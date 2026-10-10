@@ -593,7 +593,13 @@ def main():
     if not ok:
         print("校验未通过，不导出。")
         sys.exit(1)
-    print("导出：", export(data, images))
+    out = export(data, images)
+    print("导出：", out)
+    dst = ROOT / "mod/pck_project/animations/characters/regent"
+    dst.mkdir(parents=True, exist_ok=True)
+    for f in ("regent.png", "regent.atlas", "regent.spine-json"):
+        (dst / f).write_bytes((out / f).read_bytes())
+    print("已同步到 PCK 工程：", dst)
     print("预览：", previews(data, images))
 
 

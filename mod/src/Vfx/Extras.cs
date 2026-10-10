@@ -226,10 +226,15 @@ public static class Extras
 		Fx.FreeAfter(root, duration + 0.1);
 	}
 
+	/// <summary>色带上的文字：技能名（英文大字）、Persona 名、卡牌名（中文）。</summary>
+	public sealed record Caption(string Skill, string Persona, string CardTitle);
+
 	/// <summary>
-	/// P3R 风格斜切色带：深蓝平行四边形从左侧高速切入，停留，再向右切出；带青色描边和速度条纹。
+	/// P3R 风格斜切色带：深蓝平行四边形从左侧高速切入、停留、再向右切出。
+	/// 带文字时：背景超大描边字缓慢横移，主标题粗斜体技能名从右侧滑入并收紧字距，
+	/// 上方 "PERSONA ▸ 名字"，右侧竖线分隔的中文卡名。
 	/// </summary>
-	public static void SkewBand(Control layer, float yRatio = 0.42f, float hold = 0.45f, Color? tint = null)
+	public static void SkewBand(Control layer, Caption? caption = null, float yRatio = 0.42f, float hold = 0.6f, Color? tint = null)
 	{
 		Color c = tint ?? Pal.Royal;
 		Vector2 size = layer.GetViewportRect().Size;
@@ -238,20 +243,62 @@ public static class Extras
 		float w = size.X + skew * 2f;
 		Node2D root = Fx.Root(layer, Vector2.Zero, "P3SkewBand");
 		root.TopLevel = true;
+		root.GlobalPosition = Vector2.Zero;
 		Node2D band = new Node2D();
 		root.AddChild(band);
 		float y = size.Y * yRatio;
-		Vector2[] shape = { new(skew, y - h / 2f), new(w, y - h / 2f), new(w - skew, y + h / 2f), new(0f, y + h / 2f) };
-		Fx.Poly(band, shape, new Color(Pal.Abyss, 0.88f));
-		Fx.Poly(band, new Vector2[] { new(skew + 30f, y - h / 2f), new(w, y - h / 2f), new(w - 6f, y - h / 2f + 10f), new(skew + 24f, y - h / 2f + 10f) }, new Color(c, 0.9f), additive: true);
+		float top = y - h / 2f;
+		Vector2[] shape = { new(skew, top), new(w, top), new(w - skew, y + h / 2f), new(0f, y + h / 2f) };
+		Fx.Poly(band, shape, new Color(Pal.Abyss, 0.9f));
+		Fx.Poly(band, new Vector2[] { new(skew + 30f, top), new(w, top), new(w - 6f, top + 10f), new(skew + 24f, top + 10f) }, new Color(c, 0.95f), additive: true);
 		Fx.Line(band, new[] { new Vector2(0f, y + h / 2f), new Vector2(w - skew, y + h / 2f) }, Pal.Cyan, 3f);
-		for (int i = 0; i < 6; i++)
+		for (int i = 0; i < 5; i++)
 		{
-			float yy = y - h / 2f + h * (0.25f + 0.1f * i);
-			float x0 = Fx.Rand(0.1f, 0.6f) * w;
-			Fx.Line(band, new[] { new Vector2(x0, yy), new Vector2(x0 + Fx.Rand(120f, 380f), yy) }, new Color(Pal.Ice, 0.25f), 2f);
+			float yy = top + h * (0.2f + 0.14f * i);
+			float x0 = Fx.Rand(0.05f, 0.7f) * w;
+			Fx.Line(band, new[] { new Vector2(x0, yy), new Vector2(x0 + Fx.Rand(120f, 380f), yy) }, new Color(Pal.Ice, 0.18f), 2f);
 		}
+
 		float total = 0.22f + hold + 0.2f;
+		Node2D? watermark = null;
+		Node2D? title = null;
+		Node2D? meta = null;
+		if (caption != null)
+		{
+			// 背景大字：描边、极淡、缓慢横移
+			watermark = new Node2D { Position = new Vector2(size.X * 0.05f, top - h * 0.12f), Skew = -0.22f };
+			band.AddChild(watermark);
+			Typo.Text(watermark, caption.Skill + "   " + caption.Skill, Typo.Latin, (int)(h * 1.05f), new Color(1f, 1f, 1f, 0f), Vector2.Zero,
+				outline: 3, outlineColor: new Color(Pal.Cyan, 0.16f));
+
+			// 主标题：技能名
+			title = new Node2D { Position = new Vector2(size.X * 0.2f, top + h * 0.3f), Skew = -0.25f };
+			band.AddChild(title);
+			Typo.Text(title, caption.Skill, Typo.Latin, (int)(h * 0.46f), Pal.White, Vector2.Zero,
+				outline: 2, outlineColor: new Color(Pal.Abyss, 1f), shadow: new Color(Pal.Cyan, 0.9f), shadowOffset: new Vector2(6f, 5f));
+
+			// PERSONA ▸ 名字
+			meta = new Node2D { Position = new Vector2(size.X * 0.2f + 8f, top + h * 0.1f), Skew = -0.25f };
+			band.AddChild(meta);
+			Typo.Text(meta, "PERSONA  \u25B8  " + caption.Persona, Typo.Latin, (int)(h * 0.14f), Pal.Cyan, Vector2.Zero);
+
+			// 右侧：竖线 + 中文卡名
+			Node2D card = new Node2D { Position = new Vector2(size.X * 0.68f, top + h * 0.34f), Skew = -0.25f };
+			band.AddChild(card);
+			Fx.Line(card, new[] { new Vector2(-24f, -h * 0.05f), new Vector2(-24f, h * 0.38f) }, Pal.Cyan, 3f, additive: false);
+			Typo.Text(card, caption.CardTitle, Typo.Cjk, (int)(h * 0.22f), Pal.Ice, Vector2.Zero);
+			meta.Modulate = card.Modulate = new Color(1f, 1f, 1f, 0f);
+			Node2D cardRef = card;
+			Fx.Animate(card, total, t =>
+			{
+				float time = t * total;
+				float a = Mathf.Clamp((time - 0.12f) / 0.12f, 0f, 1f);
+				meta.Modulate = cardRef.Modulate = new Color(1f, 1f, 1f, a);
+				cardRef.Position = new Vector2(size.X * 0.68f + 60f * (1f - Ease.OutExpo(a)), top + h * 0.34f);
+			});
+		}
+
+		Vector2 titleHome = title?.Position ?? Vector2.Zero;
 		Fx.Animate(band, total, t =>
 		{
 			float time = t * total;
@@ -269,6 +316,18 @@ public static class Extras
 				x = Mathf.Lerp(-skew + 40f, size.X + skew, Ease.InExpo((time - 0.22f - hold) / 0.2f));
 			}
 			band.Position = new Vector2(x, 0f);
+			if (watermark != null)
+			{
+				watermark.Position = new Vector2(size.X * 0.05f - time * 90f, top - h * 0.12f);
+			}
+			if (title != null)
+			{
+				// 主标题比色带晚 50ms，从右侧滑入，横向从拉宽收紧到正常
+				float u = Ease.OutExpo(Mathf.Clamp((time - 0.05f) / 0.3f, 0f, 1f));
+				title.Position = titleHome + new Vector2(260f * (1f - u), 0f);
+				title.Scale = new Vector2(Mathf.Lerp(1.35f, 1f, u), 1f);
+				title.Modulate = new Color(1f, 1f, 1f, u);
+			}
 		});
 		Fx.FreeAfter(root, total + 0.1);
 	}

@@ -1,0 +1,8 @@
+; P3Makoto 资源包工程：只用来导入 Spine 资源并导出 P3Makoto.pck。
+; 需要把游戏解包目录里的 addons/spine 整个复制到本工程的 addons/spine（见 docs/BUILD.md）。
+config_version=5
+
+[application]
+
+config/name="P3Makoto"
+config/features=PackedStringArray("4.5")

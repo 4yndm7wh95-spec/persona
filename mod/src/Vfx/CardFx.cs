@@ -58,7 +58,8 @@ public static class CardFx
 		Extra x = style.Extra;
 		if (x.HasFlag(Extra.SkewBand))
 		{
-			Extras.SkewBand(front);
+			(string skill, string persona) = CardStyles.CaptionFor(play.Card);
+			Extras.SkewBand(front, new Extras.Caption(skill, persona, play.Card.Title));
 		}
 		if (x.HasFlag(Extra.DarkHour))
 		{

@@ -12,7 +12,7 @@ public static class ModEntry
 
 	public static void Init()
 	{
-		GD.Print($"{Tag} init v0.0.3");
+		GD.Print($"{Tag} init v0.1.0");
 		try
 		{
 			new Harmony("brooks.p3makoto").PatchAll(typeof(ModEntry).Assembly);

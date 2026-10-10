@@ -123,6 +123,28 @@ public static class CardStyles
 		["SpectrumShift"] = new(Element.None, Opener.Power, Extra.StarsSelf | Extra.Butterflies)
 	};
 
+	/// <summary>色带文字：P3 技能名 + 召唤的 Persona。只有带 SkewBand 的牌才会显示。</summary>
+	private static readonly Dictionary<string, (string Skill, string Persona)> Captions = new()
+	{
+		["SovereignBlade"] = ("BRAVE BLADE", "THANATOS"),
+		["SwordSage"] = ("BRAVE BLADE", "THANATOS"),
+		["KinglyKick"] = ("GOD'S HAND", "ORPHEUS"),
+		["Hegemony"] = ("HAMAON", "ORPHEUS"),
+		["DyingStar"] = ("DIE FOR ME!", "THANATOS"),
+		["Devastate"] = ("MEGIDO", "THANATOS"),
+		["Bombardment"] = ("MEGIDOLA", "THANATOS"),
+		["SevenStars"] = ("MEGIDOLAON", "THANATOS"),
+		["MeteorShower"] = ("MORNING STAR", "MESSIAH"),
+		["BigBang"] = ("MEGIDOLAON", "MESSIAH"),
+		["IAmInvincible"] = ("TETRAKARN", "ORPHEUS"),
+		["VoidForm"] = ("DARK HOUR", "THANATOS"),
+		["Genesis"] = ("SALVATION", "MESSIAH"),
+		["TheSealedThrone"] = ("GREAT SEAL", "MESSIAH")
+	};
+
+	public static (string Skill, string Persona) CaptionFor(object card) =>
+		Captions.TryGetValue(card.GetType().Name, out var c) ? c : ("PERSONA", "ORPHEUS");
+
 	public static CardStyle For(object card, MegaCrit.Sts2.Core.Entities.Cards.CardType type)
 	{
 		if (Table.TryGetValue(card.GetType().Name, out CardStyle? style))
