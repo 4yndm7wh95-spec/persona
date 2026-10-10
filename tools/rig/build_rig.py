@@ -18,7 +18,7 @@ MASTER = ROOT / "art/master/makoto_rig_master.png"   # 已抠图的 armout 母�
 OUT = ROOT / "art/rig"
 PARTS = OUT / "parts"
 
-K = 0.77                       # 像素 → Spine 单位（让角色高度接近原版储君）
+K = 1.0                        # 像素 → Spine 单位（v1 的 0.77 在游戏里偏小，放大约 30%）
 ORIGIN = (345.0, 1480.0)       # 母版上的地面原点（两脚之间）
 
 
@@ -69,8 +69,8 @@ def build_masks(h, w):
     # 肩部圆形关节帽：以肩关节为圆心，手臂零件带着它旋转，盖住躯干上的切口
     sx, sy = J["shoulder"]
     cap = (xs - (sx + 6)) ** 2 + (ys - sy) ** 2 < 44 ** 2
-    m["upper_arm"] = ((arm_zone & (xs >= sx)) | cap) & (xs < 625)
-    m["forearm"] = arm_zone & (xs >= 588) & (xs < 718)
+    # 整条手臂（肩帽 → 手腕）是一张加权网格，肘部和肩部平滑弯曲
+    m["arm"] = ((arm_zone & (xs >= sx)) | cap) & (xs < 718)
     m["hand_open"] = arm_zone & (xs >= 700)
     # 腿：y≥600，按分界线左右分；大腿/小腿在膝盖处各多留 20px
     legs = ys >= 600
@@ -104,6 +104,56 @@ def cut_parts(master):
         cx, cy = (bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2
         parts[name] = (crop, (cx, cy))
     return parts
+
+
+def feather_left(im, px=12):
+    """左边缘 alpha 渐变：手和袖口的接缝融合，不出现硬切口。"""
+    a = np.asarray(im).copy()
+    ramp = np.clip(np.arange(a.shape[1]) / px, 0, 1)[None, :]
+    a[..., 3] = (a[..., 3].astype(np.float32) * ramp).astype(np.uint8)
+    return Image.fromarray(a, "RGBA")
+
+
+def arm_mesh(img, center, bone_index, joint):
+    """手臂网格：3 行 × N 列网格，按 x 位置给肩（躯干↔上臂）和肘（上臂↔前臂）做线性权重过渡。
+    返回 Spine 4.2 加权 mesh 附件（不含 path）。坐标在母版像素中计算后换算到 Spine。"""
+    w, h = img.size
+    left, top = center[0] - w / 2, center[1] - h / 2
+    xs = list(np.arange(0, w, 14.0)) + [float(w)]
+    rows = [0.0, h / 2, float(h)]
+    n = len(xs)
+    order = [(x, rows[0]) for x in xs] + [(x, rows[2]) for x in reversed(xs)] + [(x, rows[1]) for x in xs]
+    top_i = lambda i: i
+    bot_i = lambda i: 2 * n - 1 - i
+    mid_i = lambda i: 2 * n + i
+    tris = []
+    for i in range(n - 1):
+        for a, b in ((top_i, mid_i), (mid_i, bot_i)):
+            tris += [a(i), a(i + 1), b(i), a(i + 1), b(i + 1), b(i)]
+    sx, ex = J["shoulder"][0], J["elbow"][0]
+
+    def weights(xpx):
+        ws = []
+        u = np.clip((xpx - (sx - 38)) / 60.0, 0, 1)      # 肩：躯干 → 上臂
+        e = np.clip((xpx - (ex - 30)) / 60.0, 0, 1)      # 肘：上臂 → 前臂
+        if e > 0:
+            ws = [("upper_arm", 1 - e), ("forearm", e)]
+        else:
+            ws = [("torso", 1 - u), ("upper_arm", u)]
+        return [(b, float(v)) for b, v in ws if v > 1e-4]
+
+    uvs, verts = [], []
+    for (x, y) in order:
+        px, py = left + x, top + y
+        uvs += [round(x / w, 5), round(y / h, 5)]
+        ws = weights(px)
+        verts.append(len(ws))
+        wx, wy = to_spine((px, py))
+        for b, v in ws:
+            bx, by = to_spine(joint[b])
+            verts += [bone_index[b], round(wx - bx, 3), round(wy - by, 3), round(v, 4)]
+    return {"type": "mesh", "uvs": uvs, "triangles": tris, "vertices": verts, "hull": 2 * n,
+            "width": round(w * K), "height": round(h * K)}
 
 
 def prop_part(src, cuff_px, cuff_h_px, target_cuff, target_h, keep_left):
@@ -186,8 +236,7 @@ SLOTS = [
     ("thigh_l", "thigh_l", "thigh_l"),
     ("head", "head", "head"),
     ("torso", "torso", "torso"),
-    ("upper_arm", "upper_arm", "upper_arm"),
-    ("forearm", "forearm", "forearm"),
+    ("arm", "upper_arm", "arm"),
     ("hand", "hand", "hand_open"),
 ]
 
@@ -203,11 +252,12 @@ def build_setup():
     tips = {}
     for name, (path, cuff, cuff_h, tip) in PROPS.items():
         src = key_image(ROOT / path)
-        im, center = prop_part(src, cuff, cuff_h, MASTER_CUFF, MASTER_SLEEVE_H, keep_left=10)
-        images[name] = im
+        im, center = prop_part(src, cuff, cuff_h, MASTER_CUFF, MASTER_SLEEVE_H, keep_left=8)
+        images[name] = feather_left(im, 10)
         centers[name] = center
         s = MASTER_SLEEVE_H / cuff_h
         tips[name] = (MASTER_CUFF[0] + (tip[0] - cuff[0]) * s, MASTER_CUFF[1] + (tip[1] - cuff[1]) * s)
+    images["hand_open"] = feather_left(images["hand_open"], 10)
     images["shadow"] = shadow_image()
     centers["shadow"] = (ORIGIN[0] + 10, ORIGIN[1] - 10)
 
@@ -237,8 +287,12 @@ def build_setup():
     skin = {}
     for slot, bone, att in SLOTS:
         skin.setdefault(slot, {})
+    bone_index = {b["name"]: i for i, b in enumerate(bones)}
     for att, im in scaled.items():
         slot = "hand" if att.startswith("hand") else att
+        if att == "arm":
+            skin[slot][att] = arm_mesh(images["arm"], centers["arm"], bone_index, joint)
+            continue
         bone = bone_of[att] if att in bone_of else slot
         bx, by = to_spine(joint[bone])
         cx, cy = to_spine(centers[att])
@@ -412,71 +466,166 @@ def bake(rig, name, duration, fn, loop=False, slots=None, events=None):
     rig.data["animations"][name] = anim
 
 
+# ───────────── 二阶弹簧动力学（"不塑料"的关键）─────────────
+# 每个关节通道像挂在弹簧上一样追赶目标姿势：越靠末端频率越低、阻尼越小 → 自然的滞后、跟随与过冲回弹。
+# (f 频率Hz, z 阻尼, r 起始响应)。参考 t3ssel8r 的 second-order dynamics。
+DYN = {
+    "hip": (3.4, 0.85, 0.0),
+    "torso": (3.0, 0.68, 0.0),
+    "head": (2.3, 0.5, 0.0),
+    "upper_arm": (4.2, 0.6, 0.0),
+    "forearm": (4.4, 0.5, 0.0),
+    "hand": (5.2, 0.42, 0.0),
+}
+
+
+class Spring:
+    def __init__(self, x0, f, z, r):
+        self.k1 = z / (math.pi * f)
+        self.k2 = 1 / ((2 * math.pi * f) ** 2)
+        self.k3 = r * z / (2 * math.pi * f)
+        self.xp = x0
+        self.y = x0
+        self.yd = 0.0
+
+    def step(self, T, x):
+        xd = (x - self.xp) / T
+        self.xp = x
+        k2 = max(self.k2, T * T / 2 + T * self.k1 / 2, T * self.k1)  # 稳定性保证
+        self.y += T * self.yd
+        self.yd += T * (x + self.k3 * xd - self.y - self.k1 * self.yd) / k2
+        return self.y
+
+
+def bake_dynamic(rig, name, duration, target, loop=False, slots=None, events=None, speed=1.0, dyn_off=()):
+    """target(t) -> Pose（目标姿势）。弹簧在 240Hz 上积分，按 30fps 输出；腿部 IK 最后统一解。
+    loop：先空跑两个周期进入稳态，取第三个周期，并强制首尾一致。dyn_off：不走弹簧的骨骼。"""
+    sub = 240
+    T = 1.0 / sub
+    chans = {}
+    p0 = target(0.0)
+    names = set(DYN) | set(p0)
+    for b in names:
+        f, z, r = DYN.get(b, (4.0, 0.7, 0.0))
+        for c in ("r", "x", "y"):
+            chans[(b, c)] = Spring(p0.get(b, {}).get(c, 0.0), f * speed, z, r)
+    warm = 2 if loop else 0
+    total_steps = int(round(duration * sub)) * (warm + 1)
+    out_every = sub // FPS
+    frames = []
+    for i in range(total_steps + 1):
+        t_abs = i * T
+        t = t_abs % duration if loop else min(t_abs, duration)
+        tp = target(t)
+        cur = Pose()
+        for (b, c), sp in chans.items():
+            x = tp.get(b, {}).get(c, 0.0)
+            v = x if b in dyn_off else sp.step(T, x)
+            if abs(v) > 1e-6:
+                cur.setdefault(b, {})[c] = v
+        cycle_start = int(round(duration * sub)) * warm
+        if i >= cycle_start and (i - cycle_start) % out_every == 0:
+            frames.append((round((i - cycle_start) * T, 4), cur))
+    if loop:
+        frames[-1] = (frames[-1][0], frames[0][1])
+    _write_frames(rig, name, frames, slots, events)
+
+
+def _write_frames(rig, name, frames, slots, events):
+    solved = []
+    for t, p in frames:
+        p = Pose({b: dict(v) for b, v in p.items()})
+        p = rig.leg_ik(p, "l")
+        p = rig.leg_ik(p, "r")
+        solved.append((t, p))
+    bones = {}
+    names = set()
+    for _, p in solved:
+        names |= set(p)
+    for b in sorted(names):
+        rot = [{"time": t, "value": round(p.get(b, {}).get("r", 0.0), 3)} for t, p in solved]
+        tr = [{"time": t, "x": round(p.get(b, {}).get("x", 0.0), 3), "y": round(p.get(b, {}).get("y", 0.0), 3)} for t, p in solved]
+        entry = {}
+        if any(abs(k["value"]) > 1e-4 for k in rot):
+            entry["rotate"] = rot
+        if b in ("root", "hip", "torso") and any(abs(k["x"]) > 1e-4 or abs(k["y"]) > 1e-4 for k in tr):
+            entry["translate"] = tr
+        if entry:
+            bones[b] = entry
+    anim = {"bones": bones}
+    if slots:
+        anim["slots"] = slots
+    if events:
+        anim["events"] = [{"time": t, "name": e} for t, e in sorted(events)]
+    rig.data["animations"][name] = anim
+
+
 # ───────────── 动画定义 ─────────────
 EVOKER_TARGET = ((418, 112), 225)      # 枪口抵住的太阳穴位置（母版像素）和枪管朝向
+EVENTS = ["death_particles_start", "death_particles_end", "explode_dead", "explode_end",
+          "weapon_draw", "weapon_slash", "weapon_sheath", "evoker_draw", "evoker_fire", "evoker_sheath"]
 
 
 def make_animations(rig):
+    rig.data["events"] = {e: {} for e in EVENTS}
     eu, ef, eh = rig.arm_ik("evoker_tip", *EVOKER_TARGET)
-    ARM_DOWN = Pose({"upper_arm": {"r": -84}, "forearm": {"r": 6}, "hand": {"r": -4}})
+    ARM_DOWN = Pose({"upper_arm": {"r": -84}, "forearm": {"r": 8}, "hand": {"r": -6}})
     EVOKER = Pose({"upper_arm": {"r": eu}, "forearm": {"r": ef}, "hand": {"r": eh}, "head": {"r": 5}, "torso": {"r": 1.5}})
-    SWORD_READY = Pose({"upper_arm": {"r": -58}, "forearm": {"r": 8}, "hand": {"r": 22}, "torso": {"r": -3}, "head": {"r": -2}, "hip": {"y": -8}})
-    WINDUP = Pose({"upper_arm": {"r": 78}, "forearm": {"r": 48}, "hand": {"r": 30}, "torso": {"r": 7}, "head": {"r": 3}, "hip": {"x": -10, "y": -14}})
-    SLASH = Pose({"upper_arm": {"r": -42}, "forearm": {"r": -16}, "hand": {"r": -12}, "torso": {"r": -10}, "head": {"r": -4}, "hip": {"x": 34, "y": -26}})
-    HURT = Pose({"torso": {"r": 11}, "head": {"r": 14}, "upper_arm": {"r": -55}, "forearm": {"r": 18}, "hip": {"x": -18, "y": -6}})
+    RAISE_MID = Pose({"upper_arm": {"r": eu * 0.55}, "forearm": {"r": 40}, "hand": {"r": 25}, "head": {"r": 2}, "torso": {"r": 1}})
+    KICK = add(EVOKER, Pose({"head": {"r": 7}, "hand": {"r": -10}, "torso": {"r": 2.5}, "forearm": {"r": -4}}))
+    SWORD_READY = Pose({"upper_arm": {"r": -58}, "forearm": {"r": 8}, "hand": {"r": 22}, "torso": {"r": -3}, "head": {"r": -2}, "hip": {"y": -10}})
+    ANTIC = Pose({"upper_arm": {"r": 30}, "forearm": {"r": 75}, "hand": {"r": 45}, "torso": {"r": 9}, "head": {"r": 4}, "hip": {"x": -14, "y": -20}})
+    WINDUP = Pose({"upper_arm": {"r": 95}, "forearm": {"r": 35}, "hand": {"r": 28}, "torso": {"r": 10}, "head": {"r": 3}, "hip": {"x": -10, "y": -16}})
+    SLASH = Pose({"upper_arm": {"r": -48}, "forearm": {"r": -18}, "hand": {"r": -16}, "torso": {"r": -12}, "head": {"r": -5}, "hip": {"x": 40, "y": -30}})
+    HURT = Pose({"torso": {"r": 13}, "head": {"r": 16}, "upper_arm": {"r": -45}, "forearm": {"r": 25}, "hip": {"x": -20, "y": -8}})
 
     def breathe(t, period, amp=1.0):
-        """呼吸：躯干轻微前后摆 + 重心起伏，头和手臂带相位滞后（跟随感）。"""
         w = 2 * math.pi * t / period
         return Pose({
-            "hip": {"y": -2.5 * amp * (1 - math.cos(w)) / 2},
-            "torso": {"r": 0.9 * amp * math.sin(w)},
-            "head": {"r": 1.2 * amp * math.sin(w - 0.6)},
-            "upper_arm": {"r": 1.6 * amp * math.sin(w - 0.9)},
-            "forearm": {"r": 1.2 * amp * math.sin(w - 1.3)},
+            "hip": {"y": -3.0 * amp * (1 - math.cos(w)) / 2},
+            "torso": {"r": 1.0 * amp * math.sin(w)},
+            "head": {"r": 0.8 * amp * math.sin(w + 0.4)},
+            "upper_arm": {"r": 1.2 * amp * math.sin(w)},
         })
 
-    def seq(t, keys):
-        """keys: [(时间, Pose, 缓动)]，在相邻关键姿势间插值。"""
-        if t <= keys[0][0]:
-            return keys[0][1]
-        for (t0, p0, _), (t1, p1, ez) in zip(keys, keys[1:]):
-            if t0 <= t <= t1:
-                return mix(p0, p1, ez((t - t0) / (t1 - t0)))
-        return keys[-1][1]
+    def seq(keys):
+        """keys: [(时间, Pose)]。目标姿势在关键点之间用 smoothstep 过渡；弹簧负责滞后与过冲。"""
+        def f(t):
+            if t <= keys[0][0]:
+                return keys[0][1]
+            for (t0, p0), (t1, p1) in zip(keys, keys[1:]):
+                if t0 <= t <= t1:
+                    return mix(p0, p1, ease_in_out((t - t0) / max(t1 - t0, 1e-6)))
+            return keys[-1][1]
+        return f
 
     hand = lambda *pairs: {"hand": {"attachment": [{"time": t, "name": n} for t, n in pairs]}}
 
-    bake(rig, "idle_loop", 2.4, lambda t: add(ARM_DOWN, breathe(t, 2.4)), loop=True)
-    bake(rig, "relaxed_loop", 3.2, lambda t: add(ARM_DOWN, breathe(t, 3.2, 0.7)), loop=True)
-    SLUMP = add(ARM_DOWN, Pose({"torso": {"r": -6}, "head": {"r": -12}, "hip": {"y": -16}, "upper_arm": {"r": 6}}))
-    bake(rig, "low_health_loop", 2.0, lambda t: add(SLUMP, breathe(t, 2.0, 1.6)), loop=True)
+    bake_dynamic(rig, "idle_loop", 2.6, lambda t: add(ARM_DOWN, breathe(t, 2.6)), loop=True)
+    bake_dynamic(rig, "relaxed_loop", 3.4, lambda t: add(ARM_DOWN, breathe(t, 3.4, 0.7)), loop=True)
+    SLUMP = add(ARM_DOWN, Pose({"torso": {"r": -6}, "head": {"r": -12}, "hip": {"y": -18}, "upper_arm": {"r": 6}}))
+    bake_dynamic(rig, "low_health_loop", 2.0, lambda t: add(SLUMP, breathe(t, 2.0, 1.6)), loop=True)
+    bake_dynamic(rig, "aim_loop", 1.8, lambda t: add(EVOKER, breathe(t, 1.8, 0.6)), loop=True, slots=hand((0, "hand_evoker")))
+    bake_dynamic(rig, "ready_sword_loop", 1.8, lambda t: add(SWORD_READY, breathe(t, 1.8, 0.8)), loop=True, slots=hand((0, "hand_sword")))
 
-    bake(rig, "aim_loop", 1.6, lambda t: add(EVOKER, breathe(t, 1.6, 0.6)), loop=True, slots=hand((0, "hand_evoker")))
-    bake(rig, "ready_sword_loop", 1.6, lambda t: add(SWORD_READY, breathe(t, 1.6, 0.8)), loop=True, slots=hand((0, "hand_sword")))
+    # 攻击：拔剑 → 下蹲后引（预备）→ 举过头顶 → 一刀斩下（极快）→ 余势 → 收剑
+    bake_dynamic(rig, "attack", 1.0, seq([(0.0, ARM_DOWN), (0.16, ANTIC), (0.25, WINDUP), (0.3, SLASH), (0.56, SLASH), (0.95, ARM_DOWN)]),
+                 slots=hand((0, "hand_sword"), (0.9, "hand_open")), speed=1.7,
+                 events=[(0.0, "weapon_draw"), (0.27, "weapon_slash"), (0.84, "weapon_sheath")])
 
-    # 攻击：举剑蓄力 → 斩下（极快）→ 定格 → 收势
-    attack_keys = [(0.0, ARM_DOWN, ease_out_cubic), (0.14, WINDUP, ease_out_cubic), (0.22, SLASH, ease_out_expo),
-                   (0.42, SLASH, ease_out_cubic), (0.8, ARM_DOWN, ease_in_out)]
-    bake(rig, "attack", 0.8, lambda t: seq(t, attack_keys), slots=hand((0, "hand_sword"), (0.78, "hand_open")))
+    # 施法：手臂沿弧线抬起（肩先、肘后）→ 枪口抵住太阳穴 → 扣扳机后坐 → 放下
+    bake_dynamic(rig, "cast", 0.95, seq([(0.0, ARM_DOWN), (0.11, RAISE_MID), (0.22, EVOKER), (0.29, EVOKER), (0.31, KICK), (0.55, EVOKER), (0.92, ARM_DOWN)]),
+                 slots=hand((0, "hand_evoker"), (0.88, "hand_open")), speed=1.4,
+                 events=[(0.0, "evoker_draw"), (0.3, "evoker_fire"), (0.82, "evoker_sheath")])
+    bake_dynamic(rig, "attack_sovereign", 0.8, seq([(0.0, ARM_DOWN), (0.08, RAISE_MID), (0.16, EVOKER), (0.2, KICK), (0.42, EVOKER), (0.78, ARM_DOWN)]),
+                 slots=hand((0, "hand_evoker"), (0.74, "hand_open")), speed=1.6,
+                 events=[(0.0, "evoker_draw"), (0.19, "evoker_fire"), (0.7, "evoker_sheath")])
 
-    # 施法：举起召唤器抵住太阳穴 → 扣扳机（头和手轻微后坐）→ 放下
-    KICK = add(EVOKER, Pose({"head": {"r": 6}, "hand": {"r": -8}, "torso": {"r": 2}}))
-    cast_keys = [(0.0, ARM_DOWN, ease_out_cubic), (0.2, EVOKER, ease_out_expo), (0.26, EVOKER, ease_out_cubic),
-                 (0.3, KICK, ease_out_expo), (0.55, EVOKER, ease_out_cubic), (0.9, ARM_DOWN, ease_in_out)]
-    bake(rig, "cast", 0.9, lambda t: seq(t, cast_keys), slots=hand((0, "hand_evoker"), (0.85, "hand_open")))
-    sov_keys = [(0.0, ARM_DOWN, ease_out_cubic), (0.14, EVOKER, ease_out_expo), (0.2, KICK, ease_out_expo),
-                (0.45, EVOKER, ease_out_cubic), (0.75, ARM_DOWN, ease_in_out)]
-    bake(rig, "attack_sovereign", 0.75, lambda t: seq(t, sov_keys), slots=hand((0, "hand_evoker"), (0.7, "hand_open")))
+    bake_dynamic(rig, "hurt", 0.6, seq([(0.0, ARM_DOWN), (0.06, HURT), (0.14, HURT), (0.3, ARM_DOWN)]), speed=1.3)
 
-    hurt_keys = [(0.0, ARM_DOWN, ease_out_cubic), (0.08, HURT, ease_out_expo), (0.45, ARM_DOWN, ease_in_out)]
-    bake(rig, "hurt", 0.45, lambda t: seq(t, hurt_keys))
-
-    # 死亡：受击后仰 → 失去力气向前垂下，重心下沉（脚仍钉在地面）
     DOWN = Pose({"torso": {"r": -30}, "head": {"r": -34}, "upper_arm": {"r": -96}, "forearm": {"r": 12}, "hand": {"r": 8}, "hip": {"y": -62, "x": 8}})
-    die_keys = [(0.0, ARM_DOWN, ease_out_cubic), (0.12, HURT, ease_out_expo), (0.9, DOWN, ease_in_out), (1.4, DOWN, ease_out_cubic)]
-    bake(rig, "die", 1.4, lambda t: seq(t, die_keys),
-         events=[(0.1, "death_particles_start"), (1.1, "death_particles_end"), (1.2, "explode_dead"), (1.35, "explode_end")])
+    bake_dynamic(rig, "die", 1.5, seq([(0.0, ARM_DOWN), (0.08, HURT), (0.2, HURT), (0.9, DOWN), (1.5, DOWN)]),
+                 events=[(0.1, "death_particles_start"), (1.1, "death_particles_end"), (1.2, "explode_dead"), (1.35, "explode_end")])
 
 
 # ───────────── 校验 ─────────────
@@ -576,7 +725,7 @@ def previews(data, images):
     sk = Skeleton(data, images)
     for name, anim in data["animations"].items():
         times = sorted({k["time"] for bk in anim["bones"].values() for tl in bk.values() for k in tl})
-        frames = [sk.render(name, t, canvas=(900, 1250), origin=(380, 1180), bg=(36, 40, 60, 255)).convert("RGB").resize((300, 416), Image.LANCZOS) for t in times]
+        frames = [sk.render(name, t, canvas=(1150, 1620), origin=(470, 1560), bg=(36, 40, 60, 255)).convert("RGB").resize((300, 423), Image.LANCZOS) for t in times]
         frames = [f.convert("P", palette=Image.ADAPTIVE, colors=200) for f in frames]
         frames[0].save(out / f"{name}.gif", save_all=True, append_images=frames[1:], duration=33, loop=0, optimize=True)
     return out

@@ -40,16 +40,20 @@ public static class CardFx
 		Vector2 head = Makoto.Head(caster);
 		Vector2 feet = Makoto.Feet(caster);
 
+		// 攻击牌：结城理挥剑，召唤器特效立即出现；技能 / 能力牌：等施法动画里扣扳机那一帧（evoker_fire 事件）
+		bool attack = play.Card.Type == CardType.Attack;
 		switch (style.Opener)
 		{
 			case Opener.Evoker:
-				P3Fx.EvokerBurst(front, head);
+				if (attack) P3Fx.EvokerBurst(front, head);
+				else QueueEvoker(caster, 1f, Pal.Cyan);
 				break;
 			case Opener.EvokerSmall:
-				P3Fx.EvokerBurst(front, head, 0.7f);
+				if (attack) P3Fx.EvokerBurst(front, head, 0.7f);
+				else QueueEvoker(caster, 0.7f, Pal.Cyan);
 				break;
 			case Opener.Power:
-				P3Fx.EvokerBurst(front, head, 1.3f, Pal.DarkHour);
+				QueueEvoker(caster, 1.3f, Pal.DarkHour);
 				P3Fx.PowerUp(front, back, feet, head);
 				Fx.After(front, 0.15, "power tarot", () => Extras.TarotFlip(front, head + new Vector2(-30f, -150f), Pal.DarkHour));
 				break;
@@ -118,6 +122,34 @@ public static class CardFx
 				Extras.BlackHole(front, t.VfxSpawnPosition, 0.9f);
 			}
 		}
+	}
+
+	private static readonly Dictionary<ulong, (float Power, Color Tint)> PendingEvoker = new();
+
+	/// <summary>登记一次召唤器发动，等施法动画的 evoker_fire 事件触发；0.5 秒内没等到就在头部直接发动。</summary>
+	private static void QueueEvoker(NCreature caster, float power, Color tint)
+	{
+		ulong id = caster.GetInstanceId();
+		PendingEvoker[id] = (power, tint);
+		Fx.After(caster, 0.5, "evoker fallback", () =>
+		{
+			if (PendingEvoker.Remove(id, out var p) && GodotObject.IsInstanceValid(caster) && Makoto.FxLayer() is Control front)
+			{
+				P3Fx.EvokerBurst(front, Makoto.Head(caster), p.Power, p.Tint);
+			}
+		});
+	}
+
+	/// <summary>施法动画扣扳机的那一帧：在枪口（太阳穴）位置发动召唤器。没有待发动的牌时放一个小号的。</summary>
+	public static void FireEvoker(NCreature caster)
+	{
+		if (Makoto.FxLayer() is not Control front)
+		{
+			return;
+		}
+		(float power, Color tint) = PendingEvoker.Remove(caster.GetInstanceId(), out var p) ? p : (0.6f, Pal.Cyan);
+		Vector2 at = WeaponFx.Bone(caster, "evoker_tip") ?? Makoto.Head(caster);
+		P3Fx.EvokerBurst(front, at, power, tint, skipGather: true);
 	}
 
 	/// <summary>单体牌取目标；群体 / 无目标的攻击性牌取全部存活敌人。</summary>

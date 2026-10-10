@@ -79,6 +79,9 @@ class Skeleton:
         for slot, bone, att in self.attachments(anim, t):
             a = skin[slot][att]
             src = self.images[a.get("path", att)]
+            if a.get("type") == "mesh":
+                self._draw_mesh(img, src, a, W, flip)
+                continue
             w, h = a["width"], a["height"]
             # 附件局部：中心在 (x,y)，图像像素 → 附件单位，图像 y 向下 → Spine y 向上
             A = mat(a.get("x", 0), a.get("y", 0), a.get("rotation", 0), a.get("scaleX", 1), a.get("scaleY", 1))
@@ -88,6 +91,58 @@ class Skeleton:
             layer = src.transform(canvas, Image.AFFINE, data=tuple(inv[:2].flatten()), resample=Image.BILINEAR)
             img.alpha_composite(layer)
         return img
+
+    def mesh_world(self, a, W):
+        """加权网格顶点 → 世界坐标。vertices 格式：[骨骼数, (骨骼索引, x, y, 权重)×骨骼数] × 顶点数。"""
+        names = self.order
+        v = a["vertices"]
+        out = []
+        i = 0
+        while i < len(v):
+            n = int(v[i])
+            i += 1
+            x = y = 0.0
+            for _ in range(n):
+                b, bx, by, w = int(v[i]), v[i + 1], v[i + 2], v[i + 3]
+                i += 4
+                p = W[names[b]] @ np.array([bx, by, 1.0])
+                x += p[0] * w
+                y += p[1] * w
+            out.append((x, y))
+        return out
+
+    def _draw_mesh(self, img, src, a, W, flip):
+        pts = self.mesh_world(a, W)
+        uvs = a["uvs"]
+        tri = a["triangles"]
+        for k in range(0, len(tri), 3):
+            ids = tri[k:k + 3]
+            dst = [flip @ np.array([pts[j][0], pts[j][1], 1.0]) for j in ids]
+            srcp = [(uvs[2 * j] * src.width, uvs[2 * j + 1] * src.height) for j in ids]
+            xs = [d[0] for d in dst]
+            ys = [d[1] for d in dst]
+            x0, y0 = int(math.floor(min(xs))) - 1, int(math.floor(min(ys))) - 1
+            x1, y1 = int(math.ceil(max(xs))) + 1, int(math.ceil(max(ys))) + 1
+            if x1 <= x0 or y1 <= y0 or x1 <= 0 or y1 <= 0 or x0 >= img.width or y0 >= img.height:
+                continue
+            # 目标像素 → 源像素 的仿射
+            A = np.array([[d[0] - x0, d[1] - y0, 1.0] for d in dst])
+            S = np.array(srcp)
+            try:
+                coef = np.linalg.solve(A, S)  # 3x2
+            except np.linalg.LinAlgError:
+                continue
+            data = (coef[0, 0], coef[1, 0], coef[2, 0], coef[0, 1], coef[1, 1], coef[2, 1])
+            patch = src.transform((x1 - x0, y1 - y0), Image.AFFINE, data=data, resample=Image.BILINEAR)
+            mask = Image.new("L", patch.size, 0)
+            from PIL import ImageDraw
+            ImageDraw.Draw(mask).polygon([(d[0] - x0, d[1] - y0) for d in dst], fill=255)
+            # 相邻三角形共享边：mask 外扩 1px 避免接缝
+            from PIL import ImageFilter
+            mask = mask.filter(ImageFilter.MaxFilter(3))
+            alpha = Image.fromarray((np.asarray(patch.getchannel("A")).astype(np.uint16) * np.asarray(mask) // 255).astype(np.uint8))
+            patch.putalpha(alpha)
+            img.alpha_composite(patch, dest=(max(x0, 0), max(y0, 0)), source=(max(-x0, 0), max(-y0, 0)))
 
     def point(self, bone, local=(0, 0), anim=None, t=0.0):
         W = self.world(anim, t)

@@ -17,7 +17,9 @@ public static class Makoto
 		{
 			return null;
 		}
-		return NCombatRoom.Instance?.GetCreatureNode(player.Creature);
+		NCreature? node = NCombatRoom.Instance?.GetCreatureNode(player.Creature);
+		SpineHooks.Ensure(node);
+		return node;
 	}
 
 	/// <summary>特效层：挂在战斗 VFX 容器下，坐标用全局坐标。</summary>

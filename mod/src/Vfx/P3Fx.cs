@@ -286,11 +286,14 @@ public static class P3Fx
 	/// 召唤器发动（所有出牌的基础层）：
 	/// 0.00 蓄力环收缩 → 0.13 扣扳机：闪光 + 折射波 + 玻璃碎裂 + 速度线 → 灵焰升腾 + 蓝蝶散开。
 	/// </summary>
-	public static void EvokerBurst(Control layer, Vector2 head, float power = 1f, Color? tint = null)
+	public static void EvokerBurst(Control layer, Vector2 head, float power = 1f, Color? tint = null, bool skipGather = false)
 	{
 		Color c = tint ?? Pal.Cyan;
-		Gather(layer, head, c, 260f * power, 0.13f);
-		layer.GetTree().CreateTimer(0.13).Timeout += () => ModEntry.Safe("evoker trigger", () =>
+		if (!skipGather)
+		{
+			Gather(layer, head, c, 260f * power, 0.13f);
+		}
+		layer.GetTree().CreateTimer(skipGather ? 0.0 : 0.13).Timeout += () => ModEntry.Safe("evoker trigger", () =>
 		{
 			Flash(layer, head, Pal.Ice, 320f * power, 0.22f);
 			Ripple(layer, head, 640f * power, 0.75f, 0.035f);

@@ -12,31 +12,39 @@ public static class Pose
 	public const string Aim = "aim_loop";
 	public const string ReadySword = "ready_sword_loop";
 
-	public static void Enter(NCreature? node, string anim)
+	public static bool Enter(NCreature? node, string anim)
 	{
 		MegaSprite? body = node?.Visuals.SpineBody;
 		if (body == null || !body.HasAnimation(anim))
 		{
-			return;
+			return false;
 		}
 		body.GetAnimationState().SetAnimation(anim, loop: true);
+		return true;
+	}
+
+	public static bool IsHolding(NCreature? node)
+	{
+		string? current = node?.Visuals.SpineBody?.GetAnimationState().GetCurrentAnimationName();
+		return current == Aim || current == ReadySword;
 	}
 
 	/// <summary>只有当前仍处于我们设置的预备姿势时才恢复待机，避免打断出牌动画。</summary>
-	public static void Exit(NCreature? node)
+	public static bool Exit(NCreature? node)
 	{
 		MegaSprite? body = node?.Visuals.SpineBody;
 		if (body == null)
 		{
-			return;
+			return false;
 		}
 		MegaAnimationState state = body.GetAnimationState();
 		string? current = state.GetCurrentAnimationName();
 		if (current != Aim && current != ReadySword)
 		{
-			return;
+			return false;
 		}
 		bool lowHealth = node!.Entity.GetHpPercentRemaining() <= 0.25 && body.HasAnimation("low_health_loop");
 		state.SetAnimation(lowHealth ? "low_health_loop" : "idle_loop", loop: true);
+		return true;
 	}
 }

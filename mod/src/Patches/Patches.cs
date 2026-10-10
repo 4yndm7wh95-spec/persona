@@ -20,7 +20,7 @@ public static class CardPlayedPatch
 	{
 		ModEntry.Safe("CardPlayed", () =>
 		{
-			TargetingFx.End();
+			TargetingFx.EndPlayed();
 			CardFx.OnPlay(cardPlay);
 		});
 	}
@@ -71,6 +71,27 @@ public static class HideTargetingPatch
 	public static void Postfix()
 	{
 		ModEntry.Safe("HideTargeting", TargetingFx.End);
+	}
+}
+
+/// <summary>出牌流程收尾：isFinished = true 是打出（交给攻击 / 施法动画接管武器），false 是取消（武器消散）。
+/// 这一步早于 BeforeCardPlayed（出牌动作是排队异步结算的）。</summary>
+[HarmonyPatch(typeof(NCardPlay), "Cleanup")]
+public static class CardPlayCleanupPatch
+{
+	public static void Prefix(bool isFinished)
+	{
+		ModEntry.Safe("CardPlayCleanup", () =>
+		{
+			if (isFinished)
+			{
+				TargetingFx.EndPlayed();
+			}
+			else
+			{
+				TargetingFx.End();
+			}
+		});
 	}
 }
 
