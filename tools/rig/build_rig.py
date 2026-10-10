@@ -582,6 +582,71 @@ def previews(data, images):
     return out
 
 
+def stage_pck(out):
+    """生成 PCK 打包目录（res:// 结构）。Spine 资源直接写成 spine-godot 导入后的格式，
+    不依赖 Spine 编辑器插件：.spjson = 原始 JSON；.spatlas = 包着 atlas 文本的 JSON。
+    regent.png 的贴图导入由本地 Godot 完成（见 docs/BUILD.md）。"""
+    import hashlib
+    stage = ROOT / "mod/pck_stage"
+    rel = "animations/characters/regent"
+    d = stage / rel
+    imp = stage / ".godot/imported"
+    d.mkdir(parents=True, exist_ok=True)
+    imp.mkdir(parents=True, exist_ok=True)
+    for f in ("regent.atlas", "regent.spine-json", "regent.png"):
+        (d / f).write_bytes((out / f).read_bytes())
+
+    def h(path):
+        return hashlib.md5(path.encode()).hexdigest()
+
+    atlas_res = f"res://{rel}/regent.atlas"
+    atlas_imp = f"regent.atlas-{h(atlas_res)}.spatlas"
+    (imp / atlas_imp).write_text(json.dumps({
+        "atlas_data": (out / "regent.atlas").read_text(),
+        "normal_texture_prefix": "n",
+        "source_path": atlas_res,
+        "specular_texture_prefix": "s",
+    }, separators=(",", ":")))
+    # 沿用原版 regent.atlas 的 uid，保证任何按 uid 引用它的地方都指向新图集
+    (d / "regent.atlas.import").write_text(f"""[remap]
+
+importer="spine.atlas"
+type="SpineAtlasResource"
+uid="uid://bpm883hqkd573"
+path="res://.godot/imported/{atlas_imp}"
+
+[deps]
+
+source_file="{atlas_res}"
+dest_files=["res://.godot/imported/{atlas_imp}"]
+
+[params]
+
+normal_map_prefix="n"
+specular_map_prefix="s"
+""")
+
+    skel_res = f"res://{rel}/regent.spine-json"
+    skel_imp = f"regent.spine-json-{h(skel_res)}.spjson"
+    (imp / skel_imp).write_bytes((out / "regent.spine-json").read_bytes())
+    (d / "regent.spine-json.import").write_text(f"""[remap]
+
+importer="spine.json"
+type="SpineSkeletonFileResource"
+path="res://.godot/imported/{skel_imp}"
+
+[deps]
+
+source_file="{skel_res}"
+dest_files=["res://.godot/imported/{skel_imp}"]
+
+[params]
+
+""")
+    (d / "regent_skel_data.tres").write_bytes((ROOT / "mod/pck_project" / rel / "regent_skel_data.tres").read_bytes())
+    return stage
+
+
 def main():
     data, images, master = build_setup()
     rig = Rig(data)
@@ -600,6 +665,7 @@ def main():
     for f in ("regent.png", "regent.atlas", "regent.spine-json"):
         (dst / f).write_bytes((out / f).read_bytes())
     print("已同步到 PCK 工程：", dst)
+    print("PCK 打包目录：", stage_pck(out))
     print("预览：", previews(data, images))
 
 
