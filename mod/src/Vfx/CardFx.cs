@@ -148,8 +148,9 @@ public static class CardFx
 			return;
 		}
 		(float power, Color tint) = PendingEvoker.Remove(caster.GetInstanceId(), out var p) ? p : (0.6f, Pal.Cyan);
-		Vector2 at = WeaponFx.Bone(caster, "evoker_tip") ?? Makoto.Head(caster);
-		P3Fx.EvokerBurst(front, at, power, tint, skipGather: true);
+		Vector2 muzzle = WeaponFx.Bone(caster, "evoker_tip") ?? Makoto.Head(caster);
+		Vector2 grip = WeaponFx.Bone(caster, "hand") ?? muzzle + Vector2.Right;
+		EvokerShot.Fire(front, muzzle, muzzle - grip, power, tint);
 	}
 
 	/// <summary>单体牌取目标；群体 / 无目标的攻击性牌取全部存活敌人。</summary>

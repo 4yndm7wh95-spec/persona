@@ -132,11 +132,16 @@ def arm_mesh(img, center, bone_index, joint):
             tris += [a(i), a(i + 1), b(i), a(i + 1), b(i + 1), b(i)]
     sx, ex = J["shoulder"][0], J["elbow"][0]
 
+    wr = J["wrist"][0]
+
     def weights(xpx):
         ws = []
         u = np.clip((xpx - (sx - 38)) / 60.0, 0, 1)      # 肩：躯干 → 上臂
         e = np.clip((xpx - (ex - 30)) / 60.0, 0, 1)      # 肘：上臂 → 前臂
-        if e > 0:
+        k = np.clip((xpx - (wr - 26)) / 26.0, 0, 1)      # 腕：前臂 → 手
+        if k > 0:
+            ws = [("forearm", 1 - k), ("hand", k)]
+        elif e > 0:
             ws = [("upper_arm", 1 - e), ("forearm", e)]
         else:
             ws = [("torso", 1 - u), ("upper_arm", u)]
@@ -156,11 +161,21 @@ def arm_mesh(img, center, bone_index, joint):
             "width": round(w * K), "height": round(h * K)}
 
 
-def prop_part(src, cuff_px, cuff_h_px, target_cuff, target_h, keep_left):
+def outline(im, px=3, color=(8, 12, 30)):
+    """道具描边：在 alpha 外扩一圈深色，暗背景上也能看清轮廓。"""
+    a = im.getchannel("A")
+    grown = a.filter(ImageFilter.MaxFilter(px * 2 + 1))
+    base = Image.new("RGBA", im.size, color + (0,))
+    base.putalpha(grown)
+    base.alpha_composite(im)
+    return base
+
+
+def prop_part(src, cuff_px, cuff_h_px, target_cuff, target_h, keep_left, extra=1.0):
     """把单独生成的"前臂+手+道具"图按袖口对齐到母版：
     cuff_px = 道具图中袖口中心，cuff_h_px = 道具图中袖口高度；target_* 为母版上的对应值。
     keep_left = 袖子保留到袖口左侧多少像素（母版坐标）。"""
-    s = target_h / cuff_h_px
+    s = target_h / cuff_h_px * extra
     im = src.resize((round(src.width * s), round(src.height * s)), Image.LANCZOS)
     cx, cy = cuff_px[0] * s, cuff_px[1] * s
     left = max(0, int(cx - keep_left))
@@ -183,6 +198,8 @@ PROPS = {
     "hand_evoker": ("art/parts_src/arm_evoker.png", (812.0, 540.0), 300.0, (1700.0, 282.0)),
     "hand_sword": ("art/parts_src/arm_sword.png", (412.0, 430.0), 152.0, (1755.0, 440.0)),
 }
+# 道具夸张系数：召唤器放大让它在战斗画面里一眼能认出
+PROP_EXTRA = {"hand_evoker": 1.15, "hand_sword": 1.0}
 
 
 def key_image(path):
@@ -252,10 +269,11 @@ def build_setup():
     tips = {}
     for name, (path, cuff, cuff_h, tip) in PROPS.items():
         src = key_image(ROOT / path)
-        im, center = prop_part(src, cuff, cuff_h, MASTER_CUFF, MASTER_SLEEVE_H, keep_left=8)
-        images[name] = feather_left(im, 10)
+        ex = PROP_EXTRA[name]
+        im, center = prop_part(src, cuff, cuff_h, MASTER_CUFF, MASTER_SLEEVE_H, keep_left=8, extra=ex)
+        images[name] = outline(feather_left(im, 10), 3)
         centers[name] = center
-        s = MASTER_SLEEVE_H / cuff_h
+        s = MASTER_SLEEVE_H / cuff_h * ex
         tips[name] = (MASTER_CUFF[0] + (tip[0] - cuff[0]) * s, MASTER_CUFF[1] + (tip[1] - cuff[1]) * s)
     images["hand_open"] = feather_left(images["hand_open"], 10)
     images["shadow"] = shadow_image()
@@ -397,22 +415,31 @@ class Rig:
         pose[f"shin_{side}"] = {"r": math.degrees((shin_w - thigh_w) - (shin0 - thigh0))}
         return pose
 
-    def arm_ik(self, tip_bone, target_px, aim_deg, elbow_up=True):
+    def arm_ik(self, tip_bone, target_px, aim_deg, elbow_up=True, stretch=None):
         """手臂三段 IK：让 tip_bone（枪口 / 剑尖）到达 target_px（母版像素），道具朝向世界角 aim_deg。
-        返回 (upper_arm, forearm, hand) 的旋转增量。"""
+        母版手臂是透视缩短的，抬起时需要拉伸回真实长度：stretch=None 时自动取够得着的最小拉伸（1.0~1.7）。
+        返回 Pose（upper_arm / forearm / hand 的旋转，以及 forearm / hand 沿肢体方向的外移）。"""
         sx, sy = self.setup_world("upper_arm")
         ex, ey = self.setup_world("forearm")
         wx, wy = self.setup_world("hand")
         tx0, ty0 = self.setup_world(tip_bone)
         tip_len = math.dist((wx, wy), (tx0, ty0))
-        tip_ang0 = math.atan2(ty0 - wy, tx0 - wx)        # setup 中 道具尖端相对手腕的方向
-        l1 = math.dist((sx, sy), (ex, ey))
-        l2 = math.dist((ex, ey), (wx, wy))
+        tip_ang0 = math.atan2(ty0 - wy, tx0 - wx)
         T = to_spine(target_px)
         aim = math.radians(aim_deg)
-        # 手腕位置 = 目标 - 道具向量（道具整体旋转 aim - tip_ang0）
         W = (T[0] - tip_len * math.cos(aim), T[1] - tip_len * math.sin(aim))
-        d = min(math.dist((sx, sy), W), l1 + l2 - 1e-3)
+        e_vec0 = (ex - sx, ey - sy)
+        w_vec0 = (wx - ex, wy - ey)
+        need = math.dist((sx, sy), W)
+        steps = [stretch] if stretch else [1.0 + 0.02 * i for i in range(36)]
+        for st in steps:
+            d1, d2 = math.hypot(*e_vec0) * (st - 1), math.hypot(*w_vec0) * (st - 1)
+            e_vec = (e_vec0[0] + d1, e_vec0[1])
+            w_vec = (w_vec0[0] + d2, w_vec0[1])
+            l1, l2 = math.hypot(*e_vec), math.hypot(*w_vec)
+            if need <= (l1 + l2) * 0.97 or stretch:
+                break
+        d = min(need, l1 + l2 - 1e-3)
         base = math.atan2(W[1] - sy, W[0] - sx)
         a = math.acos(max(-1, min(1, (l1 * l1 + d * d - l2 * l2) / (2 * l1 * d))))
         cands = []
@@ -422,13 +449,12 @@ class Rig:
             f = math.atan2(W[1] - elbow[1], W[0] - elbow[0])
             cands.append((elbow[1], u, f))
         _, u, f = max(cands) if elbow_up else min(cands)
-        upper0 = math.atan2(ey - sy, ex - sx)
-        fore0 = math.atan2(wy - ey, wx - ex)
-        hand_world = aim - tip_ang0 + fore0          # 手的世界旋转（相对 setup 方向的增量 + setup 方向）
+        upper0 = math.atan2(e_vec[1], e_vec[0])
+        fore0 = math.atan2(w_vec[1], w_vec[0])
         r_upper = math.degrees(u - upper0)
         r_fore = math.degrees((f - u) - (fore0 - upper0))
         r_hand = math.degrees((aim - tip_ang0) - (f - fore0))
-        return r_upper, r_fore, r_hand
+        return Pose({"upper_arm": {"r": r_upper}, "forearm": {"r": r_fore, "x": d1}, "hand": {"r": r_hand, "x": d2}}), st
 
 
 def bake(rig, name, duration, fn, loop=False, slots=None, events=None):
@@ -548,7 +574,7 @@ def _write_frames(rig, name, frames, slots, events):
         entry = {}
         if any(abs(k["value"]) > 1e-4 for k in rot):
             entry["rotate"] = rot
-        if b in ("root", "hip", "torso") and any(abs(k["x"]) > 1e-4 or abs(k["y"]) > 1e-4 for k in tr):
+        if b in ("root", "hip", "torso", "forearm", "hand") and any(abs(k["x"]) > 1e-4 or abs(k["y"]) > 1e-4 for k in tr):
             entry["translate"] = tr
         if entry:
             bones[b] = entry
@@ -561,18 +587,22 @@ def _write_frames(rig, name, frames, slots, events):
 
 
 # ───────────── 动画定义 ─────────────
-EVOKER_TARGET = ((418, 112), 225)      # 枪口抵住的太阳穴位置（母版像素）和枪管朝向
+EVOKER_TARGET = ((444, 104), 205)      # 枪口抵住的太阳穴位置（母版像素）和枪管朝向；手臂自动拉伸约 1.5 倍
 EVENTS = ["death_particles_start", "death_particles_end", "explode_dead", "explode_end",
           "weapon_draw", "weapon_slash", "weapon_sheath", "evoker_draw", "evoker_fire", "evoker_sheath"]
 
 
 def make_animations(rig):
     rig.data["events"] = {e: {} for e in EVENTS}
-    eu, ef, eh = rig.arm_ik("evoker_tip", *EVOKER_TARGET)
+    arm_pose, _ = rig.arm_ik("evoker_tip", *EVOKER_TARGET)
     ARM_DOWN = Pose({"upper_arm": {"r": -84}, "forearm": {"r": 8}, "hand": {"r": -6}})
-    EVOKER = Pose({"upper_arm": {"r": eu}, "forearm": {"r": ef}, "hand": {"r": eh}, "head": {"r": 5}, "torso": {"r": 1.5}})
-    RAISE_MID = Pose({"upper_arm": {"r": eu * 0.55}, "forearm": {"r": 40}, "hand": {"r": 25}, "head": {"r": 2}, "torso": {"r": 1}})
-    KICK = add(EVOKER, Pose({"head": {"r": 7}, "hand": {"r": -10}, "torso": {"r": 2.5}, "forearm": {"r": -4}}))
+    EVOKER = add(arm_pose, Pose({"head": {"r": 5}, "torso": {"r": 1.5}}))
+    # 亮枪：召唤器在胸前平端，让观众先看清他拿出了什么
+    PRESENT = Pose({"upper_arm": {"r": -28}, "forearm": {"r": 22}, "hand": {"r": -4}, "head": {"r": -3}, "torso": {"r": -1}})
+    RAISE_MID = PRESENT
+    # 扣扳机后坐：头被猛推开、手腕上跳、上身一震（配合游戏端的顿帧和震屏）
+    KICK = add(EVOKER, Pose({"head": {"r": 15}, "hand": {"r": -20}, "forearm": {"r": -9}, "upper_arm": {"r": 4}, "torso": {"r": 5}, "hip": {"x": -10, "y": -6}}))
+    TENSE = add(EVOKER, Pose({"head": {"r": -2}, "hand": {"r": 3}, "torso": {"r": -1}}))
     SWORD_READY = Pose({"upper_arm": {"r": -58}, "forearm": {"r": 8}, "hand": {"r": 22}, "torso": {"r": -3}, "head": {"r": -2}, "hip": {"y": -10}})
     ANTIC = Pose({"upper_arm": {"r": 30}, "forearm": {"r": 75}, "hand": {"r": 45}, "torso": {"r": 9}, "head": {"r": 4}, "hip": {"x": -14, "y": -20}})
     WINDUP = Pose({"upper_arm": {"r": 95}, "forearm": {"r": 35}, "hand": {"r": 28}, "torso": {"r": 10}, "head": {"r": 3}, "hip": {"x": -10, "y": -16}})
@@ -614,12 +644,13 @@ def make_animations(rig):
                  events=[(0.0, "weapon_draw"), (0.27, "weapon_slash"), (0.84, "weapon_sheath")])
 
     # 施法：手臂沿弧线抬起（肩先、肘后）→ 枪口抵住太阳穴 → 扣扳机后坐 → 放下
-    bake_dynamic(rig, "cast", 0.95, seq([(0.0, ARM_DOWN), (0.11, RAISE_MID), (0.22, EVOKER), (0.29, EVOKER), (0.31, KICK), (0.55, EVOKER), (0.92, ARM_DOWN)]),
-                 slots=hand((0, "hand_evoker"), (0.88, "hand_open")), speed=1.4,
-                 events=[(0.0, "evoker_draw"), (0.3, "evoker_fire"), (0.82, "evoker_sheath")])
-    bake_dynamic(rig, "attack_sovereign", 0.8, seq([(0.0, ARM_DOWN), (0.08, RAISE_MID), (0.16, EVOKER), (0.2, KICK), (0.42, EVOKER), (0.78, ARM_DOWN)]),
-                 slots=hand((0, "hand_evoker"), (0.74, "hand_open")), speed=1.6,
-                 events=[(0.0, "evoker_draw"), (0.19, "evoker_fire"), (0.7, "evoker_sheath")])
+    # 举枪 → 抵住后停顿蓄力（TENSE）→ 扣扳机瞬间猛烈后坐（KICK，20ms 内到位）→ 余震 → 放下
+    bake_dynamic(rig, "cast", 0.95, seq([(0.0, ARM_DOWN), (0.08, PRESENT), (0.12, PRESENT), (0.21, EVOKER), (0.26, TENSE), (0.272, KICK), (0.35, KICK), (0.55, EVOKER), (0.92, ARM_DOWN)]),
+                 slots=hand((0, "hand_evoker"), (0.89, "hand_open")), speed=2.0,
+                 events=[(0.0, "evoker_draw"), (0.27, "evoker_fire"), (0.82, "evoker_sheath")])
+    bake_dynamic(rig, "attack_sovereign", 0.85, seq([(0.0, ARM_DOWN), (0.06, PRESENT), (0.08, PRESENT), (0.16, EVOKER), (0.21, TENSE), (0.225, KICK), (0.3, KICK), (0.48, EVOKER), (0.83, ARM_DOWN)]),
+                 slots=hand((0, "hand_evoker"), (0.79, "hand_open")), speed=2.2,
+                 events=[(0.0, "evoker_draw"), (0.22, "evoker_fire"), (0.74, "evoker_sheath")])
 
     bake_dynamic(rig, "hurt", 0.6, seq([(0.0, ARM_DOWN), (0.06, HURT), (0.14, HURT), (0.3, ARM_DOWN)]), speed=1.3)
 
@@ -648,9 +679,9 @@ def validate(data, images, master):
     ok &= passed
     report.append(f"[{'OK' if passed else 'FAIL'}] 拼合校验：平均色差 {diff:.2f}（<5），缺失像素比例 {miss:.5f}（<0.001）")
 
-    # 2. 只有 root / hip / torso 允许平移（四肢只转不移 → 关节不会脱开）
+    # 2. 只有 root / hip / torso，以及网格连接的 forearm / hand（手臂拉伸）允许平移；腿和头只转不移
     movers = {b for a in data["animations"].values() for b, k in a["bones"].items() if "translate" in k}
-    passed = movers <= {"root", "hip", "torso"}
+    passed = movers <= {"root", "hip", "torso", "forearm", "hand"}
     ok &= passed
     report.append(f"[{'OK' if passed else 'FAIL'}] 平移骨骼：{sorted(movers)}")
 

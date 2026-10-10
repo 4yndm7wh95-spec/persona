@@ -15,9 +15,9 @@ bounds:948,0,153,424
 head
 bounds:1103,0,211,228
 hand_evoker
-bounds:1316,0,200,103
+bounds:1316,0,229,119
 arm
-bounds:1518,0,274,99
+bounds:1547,0,274,99
 shadow
 bounds:0,540,420,90
 hand_sword

@@ -43,22 +43,32 @@ public static class WeaponFx
 				mote.Modulate = new Color(Pal.Cyan, local <= 0f ? 0f : 1f - local * 0.3f);
 			});
 		}
-		// 光沿剑身扫过（每帧重新读取骨骼，跟随动画）
-		Line2D glow = Fx.Line(root, new[] { hilt, hilt }, new Color(Pal.Cyan, 0.8f), 16f);
-		Line2D core = Fx.Line(root, new[] { hilt, hilt }, Pal.White, 4f);
-		Fx.Animate(root, 0.42f, t =>
+		// 刃光：一段短而尖的高光从护手划到剑尖（像抛光刀身上的反光），每帧读取骨骼跟随动画
+		Curve gleamShape = new Curve();
+		gleamShape.AddPoint(new Vector2(0f, 0f));
+		gleamShape.AddPoint(new Vector2(0.5f, 1f));
+		gleamShape.AddPoint(new Vector2(1f, 0f));
+		Line2D halo = Fx.Line(root, new[] { hilt, hilt }, new Color(Pal.Cyan, 0.35f), 14f);
+		Line2D gleam = Fx.Line(root, new[] { hilt, hilt }, Pal.White, 5f);
+		halo.WidthCurve = gleam.WidthCurve = gleamShape;
+		halo.Modulate = gleam.Modulate = new Color(1f, 1f, 1f, 0f);
+		Fx.Animate(root, 0.5f, t =>
 		{
 			if (!GodotObject.IsInstanceValid(node) || Bone(node, "hand") is not Vector2 h || Bone(node, "sword_tip") is not Vector2 s)
 			{
 				return;
 			}
-			float sweep = Ease.OutExpo(Ease.Segment(t, 0.35f, 0.4f));
-			float fade = 1f - Ease.InCubic(Ease.Segment(t, 0.6f, 0.4f));
-			Vector2 end = h.Lerp(s, sweep);
-			glow.Points = core.Points = new[] { h, end };
-			glow.Modulate = core.Modulate = new Color(1f, 1f, 1f, sweep <= 0f ? 0f : fade);
+			Vector2 baseP = h.Lerp(s, 0.18f);           // 护手位置
+			float u = Ease.InOutCubic(Ease.Segment(t, 0.3f, 0.5f));
+			float head = Mathf.Lerp(0f, 1.15f, u);
+			float tail = head - 0.28f;
+			Vector2 a = baseP.Lerp(s, Mathf.Clamp(tail, 0f, 1f));
+			Vector2 b = baseP.Lerp(s, Mathf.Clamp(head, 0f, 1f));
+			gleam.Points = halo.Points = new[] { a, b };
+			float alpha = (t < 0.3f || u >= 1f) ? 0f : Mathf.Sin(u * Mathf.Pi);
+			gleam.Modulate = halo.Modulate = new Color(1f, 1f, 1f, alpha);
 		});
-		Fx.After(layer, 0.3, "sword tip flash", () =>
+		Fx.After(layer, 0.4, "sword tip flash", () =>
 		{
 			if (GodotObject.IsInstanceValid(node) && Bone(node, "sword_tip") is Vector2 s)
 			{
