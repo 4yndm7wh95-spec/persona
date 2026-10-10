@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using P3Makoto.Audio;
 using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using P3Makoto.Vfx;
@@ -62,6 +63,7 @@ public static class SpineHooks
 				if (!h.SwordOut)
 				{
 					WeaponFx.SwordMaterialize(front, node);
+					Sfx.Play(Snd.SwordDraw, 0.6f);
 				}
 				h.SwordOut = true;
 				break;
@@ -69,6 +71,7 @@ public static class SpineHooks
 				WeaponFx.TipGlint(front, node);
 				break;
 			case "weapon_slash":
+				Sfx.Play(Snd.Swing, 0.9f);
 				WeaponFx.SlashTrail(front, node, Pal.Cyan);
 				WeaponFx.BladeGhosts(front, node, Pal.Cyan);
 				WeaponFx.StepDust(Makoto.FxLayer(back: true) ?? front, Makoto.Feet(node));
@@ -77,6 +80,7 @@ public static class SpineHooks
 				if (h.SwordOut)
 				{
 					WeaponFx.SwordDissolve(front, node);
+					Sfx.Play(Snd.Dissolve, 0.5f);
 				}
 				h.SwordOut = false;
 				break;
@@ -84,6 +88,7 @@ public static class SpineHooks
 				if (!h.EvokerOut)
 				{
 					WeaponFx.EvokerGlint(front, node);
+					Sfx.Play(Snd.Cock, 0.55f, 0.08f);
 				}
 				h.EvokerOut = true;
 				break;

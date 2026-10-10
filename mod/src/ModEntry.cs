@@ -12,7 +12,7 @@ public static class ModEntry
 
 	public static void Init()
 	{
-		GD.Print($"{Tag} init v0.4.0");
+		GD.Print($"{Tag} init v0.5.0");
 		try
 		{
 			new Harmony("brooks.p3makoto").PatchAll(typeof(ModEntry).Assembly);
@@ -22,6 +22,7 @@ public static class ModEntry
 		{
 			GD.PrintErr($"{Tag} harmony patch failed: {e}");
 		}
+		Safe("sfx prewarm", Audio.Sfx.Prewarm);
 		try
 		{
 			Debug.Showcase.TryStart();

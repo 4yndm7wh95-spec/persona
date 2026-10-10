@@ -86,13 +86,13 @@ ARMS = {
     "hang": {"file": "rarm_hang", "shoulder": (390, 370), "scale": 0.54, "rot": 0.0,
              "anchors": {"hand": (335, 1060)}},
     "present": {"file": "rarm_present", "shoulder": (240, 380), "scale": 0.6, "rot": 0.0,
-                "anchors": {"hand": (560, 545), "grip": (755, 428), "evoker_tip": (985, 433), "muzzle": (985, 433)}},
+                "anchors": {"hand": (715, 535), "grip": (755, 428), "evoker_tip": (978, 434), "muzzle": (978, 434)}},
     "evoker": {"file": "rarm_evoker", "shoulder": (345, 585), "two_point": ("muzzle", "temple"),
-               "anchors": {"hand": (370, 235), "grip": (335, 48), "evoker_tip": (565, 45), "muzzle": (565, 45)}},
+               "anchors": {"hand": (370, 240), "grip": (360, 145), "evoker_tip": (595, 142), "muzzle": (595, 142)}},
     "s_ready": {"file": "rarm_sword_ready", "shoulder": (330, 305), "scale": 0.55, "rot": 0.0,
                 "anchors": {"hand": (470, 870), "sword_tip": (1000, 1390)}},
     "s_up": {"file": "rarm_sword_up", "shoulder": (385, 745), "scale": 0.55, "rot": 0.0,
-             "anchors": {"hand": (420, 265), "sword_tip": (12, 15)}},
+             "anchors": {"hand": (420, 265), "sword_tip": (50, 32)}},
     "s_down": {"file": "rarm_sword_down", "shoulder": (330, 310), "scale": 0.55, "rot": 0.0,
                "anchors": {"hand": (480, 880), "sword_tip": (1000, 1430)}},
 }
@@ -402,9 +402,11 @@ def make_animations(rig, images):
         def f(t):
             if t <= keys[0][0]:
                 return keys[0][1]
-            for (t0, p0), (t1, p1) in zip(keys, keys[1:]):
+            for k0, k1 in zip(keys, keys[1:]):
+                (t0, p0), (t1, p1) = k0[:2], k1[:2]
                 if t0 <= t <= t1:
-                    return mix(p0, p1, ease_in_out((t - t0) / max(t1 - t0, 1e-6)))
+                    ease = k1[2] if len(k1) > 2 else ease_in_out      # 第三项：进入该关键帧的缓动
+                    return mix(p0, p1, ease((t - t0) / max(t1 - t0, 1e-6)))
             return keys[-1][1]
         return f
 
@@ -432,21 +434,24 @@ def make_animations(rig, images):
     # 预备出牌：抬起 / 放下
     bake(rig, images, "aim_in", 0.42, seq([(0, IDLE), (0.07, DIP), (0.18, PRESENT), (0.32, EVOKER), (0.42, EVOKER)]),
          [(0, "hang"), (0.05, "present", 0.1), (0.19, "evoker", 0.1)], speed=1.5)
-    bake(rig, images, "sword_in", 0.36, seq([(0, IDLE), (0.07, DIP), (0.26, S_READY), (0.36, S_READY)]),
-         [(0, "hang"), (0.08, "s_ready")], speed=1.5)
+    bake(rig, images, "sword_in", 0.3, seq([(0, IDLE), (0.05, DIP), (0.2, S_READY), (0.3, S_READY)]),
+         [(0, "hang"), (0.06, "s_ready")], speed=1.8)
     LOWER = add(A("present"), B(head={"r": -1}, **ALL(-30)))
     bake(rig, images, "aim_out", 0.5, seq([(0, EVOKER), (0.08, add(EVOKER, B(**ALL(-4)))), (0.24, LOWER), (0.44, IDLE), (0.5, IDLE)]),
          [(0, "evoker"), (0.14, "present", 0.1), (0.32, "hang", 0.1)], speed=1.3, events=[(0.3, "evoker_sheath")])
     bake(rig, images, "sword_out", 0.5, seq([(0, S_READY), (0.08, add(S_READY, B(**ALL(6)))), (0.42, IDLE), (0.5, IDLE)]),
          [(0, "s_ready"), (0.3, "hang")], speed=1.3, events=[(0.2, "weapon_sheath")])
 
-    # 攻击：预备后引 → 举剑 → 斩下（拖影由游戏端 weapon_slash 事件生成）→ 余势 → 收剑
-    atk = [(0, IDLE), (0.14, ANTIC), (0.23, WINDUP), (0.28, SLASH), (0.52, SLASH), (0.92, IDLE)]
-    bake(rig, images, "attack", 0.95, seq(atk), [(0, "hang"), (0.03, "s_ready", 0.06), (0.17, "s_up", 0.06), (0.245, "s_down", 0.06), (0.78, "hang", 0.08)],
-         speed=1.7, fade=0.035, events=[(0.0, "weapon_draw"), (0.22, "weapon_windup"), (0.255, "weapon_slash"), (0.76, "weapon_sheath")])
-    atk_r = [(0, S_READY), (0.1, ANTIC), (0.18, WINDUP), (0.23, SLASH), (0.46, SLASH), (0.84, IDLE)]
-    bake(rig, images, "attack_from_ready", 0.95, seq(atk_r), [(0, "s_ready"), (0.12, "s_up", 0.06), (0.195, "s_down", 0.06), (0.7, "hang", 0.08)],
-         speed=1.7, fade=0.035, events=[(0.16, "weapon_windup"), (0.205, "weapon_slash"), (0.68, "weapon_sheath")])
+    # 攻击：游戏在触发 Attack 后 0.15s（快速模式 0.075s）结算伤害、播命中特效 —— 刀必须在这之前落下，否则"不跟手"。
+    # 所以蓄力极短（拖牌时的 ready_sword_loop 已经是蓄力），斩下用加速缓动 + 高速弹簧，接触帧约 0.07~0.09s；
+    # 之后余势停顿、慢慢收剑（快出慢收）。拖影由游戏端 weapon_slash 事件生成。
+    CUT = lambda u: u * u * u                                     # 加速砍下，接触瞬间速度最大
+    atk = [(0, IDLE), (0.035, ANTIC), (0.06, WINDUP), (0.09, SLASH, CUT), (0.4, SLASH), (0.85, IDLE)]
+    bake(rig, images, "attack", 0.95, seq(atk), [(0, "hang"), (0.005, "s_ready", 0.025), (0.035, "s_up", 0.025), (0.07, "s_down", 0.025), (0.68, "hang", 0.1)],
+         speed=3.0, fade=0.03, events=[(0.0, "weapon_draw"), (0.045, "weapon_windup"), (0.075, "weapon_slash"), (0.66, "weapon_sheath")])
+    atk_r = [(0, S_READY), (0.03, WINDUP), (0.07, SLASH, CUT), (0.38, SLASH), (0.82, IDLE)]
+    bake(rig, images, "attack_from_ready", 0.95, seq(atk_r), [(0, "s_ready"), (0.005, "s_up", 0.025), (0.05, "s_down", 0.025), (0.66, "hang", 0.1)],
+         speed=3.0, fade=0.03, events=[(0.02, "weapon_windup"), (0.055, "weapon_slash"), (0.64, "weapon_sheath")])
 
     # 施法：亮枪 → 抵住太阳穴 → 停顿 → 扣扳机后坐 → 放下
     cast = [(0, IDLE), (0.08, PRESENT), (0.12, PRESENT), (0.22, EVOKER), (0.26, TENSE), (0.272, KICK), (0.35, KICK), (0.55, EVOKER), (0.66, LOWER), (0.92, IDLE)]
@@ -454,7 +459,7 @@ def make_animations(rig, images):
     bake(rig, images, "cast", 0.95, seq(cast), cast_states, speed=2.0,
          events=[(0.0, "evoker_draw"), (0.27, "evoker_fire"), (0.82, "evoker_sheath")])
     sov = [(0, IDLE), (0.06, PRESENT), (0.08, PRESENT), (0.16, EVOKER), (0.21, TENSE), (0.225, KICK), (0.3, KICK), (0.48, EVOKER), (0.58, LOWER), (0.83, IDLE)]
-    bake(rig, images, "attack_sovereign", 0.85, seq(sov), [(0, "hang"), (0.0, "present", 0.08), (0.08, "evoker", 0.1), (0.5, "present", 0.1), (0.72, "hang", 0.1)],
+    bake(rig, images, "attack_sovereign", 0.85, seq(sov), [(0, "hang"), (0.0, "present", 0.08), (0.08, "evoker", 0.12), (0.5, "present", 0.1), (0.72, "hang", 0.1)],
          speed=2.2, events=[(0.0, "evoker_draw"), (0.22, "evoker_fire"), (0.74, "evoker_sheath")])
     from_aim = [(0, EVOKER), (0.05, TENSE), (0.062, KICK), (0.14, KICK), (0.3, EVOKER), (0.42, LOWER), (0.7, IDLE)]
     for nm in ("cast_from_aim", "sovereign_from_aim"):
@@ -492,6 +497,13 @@ def validate(data, images, master):
     miss = ((r[..., 3] < 64) & body).mean()
     mark(diff < 5 and miss < 0.001, f"拼合校验：平均色差 {diff:.2f}，缺失 {miss:.5f}")
 
+    # 1b. 锚点必须落在手臂画上（防止量错坐标：v4.0 的枪口点落在空白处，枪被对到了脖子）
+    for k, cfg in ARMS.items():
+        src = np.asarray(key_image(ROOT / "art/v4" / (cfg["file"] + ".png")))[..., 3]
+        for a, (x, y) in cfg["anchors"].items():
+            win = src[max(0, y - 8):y + 9, max(0, x - 8):x + 9]
+            mark((win > 128).any(), f"锚点在画上 {k}/{a} ({x},{y})")
+
     # 2. 平移只允许 hip（身体）和特效锚点（root 子骨骼）
     movers = {b for a in data["animations"].values() for b, k in a["bones"].items() if "translate" in k}
     mark(movers <= {"hip"} | set(ANCHORS), f"平移骨骼：{sorted(movers)}")
@@ -512,6 +524,8 @@ def validate(data, images, master):
         sh_local = (0.0, 0.0)
         # 每帧可接受的径向变化（像素）：换图淡化 ≥0.06s 时，伸展程度不同的两张手臂之间的过渡读作"手臂收拢 / 伸出"
         limits = {"hand": 80, "muzzle": 90, "sword_tip": 160}
+        if name.startswith("attack") and name != "attack_sovereign":
+            limits["sword_tip"] = 300      # 挥砍是 1 帧的"拖影帧"：举剑 → 斩下两张图之间剑尖本来就要一下扫过去
         worst = {}
         for a, lim in limits.items():
             tl = anim["bones"].get(a, {}).get("translate", [])

@@ -22,7 +22,7 @@ public static class EvokerShot
 		Vector2 exit = muzzle + dir * 105f * power;
 
 		HitStop(0.09);
-		ScreenFlash(layer, 0.12f, 0.55f);
+		ScreenFlash(layer, 0.2f, 0.12f);          // 只是一层很淡的冷色提亮，避免刺眼
 		NGame.Instance?.ScreenShake(power >= 1.2f ? ShakeStrength.Strong : ShakeStrength.Medium, ShakeDuration.Short, Mathf.RadToDeg(dir.Angle()));
 
 		// 枪口闪光：四角星 + 白点
@@ -230,16 +230,16 @@ public static class EvokerShot
 		};
 	}
 
-	/// <summary>全屏白闪。</summary>
+	/// <summary>全屏冷色提亮（很淡，不刺眼；强度靠局部闪光和震屏表现）。</summary>
 	public static void ScreenFlash(Control layer, float duration, float peak)
 	{
 		Vector2 size = layer.GetViewportRect().Size;
 		Node2D root = Fx.Root(layer, Vector2.Zero, "P3ScreenFlash");
 		root.TopLevel = true;
 		root.GlobalPosition = Vector2.Zero;
-		ColorRect rect = new ColorRect { Size = size, Color = new Color(1f, 1f, 1f, peak), MouseFilter = Control.MouseFilterEnum.Ignore, Material = Fx.Additive };
+		ColorRect rect = new ColorRect { Size = size, Color = new Color(0.55f, 0.75f, 1f, peak), MouseFilter = Control.MouseFilterEnum.Ignore, Material = Fx.Additive };
 		root.AddChild(rect);
-		Fx.Animate(rect, duration, t => rect.Color = new Color(0.85f, 0.95f, 1f, peak * (1f - Ease.OutCubic(t))));
+		Fx.Animate(rect, duration, t => rect.Color = new Color(0.55f, 0.75f, 1f, peak * (1f - Ease.OutCubic(t))));
 		Fx.FreeAfter(root, duration + 0.05);
 	}
 }

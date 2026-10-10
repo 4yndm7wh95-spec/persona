@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using P3Makoto.Audio;
 using P3Makoto.Core;
 
 namespace P3Makoto.Vfx;
@@ -48,11 +49,11 @@ public static class CardFx
 		switch (opener)
 		{
 			case Opener.Evoker:
-				if (attack) P3Fx.EvokerBurst(front, head);
+				if (attack) { P3Fx.EvokerBurst(front, head); Sfx.Play(Snd.Shatter, 0.55f); }
 				else QueueEvoker(caster, 1f, Pal.Cyan);
 				break;
 			case Opener.EvokerSmall:
-				if (attack) P3Fx.EvokerBurst(front, head, 0.7f);
+				if (attack) { P3Fx.EvokerBurst(front, head, 0.7f); Sfx.Play(Snd.Shatter, 0.4f); }
 				else QueueEvoker(caster, 0.7f, Pal.Cyan);
 				break;
 			case Opener.Power:
@@ -67,6 +68,7 @@ public static class CardFx
 		{
 			(string skill, string persona) = CardStyles.CaptionFor(play.Card);
 			Extras.SkewBand(front, new Extras.Caption(skill, persona, play.Card.Title));
+			Sfx.Play(Snd.Swipe, 0.45f);
 		}
 		if (x.HasFlag(Extra.DarkHour))
 		{
@@ -139,6 +141,7 @@ public static class CardFx
 			if (PendingEvoker.Remove(id, out var p) && GodotObject.IsInstanceValid(caster) && Makoto.FxLayer() is Control front)
 			{
 				P3Fx.EvokerBurst(front, Makoto.Head(caster), p.Power, p.Tint);
+				EvokerSound(p.Power);
 			}
 		});
 	}
@@ -155,6 +158,18 @@ public static class CardFx
 		Vector2 muzzle = WeaponFx.Bone(caster, "muzzle") ?? WeaponFx.Bone(caster, "evoker_tip") ?? Makoto.Head(caster);
 		Vector2 grip = WeaponFx.Bone(caster, "grip") ?? WeaponFx.Bone(caster, "hand") ?? muzzle + Vector2.Right;
 		EvokerShot.Fire(front, muzzle, muzzle - grip, power, tint);
+		EvokerSound(power);
+	}
+
+	/// <summary>召唤器音效：枪声 + 玻璃碎裂；能力牌（大号）再加人格面具降临的钟鸣。</summary>
+	private static void EvokerSound(float power)
+	{
+		Sfx.Play(Snd.Gunshot, 0.8f + 0.15f * power);
+		Sfx.Play(Snd.Shatter, 0.55f + 0.2f * power, 0.015f);
+		if (power >= 1.2f)
+		{
+			Sfx.Play(Snd.Summon, 0.6f, 0.12f);
+		}
 	}
 
 	/// <summary>单体牌取目标；群体 / 无目标的攻击性牌取全部存活敌人。</summary>
@@ -195,10 +210,11 @@ public static class CardFx
 		}
 		List<Creature> list = targets.ToList();
 		float scale = style.HitScale * (list.Count > 1 ? 0.8f : 1f);
-		// 物理系命中：40ms 顿帧 + 轻震屏，给刀砍进去的"顿感"
+		HitSound(style.Hit, scale);
+		// 物理系命中：50ms 顿帧 + 轻震屏，给刀砍进去的"顿感"
 		if (style.Hit is Element.Slash or Element.Royal or Element.Strike or Element.Pierce)
 		{
-			EvokerShot.HitStop(0.04);
+			EvokerShot.HitStop(0.05);
 			MegaCrit.Sts2.Core.Nodes.NGame.Instance?.ScreenShake(MegaCrit.Sts2.Core.Nodes.Vfx.Utilities.ShakeStrength.Weak, MegaCrit.Sts2.Core.Nodes.Vfx.Utilities.ShakeDuration.Short);
 		}
 		foreach (Creature c in list)
@@ -211,8 +227,45 @@ public static class CardFx
 		}
 	}
 
+	private static void HitSound(Element e, float scale)
+	{
+		float v = Mathf.Clamp(0.55f + 0.25f * scale, 0.5f, 1f);
+		switch (e)
+		{
+			case Element.Slash or Element.Royal or Element.Pierce:
+				Sfx.Play(Snd.SlashHit, v);
+				break;
+			case Element.Strike:
+				Sfx.Play(Snd.Blunt, v);
+				break;
+			case Element.Agi:
+				Sfx.Play(Snd.Fire, v);
+				break;
+			case Element.Bufu:
+				Sfx.Play(Snd.Ice, v);
+				break;
+			case Element.Zio:
+				Sfx.Play(Snd.Zap, v * 0.8f);
+				break;
+			case Element.Hama:
+				Sfx.Play(Snd.Holy, v * 0.8f);
+				break;
+			case Element.Mudo:
+				Sfx.Play(Snd.Curse, v);
+				break;
+			case Element.Megido or Element.Meteor:
+				Sfx.Play(Snd.Boom, v);
+				break;
+			case Element.Star:
+				Sfx.Play(Snd.Sparkle, v * 0.8f);
+				Sfx.Play(Snd.SlashHit, v * 0.6f);
+				break;
+		}
+	}
+
 	public static void OnBlock(CardModel card, NCreature target)
 	{
+		Sfx.Play(Snd.Shield, 0.5f);
 		Control? front = Makoto.FxLayer();
 		if (front == null)
 		{
@@ -230,6 +283,7 @@ public static class CardFx
 		if (front != null)
 		{
 			Extras.StarGain(front, Makoto.Head(caster), amount);
+			Sfx.Play(Snd.Sparkle, 0.5f);
 		}
 	}
 
@@ -239,6 +293,7 @@ public static class CardFx
 		if (front != null)
 		{
 			Extras.ForgeBlade(front, Makoto.Center(caster) + new Vector2(120f, -40f));
+			Sfx.Play(Snd.SwordDraw, 0.55f);
 		}
 	}
 }

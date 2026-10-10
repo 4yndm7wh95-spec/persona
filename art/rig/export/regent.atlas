@@ -21,10 +21,10 @@ bounds:1764,0,167,424
 rarm_s_up
 bounds:0,639,274,416
 rarm_evoker
-bounds:276,639,247,260
+bounds:276,639,283,296
 head
-bounds:525,639,209,223
+bounds:561,639,209,223
 rarm_present
-bounds:736,639,462,172
+bounds:772,639,462,172
 shadow
-bounds:1200,639,420,90
+bounds:1236,639,420,90
