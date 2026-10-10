@@ -21,7 +21,18 @@
 | B | `art/concept/style_B_anime.png` | clean modern anime cel shading like Persona 3 Reload key art, crisp thin outlines, cool blue and cyan lighting accents |
 | C | `art/concept/style_C_blend.png` | hybrid: Persona 3 Reload anime face and hair, but painted with Slay the Spire 2's thick ink outlines and painterly texture |
 
-## 阶段 2：分件（选定画风后）
+## 阶段 1 结果
+用户选定 **B（P3R 动画风）**，即 `art/concept/style_B_anime.png`。
+问题：三张图都朝左、背景不透明，所以需要重出母版。
+
+## 阶段 1.5：母版定稿（本轮）
+以 `style_B_anime.png` 为参考图（imagegen 的图像编辑 / 参考图模式），生成 `art/master/makoto_master.png`：
+- 画风、服装、配色、五官和 B 保持一致。
+- 尺寸 1024×1536，**纯色 `#00FF00` 绿幕背景**（抠图由 Claude 在云端处理），不要光晕、阴影、渐变。
+- **面朝画面右侧**的 3/4 侧身；其余姿势要求同"阶段 1 通用要求"（远侧手插兜，近侧手臂自然下垂并和躯干留缝，两腿微分）。
+- 再出一张同样要求、但近侧手握着召唤器、手臂抬起把枪口抵在太阳穴的姿势：`art/master/makoto_evoker_pose.png`，用于确认召唤动作的造型。
+
+## 阶段 2：分件（母版定稿后）
 待定。会以选中的母版为参考，逐件生成：后发、头、刘海、躯干、上臂 ×2、前臂 ×2、手 ×3（自然 / 握召唤器 / 握剑）、大腿 ×2、小腿 + 鞋 ×2、耳机、召唤器、单手剑。每件都有固定的画布大小和锚点，具体规格在选定母版后写入本文件。
 
 ## 阶段 3：Persona 立绘

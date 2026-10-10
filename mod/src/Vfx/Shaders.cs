@@ -38,6 +38,53 @@ void fragment() {
 	COLOR = vec4(tint.rgb, a * alpha * tint.a);
 }");
 
+	private static Shader? _refract;
+
+	/// <summary>
+	/// 水面折射冲击波：扭曲身后画面并带 RGB 色散，环上叠一层冷色高光。
+	/// radius 0~1，width 环宽，strength 扭曲强度（屏幕 UV），alpha 整体强度。
+	/// </summary>
+	public static Shader Refract => _refract ??= Make(@"
+shader_type canvas_item;
+uniform sampler2D screen_tex : hint_screen_texture, filter_linear_mipmap;
+uniform vec4 tint : source_color = vec4(0.7, 0.92, 1.0, 1.0);
+uniform float radius = 0.3;
+uniform float width = 0.12;
+uniform float strength = 0.025;
+uniform float alpha = 1.0;
+void fragment() {
+	vec2 uv = UV * 2.0 - 1.0;
+	float d = length(uv);
+	float k = smoothstep(width, 0.0, abs(d - radius)) * step(d, 1.0);
+	vec2 dir = d > 0.0001 ? uv / d : vec2(0.0);
+	vec2 off = dir * k * strength * alpha;
+	float r = texture(screen_tex, SCREEN_UV - off * 1.25).r;
+	float g = texture(screen_tex, SCREEN_UV - off).g;
+	float b = texture(screen_tex, SCREEN_UV - off * 0.75).b;
+	float rim = smoothstep(width * 0.35, 0.0, abs(d - radius)) * step(d, 1.0);
+	vec3 col = vec3(r, g, b) + tint.rgb * rim * 0.35 * alpha;
+	COLOR = vec4(col, clamp(k * 4.0, 0.0, 1.0));
+}");
+
+	private static Shader? _pillar;
+
+	/// <summary>竖直光柱：中心亮、两侧柔和衰减，顶部渐隐，带向上流动的条纹。</summary>
+	public static Shader Pillar => _pillar ??= Make(@"
+shader_type canvas_item;
+render_mode blend_add;
+uniform vec4 tint : source_color = vec4(0.25, 0.55, 1.0, 1.0);
+uniform float alpha = 1.0;
+void fragment() {
+	float x = abs(UV.x * 2.0 - 1.0);
+	float core = pow(clamp(1.0 - x, 0.0, 1.0), 3.0);
+	float halo = pow(clamp(1.0 - x, 0.0, 1.0), 1.2) * 0.35;
+	float fadeTop = smoothstep(0.0, 0.6, UV.y);
+	float fadeBottom = smoothstep(1.0, 0.92, UV.y);
+	float streak = 0.75 + 0.25 * sin(UV.y * 40.0 + TIME * 14.0 + UV.x * 6.0);
+	float a = (core + halo) * fadeTop * fadeBottom * streak * alpha;
+	COLOR = vec4(tint.rgb + vec3(core * 0.6), a * tint.a);
+}");
+
 	private static Shader? _magicCircle;
 
 	/// <summary>

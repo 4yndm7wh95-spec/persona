@@ -12,7 +12,7 @@ public static class ModEntry
 
 	public static void Init()
 	{
-		GD.Print($"{Tag} init v0.0.1");
+		GD.Print($"{Tag} init v0.0.2");
 		try
 		{
 			new Harmony("brooks.p3makoto").PatchAll(typeof(ModEntry).Assembly);
@@ -21,6 +21,14 @@ public static class ModEntry
 		catch (Exception e)
 		{
 			GD.PrintErr($"{Tag} harmony patch failed: {e}");
+		}
+		try
+		{
+			Debug.Showcase.TryStart();
+		}
+		catch (Exception e)
+		{
+			GD.PrintErr($"{Tag} showcase start failed: {e}");
 		}
 	}
 
