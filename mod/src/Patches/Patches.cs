@@ -36,13 +36,19 @@ public static class StartTargetingPatch
 			.Where(m => m.Name == "StartTargeting" && m.GetParameters().Length > 1 && m.GetParameters()[1].ParameterType == typeof(Control));
 	}
 
-	public static void Postfix(object[] __args)
+	public static void Postfix(NTargetManager __instance, object[] __args)
 	{
 		ModEntry.Safe("StartTargeting", () =>
 		{
 			if (__args[1] is NCard { Model: CardModel card } && LocalPlayer.Owns(card))
 			{
 				TargetingFx.Begin(card);
+				// 光标原本就停在怪物上（例如用键盘选牌）：原版在 StartTargeting 内部就触发了悬停，
+				// 那时我们的特效还没建立，所以这里补上锁定框
+				if (Traverse.Create(__instance).Property("HoveredNode").GetValue() is NCreature hovered)
+				{
+					TargetingFx.Hover(hovered);
+				}
 			}
 		});
 	}

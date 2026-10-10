@@ -31,7 +31,7 @@ public static class Sfx
 		{
 			try
 			{
-				Pcm.TryAdd(s, Encode(Synth(s)));
+				Pcm.TryAdd(s, Encode(Synth(s), Drive(s)));
 			}
 			catch (Exception e)
 			{
@@ -76,21 +76,24 @@ public static class Sfx
 	{
 		if (!Streams.TryGetValue(s, out AudioStreamWav? w))
 		{
-			byte[] data = Pcm.TryGetValue(s, out byte[]? d) ? d : Pcm.GetOrAdd(s, Encode(Synth(s)));
+			byte[] data = Pcm.TryGetValue(s, out byte[]? d) ? d : Pcm.GetOrAdd(s, Encode(Synth(s), Drive(s)));
 			w = new AudioStreamWav { Format = AudioStreamWav.FormatEnum.Format16Bits, MixRate = SR, Stereo = false, Data = data };
 			Streams[s] = w;
 		}
 		return w;
 	}
 
-	private static byte[] Encode(float[] x)
+	/// <summary>软削波推动量：越大越"满"越响（压缩感更强）。</summary>
+	private static float Drive(Snd s) => s == Snd.Gunshot ? 2.6f : 1.6f;
+
+	private static byte[] Encode(float[] x, float drive)
 	{
 		float peak = 1e-6f;
 		foreach (float v in x)
 		{
 			peak = MathF.Max(peak, MathF.Abs(v));
 		}
-		float gain = 1.6f / peak;
+		float gain = drive / peak;
 		byte[] b = new byte[x.Length * 2];
 		for (int i = 0; i < x.Length; i++)
 		{
@@ -151,6 +154,20 @@ public static class Sfx
 			}
 		}
 
+		/// <summary>稀疏的高频"叮"颗粒，越往后越稀越轻（召唤器打碎灵魂的玻璃感余韵）。</summary>
+		public void Shimmer(float t0, float spread, int count, float fLo, float fHi, float amp)
+		{
+			for (int i = 0; i < count; i++)
+			{
+				float u = (float)_r.NextDouble();
+				float f = fLo + (float)_r.NextDouble() * (fHi - fLo);
+				float tau = 0.02f + 0.05f * (float)_r.NextDouble();
+				float a = amp * (0.4f + 0.6f * (float)_r.NextDouble()) * (1f - 0.7f * u);
+				Tone(t0 + spread * u * u, tau * 5f, _ => f, Atk(0.0006f, tau), a);
+				Tone(t0 + spread * u * u, tau * 3f, _ => f * 1.52f, Atk(0.0006f, tau * 0.6f), a * 0.4f);
+			}
+		}
+
 		/// <summary>N 波：枪口冲击波的正负尖峰（几个采样宽），给出"啪"的锐利起头。</summary>
 		public void Snap(float t0, float amp)
 		{
@@ -171,17 +188,29 @@ public static class Sfx
 		Gen g;
 		switch (s)
 		{
-			case Snd.Gunshot:      // 召唤器枪声：以高频"啪"为主（不是鼓！）—— 冲击波尖峰 + 极短宽频爆裂 + 回声 + 尾音，低频只给一点分量
-				g = new Gen(1.0f, 1);
+			case Snd.Gunshot:      // 召唤器枪声：击锤 + 高频"啪"（不是鼓）+ 噪声冲击 + 次低频 + 回声 + 长尾；随后灵魂冲出的风声、E 小调共鸣、微光
+				g = new Gen(1.6f, 1);
 				g.Snap(0.0f, 1.0f);
-				g.Noise(0, 0.05f, Atk(0.0002f, 0.005f), K(900), 0.6f, F.High, 0.7f);           // 宽频爆裂
-				g.Noise(0, 0.12f, Atk(0.0003f, 0.024f), K(1700), 0.8f, F.Band, 1.1f);          // 中频"啪"的身体
-				g.Tone(0, 0.12f, t => 110f * MathF.Exp(-t / 0.02f) + 60f, Atk(0.001f, 0.025f), 0.18f);   // 一点重量
-				foreach ((float d, float a) in new[] { (0.021f, 0.35f), (0.043f, 0.22f), (0.077f, 0.14f), (0.13f, 0.08f) })   // 早期反射
+				g.Noise(0, 0.05f, Atk(0.0002f, 0.005f), K(900), 0.6f, F.High, 0.75f);          // 宽频爆裂
+				g.Noise(0, 0.14f, Atk(0.0003f, 0.026f), K(1700), 0.8f, F.Band, 1.1f);           // 中频"啪"的身体
+				g.Noise(0, 0.25f, Atk(0.0005f, 0.05f), K(480), 0.9f, F.Band, 0.8f);             // 中低频冲击（噪声，不成音高）
+				g.Noise(0, 0.5f, Atk(0.002f, 0.1f), K(170), 1f, F.Low, 0.9f);                   // 次低频轰鸣
+				g.Tone(0, 0.2f, t => 85f * MathF.Exp(-t / 0.03f) + 48f, Atk(0.001f, 0.05f), 0.25f);
+				foreach ((float d, float a) in new[] { (0.021f, 0.45f), (0.043f, 0.3f), (0.077f, 0.2f), (0.13f, 0.13f), (0.21f, 0.07f) })   // 早期反射
 				{
-					g.Noise(d, 0.04f, Atk(0.0004f, 0.008f), K(1500), 0.7f, F.High, a);
+					g.Noise(d, 0.05f, Atk(0.0004f, 0.01f), K(1300), 0.7f, F.High, a);
 				}
-				g.Noise(0.005f, 0.95f, Atk(0.01f, 0.2f), t => 2600f * MathF.Exp(-t / 0.3f) + 500f, 0.9f, F.Low, 0.22f);   // 空间尾音
+				g.Noise(0.005f, 1.55f, Atk(0.01f, 0.42f), t => 3000f * MathF.Exp(-t / 0.35f) + 450f, 0.9f, F.Low, 0.32f);   // 空间长尾
+				g.Noise(0, 0.02f, Atk(0.0002f, 0.003f), K(4500), 0.25f, F.Band, 0.5f);           // 击锤的金属"咔"
+				g.Tone(0, 0.15f, _ => 2830f, Atk(0.0004f, 0.03f), 0.06f);
+				g.Noise(0.08f, 0.6f, t => { float u = Math.Clamp(t / 0.55f, 0f, 1f); return MathF.Pow(MathF.Sin(MathF.PI * u), 2f) * (1f - 0.4f * u); },
+					t => 600f + 3200f * Math.Clamp(t / 0.45f, 0f, 1f), 0.4f, F.Band, 0.22f);                 // 灵魂冲出的风声（向上扫）
+				foreach ((float f, float a) in new[] { (164.8f, 0.07f), (246.9f, 0.05f), (329.6f, 0.05f), (493.9f, 0.025f) })   // E 小调共鸣：Persona 现身
+				{
+					g.Tone(0.06f, 1.5f, t => f * (1f + 0.003f * MathF.Sin(t * 29f)), t => MathF.Min(t / 0.18f, 1f) * MathF.Exp(-t / 0.55f), a);
+					g.Tone(0.06f, 1.5f, _ => f * 1.004f, t => MathF.Min(t / 0.18f, 1f) * MathF.Exp(-t / 0.55f), a * 0.6f);
+				}
+				g.Shimmer(0.04f, 0.7f, 34, 3200f, 7500f, 0.05f);                                  // 微光余韵
 				return g.B;
 		}
 		return new float[1];

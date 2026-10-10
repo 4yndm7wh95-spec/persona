@@ -169,7 +169,7 @@ public static class CardFx
 	}
 
 	/// <summary>召唤器枪声（本 mod 唯一的自制音效；其余都用游戏原版音效）。</summary>
-	private static void EvokerSound(float power) => Sfx.Play(Snd.Gunshot, 0.8f + 0.15f * power);
+	private static void EvokerSound(float power) => Sfx.Play(Snd.Gunshot, 1.1f + 0.15f * power);
 
 	/// <summary>单体牌取目标；群体 / 无目标的攻击性牌取全部存活敌人。</summary>
 	private static List<NCreature> Targets(CardPlay play)
