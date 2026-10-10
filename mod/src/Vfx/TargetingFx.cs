@@ -46,13 +46,11 @@ public static class TargetingFx
 			{
 				// 等姿势切换后剑到位再显现（下一帧骨骼才更新）
 				Fx.After(front, 0.05, "sword form", () => WeaponFx.SwordMaterialize(front, node));
-				Audio.Sfx.Play(Audio.Snd.SwordDraw, 0.6f, 0.05f);
 				hands.SwordOut = true;
 			}
 			else if (!attack && !hands.EvokerOut)
 			{
 				Fx.After(front, 0.08, "evoker glint", () => WeaponFx.EvokerGlint(front, node));
-				Audio.Sfx.Play(Audio.Snd.Cock, 0.55f, 0.16f);
 				hands.EvokerOut = true;
 			}
 		}
