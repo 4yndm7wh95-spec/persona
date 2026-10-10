@@ -1,0 +1,68 @@
+{
+  "canvas": [
+    512,
+    768
+  ],
+  "parts": [
+    {
+      "name": "smoke",
+      "file": "rig_smoke.png",
+      "pivot": [
+        260,
+        640
+      ],
+      "z": 0,
+      "parent": null
+    },
+    {
+      "name": "body",
+      "file": "rig_body.png",
+      "pivot": [
+        300,
+        690
+      ],
+      "z": 1,
+      "parent": null
+    },
+    {
+      "name": "arm_free",
+      "file": "rig_arm_free.png",
+      "pivot": [
+        318,
+        158
+      ],
+      "z": 2,
+      "parent": "body"
+    },
+    {
+      "name": "head",
+      "file": "rig_head.png",
+      "pivot": [
+        212,
+        165
+      ],
+      "z": 3,
+      "parent": "body"
+    },
+    {
+      "name": "arm_lantern",
+      "file": "rig_arm_lantern.png",
+      "pivot": [
+        165,
+        165
+      ],
+      "z": 4,
+      "parent": "body"
+    },
+    {
+      "name": "lantern",
+      "file": "rig_lantern.png",
+      "pivot": [
+        106,
+        110
+      ],
+      "z": 5,
+      "parent": "arm_lantern"
+    }
+  ]
+}

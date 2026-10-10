@@ -1,0 +1,14 @@
+[remap]
+
+importer="spine.json"
+type="SpineSkeletonFileResource"
+uid="uid://b7qqv4a6gra8w"
+path="res://.godot/imported/characterselect_ironclad.spine-json-e41c791f0a2af5e341d47d6e09f366ce.spjson"
+
+[deps]
+
+source_file="res://animations/character_select/ironclad/characterselect_ironclad.spine-json"
+dest_files=["res://.godot/imported/characterselect_ironclad.spine-json-e41c791f0a2af5e341d47d6e09f366ce.spjson"]
+
+[params]
+

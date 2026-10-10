@@ -1,0 +1,14 @@
+[remap]
+
+importer="spine.json"
+type="SpineSkeletonFileResource"
+uid="uid://dqw7wm6vqmlnb"
+path="res://.godot/imported/frames.spine-json-95f297682c3601b0b584d22a1caae7dd.spjson"
+
+[deps]
+
+source_file="res://animations/characters/ironclad/frames/frames.spine-json"
+dest_files=["res://.godot/imported/frames.spine-json-95f297682c3601b0b584d22a1caae7dd.spjson"]
+
+[params]
+

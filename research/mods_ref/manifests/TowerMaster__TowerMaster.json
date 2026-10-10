@@ -1,0 +1,11 @@
+{
+  "id": "TowerMaster",
+  "name": "塔主 TowerMaster",
+  "version": "0.0.55",
+  "author": "brooks",
+  "description": "测试1b：第一幕跨遭遇混搭怪物，由房主广播召唤清单",
+  "dependencies": [],
+  "has_pck": false,
+  "has_dll": true,
+  "affects_gameplay": true
+}

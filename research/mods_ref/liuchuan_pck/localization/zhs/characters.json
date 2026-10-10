@@ -1,0 +1,16 @@
+{
+  "IRONCLAD.aromaPrinciple": "[sine][red]疼痛算得了什么，我的敌人们必须死。[/red][/sine]",
+  "IRONCLAD.banter.alive.endTurnPing": "快点。",
+  "IRONCLAD.banter.dead.endTurnPing": "……",
+  "IRONCLAD.cardsModifierDescription": "刘川的卡牌现在会出现在奖励和商店中。",
+  "IRONCLAD.cardsModifierTitle": "刘川卡牌",
+  "IRONCLAD.description": "名为刘川的虎族剑士。\n手持长剑，向尖塔深处前进。",
+  "IRONCLAD.eventDeathPrevention": "我的队伍还需要我。",
+  "IRONCLAD.goldMonologue": "[sine]这些财富可以充实部落的军库……[/sine]",
+  "IRONCLAD.possessiveAdjective": "他的",
+  "IRONCLAD.pronounObject": "他",
+  "IRONCLAD.pronounPossessive": "他的",
+  "IRONCLAD.pronounSubject": "他",
+  "IRONCLAD.title": "刘川",
+  "IRONCLAD.titleObject": "刘川"
+}

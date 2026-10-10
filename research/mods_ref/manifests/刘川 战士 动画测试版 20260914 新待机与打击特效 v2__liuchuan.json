@@ -1,0 +1,10 @@
+{
+  "id": "liuchuan",
+  "name": "刘川视觉替换（新待机与打击特效）",
+  "author": "kkk & Codex",
+  "description": "保留已确认的4秒240帧60FPS新待机并用于局内与商店；沿用上一确认版攻击角色动作，仅为普通攻击和重攻击新增虎橙/暖金主色、青蓝刀锋核心的短促加法混合打击特效。施法、受伤、死亡、放松、篝火及其他资源保持基准包不变。纯视觉，无DLL，不改玩法。",
+  "version": "3.3.4-test-20260914-idle-vfx-v2",
+  "has_pck": true,
+  "has_dll": false,
+  "affects_gameplay": false
+}

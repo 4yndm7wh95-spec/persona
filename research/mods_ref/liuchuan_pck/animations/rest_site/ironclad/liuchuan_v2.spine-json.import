@@ -1,0 +1,14 @@
+[remap]
+
+importer="spine.json"
+type="SpineSkeletonFileResource"
+uid="uid://dicdu8i7kk28h"
+path="res://.godot/imported/liuchuan_v2.spine-json-c44b5e8a4f8e01f544560277b96f16df.spjson"
+
+[deps]
+
+source_file="res://animations/rest_site/ironclad/liuchuan_v2.spine-json"
+dest_files=["res://.godot/imported/liuchuan_v2.spine-json-c44b5e8a4f8e01f544560277b96f16df.spjson"]
+
+[params]
+

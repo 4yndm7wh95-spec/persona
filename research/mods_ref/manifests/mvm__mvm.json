@@ -1,0 +1,11 @@
+{
+  "id": "mvm",
+  "name": "斗兽场 / Colosseum",
+  "author": "鲲冥fish",
+  "description": "观看《杀戮尖塔2》怪物之间战斗的 Mod。\n\n【注意】本 Mod 完全免费。\n如果你是花钱获得的，那你买到盗版了。\nB站关注我，谢谢喵！\n\nA mod for watching monsters from Slay the Spire 2 battle each other.\n\n[Notice] This mod is completely free.\nIf you paid for it, you purchased an unauthorized copy.\nFollow me on Bilibili. Thank you!",
+  "version": "v1.0.0",
+  "has_pck": true,
+  "has_dll": true,
+  "dependencies": [],
+  "affects_gameplay": true
+}

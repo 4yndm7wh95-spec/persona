@@ -1,0 +1,27 @@
+{
+  "test1_fixed_encounter": false,
+  "fixed_encounters": {
+    "Overgrowth": "NibbitsNormal",
+    "Underdocks": "CultistsNormal",
+    "Hive": "MytesNormal",
+    "Glory": "AxebotsNormal"
+  },
+  "probe": true,
+  "test1b_mixed_encounter": true,
+  "mixed_monsters": {
+    "Overgrowth": [
+      "Mawler",
+      "Flyconid"
+    ],
+    "Underdocks": [
+      "CalcifiedCultist",
+      "Seapunk"
+    ]
+  },
+  "test2_master_off_field": true,
+  "test3_master_autopilot": true,
+  "test3_block_master_items": true,
+  "summon_phase": true,
+  "master_turn": true,
+  "master_cards": true
+}

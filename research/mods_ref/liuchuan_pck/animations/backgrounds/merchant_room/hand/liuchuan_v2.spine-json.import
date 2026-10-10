@@ -1,0 +1,14 @@
+[remap]
+
+importer="spine.json"
+type="SpineSkeletonFileResource"
+uid="uid://dyc84oai5vdh0"
+path="res://.godot/imported/liuchuan_v2.spine-json-a1baff380f6664a5f28aecba064a449b.spjson"
+
+[deps]
+
+source_file="res://animations/backgrounds/merchant_room/hand/liuchuan_v2.spine-json"
+dest_files=["res://.godot/imported/liuchuan_v2.spine-json-a1baff380f6664a5f28aecba064a449b.spjson"]
+
+[params]
+
