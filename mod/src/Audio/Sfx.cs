@@ -154,6 +154,17 @@ public static class Sfx
 			}
 		}
 
+		/// <summary>N 波：枪口冲击波的正负尖峰（几个采样宽），给出"啪"的锐利起头。</summary>
+		public void Snap(float t0, float amp)
+		{
+			int s0 = (int)(t0 * SR);
+			float[] w = { 0.6f, 1f, 0.8f, 0.3f, -0.4f, -0.9f, -1f, -0.6f, -0.2f };
+			for (int i = 0; i < w.Length && s0 + i < B.Length; i++)
+			{
+				B[s0 + i] += w[i] * amp;
+			}
+		}
+
 		public void Ping(float t0, float f, float tau, float amp, float bright = 1f)
 		{
 			Tone(t0, tau * 5f, _ => f, Atk(0.0006f, tau), amp);
@@ -183,12 +194,17 @@ public static class Sfx
 		Gen g;
 		switch (s)
 		{
-			case Snd.Gunshot:      // 召唤器：干脆的爆裂 + 低频"咚" + 房间尾音
-				g = new Gen(0.9f, 1);
-				g.Noise(0, 0.06f, Atk(0.0006f, 0.01f), K(6000), 0.7f, F.High, 1.0f);
-				g.Noise(0, 0.25f, Atk(0.001f, 0.045f), K(1400), 0.8f, F.Low, 0.8f);
-				g.Tone(0, 0.45f, t => 150f * MathF.Exp(-t / 0.04f) + 46f, Atk(0.002f, 0.1f), 1.0f);
-				g.Noise(0.01f, 0.88f, Atk(0.02f, 0.28f), K(800), 1f, F.Low, 0.2f);
+			case Snd.Gunshot:      // 召唤器枪声：以高频"啪"为主（不是鼓！）—— 冲击波尖峰 + 极短宽频爆裂 + 回声 + 尾音，低频只给一点分量
+				g = new Gen(1.0f, 1);
+				g.Snap(0.0f, 1.0f);
+				g.Noise(0, 0.05f, Atk(0.0002f, 0.005f), K(900), 0.6f, F.High, 0.7f);           // 宽频爆裂
+				g.Noise(0, 0.12f, Atk(0.0003f, 0.024f), K(1700), 0.8f, F.Band, 1.1f);          // 中频"啪"的身体
+				g.Tone(0, 0.12f, t => 110f * MathF.Exp(-t / 0.02f) + 60f, Atk(0.001f, 0.025f), 0.18f);   // 一点重量
+				foreach ((float d, float a) in new[] { (0.021f, 0.35f), (0.043f, 0.22f), (0.077f, 0.14f), (0.13f, 0.08f) })   // 早期反射
+				{
+					g.Noise(d, 0.04f, Atk(0.0004f, 0.008f), K(1500), 0.7f, F.High, a);
+				}
+				g.Noise(0.005f, 0.95f, Atk(0.01f, 0.2f), t => 2600f * MathF.Exp(-t / 0.3f) + 500f, 0.9f, F.Low, 0.22f);   // 空间尾音
 				return g.B;
 			case Snd.Shatter:      // 玻璃 / 灵魂碎裂：一声脆响 + 一大片叮叮声 + 微光余韵
 				g = new Gen(1.4f, 2);
