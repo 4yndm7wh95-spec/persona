@@ -1,0 +1,8 @@
+restsite_regent.png
+	size: 1024, 1024
+	filter: Linear, Linear
+	scale: 0.5
+FX_Particle
+	bounds: 307, 267, 251, 291
+Rest
+	bounds: 10, 228, 287, 330

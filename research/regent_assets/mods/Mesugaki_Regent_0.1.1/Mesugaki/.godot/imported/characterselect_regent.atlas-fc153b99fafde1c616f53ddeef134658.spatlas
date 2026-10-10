@@ -1,0 +1,1 @@
+{"atlas_data":"characterselect_regent.png\n\tsize: 2048, 2048\n\tfilter: Linear, Linear\n\tscale: 0.7\nBG\n\tbounds: 10, 770, 1796, 1036\n\toffsets: 12, 0, 1820, 1036\n","normal_texture_prefix":"n","source_path":"res://animations/character_select/regent/characterselect_regent.atlas","specular_texture_prefix":"s"}

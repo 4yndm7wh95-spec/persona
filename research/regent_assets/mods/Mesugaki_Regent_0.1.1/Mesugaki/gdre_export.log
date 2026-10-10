@@ -1,0 +1,44 @@
+GDRE Tools v2.7.3
+Windows 10.0.26200, headless
+Opening file: C:/Users/kkk/Desktop/slaythespire/Slay the Spire 2/mods/Mesugaki_Regent_0.1.1/Mesugaki.pck
+Guessing best bytecode revision from engine version 4.5.1: 4.5.0-stable (rev 0xebc36a7)
+Loaded 27 imported files
+Detected Engine Version: 4.5.1
+Detected Bytecode Revision: 4.5.0-stable (ebc36a7)
+Successfully loaded PCK!
+Version: 4.5.1
+Verified 60 files, 1 files skipped (MD5 hash entry was empty)
+Extracted 60 files, no errors detected!
+WARNING: Could not compile C# project: dotnet could not be run, make sure it is installed and configured
+   at: ImportExporter::export_imports::<lambda_3>::operator () (modules\gdsdecomp\utility\import_exporter.cpp:1132)
+Saved project config.
+
+
+********************************EXPORT REPORT********************************
+
+Totals:                                 
+Decompiled scripts:                     1
+Scripts not decompiled:                 2
+Imported resources for export session:  27
+Successfully converted:                 27
+Lossy:                                  0
+Rewrote metadata:                       19
+Non-importable conversions:             0
+Not converted:                          0
+Failed conversions:                     0
+-------------
+
+------
+
+The following scripts were not decompiled:
+res://src/Core/Nodes/Screens/CharacterSelect/NRegentCharacterSelectBg.cs
+res://src/Core/Nodes/Screens/Shops/NMerchantCharacter.cs
+
+
+------------------------------------------------------------------------------------
+
+Use Godot editor version 4.5.1 (Mono) to edit the project.
+
+*******************************************************************************
+
+Recovery finished in 00m01s
