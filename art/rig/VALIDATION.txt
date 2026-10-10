@@ -1,0 +1,17 @@
+[OK] 拼合校验：平均色差 2.62（<5），缺失像素比例 0.00006（<0.001）
+[OK] 平移骨骼：['hip']
+[OK] 脚底漂移 idle_loop: 0.01px（≤2）
+[OK] 脚底漂移 relaxed_loop: 0.01px（≤2）
+[OK] 脚底漂移 low_health_loop: 0.01px（≤2）
+[OK] 脚底漂移 aim_loop: 0.01px（≤2）
+[OK] 脚底漂移 ready_sword_loop: 0.01px（≤2）
+[OK] 脚底漂移 attack: 0.01px（≤2）
+[OK] 脚底漂移 cast: 0.01px（≤2）
+[OK] 脚底漂移 attack_sovereign: 0.01px（≤2）
+[OK] 脚底漂移 hurt: 0.01px（≤2）
+[OK] 脚底漂移 die: 0.01px（≤2）
+[OK] 循环首尾一致 idle_loop
+[OK] 循环首尾一致 relaxed_loop
+[OK] 循环首尾一致 low_health_loop
+[OK] 循环首尾一致 aim_loop
+[OK] 循环首尾一致 ready_sword_loop
