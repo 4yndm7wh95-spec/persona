@@ -120,4 +120,86 @@ void fragment() {
 	c *= step(d, 1.0);
 	COLOR = vec4(tint.rgb * (0.8 + c * 0.6), clamp(c, 0.0, 1.0) * alpha * tint.a);
 }");
+
+	private const string HueShiftBody = @"
+uniform float shift = 3.0;      // 绕灰轴旋转的弧度：橙（约 30°）→ 蓝青（约 205°）
+uniform float boost = 1.1;
+vec3 hue(vec3 c, float a) {
+	const vec3 k = vec3(0.57735);
+	float ca = cos(a);
+	return c * ca + cross(k, c) * sin(a) + k * dot(k, c) * (1.0 - ca);
+}
+void fragment() {
+	vec4 c = texture(TEXTURE, UV) * COLOR;
+	c.rgb = clamp(hue(c.rgb, shift) * boost, 0.0, 1.0);
+	COLOR = c;
+}";
+
+	private static Shader? _hueMix, _hueAdd;
+
+	/// <summary>色相旋转（普通混合）：把原版橙色的君王之刃整体换成 P3 的蓝。COLOR 已含 modulate，所以发光 tween 也会被换色。</summary>
+	public static Shader HueShift => _hueMix ??= Make("shader_type canvas_item;\n" + HueShiftBody);
+
+	/// <summary>色相旋转（叠加混合），用于原本就是 Add 混合的发光 / 粒子。</summary>
+	public static Shader HueShiftAdd => _hueAdd ??= Make("shader_type canvas_item;\nrender_mode blend_add;\n" + HueShiftBody);
+
+	private static Shader? _menu;
+
+	/// <summary>
+	/// P3R 风格背景：深蓝夜空 + 巨大的月亮与光晕 + 地平线下的水面（月光倒影碎成水平光带、细波纹缓慢流动）+ 暗角。
+	/// aspect = 宽 / 高；moon = 月亮中心（UV）；horizon = 地平线高度（UV.y）。
+	/// </summary>
+	public static Shader Menu => _menu ??= Make(@"
+shader_type canvas_item;
+uniform float aspect = 2.13;
+uniform vec2 moon = vec2(0.6, 0.2);
+uniform float moon_r = 0.085;
+uniform float horizon = 0.7;
+
+float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float noise(vec2 p) {
+	vec2 i = floor(p), f = fract(p);
+	vec2 u = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
+}
+float fbm(vec2 p) {
+	float v = 0.0, a = 0.5;
+	for (int i = 0; i < 5; i++) { v += a * noise(p); p *= 2.03; a *= 0.5; }
+	return v;
+}
+vec3 sky(vec2 uv) {
+	vec3 top = vec3(0.005, 0.015, 0.06), low = vec3(0.03, 0.11, 0.30);
+	vec3 c = mix(top, low, smoothstep(0.0, horizon, uv.y));
+	vec2 d = (uv - moon) * vec2(aspect, 1.0);
+	float r = length(d);
+	float disc = smoothstep(moon_r, moon_r - 0.004, r);
+	float craters = fbm(d * 18.0 + 3.0);
+	c = mix(c, vec3(0.78, 0.9, 1.0) * (0.82 + 0.25 * craters), disc);
+	c += vec3(0.25, 0.55, 1.0) * exp(-max(r - moon_r, 0.0) * 9.0) * 0.55 * (1.0 - disc);
+	float cloud = fbm(vec2(uv.x * 2.4 + TIME * 0.006, uv.y * 7.0)) * smoothstep(horizon, 0.15, uv.y);
+	c += vec3(0.06, 0.14, 0.3) * cloud * 0.6;
+	float stars = step(0.9975, hash(floor(uv * vec2(900.0, 420.0)))) * smoothstep(horizon, 0.0, uv.y);
+	c += stars * (0.4 + 0.6 * sin(TIME * 2.0 + hash(floor(uv * 300.0)) * 6.28)) * 0.5;
+	return c;
+}
+void fragment() {
+	vec2 uv = UV;
+	vec3 c;
+	if (uv.y < horizon) {
+		c = sky(uv);
+	} else {
+		float k = (uv.y - horizon) / (1.0 - horizon);
+		float wave = sin(uv.y * 260.0 / (0.25 + k) - TIME * 1.4) * 0.5 + fbm(vec2(uv.x * 9.0, uv.y * 60.0 / (0.3 + k) - TIME * 0.6)) - 0.5;
+		vec2 ruv = vec2(uv.x + wave * 0.006 * (0.4 + k), 2.0 * horizon - uv.y);
+		c = sky(ruv) * 0.55;
+		float col = exp(-abs((uv.x - moon.x) * aspect) * (14.0 / (0.6 + k * 2.5)));
+		float bands = smoothstep(0.35, 0.95, fbm(vec2(uv.x * 30.0, uv.y * 200.0 / (0.3 + k) - TIME * 0.9)));
+		c += vec3(0.6, 0.85, 1.0) * col * bands * 0.9;
+		c += vec3(0.1, 0.4, 0.9) * smoothstep(0.55, 0.9, wave + 0.5) * 0.06;
+		c += vec3(0.3, 0.6, 1.0) * exp(-k * 40.0) * 0.35;           // 地平线的一道亮线
+	}
+	vec2 v = uv - 0.5;
+	c *= 1.0 - dot(v, v) * 0.9;
+	COLOR = vec4(c, 1.0);
+}");
 }

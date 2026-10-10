@@ -885,7 +885,7 @@ def previews(data, images):
 def stage_pck(out):
     """生成 PCK 打包目录（res:// 结构）。Spine 资源直接写成 spine-godot 导入后的格式，
     不依赖 Spine 编辑器插件：.spjson = 原始 JSON；.spatlas = 包着 atlas 文本的 JSON。
-    regent.png 的贴图导入由本地 Godot 完成（见 docs/BUILD.md）。"""
+    regent.png 用 tools/pck/godot_tex.py 直接生成 .ctex（见 docs/BUILD.md）。"""
     import hashlib
     stage = ROOT / "mod/pck_stage"
     rel = "animations/characters/regent"
@@ -893,8 +893,13 @@ def stage_pck(out):
     imp = stage / ".godot/imported"
     d.mkdir(parents=True, exist_ok=True)
     imp.mkdir(parents=True, exist_ok=True)
-    for f in ("regent.atlas", "regent.spine-json", "regent.png"):
+    for f in ("regent.atlas", "regent.spine-json"):
         (d / f).write_bytes((out / f).read_bytes())
+    # 贴图直接生成导入产物（png + .import + .ctex），沿用原版 regent.png 的 uid；不再需要本地 Godot 导入
+    sys.path.insert(0, str(ROOT / "tools/pck"))
+    from godot_tex import write_texture
+    from PIL import Image as _Image
+    write_texture(stage, f"{rel}/regent.png", _Image.open(out / "regent.png"), "bhmdtitp0en6e")
 
     def h(path):
         return hashlib.md5(path.encode()).hexdigest()
