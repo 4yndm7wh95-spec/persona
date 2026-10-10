@@ -345,27 +345,34 @@ public static class P3Fx
 		Shockwave(backLayer, feet, Pal.DarkHour, 760f, 0.8f, squashY: 0.3f);
 		Shockwave(backLayer, feet, Pal.DarkHour, 520f, 0.8f, squashY: 0.3f, delay: 0.12f);
 
-		float height = (feet.Y - head.Y) * 2.2f;
-		Node2D root = Fx.Root(backLayer, feet, "P3Pillar");
+		Node2D root = LightPillar(backLayer, feet, Pal.DarkHour, 220f, (feet.Y - head.Y) * 2.2f, 1.1f);
+		GpuParticles2D motes = Fx.Sparks(root, Pal.DarkHour, 40, 60f, 200f, 1.0f, gravity: -300f, scaleMin: 0.15f, scaleMax: 0.4f);
+		((ParticleProcessMaterial)motes.ProcessMaterial).EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box;
+		((ParticleProcessMaterial)motes.ProcessMaterial).EmissionBoxExtents = new Vector3(90f, 8f, 0f);
+	}
+
+	/// <summary>竖直光柱：底部在 feet，先横向展开再纵向冲起，随后收窄淡出。返回根节点（已自动释放）。</summary>
+	public static Node2D LightPillar(Control layer, Vector2 feet, Color tint, float width, float height, float duration)
+	{
+		Node2D root = Fx.Root(layer, feet, "P3Pillar");
 		ColorRect pillar = new ColorRect
 		{
-			Size = new Vector2(220f, height),
-			Position = new Vector2(-110f, -height),
-			PivotOffset = new Vector2(110f, height),
+			Size = new Vector2(width, height),
+			Position = new Vector2(-width / 2f, -height),
+			PivotOffset = new Vector2(width / 2f, height),
 			MouseFilter = Control.MouseFilterEnum.Ignore,
 			Material = new ShaderMaterial { Shader = Shaders.Pillar }
 		};
 		root.AddChild(pillar);
-		Fx.SetParam(pillar, "tint", Pal.DarkHour);
-		Fx.Animate(pillar, 1.1f, t =>
+		Fx.SetParam(pillar, "tint", tint);
+		Fx.Animate(pillar, duration, t =>
 		{
-			pillar.Scale = new Vector2(Mathf.Lerp(0.2f, 1f, Ease.OutExpo(Mathf.Min(1f, t * 3f))) * Mathf.Lerp(1f, 0.4f, Ease.InCubic(t)), Ease.OutExpo(Mathf.Min(1f, t * 2.5f)));
+			float sx = Mathf.Lerp(0.2f, 1f, Ease.OutExpo(Mathf.Min(1f, t * 3f))) * Mathf.Lerp(1f, 0.4f, Ease.InCubic(t));
+			pillar.Scale = new Vector2(sx, Ease.OutExpo(Mathf.Min(1f, t * 2.5f)));
 			Fx.SetParam(pillar, "alpha", 1f - Ease.InCubic(t));
 		});
-		Fx.FreeAfter(root, 1.2);
-		GpuParticles2D motes = Fx.Sparks(root, Pal.DarkHour, 40, 60f, 200f, 1.0f, gravity: -300f, scaleMin: 0.15f, scaleMax: 0.4f);
-		((ParticleProcessMaterial)motes.ProcessMaterial).EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box;
-		((ParticleProcessMaterial)motes.ProcessMaterial).EmissionBoxExtents = new Vector3(90f, 8f, 0f);
+		Fx.FreeAfter(root, duration + 0.1);
+		return root;
 	}
 
 	// ───────────────────────── 预备出牌 ─────────────────────────

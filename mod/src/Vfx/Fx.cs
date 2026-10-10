@@ -144,8 +144,15 @@ public static class Fx
 
 	/// <summary>一次性喷发的柔光粒子。</summary>
 	public static GpuParticles2D Sparks(Node parent, Color color, int amount, float speedMin, float speedMax,
-		float lifetime, float gravity = 0f, float scaleMin = 0.15f, float scaleMax = 0.45f, bool oneShot = true)
+		float lifetime, float gravity = 0f, float scaleMin = 0.15f, float scaleMax = 0.45f, bool oneShot = true, Color[]? ramp = null)
 	{
+		Gradient gradient = ramp == null
+			? new Gradient
+			{
+				Offsets = new[] { 0f, 0.7f, 1f },
+				Colors = new[] { Colors.White, Colors.White, new Color(1f, 1f, 1f, 0f) }
+			}
+			: RampGradient(ramp);
 		ParticleProcessMaterial pm = new ParticleProcessMaterial
 		{
 			Direction = new Vector3(0f, -1f, 0f),
@@ -157,15 +164,8 @@ public static class Fx
 			ScaleMax = scaleMax,
 			DampingMin = 2f,
 			DampingMax = 6f,
-			Color = color,
-			ColorRamp = new GradientTexture1D
-			{
-				Gradient = new Gradient
-				{
-					Offsets = new[] { 0f, 0.7f, 1f },
-					Colors = new[] { Colors.White, Colors.White, new Color(1f, 1f, 1f, 0f) }
-				}
-			}
+			Color = ramp == null ? color : Colors.White,
+			ColorRamp = new GradientTexture1D { Gradient = gradient }
 		};
 		GpuParticles2D p = new GpuParticles2D
 		{
@@ -181,5 +181,57 @@ public static class Fx
 		};
 		parent.AddChild(p);
 		return p;
+	}
+
+	/// <summary>把若干颜色均匀分布成渐变，最后一个颜色之后自动淡出到透明。</summary>
+	public static Gradient RampGradient(Color[] colors)
+	{
+		int n = colors.Length + 1;
+		float[] offsets = new float[n];
+		Color[] cols = new Color[n];
+		for (int i = 0; i < colors.Length; i++)
+		{
+			offsets[i] = (float)i / (n - 1);
+			cols[i] = colors[i];
+		}
+		offsets[n - 1] = 1f;
+		cols[n - 1] = new Color(colors[^1], 0f);
+		return new Gradient { Offsets = offsets, Colors = cols };
+	}
+
+	/// <summary>四角星形（用于星光）。</summary>
+	public static Vector2[] Star4(float radius, float inner = 0.28f)
+	{
+		Vector2[] pts = new Vector2[8];
+		for (int i = 0; i < 8; i++)
+		{
+			float r = i % 2 == 0 ? radius : radius * inner;
+			float a = Mathf.Tau * i / 8f - Mathf.Pi / 2f;
+			pts[i] = new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r;
+		}
+		return pts;
+	}
+
+	/// <summary>正六边形（尖朝上）。</summary>
+	public static Vector2[] Hexagon(float radius)
+	{
+		Vector2[] pts = new Vector2[6];
+		for (int i = 0; i < 6; i++)
+		{
+			float a = Mathf.Tau * i / 6f - Mathf.Pi / 2f;
+			pts[i] = new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * radius;
+		}
+		return pts;
+	}
+
+	/// <summary>延迟执行（游戏时间），回调包在 Safe 里。</summary>
+	public static void After(Node anchor, double seconds, string what, Action action)
+	{
+		if (seconds <= 0)
+		{
+			ModEntry.Safe(what, action);
+			return;
+		}
+		anchor.GetTree().CreateTimer(seconds).Timeout += () => ModEntry.Safe(what, action);
 	}
 }
