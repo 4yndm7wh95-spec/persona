@@ -21,7 +21,7 @@ public static class EvokerShot
 		dir = dir.LengthSquared() < 0.01f ? Vector2.Left : dir.Normalized();
 		Vector2 exit = muzzle + dir * 105f * power;
 
-		HitStop(0.07);
+		HitStop(0.09);
 		ScreenFlash(layer, 0.12f, 0.55f);
 		NGame.Instance?.ScreenShake(power >= 1.2f ? ShakeStrength.Strong : ShakeStrength.Medium, ShakeDuration.Short, Mathf.RadToDeg(dir.Angle()));
 
@@ -38,8 +38,10 @@ public static class EvokerShot
 
 		Beam(layer, muzzle, dir, c, power);
 
-		// 出口：锥形碎裂 + 喷流 + 斜向冲击环 + 折射
-		ConeShatter(layer, exit, dir, (int)(30 * power), power);
+		// 出口：玻璃面瞬间龟裂 → 扇形碎片喷出并悬停闪光 → 蓝雾 + 喷流 + 斜向冲击环 + 折射
+		CrackPane(layer, exit, dir, power);
+		ConeShatter(layer, exit, dir, (int)(55 * power), power);
+		Mist(layer, exit, dir, c, power);
 		Node2D jetRoot = Fx.Root(layer, exit, "P3SpiritJet");
 		GpuParticles2D jet = Fx.Sparks(jetRoot, c, 60, 400f * power, 1100f * power, 0.45f, gravity: 0f, scaleMin: 0.4f, scaleMax: 1.1f);
 		ParticleProcessMaterial pm = (ParticleProcessMaterial)jet.ProcessMaterial;
@@ -88,7 +90,11 @@ public static class EvokerShot
 		Line2D glow = Fx.Line(root, new[] { muzzle, muzzle + dir * len }, new Color(c, 0.7f), 34f * power);
 		Line2D core = Fx.Line(root, new[] { muzzle, muzzle + dir * len }, Pal.White, 9f * power);
 		glow.WidthCurve = core.WidthCurve = taper;
-		Fx.Animate(root, 0.2f, t =>
+		// 余辉：一条细线在原地停留更久，让"穿过去的轨迹"留在画面上
+		Line2D after = Fx.Line(root, new[] { muzzle - dir * 20f, muzzle + dir * len * 0.85f }, new Color(Pal.Ice, 0.55f), 3f * power);
+		after.WidthCurve = taper;
+		Fx.Animate(after, 0.55f, t => after.Modulate = new Color(1f, 1f, 1f, 1f - Ease.OutCubic(t)));
+		Fx.Animate(root, 0.32f, t =>
 		{
 			float tail = Ease.InCubic(t);
 			Vector2 a = muzzle + dir * len * tail;
@@ -98,40 +104,112 @@ public static class EvokerShot
 			glow.Width = 34f * power * w;
 			core.Width = 9f * power * w;
 		});
-		Fx.FreeAfter(root, 0.25);
+		Fx.FreeAfter(root, 0.6);
+	}
+
+	/// <summary>出口处的玻璃面龟裂：放射状锯齿裂纹 + 两圈断续环纹，瞬间出现，随碎片飞出而淡去。</summary>
+	private static void CrackPane(Control layer, Vector2 at, Vector2 dir, float power)
+	{
+		Node2D root = Fx.Root(layer, at, "P3CrackPane");
+		root.Rotation = dir.Angle();
+		root.Scale = new Vector2(0.55f, 1f);                 // 面朝出射方向的玻璃面，透视压扁
+		int rays = 9;
+		for (int i = 0; i < rays; i++)
+		{
+			Vector2 d = Vector2.Right.Rotated(Mathf.Tau * i / rays + Fx.Rand(-0.2f, 0.2f));
+			float len = Fx.Rand(70f, 130f) * power;
+			Vector2[] pts = new Vector2[5];
+			for (int k = 0; k < 5; k++)
+			{
+				pts[k] = d * len * k / 4f + d.Orthogonal() * (k == 0 ? 0f : Fx.Rand(-8f, 8f) * power);
+			}
+			Fx.Line(root, pts, Pal.White, 2.2f);
+		}
+		for (int r = 1; r <= 2; r++)
+		{
+			float radius = 38f * r * power;
+			for (int seg = 0; seg < 6; seg++)
+			{
+				float a0 = Mathf.Tau * seg / 6f + Fx.Rand(0f, 0.4f);
+				Vector2[] arc = new Vector2[5];
+				for (int k = 0; k < 5; k++)
+				{
+					float a = a0 + 0.6f * k / 4f;
+					arc[k] = new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * (radius + Fx.Rand(-4f, 4f));
+				}
+				Fx.Line(root, arc, new Color(Pal.Ice, 0.85f), 1.6f);
+			}
+		}
+		Fx.Poly(root, Fx.Circle(26f * power, 20), new Color(Pal.Ice, 0.6f), additive: true);
+		Fx.Animate(root, 0.3f, t =>
+		{
+			root.Modulate = new Color(1f + (1f - t), 1f + (1f - t), 1f + (1f - t), 1f - Ease.InCubic(t));
+			root.Scale = new Vector2(0.55f, 1f) * Mathf.Lerp(1f, 1.25f, Ease.OutExpo(t));
+		});
+		Fx.FreeAfter(root, 0.35);
+	}
+
+	/// <summary>出口蓝雾：大颗柔光粒子沿出射方向缓慢扩散，低透明度。</summary>
+	private static void Mist(Control layer, Vector2 at, Vector2 dir, Color c, float power)
+	{
+		Node2D root = Fx.Root(layer, at, "P3ExitMist");
+		GpuParticles2D mist = Fx.Sparks(root, new Color(c, 0.35f), 26, 120f * power, 380f * power, 1.2f, gravity: -40f, scaleMin: 2.5f * power, scaleMax: 5f * power);
+		ParticleProcessMaterial pm = (ParticleProcessMaterial)mist.ProcessMaterial;
+		pm.Direction = new Vector3(dir.X, dir.Y, 0f);
+		pm.Spread = 30f;
+		pm.DampingMin = 3f;
+		pm.DampingMax = 5f;
+		Fx.FreeAfter(root, 1.5);
 	}
 
 	/// <summary>沿 dir 方向锥形喷出的玻璃碎片（贯穿后从头的另一侧飞出）。</summary>
 	private static void ConeShatter(Control layer, Vector2 at, Vector2 dir, int count, float power)
 	{
 		Node2D root = Fx.Root(layer, at, "P3ConeShatter");
-		const float duration = 0.9f;
+		const float duration = 1.5f;
 		for (int i = 0; i < count; i++)
 		{
-			float len = Fx.Rand(10f, 28f) * power;
-			float wid = len * Fx.Rand(0.25f, 0.5f);
-			Vector2[] shape = { new(-len * 0.5f, 0f), new(-len * 0.1f, -wid * 0.5f), new(len * 0.5f, 0f), new(len * 0.05f, wid * 0.5f) };
+			bool pane = i % 5 == 0;                            // 每 5 片有 1 片大玻璃
+			float len = (pane ? Fx.Rand(34f, 60f) : Fx.Rand(8f, 24f)) * power;
+			float wid = len * Fx.Rand(0.35f, 0.7f);
+			Vector2[] shape = pane
+				? new Vector2[] { new(-len * 0.5f, -wid * 0.2f), new(-len * 0.05f, -wid * 0.5f), new(len * 0.5f, -wid * 0.1f), new(len * 0.2f, wid * 0.5f), new(-len * 0.35f, wid * 0.35f) }
+				: new Vector2[] { new(-len * 0.5f, 0f), new(-len * 0.1f, -wid * 0.5f), new(len * 0.5f, 0f), new(len * 0.05f, wid * 0.5f) };
 			Node2D shard = new Node2D();
 			root.AddChild(shard);
-			Polygon2D body = Fx.Poly(shard, shape, new Color(Pal.Ice, 0.4f), additive: true);
-			Line2D edge = Fx.Line(shard, shape, Pal.White, 1.4f, closed: true);
-			Vector2 d = dir.Rotated(Fx.Rand(-0.6f, 0.6f));
-			float speed = Fx.Rand(700f, 1600f) * power;
-			float life = duration * Fx.Rand(0.5f, 1f);
-			float spin = Fx.Rand(-14f, 14f);
+			Polygon2D body = Fx.Poly(shard, shape, new Color(Pal.Ice, pane ? 0.28f : 0.4f), additive: true);
+			Line2D edge = Fx.Line(shard, shape, Pal.White, pane ? 2f : 1.4f, closed: true);
+			Vector2 d = dir.Rotated(Fx.Rand(-0.75f, 0.75f));
+			float speed = Fx.Rand(900f, 2000f) * power * (pane ? 0.6f : 1f);
+			const float drag = 7f;                             // 强阻尼：迅速减速后悬停
+			float life = duration * Fx.Rand(0.6f, 1f);
+			float spin = Fx.Rand(-10f, 10f);
+			float drift = Fx.Rand(-1f, 1f) * 0.6f;              // 悬停期间的缓慢翻转
 			float phase = Fx.Rand(0f, Mathf.Tau);
 			shard.Rotation = d.Angle();
 			Fx.Animate(shard, life, t =>
 			{
 				float s = t * life;
-				shard.Position = d * speed * (1f - Mathf.Exp(-5f * s)) / 5f + new Vector2(0f, 220f * s * s);
-				shard.Rotation = d.Angle() + spin * (1f - Mathf.Exp(-2.5f * s)) / 2.5f;
-				float glint = Mathf.Pow(Mathf.Max(0f, Mathf.Sin(shard.Rotation * 3f + phase)), 8f);
-				edge.Modulate = new Color(1f + glint, 1f + glint, 1f + glint, 1f);
+				shard.Position = d * speed * (1f - Mathf.Exp(-drag * s)) / drag + new Vector2(0f, 35f * s * s) + d.Orthogonal() * drift * 30f * s;
+				shard.Rotation = d.Angle() + spin * (1f - Mathf.Exp(-3f * s)) / 3f + drift * s;
+				float glint = Mathf.Pow(Mathf.Max(0f, Mathf.Sin(shard.Rotation * 3f + phase + s * 4f)), 10f);
+				edge.Modulate = new Color(1f + glint * 1.5f, 1f + glint * 1.5f, 1f + glint * 1.5f, 1f);
 				body.Modulate = new Color(1f, 1f, 1f, 0.6f + glint);
-				shard.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(t));
+				float end = Ease.Segment(t, 0.65f, 0.35f);
+				shard.Scale = Vector2.One * Mathf.Lerp(1f, 0.15f, Ease.InCubic(end));
+				shard.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(end));
 			});
 		}
+		// 碎片消散后留下的光点
+		Fx.After(layer, duration * 0.6, "shard motes", () =>
+		{
+			Node2D motes = Fx.Root(layer, at + dir * 140f * power, "P3ShardMotes");
+			GpuParticles2D p = Fx.Sparks(motes, Pal.Cyan, 40, 20f, 90f, 1.0f, gravity: -60f, scaleMin: 0.08f, scaleMax: 0.22f);
+			ParticleProcessMaterial pm = (ParticleProcessMaterial)p.ProcessMaterial;
+			pm.EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Sphere;
+			pm.EmissionSphereRadius = 110f * power;
+			Fx.FreeAfter(motes, 1.3);
+		});
 		Fx.FreeAfter(root, duration + 0.2);
 	}
 
