@@ -40,9 +40,12 @@ public static class CardFx
 		Vector2 head = Makoto.Head(caster);
 		Vector2 feet = Makoto.Feet(caster);
 
-		// 攻击牌：结城理挥剑，召唤器特效立即出现；技能 / 能力牌：等施法动画里扣扳机那一帧（evoker_fire 事件）
-		bool attack = play.Card.Type == CardType.Attack;
-		switch (style.Opener)
+		// 挥剑的攻击牌：召唤器特效立即出现；会播施法动作的牌：等扣扳机那一帧（evoker_fire 事件）；
+		// 不播任何动作的普通技能：不召唤，只保留它自己的效果（护盾、星光等）
+		CardStyles.CardAnim anim = CardStyles.AnimFor(play.Card, play.Card.Type);
+		bool attack = anim == CardStyles.CardAnim.Sword;
+		Opener opener = anim == CardStyles.CardAnim.None ? Opener.None : style.Opener;
+		switch (opener)
 		{
 			case Opener.Evoker:
 				if (attack) P3Fx.EvokerBurst(front, head);

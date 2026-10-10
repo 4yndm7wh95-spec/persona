@@ -145,6 +145,29 @@ public static class CardStyles
 	public static (string Skill, string Persona) CaptionFor(object card) =>
 		Captions.TryGetValue(card.GetType().Name, out var c) ? c : ("PERSONA", "ORPHEUS");
 
+	/// <summary>出牌时人物做什么动作（与游戏源码一致：OnPlay 里是否 TriggerAnim）。</summary>
+	public enum CardAnim { Sword, Evoker, None }
+
+	// 源码扫描结果：会 TriggerAnim("Cast") 的技能牌、TriggerAnim("PowerUp") 的能力牌、用施法动作代替挥剑的攻击牌
+	private static readonly HashSet<string> EvokerCards = new()
+	{
+		"Alignment", "BigBang", "Bulwark", "Charge", "Conqueror", "Constellation", "Convergence", "DecisionsDecisions",
+		"ForegoneConclusion", "Glitterstream", "Glow", "Guards", "HiddenCache", "KnowThyPlace", "Largesse", "Monologue",
+		"Patter", "Prophesize", "RefineBlade", "Reflect", "Resonance", "RoyalGamble", "SummonForth", "TheSmith", "Venerate",
+		"Arsenal", "BlackHole", "ChildOfTheStars", "Furnace", "Genesis", "HammerTime", "MonarchsGaze", "Orbit", "PaleBlueDot",
+		"Parry", "Royalties", "SeekingEdge", "SpectrumShift", "SwordSage", "TheSealedThrone", "Tyranny", "VoidForm",
+		"Comet", "CrushUnder", "GuidingStar"
+	};
+
+	public static CardAnim AnimFor(object card, MegaCrit.Sts2.Core.Entities.Cards.CardType type)
+	{
+		if (EvokerCards.Contains(card.GetType().Name))
+		{
+			return CardAnim.Evoker;
+		}
+		return type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Attack ? CardAnim.Sword : CardAnim.None;
+	}
+
 	public static CardStyle For(object card, MegaCrit.Sts2.Core.Entities.Cards.CardType type)
 	{
 		if (Table.TryGetValue(card.GetType().Name, out CardStyle? style))

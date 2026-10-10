@@ -36,7 +36,10 @@ public static class TargetingFx
 		bool attack = card.Type == CardType.Attack;
 		Color tint = card.Type == CardType.Power ? Pal.DarkHour : Pal.Cyan;
 		_aura = P3Fx.Aura(back, front, Makoto.Feet(node), Makoto.Head(node), tint, attack ? 0.7f : 0.35f);
-		if (Pose.Enter(node, attack ? Pose.ReadySword : Pose.Aim))
+		// 普通技能（游戏里不播施法动作的牌）只显示法阵，人物不做预备动作
+		CardStyles.CardAnim anim = CardStyles.AnimFor(card, card.Type);
+		attack = anim == CardStyles.CardAnim.Sword;
+		if (anim != CardStyles.CardAnim.None && Pose.Enter(node, attack ? Pose.ReadySword : Pose.Aim))
 		{
 			SpineHooks.Hands hands = SpineHooks.Of(node);
 			if (attack && !hands.SwordOut)
