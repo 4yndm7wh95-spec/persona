@@ -107,15 +107,15 @@ public static class WeaponFx
 		Node2D root = Fx.Root(layer, Vector2.Zero, "P3SlashTrail");
 		root.TopLevel = true;
 		root.GlobalPosition = Vector2.Zero;
-		Polygon2D ribbon = Fx.Poly(root, new Vector2[3], new Color(tint, 0.75f), additive: true);
-		Polygon2D edge = Fx.Poly(root, new Vector2[3], new Color(Pal.White, 0.9f), additive: true);
+		Polygon2D ribbon = Fx.Poly(root, new Vector2[3], new Color(tint, 0.85f), additive: true);
+		Polygon2D edge = Fx.Poly(root, new Vector2[3], new Color(Pal.White, 1f), additive: true);
 		var hilts = new System.Collections.Generic.List<Vector2>();
 		var tips = new System.Collections.Generic.List<Vector2>();
 		Fx.Animate(root, 0.42f, t =>
 		{
 			if (t < 0.4f && GodotObject.IsInstanceValid(node) && Bone(node, "hand") is Vector2 h && Bone(node, "sword_tip") is Vector2 s)
 			{
-				hilts.Add(h.Lerp(s, 0.35f));
+				hilts.Add(h.Lerp(s, 0.15f));
 				tips.Add(s);
 			}
 			int n = tips.Count;
@@ -143,13 +143,74 @@ public static class WeaponFx
 			for (int i = 0; i < n; i++)
 			{
 				thin[i] = outer[i];
-				thin[n * 2 - 1 - i] = outer[i].Lerp(inner[i], 0.18f);
+				thin[n * 2 - 1 - i] = outer[i].Lerp(inner[i], 0.25f);
 			}
 			edge.Polygon = thin;
 			float fade = 1f - Ease.InCubic(Ease.Segment(t, 0.45f, 0.55f));
 			root.Modulate = new Color(1f, 1f, 1f, fade);
 		});
 		Fx.FreeAfter(root, 0.5);
+	}
+
+	/// <summary>蓄力到顶：剑尖闪出十字星光（提示"要砍了"）。</summary>
+	public static void TipGlint(Control layer, NCreature node)
+	{
+		if (Bone(node, "sword_tip") is not Vector2 tip)
+		{
+			return;
+		}
+		Node2D root = Fx.Root(layer, tip, "P3TipGlint");
+		Polygon2D star = Fx.Poly(root, Fx.Star4(46f, 0.1f), Pal.White, additive: true);
+		Polygon2D halo = Fx.Poly(root, Fx.Star4(80f, 0.06f), new Color(Pal.Cyan, 0.6f), additive: true);
+		halo.Rotation = Mathf.Pi / 4f;
+		Fx.Animate(root, 0.22f, t =>
+		{
+			float pop = t < 0.3f ? Ease.OutExpo(t / 0.3f) : 1f - Ease.InCubic((t - 0.3f) / 0.7f);
+			root.Scale = Vector2.One * pop;
+			root.Rotation = t * 0.6f;
+			if (GodotObject.IsInstanceValid(node) && Bone(node, "sword_tip") is Vector2 p)
+			{
+				root.GlobalPosition = p;
+			}
+		});
+		Fx.FreeAfter(root, 0.3);
+	}
+
+	/// <summary>挥砍残影：每隔 2 帧在剑身位置留一道淡出的剑影，共 3~4 道。</summary>
+	public static void BladeGhosts(Control layer, NCreature node, Color tint)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			Fx.After(layer, 0.025 * i, "blade ghost", () =>
+			{
+				if (!GodotObject.IsInstanceValid(node) || Bone(node, "hand") is not Vector2 h || Bone(node, "sword_tip") is not Vector2 s)
+				{
+					return;
+				}
+				Node2D root = Fx.Root(layer, Vector2.Zero, "P3BladeGhost");
+				root.TopLevel = true;
+				root.GlobalPosition = Vector2.Zero;
+				Vector2 a = h.Lerp(s, 0.2f);
+				Line2D ghost = Fx.Line(root, new[] { a, s }, new Color(tint, 0.55f), 10f);
+				Line2D edge = Fx.Line(root, new[] { a, s }, new Color(Pal.White, 0.7f), 2.5f);
+				Fx.Animate(root, 0.22f, t => root.Modulate = new Color(1f, 1f, 1f, 1f - Ease.OutCubic(t)));
+				Fx.FreeAfter(root, 0.25);
+			});
+		}
+	}
+
+	/// <summary>踏步扬尘：斩下时脚前扬起一小团尘土（低饱和灰蓝，不抢主体）。</summary>
+	public static void StepDust(Control layer, Vector2 feet)
+	{
+		Node2D root = Fx.Root(layer, feet + new Vector2(60f, -4f), "P3StepDust");
+		GpuParticles2D dust = Fx.Sparks(root, new Color(0.65f, 0.7f, 0.8f, 0.45f), 18, 60f, 200f, 0.6f, gravity: 120f, scaleMin: 0.8f, scaleMax: 1.8f);
+		dust.Material = null;                         // 非加法：尘土是遮挡而不是发光
+		ParticleProcessMaterial pm = (ParticleProcessMaterial)dust.ProcessMaterial;
+		pm.Direction = new Vector3(0.6f, -1f, 0f);
+		pm.Spread = 50f;
+		pm.EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box;
+		pm.EmissionBoxExtents = new Vector3(50f, 4f, 0f);
+		Fx.FreeAfter(root, 0.9);
 	}
 
 	/// <summary>召唤器出现：手部一道银光闪过。</summary>

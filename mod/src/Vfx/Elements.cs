@@ -45,7 +45,10 @@ public static class Elements
 	{
 		switch (e)
 		{
-			case Element.Slash: Slash(layer, center, Pal.Cyan, scale); break;
+			case Element.Slash:
+				Slash(layer, center, Pal.Cyan, scale);
+				SlashScar(layer, center, Fx.Rand(-0.75f, -0.45f), scale);
+				break;
 			case Element.Royal: Slash(layer, center, Pal.Royal, scale * 1.35f, heavy: true); break;
 			case Element.Pierce: Pierce(layer, center, Pal.Cyan, scale); break;
 			case Element.Strike: Strike(layer, center, scale); break;
@@ -91,6 +94,43 @@ public static class Elements
 			P3Fx.SpeedLines(layer, at, tint, 10, 60f * scale, 300f * scale, 0.3f, delay: 0.03f);
 		}
 		Fx.FreeAfter(root, dur + 0.5);
+	}
+
+	/// <summary>
+	/// 斩痕：一道贯穿目标的细长白线，先极快地亮起，再沿垂直方向裂成两条向两侧滑开并淡去（"已经被砍了"）。
+	/// </summary>
+	public static void SlashScar(Control layer, Vector2 at, float angle, float scale = 1f)
+	{
+		Node2D root = Fx.Root(layer, at, "P3SlashScar");
+		root.Rotation = angle;
+		float half = 230f * scale;
+		Curve taper = new Curve();
+		taper.AddPoint(new Vector2(0f, 0f));
+		taper.AddPoint(new Vector2(0.5f, 1f));
+		taper.AddPoint(new Vector2(1f, 0f));
+		Line2D[] halves = new Line2D[2];
+		for (int i = 0; i < 2; i++)
+		{
+			halves[i] = Fx.Line(root, new[] { new Vector2(-half, 0f), new Vector2(half, 0f) }, Pal.White, 7f * scale);
+			halves[i].WidthCurve = taper;
+		}
+		Line2D glow = Fx.Line(root, new[] { new Vector2(-half, 0f), new Vector2(half, 0f) }, new Color(Pal.Cyan, 0.6f), 26f * scale);
+		glow.WidthCurve = taper;
+		Fx.Animate(root, 0.42f, t =>
+		{
+			float reveal = Ease.OutExpo(Mathf.Min(1f, t * 6f));
+			float split = Ease.OutCubic(Ease.Segment(t, 0.2f, 0.8f));
+			float fade = 1f - Ease.InCubic(Ease.Segment(t, 0.25f, 0.75f));
+			for (int i = 0; i < 2; i++)
+			{
+				float off = (i == 0 ? -1f : 1f) * split * 10f * scale;
+				halves[i].Points = new[] { new Vector2(-half * reveal, off), new Vector2(half * reveal, off) };
+				halves[i].Modulate = new Color(1f, 1f, 1f, fade);
+			}
+			glow.Points = new[] { new Vector2(-half * reveal, 0f), new Vector2(half * reveal, 0f) };
+			glow.Modulate = new Color(1f, 1f, 1f, fade * (1f - split));
+		});
+		Fx.FreeAfter(root, 0.5);
 	}
 
 	/// <summary>月牙多边形：沿圆弧，厚度在整条弧的中点最大、两端为零。</summary>

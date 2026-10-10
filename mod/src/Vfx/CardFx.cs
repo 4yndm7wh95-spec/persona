@@ -195,6 +195,12 @@ public static class CardFx
 		}
 		List<Creature> list = targets.ToList();
 		float scale = style.HitScale * (list.Count > 1 ? 0.8f : 1f);
+		// 物理系命中：40ms 顿帧 + 轻震屏，给刀砍进去的"顿感"
+		if (style.Hit is Element.Slash or Element.Royal or Element.Strike or Element.Pierce)
+		{
+			EvokerShot.HitStop(0.04);
+			MegaCrit.Sts2.Core.Nodes.NGame.Instance?.ScreenShake(MegaCrit.Sts2.Core.Nodes.Vfx.Utilities.ShakeStrength.Weak, MegaCrit.Sts2.Core.Nodes.Vfx.Utilities.ShakeDuration.Short);
+		}
 		foreach (Creature c in list)
 		{
 			NCreature? node = room.GetCreatureNode(c);

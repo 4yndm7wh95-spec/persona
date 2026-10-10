@@ -624,7 +624,7 @@ def _write_frames(rig, name, frames, slots, events):
 # ───────────── 动画定义 ─────────────
 EVOKER_TARGET = ((440, 112), 180)      # 网格手臂的过渡姿势：枪口指向手绘举枪手臂的枪口位置
 EVENTS = ["death_particles_start", "death_particles_end", "explode_dead", "explode_end",
-          "weapon_draw", "weapon_slash", "weapon_sheath", "evoker_draw", "evoker_fire", "evoker_sheath"]
+          "weapon_draw", "weapon_windup", "weapon_slash", "weapon_sheath", "evoker_draw", "evoker_fire", "evoker_sheath"]
 
 
 ARM_STATES = {
@@ -713,7 +713,7 @@ def make_animations(rig):
     # 攻击：拔剑 → 下蹲后引（预备）→ 举过头顶 → 一刀斩下（极快）→ 余势 → 收剑
     bake_dynamic(rig, "attack", 1.0, seq([(0.0, ARM_DOWN), (0.16, ANTIC), (0.25, WINDUP), (0.3, SLASH), (0.56, SLASH), (0.95, ARM_DOWN)]),
                  slots=arm_slots([(0, "hang"), (0.02, "mesh_sword"), (0.9, "hang")]), speed=1.7,
-                 events=[(0.0, "weapon_draw"), (0.27, "weapon_slash"), (0.84, "weapon_sheath")])
+                 events=[(0.0, "weapon_draw"), (0.22, "weapon_windup"), (0.27, "weapon_slash"), (0.84, "weapon_sheath")])
 
     # 施法：网格手臂平端亮枪 → 抬起途中交叉淡化成手绘举枪手臂 → 停顿 → 扣扳机后坐 → 放下途中淡回网格手臂 → 下垂
     bake_dynamic(rig, "cast", 0.95, seq([(0.0, ARM_DOWN), (0.08, PRESENT), (0.12, PRESENT), (0.21, EVOKER), (0.26, TENSE), (0.272, KICK), (0.35, KICK), (0.55, EVOKER), (0.66, LOWER), (0.92, ARM_DOWN)]),
@@ -742,7 +742,7 @@ def make_animations(rig):
     # 已在预备姿势时出招：直接从当前姿势接上，不再先垂手
     bake_dynamic(rig, "attack_from_ready", 0.85, seq([(0.0, SWORD_READY), (0.1, ANTIC), (0.18, WINDUP), (0.23, SLASH), (0.46, SLASH), (0.8, ARM_DOWN)]),
                  slots=arm_slots([(0, "mesh_sword"), (0.76, "hang")]), speed=1.7,
-                 events=[(0.2, "weapon_slash"), (0.7, "weapon_sheath")])
+                 events=[(0.15, "weapon_windup"), (0.2, "weapon_slash"), (0.7, "weapon_sheath")])
     for name in ("cast_from_aim", "sovereign_from_aim"):
         bake_dynamic(rig, name, 0.72, seq([(0.0, EVOKER), (0.05, TENSE), (0.062, KICK), (0.14, KICK), (0.3, EVOKER), (0.42, LOWER), (0.7, ARM_DOWN)]),
                      slots=arm_slots([(0, "raised"), (0.36, "mesh_evoker"), (0.64, "hang")]), speed=2.0,

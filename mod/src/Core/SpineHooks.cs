@@ -65,8 +65,13 @@ public static class SpineHooks
 				}
 				h.SwordOut = true;
 				break;
+			case "weapon_windup":
+				WeaponFx.TipGlint(front, node);
+				break;
 			case "weapon_slash":
 				WeaponFx.SlashTrail(front, node, Pal.Cyan);
+				WeaponFx.BladeGhosts(front, node, Pal.Cyan);
+				WeaponFx.StepDust(Makoto.FxLayer(back: true) ?? front, Makoto.Feet(node));
 				break;
 			case "weapon_sheath":
 				if (h.SwordOut)
