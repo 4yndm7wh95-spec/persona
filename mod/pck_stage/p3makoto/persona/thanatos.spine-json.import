@@ -1,0 +1,13 @@
+[remap]
+
+importer="spine.json"
+type="SpineSkeletonFileResource"
+path="res://.godot/imported/thanatos.spine-json-8095dd87c388a59c0dac79e8df7099d1.spjson"
+
+[deps]
+
+source_file="res://p3makoto/persona/thanatos.spine-json"
+dest_files=["res://.godot/imported/thanatos.spine-json-8095dd87c388a59c0dac79e8df7099d1.spjson"]
+
+[params]
+

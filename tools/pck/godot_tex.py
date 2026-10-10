@@ -17,8 +17,7 @@ IMPORT_TEMPLATE = """[remap]
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://{uid}"
-path="res://.godot/imported/{dest}"
+{uid_line}path="res://.godot/imported/{dest}"
 metadata={{
 "vram_texture": false
 }}
@@ -74,7 +73,7 @@ def read_ctex(data: bytes) -> Image.Image:
     return Image.open(io.BytesIO(data[56:]))
 
 
-def write_texture(stage: Path, rel: str, im: Image.Image, uid: str):
+def write_texture(stage: Path, rel: str, im: Image.Image, uid=None):
     """rel：res:// 之后的路径（如 images/ui/top_panel/character_icon_regent.png）。写 png + .import + .ctex。"""
     src = stage / rel
     src.parent.mkdir(parents=True, exist_ok=True)
@@ -84,7 +83,7 @@ def write_texture(stage: Path, rel: str, im: Image.Image, uid: str):
     imp = stage / ".godot/imported"
     imp.mkdir(parents=True, exist_ok=True)
     (imp / dest).write_bytes(ctex_bytes(im))
-    (stage / (rel + ".import")).write_text(IMPORT_TEMPLATE.format(uid=uid, dest=dest, rel=rel))
+    (stage / (rel + ".import")).write_text(IMPORT_TEMPLATE.format(uid_line=f'uid="uid://{uid}"\n' if uid else "", dest=dest, rel=rel))
     return dest
 
 

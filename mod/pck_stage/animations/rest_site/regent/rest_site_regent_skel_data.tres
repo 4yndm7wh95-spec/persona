@@ -1,0 +1,10 @@
+[gd_resource type="SpineSkeletonDataResource" load_steps=3 format=3 uid="uid://cpcw77otglq37"]
+
+[ext_resource type="SpineAtlasResource" path="res://animations/rest_site/regent/restsite_regent.atlas" id="1_atlas"]
+[ext_resource type="SpineSkeletonFileResource" path="res://animations/rest_site/regent/restsite_regent.spine-json" id="2_skel"]
+
+[resource]
+atlas_res = ExtResource("1_atlas")
+skeleton_file_res = ExtResource("2_skel")
+default_mix = 0.2
+animation_mixes = []

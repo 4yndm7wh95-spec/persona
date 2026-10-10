@@ -120,6 +120,11 @@ public static class CardFx
 		}
 
 		List<NCreature> targets = Targets(play);
+		// 君王之刃 = 召唤 Thanatos 挥剑（Persona 骨骼动画）
+		if (play.Card.GetType().Name == "SovereignBlade")
+		{
+			PersonaFx.SummonThanatos(caster, targets.Count > 0 ? targets[0] : null);
+		}
 		if (x.HasFlag(Extra.DebuffTargets))
 		{
 			foreach (NCreature t in targets)

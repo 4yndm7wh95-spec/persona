@@ -21,6 +21,8 @@
 | 左上角头像 / 外轮廓、地图标记、选人按钮头像（含未解锁剪影） | `tools/ui/build_ui_assets.py` |
 | 选人界面背景 | 不在 PCK 里：`mod/src/Scenes/CharSelectBg.cs` 运行时渲染 |
 | 君王之刃配色 | 不在 PCK 里：`mod/src/Scenes/BladeReskin.cs` 运行时换色 |
+| 休息处坐姿 `animations/rest_site/regent/*` | `tools/rig/build_restsite.py`（沿用原版 uid） |
+| Persona Thanatos `p3makoto/persona/thanatos*` | `tools/rig/build_persona.py`；`mod/src/Vfx/PersonaFx.cs` 出君王之刃时召唤 |
 
 ## 冲突
 Mesugaki（另一个储君换皮 mod）覆盖同一批文件，测试本 mod 时需要把它移出 mods 文件夹。

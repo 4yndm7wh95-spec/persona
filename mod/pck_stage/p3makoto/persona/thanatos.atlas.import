@@ -1,0 +1,15 @@
+[remap]
+
+importer="spine.atlas"
+type="SpineAtlasResource"
+path="res://.godot/imported/thanatos.atlas-3e9b7c866c4bcdd86e157b3ccc432011.spatlas"
+
+[deps]
+
+source_file="res://p3makoto/persona/thanatos.atlas"
+dest_files=["res://.godot/imported/thanatos.atlas-3e9b7c866c4bcdd86e157b3ccc432011.spatlas"]
+
+[params]
+
+normal_map_prefix="n"
+specular_map_prefix="s"
