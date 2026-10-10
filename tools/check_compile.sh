@@ -10,9 +10,9 @@ if [ ! -d "$REF" ]; then
   curl -sSL -o "$CACHE/ref9.nupkg" https://api.nuget.org/v3-flatcontainer/microsoft.netcore.app.ref/9.0.0/microsoft.netcore.app.ref.9.0.0.nupkg
   (cd "$CACHE/ref9" && unzip -q -o ../ref9.nupkg)
 fi
-CSC="$(find /usr/lib/dotnet /usr/share/dotnet -name csc.dll 2>/dev/null | head -1)"
+CSC="$(find /usr/lib/dotnet /usr/share/dotnet -name csc.dll 2>/dev/null | head -1 || true)"
 LIBS="$ROOT/research/libs"
-ARGS=(-noconfig -nostdlib -nologo -target:library -langversion:13.0 -nullable:enable -unsafe -optimize
+ARGS=(-noconfig -nostdlib -nologo -target:library -langversion:latest -nullable:enable -unsafe -optimize -nowarn:1701,1702
       -out:"$CACHE/P3Makoto.dll"
       -r:"$LIBS/sts2.dll" -r:"$LIBS/GodotSharp.dll" -r:"$LIBS/0Harmony.dll")
 for f in "$REF"/*.dll; do ARGS+=(-r:"$f"); done
