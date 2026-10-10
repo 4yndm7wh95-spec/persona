@@ -82,6 +82,28 @@ public static class Pose
 		return true;
 	}
 
+	private static readonly Dictionary<ulong, ulong> LightCast = new();
+
+	/// <summary>这次出牌不召唤 Persona：接下来 1 秒内游戏请求的 cast 换成轻的身体动作 cast_light（不拿召唤器）。</summary>
+	public static void MarkLightCast(NCreature node)
+	{
+		MegaSprite? body = node.Visuals.SpineBody;
+		if (body != null && body.HasAnimation("cast_light") && body.TryGetAnimationState() is MegaAnimationState state)
+		{
+			LightCast[state.BoundObject.GetInstanceId()] = Godot.Time.GetTicksMsec() + 1000;
+		}
+	}
+
+	/// <summary>游戏请求 cast 时，若这次出牌已标记为不召唤，返回 cast_light。</summary>
+	public static string? Light(MegaAnimationState state, string requested)
+	{
+		if (requested != "cast" || !LightCast.Remove(state.BoundObject.GetInstanceId(), out ulong until))
+		{
+			return null;
+		}
+		return Godot.Time.GetTicksMsec() <= until ? "cast_light" : null;
+	}
+
 	/// <summary>游戏请求播放 requested 时，如果角色正处于预备姿势，返回"从预备姿势接招"的版本。</summary>
 	public static string? FromHolding(string? current, string requested)
 	{

@@ -466,6 +466,10 @@ def make_animations(rig, images):
         bake(rig, images, nm, 0.72, seq(from_aim), [(0, "evoker"), (0.32, "present", 0.1), (0.56, "hang", 0.1)], speed=2.0,
              events=[(0.06, "evoker_fire"), (0.56, "evoker_sheath")])
 
+    # 不召唤 Persona 的施法牌：轻的身体动作（吸气后仰、抬头、垂着的手向前一摆），不拿召唤器
+    LIFT = add(IDLE, B(hip={"y": -8}, torso={"r": 3}, head={"r": 6}, **{ARM_BONE["hang"]: {"r": 14}}))
+    SETTLE = add(IDLE, B(hip={"y": -3}, torso={"r": -1}, head={"r": -2}, **{ARM_BONE["hang"]: {"r": -4}}))
+    bake(rig, images, "cast_light", 0.75, seq([(0, IDLE), (0.12, LIFT), (0.26, LIFT), (0.44, SETTLE), (0.68, IDLE)]), [(0, "hang")], speed=1.6)
     bake(rig, images, "hurt", 0.6, seq([(0, IDLE), (0.06, HURT), (0.14, HURT), (0.3, IDLE)]), [(0, "hang")], speed=1.3)
     DOWN = add(IDLE, B(torso={"r": -30}, head={"r": -34}, hip={"y": -62, "x": 8}, **ALL(6)))
     bake(rig, images, "die", 1.5, seq([(0, IDLE), (0.08, HURT), (0.2, HURT), (0.9, DOWN), (1.5, DOWN)]), [(0, "hang")],
@@ -562,7 +566,7 @@ def validate(data, images, master):
     pairs = [("aim_in", "aim_loop"), ("sword_in", "ready_sword_loop"), ("aim_loop", "aim_out"), ("ready_sword_loop", "sword_out"),
              ("aim_out", "idle_loop"), ("sword_out", "idle_loop"), ("ready_sword_loop", "attack_from_ready"),
              ("aim_loop", "cast_from_aim"), ("attack_from_ready", "idle_loop"), ("cast_from_aim", "idle_loop"),
-             ("attack", "idle_loop"), ("cast", "idle_loop"), ("hurt", "idle_loop")]
+             ("attack", "idle_loop"), ("cast", "idle_loop"), ("cast_light", "idle_loop"), ("hurt", "idle_loop")]
     for a_n, b_n in pairs:
         ea, eb = edge(a_n, "last"), edge(b_n, "first")
         worst = max([0.0] + [max(abs(x - y) for x, y in zip(ea.get(k, (0, 0, 0)), eb.get(k, (0, 0, 0)))) for k in set(ea) | set(eb)])

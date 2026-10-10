@@ -15,7 +15,7 @@ public static class AnimRenamePatch
 	{
 		string requested = animationName;
 		string? replacement = null;
-		ModEntry.Safe("AnimRename", () => replacement = Pose.FromHolding(__instance.GetCurrentAnimationName(), requested));
+		ModEntry.Safe("AnimRename", () => replacement = Pose.Light(__instance, requested) ?? Pose.FromHolding(__instance.GetCurrentAnimationName(), requested));
 		if (replacement != null)
 		{
 			animationName = replacement;

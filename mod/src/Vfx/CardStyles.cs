@@ -145,8 +145,15 @@ public static class CardStyles
 	public static (string Skill, string Persona) CaptionFor(object card) =>
 		Captions.TryGetValue(card.GetType().Name, out var c) ? c : ("PERSONA", "ORPHEUS");
 
-	/// <summary>出牌时人物做什么动作（与游戏源码一致：OnPlay 里是否 TriggerAnim）。</summary>
-	public enum CardAnim { Sword, Evoker, None }
+	/// <summary>
+	/// 出牌时人物做什么动作（与游戏源码一致：OnPlay 里是否 TriggerAnim）。
+	/// Evoker：召唤器抵太阳穴开枪 —— 只留给真正召唤 Persona 的大招（有色带字幕的牌），太频繁就不稀罕了；
+	/// Gesture：游戏会播施法动作、但不召唤的牌 —— 只做一个轻的身体动作（cast_light），不拿召唤器。
+	/// </summary>
+	public enum CardAnim { Sword, Evoker, Gesture, None }
+
+	/// <summary>这张牌是否召唤 Persona（用召唤器）：以色带字幕表为准。</summary>
+	public static bool Summons(object card) => Captions.ContainsKey(card.GetType().Name);
 
 	// 源码扫描结果：会 TriggerAnim("Cast") 的技能牌、TriggerAnim("PowerUp") 的能力牌、用施法动作代替挥剑的攻击牌
 	private static readonly HashSet<string> EvokerCards = new()
@@ -163,7 +170,7 @@ public static class CardStyles
 	{
 		if (EvokerCards.Contains(card.GetType().Name))
 		{
-			return CardAnim.Evoker;
+			return Summons(card) ? CardAnim.Evoker : CardAnim.Gesture;
 		}
 		return type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Attack ? CardAnim.Sword : CardAnim.None;
 	}

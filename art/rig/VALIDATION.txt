@@ -75,6 +75,10 @@
 [OK] 锚点径向连续 sovereign_from_aim/hand: 单帧最大 44.6（≤80）
 [OK] 锚点径向连续 sovereign_from_aim/muzzle: 单帧最大 75.1（≤90）
 [OK] 锚点径向连续 sovereign_from_aim/sword_tip: 单帧最大 0.0（≤160）
+[OK] 脚底漂移 cast_light: 0.01px
+[OK] 锚点径向连续 cast_light/hand: 单帧最大 0.0（≤80）
+[OK] 锚点径向连续 cast_light/muzzle: 单帧最大 0.0（≤90）
+[OK] 锚点径向连续 cast_light/sword_tip: 单帧最大 0.0（≤160）
 [OK] 脚底漂移 hurt: 0.01px
 [OK] 锚点径向连续 hurt/hand: 单帧最大 0.0（≤80）
 [OK] 锚点径向连续 hurt/muzzle: 单帧最大 0.0（≤90）
@@ -100,4 +104,5 @@
 [OK] 衔接 cast_from_aim → idle_loop: 最大差 0.97
 [OK] 衔接 attack → idle_loop: 最大差 0.92
 [OK] 衔接 cast → idle_loop: 最大差 0.21
+[OK] 衔接 cast_light → idle_loop: 最大差 1.06
 [OK] 衔接 hurt → idle_loop: 最大差 1.01

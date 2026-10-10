@@ -41,11 +41,16 @@ public static class CardFx
 		Vector2 head = Makoto.Head(caster);
 		Vector2 feet = Makoto.Feet(caster);
 
-		// 挥剑的攻击牌：召唤器特效立即出现；会播施法动作的牌：等扣扳机那一帧（evoker_fire 事件）；
-		// 不播任何动作的普通技能：不召唤，只保留它自己的效果（护盾、星光等）
+		// 只有召唤 Persona 的大招才用召唤器：挥剑的攻击牌召唤特效立即出现；施法牌等扣扳机那一帧（evoker_fire 事件）。
+		// 其他牌不召唤，只保留它自己的效果（护盾、星光、塔罗等）；能力牌仍有光柱演出，但不开枪。
 		CardStyles.CardAnim anim = CardStyles.AnimFor(play.Card, play.Card.Type);
 		bool attack = anim == CardStyles.CardAnim.Sword;
-		Opener opener = anim == CardStyles.CardAnim.None ? Opener.None : style.Opener;
+		bool summon = anim != CardStyles.CardAnim.None && CardStyles.Summons(play.Card);
+		if (anim == CardStyles.CardAnim.Gesture)
+		{
+			Pose.MarkLightCast(caster);
+		}
+		Opener opener = summon || style.Opener == Opener.Power ? style.Opener : Opener.None;
 		switch (opener)
 		{
 			case Opener.Evoker:
@@ -57,7 +62,10 @@ public static class CardFx
 				else QueueEvoker(caster, 0.7f, Pal.Cyan);
 				break;
 			case Opener.Power:
-				QueueEvoker(caster, 1.3f, Pal.DarkHour);
+				if (summon)
+				{
+					QueueEvoker(caster, 1.3f, Pal.DarkHour);
+				}
 				P3Fx.PowerUp(front, back, feet, head);
 				Fx.After(front, 0.15, "power tarot", () => Extras.TarotFlip(front, head + new Vector2(-30f, -150f), Pal.DarkHour));
 				break;
