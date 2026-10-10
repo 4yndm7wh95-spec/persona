@@ -198,6 +198,22 @@ PROPS = {
     "hand_evoker": ("art/parts_src/arm_evoker.png", (812.0, 540.0), 300.0, (1700.0, 282.0)),
     "hand_sword": ("art/parts_src/arm_sword.png", (412.0, 430.0), 152.0, (1755.0, 440.0)),
 }
+# 姿势专用手绘手臂（sprite swap）：源图中的肩点 → 母版肩点，按 scale 缩放。
+# 举枪手臂额外用枪口对齐太阳穴来确定缩放（两点定位），见 docs/ART_SPEC.md 阶段 2.5。
+POSE_ARMS = {
+    # 名称: (文件, 源图肩点, 目标肩点, 缩放, 骨骼)
+    "arm_raised_evoker": ("art/parts_src/arm_raised_evoker.png", (470.0, 430.0), (485.0, 300.0), 0.607, "arm_raised"),
+    "arm_hanging": ("art/parts_src/arm_hanging.png", (410.0, 380.0), (488.0, 300.0), 0.80, "arm_hang"),
+}
+RAISED_MUZZLE_SRC = (400.0, 120.0)
+RAISED_GRIP_SRC = (560.0, 190.0)
+
+
+def pose_arm_point(name, p):
+    _, s0, t0, sc, _ = POSE_ARMS[name]
+    return (t0[0] + (p[0] - s0[0]) * sc, t0[1] + (p[1] - s0[1]) * sc)
+
+
 # 道具夸张系数：召唤器放大让它在战斗画面里一眼能认出
 PROP_EXTRA = {"hand_evoker": 1.15, "hand_sword": 1.0}
 
@@ -236,6 +252,10 @@ BONES = [
     ("hand", "forearm", J["wrist"]),
     ("evoker_tip", "hand", J["wrist"]),   # 位置在 build_setup() 里按道具尖端修正
     ("sword_tip", "hand", J["wrist"]),
+    ("arm_raised", "torso", J["shoulder"]),
+    ("arm_hang", "torso", J["shoulder"]),
+    ("muzzle", "arm_raised", J["shoulder"]),    # 位置在 build_setup() 里按手绘枪口修正
+    ("grip", "arm_raised", J["shoulder"]),
     ("thigh_l", "hip", J["hip_l"]),
     ("shin_l", "thigh_l", J["knee_l"]),
     ("leg_particle_attach_l", "shin_l", (240, 1250)),
@@ -253,7 +273,9 @@ SLOTS = [
     ("thigh_l", "thigh_l", "thigh_l"),
     ("head", "head", "head"),
     ("torso", "torso", "torso"),
+    ("arm_hang", "arm_hang", None),
     ("arm", "upper_arm", "arm"),
+    ("arm_raised", "arm_raised", None),
     ("hand", "hand", "hand_open"),
 ]
 
@@ -275,6 +297,14 @@ def build_setup():
         centers[name] = center
         s = MASTER_SLEEVE_H / cuff_h * ex
         tips[name] = (MASTER_CUFF[0] + (tip[0] - cuff[0]) * s, MASTER_CUFF[1] + (tip[1] - cuff[1]) * s)
+    for name, (path, s0, t0, sc, bone) in POSE_ARMS.items():
+        src = key_image(ROOT / path)
+        bbox = src.getchannel("A").point(lambda v: 255 if v > 3 else 0).getbbox()
+        crop = src.crop(bbox)
+        crop = crop.resize((round(crop.width * sc), round(crop.height * sc)), Image.LANCZOS)
+        c_src = ((bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2)
+        images[name] = crop
+        centers[name] = pose_arm_point(name, c_src)
     images["hand_open"] = feather_left(images["hand_open"], 10)
     images["shadow"] = shadow_image()
     centers["shadow"] = (ORIGIN[0] + 10, ORIGIN[1] - 10)
@@ -288,6 +318,8 @@ def build_setup():
             scaled[n] = im.resize((max(1, round(im.width * K)), max(1, round(im.height * K))), Image.LANCZOS)
 
     joint = {b[0]: b[2] for b in BONES}
+    joint["muzzle"] = pose_arm_point("arm_raised_evoker", RAISED_MUZZLE_SRC)
+    joint["grip"] = pose_arm_point("arm_raised_evoker", RAISED_GRIP_SRC)
     joint["evoker_tip"] = tips["hand_evoker"]
     joint["sword_tip"] = tips["hand_sword"]
     bones = []
@@ -301,13 +333,14 @@ def build_setup():
         bones.append(b)
 
     bone_of = {s[0]: s[1] for s in SLOTS}
-    bone_of.update({"hand_open": "hand", "hand_evoker": "hand", "hand_sword": "hand"})
+    bone_of.update({"hand_open": "hand", "hand_evoker": "hand", "hand_sword": "hand",
+                    "arm_raised_evoker": "arm_raised", "arm_hanging": "arm_hang"})
     skin = {}
     for slot, bone, att in SLOTS:
         skin.setdefault(slot, {})
     bone_index = {b["name"]: i for i, b in enumerate(bones)}
     for att, im in scaled.items():
-        slot = "hand" if att.startswith("hand") else att
+        slot = "hand" if att.startswith("hand") else {"arm_raised_evoker": "arm_raised", "arm_hanging": "arm_hang"}.get(att, att)
         if att == "arm":
             skin[slot][att] = arm_mesh(images["arm"], centers["arm"], bone_index, joint)
             continue
@@ -319,7 +352,7 @@ def build_setup():
     data = {
         "skeleton": {"spine": "4.2.43", "images": "./", "audio": "", "x": -300, "y": -20, "width": 820, "height": 1200},
         "bones": bones,
-        "slots": [{"name": s, "bone": b, "attachment": a} for s, b, a in SLOTS],
+        "slots": [dict({"name": s, "bone": b}, **({"attachment": a} if a else {})) for s, b, a in SLOTS],
         "skins": [{"name": "default", "attachments": skin}],
         "events": {e: {} for e in ["death_particles_start", "death_particles_end", "explode_dead", "explode_end"]},
         "animations": {},
@@ -502,6 +535,8 @@ DYN = {
     "upper_arm": (4.2, 0.6, 0.0),
     "forearm": (4.4, 0.5, 0.0),
     "hand": (5.2, 0.42, 0.0),
+    "arm_raised": (4.5, 0.55, 0.0),
+    "arm_hang": (3.0, 0.45, 0.0),
 }
 
 
@@ -587,27 +622,63 @@ def _write_frames(rig, name, frames, slots, events):
 
 
 # ───────────── 动画定义 ─────────────
-EVOKER_TARGET = ((444, 104), 205)      # 枪口抵住的太阳穴位置（母版像素）和枪管朝向；手臂自动拉伸约 1.5 倍
+EVOKER_TARGET = ((440, 112), 180)      # 网格手臂的过渡姿势：枪口指向手绘举枪手臂的枪口位置
 EVENTS = ["death_particles_start", "death_particles_end", "explode_dead", "explode_end",
           "weapon_draw", "weapon_slash", "weapon_sheath", "evoker_draw", "evoker_fire", "evoker_sheath"]
+
+
+ARM_STATES = {
+    # 手臂显示状态：网格手臂（可弯曲）/ 手绘下垂手臂 / 手绘举枪手臂
+    "hang": {"arm_hang": "arm_hanging", "arm": None, "arm_raised": None, "hand": None},
+    "mesh": {"arm_hang": None, "arm": "arm", "arm_raised": None, "hand": "hand_open"},
+    "mesh_evoker": {"arm_hang": None, "arm": "arm", "arm_raised": None, "hand": "hand_evoker"},
+    "mesh_sword": {"arm_hang": None, "arm": "arm", "arm_raised": None, "hand": "hand_sword"},
+    "raised": {"arm_hang": None, "arm": None, "arm_raised": "arm_raised_evoker", "hand": None},
+}
+
+
+def arm_slots(states, fade=0.04):
+    """states: [(时间, 状态名)]。状态切换时用插槽透明度交叉淡化（fade 秒），同一插槽换图则直接切换。"""
+    out = {}
+    for slot in ARM_STATES["hang"]:
+        att, rgba = [], []
+        for i, (t, st) in enumerate(states):
+            cur = ARM_STATES[st][slot]
+            prev = ARM_STATES[states[i - 1][1]][slot] if i else None
+            if i == 0:
+                att.append({"time": 0.0, "name": cur})
+                rgba.append({"time": 0.0, "color": "ffffffff" if cur else "ffffff00"})
+            elif cur == prev:
+                continue
+            elif cur and prev:
+                att.append({"time": t, "name": cur})
+            elif cur:
+                att.append({"time": t, "name": cur})
+                rgba += [{"time": t, "color": "ffffff00"}, {"time": round(t + fade, 4), "color": "ffffffff"}]
+            else:
+                rgba += [{"time": t, "color": "ffffffff"}, {"time": round(t + fade, 4), "color": "ffffff00"}]
+                att.append({"time": round(t + fade, 4), "name": None})
+        out[slot] = {"attachment": sorted(att, key=lambda k: k["time"]), "rgba": sorted(rgba, key=lambda k: k["time"])}
+    return out
 
 
 def make_animations(rig):
     rig.data["events"] = {e: {} for e in EVENTS}
     arm_pose, _ = rig.arm_ik("evoker_tip", *EVOKER_TARGET)
-    ARM_DOWN = Pose({"upper_arm": {"r": -84}, "forearm": {"r": 8}, "hand": {"r": -6}})
+    # 隐藏中的骨骼也给一个合理姿势，淡入时从这个角度转到位（例如举枪手臂从下方抬上来）
+    ARM_DOWN = Pose({"upper_arm": {"r": -84}, "forearm": {"r": 8}, "hand": {"r": -6}, "arm_raised": {"r": -70}})
     EVOKER = add(arm_pose, Pose({"head": {"r": 5}, "torso": {"r": 1.5}}))
     # 亮枪：召唤器在胸前平端，让观众先看清他拿出了什么
-    PRESENT = Pose({"upper_arm": {"r": -28}, "forearm": {"r": 22}, "hand": {"r": -4}, "head": {"r": -3}, "torso": {"r": -1}})
-    RAISE_MID = PRESENT
-    # 扣扳机后坐：头被猛推开、手腕上跳、上身一震（配合游戏端的顿帧和震屏）
-    KICK = add(EVOKER, Pose({"head": {"r": 15}, "hand": {"r": -20}, "forearm": {"r": -9}, "upper_arm": {"r": 4}, "torso": {"r": 5}, "hip": {"x": -10, "y": -6}}))
-    TENSE = add(EVOKER, Pose({"head": {"r": -2}, "hand": {"r": 3}, "torso": {"r": -1}}))
-    SWORD_READY = Pose({"upper_arm": {"r": -58}, "forearm": {"r": 8}, "hand": {"r": 22}, "torso": {"r": -3}, "head": {"r": -2}, "hip": {"y": -10}})
-    ANTIC = Pose({"upper_arm": {"r": 30}, "forearm": {"r": 75}, "hand": {"r": 45}, "torso": {"r": 9}, "head": {"r": 4}, "hip": {"x": -14, "y": -20}})
-    WINDUP = Pose({"upper_arm": {"r": 95}, "forearm": {"r": 35}, "hand": {"r": 28}, "torso": {"r": 10}, "head": {"r": 3}, "hip": {"x": -10, "y": -16}})
-    SLASH = Pose({"upper_arm": {"r": -48}, "forearm": {"r": -18}, "hand": {"r": -16}, "torso": {"r": -12}, "head": {"r": -5}, "hip": {"x": 40, "y": -30}})
-    HURT = Pose({"torso": {"r": 13}, "head": {"r": 16}, "upper_arm": {"r": -45}, "forearm": {"r": 25}, "hip": {"x": -20, "y": -8}})
+    PRESENT = Pose({"upper_arm": {"r": -28}, "forearm": {"r": 22}, "hand": {"r": -4}, "head": {"r": -3}, "torso": {"r": -1}, "arm_raised": {"r": -40}})
+    # 扣扳机后坐：头被猛推开、举枪手臂上跳、上身一震（配合游戏端的顿帧和震屏）
+    KICK = add(EVOKER, Pose({"head": {"r": 15}, "arm_raised": {"r": 7}, "torso": {"r": 5}, "hip": {"x": -10, "y": -6}}))
+    TENSE = add(EVOKER, Pose({"head": {"r": -2}, "arm_raised": {"r": -1.5}, "torso": {"r": -1}}))
+    LOWER = add(PRESENT, Pose({"arm_raised": {"r": -25}}))
+    SWORD_READY = Pose({"upper_arm": {"r": -58}, "forearm": {"r": 8}, "hand": {"r": 22}, "torso": {"r": -3}, "head": {"r": -2}, "hip": {"y": -10}, "arm_raised": {"r": -70}})
+    ANTIC = Pose({"upper_arm": {"r": 30}, "forearm": {"r": 75}, "hand": {"r": 45}, "torso": {"r": 9}, "head": {"r": 4}, "hip": {"x": -14, "y": -20}, "arm_raised": {"r": -70}})
+    WINDUP = Pose({"upper_arm": {"r": 95}, "forearm": {"r": 35}, "hand": {"r": 28}, "torso": {"r": 10}, "head": {"r": 3}, "hip": {"x": -10, "y": -16}, "arm_raised": {"r": -70}})
+    SLASH = Pose({"upper_arm": {"r": -48}, "forearm": {"r": -18}, "hand": {"r": -16}, "torso": {"r": -12}, "head": {"r": -5}, "hip": {"x": 40, "y": -30}, "arm_raised": {"r": -70}})
+    HURT = add(ARM_DOWN, Pose({"torso": {"r": 13}, "head": {"r": 16}, "arm_hang": {"r": 16}, "hip": {"x": -20, "y": -8}}))
 
     def breathe(t, period, amp=1.0):
         w = 2 * math.pi * t / period
@@ -616,6 +687,8 @@ def make_animations(rig):
             "torso": {"r": 1.0 * amp * math.sin(w)},
             "head": {"r": 0.8 * amp * math.sin(w + 0.4)},
             "upper_arm": {"r": 1.2 * amp * math.sin(w)},
+            "arm_hang": {"r": 1.6 * amp * math.sin(w - 0.6)},
+            "arm_raised": {"r": 0.8 * amp * math.sin(w - 0.4)},
         })
 
     def seq(keys):
@@ -629,33 +702,31 @@ def make_animations(rig):
             return keys[-1][1]
         return f
 
-    hand = lambda *pairs: {"hand": {"attachment": [{"time": t, "name": n} for t, n in pairs]}}
-
-    bake_dynamic(rig, "idle_loop", 2.6, lambda t: add(ARM_DOWN, breathe(t, 2.6)), loop=True)
-    bake_dynamic(rig, "relaxed_loop", 3.4, lambda t: add(ARM_DOWN, breathe(t, 3.4, 0.7)), loop=True)
-    SLUMP = add(ARM_DOWN, Pose({"torso": {"r": -6}, "head": {"r": -12}, "hip": {"y": -18}, "upper_arm": {"r": 6}}))
-    bake_dynamic(rig, "low_health_loop", 2.0, lambda t: add(SLUMP, breathe(t, 2.0, 1.6)), loop=True)
-    bake_dynamic(rig, "aim_loop", 1.8, lambda t: add(EVOKER, breathe(t, 1.8, 0.6)), loop=True, slots=hand((0, "hand_evoker")))
-    bake_dynamic(rig, "ready_sword_loop", 1.8, lambda t: add(SWORD_READY, breathe(t, 1.8, 0.8)), loop=True, slots=hand((0, "hand_sword")))
+    HANG = arm_slots([(0, "hang")])
+    bake_dynamic(rig, "idle_loop", 2.6, lambda t: add(ARM_DOWN, breathe(t, 2.6)), loop=True, slots=HANG)
+    bake_dynamic(rig, "relaxed_loop", 3.4, lambda t: add(ARM_DOWN, breathe(t, 3.4, 0.7)), loop=True, slots=HANG)
+    SLUMP = add(ARM_DOWN, Pose({"torso": {"r": -6}, "head": {"r": -12}, "hip": {"y": -18}, "arm_hang": {"r": 4}}))
+    bake_dynamic(rig, "low_health_loop", 2.0, lambda t: add(SLUMP, breathe(t, 2.0, 1.6)), loop=True, slots=HANG)
+    bake_dynamic(rig, "aim_loop", 1.8, lambda t: add(EVOKER, breathe(t, 1.8, 0.6)), loop=True, slots=arm_slots([(0, "raised")]))
+    bake_dynamic(rig, "ready_sword_loop", 1.8, lambda t: add(SWORD_READY, breathe(t, 1.8, 0.8)), loop=True, slots=arm_slots([(0, "mesh_sword")]))
 
     # 攻击：拔剑 → 下蹲后引（预备）→ 举过头顶 → 一刀斩下（极快）→ 余势 → 收剑
     bake_dynamic(rig, "attack", 1.0, seq([(0.0, ARM_DOWN), (0.16, ANTIC), (0.25, WINDUP), (0.3, SLASH), (0.56, SLASH), (0.95, ARM_DOWN)]),
-                 slots=hand((0, "hand_sword"), (0.9, "hand_open")), speed=1.7,
+                 slots=arm_slots([(0, "hang"), (0.02, "mesh_sword"), (0.9, "hang")]), speed=1.7,
                  events=[(0.0, "weapon_draw"), (0.27, "weapon_slash"), (0.84, "weapon_sheath")])
 
-    # 施法：手臂沿弧线抬起（肩先、肘后）→ 枪口抵住太阳穴 → 扣扳机后坐 → 放下
-    # 举枪 → 抵住后停顿蓄力（TENSE）→ 扣扳机瞬间猛烈后坐（KICK，20ms 内到位）→ 余震 → 放下
-    bake_dynamic(rig, "cast", 0.95, seq([(0.0, ARM_DOWN), (0.08, PRESENT), (0.12, PRESENT), (0.21, EVOKER), (0.26, TENSE), (0.272, KICK), (0.35, KICK), (0.55, EVOKER), (0.92, ARM_DOWN)]),
-                 slots=hand((0, "hand_evoker"), (0.89, "hand_open")), speed=2.0,
+    # 施法：网格手臂平端亮枪 → 抬起途中交叉淡化成手绘举枪手臂 → 停顿 → 扣扳机后坐 → 放下途中淡回网格手臂 → 下垂
+    bake_dynamic(rig, "cast", 0.95, seq([(0.0, ARM_DOWN), (0.08, PRESENT), (0.12, PRESENT), (0.21, EVOKER), (0.26, TENSE), (0.272, KICK), (0.35, KICK), (0.55, EVOKER), (0.66, LOWER), (0.92, ARM_DOWN)]),
+                 slots=arm_slots([(0, "hang"), (0.0, "mesh_evoker"), (0.15, "raised"), (0.6, "mesh_evoker"), (0.88, "hang")]), speed=2.0,
                  events=[(0.0, "evoker_draw"), (0.27, "evoker_fire"), (0.82, "evoker_sheath")])
-    bake_dynamic(rig, "attack_sovereign", 0.85, seq([(0.0, ARM_DOWN), (0.06, PRESENT), (0.08, PRESENT), (0.16, EVOKER), (0.21, TENSE), (0.225, KICK), (0.3, KICK), (0.48, EVOKER), (0.83, ARM_DOWN)]),
-                 slots=hand((0, "hand_evoker"), (0.79, "hand_open")), speed=2.2,
+    bake_dynamic(rig, "attack_sovereign", 0.85, seq([(0.0, ARM_DOWN), (0.06, PRESENT), (0.08, PRESENT), (0.16, EVOKER), (0.21, TENSE), (0.225, KICK), (0.3, KICK), (0.48, EVOKER), (0.58, LOWER), (0.83, ARM_DOWN)]),
+                 slots=arm_slots([(0, "hang"), (0.0, "mesh_evoker"), (0.11, "raised"), (0.53, "mesh_evoker"), (0.79, "hang")]), speed=2.2,
                  events=[(0.0, "evoker_draw"), (0.22, "evoker_fire"), (0.74, "evoker_sheath")])
 
-    bake_dynamic(rig, "hurt", 0.6, seq([(0.0, ARM_DOWN), (0.06, HURT), (0.14, HURT), (0.3, ARM_DOWN)]), speed=1.3)
+    bake_dynamic(rig, "hurt", 0.6, seq([(0.0, ARM_DOWN), (0.06, HURT), (0.14, HURT), (0.3, ARM_DOWN)]), speed=1.3, slots=HANG)
 
-    DOWN = Pose({"torso": {"r": -30}, "head": {"r": -34}, "upper_arm": {"r": -96}, "forearm": {"r": 12}, "hand": {"r": 8}, "hip": {"y": -62, "x": 8}})
-    bake_dynamic(rig, "die", 1.5, seq([(0.0, ARM_DOWN), (0.08, HURT), (0.2, HURT), (0.9, DOWN), (1.5, DOWN)]),
+    DOWN = add(ARM_DOWN, Pose({"torso": {"r": -30}, "head": {"r": -34}, "arm_hang": {"r": -6}, "hip": {"y": -62, "x": 8}}))
+    bake_dynamic(rig, "die", 1.5, seq([(0.0, ARM_DOWN), (0.08, HURT), (0.2, HURT), (0.9, DOWN), (1.5, DOWN)]), slots=HANG,
                  events=[(0.1, "death_particles_start"), (1.1, "death_particles_end"), (1.2, "explode_dead"), (1.35, "explode_end")])
 
 

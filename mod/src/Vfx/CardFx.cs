@@ -148,8 +148,9 @@ public static class CardFx
 			return;
 		}
 		(float power, Color tint) = PendingEvoker.Remove(caster.GetInstanceId(), out var p) ? p : (0.6f, Pal.Cyan);
-		Vector2 muzzle = WeaponFx.Bone(caster, "evoker_tip") ?? Makoto.Head(caster);
-		Vector2 grip = WeaponFx.Bone(caster, "hand") ?? muzzle + Vector2.Right;
+		// 扣扳机时显示的是手绘举枪手臂：枪口 / 握把取它自己的骨骼（muzzle / grip）
+		Vector2 muzzle = WeaponFx.Bone(caster, "muzzle") ?? WeaponFx.Bone(caster, "evoker_tip") ?? Makoto.Head(caster);
+		Vector2 grip = WeaponFx.Bone(caster, "grip") ?? WeaponFx.Bone(caster, "hand") ?? muzzle + Vector2.Right;
 		EvokerShot.Fire(front, muzzle, muzzle - grip, power, tint);
 	}
 

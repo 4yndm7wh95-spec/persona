@@ -56,7 +56,7 @@ class Skeleton:
         return W
 
     def attachments(self, anim=None, t=0.0):
-        """返回 [(slot, bone, attachment_name)]，按绘制顺序。"""
+        """返回 [(slot, bone, attachment_name, alpha)]，按绘制顺序。"""
         st = (self.data.get("animations", {}).get(anim, {}).get("slots", {})) if anim else {}
         out = []
         for s in self.data["slots"]:
@@ -66,8 +66,13 @@ class Skeleton:
                 for k in keys:
                     if k["time"] <= t + 1e-6:
                         name = k["name"]
-            if name:
-                out.append((s["name"], s["bone"], name))
+            alpha = 1.0
+            ck = st.get(s["name"], {}).get("rgba")
+            if ck:
+                ak = [{"time": k["time"], "a": int(k["color"][6:8], 16) / 255.0} for k in ck]
+                alpha = sample(ak, t, ["a"])[0]
+            if name and alpha > 0.003:
+                out.append((s["name"], s["bone"], name, alpha))
         return out
 
     def render(self, anim=None, t=0.0, canvas=(900, 1300), origin=(450, 1200), bg=(0, 0, 0, 0)):
@@ -76,9 +81,12 @@ class Skeleton:
         img = Image.new("RGBA", canvas, bg)
         skin = self.data["skins"][0]["attachments"]
         flip = np.array([[1, 0, origin[0]], [0, -1, origin[1]], [0, 0, 1]], dtype=np.float64)
-        for slot, bone, att in self.attachments(anim, t):
+        for slot, bone, att, alpha in self.attachments(anim, t):
             a = skin[slot][att]
             src = self.images[a.get("path", att)]
+            if alpha < 0.999:
+                src = src.copy()
+                src.putalpha(src.getchannel("A").point(lambda v: int(v * alpha)))
             if a.get("type") == "mesh":
                 self._draw_mesh(img, src, a, W, flip)
                 continue
