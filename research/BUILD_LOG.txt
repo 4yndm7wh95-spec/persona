@@ -1,0 +1,9 @@
+  Determining projects to restore...
+  Restored C:\Users\kkk\.codex\.chatgpt-projects\g-p-6ac3abd59448819196f2e09aea87b0da\persona\mod\P3Makoto.csproj (in 7.03 sec).
+  P3Makoto -> C:\Users\kkk\.codex\.chatgpt-projects\g-p-6ac3abd59448819196f2e09aea87b0da\persona\mod\bin\Release\net9.0\P3Makoto.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:10.99
