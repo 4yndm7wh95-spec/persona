@@ -41,3 +41,9 @@
 - `arm_raised_evoker`（骨骼 `arm_raised`，子骨骼 `muzzle` / `grip`）：枪抵太阳穴时的手臂；两点定位（肩点 + 枪口对太阳穴）对齐。
 - 网格手臂只用于过渡（亮枪、抬起途中）和挥剑。
 - 状态切换用插槽 rgba 交叉淡化 0.04s，发生在快速运动中（`ARM_STATES` / `arm_slots`）。
+
+## 8. 预备出牌的过渡（v0.3.3）
+- 拖牌：`aim_in` / `sword_in`（下沉蓄力 → 弧线抬起 → 过冲回稳）后接循环。
+- 取消：`aim_out` / `sword_out`（停顿松劲 → 顺重力放下 → 轻晃停住），武器消散由其中的 sheath 事件触发。
+- 打出：`AnimRenamePatch` 在游戏请求 cast / attack 时，若角色处于预备姿势，换成 `cast_from_aim` / `attack_from_ready`，直接接招。
+- 校验第 5 项：相接动画接缝处骨骼差 ≤ 6（当前全部 ≤ 2.2）。

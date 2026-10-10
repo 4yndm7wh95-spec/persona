@@ -8,8 +8,25 @@
 [OK] 脚底漂移 attack: 0.01px（≤2）
 [OK] 脚底漂移 cast: 0.01px（≤2）
 [OK] 脚底漂移 attack_sovereign: 0.01px（≤2）
+[OK] 脚底漂移 aim_in: 0.01px（≤2）
+[OK] 脚底漂移 sword_in: 0.01px（≤2）
+[OK] 脚底漂移 aim_out: 0.01px（≤2）
+[OK] 脚底漂移 sword_out: 0.01px（≤2）
+[OK] 脚底漂移 attack_from_ready: 0.01px（≤2）
+[OK] 脚底漂移 cast_from_aim: 0.01px（≤2）
+[OK] 脚底漂移 sovereign_from_aim: 0.01px（≤2）
 [OK] 脚底漂移 hurt: 0.01px（≤2）
 [OK] 脚底漂移 die: 0.01px（≤2）
+[OK] 衔接 aim_in → aim_loop: 最大差 1.84（≤6，其余由 0.1s 混合抹平）
+[OK] 衔接 sword_in → ready_sword_loop: 最大差 1.46（≤6，其余由 0.1s 混合抹平）
+[OK] 衔接 aim_loop → aim_out: 最大差 0.68（≤6，其余由 0.1s 混合抹平）
+[OK] 衔接 ready_sword_loop → sword_out: 最大差 0.91（≤6，其余由 0.1s 混合抹平）
+[OK] 衔接 aim_out → idle_loop: 最大差 1.40（≤6，其余由 0.1s 混合抹平）
+[OK] 衔接 sword_out → idle_loop: 最大差 1.06（≤6，其余由 0.1s 混合抹平）
+[OK] 衔接 ready_sword_loop → attack_from_ready: 最大差 0.91（≤6，其余由 0.1s 混合抹平）
+[OK] 衔接 aim_loop → cast_from_aim: 最大差 0.68（≤6，其余由 0.1s 混合抹平）
+[OK] 衔接 attack_from_ready → idle_loop: 最大差 2.14（≤6，其余由 0.1s 混合抹平）
+[OK] 衔接 cast_from_aim → idle_loop: 最大差 1.08（≤6，其余由 0.1s 混合抹平）
 [OK] 循环首尾一致 idle_loop
 [OK] 循环首尾一致 relaxed_loop
 [OK] 循环首尾一致 low_health_loop

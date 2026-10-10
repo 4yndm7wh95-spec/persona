@@ -116,23 +116,9 @@ public static class TargetingFx
 		});
 	}
 
+	/// <summary>播放放下动画；武器的消散特效由放下动画里的 weapon_sheath / evoker_sheath 事件在正确的那一帧触发。</summary>
 	private static void Release(NCreature caster)
 	{
-		if (!Pose.Exit(caster))
-		{
-			return;
-		}
-		SpineHooks.Hands hands = SpineHooks.Of(caster);
-		Control? front = Makoto.FxLayer();
-		if (front != null && hands.SwordOut)
-		{
-			WeaponFx.SwordDissolve(front, caster);
-		}
-		else if (front != null && hands.EvokerOut)
-		{
-			WeaponFx.EvokerGlint(front, caster);
-		}
-		hands.SwordOut = false;
-		hands.EvokerOut = false;
+		Pose.Exit(caster);
 	}
 }

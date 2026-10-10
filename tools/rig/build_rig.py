@@ -723,6 +723,31 @@ def make_animations(rig):
                  slots=arm_slots([(0, "hang"), (0.0, "mesh_evoker"), (0.11, "raised"), (0.53, "mesh_evoker"), (0.79, "hang")]), speed=2.2,
                  events=[(0.0, "evoker_draw"), (0.22, "evoker_fire"), (0.74, "evoker_sheath")])
 
+    # ───── 预备出牌的过渡动画（拖牌 / 取消 / 从预备姿势直接出招）─────
+    # 抬起：先微微下沉蓄力（DIP）→ 沿弧线抬起 → 到位过冲回稳；末帧与对应循环动画首帧一致
+    DIP = add(ARM_DOWN, Pose({"hip": {"y": -10}, "torso": {"r": 2}, "head": {"r": -3}, "upper_arm": {"r": -8}, "arm_hang": {"r": -6}}))
+    bake_dynamic(rig, "aim_in", 0.4, seq([(0.0, ARM_DOWN), (0.07, DIP), (0.17, PRESENT), (0.31, EVOKER), (0.4, EVOKER)]),
+                 slots=arm_slots([(0, "hang"), (0.04, "mesh_evoker"), (0.22, "raised")]), speed=1.5)
+    bake_dynamic(rig, "sword_in", 0.36, seq([(0.0, ARM_DOWN), (0.07, DIP), (0.26, SWORD_READY), (0.36, SWORD_READY)]),
+                 slots=arm_slots([(0, "hang"), (0.04, "mesh_sword")]), speed=1.5)
+    # 放下：先停顿松劲 → 顺着重力放下 → 手臂轻晃停住
+    RELAX_AIM = add(EVOKER, Pose({"arm_raised": {"r": -4}, "head": {"r": -2}}))
+    bake_dynamic(rig, "aim_out", 0.5, seq([(0.0, EVOKER), (0.08, RELAX_AIM), (0.24, LOWER), (0.44, ARM_DOWN), (0.5, ARM_DOWN)]),
+                 slots=arm_slots([(0, "raised"), (0.17, "mesh_evoker"), (0.4, "hang")]), speed=1.3,
+                 events=[(0.32, "evoker_sheath")])
+    SWORD_RELAX = add(SWORD_READY, Pose({"upper_arm": {"r": 6}, "hand": {"r": 8}}))
+    bake_dynamic(rig, "sword_out", 0.5, seq([(0.0, SWORD_READY), (0.08, SWORD_RELAX), (0.42, ARM_DOWN), (0.5, ARM_DOWN)]),
+                 slots=arm_slots([(0, "mesh_sword"), (0.4, "hang")]), speed=1.3,
+                 events=[(0.2, "weapon_sheath")])
+    # 已在预备姿势时出招：直接从当前姿势接上，不再先垂手
+    bake_dynamic(rig, "attack_from_ready", 0.85, seq([(0.0, SWORD_READY), (0.1, ANTIC), (0.18, WINDUP), (0.23, SLASH), (0.46, SLASH), (0.8, ARM_DOWN)]),
+                 slots=arm_slots([(0, "mesh_sword"), (0.76, "hang")]), speed=1.7,
+                 events=[(0.2, "weapon_slash"), (0.7, "weapon_sheath")])
+    for name in ("cast_from_aim", "sovereign_from_aim"):
+        bake_dynamic(rig, name, 0.72, seq([(0.0, EVOKER), (0.05, TENSE), (0.062, KICK), (0.14, KICK), (0.3, EVOKER), (0.42, LOWER), (0.7, ARM_DOWN)]),
+                     slots=arm_slots([(0, "raised"), (0.36, "mesh_evoker"), (0.64, "hang")]), speed=2.0,
+                     events=[(0.06, "evoker_fire"), (0.56, "evoker_sheath")])
+
     bake_dynamic(rig, "hurt", 0.6, seq([(0.0, ARM_DOWN), (0.06, HURT), (0.14, HURT), (0.3, ARM_DOWN)]), speed=1.3, slots=HANG)
 
     DOWN = add(ARM_DOWN, Pose({"torso": {"r": -30}, "head": {"r": -34}, "arm_hang": {"r": -6}, "hip": {"y": -62, "x": 8}}))
@@ -774,6 +799,30 @@ def validate(data, images, master):
         passed = drift <= 2.0
         ok &= passed
         report.append(f"[{'OK' if passed else 'FAIL'}] 脚底漂移 {name}: {drift:.2f}px（≤2）")
+
+    # 5. 衔接校验：相接动画在接缝处的骨骼角度差（度）和平移差（单位）
+    def edge(name, which):
+        a = data["animations"][name]["bones"]
+        out = {}
+        for b, tl in a.items():
+            for kind in ("rotate", "translate"):
+                if kind in tl:
+                    k = tl[kind][0 if which == "first" else -1]
+                    out[(b, kind)] = (k.get("value", 0.0), k.get("x", 0.0), k.get("y", 0.0))
+        return out
+
+    pairs = [("aim_in", "aim_loop"), ("sword_in", "ready_sword_loop"), ("aim_loop", "aim_out"), ("ready_sword_loop", "sword_out"),
+             ("aim_out", "idle_loop"), ("sword_out", "idle_loop"), ("ready_sword_loop", "attack_from_ready"),
+             ("aim_loop", "cast_from_aim"), ("attack_from_ready", "idle_loop"), ("cast_from_aim", "idle_loop")]
+    for a_name, b_name in pairs:
+        ea, eb = edge(a_name, "last"), edge(b_name, "first")
+        worst = 0.0
+        for key in set(ea) | set(eb):
+            va, vb = ea.get(key, (0, 0, 0)), eb.get(key, (0, 0, 0))
+            worst = max(worst, max(abs(x - y) for x, y in zip(va, vb)))
+        passed = worst <= 6.0
+        ok &= passed
+        report.append(f"[{'OK' if passed else 'FAIL'}] 衔接 {a_name} → {b_name}: 最大差 {worst:.2f}（≤6，其余由 0.1s 混合抹平）")
 
     # 4. 循环动画首尾一致
     for name, anim in data["animations"].items():
