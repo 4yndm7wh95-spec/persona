@@ -21,6 +21,30 @@
   - 储君动画名：`idle_loop`、`relaxed_loop`、`attack`、`attack_sovereign`、`cast`、`hurt`、`die`。
   - 刘川 mod 证明：mod PCK 里放 `.spine-json` 能被游戏正常加载。
 - 战斗中角色包围盒约 230×335 px（`Bounds`），中心点 (0,-178)，意图位置 (24,-414)。
+- Godot 版本：**4.5.1**（GodotSharp.dll），目标框架 net9.0，Harmony 为游戏自带 `0Harmony.dll`。
+- mod 加载顺序：先加载 `<id>.dll`，再加载 `<id>.pck`；有 `[ModInitializer]` 时只调用初始化方法，Harmony 需自行 `PatchAll`。
+
+### 2.1 源码确认的挂钩点
+| 用途 | 位置 | 说明 |
+|---|---|---|
+| 出牌特效 | `Hook.BeforeCardPlayed(ICombatState, CardPlay)` | 每次打出（含多次打出）在 `OnPlay` 前调用；`CardPlay` 带 Card / Player / Target |
+| 单体选目标开始 | `NTargetManager.StartTargeting(TargetType, Control, …)` | `Control` 参数就是被拖动的 `NCard` |
+| 群体牌进入出牌区 | `NCardPlay.ShowMultiCreatureTargetingVisuals()` | |
+| 悬停 / 离开目标 | `NTargetManager.OnCreatureHovered/Unhovered(NCreature)` | |
+| 选目标结束 | `NTargetManager.FinishTargeting(bool cancel)` | |
+| 出牌流程清理 | `NCardPlay.HideTargetingVisuals()` | 取消和成功都会走到 |
+| 角色动画状态机 | `CharacterModel.GenerateAnimator` | 触发器 Cast / Attack / Hit / Dead / Idle / Relaxed，对应 Spine 动画 cast / attack / hurt / die / idle_loop / relaxed_loop，低血量 `low_health_loop` |
+| 直接切 Spine 动画 | `NCreature.Visuals.SpineBody.GetAnimationState().SetAnimation(name, loop)` | 用于预备姿势 |
+
+### 2.2 新骨骼必须满足的兼容约定（原版 regent.tscn 和 NRegentVfx 依赖）
+- 动画：`idle_loop`、`low_health_loop`、`relaxed_loop`、`attack`、`attack_sovereign`、`cast`、`hurt`、`die`，另加 `aim_loop`、`ready_sword_loop`。
+- 骨骼：`arm_particle_attach`、`chest_particle_attach`、`leg_particle_attach`、`leg_particle_attach_l`；新增 `evoker_tip`、`sword_tip` 供特效定位。
+- 插槽：`shadow`（君王之刃的武器 Spine 挂在这里）。
+- 事件：`death_particles_start`、`death_particles_end`、`explode_dead`、`explode_end`（die 动画中触发）。
+
+### 2.3 代码约束
+- mod 程序集是运行时加载的，**不定义自定义 Node 子类**。特效只用引擎自带节点，用 Tween / Timer / lambda 驱动，着色器用代码字符串生成。
+- 所有补丁都包在 `ModEntry.Safe` 里，特效出错不影响游戏逻辑。
 
 ## 3. 总体方案
 
