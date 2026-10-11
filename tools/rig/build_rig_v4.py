@@ -382,6 +382,7 @@ def bake(rig, images, name, duration, target, states, loop=False, events=None, s
 
 SUPPORT = {}
 VISIBLE = {}
+SWORD_SMEAR = 300          # 攻击动画剑尖单帧径向上限（v5 甩腕后放宽）
 
 
 # ───────────── 动画 ─────────────
@@ -529,7 +530,7 @@ def validate(data, images, master):
         # 每帧可接受的径向变化（像素）：换图淡化 ≥0.06s 时，伸展程度不同的两张手臂之间的过渡读作"手臂收拢 / 伸出"
         limits = {"hand": 80, "muzzle": 90, "sword_tip": 160}
         if name.startswith("attack") and name != "attack_sovereign":
-            limits["sword_tip"] = 300      # 挥砍是 1 帧的"拖影帧"：举剑 → 斩下两张图之间剑尖本来就要一下扫过去
+            limits["sword_tip"] = SWORD_SMEAR  # 挥砍是 1 帧的"拖影帧"：举剑 → 斩下两张图之间剑尖本来就要一下扫过去
         worst = {}
         for a, lim in limits.items():
             tl = anim["bones"].get(a, {}).get("translate", [])

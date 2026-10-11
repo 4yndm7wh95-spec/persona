@@ -49,7 +49,7 @@ public static class CardStyles
 		// ── 攻击：物理 ──
 		["StrikeRegent"] = new(Element.Slash, Opener.None),
 		["WroughtInWar"] = new(Element.Slash, Opener.None),
-		["SovereignBlade"] = new(Element.Royal, Opener.None, Extra.SkewBand),
+		["SovereignBlade"] = new(Element.Royal, Opener.Evoker, Extra.SkewBand),
 		["CollisionCourse"] = new(Element.Strike, Opener.EvokerSmall),
 		["KinglyPunch"] = new(Element.Strike, Opener.Evoker),
 		["KinglyKick"] = new(Element.Strike, Opener.Evoker, Extra.SkewBand, 1.3f),
@@ -168,6 +168,11 @@ public static class CardStyles
 
 	public static CardAnim AnimFor(object card, MegaCrit.Sts2.Core.Entities.Cards.CardType type)
 	{
+		// 君王之刃：召唤器开枪 → Thanatos 挥剑，所以选中时举召唤器（而不是持剑）
+		if (card.GetType().Name == "SovereignBlade")
+		{
+			return CardAnim.Evoker;
+		}
 		if (EvokerCards.Contains(card.GetType().Name))
 		{
 			return Summons(card) ? CardAnim.Evoker : CardAnim.Gesture;

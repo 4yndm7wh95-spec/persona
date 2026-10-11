@@ -234,11 +234,12 @@ public static class Extras
 	/// 带文字时：背景超大描边字缓慢横移，主标题粗斜体技能名从右侧滑入并收紧字距，
 	/// 上方 "PERSONA ▸ 名字"，右侧竖线分隔的中文卡名。
 	/// </summary>
-	public static void SkewBand(Control layer, Caption? caption = null, float yRatio = 0.42f, float hold = 0.6f, Color? tint = null)
+	public static void SkewBand(Control layer, Caption? caption = null, float yRatio = 0.17f, float hold = 0.6f, Color? tint = null)
 	{
+		// 放在屏幕上部（顶栏下方），不挡住屏幕中间的人物与命中特效
 		Color c = tint ?? Pal.Royal;
 		Vector2 size = layer.GetViewportRect().Size;
-		float h = size.Y * 0.2f;
+		float h = size.Y * 0.15f;
 		float skew = h * 0.6f;
 		float w = size.X + skew * 2f;
 		Node2D root = Fx.Root(layer, Vector2.Zero, "P3SkewBand");
