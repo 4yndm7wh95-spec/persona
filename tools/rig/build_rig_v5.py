@@ -303,6 +303,7 @@ for _k in CHAINS:
     DYN[FORE[_k]] = (4.2, 0.5, 0.0)
     DYN[HAND[_k]] = (3.8, 0.42, 0.0)
 DYN[ARM_BONE["hang"]] = (3.2, 0.42, 0.0)
+DYN["foot_l"] = DYN["foot_r"] = (5.0, 0.8, 0.0)          # 踏步：脚踝目标位移（只喂给 IK，不导出）
 SECONDARY = ("hair_fringe", "hair_back", "hair_side", "tie", "coat")
 
 
@@ -373,7 +374,7 @@ def bake(rig, images, name, duration, target, states, loop=False, events=None, s
         frames[-1] = (frames[-1][0], frames[0][1])
     bones = {}
     solved = [(t, rig.leg_ik(rig.leg_ik(Pose({b: dict(v) for b, v in p.items()}), "l"), "r")) for t, p in frames]
-    names = set().union(*[set(p) for _, p in solved])
+    names = {n for n in set().union(*[set(p) for _, p in solved]) if not n.startswith("foot_")}
     for b in sorted(names):
         rot = [{"time": t, "value": round(p.get(b, {}).get("r", 0.0), 3)} for t, p in solved]
         tr = [{"time": t, "x": round(p.get(b, {}).get("x", 0.0), 3), "y": round(p.get(b, {}).get("y", 0.0), 3)} for t, p in solved]
@@ -453,6 +454,10 @@ def make_animations(rig, images):
             return keys[-1][1]
         return f
 
+    out_back = lambda u: 1 + 2.4 * (u - 1) ** 3 + 1.4 * (u - 1) ** 2      # 快速到位并略微过冲
+    out_cubic = lambda u: 1 - (1 - u) ** 3
+    in_out_sine = lambda u: 0.5 - 0.5 * math.cos(math.pi * u)
+
     def breathe(t, period, amp=1.0, arm="hang"):
         w = 2 * math.pi * t / period
         p = Pose({"hip": {"y": -3.0 * amp * (1 - math.cos(w)) / 2, "x": 1.6 * amp * math.sin(w / 1 + 0.5)},
@@ -479,10 +484,18 @@ def make_animations(rig, images):
                                 **ALL(16), **{FORE["s_ready"]: {"r": 14}, HAND["s_ready"]: {"r": 10}}))
     WINDUP = add(A("s_up"), B(hip={"x": -12, "y": -22}, spine={"r": 7}, torso={"r": 10}, head={"r": 2},
                               **ALL(8), **{FORE["s_up"]: {"r": 12}, HAND["s_up"]: {"r": 14}}))
-    SLASH = add(A("s_down"), B(hip={"x": 56, "y": -42}, spine={"r": -12}, torso={"r": -18}, head={"r": -7},
+    # 斩下：前脚（画面右侧的远侧腿）踏出一步拉开弓步，重心压低、两膝弯曲，上身前压，头保持盯着敌人
+    SLASH = add(A("s_down"), B(hip={"x": 52, "y": -66}, spine={"r": -16}, torso={"r": -22}, head={"r": 13},
+                               foot_r={"x": 78, "y": 0},
                                **ALL(-6), **{FORE["s_down"]: {"r": -4}, HAND["s_down"]: {"r": -10}}))
-    FOLLOW = add(A("s_down"), B(hip={"x": 46, "y": -34}, spine={"r": -9}, torso={"r": -12}, head={"r": -4},
+    FOLLOW = add(A("s_down"), B(hip={"x": 60, "y": -74}, spine={"r": -18}, torso={"r": -24}, head={"r": 14},
+                                foot_r={"x": 82, "y": 0},
                                 **ALL(-2), **{FORE["s_down"]: {"r": 6}, HAND["s_down"]: {"r": 4}}))
+    # 收招：先撤脚收髋（脚抬起滑回），上身随后直起，手臂最后收
+    RECOVER = add(A("s_down"), B(hip={"x": 18, "y": -30}, spine={"r": -6}, torso={"r": -9}, head={"r": 4},
+                                 foot_r={"x": 34, "y": 16},
+                                 **ALL(0), **{FORE["s_down"]: {"r": 10}, HAND["s_down"]: {"r": 8}}))
+    WINDUP = add(WINDUP, B(foot_r={"x": 24, "y": 22}))          # 蓄力时前脚已经抬起，准备踏出
     HURT = add(IDLE, B(spine={"r": 6}, torso={"r": 10}, head={"r": 16}, hip={"x": -20, "y": -8}, **ALL(-16),
                        **{FORE["hang"]: {"r": -14}}))
 
@@ -506,12 +519,15 @@ def make_animations(rig, images):
          [(0, "s_ready"), (0.3, "hang")], speed=1.3, events=[(0.2, "weapon_sheath")])
 
     CUT = lambda u: u * u * u
-    atk = [(0, IDLE), (0.035, ANTIC), (0.06, WINDUP), (0.09, SLASH, CUT), (0.2, FOLLOW), (0.42, FOLLOW), (0.85, IDLE)]
-    bake(rig, images, "attack", 0.95, seq(atk), [(0, "hang"), (0.005, "s_ready", 0.025), (0.035, "s_up", 0.025), (0.07, "s_down", 0.025), (0.68, "hang", 0.1)],
-         speed=3.0, fade=0.03, events=[(0.0, "weapon_draw"), (0.045, "weapon_windup"), (0.075, "weapon_slash"), (0.66, "weapon_sheath")])
-    atk_r = [(0, S_READY), (0.03, WINDUP), (0.07, SLASH, CUT), (0.18, FOLLOW), (0.4, FOLLOW), (0.82, IDLE)]
-    bake(rig, images, "attack_from_ready", 0.95, seq(atk_r), [(0, "s_ready"), (0.005, "s_up", 0.025), (0.05, "s_down", 0.025), (0.66, "hang", 0.1)],
-         speed=3.0, fade=0.03, events=[(0.02, "weapon_windup"), (0.055, "weapon_slash"), (0.64, "weapon_sheath")])
+    atk = [(0, IDLE), (0.035, ANTIC), (0.06, WINDUP), (0.09, SLASH, CUT), (0.2, FOLLOW, out_cubic), (0.4, FOLLOW),
+           (0.6, RECOVER, in_out_sine), (0.88, IDLE, out_cubic)]
+    bake(rig, images, "attack", 0.95, seq(atk), [(0, "hang"), (0.005, "s_ready", 0.025), (0.035, "s_up", 0.025), (0.07, "s_down", 0.025), (0.7, "hang", 0.12)],
+         speed=3.0, fade=0.03, events=[(0.0, "weapon_draw"), (0.045, "weapon_windup"), (0.075, "weapon_slash"), (0.68, "weapon_sheath")])
+    atk_r = [(0, S_READY), (0.03, WINDUP), (0.07, SLASH, CUT), (0.18, FOLLOW, out_cubic), (0.38, FOLLOW),
+             (0.58, RECOVER, in_out_sine), (0.86, IDLE, out_cubic)]
+    bake(rig, images, "attack_from_ready", 0.95, seq(atk_r), [(0, "s_ready"), (0.005, "s_up", 0.025), (0.05, "s_down", 0.025), (0.68, "hang", 0.12)],
+         speed=3.0, fade=0.03, events=[(0.02, "weapon_windup"), (0.055, "weapon_slash"), (0.66, "weapon_sheath")])
+    v4.STEP_ANIMS.update({"attack", "attack_from_ready"})
 
     cast = [(0, IDLE), (0.08, PRESENT), (0.12, PRESENT), (0.22, EVOKER), (0.26, TENSE), (0.272, KICK), (0.35, KICK), (0.55, EVOKER), (0.66, LOWER), (0.92, IDLE)]
     cast_states = [(0, "hang"), (0.02, "present", 0.1), (0.12, "evoker", 0.11), (0.56, "present", 0.1), (0.8, "hang", 0.1)]
@@ -526,11 +542,15 @@ def make_animations(rig, images):
              events=[(0.06, "evoker_fire"), (0.56, "evoker_sheath")])
 
     # 不召唤的施法：抬起前臂、掌心向上托出（游戏端在手上方翻出一张塔罗牌），身体随之前倾、低头看手，再自然放下
-    OFFER = add(IDLE, B(hip={"x": 6, "y": -10}, spine={"r": -2}, torso={"r": -3}, head={"r": -6},
-                        **{ARM_BONE["hang"]: {"r": 38}, FORE["hang"]: {"r": 52}, HAND["hang"]: {"r": 24}}))
-    OFFER_HOLD = add(OFFER, B(head={"r": -2}, **{HAND["hang"]: {"r": 4}}))
-    bake(rig, images, "cast_light", 0.85, seq([(0, IDLE), (0.18, OFFER), (0.42, OFFER_HOLD), (0.7, IDLE), (0.85, IDLE)]),
-         [(0, "hang")], speed=1.7)
+    GATHER = add(IDLE, B(hip={"y": -7}, spine={"r": 1}, torso={"r": 2}, head={"r": -2},
+                         **{ARM_BONE["hang"]: {"r": -3}, FORE["hang"]: {"r": 8}, HAND["hang"]: {"r": -6}}))
+    FLICK = add(IDLE, B(hip={"y": 2, "x": 3}, spine={"r": -1}, torso={"r": -2}, head={"r": -6},
+                        **{ARM_BONE["hang"]: {"r": 14}, FORE["hang"]: {"r": 36}, HAND["hang"]: {"r": 30}}))
+    FLOAT = add(FLICK, B(head={"r": -4}, **{FORE["hang"]: {"r": 39}, HAND["hang"]: {"r": 24}}))
+    LET_GO = add(IDLE, B(hip={"y": -3}, head={"r": -2}, **{ARM_BONE["hang"]: {"r": 5}, FORE["hang"]: {"r": 14}, HAND["hang"]: {"r": 26}}))
+    bake(rig, images, "cast_light", 0.9, seq([(0, IDLE), (0.08, GATHER, out_cubic), (0.17, FLICK, out_back), (0.44, FLOAT, in_out_sine),
+                                              (0.64, LET_GO, in_out_sine), (0.88, IDLE, out_cubic)]),
+         [(0, "hang")], speed=2.2)
 
     IDLE0 = add(IDLE, breathe(0.0, 3.2))                  # idle_loop 第一帧的姿势：结束在这里，接待机无缝
     bake(rig, images, "hurt", 0.7, seq([(0, IDLE), (0.06, HURT), (0.14, HURT), (0.34, IDLE0)]), [(0, "hang")], speed=1.3)

@@ -225,16 +225,18 @@ class Rig:
         dx, dy = pose.get("hip", {}).get("x", 0.0), pose.get("hip", {}).get("y", 0.0)
         tx, ty = self.setup_world(f"thigh_{side}")
         kx, ky = self.setup_world(f"shin_{side}")
-        ax, ay = to_spine(J[f"ankle_{side}"])
+        ax0, ay0 = to_spine(J[f"ankle_{side}"])
+        foot = pose.get(f"foot_{side}", {})              # 踏步：脚踝目标位移（Spine 单位，y 向上 = 抬脚）
+        ax, ay = ax0 + foot.get("x", 0.0), ay0 + foot.get("y", 0.0)
         root = (tx + dx, ty + dy)
-        l1, l2 = math.dist((tx, ty), (kx, ky)), math.dist((kx, ky), (ax, ay))
+        l1, l2 = math.dist((tx, ty), (kx, ky)), math.dist((kx, ky), (ax0, ay0))   # 腿长按原始姿势算（不受踏步影响）
         d = min(math.dist(root, (ax, ay)), l1 + l2 - 1e-3)
         base = math.atan2(ay - root[1], ax - root[0])
         a = math.acos(max(-1, min(1, (l1 * l1 + d * d - l2 * l2) / (2 * l1 * d))))
         thigh_w = base + a                              # 两腿都向前（画面右）屈膝
         knee = (root[0] + l1 * math.cos(thigh_w), root[1] + l1 * math.sin(thigh_w))
         shin_w = math.atan2(ay - knee[1], ax - knee[0])
-        thigh0, shin0 = math.atan2(ky - ty, kx - tx), math.atan2(ay - ky, ax - kx)
+        thigh0, shin0 = math.atan2(ky - ty, kx - tx), math.atan2(ay0 - ky, ax0 - kx)
         pose[f"thigh_{side}"] = {"r": math.degrees(thigh_w - thigh0)}
         pose[f"shin_{side}"] = {"r": math.degrees((shin_w - thigh_w) - (shin0 - thigh0))}
         return pose
@@ -383,6 +385,7 @@ def bake(rig, images, name, duration, target, states, loop=False, events=None, s
 SUPPORT = {}
 VISIBLE = {}
 SWORD_SMEAR = 300          # 攻击动画剑尖单帧径向上限（v5 甩腕后放宽）
+STEP_ANIMS = set()         # 中途有踏步（脚离开原位）的动画
 
 
 # ───────────── 动画 ─────────────
@@ -522,8 +525,10 @@ def validate(data, images, master):
     base = {s: sk.point(f"shin_{s}", ank[s]) for s in "lr"}
     for name, anim in data["animations"].items():
         times = sorted({k["time"] for bk in anim["bones"].values() for tl in bk.values() for k in tl})
-        drift = max(math.dist(sk.point(f"shin_{s}", ank[s], name, t), base[s]) for t in times for s in "lr") / K
-        mark(drift <= 2.0, f"脚底漂移 {name}: {drift:.2f}px")
+        # 踏步的动画（STEP_ANIMS）中途脚会移动，只要求首尾两帧脚在原位
+        check = [times[0], times[-1]] if name in STEP_ANIMS else times
+        drift = max(math.dist(sk.point(f"shin_{s}", ank[s], name, t), base[s]) for t in check for s in "lr") / K
+        mark(drift <= 2.0, f"脚底漂移 {name}: {drift:.2f}px" + ("（踏步，只查首尾）" if name in STEP_ANIMS else ""))
         # 3. 锚点不瞬移：相邻帧剑尖 / 枪口位移上限（攻击挥砍最快，放宽到 140）
         # 3. 锚点不瞬移：旋转不改变"锚点到肩"的距离；距离的单帧跳变才是换图造成的跳跃
         sh_local = (0.0, 0.0)
