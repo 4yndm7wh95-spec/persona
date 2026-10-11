@@ -1,4 +1,4 @@
-[OK] 拼合校验：平均色差 0.44，缺失 0.00000
+[OK] 拼合校验：平均色差 0.47，缺失 0.00000
 [OK] 锚点在画上 hang/hand (335,1060)
 [OK] 锚点在画上 present/hand (715,535)
 [OK] 锚点在画上 present/grip (755,428)
@@ -18,6 +18,8 @@
 [OK] 锚点在画上 s_back/sword_tip (24,1302)
 [OK] 锚点在画上 s_ext/hand (512,461)
 [OK] 锚点在画上 s_ext/sword_tip (1008,341)
+[OK] 锚点在画上 s_shoulder/hand (709,532)
+[OK] 锚点在画上 s_shoulder/sword_tip (92,28)
 [OK] 平移骨骼：['evoker_tip', 'grip', 'hand', 'hip', 'muzzle', 'sword_tip']
 [OK] 脚底漂移 idle_loop: 0.01px
 [OK] 锚点径向连续 idle_loop/hand: 单帧最大 0.2（≤80）
@@ -55,14 +57,14 @@
 [OK] 锚点径向连续 sword_out/hand: 单帧最大 35.7（≤80）
 [OK] 锚点径向连续 sword_out/muzzle: 单帧最大 0.0（≤90）
 [OK] 锚点径向连续 sword_out/sword_tip: 单帧最大 0.1（≤160）
-[OK] 脚底漂移 attack: 0.00px（踏步，只查首尾）
-[OK] 锚点径向连续 attack/hand: 单帧最大 37.0（≤80）
+[OK] 脚底漂移 attack: 0.01px（踏步，只查首尾）
+[OK] 锚点径向连续 attack/hand: 单帧最大 71.5（≤80）
 [OK] 锚点径向连续 attack/muzzle: 单帧最大 0.0（≤90）
-[OK] 锚点径向连续 attack/sword_tip: 单帧最大 15.3（≤340）
+[OK] 锚点径向连续 attack/sword_tip: 单帧最大 297.3（≤340）
 [OK] 脚底漂移 attack_from_ready: 0.00px（踏步，只查首尾）
-[OK] 锚点径向连续 attack_from_ready/hand: 单帧最大 54.2（≤80）
+[OK] 锚点径向连续 attack_from_ready/hand: 单帧最大 79.9（≤80）
 [OK] 锚点径向连续 attack_from_ready/muzzle: 单帧最大 0.0（≤90）
-[OK] 锚点径向连续 attack_from_ready/sword_tip: 单帧最大 43.8（≤340）
+[OK] 锚点径向连续 attack_from_ready/sword_tip: 单帧最大 293.4（≤340）
 [OK] 脚底漂移 cast: 0.01px
 [OK] 锚点径向连续 cast/hand: 单帧最大 44.4（≤80）
 [OK] 锚点径向连续 cast/muzzle: 单帧最大 72.6（≤90）
@@ -104,9 +106,9 @@
 [OK] 衔接 sword_out → idle_loop: 最大差 1.59
 [OK] 衔接 ready_sword_loop → attack_from_ready: 最大差 2.88
 [OK] 衔接 aim_loop → cast_from_aim: 最大差 2.53
-[OK] 衔接 attack_from_ready → idle_loop: 最大差 1.31
+[OK] 衔接 attack_from_ready → idle_loop: 最大差 1.27
 [OK] 衔接 cast_from_aim → idle_loop: 最大差 2.70
-[OK] 衔接 attack → idle_loop: 最大差 1.12
+[OK] 衔接 attack → idle_loop: 最大差 1.70
 [OK] 衔接 cast → idle_loop: 最大差 2.36
 [OK] 衔接 cast_light → idle_loop: 最大差 2.24
 [OK] 衔接 hurt → idle_loop: 最大差 3.74
