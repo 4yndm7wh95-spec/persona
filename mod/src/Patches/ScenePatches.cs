@@ -37,6 +37,16 @@ public static class CharSelectBgPatch
 	}
 }
 
+/// <summary>选人界面左侧介绍板：选中结城理时换成 P3R 风格，选其他角色时恢复（只改外观，见 CharSelectInfo）。</summary>
+[HarmonyPatch(typeof(NCharacterSelectScreen), nameof(NCharacterSelectScreen.SelectCharacter))]
+public static class CharSelectInfoPatch
+{
+	public static void Postfix(NCharacterSelectScreen __instance, NCharacterSelectButton charSelectButton, MegaCrit.Sts2.Core.Models.CharacterModel characterModel)
+	{
+		ModEntry.Safe("CharSelectInfo", () => CharSelectInfo.Apply(__instance, charSelectButton, characterModel));
+	}
+}
+
 /// <summary>虚空形态：原版常驻特效换成影时间（见 FormFx）。</summary>
 [HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Vfx.Forms.NVoidFormVfx), nameof(MegaCrit.Sts2.Core.Nodes.Vfx.Forms.NVoidFormVfx.Create))]
 public static class VoidFormVfxPatch

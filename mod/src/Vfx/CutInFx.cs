@@ -195,7 +195,8 @@ public static class CutInFx
 		Typo.Text(sub, "PERSONA  \u25B8  " + persona, Typo.Latin, 26, Pal.Cyan, Vector2.Zero, outline: 4, outlineColor: new Color(0.02f, 0.04f, 0.12f));
 		// 拟声字"カチッ"（扣扳机的咔哒声）：离线生成的空心双描边设计字（build_ui_assets.cutin_ka），不是系统字体
 		// 位置：横幅左下角（技能名在左上；横幅中间到右边是眼睛 / 人物的脸，不能挡），一半压在横幅下沿外
-		Vector2 kaAt = new(size.X * 0.2f, st.Cy + st.HalfH * 0.78f);
+		// 选人界面（BeginScreen）：横幅下方是角色介绍板，改放到横幅上沿中间偏左（技能名右侧，脸在更右边）
+		Vector2 kaAt = st.Below != null || back == front ? new(size.X * 0.4f, st.Cy - st.HalfH * 0.82f) : new(size.X * 0.2f, st.Cy + st.HalfH * 0.78f);
 		Node2D ka = new() { Position = kaAt, Rotation = -0.06f };
 		st.Ka = ka;
 		st.Ui.AddChild(ka);

@@ -262,6 +262,15 @@ class Builder:
         }
         for p in EVOKER_POSES:
             self.hand[p] = self.grip[p]
+        self.center = {}
+        for p in POSE_T:
+            img = self.src.get(f"v7_{p}")
+            if img is None:
+                continue
+            a = img[..., 3] > 0.5
+            g = (img[..., :3].max(-1) - img[..., :3].min(-1) < 0.12) & (img[..., :3].min(-1) > 0.55)   # 剑身（亮灰）不算进重心
+            ys, xs = np.nonzero(a & ~g)
+            self.center[p] = U((float(xs.mean()), float(ys.mean())), p)
         self.tip = {}
         for p, (fist, tip) in SWORD.items():
             self.hand[p], self.tip[p] = fist, tip
@@ -289,7 +298,8 @@ class Builder:
     # ── 骨骼 / 槽 / 附件 ──
     def setup(self):
         d = self.data
-        d["bones"].append({"name": "v7", "parent": "root"})
+        d["bones"].append({"name": "v7_settle", "parent": "root"})     # 换图时的"惯性到位"（见 settle）
+        d["bones"].append({"name": "v7", "parent": "v7_settle"})
         for p in EVOKER_POSES:
             gx, gy = U(self.grip[p], p)
             d["bones"].append({"name": f"v7_ev_{p}", "parent": "v7", "x": round(gx, 2), "y": round(gy, 2)})
@@ -336,11 +346,35 @@ class Builder:
         return {"x": round(cx, 2), "y": round(cy, 2), "width": round((x1 - x0) * S * k, 2), "height": round((y1 - y0) * S * k, 2)}
 
     # ── 动画编排 ──
+    def settle(self, a, seq, prev, dur):
+        """换图的惯性到位：新姿势出现时先停在"上一个姿势重心"和"自己重心"之间（偏回去 40%），
+        随后减速滑到原位（约 0.26s，提前遇到下一次换图就截断）。整图平移，不变形；
+        和溶解叠在一起，看起来是人物真的从上一个姿势移动过来，而不是一张张切换的幻灯片。"""
+        prof = [(0.0, 1.0), (0.04, 0.55), (0.1, 0.22), (0.18, 0.06), (0.26, 0.0)]
+        keys = [(0.0, 0.0, 0.0)]
+        for i, (t, p) in enumerate(seq):
+            before = prev if i == 0 else seq[i - 1][1]
+            if before is None or before == p or before not in self.center or p not in self.center:
+                continue
+            nxt = seq[i + 1][0] if i + 1 < len(seq) else dur
+            bx, by = self.center[before]
+            cx, cy = self.center[p]
+            ox, oy = 0.4 * (bx - cx), 0.4 * (by - cy)
+            keys = [k for k in keys if k[0] < t - 1e-4]
+            for dt, v in prof:
+                if t + dt <= nxt + 1e-4:
+                    keys.append((t + dt, ox * v, oy * v))
+            if keys[-1][0] < nxt - 1e-4 and keys[-1][1:] != (0.0, 0.0):
+                keys.append((min(t + 0.26, nxt), 0.0, 0.0))
+        for t, x, y in keys:
+            a.tr("v7_settle", t, x, y)
+
     def sequence(self, a, seq, prev=None):
         """seq: [(t, pose)]。姿势切换 + 过渡特效 + 召唤器 / 拳头层 + 契约骨骼。prev：动画开始前的姿势（t=0 的切换要残影）。"""
         for slot in self.v5_slots:
             if slot != "shadow":
                 a.att(slot, 0, None)
+        self.settle(a, seq, prev, a.dur)
         for i, (t, p) in enumerate(seq):
             before = prev if i == 0 else seq[i - 1][1]
             a.att("v7_body", t, f"v7_{p}")
