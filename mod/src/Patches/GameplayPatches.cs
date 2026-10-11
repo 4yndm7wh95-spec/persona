@@ -57,6 +57,7 @@ public static class DamagePatch
 		{
 			if (targets != null && CardFx.IsMakotoCard(cardSource))
 			{
+				Popups.MarkHits(targets);
 				CardFx.OnHit(cardSource!, targets);
 			}
 		});
@@ -104,17 +105,51 @@ public static class ForgePatch
 }
 
 /// <summary>
-/// 君王之刃（结城理）：把"出牌 → 伤害结算"的等待从 0.25s 推迟到 0.62s，给 Thanatos 留出显形 → 冲刺 → 劈下的时间，
-/// 让伤害数字与 Persona 的斩击同一帧出现。只影响这一张牌的表现等待，不改任何数值。
+/// 结城理的出招等待：君王之刃推迟到 0.62s（Thanatos 显形 → 冲刺 → 劈下，伤害数字与斩击同帧）；
+/// 召唤 Persona 的攻击大招推迟到 0.32s（先开枪再结算）。只影响表现等待，不改任何数值。
 /// </summary>
 [HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.TriggerAnim))]
 public static class SovereignTimingPatch
 {
 	public static void Prefix(MegaCrit.Sts2.Core.Entities.Creatures.Creature creature, string triggerName, ref float waitTime)
 	{
-		if (triggerName == "sovereignBladeTrigger" && Makoto.Is(creature.Player))
+		if (!Makoto.Is(creature.Player))
+		{
+			return;
+		}
+		if (triggerName == "sovereignBladeTrigger")
 		{
 			waitTime = Vfx.PersonaFx.SovereignWait;
 		}
+		// 召唤 Persona 的攻击大招改播召唤器开枪（0.22s 扣扳机）：伤害等到开枪之后
+		else if (triggerName == "Attack" && Makoto.Node(creature.Player) is NCreature node && Pose.HasEvokerAttack(node))
+		{
+			waitTime = System.Math.Max(waitTime, 0.32f);
+		}
+	}
+}
+
+/// <summary>伤害数字：结城理打中的敌人，原版数字换成 P3R 样式（Popups.Damage）。</summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Vfx.NDamageNumVfx), nameof(MegaCrit.Sts2.Core.Nodes.Vfx.NDamageNumVfx.Create),
+	typeof(Creature), typeof(MegaCrit.Sts2.Core.Entities.Creatures.DamageResult))]
+public static class DamageNumberPatch
+{
+	public static void Postfix(Creature target, MegaCrit.Sts2.Core.Entities.Creatures.DamageResult result,
+		ref MegaCrit.Sts2.Core.Nodes.Vfx.NDamageNumVfx? __result)
+	{
+		if (__result == null || target.IsPlayer || !Popups.IsMakotoHit(target))
+		{
+			return;
+		}
+		NCreature? node = NCombatRoom.Instance?.GetCreatureNode(target);
+		Godot.Control? layer = Makoto.FxLayer();
+		if (node == null || layer == null)
+		{
+			return;
+		}
+		int amount = result.UnblockedDamage + (target.Monster is MegaCrit.Sts2.Core.Models.Monsters.Osty ? 0 : result.OverkillDamage);
+		__result.QueueFree();
+		__result = null;                                     // 调用方拿到 null 就不显示原版数字
+		ModEntry.Safe("P3 damage number", () => Popups.Damage(layer, node.GetInstanceId(), node.VfxSpawnPosition, amount));
 	}
 }

@@ -46,6 +46,10 @@ public static class CardFx
 		CardStyles.CardAnim anim = CardStyles.AnimFor(play.Card, play.Card.Type);
 		bool attack = anim == CardStyles.CardAnim.Sword;
 		bool summon = anim != CardStyles.CardAnim.None && CardStyles.Summons(play.Card);
+		if (summon && play.Card.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Attack && play.Card.GetType().Name != "SovereignBlade")
+		{
+			Pose.MarkEvokerAttack(caster);                // 攻击大招：attack → 召唤器开枪
+		}
 		if (anim == CardStyles.CardAnim.Gesture)
 		{
 			Pose.MarkLightCast(caster);
@@ -76,7 +80,6 @@ public static class CardFx
 					QueueEvoker(caster, 1.3f, Pal.DarkHour);
 				}
 				P3Fx.PowerUp(front, back, feet, head);
-				Fx.After(front, 0.15, "power tarot", () => Extras.TarotFlip(front, head + new Vector2(-30f, -150f), Pal.DarkHour));
 				break;
 		}
 
@@ -129,6 +132,7 @@ public static class CardFx
 		}
 
 		List<NCreature> targets = Targets(play);
+		CardSigs.Play(play.Card, new CardSigs.Ctx(front, back, caster, head, Makoto.Center(caster), feet, targets));
 		// 君王之刃 = 召唤 Thanatos 挥剑（Persona 骨骼动画）
 		if (play.Card.GetType().Name == "SovereignBlade")
 		{
@@ -208,6 +212,21 @@ public static class CardFx
 		return result;
 	}
 
+	// 召唤 Persona 的攻击牌打中敌人时弹"WEAK!"（P3R 原版弱点命中的感觉）；同一次出牌对同一个敌人只弹一次
+	private static readonly Dictionary<(CardModel Card, Creature Target), ulong> WeakShown = new();
+
+	private static void WeakPopup(CardModel card, NCreature node, Control front)
+	{
+		ulong now = Time.GetTicksMsec();
+		var key = (card, node.Entity);
+		if (WeakShown.TryGetValue(key, out ulong t) && now - t < 2000)
+		{
+			return;
+		}
+		WeakShown[key] = now;
+		Popups.Weak(front, node.VfxSpawnPosition);
+	}
+
 	public static void OnHit(CardModel card, IEnumerable<Creature> targets)
 	{
 		CardStyle style = CardStyles.For(card, card.Type);
@@ -235,6 +254,10 @@ public static class CardFx
 			if (node != null)
 			{
 				Elements.Hit(style.Hit, front, node.VfxSpawnPosition, node.GetBottomOfHitbox(), scale);
+				if (CardStyles.Summons(card) && !c.IsPlayer)
+				{
+					WeakPopup(card, node, front);
+				}
 			}
 		}
 	}
@@ -249,7 +272,7 @@ public static class CardFx
 		string name = card.GetType().Name;
 		bool reflect = name == "Reflect";
 		bool big = name is "IAmInvincible" or "Bulwark";
-		Extras.HexShield(front, target.VfxSpawnPosition, big ? 1.3f : 1f, reflect, big ? 0.7f : 0.45f);
+		Extras.HexShield(front, target.VfxSpawnPosition, big ? 1.6f : 1.25f, reflect, big ? 0.7f : 0.5f);
 	}
 
 	public static void OnForge(NCreature caster)

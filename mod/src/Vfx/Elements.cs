@@ -43,23 +43,24 @@ public static class Elements
 {
 	public static void Hit(Element e, Control layer, Vector2 center, Vector2 feet, float scale = 1f)
 	{
+		// v0.9：全部换成"大胆版"（Bold / Motifs）—— 尺寸大、层次多、自带确认感
 		switch (e)
 		{
-			case Element.Slash:
-				Slash(layer, center, Pal.Cyan, scale);
-				SlashScar(layer, center, Fx.Rand(-0.75f, -0.45f), scale);
+			case Element.Slash: Motifs.Cleave(layer, center, Pal.Cyan, 0.85f * scale, Fx.Rand(-0.75f, -0.4f)); break;
+			case Element.Royal: Motifs.Cleave(layer, center, Pal.Royal, 1.15f * scale, -0.6f); break;
+			case Element.Pierce: Motifs.Thrust(layer, center, Pal.Cyan, scale); break;
+			case Element.Strike: Motifs.Smash(layer, center, feet, Pal.Royal, scale, crack: scale >= 0.9f); break;
+			case Element.Agi: Bold.Agidyne(layer, center, feet, scale); break;
+			case Element.Bufu: Bold.Bufudyne(layer, center, feet, scale); break;
+			case Element.Zio: Bold.Ziodyne(layer, center, scale); break;
+			case Element.Hama: Bold.Hamaon(layer, center, feet, scale); break;
+			case Element.Mudo: Bold.Mudoon(layer, center, scale); break;
+			case Element.Megido: Bold.Megidolaon(layer, center, scale); break;
+			case Element.Meteor: Motifs.Meteor(layer, center, Pal.Cyan, scale); break;
+			case Element.Star:
+				Star(layer, center, scale * 1.3f);
+				Bold.Impact(layer, center, Pal.Ice, 0.7f * scale, MegaCrit.Sts2.Core.Nodes.Vfx.Utilities.ShakeStrength.Weak);
 				break;
-			case Element.Royal: Slash(layer, center, Pal.Royal, scale * 1.35f, heavy: true); break;
-			case Element.Pierce: Pierce(layer, center, Pal.Cyan, scale); break;
-			case Element.Strike: Strike(layer, center, scale); break;
-			case Element.Agi: Agi(layer, center, feet, scale); break;
-			case Element.Bufu: Bufu(layer, center, feet, scale); break;
-			case Element.Zio: Zio(layer, center, scale); break;
-			case Element.Hama: Hama(layer, center, feet, scale); break;
-			case Element.Mudo: Mudo(layer, center, scale); break;
-			case Element.Megido: Megido(layer, center, scale); break;
-			case Element.Meteor: Meteor(layer, center, scale); break;
-			case Element.Star: Star(layer, center, scale); break;
 		}
 	}
 

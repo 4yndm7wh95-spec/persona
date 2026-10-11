@@ -94,14 +94,39 @@ public static class Pose
 		}
 	}
 
-	/// <summary>游戏请求 cast 时，若这次出牌已标记为不召唤，返回 cast_light。</summary>
+	private static readonly Dictionary<ulong, ulong> EvokerAttack = new();
+
+	/// <summary>这次出牌是召唤 Persona 的攻击大招：接下来 1 秒内游戏请求的 attack 换成召唤器开枪（attack_sovereign）。</summary>
+	public static void MarkEvokerAttack(NCreature node)
+	{
+		if (node.Visuals.SpineBody?.TryGetAnimationState() is MegaAnimationState state)
+		{
+			EvokerAttack[state.BoundObject.GetInstanceId()] = Godot.Time.GetTicksMsec() + 1000;
+		}
+	}
+
+	/// <summary>这个角色是否有待执行的召唤器攻击（伤害等待据此延后到开枪之后，见 SovereignTimingPatch）。</summary>
+	public static bool HasEvokerAttack(NCreature node) =>
+		node.Visuals.SpineBody?.TryGetAnimationState() is MegaAnimationState state
+		&& EvokerAttack.TryGetValue(state.BoundObject.GetInstanceId(), out ulong until) && Godot.Time.GetTicksMsec() <= until;
+
+	/// <summary>
+	/// 按这次出牌的标记改写动画：不召唤的施法 cast → cast_light；召唤 Persona 的攻击 attack → attack_sovereign
+	/// （正在举枪瞄准时 → sovereign_from_aim）。
+	/// </summary>
 	public static string? Light(MegaAnimationState state, string requested)
 	{
-		if (requested != "cast" || !LightCast.Remove(state.BoundObject.GetInstanceId(), out ulong until))
+		ulong id = state.BoundObject.GetInstanceId();
+		ulong now = Godot.Time.GetTicksMsec();
+		if (requested == "cast" && LightCast.Remove(id, out ulong until))
 		{
-			return null;
+			return now <= until ? "cast_light" : null;
 		}
-		return Godot.Time.GetTicksMsec() <= until ? "cast_light" : null;
+		if (requested == "attack" && EvokerAttack.Remove(id, out ulong until2) && now <= until2)
+		{
+			return FromHolding(state.GetCurrentAnimationName(), "attack_sovereign") ?? "attack_sovereign";
+		}
+		return null;
 	}
 
 	/// <summary>游戏请求播放 requested 时，如果角色正处于预备姿势，返回"从预备姿势接招"的版本。</summary>
