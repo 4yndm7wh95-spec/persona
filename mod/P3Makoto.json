@@ -3,7 +3,7 @@
   "name": "P3 结城理（储君换皮）",
   "author": "brooks",
   "description": "将储君替换为 Persona 3 主角结城理，附带专属出牌与预备出牌特效。纯视觉，不改玩法。",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "has_pck": true,
   "has_dll": true,
   "affects_gameplay": false
