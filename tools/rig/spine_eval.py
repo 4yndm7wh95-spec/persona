@@ -170,15 +170,38 @@ class Skeleton:
                 out.append((s["name"], s["bone"], name, alpha))
         return out
 
+    def slot_style(self, anim, t):
+        """各槽在 t 时的 (颜色 rgba 0~1, 是否加色)。颜色取 rgba 时间线（支持 stepped），否则取槽的 setup 颜色。"""
+        st = (self.data.get("animations", {}).get(anim, {}).get("slots", {})) if anim else {}
+        out = {}
+        for s in self.data["slots"]:
+            col = s.get("color", "ffffffff")
+            c = [int(col[i:i + 2], 16) / 255.0 for i in (0, 2, 4, 6)]
+            ck = st.get(s["name"], {}).get("rgba")
+            if ck:
+                keys = [{"time": k["time"], "r": int(k["color"][0:2], 16) / 255.0, "g": int(k["color"][2:4], 16) / 255.0,
+                         "b": int(k["color"][4:6], 16) / 255.0, "a": int(k["color"][6:8], 16) / 255.0,
+                         **({"curve": k["curve"]} if "curve" in k else {})} for k in ck]
+                c = list(sample(keys, t, ["r", "g", "b", "a"]))
+            out[s["name"]] = (c, s.get("blend") == "additive")
+        return out
+
     def render(self, anim=None, t=0.0, canvas=(900, 1300), origin=(450, 1200), bg=(0, 0, 0, 0)):
         """origin = Spine 世界原点在画布上的像素位置。"""
         W = self.world(anim, t)
         img = Image.new("RGBA", canvas, bg)
         skin = self.data["skins"][0]["attachments"]
         flip = np.array([[1, 0, origin[0]], [0, -1, origin[1]], [0, 0, 1]], dtype=np.float64)
+        style = self.slot_style(anim, t)
         for slot, bone, att, alpha in self.attachments(anim, t):
             a = skin[slot][att]
             src = self.images[a.get("path", att)]
+            col, additive = style[slot]
+            alpha = col[3]
+            if col[:3] != [1.0, 1.0, 1.0] and col[:3] != (1.0, 1.0, 1.0):     # 槽颜色染色（乘 rgb）
+                arr = np.asarray(src.convert("RGBA")).astype(np.float32)
+                arr[..., :3] *= np.array(col[:3], np.float32)
+                src = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8), "RGBA")
             if alpha < 0.999:
                 src = src.copy()
                 src.putalpha(src.getchannel("A").point(lambda v: int(v * alpha)))
@@ -192,7 +215,13 @@ class Skeleton:
             M = flip @ W[bone] @ A @ to_att  # 源图像素 → 画布像素
             inv = np.linalg.inv(M)
             layer = src.transform(canvas, Image.AFFINE, data=tuple(inv[:2].flatten()), resample=Image.BILINEAR)
-            img.alpha_composite(layer)
+            if additive:                                                        # 加色：rgb × alpha 叠加
+                L = np.asarray(layer).astype(np.float32) / 255
+                base = np.asarray(img).astype(np.float32) / 255
+                base[..., :3] = np.clip(base[..., :3] + L[..., :3] * L[..., 3:], 0, 1)
+                img = Image.fromarray((base * 255).astype(np.uint8), "RGBA")
+            else:
+                img.alpha_composite(layer)
         return img
 
     def mesh_world(self, a, W):
