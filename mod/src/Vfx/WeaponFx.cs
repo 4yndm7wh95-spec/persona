@@ -101,55 +101,77 @@ public static class WeaponFx
 		Fx.FreeAfter(root, 1.2);
 	}
 
-	/// <summary>挥砍拖尾：在接下来的 0.16 秒里记录剑身位置，生成一条渐隐的弧形光带。</summary>
-	public static void SlashTrail(Control layer, NCreature node, Color tint)
+	/// <summary>
+	/// 斩击残影：从蓄力开始记录剑尖 / 剑身轨迹，帧与帧之间用 Catmull-Rom 曲线补点（挥剑只用 1~2 帧，不补就只剩一个三角），
+	/// 画成一道宽大的新月：外层大范围青色光晕 + 中层色带 + 白色刃芯；扫完后停留一下再收窄淡出。
+	/// </summary>
+	public static void SlashTrail(Control layer, NCreature node, Color tint, float record = 0.16f, float width = 1f)
 	{
 		Node2D root = Fx.Root(layer, Vector2.Zero, "P3SlashTrail");
 		root.TopLevel = true;
 		root.GlobalPosition = Vector2.Zero;
-		Polygon2D ribbon = Fx.Poly(root, new Vector2[3], new Color(tint, 0.85f), additive: true);
-		Polygon2D edge = Fx.Poly(root, new Vector2[3], new Color(Pal.White, 1f), additive: true);
+		Polygon2D halo = Fx.Poly(root, new Vector2[3], new Color(tint, 0.35f), additive: true);
+		Polygon2D ribbon = Fx.Poly(root, new Vector2[3], new Color(tint, 0.9f), additive: true);
+		Polygon2D core = Fx.Poly(root, new Vector2[3], Pal.White, additive: true);
 		var hilts = new System.Collections.Generic.List<Vector2>();
 		var tips = new System.Collections.Generic.List<Vector2>();
-		Fx.Animate(root, 0.42f, t =>
+		const float total = 0.55f;
+		Fx.Animate(root, total, t =>
 		{
-			if (t < 0.4f && GodotObject.IsInstanceValid(node) && Bone(node, "hand") is Vector2 h && Bone(node, "sword_tip") is Vector2 s)
+			float time = t * total;
+			if (time < record && GodotObject.IsInstanceValid(node) && Bone(node, "hand") is Vector2 h && Bone(node, "sword_tip") is Vector2 s)
 			{
-				hilts.Add(h.Lerp(s, 0.15f));
-				tips.Add(s);
+				if (tips.Count == 0 || tips[^1].DistanceSquaredTo(s) > 4f)
+				{
+					hilts.Add(h.Lerp(s, 0.12f));
+					tips.Add(s);
+				}
 			}
-			int n = tips.Count;
-			if (n < 2)
+			if (tips.Count < 2)
 			{
 				return;
 			}
-			// 带状多边形：外缘 = 剑尖轨迹，内缘 = 剑身 35% 处轨迹；越旧越窄
-			var outer = new Vector2[n];
-			var inner = new Vector2[n];
-			for (int i = 0; i < n; i++)
+			Vector2[] o = Smooth(tips, 8);
+			Vector2[] inn = Smooth(hilts, 8);
+			int n = o.Length;
+			// 收尾：扫完后整条残影从尾部开始收窄
+			float shrink = Ease.InCubic(Mathf.Clamp((time - record) / (total - record), 0f, 1f));
+			Vector2[] Band(float inner, float outerPush)
 			{
-				float age = (float)i / (n - 1);
-				outer[i] = tips[i];
-				inner[i] = tips[i].Lerp(hilts[i], age);
+				var poly = new Vector2[n * 2];
+				for (int i = 0; i < n; i++)
+				{
+					float age = 1f - (float)i / (n - 1);                    // 0 = 最新
+					float w = Mathf.Clamp(1f - age * 0.85f - shrink, 0f, 1f) * width;
+					Vector2 dir = (o[i] - inn[i]).Normalized();
+					poly[i] = o[i] + dir * outerPush * w;
+					poly[n * 2 - 1 - i] = o[i].Lerp(inn[i], inner * w);
+				}
+				return poly;
 			}
-			var poly = new Vector2[n * 2];
-			for (int i = 0; i < n; i++)
-			{
-				poly[i] = outer[i];
-				poly[n * 2 - 1 - i] = inner[i];
-			}
-			ribbon.Polygon = poly;
-			var thin = new Vector2[n * 2];
-			for (int i = 0; i < n; i++)
-			{
-				thin[i] = outer[i];
-				thin[n * 2 - 1 - i] = outer[i].Lerp(inner[i], 0.25f);
-			}
-			edge.Polygon = thin;
-			float fade = 1f - Ease.InCubic(Ease.Segment(t, 0.45f, 0.55f));
-			root.Modulate = new Color(1f, 1f, 1f, fade);
+			halo.Polygon = Band(0.95f, 26f);
+			ribbon.Polygon = Band(0.7f, 6f);
+			core.Polygon = Band(0.16f, 0f);
+			root.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(Mathf.Clamp((time - 0.3f) / 0.25f, 0f, 1f)));
 		});
-		Fx.FreeAfter(root, 0.5);
+		Fx.FreeAfter(root, total + 0.05);
+	}
+
+	/// <summary>Catmull-Rom 插值：每两个采样点之间补 sub 个点。</summary>
+	private static Vector2[] Smooth(System.Collections.Generic.List<Vector2> p, int sub)
+	{
+		var outp = new System.Collections.Generic.List<Vector2>();
+		for (int i = 0; i < p.Count - 1; i++)
+		{
+			Vector2 p0 = p[Mathf.Max(i - 1, 0)], p1 = p[i], p2 = p[i + 1], p3 = p[Mathf.Min(i + 2, p.Count - 1)];
+			for (int k = 0; k < sub; k++)
+			{
+				float t = k / (float)sub, t2 = t * t, t3 = t2 * t;
+				outp.Add(0.5f * (2f * p1 + (-p0 + p2) * t + (2f * p0 - 5f * p1 + 4f * p2 - p3) * t2 + (-p0 + 3f * p1 - 3f * p2 + p3) * t3));
+			}
+		}
+		outp.Add(p[^1]);
+		return outp.ToArray();
 	}
 
 	/// <summary>蓄力到顶：剑尖闪出十字星光（提示"要砍了"）。</summary>

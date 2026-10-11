@@ -498,9 +498,10 @@ def make_animations(rig, images):
                               foot_r={"x": 22, "y": 20},
                               **{FORE["s_back"]: {"r": -6}, HAND["s_back"]: {"r": -8}}))
     BACK_DEEP = add(BACK, B(torso={"r": 3}, **ALL(-5), **{HAND["s_back"]: {"r": -6}}))
+    # 斩出：伸直的手臂（剑与手臂成一线）从身后下方甩过一个 ~134° 的大弧，略越过水平（剑尖朝右上）后回落到指向敌人
     EXTEND = add(A("s_ext"), B(hip={"x": 54, "y": -62}, spine={"r": -11}, torso={"r": -15}, head={"r": 10},
                                foot_r={"x": 80, "y": 0},
-                               **ALL(6), **{FORE["s_ext"]: {"r": 4}, HAND["s_ext"]: {"r": 6}}))
+                               **ALL(18), **{FORE["s_ext"]: {"r": 6}, HAND["s_ext"]: {"r": 10}}))
     HOLD = add(A("s_ext"), B(hip={"x": 58, "y": -66}, spine={"r": -12}, torso={"r": -16}, head={"r": 11},
                              foot_r={"x": 82, "y": 0},
                              **ALL(2), **{FORE["s_ext"]: {"r": 0}, HAND["s_ext"]: {"r": 2}}))
@@ -531,14 +532,16 @@ def make_animations(rig, images):
 
     CUT = lambda u: u * u * u
     # 接触帧（剑扫过最低点、朝向敌人）约 0.08s；0.10s 到定格，早于游戏 0.15s 的伤害结算
-    atk = [(0, IDLE), (0.04, BACK, out_cubic), (0.06, BACK_DEEP), (0.1, EXTEND, CUT), (0.22, HOLD, out_cubic), (0.44, HOLD),
+    # 蓄力 0.04 → 0.055 换成伸直的手臂（此时它对准身后下方，看不出切换）→ 0.105 甩到最高点（接触帧 ≈0.08）
+    # → 0.17 回落定格、剑尖指敌 → 0.6 甩剑 → 0.9 收招
+    atk = [(0, IDLE), (0.04, BACK, out_cubic), (0.055, BACK_DEEP), (0.105, EXTEND, CUT), (0.17, HOLD, out_back), (0.44, HOLD),
            (0.6, FLICK, in_out_sine), (0.9, IDLE, out_cubic)]
-    bake(rig, images, "attack", 0.95, seq(atk), [(0, "hang"), (0.005, "s_back", 0.03), (0.065, "s_ext", 0.03), (0.72, "hang", 0.12)],
-         speed=3.0, fade=0.03, events=[(0.0, "weapon_draw"), (0.045, "weapon_windup"), (0.08, "weapon_slash"), (0.7, "weapon_sheath")])
-    atk_r = [(0, S_READY), (0.03, BACK, out_cubic), (0.045, BACK_DEEP), (0.085, EXTEND, CUT), (0.2, HOLD, out_cubic), (0.42, HOLD),
+    bake(rig, images, "attack", 0.95, seq(atk), [(0, "hang"), (0.005, "s_back", 0.03), (0.055, "s_ext", 0.012), (0.72, "hang", 0.12)],
+         speed=3.0, fade=0.03, events=[(0.0, "weapon_draw"), (0.04, "weapon_windup"), (0.08, "weapon_slash"), (0.7, "weapon_sheath")])
+    atk_r = [(0, S_READY), (0.03, BACK, out_cubic), (0.042, BACK_DEEP), (0.09, EXTEND, CUT), (0.155, HOLD, out_back), (0.42, HOLD),
              (0.58, FLICK, in_out_sine), (0.88, IDLE, out_cubic)]
-    bake(rig, images, "attack_from_ready", 0.95, seq(atk_r), [(0, "s_ready"), (0.005, "s_back", 0.025), (0.05, "s_ext", 0.03), (0.7, "hang", 0.12)],
-         speed=3.0, fade=0.03, events=[(0.02, "weapon_windup"), (0.065, "weapon_slash"), (0.68, "weapon_sheath")])
+    bake(rig, images, "attack_from_ready", 0.95, seq(atk_r), [(0, "s_ready"), (0.005, "s_back", 0.025), (0.042, "s_ext", 0.012), (0.7, "hang", 0.12)],
+         speed=3.0, fade=0.03, events=[(0.025, "weapon_windup"), (0.065, "weapon_slash"), (0.68, "weapon_sheath")])
     v4.STEP_ANIMS.update({"attack", "attack_from_ready"})
 
     cast = [(0, IDLE), (0.08, PRESENT), (0.12, PRESENT), (0.22, EVOKER), (0.26, TENSE), (0.272, KICK), (0.35, KICK), (0.55, EVOKER), (0.66, LOWER), (0.92, IDLE)]

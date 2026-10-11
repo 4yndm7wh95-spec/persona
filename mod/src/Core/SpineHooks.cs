@@ -67,9 +67,9 @@ public static class SpineHooks
 				break;
 			case "weapon_windup":
 				WeaponFx.TipGlint(front, node);
+				WeaponFx.SlashTrail(front, node, Pal.Cyan);           // 从蓄力就开始记录轨迹，残影才完整
 				break;
 			case "weapon_slash":
-				WeaponFx.SlashTrail(front, node, Pal.Cyan);
 				WeaponFx.BladeGhosts(front, node, Pal.Cyan);
 				WeaponFx.StepDust(Makoto.FxLayer(back: true) ?? front, Makoto.Feet(node));
 				break;

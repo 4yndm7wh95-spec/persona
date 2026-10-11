@@ -34,8 +34,9 @@ public static class TargetingFx
 		}
 		_caster = node;
 		// 要花辉星的牌：对应张数的塔罗牌从环绕轨道里抽出，排在身前待命
+		// 不花辉星的牌 GetStarCostWithModifiers() 返回 -1，不能当成 X 费
 		int starCost = card.HasStarCostX ? -1 : card.GetStarCostWithModifiers();
-		if (starCost != 0)
+		if (card.HasStarCostX || starCost > 0)
 		{
 			StarOrbit.Preview(node, starCost);
 		}

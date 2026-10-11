@@ -11,7 +11,7 @@ namespace P3Makoto.Vfx;
 /// <summary>
 /// 辉星实体化：结城理持有的每一颗辉星 = 一张环绕在他身边的蓝色塔罗牌（大阿卡纳；他是"愚者"——Wild Card）。
 /// - 获得：一张牌从他胸口的蓝光里凝出，翻转着飞进环绕轨道。
-/// - 预备打出要花 N 颗辉星的牌：N 张牌离开轨道，在他身前排开待命（发着光）；取消则飞回轨道。
+/// - 预备打出要花 N 颗辉星的牌：N 张牌离开轨道，升到他后脑勺偏上的位置排成拱形待命（发着光）；取消则飞回轨道。
 /// - 消耗：这 N 张牌向前飞出、翻面，碎成玻璃和蓝蝶。
 /// 每帧对照真实的辉星数量（PlayerCombatState.Stars）对账，所以任何来源的增减都会有对应动画。
 /// 轨道是压扁的椭圆：后半圈的牌放在人物身后的特效层，前半圈放在身前，读起来像真的绕着他转。
@@ -167,11 +167,13 @@ public static class StarOrbit
 			float scale;
 			if (i < o.Preview)
 			{
-				// 身前待命：在胸前排成一道向上扬的弧，朝向敌人一侧
+				// 待命：升到后脑勺偏上的位置，排成一道拱形（中间最高），轻轻上下浮动
 				float u = o.Preview == 1 ? 0.5f : i / (float)(o.Preview - 1);
-				target = center + new Vector2(70f + 150f * u, -70f - 40f * Mathf.Sin(u * Mathf.Pi) - 10f * i);
+				Vector2 above = Makoto.Head(o.Creature) + new Vector2(-55f, -95f);
+				float span = Mathf.Min(48f * (o.Preview - 1), 300f);
+				target = above + new Vector2(span * (u - 0.5f), -34f * Mathf.Sin(u * Mathf.Pi) + 5f * Mathf.Sin(_time * 3f + i));
 				depth = 1f;
-				scale = 1.15f + 0.05f * Mathf.Sin(_time * 6f + i);
+				scale = 1.2f + 0.05f * Mathf.Sin(_time * 6f + i);
 			}
 			else
 			{
