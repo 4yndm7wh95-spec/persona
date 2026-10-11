@@ -79,6 +79,8 @@ public static class CharSelectBg
 		{
 			return;
 		}
+		Node2D group = new() { Name = "Portrait" };                 // 立绘（含残影、光晕）一组，切入横幅和碎片都插在它下面
+		root.AddChild(group);
 		Sprite2D Make(Color modulate, bool additive, float extraScale)
 		{
 			Sprite2D sp = new() { Texture = tex, Position = PortraitPos + new Vector2(420f, 0f), Scale = Vector2.One * PortraitScale * extraScale, Modulate = modulate };
@@ -86,7 +88,7 @@ public static class CharSelectBg
 			{
 				sp.Material = Fx.Additive;
 			}
-			root.AddChild(sp);
+			group.AddChild(sp);
 			return sp;
 		}
 		Sprite2D ghost2 = Make(new Color(Pal.Cyan, 0.0f), true, 1.0f);
@@ -112,7 +114,7 @@ public static class CharSelectBg
 			glow.Position = main.Position;
 			glow.Modulate = new Color(Pal.Cyan, 0.3f * u);
 		});
-		Fx.After(main, 0.45, "portrait landed", () => Selected(root));
+		Fx.After(main, 0.45, "portrait landed", () => Selected(root, group));
 		Fx.FreeAfter(ghost1, 0.7);
 		Fx.FreeAfter(ghost2, 0.7);
 
@@ -134,7 +136,7 @@ public static class CharSelectBg
 	/// 他抬手用召唤器对太阳穴开一枪（cast 动画）→ 开枪那一帧：召唤器爆发 + 玻璃碎片 + 蓝蝶群 + 枪声，
 	/// 同时上方切入 P3R 色带"WILD CARD / PERSONA ▸ ORPHEUS"。之后回到待机。
 	/// </summary>
-	private static void Selected(Control root)
+	private static void Selected(Control root, Node2D portrait)
 	{
 		// v0.9.2：选中时也播一次召唤切入 —— 眼神特写横幅（立绘仍在最前面）→ 0.55s 扣扳机 → 横幅碎裂 → 召唤器爆发、蓝蝶、枪声、眼中蓝光
 		Vector2 temple = root.GlobalPosition + PortraitPos + PortraitHead * PortraitScale + new Vector2(-30f, 0f);
@@ -145,15 +147,7 @@ public static class CharSelectBg
 			WaterRipple(root, root.GlobalPosition + new Vector2(PortraitPos.X - 60f, HorizonY + 150f));
 			Audio.Sfx.Play(Audio.Snd.Gunshot, 1.0f);
 			EyeGlow(root, root.GlobalPosition + PortraitPos + PortraitEye * PortraitScale);
-		}, 0.55);
-		// 立绘留在横幅前面（横幅、色块都在它后面）
-		foreach (Node n in root.GetChildren())
-		{
-			if (n is Sprite2D sp && sp.Texture != null && sp.Texture.ResourcePath == PortraitPath)
-			{
-				root.MoveChild(sp, root.GetChildCount() - 1);
-			}
-		}
+		}, 0.7, below: portrait);
 	}
 
 	/// <summary>

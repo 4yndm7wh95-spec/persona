@@ -37,6 +37,7 @@ public static class CutInFx
 		public Action<float>? OnFire;
 		public Func<Vector2>? Impact;
 		public Control Back = null!;
+		public Node? Below;                       // 碎片等一律插到这个节点下面（选人界面：立绘始终在玻璃前面）
 		public bool Fired;
 	}
 
@@ -63,9 +64,37 @@ public static class CutInFx
 	}
 
 	/// <summary>不在战斗里（选人界面）：横幅和碎片都放在 layer 上，fireAfter 秒后自动扣扳机碎裂，冲击点固定。</summary>
-	public static void BeginScreen(Control layer, Vector2 impact, string title, string persona, Action<float>? onFire, double fireAfter)
+	/// <summary>below：layer 上的一个子节点（立绘）。横幅、碎片、闪光都插在它下面，碎裂时也不会盖住人物。</summary>
+	public static void BeginScreen(Control layer, Vector2 impact, string title, string persona, Action<float>? onFire, double fireAfter, Node? below = null)
 	{
 		BeginOn(layer, layer, layer.GetInstanceId(), title, persona, onFire, () => impact, fireAfter);
+		if (Live.TryGetValue(layer.GetInstanceId(), out State? st))
+		{
+			st.Below = below;
+			KeepBelow(layer, below, 0, st.Ui);                  // 技能名和"咔"留在人物前面
+		}
+	}
+
+	/// <summary>把 parent 里从 from 开始新加的子节点（below 本身除外）按原顺序挪到 below 下面。</summary>
+	private static void KeepBelow(Node parent, Node? below, int from, Node? except = null)
+	{
+		if (below == null || !GodotObject.IsInstanceValid(below) || below.GetParent() != parent)
+		{
+			return;
+		}
+		var added = new List<Node>();
+		for (int i = from; i < parent.GetChildCount(); i++)
+		{
+			Node n = parent.GetChild(i);
+			if (n != below && n != except && n.GetIndex() > below.GetIndex())
+			{
+				added.Add(n);
+			}
+		}
+		foreach (Node n in added)
+		{
+			parent.MoveChild(n, below.GetIndex());
+		}
 	}
 
 	private static void BeginOn(Control back, Control front, ulong id, string title, string persona, Action<float>? onFire, Func<Vector2> impact, double timeout)
@@ -110,12 +139,12 @@ public static class CutInFx
 		Fx.Animate(decor, 3.0, t =>
 		{
 			float time = t * 3f;
-			float a = Ease.OutExpo(Mathf.Clamp(time / 0.2f, 0f, 1f));
-			float b = Ease.OutExpo(Mathf.Clamp((time - 0.04f) / 0.2f, 0f, 1f));
+			float a = Ease.OutQuint(Mathf.Clamp(time / 0.3f, 0f, 1f));
+			float b = Ease.OutQuint(Mathf.Clamp((time - 0.05f) / 0.3f, 0f, 1f));
 			slabs.Position = new Vector2(-size.X * 0.5f * (1f - a), 0f);
 			topSlab.Position = new Vector2(size.X * 0.5f * (1f - b), 0f);
 			word.Position = new Vector2(size.X * 0.03f + 30f * time, size.Y * 1.08f);
-			Fx.SetParam(disc, "reveal", Ease.OutExpo(Mathf.Clamp((time - 0.02f) / 0.24f, 0f, 1f)));
+			Fx.SetParam(disc, "reveal", Ease.OutQuint(Mathf.Clamp((time - 0.03f) / 0.36f, 0f, 1f)));
 			arc1.Rotation = 0.25f * time;
 			arc2.Rotation = -0.18f * time;
 			arc1.Modulate = arc2.Modulate = new Color(1f, 1f, 1f, b);
@@ -173,17 +202,19 @@ public static class CutInFx
 		ka.Scale = Vector2.One * 2.2f;
 		ka.Modulate = new Color(1f, 1f, 1f, 0f);
 
-		float open = 0.12f;
+		// P3R 的节奏：横幅"啪"地张开（0.2s，略过冲再落定）→ 长停顿慢推（眼神）→ 碎裂
+		const float open = 0.2f;
 		Fx.Animate(st.Band, 3.0, t =>
 		{
 			float time = t * 3f;
-			float e = Ease.OutExpo(Mathf.Clamp(time / open, 0f, 1f));
-			st.Band.Scale = new Vector2(1f, Mathf.Max(e, 0.02f));
+			float k0 = Mathf.Clamp(time / open, 0f, 1f);
+			float e = Ease.OutQuint(k0);
+			st.Band.Scale = new Vector2(1f + 0.04f * (1f - e), Mathf.Max(Ease.OutBack(k0) * 0.97f + 0.03f * e, 0.02f));
 			st.Pan = -70f * Mathf.Min(time, 1f);
 			st.Face.UV = BandUv(st);                          // 横向缓慢平移（碎片用同一个映射 ToUv，严丝合缝）
 			st.Dim.Color = new Color(0.01f, 0.03f, 0.1f, 0.6f * e);
-			tag.Position = new Vector2(Mathf.Lerp(-420f, 70f, Ease.OutExpo(Mathf.Clamp(time / 0.16f, 0f, 1f))), size.Y * 0.08f);
-			float k = Mathf.Clamp((time - 0.06f) / 0.1f, 0f, 1f);
+			tag.Position = new Vector2(Mathf.Lerp(-420f, 70f, Ease.OutQuint(Mathf.Clamp((time - 0.04f) / 0.26f, 0f, 1f))), size.Y * 0.08f);
+			float k = Mathf.Clamp((time - 0.1f) / 0.16f, 0f, 1f);
 			ka.Scale = Vector2.One * Mathf.Lerp(2.2f, 1f, Ease.OutBack(k));
 			ka.Modulate = new Color(1f, 1f, 1f, k);
 		});
@@ -205,7 +236,9 @@ public static class CutInFx
 		float elapsed = (Time.GetTicksMsec() - st.Start) / 1000f;
 		if (GodotObject.IsInstanceValid(st.Back))
 		{
+			int before = st.Back.GetChildCount();
 			Shatter(st.Back, st, st.Impact?.Invoke() ?? new Vector2(st.Screen.X * 0.3f, st.Cy));
+			KeepBelow(st.Back, st.Below, before);
 		}
 		Clear(st, keepDim: true);
 		st.OnFire?.Invoke(elapsed);
@@ -217,18 +250,22 @@ public static class CutInFx
 		if (GodotObject.IsInstanceValid(st.Decor))
 		{
 			Node2D decor = st.Decor;
-			Fx.Animate(decor, 0.35, t =>
+			Fx.Animate(decor, 0.55, t =>
 			{
-				decor.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(t));
-				decor.Scale = Vector2.One * (1f + 0.06f * Ease.OutCubic(t));
+				decor.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InOutCubic(t));
+				decor.Scale = Vector2.One * (1f + 0.05f * Ease.OutCubic(t));
 			});
-			Fx.FreeAfter(decor, 0.4);
+			Fx.FreeAfter(decor, 0.6);
 		}
 		if (GodotObject.IsInstanceValid(st.Ui))
 		{
 			Node2D ui = st.Ui;
-			Fx.Animate(ui, 0.15, t => ui.Modulate = new Color(1f, 1f, 1f, 1f - t));
-			Fx.FreeAfter(ui, 0.2);
+			Fx.Animate(ui, 0.3, t =>
+			{
+				ui.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InOutCubic(t));
+				ui.Position = new Vector2(-40f * Ease.InCubic(t), 0f);
+			});
+			Fx.FreeAfter(ui, 0.35);
 		}
 		if (GodotObject.IsInstanceValid(st.Dim))
 		{
@@ -368,10 +405,11 @@ public static class CutInFx
 		{
 			Fx.Line(cracks, piece, new Color(1f, 1f, 1f, 0.95f), 2.5f, closed: true);
 		}
-		Fx.Animate(cracks, 0.1, t => cracks.Modulate = new Color(1f, 1f, 1f, 1f - t));
-		Fx.FreeAfter(cracks, 0.12);
+		Fx.Animate(cracks, 0.16, t => cracks.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(t)));
+		Fx.FreeAfter(cracks, 0.18);
 
-		const float total = 0.85f;
+		// 碎片：一下子炸开、迅速减速（指数衰减）、再慢慢漂着转着淡出 —— P3R 碎玻璃的"爆发 + 悬停"节奏
+		const float total = 1.35f, tau = 0.2f;
 		foreach (Vector2[] piece in pieces)
 		{
 			Vector2 c = Vector2.Zero;
@@ -391,21 +429,22 @@ public static class CutInFx
 			Polygon2D glint = Fx.Poly(shard, local, new Color(0.7f, 0.95f, 1f, 0.5f), additive: true);
 			Vector2 dir = (c - hit).Normalized();
 			float dist = (c - hit).Length();
-			Vector2 vel = dir * (420f + dist * 1.1f) * Fx.Rand(0.75f, 1.25f) + new Vector2(0f, Fx.Rand(-160f, 40f));
-			float spin = Fx.Rand(-5f, 5f);
+			Vector2 vel = dir * (1500f + dist * 2.4f) * Fx.Rand(0.75f, 1.25f) + new Vector2(0f, Fx.Rand(-500f, 150f));
+			float spin = Fx.Rand(-9f, 9f);
 			float grow = Fx.Rand(0f, 1f) < 0.4f ? Fx.Rand(0.3f, 0.9f) : Fx.Rand(-0.3f, 0.1f);   // 一部分飞向镜头（放大）
-			float delay = 0.04f + dist / 6000f;
+			float delay = 0.05f + dist / 7000f;
 			Vector2 p0 = c;
 			Fx.Animate(shard, total, t =>
 			{
 				float time = t * total - delay;
 				if (time < 0f) return;
 				float tt = time;
-				shard.Position = p0 + vel * tt + new Vector2(0f, 500f * tt * tt);
-				shard.Rotation = spin * tt;
-				shard.Scale = Vector2.One * (1f + grow * Ease.OutCubic(Mathf.Clamp(tt / 0.6f, 0f, 1f)));
-				glint.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(1f - tt / 0.15f, 0f, 1f) + 0.25f * Mathf.Abs(Mathf.Sin(tt * 18f + spin)));
-				shard.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(Mathf.Clamp((tt - 0.3f) / 0.45f, 0f, 1f)));
+				float burst = tau * (1f - Mathf.Exp(-tt / tau));                 // 爆发后迅速减速
+				shard.Position = p0 + vel * burst + vel * 0.06f * tt + new Vector2(0f, 90f * tt * tt);
+				shard.Rotation = spin * burst + spin * 0.12f * tt;
+				shard.Scale = Vector2.One * (1f + grow * Ease.OutCubic(Mathf.Clamp(tt / 0.9f, 0f, 1f)));
+				glint.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(1f - tt / 0.2f, 0f, 1f) + 0.3f * Mathf.Abs(Mathf.Sin(tt * 7f + spin)));
+				shard.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InOutCubic(Mathf.Clamp((tt - 0.4f) / 0.85f, 0f, 1f)));
 			});
 		}
 		Fx.FreeAfter(root, total + 0.1);
