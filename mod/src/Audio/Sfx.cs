@@ -183,11 +183,11 @@ public static class Sfx
 			}
 		}
 
-		/// <summary>钟琴 / 铃声：非谐波泛音（1, 2, 2.76, 5.4, 8.9 倍），高泛音衰减更快。</summary>
-		public void Bell(float t0, float f, float decay, float amp)
+		/// <summary>钟琴 / 铃声：非谐波泛音（1, 2, 2.76, 5.4, 8.9 倍），高泛音衰减更快。parts 限制泛音个数（越少越闷）。</summary>
+		public void Bell(float t0, float f, float decay, float amp, int partCount = 5)
 		{
 			(float r, float a, float d)[] parts = { (1f, 1f, 1f), (2f, 0.5f, 0.7f), (2.76f, 0.35f, 0.45f), (5.4f, 0.18f, 0.25f), (8.93f, 0.08f, 0.15f) };
-			foreach ((float r, float a, float d) in parts)
+			foreach ((float r, float a, float d) in parts[..Math.Min(partCount, parts.Length)])
 			{
 				if (f * r < 11000f)
 				{
@@ -209,6 +209,30 @@ public static class Sfx
 				Tone(at, tau * 6f, _ => f, Atk(0.0003f, tau), a);
 				Tone(at, tau * 4f, _ => f * 2.71f, Atk(0.0003f, tau * 0.5f), a * 0.35f);
 				Noise(at, 0.006f, Atk(0.0002f, 0.0015f), _ => f, 0.3f, F.Band, a * 0.6f);
+			}
+		}
+
+		/// <summary>合成器音色（锯齿感）：基频 + 若干谐波，轻微失谐的两层叠出厚度；env 包络。</summary>
+		public void Pad(float t0, float dur, float f, Func<float, float> env, float amp, int harmonics = 3)
+		{
+			for (int h = 1; h <= harmonics; h++)
+			{
+				float fh = f * h;
+				Tone(t0, dur, _ => fh, env, amp / h);
+				Tone(t0, dur, _ => fh * 1.006f, env, amp / h * 0.7f);
+			}
+		}
+
+		/// <summary>整体低通（两级一阶），把高频"亮"的部分压下去，声音更闷更厚。</summary>
+		public void Lowpass(float fc)
+		{
+			float a = 1f - MathF.Exp(-2f * MathF.PI * fc / SR);
+			float y1 = 0f, y2 = 0f;
+			for (int i = 0; i < B.Length; i++)
+			{
+				y1 += a * (B[i] - y1);
+				y2 += a * (y1 - y2);
+				B[i] = y2;
 			}
 		}
 
@@ -256,88 +280,89 @@ public static class Sfx
 				}
 				g.Shimmer(0.04f, 0.7f, 34, 3200f, 7500f, 0.05f);                                  // 微光余韵
 				return g.B;
-			case Snd.TarotReveal:
-				g = new Gen(1.0f, 2);
-				g.Noise(0, 0.12f, t => MathF.Pow(t / 0.12f, 2.2f), t => 600f + 4400f * (t / 0.12f), 0.5f, F.Band, 0.35f);   // 上扬的气流
-				g.Snap(0.115f, 0.35f);
-				g.Noise(0.115f, 0.035f, Atk(0.0003f, 0.008f), K(3200), 0.5f, F.High, 0.45f);                              // 翻牌"啪"
-				foreach ((float d, float f) in new[] { (0.12f, 659.3f), (0.16f, 987.8f), (0.2f, 1318.5f), (0.25f, 1568f) })   // E 小调琶音
+			// ───── P3R 风格：低沉、厚、闷的玻璃感 + 大混响；高频用低通压住，不用明亮的铃声琶音 ─────
+			case Snd.TarotReveal:      // 塔罗牌浮现：反向吸入的气流 → 翻牌闷响 → Em 合成器垫音缓缓铺开 → 暗混响
+				g = new Gen(1.3f, 2);
+				g.Noise(0, 0.14f, t => MathF.Pow(t / 0.14f, 2.5f), t => 250f + 1500f * (t / 0.14f), 0.6f, F.Band, 0.5f);
+				g.Noise(0.13f, 0.06f, Atk(0.0006f, 0.016f), K(1100), 0.6f, F.Band, 0.45f);                               // 翻牌闷响
+				g.Tone(0.13f, 0.3f, t => 120f * MathF.Exp(-t / 0.05f) + 60f, Atk(0.002f, 0.07f), 0.35f);
+				foreach (float f in new[] { 164.8f, 196f, 246.9f })                                                       // Em（低八度）
 				{
-					g.Bell(d, f, 0.32f, 0.16f);
+					g.Pad(0.12f, 1.15f, f, t => MathF.Min(t / 0.12f, 1f) * MathF.Exp(-t / 0.45f), 0.07f);
 				}
-				g.Tone(0.1f, 0.85f, _ => 82.4f, Atk(0.04f, 0.32f), 0.13f);                                              // 低音垫 E2
-				g.Tone(0.1f, 0.85f, _ => 164.8f, Atk(0.05f, 0.3f), 0.06f);
-				g.Shimmer(0.12f, 0.55f, 22, 3500f, 7500f, 0.045f);
-				g.Noise(0.12f, 0.8f, Atk(0.01f, 0.25f), t => 2600f * MathF.Exp(-t / 0.3f) + 500f, 0.9f, F.Low, 0.08f);  // 空间
+				g.Bell(0.14f, 659.3f, 0.4f, 0.05f, partCount: 2);                                                        // 一点玻璃感（很轻）
+				g.Noise(0.13f, 1.15f, Atk(0.02f, 0.4f), t => 1400f * MathF.Exp(-t / 0.5f) + 250f, 0.9f, F.Low, 0.2f);    // 暗混响
+				g.Lowpass(3200f);
 				return g.B;
-			case Snd.TarotShatter:
-				g = new Gen(1.4f, 3);
-				g.Snap(0f, 0.9f);
-				g.Noise(0, 0.06f, Atk(0.0002f, 0.012f), K(2600), 0.6f, F.High, 0.9f);                                    // 脆响
-				g.Noise(0, 0.26f, Atk(0.0005f, 0.06f), K(4200), 0.3f, F.Band, 0.45f);                                     // 玻璃本体
-				g.Noise(0, 0.16f, Atk(0.0005f, 0.035f), K(900), 0.7f, F.Band, 0.55f);                                     // 中频碎裂
-				g.Pings(0.004f, 0.5f, 46, 2400f, 7200f, 0.11f);                                                          // 碎片叮当
-				g.Tone(0, 0.35f, t => 110f * MathF.Exp(-t / 0.05f) + 44f, Atk(0.001f, 0.09f), 0.55f);                    // 低频冲击
-				g.Noise(0, 0.3f, Atk(0.001f, 0.07f), K(150), 1f, F.Low, 0.7f);
-				g.Bell(0.03f, 659.3f, 0.5f, 0.09f);                                                                       // 确认和弦 E5 / B5
-				g.Bell(0.05f, 987.8f, 0.45f, 0.07f);
-				g.Noise(0.01f, 1.3f, Atk(0.01f, 0.35f), t => 4500f * MathF.Exp(-t / 0.3f) + 600f, 0.9f, F.Low, 0.16f);   // 尾音
-				g.Shimmer(0.1f, 0.9f, 26, 4000f, 7500f, 0.035f);
-				return g.B;
-			case Snd.StarGain:
-				g = new Gen(0.7f, 4);
-				g.Noise(0, 0.12f, t => MathF.Pow(t / 0.12f, 2f), t => 1200f + 4000f * (t / 0.12f), 0.5f, F.Band, 0.2f);
-				g.Bell(0.11f, 1318.5f, 0.22f, 0.14f);
-				g.Bell(0.14f, 1975.5f, 0.18f, 0.09f);
-				g.Shimmer(0.11f, 0.35f, 10, 4000f, 7500f, 0.04f);
-				return g.B;
-			case Snd.StarSpend:
-				g = new Gen(0.8f, 5);
-				g.Snap(0f, 0.4f);
-				g.Noise(0, 0.04f, Atk(0.0002f, 0.01f), K(3000), 0.6f, F.High, 0.5f);
-				g.Pings(0.003f, 0.3f, 16, 3000f, 7200f, 0.09f);
-				g.Tone(0, 0.2f, t => 160f * MathF.Exp(-t / 0.04f) + 70f, Atk(0.001f, 0.05f), 0.3f);
-				g.Bell(0.02f, 987.8f, 0.3f, 0.07f);
-				return g.B;
-			case Snd.CutIn:
-				g = new Gen(1.2f, 6);
-				g.Noise(0, 0.06f, t => MathF.Pow(t / 0.06f, 2f), t => 500f + 5000f * (t / 0.06f), 0.45f, F.Band, 0.45f);      // 风声冲入
-				g.Snap(0.06f, 1f);
-				g.Noise(0.06f, 0.05f, Atk(0.0002f, 0.01f), K(1800), 0.6f, F.High, 0.9f);                                   // 重击
-				g.Noise(0.06f, 0.2f, Atk(0.0004f, 0.045f), K(600), 0.8f, F.Band, 0.7f);
-				g.Tone(0.06f, 0.45f, t => 90f * MathF.Exp(-t / 0.05f) + 40f, Atk(0.001f, 0.12f), 0.7f);                    // 次低频
-				foreach (float f in new[] { 329.6f, 392f, 493.9f, 587.3f })                                               // Em7 和弦重音（锯齿感：叠 3 个谐波）
-				{
-					for (int h = 1; h <= 3; h++)
-					{
-						g.Tone(0.06f, 0.9f, _ => f * h, Atk(0.004f, 0.28f / h), 0.07f / h);
-					}
-				}
-				g.Noise(0.06f, 1.0f, Atk(0.01f, 0.3f), t => 3500f * MathF.Exp(-t / 0.3f) + 500f, 0.9f, F.Low, 0.18f);
-				g.Shimmer(0.12f, 0.5f, 14, 3500f, 7500f, 0.04f);
-				return g.B;
-			case Snd.Weak:
-				g = new Gen(0.9f, 7);
+			case Snd.TarotShatter:     // 塔罗牌碎裂：闷重的冲击 + 低通过的玻璃碎裂 + 低音和弦涌起 + 长混响
+				g = new Gen(1.7f, 3);
 				g.Snap(0f, 0.6f);
-				g.Noise(0, 0.03f, Atk(0.0002f, 0.006f), K(5000), 0.4f, F.High, 0.6f);
-				g.Tone(0, 0.08f, t => 900f + 1800f * MathF.Min(t / 0.06f, 1f), Atk(0.002f, 0.04f), 0.12f);               // 上扬滑音
-				g.Bell(0.01f, 1760f, 0.28f, 0.2f);                                                                        // 金属"叮"
-				g.Bell(0.03f, 2637f, 0.22f, 0.12f);
-				g.Tone(0, 0.3f, t => 140f * MathF.Exp(-t / 0.04f) + 60f, Atk(0.001f, 0.07f), 0.35f);                     // 重量
-				g.Shimmer(0.04f, 0.5f, 18, 4000f, 7500f, 0.045f);
+				g.Tone(0, 0.5f, t => 95f * MathF.Exp(-t / 0.06f) + 40f, Atk(0.001f, 0.14f), 0.8f);                       // 低频冲击
+				g.Noise(0, 0.4f, Atk(0.001f, 0.1f), K(140), 1f, F.Low, 0.9f);
+				g.Noise(0, 0.2f, Atk(0.0005f, 0.05f), K(520), 0.8f, F.Band, 0.7f);                                        // 中低频碎裂"身体"
+				g.Noise(0, 0.3f, Atk(0.0005f, 0.07f), K(2100), 0.4f, F.Band, 0.35f);                                      // 玻璃本体（中频）
+				g.Pings(0.005f, 0.55f, 30, 1100f, 3600f, 0.08f);                                                         // 碎片（压低音高）
+				foreach (float f in new[] { 82.4f, 123.5f, 164.8f })                                                      // E2 / B2 / E3 涌起
+				{
+					g.Pad(0.04f, 1.6f, f, t => MathF.Min(t / 0.2f, 1f) * MathF.Exp(-t / 0.6f), 0.08f, harmonics: 4);
+				}
+				g.Noise(0.02f, 1.65f, Atk(0.03f, 0.55f), t => 1800f * MathF.Exp(-t / 0.5f) + 220f, 0.9f, F.Low, 0.3f);   // 长混响
+				g.Lowpass(4000f);
 				return g.B;
-			case Snd.ThanatosSlash:
-				g = new Gen(1.8f, 8);
-				g.Noise(0, 0.18f, t => MathF.Pow(t / 0.18f, 2f), t => 250f + 2600f * (t / 0.18f), 0.5f, F.Band, 0.5f);    // 低沉风啸
-				g.Snap(0.18f, 1f);
-				g.Noise(0.18f, 0.08f, Atk(0.0002f, 0.02f), K(1400), 0.6f, F.High, 0.9f);
-				g.Noise(0.18f, 0.6f, Atk(0.001f, 0.16f), K(120), 1f, F.Low, 1.1f);                                        // 巨响
-				g.Tone(0.18f, 0.9f, t => 75f * MathF.Exp(-t / 0.08f) + 30f, Atk(0.002f, 0.25f), 0.8f);
-				g.Noise(0.18f, 0.5f, Atk(0.002f, 0.12f), t => 3200f - 1600f * MathF.Min(t / 0.4f, 1f), 0.2f, F.Band, 0.22f);   // 金属刮擦
-				g.Tone(0.18f, 1.5f, _ => 82.4f, Atk(0.02f, 0.6f), 0.2f);                                                  // 不协和低音（三全音）
-				g.Tone(0.18f, 1.5f, _ => 116.5f, Atk(0.03f, 0.55f), 0.16f);
-				g.Pings(0.2f, 0.5f, 20, 2500f, 6500f, 0.07f);
-				g.Noise(0.18f, 1.6f, Atk(0.01f, 0.5f), t => 2500f * MathF.Exp(-t / 0.4f) + 300f, 0.9f, F.Low, 0.25f);
+			case Snd.StarGain:         // 辉星凝聚：轻轻吸入 + 一声闷的低音"嗡"
+				g = new Gen(0.8f, 4);
+				g.Noise(0, 0.14f, t => MathF.Pow(t / 0.14f, 2f), t => 300f + 1300f * (t / 0.14f), 0.6f, F.Band, 0.35f);
+				g.Pad(0.12f, 0.65f, 246.9f, t => MathF.Min(t / 0.04f, 1f) * MathF.Exp(-t / 0.2f), 0.12f);
+				g.Bell(0.13f, 493.9f, 0.25f, 0.06f, partCount: 2);
+				g.Noise(0.12f, 0.6f, Atk(0.02f, 0.2f), K(900), 0.9f, F.Low, 0.12f);
+				g.Lowpass(3000f);
+				return g.B;
+			case Snd.StarSpend:        // 辉星消耗：小而闷的碎裂
+				g = new Gen(0.9f, 5);
+				g.Snap(0f, 0.3f);
+				g.Tone(0, 0.25f, t => 130f * MathF.Exp(-t / 0.04f) + 60f, Atk(0.001f, 0.06f), 0.45f);
+				g.Noise(0, 0.12f, Atk(0.0005f, 0.03f), K(900), 0.7f, F.Band, 0.45f);
+				g.Pings(0.004f, 0.3f, 12, 1200f, 3200f, 0.07f);
+				g.Noise(0.01f, 0.8f, Atk(0.02f, 0.25f), t => 1500f * MathF.Exp(-t / 0.3f) + 250f, 0.9f, F.Low, 0.14f);
+				g.Lowpass(3500f);
+				return g.B;
+			case Snd.CutIn:            // 切入大字：低通风声冲入 → 厚重的重击 + 低八度 Em7 合成器重音 → 混响
+				g = new Gen(1.4f, 6);
+				g.Noise(0, 0.07f, t => MathF.Pow(t / 0.07f, 2f), t => 300f + 1800f * (t / 0.07f), 0.5f, F.Band, 0.6f);
+				g.Snap(0.06f, 0.8f);
+				g.Noise(0.06f, 0.06f, Atk(0.0003f, 0.014f), K(1300), 0.6f, F.Band, 0.6f);
+				g.Noise(0.06f, 0.3f, Atk(0.0005f, 0.08f), K(130), 1f, F.Low, 1f);                                        // 重击
+				g.Tone(0.06f, 0.5f, t => 85f * MathF.Exp(-t / 0.06f) + 36f, Atk(0.001f, 0.15f), 0.85f);
+				foreach (float f in new[] { 164.8f, 196f, 246.9f, 293.7f })                                               // Em7（低八度）
+				{
+					g.Pad(0.06f, 1.0f, f, t => MathF.Min(t / 0.006f, 1f) * MathF.Exp(-t / 0.3f), 0.07f, harmonics: 4);
+				}
+				g.Noise(0.06f, 1.3f, Atk(0.02f, 0.42f), t => 1700f * MathF.Exp(-t / 0.45f) + 220f, 0.9f, F.Low, 0.28f);
+				g.Lowpass(4500f);
+				return g.B;
+			case Snd.Weak:             // WEAK!：短促有力的"咚—锵"：低频重击 + 中频金属音（两个泛音、很短）+ 混响
+				g = new Gen(1.0f, 7);
+				g.Snap(0f, 0.6f);
+				g.Tone(0, 0.3f, t => 120f * MathF.Exp(-t / 0.04f) + 52f, Atk(0.001f, 0.08f), 0.7f);
+				g.Noise(0, 0.08f, Atk(0.0003f, 0.02f), K(1700), 0.35f, F.Band, 0.5f);
+				g.Bell(0.005f, 880f, 0.14f, 0.14f, partCount: 3);
+				g.Bell(0.02f, 1318.5f, 0.12f, 0.08f, partCount: 2);
+				g.Noise(0, 0.9f, Atk(0.02f, 0.3f), t => 2000f * MathF.Exp(-t / 0.35f) + 250f, 0.9f, F.Low, 0.2f);
+				g.Lowpass(5000f);
+				return g.B;
+			case Snd.ThanatosSlash:    // 塔纳托斯斩击：低沉风啸 → 巨响 + 低沉的金属刮擦 + 不协和低音 → 长混响
+				g = new Gen(2.0f, 8);
+				g.Noise(0, 0.18f, t => MathF.Pow(t / 0.18f, 2f), t => 200f + 1400f * (t / 0.18f), 0.5f, F.Band, 0.6f);
+				g.Snap(0.18f, 0.9f);
+				g.Noise(0.18f, 0.08f, Atk(0.0002f, 0.02f), K(1100), 0.6f, F.Band, 0.7f);
+				g.Noise(0.18f, 0.7f, Atk(0.001f, 0.18f), K(110), 1f, F.Low, 1.2f);
+				g.Tone(0.18f, 1.0f, t => 70f * MathF.Exp(-t / 0.09f) + 28f, Atk(0.002f, 0.28f), 0.9f);
+				g.Noise(0.18f, 0.55f, Atk(0.003f, 0.14f), t => 1800f - 900f * MathF.Min(t / 0.45f, 1f), 0.2f, F.Band, 0.2f);
+				g.Pad(0.18f, 1.7f, 82.4f, Atk(0.03f, 0.65f), 0.12f, harmonics: 4);
+				g.Pad(0.18f, 1.7f, 116.5f, Atk(0.04f, 0.6f), 0.09f, harmonics: 4);
+				g.Pings(0.2f, 0.5f, 14, 900f, 2600f, 0.06f);
+				g.Noise(0.18f, 1.8f, Atk(0.02f, 0.6f), t => 1500f * MathF.Exp(-t / 0.5f) + 200f, 0.9f, F.Low, 0.32f);
+				g.Lowpass(2600f);
 				return g.B;
 		}
 		return new float[1];
