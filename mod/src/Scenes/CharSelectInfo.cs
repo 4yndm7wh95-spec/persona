@@ -11,7 +11,7 @@ namespace P3Makoto.Scenes;
 /// 选人界面左侧的角色介绍板（所有角色共用的 InfoPanel）：选中结城理时换成 P3R 菜单风格，选别的角色时恢复原样。
 /// 只改外观 —— 原版底板隐藏、名字换色，再垫一层 P3R 色块；文字内容（名字 / 血量 / 金币 / 描述 / 天赋）全部是原版的，不动。
 /// 外观：深蓝斜切主板 + 左缘青色亮线；名字压在白色斜切标题条上（深蓝字 + 红色底线，P3R"选中项"样式）；
-/// 标题条右侧 ARCANA 0 / THE FOOL 小字；天赋上方一道青色斜线分隔；右下角半透明超大 FOOL 水印。各层错开滑入。
+/// 标题条右侧 ARCANA 0 / THE FOOL 小字；天赋上方一道青色斜线分隔；各层错开滑入。
 /// </summary>
 public static class CharSelectInfo
 {
@@ -20,8 +20,7 @@ public static class CharSelectInfo
 	private sealed class Saved
 	{
 		public readonly List<(CanvasItem Item, Color SelfModulate)> Hidden = new();
-		public LabelSettings? NameSettings;
-		public bool NameOverride;
+		public System.Action? UndoName;
 	}
 
 	private static readonly Dictionary<ulong, Saved> State = new();
@@ -54,26 +53,10 @@ public static class CharSelectInfo
 			}
 		}
 
-		// 名字：深蓝字（白色标题条上）
+		// 名字：P3R 粗斜体、深蓝字（白色标题条上）
 		if (name != null)
 		{
-			Color navy = new(0.03f, 0.07f, 0.26f);
-			if (name.LabelSettings != null)
-			{
-				saved.NameSettings = name.LabelSettings;
-				LabelSettings ls = (LabelSettings)name.LabelSettings.Duplicate();
-				ls.FontColor = navy;
-				ls.OutlineColor = new Color(1f, 1f, 1f, 0f);
-				ls.ShadowColor = new Color(0f, 0f, 0f, 0f);
-				name.LabelSettings = ls;
-			}
-			else
-			{
-				saved.NameOverride = true;
-				name.AddThemeColorOverride("font_color", navy);
-				name.AddThemeColorOverride("font_outline_color", new Color(1f, 1f, 1f, 0f));
-				name.AddThemeColorOverride("font_shadow_color", new Color(0f, 0f, 0f, 0f));
-			}
+			saved.UndoName = Typo.Restyle(name, Typo.CjkHeavy, new Color(0.03f, 0.07f, 0.26f), new Color(1f, 1f, 1f, 0f), 0);
 		}
 
 		Node2D deco = new() { Name = DecoName };                     // Node2D：面板若是容器也不会被它排版、不挤动原版内容
@@ -101,64 +84,77 @@ public static class CharSelectInfo
 				item.SelfModulate = c;
 			}
 		}
-		if (name != null && GodotObject.IsInstanceValid(name))
+		saved.UndoName?.Invoke();
+	}
+
+	/// <summary>节点相对面板的矩形（面板在滑入动画中也成立：两者一起移动）。</summary>
+	private static Rect2? RectIn(Control panel, string path)
+	{
+		if (panel.GetNodeOrNull<Control>(path) is not Control c || !c.IsVisibleInTree() || c.Size.X < 1f)
 		{
-			if (saved.NameSettings != null)
-			{
-				name.LabelSettings = saved.NameSettings;
-			}
-			if (saved.NameOverride)
-			{
-				name.RemoveThemeColorOverride("font_color");
-				name.RemoveThemeColorOverride("font_outline_color");
-				name.RemoveThemeColorOverride("font_shadow_color");
-			}
+			return null;
 		}
+		return new Rect2(c.GlobalPosition - panel.GlobalPosition, c.Size * c.GetGlobalTransform().Scale);
 	}
 
 	private static void Build(Node2D deco, Vector2 size, Label? name)
 	{
-		float w = Mathf.Max(size.X, 560f), h = Mathf.Max(size.Y, 300f);
-		const float lean = 46f;                                     // 斜切：上边比下边右移
-		Color navy = new(0.02f, 0.06f, 0.21f, 0.9f);
-
-		// 名字所在的高度（标题条对齐名字）
-		float nameTop = 10f, nameH = 86f;
-		if (!GodotObject.IsInstanceValid(deco))
+		if (!GodotObject.IsInstanceValid(deco) || deco.GetParent() is not Control panel)
 		{
 			return;
 		}
-		if (name != null && GodotObject.IsInstanceValid(name))
+		// 按原版每一块的实际位置画（不靠固定比例猜）
+		Rect2 box = RectIn(panel, "VBoxContainer") ?? new Rect2(Vector2.Zero, size);
+		Rect2? nameR = RectIn(panel, "VBoxContainer/Name");
+		Rect2? hpR = RectIn(panel, "VBoxContainer/HpGoldSpacer");
+		Rect2? relicR = RectIn(panel, "VBoxContainer/Relic");
+
+		// 名字实际文字宽度（标签本身可能比文字宽）
+		float textW = 0f;
+		if (name != null && GodotObject.IsInstanceValid(name) && nameR is Rect2 nr)
 		{
-			Vector2 p = name.GlobalPosition - deco.GetParent<Control>().GlobalPosition;
-			nameTop = p.Y - 8f;
-			nameH = Mathf.Max(name.Size.Y, 60f) + 16f;
+			Font? f = name.LabelSettings?.Font ?? name.GetThemeFont("font");
+			int fs = name.LabelSettings?.FontSize ?? name.GetThemeFontSize("font_size");
+			textW = f != null ? f.GetStringSize(name.Text, HorizontalAlignment.Left, -1, fs).X : nr.Size.Y * name.Text.Length;
+			textW = Mathf.Min(textW, nr.Size.X);
 		}
+
+		const float lean = 34f;                                     // 斜切：上边比下边右移
+		Color navy = new(0.02f, 0.06f, 0.21f, 0.9f);
+		float left = box.Position.X - 34f, right = box.End.X + 34f;
+		float top = box.Position.Y - 18f, bottom = box.End.Y + 18f;
 
 		Node2D main = new();
 		deco.AddChild(main);
-		P3Ui.Slab(main, -10f, w + 10f, -6f, h + 6f, lean, navy);                                       // 主板
-		P3Ui.Slab(main, -16f, -10f, -6f, h + 6f, lean, new Color(Pal.Cyan, 0.95f));                    // 左缘青色亮线
-		P3Ui.Slab(main, -10f, w * 0.7f, h + 6f, h + 9f, 0f, new Color(Pal.Cyan, 0.7f));               // 底边细线
-		Node2D mark = P3Ui.GiantWord(main, "FOOL", new Vector2(w * 0.5f, h * 0.98f), (int)(h * 0.42f), -0.12f, new Color(Pal.Royal, 0.12f));
+		P3Ui.Slab(main, left - lean, right, top, bottom, lean, navy);                                         // 主板
+		P3Ui.Slab(main, left - lean - 6f, left - lean, top, bottom, lean, new Color(Pal.Cyan, 0.95f));      // 左缘青色亮线
+		P3Ui.Slab(main, left - lean, left + (right - left) * 0.6f, bottom, bottom + 3f, 0f, new Color(Pal.Cyan, 0.7f));   // 底边细线
 
 		Node2D head = new();
 		deco.AddChild(head);
-		float hx0 = 4f, hx1 = w * 0.62f;
-		float hy0 = nameTop, hy1 = nameTop + nameH;
-		float hl = (hy1 - hy0) * 0.3f;
-		P3Ui.Slab(head, hx0 + 8f, hx1 + 8f, hy0 + 8f, hy1 + 8f, hl, new Color(0.01f, 0.01f, 0.04f, 0.85f));   // 错开的黑块
-		P3Ui.Slab(head, hx0, hx1, hy0, hy1, hl, new Color(0.97f, 0.98f, 1f, 0.97f));                       // 白色标题条
-		P3Ui.Slab(head, hx0, hx1 - 2f, hy1 - 7f, hy1, 0f, new Color(0.9f, 0.08f, 0.22f, 0.95f));           // 红色底线
-		Typo.Text(head, "ARCANA 0  /  THE FOOL", Typo.Latin, 22, new Color(Pal.Cyan, 0.95f), new Vector2(hx1 + 26f, hy0 + nameH * 0.5f - 14f));
+		if (nameR is Rect2 n)
+		{
+			// 标题条只包住名字这一行（不压到下面的血量 / 金币）；左边留出斜切的量，字不会露在外面
+			float hy0 = n.Position.Y + n.Size.Y * 0.08f;
+			float hy1 = hpR is Rect2 h ? Mathf.Min(n.End.Y, h.Position.Y) - 2f : n.End.Y - 2f;
+			float hl = (hy1 - hy0) * 0.28f;
+			float hx0 = n.Position.X - 22f - hl, hx1 = n.Position.X + textW + 46f;
+			P3Ui.Slab(head, hx0 + 7f, hx1 + 7f, hy0 + 7f, hy1 + 7f, hl, new Color(0.01f, 0.01f, 0.04f, 0.85f));   // 错开的黑块
+			P3Ui.Slab(head, hx0, hx1, hy0, hy1, hl, new Color(0.97f, 0.98f, 1f, 0.97f));                       // 白色标题条
+			P3Ui.Slab(head, hx0, hx1 - 3f, hy1 - 6f, hy1, 0f, new Color(0.9f, 0.08f, 0.22f, 0.95f));           // 红色底线（名字正下方）
+			Typo.Text(head, "ARCANA 0  /  THE FOOL", Typo.Latin, 22, new Color(Pal.Cyan, 0.95f), new Vector2(hx1 + 24f, hy1 - 30f));
+		}
 
-		// 天赋（最后一段）上方的斜线分隔
+		// 描述和天赋之间的斜线分隔（落在两段之间的空隙里，不穿过文字）
 		Node2D line = new();
 		deco.AddChild(line);
-		float ly = h * 0.7f;
-		Fx.Line(line, new[] { new Vector2(10f, ly + 10f), new Vector2(w * 0.82f, ly - 6f) }, new Color(Pal.Cyan, 0.75f), 2f, additive: false);
+		if (relicR is Rect2 r)
+		{
+			float ly = r.Position.Y - 6f;
+			Fx.Line(line, new[] { new Vector2(box.Position.X, ly + 4f), new Vector2(box.Position.X + box.Size.X * 0.85f, ly - 4f) }, new Color(Pal.Cyan, 0.7f), 2f, additive: false);
+		}
 
-		// 入场：主板先从左滑入，标题条稍晚、带一点过冲，水印缓慢漂移
+		// 入场：主板先从左滑入，标题条稍晚、带一点过冲
 		Fx.Animate(deco, 0.7, t =>
 		{
 			float time = t * 0.7f;
@@ -169,11 +165,7 @@ public static class CharSelectInfo
 			main.Modulate = new Color(1f, 1f, 1f, a);
 			head.Position = new Vector2(-160f * (1f - b), 0f);
 			head.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((time - 0.08f) / 0.12f, 0f, 1f));
-			line.Scale = new Vector2(c, 1f);
 			line.Modulate = new Color(1f, 1f, 1f, c);
 		});
-		Tween drift = mark.CreateTween().SetLoops();
-		drift.TweenProperty(mark, "position:x", w * 0.5f - 40f, 9.0).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-		drift.TweenProperty(mark, "position:x", w * 0.5f, 9.0).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
 	}
 }

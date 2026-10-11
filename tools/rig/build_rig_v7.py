@@ -421,14 +421,12 @@ class Builder:
                 a.rgba("v7_old", t, c8(1, 1, 1, 1))
                 a.rgba("v7_old", t + fade, c8(1, 1, 1, 0))
                 a.att("v7_old", t + fade, None)
-                a.att("v7_ghost", t, f"v7_{before}")
-                a.rgba("v7_ghost", t, c8(0.3, 0.7, 1.0, 0.3))
-                a.rgba("v7_ghost", t + 0.2, c8(0.3, 0.7, 1.0, 0.0))
-                a.att("v7_ghost", t + 0.2, None)
-                a.att("v7_flash", t, f"v7_{p}")
-                a.rgba("v7_flash", t, c8(0.35, 0.85, 1.0, 0.18))
-                a.rgba("v7_flash", t + 3 * f, c8(0.8, 0.95, 1.0, 0.0))
-                a.att("v7_flash", t + 3 * f, None)
+                # 不再叠青色残影（用户反馈像重影）；闪光只留给出招 / 扣下 / 受击这几个冲击瞬间
+                if p in ("sword_smear", "awaken_peak", "hurt_impact"):
+                    a.att("v7_flash", t, f"v7_{p}")
+                    a.rgba("v7_flash", t, c8(0.6, 0.9, 1.0, 0.22))
+                    a.rgba("v7_flash", t + 3 * f, c8(0.8, 0.95, 1.0, 0.0))
+                    a.att("v7_flash", t + 3 * f, None)
 
     def fire(self, a, T, hold):
         """觉醒（扣下召唤器）那一刻的附加动作；hold：觉醒姿势停留多久（之后蓝光随换图消失）。"""

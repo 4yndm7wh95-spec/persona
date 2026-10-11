@@ -38,7 +38,7 @@ public static class EndTurnSkin
 		Polygon2D? sweep = null;
 		float builtW = -1f;
 
-		LabelSettings? origSettings = label?.LabelSettings;
+		System.Action? undoLabel = null;
 		bool skinned = false;
 		float t = 0f;
 
@@ -77,24 +77,12 @@ public static class EndTurnSkin
 			{
 				if (on)
 				{
-					if (label.LabelSettings != null)
-					{
-						LabelSettings ls = (LabelSettings)label.LabelSettings.Duplicate();
-						ls.FontColor = Colors.White;
-						ls.OutlineColor = new Color(0.02f, 0.05f, 0.2f);
-						label.LabelSettings = ls;
-					}
-					else
-					{
-						label.AddThemeColorOverride("font_color", Colors.White);
-						label.AddThemeColorOverride("font_outline_color", new Color(0.02f, 0.05f, 0.2f));
-					}
+					undoLabel = Typo.Restyle(label, Typo.CjkHeavy, Colors.White, new Color(0.02f, 0.05f, 0.2f));
 				}
 				else
 				{
-					label.LabelSettings = origSettings;
-					label.RemoveThemeColorOverride("font_color");
-					label.RemoveThemeColorOverride("font_outline_color");
+					undoLabel?.Invoke();
+					undoLabel = null;
 				}
 			}
 		}

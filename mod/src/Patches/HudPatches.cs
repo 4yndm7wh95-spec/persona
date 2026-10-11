@@ -75,10 +75,7 @@ public static class EndTurnButtonPatch
 	{
 		ModEntry.Safe("end turn skin", () =>
 		{
-			if (Stage.MakotoCombat() || Stage.MakotoRun)
-			{
-				EndTurnSkin.Apply(__instance);
-			}
+			EndTurnSkin.Apply(__instance);                  // 总是装上：按钮在角色加载前就创建了，是否显示 P3R 外观由它每帧自己判断
 		});
 	}
 }
