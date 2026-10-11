@@ -307,3 +307,29 @@ Orpheus、Thanatos、Messiah 各一张半透明召唤立绘，用于 S 级卡牌
 - `focus_a/b.png`、`awaken_a/b.png`：按上方表格，手里是空的。
 
 全部以 `art/v12/transparent/sword_ready_a.png` 为输入图做图像编辑，人物和画法和它保持一致。每张 2 个版本，放到 `art/v12/transparent/`。
+
+### 12 验收（第二批，`art/v12/transparent/batch2_review_20261011/`）
+采用：
+- `focus_b`：半握拳停在鬓角外侧，手的形状能放进召唤器。
+- `awaken_a`：手位和 `focus_b` 接近，切换不会跳。
+
+两张都留在原目录，Claude 直接从那里取用。
+
+不用：
+| 图 | 原因 |
+|---|---|
+| `focus_a` | 手指捏着头发，像在把头发别到耳后 |
+| `awaken_b` | 手势和 `focus_b` 不一致 |
+| `evoker*`、`evoker_fire*` | 按作废的旧要求生成，五指插在头发里 |
+| `sword_draw*` | 姿势已取消 |
+| `sword_windup_a` | 姿势很好，但剑的结构错了：剑身从护手往回穿过剑柄和手 |
+
+**还需要**：
+| 文件 | 要求 |
+|---|---|
+| `sword_windup_a/b.png`（重画） | 以 `art/v12/transparent/sword_ready_a.png` 为输入，姿势同第二批的 `sword_windup_a`（近侧右手把剑高举过头、前腿屈膝、另一手握拳在胸前）。**剑的几何**：右手握住黑色剑柄；**剑柄末端（银色圆头）在拳头的右侧，十字护手紧贴在拳头的左侧，笔直的剑身从护手向画面左上方伸出**，剑身不经过手和剑柄。剑尖指向画面左上方，整把剑在画面内 |
+| `idle_a/b.png` | 以 `art/v12/transparent/sword_rest_a.png` 为输入，去掉剑：近侧右手空手自然下垂在身侧，手指放松微弯；另一只手插在裤兜里；站姿同输入图 |
+
+**生成方式**：
+- 一次只生成一张，生成后先给用户看，用户认可后再生成下一张。
+- 每张都要确认是真透明底。
