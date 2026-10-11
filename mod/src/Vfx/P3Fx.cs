@@ -342,8 +342,62 @@ public static class P3Fx
 	}
 
 	/// <summary>能力牌：脚下影时间绿扁平波纹 + 光柱升起。</summary>
-	public static void PowerUp(Control frontLayer, Control backLayer, Vector2 feet, Vector2 head)
+	private static readonly string[] Arcana = { "0", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX", "XXI" };
+
+	/// <summary>同一张牌总是同一个大阿卡纳编号（按牌名哈希）。</summary>
+	public static string ArcanaFor(string key)
 	{
+		int h = 17;
+		foreach (char ch in key) h = h * 31 + ch;
+		return Arcana[(h & 0x7fffffff) % Arcana.Length];
+	}
+
+	/// <summary>
+	/// 能力牌：人物身后张开一个"水之圆"（焦散），圆里浮现超大的大阿卡纳罗马数字，两道细圆弧反向转动；
+	/// 入：0.3s 从中心张开（OutExpo）、数字从放大 + 透明压回；停 0.7s 缓慢漂移；出：0.35s 收拢（InCubic）、数字上浮淡出。
+	/// </summary>
+	public static void ArcanaDisc(Control backLayer, Vector2 feet, Vector2 head, string numeral)
+	{
+		float bodyH = Mathf.Max(200f, feet.Y - head.Y);
+		Vector2 c = head + new Vector2(-bodyH * 0.05f, bodyH * 0.3f);
+		float r = bodyH * 0.72f;
+		Node2D root = Fx.Root(backLayer, c, "P3ArcanaDisc");
+		ColorRect disc = P3Ui.WaterDisc(root, Vector2.Zero, r);
+		Node2D arcs = new();
+		root.AddChild(arcs);
+		P3Ui.Arc(arcs, Vector2.Zero, r * 1.08f, 0f, Mathf.Pi * 1.2f, new Color(Pal.Cyan, 0.6f), 3f);
+		Node2D arcs2 = new();
+		root.AddChild(arcs2);
+		P3Ui.Arc(arcs2, Vector2.Zero, r * 1.18f, Mathf.Pi, Mathf.Pi * 1.6f, new Color(1f, 1f, 1f, 0.5f), 2f);
+		Node2D num = new() { Skew = -0.22f };
+		root.AddChild(num);
+		int fs = (int)(r * 0.9f);
+		Typo.Text(num, numeral, Typo.Latin, fs, new Color(1f, 1f, 1f, 0.5f), new Vector2(-fs * 0.3f * numeral.Length, -fs * 0.62f),
+			outline: 4, outlineColor: new Color(0.3f, 0.85f, 1f, 0.7f));
+		const float tIn = 0.3f, hold = 0.7f, tOut = 0.35f, total = tIn + hold + tOut;
+		Fx.Animate(root, total, t =>
+		{
+			float time = t * total;
+			float i = Ease.OutExpo(Mathf.Clamp(time / tIn, 0f, 1f));
+			float o = Ease.InCubic(Mathf.Clamp((time - tIn - hold) / tOut, 0f, 1f));
+			Fx.SetParam(disc, "reveal", i * (1f - o));
+			arcs.Rotation = 0.5f * time;
+			arcs2.Rotation = -0.35f * time;
+			arcs.Modulate = arcs2.Modulate = new Color(1f, 1f, 1f, i * (1f - o));
+			float n = Ease.OutCubic(Mathf.Clamp((time - 0.08f) / 0.3f, 0f, 1f));
+			num.Scale = Vector2.One * Mathf.Lerp(1.6f, 1f, n);
+			num.Position = new Vector2(0f, -40f * o - 10f * Mathf.Clamp((time - tIn) / hold, 0f, 1f));
+			num.Modulate = new Color(1f, 1f, 1f, n * (1f - o));
+		});
+		Fx.FreeAfter(root, total + 0.05);
+	}
+
+	public static void PowerUp(Control frontLayer, Control backLayer, Vector2 feet, Vector2 head, string? numeral = null)
+	{
+		if (numeral != null)
+		{
+			ArcanaDisc(backLayer, feet, head, numeral);
+		}
 		Ripple(backLayer, feet, 900f, 1.0f, 0.03f, squashY: 0.3f);
 		Shockwave(backLayer, feet, Pal.DarkHour, 760f, 0.8f, squashY: 0.3f);
 		Shockwave(backLayer, feet, Pal.DarkHour, 520f, 0.8f, squashY: 0.3f, delay: 0.12f);

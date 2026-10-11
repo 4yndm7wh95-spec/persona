@@ -35,6 +35,8 @@ public static class CutInFx
 		public float Cy, HalfH, Pan;
 		public ulong Start;
 		public Action<float>? OnFire;
+		public Func<Vector2>? Impact;
+		public Control Back = null!;
 		public bool Fired;
 	}
 
@@ -50,18 +52,35 @@ public static class CutInFx
 	{
 		Control? back = Makoto.FxLayer(back: true);
 		Control? front = Makoto.FxLayer();
-		if (back == null || front == null || ResourceLoader.Load(EyesPath) is not Texture2D eyes)
+		if (back == null || front == null)
 		{
 			onFire?.Invoke(0f);
 			return;
 		}
-		ulong id = caster.GetInstanceId();
+		BeginOn(back, front, caster.GetInstanceId(), title, persona, onFire,
+			() => GodotObject.IsInstanceValid(caster) ? Makoto.Head(caster) : new Vector2(back.GetViewportRect().Size.X * 0.3f, back.GetViewportRect().Size.Y * 0.4f),
+			Fast ? 0.3 : 0.65);
+	}
+
+	/// <summary>不在战斗里（选人界面）：横幅和碎片都放在 layer 上，fireAfter 秒后自动扣扳机碎裂，冲击点固定。</summary>
+	public static void BeginScreen(Control layer, Vector2 impact, string title, string persona, Action<float>? onFire, double fireAfter)
+	{
+		BeginOn(layer, layer, layer.GetInstanceId(), title, persona, onFire, () => impact, fireAfter);
+	}
+
+	private static void BeginOn(Control back, Control front, ulong id, string title, string persona, Action<float>? onFire, Func<Vector2> impact, double timeout)
+	{
+		if (ResourceLoader.Load(EyesPath) is not Texture2D eyes)
+		{
+			onFire?.Invoke(0f);
+			return;
+		}
 		if (Live.Remove(id, out State? old))
 		{
 			Clear(old);
 		}
 		Vector2 size = back.GetViewportRect().Size;
-		var st = new State { Eyes = eyes, Screen = size, Cy = size.Y * 0.4f, HalfH = size.Y * 0.19f, Start = Time.GetTicksMsec(), OnFire = onFire };
+		var st = new State { Eyes = eyes, Screen = size, Cy = size.Y * 0.4f, HalfH = size.Y * 0.19f, Start = Time.GetTicksMsec(), OnFire = onFire, Impact = impact, Back = back };
 		Live[id] = st;
 
 		// 压暗背景（在人物身后）
@@ -170,22 +189,23 @@ public static class CutInFx
 		});
 		P3Fx.Flash(back, new Vector2(size.X * 0.5f, st.Cy), Pal.Cyan, size.X * 0.5f, 0.18f);
 		// 兜底：没等到扣扳机就自己碎
-		Fx.After(st.Band, Fast ? 0.3 : 0.65, "cut-in timeout", () => Fire(caster));
+		Fx.After(st.Band, timeout, "cut-in timeout", () => Fire(id));
 	}
 
 	/// <summary>扣扳机：横幅碎裂、Persona 现身。没有进行中的切入时什么也不做。</summary>
-	public static void Fire(NCreature caster)
+	public static void Fire(NCreature caster) => Fire(caster.GetInstanceId());
+
+	private static void Fire(ulong id)
 	{
-		if (!Live.Remove(caster.GetInstanceId(), out State? st) || st.Fired || !GodotObject.IsInstanceValid(st.Band))
+		if (!Live.Remove(id, out State? st) || st.Fired || !GodotObject.IsInstanceValid(st.Band))
 		{
 			return;
 		}
 		st.Fired = true;
 		float elapsed = (Time.GetTicksMsec() - st.Start) / 1000f;
-		Control? back = Makoto.FxLayer(back: true);
-		if (back != null)
+		if (GodotObject.IsInstanceValid(st.Back))
 		{
-			Shatter(back, st, GodotObject.IsInstanceValid(caster) ? Makoto.Head(caster) : new Vector2(st.Screen.X * 0.3f, st.Cy));
+			Shatter(st.Back, st, st.Impact?.Invoke() ?? new Vector2(st.Screen.X * 0.3f, st.Cy));
 		}
 		Clear(st, keepDim: true);
 		st.OnFire?.Invoke(elapsed);

@@ -245,4 +245,34 @@ void fragment() {
 	col += vec3(0.35, 0.8, 1.0) * rim * 0.6;
 	COLOR = vec4(col, inside * alpha);
 }");
+
+	private static Shader? _drown;
+
+	/// <summary>低血量"沉入水中"：画面边缘深蓝暗角 + 焦散光纹 + 缓慢的水波起伏；intensity 0~1，pulse 心跳增亮。中间完全透明，不挡视线。</summary>
+	public static Shader Drown => _drown ??= Make(@"
+shader_type canvas_item;
+uniform float intensity = 0.0;
+uniform float pulse = 0.0;
+uniform float aspect = 1.78;
+float caustic(vec2 p, float t) {
+	vec2 i = p;
+	float c = 1.0;
+	for (int n = 0; n < 4; n++) {
+		float tt = t * (1.0 - (3.5 / float(n + 1)));
+		i = p + vec2(cos(tt - i.x) + sin(tt + i.y), sin(tt - i.y) + cos(tt + i.x));
+		c += 1.0 / length(vec2(p.x / (sin(i.x + tt) / 0.005), p.y / (cos(i.y + tt) / 0.005)));
+	}
+	c /= 4.0;
+	c = 1.17 - pow(c, 1.4);
+	return pow(abs(c), 8.0);
+}
+void fragment() {
+	vec2 d = (UV - 0.5) * vec2(aspect, 1.0);
+	float wave = 0.03 * sin(UV.x * 9.0 + TIME * 0.8) + 0.02 * sin(UV.y * 7.0 - TIME * 0.6);
+	float r = length(d) / (0.5 * aspect) + wave;
+	float edge = smoothstep(0.55 - 0.12 * pulse, 1.05, r);
+	float c = clamp(caustic(UV * vec2(aspect, 1.0) * 4.0, TIME * 0.3), 0.0, 1.0);
+	vec3 col = mix(vec3(0.01, 0.04, 0.2), vec3(0.2, 0.55, 1.0), c * 0.7);
+	COLOR = vec4(col, edge * intensity * (0.75 + 0.25 * c));
+}");
 }

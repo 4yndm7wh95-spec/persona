@@ -98,7 +98,7 @@ public static class CardFx
 				{
 					QueueEvoker(caster, 1.3f, Pal.DarkHour);
 				}
-				P3Fx.PowerUp(front, back, feet, head);
+				P3Fx.PowerUp(front, back, feet, head, P3Fx.ArcanaFor(play.Card.GetType().Name));
 				break;
 		}
 

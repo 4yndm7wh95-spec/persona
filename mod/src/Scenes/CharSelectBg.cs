@@ -136,14 +136,24 @@ public static class CharSelectBg
 	/// </summary>
 	private static void Selected(Control root)
 	{
+		// v0.9.2：选中时也播一次召唤切入 —— 眼神特写横幅（立绘仍在最前面）→ 0.55s 扣扳机 → 横幅碎裂 → 召唤器爆发、蓝蝶、枪声、眼中蓝光
 		Vector2 temple = root.GlobalPosition + PortraitPos + PortraitHead * PortraitScale + new Vector2(-30f, 0f);
-		P3Fx.EvokerBurst(root, temple, 1.25f);
-		P3Fx.GlassShatter(root, temple + new Vector2(60f, 0f), 34, 1.2f, Pal.Ice);
-		P3Fx.ButterflyBurst(root, temple, 7, 380f);
-		WaterRipple(root, root.GlobalPosition + new Vector2(PortraitPos.X - 60f, HorizonY + 150f));
-		Audio.Sfx.Play(Audio.Snd.Gunshot, 1.0f);
-		EyeGlow(root, root.GlobalPosition + PortraitPos + PortraitEye * PortraitScale);
-		Extras.SkewBand(root, new Extras.Caption("WILD CARD", "ORPHEUS", "结城理"), hold: 0.9f);
+		CutInFx.BeginScreen(root, temple, "结城理", "ORPHEUS", _ =>
+		{
+			P3Fx.EvokerBurst(root, temple, 1.25f);
+			P3Fx.ButterflyBurst(root, temple, 7, 380f);
+			WaterRipple(root, root.GlobalPosition + new Vector2(PortraitPos.X - 60f, HorizonY + 150f));
+			Audio.Sfx.Play(Audio.Snd.Gunshot, 1.0f);
+			EyeGlow(root, root.GlobalPosition + PortraitPos + PortraitEye * PortraitScale);
+		}, 0.55);
+		// 立绘留在横幅前面（横幅、色块都在它后面）
+		foreach (Node n in root.GetChildren())
+		{
+			if (n is Sprite2D sp && sp.Texture != null && sp.Texture.ResourcePath == PortraitPath)
+			{
+				root.MoveChild(sp, root.GetChildCount() - 1);
+			}
+		}
 	}
 
 	/// <summary>

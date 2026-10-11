@@ -12,7 +12,7 @@ public static class ModEntry
 
 	public static void Init()
 	{
-		GD.Print($"{Tag} init v0.9.2");
+		GD.Print($"{Tag} init v0.9.3");
 		try
 		{
 			new Harmony("brooks.p3makoto").PatchAll(typeof(ModEntry).Assembly);
@@ -24,6 +24,7 @@ public static class ModEntry
 		}
 		Safe("sfx prewarm", Audio.Sfx.Prewarm);
 		Safe("star orbit", Vfx.StarOrbit.Install);
+		Safe("low hp", Vfx.LowHpFx.Install);
 		try
 		{
 			Debug.Showcase.TryStart();

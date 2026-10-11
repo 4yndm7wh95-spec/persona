@@ -231,104 +231,102 @@ public static class Extras
 	public sealed record Caption(string Skill, string Persona, string CardTitle);
 
 	/// <summary>
-	/// P3R 风格斜切色带：深蓝平行四边形从左侧高速切入、停留、再向右切出。
-	/// 带文字时：背景超大描边字缓慢横移，主标题粗斜体技能名从右侧滑入并收紧字距，
-	/// 上方 "PERSONA ▸ 名字"，右侧竖线分隔的中文卡名。
+	/// P3R 风格色带（v0.9.2 重做，参照原版菜单的色块拼接）：
+	/// 左：白色斜切色块（上面是红字选中标签 = 中文卡名，和超大描边水印字）；中：深蓝主色带（技能名粗斜体白字 + 青色 PERSONA ▸ 名字）；
+	/// 接缝处一道红色斜块；右端一个"水之圆"（焦散）带两道细圆弧。
+	/// 入场：白块从左、深蓝块从右同时切入（OutExpo，错开 30ms）→ 红块竖向弹出 → 水之圆张开 → 标题从右滑入并收紧 → 标签盖章；
+	/// 停留：整体缓慢漂移、圆弧转动；出场：白块向左、深蓝块向右加速切出，水之圆收拢，最后 40% 淡出。
 	/// </summary>
 	public static void SkewBand(Control layer, Caption? caption = null, float yRatio = 0.17f, float hold = 0.6f, Color? tint = null)
 	{
-		// 放在屏幕上部（顶栏下方），不挡住屏幕中间的人物与命中特效
-		Color c = tint ?? Pal.Royal;
 		Vector2 size = layer.GetViewportRect().Size;
-		float h = size.Y * 0.15f;
-		float skew = h * 0.6f;
-		float w = size.X + skew * 2f;
+		float h = size.Y * 0.15f, lean = h * 0.6f;
+		float y = size.Y * yRatio, top = y - h / 2f, bottom = y + h / 2f;
 		Node2D root = Fx.Root(layer, Vector2.Zero, "P3SkewBand");
 		root.TopLevel = true;
 		root.GlobalPosition = Vector2.Zero;
-		Node2D band = new Node2D();
-		root.AddChild(band);
-		float y = size.Y * yRatio;
-		float top = y - h / 2f;
-		Vector2[] shape = { new(skew, top), new(w, top), new(w - skew, y + h / 2f), new(0f, y + h / 2f) };
-		Fx.Poly(band, shape, new Color(Pal.Abyss, 0.9f));
-		Fx.Poly(band, new Vector2[] { new(skew + 30f, top), new(w, top), new(w - 6f, top + 10f), new(skew + 24f, top + 10f) }, new Color(c, 0.95f), additive: true);
-		Fx.Line(band, new[] { new Vector2(0f, y + h / 2f), new Vector2(w - skew, y + h / 2f) }, Pal.Cyan, 3f);
-		for (int i = 0; i < 5; i++)
-		{
-			float yy = top + h * (0.2f + 0.14f * i);
-			float x0 = Fx.Rand(0.05f, 0.7f) * w;
-			Fx.Line(band, new[] { new Vector2(x0, yy), new Vector2(x0 + Fx.Rand(120f, 380f), yy) }, new Color(Pal.Ice, 0.18f), 2f);
-		}
 
-		float total = 0.22f + hold + 0.2f;
-		Node2D? watermark = null;
-		Node2D? title = null;
-		Node2D? meta = null;
+		// 深蓝主色带（从右切入）
+		Node2D navy = new();
+		root.AddChild(navy);
+		P3Ui.Slab(navy, size.X * 0.3f, size.X + lean * 2f, top, bottom, lean, new Color(0.02f, 0.06f, 0.24f, 0.94f));
+		P3Ui.Slab(navy, size.X * 0.3f, size.X + lean * 2f, bottom, bottom + 6f, 4f, new Color(Pal.Cyan, 0.9f));
+		for (int i = 0; i < 4; i++)
+		{
+			float yy = top + h * (0.18f + 0.18f * i), x0 = Fx.Rand(0.4f, 0.85f) * size.X;
+			Fx.Line(navy, new[] { new Vector2(x0, yy), new Vector2(x0 + Fx.Rand(90f, 300f), yy) }, new Color(Pal.Ice, 0.16f), 2f);
+		}
+		// 水之圆（右端）
+		Vector2 discAt = new(size.X * 0.87f, y + h * 0.1f);
+		float discR = h * 1.3f;
+		ColorRect disc = P3Ui.WaterDisc(navy, discAt, discR);
+		Node2D arcs = new() { Position = discAt };
+		navy.AddChild(arcs);
+		P3Ui.Arc(arcs, Vector2.Zero, discR * 1.1f, Mathf.Pi * 0.6f, Mathf.Pi * 1.5f, new Color(Pal.Cyan, 0.6f), 2.5f);
+		P3Ui.Arc(arcs, Vector2.Zero, discR * 1.2f, Mathf.Pi * 0.9f, Mathf.Pi * 1.3f, new Color(1f, 1f, 1f, 0.5f), 2f);
+
+		// 白色斜切色块（从左切入）
+		Node2D white = new();
+		root.AddChild(white);
+		P3Ui.Slab(white, -lean * 2f, size.X * 0.36f, top - h * 0.14f, bottom + h * 0.06f, lean, new Color(0.95f, 0.97f, 1f, 0.96f));
+		// 接缝红块
+		Node2D red = new() { Position = new Vector2(size.X * 0.36f, bottom + h * 0.06f) };
+		root.AddChild(red);
+		P3Ui.Slab(red, 0f, h * 0.18f, -h * 1.2f, 0f, lean * 1.05f, new Color(0.9f, 0.08f, 0.22f, 0.95f));
+
+		Node2D? watermark = null, title = null, meta = null, tag = null;
 		if (caption != null)
 		{
-			// 背景大字：描边、极淡、缓慢横移
-			watermark = new Node2D { Position = new Vector2(size.X * 0.05f, top - h * 0.12f), Skew = -0.22f };
-			band.AddChild(watermark);
-			Typo.Text(watermark, caption.Skill + "   " + caption.Skill, Typo.Latin, (int)(h * 1.05f), new Color(1f, 1f, 1f, 0f), Vector2.Zero,
-				outline: 3, outlineColor: new Color(Pal.Cyan, 0.16f));
-
-			// 主标题：技能名
-			title = new Node2D { Position = new Vector2(size.X * 0.2f, top + h * 0.3f), Skew = -0.25f };
-			band.AddChild(title);
+			watermark = new Node2D { Position = new Vector2(size.X * 0.02f, top - h * 0.05f), Skew = -0.22f };
+			white.AddChild(watermark);
+			Typo.Text(watermark, caption.Skill, Typo.Latin, (int)(h * 1.0f), new Color(1f, 1f, 1f, 0f), Vector2.Zero,
+				outline: 3, outlineColor: new Color(0.02f, 0.06f, 0.24f, 0.18f));
+			tag = P3Ui.RedTag(root, caption.CardTitle, new Vector2(size.X * 0.06f, y - h * 0.26f), (int)(h * 0.26f));
+			title = new Node2D { Position = new Vector2(size.X * 0.42f, top + h * 0.3f), Skew = -0.25f };
+			root.AddChild(title);
 			Typo.Text(title, caption.Skill, Typo.Latin, (int)(h * 0.46f), Pal.White, Vector2.Zero,
-				outline: 2, outlineColor: new Color(Pal.Abyss, 1f), shadow: new Color(Pal.Cyan, 0.9f), shadowOffset: new Vector2(6f, 5f));
-
-			// PERSONA ▸ 名字
-			meta = new Node2D { Position = new Vector2(size.X * 0.2f + 8f, top + h * 0.1f), Skew = -0.25f };
-			band.AddChild(meta);
+				outline: 2, outlineColor: new Color(Pal.Abyss, 1f), shadow: new Color(0.9f, 0.08f, 0.22f, 0.9f), shadowOffset: new Vector2(6f, 5f));
+			meta = new Node2D { Position = new Vector2(size.X * 0.42f + 8f, top + h * 0.08f), Skew = -0.25f };
+			root.AddChild(meta);
 			Typo.Text(meta, "PERSONA  \u25B8  " + caption.Persona, Typo.Latin, (int)(h * 0.14f), Pal.Cyan, Vector2.Zero);
-
-			// 右侧：竖线 + 中文卡名
-			Node2D card = new Node2D { Position = new Vector2(size.X * 0.68f, top + h * 0.34f), Skew = -0.25f };
-			band.AddChild(card);
-			Fx.Line(card, new[] { new Vector2(-24f, -h * 0.05f), new Vector2(-24f, h * 0.38f) }, Pal.Cyan, 3f, additive: false);
-			Typo.Text(card, caption.CardTitle, Typo.Cjk, (int)(h * 0.22f), Pal.Ice, Vector2.Zero);
-			meta.Modulate = card.Modulate = new Color(1f, 1f, 1f, 0f);
-			Node2D cardRef = card;
-			Fx.Animate(card, total, t =>
-			{
-				float time = t * total;
-				float a = Mathf.Clamp((time - 0.12f) / 0.12f, 0f, 1f);
-				meta.Modulate = cardRef.Modulate = new Color(1f, 1f, 1f, a);
-				cardRef.Position = new Vector2(size.X * 0.68f + 60f * (1f - Ease.OutExpo(a)), top + h * 0.34f);
-			});
 		}
 
-		Vector2 titleHome = title?.Position ?? Vector2.Zero;
-		Fx.Animate(band, total, t =>
+		const float tIn = 0.3f, tOut = 0.24f;
+		float total = tIn + hold + tOut;
+		Vector2 titleHome = title?.Position ?? Vector2.Zero, tagHome = tag?.Position ?? Vector2.Zero, metaHome = meta?.Position ?? Vector2.Zero;
+		Fx.Animate(root, total, t =>
 		{
 			float time = t * total;
-			float x;
-			if (time < 0.22f)
-			{
-				x = Mathf.Lerp(-w, -skew, Ease.OutExpo(time / 0.22f));
-			}
-			else if (time < 0.22f + hold)
-			{
-				x = Mathf.Lerp(-skew, -skew + 40f, (time - 0.22f) / hold);
-			}
-			else
-			{
-				x = Mathf.Lerp(-skew + 40f, size.X + skew, Ease.InExpo((time - 0.22f - hold) / 0.2f));
-			}
-			band.Position = new Vector2(x, 0f);
+			float inA = Ease.OutExpo(Mathf.Clamp(time / 0.22f, 0f, 1f));
+			float inB = Ease.OutExpo(Mathf.Clamp((time - 0.03f) / 0.22f, 0f, 1f));
+			float drift = Mathf.Clamp((time - tIn) / hold, 0f, 1f);
+			float o = Mathf.Clamp((time - tIn - hold) / tOut, 0f, 1f);
+			float outE = Ease.InExpo(o);
+			white.Position = new Vector2(-size.X * 0.55f * (1f - inA) - 30f * drift - size.X * 0.6f * outE, 0f);
+			navy.Position = new Vector2(size.X * 0.9f * (1f - inB) + 30f * drift + size.X * outE, 0f);
+			float r = Mathf.Clamp((time - 0.1f) / 0.14f, 0f, 1f);
+			red.Scale = new Vector2(1f, Ease.OutBack(r) * (1f - outE));
+			Fx.SetParam(disc, "reveal", Ease.OutExpo(Mathf.Clamp((time - 0.08f) / 0.26f, 0f, 1f)) * (1f - Ease.InCubic(o)));
+			arcs.Rotation = 0.3f * time;
+			float fade = 1f - Mathf.Clamp((o - 0.6f) / 0.4f, 0f, 1f);
+			root.Modulate = new Color(1f, 1f, 1f, fade);
 			if (watermark != null)
 			{
-				watermark.Position = new Vector2(size.X * 0.05f - time * 90f, top - h * 0.12f);
+				watermark.Position = new Vector2(size.X * 0.02f - time * 70f, top - h * 0.05f);
 			}
-			if (title != null)
+			if (title != null && meta != null && tag != null)
 			{
-				// 主标题比色带晚 50ms，从右侧滑入，横向从拉宽收紧到正常
-				float u = Ease.OutExpo(Mathf.Clamp((time - 0.05f) / 0.3f, 0f, 1f));
-				title.Position = titleHome + new Vector2(260f * (1f - u), 0f);
-				title.Scale = new Vector2(Mathf.Lerp(1.35f, 1f, u), 1f);
+				float u = Ease.OutExpo(Mathf.Clamp((time - 0.06f) / 0.3f, 0f, 1f));
+				title.Position = titleHome + new Vector2(280f * (1f - u) + 24f * drift + size.X * 0.7f * outE, 0f);
+				title.Scale = new Vector2(Mathf.Lerp(1.4f, 1f, u), 1f);
 				title.Modulate = new Color(1f, 1f, 1f, u);
+				float m = Ease.OutCubic(Mathf.Clamp((time - 0.14f) / 0.16f, 0f, 1f));
+				meta.Position = metaHome + new Vector2(60f * (1f - m) + size.X * 0.7f * outE, 0f);
+				meta.Modulate = new Color(1f, 1f, 1f, m);
+				float k = Mathf.Clamp((time - 0.12f) / 0.16f, 0f, 1f);
+				tag.Scale = Vector2.One * Mathf.Lerp(1.7f, 1f, Ease.OutBack(k));
+				tag.Modulate = new Color(1f, 1f, 1f, k);
+				tag.Position = tagHome - new Vector2(size.X * 0.6f * outE, 0f);
 			}
 		});
 		Fx.FreeAfter(root, total + 0.1);
