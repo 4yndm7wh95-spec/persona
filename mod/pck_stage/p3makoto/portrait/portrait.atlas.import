@@ -1,0 +1,15 @@
+[remap]
+
+importer="spine.atlas"
+type="SpineAtlasResource"
+path="res://.godot/imported/portrait.atlas-051be482bf0ed8e4b9698eea5e65b523.spatlas"
+
+[deps]
+
+source_file="res://p3makoto/portrait/portrait.atlas"
+dest_files=["res://.godot/imported/portrait.atlas-051be482bf0ed8e4b9698eea5e65b523.spatlas"]
+
+[params]
+
+normal_map_prefix="n"
+specular_map_prefix="s"

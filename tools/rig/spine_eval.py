@@ -72,6 +72,20 @@ def _ik2(W, parent, child, child_local, length, target, bend_positive):
     W[child] = np.array([[c, -s, cxw], [s, c, cyw], [0, 0, 1.0]])
 
 
+def _child(Pm, local, no_scale):
+    """子骨骼世界矩阵。noScale：位置照常经过父矩阵（含缩放），朝向 / 缩放只继承父骨骼的旋转。"""
+    if not no_scale:
+        return Pm @ local
+    pos = Pm @ np.array([local[0, 2], local[1, 2], 1.0])
+    R = Pm[:2, :2].copy()
+    for c in range(2):
+        R[:, c] /= max(np.linalg.norm(R[:, c]), 1e-9)
+    out = np.eye(3)
+    out[:2, :2] = R @ local[:2, :2]
+    out[:2, 2] = pos[:2]
+    return out
+
+
 class Skeleton:
     def __init__(self, data, images):
         self.data = data
@@ -104,7 +118,11 @@ class Skeleton:
                 sx *= ks[0] if ks[0] != 0 else 1.0
                 sy *= ks[1] if ks[1] != 0 else 1.0
             local = mat(x, y, rot, sx, sy)
-            W[name] = W[b["parent"]] @ local if "parent" in b else local
+            if "parent" in b:
+                Pm = W[b["parent"]]
+                W[name] = _child(Pm, local, b.get("inherit") == "noScale")
+            else:
+                W[name] = local
         for ik in self.data.get("ik", []):
             parent, child = ik["bones"]
             cb = self.bones[child]
@@ -129,7 +147,7 @@ class Skeleton:
             if "scale" in k:
                 ks = sample(k["scale"], self._t, ["x", "y"])
                 sx, sy = sx * ks[0], sy * ks[1]
-            W[n] = W[root] @ mat(x, y, rot, sx, sy)
+            W[n] = _child(W[root], mat(x, y, rot, sx, sy), b.get("inherit") == "noScale")
             self._reparent(W, n, tl)
 
     def attachments(self, anim=None, t=0.0):

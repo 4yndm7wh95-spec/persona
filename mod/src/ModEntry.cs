@@ -12,7 +12,7 @@ public static class ModEntry
 
 	public static void Init()
 	{
-		GD.Print($"{Tag} init v0.9.5");
+		GD.Print($"{Tag} init v0.9.6");
 		try
 		{
 			new Harmony("brooks.p3makoto").PatchAll(typeof(ModEntry).Assembly);
@@ -24,7 +24,7 @@ public static class ModEntry
 		}
 		Safe("sfx prewarm", Audio.Sfx.Prewarm);
 		Safe("star orbit", Vfx.StarOrbit.Install);
-		Safe("low hp", Vfx.LowHpFx.Install);
+		// 低血溺水暗角已按用户要求关闭（Vfx/LowHpFx.cs 保留未用）
 		try
 		{
 			Debug.Showcase.TryStart();

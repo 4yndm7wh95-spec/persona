@@ -21,72 +21,72 @@ public static class StageFx
 	/// </summary>
 	public static void TurnBanner(Control layer, bool player, int round)
 	{
+		// v0.9.5：不再横贯屏幕中央 —— 收成左上角的一条短色带（顶栏下方），画在背景特效层（人物后面），淡一些、停得短一些
 		Vector2 size = layer.GetViewportRect().Size;
-		float cy = size.Y * 0.42f, h = size.Y * 0.13f;
-		Node2D root = Fx.Root(layer, new Vector2(size.X * 0.5f, cy), "P3TurnBanner");
-		root.TopLevel = true;
-		root.GlobalPosition = new Vector2(size.X * 0.5f, cy);
-		root.Rotation = -0.105f;
-		Color slabB = player ? new Color(0.95f, 0.97f, 1f, 0.97f) : new Color(0.32f, 0.03f, 0.1f, 0.96f);
+		float cy = size.Y * 0.2f, h = size.Y * 0.075f;
+		Node2D root = Fx.Root(layer, new Vector2(0f, cy), "P3TurnBanner");
+		root.Rotation = -0.05f;
+		Color slabB = player ? new Color(0.95f, 0.97f, 1f, 0.9f) : new Color(0.32f, 0.03f, 0.1f, 0.9f);
 		Color word = player ? new Color(0.03f, 0.08f, 0.3f) : Pal.White;
 		Color accent = player ? new Color(Pal.Cyan, 0.9f) : new Color(0.95f, 0.15f, 0.3f, 0.9f);
+		float w = size.X * 0.36f;
 
 		Node2D navy = new();
 		root.AddChild(navy);
-		P3Ui.Slab(navy, -size.X, size.X, -h * 0.5f, h * 0.5f, h * 0.5f, new Color(0.02f, 0.06f, 0.24f, 0.94f));
-		P3Ui.Slab(navy, -size.X, size.X, h * 0.5f, h * 0.5f + 6f, 3f, accent);
+		P3Ui.Slab(navy, -200f, w, -h * 0.5f, h * 0.5f, h * 0.5f, new Color(0.02f, 0.06f, 0.24f, 0.82f));
+		P3Ui.Slab(navy, -200f, w, h * 0.5f, h * 0.5f + 4f, 2f, accent);
 		Node2D slab = new();
 		root.AddChild(slab);
-		P3Ui.Slab(slab, -size.X * 0.32f, size.X * 0.42f, -h * 0.36f, h * 0.36f, h * 0.36f, slabB);
-		Node2D red = new() { Position = new Vector2(-size.X * 0.34f, h * 0.36f) };
+		P3Ui.Slab(slab, size.X * 0.06f, w - size.X * 0.03f, -h * 0.36f, h * 0.36f, h * 0.36f, slabB);
+		Node2D red = new() { Position = new Vector2(size.X * 0.06f - 8f, h * 0.36f) };
 		root.AddChild(red);
 		P3Ui.Slab(red, 0f, h * 0.12f, -h * 0.72f, 0f, h * 0.36f, new Color(0.9f, 0.08f, 0.22f, 0.95f));
 
-		Node2D text = new() { Skew = -0.25f, Position = new Vector2(-size.X * 0.22f, 0f) };
+		Node2D text = new() { Skew = -0.25f, Position = new Vector2(size.X * 0.09f, 0f) };
 		root.AddChild(text);
-		int fs = (int)(h * 0.62f);
+		int fs = (int)(h * 0.56f);
 		Typo.Text(text, player ? "PLAYER TURN" : "ENEMY TURN", Typo.Latin, fs, word, new Vector2(0f, -fs * 0.62f),
-			shadow: new Color(0.9f, 0.08f, 0.22f, player ? 0.85f : 0.0f), shadowOffset: new Vector2(5f, 4f));
+			shadow: new Color(0.9f, 0.08f, 0.22f, player ? 0.85f : 0.0f), shadowOffset: new Vector2(4f, 3f));
 
-		Vector2 discAt = new(-size.X * 0.4f, -h * 0.1f);
-		float discR = h * 1.05f;
+		Vector2 discAt = new(size.X * 0.035f, 0f);
+		float discR = h * 0.95f;
 		ColorRect disc = P3Ui.WaterDisc(root, discAt, discR);
 		Node2D arcs = new() { Position = discAt };
 		root.AddChild(arcs);
-		P3Ui.Arc(arcs, Vector2.Zero, discR * 1.12f, 0f, Mathf.Pi * 1.3f, accent, 3f);
+		P3Ui.Arc(arcs, Vector2.Zero, discR * 1.12f, 0f, Mathf.Pi * 1.3f, accent, 2.5f);
 		Node2D num = new() { Position = discAt, Skew = -0.2f };
 		root.AddChild(num);
+		// 圆里总有内容：我方回合 = 回合数，敌方回合 = 红色感叹号（之前敌方回合这里是空的）
+		string glyph = player ? round.ToString() : "!";
+		int ns = (int)(discR * (player ? 1.0f : 1.2f));
 		if (player)
 		{
-			int ns = (int)(discR * 1.05f);
 			Typo.Text(num, "TURN", Typo.Latin, (int)(discR * 0.26f), new Color(Pal.Ice, 0.9f), new Vector2(-discR * 0.5f, -discR * 0.82f));
-			Typo.Text(num, round.ToString(), Typo.Latin, ns, Pal.White, new Vector2(-ns * 0.3f * round.ToString().Length, -ns * 0.6f),
-				shadow: new Color(0.02f, 0.06f, 0.24f, 0.9f), shadowOffset: new Vector2(5f, 5f));
 		}
+		Typo.Text(num, glyph, Typo.Latin, ns, player ? Pal.White : new Color(1f, 0.25f, 0.35f), new Vector2(-ns * 0.3f * glyph.Length, -ns * 0.6f),
+			shadow: new Color(0.02f, 0.06f, 0.24f, 0.9f), shadowOffset: new Vector2(4f, 4f));
 
-		const float tIn = 0.28f, hold = 0.55f, tOut = 0.26f, total = tIn + hold + tOut;
+		const float tIn = 0.26f, hold = 0.45f, tOut = 0.26f, total = tIn + hold + tOut;
 		Fx.Animate(root, total, t =>
 		{
 			float time = t * total;
-			float a = Ease.OutExpo(Seg(time, 0f, 0.24f));
-			float b = Ease.OutExpo(Seg(time, 0.03f, 0.24f));
+			float a = Ease.OutQuint(Seg(time, 0f, 0.26f));
+			float b = Ease.OutQuint(Seg(time, 0.03f, 0.26f));
 			float d = Seg(time, tIn, hold);
-			float o = Ease.InExpo(Seg(time, tIn + hold, tOut));
-			navy.Position = new Vector2(-size.X * 1.1f * (1f - a) - 20f * d + size.X * 1.2f * o, 0f);
-			slab.Position = new Vector2(size.X * 1.1f * (1f - b) + 25f * d - size.X * 1.2f * o, 0f);
-			navy.Scale = slab.Scale = new Vector2(1f, 1f - 0.8f * o);
+			float o = Ease.InCubic(Seg(time, tIn + hold, tOut));
+			navy.Position = new Vector2(-(w + 200f) * (1f - a) + 8f * d - (w + 200f) * o, 0f);
+			slab.Position = new Vector2(-(w + 200f) * (1f - b) + 14f * d - (w + 200f) * o, 0f);
 			red.Scale = new Vector2(1f, Ease.OutBack(Seg(time, 0.12f, 0.14f)) * (1f - o));
-			float u = Ease.OutExpo(Seg(time, 0.07f, 0.3f));
-			text.Position = new Vector2(-size.X * 0.22f + 300f * (1f - u) + 30f * d - size.X * 0.9f * o, 0f);
-			text.Scale = new Vector2(Mathf.Lerp(1.5f, 1f, u), 1f);
-			text.Modulate = new Color(1f, 1f, 1f, u);
-			Fx.SetParam(disc, "reveal", Ease.OutExpo(Seg(time, 0.05f, 0.28f)) * (1f - Ease.InCubic(Seg(time, tIn + hold, tOut))));
+			float u = Ease.OutQuint(Seg(time, 0.07f, 0.28f));
+			text.Position = new Vector2(size.X * 0.09f - 120f * (1f - u) + 16f * d - (w + 200f) * o, 0f);
+			text.Modulate = new Color(1f, 1f, 1f, u * (1f - o));
+			Fx.SetParam(disc, "reveal", Ease.OutQuint(Seg(time, 0.05f, 0.28f)) * (1f - Ease.InCubic(Seg(time, tIn + hold, tOut))));
 			arcs.Rotation = 0.6f * time;
 			arcs.Modulate = new Color(1f, 1f, 1f, a * (1f - o));
 			float n = Ease.OutBack(Seg(time, 0.12f, 0.22f));
-			num.Scale = Vector2.One * Mathf.Lerp(1.8f, 1f, n) * (1f - o);
+			num.Scale = Vector2.One * Mathf.Lerp(1.6f, 1f, n) * (1f - o);
 			num.Modulate = new Color(1f, 1f, 1f, Seg(time, 0.12f, 0.08f) * (1f - o));
-			root.Modulate = new Color(1f, 1f, 1f, 1f - Seg(time, tIn + hold + tOut * 0.6f, tOut * 0.4f));
+			root.Modulate = new Color(1f, 1f, 1f, 0.92f * (1f - Seg(time, tIn + hold + tOut * 0.6f, tOut * 0.4f)));
 		});
 		Fx.FreeAfter(root, total + 0.05);
 	}
@@ -158,7 +158,23 @@ public static class StageFx
 		root.AddChild(white);
 		P3Ui.Slab(white, -300f, size.X * 0.42f, -40f, size.Y + 40f, size.Y * 0.28f, new Color(0.95f, 0.97f, 1f, 0.95f));
 		P3Ui.Slab(white, size.X * 0.42f - 4f, size.X * 0.42f + 12f, -40f, size.Y + 40f, size.Y * 0.28f, new Color(0.9f, 0.08f, 0.22f, 0.95f));
-		Node2D word = P3Ui.GiantWord(white, "VICTORY", new Vector2(size.X * 0.05f, size.Y * 0.95f), (int)(size.Y * 0.26f), -1.05f, new Color(0.03f, 0.08f, 0.3f, 0.95f));
+		// 左侧色块上方不再空着：深蓝斜切色块 + "RESULT" 小标题 + 两道细线 + 半透明描边大字（P3R 菜单的层叠排版）
+		P3Ui.Slab(white, -300f, size.X * 0.3f, -40f, size.Y * 0.2f, size.Y * 0.06f, new Color(0.03f, 0.08f, 0.3f, 0.95f));
+		Typo.Text(white, "RESULT", Typo.Latin, (int)(size.Y * 0.07f), new Color(0.95f, 0.97f, 1f), new Vector2(size.X * 0.04f, size.Y * 0.045f));
+		Typo.Text(white, "MEMENTO MORI  /  THE FOOL", Typo.Latin, (int)(size.Y * 0.022f), new Color(Pal.Cyan, 0.9f), new Vector2(size.X * 0.045f, size.Y * 0.135f));
+		Fx.Line(white, new[] { new Vector2(-50f, size.Y * 0.235f), new Vector2(size.X * 0.36f, size.Y * 0.235f) }, new Color(0.9f, 0.08f, 0.22f, 0.9f), 4f);
+		Fx.Line(white, new[] { new Vector2(-50f, size.Y * 0.255f), new Vector2(size.X * 0.33f, size.Y * 0.255f) }, new Color(0.03f, 0.08f, 0.3f, 0.6f), 2f);
+		Node2D ghostWord = P3Ui.GiantWord(white, "CLEAR", new Vector2(size.X * 0.2f, size.Y * 0.62f), (int)(size.Y * 0.2f), -1.05f, new Color(0.03f, 0.08f, 0.3f, 0.08f));
+		Node2D word = P3Ui.GiantWord(white, "VICTORY", new Vector2(size.X * 0.09f, size.Y * 0.9f), (int)(size.Y * 0.28f), -1.05f, new Color(0.03f, 0.08f, 0.3f, 0.95f));
+		// 水之圆里站着结城理（选人界面同一张立绘），从右侧滑入
+		Sprite2D hero = new() { Modulate = new Color(1f, 1f, 1f, 0f) };
+		if (ResourceLoader.Load("res://p3makoto/ui/charselect_portrait.png") is Texture2D heroTex)
+		{
+			hero.Texture = heroTex;
+			hero.Scale = Vector2.One * (size.Y * 1.02f / heroTex.GetHeight());
+		}
+		root.AddChild(hero);
+		Vector2 heroAt = discAt + new Vector2(size.Y * 0.04f, size.Y * 0.04f);
 		Node2D tag = P3Ui.RedTag(root, "BATTLE CLEAR", new Vector2(size.X * 0.58f, size.Y * 0.16f), (int)(size.Y * 0.05f), cjk: false);
 
 		const float tIn = 0.4f, hold = 1.0f, tOut = 0.4f, total = tIn + hold + tOut;
@@ -171,7 +187,11 @@ public static class StageFx
 			float oe = Ease.InExpo(o);
 			dim.Color = new Color(0.01f, 0.03f, 0.1f, 0.45f * a * (1f - o));
 			white.Position = new Vector2(-size.X * 0.6f * (1f - a) - 20f * d - size.X * 0.7f * oe, 0f);
-			word.Position = new Vector2(size.X * 0.05f, size.Y * 0.95f + size.Y * 0.5f * (1f - Ease.OutExpo(Seg(time, 0.08f, 0.4f))) - 40f * d - size.Y * 0.4f * oe);
+			word.Position = new Vector2(size.X * 0.09f, size.Y * 0.9f + size.Y * 0.5f * (1f - Ease.OutExpo(Seg(time, 0.08f, 0.4f))) - 40f * d - size.Y * 0.4f * oe);
+			ghostWord.Position = new Vector2(size.X * 0.2f + 60f * time, size.Y * 0.62f);
+			float h = Ease.OutQuint(Seg(time, 0.1f, 0.45f));
+			hero.Position = heroAt + new Vector2(size.X * 0.25f * (1f - h) + 15f * d + size.X * 0.3f * oe, 0f);
+			hero.Modulate = new Color(1f, 1f, 1f, h * (1f - o));
 			Fx.SetParam(disc, "reveal", Ease.OutExpo(Seg(time, 0.06f, 0.36f)) * (1f - Ease.InCubic(o)));
 			arcs.Rotation = 0.35f * time;
 			arcs.Modulate = new Color(1f, 1f, 1f, a * (1f - o));
@@ -192,10 +212,10 @@ public static class StageFx
 	public static void RewardBackdrop(Control screen, Vector2 rowCenter, Func<Vector2[]> cardCenters)
 	{
 		Vector2 size = screen.GetViewportRect().Size;
-		Node2D root = new() { Name = "P3RewardBackdrop" };
+		// 画在选牌界面所有子节点的最下面（不用 TopLevel：TopLevel 会画到牌的上面，挡住选牌）
+		Node2D root = new() { Name = "P3RewardBackdrop", ZIndex = -1 };
 		screen.AddChild(root);
 		screen.MoveChild(root, 0);
-		root.TopLevel = true;
 		root.GlobalPosition = Vector2.Zero;
 		Node2D slab = new();
 		root.AddChild(slab);
@@ -228,7 +248,7 @@ public static class StageFx
 				Vector2 p = cs[i];
 				Fx.After(root, 0.07 * i, "reward glint", () =>
 				{
-					Node2D g = new() { TopLevel = true };
+					Node2D g = new();
 					root.AddChild(g);
 					g.GlobalPosition = p;
 					Fx.Poly(g, Fx.Star4(140f, 0.05f), Pal.White, additive: true);

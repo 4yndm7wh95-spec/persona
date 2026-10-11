@@ -38,9 +38,9 @@ public static class PlayerTurnBannerPatch
 		bool replaced = false;
 		ModEntry.Safe("turn banner", () =>
 		{
-			if (Stage.MakotoCombat() && Makoto.FxLayer() is Control front)
+			if (Stage.MakotoCombat() && (Makoto.FxLayer(back: true) ?? Makoto.FxLayer()) is Control back)
 			{
-				StageFx.TurnBanner(front, player: true, roundNumber);
+				StageFx.TurnBanner(back, player: true, roundNumber);
 				replaced = true;
 			}
 		});
@@ -61,9 +61,9 @@ public static class EnemyTurnBannerPatch
 		bool replaced = false;
 		ModEntry.Safe("enemy banner", () =>
 		{
-			if (Stage.MakotoCombat() && Makoto.FxLayer() is Control front)
+			if (Stage.MakotoCombat() && (Makoto.FxLayer(back: true) ?? Makoto.FxLayer()) is Control back)
 			{
-				StageFx.TurnBanner(front, player: false, 0);
+				StageFx.TurnBanner(back, player: false, 0);
 				replaced = true;
 			}
 		});

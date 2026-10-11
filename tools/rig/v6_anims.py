@@ -29,18 +29,28 @@ def make(data):
         """躯干姿势 + 它的坐标系；头按"世界角度"给（身体怎么倾，眼睛都盯着前方）。"""
         return body(hx=hx, hy=hy, spine=spine, chest=chest, head=head_world - spine - chest, sy=sy), (hx, hy, spine, chest)
 
-    def evoker(wrist, barrel_dir, bend=1):
-        return arm("n", wrist, hand_dir=barrel_dir - barrel_rel, bend=bend)
+    def evoker(wrist, barrel_dir, bend=1, fore_scale=1.0):
+        return arm("n", wrist, hand_dir=barrel_dir - barrel_rel, bend=bend, fore_scale=fore_scale)
+
+    mx, my = bones["muzzle"]["x"], bones["muzzle"]["y"]
+
+    def evoker_at(muzzle, barrel_dir, fore_scale=0.6):
+        """枪口顶在 muzzle（底图像素），枪管朝 barrel_dir：反推手腕位置。前臂按透视缩短（肘朝镜头抬起）。"""
+        hd = math.radians(barrel_dir - barrel_rel)
+        ox = mx * math.cos(hd) - my * math.sin(hd)
+        oy = mx * math.sin(hd) + my * math.cos(hd)
+        return evoker((muzzle[0] - ox, muzzle[1] + oy), barrel_dir, bend=1, fore_scale=fore_scale)
 
     anims = []
 
     # ───────────── 站姿 ─────────────
     # 待机：重心略沉、膝盖放松，两臂自然下垂贴近身体（不再是 A 字），肘部微屈
     STANCE = feet(n=(12, 0), f=(-10, 0))
-    IDLE = add(STANCE, body(hy=6, chest=0.5, head=-1),
-               arm("n", (322, 700), bend=-1, hand_rel=6), arm("f", (735, 700), bend=-1, hand_rel=-6))
-    INHALE = add(STANCE, body(hy=3, chest=-0.2, head=-1.8, sy=0.012),
-                 arm("n", (318, 697), bend=-1, hand_rel=8), arm("f", (740, 697), bend=-1, hand_rel=-8))
+    # 远侧手插兜（v5 起用户喜欢的待机），近侧手自然下垂、肘微屈
+    FAR_POCKET = arm("f", (622, 668), bend=1, hand_rel=0)
+    IDLE = add(STANCE, body(hx=-4, hy=6, chest=0.5, head=-1), arm("n", (330, 700), bend=-1, hand_rel=6), FAR_POCKET)
+    INHALE = add(STANCE, body(hx=-4, hy=3, chest=-0.2, head=-1.8, sy=0.012), arm("n", (327, 697), bend=-1, hand_rel=8),
+                 arm("f", (621, 665), bend=1, hand_rel=0))
 
     def blink(a, t):
         a.att(0, "blink", "blink")
@@ -61,12 +71,9 @@ def make(data):
     blink(a, 3.3)
     anims.append(a)
 
-    # 低血：弯腰、低头、重喘
-    SLUMP = add(STANCE, body(hx=-6, hy=34, spine=-4, chest=-7, head=-14),
-                arm("n", (345, 715), bend=-1, hand_rel=10), arm("f", (705, 712), bend=-1, hand_rel=-4))
-    SLUMP_IN = add(SLUMP, body(hy=-8, chest=3, head=3, sy=0.02))
-    a = Anim("low_health_loop", 2.4, loop=True).k(0, SLUMP).k(0.9, SLUMP_IN, "out").k(2.4, SLUMP, "io")
-    blink(a, 1.5)
+    # 低血：不做专属姿势（用户要求），和待机一样
+    a = Anim("low_health_loop", 3.2, loop=True).k(0, IDLE).k(1.5, INHALE).k(3.2, IDLE)
+    blink(a, 1.9)
     anims.append(a)
 
     # ───────────── 召唤器 ─────────────
@@ -75,21 +82,21 @@ def make(data):
 
     def to_temple(wrist):
         return math.degrees(math.atan2(-(TEMPLE[1] - wrist[1]), TEMPLE[0] - wrist[0]))
-    FAR_TENSE = arm("f", (722, 690), bend=-1, hand_rel=-10)
+    FAR_TENSE = arm("f", (624, 664), bend=1, hand_rel=0)                # 召唤器时远侧手仍插兜
     DIP = add(IDLE, body(hy=14, chest=-1, head=-3))
     REACH = add(STANCE, body(hx=-4, hy=12, spine=-1, chest=-3, head=-8), arm("n", (452, 602), bend=-1, hand_rel=-20), FAR_TENSE)
-    W_EV = (452, 182)
-    EVOKER = add(STANCE, body(hx=-3, hy=8, chest=1.5, head=3), evoker(W_EV, to_temple(W_EV)), FAR_TENSE)
-    W_T = (458, 176)
-    TENSE = add(STANCE, body(hx=-1, hy=11, chest=0.5, head=4.5, sy=-0.01), evoker(W_T, to_temple(W_T)), arm("f", (716, 684), bend=-1, hand_rel=-14))
+    # 肘抬高往外张、手在头的左上方，枪管斜向下抵住太阳穴（枪口离手腕约 180px）
+    # 经典的召唤器姿势：肘抬起朝向镜头（前臂透视缩短），枪管水平抵住太阳穴
+    EVOKER = add(STANCE, body(hx=-3, hy=8, chest=1.5, head=3), evoker_at(TEMPLE, -4), FAR_TENSE)
+    TENSE = add(STANCE, body(hx=-1, hy=11, chest=0.5, head=4.5, sy=-0.01), evoker_at((TEMPLE[0] + 3, TEMPLE[1] + 2), -7), FAR_TENSE)
     SQUEEZE = add(TENSE, body(hy=4, head=1.5, sy=-0.006))
     # 后坐：头被"打"得甩向另一侧，胸口一挺，枪口跳起
-    W_K = (440, 160)
+
     KICK = add(STANCE, body(hx=-14, hy=4, spine=-2, chest=-5, head=-17, sy=0.015),
-               evoker(W_K, to_temple(W_K) + 16), arm("f", (748, 700), bend=-1, hand_rel=-2))
+               evoker_at((TEMPLE[0] - 22, TEMPLE[1] - 26), 16, fore_scale=0.66), arm("f", (628, 668), bend=1, hand_rel=0))
     W_L = (372, 500)
-    LOWER = add(STANCE, body(hy=8, chest=0.5, head=-2), evoker(W_L, -95, bend=-1), arm("f", (735, 700), bend=-1, hand_rel=-6))
-    HOLSTER = add(STANCE, body(hy=10, chest=-2, head=-5), arm("n", (450, 606), bend=-1, hand_rel=-20), arm("f", (735, 700), bend=-1, hand_rel=-6))
+    LOWER = add(STANCE, body(hy=8, chest=0.5, head=-2), evoker(W_L, -95, bend=-1), FAR_POCKET)
+    HOLSTER = add(STANCE, body(hy=10, chest=-2, head=-5), arm("n", (450, 606), bend=-1, hand_rel=-20), FAR_POCKET)
 
     def eyes(a, keys):
         a.att(0, "eye_glow", "eye_glow")
@@ -148,11 +155,12 @@ def make(data):
     # ───────────── 剑：扛刀弓步架势（选中剑牌时）→ 斜劈 ─────────────
     # 参照 P3R：右脚（近侧）向前送、屈膝承重；左脚（远侧）撤后伸直蹬地、脚跟微抬；胯前压下沉，上身顺着后腿的斜线前倾；
     # 右手把刀扛到耳后（肘向后张），剑身从后脑后面压过、剑尖朝前上；左手（远侧）伸到胸前、张掌指向敌人；头抬起盯住前方。
-    LUNGE = feet(n=(420, 0), f=(-330, -10), rf=-14)
+    # 前脚 = 远侧腿（往前送、屈膝），后脚 = 近侧腿（撤后蹬直、脚跟微抬）。两腿不交叉（镜像参考图的轮廓）
+    LUNGE = feet(n=(-170, -8), f=(230, 0), rn=6)
     W_CARRY = (400, 150)
-    B, F = lean(45, 95, -5, -9, -3)
+    B, F = lean(40, 82, -8, -14, -2)
     READY = add(LUNGE, B, sword(W_CARRY, 52), arm("f", (868, 404), bend=-1, hand_rel=-35))
-    B, F = lean(43, 91, -4.5, -8, -2, sy=0.01)
+    B, F = lean(38, 78, -7.5, -13, -1.5, sy=0.01)
     READY_IN = add(LUNGE, B, sword((402, 146), 55), arm("f", (872, 398), bend=-1, hand_rel=-31))
     # 劈：后脚再蹬 → 胯前送带上身前倒 → 肩带臂、臂带剑（手腕领先、剑尖滞后，最后一甩）；前膝被压得更弯吸收冲击；
     # 左手猛地收回腰侧（反向扭力，身体才转得过来）
@@ -169,17 +177,17 @@ def make(data):
     # 收招：甩一下剑 → 起身，前脚撤回（重心先移到后脚），后脚跟上
     B, F = lean(55, 80, -6, -10, -2)
     FLICK = add(LUNGE, B, sword((760, 690), -100, bend=-1, frame=F), arm("f", (730, 700), bend=-1, hand_rel=-4, frame=F))
-    BACK_STEP = add(feet(n=(160, 0), f=(-240, -6), rf=-8), body(hx=-10, hy=40, spine=-2, chest=-4, head=1),
+    BACK_STEP = add(feet(n=(-120, -6), f=(110, 0), rn=3), body(hx=-10, hy=40, spine=-2, chest=-4, head=1),
                     arm("n", (420, 640), bend=-1, hand_rel=0), arm("f", (690, 680), bend=-1, hand_rel=-4))
 
     def lunge_feet_in(a, t0, t1):
         """从站姿迈成弓步：右脚抬起向前跨，左脚向后滑（重心先压到左脚）。"""
         tm = t0 + (t1 - t0) * 0.5
-        a.kb(tm, {"foot_n": {"x": 230, "y": 56, "r": 6}}, "out")
-        a.kb(t0 + (t1 - t0) * 0.6, {"foot_f": {"x": -190, "y": 16, "r": -10}}, "io")
+        a.kb(tm, {"foot_f": {"x": 120, "y": 52, "r": 8}}, "out")
+        a.kb(t0 + (t1 - t0) * 0.6, {"foot_n": {"x": -100, "y": 14, "r": 4}}, "io")
 
     # 拔剑上肩的路线走身前：手从胯边经过胸前举起，再绕到耳后（不是从身后抡一大圈）
-    RAISE = add(feet(n=(200, 30), f=(-150, 0), rf=-6), body(hx=20, hy=50, spine=-3, chest=-5, head=4),
+    RAISE = add(feet(n=(-90, 0), f=(140, 34), rf=6), body(hx=20, hy=50, spine=-3, chest=-5, head=4),
                 sword((520, 335), 108), arm("f", (800, 470), bend=-1, hand_rel=-30))
     a = (Anim("sword_in", 0.3).k(0, IDLE).k(0.06, add(DIP, body(hx=-8, hy=6, chest=1)), "out")
          .k(0.13, RAISE, "io").k(0.22, add(READY, body(hy=8, chest=-2, head=1)), "out").k(0.3, READY, "io"))
@@ -194,9 +202,9 @@ def make(data):
 
     a = (Anim("sword_out", 0.5).k(0, READY).k(0.08, add(READY, body(hy=6, chest=-1)), "out")
          .k(0.3, BACK_STEP, "io").k(0.5, IDLE, "io"))
-    a.kb(0.2, {"foot_n": {"x": 300, "y": 46, "r": 4}}, "io")
-    a.kb(0.4, {"foot_f": {"x": -110, "y": 22, "r": -6}}, "io")
-    a.hand(0.2, "n", "hang").far(0.24, kind="hang", front=False).ev(0.2, "weapon_sheath")
+    a.kb(0.2, {"foot_f": {"x": 140, "y": 44, "r": 6}}, "io")
+    a.kb(0.4, {"foot_n": {"x": -60, "y": 18, "r": 3}}, "io")
+    a.hand(0.2, "n", "hang").far(0.3, kind="pocket", front=False).ev(0.2, "weapon_sheath")
     anims.append(a)
 
     def slash(name, keys, foot_in, events, swap_front, recover_at, from_idle=False):
@@ -213,9 +221,9 @@ def make(data):
         a.hand(swap_front, "n", "sword", back=False)
         a.far(swap_front + 0.01, kind="fist", front=False)
         # 收招：前脚撤回（抬起），后脚跟上
-        a.kb(recover_at, {"foot_n": {"x": 300, "y": 46, "r": 5}}, "io")
-        a.kb(recover_at + 0.16, {"foot_f": {"x": -130, "y": 22, "r": -6}}, "io")
-        a.hand(0.7, "n", "hang").far(0.72, kind="hang")
+        a.kb(recover_at, {"foot_f": {"x": 150, "y": 44, "r": 6}}, "io")
+        a.kb(recover_at + 0.16, {"foot_n": {"x": -70, "y": 18, "r": 3}}, "io")
+        a.hand(0.7, "n", "hang").far(0.8, kind="pocket")
         for t, e in events:
             a.ev(t, e)
         a.att(0, "glare", "glare")
@@ -227,11 +235,11 @@ def make(data):
     slash("attack_from_ready", [(0, READY), (0.026, COCK, "out"), (0.056, MID, "in"), (0.084, FINISH, "out"), (0.14, SETTLE, "back")] + rec,
           None, [(0.025, "weapon_windup"), (0.065, "weapon_slash"), (0.68, "weapon_sheath")], 0.045, 0.62)
     # 直接出招（没有预备）：一步踏进弓步、同时扛刀，0.08s 接触
-    STEP = add(feet(n=(260, 0), f=(-210, 0), rf=-8), body(hx=24, hy=55, spine=-3, chest=-4, head=6),
+    STEP = add(feet(n=(-110, -4), f=(160, 0), rn=3), body(hx=24, hy=55, spine=-3, chest=-4, head=6),
                sword((395, 170), 64), arm("f", (820, 430), bend=-1, hand_rel=-30))
     slash("attack", [(0, IDLE), (0.032, STEP, "out"), (0.048, COCK, "out"), (0.07, MID, "in"), (0.098, FINISH, "out"),
                      (0.15, SETTLE, "back")] + rec,
-          lambda a: (a.kb(0.018, {"foot_n": {"x": 130, "y": 40, "r": 6}}, "out"), a.kb(0.02, {"foot_f": {"x": -100, "y": 10, "r": -6}}, "out")),
+          lambda a: (a.kb(0.018, {"foot_f": {"x": 90, "y": 40, "r": 6}}, "out"), a.kb(0.02, {"foot_n": {"x": -60, "y": 10, "r": 2}}, "out")),
           [(0.0, "weapon_draw"), (0.04, "weapon_windup"), (0.08, "weapon_slash"), (0.7, "weapon_sheath")], 0.06, 0.62, from_idle=True)
 
     # ───────────── 托掌施法（不召唤）：手心向上托出，低头看手 ─────────────
@@ -252,7 +260,9 @@ def make(data):
                arm("n", (372, 650), bend=-1, hand_rel=18), arm("f", (800, 645), bend=-1, hand_rel=14))
     REBOUND = add(STANCE, body(hx=6, hy=8, spine=-1, chest=-3, head=-4), arm("n", (318, 700), bend=-1, hand_rel=4),
                   arm("f", (730, 702), bend=-1, hand_rel=-8))
-    anims.append(Anim("hurt", 0.7).k(0, IDLE).k(0.05, HIT, "snap").k(0.13, HIT2, "out").k(0.34, REBOUND, "io").k(0.56, IDLE, "io").k(0.7, IDLE, "io"))
+    a = Anim("hurt", 0.7).k(0, IDLE).k(0.05, HIT, "snap").k(0.13, HIT2, "out").k(0.34, REBOUND, "io").k(0.56, IDLE, "io").k(0.7, IDLE, "io")
+    a.far(0.02, kind="hang").far(0.5, kind="pocket")                 # 被打时插兜的手甩出来，站稳后插回去
+    anims.append(a)
 
     KNEEL = add(STANCE, body(hx=-20, hy=330, spine=-6, chest=-12, head=-22),
                 arm("n", (360, 690), bend=-1, hand_rel=14), arm("f", (730, 690), bend=-1, hand_rel=-4))
@@ -260,6 +270,7 @@ def make(data):
                arm("n", (420, 680), bend=-1, hand_rel=20), arm("f", (690, 690), bend=-1, hand_rel=0))
     a = (Anim("die", 1.5).k(0, IDLE).k(0.06, HIT, "snap").k(0.2, HIT2, "out").k(0.55, KNEEL, "in").k(0.62, add(KNEEL, body(hy=-12)), "out")
          .k(0.95, DOWN, "in").k(1.02, add(DOWN, body(hy=-8, chest=3)), "out").k(1.5, DOWN, "io"))
+    a.far(0.03, kind="hang")
     a.ev(0.1, "death_particles_start").ev(1.1, "death_particles_end").ev(1.2, "explode_dead").ev(1.35, "explode_end")
     a.att(0, "blink", "blink")
     a.alpha("blink", [(0, 0), (0.5, 0), (0.6, 1), (1.5, 1)])

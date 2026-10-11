@@ -1,4 +1,5 @@
 using Godot;
+using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using P3Makoto.Vfx;
 
 namespace P3Makoto.Scenes;
@@ -43,12 +44,14 @@ public static class CharSelectBg
 		Butterflies(root);
 	}
 
-	// 特写立绘（art/v6/portrait_a.png → tools/ui/build_ui_assets.py）：922×1400，头部约在 (480, 213)
+	// 特写立绘（阶段 11：手持碎镜片，art/v11）：会动的 Spine 立绘（tools/ui/build_portrait.py），静态图只给残影 / 光晕 / 兜底用。
+	// 两者同一画布 1024×1536：静态图以中心为原点，Spine 以底边中点为原点。
 	private const string PortraitPath = "res://p3makoto/ui/charselect_portrait.png";
-	private static readonly Vector2 PortraitPos = new(1270f, 526f);
-	private const float PortraitScale = 0.82f;
-	private static readonly Vector2 PortraitHead = new(480f - 461f, 213f - 700f);
-	private static readonly Vector2 PortraitEye = new(489f - 461f, 256f - 700f);        // 露出的那只眼睛
+	private const string PortraitSpine = "res://p3makoto/portrait/portrait_skel_data.tres";
+	private static readonly Vector2 PortraitPos = new(1440f, 575f);
+	private const float PortraitScale = 0.75f;
+	private static readonly Vector2 PortraitHead = new(620f - 512f, 320f - 768f);       // 镜片中心：切入横幅从这里碎开
+	private static readonly Vector2 PortraitEye = new(425f - 512f, 645f - 768f);        // 露出的那只眼睛
 
 	/// <summary>眼睛里泛起的蓝光：加色光点迅速亮起、横向拉长成一道细光，再慢慢退去。</summary>
 	private static void EyeGlow(Control layer, Vector2 at)
@@ -71,7 +74,7 @@ public static class CharSelectBg
 
 	/// <summary>
 	/// P3R 结算界面式的特写：从右侧带两道青色残影滑入（0.45s）→ 入场完成时触发选中反馈；
-	/// 之后呼吸般轻微缩放与摇摆，身后一层同形的青色加色光晕缓慢明暗（边缘光）。
+	/// 立绘本身是 Spine 动画（呼吸、发梢飘、手和镜片浮动、眨眼、轮廓光、眼中蓝光、镜面扫光），身后一层同形的青色光晕缓慢明暗。
 	/// </summary>
 	private static void Portrait(Control root)
 	{
@@ -81,22 +84,30 @@ public static class CharSelectBg
 		}
 		Node2D group = new() { Name = "Portrait" };                 // 立绘（含残影、光晕）一组，切入横幅和碎片都插在它下面
 		root.AddChild(group);
-		Sprite2D Make(Color modulate, bool additive, float extraScale)
-		{
-			Sprite2D sp = new() { Texture = tex, Position = PortraitPos + new Vector2(420f, 0f), Scale = Vector2.One * PortraitScale * extraScale, Modulate = modulate };
-			if (additive)
-			{
-				sp.Material = Fx.Additive;
-			}
-			group.AddChild(sp);
-			return sp;
-		}
-		Sprite2D ghost2 = Make(new Color(Pal.Cyan, 0.0f), true, 1.0f);
-		Sprite2D ghost1 = Make(new Color(Pal.Cyan, 0.0f), true, 1.0f);
-		Sprite2D glow = Make(new Color(Pal.Cyan, 0.0f), true, 1.012f);
-		Sprite2D main = Make(new Color(1f, 1f, 1f, 0f), false, 1.0f);
-
 		Vector2 from = PortraitPos + new Vector2(420f, 0f);
+		Node2D Holder(Color modulate, bool additive, float extraScale, bool live)
+		{
+			Node2D h = new() { Position = from, Scale = Vector2.One * PortraitScale * extraScale, Modulate = modulate };
+			group.AddChild(h);
+			Node2D? spine = live && ResourceLoader.Load(PortraitSpine) is Resource data ? ClassDB.Instantiate("SpineSprite").AsGodotObject() as Node2D : null;
+			if (spine != null)
+			{
+				spine.Position = new Vector2(0f, 768f);
+				h.AddChild(spine);
+				spine.Set("skeleton_data_res", ResourceLoader.Load(PortraitSpine));
+				PlayIdle(spine, 30);
+			}
+			else
+			{
+				h.AddChild(new Sprite2D { Texture = tex, Material = additive ? Fx.Additive : null });
+			}
+			return h;
+		}
+		Node2D ghost2 = Holder(new Color(Pal.Cyan, 0.0f), true, 1.0f, false);
+		Node2D ghost1 = Holder(new Color(Pal.Cyan, 0.0f), true, 1.0f, false);
+		Node2D glow = Holder(new Color(Pal.Cyan, 0.0f), true, 1.012f, false);
+		Node2D main = Holder(new Color(1f, 1f, 1f, 0f), false, 1.0f, true);
+
 		Fx.Animate(main, 0.6f, t =>
 		{
 			float time = t * 0.6f;
@@ -112,23 +123,38 @@ public static class CharSelectBg
 			ghost1.Modulate = new Color(Pal.Cyan, 0.45f * g);
 			ghost2.Modulate = new Color(Pal.Royal, 0.35f * g);
 			glow.Position = main.Position;
-			glow.Modulate = new Color(Pal.Cyan, 0.3f * u);
+			glow.Modulate = new Color(Pal.Cyan, 0.22f * u);
 		});
 		Fx.After(main, 0.45, "portrait landed", () => Selected(root, group));
 		Fx.FreeAfter(ghost1, 0.7);
 		Fx.FreeAfter(ghost2, 0.7);
 
-		// 呼吸：极轻的缩放与摇摆；光晕跟着明暗
+		// 身后光晕呼吸（立绘自己的微动在 Spine 动画里）
 		Fx.After(main, 0.6, "portrait idle", () =>
 		{
-			Tween breathe = main.CreateTween().SetLoops().SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-			breathe.TweenProperty(main, "scale", Vector2.One * PortraitScale * 1.006f, 2.2);
-			breathe.Parallel().TweenProperty(main, "rotation", 0.004f, 2.2);
-			breathe.Parallel().TweenProperty(glow, "modulate:a", 0.18f, 2.2);
-			breathe.TweenProperty(main, "scale", Vector2.One * PortraitScale, 2.2);
-			breathe.Parallel().TweenProperty(main, "rotation", -0.003f, 2.2);
-			breathe.Parallel().TweenProperty(glow, "modulate:a", 0.32f, 2.2);
+			Tween breathe = glow.CreateTween().SetLoops().SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+			breathe.TweenProperty(glow, "modulate:a", 0.12f, 3.0);
+			breathe.TweenProperty(glow, "modulate:a", 0.24f, 3.0);
 		});
+	}
+
+	/// <summary>SpineSprite 加进场景树后下一帧才有动画状态：取不到就稍后再试。</summary>
+	private static void PlayIdle(Node2D spine, int triesLeft)
+	{
+		if (!GodotObject.IsInstanceValid(spine))
+		{
+			return;
+		}
+		MegaSprite sprite = new(spine);
+		if (sprite.TryGetAnimationState() is MegaAnimationState state)
+		{
+			state.SetAnimation("idle_loop", loop: true);
+			return;
+		}
+		if (triesLeft > 0)
+		{
+			Fx.After(spine, 0.016, "portrait spine", () => PlayIdle(spine, triesLeft - 1));
+		}
 	}
 
 	/// <summary>
@@ -139,7 +165,7 @@ public static class CharSelectBg
 	private static void Selected(Control root, Node2D portrait)
 	{
 		// v0.9.2：选中时也播一次召唤切入 —— 眼神特写横幅（立绘仍在最前面）→ 0.55s 扣扳机 → 横幅碎裂 → 召唤器爆发、蓝蝶、枪声、眼中蓝光
-		Vector2 temple = root.GlobalPosition + PortraitPos + PortraitHead * PortraitScale + new Vector2(-30f, 0f);
+		Vector2 temple = root.GlobalPosition + PortraitPos + PortraitHead * PortraitScale;
 		CutInFx.BeginScreen(root, temple, "结城理", "ORPHEUS", _ =>
 		{
 			P3Fx.EvokerBurst(root, temple, 1.25f);

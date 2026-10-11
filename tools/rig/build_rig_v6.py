@@ -188,6 +188,8 @@ def build_bones(anchor_px):
             b["rotation"] = a
         if length:
             b["length"] = round(length, 2)
+        if n.startswith("hand_"):
+            b["inherit"] = "noScale"            # 前臂缩短（透视）时手不跟着变形
         out.append(b)
     (hx, hy), ha = world["hand_n"]
     for an in ANCHORS:
@@ -352,7 +354,7 @@ SLOT_BONE = {"shadow": "root", "f_upper": "upper_f", "f_fore": "fore_f", "f_hand
              "thigh_f": "thigh_f", "foot_f": "foot_f", "shin_f": "shin_f", "thigh_n": "thigh_n", "foot_n": "foot_n", "shin_n": "shin_n",
              "n_hand_bk": "hand_n", "head": "head", "blink": "head", "glare": "head", "eye_glow": "head", "torso": "root",
              "n_upper": "upper_n", "n_fore": "fore_n", "n_hand": "hand_n"}
-DEFAULT = {"shadow": "shadow", "f_upper": "f_upper", "f_fore": "f_fore", "f_hand": "f_hand_hang",
+DEFAULT = {"shadow": "shadow", "f_upper": "f_upper", "f_fore": "f_fore", "f_hand": "f_hand_pocket",
            "thigh_f": "thigh_f", "foot_f": "foot_f", "shin_f": "shin_f", "thigh_n": "thigh_n", "foot_n": "foot_n", "shin_n": "shin_n",
            "head": "head", "torso": "torso", "n_upper": "n_upper", "n_fore": "n_fore", "n_hand": "n_hand_hang"}
 
@@ -535,7 +537,7 @@ def to_chest_frame(p, frame):
     return (q[0] - hx, q[1] - hy)
 
 
-def arm(side, wrist, hand_dir=None, bend=-1, lean=0.0, hand_rel=0.0, frame=None):
+def arm(side, wrist, hand_dir=None, bend=-1, lean=0.0, hand_rel=0.0, frame=None, fore_scale=1.0):
     """两骨 IK：给手腕目标（基准图像素，躯干未转动时）、手的世界方向（Spine 度），求上臂 / 前臂 / 手的旋转增量。
     bend：+1 肘在"肩 → 手腕"连线的逆时针一侧，-1 顺时针一侧。hand_dir 缺省 = 前臂方向 + hand_rel。
     坐标都在"胸部装配坐标系"里（身体怎么动，手相对身体的位置不变）。"""
@@ -551,7 +553,7 @@ def arm(side, wrist, hand_dir=None, bend=-1, lean=0.0, hand_rel=0.0, frame=None)
         R = np.array([[math.cos(r), math.sin(r)], [-math.sin(r), math.cos(r)]])
         Tg = c + R.T @ (Tg - c)
     L1 = math.dist(J[f"sh_{side}"], J[f"el_{side}"])
-    L2 = math.dist(J[f"el_{side}"], J[f"wr_{side}"])
+    L2 = math.dist(J[f"el_{side}"], J[f"wr_{side}"]) * fore_scale       # fore_scale < 1：前臂朝镜头伸出（透视缩短）
     d = Tg - S
     D = min(max(np.linalg.norm(d), abs(L1 - L2) + 1), L1 + L2 - 0.5)
     base = math.atan2(-d[1], d[0])                       # Spine 角（y 向上）
@@ -566,7 +568,10 @@ def arm(side, wrist, hand_dir=None, bend=-1, lean=0.0, hand_rel=0.0, frame=None)
     du = wrap(pu - u0)
     df = wrap((pf - pu) - (f0 - u0))
     dh = wrap(hand_dir - pf)
-    return {f"upper_{side}": {"r": du}, f"fore_{side}": {"r": df}, f"hand_{side}": {"r": dh}}
+    out = {f"upper_{side}": {"r": du}, f"fore_{side}": {"r": df}, f"hand_{side}": {"r": dh}}
+    if fore_scale != 1.0:
+        out[f"fore_{side}"]["sx"] = fore_scale - 1.0
+    return out
 
 
 def wrap(a):
@@ -641,7 +646,7 @@ class Anim:
 
     def far(self, t, kind=None, front=None):
         """远侧手臂：换手 / 换到身前插槽（伸到胸前时）。两组插槽只有一组有附件。"""
-        st = getattr(self, "_far", {"kind": "hang", "front": False})
+        st = getattr(self, "_far", {"kind": "pocket", "front": False})
         if kind is not None:
             st["kind"] = kind
         if front is not None:
@@ -838,6 +843,8 @@ def validate(data, images, base):
     for s in data["slots"]:
         if s["name"] == "shadow":
             s.pop("attachment", None)
+        if s["name"] == "f_hand":                 # 装配姿势（A 字）比对用垂手；游戏里默认插兜
+            s["attachment"] = "f_hand_hang"
     r = np.asarray(Skeleton(data, images).render(canvas=(1024, 1536), origin=ORIGIN)).astype(float) / 255
     for s, a in saved:
         if a:
