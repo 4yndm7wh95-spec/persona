@@ -88,6 +88,7 @@ public static class Extras
 	/// </summary>
 	public static void TarotFlip(Control layer, Vector2 at, Color tint, float hold = 0.35f)
 	{
+		Audio.Sfx.Play(Audio.Snd.TarotReveal, 0.6f);
 		Node2D root = Fx.Root(layer, at, "P3Tarot");
 		Node2D card = new Node2D();
 		root.AddChild(card);

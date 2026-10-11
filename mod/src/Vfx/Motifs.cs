@@ -15,36 +15,85 @@ public static class Motifs
 	/// <summary>巨型新月斩痕（颜色可选），停留后碎成玻璃。</summary>
 	public static void Cleave(Control layer, Vector2 at, Color tint, float s = 1f, float angle = -0.55f)
 	{
-		Node2D root = Fx.Root(layer, at, "P3Cleave");
+		ArcSlash(layer, at, tint, 620f * s, 50f * s, 40f * s, angle, s);
+		Fx.After(layer, 0.2, "cleave shatter", () => P3Fx.GlassShatter(layer, at, (int)(18 * s), 0.9f * s, tint));
+		Bold.Impact(layer, at, tint, 0.8f * s, ShakeStrength.Medium);
+	}
+
+	/// <summary>
+	/// 弧形斩痕的完整出入动画（普通攻击 / 塔纳托斯共用）：
+	/// 入 —— 刀光从弧线一端"划"到另一端（0.07s，OutExpo），最前端带一颗白色星光头；
+	/// 满 —— 整条弧闪一下白（0.05s），并略微向外膨胀；
+	/// 出 —— 尾端追着头端收拢（0.2s），弧线同时变细、沿切线方向继续滑出一点，最后在头端碎成光点。
+	/// darkCore：塔纳托斯用的黑色刀身层。
+	/// </summary>
+	public static void ArcSlash(Control layer, Vector2 at, Color tint, float length, float bow, float thick, float angle, float s = 1f,
+		bool darkCore = false)
+	{
+		Node2D root = Fx.Root(layer, at, "P3ArcSlash");
 		root.Rotation = angle;
-		float length = 620f * s;
-		Vector2[] Crescent(float thick, float bow)
+		const int n = 32;
+		const float tIn = 0.07f, tFlash = 0.05f, tHold = 0.06f, tOut = 0.2f;
+		const float total = tIn + tFlash + tHold + tOut;
+		Polygon2D glow = Fx.Poly(root, new Vector2[3], new Color(tint, 0.55f), additive: true);
+		Polygon2D band = darkCore
+			? Fx.Poly(root, new Vector2[3], new Color(0.02f, 0.03f, 0.06f, 0.92f))
+			: Fx.Poly(root, new Vector2[3], new Color(tint.Lightened(0.4f), 0.95f), additive: true);
+		Polygon2D core = Fx.Poly(root, new Vector2[3], Pal.White, additive: true);
+		Node2D head = new();
+		root.AddChild(head);
+		Fx.Poly(head, Fx.Star4(46f * s, 0.12f), Pal.White, additive: true);
+		head.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(tint, 0.9f), Scale = Vector2.One * 2.2f * s });
+
+		Vector2 Point(float u, float off) =>
+			new((u - 0.5f) * length, -Mathf.Sin(u * Mathf.Pi) * bow + off);
+
+		// 只画 [a, b] 这一段；两端各自收尖，整体厚度乘 k
+		Vector2[] Crescent(float a, float b, float th, float k)
 		{
-			const int n = 24;
 			var pts = new Vector2[n * 2];
 			for (int i = 0; i < n; i++)
 			{
-				float u = i / (float)(n - 1);
-				float w = Mathf.Sin(u * Mathf.Pi) * thick;
-				float y = -Mathf.Sin(u * Mathf.Pi) * bow;
-				pts[i] = new Vector2((u - 0.5f) * length, y - w);
-				pts[n * 2 - 1 - i] = new Vector2((u - 0.5f) * length, y + w * 0.3f);
+				float u = Mathf.Lerp(a, b, i / (float)(n - 1));
+				float local = (u - a) / Mathf.Max(b - a, 1e-4f);
+				float w = Mathf.Sin(u * Mathf.Pi) * Mathf.Pow(Mathf.Sin(local * Mathf.Pi * 0.5f + 0.0001f), 0.6f) * th * k;
+				// 头端（b）更粗更亮，尾端拖细
+				w *= 0.35f + 0.65f * local;
+				pts[i] = Point(u, -w);
+				pts[n * 2 - 1 - i] = Point(u, w * 0.3f);
 			}
 			return pts;
 		}
-		Fx.Poly(root, Crescent(40f * s, 50f * s), new Color(tint, 0.6f), additive: true);
-		Fx.Poly(root, Crescent(18f * s, 52f * s), new Color(tint.Lightened(0.4f), 0.95f), additive: true);
-		Fx.Poly(root, Crescent(5f * s, 54f * s), Pal.White, additive: true);
-		root.Scale = new Vector2(0.02f, 1f);
-		Fx.Animate(root, 0.45f, t =>
+
+		Fx.Animate(root, total, t =>
 		{
-			float time = t * 0.45f;
-			root.Scale = new Vector2(Ease.OutExpo(Mathf.Clamp(time / 0.07f, 0f, 1f)), 1f + 0.2f * Ease.OutCubic(Mathf.Clamp(time / 0.3f, 0f, 1f)));
-			root.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(Mathf.Clamp((time - 0.22f) / 0.23f, 0f, 1f)));
+			float time = t * total;
+			float inU = Ease.OutExpo(Mathf.Clamp(time / tIn, 0f, 1f));
+			float flash = Mathf.Clamp((time - tIn) / tFlash, 0f, 1f);
+			float outU = Ease.InOutCubic(Mathf.Clamp((time - tIn - tFlash - tHold) / tOut, 0f, 1f));
+			float b = Mathf.Lerp(0f, 1f, inU) + 0.06f * outU;              // 出场时头端继续往前滑一点
+			float a = Mathf.Lerp(0f, Mathf.Min(b, 1.04f) - 0.02f, outU);
+			float swell = 1f + 0.18f * Mathf.Sin(flash * Mathf.Pi) + 0.1f * outU;
+			float thin = 1f - 0.55f * outU;
+			glow.Polygon = Crescent(a, b, thick * 1.0f, swell * thin);
+			band.Polygon = Crescent(a, b, thick * 0.45f, swell * thin);
+			core.Polygon = Crescent(a, b, thick * 0.13f, (1f + 0.8f * Mathf.Sin(flash * Mathf.Pi)) * thin);
+			core.Modulate = new Color(1f, 1f, 1f, 1f);
+			glow.Modulate = new Color(1f + Mathf.Sin(flash * Mathf.Pi), 1f + Mathf.Sin(flash * Mathf.Pi), 1f + Mathf.Sin(flash * Mathf.Pi), 1f);
+			head.Position = Point(Mathf.Min(b, 1f), -thick * 0.2f);
+			float headPop = time < tIn ? 1f : 1f - Ease.InCubic(Mathf.Clamp((time - tIn) / (tFlash + tHold + tOut * 0.6f), 0f, 1f)) * 0.7f;
+			head.Scale = Vector2.One * headPop * (1f + 0.25f * Mathf.Sin(time * 60f));
+			head.Rotation = time * 4f;
+			root.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(Mathf.Clamp((outU - 0.6f) / 0.4f, 0f, 1f)));
 		});
-		Fx.After(root, 0.24, "cleave shatter", () => P3Fx.GlassShatter(layer, at, (int)(18 * s), 0.9f * s, tint));
-		Bold.Impact(layer, at, tint, 0.8f * s, ShakeStrength.Medium);
-		Fx.FreeAfter(root, 0.5);
+		// 收尾：头端炸成一簇光点
+		Fx.After(root, tIn + tFlash + tHold + tOut * 0.8f, "arc slash end", () =>
+		{
+			Vector2 end = root.ToGlobal(Point(1f, 0f));
+			GpuParticles2D sp = Fx.Sparks(Fx.Root(layer, end, "P3ArcSparks"), tint, (int)(16 * s), 80f * s, 320f * s, 0.4f, gravity: 0f);
+			Fx.FreeAfter(sp.GetParent(), 0.6);
+		});
+		Fx.FreeAfter(root, total + 0.05);
 	}
 
 	/// <summary>连续乱斩：n 道交叉斩痕依次闪过，最后一记爆开。</summary>
@@ -335,6 +384,7 @@ public static class Motifs
 	public static void BigTarot(Control layer, Vector2 at, string numeral, string name, Color tint, float hold = 0.45f, float s = 1f, Control? fxLayer = null)
 	{
 		Control fx = fxLayer ?? layer;
+		Audio.Sfx.Play(Audio.Snd.TarotReveal, 0.95f);
 		Node2D root = Fx.Root(layer, at, "P3BigTarot");
 		const float w = 95f, h = 160f;
 		Node2D card = new() { Scale = Vector2.One * s };
@@ -360,6 +410,7 @@ public static class Motifs
 		Fx.After(root, total - 0.05, "tarot shatter", () =>
 		{
 			P3Fx.GlassShatter(fx, root.GlobalPosition, (int)(30 * s), 1.1f * s, tint);
+			Audio.Sfx.Play(Audio.Snd.TarotShatter, 1.0f);
 			P3Fx.Flash(layer, root.GlobalPosition, tint, 360f * s, 0.25f);
 			root.QueueFree();
 		});
@@ -396,6 +447,7 @@ public static class Motifs
 	/// <summary>P3R 风格大字切入（"CRITICAL" / "ONE MORE!" / 技能名）：斜切色带 + 粗体描边大字，猛地砸入，略停后滑出。</summary>
 	public static void CutIn(Control layer, Vector2 at, string text, Color tint, float size = 92f)
 	{
+		Audio.Sfx.Play(Audio.Snd.CutIn, 1.0f);
 		Node2D root = Fx.Root(layer, at + new Vector2(-40f, -260f), "P3CutIn");
 		root.Skew = -0.25f;
 		float w = text.Length * size * 0.62f + 80f;

@@ -17,11 +17,11 @@ SRC = ROOT / "art/v5/rest_sit_a.png"
 OUT = ROOT / "art/rest/export"
 LOOP = 8.0
 BEAT = LOOP / 12                     # 90 BPM
-UNIT = 0.42                          # 原图像素 → 骨骼单位（坐姿宽约 550、高约 390，和原版休息处人物占地相当）
+UNIT = 0.6                           # 原图像素 → 骨骼单位（v0.9.1 游戏内反馈偏小：0.42 → 0.6，约放大 1.43 倍）
 
 
 def build():
-    rig = MeshRig(key_image(SRC), origin=(650, 935), unit=UNIT, step=20, tex_scale=0.75, name="makoto")
+    rig = MeshRig(key_image(SRC), origin=(650, 935), unit=UNIT, step=20, tex_scale=0.95, name="makoto")
     rig.bone("chest", "root", (600, 690),
              polys=[[(250, 170), (720, 170), (740, 330), (700, 620), (560, 690), (330, 690), (250, 520)]], feather=90)
     rig.bone("head", "chest", (610, 255), circles=[(585, 120, 165)], polys=[[(540, 200), (680, 200), (690, 300), (540, 300)]], feather=50)

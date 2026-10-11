@@ -50,24 +50,68 @@ public static class Popups
 		}
 	}
 
-	/// <summary>入场 / 停留 / 出场 的通用动画。</summary>
+	/// <summary>
+	/// 入场 / 停留 / 出场 的通用动画：
+	/// 入 —— 从 2.4 倍猛砸下来（0.1s），落地瞬间横向压扁再弹回（像盖章），同时抖动 0.14s；
+	/// 停 —— 轻微上浮；
+	/// 出 —— 先微微放大蓄一下，再纵向压扁、加速飞向右上方淡出。
+	/// </summary>
 	private static void Animate(Node2D root, Vector2 home, float hold, float tilt)
 	{
 		root.Rotation = tilt;
 		root.Skew = -0.28f;                                  // 斜体
-		float total = 0.14f + hold + 0.22f;
+		const float tIn = 0.1f, tLand = 0.14f, tOut = 0.24f;
+		float total = tIn + tLand + hold + tOut;
 		Fx.Animate(root, total, t =>
 		{
 			float time = t * total;
-			float slam = Mathf.Clamp(time / 0.14f, 0f, 1f);
-			float exit = Mathf.Clamp((time - 0.14f - hold) / 0.22f, 0f, 1f);
-			float s = Mathf.Lerp(1.7f, 1f, Ease.OutBack(slam));
-			root.Scale = new Vector2(s * (1f + 0.4f * Ease.InCubic(exit)), s * (1f - 0.75f * Ease.InCubic(exit)));
-			root.GlobalPosition = home + new Vector2(-60f * (1f - Ease.OutExpo(slam)) + 180f * Ease.InCubic(exit),
-				-14f * Mathf.Clamp((time - 0.14f) / hold, 0f, 1f) - 60f * Ease.InCubic(exit));
-			root.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.04f, 0f, 1f) * (1f - exit));
+			float slam = Mathf.Clamp(time / tIn, 0f, 1f);
+			float land = Mathf.Clamp((time - tIn) / tLand, 0f, 1f);
+			float exit = Mathf.Clamp((time - tIn - tLand - hold) / tOut, 0f, 1f);
+			float s = Mathf.Lerp(2.4f, 1f, Ease.InCubic(slam));
+			// 落地压扁：x 1.3 / y 0.72 → 弹回（阻尼振荡）
+			float squash = land <= 0f ? 0f : Mathf.Exp(-6f * land) * Mathf.Cos(land * 14f);
+			float sx = s * (1f + 0.3f * squash), sy = s * (1f - 0.28f * squash);
+			float pre = Mathf.Sin(Mathf.Clamp(exit / 0.3f, 0f, 1f) * Mathf.Pi) * 0.12f;          // 出场前蓄一下
+			float go = Ease.InCubic(Mathf.Clamp((exit - 0.2f) / 0.8f, 0f, 1f));
+			root.Scale = new Vector2(sx * (1f + pre + 0.5f * go), sy * (1f + pre - 0.85f * go));
+			Vector2 jitter = land > 0f && land < 1f ? new Vector2(Fx.Rand(-1f, 1f), Fx.Rand(-1f, 1f)) * 9f * (1f - land) : Vector2.Zero;
+			root.GlobalPosition = home + jitter + new Vector2(-80f * (1f - Ease.OutExpo(slam)) + 220f * go,
+				-60f * (1f - Ease.OutExpo(slam)) - 16f * Mathf.Clamp((time - tIn) / (tLand + hold), 0f, 1f) - 90f * go);
+			root.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.03f, 0f, 1f) * (1f - go));
 		});
 		Fx.FreeAfter(root, total + 0.05);
+	}
+
+	/// <summary>落地冲击：白色闪字（盖在字上 0.1s 淡掉）+ 细光环 + 十字星爆 + 三道向后拖的残影。</summary>
+	private static void LandImpact(Control layer, Node2D root, Node2D text, Vector2 home, string label, int size, float strength)
+	{
+		Node2D white = new() { Position = text.Position };
+		root.AddChild(white);
+		Typo.Text(white, label, Typo.Latin, size, Pal.White, Vector2.Zero, outline: 8, outlineColor: Pal.White);
+		Fx.Animate(white, 0.2f, t => white.Modulate = new Color(1f, 1f, 1f, t < 0.45f ? 1f : 1f - Ease.OutCubic((t - 0.45f) / 0.55f)));
+		Fx.FreeAfter(white, 0.22);
+		// 残影：砸下来的轨迹上留三道淡蓝描边字
+		for (int i = 1; i <= 3; i++)
+		{
+			Node2D ghost = Fx.Root(layer, home + new Vector2(-26f * i, -20f * i), "P3DmgGhost");
+			ghost.Rotation = root.Rotation;
+			ghost.Skew = -0.28f;
+			ghost.Scale = Vector2.One * (1f + 0.35f * i);
+			Typo.Text(ghost, label, Typo.Latin, size, new Color(Pal.Cyan, 0.0f), text.Position, outline: 4, outlineColor: new Color(Pal.Cyan, 0.5f - 0.12f * i));
+			Fx.Animate(ghost, 0.16f, t => ghost.Modulate = new Color(1f, 1f, 1f, 1f - t));
+			Fx.FreeAfter(ghost, 0.18);
+		}
+		Fx.After(layer, 0.1, "dmg land", () =>
+		{
+			P3Fx.Shockwave(layer, home, Pal.Cyan, 320f * strength, 0.35f);
+			P3Fx.Flash(layer, home, Pal.Ice, 260f * strength, 0.14f);
+			Node2D star = Fx.Root(layer, home, "P3DmgStar");
+			Fx.Poly(star, Fx.Star4(150f * strength, 0.06f), Pal.White, additive: true);
+			Fx.Animate(star, 0.2f, t => { star.Scale = new Vector2(1f + t, 1f - 0.9f * t); star.Modulate = new Color(1f, 1f, 1f, 1f - t); });
+			Fx.FreeAfter(star, 0.22);
+			Sparkles(layer, home, 4, 110f * strength);
+		});
 	}
 
 	// 结城理的牌刚刚打中的目标（伤害数字由 NDamageNumVfx.Create 生成时据此替换成 P3R 样式）
@@ -89,17 +133,20 @@ public static class Popups
 	// 同一目标短时间内多段伤害：后一个数字往右下错开，不叠在一起
 	private static readonly Dictionary<ulong, (ulong Time, int Count)> Stack = new();
 
-	/// <summary>伤害数字（在目标旁边）。</summary>
+	/// <summary>伤害数字（在目标旁边）。字号随伤害增大：&lt;10 → 112，≥30 → 150。</summary>
 	public static void Damage(Control layer, ulong targetId, Vector2 at, int amount)
 	{
 		ulong now = Time.GetTicksMsec();
 		int k = Stack.TryGetValue(targetId, out var st) && now - st.Time < 600 ? st.Count + 1 : 0;
 		Stack[targetId] = (now, k);
-		Vector2 home = at + new Vector2(70f + 34f * k, -70f + 30f * k);
+		Vector2 home = at + new Vector2(80f + 40f * k, -80f + 36f * k);
 		Node2D root = Fx.Root(layer, home, "P3DamageNum");
-		BlockText(root, amount.ToString(), amount >= 30 ? 84 : 72, Face, 6).Position = new Vector2(-40f, -50f);
+		int size = amount >= 30 ? 150 : amount >= 10 ? 128 : 112;
+		string label = amount.ToString();
+		Node2D text = BlockText(root, label, size, Face, 8);
+		text.Position = new Vector2(-size * 0.3f * label.Length, -size * 0.7f);
 		Animate(root, home, 0.5f, Fx.Rand(-0.12f, -0.04f));
-		Sparkles(layer, home, 2, 70f);
+		LandImpact(layer, root, text, home, label, size, amount >= 30 ? 1.3f : 1f);
 	}
 
 	/// <summary>"WEAK!"（施加减益时）。</summary>
@@ -107,8 +154,11 @@ public static class Popups
 	{
 		Vector2 home = at + new Vector2(-90f, -150f);
 		Node2D root = Fx.Root(layer, home, "P3Weak");
-		BlockText(root, "WEAK!", 120, WeakFace, 8).Position = new Vector2(-150f, -70f);
+		Audio.Sfx.Play(Audio.Snd.Weak, 1.0f, delay: 0.09f);       // 对准落地那一刻
+		Node2D text = BlockText(root, "WEAK!", 140, WeakFace, 9);
+		text.Position = new Vector2(-180f, -84f);
 		Animate(root, home, 0.55f, -0.17f);
+		LandImpact(layer, root, text, home, "WEAK!", 140, 1.4f);
 		Sparkles(layer, home, 5, 170f);
 		P3Fx.Flash(layer, home, Pal.Cyan, 260f, 0.2f);
 	}

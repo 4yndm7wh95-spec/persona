@@ -118,6 +118,7 @@ public static class StarOrbit
 			c.Node.GlobalPosition = chest;
 			o.Cards.Add(c);
 			P3Fx.Flash(front, chest, Pal.Cyan, 160f, 0.25f);
+			Audio.Sfx.Play(Audio.Snd.StarGain, 0.5f);
 			Node2D sparks = Fx.Root(front, chest, "P3StarBirth");
 			Fx.Sparks(sparks, Pal.Ice, 10, 80f, 220f, 0.5f);
 			Fx.FreeAfter(sparks, 0.8);
@@ -226,6 +227,7 @@ public static class StarOrbit
 		{
 			Vector2 at = n.GlobalPosition;
 			P3Fx.GlassShatter(front, at, 10, 0.5f, Pal.Ice);
+			Audio.Sfx.Play(Audio.Snd.StarSpend, 0.65f);
 			P3Fx.Flash(front, at, Pal.Cyan, 140f, 0.18f);
 			P3Fx.Butterfly(front, at, at + new Vector2(Fx.Rand(-60f, 80f), Fx.Rand(-220f, -140f)), 1.2f, 0.55f);
 			n.QueueFree();
