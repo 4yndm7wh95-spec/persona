@@ -102,3 +102,19 @@ public static class ForgePatch
 		});
 	}
 }
+
+/// <summary>
+/// 君王之刃（结城理）：把"出牌 → 伤害结算"的等待从 0.25s 推迟到 0.62s，给 Thanatos 留出显形 → 冲刺 → 劈下的时间，
+/// 让伤害数字与 Persona 的斩击同一帧出现。只影响这一张牌的表现等待，不改任何数值。
+/// </summary>
+[HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.TriggerAnim))]
+public static class SovereignTimingPatch
+{
+	public static void Prefix(MegaCrit.Sts2.Core.Entities.Creatures.Creature creature, string triggerName, ref float waitTime)
+	{
+		if (triggerName == "sovereignBladeTrigger" && Makoto.Is(creature.Player))
+		{
+			waitTime = Vfx.PersonaFx.SovereignWait;
+		}
+	}
+}

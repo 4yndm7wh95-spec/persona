@@ -22,5 +22,7 @@ rarm_s_ext
 bounds:749,1510,751,141
 shadow
 bounds:1502,1510,420,90
+eye_glow
+bounds:1924,1510,72,40
 eyelid
-bounds:1924,1510,28,24
+bounds:1998,1510,28,24

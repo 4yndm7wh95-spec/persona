@@ -129,8 +129,27 @@ ASSETS = {
 }
 
 
+def charselect_portrait():
+    """选人界面特写（art/v6/portrait_a.png）：抠绿幕、裁边、缩到高 1400；底部 12% 渐隐（腿部被画框截断处不留硬边）。"""
+    sys.path.insert(0, str(ROOT / "tools/rig"))
+    from build_rig import key_image
+    im = key_image(ROOT / "art/v6/portrait_a.png")
+    im = im.crop(im.getchannel("A").point(lambda v: 255 if v > 8 else 0).getbbox())
+    h = 1400
+    im = im.resize((round(im.width * h / im.height), h), Image.LANCZOS)
+    a = np.asarray(im).copy()
+    ys = np.arange(h)[:, None]
+    fade = np.clip((h - ys) / (h * 0.12), 0, 1)
+    a[..., 3] = (a[..., 3] * fade).astype(np.uint8)
+    return Image.fromarray(a, "RGBA")
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
+    portrait_img = charselect_portrait()
+    portrait_img.save(OUT / "charselect_portrait.png")
+    write_texture(STAGE, "p3makoto/ui/charselect_portrait.png", portrait_img)
+    print("staged charselect portrait", portrait_img.size)
     icon, outline = top_icon()
     portrait, locked = char_select()
     images = {

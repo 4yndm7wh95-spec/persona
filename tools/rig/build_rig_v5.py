@@ -206,6 +206,18 @@ def eyelid_patch(master):
     return im, (x0, y0)
 
 
+def eye_glow_image():
+    """眼中蓝光：横向拉长的青色柔光 + 白色光芯（加色混合）。"""
+    W_, H_ = 72, 40
+    ys, xs = np.mgrid[0:H_, 0:W_].astype(np.float32)
+    d = np.hypot((xs - W_ / 2) / (W_ / 2), (ys - H_ / 2) / (H_ / 2))
+    halo = np.clip(1 - d, 0, 1) ** 1.6
+    core = np.clip(1 - np.hypot((xs - W_ / 2) / 7, (ys - H_ / 2) / 4), 0, 1)
+    rgb = np.stack([0.22 * halo + core, 0.85 * halo + core, 1.0 * halo + core], -1).clip(0, 1)
+    a = np.clip(halo * 0.9 + core, 0, 1)
+    return Image.fromarray((np.dstack([rgb, a]) * 255).astype(np.uint8), "RGBA")
+
+
 # ───────────── 骨骼 / 插槽 / 网格 ─────────────
 BONES = [
     ("root", None, ORIGIN),
@@ -284,6 +296,13 @@ def build_setup():
     skin["eyelid"] = {"eyelid": {"x": round(cx - hx, 2), "y": round(cy - hy, 2), "width": lid.width, "height": lid.height}}
     slots.append({"name": "eyelid", "bone": "head"})
 
+    # 眼中蓝光（P3R 召唤器动画的细节）：加色插槽，平时没有附件；召唤器相关动画里按时间轴亮起
+    glow = eye_glow_image()
+    images["eye_glow"] = glow
+    gx, gy = to_spine(J5["eye"])
+    skin["eye_glow"] = {"eye_glow": {"x": round(gx - hx, 2), "y": round(gy - hy, 2), "width": glow.width, "height": glow.height}}
+    slots.append({"name": "eye_glow", "bone": "head", "blend": "additive"})
+
     # 手臂网格（每张手绘一块，放在身体前面）
     for k, cfg in ARMS.items():
         im, center = v4.load_arm(cfg)
@@ -353,7 +372,7 @@ def breeze(t, period, amp=1.0):
     })
 
 
-def bake(rig, images, name, duration, target, states, loop=False, events=None, speed=1.0, fade=0.05, blinks=()):
+def bake(rig, images, name, duration, target, states, loop=False, events=None, speed=1.0, fade=0.05, blinks=(), eyes=()):
     """弹簧积分 240Hz → 30fps；次级部件目标由身体速度推出；腿部 IK；插槽淡化；锚点烘焙；眨眼。"""
     sub, T = 240, 1.0 / 240
     p0 = target(0.0)
@@ -408,6 +427,9 @@ def bake(rig, images, name, duration, target, states, loop=False, events=None, s
             rgba += [{"time": round(bt, 4), "color": "ffffff00"}, {"time": round(bt + 0.05, 4), "color": "ffffffff"},
                      {"time": round(bt + 0.1, 4), "color": "ffffffff"}, {"time": round(bt + 0.16, 4), "color": "ffffff00"}]
         slots["eyelid"] = {"attachment": att, "rgba": rgba}
+    if eyes:                                    # 眼中蓝光：[(时间, 亮度 0~1)] 线性插值
+        slots["eye_glow"] = {"attachment": [{"time": 0.0, "name": "eye_glow"}],
+                             "rgba": [{"time": round(t, 4), "color": "ffffff%02x" % round(255 * a)} for t, a in eyes]}
     anim = {"bones": bones, "slots": slots}
     if events:
         anim["events"] = [{"time": t, "name": n} for t, n in sorted(events)]
@@ -515,18 +537,20 @@ def make_animations(rig, images):
     bake(rig, images, "relaxed_loop", 4.0, lambda t: add(IDLE, breathe(t, 4.0, 0.7)), [(0, "hang")], loop=True, blinks=(1.1, 3.3))
     SLUMP = add(IDLE, B(spine={"r": -3}, torso={"r": -5}, head={"r": -12}, hip={"y": -18}))
     bake(rig, images, "low_health_loop", 2.4, lambda t: add(SLUMP, breathe(t, 2.4, 1.6)), [(0, "hang")], loop=True, blinks=(1.5,))
-    bake(rig, images, "aim_loop", 2.0, lambda t: add(EVOKER, breathe(t, 2.0, 0.6, "evoker")), [(0, "evoker")], loop=True, blinks=(1.2,))
+    bake(rig, images, "aim_loop", 2.0, lambda t: add(EVOKER, breathe(t, 2.0, 0.6, "evoker")), [(0, "evoker")], loop=True,
+         eyes=[(0, 0.7), (1.0, 0.95), (2.0, 0.7)])
     bake(rig, images, "ready_sword_loop", 2.0, lambda t: add(S_READY, breathe(t, 2.0, 0.8, "s_ready")), [(0, "s_ready")], loop=True,
          blinks=(1.4,))
 
     # 预备出牌：抬起 / 放下
     bake(rig, images, "aim_in", 0.42, seq([(0, IDLE), (0.07, DIP), (0.18, PRESENT), (0.32, EVOKER), (0.42, EVOKER)]),
-         [(0, "hang"), (0.05, "present", 0.1), (0.19, "evoker", 0.1)], speed=1.5)
+         [(0, "hang"), (0.05, "present", 0.1), (0.19, "evoker", 0.1)], speed=1.5, eyes=[(0, 0), (0.28, 0), (0.42, 0.7)])
     bake(rig, images, "sword_in", 0.3, seq([(0, IDLE), (0.05, DIP), (0.2, S_READY), (0.3, S_READY)]),
          [(0, "hang"), (0.06, "s_ready")], speed=1.8)
     LOWER = add(A("present"), B(head={"r": -1}, **ALL(-30)))
     bake(rig, images, "aim_out", 0.5, seq([(0, EVOKER), (0.08, add(EVOKER, B(**ALL(-4)))), (0.24, LOWER), (0.44, IDLE), (0.5, IDLE)]),
-         [(0, "evoker"), (0.14, "present", 0.1), (0.32, "hang", 0.1)], speed=1.3, events=[(0.3, "evoker_sheath")])
+         [(0, "evoker"), (0.14, "present", 0.1), (0.32, "hang", 0.1)], speed=1.3, events=[(0.3, "evoker_sheath")],
+         eyes=[(0, 0.7), (0.16, 0)])
     bake(rig, images, "sword_out", 0.5, seq([(0, S_READY), (0.08, add(S_READY, B(**ALL(6)))), (0.42, IDLE), (0.5, IDLE)]),
          [(0, "s_ready"), (0.3, "hang")], speed=1.3, events=[(0.2, "weapon_sheath")])
 
@@ -547,14 +571,16 @@ def make_animations(rig, images):
     cast = [(0, IDLE), (0.08, PRESENT), (0.12, PRESENT), (0.22, EVOKER), (0.26, TENSE), (0.272, KICK), (0.35, KICK), (0.55, EVOKER), (0.66, LOWER), (0.92, IDLE)]
     cast_states = [(0, "hang"), (0.02, "present", 0.1), (0.12, "evoker", 0.11), (0.56, "present", 0.1), (0.8, "hang", 0.1)]
     bake(rig, images, "cast", 0.95, seq(cast), cast_states, speed=2.0,
-         events=[(0.0, "evoker_draw"), (0.27, "evoker_fire"), (0.82, "evoker_sheath")])
+         events=[(0.0, "evoker_draw"), (0.27, "evoker_fire"), (0.82, "evoker_sheath")],
+         eyes=[(0, 0), (0.17, 0), (0.24, 0.7), (0.27, 1.0), (0.42, 0.8), (0.64, 0)])
     sov = [(0, IDLE), (0.06, PRESENT), (0.08, PRESENT), (0.16, EVOKER), (0.21, TENSE), (0.225, KICK), (0.3, KICK), (0.48, EVOKER), (0.58, LOWER), (0.83, IDLE)]
     bake(rig, images, "attack_sovereign", 0.85, seq(sov), [(0, "hang"), (0.0, "present", 0.08), (0.08, "evoker", 0.12), (0.5, "present", 0.1), (0.72, "hang", 0.1)],
-         speed=2.2, events=[(0.0, "evoker_draw"), (0.22, "evoker_fire"), (0.74, "evoker_sheath")])
+         speed=2.2, events=[(0.0, "evoker_draw"), (0.22, "evoker_fire"), (0.74, "evoker_sheath")],
+         eyes=[(0, 0), (0.13, 0), (0.19, 0.7), (0.22, 1.0), (0.36, 0.8), (0.56, 0)])
     from_aim = [(0, EVOKER), (0.05, TENSE), (0.062, KICK), (0.14, KICK), (0.3, EVOKER), (0.42, LOWER), (0.7, IDLE)]
     for nm in ("cast_from_aim", "sovereign_from_aim"):
         bake(rig, images, nm, 0.72, seq(from_aim), [(0, "evoker"), (0.32, "present", 0.1), (0.56, "hang", 0.1)], speed=2.0,
-             events=[(0.06, "evoker_fire"), (0.56, "evoker_sheath")])
+             events=[(0.06, "evoker_fire"), (0.56, "evoker_sheath")], eyes=[(0, 0.7), (0.06, 1.0), (0.2, 0.8), (0.4, 0)])
 
     # 不召唤的施法：抬起前臂、掌心向上托出（游戏端在手上方翻出一张塔罗牌），身体随之前倾、低头看手，再自然放下
     GATHER = add(IDLE, B(hip={"y": -7}, spine={"r": 1}, torso={"r": 2}, head={"r": -2},

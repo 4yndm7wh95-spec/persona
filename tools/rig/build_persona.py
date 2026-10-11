@@ -1,5 +1,5 @@
 """Persona：Thanatos（art/v5/thanatos_a.png，单张立绘 + 加权网格骨骼）。
-游戏里由 mod 代码在出"君王之刃"时召唤：summon 0.22s（从下方升起、显形、棺材环张开）→ attack 0.55s（后引 → 挥剑斩下，slash 事件 0.1s = 命中帧）→ dismiss 0.4s（上浮消散）。
+游戏里由 mod 代码在出"君王之刃"时召唤：summon 0.3s（从下方升起、显形、棺材环张开）→ attack 0.7s（深蓄力 → 挥剑斩下，slash 事件 0.18s = 命中帧）→ dismiss 0.45s（上浮消散）。
 idle_loop 用于以后的常驻展示。
 骨骼（原图像素）：剑臂以肩为轴、剑以手为轴（挥砍时手腕反向翻转，剑刃最终斜指右下）；爪臂、头、左右两组棺材、披风两节、腿。
 用法：python3 tools/rig/build_persona.py [--no-preview]"""
@@ -73,13 +73,13 @@ def build():
         return out
 
     # 召唤：从下方升起、放大、显形；棺材环先收拢再张开
-    # 游戏在出牌后约 0.25s 结算君王之刃的伤害：召唤压到 0.22s，斩击命中帧在 attack 的 0.1s（出牌后约 0.32s）
-    SUMMON = 0.22
+    # 君王之刃的伤害结算被 mod 推迟到出牌后约 0.62s（见 SovereignTimingPatch）：召唤 0.3s，游戏端按结算时间安排斩击
+    SUMMON = 0.3
 
     def summon(t):
         u = out_cubic(t / SUMMON)
         s = 0.82 + 0.18 * out_back(t / SUMMON, 1.3)
-        open_ = keys(t, [(0, 14.0), (SUMMON, 0.0, out_back)])
+        open_ = keys(t, [(0, 28.0), (SUMMON, 0.0, out_back)])
         return merge(flutter(t), {
             "root": {"y": -140 * (1 - u), "sx": s, "sy": s},
             "coffins_l": {"r": -open_}, "coffins_r": {"r": open_},
@@ -92,33 +92,34 @@ def build():
                                                              "chest": {"r": 1.2 * math.sin(2 * math.pi * t / 4.0)}}),
          loop=True, slot=SLOTS)
 
-    # 斩击：后引 0~0.07 → 斩下 0.07~0.12（slash 事件 0.1）→ 余势 → 0.55 收回
-    SLASH = 0.1
+    # 斩击：深蓄力 0~0.14（剑臂后引、上身后仰、棺材环收拢）→ 斩下 0.14~0.2（slash 事件 0.18）→ 余势停顿 → 0.7 收回
+    SLASH = 0.18
 
     def attack(t):
-        arm = keys(t, [(0, 0.0), (0.07, 20.0, out_cubic), (0.12, -112.0, in_cubic), (0.26, -118.0, out_cubic), (0.55, -10.0)])
-        wrist = keys(t, [(0, 0.0), (0.07, 8.0), (0.12, 70.0, in_cubic), (0.26, 82.0, out_cubic), (0.55, 6.0)])
-        lean = keys(t, [(0, 0.0), (0.07, 6.0, out_cubic), (0.12, -10.0, in_cubic), (0.3, -8.0), (0.55, 0.0)])
-        lunge = keys(t, [(0, 0.0), (0.07, -20.0, out_cubic), (0.12, 70.0, in_cubic), (0.3, 60.0), (0.55, 0.0)])
-        claw = keys(t, [(0, 0.0), (0.07, -8.0), (0.12, 14.0, in_cubic), (0.55, 0.0)])
-        spread = keys(t, [(0, 0.0), (0.07, -6.0), (0.12, 10.0, in_cubic), (0.55, 0.0)])
-        return merge(flutter(t, 1.6), {
-            "root": {"x": lunge, "y": -0.2 * lunge},
-            "chest": {"r": lean},
+        arm = keys(t, [(0, 0.0), (0.14, 38.0, out_cubic), (0.2, -132.0, in_cubic), (0.4, -138.0, out_cubic), (0.7, -10.0)])
+        wrist = keys(t, [(0, 0.0), (0.14, 18.0), (0.2, 80.0, in_cubic), (0.4, 88.0, out_cubic), (0.7, 6.0)])
+        lean = keys(t, [(0, 0.0), (0.14, 10.0, out_cubic), (0.2, -16.0, in_cubic), (0.4, -13.0), (0.7, 0.0)])
+        lunge = keys(t, [(0, 0.0), (0.14, -40.0, out_cubic), (0.2, 110.0, in_cubic), (0.4, 95.0), (0.7, 0.0)])
+        claw = keys(t, [(0, 0.0), (0.14, -14.0), (0.2, 22.0, in_cubic), (0.7, 0.0)])
+        spread = keys(t, [(0, 0.0), (0.14, -12.0), (0.2, 16.0, in_cubic), (0.7, 0.0)])
+        head = keys(t, [(0, 0.0), (0.14, 6.0), (0.2, -8.0, in_cubic), (0.7, 0.0)])
+        return merge(flutter(t, 1.8), {
+            "root": {"x": lunge, "y": -0.25 * lunge},
+            "chest": {"r": lean}, "head": {"r": head},
             "sword_arm": {"r": arm}, "sword": {"r": wrist},
             "claw_arm": {"r": claw},
             "coffins_l": {"r": spread}, "coffins_r": {"r": -spread},
         })
 
-    bake(data, "attack", 0.55, attack, events=[(SLASH, "slash")], slot=SLOTS)
+    bake(data, "attack", 0.7, attack, events=[(SLASH, "slash")], slot=SLOTS)
 
     # 消散：上浮、略放大、淡出；棺材环张开
     def dismiss(t):
-        u = out_cubic(t / 0.4)
+        u = out_cubic(t / 0.45)
         return merge(flutter(t), {"root": {"y": 90 * u, "sx": 1 + 0.08 * u, "sy": 1 + 0.08 * u},
                                   "coffins_l": {"r": 10 * u}, "coffins_r": {"r": -10 * u}})
 
-    bake(data, "dismiss", 0.4, dismiss, slot=SLOTS, slot_alpha=lambda t: 1 - out_cubic(t / 0.4))
+    bake(data, "dismiss", 0.45, dismiss, slot=SLOTS, slot_alpha=lambda t: 1 - out_cubic(t / 0.45))
     return rig, data
 
 

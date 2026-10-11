@@ -1,5 +1,4 @@
 using Godot;
-using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using P3Makoto.Vfx;
 
 namespace P3Makoto.Scenes;
@@ -7,15 +6,13 @@ namespace P3Makoto.Scenes;
 /// <summary>
 /// 选人界面背景（储君的 RegentBg 场景）：隐藏原版的星座王座，换成游戏内实时渲染的 P3R 风格画面 ——
 /// 深蓝夜空与巨大的月亮、月光碎在水面上、斜切的 MEMENTO MORI 色带、上升的光点和蓝蝶，
-/// 结城理本人用战斗骨骼站在水面上（带倒影），播放待机动画。
+/// 结城理是 P3R 结算界面式的特写立绘（从右侧带残影滑入，呼吸般轻动）。
 /// 原版脚本按名字取的 7 个悬停区域保留不动（它们只切换已隐藏的原版骨骼皮肤）。
 /// </summary>
 public static class CharSelectBg
 {
 	// 场景根 Control 的尺寸（tscn：offset -960,-521 .. 1600,679），本地 (960,521) 是屏幕中心
 	private const float W = 2560f, H = 1200f;
-	private static readonly Vector2 Feet = new(1200f, 985f);
-	private const float CharScale = 0.6f;
 	private const float HorizonY = 830f;
 
 	public static void Build(Control bg)
@@ -42,9 +39,94 @@ public static class CharSelectBg
 
 		Band(root);
 		Motes(root);
-		Character(root, reflection: true);
-		Character(root, reflection: false);
+		Portrait(root);
 		Butterflies(root);
+	}
+
+	// 特写立绘（art/v6/portrait_a.png → tools/ui/build_ui_assets.py）：922×1400，头部约在 (480, 213)
+	private const string PortraitPath = "res://p3makoto/ui/charselect_portrait.png";
+	private static readonly Vector2 PortraitPos = new(1270f, 526f);
+	private const float PortraitScale = 0.82f;
+	private static readonly Vector2 PortraitHead = new(480f - 461f, 213f - 700f);
+	private static readonly Vector2 PortraitEye = new(489f - 461f, 256f - 700f);        // 露出的那只眼睛
+
+	/// <summary>眼睛里泛起的蓝光：加色光点迅速亮起、横向拉长成一道细光，再慢慢退去。</summary>
+	private static void EyeGlow(Control layer, Vector2 at)
+	{
+		Node2D root = Fx.Root(layer, at, "P3EyeGlow");
+		Sprite2D dot = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(Pal.Cyan, 0f), Scale = new Vector2(1.6f, 1.0f) };
+		Sprite2D streak = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(Pal.Ice, 0f), Scale = new Vector2(0.2f, 0.18f) };
+		root.AddChild(dot);
+		root.AddChild(streak);
+		Fx.Animate(root, 1.1f, t =>
+		{
+			float time = t * 1.1f;
+			float a = time < 0.08f ? time / 0.08f : 1f - Ease.InCubic(Mathf.Clamp((time - 0.3f) / 0.8f, 0f, 1f));
+			dot.Modulate = new Color(Pal.Cyan, 0.9f * a);
+			streak.Modulate = new Color(Pal.Ice, a);
+			streak.Scale = new Vector2(0.2f + 3.2f * Ease.OutExpo(Mathf.Clamp(time / 0.25f, 0f, 1f)), 0.16f);
+		});
+		Fx.FreeAfter(root, 1.2);
+	}
+
+	/// <summary>
+	/// P3R 结算界面式的特写：从右侧带两道青色残影滑入（0.45s）→ 入场完成时触发选中反馈；
+	/// 之后呼吸般轻微缩放与摇摆，身后一层同形的青色加色光晕缓慢明暗（边缘光）。
+	/// </summary>
+	private static void Portrait(Control root)
+	{
+		if (ResourceLoader.Load(PortraitPath) is not Texture2D tex)
+		{
+			return;
+		}
+		Sprite2D Make(Color modulate, bool additive, float extraScale)
+		{
+			Sprite2D sp = new() { Texture = tex, Position = PortraitPos + new Vector2(420f, 0f), Scale = Vector2.One * PortraitScale * extraScale, Modulate = modulate };
+			if (additive)
+			{
+				sp.Material = Fx.Additive;
+			}
+			root.AddChild(sp);
+			return sp;
+		}
+		Sprite2D ghost2 = Make(new Color(Pal.Cyan, 0.0f), true, 1.0f);
+		Sprite2D ghost1 = Make(new Color(Pal.Cyan, 0.0f), true, 1.0f);
+		Sprite2D glow = Make(new Color(Pal.Cyan, 0.0f), true, 1.012f);
+		Sprite2D main = Make(new Color(1f, 1f, 1f, 0f), false, 1.0f);
+
+		Vector2 from = PortraitPos + new Vector2(420f, 0f);
+		Fx.Animate(main, 0.6f, t =>
+		{
+			float time = t * 0.6f;
+			float u = Ease.OutExpo(Mathf.Clamp(time / 0.45f, 0f, 1f));
+			main.Position = from.Lerp(PortraitPos, u);
+			main.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.15f, 0f, 1f));
+			// 残影：落后一点、更透明，入场结束时消失
+			float u1 = Ease.OutExpo(Mathf.Clamp((time - 0.05f) / 0.45f, 0f, 1f));
+			float u2 = Ease.OutExpo(Mathf.Clamp((time - 0.1f) / 0.45f, 0f, 1f));
+			ghost1.Position = from.Lerp(PortraitPos, u1);
+			ghost2.Position = from.Lerp(PortraitPos, u2);
+			float g = (1f - Ease.InCubic(Mathf.Clamp((time - 0.3f) / 0.3f, 0f, 1f))) * Mathf.Clamp(time / 0.1f, 0f, 1f);
+			ghost1.Modulate = new Color(Pal.Cyan, 0.45f * g);
+			ghost2.Modulate = new Color(Pal.Royal, 0.35f * g);
+			glow.Position = main.Position;
+			glow.Modulate = new Color(Pal.Cyan, 0.3f * u);
+		});
+		Fx.After(main, 0.45, "portrait landed", () => Selected(root));
+		Fx.FreeAfter(ghost1, 0.7);
+		Fx.FreeAfter(ghost2, 0.7);
+
+		// 呼吸：极轻的缩放与摇摆；光晕跟着明暗
+		Fx.After(main, 0.6, "portrait idle", () =>
+		{
+			Tween breathe = main.CreateTween().SetLoops().SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+			breathe.TweenProperty(main, "scale", Vector2.One * PortraitScale * 1.006f, 2.2);
+			breathe.Parallel().TweenProperty(main, "rotation", 0.004f, 2.2);
+			breathe.Parallel().TweenProperty(glow, "modulate:a", 0.18f, 2.2);
+			breathe.TweenProperty(main, "scale", Vector2.One * PortraitScale, 2.2);
+			breathe.Parallel().TweenProperty(main, "rotation", -0.003f, 2.2);
+			breathe.Parallel().TweenProperty(glow, "modulate:a", 0.32f, 2.2);
+		});
 	}
 
 	/// <summary>
@@ -54,12 +136,13 @@ public static class CharSelectBg
 	/// </summary>
 	private static void Selected(Control root)
 	{
-		Vector2 temple = root.GlobalPosition + Feet + new Vector2(4f, -1370f * CharScale);
+		Vector2 temple = root.GlobalPosition + PortraitPos + PortraitHead * PortraitScale + new Vector2(-30f, 0f);
 		P3Fx.EvokerBurst(root, temple, 1.25f);
 		P3Fx.GlassShatter(root, temple + new Vector2(60f, 0f), 34, 1.2f, Pal.Ice);
 		P3Fx.ButterflyBurst(root, temple, 7, 380f);
-		P3Fx.Ripple(root, root.GlobalPosition + new Vector2(Feet.X, HorizonY + 40f), 900f, 1.0f, 0.03f);
+		P3Fx.Ripple(root, root.GlobalPosition + new Vector2(PortraitPos.X, HorizonY + 40f), 900f, 1.0f, 0.03f);
 		Audio.Sfx.Play(Audio.Snd.Gunshot, 1.0f);
+		EyeGlow(root, root.GlobalPosition + PortraitPos + PortraitEye * PortraitScale);
 		Extras.SkewBand(root, new Extras.Caption("WILD CARD", "ORPHEUS", "结城理"), hold: 0.9f);
 	}
 
@@ -100,49 +183,6 @@ public static class CharSelectBg
 		pm.DampingMin = 0f;
 		pm.DampingMax = 0f;
 		p.Preprocess = 6.0;
-	}
-
-	/// <summary>结城理（战斗骨骼，待机动画）；reflection = 水中倒影（上下翻转、淡蓝、半透明）。</summary>
-	private static void Character(Control root, bool reflection)
-	{
-		if (ClassDB.Instantiate("SpineSprite").AsGodotObject() is not Node2D spine)
-		{
-			return;
-		}
-		spine.Name = reflection ? "MakotoReflection" : "Makoto";
-		root.AddChild(spine);
-		spine.Position = Feet;
-		spine.Scale = new Vector2(CharScale, reflection ? -CharScale * 0.9f : CharScale);
-		if (reflection)
-		{
-			spine.Modulate = new Color(0.45f, 0.7f, 1f, 0.22f);
-		}
-		spine.Set("skeleton_data_res", GD.Load<Resource>("res://animations/characters/regent/regent_skel_data.tres"));
-		MegaSprite sprite = new(spine);
-		PlayWhenReady(spine, sprite, 40, reflection ? null : () => Selected(root));
-	}
-
-	/// <summary>骨骼加载完成后：先播一次召唤器开枪（cast），再接待机；onFire 在扳机那一帧（cast 的 0.27s）触发。</summary>
-	private static void PlayWhenReady(Node2D spine, MegaSprite sprite, int triesLeft, System.Action? onFire)
-	{
-		if (!GodotObject.IsInstanceValid(spine))
-		{
-			return;
-		}
-		if (sprite.TryGetAnimationState() is MegaAnimationState state)
-		{
-			state.SetAnimation("cast", loop: false);
-			state.AddAnimation("idle_loop", 0f, loop: true);
-			if (onFire != null)
-			{
-				Fx.After(spine, 0.27, "char select fire", onFire);
-			}
-			return;
-		}
-		if (triesLeft > 0)
-		{
-			Fx.After(spine, 0.05, "char select spine", () => PlayWhenReady(spine, sprite, triesLeft - 1, onFire));
-		}
 	}
 
 	/// <summary>蓝蝶不时从水面飞起。</summary>
