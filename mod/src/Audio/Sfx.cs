@@ -96,7 +96,7 @@ public static class Sfx
 	/// <summary>软削波推动量：越大越"满"越响（压缩感更强）。</summary>
 	private static float Drive(Snd s) => s switch
 	{
-		Snd.Gunshot => 2.6f,
+		Snd.Gunshot => 1.3f,                      // 以前 2.6：削波太重、太亮（重心 7.3kHz）
 		Snd.CutIn or Snd.ThanatosSlash => 2.2f,
 		Snd.Weak or Snd.TarotShatter or Snd.StarSpend or Snd.GlassOnly => 1.1f,   // 玻璃为主的音效几乎不削波：削波产生的高次谐波会让玻璃声刺耳
 		Snd.StarGain or Snd.StarSpend => 1.3f,
@@ -378,29 +378,29 @@ public static class Sfx
 		Gen g;
 		switch (s)
 		{
-			case Snd.Gunshot:      // 召唤器枪声：击锤 + 高频"啪"（不是鼓）+ 噪声冲击 + 次低频 + 回声 + 长尾；随后灵魂冲出的风声、E 小调共鸣、微光
-				g = new Gen(1.6f, 1);
-				g.Snap(0.0f, 1.0f);
-				g.Noise(0, 0.05f, Atk(0.0002f, 0.005f), K(900), 0.6f, F.High, 0.75f);          // 宽频爆裂
-				g.Noise(0, 0.14f, Atk(0.0003f, 0.026f), K(1700), 0.8f, F.Band, 1.1f);           // 中频"啪"的身体
-				g.Noise(0, 0.25f, Atk(0.0005f, 0.05f), K(480), 0.9f, F.Band, 0.8f);             // 中低频冲击（噪声，不成音高）
-				g.Noise(0, 0.5f, Atk(0.002f, 0.1f), K(170), 1f, F.Low, 0.9f);                   // 次低频轰鸣
-				g.Tone(0, 0.2f, t => 85f * MathF.Exp(-t / 0.03f) + 48f, Atk(0.001f, 0.05f), 0.25f);
-				foreach ((float d, float a) in new[] { (0.021f, 0.45f), (0.043f, 0.3f), (0.077f, 0.2f), (0.13f, 0.13f), (0.21f, 0.07f) })   // 早期反射
+			case Snd.Gunshot:      // 召唤器：枪声（闷而有空间感，不是写实枪声）→ 紧接着"心灵碎裂"的玻璃声（主体，复用按原声校准的玻璃层）
+				                       // → Persona 冲出的涌起风声 + Em 垫音 → 长混响。结构依据 research/P3R_SFX_ANALYSIS.md
+				g = new Gen(1.8f, 1);
+				g.Snap(0f, 0.8f);
+				g.Noise(0, 0.04f, Atk(0.0002f, 0.008f), K(2200), 0.7f, F.Band, 0.7f);                                     // 枪声的"啪"（中频，不用高通）
+				g.Noise(0, 0.18f, Atk(0.0004f, 0.035f), K(520), 0.85f, F.Band, 0.75f);                                    // 中低频冲击
+				g.Tone(0, 0.35f, t => 95f * MathF.Exp(-t / 0.04f) + 42f, Atk(0.001f, 0.09f), 0.45f);                      // 低频重量
+				g.Noise(0, 0.3f, Atk(0.001f, 0.07f), K(150), 1f, F.Low, 0.45f);
+				foreach ((float d, float am) in new[] { (0.023f, 0.35f), (0.047f, 0.22f), (0.083f, 0.13f) })              // 早期反射（闷）
 				{
-					g.Noise(d, 0.05f, Atk(0.0004f, 0.01f), K(1300), 0.7f, F.High, a);
+					g.Noise(d, 0.05f, Atk(0.0005f, 0.012f), K(900), 0.8f, F.Band, am);
 				}
-				g.Noise(0.005f, 1.55f, Atk(0.01f, 0.42f), t => 3000f * MathF.Exp(-t / 0.35f) + 450f, 0.9f, F.Low, 0.32f);   // 空间长尾
-				g.Noise(0, 0.02f, Atk(0.0002f, 0.003f), K(4500), 0.25f, F.Band, 0.5f);           // 击锤的金属"咔"
-				g.Tone(0, 0.15f, _ => 2830f, Atk(0.0004f, 0.03f), 0.06f);
-				g.Noise(0.08f, 0.6f, t => { float u = Math.Clamp(t / 0.55f, 0f, 1f); return MathF.Pow(MathF.Sin(MathF.PI * u), 2f) * (1f - 0.4f * u); },
-					t => 600f + 3200f * Math.Clamp(t / 0.45f, 0f, 1f), 0.4f, F.Band, 0.22f);                 // 灵魂冲出的风声（向上扫）
-				foreach ((float f, float a) in new[] { (164.8f, 0.07f), (246.9f, 0.05f), (329.6f, 0.05f), (493.9f, 0.025f) })   // E 小调共鸣：Persona 现身
+				g.Noise(0.03f, 1.0f, t => t < 0.2f ? MathF.Pow(t / 0.2f, 1.5f) : MathF.Exp(-(t - 0.2f) / 0.18f),
+					t => 400f + 1600f * MathF.Min(t / 0.2f, 1f), 0.8f, F.Band, 0.35f);                                   // Persona 冲出的风声（200ms 涌起）
+				g.Noise(0.03f, 1.0f, t => t < 0.2f ? t / 0.2f : MathF.Exp(-(t - 0.2f) / 0.25f), K(170), 1f, F.Low, 0.4f);
+				g.Warble(0.05f, 0.45f, 330f, 990f, 18f, 0.25f, t => MathF.Sin(MathF.PI * MathF.Min(t / 0.45f, 1f)), 0.06f);
+				foreach (float f in new[] { 164.8f, 246.9f, 329.6f })                                                     // Em 垫音（Persona 现身）
 				{
-					g.Tone(0.06f, 1.5f, t => f * (1f + 0.003f * MathF.Sin(t * 29f)), t => MathF.Min(t / 0.18f, 1f) * MathF.Exp(-t / 0.55f), a);
-					g.Tone(0.06f, 1.5f, _ => f * 1.004f, t => MathF.Min(t / 0.18f, 1f) * MathF.Exp(-t / 0.55f), a * 0.6f);
+					g.Pad(0.08f, 1.6f, f, t => MathF.Min(t / 0.15f, 1f) * MathF.Exp(-t / 0.5f), 0.035f);
 				}
-				g.Shimmer(0.04f, 0.7f, 34, 3200f, 7500f, 0.05f);                                  // 微光余韵
+				g.Noise(0.01f, 1.7f, Atk(0.02f, 0.5f), t => 1800f * MathF.Exp(-t / 0.5f) + 250f, 0.9f, F.Low, 0.22f);   // 空间尾音
+				g.Lowpass(9000f);
+				AddGlass(g, 0.025f, 1.15f, 1f, 21);                                                                      // 心灵碎裂（主体）
 				return g.B;
 			// ───── P3R 风格（依据 research/P3R_SFX_ANALYSIS.md 对原版系统音效的测量）─────
 			// 词汇：快速大幅颤音的合成音 + 音高滑动、干净的三角波琶音（75~85ms 一个音）+ 回声、
