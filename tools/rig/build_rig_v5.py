@@ -543,15 +543,25 @@ def bake(rig, images, name, duration, target, states, loop=False, events=None, s
     for t, _ in frames:
         Wm = sk.world(name, t)
         al = v4.arm_alpha(states, fade, t)
+        sh = Wm[ARM_BONE["hang"]] @ np.array([0.0, 0.0, 1.0])
         for a in ANCHORS:
-            sx = sy = sw = 0.0
+            # 换图淡化期间按"以肩为圆心的极坐标"混合（半径线性、角度走短弧）：剑尖沿弧线扫过去，
+            # 而不是两点连线从肩膀附近穿过（那样拖尾会缩成一团）
+            sr = sw = 0.0
+            cx = cy = 0.0
             for k in ARMS:
                 if al[k] <= 0 or a not in local[k]:
                     continue
                 pt = Wm[deepest(k)] @ np.array([local[k][a][0], local[k][a][1], 1.0])
-                sx, sy, sw = sx + pt[0] * al[k], sy + pt[1] * al[k], sw + al[k]
+                dx, dy = pt[0] - sh[0], pt[1] - sh[1]
+                rr = math.hypot(dx, dy)
+                sr, sw = sr + rr * al[k], sw + al[k]
+                if rr > 1e-6:
+                    cx, cy = cx + dx / rr * al[k], cy + dy / rr * al[k]
             if sw > 0:
-                last[a] = (sx / sw, sy / sw)
+                ang = math.atan2(cy, cx)
+                rad = sr / sw
+                last[a] = (sh[0] + rad * math.cos(ang), sh[1] + rad * math.sin(ang))
             elif a != "hand":
                 last[a] = last["hand"]
             support[a].append(sw > 0.999)
@@ -610,23 +620,29 @@ def make_animations(rig, images):
                                   **{FORE["s_ready"]: {"r": 6}, HAND["s_ready"]: {"r": -4}}))
     # P3R 斩击（参照原版结城理最后一帧）：剑压低蓄力 → 前脚踏出、横扫向敌人（接触帧）→ 剑顺势甩过头顶
     # → 收剑扛肩（剑刃在脑后）+ 左手从口袋抽出向前开掌，宽步定格 → 收招。larm 是开掌左臂：出现时从下方摆上来。
-    LOW = add(A("s_ready"), B(hip={"x": -14, "y": -24}, spine={"r": 5}, torso={"r": 10}, head={"r": 2},
-                              foot_r={"x": 20, "y": 20}, larm={"r": -70},
+    # 全身参照原版：重心压得很低（胯几乎坐下）、上身整体前倾压向敌人、前腿远远踏出接近伸直、后腿屈膝压在身下、
+    # 头微低用眼角看敌 —— 一个"突进"的定格。腿长约 700~750 单位：hip 下沉 170、前移 46，前脚踏出 470 时前腿接近伸直，
+    # 后脚被拖前 130、膝盖深屈压在身下（和常见弓步相反：原版是前腿直、后腿屈的滑步急停）。
+    LOW = add(A("s_ready"), B(hip={"x": -18, "y": -46, "r": 7}, spine={"r": 4}, torso={"r": 6}, head={"r": 0},
+                              foot_r={"x": 30, "y": 34}, larm={"r": -70},
                               **{FORE["s_ready"]: {"r": 10}, HAND["s_ready"]: {"r": 8}}))
-    SWEEP = add(A("s_ext"), B(hip={"x": 40, "y": -52}, spine={"r": -9}, torso={"r": -12}, head={"r": 7},
-                              foot_r={"x": 72, "y": 0}, larm={"r": -70},
+    SWEEP = add(A("s_ext"), B(hip={"x": 40, "y": -122, "r": -12}, spine={"r": -6}, torso={"r": -9}, head={"r": 12},
+                              foot_r={"x": 350, "y": 6}, foot_l={"x": 50, "y": 0}, larm={"r": -66},
                               **ALL(2), **{FORE["s_ext"]: {"r": 4}, HAND["s_ext"]: {"r": 4}}))
-    OVER = add(A("s_ext"), B(hip={"x": 42, "y": -58}, spine={"r": -6}, torso={"r": -6}, head={"r": 8},
-                             foot_r={"x": 76, "y": 0}, larm={"r": -40},
+    OVER = add(A("s_ext"), B(hip={"x": 44, "y": -158, "r": -16}, spine={"r": -7}, torso={"r": -11}, head={"r": 16},
+                             foot_r={"x": 440, "y": 0}, foot_l={"x": 100, "y": 0}, larm={"r": -34},
                              **ALL(70), **{FORE["s_ext"]: {"r": 10}, HAND["s_ext"]: {"r": 16}}))
-    FINISH = add(A("s_shoulder"), B(hip={"x": 34, "y": -60}, spine={"r": -3}, torso={"r": 2}, head={"r": 9},
-                                    foot_r={"x": 78, "y": 0}, larm={"r": 4},
+    FINISH = add(A("s_shoulder"), B(hip={"x": 46, "y": -172, "r": -19}, spine={"r": -6}, torso={"r": -10}, head={"r": 19},
+                                    foot_r={"x": 470, "y": 0}, foot_l={"x": 130, "y": 0}, larm={"r": 36}, **{ARM_BONE["s_shoulder"]: {"r": 22}},
                                     **{FORE["s_shoulder"]: {"r": 0}, HAND["s_shoulder"]: {"r": 0}}))
-    SETTLE = add(A("s_shoulder"), B(hip={"x": 32, "y": -54}, spine={"r": -2}, torso={"r": 1}, head={"r": 7},
-                                    foot_r={"x": 78, "y": 0}, larm={"r": 1},
+    SETTLE = add(A("s_shoulder"), B(hip={"x": 42, "y": -162, "r": -17}, spine={"r": -5}, torso={"r": -9}, head={"r": 17},
+                                    foot_r={"x": 470, "y": 0}, foot_l={"x": 130, "y": 0}, larm={"r": 33}, **{ARM_BONE["s_shoulder"]: {"r": 20}},
                                     **{FORE["s_shoulder"]: {"r": -2}, HAND["s_shoulder"]: {"r": -2}}))
-    PUT_AWAY = add(A("hang"), B(hip={"x": 14, "y": -22}, spine={"r": -2}, torso={"r": -3}, head={"r": 3},
-                                foot_r={"x": 30, "y": 14}, larm={"r": -60}))
+    RISE = add(A("s_shoulder"), B(hip={"x": 34, "y": -104, "r": -9}, spine={"r": -3}, torso={"r": -4}, head={"r": 9},
+                                  foot_r={"x": 300, "y": 50}, foot_l={"x": 110, "y": 0}, larm={"r": -20}, **{ARM_BONE["s_shoulder"]: {"r": 12}},
+                                  **{FORE["s_shoulder"]: {"r": -6}, HAND["s_shoulder"]: {"r": -4}}))
+    PUT_AWAY = add(A("hang"), B(hip={"x": 20, "y": -30, "r": -3}, spine={"r": -1}, torso={"r": -2}, head={"r": 4},
+                                foot_r={"x": 60, "y": 0}, foot_l={"x": 50, "y": 40}, larm={"r": -60}))
     HURT = add(IDLE, B(spine={"r": 6}, torso={"r": 10}, head={"r": 16}, hip={"x": -20, "y": -8}, **ALL(-16),
                        **{FORE["hang"]: {"r": -14}}))
 
@@ -655,14 +671,14 @@ def make_animations(rig, images):
     # 接触帧 ≈0.072（剑横扫到正对敌人），早于游戏 0.15s 的伤害结算；0.1~0.155 甩过头顶落到肩后（两张手臂图交叉淡化 2 帧，
     # 读作挥剑残影，手和剑尖不瞬移）；0.5 起收招
     atk = [(0, IDLE), (0.04, LOW, out_cubic), (0.075, SWEEP, CUT), (0.1, OVER), (0.155, FINISH, out_back), (0.25, SETTLE, out_cubic),
-           (0.5, SETTLE), (0.7, PUT_AWAY, in_out_sine), (0.92, IDLE, out_cubic)]
+           (0.5, SETTLE), (0.6, RISE, in_out_sine), (0.74, PUT_AWAY, in_out_sine), (0.94, IDLE, out_cubic)]
     atk_states = [(0, "hang"), (0.005, "s_ready", 0.025), (0.045, "s_ext", 0.012), (0.074, "s_shoulder", 0.074), (0.68, "hang", 0.14)]
     atk_left = [(0, "pocket", 0.05), (0.09, "open", 0.05), (0.66, "pocket", 0.12)]
     bake(rig, images, "attack", 0.95, seq(atk), atk_states, speed=3.0, fade=0.03, left=atk_left,
          events=[(0.0, "weapon_draw"), (0.03, "weapon_windup"), (0.072, "weapon_slash"), (0.68, "weapon_sheath")])
     atk_r = [(0, S_READY), (0.03, LOW, out_cubic), (0.062, SWEEP, CUT), (0.085, OVER), (0.14, FINISH, out_back), (0.23, SETTLE, out_cubic),
-             (0.48, SETTLE), (0.68, PUT_AWAY, in_out_sine), (0.9, IDLE, out_cubic)]
-    atk_r_states = [(0, "s_ready"), (0.035, "s_ext", 0.012), (0.077, "s_shoulder", 0.066), (0.66, "hang", 0.14)]
+             (0.48, SETTLE), (0.58, RISE, in_out_sine), (0.72, PUT_AWAY, in_out_sine), (0.92, IDLE, out_cubic)]
+    atk_r_states = [(0, "s_ready"), (0.035, "s_ext", 0.012), (0.074, "s_shoulder", 0.078), (0.66, "hang", 0.14)]
     atk_r_left = [(0, "pocket", 0.05), (0.075, "open", 0.05), (0.64, "pocket", 0.12)]
     bake(rig, images, "attack_from_ready", 0.95, seq(atk_r), atk_r_states, speed=3.0, fade=0.03, left=atk_r_left,
          events=[(0.02, "weapon_windup"), (0.06, "weapon_slash"), (0.66, "weapon_sheath")])

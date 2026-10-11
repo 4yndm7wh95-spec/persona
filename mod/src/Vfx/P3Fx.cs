@@ -35,10 +35,10 @@ public static class P3Fx
 		Fx.Animate(quad, duration + delay, t =>
 		{
 			float local = Ease.Segment(t, delay / (duration + delay), duration / (duration + delay));
-			float e = Ease.OutExpo(local);
-			Fx.SetParam(quad, "radius", Mathf.Lerp(0.02f, 0.95f, e));
-			Fx.SetParam(quad, "width", Mathf.Lerp(0.18f, 0.05f, e));
-			Fx.SetParam(quad, "alpha", local <= 0f ? 0f : 1f - Ease.InCubic(local));
+			float e = Ease.OutCubic(local);
+			Fx.SetParam(quad, "radius", Mathf.Lerp(0.02f, 0.9f, e));
+			Fx.SetParam(quad, "width", Mathf.Lerp(0.16f, 0.07f, e));
+			Fx.SetParam(quad, "alpha", local <= 0f ? 0f : (1f - local) * (1f - local));
 		});
 		Fx.FreeAfter(root, duration + delay + 0.1);
 	}

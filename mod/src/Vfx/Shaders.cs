@@ -21,7 +21,8 @@ void fragment() {
 	float d = length(UV * 2.0 - 1.0);
 	float core = smoothstep(width, 0.0, abs(d - radius));
 	float glow = smoothstep(width * 5.0, 0.0, abs(d - radius)) * 0.35;
-	COLOR = vec4(tint.rgb * (1.0 + core), (core + glow) * alpha * tint.a);
+	float edge = smoothstep(1.0, 0.8, d);          // 扩到边缘前淡掉，不被方框裁出硬边
+	COLOR = vec4(tint.rgb * (1.0 + core), (core + glow) * alpha * tint.a * edge);
 }");
 
 	private static Shader? _flash;
@@ -46,7 +47,7 @@ void fragment() {
 	/// </summary>
 	public static Shader Refract => _refract ??= Make(@"
 shader_type canvas_item;
-uniform sampler2D screen_tex : hint_screen_texture, filter_linear_mipmap;
+uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
 uniform vec4 tint : source_color = vec4(0.7, 0.92, 1.0, 1.0);
 uniform float radius = 0.3;
 uniform float width = 0.12;
@@ -55,15 +56,19 @@ uniform float alpha = 1.0;
 void fragment() {
 	vec2 uv = UV * 2.0 - 1.0;
 	float d = length(uv);
-	float k = smoothstep(width, 0.0, abs(d - radius)) * step(d, 1.0);
+	// 高斯环形剖面（无硬边）+ 越靠近四边越淡（扩到边缘时自然消散，不会被方框裁掉）
+	float x = (d - radius) / max(width, 0.0001);
+	float edge = smoothstep(1.0, 0.72, d);
+	float k = exp(-x * x * 2.5) * edge;
 	vec2 dir = d > 0.0001 ? uv / d : vec2(0.0);
-	vec2 off = dir * k * strength * alpha;
-	float r = texture(screen_tex, SCREEN_UV - off * 1.25).r;
+	// 折射方向随环的内外侧反向（像真正的水波：一侧压缩一侧拉伸）
+	vec2 off = dir * (-x * exp(-x * x * 2.5)) * edge * strength * alpha;
+	float r = texture(screen_tex, SCREEN_UV - off * 1.12).r;
 	float g = texture(screen_tex, SCREEN_UV - off).g;
-	float b = texture(screen_tex, SCREEN_UV - off * 0.75).b;
-	float rim = smoothstep(width * 0.35, 0.0, abs(d - radius)) * step(d, 1.0);
-	vec3 col = vec3(r, g, b) + tint.rgb * rim * 0.35 * alpha;
-	COLOR = vec4(col, clamp(k * 4.0, 0.0, 1.0));
+	float b = texture(screen_tex, SCREEN_UV - off * 0.88).b;
+	float rim = exp(-x * x * 9.0) * edge;
+	vec3 col = vec3(r, g, b) + tint.rgb * rim * 0.22 * alpha;
+	COLOR = vec4(col, clamp(k * 3.0, 0.0, 1.0) * clamp(alpha * 4.0, 0.0, 1.0));
 }");
 
 	private static Shader? _pillar;

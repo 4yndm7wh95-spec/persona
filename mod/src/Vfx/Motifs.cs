@@ -332,8 +332,9 @@ public static class Motifs
 	// ═════════ P3R 主题 ═════════
 
 	/// <summary>大塔罗牌：翻面登场（罗马数字 + 牌名 + 中央纹章），停留，然后碎成玻璃。</summary>
-	public static void BigTarot(Control layer, Vector2 at, string numeral, string name, Color tint, float hold = 0.45f, float s = 1f)
+	public static void BigTarot(Control layer, Vector2 at, string numeral, string name, Color tint, float hold = 0.45f, float s = 1f, Control? fxLayer = null)
 	{
+		Control fx = fxLayer ?? layer;
 		Node2D root = Fx.Root(layer, at, "P3BigTarot");
 		const float w = 95f, h = 160f;
 		Node2D card = new() { Scale = Vector2.One * s };
@@ -358,7 +359,7 @@ public static class Motifs
 		});
 		Fx.After(root, total - 0.05, "tarot shatter", () =>
 		{
-			P3Fx.GlassShatter(layer, root.GlobalPosition, (int)(30 * s), 1.1f * s, tint);
+			P3Fx.GlassShatter(fx, root.GlobalPosition, (int)(30 * s), 1.1f * s, tint);
 			P3Fx.Flash(layer, root.GlobalPosition, tint, 360f * s, 0.25f);
 			root.QueueFree();
 		});

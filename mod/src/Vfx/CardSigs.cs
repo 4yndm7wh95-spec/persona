@@ -25,8 +25,9 @@ public static class CardSigs
 
 	private static void After(Ctx c, double s, Action a) => Fx.After(c.Front, s, "card sig", a);
 
+	// 大塔罗牌放在人物身后的图层、头顶偏后上方（不挡人），碎裂的玻璃和闪光仍在前景
 	private static void Tarot(Ctx c, string numeral, string name, Color tint, double delay = 0.15) =>
-		After(c, delay, () => Motifs.BigTarot(c.Front, c.Above, numeral, name, tint));
+		After(c, delay, () => Motifs.BigTarot(c.Back, c.Above + new Vector2(-150f, -70f), numeral, name, tint, s: 0.85f, fxLayer: c.Front));
 
 	private static readonly Dictionary<string, Action<Ctx>> Sigs = new()
 	{

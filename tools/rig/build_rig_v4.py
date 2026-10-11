@@ -228,7 +228,9 @@ class Rig:
         ax0, ay0 = to_spine(J[f"ankle_{side}"])
         foot = pose.get(f"foot_{side}", {})              # 踏步：脚踝目标位移（Spine 单位，y 向上 = 抬脚）
         ax, ay = ax0 + foot.get("x", 0.0), ay0 + foot.get("y", 0.0)
-        root = (tx + dx, ty + dy)
+        hr = math.radians(pose.get("hip", {}).get("r", 0.0))   # 胯部前倾：大腿根绕胯点转，IK 结果再扣掉父骨骼旋转
+        ox, oy = tx - hx, ty - hy
+        root = (hx + dx + ox * math.cos(hr) - oy * math.sin(hr), hy + dy + ox * math.sin(hr) + oy * math.cos(hr))
         l1, l2 = math.dist((tx, ty), (kx, ky)), math.dist((kx, ky), (ax0, ay0))   # 腿长按原始姿势算（不受踏步影响）
         d = min(math.dist(root, (ax, ay)), l1 + l2 - 1e-3)
         base = math.atan2(ay - root[1], ax - root[0])
@@ -237,7 +239,7 @@ class Rig:
         knee = (root[0] + l1 * math.cos(thigh_w), root[1] + l1 * math.sin(thigh_w))
         shin_w = math.atan2(ay - knee[1], ax - knee[0])
         thigh0, shin0 = math.atan2(ky - ty, kx - tx), math.atan2(ay0 - ky, ax0 - kx)
-        pose[f"thigh_{side}"] = {"r": math.degrees(thigh_w - thigh0)}
+        pose[f"thigh_{side}"] = {"r": math.degrees(thigh_w - thigh0 - hr)}
         pose[f"shin_{side}"] = {"r": math.degrees((shin_w - thigh_w) - (shin0 - thigh0))}
         return pose
 

@@ -167,12 +167,12 @@ public static class StarOrbit
 			float scale;
 			if (i < o.Preview)
 			{
-				// 待命：升到后脑勺偏上的位置，排成一道拱形（中间最高），轻轻上下浮动
+				// 待命：升到后脑勺后上方（人物身后图层，不挡人），排成一道拱形（中间最高），轻轻上下浮动
 				float u = o.Preview == 1 ? 0.5f : i / (float)(o.Preview - 1);
-				Vector2 above = Makoto.Head(o.Creature) + new Vector2(-55f, -95f);
+				Vector2 above = Makoto.Head(o.Creature) + new Vector2(-165f, -150f);
 				float span = Mathf.Min(48f * (o.Preview - 1), 300f);
 				target = above + new Vector2(span * (u - 0.5f), -34f * Mathf.Sin(u * Mathf.Pi) + 5f * Mathf.Sin(_time * 3f + i));
-				depth = 1f;
+				depth = -1f;
 				scale = 1.2f + 0.05f * Mathf.Sin(_time * 6f + i);
 			}
 			else
@@ -197,7 +197,8 @@ public static class StarOrbit
 			float flip = Mathf.Cos(_time * 1.6f + i * 0.9f) * 0.25f + 0.75f;
 			c.Node.Scale = new Vector2(s * flip, s);
 			c.Node.Rotation = (1f - born) * 3f + 0.08f * Mathf.Sin(_time * 2f + i);
-			c.Node.Modulate = new Color(1f, 1f, 1f, (0.55f + 0.45f * (depth * 0.5f + 0.5f)) * born + (1f - born) * born);
+			float shade = i < o.Preview ? 1f : 0.55f + 0.45f * (depth * 0.5f + 0.5f);
+			c.Node.Modulate = new Color(1f, 1f, 1f, shade * born + (1f - born) * born);
 		}
 	}
 

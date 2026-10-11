@@ -140,10 +140,24 @@ public static class CharSelectBg
 		P3Fx.EvokerBurst(root, temple, 1.25f);
 		P3Fx.GlassShatter(root, temple + new Vector2(60f, 0f), 34, 1.2f, Pal.Ice);
 		P3Fx.ButterflyBurst(root, temple, 7, 380f);
-		P3Fx.Ripple(root, root.GlobalPosition + new Vector2(PortraitPos.X, HorizonY + 40f), 900f, 1.0f, 0.03f);
+		WaterRipple(root, root.GlobalPosition + new Vector2(PortraitPos.X - 60f, HorizonY + 150f));
 		Audio.Sfx.Play(Audio.Snd.Gunshot, 1.0f);
 		EyeGlow(root, root.GlobalPosition + PortraitPos + PortraitEye * PortraitScale);
 		Extras.SkewBand(root, new Extras.Caption("WILD CARD", "ORPHEUS", "结城理"), hold: 0.9f);
+	}
+
+	/// <summary>
+	/// 开枪那一刻脚下水面荡开的涟漪：透视压扁成椭圆贴在水面上，三圈先后扩散、越往外越淡越宽，
+	/// 最后一圈完全淡出后才回收（不会在边缘被裁掉）。另加一圈细细的青色高光描出波峰。
+	/// </summary>
+	private static void WaterRipple(Control root, Vector2 at)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			float size = 1300f + 260f * i;
+			P3Fx.Ripple(root, at, size, 1.6f + 0.25f * i, 0.018f - 0.004f * i, squashY: 0.2f, delay: 0.16f * i);
+			P3Fx.Shockwave(root, at, new Color(Pal.Cyan, 0.35f - 0.09f * i), size * 0.95f, 1.5f + 0.25f * i, squashY: 0.2f, delay: 0.16f * i + 0.03f);
+		}
 	}
 
 	/// <summary>P3R 标志性的斜切色带 + 超大号描边字缓慢漂移。</summary>
