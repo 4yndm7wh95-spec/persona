@@ -192,12 +192,12 @@ public static class CutInFx
 		Node2D sub = new() { Position = new Vector2(30f, 80f), Skew = -0.25f };
 		tag.AddChild(sub);
 		Typo.Text(sub, "PERSONA  \u25B8  " + persona, Typo.Latin, 26, Pal.Cyan, Vector2.Zero, outline: 4, outlineColor: new Color(0.02f, 0.04f, 0.12f));
-		// "咔"：离线生成的空心双描边设计字（build_ui_assets.cutin_ka），不是系统字体
-		Node2D ka = new() { Position = new Vector2(size.X * 0.8f, st.Cy - st.HalfH * 0.1f), Rotation = -0.06f };
+		// 拟声字"カチッ"（扣扳机的咔哒声）：离线生成的空心双描边设计字（build_ui_assets.cutin_ka），不是系统字体
+		Node2D ka = new() { Position = new Vector2(size.X * 0.76f, st.Cy - st.HalfH * 0.1f), Rotation = -0.06f };
 		st.Ui.AddChild(ka);
 		if (ResourceLoader.Load(KaPath) is Texture2D kaTex)
 		{
-			ka.AddChild(new Sprite2D { Texture = kaTex, Scale = Vector2.One * (st.HalfH * 2.1f / kaTex.GetHeight()) });
+			ka.AddChild(new Sprite2D { Texture = kaTex, Scale = Vector2.One * (st.HalfH * 1.7f / kaTex.GetHeight()) });
 		}
 		ka.Scale = Vector2.One * 2.2f;
 		ka.Modulate = new Color(1f, 1f, 1f, 0f);
@@ -260,10 +260,11 @@ public static class CutInFx
 		if (GodotObject.IsInstanceValid(st.Ui))
 		{
 			Node2D ui = st.Ui;
+			Vector2 p0 = ui.Position;                       // 层的本地原点不一定是 (0,0)（选人界面的背景节点有偏移），只能相对原位置移动
 			Fx.Animate(ui, 0.3, t =>
 			{
 				ui.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InOutCubic(t));
-				ui.Position = new Vector2(-40f * Ease.InCubic(t), 0f);
+				ui.Position = p0 + new Vector2(-40f * Ease.InCubic(t), 0f);
 			});
 			Fx.FreeAfter(ui, 0.35);
 		}

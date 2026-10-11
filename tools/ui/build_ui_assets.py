@@ -234,14 +234,23 @@ def cutin_eyes():
 EYE = (690, 215)          # 横幅贴图里露出的那只眼睛（游戏里眼睛的动态光也对准这里：CutInFx.EyeTex）
 
 
-def cutin_ka():
-    """切入右侧的"咔"：原版那种手绘感的空心双描边大字 —— 斜切、白色粗外描边 + 黑色外缘 + 内部细青线、
+def cutin_ka(text="カチッ"):
+    """切入右侧的拟声字（默认日文"カチッ"，扣扳机的咔哒声）：原版那种手绘感的空心双描边大字 —— 斜切、白色粗外描边 + 黑色外缘 + 内部细青线、
     空心（内部半透明深蓝）、右下错开的深蓝投影、几道速度斜线。离线用粗黑体字形做遮罩生成 PNG。"""
     from PIL import ImageDraw, ImageFont, ImageFilter
     font = ImageFont.truetype("/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc", 300)
-    S = 520
-    m = Image.new("L", (S, S), 0)
-    ImageDraw.Draw(m).text((60, 40), "咔", font=font, fill=255, stroke_width=6, stroke_fill=255)
+    small = ImageFont.truetype("/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc", 190)
+    smalls = set("ッャュョァィゥェォ")                   # 小写假名单独缩小，避免读成大写（ッ → ツ）
+    probe = ImageDraw.Draw(Image.new("L", (1, 1)))
+    tw = int(sum(probe.textlength(c, font=small if c in smalls else font) for c in text))
+    W, S = tw + 220, 520
+    m = Image.new("L", (W, S), 0)
+    d = ImageDraw.Draw(m)
+    x = 80
+    for c in text:
+        f = small if c in smalls else font
+        d.text((x, 40 + (300 - 190) * (c in smalls)), c, font=f, fill=255, stroke_width=6, stroke_fill=255)
+        x += probe.textlength(c, font=f)
     m = m.transform(m.size, Image.AFFINE, (1, 0.32, -70, 0, 1, 0), resample=Image.BICUBIC)       # 斜体
     g = np.asarray(m).astype(np.float32) / 255
     def grow(a, r):
@@ -252,7 +261,7 @@ def cutin_ka():
     white = grow(g, 15)              # 白色粗描边
     inner = shrink(g, 7)             # 内部
     cyan = np.clip(g - shrink(g, 5), 0, 1)
-    out = np.zeros((S, S, 4), np.float32)
+    out = np.zeros((S, W, 4), np.float32)
     shadow = np.roll(np.roll(outer, 14, 0), 18, 1)
     out[..., :3] = [0.03, 0.08, 0.3]; out[..., 3] = shadow * 0.85
     def over(rgb, a):
@@ -265,7 +274,7 @@ def cutin_ka():
     # 速度斜线
     im = Image.fromarray((np.clip(out, 0, 1) * 255).astype(np.uint8), "RGBA")
     d = ImageDraw.Draw(im)
-    for k, (x, y, L) in enumerate(((30, 380, 150), (380, 90, 120), (410, 140, 70))):
+    for k, (x, y, L) in enumerate(((30, 400, 150), (W - 150, 70, 120), (W - 120, 120, 70))):
         d.line([(x, y), (x + L, y - L * 0.55)], fill=(255, 255, 255, 230), width=7 - 2 * (k == 2))
     return im
 
