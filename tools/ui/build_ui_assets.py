@@ -294,8 +294,76 @@ def charselect_portrait():
     return Image.fromarray(a, "RGBA")
 
 
+def cursor(pressed=False):
+    """P3R 风格鼠标光标（64×64，尖端在 (14,5) —— 原版光标管理器写死的热点）：
+    一枚斜着的锋利玻璃碎片当指针（青 → 深蓝渐变、白色亮边、深蓝描边、尾部红色斜切），
+    碎片尾端停着一只蓝蝶（P3 的标志）。按下时碎片向下倾斜、蝴蝶合起翅膀。"""
+    import math
+    from PIL import ImageDraw, ImageFilter
+    S = 4
+    N = 64
+    tip = np.array([14.0, 5.0])
+    ang = math.radians(-12 if pressed else 0)
+    R = np.array([[math.cos(ang), -math.sin(ang)], [math.sin(ang), math.cos(ang)]])
+
+    def P(pts, origin=tip, rot=R):
+        return [tuple(((origin + rot @ np.array(p, float)) * S).tolist()) for p in pts]
+    im = Image.new("RGBA", (N * S, N * S), (0, 0, 0, 0))
+    # 碎片：尖端在 (0,0)，向右下方伸出，一边长一边短的不规则四边形
+    shard = [(0, 0), (8.5, 25), (13.5, 19.5), (27, 22)]
+    shadow = Image.new("RGBA", im.size, (0, 0, 0, 0))
+    ImageDraw.Draw(shadow).polygon(P([(x + 2.5, y + 3) for x, y in shard]), fill=(2, 8, 30, 130))
+    im.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(2.2 * S)))
+    d = ImageDraw.Draw(im)
+    d.polygon(P([(-1.8, -2.2), (8.6, 27.5), (14.2, 21.5), (30.5, 23.4)]), fill=(6, 16, 56, 255))   # 描边
+    # 渐变：逐条三角带（尖端白 → 青 → 深蓝）
+    steps = 24
+    for i in range(steps):
+        t0, t1 = i / steps, (i + 1) / steps
+        def lerp(p, q, t):
+            return (p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t)
+        a0, a1 = lerp(shard[0], shard[1], t0), lerp(shard[0], shard[1], t1)
+        b0, b1 = lerp(shard[0], shard[3], t0), lerp(shard[0], shard[3], t1)
+        c = np.array([235, 252, 255]) * (1 - t0) ** 2 + np.array([57, 216, 255]) * 2 * t0 * (1 - t0) + np.array([31, 92, 255]) * t0 ** 2
+        d.polygon(P([a0, a1, (shard[2][0] * t1, shard[2][1] * t1), b1, b0]), fill=tuple(int(v) for v in c) + (255,))
+    d.polygon(P([(0, 0), (13.5, 19.5), (27, 22)]), fill=None)
+    d.line(P([(0.6, 0.8), (8.0, 23.0)]), fill=(255, 255, 255, 240), width=int(1.4 * S))           # 长边亮线
+    d.polygon(P([(9.8, 23.8), (13.5, 19.5), (16.2, 19.9), (11.8, 25.2)]), fill=(255, 42, 74, 255))  # 尾部红色斜切
+    # 蓝蝶：停在碎片尾端
+    bt = tip + R @ np.array([31.0, 25.5])
+    open_ = 0.25 if pressed else 1.0
+    wing = Image.new("RGBA", im.size, (0, 0, 0, 0))
+    wd = ImageDraw.Draw(wing)
+    def poly(pts, side, fill):
+        q = [((bt[0] + side * x * open_) * S, (bt[1] + y) * S) for x, y in pts]
+        wd.polygon(q, fill=fill, outline=(6, 16, 56, 255), width=int(1.1 * S))
+    fore = [(0.4, -0.6), (5.5, -8.5), (11.5, -10.0), (12.0, -6.0), (8.5, -1.5), (1.0, 0.6)]
+    hind = [(0.4, 0.6), (7.5, 1.0), (9.5, 5.5), (6.0, 9.5), (2.5, 7.0)]
+    shine = [(2.5, -2.0), (6.5, -7.5), (10.0, -8.5), (7.5, -4.0)]
+    for side in (-1, 1):
+        poly(hind, side, (31, 92, 255, 240))
+        poly(fore, side, (57, 216, 255, 240))
+        q = [((bt[0] + side * x * open_) * S, (bt[1] + y) * S) for x, y in shine]
+        wd.polygon(q, fill=(225, 250, 255, 190))
+    wd.line([(bt[0] * S, (bt[1] - 4) * S), (bt[0] * S, (bt[1] + 6) * S)], fill=(6, 16, 56, 255), width=int(1.5 * S))
+    wd.line([(bt[0] * S, (bt[1] - 4) * S), ((bt[0] - 2.5) * S, (bt[1] - 8) * S)], fill=(6, 16, 56, 255), width=int(0.8 * S))
+    wd.line([(bt[0] * S, (bt[1] - 4) * S), ((bt[0] + 2.5) * S, (bt[1] - 8) * S)], fill=(6, 16, 56, 255), width=int(0.8 * S))
+    wing = wing.rotate(-35, center=(bt[0] * S, bt[1] * S), resample=Image.BICUBIC)
+    glow = wing.filter(ImageFilter.GaussianBlur(3 * S))
+    gl = np.asarray(glow).astype(np.float32)
+    gl[..., :3] = [57, 216, 255]
+    gl[..., 3] *= 0.6
+    im.alpha_composite(Image.fromarray(gl.astype(np.uint8), "RGBA"))
+    im.alpha_composite(wing)
+    return im.resize((N, N), Image.LANCZOS)
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
+    for name, pressed in (("cursor", False), ("cursor_tilted", True)):
+        c = cursor(pressed)
+        c.save(OUT / f"{name}.png")
+        write_texture(STAGE, f"p3makoto/ui/{name}.png", c)
     ka = cutin_ka()
     ka.save(OUT / "cutin_ka.png")
     write_texture(STAGE, "p3makoto/ui/cutin_ka.png", ka)
