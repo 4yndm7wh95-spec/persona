@@ -223,6 +223,47 @@ public static class Sfx
 			}
 		}
 
+		/// <summary>
+		/// P3R 式"颤音合成音"：频率从 f0 指数滑到 f1，同时被快速大幅度的颤音调制（rate 次/秒，depth 为相对幅度，
+		/// 原声测得 14~28 次/秒、±15%~70%）。音色是三角波（基频 + 1/9 的 3 次谐波 + 1/25 的 5 次谐波），干净不刺耳。
+		/// </summary>
+		public void Warble(float t0, float dur, float f0, float f1, float rate, float depth, Func<float, float> env, float amp)
+		{
+			double ph = 0;
+			int s0 = (int)(t0 * SR), n = (int)(dur * SR);
+			for (int i = 0; i < n && s0 + i < B.Length; i++)
+			{
+				float t = i / (float)SR;
+				float glide = f0 * MathF.Pow(f1 / f0, Math.Clamp(t / dur, 0f, 1f));
+				float f = glide * (1f + depth * MathF.Sin(2f * MathF.PI * rate * t));
+				ph += Math.Tau * f / SR;
+				float v = (float)(Math.Sin(ph) - Math.Sin(3 * ph) / 9 + Math.Sin(5 * ph) / 25);
+				B[s0 + i] += v * env(t) * amp;
+			}
+		}
+
+		/// <summary>琶音：notes 依次每 step 秒一个（原声 75~85ms），三角波短音。</summary>
+		public void Arp(float t0, float step, float[] notes, float noteDecay, float amp)
+		{
+			for (int k = 0; k < notes.Length; k++)
+			{
+				float f = notes[k];
+				Warble(t0 + k * step, noteDecay * 5f, f, f, 6f, 0.004f, Atk(0.003f, noteDecay), amp);
+			}
+		}
+
+		/// <summary>回声（反馈延迟，带一点低通让回声越来越暗）。原声的琶音和提示音都带这种回声。</summary>
+		public void Echo(float delay, float feedback, float damp = 0.35f)
+		{
+			int d = (int)(delay * SR);
+			float lp = 0f;
+			for (int i = d; i < B.Length; i++)
+			{
+				lp += (1f - damp) * (B[i - d] - lp);
+				B[i] += lp * feedback;
+			}
+		}
+
 		/// <summary>整体低通（两级一阶），把高频"亮"的部分压下去，声音更闷更厚。</summary>
 		public void Lowpass(float fc)
 		{
@@ -280,89 +321,86 @@ public static class Sfx
 				}
 				g.Shimmer(0.04f, 0.7f, 34, 3200f, 7500f, 0.05f);                                  // 微光余韵
 				return g.B;
-			// ───── P3R 风格：低沉、厚、闷的玻璃感 + 大混响；高频用低通压住，不用明亮的铃声琶音 ─────
-			case Snd.TarotReveal:      // 塔罗牌浮现：反向吸入的气流 → 翻牌闷响 → Em 合成器垫音缓缓铺开 → 暗混响
-				g = new Gen(1.3f, 2);
-				g.Noise(0, 0.14f, t => MathF.Pow(t / 0.14f, 2.5f), t => 250f + 1500f * (t / 0.14f), 0.6f, F.Band, 0.5f);
-				g.Noise(0.13f, 0.06f, Atk(0.0006f, 0.016f), K(1100), 0.6f, F.Band, 0.45f);                               // 翻牌闷响
-				g.Tone(0.13f, 0.3f, t => 120f * MathF.Exp(-t / 0.05f) + 60f, Atk(0.002f, 0.07f), 0.35f);
-				foreach (float f in new[] { 164.8f, 196f, 246.9f })                                                       // Em（低八度）
-				{
-					g.Pad(0.12f, 1.15f, f, t => MathF.Min(t / 0.12f, 1f) * MathF.Exp(-t / 0.45f), 0.07f);
-				}
-				g.Bell(0.14f, 659.3f, 0.4f, 0.05f, partCount: 2);                                                        // 一点玻璃感（很轻）
-				g.Noise(0.13f, 1.15f, Atk(0.02f, 0.4f), t => 1400f * MathF.Exp(-t / 0.5f) + 250f, 0.9f, F.Low, 0.2f);    // 暗混响
-				g.Lowpass(3200f);
+			// ───── P3R 风格（依据 research/P3R_SFX_ANALYSIS.md 对原版系统音效的测量）─────
+			// 词汇：快速大幅颤音的合成音 + 音高滑动、干净的三角波琶音（75~85ms 一个音）+ 回声、
+			// 慢慢涌起（200~370ms）的宽频风声且低频占 ~25%。不用非谐波铃声和高频闪光颗粒（那种"亮"很廉价）。
+			case Snd.TarotReveal:      // 塔罗牌浮现：涌起的风声 + 上扬颤音 + Em 琶音（带回声）
+				g = new Gen(1.4f, 2);
+				g.Noise(0, 0.5f, t => t < 0.2f ? MathF.Pow(t / 0.2f, 1.5f) : MathF.Exp(-(t - 0.2f) / 0.12f), t => 500f + 1800f * MathF.Min(t / 0.2f, 1f), 0.8f, F.Band, 0.45f);
+				g.Noise(0, 0.5f, t => t < 0.2f ? t / 0.2f : MathF.Exp(-(t - 0.2f) / 0.15f), K(160), 1f, F.Low, 1.3f);
+				g.Warble(0.02f, 0.3f, 330f, 990f, 18f, 0.3f, t => MathF.Sin(MathF.PI * MathF.Min(t / 0.3f, 1f)), 0.18f);
+				g.Noise(0.12f, 0.04f, Atk(0.0006f, 0.012f), K(1600), 0.6f, F.Band, 0.35f);                               // 翻牌
+				g.Arp(0.16f, 0.08f, new[] { 659.3f, 784f, 987.8f, 1318.5f }, 0.09f, 0.16f);                               // E5 G5 B5 E6
+				g.Echo(0.14f, 0.38f);
+				g.Lowpass(7000f);
 				return g.B;
-			case Snd.TarotShatter:     // 塔罗牌碎裂：闷重的冲击 + 低通过的玻璃碎裂 + 低音和弦涌起 + 长混响
-				g = new Gen(1.7f, 3);
-				g.Snap(0f, 0.6f);
-				g.Tone(0, 0.5f, t => 95f * MathF.Exp(-t / 0.06f) + 40f, Atk(0.001f, 0.14f), 0.8f);                       // 低频冲击
-				g.Noise(0, 0.4f, Atk(0.001f, 0.1f), K(140), 1f, F.Low, 0.9f);
-				g.Noise(0, 0.2f, Atk(0.0005f, 0.05f), K(520), 0.8f, F.Band, 0.7f);                                        // 中低频碎裂"身体"
-				g.Noise(0, 0.3f, Atk(0.0005f, 0.07f), K(2100), 0.4f, F.Band, 0.35f);                                      // 玻璃本体（中频）
-				g.Pings(0.005f, 0.55f, 30, 1100f, 3600f, 0.08f);                                                         // 碎片（压低音高）
-				foreach (float f in new[] { 82.4f, 123.5f, 164.8f })                                                      // E2 / B2 / E3 涌起
-				{
-					g.Pad(0.04f, 1.6f, f, t => MathF.Min(t / 0.2f, 1f) * MathF.Exp(-t / 0.6f), 0.08f, harmonics: 4);
-				}
-				g.Noise(0.02f, 1.65f, Atk(0.03f, 0.55f), t => 1800f * MathF.Exp(-t / 0.5f) + 220f, 0.9f, F.Low, 0.3f);   // 长混响
-				g.Lowpass(4000f);
+			case Snd.TarotShatter:     // 塔罗牌碎裂：重击 + 宽频碎裂 + 下坠颤音（力量散去）+ 回声
+				g = new Gen(1.6f, 3);
+				g.Snap(0f, 0.7f);
+				g.Tone(0, 0.45f, t => 100f * MathF.Exp(-t / 0.06f) + 45f, Atk(0.001f, 0.12f), 0.32f);
+				g.Noise(0, 0.35f, Atk(0.0005f, 0.09f), K(170), 1f, F.Low, 0.38f);
+				g.Noise(0, 0.25f, Atk(0.0005f, 0.06f), K(700), 0.8f, F.Band, 0.85f);
+				g.Noise(0, 0.4f, Atk(0.0008f, 0.1f), K(2600), 0.6f, F.Band, 0.75f);                                       // 碎裂（宽频噪声，不是铃声）
+				g.Pings(0.005f, 0.4f, 16, 1500f, 4200f, 0.05f);
+				g.Warble(0.03f, 0.75f, 840f, 320f, 14f, 0.6f, t => MathF.Min(t / 0.03f, 1f) * MathF.Exp(-t / 0.3f), 0.14f);   // 原声 #35：840→320Hz、14 次/秒
+				g.Echo(0.12f, 0.3f);
+				g.Lowpass(7500f);
 				return g.B;
-			case Snd.StarGain:         // 辉星凝聚：轻轻吸入 + 一声闷的低音"嗡"
-				g = new Gen(0.8f, 4);
-				g.Noise(0, 0.14f, t => MathF.Pow(t / 0.14f, 2f), t => 300f + 1300f * (t / 0.14f), 0.6f, F.Band, 0.35f);
-				g.Pad(0.12f, 0.65f, 246.9f, t => MathF.Min(t / 0.04f, 1f) * MathF.Exp(-t / 0.2f), 0.12f);
-				g.Bell(0.13f, 493.9f, 0.25f, 0.06f, partCount: 2);
-				g.Noise(0.12f, 0.6f, Atk(0.02f, 0.2f), K(900), 0.9f, F.Low, 0.12f);
-				g.Lowpass(3000f);
+			case Snd.StarGain:         // 辉星凝聚：短促上扬的颤音（原声 #47：495→1380Hz、27 次/秒）
+				g = new Gen(0.7f, 4);
+				g.Warble(0, 0.28f, 495f, 1380f, 27f, 0.3f, t => MathF.Min(t / 0.03f, 1f) * MathF.Exp(-t / 0.12f), 0.3f);
+				g.Arp(0.12f, 0.07f, new[] { 1318.5f, 1975.5f }, 0.06f, 0.12f);
+				g.Echo(0.1f, 0.3f);
+				g.Lowpass(7000f);
 				return g.B;
-			case Snd.StarSpend:        // 辉星消耗：小而闷的碎裂
-				g = new Gen(0.9f, 5);
+			case Snd.StarSpend:        // 辉星消耗：短促下坠颤音 + 小碎裂
+				g = new Gen(0.8f, 5);
 				g.Snap(0f, 0.3f);
-				g.Tone(0, 0.25f, t => 130f * MathF.Exp(-t / 0.04f) + 60f, Atk(0.001f, 0.06f), 0.45f);
-				g.Noise(0, 0.12f, Atk(0.0005f, 0.03f), K(900), 0.7f, F.Band, 0.45f);
-				g.Pings(0.004f, 0.3f, 12, 1200f, 3200f, 0.07f);
-				g.Noise(0.01f, 0.8f, Atk(0.02f, 0.25f), t => 1500f * MathF.Exp(-t / 0.3f) + 250f, 0.9f, F.Low, 0.14f);
-				g.Lowpass(3500f);
+				g.Tone(0, 0.22f, t => 140f * MathF.Exp(-t / 0.04f) + 60f, Atk(0.001f, 0.05f), 0.18f);
+				g.Noise(0, 0.15f, Atk(0.0005f, 0.04f), K(2200), 0.6f, F.Band, 0.5f);
+				g.Warble(0.01f, 0.35f, 1100f, 420f, 16f, 0.45f, t => MathF.Min(t / 0.02f, 1f) * MathF.Exp(-t / 0.12f), 0.2f);
+				g.Echo(0.1f, 0.25f);
+				g.Lowpass(7000f);
 				return g.B;
-			case Snd.CutIn:            // 切入大字：低通风声冲入 → 厚重的重击 + 低八度 Em7 合成器重音 → 混响
+			case Snd.CutIn:            // 切入大字：短风声 → 重击 + 三角波和弦重音 + 上冲颤音 → 回声
 				g = new Gen(1.4f, 6);
-				g.Noise(0, 0.07f, t => MathF.Pow(t / 0.07f, 2f), t => 300f + 1800f * (t / 0.07f), 0.5f, F.Band, 0.6f);
+				g.Noise(0, 0.07f, t => MathF.Pow(t / 0.07f, 2f), t => 400f + 2500f * (t / 0.07f), 0.6f, F.Band, 0.55f);
 				g.Snap(0.06f, 0.8f);
-				g.Noise(0.06f, 0.06f, Atk(0.0003f, 0.014f), K(1300), 0.6f, F.Band, 0.6f);
-				g.Noise(0.06f, 0.3f, Atk(0.0005f, 0.08f), K(130), 1f, F.Low, 1f);                                        // 重击
-				g.Tone(0.06f, 0.5f, t => 85f * MathF.Exp(-t / 0.06f) + 36f, Atk(0.001f, 0.15f), 0.85f);
-				foreach (float f in new[] { 164.8f, 196f, 246.9f, 293.7f })                                               // Em7（低八度）
+				g.Noise(0.06f, 0.3f, Atk(0.0005f, 0.08f), K(140), 1f, F.Low, 0.42f);
+				g.Tone(0.06f, 0.5f, t => 85f * MathF.Exp(-t / 0.06f) + 38f, Atk(0.001f, 0.15f), 0.32f);
+				g.Noise(0.06f, 0.08f, Atk(0.0003f, 0.02f), K(1500), 0.6f, F.Band, 0.85f);
+				foreach (float f in new[] { 329.6f, 392f, 493.9f, 659.3f })                                               // Em（三角波）
 				{
-					g.Pad(0.06f, 1.0f, f, t => MathF.Min(t / 0.006f, 1f) * MathF.Exp(-t / 0.3f), 0.07f, harmonics: 4);
+					g.Warble(0.06f, 0.9f, f, f, 5f, 0.004f, Atk(0.003f, 0.26f), 0.17f);
 				}
-				g.Noise(0.06f, 1.3f, Atk(0.02f, 0.42f), t => 1700f * MathF.Exp(-t / 0.45f) + 220f, 0.9f, F.Low, 0.28f);
-				g.Lowpass(4500f);
+				g.Warble(0.06f, 0.25f, 185f, 676f, 19f, 0.16f, t => MathF.Min(t / 0.02f, 1f) * MathF.Exp(-t / 0.1f), 0.18f);   // 原声 #44
+				g.Echo(0.13f, 0.32f);
+				g.Lowpass(7500f);
 				return g.B;
-			case Snd.Weak:             // WEAK!：短促有力的"咚—锵"：低频重击 + 中频金属音（两个泛音、很短）+ 混响
+			case Snd.Weak:             // WEAK!：重击 + 快速上扬颤音 + 纯四度两音（带回声）
 				g = new Gen(1.0f, 7);
 				g.Snap(0f, 0.6f);
-				g.Tone(0, 0.3f, t => 120f * MathF.Exp(-t / 0.04f) + 52f, Atk(0.001f, 0.08f), 0.7f);
-				g.Noise(0, 0.08f, Atk(0.0003f, 0.02f), K(1700), 0.35f, F.Band, 0.5f);
-				g.Bell(0.005f, 880f, 0.14f, 0.14f, partCount: 3);
-				g.Bell(0.02f, 1318.5f, 0.12f, 0.08f, partCount: 2);
-				g.Noise(0, 0.9f, Atk(0.02f, 0.3f), t => 2000f * MathF.Exp(-t / 0.35f) + 250f, 0.9f, F.Low, 0.2f);
-				g.Lowpass(5000f);
+				g.Tone(0, 0.3f, t => 125f * MathF.Exp(-t / 0.04f) + 52f, Atk(0.001f, 0.08f), 0.28f);
+				g.Noise(0, 0.07f, Atk(0.0003f, 0.018f), K(1800), 0.5f, F.Band, 0.7f);
+				g.Warble(0, 0.18f, 300f, 1100f, 22f, 0.25f, t => MathF.Min(t / 0.01f, 1f) * MathF.Exp(-t / 0.08f), 0.35f);
+				g.Arp(0.05f, 0.08f, new[] { 1046.5f, 1396.9f }, 0.09f, 0.28f);                                             // C6 → F6
+				g.Echo(0.11f, 0.33f);
+				g.Lowpass(8000f);
 				return g.B;
-			case Snd.ThanatosSlash:    // 塔纳托斯斩击：低沉风啸 → 巨响 + 低沉的金属刮擦 + 不协和低音 → 长混响
+			case Snd.ThanatosSlash:    // 塔纳托斯斩击：涌起的低沉风声 → 巨响 + 金属刮擦 + 低沉下坠颤音 + 不协和低音 → 长回声
 				g = new Gen(2.0f, 8);
-				g.Noise(0, 0.18f, t => MathF.Pow(t / 0.18f, 2f), t => 200f + 1400f * (t / 0.18f), 0.5f, F.Band, 0.6f);
+				g.Noise(0, 0.2f, t => MathF.Pow(t / 0.2f, 1.6f), t => 200f + 1600f * (t / 0.2f), 0.6f, F.Band, 0.6f);
+				g.Noise(0, 0.2f, t => t / 0.2f, K(140), 1f, F.Low, 0.3f);
 				g.Snap(0.18f, 0.9f);
-				g.Noise(0.18f, 0.08f, Atk(0.0002f, 0.02f), K(1100), 0.6f, F.Band, 0.7f);
-				g.Noise(0.18f, 0.7f, Atk(0.001f, 0.18f), K(110), 1f, F.Low, 1.2f);
-				g.Tone(0.18f, 1.0f, t => 70f * MathF.Exp(-t / 0.09f) + 28f, Atk(0.002f, 0.28f), 0.9f);
-				g.Noise(0.18f, 0.55f, Atk(0.003f, 0.14f), t => 1800f - 900f * MathF.Min(t / 0.45f, 1f), 0.2f, F.Band, 0.2f);
-				g.Pad(0.18f, 1.7f, 82.4f, Atk(0.03f, 0.65f), 0.12f, harmonics: 4);
-				g.Pad(0.18f, 1.7f, 116.5f, Atk(0.04f, 0.6f), 0.09f, harmonics: 4);
-				g.Pings(0.2f, 0.5f, 14, 900f, 2600f, 0.06f);
-				g.Noise(0.18f, 1.8f, Atk(0.02f, 0.6f), t => 1500f * MathF.Exp(-t / 0.5f) + 200f, 0.9f, F.Low, 0.32f);
-				g.Lowpass(2600f);
+				g.Noise(0.18f, 0.08f, Atk(0.0002f, 0.02f), K(1300), 0.6f, F.Band, 0.95f);
+				g.Noise(0.18f, 0.7f, Atk(0.001f, 0.18f), K(110), 1f, F.Low, 0.3f);
+				g.Tone(0.18f, 1.0f, t => 70f * MathF.Exp(-t / 0.09f) + 28f, Atk(0.002f, 0.28f), 0.24f);
+				g.Noise(0.18f, 0.5f, Atk(0.003f, 0.13f), t => 2400f - 1200f * MathF.Min(t / 0.45f, 1f), 0.2f, F.Band, 0.42f);
+				g.Warble(0.2f, 1.0f, 300f, 95f, 14f, 0.6f, t => MathF.Min(t / 0.03f, 1f) * MathF.Exp(-t / 0.35f), 0.18f);
+				g.Pad(0.18f, 1.7f, 82.4f, Atk(0.03f, 0.6f), 0.06f, harmonics: 4);
+				g.Pad(0.18f, 1.7f, 116.5f, Atk(0.04f, 0.55f), 0.05f, harmonics: 4);
+				g.Echo(0.17f, 0.3f);
+				g.Lowpass(6000f);
 				return g.B;
 		}
 		return new float[1];
