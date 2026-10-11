@@ -75,9 +75,9 @@ public static class Motifs
 			float a = Mathf.Lerp(0f, Mathf.Min(b, 1.04f) - 0.02f, outU);
 			float swell = 1f + 0.18f * Mathf.Sin(flash * Mathf.Pi) + 0.1f * outU;
 			float thin = 1f - 0.55f * outU;
-			glow.Polygon = Crescent(a, b, thick * 1.0f, swell * thin);
-			band.Polygon = Crescent(a, b, thick * 0.45f, swell * thin);
-			core.Polygon = Crescent(a, b, thick * 0.13f, (1f + 0.8f * Mathf.Sin(flash * Mathf.Pi)) * thin);
+			Fx.Reshape(glow, Crescent(a, b, thick * 1.0f, swell * thin));
+			Fx.Reshape(band, Crescent(a, b, thick * 0.45f, swell * thin));
+			Fx.Reshape(core, Crescent(a, b, thick * 0.13f, (1f + 0.8f * Mathf.Sin(flash * Mathf.Pi)) * thin));
 			core.Modulate = new Color(1f, 1f, 1f, 1f);
 			glow.Modulate = new Color(1f + Mathf.Sin(flash * Mathf.Pi), 1f + Mathf.Sin(flash * Mathf.Pi), 1f + Mathf.Sin(flash * Mathf.Pi), 1f);
 			head.Position = Point(Mathf.Min(b, 1f), -thick * 0.2f);

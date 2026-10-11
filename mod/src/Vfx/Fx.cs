@@ -63,29 +63,53 @@ public static class Fx
 		return tween;
 	}
 
+	// Godot 4 的 Polygon2D 边缘不做抗锯齿（Antialiased 属性不生效，MSAA 也不一定开）：
+	// 用着色器按"到多边形边的距离"把最外 1 个像素淡出 —— 对任意形状（凹的也行）都成立，不会出额外的线或条纹。
+	private const int AaMax = 128;
+	private const string AaBody = @"
+uniform vec2 pts[128];
+uniform int n = 0;
+varying vec2 lp;
+void vertex() { lp = VERTEX; }
+void fragment() {
+	COLOR *= texture(TEXTURE, UV);
+	if (n >= 3) {
+		float d = 1e9;
+		for (int i = 0; i < 128; i++) {
+			if (i >= n) { break; }
+			vec2 a = pts[i];
+			vec2 ab = pts[(i + 1) % n] - a;
+			float t = clamp(dot(lp - a, ab) / max(dot(ab, ab), 1e-6), 0.0, 1.0);
+			d = min(d, length(lp - a - ab * t));
+		}
+		float px = max(length(fwidth(lp)) * 0.7071, 1e-4);
+		COLOR.a *= clamp(d / px, 0.0, 1.0);
+	}
+}";
+	private static Shader? _aa, _aaAdd;
+	private static Shader AaShader => _aa ??= new Shader { Code = "shader_type canvas_item;\n" + AaBody };
+	private static Shader AaAddShader => _aaAdd ??= new Shader { Code = "shader_type canvas_item;\nrender_mode blend_add;\n" + AaBody };
+
 	public static Polygon2D Poly(Node parent, Vector2[] points, Color color, bool additive = false)
 	{
-		Polygon2D poly = new Polygon2D { Polygon = points, Color = color };
-		if (additive)
-		{
-			poly.Material = Additive;
-		}
+		Polygon2D poly = new Polygon2D { Color = color, Material = new ShaderMaterial { Shader = additive ? AaAddShader : AaShader } };
+		Reshape(poly, points);
 		parent.AddChild(poly);
-		// Godot 4 的 Polygon2D 不做边缘抗锯齿（Antialiased 属性不生效）：实心色块沿边描一圈同色、抗锯齿的细线盖住锯齿。
-		// 半透明的块不描（细线和块重叠处会更深，反而出一圈边）；加色的也不描。
-		if (!additive && color.A >= 0.6f && points.Length >= 3)
-		{
-			poly.AddChild(new Line2D
-			{
-				Points = points,
-				Closed = true,
-				Width = 1.5f,
-				DefaultColor = color,
-				Antialiased = true,
-				JointMode = Line2D.LineJointMode.Sharp,
-			});
-		}
 		return poly;
+	}
+
+	/// <summary>改多边形形状（同步抗锯齿着色器里的顶点）。Fx.Poly 创建的多边形改形状都要走这里，不要直接赋 Polygon。</summary>
+	public static void Reshape(Polygon2D poly, Vector2[] points)
+	{
+		poly.Polygon = points;
+		if (poly.Material is ShaderMaterial m)
+		{
+			int n = points.Length <= AaMax ? points.Length : 0;            // 顶点太多就不做抗锯齿
+			var arr = new Vector2[AaMax];
+			System.Array.Copy(points, arr, System.Math.Min(points.Length, AaMax));
+			m.SetShaderParameter("pts", arr);
+			m.SetShaderParameter("n", n);
+		}
 	}
 
 	public static Line2D Line(Node parent, Vector2[] points, Color color, float width, bool closed = false, bool additive = true)

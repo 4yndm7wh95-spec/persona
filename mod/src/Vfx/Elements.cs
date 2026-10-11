@@ -83,8 +83,8 @@ public static class Elements
 			float tail = Ease.InCubic(t);
 			float from = Mathf.Lerp(a0, a1, tail);
 			float to = Mathf.Lerp(a0, a1, head);
-			glow.Polygon = Crescent(r, r * 0.16f * (heavy ? 1.6f : 1f), from, to, a0, a1);
-			core.Polygon = Crescent(r * 0.985f, r * 0.05f, from, to, a0, a1);
+			Fx.Reshape(glow, Crescent(r, r * 0.16f * (heavy ? 1.6f : 1f), from, to, a0, a1));
+			Fx.Reshape(core, Crescent(r * 0.985f, r * 0.05f, from, to, a0, a1));
 			root.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(t));
 		});
 		P3Fx.Flash(layer, at, Pal.Ice, 220f * scale, 0.16f, delay: 0.03f);

@@ -38,6 +38,9 @@ PLAYLISTS = {
     "summon": [("idle_loop", 0.6), ("aim_in", None), ("aim_loop", 0.5), ("sovereign_from_aim", None), ("idle_loop", 0.8)],
     "cast": [("idle_loop", 0.5), ("attack_sovereign", None), ("idle_loop", 0.6)],
     "light": [("idle_loop", 0.5), ("cast_light", None), ("idle_loop", 2.4)],
+    "sword": [("idle_loop", 0.5), ("sword_in", None), ("ready_sword_loop", 0.6), ("attack_from_ready", None), ("idle_loop", 0.5),
+              ("attack", None), ("idle_loop", 0.5)],
+    "hurt": [("idle_loop", 0.4), ("hurt", None), ("idle_loop", 0.6), ("die", None)],
 }
 
 
@@ -52,8 +55,8 @@ def main(out_dir, which):
             dur = length or Skeleton_duration(data["animations"][anim])
             n = int(round(dur * FPS))
             for k in range(n):
-                im = sk.render(anim, k / FPS, canvas=(820, 1600), origin=(330, 1540), bg=(23, 31, 56, 255)).convert("RGB")
-                frames.append(im.resize((410, 800), Image.LANCZOS))
+                im = sk.render(anim, k / FPS, canvas=(1400, 1600), origin=(560, 1540), bg=(23, 31, 56, 255)).convert("RGB")
+                frames.append(im.resize((700, 800), Image.LANCZOS))
         d = out_dir / f"v7_{name}"
         d.mkdir(exist_ok=True)
         for i, f in enumerate(frames):

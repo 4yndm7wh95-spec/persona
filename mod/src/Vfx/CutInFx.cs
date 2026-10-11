@@ -29,6 +29,7 @@ public static class CutInFx
 		public Polygon2D Face = null!;
 		public ColorRect Dim = null!;
 		public Node2D Ui = null!;
+		public Node2D? Ka;
 		public Node2D Decor = null!;
 		public Texture2D Eyes = null!;
 		public Vector2 Screen;
@@ -193,13 +194,15 @@ public static class CutInFx
 		tag.AddChild(sub);
 		Typo.Text(sub, "PERSONA  \u25B8  " + persona, Typo.Latin, 26, Pal.Cyan, Vector2.Zero, outline: 4, outlineColor: new Color(0.02f, 0.04f, 0.12f));
 		// 拟声字"カチッ"（扣扳机的咔哒声）：离线生成的空心双描边设计字（build_ui_assets.cutin_ka），不是系统字体
-		Node2D ka = new() { Position = new Vector2(size.X * 0.76f, st.Cy - st.HalfH * 0.1f), Rotation = -0.06f };
+		// 位置：横幅左下角（技能名在左上；横幅中间到右边是眼睛 / 人物的脸，不能挡），一半压在横幅下沿外
+		Vector2 kaAt = new(size.X * 0.2f, st.Cy + st.HalfH * 0.78f);
+		Node2D ka = new() { Position = kaAt, Rotation = -0.06f };
+		st.Ka = ka;
 		st.Ui.AddChild(ka);
 		if (ResourceLoader.Load(KaPath) is Texture2D kaTex)
 		{
-			ka.AddChild(new Sprite2D { Texture = kaTex, Scale = Vector2.One * (st.HalfH * 1.7f / kaTex.GetHeight()) });
+			ka.AddChild(new Sprite2D { Texture = kaTex, Scale = Vector2.One * (st.HalfH * 1.05f / kaTex.GetHeight()) });
 		}
-		ka.Scale = Vector2.One * 2.2f;
 		ka.Modulate = new Color(1f, 1f, 1f, 0f);
 
 		// P3R 的节奏：横幅"啪"地张开（0.2s，略过冲再落定）→ 长停顿慢推（眼神）→ 碎裂
@@ -214,9 +217,11 @@ public static class CutInFx
 			st.Face.UV = BandUv(st);                          // 横向缓慢平移（碎片用同一个映射 ToUv，严丝合缝）
 			st.Dim.Color = new Color(0.01f, 0.03f, 0.1f, 0.6f * e);
 			tag.Position = new Vector2(Mathf.Lerp(-420f, 70f, Ease.OutQuint(Mathf.Clamp((time - 0.04f) / 0.26f, 0f, 1f))), size.Y * 0.08f);
-			float k = Mathf.Clamp((time - 0.1f) / 0.16f, 0f, 1f);
-			ka.Scale = Vector2.One * Mathf.Lerp(2.2f, 1f, Ease.OutBack(k));
-			ka.Modulate = new Color(1f, 1f, 1f, k);
+			// カチッ：横幅张开后从左侧斜着滑入（0.32s 缓出，不弹跳），停留时继续向右缓慢漂移
+			float k = Ease.OutQuint(Mathf.Clamp((time - 0.12f) / 0.32f, 0f, 1f));
+			ka.Position = kaAt + new Vector2(-70f * (1f - k) + 14f * time, 10f * (1f - k));
+			ka.Scale = Vector2.One * Mathf.Lerp(0.92f, 1f, k);
+			ka.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((time - 0.12f) / 0.18f, 0f, 1f));
 		});
 		P3Fx.Flash(back, new Vector2(size.X * 0.5f, st.Cy), Pal.Cyan, size.X * 0.5f, 0.18f);
 		// 兜底：没等到扣扳机就自己碎
@@ -260,7 +265,17 @@ public static class CutInFx
 		if (GodotObject.IsInstanceValid(st.Ui))
 		{
 			Node2D ui = st.Ui;
-			Vector2 p0 = ui.Position;                       // 层的本地原点不一定是 (0,0)（选人界面的背景节点有偏移），只能相对原位置移动
+			Vector2 p0 = ui.Position;
+			if (st.Ka is Node2D ka && GodotObject.IsInstanceValid(ka))
+			{
+				Vector2 k0 = ka.Position;                  // カチッ：随碎裂向右上方飘出、放大淡出（和其他文字的退场分开，不是一起往左收）
+				Fx.Animate(ka, 0.35, t =>
+				{
+					float e = Ease.OutCubic(t);
+					ka.Position = k0 + new Vector2(70f * e + 40f, -18f * e);
+					ka.Scale = Vector2.One * (1f + 0.12f * e);
+				});
+			}                       // 层的本地原点不一定是 (0,0)（选人界面的背景节点有偏移），只能相对原位置移动
 			Fx.Animate(ui, 0.3, t =>
 			{
 				ui.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InOutCubic(t));

@@ -149,9 +149,9 @@ public static class WeaponFx
 				}
 				return poly;
 			}
-			halo.Polygon = Band(0.95f, 26f);
-			ribbon.Polygon = Band(0.7f, 6f);
-			core.Polygon = Band(0.16f, 0f);
+			Fx.Reshape(halo, Band(0.95f, 26f));
+			Fx.Reshape(ribbon, Band(0.7f, 6f));
+			Fx.Reshape(core, Band(0.16f, 0f));
 			root.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(Mathf.Clamp((time - 0.3f) / 0.25f, 0f, 1f)));
 		});
 		Fx.FreeAfter(root, total + 0.05);

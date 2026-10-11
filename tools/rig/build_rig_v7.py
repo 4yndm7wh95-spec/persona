@@ -39,7 +39,12 @@ PAGE = 2048
 FPS = 30
 
 V7_ANIMS = ["idle_loop", "relaxed_loop", "low_health_loop", "aim_in", "aim_loop", "aim_out",
-            "cast", "cast_from_aim", "attack_sovereign", "sovereign_from_aim", "cast_light"]
+            "cast", "cast_from_aim", "attack_sovereign", "sovereign_from_aim", "cast_light",
+            "sword_in", "ready_sword_loop", "sword_out", "attack", "attack_from_ready", "hurt", "die"]
+SWORD_POSES = ["sword_rest", "sword_ready", "sword_windup", "sword_slash"]
+# 剑：拳头中心 / 剑尖（原图像素，自动检测剑身 + 握剑手，见提交记录里的标定图）
+SWORD = {"sword_rest": ((358.2, 778.4), (807.1, 1263.9)), "sword_ready": ((234.6, 742.9), (821.2, 1378.1)),
+         "sword_windup": ((479.9, 132.5), (13.1, 424.6)), "sword_slash": ((637.3, 843.7), (1012.5, 1327.4))}
 CONTRACT = ["hand", "grip", "muzzle", "evoker_tip"]
 EVOKER_POSES = ["focus_mid", "focus", "awaken"]
 
@@ -49,14 +54,22 @@ EVOKER_POSES = ["focus_mid", "focus", "awaken"]
 # 用剪影叠图比较肩宽 / 躯干宽度，0.95 时与待机最吻合（头顶偏低是低头姿势本身），取 0.95。
 # 以脚底中点 (553, 1515) 为基准缩放，脚仍踩在原地。水平：抬手 / 余势 整体右移 83px（头和鞋的特征点一致给出）；
 # 觉醒右移 5px（躯干基本对齐；它的站姿本来就更开）
+#
+# 持剑 / 受击 / 死亡：头部特征点配准给出的比例 × 召唤器那组验证过的修正系数（0.95 / 0.891 = 1.066），
+# 水平按躯干中心对齐（持剑弓步、斩击前冲、受击后仰的位移保留一部分，切回待机时躯干最多差 ~25px）。
+# 第三项（可选）= 该图自己的基准点（缩放中心，映射到待机脚底中点）：跪地图以躯干 / 膝盖底，倒地横版图以腰 / 身体最低点。
 POSE_T = {"idle": (1.0, 0.0), "focus_mid": (0.95, 0.0), "focus": (0.95, 0.0), "awaken": (0.95, 5.0),
-          "cast_mid": (1.0, 83.0), "cast": (1.0, 83.0)}
+          "cast_mid": (1.0, 83.0), "cast": (1.0, 83.0),
+          "sword_rest": (1.0, 0.0), "sword_ready": (0.915, 10.0), "sword_windup": (0.95, -4.0), "sword_slash": (0.935, -25.0),
+          "hurt": (1.0, 25.0), "die_kneel": (0.8, 0.0, (631.0, 1350.0)), "die_down": (1.06, 0.0, (777.0, 952.0))}
 
 
 def U(p, pose=None):
-    s, dx = POSE_T.get(pose, (1.0, 0.0)) if pose else (1.0, 0.0)
-    x = 553.0 + (p[0] - 553.0) * s + dx
-    y = 1515.0 + (p[1] - 1515.0) * s
+    t = POSE_T.get(pose, (1.0, 0.0)) if pose else (1.0, 0.0)
+    s, dx = t[0], t[1]
+    px, py = t[2] if len(t) > 2 else (553.0, 1515.0)
+    x = 553.0 + (p[0] - px) * s + dx
+    y = 1515.0 + (p[1] - py) * s
     return ((x - 553.0) * S + 60.6, (1515.0 - y) * S)
 
 
@@ -85,6 +98,13 @@ def sources():
         "v7_awaken": load(comp.POSES["awaken"][0]),
         "v7_cast_mid": load(T / "cast_mid_a.png"),
         "v7_cast": load(T / "cast_a.png"),
+        "v7_sword_rest": load(T / "sword_rest_a.png"),
+        "v7_sword_ready": load(T / "sword_ready_a.png"),
+        "v7_sword_windup": load(T / "sword_windup_a.png"),
+        "v7_sword_slash": load(T / "sword_slash_b.png"),
+        "v7_hurt": load(T / "hurt_b.png"),
+        "v7_die_kneel": load(T / "die_kneel_a.png"),
+        "v7_die_down": load(T / "die_down_wide_a.png"),
         "v7_awaken_eyeglow": load(C / "awaken_eyeglow.png"),
     }
     for p in EVOKER_POSES:
@@ -242,6 +262,12 @@ class Builder:
         }
         for p in EVOKER_POSES:
             self.hand[p] = self.grip[p]
+        self.tip = {}
+        for p, (fist, tip) in SWORD.items():
+            self.hand[p], self.tip[p] = fist, tip
+        self.hand["hurt"] = (553.0, 800.0)
+        self.hand["die_kneel"] = (560.0, 1100.0)
+        self.hand["die_down"] = (900.0, 800.0)
 
     @staticmethod
     def duration(a):
@@ -267,7 +293,7 @@ class Builder:
         for p in EVOKER_POSES:
             gx, gy = U(self.grip[p], p)
             d["bones"].append({"name": f"v7_ev_{p}", "parent": "v7", "x": round(gx, 2), "y": round(gy, 2)})
-        slots = [("v7_ghost", "v7", None), ("v7_body", "v7", None), ("v7_blink", "v7", None)]
+        slots = [("v7_ghost", "v7", None), ("v7_body", "v7", None), ("v7_blink", "v7", None), ("v7_old", "v7", None)]
         slots += [(f"v7_ev_{p}", f"v7_ev_{p}", None) for p in EVOKER_POSES]
         slots += [("v7_hand", "v7", None), ("v7_flash", "v7", "additive"), ("v7_glow", "v7", "additive"),
                   ("v7_tip", "v7_ev_awaken", "additive")]
@@ -285,8 +311,8 @@ class Builder:
             self.geom[name] = box
             regions[name] = shrink(tr, TEX)
         att = d["skins"][0]["attachments"]
-        poses = ["idle", "focus_mid", "focus", "awaken", "cast_mid", "cast"]
-        for slot in ("v7_ghost", "v7_body", "v7_flash"):
+        poses = ["idle", "focus_mid", "focus", "awaken", "cast_mid", "cast"] + SWORD_POSES + ["hurt", "die_kneel", "die_down"]
+        for slot in ("v7_ghost", "v7_body", "v7_old", "v7_flash"):
             att[slot] = {f"v7_{p}": self.region(f"v7_{p}") for p in poses}
         att["v7_blink"] = {"v7_idle_blink": self.region("v7_idle_blink")}
         att["v7_hand"] = {f"v7_{p}_hand": self.region(f"v7_{p}_hand") for p in EVOKER_POSES}
@@ -326,19 +352,25 @@ class Builder:
             a.att("v7_tip", t, None)
             hx, hy = U(self.hand[p], p)
             tx, ty = U(self.muzzle[p], p) if p in EVOKER_POSES else (hx, hy)
-            for b, (x, y) in (("hand", (hx, hy)), ("grip", (hx, hy)), ("muzzle", (tx, ty)), ("evoker_tip", (tx, ty))):
+            sx, sy = U(self.tip[p], p) if p in self.tip else (hx, hy)
+            for b, (x, y) in (("hand", (hx, hy)), ("grip", (hx, hy)), ("muzzle", (tx, ty)), ("evoker_tip", (tx, ty)), ("sword_tip", (sx, sy))):
                 a.tr(b, t, x, y, stepped=True)
             if before is not None and before != p:
                 f = 1.0 / FPS
+                fade = 0.09 if p not in ("sword_slash", "awaken") else 0.05     # 出招 / 扣下：溶解更短，保持力度
+                # 溶解：新姿势在下面已经完全显示，旧姿势盖在上面从不透明淡到透明 —— 60 帧里每帧都在变，不会一下跳过去
+                a.att("v7_old", t, f"v7_{before}")
+                a.rgba("v7_old", t, c8(1, 1, 1, 1))
+                a.rgba("v7_old", t + fade, c8(1, 1, 1, 0))
+                a.att("v7_old", t + fade, None)
                 a.att("v7_ghost", t, f"v7_{before}")
-                a.rgba("v7_ghost", t, c8(0.3, 0.7, 1.0, 0.38))
-                a.rgba("v7_ghost", t + 0.18, c8(0.3, 0.7, 1.0, 0.0))
-                a.att("v7_ghost", t + 0.18, None)
+                a.rgba("v7_ghost", t, c8(0.3, 0.7, 1.0, 0.3))
+                a.rgba("v7_ghost", t + 0.2, c8(0.3, 0.7, 1.0, 0.0))
+                a.att("v7_ghost", t + 0.2, None)
                 a.att("v7_flash", t, f"v7_{p}")
-                a.rgba("v7_flash", t, c8(0.35, 0.85, 1.0, 0.3), stepped=True)
-                a.rgba("v7_flash", t + f, c8(0.8, 0.95, 1.0, 0.1), stepped=True)
-                a.rgba("v7_flash", t + 2 * f, c8(1, 1, 1, 0.0), stepped=True)
-                a.att("v7_flash", t + 2 * f, None)
+                a.rgba("v7_flash", t, c8(0.35, 0.85, 1.0, 0.18))
+                a.rgba("v7_flash", t + 3 * f, c8(0.8, 0.95, 1.0, 0.0))
+                a.att("v7_flash", t + 3 * f, None)
 
     def fire(self, a, T, hold):
         """觉醒（扣下召唤器）那一刻的附加动作；hold：觉醒姿势停留多久（之后蓝光随换图消失）。"""
@@ -414,6 +446,41 @@ class Builder:
         a = Anim(d["cast_light"])
         self.sequence(a, [(0, "cast_mid"), (0.12, "cast"), (0.6, "cast_mid"), (0.74, "idle")], prev="idle")
         A["cast_light"] = a
+
+        # ── 持剑 ──
+        a = Anim(d["sword_in"])
+        self.sequence(a, [(0, "sword_rest"), (0.14, "sword_ready")], prev="idle")
+        A["sword_in"] = a
+
+        a = Anim(d["ready_sword_loop"])
+        self.sequence(a, [(0, "sword_ready")])
+        self.breathe(a, d["ready_sword_loop"], amp=-1.4)
+        A["ready_sword_loop"] = a
+
+        a = Anim(d["sword_out"])
+        self.sequence(a, [(0, "sword_ready"), (0.16, "sword_rest"), (0.34, "idle")])
+        A["sword_out"] = a
+
+        def strike(name, prev, t_slash, t_rest, t_idle):
+            a = Anim(d[name])
+            self.sequence(a, [(0, "sword_windup"), (t_slash, "sword_slash"), (t_rest, "sword_rest"), (t_idle, "idle")], prev=prev)
+            # 斩下那一刻向前冲一下再收回（整图位移，不变形）
+            for dt, v in ((-0.001, 0.0), (0.0, 1.0), (0.05, 0.75), (0.14, 0.3), (0.26, 0.0)):
+                a.tr("v7", t_slash + dt, 18 * S * v, 0)
+            return a
+        A["attack"] = strike("attack", "idle", 0.08, 0.5, 0.72)
+        A["attack_from_ready"] = strike("attack_from_ready", "sword_ready", 0.065, 0.48, 0.7)
+
+        # ── 受击 / 死亡 ──
+        a = Anim(d["hurt"])
+        self.sequence(a, [(0, "hurt"), (0.42, "idle")], prev="idle")
+        for dt, v in ((0.0, 1.0), (0.06, 0.6), (0.16, 0.25), (0.3, 0.0)):
+            a.tr("v7", dt, -14 * S * v, 0)
+        A["hurt"] = a
+
+        a = Anim(d["die"])
+        self.sequence(a, [(0, "hurt"), (0.22, "die_kneel"), (0.85, "die_down")], prev="idle")
+        A["die"] = a
 
         for name, a in A.items():
             for e in self.v5_events.get(name, []):
