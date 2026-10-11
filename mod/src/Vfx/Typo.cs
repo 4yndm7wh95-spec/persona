@@ -42,8 +42,18 @@ public static class Typo
 	public static Font CjkHeavy => _cjkHeavy ??= new FontVariation
 	{
 		BaseFont = Cjk,
-		VariationEmbolden = 0.55f,
+		VariationEmbolden = 0.3f,
 		VariationTransform = new Transform2D(new Vector2(1f, 0f), new Vector2(-0.22f, 1f), Vector2.Zero),
+	};
+
+	private static FontVariation? _latinItalic;
+
+	/// <summary>P3R 数字风格：窄体粗斜体（血量 / 金币等数字）。</summary>
+	public static Font LatinItalic => _latinItalic ??= new FontVariation
+	{
+		BaseFont = Latin,
+		VariationEmbolden = 0.2f,
+		VariationTransform = new Transform2D(new Vector2(1f, 0f), new Vector2(-0.2f, 1f), Vector2.Zero),
 	};
 
 	/// <summary>
@@ -81,6 +91,89 @@ public static class Typo
 			label.RemoveThemeColorOverride("font_shadow_color");
 			label.RemoveThemeConstantOverride("outline_size");
 		};
+	}
+
+	/// <summary>
+	/// 主题覆盖（字体 / 颜色 / 常量），返回恢复回调：恢复成覆盖之前的值（原来就有覆盖的放回原值，没有的移除）。
+	/// 原版 MegaRichTextLabel 要求自带 normal_font 覆盖，所以不能简单地 Remove。
+	/// </summary>
+	public static System.Action Theme(Control c, Font? font = null, string fontKey = "font",
+		(string Key, Color Value)[]? colors = null, (string Key, int Value)[]? consts = null)
+	{
+		var undo = new System.Collections.Generic.List<System.Action>();
+		if (font != null)
+		{
+			bool had = c.HasThemeFontOverride(fontKey);
+			Font? old = had ? c.GetThemeFont(fontKey) : null;
+			c.AddThemeFontOverride(fontKey, font);
+			undo.Add(() => { if (had && old != null) c.AddThemeFontOverride(fontKey, old); else c.RemoveThemeFontOverride(fontKey); });
+		}
+		foreach ((string k, Color v) in colors ?? System.Array.Empty<(string, Color)>())
+		{
+			bool had = c.HasThemeColorOverride(k);
+			Color old = had ? c.GetThemeColor(k) : default;
+			c.AddThemeColorOverride(k, v);
+			undo.Add(() => { if (had) c.AddThemeColorOverride(k, old); else c.RemoveThemeColorOverride(k); });
+		}
+		foreach ((string k, int v) in consts ?? System.Array.Empty<(string, int)>())
+		{
+			bool had = c.HasThemeConstantOverride(k);
+			int old = had ? c.GetThemeConstant(k) : 0;
+			c.AddThemeConstantOverride(k, v);
+			undo.Add(() => { if (had) c.AddThemeConstantOverride(k, old); else c.RemoveThemeConstantOverride(k); });
+		}
+		return () =>
+		{
+			if (!GodotObject.IsInstanceValid(c)) return;
+			for (int i = undo.Count - 1; i >= 0; i--) undo[i]();
+		};
+	}
+
+	private static Shader? _gradShader;
+
+	/// <summary>逐行竖向渐变的文字材质（P3R 的字不用纯色）：每一行从 top 渐变到 bottom；line_h 是行距，y0 是第一行顶部（标签本地坐标）。</summary>
+	public static ShaderMaterial Gradient(Color top, Color bottom, float lineH, float y0 = 0f)
+	{
+		_gradShader ??= new Shader
+		{
+			Code = @"shader_type canvas_item;
+uniform vec4 top_color : source_color = vec4(1.0);
+uniform vec4 bottom_color : source_color = vec4(1.0);
+uniform float line_h = 32.0;
+uniform float y0 = 0.0;
+varying float ly;
+void vertex() { ly = VERTEX.y; }
+void fragment() {
+	vec4 c = texture(TEXTURE, UV) * COLOR;
+	float k = clamp(fract((ly - y0) / max(line_h, 1.0)) * 1.15, 0.0, 1.0);
+	c.rgb *= mix(top_color.rgb, bottom_color.rgb, k);
+	COLOR = c;
+}"
+		};
+		ShaderMaterial m = new() { Shader = _gradShader };
+		m.SetShaderParameter("top_color", top);
+		m.SetShaderParameter("bottom_color", bottom);
+		m.SetShaderParameter("line_h", lineH);
+		m.SetShaderParameter("y0", y0);
+		return m;
+	}
+
+	/// <summary>给标签挂渐变材质（字色先设成白，由材质上色），返回恢复回调。行高自动量。</summary>
+	public static System.Action ApplyGradient(Control label, Color top, Color bottom)
+	{
+		float lineH = 32f;
+		if (label is RichTextLabel rt && rt.GetLineCount() > 0)
+		{
+			lineH = rt.GetContentHeight() / (float)rt.GetLineCount();
+		}
+		else if (label is Label l)
+		{
+			lineH = l.GetLineHeight() + (l.LabelSettings?.LineSpacing ?? l.GetThemeConstant("line_spacing"));
+			if (l.GetLineCount() <= 1) lineH = l.Size.Y;
+		}
+		Material? old = label.Material;
+		label.Material = Gradient(top, bottom, lineH);
+		return () => { if (GodotObject.IsInstanceValid(label)) label.Material = old; };
 	}
 
 	public static Label Text(Node parent, string text, Font font, int size, Color color, Vector2 pos,
