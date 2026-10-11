@@ -7,7 +7,10 @@ using P3Makoto.Scenes;
 
 namespace P3Makoto.Patches;
 
-/// <summary>君王之刃：结城理锻造出的剑换成 P3 蓝。</summary>
+/// <summary>
+/// 君王之刃：结城理不显示环绕的大剑（v0.9.2 起由 Persona 代替：出牌时眼神切入 → 召唤器 → Thanatos 现身斩击，见 CutInFx / PersonaFx）。
+/// 整棵节点透明、悬停框不再接收鼠标（伤害数值在卡牌上照常显示）；仍保留换色，万一别处把它显示出来也是 P3 蓝。
+/// </summary>
 [HarmonyPatch(typeof(NSovereignBladeVfx), "_Ready")]
 public static class SovereignBladeReskinPatch
 {
@@ -18,6 +21,7 @@ public static class SovereignBladeReskinPatch
 			if (Makoto.Is(__instance.Card?.Owner))
 			{
 				BladeReskin.Apply(__instance);
+				BladeReskin.Hide(__instance);
 			}
 		});
 	}

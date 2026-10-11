@@ -69,16 +69,16 @@
 [OK] 锚点径向连续 cast/sword_tip: 单帧最大 0.0（≤160）
 [OK] 脚底漂移 attack_sovereign: 0.01px
 [OK] 锚点径向连续 attack_sovereign/hand: 单帧最大 44.6（≤80）
-[OK] 锚点径向连续 attack_sovereign/muzzle: 单帧最大 81.0（≤90）
+[OK] 锚点径向连续 attack_sovereign/muzzle: 单帧最大 75.1（≤90）
 [OK] 锚点径向连续 attack_sovereign/sword_tip: 单帧最大 0.0（≤160）
+[OK] 脚底漂移 sovereign_from_aim: 0.01px
+[OK] 锚点径向连续 sovereign_from_aim/hand: 单帧最大 44.6（≤80）
+[OK] 锚点径向连续 sovereign_from_aim/muzzle: 单帧最大 77.5（≤90）
+[OK] 锚点径向连续 sovereign_from_aim/sword_tip: 单帧最大 0.0（≤160）
 [OK] 脚底漂移 cast_from_aim: 0.01px
 [OK] 锚点径向连续 cast_from_aim/hand: 单帧最大 44.6（≤80）
 [OK] 锚点径向连续 cast_from_aim/muzzle: 单帧最大 75.1（≤90）
 [OK] 锚点径向连续 cast_from_aim/sword_tip: 单帧最大 0.0（≤160）
-[OK] 脚底漂移 sovereign_from_aim: 0.01px
-[OK] 锚点径向连续 sovereign_from_aim/hand: 单帧最大 44.6（≤80）
-[OK] 锚点径向连续 sovereign_from_aim/muzzle: 单帧最大 75.1（≤90）
-[OK] 锚点径向连续 sovereign_from_aim/sword_tip: 单帧最大 0.0（≤160）
 [OK] 脚底漂移 cast_light: 1.55px
 [OK] 锚点径向连续 cast_light/hand: 单帧最大 28.5（≤80）
 [OK] 锚点径向连续 cast_light/muzzle: 单帧最大 0.0（≤90）

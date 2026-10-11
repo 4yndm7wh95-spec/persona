@@ -22,7 +22,7 @@ public static class PersonaFx
 {
 	private const string Thanatos = "res://p3makoto/persona/thanatos_skel_data.tres";
 	private const float FigureHeight = 1440f;          // 立绘在骨骼单位下的高度（原图像素）
-	public const float SovereignWait = 0.62f;          // 君王之刃：出牌 → 伤害结算（普通速度）
+	public const float SovereignWait = 0.92f;          // 君王之刃：出牌 → 伤害结算（普通速度）
 	private const float SlashInAttack = 0.18f;         // attack 动画里 slash 事件的时刻
 
 	/// <summary>当前速度设置下，出牌到伤害结算的秒数（与 CreatureCmd.TriggerAnim 的等待规则一致）。</summary>
@@ -33,7 +33,8 @@ public static class PersonaFx
 		_ => SovereignWait,
 	};
 
-	public static void SummonThanatos(NCreature caster, NCreature? target)
+	/// <summary>elapsed：从出牌到现在（扣扳机那一刻）已经过去的秒数，用来对齐伤害结算时刻。</summary>
+	public static void SummonThanatos(NCreature caster, NCreature? target, float elapsed = 0f)
 	{
 		Control? back = Makoto.FxLayer(back: true);
 		Control? front = Makoto.FxLayer();
@@ -69,7 +70,7 @@ public static class PersonaFx
 		Fx.Sparks(motes, Pal.DarkHour, 60, 160f, 520f, 0.8f, gravity: -80f);
 		Fx.FreeAfter(motes, 1.2);
 
-		float attackAt = Mathf.Max(DamageDelay() - SlashInAttack, 0.05f);
+		float attackAt = Mathf.Max(DamageDelay() - SlashInAttack - elapsed, 0.05f);
 		Vector2 strikeAt = target != null && GodotObject.IsInstanceValid(target)
 			? target.VfxSpawnPosition + new Vector2(-height * 0.42f, -height * 0.32f)
 			: home + new Vector2(height * 0.6f, 0f);
@@ -113,8 +114,40 @@ public static class PersonaFx
 		return spine;
 	}
 
-	/// <summary>显形 → 悬浮待命 → attackAt 时开始攻击（接消散）。onSlash 在 slash 事件触发。</summary>
-	private static void Play(Node2D? spine, float attackAt, System.Action? onSlash, int triesLeft = 20)
+	/// <summary>不攻击的召唤牌：召唤器碎裂后 Persona 在结城理身后显形（光柱 + 水波 + 闪光），悬浮一拍后消散。</summary>
+	public static void Apparition(NCreature caster, Color tint)
+	{
+		Control? back = Makoto.FxLayer(back: true);
+		Control? front = Makoto.FxLayer();
+		if (back == null || front == null || ResourceLoader.Load(Thanatos) is not Resource data)
+		{
+			return;
+		}
+		Vector2 feet = Makoto.Feet(caster);
+		Vector2 center = Makoto.Center(caster);
+		float height = Mathf.Max(260f, (feet.Y - center.Y) * 2.1f) * 1.6f;
+		Vector2 home = new(center.X - height * 0.22f, center.Y - height * 0.2f);
+		Node2D root = Fx.Root(back, home, "P3PersonaApparition");
+		root.Scale = Vector2.One * (height / FigureHeight);
+		Node2D? glow = Sprite(root, data, new Color(tint, 0.5f), additive: true);
+		if (glow != null)
+		{
+			glow.Scale = Vector2.One * 1.04f;
+		}
+		Node2D? body = Sprite(root, data, new Color(0.8f, 0.88f, 1f, 0.95f), additive: false);
+		P3Fx.LightPillar(back, new Vector2(home.X, feet.Y), tint, height * 0.45f, height * 1.1f, 0.6f);
+		P3Fx.Ripple(back, new Vector2(home.X, feet.Y), 900f, 0.8f, 0.03f, squashY: 0.35f);
+		P3Fx.Flash(front, home, tint, height * 0.8f, 0.3f);
+		Play(glow, 0.95f, null, attack: false);
+		Play(body, 0.95f, null, attack: false);
+		Vector2 from = home + new Vector2(0f, height * 0.06f);
+		Vector2 to = home - new Vector2(0f, height * 0.04f);
+		Fx.Animate(root, 1.5, t => root.GlobalPosition = from.Lerp(to, Ease.OutCubic(Mathf.Clamp(t * 1.5f / 0.4f, 0f, 1f))));
+		Fx.FreeAfter(root, 1.6);
+	}
+
+	/// <summary>显形 → 悬浮待命 → attackAt 时开始攻击（接消散）；attack = false 时到点直接消散。onSlash 在 slash 事件触发。</summary>
+	private static void Play(Node2D? spine, float attackAt, System.Action? onSlash, int triesLeft = 20, bool attack = true)
 	{
 		if (spine == null || !GodotObject.IsInstanceValid(spine))
 		{
@@ -125,7 +158,7 @@ public static class PersonaFx
 		{
 			if (triesLeft > 0)
 			{
-				Fx.After(spine, 0.016, "persona spine", () => Play(spine, attackAt - 0.016f, onSlash, triesLeft - 1));
+				Fx.After(spine, 0.016, "persona spine", () => Play(spine, attackAt - 0.016f, onSlash, triesLeft - 1, attack));
 			}
 			return;
 		}
@@ -135,8 +168,15 @@ public static class PersonaFx
 		{
 			if (sprite.TryGetAnimationState() is MegaAnimationState s)
 			{
-				s.SetAnimation("attack", loop: false);
-				s.AddAnimation("dismiss", 0f, loop: false);
+				if (attack)
+				{
+					s.SetAnimation("attack", loop: false);
+					s.AddAnimation("dismiss", 0f, loop: false);
+				}
+				else
+				{
+					s.SetAnimation("dismiss", loop: false);
+				}
 			}
 		});
 		if (onSlash != null)

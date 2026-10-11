@@ -1,4 +1,5 @@
 using Godot;
+using HarmonyLib;
 using P3Makoto.Vfx;
 
 namespace P3Makoto.Scenes;
@@ -15,6 +16,17 @@ public static class BladeReskin
 	private static ShaderMaterial Add => _add ??= new ShaderMaterial { Shader = Shaders.HueShiftAdd };
 
 	public static void Apply(Node root) => Walk(root);
+
+	/// <summary>整棵节点透明 + 悬停框不接收鼠标（原版代码只改子节点的 Visible / modulate，不碰根节点的 Modulate）。</summary>
+	public static void Hide(Node2D root)
+	{
+		root.Modulate = new Color(1f, 1f, 1f, 0f);
+		if (Traverse.Create(root).Field("_hitbox").GetValue() is Control hitbox)
+		{
+			hitbox.MouseFilter = Control.MouseFilterEnum.Ignore;
+			hitbox.FocusMode = Control.FocusModeEnum.None;
+		}
+	}
 
 	private static void Walk(Node n)
 	{

@@ -121,10 +121,10 @@ public static class SovereignTimingPatch
 		{
 			waitTime = Vfx.PersonaFx.SovereignWait;
 		}
-		// 召唤 Persona 的攻击大招改播召唤器开枪（0.22s 扣扳机）：伤害等到开枪之后
-		else if (triggerName == "Attack" && Makoto.Node(creature.Player) is NCreature node && Pose.HasEvokerAttack(node))
+		// 召唤牌改播"召唤开枪"（~0.42s 扣扳机 → 横幅碎裂、Persona 现身）：伤害 / 效果等到开枪、Persona 现身之后
+		else if (triggerName is "Attack" or "Cast" && Makoto.Node(creature.Player) is NCreature node && Pose.HasSummon(node))
 		{
-			waitTime = System.Math.Max(waitTime, 0.32f);
+			waitTime = System.Math.Max(waitTime, triggerName == "Attack" ? 0.6f : 0.5f);
 		}
 	}
 }

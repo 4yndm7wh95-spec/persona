@@ -573,14 +573,22 @@ def make_animations(rig, images):
     bake(rig, images, "cast", 0.95, seq(cast), cast_states, speed=2.0,
          events=[(0.0, "evoker_draw"), (0.27, "evoker_fire"), (0.82, "evoker_sheath")],
          eyes=[(0, 0), (0.17, 0), (0.24, 0.7), (0.27, 1.0), (0.42, 0.8), (0.64, 0)])
-    sov = [(0, IDLE), (0.06, PRESENT), (0.08, PRESENT), (0.16, EVOKER), (0.21, TENSE), (0.225, KICK), (0.3, KICK), (0.48, EVOKER), (0.58, LOWER), (0.83, IDLE)]
-    bake(rig, images, "attack_sovereign", 0.85, seq(sov), [(0, "hang"), (0.0, "present", 0.08), (0.08, "evoker", 0.12), (0.5, "present", 0.1), (0.72, "hang", 0.1)],
-         speed=2.2, events=[(0.0, "evoker_draw"), (0.22, "evoker_fire"), (0.74, "evoker_sheath")],
-         eyes=[(0, 0), (0.13, 0), (0.19, 0.7), (0.22, 1.0), (0.36, 0.8), (0.56, 0)])
+    # 召唤 Persona（君王之刃 + 所有召唤牌，v0.9.2）：照 P3R —— 召唤器抵住太阳穴停一拍（眼神切入横幅就在这时展开），
+    # 眼中蓝光逐渐变亮、身体微微收紧蓄力 → ~0.43s 扣扳机（横幅碎裂、Persona 现身）→ 后坐 → 慢慢放下。
+    # 普通（不召唤）的召唤器施法仍用 cast / cast_from_aim（0.27s / 0.06s 开枪），节奏不拖。
+    SQUEEZE = add(TENSE, B(head={"r": 2.5}, torso={"r": 1}, spine={"r": 0.5}, hip={"y": -4}, **ALL(-2.5)))
+    sov = [(0, IDLE), (0.06, PRESENT), (0.08, PRESENT), (0.16, EVOKER), (0.3, EVOKER), (0.36, TENSE, in_out_sine), (0.42, SQUEEZE, in_out_sine),
+           (0.435, KICK), (0.52, KICK), (0.7, EVOKER), (0.82, LOWER), (1.08, IDLE)]
+    bake(rig, images, "attack_sovereign", 1.1, seq(sov), [(0, "hang"), (0.0, "present", 0.08), (0.08, "evoker", 0.12), (0.72, "present", 0.1), (0.94, "hang", 0.1)],
+         speed=2.2, events=[(0.0, "evoker_draw"), (0.43, "evoker_fire"), (0.96, "evoker_sheath")],
+         eyes=[(0, 0), (0.13, 0), (0.2, 0.6), (0.4, 0.9), (0.43, 1.0), (0.6, 0.8), (0.8, 0)])
+    sov_aim = [(0, EVOKER), (0.14, EVOKER), (0.32, TENSE, in_out_sine), (0.39, SQUEEZE, in_out_sine), (0.402, KICK), (0.48, KICK),
+               (0.66, EVOKER), (0.78, LOWER), (1.04, IDLE)]
+    bake(rig, images, "sovereign_from_aim", 1.06, seq(sov_aim), [(0, "evoker"), (0.68, "present", 0.1), (0.9, "hang", 0.1)], speed=2.0,
+         events=[(0.4, "evoker_fire"), (0.9, "evoker_sheath")], eyes=[(0, 0.7), (0.3, 0.9), (0.4, 1.0), (0.56, 0.8), (0.76, 0)])
     from_aim = [(0, EVOKER), (0.05, TENSE), (0.062, KICK), (0.14, KICK), (0.3, EVOKER), (0.42, LOWER), (0.7, IDLE)]
-    for nm in ("cast_from_aim", "sovereign_from_aim"):
-        bake(rig, images, nm, 0.72, seq(from_aim), [(0, "evoker"), (0.32, "present", 0.1), (0.56, "hang", 0.1)], speed=2.0,
-             events=[(0.06, "evoker_fire"), (0.56, "evoker_sheath")], eyes=[(0, 0.7), (0.06, 1.0), (0.2, 0.8), (0.4, 0)])
+    bake(rig, images, "cast_from_aim", 0.72, seq(from_aim), [(0, "evoker"), (0.32, "present", 0.1), (0.56, "hang", 0.1)], speed=2.0,
+         events=[(0.06, "evoker_fire"), (0.56, "evoker_sheath")], eyes=[(0, 0.7), (0.06, 1.0), (0.2, 0.8), (0.4, 0)])
 
     # 不召唤的施法：抬起前臂、掌心向上托出（游戏端在手上方翻出一张塔罗牌），身体随之前倾、低头看手，再自然放下
     GATHER = add(IDLE, B(hip={"y": -7}, spine={"r": 1}, torso={"r": 2}, head={"r": -2},

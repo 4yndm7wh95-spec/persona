@@ -94,21 +94,23 @@ public static class Pose
 		}
 	}
 
-	private static readonly Dictionary<ulong, ulong> EvokerAttack = new();
+	// 召唤 Persona 的牌（君王之刃 + 所有召唤牌）：游戏要播的 attack / cast 统一换成"召唤开枪"动画
+	// （attack_sovereign / sovereign_from_aim：召唤器抵住太阳穴停一拍，~0.4s 扣扳机，配合 CutInFx 的眼神切入）
+	private static readonly Dictionary<ulong, ulong> Summon = new();
 
-	/// <summary>这次出牌是召唤 Persona 的攻击大招：接下来 1 秒内游戏请求的 attack 换成召唤器开枪（attack_sovereign）。</summary>
-	public static void MarkEvokerAttack(NCreature node)
+	/// <summary>这次出牌召唤 Persona：接下来 1 秒内游戏请求的 attack / cast 换成召唤开枪。</summary>
+	public static void MarkSummon(NCreature node)
 	{
 		if (node.Visuals.SpineBody?.TryGetAnimationState() is MegaAnimationState state)
 		{
-			EvokerAttack[state.BoundObject.GetInstanceId()] = Godot.Time.GetTicksMsec() + 1000;
+			Summon[state.BoundObject.GetInstanceId()] = Godot.Time.GetTicksMsec() + 1000;
 		}
 	}
 
-	/// <summary>这个角色是否有待执行的召唤器攻击（伤害等待据此延后到开枪之后，见 SovereignTimingPatch）。</summary>
-	public static bool HasEvokerAttack(NCreature node) =>
+	/// <summary>这个角色是否有待执行的召唤开枪（伤害 / 效果等待据此延后，见 SovereignTimingPatch）。</summary>
+	public static bool HasSummon(NCreature node) =>
 		node.Visuals.SpineBody?.TryGetAnimationState() is MegaAnimationState state
-		&& EvokerAttack.TryGetValue(state.BoundObject.GetInstanceId(), out ulong until) && Godot.Time.GetTicksMsec() <= until;
+		&& Summon.TryGetValue(state.BoundObject.GetInstanceId(), out ulong until) && Godot.Time.GetTicksMsec() <= until;
 
 	/// <summary>
 	/// 按这次出牌的标记改写动画：不召唤的施法 cast → cast_light；召唤 Persona 的攻击 attack → attack_sovereign
@@ -118,11 +120,11 @@ public static class Pose
 	{
 		ulong id = state.BoundObject.GetInstanceId();
 		ulong now = Godot.Time.GetTicksMsec();
-		if (requested == "cast" && LightCast.Remove(id, out ulong until))
+		if (requested == "cast" && !Summon.ContainsKey(id) && LightCast.Remove(id, out ulong until))
 		{
 			return now <= until ? "cast_light" : null;
 		}
-		if (requested == "attack" && EvokerAttack.Remove(id, out ulong until2) && now <= until2)
+		if (requested is "attack" or "cast" or "attack_sovereign" && Summon.Remove(id, out ulong until2) && now <= until2)
 		{
 			return FromHolding(state.GetCurrentAnimationName(), "attack_sovereign") ?? "attack_sovereign";
 		}

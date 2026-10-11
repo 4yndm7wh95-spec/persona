@@ -129,6 +129,32 @@ ASSETS = {
 }
 
 
+def cutin_eyes():
+    """召唤器切入的"眼神特写"横幅（P3R 技能切入风格）：从 art/v6/portrait_a.png 裁出露出的那只眼睛所在的横条，
+    放大到 1600×440，做青蓝双色调（亮度 → 深海军蓝 / 宝蓝 / 青 / 白 的渐变映射），透明处填深蓝→青渐变，
+    左右两端渐隐。游戏里再叠气泡、横向缓慢平移。"""
+    sys.path.insert(0, str(ROOT / "tools/rig"))
+    from build_rig import key_image
+    from PIL import ImageFilter
+    im = key_image(ROOT / "art/v6/portrait_a.png").crop((290, 182, 870, 342))
+    W, H = 1600, 440
+    im = im.resize((W, H), Image.LANCZOS).filter(ImageFilter.UnsharpMask(radius=3, percent=80, threshold=2))
+    a = np.asarray(im).astype(np.float32) / 255
+    rgb, alpha = a[..., :3], a[..., 3:4]
+    lum = (rgb * [0.3, 0.55, 0.15]).sum(-1)
+    lum = np.clip((lum - 0.05) / 0.85, 0, 1) ** 0.85
+    stops = np.array([[0.02, 0.05, 0.18], [0.07, 0.25, 0.75], [0.2, 0.78, 1.0], [0.85, 0.98, 1.0]])
+    pos = np.array([0.0, 0.35, 0.7, 1.0])
+    out = np.stack([np.interp(lum, pos, stops[:, c]) for c in range(3)], -1)
+    ys, xs = np.mgrid[0:H, 0:W].astype(np.float32)
+    ys, xs = ys / H, xs / W
+    bg = np.stack([0.03 + 0.12 * xs, 0.12 + 0.45 * xs * (1 - ys * 0.5), 0.35 + 0.55 * xs], -1)   # 深蓝 → 青
+    col = out * alpha + bg * (1 - alpha)
+    edge = np.clip(np.minimum(xs, 1 - xs) / 0.08, 0, 1)[..., None]
+    rgba = np.concatenate([col, edge], -1)
+    return Image.fromarray((np.clip(rgba, 0, 1) * 255).astype(np.uint8), "RGBA")
+
+
 def charselect_portrait():
     """选人界面特写（art/v6/portrait_a.png）：抠绿幕、裁边、缩到高 1400；底部 12% 渐隐（腿部被画框截断处不留硬边）。"""
     sys.path.insert(0, str(ROOT / "tools/rig"))
@@ -146,6 +172,10 @@ def charselect_portrait():
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
+    eyes = cutin_eyes()
+    eyes.save(OUT / "cutin_eyes.png")
+    write_texture(STAGE, "p3makoto/ui/cutin_eyes.png", eyes)
+    print("staged cut-in eyes", eyes.size)
     portrait_img = charselect_portrait()
     portrait_img.save(OUT / "charselect_portrait.png")
     write_texture(STAGE, "p3makoto/ui/charselect_portrait.png", portrait_img)

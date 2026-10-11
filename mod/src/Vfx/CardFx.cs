@@ -46,9 +46,28 @@ public static class CardFx
 		CardStyles.CardAnim anim = CardStyles.AnimFor(play.Card, play.Card.Type);
 		bool attack = anim == CardStyles.CardAnim.Sword;
 		bool summon = anim != CardStyles.CardAnim.None && CardStyles.Summons(play.Card);
-		if (summon && play.Card.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Attack && play.Card.GetType().Name != "SovereignBlade")
+		bool sovereign = play.Card.GetType().Name == "SovereignBlade";
+		bool cutIn = summon && CutInFx.Enabled;
+		if (summon)
 		{
-			Pose.MarkEvokerAttack(caster);                // 攻击大招：attack → 召唤器开枪
+			Pose.MarkSummon(caster);                      // attack / cast → "召唤开枪"（抵住太阳穴停一拍再扣扳机）
+		}
+		if (cutIn)
+		{
+			// P3R 技能切入：眼神特写横幅 → 扣扳机时碎裂 → Persona 现身（君王之刃：Thanatos 冲过去斩击；其他：显形后消散）
+			List<NCreature> cutTargets = Targets(play);
+			Color tint = play.Card.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Power ? Pal.DarkHour : Pal.Cyan;
+			CutInFx.Begin(caster, play.Card.Title, elapsed =>
+			{
+				if (sovereign)
+				{
+					PersonaFx.SummonThanatos(caster, cutTargets.Count > 0 ? cutTargets[0] : null, elapsed);
+				}
+				else
+				{
+					PersonaFx.Apparition(caster, tint);
+				}
+			});
 		}
 		if (anim == CardStyles.CardAnim.Gesture)
 		{
@@ -67,11 +86,11 @@ public static class CardFx
 		switch (opener)
 		{
 			case Opener.Evoker:
-				if (attack) P3Fx.EvokerBurst(front, head);
+				if (attack && !cutIn) P3Fx.EvokerBurst(front, head);
 				else QueueEvoker(caster, 1f, Pal.Cyan);
 				break;
 			case Opener.EvokerSmall:
-				if (attack) P3Fx.EvokerBurst(front, head, 0.7f);
+				if (attack && !cutIn) P3Fx.EvokerBurst(front, head, 0.7f);
 				else QueueEvoker(caster, 0.7f, Pal.Cyan);
 				break;
 			case Opener.Power:
@@ -84,7 +103,7 @@ public static class CardFx
 		}
 
 		Extra x = style.Extra;
-		if (x.HasFlag(Extra.SkewBand))
+		if (x.HasFlag(Extra.SkewBand) && !cutIn)            // 有眼神切入时不再叠蓝色色带
 		{
 			(string skill, string persona) = CardStyles.CaptionFor(play.Card);
 			Extras.SkewBand(front, new Extras.Caption(skill, persona, play.Card.Title));
@@ -134,7 +153,7 @@ public static class CardFx
 		List<NCreature> targets = Targets(play);
 		CardSigs.Play(play.Card, new CardSigs.Ctx(front, back, caster, head, Makoto.Center(caster), feet, targets));
 		// 君王之刃 = 召唤 Thanatos 挥剑（Persona 骨骼动画）
-		if (play.Card.GetType().Name == "SovereignBlade")
+		if (sovereign && !cutIn)
 		{
 			PersonaFx.SummonThanatos(caster, targets.Count > 0 ? targets[0] : null);
 		}
@@ -161,7 +180,7 @@ public static class CardFx
 	{
 		ulong id = caster.GetInstanceId();
 		PendingEvoker[id] = (power, tint);
-		Fx.After(caster, 0.5, "evoker fallback", () =>
+		Fx.After(caster, 0.7, "evoker fallback", () =>              // 召唤开枪 ~0.43s 扣扳机，留余量
 		{
 			if (PendingEvoker.Remove(id, out var p) && GodotObject.IsInstanceValid(caster) && Makoto.FxLayer() is Control front)
 			{
@@ -184,6 +203,7 @@ public static class CardFx
 		Vector2 grip = WeaponFx.Bone(caster, "grip") ?? WeaponFx.Bone(caster, "hand") ?? muzzle + Vector2.Right;
 		EvokerShot.Fire(front, muzzle, muzzle - grip, power, tint);
 		EvokerSound(power);
+		CutInFx.Fire(caster);                             // 有进行中的眼神切入：横幅碎裂、Persona 现身
 	}
 
 	/// <summary>召唤器枪声（本 mod 唯一的自制音效；其余都用游戏原版音效）。</summary>
