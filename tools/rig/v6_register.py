@@ -22,12 +22,17 @@ OUT = V9 / "reg"
 
 
 def key(path):
-    """绿幕抠图（同 tools/chroma_key.py）+ 去掉小碎块。返回 float32 RGBA（0~1）。"""
-    im = np.asarray(Image.open(path).convert("RGB")).astype(np.float32)
+    """抠图 + 去掉小碎块。图片自带透明通道（真透明底）就直接用；否则按绿幕抠（同 tools/chroma_key.py）。返回 float32 RGBA（0~1）。"""
+    src = Image.open(path)
+    im = np.asarray(src.convert("RGBA")).astype(np.float32)
     r, g, b = im[..., 0], im[..., 1], im[..., 2]
-    excess = g - np.maximum(r, b)
-    alpha = 1.0 - np.clip((excess - 40.0) / 90.0, 0.0, 1.0)
-    g2 = np.minimum(g, np.maximum(r, b) + 10.0)
+    if "A" in src.getbands() and im[..., 3].min() < 250:
+        alpha = im[..., 3] / 255
+        g2 = g
+    else:
+        excess = g - np.maximum(r, b)
+        alpha = 1.0 - np.clip((excess - 40.0) / 90.0, 0.0, 1.0)
+        g2 = np.minimum(g, np.maximum(r, b) + 10.0)
     solid = (alpha > 0.5).astype(np.uint8)
     n, lab, stats, _ = cv2.connectedComponentsWithStats(solid, 8)
     keep = np.zeros(n, bool)
