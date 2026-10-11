@@ -233,7 +233,7 @@ public static class CharSelectBg
 	{
 		// v0.9.2：选中时也播一次召唤切入 —— 眼神特写横幅（立绘仍在最前面）→ 0.55s 扣扳机 → 横幅碎裂 → 召唤器爆发、蓝蝶、枪声、眼中蓝光
 		Vector2 temple = root.GlobalPosition + PortraitPos + PortraitHead * PortraitScale;
-		CutInFx.BeginScreen(root, temple, "结城理", "ORPHEUS", _ =>
+		CutInFx.BeginScreen(root, temple, "結城 理", "ORPHEUS", _ =>
 		{
 			P3Fx.EvokerBurst(root, temple, 1.25f);
 			P3Fx.ButterflyBurst(root, temple, 7, 380f);
