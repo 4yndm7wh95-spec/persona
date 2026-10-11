@@ -15,7 +15,7 @@ namespace P3Makoto.Vfx;
 /// 出牌特效调度：
 /// - OnPlay：出牌瞬间的开场（召唤器 / 能力演出 / 额外演出），见 CardStyles。
 /// - OnHit：每一击伤害时在目标身上播放元素命中特效（与游戏伤害判定同步）。
-/// - OnBlock / OnStars / OnForge：获得格挡、辉星、锻造君王之刃时自动叠加对应演出。
+/// - OnBlock / OnForge：获得格挡、锻造君王之刃时自动叠加对应演出（辉星的获得 / 消耗由 StarOrbit 演出）。
 /// </summary>
 public static class CardFx
 {
@@ -49,6 +49,15 @@ public static class CardFx
 		if (anim == CardStyles.CardAnim.Gesture)
 		{
 			Pose.MarkLightCast(caster);
+			// 掌心托起的那一刻，手上方翻出一张塔罗牌（牌本身带塔罗演出的就不重复）
+			if (!style.Extra.HasFlag(Extra.Tarot))
+			{
+				Fx.After(front, 0.2, "gesture tarot", () =>
+				{
+					Vector2 hand = WeaponFx.Bone(caster, "hand") ?? Makoto.Center(caster);
+					Extras.TarotFlip(front, hand + new Vector2(10f, -80f), play.Card.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Power ? Pal.DarkHour : Pal.Cyan, 0.3f);
+				});
+			}
 		}
 		Opener opener = summon || style.Opener == Opener.Power ? style.Opener : Opener.None;
 		switch (opener)
@@ -241,15 +250,6 @@ public static class CardFx
 		bool reflect = name == "Reflect";
 		bool big = name is "IAmInvincible" or "Bulwark";
 		Extras.HexShield(front, target.VfxSpawnPosition, big ? 1.3f : 1f, reflect, big ? 0.7f : 0.45f);
-	}
-
-	public static void OnStars(NCreature caster, int amount)
-	{
-		Control? front = Makoto.FxLayer();
-		if (front != null)
-		{
-			Extras.StarGain(front, Makoto.Head(caster), amount);
-		}
 	}
 
 	public static void OnForge(NCreature caster)

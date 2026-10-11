@@ -47,6 +47,22 @@ public static class CharSelectBg
 		Butterflies(root);
 	}
 
+	/// <summary>
+	/// 选中结城理的强反馈（这个背景场景每次选中都会重新创建，所以 Build 就是"刚被选中"）：
+	/// 他抬手用召唤器对太阳穴开一枪（cast 动画）→ 开枪那一帧：召唤器爆发 + 玻璃碎片 + 蓝蝶群 + 枪声，
+	/// 同时上方切入 P3R 色带"WILD CARD / PERSONA ▸ ORPHEUS"。之后回到待机。
+	/// </summary>
+	private static void Selected(Control root)
+	{
+		Vector2 temple = root.GlobalPosition + Feet + new Vector2(4f, -1370f * CharScale);
+		P3Fx.EvokerBurst(root, temple, 1.25f);
+		P3Fx.GlassShatter(root, temple + new Vector2(60f, 0f), 34, 1.2f, Pal.Ice);
+		P3Fx.ButterflyBurst(root, temple, 7, 380f);
+		P3Fx.Ripple(root, root.GlobalPosition + new Vector2(Feet.X, HorizonY + 40f), 900f, 1.0f, 0.03f);
+		Audio.Sfx.Play(Audio.Snd.Gunshot, 1.0f);
+		Extras.SkewBand(root, new Extras.Caption("WILD CARD", "ORPHEUS", "结城理"), hold: 0.9f);
+	}
+
 	/// <summary>P3R 标志性的斜切色带 + 超大号描边字缓慢漂移。</summary>
 	private static void Band(Control root)
 	{
@@ -103,10 +119,11 @@ public static class CharSelectBg
 		}
 		spine.Set("skeleton_data_res", GD.Load<Resource>("res://animations/characters/regent/regent_skel_data.tres"));
 		MegaSprite sprite = new(spine);
-		PlayWhenReady(spine, sprite, 40);
+		PlayWhenReady(spine, sprite, 40, reflection ? null : () => Selected(root));
 	}
 
-	private static void PlayWhenReady(Node2D spine, MegaSprite sprite, int triesLeft)
+	/// <summary>骨骼加载完成后：先播一次召唤器开枪（cast），再接待机；onFire 在扳机那一帧（cast 的 0.27s）触发。</summary>
+	private static void PlayWhenReady(Node2D spine, MegaSprite sprite, int triesLeft, System.Action? onFire)
 	{
 		if (!GodotObject.IsInstanceValid(spine))
 		{
@@ -114,12 +131,17 @@ public static class CharSelectBg
 		}
 		if (sprite.TryGetAnimationState() is MegaAnimationState state)
 		{
-			state.SetAnimation("idle_loop");
+			state.SetAnimation("cast", loop: false);
+			state.AddAnimation("idle_loop", 0f, loop: true);
+			if (onFire != null)
+			{
+				Fx.After(spine, 0.27, "char select fire", onFire);
+			}
 			return;
 		}
 		if (triesLeft > 0)
 		{
-			Fx.After(spine, 0.05, "char select spine", () => PlayWhenReady(spine, sprite, triesLeft - 1));
+			Fx.After(spine, 0.05, "char select spine", () => PlayWhenReady(spine, sprite, triesLeft - 1, onFire));
 		}
 	}
 

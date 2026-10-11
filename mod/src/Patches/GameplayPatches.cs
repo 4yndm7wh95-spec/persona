@@ -88,21 +88,6 @@ public static class GainBlockPatch
 	}
 }
 
-[HarmonyPatch(typeof(PlayerCmd), nameof(PlayerCmd.GainStars))]
-public static class GainStarsPatch
-{
-	public static void Prefix(decimal amount, Player player)
-	{
-		ModEntry.Safe("GainStars", () =>
-		{
-			if (amount > 0m && Makoto.Is(player) && Makoto.Node(player) is NCreature node)
-			{
-				CardFx.OnStars(node, (int)amount);
-			}
-		});
-	}
-}
-
 [HarmonyPatch(typeof(ForgeCmd), nameof(ForgeCmd.Forge))]
 public static class ForgePatch
 {

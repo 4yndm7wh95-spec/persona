@@ -32,3 +32,28 @@ public static class CharSelectBgPatch
 		ModEntry.Safe("CharSelectBg", () => CharSelectBg.Build(__instance));
 	}
 }
+
+/// <summary>虚空形态：原版常驻特效换成影时间（见 FormFx）。</summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Vfx.Forms.NVoidFormVfx), nameof(MegaCrit.Sts2.Core.Nodes.Vfx.Forms.NVoidFormVfx.Create))]
+public static class VoidFormVfxPatch
+{
+	public static void Postfix(MegaCrit.Sts2.Core.Entities.Creatures.Creature target, MegaCrit.Sts2.Core.Nodes.Vfx.Forms.NVoidFormVfx? __result)
+	{
+		ModEntry.Safe("VoidFormVfx", () =>
+		{
+			if (__result != null && Makoto.Is(target.Player) && Makoto.Node(target.Player) is MegaCrit.Sts2.Core.Nodes.Combat.NCreature node)
+			{
+				Vfx.FormFx.DarkHour(__result, node);
+			}
+		});
+	}
+}
+
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Vfx.Forms.NVoidFormVfx), nameof(MegaCrit.Sts2.Core.Nodes.Vfx.Forms.NVoidFormVfx.SetActive))]
+public static class VoidFormActivePatch
+{
+	public static void Postfix(MegaCrit.Sts2.Core.Nodes.Vfx.Forms.NVoidFormVfx __instance, bool isActive)
+	{
+		ModEntry.Safe("VoidFormActive", () => Vfx.FormFx.SetActive(__instance, isActive));
+	}
+}

@@ -33,6 +33,12 @@ public static class TargetingFx
 			return;
 		}
 		_caster = node;
+		// 要花辉星的牌：对应张数的塔罗牌从环绕轨道里抽出，排在身前待命
+		int starCost = card.HasStarCostX ? -1 : card.GetStarCostWithModifiers();
+		if (starCost != 0)
+		{
+			StarOrbit.Preview(node, starCost);
+		}
 		bool attack = card.Type == CardType.Attack;
 		Color tint = card.Type == CardType.Power ? Pal.DarkHour : Pal.Cyan;
 		_aura = P3Fx.Aura(back, front, Makoto.Feet(node), Makoto.Head(node), tint, attack ? 0.7f : 0.35f);
@@ -82,6 +88,7 @@ public static class TargetingFx
 	/// <summary>取消出牌：收起法阵，退出预备姿势，武器消散。</summary>
 	public static void End()
 	{
+		StarOrbit.ClearPreview();
 		Unhover();
 		P3Fx.Dismiss(_aura, 0.25f);
 		_aura = null;
@@ -98,6 +105,7 @@ public static class TargetingFx
 	/// </summary>
 	public static void EndPlayed()
 	{
+		StarOrbit.ClearPreview();
 		Unhover();
 		P3Fx.Dismiss(_aura, 0.25f);
 		_aura = null;
