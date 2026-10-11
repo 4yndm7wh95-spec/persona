@@ -267,7 +267,7 @@ public static class Sfx
 		/// <summary>
 		/// 玻璃碎裂（按 P3R 原声测量：research/P3R_SFX_ANALYSIS.md）：
 		/// 开头 ~130ms 内 cracks 次宽频碎裂冲击（每次 3~8ms 的高通噪声，越往后越弱）；
-		/// 同时 lines 条共鸣音（fLo~fHi；原声中位约 10kHz，游戏内反馈太刺耳，降到约 1.6~8kHz）在 0~100ms 内先后响起（大多在开头），各自衰减 70~280ms。
+		/// 同时 lines 条共鸣音（fLo~fHi；原声中位约 10kHz，试听反馈太高频、刺耳，降到约 1.1~5kHz，起音放软到 3ms，整体再低通 5.5kHz）在 0~100ms 内先后响起（大多在开头），各自衰减 70~280ms。
 		/// 必须在整体 Lowpass 之后叠加，否则会被闷掉。
 		/// </summary>
 		public void Glass(float t0, int cracks, int lines, float fLo, float fHi, float amp, float ring = 1f)
@@ -278,7 +278,7 @@ public static class Sfx
 				float at = t0 + 0.13f * u + 0.012f * (float)_r.NextDouble();
 				float a = amp * (1f - 0.65f * u) * (0.7f + 0.3f * (float)_r.NextDouble());
 				float len = 0.003f + 0.005f * (float)_r.NextDouble();
-				Noise(at, len * 4f, Atk(0.0002f, len), K(1500f + 2000f * (float)_r.NextDouble()), 0.7f, F.High, a);
+				Noise(at, len * 4f, Atk(0.0015f, len), K(1200f + 1300f * (float)_r.NextDouble()), 0.9f, F.Band, a * 1.4f);   // 带通（不用高通：太刺）
 			}
 			for (int i = 0; i < lines; i++)
 			{
@@ -287,9 +287,9 @@ public static class Sfx
 				float at = t0 + 0.1f * on * on;                       // 多数集中在开头
 				float tau = (0.03f + 0.09f * (float)_r.NextDouble()) * ring;
 				float a = amp * 0.32f * (0.4f + 0.6f * (float)_r.NextDouble());
-				Tone(at, tau * 6f, _ => f, Atk(0.0004f, tau), a);
+				Tone(at, tau * 6f, _ => f, Atk(0.003f, tau), a);                    // 3ms 软起音，去掉尖刺
 			}
-			Noise(t0, 0.12f, Atk(0.0005f, 0.02f * ring), K(4000), 0.5f, F.High, amp * 0.1f);    // 碎屑沙沙声（很轻：原声的碎裂是一下一下分开的）
+			Noise(t0, 0.12f, Atk(0.0005f, 0.02f * ring), K(3000), 0.6f, F.Band, amp * 0.08f);    // 碎屑沙沙声（很轻：原声的碎裂是一下一下分开的）
 		}
 
 		/// <summary>整体低通（两级一阶），把高频"亮"的部分压下去，声音更闷更厚。</summary>
@@ -371,9 +371,9 @@ public static class Sfx
 				g.Warble(0.04f, 0.6f, 840f, 320f, 14f, 0.6f, t => MathF.Min(t / 0.03f, 1f) * MathF.Exp(-t / 0.25f), 0.08f);
 				g.Echo(0.12f, 0.25f);
 				g.Lowpass(6000f);
-				g.Glass(0f, 8, 24, 1600f, 7500f, 0.9f, ring: 1.3f);
-				g.Glass(0.09f, 4, 12, 2000f, 7000f, 0.45f);
-				g.Lowpass(9000f);
+				g.Glass(0f, 8, 18, 1100f, 5000f, 0.9f, ring: 1.3f);
+				g.Glass(0.09f, 4, 9, 1400f, 4500f, 0.45f);
+				g.Lowpass(5500f);
 				return g.B;
 			case Snd.StarGain:         // 辉星凝聚：短促上扬的颤音（原声 #47：495→1380Hz、27 次/秒）
 				g = new Gen(0.7f, 4);
@@ -387,8 +387,8 @@ public static class Sfx
 				g.Tone(0, 0.2f, t => 150f * MathF.Exp(-t / 0.04f) + 70f, Atk(0.001f, 0.05f), 0.15f);
 				g.Warble(0.01f, 0.3f, 1100f, 420f, 16f, 0.45f, t => MathF.Min(t / 0.02f, 1f) * MathF.Exp(-t / 0.1f), 0.1f);
 				g.Lowpass(6000f);
-				g.Glass(0f, 4, 12, 1800f, 7000f, 0.7f, ring: 0.8f);
-				g.Lowpass(9000f);
+				g.Glass(0f, 4, 10, 1200f, 4800f, 0.7f, ring: 0.8f);
+				g.Lowpass(5500f);
 				return g.B;
 			case Snd.CutIn:            // 切入大字：短风声 → 重击 + 三角波和弦重音 + 上冲颤音 → 回声
 				g = new Gen(1.4f, 6);
@@ -413,9 +413,9 @@ public static class Sfx
 				g.Warble(0, 0.16f, 300f, 1100f, 22f, 0.25f, t => MathF.Min(t / 0.01f, 1f) * MathF.Exp(-t / 0.07f), 0.12f);
 				g.Echo(0.1f, 0.22f);
 				g.Lowpass(7000f);
-				g.Glass(0f, 9, 28, 1600f, 8000f, 1.0f, ring: 1.2f);
-				g.Glass(0.07f, 4, 12, 2200f, 7500f, 0.45f);
-				g.Lowpass(9000f);
+				g.Glass(0f, 9, 20, 1100f, 5200f, 1.0f, ring: 1.2f);
+				g.Glass(0.07f, 4, 9, 1500f, 4800f, 0.45f);
+				g.Lowpass(5500f);
 				return g.B;
 			case Snd.ThanatosSlash:    // 塔纳托斯斩击：涌起的低沉风声 → 巨响 + 金属刮擦 + 低沉下坠颤音 + 不协和低音 → 长回声
 				g = new Gen(2.0f, 8);
