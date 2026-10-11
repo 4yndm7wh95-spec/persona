@@ -204,14 +204,13 @@ public static class Extras
 	public static void DarkHour(Control layer, float duration = 2.2f)
 	{
 		Vector2 size = layer.GetViewportRect().Size;
+		// 放在人物身后的特效层（不用 TopLevel：TopLevel 会画到所有人物上面）。该层在可缩放 / 震屏的场景容器里，染色矩形放大到三倍屏幕保证盖满
 		Node2D root = Fx.Root(layer, Vector2.Zero, "P3DarkHour");
-		root.TopLevel = true;
-		root.GlobalPosition = Vector2.Zero;
-		ColorRect tintRect = new ColorRect { Size = size, Color = new Color(0.05f, 0.25f, 0.12f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore };
+		ColorRect tintRect = new ColorRect { Position = -size, Size = size * 3f, Color = new Color(0.05f, 0.25f, 0.12f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore };
 		root.AddChild(tintRect);
 		Vector2 moonPos = new Vector2(size.X * 0.78f, size.Y * 0.2f);
 		Sprite2D moonGlow = new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Position = moonPos, Scale = Vector2.One * 16f, Modulate = new Color(0.75f, 1f, 0.6f, 0f) };
-		Polygon2D moon = new Polygon2D { Polygon = Fx.Circle(70f, 48), Position = moonPos, Color = new Color(0.92f, 1f, 0.75f, 0f), Material = Fx.Additive };
+		Polygon2D moon = new Polygon2D { Polygon = Fx.Circle(70f, 48), Position = moonPos, Color = new Color(0.92f, 1f, 0.75f, 0f), Material = Fx.Additive, Antialiased = true };
 		root.AddChild(moonGlow);
 		root.AddChild(moon);
 		Fx.Animate(root, duration, t =>

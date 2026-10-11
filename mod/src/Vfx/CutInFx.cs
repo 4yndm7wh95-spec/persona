@@ -152,7 +152,7 @@ public static class CutInFx
 
 		// 横幅：两条曲边（越往两端越高，像镜头的弧面），贴图横向缓慢平移
 		st.Band = Fx.Root(back, new Vector2(0f, st.Cy), "P3CutInBand");
-		st.Face = new Polygon2D { Texture = eyes, Polygon = BandPoly(st, 0f), UV = BandUv(st), TextureFilter = CanvasItem.TextureFilterEnum.Linear };
+		st.Face = new Polygon2D { Texture = eyes, Polygon = BandPoly(st, 0f), UV = BandUv(st), TextureFilter = CanvasItem.TextureFilterEnum.Linear, Antialiased = true };
 		st.Band.AddChild(st.Face);
 		Polygon2D frameTop = Fx.Poly(st.Band, Strip(st, -1f, 16f), new Color(0.02f, 0.05f, 0.16f, 0.96f));
 		Polygon2D frameBot = Fx.Poly(st.Band, Strip(st, 1f, 16f), new Color(0.02f, 0.05f, 0.16f, 0.96f));
@@ -425,7 +425,7 @@ public static class CutInFx
 			}
 			Node2D shard = new() { Position = c };
 			root.AddChild(shard);
-			shard.AddChild(new Polygon2D { Texture = st.Eyes, Polygon = local, UV = uv, TextureFilter = CanvasItem.TextureFilterEnum.Linear });
+			shard.AddChild(new Polygon2D { Texture = st.Eyes, Polygon = local, UV = uv, TextureFilter = CanvasItem.TextureFilterEnum.Linear, Antialiased = true });
 			Line2D rim = Fx.Line(shard, local, new Color(Pal.Cyan, 0.85f), 2.5f, closed: true);
 			Polygon2D glint = Fx.Poly(shard, local, new Color(0.7f, 0.95f, 1f, 0.5f), additive: true);
 			Vector2 dir = (c - hit).Normalized();

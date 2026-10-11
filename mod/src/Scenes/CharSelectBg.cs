@@ -264,11 +264,13 @@ public static class CharSelectBg
 		root.AddChild(band);
 		band.AddChild(new Polygon2D
 		{
+			Antialiased = true,
 			Polygon = new[] { new Vector2(0, 0), new Vector2(1900, 0), new Vector2(1820, 150), new Vector2(-80, 150) },
 			Color = new Color(Pal.Royal, 0.22f),
 		});
 		band.AddChild(new Polygon2D
 		{
+			Antialiased = true,
 			Polygon = new[] { new Vector2(0, 160), new Vector2(1900, 160), new Vector2(1897, 166), new Vector2(-3, 166) },
 			Color = new Color(Pal.Cyan, 0.5f),
 			Material = Fx.Additive,

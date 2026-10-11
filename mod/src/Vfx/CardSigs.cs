@@ -29,6 +29,8 @@ public static class CardSigs
 	private static void Tarot(Ctx c, string numeral, string name, Color tint, double delay = 0.15) =>
 		After(c, delay, () => Motifs.BigTarot(c.Back, c.Above + new Vector2(-150f, -70f), numeral, name, tint, s: 0.85f, fxLayer: c.Front));
 
+	// 规则：以结城理自己为中心、会大面积盖住他的实心光效（爆发、光柱、汇聚、闪光）一律放在人物身后（Back）；
+	// 文字、火花、蝴蝶、星座连线这类轻量元素留在前面（Front）。
 	private static readonly Dictionary<string, Action<Ctx>> Sigs = new()
 	{
 		// ═════ 攻击：出牌瞬间的"起手" ═════
@@ -74,7 +76,7 @@ public static class CardSigs
 		["CloakOfStars"] = c => Motifs.Constellation(c.Front, c.Center,
 			new[] { new Vector2(-150f, 60f), new Vector2(-120f, -90f), new Vector2(0f, -170f), new Vector2(120f, -90f), new Vector2(150f, 60f) }, Pal.Cyan, 0.9f),
 		["Glitterstream"] = c => { for (int i = 0; i < 6; i++) { P3Fx.Butterfly(c.Front, c.Feet + new Vector2(-200f + 70f * i, 0f), c.Head + new Vector2(-120f + 50f * i, -100f), 1.2f, 0.8f); } },
-		["GatherLight"] = c => { P3Fx.Gather(c.Front, c.Center, Pal.Ice, 520f, 0.4f); After(c, 0.35, () => P3Fx.Flash(c.Front, c.Center, Pal.Ice, 420f, 0.3f)); },
+		["GatherLight"] = c => { P3Fx.Gather(c.Back, c.Center, Pal.Ice, 520f, 0.4f); After(c, 0.35, () => P3Fx.Flash(c.Back, c.Center, Pal.Ice, 420f, 0.3f)); },
 		["Bulwark"] = c => After(c, 0.1, () => Motifs.ForgeSpark(c.Front, c.Center + new Vector2(110f, 0f), 1.1f)),
 		["ParticleWall"] = c => { Node2D p = Fx.Root(c.Front, c.Center + new Vector2(120f, 0f), "P3ParticleWall"); Fx.Sparks(p, Pal.Cyan, 90, 60f, 260f, 0.8f, scaleMin: 0.1f, scaleMax: 0.3f); Fx.FreeAfter(p, 1.0); },
 		["IAmInvincible"] = c => Motifs.CutIn(c.Front, c.Center + new Vector2(200f, 0f), "TETRAKARN", Pal.Royal),
@@ -108,18 +110,18 @@ public static class CardSigs
 		["Venerate"] = c => Tarot(c, "XVII", "THE STAR", Pal.Cyan),
 		["RoyalGamble"] = c => Tarot(c, "X", "FORTUNE", ElementPal.HolyGold),
 		["HiddenCache"] = c => Tarot(c, "IX", "HERMIT", Pal.Royal),
-		["Glow"] = c => { P3Fx.Flash(c.Front, c.Center, Pal.Ice, 520f, 0.4f); P3Fx.ButterflyBurst(c.Front, c.Head, 7, 340f); },
+		["Glow"] = c => { P3Fx.Flash(c.Back, c.Center, Pal.Ice, 520f, 0.4f); P3Fx.ButterflyBurst(c.Front, c.Head, 7, 340f); },
 		["Alignment"] = c => Motifs.Constellation(c.Front, c.Above,
 			new[] { new Vector2(-180f, 0f), new Vector2(-60f, 0f), new Vector2(60f, 0f), new Vector2(180f, 0f) }, ElementPal.Volt),
-		["Convergence"] = c => { Motifs.DarkClock(c.Front, c.Above, 0.8f); P3Fx.Gather(c.Front, c.Center, Pal.DarkHour, 600f, 0.45f); },
+		["Convergence"] = c => { Motifs.DarkClock(c.Front, c.Above, 0.8f); P3Fx.Gather(c.Back, c.Center, Pal.DarkHour, 600f, 0.45f); },
 		["Prophesize"] = c => Tarot(c, "II", "PRIESTESS", Pal.Cyan),
 		["ForegoneConclusion"] = c => { Motifs.DarkClock(c.Front, c.Above + new Vector2(-180f, 0f), 0.7f); Tarot(c, "XX", "JUDGEMENT", Pal.DarkHour, 0.35); },
 		["DecisionsDecisions"] = c => Tarot(c, "VI", "LOVERS", Pal.Blood),
-		["Glimmer"] = c => { P3Fx.Flash(c.Front, c.Center, Pal.Cyan, 380f, 0.25f); Motifs.ShuffleTime(c.Front, c.Center, 2, Pal.Cyan); },
+		["Glimmer"] = c => { P3Fx.Flash(c.Back, c.Center, Pal.Cyan, 380f, 0.25f); Motifs.ShuffleTime(c.Front, c.Center, 2, Pal.Cyan); },
 		["Plot"] = c => { Motifs.DarkClock(c.Front, c.Above, 0.6f); Motifs.ShuffleTime(c.Front, c.Center, 3, Pal.DarkHour); },
 		["Tutor"] = c => Motifs.ShuffleTime(c.Front, c.Center, 1, Pal.Cyan),
 		["BundleOfJoy"] = c => { Motifs.ShuffleTime(c.Front, c.Center, 5, ElementPal.HolyGold); P3Fx.ButterflyBurst(c.Front, c.Head, 6, 320f, ElementPal.HolyGold); },
-		["Quasar"] = c => { Bold.Megidolaon(c.Front, c.Above, 0.45f); After(c, 0.3, () => Motifs.ShuffleTime(c.Front, c.Center, 3, ElementPal.Almighty)); },
+		["Quasar"] = c => { Bold.Megidolaon(c.Back, c.Above, 0.45f); After(c, 0.3, () => Motifs.ShuffleTime(c.Front, c.Center, 3, ElementPal.Almighty)); },
 		["Largesse"] = c => Motifs.ShuffleTime(c.Front, c.Center, 2, ElementPal.HolyGold),
 		["Constellation"] = c => Motifs.Constellation(c.Front, c.Above,
 			new[] { new Vector2(-140f, 40f), new Vector2(-40f, -60f), new Vector2(60f, -20f), new Vector2(150f, -90f), new Vector2(110f, 50f) }, Pal.Cyan),
@@ -127,7 +129,7 @@ public static class CardSigs
 		["RefineBlade"] = c => Motifs.ForgeSpark(c.Front, c.Center + new Vector2(110f, -20f), 1.0f),
 		["TheSmith"] = c => { for (int i = 0; i < 3; i++) { After(c, 0.18 * i, () => Motifs.ForgeSpark(c.Front, c.Center + new Vector2(110f, -20f), 0.9f + 0.2f)); } },
 		["SummonForth"] = c => { Motifs.ForgeSpark(c.Front, c.Center + new Vector2(110f, -20f), 1.1f); Motifs.CutIn(c.Front, c.Center + new Vector2(220f, 0f), "SUMMON FORTH", Pal.Royal); },
-		["BigBang"] = c => After(c, 0.3, () => { Bold.Megidolaon(c.Front, c.Above, 1.3f); Motifs.ShuffleTime(c.Front, c.Center, 5, ElementPal.Almighty); }),
+		["BigBang"] = c => After(c, 0.3, () => { Bold.Megidolaon(c.Back, c.Above, 1.3f); Motifs.ShuffleTime(c.Front, c.Center, 5, ElementPal.Almighty); }),
 
 		// ═════ 能力 ═════
 		["Tyranny"] = c => Tarot(c, "IV", "EMPEROR", Pal.Blood),
@@ -144,9 +146,9 @@ public static class CardSigs
 		["ChildOfTheStars"] = c => { Tarot(c, "XVII", "THE STAR", Pal.Cyan); Motifs.Constellation(c.Front, c.Center, Motifs.BigDipper, Pal.Ice, 0.7f); },
 		["SpectrumShift"] = c => Motifs.ShuffleTime(c.Front, c.Center, 4, ElementPal.Almighty),
 		["Royalties"] = c => Tarot(c, "X", "FORTUNE", ElementPal.HolyGold),
-		["PillarOfCreation"] = c => { P3Fx.LightPillar(c.Back, c.Feet, Pal.Ice, 260f, 1100f, 1.0f); Bold.Hamaon(c.Front, c.Center, c.Feet, 0.9f); },
-		["Genesis"] = c => After(c, 0.35, () => Bold.Hamaon(c.Front, c.Center, c.Feet, 1.5f)),
-		["TheSealedThrone"] = c => { Motifs.DarkClock(c.Front, c.Above, 1.0f); After(c, 0.4, () => Bold.Hamaon(c.Front, c.Center, c.Feet, 1.3f)); },
+		["PillarOfCreation"] = c => { P3Fx.LightPillar(c.Back, c.Feet, Pal.Ice, 260f, 1100f, 1.0f); Bold.Hamaon(c.Back, c.Center, c.Feet, 0.9f); },
+		["Genesis"] = c => After(c, 0.35, () => Bold.Hamaon(c.Back, c.Center, c.Feet, 1.5f)),
+		["TheSealedThrone"] = c => { Motifs.DarkClock(c.Front, c.Above, 1.0f); After(c, 0.4, () => Bold.Hamaon(c.Back, c.Center, c.Feet, 1.3f)); },
 	};
 
 	public static void Play(CardModel card, Ctx c)

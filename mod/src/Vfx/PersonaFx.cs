@@ -65,7 +65,7 @@ public static class PersonaFx
 		// 显形：脚下光柱 + 水波 + 墨绿闪光 + 光点
 		P3Fx.LightPillar(back, new Vector2(home.X, feet.Y), Pal.DarkHour, height * 0.45f, height * 1.1f, 0.6f);
 		P3Fx.Ripple(back, new Vector2(home.X, feet.Y), 900f, 0.8f, 0.03f, squashY: 0.35f);
-		P3Fx.Flash(front, home, Pal.DarkHour, height * 0.9f, 0.35f);
+		P3Fx.Flash(back, home, Pal.DarkHour, height * 0.9f, 0.35f);          // 闪光在 Persona 身后、结城理身后，不盖住人物
 		Node2D motes = Fx.Root(front, home, "P3ThanatosMotes");
 		Fx.Sparks(motes, Pal.DarkHour, 60, 160f, 520f, 0.8f, gravity: -80f);
 		Fx.FreeAfter(motes, 1.2);
@@ -137,7 +137,7 @@ public static class PersonaFx
 		Node2D? body = Sprite(root, data, new Color(0.8f, 0.88f, 1f, 0.95f), additive: false);
 		P3Fx.LightPillar(back, new Vector2(home.X, feet.Y), tint, height * 0.45f, height * 1.1f, 0.6f);
 		P3Fx.Ripple(back, new Vector2(home.X, feet.Y), 900f, 0.8f, 0.03f, squashY: 0.35f);
-		P3Fx.Flash(front, home, tint, height * 0.8f, 0.3f);
+		P3Fx.Flash(back, home, tint, height * 0.8f, 0.3f);
 		Play(glow, 0.95f, null, attack: false);
 		Play(body, 0.95f, null, attack: false);
 		Vector2 from = home + new Vector2(0f, height * 0.06f);

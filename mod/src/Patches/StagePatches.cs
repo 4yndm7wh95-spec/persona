@@ -130,3 +130,24 @@ public static class RewardBackdropPatch
 		});
 	}
 }
+
+/// <summary>
+/// 商店里的人物：原版 regent_merchant.tscn 用 0.47 倍显示储君（坐着、矮）；结城理是站着的全身骨骼，同样倍率会高到顶住屏幕上沿。
+/// 只缩这个场景（文件名判断），脚底是骨骼原点，缩放后仍踩在原位置。
+/// </summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Screens.Shops.NMerchantCharacter), nameof(MegaCrit.Sts2.Core.Nodes.Screens.Shops.NMerchantCharacter._Ready))]
+public static class MerchantScalePatch
+{
+	private const float Scale = 0.31f;
+
+	public static void Postfix(MegaCrit.Sts2.Core.Nodes.Screens.Shops.NMerchantCharacter __instance)
+	{
+		ModEntry.Safe("merchant scale", () =>
+		{
+			if (__instance.SceneFilePath.Contains("regent_merchant") && __instance.GetChildCount() > 0 && __instance.GetChild(0) is Node2D sprite)
+			{
+				sprite.Scale = Vector2.One * Scale;
+			}
+		});
+	}
+}

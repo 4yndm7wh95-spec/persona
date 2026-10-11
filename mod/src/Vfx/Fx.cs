@@ -65,7 +65,7 @@ public static class Fx
 
 	public static Polygon2D Poly(Node parent, Vector2[] points, Color color, bool additive = false)
 	{
-		Polygon2D poly = new Polygon2D { Polygon = points, Color = color };
+		Polygon2D poly = new Polygon2D { Polygon = points, Color = color, Antialiased = true };   // 斜边抗锯齿（色块、横幅的斜切边）
 		if (additive)
 		{
 			poly.Material = Additive;
