@@ -119,6 +119,59 @@ def char_select():
     return portrait, locked
 
 
+# v0.9.5：头像改用专门绘制的卡面（art/v10/avatar_b.png，1024×1536 带背景），不再截局内人物
+AVATAR = ROOT / "art/v10/avatar_b.png"
+AVATAR_FACE = (690, 470, 270)                       # 头部圆心与半径（卡面像素）
+
+
+def avatar_circle(S, r, center, ring=2):
+    """卡面头部裁成圆形徽章（青色描边 + 墨色外圈）。"""
+    cx, cy, R = AVATAR_FACE
+    face = Image.open(AVATAR).convert("RGBA").crop((cx - R, cy - R, cx + R, cy + R)).resize((2 * r, 2 * r), Image.LANCZOS)
+    mask = Image.new("L", (2 * r * 4, 2 * r * 4), 0)
+    ImageDraw.Draw(mask).ellipse((0, 0, 2 * r * 4 - 1, 2 * r * 4 - 1), fill=255)
+    face.putalpha(mask.resize((2 * r, 2 * r), Image.LANCZOS))
+    out = Image.new("RGBA", S, (0, 0, 0, 0))
+    out.alpha_composite(face, (center[0] - r, center[1] - r))
+    d = ImageDraw.Draw(out)
+    d.ellipse((center[0] - r - 1, center[1] - r - 1, center[0] + r, center[1] + r), outline=INK + (255,), width=ring + 1)
+    d.ellipse((center[0] - r + 1, center[1] - r + 1, center[0] + r - 2, center[1] + r - 2), outline=CYAN + (255,), width=1)
+    return out
+
+
+def top_icon_avatar():
+    S = 88
+    icon = avatar_circle((S, S), 40, (44, 44))
+    outline = Image.new("RGBA", (S, S), (255, 255, 255, 0))
+    outline.putalpha(dilate(icon.getchannel("A"), 3))
+    return icon, outline
+
+
+def map_marker_avatar():
+    W, H = 49, 64
+    center, r = (24, 26), 22
+    canvas = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    ImageDraw.Draw(canvas).polygon([(13, 42), (35, 42), (24, 62)], fill=ROYAL + (255,), outline=INK + (255,))
+    canvas.alpha_composite(avatar_circle((W, H), r, center, ring=1))
+    return canvas
+
+
+def char_select_avatar():
+    W, H = 132, 195
+    im = Image.open(AVATAR).convert("RGBA")
+    ch = round(im.width * H / W)                     # 按卡片比例裁（保留上部：脸在上半）
+    im = im.crop((0, 0, im.width, min(ch, im.height))).resize((W, H), Image.LANCZOS)
+    portrait = im.copy()
+    d = ImageDraw.Draw(portrait)
+    d.rectangle((0, 0, W - 1, H - 1), outline=INK + (255,), width=2)
+    d.line((2, H - 4, W - 3, H - 4), fill=CYAN + (255,), width=1)
+    # 未解锁：去色压暗（卡面自带背景，没有可用的人物剪影）
+    g = np.asarray(im.convert("L")).astype(np.float32) * 0.28 + 30
+    locked = Image.fromarray(np.dstack([g, g, g * 1.04, np.full_like(g, 255)]).clip(0, 255).astype(np.uint8), "RGBA")
+    ImageDraw.Draw(locked).rectangle((0, 0, W - 1, H - 1), outline=(40, 40, 44, 255), width=2)
+    return portrait, locked
+
+
 ASSETS = {
     # res 相对路径: (原版 uid, 生成函数里的哪一张)
     "images/ui/top_panel/character_icon_regent.png": "ddwry85j3nb6",
@@ -245,12 +298,12 @@ def main():
     portrait_img.save(OUT / "charselect_portrait.png")
     write_texture(STAGE, "p3makoto/ui/charselect_portrait.png", portrait_img)
     print("staged charselect portrait", portrait_img.size)
-    icon, outline = top_icon()
-    portrait, locked = char_select()
+    icon, outline = top_icon_avatar()
+    portrait, locked = char_select_avatar()
     images = {
         "images/ui/top_panel/character_icon_regent.png": icon,
         "images/ui/top_panel/character_icon_regent_outline.png": outline,
-        "images/packed/map/icons/map_marker_regent.png": map_marker(),
+        "images/packed/map/icons/map_marker_regent.png": map_marker_avatar(),
         "images/packed/character_select/char_select_regent.png": portrait,
         "images/packed/character_select/char_select_regent_locked.png": locked,
     }

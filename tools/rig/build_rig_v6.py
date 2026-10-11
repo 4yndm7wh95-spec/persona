@@ -29,7 +29,7 @@ ORIGIN = (505.0, 1475.0)                    # 两脚之间的地面（基准图�
 STEP = 16                                   # 网格步长
 
 # 选用的版本（配准残差、内容检查后选定）
-PICK = {"torso": "torso_b", "head": "head_a", "arm_n": "arm_near_a", "arm_f": "arm_far_a",
+PICK = {"torso": "torso_b", "torso_nogun": "torso_nogun_b", "head": "head_a", "arm_n": "arm_near_a", "arm_f": "arm_far_a",
         "leg_n": "leg_near_a", "leg_f": "leg_far_b", "blink": "head_blink_a", "glare": "head_glare_a"}
 HANDS_N = {"hang": "arm_near_a", "sword": "near_sword_a", "evoker": "near_evoker_a", "fist": "near_fist_a",
            "palm": "near_palm_a", "palmup": "near_palmup_a", "pocket": "near_pocket_a"}
@@ -378,6 +378,8 @@ def build_setup():
     # 躯干 / 头（网格）
     torso = load(PICK["torso"])
     pieces["torso"] = (*piece(torso, torso[..., 3] > 0.02, 0), "MESH_T")
+    tng = load(PICK["torso_nogun"])                  # 9D：枪套里没有枪（召唤器拿在手上时用）
+    pieces["torso_nogun"] = (*piece(tng, tng[..., 3] > 0.02, 0), "MESH_T")
     head = load(PICK["head"])
     pieces["head"] = (*piece(head, head[..., 3] > 0.02, 0), "MESH_H")
     for k in ("blink", "glare"):
@@ -455,7 +457,7 @@ def build_setup():
     # 插槽与皮肤
     slot_atts = {s: [] for s in SLOTS}
     slot_atts["shadow"] = ["shadow"]
-    slot_atts["torso"] = ["torso"]
+    slot_atts["torso"] = ["torso", "torso_nogun"]
     slot_atts["head"] = ["head"]
     slot_atts["blink"] = ["blink"]
     slot_atts["glare"] = ["glare"]
@@ -630,6 +632,7 @@ class Anim:
     def hand(self, t, side, kind, back=False):
         """换手（阶梯）。近侧 back=True：手 + 剑放到头后插槽（握剑扛肩）。"""
         if side == "n":
+            self.att(t, "torso", "torso_nogun" if kind == "evoker" else "torso")     # 召唤器从枪套里拿出来了
             self.att(t, "n_hand", None if back else f"n_hand_{kind}")
             self.att(t, "n_hand_bk", f"n_hand_{kind}" if back else None)
         else:
