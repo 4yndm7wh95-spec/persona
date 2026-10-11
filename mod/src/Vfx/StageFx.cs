@@ -166,15 +166,18 @@ public static class StageFx
 		Fx.Line(white, new[] { new Vector2(-50f, size.Y * 0.255f), new Vector2(size.X * 0.33f, size.Y * 0.255f) }, new Color(0.03f, 0.08f, 0.3f, 0.6f), 2f);
 		Node2D ghostWord = P3Ui.GiantWord(white, "CLEAR", new Vector2(size.X * 0.2f, size.Y * 0.62f), (int)(size.Y * 0.2f), -1.05f, new Color(0.03f, 0.08f, 0.3f, 0.08f));
 		Node2D word = P3Ui.GiantWord(white, "VICTORY", new Vector2(size.X * 0.09f, size.Y * 0.9f), (int)(size.Y * 0.28f), -1.05f, new Color(0.03f, 0.08f, 0.3f, 0.95f));
-		// 水之圆里站着结城理（选人界面同一张立绘），从右侧滑入
+		// 水之圆里是结城理（选人界面同一张立绘，不切边的整张）：按圆形裁切、放大到盖满整个圆 —— 画布边缘（身体截断处）永远在圆外
+		Polygon2D clip = new() { Polygon = Fx.Circle(discR * 0.985f, 96), Position = discAt, ClipChildren = CanvasItem.ClipChildrenMode.Only };
+		root.AddChild(clip);
 		Sprite2D hero = new() { Modulate = new Color(1f, 1f, 1f, 0f) };
-		if (ResourceLoader.Load("res://p3makoto/ui/charselect_portrait.png") is Texture2D heroTex)
+		float heroScale = 1f;
+		if (ResourceLoader.Load("res://p3makoto/ui/victory_portrait.png") is Texture2D heroTex)
 		{
 			hero.Texture = heroTex;
-			hero.Scale = Vector2.One * (size.Y * 1.02f / heroTex.GetHeight());
+			heroScale = discR * 2.12f / heroTex.GetWidth();         // 宽 = 直径 × 1.06：左右各留余量，入场的缩放 / 漂移也不会露边
 		}
-		root.AddChild(hero);
-		Vector2 heroAt = discAt + new Vector2(size.Y * 0.04f, size.Y * 0.04f);
+		clip.AddChild(hero);
+		Vector2 heroAt = new(0f, discR * 0.43f);                    // 画布下移：脸落在圆心附近，画布上沿仍在圆外
 		Node2D tag = P3Ui.RedTag(root, "BATTLE CLEAR", new Vector2(size.X * 0.58f, size.Y * 0.16f), (int)(size.Y * 0.05f), cjk: false);
 
 		const float tIn = 0.4f, hold = 1.0f, tOut = 0.4f, total = tIn + hold + tOut;
@@ -190,7 +193,8 @@ public static class StageFx
 			word.Position = new Vector2(size.X * 0.09f, size.Y * 0.9f + size.Y * 0.5f * (1f - Ease.OutExpo(Seg(time, 0.08f, 0.4f))) - 40f * d - size.Y * 0.4f * oe);
 			ghostWord.Position = new Vector2(size.X * 0.2f + 60f * time, size.Y * 0.62f);
 			float h = Ease.OutQuint(Seg(time, 0.1f, 0.45f));
-			hero.Position = heroAt + new Vector2(size.X * 0.25f * (1f - h) + 15f * d + size.X * 0.3f * oe, 0f);
+			hero.Position = heroAt + new Vector2(-12f * d, 0f);
+			hero.Scale = Vector2.One * heroScale * (1.12f - 0.12f * h);
 			hero.Modulate = new Color(1f, 1f, 1f, h * (1f - o));
 			Fx.SetParam(disc, "reveal", Ease.OutExpo(Seg(time, 0.06f, 0.36f)) * (1f - Ease.InCubic(o)));
 			arcs.Rotation = 0.35f * time;

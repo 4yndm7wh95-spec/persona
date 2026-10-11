@@ -15,6 +15,7 @@ public static class CharSelectBg
 	// 场景根 Control 的尺寸（tscn：offset -960,-521 .. 1600,679），本地 (960,521) 是屏幕中心
 	private const float W = 2560f, H = 1200f;
 	private const float HorizonY = 830f;
+	private static readonly Vector2 MoonPos = new(830f, 150f);      // 立绘贴右边后，月亮挪到中上方的空天上（水面倒影跟着走）
 
 	public static void Build(Control bg)
 	{
@@ -34,7 +35,7 @@ public static class CharSelectBg
 		ShaderMaterial sky = new() { Shader = Shaders.Menu };
 		Vector2 full = new(W + 2 * pad, H + 2 * pad);
 		sky.SetShaderParameter("aspect", full.X / full.Y);
-		sky.SetShaderParameter("moon", new Vector2((1640f + pad) / full.X, (250f + pad) / full.Y));
+		sky.SetShaderParameter("moon", new Vector2((MoonPos.X + pad) / full.X, (MoonPos.Y + pad) / full.Y));
 		sky.SetShaderParameter("horizon", (HorizonY + pad) / full.Y);
 		root.AddChild(new ColorRect { Position = new Vector2(-pad, -pad), Size = full, Material = sky, MouseFilter = Control.MouseFilterEnum.Ignore });
 
@@ -48,9 +49,10 @@ public static class CharSelectBg
 	// 两者同一画布 1024×1536：静态图以中心为原点，Spine 以底边中点为原点。
 	private const string PortraitPath = "res://p3makoto/ui/charselect_portrait.png";
 	private const string PortraitSpine = "res://p3makoto/portrait/portrait_skel_data.tres";
-	private static readonly Vector2 PortraitPos = new(1440f, 575f);
+	private static readonly Vector2 PortraitPos = new(1560f, 575f);          // 画布右边出屏：身体贴着右墙，不在半空截断
 	private const float PortraitScale = 0.75f;
 	private static readonly Vector2 PortraitHead = new(620f - 512f, 320f - 768f);       // 镜片中心：切入横幅从这里碎开
+	private static readonly Vector2 CutTop = new(20f - 512f, -768f), CutBottom = new(330f - 512f, 768f);   // 左侧斜切线（同 build_portrait.py 的 CUT）
 	private static readonly Vector2 PortraitEye = new(425f - 512f, 645f - 768f);        // 露出的那只眼睛
 
 	/// <summary>眼睛里泛起的蓝光：加色光点迅速亮起、横向拉长成一道细光，再慢慢退去。</summary>
@@ -107,6 +109,7 @@ public static class CharSelectBg
 		Node2D ghost1 = Holder(new Color(Pal.Cyan, 0.0f), true, 1.0f, false);
 		Node2D glow = Holder(new Color(Pal.Cyan, 0.0f), true, 1.012f, false);
 		Node2D main = Holder(new Color(1f, 1f, 1f, 0f), false, 1.0f, true);
+		Slash(main);
 
 		Fx.Animate(main, 0.6f, t =>
 		{
@@ -136,6 +139,24 @@ public static class CharSelectBg
 			breathe.TweenProperty(glow, "modulate:a", 0.12f, 3.0);
 			breathe.TweenProperty(glow, "modulate:a", 0.24f, 3.0);
 		});
+	}
+
+	/// <summary>
+	/// 立绘左侧的切口：不做虚化，压一组 P3R 式大斜条 —— 贴着切口的一道亮青细线、外侧一块深蓝实心斜板、再外侧一道白色细条，
+	/// 全部沿切线方向延长出屏。挂在立绘节点下，跟着一起滑入。
+	/// </summary>
+	private static void Slash(Node2D holder)
+	{
+		Vector2 dir = (CutBottom - CutTop).Normalized();
+		Vector2 left = new(-dir.Y, dir.X);                      // 切线的法向，指向画布外侧（左）
+		Vector2 a = CutTop - dir * 500f, b = CutBottom + dir * 300f;
+		Vector2[] Strip(float from, float to) => new[] { a + left * from, b + left * from, b + left * to, a + left * to };
+		// 斜板往立绘里多压 ~12px：头、手臂的微动（最多约 10px）不会在切口露出缝
+		Fx.Poly(holder, Strip(-12f, 120f), new Color(0.02f, 0.07f, 0.25f, 0.96f));
+		Fx.Poly(holder, Strip(8f, 16f), new Color(Pal.Royal, 0.9f));
+		Fx.Poly(holder, Strip(-16f, -8f), new Color(Pal.Cyan, 0.95f), additive: true);
+		Fx.Poly(holder, Strip(142f, 152f), new Color(1f, 1f, 1f, 0.85f));
+		Fx.Poly(holder, Strip(176f, 180f), new Color(Pal.Cyan, 0.6f), additive: true);
 	}
 
 	/// <summary>SpineSprite 加进场景树后下一帧才有动画状态：取不到就稍后再试。</summary>

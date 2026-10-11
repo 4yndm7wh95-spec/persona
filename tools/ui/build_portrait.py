@@ -42,10 +42,15 @@ def load(name):
     return np.asarray(Image.open(L / name).convert("RGBA")).astype(np.float32) / 255
 
 
+CUT = ((20, 0), (330, H))                   # 左侧斜切线（画布坐标，上 → 下）；CharSelectBg.cs 的斜条沿同一条线
+
+
 def edge_fade():
-    """左边、下边渐隐（立绘被画框截断处不留硬边）。"""
+    """左边按斜线硬切（P3R 式大斜条压在切口上，不用虚化）；下边、右边出屏，不处理。"""
     ys, xs = np.mgrid[0:H, 0:W].astype(np.float32)
-    return np.clip(xs / 150, 0, 1) * np.clip((H - ys) / 260, 0, 1)
+    (x0, y0), (x1, y1) = CUT
+    edge_x = x0 + (x1 - x0) * (ys - y0) / (y1 - y0)
+    return np.clip((xs - edge_x) / 1.5 + 0.5, 0, 1)
 
 
 def to_img(a):
@@ -311,8 +316,16 @@ def pack(imgs, name):
     return page, "\n".join(lines) + "\n"
 
 
+def full():
+    """胜利界面用：不切边的整张（在水之圆里按圆形裁切、放大到盖满整个圆，画布边缘永远不露出来）。"""
+    under = load("under.png")
+    hand = load("hand.png")
+    out = under[..., :3] * (1 - hand[..., 3:]) + hand[..., :3] * hand[..., 3:]
+    return to_img(np.dstack([out, np.maximum(under[..., 3], hand[..., 3])]))
+
+
 def flat(data, imgs):
-    """静态版（残影 / 光晕 / 兜底用）：底层 + 手层，左、下渐隐。"""
+    """静态版（残影 / 光晕 / 兜底用）：底层 + 手层，左侧斜切。"""
     under = load("under.png")
     hand = load("hand.png")
     out = under[..., :3] * (1 - hand[..., 3:]) + hand[..., :3] * hand[..., 3:]
@@ -332,6 +345,7 @@ def main():
     f = flat(data, imgs)
     f.save(ROOT / "art/ui/charselect_portrait.png")
     write_texture(ROOT / "mod/pck_stage", "p3makoto/ui/charselect_portrait.png", f)
+    write_texture(ROOT / "mod/pck_stage", "p3makoto/ui/victory_portrait.png", full())
     print("portrait atlas", page.size, "vertices", len(data["skins"][0]["attachments"]["under"]["under"]["uvs"]) // 2)
     if "--no-preview" not in sys.argv:
         from spine_eval import Skeleton
