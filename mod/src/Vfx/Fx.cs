@@ -65,12 +65,26 @@ public static class Fx
 
 	public static Polygon2D Poly(Node parent, Vector2[] points, Color color, bool additive = false)
 	{
-		Polygon2D poly = new Polygon2D { Polygon = points, Color = color, Antialiased = true };   // 斜边抗锯齿（色块、横幅的斜切边）
+		Polygon2D poly = new Polygon2D { Polygon = points, Color = color };
 		if (additive)
 		{
 			poly.Material = Additive;
 		}
 		parent.AddChild(poly);
+		// Godot 4 的 Polygon2D 不做边缘抗锯齿（Antialiased 属性不生效）：实心色块沿边描一圈同色、抗锯齿的细线盖住锯齿。
+		// 半透明的块不描（细线和块重叠处会更深，反而出一圈边）；加色的也不描。
+		if (!additive && color.A >= 0.6f && points.Length >= 3)
+		{
+			poly.AddChild(new Line2D
+			{
+				Points = points,
+				Closed = true,
+				Width = 1.5f,
+				DefaultColor = color,
+				Antialiased = true,
+				JointMode = Line2D.LineJointMode.Sharp,
+			});
+		}
 		return poly;
 	}
 

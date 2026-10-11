@@ -138,7 +138,7 @@ public static class RewardBackdropPatch
 [HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Screens.Shops.NMerchantCharacter), nameof(MegaCrit.Sts2.Core.Nodes.Screens.Shops.NMerchantCharacter._Ready))]
 public static class MerchantScalePatch
 {
-	private const float Scale = 0.31f;
+	private const float Scale = 0.34f;
 
 	public static void Postfix(MegaCrit.Sts2.Core.Nodes.Screens.Shops.NMerchantCharacter __instance)
 	{

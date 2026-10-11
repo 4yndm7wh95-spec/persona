@@ -25,9 +25,15 @@ public static class CardSigs
 
 	private static void After(Ctx c, double s, Action a) => Fx.After(c.Front, s, "card sig", a);
 
-	// 大塔罗牌放在人物身后的图层、头顶偏后上方（不挡人），碎裂的玻璃和闪光仍在前景
+	// 大塔罗牌放在人物身后的图层、人物左侧与头同高（不挡人；原来放在头顶上方，会超出屏幕顶边），碎裂的玻璃和闪光仍在前景
 	private static void Tarot(Ctx c, string numeral, string name, Color tint, double delay = 0.15) =>
-		After(c, delay, () => Motifs.BigTarot(c.Back, c.Above + new Vector2(-150f, -70f), numeral, name, tint, s: 0.85f, fxLayer: c.Front));
+		After(c, delay, () =>
+		{
+			Vector2 at = c.Head + new Vector2(-230f, 70f);
+			at.Y = Mathf.Max(at.Y, 240f);                     // 卡高约 270px：中心不高于 240，顶边不压到顶栏
+			at.X = Mathf.Max(at.X, 110f);
+			Motifs.BigTarot(c.Back, at, numeral, name, tint, s: 0.85f, fxLayer: c.Front);
+		});
 
 	// 规则：以结城理自己为中心、会大面积盖住他的实心光效（爆发、光柱、汇聚、闪光）一律放在人物身后（Back）；
 	// 文字、火花、蝴蝶、星座连线这类轻量元素留在前面（Front）。

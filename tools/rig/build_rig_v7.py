@@ -44,20 +44,28 @@ CONTRACT = ["hand", "grip", "muzzle", "evoker_tip"]
 EVOKER_POSES = ["focus_mid", "focus", "awaken"]
 
 
-# 各姿势图的躯干（衬衫）中心和待机图（561px）的水平差；取一半做修正：
-# 全修会让踩住的脚滑开，不修躯干会整段跳，各让一半，换图时躯干和脚都只动 ≤ 45px（游戏里约 14px），由过渡残影带过
-TORSO = {"idle": 561.0, "focus_mid": 587.0, "focus": 589.0, "awaken": 565.0, "cast_mid": 470.5, "cast": 471.5}
-POSE_DX = {k: 0.5 * (TORSO["idle"] - v) for k, v in TORSO.items()}
-POSE_DX["cast_mid"] = POSE_DX["cast"] = 0.5 * (TORSO["idle"] - 471.0)      # 这两张一起移，彼此之间不跳
+# 各姿势图相对待机图的比例和水平偏移（生成模型每张画的人物大小不一样）：
+# 召唤器三张：鞋和头量出来约 0.89~0.91，但整体身高与待机一致（1.0）——模型把头和鞋画得略大、腿略短。
+# 用剪影叠图比较肩宽 / 躯干宽度，0.95 时与待机最吻合（头顶偏低是低头姿势本身），取 0.95。
+# 以脚底中点 (553, 1515) 为基准缩放，脚仍踩在原地。水平：抬手 / 余势 整体右移 83px（头和鞋的特征点一致给出）；
+# 觉醒右移 5px（躯干基本对齐；它的站姿本来就更开）
+POSE_T = {"idle": (1.0, 0.0), "focus_mid": (0.95, 0.0), "focus": (0.95, 0.0), "awaken": (0.95, 5.0),
+          "cast_mid": (1.0, 83.0), "cast": (1.0, 83.0)}
 
 
 def U(p, pose=None):
-    dx = POSE_DX.get(pose, 0.0) if pose else 0.0
-    return ((p[0] + dx - 553.0) * S + 60.6, (1515.0 - p[1]) * S)
+    s, dx = POSE_T.get(pose, (1.0, 0.0)) if pose else (1.0, 0.0)
+    x = 553.0 + (p[0] - 553.0) * s + dx
+    y = 1515.0 + (p[1] - 1515.0) * s
+    return ((x - 553.0) * S + 60.6, (1515.0 - y) * S)
+
+
+def pose_scale(pose):
+    return POSE_T.get(pose, (1.0, 0.0))[0] if pose else 1.0
 
 
 def pose_of(region):
-    for p in sorted(TORSO, key=len, reverse=True):
+    for p in sorted(POSE_T, key=len, reverse=True):
         if region == f"v7_{p}" or region.startswith(f"v7_{p}_"):
             return p
     return None
@@ -287,7 +295,8 @@ class Builder:
         att["v7_glow"] = {"v7_awaken_eyeglow": self.region("v7_awaken_eyeglow")}
         mx, my = U(self.muzzle["awaken"], "awaken")
         gx, gy = U(self.grip["awaken"], "awaken")
-        att["v7_tip"] = {"v7_tipflash": {"x": round(mx - gx, 2), "y": round(my - gy, 2), "width": 160 * S, "height": 160 * S}}
+        k = pose_scale("awaken")
+        att["v7_tip"] = {"v7_tipflash": {"x": round(mx - gx, 2), "y": round(my - gy, 2), "width": round(160 * S * k, 2), "height": round(160 * S * k, 2)}}
         return regions
 
     def region(self, name, origin=None):
@@ -297,7 +306,8 @@ class Builder:
         if origin is not None:
             ox, oy = U(origin, pose)
             cx, cy = cx - ox, cy - oy
-        return {"x": round(cx, 2), "y": round(cy, 2), "width": round((x1 - x0) * S, 2), "height": round((y1 - y0) * S, 2)}
+        k = pose_scale(pose)
+        return {"x": round(cx, 2), "y": round(cy, 2), "width": round((x1 - x0) * S * k, 2), "height": round((y1 - y0) * S * k, 2)}
 
     # ── 动画编排 ──
     def sequence(self, a, seq, prev=None):
