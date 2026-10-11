@@ -30,11 +30,7 @@ ARMS["s_back"] = {"file": "../v7/rarm_sword_back_b", "shoulder": (580, 300), "sc
                   "anchors": {"hand": (372, 880), "sword_tip": (24, 1302)}}
 ARMS["s_ext"] = {"file": "../v7/rarm_sword_extend_a", "shoulder": (88, 429), "scale": 0.79, "rot": 0.0,
                  "anchors": {"hand": (512, 461), "sword_tip": (1008, 341)}}
-# 阶段 8（参考 P3R 原版斩击定格）：横斩后收剑扛肩 —— 上臂下垂、前臂折回、手在胸前，剑身斜伸到头后（剑刃切出来画在身体后面）
-ARMS["s_shoulder"] = {"file": "../v8/rarm_sword_shoulder_b", "shoulder": (364, 450), "scale": 0.5, "rot": 0.0,
-                      "anchors": {"hand": (709, 532), "sword_tip": (92, 28)}}
-BLADE_BEHIND = {"s_shoulder": [(56, 0), (150, 0), (676, 458), (648, 552), (588, 530)]}   # 剑刃 + 护手（手绘图像素）
-for _k in ("s_back", "s_ext", "s_shoulder"):
+for _k in ("s_back", "s_ext"):
     v4.ARM_BONE[_k] = "rarm_" + _k
     v4.THETA[_k] = v4._hand_dir(_k)
 to_spine, map_point = v4.to_spine, v4.map_point
@@ -49,7 +45,6 @@ J5.update({
     "hair_fringe": (562, 76), "hair_back": (470, 70), "hair_side": (615, 62),
     "tie": (545, 255), "coat": (445, 600),
     "eye": (599, 129),
-    "lshoulder": (634, 292),                 # 远侧左肩
 })
 
 # 手臂肩 → 肘 → 腕（各自手绘图的像素）；present / evoker 是单骨骼（刚体）
@@ -60,13 +55,7 @@ CHAINS = {
     "s_down": [(330, 310), (400, 570), (478, 815)],
     "s_back": [(580, 300), (514, 621), (390, 768)],
     "s_ext": [(88, 429), (352, 437), (445, 447)],
-    "s_shoulder": [(364, 450), (499, 862), (679, 630)],
 }
-
-# 远侧左臂：平时插在口袋里（身体图的一部分，切出来单独成块），斩击定格时换成向前平伸开掌（art/v8/larm_open_a）
-LARM_OPEN = {"file": "art/v8/larm_open_a.png", "shoulder": (85, 600), "scale": 0.3}
-POCKET_ARM = [(616, 262), (652, 258), (674, 330), (682, 440), (697, 520), (707, 600), (708, 668), (678, 670),
-              (658, 640), (648, 560), (638, 470), (626, 380), (612, 300)]           # 母版像素
 FORE = {k: f"rarm_{k}_fore" for k in CHAINS}
 HAND = {k: f"rarm_{k}_hand" for k in CHAINS}
 ARM_BONE = v4.ARM_BONE
@@ -229,25 +218,6 @@ def eye_glow_image():
     return Image.fromarray((np.dstack([rgb, a]) * 255).astype(np.uint8), "RGBA")
 
 
-def _poly(size, points):
-    m = Image.new("L", size, 0)
-    ImageDraw.Draw(m).polygon([tuple(p) for p in points], fill=255)
-    return m
-
-
-def load_left_arm():
-    """开掌左臂：抠图 → 按肩点缩放 → 放到远侧左肩。返回 (图像, 左上角在母版中的位置)。"""
-    src = key_image(ROOT / LARM_OPEN["file"])
-    bb = src.getchannel("A").point(lambda v: 255 if v > 3 else 0).getbbox()
-    sc = LARM_OPEN["scale"]
-    crop = src.crop(bb)
-    im = crop.resize((max(1, round(crop.width * sc)), max(1, round(crop.height * sc))), Image.LANCZOS)
-    im = v4.outline(im, 1, (10, 10, 20))
-    sx, sy = LARM_OPEN["shoulder"]
-    lx, ly = J5["lshoulder"]
-    return im, (lx - (sx - bb[0]) * sc, ly - (sy - bb[1]) * sc)
-
-
 # ───────────── 骨骼 / 插槽 / 网格 ─────────────
 BONES = [
     ("root", None, ORIGIN),
@@ -262,7 +232,6 @@ BONES = [
     ("tie", "torso", J5["tie"]),
     ("arm_particle_attach", "torso", (380, 520)),
     ("coat", "hip", J5["coat"]),
-    ("larm", "torso", J5["lshoulder"]),
     ("thigh_l", "hip", J["hip_l"]), ("shin_l", "thigh_l", J["knee_l"]), ("leg_particle_attach_l", "shin_l", (400, 1250)),
     ("thigh_r", "hip", J["hip_r"]), ("shin_r", "thigh_r", J["knee_r"]), ("leg_particle_attach", "shin_r", (612, 1250)),
 ]
@@ -313,53 +282,11 @@ def build_setup():
         s = sum(v for _, v in ws)
         return [(n, v / s) for n, v in ws if v / s > 1e-3]
 
-    # 远侧左臂（插兜）从身体上切下来单独成块；身体上的切口用扩散填补（黑色外套，看不出来）
-    from mesh_rig import inpaint
-    m_arr = np.asarray(master).copy()
-    pocket_mask = np.asarray(_poly(master.size, POCKET_ARM)) > 0
-    pocket = m_arr.copy()
-    pocket[..., 3] = (pocket[..., 3] * pocket_mask).astype(np.uint8)
-    hole = np.asarray(Image.fromarray((pocket_mask & (m_arr[..., 3] > 0)).astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(3))) > 0
-    body_arr = inpaint(m_arr, hole)
-    body_src = Image.fromarray(body_arr, "RGBA")
-
-    # 远侧左臂（开掌）：画在身体后面，挂在 larm 骨骼上
-    lim, lbox = load_left_arm()
-    images["larm_open"] = lim
-    skin["larm_open"] = {"larm_open": mesh_from(lim, lbox, lambda x, y: [("larm", 1.0)], world, bone_index)}
-    slots.append({"name": "larm_open", "bone": "root"})
-
-    # 扛肩那张剑臂的剑刃：画在身体后面（剑在脑后）
-    blade_parts = {}
-    for k, poly in BLADE_BEHIND.items():
-        im, center = v4.load_arm(ARMS[k])
-        src = key_image(ROOT / "art/v4" / (ARMS[k]["file"] + ".png"))
-        bb = src.getchannel("A").point(lambda v: 255 if v > 3 else 0).getbbox()
-        sc = ARMS[k]["scale"]
-        mask = np.asarray(_poly(im.size, [((x - bb[0]) * sc, (y - bb[1]) * sc) for x, y in poly])) > 0
-        a = np.asarray(im).copy()
-        blade = a.copy()
-        blade[..., 3] = (blade[..., 3] * mask).astype(np.uint8)
-        a[..., 3] = (a[..., 3] * ~mask).astype(np.uint8)
-        blade_parts[k] = (Image.fromarray(a, "RGBA"), center)
-        name = f"rarm_{k}_blade"
-        bimg = Image.fromarray(blade, "RGBA")
-        images[name] = bimg
-        box = (center[0] - im.width / 2, center[1] - im.height / 2)
-        skin[name] = {name: mesh_from(bimg, box, arm_weights(k, ARMS[k]), world, bone_index)}
-        slots.append({"name": name, "bone": "root"})
-
-    bbox = body_src.getchannel("A").point(lambda v: 255 if v > 8 else 0).getbbox()
-    body_img = body_src.crop(bbox)
+    bbox = master.getchannel("A").point(lambda v: 255 if v > 8 else 0).getbbox()
+    body_img = master.crop(bbox)
     images["body"] = body_img
     skin["body"] = {"body": mesh_from(body_img, bbox[:2], body_fn, world, bone_index)}
     slots.append({"name": "body", "bone": "root", "attachment": "body"})
-
-    pocket_img = Image.fromarray(pocket, "RGBA")
-    pb = pocket_img.getchannel("A").point(lambda v: 255 if v > 8 else 0).getbbox()
-    images["larm_pocket"] = pocket_img.crop(pb)
-    skin["larm_pocket"] = {"larm_pocket": mesh_from(images["larm_pocket"], pb[:2], body_fn, world, bone_index)}
-    slots.append({"name": "larm_pocket", "bone": "root", "attachment": "larm_pocket"})
 
     # 眨眼贴片（头部骨骼上的普通区域附件）
     lid, (lx, ly) = eyelid_patch(master)
@@ -378,7 +305,7 @@ def build_setup():
 
     # 手臂网格（每张手绘一块，放在身体前面）
     for k, cfg in ARMS.items():
-        im, center = blade_parts[k] if k in blade_parts else v4.load_arm(cfg)
+        im, center = v4.load_arm(cfg)
         name = "rarm_" + k
         images[name] = im
         box = (center[0] - im.width / 2, center[1] - im.height / 2)
@@ -407,8 +334,7 @@ for _k in CHAINS:
     DYN[FORE[_k]] = (4.2, 0.5, 0.0)
     DYN[HAND[_k]] = (3.8, 0.42, 0.0)
 DYN[ARM_BONE["hang"]] = (3.2, 0.42, 0.0)
-DYN["foot_l"] = DYN["foot_r"] = (5.0, 0.8, 0.0)
-DYN["larm"] = (4.0, 0.55, 0.0)          # 踏步：脚踝目标位移（只喂给 IK，不导出）
+DYN["foot_l"] = DYN["foot_r"] = (5.0, 0.8, 0.0)          # 踏步：脚踝目标位移（只喂给 IK，不导出）
 SECONDARY = ("hair_fringe", "hair_back", "hair_side", "tie", "coat")
 
 
@@ -446,7 +372,7 @@ def breeze(t, period, amp=1.0):
     })
 
 
-def bake(rig, images, name, duration, target, states, loop=False, events=None, speed=1.0, fade=0.05, blinks=(), eyes=(), left=()):
+def bake(rig, images, name, duration, target, states, loop=False, events=None, speed=1.0, fade=0.05, blinks=(), eyes=()):
     """弹簧积分 240Hz → 30fps；次级部件目标由身体速度推出；腿部 IK；插槽淡化；锚点烘焙；眨眼。"""
     sub, T = 240, 1.0 / 240
     p0 = target(0.0)
@@ -494,27 +420,6 @@ def bake(rig, images, name, duration, target, states, loop=False, events=None, s
         if e:
             bones[b] = e
     slots = v4.slot_timelines(states, fade)
-    for k in BLADE_BEHIND:                      # 身后的剑刃与它的手臂同步显隐
-        src = slots["rarm_" + k]
-        slots[f"rarm_{k}_blade"] = {"attachment": [{"time": a["time"], "name": (f"rarm_{k}_blade" if a["name"] else None)} for a in src["attachment"]],
-                                    "rgba": [dict(c) for c in src["rgba"]]}
-    if left:                                    # 左臂：插兜 ↔ 开掌 交叉淡化，[(时间, "pocket"/"open", 淡化秒)]
-        for slot, which in (("larm_pocket", "pocket"), ("larm_open", "open")):
-            att, rgba = [], []
-            prev = None
-            for i, (t, st, f) in enumerate(left):
-                on = st == which
-                if i == 0:
-                    att.append({"time": 0.0, "name": slot if on else None})
-                    rgba.append({"time": 0.0, "color": "ffffffff" if on else "ffffff00"})
-                elif on and not prev:
-                    att.append({"time": t, "name": slot})
-                    rgba += [{"time": t, "color": "ffffff00"}, {"time": round(t + f, 4), "color": "ffffffff"}]
-                elif prev and not on:
-                    rgba += [{"time": t, "color": "ffffffff"}, {"time": round(t + f, 4), "color": "ffffff00"}]
-                    att.append({"time": round(t + f, 4), "name": None})
-                prev = on
-            slots[slot] = {"attachment": sorted(att, key=lambda x: x["time"]), "rgba": sorted(rgba, key=lambda x: x["time"])}
     if blinks:
         rgba = [{"time": 0.0, "color": "ffffff00"}]
         att = [{"time": 0.0, "name": "eyelid"}]
@@ -543,25 +448,15 @@ def bake(rig, images, name, duration, target, states, loop=False, events=None, s
     for t, _ in frames:
         Wm = sk.world(name, t)
         al = v4.arm_alpha(states, fade, t)
-        sh = Wm[ARM_BONE["hang"]] @ np.array([0.0, 0.0, 1.0])
         for a in ANCHORS:
-            # 换图淡化期间按"以肩为圆心的极坐标"混合（半径线性、角度走短弧）：剑尖沿弧线扫过去，
-            # 而不是两点连线从肩膀附近穿过（那样拖尾会缩成一团）
-            sr = sw = 0.0
-            cx = cy = 0.0
+            sx = sy = sw = 0.0
             for k in ARMS:
                 if al[k] <= 0 or a not in local[k]:
                     continue
                 pt = Wm[deepest(k)] @ np.array([local[k][a][0], local[k][a][1], 1.0])
-                dx, dy = pt[0] - sh[0], pt[1] - sh[1]
-                rr = math.hypot(dx, dy)
-                sr, sw = sr + rr * al[k], sw + al[k]
-                if rr > 1e-6:
-                    cx, cy = cx + dx / rr * al[k], cy + dy / rr * al[k]
+                sx, sy, sw = sx + pt[0] * al[k], sy + pt[1] * al[k], sw + al[k]
             if sw > 0:
-                ang = math.atan2(cy, cx)
-                rad = sr / sw
-                last[a] = (sh[0] + rad * math.cos(ang), sh[1] + rad * math.sin(ang))
+                last[a] = (sx / sw, sy / sw)
             elif a != "hand":
                 last[a] = last["hand"]
             support[a].append(sw > 0.999)
@@ -618,31 +513,23 @@ def make_animations(rig, images):
     KICK = add(EVOKER, B(head={"r": -16}, spine={"r": -2}, torso={"r": -5}, hip={"x": -12, "y": -8}, **ALL(7)))
     S_READY = add(A("s_ready"), B(hip={"y": -14, "x": 4}, spine={"r": -2}, torso={"r": -3}, head={"r": -2},
                                   **{FORE["s_ready"]: {"r": 6}, HAND["s_ready"]: {"r": -4}}))
-    # P3R 斩击（参照原版结城理最后一帧）：剑压低蓄力 → 前脚踏出、横扫向敌人（接触帧）→ 剑顺势甩过头顶
-    # → 收剑扛肩（剑刃在脑后）+ 左手从口袋抽出向前开掌，宽步定格 → 收招。larm 是开掌左臂：出现时从下方摆上来。
-    # 全身参照原版：重心压得很低（胯几乎坐下）、上身整体前倾压向敌人、前腿远远踏出接近伸直、后腿屈膝压在身下、
-    # 头微低用眼角看敌 —— 一个"突进"的定格。腿长约 700~750 单位：hip 下沉 170、前移 46，前脚踏出 470 时前腿接近伸直，
-    # 后脚被拖前 130、膝盖深屈压在身下（和常见弓步相反：原版是前腿直、后腿屈的滑步急停）。
-    LOW = add(A("s_ready"), B(hip={"x": -18, "y": -46, "r": 7}, spine={"r": 4}, torso={"r": 6}, head={"r": 0},
-                              foot_r={"x": 30, "y": 34}, larm={"r": -70},
-                              **{FORE["s_ready"]: {"r": 10}, HAND["s_ready"]: {"r": 8}}))
-    SWEEP = add(A("s_ext"), B(hip={"x": 40, "y": -122, "r": -12}, spine={"r": -6}, torso={"r": -9}, head={"r": 12},
-                              foot_r={"x": 350, "y": 6}, foot_l={"x": 50, "y": 0}, larm={"r": -66},
-                              **ALL(2), **{FORE["s_ext"]: {"r": 4}, HAND["s_ext"]: {"r": 4}}))
-    OVER = add(A("s_ext"), B(hip={"x": 44, "y": -158, "r": -16}, spine={"r": -7}, torso={"r": -11}, head={"r": 16},
-                             foot_r={"x": 440, "y": 0}, foot_l={"x": 100, "y": 0}, larm={"r": -34},
-                             **ALL(70), **{FORE["s_ext"]: {"r": 10}, HAND["s_ext"]: {"r": 16}}))
-    FINISH = add(A("s_shoulder"), B(hip={"x": 46, "y": -172, "r": -19}, spine={"r": -6}, torso={"r": -10}, head={"r": 19},
-                                    foot_r={"x": 470, "y": 0}, foot_l={"x": 130, "y": 0}, larm={"r": 36}, **{ARM_BONE["s_shoulder"]: {"r": 22}},
-                                    **{FORE["s_shoulder"]: {"r": 0}, HAND["s_shoulder"]: {"r": 0}}))
-    SETTLE = add(A("s_shoulder"), B(hip={"x": 42, "y": -162, "r": -17}, spine={"r": -5}, torso={"r": -9}, head={"r": 17},
-                                    foot_r={"x": 470, "y": 0}, foot_l={"x": 130, "y": 0}, larm={"r": 33}, **{ARM_BONE["s_shoulder"]: {"r": 20}},
-                                    **{FORE["s_shoulder"]: {"r": -2}, HAND["s_shoulder"]: {"r": -2}}))
-    RISE = add(A("s_shoulder"), B(hip={"x": 34, "y": -104, "r": -9}, spine={"r": -3}, torso={"r": -4}, head={"r": 9},
-                                  foot_r={"x": 300, "y": 50}, foot_l={"x": 110, "y": 0}, larm={"r": -20}, **{ARM_BONE["s_shoulder"]: {"r": 12}},
-                                  **{FORE["s_shoulder"]: {"r": -6}, HAND["s_shoulder"]: {"r": -4}}))
-    PUT_AWAY = add(A("hang"), B(hip={"x": 20, "y": -30, "r": -3}, spine={"r": -1}, torso={"r": -2}, head={"r": 4},
-                                foot_r={"x": 60, "y": 0}, foot_l={"x": 50, "y": 40}, larm={"r": -60}))
+    # 攻击：髋部先动，脊柱 / 胸 / 手臂依次跟上（弹簧本身给每节一点滞后），剑在接触帧前甩腕加速
+    # 上撩斜斩（v0.8.2）：剑拉到右胯后下方蓄力（上身后拧、前脚抬起）→ 前脚踏出，髋部带上身前转，
+    # 剑从后下方经过最低点斜向前上划出 → 手臂伸直、剑尖指敌定格（弓步、前压、头盯敌人）→ 甩腕把剑尖甩下 → 撤步收招。
+    BACK = add(A("s_back"), B(hip={"x": -16, "y": -28}, spine={"r": 6}, torso={"r": 12}, head={"r": 3},
+                              foot_r={"x": 22, "y": 20},
+                              **{FORE["s_back"]: {"r": -6}, HAND["s_back"]: {"r": -8}}))
+    BACK_DEEP = add(BACK, B(torso={"r": 3}, **ALL(-5), **{HAND["s_back"]: {"r": -6}}))
+    # 斩出：伸直的手臂（剑与手臂成一线）从身后下方甩过一个 ~134° 的大弧，略越过水平（剑尖朝右上）后回落到指向敌人
+    EXTEND = add(A("s_ext"), B(hip={"x": 54, "y": -62}, spine={"r": -11}, torso={"r": -15}, head={"r": 10},
+                               foot_r={"x": 80, "y": 0},
+                               **ALL(18), **{FORE["s_ext"]: {"r": 6}, HAND["s_ext"]: {"r": 10}}))
+    HOLD = add(A("s_ext"), B(hip={"x": 58, "y": -66}, spine={"r": -12}, torso={"r": -16}, head={"r": 11},
+                             foot_r={"x": 82, "y": 0},
+                             **ALL(2), **{FORE["s_ext"]: {"r": 0}, HAND["s_ext"]: {"r": 2}}))
+    FLICK = add(A("s_ext"), B(hip={"x": 30, "y": -36}, spine={"r": -6}, torso={"r": -8}, head={"r": 5},
+                              foot_r={"x": 40, "y": 14},
+                              **ALL(-14), **{FORE["s_ext"]: {"r": -12}, HAND["s_ext"]: {"r": -38}}))
     HURT = add(IDLE, B(spine={"r": 6}, torso={"r": 10}, head={"r": 16}, hip={"x": -20, "y": -8}, **ALL(-16),
                        **{FORE["hang"]: {"r": -14}}))
 
@@ -668,20 +555,17 @@ def make_animations(rig, images):
          [(0, "s_ready"), (0.3, "hang")], speed=1.3, events=[(0.2, "weapon_sheath")])
 
     CUT = lambda u: u * u * u
-    # 接触帧 ≈0.072（剑横扫到正对敌人），早于游戏 0.15s 的伤害结算；0.1~0.155 甩过头顶落到肩后（两张手臂图交叉淡化 2 帧，
-    # 读作挥剑残影，手和剑尖不瞬移）；0.5 起收招
-    atk = [(0, IDLE), (0.04, LOW, out_cubic), (0.075, SWEEP, CUT), (0.1, OVER), (0.155, FINISH, out_back), (0.25, SETTLE, out_cubic),
-           (0.5, SETTLE), (0.6, RISE, in_out_sine), (0.74, PUT_AWAY, in_out_sine), (0.94, IDLE, out_cubic)]
-    atk_states = [(0, "hang"), (0.005, "s_ready", 0.025), (0.045, "s_ext", 0.012), (0.074, "s_shoulder", 0.074), (0.68, "hang", 0.14)]
-    atk_left = [(0, "pocket", 0.05), (0.09, "open", 0.05), (0.66, "pocket", 0.12)]
-    bake(rig, images, "attack", 0.95, seq(atk), atk_states, speed=3.0, fade=0.03, left=atk_left,
-         events=[(0.0, "weapon_draw"), (0.03, "weapon_windup"), (0.072, "weapon_slash"), (0.68, "weapon_sheath")])
-    atk_r = [(0, S_READY), (0.03, LOW, out_cubic), (0.062, SWEEP, CUT), (0.085, OVER), (0.14, FINISH, out_back), (0.23, SETTLE, out_cubic),
-             (0.48, SETTLE), (0.58, RISE, in_out_sine), (0.72, PUT_AWAY, in_out_sine), (0.92, IDLE, out_cubic)]
-    atk_r_states = [(0, "s_ready"), (0.035, "s_ext", 0.012), (0.074, "s_shoulder", 0.078), (0.66, "hang", 0.14)]
-    atk_r_left = [(0, "pocket", 0.05), (0.075, "open", 0.05), (0.64, "pocket", 0.12)]
-    bake(rig, images, "attack_from_ready", 0.95, seq(atk_r), atk_r_states, speed=3.0, fade=0.03, left=atk_r_left,
-         events=[(0.02, "weapon_windup"), (0.06, "weapon_slash"), (0.66, "weapon_sheath")])
+    # 接触帧（剑扫过最低点、朝向敌人）约 0.08s；0.10s 到定格，早于游戏 0.15s 的伤害结算
+    # 蓄力 0.04 → 0.055 换成伸直的手臂（此时它对准身后下方，看不出切换）→ 0.105 甩到最高点（接触帧 ≈0.08）
+    # → 0.17 回落定格、剑尖指敌 → 0.6 甩剑 → 0.9 收招
+    atk = [(0, IDLE), (0.04, BACK, out_cubic), (0.055, BACK_DEEP), (0.105, EXTEND, CUT), (0.17, HOLD, out_back), (0.44, HOLD),
+           (0.6, FLICK, in_out_sine), (0.9, IDLE, out_cubic)]
+    bake(rig, images, "attack", 0.95, seq(atk), [(0, "hang"), (0.005, "s_back", 0.03), (0.055, "s_ext", 0.012), (0.72, "hang", 0.12)],
+         speed=3.0, fade=0.03, events=[(0.0, "weapon_draw"), (0.04, "weapon_windup"), (0.08, "weapon_slash"), (0.7, "weapon_sheath")])
+    atk_r = [(0, S_READY), (0.03, BACK, out_cubic), (0.042, BACK_DEEP), (0.09, EXTEND, CUT), (0.155, HOLD, out_back), (0.42, HOLD),
+             (0.58, FLICK, in_out_sine), (0.88, IDLE, out_cubic)]
+    bake(rig, images, "attack_from_ready", 0.95, seq(atk_r), [(0, "s_ready"), (0.005, "s_back", 0.025), (0.042, "s_ext", 0.012), (0.7, "hang", 0.12)],
+         speed=3.0, fade=0.03, events=[(0.025, "weapon_windup"), (0.065, "weapon_slash"), (0.68, "weapon_sheath")])
     v4.STEP_ANIMS.update({"attack", "attack_from_ready"})
 
     cast = [(0, IDLE), (0.08, PRESENT), (0.12, PRESENT), (0.22, EVOKER), (0.26, TENSE), (0.272, KICK), (0.35, KICK), (0.55, EVOKER), (0.66, LOWER), (0.92, IDLE)]
