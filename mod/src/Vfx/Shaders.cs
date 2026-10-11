@@ -207,4 +207,42 @@ void fragment() {
 	c *= 1.0 - dot(v, v) * 0.9;
 	COLOR = vec4(c, 1.0);
 }");
+
+	private static Shader? _waterDisc;
+
+	/// <summary>
+	/// P3R 菜单的"水之圆"：大圆形里是深蓝渐变 + 缓慢流动的水下焦散光纹（经典迭代 sin 焦散），边缘一圈柔和亮边，圆外透明。
+	/// 参数：alpha 整体透明度；reveal 0~1 圆从中心张开的半径比例。
+	/// </summary>
+	public static Shader WaterDisc => _waterDisc ??= Make(@"
+shader_type canvas_item;
+uniform float alpha = 1.0;
+uniform float reveal = 1.0;
+uniform vec4 deep : source_color = vec4(0.02, 0.08, 0.42, 1.0);
+uniform vec4 shallow : source_color = vec4(0.1, 0.45, 0.95, 1.0);
+float caustic(vec2 p, float t) {
+	vec2 i = p;
+	float c = 1.0;
+	float inten = 0.005;
+	for (int n = 0; n < 4; n++) {
+		float tt = t * (1.0 - (3.5 / float(n + 1)));
+		i = p + vec2(cos(tt - i.x) + sin(tt + i.y), sin(tt - i.y) + cos(tt + i.x));
+		c += 1.0 / length(vec2(p.x / (sin(i.x + tt) / inten), p.y / (cos(i.y + tt) / inten)));
+	}
+	c /= 4.0;
+	c = 1.17 - pow(c, 1.4);
+	return pow(abs(c), 8.0);
+}
+void fragment() {
+	vec2 d = UV * 2.0 - 1.0;
+	float r = length(d);
+	float R = max(reveal, 0.001);
+	float inside = smoothstep(R, R - 0.008, r);
+	vec3 col = mix(shallow.rgb, deep.rgb, smoothstep(-0.9, 0.9, d.y));
+	float c = caustic(UV * 7.0 + vec2(0.0, TIME * 0.05), TIME * 0.35);
+	col += vec3(0.55, 0.85, 1.0) * clamp(c, 0.0, 1.0) * (0.55 - 0.35 * UV.y);
+	float rim = smoothstep(R - 0.06, R - 0.004, r) * inside;
+	col += vec3(0.35, 0.8, 1.0) * rim * 0.6;
+	COLOR = vec4(col, inside * alpha);
+}");
 }

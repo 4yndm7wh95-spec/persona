@@ -150,9 +150,71 @@ def cutin_eyes():
     ys, xs = ys / H, xs / W
     bg = np.stack([0.03 + 0.12 * xs, 0.12 + 0.45 * xs * (1 - ys * 0.5), 0.35 + 0.55 * xs], -1)   # 深蓝 → 青
     col = out * alpha + bg * (1 - alpha)
+    # ── 光影（参照原版切入：左上漏光、下方阴影、眼睛泛蓝光 + 横向镜头光、淡淡的水下焦散）──
+    Y, X = np.mgrid[0:H, 0:W].astype(np.float32)
+    leak = np.clip(1 - np.hypot((X - W * 0.1) / (W * 0.55), (Y + H * 0.3) / (H * 1.1)), 0, 1) ** 2
+    col = col + np.array([0.25, 0.55, 0.8]) * leak[..., None] * 0.45
+    beams = sum(np.clip(1 - np.abs((X - Y * 0.9) - W * c) / (W * w), 0, 1) ** 2 for c, w in ((0.18, 0.03), (0.33, 0.012), (0.62, 0.02)))
+    col = col + np.array([0.5, 0.8, 1.0]) * beams[..., None] * 0.18
+    shade = np.clip((Y / H - 0.55) / 0.45, 0, 1) ** 1.5
+    col = col * (1 - 0.5 * shade[..., None]) * (1 - 0.25 * np.clip(1 - Y / (H * 0.12), 0, 1)[..., None])
+    ex, ey = EYE
+    r = np.hypot((X - ex) / 1.0, (Y - ey) / 0.85)
+    col = col + np.array([0.3, 0.85, 1.0]) * (np.exp(-r / 38) * 0.9 + np.exp(-r / 120) * 0.35)[..., None]
+    streak = np.exp(-np.abs(Y - ey) / 5) * np.exp(-np.abs(X - ex) / 420)
+    col = col + np.array([0.45, 0.9, 1.0]) * streak[..., None] * 0.55
+    # 焦散（和游戏里水之圆同一个公式，只在暗部淡淡叠一层）
+    p = np.stack([X / W * 9, Y / H * 2.5], -1)
+    i = p.copy(); c = np.ones((H, W), np.float32); inten = 0.005; t = 3.0
+    for n in range(4):
+        tt = t * (1 - 3.5 / (n + 1))
+        i = p + np.stack([np.cos(tt - i[..., 0]) + np.sin(tt + i[..., 1]), np.sin(tt - i[..., 1]) + np.cos(tt + i[..., 0])], -1)
+        c += 1 / np.hypot(p[..., 0] / (np.sin(i[..., 0] + tt) / inten), p[..., 1] / (np.cos(i[..., 1] + tt) / inten))
+    c = np.abs(1.17 - (c / 4) ** 1.4) ** 8
+    dark = np.clip(1 - lum, 0, 1)[..., None] * (1 - alpha * 0.6)
+    col = col + np.array([0.4, 0.75, 1.0]) * np.clip(c, 0, 1)[..., None] * dark * 0.35
     edge = np.clip(np.minimum(xs, 1 - xs) / 0.08, 0, 1)[..., None]
     rgba = np.concatenate([col, edge], -1)
     return Image.fromarray((np.clip(rgba, 0, 1) * 255).astype(np.uint8), "RGBA")
+
+
+EYE = (690, 215)          # 横幅贴图里露出的那只眼睛（游戏里眼睛的动态光也对准这里：CutInFx.EyeTex）
+
+
+def cutin_ka():
+    """切入右侧的"咔"：原版那种手绘感的空心双描边大字 —— 斜切、白色粗外描边 + 黑色外缘 + 内部细青线、
+    空心（内部半透明深蓝）、右下错开的深蓝投影、几道速度斜线。离线用粗黑体字形做遮罩生成 PNG。"""
+    from PIL import ImageDraw, ImageFont, ImageFilter
+    font = ImageFont.truetype("/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc", 300)
+    S = 520
+    m = Image.new("L", (S, S), 0)
+    ImageDraw.Draw(m).text((60, 40), "咔", font=font, fill=255, stroke_width=6, stroke_fill=255)
+    m = m.transform(m.size, Image.AFFINE, (1, 0.32, -70, 0, 1, 0), resample=Image.BICUBIC)       # 斜体
+    g = np.asarray(m).astype(np.float32) / 255
+    def grow(a, r):
+        return np.asarray(Image.fromarray((a * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(r))).astype(np.float32) / 255
+    def shrink(a, r):
+        return np.asarray(Image.fromarray((a * 255).astype(np.uint8)).filter(ImageFilter.MinFilter(r))).astype(np.float32) / 255
+    outer = grow(g, 23)              # 黑色外缘
+    white = grow(g, 15)              # 白色粗描边
+    inner = shrink(g, 7)             # 内部
+    cyan = np.clip(g - shrink(g, 5), 0, 1)
+    out = np.zeros((S, S, 4), np.float32)
+    shadow = np.roll(np.roll(outer, 14, 0), 18, 1)
+    out[..., :3] = [0.03, 0.08, 0.3]; out[..., 3] = shadow * 0.85
+    def over(rgb, a):
+        out[..., :3] = out[..., :3] * (1 - a[..., None]) + np.array(rgb) * a[..., None]
+        out[..., 3] = out[..., 3] * (1 - a) + a
+    over([0.02, 0.02, 0.06], outer)
+    over([1, 1, 1], white)
+    over([0.04, 0.1, 0.32], inner * 0.8)
+    over([0.35, 0.9, 1.0], cyan)
+    # 速度斜线
+    im = Image.fromarray((np.clip(out, 0, 1) * 255).astype(np.uint8), "RGBA")
+    d = ImageDraw.Draw(im)
+    for k, (x, y, L) in enumerate(((30, 380, 150), (380, 90, 120), (410, 140, 70))):
+        d.line([(x, y), (x + L, y - L * 0.55)], fill=(255, 255, 255, 230), width=7 - 2 * (k == 2))
+    return im
 
 
 def charselect_portrait():
@@ -172,6 +234,9 @@ def charselect_portrait():
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
+    ka = cutin_ka()
+    ka.save(OUT / "cutin_ka.png")
+    write_texture(STAGE, "p3makoto/ui/cutin_ka.png", ka)
     eyes = cutin_eyes()
     eyes.save(OUT / "cutin_eyes.png")
     write_texture(STAGE, "p3makoto/ui/cutin_eyes.png", eyes)

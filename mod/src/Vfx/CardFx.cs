@@ -57,7 +57,7 @@ public static class CardFx
 			// P3R 技能切入：眼神特写横幅 → 扣扳机时碎裂 → Persona 现身（君王之刃：Thanatos 冲过去斩击；其他：显形后消散）
 			List<NCreature> cutTargets = Targets(play);
 			Color tint = play.Card.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Power ? Pal.DarkHour : Pal.Cyan;
-			CutInFx.Begin(caster, play.Card.Title, elapsed =>
+			CutInFx.Begin(caster, play.Card.Title, CardStyles.CaptionFor(play.Card).Persona, elapsed =>
 			{
 				if (sovereign)
 				{

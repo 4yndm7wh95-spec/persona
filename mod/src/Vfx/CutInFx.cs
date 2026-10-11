@@ -19,6 +19,8 @@ namespace P3Makoto.Vfx;
 public static class CutInFx
 {
 	private const string EyesPath = "res://p3makoto/ui/cutin_eyes.png";
+	private const string KaPath = "res://p3makoto/ui/cutin_ka.png";
+	private static readonly Vector2 EyeTex = new(690f, 215f);          // 贴图里眼睛的位置（build_ui_assets.EYE）
 	private const float TexW = 1600f, TexH = 440f;
 
 	private sealed class State
@@ -27,6 +29,7 @@ public static class CutInFx
 		public Polygon2D Face = null!;
 		public ColorRect Dim = null!;
 		public Node2D Ui = null!;
+		public Node2D Decor = null!;
 		public Texture2D Eyes = null!;
 		public Vector2 Screen;
 		public float Cy, HalfH, Pan;
@@ -43,7 +46,7 @@ public static class CutInFx
 	private static bool Fast => SaveManager.Instance?.PrefsSave.FastMode == FastModeType.Fast;
 
 	/// <summary>开始切入。onFire(从开始到扣扳机经过的秒数) 在玻璃碎裂那一刻调用（召唤 Persona）。</summary>
-	public static void Begin(NCreature caster, string title, Action<float>? onFire)
+	public static void Begin(NCreature caster, string title, string persona, Action<float>? onFire)
 	{
 		Control? back = Makoto.FxLayer(back: true);
 		Control? front = Makoto.FxLayer();
@@ -66,6 +69,39 @@ public static class CutInFx
 		back.AddChild(st.Dim);
 		st.Dim.GlobalPosition = -size * 0.1f;
 
+		// P3R 菜单式背景拼贴（都在横幅后面）：左下白色斜切大色块 + 上面旋转的超大 Persona 名字水印、右上深蓝色块、
+		// 右侧巨大的"水之圆"（焦散光纹）+ 两道细圆弧。依次从画面外滑入 / 张开。
+		Node2D decor = Fx.Root(back, Vector2.Zero, "P3CutInDecor");
+		st.Decor = decor;
+		Node2D slabs = new();
+		decor.AddChild(slabs);
+		P3Ui.Slab(slabs, -200f, size.X * 0.4f, size.Y * 0.64f, size.Y + 60f, 190f, new Color(0.93f, 0.96f, 1f, 0.9f));
+		P3Ui.Slab(slabs, -200f, size.X * 0.36f, size.Y * 0.64f, size.Y * 0.64f + 10f, 190f, new Color(0.9f, 0.1f, 0.25f, 0.9f));
+		Node2D word = P3Ui.GiantWord(slabs, persona, new Vector2(size.X * 0.03f, size.Y * 1.08f), (int)(size.Y * 0.3f), -1.0f, new Color(0.02f, 0.03f, 0.09f, 0.88f));
+		Node2D topSlab = new();
+		decor.AddChild(topSlab);
+		P3Ui.Slab(topSlab, size.X * 0.5f, size.X + 300f, -60f, size.Y * 0.15f, -140f, new Color(0.02f, 0.06f, 0.24f, 0.92f));
+		Vector2 discAt = new(size.X * 0.84f, st.Cy + size.Y * 0.06f);
+		float discR = size.Y * 0.62f;
+		ColorRect disc = P3Ui.WaterDisc(decor, discAt, discR);
+		Node2D arcs = new() { Position = discAt };
+		decor.AddChild(arcs);
+		Line2D arc1 = P3Ui.Arc(arcs, Vector2.Zero, discR * 1.07f, Mathf.Pi * 0.55f, Mathf.Pi * 1.45f, new Color(Pal.Cyan, 0.55f), 3f);
+		Line2D arc2 = P3Ui.Arc(arcs, Vector2.Zero, discR * 1.16f, Mathf.Pi * 0.8f, Mathf.Pi * 1.25f, new Color(1f, 1f, 1f, 0.45f), 2f);
+		Fx.Animate(decor, 3.0, t =>
+		{
+			float time = t * 3f;
+			float a = Ease.OutExpo(Mathf.Clamp(time / 0.2f, 0f, 1f));
+			float b = Ease.OutExpo(Mathf.Clamp((time - 0.04f) / 0.2f, 0f, 1f));
+			slabs.Position = new Vector2(-size.X * 0.5f * (1f - a), 0f);
+			topSlab.Position = new Vector2(size.X * 0.5f * (1f - b), 0f);
+			word.Position = new Vector2(size.X * 0.03f + 30f * time, size.Y * 1.08f);
+			Fx.SetParam(disc, "reveal", Ease.OutExpo(Mathf.Clamp((time - 0.02f) / 0.24f, 0f, 1f)));
+			arc1.Rotation = 0.25f * time;
+			arc2.Rotation = -0.18f * time;
+			arc1.Modulate = arc2.Modulate = new Color(1f, 1f, 1f, b);
+		});
+
 		// 横幅：两条曲边（越往两端越高，像镜头的弧面），贴图横向缓慢平移
 		st.Band = Fx.Root(back, new Vector2(0f, st.Cy), "P3CutInBand");
 		st.Face = new Polygon2D { Texture = eyes, Polygon = BandPoly(st, 0f), UV = BandUv(st), TextureFilter = CanvasItem.TextureFilterEnum.Linear };
@@ -75,19 +111,46 @@ public static class CutInFx
 		Fx.Line(st.Band, Edge(st, -1f), new Color(Pal.Cyan, 0.9f), 3f);
 		Fx.Line(st.Band, Edge(st, 1f), new Color(Pal.Cyan, 0.9f), 3f);
 		Bubbles(st);
+		// 眼中蓝光（实时）：柔光 + 十字星 + 横向镜头光，跟着贴图平移，呼吸闪烁
+		Node2D eye = new();
+		st.Band.AddChild(eye);
+		Sprite2D bloom = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(Pal.Cyan, 0.85f), Scale = Vector2.One * 2.2f };
+		eye.AddChild(bloom);
+		Polygon2D star = Fx.Poly(eye, Fx.Star4(70f, 0.06f), Pal.White, additive: true);
+		Sprite2D streak = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(0.6f, 0.92f, 1f, 0.8f), Scale = new Vector2(22f, 0.22f) };
+		eye.AddChild(streak);
+		// 斜向扫过的一道光
+		Polygon2D sweep = Fx.Poly(st.Band, new[] { new Vector2(-90f, -st.HalfH * 1.3f), new Vector2(0f, -st.HalfH * 1.3f), new Vector2(-160f, st.HalfH * 1.3f), new Vector2(-250f, st.HalfH * 1.3f) },
+			new Color(0.6f, 0.9f, 1f, 0.35f), additive: true);
+		Fx.Animate(eye, 3.0, t =>
+		{
+			float time = t * 3f;
+			float u = (EyeTex.X + st.Pan) / (TexW * 0.92f);
+			eye.Position = new Vector2(X(st, u), (EyeTex.Y / TexH * 2f - 1f) * Half(st, u));
+			float pulse = 0.8f + 0.2f * Mathf.Sin(time * 9f);
+			float flare = Ease.OutExpo(Mathf.Clamp((time - 0.08f) / 0.15f, 0f, 1f));
+			bloom.Scale = Vector2.One * 2.2f * pulse * flare;
+			star.Scale = Vector2.One * flare * (0.7f + 0.3f * Mathf.Sin(time * 13f));
+			star.Rotation = time * 0.8f;
+			streak.Scale = new Vector2(22f * flare, 0.22f * pulse);
+			sweep.Position = new Vector2(Mathf.Lerp(-200f, st.Screen.X + 400f, Mathf.Clamp(time / 0.5f, 0f, 1f)), 0f);
+		});
 		st.Band.Scale = new Vector2(1f, 0.02f);
 
 		// 左上技能名 + 右侧"咔"
 		st.Ui = Fx.Root(front, Vector2.Zero, "P3CutInUi");
-		Node2D tag = new() { Position = new Vector2(-420f, size.Y * 0.08f), Skew = -0.25f };
-		st.Ui.AddChild(tag);
-		float tw = Mathf.Max(260f, title.Length * 44f + 120f);
-		Fx.Poly(tag, new[] { new Vector2(0, 0), new Vector2(tw, 0), new Vector2(tw - 18f, 64f), new Vector2(-18f, 64f) }, new Color(0.08f, 0.27f, 0.88f, 0.95f));
-		Fx.Line(tag, new[] { new Vector2(0, 0), new Vector2(tw, 0), new Vector2(tw - 18f, 64f), new Vector2(-18f, 64f) }, new Color(Pal.Cyan, 0.9f), 3f, closed: true);
-		Typo.Text(tag, title, Typo.Cjk, 38, Pal.White, new Vector2(70f, 8f));
-		Node2D ka = new() { Position = new Vector2(size.X * 0.8f, st.Cy - st.HalfH * 0.15f), Skew = -0.22f, Rotation = -0.08f };
+		// 技能名：P3R 菜单"选中项"样式（白色平行四边形 + 错开黑块 + 红色粗斜体），下面一行青色 PERSONA ▸ 名字
+		Node2D tag = P3Ui.RedTag(st.Ui, title, new Vector2(-420f, size.Y * 0.08f), 44);
+		Node2D sub = new() { Position = new Vector2(30f, 80f), Skew = -0.25f };
+		tag.AddChild(sub);
+		Typo.Text(sub, "PERSONA  \u25B8  " + persona, Typo.Latin, 26, Pal.Cyan, Vector2.Zero, outline: 4, outlineColor: new Color(0.02f, 0.04f, 0.12f));
+		// "咔"：离线生成的空心双描边设计字（build_ui_assets.cutin_ka），不是系统字体
+		Node2D ka = new() { Position = new Vector2(size.X * 0.8f, st.Cy - st.HalfH * 0.1f), Rotation = -0.06f };
 		st.Ui.AddChild(ka);
-		Typo.Text(ka, "咔", Typo.Cjk, 230, new Color(0.03f, 0.06f, 0.18f, 0.92f), new Vector2(-115f, -150f), outline: 14, outlineColor: Pal.White);
+		if (ResourceLoader.Load(KaPath) is Texture2D kaTex)
+		{
+			ka.AddChild(new Sprite2D { Texture = kaTex, Scale = Vector2.One * (st.HalfH * 2.1f / kaTex.GetHeight()) });
+		}
 		ka.Scale = Vector2.One * 2.2f;
 		ka.Modulate = new Color(1f, 1f, 1f, 0f);
 
@@ -131,6 +194,16 @@ public static class CutInFx
 	private static void Clear(State st, bool keepDim = false)
 	{
 		if (GodotObject.IsInstanceValid(st.Band)) st.Band.QueueFree();
+		if (GodotObject.IsInstanceValid(st.Decor))
+		{
+			Node2D decor = st.Decor;
+			Fx.Animate(decor, 0.35, t =>
+			{
+				decor.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(t));
+				decor.Scale = Vector2.One * (1f + 0.06f * Ease.OutCubic(t));
+			});
+			Fx.FreeAfter(decor, 0.4);
+		}
 		if (GodotObject.IsInstanceValid(st.Ui))
 		{
 			Node2D ui = st.Ui;
