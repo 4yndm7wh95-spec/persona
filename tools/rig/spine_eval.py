@@ -1,4 +1,5 @@
-"""最小 Spine 求值器 + 渲染器（只支持本项目用到的子集：骨骼的平移/旋转/缩放，区域附件，线性插值）。
+"""最小 Spine 求值器 + 渲染器（只支持本项目用到的子集：骨骼的平移/旋转/缩放，区域 / 网格附件，
+线性 / 贝塞尔 / 阶梯插值，两骨 IK 约束（rig v6 的腿））。
 游戏里 spine-godot 用同一套规则计算，所以这里渲染出来的画面就是游戏里的画面（不含特效）。
 坐标：Spine 世界坐标 y 向上；渲染时翻转成图像坐标。"""
 import math
@@ -12,17 +13,63 @@ def mat(x, y, rot_deg, sx=1.0, sy=1.0):
     return np.array([[c * sx, -s * sy, x], [s * sx, c * sy, y], [0, 0, 1]], dtype=np.float64)
 
 
+def _bezier_value(t, t0, v0, cx1, cy1, cx2, cy2, t1, v1):
+    """Spine 4.x 贝塞尔：控制点是绝对的 (时间, 数值)。先按时间二分出参数，再求数值。"""
+    lo, hi = 0.0, 1.0
+    for _ in range(40):
+        u = (lo + hi) / 2
+        m = 1 - u
+        tt = m * m * m * t0 + 3 * m * m * u * cx1 + 3 * m * u * u * cx2 + u * u * u * t1
+        if tt < t:
+            lo = u
+        else:
+            hi = u
+    u = (lo + hi) / 2
+    m = 1 - u
+    return m * m * m * v0 + 3 * m * m * u * cy1 + 3 * m * u * u * cy2 + u * u * u * v1
+
+
 def sample(keys, t, fields):
-    """keys: [{'time':..,field:..}] 线性插值；超出范围取端点。"""
+    """keys: [{'time':..,field:..,'curve':..}]；curve 缺省线性，"stepped" 阶梯，列表为贝塞尔（每个字段 4 个数）。超出范围取端点。"""
     if not keys:
         return None
     if t <= keys[0]["time"]:
         return [keys[0].get(f, 0.0) for f in fields]
     for a, b in zip(keys, keys[1:]):
         if a["time"] <= t <= b["time"]:
-            u = 0.0 if b["time"] == a["time"] else (t - a["time"]) / (b["time"] - a["time"])
+            if b["time"] == a["time"]:
+                return [b.get(f, 0.0) for f in fields]
+            c = a.get("curve")
+            if c == "stepped":
+                return [a.get(f, 0.0) for f in fields]
+            if isinstance(c, list):
+                return [_bezier_value(t, a["time"], a.get(f, 0.0), *c[4 * i:4 * i + 4], b["time"], b.get(f, 0.0))
+                        for i, f in enumerate(fields)]
+            u = (t - a["time"]) / (b["time"] - a["time"])
             return [a.get(f, 0.0) + (b.get(f, 0.0) - a.get(f, 0.0)) * u for f in fields]
     return [keys[-1].get(f, 0.0) for f in fields]
+
+
+def _ik2(W, parent, child, child_local, length, target, bend_positive):
+    """两骨 IK（与 Spine 相同的解析解；假设父骨骼缩放为 1、子骨骼位于父骨骼 x 轴上）。直接改写 W 里父 / 子的世界矩阵。"""
+    px, py = W[parent][0, 2], W[parent][1, 2]
+    tx, ty = target
+    l1 = math.hypot(*child_local)
+    l2 = length
+    dx, dy = tx - px, ty - py
+    d = max(min(math.hypot(dx, dy), l1 + l2 - 1e-6), abs(l1 - l2) + 1e-6)
+    cos_c = (l1 * l1 + d * d - l2 * l2) / (2 * l1 * d)
+    sgn = 1 if bend_positive else -1             # Spine：bendPositive → 子骨骼相对父骨骼逆时针（y 向上）弯
+    a1 = math.atan2(dy, dx) - sgn * math.acos(max(-1, min(1, cos_c)))
+    cos_b = (l1 * l1 + l2 * l2 - d * d) / (2 * l1 * l2)
+    knee = math.pi - math.acos(max(-1, min(1, cos_b)))
+    a2 = a1 + sgn * knee
+    a1 -= math.atan2(child_local[1], child_local[0])
+    c, s = math.cos(a1), math.sin(a1)
+    W[parent] = np.array([[c, -s, px], [s, c, py], [0, 0, 1.0]])
+    cxw, cyw = (W[parent] @ np.array([child_local[0], child_local[1], 1.0]))[:2]
+    c, s = math.cos(a2), math.sin(a2)
+    W[child] = np.array([[c, -s, cxw], [s, c, cyw], [0, 0, 1.0]])
 
 
 class Skeleton:
@@ -31,8 +78,13 @@ class Skeleton:
         self.images = images  # region name -> PIL RGBA（已按附件尺寸）
         self.bones = {b["name"]: b for b in data["bones"]}
         self.order = [b["name"] for b in data["bones"]]
+        self.children = {}
+        for b in data["bones"]:
+            if "parent" in b:
+                self.children.setdefault(b["parent"], []).append(b["name"])
 
     def world(self, anim=None, t=0.0):
+        self._t = t
         tl = (self.data.get("animations", {}).get(anim, {}).get("bones", {})) if anim else {}
         W = {}
         for name in self.order:
@@ -53,7 +105,32 @@ class Skeleton:
                 sy *= ks[1] if ks[1] != 0 else 1.0
             local = mat(x, y, rot, sx, sy)
             W[name] = W[b["parent"]] @ local if "parent" in b else local
+        for ik in self.data.get("ik", []):
+            parent, child = ik["bones"]
+            cb = self.bones[child]
+            tgt = W[ik["target"]][:2, 2]
+            _ik2(W, parent, child, (cb.get("x", 0.0), cb.get("y", 0.0)), cb.get("length", 0.0), tgt, ik.get("bendPositive", True))
+            self._reparent(W, child, tl)          # 子孙骨骼按新的子骨骼矩阵重算
         return W
+
+    def _reparent(self, W, root, tl):
+        """root 的世界矩阵被约束改写后，按各子骨骼的局部变换重算其子孙。"""
+        for n in self.children.get(root, []):
+            b = self.bones[n]
+            x, y = b.get("x", 0.0), b.get("y", 0.0)
+            rot = b.get("rotation", 0.0)
+            sx, sy = b.get("scaleX", 1.0), b.get("scaleY", 1.0)
+            k = tl.get(n, {})
+            if "rotate" in k:
+                rot += sample(k["rotate"], self._t, ["value"])[0]
+            if "translate" in k:
+                dx, dy = sample(k["translate"], self._t, ["x", "y"])
+                x, y = x + dx, y + dy
+            if "scale" in k:
+                ks = sample(k["scale"], self._t, ["x", "y"])
+                sx, sy = sx * ks[0], sy * ks[1]
+            W[n] = W[root] @ mat(x, y, rot, sx, sy)
+            self._reparent(W, n, tl)
 
     def attachments(self, anim=None, t=0.0):
         """返回 [(slot, bone, attachment_name, alpha)]，按绘制顺序。"""
