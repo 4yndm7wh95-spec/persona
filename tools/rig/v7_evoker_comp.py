@@ -76,6 +76,36 @@ def hand_layer(img, box):
     return layer
 
 
+EYE = {"awaken": ((620.0, 128.0), -12.0)}      # 露出的那只眼睛：虹膜中心、眼睛走向（度，仰头时略向上斜）
+
+
+def eye_glow(center, tilt, size=(1024, 1536)):
+    """眼中蓝光（加色层，rig 里单独做亮起 / 退去）：虹膜发亮 + 柔光 + 大范围光晕 + 沿眼睛方向的细长横光 + 小十字星。
+    RGB = 颜色，alpha = 强度（Spine additive 槽：rgb × alpha 叠加）。"""
+    W, H = size
+    ys, xs = np.mgrid[0:H, 0:W].astype(np.float32)
+    dx, dy = xs - center[0], ys - center[1]
+    t = np.radians(tilt)
+    u = dx * np.cos(t) + dy * np.sin(t)              # 沿眼睛方向
+    v = -dx * np.sin(t) + dy * np.cos(t)
+    r2 = dx * dx + dy * dy
+    iris = np.exp(-r2 / (2 * 3.5 ** 2)) * 0.55        # 不要把虹膜冲成白：只提亮、保留瞳孔细节
+    bloom = np.exp(-r2 / (2 * 12 ** 2)) * 0.5
+    halo = np.exp(-r2 / (2 * 40 ** 2)) * 0.2
+    streak = np.exp(-(v / 1.8) ** 2) * np.exp(-np.abs(u) / 42) * 0.6
+    star = (np.exp(-(v / 1.0) ** 2) * np.exp(-np.abs(u) / 10) + np.exp(-(u / 1.0) ** 2) * np.exp(-np.abs(v) / 10)) * 0.55
+    I = np.clip(iris + bloom + halo + streak + star, 0, 1)
+    white = np.clip(iris * 0.8 + star * 0.6, 0, 1)[..., None]           # 中心偏白，外圈青蓝
+    col = np.array([0.18, 0.62, 1.0]) * (1 - white) + np.array([0.9, 1.0, 1.0]) * white
+    return np.dstack([col, I]).astype(np.float32)
+
+
+def add(dst, glow):
+    out = dst.copy()
+    out[..., :3] = np.clip(dst[..., :3] + glow[..., :3] * glow[..., 3:], 0, 1)
+    return out
+
+
 def over(dst, src):
     a = src[..., 3:]
     out = dst.copy()
@@ -95,11 +125,20 @@ def build(name):
     hand = hand_layer(img, box)
     comp = over(over(img, gun), hand)
     OUT.mkdir(parents=True, exist_ok=True)
+    if name in EYE:
+        glow = eye_glow(*EYE[name])
+        to_img(glow).save(OUT / f"{name}_eyeglow.png")
+        comp_glow = add(comp, glow)
+    else:
+        comp_glow = comp
     to_img(comp).save(OUT / f"{name}.png")
     to_img(gun).save(OUT / f"{name}_evoker.png")
     to_img(hand).save(OUT / f"{name}_hand.png")
     bg = Image.new("RGBA", (1024, 1536), (120, 130, 150, 255))
     bg.alpha_composite(to_img(comp))
+    if name in EYE:                                  # 预览：加色叠在合成后的画面上
+        b = np.asarray(bg).astype(np.float32) / 255
+        bg = to_img(add(b, eye_glow(*EYE[name])))
     x0, y0, x1, y1 = box
     cx, cy = (x0 + muzzle[0]) / 2, (y0 + y1) / 2
     crop = bg.crop((int(cx - 110), int(cy - 90), int(cx + 110), int(cy + 90))).resize((660, 540), Image.LANCZOS)
