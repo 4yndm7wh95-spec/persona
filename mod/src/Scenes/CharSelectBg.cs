@@ -15,7 +15,7 @@ public static class CharSelectBg
 	// 场景根 Control 的尺寸（tscn：offset -960,-521 .. 1600,679），本地 (960,521) 是屏幕中心
 	private const float W = 2560f, H = 1200f;
 	private const float HorizonY = 830f;
-	private static readonly Vector2 MoonPos = new(830f, 150f);      // 立绘贴右边后，月亮挪到中上方的空天上（水面倒影跟着走）
+	private static readonly Vector2 MoonPos = new(720f, 150f);      // 立绘贴右边后，月亮挪到中上方的空天上（水面倒影跟着走）
 
 	public static void Build(Control bg)
 	{
@@ -86,7 +86,9 @@ public static class CharSelectBg
 		}
 		Node2D group = new() { Name = "Portrait" };                 // 立绘（含残影、光晕）一组，切入横幅和碎片都插在它下面
 		root.AddChild(group);
-		Vector2 from = PortraitPos + new Vector2(420f, 0f);
+		// 沿左侧切线方向从下往上升入：切口始终落在同一条斜线上（斜条压在那里），入场过程中也不会露出画布边缘
+		Vector2 cutDir = (CutBottom - CutTop).Normalized();
+		Vector2 from = PortraitPos + cutDir * 520f;
 		Node2D Holder(Color modulate, bool additive, float extraScale, bool live)
 		{
 			Node2D h = new() { Position = from, Scale = Vector2.One * PortraitScale * extraScale, Modulate = modulate };
@@ -109,7 +111,7 @@ public static class CharSelectBg
 		Node2D ghost1 = Holder(new Color(Pal.Cyan, 0.0f), true, 1.0f, false);
 		Node2D glow = Holder(new Color(Pal.Cyan, 0.0f), true, 1.012f, false);
 		Node2D main = Holder(new Color(1f, 1f, 1f, 0f), false, 1.0f, true);
-		Slash(main);
+		Slash(group);
 
 		Fx.Animate(main, 0.6f, t =>
 		{
@@ -142,21 +144,65 @@ public static class CharSelectBg
 	}
 
 	/// <summary>
-	/// 立绘左侧的切口：不做虚化，压一组 P3R 式大斜条 —— 贴着切口的一道亮青细线、外侧一块深蓝实心斜板、再外侧一道白色细条，
-	/// 全部沿切线方向延长出屏。挂在立绘节点下，跟着一起滑入。
+	/// 立绘左侧切口上的 P3R 式斜条组（不跟立绘绑定，单独入场）：
+	/// 深蓝实心斜板（压住切口）+ 贴切口的亮青细线 + 宝蓝细条 + 外侧白条 + 更外侧的半透明宽带 + 沿斜板滚动的竖排小字 + 红色标签块。
+	/// 各条沿斜线方向分别从上方 / 下方错开切入（OutExpo），随后小字缓慢滚动。
 	/// </summary>
-	private static void Slash(Node2D holder)
+	private static void Slash(Node2D parent)
 	{
-		Vector2 dir = (CutBottom - CutTop).Normalized();
-		Vector2 left = new(-dir.Y, dir.X);                      // 切线的法向，指向画布外侧（左）
-		Vector2 a = CutTop - dir * 500f, b = CutBottom + dir * 300f;
-		Vector2[] Strip(float from, float to) => new[] { a + left * from, b + left * from, b + left * to, a + left * to };
-		// 斜板往立绘里多压 ~12px：头、手臂的微动（最多约 10px）不会在切口露出缝
-		Fx.Poly(holder, Strip(-12f, 120f), new Color(0.02f, 0.07f, 0.25f, 0.96f));
-		Fx.Poly(holder, Strip(8f, 16f), new Color(Pal.Royal, 0.9f));
-		Fx.Poly(holder, Strip(-16f, -8f), new Color(Pal.Cyan, 0.95f), additive: true);
-		Fx.Poly(holder, Strip(142f, 152f), new Color(1f, 1f, 1f, 0.85f));
-		Fx.Poly(holder, Strip(176f, 180f), new Color(Pal.Cyan, 0.6f), additive: true);
+		Node2D layer = new() { Name = "Slash" };
+		parent.AddChild(layer);
+		// 切线在屏幕坐标里（立绘最终位置）
+		Vector2 top = PortraitPos + CutTop * PortraitScale, bottom = PortraitPos + CutBottom * PortraitScale;
+		Vector2 dir = (bottom - top).Normalized();
+		Vector2 left = new(-dir.Y, dir.X);                          // 法向，指向切口外侧（左）
+		Vector2 a = top - dir * 700f, b = bottom + dir * 500f;
+		float travel = 1500f;
+
+		Node2D Strip(float from, float to, Color color, bool additive, int enterFrom, float delay)
+		{
+			Node2D n = new() { Position = dir * travel * enterFrom };
+			layer.AddChild(n);
+			Fx.Poly(n, new[] { a + left * from, b + left * from, b + left * to, a + left * to }, color, additive);
+			Fx.Animate(n, delay + 0.4f, t =>
+			{
+				float u = Ease.OutExpo(Mathf.Clamp((t * (delay + 0.4f) - delay) / 0.4f, 0f, 1f));
+				n.Position = dir * travel * enterFrom * (1f - u);
+			});
+			return n;
+		}
+		// 斜板往立绘里多压 ~9px：头、手臂的微动（最多约 7px）不会在切口露出缝
+		Strip(232f, 300f, new Color(Pal.Royal, 0.22f), false, +1, 0.12f);         // 外侧半透明宽带（从下）
+		Strip(-9f, 92f, new Color(0.02f, 0.07f, 0.25f, 0.97f), false, -1, 0.0f);  // 深蓝实心斜板（从上）
+		Strip(6f, 12f, new Color(Pal.Royal, 0.95f), false, +1, 0.05f);            // 宝蓝细条（从下）
+		Strip(-12f, -6f, new Color(Pal.Cyan, 0.95f), true, -1, 0.04f);            // 贴切口的亮青细线（从上）
+		Strip(108f, 116f, new Color(1f, 1f, 1f, 0.9f), false, -1, 0.1f);          // 白条（从上）
+		Strip(134f, 137f, new Color(Pal.Cyan, 0.6f), true, +1, 0.16f);            // 青色细线（从下）
+		Strip(206f, 208f, new Color(1f, 1f, 1f, 0.35f), false, -1, 0.2f);         // 最外侧发丝线（从上）
+
+		// 沿斜板滚动的竖排小字（读法从上往下）
+		Node2D tickerRoot = new() { Position = a + left * 66f, Rotation = dir.Angle(), Modulate = new Color(1f, 1f, 1f, 0f) };
+		layer.AddChild(tickerRoot);
+		Node2D tickerClip = new();
+		tickerRoot.AddChild(tickerClip);
+		const string unit = "THE FOOL  //  ARCANA 0  //  MEMENTO MORI  //  ";
+		Label ticker = Typo.Text(tickerClip, string.Concat(System.Linq.Enumerable.Repeat(unit, 8)), Typo.Latin, 30, new Color(Pal.Ice, 0.55f), new Vector2(0f, -20f));
+		float period = Typo.Latin.GetStringSize(unit, HorizontalAlignment.Left, -1, 30).X;   // 滚动正好一个循环单元，回绕无跳变
+		Fx.After(layer, 0.3, "slash ticker", () =>
+		{
+			Tween fade = tickerRoot.CreateTween();
+			fade.TweenProperty(tickerRoot, "modulate:a", 1f, 0.4);
+			Tween scroll = ticker.CreateTween().SetLoops();
+			scroll.TweenProperty(ticker, "position:x", -period, period / 26.0).From(0f);
+		});
+
+		// 红色标签块：贴在深蓝斜板外沿，弹出
+		Vector2 tagAt = top + (bottom - top) * 0.72f + left * 100f;
+		Node2D tag = new() { Position = tagAt, Rotation = dir.Angle() - Mathf.Pi / 2f, Scale = Vector2.Zero };
+		layer.AddChild(tag);
+		Fx.Poly(tag, new[] { new Vector2(-8f, -70f), new Vector2(8f, -70f), new Vector2(8f, 70f), new Vector2(-8f, 70f) }, new Color(Pal.Blood, 0.95f));
+		Fx.Poly(tag, new[] { new Vector2(-8f, 76f), new Vector2(8f, 76f), new Vector2(8f, 90f), new Vector2(-8f, 90f) }, new Color(1f, 1f, 1f, 0.9f));
+		Fx.After(layer, 0.35, "slash tag", () => Fx.Animate(tag, 0.3, t => tag.Scale = Vector2.One * Mathf.Lerp(1.6f, 1f, Ease.OutBack(t)) * Mathf.Clamp(t * 3f, 0f, 1f)));
 	}
 
 	/// <summary>SpineSprite 加进场景树后下一帧才有动画状态：取不到就稍后再试。</summary>
