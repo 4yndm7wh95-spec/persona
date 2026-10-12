@@ -566,18 +566,21 @@ public static class Rares
 		float[] radii = { 120f, 185f, 255f, 335f };
 		Color[] tints = { Pal.Ice, Pal.Cyan, new(1f, 0.85f, 0.5f), new(0.65f, 0.55f, 1f) };
 		const float squash = 0.34f;
-		var rings = new List<ColorRect>();
+		var rings = new List<Polygon2D>();
+		var pens = new List<Node2D>();
 		var planets = new List<Node2D>();
 		var trails = new List<Polygon2D>();
 		float[] phase = new float[radii.Length];
 		for (int i = 0; i < radii.Length; i++)
 		{
-			float qs = radii[i] * 2f / 0.8f;
-			ColorRect ring = Fx.ShaderQuad(sys, Shaders.Ring, qs, squash);
-			Fx.SetParam(ring, "tint", new Color(tints[i], 0.8f));
-			Fx.SetParam(ring, "width", 2.2f / (qs * 0.5f));
-			Fx.SetParam(ring, "alpha", 0f);
-			rings.Add(ring);
+			// 轨道不是"放大出现"，而是被一支光笔沿椭圆画出来（抗锯齿描边，笔头是一颗亮星）
+			rings.Add(Fx.Poly(sys, new Vector2[3], new Color(tints[i], 0f), additive: true));
+			Node2D pen = new();
+			sys.AddChild(pen);
+			Fx.Poly(pen, Fx.Star4(11f, 0.2f), Pal.White, additive: true);
+			pen.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(tints[i], 0.9f), Scale = Vector2.One * 1.1f });
+			pen.Modulate = new Color(1f, 1f, 1f, 0f);
+			pens.Add(pen);
 			trails.Add(Fx.Poly(sys, new Vector2[3], new Color(tints[i], 0f), additive: true));
 			Node2D pl = new();
 			sys.AddChild(pl);
@@ -640,27 +643,45 @@ public static class Rares
 			float birth = Ease.OutCubic(Mathf.Clamp((time - T(0.1f)) / T(0.25f), 0f, 1f));
 			Fx.SetParam(core, "spin", spin);
 			Fx.SetParam(core, "birth", Mathf.Max(birth * (1f - collapse), 0.02f));
-			coreGlow.Modulate = new Color(Pal.Ice, 0.25f * birth + 0.9f * collapse);
+			// 坍缩前"屏息"：星核先慢慢变亮，坍缩时最亮
+			float breath = Mathf.Clamp((time - T(0.66f)) / T(0.08f), 0f, 1f);
+			coreGlow.Modulate = new Color(Pal.Ice, 0.25f * birth + 0.3f * breath + 0.9f * collapse);
+			coreGlow.Scale = Vector2.One * (3f + 1.5f * breath - 2f * collapse);
 			// 坍缩：整个系统缩向星核，越缩越快地转
 			sys.Scale = Vector2.One * (1f - 0.92f * collapse);
 			sys.Rotation = -0.18f + 1.6f * collapse * collapse;
 
 			for (int i = 0; i < radii.Length; i++)
 			{
-				float open = Ease.OutExpo(Mathf.Clamp((time - T(0.12f) - T(0.07f) * i) / T(0.18f), 0f, 1f));
-				Fx.SetParam(rings[i], "radius", 0.8f * open);
-				Fx.SetParam(rings[i], "alpha", open * (0.55f - 0.08f * i) * (1f - collapse));
+				// 画轨道：光笔从行星的位置出发绕一圈（交替顺 / 逆时针），画完后笔头融进轨道
+				float draw = Ease.InOutCubic(Mathf.Clamp((time - T(0.12f) - T(0.07f) * i) / T(0.2f), 0f, 1f));
+				float dir = i % 2 == 0 ? 1f : -1f;
+				if (draw > 0f)
+				{
+					const int seg = 60;
+					int m = Mathf.Max(2, (int)(seg * draw) + 1);
+					var orbit = new Vector2[m];
+					for (int k = 0; k < m; k++) orbit[k] = Orbit(i, phase[i] + dir * Mathf.Tau * draw * k / (m - 1));
+					Fx.Reshape(rings[i], Fx.StrokePts(orbit, 2.2f));
+					pens[i].Position = orbit[m - 1];
+				}
+				rings[i].Color = new Color(tints[i], (0.6f - 0.08f * i) * Mathf.Min(draw * 3f, 1f) * (1f - collapse));
+				pens[i].Modulate = new Color(1f, 1f, 1f, draw > 0f && draw < 1f ? 1f : Mathf.Max(0f, pens[i].Modulate.A - 0.12f));
+				pens[i].Rotation = time * 8f;
 				// 行星：内圈快、外圈慢；随轨道一起出现
 				float speed = 2.2f / Mathf.Sqrt(radii[i] / 120f);
 				float ang = phase[i] + time * speed;
-				planets[i].Position = Orbit(i, ang) * open;
-				planets[i].Modulate = new Color(1f, 1f, 1f, open * (1f - collapse));
+				// 行星在它那圈轨道画完时才"点亮"在轨道上（亮一下再回落）
+				float lit = Mathf.Clamp((draw - 0.85f) / 0.15f, 0f, 1f);
+				planets[i].Position = Orbit(i, ang);
+				planets[i].Modulate = new Color(1f, 1f, 1f, lit * (1f - collapse));
+				planets[i].Scale = Vector2.One * (1f + 0.8f * Mathf.Sin(lit * Mathf.Pi));
 				// 行星后面的一段尾巴（沿轨道的细弧）
 				var pts = new List<Vector2>();
 				const int n = 10;
-				for (int k = 0; k <= n; k++) pts.Add(Orbit(i, ang - 0.7f * k / n) * open);
+				for (int k = 0; k <= n; k++) pts.Add(Orbit(i, ang - 0.7f * k / n));
 				Fx.Reshape(trails[i], Fx.StrokePts(pts.ToArray(), 4f + i, taper: false));
-				trails[i].Color = new Color(tints[i], 0.35f * open * (1f - collapse));
+				trails[i].Color = new Color(tints[i], 0.35f * lit * (1f - collapse));
 			}
 			foreach (var (node, appear) in stars)
 			{
@@ -684,6 +705,11 @@ public static class Rares
 			P3Fx.Flash(back, at, Pal.White, 360f * s, 0.25f);
 			P3Fx.Shockwave(back, at, Pal.Ice, 640f * s, 0.45f, squashY: 0.45f);
 			P3Fx.SpeedLines(back, at, Pal.Ice, 16, 60f * s, 380f * s, 0.35f);
+			// 余晖：新生星系的尘埃从中心缓缓飘散开，不让画面"啪"地一下全空掉
+			Node2D dust = Fx.Root(back, at, "P3GenesisDust");
+			GpuParticles2D e = Fx.Sparks(dust, Pal.Ice, big ? 46 : 24, 30f * s, 140f * s, 0.9f, gravity: 0f, scaleMin: 0.1f, scaleMax: 0.3f,
+				ramp: new[] { new Color(Pal.White, 0.9f), new Color(Pal.Cyan, 0.6f), new Color(0.65f, 0.55f, 1f, 0f) });
+			Fx.FreeAfter(dust, 1.0);
 			Audio.Sfx.Play(Audio.Snd.TarotShatter, big ? 0.7f : 0.4f, pitch: 1.25f);
 			int count = big ? 5 : 3;
 			for (int i = 0; i < count; i++)
@@ -804,6 +830,11 @@ public static class Rares
 		// 2) 塔尔塔罗斯：地平线以下裁掉，从下往上升起
 		Node2D? towerBody = null;
 		Sprite2D? towerRim = null;
+		Polygon2D? horizonGlow = null;
+		var fog = new List<Sprite2D>();
+		var windows = new List<(Node2D node, float on, float off)>();
+		// 午夜降临的那一下：整屏绿光闪
+		ColorRect midnight = new() { Size = size * 3f, Position = -size, Color = new Color(Pal.DarkHour, 0f), MouseFilter = Control.MouseFilterEnum.Ignore, Material = Fx.Additive };
 		if (Tartarus is Texture2D tt)
 		{
 			float sc = towerH / tt.GetHeight();
@@ -828,8 +859,49 @@ public static class Rares
 				Fx.After(dust, 0.7, "dust off", () => e.Emitting = false);
 				Fx.FreeAfter(dust, 1.8);
 				Audio.Sfx.Play(Audio.Snd.ThanatosSlash, 0.45f, pitch: 0.6f);
+				// 升起时塔身上簌簌落下的碎石
+				Node2D debris = Fx.Root(back, new Vector2(towerX, horizon - towerH * 0.45f), "P3TartarusDebris");
+				GpuParticles2D d = Fx.Sparks(debris, new Color(0.05f, 0.16f, 0.09f), 40, 10f, 60f, 0.9f, gravity: 700f, scaleMin: 0.08f, scaleMax: 0.2f,
+					ramp: new[] { new Color(0.1f, 0.3f, 0.16f, 0.9f), new Color(0.05f, 0.15f, 0.08f, 0f) }, oneShot: false);
+				((ParticleProcessMaterial)d.ProcessMaterial).EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box;
+				((ParticleProcessMaterial)d.ProcessMaterial).EmissionBoxExtents = new Vector3(tt.GetWidth() * sc * 0.3f, towerH * 0.35f, 0f);
+				Fx.After(debris, 0.65, "debris off", () => d.Emitting = false);
+				Fx.FreeAfter(debris, 1.7);
 			});
+			Fx.After(root, 2.55, "tartarus sink", () =>
+			{
+				P3Fx.Ripple(back, new Vector2(towerX, horizon), 700f, 0.8f, 0.02f, squashY: 0.3f);
+				Node2D dust = Fx.Root(back, new Vector2(towerX, horizon), "P3TartarusDust2");
+				GpuParticles2D e = Fx.Sparks(dust, Pal.DarkHour, 40, 30f, 120f, 0.9f, gravity: -30f, scaleMin: 0.3f, scaleMax: 0.8f,
+					ramp: new[] { new Color(Pal.DarkHour, 0.4f), new Color(0.1f, 0.3f, 0.15f, 0f) }, oneShot: false);
+				((ParticleProcessMaterial)e.ProcessMaterial).EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box;
+				((ParticleProcessMaterial)e.ProcessMaterial).EmissionBoxExtents = new Vector3(tt.GetWidth() * sc * 0.55f, 6f, 0f);
+				Fx.After(dust, 0.5, "dust off", () => e.Emitting = false);
+				Fx.FreeAfter(dust, 1.5);
+			});
+			// 塔上的几扇窗：升起后从下往上依次亮起（偶尔闪一下），沉下时从上往下熄灭
+			float tw = tt.GetWidth() * sc;
+			for (int i = 0; i < 8; i++)
+			{
+				float fy = 0.18f + 0.62f * i / 7f;
+				Node2D win = new() { Position = new Vector2(Fx.Rand(-0.14f, 0.14f) * tw * (1f - fy * 0.6f), -towerH * fy) };
+				towerBody.AddChild(win);
+				win.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(0.75f, 1f, 0.55f, 0.9f), Scale = Vector2.One * Fx.Rand(0.25f, 0.4f) });
+				win.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(Pal.DarkHour, 0.35f), Scale = Vector2.One * 1.2f });
+				win.Modulate = new Color(1f, 1f, 1f, 0f);
+				windows.Add((win, 0.95f + 0.06f * i, 2.5f - 0.03f * i));
+			}
+			// 地平线：塔脚下的一道绿色光线 + 一层低雾（盖住裁切的硬边，塔像是从雾里升起来）
+			horizonGlow = Fx.Poly(root, RectPts(new Rect2(towerX - tw * 0.9f, horizon - 2f, tw * 1.8f, 4f)), new Color(Pal.DarkHour, 0f), additive: true);
+			for (int i = 0; i < 6; i++)
+			{
+				Sprite2D f = new() { Texture = Fx.SoftDot, Position = new Vector2(towerX + (i - 2.5f) * tw * 0.32f, horizon + Fx.Rand(-6f, 6f)), Scale = new Vector2(tw * 0.5f / 32f, 2.2f), Modulate = new Color(0.03f, 0.13f, 0.07f, 0f) };
+				root.AddChild(f);
+				fog.Add(f);
+			}
 		}
+
+		root.AddChild(midnight);
 
 		// 3) 血洼（在棺材下面）
 		(Vector2 off, float s)[] row = { (new(-215f, -10f), 0.42f), (new(-335f, -40f), 0.36f), (new(-440f, -62f), 0.31f), (new(-530f, -80f), 0.27f) };
@@ -869,15 +941,41 @@ public static class Rares
 		{
 			float time = t * total;
 			float skyIn = Ease.OutCubic(Mathf.Clamp(time / 0.35f, 0f, 1f)), skyOut = Ease.InCubic(Mathf.Clamp((time - 2.7f) / 0.5f, 0f, 1f));
+			// 午夜：前 0.3s 天色像接触不良的灯一样闪几下才稳住，同时整屏一道绿光
+			float flick = time < 0.3f ? (Mathf.Sin(time * 58f) > -0.2f ? 1f : 0.35f) : 1f;
+			midnight.Color = new Color(Pal.DarkHour, 0.22f * Mathf.Clamp(1f - Mathf.Abs(time - 0.08f) / 0.14f, 0f, 1f));
 			if (sky != null)
 			{
-				Fx.SetParam(sky, "alpha", skyIn * (1f - skyOut));
+				Fx.SetParam(sky, "alpha", skyIn * flick * (1f - skyOut));
 			}
 			if (moon != null)
 			{
+				// 月亮：先是一团白亮的光（过曝），0.4s 里冷却成黄绿色；退场时缩小、下沉一点再淡出
 				float m = Ease.OutCubic(Mathf.Clamp((time - 0.05f) / 0.45f, 0f, 1f));
-				moon.Modulate = new Color(1f, 1f, 1f, m * (1f - skyOut));
-				moon.Scale = Vector2.One * (0.85f + 0.15f * m);
+				float hot = 1f + 1.4f * (1f - Ease.OutCubic(Mathf.Clamp((time - 0.05f) / 0.4f, 0f, 1f)));
+				moon.Modulate = new Color(hot, hot, hot, m * (1f - skyOut));
+				moon.Scale = Vector2.One * (0.85f + 0.15f * m - 0.12f * skyOut);
+				moon.Position = moonAt + new Vector2(0f, 40f * skyOut);
+			}
+			float rise0 = Mathf.Clamp((time - 0.25f) / 0.75f, 0f, 1f);
+			float sink0 = Mathf.Clamp((time - 2.55f) / 0.55f, 0f, 1f);
+			if (horizonGlow != null)
+			{
+				float flare = Mathf.Clamp(1f - Mathf.Abs(time - 0.32f) / 0.25f, 0f, 1f) + Mathf.Clamp(1f - Mathf.Abs(time - 2.6f) / 0.25f, 0f, 1f);
+				horizonGlow.Color = new Color(Pal.DarkHour, (0.9f * flare + 0.25f * Mathf.Min(rise0 * 3f, 1f)) * (1f - skyOut));
+				horizonGlow.Scale = new Vector2(Ease.OutExpo(Mathf.Clamp((time - 0.22f) / 0.3f, 0f, 1f)), 1f);
+				horizonGlow.Position = new Vector2(towerX * (1f - horizonGlow.Scale.X), 0f);   // 从塔脚中心向两边展开
+			}
+			foreach (Sprite2D f in fog)
+			{
+				f.Modulate = new Color(0.03f, 0.13f, 0.07f, 0.85f * skyIn * (1f - skyOut));
+				f.Position += new Vector2(Mathf.Sin(time * 0.7f + f.Position.Y) * 0.15f, 0f);
+			}
+			foreach (var (node, on, off) in windows)
+			{
+				float lit = Mathf.Clamp((time - on) / 0.08f, 0f, 1f) * (1f - Mathf.Clamp((time - off) / 0.08f, 0f, 1f));
+				float blink = Mathf.Sin(time * 23f + on * 40f) > 0.92f ? 0.3f : 1f;
+				node.Modulate = new Color(1f, 1f, 1f, lit * blink);
 			}
 			if (towerBody != null && towerRim != null)
 			{
@@ -885,6 +983,7 @@ public static class Rares
 				float sink = Ease.InCubic(Mathf.Clamp((time - 2.55f) / 0.55f, 0f, 1f));
 				towerBody.Position = new Vector2(towerX + (rise < 1f ? Mathf.Sin(time * 70f) * 3f * (1f - rise) : 0f), horizon + towerH * (1f - rise + sink));
 				towerRim.Modulate = new Color(Pal.DarkHour, (0.35f + 0.15f * Mathf.Sin(time * 5f)) * rise * (1f - sink));
+				towerBody.Modulate = new Color(1f, 1f, 1f, 1f - 0.5f * sink);
 			}
 			Wave(ringIn, time, waveIn, 1f);
 			Wave(ringIn2, time, waveIn + 0.08f, 0.6f);
