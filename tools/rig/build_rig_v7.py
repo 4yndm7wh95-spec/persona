@@ -45,6 +45,7 @@ V7_ANIMS = ["idle_loop", "relaxed_loop", "low_health_loop", "aim_in", "aim_loop"
             "cast", "cast_from_aim", "attack_sovereign", "sovereign_from_aim", "cast_light",
             "sword_in", "ready_sword_loop", "sword_out", "attack", "attack_from_ready", "hurt", "die"]
 SWORD_POSES = ["sword_rest", "sword_ready", "sword_windup", "sword_slash"]
+CAST_BACK = ["cast_low", "cast_drop", "cast_lower", "cast_settle"]
 # 第六批（可选）："放下途中"（胸口 → 待机之间，手放到腰的高度、空手）。图到了才启用
 HAVE_LOW = (ROOT / "art/v12/transparent/focus_low_a.png").exists()
 # 剑：拳头中心 / 剑尖（原图像素，自动检测剑身 + 握剑手，见提交记录里的标定图）
@@ -68,6 +69,8 @@ EVOKER_POSES = ["focus_mid", "focus", "awaken", "awaken_peak"]
 # 第三项（可选）= 该图自己的基准点（缩放中心，映射到待机脚底中点）：跪地图以躯干 / 膝盖底，倒地横版图以腰 / 身体最低点。
 POSE_T = {"idle": (1.0, 0.0), "focus_mid": (0.95, 0.0), "focus": (0.95, 0.0), "awaken": (0.95, 5.0),
           "cast_mid": (1.0, 83.0), "cast": (1.0, 83.0),
+          # 第七批：轻施法收手的过渡帧（cast_mid → idle）。按头部中心对齐（头稳在原地 ≈532），双脚随之从施法站姿单调过渡到待机站姿
+          "cast_low": (1.0, 30.7), "cast_drop": (1.0, 5.5), "cast_lower": (1.0, -4.7), "cast_settle": (1.0, -21.3),
           "sword_rest": (1.0, 0.0), "sword_ready": (0.915, 10.0), "sword_windup": (0.95, -4.0), "sword_slash": (0.935, -25.0),
           "hurt": (1.0, 25.0), "die_kneel": (0.8, 0.0, (631.0, 1350.0)), "die_down": (1.06, 0.0, (777.0, 952.0)),
           # 第四批中间帧：都是从某张已校准的图编辑出来的 —— 先按特征点配准（只取缩放 + 平移）映射到那张图，再走那张图的校准
@@ -123,6 +126,7 @@ def sources():
         "v7_awaken": load(comp.POSES["awaken"][0]),
         "v7_cast_mid": load(T / "cast_mid_a.png"),
         "v7_cast": load(T / "cast_a.png"),
+        **{f"v7_{n}": load(T / f"{n}_a.png") for n in CAST_BACK},
         "v7_sword_rest": load(T / "sword_rest_a.png"),
         "v7_sword_ready": load(T / "sword_ready_a.png"),
         "v7_sword_windup": load(T / "sword_windup_a.png"),
@@ -431,6 +435,8 @@ class Builder:
             "cast_mid": skin_blob(self.src["v7_cast_mid"], (250, 650, 520, 900)),
             "cast": skin_blob(self.src["v7_cast"], (250, 650, 520, 900)),
         }
+        for n in CAST_BACK:
+            self.hand[n] = self.hand["idle"]          # 收手途中：手的骨骼位置用待机的（只有出牌那一刻的特效会读它）
         for p in EVOKER_POSES:
             self.hand[p] = self.grip[p]
         self.center = {}
@@ -500,7 +506,7 @@ class Builder:
             self.geom[name] = box
             regions[name] = shrink(tr, TEX)
         att = d["skins"][0]["attachments"]
-        poses = ["idle", "focus_mid", "focus", "awaken", "awaken_peak", "cast_mid", "cast"] + SWORD_POSES + \
+        poses = ["idle", "focus_mid", "focus", "awaken", "awaken_peak", "cast_mid", "cast"] + CAST_BACK + SWORD_POSES + \
             ["sword_smear", "sword_raise", "sword_recover", "hurt_impact", "hurt", "hurt_recover", "die_kneel", "die_fall", "die_down"] + \
             (["focus_low"] if HAVE_LOW else [])
         for slot in ("v7_ghost", "v7_old", "v7_flash"):
@@ -726,7 +732,9 @@ class Builder:
         A["sovereign_from_aim"] = summon("sovereign_from_aim", [(0, "focus")], 0.40, 0.72, 0.90, None)
 
         a = Anim(d["cast_light"])
-        self.sequence(a, [(0, "cast_mid"), (0.12, "cast"), (0.6, "cast_mid"), (0.74, "idle")], prev="idle")
+        # 收手：伸手 → 抬手 → 四张过渡帧（左手放下插袋、右手抽出口袋、衣摆落下）→ 待机，每张只差一小步，0.06s 溶解不会重影
+        self.sequence(a, [(0, "cast_mid"), (0.12, "cast"), (0.5, "cast_mid"), (0.58, "cast_low"), (0.66, "cast_drop"),
+                          (0.74, "cast_lower"), (0.82, "cast_settle"), (0.88, "idle")], prev="idle")
         A["cast_light"] = a
 
         # ── 持剑 ──
