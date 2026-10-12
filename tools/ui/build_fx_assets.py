@@ -51,6 +51,9 @@ def main():
     out("book_right", book.crop((190, 0, 380, book.height)))
     out("tarot_back", by_height(trim(load("tarot_back")), 300))
     out("coffin", by_height(trim(load("dark_hour_coffin")), 460))
+    # 塔尔塔罗斯（暴政的远景塔）：可选素材，还没生图时跳过
+    if (SRC / "tartarus.png").exists():
+        out("tartarus", by_height(trim(load("tartarus")), 1024))
     for n in ("sword", "cup", "wand", "coin"):
         out(f"minor_{n}", by_height(trim(load(f"minor_{n}")), 300))
 
