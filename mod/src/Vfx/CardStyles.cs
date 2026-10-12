@@ -130,7 +130,9 @@ public static class CardStyles
 		"Patter", "Prophesize", "RefineBlade", "Reflect", "Resonance", "RoyalGamble", "SummonForth", "TheSmith", "Venerate",
 		"Arsenal", "BlackHole", "ChildOfTheStars", "Furnace", "Genesis", "HammerTime", "MonarchsGaze", "Orbit", "PaleBlueDot",
 		"Parry", "Royalties", "SeekingEdge", "SpectrumShift", "SwordSage", "TheSealedThrone", "Tyranny", "VoidForm",
-		"Comet", "CrushUnder", "GuidingStar", "Stardust"
+		"Comet", "CrushUnder", "GuidingStar", "Stardust", "LunarBlast", "CrashLanding", "HeavenlyDrill", "Radiate",
+		// 法术类攻击（光 / 雷 / 黑洞 / 万能 / 陨石 / 星）：不挥剑，改为抬手施法
+		"GammaBlast", "Supermassive", "Devastate", "MakeItSo", "Bombardment", "FallingStar", "AstralPulse"
 	};
 
 	public static CardAnim AnimFor(object card, MegaCrit.Sts2.Core.Entities.Cards.CardType type)

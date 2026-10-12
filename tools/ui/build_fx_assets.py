@@ -50,6 +50,7 @@ def main():
     out("book_left", book.crop((0, 0, 190, book.height)))
     out("book_right", book.crop((190, 0, 380, book.height)))
     out("tarot_back", by_height(trim(load("tarot_back")), 300))
+    out("coffin", by_height(trim(load("dark_hour_coffin")), 460))
     for n in ("sword", "cup", "wand", "coin"):
         out(f"minor_{n}", by_height(trim(load(f"minor_{n}")), 300))
 

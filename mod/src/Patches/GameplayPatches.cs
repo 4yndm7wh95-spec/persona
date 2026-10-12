@@ -180,3 +180,50 @@ public static class PillarGatePatch
 		});
 	}
 }
+
+/// <summary>创世纪：每回合获得辉星时，头顶的星系小转一圈。</summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Models.Powers.GenesisPower), nameof(MegaCrit.Sts2.Core.Models.Powers.GenesisPower.AfterEnergyReset))]
+public static class GenesisTurnPatch
+{
+	public static void Prefix(MegaCrit.Sts2.Core.Models.Powers.GenesisPower __instance, Player player)
+	{
+		ModEntry.Safe("GenesisTurn", () =>
+		{
+			if (player == __instance.Owner.Player && Makoto.Is(player) && Makoto.Node(player) is NCreature node)
+			{
+				Rares.Genesis(node, 0.6f, 1.2f);
+			}
+		});
+	}
+}
+
+/// <summary>暴政：回合开始的消耗选择 → 接下来这次消耗演出棺材。</summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Models.Powers.TyrannyPower), nameof(MegaCrit.Sts2.Core.Models.Powers.TyrannyPower.AfterPlayerTurnStart))]
+public static class TyrannyTurnPatch
+{
+	public static ulong ArmedUntil;
+
+	public static void Prefix(MegaCrit.Sts2.Core.Models.Powers.TyrannyPower __instance, Player player)
+	{
+		if (player == __instance.Owner.Player && Makoto.Is(player))
+		{
+			ArmedUntil = Godot.Time.GetTicksMsec() + 60000;
+		}
+	}
+}
+
+[HarmonyPatch(typeof(CardCmd), nameof(CardCmd.Exhaust))]
+public static class TyrannyExhaustPatch
+{
+	public static void Prefix(CardModel card)
+	{
+		ModEntry.Safe("TyrannyExhaust", () =>
+		{
+			if (Godot.Time.GetTicksMsec() <= TyrannyTurnPatch.ArmedUntil && Makoto.Is(card.Owner) && Makoto.Node(card.Owner) is NCreature node)
+			{
+				TyrannyTurnPatch.ArmedUntil = 0;
+				Rares.TyrannyExhaust(node);
+			}
+		});
+	}
+}

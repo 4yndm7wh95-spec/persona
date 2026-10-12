@@ -166,18 +166,19 @@ public static class StageFx
 		Fx.Line(white, new[] { new Vector2(-50f, size.Y * 0.255f), new Vector2(size.X * 0.33f, size.Y * 0.255f) }, new Color(0.03f, 0.08f, 0.3f, 0.6f), 2f);
 		Node2D ghostWord = P3Ui.GiantWord(white, "CLEAR", new Vector2(size.X * 0.2f, size.Y * 0.62f), (int)(size.Y * 0.2f), -1.05f, new Color(0.03f, 0.08f, 0.3f, 0.08f));
 		Node2D word = P3Ui.GiantWord(white, "VICTORY", new Vector2(size.X * 0.09f, size.Y * 0.9f), (int)(size.Y * 0.28f), -1.05f, new Color(0.03f, 0.08f, 0.3f, 0.95f));
-		// 水之圆里是结城理（选人界面同一张立绘，不切边的整张）：按圆形裁切、放大到盖满整个圆 —— 画布边缘（身体截断处）永远在圆外
+		// 水之圆里是结城理"漂在水里"的平涂立绘（P3R 主菜单那种闭眼漂浮，不再复用选人立绘；tools/ui/build_menu_art.py 生成）：
+		// 正方形画布，脸在中上部；按圆形裁切、放大到盖满整个圆 —— 画布边缘（身体截断处）永远在圆外
 		Polygon2D clip = new() { Polygon = Fx.Circle(discR * 0.985f, 96), Position = discAt, ClipChildren = CanvasItem.ClipChildrenMode.Only };
 		root.AddChild(clip);
 		Sprite2D hero = new() { Modulate = new Color(1f, 1f, 1f, 0f) };
 		float heroScale = 1f;
-		if (ResourceLoader.Load("res://p3makoto/ui/victory_portrait.png") is Texture2D heroTex)
+		if (ResourceLoader.Load("res://p3makoto/menu/victory.png") is Texture2D heroTex)
 		{
 			hero.Texture = heroTex;
 			heroScale = discR * 2.12f / heroTex.GetWidth();         // 宽 = 直径 × 1.06：左右各留余量，入场的缩放 / 漂移也不会露边
 		}
 		clip.AddChild(hero);
-		Vector2 heroAt = new(0f, discR * 0.43f);                    // 画布下移：脸落在圆心附近，画布上沿仍在圆外
+		Vector2 heroAt = Vector2.Zero;                                // 画布居中：脸在圆心上方一点
 		Node2D tag = P3Ui.RedTag(root, "BATTLE CLEAR", new Vector2(size.X * 0.58f, size.Y * 0.16f), (int)(size.Y * 0.05f), cjk: false);
 
 		const float tIn = 0.4f, hold = 1.0f, tOut = 0.4f, total = tIn + hold + tOut;

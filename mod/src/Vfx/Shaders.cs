@@ -341,6 +341,85 @@ void fragment() {
 	COLOR = vec4(outCol, a * alpha);
 }");
 
+	private static Shader? _forgeFire;
+
+	/// <summary>
+	/// 熔炉之火（ColorRect，底边是火源）：fbm 噪声扭动的火舌，白热的芯 → 金黄 → 橙 → 暗红的外焰，火舌尖端带一点青蓝（灵魂之火）。
+	/// height 0~1 火焰升起的高度；alpha 整体透明度。加色混合。
+	/// </summary>
+	public static Shader ForgeFire => _forgeFire ??= Make(@"
+shader_type canvas_item;
+render_mode blend_add;
+uniform float height = 1.0;
+uniform float alpha = 1.0;
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+float noise(vec2 p) {
+	vec2 i = floor(p), f = fract(p);
+	vec2 u = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
+}
+float fbm(vec2 p) { float v = 0.0, a = 0.5; mat2 r = mat2(vec2(0.8, 0.6), vec2(-0.6, 0.8)); for (int i = 0; i < 5; i++) { v += a * noise(p); p = r * p * 2.03 + 17.0; a *= 0.5; } return v; }
+void fragment() {
+	vec2 uv = UV;
+	float y = 1.0 - uv.y;                       // 0 = 火源（底边） → 1 = 顶
+	float x = uv.x - 0.5;
+	float t = TIME;
+	float yy = y / max(height, 0.01);
+	float n = fbm(vec2(x * 3.5, y * 2.5 - t * 2.2));
+	float n2 = fbm(vec2(x * 8.0 + 3.0, y * 5.0 - t * 3.8));
+	float n3 = fbm(vec2(x * 16.0 + 7.0, y * 10.0 - t * 6.0));
+	// 火舌随高度左右摆动、变窄，边缘被细噪声撕碎
+	float sway = (n - 0.5) * 0.45 * yy;
+	float w = 0.3 * pow(max(1.0 - yy, 0.0), 0.7) + 0.01;
+	float d = abs(x - sway + (n2 - 0.5) * 0.16 * yy);
+	float body = smoothstep(w, w * 0.2, d);
+	float tongues = smoothstep(0.28, 0.62, n2 * 0.7 + n3 * 0.3 + (1.0 - yy) * 0.55);
+	float f = body * tongues * smoothstep(1.05, 0.75, yy + (n3 - 0.5) * 0.3);
+	float heat = clamp(f * (1.05 - yy) * (0.55 + 0.8 * n3), 0.0, 1.0);
+	vec3 c = mix(vec3(0.55, 0.05, 0.02), vec3(1.0, 0.38, 0.06), smoothstep(0.05, 0.3, heat));
+	c = mix(c, vec3(1.0, 0.75, 0.25), smoothstep(0.3, 0.6, heat));
+	c = mix(c, vec3(1.0, 0.97, 0.85), smoothstep(0.65, 0.95, heat));
+	// 火舌尖端泛青蓝（灵魂之火）
+	float tip = smoothstep(0.6, 0.95, yy) * (1.0 - smoothstep(0.2, 0.5, heat));
+	c = mix(c, vec3(0.3, 0.75, 1.0), tip * 0.6);
+	f = clamp(f * 1.4, 0.0, 1.0);
+	COLOR = vec4(c * f, f) * alpha;
+}");
+
+	private static Shader? _galaxy;
+
+	/// <summary>
+	/// 创世纪的星系（ColorRect 正方形，加色）：白金色的核 + 两条旋转的旋臂（蓝 → 青），旋臂上散落闪烁的星点。
+	/// spin 旋转角（由代码推进），birth 0~1 从中心向外长出，alpha 整体透明度。
+	/// </summary>
+	public static Shader Galaxy => _galaxy ??= Make(@"
+shader_type canvas_item;
+render_mode blend_add;
+uniform float spin = 0.0;
+uniform float birth = 1.0;
+uniform float alpha = 1.0;
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+float noise(vec2 p) {
+	vec2 i = floor(p), f = fract(p);
+	vec2 u = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
+}
+void fragment() {
+	vec2 p = (UV - 0.5) * vec2(1.0, 2.2);          // 压扁：斜着看的星系盘
+	float r = length(p) * 2.0;
+	float th = atan(p.y, p.x);
+	float reach = birth * 1.05;
+	float fade = smoothstep(reach, reach * 0.6, r);
+	float arms = pow(0.5 + 0.5 * cos(2.0 * (th - spin) + log(r + 0.05) * 5.5), 3.0);
+	float dust = noise(vec2(th * 6.0 + spin, r * 14.0)) * 0.6 + 0.4;
+	float disk = exp(-r * 2.6) * arms * dust * fade;
+	float core = exp(-r * 11.0) * 1.6 * smoothstep(0.0, 0.25, birth);
+	float sparkle = step(0.985, hash(floor(UV * 160.0))) * arms * fade * (0.5 + 0.5 * sin(TIME * 6.0 + hash(floor(UV * 80.0)) * 6.28));
+	vec3 c = vec3(1.0, 0.92, 0.7) * core + mix(vec3(0.35, 0.6, 1.0), vec3(0.4, 0.95, 1.0), r) * disk * 1.4 + vec3(1.0) * sparkle;
+	float a = clamp(core + disk + sparkle, 0.0, 1.0);
+	COLOR = vec4(c, a) * alpha;
+}");
+
 	private static Shader? _waterDisc;
 
 	/// <summary>

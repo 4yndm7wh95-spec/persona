@@ -1,6 +1,8 @@
 using System;
 using Godot;
 
+using P3Makoto.Core;
+
 namespace P3Makoto.Vfx;
 
 /// <summary>
@@ -226,9 +228,11 @@ public static class Bold
 	// ───────── 暗：Mudoon —— 血红咒阵 + 黑雾向内坍缩 + 十字血光 ─────────
 	public static void Mudoon(Control layer, Vector2 center, float s = 1f)
 	{
-		Node2D root = Fx.Root(layer, center, "P3Mudoon");
+		// 黑色法阵画在人物身后层（敌人身后），不盖住敌人；只有最后的十字斩痕和冲击在前景
+		Control ringLayer = Makoto.FxLayer(back: true) ?? layer;
+		Node2D root = Fx.Root(ringLayer, center, "P3Mudoon");
 		float r = 200f * s;
-		Polygon2D dark = Fx.Poly(root, Fx.Circle(r, 48), new Color(0.03f, 0f, 0.06f, 0.75f));
+		Polygon2D dark = Fx.Poly(root, Fx.Circle(r, 48), new Color(0.03f, 0f, 0.06f, 0.55f));
 		Line2D ring = Fx.Line(root, Fx.Circle(r, 48), new Color(ElementPal.CurseRed, 0.95f), 4f, closed: true);
 		Line2D ring2 = Fx.Line(root, Fx.Circle(r * 0.7f, 6), new Color(ElementPal.Curse, 0.9f), 3f, closed: true);
 		Fx.Animate(root, 0.9f, t =>
@@ -274,7 +278,7 @@ public static class Bold
 	{
 		Node2D root = Fx.Root(layer, center, "P3Megido");
 		Polygon2D core = Fx.Poly(root, Fx.Circle(60f, 40), Pal.White, additive: true);
-		Polygon2D dome = Fx.Poly(root, Fx.Circle(60f, 48), new Color(ElementPal.Almighty, 0.55f), additive: true);
+		Polygon2D dome = Fx.Poly(root, Fx.Circle(60f, 48), new Color(ElementPal.Almighty, 0.28f), additive: true);
 		Line2D rim = Fx.Line(root, Fx.Circle(60f, 48), new Color(Pal.White, 0.9f), 5f, closed: true);
 		Fx.Animate(root, 0.9f, t =>
 		{
@@ -282,12 +286,15 @@ public static class Bold
 			float charge = 1f - Ease.InCubic(Mathf.Clamp(time / 0.15f, 0f, 1f)) * 0.7f;   // 先收缩
 			float blast = Ease.OutExpo(Mathf.Clamp((time - 0.15f) / 0.35f, 0f, 1f));
 			core.Scale = Vector2.One * s * (time < 0.15f ? charge : 0.3f + 2.2f * blast);
+			// 白色实心核只闪一下（0.12 秒内淡掉），不长时间盖住敌人；之后只剩扩散的光环
+			core.Modulate = new Color(1f, 1f, 1f, time < 0.15f ? 1f : 1f - Ease.OutCubic(Mathf.Clamp((time - 0.15f) / 0.12f, 0f, 1f)));
+			dome.Modulate = new Color(1f, 1f, 1f, 1f - Ease.OutCubic(Mathf.Clamp((time - 0.2f) / 0.3f, 0f, 1f)));
 			dome.Scale = rim.Scale = Vector2.One * s * (time < 0.15f ? 0.2f : 0.2f + 5.5f * blast);
 			root.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(Mathf.Clamp((time - 0.45f) / 0.45f, 0f, 1f)));
 		});
 		Fx.After(root, 0.15, "megido blast", () =>
 		{
-			Impact(layer, center, ElementPal.Almighty, s * 1.4f, MegaCrit.Sts2.Core.Nodes.Vfx.Utilities.ShakeStrength.Strong);
+			Impact(layer, center, ElementPal.Almighty, s * 0.8f, MegaCrit.Sts2.Core.Nodes.Vfx.Utilities.ShakeStrength.Strong);
 			P3Fx.Shockwave(layer, center, Pal.White, 1100f * s, 0.7f, delay: 0.08f);
 			P3Fx.Shockwave(layer, center, Pal.Cyan, 1400f * s, 0.85f, delay: 0.16f);
 			P3Fx.Ripple(layer, center, 1200f * s, 0.9f, 0.05f);
