@@ -559,23 +559,50 @@ public static class Uniq
 		{
 			fans.Add(Fx.Poly(root, new Vector2[3], new Color(spec[i], 0f), additive: true));
 		}
-		Fx.Animate(root, 1.4f, t =>
+		Node2D prism = new();
+		root.AddChild(prism);
+		foreach (Node n in root.GetChildren())
 		{
-			float time = t * 1.4f;
-			float inA = Mathf.Clamp(time / 0.15f, 0f, 1f) * (1f - Mathf.Clamp((time - 1.1f) / 0.3f, 0f, 1f));
-			inBeam.DefaultColor = new Color(Pal.White, 0.9f * inA);
+			if (n != prism && n is Polygon2D or Line2D && fans.TrueForAll(f => f != n) && n != inBeam)
+			{
+				n.Reparent(prism, keepGlobalTransform: false);
+			}
+		}
+		const float total = 1.6f;
+		Fx.Animate(root, total, t =>
+		{
+			float time = t * total;
+			// 退场分三步、互相错开：入射光先从左往右收回（0.9–1.1）→ 光谱从远端往棱镜收拢（1.0–1.35）→ 棱镜转着缩小、闪一下消失（1.3–1.6）
+			float beamOut = Ease.InCubic(Mathf.Clamp((time - 0.9f) / 0.2f, 0f, 1f));
+			float fanOut = Ease.InOutCubic(Mathf.Clamp((time - 1.0f) / 0.35f, 0f, 1f));
+			float prismOut = Ease.InBackLike(Mathf.Clamp((time - 1.3f) / 0.3f, 0f, 1f));
+			Vector2 b0 = new(-420f, -160f), b1 = new(-24f, -10f);
+			inBeam.Points = new[] { b0.Lerp(b1, beamOut), b1 };
+			inBeam.DefaultColor = new Color(Pal.White, 0.9f * Mathf.Clamp(time / 0.15f, 0f, 1f) * (1f - beamOut));
 			float spread = Ease.OutExpo(Mathf.Clamp((time - 0.2f) / 0.4f, 0f, 1f));
 			for (int i = 0; i < fans.Count; i++)
 			{
 				float a0 = 0.15f + i * 0.13f, a1 = a0 + 0.12f;
-				float L = 520f * spread;
-				Fx.Reshape(fans[i], new[] { new Vector2(24f, 0f), new Vector2(24f, 0f) + Vector2.Right.Rotated(a0) * L, new Vector2(24f, 0f) + Vector2.Right.Rotated(a1) * L });
-				fans[i].Color = new Color(spec[i], 0.35f * inA);
+				float far = 520f * spread * (1f - fanOut * (1f - i * 0.04f));
+				float near = 520f * spread * fanOut * 0.0f;
+				Vector2 o = new(24f, 0f);
+				Fx.Reshape(fans[i], new[] { o + Vector2.Right.Rotated((a0 + a1) / 2f) * near, o + Vector2.Right.Rotated(a0) * far, o + Vector2.Right.Rotated(a1) * far });
+				fans[i].Color = new Color(spec[i], 0.35f * Mathf.Clamp(time / 0.2f, 0f, 1f) * (1f - fanOut * 0.6f));
 			}
+			prism.Scale = Vector2.One * (1f - prismOut);
+			prism.Rotation = prismOut * 2.5f;
 			root.Rotation = 0.05f * Mathf.Sin(time * 2f);
 		});
 		Fx.After(root, 0.2, "prism hit", () => { P3Fx.Flash(back, at, Pal.White, 160f, 0.2f); Audio.Sfx.Play(Audio.Snd.TarotReveal, 0.5f, pitch: 1.3f); });
-		Fx.FreeAfter(root, 1.45);
+		Fx.After(root, total - 0.08, "prism out", () =>
+		{
+			P3Fx.Flash(front, at, Pal.White, 120f, 0.18f);
+			Node2D star = Fx.Root(front, at, "P3PrismStar");
+			Fx.Poly(star, Fx.Star4(28f, 0.12f), Pal.White, additive: true);
+			Fx.Animate(star, 0.3f, t => { star.Scale = Vector2.One * Mathf.Sin(t * Mathf.Pi); star.Rotation = t * 2f; });
+			Fx.FreeAfter(star, 0.32);
+		});
+		Fx.FreeAfter(root, total + 0.02);
 	}
 
 	/// <summary>类星体：头顶一个极亮的点，上下喷出两道细长的喷流，绕着一圈压扁的吸积盘旋转。</summary>
