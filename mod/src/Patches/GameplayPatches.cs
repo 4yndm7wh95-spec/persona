@@ -164,3 +164,19 @@ public static class DamageNumberPatch
 		ModEntry.Safe("P3 damage number", () => Popups.Damage(layer, node.GetInstanceId(), node.VfxSpawnPosition, amount));
 	}
 }
+
+/// <summary>创世之柱：每次生成卡牌（给格挡的那一刻），身后的天鹅绒门开一次。</summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Models.Powers.PillarOfCreationPower), nameof(MegaCrit.Sts2.Core.Models.Powers.PillarOfCreationPower.AfterCardGeneratedForCombat))]
+public static class PillarGatePatch
+{
+	public static void Prefix(MegaCrit.Sts2.Core.Models.Powers.PillarOfCreationPower __instance, Player? creator)
+	{
+		ModEntry.Safe("PillarGate", () =>
+		{
+			if (creator != null && creator.Creature == __instance.Owner && Makoto.Is(creator))
+			{
+				ThemeFx.GatePulse();
+			}
+		});
+	}
+}

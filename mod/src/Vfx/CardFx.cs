@@ -19,6 +19,9 @@ namespace P3Makoto.Vfx;
 /// </summary>
 public static class CardFx
 {
+	// 有自己物件演出（契约 / 全书 / Shuffle Time / 天鹅绒门）的牌：施法时不再额外翻一张小塔罗
+	private static readonly HashSet<string> ThemeCards = new() { "ForegoneConclusion", "Prophesize", "DecisionsDecisions", "PillarOfCreation" };
+
 	public static bool IsMakotoCard(CardModel? card) => card != null && Makoto.Is(card.Owner);
 
 	public static bool ReplacesHitVfx(CardModel? card) =>
@@ -85,7 +88,7 @@ public static class CardFx
 		{
 			Pose.MarkLightCast(caster);
 			// 掌心托起的那一刻，手上方翻出一张塔罗牌（牌本身带塔罗演出的就不重复）
-			if (!style.Extra.HasFlag(Extra.Tarot) && !stardust && !gamble)
+			if (!style.Extra.HasFlag(Extra.Tarot) && !stardust && !gamble && !ThemeCards.Contains(play.Card.GetType().Name))
 			{
 				Fx.After(front, 0.2, "gesture tarot", () =>
 				{

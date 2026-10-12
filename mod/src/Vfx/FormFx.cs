@@ -27,12 +27,24 @@ public static class FormFx
 		vanilla.AddChild(root);
 		root.GlobalPosition = Makoto.Center(creature) + new Vector2(-20f, -90f);
 
-		// 月亮：大圆盘 + 光晕（复用闪光着色器做柔和光晕，圆盘用多边形）
-		ColorRect halo = Fx.ShaderQuad(root, Shaders.Flash, 760f);
-		Fx.SetParam(halo, "tint", new Color(Pal.DarkHour, 0.5f));
-		Fx.SetParam(halo, "alpha", 0.55f);
-		Fx.Poly(root, Fx.Circle(150f, 64), new Color(0.86f, 0.95f, 0.62f, 0.55f));
-		Fx.Poly(root, Fx.Circle(150f, 64), new Color(Pal.DarkHour, 0.18f), additive: true);
+		// 影时间的天色：盖在战斗背景上（人物之下），整屏暗绿 + 地面绿雾 + 月光光柱 + 暗角
+		Vector2 view = creature.GetViewportRect().Size;
+		Node2D skyRoot = new() { Name = "Sky", ShowBehindParent = true };
+		root.AddChild(skyRoot);
+		ColorRect sky = new() { Material = new ShaderMaterial { Shader = Shaders.DarkSky }, Size = view * 3f, MouseFilter = Control.MouseFilterEnum.Ignore };
+		skyRoot.AddChild(sky);
+		sky.GlobalPosition = -view;
+		((ShaderMaterial)sky.Material).SetShaderParameter("moon", root.GlobalPosition / view);
+
+		// 月亮：着色器画的黄绿色满月（环形山、球面明暗、亮边、两圈光环、飘过的云带）+ 外层柔光
+		ColorRect halo = Fx.ShaderQuad(root, Shaders.Flash, 900f);
+		Fx.SetParam(halo, "tint", new Color(Pal.DarkHour, 0.45f));
+		Fx.SetParam(halo, "alpha", 0.4f);
+		ColorRect moonQuad = Fx.ShaderQuad(root, Shaders.DarkMoon, 640f);
+		Tween moonBreath = moonQuad.CreateTween().SetLoops();
+		moonBreath.TweenProperty(moonQuad, "scale", Vector2.One * 1.015f, 2.4).SetTrans(Tween.TransitionType.Sine);
+		moonBreath.TweenProperty(moonQuad, "scale", Vector2.One, 2.4).SetTrans(Tween.TransitionType.Sine);
+		moonQuad.PivotOffset = moonQuad.Size / 2f;
 
 		// 时钟：外圈 + 刻度 + 罗马数字，缓慢旋转；指针固定指向 XII
 		Node2D clock = new() { Name = "Clock" };

@@ -208,6 +208,95 @@ void fragment() {
 	COLOR = vec4(c, 1.0);
 }");
 
+	private static Shader? _darkSky;
+
+	/// <summary>
+	/// 影时间的天色（虚空形态常驻）：盖在战斗背景上的半透明层，按屏幕坐标作画。
+	/// 上深下浅的暗绿；地面附近两层缓慢流动的绿雾；月亮方向斜射下来的几道淡光柱；四角压暗。alpha 整体强度。
+	/// moon = 月亮在屏幕上的位置（SCREEN_UV）。
+	/// </summary>
+	public static Shader DarkSky => _darkSky ??= Make(@"
+shader_type canvas_item;
+uniform float alpha = 1.0;
+uniform vec2 moon = vec2(0.25, 0.2);
+float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float noise(vec2 p) {
+	vec2 i = floor(p), f = fract(p);
+	vec2 u = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
+}
+float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p *= 2.03; a *= 0.5; } return v; }
+void fragment() {
+	vec2 uv = SCREEN_UV;
+	vec3 top = vec3(0.0, 0.05, 0.03), low = vec3(0.05, 0.24, 0.11);
+	vec3 c = mix(top, low, smoothstep(0.0, 0.95, uv.y));
+	float a = mix(0.62, 0.42, uv.y);
+	// 地面附近的绿雾：两层不同速度的横向噪声带
+	float fog1 = fbm(vec2(uv.x * 3.0 + TIME * 0.03, uv.y * 9.0)) * smoothstep(0.45, 0.85, uv.y);
+	float fog2 = fbm(vec2(uv.x * 6.0 - TIME * 0.05, uv.y * 18.0 + 4.0)) * smoothstep(0.6, 0.95, uv.y);
+	c += vec3(0.15, 0.55, 0.28) * (fog1 * 0.35 + fog2 * 0.25);
+	// 从月亮斜射下来的淡光柱（角度噪声分条，缓慢摆动）
+	vec2 d = uv - moon;
+	float ang = atan(d.x, d.y);
+	float shafts = smoothstep(0.55, 0.9, noise(vec2(ang * 9.0 + TIME * 0.08, 0.0))) * smoothstep(0.0, 0.25, length(d)) * smoothstep(1.1, 0.2, length(d));
+	c += vec3(0.5, 0.9, 0.55) * shafts * 0.08;
+	// 月亮周围一圈天光
+	c += vec3(0.45, 0.75, 0.35) * exp(-length(d * vec2(1.78, 1.0)) * 4.0) * 0.18;
+	// 暗角
+	vec2 v = uv - 0.5;
+	a += dot(v, v) * 0.6;
+	COLOR = vec4(c, clamp(a, 0.0, 0.85) * alpha);
+}");
+
+	private static Shader? _darkMoon;
+
+	/// <summary>
+	/// 影时间的月亮（ColorRect 正方形）：黄绿色满月，fbm 环形山与明暗、边缘亮边、两圈细光环和柔光；
+	/// 前面有缓慢飘过的暗绿色云带遮住月亮下半部。alpha 整体透明度。
+	/// </summary>
+	public static Shader DarkMoon => _darkMoon ??= Make(@"
+shader_type canvas_item;
+uniform float alpha = 1.0;
+float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float noise(vec2 p) {
+	vec2 i = floor(p), f = fract(p);
+	vec2 u = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
+}
+float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p *= 2.03; a *= 0.5; } return v; }
+void fragment() {
+	vec2 p = UV - 0.5;
+	float r = length(p);
+	float R = 0.24;
+	float disc = smoothstep(R, R - 0.004, r);
+	// 月面：底色 + 大块暗斑（月海）+ 细环形山 + 球面明暗（右上亮）
+	float maria = smoothstep(0.45, 0.7, fbm(p * 7.0 + 2.0));
+	float craters = fbm(p * 30.0 + 7.0);
+	vec3 surf = vec3(0.95, 0.98, 0.62) * (0.88 + 0.18 * craters) - vec3(0.2, 0.18, 0.12) * maria;
+	float sphere = sqrt(max(0.0, 1.0 - (r * r) / (R * R)));
+	surf *= 0.72 + 0.28 * sphere + 0.12 * dot(normalize(vec3(p, sphere * R)), normalize(vec3(0.4, -0.5, 0.6)));
+	float rim = smoothstep(R - 0.03, R, r) * disc;
+	surf += vec3(0.6, 1.0, 0.6) * rim * 0.5;
+	// 光晕：柔光 + 两圈细环
+	float glow = exp(-max(r - R, 0.0) * 14.0) * (1.0 - disc);
+	float ring1 = smoothstep(0.004, 0.0, abs(r - 0.32)) * 0.35;
+	float ring2 = smoothstep(0.003, 0.0, abs(r - 0.41)) * 0.2;
+	vec3 halo = vec3(0.55, 0.95, 0.5) * (glow * 0.7 + ring1 + ring2);
+	float ha = glow * 0.75 + ring1 + ring2;
+	// 云带：横向拉长的噪声，缓慢向左飘，主要遮住月亮下半部
+	float band = smoothstep(0.02, 0.18, p.y + 0.05) * smoothstep(0.42, 0.12, p.y);
+	float cloud = smoothstep(0.5, 0.75, fbm(vec2(p.x * 4.0 + TIME * 0.025, p.y * 14.0))) * band;
+	vec3 cloudCol = vec3(0.02, 0.12, 0.06);
+	vec3 col = mix(halo, surf, disc);
+	float a = max(disc, ha);
+	col = mix(col, cloudCol, cloud * 0.85);
+	a = max(a, cloud * 0.8 * smoothstep(0.5, 0.1, r));
+	// 云的上缘被月光照亮
+	float lit = cloud * (1.0 - smoothstep(0.5, 0.8, fbm(vec2(p.x * 4.0 + TIME * 0.025, p.y * 14.0 - 0.6)))) * disc;
+	col += vec3(0.5, 0.9, 0.4) * lit * 0.4;
+	COLOR = vec4(col, a * alpha);
+}");
+
 	private static Shader? _waterDisc;
 
 	/// <summary>
