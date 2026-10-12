@@ -3,7 +3,7 @@
   "name": "P3 测试工具（仅展示用）",
   "author": "brooks",
   "description": "测试特效和动画用：所有房间都换成打不死的训练假人，能量和辉星无限，F8 打开面板一键把任意卡牌加入手牌。只用于单人测试，不要在正式对局或联机里开。",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "has_pck": false,
   "has_dll": true,
   "affects_gameplay": true

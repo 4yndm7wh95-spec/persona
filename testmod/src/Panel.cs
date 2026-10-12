@@ -189,10 +189,15 @@ public static class Panel
 			if (card == null) continue;
 			NGridCardHolder? holder = NGridCardHolder.Create(card);
 			if (holder == null) continue;
-			holder.Scale = Vector2.One * CardScale;
-			holder.Position = CardSize * CardScale * 0.5f;
+			// 不直接缩放格子：原版格子悬停时放大到 HoverScale、移开后缩回它自己的 SmallScale（0.8），
+			// 直接设 0.5 的话移开后会缩回 0.8、永久变大。所以套一层外框缩放，格子保持原版的尺寸逻辑。
+			Node2D frame = new() { Position = CardSize * CardScale * 0.5f, Scale = Vector2.One * (CardScale / holder.SmallScale.X) };
+			cell.AddChild(frame);
+			holder.Scale = holder.SmallScale;
 			holder.MouseFilter = Control.MouseFilterEnum.Pass;
-			cell.AddChild(holder);
+			frame.AddChild(holder);
+			holder.MouseEntered += () => cell.ZIndex = 1;                       // 悬停放大的那张画在邻居上面
+			holder.MouseExited += () => cell.ZIndex = 0;
 			card.UpdateVisuals(PileType.Deck, CardPreviewMode.Normal);
 			CardModel picked = model;
 			holder.Connect(NCardHolder.SignalName.Pressed, Callable.From<NCardHolder>(_ => Say(AddToHand(picked))));
