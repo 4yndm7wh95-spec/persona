@@ -79,8 +79,8 @@ POSE_T = {"idle": (1.0, 0.0), "focus_mid": (0.95, 0.0), "focus": (0.95, 0.0), "a
           "sword_raise": ("via", "sword_windup", (1.0, 0.5, 2.1)),
           "sword_recover": ("via", "sword_slash", (1.0, 0.9, 29.5)),
           "hurt_recover": ("via", "hurt", (1.0, -1.0, -2.2)),
-          # 第六批：由 focus_mid 编辑出来，到图后用 tools/rig/v7_register.py 按鞋配准再填
-          "focus_low": ("via", "focus_mid", (1.0, 0.0, 0.0))}
+          # 第六批：由 focus_mid 编辑出来，按鞋配准（tools/rig/v7_register.py）：缩放 1.000、位移不到 1px
+          "focus_low": ("via", "focus_mid", (1.0, -0.4, -0.6))}
 
 
 def U(p, pose=None):
@@ -450,7 +450,7 @@ class Builder:
         self.hand["die_down"] = (900.0, 800.0)
         self.hand["hurt_impact"] = (553.0, 800.0)
         self.hand["hurt_recover"] = (553.0, 800.0)
-        self.hand["focus_low"] = (560.0, 760.0)
+        self.hand["focus_low"] = (440.0, 690.0)          # 手在腰间枪套旁（正好像把召唤器收回去）
         self.hand["die_fall"] = (700.0, 700.0)
 
     @staticmethod
