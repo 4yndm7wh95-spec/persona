@@ -40,4 +40,11 @@ public static class Ease
 		}
 		return 1f;
 	}
+
+	/// <summary>先往反方向稍微回一下再加速（退场用）。</summary>
+	public static float InBackLike(float t)
+	{
+		const float k = 1.70158f;
+		return t * t * ((k + 1f) * t - k);
+	}
 }
