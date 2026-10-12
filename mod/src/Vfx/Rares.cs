@@ -610,8 +610,13 @@ public static class Rares
 		Makoto.Feet(caster) + new Vector2(ThemeFx.GateRoot != null ? 250f : -270f, 0f);
 
 	/// <summary>
-	/// 暴政（皇帝 IV）：人物身旁的空地上，影时间的棺材从地下升起；棺面的罗马数字 IV 像印章一样"盖"上去（由大到小砸下、绿光一闪），
-	/// 棺盖缝透出绿光、冒起几缕绿烟；随后棺材沉回地下。
+	/// 暴政（皇帝 IV · 奥丁的"雷神之怒"Thunder Reign）：
+	/// 0.0 影时间降临 —— 人物身后的世界压成墨绿色，脚下张开绿色法阵（压扁透视）；
+	/// 0.15 一张巨大的皇帝塔罗（IV）在人物身后翻面立起，牌框流过电光；
+	/// 0.45 / 0.6 两道落雷劈在人物左右两侧地面（地面冲击、电火花、震屏）；
+	/// 0.9 第三道主雷正中劈进皇帝牌 —— 白闪、牌碎成绿玻璃、脚下法阵炸开一圈冲击、强震屏；
+	/// 0.95~1.7 余电在人物身边游走，绿色火星向上飘，影时间慢慢退去。
+	/// 雷、牌、法阵都在人物身后（back 层），只有极短的白闪和细小的余电在人物前面，不挡人物。
 	/// </summary>
 	public static void Tyranny(NCreature caster)
 	{
@@ -621,18 +626,231 @@ public static class Rares
 		{
 			return;
 		}
-		Vector2 floor = CoffinSpot(caster);
-		RiseCoffin(back, floor, 0.85f, 1.7f, numeral: true);
-		Fx.After(front, 0.35, "tyranny smoke", () =>
+		Vector2 feet = Makoto.Feet(caster), center = Makoto.Center(caster), head = Makoto.Head(caster);
+		Vector2 size = front.GetViewportRect().Size;
+		Color green = Pal.DarkHour;
+		const float total = 1.9f;
+
+		// 1) 影时间：人物身后的整个画面压暗成墨绿，落雷那几帧被照亮
+		Node2D sky = Fx.Root(back, Vector2.Zero, "P3TyrannySky");
+		sky.TopLevel = true;
+		sky.GlobalPosition = Vector2.Zero;
+		ColorRect dim = new() { Size = size, Color = new Color(0.01f, 0.05f, 0.03f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore };
+		sky.AddChild(dim);
+		float[] strikes = { 0.45f, 0.6f, 0.9f };
+
+		// 2) 脚下法阵
+		Node2D seal = Fx.Root(back, feet, "P3TyrannySeal");
+		ColorRect circle = Fx.ShaderQuad(seal, Shaders.MagicCircle, 620f, 0.3f);
+		Fx.SetParam(circle, "tint", green);
+		Fx.SetParam(circle, "spin", 0.9f);
+		ColorRect circle2 = Fx.ShaderQuad(seal, Shaders.MagicCircle, 380f, 0.3f);
+		Fx.SetParam(circle2, "tint", Pal.Ice);
+		Fx.SetParam(circle2, "spin", -1.4f);
+
+		// 3) 皇帝塔罗：人物身后、头顶上方立起
+		Vector2 cardAt = head + new Vector2(-10f, -150f);
+		Node2D cardRoot = Fx.Root(back, cardAt, "P3TyrannyCard");
+		Node2D card = new();
+		cardRoot.AddChild(card);
+		const float cw = 120f, ch = 200f;
+		Vector2[] rect = { new(-cw, -ch), new(cw, -ch), new(cw, ch), new(-cw, ch) };
+		Vector2[] inner = { new(-cw + 14f, -ch + 14f), new(cw - 14f, -ch + 14f), new(cw - 14f, ch - 14f), new(-cw + 14f, ch - 14f) };
+		card.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(green, 0.5f), Scale = new Vector2(11f, 16f) });
+		Fx.Poly(card, rect, new Color(0.01f, 0.07f, 0.05f, 0.97f));
+		Fx.StrokeClosed(card, rect, green, 6f, additive: false);
+		Fx.StrokeClosed(card, inner, new Color(Pal.Ice, 0.75f), 2f, additive: false);
+		// 牌面：同心圆 + 放射线 + 巨大的 IV
+		RingQuad(card, 86f, 2.5f, new Color(green, 0.8f));
+		RingQuad(card, 70f, 1.5f, new Color(Pal.Ice, 0.5f));
+		for (int i = 0; i < 16; i++)
 		{
-			Node2D smoke = Fx.Root(back, floor + new Vector2(0f, -200f), "P3TyrannySmoke");
-			GpuParticles2D e = Fx.Sparks(smoke, Pal.DarkHour, 26, 20f, 70f, 1.2f, gravity: -90f, scaleMin: 0.3f, scaleMax: 0.8f,
-				ramp: new[] { new Color(Pal.DarkHour, 0.6f), new Color(Pal.DarkHour, 0f) }, oneShot: false);
-			((ParticleProcessMaterial)e.ProcessMaterial).EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box;
-			((ParticleProcessMaterial)e.ProcessMaterial).EmissionBoxExtents = new Vector3(40f, 120f, 0f);
-			Fx.After(smoke, 0.9, "smoke off", () => e.Emitting = false);
-			Fx.FreeAfter(smoke, 2.3);
+			Vector2 dir = Vector2.Right.Rotated(i * Mathf.Tau / 16f);
+			float r0 = i % 2 == 0 ? 92f : 96f, r1 = i % 2 == 0 ? 112f : 104f;
+			Fx.Stroke(card, new[] { dir * r0, dir * r1 }, new Color(green, 0.75f), i % 2 == 0 ? 3f : 1.5f);
+		}
+		Label iv = Typo.Text(card, "IV", Typo.Latin, 104, new Color(0.85f, 1f, 0.9f), new Vector2(-62f, -70f), outline: 5, outlineColor: new Color(0.02f, 0.1f, 0.05f));
+		Typo.Text(card, "THE EMPEROR", Typo.Latin, 24, Pal.White, new Vector2(-cw + 22f, ch - 52f), outline: 2, outlineColor: new Color(0.02f, 0.1f, 0.05f));
+		Typo.Text(card, "IV", Typo.Latin, 30, green, new Vector2(-cw + 20f, -ch + 18f));
+		// 牌框上流动的电光（沿边框跑的一小段亮线）
+		Polygon2D runner = Fx.Poly(card, new Vector2[3], Pal.White, additive: true);
+		Audio.Sfx.Play(Audio.Snd.TarotReveal, 0.85f, pitch: 0.8f);
+
+		// 4) 动画主轴
+		Fx.Animate(sky, total, t =>
+		{
+			float time = t * total;
+			float lit = 0f;
+			foreach (float st in strikes)
+			{
+				lit = Mathf.Max(lit, Mathf.Clamp(1f - Mathf.Abs(time - st - 0.03f) / 0.07f, 0f, 1f));
+			}
+			float shade = Ease.OutCubic(Mathf.Clamp(time / 0.2f, 0f, 1f)) * (1f - Ease.InCubic(Mathf.Clamp((time - 1.4f) / 0.5f, 0f, 1f)));
+			dim.Color = new Color(0.01f, 0.05f, 0.03f, 0.55f * shade).Lerp(new Color(0.75f, 1f, 0.85f, 0.35f * shade), lit);
+
+			float sealIn = Ease.OutExpo(Mathf.Clamp(time / 0.25f, 0f, 1f));
+			float sealOut = Ease.InCubic(Mathf.Clamp((time - 1.35f) / 0.45f, 0f, 1f));
+			seal.Scale = Vector2.One * (0.4f + 0.6f * sealIn + 0.25f * Ease.OutExpo(Mathf.Clamp((time - 0.9f) / 0.3f, 0f, 1f)));
+			Fx.SetParam(circle, "alpha", sealIn * (1f - sealOut) * (0.85f + 0.6f * lit));
+			Fx.SetParam(circle2, "alpha", Ease.OutExpo(Mathf.Clamp((time - 0.1f) / 0.25f, 0f, 1f)) * (1f - sealOut) * 0.7f);
+
+			if (IsInstanceValid(card))
+			{
+				float flip = Mathf.Clamp((time - 0.12f) / 0.28f, 0f, 1f);
+				card.Scale = new Vector2(Mathf.Abs(Mathf.Cos((1f - Ease.OutCubic(flip)) * Mathf.Pi * 1.5f)), 0.85f + 0.15f * Ease.OutBack(flip));
+				card.Position = new Vector2(0f, 60f * (1f - Ease.OutExpo(flip)) + 4f * Mathf.Sin(time * 9f) * Mathf.Clamp((time - 0.45f) * 4f, 0f, 1f));
+				card.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(flip * 4f, 0f, 1f));
+				iv.Modulate = new Color(1f + lit, 1f + lit, 1f + lit, 1f);
+				// 电光沿边框跑：周长参数化
+				float per = 4f * (cw + ch);
+				float u0 = Mathf.PosMod(time * 2600f, per);
+				Vector2 P(float u)
+				{
+					u = Mathf.PosMod(u, per);
+					if (u < 2f * cw) return new Vector2(-cw + u, -ch);
+					u -= 2f * cw;
+					if (u < 2f * ch) return new Vector2(cw, -ch + u);
+					u -= 2f * ch;
+					if (u < 2f * cw) return new Vector2(cw - u, ch);
+					u -= 2f * cw;
+					return new Vector2(-cw, ch - u);
+				}
+				Fx.Reshape(runner, Fx.StrokePts(new[] { P(u0), P(u0 + 45f), P(u0 + 90f), P(u0 + 135f), P(u0 + 180f) }, 5f, taper: true));
+				runner.Modulate = new Color(1f, 1f, 1f, flip >= 1f ? 0.9f : 0f);
+			}
 		});
+
+		// 5) 落雷：两道劈在人物两侧地面，第三道劈进皇帝牌
+		Vector2[] hits = { feet + new Vector2(-240f, 0f), feet + new Vector2(230f, 0f) };
+		for (int i = 0; i < 2; i++)
+		{
+			Vector2 hit = hits[i];
+			int k = i;
+			Fx.After(sky, strikes[i], "tyranny bolt", () =>
+			{
+				Bolt(back, new Vector2(hit.X + Fx.Rand(-90f, 90f), -40f), hit, green, 7f, 0.32f);
+				P3Fx.Flash(back, hit, Pal.Ice, 280f, 0.18f);
+				P3Fx.Shockwave(back, hit, green, 420f, 0.35f, squashY: 0.3f);
+				Node2D sp = Fx.Root(back, hit, "P3TyrannySparks");
+				Fx.Sparks(sp, Pal.Ice, 30, 220f, 560f, 0.45f, gravity: 1000f, scaleMin: 0.08f, scaleMax: 0.22f,
+					ramp: new[] { Pal.White, green, new Color(green, 0f) });
+				Fx.FreeAfter(sp, 0.6);
+				Shake(ShakeStrength.Weak);
+				Audio.Sfx.Play(Audio.Snd.StarSpend, 0.7f, pitch: 0.5f + 0.1f * k);
+			});
+		}
+		Fx.After(sky, strikes[2], "tyranny main bolt", () =>
+		{
+			Bolt(back, new Vector2(cardAt.X + 40f, -40f), cardAt, Pal.White, 12f, 0.42f, branches: 4);
+			Bolt(back, new Vector2(cardAt.X - 70f, -40f), cardAt, green, 6f, 0.3f);
+			if (IsInstanceValid(cardRoot))
+			{
+				cardRoot.QueueFree();
+			}
+			P3Fx.GlassShatter(back, cardAt, 40, 1.3f, green);
+			P3Fx.Flash(back, cardAt, Pal.White, 520f, 0.25f);
+			P3Fx.Flash(front, center, new Color(Pal.Ice, 0.6f), 260f, 0.1f);
+			P3Fx.Shockwave(back, cardAt, green, 640f, 0.45f);
+			P3Fx.Shockwave(back, feet, Pal.Ice, 760f, 0.5f, squashY: 0.3f);
+			P3Fx.Ripple(back, feet, 700f, 0.6f, 0.03f, squashY: 0.35f);
+			P3Fx.SpeedLines(back, cardAt, green, 20, 140f, 520f, 0.4f);
+			Shake(ShakeStrength.Medium);
+			Audio.Sfx.Play(Audio.Snd.TarotShatter, 0.9f, pitch: 0.75f);
+			Audio.Sfx.Play(Audio.Snd.CutIn, 0.6f, pitch: 0.7f);
+		});
+
+		// 6) 余电：人物身边游走的细电弧 + 向上飘的绿火星
+		for (int i = 0; i < 9; i++)
+		{
+			Fx.After(sky, 0.95f + 0.08f * i, "tyranny arc", () =>
+			{
+				Vector2 a0 = center + Vector2.Right.Rotated(Fx.Rand(0f, Mathf.Tau)) * new Vector2(110f, 150f);
+				Vector2 a1 = a0 + Vector2.Right.Rotated(Fx.Rand(0f, Mathf.Tau)) * Fx.Rand(40f, 80f);
+				Bolt(front, a0, a1, green, 2f, 0.12f, branches: 0, segments: 6);
+			});
+		}
+		Fx.After(sky, 0.92, "tyranny embers", () =>
+		{
+			Node2D em = Fx.Root(back, feet + new Vector2(0f, -40f), "P3TyrannyEmbers");
+			GpuParticles2D e = Fx.Sparks(em, green, 40, 30f, 110f, 1.1f, gravity: -160f, scaleMin: 0.1f, scaleMax: 0.3f,
+				ramp: new[] { new Color(Pal.Ice, 0.9f), new Color(green, 0.7f), new Color(green, 0f) }, oneShot: false);
+			((ParticleProcessMaterial)e.ProcessMaterial).EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box;
+			((ParticleProcessMaterial)e.ProcessMaterial).EmissionBoxExtents = new Vector3(220f, 20f, 0f);
+			Fx.After(em, 0.6, "embers off", () => e.Emitting = false);
+			Fx.FreeAfter(em, 1.8);
+		});
+		Fx.FreeAfter(seal, total + 0.05f);
+		Fx.FreeAfter(sky, total + 0.05f);
+		Fx.FreeAfter(cardRoot, total);
+	}
+
+	private static bool IsInstanceValid(GodotObject o) => GodotObject.IsInstanceValid(o);
+
+	/// <summary>
+	/// 闪电：起点到终点的锯齿折线（白芯 + 有色辉光 + 几条分叉），每 45ms 重新生成一次形状（闪烁抖动），
+	/// 前 15% 时间满亮，之后随机明灭着熄灭。
+	/// </summary>
+	private static void Bolt(Control layer, Vector2 from, Vector2 to, Color tint, float width, float dur, int branches = 2, int segments = 16)
+	{
+		Node2D root = Fx.Root(layer, Vector2.Zero, "P3Bolt");
+		root.TopLevel = true;
+		root.GlobalPosition = Vector2.Zero;
+		// 都是抗锯齿多边形（Fx.StrokePts 展开折线），不用 Line2D —— 游戏里 Line2D 的斜线有锯齿
+		Polygon2D glow = Fx.Poly(root, new Vector2[3], new Color(tint, 0.35f), additive: true);
+		Polygon2D core = Fx.Poly(root, new Vector2[3], Pal.White, additive: true);
+		Polygon2D[] forks = new Polygon2D[branches];
+		for (int i = 0; i < branches; i++)
+		{
+			forks[i] = Fx.Poly(root, new Vector2[3], new Color(tint.Lerp(Pal.White, 0.5f), 0.85f), additive: true);
+		}
+		Vector2[] pts = { from, to };
+		float len = from.DistanceTo(to);
+		int last = -1;
+		Fx.Animate(root, dur, t =>
+		{
+			int f = (int)(t * dur / 0.045f);
+			if (f != last)
+			{
+				last = f;
+				pts = Jag(from, to, segments, len * 0.07f);
+				Fx.Reshape(glow, Fx.StrokePts(pts, width * 3.5f));
+				for (int i = 0; i < branches; i++)
+				{
+					Vector2 p = pts[1 + (int)Fx.Rand(0f, pts.Length - 3)];
+					Vector2 dir = (to - from).Normalized().Rotated(Fx.Rand(-0.9f, 0.9f));
+					Fx.Reshape(forks[i], Fx.StrokePts(Jag(p, p + dir * len * Fx.Rand(0.12f, 0.25f), 6, len * 0.03f), width * 0.45f, taper: true));
+				}
+			}
+			float a = t < 0.15f ? 1f : (1f - t) * (Fx.Rand(0f, 1f) < 0.25f ? 0.3f : 1f);
+			root.Modulate = new Color(1f, 1f, 1f, a);
+			Fx.Reshape(core, Fx.StrokePts(pts, width * (1f - 0.6f * t)));
+		});
+		Fx.FreeAfter(root, dur + 0.03f);
+	}
+
+	/// <summary>细圆环（Ring 着色器，边缘平滑无锯齿）。</summary>
+	private static ColorRect RingQuad(Node parent, float r, float w, Color tint)
+	{
+		float size = r * 2f / 0.8f;
+		ColorRect q = Fx.ShaderQuad(parent, Shaders.Ring, size);
+		Fx.SetParam(q, "tint", tint);
+		Fx.SetParam(q, "radius", 0.8f);
+		Fx.SetParam(q, "width", w / (size * 0.5f));
+		return q;
+	}
+
+	private static Vector2[] Jag(Vector2 a, Vector2 b, int n, float amp)
+	{
+		Vector2 nrm = (b - a).Orthogonal().Normalized();
+		Vector2[] pts = new Vector2[n + 1];
+		float off = 0f;
+		for (int i = 0; i <= n; i++)
+		{
+			float k = (float)i / n;
+			off = Mathf.Clamp(off + Fx.Rand(-amp, amp) * 0.8f, -amp, amp);
+			pts[i] = a.Lerp(b, k) + nrm * off * Mathf.Sin(k * Mathf.Pi);
+		}
+		return pts;
 	}
 
 	/// <summary>暴政生效（回合开始消耗一张牌）：同一位置升起一口小棺材，一张牌的虚影从手牌区落进去，绿光一闪，沉下。</summary>

@@ -128,18 +128,23 @@ void fragment() {
 	/// 不闭合的折线描边，展开成细长多边形走抗锯齿着色器（Line2D 自带的 Antialiased 在部分显示设置下不生效，斜线有锯齿）。
 	/// 顶点数 = 折线点数 × 2，要 ≤ 128 才有抗锯齿。
 	/// </summary>
-	public static Polygon2D Stroke(Node parent, Vector2[] points, Color color, float width, bool additive = true)
+	public static Polygon2D Stroke(Node parent, Vector2[] points, Color color, float width, bool additive = true) =>
+		Poly(parent, StrokePts(points, width), color, additive);
+
+	/// <summary>折线展开成的多边形顶点（Stroke 用；动态改形状时配合 Reshape：Reshape(poly, StrokePts(新点, 线宽))）。taper 为 true 时两端收尖。</summary>
+	public static Vector2[] StrokePts(Vector2[] points, float width, bool taper = false)
 	{
 		int n = points.Length;
 		var poly = new Vector2[n * 2];
 		for (int i = 0; i < n; i++)
 		{
 			Vector2 dir = (points[System.Math.Min(i + 1, n - 1)] - points[System.Math.Max(i - 1, 0)]).Normalized();
-			Vector2 nrm = new Vector2(-dir.Y, dir.X) * (width * 0.5f);
+			float w = taper && n > 1 ? width * Mathf.Max(Mathf.Sin(Mathf.Pi * i / (n - 1)), 0.15f) : width;
+			Vector2 nrm = new Vector2(-dir.Y, dir.X) * (w * 0.5f);
 			poly[i] = points[i] + nrm;
 			poly[n * 2 - 1 - i] = points[i] - nrm;
 		}
-		return Poly(parent, poly, color, additive);
+		return poly;
 	}
 
 	/// <summary>闭合描边（每条边单独展开成多边形，两端各延伸半个线宽，拐角不留缺口）。</summary>

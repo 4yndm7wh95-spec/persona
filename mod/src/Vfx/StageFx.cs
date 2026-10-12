@@ -133,52 +133,90 @@ public static class StageFx
 
 	// ───────────────────────── 胜利 ─────────────────────────
 	/// <summary>
-	/// 战斗胜利（P3R 结算界面风格）：左侧白色斜切大色块 + 红边从左切入，右侧巨大水之圆张开（两道圆弧），
-	/// 白块上旋转的超大深蓝 "VICTORY" 从下方滑上来，右上红字标签 "BATTLE CLEAR"，蓝蝶从圆里飞出。
-	/// 入 0.4s → 停 1.0s → 出 0.4s（白块向左、圆收拢、字继续上滑淡出）。
+	/// 战斗胜利（P3R 结算界面风格，不用圆框）：左侧白色斜切大色块 + 红边从左切入，"VICTORY" 大字从下滑上；
+	/// 右侧一整块斜切的水面面板从右边扫进来（左边是一道 "/" 斜切口，上 / 右 / 下都出血到屏幕外），
+	/// 结城理的立绘贴着屏幕右下角放大出血，身后两层错开的蓝色剪影先到、本人随后滑入；斜切口上青白两道细线，
+	/// 入场时眼前那块玻璃碎开，蓝蝶从面板里飞出。入 0.4s → 停 1.0s → 出 0.4s（白块向左、面板向右收走）。
 	/// </summary>
 	public static void Victory(Control layer)
 	{
 		Vector2 size = layer.GetViewportRect().Size;
+		float W = size.X, H = size.Y;
 		Node2D root = Fx.Root(layer, Vector2.Zero, "P3Victory");
 		root.TopLevel = true;
 		root.GlobalPosition = Vector2.Zero;
 		ColorRect dim = new() { Size = size, Color = new Color(0.01f, 0.03f, 0.1f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore };
 		root.AddChild(dim);
 
-		Vector2 discAt = new(size.X * 0.72f, size.Y * 0.5f);
-		float discR = size.Y * 0.46f;
-		ColorRect disc = P3Ui.WaterDisc(root, discAt, discR);
-		Node2D arcs = new() { Position = discAt };
-		root.AddChild(arcs);
-		P3Ui.Arc(arcs, Vector2.Zero, discR * 1.07f, 0f, Mathf.Pi * 1.4f, new Color(Pal.Cyan, 0.6f), 3f);
-		P3Ui.Arc(arcs, Vector2.Zero, discR * 1.15f, Mathf.Pi * 1.1f, Mathf.Pi * 1.7f, new Color(1f, 1f, 1f, 0.5f), 2f);
+		// 立绘：画布右下角贴住屏幕右下角（身体在画布下 / 右边被截断，截断处正好在屏幕外）
+		Texture2D? heroTex = ResourceLoader.Load("res://p3makoto/ui/victory_portrait.png") as Texture2D;
+		float heroH = H * 1.25f;
+		float heroScale = heroTex != null ? heroH / heroTex.GetHeight() : 1f;
+		float heroW = heroTex != null ? heroTex.GetWidth() * heroScale : heroH * 0.667f;
+		Vector2 heroAt = new(W + W * 0.02f - heroW * 0.5f, -H * 0.055f + heroH * 0.5f);
+		// 面板的 "/" 斜切口：下端在立绘画布左边线右侧（画布左边的袖子截断处永远被切掉），上端再向右倾
+		float lean = H * 0.16f;
+		float cutB = Mathf.Max(heroAt.X - heroW * 0.5f + 24f, W * 0.54f);
+		float far = W + lean + 260f;
+		Vector2[] PanelPts(float x0) => new[] { new Vector2(x0 + lean, -60f), new Vector2(far + 400f, -60f), new Vector2(far + 400f, H + 60f), new Vector2(x0, H + 60f) };
+
+		// 白块与面板之间的深蓝底带
+		Node2D band = new();
+		root.AddChild(band);
+		P3Ui.Slab(band, W * 0.38f, W + 300f, -60f, H + 60f, H * 0.28f, new Color(0.02f, 0.06f, 0.24f, 0.92f));
+
+		Polygon2D panel = new() { Polygon = PanelPts(far), ClipChildren = CanvasItem.ClipChildrenMode.AndDraw, Color = new Color(0.02f, 0.08f, 0.4f, 1f) };
+		root.AddChild(panel);
+		ColorRect water = P3Ui.WaterDisc(panel, new Vector2(W * 0.8f, H * 0.5f), size.Length() * 0.62f);
+		Fx.SetParam(water, "reveal", 1f);
+		// 面板里的斜向光带（水面反光，和斜切口平行）
+		Node2D sheen = new();
+		panel.AddChild(sheen);
+		P3Ui.Slab(sheen, cutB + W * 0.05f, cutB + W * 0.09f, -60f, H + 60f, lean * 1.4f, new Color(0.6f, 0.9f, 1f, 0.12f));
+		P3Ui.Slab(sheen, cutB + W * 0.11f, cutB + W * 0.125f, -60f, H + 60f, lean * 1.4f, new Color(0.6f, 0.9f, 1f, 0.08f));
+		Typo.Text(panel, "THE FOOL  0", Typo.Latin, (int)(H * 0.03f), new Color(Pal.Ice, 0.35f), new Vector2(W - W * 0.2f, H * 0.93f));
+
+		Sprite2D MakeHero(Color? tint)
+		{
+			Sprite2D sp = new() { Texture = heroTex, Scale = Vector2.One * heroScale, Position = heroAt };
+			if (tint is Color c)
+			{
+				ShaderMaterial m = new() { Shader = Shaders.FlatTint };
+				m.SetShaderParameter("tint", new Color(c, 0f));
+				sp.Material = m;
+			}
+			panel.AddChild(sp);
+			return sp;
+		}
+		Sprite2D shadeDeep = MakeHero(new Color(0.12f, 0.3f, 1f));
+		Sprite2D shadeCyan = MakeHero(Pal.Cyan);
+		Sprite2D hero = MakeHero(null);
+		hero.Modulate = new Color(1f, 1f, 1f, 0f);
+
+		// 斜切口上的两道细线（随面板一起扫进来）
+		Node2D edge = new();
+		root.AddChild(edge);
+		float EdgeX(float y) => lean * (H + 60f - y) / (H + 120f);
+		Fx.Stroke(edge, new[] { new Vector2(0f, H + 60f), new Vector2(lean, -60f) }, Pal.Cyan, 7f, additive: false);
+		Fx.Stroke(edge, new[] { new Vector2(-22f, H + 60f), new Vector2(lean - 22f, -60f) }, new Color(1f, 1f, 1f, 0.85f), 2.5f, additive: false);
+		Fx.Stroke(edge, new[] { new Vector2(EdgeX(H * 0.8f) - 44f, H * 0.8f), new Vector2(EdgeX(H * 0.6f) - 44f, H * 0.6f) }, new Color(0.9f, 0.08f, 0.22f, 0.9f), 5f, additive: false);
 
 		Node2D white = new();
 		root.AddChild(white);
-		P3Ui.Slab(white, -300f, size.X * 0.42f, -40f, size.Y + 40f, size.Y * 0.28f, new Color(0.95f, 0.97f, 1f, 0.95f));
-		P3Ui.Slab(white, size.X * 0.42f - 4f, size.X * 0.42f + 12f, -40f, size.Y + 40f, size.Y * 0.28f, new Color(0.9f, 0.08f, 0.22f, 0.95f));
-		// 左侧色块上方不再空着：深蓝斜切色块 + "RESULT" 小标题 + 两道细线 + 半透明描边大字（P3R 菜单的层叠排版）
-		P3Ui.Slab(white, -300f, size.X * 0.3f, -40f, size.Y * 0.2f, size.Y * 0.06f, new Color(0.03f, 0.08f, 0.3f, 0.95f));
-		Typo.Text(white, "RESULT", Typo.Latin, (int)(size.Y * 0.07f), new Color(0.95f, 0.97f, 1f), new Vector2(size.X * 0.04f, size.Y * 0.045f));
-		Typo.Text(white, "MEMENTO MORI  /  THE FOOL", Typo.Latin, (int)(size.Y * 0.022f), new Color(Pal.Cyan, 0.9f), new Vector2(size.X * 0.045f, size.Y * 0.135f));
-		Fx.Line(white, new[] { new Vector2(-50f, size.Y * 0.235f), new Vector2(size.X * 0.36f, size.Y * 0.235f) }, new Color(0.9f, 0.08f, 0.22f, 0.9f), 4f);
-		Fx.Line(white, new[] { new Vector2(-50f, size.Y * 0.255f), new Vector2(size.X * 0.33f, size.Y * 0.255f) }, new Color(0.03f, 0.08f, 0.3f, 0.6f), 2f);
-		Node2D ghostWord = P3Ui.GiantWord(white, "CLEAR", new Vector2(size.X * 0.2f, size.Y * 0.62f), (int)(size.Y * 0.2f), -1.05f, new Color(0.03f, 0.08f, 0.3f, 0.08f));
-		Node2D word = P3Ui.GiantWord(white, "VICTORY", new Vector2(size.X * 0.09f, size.Y * 0.9f), (int)(size.Y * 0.28f), -1.05f, new Color(0.03f, 0.08f, 0.3f, 0.95f));
-		// 水之圆里是结城理（选人界面同一张立绘，不切边的整张）：按圆形裁切、放大到盖满整个圆 —— 画布边缘（身体截断处）永远在圆外
-		Polygon2D clip = new() { Polygon = Fx.Circle(discR * 0.985f, 96), Position = discAt, ClipChildren = CanvasItem.ClipChildrenMode.Only };
-		root.AddChild(clip);
-		Sprite2D hero = new() { Modulate = new Color(1f, 1f, 1f, 0f) };
-		float heroScale = 1f;
-		if (ResourceLoader.Load("res://p3makoto/ui/victory_portrait.png") is Texture2D heroTex)
-		{
-			hero.Texture = heroTex;
-			heroScale = discR * 2.12f / heroTex.GetWidth();         // 宽 = 直径 × 1.06：左右各留余量，入场的缩放 / 漂移也不会露边
-		}
-		clip.AddChild(hero);
-		Vector2 heroAt = new(0f, discR * 0.43f);                    // 画布下移：脸落在圆心附近，画布上沿仍在圆外
-		Node2D tag = P3Ui.RedTag(root, "BATTLE CLEAR", new Vector2(size.X * 0.58f, size.Y * 0.16f), (int)(size.Y * 0.05f), cjk: false);
+		P3Ui.Slab(white, -300f, W * 0.42f, -40f, H + 40f, H * 0.28f, new Color(0.95f, 0.97f, 1f, 0.95f));
+		P3Ui.Slab(white, W * 0.42f - 4f, W * 0.42f + 12f, -40f, H + 40f, H * 0.28f, new Color(0.9f, 0.08f, 0.22f, 0.95f));
+		// 左侧色块上方：深蓝斜切色块 + "RESULT" 小标题 + 两道细线 + 半透明大字（P3R 菜单的层叠排版）
+		P3Ui.Slab(white, -300f, W * 0.3f, -40f, H * 0.2f, H * 0.06f, new Color(0.03f, 0.08f, 0.3f, 0.95f));
+		Typo.Text(white, "RESULT", Typo.Latin, (int)(H * 0.07f), new Color(0.95f, 0.97f, 1f), new Vector2(W * 0.04f, H * 0.045f));
+		Typo.Text(white, "MEMENTO MORI  /  THE FOOL", Typo.Latin, (int)(H * 0.022f), new Color(Pal.Cyan, 0.9f), new Vector2(W * 0.045f, H * 0.135f));
+		Fx.Line(white, new[] { new Vector2(-50f, H * 0.235f), new Vector2(W * 0.36f, H * 0.235f) }, new Color(0.9f, 0.08f, 0.22f, 0.9f), 4f);
+		Fx.Line(white, new[] { new Vector2(-50f, H * 0.255f), new Vector2(W * 0.33f, H * 0.255f) }, new Color(0.03f, 0.08f, 0.3f, 0.6f), 2f);
+		Node2D ghostWord = P3Ui.GiantWord(white, "CLEAR", new Vector2(W * 0.2f, H * 0.62f), (int)(H * 0.2f), -1.05f, new Color(0.03f, 0.08f, 0.3f, 0.08f));
+		Node2D word = P3Ui.GiantWord(white, "VICTORY", new Vector2(W * 0.09f, H * 0.9f), (int)(H * 0.28f), -1.05f, new Color(0.03f, 0.08f, 0.3f, 0.95f));
+		Node2D tag = P3Ui.RedTag(root, "BATTLE CLEAR", new Vector2(W * 0.5f, H * 0.14f), (int)(H * 0.05f), cjk: false);
+
+		// 画布上眼睛 / 玻璃片的位置（相对立绘画布，0~1）
+		Vector2 glassAt = heroAt + new Vector2((0.56f - 0.5f) * heroW, (0.24f - 0.5f) * heroH);
 
 		const float tIn = 0.4f, hold = 1.0f, tOut = 0.4f, total = tIn + hold + tOut;
 		Fx.Animate(root, total, t =>
@@ -189,22 +227,42 @@ public static class StageFx
 			float o = Seg(time, tIn + hold, tOut);
 			float oe = Ease.InExpo(o);
 			dim.Color = new Color(0.01f, 0.03f, 0.1f, 0.45f * a * (1f - o));
-			white.Position = new Vector2(-size.X * 0.6f * (1f - a) - 20f * d - size.X * 0.7f * oe, 0f);
-			word.Position = new Vector2(size.X * 0.09f, size.Y * 0.9f + size.Y * 0.5f * (1f - Ease.OutExpo(Seg(time, 0.08f, 0.4f))) - 40f * d - size.Y * 0.4f * oe);
-			ghostWord.Position = new Vector2(size.X * 0.2f + 60f * time, size.Y * 0.62f);
-			float h = Ease.OutQuint(Seg(time, 0.1f, 0.45f));
-			hero.Position = heroAt + new Vector2(-12f * d, 0f);
-			hero.Scale = Vector2.One * heroScale * (1.12f - 0.12f * h);
+			white.Position = new Vector2(-W * 0.6f * (1f - a) - 20f * d - W * 0.7f * oe, 0f);
+			band.Position = new Vector2(W * 0.5f * (1f - a) + W * 0.7f * oe, 0f);
+			word.Position = new Vector2(W * 0.09f, H * 0.9f + H * 0.5f * (1f - Ease.OutExpo(Seg(time, 0.08f, 0.4f))) - 40f * d - H * 0.4f * oe);
+			ghostWord.Position = new Vector2(W * 0.2f + 60f * time, H * 0.62f);
+			// 面板：斜切口从屏幕右外扫到 cutB，停留时轻微左移，退场再扫回右边
+			float p = Ease.OutExpo(Seg(time, 0.04f, 0.3f));
+			float x0 = Mathf.Lerp(far, cutB, p) - 10f * d + (far - cutB) * oe;
+			panel.Polygon = PanelPts(x0);
+			edge.Position = new Vector2(x0, 0f);
+			// 剪影先到、本人随后：三层同向滑入，错开 (-34,18) / (-18,9) 停住
+			float s1 = Ease.OutExpo(Seg(time, 0.06f, 0.3f));
+			float s2 = Ease.OutExpo(Seg(time, 0.1f, 0.3f));
+			float h = Ease.OutQuint(Seg(time, 0.14f, 0.34f));
+			Vector2 drift = new(-14f * d, 0f);
+			Vector2 slideOut = new(W * 0.5f * oe, 0f);
+			shadeDeep.Position = heroAt + new Vector2(-34f, 18f) + new Vector2(W * 0.35f * (1f - s1), 0f) + drift * 1.4f + slideOut;
+			shadeCyan.Position = heroAt + new Vector2(-18f, 9f) + new Vector2(W * 0.35f * (1f - s2), 0f) + drift * 1.2f + slideOut;
+			hero.Position = heroAt + new Vector2(W * 0.3f * (1f - h), 0f) + drift + slideOut;
+			hero.Scale = Vector2.One * heroScale * (1.06f - 0.06f * h);
 			hero.Modulate = new Color(1f, 1f, 1f, h * (1f - o));
-			Fx.SetParam(disc, "reveal", Ease.OutExpo(Seg(time, 0.06f, 0.36f)) * (1f - Ease.InCubic(o)));
-			arcs.Rotation = 0.35f * time;
-			arcs.Modulate = new Color(1f, 1f, 1f, a * (1f - o));
+			((ShaderMaterial)shadeDeep.Material).SetShaderParameter("tint", new Color(0.12f, 0.3f, 1f, 0.9f * s1 * (1f - o)));
+			((ShaderMaterial)shadeCyan.Material).SetShaderParameter("tint", new Color(Pal.Cyan, 0.95f * s2 * (1f - o)));
 			float k = Seg(time, 0.2f, 0.18f);
 			tag.Scale = Vector2.One * Mathf.Lerp(1.8f, 1f, Ease.OutBack(k));
 			tag.Modulate = new Color(1f, 1f, 1f, k * (1f - o));
 			root.Modulate = new Color(1f, 1f, 1f, 1f - Seg(time, tIn + hold + tOut * 0.5f, tOut * 0.5f));
 		});
-		Fx.After(root, 0.3, "victory butterflies", () => P3Fx.ButterflyBurst(layer, discAt, 9, size.Y * 0.5f));
+		Fx.After(root, 0.36, "victory glass", () => P3Fx.GlassShatter(layer, glassAt, 16, 0.8f, Pal.Ice));
+		Fx.After(root, 0.3, "victory butterflies", () =>
+		{
+			for (int i = 0; i < 5; i++)
+			{
+				Vector2 from = new(cutB + Fx.Rand(-20f, 120f), H * Fx.Rand(0.45f, 0.9f));
+				P3Fx.Butterfly(layer, from, from + new Vector2(Fx.Rand(-W * 0.3f, -W * 0.1f), -H * Fx.Rand(0.3f, 0.6f)), Fx.Rand(1.1f, 1.5f), Fx.Rand(0.7f, 1.1f));
+			}
+		});
 		Fx.FreeAfter(root, total + 0.05);
 	}
 

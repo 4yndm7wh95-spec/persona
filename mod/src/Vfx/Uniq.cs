@@ -54,62 +54,190 @@ public static class Uniq
 		Fx.Poly(h, RectPts(new Rect2(-7f * s, -150f * s, 14f * s, 150f * s)), new Color(0.55f, 0.6f, 0.75f));
 		Fx.Poly(h, RectPts(new Rect2(-62f * s, -200f * s, 124f * s, 58f * s)), new Color(tint, 0.35f), additive: true);
 		Fx.Poly(h, RectPts(new Rect2(-55f * s, -195f * s, 110f * s, 48f * s)), new Color(0.82f, 0.88f, 1f));
-		Fx.Line(h, RectPts(new Rect2(-55f * s, -195f * s, 110f * s, 48f * s)), Pal.White, 3f, closed: true);
+		Fx.StrokeClosed(h, RectPts(new Rect2(-55f * s, -195f * s, 110f * s, 48f * s)), Pal.White, 3f);
 		return h;
 	}
 
 	// ══════════════════ 锻造系 ══════════════════
 
-	/// <summary>铸剑者：身旁凭空出现一块烧红的剑胚，光之锤连砸三下（每下火花喷泉 + 冲击），剑胚由红变白再淬成青。</summary>
+	/// <summary>
+	/// 铸剑者（华丽版，约 1.9s）：
+	/// 0.0 人物身旁地面张开一座橙金色的"光之砧"法阵（压扁），身后升起锻炉之火（ForgeFire，back 层）；
+	///     熔融的火星从四周被吸进砧心，凝成一块烧红的剑胚（由短到长、带热浪涟漪）；
+	/// 0.35 / 0.6 / 0.85 光之锤三连锤：每锤火花喷泉 + 冲击环 + 剑身上一排符文亮一下，剑胚被锤长、由红转白；
+	/// 1.1 第四锤重砸（锤更大、强震屏、法阵炸开），剑身一道白光从剑柄扫到剑尖；
+	/// 1.2 淬火：蒸汽喷涌、剑变成 P3 的青蓝，冰晶般的十字星闪；
+	/// 1.45 新剑立起、转向，化作一道青光飞进人物手里（被吸收的闪光 + 小冲击环）。
+	/// </summary>
 	public static void TheSmith(Control back, Control front, Vector2 center)
 	{
-		Vector2 at = center + new Vector2(150f, 30f);
+		Vector2 at = center + new Vector2(190f, 40f);       // 剑胚中心
+		Vector2 floor = at + new Vector2(0f, 95f);
+		Color hot = new(1f, 0.5f, 0.12f), gold = new(1f, 0.82f, 0.4f);
+		const float total = 1.9f;
+
+		// 光之砧：地面法阵（橙金 → 淬火后变青）
+		Node2D anvil = Fx.Root(back, floor, "P3SmithAnvil");
+		ColorRect circle = Fx.ShaderQuad(anvil, Shaders.MagicCircle, 420f, 0.3f);
+		Fx.SetParam(circle, "tint", gold);
+		Fx.SetParam(circle, "spin", 0.7f);
+		// 锻炉之火：剑胚后面
+		Node2D fireRoot = Fx.Root(back, floor, "P3SmithFire");
+		ColorRect fire = new() { Size = new Vector2(300f, 380f), Position = new Vector2(-150f, -370f), MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Shaders.ForgeFire } };
+		fireRoot.AddChild(fire);
+		Fx.SetParam(fire, "height", 0f);
+
+		// 剑胚
 		Node2D billet = Fx.Root(front, at, "P3SmithBillet");
-		Node2D sw = Sword(billet, 170f, new Color(1f, 0.5f, 0.1f));
-		billet.Rotation = 0.05f;
-		Node2D hamRoot = Fx.Root(front, at + new Vector2(10f, -10f), "P3SmithHammer");
-		Hammer(hamRoot, 0.9f, Pal.Ice);
-		for (int i = 0; i < 3; i++)
+		Sprite2D heat = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(hot, 0f), Scale = new Vector2(5f, 2.2f) };
+		billet.AddChild(heat);
+		Node2D sw = Sword(billet, 190f, hot);
+		sw.Position = new Vector2(-80f, 0f);
+		// 剑身上的符文（锤一下亮一下）
+		var runes = new List<Polygon2D>();
+		for (int i = 0; i < 5; i++)
 		{
-			float t0 = 0.12f + 0.3f * i;
-			int k = i;
-			Fx.After(hamRoot, t0 + 0.12f, "smith blow", () =>
+			runes.Add(Fx.Poly(sw, Fx.Star4(7f, 0.3f), new Color(Pal.Ice, 0f), additive: true));
+			runes[i].Position = new Vector2(30f + i * 26f, 0f);
+		}
+		// 扫过剑身的白光
+		Polygon2D sweep = Fx.Poly(sw, RectPts(new Rect2(-10f, -14f, 20f, 28f)), new Color(1f, 1f, 1f, 0f), additive: true);
+		billet.Rotation = 0.04f;
+
+		Node2D hamRoot = Fx.Root(front, at + new Vector2(30f, -10f), "P3SmithHammer");
+		Node2D ham = Hammer(hamRoot, 0.9f, Pal.Ice);
+		Sprite2D hamGlow = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(Pal.Cyan, 0.45f), Scale = Vector2.One * 2.5f, Position = new Vector2(0f, -170f) };
+		ham.AddChild(hamGlow);
+
+		// 熔融火星被吸进砧心
+		P3Fx.Gather(front, at, hot, 420f, 0.3f);
+		for (int i = 0; i < 14; i++)
+		{
+			float ang = Fx.Rand(0f, Mathf.Tau);
+			Vector2 from = at + Vector2.Right.Rotated(ang) * Fx.Rand(180f, 280f);
+			Node2D m = Fx.Root(front, from, "P3SmithMote");
+			m.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = hot, Scale = Vector2.One * Fx.Rand(0.35f, 0.6f) });
+			float delay = Fx.Rand(0f, 0.12f);
+			Fx.Animate(m, 0.3f, t =>
 			{
-				Vector2 hit = at + new Vector2(60f, 0f);
+				float e = Ease.InCubic(Mathf.Clamp((t * 0.3f - delay) / 0.18f, 0f, 1f));
+				m.GlobalPosition = from.Lerp(at, e);
+				m.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Max(e - 0.8f, 0f) * 5f);
+			});
+			Fx.FreeAfter(m, 0.32);
+		}
+		P3Fx.Ripple(back, at + new Vector2(0f, -40f), 360f, 1.2f, 0.015f);
+
+		float[] blows = { 0.35f, 0.6f, 0.85f, 1.1f };
+		for (int i = 0; i < blows.Length; i++)
+		{
+			int k = i;
+			bool big = k == 3;
+			Fx.After(billet, blows[i], "smith blow", () =>
+			{
+				Vector2 hit = at + new Vector2(big ? 0f : -20f + 30f * k, 0f);
 				Node2D sp = Fx.Root(front, hit, "P3SmithSparks");
-				Fx.Sparks(sp, new Color(1f, 0.6f, 0.15f), 40, 200f, 520f, 0.5f, gravity: 900f, scaleMin: 0.1f, scaleMax: 0.3f,
-					ramp: new[] { new Color(1f, 0.95f, 0.7f), new Color(1f, 0.55f, 0.1f), new Color(0.6f, 0.1f, 0.05f) });
-				Fx.FreeAfter(sp, 0.6);
-				Bang(front, hit, k == 2 ? Pal.Ice : new Color(1f, 0.6f, 0.2f), 0.6f + 0.2f * k);
-				Shake(k == 2 ? ShakeStrength.Medium : ShakeStrength.Weak);
-				Audio.Sfx.Play(Audio.Snd.StarSpend, 0.6f, pitch: 0.6f + 0.1f * k);
+				Fx.Sparks(sp, hot, big ? 80 : 45, 220f, big ? 760f : 540f, 0.55f, gravity: 1000f, scaleMin: 0.08f, scaleMax: 0.28f,
+					ramp: new[] { new Color(1f, 0.97f, 0.8f), new Color(1f, 0.6f, 0.15f), new Color(0.6f, 0.1f, 0.05f, 0f) });
+				Fx.FreeAfter(sp, 0.7);
+				P3Fx.Flash(front, hit, big ? Pal.White : gold, big ? 300f : 180f, big ? 0.22f : 0.14f);
+				P3Fx.Shockwave(back, hit, big ? Pal.Ice : gold, big ? 620f : 360f, 0.35f);
+				P3Fx.Shockwave(back, floor, hot, big ? 520f : 300f, 0.3f, squashY: 0.3f);
+				if (big)
+				{
+					P3Fx.SpeedLines(back, hit, gold, 18, 90f, 420f, 0.35f);
+				}
+				Shake(big ? ShakeStrength.Medium : ShakeStrength.Weak);
+				Audio.Sfx.Play(Audio.Snd.StarSpend, 0.65f, pitch: big ? 0.45f : 0.6f + 0.1f * k);
 			});
 		}
-		Fx.Animate(hamRoot, 1.15f, t =>
+
+		Fx.Animate(hamRoot, 1.25f, t =>
 		{
-			float time = t * 1.15f;
-			float ph = Mathf.PosMod(time - 0.12f, 0.3f) / 0.3f;
-			float swing = time < 0.12f || time > 1.02f ? -1.2f : (ph < 0.4f ? Mathf.Lerp(0.2f, -1.2f, Ease.OutCubic(ph / 0.4f)) : Mathf.Lerp(-1.2f, 0.2f, Ease.InCubic((ph - 0.4f) / 0.6f)));
+			float time = t * 1.25f;
+			// 每一锤：抬起（0.6）→ 砸下（0.4，加速）
+			float swing = time > 1.1f ? 0.15f : -1.3f;
+			for (int i = 0; i < blows.Length; i++)
+			{
+				float s0 = blows[i] - 0.25f;
+				if (time >= s0 && time <= blows[i] + 0.05f)
+				{
+					float ph = (time - s0) / 0.25f;
+					float lift = i == 3 ? -2.1f : -1.3f;
+					swing = ph < 0.55f ? Mathf.Lerp(0.15f, lift, Ease.OutCubic(ph / 0.55f)) : Mathf.Lerp(lift, 0.15f, Ease.InCubic(Mathf.Clamp((ph - 0.55f) / 0.45f, 0f, 1f)));
+				}
+			}
 			hamRoot.Rotation = swing;
-			hamRoot.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.08f, 0f, 1f) * (1f - Mathf.Clamp((time - 1.0f) / 0.15f, 0f, 1f)));
+			hamRoot.Scale = Vector2.One * (time > 0.85f ? 1.25f : 1f);
+			hamRoot.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((time - 0.08f) / 0.08f, 0f, 1f) * (1f - Mathf.Clamp((time - 1.12f) / 0.12f, 0f, 1f)));
 		});
-		Fx.Animate(billet, 1.5f, t =>
+
+		Vector2 hand = center + new Vector2(-10f, 20f);
+		Fx.Animate(billet, total, t =>
 		{
-			float time = t * 1.5f;
-			float heat = Mathf.Clamp(time / 0.9f, 0f, 1f), q = Mathf.Clamp((time - 1.0f) / 0.2f, 0f, 1f);
-			Color c = new Color(1f, 0.35f, 0.1f).Lerp(new Color(1f, 0.95f, 0.8f), heat).Lerp(new Color(0.6f, 0.85f, 1f), q);
+			float time = t * total;
+			float form = Ease.OutExpo(Mathf.Clamp((time - 0.12f) / 0.2f, 0f, 1f));
+			int done = 0;
+			foreach (float b in blows) { if (time >= b) done++; }
+			float len = 0.55f + 0.45f * Mathf.Min(done / 3f, 1f);
+			sw.Scale = new Vector2(len * form, form);
+			float heatT = Mathf.Clamp(time / 1.0f, 0f, 1f), q = Ease.OutCubic(Mathf.Clamp((time - 1.2f) / 0.2f, 0f, 1f));
+			Color c = hot.Lerp(new Color(1f, 0.95f, 0.8f), heatT).Lerp(new Color(0.6f, 0.88f, 1f), q);
 			sw.Modulate = c;
-			billet.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.1f, 0f, 1f) * (1f - Mathf.Clamp((time - 1.3f) / 0.2f, 0f, 1f)));
+			heat.Modulate = new Color(hot.Lerp(Pal.Cyan, q), 0.75f * form * (1f - 0.5f * q));
+			// 符文：每锤后亮起并衰减；淬火后常亮
+			for (int i = 0; i < runes.Count; i++)
+			{
+				float lit = 0f;
+				foreach (float b in blows) { lit = Mathf.Max(lit, Mathf.Clamp(1f - Mathf.Abs(time - b - 0.03f * i) / 0.12f, 0f, 1f)); }
+				runes[i].Color = new Color(Pal.Ice, Mathf.Max(lit, q * 0.8f));
+				runes[i].Rotation = time * 3f;
+			}
+			// 第四锤后白光扫过剑身
+			float sw0 = Mathf.Clamp((time - 1.12f) / 0.18f, 0f, 1f);
+			sweep.Position = new Vector2(Mathf.Lerp(-30f, 200f, sw0), 0f);
+			sweep.Color = new Color(1f, 1f, 1f, sw0 > 0f && sw0 < 1f ? 0.9f : 0f);
+			// 立起、飞进人物手里
+			float rise = Ease.OutBack(Mathf.Clamp((time - 1.42f) / 0.16f, 0f, 1f));
+			float fly = Ease.InCubic(Mathf.Clamp((time - 1.58f) / 0.2f, 0f, 1f));
+			billet.Rotation = Mathf.Lerp(0.04f, -Mathf.Pi / 2f, rise) + fly * 1.2f;
+			billet.GlobalPosition = (at + new Vector2(0f, -60f * rise)).Lerp(hand, fly);
+			billet.Scale = Vector2.One * (1f - 0.5f * fly);
+			billet.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.12f, 0f, 1f));
+
+			float fh = time < 0.05f ? 0f : time < 1.15f ? Ease.OutCubic(Mathf.Clamp((time - 0.05f) / 0.3f, 0f, 1f)) : 1f - Ease.InCubic(Mathf.Clamp((time - 1.15f) / 0.3f, 0f, 1f));
+			Fx.SetParam(fire, "height", 0.1f + 0.9f * fh);
+			Fx.SetParam(fire, "alpha", Mathf.Clamp(fh * 1.4f, 0f, 1f) * 0.85f);
+			float ain = Ease.OutExpo(Mathf.Clamp(time / 0.25f, 0f, 1f)), aout = Ease.InCubic(Mathf.Clamp((time - 1.45f) / 0.35f, 0f, 1f));
+			anvil.Scale = Vector2.One * (0.5f + 0.5f * ain + (time > 1.1f ? 0.25f * Ease.OutExpo(Mathf.Clamp((time - 1.1f) / 0.25f, 0f, 1f)) : 0f));
+			Fx.SetParam(circle, "tint", gold.Lerp(Pal.Cyan, q));
+			Fx.SetParam(circle, "alpha", ain * (1f - aout));
 		});
-		Fx.After(billet, 1.0, "smith quench", () =>
+		Fx.After(billet, 1.2, "smith quench", () =>
 		{
-			Node2D steam = Fx.Root(front, at + new Vector2(70f, 0f), "P3SmithSteam");
-			Fx.Sparks(steam, Pal.White, 26, 60f, 200f, 0.7f, gravity: -220f, scaleMin: 0.3f, scaleMax: 0.8f, ramp: new[] { new Color(1f, 1f, 1f, 0.8f), new Color(0.8f, 0.9f, 1f, 0f) });
-			Fx.FreeAfter(steam, 0.9);
-			Audio.Sfx.Play(Audio.Snd.Weak, 0.5f, pitch: 0.9f);
+			Node2D steam = Fx.Root(front, at + new Vector2(20f, -10f), "P3SmithSteam");
+			GpuParticles2D e = Fx.Sparks(steam, Pal.White, 40, 60f, 220f, 0.8f, gravity: -260f, scaleMin: 0.4f, scaleMax: 1.0f,
+				ramp: new[] { new Color(1f, 1f, 1f, 0.7f), new Color(0.75f, 0.9f, 1f, 0f) });
+			((ParticleProcessMaterial)e.ProcessMaterial).EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box;
+			((ParticleProcessMaterial)e.ProcessMaterial).EmissionBoxExtents = new Vector3(110f, 8f, 0f);
+			Fx.FreeAfter(steam, 1.0);
+			Node2D star = Fx.Root(front, at + new Vector2(90f, 0f), "P3SmithGlint");
+			Fx.Poly(star, Fx.Star4(70f, 0.08f), Pal.White, additive: true);
+			Fx.Animate(star, 0.3f, t => { star.Scale = Vector2.One * Mathf.Sin(t * Mathf.Pi); star.Rotation = t * 0.8f; });
+			Fx.FreeAfter(star, 0.32);
+			P3Fx.Flash(front, at, Pal.Ice, 220f, 0.18f);
+			Audio.Sfx.Play(Audio.Snd.Weak, 0.55f, pitch: 0.9f);
 		});
-		Fx.FreeAfter(billet, 1.55);
-		Fx.FreeAfter(hamRoot, 1.2);
+		Fx.After(billet, 1.78, "smith absorb", () =>
+		{
+			P3Fx.Flash(front, hand, Pal.Ice, 200f, 0.15f);
+			P3Fx.Shockwave(front, hand, Pal.Cyan, 280f, 0.3f);
+			Audio.Sfx.Play(Audio.Snd.StarGain, 0.5f, pitch: 1.1f);
+		});
+		Fx.FreeAfter(billet, 1.8);
+		Fx.FreeAfter(hamRoot, 1.3);
+		Fx.FreeAfter(anvil, total + 0.05f);
+		Fx.FreeAfter(fireRoot, total + 0.05f);
 	}
 
 	/// <summary>锻打成型：巨大的光之锤从敌人头顶砸下，地面开裂，火花四溅。</summary>
@@ -630,24 +758,23 @@ public static class Uniq
 		Vector2 at = head + new Vector2(60f, -150f);
 		Node2D root = Fx.Root(back, at, "P3Prism");
 		Vector2[] tri = { new(0f, -60f), new(52f, 30f), new(-52f, 30f) };
-		Fx.Poly(root, tri, new Color(0.8f, 0.9f, 1f, 0.25f), additive: true);
-		Fx.Line(root, tri, Pal.White, 3f, closed: true);
-		Line2D inBeam = Fx.Line(root, new[] { new Vector2(-420f, -160f), new Vector2(-24f, -10f) }, new Color(Pal.White, 0f), 8f);
+		// 入射光：抗锯齿多边形（Line2D 的抗锯齿在游戏里不生效，斜线有锯齿）
+		Vector2 b0 = new(-420f, -160f), b1 = new(-24f, -10f);
+		Polygon2D beamGlow = Fx.Poly(root, Fx.StrokePts(new[] { b0, b1 }, 18f), new Color(Pal.Ice, 0f), additive: true);
+		Polygon2D inBeam = Fx.Poly(root, Fx.StrokePts(new[] { b0, b1 }, 6f), new Color(Pal.White, 0f), additive: true);
 		Color[] spec = { Pal.Cyan, Pal.Royal, new(0.6f, 0.4f, 1f), new(1f, 0.85f, 0.45f), Pal.Ice };
 		var fans = new List<Polygon2D>();
 		for (int i = 0; i < spec.Length; i++)
 		{
 			fans.Add(Fx.Poly(root, new Vector2[3], new Color(spec[i], 0f), additive: true));
 		}
+		// 棱镜：玻璃体 + 内部高光面 + 抗锯齿描边（画在光束上面）
 		Node2D prism = new();
 		root.AddChild(prism);
-		foreach (Node n in root.GetChildren())
-		{
-			if (n != prism && n is Polygon2D or Line2D && fans.TrueForAll(f => f != n) && n != inBeam)
-			{
-				n.Reparent(prism, keepGlobalTransform: false);
-			}
-		}
+		Fx.Poly(prism, tri, new Color(0.8f, 0.9f, 1f, 0.25f), additive: true);
+		Fx.Poly(prism, new[] { new Vector2(0f, -60f), new Vector2(14f, 30f), new Vector2(-52f, 30f) }, new Color(1f, 1f, 1f, 0.12f), additive: true);
+		Fx.StrokeClosed(prism, tri, Pal.White, 3f);
+		Fx.Stroke(prism, new[] { new Vector2(-4f, -44f), new Vector2(-38f, 22f) }, new Color(1f, 1f, 1f, 0.5f), 1.5f);
 		const float total = 1.6f;
 		Fx.Animate(root, total, t =>
 		{
@@ -656,9 +783,12 @@ public static class Uniq
 			float beamOut = Ease.InCubic(Mathf.Clamp((time - 0.9f) / 0.2f, 0f, 1f));
 			float fanOut = Ease.InOutCubic(Mathf.Clamp((time - 1.0f) / 0.35f, 0f, 1f));
 			float prismOut = Ease.InBackLike(Mathf.Clamp((time - 1.3f) / 0.3f, 0f, 1f));
-			Vector2 b0 = new(-420f, -160f), b1 = new(-24f, -10f);
-			inBeam.Points = new[] { b0.Lerp(b1, beamOut), b1 };
-			inBeam.DefaultColor = new Color(Pal.White, 0.9f * Mathf.Clamp(time / 0.15f, 0f, 1f) * (1f - beamOut));
+			Vector2[] beam = { b0.Lerp(b1, beamOut), b1 };
+			float ba = Mathf.Clamp(time / 0.15f, 0f, 1f) * (1f - beamOut);
+			Fx.Reshape(inBeam, Fx.StrokePts(beam, 6f));
+			Fx.Reshape(beamGlow, Fx.StrokePts(beam, 18f));
+			inBeam.Color = new Color(Pal.White, 0.9f * ba);
+			beamGlow.Color = new Color(Pal.Ice, 0.25f * ba);
 			float spread = Ease.OutExpo(Mathf.Clamp((time - 0.2f) / 0.4f, 0f, 1f));
 			for (int i = 0; i < fans.Count; i++)
 			{

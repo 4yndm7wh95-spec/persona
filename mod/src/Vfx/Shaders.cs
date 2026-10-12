@@ -655,4 +655,14 @@ void fragment() {
 	vec3 col = mix(vec3(0.01, 0.04, 0.2), vec3(0.2, 0.55, 1.0), c * 0.7);
 	COLOR = vec4(col, edge * intensity * (0.75 + 0.25 * c));
 }");
+
+	private static Shader? _flatTint;
+
+	/// <summary>纯色剪影：只取贴图的 alpha，颜色整体换成 tint（P3R 立绘后面错开的蓝色剪影）。</summary>
+	public static Shader FlatTint => _flatTint ??= Make(@"
+shader_type canvas_item;
+uniform vec4 tint : source_color = vec4(0.22, 0.85, 1.0, 1.0);
+void fragment() {
+	COLOR = vec4(tint.rgb, texture(TEXTURE, UV).a * tint.a);
+}");
 }
