@@ -516,8 +516,12 @@ public static class Rares
 	// ══════════════════════ 创世纪 ══════════════════════
 
 	/// <summary>
-	/// 创世纪（召唤 Messiah 之后）：头顶上方的夜空里一点光炸开，长成一个旋转的星系（着色器），星系越转越快，
-	/// 旋臂上甩出的星星划着弧线落进人物身边（辉星）；最后星系收缩成一颗星，闪一下消失。
+	/// 创世纪（"要有光"，不用召唤器）：
+	/// 1) 人物身后的世界沉进深夜蓝，头顶上方亮起一个光点（从抬起的手里升上去）；
+	/// 2) 光从这一点向外铺开，画出一整个星系：中心是旋转的星核（Galaxy 着色器），四圈倾斜的轨道由内向外依次展开，
+	///    每圈轨道上一颗行星拖着短尾巴绕行；周围的星星一颗颗点亮（十字星闪），再被细细的星座线依次连起来；
+	/// 3) 结尾整个星系向星核坍缩，白闪 + 冲击环，新生的星星（辉星）划着弧线落到人物身边。
+	/// 回合开始的小版本（s = 0.6、duration = 1.2）同样的流程，按比例缩短。全部在人物身后，不挡人物。
 	/// </summary>
 	public static void Genesis(NCreature caster, float s = 1f, float duration = 1.9f)
 	{
@@ -527,71 +531,202 @@ public static class Rares
 		{
 			return;
 		}
-		Vector2 at = Makoto.Head(caster) + new Vector2(-40f, -190f * s);
-		at.Y = Mathf.Max(at.Y, 170f);
+		Vector2 at = Makoto.Head(caster) + new Vector2(-30f, -200f * s);
+		at.Y = Mathf.Max(at.Y, 200f * s);
 		Vector2 chest = Makoto.Center(caster) + new Vector2(0f, -20f);
+		Vector2 hand = WeaponFx.Bone(caster, "hand") ?? chest;
+		float D = duration;
+		float T(float f) => f * D;                                   // 时间点按总时长的比例给
+		bool big = s >= 0.9f;
+		Vector2 size = front.GetViewportRect().Size;
+
+		// 夜空压暗（只有出牌时的完整版才压暗）
+		Node2D sky = Fx.Root(back, Vector2.Zero, "P3GenesisSky");
+		sky.TopLevel = true;
+		sky.GlobalPosition = Vector2.Zero;
+		ColorRect dim = new() { Size = size, Color = new Color(0.01f, 0.02f, 0.09f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore };
+		if (big)
+		{
+			sky.AddChild(dim);
+		}
+
 		Node2D root = Fx.Root(back, at, "P3Genesis");
 		root.Scale = Vector2.One * s;
-		ColorRect gal = Fx.ShaderQuad(root, Shaders.Galaxy, 620f);
-		P3Fx.Flash(back, at, Pal.White, 140f * s, 0.2f);
-		float spin = 0f;
-		float last = 0f;
-		Fx.Animate(root, duration, t =>
+		// 星系整体略微倾斜（像斜着看一张星图）
+		Node2D sys = new() { Rotation = -0.18f };
+		root.AddChild(sys);
+
+		// 星核
+		ColorRect core = Fx.ShaderQuad(sys, Shaders.Galaxy, 300f);
+		Fx.SetParam(core, "birth", 0f);
+		Sprite2D coreGlow = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(Pal.Ice, 0f), Scale = Vector2.One * 3f };
+		sys.AddChild(coreGlow);
+
+		// 轨道（压扁的细圆环）+ 行星
+		float[] radii = { 120f, 185f, 255f, 335f };
+		Color[] tints = { Pal.Ice, Pal.Cyan, new(1f, 0.85f, 0.5f), new(0.65f, 0.55f, 1f) };
+		const float squash = 0.34f;
+		var rings = new List<ColorRect>();
+		var planets = new List<Node2D>();
+		var trails = new List<Polygon2D>();
+		float[] phase = new float[radii.Length];
+		for (int i = 0; i < radii.Length; i++)
 		{
-			float time = t * duration;
-			float dt = time - last;
-			last = time;
-			float speed = 0.8f + 3.5f * Ease.InCubic(t);
-			spin += speed * dt;
-			float birth = Ease.OutCubic(Mathf.Clamp(time / 0.5f, 0f, 1f));
-			float collapse = Ease.InCubic(Mathf.Clamp((time - (duration - 0.35f)) / 0.3f, 0f, 1f));
-			Fx.SetParam(gal, "spin", spin);
-			Fx.SetParam(gal, "birth", birth * (1f - collapse) + 0.02f);
-			Fx.SetParam(gal, "alpha", 1f - collapse * 0.5f);
-		});
-		// 0.5 起：旋臂上甩出星星，弧线落到人物身边
-		for (int i = 0; i < 7; i++)
-		{
-			float delay = 0.5f + 0.13f * i;
-			Fx.After(root, delay, "genesis star", () =>
-			{
-				float a = Fx.Rand(0f, Mathf.Tau);
-				Vector2 from = at + new Vector2(Mathf.Cos(a) * 150f, Mathf.Sin(a) * 70f) * s;
-				Vector2 to = chest + new Vector2(Fx.Rand(-130f, 130f), Fx.Rand(-40f, 30f));
-				Vector2 ctrl = from + new Vector2(Mathf.Cos(a) * 160f, -80f);
-				Node2D star = Fx.Root(front, from, "P3GenesisStar");
-				Fx.Poly(star, Fx.Star4(16f, 0.25f), Pal.White, additive: true);
-				Sprite2D g = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = Vector2.One * 1.6f, Modulate = new Color(Pal.Cyan, 0.8f) };
-				star.AddChild(g);
-				Line2D tail = new() { Width = 5f, Material = Fx.Additive, Gradient = new Gradient { Colors = new[] { new Color(Pal.Cyan, 0f), new Color(Pal.Ice, 0.9f) } } };
-				Node2D tr = Fx.Root(front, Vector2.Zero, "P3GenesisTail");
-				tr.TopLevel = true;
-				tr.GlobalPosition = Vector2.Zero;
-				tr.AddChild(tail);
-				Fx.Animate(star, 0.4f, t =>
-				{
-					float e = Ease.InOutCubic(t);
-					Vector2 p = Bezier(from, ctrl, to, e);
-					star.GlobalPosition = p;
-					star.Rotation = t * 6f;
-					tail.Points = new[] { Bezier(from, ctrl, to, Mathf.Max(0f, e - 0.25f)), p };
-				});
-				Fx.After(star, 0.4, "genesis star land", () =>
-				{
-					P3Fx.Flash(front, to, Pal.Ice, 90f, 0.15f);
-					star.QueueFree();
-					Fx.Animate(tail, 0.12f, t => tail.Modulate = new Color(1f, 1f, 1f, 1f - t));
-					Fx.FreeAfter(tr, 0.14);
-				});
-				Audio.Sfx.Play(Audio.Snd.StarGain, 0.35f, pitch: 1f + 0.05f * i);
-			});
+			float qs = radii[i] * 2f / 0.8f;
+			ColorRect ring = Fx.ShaderQuad(sys, Shaders.Ring, qs, squash);
+			Fx.SetParam(ring, "tint", new Color(tints[i], 0.8f));
+			Fx.SetParam(ring, "width", 2.2f / (qs * 0.5f));
+			Fx.SetParam(ring, "alpha", 0f);
+			rings.Add(ring);
+			trails.Add(Fx.Poly(sys, new Vector2[3], new Color(tints[i], 0f), additive: true));
+			Node2D pl = new();
+			sys.AddChild(pl);
+			pl.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(tints[i], 0.9f), Scale = Vector2.One * (0.55f + 0.1f * i) });
+			Fx.Poly(pl, Fx.Circle(5f + i, 16), Pal.White, additive: true);
+			pl.Modulate = new Color(1f, 1f, 1f, 0f);
+			planets.Add(pl);
+			phase[i] = Fx.Rand(0f, Mathf.Tau);
 		}
-		Fx.After(root, duration - 0.05f, "genesis end", () =>
+		Vector2 Orbit(int i, float ang) => new(Mathf.Cos(ang) * radii[i], Mathf.Sin(ang) * radii[i] * squash);
+
+		// 星星（随机撒在星系外围的椭圆里）+ 星座线
+		const int starCount = 22;
+		var stars = new List<(Node2D node, float appear)>();
+		for (int i = 0; i < starCount; i++)
 		{
-			P3Fx.Flash(front, at, Pal.White, 260f * s, 0.25f);
-			P3Fx.Shockwave(front, at, Pal.Ice, 520f * s, 0.4f, squashY: 0.45f);
+			float ang = Fx.Rand(0f, Mathf.Tau), rr = Fx.Rand(140f, 430f);
+			Node2D st = new() { Position = new Vector2(Mathf.Cos(ang) * rr, Mathf.Sin(ang) * rr * 0.5f), Scale = Vector2.Zero };
+			sys.AddChild(st);
+			Fx.Poly(st, Fx.Star4(Fx.Rand(7f, 14f), 0.18f), Pal.White, additive: true);
+			st.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(i % 3 == 0 ? new Color(1f, 0.85f, 0.5f) : Pal.Cyan, 0.6f), Scale = Vector2.One * 0.5f });
+			stars.Add((st, T(0.1f) + T(0.32f) * rr / 430f + Fx.Rand(0f, T(0.06f))));   // 由内向外依次点亮
+		}
+		// 星座：挑 7 颗按角度排序连成一条折线，依次画出来
+		var cons = stars.Take(7).Select(x => x.node.Position).OrderBy(p => Mathf.Atan2(p.Y, p.X)).ToArray();
+		var lines = new List<Polygon2D>();
+		for (int i = 0; i < cons.Length - 1; i++)
+		{
+			lines.Add(Fx.Poly(sys, new Vector2[3], new Color(Pal.Ice, 0f), additive: true));
+		}
+
+		// 从手里升起的光点
+		Node2D seed = Fx.Root(front, hand, "P3GenesisSeed");
+		Fx.Poly(seed, Fx.Star4(18f, 0.15f), Pal.White, additive: true);
+		seed.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(Pal.Ice, 0.9f), Scale = Vector2.One * 1.4f });
+		Fx.Animate(seed, T(0.12f), t =>
+		{
+			seed.GlobalPosition = hand.Lerp(at, Ease.InOutCubic(t));
+			seed.Rotation = t * 3f;
 		});
-		Fx.FreeAfter(root, duration + 0.05f);
+		Fx.After(seed, T(0.12f), "genesis seed", () =>
+		{
+			seed.QueueFree();
+			P3Fx.Flash(back, at, Pal.White, 220f * s, 0.25f);
+			P3Fx.Ripple(back, at, 700f * s, 0.8f, 0.02f);
+			Audio.Sfx.Play(Audio.Snd.TarotReveal, big ? 0.7f : 0.4f, pitch: 1.2f);
+		});
+
+		float collapseAt = T(0.74f), collapseLen = T(0.14f);
+		float spin = 0f, last = 0f;
+		Fx.Animate(root, D, t =>
+		{
+			float time = t * D, dt = time - last;
+			last = time;
+			float collapse = Ease.InCubic(Mathf.Clamp((time - collapseAt) / collapseLen, 0f, 1f));
+			float shade = Ease.OutCubic(Mathf.Clamp(time / T(0.15f), 0f, 1f)) * (1f - Ease.InCubic(Mathf.Clamp((time - T(0.85f)) / T(0.15f), 0f, 1f)));
+			dim.Color = new Color(0.01f, 0.02f, 0.09f, 0.5f * shade);
+
+			spin += (0.8f + 4f * collapse) * dt;
+			float birth = Ease.OutCubic(Mathf.Clamp((time - T(0.1f)) / T(0.25f), 0f, 1f));
+			Fx.SetParam(core, "spin", spin);
+			Fx.SetParam(core, "birth", Mathf.Max(birth * (1f - collapse), 0.02f));
+			coreGlow.Modulate = new Color(Pal.Ice, 0.25f * birth + 0.9f * collapse);
+			// 坍缩：整个系统缩向星核，越缩越快地转
+			sys.Scale = Vector2.One * (1f - 0.92f * collapse);
+			sys.Rotation = -0.18f + 1.6f * collapse * collapse;
+
+			for (int i = 0; i < radii.Length; i++)
+			{
+				float open = Ease.OutExpo(Mathf.Clamp((time - T(0.12f) - T(0.07f) * i) / T(0.18f), 0f, 1f));
+				Fx.SetParam(rings[i], "radius", 0.8f * open);
+				Fx.SetParam(rings[i], "alpha", open * (0.55f - 0.08f * i) * (1f - collapse));
+				// 行星：内圈快、外圈慢；随轨道一起出现
+				float speed = 2.2f / Mathf.Sqrt(radii[i] / 120f);
+				float ang = phase[i] + time * speed;
+				planets[i].Position = Orbit(i, ang) * open;
+				planets[i].Modulate = new Color(1f, 1f, 1f, open * (1f - collapse));
+				// 行星后面的一段尾巴（沿轨道的细弧）
+				var pts = new List<Vector2>();
+				const int n = 10;
+				for (int k = 0; k <= n; k++) pts.Add(Orbit(i, ang - 0.7f * k / n) * open);
+				Fx.Reshape(trails[i], Fx.StrokePts(pts.ToArray(), 4f + i, taper: false));
+				trails[i].Color = new Color(tints[i], 0.35f * open * (1f - collapse));
+			}
+			foreach (var (node, appear) in stars)
+			{
+				float k = Mathf.Clamp((time - appear) / T(0.06f), 0f, 1f);
+				float tw = 0.85f + 0.15f * Mathf.Sin(time * 9f + node.Position.X);
+				node.Scale = Vector2.One * (k < 1f ? Ease.OutBack(k) * 1.3f : tw) * (1f - collapse);
+				node.Rotation = time * 0.6f;
+			}
+			for (int i = 0; i < lines.Count; i++)
+			{
+				float g = Ease.OutCubic(Mathf.Clamp((time - T(0.42f) - T(0.035f) * i) / T(0.06f), 0f, 1f));
+				Vector2 p0 = cons[i], p1 = cons[i].Lerp(cons[i + 1], Mathf.Max(g, 0.01f));
+				Fx.Reshape(lines[i], Fx.StrokePts(new[] { p0, p1 }, 1.6f));
+				lines[i].Color = new Color(Pal.Ice, 0.55f * g * (1f - collapse));
+			}
+		});
+
+		// 坍缩完成：白闪 + 冲击环，新生的星星落到人物身边
+		Fx.After(root, collapseAt + collapseLen, "genesis birth", () =>
+		{
+			P3Fx.Flash(back, at, Pal.White, 360f * s, 0.25f);
+			P3Fx.Shockwave(back, at, Pal.Ice, 640f * s, 0.45f, squashY: 0.45f);
+			P3Fx.SpeedLines(back, at, Pal.Ice, 16, 60f * s, 380f * s, 0.35f);
+			Audio.Sfx.Play(Audio.Snd.TarotShatter, big ? 0.7f : 0.4f, pitch: 1.25f);
+			int count = big ? 5 : 3;
+			for (int i = 0; i < count; i++)
+			{
+				int idx = i;
+				Fx.After(back, 0.05 * i, "genesis star", () => ThrowStar(front, at, chest, idx));
+			}
+		});
+		Fx.FreeAfter(root, D + 0.05f);
+		Fx.FreeAfter(sky, D + 0.05f);
+	}
+
+	/// <summary>一颗新生的星星从 from 划弧线落到人物身边（白色十字星 + 青色柔光 + 渐隐尾巴，落地一闪）。</summary>
+	private static void ThrowStar(Control front, Vector2 from, Vector2 chest, int i)
+	{
+		float a = Fx.Rand(0f, Mathf.Tau);
+		Vector2 to = chest + new Vector2(Fx.Rand(-130f, 130f), Fx.Rand(-40f, 30f));
+		Vector2 ctrl = from + new Vector2(Mathf.Cos(a) * 200f, -120f);
+		Node2D star = Fx.Root(front, from, "P3GenesisStar");
+		Fx.Poly(star, Fx.Star4(16f, 0.25f), Pal.White, additive: true);
+		star.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = Vector2.One * 1.6f, Modulate = new Color(Pal.Cyan, 0.8f) });
+		Node2D tr = Fx.Root(front, Vector2.Zero, "P3GenesisTail");
+		tr.TopLevel = true;
+		tr.GlobalPosition = Vector2.Zero;
+		Polygon2D tail = Fx.Poly(tr, new Vector2[3], new Color(Pal.Ice, 0.7f), additive: true);
+		Fx.Animate(star, 0.42f, t =>
+		{
+			float e = Ease.InOutCubic(t);
+			Vector2 p = Bezier(from, ctrl, to, e);
+			star.GlobalPosition = p;
+			star.Rotation = t * 6f;
+			var pts = new Vector2[6];
+			for (int k = 0; k < 6; k++) pts[k] = Bezier(from, ctrl, to, Mathf.Max(0f, e - 0.22f * (5 - k) / 5f));
+			Fx.Reshape(tail, Fx.StrokePts(pts, 6f, taper: true));
+		});
+		Fx.After(star, 0.42, "genesis star land", () =>
+		{
+			P3Fx.Flash(front, to, Pal.Ice, 100f, 0.15f);
+			star.QueueFree();
+			Fx.Animate(tr, 0.12f, t => tr.Modulate = new Color(1f, 1f, 1f, 1f - t));
+			Fx.FreeAfter(tr, 0.14);
+			Audio.Sfx.Play(Audio.Snd.StarGain, 0.35f, pitch: 1f + 0.06f * i);
+		});
 	}
 
 	private static Vector2 Bezier(Vector2 a, Vector2 c, Vector2 b, float t)
