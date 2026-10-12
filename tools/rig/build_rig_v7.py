@@ -45,6 +45,8 @@ V7_ANIMS = ["idle_loop", "relaxed_loop", "low_health_loop", "aim_in", "aim_loop"
             "cast", "cast_from_aim", "attack_sovereign", "sovereign_from_aim", "cast_light",
             "sword_in", "ready_sword_loop", "sword_out", "attack", "attack_from_ready", "hurt", "die"]
 SWORD_POSES = ["sword_rest", "sword_ready", "sword_windup", "sword_slash"]
+# 第六批（可选）："放下途中"（胸口 → 待机之间，手放到腰的高度、空手）。图到了才启用
+HAVE_LOW = (ROOT / "art/v12/transparent/focus_low_a.png").exists()
 # 剑：拳头中心 / 剑尖（原图像素，自动检测剑身 + 握剑手，见提交记录里的标定图）
 SWORD = {"sword_rest": ((358.2, 778.4), (807.1, 1263.9)), "sword_ready": ((234.6, 742.9), (821.2, 1378.1)),
          "sword_windup": ((479.9, 132.5), (13.1, 424.6)), "sword_slash": ((637.3, 843.7), (1012.5, 1327.4)),
@@ -76,7 +78,9 @@ POSE_T = {"idle": (1.0, 0.0), "focus_mid": (0.95, 0.0), "focus": (0.95, 0.0), "a
           # 第五批过渡帧：只用鞋的特征点配准（tools/rig/v7_register.py，脚踩在原地不动），缩放都≈1
           "sword_raise": ("via", "sword_windup", (1.0, 0.5, 2.1)),
           "sword_recover": ("via", "sword_slash", (1.0, 0.9, 29.5)),
-          "hurt_recover": ("via", "hurt", (1.0, -1.0, -2.2))}
+          "hurt_recover": ("via", "hurt", (1.0, -1.0, -2.2)),
+          # 第六批：由 focus_mid 编辑出来，到图后用 tools/rig/v7_register.py 按鞋配准再填
+          "focus_low": ("via", "focus_mid", (1.0, 0.0, 0.0))}
 
 
 def U(p, pose=None):
@@ -132,6 +136,7 @@ def sources():
         "v7_sword_raise": load(T / "sword_raise_a.png"),
         "v7_sword_recover": load(T / "sword_recover_a.png"),
         "v7_hurt_recover": load(T / "hurt_recover_a.png"),
+        **({"v7_focus_low": load(T / "focus_low_a.png")} if HAVE_LOW else {}),
         "v7_awaken_peak": load(comp.POSES["awaken_peak"][0]),
         "v7_awaken_peak_eyeglow": load(C / "awaken_peak_eyeglow.png"),
         "v7_awaken_eyeglow": load(C / "awaken_eyeglow.png"),
@@ -445,6 +450,7 @@ class Builder:
         self.hand["die_down"] = (900.0, 800.0)
         self.hand["hurt_impact"] = (553.0, 800.0)
         self.hand["hurt_recover"] = (553.0, 800.0)
+        self.hand["focus_low"] = (560.0, 760.0)
         self.hand["die_fall"] = (700.0, 700.0)
 
     @staticmethod
@@ -495,7 +501,8 @@ class Builder:
             regions[name] = shrink(tr, TEX)
         att = d["skins"][0]["attachments"]
         poses = ["idle", "focus_mid", "focus", "awaken", "awaken_peak", "cast_mid", "cast"] + SWORD_POSES + \
-            ["sword_smear", "sword_raise", "sword_recover", "hurt_impact", "hurt", "hurt_recover", "die_kneel", "die_fall", "die_down"]
+            ["sword_smear", "sword_raise", "sword_recover", "hurt_impact", "hurt", "hurt_recover", "die_kneel", "die_fall", "die_down"] + \
+            (["focus_low"] if HAVE_LOW else [])
         for slot in ("v7_ghost", "v7_old", "v7_flash"):
             att[slot] = {f"v7_{p}": self.region(f"v7_{p}") for p in poses}
         names = [b["name"] for b in d["bones"]]
@@ -698,9 +705,15 @@ class Builder:
         A["aim_out"] = a
 
         def summon(name, seq, T, back_mid, back_idle, prev):
+            """召唤：扣下（冲击帧）→ 觉醒 → 收手。收手不再从太阳穴直接跳到胸口再跳到待机，而是
+            觉醒 → 凝神（放松、手还在太阳穴旁）→ 胸口 →（有图时）腰部 → 待机，每一步只差一点。"""
             a = Anim(d[name])
-            self.sequence(a, seq + [(T, "awaken_peak"), (T + PEAK, "awaken"), (back_mid, "focus_mid"), (back_idle, "idle")], prev=prev)
-            self.fire(a, T, back_mid - T)
+            relax = back_mid - 0.08
+            back = [(relax, "focus"), (back_mid + 0.03, "focus_mid")]
+            if HAVE_LOW:
+                back.append((back_mid + 0.03 + (back_idle - back_mid - 0.03) * 0.5, "focus_low"))
+            self.sequence(a, seq + [(T, "awaken_peak"), (T + PEAK, "awaken")] + back + [(back_idle, "idle")], prev=prev)
+            self.fire(a, T, relax - T)
             return a
         A["cast"] = summon("cast", [(0, "focus_mid"), (0.12, "focus")], 0.27, 0.62, 0.82, "idle")
         A["cast_from_aim"] = summon("cast_from_aim", [(0, "focus")], 0.06, 0.38, 0.56, None)
