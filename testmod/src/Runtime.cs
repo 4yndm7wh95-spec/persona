@@ -18,7 +18,7 @@ namespace P3TestMod;
 /// 每帧检查（只在战斗中）：
 /// · 假人：血量上限和当前血量拉到 999999，被打掉一半就补满（"击杀"按钮会临时放行）；
 /// · 玩家：血量低于 30% 补满（"让我受击"不会真的打死）；能量、辉星不足 99 就直接设回 99；
-/// · F8：开关测试面板；F7：消耗所有手牌（逐张播放原版的消耗动画）。
+/// · F8：开关测试面板；F7：一次性消耗所有手牌（同时播放原版的消耗动画）。
 /// </summary>
 public static class Runtime
 {
@@ -149,10 +149,8 @@ public static class Runtime
 
 	private static async System.Threading.Tasks.Task ExhaustAll(List<CardModel> cards)
 	{
-		foreach (CardModel c in cards)
-		{
-			await CardCmd.Exhaust(new BlockingPlayerChoiceContext(), c);         // 一张一张来，每张都播消耗动画
-		}
+		// 所有手牌同时开始消耗（不一张一张等），一起播原版的消耗动画
+		await System.Threading.Tasks.Task.WhenAll(cards.Select(c => CardCmd.Exhaust(new BlockingPlayerChoiceContext(), c)));
 	}
 
 	public static string HurtMe(int amount)
