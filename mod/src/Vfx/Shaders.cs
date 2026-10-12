@@ -386,6 +386,40 @@ void fragment() {
 	COLOR = vec4(c * f, f) * alpha;
 }");
 
+	private static Shader? _galaxy;
+
+	/// <summary>
+	/// 创世纪的星系（ColorRect 正方形，加色）：白金色的核 + 两条旋转的旋臂（蓝 → 青），旋臂上散落闪烁的星点。
+	/// spin 旋转角（由代码推进），birth 0~1 从中心向外长出，alpha 整体透明度。
+	/// </summary>
+	public static Shader Galaxy => _galaxy ??= Make(@"
+shader_type canvas_item;
+render_mode blend_add;
+uniform float spin = 0.0;
+uniform float birth = 1.0;
+uniform float alpha = 1.0;
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+float noise(vec2 p) {
+	vec2 i = floor(p), f = fract(p);
+	vec2 u = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
+}
+void fragment() {
+	vec2 p = (UV - 0.5) * vec2(1.0, 2.2);          // 压扁：斜着看的星系盘
+	float r = length(p) * 2.0;
+	float th = atan(p.y, p.x);
+	float reach = birth * 1.05;
+	float fade = smoothstep(reach, reach * 0.6, r);
+	float arms = pow(0.5 + 0.5 * cos(2.0 * (th - spin) + log(r + 0.05) * 5.5), 3.0);
+	float dust = noise(vec2(th * 6.0 + spin, r * 14.0)) * 0.6 + 0.4;
+	float disk = exp(-r * 2.6) * arms * dust * fade;
+	float core = exp(-r * 11.0) * 1.6 * smoothstep(0.0, 0.25, birth);
+	float sparkle = step(0.985, hash(floor(UV * 160.0))) * arms * fade * (0.5 + 0.5 * sin(TIME * 6.0 + hash(floor(UV * 80.0)) * 6.28));
+	vec3 c = vec3(1.0, 0.92, 0.7) * core + mix(vec3(0.35, 0.6, 1.0), vec3(0.4, 0.95, 1.0), r) * disk * 1.4 + vec3(1.0) * sparkle;
+	float a = clamp(core + disk + sparkle, 0.0, 1.0);
+	COLOR = vec4(c, a) * alpha;
+}");
+
 	private static Shader? _waterDisc;
 
 	/// <summary>

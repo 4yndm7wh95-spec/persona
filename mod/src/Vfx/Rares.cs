@@ -518,4 +518,224 @@ public static class Rares
 	{
 		new Vector2(-40f, -w * 0.35f), new Vector2(len * 0.82f, -w * 0.5f), new Vector2(len, 0f), new Vector2(len * 0.82f, w * 0.5f), new Vector2(-40f, w * 0.35f)
 	};
+
+	// ══════════════════════ 创世纪 ══════════════════════
+
+	/// <summary>
+	/// 创世纪（召唤 Messiah 之后）：头顶上方的夜空里一点光炸开，长成一个旋转的星系（着色器），星系越转越快，
+	/// 旋臂上甩出的星星划着弧线落进人物身边（辉星）；最后星系收缩成一颗星，闪一下消失。
+	/// </summary>
+	public static void Genesis(NCreature caster, float s = 1f, float duration = 1.9f)
+	{
+		Control? back = Makoto.FxLayer(back: true);
+		Control? front = Makoto.FxLayer();
+		if (back == null || front == null)
+		{
+			return;
+		}
+		Vector2 at = Makoto.Head(caster) + new Vector2(-40f, -190f * s);
+		at.Y = Mathf.Max(at.Y, 170f);
+		Vector2 chest = Makoto.Center(caster) + new Vector2(0f, -20f);
+		Node2D root = Fx.Root(back, at, "P3Genesis");
+		root.Scale = Vector2.One * s;
+		ColorRect gal = Fx.ShaderQuad(root, Shaders.Galaxy, 620f);
+		P3Fx.Flash(back, at, Pal.White, 140f * s, 0.2f);
+		float spin = 0f;
+		float last = 0f;
+		Fx.Animate(root, duration, t =>
+		{
+			float time = t * duration;
+			float dt = time - last;
+			last = time;
+			float speed = 0.8f + 3.5f * Ease.InCubic(t);
+			spin += speed * dt;
+			float birth = Ease.OutCubic(Mathf.Clamp(time / 0.5f, 0f, 1f));
+			float collapse = Ease.InCubic(Mathf.Clamp((time - (duration - 0.35f)) / 0.3f, 0f, 1f));
+			Fx.SetParam(gal, "spin", spin);
+			Fx.SetParam(gal, "birth", birth * (1f - collapse) + 0.02f);
+			Fx.SetParam(gal, "alpha", 1f - collapse * 0.5f);
+		});
+		// 0.5 起：旋臂上甩出星星，弧线落到人物身边
+		for (int i = 0; i < 7; i++)
+		{
+			float delay = 0.5f + 0.13f * i;
+			Fx.After(root, delay, "genesis star", () =>
+			{
+				float a = Fx.Rand(0f, Mathf.Tau);
+				Vector2 from = at + new Vector2(Mathf.Cos(a) * 150f, Mathf.Sin(a) * 70f) * s;
+				Vector2 to = chest + new Vector2(Fx.Rand(-130f, 130f), Fx.Rand(-40f, 30f));
+				Vector2 ctrl = from + new Vector2(Mathf.Cos(a) * 160f, -80f);
+				Node2D star = Fx.Root(front, from, "P3GenesisStar");
+				Fx.Poly(star, Fx.Star4(16f, 0.25f), Pal.White, additive: true);
+				Sprite2D g = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = Vector2.One * 1.6f, Modulate = new Color(Pal.Cyan, 0.8f) };
+				star.AddChild(g);
+				Line2D tail = new() { Width = 5f, Material = Fx.Additive, Gradient = new Gradient { Colors = new[] { new Color(Pal.Cyan, 0f), new Color(Pal.Ice, 0.9f) } } };
+				Node2D tr = Fx.Root(front, Vector2.Zero, "P3GenesisTail");
+				tr.TopLevel = true;
+				tr.GlobalPosition = Vector2.Zero;
+				tr.AddChild(tail);
+				Fx.Animate(star, 0.4f, t =>
+				{
+					float e = Ease.InOutCubic(t);
+					Vector2 p = Bezier(from, ctrl, to, e);
+					star.GlobalPosition = p;
+					star.Rotation = t * 6f;
+					tail.Points = new[] { Bezier(from, ctrl, to, Mathf.Max(0f, e - 0.25f)), p };
+				});
+				Fx.After(star, 0.4, "genesis star land", () =>
+				{
+					P3Fx.Flash(front, to, Pal.Ice, 90f, 0.15f);
+					star.QueueFree();
+					Fx.Animate(tail, 0.12f, t => tail.Modulate = new Color(1f, 1f, 1f, 1f - t));
+					Fx.FreeAfter(tr, 0.14);
+				});
+				Audio.Sfx.Play(Audio.Snd.StarGain, 0.35f, pitch: 1f + 0.05f * i);
+			});
+		}
+		Fx.After(root, duration - 0.05f, "genesis end", () =>
+		{
+			P3Fx.Flash(front, at, Pal.White, 260f * s, 0.25f);
+			P3Fx.Shockwave(front, at, Pal.Ice, 520f * s, 0.4f, squashY: 0.45f);
+		});
+		Fx.FreeAfter(root, duration + 0.05f);
+	}
+
+	private static Vector2 Bezier(Vector2 a, Vector2 c, Vector2 b, float t)
+	{
+		float k = 1f - t;
+		return a * (k * k) + c * (2f * k * t) + b * (t * t);
+	}
+
+	// ══════════════════════ 暴政 ══════════════════════
+
+	private static Texture2D? _coffin;
+	private static Texture2D? Coffin => _coffin ??= ResourceLoader.Exists("res://p3makoto/fx/coffin.png") ? ResourceLoader.Load<Texture2D>("res://p3makoto/fx/coffin.png") : null;
+
+	/// <summary>
+	/// 暴政（皇帝 IV）：影时间的棺材从人物身后的地面升起，像王座的靠背；棺面亮起罗马数字 IV，
+	/// 头顶凝出一顶光之王冠（尖刺一根根长出）；随后王冠化作光点散去、棺材沉回地下。
+	/// </summary>
+	public static void Tyranny(NCreature caster)
+	{
+		Control? back = Makoto.FxLayer(back: true);
+		Control? front = Makoto.FxLayer();
+		if (back == null || front == null)
+		{
+			return;
+		}
+		Vector2 feet = Makoto.Feet(caster);
+		Vector2 head = Makoto.Head(caster);
+		RiseCoffin(back, feet + new Vector2(-30f, 0f), 1.0f, 1.6f, numeral: true);
+		// 王冠：九根尖刺从中间向两边依次长出，冰蓝描边 + 金色芯
+		Vector2 crownAt = head + new Vector2(-10f, -95f);
+		Node2D crown = Fx.Root(front, crownAt, "P3TyrannyCrown");
+		var spikes = new List<Node2D>();
+		for (int i = 0; i < 9; i++)
+		{
+			int k = i - 4;
+			Node2D sp = new() { Position = new Vector2(k * 17f, 0f), Rotation = k * 0.09f };
+			crown.AddChild(sp);
+			float h = 46f - Mathf.Abs(k) * 6f;
+			Fx.Poly(sp, new[] { new Vector2(-7f, 0f), new Vector2(0f, -h), new Vector2(7f, 0f) }, new Color(1f, 0.85f, 0.45f), additive: true);
+			Fx.Line(sp, new[] { new Vector2(-7f, 0f), new Vector2(0f, -h), new Vector2(7f, 0f) }, Pal.Ice, 2f);
+			sp.Scale = new Vector2(1f, 0f);
+			spikes.Add(sp);
+		}
+		Fx.Poly(crown, new[] { new Vector2(-82f, 0f), new Vector2(82f, 0f), new Vector2(76f, 14f), new Vector2(-76f, 14f) }, new Color(Pal.Ice, 0.9f), additive: true);
+		crown.Modulate = new Color(1f, 1f, 1f, 0f);
+		Fx.Animate(crown, 1.6f, t =>
+		{
+			float time = t * 1.6f;
+			crown.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((time - 0.3f) / 0.1f, 0f, 1f) * (1f - Mathf.Clamp((time - 1.3f) / 0.3f, 0f, 1f)));
+			crown.Position = crownAt + new Vector2(0f, 3f * Mathf.Sin(time * 4f));
+			for (int i = 0; i < spikes.Count; i++)
+			{
+				float d = 0.35f + Mathf.Abs(i - 4) * 0.05f;
+				spikes[i].Scale = new Vector2(1f, Ease.OutBack(Mathf.Clamp((time - d) / 0.15f, 0f, 1f)));
+			}
+		});
+		Fx.After(crown, 0.62, "crown done", () =>
+		{
+			P3Fx.Flash(front, crownAt, new Color(1f, 0.85f, 0.45f), 160f, 0.2f);
+			Audio.Sfx.Play(Audio.Snd.Weak, 0.6f, pitch: 0.75f);
+		});
+		Fx.After(crown, 1.3, "crown fade", () => P3Fx.GlassShatter(front, crownAt, 14, 0.4f, new Color(1f, 0.85f, 0.45f)));
+		Fx.FreeAfter(crown, 1.65);
+	}
+
+	/// <summary>暴政生效（回合开始消耗一张牌）：小一号的棺材在人物右侧升起，一张牌的虚影从手牌区落进去，绿光一闪，沉下。</summary>
+	public static void TyrannyExhaust(NCreature caster)
+	{
+		Control? back = Makoto.FxLayer(back: true);
+		Control? front = Makoto.FxLayer();
+		if (back == null || front == null)
+		{
+			return;
+		}
+		Vector2 at = Makoto.Feet(caster) + new Vector2(170f, 0f);
+		RiseCoffin(back, at, 0.55f, 1.1f, numeral: false);
+		Vector2 size = front.GetViewportRect().Size;
+		Vector2 from = new(size.X * 0.5f, size.Y - 120f);
+		Vector2 to = at + new Vector2(0f, -120f);
+		Node2D ghost = Fx.Root(front, from, "P3TyrannyGhost");
+		Fx.Poly(ghost, RectPts(new Rect2(-26f, -38f, 52f, 76f)), new Color(Pal.DarkHour, 0.35f), additive: true);
+		Fx.Line(ghost, RectPts(new Rect2(-26f, -38f, 52f, 76f)), new Color(Pal.DarkHour, 0.9f), 2f, closed: true);
+		Fx.Animate(ghost, 0.45f, t =>
+		{
+			float e = Ease.InOutCubic(Mathf.Clamp((t - 0.25f) / 0.75f, 0f, 1f));
+			ghost.GlobalPosition = Bezier(from, (from + to) / 2f + new Vector2(0f, -200f), to, e);
+			ghost.Rotation = e * 2.5f;
+			ghost.Scale = Vector2.One * (1f - 0.6f * e);
+			ghost.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(t * 5f, 0f, 1f));
+		});
+		Fx.After(ghost, 0.45, "ghost in", () =>
+		{
+			ghost.QueueFree();
+			P3Fx.Flash(front, to, Pal.DarkHour, 160f, 0.2f);
+			Audio.Sfx.Play(Audio.Snd.StarSpend, 0.5f, pitch: 0.6f);
+		});
+	}
+
+	/// <summary>棺材从地面下升起（只显示地面以上），停留后沉回。</summary>
+	private static void RiseCoffin(Control layer, Vector2 floor, float s, float hold, bool numeral)
+	{
+		Texture2D? tex = Coffin;
+		if (tex == null)
+		{
+			return;
+		}
+		float h = tex.GetHeight(), w = tex.GetWidth();
+		Node2D root = Fx.Root(layer, floor, "P3Coffin");
+		root.Scale = Vector2.One * s;
+		Polygon2D clip = new() { Polygon = RectPts(new Rect2(-w, -h * 1.5f, w * 2f, h * 1.5f)), ClipChildren = CanvasItem.ClipChildrenMode.Only };
+		root.AddChild(clip);
+		Node2D body = new();
+		clip.AddChild(body);
+		Sprite2D spr = new() { Texture = tex, Centered = false, Position = new Vector2(-w / 2f, -h) };
+		body.AddChild(spr);
+		Sprite2D shine = new() { Texture = tex, Centered = false, Position = new Vector2(-w / 2f, -h), Material = Fx.Additive, Modulate = new Color(Pal.DarkHour, 0f) };
+		body.AddChild(shine);
+		Label? iv = null;
+		if (numeral)
+		{
+			iv = Typo.Text(body, "IV", Typo.Latin, 64, new Color(1f, 0.88f, 0.5f, 0f), new Vector2(-30f, -h * 0.62f), outline: 4, outlineColor: new Color(0.02f, 0.05f, 0.2f));
+		}
+		Fx.Animate(root, hold + 0.6f, t =>
+		{
+			float time = t * (hold + 0.6f);
+			float rise = time < 0.3f ? Ease.OutBack(time / 0.3f) : time < hold ? 1f : 1f - Ease.InCubic(Mathf.Clamp((time - hold) / 0.3f, 0f, 1f));
+			body.Position = new Vector2(0f, h * (1f - rise));
+			shine.Modulate = new Color(Pal.DarkHour, 0.5f * Mathf.Clamp(1f - Mathf.Abs(time - 0.45f) / 0.25f, 0f, 1f));
+			if (iv != null)
+			{
+				iv.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((time - 0.4f) / 0.15f, 0f, 1f) * (1f - Mathf.Clamp((time - hold + 0.2f) / 0.2f, 0f, 1f)));
+			}
+		});
+		Fx.After(root, 0.02, "coffin dust", () =>
+		{
+			P3Fx.Ripple(layer, floor, 420f * s, 0.7f, 0.02f, squashY: 0.3f);
+			P3Fx.Shockwave(layer, floor, Pal.DarkHour, 380f * s, 0.4f, squashY: 0.3f);
+		});
+		Fx.FreeAfter(root, hold + 0.65f);
+	}
 }

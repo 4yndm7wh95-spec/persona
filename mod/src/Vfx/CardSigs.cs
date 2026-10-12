@@ -139,7 +139,7 @@ public static class CardSigs
 		["BigBang"] = c => After(c, 0.3, () => { Bold.Megidolaon(c.Back, c.Above, 1.3f); Motifs.ShuffleTime(c.Front, c.Center, 5, ElementPal.Almighty); }),
 
 		// ═════ 能力 ═════
-		["Tyranny"] = c => Tarot(c, "IV", "EMPEROR", Pal.Blood),
+		["Tyranny"] = c => After(c, 0.1, () => Rares.Tyranny(c.Caster)),
 		["MonarchsGaze"] = c => After(c, 0.15, Rares.Gaze),
 		["Parry"] = c => Tarot(c, "VII", "CHARIOT", Pal.Royal),
 		["NeutronAegis"] = c => { Extras.HexShield(c.Front, c.Center, 1.4f, false, 0.8f); Tarot(c, "XI", "STRENGTH", Pal.Cyan); },
@@ -154,7 +154,7 @@ public static class CardSigs
 		["SpectrumShift"] = c => Motifs.ShuffleTime(c.Front, c.Center, 4, ElementPal.Almighty),
 		["Royalties"] = c => { Tarot(c, "X", "FORTUNE", ElementPal.HolyGold); After(c, 0.3, () => Grand.CoinRain(c.Front, c.Center, c.Feet.Y, 34)); },
 		["PillarOfCreation"] = c => After(c, 0.1, () => ThemeFx.SummonGate(c.Caster)),
-		["Genesis"] = c => After(c, 0.35, () => Bold.Hamaon(c.Back, c.Center, c.Feet, 1.5f)),
+		["Genesis"] = c => After(c, 0.55, () => Rares.Genesis(c.Caster)),
 		["TheSealedThrone"] = c => { Motifs.DarkClock(c.Front, c.Above, 1.0f); After(c, 0.4, () => Bold.Hamaon(c.Back, c.Center, c.Feet, 1.3f)); },
 	};
 
