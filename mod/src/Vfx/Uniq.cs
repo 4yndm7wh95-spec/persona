@@ -773,36 +773,74 @@ public static class Uniq
 		Fx.FreeAfter(root, 1.35);
 	}
 
-	/// <summary>独白：舞台熄灯，一束硬边的聚光灯从正上方打在他身上，光里飘着灰尘，片刻后灯光收拢熄灭。</summary>
+	/// <summary>
+	/// 独白（舞台）：两侧的深蓝天鹅绒幕布滑进画面框住舞台；全场熄灯，"咔"一声，一束聚光灯从顶上打在他身上
+	/// （着色器：锥形光柱里有翻涌的烟雾和被照亮的浮尘、地面一圈柔和光斑、灯外压暗）；灯口有一点眩光，
+	/// 他身后泛起一圈暖白的轮廓光；独白结束，灯光收窄熄灭，幕布退场。
+	/// </summary>
 	public static void Monologue(Control back, Control front, Vector2 head, Vector2 feet)
 	{
 		Vector2 size = front.GetViewportRect().Size;
-		Node2D root = Fx.Root(back, Vector2.Zero, "P3Spotlight");
-		ColorRect dark = new() { Position = -size, Size = size * 3f, Color = new Color(0f, 0f, 0.03f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore };
-		root.AddChild(dark);
-		Polygon2D cone = Fx.Poly(root, new Vector2[4], new Color(1f, 0.97f, 0.88f, 0f), additive: true);
-		Node2D pool = Fx.Root(back, feet, "P3SpotPool");
-		Polygon2D floor = Fx.Poly(pool, Fx.Circle(150f, 48, 0.22f), new Color(1f, 0.97f, 0.88f, 0f), additive: true);
-		Node2D dustAt = Fx.Root(front, (head + feet) / 2f, "P3SpotDust");
-		GpuParticles2D dust = Fx.Sparks(dustAt, new Color(1f, 0.97f, 0.88f), 30, 5f, 20f, 1.6f, gravity: 10f, scaleMin: 0.06f, scaleMax: 0.15f, oneShot: false);
-		((ParticleProcessMaterial)dust.ProcessMaterial).EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box;
-		((ParticleProcessMaterial)dust.ProcessMaterial).EmissionBoxExtents = new Vector3(110f, 220f, 0f);
-		Fx.Animate(root, 1.6f, t =>
+		const float total = 2.1f;
+		Node2D root = Fx.Root(back, Vector2.Zero, "P3Stage");
+		ColorRect spot = new() { Position = -size, Size = size * 3f, MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Shaders.Spotlight } };
+		root.AddChild(spot);
+		var sm = (ShaderMaterial)spot.Material;
+		Vector2 lamp = new(head.X - 30f, 0f);
+		sm.SetShaderParameter("aspect", size.X / size.Y);
+		sm.SetShaderParameter("lamp", lamp / size);
+		sm.SetShaderParameter("floor_pos", (feet + new Vector2(0f, -6f)) / size);
+		sm.SetShaderParameter("w_top", 0.018f);
+		sm.SetShaderParameter("w_floor", 0.1f);
+		sm.SetShaderParameter("open", 0f);
+		sm.SetShaderParameter("alpha", 0f);
+		// 轮廓光：人物身后一圈暖白柔光（身后层，所以只从人物边缘透出来）
+		Node2D rimRoot = Fx.Root(back, (head + feet) / 2f, "P3StageRim");
+		Sprite2D rim = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = new Vector2(3.2f, 7f), Modulate = new Color(1f, 0.95f, 0.85f, 0f) };
+		rimRoot.AddChild(rim);
+		// 灯口眩光
+		Node2D flare = Fx.Root(front, lamp + new Vector2(0f, 26f), "P3StageFlare");
+		Polygon2D flareStar = Fx.Poly(flare, Fx.Star4(60f, 0.05f), new Color(1f, 0.96f, 0.86f, 0f), additive: true);
+		Sprite2D flareGlow = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = Vector2.One * 2.2f, Modulate = new Color(1f, 0.96f, 0.86f, 0f) };
+		flare.AddChild(flareGlow);
+		// 幕布（前景，压在画面两侧边缘）
+		var curtains = new List<ColorRect>();
+		float cw = size.X * 0.16f;
+		for (int k = 0; k < 2; k++)
 		{
-			float time = t * 1.6f;
-			float on = time < 0.12f ? 0f : 1f - Mathf.Clamp((time - 1.25f) / 0.3f, 0f, 1f);
-			float width = 1f - 0.7f * Mathf.Clamp((time - 1.25f) / 0.3f, 0f, 1f);
-			dark.Color = new Color(0f, 0f, 0.03f, 0.55f * Mathf.Clamp(time / 0.1f, 0f, 1f) * (1f - Mathf.Clamp((time - 1.3f) / 0.3f, 0f, 1f)));
-			Fx.Reshape(cone, new[] { new Vector2(head.X - 40f * width, -40f), new Vector2(head.X + 40f * width, -40f), new Vector2(feet.X + 150f * width, feet.Y), new Vector2(feet.X - 150f * width, feet.Y) });
-			cone.Color = new Color(1f, 0.97f, 0.88f, 0.22f * on);
-			floor.Color = new Color(1f, 0.97f, 0.88f, 0.35f * on);
-			pool.Scale = new Vector2(width, 1f);
+			ColorRect c = new() { Size = new Vector2(cw, size.Y + 40f), MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Shaders.Curtain } };
+			((ShaderMaterial)c.Material).SetShaderParameter("side", k == 0 ? 1f : -1f);
+			front.AddChild(c);
+			curtains.Add(c);
+		}
+		Fx.Animate(root, total, t =>
+		{
+			float time = t * total;
+			float curtainIn = Ease.OutCubic(Mathf.Clamp(time / 0.3f, 0f, 1f)) * (1f - Ease.InCubic(Mathf.Clamp((time - 1.75f) / 0.35f, 0f, 1f)));
+			curtains[0].Position = new Vector2(-cw + cw * curtainIn, -20f);
+			curtains[1].Position = new Vector2(size.X - cw * curtainIn, -20f);
+			float lightOn = time < 0.35f ? 0f : 1f;
+			float narrow = 1f - Ease.InCubic(Mathf.Clamp((time - 1.45f) / 0.3f, 0f, 1f));
+			sm.SetShaderParameter("alpha", Mathf.Clamp(time / 0.25f, 0f, 1f) * (1f - Mathf.Clamp((time - 1.75f) / 0.3f, 0f, 1f)));
+			sm.SetShaderParameter("open", lightOn * Mathf.Max(0.02f, narrow) * (1f + 0.04f * Mathf.Sin(time * 3f)));
+			rim.Modulate = new Color(1f, 0.95f, 0.85f, 0.35f * lightOn * narrow);
+			float f = lightOn * narrow * (time < 0.45f ? 1.6f : 1f);
+			flareStar.Color = new Color(1f, 0.96f, 0.86f, 0.7f * f);
+			flareGlow.Modulate = new Color(1f, 0.96f, 0.86f, 0.8f * f);
+			flare.Rotation = time * 0.3f;
 		});
-		Fx.After(root, 0.12, "spot on", () => Audio.Sfx.Play(Audio.Snd.Gunshot, 0.25f, pitch: 0.5f));
-		Fx.After(root, 1.0, "dust off", () => dust.Emitting = false);
-		Fx.FreeAfter(root, 1.65);
-		Fx.FreeAfter(pool, 1.65);
-		Fx.FreeAfter(dustAt, 2.6);
+		Fx.After(root, 0.35, "spot on", () =>
+		{
+			Audio.Sfx.Play(Audio.Snd.Gunshot, 0.22f, pitch: 0.45f);
+			P3Fx.Flash(back, feet + new Vector2(0f, -10f), new Color(1f, 0.95f, 0.85f), 260f, 0.25f);
+		});
+		Fx.FreeAfter(root, total + 0.05);
+		Fx.FreeAfter(rimRoot, total + 0.05);
+		Fx.FreeAfter(flare, total + 0.05);
+		foreach (ColorRect c in curtains)
+		{
+			Fx.FreeAfter(c, total + 0.05);
+		}
 	}
 
 	/// <summary>共鸣：他身前荡出一组声波弧线（音叉般一层层），扫过敌人时敌人身上震一下、泛起涟漪。</summary>

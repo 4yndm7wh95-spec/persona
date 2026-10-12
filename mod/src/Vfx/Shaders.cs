@@ -509,6 +509,78 @@ void fragment() {
 	COLOR = vec4(col, clamp(dim + length(c) * 0.5, 0.0, 1.0) * alpha);
 }");
 
+	private static Shader? _spotlight;
+
+	/// <summary>
+	/// 舞台聚光灯（屏幕坐标作画，盖满屏幕）：灯外整片压暗；锥形光柱从顶部灯口打到地面，里面有缓慢翻涌的烟雾（fbm）和被照亮的浮尘，
+	/// 越靠近灯口越亮、两侧边缘柔和；地面一圈椭圆光斑（中心最亮、边缘渐隐）。
+	/// lamp / floor = 灯口和光斑中心（SCREEN_UV），w_top / w_floor = 两端半宽（UV），open 0~1 灯开合，alpha 整体强度。
+	/// </summary>
+	public static Shader Spotlight => _spotlight ??= Make(@"
+shader_type canvas_item;
+uniform vec2 lamp = vec2(0.3, 0.0);
+uniform vec2 floor_pos = vec2(0.3, 0.7);
+uniform float w_top = 0.02;
+uniform float w_floor = 0.12;
+uniform float open = 1.0;
+uniform float alpha = 1.0;
+uniform float aspect = 1.78;
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+float noise(vec2 p) {
+	vec2 i = floor(p), f = fract(p);
+	vec2 u = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
+}
+float fbm(vec2 p) { float v = 0.0, a = 0.5; mat2 r = mat2(vec2(0.8, 0.6), vec2(-0.6, 0.8)); for (int i = 0; i < 4; i++) { v += a * noise(p); p = r * p * 2.03 + 17.0; a *= 0.5; } return v; }
+void fragment() {
+	vec2 uv = SCREEN_UV;
+	float t = clamp((uv.y - lamp.y) / max(floor_pos.y - lamp.y, 0.001), 0.0, 1.2);
+	float cx = mix(lamp.x, floor_pos.x, t);
+	float hw = mix(w_top, w_floor, t) * open;
+	float dx = abs(uv.x - cx) * aspect;
+	float hwa = hw * aspect;
+	float cone = smoothstep(hwa, hwa * 0.55, dx) * step(lamp.y, uv.y) * step(t, 1.02);
+	// 光柱里的烟雾和浮尘
+	float haze = fbm(vec2(uv.x * aspect * 6.0, uv.y * 4.0 - TIME * 0.12) + TIME * 0.05);
+	float motes = step(0.996, hash(floor(vec2(uv.x * aspect * 420.0, uv.y * 420.0 + TIME * 9.0)))) * cone;
+	float beam = cone * (0.35 + 0.65 * (1.0 - t)) * (0.6 + 0.6 * haze);
+	// 地面光斑
+	vec2 fp = (uv - floor_pos) * vec2(aspect, 1.0) / vec2(w_floor * aspect * 1.25, w_floor * 0.32) / max(open, 0.01);
+	float pool = smoothstep(1.0, 0.0, length(fp));
+	vec3 warm = vec3(1.0, 0.96, 0.86);
+	vec3 col = warm * (beam * 0.32 + pool * 0.45 + motes * 0.9);
+	float dark = 0.62 * (1.0 - clamp(beam * 1.4 + pool, 0.0, 1.0));
+	COLOR = vec4(col, clamp(dark + beam * 0.3 + pool * 0.4 + motes, 0.0, 1.0) * alpha);
+}");
+
+	private static Shader? _curtain;
+
+	/// <summary>
+	/// 天鹅绒幕布（ColorRect，竖长一片）：深蓝丝绒的竖向褶皱（明暗交替 + 褶皱边的亮线），下摆有金色流苏边，
+	/// 靠舞台内侧的一边带一点光；side = 1 左幕（内侧在右）/ -1 右幕。alpha 整体透明度。
+	/// </summary>
+	public static Shader Curtain => _curtain ??= Make(@"
+shader_type canvas_item;
+uniform float side = 1.0;
+uniform float alpha = 1.0;
+void fragment() {
+	vec2 uv = UV;
+	float inner = side > 0.0 ? uv.x : 1.0 - uv.x;
+	float sway = sin(TIME * 1.3 + uv.y * 3.0) * 0.01;
+	float f = uv.x * 9.0 + sway * 9.0 + sin(uv.y * 2.0) * 0.15;
+	float fold = 0.5 + 0.5 * sin(f * 6.2832);
+	float ridge = pow(fold, 6.0);
+	vec3 deep = vec3(0.02, 0.04, 0.16), velvet = vec3(0.07, 0.14, 0.45);
+	vec3 c = mix(deep, velvet, fold * 0.85) + vec3(0.25, 0.35, 0.7) * ridge * 0.35;
+	c += vec3(1.0, 0.95, 0.85) * smoothstep(0.75, 1.0, inner) * 0.12 * fold;
+	// 下摆金色流苏
+	float hem = smoothstep(0.93, 0.94, uv.y) * (1.0 - smoothstep(0.985, 0.99, uv.y));
+	float tassel = step(0.5, fract(uv.x * 40.0)) * smoothstep(0.99, 0.995, uv.y) * (1.0 - step(1.0, uv.y));
+	c = mix(c, vec3(0.95, 0.78, 0.4), hem * (0.7 + 0.3 * fold));
+	c = mix(c, vec3(0.9, 0.7, 0.35), tassel);
+	COLOR = vec4(c, alpha);
+}");
+
 	private static Shader? _waterDisc;
 
 	/// <summary>
