@@ -84,6 +84,34 @@ public static class Pose
 
 	private static readonly Dictionary<ulong, ulong> LightCast = new();
 
+	// 用召唤器 / 施法动作出招的攻击牌：只有第一次 Attack 触发播动作，之后的多段攻击（七星、星尘）
+	// 或卡牌自己再触发一次的 Attack（星灭）都不再播挥剑（否则会接一个斩击动作），只保留游戏的等待节奏。
+	private static readonly Dictionary<ulong, (ulong Until, int Count)> SingleAttack = new();
+
+	public static void MarkSingleAttackAnim(NCreature node, bool on)
+	{
+		if (on)
+		{
+			SingleAttack[node.GetInstanceId()] = (Godot.Time.GetTicksMsec() + 4000, 0);
+		}
+		else
+		{
+			SingleAttack.Remove(node.GetInstanceId());
+		}
+	}
+
+	/// <summary>这次 Attack 触发是否应跳过动作（本次出牌已经播过一次）。</summary>
+	public static bool SkipRepeatAttack(NCreature node)
+	{
+		ulong id = node.GetInstanceId();
+		if (!SingleAttack.TryGetValue(id, out var e) || Godot.Time.GetTicksMsec() > e.Until)
+		{
+			return false;
+		}
+		SingleAttack[id] = (e.Until, e.Count + 1);
+		return e.Count >= 1;
+	}
+
 	/// <summary>这次出牌不召唤 Persona：接下来 1 秒内游戏请求的 cast 换成轻的身体动作 cast_light（不拿召唤器）。</summary>
 	public static void MarkLightCast(NCreature node)
 	{
@@ -120,7 +148,7 @@ public static class Pose
 	{
 		ulong id = state.BoundObject.GetInstanceId();
 		ulong now = Godot.Time.GetTicksMsec();
-		if (requested == "cast" && !Summon.ContainsKey(id) && LightCast.Remove(id, out ulong until))
+		if (requested is "cast" or "attack" && !Summon.ContainsKey(id) && LightCast.Remove(id, out ulong until))
 		{
 			return now <= until ? "cast_light" : null;
 		}

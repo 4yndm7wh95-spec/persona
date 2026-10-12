@@ -14,6 +14,7 @@ namespace P3Makoto.Vfx;
 /// - 预备打出要花 N 颗辉星的牌：N 张牌离开轨道，升到他后脑勺偏上的位置排成拱形待命（发着光）；取消则飞回轨道。
 /// - 消耗：这 N 张牌向前飞出、翻面，碎成玻璃和蓝蝶。
 /// 每帧对照真实的辉星数量（PlayerCombatState.Stars）对账，所以任何来源的增减都会有对应动画。
+/// - 星尘（ArmVolley）：花掉的牌不碎，留在头顶排成一排待命；每一击 Throw 掷出一颗砸向目标。
 /// 轨道是压扁的椭圆：后半圈的牌放在人物身后的特效层，前半圈放在身前，读起来像真的绕着他转。
 /// </summary>
 public static class StarOrbit
@@ -35,6 +36,8 @@ public static class StarOrbit
 		public readonly List<Card> Cards = new();
 		public int Preview;                              // 当前在身前待命的张数
 		public float Phase;
+		public readonly List<Card> Quiver = new();       // 星尘：已花掉、等待掷出的牌
+		public float VolleyUntil;
 	}
 
 	private static readonly Dictionary<ulong, Orbit> Orbits = new();
@@ -59,6 +62,104 @@ public static class StarOrbit
 		{
 			o.Preview = n < 0 ? o.Cards.Count : Math.Min(n, o.Cards.Count);
 		}
+	}
+
+	/// <summary>星尘：接下来花掉的辉星留在头顶，等每一击掷出（几秒内没掷完的照常碎掉）。</summary>
+	public static void ArmVolley(NCreature creature)
+	{
+		ulong id = creature.GetInstanceId();
+		if (!Orbits.TryGetValue(id, out Orbit? o))
+		{
+			o = new Orbit { Creature = creature };
+			Orbits[id] = o;
+		}
+		o.VolleyUntil = _time + 4f;
+	}
+
+	public static void DisarmVolley()
+	{
+		foreach (Orbit o in Orbits.Values)
+		{
+			o.VolleyUntil = 0f;
+		}
+	}
+
+	/// <summary>掷出一颗待命的辉星砸向 target，落地时调用 onImpact。没有待命的牌就从头顶凝出一颗。</summary>
+	public static void Throw(NCreature creature, Vector2 target, Action onImpact)
+	{
+		Control? front = Makoto.FxLayer();
+		if (front == null)
+		{
+			onImpact();
+			return;
+		}
+		Node2D n;
+		if (Orbits.TryGetValue(creature.GetInstanceId(), out Orbit? o) && o.Quiver.Count > 0)
+		{
+			Card c = o.Quiver[0];
+			o.Quiver.RemoveAt(0);
+			n = c.Node;
+			if (!GodotObject.IsInstanceValid(n))
+			{
+				onImpact();
+				return;
+			}
+			if (!c.Front)
+			{
+				n.Reparent(front);
+			}
+		}
+		else
+		{
+			n = MakeCard(front);
+			n.GlobalPosition = QuiverSlot(creature, 0, 1);
+		}
+		Vector2 from = n.GlobalPosition;
+		Vector2 dir = (target - from).Normalized();
+		// 先往后一缩（蓄力），再直线砸下：拖一道青白色的光尾
+		Vector2 wind = from - dir * 26f;
+		Line2D trail = new() { Width = 16f, Material = Fx.Additive, BeginCapMode = Line2D.LineCapMode.Round, EndCapMode = Line2D.LineCapMode.Round,
+			Gradient = new Gradient { Colors = new[] { new Color(Pal.Cyan, 0f), new Color(Pal.Cyan, 0.55f), new Color(Pal.White, 0.95f) }, Offsets = new[] { 0f, 0.6f, 1f } } };
+		Node2D trailRoot = Fx.Root(front, Vector2.Zero, "P3StarThrowTrail");
+		trailRoot.TopLevel = true;
+		trailRoot.GlobalPosition = Vector2.Zero;
+		trailRoot.AddChild(trail);
+		const float windT = 0.06f, flyT = 0.11f;
+		Audio.Sfx.Play(Audio.Snd.StarSpend, 0.45f);
+		Fx.Animate(n, windT + flyT, t =>
+		{
+			float time = t * (windT + flyT);
+			if (time < windT)
+			{
+				n.GlobalPosition = from.Lerp(wind, Ease.OutCubic(time / windT));
+				n.Scale = Vector2.One * (1.25f + 0.25f * time / windT);
+			}
+			else
+			{
+				float u = Ease.InCubic((time - windT) / flyT);
+				Vector2 p = wind.Lerp(target, u);
+				n.GlobalPosition = p;
+				n.Rotation = dir.Angle() + Mathf.Pi / 2f;
+				n.Scale = new Vector2(1.1f, 1.5f + 1.2f * u);
+				trail.Points = new[] { wind.Lerp(p, Mathf.Max(0f, u - 0.55f) / 1f), p };
+			}
+		});
+		Fx.After(n, windT + flyT, "star throw hit", () =>
+		{
+			n.QueueFree();
+			onImpact();
+			P3Fx.GlassShatter(front, target, 8, 0.4f, Pal.Ice);
+			Fx.Animate(trail, 0.18f, t => trail.Modulate = new Color(1f, 1f, 1f, 1f - t));
+			Fx.FreeAfter(trailRoot, 0.2);
+		});
+	}
+
+	/// <summary>星尘待命位：头顶后上方一排（人物身后），中间最高。</summary>
+	private static Vector2 QuiverSlot(NCreature creature, int i, int count)
+	{
+		float u = count <= 1 ? 0.5f : i / (float)(count - 1);
+		float span = Mathf.Min(56f * (count - 1), 420f);
+		return Makoto.Head(creature) + new Vector2(-120f + span * (u - 0.5f), -170f - 40f * Mathf.Sin(u * Mathf.Pi) + 5f * Mathf.Sin(_time * 3f + i));
 	}
 
 	public static void ClearPreview()
@@ -133,9 +234,25 @@ public static class StarOrbit
 			{
 				o.Preview--;
 			}
-			Spend(c, front);
+			if (_time < o.VolleyUntil)
+			{
+				o.Quiver.Add(c);
+			}
+			else
+			{
+				Spend(c, front);
+			}
 		}
 		o.Preview = Math.Min(o.Preview, o.Cards.Count);
+		// 星尘待命超时（敌人提前死光等）：剩下的照常碎掉
+		if (o.Quiver.Count > 0 && _time > o.VolleyUntil)
+		{
+			foreach (Card c in o.Quiver)
+			{
+				Spend(c, front);
+			}
+			o.Quiver.Clear();
+		}
 	}
 
 	private static int FrontMost(Orbit o)
@@ -200,6 +317,25 @@ public static class StarOrbit
 			c.Node.Rotation = (1f - born) * 3f + 0.08f * Mathf.Sin(_time * 2f + i);
 			float shade = i < o.Preview ? 1f : 0.55f + 0.45f * (depth * 0.5f + 0.5f);
 			c.Node.Modulate = new Color(1f, 1f, 1f, shade * born + (1f - born) * born);
+		}
+		// 星尘待命：在头顶排开，发亮、轻轻浮动，牌面朝前
+		for (int i = 0; i < o.Quiver.Count; i++)
+		{
+			Card c = o.Quiver[i];
+			if (!GodotObject.IsInstanceValid(c.Node))
+			{
+				continue;
+			}
+			if (c.Front)
+			{
+				c.Node.Reparent(back);
+				c.Front = false;
+			}
+			c.Pos = c.Pos.Lerp(QuiverSlot(o.Creature, i, o.Quiver.Count), 1f - Mathf.Exp(-14f * dt));
+			c.Node.GlobalPosition = c.Pos;
+			c.Node.Rotation = Mathf.LerpAngle(c.Node.Rotation, 0f, 0.3f);
+			c.Node.Scale = Vector2.One * (1.25f + 0.06f * Mathf.Sin(_time * 7f + i));
+			c.Node.Modulate = Colors.White;
 		}
 	}
 

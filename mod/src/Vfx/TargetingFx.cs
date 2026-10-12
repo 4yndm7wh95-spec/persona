@@ -40,6 +40,10 @@ public static class TargetingFx
 		{
 			StarOrbit.Preview(node, starCost);
 		}
+		if (card.GetType().Name == "Stardust")
+		{
+			StarOrbit.ArmVolley(node);
+		}
 		bool attack = card.Type == CardType.Attack;
 		Color tint = card.Type == CardType.Power ? Pal.DarkHour : Pal.Cyan;
 		_aura = P3Fx.Aura(back, front, Makoto.Feet(node), Makoto.Head(node), tint, attack ? 0.7f : 0.35f);
@@ -90,6 +94,7 @@ public static class TargetingFx
 	public static void End()
 	{
 		StarOrbit.ClearPreview();
+		StarOrbit.DisarmVolley();
 		Unhover();
 		P3Fx.Dismiss(_aura, 0.25f);
 		_aura = null;

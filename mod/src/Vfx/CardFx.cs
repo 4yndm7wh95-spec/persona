@@ -48,6 +48,13 @@ public static class CardFx
 		bool summon = anim != CardStyles.CardAnim.None && CardStyles.Summons(play.Card);
 		bool sovereign = play.Card.GetType().Name == "SovereignBlade";
 		bool cutIn = summon && CutInFx.Enabled;
+		// 召唤器 / 施法出招的攻击牌：整次出牌只播一次出招动作（后续多段攻击不再接挥剑）
+		Pose.MarkSingleAttackAnim(caster, play.Card.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Attack && anim != CardStyles.CardAnim.Sword);
+		bool stardust = play.Card.GetType().Name == "Stardust";
+		if (stardust)
+		{
+			StarOrbit.ArmVolley(caster);                 // 本次花掉的辉星不碎，留在头顶，每一击掷出一颗
+		}
 		if (summon)
 		{
 			Pose.MarkSummon(caster);                      // attack / cast → "召唤开枪"（抵住太阳穴停一拍再扣扳机）
@@ -73,7 +80,7 @@ public static class CardFx
 		{
 			Pose.MarkLightCast(caster);
 			// 掌心托起的那一刻，手上方翻出一张塔罗牌（牌本身带塔罗演出的就不重复）
-			if (!style.Extra.HasFlag(Extra.Tarot))
+			if (!style.Extra.HasFlag(Extra.Tarot) && !stardust)
 			{
 				Fx.After(front, 0.2, "gesture tarot", () =>
 				{
@@ -262,6 +269,19 @@ public static class CardFx
 		}
 		List<Creature> list = targets.ToList();
 		float scale = style.HitScale * (list.Count > 1 ? 0.8f : 1f);
+		// 星尘：每一击 = 头顶待命的一颗辉星砸向目标（命中特效在辉星落地时播放）
+		if (card.GetType().Name == "Stardust" && Makoto.Node(card.Owner) is NCreature thrower)
+		{
+			foreach (Creature c in list)
+			{
+				if (room.GetCreatureNode(c) is NCreature n)
+				{
+					Vector2 at = n.VfxSpawnPosition, feet = n.GetBottomOfHitbox();
+					StarOrbit.Throw(thrower, at, () => Elements.Hit(Element.Star, front, at, feet, scale));
+				}
+			}
+			return;
+		}
 		// 物理系命中：50ms 顿帧 + 轻震屏，给刀砍进去的"顿感"
 		if (style.Hit is Element.Slash or Element.Royal or Element.Strike or Element.Pierce)
 		{

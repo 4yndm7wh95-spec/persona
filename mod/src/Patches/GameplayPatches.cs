@@ -111,11 +111,17 @@ public static class ForgePatch
 [HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.TriggerAnim))]
 public static class SovereignTimingPatch
 {
-	public static void Prefix(MegaCrit.Sts2.Core.Entities.Creatures.Creature creature, string triggerName, ref float waitTime)
+	public static bool Prefix(MegaCrit.Sts2.Core.Entities.Creatures.Creature creature, string triggerName, ref float waitTime, ref System.Threading.Tasks.Task __result)
 	{
 		if (!Makoto.Is(creature.Player))
 		{
-			return;
+			return true;
+		}
+		// 召唤器 / 施法出招的攻击牌：第二次起的 Attack 触发不播动作（不接斩击），只保留等待
+		if (triggerName == "Attack" && Makoto.Node(creature.Player) is NCreature caster && !creature.IsDead && Pose.SkipRepeatAttack(caster))
+		{
+			__result = Cmd.CustomScaledWait(System.Math.Min(waitTime * 0.5f, 0.25f), waitTime);
+			return false;
 		}
 		if (triggerName == "sovereignBladeTrigger")
 		{
@@ -126,6 +132,7 @@ public static class SovereignTimingPatch
 		{
 			waitTime = System.Math.Max(waitTime, triggerName == "Attack" ? 0.6f : 0.5f);
 		}
+		return true;
 	}
 }
 

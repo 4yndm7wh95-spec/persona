@@ -130,7 +130,7 @@ public static class CardStyles
 		"Patter", "Prophesize", "RefineBlade", "Reflect", "Resonance", "RoyalGamble", "SummonForth", "TheSmith", "Venerate",
 		"Arsenal", "BlackHole", "ChildOfTheStars", "Furnace", "Genesis", "HammerTime", "MonarchsGaze", "Orbit", "PaleBlueDot",
 		"Parry", "Royalties", "SeekingEdge", "SpectrumShift", "SwordSage", "TheSealedThrone", "Tyranny", "VoidForm",
-		"Comet", "CrushUnder", "GuidingStar"
+		"Comet", "CrushUnder", "GuidingStar", "Stardust"
 	};
 
 	public static CardAnim AnimFor(object card, MegaCrit.Sts2.Core.Entities.Cards.CardType type)

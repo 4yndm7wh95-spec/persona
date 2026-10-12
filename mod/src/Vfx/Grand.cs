@@ -598,62 +598,158 @@ public static class Grand
 
 	// ═════════ 命运之轮 ═════════
 
-	/// <summary>命运之轮：高速旋转 → 减速、咔哒咔哒 → 停下，指针一闪、金色星爆。</summary>
+	/// <summary>
+	/// 命运之轮（胜券在王）：放在人物身后层、头顶左上方（不挡人）。
+	/// 进场：从小放大 + 外圈扩散；转动：外圈刻度反向慢转、轮缘灯珠追光、扇区残影随转速变化；
+	/// 停下：顶端扇区亮金、指针回弹、金色星屑；退场：缩小淡出。
+	/// </summary>
 	public static void FortuneWheel(Control layer, Vector2 at, Color tint, float s = 1f)
 	{
+		float r = 150f * s;
+		at.Y = Mathf.Max(at.Y, r * 1.25f + 24f);            // 别顶出屏幕
 		Node2D root = Fx.Root(layer, at, "P3FortuneWheel");
+		Glow(root, new Color(tint, 0.22f), Vector2.One * r / 13f);
+
+		// 外圈：细环 + 40 道刻度（反向慢转）
+		Node2D outer = new();
+		root.AddChild(outer);
+		Fx.Line(outer, Fx.Circle(r * 1.16f, 72), new Color(Pal.Ice, 0.55f), 1.5f, closed: true);
+		for (int i = 0; i < 40; i++)
+		{
+			Vector2 d = Vector2.Up.Rotated(Mathf.Tau * i / 40f);
+			float len = i % 5 == 0 ? 14f : 7f;
+			Fx.Line(outer, new[] { d * r * 1.16f, d * (r * 1.16f - len * s) }, new Color(Pal.Ice, i % 5 == 0 ? 0.8f : 0.4f), i % 5 == 0 ? 2f : 1f);
+		}
+
 		Node2D wheel = new();
 		root.AddChild(wheel);
-		float r = 150f * s;
-		Glow(wheel, new Color(tint, 0.35f), Vector2.One * r / 18f);
-		Fx.Poly(wheel, Fx.Circle(r, 64), new Color(Pal.Abyss, 0.9f));
-		Fx.Line(wheel, Fx.Circle(r, 64), tint, 6f, closed: true);
-		Fx.Line(wheel, Fx.Circle(r * 0.35f, 40), new Color(tint, 0.8f), 3f, closed: true);
+		// 八个扇区：两种深蓝交替，给盘面一点层次
+		Color dark = new(Pal.Abyss, 0.95f), light = new(Pal.Abyss.Lightened(0.12f), 0.95f);
+		for (int i = 0; i < 8; i++)
+		{
+			Fx.Poly(wheel, Sector(r * 0.35f, r, Mathf.Tau * i / 8f, Mathf.Tau * (i + 1) / 8f, 10), i % 2 == 0 ? dark : light);
+		}
+		Fx.Line(wheel, Fx.Circle(r, 64), tint, 6f * s, closed: true);
+		Fx.Line(wheel, Fx.Circle(r - 9f * s, 64), new Color(tint, 0.45f), 1.5f, closed: true);
+		Fx.Line(wheel, Fx.Circle(r * 0.35f, 40), new Color(tint, 0.85f), 3f, closed: true);
 		string[] numerals = { "I", "II", "III", "IV", "V", "VI", "VII", "VIII" };
 		for (int i = 0; i < 8; i++)
 		{
 			Vector2 d = Vector2.Up.Rotated(Mathf.Tau * i / 8f);
-			Fx.Line(wheel, new[] { d * r * 0.35f, d * r }, new Color(tint, 0.7f), 3f);
+			Fx.Line(wheel, new[] { d * r * 0.35f, d * (r - 9f * s) }, new Color(tint, 0.75f), 2.5f);
 			Vector2 mid = Vector2.Up.Rotated(Mathf.Tau * (i + 0.5f) / 8f) * r * 0.7f;
 			Label l = Typo.Text(wheel, numerals[i], Typo.Latin, (int)(26 * s), Pal.Ice, mid - new Vector2(numerals[i].Length * 6f * s, 16f * s));
 			l.Rotation = Mathf.Tau * (i + 0.5f) / 8f;
 		}
+		// 轴心：深色圆 + 白色四芒星 + 一圈小点
+		Fx.Poly(wheel, Fx.Circle(r * 0.33f, 32), new Color(Pal.Abyss.Darkened(0.4f), 1f));
+		for (int i = 0; i < 8; i++)
+		{
+			Fx.Poly(wheel, Fx.Circle(2.5f * s, 8), new Color(tint, 0.8f)).Position = Vector2.Up.Rotated(Mathf.Tau * (i + 0.5f) / 8f) * r * 0.26f;
+		}
 		Fx.Poly(wheel, Fx.Star4(30f * s, 0.3f), Pal.White, additive: true);
-		// 指针（不转）
-		Fx.Poly(root, new[] { new Vector2(-16f * s, -r - 34f * s), new Vector2(16f * s, -r - 34f * s), new Vector2(0f, -r + 10f * s) }, Pal.Blood);
+
+		// 残影：转得快时，盘面上叠一层随转速变亮的光弧
+		Polygon2D blur = Fx.Poly(root, Sector(r * 0.4f, r * 0.97f, -0.9f, 0.9f, 24), new Color(Pal.Ice, 0f), additive: true);
+		// 轮缘灯珠：16 颗，转动时依次追光
+		Polygon2D[] lamps = new Polygon2D[16];
+		for (int i = 0; i < 16; i++)
+		{
+			lamps[i] = Fx.Poly(root, Fx.Circle(4f * s, 10), new Color(Pal.Ice, 0.3f), additive: true);
+			lamps[i].Position = Vector2.Up.Rotated(Mathf.Tau * i / 16f) * r * 1.07f;
+		}
+		// 指针（不转）：白色细三角 + 青色描边
+		Node2D pointer = new();
+		root.AddChild(pointer);
+		Vector2[] tri = { new(-14f * s, -r - 30f * s), new(14f * s, -r - 30f * s), new(0f, -r + 12f * s) };
+		Fx.Poly(pointer, tri, Pal.White);
+		Fx.Line(pointer, tri, Pal.Cyan, 2f, closed: true, additive: false);
+		// 停下后亮起的顶端扇区
+		Polygon2D win = Fx.Poly(root, Sector(r * 0.35f, r, -Mathf.Tau / 16f, Mathf.Tau / 16f, 10), new Color(tint, 0f), additive: true);
+		// 底部小标签
+		Typo.Text(root, "X  WHEEL OF FORTUNE", Typo.LatinItalic, (int)(18 * s), new Color(Pal.Ice, 0.85f), new Vector2(-r, r * 1.22f), HorizontalAlignment.Center).Size = new Vector2(r * 2f, 24f);
+
+		// 进场扩散环
+		P3Fx.Shockwave(layer, at, Pal.Ice, r * 2.6f, 0.4f);
+
+		const float total = 1.75f, stopAt = 1.15f;
 		float spins = 4.25f;
 		float lastTick = 0f;
-		Fx.Animate(root, 1.6f, t =>
+		float lastAngle = 0f;
+		Fx.Animate(root, total, t =>
 		{
-			float time = t * 1.6f;
-			float spin = Ease.OutCubic(Mathf.Clamp(time / 1.1f, 0f, 1f));
+			float time = t * total;
+			float spin = Ease.OutCubic(Mathf.Clamp(time / stopAt, 0f, 1f));
 			float angle = spin * spins * Mathf.Tau;
+			float speed = Mathf.Abs(angle - lastAngle);
+			lastAngle = angle;
 			wheel.Rotation = angle;
+			outer.Rotation = -angle * 0.12f;
+			blur.Rotation = angle * 0.5f;
+			blur.Color = new Color(Pal.Ice, Mathf.Clamp(speed * 0.35f, 0f, 0.22f));
+			// 灯珠：转动中追光，停下后全亮闪两下
+			for (int i = 0; i < 16; i++)
+			{
+				float a;
+				if (time < stopAt)
+				{
+					float head = angle * 0.6f / (Mathf.Tau / 16f);
+					float d = Mathf.PosMod(head - i, 16f);
+					a = 0.25f + 0.75f * Mathf.Exp(-d * 0.9f);
+				}
+				else
+				{
+					a = 0.5f + 0.5f * Mathf.Abs(Mathf.Sin((time - stopAt) * 14f));
+				}
+				lamps[i].Color = new Color(time < stopAt ? Pal.Ice : tint, a);
+			}
 			float tick = Mathf.Floor(angle / (Mathf.Tau / 8f));
-			if (tick != lastTick && time > 0.5f)
+			if (tick != lastTick && time > 0.55f && time < stopAt)
 			{
 				lastTick = tick;
-				root.Scale = Vector2.One * 1.04f;
+				pointer.Rotation = 0.12f;                     // 指针被扇区边线拨了一下
 			}
-			else
+			pointer.Rotation = Mathf.Lerp(pointer.Rotation, 0f, 0.25f);
+			// 进场：0.5 → 1（OutBack）；退场：缩到 0.9 并淡出
+			float enter = Ease.OutBack(Mathf.Clamp(time / 0.28f, 0f, 1f));
+			float exit = Ease.InCubic(Mathf.Clamp((time - (total - 0.25f)) / 0.25f, 0f, 1f));
+			root.Scale = Vector2.One * (Mathf.Lerp(0.5f, 1f, enter) - 0.1f * exit);
+			root.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.1f, 0f, 1f) * (1f - exit));
+			if (time >= stopAt)
 			{
-				root.Scale = root.Scale.Lerp(Vector2.One, 0.3f);
+				float w = (time - stopAt) / 0.5f;
+				win.Color = new Color(tint, 0.55f * Mathf.Clamp(1f - w * 0.6f, 0.25f, 1f));
 			}
-			root.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.12f, 0f, 1f) * (1f - Ease.InCubic(Mathf.Clamp((time - 1.4f) / 0.2f, 0f, 1f))));
 		});
-		Fx.After(root, 1.12, "fortune stop", () =>
+		Fx.After(root, stopAt, "fortune stop", () =>
 		{
-			Vector2 top = at + new Vector2(0f, -r);
-			P3Fx.Flash(layer, top, ElementPal.HolyGold, 300f * s, 0.25f);
-			Node2D burst = Fx.Root(layer, at, "P3FortuneStars");
-			Fx.Sparks(burst, ElementPal.HolyGold, (int)(80 * s), 300f, 800f, 0.9f, gravity: 500f, scaleMin: 0.15f, scaleMax: 0.4f,
-				ramp: new[] { Pal.White, ElementPal.HolyGold, ElementPal.FireMid });
+			Vector2 top = at + new Vector2(0f, -r * 0.65f);
+			pointer.Rotation = -0.3f;
+			P3Fx.Flash(layer, top, tint, 260f * s, 0.25f);
+			Node2D burst = Fx.Root(layer, top, "P3FortuneStars");
+			Fx.Sparks(burst, tint, (int)(60 * s), 250f, 650f, 0.9f, gravity: 500f, scaleMin: 0.12f, scaleMax: 0.35f,
+				ramp: new[] { Pal.White, tint, ElementPal.FireMid });
 			Fx.FreeAfter(burst, 1.1);
-			P3Fx.Shockwave(layer, at, ElementPal.HolyGold, 600f * s, 0.5f);
+			P3Fx.Shockwave(layer, at, tint, 520f * s, 0.45f);
 			Audio.Sfx.Play(Audio.Snd.StarGain, 1.0f);
 			Shake(ShakeStrength.Weak);
 		});
-		Fx.FreeAfter(root, 1.65);
+		Fx.FreeAfter(root, total + 0.05);
+	}
+
+	/// <summary>圆环扇区（a0..a1，弧度，0 = 正上方顺时针）。</summary>
+	private static Vector2[] Sector(float r0, float r1, float a0, float a1, int seg)
+	{
+		var pts = new List<Vector2>();
+		for (int i = 0; i <= seg; i++)
+		{
+			pts.Add(Vector2.Up.Rotated(Mathf.Lerp(a0, a1, i / (float)seg)) * r1);
+		}
+		for (int i = seg; i >= 0; i--)
+		{
+			pts.Add(Vector2.Up.Rotated(Mathf.Lerp(a0, a1, i / (float)seg)) * r0);
+		}
+		return pts.ToArray();
 	}
 
 	// ═════════ 金币雨 ═════════
