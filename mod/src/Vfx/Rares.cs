@@ -605,9 +605,13 @@ public static class Rares
 	private static Texture2D? _coffin;
 	private static Texture2D? Coffin => _coffin ??= ResourceLoader.Exists("res://p3makoto/fx/coffin.png") ? ResourceLoader.Load<Texture2D>("res://p3makoto/fx/coffin.png") : null;
 
+	/// <summary>棺材的位置：人物左后方空地（和人物不重叠）；天鹅绒门在场时改到右侧。</summary>
+	private static Vector2 CoffinSpot(NCreature caster) =>
+		Makoto.Feet(caster) + new Vector2(ThemeFx.GateRoot != null ? 250f : -270f, 0f);
+
 	/// <summary>
-	/// 暴政（皇帝 IV）：影时间的棺材从人物身后的地面升起，像王座的靠背；棺面亮起罗马数字 IV，
-	/// 头顶凝出一顶光之王冠（尖刺一根根长出）；随后王冠化作光点散去、棺材沉回地下。
+	/// 暴政（皇帝 IV）：人物身旁的空地上，影时间的棺材从地下升起；棺面的罗马数字 IV 像印章一样"盖"上去（由大到小砸下、绿光一闪），
+	/// 棺盖缝透出绿光、冒起几缕绿烟；随后棺材沉回地下。
 	/// </summary>
 	public static void Tyranny(NCreature caster)
 	{
@@ -617,47 +621,21 @@ public static class Rares
 		{
 			return;
 		}
-		Vector2 feet = Makoto.Feet(caster);
-		Vector2 head = Makoto.Head(caster);
-		RiseCoffin(back, feet + new Vector2(-30f, 0f), 1.0f, 1.6f, numeral: true);
-		// 王冠：九根尖刺从中间向两边依次长出，冰蓝描边 + 金色芯
-		Vector2 crownAt = head + new Vector2(-10f, -95f);
-		Node2D crown = Fx.Root(front, crownAt, "P3TyrannyCrown");
-		var spikes = new List<Node2D>();
-		for (int i = 0; i < 9; i++)
+		Vector2 floor = CoffinSpot(caster);
+		RiseCoffin(back, floor, 0.85f, 1.7f, numeral: true);
+		Fx.After(front, 0.35, "tyranny smoke", () =>
 		{
-			int k = i - 4;
-			Node2D sp = new() { Position = new Vector2(k * 17f, 0f), Rotation = k * 0.09f };
-			crown.AddChild(sp);
-			float h = 46f - Mathf.Abs(k) * 6f;
-			Fx.Poly(sp, new[] { new Vector2(-7f, 0f), new Vector2(0f, -h), new Vector2(7f, 0f) }, new Color(1f, 0.85f, 0.45f), additive: true);
-			Fx.Line(sp, new[] { new Vector2(-7f, 0f), new Vector2(0f, -h), new Vector2(7f, 0f) }, Pal.Ice, 2f);
-			sp.Scale = new Vector2(1f, 0f);
-			spikes.Add(sp);
-		}
-		Fx.Poly(crown, new[] { new Vector2(-82f, 0f), new Vector2(82f, 0f), new Vector2(76f, 14f), new Vector2(-76f, 14f) }, new Color(Pal.Ice, 0.9f), additive: true);
-		crown.Modulate = new Color(1f, 1f, 1f, 0f);
-		Fx.Animate(crown, 1.6f, t =>
-		{
-			float time = t * 1.6f;
-			crown.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((time - 0.3f) / 0.1f, 0f, 1f) * (1f - Mathf.Clamp((time - 1.3f) / 0.3f, 0f, 1f)));
-			crown.Position = crownAt + new Vector2(0f, 3f * Mathf.Sin(time * 4f));
-			for (int i = 0; i < spikes.Count; i++)
-			{
-				float d = 0.35f + Mathf.Abs(i - 4) * 0.05f;
-				spikes[i].Scale = new Vector2(1f, Ease.OutBack(Mathf.Clamp((time - d) / 0.15f, 0f, 1f)));
-			}
+			Node2D smoke = Fx.Root(back, floor + new Vector2(0f, -200f), "P3TyrannySmoke");
+			GpuParticles2D e = Fx.Sparks(smoke, Pal.DarkHour, 26, 20f, 70f, 1.2f, gravity: -90f, scaleMin: 0.3f, scaleMax: 0.8f,
+				ramp: new[] { new Color(Pal.DarkHour, 0.6f), new Color(Pal.DarkHour, 0f) }, oneShot: false);
+			((ParticleProcessMaterial)e.ProcessMaterial).EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box;
+			((ParticleProcessMaterial)e.ProcessMaterial).EmissionBoxExtents = new Vector3(40f, 120f, 0f);
+			Fx.After(smoke, 0.9, "smoke off", () => e.Emitting = false);
+			Fx.FreeAfter(smoke, 2.3);
 		});
-		Fx.After(crown, 0.62, "crown done", () =>
-		{
-			P3Fx.Flash(front, crownAt, new Color(1f, 0.85f, 0.45f), 160f, 0.2f);
-			Audio.Sfx.Play(Audio.Snd.Weak, 0.6f, pitch: 0.75f);
-		});
-		Fx.After(crown, 1.3, "crown fade", () => P3Fx.GlassShatter(front, crownAt, 14, 0.4f, new Color(1f, 0.85f, 0.45f)));
-		Fx.FreeAfter(crown, 1.65);
 	}
 
-	/// <summary>暴政生效（回合开始消耗一张牌）：小一号的棺材在人物右侧升起，一张牌的虚影从手牌区落进去，绿光一闪，沉下。</summary>
+	/// <summary>暴政生效（回合开始消耗一张牌）：同一位置升起一口小棺材，一张牌的虚影从手牌区落进去，绿光一闪，沉下。</summary>
 	public static void TyrannyExhaust(NCreature caster)
 	{
 		Control? back = Makoto.FxLayer(back: true);
@@ -666,11 +644,11 @@ public static class Rares
 		{
 			return;
 		}
-		Vector2 at = Makoto.Feet(caster) + new Vector2(170f, 0f);
-		RiseCoffin(back, at, 0.55f, 1.1f, numeral: false);
+		Vector2 at = CoffinSpot(caster);
+		RiseCoffin(back, at, 0.6f, 1.1f, numeral: false);
 		Vector2 size = front.GetViewportRect().Size;
 		Vector2 from = new(size.X * 0.5f, size.Y - 120f);
-		Vector2 to = at + new Vector2(0f, -120f);
+		Vector2 to = at + new Vector2(0f, -130f);
 		Node2D ghost = Fx.Root(front, from, "P3TyrannyGhost");
 		Fx.Poly(ghost, RectPts(new Rect2(-26f, -38f, 52f, 76f)), new Color(Pal.DarkHour, 0.35f), additive: true);
 		Fx.Line(ghost, RectPts(new Rect2(-26f, -38f, 52f, 76f)), new Color(Pal.DarkHour, 0.9f), 2f, closed: true);
@@ -712,7 +690,15 @@ public static class Rares
 		Label? iv = null;
 		if (numeral)
 		{
-			iv = Typo.Text(body, "IV", Typo.Latin, 64, new Color(1f, 0.88f, 0.5f, 0f), new Vector2(-30f, -h * 0.62f), outline: 4, outlineColor: new Color(0.02f, 0.05f, 0.2f));
+			iv = Typo.Text(body, "IV", Typo.Latin, 64, new Color(0.75f, 1f, 0.82f), new Vector2(-30f, -h * 0.62f), outline: 4, outlineColor: new Color(0.02f, 0.08f, 0.05f));
+			iv.PivotOffset = iv.Size / 2f;
+			Fx.After(root, 0.52, "iv stamp", () =>
+			{
+				Vector2 at = floor + new Vector2(0f, (-h * 0.62f + 32f) * s);
+				P3Fx.Flash(layer, at, Pal.DarkHour, 160f * s, 0.2f);
+				P3Fx.Shockwave(layer, at, Pal.DarkHour, 260f * s, 0.3f);
+				Audio.Sfx.Play(Audio.Snd.StarSpend, 0.6f, pitch: 0.55f);
+			});
 		}
 		Fx.Animate(root, hold + 0.6f, t =>
 		{
@@ -722,7 +708,10 @@ public static class Rares
 			shine.Modulate = new Color(Pal.DarkHour, 0.5f * Mathf.Clamp(1f - Mathf.Abs(time - 0.45f) / 0.25f, 0f, 1f));
 			if (iv != null)
 			{
-				iv.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((time - 0.4f) / 0.15f, 0f, 1f) * (1f - Mathf.Clamp((time - hold + 0.2f) / 0.2f, 0f, 1f)));
+				// 印章式落下：0.4 秒时从两倍大砸到原大小
+				float stamp = Mathf.Clamp((time - 0.4f) / 0.12f, 0f, 1f);
+				iv.Scale = Vector2.One * Mathf.Lerp(2.2f, 1f, Ease.InCubic(stamp));
+				iv.Modulate = new Color(1f, 1f, 1f, stamp * (1f - Mathf.Clamp((time - hold + 0.2f) / 0.2f, 0f, 1f)));
 			}
 		});
 		Fx.After(root, 0.02, "coffin dust", () =>

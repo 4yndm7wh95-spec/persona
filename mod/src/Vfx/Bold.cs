@@ -52,47 +52,38 @@ public static class Bold
 		MegaCrit.Sts2.Core.Nodes.NGame.Instance?.ScreenShake(shake, MegaCrit.Sts2.Core.Nodes.Vfx.Utilities.ShakeDuration.Short);
 	}
 
-	// ───────── 火：Agidyne —— 脚下炸开的火柱 + 火舌 + 余烬 ─────────
+	// ───────── 火：Agidyne —— 脚下一圈火环收缩 → 着色器火柱从地面喷起（白热芯、橙色火舌）→ 火星与热浪 ─────────
 	public static void Agidyne(Control layer, Vector2 center, Vector2 feet, float s = 1f)
 	{
 		Node2D root = Fx.Root(layer, feet, "P3Agidyne");
-		// 预兆：脚下一圈橙色火环迅速收缩
-		Line2D ring = Fx.Line(root, Fx.Circle(160f * s, 40, 0.3f), new Color(ElementPal.FireMid, 0.9f), 6f * s, closed: true);
-		Fx.Animate(ring, 0.12f, t => ring.Scale = Vector2.One * Mathf.Lerp(1.6f, 0.6f, Ease.OutCubic(t)));
-		Fx.After(root, 0.1, "agi burst", () =>
+		Line2D ring = Fx.Line(root, Fx.Circle(150f * s, 40, 0.3f), new Color(ElementPal.FireMid, 0.9f), 5f * s, closed: true);
+		Fx.Animate(ring, 0.1f, t => ring.Scale = Vector2.One * Mathf.Lerp(1.5f, 0.5f, Ease.OutCubic(t)));
+		float w = 320f * s, h = Mathf.Max(feet.Y - center.Y, 120f) * 2.6f * s;
+		ColorRect fire = new() { Size = new Vector2(w, h), Position = new Vector2(-w / 2f, -h + 20f * s), MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Shaders.ForgeFire } };
+		root.AddChild(fire);
+		Fx.SetParam(fire, "height", 0f);
+		Fx.Animate(root, 0.8f, t =>
 		{
-			ring.Visible = false;
-			// 火舌：7 道泪滴形火焰从脚下向上窜起、摇摆、熄灭
-			for (int i = 0; i < 7; i++)
-			{
-				float x = (i - 3) * 38f * s + Fx.Rand(-10f, 10f);
-				float h = Fx.Rand(1.6f, 2.6f) * s * (1f - Mathf.Abs(i - 3) * 0.12f);
-				Node2D tongue = new() { Position = new Vector2(x, 0f), Rotation = Fx.Rand(-0.15f, 0.15f) };
-				root.AddChild(tongue);
-				Polygon2D outer = Fx.Poly(tongue, Teardrop(46f, 3.2f), new Color(ElementPal.FireOuter, 0.85f), additive: true);
-				Polygon2D mid = Fx.Poly(tongue, Teardrop(30f, 3f), new Color(ElementPal.FireMid, 0.95f), additive: true);
-				Polygon2D core = Fx.Poly(tongue, Teardrop(14f, 2.6f), ElementPal.FireCore, additive: true);
-				outer.Position = mid.Position = core.Position = new Vector2(0f, -40f);
-				float delay = Mathf.Abs(i - 3) * 0.025f;
-				Fx.Animate(tongue, 0.75f, t =>
-				{
-					float time = t * 0.75f - delay;
-					float grow = Ease.OutBack(Mathf.Clamp(time / 0.18f, 0f, 1f));
-					float fade = 1f - Ease.InCubic(Mathf.Clamp((time - 0.35f) / 0.4f, 0f, 1f));
-					tongue.Scale = new Vector2(Mathf.Max(grow, 0.01f) * (0.9f + 0.1f * Mathf.Sin(time * 40f)), Mathf.Max(grow * h, 0.01f) * (0.8f + 0.2f * fade));
-					tongue.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(fade, 0f, 1f) * Mathf.Clamp(time * 20f, 0f, 1f));
-				});
-			}
-			// 火柱核心 + 余烬
-			Node2D emberAt = new() { Position = new Vector2(0f, -40f * s) };
-			root.AddChild(emberAt);
-			GpuParticles2D embers = Fx.Sparks(emberAt, ElementPal.FireMid, (int)(90 * s), 200f * s, 700f * s, 1.1f, gravity: -260f,
-				scaleMin: 0.15f, scaleMax: 0.55f, ramp: new[] { ElementPal.FireCore, ElementPal.FireMid, ElementPal.FireOuter });
-			((ParticleProcessMaterial)embers.ProcessMaterial).Spread = 35f;
-			Impact(layer, center, ElementPal.FireMid, s, MegaCrit.Sts2.Core.Nodes.Vfx.Utilities.ShakeStrength.Medium);
-			P3Fx.Ripple(layer, center, 620f * s, 0.6f, 0.035f);
+			float time = t * 0.8f;
+			float up = Ease.OutExpo(Mathf.Clamp((time - 0.08f) / 0.15f, 0f, 1f));
+			float down = Ease.InCubic(Mathf.Clamp((time - 0.4f) / 0.4f, 0f, 1f));
+			Fx.SetParam(fire, "height", 0.1f + 0.9f * up * (1f - 0.6f * down));
+			Fx.SetParam(fire, "alpha", up * (1f - down));
+			ring.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp(time / 0.15f, 0f, 1f));
 		});
-		Fx.FreeAfter(root, 1.6);
+		Fx.After(root, 0.08, "agi burst", () =>
+		{
+			Impact(layer, center, ElementPal.FireMid, 0.7f * s, MegaCrit.Sts2.Core.Nodes.Vfx.Utilities.ShakeStrength.Medium);
+			P3Fx.Ripple(layer, center + new Vector2(0f, -40f * s), 420f * s, 0.6f, 0.03f);
+			Node2D sparks = Fx.Root(layer, feet + new Vector2(0f, -30f * s), "P3AgiEmbers");
+			GpuParticles2D e = Fx.Sparks(sparks, ElementPal.FireMid, (int)(50 * s), 120f, 420f, 0.9f, gravity: -300f, scaleMin: 0.1f, scaleMax: 0.3f,
+				ramp: new[] { new Color(1f, 0.95f, 0.7f), ElementPal.FireMid, new Color(0.5f, 0.08f, 0.04f, 0f) });
+			ParticleProcessMaterial pm = (ParticleProcessMaterial)e.ProcessMaterial;
+			pm.EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box;
+			pm.EmissionBoxExtents = new Vector3(110f * s, 10f, 0f);
+			Fx.FreeAfter(sparks, 1.1);
+		});
+		Fx.FreeAfter(root, 0.85);
 	}
 
 	// ───────── 冰：Bufudyne —— 冰柱从地面破土而出、冻结、碎裂 ─────────
