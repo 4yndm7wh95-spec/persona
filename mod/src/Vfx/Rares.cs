@@ -946,10 +946,11 @@ public static class Rares
 		Typo.Text(title, "IV  /  DARK HOUR", Typo.Latin, (int)(H * 0.022f), new Color(Pal.DarkHour, 0.9f), new Vector2(4f, H * 0.062f));
 
 		// ③ 左侧小面板：影时间的钟
-		float cx0 = W * 0.04f, cx1 = W * 0.25f, cyT = H * 0.14f, cyB = H * 0.42f;
+		// 缩在左上角：钟面整个在能力牌通用蓝色圆盘（人物胸前，顶端约 0.28H）的上方，不被它挡住
+		float cx0 = W * 0.015f, cx1 = W * 0.17f, cyT = H * 0.13f, cyB = H * 0.4f;
 		Node2D clockPanel = Panel(cx0, cx1, cyT, cyB, H * 0.08f, 0.22f, 1.9f, -1f, new Color(0.01f, 0.08f, 0.05f, 0.97f));
-		float cr = (cyB - cyT) * 0.36f;
-		Node2D clock = new() { Position = new Vector2(cx0 + (cx1 - cx0) * 0.38f + H * 0.04f, (cyT + cyB) * 0.5f) };
+		float cr = (cyB - cyT) * 0.33f;
+		Node2D clock = new() { Position = new Vector2(cx0 + (cx1 - cx0) * 0.42f + H * 0.04f, (cyT + cyB) * 0.5f - H * 0.005f) };
 		clockPanel.AddChild(clock);
 		Fx.StrokeClosed(clock, Fx.Circle(cr, 48), new Color(Pal.DarkHour, 0.9f), 3f);
 		Fx.StrokeClosed(clock, Fx.Circle(cr * 0.88f, 48), new Color(Pal.DarkHour, 0.45f), 1.5f);
