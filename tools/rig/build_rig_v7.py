@@ -608,12 +608,12 @@ class Builder:
         a.rgba("v7_tip", T + 0.12, c8(1, 1, 1, 0))
         a.att("v7_tip", T + 0.13, None)
 
-    def breathe(self, a, dur, amp=18.0, sway=22.0):
+    def breathe(self, a, dur, amp=12.6, sway=15.4):
         """循环动画的网格微动（脚锁死，见 mesh_weights）：
         · 呼吸：上身（呼吸骨骼）抬起 amp 再落下，循环里正好整数个周期（约 2.2 秒一次）；
         · 发梢：缓慢左右摆 sway、上下随呼吸轻扬，两个方向周期不同（不机械），首尾为 0、无缝循环；
         · 上身随呼吸轻微左右晃（重心微移，脚不动）。
-        幅度按游戏里实际显示定：1 个单位约 0.26 个屏幕像素（v0.9.16 的 7 单位在游戏里看不出来，加到 18 / 22）。"""
+        幅度按游戏里实际显示定：1 个单位约 0.26 个屏幕像素（v0.9.16 的 7 单位看不出来，v0.9.17 加到 18 / 22 又偏大，v0.9.18 收 30% 到 12.6 / 15.4）。"""
         cyc = max(1, round(dur / 2.2))
         n = max(8, int(round(dur * 10)))
         for i in range(n + 1):
@@ -640,7 +640,7 @@ class Builder:
             m = math.hypot(dx, dy)
             if m < 1.0:
                 continue
-            A = min(70.0, 20.0 + 0.6 * m)
+            A = min(49.0, 14.0 + 0.42 * m)
             springs.append((t, A * dx / m, A * dy / m))
         if not springs:
             return
@@ -690,7 +690,7 @@ class Builder:
 
         a = Anim(d["aim_loop"])
         self.sequence(a, [(0, "focus")])
-        self.breathe(a, d["aim_loop"], amp=13.0, sway=14.0)
+        self.breathe(a, d["aim_loop"], amp=9.1, sway=9.8)
         A["aim_loop"] = a
 
         a = Anim(d["aim_out"])
@@ -718,7 +718,7 @@ class Builder:
 
         a = Anim(d["ready_sword_loop"])
         self.sequence(a, [(0, "sword_ready")])
-        self.breathe(a, d["ready_sword_loop"], amp=14.0, sway=16.0)
+        self.breathe(a, d["ready_sword_loop"], amp=9.8, sway=11.2)
         A["ready_sword_loop"] = a
 
         a = Anim(d["sword_out"])
