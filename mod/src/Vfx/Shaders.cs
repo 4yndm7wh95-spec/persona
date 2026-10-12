@@ -227,11 +227,15 @@ float caustic(vec2 p, float t) {
 	for (int n = 0; n < 4; n++) {
 		float tt = t * (1.0 - (3.5 / float(n + 1)));
 		i = p + vec2(cos(tt - i.x) + sin(tt + i.y), sin(tt - i.y) + cos(tt + i.x));
-		c += 1.0 / length(vec2(p.x / (sin(i.x + tt) / inten), p.y / (cos(i.y + tt) / inten)));
+		// 分母保护：sin / cos 接近 0 时原式会除以 0 得到 NaN，画面上出现黑色坏点
+		float sx = sin(i.x + tt), cy = cos(i.y + tt);
+		sx = (sx < 0.0 ? -1.0 : 1.0) * max(abs(sx), 1e-3);
+		cy = (cy < 0.0 ? -1.0 : 1.0) * max(abs(cy), 1e-3);
+		c += 1.0 / max(length(vec2(p.x / (sx / inten), p.y / (cy / inten))), 1e-4);
 	}
 	c /= 4.0;
-	c = 1.17 - pow(c, 1.4);
-	return pow(abs(c), 8.0);
+	c = 1.17 - pow(clamp(c, 0.0, 50.0), 1.4);
+	return clamp(pow(abs(c), 8.0), 0.0, 4.0);
 }
 void fragment() {
 	vec2 d = UV * 2.0 - 1.0;
@@ -260,11 +264,14 @@ float caustic(vec2 p, float t) {
 	for (int n = 0; n < 4; n++) {
 		float tt = t * (1.0 - (3.5 / float(n + 1)));
 		i = p + vec2(cos(tt - i.x) + sin(tt + i.y), sin(tt - i.y) + cos(tt + i.x));
-		c += 1.0 / length(vec2(p.x / (sin(i.x + tt) / 0.005), p.y / (cos(i.y + tt) / 0.005)));
+		float sx = sin(i.x + tt), cy = cos(i.y + tt);
+		sx = (sx < 0.0 ? -1.0 : 1.0) * max(abs(sx), 1e-3);
+		cy = (cy < 0.0 ? -1.0 : 1.0) * max(abs(cy), 1e-3);
+		c += 1.0 / max(length(vec2(p.x / (sx / 0.005), p.y / (cy / 0.005))), 1e-4);
 	}
 	c /= 4.0;
-	c = 1.17 - pow(c, 1.4);
-	return pow(abs(c), 8.0);
+	c = 1.17 - pow(clamp(c, 0.0, 50.0), 1.4);
+	return clamp(pow(abs(c), 8.0), 0.0, 4.0);
 }
 void fragment() {
 	vec2 d = (UV - 0.5) * vec2(aspect, 1.0);

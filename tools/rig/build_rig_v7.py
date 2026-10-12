@@ -222,6 +222,30 @@ def skin_blob(img, box):
 # ───────────────────────── 网格微动 ─────────────────────────
 GRID = 28            # 网格间距（原图像素）
 NO_MESH = {"die_kneel", "die_fall", "die_down"}     # 跪地 / 倒地不做呼吸和发梢（整张图）
+# 循环姿势里会动的手 / 衣摆（手工圈的原图像素区域 + 权重从 y0 到 y1 由 0 渐变到 1）。
+# 外套和裤子都是黑色，靠颜色分不开，所以手工圈；握剑的手连着剑，不动。
+EXTRA = {
+    "idle": {"arm": [([(300, 470), (405, 470), (408, 860), (316, 860)], (520, 820))],
+             "coat": [([(385, 556), (500, 556), (500, 716), (385, 716)], (580, 712)),
+                      ([(638, 556), (722, 556), (722, 672), (638, 672)], (570, 668))]},
+    "sword_ready": {"arm": [([(700, 560), (805, 560), (885, 822), (775, 834)], (590, 800))],
+                    "coat": [([(272, 520), (420, 520), (420, 706), (272, 706)], (556, 702))]},
+    "focus": {"coat": [([(310, 540), (456, 540), (456, 716), (310, 716)], (562, 712)),
+                       ([(668, 528), (752, 528), (752, 652), (668, 652)], (540, 648))]},
+}
+
+
+def _region_weight(shape, regions):
+    """手工区域 → 平滑权重图（多边形填充、羽化，再乘竖直渐变）。"""
+    from PIL import ImageDraw as _D, ImageFilter as _F
+    out = np.zeros(shape, np.float64)
+    for pts, (ya, yb) in regions:
+        m = Image.new("L", (shape[1], shape[0]), 0)
+        _D.Draw(m).polygon(pts, fill=255)
+        m = np.asarray(m.filter(_F.GaussianBlur(14))).astype(np.float64) / 255
+        yy = np.arange(shape[0], dtype=np.float64)[:, None]
+        out = np.maximum(out, m * _smoothstep(ya, yb, yy))
+    return out
 
 
 def _smoothstep(e0, e1, x):
@@ -237,7 +261,7 @@ def _box_mean(m, r):
     return (c[k:, k:] - c[:-k, k:] - c[k:, :-k] + c[:-k, :-k]) / (k * k)
 
 
-def mesh_weights(img, sword=None):
+def mesh_weights(img, sword=None, pose=None):
     """每个像素的 (呼吸权重 b, 发梢权重 h)。
     · 呼吸：胯部（人物高度 50%）以下 0、肩（22%）以上 1，平滑过渡 —— 脚锁死，上身随呼吸抬起，头跟着上身走。
     · 发梢：深蓝头发像素，离头部中心越远权重越大（发根 0、发梢 1）；皮肤（脸 / 手）附近强制 0，脸绝不变形。
@@ -273,7 +297,16 @@ def mesh_weights(img, sword=None):
         fyi = int(np.clip(fy, 0, img.shape[0] - 1))
         b = np.where(near, b[fyi, 0], b)
         h = np.where(near, 0.0, h)
-    return b, np.minimum(h, b)
+    ex = EXTRA.get(pose, {})
+    arm = _region_weight(a.shape, ex["arm"]) if "arm" in ex else np.zeros(a.shape)
+    coat = _region_weight(a.shape, ex["coat"]) if "coat" in ex else np.zeros(a.shape)
+    h = np.minimum(h, 1.0)
+    h = np.where(arm + coat > 0.01, 0.0, h)
+    # 手 / 衣摆骨骼挂在呼吸骨骼下面：这些区域的呼吸权重至少要和它们一样大（整体跟着上身起伏，不被拉开）
+    b = np.maximum(b, np.clip(arm + coat + h, 0, 1))
+    tot = h + arm + coat
+    scale = np.where(tot > b, b / np.maximum(tot, 1e-6), 1.0)
+    return b, h * scale, arm * scale, coat * scale
 
 
 def pose_mesh(img, box, pose, bones, sword=None):
@@ -284,7 +317,7 @@ def pose_mesh(img, box, pose, bones, sword=None):
     ny = max(1, int(math.ceil((y1 - y0) / GRID)))
     gx = np.linspace(x0, x1, nx + 1)
     gy = np.linspace(y0, y1, ny + 1)
-    b, h = mesh_weights(img, sword)
+    b, h, arm, coat = mesh_weights(img, sword, pose)
     alpha = img[..., 3]
     keep = {}
     tris = []
@@ -302,17 +335,17 @@ def pose_mesh(img, box, pose, bones, sword=None):
             v00, v10, v01, v11 = vid(i, j), vid(i + 1, j), vid(i, j + 1), vid(i + 1, j + 1)
             tris += [v00, v10, v11, v00, v11, v01]
     verts, uvs = [], []
-    iv7, ibr, iha = bones
+    iv7, ibr, iha, iarm, icoat = bones
     for (i, j), k in sorted(keep.items(), key=lambda kv: kv[1]):
         px, py = gx[i], gy[j]
         uvs += [round((px - x0) / (x1 - x0), 5), round((py - y0) / (y1 - y0), 5)]
         sx = int(np.clip(px, 0, img.shape[1] - 1))
         sy = int(np.clip(py, 0, img.shape[0] - 1))
-        wb, wh = float(b[sy, sx]), float(h[sy, sx])
+        wb, wh, wa, wc = float(b[sy, sx]), float(h[sy, sx]), float(arm[sy, sx]), float(coat[sy, sx])
         if pose in NO_MESH:
-            wb = wh = 0.0
+            wb = wh = wa = wc = 0.0
         x, y = U((px, py), pose)
-        ws = [(iv7, 1.0 - wb), (ibr, wb - wh), (iha, wh)]
+        ws = [(iv7, 1.0 - wb), (ibr, max(0.0, wb - wh - wa - wc)), (iha, wh), (iarm, wa), (icoat, wc)]
         ws = [(bi, w) for bi, w in ws if w > 1e-4]
         tot = sum(w for _, w in ws)
         verts.append(len(ws))
@@ -438,6 +471,8 @@ class Builder:
         d["bones"].append({"name": "v7", "parent": "v7_settle"})
         d["bones"].append({"name": "v7_breath", "parent": "v7"})          # 网格微动：上身呼吸（只平移）
         d["bones"].append({"name": "v7_hair", "parent": "v7_breath"})     # 网格微动：发梢摆动 / 换图后的甩动回弹（只平移）
+        d["bones"].append({"name": "v7_arm", "parent": "v7_breath"})      # 网格微动：垂下的手轻轻摆（只平移）
+        d["bones"].append({"name": "v7_coat", "parent": "v7_breath"})     # 网格微动：外套下摆摆动 / 甩动回弹（只平移）
         for p in EVOKER_POSES:
             gx, gy = U(self.grip[p], p)
             d["bones"].append({"name": f"v7_ev_{p}", "parent": "v7_breath", "x": round(gx, 2), "y": round(gy, 2)})
@@ -464,7 +499,7 @@ class Builder:
         for slot in ("v7_ghost", "v7_old", "v7_flash"):
             att[slot] = {f"v7_{p}": self.region(f"v7_{p}") for p in poses}
         names = [b["name"] for b in d["bones"]]
-        bones = (names.index("v7"), names.index("v7_breath"), names.index("v7_hair"))
+        bones = (names.index("v7"), names.index("v7_breath"), names.index("v7_hair"), names.index("v7_arm"), names.index("v7_coat"))
         att["v7_body"] = {f"v7_{p}": pose_mesh(self.src[f"v7_{p}"], self.geom[f"v7_{p}"], p, bones, SWORD.get(p))
                           for p in poses}
         att["v7_blink"] = {"v7_idle_blink": self.region("v7_idle_blink")}
@@ -573,19 +608,24 @@ class Builder:
         a.rgba("v7_tip", T + 0.12, c8(1, 1, 1, 0))
         a.att("v7_tip", T + 0.13, None)
 
-    def breathe(self, a, dur, amp=7.0, sway=7.0):
+    def breathe(self, a, dur, amp=18.0, sway=22.0):
         """循环动画的网格微动（脚锁死，见 mesh_weights）：
         · 呼吸：上身（呼吸骨骼）抬起 amp 再落下，循环里正好整数个周期（约 2.2 秒一次）；
-        · 发梢：缓慢左右摆 sway、上下随呼吸轻扬，两个方向周期不同（不机械），首尾为 0、无缝循环。"""
+        · 发梢：缓慢左右摆 sway、上下随呼吸轻扬，两个方向周期不同（不机械），首尾为 0、无缝循环；
+        · 上身随呼吸轻微左右晃（重心微移，脚不动）。
+        幅度按游戏里实际显示定：1 个单位约 0.26 个屏幕像素（v0.9.16 的 7 单位在游戏里看不出来，加到 18 / 22）。"""
         cyc = max(1, round(dur / 2.2))
         n = max(8, int(round(dur * 10)))
         for i in range(n + 1):
             u = i / n
             t = dur * u
             br = 0.5 * (1 - math.cos(2 * math.pi * cyc * u))
-            a.tr("v7_breath", t, 0, amp * br)
+            a.tr("v7_breath", t, 0.22 * amp * math.sin(2 * math.pi * u), amp * br)
             hx = sway * math.sin(2 * math.pi * max(1, cyc - 1) * u) * (0.7 + 0.3 * math.sin(2 * math.pi * u))
             a.tr("v7_hair", t, hx, 0.35 * amp * br + 0.25 * sway * math.sin(2 * math.pi * cyc * u * 2))
+            # 垂下的手像钟摆轻轻前后摆（比呼吸慢半拍）；衣摆跟着上身晃、比发梢晚一点
+            a.tr("v7_arm", t, 0.7 * sway * math.sin(2 * math.pi * u - 0.6), 0.15 * amp * br)
+            a.tr("v7_coat", t, 0.55 * sway * math.sin(2 * math.pi * max(1, cyc - 1) * u - 0.9), 0.2 * amp * br)
 
     def follow(self, a, seq, prev):
         """换姿势后的发梢跟随：每次换图，发梢先往动作反方向拖（惯性），再越过原位一点、回弹、停住（衰减弹簧，约 0.5 秒）。
@@ -600,7 +640,7 @@ class Builder:
             m = math.hypot(dx, dy)
             if m < 1.0:
                 continue
-            A = min(30.0, 8.0 + 0.35 * m)
+            A = min(70.0, 20.0 + 0.6 * m)
             springs.append((t, A * dx / m, A * dy / m))
         if not springs:
             return
@@ -616,6 +656,8 @@ class Builder:
                     x += sx * v
                     y += sy * v
             a.tr("v7_hair", t, x, y)
+            a.tr("v7_coat", t, 0.8 * x, 0.5 * y)
+            a.tr("v7_arm", t, 0.5 * x, 0.3 * y)
 
     def blink(self, a, t):
         a.att("v7_blink", t, "v7_idle_blink")
@@ -648,7 +690,7 @@ class Builder:
 
         a = Anim(d["aim_loop"])
         self.sequence(a, [(0, "focus")])
-        self.breathe(a, d["aim_loop"], amp=5.0, sway=4.0)
+        self.breathe(a, d["aim_loop"], amp=13.0, sway=14.0)
         A["aim_loop"] = a
 
         a = Anim(d["aim_out"])
@@ -676,7 +718,7 @@ class Builder:
 
         a = Anim(d["ready_sword_loop"])
         self.sequence(a, [(0, "sword_ready")])
-        self.breathe(a, d["ready_sword_loop"], amp=5.5, sway=5.0)
+        self.breathe(a, d["ready_sword_loop"], amp=14.0, sway=16.0)
         A["ready_sword_loop"] = a
 
         a = Anim(d["sword_out"])

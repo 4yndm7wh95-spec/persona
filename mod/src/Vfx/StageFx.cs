@@ -216,8 +216,9 @@ public static class StageFx
 	public static void RewardBackdrop(Control screen, Vector2 rowCenter, Func<Vector2[]> cardCenters)
 	{
 		Vector2 size = screen.GetViewportRect().Size;
-		// 画在选牌界面所有子节点的最下面（不用 TopLevel：TopLevel 会画到牌的上面，挡住选牌）
-		Node2D root = new() { Name = "P3RewardBackdrop", ZIndex = -1 };
+		// 作为选牌界面的第一个子节点：画在牌的下面，但在原版共享的暗色遮罩（选牌界面的同级节点）上面。
+		// 不能设 ZIndex = -1（会掉到遮罩下面被一起压暗），也不用 TopLevel（会画到牌的上面）。
+		Node2D root = new() { Name = "P3RewardBackdrop" };
 		screen.AddChild(root);
 		screen.MoveChild(root, 0);
 		root.GlobalPosition = Vector2.Zero;
