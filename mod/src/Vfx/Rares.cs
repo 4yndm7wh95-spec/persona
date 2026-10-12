@@ -966,10 +966,13 @@ public static class Rares
 		Fx.Poly(clock, Fx.Circle(5f, 16), Pal.White);
 		Sprite2D clockFlash = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(Pal.DarkHour, 0f), Scale = Vector2.One * cr / 10f };
 		clock.AddChild(clockFlash);
-		Node2D clockText = new() { Position = new Vector2(clock.Position.X + cr * 1.25f, clock.Position.Y - H * 0.045f), Skew = -0.2f };
+		// 钟面里的数字读数（放在钟面下半，不伸出面板，免得挨着人物的头）
+		Node2D clockText = new() { Position = clock.Position + new Vector2(-cr * 0.36f, cr * 0.22f), Skew = -0.2f };
 		clockPanel.AddChild(clockText);
-		Label zero = Typo.Text(clockText, "0:00", Typo.Latin, (int)(H * 0.06f), new Color(0.85f, 1f, 0.9f), Vector2.Zero, outline: 3, outlineColor: ink);
-		Typo.Text(clockText, "MIDNIGHT", Typo.Latin, (int)(H * 0.018f), new Color(Pal.DarkHour, 0.9f), new Vector2(4f, H * 0.075f));
+		Label zero = Typo.Text(clockText, "0:00", Typo.Latin, (int)(cr * 0.36f), new Color(0.85f, 1f, 0.9f), Vector2.Zero, outline: 3, outlineColor: ink);
+		Node2D midText = new() { Position = clock.Position + new Vector2(-cr * 0.3f, -cr * 0.5f), Skew = -0.2f };
+		clockPanel.AddChild(midText);
+		Typo.Text(midText, "MIDNIGHT", Typo.Latin, (int)(cr * 0.13f), new Color(Pal.DarkHour, 0.9f), Vector2.Zero);
 
 		// ④ 主面板下沿的反向跑马灯
 		Node2D tick2 = Panel(W * 0.26f, W * 1.05f, myB + H * 0.03f, myB + H * 0.062f, H * 0.012f, 0.3f, 2.2f, 1f, new Color(0.9f, 0.97f, 0.93f, 0.92f), 1f, underlay: false);
