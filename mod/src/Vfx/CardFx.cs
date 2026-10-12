@@ -88,7 +88,7 @@ public static class CardFx
 		{
 			Pose.MarkLightCast(caster);
 			// 掌心托起的那一刻，手上方翻出一张塔罗牌（牌本身带塔罗演出的就不重复）
-			if (!style.Extra.HasFlag(Extra.Tarot) && !stardust && !gamble && !ThemeCards.Contains(play.Card.GetType().Name))
+			if (!style.Extra.HasFlag(Extra.Tarot) && !stardust && !gamble && !ThemeCards.Contains(play.Card.GetType().Name) && !CardSigs.Has(play.Card))
 			{
 				Fx.After(front, 0.2, "gesture tarot", () =>
 				{
