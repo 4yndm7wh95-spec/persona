@@ -113,7 +113,7 @@ public static class CardSigs
 
 		// ═════ 技能：辉星 / 能量 / 抽牌（塔罗与星象）═════
 		["Venerate"] = c => Tarot(c, "XVII", "THE STAR", Pal.Cyan),
-		["RoyalGamble"] = c => Grand.FortuneWheel(c.Back, c.Head + new Vector2(-170f, -200f), ElementPal.HolyGold, 0.9f),
+		["RoyalGamble"] = c => Grand.FortuneWheel(c.Back, c.Head + new Vector2(-235f, -125f), ElementPal.HolyGold, 0.75f),
 		["HiddenCache"] = c => Tarot(c, "IX", "HERMIT", Pal.Royal),
 		["Glow"] = c => { P3Fx.Flash(c.Back, c.Center, Pal.Ice, 520f, 0.4f); P3Fx.ButterflyBurst(c.Front, c.Head, 7, 340f); },
 		["Alignment"] = c => Motifs.Constellation(c.Front, c.Above,

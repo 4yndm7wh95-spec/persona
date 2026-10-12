@@ -606,7 +606,7 @@ public static class Grand
 	public static void FortuneWheel(Control layer, Vector2 at, Color tint, float s = 1f)
 	{
 		float r = 150f * s;
-		at.Y = Mathf.Max(at.Y, r * 1.25f + 24f);            // 别顶出屏幕
+		at.Y = Mathf.Max(at.Y, r * 1.16f + 100f);           // 外圈不压到顶部状态栏（约 90px 高）
 		Node2D root = Fx.Root(layer, at, "P3FortuneWheel");
 		Glow(root, new Color(tint, 0.22f), Vector2.One * r / 13f);
 
