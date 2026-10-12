@@ -190,7 +190,7 @@ public static class CharSelectInfo
 		Node2D hpLine = new() { Position = new Vector2(-356f, 0f) };                // 下划线从左端"画出来"：缩放中心放在左端
 		stats.AddChild(hpLine);
 		P3Ui.Slab(hpLine, 0f, 60f + hpW, 34f, 43f, 4f, Pal.Cyan);
-		Fx.Line(stats, new[] { new Vector2(0f, -44f), new Vector2(-20f, 42f) }, Red, 5f, additive: false);
+		Fx.Stroke(stats, new[] { new Vector2(0f, -44f), new Vector2(-20f, 42f) }, Red, 5f, additive: false);
 		Text(stats, "G", num, small, new Color(1f, 0.94f, 0.67f), Yellow, new Vector2(20f, -12f));
 		Label goldLabel = Text(stats, gold, num, big, new Color(1f, 0.99f, 0.9f), Yellow, new Vector2(50f, -60f), 4);
 		float goldW = TextWidth(num, gold, big);

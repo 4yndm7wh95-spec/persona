@@ -157,8 +157,9 @@ public static class CutInFx
 		st.Band.AddChild(st.Face);
 		Polygon2D frameTop = Fx.Poly(st.Band, Strip(st, -1f, 16f), new Color(0.02f, 0.05f, 0.16f, 0.96f));
 		Polygon2D frameBot = Fx.Poly(st.Band, Strip(st, 1f, 16f), new Color(0.02f, 0.05f, 0.16f, 0.96f));
-		Fx.Line(st.Band, Edge(st, -1f), new Color(Pal.Cyan, 0.9f), 3f);
-		Fx.Line(st.Band, Edge(st, 1f), new Color(Pal.Cyan, 0.9f), 3f);
+		// 上下沿青线：展开成多边形走抗锯齿着色器（v0.9.24 之前用 Line2D，斜边锯齿明显）
+		Fx.Stroke(st.Band, Edge(st, -1f), new Color(Pal.Cyan, 0.9f), 3f);
+		Fx.Stroke(st.Band, Edge(st, 1f), new Color(Pal.Cyan, 0.9f), 3f);
 		Bubbles(st);
 		// 眼中蓝光（实时）：柔光 + 十字星 + 横向镜头光，跟着贴图平移，呼吸闪烁
 		Node2D eye = new();

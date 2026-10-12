@@ -77,10 +77,10 @@ public static class EndTurnSkin
 			P3Ui.Slab(normal, x0 + wedge + 6f, x1 - 4f, y0 + 3f, y0 + 5f, lean * 2f / h, new Color(1f, 1f, 1f, 0.22f));
 			P3Ui.Slab(normal, x0, x0 + wedge, y0, y1, lean, new Color(Pal.Cyan, 0.95f));
 			float rx = x1 - h * 0.45f;
-			Fx.Line(normal, new[] { new Vector2(rx + lean * 0.8f, y0 + 6f), new Vector2(rx + lean * 0.2f, y1 - 6f) }, Red, 3f, additive: false);
+			Fx.Stroke(normal, new[] { new Vector2(rx + lean * 0.8f, y0 + 6f), new Vector2(rx + lean * 0.2f, y1 - 6f) }, Red, 3f, additive: false);
 			// 选中：白底 + 右上错开的红色细框（P3R 队伍列表的选中行），左端青块保留
 			Vector2[] frame = { new(x0 + lean + 6f, y0 - 6f), new(x1 + lean + 6f, y0 - 6f), new(x1 + 6f, y1 - 6f), new(x0 + 6f, y1 - 6f) };
-			Fx.Line(selected, frame, Red, 3f, closed: true, additive: false);
+			Fx.StrokeClosed(selected, frame, Red, 3f, additive: false);
 			P3Ui.Slab(selected, x0, x1, y0, y1, lean, new Color(0.97f, 0.98f, 1f, 1f));
 			P3Ui.Slab(selected, x0, x0 + wedge, y0, y1, lean, new Color(Pal.Cyan, 0.95f));
 			if (label != null)

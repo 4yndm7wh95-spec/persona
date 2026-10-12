@@ -124,6 +124,38 @@ void fragment() {
 		}
 	}
 
+	/// <summary>
+	/// 不闭合的折线描边，展开成细长多边形走抗锯齿着色器（Line2D 自带的 Antialiased 在部分显示设置下不生效，斜线有锯齿）。
+	/// 顶点数 = 折线点数 × 2，要 ≤ 128 才有抗锯齿。
+	/// </summary>
+	public static Polygon2D Stroke(Node parent, Vector2[] points, Color color, float width, bool additive = true)
+	{
+		int n = points.Length;
+		var poly = new Vector2[n * 2];
+		for (int i = 0; i < n; i++)
+		{
+			Vector2 dir = (points[System.Math.Min(i + 1, n - 1)] - points[System.Math.Max(i - 1, 0)]).Normalized();
+			Vector2 nrm = new Vector2(-dir.Y, dir.X) * (width * 0.5f);
+			poly[i] = points[i] + nrm;
+			poly[n * 2 - 1 - i] = points[i] - nrm;
+		}
+		return Poly(parent, poly, color, additive);
+	}
+
+	/// <summary>闭合描边（每条边单独展开成多边形，两端各延伸半个线宽，拐角不留缺口）。</summary>
+	public static Node2D StrokeClosed(Node parent, Vector2[] points, Color color, float width, bool additive = true)
+	{
+		Node2D group = new();
+		parent.AddChild(group);
+		for (int i = 0; i < points.Length; i++)
+		{
+			Vector2 a = points[i], b = points[(i + 1) % points.Length];
+			Vector2 d = (b - a).Normalized() * (width * 0.5f);
+			Stroke(group, new[] { a - d, b + d }, color, width, additive);
+		}
+		return group;
+	}
+
 	public static Line2D Line(Node parent, Vector2[] points, Color color, float width, bool closed = false, bool additive = true)
 	{
 		Line2D line = new Line2D
