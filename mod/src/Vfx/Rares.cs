@@ -129,7 +129,8 @@ public static class Rares
 	{
 		public Node2D Root = null!;
 		public Node2D Body = null!;
-		public Polygon2D[] Stripes = System.Array.Empty<Polygon2D>();
+		public ColorRect Quad = null!;
+		public Node2D Vortex = null!;
 		public float Spin;
 		public int Hits;
 		public ulong Last;
@@ -158,18 +159,16 @@ public static class Rares
 		d.Root = Fx.Root(front, tip, "P3HeavenlyDrill");
 		d.Body = new Node2D();
 		d.Root.AddChild(d.Body);
-		// 锥体（原点在锥尖，向上伸出）：外层青色光晕 + 深蓝锥身 + 螺旋条纹（单层裁切）+ 白色锥芯
-		Vector2[] cone = { new(-DrillW / 2f, -DrillLen), new(DrillW / 2f, -DrillLen), Vector2.Zero };
-		Fx.Poly(d.Body, new[] { new Vector2(-DrillW * 0.75f, -DrillLen - 20f), new Vector2(DrillW * 0.75f, -DrillLen - 20f), new Vector2(0f, 30f) }, new Color(Pal.Cyan, 0.35f), additive: true);
-		Fx.Poly(d.Body, cone, new Color(0.05f, 0.14f, 0.5f));
-		Polygon2D clip = new() { Polygon = cone, ClipChildren = CanvasItem.ClipChildrenMode.Only };
-		d.Body.AddChild(clip);
-		d.Stripes = new Polygon2D[7];
-		for (int i = 0; i < d.Stripes.Length; i++)
-		{
-			d.Stripes[i] = Fx.Poly(clip, new Vector2[4], i % 2 == 0 ? Pal.Ice : new Color(Pal.Cyan, 0.9f), additive: true);
-		}
-		Fx.Poly(d.Body, new[] { new Vector2(-8f, -DrillLen), new Vector2(8f, -DrillLen), Vector2.Zero }, Pal.White, additive: true);
+		// 锥体（原点在锥尖，向上伸出）：着色器画的螺旋钻头（金属明暗、螺旋棱、轮廓光、锥尖白热）
+		d.Quad = new ColorRect { Size = new Vector2(DrillW * 1.5f, DrillLen), Position = new Vector2(-DrillW * 0.75f, -DrillLen), MouseFilter = Control.MouseFilterEnum.Ignore,
+			Material = new ShaderMaterial { Shader = Shaders.Drill } };
+		d.Body.AddChild(d.Quad);
+		// 锥尖附近两圈压扁的气旋环，反向旋转（转起来的感觉）
+		d.Vortex = new Node2D { Position = new Vector2(0f, -DrillLen * 0.28f), Scale = new Vector2(1f, 0.28f) };
+		d.Body.AddChild(d.Vortex);
+		Fx.Line(d.Vortex, Fx.Circle(70f, 40), new Color(Pal.Ice, 0.55f), 3f, closed: true);
+		Fx.Line(d.Vortex, Fx.Circle(98f, 40), new Color(Pal.Cyan, 0.3f), 2f, closed: true);
+		d.Vortex.Modulate = new Color(1f, 1f, 1f, 0f);
 		Drills[id] = d;
 		// 从屏幕上方落下
 		float drop = tip.Y + DrillLen + 80f;
@@ -186,29 +185,24 @@ public static class Rares
 		d.Root.AddChild(tick);
 		tick.Timeout += () => ModEntry.Safe("drill tick", () =>
 		{
-			d.Spin += (float)tick.WaitTime * (6f + 3f * Mathf.Min(d.Hits, 6));
-			LayStripes(d);
+			float speed = 6f + 3f * Mathf.Min(d.Hits, 6);
+			d.Spin += (float)tick.WaitTime * speed;
+			if (GodotObject.IsInstanceValid(d.Quad))
+			{
+				((ShaderMaterial)d.Quad.Material).SetShaderParameter("spin", d.Spin);
+				((ShaderMaterial)d.Quad.Material).SetShaderParameter("heat", Mathf.Min(d.Hits / 6f, 1f));
+				d.Vortex.Rotation += (float)tick.WaitTime * speed * 0.6f;
+				d.Vortex.Modulate = new Color(1f, 1f, 1f, d.Hits > 0 ? Mathf.Min(1f, 0.4f + d.Hits * 0.1f) : 0f);
+			}
+			// 连击之间留足间隔（命中间隔可能接近 0.5 秒），1.1 秒没有新的命中才算打完，不会中途碎掉再重新落下
 			ulong idle = Time.GetTicksMsec() - d.Last;
-			if (idle > (d.Hits == 0 ? 2500UL : 420UL))
+			if (idle > (d.Hits == 0 ? 2500UL : 1100UL))
 			{
 				tick.Stop();
 				Drills.Remove(id);
 				Shatter(front, d);
 			}
 		});
-	}
-
-	/// <summary>螺旋条纹：斜向平行四边形沿锥身向下滚动（看起来在旋转）。</summary>
-	private static void LayStripes(Drill d)
-	{
-		float span = DrillLen / d.Stripes.Length;
-		for (int i = 0; i < d.Stripes.Length; i++)
-		{
-			float y = -DrillLen + ((i * span + d.Spin * 40f) % DrillLen);
-			float h = span * 0.42f, slant = 26f;
-			float w0 = DrillHalf(y + DrillLen), w1 = DrillHalf(y + h + DrillLen);
-			Fx.Reshape(d.Stripes[i], new[] { new Vector2(-w0 - 10f, y), new Vector2(w0 + 10f, y - slant), new Vector2(w1 + 10f, y + h - slant), new Vector2(-w1 - 10f, y + h) });
-		}
 	}
 
 	/// <summary>每一击：光锥往下钻一下，锥尖迸出火花和一圈冲击。</summary>

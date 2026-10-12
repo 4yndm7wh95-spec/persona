@@ -420,6 +420,46 @@ void fragment() {
 	COLOR = vec4(c, a) * alpha;
 }");
 
+	private static Shader? _drill;
+
+	/// <summary>
+	/// 天际钻头（ColorRect，上边是锥底、下边是锥尖）：按圆柱展开坐标画的螺旋棱纹（随 spin 转动），
+	/// 左上方打光的金属明暗 + 一条锐利高光、边缘青色轮廓光、锥尖白热；锥体外一圈柔和的青色辉光。alpha 整体透明度。
+	/// </summary>
+	public static Shader Drill => _drill ??= Make(@"
+shader_type canvas_item;
+uniform float spin = 0.0;
+uniform float alpha = 1.0;
+uniform float heat = 0.0;
+void fragment() {
+	float y = UV.y;                                   // 0 = 锥底 → 1 = 锥尖
+	float x = UV.x - 0.5;
+	float half_w = 0.33 * (1.0 - y) + 0.004;
+	float ax = abs(x);
+	float inside = smoothstep(half_w + 0.004, half_w - 0.004, ax);
+	float u = asin(clamp(x / half_w, -1.0, 1.0));     // 圆柱展开角：-π/2 … π/2
+	// 螺旋棱：三条，沿锥身向下缠绕
+	float band = fract((u + spin) / 6.28318 * 3.0 + y * 7.0);
+	float ridge = smoothstep(0.0, 0.12, band) * smoothstep(0.55, 0.4, band);
+	float groove = 1.0 - smoothstep(0.55, 0.7, band) * smoothstep(1.0, 0.85, band);
+	float light = clamp(cos(u + 0.55) * 0.5 + 0.5, 0.0, 1.0);
+	vec3 dark = vec3(0.03, 0.08, 0.26), mid = vec3(0.18, 0.4, 0.85), hi = vec3(0.82, 0.93, 1.0);
+	vec3 c = mix(dark, mid, light);
+	c = mix(c, hi, ridge * light * 0.8);
+	c *= 0.55 + 0.45 * groove;
+	float spec = pow(max(cos(u + 0.75), 0.0), 18.0) * (0.6 + 0.4 * ridge);
+	c += vec3(1.0) * spec * 0.9;
+	float rim = smoothstep(half_w - 0.02, half_w, ax) * inside;
+	c += vec3(0.25, 0.85, 1.0) * rim * 0.9;
+	// 锥尖白热（钻得越久越亮）
+	float tip = exp(-(1.0 - y) * (14.0 - 6.0 * heat));
+	c = mix(c, vec3(1.0, 0.98, 0.9), tip * inside * (0.6 + 0.4 * heat));
+	// 锥体外的辉光
+	float glow = exp(-max(ax - half_w, 0.0) * 30.0) * (1.0 - inside) * (0.35 + 0.4 * heat) * smoothstep(0.0, 0.1, y);
+	vec3 outc = mix(vec3(0.3, 0.85, 1.0), c, inside);
+	COLOR = vec4(outc, clamp(inside + glow, 0.0, 1.0) * alpha);
+}");
+
 	private static Shader? _waterDisc;
 
 	/// <summary>
