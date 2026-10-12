@@ -98,6 +98,18 @@ void fragment() {
 		return poly;
 	}
 
+	/// <summary>带贴图的多边形（同样走抗锯齿着色器：着色器里自己乘贴图）。眼神切入的玻璃横幅、碎片用这个。</summary>
+	public static Polygon2D TexPoly(Texture2D texture, Vector2[] points, Vector2[] uv, bool additive = false)
+	{
+		Polygon2D poly = new Polygon2D
+		{
+			Texture = texture, UV = uv, TextureFilter = CanvasItem.TextureFilterEnum.Linear,
+			Material = new ShaderMaterial { Shader = additive ? AaAddShader : AaShader }
+		};
+		Reshape(poly, points);
+		return poly;
+	}
+
 	/// <summary>改多边形形状（同步抗锯齿着色器里的顶点）。Fx.Poly 创建的多边形改形状都要走这里，不要直接赋 Polygon。</summary>
 	public static void Reshape(Polygon2D poly, Vector2[] points)
 	{

@@ -33,7 +33,11 @@ public static class CharSelectBgPatch
 {
 	public static void Postfix(NRegentCharacterSelectBg __instance)
 	{
-		ModEntry.Safe("CharSelectBg", () => CharSelectBg.Build(__instance));
+		ModEntry.Safe("CharSelectBg", () =>
+		{
+			Vfx.Perf.WatchFrames("select makoto", 3.0);                 // 卡顿定位：选中后 3 秒里的慢帧写进日志
+			Vfx.Perf.Time("charselect bg build", () => CharSelectBg.Build(__instance));
+		});
 	}
 }
 
@@ -43,7 +47,7 @@ public static class CharSelectInfoPatch
 {
 	public static void Postfix(NCharacterSelectScreen __instance, NCharacterSelectButton charSelectButton, MegaCrit.Sts2.Core.Models.CharacterModel characterModel)
 	{
-		ModEntry.Safe("CharSelectInfo", () => CharSelectInfo.Apply(__instance, charSelectButton, characterModel));
+		ModEntry.Safe("CharSelectInfo", () => Vfx.Perf.Time("info panel apply", () => CharSelectInfo.Apply(__instance, charSelectButton, characterModel)));
 	}
 }
 

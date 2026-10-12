@@ -262,19 +262,9 @@ public static class CharSelectBg
 	{
 		Node2D band = new() { Name = "Band", Position = new Vector2(-200f, 700f), Rotation = Mathf.DegToRad(-9f) };
 		root.AddChild(band);
-		band.AddChild(new Polygon2D
-		{
-			Antialiased = true,
-			Polygon = new[] { new Vector2(0, 0), new Vector2(1900, 0), new Vector2(1820, 150), new Vector2(-80, 150) },
-			Color = new Color(Pal.Royal, 0.22f),
-		});
-		band.AddChild(new Polygon2D
-		{
-			Antialiased = true,
-			Polygon = new[] { new Vector2(0, 160), new Vector2(1900, 160), new Vector2(1897, 166), new Vector2(-3, 166) },
-			Color = new Color(Pal.Cyan, 0.5f),
-			Material = Fx.Additive,
-		});
+		// 斜带 + 下沿细青线：走抗锯齿着色器（原生 Polygon2D 的 Antialiased 不生效，斜边有锯齿）
+		Fx.Poly(band, new[] { new Vector2(0, 0), new Vector2(1900, 0), new Vector2(1820, 150), new Vector2(-80, 150) }, new Color(Pal.Royal, 0.22f));
+		Fx.Poly(band, new[] { new Vector2(0, 160), new Vector2(1900, 160), new Vector2(1897, 166), new Vector2(-3, 166) }, new Color(Pal.Cyan, 0.5f), additive: true);
 		Label text = Typo.Text(band, "MEMENTO MORI   MEMENTO MORI   MEMENTO MORI", Typo.Latin, 130, new Color(Pal.Ice, 0.13f), new Vector2(-300f, -6f));
 		Tween drift = text.CreateTween().SetLoops();
 		drift.TweenProperty(text, "position:x", 0f, 26.0).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);

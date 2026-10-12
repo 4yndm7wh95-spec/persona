@@ -210,9 +210,9 @@ public static class Extras
 		root.AddChild(tintRect);
 		Vector2 moonPos = new Vector2(size.X * 0.78f, size.Y * 0.2f);
 		Sprite2D moonGlow = new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Position = moonPos, Scale = Vector2.One * 16f, Modulate = new Color(0.75f, 1f, 0.6f, 0f) };
-		Polygon2D moon = new Polygon2D { Polygon = Fx.Circle(70f, 48), Position = moonPos, Color = new Color(0.92f, 1f, 0.75f, 0f), Material = Fx.Additive, Antialiased = true };
 		root.AddChild(moonGlow);
-		root.AddChild(moon);
+		Polygon2D moon = Fx.Poly(root, Fx.Circle(70f, 48), new Color(0.92f, 1f, 0.75f, 0f), additive: true);   // 抗锯齿着色器
+		moon.Position = moonPos;
 		Fx.Animate(root, duration, t =>
 		{
 			float a = Ease.Envelope(t, 0.18f, 0.65f);

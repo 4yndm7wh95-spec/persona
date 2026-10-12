@@ -24,6 +24,7 @@ public static class Preload
 	private static readonly List<Resource> Keep = new();
 	private static readonly List<string> Pending = new();
 	private static bool _started;
+	private static ulong _t0;
 
 	public static void Start()
 	{
@@ -32,6 +33,7 @@ public static class Preload
 			return;
 		}
 		_started = true;
+		_t0 = Time.GetTicksMsec();
 		foreach (string p in Paths)
 		{
 			if (ResourceLoader.Exists(p) && ResourceLoader.LoadThreadedRequest(p, "", true) == Error.Ok)
@@ -56,6 +58,7 @@ public static class Preload
 				{
 					Keep.Add(r);
 				}
+				GD.Print($"{ModEntry.Tag} perf preload {p} ready at +{Time.GetTicksMsec() - _t0}ms");
 				Pending.RemoveAt(i);
 			}
 			else if (st != ResourceLoader.ThreadLoadStatus.InProgress)
