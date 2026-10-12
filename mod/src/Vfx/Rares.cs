@@ -774,13 +774,13 @@ public static class Rares
 	private static Texture2D? Tartarus => _tartarus ??= ResourceLoader.Exists("res://p3makoto/fx/tartarus.png") ? ResourceLoader.Load<Texture2D>("res://p3makoto/fx/tartarus.png") : null;
 
 	/// <summary>
-	/// 暴政（皇帝 IV · 影时间降临）：
-	/// 0.0 午夜 —— 人物身后的天色像接触不良的灯一样闪几下，沉进影时间的墨绿；月亮先过曝白亮再冷却成黄绿；
-	/// 0.25 远景（背景地面与墙交界处）的低雾里，塔尔塔罗斯被一道绿光"扫描线"从塔脚往塔尖扫出来（塔本身不动，扫过处飘起光点），
-	///      扫完后塔上的窗一扇扇亮起；月亮半躲在塔尖后面；
-	/// 0.45 影时间的波从人物脚下沿地面扩散，波前扫到哪里，人物左后方散落的棺材就在哪里显形（远近、大小、倾斜都不一样）；
-	/// 2.0 第二道波扫过，棺材依次消散；2.45 扫描线从塔尖往下把塔擦掉（窗随之熄灭、化成光点）；2.7 天色和月亮退去。
-	/// 全部画在人物身后（back 层最底下），不挡人物；虚空形态的影时间已在场时不重复画天色和月亮；缺塔贴图时跳过塔。
+	/// 暴政（皇帝 IV · 影时间降临），P3R 的"斜切面板"语言 —— 不把塔和棺材直接摆进战斗场景（洞窟 / 木台和塔的地面永远对不上），
+	/// 而是在人物身后、画面上半部的留白里切进一块斜切面板，面板里是一幅完整的影时间远景：
+	///   墨绿天色 + 大月亮 + 塔尔塔罗斯（塔脚被面板下沿裁掉，落在雾里）+ 街上几口棺材剪影 + 巨大的半透明 "IV" 水印 + 标题字。
+	/// 0.0 午夜：身后的世界闪几下沉进墨绿；
+	/// 0.08 面板从右侧斜着切进来（0.3s），绿色边线领头；面板里的景比面板框慢一拍（视差）；
+	/// 停留时面板里的景缓慢推近，塔上的窗一扇扇亮，棺材剪影依次透出绿光；
+	/// 2.0 退场：边线闪一下，面板向中线压扁、同时往左滑出；之后天色退去。
 	/// </summary>
 	public static void Tyranny(NCreature caster)
 	{
@@ -790,194 +790,148 @@ public static class Rares
 		{
 			return;
 		}
-		Vector2 feet = Makoto.Feet(caster);
 		Vector2 size = front.GetViewportRect().Size;
+		float W = size.X, H = size.Y;
 		bool formSky = FormFx.SkyIndex >= 0;
-		const float total = 3.3f;
-		const float waveIn = 0.45f, waveOut = 2.0f, waveSpeed = 900f, waveMax = 640f, waveSquash = 0.25f;
-		const float revealAt = 0.25f, revealLen = 0.9f, eraseAt = 2.45f, eraseLen = 0.6f;
+		const float total = 2.6f, tIn = 0.3f, inAt = 0.08f, outAt = 2.0f, tOut = 0.32f;
 
 		Node2D root = Fx.Root(back, Vector2.Zero, "P3Tyranny");
 		root.TopLevel = true;
 		root.GlobalPosition = Vector2.Zero;
 		back.MoveChild(root, formSky ? FormFx.SkyIndex + 1 : 0);
 
-		// 远景：塔脚落在背景地面与墙的交界附近（屏幕中部），画面正中；塔高约 0.44 屏，塔尖和月亮都在屏幕内
-		float horizon = Mathf.Min(size.Y * 0.5f, feet.Y - 160f);
-		float towerX = size.X * 0.5f;
-		float towerH = size.Y * 0.44f;
-		float moonR = size.Y * 0.15f;
-		Vector2 moonAt = new(towerX + size.X * 0.07f, Mathf.Max(horizon - towerH * 0.8f, moonR + 24f));
-
-		// 1) 天色 + 月亮
-		ColorRect? sky = null;
-		Node2D? moon = null;
-		if (!formSky)
-		{
-			sky = new() { Material = new ShaderMaterial { Shader = Shaders.DarkSky }, Size = size * 3f, Position = -size, MouseFilter = Control.MouseFilterEnum.Ignore };
-			root.AddChild(sky);
-			((ShaderMaterial)sky.Material).SetShaderParameter("moon", moonAt / size);
-			Fx.SetParam(sky, "alpha", 0f);
-			moon = new() { Position = moonAt };
-			root.AddChild(moon);
-			ColorRect halo = Fx.ShaderQuad(moon, Shaders.Flash, moonR * 4.4f);
-			Fx.SetParam(halo, "tint", new Color(Pal.DarkHour, 0.45f));
-			Fx.SetParam(halo, "alpha", 0.45f);
-			Fx.ShaderQuad(moon, Shaders.DarkMoon, moonR * 2.6f);
-			moon.Modulate = new Color(1f, 1f, 1f, 0f);
-		}
+		// 身后世界：压暗成墨绿（虚空形态已在场时只做很淡的一层）
+		ColorRect dim = new() { Size = size * 3f, Position = -size, Color = new Color(0.01f, 0.06f, 0.03f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore };
+		root.AddChild(dim);
 		ColorRect midnight = new() { Size = size * 3f, Position = -size, Color = new Color(Pal.DarkHour, 0f), MouseFilter = Control.MouseFilterEnum.Ignore, Material = Fx.Additive };
 		root.AddChild(midnight);
 
-		// 2) 塔尔塔罗斯：远景剪影，被扫描线扫出 / 擦掉
-		Polygon2D? towerClip = null;
-		Node2D? seam = null;
-		GpuParticles2D? seamMotes = null;
-		Sprite2D? towerRim = null;
-		float tw = 0f;
-		var fog = new List<Sprite2D>();
-		var windows = new List<(Node2D node, float fy)>();
+		// 面板几何：画面上半部的斜切平行四边形（上沿右倾），人物头顶以上的留白
+		float x0 = W * 0.16f, x1 = W * 1.06f, yT = H * 0.05f, yB = H * 0.56f, lean = H * 0.14f;
+		Vector2 mid = new((x0 + x1) * 0.5f + lean * 0.5f, (yT + yB) * 0.5f);
+		Vector2[] Panel(float dx, float squash)
+		{
+			float cy = (yT + yB) * 0.5f, t = cy + (yT - cy) * squash, b = cy + (yB - cy) * squash;
+			float lt = lean * (b - t) / (yB - yT);
+			return new[] { new Vector2(x0 + lt + dx, t), new Vector2(x1 + lt + dx, t), new Vector2(x1 + dx, b), new Vector2(x0 + dx, b) };
+		}
+		// 面板后面错开的一条深蓝底板 + 面板本体（裁切容器）
+		Polygon2D under = Fx.Poly(root, Panel(W, 1f), new Color(0.02f, 0.05f, 0.2f, 0.9f));
+		Polygon2D frame = new() { Polygon = Panel(W, 1f), ClipChildren = CanvasItem.ClipChildrenMode.AndDraw, Color = new Color(0.01f, 0.05f, 0.03f, 1f) };
+		root.AddChild(frame);
+		Node2D scene = new();
+		frame.AddChild(scene);
+
+		// —— 面板里的影时间远景 ——
+		ColorRect sky = new() { Material = new ShaderMaterial { Shader = Shaders.DarkSky }, Size = size * 3f, Position = -size, MouseFilter = Control.MouseFilterEnum.Ignore };
+		scene.AddChild(sky);
+		Vector2 moonAt = new(W * 0.74f, H * 0.2f);
+		((ShaderMaterial)sky.Material).SetShaderParameter("moon", moonAt / size);
+		Fx.SetParam(sky, "alpha", 1f);
+		Node2D ghost = new() { Position = new Vector2(W * 0.38f, H * 0.5f), Skew = -0.2f };
+		scene.AddChild(ghost);
+		Typo.Text(ghost, "IV", Typo.Latin, (int)(H * 0.5f), new Color(Pal.DarkHour, 0.07f), new Vector2(0f, -H * 0.4f));
+		Node2D moon = new() { Position = moonAt };
+		scene.AddChild(moon);
+		ColorRect halo = Fx.ShaderQuad(moon, Shaders.Flash, H * 0.6f);
+		Fx.SetParam(halo, "tint", new Color(Pal.DarkHour, 0.45f));
+		Fx.SetParam(halo, "alpha", 0.5f);
+		Fx.ShaderQuad(moon, Shaders.DarkMoon, H * 0.34f);
+		var windows = new List<(Node2D node, float on)>();
 		if (Tartarus is Texture2D tt)
 		{
-			float sc = towerH / tt.GetHeight();
-			tw = tt.GetWidth() * sc;
-			towerClip = new() { Polygon = RectPts(new Rect2(towerX - tw, horizon, tw * 2f, 30f)), ClipChildren = CanvasItem.ClipChildrenMode.Only };
-			root.AddChild(towerClip);
-			Node2D body = new() { Position = new Vector2(towerX, horizon + 20f) };     // 塔脚压进雾里一点
-			towerClip.AddChild(body);
-			towerRim = new() { Texture = tt, Centered = false, Position = new Vector2(-tw * 0.5f - 3f, -towerH - 4f), Scale = Vector2.One * sc * 1.008f, Material = Fx.Additive, Modulate = new Color(Pal.DarkHour, 0f) };
-			body.AddChild(towerRim);
-			// 远景：压暗、偏向雾色，略透
-			body.AddChild(new Sprite2D { Texture = tt, Centered = false, Position = new Vector2(-tw * 0.5f, -towerH), Scale = Vector2.One * sc, Modulate = new Color(0.6f, 0.78f, 0.68f, 0.94f) });
+			float th = H * 0.62f, sc = th / tt.GetHeight(), tw = tt.GetWidth() * sc;
+			Node2D tower = new() { Position = new Vector2(W * 0.6f, yB + H * 0.06f) };    // 塔脚在面板下沿以下（被裁掉）
+			scene.AddChild(tower);
+			tower.AddChild(new Sprite2D { Texture = tt, Centered = false, Position = new Vector2(-tw * 0.5f - 3f, -th - 4f), Scale = Vector2.One * sc * 1.008f, Material = Fx.Additive, Modulate = new Color(Pal.DarkHour, 0.3f) });
+			tower.AddChild(new Sprite2D { Texture = tt, Centered = false, Position = new Vector2(-tw * 0.5f, -th), Scale = Vector2.One * sc, Modulate = new Color(0.7f, 0.85f, 0.75f) });
 			for (int i = 0; i < 8; i++)
 			{
-				float fy = 0.16f + 0.64f * i / 7f;
-				Node2D win = new() { Position = new Vector2(Fx.Rand(-0.12f, 0.12f) * tw * (1f - fy * 0.6f), -towerH * fy) };
-				body.AddChild(win);
-				win.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(0.75f, 1f, 0.55f, 0.9f), Scale = Vector2.One * Fx.Rand(0.18f, 0.28f) });
-				win.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(Pal.DarkHour, 0.3f), Scale = Vector2.One * 0.9f });
+				float fy = 0.2f + 0.6f * i / 7f;
+				Node2D win = new() { Position = new Vector2(Fx.Rand(-0.12f, 0.12f) * tw * (1f - fy * 0.6f), -th * fy) };
+				tower.AddChild(win);
+				win.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(0.75f, 1f, 0.55f, 0.9f), Scale = Vector2.One * Fx.Rand(0.2f, 0.3f) });
+				win.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(Pal.DarkHour, 0.3f), Scale = Vector2.One });
 				win.Modulate = new Color(1f, 1f, 1f, 0f);
-				windows.Add((win, fy));
+				windows.Add((win, 0.45f + 0.09f * i));
 			}
-			// 扫描线：一条柔和的绿光带（宽度跟着塔身收窄）+ 光点
-			seam = new();
-			root.AddChild(seam);
-			seam.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(Pal.DarkHour, 0.9f), Scale = new Vector2(tw / 32f, 0.45f) });
-			seam.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(0.85f, 1f, 0.8f, 0.9f), Scale = new Vector2(tw * 0.7f / 32f, 0.12f) });
-			seam.Modulate = new Color(1f, 1f, 1f, 0f);
-			seamMotes = Fx.Sparks(seam, Pal.DarkHour, 40, 20f, 70f, 0.9f, gravity: -60f, scaleMin: 0.12f, scaleMax: 0.3f,
-				ramp: new[] { new Color(Pal.Ice, 0.9f), new Color(Pal.DarkHour, 0.6f), new Color(Pal.DarkHour, 0f) }, oneShot: false);
-			((ParticleProcessMaterial)seamMotes.ProcessMaterial).EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box;
-			((ParticleProcessMaterial)seamMotes.ProcessMaterial).EmissionBoxExtents = new Vector3(tw * 0.35f, 3f, 0f);
-			seamMotes.Emitting = false;
-			// 塔脚的低雾（盖住塔脚，远景的空气感）
-			for (int i = 0; i < 7; i++)
+		}
+		// 街上的棺材剪影（面板下沿附近，远小近大），停留时依次透出绿光
+		var coffins = new List<(Sprite2D glow, float on)>();
+		if (Coffin is Texture2D ct)
+		{
+			(float x, float s)[] cs = { (0.3f, 0.22f), (0.37f, 0.17f), (0.46f, 0.2f), (0.8f, 0.18f), (0.88f, 0.24f) };
+			for (int i = 0; i < cs.Length; i++)
 			{
-				Sprite2D f = new() { Texture = Fx.SoftDot, Position = new Vector2(towerX + (i - 3f) * tw * 0.3f, horizon + Fx.Rand(-4f, 10f)), Scale = new Vector2(tw * 0.55f / 32f, 3.2f), Modulate = new Color(0.04f, 0.15f, 0.08f, 0f) };
-				root.AddChild(f);
-				fog.Add(f);
+				var (fx, s) = cs[i];
+				Node2D c = new() { Position = new Vector2(W * fx, yB + 6f), Scale = Vector2.One * s, Rotation = Fx.Rand(-0.04f, 0.04f) };
+				scene.AddChild(c);
+				c.AddChild(new Sprite2D { Texture = ct, Centered = false, Position = new Vector2(-ct.GetWidth() / 2f, -ct.GetHeight()), Modulate = new Color(0.05f, 0.14f, 0.09f) });
+				Sprite2D g = new() { Texture = ct, Centered = false, Position = new Vector2(-ct.GetWidth() / 2f, -ct.GetHeight()), Material = Fx.Additive, Modulate = new Color(Pal.DarkHour, 0f) };
+				c.AddChild(g);
+				coffins.Add((g, 0.6f + 0.12f * i));
 			}
-			Fx.After(root, revealAt, "tartarus reveal", () => { Audio.Sfx.Play(Audio.Snd.ThanatosSlash, 0.4f, pitch: 0.55f); Shake(ShakeStrength.Weak); });
 		}
+		// 面板底部的雾
+		for (int i = 0; i < 8; i++)
+		{
+			scene.AddChild(new Sprite2D { Texture = Fx.SoftDot, Position = new Vector2(x0 + (x1 - x0) * i / 7f, yB - 4f), Scale = new Vector2(W * 0.16f / 32f, 2.6f), Modulate = new Color(0.04f, 0.16f, 0.09f, 0.9f) });
+		}
+		// 标题字（左上角）
+		Node2D title = new() { Position = new Vector2(x0 + lean + W * 0.03f, yT + H * 0.035f), Skew = -0.2f };
+		scene.AddChild(title);
+		Typo.Text(title, "THE EMPEROR", Typo.Latin, (int)(H * 0.05f), new Color(0.85f, 1f, 0.9f), Vector2.Zero, outline: 3, outlineColor: new Color(0.01f, 0.06f, 0.03f));
+		Typo.Text(title, "IV  /  DARK HOUR  0:00", Typo.Latin, (int)(H * 0.022f), new Color(Pal.DarkHour, 0.9f), new Vector2(4f, H * 0.065f));
 
-		// 3) 影时间的波：从人物脚下沿地面扩散（压扁的圆）；波前扫到哪口棺材，哪口就在那一刻显形；第二道波扫到时消散
-		// 棺材散落在人物左后方：远近、大小、倾斜都不同（不排成一排），都在屏幕内
-		float leftRoom = Mathf.Max(feet.X - 90f, 200f);
-		(Vector2 off, float s, float lean)[] spots =
-		{
-			(new(-170f, -6f), 0.42f, -0.03f),
-			(new(-Mathf.Min(300f, leftRoom * 0.62f), -52f), 0.33f, 0.04f),
-			(new(-Mathf.Min(235f, leftRoom * 0.48f), -88f), 0.27f, -0.02f),
-			(new(-Mathf.Min(400f, leftRoom * 0.85f), -24f), 0.38f, 0.05f),
-		};
-		float[] arrive = spots.Select(r => new Vector2(r.off.X, r.off.Y / waveSquash).Length() / waveSpeed).ToArray();
-		float ringSize = waveMax * 2f / 0.95f;
-		Node2D waveAt = new() { Position = feet };
-		root.AddChild(waveAt);
-		ColorRect ringIn = Fx.ShaderQuad(waveAt, Shaders.Ring, ringSize, waveSquash);
-		ColorRect ringIn2 = Fx.ShaderQuad(waveAt, Shaders.Ring, ringSize, waveSquash);
-		ColorRect ringOut = Fx.ShaderQuad(waveAt, Shaders.Ring, ringSize, waveSquash);
-		Fx.SetParam(ringIn, "tint", Pal.DarkHour);
-		Fx.SetParam(ringIn2, "tint", new Color(Pal.Ice, 0.6f));
-		Fx.SetParam(ringOut, "tint", Pal.Ice);
-		foreach (ColorRect r in new[] { ringIn, ringIn2, ringOut })
-		{
-			Fx.SetParam(r, "width", 0.012f);
-			Fx.SetParam(r, "alpha", 0f);
-		}
-		void Wave(ColorRect r, float time, float start, float a)
-		{
-			float R = (time - start) * waveSpeed;
-			bool on = R > 0f && R < waveMax;
-			Fx.SetParam(r, "radius", Mathf.Clamp(R / waveMax, 0f, 1f) * 0.95f);
-			Fx.SetParam(r, "alpha", on ? a * (1f - Mathf.Pow(R / waveMax, 3f)) : 0f);
-		}
+		// 面板边线：领头的绿线 + 下沿白线
+		Polygon2D edgeL = Fx.Poly(root, new Vector2[3], Pal.DarkHour, additive: true);
+		Polygon2D edgeB = Fx.Poly(root, new Vector2[3], new Color(1f, 1f, 1f, 0.85f));
+		Polygon2D edgeT = Fx.Poly(root, new Vector2[3], new Color(Pal.DarkHour, 0.8f));
 
 		Fx.Animate(root, total, t =>
 		{
 			float time = t * total;
-			float skyIn = Ease.OutCubic(Mathf.Clamp(time / 0.35f, 0f, 1f)), skyOut = Ease.InCubic(Mathf.Clamp((time - 2.75f) / 0.5f, 0f, 1f));
-			float flick = time < 0.3f ? (Mathf.Sin(time * 58f) > -0.2f ? 1f : 0.35f) : 1f;
-			midnight.Color = new Color(Pal.DarkHour, 0.22f * Mathf.Clamp(1f - Mathf.Abs(time - 0.08f) / 0.14f, 0f, 1f));
-			if (sky != null)
+			float inE = Ease.OutExpo(Mathf.Clamp((time - inAt) / tIn, 0f, 1f));
+			float outT = Mathf.Clamp((time - outAt) / tOut, 0f, 1f);
+			float squash = 1f - Ease.InCubic(outT);
+			float dx = W * 0.95f * (1f - inE) - W * 0.25f * Ease.InCubic(outT);
+			Vector2[] pts = Panel(dx, Mathf.Max(squash, 0.001f));
+			frame.Polygon = pts;
+			Fx.Reshape(under, Panel(dx * 1.15f + 26f, Mathf.Max(squash, 0.001f) * 1.04f).Select(p => p + new Vector2(0f, 14f)).ToArray());
+			// 视差：景比框慢；停留时缓慢推近
+			float hold = Mathf.Clamp((time - inAt - tIn) / (outAt - inAt - tIn), 0f, 1f);
+			scene.Position = new Vector2(dx * 0.55f, 0f);
+			scene.Scale = Vector2.One * (1f + 0.04f * hold);
+			scene.Position += (Vector2.One - scene.Scale) * mid;
+			// 边线
+			float edgeA = inE * (1f - outT) + Mathf.Clamp(1f - Mathf.Abs(time - outAt - 0.03f) / 0.08f, 0f, 1f);
+			Fx.Reshape(edgeL, Fx.StrokePts(new[] { pts[3] + new Vector2(-10f, 0f), pts[0] + new Vector2(-10f, 0f) }, 8f));
+			Fx.Reshape(edgeB, Fx.StrokePts(new[] { pts[3] + new Vector2(0f, 6f), pts[2] + new Vector2(0f, 6f) }, 3f));
+			Fx.Reshape(edgeT, Fx.StrokePts(new[] { pts[0] + new Vector2(0f, -6f), pts[1] + new Vector2(0f, -6f) }, 2f));
+			edgeL.Color = new Color(Pal.DarkHour, Mathf.Clamp(edgeA, 0f, 1f));
+			edgeB.Color = new Color(1f, 1f, 1f, 0.85f * inE * (1f - outT));
+			edgeT.Color = new Color(Pal.DarkHour, 0.8f * inE * (1f - outT));
+			// 身后世界
+			float flick = time < 0.3f ? (Mathf.Sin(time * 58f) > -0.2f ? 1f : 0.4f) : 1f;
+			float shade = Ease.OutCubic(Mathf.Clamp(time / 0.3f, 0f, 1f)) * (1f - Ease.InCubic(Mathf.Clamp((time - outAt - 0.15f) / 0.45f, 0f, 1f)));
+			dim.Color = new Color(0.01f, 0.06f, 0.03f, (formSky ? 0.15f : 0.45f) * shade * flick);
+			midnight.Color = new Color(Pal.DarkHour, 0.2f * Mathf.Clamp(1f - Mathf.Abs(time - 0.08f) / 0.14f, 0f, 1f));
+			// 月亮：先过曝白亮再冷却
+			float hot = 1f + 1.2f * (1f - Ease.OutCubic(Mathf.Clamp((time - inAt) / 0.5f, 0f, 1f)));
+			moon.Modulate = new Color(hot, hot, hot, 1f);
+			foreach (var (node, on) in windows)
 			{
-				Fx.SetParam(sky, "alpha", skyIn * flick * (1f - skyOut));
+				float lit = Mathf.Clamp((time - on) / 0.08f, 0f, 1f);
+				node.Modulate = new Color(1f, 1f, 1f, lit * (Mathf.Sin(time * 23f + on * 40f) > 0.92f ? 0.3f : 1f));
 			}
-			if (moon != null)
+			foreach (var (glow, on) in coffins)
 			{
-				float m = Ease.OutCubic(Mathf.Clamp((time - 0.05f) / 0.45f, 0f, 1f));
-				float hot = 1f + 1.4f * (1f - Ease.OutCubic(Mathf.Clamp((time - 0.05f) / 0.4f, 0f, 1f)));
-				moon.Modulate = new Color(hot, hot, hot, m * (1f - skyOut));
-				moon.Scale = Vector2.One * (0.85f + 0.15f * m - 0.12f * skyOut);
-				moon.Position = moonAt + new Vector2(0f, 30f * skyOut);
+				float g = Mathf.Clamp((time - on) / 0.25f, 0f, 1f);
+				glow.Modulate = new Color(Pal.DarkHour, 0.55f * g * (1f - 0.4f * g) + 0.08f * Mathf.Sin(time * 4f + on * 9f) * g);
 			}
-			if (towerClip != null && seam != null && towerRim != null && seamMotes != null)
-			{
-				// 扫出：塔脚 → 塔尖；擦掉：塔尖 → 塔脚。edge = 当前可见部分的上沿（距塔脚的比例）
-				float rv = Ease.InOutCubic(Mathf.Clamp((time - revealAt) / revealLen, 0f, 1f));
-				float er = Ease.InOutCubic(Mathf.Clamp((time - eraseAt) / eraseLen, 0f, 1f));
-				float edge = time < eraseAt ? rv : 1f - er;
-				float topY = horizon + 20f - (towerH + 8f) * edge;
-				towerClip.Polygon = RectPts(new Rect2(towerX - tw, topY, tw * 2f, horizon + 40f - topY));
-				bool moving = (rv > 0f && rv < 1f) || (er > 0f && er < 1f);
-				seam.Position = new Vector2(towerX, topY);
-				seam.Scale = new Vector2(1f - 0.75f * edge, 1f);                         // 塔越往上越细
-				seam.Modulate = new Color(1f, 1f, 1f, moving ? 1f : Mathf.Max(0f, seam.Modulate.A - 0.1f));
-				seamMotes.Emitting = moving;
-				towerRim.Modulate = new Color(Pal.DarkHour, (0.3f + 0.12f * Mathf.Sin(time * 5f)) * Mathf.Clamp(edge, 0f, 1f));
-				foreach (var (node, fy) in windows)
-				{
-					// 扫描线扫过后 0.15s 亮起；擦掉时随扫描线熄灭
-					float on = Mathf.Clamp((time - revealAt - revealLen * fy - 0.15f) / 0.08f, 0f, 1f);
-					float blink = Mathf.Sin(time * 23f + fy * 40f) > 0.92f ? 0.3f : 1f;
-					node.Modulate = new Color(1f, 1f, 1f, (fy < edge - 0.02f ? on : 0f) * blink);
-				}
-			}
-			foreach (Sprite2D f in fog)
-			{
-				f.Modulate = new Color(0.04f, 0.15f, 0.08f, 0.9f * skyIn * (1f - skyOut));
-			}
-			Wave(ringIn, time, waveIn, 1f);
-			Wave(ringIn2, time, waveIn + 0.08f, 0.6f);
-			Wave(ringOut, time, waveOut, 0.8f);
 		});
-
-		// 4) 棺材：波前扫到时显形，第二道波扫到时消散；最近那口盖皇帝 IV 印章
-		Fx.After(root, waveIn, "dark hour wave", () =>
-		{
-			P3Fx.Ripple(back, feet, waveMax * 2f, 0.9f, 0.02f, squashY: waveSquash);
-			Audio.Sfx.Play(Audio.Snd.TarotReveal, 0.5f, pitch: 0.55f);
-		});
-		for (int i = 0; i < spots.Length; i++)
-		{
-			var (off, s, lean) = spots[i];
-			int k = i;
-			Fx.After(root, waveIn + arrive[i], "tyranny coffin", () =>
-			{
-				RiseCoffin(back, feet + off, s, waveOut - waveIn - CoffinIn, numeral: k == 0, castShadow: true, lean: lean);
-				Audio.Sfx.Play(Audio.Snd.StarSpend, 0.4f, pitch: 0.5f + 0.05f * k);
-			});
-		}
+		Fx.After(root, inAt, "tyranny panel in", () => { Audio.Sfx.Play(Audio.Snd.CutIn, 0.5f, pitch: 0.7f); P3Fx.Ripple(back, mid, W * 0.6f, 0.7f, 0.015f); });
+		Fx.After(root, outAt, "tyranny panel out", () => Audio.Sfx.Play(Audio.Snd.StarSpend, 0.5f, pitch: 0.5f));
 		Fx.FreeAfter(root, total + 0.05f);
 	}
 
