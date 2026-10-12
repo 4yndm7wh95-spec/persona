@@ -118,6 +118,9 @@ public static class ThemeFx
 
 	private static Gate? _gate;
 
+	/// <summary>常驻的天鹅绒门节点（不在场为 null）。影时间出现时用它调整前后顺序。</summary>
+	public static Node2D? GateRoot => GateAlive ? _gate!.Root : null;
+
 	private static bool GateAlive => _gate != null && GodotObject.IsInstanceValid(_gate.Root);
 
 	/// <summary>打出创世之柱：门从水面下升起并常驻（已经在场就只闪一下）。</summary>
@@ -138,6 +141,8 @@ public static class ThemeFx
 		Gate g = new();
 		g.Root = Fx.Root(back, floor, "P3VelvetGate");
 		g.Root.Scale = Vector2.One * DoorScale;
+		// 身后层里的顺序：影时间在场时插在天色上面、月亮下面；否则放最底下（其他身后特效都在门前面）
+		back.MoveChild(g.Root, FormFx.SkyIndex >= 0 ? FormFx.SkyIndex + 1 : 0);
 
 		// 水面之上才显示（门从地面下升起 / 沉下去）
 		Polygon2D ground = Clip(g.Root, new Rect2(-900f, -2400f, 1800f, 2400f));
@@ -297,6 +302,8 @@ public static class ThemeFx
 		// 门缝光：关着时呼吸，开着时隐去
 		float a = (0.35f + 0.25f * Mathf.Sin(g.Time * 4f)) * (1f - g.Open);
 		g.Crack.DefaultColor = new Color(Pal.Cyan, a);
+		// 影时间在场时，门也被"照"成暗绿，和战场一致
+		g.Body.Modulate = g.Body.Modulate.Lerp(FormFx.WorldTint, 1f - Mathf.Exp(-6f * dt));
 	}
 
 	private static void WaterRing(Control layer, Vector2 at, float delay)
