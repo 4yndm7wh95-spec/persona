@@ -287,7 +287,7 @@ def mesh_weights(img, sword=None, pose=None):
         cx, cy = hx.mean(), hy.mean()
         R = np.percentile(np.hypot(hx - cx, hy - cy), 96)
         xx = np.arange(img.shape[1], dtype=np.float64)[None, :] * np.ones((img.shape[0], 1))
-        tip = _smoothstep(0.42 * R, 1.0 * R, np.hypot(xx - cx, yy - cy))
+        tip = _smoothstep(0.6 * R, 1.05 * R, np.hypot(xx - cx, yy - cy))     # 只动外圈发梢（v0.9.23 从 0.42R 起动，刘海贴脸也在动，像脸在 Q 弹）
         dens = _box_mean(hair, GRID // 2)
         lock = np.clip(_box_mean(skin, GRID // 2) * 6.0, 0, 1)
         h = np.clip(dens * 1.6, 0, 1) * tip * (1 - lock)
@@ -578,12 +578,15 @@ class Builder:
                 a.tr(b, t, x, y, stepped=True)
             if before is not None and before != p:
                 f = 1.0 / FPS
-                fade = 0.09 if p not in ("sword_smear", "sword_slash", "awaken_peak", "hurt_impact") else 0.04   # 出招 / 扣下 / 受击：溶解更短，保持力度
+                # 溶解：0.06s（出招 / 扣下 / 受击 0.04s）。v0.9.23 是 0.09s 线性 —— 头的位置差得远时（待机 → 举召唤器）
+                # 两个半透明的头同时出现两三帧，动起来像头在 Q 弹；现在旧图第一帧就淡掉大半，重影只剩一帧、很淡
+                fade = 0.06 if p not in ("sword_smear", "sword_slash", "awaken_peak", "hurt_impact") else 0.04
                 nxt = seq[i + 1][0] if i + 1 < len(seq) else a.dur
                 fade = max(min(fade, nxt - t - 0.002), f * 0.5)          # 下一次换图之前必须溶解完（"举剑途中"只停一帧）
                 # 溶解：新姿势在下面已经完全显示，旧姿势盖在上面从不透明淡到透明 —— 60 帧里每帧都在变，不会一下跳过去
                 a.att("v7_old", t, f"v7_{before}")
                 a.rgba("v7_old", t, c8(1, 1, 1, 1))
+                a.rgba("v7_old", t + fade * 0.35, c8(1, 1, 1, 0.3))
                 a.rgba("v7_old", t + fade, c8(1, 1, 1, 0))
                 a.att("v7_old", t + fade, None)
                 # 不再叠青色残影（用户反馈像重影）；闪光只留给出招 / 扣下 / 受击这几个冲击瞬间
@@ -635,7 +638,7 @@ class Builder:
             a.tr("v7_coat", t, 0.55 * sway * math.sin(2 * math.pi * max(1, cyc - 1) * u - 0.9), 0.2 * amp * br)
 
     def follow(self, a, seq, prev):
-        """换姿势后的发梢跟随：每次换图，发梢先往动作反方向拖（惯性），再越过原位一点、回弹、停住（衰减弹簧，约 0.5 秒）。
+        """换姿势后的发梢跟随：每次换图，发梢先往动作反方向拖（惯性），再平滑回到原位（临界阻尼，不回弹，约 0.4 秒）。
         多次换图的弹簧叠加，逐帧采样成关键帧 —— 连续变化，没有跳变。"""
         springs = []
         for i, (t, p) in enumerate(seq):
@@ -647,7 +650,7 @@ class Builder:
             m = math.hypot(dx, dy)
             if m < 1.0:
                 continue
-            A = min(49.0, 14.0 + 0.42 * m)
+            A = min(25.0, 8.0 + 0.25 * m)
             springs.append((t, A * dx / m, A * dy / m))
         if not springs:
             return
@@ -658,8 +661,10 @@ class Builder:
             x = y = 0.0
             for t0, sx, sy in springs:
                 tau = t - t0
-                if 0.0 <= tau <= 0.7:
-                    v = -math.exp(-tau / 0.14) * math.sin(2 * math.pi * tau / 0.32)
+                if 0.0 <= tau <= 0.8:
+                    # 临界阻尼：只往动作反方向拖一下、平滑回到原位，不越过原位来回晃（v0.9.23 的衰减正弦会回弹，头发绕脸抖，像头在 Q 弹）
+                    u = tau / 0.09
+                    v = -u * math.exp(1.0 - u)
                     x += sx * v
                     y += sy * v
             a.tr("v7_hair", t, x, y)
