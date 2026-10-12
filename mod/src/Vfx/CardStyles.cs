@@ -89,7 +89,7 @@ public static class CardStyles
 		// ── 技能 / 能力：命中元素为空，演出全在 CardSigs；这里只标出色带大招与影时间 ──
 		["BigBang"] = new(Element.None, Opener.Evoker, Extra.SkewBand),
 		["VoidForm"] = new(Element.None, Opener.Power, Extra.SkewBand | Extra.DarkHour),
-		["Genesis"] = new(Element.None, Opener.Power, Extra.SkewBand),
+		["Genesis"] = new(Element.None, Opener.None, Extra.None),      // 不走召唤器 / 色带 / 阿尔卡纳圆盘模板，演出全在 Rares.Genesis
 		["TheSealedThrone"] = new(Element.None, Opener.Power, Extra.SkewBand | Extra.DarkHour),
 		["SwordSage"] = new(Element.None, Opener.Power, Extra.SkewBand),
 		["BlackHole"] = new(Element.None, Opener.Power, Extra.BlackHoleCenter),
@@ -105,7 +105,6 @@ public static class CardStyles
 		["MeteorShower"] = ("MORNING STAR", "MESSIAH"),
 		["BigBang"] = ("MEGIDOLAON", "MESSIAH"),
 		["VoidForm"] = ("DARK HOUR", "THANATOS"),
-		["Genesis"] = ("SALVATION", "MESSIAH"),
 		["TheSealedThrone"] = ("GREAT SEAL", "MESSIAH")
 	};
 
