@@ -29,6 +29,7 @@ public static class Panel
 
 	private static CanvasLayer? _layer;
 	private static Control? _window;
+	private static Button? _open;
 	private static GridContainer? _grid;
 	private static Label? _status, _pageLabel;
 	private static LineEdit? _search;
@@ -47,6 +48,29 @@ public static class Panel
 		if (_window.Visible)
 		{
 			Refresh();
+		}
+	}
+
+	public static bool ButtonVisible => _open == null || !GodotObject.IsInstanceValid(_open) || _open.Visible;
+
+	/// <summary>导演接口用：录制时藏起左上角的"测试"按钮。</summary>
+	public static void SetChrome(bool showButton)
+	{
+		if (_layer == null || !GodotObject.IsInstanceValid(_layer))
+		{
+			Build();
+		}
+		if (_open != null && GodotObject.IsInstanceValid(_open))
+		{
+			_open.Visible = showButton;
+		}
+	}
+
+	public static void Hide()
+	{
+		if (_window != null && GodotObject.IsInstanceValid(_window))
+		{
+			_window.Visible = false;
 		}
 	}
 
@@ -69,6 +93,7 @@ public static class Panel
 		Button open = new() { Text = "测试 (F8)", Position = new Vector2(8f, 140f), FocusMode = Control.FocusModeEnum.None, Theme = theme };
 		open.Pressed += Toggle;
 		_layer.AddChild(open);
+		_open = open;
 
 		Vector2 view = tree.Root.GetVisibleRect().Size;
 		float w = Columns * CardSize.X * CardScale + (Columns - 1) * GapX + 90f, h = 2 * CardSize.Y * CardScale + GapY + 230f;

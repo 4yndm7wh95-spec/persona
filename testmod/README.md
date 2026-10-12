@@ -15,6 +15,26 @@
   - 按钮：击杀假人（看胜利特效）、让我受击（3 点伤害，看受击动画）、清空手牌、消耗手牌。
 - **F7：消耗所有手牌**（面板关着也能用，所有手牌同时消耗）。
 
+## 导演接口（录制演示用）
+游戏启动后自动在 **127.0.0.1:47021** 开一个本机 HTTP 接口（只监听本机；环境变量 `P3_BRIDGE_PORT` 改端口，`P3_BRIDGE=0` 关闭）。
+配套脚本在 `tools/director/`：`director.py`（命令行 + 按镜头清单配合 OBS 逐段录制）、`mcp_server.py`（MCP 服务，给 Codex 用）、`shots.json`（代表性镜头清单）。
+
+| 接口 | 参数 | 作用 |
+|---|---|---|
+| `/ping` `/state` | | 连通检查；当前画面 / 手牌（含屏幕坐标）/ 敌人 / 光标 |
+| `/cards` | `pool` `q` | 列卡牌（`cls` 类名可直接当 id） |
+| `/hand/set` `/hand/add` | `ids` `count` | 换手牌 / 加牌 |
+| `/hand/clear` `/hand/exhaust` | | 清空 / 消耗全部手牌 |
+| `/play` | `card` `target` `style` `speed` `hover_ms` `aim_ms` | 出牌。`style=drag`（默认）：真实鼠标悬停 → 拖起 → 瞄准 → 松手，和手动出牌同一流程；`instant`：直接打出 |
+| `/end_turn` | `style=click/instant` | 鼠标点结束回合按钮，等到下回合可操作才返回 |
+| `/wait` | `ms` `until=ready` | 等待 |
+| `/mouse/move` `/mouse/click` `/mouse/park` `/mouse/hover_card` | `x` `y` `ms` `relative` | 光标平滑移动 / 点击 / 停到画面外侧 / 悬停手牌 |
+| `/ui/find` `/ui/click` | `text` `type` `character` `index` `travelable` | 找 / 点界面节点（按文字、类名、角色；地图节点） |
+| `/ui` | `test_button` | 隐藏 / 显示左上角"测试"按钮 |
+| `/kill` `/hurt` `/console` | `amount` `command` | 击杀假人、受击、开发者控制台命令 |
+
+录制时不要碰鼠标（脚本在移动真实光标）；游戏用 1920×1080 全屏最稳。
+
 ## 实现
 全部调用原版开发者控制台命令用的同一套接口（`card` / `energy` / `stars` / `fight` / `damage` / `kill`）：
 - `RunManager.CreateRoom`：除地图外都返回 `BattlewornDummyEventV1Encounter` 战斗；

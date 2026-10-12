@@ -46,6 +46,7 @@ public static class Runtime
 
 	private static void Tick()
 	{
+		Bridge.Pump();
 		bool f8 = Input.IsKeyPressed(Key.F8);
 		if (f8 && !_f8Down)
 		{
@@ -147,7 +148,7 @@ public static class Runtime
 		return $"消耗 {cards.Count} 张手牌";
 	}
 
-	private static async System.Threading.Tasks.Task ExhaustAll(List<CardModel> cards)
+	public static async System.Threading.Tasks.Task ExhaustAll(List<CardModel> cards)
 	{
 		// 所有手牌同时开始消耗（不一张一张等），一起播原版的消耗动画
 		await System.Threading.Tasks.Task.WhenAll(cards.Select(c => CardCmd.Exhaust(new BlockingPlayerChoiceContext(), c)));

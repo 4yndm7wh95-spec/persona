@@ -1,0 +1,87 @@
+{
+  "defaults": { "pre_roll_ms": 800, "post_roll_ms": 1800, "gap_ms": 600 },
+  "shots": [
+    { "name": "char_select", "category": "01_select", "requires": "char_select",
+      "desc": "选人界面：选中结城理（背景、切入、信息面板入场 + 常驻动画）",
+      "steps": [
+        { "do": "ui/click", "type": "NCharacterSelectButton", "character": "Regent", "hover_ms": 400 },
+        { "do": "sleep", "ms": 4500 },
+        { "do": "mouse/park" },
+        { "do": "sleep", "ms": 2000 } ] },
+
+    { "name": "idle", "category": "02_motion", "requires": "combat",
+      "desc": "战斗待机：呼吸、发梢 / 衣角 / 手部微动；悬停一张牌看举召唤器",
+      "setup": [ { "do": "hand/set", "ids": ["StrikeRegent", "SovereignBlade", "DefendRegent"] } ],
+      "steps": [
+        { "do": "sleep", "ms": 3000 },
+        { "do": "mouse/hover_card", "card": "SovereignBlade", "hover_ms": 2200 },
+        { "do": "mouse/park" },
+        { "do": "sleep", "ms": 1500 } ] },
+
+    { "name": "strike", "category": "03_cards", "requires": "combat",
+      "desc": "普通攻击：亲自挥剑（剑拖尾 + 斩击）",
+      "setup": [ { "do": "hand/set", "ids": ["StrikeRegent"] } ],
+      "steps": [ { "do": "play", "card": "StrikeRegent" } ] },
+
+    { "name": "sovereign_blade", "category": "03_cards", "requires": "combat",
+      "desc": "召唤 Thanatos：召唤器 + 色带切入 + 巨大斩痕（招牌镜头）",
+      "setup": [ { "do": "hand/set", "ids": ["SovereignBlade"] } ],
+      "post_roll_ms": 2500,
+      "steps": [ { "do": "play", "card": "SovereignBlade" } ] },
+
+    { "name": "meteor_shower", "category": "03_cards", "requires": "combat",
+      "desc": "召唤 Messiah：流星雨（群体）",
+      "setup": [ { "do": "hand/set", "ids": ["MeteorShower"] } ],
+      "post_roll_ms": 2500,
+      "steps": [ { "do": "play", "card": "MeteorShower" } ] },
+
+    { "name": "cut_in_text", "category": "03_cards", "requires": "combat",
+      "desc": "模板：切入大字（CRITICAL / ONE MORE! 一类，展示一张）",
+      "setup": [ { "do": "hand/set", "ids": ["HeirloomHammer"] } ],
+      "steps": [ { "do": "play", "card": "HeirloomHammer" } ] },
+
+    { "name": "full_moon", "category": "03_cards", "requires": "combat",
+      "desc": "模板：满月",
+      "setup": [ { "do": "hand/set", "ids": ["LunarBlast"] } ],
+      "steps": [ { "do": "play", "card": "LunarBlast" } ] },
+
+    { "name": "seal_tarot", "category": "03_cards", "requires": "combat",
+      "desc": "模板：法阵 + 塔罗牌（增益 / 减益类，展示一张）",
+      "setup": [ { "do": "hand/set", "ids": ["Monologue"] } ],
+      "steps": [ { "do": "play", "card": "Monologue" } ] },
+
+    { "name": "butterflies", "category": "03_cards", "requires": "combat",
+      "desc": "模板：蓝蝶 + 闪光",
+      "setup": [ { "do": "hand/set", "ids": ["Glow"] } ],
+      "steps": [ { "do": "play", "card": "Glow" } ] },
+
+    { "name": "black_hole", "category": "03_cards", "requires": "combat",
+      "desc": "能力牌：黑洞",
+      "setup": [ { "do": "hand/set", "ids": ["BlackHole"] } ],
+      "post_roll_ms": 2500,
+      "steps": [ { "do": "play", "card": "BlackHole" } ] },
+
+    { "name": "hurt", "category": "02_motion", "requires": "combat",
+      "desc": "受击动作 + 受击恢复",
+      "steps": [
+        { "do": "hurt", "amount": 3 }, { "do": "sleep", "ms": 1600 },
+        { "do": "hurt", "amount": 3 } ] },
+
+    { "name": "dark_hour", "category": "04_form", "requires": "combat",
+      "desc": "虚空形态：影时间降临 + 常驻月亮 / 时钟（放在后面，之后的镜头都会带着影时间）",
+      "setup": [ { "do": "hand/set", "ids": ["VoidForm"] } ],
+      "post_roll_ms": 4000,
+      "steps": [ { "do": "play", "card": "VoidForm" } ] },
+
+    { "name": "end_turn", "category": "05_ui", "requires": "combat",
+      "desc": "结束回合按钮（悬停 → 点击）+ 回合切换",
+      "setup": [ { "do": "hand/clear" } ],
+      "post_roll_ms": 1200,
+      "steps": [ { "do": "end_turn" } ] },
+
+    { "name": "victory", "category": "05_ui", "requires": "combat",
+      "desc": "击败敌人（胜利演出）",
+      "post_roll_ms": 3500,
+      "steps": [ { "do": "kill" } ] }
+  ]
+}

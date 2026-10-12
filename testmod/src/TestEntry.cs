@@ -11,16 +11,18 @@ namespace P3TestMod;
 /// · 能量和辉星始终不低于 99；
 /// · F8 打开面板：按原版卡面显示卡牌，点一下加入手牌；还有击杀假人 / 让我受击 / 清空手牌等按钮。
 /// 实现全部调用原版开发者控制台命令用的同一套接口（card / energy / stars / fight / damage / kill）。
+/// · 导演接口（Bridge）：本机 127.0.0.1:47021，供录制脚本 / MCP 驱动游戏，见 README。
 /// 只用于单人测试，不要在正式对局或联机里开。
 /// </summary>
 [ModInitializer("Init")]
 public static class TestEntry
 {
 	public const string Tag = "[P3TestMod]";
+	public const string Version = "1.1.0";
 
 	public static void Init()
 	{
-		GD.Print($"{Tag} init v1.0.4");
+		GD.Print($"{Tag} init v{Version}");
 		try
 		{
 			new Harmony("brooks.p3testmod").PatchAll(typeof(TestEntry).Assembly);
@@ -31,6 +33,7 @@ public static class TestEntry
 			GD.PrintErr($"{Tag} harmony patch failed: {e}");
 		}
 		Safe("runtime", Runtime.Install);
+		Safe("bridge", Bridge.Start);
 	}
 
 	public static void Safe(string where, Action action)
