@@ -814,7 +814,7 @@ public static class Rares
 			// 本体压成影时间的暗绿剪影，外面一层加色的绿光勾边（呼吸）
 			towerRim = new() { Texture = tt, Centered = false, Position = new Vector2(-tt.GetWidth() * sc * 0.5f - 4f, -towerH - 6f), Scale = Vector2.One * sc * 1.01f, Material = Fx.Additive, Modulate = new Color(Pal.DarkHour, 0f) };
 			towerBody.AddChild(towerRim);
-			towerBody.AddChild(new Sprite2D { Texture = tt, Centered = false, Position = new Vector2(-tt.GetWidth() * sc * 0.5f, -towerH), Scale = Vector2.One * sc, Modulate = new Color(0.5f, 0.75f, 0.6f) });
+			towerBody.AddChild(new Sprite2D { Texture = tt, Centered = false, Position = new Vector2(-tt.GetWidth() * sc * 0.5f, -towerH), Scale = Vector2.One * sc, Modulate = new Color(0.82f, 0.92f, 0.86f) });   // 图本身已是暗绿剪影，只再压暗一点融进影时间的天色
 			Fx.After(root, 0.25, "tartarus rise", () =>
 			{
 				Shake(ShakeStrength.Weak);
