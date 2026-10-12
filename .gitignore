@@ -3,3 +3,5 @@ mod/obj/
 mod/_build/
 research/PCK_*_LOG.txt
 __pycache__/
+testmod/bin/
+testmod/obj/
