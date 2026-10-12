@@ -887,41 +887,173 @@ public static class Uniq
 		Audio.Sfx.Play(Audio.Snd.StarSpend, 0.7f, pitch: 0.55f);
 	}
 
-	/// <summary>星位序列：头顶一条弧形轨道上，四颗小行星从散乱的位置滑进同一条直线，连成一线时一道光贯穿。</summary>
-	public static void Alignment(Control back, Control front, Vector2 above)
+	/// <summary>
+	/// 星位序列（获得能量）：头顶展开一座星象仪 —— 中心一颗小太阳，三圈带刻度的倾斜轨道慢慢转；
+	/// 五颗各不相同的行星（带环的、带卫星的、冰蓝 / 金 / 紫）拖着轨迹沿轨道绕行，越转越慢，最后一颗接一颗滑进同一条斜线；
+	/// 对齐的一瞬，一道光线贯穿所有行星（"SYZYGY"），行星依次闪亮；随后能量沿这条线倾泻进他的胸口，星象仪收拢消失。
+	/// </summary>
+	public static void Alignment(Control back, Control front, Vector2 above, Vector2 chest)
 	{
-		Node2D root = Fx.Root(front, above, "P3Alignment");
-		Node2D orbit = new() { Scale = new Vector2(1f, 0.35f) };
-		root.AddChild(orbit);
-		Fx.Line(orbit, Fx.Circle(220f, 64), new Color(Pal.Ice, 0.35f), 2f, closed: true);
-		Color[] cols = { Pal.Cyan, new(1f, 0.85f, 0.45f), Pal.Ice, new(0.6f, 0.5f, 1f) };
-		float[] start = { -2.4f, -0.4f, 1.6f, 2.8f };
-		var planets = new List<Node2D>();
-		for (int i = 0; i < 4; i++)
+		Vector2 at = above + new Vector2(-40f, -10f);
+		at.Y = Mathf.Max(at.Y, 190f);
+		const float tilt = 0.32f;                          // 轨道面倾角（压扁比）
+		Node2D root = Fx.Root(back, at, "P3Orrery");
+		// 中心小太阳
+		Sprite2D sunGlow = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = Vector2.One * 3.2f, Modulate = new Color(1f, 0.88f, 0.55f, 0.8f) };
+		root.AddChild(sunGlow);
+		Fx.Poly(root, Fx.Circle(13f, 24), new Color(1f, 0.95f, 0.8f), additive: true);
+		// 三圈轨道 + 刻度（一起慢慢转）
+		Node2D orbits = new() { Scale = new Vector2(1f, tilt) };
+		root.AddChild(orbits);
+		float[] radii = { 120f, 190f, 260f };
+		foreach (float r in radii)
 		{
-			Node2D p = new();
-			root.AddChild(p);
-			Fx.Poly(p, Fx.Circle(9f + 3f * (i % 2), 20), cols[i], additive: true);
-			Sprite2D g = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = Vector2.One * 1.2f, Modulate = new Color(cols[i], 0.6f) };
-			p.AddChild(g);
-			planets.Add(p);
-		}
-		Line2D beam = Fx.Line(root, new[] { new Vector2(-300f, 0f), new Vector2(300f, 0f) }, new Color(Pal.White, 0f), 5f);
-		Fx.Animate(root, 1.3f, t =>
-		{
-			float time = t * 1.3f;
-			float align = Ease.InOutCubic(Mathf.Clamp((time - 0.1f) / 0.5f, 0f, 1f));
-			for (int i = 0; i < 4; i++)
+			Fx.Line(orbits, Fx.Circle(r, 96), new Color(Pal.Ice, 0.4f), 2f, closed: true);
+			for (int k = 0; k < 24; k++)
 			{
-				Vector2 free = new Vector2(Mathf.Cos(start[i] + time), Mathf.Sin(start[i] + time) * 0.35f) * 220f;
-				Vector2 lined = new((i - 1.5f) * 120f, 0f);
-				planets[i].Position = free.Lerp(lined, align);
+				Vector2 d = Vector2.Right.Rotated(Mathf.Tau * k / 24f);
+				Fx.Line(orbits, new[] { d * (r - (k % 6 == 0 ? 10f : 4f)), d * (r + (k % 6 == 0 ? 10f : 4f)) }, new Color(Pal.Ice, k % 6 == 0 ? 0.6f : 0.3f), k % 6 == 0 ? 2f : 1f);
 			}
-			beam.DefaultColor = new Color(Pal.White, 0.9f * Mathf.Clamp((time - 0.6f) / 0.05f, 0f, 1f) * (1f - Mathf.Clamp((time - 0.75f) / 0.3f, 0f, 1f)));
-			root.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.1f, 0f, 1f) * (1f - Mathf.Clamp((time - 1.05f) / 0.25f, 0f, 1f)));
+		}
+		// 五颗行星：所在轨道、起始角、角速度、半径、颜色、特征
+		(int orbit, float a0, float speed, float r, Color c, int kind)[] ps =
+		{
+			(0, 0.4f, 2.6f, 9f, Pal.Cyan, 0),
+			(1, 2.2f, 1.9f, 13f, new Color(1f, 0.82f, 0.45f), 1),       // 带环
+			(1, 4.4f, 1.9f, 8f, new Color(0.65f, 0.55f, 1f), 0),
+			(2, 1.1f, 1.3f, 15f, Pal.Ice, 2),                          // 带卫星
+			(2, 3.6f, 1.3f, 10f, Pal.Royal, 0),
+		};
+		// 对齐后所在的斜线（从左上指向他的胸口方向）
+		Vector2 lineDir = (chest - at).Normalized().Rotated(Mathf.Pi);
+		var nodes = new List<Node2D>();
+		var trails = new List<Line2D>();
+		var trailPts = new List<List<Vector2>>();
+		foreach (var p in ps)
+		{
+			Node2D pl = new();
+			root.AddChild(pl);
+			Sprite2D g = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = Vector2.One * p.r / 9f, Modulate = new Color(p.c, 0.55f) };
+			pl.AddChild(g);
+			Fx.Poly(pl, Fx.Circle(p.r, 24), p.c.Darkened(0.35f));
+			Fx.Poly(pl, Fx.Circle(p.r * 0.8f, 20), new Color(p.c, 0.9f)).Position = new Vector2(-p.r * 0.18f, -p.r * 0.18f);      // 受光面
+			Fx.Poly(pl, Fx.Circle(p.r * 0.3f, 12), new Color(1f, 1f, 1f, 0.8f), additive: true).Position = new Vector2(-p.r * 0.4f, -p.r * 0.4f);
+			if (p.kind == 1)
+			{
+				Node2D ring = new() { Scale = new Vector2(1f, 0.3f), Rotation = -0.3f };
+				pl.AddChild(ring);
+				Fx.Line(ring, Fx.Circle(p.r * 1.9f, 40), new Color(p.c, 0.85f), 2.5f, closed: true);
+			}
+			if (p.kind == 2)
+			{
+				Node2D moon = new() { Name = "Moon" };
+				pl.AddChild(moon);
+				Fx.Poly(moon, Fx.Circle(4f, 12), Pal.White, additive: true);
+			}
+			Line2D tr = new() { Width = p.r * 0.9f, Material = Fx.Additive, Gradient = new Gradient { Colors = new[] { new Color(p.c, 0f), new Color(p.c, 0.5f) } } };
+			root.AddChild(tr);
+			root.MoveChild(tr, 1);
+			nodes.Add(pl);
+			trails.Add(tr);
+			trailPts.Add(new List<Vector2>());
+		}
+		Line2D beam = Fx.Line(root, new[] { Vector2.Zero, Vector2.Zero }, new Color(Pal.White, 0f), 3f);
+		Line2D beamGlow = Fx.Line(root, new[] { Vector2.Zero, Vector2.Zero }, new Color(Pal.Cyan, 0f), 16f);
+		Label tag = Typo.Text(root, "SYZYGY", Typo.LatinItalic, 26, new Color(Pal.Ice, 0f), new Vector2(40f, -90f), outline: 4, outlineColor: new Color(0.02f, 0.05f, 0.2f));
+		const float alignAt = 0.85f, total = 1.9f;
+		float spin = 0f, last = 0f;
+		Fx.Animate(root, total, t =>
+		{
+			float time = t * total;
+			float dt = time - last;
+			last = time;
+			float open = Ease.OutBack(Mathf.Clamp(time / 0.25f, 0f, 1f));
+			float close = Ease.InCubic(Mathf.Clamp((time - (total - 0.3f)) / 0.3f, 0f, 1f));
+			root.Scale = Vector2.One * (open * (1f - 0.4f * close));
+			root.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.12f, 0f, 1f) * (1f - close));
+			orbits.Rotation = time * 0.25f;
+			spin += dt * Mathf.Max(0f, 1f - time / alignAt);       // 越转越慢，对齐时停下
+			float settle = Ease.InOutCubic(Mathf.Clamp((time - 0.35f) / (alignAt - 0.35f), 0f, 1f));
+			for (int i = 0; i < ps.Length; i++)
+			{
+				var p = ps[i];
+				float R = radii[p.orbit];
+				float a = p.a0 + spin * p.speed * 2f;
+				Vector2 free = new Vector2(Mathf.Cos(a), Mathf.Sin(a) * tilt) * R;
+				// 对齐目标：同一条斜线上，按轨道由内到外排开（同一轨道的第二颗放在太阳另一侧）
+				float side = i == 2 || i == 4 ? -1f : 1f;
+				Vector2 lined = lineDir * (side * (R * 0.85f + i * 6f));
+				Vector2 pos = free.Lerp(lined, settle);
+				nodes[i].Position = pos;
+				Node? m = nodes[i].GetNodeOrNull("Moon");
+				if (m is Node2D moon)
+				{
+					moon.Position = new Vector2(Mathf.Cos(time * 7f), Mathf.Sin(time * 7f) * 0.5f) * p.r * 2.1f;
+				}
+				var tp = trailPts[i];
+				tp.Add(pos);
+				if (tp.Count > 10)
+				{
+					tp.RemoveAt(0);
+				}
+				trails[i].Points = tp.ToArray();
+				trails[i].Modulate = new Color(1f, 1f, 1f, 1f - settle);
+			}
+			float lit = Mathf.Clamp((time - alignAt) / 0.08f, 0f, 1f) * (1f - Mathf.Clamp((time - 1.45f) / 0.3f, 0f, 1f));
+			Vector2 far = lineDir * 330f;
+			beam.Points = beamGlow.Points = new[] { far, -far };
+			beam.DefaultColor = new Color(Pal.White, 0.95f * lit);
+			beamGlow.DefaultColor = new Color(Pal.Cyan, 0.35f * lit);
+			tag.Modulate = new Color(1f, 1f, 1f, lit);
 		});
-		Fx.After(root, 0.6, "aligned", () => { P3Fx.Flash(front, above, Pal.White, 200f, 0.2f); Audio.Sfx.Play(Audio.Snd.Weak, 0.5f, pitch: 1.2f); });
-		Fx.FreeAfter(root, 1.35);
+		// 对齐：行星由内到外依次闪亮，音调递升
+		Fx.After(root, alignAt, "syzygy", () =>
+		{
+			P3Fx.Flash(back, at, Pal.White, 300f, 0.25f);
+			Shake(ShakeStrength.Weak);
+			for (int i = 0; i < nodes.Count; i++)
+			{
+				Node2D n = nodes[i];
+				int k = i;
+				Fx.After(root, 0.05 * k, "planet ping", () =>
+				{
+					if (GodotObject.IsInstanceValid(n))
+					{
+						P3Fx.Flash(front, n.GlobalPosition, Pal.White, 90f, 0.18f);
+						P3Fx.Shockwave(front, n.GlobalPosition, Pal.Ice, 120f, 0.25f);
+					}
+					Audio.Sfx.Play(Audio.Snd.Weak, 0.35f, pitch: 1.0f + 0.12f * k);
+				});
+			}
+		});
+		// 能量沿斜线倾泻进胸口
+		Fx.After(root, alignAt + 0.3, "alignment pour", () =>
+		{
+			Vector2 from = root.GlobalPosition;
+			Node2D pour = Fx.Root(front, Vector2.Zero, "P3AlignPour");
+			pour.TopLevel = true;
+			pour.GlobalPosition = Vector2.Zero;
+			Line2D l = new() { Width = 14f, Material = Fx.Additive, BeginCapMode = Line2D.LineCapMode.Round, EndCapMode = Line2D.LineCapMode.Round,
+				Gradient = new Gradient { Colors = new[] { new Color(Pal.Cyan, 0.2f), new Color(Pal.White, 0.95f) } } };
+			pour.AddChild(l);
+			Fx.Animate(pour, 0.35f, t =>
+			{
+				float e = Ease.InCubic(Mathf.Clamp(t / 0.7f, 0f, 1f));
+				l.Points = new[] { from.Lerp(chest, Mathf.Max(0f, e - 0.4f)), from.Lerp(chest, e) };
+				l.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp((t - 0.7f) / 0.3f, 0f, 1f));
+			});
+			Fx.After(pour, 0.25, "alignment in", () =>
+			{
+				P3Fx.Flash(front, chest, new Color(1f, 0.88f, 0.55f), 240f, 0.25f);
+				P3Fx.Shockwave(front, chest, Pal.Ice, 320f, 0.35f);
+				Node2D sp = Fx.Root(front, chest, "P3AlignSparks");
+				Fx.Sparks(sp, Pal.Ice, 30, 120f, 340f, 0.5f, scaleMin: 0.1f, scaleMax: 0.25f);
+				Fx.FreeAfter(sp, 0.6);
+				Audio.Sfx.Play(Audio.Snd.StarGain, 0.8f);
+			});
+			Fx.FreeAfter(pour, 0.4);
+		});
+		Fx.FreeAfter(root, total + 0.05);
 	}
 
 	/// <summary>群星之子：他身周升起一圈星星组成的光环（像星之摇篮），缓缓旋转、收紧，最后每颗星闪一下融进身体。</summary>
