@@ -48,7 +48,9 @@ SWORD_POSES = ["sword_rest", "sword_ready", "sword_windup", "sword_slash"]
 # 剑：拳头中心 / 剑尖（原图像素，自动检测剑身 + 握剑手，见提交记录里的标定图）
 SWORD = {"sword_rest": ((358.2, 778.4), (807.1, 1263.9)), "sword_ready": ((234.6, 742.9), (821.2, 1378.1)),
          "sword_windup": ((479.9, 132.5), (13.1, 424.6)), "sword_slash": ((637.3, 843.7), (1012.5, 1327.4)),
-         "sword_smear": ((665.0, 455.0), (998.0, 92.0))}
+         "sword_smear": ((665.0, 455.0), (998.0, 92.0)),
+         # 第五批（手量）：举剑途中 / 收招途中
+         "sword_raise": ((300.0, 264.0), (817.0, 24.0)), "sword_recover": ((468.0, 646.0), (1009.0, 1276.0))}
 CONTRACT = ["hand", "grip", "muzzle", "evoker_tip"]
 EVOKER_POSES = ["focus_mid", "focus", "awaken", "awaken_peak"]
 
@@ -70,7 +72,11 @@ POSE_T = {"idle": (1.0, 0.0), "focus_mid": (0.95, 0.0), "focus": (0.95, 0.0), "a
           "sword_smear": ("via", "sword_slash", (1.016, 11.2, -68.8)),
           "hurt_impact": ("via", "hurt", (0.962, 20.2, 58.1)),
           "die_fall": ("via", "die_kneel", (0.906, -424.7, 135.5)),
-          "awaken_peak": ("via", "awaken", (0.993, -8.6, 5.6))}
+          "awaken_peak": ("via", "awaken", (0.993, -8.6, 5.6)),
+          # 第五批过渡帧：只用鞋的特征点配准（tools/rig/v7_register.py，脚踩在原地不动），缩放都≈1
+          "sword_raise": ("via", "sword_windup", (1.0, 0.5, 2.1)),
+          "sword_recover": ("via", "sword_slash", (1.0, 0.9, 29.5)),
+          "hurt_recover": ("via", "hurt", (1.0, -1.0, -2.2))}
 
 
 def U(p, pose=None):
@@ -123,6 +129,9 @@ def sources():
         "v7_sword_smear": load(T / "sword_smear_a.png"),
         "v7_hurt_impact": load(T / "hurt_impact_a.png"),
         "v7_die_fall": load(T / "die_fall_a.png"),
+        "v7_sword_raise": load(T / "sword_raise_a.png"),
+        "v7_sword_recover": load(T / "sword_recover_a.png"),
+        "v7_hurt_recover": load(T / "hurt_recover_a.png"),
         "v7_awaken_peak": load(comp.POSES["awaken_peak"][0]),
         "v7_awaken_peak_eyeglow": load(C / "awaken_peak_eyeglow.png"),
         "v7_awaken_eyeglow": load(C / "awaken_eyeglow.png"),
@@ -208,6 +217,110 @@ def skin_blob(img, box):
     sub[y0:y1, x0:x1] = m[y0:y1, x0:x1]
     ys, xs = np.nonzero(sub)
     return (float(xs.mean()), float(ys.mean())) if len(xs) else ((x0 + x1) / 2, (y0 + y1) / 2)
+
+
+# ───────────────────────── 网格微动 ─────────────────────────
+GRID = 28            # 网格间距（原图像素）
+NO_MESH = {"die_kneel", "die_fall", "die_down"}     # 跪地 / 倒地不做呼吸和发梢（整张图）
+
+
+def _smoothstep(e0, e1, x):
+    t = np.clip((x - e0) / (e1 - e0), 0.0, 1.0)
+    return t * t * (3 - 2 * t)
+
+
+def _box_mean(m, r):
+    """m 的 (2r+1)² 窗口均值（积分图）。"""
+    p = np.pad(m.astype(np.float64), ((r + 1, r), (r + 1, r)), mode="constant")
+    c = p.cumsum(0).cumsum(1)
+    k = 2 * r + 1
+    return (c[k:, k:] - c[:-k, k:] - c[k:, :-k] + c[:-k, :-k]) / (k * k)
+
+
+def mesh_weights(img, sword=None):
+    """每个像素的 (呼吸权重 b, 发梢权重 h)。
+    · 呼吸：胯部（人物高度 50%）以下 0、肩（22%）以上 1，平滑过渡 —— 脚锁死，上身随呼吸抬起，头跟着上身走。
+    · 发梢：深蓝头发像素，离头部中心越远权重越大（发根 0、发梢 1）；皮肤（脸 / 手）附近强制 0，脸绝不变形。
+    · 剑（亮灰）：整把剑跟握剑的拳头同一个呼吸权重、不带发梢权重 —— 剑不会被拉弯。"""
+    a = img[..., 3] > 0.5
+    rgb = img[..., :3]
+    ys, xs = np.nonzero(a)
+    yt, yb = ys.min(), ys.max()
+    H = yb - yt
+    yy = np.arange(img.shape[0], dtype=np.float64)[:, None] * np.ones((1, img.shape[1]))
+    b = 1.0 - _smoothstep(yt + 0.22 * H, yt + 0.5 * H, yy)
+    r, g, bl = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+    skin = a & (r > 0.78) & (g > 0.58) & (bl > 0.45) & (r > bl + 0.06)
+    hair = a & (bl > r + 0.1) & (bl > 0.16) & (rgb.max(-1) < 0.62) & (yy < yt + 0.3 * H) & ~skin     # 深蓝头发（衬衫阴影也偏蓝，但亮）
+    hy, hx = np.nonzero(hair)
+    h = np.zeros(a.shape, np.float64)
+    if len(hx) > 50:
+        cx, cy = hx.mean(), hy.mean()
+        R = np.percentile(np.hypot(hx - cx, hy - cy), 96)
+        xx = np.arange(img.shape[1], dtype=np.float64)[None, :] * np.ones((img.shape[0], 1))
+        tip = _smoothstep(0.42 * R, 1.0 * R, np.hypot(xx - cx, yy - cy))
+        dens = _box_mean(hair, GRID // 2)
+        lock = np.clip(_box_mean(skin, GRID // 2) * 6.0, 0, 1)
+        h = np.clip(dens * 1.6, 0, 1) * tip * (1 - lock)
+    if sword is not None:
+        # 剑 = 拳头到剑尖那条线段附近（不按颜色找：白衬衫也是亮灰）
+        (fx, fy), (tx, ty) = sword
+        xx = np.arange(img.shape[1], dtype=np.float64)[None, :]
+        vx, vy = tx - fx, ty - fy
+        L2 = vx * vx + vy * vy
+        u = np.clip(((xx - fx) * vx + (yy - fy) * vy) / L2, 0, 1)
+        near = np.hypot(xx - fx - u * vx, yy - fy - u * vy) < GRID * 1.2
+        fyi = int(np.clip(fy, 0, img.shape[0] - 1))
+        b = np.where(near, b[fyi, 0], b)
+        h = np.where(near, 0.0, h)
+    return b, np.minimum(h, b)
+
+
+def pose_mesh(img, box, pose, bones, sword=None):
+    """把一张整身姿势图做成带权重的网格附件（规则网格，只保留有内容的格子）。
+    bones = (v7, v7_breath, v7_hair) 的骨骼索引。三根骨骼的初始姿态都在原点、不旋转，所以顶点的骨骼局部坐标 = 世界坐标。"""
+    x0, y0, x1, y1 = box
+    nx = max(1, int(math.ceil((x1 - x0) / GRID)))
+    ny = max(1, int(math.ceil((y1 - y0) / GRID)))
+    gx = np.linspace(x0, x1, nx + 1)
+    gy = np.linspace(y0, y1, ny + 1)
+    b, h = mesh_weights(img, sword)
+    alpha = img[..., 3]
+    keep = {}
+    tris = []
+
+    def vid(i, j):
+        if (i, j) not in keep:
+            keep[(i, j)] = len(keep)
+        return keep[(i, j)]
+    for j in range(ny):
+        for i in range(nx):
+            cx0, cx1 = int(gx[i]) - 2, int(math.ceil(gx[i + 1])) + 2
+            cy0, cy1 = int(gy[j]) - 2, int(math.ceil(gy[j + 1])) + 2
+            if alpha[max(cy0, 0):cy1, max(cx0, 0):cx1].max() <= 0.004:
+                continue
+            v00, v10, v01, v11 = vid(i, j), vid(i + 1, j), vid(i, j + 1), vid(i + 1, j + 1)
+            tris += [v00, v10, v11, v00, v11, v01]
+    verts, uvs = [], []
+    iv7, ibr, iha = bones
+    for (i, j), k in sorted(keep.items(), key=lambda kv: kv[1]):
+        px, py = gx[i], gy[j]
+        uvs += [round((px - x0) / (x1 - x0), 5), round((py - y0) / (y1 - y0), 5)]
+        sx = int(np.clip(px, 0, img.shape[1] - 1))
+        sy = int(np.clip(py, 0, img.shape[0] - 1))
+        wb, wh = float(b[sy, sx]), float(h[sy, sx])
+        if pose in NO_MESH:
+            wb = wh = 0.0
+        x, y = U((px, py), pose)
+        ws = [(iv7, 1.0 - wb), (ibr, wb - wh), (iha, wh)]
+        ws = [(bi, w) for bi, w in ws if w > 1e-4]
+        tot = sum(w for _, w in ws)
+        verts.append(len(ws))
+        for bi, w in ws:
+            verts += [bi, round(x, 2), round(y, 2), round(w / tot, 4)]
+    k = pose_scale(pose)
+    return {"type": "mesh", "uvs": uvs, "triangles": tris, "vertices": verts, "hull": len(keep),
+            "width": round((x1 - x0) * S * k, 2), "height": round((y1 - y0) * S * k, 2)}
 
 
 # ───────────────────────── 动画 ─────────────────────────
@@ -298,6 +411,7 @@ class Builder:
         self.hand["die_kneel"] = (560.0, 1100.0)
         self.hand["die_down"] = (900.0, 800.0)
         self.hand["hurt_impact"] = (553.0, 800.0)
+        self.hand["hurt_recover"] = (553.0, 800.0)
         self.hand["die_fall"] = (700.0, 700.0)
 
     @staticmethod
@@ -322,12 +436,14 @@ class Builder:
         d = self.data
         d["bones"].append({"name": "v7_settle", "parent": "root"})     # 换图时的"惯性到位"（见 settle）
         d["bones"].append({"name": "v7", "parent": "v7_settle"})
+        d["bones"].append({"name": "v7_breath", "parent": "v7"})          # 网格微动：上身呼吸（只平移）
+        d["bones"].append({"name": "v7_hair", "parent": "v7_breath"})     # 网格微动：发梢摆动 / 换图后的甩动回弹（只平移）
         for p in EVOKER_POSES:
             gx, gy = U(self.grip[p], p)
-            d["bones"].append({"name": f"v7_ev_{p}", "parent": "v7", "x": round(gx, 2), "y": round(gy, 2)})
-        slots = [("v7_ghost", "v7", None), ("v7_body", "v7", None), ("v7_blink", "v7", None), ("v7_old", "v7", None)]
+            d["bones"].append({"name": f"v7_ev_{p}", "parent": "v7_breath", "x": round(gx, 2), "y": round(gy, 2)})
+        slots = [("v7_ghost", "v7", None), ("v7_body", "v7", None), ("v7_blink", "v7_breath", None), ("v7_old", "v7", None)]
         slots += [(f"v7_ev_{p}", f"v7_ev_{p}", None) for p in EVOKER_POSES]
-        slots += [("v7_hand", "v7", None), ("v7_flash", "v7", "additive"), ("v7_glow", "v7", "additive"),
+        slots += [("v7_hand", "v7_breath", None), ("v7_flash", "v7", "additive"), ("v7_glow", "v7_breath", "additive"),
                   ("v7_tip", "v7_ev_awaken_peak", "additive")]
         for name, bone, blend in slots:
             s = {"name": name, "bone": bone}
@@ -344,9 +460,13 @@ class Builder:
             regions[name] = shrink(tr, TEX)
         att = d["skins"][0]["attachments"]
         poses = ["idle", "focus_mid", "focus", "awaken", "awaken_peak", "cast_mid", "cast"] + SWORD_POSES + \
-            ["sword_smear", "hurt_impact", "hurt", "die_kneel", "die_fall", "die_down"]
-        for slot in ("v7_ghost", "v7_body", "v7_old", "v7_flash"):
+            ["sword_smear", "sword_raise", "sword_recover", "hurt_impact", "hurt", "hurt_recover", "die_kneel", "die_fall", "die_down"]
+        for slot in ("v7_ghost", "v7_old", "v7_flash"):
             att[slot] = {f"v7_{p}": self.region(f"v7_{p}") for p in poses}
+        names = [b["name"] for b in d["bones"]]
+        bones = (names.index("v7"), names.index("v7_breath"), names.index("v7_hair"))
+        att["v7_body"] = {f"v7_{p}": pose_mesh(self.src[f"v7_{p}"], self.geom[f"v7_{p}"], p, bones, SWORD.get(p))
+                          for p in poses}
         att["v7_blink"] = {"v7_idle_blink": self.region("v7_idle_blink")}
         att["v7_hand"] = {f"v7_{p}_hand": self.region(f"v7_{p}_hand") for p in EVOKER_POSES}
         for p in EVOKER_POSES:
@@ -399,6 +519,7 @@ class Builder:
             if slot != "shadow":
                 a.att(slot, 0, None)
         self.settle(a, seq, prev, a.dur)
+        self.follow(a, seq, prev)
         for i, (t, p) in enumerate(seq):
             before = prev if i == 0 else seq[i - 1][1]
             a.att("v7_body", t, f"v7_{p}")
@@ -416,6 +537,8 @@ class Builder:
             if before is not None and before != p:
                 f = 1.0 / FPS
                 fade = 0.09 if p not in ("sword_smear", "sword_slash", "awaken_peak", "hurt_impact") else 0.04   # 出招 / 扣下 / 受击：溶解更短，保持力度
+                nxt = seq[i + 1][0] if i + 1 < len(seq) else a.dur
+                fade = max(min(fade, nxt - t - 0.002), f * 0.5)          # 下一次换图之前必须溶解完（"举剑途中"只停一帧）
                 # 溶解：新姿势在下面已经完全显示，旧姿势盖在上面从不透明淡到透明 —— 60 帧里每帧都在变，不会一下跳过去
                 a.att("v7_old", t, f"v7_{before}")
                 a.rgba("v7_old", t, c8(1, 1, 1, 1))
@@ -450,11 +573,49 @@ class Builder:
         a.rgba("v7_tip", T + 0.12, c8(1, 1, 1, 0))
         a.att("v7_tip", T + 0.13, None)
 
-    def breathe(self, a, dur, amp=1.6, phase=0.0):
-        n = 8
+    def breathe(self, a, dur, amp=7.0, sway=7.0):
+        """循环动画的网格微动（脚锁死，见 mesh_weights）：
+        · 呼吸：上身（呼吸骨骼）抬起 amp 再落下，循环里正好整数个周期（约 2.2 秒一次）；
+        · 发梢：缓慢左右摆 sway、上下随呼吸轻扬，两个方向周期不同（不机械），首尾为 0、无缝循环。"""
+        cyc = max(1, round(dur / 2.2))
+        n = max(8, int(round(dur * 10)))
         for i in range(n + 1):
-            t = dur * i / n
-            a.tr("v7", t, 0, amp * 0.5 * (1 - math.cos(2 * math.pi * (i / n + phase))))
+            u = i / n
+            t = dur * u
+            br = 0.5 * (1 - math.cos(2 * math.pi * cyc * u))
+            a.tr("v7_breath", t, 0, amp * br)
+            hx = sway * math.sin(2 * math.pi * max(1, cyc - 1) * u) * (0.7 + 0.3 * math.sin(2 * math.pi * u))
+            a.tr("v7_hair", t, hx, 0.35 * amp * br + 0.25 * sway * math.sin(2 * math.pi * cyc * u * 2))
+
+    def follow(self, a, seq, prev):
+        """换姿势后的发梢跟随：每次换图，发梢先往动作反方向拖（惯性），再越过原位一点、回弹、停住（衰减弹簧，约 0.5 秒）。
+        多次换图的弹簧叠加，逐帧采样成关键帧 —— 连续变化，没有跳变。"""
+        springs = []
+        for i, (t, p) in enumerate(seq):
+            before = prev if i == 0 else seq[i - 1][1]
+            if before is None or before == p or before not in self.center or p not in self.center or p in NO_MESH:
+                continue
+            dx = self.center[p][0] - self.center[before][0]
+            dy = self.center[p][1] - self.center[before][1]
+            m = math.hypot(dx, dy)
+            if m < 1.0:
+                continue
+            A = min(30.0, 8.0 + 0.35 * m)
+            springs.append((t, A * dx / m, A * dy / m))
+        if not springs:
+            return
+        step = 1.0 / FPS
+        n = int(math.ceil(a.dur / step))
+        for k in range(n + 1):
+            t = min(k * step, a.dur)
+            x = y = 0.0
+            for t0, sx, sy in springs:
+                tau = t - t0
+                if 0.0 <= tau <= 0.7:
+                    v = -math.exp(-tau / 0.14) * math.sin(2 * math.pi * tau / 0.32)
+                    x += sx * v
+                    y += sy * v
+            a.tr("v7_hair", t, x, y)
 
     def blink(self, a, t):
         a.att("v7_blink", t, "v7_idle_blink")
@@ -487,7 +648,7 @@ class Builder:
 
         a = Anim(d["aim_loop"])
         self.sequence(a, [(0, "focus")])
-        self.breathe(a, d["aim_loop"], amp=-1.2)
+        self.breathe(a, d["aim_loop"], amp=5.0, sway=4.0)
         A["aim_loop"] = a
 
         a = Anim(d["aim_out"])
@@ -510,22 +671,24 @@ class Builder:
 
         # ── 持剑 ──
         a = Anim(d["sword_in"])
-        self.sequence(a, [(0, "sword_rest"), (0.14, "sword_ready")], prev="idle")
+        self.sequence(a, [(0, "sword_rest"), (0.07, "sword_recover"), (0.14, "sword_ready")], prev="idle")   # 收招途中那张倒着用：从站直到压低重心
         A["sword_in"] = a
 
         a = Anim(d["ready_sword_loop"])
         self.sequence(a, [(0, "sword_ready")])
-        self.breathe(a, d["ready_sword_loop"], amp=-1.4)
+        self.breathe(a, d["ready_sword_loop"], amp=5.5, sway=5.0)
         A["ready_sword_loop"] = a
 
         a = Anim(d["sword_out"])
-        self.sequence(a, [(0, "sword_ready"), (0.16, "sword_rest"), (0.34, "idle")])
+        self.sequence(a, [(0, "sword_ready"), (0.08, "sword_recover"), (0.16, "sword_rest"), (0.34, "idle")])
         A["sword_out"] = a
 
         def strike(name, prev, t_slash, t_rest, t_idle):
             a = Anim(d[name])
             # 拖影帧就是"斩下"那一瞬（weapon_slash 事件那一刻），随后落到斩击收招
-            self.sequence(a, [(0, "sword_windup"), (t_slash, "sword_smear"), (t_slash + SMEAR, "sword_slash"), (t_rest, "sword_rest"), (t_idle, "idle")], prev=prev)
+            # 起手先过"举剑途中"（约一帧），斩完先"收招途中"再收剑
+            self.sequence(a, [(0, "sword_raise"), (t_slash * 0.45, "sword_windup"), (t_slash, "sword_smear"), (t_slash + SMEAR, "sword_slash"),
+                              (t_slash + SMEAR + (t_rest - t_slash - SMEAR) * 0.6, "sword_recover"), (t_rest, "sword_rest"), (t_idle, "idle")], prev=prev)
             # 斩下那一刻向前冲一下再收回（整图位移，不变形）
             for dt, v in ((-0.001, 0.0), (0.0, 1.0), (0.05, 0.75), (0.14, 0.3), (0.26, 0.0)):
                 a.tr("v7", t_slash + dt, 18 * S * v, 0)
@@ -535,7 +698,7 @@ class Builder:
 
         # ── 受击 / 死亡 ──
         a = Anim(d["hurt"])
-        self.sequence(a, [(0, "hurt_impact"), (IMPACT, "hurt"), (0.42, "idle")], prev="idle")
+        self.sequence(a, [(0, "hurt_impact"), (IMPACT, "hurt"), (0.27, "hurt_recover"), (0.42, "idle")], prev="idle")
         for dt, v in ((0.0, 1.0), (0.06, 0.6), (0.16, 0.25), (0.3, 0.0)):
             a.tr("v7", dt, -14 * S * v, 0)
         A["hurt"] = a
