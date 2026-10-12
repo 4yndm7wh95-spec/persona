@@ -17,13 +17,14 @@ namespace P3TestMod;
 /// <summary>
 /// 测试面板（F8 开关，或点左上角的"测试"按钮）：
 /// · 卡牌按原版卡面显示（原版牌组 / 图鉴用的同一个卡牌格子 NGridCardHolder），点一下加入手牌；
-/// · 筛选：储君 / 无色 / 全部，按名称搜索，"升级版"开关（卡面预览也跟着变）；每页 12 张；
+/// · 筛选：储君 / 无色 / 全部，按名称搜索；每页 12 张，卡与卡之间留足空隙；
 /// · 按钮：击杀假人（看胜利特效）、让我受击（看受击动画）、清空手牌。
 /// </summary>
 public static class Panel
 {
 	private const int Columns = 6, PerPage = 12;
-	private const float CardScale = 0.6f;
+	private const float CardScale = 0.5f;
+	private const int GapX = 34, GapY = 40;                           // 卡与卡之间留空（费用圆标会伸出卡框）
 	private static readonly Vector2 CardSize = new(300f, 422f);       // NCard.defaultSize
 
 	private static CanvasLayer? _layer;
@@ -32,7 +33,6 @@ public static class Panel
 	private static Label? _status, _pageLabel;
 	private static LineEdit? _search;
 	private static string _filter = "regent";
-	private static bool _upgraded;
 	private static int _page;
 	private static List<CardModel> _cards = new();
 
@@ -71,7 +71,7 @@ public static class Panel
 		_layer.AddChild(open);
 
 		Vector2 view = tree.Root.GetVisibleRect().Size;
-		float w = Columns * CardSize.X * CardScale + 80f, h = 2 * CardSize.Y * CardScale + 230f;
+		float w = Columns * CardSize.X * CardScale + (Columns - 1) * GapX + 90f, h = 2 * CardSize.Y * CardScale + GapY + 230f;
 		PanelContainer win = new() { Position = new Vector2((view.X - w) * 0.5f, 40f), CustomMinimumSize = new Vector2(w, h), Visible = false, Theme = theme };
 		win.AddThemeStyleboxOverride("panel", new StyleBoxFlat { BgColor = new Color(0.02f, 0.05f, 0.16f, 0.94f), BorderColor = new Color(0.22f, 0.85f, 1f), BorderWidthTop = 2, BorderWidthBottom = 2, BorderWidthLeft = 2, BorderWidthRight = 2, ContentMarginLeft = 16, ContentMarginRight = 16, ContentMarginTop = 12, ContentMarginBottom = 12 });
 		_layer.AddChild(win);
@@ -94,9 +94,6 @@ public static class Panel
 		_search = new LineEdit { PlaceholderText = "搜索卡名…", CustomMinimumSize = new Vector2(220f, 0f) };
 		_search.TextChanged += _ => { _page = 0; Refresh(); };
 		top.AddChild(_search);
-		CheckBox up = new() { Text = "升级版", FocusMode = Control.FocusModeEnum.None };
-		up.Toggled += on => { _upgraded = on; Refresh(); };
-		top.AddChild(up);
 		Button close = new() { Text = "关闭", FocusMode = Control.FocusModeEnum.None };
 		close.Pressed += Toggle;
 		top.AddChild(close);
@@ -114,13 +111,17 @@ public static class Panel
 		AddButton("击杀假人", Runtime.KillDummy);
 		AddButton("让我受击", () => Runtime.HurtMe(3));
 		AddButton("清空手牌", ClearHand);
-		actions.AddChild(new Label { Text = "  能量 / 辉星无限；假人打不死；所有房间都是假人战" });
 
 		// 卡牌网格（每页 12 张）
 		_grid = new GridContainer { Columns = Columns };
-		_grid.AddThemeConstantOverride("h_separation", 8);
-		_grid.AddThemeConstantOverride("v_separation", 8);
-		col.AddChild(_grid);
+		_grid.AddThemeConstantOverride("h_separation", GapX);
+		_grid.AddThemeConstantOverride("v_separation", GapY);
+		MarginContainer gridPad = new();                                   // 上下左右留边：费用圆标伸出卡框不会被裁掉 / 压到按钮
+		gridPad.AddThemeConstantOverride("margin_top", 22);
+		gridPad.AddThemeConstantOverride("margin_left", 22);
+		gridPad.AddThemeConstantOverride("margin_bottom", 10);
+		gridPad.AddChild(_grid);
+		col.AddChild(gridPad);
 
 		// 翻页 + 状态
 		HBoxContainer bottom = new();
@@ -192,10 +193,6 @@ public static class Panel
 			holder.MouseFilter = Control.MouseFilterEnum.Pass;
 			cell.AddChild(holder);
 			card.UpdateVisuals(PileType.Deck, CardPreviewMode.Normal);
-			if (model.IsUpgradable)
-			{
-				holder.SetIsPreviewingUpgrade(_upgraded);
-			}
 			CardModel picked = model;
 			holder.Connect(NCardHolder.SignalName.Pressed, Callable.From<NCardHolder>(_ => Say(AddToHand(picked))));
 		}
@@ -215,12 +212,8 @@ public static class Panel
 			return "手牌满了（10 张）：先出牌或点\"清空手牌\"";
 		}
 		CardModel card = ((ICardScope)state).CreateCard(model, me);           // 和原版 card 命令一样走 ICardScope
-		if (_upgraded && card.IsUpgradable)
-		{
-			CardCmd.Upgrade(card);                // 牌还不在任何牌堆里：只改数值，不弹升级预览
-		}
 		TaskHelper.RunSafely(CardPileCmd.Add(card, PileType.Hand));
-		return $"已加入手牌：{model.TitleLocString.GetRawText()}{(_upgraded && card.IsUpgraded ? "+" : "")}";
+		return $"已加入手牌：{model.TitleLocString.GetRawText()}";
 	}
 
 	private static string ClearHand()
