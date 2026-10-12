@@ -42,8 +42,8 @@ public static class CardSigs
 		// ═════ 攻击：出牌瞬间的"起手" ═════
 		["WroughtInWar"] = c => Grand.AnvilForge(c.Front, c.Above + new Vector2(140f, 40f), 2, 0.8f),
 		["BeatIntoShape"] = c => After(c, 0.18, () => Motifs.ForgeSpark(c.Front, c.FirstTarget, 1.2f)),
-		["HeirloomHammer"] = c => After(c, 0.16, () => { Motifs.Smash(c.Front, c.FirstTarget, c.Feet, ElementPal.HolyGold, 0.9f); Motifs.CutIn(c.Front, c.FirstTarget, "CRITICAL", Pal.Blood); After(c, 0.35, () => Grand.PrismBurst(c.Front, c.Above + new Vector2(80f, 0f), 1, 0.8f)); }),
-		["KnockoutBlow"] = c => After(c, 0.1, () => Grand.AllOutAttack(c.Front, c.FirstTarget)),
+		["HeirloomHammer"] = c => After(c, 0.16, () => Motifs.CutIn(c.Front, c.FirstTarget, "CRITICAL", Pal.Blood)),
+		["KnockoutBlow"] = c => After(c, 0.16, () => Motifs.CutIn(c.Front, c.FirstTarget, "ONE MORE!", Pal.Royal)),
 		["KinglyKick"] = c => After(c, 0.16, () => Motifs.CutIn(c.Front, c.FirstTarget, "GOD'S HAND", Pal.Royal)),
 		["KinglyPunch"] = c => After(c, 0.14, () => Motifs.Smash(c.Front, c.FirstTarget + new Vector2(-40f, 0f), c.Feet, Pal.Cyan, 0.5f, crack: false)),
 		["CrushUnder"] = c => After(c, 0.14, () =>
@@ -91,7 +91,7 @@ public static class CardSigs
 		["IAmInvincible"] = c => { Extras.HexShield(c.Front, c.Center, 1.4f, false, 0.7f); Motifs.CutIn(c.Front, c.Center + new Vector2(200f, 0f), "TETRAKARN", Pal.Royal); },
 		["Reflect"] = c => { Extras.HexShield(c.Front, c.Center, 1.4f, true, 0.7f); Motifs.CutIn(c.Front, c.Center + new Vector2(200f, 0f), "MAKARAKARN", ElementPal.Almighty); },
 		["CosmicIndifference"] = c => Motifs.DarkClock(c.Front, c.Above, 0.7f),
-		["ManifestAuthority"] = c => { Grand.VelvetDoor(c.Back, c.Center + new Vector2(-170f, -40f), 0.9f); After(c, 0.5, () => Grand.PrismBurst(c.Front, c.Above + new Vector2(60f, 0f), 1, 0.8f)); },
+		["ManifestAuthority"] = c => { Motifs.ShuffleTime(c.Front, c.Center, 3, ElementPal.HolyGold); Tarot(c, "IV", "EMPEROR", ElementPal.HolyGold, 0.05); },
 
 		// ═════ 技能：增益 / 减益 ═════
 		["Patter"] = c => Grand.StatBuff(c.Front, c.Center, c.Feet, c.Head, "VIGOR UP", ElementPal.HolyGold, up: true),
@@ -110,10 +110,10 @@ public static class CardSigs
 			Grand.StatBuff(c.Front, c.Center, c.Feet, c.Head, "ATTACK UP", Pal.Blood, up: true);
 			After(c, 0.3, () => { foreach (NCreature t in c.Targets) { Grand.StatBuff(c.Front, t.VfxSpawnPosition, t.GetBottomOfHitbox(), t.GetTopOfHitbox(), "ATTACK DOWN", Pal.Royal, up: false, 0.8f); } });
 		},
-		["Conqueror"] = c => { Grand.Shout(c.Front, c.Above + new Vector2(220f, 40f), "CONQUEROR!", Pal.Royal); After(c, 0.3, () => Grand.BladeFan(c.Front, c.Center, c.FirstTarget, 1, 1.6f)); },
-		["Charge"] = c => { Grand.Shout(c.Front, c.Above + new Vector2(220f, 40f), "CHARGE!!", ElementPal.HolyGold); After(c, 0.45, () => Grand.PrismBurst(c.Front, c.Above + new Vector2(-40f, 20f), 2, 0.8f)); },
-		["Begone"] = c => { Grand.Shout(c.Front, c.Above + new Vector2(220f, 40f), "BEGONE!", Pal.Royal); After(c, 0.45, () => Grand.PrismBurst(c.Front, c.Above + new Vector2(-40f, 20f), 1, 0.7f)); },
-		["Guards"] = c => { Grand.Shout(c.Front, c.Above + new Vector2(220f, 40f), "GUARDS!!!", Pal.Royal); After(c, 0.35, () => Grand.BladeFan(c.Front, c.Center, null, 6, 0.9f)); },
+		["Conqueror"] = c => After(c, 0.15, () => { Motifs.CutIn(c.Front, c.FirstTarget, "CONQUEROR", Pal.Royal); Motifs.ForgeSpark(c.Front, c.Center + new Vector2(110f, -20f), 0.8f); }),
+		["Charge"] = c => { Motifs.Seal(c.Front, c.Center, c.Feet, ElementPal.HolyGold, up: true, 1.2f); Motifs.CutIn(c.Front, c.Center + new Vector2(220f, 0f), "CHARGE!!", ElementPal.HolyGold); },
+		["Begone"] = c => Motifs.CutIn(c.Front, c.Center + new Vector2(220f, 0f), "BEGONE!", Pal.Royal),
+		["Guards"] = c => Motifs.CutIn(c.Front, c.Center + new Vector2(220f, 0f), "GUARDS!!!", Pal.Royal),
 
 		// ═════ 技能：辉星 / 能量 / 抽牌（塔罗与星象）═════
 		["Venerate"] = c => Tarot(c, "XVII", "THE STAR", Pal.Cyan),
@@ -129,9 +129,9 @@ public static class CardSigs
 		["Glimmer"] = c => { P3Fx.Flash(c.Back, c.Center, Pal.Cyan, 380f, 0.25f); Grand.CardCascade(c.Front, c.Above, 2, Pal.Cyan); },
 		["Plot"] = c => { Motifs.DarkClock(c.Front, c.Above, 0.6f); After(c, 0.5, () => Grand.CardCascade(c.Front, c.Above, 3, Pal.DarkHour)); },
 		["Tutor"] = c => Grand.CardCascade(c.Front, c.Above, 1, Pal.Ice),
-		["BundleOfJoy"] = c => { Grand.PrismBurst(c.Front, c.Above + new Vector2(60f, 0f), 5); P3Fx.ButterflyBurst(c.Front, c.Head, 6, 320f, ElementPal.HolyGold); },
-		["Quasar"] = c => { Bold.Megidolaon(c.Back, c.Above, 0.45f); After(c, 0.3, () => Grand.PrismBurst(c.Front, c.Above + new Vector2(60f, 0f), 3)); },
-		["Largesse"] = c => Grand.PrismBurst(c.Front, c.Above + new Vector2(60f, 0f), 2, 0.9f),
+		["BundleOfJoy"] = c => { Motifs.ShuffleTime(c.Front, c.Center, 5, ElementPal.HolyGold); P3Fx.ButterflyBurst(c.Front, c.Head, 6, 320f, ElementPal.HolyGold); },
+		["Quasar"] = c => { Bold.Megidolaon(c.Back, c.Above, 0.45f); After(c, 0.3, () => Motifs.ShuffleTime(c.Front, c.Center, 3, ElementPal.Almighty)); },
+		["Largesse"] = c => Motifs.ShuffleTime(c.Front, c.Center, 2, ElementPal.HolyGold),
 		["Constellation"] = c => Motifs.Constellation(c.Front, c.Above,
 			new[] { new Vector2(-140f, 40f), new Vector2(-40f, -60f), new Vector2(60f, -20f), new Vector2(150f, -90f), new Vector2(110f, 50f) }, Pal.Cyan),
 		["SpoilsOfBattle"] = c => { Grand.CoinRain(c.Front, c.Center, c.Feet.Y, 20); Motifs.ForgeSpark(c.Front, c.Center + new Vector2(100f, 0f), 0.8f); After(c, 0.3, () => Grand.CardCascade(c.Front, c.Above, 2, ElementPal.HolyGold)); },
@@ -147,13 +147,13 @@ public static class CardSigs
 		["NeutronAegis"] = c => { Extras.HexShield(c.Front, c.Center, 1.4f, false, 0.8f); Tarot(c, "XI", "STRENGTH", Pal.Cyan); },
 		["Arsenal"] = c => Grand.BladeFan(c.Front, c.Center, null, 7, 1.0f),
 		["SwordSage"] = c => After(c, 0.2, () => { Grand.BladeFan(c.Front, c.Center, null, 4, 1.2f); Motifs.ForgeSpark(c.Front, c.Center + new Vector2(110f, -40f), 1.0f); }),
-		["HammerTime"] = c => { Grand.Shout(c.Front, c.Above + new Vector2(240f, 30f), "HAMMER TIME!", ElementPal.FireMid); After(c, 0.3, () => Grand.AnvilForge(c.Front, c.Above + new Vector2(140f, 60f), 3, 1.0f)); },
+		["HammerTime"] = c => { Motifs.ForgeSpark(c.Front, c.Center + new Vector2(110f, -20f), 1.4f); Motifs.CutIn(c.Front, c.Center + new Vector2(220f, 0f), "HAMMER TIME", ElementPal.FireMid); },
 		["SeekingEdge"] = c => After(c, 0.2, () => { foreach (Vector2 t in c.TargetCenters) { Motifs.Thrust(c.Front, t, Pal.Royal, 0.7f); } }),
 		["Furnace"] = c => Bold.Agidyne(c.Back, c.Center, c.Feet, 0.8f),
 		["Orbit"] = c => Tarot(c, "XXI", "THE WORLD", Pal.Cyan),
 		["PaleBlueDot"] = c => Motifs.FullMoon(c.Back, c.Above, 0.45f),
 		["ChildOfTheStars"] = c => { Tarot(c, "XVII", "THE STAR", Pal.Cyan); Motifs.Constellation(c.Front, c.Center, Motifs.BigDipper, Pal.Ice, 0.7f); },
-		["SpectrumShift"] = c => { Grand.VelvetDoor(c.Back, c.Center + new Vector2(-170f, -40f), 0.9f); After(c, 0.55, () => Grand.PrismBurst(c.Front, c.Above + new Vector2(60f, 0f), 4, 0.9f)); },
+		["SpectrumShift"] = c => Motifs.ShuffleTime(c.Front, c.Center, 4, ElementPal.Almighty),
 		["Royalties"] = c => { Tarot(c, "X", "FORTUNE", ElementPal.HolyGold); After(c, 0.3, () => Grand.CoinRain(c.Front, c.Center, c.Feet.Y, 34)); },
 		["PillarOfCreation"] = c => { P3Fx.LightPillar(c.Back, c.Feet, Pal.Ice, 260f, 1100f, 1.0f); Bold.Hamaon(c.Back, c.Center, c.Feet, 0.9f); },
 		["Genesis"] = c => After(c, 0.35, () => Bold.Hamaon(c.Back, c.Center, c.Feet, 1.5f)),

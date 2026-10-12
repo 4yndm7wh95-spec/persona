@@ -137,6 +137,8 @@ public static class Panel
 		AddButton("让我受击", () => Runtime.HurtMe(3));
 		AddButton("清空手牌", ClearHand);
 		AddButton("消耗手牌 (F7)", Runtime.ExhaustHand);
+		AddButton("试播：水流圆弧", () => FxDemo("arc"));
+		AddButton("试播：水流斜条", () => FxDemo("bar"));
 
 		// 卡牌网格（每页 12 张）
 		_grid = new GridContainer { Columns = Columns };
@@ -245,6 +247,21 @@ public static class Panel
 		CardModel card = ((ICardScope)state).CreateCard(model, me);           // 和原版 card 命令一样走 ICardScope
 		TaskHelper.RunSafely(CardPileCmd.Add(card, PileType.Hand));
 		return $"已加入手牌：{model.TitleLocString.GetRawText()}";
+	}
+
+	/// <summary>调用 P3Makoto 里的新特效试播入口（反射：测试工具不直接依赖正式 mod 的程序集）。播放前先关掉面板，免得挡住画面。</summary>
+	private static string FxDemo(string which)
+	{
+		Type? flow = null;
+		foreach (System.Reflection.Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
+		{
+			flow = asm.GetType("P3Makoto.Vfx.Flow");
+			if (flow != null) break;
+		}
+		System.Reflection.MethodInfo? demo = flow?.GetMethod("Demo");
+		if (demo == null) return "找不到 P3Makoto 的试播入口（P3Makoto 版本太旧？）";
+		Hide();
+		return demo.Invoke(null, new object[] { which }) as string ?? "";
 	}
 
 	private static string ClearHand()

@@ -18,7 +18,7 @@ namespace P3TestMod;
 public static class TestEntry
 {
 	public const string Tag = "[P3TestMod]";
-	public const string Version = "1.1.0";
+	public const string Version = "1.1.1";
 
 	public static void Init()
 	{
