@@ -616,9 +616,10 @@ public static class Rares
 	/// 暴政（皇帝 IV · 影时间降临）：
 	/// 0.0 午夜 —— 人物身后的世界沉进影时间的墨绿色天色，远处升起一轮黄绿色的大月亮；
 	/// 0.25 塔尔塔罗斯从远处的地平线下拔地而起（震屏、尘浪），塔尖正好顶在月亮前面；
-	/// 0.55 人物左后方一排棺材由近到远依次"显形"（棺材本身不动：绿光扫描线自下而上扫出绿光剪影，再凝成实体；影时间里普通人都变成了棺材），
+	/// 0.45 影时间的波从人物脚下沿地面扩散；人物左后方一排棺材在波前扫到的那一刻"显形"（棺材本身不动：绿光扫描线自下而上扫出绿光剪影，再凝成实体；影时间里普通人都变成了棺材），
+	///      月光把每口棺材的长影子投向左下方，影子随月亮升起慢慢拉长，
 	///      最前面那口棺材上盖下皇帝的 IV 印章；棺材脚下漫开暗红色的血洼；
-	/// 2.0 棺材泛起绿光、从上往下化成光点消散；2.25 塔沉回地平线下，天色和月亮退去。
+	/// 2.0 影时间结束的第二道波扩散，扫到的棺材泛起绿光、从上往下化成光点消散；2.55 塔沉回地平线下，天色和月亮退去。
 	/// 全部画在人物身后（back 层的最底下，天色之上），不挡人物；虚空形态的影时间已经在场时，不再重复画天色和月亮。
 	/// 塔的贴图（p3makoto/fx/tartarus.png）缺失时跳过塔，其余照常。
 	/// </summary>
@@ -633,7 +634,8 @@ public static class Rares
 		Vector2 feet = Makoto.Feet(caster);
 		Vector2 size = front.GetViewportRect().Size;
 		bool formSky = FormFx.SkyIndex >= 0;
-		const float total = 2.85f;
+		const float total = 3.25f;
+		const float waveIn = 0.45f, waveOut = 2.0f, waveSpeed = 900f, waveMax = 760f, waveSquash = 0.25f;
 
 		Node2D root = Fx.Root(back, Vector2.Zero, "P3Tyranny");
 		root.TopLevel = true;
@@ -696,6 +698,30 @@ public static class Rares
 
 		// 3) 血洼（在棺材下面）
 		(Vector2 off, float s)[] row = { (new(-215f, -10f), 0.42f), (new(-335f, -40f), 0.36f), (new(-440f, -62f), 0.31f), (new(-530f, -80f), 0.27f) };
+		// 影时间的波：从人物脚下沿地面向外扩散（压扁的圆），波前扫到哪口棺材，哪口棺材就在那一刻显形；
+		// 影时间结束时第二道波再扫一遍，扫到的棺材随之消散。arrive[i] = 波前到达第 i 口棺材的时间（相对波的起点）。
+		float[] arrive = row.Select(r => new Vector2(r.off.X, r.off.Y / waveSquash).Length() / waveSpeed).ToArray();
+		float ringSize = waveMax * 2f / 0.95f;
+		Node2D waveAt = new() { Position = feet };
+		root.AddChild(waveAt);
+		ColorRect ringIn = Fx.ShaderQuad(waveAt, Shaders.Ring, ringSize, waveSquash);
+		ColorRect ringIn2 = Fx.ShaderQuad(waveAt, Shaders.Ring, ringSize, waveSquash);
+		ColorRect ringOut = Fx.ShaderQuad(waveAt, Shaders.Ring, ringSize, waveSquash);
+		Fx.SetParam(ringIn, "tint", Pal.DarkHour);
+		Fx.SetParam(ringIn2, "tint", new Color(Pal.Ice, 0.6f));
+		Fx.SetParam(ringOut, "tint", Pal.Ice);
+		foreach (ColorRect r in new[] { ringIn, ringIn2, ringOut })
+		{
+			Fx.SetParam(r, "width", 0.012f);
+			Fx.SetParam(r, "alpha", 0f);
+		}
+		void Wave(ColorRect r, float time, float start, float a)
+		{
+			float R = (time - start) * waveSpeed;
+			bool on = R > 0f && R < waveMax;
+			Fx.SetParam(r, "radius", Mathf.Clamp(R / waveMax, 0f, 1f) * 0.95f);
+			Fx.SetParam(r, "alpha", on ? a * (1f - Mathf.Pow(R / waveMax, 3f)) : 0f);
+		}
 		var pools = new List<(Polygon2D poly, float r)>();
 		foreach (var (off, s) in row)
 		{
@@ -707,7 +733,7 @@ public static class Rares
 		Fx.Animate(root, total, t =>
 		{
 			float time = t * total;
-			float skyIn = Ease.OutCubic(Mathf.Clamp(time / 0.35f, 0f, 1f)), skyOut = Ease.InCubic(Mathf.Clamp((time - 2.35f) / 0.45f, 0f, 1f));
+			float skyIn = Ease.OutCubic(Mathf.Clamp(time / 0.35f, 0f, 1f)), skyOut = Ease.InCubic(Mathf.Clamp((time - 2.7f) / 0.5f, 0f, 1f));
 			if (sky != null)
 			{
 				Fx.SetParam(sky, "alpha", skyIn * (1f - skyOut));
@@ -721,26 +747,34 @@ public static class Rares
 			if (towerBody != null && towerRim != null)
 			{
 				float rise = Ease.OutCubic(Mathf.Clamp((time - 0.25f) / 0.75f, 0f, 1f));
-				float sink = Ease.InCubic(Mathf.Clamp((time - 2.25f) / 0.5f, 0f, 1f));
+				float sink = Ease.InCubic(Mathf.Clamp((time - 2.55f) / 0.55f, 0f, 1f));
 				towerBody.Position = new Vector2(towerX + (rise < 1f ? Mathf.Sin(time * 70f) * 3f * (1f - rise) : 0f), horizon + towerH * (1f - rise + sink));
 				towerRim.Modulate = new Color(Pal.DarkHour, (0.35f + 0.15f * Mathf.Sin(time * 5f)) * rise * (1f - sink));
 			}
+			Wave(ringIn, time, waveIn, 1f);
+			Wave(ringIn2, time, waveIn + 0.08f, 0.6f);
+			Wave(ringOut, time, waveOut, 0.8f);
 			for (int i = 0; i < pools.Count; i++)
 			{
-				float g = Ease.OutCubic(Mathf.Clamp((time - 0.6f - 0.1f * i) / 0.5f, 0f, 1f));
+				float g = Ease.OutCubic(Mathf.Clamp((time - waveIn - arrive[i] - 0.1f) / 0.6f, 0f, 1f));
 				pools[i].poly.Scale = new Vector2(pools[i].r * g, pools[i].r * 0.22f * g);
 				pools[i].poly.Color = new Color(0.32f, 0.01f, 0.05f, 0.6f * g * (1f - skyOut));
 			}
 		});
 
-		// 4) 棺材：由近到远依次立起，几乎同时沉回；最前面那口盖皇帝 IV 印章
+		// 4) 棺材：波前扫到时显形，第二道波扫到时消散（两道波速度相同，所以每口棺材停留时间一样）；最前面那口盖皇帝 IV 印章
+		Fx.After(root, waveIn, "dark hour wave", () =>
+		{
+			P3Fx.Ripple(back, feet, waveMax * 2f, 0.9f, 0.02f, squashY: waveSquash);
+			Audio.Sfx.Play(Audio.Snd.TarotReveal, 0.5f, pitch: 0.55f);
+		});
 		for (int i = 0; i < row.Length; i++)
 		{
 			var (off, s) = row[i];
 			int k = i;
-			Fx.After(root, 0.55 + 0.1 * i, "tyranny coffin", () =>
+			Fx.After(root, waveIn + arrive[i], "tyranny coffin", () =>
 			{
-				RiseCoffin(back, feet + off, s, 1.07f - 0.1f * k, numeral: k == 0);   // 四口棺材同时（2.0s）开始消散
+				RiseCoffin(back, feet + off, s, waveOut - waveIn - CoffinIn, numeral: k == 0, castShadow: true);
 				Audio.Sfx.Play(Audio.Snd.StarSpend, 0.4f, pitch: 0.5f + 0.05f * k);
 			});
 		}
@@ -786,7 +820,9 @@ public static class Rares
 	/// 停留时棺身有极淡的绿光呼吸；
 	/// 消散：先整体泛起绿光，再从上往下被光线"擦掉"，擦过的地方化成绿色光点往上飘。
 	/// </summary>
-	private static void RiseCoffin(Control layer, Vector2 floor, float s, float hold, bool numeral)
+	private const float CoffinIn = 0.38f;
+
+	private static void RiseCoffin(Control layer, Vector2 floor, float s, float hold, bool numeral, bool castShadow = false)
 	{
 		Texture2D? tex = Coffin;
 		if (tex == null)
@@ -794,12 +830,19 @@ public static class Rares
 			return;
 		}
 		float h = tex.GetHeight(), w = tex.GetWidth();
-		const float tIn = 0.38f, tOut = 0.5f;
+		const float tIn = CoffinIn, tOut = 0.5f;
 		float total = tIn + hold + tOut;
 		Node2D root = Fx.Root(layer, floor, "P3Coffin");
 		root.Scale = Vector2.One * s;
 		// 地面阴影
 		Polygon2D shadow = Fx.Poly(root, Fx.Circle(w * 0.62f, 24, 0.16f), new Color(0f, 0.03f, 0.01f, 0f));
+		// 月光投下的长影子（棺材贴图本身压成黑色、翻到地面上、斜向左下方），随月亮升起拉长
+		Sprite2D? cast = null;
+		if (castShadow)
+		{
+			cast = new() { Texture = tex, Centered = false, Modulate = new Color(0f, 0.02f, 0.01f, 0f) };
+			root.AddChild(cast);
+		}
 		Polygon2D clip = new() { Polygon = RectPts(new Rect2(-w, 0f, w * 2f, 12f)), ClipChildren = CanvasItem.ClipChildrenMode.Only };
 		root.AddChild(clip);
 		Sprite2D spr = new() { Texture = tex, Centered = false, Position = new Vector2(-w / 2f, -h) };
@@ -856,6 +899,15 @@ public static class Rares
 			shine.Modulate = new Color(Pal.DarkHour, glow);
 			spr.Modulate = new Color(1f, 1f, 1f, 0.25f + 0.75f * solid);
 			shadow.Color = new Color(0f, 0.03f, 0.01f, 0.45f * reveal * (1f - wipe));
+			if (cast != null)
+			{
+				// 贴图坐标 (x, y) → 地面：x 轴不变，y 轴 = (k, -q)·len；棺底（y = h）落在脚下，棺顶伸向左下方
+				float len = 0.35f + 0.65f * Ease.OutCubic(Mathf.Clamp(time / (tIn + 0.9f), 0f, 1f));
+				const float k = 0.55f, q = 0.28f;
+				Vector2 yAxis = new Vector2(k, -q) * len;
+				cast.Transform = new Transform2D(Vector2.Right, yAxis, new Vector2(-w / 2f, 0f) - yAxis * h);
+				cast.Modulate = new Color(0f, 0.02f, 0.01f, 0.5f * reveal * (1f - wipe));
+			}
 			if (iv != null)
 			{
 				// 印章式落下：从两倍大砸到原大小
