@@ -19,7 +19,9 @@ public static class Preload
 		"res://p3makoto/ui/cutin_eyes.png",
 		"res://p3makoto/ui/cutin_ka.png",
 		"res://p3makoto/ui/charselect_portrait.png",
+		PortraitSpine,                                     // 选人界面的 Spine 立绘（骨骼数据 + 图集）
 	};
+	private const string PortraitSpine = "res://p3makoto/portrait/portrait_skel_data.tres";
 
 	private static readonly List<Resource> Keep = new();
 	private static readonly List<string> Pending = new();
@@ -57,6 +59,10 @@ public static class Preload
 				if (ResourceLoader.LoadThreadedGet(p) is Resource r)
 				{
 					Keep.Add(r);
+					if (p == PortraitSpine)
+					{
+						ModEntry.Safe("spine warmup", () => WarmSpine(r));
+					}
 				}
 				GD.Print($"{ModEntry.Tag} perf preload {p} ready at +{Time.GetTicksMsec() - _t0}ms");
 				Pending.RemoveAt(i);
@@ -70,6 +76,36 @@ public static class Preload
 		{
 			tree.ProcessFrame -= Poll;
 		}
+	}
+
+	/// <summary>Spine 立绘：数据加载完后在屏幕外实例化一次（解析骨骼 / 建立皮肤的开销挪到启动时），停 3 帧后删掉。</summary>
+	private static void WarmSpine(Resource data)
+	{
+		if (Engine.GetMainLoop() is not SceneTree tree || ClassDB.Instantiate("SpineSprite").AsGodotObject() is not Node2D spine)
+		{
+			return;
+		}
+		CanvasLayer layer = new() { Layer = 128 };
+		tree.Root.AddChild(layer);
+		spine.Position = new Vector2(-4000f, -4000f);
+		spine.Modulate = new Color(1f, 1f, 1f, 0.004f);
+		spine.Set("skeleton_data_res", data);
+		layer.AddChild(spine);
+		int frames = 0;
+		void Tick()
+		{
+			if (++frames < 3)
+			{
+				return;
+			}
+			tree.ProcessFrame -= Tick;
+			if (GodotObject.IsInstanceValid(layer))
+			{
+				layer.QueueFree();
+			}
+			GD.Print($"{ModEntry.Tag} perf spine portrait warmed at +{Time.GetTicksMsec() - _t0}ms");
+		}
+		tree.ProcessFrame += Tick;
 	}
 
 	private static void Warm()
@@ -88,6 +124,10 @@ public static class Preload
 		l.Material = Typo.Gradient(Colors.White, Colors.White, 8f);
 		ColorRect disc = P3Ui.WaterDisc(n, Vector2.One, 1f);
 		_ = disc;
+		// 选人界面：夜空着色器、上升光点的粒子着色器、介绍板（字体 / 扫光 / 文字栅格化）
+		n.AddChild(new ColorRect { Size = new Vector2(2f, 2f), Material = new ShaderMaterial { Shader = Shaders.Menu }, MouseFilter = Control.MouseFilterEnum.Ignore });
+		Fx.Sparks(n, Pal.Cyan, 4, 1f, 2f, 0.3f, gravity: 0f, scaleMin: 0.01f, scaleMax: 0.02f, oneShot: false);
+		ModEntry.Safe("charselect info warmup", () => Scenes.CharSelectInfo.Warm(n));
 		int frames = 0;
 		void Tick()
 		{

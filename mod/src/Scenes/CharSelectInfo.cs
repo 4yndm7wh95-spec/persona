@@ -292,6 +292,27 @@ public static class CharSelectInfo
 		});
 	}
 
+	/// <summary>
+	/// 预热（mod 启动后由 Preload 调用，画在几乎透明的角落节点里）：读 Barlow 字体、编译扫光着色器、
+	/// 把介绍板用到的数字 / 描述文字按实际字号先栅格化一遍 —— 第一次选中结城理时就不用同步读盘、编译、逐字栅格化。
+	/// </summary>
+	internal static void Warm(Node2D parent)
+	{
+		if (Barlow is Font num)
+		{
+			foreach (int size in new[] { 19, 24, 72 })
+			{
+				Typo.Text(parent, "HP G PASSIVE 0123456789/", num, size, Colors.White, Vector2.Zero);
+			}
+		}
+		Typo.Text(parent, ShortDesc(), CjkMedium, 27, Colors.White, Vector2.Zero);
+		Typo.Text(parent, ShortDesc(), CjkBold, 26, Colors.White, Vector2.Zero);
+		if (ResourceLoader.Load(HeadPath) is Texture2D headTex)
+		{
+			parent.AddChild(new Sprite2D { Texture = headTex, Material = new ShaderMaterial { Shader = SheenShader }, Scale = Vector2.One * 0.01f });
+		}
+	}
+
 	private static Shader? _sheen;
 
 	/// <summary>白带扫光：一道斜的亮带沿贴图横向扫过，只加在不透明像素上（透明度不变，边缘不会出锯齿）。sweep &lt; -0.5 时不显示。</summary>
