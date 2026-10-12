@@ -794,7 +794,7 @@ public static class Rares
 		Vector2 size = front.GetViewportRect().Size;
 		float W = size.X, H = size.Y;
 		bool formSky = FormFx.SkyIndex >= 0;
-		const float total = 2.8f, strike = 0.78f;
+		const float total = 2.9f, strike = 0.82f;
 		Color ink = new(0.01f, 0.06f, 0.03f);
 
 		Node2D root = Fx.Root(back, Vector2.Zero, "P3Tyranny");
@@ -827,7 +827,9 @@ public static class Rares
 				float inE = Ease.OutExpo(Mathf.Clamp((time - inAt) / 0.3f, 0f, 1f));
 				float o = Mathf.Clamp((time - outAt) / 0.28f, 0f, 1f);
 				float sq = Mathf.Max(1f - Ease.InCubic(o), 0.001f);
-				float dx = dir * W * 1.1f * (1f - inE) - dir * W * 0.22f * Ease.InCubic(o);
+				// 切入后不静止：沿切入方向继续以 ~25px/s 惯性滑动（从切入开始就叠加，所以 OutExpo 减速后自然接上，不会顿住）
+				float drift = -dir * 25f * Mathf.Max(0f, time - inAt);
+				float dx = dir * W * 1.1f * (1f - inE) + drift - dir * W * 0.22f * Ease.InCubic(o);
 				Vector2[] pts = Pts(dx, sq);
 				frame.Polygon = pts;
 				if (under != null)
@@ -847,14 +849,14 @@ public static class Rares
 		}
 
 		// ① 顶部跑马灯
-		Node2D tick = Panel(-W * 0.05f, W * 1.05f, H * 0.045f, H * 0.088f, H * 0.02f, 0.0f, 2.12f, -1f, new Color(0.01f, 0.04f, 0.03f, 0.95f), 1f, underlay: false);
+		Node2D tick = Panel(-W * 0.05f, W * 1.05f, H * 0.045f, H * 0.088f, H * 0.02f, 0.0f, 2.24f, -1f, new Color(0.01f, 0.04f, 0.03f, 0.95f), 1f, underlay: false);
 		Node2D tickText = new() { Position = new Vector2(W * 0.02f, H * 0.05f), Skew = -0.2f };
 		tick.AddChild(tickText);
 		Typo.Text(tickText, string.Concat(Enumerable.Repeat("DARK HOUR  ·  THE EMPEROR  ·  IV  ·  ", 6)), Typo.Latin, (int)(H * 0.026f), new Color(Pal.DarkHour, 0.95f), Vector2.Zero);
 
 		// ② 主面板：影时间远景
 		float mx0 = W * 0.3f, mx1 = W * 1.06f, myT = H * 0.12f, myB = H * 0.54f, mlean = H * 0.12f;
-		Node2D vista = Panel(mx0, mx1, myT, myB, mlean, 0.08f, 2.02f, 1f, new Color(ink, 1f));
+		Node2D vista = Panel(mx0, mx1, myT, myB, mlean, 0.08f, 2.0f, 1f, new Color(ink, 1f));
 		var windows = new List<(Node2D node, float on)>();
 		var coffins = new List<(Sprite2D glow, float on)>();
 		var moons = new List<Node2D>();
@@ -926,7 +928,7 @@ public static class Rares
 
 		// 倒影面板：主面板下面（人物脚下的地面留白），反向倾斜，里面是翻转的远景，淡、带水面横纹，下沿渐隐进暗处
 		float ryT = myB + H * 0.075f, ryB = H * 1.02f;
-		Node2D reflPanel = Panel(W * 0.18f, W * 1.06f, ryT, ryB, -H * 0.1f, 0.22f, 2.0f, 1f, new Color(ink, 0.9f), 0.45f);
+		Node2D reflPanel = Panel(W * 0.18f, W * 1.06f, ryT, ryB, -H * 0.1f, 0.36f, 2.1f, 1f, new Color(ink, 0.9f), 0.45f);
 		Node2D reflWrap = new() { Position = new Vector2(0f, 2f * (myB + H * 0.04f)), Scale = new Vector2(1f, -1f), Modulate = new Color(1f, 1f, 1f, 0.38f) };
 		reflPanel.AddChild(reflWrap);
 		Node2D reflScene = Vista(reflWrap);
@@ -945,7 +947,7 @@ public static class Rares
 
 		// ③ 左侧小面板：影时间的钟
 		float cx0 = W * 0.04f, cx1 = W * 0.25f, cyT = H * 0.14f, cyB = H * 0.42f;
-		Node2D clockPanel = Panel(cx0, cx1, cyT, cyB, H * 0.08f, 0.2f, 1.95f, -1f, new Color(0.01f, 0.08f, 0.05f, 0.97f));
+		Node2D clockPanel = Panel(cx0, cx1, cyT, cyB, H * 0.08f, 0.22f, 1.9f, -1f, new Color(0.01f, 0.08f, 0.05f, 0.97f));
 		float cr = (cyB - cyT) * 0.36f;
 		Node2D clock = new() { Position = new Vector2(cx0 + (cx1 - cx0) * 0.38f + H * 0.04f, (cyT + cyB) * 0.5f) };
 		clockPanel.AddChild(clock);
@@ -970,7 +972,7 @@ public static class Rares
 		Typo.Text(clockText, "MIDNIGHT", Typo.Latin, (int)(H * 0.018f), new Color(Pal.DarkHour, 0.9f), new Vector2(4f, H * 0.075f));
 
 		// ④ 主面板下沿的反向跑马灯
-		Node2D tick2 = Panel(W * 0.26f, W * 1.05f, myB + H * 0.03f, myB + H * 0.062f, H * 0.012f, 0.28f, 2.06f, 1f, new Color(0.9f, 0.97f, 0.93f, 0.92f), 1f, underlay: false);
+		Node2D tick2 = Panel(W * 0.26f, W * 1.05f, myB + H * 0.03f, myB + H * 0.062f, H * 0.012f, 0.3f, 2.2f, 1f, new Color(0.9f, 0.97f, 0.93f, 0.92f), 1f, underlay: false);
 		Node2D tick2Text = new() { Position = new Vector2(W * 0.28f, myB + H * 0.032f), Skew = -0.2f };
 		tick2.AddChild(tick2Text);
 		Typo.Text(tick2Text, string.Concat(Enumerable.Repeat("MEMENTO MORI  ·  0:00  ·  ", 7)), Typo.Latin, (int)(H * 0.02f), ink, Vector2.Zero);
@@ -1004,7 +1006,7 @@ public static class Rares
 			tick2Text.Position = new Vector2(W * 0.28f - 300f + 110f * time, myB + H * 0.032f);
 			// 身后世界
 			float flick = time < 0.3f ? (Mathf.Sin(time * 58f) > -0.2f ? 1f : 0.4f) : 1f;
-			float shade = Ease.OutCubic(Mathf.Clamp(time / 0.3f, 0f, 1f)) * (1f - Ease.InCubic(Mathf.Clamp((time - 2.15f) / 0.5f, 0f, 1f)));
+			float shade = Ease.OutCubic(Mathf.Clamp(time / 0.3f, 0f, 1f)) * (1f - Ease.InCubic(Mathf.Clamp((time - 2.3f) / 0.5f, 0f, 1f)));
 			dim.Color = new Color(ink, (formSky ? 0.15f : 0.45f) * shade * flick);
 			float strikeFx = Mathf.Clamp(1f - Mathf.Abs(time - strike) / 0.12f, 0f, 1f);
 			midnight.Color = new Color(Pal.DarkHour, 0.2f * Mathf.Clamp(1f - Mathf.Abs(time - 0.08f) / 0.14f, 0f, 1f) + 0.12f * strikeFx);
