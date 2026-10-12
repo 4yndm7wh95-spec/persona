@@ -112,7 +112,9 @@ public static class ThemeFx
 		public Line2D Crack = null!;
 		public float Open;                  // 0 关 → 1 开
 		public float NeedleT;               // 0 最左 → 1 最右
-		public bool Busy;
+		public bool Busy;                  // 正在开门 / 开着 / 正在关门
+		public bool Closing;
+		public ulong CloseAt;
 		public float Time;
 	}
 
@@ -222,17 +224,28 @@ public static class ThemeFx
 		});
 	}
 
-	/// <summary>生成卡牌时（创世之柱给格挡的那一刻）：指针扫到底"叮" → 开门放光 → 砰地关上。</summary>
+	/// <summary>
+	/// 生成卡牌时（创世之柱给格挡的那一刻）：门关着 → 指针扫到底"叮"、开门放光；门已经开着（连续生成多张牌）→ 不关门，
+	/// 只再放一次光和蓝蝶，并把关门时间往后推。最后一张生成完 0.55 秒后才砰地关上。
+	/// </summary>
 	public static void GatePulse()
 	{
-		if (!GateAlive || _gate!.Busy)
+		if (!GateAlive)
 		{
 			return;
 		}
-		Gate g = _gate;
+		Gate g = _gate!;
+		g.CloseAt = Time.GetTicksMsec() + 900;                 // 开门需要 0.3 秒，所以首次延到 0.9 秒后；之后每次续 0.55 秒
+		if (g.Busy)
+		{
+			if (g.Open >= 0.99f)
+			{
+				g.CloseAt = Time.GetTicksMsec() + 550;
+				Burst(g);
+			}
+			return;
+		}
 		g.Busy = true;
-		Control? back = Makoto.FxLayer(back: true);
-		Control? front = Makoto.FxLayer();
 		// 指针一格一格抖着扫到最右（0.3s）
 		Fx.Animate(g.Needle, 0.3f, t =>
 		{
@@ -241,34 +254,43 @@ public static class ThemeFx
 		});
 		Fx.After(g.Root, 0.3, "gate ding", () =>
 		{
-			Vector2 tip = g.Root.ToGlobal(Dial + Vector2.Up.Rotated(Mathf.DegToRad(74f)) * 61f);
-			if (front != null)
+			if (Makoto.FxLayer() is Control front)
 			{
+				Vector2 tip = g.Root.ToGlobal(Dial + Vector2.Up.Rotated(Mathf.DegToRad(74f)) * 61f);
 				P3Fx.Flash(front, tip, Pal.White, 70f, 0.2f);
 			}
 			Audio.Sfx.Play(Audio.Snd.Weak, 0.45f, pitch: 1.3f);
 			Fx.Animate(g.Leaf, 0.16f, t => { g.Open = Ease.OutCubic(t); Apply(g); });
-			if (back != null && front != null)
-			{
-				Vector2 c = g.Root.ToGlobal(Opening.GetCenter());
-				Rays(back, c);
-				for (int i = 0; i < 3; i++)
-				{
-					P3Fx.Butterfly(front, c, c + new Vector2(Fx.Rand(80f, 380f), Fx.Rand(-360f, -160f)), 0.9f, 0.8f);
-				}
-			}
+			Burst(g);
 		});
-		Fx.After(g.Root, 0.92, "gate slam", () =>
+	}
+
+	/// <summary>门开着时每生成一张牌：门口射出光束、飞出蓝蝶。</summary>
+	private static void Burst(Gate g)
+	{
+		if (Makoto.FxLayer(back: true) is Control back && Makoto.FxLayer() is Control front)
 		{
-			Fx.Animate(g.Leaf, 0.08f, t => { g.Open = 1f - Ease.InCubic(t); Apply(g); });
-		});
-		Fx.After(g.Root, 1.0, "gate shut", () =>
+			Vector2 c = g.Root.ToGlobal(Opening.GetCenter());
+			Rays(back, c);
+			for (int i = 0; i < 2; i++)
+			{
+				P3Fx.Butterfly(front, c, c + new Vector2(Fx.Rand(80f, 380f), Fx.Rand(-360f, -160f)), 0.9f, 0.8f);
+			}
+		}
+	}
+
+	/// <summary>关门：砰地关上，门框闪白、轻震，指针落回最左。</summary>
+	private static void Close(Gate g)
+	{
+		g.Closing = true;
+		Fx.Animate(g.Leaf, 0.08f, t => { g.Open = 1f - Ease.InCubic(t); Apply(g); });
+		Fx.After(g.Root, 0.08, "gate shut", () =>
 		{
 			Fx.Animate(g.FrameFlash, 0.15f, t => g.FrameFlash.Modulate = new Color(1f, 1f, 1f, 0.45f * (1f - t)));
 			MegaCrit.Sts2.Core.Nodes.NGame.Instance?.ScreenShake(MegaCrit.Sts2.Core.Nodes.Vfx.Utilities.ShakeStrength.Weak, MegaCrit.Sts2.Core.Nodes.Vfx.Utilities.ShakeDuration.Short);
 			Fx.Animate(g.Needle, 0.3f, t => { g.NeedleT = 1f - Ease.OutCubic(t); Apply(g); });
 		});
-		Fx.After(g.Root, 1.32, "gate idle", () => g.Busy = false);
+		Fx.After(g.Root, 0.4, "gate idle", () => { g.Busy = false; g.Closing = false; });
 	}
 
 	private static void Apply(Gate g)
@@ -302,6 +324,11 @@ public static class ThemeFx
 		// 门缝光：关着时呼吸，开着时隐去
 		float a = (0.35f + 0.25f * Mathf.Sin(g.Time * 4f)) * (1f - g.Open);
 		g.Crack.DefaultColor = new Color(Pal.Cyan, a);
+		// 门开着且已经过了关门时间（没有新的牌在生成）→ 关门
+		if (g.Busy && !g.Closing && g.Open >= 0.99f && Time.GetTicksMsec() >= g.CloseAt)
+		{
+			Close(g);
+		}
 		// 影时间在场时，门也被"照"成暗绿，和战场一致
 		g.Body.Modulate = g.Body.Modulate.Lerp(FormFx.WorldTint, 1f - Mathf.Exp(-6f * dt));
 	}

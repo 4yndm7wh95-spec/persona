@@ -20,7 +20,7 @@ namespace P3Makoto.Vfx;
 public static class CardFx
 {
 	// 有自己物件演出（契约 / 全书 / Shuffle Time / 天鹅绒门）的牌：施法时不再额外翻一张小塔罗
-	private static readonly HashSet<string> ThemeCards = new() { "ForegoneConclusion", "Prophesize", "DecisionsDecisions", "PillarOfCreation", "LunarBlast" };
+	private static readonly HashSet<string> ThemeCards = new() { "ForegoneConclusion", "Prophesize", "DecisionsDecisions", "PillarOfCreation", "LunarBlast", "CrashLanding", "HeavenlyDrill", "MonarchsGaze" };
 
 	public static bool IsMakotoCard(CardModel? card) => card != null && Makoto.Is(card.Owner);
 
@@ -277,6 +277,41 @@ public static class CardFx
 		}
 		List<Creature> list = targets.ToList();
 		float scale = style.HitScale * (list.Count > 1 ? 0.8f : 1f);
+		// 王之凝视在场：被结城理攻击的敌人身上闪一下眼形印记（力量下降）
+		if (card.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Attack && card.Owner?.Creature?.HasPower<MegaCrit.Sts2.Core.Models.Powers.MonarchsGazePower>() == true)
+		{
+			foreach (Creature c in list)
+			{
+				if (!c.IsPlayer && room.GetCreatureNode(c) is NCreature n)
+				{
+					Rares.Mark(front, n.VfxSpawnPosition + new Vector2(0f, -60f), 0.8f);
+				}
+			}
+		}
+		// 天际钻头：每一击 = 头顶的螺旋光锥往下钻一下
+		if (card.GetType().Name == "HeavenlyDrill")
+		{
+			foreach (Creature c in list)
+			{
+				if (room.GetCreatureNode(c) is NCreature n)
+				{
+					Rares.DrillHit(n);
+				}
+			}
+			return;
+		}
+		// 迫降：命中特效由坠落的月亮统一演出，这里只在每个敌人身上补一点碎光
+		if (card.GetType().Name == "CrashLanding")
+		{
+			foreach (Creature c in list)
+			{
+				if (room.GetCreatureNode(c) is NCreature n)
+				{
+					P3Fx.GlassShatter(front, n.VfxSpawnPosition, 10, 0.5f, Pal.Ice);
+				}
+			}
+			return;
+		}
 		// 月面射击：每一击 = 目标头顶的月亮削下一道新月光刃
 		if (card.GetType().Name == "LunarBlast")
 		{

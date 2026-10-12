@@ -56,7 +56,7 @@ public static class CardSigs
 		}),
 		["CrescentSpear"] = c => After(c, 0.1, () => Motifs.FullMoon(c.Back, c.FirstTarget, 0.6f)),
 		["PhotonCut"] = c => After(c, 0.1, () => P3Fx.SpeedLines(c.Front, c.FirstTarget, Pal.Ice, 26, 60f, 700f, 0.3f)),
-		["HeavenlyDrill"] = c => After(c, 0.12, () => Motifs.Drill(c.Front, c.FirstTarget, 1.2f, 0.7f)),
+		["HeavenlyDrill"] = c => { foreach (NCreature t in c.Targets) { Rares.DrillDescend(t); } },
 		["SolarStrike"] = c => After(c, 0.12, () => Motifs.SolarFlare(c.Front, c.FirstTarget + new Vector2(0f, -120f), 0.9f)),
 		["Hegemony"] = c => After(c, 0.14, () => Motifs.CutIn(c.Front, c.FirstTarget, "HAMAON", ElementPal.HolyGold)),
 		["Radiate"] = c => P3Fx.LightPillar(c.Back, c.Feet, ElementPal.HolyGold, 220f, 900f, 0.8f),
@@ -66,7 +66,7 @@ public static class CardSigs
 		["MakeItSo"] = c => After(c, 0.1, () => Motifs.CutIn(c.Front, c.FirstTarget, "MAKE IT SO", Pal.Cyan)),
 		["Bombardment"] = c => Motifs.MeteorRain(c.Front, c.TargetCenters, 6, Pal.Cyan, 0.9f),
 		["Comet"] = c => Motifs.Comet(c.Front, c.FirstTarget, Pal.Cyan, 1.2f),
-		["CrashLanding"] = c => After(c, 0.05, () => Motifs.Comet(c.Front, c.FirstTarget, ElementPal.FireMid, 1.4f)),
+		["CrashLanding"] = c => Rares.Moonfall(c.Targets),
 		["MeteorShower"] = c => Motifs.MeteorRain(c.Front, c.TargetCenters, 14, Pal.Cyan, 1.0f),
 		["SevenStars"] = c => Motifs.Constellation(c.Front, c.Above + new Vector2(260f, -20f), Motifs.BigDipper, Pal.Cyan, 1.1f),
 		["GuidingStar"] = c => Motifs.Constellation(c.Front, c.Above + new Vector2(120f, 0f),
@@ -140,7 +140,7 @@ public static class CardSigs
 
 		// ═════ 能力 ═════
 		["Tyranny"] = c => Tarot(c, "IV", "EMPEROR", Pal.Blood),
-		["MonarchsGaze"] = c => { Tarot(c, "XIX", "THE SUN", ElementPal.HolyGold); After(c, 0.3, () => { foreach (NCreature t in c.Targets) { Motifs.Seal(c.Front, t.VfxSpawnPosition, t.GetBottomOfHitbox(), Pal.Royal, up: false, 0.7f); } }); },
+		["MonarchsGaze"] = c => After(c, 0.15, Rares.Gaze),
 		["Parry"] = c => Tarot(c, "VII", "CHARIOT", Pal.Royal),
 		["NeutronAegis"] = c => { Extras.HexShield(c.Front, c.Center, 1.4f, false, 0.8f); Tarot(c, "XI", "STRENGTH", Pal.Cyan); },
 		["Arsenal"] = c => { for (int i = 0; i < 3; i++) { After(c, 0.12 * i, () => Motifs.ForgeSpark(c.Front, c.Center + new Vector2(80f + 40f * i, -60f + 30f * i), 0.8f)); } },
