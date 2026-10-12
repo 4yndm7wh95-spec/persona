@@ -123,7 +123,7 @@ public static class CardSigs
 		["Prophesize"] = c => After(c, 0.15, () => ThemeFx.Compendium(c.Caster)),
 		["ForegoneConclusion"] = c => After(c, 0.15, () => ThemeFx.Contract(c.Caster)),
 		["DecisionsDecisions"] = c => After(c, 0.1, () => ThemeFx.ShuffleTime(c.Caster)),
-		["Glimmer"] = c => Uniq.Glimmer(c.Back, c.Front, c.Center),
+		["Glimmer"] = c => After(c, 0.12, () => Uniq.Glimmer(c.Back, c.Front, c.Center, WeaponFx.Bone(c.Caster, "hand") ?? c.Center)),
 		["Plot"] = c => Uniq.Plot(c.Back, c.Front, c.Feet),
 		["Tutor"] = c => After(c, 0.15, () => Uniq.Tutor(c.Front, WeaponFx.Bone(c.Caster, "hand") ?? c.Center)),
 		["BundleOfJoy"] = c => Uniq.BundleOfJoy(c.Back, c.Front, c.Head),

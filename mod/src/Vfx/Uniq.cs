@@ -390,26 +390,102 @@ public static class Uniq
 
 	// ══════════════════ 抽牌 / 生成系 ══════════════════
 
-	/// <summary>微光：他身边浮起一圈细小的光点，像萤火一样慢慢升起、明灭，其中一颗忽然变亮、眨一下。</summary>
-	public static void Glimmer(Control back, Control front, Vector2 center)
+	/// <summary>
+	/// 微光：掌心托起一颗光球，光球一明一暗地"呼吸"三下，每亮一次就放出一圈十字星芒；周围一颗接一颗亮起闪烁的小星，
+	/// 萤火般的光点向上飘；最后光球分成两道光尾，一道飞向抽牌堆、一道绕回来落进手牌区（抽牌、放回）。
+	/// </summary>
+	public static void Glimmer(Control back, Control front, Vector2 center, Vector2 hand)
 	{
-		Node2D root = Fx.Root(front, center, "P3Glimmer");
-		GpuParticles2D motes = Fx.Sparks(root, Pal.Ice, 40, 10f, 40f, 1.4f, gravity: -60f, scaleMin: 0.08f, scaleMax: 0.22f, oneShot: false);
-		ParticleProcessMaterial pm = (ParticleProcessMaterial)motes.ProcessMaterial;
-		pm.EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Sphere;
-		pm.EmissionSphereRadius = 160f;
-		Fx.After(root, 0.7, "glimmer off", () => motes.Emitting = false);
-		Fx.After(root, 0.45, "glimmer wink", () =>
+		Vector2 at = hand + new Vector2(30f, -70f);
+		Node2D orb = Fx.Root(front, at, "P3GlimmerOrb");
+		Sprite2D halo = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = Vector2.One * 5f, Modulate = new Color(Pal.Ice, 0.7f) };
+		orb.AddChild(halo);
+		Polygon2D core = Fx.Poly(orb, Fx.Circle(16f, 24), Pal.White, additive: true);
+		Polygon2D flare = Fx.Poly(orb, Fx.Star4(90f, 0.06f), new Color(Pal.White, 0f), additive: true);
+		Polygon2D flare2 = Fx.Poly(orb, Fx.Star4(60f, 0.06f), new Color(Pal.Cyan, 0f), additive: true);
+		flare2.Rotation = Mathf.Pi / 4f;
+		P3Fx.Flash(back, center, Pal.Ice, 380f, 0.45f);
+		const float total = 1.4f;
+		Fx.Animate(orb, total, t =>
 		{
-			Vector2 at = center + new Vector2(90f, -120f);
-			Node2D star = Fx.Root(front, at, "P3GlimmerWink");
-			Fx.Poly(star, Fx.Star4(40f, 0.12f), Pal.White, additive: true);
-			Fx.Animate(star, 0.4f, t => { star.Scale = Vector2.One * Mathf.Sin(t * Mathf.Pi); star.Rotation = t * 1.5f; });
-			Fx.FreeAfter(star, 0.42);
-			Audio.Sfx.Play(Audio.Snd.Weak, 0.35f, pitch: 1.6f);
+			float time = t * total;
+			float grow = Ease.OutBack(Mathf.Clamp(time / 0.2f, 0f, 1f));
+			// 三次呼吸：0.2 / 0.45 / 0.7 秒各亮一下
+			float pulse = 0f;
+			foreach (float p0 in new[] { 0.2f, 0.45f, 0.7f })
+			{
+				pulse = Mathf.Max(pulse, Mathf.Clamp(1f - Mathf.Abs(time - p0) / 0.1f, 0f, 1f));
+			}
+			orb.Scale = Vector2.One * grow * (1f + 0.25f * pulse);
+			halo.Modulate = new Color(Pal.Ice, 0.5f + 0.4f * pulse);
+			flare.Color = new Color(Pal.White, 0.9f * pulse);
+			flare2.Color = new Color(Pal.Cyan, 0.7f * pulse);
+			flare.Rotation = time * 0.8f;
+			flare2.Rotation = Mathf.Pi / 4f - time * 0.8f;
+			orb.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp((time - 0.95f) / 0.1f, 0f, 1f));
 		});
-		P3Fx.Flash(back, center, Pal.Ice, 260f, 0.4f);
-		Fx.FreeAfter(root, 2.3);
+		for (int i = 0; i < 3; i++)
+		{
+			float p0 = 0.2f + 0.25f * i;
+			Fx.After(orb, p0, "glimmer pulse", () =>
+			{
+				P3Fx.Shockwave(front, at, Pal.Ice, 260f, 0.35f);
+				Audio.Sfx.Play(Audio.Snd.Weak, 0.35f, pitch: 1.5f + 0.15f * (p0 * 4f));
+			});
+		}
+		// 四周依次亮起的闪烁小星
+		for (int i = 0; i < 8; i++)
+		{
+			float a = Mathf.Tau * i / 8f + 0.3f;
+			Vector2 p = center + new Vector2(Mathf.Cos(a) * 170f, Mathf.Sin(a) * 120f - 30f);
+			float d = 0.1f + 0.08f * i;
+			Fx.After(orb, d, "glimmer twinkle", () =>
+			{
+				Node2D st = Fx.Root(front, p, "P3GlimmerTwinkle");
+				Fx.Poly(st, Fx.Star4(26f, 0.1f), Pal.White, additive: true);
+				Fx.Animate(st, 0.4f, t => { st.Scale = Vector2.One * Mathf.Sin(t * Mathf.Pi); st.Rotation = t * 1.2f; });
+				Fx.FreeAfter(st, 0.42);
+			});
+		}
+		Node2D motesAt = Fx.Root(front, center, "P3GlimmerMotes");
+		GpuParticles2D motes = Fx.Sparks(motesAt, Pal.Ice, 50, 10f, 50f, 1.4f, gravity: -80f, scaleMin: 0.12f, scaleMax: 0.3f, oneShot: false);
+		((ParticleProcessMaterial)motes.ProcessMaterial).EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Sphere;
+		((ParticleProcessMaterial)motes.ProcessMaterial).EmissionSphereRadius = 170f;
+		Fx.After(motesAt, 0.9, "glimmer motes off", () => motes.Emitting = false);
+		Fx.FreeAfter(motesAt, 2.4);
+		// 收尾：光球分成两道光尾 —— 一道飞去抽牌堆，一道绕个弯落回手牌区
+		Fx.After(orb, 1.0, "glimmer split", () =>
+		{
+			Vector2 size = front.GetViewportRect().Size;
+			Vector2 pile = new(70f, size.Y - 60f), handArea = new(size.X * 0.5f, size.Y - 110f);
+			Streak(front, at, at + new Vector2(-200f, -120f), pile);
+			Streak(front, at, at + new Vector2(260f, -160f), handArea);
+			P3Fx.Flash(front, at, Pal.White, 160f, 0.2f);
+		});
+		Fx.FreeAfter(orb, total + 0.05);
+	}
+
+	private static void Streak(Control layer, Vector2 from, Vector2 ctrl, Vector2 to)
+	{
+		Node2D root = Fx.Root(layer, Vector2.Zero, "P3GlimmerStreak");
+		root.TopLevel = true;
+		root.GlobalPosition = Vector2.Zero;
+		Line2D l = new() { Width = 7f, Material = Fx.Additive, BeginCapMode = Line2D.LineCapMode.Round, EndCapMode = Line2D.LineCapMode.Round,
+			Gradient = new Gradient { Colors = new[] { new Color(Pal.Cyan, 0f), new Color(Pal.White, 0.95f) } } };
+		root.AddChild(l);
+		Fx.Animate(root, 0.5f, t =>
+		{
+			float e = Ease.InOutCubic(Mathf.Clamp(t / 0.8f, 0f, 1f));
+			var pts = new Vector2[8];
+			for (int i = 0; i < 8; i++)
+			{
+				pts[i] = Bezier(from, ctrl, to, Mathf.Max(0f, e - 0.3f + 0.3f * i / 7f));
+			}
+			l.Points = pts;
+			l.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp((t - 0.8f) / 0.2f, 0f, 1f));
+		});
+		Fx.After(root, 0.4, "streak land", () => P3Fx.Flash(layer, to, Pal.Ice, 110f, 0.2f));
+		Fx.FreeAfter(root, 0.52);
 	}
 
 	/// <summary>指导：他抬手一指，一道细光从指尖射向抽牌堆，抽牌堆上亮起准星并"叮"一下。</summary>
