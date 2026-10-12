@@ -130,8 +130,9 @@ public static class Popups
 	public static bool IsMakotoHit(MegaCrit.Sts2.Core.Entities.Creatures.Creature target) =>
 		Marked.TryGetValue(target, out ulong t) && Time.GetTicksMsec() - t < 1500;
 
-	// 同一目标短时间内多段伤害：后一个数字往右下错开，不叠在一起
+	// 同一目标短时间内多段伤害：依次落在目标周围的几个固定位置上（循环使用），不叠在一起，也不会越错越远
 	private static readonly Dictionary<ulong, (ulong Time, int Count)> Stack = new();
+	private static readonly Vector2[] Slots = { new(0f, 0f), new(-95f, 55f), new(85f, 70f), new(-40f, -75f), new(110f, -40f), new(10f, 120f) };
 
 	/// <summary>伤害数字（在目标旁边）。字号随伤害增大：&lt;10 → 112，≥30 → 150。</summary>
 	public static void Damage(Control layer, ulong targetId, Vector2 at, int amount)
@@ -139,7 +140,7 @@ public static class Popups
 		ulong now = Time.GetTicksMsec();
 		int k = Stack.TryGetValue(targetId, out var st) && now - st.Time < 600 ? st.Count + 1 : 0;
 		Stack[targetId] = (now, k);
-		Vector2 home = at + new Vector2(80f + 40f * k, -80f + 36f * k);
+		Vector2 home = at + new Vector2(80f, -80f) + Slots[k % Slots.Length];
 		Node2D root = Fx.Root(layer, home, "P3DamageNum");
 		int size = amount >= 30 ? 150 : amount >= 10 ? 128 : 112;
 		string label = amount.ToString();
