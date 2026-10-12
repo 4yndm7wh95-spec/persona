@@ -71,14 +71,14 @@ public static class Uniq
 	/// </summary>
 	public static void TheSmith(Control back, Control front, Vector2 center)
 	{
-		Vector2 at = center + new Vector2(190f, 40f);       // 剑胚中心
+		Vector2 at = center + new Vector2(380f, 50f);       // 剑胚中心：离人物足够远，法阵不碰到人物脚下
 		Vector2 floor = at + new Vector2(0f, 95f);
 		Color hot = new(1f, 0.5f, 0.12f), gold = new(1f, 0.82f, 0.4f);
 		const float total = 1.9f;
 
 		// 光之砧：地面法阵（橙金 → 淬火后变青）
 		Node2D anvil = Fx.Root(back, floor, "P3SmithAnvil");
-		ColorRect circle = Fx.ShaderQuad(anvil, Shaders.MagicCircle, 420f, 0.3f);
+		ColorRect circle = Fx.ShaderQuad(anvil, Shaders.MagicCircle, 360f, 0.3f);
 		Fx.SetParam(circle, "tint", gold);
 		Fx.SetParam(circle, "spin", 0.7f);
 		// 锻炉之火：剑胚后面
@@ -104,7 +104,8 @@ public static class Uniq
 		Polygon2D sweep = Fx.Poly(sw, RectPts(new Rect2(-10f, -14f, 20f, 28f)), new Color(1f, 1f, 1f, 0f), additive: true);
 		billet.Rotation = 0.04f;
 
-		Node2D hamRoot = Fx.Root(front, at + new Vector2(30f, -10f), "P3SmithHammer");
+		// 锤柄握点在剑胚右侧：锤头从右上方抡下砸在剑胚上，永远不会扫到人物那一侧
+		Node2D hamRoot = Fx.Root(front, at + new Vector2(200f, -30f), "P3SmithHammer");
 		Node2D ham = Hammer(hamRoot, 0.9f, Pal.Ice);
 		Sprite2D hamGlow = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(Pal.Cyan, 0.45f), Scale = Vector2.One * 2.5f, Position = new Vector2(0f, -170f) };
 		ham.AddChild(hamGlow);
@@ -135,7 +136,7 @@ public static class Uniq
 			bool big = k == 3;
 			Fx.After(billet, blows[i], "smith blow", () =>
 			{
-				Vector2 hit = at + new Vector2(big ? 0f : -20f + 30f * k, 0f);
+				Vector2 hit = at + new Vector2(big ? 0f : 10f + 15f * k, -20f);
 				Node2D sp = Fx.Root(front, hit, "P3SmithSparks");
 				Fx.Sparks(sp, hot, big ? 80 : 45, 220f, big ? 760f : 540f, 0.55f, gravity: 1000f, scaleMin: 0.08f, scaleMax: 0.28f,
 					ramp: new[] { new Color(1f, 0.97f, 0.8f), new Color(1f, 0.6f, 0.15f), new Color(0.6f, 0.1f, 0.05f, 0f) });
@@ -156,15 +157,16 @@ public static class Uniq
 		{
 			float time = t * 1.25f;
 			// 每一锤：抬起（0.6）→ 砸下（0.4，加速）
-			float swing = time > 1.1f ? 0.15f : -1.3f;
+			const float strike = -1.45f;                    // 锤头水平朝左、正好落在剑胚上
+			float swing = time > 1.1f ? strike : 0.25f;
 			for (int i = 0; i < blows.Length; i++)
 			{
 				float s0 = blows[i] - 0.25f;
 				if (time >= s0 && time <= blows[i] + 0.05f)
 				{
 					float ph = (time - s0) / 0.25f;
-					float lift = i == 3 ? -2.1f : -1.3f;
-					swing = ph < 0.55f ? Mathf.Lerp(0.15f, lift, Ease.OutCubic(ph / 0.55f)) : Mathf.Lerp(lift, 0.15f, Ease.InCubic(Mathf.Clamp((ph - 0.55f) / 0.45f, 0f, 1f)));
+					float lift = i == 3 ? 0.75f : 0.25f;          // 向右上方抬起（第四锤抬得更高）
+					swing = ph < 0.55f ? Mathf.Lerp(strike, lift, Ease.OutCubic(ph / 0.55f)) : Mathf.Lerp(lift, strike, Ease.InCubic(Mathf.Clamp((ph - 0.55f) / 0.45f, 0f, 1f)));
 				}
 			}
 			hamRoot.Rotation = swing;
