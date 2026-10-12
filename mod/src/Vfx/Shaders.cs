@@ -219,13 +219,13 @@ void fragment() {
 shader_type canvas_item;
 uniform float alpha = 1.0;
 uniform vec2 moon = vec2(0.25, 0.2);
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
 	vec2 u = f * f * (3.0 - 2.0 * f);
 	return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
 }
-float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p *= 2.03; a *= 0.5; } return v; }
+float fbm(vec2 p) { float v = 0.0, a = 0.5; mat2 r = mat2(vec2(0.8, 0.6), vec2(-0.6, 0.8)); for (int i = 0; i < 5; i++) { v += a * noise(p); p = r * p * 2.03 + 17.0; a *= 0.5; } return v; }
 void fragment() {
 	vec2 uv = SCREEN_UV;
 	vec3 top = vec3(0.0, 0.05, 0.03), low = vec3(0.05, 0.24, 0.11);
@@ -257,13 +257,13 @@ void fragment() {
 	public static Shader DarkMoon => _darkMoon ??= Make(@"
 shader_type canvas_item;
 uniform float alpha = 1.0;
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
 	vec2 u = f * f * (3.0 - 2.0 * f);
 	return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
 }
-float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p *= 2.03; a *= 0.5; } return v; }
+float fbm(vec2 p) { float v = 0.0, a = 0.5; mat2 r = mat2(vec2(0.8, 0.6), vec2(-0.6, 0.8)); for (int i = 0; i < 5; i++) { v += a * noise(p); p = r * p * 2.03 + 17.0; a *= 0.5; } return v; }
 void fragment() {
 	vec2 p = UV - 0.5;
 	float r = length(p);
@@ -285,16 +285,60 @@ void fragment() {
 	float ha = glow * 0.75 + ring1 + ring2;
 	// 云带：横向拉长的噪声，缓慢向左飘，主要遮住月亮下半部
 	float band = smoothstep(0.02, 0.18, p.y + 0.05) * smoothstep(0.42, 0.12, p.y);
-	float cloud = smoothstep(0.5, 0.75, fbm(vec2(p.x * 4.0 + TIME * 0.025, p.y * 14.0))) * band;
+	float cloud = smoothstep(0.42, 0.78, fbm(vec2(p.x * 3.0 + TIME * 0.025, p.y * 9.0))) * band * 0.7;
 	vec3 cloudCol = vec3(0.02, 0.12, 0.06);
 	vec3 col = mix(halo, surf, disc);
 	float a = max(disc, ha);
 	col = mix(col, cloudCol, cloud * 0.85);
 	a = max(a, cloud * 0.8 * smoothstep(0.5, 0.1, r));
 	// 云的上缘被月光照亮
-	float lit = cloud * (1.0 - smoothstep(0.5, 0.8, fbm(vec2(p.x * 4.0 + TIME * 0.025, p.y * 14.0 - 0.6)))) * disc;
+	float lit = cloud * (1.0 - smoothstep(0.42, 0.8, fbm(vec2(p.x * 3.0 + TIME * 0.025, p.y * 9.0 - 0.4)))) * disc;
 	col += vec3(0.5, 0.9, 0.4) * lit * 0.4;
 	COLOR = vec4(col, a * alpha);
+}");
+
+	private static Shader? _moonPhase;
+
+	/// <summary>
+	/// 月相（月面射击）：冷白色的月亮，phase 0 = 新月（只剩一道亮边）→ 1 = 满月；被照亮部分有环形山与球面明暗，
+	/// 暗面留一点"地照"的深蓝；外圈一层青色柔光（满月时更亮）。alpha 整体透明度，flash 让月面整体发白。
+	/// </summary>
+	public static Shader MoonPhase => _moonPhase ??= Make(@"
+shader_type canvas_item;
+render_mode blend_mix;
+uniform float phase = 0.25;
+uniform float alpha = 1.0;
+uniform float flash = 0.0;
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+float noise(vec2 p) {
+	vec2 i = floor(p), f = fract(p);
+	vec2 u = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
+}
+float fbm(vec2 p) { float v = 0.0, a = 0.5; mat2 r = mat2(vec2(0.8, 0.6), vec2(-0.6, 0.8)); for (int i = 0; i < 5; i++) { v += a * noise(p); p = r * p * 2.03 + 17.0; a *= 0.5; } return v; }
+void fragment() {
+	vec2 p = UV - 0.5;
+	float R = 0.3;
+	float r = length(p);
+	float disc = smoothstep(R, R - 0.005, r);
+	// 明暗交界线：x > cos(phase·π)·√(R²−y²) 的部分被照亮（光从右边来）
+	float half_w = sqrt(max(R * R - p.y * p.y, 0.0));
+	float term = cos(clamp(phase, 0.0, 1.0) * 3.14159) * half_w;
+	float lit = smoothstep(term - 0.012, term + 0.012, p.x) * disc;
+	float maria = smoothstep(0.45, 0.72, fbm(p * 6.0 + 3.0));
+	float craters = fbm(p * 26.0 + 9.0);
+	float sphere = sqrt(max(0.0, 1.0 - r * r / (R * R)));
+	vec3 surf = vec3(0.86, 0.94, 1.0) * (0.86 + 0.2 * craters) - vec3(0.16, 0.12, 0.05) * maria;
+	surf *= 0.75 + 0.25 * sphere;
+	vec3 dark = vec3(0.04, 0.09, 0.26) * (0.8 + 0.3 * craters);
+	vec3 col = mix(dark, surf, lit);
+	col = mix(col, vec3(1.0), flash * disc);
+	float rim = smoothstep(R - 0.025, R, r) * disc * lit;
+	col += vec3(0.6, 0.9, 1.0) * rim * 0.6;
+	float glow = exp(-max(r - R, 0.0) * 12.0) * (1.0 - disc) * (0.3 + 0.7 * clamp(phase, 0.0, 1.0));
+	vec3 outCol = mix(vec3(0.45, 0.8, 1.0), col, disc);
+	float a = max(disc, glow * 0.8);
+	COLOR = vec4(outCol, a * alpha);
 }");
 
 	private static Shader? _waterDisc;
