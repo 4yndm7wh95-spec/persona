@@ -1530,29 +1530,82 @@ public static class Uniq
 
 	// ══════════════════ 攻击补充 ══════════════════
 
-	/// <summary>传承之锤：巨锤带着残影从高处抡下砸在敌人身上，地面炸开一圈。</summary>
+	/// <summary>
+	/// 传承之锤：一柄巨大的光之锤从敌人左上方抡下来（握点在空中，锤头绕握点划一道大弧），锤头底面正正砸在敌人头顶：
+	/// 锤头后面拖一道弧形残影；砸中瞬间顿帧 0.07s、锤身被反震弹起一点，敌人头顶白闪 + 冲击环，脚下地面开裂 + 压扁的冲击波，火花向两侧溅开，强震屏。
+	/// </summary>
 	public static void HeirloomHammer(Control front, Vector2 target, Vector2 feet)
 	{
-		for (int i = 0; i < 3; i++)
+		const float sc = 1.9f;
+		// 敌人头顶：中心点往上再走半个身位
+		Vector2 impact = new(target.X, target.Y - Mathf.Max(feet.Y - target.Y, 60f) * 0.8f);
+		// 锤柄水平朝右时，锤头中心在握点右边 171·sc，锤头底面比握点低 55·sc
+		Vector2 grip = impact + new Vector2(-171f * sc, -55f * sc);
+		const float a0 = -0.5f, a1 = Mathf.Pi / 2f, tSwing = 0.22f, tStop = 0.07f, tOut = 0.3f;
+		Vector2 At(float ang, float r) => grip + new Vector2(Mathf.Sin(ang), -Mathf.Cos(ang)) * r;
+
+		// 弧形残影（锤头扫过的扇环，只留当前角度后面一段）
+		Node2D smearRoot = Fx.Root(front, Vector2.Zero, "P3HeirloomSmear");
+		smearRoot.TopLevel = true;
+		smearRoot.GlobalPosition = Vector2.Zero;
+		Polygon2D smear = Fx.Poly(smearRoot, new Vector2[3], new Color(Pal.Cyan, 0f), additive: true);
+		Polygon2D smearCore = Fx.Poly(smearRoot, new Vector2[3], new Color(Pal.White, 0f), additive: true);
+		void Sector(Polygon2D poly, float from, float to, float r0, float r1)
 		{
-			float d = 0.03f * i;
-			Fx.After(front, d, "heirloom ghost", () =>
+			const int n = 16;
+			var pts = new Vector2[(n + 1) * 2];
+			for (int i = 0; i <= n; i++)
 			{
-				Node2D root = Fx.Root(front, target + new Vector2(-60f, 0f), "P3Heirloom");
-				Node2D h = Hammer(root, 1.9f, Pal.Cyan);
-				h.Rotation = Mathf.Pi;
-				h.Modulate = new Color(1f, 1f, 1f, i == 0 ? 1f : 0.35f);
-				Fx.Animate(root, 0.24f, t => { root.Rotation = Mathf.Lerp(-2.6f, 0.1f, Ease.InCubic(t)); });
-				Fx.After(root, 0.24, "heirloom fade", () => Fx.Animate(root, 0.2f, t => root.Modulate = new Color(1f, 1f, 1f, 1f - t)));
-				Fx.FreeAfter(root, 0.46);
-			});
+				float ang = Mathf.Lerp(from, to, i / (float)n);
+				pts[i] = At(ang, r1);
+				pts[(n + 1) * 2 - 1 - i] = At(ang, Mathf.Lerp(r1, r0, i / (float)n));   // 越靠后越窄：彗尾形
+			}
+			Fx.Reshape(poly, pts);
 		}
-		Fx.After(front, 0.24, "heirloom hit", () =>
+
+		Node2D root = Fx.Root(front, grip, "P3Heirloom");
+		Node2D h = Hammer(root, sc, Pal.Cyan);
+		Sprite2D glow = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(Pal.Cyan, 0.55f), Scale = new Vector2(3.4f, 2f), Position = new Vector2(0f, -171f * sc) };
+		h.AddChild(glow);
+		root.Rotation = a0;
+		float total = tSwing + tStop + tOut;
+		Fx.Animate(root, total, t =>
 		{
+			float time = t * total;
+			float sw = Ease.InCubic(Mathf.Clamp(time / tSwing, 0f, 1f));
+			float rec = Mathf.Clamp((time - tSwing - tStop) / tOut, 0f, 1f);
+			// 砸中后被反震弹起 0.12 rad 再落回一点
+			float ang = Mathf.Lerp(a0, a1, sw) - 0.12f * Mathf.Sin(rec * Mathf.Pi) * (1f - rec * 0.5f);
+			root.Rotation = ang;
+			root.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.05f, 0f, 1f) * (1f - Ease.InCubic(Mathf.Clamp((rec - 0.4f) / 0.6f, 0f, 1f))));
+			// 残影：挥动时跟在锤头后面 0.9 rad，砸中后迅速淡掉
+			float tail = Mathf.Min(0.9f, ang - a0);
+			float sa = time < tSwing ? 0.5f * sw : 0.5f * (1f - Mathf.Clamp((time - tSwing) / 0.15f, 0f, 1f));
+			if (tail > 0.02f)
+			{
+				Sector(smear, ang - tail, ang, 150f * sc, 200f * sc);
+				Sector(smearCore, ang - tail * 0.6f, ang, 168f * sc, 192f * sc);
+			}
+			smear.Color = new Color(Pal.Cyan, sa);
+			smearCore.Color = new Color(Pal.White, sa * 0.8f);
+		});
+		Fx.After(root, tSwing, "heirloom hit", () =>
+		{
+			P3Fx.Flash(front, impact, Pal.White, 380f, 0.18f);
+			P3Fx.Shockwave(front, impact, Pal.Ice, 520f, 0.35f, squashY: 0.55f);
+			P3Fx.Shockwave(front, feet, Pal.Cyan, 640f, 0.4f, squashY: 0.25f);
 			Motifs.GroundCrack(front, feet, 1.5f);
-			Bang(front, target, Pal.Ice, 1.3f);
+			Node2D sp = Fx.Root(front, impact, "P3HeirloomSparks");
+			GpuParticles2D e = Fx.Sparks(sp, Pal.Ice, 50, 260f, 620f, 0.5f, gravity: 1100f, scaleMin: 0.08f, scaleMax: 0.25f,
+				ramp: new[] { Pal.White, Pal.Cyan, new Color(Pal.Cyan, 0f) });
+			((ParticleProcessMaterial)e.ProcessMaterial).Direction = new Vector3(0f, -1f, 0f);
+			((ParticleProcessMaterial)e.ProcessMaterial).Spread = 75f;
+			Fx.FreeAfter(sp, 0.7);
+			P3Fx.SpeedLines(front, impact, Pal.Ice, 14, 80f, 320f, 0.3f);
 			Shake(ShakeStrength.Strong);
 		});
+		Fx.FreeAfter(root, total + 0.03f);
+		Fx.FreeAfter(smearRoot, total + 0.03f);
 	}
 
 	/// <summary>王者之踢：一道新月形的脚踢弧光从下往上划过敌人，弧尾拖出残影。</summary>
