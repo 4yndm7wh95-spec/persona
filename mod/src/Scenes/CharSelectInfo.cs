@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Models;
@@ -8,44 +9,63 @@ using P3Makoto.Vfx;
 namespace P3Makoto.Scenes;
 
 /// <summary>
-/// 选人界面左侧的角色介绍板（所有角色共用的 InfoPanel）：选中结城理时换成 P3R 菜单风格，选别的角色时全部恢复原样。只改外观。
-/// 视觉语言照 P3R 菜单截图（人格面具 / 装备 / 社群界面）：
-/// · 一整块斜切板子：上面白色抬头、下面深蓝正文，左右边缘和斜切角度完全一致（选人背景本身很满，这块要"安静"）；抬头上沿错开露出一条青边。
-/// · 名字：烘焙好的字样（tools/ui/build_plates.nameplate）—— 深蓝渐变"結城 理" + 青色错位残影 + 浅灰大号"愚者"；原版名字标签隐藏但保留排版位置。
-/// · 天赋图标垫一张青边小斜卡。
-/// · 字不用纯色：逐行竖向渐变（Typo.Gradient）—— 正文白 → 冰蓝，天赋名冰白 → 青，血量白 → 青、金币白 → 黄（+ 同色下划线、红色斜杠）。
-/// · 描述文案换成精简版（只在显示上替换，切走时还原原文）。
+/// 选人界面左侧的角色介绍板：选中结城理时换成 P3R 人格面具状态界面风格（效果图方向 A），选别的角色时全部恢复原样。只改显示。
+/// 原版面板整块隐藏，内容由我们重新排（数值 / 天赋名称 / 天赋说明 / 图标都实时读原版的标签和数据）：
+/// · 抬头：倾斜白带（烘焙图 tools/ui/build_info_panel.py：大号"0"、ARCANA、"結城 理"、YUKI MAKOTO），裁在白带里的浅灰"愚者"；
+/// · 数字：Barlow Condensed 粗斜体（mod 自带，SIL OFL），血量白 → 青、金币白 → 黄渐变，同色粗下划线，中间红色斜杠；
+/// · 描述（精简文案）+ 左侧青线；天赋：青边图标斜卡 + 名称 + 黄色 PASSIVE 标签 + 说明。中文用游戏自带的 Noto Sans CJK。
+/// 动画：等选中时的召唤切入（眼神横幅碎裂）结束再入场 —— 白带滑入 → 数字弹入并从 0 数上来 → 描述 → 天赋；
+/// 之后常驻：白带每隔几秒扫过一道光、"愚者"缓慢漂移、整组极轻微浮动、下划线轻轻呼吸。
+/// 坐标按 1920×1080 下原版面板左上角为原点（效果图量出来的）。
 /// </summary>
 public static class CharSelectInfo
 {
 	private const string DecoName = "P3InfoDeco";
-	private const string PlatePath = "res://p3makoto/ui/nameplate.png";
-	private const string HpPath = "VBoxContainer/HpGoldSpacer/HpGold/Hp/Label";
-	private const string GoldPath = "VBoxContainer/HpGoldSpacer/HpGold/Gold/Label";
-	private const string DescPath = "VBoxContainer/DescriptionLabel";
-	private const string RelicNamePath = "VBoxContainer/Relic/Name/RichTextLabel";
-	private const string RelicDescPath = "VBoxContainer/Relic/Description";
-	// 名字字样贴图（build_plates.nameplate，724×155，透明底）：名字字形左下角、名字字高
-	private static readonly Vector2 PlateAnchor = new(20f, 135f);
-	private const float PlateNameH = 102.5f;
+	private const string HeadPath = "res://p3makoto/ui/info_head.png";
+	private const string GhostPath = "res://p3makoto/ui/info_head_ghost.png";
+	private const string BarlowPath = "res://p3makoto/fonts/BarlowCondensed-900Italic.ttf";
+	private const string CjkBoldPath = "res://fonts/jpn/NotoSansCJKjp-Bold.otf";
+	private const string CjkMediumPath = "res://fonts/jpn/NotoSansCJKjp-Medium.otf";
+	private const float Tilt = -5f * Mathf.Pi / 180f;           // 整组右端上扬 5°（和选人背景里的大斜条同方向）
 
-	private static readonly Color Yellow = new(1f, 0.82f, 0.12f);
-	private static readonly Color Red = new(0.91f, 0.14f, 0.23f);
-	private static readonly Color Ice = new(0.66f, 0.84f, 1f);
-	private static readonly Color Navy = new(0.016f, 0.04f, 0.18f, 0.95f);
+	private static readonly Color White = new(0.97f, 0.98f, 1f);
+	private static readonly Color Ink = new(0.03f, 0.04f, 0.1f);
+	private static readonly Color Navy = new(0.024f, 0.063f, 0.26f);
+	private static readonly Color Deep = new(0.012f, 0.03f, 0.14f);
+	private static readonly Color Ice = new(0.69f, 0.84f, 1f);
+	private static readonly Color Yellow = new(1f, 0.82f, 0.16f);
+	private static readonly Color Red = new(0.91f, 0.12f, 0.23f);
 
 	private sealed class Saved
 	{
-		public readonly List<(CanvasItem Item, Color SelfModulate)> Hidden = new();
-		public readonly List<System.Action> Undo = new();
+		public readonly List<(CanvasItem Item, Color Color, bool Self)> Hidden = new();
 	}
 
 	private static readonly Dictionary<ulong, Saved> State = new();
+	private static Font? _barlow;
+
+	private static Font? Barlow
+	{
+		get
+		{
+			if (_barlow == null)
+			{
+				FontFile f = new();
+				if (f.LoadDynamicFont(BarlowPath) == Error.Ok)
+				{
+					_barlow = f;
+				}
+			}
+			return _barlow ?? Typo.Latin;
+		}
+	}
+
+	private static Font CjkBold => ResourceLoader.Load(CjkBoldPath) as Font ?? Typo.Cjk;
+	private static Font CjkMedium => ResourceLoader.Load(CjkMediumPath) as Font ?? Typo.Cjk;
 
 	public static void Apply(NCharacterSelectScreen screen, NCharacterSelectButton button, CharacterModel model)
 	{
 		Control? panel = Traverse.Create(screen).Field("_infoPanel").GetValue<Control>();
-		Label? name = Traverse.Create(screen).Field("_name").GetValue<Label>();
 		if (panel == null || !GodotObject.IsInstanceValid(panel))
 		{
 			return;
@@ -58,60 +78,38 @@ public static class CharSelectInfo
 		Saved saved = new();
 		State[panel.GetInstanceId()] = saved;
 
-		// 原版底板：面板自身的绘制 + 面板下除内容容器以外的直接子节点（只是底图 / 装饰）
-		Hide(saved, panel);
+		// 原版面板整块隐藏：底板（面板自身 + 非容器子节点）用 SelfModulate，内容容器用 Modulate（连同所有子节点）
+		saved.Hidden.Add((panel, panel.SelfModulate, true));
+		panel.SelfModulate = new Color(1f, 1f, 1f, 0f);
 		foreach (Node child in panel.GetChildren())
 		{
-			if (child is CanvasItem ci && child is not Container && child.Name != DecoName)
+			if (child is not CanvasItem ci || child.Name == DecoName)
 			{
-				Hide(saved, ci);
+				continue;
 			}
-		}
-		// 名字：原版标签隐藏（保留排版位置），换成名字色带贴图
-		if (name != null)
-		{
-			Hide(saved, name);
-		}
-		// 字色先统一设成白（渐变由材质上色，见 Build），去掉原版投影
-		foreach (string path in new[] { DescPath, RelicNamePath, RelicDescPath })
-		{
-			if (panel.GetNodeOrNull<Control>(path) is Control c)
+			if (child is Container)
 			{
-				saved.Undo.Add(Typo.Theme(c, colors: new[] { ("default_color", Colors.White), ("font_shadow_color", new Color(0f, 0f, 0f, 0f)) }));
+				saved.Hidden.Add((ci, ci.Modulate, false));
+				ci.Modulate = new Color(1f, 1f, 1f, 0f);
 			}
-		}
-		foreach (string path in new[] { HpPath, GoldPath })
-		{
-			if (panel.GetNodeOrNull<Label>(path) is Label l)
+			else
 			{
-				saved.Undo.Add(Typo.Restyle(l, Typo.LatinItalic, Colors.White, new Color(0.02f, 0.06f, 0.3f), 4));
+				saved.Hidden.Add((ci, ci.SelfModulate, true));
+				ci.SelfModulate = new Color(1f, 1f, 1f, 0f);
 			}
-		}
-		// 各行之间拉开（P3R 留白多）：内容容器的行距加大，名字行下方再多空一截给色带
-		if (panel.GetNodeOrNull<Control>("VBoxContainer") is Control vbox)
-		{
-			int sep = vbox.GetThemeConstant("separation");
-			saved.Undo.Add(Typo.Theme(vbox, consts: new[] { ("separation", sep + 14) }));
-		}
-		if (name != null)
-		{
-			float minY = name.CustomMinimumSize.Y;
-			name.CustomMinimumSize = new Vector2(name.CustomMinimumSize.X, Mathf.Max(minY, name.Size.Y + 22f));
-			saved.Undo.Add(() => { if (GodotObject.IsInstanceValid(name)) name.CustomMinimumSize = new Vector2(name.CustomMinimumSize.X, minY); });
-		}
-		// 精简文案
-		if (panel.GetNodeOrNull<RichTextLabel>(DescPath) is RichTextLabel desc)
-		{
-			string orig = desc.Text;
-			desc.Text = ShortDesc();
-			saved.Undo.Add(() => { if (GodotObject.IsInstanceValid(desc)) desc.Text = orig; });
 		}
 
-		Node2D deco = new() { Name = DecoName };                     // Node2D：面板若是容器也不会被它排版、不挤动原版内容
+		// 内容：读原版的标签 / 数据
+		string hp = Traverse.Create(screen).Field("_hp").GetValue<Label>()?.Text ?? "";
+		string gold = Traverse.Create(screen).Field("_gold").GetValue<Label>()?.Text ?? "";
+		string relicTitle = Traverse.Create(screen).Field("_relicTitle").GetValue<RichTextLabel>()?.Text ?? "";
+		string relicDesc = Traverse.Create(screen).Field("_relicDescription").GetValue<RichTextLabel>()?.Text ?? "";
+		Texture2D? relicIcon = Traverse.Create(screen).Field("_relicIcon").GetValue<TextureRect>()?.Texture;
+
+		Node2D deco = new() { Name = DecoName, Visible = false };
 		panel.AddChild(deco);
-		panel.MoveChild(deco, 0);                                   // 最先画：内容都在它上面
-		// 文字刚换过，容器要到下一帧才重新排版：等两帧再按实际位置画
-		Fx.After(deco, 0.034, "info panel deco", () => Build(deco, panel.Size, saved, name));
+		// 等选中时的召唤切入（眼神横幅 0.7s 后碎裂）结束再入场，两者不同时出现
+		Fx.After(deco, CutInFx.Enabled ? 0.85 : 0.1, "info panel", () => Build(deco, hp, gold, Regex.Replace(relicTitle, @"\[[^\]]*\]", ""), relicDesc, relicIcon));
 	}
 
 	private static string ShortDesc()
@@ -128,12 +126,6 @@ public static class CharSelectInfo
 		return "A silent youth awakened in the Dark Hour.\nHis bonds call forth his Persona.";
 	}
 
-	private static void Hide(Saved saved, CanvasItem item)
-	{
-		saved.Hidden.Add((item, item.SelfModulate));
-		item.SelfModulate = new Color(1f, 1f, 1f, 0f);
-	}
-
 	private static void Restore(Control panel)
 	{
 		if (panel.GetNodeOrNull(DecoName) is Node old)
@@ -145,133 +137,165 @@ public static class CharSelectInfo
 		{
 			return;
 		}
-		foreach ((CanvasItem item, Color c) in saved.Hidden)
+		foreach ((CanvasItem item, Color c, bool self) in saved.Hidden)
 		{
-			if (GodotObject.IsInstanceValid(item))
-			{
-				item.SelfModulate = c;
-			}
-		}
-		for (int i = saved.Undo.Count - 1; i >= 0; i--)
-		{
-			saved.Undo[i]();
+			if (!GodotObject.IsInstanceValid(item)) continue;
+			if (self) item.SelfModulate = c;
+			else item.Modulate = c;
 		}
 	}
 
-	/// <summary>节点相对面板的矩形（面板在滑入动画中也成立：两者一起移动）。</summary>
-	private static Rect2? RectIn(Control panel, string path)
+	/// <summary>文字标签（字体 / 字号 / 白字 + 渐变材质 + 可选描边）。</summary>
+	private static Label Text(Node parent, string text, Font font, int size, Color top, Color bottom, Vector2 pos, int outline = 0, Color? outlineColor = null)
 	{
-		if (panel.GetNodeOrNull<Control>(path) is not Control c || !c.IsVisibleInTree() || c.Size.X < 1f)
-		{
-			return null;
-		}
-		return new Rect2(c.GlobalPosition - panel.GlobalPosition, c.Size * c.GetGlobalTransform().Scale);
+		Label l = Typo.Text(parent, text, font, size, Colors.White, pos, outline: outline, outlineColor: outlineColor ?? Deep);
+		l.Material = Typo.Gradient(top, bottom, size * 1.35f);
+		return l;
 	}
 
-	private static void Build(Node2D deco, Vector2 size, Saved saved, Label? name)
+	private static float TextWidth(Font font, string text, int size) => font.GetStringSize(text, HorizontalAlignment.Left, -1, size).X;
+
+	private static void Build(Node2D deco, string hp, string gold, string relicTitle, string relicDesc, Texture2D? relicIcon)
 	{
-		if (!GodotObject.IsInstanceValid(deco) || deco.GetParent() is not Control panel)
+		if (!GodotObject.IsInstanceValid(deco))
 		{
 			return;
 		}
-		// 渐变字（排版完成后才量得准行高）
-		void Grad(string path, Color top, Color bottom)
-		{
-			if (panel.GetNodeOrNull<Control>(path) is Control c)
-			{
-				saved.Undo.Add(Typo.ApplyGradient(c, top, bottom));
-			}
-		}
-		Grad(DescPath, Colors.White, Ice);
-		Grad(RelicDescPath, Colors.White, Ice);
-		Grad(RelicNamePath, new Color(0.85f, 0.97f, 1f), Pal.Cyan);
-		Grad(HpPath, Colors.White, Pal.Cyan);
-		Grad(GoldPath, new Color(1f, 0.98f, 0.85f), Yellow);
+		deco.Visible = true;
+		Font num = Barlow!;
 
-		// 按原版每一块的实际位置画（不靠固定比例猜）
-		Rect2 box = RectIn(panel, "VBoxContainer") ?? new Rect2(Vector2.Zero, size);
-		Rect2? nameR = RectIn(panel, "VBoxContainer/Name");
-		Rect2? iconR = RectIn(panel, "VBoxContainer/Relic/Icon");
-
-		// ── 一整块板子：上面白色抬头（名字），下面深蓝正文；左右边缘和斜切角度完全一致 ──
-		const float lean = 40f;
-		float left = box.Position.X - 44f, right = box.End.X + 24f;
-		float bottom = box.End.Y + 26f;
-		float headTop = box.Position.Y - 14f, headBottom = box.Position.Y + 60f;
-		Node2D head = new();
-		Node2D text = new();
-		if (nameR is Rect2 n)
-		{
-			// 按名字文字本身的行高定位（名字标签下方额外加了留白，不能用整个标签高度）
-			float lh = name != null && GodotObject.IsInstanceValid(name) ? name.GetLineHeight() : n.Size.Y;
-			float textTop = n.Position.Y;
-			if (name != null && name.VerticalAlignment == VerticalAlignment.Center) textTop += (n.Size.Y - lh) * 0.5f;
-			else if (name != null && name.VerticalAlignment == VerticalAlignment.Bottom) textTop += n.Size.Y - lh;
-			headTop = textTop - lh * 0.22f;
-			headBottom = textTop + lh * 1.08f;
-			if (ResourceLoader.Load(PlatePath) is Texture2D plate)
-			{
-				float s = lh * 0.78f / PlateNameH;
-				Vector2 origin = new(n.Position.X + 6f, textTop + lh * 0.9f);
-				text.AddChild(new Sprite2D { Texture = plate, Centered = false, Scale = Vector2.One * s, Position = origin - PlateAnchor * s });
-			}
-		}
-		float total = bottom - headTop;
-		float X(float x, float y) => x + lean * (bottom - y) / total;       // 同一条斜边上 y 处的 x
-		Fx.Poly(head, new[] { new Vector2(X(left, headTop - 7f) + 70f, headTop - 7f), new Vector2(X(right, headTop - 7f) + 10f, headTop - 7f), new Vector2(X(right, headTop) + 10f, headTop), new Vector2(X(left, headTop) + 70f, headTop) }, new Color(Pal.Cyan, 0.95f));   // 上沿错开的青边
-		Fx.Poly(head, new[] { new Vector2(X(left, headTop), headTop), new Vector2(X(right, headTop), headTop), new Vector2(X(right, headBottom), headBottom), new Vector2(X(left, headBottom), headBottom) }, new Color(0.97f, 0.98f, 1f, 0.98f));   // 白色抬头
-		Node2D main = new();
-		deco.AddChild(main);
-		Fx.Poly(main, new[] { new Vector2(X(left, headBottom), headBottom), new Vector2(X(right, headBottom), headBottom), new Vector2(right, bottom), new Vector2(left, bottom) }, Navy);   // 深蓝正文
+		// ── 抬头：倾斜白带（烘焙图）+ 裁在白带里的"愚者"（常驻缓慢漂移）+ 扫光 ──
+		Node2D head = new() { Position = new Vector2(252f, -28f), Rotation = Tilt };
 		deco.AddChild(head);
-		deco.AddChild(text);
-
-		// ── 天赋：图标垫一张青边小斜卡 ──
-		Node2D relic = new();
-		deco.AddChild(relic);
-		if (iconR is Rect2 ic)
+		if (ResourceLoader.Load(HeadPath) is Texture2D headTex)
 		{
-			Rect2 c = ic.Grow(6f);
-			float k = c.Size.Y * 0.18f;
-			Fx.Poly(relic, new[] { new Vector2(c.Position.X + k - 3f, c.Position.Y - 3f), new Vector2(c.End.X + k + 3f, c.Position.Y - 3f), new Vector2(c.End.X + 3f, c.End.Y + 3f), new Vector2(c.Position.X - 3f, c.End.Y + 3f) }, new Color(Pal.Cyan, 0.95f));
-			Fx.Poly(relic, new[] { new Vector2(c.Position.X + k, c.Position.Y), new Vector2(c.End.X + k, c.Position.Y), c.End, new Vector2(c.Position.X, c.End.Y) }, new Color(0.03f, 0.08f, 0.32f, 1f));
+			head.AddChild(new Sprite2D { Texture = headTex, Scale = Vector2.One * 0.5f });
 		}
+		// 白带形状（贴图坐标 → 以贴图中心为原点）：用作"愚者"和扫光的裁剪遮罩
+		Vector2[] band = { new(-500f, -70f), new(490f, -70f), new(450f, 66f), new(-500f, 66f) };
+		Polygon2D clip = new() { Polygon = band, ClipChildren = CanvasItem.ClipChildrenMode.Only };
+		head.AddChild(clip);
+		Sprite2D? ghost = null;
+		if (ResourceLoader.Load(GhostPath) is Texture2D ghostTex)
+		{
+			ghost = new Sprite2D { Texture = ghostTex, Scale = Vector2.One * 0.5f };
+			clip.AddChild(ghost);
+		}
+		Polygon2D sheen = Fx.Poly(clip, new[] { new Vector2(-30f, -72f), new Vector2(10f, -72f), new Vector2(-34f, 68f), new Vector2(-74f, 68f) }, new Color(0.75f, 0.92f, 1f, 0.55f), additive: true);
+		sheen.Position = new Vector2(-700f, 0f);
 
-		// ── 血量 / 金币：同色下划线 + 中间红色斜杠 ──
-		Node2D stats = new();
+		// ── 数字：HP（白 → 青）/ 金币（白 → 黄），同色粗下划线，中间红色斜杠 ──
+		Node2D stats = new() { Position = new Vector2(202f, 150f), Rotation = Tilt };
 		deco.AddChild(stats);
-		Rect2? hpR = RectIn(panel, HpPath), goldR = RectIn(panel, GoldPath);
-		if (hpR is Rect2 h)
+		const int big = 72, small = 24;
+		Text(stats, "HP", num, small, new Color(0.67f, 0.94f, 1f), Pal.Cyan, new Vector2(-350f, -12f));
+		Label hpLabel = Text(stats, hp, num, big, White, Pal.Cyan, new Vector2(-308f, -60f), 4);
+		float hpW = TextWidth(num, hp, big);
+		Node2D hpLine = new() { Position = new Vector2(-356f, 0f) };                // 下划线从左端"画出来"：缩放中心放在左端
+		stats.AddChild(hpLine);
+		P3Ui.Slab(hpLine, 0f, 60f + hpW, 34f, 43f, 4f, Pal.Cyan);
+		Fx.Line(stats, new[] { new Vector2(0f, -44f), new Vector2(-20f, 42f) }, Red, 5f, additive: false);
+		Text(stats, "G", num, small, new Color(1f, 0.94f, 0.67f), Yellow, new Vector2(20f, -12f));
+		Label goldLabel = Text(stats, gold, num, big, new Color(1f, 0.99f, 0.9f), Yellow, new Vector2(50f, -60f), 4);
+		float goldW = TextWidth(num, gold, big);
+		Node2D goldLine = new() { Position = new Vector2(14f, 0f) };
+		stats.AddChild(goldLine);
+		P3Ui.Slab(goldLine, 0f, 50f + goldW, 34f, 43f, 4f, Yellow);
+
+		// ── 描述：左侧青线 + 两行（白 → 冰蓝） ──
+		Node2D desc = new() { Position = new Vector2(-148f, 238f) };
+		deco.AddChild(desc);
+		Polygon2D bar = P3Ui.Slab(desc, 0f, 5f, 2f, 70f, 0f, Pal.Cyan);
+		Label descLabel = Text(desc, ShortDesc(), CjkMedium, 27, White, Ice, new Vector2(22f, -6f));
+		descLabel.LabelSettings!.LineSpacing = 2f;
+		descLabel.Material = Typo.Gradient(White, Ice, 27 * 1.35f + 2f);
+
+		// ── 天赋：青边图标斜卡 + 名称 + PASSIVE + 说明（说明带原版的星星图标，用富文本） ──
+		Node2D relic = new() { Position = new Vector2(-144f, 324f) };
+		deco.AddChild(relic);
+		P3Ui.Slab(relic, 0f, 66f, -2f, 62f, 10f, Pal.Cyan);
+		P3Ui.Slab(relic, 4f, 62f, 2f, 58f, 10f, Navy);
+		if (relicIcon != null)
 		{
-			P3Ui.Slab(stats, h.Position.X - 40f, h.End.X + 8f, h.End.Y + 1f, h.End.Y + 5f, 0f, Pal.Cyan);
+			relic.AddChild(new Sprite2D { Texture = relicIcon, Position = new Vector2(35f, 30f), Scale = Vector2.One * (52f / Mathf.Max(relicIcon.GetWidth(), 1)) });
 		}
-		if (goldR is Rect2 g)
+		Font cjkB = CjkBold;
+		Text(relic, relicTitle, cjkB, 26, new Color(0.88f, 0.98f, 1f), Pal.Cyan, new Vector2(94f, -6f));
+		float tx0 = 94f + TextWidth(cjkB, relicTitle, 26) + 18f;
+		Node2D tag = new() { Position = new Vector2(tx0 + 48f, 18f) };
+		relic.AddChild(tag);
+		P3Ui.Slab(tag, -48f, 44f, -11f, 11f, 5f, Yellow);
+		Label passive = Typo.Text(tag, "PASSIVE", num, 19, Ink, Vector2.Zero);
+		float pw = TextWidth(num, "PASSIVE", 19);
+		passive.Position = new Vector2(-pw * 0.5f + 2.5f, -19f * 0.68f);              // 在黄色斜标签里居中
+		RichTextLabel rd = new()
 		{
-			P3Ui.Slab(stats, g.Position.X - 40f, g.End.X + 8f, g.End.Y + 1f, g.End.Y + 5f, 0f, Yellow);
-			if (hpR is Rect2 h2 && g.Position.X - 40f > h2.End.X + 20f)
+			BbcodeEnabled = true, Text = relicDesc, FitContent = true, ScrollActive = false, AutowrapMode = TextServer.AutowrapMode.Off,
+			MouseFilter = Control.MouseFilterEnum.Ignore, Position = new Vector2(94f, 30f), Size = new Vector2(620f, 30f)
+		};
+		rd.AddThemeFontOverride("normal_font", CjkMedium);
+		rd.AddThemeFontSizeOverride("normal_font_size", 21);
+		rd.AddThemeColorOverride("default_color", Colors.White);
+		rd.Material = Typo.Gradient(White, Ice, 21 * 1.4f);
+		relic.AddChild(rd);
+
+		// ── 入场 ──
+		int.TryParse(Regex.Match(hp, @"\d+").Value, out int hpCur);
+		int.TryParse(Regex.Match(gold, @"\d+").Value, out int goldVal);
+		Vector2 headAt = head.Position, statsAt = stats.Position, descAt = desc.Position, relicAt = relic.Position;
+		foreach (CanvasItem c in new CanvasItem[] { head, stats, desc, relic })
+		{
+			c.Modulate = new Color(1f, 1f, 1f, 0f);
+		}
+		const float intro = 0.9f;
+		Fx.Animate(deco, intro, t =>
+		{
+			float time = t * intro;
+			float a = Ease.OutExpo(Seg(time, 0f, 0.36f));
+			head.Position = headAt + new Vector2(-320f * (1f - a), 0f);
+			head.Modulate = new Color(1f, 1f, 1f, Seg(time, 0f, 0.12f));
+			float b = Ease.OutBack(Seg(time, 0.1f, 0.32f));
+			stats.Position = statsAt + new Vector2(-140f * (1f - b), 0f);
+			stats.Modulate = new Color(1f, 1f, 1f, Seg(time, 0.1f, 0.12f));
+			float n = Ease.OutQuint(Seg(time, 0.12f, 0.45f));                     // 数字从 0 数上来
+			hpLabel.Text = Regex.Replace(hp, @"\d+", m => ((int)Mathf.Round(int.Parse(m.Value) * n)).ToString());
+			goldLabel.Text = ((int)Mathf.Round(goldVal * n)).ToString();
+			hpLine.Scale = new Vector2(Ease.OutExpo(Seg(time, 0.16f, 0.3f)), 1f);
+			goldLine.Scale = hpLine.Scale;
+			float c = Ease.OutQuint(Seg(time, 0.22f, 0.32f));
+			desc.Position = descAt + new Vector2(0f, 14f * (1f - c));
+			desc.Modulate = new Color(1f, 1f, 1f, c);
+			bar.Scale = new Vector2(1f, Ease.OutExpo(Seg(time, 0.22f, 0.3f)));
+			float r = Ease.OutQuint(Seg(time, 0.3f, 0.34f));
+			relic.Position = relicAt + new Vector2(-90f * (1f - r), 0f);
+			relic.Modulate = new Color(1f, 1f, 1f, r);
+			tag.Scale = Vector2.One * Mathf.Lerp(1.6f, 1f, Ease.OutBack(Seg(time, 0.48f, 0.22f)));
+			tag.Modulate = new Color(1f, 1f, 1f, Seg(time, 0.48f, 0.08f));
+		});
+
+		// ── 常驻（入场之后）：扫光、"愚者"漂移、整组极轻微浮动、下划线呼吸 ──
+		Fx.After(deco, intro, "info panel idle", () =>
+		{
+			hpLabel.Text = hp;
+			goldLabel.Text = gold;
+			Fx.Animate(deco, 3600.0, t =>
 			{
-				float sx = (h2.End.X + 8f + g.Position.X - 40f) * 0.5f;
-				Fx.Line(stats, new[] { new Vector2(sx + 7f, g.Position.Y + 2f), new Vector2(sx - 7f, g.End.Y + 4f) }, Red, 3f, additive: false);
-			}
-		}
-
-
-		// 入场：板子先从左滑入，名字稍晚、带一点过冲，天赋 / 数字最后
-		Fx.Animate(deco, 0.7, t =>
-		{
-			float time = t * 0.7f;
-			float a = Ease.OutExpo(Mathf.Clamp(time / 0.4f, 0f, 1f));
-			float b = Ease.OutBack(Mathf.Clamp((time - 0.08f) / 0.35f, 0f, 1f));
-			float c = Ease.OutQuint(Mathf.Clamp((time - 0.15f) / 0.4f, 0f, 1f));
-			main.Position = new Vector2(-120f * (1f - a), 0f);
-			main.Modulate = new Color(1f, 1f, 1f, a);
-			head.Position = main.Position;                          // 抬头和正文是同一块板子，一起动
-			head.Modulate = main.Modulate;
-			text.Position = new Vector2(-80f * (1f - b), 0f);       // 名字稍晚、带一点过冲
-			text.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((time - 0.08f) / 0.12f, 0f, 1f));
-			relic.Position = new Vector2(-60f * (1f - c), 0f);
-			relic.Modulate = new Color(1f, 1f, 1f, c);
-			stats.Modulate = new Color(1f, 1f, 1f, c);
+				float time = t * 3600f;
+				float s = (time % 3.6f) / 0.7f;                                    // 每 3.6 秒扫一次光，扫 0.7 秒
+				sheen.Visible = s < 1f;
+				sheen.Position = new Vector2(-560f + 1100f * Ease.InOutCubic(Mathf.Clamp(s, 0f, 1f)), 0f);
+				if (ghost != null)
+				{
+					ghost.Position = new Vector2(12f * Mathf.Sin(time * 0.4f), 0f);
+				}
+				head.Position = headAt + new Vector2(0f, 1.6f * Mathf.Sin(time * 1.1f));
+				stats.Position = statsAt + new Vector2(0f, 1.6f * Mathf.Sin(time * 1.1f - 0.7f));
+				float pulse = 0.78f + 0.22f * (0.5f + 0.5f * Mathf.Sin(time * 2.2f));
+				hpLine.Modulate = new Color(1f, 1f, 1f, pulse);
+				goldLine.Modulate = new Color(1f, 1f, 1f, 0.78f + 0.22f * (0.5f + 0.5f * Mathf.Sin(time * 2.2f - 1.2f)));
+			});
 		});
 	}
+
+	private static float Seg(float time, float start, float len) => Mathf.Clamp((time - start) / len, 0f, 1f);
 }

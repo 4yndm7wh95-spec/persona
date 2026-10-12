@@ -37,7 +37,15 @@ public static class CharSelectBgPatch
 	}
 }
 
-// 选人界面左侧介绍板的 P3R 皮肤（CharSelectInfo）暂时停用：用户要求先用原版介绍板，代码保留，之后重做时再挂回 SelectCharacter 的 Postfix。
+/// <summary>选人界面左侧介绍板：选中结城理时换成 P3R 人格面具状态界面风格，选其他角色时恢复（只改显示，见 CharSelectInfo）。</summary>
+[HarmonyPatch(typeof(NCharacterSelectScreen), nameof(NCharacterSelectScreen.SelectCharacter))]
+public static class CharSelectInfoPatch
+{
+	public static void Postfix(NCharacterSelectScreen __instance, NCharacterSelectButton charSelectButton, MegaCrit.Sts2.Core.Models.CharacterModel characterModel)
+	{
+		ModEntry.Safe("CharSelectInfo", () => CharSelectInfo.Apply(__instance, charSelectButton, characterModel));
+	}
+}
 
 /// <summary>虚空形态：原版常驻特效换成影时间（见 FormFx）。</summary>
 [HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Vfx.Forms.NVoidFormVfx), nameof(MegaCrit.Sts2.Core.Nodes.Vfx.Forms.NVoidFormVfx.Create))]
