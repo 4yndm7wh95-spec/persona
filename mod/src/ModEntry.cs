@@ -12,7 +12,7 @@ public static class ModEntry
 
 	public static void Init()
 	{
-		GD.Print($"{Tag} init v0.9.19");
+		GD.Print($"{Tag} init v0.9.20");
 		try
 		{
 			new Harmony("brooks.p3makoto").PatchAll(typeof(ModEntry).Assembly);
@@ -24,6 +24,7 @@ public static class ModEntry
 		}
 		Safe("sfx prewarm", Audio.Sfx.Prewarm);
 		Safe("star orbit", Vfx.StarOrbit.Install);
+		Safe("preload", Vfx.Preload.Start);                  // 选中结城理时要用的大资源后台预加载 + 着色器预编译（避免第一次选中掉帧）
 		// 低血溺水暗角已按用户要求关闭（Vfx/LowHpFx.cs 保留未用）
 		try
 		{

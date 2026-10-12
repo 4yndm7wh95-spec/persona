@@ -1,8 +1,9 @@
 """选人界面介绍板（P3R 人格面具状态界面风格，方向 A）的离线素材：
-- info_head.png：抬头白带（不转角度，运行时再转）—— 白带 + 上沿红线 + 下沿皇家蓝细条 + 大号"0" + ARCANA +
-  深蓝渐变的"結城 理"（青色错位残影）+ YUKI MAKOTO + 裁在白带里的浅灰"愚者"；
-- info_head_ghost.png：只有"愚者"（运行时单独做缓慢漂移的常驻动画，所以白带图里不画它）。
-字体在 tools/ui/fonts/（SIL OFL）：Noto Sans JP Black 子集、Barlow Condensed 粗斜体。2 倍分辨率烘焙，运行时缩 0.5。
+- info_head.png：抬头白带 —— 白带 + 上沿红线 + 下沿皇家蓝细条 + 大号"0" + ARCANA +
+  深蓝渐变的"結城 理"（青色错位残影）+ YUKI MAKOTO；
+- info_head_ghost.png：只有浅灰"愚者"（同一画布，运行时单独做缓慢漂移的常驻动画；完全在白带内，漂移幅度也不出界，不需要裁剪）。
+字体在 tools/ui/fonts/（SIL OFL）：Noto Sans JP Black 子集、Barlow Condensed 粗斜体。
+旋转（右端上扬 5°）和缩小都在这里用 2 倍超采样做完，运行时 1:1 贴图、不旋转不缩放 —— 不会出锯齿（v0.9.19 运行时缩 0.5 再转角度，边缘锯齿明显）。
 用法：python3 tools/ui/build_info_panel.py"""
 import sys
 from pathlib import Path
@@ -81,16 +82,25 @@ def head():
 
 
 def ghost():
-    """"愚者"：和白带同一画布，裁在白带形状里（运行时做慢速漂移时用白带形状的遮罩再裁一次）。"""
+    """"愚者"：和白带同一画布、同一位置（运行时叠在白带上面单独漂移）。"""
     im = Image.new("RGBA", (W * K, H * K), (0, 0, 0, 0))
     g = mask("愚者", JP, 104)
     paste_mid(im, fill(g, (224, 229, 241), (200, 208, 228)), 690, (BT + BB) / 2)
     return im
 
 
+TILT = 5.0
+
+
+def finish(im):
+    """绕中心逆时针转 TILT 度（expand，中心不动），再从 2 倍缩回 1 倍。"""
+    im = im.rotate(TILT, expand=True, resample=Image.BICUBIC)
+    return im.resize((im.width // K, im.height // K), Image.LANCZOS)
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    for name, im in (("info_head", head()), ("info_head_ghost", ghost())):
+    for name, im in (("info_head", finish(head())), ("info_head_ghost", finish(ghost()))):
         im.save(OUT / f"{name}.png")
         write_texture(STAGE, f"p3makoto/ui/{name}.png", im)
         print("staged", name, im.size)

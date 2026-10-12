@@ -164,25 +164,21 @@ public static class CharSelectInfo
 		deco.Visible = true;
 		Font num = Barlow!;
 
-		// ── 抬头：倾斜白带（烘焙图）+ 裁在白带里的"愚者"（常驻缓慢漂移）+ 扫光 ──
-		Node2D head = new() { Position = new Vector2(252f, -28f), Rotation = Tilt };
+		// ── 抬头：倾斜白带（烘焙图，已转好角度、已抗锯齿，1:1 贴，不旋转不缩放）+ "愚者"（常驻缓慢漂移）+ 扫光（着色器，只亮在白带像素上） ──
+		Node2D head = new() { Position = new Vector2(252f, -28f) };
 		deco.AddChild(head);
+		ShaderMaterial? sheen = null;
 		if (ResourceLoader.Load(HeadPath) is Texture2D headTex)
 		{
-			head.AddChild(new Sprite2D { Texture = headTex, Scale = Vector2.One * 0.5f });
+			sheen = new ShaderMaterial { Shader = SheenShader };
+			head.AddChild(new Sprite2D { Texture = headTex, Material = sheen });
 		}
-		// 白带形状（贴图坐标 → 以贴图中心为原点）：用作"愚者"和扫光的裁剪遮罩
-		Vector2[] band = { new(-500f, -70f), new(490f, -70f), new(450f, 66f), new(-500f, 66f) };
-		Polygon2D clip = new() { Polygon = band, ClipChildren = CanvasItem.ClipChildrenMode.Only };
-		head.AddChild(clip);
 		Sprite2D? ghost = null;
 		if (ResourceLoader.Load(GhostPath) is Texture2D ghostTex)
 		{
-			ghost = new Sprite2D { Texture = ghostTex, Scale = Vector2.One * 0.5f };
-			clip.AddChild(ghost);
+			ghost = new Sprite2D { Texture = ghostTex };
+			head.AddChild(ghost);
 		}
-		Polygon2D sheen = Fx.Poly(clip, new[] { new Vector2(-30f, -72f), new Vector2(10f, -72f), new Vector2(-34f, 68f), new Vector2(-74f, 68f) }, new Color(0.75f, 0.92f, 1f, 0.55f), additive: true);
-		sheen.Position = new Vector2(-700f, 0f);
 
 		// ── 数字：HP（白 → 青）/ 金币（白 → 黄），同色粗下划线，中间红色斜杠 ──
 		Node2D stats = new() { Position = new Vector2(202f, 150f), Rotation = Tilt };
@@ -282,11 +278,10 @@ public static class CharSelectInfo
 			{
 				float time = t * 3600f;
 				float s = (time % 3.6f) / 0.7f;                                    // 每 3.6 秒扫一次光，扫 0.7 秒
-				sheen.Visible = s < 1f;
-				sheen.Position = new Vector2(-560f + 1100f * Ease.InOutCubic(Mathf.Clamp(s, 0f, 1f)), 0f);
+				sheen?.SetShaderParameter("sweep", s < 1f ? -0.2f + 1.4f * Ease.InOutCubic(s) : -1f);
 				if (ghost != null)
 				{
-					ghost.Position = new Vector2(12f * Mathf.Sin(time * 0.4f), 0f);
+					ghost.Position = new Vector2(Mathf.Cos(Tilt), Mathf.Sin(Tilt)) * (12f * Mathf.Sin(time * 0.4f));   // 沿白带方向漂移
 				}
 				head.Position = headAt + new Vector2(0f, 1.6f * Mathf.Sin(time * 1.1f));
 				stats.Position = statsAt + new Vector2(0f, 1.6f * Mathf.Sin(time * 1.1f - 0.7f));
@@ -296,6 +291,22 @@ public static class CharSelectInfo
 			});
 		});
 	}
+
+	private static Shader? _sheen;
+
+	/// <summary>白带扫光：一道斜的亮带沿贴图横向扫过，只加在不透明像素上（透明度不变，边缘不会出锯齿）。sweep &lt; -0.5 时不显示。</summary>
+	private static Shader SheenShader => _sheen ??= new Shader
+	{
+		Code = @"shader_type canvas_item;
+uniform float sweep = -1.0;
+void fragment() {
+	vec4 c = texture(TEXTURE, UV);
+	float d = abs((UV.x + (1.0 - UV.y) * 0.18) - sweep);
+	float k = smoothstep(0.045, 0.0, d) * step(-0.5, sweep);
+	c.rgb += vec3(0.55, 0.85, 1.0) * k * 0.45 * c.a;
+	COLOR = c * COLOR;
+}"
+	};
 
 	private static float Seg(float time, float start, float len) => Mathf.Clamp((time - start) / len, 0f, 1f);
 }
