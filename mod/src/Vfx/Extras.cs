@@ -84,6 +84,38 @@ public static class Extras
 	}
 
 	/// <summary>
+	/// 轻施法收手时的掌心余光：从伸出的掌心（按原画比例估算：脚底往右 0.37h、往上 0.9h，h = 脚到头的高度）
+	/// 沿一道向外下垂的弧线落到腰侧口袋（右 0.23h、上 0.6h），0.45s；一团淡青柔光 + 白色小核 + 一路掉下的光点，落地后散掉。
+	/// </summary>
+	public static void PalmAfterglow(Control layer, MegaCrit.Sts2.Core.Nodes.Combat.NCreature caster)
+	{
+		Vector2 feet = P3Makoto.Core.Makoto.Feet(caster), head = P3Makoto.Core.Makoto.Head(caster);
+		float h = Mathf.Max(feet.Y - head.Y, 120f);
+		Vector2 from = feet + new Vector2(0.37f, -0.9f) * h;
+		Vector2 to = feet + new Vector2(0.23f, -0.6f) * h;
+		Vector2 ctrl = from + new Vector2(0.1f * h, 0.2f * h);
+		Node2D root = Fx.Root(layer, from, "P3PalmAfterglow");
+		root.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(Pal.Cyan, 0.45f), Scale = Vector2.One * 1.6f });
+		root.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(Pal.White, 0.6f), Scale = Vector2.One * 0.45f });
+		GpuParticles2D motes = Fx.Sparks(root, Pal.Ice, 14, 10f, 40f, 0.5f, gravity: 40f, scaleMin: 0.06f, scaleMax: 0.16f,
+			ramp: new[] { new Color(Pal.White, 0.8f), new Color(Pal.Cyan, 0.5f), new Color(Pal.Cyan, 0f) }, oneShot: false);
+		motes.LocalCoords = false;                        // 光点留在原地，拖出一条轨迹
+		const float dur = 0.45f;
+		Fx.Animate(root, dur + 0.25f, t =>
+		{
+			float time = t * (dur + 0.25f);
+			float e = Ease.InOutCubic(Mathf.Clamp(time / dur, 0f, 1f));
+			float k = 1f - e;
+			root.GlobalPosition = from * (k * k) + ctrl * (2f * k * e) + to * (e * e);
+			float fade = 1f - Mathf.Clamp((time - dur + 0.1f) / 0.25f, 0f, 1f);
+			root.Modulate = new Color(1f, 1f, 1f, fade * Mathf.Clamp(time / 0.05f, 0f, 1f));
+			root.Scale = Vector2.One * (1f - 0.4f * e);
+			motes.Emitting = time < dur;
+		});
+		Fx.FreeAfter(root, dur + 0.8f);
+	}
+
+	/// <summary>
 	/// 塔罗牌：从角色身后翻转出现（宽度 0→1），上浮发光，停留后碎成玻璃。用于能力牌。
 	/// </summary>
 	public static void TarotFlip(Control layer, Vector2 at, Color tint, float hold = 0.35f)

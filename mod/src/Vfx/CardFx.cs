@@ -87,6 +87,9 @@ public static class CardFx
 		if (anim == CardStyles.CardAnim.Gesture)
 		{
 			Pose.MarkLightCast(caster);
+			// 收手（cast_light 0.36s 起）：掌心残留的一团淡青光沿手放下的弧线落到腰侧、拖着几粒光点散掉 —— 视线跟着手走，
+			// 掩住过渡帧之间人物外观的细微差异
+			Fx.After(front, 0.36, "gesture afterglow", () => Extras.PalmAfterglow(front, caster));
 			// 掌心托起的那一刻，手上方翻出一张塔罗牌（牌本身带塔罗演出的就不重复）
 			if (!style.Extra.HasFlag(Extra.Tarot) && !stardust && !gamble && !ThemeCards.Contains(play.Card.GetType().Name) && !CardSigs.Has(play.Card))
 			{

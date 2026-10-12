@@ -587,12 +587,17 @@ class Builder:
                 # 溶解：0.06s（出招 / 扣下 / 受击 0.04s）。v0.9.23 是 0.09s 线性 —— 头的位置差得远时（待机 → 举召唤器）
                 # 两个半透明的头同时出现两三帧，动起来像头在 Q 弹；现在旧图第一帧就淡掉大半，重影只剩一帧、很淡
                 fade = 0.06 if p not in ("sword_smear", "sword_slash", "awaken_peak", "hurt_impact") else 0.04
+                # 轻施法收手的过渡帧（生图画的，脸 / 比例和原画有细微差异）：相邻两张很接近，溶解拉长到 0.09s 且更均匀，
+                # 看起来像一张图在慢慢变形而不是一下下换图，差异被抹平
+                soft = p in CAST_BACK or before in CAST_BACK
                 nxt = seq[i + 1][0] if i + 1 < len(seq) else a.dur
                 fade = max(min(fade, nxt - t - 0.002), f * 0.5)          # 下一次换图之前必须溶解完（"举剑途中"只停一帧）
                 # 溶解：新姿势在下面已经完全显示，旧姿势盖在上面从不透明淡到透明 —— 60 帧里每帧都在变，不会一下跳过去
+                if soft:
+                    fade = max(min(0.09, nxt - t - 0.002), f * 0.5)
                 a.att("v7_old", t, f"v7_{before}")
                 a.rgba("v7_old", t, c8(1, 1, 1, 1))
-                a.rgba("v7_old", t + fade * 0.35, c8(1, 1, 1, 0.3))
+                a.rgba("v7_old", t + fade * (0.5 if soft else 0.35), c8(1, 1, 1, 0.5 if soft else 0.3))
                 a.rgba("v7_old", t + fade, c8(1, 1, 1, 0))
                 a.att("v7_old", t + fade, None)
                 # 不再叠青色残影（用户反馈像重影）；闪光只留给出招 / 扣下 / 受击这几个冲击瞬间
@@ -734,8 +739,8 @@ class Builder:
         a = Anim(d["cast_light"])
         # 收手：伸手 → 抬手 → 四张过渡帧（左手放下插袋、右手抽出口袋、衣摆落下）→ 待机，每张只差一小步，0.06s 溶解不会重影
         # 总长必须保持 0.9s（与原版一致）：伸手停留缩短到 0.10–0.38，省下的时间给收手，每张过渡帧约 0.1s
-        self.sequence(a, [(0, "cast_mid"), (0.1, "cast"), (0.38, "cast_mid"), (0.48, "cast_low"), (0.58, "cast_drop"),
-                          (0.68, "cast_lower"), (0.78, "cast_settle"), (0.88, "idle")], prev="idle")
+        self.sequence(a, [(0, "cast_mid"), (0.1, "cast"), (0.36, "cast_mid"), (0.45, "cast_low"), (0.54, "cast_drop"),
+                          (0.63, "cast_lower"), (0.72, "cast_settle"), (0.81, "idle")], prev="idle")      # 最后一步也留足 0.09s 溶解
         A["cast_light"] = a
 
         # ── 持剑 ──
