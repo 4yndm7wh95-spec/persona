@@ -733,8 +733,9 @@ class Builder:
 
         a = Anim(d["cast_light"])
         # 收手：伸手 → 抬手 → 四张过渡帧（左手放下插袋、右手抽出口袋、衣摆落下）→ 待机，每张只差一小步，0.06s 溶解不会重影
-        self.sequence(a, [(0, "cast_mid"), (0.12, "cast"), (0.5, "cast_mid"), (0.58, "cast_low"), (0.66, "cast_drop"),
-                          (0.74, "cast_lower"), (0.82, "cast_settle"), (0.88, "idle")], prev="idle")
+        # 总长必须保持 0.9s（与原版一致）：伸手停留缩短到 0.10–0.38，省下的时间给收手，每张过渡帧约 0.1s
+        self.sequence(a, [(0, "cast_mid"), (0.1, "cast"), (0.38, "cast_mid"), (0.48, "cast_low"), (0.58, "cast_drop"),
+                          (0.68, "cast_lower"), (0.78, "cast_settle"), (0.88, "idle")], prev="idle")
         A["cast_light"] = a
 
         # ── 持剑 ──
