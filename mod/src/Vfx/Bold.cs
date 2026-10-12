@@ -1,6 +1,8 @@
 using System;
 using Godot;
 
+using P3Makoto.Core;
+
 namespace P3Makoto.Vfx;
 
 /// <summary>
@@ -226,9 +228,11 @@ public static class Bold
 	// ───────── 暗：Mudoon —— 血红咒阵 + 黑雾向内坍缩 + 十字血光 ─────────
 	public static void Mudoon(Control layer, Vector2 center, float s = 1f)
 	{
-		Node2D root = Fx.Root(layer, center, "P3Mudoon");
+		// 黑色法阵画在人物身后层（敌人身后），不盖住敌人；只有最后的十字斩痕和冲击在前景
+		Control ringLayer = Makoto.FxLayer(back: true) ?? layer;
+		Node2D root = Fx.Root(ringLayer, center, "P3Mudoon");
 		float r = 200f * s;
-		Polygon2D dark = Fx.Poly(root, Fx.Circle(r, 48), new Color(0.03f, 0f, 0.06f, 0.75f));
+		Polygon2D dark = Fx.Poly(root, Fx.Circle(r, 48), new Color(0.03f, 0f, 0.06f, 0.55f));
 		Line2D ring = Fx.Line(root, Fx.Circle(r, 48), new Color(ElementPal.CurseRed, 0.95f), 4f, closed: true);
 		Line2D ring2 = Fx.Line(root, Fx.Circle(r * 0.7f, 6), new Color(ElementPal.Curse, 0.9f), 3f, closed: true);
 		Fx.Animate(root, 0.9f, t =>

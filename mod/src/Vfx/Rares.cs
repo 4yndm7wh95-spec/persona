@@ -394,4 +394,128 @@ public static class Rares
 		}
 		return pts.ToArray();
 	}
+
+	// ══════════════════════ 熔炉 ══════════════════════
+
+	/// <summary>
+	/// 熔炉：脚下的锻造法阵亮起 → 人物身后升起一道着色器火柱（白热芯、橙色外焰、尖端泛青），热浪扭曲空气、火星上飘 →
+	/// 火柱顶端锻出一把烧红的剑，淬火（白汽 + 由橙变青）后化作光点飞进人物身体。
+	/// </summary>
+	public static void Furnace(NCreature caster)
+	{
+		Control? back = Makoto.FxLayer(back: true);
+		Control? front = Makoto.FxLayer();
+		if (back == null || front == null)
+		{
+			return;
+		}
+		Vector2 feet = Makoto.Feet(caster);
+		Vector2 chest = Makoto.Center(caster);
+		Color ember = new(1f, 0.5f, 0.12f);
+		// 1) 锻造法阵：压扁的双圈 + 八个刻度，从中心张开、亮起
+		Node2D sigil = Fx.Root(back, feet, "P3FurnaceSigil");
+		sigil.Scale = new Vector2(1f, 0.28f);
+		Fx.Line(sigil, Fx.Circle(170f, 64), new Color(ember, 0.9f), 4f, closed: true);
+		Fx.Line(sigil, Fx.Circle(140f, 64), new Color(1f, 0.8f, 0.4f, 0.6f), 2f, closed: true);
+		for (int i = 0; i < 8; i++)
+		{
+			Vector2 dir = Vector2.Right.Rotated(Mathf.Tau * i / 8f);
+			Fx.Poly(sigil, new[] { dir * 140f + dir.Orthogonal() * 8f, dir * 186f, dir * 140f - dir.Orthogonal() * 8f }, new Color(ember, 0.9f), additive: true);
+		}
+		Fx.Animate(sigil, 1.5f, t =>
+		{
+			float time = t * 1.5f;
+			float k = Ease.OutBack(Mathf.Clamp(time / 0.2f, 0f, 1f));
+			sigil.Scale = new Vector2(k, 0.28f * k);
+			sigil.Rotation = time * 0.6f;
+			sigil.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(Mathf.Clamp((time - 1.1f) / 0.4f, 0f, 1f)));
+		});
+		Fx.FreeAfter(sigil, 1.55);
+
+		// 2) 火柱（人物身后）：底边对齐脚下
+		Node2D fireRoot = Fx.Root(back, feet, "P3FurnaceFire");
+		ColorRect fire = new() { Size = new Vector2(440f, 620f), Position = new Vector2(-220f, -600f), MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Shaders.ForgeFire } };
+		fireRoot.AddChild(fire);
+		Fx.SetParam(fire, "height", 0f);
+		Fx.Animate(fireRoot, 1.45f, t =>
+		{
+			float time = t * 1.45f;
+			float h = time < 0.18f ? 0f : time < 1.05f ? Ease.OutCubic(Mathf.Clamp((time - 0.18f) / 0.25f, 0f, 1f)) : 1f - Ease.InCubic(Mathf.Clamp((time - 1.05f) / 0.4f, 0f, 1f));
+			Fx.SetParam(fire, "height", 0.15f + 0.85f * h);
+			Fx.SetParam(fire, "alpha", Mathf.Clamp(h * 1.5f, 0f, 1f));
+		});
+		Fx.FreeAfter(fireRoot, 1.5);
+		Fx.After(fireRoot, 0.18, "furnace ignite", () =>
+		{
+			P3Fx.Flash(back, feet + new Vector2(0f, -40f), ember, 360f, 0.3f);
+			P3Fx.Ripple(back, feet + new Vector2(0f, -200f), 600f, 1.0f, 0.03f);
+			Node2D sparks = Fx.Root(front, feet + new Vector2(0f, -20f), "P3FurnaceEmbers");
+			GpuParticles2D e = Fx.Sparks(sparks, ember, 60, 60f, 220f, 1.1f, gravity: -380f, scaleMin: 0.1f, scaleMax: 0.3f,
+				ramp: new[] { new Color(1f, 0.95f, 0.7f), ember, new Color(0.6f, 0.1f, 0.05f) }, oneShot: false);
+			ParticleProcessMaterial pm = (ParticleProcessMaterial)e.ProcessMaterial;
+			pm.EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box;
+			pm.EmissionBoxExtents = new Vector3(150f, 10f, 0f);
+			Fx.After(sparks, 0.8, "embers off", () => e.Emitting = false);
+			Fx.FreeAfter(sparks, 2.0);
+			MegaCrit.Sts2.Core.Nodes.NGame.Instance?.ScreenShake(ShakeStrength.Weak, ShakeDuration.Short);
+		});
+
+		// 3) 火柱顶端锻出一把剑：烧红 → 淬火（白汽、由橙变青）→ 化作光点飞进胸口
+		Vector2 bladeAt = feet + new Vector2(0f, -560f);
+		Node2D blade = Fx.Root(front, bladeAt, "P3FurnaceBlade");
+		blade.Rotation = Mathf.Pi / 2f;                      // 剑尖朝下
+		blade.Visible = false;
+		Polygon2D glowB = Fx.Poly(blade, Blade(230f, 34f), new Color(ember, 0.5f), additive: true);
+		Polygon2D steel = Fx.Poly(blade, Blade(200f, 20f), new Color(1f, 0.55f, 0.15f));
+		Polygon2D edge = Fx.Poly(blade, Blade(196f, 6f), new Color(1f, 0.95f, 0.75f), additive: true);
+		Fx.Poly(blade, RectPts(new Rect2(-48f, -26f, 12f, 52f)), new Color(0.75f, 0.78f, 0.9f));
+		Fx.After(blade, 0.45, "blade forge", () =>
+		{
+			blade.Visible = true;
+			P3Fx.Flash(front, bladeAt, ember, 200f, 0.2f);
+			Audio.Sfx.Play(Audio.Snd.StarSpend, 0.6f, pitch: 0.7f);
+		});
+		Fx.Animate(blade, 1.4f, t =>
+		{
+			float time = t * 1.4f;
+			float form = Ease.OutBack(Mathf.Clamp((time - 0.45f) / 0.18f, 0f, 1f));
+			blade.Scale = new Vector2(form, 1f) * 0.9f;
+			blade.Position = bladeAt + new Vector2(0f, 6f * Mathf.Sin(time * 5f));
+			// 0.85 起淬火：由橙变青
+			float q = Mathf.Clamp((time - 0.85f) / 0.2f, 0f, 1f);
+			steel.Color = new Color(1f, 0.55f, 0.15f).Lerp(new Color(0.55f, 0.75f, 0.95f), q);
+			glowB.Color = new Color(ember, 0.5f).Lerp(new Color(Pal.Cyan, 0.5f), q);
+			edge.Color = new Color(1f, 0.95f, 0.75f).Lerp(Pal.White, q);
+		});
+		Fx.After(blade, 0.85, "blade quench", () =>
+		{
+			Node2D steam = Fx.Root(front, bladeAt, "P3FurnaceSteam");
+			Fx.Sparks(steam, Pal.White, 30, 80f, 260f, 0.7f, gravity: -200f, scaleMin: 0.3f, scaleMax: 0.8f, ramp: new[] { new Color(1f, 1f, 1f, 0.8f), new Color(0.8f, 0.9f, 1f, 0f) });
+			Fx.FreeAfter(steam, 0.9);
+			P3Fx.Shockwave(front, bladeAt, Pal.Ice, 300f, 0.35f);
+			Audio.Sfx.Play(Audio.Snd.Weak, 0.5f, pitch: 0.9f);
+		});
+		Fx.After(blade, 1.12, "blade absorb", () =>
+		{
+			Vector2 from = blade.GlobalPosition;
+			Fx.Animate(blade, 0.22f, t =>
+			{
+				float e = Ease.InCubic(t);
+				blade.GlobalPosition = from.Lerp(chest, e);
+				blade.Scale = Vector2.One * 0.9f * (1f - 0.7f * e);
+			});
+			Fx.After(blade, 0.22, "blade in", () =>
+			{
+				P3Fx.Flash(front, chest, Pal.Cyan, 220f, 0.25f);
+				P3Fx.Shockwave(front, chest, Pal.Cyan, 280f, 0.3f);
+				blade.QueueFree();
+			});
+		});
+	}
+
+	/// <summary>剑形：剑尖朝 +X，从护手（原点）到剑尖 len。</summary>
+	private static Vector2[] Blade(float len, float w) => new[]
+	{
+		new Vector2(-40f, -w * 0.35f), new Vector2(len * 0.82f, -w * 0.5f), new Vector2(len, 0f), new Vector2(len * 0.82f, w * 0.5f), new Vector2(-40f, w * 0.35f)
+	};
 }

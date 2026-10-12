@@ -73,7 +73,7 @@ public static class CardSigs
 			new[] { new Vector2(-120f, 30f), new Vector2(0f, -40f), new Vector2(120f, 20f) }, ElementPal.HolyGold),
 		["AstralPulse"] = c => { P3Fx.Shockwave(c.Front, c.Center, Pal.Cyan, 1400f, 0.7f); P3Fx.Ripple(c.Front, c.Center, 1400f, 0.9f, 0.04f); },
 				["CelestialMight"] = c => After(c, 0.1, () => Motifs.MultiCut(c.Front, c.FirstTarget, 5, Pal.Cyan, 1.0f)),
-		["DyingStar"] = c => After(c, 0.3, () => { foreach (Vector2 t in c.TargetCenters) { Bold.Mudoon(c.Front, t, 1.2f); } }),
+		// 星灭：命中特效（Mudoon）已经由每一击播放，这里不再重复叠一层
 		["Supermassive"] = c => After(c, 0.1, () => Motifs.CutIn(c.Front, c.FirstTarget, "SUPERMASSIVE", ElementPal.Curse)),
 		["CollisionCourse"] = c => After(c, 0.12, () => Motifs.Meteor(c.Front, c.FirstTarget, ElementPal.FireMid, 0.7f)),
 
@@ -147,7 +147,7 @@ public static class CardSigs
 		["SwordSage"] = c => After(c, 0.2, () => Motifs.ForgeSpark(c.Front, c.Center + new Vector2(110f, -40f), 1.3f)),
 		["HammerTime"] = c => { Motifs.ForgeSpark(c.Front, c.Center + new Vector2(110f, -20f), 1.4f); Motifs.CutIn(c.Front, c.Center + new Vector2(220f, 0f), "HAMMER TIME", ElementPal.FireMid); },
 		["SeekingEdge"] = c => After(c, 0.2, () => { foreach (Vector2 t in c.TargetCenters) { Motifs.Thrust(c.Front, t, Pal.Royal, 0.7f); } }),
-		["Furnace"] = c => Bold.Agidyne(c.Back, c.Center, c.Feet, 0.8f),
+		["Furnace"] = c => After(c, 0.1, () => Rares.Furnace(c.Caster)),
 		["Orbit"] = c => Tarot(c, "XXI", "THE WORLD", Pal.Cyan),
 		["PaleBlueDot"] = c => Motifs.FullMoon(c.Back, c.Above, 0.45f),
 		["ChildOfTheStars"] = c => { Tarot(c, "XVII", "THE STAR", Pal.Cyan); Motifs.Constellation(c.Front, c.Center, Motifs.BigDipper, Pal.Ice, 0.7f); },

@@ -20,7 +20,7 @@ namespace P3Makoto.Vfx;
 public static class CardFx
 {
 	// 有自己物件演出（契约 / 全书 / Shuffle Time / 天鹅绒门）的牌：施法时不再额外翻一张小塔罗
-	private static readonly HashSet<string> ThemeCards = new() { "ForegoneConclusion", "Prophesize", "DecisionsDecisions", "PillarOfCreation", "LunarBlast", "CrashLanding", "HeavenlyDrill", "MonarchsGaze" };
+	private static readonly HashSet<string> ThemeCards = new() { "ForegoneConclusion", "Prophesize", "DecisionsDecisions", "PillarOfCreation", "LunarBlast", "CrashLanding", "HeavenlyDrill", "MonarchsGaze", "Furnace" };
 
 	public static bool IsMakotoCard(CardModel? card) => card != null && Makoto.Is(card.Owner);
 
