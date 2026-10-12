@@ -48,9 +48,17 @@ public static class StageFx
 		Typo.Text(text, player ? "PLAYER TURN" : "ENEMY TURN", Typo.Latin, fs, word, new Vector2(0f, -fs * 0.62f),
 			shadow: new Color(0.9f, 0.08f, 0.22f, player ? 0.85f : 0.0f), shadowOffset: new Vector2(4f, 3f));
 
-		Vector2 discAt = new(size.X * 0.035f, 0f);
 		float discR = h * 0.95f;
-		ColorRect disc = P3Ui.WaterDisc(root, discAt, discR);
+		Vector2 discAt = new(Mathf.Max(size.X * 0.035f, discR * 1.2f + 10f), 0f);   // 整个圆（含外圈弧线）都在屏幕内
+		// 平涂双色圆（小尺寸下水之圆的焦散会变成一团团暗斑，这里不用）：底色 + 偏右上的亮面 + 白色细边
+		Node2D disc = new() { Position = discAt };
+		root.AddChild(disc);
+		Color baseC = player ? new Color(0.03f, 0.1f, 0.38f) : new Color(0.3f, 0.02f, 0.09f);
+		Color litC = player ? new Color(0.12f, 0.42f, 0.95f) : new Color(0.62f, 0.06f, 0.16f);
+		Fx.Poly(disc, Fx.Circle(discR, 64), baseC);
+		Polygon2D lit = Fx.Poly(disc, Fx.Circle(discR * 0.8f, 64), litC);
+		lit.Position = new Vector2(discR * 0.14f, -discR * 0.14f);
+		Fx.StrokeClosed(disc, Fx.Circle(discR, 64), Pal.White, 3f, additive: false);
 		Node2D arcs = new() { Position = discAt };
 		root.AddChild(arcs);
 		P3Ui.Arc(arcs, Vector2.Zero, discR * 1.12f, 0f, Mathf.Pi * 1.3f, accent, 2.5f);
@@ -63,8 +71,8 @@ public static class StageFx
 		{
 			Typo.Text(num, "TURN", Typo.Latin, (int)(discR * 0.26f), new Color(Pal.Ice, 0.9f), new Vector2(-discR * 0.5f, -discR * 0.82f));
 		}
-		Typo.Text(num, glyph, Typo.Latin, ns, player ? Pal.White : new Color(1f, 0.25f, 0.35f), new Vector2(-ns * 0.3f * glyph.Length, -ns * 0.6f),
-			shadow: new Color(0.02f, 0.06f, 0.24f, 0.9f), shadowOffset: new Vector2(4f, 4f));
+		Typo.Text(num, glyph, Typo.Latin, ns, Pal.White, new Vector2(-ns * 0.3f * glyph.Length, -ns * 0.6f),
+			shadow: player ? new Color(0.02f, 0.06f, 0.24f, 0.9f) : new Color(0.12f, 0f, 0.03f, 0.9f), shadowOffset: new Vector2(4f, 4f));
 
 		const float tIn = 0.26f, hold = 0.45f, tOut = 0.26f, total = tIn + hold + tOut;
 		Fx.Animate(root, total, t =>
@@ -80,7 +88,7 @@ public static class StageFx
 			float u = Ease.OutQuint(Seg(time, 0.07f, 0.28f));
 			text.Position = new Vector2(size.X * 0.09f - 120f * (1f - u) + 16f * d - (w + 200f) * o, 0f);
 			text.Modulate = new Color(1f, 1f, 1f, u * (1f - o));
-			Fx.SetParam(disc, "reveal", Ease.OutQuint(Seg(time, 0.05f, 0.28f)) * (1f - Ease.InCubic(Seg(time, tIn + hold, tOut))));
+			disc.Scale = Vector2.One * Ease.OutBack(Seg(time, 0.05f, 0.22f)) * (1f - Ease.InCubic(Seg(time, tIn + hold, tOut)));
 			arcs.Rotation = 0.6f * time;
 			arcs.Modulate = new Color(1f, 1f, 1f, a * (1f - o));
 			float n = Ease.OutBack(Seg(time, 0.12f, 0.22f));
