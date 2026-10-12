@@ -277,6 +277,18 @@ public static class CardFx
 		}
 		List<Creature> list = targets.ToList();
 		float scale = style.HitScale * (list.Count > 1 ? 0.8f : 1f);
+		// 月面射击：每一击 = 目标头顶的月亮削下一道新月光刃
+		if (card.GetType().Name == "LunarBlast")
+		{
+			foreach (Creature c in list)
+			{
+				if (room.GetCreatureNode(c) is NCreature n)
+				{
+					Lunar.Hit(n, 1f);
+				}
+			}
+			return;
+		}
 		// 星尘：每一击 = 头顶待命的一颗辉星砸向目标（命中特效在辉星落地时播放）
 		if (card.GetType().Name == "Stardust" && Makoto.Node(card.Owner) is NCreature thrower)
 		{

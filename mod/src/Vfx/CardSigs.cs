@@ -60,7 +60,7 @@ public static class CardSigs
 		["SolarStrike"] = c => After(c, 0.12, () => Motifs.SolarFlare(c.Front, c.FirstTarget + new Vector2(0f, -120f), 0.9f)),
 		["Hegemony"] = c => After(c, 0.14, () => Motifs.CutIn(c.Front, c.FirstTarget, "HAMAON", ElementPal.HolyGold)),
 		["Radiate"] = c => P3Fx.LightPillar(c.Back, c.Feet, ElementPal.HolyGold, 220f, 900f, 0.8f),
-		["LunarBlast"] = c => Motifs.FullMoon(c.Back, c.FirstTarget, 1.2f),
+		["LunarBlast"] = c => { foreach (NCreature t in c.Targets) { Lunar.Rise(t); } },
 		["GammaBlast"] = c => After(c, 0.1, () => Motifs.CutIn(c.Front, c.FirstTarget, "ZIODYNE", ElementPal.Volt)),
 		["Devastate"] = c => After(c, 0.1, () => Motifs.CutIn(c.Front, c.FirstTarget, "MEGIDO", ElementPal.Almighty)),
 		["MakeItSo"] = c => After(c, 0.1, () => Motifs.CutIn(c.Front, c.FirstTarget, "MAKE IT SO", Pal.Cyan)),

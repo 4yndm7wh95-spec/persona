@@ -144,20 +144,19 @@ public static class ThemeFx
 		g.Body = new Node2D();
 		ground.AddChild(g.Body);
 
-		// 门后：笼式电梯 —— 深蓝底 + 一直向下滑过的井道光带 + 铁艺格栅（只在门洞里显示）
-		Polygon2D hole = Clip(g.Body, Opening);
+		// 门后：笼式电梯 —— 深蓝底 + 一直向下滑过的井道光带 + 铁艺格栅。
+		// 注意：不能再套一层 ClipChildren（嵌套裁切在游戏里会把裁切多边形画成一整块白色），光带每帧手动截到门洞范围内。
 		g.Interior = new Node2D();
-		hole.AddChild(g.Interior);
+		g.Body.AddChild(g.Interior);
 		Fx.Poly(g.Interior, RectPts(Opening), new Color(0.02f, 0.05f, 0.24f));
 		float[] heights = { 30f, 12f, 48f, 18f, 9f, 26f };
 		g.Bars = new Polygon2D[heights.Length];
 		for (int i = 0; i < heights.Length; i++)
 		{
 			g.Bars[i] = Fx.Poly(g.Interior, RectPts(new Rect2(Opening.Position.X, 0f, Opening.Size.X, heights[i])), new Color(i % 2 == 0 ? Pal.White : Pal.Ice, 0.9f), additive: true);
+			g.Bars[i].SetMeta("h", heights[i]);
 		}
 		Sprite(g.Interior, "door_grille", Opening.Position, centered: false);
-		Sprite2D inner = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Position = Opening.GetCenter(), Scale = new Vector2(8f, 16f), Modulate = new Color(Pal.Ice, 0.35f) };
-		g.Interior.AddChild(inner);
 
 		// 门板：铰链在左，打开时宽度按 cos 收窄、越开越暗
 		g.Leaf = Sprite(g.Body, "door_leaf", Opening.Position, centered: false);
@@ -272,7 +271,6 @@ public static class ThemeFx
 		float ang = g.Open * Mathf.DegToRad(78f);
 		float w = Mathf.Cos(ang);
 		g.Leaf.Scale = new Vector2(Mathf.Max(0.02f, w), 1f);
-		g.Leaf.Skew = -0.1f * Mathf.Sin(ang);
 		float shade = 1f - 0.55f * g.Open;
 		g.Leaf.Modulate = new Color(shade, shade, shade);
 		g.Interior.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(g.Open * 3f, 0f, 1f));
@@ -288,7 +286,13 @@ public static class ThemeFx
 		for (int i = 0; i < g.Bars.Length; i++)
 		{
 			float y = Opening.Position.Y - 60f + ((phase[i] + g.Time * 1.1f) % 1f) * h;
-			g.Bars[i].Position = new Vector2(0f, y);
+			float bh = (float)g.Bars[i].GetMeta("h");
+			float y0 = Mathf.Max(y, Opening.Position.Y), y1 = Mathf.Min(y + bh, Opening.End.Y);
+			g.Bars[i].Visible = y1 > y0;
+			if (y1 > y0)
+			{
+				Fx.Reshape(g.Bars[i], RectPts(new Rect2(Opening.Position.X, y0, Opening.Size.X, y1 - y0)));
+			}
 		}
 		// 门缝光：关着时呼吸，开着时隐去
 		float a = (0.35f + 0.25f * Mathf.Sin(g.Time * 4f)) * (1f - g.Open);

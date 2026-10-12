@@ -92,7 +92,7 @@ public static class Pose
 	{
 		if (on)
 		{
-			SingleAttack[node.GetInstanceId()] = (Godot.Time.GetTicksMsec() + 4000, 0);
+			SingleAttack[node.GetInstanceId()] = (Godot.Time.GetTicksMsec() + 120000, 0);   // 到下一次出牌才清掉（星尘 X 很大时要打很久）
 		}
 		else
 		{

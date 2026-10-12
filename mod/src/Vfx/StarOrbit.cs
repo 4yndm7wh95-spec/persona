@@ -94,6 +94,10 @@ public static class StarOrbit
 			return;
 		}
 		Node2D n;
+		if (Orbits.TryGetValue(creature.GetInstanceId(), out Orbit? oo))
+		{
+			oo.VolleyUntil = Math.Max(oo.VolleyUntil, _time + 2f);    // 还在连续掷出：待命状态续期
+		}
 		if (Orbits.TryGetValue(creature.GetInstanceId(), out Orbit? o) && o.Quiver.Count > 0)
 		{
 			Card c = o.Quiver[0];
