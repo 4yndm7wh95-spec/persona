@@ -1,4 +1,4 @@
-[gd_resource type="SpineSkeletonDataResource" load_steps=5 format=3 uid="uid://c2mrbqct15cgx"]
+[gd_resource type="SpineSkeletonDataResource" load_steps=14 format=3 uid="uid://c2mrbqct15cgx"]
 
 [ext_resource type="SpineAtlasResource" path="res://animations/characters/regent/regent.atlas" id="1_atlas"]
 [ext_resource type="SpineSkeletonFileResource" path="res://animations/characters/regent/regent.spine-json" id="2_skel"]
@@ -13,8 +13,53 @@ from = "hurt"
 to = "die"
 mix = 0.1
 
+[sub_resource type="SpineAnimationMix" id="mix_cast_light_idle_loop"]
+from = "cast_light"
+to = "idle_loop"
+mix = 0.35
+
+[sub_resource type="SpineAnimationMix" id="mix_cast_light_relaxed_loop"]
+from = "cast_light"
+to = "relaxed_loop"
+mix = 0.35
+
+[sub_resource type="SpineAnimationMix" id="mix_cast_light_low_health_loop"]
+from = "cast_light"
+to = "low_health_loop"
+mix = 0.35
+
+[sub_resource type="SpineAnimationMix" id="mix_cast_idle_loop"]
+from = "cast"
+to = "idle_loop"
+mix = 0.35
+
+[sub_resource type="SpineAnimationMix" id="mix_cast_relaxed_loop"]
+from = "cast"
+to = "relaxed_loop"
+mix = 0.35
+
+[sub_resource type="SpineAnimationMix" id="mix_cast_low_health_loop"]
+from = "cast"
+to = "low_health_loop"
+mix = 0.35
+
+[sub_resource type="SpineAnimationMix" id="mix_cast_from_aim_idle_loop"]
+from = "cast_from_aim"
+to = "idle_loop"
+mix = 0.35
+
+[sub_resource type="SpineAnimationMix" id="mix_cast_from_aim_relaxed_loop"]
+from = "cast_from_aim"
+to = "relaxed_loop"
+mix = 0.35
+
+[sub_resource type="SpineAnimationMix" id="mix_cast_from_aim_low_health_loop"]
+from = "cast_from_aim"
+to = "low_health_loop"
+mix = 0.35
+
 [resource]
 atlas_res = ExtResource("1_atlas")
 skeleton_file_res = ExtResource("2_skel")
 default_mix = 0.1
-animation_mixes = [SubResource("mix_idle_hurt"), SubResource("mix_hurt_die")]
+animation_mixes = [SubResource("mix_idle_hurt"), SubResource("mix_hurt_die"), SubResource("mix_cast_light_idle_loop"), SubResource("mix_cast_light_relaxed_loop"), SubResource("mix_cast_light_low_health_loop"), SubResource("mix_cast_idle_loop"), SubResource("mix_cast_relaxed_loop"), SubResource("mix_cast_low_health_loop"), SubResource("mix_cast_from_aim_idle_loop"), SubResource("mix_cast_from_aim_relaxed_loop"), SubResource("mix_cast_from_aim_low_health_loop")]
