@@ -100,6 +100,16 @@ public static class Pose
 		}
 	}
 
+	// 某些牌的效果要等演出到某一刻才结算（胜券在王：命运之轮停下、奖励落进胸口才获得辉星）
+	private static readonly Dictionary<ulong, (ulong Until, float Seconds)> CastHold = new();
+
+	public static void HoldCast(NCreature node, float seconds) =>
+		CastHold[node.GetInstanceId()] = (Godot.Time.GetTicksMsec() + 1000, seconds);
+
+	/// <summary>本次出牌的 Cast 触发需要等待的时长（没有标记返回 0）。只用一次。</summary>
+	public static float TakeCastHold(NCreature node) =>
+		CastHold.Remove(node.GetInstanceId(), out var e) && Godot.Time.GetTicksMsec() <= e.Until ? e.Seconds : 0f;
+
 	/// <summary>这次 Attack 触发是否应跳过动作（本次出牌已经播过一次）。</summary>
 	public static bool SkipRepeatAttack(NCreature node)
 	{

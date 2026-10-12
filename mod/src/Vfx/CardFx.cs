@@ -51,6 +51,11 @@ public static class CardFx
 		// 召唤器 / 施法出招的攻击牌：整次出牌只播一次出招动作（后续多段攻击不再接挥剑）
 		Pose.MarkSingleAttackAnim(caster, play.Card.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Attack && anim != CardStyles.CardAnim.Sword);
 		bool stardust = play.Card.GetType().Name == "Stardust";
+		bool gamble = play.Card.GetType().Name == "RoyalGamble";
+		if (gamble)
+		{
+			Pose.HoldCast(caster, 0.15f + Grand.FortunePayout);   // 辉星等命运之轮的奖励落进胸口才到账
+		}
 		if (stardust)
 		{
 			StarOrbit.ArmVolley(caster);                 // 本次花掉的辉星不碎，留在头顶，每一击掷出一颗
@@ -80,7 +85,7 @@ public static class CardFx
 		{
 			Pose.MarkLightCast(caster);
 			// 掌心托起的那一刻，手上方翻出一张塔罗牌（牌本身带塔罗演出的就不重复）
-			if (!style.Extra.HasFlag(Extra.Tarot) && !stardust)
+			if (!style.Extra.HasFlag(Extra.Tarot) && !stardust && !gamble)
 			{
 				Fx.After(front, 0.2, "gesture tarot", () =>
 				{

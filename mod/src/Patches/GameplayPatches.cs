@@ -123,6 +123,10 @@ public static class SovereignTimingPatch
 			__result = Cmd.CustomScaledWait(System.Math.Min(waitTime * 0.5f, 0.25f), waitTime);
 			return false;
 		}
+		if (triggerName == "Cast" && Makoto.Node(creature.Player) is NCreature holder && Pose.TakeCastHold(holder) is float hold and > 0f)
+		{
+			waitTime = System.Math.Max(waitTime, hold);
+		}
 		if (triggerName == "sovereignBladeTrigger")
 		{
 			waitTime = Vfx.PersonaFx.SovereignWait;

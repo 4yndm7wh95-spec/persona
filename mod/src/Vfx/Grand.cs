@@ -598,15 +598,59 @@ public static class Grand
 
 	// ═════════ 命运之轮 ═════════
 
+	/// <summary>命运之轮出场 + 停下到奖励落进身体的总时长（胜券在王把获得辉星推迟到这一刻，见 SovereignTimingPatch）。</summary>
+	public const float FortunePayout = WheelFlight + 1.15f + PrizeFlight;
+	private const float WheelFlight = 0.3f, PrizeFlight = 0.24f;
+
 	/// <summary>
-	/// 命运之轮（胜券在王）：放在人物身后层、头顶左上方（不挡人）。
-	/// 进场：从小放大 + 外圈扩散；转动：外圈刻度反向慢转、轮缘灯珠追光、扇区残影随转速变化；
-	/// 停下：顶端扇区亮金、指针回弹、金色星屑；退场：缩小淡出。
+	/// 命运之轮（胜券在王），整段和结城理连在一起：
+	/// 1. 他抬手时，掌心翻出一张金边塔罗牌（X），旋转着沿弧线飞到头顶左上方；
+	/// 2. 牌在那里一闪"展开"成命运之轮（人物身后层，不挡人），开始转；
+	/// 3. 停下：顶端扇区亮金，指针回弹，一颗金星从扇区俯冲回他胸口（正好是获得辉星、新牌凝出的位置）。
 	/// </summary>
-	public static void FortuneWheel(Control layer, Vector2 at, Color tint, float s = 1f)
+	public static void FortuneWheel(Control back, Control front, Vector2 hand, Vector2 at, Vector2 chest, Color tint, float s = 1f)
 	{
 		float r = 150f * s;
 		at.Y = Mathf.Max(at.Y, r * 1.16f + 100f);           // 外圈不压到顶部状态栏（约 90px 高）
+		// 1. 掌心翻出的塔罗牌
+		Node2D card = MiniCard(Fx.Root(front, hand, "P3FortuneCard"), tint, 0.5f);
+		Node2D cardRoot = (Node2D)card.GetParent();
+		Typo.Text(card, "X", Typo.Latin, 22, Pal.Ice, new Vector2(-7f, -36f));
+		Line2D trail = new() { Width = 5f, Material = Fx.Additive, Gradient = new Gradient { Colors = new[] { new Color(tint, 0f), new Color(tint, 0.8f) } } };
+		Node2D trailRoot = Fx.Root(front, Vector2.Zero, "P3FortuneTrail");
+		trailRoot.TopLevel = true;
+		trailRoot.GlobalPosition = Vector2.Zero;
+		trailRoot.AddChild(trail);
+		Vector2 ctrl = new(Mathf.Lerp(hand.X, at.X, 0.3f), Mathf.Min(hand.Y, at.Y) - 140f);
+		P3Fx.Flash(front, hand, tint, 120f, 0.2f);
+		var pts = new List<Vector2>();
+		Fx.Animate(cardRoot, WheelFlight, t =>
+		{
+			float e = Ease.OutCubic(t);
+			Vector2 p = Bezier(hand, ctrl, at, e);
+			cardRoot.GlobalPosition = p;
+			cardRoot.Rotation = e * Mathf.Tau * 1.5f;
+			card.Scale = new Vector2(0.5f + 0.9f * e, 0.5f + 0.9f * e) * new Vector2(Mathf.Cos(e * Mathf.Pi * 3f), 1f);
+			pts.Add(p);
+			if (pts.Count > 9)
+			{
+				pts.RemoveAt(0);
+			}
+			trail.Points = pts.ToArray();
+		});
+		Fx.After(cardRoot, WheelFlight, "fortune unfold", () =>
+		{
+			cardRoot.QueueFree();
+			Fx.Animate(trail, 0.15f, t => trail.Modulate = new Color(1f, 1f, 1f, 1f - t));
+			Fx.FreeAfter(trailRoot, 0.16);
+			P3Fx.Flash(back, at, Pal.White, r * 1.4f, 0.22f);
+			WheelCore(back, front, at, chest, tint, s);
+		});
+	}
+
+	private static void WheelCore(Control layer, Control front, Vector2 at, Vector2 chest, Color tint, float s)
+	{
+		float r = 150f * s;
 		Node2D root = Fx.Root(layer, at, "P3FortuneWheel");
 		Glow(root, new Color(tint, 0.22f), Vector2.One * r / 13f);
 
@@ -710,10 +754,10 @@ public static class Grand
 				pointer.Rotation = 0.12f;                     // 指针被扇区边线拨了一下
 			}
 			pointer.Rotation = Mathf.Lerp(pointer.Rotation, 0f, 0.25f);
-			// 进场：0.5 → 1（OutBack）；退场：缩到 0.9 并淡出
+			// 进场：从牌的大小展开到 1（OutBack），同时转进来；退场：缩到 0.9 并淡出
 			float enter = Ease.OutBack(Mathf.Clamp(time / 0.28f, 0f, 1f));
 			float exit = Ease.InCubic(Mathf.Clamp((time - (total - 0.25f)) / 0.25f, 0f, 1f));
-			root.Scale = Vector2.One * (Mathf.Lerp(0.5f, 1f, enter) - 0.1f * exit);
+			root.Scale = Vector2.One * (Mathf.Lerp(0.2f, 1f, enter) - 0.1f * exit);
 			root.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.1f, 0f, 1f) * (1f - exit));
 			if (time >= stopAt)
 			{
@@ -731,8 +775,36 @@ public static class Grand
 				ramp: new[] { Pal.White, tint, ElementPal.FireMid });
 			Fx.FreeAfter(burst, 1.1);
 			P3Fx.Shockwave(layer, at, tint, 520f * s, 0.45f);
-			Audio.Sfx.Play(Audio.Snd.StarGain, 1.0f);
 			Shake(ShakeStrength.Weak);
+			// 奖励：一颗金星从胜出扇区俯冲回胸口
+			Node2D prize = Fx.Root(front, top, "P3FortunePrize");
+			Glow(prize, new Color(tint, 0.8f), Vector2.One * 2.2f);
+			Fx.Poly(prize, Fx.Star4(26f * s, 0.3f), Pal.White, additive: true);
+			Line2D tail = new() { Width = 10f, Material = Fx.Additive, Gradient = new Gradient { Colors = new[] { new Color(tint, 0f), new Color(Pal.White, 0.9f) } } };
+			Node2D tailRoot = Fx.Root(front, Vector2.Zero, "P3FortunePrizeTail");
+			tailRoot.TopLevel = true;
+			tailRoot.GlobalPosition = Vector2.Zero;
+			tailRoot.AddChild(tail);
+			Vector2 bend = new(Mathf.Lerp(top.X, chest.X, 0.7f), top.Y - 40f);
+			Fx.Animate(prize, PrizeFlight, t =>
+			{
+				float e = Ease.InCubic(t);
+				Vector2 p = Bezier(top, bend, chest, e);
+				prize.GlobalPosition = p;
+				prize.Rotation = t * 6f;
+				tail.Points = new[] { Bezier(top, bend, chest, Mathf.Max(0f, e - 0.35f)), p };
+			});
+			Fx.After(prize, PrizeFlight, "fortune prize", () =>
+			{
+				prize.QueueFree();
+				Fx.Animate(tail, 0.15f, t => tail.Modulate = new Color(1f, 1f, 1f, 1f - t));
+				Fx.FreeAfter(tailRoot, 0.16);
+				P3Fx.Flash(front, chest, tint, 220f, 0.25f);
+				Node2D sp = Fx.Root(front, chest, "P3FortunePrizeSparks");
+				Fx.Sparks(sp, tint, 24, 120f, 320f, 0.5f, scaleMin: 0.1f, scaleMax: 0.3f);
+				Fx.FreeAfter(sp, 0.7);
+				Audio.Sfx.Play(Audio.Snd.StarGain, 1.0f);
+			});
 		});
 		Fx.FreeAfter(root, total + 0.05);
 	}
