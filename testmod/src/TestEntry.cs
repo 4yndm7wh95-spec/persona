@@ -20,7 +20,7 @@ public static class TestEntry
 
 	public static void Init()
 	{
-		GD.Print($"{Tag} init v1.0.1");
+		GD.Print($"{Tag} init v1.0.2");
 		try
 		{
 			new Harmony("brooks.p3testmod").PatchAll(typeof(TestEntry).Assembly);

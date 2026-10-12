@@ -4,10 +4,12 @@ using Godot;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Context;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Helpers;
+using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 
 namespace P3TestMod;
@@ -16,7 +18,7 @@ namespace P3TestMod;
 /// 每帧检查（只在战斗中）：
 /// · 假人：血量上限和当前血量拉到 999999，被打掉一半就补满（"击杀"按钮会临时放行）；
 /// · 玩家：血量低于 30% 补满（"让我受击"不会真的打死）；能量、辉星不足 99 就直接设回 99；
-/// · F8：开关测试面板。
+/// · F8：开关测试面板；F7：消耗所有手牌（逐张播放原版的消耗动画）。
 /// </summary>
 public static class Runtime
 {
@@ -24,7 +26,7 @@ public static class Runtime
 	public const int DummyHp = 999999;
 
 	private static bool _installed;
-	private static bool _f8Down;
+	private static bool _f8Down, _f7Down;
 	private static bool _busy;                     // 有一个血量命令还在执行，等它完成再检查
 	public static bool AllowEnemyDeath;            // "击杀假人"时临时放行
 
@@ -50,6 +52,12 @@ public static class Runtime
 			Panel.Toggle();
 		}
 		_f8Down = f8;
+		bool f7 = Input.IsKeyPressed(Key.F7);
+		if (f7 && !_f7Down)
+		{
+			Panel.Say(ExhaustHand());
+		}
+		_f7Down = f7;
 
 		CombatState? state = Combat;
 		if (state == null || CombatManager.Instance.IsEnding)
@@ -128,6 +136,23 @@ public static class Runtime
 	{
 		await CreatureCmd.Kill(enemies, force: true);
 		await CombatManager.Instance.CheckWinCondition();
+	}
+
+	public static string ExhaustHand()
+	{
+		if (Me is not Player me) return "不在战斗中";
+		List<CardModel> cards = PileType.Hand.GetPile(me).Cards.ToList();
+		if (cards.Count == 0) return "手牌已经是空的";
+		TaskHelper.RunSafely(ExhaustAll(cards));
+		return $"消耗 {cards.Count} 张手牌";
+	}
+
+	private static async System.Threading.Tasks.Task ExhaustAll(List<CardModel> cards)
+	{
+		foreach (CardModel c in cards)
+		{
+			await CardCmd.Exhaust(new BlockingPlayerChoiceContext(), c);         // 一张一张来，每张都播消耗动画
+		}
 	}
 
 	public static string HurtMe(int amount)

@@ -18,7 +18,7 @@ namespace P3TestMod;
 /// 测试面板（F8 开关，或点左上角的"测试"按钮）：
 /// · 卡牌按原版卡面显示（原版牌组 / 图鉴用的同一个卡牌格子 NGridCardHolder），点一下加入手牌；
 /// · 筛选：储君 / 无色 / 全部，按名称搜索；每页 12 张，卡与卡之间留足空隙；
-/// · 按钮：击杀假人（看胜利特效）、让我受击（看受击动画）、清空手牌。
+/// · 按钮：击杀假人（看胜利特效）、让我受击（看受击动画）、清空手牌、消耗手牌（也可以按 F7，面板关着也行）。
 /// </summary>
 public static class Panel
 {
@@ -80,7 +80,7 @@ public static class Panel
 		col.AddThemeConstantOverride("separation", 8);
 		win.AddChild(col);
 
-		// 第一行：标题 + 筛选 + 搜索 + 升级开关 + 关闭
+		// 第一行：标题 + 筛选 + 搜索 + 关闭
 		HBoxContainer top = new();
 		top.AddThemeConstantOverride("separation", 10);
 		col.AddChild(top);
@@ -111,6 +111,7 @@ public static class Panel
 		AddButton("击杀假人", Runtime.KillDummy);
 		AddButton("让我受击", () => Runtime.HurtMe(3));
 		AddButton("清空手牌", ClearHand);
+		AddButton("消耗手牌 (F7)", Runtime.ExhaustHand);
 
 		// 卡牌网格（每页 12 张）
 		_grid = new GridContainer { Columns = Columns };
@@ -139,7 +140,7 @@ public static class Panel
 		bottom.AddChild(_status);
 	}
 
-	private static void Say(string text)
+	public static void Say(string text)
 	{
 		if (_status != null && GodotObject.IsInstanceValid(_status))
 		{
