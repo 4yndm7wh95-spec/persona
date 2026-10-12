@@ -594,10 +594,14 @@ public static class Uniq
 	/// <summary>新生之喜：头顶一颗光蛋裂开，涌出一大群小蓝蝶和金色光屑，像烟花一样散开。</summary>
 	public static void BundleOfJoy(Control back, Control front, Vector2 head)
 	{
-		Vector2 at = head + new Vector2(-20f, -110f);
+		// 光蛋放在头顶左上方的空处（和其他物件同一位置），不挡脸
+		Vector2 at = head + new Vector2(-200f, -150f);
+		at.Y = Mathf.Max(at.Y, 160f);
+		at.X = Mathf.Max(at.X, 120f);
 		Node2D egg = Fx.Root(front, at, "P3JoyEgg");
-		Fx.Poly(egg, Fx.Circle(34f, 32, 1.3f), new Color(1f, 0.95f, 0.85f), additive: true);
-		Sprite2D g = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = Vector2.One * 4f, Modulate = new Color(1f, 0.85f, 0.5f, 0.6f) };
+		Fx.Poly(egg, Fx.Circle(22f, 32, 1.3f), new Color(1f, 0.95f, 0.85f), additive: true);
+		Fx.Line(egg, Fx.Circle(22f, 32, 1.3f), new Color(1f, 0.85f, 0.5f, 0.9f), 2f, closed: true);
+		Sprite2D g = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = Vector2.One * 2.6f, Modulate = new Color(1f, 0.85f, 0.5f, 0.5f) };
 		egg.AddChild(g);
 		Fx.Animate(egg, 0.45f, t =>
 		{
@@ -1121,31 +1125,82 @@ public static class Uniq
 		Fx.FreeAfter(root, 1.55);
 	}
 
-	/// <summary>暗淡蓝点：画面暗下来，远处一颗极小的蓝色光点，一道斜穿画面的阳光光带恰好从它身上掠过。</summary>
+	/// <summary>
+	/// 暗淡蓝点（旅行者号那张照片）：画面压暗、带胶片颗粒，从画外左上方斜射进几道散射光带（宽窄不一、带色散），
+	/// 最亮的一道正好穿过一颗极小的淡蓝色光点；一个取景框从大到小收拢锁定它，旁边浮出 "PALE BLUE DOT" 和距离读数；
+	/// 远处星星一颗颗亮起。最后光带先退去，蓝点独自闪两下熄灭。
+	/// </summary>
 	public static void PaleBlueDot(Control back, Control front, Vector2 above)
 	{
 		Vector2 size = front.GetViewportRect().Size;
+		Vector2 dotAt = above + new Vector2(220f, -30f);
+		dotAt.Y = Mathf.Max(dotAt.Y, 160f);
 		Node2D root = Fx.Root(back, Vector2.Zero, "P3PaleBlueDot");
-		ColorRect dark = new() { Position = -size, Size = size * 3f, Color = new Color(0f, 0f, 0.02f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore };
-		root.AddChild(dark);
-		Vector2 dotAt = above + new Vector2(200f, -20f);
-		Polygon2D band = Fx.Poly(root, new Vector2[4], new Color(1f, 0.9f, 0.7f, 0f), additive: true);
-		Polygon2D dot = Fx.Poly(root, Fx.Circle(4f, 12), new Color(0.5f, 0.8f, 1f, 0f), additive: true);
-		dot.Position = dotAt;
-		Fx.Animate(root, 1.8f, t =>
+		ColorRect rays = new() { Position = -size, Size = size * 3f, MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Shaders.PaleRays } };
+		root.AddChild(rays);
+		var mat = (ShaderMaterial)rays.Material;
+		mat.SetShaderParameter("aspect", size.X / size.Y);
+		mat.SetShaderParameter("alpha", 0f);
+		// 远处的星：小点一颗颗亮起、闪烁
+		var stars = new List<Polygon2D>();
+		for (int i = 0; i < 40; i++)
 		{
-			float time = t * 1.8f;
-			float a = Mathf.Clamp(time / 0.25f, 0f, 1f) * (1f - Mathf.Clamp((time - 1.45f) / 0.35f, 0f, 1f));
-			dark.Color = new Color(0f, 0f, 0.02f, 0.6f * a);
-			Vector2 dir = new Vector2(1f, 0.55f).Normalized(), n = dir.Orthogonal();
-			float w = 26f;
-			Fx.Reshape(band, new[] { dotAt - dir * 1400f - n * w, dotAt + dir * 1400f - n * w, dotAt + dir * 1400f + n * w, dotAt - dir * 1400f + n * w });
-			band.Color = new Color(1f, 0.9f, 0.7f, 0.18f * a);
-			dot.Color = new Color(0.5f, 0.8f, 1f, a);
-			dot.Scale = Vector2.One * (1f + 0.3f * Mathf.Sin(time * 5f));
+			Polygon2D st = Fx.Poly(root, Fx.Circle(Fx.Rand(1f, 2.4f), 6), new Color(0.8f, 0.9f, 1f, 0f), additive: true);
+			st.Position = new Vector2(Fx.Rand(0f, size.X), Fx.Rand(0f, size.Y * 0.7f));
+			stars.Add(st);
+		}
+		// 蓝点 + 柔光
+		Node2D dot = Fx.Root(front, dotAt, "P3BlueDot");
+		Sprite2D halo = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = Vector2.One * 0.9f, Modulate = new Color(0.5f, 0.8f, 1f, 0f) };
+		dot.AddChild(halo);
+		Polygon2D core = Fx.Poly(dot, Fx.Circle(3.5f, 12), new Color(0.6f, 0.85f, 1f, 0f), additive: true);
+		// 取景框：四角括号 + 细圆环，从大到小收拢
+		Node2D frame = Fx.Root(front, dotAt, "P3DotFrame");
+		for (int k = 0; k < 4; k++)
+		{
+			Node2D corner = new() { Rotation = k * Mathf.Pi / 2f };
+			frame.AddChild(corner);
+			Fx.Line(corner, new[] { new Vector2(-40f, -26f), new Vector2(-40f, -40f), new Vector2(-26f, -40f) }, new Color(Pal.Ice, 0.9f), 2f, additive: false);
+		}
+		Line2D ring = Fx.Line(frame, Fx.Circle(18f, 32), new Color(Pal.Ice, 0.6f), 1.2f, closed: true);
+		Label title = Typo.Text(front, "PALE BLUE DOT", Typo.LatinItalic, 22, new Color(Pal.Ice, 0f), dotAt + new Vector2(34f, -42f));
+		Label dist = Typo.Text(front, "6.0 × 10⁹ km", Typo.Latin, 15, new Color(Pal.Ice, 0f), dotAt + new Vector2(36f, -16f));
+		const float total = 2.3f;
+		Fx.Animate(root, total, t =>
+		{
+			float time = t * total;
+			float a = Mathf.Clamp(time / 0.3f, 0f, 1f);
+			float raysOut = Mathf.Clamp((time - 1.55f) / 0.35f, 0f, 1f);
+			float allOut = Mathf.Clamp((time - 2.0f) / 0.3f, 0f, 1f);
+			mat.SetShaderParameter("alpha", a * (1f - allOut));
+			mat.SetShaderParameter("dot_pos", dotAt / size);
+			rays.Modulate = new Color(1f, 1f, 1f, 1f - raysOut * 0.6f);
+			for (int i = 0; i < stars.Count; i++)
+			{
+				float on = Mathf.Clamp((time - 0.2f - i * 0.02f) / 0.15f, 0f, 1f);
+				stars[i].Color = new Color(0.8f, 0.9f, 1f, on * (0.35f + 0.3f * Mathf.Sin(time * 5f + i)) * (1f - allOut));
+			}
+			float dotOn = Mathf.Clamp((time - 0.35f) / 0.2f, 0f, 1f);
+			float blink = time > 1.9f ? (Mathf.Sin((time - 1.9f) * 30f) > 0f ? 1f : 0.2f) : 1f;
+			core.Color = new Color(0.6f, 0.85f, 1f, dotOn * blink * (1f - allOut));
+			halo.Modulate = new Color(0.5f, 0.8f, 1f, 0.7f * dotOn * blink * (1f - allOut));
+			dot.Scale = Vector2.One * (1f + 0.25f * Mathf.Sin(time * 4f));
+			float lockT = Ease.OutCubic(Mathf.Clamp((time - 0.45f) / 0.45f, 0f, 1f));
+			frame.Scale = Vector2.One * Mathf.Lerp(4f, 1f, lockT);
+			frame.Rotation = (1f - lockT) * 0.6f;
+			frame.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((time - 0.45f) / 0.1f, 0f, 1f) * (1f - raysOut));
+			ring.DefaultColor = new Color(Pal.Ice, 0.6f * lockT);
+			float txt = Mathf.Clamp((time - 0.95f) / 0.15f, 0f, 1f) * (1f - raysOut);
+			title.Modulate = new Color(1f, 1f, 1f, txt);
+			dist.Modulate = new Color(1f, 1f, 1f, txt * 0.8f);
+			title.VisibleRatio = Mathf.Clamp((time - 0.95f) / 0.3f, 0f, 1f);
 		});
-		Fx.After(root, 0.6, "pale dot", () => Audio.Sfx.Play(Audio.Snd.Weak, 0.3f, pitch: 1.8f));
-		Fx.FreeAfter(root, 1.85);
+		Fx.After(root, 0.9, "dot lock", () => { P3Fx.Flash(front, dotAt, Pal.Ice, 70f, 0.15f); Audio.Sfx.Play(Audio.Snd.Weak, 0.35f, pitch: 1.8f); });
+		Fx.FreeAfter(root, total + 0.05);
+		Fx.FreeAfter(dot, total + 0.05);
+		Fx.FreeAfter(frame, total + 0.05);
+		Fx.FreeAfter(title, total + 0.05);
+		Fx.FreeAfter(dist, total + 0.05);
 	}
 
 	// ══════════════════ 防御系 ══════════════════

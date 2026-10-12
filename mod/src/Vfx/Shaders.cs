@@ -460,6 +460,55 @@ void fragment() {
 	COLOR = vec4(outc, clamp(inside + glow, 0.0, 1.0) * alpha);
 }");
 
+	private static Shader? _paleRays;
+
+	/// <summary>
+	/// 暗淡蓝点（屏幕坐标作画，盖满屏幕的 ColorRect）：画面压暗 + 胶片颗粒；从画外左上方的"太阳"斜射进来几道散射光带，
+	/// 光带宽窄不一、边缘柔和、带一点彩色色散（红 / 绿 / 蓝分量错开），其中最亮的一道正好穿过蓝点所在位置。
+	/// dot = 蓝点（SCREEN_UV），alpha 整体强度。
+	/// </summary>
+	public static Shader PaleRays => _paleRays ??= Make(@"
+shader_type canvas_item;
+uniform vec2 dot_pos = vec2(0.4, 0.3);
+uniform float alpha = 1.0;
+uniform float aspect = 1.78;
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+float band(vec2 p, vec2 o, float ang, float w) {
+	vec2 d = vec2(cos(ang), sin(ang));
+	vec2 n = vec2(-d.y, d.x);
+	float dist = abs(dot(p - o, n));
+	return exp(-dist * dist / (w * w));
+}
+void fragment() {
+	vec2 uv = SCREEN_UV;
+	vec2 p = vec2(uv.x * aspect, uv.y);
+	vec2 o = vec2(dot_pos.x * aspect, dot_pos.y);
+	float main_ang = 0.5;
+	// 几道光带：都经过太阳方向（画外左上），彼此张开一点角度；最亮的一道穿过蓝点
+	vec3 c = vec3(0.0);
+	for (int i = 0; i < 5; i++) {
+		float fi = float(i);
+		float ang = main_ang + (fi - 1.0) * 0.045;
+		vec2 oo = o + vec2(-0.02, 0.06) * (fi - 1.0);
+		float w = (fi == 1.0) ? 0.022 : 0.008 + 0.006 * fract(fi * 0.37);
+		float k = (fi == 1.0) ? 1.0 : 0.35;
+		// 色散：三个分量的光带位置略微错开
+		float r = band(p, oo + vec2(0.0, 0.004), ang, w);
+		float g = band(p, oo, ang, w);
+		float b = band(p, oo - vec2(0.0, 0.004), ang, w);
+		c += vec3(r * 1.0, g * 0.88, b * 0.7) * k;
+	}
+	// 光带沿长度方向：靠近太阳（左上）更亮
+	float along = clamp(1.2 - (p.x + p.y) * 0.45, 0.25, 1.0);
+	c *= along * 0.35;
+	// 胶片颗粒与少量尘点
+	float grain = hash(floor(uv * vec2(640.0, 360.0)) + floor(TIME * 24.0)) - 0.5;
+	float speck = step(0.9993, hash(floor(uv * vec2(900.0, 500.0)))) * 0.5;
+	vec3 col = c + vec3(grain * 0.04) + vec3(speck);
+	float dim = 0.62;
+	COLOR = vec4(col, clamp(dim + length(c) * 0.5, 0.0, 1.0) * alpha);
+}");
+
 	private static Shader? _waterDisc;
 
 	/// <summary>
