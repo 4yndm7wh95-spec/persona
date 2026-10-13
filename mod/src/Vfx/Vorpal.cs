@@ -19,29 +19,6 @@ public static class Vorpal
 	/// <summary>从"割裂开始"到"释放"的标准时长；可用时间不够时等比压缩。</summary>
 	public const float CutDuration = 1.0f;
 
-	private static Shader? _screen;
-
-	/// <summary>
-	/// 全屏调色：读屏幕，mode 0 = 高调反相（亮处变米白、暗处保留成深褐，像底片），mode 1 = 压暗成深蓝。amount 0~1。
-	/// </summary>
-	private static Shader Screen => _screen ??= new Shader
-	{
-		Code = @"
-shader_type canvas_item;
-uniform sampler2D screen_tex : hint_screen_texture, filter_linear_mipmap;
-uniform float amount = 0.0;
-uniform float mode = 0.0;
-void fragment() {
-	vec3 c = texture(screen_tex, SCREEN_UV).rgb;
-	float l = dot(c, vec3(0.299, 0.587, 0.114));
-	vec3 hk = mix(vec3(0.22, 0.17, 0.16), vec3(0.98, 0.94, 0.88), smoothstep(0.04, 0.42, l));
-	hk = mix(hk, vec3(1.0, 0.9, 0.9), 0.12 * smoothstep(0.3, 0.9, l));
-	vec3 db = c * vec3(0.32, 0.42, 0.78) + vec3(0.0, 0.02, 0.07);
-	vec3 t = mix(hk, db, step(0.5, mode));
-	COLOR = vec4(mix(c, t, amount), 1.0);
-}",
-	};
-
 	/// <summary>
 	/// 播放空间杀法。release：从现在起到伤害结算的秒数；targets：所有敌人的中心点。
 	/// </summary>
@@ -56,13 +33,13 @@ void fragment() {
 		Node2D root = Fx.Root(front, Vector2.Zero, "P3Vorpal");
 		root.TopLevel = true;
 		root.GlobalPosition = Vector2.Zero;
-		ColorRect grade = new() { Size = size, MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Screen } };
+		// v0.14.1：不再读屏幕调色（游戏里读不到画面，会变成一整块不透明灰蓝，挡住全部视野）→ 改用半透明色层，人物和敌人始终看得见
+		ColorRect grade = new() { Size = size, MouseFilter = Control.MouseFilterEnum.Ignore, Color = new Color(0.97f, 0.93f, 0.86f, 0f) };
 		root.AddChild(grade);
 		Node2D lines = new();
 		root.AddChild(lines);
 		Node2D glow = new();
 		root.AddChild(glow);
-		Fx.SetParam(grade, "amount", 0f);
 
 		// 割裂的线：12 条贯穿全屏的直线，穿过敌人附近的点；粗细不一；出现时间越来越密
 		const int n = 12;
@@ -80,8 +57,7 @@ void fragment() {
 		Audio.Sfx.Clip("vorpal_blade", 1.0f, Mathf.Max(start - 0.2f, 0f));
 		Fx.After(root, start, "vorpal invert", () =>
 		{
-			Fx.SetParam(grade, "mode", 0f);
-			Fx.Animate(grade, 0.06f, t => Fx.SetParam(grade, "amount", t));
+			Fx.Animate(grade, 0.06f, t => grade.Color = new Color(0.97f, 0.93f, 0.86f, 0.5f * t));       // 高调：米白色层 50%
 			BrushStroke(lines, focus, size, k);
 			ArcStroke(lines, focus, k);
 			Flecks(root, focus, size, cut + 0.5f);
@@ -100,12 +76,11 @@ void fragment() {
 		Fx.After(root, release - 0.06f, "vorpal release", () =>
 		{
 			Flash(root, size);
-			Fx.SetParam(grade, "mode", 1f);
-			Fx.SetParam(grade, "amount", 0.75f);
+			grade.Color = new Color(0.02f, 0.07f, 0.24f, 0.4f);                                            // 释放：暗蓝色层 40%
 			lines.Visible = false;
 			foreach (var (a, b, w, _) in cuts)
 			{
-				Fx.Stroke(glow, new[] { a, b }, new Color(0.35f, 0.75f, 1f, 0.28f), w * 3.2f + 6f);
+				Fx.Stroke(glow, new[] { a, b }, new Color(0.35f, 0.75f, 1f, 0.18f), w * 2.6f + 4f);
 				Fx.Stroke(glow, new[] { a, b }, new Color(0.85f, 0.97f, 1f, 0.95f), Mathf.Max(2f, w * 0.6f));
 			}
 			P3Fx.SpeedLines(front, focus, Pal.Ice, 26, 120f, size.X * 0.7f, 0.45f);
@@ -114,7 +89,7 @@ void fragment() {
 			Fx.Animate(glow, 0.75f, t =>
 			{
 				glow.Modulate = new Color(1f, 1f, 1f, (1f - Ease.InCubic(Mathf.Clamp((t - 0.35f) / 0.65f, 0f, 1f))) * (0.85f + 0.15f * Mathf.Sin(t * 60f)));
-				Fx.SetParam(grade, "amount", 0.75f * (1f - Ease.InCubic(Mathf.Clamp((t - 0.3f) / 0.7f, 0f, 1f))));
+				grade.Color = new Color(0.02f, 0.07f, 0.24f, 0.4f * (1f - Ease.InCubic(Mathf.Clamp((t - 0.3f) / 0.7f, 0f, 1f))));
 			});
 		});
 		Fx.FreeAfter(root, release + 0.85f);
