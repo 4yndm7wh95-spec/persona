@@ -62,6 +62,8 @@ public static class PersonaFx
 			return;
 		}
 
+		// 显形音：玻璃碎裂（召唤器枪声）之后紧接着 Persona 涌现的上扬声，峰值约 0.55s，正好接上斩击 —— 填掉碎裂和劈下之间的空档
+		Audio.Sfx.Clip("Snd_FX_Btl_Summon_00", 0.65f);
 		// 显形：脚下光柱 + 水波 + 墨绿闪光 + 光点
 		P3Fx.LightPillar(back, new Vector2(home.X, feet.Y), Pal.DarkHour, height * 0.45f, height * 1.1f, 0.6f);
 		P3Fx.Ripple(back, new Vector2(home.X, feet.Y), 900f, 0.8f, 0.03f, squashY: 0.35f);

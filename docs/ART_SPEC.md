@@ -562,3 +562,16 @@ Grand.cs 里其余函数暂时保留不用。
 
 - 抽牌声修正：`Velvet_Tarot_Flip` 原声里其实有两次翻牌（0.02s 和 0.34s 各一下），抽 N 张听起来像 2N 张。
   改用截取前 0.3 秒（一次翻牌 + 拖尾淡出）的 `card_draw.ogg`。试听：`art/sfx_draw_options.m4a`。
+
+## v0.13.9
+
+- **关掉原版储君全部角色音效**（`RegentSfxMutePatch`：拦截 `event:/sfx/characters/regent/*`，只留死亡）：
+  攻击动作 → P3R `swish_mid_1~4`；锻造 → `sword_draw_1`；精炼 → `sword_sheath_1`；施法 / 能力 / 君王之刃 / 引导之星 / 选人 → 静音（特效自带）。
+  命中音：陨石 `atk_hit_strike`、辉星 `atk_light` 也换成 P3R，原版命中 mp3 全部关掉（Hit=None 的牌除外）。
+- **时钟音效**（素材 `art/sfx_p3r_clock/`）：`clock_spin`（命运 Boss 轮盘的棘轮声截 0.55s）、`clock_tick`（钟表滴答 +24dB）、`clock_midnight`（报时长音）。
+  DarkClock（CosmicIndifference / Convergence / TheSealedThrone）：飞转 + 0.5s 报时；暴政时钟面板：滴答两下 → 飞转 → 0.82s 报时；汇流黑圈：`evt_eft_timespin_01`。
+- **胜券在王**：启动 `roulette_01`；每过一条扇区边线一声 `wheel_click`（随减速变稀）；停下 `roulette_03` + `ShuffleTime_Result`（峰值对准停下）。
+- **补齐无声演出**：Radiate 光柱、Glitterstream 蝶群、ParticleWall、Patter、Glow、陨石雨 / 彗星破空、星座连线（`Theurgia_Max`）。
+- **君王之刃**：Persona 显形时加 `Snd_FX_Btl_Summon_00`（峰值约 0.55s），填上玻璃碎裂和斩击之间的空档。
+- **能力牌月盘**：WaterDisc 新增 `caustics` 参数，月盘设 0 —— 焦散的暗部会形成不规则深蓝斑块，改为高光 + 细水波环。胜利 / 切入不变。
+- sfx 文件 62 个。试听：`art/sfx_v0139_audition.m4a`。

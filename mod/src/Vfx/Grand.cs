@@ -720,6 +720,9 @@ public static class Grand
 		float spins = 4.25f;
 		float lastTick = 0f;
 		float lastAngle = 0f;
+		float lastClick = -1f, clickTick = 0f;
+		Audio.Sfx.Clip("em0561_sp_roulette_01", 0.6f);                  // 轮盘启动（P3R 命运 Boss 的轮盘）
+		Audio.Sfx.Clip("ShuffleTime_Result", 0.9f, stopAt - 0.35f);      // 中奖音的峰值（约 0.35s）对准停下那一刻
 		Fx.Animate(root, total, t =>
 		{
 			float time = t * total;
@@ -748,6 +751,13 @@ public static class Grand
 				lamps[i].Color = new Color(time < stopAt ? Pal.Ice : tint, a);
 			}
 			float tick = Mathf.Floor(angle / (Mathf.Tau / 8f));
+			// 每过一条扇区边线"咔"一声：转得快时最多 25ms 一声，减速后越来越稀，和指针拨动同步
+			if (tick != clickTick && time < stopAt && time - lastClick > 0.025f)
+			{
+				clickTick = tick;
+				lastClick = time;
+				Audio.Sfx.Clip("wheel_click", 0.45f + 0.35f * Mathf.Clamp(time / stopAt, 0f, 1f));
+			}
 			if (tick != lastTick && time > 0.55f && time < stopAt)
 			{
 				lastTick = tick;
@@ -767,6 +777,7 @@ public static class Grand
 		});
 		Fx.After(root, stopAt, "fortune stop", () =>
 		{
+			Audio.Sfx.Clip("em0561_sp_roulette_03", 1.0f);           // 停下：重重一"咔"
 			Vector2 top = at + new Vector2(0f, -r * 0.65f);
 			pointer.Rotation = -0.3f;
 			P3Fx.Flash(layer, top, tint, 260f * s, 0.25f);

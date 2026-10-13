@@ -254,3 +254,26 @@ public static class CardDrawnPatch
 		});
 	}
 }
+
+/// <summary>
+/// v0.13.9：关掉原版储君的全部角色音效（攻击 / 施法 / 能力 / 君王之刃 / 锻造 / 精炼 / 引导之星 / 选人），换成本 mod 的 P3R 原声。
+/// 储君的音效都走 NAudioManager.PlayOneShot("event:/sfx/characters/regent/…")；只保留死亡音效。
+/// </summary>
+[HarmonyPatch]
+public static class RegentSfxMutePatch
+{
+	public static IEnumerable<MethodBase> TargetMethods() =>
+		typeof(MegaCrit.Sts2.Core.Nodes.Audio.NAudioManager).GetMethods(BindingFlags.Public | BindingFlags.Instance)
+			.Where(m => m.Name == "PlayOneShot" && m.GetParameters().Length > 0 && m.GetParameters()[0].ParameterType == typeof(string));
+
+	public static bool Prefix(object[] __args)
+	{
+		if (__args.Length == 0 || __args[0] is not string path || !path.StartsWith("event:/sfx/characters/regent/", System.StringComparison.Ordinal))
+		{
+			return true;
+		}
+		bool play = true;
+		ModEntry.Safe("RegentSfx", () => play = Audio.Sfx.ReplaceRegent(path.Substring("event:/sfx/characters/regent/".Length)));
+		return play;
+	}
+}

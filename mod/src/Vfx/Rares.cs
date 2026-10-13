@@ -1050,9 +1050,12 @@ public static class Rares
 			}
 		});
 		Fx.After(root, 0.08, "tyranny panel in", () => { Audio.Sfx.Play(Audio.Snd.CutIn, 0.5f, pitch: 0.7f); P3Fx.Ripple(back, mid, W * 0.6f, 0.7f, 0.015f); });
+		Audio.Sfx.Clip("clock_tick", 0.8f, 0.3f);                     // 时钟面板：滴答两下 → 指针飞转 → 0:00 报时长音
+		Audio.Sfx.Clip("clock_tick", 0.8f, 0.5f);
+		Audio.Sfx.Clip("clock_spin", 0.55f, strike - 0.5f);
 		Fx.After(root, strike, "tyranny midnight", () =>
 		{
-			Audio.Sfx.Play(Audio.Snd.TarotReveal, 0.6f, pitch: 0.5f);
+			Audio.Sfx.Clip("clock_midnight", 0.85f);
 			P3Fx.Ripple(back, mid, W * 0.9f, 0.9f, 0.025f);
 			Shake(ShakeStrength.Weak);
 		});

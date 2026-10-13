@@ -591,6 +591,7 @@ void fragment() {
 shader_type canvas_item;
 uniform float alpha = 1.0;
 uniform float reveal = 1.0;
+uniform float caustics = 1.0;
 uniform vec4 deep : source_color = vec4(0.02, 0.08, 0.42, 1.0);
 uniform vec4 shallow : source_color = vec4(0.1, 0.45, 0.95, 1.0);
 float caustic(vec2 p, float t) {
@@ -616,8 +617,12 @@ void fragment() {
 	float R = max(reveal, 0.001);
 	float inside = smoothstep(R, R - 0.008, r);
 	vec3 col = mix(shallow.rgb, deep.rgb, smoothstep(-0.9, 0.9, d.y));
+	// caustics = 1：焦散纹（胜利 / 切入用）；0：能力牌月盘用干净水面（焦散的暗部会在盘面上形成不规则深蓝斑块，v0.13.9）
 	float c = caustic(UV * 7.0 + vec2(0.0, TIME * 0.05), TIME * 0.35);
-	col += vec3(0.55, 0.85, 1.0) * clamp(c, 0.0, 1.0) * (0.55 - 0.35 * UV.y);
+	col += vec3(0.55, 0.85, 1.0) * clamp(c, 0.0, 1.0) * (0.55 - 0.35 * UV.y) * caustics;
+	float hi = smoothstep(0.9, -0.2, length(d - vec2(-0.25, -0.45)));
+	float wave = 0.5 + 0.5 * sin(r * 26.0 - TIME * 2.2);
+	col += (vec3(0.45, 0.8, 1.0) * hi * 0.35 + vec3(0.4, 0.8, 1.0) * pow(wave, 6.0) * 0.12 * (1.0 - r)) * (1.0 - caustics);
 	float rim = smoothstep(R - 0.06, R - 0.004, r) * inside;
 	col += vec3(0.35, 0.8, 1.0) * rim * 0.6;
 	COLOR = vec4(col, inside * alpha);

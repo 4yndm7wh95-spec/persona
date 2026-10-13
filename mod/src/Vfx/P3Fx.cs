@@ -363,6 +363,7 @@ public static class P3Fx
 		float r = bodyH * 0.72f;
 		Node2D root = Fx.Root(backLayer, c, "P3ArcanaDisc");
 		ColorRect disc = P3Ui.WaterDisc(root, Vector2.Zero, r);
+		Fx.SetParam(disc, "caustics", 0f);
 		Node2D arcs = new();
 		root.AddChild(arcs);
 		P3Ui.Arc(arcs, Vector2.Zero, r * 1.08f, 0f, Mathf.Pi * 1.2f, new Color(Pal.Cyan, 0.6f), 3f);

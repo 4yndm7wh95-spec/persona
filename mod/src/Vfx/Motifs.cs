@@ -263,6 +263,10 @@ public static class Motifs
 	/// <summary>流星群：count 颗陨石错落砸向各个目标。</summary>
 	public static void MeteorRain(Control layer, Vector2[] targets, int count, Color tint, float s = 1f)
 	{
+		for (int i = 0; i < count; i += 3)
+		{
+			Audio.Sfx.ClipAny(new[] { "swish_large_1", "swish_large_2" }, 0.55f, 0.07f * i);   // 每三颗一声破空（命中音由 Element.Meteor 负责）
+		}
 		for (int i = 0; i < count; i++)
 		{
 			Vector2 t = targets[i % targets.Length] + new Vector2(Fx.Rand(-90f, 90f), Fx.Rand(-60f, 60f));
@@ -273,6 +277,7 @@ public static class Motifs
 	/// <summary>巨型彗星：从屏幕左上角横越到目标，尾巴极长。</summary>
 	public static void Comet(Control layer, Vector2 at, Color tint, float s = 1f)
 	{
+		Audio.Sfx.Clip("swish_large_2", 0.9f, pitch: 0.8f);
 		Vector2 size = layer.GetViewportRect().Size;
 		Vector2 from = new(-200f, size.Y * 0.05f);
 		Node2D head = Fx.Root(layer, from, "P3Comet");
@@ -302,6 +307,7 @@ public static class Motifs
 	/// <summary>星座：星点依次亮起并连线，最后整体一闪。pattern 为相对坐标（单位：像素）。</summary>
 	public static void Constellation(Control layer, Vector2 at, Vector2[] pattern, Color tint, float s = 1f)
 	{
+		Audio.Sfx.Clip("Theurgia_Max", 0.6f);                 // 星座连线：P3R 的"灵能槽满"上扬声
 		Node2D root = Fx.Root(layer, at, "P3Constellation");
 		for (int i = 0; i < pattern.Length; i++)
 		{
@@ -510,6 +516,8 @@ public static class Motifs
 	public static void DarkClock(Control layer, Vector2 at, float s = 1f)
 	{
 		Node2D root = Fx.Root(layer, at, "P3DarkClock");
+		Audio.Sfx.Clip("clock_spin", 0.6f);                   // 指针飞转（P3R 轮盘的棘轮声）
+		Audio.Sfx.Clip("clock_midnight", 0.75f, 0.5f);         // 0.5s 指针到 XII：P3R 报时长音
 		Fx.Line(root, Fx.Circle(150f * s, 60), new Color(Pal.DarkHour, 0.85f), 4f, closed: true);
 		for (int i = 0; i < 12; i++)
 		{

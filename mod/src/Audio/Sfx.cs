@@ -85,7 +85,7 @@ public static class Sfx
 		[Snd.StarSpend] = new[] { new[] { ("Sys_Theurgia_Open", 0f, 0.8f) } },
 		[Snd.CutIn] = new[] { new[] { ("flash_cutin", 0f, 0.9f) } },
 		[Snd.Weak] = new[] { new[] { ("ShuffleTime_Select", 0f, 0.8f) } },
-		[Snd.ThanatosSlash] = new[] { new[] { ("swish_heavy_1", 0.05f, 0.9f), ("atk_hit_enemy_slash", 0.18f, 1f), ("sword_finish", 0.18f, 0.6f) } },
+		[Snd.ThanatosSlash] = new[] { new[] { ("swish_heavy_1", 0f, 0.9f), ("atk_hit_enemy_slash", 0.18f, 1f), ("sword_finish", 0.18f, 0.6f) } },
 		[Snd.OneMore] = new[] { new[] { ("Btl_1more_pc", 0f, 1f) } },
 		[Snd.SkillCutIn] = new[] { new[] { ("Snd_FX_Btl_PersonaAura_00_Cutin", 0f, 0.9f) } },
 		[Snd.Down] = new[] { new[] { ("Btl_Critical", 0f, 0.8f) } },
@@ -108,7 +108,9 @@ public static class Sfx
 		[P3Makoto.Vfx.Element.Royal] = new[] { "atk_hit_slash_1", "atk_hit_slash_2", "atk_hit_slash_3" },
 		[P3Makoto.Vfx.Element.Pierce] = new[] { "atk_hit_stab_1", "atk_hit_stab_2", "atk_hit_stab_3" },
 		[P3Makoto.Vfx.Element.Strike] = new[] { "atk_hit_strike_1", "atk_hit_strike_2", "atk_hit_strike_3" },
-		[P3Makoto.Vfx.Element.Megido] = new[] { "megido_hit" },      // P3R skill_0070（推测为 Megido），去掉开头 0.17s 空白
+		[P3Makoto.Vfx.Element.Megido] = new[] { "megido_hit" },
+		[P3Makoto.Vfx.Element.Meteor] = new[] { "atk_hit_strike_1", "atk_hit_strike_2", "atk_hit_strike_3" },
+		[P3Makoto.Vfx.Element.Star] = new[] { "atk_light_1", "atk_light_2", "atk_light_3" },      // P3R skill_0070（推测为 Megido），去掉开头 0.17s 空白
 		[P3Makoto.Vfx.Element.Agi] = new[] { "atk_fire_1", "atk_fire_2", "atk_fire_3" },
 		[P3Makoto.Vfx.Element.Bufu] = new[] { "atk_ice_1", "atk_ice_2", "atk_ice_3" },
 		[P3Makoto.Vfx.Element.Zio] = new[] { "atk_elec_1", "atk_elec_2", "atk_elec_3" },
@@ -119,6 +121,65 @@ public static class Sfx
 	/// <summary>这个元素的命中有可用的 P3R 原声（文件都在且能解码）。</summary>
 	public static bool HasElementSound(P3Makoto.Vfx.Element e) =>
 		ElementFiles.TryGetValue(e, out string[]? files) && files.All(f => Sample(f) != null);
+
+	/// <summary>
+	/// 单独的原声片段（特效里直接按文件名播放，v0.13.9）。列在这里只是为了启动时预热、统计。
+	/// wheel_click / clock_tick / clock_midnight / clock_spin 是从 art/sfx_p3r_clock 截出来的。
+	/// </summary>
+	private static readonly string[] Clips =
+	{
+		"wheel_click", "clock_tick", "clock_midnight", "clock_spin", "evt_eft_timespin_01",
+		"em0561_sp_roulette_01", "em0561_sp_roulette_03", "ShuffleTime_Result", "Snd_FX_Btl_Summon_00",
+		"ShuffleTime_PowerUp", "Theurgia_Max", "Snd_FX_Btl_StReflection_00_1", "Snd_FX_Btl_StAbsorption_00_1",
+		"sword_draw_1", "sword_sheath_1", "swish_large_1", "swish_large_2",
+		"swish_mid_1", "swish_mid_2", "swish_mid_3", "swish_mid_4",
+	};
+
+	/// <summary>按文件名播放一个原声片段（缺文件就不响）。</summary>
+	public static void Clip(string file, float volume = 1f, float delay = 0f, float pitch = 1f) => ModEntry.Safe("clip " + file, () =>
+	{
+		if (Engine.GetMainLoop() is not SceneTree tree)
+		{
+			return;
+		}
+		if (delay > 0f)
+		{
+			tree.CreateTimer(delay, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () => Clip(file, volume, 0f, pitch);
+			return;
+		}
+		if (Sample(file) is AudioStreamOggVorbis st)
+		{
+			Spawn(tree, st, volume * SampleMaster, pitch * (float)GD.RandRange(0.98, 1.02));
+		}
+	});
+
+	private static readonly string[] Swings = { "swish_mid_1", "swish_mid_2", "swish_mid_3", "swish_mid_4" };
+
+	/// <summary>
+	/// 原版储君角色音效的替换表（RegentSfxMutePatch 调用）。返回 true = 原版照常播放（只有死亡音效），false = 已拦截。
+	/// 施法 / 能力 / 君王之刃 / 引导之星 / 选人：本 mod 的特效自带音效，原版直接静音。
+	/// </summary>
+	public static bool ReplaceRegent(string name)
+	{
+		switch (name)
+		{
+			case "regent_die":
+				return true;
+			case "regent_attack":
+				ClipAny(Swings, 0.7f);
+				break;
+			case "regent_forge":
+				Clip("sword_draw_1", 0.8f);
+				break;
+			case "regent_refine":
+				Clip("sword_sheath_1", 0.7f);
+				break;
+		}
+		return false;
+	}
+
+	/// <summary>随机挑一个片段播放。</summary>
+	public static void ClipAny(string[] files, float volume = 1f, float delay = 0f) => Clip(files[(int)(GD.Randi() % (uint)files.Length)], volume, delay);
 
 	private const string SfxDir = "res://p3makoto/sfx/";
 	private const float SampleMaster = 0.7f;
@@ -147,7 +208,7 @@ public static class Sfx
 	private static void PrewarmSamples()
 	{
 		int ok = 0, all = 0;
-		IEnumerable<string> names = P3r.Values.SelectMany(v => v).SelectMany(l => l).Select(l => l.File).Concat(ElementFiles.Values.SelectMany(f => f)).Distinct();
+		IEnumerable<string> names = P3r.Values.SelectMany(v => v).SelectMany(l => l).Select(l => l.File).Concat(ElementFiles.Values.SelectMany(f => f)).Concat(Clips).Distinct();
 		foreach (string n in names)
 		{
 			all++;

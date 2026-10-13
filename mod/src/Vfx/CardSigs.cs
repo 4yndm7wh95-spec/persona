@@ -160,8 +160,23 @@ public static class CardSigs
 	/// <summary>这张牌有自己的专属演出（施法时就不再额外翻一张小塔罗，避免重复）。</summary>
 	public static bool Has(CardModel card) => Sigs.ContainsKey(card.GetType().Name);
 
+	/// <summary>v0.13.9：原本没有音效的专属演出，出牌时补一个 P3R 原声（文件, 音量, 延迟）。</summary>
+	private static readonly Dictionary<string, (string File, float Volume, float Delay)> SigSounds = new()
+	{
+		["Radiate"] = ("ShuffleTime_PowerUp", 0.7f, 0f),
+		["Glitterstream"] = ("Snd_FX_Btl_PersonaAura_00", 0.5f, 0.1f),
+		["ParticleWall"] = ("Snd_FX_Btl_StReflection_00_1", 0.7f, 0.05f),
+		["Patter"] = ("Snd_FX_Btl_StAbsorption_00_1", 0.8f, 0f),
+		["Glow"] = ("Theurgia_Up", 0.6f, 0f),
+		["Convergence"] = ("evt_eft_timespin_01", 0.9f, 0f),   // 黑圈内收（P2 是时钟，DarkClock 自带）
+	};
+
 	public static void Play(CardModel card, Ctx c)
 	{
+		if (SigSounds.TryGetValue(card.GetType().Name, out var snd))
+		{
+			Audio.Sfx.Clip(snd.File, snd.Volume, snd.Delay);
+		}
 		if (Sigs.TryGetValue(card.GetType().Name, out Action<Ctx>? sig))
 		{
 			ModEntry.Safe("card sig " + card.GetType().Name, () => sig(c));
