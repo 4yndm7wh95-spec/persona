@@ -1,0 +1,34 @@
+安装路径：G:\Gamebox\ZS15858\GAME15858\GAME15858
+项目：Persona 3 Reload / UE4.27
+来源：本机 Gamebox 独立安装；不在 Steam libraryfolders.vdf 指定的库中。随附 Steamworks appid 为 2161700；无法据此确认购买渠道或准确游戏版本。
+P3R.exe 未提供 FileVersion/ProductVersion。未启动游戏。
+FModel：d61549776a0ca9411903804640c7a61de721c4e6，2026-10-09 官方最新构建（工具内更新列表）。
+vgmstream-cli：r2117，官方 win64；FFmpeg：9.0.2 essentials Windows 静态构建（ffmpeg.org 链接的 gyan.dev）。
+AES：需要。FModel 手动游戏配置无自动获取接口；公开密钥已取得并验证挂载成功。
+AES 来源：https://animatedswine37.github.io/persona-modding-docs/docs/flowscript/decompilation/
+CRIWARE：另外使用公开的游戏 KeyCode（含 AWB 子密钥派生）；所有解码均未出现密钥缺失警告。
+CRIWARE 来源：https://gamebanana.com/tools/16116
+库元数据：通过 FModel 导出 SoundAtomCueSheet 属性。ACB 从 SE 原始容器内完整 @UTF 表保存，保持 cue/波形表。
+导出目录：C:\Users\kkk\sts2_tools\p3r_rip\
+
+[Content\Paks 文件名 | 大小字节]
+global.ucas | 1528496
+global.utoc | 609
+pakchunk0-WindowsNoEditor.pak | 3087370046
+pakchunk0-WindowsNoEditor.ucas | 3050162320
+pakchunk0-WindowsNoEditor.utoc | 3980483
+pakchunk1-WindowsNoEditor.pak | 1688847800
+pakchunk1-WindowsNoEditor.ucas | 8535988096
+pakchunk1-WindowsNoEditor.utoc | 11408947
+pakchunk2-WindowsNoEditor.pak | 5639506
+pakchunk2-WindowsNoEditor.ucas | 92107296
+pakchunk2-WindowsNoEditor.utoc | 297524
+pakchunk3-WindowsNoEditor.pak | 31708746
+pakchunk3-WindowsNoEditor.ucas | 104702464
+pakchunk3-WindowsNoEditor.utoc | 1000385
+pakchunk4-WindowsNoEditor.pak | 406833720
+pakchunk4-WindowsNoEditor.ucas | 344131760
+pakchunk4-WindowsNoEditor.utoc | 1105010
+pakchunk5-WindowsNoEditor.pak | 1925742357
+pakchunk5-WindowsNoEditor.ucas | 432798144
+pakchunk5-WindowsNoEditor.utoc | 2936387
