@@ -227,3 +227,22 @@ public static class TyrannyExhaustPatch
 		});
 	}
 }
+
+/// <summary>
+/// 抽牌音效（v0.13.6）：结城理每抽到一张牌（打出的牌抽牌、每回合开始的自动抽牌都算）就播一次 P3R 翻牌声。
+/// Hook.AfterCardDrawn 每张牌调用一次；连续抽牌由 Sfx.CardDrawn 排队错开，保证抽几张响几次。
+/// </summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Hooks.Hook), nameof(MegaCrit.Sts2.Core.Hooks.Hook.AfterCardDrawn))]
+public static class CardDrawnPatch
+{
+	public static void Postfix(CardModel card)
+	{
+		ModEntry.Safe("CardDrawn", () =>
+		{
+			if (CardFx.IsMakotoCard(card))
+			{
+				Audio.Sfx.CardDrawn();
+			}
+		});
+	}
+}

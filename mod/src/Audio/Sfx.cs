@@ -23,6 +23,7 @@ public enum Snd
 	OneMore,        // "ONE MORE!"
 	SkillCutIn,     // 技能名大字切入（Persona 光环切入）
 	Down,           // WEAK! 弹字（击倒音）
+	CardDraw,       // 抽到一张牌（只用于真实抽牌，不用在特效里）
 }
 
 /// <summary>
@@ -77,7 +78,8 @@ public static class Sfx
 	{
 		[Snd.Gunshot] = new[] { new[] { ("Snd_FX_Btl_Trigger_00", 0f, 1f) }, new[] { ("Snd_FX_Btl_Trigger_01", 0f, 1f) } },
 		[Snd.Summon] = new[] { new[] { ("Snd_FX_Btl_Trigger_00_Flash", 0f, 0.8f) } },
-		[Snd.TarotReveal] = new[] { new[] { ("Velvet_Tarot_Flip", 0f, 1f) } },
+		[Snd.TarotReveal] = new[] { new[] { ("Snd_FX_Btl_PersonaAura_00", 0f, 0.6f) } },   // 特效里的"浮现"：Persona 光环（翻牌声只留给真实抽牌）
+		[Snd.CardDraw] = new[] { new[] { ("Velvet_Tarot_Flip", 0f, 1f) } },
 		[Snd.TarotShatter] = new[] { new[] { ("ShuffleTime_ArcanaBurst", 0f, 0.9f) } },
 		[Snd.StarGain] = new[] { new[] { ("Theurgia_Up", 0f, 0.7f) } },
 		[Snd.StarSpend] = new[] { new[] { ("Sys_Theurgia_Open", 0f, 0.8f) } },
@@ -95,6 +97,7 @@ public static class Sfx
 		Snd.Summon => Snd.Gunshot,
 		Snd.OneMore or Snd.SkillCutIn => Snd.CutIn,
 		Snd.Down => Snd.Weak,
+		Snd.CardDraw => Snd.TarotReveal,
 		_ => s,
 	};
 
@@ -240,6 +243,18 @@ public static class Sfx
 		}
 	}
 
+	private static double _nextDraw;
+	private const double DrawGap = 0.09;
+
+	/// <summary>抽到一张牌：每张都响一次。几乎同时抽到的多张牌按 90ms 间隔排开（不会被 45ms 防叠音吞掉）。</summary>
+	public static void CardDrawn()
+	{
+		double now = Time.GetTicksMsec() / 1000.0;
+		double at = Math.Max(now, _nextDraw);
+		_nextDraw = at + DrawGap;
+		Play(Snd.CardDraw, 0.55f, (float)(at - now));
+	}
+
 	private static readonly Dictionary<string, ulong> LastEvent = new();
 
 	/// <summary>播放原版 FMOD 事件（同一事件 60ms 内不叠加）。</summary>
@@ -267,7 +282,7 @@ public static class Sfx
 			return;
 		}
 		ulong now = Time.GetTicksMsec();
-		if (LastPlay.TryGetValue(s, out ulong last) && now - last < 45)
+		if (s != Snd.CardDraw && LastPlay.TryGetValue(s, out ulong last) && now - last < 45)
 		{
 			return;
 		}

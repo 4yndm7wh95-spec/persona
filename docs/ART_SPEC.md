@@ -530,7 +530,7 @@ Grand.cs 里其余函数暂时保留不用。
 
 ## v0.13.5 — P3R 原声音效接入
 
-- 31 个 P3R 原声（来自 `art/sfx_p3r/`）复制到 `mod/pck_stage/p3makoto/sfx/`，运行时用 `FileAccess.GetFileAsBytes` + `AudioStreamOggVorbis.LoadFromBuffer` 解码（不走导入系统，不需要 `.import`）。
+- 31 个 P3R 原声（v0.13.6 起 32 个：加 Snd_FX_Btl_PersonaAura_00）（来自 `art/sfx_p3r/`）复制到 `mod/pck_stage/p3makoto/sfx/`，运行时用 `FileAccess.GetFileAsBytes` + `AudioStreamOggVorbis.LoadFromBuffer` 解码（不走导入系统，不需要 `.import`）。
 - 映射表在 `mod/src/Audio/Sfx.cs` 的 `P3r` / `ElementFiles`；退路顺序：P3R 原声 → 原版 FMOD → 合成。
 - 新增 Snd：Summon（选人召唤）、OneMore、SkillCutIn（技能名大字）、Down（WEAK! 弹字）。
 - 调用方的 pitch 对原声只取一半幅度并限制在 0.8~1.25。
@@ -539,7 +539,7 @@ Grand.cs 里其余函数暂时保留不用。
 
 ## 待办（v0.13.5 测试反馈，暂不改动）
 
-1. **"抽牌音效"误用**：不少特效（如暴政 Tyranny、既定事项 MakeItSo，能力牌似乎都有）播出一个像抽牌 / 翻牌的声音，与卡牌内容无关。
+1. ✅ v0.13.6 已改：翻牌声 `Velvet_Tarot_Flip` 只在真实抽牌时播（`Hook.AfterCardDrawn` 补丁，每抽一张响一次，含每回合自动抽牌，连续抽牌按 90ms 排开）；特效里的 TarotReveal 换成 `Snd_FX_Btl_PersonaAura_00`。原记录：**"抽牌音效"误用**：不少特效（如暴政 Tyranny、既定事项 MakeItSo，能力牌似乎都有）播出一个像抽牌 / 翻牌的声音，与卡牌内容无关。
    用户要求：翻牌 / 抽牌声只给**主动抽牌**的牌（微光 Glimmer、预言 Prophesize、抉择抉择 DecisionsDecisions、辉光 Glow、大爆炸 BigBang、光子切割 PhotonCut、战利品 SpoilsOfBattle），其他牌换成和内容相关的声音。
    嫌疑：`Snd.TarotReveal` → `Velvet_Tarot_Flip`（通用的掌心翻塔罗 `Extras.TarotFlip`、ThemeFx 多处、Tyranny `Rares.cs` 都用它）；也可能是原版能力牌自带音效。待用户确认后替换。
 2. **人物缩小（BodyScale 0.92）后特效位置需整体复查**：绕身体的特效（能力牌的月亮圆盘 + 时钟环 + 环绕的塔罗小牌、掌心、头顶类特效等）
