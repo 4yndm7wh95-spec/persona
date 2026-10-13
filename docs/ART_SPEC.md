@@ -527,3 +527,11 @@ Grand.cs 里其余函数暂时保留不用。
 - v0.13.2 天鹅绒门 0.86 → 0.80、门底 -300 → -255px：0.86 时门顶贴状态栏、左边出屏。
 - v0.13.3 音效第一层：塔罗浮现 / 碎裂、辉星获得 / 消耗、WEAK!、切入改用原版 FMOD 事件（Sfx.Vanilla 映射表，可逐个改回合成）；元素命中加原版音效（火 attack_fire、冰 frost_channel、雷 lightning_evoke、光 plasma_channel、暗 dark_channel、万能 hyperbeam、星 / 陨石 regent_guiding_star）。召唤器、塔纳托斯斩击仍是合成，待第二层换真实素材。
 - v0.13.4 战斗人物等比缩小 0.92（骨骼根节点 scale，以脚底为原点；约 428px → 394px，原版储君约 369px）。Makoto.Center / Head 按脚底同比换算，特效定位跟着走；骨骼点（hand / evoker_tip 等）自动随根骨骼缩放。选人 / 休息处 / 商店的立绘不变。
+
+## v0.13.5 — P3R 原声音效接入
+
+- 32 个 P3R 原声（来自 `art/sfx_p3r/`）复制到 `mod/pck_stage/p3makoto/sfx/`，运行时用 `FileAccess.GetFileAsBytes` + `AudioStreamOggVorbis.LoadFromBuffer` 解码（不走导入系统，不需要 `.import`）。
+- 映射表在 `mod/src/Audio/Sfx.cs` 的 `P3r` / `ElementFiles`；退路顺序：P3R 原声 → 原版 FMOD → 合成。
+- 新增 Snd：Summon（选人召唤）、OneMore、SkillCutIn（技能名大字）、AllOut（总攻击收尾）、Down（WEAK! 弹字）。
+- 调用方的 pitch 对原声只取一半幅度并限制在 0.8~1.25。
+- 试听：`art/sfx_p3r_v0135_audition.m4a`（时间点见同名 .txt）。日志里会打印 `P3R sfx loaded N/32`。

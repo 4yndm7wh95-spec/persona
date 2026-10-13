@@ -224,7 +224,7 @@ public static class CardFx
 		CutInFx.Fire(caster);                             // 有进行中的眼神切入：横幅碎裂、Persona 现身
 	}
 
-	/// <summary>召唤器枪声（本 mod 唯一的自制音效；其余都用游戏原版音效）。</summary>
+	/// <summary>召唤器枪声（P3R 原声 Trigger_00/01 随机）。</summary>
 	private static void EvokerSound(float power) => Sfx.Play(Snd.Gunshot, 1.1f + 0.15f * power);
 
 	/// <summary>单体牌取目标；群体 / 无目标的攻击性牌取全部存活敌人。</summary>

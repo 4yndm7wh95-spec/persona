@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Godot;
 
@@ -17,9 +18,16 @@ public enum Snd
 	CutIn,          // "CRITICAL" / "ONE MORE!" 切入：风声冲入 + 重击 + 和弦重音
 	Weak,           // WEAK!：金属高音"叮"+ 上扬滑音 + 微光
 	ThanatosSlash,  // 塔纳托斯斩击：低沉风啸 + 巨响 + 金属刮擦 + 不协和低音
+	// v0.13.5 起只有 P3R 原声（没有合成版本，缺文件时退回到上面对应的合成音）
+	Summon,         // 选人界面的召唤（召唤器 + 闪光的完整版）
+	OneMore,        // "ONE MORE!"
+	SkillCutIn,     // 技能名大字切入（Persona 光环切入）
+	AllOut,         // 总攻击收尾
+	Down,           // WEAK! 弹字（击倒音）
 }
 
 /// <summary>
+/// v0.13.5 起优先播放 P3R 原声（见 P3r 表）；下面的程序合成只作缺文件时的最后退路。
 /// 程序合成音效（不需要音频素材）：启动时在后台线程合成 PCM，播放走 Godot 的 "SFX" 总线 —— 和游戏自己的
 /// 临时音效（NDebugAudioManager）同一条总线，跟随游戏音量设置。
 /// 召唤器枪声 + 几个"仪式感"特效的音效（塔罗牌、辉星、切入大字、WEAK!、塔纳托斯斩击），普通命中仍用游戏原版。
@@ -37,8 +45,20 @@ public static class Sfx
 
 	public static void Prewarm() => Task.Run(() =>
 	{
+		try
+		{
+			PrewarmSamples();
+		}
+		catch (Exception e)
+		{
+			GD.PrintErr($"{ModEntry.Tag} sample prewarm failed: {e}");
+		}
 		foreach (Snd s in Enum.GetValues<Snd>())
 		{
+			if (SynthFallback(s) != s || (P3r.TryGetValue(s, out var vs) && vs.All(v => v.All(l => Sample(l.File) != null))))
+			{
+				continue;
+			}
 			try
 			{
 				Pcm.TryAdd(s, Encode(Synth(s), Drive(s)));
@@ -51,9 +71,127 @@ public static class Sfx
 	});
 
 	/// <summary>
-	/// 第一层改进（v0.13.3）：能用游戏原版 FMOD 音效的，直接用原版（真实录音、和游戏混音统一）；没有合适原版的（召唤器、塔纳托斯）
-	/// 暂时保留合成，之后换成真实素材。null = 用合成。音量是相对原版的倍率。
+	/// v0.13.5：P3R 原声（art/sfx_p3r → pck 里的 res://p3makoto/sfx/）。每个音效可有多个变体（随机挑一个），
+	/// 每个变体可由多层组成（文件, 延迟秒, 音量倍率）。文件缺失或解码失败时退回：Vanilla 原版 FMOD → 合成。
 	/// </summary>
+	private static readonly Dictionary<Snd, (string File, float Delay, float Gain)[][]> P3r = new()
+	{
+		[Snd.Gunshot] = new[] { new[] { ("Snd_FX_Btl_Trigger_00", 0f, 1f) }, new[] { ("Snd_FX_Btl_Trigger_01", 0f, 1f) } },
+		[Snd.Summon] = new[] { new[] { ("Snd_FX_Btl_Trigger_00_Flash", 0f, 0.8f) } },
+		[Snd.TarotReveal] = new[] { new[] { ("Velvet_Tarot_Flip", 0f, 1f) } },
+		[Snd.TarotShatter] = new[] { new[] { ("ShuffleTime_ArcanaBurst", 0f, 0.9f) } },
+		[Snd.StarGain] = new[] { new[] { ("Theurgia_Up", 0f, 0.7f) } },
+		[Snd.StarSpend] = new[] { new[] { ("Sys_Theurgia_Open", 0f, 0.8f) } },
+		[Snd.CutIn] = new[] { new[] { ("flash_cutin", 0f, 0.9f) } },
+		[Snd.Weak] = new[] { new[] { ("ShuffleTime_Select", 0f, 0.8f) } },
+		[Snd.ThanatosSlash] = new[] { new[] { ("swish_heavy_1", 0.05f, 0.9f), ("atk_hit_enemy_slash", 0.18f, 1f), ("sword_finish", 0.18f, 0.6f) } },
+		[Snd.OneMore] = new[] { new[] { ("Btl_1more_pc", 0f, 1f) } },
+		[Snd.SkillCutIn] = new[] { new[] { ("Snd_FX_Btl_PersonaAura_00_Cutin", 0f, 0.9f) } },
+		[Snd.AllOut] = new[] { new[] { ("Btl_Allout_Wipe", 0f, 1f) } },
+		[Snd.Down] = new[] { new[] { ("Btl_Down_1", 0f, 1f) }, new[] { ("Btl_Down_2", 0f, 1f) } },
+	};
+
+	/// <summary>只有原声、没有合成版本的音效缺文件时，用哪个合成音代替。</summary>
+	private static Snd SynthFallback(Snd s) => s switch
+	{
+		Snd.Summon => Snd.Gunshot,
+		Snd.OneMore or Snd.SkillCutIn or Snd.AllOut => Snd.CutIn,
+		Snd.Down => Snd.Weak,
+		_ => s,
+	};
+
+	/// <summary>元素命中的原版 / P3R 音效变体（物理系不加：原版卡牌自己的攻击音效已经在播）。</summary>
+	private static readonly Dictionary<P3Makoto.Vfx.Element, string[]> ElementFiles = new()
+	{
+		[P3Makoto.Vfx.Element.Agi] = new[] { "atk_fire_1", "atk_fire_2", "atk_fire_3" },
+		[P3Makoto.Vfx.Element.Bufu] = new[] { "atk_ice_1", "atk_ice_2", "atk_ice_3" },
+		[P3Makoto.Vfx.Element.Zio] = new[] { "atk_elec_1", "atk_elec_2", "atk_elec_3" },
+		[P3Makoto.Vfx.Element.Hama] = new[] { "atk_light_1", "atk_light_2", "atk_light_3" },
+		[P3Makoto.Vfx.Element.Mudo] = new[] { "atk_dark_1", "atk_dark_2", "atk_dark_3" },
+	};
+
+	private const string SfxDir = "res://p3makoto/sfx/";
+	private const float SampleMaster = 0.7f;
+	private static readonly ConcurrentDictionary<string, AudioStreamOggVorbis?> Samples = new();
+
+	/// <summary>读 pck 里的原始 .ogg 字节再解码（不走导入系统，所以不需要 .import 文件）。失败返回 null 并记住。</summary>
+	private static AudioStreamOggVorbis? Sample(string name) => Samples.GetOrAdd(name, n =>
+	{
+		try
+		{
+			string path = SfxDir + n + ".ogg";
+			if (!FileAccess.FileExists(path))
+			{
+				return null;
+			}
+			byte[] bytes = FileAccess.GetFileAsBytes(path);
+			return bytes.Length > 0 ? AudioStreamOggVorbis.LoadFromBuffer(bytes) : null;
+		}
+		catch (Exception e)
+		{
+			GD.PrintErr($"{ModEntry.Tag} ogg {n} failed: {e.Message}");
+			return null;
+		}
+	});
+
+	private static void PrewarmSamples()
+	{
+		int ok = 0, all = 0;
+		IEnumerable<string> names = P3r.Values.SelectMany(v => v).SelectMany(l => l).Select(l => l.File).Concat(ElementFiles.Values.SelectMany(f => f)).Distinct();
+		foreach (string n in names)
+		{
+			all++;
+			if (Sample(n) != null)
+			{
+				ok++;
+			}
+		}
+		GD.Print($"{ModEntry.Tag} P3R sfx loaded {ok}/{all}");
+	}
+
+	/// <summary>播放一个原声变体（全部层都在才播）；成功返回 true。</summary>
+	private static bool PlaySample(SceneTree tree, (string File, float Delay, float Gain)[][] variants, float volume, float pitch)
+	{
+		var layers = variants[variants.Length == 1 ? 0 : (int)(GD.Randi() % (uint)variants.Length)];
+		if (layers.Any(l => Sample(l.File) == null))
+		{
+			return false;
+		}
+		// 调用方的 pitch 是给合成音调的（0.45~1.8），真实录音变调太多会失真：只取一半幅度，限制在 0.8~1.25
+		float ps = Mathf.Clamp(1f + (pitch - 1f) * 0.5f, 0.8f, 1.25f) * (float)GD.RandRange(0.98, 1.02);
+		foreach ((string file, float delay, float gain) in layers)
+		{
+			AudioStreamOggVorbis stream = Sample(file)!;
+			void Go() => Spawn(tree, stream, volume * gain * SampleMaster, ps);
+			if (delay > 0f)
+			{
+				tree.CreateTimer(delay, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += Go;
+			}
+			else
+			{
+				Go();
+			}
+		}
+		return true;
+	}
+
+	private static void Spawn(SceneTree tree, AudioStream stream, float volume, float pitch)
+	{
+		_bus ??= AudioServer.GetBusIndex("SFX") >= 0 ? new StringName("SFX") : new StringName("Master");
+		AudioStreamPlayer p = new()
+		{
+			Stream = stream,
+			Bus = _bus,
+			VolumeDb = Mathf.LinearToDb(Mathf.Clamp(volume, 0.0001f, 1.4f)),
+			PitchScale = pitch,
+			ProcessMode = Node.ProcessModeEnum.Always,
+		};
+		tree.Root.AddChild(p);
+		p.Finished += p.QueueFree;
+		p.Play();
+	}
+
+	/// <summary>v0.13.3 的原版 FMOD 映射：现在只在 P3R 原声缺失时作为第二级退路。</summary>
 	private static readonly Dictionary<Snd, (string Event, float Volume)?> Vanilla = new()
 	{
 		[Snd.TarotReveal] = ("event:/sfx/ui/cards/card_transform", 0.9f),
@@ -66,9 +204,27 @@ public static class Sfx
 		[Snd.ThanatosSlash] = null,
 	};
 
-	/// <summary>元素命中的原版音效（物理系不加：原版卡牌自己的攻击音效已经在播）。</summary>
+	private static readonly Dictionary<P3Makoto.Vfx.Element, ulong> LastElement = new();
+
+	/// <summary>元素命中音效：优先 P3R 原声（随机变体），否则原版 FMOD。</summary>
 	public static void Element(P3Makoto.Vfx.Element e, float scale = 1f)
 	{
+		float vol = scale < 0.9f ? 0.55f : 0.8f;
+		if (ElementFiles.TryGetValue(e, out string[]? files) && Engine.GetMainLoop() is SceneTree tree)
+		{
+			ulong now = Time.GetTicksMsec();
+			if (LastElement.TryGetValue(e, out ulong last) && now - last < 60)
+			{
+				return;
+			}
+			LastElement[e] = now;
+			AudioStreamOggVorbis? st = Sample(files[(int)(GD.Randi() % (uint)files.Length)]);
+			if (st != null)
+			{
+				ModEntry.Safe("sfx element", () => Spawn(tree, st, vol * SampleMaster, (float)GD.RandRange(0.97, 1.03)));
+				return;
+			}
+		}
 		string? ev = e switch
 		{
 			P3Makoto.Vfx.Element.Agi => "event:/sfx/characters/attack_fire",
@@ -82,7 +238,7 @@ public static class Sfx
 		};
 		if (ev != null)
 		{
-			PlayEvent(ev, (scale < 0.9f ? 0.55f : 0.8f));
+			PlayEvent(ev, vol);
 		}
 	}
 
@@ -118,23 +274,17 @@ public static class Sfx
 			return;
 		}
 		LastPlay[s] = now;
+		if (P3r.TryGetValue(s, out var variants) && PlaySample(tree, variants, volume, pitch))
+		{
+			return;
+		}
+		s = SynthFallback(s);
 		if (Vanilla.TryGetValue(s, out var v) && v is (string ev, float vv))
 		{
 			PlayEvent(ev, Mathf.Clamp(volume * vv, 0f, 1.5f));
 			return;
 		}
-		_bus ??= AudioServer.GetBusIndex("SFX") >= 0 ? new StringName("SFX") : new StringName("Master");
-		AudioStreamPlayer p = new()
-		{
-			Stream = Get(s),
-			Bus = _bus,
-			VolumeDb = Mathf.LinearToDb(Mathf.Max(volume * Master, 0.0001f)),
-			PitchScale = pitch * (float)GD.RandRange(0.97, 1.03),
-			ProcessMode = Node.ProcessModeEnum.Always,
-		};
-		tree.Root.AddChild(p);
-		p.Finished += p.QueueFree;
-		p.Play();
+		Spawn(tree, Get(s), volume * Master, pitch * (float)GD.RandRange(0.97, 1.03));
 	});
 
 	private static AudioStreamWav Get(Snd s)

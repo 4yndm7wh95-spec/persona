@@ -155,7 +155,7 @@ public static class Popups
 	{
 		Vector2 home = at + new Vector2(-90f, -150f);
 		Node2D root = Fx.Root(layer, home, "P3Weak");
-		Audio.Sfx.Play(Audio.Snd.Weak, 1.0f, delay: 0.09f);       // 对准落地那一刻
+		Audio.Sfx.Play(Audio.Snd.Down, 1.0f, delay: 0.09f);       // 对准落地那一刻
 		Node2D text = BlockText(root, "WEAK!", 140, WeakFace, 9);
 		text.Position = new Vector2(-180f, -84f);
 		Animate(root, home, 0.55f, -0.17f);

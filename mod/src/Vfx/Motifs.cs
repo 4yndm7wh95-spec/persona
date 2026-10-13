@@ -447,7 +447,7 @@ public static class Motifs
 	/// <summary>P3R 风格大字切入（"CRITICAL" / "ONE MORE!" / 技能名）：斜切色带 + 粗体描边大字，猛地砸入，略停后滑出。</summary>
 	public static void CutIn(Control layer, Vector2 at, string text, Color tint, float size = 92f)
 	{
-		Audio.Sfx.Play(Audio.Snd.CutIn, 1.0f);
+		Audio.Sfx.Play(text.StartsWith("ONE MORE") ? Audio.Snd.OneMore : Audio.Snd.SkillCutIn, 1.0f);
 		Node2D root = Fx.Root(layer, at + new Vector2(-40f, -260f), "P3CutIn");
 		root.Skew = -0.25f;
 		float w = text.Length * size * 0.62f + 80f;

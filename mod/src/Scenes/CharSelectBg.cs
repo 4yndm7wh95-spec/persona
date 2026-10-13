@@ -238,7 +238,7 @@ public static class CharSelectBg
 			P3Fx.EvokerBurst(root, temple, 1.25f);
 			P3Fx.ButterflyBurst(root, temple, 7, 380f);
 			WaterRipple(root, root.GlobalPosition + new Vector2(PortraitPos.X - 60f, HorizonY + 150f));
-			Audio.Sfx.Play(Audio.Snd.Gunshot, 1.0f);
+			Audio.Sfx.Play(Audio.Snd.Summon, 1.0f);
 			EyeGlow(root, root.GlobalPosition + PortraitPos + PortraitEye * PortraitScale);
 		}, 0.7, below: portrait);
 	}
