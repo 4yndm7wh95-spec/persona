@@ -544,3 +544,5 @@ Grand.cs 里其余函数暂时保留不用。
    嫌疑：`Snd.TarotReveal` → `Velvet_Tarot_Flip`（通用的掌心翻塔罗 `Extras.TarotFlip`、ThemeFx 多处、Tyranny `Rares.cs` 都用它）；也可能是原版能力牌自带音效。待用户确认后替换。
 2. **人物缩小（BodyScale 0.92）后特效位置需整体复查**：绕身体的特效（能力牌的月亮圆盘 + 时钟环 + 环绕的塔罗小牌、掌心、头顶类特效等）
    位置 / 尺寸仍按原身高设计。截图里月亮圆盘中心偏左、偏高。计划：锚点统一走 `Makoto.Center/Head/Feet`，贴身特效尺寸 ×0.92，全屏特效不动。
+3. **大塔罗牌（崇拜 Venerate / HiddenCache / Royalties 等 `CardSigs.Tarot`）往上挪一点**：现在中心 = 头 + (-230, 0)、且 Y ≥ 225，
+   人物缩小后头变低，牌显得偏下（截图里牌中心比头还低）。计划上移约 60px，同时保留不压顶栏的限制（必要时把 Y 下限放宽）。
