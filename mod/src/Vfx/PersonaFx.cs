@@ -23,7 +23,7 @@ public static class PersonaFx
 	private const string Thanatos = "res://p3makoto/persona/thanatos_skel_data.tres";
 	private const float FigureHeight = 1440f;          // 立绘在骨骼单位下的高度（原图像素）
 	public const float SovereignWait = 0.92f;          // 君王之刃：出牌 → 伤害结算（普通速度）
-	public const float VorpalWait = 2.0f;              // 追踪之刃生效时（空间杀法，群体）：出牌 → 伤害结算，多出约 1s 给"割裂空间"
+	public const float VorpalWait = 1.1f;              // 追踪之刃生效时（空间杀法）：出牌 → 伤害结算的游戏时间；中间还有 1.2s 真实时间的时停（Vorpal），实际约 2.3s
 	private const float SlashInAttack = 0.18f;         // attack 动画里 slash 事件的时刻
 
 	/// <summary>当前速度设置下，出牌到伤害结算的秒数（与 CreatureCmd.TriggerAnim 的等待规则一致）。</summary>
@@ -100,8 +100,8 @@ public static class PersonaFx
 				}
 			}
 			Vorpal.Play(front, centers, Mathf.Max(release, 0.4f));
-			Uniq.SkillBanner(front, "空间杀法", "VORPAL BLADE", Mathf.Max(release, 0.4f) + 0.6f);   // P3R：技能名横幅挂到技能结束
-			Fx.FreeAfter(root, attackAt + 1.6f);
+			Uniq.SkillBanner(front, "空间杀法", "VORPAL BLADE", Mathf.Max(release, 0.4f) + 0.6f);   // 横幅用游戏时间：时停期间它也定格，正好挂到技能结束   // P3R：技能名横幅挂到技能结束
+			Fx.FreeAfter(root, attackAt + 1.6f);   // 游戏时间：时停期间 Persona 也定格
 			return;
 		}
 		Play(body, attackAt, () => OnSlash(front, target, height));

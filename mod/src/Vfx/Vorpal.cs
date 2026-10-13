@@ -8,8 +8,9 @@ namespace P3Makoto.Vfx;
 /// <summary>
 /// 空间杀法（Vorpal Blade）—— 追踪之刃生效后的君王之刃（群体）。节奏逐帧对照 research/p3r_video/NOTES.md 第 2 节：
 ///   蓄力：Persona 周身光点外飘（由 PersonaFx 负责 Persona 本体）
-///   反相（release - 1.0s）：全屏瞬间变成米白高调色，第一道粗黑毛笔斩痕横扫
-///   割裂（约 0.85s）：黑色直线一条条刻满全屏（越来越快），黑色碎屑漂浮，一道弧形黑斩痕绕场
+///   时停（v0.14.1）：伤害结算前 0.1s 冻结战斗时间，以下"反相 → 割裂"在真实时间里进行 1.2s，然后恢复时间、释放、结算
+///   反相：全屏瞬间蒙上米白色层，第一道粗黑毛笔斩痕横扫
+///   割裂（约 1.1s）：黑色直线一条条刻满全屏（越来越快），黑色碎屑漂浮，一道弧形黑斩痕绕场
 ///   释放（release）：蓝白强闪 → 画面压成暗蓝，刚才的黑线全部变成发光的青白激光线 + 放射速度线
 ///   结算（release + 0.1 ~ 0.8s）：伤害数字（游戏自己出）、敌人倒下，线条淡出
 /// release 对准伤害结算时刻。
@@ -17,7 +18,7 @@ namespace P3Makoto.Vfx;
 public static class Vorpal
 {
 	/// <summary>从"割裂开始"到"释放"的标准时长；可用时间不够时等比压缩。</summary>
-	public const float CutDuration = 1.0f;
+	public const float CutDuration = 1.2f;
 
 	/// <summary>
 	/// 播放空间杀法。release：从现在起到伤害结算的秒数；targets：所有敌人的中心点。
@@ -25,9 +26,12 @@ public static class Vorpal
 	public static void Play(Control front, IReadOnlyList<Vector2> targets, float release)
 	{
 		Vector2 size = front.GetViewportRect().Size;
-		float cut = Mathf.Min(CutDuration, Mathf.Max(release - 0.1f, 0.35f));
-		float start = Mathf.Max(release - cut, 0f);
-		float k = cut / CutDuration;                     // 时间压缩系数
+		// v0.14.1 时停：伤害结算前 0.1s 冻结战斗时间（Engine.TimeScale≈0，敌人 / Persona / 游戏流程全部停住），
+		// 斩线在真实时间里刻 1.2s；斩击结束、线条亮起时恢复时间，0.1s 后游戏照常结算伤害。本类里的动画 / 计时都用真实时间（RT）。
+		float cut = CutDuration;
+		float start = Mathf.Max(release - 0.1f, 0.05f);
+		float k = 1f;
+		float releaseAt = start + cut;                 // 真实时间：时停结束 = 释放
 		Vector2 focus = Center(targets, size);
 
 		Node2D root = Fx.Root(front, Vector2.Zero, "P3Vorpal");
@@ -55,26 +59,28 @@ public static class Vorpal
 
 		// P3R 原声 skill_0117（空间杀法）：和视频对齐 —— 音频开始 0.2s 后画面反相，1.0s 前后是斩击密集段，1.4s 释放
 		Audio.Sfx.Clip("vorpal_blade", 1.0f, Mathf.Max(start - 0.2f, 0f));
-		Fx.After(root, start, "vorpal invert", () =>
+		AfterRT(root, start, "vorpal invert", () =>
 		{
-			Fx.Animate(grade, 0.06f, t => grade.Color = new Color(0.97f, 0.93f, 0.86f, 0.5f * t));       // 高调：米白色层 50%
+			AnimRT(grade, 0.06f, t => grade.Color = new Color(0.97f, 0.93f, 0.86f, 0.5f * t));       // 高调：米白色层 50%
 			BrushStroke(lines, focus, size, k);
 			ArcStroke(lines, focus, k);
 			Flecks(root, focus, size, cut + 0.5f);
 			foreach (var (a, b, w, at) in cuts)
 			{
-				Fx.After(root, at * k, "vorpal line", () =>
+				AfterRT(root, at * k, "vorpal line", () =>
 				{
 					Polygon2D poly = Fx.Poly(lines, new Vector2[3], new Color(0.08f, 0.07f, 0.06f, 0.92f));
 					Vector2 mid = (a + b) * 0.5f;
-					Fx.Animate(poly, 0.06f, t => Fx.Reshape(poly, Fx.StrokePts(new[] { mid.Lerp(a, Ease.OutExpo(t)), mid.Lerp(b, Ease.OutExpo(t)) }, w, taper: true)));
+					AnimRT(poly, 0.06f, t => Fx.Reshape(poly, Fx.StrokePts(new[] { mid.Lerp(a, Ease.OutExpo(t)), mid.Lerp(b, Ease.OutExpo(t)) }, w, taper: true)));
 				});
 			}
 		});
 
 		// 释放：蓝白强闪 → 暗蓝 + 线条亮起
-		Fx.After(root, release - 0.06f, "vorpal release", () =>
+		AfterRT(root, start, "vorpal freeze", () => Freeze(true));
+		AfterRT(root, releaseAt - 0.02f, "vorpal release", () =>
 		{
+			Freeze(false);
 			Flash(root, size);
 			grade.Color = new Color(0.02f, 0.07f, 0.24f, 0.4f);                                            // 释放：暗蓝色层 40%
 			lines.Visible = false;
@@ -84,15 +90,54 @@ public static class Vorpal
 				Fx.Stroke(glow, new[] { a, b }, new Color(0.85f, 0.97f, 1f, 0.95f), Mathf.Max(2f, w * 0.6f));
 			}
 			P3Fx.SpeedLines(front, focus, Pal.Ice, 26, 120f, size.X * 0.7f, 0.45f);
-			EvokerShot.HitStop(0.08);
 			NGame.Instance?.ScreenShake(ShakeStrength.Strong, ShakeDuration.Short);
-			Fx.Animate(glow, 0.75f, t =>
+			AnimRT(glow, 0.75f, t =>
 			{
 				glow.Modulate = new Color(1f, 1f, 1f, (1f - Ease.InCubic(Mathf.Clamp((t - 0.35f) / 0.65f, 0f, 1f))) * (0.85f + 0.15f * Mathf.Sin(t * 60f)));
 				grade.Color = new Color(0.02f, 0.07f, 0.24f, 0.4f * (1f - Ease.InCubic(Mathf.Clamp((t - 0.3f) / 0.7f, 0f, 1f))));
 			});
 		});
-		Fx.FreeAfter(root, release + 0.85f);
+		FreeRT(root, releaseAt + 0.85f);
+	}
+
+	// ── 真实时间（不受时停影响）的动画 / 计时 ──
+	private static Tween AnimRT(Node owner, double seconds, System.Action<float> step)
+	{
+		Tween tw = Fx.Animate(owner, seconds, step);
+		tw.SetIgnoreTimeScale(true);
+		return tw;
+	}
+
+	private static void AfterRT(Node anchor, double seconds, string what, System.Action action)
+	{
+		if (seconds <= 0)
+		{
+			ModEntry.Safe(what, action);
+			return;
+		}
+		anchor.GetTree().CreateTimer(seconds, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () => ModEntry.Safe(what, action);
+	}
+
+	private static void FreeRT(Node node, double seconds)
+	{
+		node.GetTree()?.CreateTimer(seconds, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Connect("timeout", Callable.From(() =>
+		{
+			if (GodotObject.IsInstanceValid(node)) node.QueueFree();
+		}));
+	}
+
+	private static bool _frozen;
+
+	/// <summary>时停开关。冻结时保险：最多 2.5s 后无论如何恢复。</summary>
+	private static void Freeze(bool on)
+	{
+		if (on == _frozen) return;
+		_frozen = on;
+		Engine.TimeScale = on ? 0.02 : 1.0;
+		if (on && Engine.GetMainLoop() is SceneTree tree)
+		{
+			tree.CreateTimer(2.5, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () => { if (_frozen) { _frozen = false; Engine.TimeScale = 1.0; } };
+		}
 	}
 
 	private static Vector2 Center(IReadOnlyList<Vector2> targets, Vector2 size)
@@ -115,7 +160,7 @@ public static class Vorpal
 			float u = i / 8f - 0.5f;
 			pts[i] = focus + dir * u * size.X * 1.3f + nrm * (u * u * 260f - 40f);
 		}
-		Fx.Animate(poly, 0.09f * Mathf.Max(k, 0.6f), t =>
+		AnimRT(poly, 0.09f * Mathf.Max(k, 0.6f), t =>
 		{
 			int m = Mathf.Clamp(Mathf.CeilToInt(t * 8f) + 1, 2, 9);
 			Fx.Reshape(poly, Fx.StrokePts(pts[..m], 26f, taper: true));
@@ -125,11 +170,11 @@ public static class Vorpal
 	/// <summary>一道绕着敌群的弧形黑斩痕（椭圆的一段），稍晚出现。</summary>
 	private static void ArcStroke(Node2D parent, Vector2 focus, float k)
 	{
-		Fx.After(parent, 0.3f * k, "vorpal arc", () =>
+		AfterRT(parent, 0.3f * k, "vorpal arc", () =>
 		{
 			Polygon2D poly = Fx.Poly(parent, new Vector2[3], new Color(0.06f, 0.05f, 0.05f, 0.85f));
 			float a0 = Fx.Rand(0f, Mathf.Tau);
-			Fx.Animate(poly, 0.12f, t =>
+			AnimRT(poly, 0.12f, t =>
 			{
 				var pts = new List<Vector2>();
 				int m = 4 + (int)(t * 20f);
@@ -155,7 +200,7 @@ public static class Vorpal
 			Vector2 v = Fx.RandDir() * Fx.Rand(10f, 50f);
 			float spin = Fx.Rand(-4f, 4f);
 			Vector2 from = f.Position;
-			Fx.Animate(f, life, t =>
+			AnimRT(f, life, t =>
 			{
 				f.Position = from + v * t * life;
 				f.Rotation = spin * t * life;
@@ -168,7 +213,7 @@ public static class Vorpal
 	{
 		ColorRect r = new() { Size = size, Color = new Color(0.85f, 0.93f, 1f, 0.95f), MouseFilter = Control.MouseFilterEnum.Ignore };
 		root.AddChild(r);
-		Fx.Animate(r, 0.16f, t => r.Color = new Color(0.85f, 0.93f, 1f, 0.95f * (1f - Ease.OutCubic(t))));
-		Fx.FreeAfter(r, 0.18);
+		AnimRT(r, 0.16f, t => r.Color = new Color(0.85f, 0.93f, 1f, 0.95f * (1f - Ease.OutCubic(t))));
+		FreeRT(r, 0.18);
 	}
 }
