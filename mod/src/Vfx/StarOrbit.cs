@@ -19,7 +19,7 @@ namespace P3Makoto.Vfx;
 /// </summary>
 public static class StarOrbit
 {
-	private const int MaxShown = 24;                     // v0.14.0：两圈轨道（内圈 12 + 外圈 12），再多显示"×N"计数，不再出现"加了星却没动画"
+	private const int MaxShown = 12;                     // 显示上限（用户确认可以设上限）：超出的仍有获得动画（飞进轨道后并入），右侧显示"×N"总数；外圈布局代码保留，上限调到 >12 即启用
 	private const int RingSize = 12;
 	private const float SpinSpeed = 0.55f;               // 轨道角速度（弧度 / 秒）
 
@@ -40,7 +40,11 @@ public static class StarOrbit
 		public readonly List<Card> Quiver = new();       // 星尘：已花掉、等待掷出的牌
 		public float VolleyUntil;
 		public Label? Overflow;                          // 超过 MaxShown 时的"×N"
+		public float NextBirth;                          // 一次获得多颗时逐张凝出（间隔 BirthGap），不叠在同一帧
+		public int LastTotal = -1;                       // 上一帧的真实辉星数（用于超过上限时的获得动画和"+N"）
 	}
+
+	private const float BirthGap = 0.13f;
 
 	/// <summary>封印王座等：下一颗（几颗）辉星从这里凝出，而不是胸口（until 之前有效）。</summary>
 	private static Vector2? _birthFrom;
@@ -222,6 +226,7 @@ public static class StarOrbit
 			}
 			int total = node.Entity.IsDead ? 0 : player.PlayerCombatState?.Stars ?? 0;
 			int stars = Math.Min(total, MaxShown);
+			TrackGains(o, total, front);
 			Reconcile(o, stars, front, back);
 			Layout(o, dt, front, back);
 			UpdateOverflow(o, total, front);
@@ -236,15 +241,17 @@ public static class StarOrbit
 		{
 			chest = from;
 		}
-		while (o.Cards.Count < stars)
+		// 一次获得多颗：逐张凝出（每 0.13s 一张），每张都有自己的闪光、火花和音效 —— 不管辉星是从卡牌、能力、回合开始还是别的来源来的
+		while (o.Cards.Count < stars && _time >= o.NextBirth)
 		{
+			o.NextBirth = _time + BirthGap;
 			Card c = new() { Node = MakeCard(front), Born = _time, Pos = chest, Front = true };
 			c.Node.GlobalPosition = chest;
 			o.Cards.Add(c);
-			P3Fx.Flash(front, chest, Pal.Cyan, 160f, 0.25f);
-			Audio.Sfx.Play(Audio.Snd.StarGain, 0.5f);
+			P3Fx.Flash(front, chest, Pal.Cyan, 90f, 0.2f);                // 克制：小闪光、少量火花、音量偏低
+			Audio.Sfx.Play(Audio.Snd.StarGain, 0.35f);
 			Node2D sparks = Fx.Root(front, chest, "P3StarBirth");
-			Fx.Sparks(sparks, Pal.Ice, 10, 80f, 220f, 0.5f);
+			Fx.Sparks(sparks, Pal.Ice, 5, 60f, 150f, 0.4f);
 			Fx.FreeAfter(sparks, 0.8);
 		}
 		while (o.Cards.Count > stars)
@@ -442,5 +449,64 @@ public static class StarOrbit
 		}
 		o.Overflow.Scale = o.Overflow.Scale.Lerp(Vector2.One, 0.15f);
 		o.Overflow.GlobalPosition = Makoto.Center(o.Creature) + new Vector2(200f, -60f);
+	}
+
+	/// <summary>
+	/// 任何来源的辉星增加都要看得见：
+	/// · 在显示上限以内 —— Reconcile 逐张凝出塔罗牌；
+	/// · 超过上限（轨道已满）—— 每多一颗，仍然从胸口凝出一张牌飞进轨道外圈，到达后化成光点并入，同时"×N"弹一下；
+	/// 整体克制：不弹数字，只是一张张小牌安静地凝出、加入轨道。
+	/// </summary>
+	private static void TrackGains(Orbit o, int total, Control front)
+	{
+		if (o.LastTotal < 0)
+		{
+			o.LastTotal = total;
+			return;
+		}
+		int gained = total - o.LastTotal;
+		if (gained > 0)
+		{
+			int over = Math.Max(0, total - Math.Max(o.LastTotal, MaxShown));       // 超出上限、轨道里放不下的那几颗
+			for (int i = 0; i < over; i++)
+			{
+				float delay = BirthGap * i;
+				Fx.After(front, delay, "star overflow birth", () => OverflowBirth(o, front));
+			}
+		}
+		o.LastTotal = total;
+	}
+
+	/// <summary>轨道已满时的获得：一张牌从胸口凝出，飞到外圈某处，化成光点并入（计数"×N"随后弹一下）。</summary>
+	private static void OverflowBirth(Orbit o, Control front)
+	{
+		if (!GodotObject.IsInstanceValid(o.Creature))
+		{
+			return;
+		}
+		Vector2 chest = Makoto.Center(o.Creature) + new Vector2(0f, -20f);
+		float a = Fx.Rand(0f, Mathf.Tau);
+		Vector2 to = Makoto.Center(o.Creature) + new Vector2(0f, -10f) + new Vector2(Mathf.Cos(a) * 230f, Mathf.Sin(a) * 46f + 18f);
+		Node2D card = MakeCard(front);
+		card.GlobalPosition = chest;
+		P3Fx.Flash(front, chest, Pal.Cyan, 80f, 0.18f);
+		Audio.Sfx.Play(Audio.Snd.StarGain, 0.3f);
+		Fx.Animate(card, 0.45f, t =>
+		{
+			float e = Ease.OutCubic(t);
+			card.GlobalPosition = chest.Lerp(to, e) + new Vector2(0f, -40f * Mathf.Sin(t * Mathf.Pi));
+			card.Rotation = (1f - e) * 3f;
+			card.Scale = Vector2.One * (0.8f * Ease.OutBack(Mathf.Min(t * 2f, 1f)) * (1f - 0.6f * Mathf.Clamp((t - 0.7f) / 0.3f, 0f, 1f)));
+			card.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp((t - 0.75f) / 0.25f, 0f, 1f));
+		});
+		Fx.After(card, 0.45, "star overflow merge", () =>
+		{
+			P3Fx.Flash(front, to, Pal.Ice, 50f, 0.12f);
+			card.QueueFree();
+			if (o.Overflow != null && GodotObject.IsInstanceValid(o.Overflow))
+			{
+				o.Overflow.Scale = Vector2.One * 1.4f;
+			}
+		});
 	}
 }
