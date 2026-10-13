@@ -161,7 +161,7 @@ public static class Sfx
 
 	/// <summary>
 	/// 原版储君角色音效的替换表（RegentSfxMutePatch 调用）。返回 true = 原版照常播放（只有死亡音效），false = 已拦截。
-	/// 施法 / 能力 / 君王之刃 / 引导之星 / 选人：本 mod 的特效自带音效，原版直接静音。
+	/// 施法 / 能力 / 君王之刃 / 引导之星：本 mod 的特效自带音效，原版直接静音；选人换成 P3R Persona 光环切入。
 	/// </summary>
 	public static bool ReplaceRegent(string name)
 	{
@@ -169,6 +169,9 @@ public static class Sfx
 		{
 			case "regent_die":
 				return true;
+			case "regent_select":                                  // 选人界面选中结城理：立刻一声 P3R 的 Persona 光环切入（之后切入演出里还有召唤器枪声）
+				Clip("Snd_FX_Btl_PersonaAura_00_Cutin", 0.8f);
+				break;
 			case "regent_attack":
 				if (!P3Makoto.Core.Pose.SummonActive())           // 召唤开枪不是挥动：不播破空声（之前在召唤动画最前面形成一声"噗"）
 				{
