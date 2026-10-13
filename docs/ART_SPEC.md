@@ -660,3 +660,9 @@ Grand.cs 里其余函数暂时保留不用。
 - 版本号 0.14.0；sfx 60 个。
 - **任何来源的辉星获得都有动画**（`StarOrbit.TrackGains`）：一次获得多颗时逐张凝出（间隔 0.13s），不再同一帧叠成一下；
   显示上限 12 颗，超出的每一颗仍从胸口凝出一张小牌飞到轨道旁、化成光点并入，右侧"×N"显示总数并轻弹。整体克制：小闪光、少量火花、低音量，不弹数字。
+
+## v0.14.1
+
+- **总攻击**（`Vfx/AllOut.cs`、`AllOutPatch`）：精英 / Boss 战胜利时，在 AfterCombatEnd 后插入 3.75s：横幅「ALL-OUT ATTACK 总攻击」→ 同心圆光圈转场 → 乱斗烟云（四芒星、斩击线）→ 全屏白 →
+  敌人位置黑红墨点 + 红色斩线 → 结束立绘（青底 + 巨大圆环 + DONE AND DUSTED. + MAJESTIC，最后褪成黑白）→ 原有胜利结算。
+  音效：AlloutUI_00 / Btl_Allout_Wipe / Extermination（截 1.5s）/ Kime01。结束立绘暂用 victory_portrait，等 art/v13/finish。

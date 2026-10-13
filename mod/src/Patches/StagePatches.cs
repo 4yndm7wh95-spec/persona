@@ -151,3 +151,50 @@ public static class MerchantScalePatch
 		});
 	}
 }
+
+/// <summary>
+/// 总攻击（v0.14.1）：结城理赢下精英 / Boss 战时，在战斗结束流程（AfterCombatEnd → 胜利结算）前插入约 3.7s 的总攻击演出。
+/// 只推迟表现，不改任何结果。
+/// </summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Hooks.Hook), nameof(MegaCrit.Sts2.Core.Hooks.Hook.AfterCombatEnd))]
+public static class AllOutPatch
+{
+	public static void Postfix(MegaCrit.Sts2.Core.Rooms.CombatRoom room, MegaCrit.Sts2.Core.Combat.ICombatState? combatState, ref System.Threading.Tasks.Task __result)
+	{
+		bool play = false;
+		ModEntry.Safe("allout check", () =>
+		{
+			play = room.RoomType is MegaCrit.Sts2.Core.Rooms.RoomType.Elite or MegaCrit.Sts2.Core.Rooms.RoomType.Boss
+				&& Stage.MakotoCombat()
+				&& combatState != null
+				&& System.Linq.Enumerable.All(combatState.Enemies, e => !e.IsAlive)
+				&& System.Linq.Enumerable.Any(combatState.PlayerCreatures, p => p.IsAlive);
+		});
+		if (!play)
+		{
+			return;
+		}
+		Callable.From(() => ModEntry.Safe("allout", () =>
+		{
+			if (Makoto.FxLayer() is Control front && NCombatRoom.Instance is { } r)
+			{
+				var pts = new System.Collections.Generic.List<Vector2>();
+				foreach (NCreature n in r.CreatureNodes)
+				{
+					if (GodotObject.IsInstanceValid(n) && n.Entity.IsMonster)
+					{
+						pts.Add(n.VfxSpawnPosition);
+					}
+				}
+				AllOut.Play(front, pts);
+			}
+		})).CallDeferred();
+		__result = Delay(__result);
+	}
+
+	private static async System.Threading.Tasks.Task Delay(System.Threading.Tasks.Task inner)
+	{
+		await inner;
+		await System.Threading.Tasks.Task.Delay((int)(AllOut.Duration * 1000f));
+	}
+}
