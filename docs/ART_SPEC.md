@@ -530,8 +530,9 @@ Grand.cs 里其余函数暂时保留不用。
 
 ## v0.13.5 — P3R 原声音效接入
 
-- 32 个 P3R 原声（来自 `art/sfx_p3r/`）复制到 `mod/pck_stage/p3makoto/sfx/`，运行时用 `FileAccess.GetFileAsBytes` + `AudioStreamOggVorbis.LoadFromBuffer` 解码（不走导入系统，不需要 `.import`）。
+- 31 个 P3R 原声（来自 `art/sfx_p3r/`）复制到 `mod/pck_stage/p3makoto/sfx/`，运行时用 `FileAccess.GetFileAsBytes` + `AudioStreamOggVorbis.LoadFromBuffer` 解码（不走导入系统，不需要 `.import`）。
 - 映射表在 `mod/src/Audio/Sfx.cs` 的 `P3r` / `ElementFiles`；退路顺序：P3R 原声 → 原版 FMOD → 合成。
-- 新增 Snd：Summon（选人召唤）、OneMore、SkillCutIn（技能名大字）、AllOut（总攻击收尾）、Down（WEAK! 弹字）。
+- 新增 Snd：Summon（选人召唤）、OneMore、SkillCutIn（技能名大字）、Down（WEAK! 弹字）。
 - 调用方的 pitch 对原声只取一半幅度并限制在 0.8~1.25。
-- 试听：`art/sfx_p3r_v0135_audition.m4a`（时间点见同名 .txt）。日志里会打印 `P3R sfx loaded N/32`。
+- 试听：`art/sfx_p3r_v0135_audition.m4a`（时间点见同名 .txt）。日志里会打印 `P3R sfx loaded N/31`。
+- 总攻击（All-Out Attack）暂不接：`Grand.AllOutAttack` 是旧草稿、没有任何调用，之后作为独立机制单独做（候选原声 Btl_Allout_Wipe / Snd_FX_Btl_AlloutUI_00 / Allout_Kime01 / Allout_Zoom / Allout_Extermination 都在 art/sfx_p3r/）。

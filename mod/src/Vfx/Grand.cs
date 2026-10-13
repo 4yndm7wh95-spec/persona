@@ -137,7 +137,7 @@ public static class Grand
 				text.Position = new Vector2(-560f + 900f * (1f - slam) - 300f * exit, -92f);
 			});
 			Fx.FreeAfter(band, 1.0);
-			Audio.Sfx.Play(Audio.Snd.AllOut, 1.1f);
+			Audio.Sfx.Play(Audio.Snd.CutIn, 1.1f);
 			if (GodotObject.IsInstanceValid(root))
 			{
 				P3Fx.Flash(layer, root.GlobalPosition, Pal.White, 700f * s, 0.3f);

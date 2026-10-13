@@ -22,7 +22,6 @@ public enum Snd
 	Summon,         // 选人界面的召唤（召唤器 + 闪光的完整版）
 	OneMore,        // "ONE MORE!"
 	SkillCutIn,     // 技能名大字切入（Persona 光环切入）
-	AllOut,         // 总攻击收尾
 	Down,           // WEAK! 弹字（击倒音）
 }
 
@@ -87,7 +86,6 @@ public static class Sfx
 		[Snd.ThanatosSlash] = new[] { new[] { ("swish_heavy_1", 0.05f, 0.9f), ("atk_hit_enemy_slash", 0.18f, 1f), ("sword_finish", 0.18f, 0.6f) } },
 		[Snd.OneMore] = new[] { new[] { ("Btl_1more_pc", 0f, 1f) } },
 		[Snd.SkillCutIn] = new[] { new[] { ("Snd_FX_Btl_PersonaAura_00_Cutin", 0f, 0.9f) } },
-		[Snd.AllOut] = new[] { new[] { ("Btl_Allout_Wipe", 0f, 1f) } },
 		[Snd.Down] = new[] { new[] { ("Btl_Down_1", 0f, 1f) }, new[] { ("Btl_Down_2", 0f, 1f) } },
 	};
 
@@ -95,7 +93,7 @@ public static class Sfx
 	private static Snd SynthFallback(Snd s) => s switch
 	{
 		Snd.Summon => Snd.Gunshot,
-		Snd.OneMore or Snd.SkillCutIn or Snd.AllOut => Snd.CutIn,
+		Snd.OneMore or Snd.SkillCutIn => Snd.CutIn,
 		Snd.Down => Snd.Weak,
 		_ => s,
 	};
