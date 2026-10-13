@@ -798,7 +798,12 @@ public static class Rares
 		Color ink = new(0.01f, 0.06f, 0.03f);
 
 		Node2D root = Fx.Root(back, Vector2.Zero, "P3Tyranny");
-		back.MoveChild(root, formSky ? FormFx.SkyIndex + 1 : 0);
+		int idx = formSky ? FormFx.SkyIndex + 1 : 0;
+		if (ThemeFx.GateRoot is Node2D gate && gate.GetParent() == back)
+		{
+			idx = Mathf.Max(idx, gate.GetIndex() + 1);            // 天鹅绒门在场时，面板盖在门上面（人物仍在面板前）
+		}
+		back.MoveChild(root, idx);
 		ColorRect dim = new() { Size = size * 3f, Position = -size, Color = new Color(ink, 0f), MouseFilter = Control.MouseFilterEnum.Ignore };
 		root.AddChild(dim);
 		ColorRect midnight = new() { Size = size * 3f, Position = -size, Color = new Color(Pal.DarkHour, 0f), MouseFilter = Control.MouseFilterEnum.Ignore, Material = Fx.Additive };

@@ -33,7 +33,7 @@ public static class CardSigs
 	private static void Tarot(Ctx c, string numeral, string name, Color tint, double delay = 0.15) =>
 		After(c, delay, () =>
 		{
-			Vector2 at = c.Head + new Vector2(-230f, 0f);                      // 卡牌中心与头同高
+			Vector2 at = c.Head + new Vector2(-230f, -60f);                    // 卡牌中心比头高 60px（人物缩到 0.92 后头变低，v0.13.7 上移）
 			at.Y = Mathf.Max(at.Y, 225f);                     // 卡高约 270px：中心不高于 225，顶边不压到顶栏
 			at.X = Mathf.Max(at.X, 110f);
 			Motifs.BigTarot(c.Back, at, numeral, name, tint, s: 0.85f, fxLayer: c.Front);

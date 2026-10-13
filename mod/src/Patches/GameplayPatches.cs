@@ -30,6 +30,8 @@ internal static class Sig
 public static class AttackHitVfxPatch
 {
 	private static readonly PropertyInfo HitVfx = AccessTools.Property(typeof(AttackCommand), "HitVfx");
+	private static readonly PropertyInfo HitSfx = AccessTools.Property(typeof(AttackCommand), "HitSfx");
+	private static readonly PropertyInfo TmpHitSfx = AccessTools.Property(typeof(AttackCommand), "TmpHitSfx");
 
 	public static void Prefix(AttackCommand __instance)
 	{
@@ -38,6 +40,12 @@ public static class AttackHitVfxPatch
 			if (__instance.ModelSource is CardModel card && CardFx.ReplacesHitVfx(card))
 			{
 				HitVfx.SetValue(__instance, null);
+				// 命中音效换成 P3R 原声时（Elements.Hit 里播），关掉原版命中音效（原版对 null 有判断）
+				if (Audio.Sfx.HasElementSound(CardStyles.For(card, card.Type).Hit))
+				{
+					HitSfx.SetValue(__instance, null);
+					TmpHitSfx.SetValue(__instance, null);
+				}
 			}
 		});
 	}

@@ -22,7 +22,7 @@ public enum Snd
 	Summon,         // 选人界面的召唤（召唤器 + 闪光的完整版）
 	OneMore,        // "ONE MORE!"
 	SkillCutIn,     // 技能名大字切入（Persona 光环切入）
-	Down,           // WEAK! 弹字（击倒音）
+	Down,           // WEAK! 弹字（v0.13.7 起用暴击冲击声；名字沿用）
 	CardDraw,       // 抽到一张牌（只用于真实抽牌，不用在特效里）
 }
 
@@ -88,7 +88,7 @@ public static class Sfx
 		[Snd.ThanatosSlash] = new[] { new[] { ("swish_heavy_1", 0.05f, 0.9f), ("atk_hit_enemy_slash", 0.18f, 1f), ("sword_finish", 0.18f, 0.6f) } },
 		[Snd.OneMore] = new[] { new[] { ("Btl_1more_pc", 0f, 1f) } },
 		[Snd.SkillCutIn] = new[] { new[] { ("Snd_FX_Btl_PersonaAura_00_Cutin", 0f, 0.9f) } },
-		[Snd.Down] = new[] { new[] { ("Btl_Down_1", 0f, 1f) }, new[] { ("Btl_Down_2", 0f, 1f) } },
+		[Snd.Down] = new[] { new[] { ("Btl_Critical", 0f, 0.8f) } },
 	};
 
 	/// <summary>只有原声、没有合成版本的音效缺文件时，用哪个合成音代替。</summary>
@@ -101,15 +101,24 @@ public static class Sfx
 		_ => s,
 	};
 
-	/// <summary>元素命中的原版 / P3R 音效变体（物理系不加：原版卡牌自己的攻击音效已经在播）。</summary>
+	/// <summary>元素命中的 P3R 音效变体。有原声的元素，原版卡牌的命中音效会被关掉（见 AttackHitVfxPatch），避免两套叠在一起。</summary>
 	private static readonly Dictionary<P3Makoto.Vfx.Element, string[]> ElementFiles = new()
 	{
+		[P3Makoto.Vfx.Element.Slash] = new[] { "atk_hit_slash_1", "atk_hit_slash_2", "atk_hit_slash_3" },
+		[P3Makoto.Vfx.Element.Royal] = new[] { "atk_hit_slash_1", "atk_hit_slash_2", "atk_hit_slash_3" },
+		[P3Makoto.Vfx.Element.Pierce] = new[] { "atk_hit_stab_1", "atk_hit_stab_2", "atk_hit_stab_3" },
+		[P3Makoto.Vfx.Element.Strike] = new[] { "atk_hit_strike_1", "atk_hit_strike_2", "atk_hit_strike_3" },
+		[P3Makoto.Vfx.Element.Megido] = new[] { "megido_hit" },      // P3R skill_0070（推测为 Megido），去掉开头 0.17s 空白
 		[P3Makoto.Vfx.Element.Agi] = new[] { "atk_fire_1", "atk_fire_2", "atk_fire_3" },
 		[P3Makoto.Vfx.Element.Bufu] = new[] { "atk_ice_1", "atk_ice_2", "atk_ice_3" },
 		[P3Makoto.Vfx.Element.Zio] = new[] { "atk_elec_1", "atk_elec_2", "atk_elec_3" },
 		[P3Makoto.Vfx.Element.Hama] = new[] { "atk_light_1", "atk_light_2", "atk_light_3" },
 		[P3Makoto.Vfx.Element.Mudo] = new[] { "atk_dark_1", "atk_dark_2", "atk_dark_3" },
 	};
+
+	/// <summary>这个元素的命中有可用的 P3R 原声（文件都在且能解码）。</summary>
+	public static bool HasElementSound(P3Makoto.Vfx.Element e) =>
+		ElementFiles.TryGetValue(e, out string[]? files) && files.All(f => Sample(f) != null);
 
 	private const string SfxDir = "res://p3makoto/sfx/";
 	private const float SampleMaster = 0.7f;

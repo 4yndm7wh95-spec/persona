@@ -100,7 +100,7 @@ public static class ThemeFx
 	private static readonly Vector2 Dial = new(0f, 158f - 768f);
 	// 0.80：门洞 ≈ 455px，比结城理（≈428px）略高；门框总高 ≈ 614px、宽 ≈ 410px —— 1080p 下门顶离顶部状态栏还有一段、左边不贴屏幕边
 	// （0.64 时门洞比人矮；0.86 时门顶和左边都贴到了屏幕边缘）
-	private const float DoorScale = 0.80f;
+	private const float DoorScale = 0.80f * Makoto.BodyScale;   // 跟人物一起缩（v0.13.7）
 
 	private sealed class Gate
 	{
