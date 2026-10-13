@@ -163,4 +163,66 @@ public static class Popups
 		Sparkles(layer, home, 5, 170f);
 		P3Fx.Flash(layer, home, Pal.Cyan, 260f, 0.2f);
 	}
+
+	/// <summary>
+	/// P3R「BLOCK」（v0.14.0，参照 research/p3r_video/NOTES.md 第 4 节）：格挡完全挡住这一击的那一刻，
+	/// 冲击点一圈白色冲击环 + 黄橙色放射火花线；人物身前稍微靠前的位置弹出黑色斜标签 + 白色粗斜体「BLOCK」，
+	/// 放大弹入 → 停留约 0.6s 缓慢上飘 → 淡出。
+	/// </summary>
+	public static void Block(Control layer, Vector2 center, float s = 1f)
+	{
+		Vector2 impact = center + new Vector2(55f, -10f) * s;            // 冲击点：身前（敌人在右边）
+		// 冲击环
+		Node2D ring = Fx.Root(layer, impact, "P3BlockRing");
+		Fx.StrokeClosed(ring, Fx.Circle(60f * s, 40), new Color(Pal.White, 0.95f), 6f * s);
+		Fx.StrokeClosed(ring, Fx.Circle(46f * s, 40), new Color(1f, 0.85f, 0.45f, 0.7f), 3f * s);
+		Fx.Animate(ring, 0.22f, t =>
+		{
+			ring.Scale = Vector2.One * (0.3f + 1.2f * Ease.OutExpo(t));
+			ring.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(t));
+		});
+		Fx.FreeAfter(ring, 0.24);
+		// 放射火花线：10 道细长尖线，黄 / 橙 / 白
+		Node2D rays = Fx.Root(layer, impact, "P3BlockRays");
+		var list = new System.Collections.Generic.List<(Polygon2D P, Vector2 D, float L)>();
+		for (int i = 0; i < 10; i++)
+		{
+			Vector2 d = Vector2.Right.Rotated(Mathf.Tau * i / 10f + Fx.Rand(-0.2f, 0.2f));
+			Color c = i % 3 == 0 ? Pal.White : (i % 3 == 1 ? new Color(1f, 0.85f, 0.35f) : new Color(1f, 0.55f, 0.2f));
+			list.Add((Fx.Poly(rays, new Vector2[3], c, additive: true), d, Fx.Rand(110f, 210f) * s));
+		}
+		Fx.Animate(rays, 0.2f, t =>
+		{
+			float head = Ease.OutExpo(t), tail = Ease.InCubic(t);
+			foreach (var (poly, d, len) in list)
+			{
+				Fx.Reshape(poly, Fx.StrokePts(new[] { d * (20f * s + len * tail), d * (24f * s + len * head) }, 4f * s, taper: true));
+			}
+		});
+		Fx.FreeAfter(rays, 0.22);
+		P3Fx.Flash(layer, impact, new Color(1f, 0.9f, 0.6f), 160f * s, 0.14f);
+
+		// 标签：人物身前偏上（胸口高度、稍微靠前），不离人物太远
+		Vector2 home = center + new Vector2(70f, -55f) * s;
+		Node2D root = Fx.Root(layer, home, "P3Block");
+		root.Rotation = -0.26f;
+		Sprite2D glow = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(1f, 0.35f, 0.3f, 0.6f), Scale = new Vector2(4.2f, 2f) * s };
+		root.AddChild(glow);
+		float w = 196f * s, h = 54f * s, k = 14f * s;
+		Fx.Poly(root, new[] { new Vector2(-w / 2f + k, -h / 2f), new Vector2(w / 2f + k, -h / 2f), new Vector2(w / 2f - k, h / 2f), new Vector2(-w / 2f - k, h / 2f) }, new Color(0.03f, 0.03f, 0.05f, 0.96f));
+		int fs = (int)(44 * s);
+		Label l = Typo.Text(root, "BLOCK", Typo.LatinItalic, fs, Pal.White, new Vector2(-w / 2f, -fs * 0.66f), HorizontalAlignment.Center, outline: 2, outlineColor: new Color(0.03f, 0.03f, 0.05f));
+		l.Size = new Vector2(w, h);
+		const float total = 0.95f;
+		Fx.Animate(root, total, t =>
+		{
+			float time = t * total;
+			float pop = Ease.OutBack(Mathf.Clamp(time / 0.12f, 0f, 1f));
+			root.Scale = Vector2.One * Mathf.Lerp(1.7f, 1f, pop);
+			root.Position = home + new Vector2(6f * Mathf.Sin(time * 3f), -34f * Ease.OutCubic(Mathf.Clamp((time - 0.12f) / 0.83f, 0f, 1f)));
+			glow.Modulate = new Color(1f, 0.35f, 0.3f, 0.6f * (1f - Mathf.Clamp(time / 0.3f, 0f, 1f)));
+			root.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(Mathf.Clamp((time - 0.7f) / 0.25f, 0f, 1f)));
+		});
+		Fx.FreeAfter(root, total + 0.05);
+	}
 }

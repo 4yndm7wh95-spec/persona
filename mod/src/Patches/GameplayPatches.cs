@@ -277,3 +277,30 @@ public static class RegentSfxMutePatch
 		return play;
 	}
 }
+
+/// <summary>
+/// v0.14.0：结城理的格挡完全挡住一次攻击时（原版 CreatureCmd.Damage 里 WasFullyBlocked → NDamageBlockedVfx.Create），
+/// 把原版的"格挡"字样换成 P3R 的「BLOCK」（Popups.Block）。原版的格挡火花和音效保留。
+/// </summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Vfx.NDamageBlockedVfx), nameof(MegaCrit.Sts2.Core.Nodes.Vfx.NDamageBlockedVfx.Create))]
+public static class BlockPopupPatch
+{
+	public static bool Prefix(Creature target, ref MegaCrit.Sts2.Core.Nodes.Vfx.NDamageBlockedVfx? __result)
+	{
+		bool replaced = false;
+		ModEntry.Safe("BlockPopup", () =>
+		{
+			if (target.IsPlayer && Makoto.Is(target.Player) && NCombatRoom.Instance?.GetCreatureNode(target) is NCreature node && Makoto.FxLayer() is Godot.Control front)
+			{
+				Popups.Block(front, Makoto.Center(node));
+				replaced = true;
+			}
+		});
+		if (replaced)
+		{
+			__result = null;
+			return false;
+		}
+		return true;
+	}
+}
