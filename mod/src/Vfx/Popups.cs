@@ -165,64 +165,141 @@ public static class Popups
 	}
 
 	/// <summary>
-	/// P3R「BLOCK」（v0.14.0，参照 research/p3r_video/NOTES.md 第 4 节）：格挡完全挡住这一击的那一刻，
-	/// 冲击点一圈白色冲击环 + 黄橙色放射火花线；人物身前稍微靠前的位置弹出黑色斜标签 + 白色粗斜体「BLOCK」，
-	/// 放大弹入 → 停留约 0.6s 缓慢上飘 → 淡出。
+	/// P3R「BLOCK」（v0.14.0，逐帧对照 research/p3r_video/NOTES.md 第 4 节）：
+	/// · 字先出现（冲击前一拍），白色粗斜体、每个字母各自轻微歪斜 / 错位，带细黑描边和偏左下的厚黑色"阴影块"（不是底框）；
+	/// · 冲击：半透明白色护盾泡猛地胀开（带几道弧形流光）→ 一圈细长的放射火花（白芯 → 黄 → 橙粉，越往外越细越暗）+ 中心黄光；
+	/// · 余韵：人物身后一团红橙色柔光慢慢褪去，地上几片青色碎片，几片黄绿色小纸屑飘落；字停留约 0.7s 缓慢漂移后淡出。
 	/// </summary>
 	public static void Block(Control layer, Vector2 center, float s = 1f)
 	{
-		Vector2 impact = center + new Vector2(55f, -10f) * s;            // 冲击点：身前（敌人在右边）
-		// 冲击环
-		Node2D ring = Fx.Root(layer, impact, "P3BlockRing");
-		Fx.StrokeClosed(ring, Fx.Circle(60f * s, 40), new Color(Pal.White, 0.95f), 6f * s);
-		Fx.StrokeClosed(ring, Fx.Circle(46f * s, 40), new Color(1f, 0.85f, 0.45f, 0.7f), 3f * s);
-		Fx.Animate(ring, 0.22f, t =>
-		{
-			ring.Scale = Vector2.One * (0.3f + 1.2f * Ease.OutExpo(t));
-			ring.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(t));
-		});
-		Fx.FreeAfter(ring, 0.24);
-		// 放射火花线：10 道细长尖线，黄 / 橙 / 白
-		Node2D rays = Fx.Root(layer, impact, "P3BlockRays");
-		var list = new System.Collections.Generic.List<(Polygon2D P, Vector2 D, float L)>();
-		for (int i = 0; i < 10; i++)
-		{
-			Vector2 d = Vector2.Right.Rotated(Mathf.Tau * i / 10f + Fx.Rand(-0.2f, 0.2f));
-			Color c = i % 3 == 0 ? Pal.White : (i % 3 == 1 ? new Color(1f, 0.85f, 0.35f) : new Color(1f, 0.55f, 0.2f));
-			list.Add((Fx.Poly(rays, new Vector2[3], c, additive: true), d, Fx.Rand(110f, 210f) * s));
-		}
-		Fx.Animate(rays, 0.2f, t =>
-		{
-			float head = Ease.OutExpo(t), tail = Ease.InCubic(t);
-			foreach (var (poly, d, len) in list)
-			{
-				Fx.Reshape(poly, Fx.StrokePts(new[] { d * (20f * s + len * tail), d * (24f * s + len * head) }, 4f * s, taper: true));
-			}
-		});
-		Fx.FreeAfter(rays, 0.22);
-		P3Fx.Flash(layer, impact, new Color(1f, 0.9f, 0.6f), 160f * s, 0.14f);
+		Vector2 impact = center + new Vector2(50f, -10f) * s;              // 冲击点：身前（敌人在右边）
+		Vector2 home = center + new Vector2(62f, -62f) * s;                // 字：胸口偏上、稍微靠前
+		BlockWord(layer, home, s);
+		Fx.After(layer, 0.05, "block impact", () => BlockImpact(layer, impact, s));
+	}
 
-		// 标签：人物身前偏上（胸口高度、稍微靠前），不离人物太远
-		Vector2 home = center + new Vector2(70f, -55f) * s;
+	private static readonly Color BlockInk = new(0.04f, 0.04f, 0.07f);
+
+	private static void BlockWord(Control layer, Vector2 home, float s)
+	{
 		Node2D root = Fx.Root(layer, home, "P3Block");
-		root.Rotation = -0.26f;
-		Sprite2D glow = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(1f, 0.35f, 0.3f, 0.6f), Scale = new Vector2(4.2f, 2f) * s };
-		root.AddChild(glow);
-		float w = 196f * s, h = 54f * s, k = 14f * s;
-		Fx.Poly(root, new[] { new Vector2(-w / 2f + k, -h / 2f), new Vector2(w / 2f + k, -h / 2f), new Vector2(w / 2f - k, h / 2f), new Vector2(-w / 2f - k, h / 2f) }, new Color(0.03f, 0.03f, 0.05f, 0.96f));
-		int fs = (int)(44 * s);
-		Label l = Typo.Text(root, "BLOCK", Typo.LatinItalic, fs, Pal.White, new Vector2(-w / 2f, -fs * 0.66f), HorizontalAlignment.Center, outline: 2, outlineColor: new Color(0.03f, 0.03f, 0.05f));
-		l.Size = new Vector2(w, h);
-		const float total = 0.95f;
+		root.Rotation = -0.21f;
+		const string word = "BLOCK";
+		int fs = (int)(46 * s);
+		float adv = fs * 0.5f, x0 = -adv * word.Length / 2f;
+		// 偏左下的厚黑阴影块：每个字母一块，比字大一圈、位置随机错开 → 形成参差的黑色底，不是规整的框
+		for (int i = 0; i < word.Length; i++)
+		{
+			Vector2 p = new(x0 + adv * i - 6f * s + Fx.Rand(-2f, 2f) * s, -fs * 0.62f + 6f * s + Fx.Rand(-2f, 3f) * s);
+			Label sh = Typo.Text(root, word[i].ToString(), Typo.LatinItalic, (int)(fs * 1.06f), BlockInk, p, outline: (int)(9 * s), outlineColor: BlockInk);
+			sh.Rotation = Fx.Rand(-0.08f, 0.08f);
+		}
+		// 字面：白色，细黑描边，每个字母轻微歪斜、上下错位
+		for (int i = 0; i < word.Length; i++)
+		{
+			Vector2 p = new(x0 + adv * i, -fs * 0.62f + Fx.Rand(-3f, 3f) * s);
+			Label l = Typo.Text(root, word[i].ToString(), Typo.LatinItalic, fs, new Color(0.97f, 0.97f, 1f), p, outline: (int)(2 * s), outlineColor: BlockInk);
+			l.PivotOffset = new Vector2(adv * 0.5f, fs * 0.6f);
+			l.Rotation = Fx.Rand(-0.07f, 0.07f);
+		}
+		const float total = 1.0f;
 		Fx.Animate(root, total, t =>
 		{
 			float time = t * total;
-			float pop = Ease.OutBack(Mathf.Clamp(time / 0.12f, 0f, 1f));
-			root.Scale = Vector2.One * Mathf.Lerp(1.7f, 1f, pop);
-			root.Position = home + new Vector2(6f * Mathf.Sin(time * 3f), -34f * Ease.OutCubic(Mathf.Clamp((time - 0.12f) / 0.83f, 0f, 1f)));
-			glow.Modulate = new Color(1f, 0.35f, 0.3f, 0.6f * (1f - Mathf.Clamp(time / 0.3f, 0f, 1f)));
-			root.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(Mathf.Clamp((time - 0.7f) / 0.25f, 0f, 1f)));
+			float pop = Ease.OutBack(Mathf.Clamp(time / 0.1f, 0f, 1f));
+			float kick = time > 0.05f ? Mathf.Exp(-(time - 0.05f) * 18f) * 0.12f : 0f;   // 冲击那一下被顶得一颤
+			root.Scale = Vector2.One * (Mathf.Lerp(1.5f, 1f, pop) + kick);
+			root.Position = home + new Vector2(10f * Ease.OutCubic(Mathf.Clamp(time / total, 0f, 1f)), -16f * Ease.OutCubic(Mathf.Clamp((time - 0.1f) / 0.9f, 0f, 1f))) * s;
+			root.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.04f, 0f, 1f) * (1f - Ease.InCubic(Mathf.Clamp((time - 0.78f) / 0.22f, 0f, 1f))));
 		});
 		Fx.FreeAfter(root, total + 0.05);
+	}
+
+	private static void BlockImpact(Control layer, Vector2 at, float s)
+	{
+		// 护盾泡：柔光圆 + 亮边 + 三道弧形流光，0.12s 胀开后淡出
+		Node2D bubble = Fx.Root(layer, at, "P3BlockBubble");
+		Sprite2D fill = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(0.85f, 0.92f, 1f, 0.55f), Scale = Vector2.One * 2.4f * s };
+		bubble.AddChild(fill);
+		Fx.StrokeClosed(bubble, Fx.Circle(78f * s, 48), new Color(1f, 1f, 1f, 0.85f), 4f * s);
+		Fx.StrokeClosed(bubble, Fx.Circle(70f * s, 48), new Color(0.8f, 0.9f, 1f, 0.35f), 7f * s);
+		for (int k = 0; k < 3; k++)
+		{
+			float a0 = Fx.Rand(0f, Mathf.Tau), r = Fx.Rand(48f, 66f) * s;
+			var arc = new Vector2[10];
+			for (int i = 0; i < 10; i++) arc[i] = Vector2.Right.Rotated(a0 + i * 0.13f) * r;
+			Fx.Stroke(bubble, arc, new Color(1f, 1f, 1f, 0.8f), 3f * s);
+		}
+		Fx.Animate(bubble, 0.26f, t =>
+		{
+			bubble.Scale = Vector2.One * (0.55f + 0.6f * Ease.OutExpo(Mathf.Clamp(t / 0.45f, 0f, 1f)));
+			bubble.Rotation = t * 0.6f;
+			bubble.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(t));
+		});
+		Fx.FreeAfter(bubble, 0.28);
+
+		// 放射火花：每道由三段拼成（白芯 → 黄 → 橙粉），外围再叠一层宽而淡的光晕；长短不一、稍有先后
+		Fx.After(layer, 0.06, "block sparks", () =>
+		{
+			Node2D rays = Fx.Root(layer, at, "P3BlockSparks");
+			var sparks = new System.Collections.Generic.List<(Polygon2D[] P, Vector2 D, float L, float Delay)>();
+			Color[] cols = { new(1f, 1f, 0.95f, 0.95f), new(1f, 0.85f, 0.35f, 0.9f), new(1f, 0.45f, 0.45f, 0.75f) };
+			for (int i = 0; i < 16; i++)
+			{
+				Vector2 d = Vector2.Right.Rotated(Mathf.Tau * i / 16f + Fx.Rand(-0.15f, 0.15f));
+				float len = (i % 4 == 0 ? Fx.Rand(220f, 320f) : Fx.Rand(90f, 190f)) * s;
+				var polys = new Polygon2D[4];
+				polys[0] = Fx.Poly(rays, new Vector2[3], new Color(1f, 0.6f, 0.3f, 0.25f), additive: true);   // 光晕
+				for (int k = 0; k < 3; k++) polys[k + 1] = Fx.Poly(rays, new Vector2[3], cols[k], additive: true);
+				sparks.Add((polys, d, len, Fx.Rand(0f, 0.05f)));
+			}
+			Fx.Animate(rays, 0.34f, t =>
+			{
+				float time = t * 0.34f;
+				foreach (var (polys, d, len, delay) in sparks)
+				{
+					float u = Mathf.Clamp((time - delay) / 0.26f, 0f, 1f);
+					float head = 18f * s + len * Ease.OutExpo(u), tail = 18f * s + len * Ease.InCubic(u) * 0.95f;
+					float span = Mathf.Max(head - tail, 0.5f), w = 3.4f * s * (1f - 0.6f * u);
+					Vector2 a = d * tail, b = d * (tail + span * 0.45f), c = d * (tail + span * 0.8f), e = d * head;
+					Fx.Reshape(polys[0], Fx.StrokePts(new[] { a, e }, w * 4f, taper: true));
+					Fx.Reshape(polys[3], Fx.StrokePts(new[] { a, b }, w * 0.7f, taper: true));
+					Fx.Reshape(polys[2], Fx.StrokePts(new[] { b, c }, w, taper: false));
+					Fx.Reshape(polys[1], Fx.StrokePts(new[] { c, e }, w * 1.2f, taper: true));
+				}
+			});
+			Fx.FreeAfter(rays, 0.36);
+			Sprite2D core = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(1f, 0.85f, 0.35f, 0.9f), Scale = Vector2.One * 2.6f * s };
+			Node2D coreRoot = Fx.Root(layer, at, "P3BlockCore");
+			coreRoot.AddChild(core);
+			Fx.Animate(coreRoot, 0.25f, t => coreRoot.Modulate = new Color(1f, 1f, 1f, 1f - t));
+			Fx.FreeAfter(coreRoot, 0.27);
+		});
+
+		// 余韵：身后红橙柔光（0.7s 褪去）、地上青色碎片、黄绿小纸屑飘落
+		Node2D after = Fx.Root(layer, at + new Vector2(-30f, 10f) * s, "P3BlockAfterglow");
+		Sprite2D warm = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(1f, 0.32f, 0.22f, 0f), Scale = new Vector2(3.2f, 4.2f) * s };
+		after.AddChild(warm);
+		Fx.Animate(after, 0.8f, t => warm.Modulate = new Color(1f, 0.32f, 0.22f, 0.5f * Mathf.Sin(Mathf.Min(t * 4f, 1f) * Mathf.Pi * 0.5f) * (1f - t)));
+		Fx.FreeAfter(after, 0.82);
+		Fx.After(layer, 0.08, "block shards", () => P3Fx.GlassShatter(layer, at + new Vector2(0f, 60f) * s, 8, 0.45f, new Color(0.45f, 0.95f, 0.85f)));
+		for (int i = 0; i < 7; i++)
+		{
+			Node2D leaf = Fx.Root(layer, at + new Vector2(Fx.Rand(-110f, 90f), Fx.Rand(-120f, -40f)) * s, "P3BlockConfetti");
+			Fx.Poly(leaf, new[] { new Vector2(-5f, 0f), new Vector2(0f, -2.5f), new Vector2(5f, 0f), new Vector2(0f, 2.5f) }, i % 2 == 0 ? new Color(0.85f, 0.95f, 0.35f) : new Color(1f, 0.85f, 0.3f));
+			float spin = Fx.Rand(4f, 9f), sway = Fx.Rand(0.5f, 1.2f), delay = Fx.Rand(0.05f, 0.2f);
+			Vector2 from = leaf.Position;
+			leaf.Modulate = new Color(1f, 1f, 1f, 0f);
+			Fx.Animate(leaf, 0.9f, t =>
+			{
+				float time = t * 0.9f - delay;
+				if (time < 0f) return;
+				leaf.Position = from + new Vector2(18f * Mathf.Sin(time * 6f * sway), 70f * time) * s;
+				leaf.Rotation = time * spin;
+				leaf.Scale = new Vector2(Mathf.Cos(time * spin * 1.3f), 1f) * s;
+				leaf.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.05f, 0f, 1f) * (1f - Mathf.Clamp((time - 0.5f) / 0.2f, 0f, 1f)));
+			});
+			Fx.FreeAfter(leaf, 0.95);
+		}
 	}
 }

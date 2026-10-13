@@ -304,3 +304,18 @@ public static class BlockPopupPatch
 		return true;
 	}
 }
+
+/// <summary>结城理格挡时原版的蓝色格挡火花也不要（换成 Popups.Block 的 P3R 冲击）。</summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Vfx.NBlockSparkVfx), nameof(MegaCrit.Sts2.Core.Nodes.Vfx.NBlockSparkVfx.Create))]
+public static class BlockSparkPatch
+{
+	public static bool Prefix(Creature target, ref MegaCrit.Sts2.Core.Nodes.Vfx.NBlockSparkVfx? __result)
+	{
+		if (target.IsPlayer && Makoto.Is(target.Player))
+		{
+			__result = null;
+			return false;
+		}
+		return true;
+	}
+}
