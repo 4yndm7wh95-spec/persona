@@ -19,7 +19,8 @@ namespace P3Makoto.Vfx;
 /// </summary>
 public static class StarOrbit
 {
-	private const int MaxShown = 12;
+	private const int MaxShown = 24;                     // v0.14.0：两圈轨道（内圈 12 + 外圈 12），再多显示"×N"计数，不再出现"加了星却没动画"
+	private const int RingSize = 12;
 	private const float SpinSpeed = 0.55f;               // 轨道角速度（弧度 / 秒）
 
 	private sealed class Card
@@ -38,6 +39,17 @@ public static class StarOrbit
 		public float Phase;
 		public readonly List<Card> Quiver = new();       // 星尘：已花掉、等待掷出的牌
 		public float VolleyUntil;
+		public Label? Overflow;                          // 超过 MaxShown 时的"×N"
+	}
+
+	/// <summary>封印王座等：下一颗（几颗）辉星从这里凝出，而不是胸口（until 之前有效）。</summary>
+	private static Vector2? _birthFrom;
+	private static float _birthUntil;
+
+	public static void BirthFrom(Vector2 at, float seconds)
+	{
+		_birthFrom = at;
+		_birthUntil = _time + seconds;
 	}
 
 	private static readonly Dictionary<ulong, Orbit> Orbits = new();
@@ -208,15 +220,22 @@ public static class StarOrbit
 				o = new Orbit { Creature = node };
 				Orbits[id] = o;
 			}
-			int stars = node.Entity.IsDead ? 0 : Math.Min(player.PlayerCombatState?.Stars ?? 0, MaxShown);
+			int total = node.Entity.IsDead ? 0 : player.PlayerCombatState?.Stars ?? 0;
+			int stars = Math.Min(total, MaxShown);
 			Reconcile(o, stars, front, back);
 			Layout(o, dt, front, back);
+			UpdateOverflow(o, total, front);
+			ThroneSeal.Tick(node, back, front, _time);
 		}
 	}
 
 	private static void Reconcile(Orbit o, int stars, Control front, Control back)
 	{
 		Vector2 chest = Makoto.Center(o.Creature) + new Vector2(0f, -20f);
+		if (_birthFrom is Vector2 from && _time <= _birthUntil)
+		{
+			chest = from;
+		}
 		while (o.Cards.Count < stars)
 		{
 			Card c = new() { Node = MakeCard(front), Born = _time, Pos = chest, Front = true };
@@ -300,10 +319,16 @@ public static class StarOrbit
 			else
 			{
 				int j = i - o.Preview;
-				float a = o.Phase + Mathf.Tau * j / Math.Max(orbiting, 1);
-				target = center + new Vector2(rx * Mathf.Cos(a), ry * Mathf.Sin(a) + 6f * Mathf.Sin(_time * 1.3f + j));
+				// 内圈最多 12 张；更多的进外圈（更大、更扁、反向慢转、牌小一号），两圈错开不打架
+				int ring = j < RingSize ? 0 : 1;
+				int inRing = ring == 0 ? Math.Min(orbiting, RingSize) : orbiting - RingSize;
+				int jr = ring == 0 ? j : j - RingSize;
+				float rx0 = 118f + 4f * Math.Min(orbiting, RingSize);
+				float a = (ring == 0 ? o.Phase : -o.Phase * 0.7f + 0.3f) + Mathf.Tau * jr / Math.Max(inRing, 1);
+				float rxr = ring == 0 ? rx0 : rx0 + 64f, ryr = ring == 0 ? ry : ry + 16f;
+				target = center + new Vector2(rxr * Mathf.Cos(a), ryr * Mathf.Sin(a) + 6f * Mathf.Sin(_time * 1.3f + j) + (ring == 1 ? 18f : 0f));
 				depth = Mathf.Sin(a);
-				scale = 0.82f + 0.16f * depth;
+				scale = (0.82f + 0.16f * depth) * (ring == 0 ? 1f : 0.8f);
 			}
 			c.Pos = c.Pos.Lerp(target, k);
 			float born = Mathf.Clamp((_time - c.Born) / 0.4f, 0f, 1f);
@@ -389,5 +414,33 @@ public static class StarOrbit
 			new Color(Pal.Royal, 0.9f), 1f, closed: true, additive: false);
 		Fx.Poly(root, Fx.Star4(9f, 0.3f), Pal.Ice, additive: true);
 		return root;
+	}
+
+	/// <summary>超过 MaxShown 颗时，在轨道右侧显示"×N"（总数），每次变化轻轻弹一下。</summary>
+	private static void UpdateOverflow(Orbit o, int total, Control front)
+	{
+		bool show = total > MaxShown;
+		if (!show)
+		{
+			if (o.Overflow != null && GodotObject.IsInstanceValid(o.Overflow))
+			{
+				o.Overflow.QueueFree();
+			}
+			o.Overflow = null;
+			return;
+		}
+		if (o.Overflow == null || !GodotObject.IsInstanceValid(o.Overflow))
+		{
+			o.Overflow = Typo.Text(front, "", Typo.LatinItalic, 34, Pal.Ice, Vector2.Zero, outline: 4, outlineColor: Pal.Abyss);
+			o.Overflow.TopLevel = true;
+		}
+		string text = "×" + total;
+		if (o.Overflow.Text != text)
+		{
+			o.Overflow.Text = text;
+			o.Overflow.Scale = Vector2.One * 1.35f;
+		}
+		o.Overflow.Scale = o.Overflow.Scale.Lerp(Vector2.One, 0.15f);
+		o.Overflow.GlobalPosition = Makoto.Center(o.Creature) + new Vector2(200f, -60f);
 	}
 }

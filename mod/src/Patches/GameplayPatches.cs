@@ -319,3 +319,20 @@ public static class BlockSparkPatch
 		return true;
 	}
 }
+
+/// <summary>封印王座：结城理每打出一张牌（获得辉星）→ 印记脉冲 + 光流 + 星从印记凝出（ThroneSeal.Pulse）。</summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Models.Powers.TheSealedThronePower), nameof(MegaCrit.Sts2.Core.Models.Powers.TheSealedThronePower.BeforeCardPlayed))]
+public static class SealedThronePulsePatch
+{
+	public static void Prefix(MegaCrit.Sts2.Core.Models.Powers.TheSealedThronePower __instance, MegaCrit.Sts2.Core.Entities.Cards.CardPlay cardPlay)
+	{
+		ModEntry.Safe("SealedThronePulse", () =>
+		{
+			Player? owner = __instance.Owner?.Player;
+			if (owner != null && cardPlay.Card.Owner == owner && Makoto.Is(owner) && Makoto.Node(owner) is NCreature node)
+			{
+				ThroneSeal.Pulse(node);
+			}
+		});
+	}
+}
