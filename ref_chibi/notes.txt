@@ -1,0 +1,34 @@
+来源 a: C:\Users\kkk\Documents\xwechat_files\wxid_r5iyy0roirlf22_8f2a\temp\RWTemp\2026-10\9e20f478899dc29eb19741386f9343c8\b3acb08d1c3066ed4fc03fd20c37dba5.mp4
+来源 b: C:\Users\kkk\Documents\xwechat_files\wxid_r5iyy0roirlf22_8f2a\temp\RWTemp\2026-10\9e20f478899dc29eb19741386f9343c8\361f7da7847b9addad829b1260912f22.mp4
+总览均为每秒2帧，6列×5行；最后一张不足30帧的位置留黑。
+关键帧来自原分辨率裁切，保留周围余量，以 Lanczos 放大至短边600；放大不补造细节。
+未发现清晰的倒地或退场动作；移动仅见出场落位，不把它标成完整走路动画。
+红色闪烁及双方近身画面只描述可见现象，受击含义不确定。
+
+a_key_01_entry.png	00:04.5	出场落位：身体前倾，脚下蓝色圆环和竖直光线。
+a_key_02_idle.png	00:05.5	正面偏侧待机：蓝色遮眼刘海、耳机、外套与下垂长剑。
+a_key_03_ready.png	00:06.0	普通攻击准备：抬臂持剑，身体转向右侧。
+a_key_04_attack.png	00:06.5	普通攻击挥斩：身体压低，剑随蓝色弧形轨迹扫向右侧。
+a_key_05_raise_sword.png	00:07.5	举剑动作：双手上抬，剑刃伸到头顶上方。
+a_key_06_followthrough.png	00:08.0	斩击后半段：身体前倾，剑尖向下，右侧敌人出现命中效果。
+a_key_07_slash.png	00:09.0	侧身挥斩：左腿迈开，蓝色剑光绕身划出大弧。
+a_key_08_impact.png	00:11.0	挥剑命中：剑向右挥出，右侧可见明亮撞击火花。
+a_key_09_front.png	00:15.0	正面偏侧待机：抬手到脸旁并张口，头身比例、外套分层、腰带和鞋型可见。
+a_key_10_side.png	00:16.5	待机轻微转头：脸部偏侧，长剑斜垂，可核对侧面轮廓。
+a_key_11_rear_entry.png	00:21.0	背面出场落位：蓝色落位光效，外套背面与后脑发型可见。
+a_key_12_rear_idle.png	00:22.5	背面待机：背包或外套背部细节、红色臂章和剑的位置。
+a_key_13_red_flash.png	00:23.5	背面举剑并出现红色闪烁；疑似受击反馈，单帧无法确定触发原因。
+a_key_14_rear_attack.png	00:25.0	背面挥剑：上身转动，右侧剑光与命中火花。
+a_key_15_rear_raise.png	00:28.0	背面举剑准备：剑伸到头顶，观察手臂与肩部姿态。
+b_key_01_idle.png	00:00.5	技能前持剑待机，角色全身及耳机、外套、长剑清晰。
+b_key_02_draw_gun.png	00:01.5	抬手取枪：手枪尚未贴近太阳穴，另一手持剑。
+b_key_03_gun_raise.png	00:02.0	举枪动作：手臂向侧后方伸展，绿色枪身可见。
+b_key_04_gun_temple.png	00:02.5	召唤准备：手枪抵近太阳穴，双腿站定。
+b_key_05_summon_start.png	00:03.5	召唤启动：仍保持抵额举枪姿势，周围出现蓝色火焰。
+b_key_06_summon.png	00:04.0	Persona 从背后浮现，角色周围蓝色火焰与碎片。
+b_key_07_persona_idle.png	00:05.0	Persona 完整显现：位于角色后上方，红围巾、绿色躯干和乐器轮廓。
+b_key_08_skill_aura.png	00:06.5	技能持续：脚边及身旁出现音符和弯曲谱线。
+b_key_09_persona_attack.png	00:07.5	Persona 伸出手臂，角色维持抵额举枪姿势，右侧发出攻击轨迹。
+b_key_10_projectile.png	00:09.0	Persona 攻击：橙红色投射轨迹飞向右侧敌人。
+b_key_11_close_combat.png	00:10.0	敌人贴近角色右侧，双方武器交叠，蓝色效果出现在身前；受击归属不确定。
+b_key_12_skill_wide.png	00:12.5	镜头拉远后的技能全身：Persona、举枪角色和音符谱线同时可见。
