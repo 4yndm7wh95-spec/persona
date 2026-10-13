@@ -602,3 +602,9 @@ Grand.cs 里其余函数暂时保留不用。
 ## v0.13.12
 
 - 辉星凝聚（StarGain）用回合成版（上扬颤音 + 琶音）；辉星消耗保持 P3R `Sys_Theurgia_Open`；星尘砸中 `atk_light`、陨星命中 `evt_impact_01` 保持（用户对比 `art/compare_star_meteor.mp3` 后确认）。
+
+## v0.13.13
+
+- 召唤器开枪（Gunshot）和选人召唤（Summon）用回 v0.13.4 之前的合成枪声（v0.13.5 换成 P3R Trigger_00/01 不是用户要求的）；合成代码与 v0.13.4 完全一致。
+- 上膛：em0131_gun_1 整段 0.6s 是一阵密集的枪声，会盖住召唤器 → 只截开头 0.07s（`cock_click.ogg`）。对比试听 `art/compare_evoker_cock.mp3`。
+- 移除 Trigger_00 / 01 / 00_Flash、em0131_gun_1；sfx 59 个。

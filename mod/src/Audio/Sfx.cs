@@ -78,11 +78,10 @@ public static class Sfx
 	/// </summary>
 	private static readonly Dictionary<Snd, (string File, float Delay, float Gain)[][]> P3r = new()
 	{
-		[Snd.Gunshot] = new[] { new[] { ("Snd_FX_Btl_Trigger_00", 0f, 1f) }, new[] { ("Snd_FX_Btl_Trigger_01", 0f, 1f) } },
-		[Snd.Summon] = new[] { new[] { ("Snd_FX_Btl_Trigger_00_Flash", 0f, 0.8f) } },
+		// 召唤器开枪（Gunshot）和选人召唤（Summon）：v0.13.13 起用回 v0.13.4 之前的合成枪声（用户没有要求换开枪声），不在这张表里
 		[Snd.TarotReveal] = new[] { new[] { ("Snd_FX_Btl_PersonaAura_00", 0f, 0.6f) } },   // 特效里的"浮现"：Persona 光环（翻牌声只留给真实抽牌）
 		[Snd.CardDraw] = new[] { new[] { ("card_draw", 0f, 1f) } },
-		[Snd.Cock] = new[] { new[] { ("em0131_gun_1", 0f, 0.75f) } },       // Velvet_Tarot_Flip 原声里有两次翻牌，只截前 0.3 秒（一张）
+		[Snd.Cock] = new[] { new[] { ("cock_click", 0f, 0.9f) } },        // em0131_gun_1 只截开头 0.07s（整段 0.6s 是一阵枪声，会盖住召唤器枪声）       // Velvet_Tarot_Flip 原声里有两次翻牌，只截前 0.3 秒（一张）
 		[Snd.TarotShatter] = new[] { new[] { ("ShuffleTime_ArcanaBurst", 0f, 0.9f) } },
 		// StarGain：v0.13.12 起用回合成版（上扬颤音 + 琶音，用户对比后选的），不在这张表里
 		[Snd.StarSpend] = new[] { new[] { ("Sys_Theurgia_Open", 0f, 0.8f) } },
