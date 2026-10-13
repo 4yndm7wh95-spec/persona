@@ -100,6 +100,7 @@ public static class PersonaFx
 				}
 			}
 			Vorpal.Play(front, centers, Mathf.Max(release, 0.4f));
+			Uniq.SkillBanner(front, "空间杀法", "VORPAL BLADE", Mathf.Max(release, 0.4f) + 0.6f);   // P3R：技能名横幅挂到技能结束
 			Fx.After(root, attackAt, "vorpal persona", () => Audio.Sfx.Play(Audio.Snd.ThanatosSlash, 0.9f));
 			Fx.FreeAfter(root, attackAt + 1.6f);
 			return;

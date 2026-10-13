@@ -484,15 +484,22 @@ public static class Uniq
 	/// <summary>追踪之刃：头顶一把剑分裂成数道光刃，各自划着弧线锁定每个敌人，敌人身上亮起准星。</summary>
 	public static void SeekingEdge(Control front, Vector2 head, Vector2[] targets)
 	{
+		// v0.14.0：追踪之刃 = 之后的君王之刃变成群体「空间杀法」。打出时预告这一点：
+		// 左上角挂 P3R 技能名横幅「空间杀法 VORPAL BLADE」；头顶浮出光剑，一分为 N 把飞向每个敌人，
+		// 落点亮起 P3R 全体目标的黄色菱形标记；全部锁定后一道细黑线（白边）横贯全屏穿过所有标记 —— 空间被"标记"了。
+		SkillBanner(front, "空间杀法", "VORPAL BLADE", 1.7f);
 		Vector2 at = head + new Vector2(30f, -110f);
 		Node2D origin = Fx.Root(front, at, "P3SeekOrigin");
 		Node2D sw = Sword(origin, 150f, Pal.Cyan);
 		sw.Rotation = -Mathf.Pi / 2f;
 		Fx.Animate(origin, 0.4f, t => origin.Modulate = new Color(1f, 1f, 1f, Ease.Envelope(t, 0.2f, 0.7f)));
 		Fx.FreeAfter(origin, 0.42);
+		var marks = new System.Collections.Generic.List<Vector2>();
 		for (int i = 0; i < targets.Length; i++)
 		{
 			Vector2 to = targets[i];
+			Vector2 mark = to + new Vector2(0f, -150f);
+			marks.Add(mark);
 			float side = i % 2 == 0 ? -1f : 1f;
 			Fx.After(origin, 0.3 + 0.08 * i, "seek blade", () =>
 			{
@@ -509,12 +516,92 @@ public static class Uniq
 				Fx.After(b, 0.35, "seek lock", () =>
 				{
 					b.QueueFree();
-					P3Fx.Reticle(front, to, 90f, Pal.Ice);
 					P3Fx.Flash(front, to, Pal.Ice, 140f, 0.15f);
+					TargetDiamond(front, mark, 1.5f);
 					Audio.Sfx.Play(Audio.Snd.Weak, 0.4f, pitch: 1.3f);
 				});
 			});
 		}
+		if (marks.Count == 0)
+		{
+			return;
+		}
+		Fx.After(front, 0.3 + 0.08 * targets.Length + 0.45, "seek seam", () =>
+		{
+			Vector2 size = front.GetViewportRect().Size;
+			Vector2 a = marks[0], c = marks[^1];
+			Vector2 dir = marks.Count > 1 ? (c - a).Normalized() : Vector2.Right.Rotated(-0.12f);
+			dir = dir.Rotated(-0.1f);
+			Vector2 mid = (a + c) * 0.5f + new Vector2(0f, 40f);
+			Vector2 p0 = mid - dir * size.X, p1 = mid + dir * size.X;
+			Node2D seam = Fx.Root(front, Vector2.Zero, "P3SeekSeam");
+			seam.TopLevel = true;
+			seam.GlobalPosition = Vector2.Zero;
+			Polygon2D edge = Fx.Stroke(seam, new[] { p0, p0 }, new Color(1f, 1f, 1f, 0.9f), 9f);
+			Polygon2D cut = Fx.Poly(seam, new Vector2[3], new Color(0.05f, 0.04f, 0.05f, 0.95f));
+			Fx.Animate(seam, 0.6f, t =>
+			{
+				float g = Ease.OutExpo(Mathf.Clamp(t / 0.18f, 0f, 1f));
+				Vector2 head2 = p0.Lerp(p1, g);
+				Fx.Reshape(edge, Fx.StrokePts(new[] { p0, head2 }, 9f * (1f - 0.6f * t), taper: true));
+				Fx.Reshape(cut, Fx.StrokePts(new[] { p0, head2 }, 4f, taper: true));
+				seam.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(Mathf.Clamp((t - 0.45f) / 0.55f, 0f, 1f)));
+			});
+			Fx.FreeAfter(seam, 0.62);
+			foreach (Vector2 m in marks)
+			{
+				P3Fx.GlassShatter(front, m + new Vector2(0f, 150f), 8, 0.5f, Pal.Ice);
+			}
+			Audio.Sfx.Clip("swish_heavy_1", 0.8f);
+			Shake(ShakeStrength.Weak);
+		});
+	}
+
+	/// <summary>P3R 全体目标标记：黄色菱形（黑描边）+ 中间问号，从上方落下弹一下，停留后淡出。</summary>
+	public static void TargetDiamond(Control front, Vector2 at, float hold)
+	{
+		Node2D root = Fx.Root(front, at, "P3TargetDiamond");
+		Vector2[] dia = { new(0f, -22f), new(17f, 0f), new(0f, 22f), new(-17f, 0f) };
+		Vector2[] big = { new(0f, -27f), new(22f, 0f), new(0f, 27f), new(-22f, 0f) };
+		Fx.Poly(root, big, new Color(0.05f, 0.05f, 0.08f, 0.95f));
+		Fx.Poly(root, dia, new Color(1f, 0.82f, 0.18f));
+		Fx.Poly(root, new[] { new Vector2(0f, -22f), new Vector2(17f, 0f), new Vector2(0f, 0f) }, new Color(1f, 0.95f, 0.6f));
+		Typo.Text(root, "?", Typo.LatinItalic, 26, new Color(0.08f, 0.08f, 0.12f), new Vector2(-6f, -18f));
+		float total = 0.18f + hold + 0.2f;
+		Fx.Animate(root, total, t =>
+		{
+			float time = t * total;
+			float inn = Ease.OutBack(Mathf.Clamp(time / 0.18f, 0f, 1f));
+			root.Position = at + new Vector2(0f, -40f * (1f - inn) + 4f * Mathf.Sin(time * 5f));
+			root.Scale = new Vector2(Mathf.Max(0.05f, Mathf.Abs(Mathf.Cos((1f - inn) * Mathf.Pi))), 1f);
+			root.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.08f, 0f, 1f) * (1f - Mathf.Clamp((time - 0.18f - hold) / 0.2f, 0f, 1f)));
+		});
+		Fx.FreeAfter(root, total + 0.05);
+	}
+
+	/// <summary>P3R 技能名小横幅（左上角）：蓝色斜切条 + 白色技能名 + 小号英文，从左滑入、停留、滑出。</summary>
+	public static void SkillBanner(Control front, string name, string latin, float hold)
+	{
+		Vector2 size = front.GetViewportRect().Size;
+		Vector2 home = new(size.X * 0.03f, size.Y * 0.13f);
+		Node2D root = Fx.Root(front, home, "P3SkillBanner");
+		root.TopLevel = true;
+		const float w = 360f, h = 52f;
+		Fx.Poly(root, new[] { new Vector2(0f, 0f), new Vector2(w, 0f), new Vector2(w - 18f, h), new Vector2(-18f, h) }, new Color(0.05f, 0.18f, 0.62f, 0.95f));
+		Fx.Poly(root, new[] { new Vector2(0f, 0f), new Vector2(w, 0f), new Vector2(w - 1.5f, 4f), new Vector2(-1.5f, 4f) }, Pal.Cyan, additive: true);
+		Fx.Poly(root, new[] { new Vector2(w - 26f, 0f), new Vector2(w + 10f, 0f), new Vector2(w - 8f, h), new Vector2(w - 44f, h) }, new Color(Pal.Cyan, 0.9f));
+		Typo.Text(root, name, Typo.CjkHeavy, 30, Pal.White, new Vector2(18f, 6f), outline: 2, outlineColor: new Color(0.02f, 0.06f, 0.2f));
+		Typo.Text(root, latin, Typo.LatinItalic, 16, new Color(Pal.Ice, 0.85f), new Vector2(150f, 22f));
+		float total = 0.2f + hold + 0.25f;
+		Fx.Animate(root, total, t =>
+		{
+			float time = t * total;
+			float inn = Ease.OutExpo(Mathf.Clamp(time / 0.2f, 0f, 1f));
+			float outt = Ease.InCubic(Mathf.Clamp((time - 0.2f - hold) / 0.25f, 0f, 1f));
+			root.GlobalPosition = home + new Vector2(-w * (1f - inn) - w * 0.6f * outt, 0f);
+			root.Modulate = new Color(1f, 1f, 1f, inn * (1f - outt));
+		});
+		Fx.FreeAfter(root, total + 0.05);
 	}
 
 	// ══════════════════ 抽牌 / 生成系 ══════════════════
