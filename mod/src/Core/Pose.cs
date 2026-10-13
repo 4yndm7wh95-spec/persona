@@ -145,6 +145,26 @@ public static class Pose
 		}
 	}
 
+	private static ulong _lastSummonAnim;
+
+	/// <summary>正在召唤开枪：有未过期的召唤标记，或者 0.4s 内刚改写过召唤动画。原版 regent_attack 的挥动声此时不播（见 Sfx.ReplaceRegent）。</summary>
+	public static bool SummonActive()
+	{
+		ulong now = Godot.Time.GetTicksMsec();
+		if (now - _lastSummonAnim < 400)
+		{
+			return true;
+		}
+		foreach (ulong until in Summon.Values)
+		{
+			if (now <= until)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/// <summary>这个角色是否有待执行的召唤开枪（伤害 / 效果等待据此延后，见 SovereignTimingPatch）。</summary>
 	public static bool HasSummon(NCreature node) =>
 		node.Visuals.SpineBody?.TryGetAnimationState() is MegaAnimationState state
@@ -165,6 +185,7 @@ public static class Pose
 		if (requested is "attack" or "cast" or "attack_sovereign" && Summon.Remove(id, out ulong until2) && now <= until2)
 		{
 			string anim = FromHolding(state.GetCurrentAnimationName(), "attack_sovereign") ?? "attack_sovereign";
+			_lastSummonAnim = now;
 			// 上膛：召唤器抵到太阳穴的那一刻"咔嚓"一声（attack_sovereign 在 0.14s 到位；从瞄准接招时枪已经在位）
 			Audio.Sfx.Play(Audio.Snd.Cock, 0.8f, delay: anim == "attack_sovereign" ? 0.12f : 0f);
 			return anim;

@@ -81,7 +81,7 @@ public static class Sfx
 		// 召唤器开枪（Gunshot）和选人召唤（Summon）：v0.13.13 起用回 v0.13.4 之前的合成枪声（用户没有要求换开枪声），不在这张表里
 		[Snd.TarotReveal] = new[] { new[] { ("Snd_FX_Btl_PersonaAura_00", 0f, 0.6f) } },   // 特效里的"浮现"：Persona 光环（翻牌声只留给真实抽牌）
 		[Snd.CardDraw] = new[] { new[] { ("card_draw", 0f, 1f) } },
-		[Snd.Cock] = new[] { new[] { ("cock_click", 0f, 0.9f) } },        // em0131_gun_1 只截开头 0.07s（整段 0.6s 是一阵枪声，会盖住召唤器枪声）       // Velvet_Tarot_Flip 原声里有两次翻牌，只截前 0.3 秒（一张）
+		[Snd.Cock] = new[] { new[] { ("sc0255_btl_gun_reload", 0f, 0.8f) } },   // P3R 装弹声（干脆的"咔嚓"）；之前截的 em0131 片段是一小团噪声，听着像"噗"       // Velvet_Tarot_Flip 原声里有两次翻牌，只截前 0.3 秒（一张）
 		[Snd.TarotShatter] = new[] { new[] { ("ShuffleTime_ArcanaBurst", 0f, 0.9f) } },
 		// StarGain：v0.13.12 起用回合成版（上扬颤音 + 琶音，用户对比后选的），不在这张表里
 		[Snd.StarSpend] = new[] { new[] { ("Sys_Theurgia_Open", 0f, 0.8f) } },
@@ -169,7 +169,10 @@ public static class Sfx
 			case "regent_die":
 				return true;
 			case "regent_attack":
-				ClipAny(Swings, 0.7f);
+				if (!P3Makoto.Core.Pose.SummonActive())           // 召唤开枪不是挥动：不播破空声（之前在召唤动画最前面形成一声"噗"）
+				{
+					ClipAny(Swings, 0.7f);
+				}
 				break;
 			case "regent_forge":                                   // 锻造 / 精炼：合成的打铁声 + 锻造火花，和原版君王之刃的锻造动画同一时刻
 				Play(Snd.Anvil, 0.85f);
