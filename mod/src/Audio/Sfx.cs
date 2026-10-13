@@ -111,7 +111,7 @@ public static class Sfx
 		[P3Makoto.Vfx.Element.Royal] = new[] { "atk_hit_slash_1", "atk_hit_slash_2", "atk_hit_slash_3" },
 		[P3Makoto.Vfx.Element.Pierce] = new[] { "atk_hit_stab_1", "atk_hit_stab_2", "atk_hit_stab_3" },
 		[P3Makoto.Vfx.Element.Strike] = new[] { "atk_hit_strike_1", "atk_hit_strike_2", "atk_hit_strike_3" },
-		[P3Makoto.Vfx.Element.Megido] = new[] { "megido_hit" },
+		[P3Makoto.Vfx.Element.Megido] = new[] { "megido_hit" },      // P3R skill_0078 = Megido（技能名表确认；之前误用的 0070 其实是 Eiha），去掉开头 0.95s 空白
 		[P3Makoto.Vfx.Element.Meteor] = new[] { "evt_impact_01" },     // v0.13.11：用户选的 P3R 冲击声（原来的打击声像拳击）
 		[P3Makoto.Vfx.Element.Star] = new[] { "atk_light_1", "atk_light_2", "atk_light_3" },      // P3R skill_0070（推测为 Megido），去掉开头 0.17s 空白
 		[P3Makoto.Vfx.Element.Agi] = new[] { "atk_fire_1", "atk_fire_2", "atk_fire_3" },
@@ -131,7 +131,7 @@ public static class Sfx
 	/// </summary>
 	private static readonly string[] Clips =
 	{
-		"wheel_click", "clock_tick", "clock_midnight", "clock_spin", "evt_eft_timespin_01",
+		"vorpal_blade", "wheel_click", "clock_tick", "clock_midnight", "clock_spin", "evt_eft_timespin_01",
 		"em0561_sp_roulette_01", "em0561_sp_roulette_03", "ShuffleTime_Result", "Snd_FX_Btl_Summon_00",
 		"ShuffleTime_PowerUp", "Theurgia_Max", "Snd_FX_Btl_StReflection_00_1", "Snd_FX_Btl_StAbsorption_00_1",
 		"swish_large_1", "swish_large_2",

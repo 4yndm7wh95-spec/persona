@@ -76,9 +76,10 @@ void fragment() {
 			cuts.Add((p - d, p + d, Fx.Rand(2.5f, 9f), 0.12f + 0.7f * (1f - (1f - u) * (1f - u))));
 		}
 
+		// P3R 原声 skill_0117（空间杀法）：和视频对齐 —— 音频开始 0.2s 后画面反相，1.0s 前后是斩击密集段，1.4s 释放
+		Audio.Sfx.Clip("vorpal_blade", 1.0f, Mathf.Max(start - 0.2f, 0f));
 		Fx.After(root, start, "vorpal invert", () =>
 		{
-			Audio.Sfx.Clip("swish_heavy_1", 0.9f);
 			Fx.SetParam(grade, "mode", 0f);
 			Fx.Animate(grade, 0.06f, t => Fx.SetParam(grade, "amount", t));
 			BrushStroke(lines, focus, size, k);
@@ -91,7 +92,6 @@ void fragment() {
 					Polygon2D poly = Fx.Poly(lines, new Vector2[3], new Color(0.08f, 0.07f, 0.06f, 0.92f));
 					Vector2 mid = (a + b) * 0.5f;
 					Fx.Animate(poly, 0.06f, t => Fx.Reshape(poly, Fx.StrokePts(new[] { mid.Lerp(a, Ease.OutExpo(t)), mid.Lerp(b, Ease.OutExpo(t)) }, w, taper: true)));
-					if (Fx.Rng.Next(3) == 0) Audio.Sfx.ClipAny(new[] { "swish_mid_1", "swish_mid_2", "swish_mid_3", "swish_mid_4" }, 0.35f);
 				});
 			}
 		});

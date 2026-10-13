@@ -655,3 +655,6 @@ Grand.cs 里其余函数暂时保留不用。
   辉星轨道改为两圈（内 12 + 外 12，外圈反向慢转、牌小一号），超过 24 颗显示"×N"。召唤弥赛亚的打出演出等 messiah 图。
 - **锻造 → Persona 蓄力增益**（`Extras.PersonaCharge`、`PersonaFx.ChargeGhost`）：不再敲剑 / 拼光剑 / 打铁声。锻造那一刻：Thanatos 暗红半透明身影在身后浮现，
   脚下深红环，6（大量锻造 10）道深红色上升箭头（白芯），头旁 P3R 斜标签「ATTACK UP」+ 大号「+N」；声音 `ShuffleTime_PowerUp`。铸剑者（锻造 ≥10）用大号版本。
+- **空间杀法音效**：P3R `skill_0117`（技能名表确认 117 = 空間殺法 / Vorpal Blade），与视频 2 互相关对齐：音频开始 0.2s 后反相、约 1.4s 释放。占位的 swish 撤掉。
+- **Megido 修正**：之前的 `skill_0070` 其实是 Eiha（咒怨），改为 `skill_0078`（Megido），去掉开头 0.95s 空白。
+- 版本号 0.14.0；sfx 60 个。
