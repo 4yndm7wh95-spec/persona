@@ -536,3 +536,10 @@ Grand.cs 里其余函数暂时保留不用。
 - 调用方的 pitch 对原声只取一半幅度并限制在 0.8~1.25。
 - 试听：`art/sfx_p3r_v0135_audition.m4a`（时间点见同名 .txt）。日志里会打印 `P3R sfx loaded N/31`。
 - 总攻击（All-Out Attack）暂不接：`Grand.AllOutAttack` 是旧草稿、没有任何调用，之后作为独立机制单独做（候选原声 Btl_Allout_Wipe / Snd_FX_Btl_AlloutUI_00 / Allout_Kime01 / Allout_Zoom / Allout_Extermination 都在 art/sfx_p3r/）。
+
+## 待办（v0.13.5 测试反馈，暂不改动）
+
+1. **"抽牌音效"误用**：不少特效（如暴政 Tyranny、既定事项 MakeItSo，能力牌似乎都有）播出一个像抽牌 / 翻牌的声音，与卡牌内容无关。
+   嫌疑：`Snd.TarotReveal` → `Velvet_Tarot_Flip`（通用的掌心翻塔罗 `Extras.TarotFlip`、ThemeFx 多处、Tyranny `Rares.cs` 都用它）；也可能是原版能力牌自带音效。待用户确认后替换。
+2. **人物缩小（BodyScale 0.92）后特效位置需整体复查**：绕身体的特效（能力牌的月亮圆盘 + 时钟环 + 环绕的塔罗小牌、掌心、头顶类特效等）
+   位置 / 尺寸仍按原身高设计。截图里月亮圆盘中心偏左、偏高。计划：锚点统一走 `Makoto.Center/Head/Feet`，贴身特效尺寸 ×0.92，全屏特效不动。
