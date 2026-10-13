@@ -98,8 +98,9 @@ public static class ThemeFx
 	// 门框贴图 512×768（原点 = 门底中心）；开口 x 138–374、y 181–750；楼层指示盘中心 (256,158)
 	private static readonly Rect2 Opening = new(138f - 256f, 181f - 768f, 236f, 569f);
 	private static readonly Vector2 Dial = new(0f, 158f - 768f);
-	// 0.86：门洞 ≈ 569×0.86 ≈ 490px，比结城理（≈428px）高约 15%；门框总高 ≈ 660px，门顶在顶部状态栏下方（之前 0.64 时门洞比人还矮）
-	private const float DoorScale = 0.86f;
+	// 0.80：门洞 ≈ 455px，比结城理（≈428px）略高；门框总高 ≈ 614px、宽 ≈ 410px —— 1080p 下门顶离顶部状态栏还有一段、左边不贴屏幕边
+	// （0.64 时门洞比人矮；0.86 时门顶和左边都贴到了屏幕边缘）
+	private const float DoorScale = 0.80f;
 
 	private sealed class Gate
 	{
@@ -140,7 +141,7 @@ public static class ThemeFx
 			Fx.Animate(_gate!.FrameFlash, 0.3f, t => _gate.FrameFlash.Modulate = new Color(1f, 1f, 1f, 0.6f * (1f - t)));
 			return;
 		}
-		Vector2 floor = Makoto.Feet(caster) + new Vector2(-300f, 0f);      // 门变大后再往左挪一点，不贴着人
+		Vector2 floor = Makoto.Feet(caster) + new Vector2(-255f, 0f);      // 门的右边刚好在人物身后左侧，左边离屏幕边约 35px
 		Gate g = new();
 		g.Root = Fx.Root(back, floor, "P3VelvetGate");
 		g.Root.Scale = Vector2.One * DoorScale;
