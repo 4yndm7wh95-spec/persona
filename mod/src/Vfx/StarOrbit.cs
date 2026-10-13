@@ -19,7 +19,7 @@ namespace P3Makoto.Vfx;
 /// </summary>
 public static class StarOrbit
 {
-	private const int MaxShown = 12;                     // 显示上限（用户确认可以设上限）：超出的仍有获得动画（飞进轨道后并入），右侧显示"×N"总数；外圈布局代码保留，上限调到 >12 即启用
+	private const int MaxShown = 12;                     // 显示上限（用户确认可以设上限）：超出的仍有获得动画（飞进轨道后并入），不显示计数；外圈布局代码保留，上限调到 >12 即启用
 	private const int RingSize = 12;
 	private const float SpinSpeed = 0.55f;               // 轨道角速度（弧度 / 秒）
 
@@ -39,7 +39,6 @@ public static class StarOrbit
 		public float Phase;
 		public readonly List<Card> Quiver = new();       // 星尘：已花掉、等待掷出的牌
 		public float VolleyUntil;
-		public Label? Overflow;                          // 超过 MaxShown 时的"×N"
 		public float NextBirth;                          // 一次获得多颗时逐张凝出（间隔 BirthGap），不叠在同一帧
 		public int LastTotal = -1;                       // 上一帧的真实辉星数（用于超过上限时的获得动画和"+N"）
 	}
@@ -229,7 +228,6 @@ public static class StarOrbit
 			TrackGains(o, total, front);
 			Reconcile(o, stars, front, back);
 			Layout(o, dt, front, back);
-			UpdateOverflow(o, total, front);
 			ThroneSeal.Tick(node, back, front, _time);
 		}
 	}
@@ -423,38 +421,10 @@ public static class StarOrbit
 		return root;
 	}
 
-	/// <summary>超过 MaxShown 颗时，在轨道右侧显示"×N"（总数），每次变化轻轻弹一下。</summary>
-	private static void UpdateOverflow(Orbit o, int total, Control front)
-	{
-		bool show = total > MaxShown;
-		if (!show)
-		{
-			if (o.Overflow != null && GodotObject.IsInstanceValid(o.Overflow))
-			{
-				o.Overflow.QueueFree();
-			}
-			o.Overflow = null;
-			return;
-		}
-		if (o.Overflow == null || !GodotObject.IsInstanceValid(o.Overflow))
-		{
-			o.Overflow = Typo.Text(front, "", Typo.LatinItalic, 34, Pal.Ice, Vector2.Zero, outline: 4, outlineColor: Pal.Abyss);
-			o.Overflow.TopLevel = true;
-		}
-		string text = "×" + total;
-		if (o.Overflow.Text != text)
-		{
-			o.Overflow.Text = text;
-			o.Overflow.Scale = Vector2.One * 1.35f;
-		}
-		o.Overflow.Scale = o.Overflow.Scale.Lerp(Vector2.One, 0.15f);
-		o.Overflow.GlobalPosition = Makoto.Center(o.Creature) + new Vector2(200f, -60f);
-	}
-
 	/// <summary>
 	/// 任何来源的辉星增加都要看得见：
 	/// · 在显示上限以内 —— Reconcile 逐张凝出塔罗牌；
-	/// · 超过上限（轨道已满）—— 每多一颗，仍然从胸口凝出一张牌飞进轨道外圈，到达后化成光点并入，同时"×N"弹一下；
+	/// · 超过上限（轨道已满）—— 每多一颗，仍然从胸口凝出一张牌飞到轨道旁，到达后化成光点并入（不显示计数）；
 	/// 整体克制：不弹数字，只是一张张小牌安静地凝出、加入轨道。
 	/// </summary>
 	private static void TrackGains(Orbit o, int total, Control front)
@@ -503,10 +473,6 @@ public static class StarOrbit
 		{
 			P3Fx.Flash(front, to, Pal.Ice, 50f, 0.12f);
 			card.QueueFree();
-			if (o.Overflow != null && GodotObject.IsInstanceValid(o.Overflow))
-			{
-				o.Overflow.Scale = Vector2.One * 1.4f;
-			}
 		});
 	}
 }

@@ -669,3 +669,4 @@ Grand.cs 里其余函数暂时保留不用。
 - **Shuffle Time（明牌选牌）**（`StageFx.ShuffleIntro / ShufflePick`）：接管原版选牌界面的滑入：牌从中间一摞出发，沿圆弧绕场洗牌、边飞边翻面，依次正面朝上落位（每张 ShuffleTime_CardSet）；
   顶部斜切蓝带「SHUFFLE TIME」滑入；ShuffleTime_Start + Whoosh。选中一张 → 阿卡纳光爆（光柱 + 八道光芒，ShuffleTime_ArcanaBurst），其余牌下沉变暗。sfx 67 个。
 - **选人音效**：原版 regent_select 被静音后选中角色没有即时反馈 → 换成 P3R `Snd_FX_Btl_PersonaAura_00_Cutin`（之后切入演出里仍有召唤器枪声）。
+- 去掉辉星"×N"计数（用户：没必要）；超出上限的获得仍有并入动画。
