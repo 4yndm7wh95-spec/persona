@@ -164,7 +164,10 @@ public static class Pose
 		}
 		if (requested is "attack" or "cast" or "attack_sovereign" && Summon.Remove(id, out ulong until2) && now <= until2)
 		{
-			return FromHolding(state.GetCurrentAnimationName(), "attack_sovereign") ?? "attack_sovereign";
+			string anim = FromHolding(state.GetCurrentAnimationName(), "attack_sovereign") ?? "attack_sovereign";
+			// 上膛：召唤器抵到太阳穴的那一刻"咔嚓"一声（attack_sovereign 在 0.14s 到位；从瞄准接招时枪已经在位）
+			Audio.Sfx.Play(Audio.Snd.Cock, 0.8f, delay: anim == "attack_sovereign" ? 0.12f : 0f);
+			return anim;
 		}
 		return null;
 	}

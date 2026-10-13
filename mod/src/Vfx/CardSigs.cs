@@ -44,7 +44,7 @@ public static class CardSigs
 	private static readonly Dictionary<string, Action<Ctx>> Sigs = new()
 	{
 		// ═════ 攻击：出牌瞬间的"起手" ═════
-		["WroughtInWar"] = c => Motifs.ForgeSpark(c.Front, c.Center + new Vector2(90f, -20f), 0.8f),
+		["WroughtInWar"] = c => { },                       // 锻造火花在真正锻造的那一刻（Motifs.ForgeAtMakoto，跟打铁声同步）
 		["BeatIntoShape"] = c => After(c, 0.12, () => Uniq.BeatIntoShape(c.Front, c.FirstTarget, c.Targets.Count > 0 ? c.Targets[0].GetBottomOfHitbox() : c.Feet)),
 		["HeirloomHammer"] = c => After(c, 0.1, () => Uniq.HeirloomHammer(c.Front, c.FirstTarget, c.Targets.Count > 0 ? c.Targets[0].GetBottomOfHitbox() : c.Feet)),
 		["KnockoutBlow"] = c => After(c, 0.16, () => Motifs.CutIn(c.Front, c.FirstTarget, "ONE MORE!", Pal.Royal)),
@@ -138,8 +138,8 @@ public static class CardSigs
 		["Largesse"] = c => Uniq.Largesse(c.Back, c.Front, c.Head, c.Feet),
 		["Constellation"] = c => Motifs.Constellation(c.Front, c.Above,
 			new[] { new Vector2(-140f, 40f), new Vector2(-40f, -60f), new Vector2(60f, -20f), new Vector2(150f, -90f), new Vector2(110f, 50f) }, Pal.Cyan),
-		["SpoilsOfBattle"] = c => { Motifs.ForgeSpark(c.Front, c.Center + new Vector2(100f, 0f), 0.8f); Motifs.ShuffleTime(c.Front, c.Center, 2, ElementPal.FireMid); },
-		["RefineBlade"] = c => Motifs.ForgeSpark(c.Front, c.Center + new Vector2(110f, -20f), 1.0f),
+		["SpoilsOfBattle"] = c => { Motifs.ShuffleTime(c.Front, c.Center, 2, ElementPal.FireMid); },
+		["RefineBlade"] = c => { },
 		["TheSmith"] = c => Uniq.TheSmith(c.Back, c.Front, c.Center),
 		["SummonForth"] = c => Uniq.SummonForth(c.Back, c.Front, c.Feet),
 		["BigBang"] = c => After(c, 0.3, () => Uniq.BigBang(c.Back, c.Front, c.Above + new Vector2(120f, 0f))),

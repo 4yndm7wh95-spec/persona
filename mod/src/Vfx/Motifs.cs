@@ -528,6 +528,23 @@ public static class Motifs
 	}
 
 	/// <summary>锻造：铁砧火花 —— 白橙星爆 + 火花喷泉 + 青色淬火环。</summary>
+	/// <summary>锻造 / 精炼的那一刻（原版 regent_forge / regent_refine 事件，见 Sfx.ReplaceRegent）：在结城理身前爆一团锻造火花，和打铁声同步。</summary>
+	public static void ForgeAtMakoto(float s = 1f)
+	{
+		if (MegaCrit.Sts2.Core.Nodes.Rooms.NCombatRoom.Instance is not { } room || P3Makoto.Core.Makoto.FxLayer() is not Control front)
+		{
+			return;
+		}
+		foreach (MegaCrit.Sts2.Core.Nodes.Combat.NCreature n in room.CreatureNodes)
+		{
+			if (GodotObject.IsInstanceValid(n) && n.Entity.IsPlayer && P3Makoto.Core.Makoto.Is(n.Entity.Player))
+			{
+				ForgeSpark(front, P3Makoto.Core.Makoto.Center(n) + new Vector2(100f, -20f), 0.8f * s);
+				return;
+			}
+		}
+	}
+
 	public static void ForgeSpark(Control layer, Vector2 at, float s = 1f)
 	{
 		Node2D root = Fx.Root(layer, at, "P3Forge");

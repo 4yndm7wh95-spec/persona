@@ -149,7 +149,7 @@ public static class Uniq
 					P3Fx.SpeedLines(back, hit, gold, 18, 90f, 420f, 0.35f);
 				}
 				Shake(big ? ShakeStrength.Medium : ShakeStrength.Weak);
-				Audio.Sfx.Play(Audio.Snd.StarSpend, 0.65f, pitch: big ? 0.45f : 0.6f + 0.1f * k);
+				Audio.Sfx.Play(Audio.Snd.Anvil, big ? 1.0f : 0.75f, pitch: big ? 0.88f : 1f + 0.04f * k);   // 每一锤：打铁声
 			});
 		}
 
@@ -251,6 +251,7 @@ public static class Uniq
 		Color hot = new(1f, 0.55f, 0.15f);
 		OverheadSmash(front, target, feet, 1.5f, hot, hot, impact =>
 		{
+			Audio.Sfx.Play(Audio.Snd.Anvil, 0.9f, pitch: 0.92f);            // 锻打成形：砸下的那一刻一声打铁
 			Motifs.GroundCrack(front, feet, 1.3f);
 			Node2D sp = Fx.Root(front, impact, "P3BeatSparks");
 			GpuParticles2D e = Fx.Sparks(sp, hot, 55, 260f, 640f, 0.55f, gravity: 1000f, scaleMin: 0.1f, scaleMax: 0.3f,

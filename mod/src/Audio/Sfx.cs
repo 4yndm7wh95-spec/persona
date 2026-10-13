@@ -24,6 +24,8 @@ public enum Snd
 	SkillCutIn,     // 技能名大字切入（Persona 光环切入）
 	Down,           // WEAK! 弹字（v0.13.7 起用暴击冲击声；名字沿用）
 	CardDraw,       // 抽到一张牌（只用于真实抽牌，不用在特效里）
+	Anvil,          // v0.13.11 锻打（合成）：锤子砸在铁砧上 —— 清脆的金属"铛"+ 短促的击打 + 一点火星，不沉
+	Cock,           // v0.13.11 召唤器抵住太阳穴时的"咔嚓"上膛（P3R em0131_gun）
 }
 
 /// <summary>
@@ -79,7 +81,8 @@ public static class Sfx
 		[Snd.Gunshot] = new[] { new[] { ("Snd_FX_Btl_Trigger_00", 0f, 1f) }, new[] { ("Snd_FX_Btl_Trigger_01", 0f, 1f) } },
 		[Snd.Summon] = new[] { new[] { ("Snd_FX_Btl_Trigger_00_Flash", 0f, 0.8f) } },
 		[Snd.TarotReveal] = new[] { new[] { ("Snd_FX_Btl_PersonaAura_00", 0f, 0.6f) } },   // 特效里的"浮现"：Persona 光环（翻牌声只留给真实抽牌）
-		[Snd.CardDraw] = new[] { new[] { ("card_draw", 0f, 1f) } },       // Velvet_Tarot_Flip 原声里有两次翻牌，只截前 0.3 秒（一张）
+		[Snd.CardDraw] = new[] { new[] { ("card_draw", 0f, 1f) } },
+		[Snd.Cock] = new[] { new[] { ("em0131_gun_1", 0f, 0.75f) } },       // Velvet_Tarot_Flip 原声里有两次翻牌，只截前 0.3 秒（一张）
 		[Snd.TarotShatter] = new[] { new[] { ("ShuffleTime_ArcanaBurst", 0f, 0.9f) } },
 		[Snd.StarGain] = new[] { new[] { ("Theurgia_Up", 0f, 0.7f) } },
 		[Snd.StarSpend] = new[] { new[] { ("Sys_Theurgia_Open", 0f, 0.8f) } },
@@ -98,6 +101,7 @@ public static class Sfx
 		Snd.OneMore or Snd.SkillCutIn => Snd.CutIn,
 		Snd.Down => Snd.Weak,
 		Snd.CardDraw => Snd.TarotReveal,
+		Snd.Cock => Snd.Weak,
 		_ => s,
 	};
 
@@ -109,7 +113,7 @@ public static class Sfx
 		[P3Makoto.Vfx.Element.Pierce] = new[] { "atk_hit_stab_1", "atk_hit_stab_2", "atk_hit_stab_3" },
 		[P3Makoto.Vfx.Element.Strike] = new[] { "atk_hit_strike_1", "atk_hit_strike_2", "atk_hit_strike_3" },
 		[P3Makoto.Vfx.Element.Megido] = new[] { "megido_hit" },
-		[P3Makoto.Vfx.Element.Meteor] = new[] { "atk_hit_strike_1", "atk_hit_strike_2", "atk_hit_strike_3" },
+		[P3Makoto.Vfx.Element.Meteor] = new[] { "evt_impact_01" },     // v0.13.11：用户选的 P3R 冲击声（原来的打击声像拳击）
 		[P3Makoto.Vfx.Element.Star] = new[] { "atk_light_1", "atk_light_2", "atk_light_3" },      // P3R skill_0070（推测为 Megido），去掉开头 0.17s 空白
 		[P3Makoto.Vfx.Element.Agi] = new[] { "atk_fire_1", "atk_fire_2", "atk_fire_3" },
 		[P3Makoto.Vfx.Element.Bufu] = new[] { "atk_ice_1", "atk_ice_2", "atk_ice_3" },
@@ -131,7 +135,7 @@ public static class Sfx
 		"wheel_click", "clock_tick", "clock_midnight", "clock_spin", "evt_eft_timespin_01",
 		"em0561_sp_roulette_01", "em0561_sp_roulette_03", "ShuffleTime_Result", "Snd_FX_Btl_Summon_00",
 		"ShuffleTime_PowerUp", "Theurgia_Max", "Snd_FX_Btl_StReflection_00_1", "Snd_FX_Btl_StAbsorption_00_1",
-		"sword_draw_1", "sword_sheath_1", "swish_large_1", "swish_large_2",
+		"swish_large_1", "swish_large_2",
 		"swish_mid_1", "swish_mid_2", "swish_mid_3", "swish_mid_4",
 	};
 
@@ -168,11 +172,13 @@ public static class Sfx
 			case "regent_attack":
 				ClipAny(Swings, 0.7f);
 				break;
-			case "regent_forge":
-				Clip("sword_draw_1", 0.8f);
+			case "regent_forge":                                   // 锻造 / 精炼：合成的打铁声 + 锻造火花，和原版君王之刃的锻造动画同一时刻
+				Play(Snd.Anvil, 0.85f);
+				P3Makoto.Vfx.Motifs.ForgeAtMakoto(1.0f);
 				break;
 			case "regent_refine":
-				Clip("sword_sheath_1", 0.7f);
+				Play(Snd.Anvil, 0.7f, pitch: 1.12f);
+				P3Makoto.Vfx.Motifs.ForgeAtMakoto(0.8f);
 				break;
 		}
 		return false;
@@ -386,6 +392,7 @@ public static class Sfx
 	{
 		Snd.Gunshot => 1.3f,                      // 以前 2.6：削波太重、太亮（重心 7.3kHz）
 		Snd.CutIn or Snd.ThanatosSlash => 2.2f,
+		Snd.Anvil => 1.25f,
 		Snd.Weak or Snd.TarotShatter or Snd.StarSpend or Snd.GlassOnly => 1.1f,   // 玻璃为主的音效几乎不削波：削波产生的高次谐波会让玻璃声刺耳
 		Snd.StarGain or Snd.StarSpend => 1.3f,
 		_ => 1.7f,
@@ -749,6 +756,23 @@ public static class Sfx
 				g.Noise(0, 0.05f, Atk(0.0003f, 0.012f), K(1500), 0.5f, F.Band, 0.2f);
 				g.Warble(0, 0.15f, 300f, 1100f, 22f, 0.25f, t => MathF.Min(t / 0.01f, 1f) * MathF.Exp(-t / 0.06f), 0.05f);
 				AddGlass(g, 0f, 1f, 1f, 15);
+				return g.B;
+			case Snd.Anvil:            // 锤击铁砧：非谐波金属泛音（铁砧常见比例 1 / 1.58 / 2.31 / 2.98 / 3.93）+ 两两轻微失谐产生拍音；
+				                       // 起音是很短的亮噪声"咔"，加一点 200Hz 的击打感（不沉）和几颗高频火星，整体 0.6s 内衰减完
+				g = new Gen(0.75f, 9);
+				g.Snap(0f, 0.55f);
+				g.Noise(0, 0.02f, Atk(0.0002f, 0.004f), K(5200), 0.5f, F.Band, 0.7f);
+				g.Noise(0, 0.05f, Atk(0.0004f, 0.012f), K(1800), 0.7f, F.Band, 0.35f);
+				g.Tone(0, 0.12f, t => 230f * MathF.Exp(-t / 0.02f) + 170f, Atk(0.0008f, 0.03f), 0.22f);
+				foreach ((float r, float a, float d) in new[] { (1f, 1f, 0.32f), (1.58f, 0.6f, 0.24f), (2.31f, 0.45f, 0.18f), (2.98f, 0.3f, 0.12f), (3.93f, 0.18f, 0.08f) })
+				{
+					float f = 1180f * r;
+					g.Tone(0, d * 5f, _ => f, Atk(0.0008f, d), 0.16f * a);
+					g.Tone(0, d * 5f, _ => f * 1.004f, Atk(0.0008f, d * 0.9f), 0.1f * a);
+				}
+				g.Pings(0.01f, 0.25f, 7, 5500f, 9000f, 0.05f);
+				g.Echo(0.07f, 0.18f, 0.5f);
+				g.Lowpass(11000f);
 				return g.B;
 			case Snd.ThanatosSlash:    // 塔纳托斯斩击：涌起的低沉风声 → 巨响 + 金属刮擦 + 低沉下坠颤音 + 不协和低音 → 长回声
 				g = new Gen(2.0f, 8);
