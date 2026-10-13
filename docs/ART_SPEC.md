@@ -670,3 +670,4 @@ Grand.cs 里其余函数暂时保留不用。
   顶部斜切蓝带「SHUFFLE TIME」滑入；ShuffleTime_Start + Whoosh。选中一张 → 阿卡纳光爆（光柱 + 八道光芒，ShuffleTime_ArcanaBurst），其余牌下沉变暗。sfx 67 个。
 - **选人音效**：原版 regent_select 被静音后选中角色没有即时反馈 → 换成 P3R `Snd_FX_Btl_PersonaAura_00_Cutin`（之后切入演出里仍有召唤器枪声）。
 - 去掉辉星"×N"计数（用户：没必要）；超出上限的获得仍有并入动画。
+- **流星雨 / 彗星音效**：原来的 swish 破空声像风声 → P3R「明けの明星」（Morning Star，skill_0082）：流星雨用第 3 段（连串坠落冲击），彗星用第 2 段。试听 `art/meteor_compare.mp3`。sfx 69 个。

@@ -263,10 +263,8 @@ public static class Motifs
 	/// <summary>流星群：count 颗陨石错落砸向各个目标。</summary>
 	public static void MeteorRain(Control layer, Vector2[] targets, int count, Color tint, float s = 1f)
 	{
-		for (int i = 0; i < count; i += 3)
-		{
-			Audio.Sfx.ClipAny(new[] { "swish_large_1", "swish_large_2" }, 0.55f, 0.07f * i);   // 每三颗一声破空（命中音由 Element.Meteor 负责）
-		}
+		// P3R「明けの明星」（Morning Star，skill_0082 第 3 段）：一连串坠落 + 冲击（原来的 swish 破空声像风声）
+		Audio.Sfx.Clip("morning_star_rain", 0.85f);
 		for (int i = 0; i < count; i++)
 		{
 			Vector2 t = targets[i % targets.Length] + new Vector2(Fx.Rand(-90f, 90f), Fx.Rand(-60f, 60f));
@@ -277,7 +275,7 @@ public static class Motifs
 	/// <summary>巨型彗星：从屏幕左上角横越到目标，尾巴极长。</summary>
 	public static void Comet(Control layer, Vector2 at, Color tint, float s = 1f)
 	{
-		Audio.Sfx.Clip("swish_large_2", 0.9f, pitch: 0.8f);
+		Audio.Sfx.Clip("morning_star_fall", 0.9f);              // P3R「明けの明星」第 2 段：单颗巨大陨星坠落
 		Vector2 size = layer.GetViewportRect().Size;
 		Vector2 from = new(-200f, size.Y * 0.05f);
 		Node2D head = Fx.Root(layer, from, "P3Comet");
