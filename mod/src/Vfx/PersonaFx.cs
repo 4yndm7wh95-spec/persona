@@ -23,15 +23,20 @@ public static class PersonaFx
 	private const string Thanatos = "res://p3makoto/persona/thanatos_skel_data.tres";
 	private const float FigureHeight = 1440f;          // 立绘在骨骼单位下的高度（原图像素）
 	public const float SovereignWait = 0.92f;          // 君王之刃：出牌 → 伤害结算（普通速度）
+	public const float VorpalWait = 2.0f;              // 追踪之刃生效时（空间杀法，群体）：出牌 → 伤害结算，多出约 1s 给"割裂空间"
 	private const float SlashInAttack = 0.18f;         // attack 动画里 slash 事件的时刻
 
 	/// <summary>当前速度设置下，出牌到伤害结算的秒数（与 CreatureCmd.TriggerAnim 的等待规则一致）。</summary>
-	public static float DamageDelay() => SaveManager.Instance?.PrefsSave.FastMode switch
+	public static float DamageDelay(bool vorpal = false) => SaveManager.Instance?.PrefsSave.FastMode switch
 	{
-		FastModeType.Fast => Mathf.Min(SovereignWait * 0.5f, 0.25f),
+		FastModeType.Fast => Mathf.Min((vorpal ? VorpalWait : SovereignWait) * 0.5f, 0.25f),   // 与游戏的快速模式等待规则一致
 		FastModeType.Instant => 0f,
-		_ => SovereignWait,
+		_ => vorpal ? VorpalWait : SovereignWait,
 	};
+
+	/// <summary>追踪之刃生效中：君王之刃改为群体 → 演出换成空间杀法。</summary>
+	public static bool IsVorpal(NCreature caster) =>
+		caster.Entity?.HasPower<MegaCrit.Sts2.Core.Models.Powers.SeekingEdgePower>() == true;
 
 	/// <summary>elapsed：从出牌到现在（扣扳机那一刻）已经过去的秒数，用来对齐伤害结算时刻。</summary>
 	public static void SummonThanatos(NCreature caster, NCreature? target, float elapsed = 0f)
@@ -72,11 +77,33 @@ public static class PersonaFx
 		Fx.Sparks(motes, Pal.DarkHour, 60, 160f, 520f, 0.8f, gravity: -80f);
 		Fx.FreeAfter(motes, 1.2);
 
-		float attackAt = Mathf.Max(DamageDelay() - SlashInAttack - elapsed, 0.05f);
+		bool vorpal = IsVorpal(caster);
+		float release = DamageDelay(vorpal) - elapsed;
+		float attackAt = Mathf.Max(release - SlashInAttack, 0.05f);
 		Vector2 strikeAt = target != null && GodotObject.IsInstanceValid(target)
 			? target.VfxSpawnPosition + new Vector2(-height * 0.42f, -height * 0.32f)
 			: home + new Vector2(height * 0.6f, 0f);
 		Play(glow, attackAt, null);
+		if (vorpal)
+		{
+			// 空间杀法：Persona 不冲刺，原地挥剑；全屏"割裂空间"对准伤害结算（Vorpal.Play）
+			Play(body, attackAt, null);
+			var centers = new System.Collections.Generic.List<Vector2>();
+			if (MegaCrit.Sts2.Core.Nodes.Rooms.NCombatRoom.Instance is { } room)
+			{
+				foreach (NCreature n in room.CreatureNodes)
+				{
+					if (GodotObject.IsInstanceValid(n) && !n.Entity.IsPlayer && n.Entity.IsAlive)
+					{
+						centers.Add(n.VfxSpawnPosition);
+					}
+				}
+			}
+			Vorpal.Play(front, centers, Mathf.Max(release, 0.4f));
+			Fx.After(root, attackAt, "vorpal persona", () => Audio.Sfx.Play(Audio.Snd.ThanatosSlash, 0.9f));
+			Fx.FreeAfter(root, attackAt + 1.6f);
+			return;
+		}
 		Play(body, attackAt, () => OnSlash(front, target, height));
 
 		// 冲刺：在 attack 开始时冲到敌人面前（0.16s），沿途速度线；斩完停留，dismiss 时往回退

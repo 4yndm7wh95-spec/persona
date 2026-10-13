@@ -137,7 +137,7 @@ public static class SovereignTimingPatch
 		}
 		if (triggerName == "sovereignBladeTrigger")
 		{
-			waitTime = Vfx.PersonaFx.SovereignWait;
+			waitTime = creature.HasPower<MegaCrit.Sts2.Core.Models.Powers.SeekingEdgePower>() ? Vfx.PersonaFx.VorpalWait : Vfx.PersonaFx.SovereignWait;
 		}
 		// 召唤牌改播"召唤开枪"（~0.42s 扣扳机 → 横幅碎裂、Persona 现身）：伤害 / 效果等到开枪、Persona 现身之后
 		else if (triggerName is "Attack" or "Cast" && Makoto.Node(creature.Player) is NCreature node && Pose.HasSummon(node))
