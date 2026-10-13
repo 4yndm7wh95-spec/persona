@@ -1,0 +1,473 @@
+{
+  "status": "review_only_not_approved",
+  "normalization": "Full generated canvas resized to2048x2048; no repositioning, cropping or source-pixel restoration performed.",
+  "assembly_order": [
+    "hair_back",
+    "leg_l_lower",
+    "leg_l_upper",
+    "arm_l_upper",
+    "arm_l_lower",
+    "hand_l_open",
+    "coat_tail_back",
+    "leg_r_lower",
+    "leg_r_upper",
+    "hips",
+    "holster",
+    "evoker_holstered",
+    "torso",
+    "coat_tail_front",
+    "arm_r_pocket",
+    "head",
+    "eye_open",
+    "mouth_neutral",
+    "headphones",
+    "hair_front"
+  ],
+  "fallback_parts": [
+    "arm_r_pocket",
+    "mouth_neutral",
+    "headphones"
+  ],
+  "files": [
+    {
+      "file": "head.png",
+      "status": "review_only_not_approved",
+      "native_canvas": [
+        1254,
+        1254
+      ],
+      "saved_canvas": [
+        2048,
+        2048
+      ],
+      "native_visible_bounds_alpha_ge_32": [
+        381,
+        432,
+        892,
+        905
+      ],
+      "redrawn_after_review": true,
+      "original_input": "../parts/head.png",
+      "pixel_preservation_verified": false,
+      "alignment_verified": false
+    },
+    {
+      "file": "hair_front.png",
+      "status": "review_only_not_approved",
+      "native_canvas": [
+        1254,
+        1254
+      ],
+      "saved_canvas": [
+        2048,
+        2048
+      ],
+      "native_visible_bounds_alpha_ge_32": [
+        85,
+        161,
+        1170,
+        1054
+      ],
+      "redrawn_after_review": false,
+      "original_input": "../parts/hair_front.png",
+      "pixel_preservation_verified": false,
+      "alignment_verified": false
+    },
+    {
+      "file": "hair_back.png",
+      "status": "review_only_not_approved",
+      "native_canvas": [
+        1254,
+        1254
+      ],
+      "saved_canvas": [
+        2048,
+        2048
+      ],
+      "native_visible_bounds_alpha_ge_32": [
+        360,
+        152,
+        851,
+        632
+      ],
+      "redrawn_after_review": false,
+      "original_input": "../parts/hair_back.png",
+      "pixel_preservation_verified": false,
+      "alignment_verified": false
+    },
+    {
+      "file": "eye_open.png",
+      "status": "review_only_not_approved",
+      "native_canvas": [
+        1254,
+        1254
+      ],
+      "saved_canvas": [
+        2048,
+        2048
+      ],
+      "native_visible_bounds_alpha_ge_32": [
+        654,
+        483,
+        960,
+        800
+      ],
+      "redrawn_after_review": true,
+      "original_input": "../parts/eye_open.png",
+      "pixel_preservation_verified": false,
+      "alignment_verified": false
+    },
+    {
+      "file": "eye_sharp.png",
+      "status": "review_only_not_approved",
+      "native_canvas": [
+        1254,
+        1254
+      ],
+      "saved_canvas": [
+        2048,
+        2048
+      ],
+      "native_visible_bounds_alpha_ge_32": [
+        723,
+        386,
+        836,
+        506
+      ],
+      "redrawn_after_review": true,
+      "original_input": "../parts/eye_sharp.png",
+      "pixel_preservation_verified": false,
+      "alignment_verified": false
+    },
+    {
+      "file": "torso.png",
+      "status": "review_only_not_approved",
+      "native_canvas": [
+        1254,
+        1254
+      ],
+      "saved_canvas": [
+        2048,
+        2048
+      ],
+      "native_visible_bounds_alpha_ge_32": [
+        326,
+        382,
+        941,
+        991
+      ],
+      "redrawn_after_review": true,
+      "original_input": "../parts/torso.png",
+      "pixel_preservation_verified": false,
+      "alignment_verified": false
+    },
+    {
+      "file": "hips.png",
+      "status": "review_only_not_approved",
+      "native_canvas": [
+        1254,
+        1254
+      ],
+      "saved_canvas": [
+        2048,
+        2048
+      ],
+      "native_visible_bounds_alpha_ge_32": [
+        335,
+        661,
+        979,
+        1096
+      ],
+      "redrawn_after_review": false,
+      "original_input": "../parts/hips.png",
+      "pixel_preservation_verified": false,
+      "alignment_verified": false
+    },
+    {
+      "file": "holster.png",
+      "status": "review_only_not_approved",
+      "native_canvas": [
+        1254,
+        1254
+      ],
+      "saved_canvas": [
+        2048,
+        2048
+      ],
+      "native_visible_bounds_alpha_ge_32": [
+        539,
+        631,
+        748,
+        988
+      ],
+      "redrawn_after_review": false,
+      "original_input": "../parts/holster.png",
+      "pixel_preservation_verified": false,
+      "alignment_verified": false
+    },
+    {
+      "file": "evoker_holstered.png",
+      "status": "review_only_not_approved",
+      "native_canvas": [
+        1254,
+        1254
+      ],
+      "saved_canvas": [
+        2048,
+        2048
+      ],
+      "native_visible_bounds_alpha_ge_32": [
+        525,
+        753,
+        621,
+        846
+      ],
+      "redrawn_after_review": false,
+      "original_input": "../parts/evoker_holstered.png",
+      "pixel_preservation_verified": false,
+      "alignment_verified": false
+    },
+    {
+      "file": "leg_l_upper.png",
+      "status": "review_only_not_approved",
+      "native_canvas": [
+        1254,
+        1254
+      ],
+      "saved_canvas": [
+        2048,
+        2048
+      ],
+      "native_visible_bounds_alpha_ge_32": [
+        491,
+        550,
+        805,
+        1089
+      ],
+      "redrawn_after_review": true,
+      "original_input": "../parts/leg_l_upper.png",
+      "pixel_preservation_verified": false,
+      "alignment_verified": false
+    },
+    {
+      "file": "leg_r_upper.png",
+      "status": "review_only_not_approved",
+      "native_canvas": [
+        1254,
+        1254
+      ],
+      "saved_canvas": [
+        2048,
+        2048
+      ],
+      "native_visible_bounds_alpha_ge_32": [
+        567,
+        518,
+        807,
+        1102
+      ],
+      "redrawn_after_review": true,
+      "original_input": "../parts/leg_r_upper.png",
+      "pixel_preservation_verified": false,
+      "alignment_verified": false
+    },
+    {
+      "file": "leg_l_lower.png",
+      "status": "review_only_not_approved",
+      "native_canvas": [
+        1254,
+        1254
+      ],
+      "saved_canvas": [
+        2048,
+        2048
+      ],
+      "native_visible_bounds_alpha_ge_32": [
+        473,
+        567,
+        705,
+        1166
+      ],
+      "redrawn_after_review": true,
+      "original_input": "../parts/leg_l_lower.png",
+      "pixel_preservation_verified": false,
+      "alignment_verified": false
+    },
+    {
+      "file": "leg_r_lower.png",
+      "status": "review_only_not_approved",
+      "native_canvas": [
+        1254,
+        1254
+      ],
+      "saved_canvas": [
+        2048,
+        2048
+      ],
+      "native_visible_bounds_alpha_ge_32": [
+        647,
+        701,
+        916,
+        1111
+      ],
+      "redrawn_after_review": false,
+      "original_input": "../parts/leg_r_lower.png",
+      "pixel_preservation_verified": false,
+      "alignment_verified": false
+    },
+    {
+      "file": "arm_l_upper.png",
+      "status": "review_only_not_approved",
+      "native_canvas": [
+        1254,
+        1254
+      ],
+      "saved_canvas": [
+        2048,
+        2048
+      ],
+      "native_visible_bounds_alpha_ge_32": [
+        437,
+        571,
+        623,
+        918
+      ],
+      "redrawn_after_review": false,
+      "original_input": "../parts/arm_l_upper.png",
+      "pixel_preservation_verified": false,
+      "alignment_verified": false
+    },
+    {
+      "file": "arm_l_lower.png",
+      "status": "review_only_not_approved",
+      "native_canvas": [
+        1254,
+        1254
+      ],
+      "saved_canvas": [
+        2048,
+        2048
+      ],
+      "native_visible_bounds_alpha_ge_32": [
+        428,
+        550,
+        644,
+        993
+      ],
+      "redrawn_after_review": false,
+      "original_input": "../parts/arm_l_lower.png",
+      "pixel_preservation_verified": false,
+      "alignment_verified": false
+    },
+    {
+      "file": "hand_l_open.png",
+      "status": "review_only_not_approved",
+      "native_canvas": [
+        1254,
+        1254
+      ],
+      "saved_canvas": [
+        2048,
+        2048
+      ],
+      "native_visible_bounds_alpha_ge_32": [
+        442,
+        827,
+        573,
+        1000
+      ],
+      "redrawn_after_review": false,
+      "original_input": "../parts/hand_l_open.png",
+      "pixel_preservation_verified": false,
+      "alignment_verified": false
+    },
+    {
+      "file": "arm_r_upper.png",
+      "status": "review_only_not_approved",
+      "native_canvas": [
+        1254,
+        1254
+      ],
+      "saved_canvas": [
+        2048,
+        2048
+      ],
+      "native_visible_bounds_alpha_ge_32": [
+        583,
+        313,
+        888,
+        869
+      ],
+      "redrawn_after_review": false,
+      "original_input": "../parts/arm_r_upper.png",
+      "pixel_preservation_verified": false,
+      "alignment_verified": false
+    },
+    {
+      "file": "arm_r_lower.png",
+      "status": "review_only_not_approved",
+      "native_canvas": [
+        1254,
+        1254
+      ],
+      "saved_canvas": [
+        2048,
+        2048
+      ],
+      "native_visible_bounds_alpha_ge_32": [
+        712,
+        669,
+        880,
+        960
+      ],
+      "redrawn_after_review": false,
+      "original_input": "../parts/arm_r_lower.png",
+      "pixel_preservation_verified": false,
+      "alignment_verified": false
+    },
+    {
+      "file": "coat_tail_back.png",
+      "status": "review_only_not_approved",
+      "native_canvas": [
+        1254,
+        1254
+      ],
+      "saved_canvas": [
+        2048,
+        2048
+      ],
+      "native_visible_bounds_alpha_ge_32": [
+        459,
+        728,
+        600,
+        846
+      ],
+      "redrawn_after_review": true,
+      "original_input": "../parts/coat_tail_back.png",
+      "pixel_preservation_verified": false,
+      "alignment_verified": false
+    },
+    {
+      "file": "coat_tail_front.png",
+      "status": "review_only_not_approved",
+      "native_canvas": [
+        1254,
+        1254
+      ],
+      "saved_canvas": [
+        2048,
+        2048
+      ],
+      "native_visible_bounds_alpha_ge_32": [
+        482,
+        732,
+        809,
+        927
+      ],
+      "redrawn_after_review": false,
+      "original_input": "../parts/coat_tail_front.png",
+      "pixel_preservation_verified": false,
+      "alignment_verified": false
+    }
+  ]
+}
