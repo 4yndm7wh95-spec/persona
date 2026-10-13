@@ -666,3 +666,5 @@ Grand.cs 里其余函数暂时保留不用。
 - **总攻击**（`Vfx/AllOut.cs`、`AllOutPatch`）：精英 / Boss 战胜利时，在 AfterCombatEnd 后插入 3.75s：横幅「ALL-OUT ATTACK 总攻击」→ 同心圆光圈转场 → 乱斗烟云（四芒星、斩击线）→ 全屏白 →
   敌人位置黑红墨点 + 红色斩线 → 结束立绘（青底 + 巨大圆环 + DONE AND DUSTED. + MAJESTIC，最后褪成黑白）→ 原有胜利结算。
   音效：AlloutUI_00 / Btl_Allout_Wipe / Extermination（截 1.5s）/ Kime01。结束立绘暂用 victory_portrait，等 art/v13/finish。
+- **Shuffle Time（明牌选牌）**（`StageFx.ShuffleIntro / ShufflePick`）：接管原版选牌界面的滑入：牌从中间一摞出发，沿圆弧绕场洗牌、边飞边翻面，依次正面朝上落位（每张 ShuffleTime_CardSet）；
+  顶部斜切蓝带「SHUFFLE TIME」滑入；ShuffleTime_Start + Whoosh。选中一张 → 阿卡纳光爆（光柱 + 八道光芒，ShuffleTime_ArcanaBurst），其余牌下沉变暗。sfx 67 个。

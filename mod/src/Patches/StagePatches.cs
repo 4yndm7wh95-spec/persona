@@ -116,17 +116,39 @@ public static class RewardBackdropPatch
 	{
 		ModEntry.Safe("reward backdrop", () =>
 		{
-			if (!Stage.MakotoRun || __instance.GetNodeOrNull("P3RewardBackdrop") != null)
+			if (!Stage.MakotoRun || Traverse.Create(__instance).Field("_cardRow").GetValue() is not Control row)
 			{
 				return;
 			}
-			if (Traverse.Create(__instance).Field("_cardRow").GetValue() is not Control row)
+			// v0.14.1：P3R Shuffle Time（明牌）—— 每次打开 / 重抽都播洗牌入场（接管原版的滑入 Tween）
+			if (Traverse.Create(__instance).Field("_cardTween").GetValue() is Tween vanillaTween)
+			{
+				vanillaTween.Kill();
+			}
+			StageFx.ShuffleIntro(__instance, row);
+			if (__instance.GetNodeOrNull("P3RewardBackdrop") != null)
 			{
 				return;
 			}
 			Vector2 center = row.GetGlobalRect().GetCenter();
 			StageFx.RewardBackdrop(__instance, center, () =>
 				row.GetChildren().OfType<Control>().Select(c => c.GetGlobalRect().GetCenter()).ToArray());
+		});
+	}
+}
+
+/// <summary>Shuffle Time：选中一张牌 → 那张牌爆出阿卡纳光（ShuffleTime_ArcanaBurst），其余的牌轻轻沉下去。</summary>
+[HarmonyPatch(typeof(NCardRewardSelectionScreen), "SelectCard")]
+public static class RewardPickPatch
+{
+	public static void Prefix(NCardRewardSelectionScreen __instance, MegaCrit.Sts2.Core.Nodes.Cards.Holders.NCardHolder cardHolder)
+	{
+		ModEntry.Safe("reward pick", () =>
+		{
+			if (Stage.MakotoRun)
+			{
+				StageFx.ShufflePick(__instance, cardHolder);
+			}
 		});
 	}
 }

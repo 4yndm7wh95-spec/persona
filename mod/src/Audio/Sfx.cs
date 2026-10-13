@@ -131,7 +131,8 @@ public static class Sfx
 	/// </summary>
 	private static readonly string[] Clips =
 	{
-		"vorpal_blade", "wheel_click", "clock_tick", "clock_midnight", "clock_spin", "evt_eft_timespin_01",
+		"vorpal_blade", "Snd_FX_Btl_AlloutUI_00", "Btl_Allout_Wipe", "allout_brawl", "Snd_FX_Btl_Allout_Kime01",
+		"ShuffleTime_Start", "ShuffleTime_Whoosh", "ShuffleTime_CardSet", "wheel_click", "clock_tick", "clock_midnight", "clock_spin", "evt_eft_timespin_01",
 		"em0561_sp_roulette_01", "em0561_sp_roulette_03", "ShuffleTime_Result", "Snd_FX_Btl_Summon_00",
 		"ShuffleTime_PowerUp", "Theurgia_Max", "Snd_FX_Btl_StReflection_00_1", "Snd_FX_Btl_StAbsorption_00_1",
 		"swish_large_1", "swish_large_2",

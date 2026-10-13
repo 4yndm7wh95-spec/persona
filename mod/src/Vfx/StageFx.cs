@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Godot;
 
 namespace P3Makoto.Vfx;
@@ -333,5 +334,117 @@ public static class StageFx
 				});
 			}
 		});
+	}
+
+	/// <summary>
+	/// P3R Shuffle Time（明牌版，v0.14.1）：
+	/// 牌先在中间叠成一摞（侧面朝前、看不清牌面），随后沿圆弧绕场洗牌飞散（边飞边翻面），依次落到原版的位置、正面朝上，
+	/// 每落一张"嗒"一声（ShuffleTime_CardSet）；顶部斜切蓝带上的「SHUFFLE TIME」大字同时滑入。
+	/// </summary>
+	public static void ShuffleIntro(Control screen, Control row)
+	{
+		var holders = row.GetChildren().OfType<Control>().ToList();
+		int n = holders.Count;
+		if (n == 0)
+		{
+			return;
+		}
+		Audio.Sfx.Clip("ShuffleTime_Start", 0.8f);
+		Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.7f, 0.2f);
+		ShuffleTitle(screen);
+		float spacing = 350f;
+		Vector2 origin = Vector2.Left * (n - 1) * spacing * 0.5f;
+		for (int i = 0; i < n; i++)
+		{
+			Control h = holders[i];
+			Vector2 final = origin + Vector2.Right * spacing * i;
+			Vector2 baseScale = h.Scale;
+			float delay = 0.08f * i;
+			float dir = i % 2 == 0 ? 1f : -1f;
+			h.Position = Vector2.Zero;
+			h.Modulate = new Color(1f, 1f, 1f, 0f);
+			int idx = i;
+			Fx.Animate(h, 0.95f + delay, t =>
+			{
+				if (!GodotObject.IsInstanceValid(h)) return;
+				float time = t * (0.95f + delay) - delay;
+				if (time < 0f) { h.Modulate = new Color(1f, 1f, 1f, 0f); return; }
+				float u = Mathf.Clamp(time / 0.95f, 0f, 1f);
+				float e = Ease.OutCubic(u);
+				// 圆弧洗牌：从中心出发，绕一个大圈（越来越小）再落到最终位置
+				float ang = dir * (1f - e) * Mathf.Pi * 1.6f + idx;
+				float rad = 260f * Mathf.Sin(Mathf.Pi * Mathf.Min(u * 1.15f, 1f));
+				h.Position = final * e + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang) * 0.45f) * rad;
+				// 翻面：前 60% 侧面翻转（看不清牌面），之后转正
+				float flip = u < 0.6f ? Mathf.Abs(Mathf.Cos(u / 0.6f * Mathf.Pi * 2.5f)) * 0.8f + 0.05f : Mathf.Lerp(0.85f, 1f, Ease.OutBack((u - 0.6f) / 0.4f));
+				h.Scale = new Vector2(baseScale.X * flip, baseScale.Y);
+				h.Rotation = (1f - e) * dir * 0.5f;
+				h.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.12f, 0f, 1f));
+			});
+			Fx.After(h, 0.95f + delay, "shuffle land", () =>
+			{
+				if (!GodotObject.IsInstanceValid(h)) return;
+				h.Position = final;
+				h.Scale = baseScale;
+				h.Rotation = 0f;
+				h.Modulate = Colors.White;
+				Audio.Sfx.Clip("ShuffleTime_CardSet", 0.55f);
+			});
+		}
+	}
+
+	private static void ShuffleTitle(Control screen)
+	{
+		screen.GetNodeOrNull("P3ShuffleTitle")?.QueueFree();
+		Vector2 size = screen.GetViewportRect().Size;
+		Node2D root = new() { Name = "P3ShuffleTitle" };
+		screen.AddChild(root);
+		root.GlobalPosition = new Vector2(0f, size.Y * 0.07f);
+		Node2D band = new() { Rotation = -0.05f };
+		root.AddChild(band);
+		P3Ui.Slab(band, -100f, size.X * 0.62f, 0f, size.Y * 0.11f, 26f, new Color(0.04f, 0.2f, 0.75f, 0.92f));
+		P3Ui.Slab(band, -100f, size.X * 0.62f, size.Y * 0.11f - 5f, size.Y * 0.11f, 26f, Pal.Cyan);
+		Typo.Text(band, "SHUFFLE TIME", Typo.LatinItalic, (int)(size.Y * 0.09f), Pal.White, new Vector2(size.X * 0.06f, -size.Y * 0.005f), outline: 5, outlineColor: new Color(0.02f, 0.06f, 0.25f));
+		Fx.Animate(root, 0.4f, t =>
+		{
+			root.GlobalPosition = new Vector2(-size.X * 0.7f * (1f - Ease.OutExpo(t)), size.Y * 0.07f);
+		});
+	}
+
+	/// <summary>Shuffle Time 选中：阿卡纳爆发（光柱 + 玻璃碎片 + 闪光），其余的牌下沉变暗。</summary>
+	public static void ShufflePick(Control screen, Control picked)
+	{
+		Audio.Sfx.Clip("ShuffleTime_ArcanaBurst", 0.9f);
+		Vector2 at = picked.GetGlobalRect().GetCenter();
+		Node2D root = new() { Name = "P3ShufflePick" };
+		screen.AddChild(root);
+		root.TopLevel = true;
+		root.GlobalPosition = at;
+		root.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(Pal.Ice, 0.9f), Scale = new Vector2(4f, 9f) });
+		for (int i = 0; i < 8; i++)
+		{
+			Vector2 d = Vector2.Up.Rotated(Mathf.Tau * i / 8f);
+			Fx.Stroke(root, new[] { d * 60f, d * (i % 2 == 0 ? 320f : 200f) }, new Color(Pal.White, 0.9f), i % 2 == 0 ? 6f : 3f);
+		}
+		Fx.Animate(root, 0.45f, t =>
+		{
+			root.Scale = Vector2.One * (0.6f + 0.6f * Ease.OutExpo(t));
+			root.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(t));
+		});
+		Fx.FreeAfter(root, 0.47);
+		if (picked.GetParent() is Control row)
+		{
+			foreach (Control other in row.GetChildren().OfType<Control>())
+			{
+				if (other == picked) continue;
+				Vector2 p0 = other.Position;
+				Fx.Animate(other, 0.3f, t =>
+				{
+					if (!GodotObject.IsInstanceValid(other)) return;
+					other.Position = p0 + new Vector2(0f, 40f * Ease.InCubic(t));
+					other.Modulate = new Color(1f - 0.5f * t, 1f - 0.5f * t, 1f - 0.4f * t, 1f - 0.6f * t);
+				});
+			}
+		}
 	}
 }
