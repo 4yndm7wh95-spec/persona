@@ -708,8 +708,20 @@ public static class Grand
 		Vector2[] tri = { new(-14f * s, -r - 30f * s), new(14f * s, -r - 30f * s), new(0f, -r + 12f * s) };
 		Fx.Poly(pointer, tri, Pal.White);
 		Fx.Line(pointer, tri, Pal.Cyan, 2f, closed: true, additive: false);
-		// 停下后亮起的顶端扇区
-		Polygon2D win = Fx.Poly(root, Sector(r * 0.35f, r, -Mathf.Tau / 16f, Mathf.Tau / 16f, 10), new Color(tint, 0f), additive: true);
+		// 结果（v0.13.10）：每次随机停在一格；落点在格内随机偏移（不压线）；三种停法 —— 干脆停下 / 差一点停在前一格、又慢慢挤进来 / 冲过头被弹回
+		int result = Fx.Rng.Next(8);
+		float jitter = Fx.Rand(-0.3f, 0.3f);
+		int mode = Fx.Rng.Next(10) switch { < 4 => 0, < 7 => 1, _ => 2 };
+		const float sectorA = Mathf.Tau / 8f;
+		float finalAngle = (Fx.Rng.Next(2) + 3) * Mathf.Tau + (Mathf.Tau - (result + 0.5f + jitter) * sectorA);
+		float preAngle = mode switch
+		{
+			1 => finalAngle - (0.5f - jitter + 0.35f) * sectorA,     // 停在边线前（上一格里），随后挤过边线
+			2 => finalAngle + (0.5f + jitter + 0.3f) * sectorA,      // 冲进下一格，再被弹回
+			_ => finalAngle,
+		};
+		// 停下后亮起的扇区：画在转盘上（跟着落点那一格），不是固定在顶端
+		Polygon2D win = Fx.Poly(wheel, Sector(r * 0.35f, r, sectorA * result, sectorA * (result + 1), 10), new Color(tint, 0f), additive: true);
 		// 底部小标签
 		Typo.Text(root, "X  WHEEL OF FORTUNE", Typo.LatinItalic, (int)(18 * s), new Color(Pal.Ice, 0.85f), new Vector2(-r, r * 1.22f), HorizontalAlignment.Center).Size = new Vector2(r * 2f, 24f);
 
@@ -717,7 +729,7 @@ public static class Grand
 		P3Fx.Shockwave(layer, at, Pal.Ice, r * 2.6f, 0.4f);
 
 		const float total = 1.75f, stopAt = 1.15f;
-		float spins = 4.25f;
+		float mainEnd = mode == 0 ? stopAt : 0.9f;
 		float lastTick = 0f;
 		float lastAngle = 0f;
 		float lastClick = -1f, clickTick = 0f;
@@ -726,8 +738,18 @@ public static class Grand
 		Fx.Animate(root, total, t =>
 		{
 			float time = t * total;
-			float spin = Ease.OutCubic(Mathf.Clamp(time / stopAt, 0f, 1f));
-			float angle = spin * spins * Mathf.Tau;
+			float angle;
+			if (time < mainEnd)
+			{
+				angle = preAngle * Ease.OutCubic(time / mainEnd);
+			}
+			else
+			{
+				// 收尾 0.25s：挤进（先停顿一下再慢慢过线）或弹回（回弹带一点过冲）
+				float u = Mathf.Clamp((time - mainEnd) / (stopAt - mainEnd), 0f, 1f);
+				float k = mode == 1 ? Ease.InOutCubic(Mathf.Clamp((u - 0.25f) / 0.75f, 0f, 1f)) : Ease.OutBack(u);
+				angle = Mathf.Lerp(preAngle, finalAngle, k);
+			}
 			float speed = Mathf.Abs(angle - lastAngle);
 			lastAngle = angle;
 			wheel.Rotation = angle;
@@ -778,6 +800,7 @@ public static class Grand
 		Fx.After(root, stopAt, "fortune stop", () =>
 		{
 			Audio.Sfx.Clip("em0561_sp_roulette_03", 1.0f);           // 停下：重重一"咔"
+			ResultBanner(layer, at + new Vector2(0f, -r * 1.42f), result, tint, s);
 			Vector2 top = at + new Vector2(0f, -r * 0.65f);
 			pointer.Rotation = -0.3f;
 			P3Fx.Flash(layer, top, tint, 260f * s, 0.25f);
@@ -816,6 +839,34 @@ public static class Grand
 				Fx.FreeAfter(sp, 0.7);
 				Audio.Sfx.Play(Audio.Snd.StarGain, 1.0f);
 			});
+		});
+		Fx.FreeAfter(root, total + 0.05);
+	}
+
+	private static readonly string[] WheelArcana = { "MAGICIAN", "PRIESTESS", "EMPRESS", "EMPEROR", "HIEROPHANT", "LOVERS", "CHARIOT", "JUSTICE" };
+	private static readonly string[] WheelNumerals = { "I", "II", "III", "IV", "V", "VI", "VII", "VIII" };
+
+	/// <summary>命运之轮的结果横幅：转盘上方斜切色带 + "VII · CHARIOT"，从左边滑入、停一下、往右滑出。</summary>
+	private static void ResultBanner(Control layer, Vector2 at, int result, Color tint, float s)
+	{
+		Node2D root = Fx.Root(layer, at, "P3FortuneResult");
+		root.Skew = -0.25f;
+		string text = WheelNumerals[result] + "  ·  " + WheelArcana[result];
+		int fs = (int)(30 * s);
+		float w = text.Length * fs * 0.58f + 50f * s, h = fs * 1.35f;
+		Fx.Poly(root, new[] { new Vector2(-w / 2f, -h / 2f), new Vector2(w / 2f, -h / 2f), new Vector2(w / 2f - 14f, h / 2f), new Vector2(-w / 2f - 14f, h / 2f) }, new Color(Pal.Abyss, 0.92f));
+		Fx.Poly(root, new[] { new Vector2(-w / 2f, -h / 2f), new Vector2(w / 2f, -h / 2f), new Vector2(w / 2f - 1f, -h / 2f + 4f), new Vector2(-w / 2f - 1f, -h / 2f + 4f) }, tint, additive: true);
+		Label l = Typo.Text(root, text, Typo.LatinItalic, fs, Pal.White, new Vector2(-w / 2f, -fs * 0.68f), HorizontalAlignment.Center, outline: 3, outlineColor: Pal.Abyss);
+		l.Size = new Vector2(w, h);
+		const float total = 0.95f;
+		Fx.Animate(root, total, t =>
+		{
+			float time = t * total;
+			float inn = Ease.OutExpo(Mathf.Clamp(time / 0.16f, 0f, 1f));
+			float outt = Ease.InCubic(Mathf.Clamp((time - 0.72f) / 0.23f, 0f, 1f));
+			root.Position = at + new Vector2(-120f * (1f - inn) + 140f * outt, 0f);
+			root.Scale = new Vector2(1f, Mathf.Max(0.05f, inn * (1f - outt)));
+			root.Modulate = new Color(1f, 1f, 1f, inn * (1f - outt));
 		});
 		Fx.FreeAfter(root, total + 0.05);
 	}

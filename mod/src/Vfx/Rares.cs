@@ -722,7 +722,7 @@ public static class Rares
 	}
 
 	/// <summary>一颗新生的星星从 from 划弧线落到人物身边（白色十字星 + 青色柔光 + 渐隐尾巴，落地一闪）。</summary>
-	private static void ThrowStar(Control front, Vector2 from, Vector2 chest, int i)
+	internal static void ThrowStar(Control front, Vector2 from, Vector2 chest, int i)
 	{
 		float a = Fx.Rand(0f, Mathf.Tau);
 		Vector2 to = chest + new Vector2(Fx.Rand(-130f, 130f), Fx.Rand(-40f, 30f));

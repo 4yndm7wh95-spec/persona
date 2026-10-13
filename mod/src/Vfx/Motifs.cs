@@ -363,25 +363,60 @@ public static class Motifs
 	}
 
 	/// <summary>太阳耀斑：日轮带旋转的日冕尖刺，爆开一圈烈光。</summary>
-	public static void SolarFlare(Control layer, Vector2 at, float s = 1f)
+	public static void SolarFlare(Control layer, Vector2 at, float s = 1f) => SolarFlare(layer, layer, at, at, s);
+
+	/// <summary>
+	/// 太阳打击（v0.13.10 重做，不再盖住敌人）：小太阳在敌人斜上方、画在身后层升起 —— 空心细光芒旋转 + 白热小核 + 柔光；
+	/// 0.18s 后一道细光束从太阳射到目标，命中点只有小闪光和细冲击环。
+	/// </summary>
+	public static void SolarFlare(Control back, Control front, Vector2 sunAt, Vector2 target, float s = 1f)
 	{
-		Node2D root = Fx.Root(layer, at, "P3Solar");
-		var corona = new Vector2[32];
-		for (int i = 0; i < 32; i++)
+		Node2D root = Fx.Root(back, sunAt, "P3Solar");
+		root.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = Vector2.One * 5.5f * s, Modulate = new Color(ElementPal.FireMid, 0.55f) });
+		Node2D rays = new();
+		root.AddChild(rays);
+		for (int i = 0; i < 16; i++)
 		{
-			corona[i] = Vector2.Right.Rotated(Mathf.Tau * i / 32f) * (i % 2 == 0 ? 230f : 120f) * s;
+			Vector2 d = Vector2.Right.Rotated(Mathf.Tau * i / 16f);
+			float len = (i % 2 == 0 ? 120f : 82f) * s;
+			Fx.Stroke(rays, new[] { d * 62f * s, d * len }, new Color(i % 2 == 0 ? ElementPal.FireCore : ElementPal.FireMid, 0.9f), (i % 2 == 0 ? 5f : 3f) * s);
 		}
-		Polygon2D cor = Fx.Poly(root, corona, new Color(ElementPal.FireMid, 0.7f), additive: true);
-		Fx.Poly(root, Fx.Circle(110f * s, 48), new Color(ElementPal.FireCore, 0.95f), additive: true);
-		Fx.Poly(root, Fx.Circle(70f * s, 48), Pal.White, additive: true);
-		Fx.Animate(root, 0.6f, t =>
+		Fx.StrokeClosed(root, Fx.Circle(58f * s, 40), new Color(ElementPal.FireMid, 0.9f), 3f * s);
+		Fx.Poly(root, Fx.Circle(46f * s, 40), new Color(ElementPal.FireCore, 0.95f), additive: true);
+		Fx.Poly(root, Fx.Circle(26f * s, 32), Pal.White, additive: true);
+		const float total = 0.75f;
+		Fx.Animate(root, total, t =>
 		{
-			cor.Rotation = t * 2f;
-			root.Scale = Vector2.One * (0.3f + 0.9f * Ease.OutExpo(Mathf.Clamp(t / 0.3f, 0f, 1f)));
-			root.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(Mathf.Clamp((t - 0.4f) / 0.6f, 0f, 1f)));
+			float time = t * total;
+			rays.Rotation = time * 1.4f;
+			float up = Ease.OutBack(Mathf.Clamp(time / 0.2f, 0f, 1f));
+			root.Scale = Vector2.One * Mathf.Max(0.05f, up);
+			root.Position = new Vector2(0f, 40f * (1f - Ease.OutCubic(Mathf.Clamp(time / 0.2f, 0f, 1f))));
+			root.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(Mathf.Clamp((time - 0.5f) / 0.25f, 0f, 1f)));
 		});
-		Bold.Impact(layer, at, ElementPal.FireMid, s, ShakeStrength.Medium);
-		Fx.FreeAfter(root, 0.65);
+		Fx.FreeAfter(root, total + 0.05);
+		if (sunAt == target)
+		{
+			return;
+		}
+		Fx.After(root, 0.18, "solar beam", () =>
+		{
+			Node2D b = Fx.Root(front, Vector2.Zero, "P3SolarBeam");
+			Vector2 dir = (target - sunAt).Normalized();
+			Polygon2D beam = Fx.Stroke(b, new[] { sunAt + dir * 50f * s, target }, new Color(ElementPal.FireCore, 0.85f), 16f * s);
+			Polygon2D core = Fx.Stroke(b, new[] { sunAt + dir * 50f * s, target }, Pal.White, 5f * s);
+			Fx.Animate(b, 0.28f, t =>
+			{
+				b.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(t));
+				float w = 1f - 0.7f * t;
+				Fx.Reshape(beam, Fx.StrokePts(new[] { sunAt + dir * 50f * s, target }, 16f * s * w));
+				Fx.Reshape(core, Fx.StrokePts(new[] { sunAt + dir * 50f * s, target }, 5f * s * w));
+			});
+			Fx.FreeAfter(b, 0.3);
+			P3Fx.Flash(front, target, ElementPal.FireMid, 150f * s, 0.15f);
+			P3Fx.Shockwave(front, target, ElementPal.FireMid, 320f * s, 0.35f);
+			MegaCrit.Sts2.Core.Nodes.NGame.Instance?.ScreenShake(ShakeStrength.Medium, ShakeDuration.Short);
+		});
 	}
 
 	// ═════════ P3R 主题 ═════════

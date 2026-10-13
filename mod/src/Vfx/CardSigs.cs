@@ -48,8 +48,7 @@ public static class CardSigs
 		["BeatIntoShape"] = c => After(c, 0.12, () => Uniq.BeatIntoShape(c.Front, c.FirstTarget, c.Targets.Count > 0 ? c.Targets[0].GetBottomOfHitbox() : c.Feet)),
 		["HeirloomHammer"] = c => After(c, 0.1, () => Uniq.HeirloomHammer(c.Front, c.FirstTarget, c.Targets.Count > 0 ? c.Targets[0].GetBottomOfHitbox() : c.Feet)),
 		["KnockoutBlow"] = c => After(c, 0.16, () => Motifs.CutIn(c.Front, c.FirstTarget, "ONE MORE!", Pal.Royal)),
-		["KinglyKick"] = c => After(c, 0.12, () => { Uniq.KinglyKick(c.Front, c.FirstTarget); Motifs.CutIn(c.Front, c.FirstTarget, "GOD'S HAND", Pal.Royal); }),
-		["KinglyPunch"] = c => After(c, 0.14, () => Motifs.Smash(c.Front, c.FirstTarget + new Vector2(-40f, 0f), c.Feet, Pal.Cyan, 0.5f, crack: false)),
+		["KinglyKick"] = c => After(c, 0.12, () => Motifs.CutIn(c.Front, c.FirstTarget, "GOD'S HAND", Pal.Royal)),   // 踢的弧光在命中时（Kingly.Kick）
 		["CrushUnder"] = c => After(c, 0.14, () =>
 		{
 			foreach (NCreature t in c.Targets)
@@ -61,7 +60,15 @@ public static class CardSigs
 		["CrescentSpear"] = c => After(c, 0.1, () => Motifs.FullMoon(c.Back, c.FirstTarget, 0.6f)),
 		["PhotonCut"] = c => After(c, 0.1, () => P3Fx.SpeedLines(c.Front, c.FirstTarget, Pal.Ice, 26, 60f, 700f, 0.3f)),
 		["HeavenlyDrill"] = c => { foreach (NCreature t in c.Targets) { Rares.DrillDescend(t); } },
-		["SolarStrike"] = c => After(c, 0.12, () => Motifs.SolarFlare(c.Front, c.FirstTarget + new Vector2(0f, -120f), 0.9f)),
+		["SolarStrike"] = c => After(c, 0.12, () =>
+		{
+			// 太阳在目标斜上方（高过头顶），画在身后层，光束射下来 —— 不盖住敌人
+			NCreature t = c.Targets.Count > 0 ? c.Targets[0] : c.Caster;
+			float h = Mathf.Max(120f, t.GetBottomOfHitbox().Y - t.VfxSpawnPosition.Y);
+			Vector2 sun = c.FirstTarget + new Vector2(110f, -h * 1.25f - 110f);
+			sun.Y = Mathf.Max(sun.Y, 190f);
+			Motifs.SolarFlare(c.Back, c.Front, sun, c.FirstTarget, 0.9f);
+		}),
 		["Hegemony"] = c => After(c, 0.14, () => Motifs.CutIn(c.Front, c.FirstTarget, "HAMAON", ElementPal.HolyGold)),
 		["Radiate"] = c => P3Fx.LightPillar(c.Back, c.Feet, ElementPal.HolyGold, 220f, 900f, 0.8f),
 		["LunarBlast"] = c => { foreach (NCreature t in c.Targets) { Lunar.Rise(t); } },

@@ -48,7 +48,7 @@ public static class FormFx
 		}
 		Node2D root = new() { Name = AuraName, ShowBehindParent = true };
 		vanilla.AddChild(root);
-		root.GlobalPosition = Makoto.Center(creature) + new Vector2(-20f, -90f);
+		root.GlobalPosition = Makoto.Center(creature) + new Vector2(4f, -70f);     // v0.13.10：人物缩到 0.92 后重新居中（原 -20,-90 偏左上）
 		// 放在"人物身后特效层"里，从下到上：天色（第 0 个）→ 天鹅绒门（如果在场）→ 月亮和时钟 → 之后出现的身后特效。
 		// 天色只压住战斗背景；门被天色"照"成暗绿（ThemeFx 用 WorldTint 调色）但不挡月亮。
 		// root 仍挂在原版节点下，负责生命周期：原版节点释放时一起释放天色和月亮。

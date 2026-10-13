@@ -351,6 +351,11 @@ public static class CardFx
 			NCreature? node = room.GetCreatureNode(c);
 			if (node != null)
 			{
+				if (Kingly.Hit(card, front, node, c, scale))       // 拳 / 踢 / 决胜：专属命中，不叠通用打击星爆
+				{
+					Audio.Sfx.Element(style.Hit, scale);
+					continue;
+				}
 				Elements.Hit(style.Hit, front, node.VfxSpawnPosition, node.GetBottomOfHitbox(), scale);
 				if (CardStyles.Summons(card) && !c.IsPlayer)
 				{
