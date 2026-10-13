@@ -106,7 +106,7 @@ public static class ForgePatch
 		{
 			if (amount > 0m && Makoto.Is(player) && Makoto.Node(player) is NCreature node)
 			{
-				CardFx.OnForge(node);
+				Extras.PersonaCharge(node, (int)amount, amount >= 10m);      // v0.14.0：锻造 = Persona 蓄力增益（不再敲剑 / 拼光剑）
 			}
 		});
 	}

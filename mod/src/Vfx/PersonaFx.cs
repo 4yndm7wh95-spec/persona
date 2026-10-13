@@ -144,6 +144,40 @@ public static class PersonaFx
 		return spine;
 	}
 
+	/// <summary>
+	/// 锻造 → P3R 式"蓄力增益"（v0.14.0）：Thanatos 的半透明身影在结城理身后浮现（暗红色调），
+	/// 和他一起被深红色的上升箭头包围 —— 区别于普通给自己加 buff 的牌：增强的是 Persona（君王之刃由 Thanatos 挥出）。
+	/// big：铸剑者那种大量锻造，Persona 更清晰、停留更久。
+	/// </summary>
+	public static void ChargeGhost(NCreature caster, bool big)
+	{
+		Control? back = Makoto.FxLayer(back: true);
+		if (back == null || ResourceLoader.Load(Thanatos) is not Resource data)
+		{
+			return;
+		}
+		Vector2 feet = Makoto.Feet(caster);
+		Vector2 center = Makoto.Center(caster);
+		float height = Mathf.Max(260f, (feet.Y - center.Y) * 2.1f) * (big ? 1.6f : 1.35f);
+		Vector2 home = new(center.X - height * 0.18f, center.Y - height * 0.16f);
+		Node2D root = Fx.Root(back, home, "P3PersonaCharge");
+		root.Scale = Vector2.One * (height / FigureHeight);
+		Color tint = new(1f, 0.35f, 0.32f, big ? 0.6f : 0.42f);
+		Node2D? glow = Sprite(root, data, new Color(1f, 0.2f, 0.15f, big ? 0.55f : 0.4f), additive: true);
+		if (glow != null) glow.Scale = Vector2.One * 1.05f;
+		Node2D? body = Sprite(root, data, tint, additive: false);
+		float hold = big ? 1.5f : 0.9f;
+		Play(glow, hold, null, attack: false);
+		Play(body, hold, null, attack: false);
+		Fx.Animate(root, hold + 0.5f, t =>
+		{
+			float time = t * (hold + 0.5f);
+			root.Position = home + new Vector2(0f, -30f * Ease.OutCubic(Mathf.Clamp(time / 0.6f, 0f, 1f)));
+			root.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.25f, 0f, 1f) * (1f - Mathf.Clamp((time - hold) / 0.5f, 0f, 1f)));
+		});
+		Fx.FreeAfter(root, hold + 0.55f);
+	}
+
 	/// <summary>不攻击的召唤牌：召唤器碎裂后 Persona 在结城理身后显形（光柱 + 水波 + 闪光），悬浮一拍后消散。</summary>
 	public static void Apparition(NCreature caster, Color tint)
 	{

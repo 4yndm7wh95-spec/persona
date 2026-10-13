@@ -140,7 +140,7 @@ public static class CardSigs
 			new[] { new Vector2(-140f, 40f), new Vector2(-40f, -60f), new Vector2(60f, -20f), new Vector2(150f, -90f), new Vector2(110f, 50f) }, Pal.Cyan),
 		["SpoilsOfBattle"] = c => { Motifs.ShuffleTime(c.Front, c.Center, 2, ElementPal.FireMid); },
 		["RefineBlade"] = c => { },
-		["TheSmith"] = c => Uniq.TheSmith(c.Back, c.Front, c.Center),
+		["TheSmith"] = c => { },                           // v0.14.0：不再敲剑；锻造的那一刻由 ForgePatch 播大号的 Persona 蓄力增益
 		["SummonForth"] = c => Uniq.SummonForth(c.Back, c.Front, c.Feet),
 		["BigBang"] = c => After(c, 0.3, () => Uniq.BigBang(c.Back, c.Front, c.Above + new Vector2(120f, 0f))),
 

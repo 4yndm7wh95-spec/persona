@@ -419,4 +419,88 @@ public static class Extras
 		}
 		return pts;
 	}
+
+	/// <summary>
+	/// 锻造 = P3R 增益（v0.14.0，取代"碎光拼成光剑"和打铁）：脚下一圈深红色环 → 6 道深红色上升箭头（白芯，像 P3R 的攻击力上升）
+	/// 从脚边错落升到头顶 → 头旁弹出 P3R 斜标签「ATTACK UP」+ 大号「+N」（锻造的数值）；身后 Thanatos 的暗红身影同时浮现（PersonaFx.ChargeGhost）。
+	/// big（铸剑者等一次锻造很多）：箭头更多、标签更大、Persona 更清晰。
+	/// </summary>
+	public static void PersonaCharge(MegaCrit.Sts2.Core.Nodes.Combat.NCreature caster, int amount, bool big)
+	{
+		Control? front = P3Makoto.Core.Makoto.FxLayer();
+		Control? back = P3Makoto.Core.Makoto.FxLayer(back: true);
+		if (front == null || back == null)
+		{
+			return;
+		}
+		Vector2 feet = P3Makoto.Core.Makoto.Feet(caster), head = P3Makoto.Core.Makoto.Head(caster), center = P3Makoto.Core.Makoto.Center(caster);
+		Color red = new(1f, 0.18f, 0.22f), deep = new(0.55f, 0.02f, 0.08f);
+		Audio.Sfx.Clip("ShuffleTime_PowerUp", big ? 0.9f : 0.7f);
+		PersonaFx.ChargeGhost(caster, big);
+
+		// 脚下深红环（压扁）
+		Node2D ring = Fx.Root(back, feet, "P3ChargeRing");
+		ring.Scale = new Vector2(1f, 0.3f);
+		Fx.StrokeClosed(ring, Fx.Circle(150f, 56), new Color(red, 0.9f), 6f);
+		Fx.StrokeClosed(ring, Fx.Circle(126f, 56), new Color(deep, 0.6f), 10f);
+		Fx.Animate(ring, 0.8f, t =>
+		{
+			ring.Scale = new Vector2(0.4f + 0.8f * Ease.OutExpo(t), (0.4f + 0.8f * Ease.OutExpo(t)) * 0.3f);
+			ring.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(t));
+		});
+		Fx.FreeAfter(ring, 0.82);
+
+		// 上升箭头：粗 V 形（尖朝上），深红外缘 + 白芯，错落升起、上升中拉长后淡出
+		int n = big ? 10 : 6;
+		for (int i = 0; i < n; i++)
+		{
+			float x = Mathf.Lerp(-110f, 110f, n == 1 ? 0.5f : i / (float)(n - 1)) + Fx.Rand(-14f, 14f);
+			float delay = 0.06f * i + Fx.Rand(0f, 0.08f);
+			float size = Fx.Rand(26f, 40f) * (big ? 1.2f : 1f);
+			Node2D arrow = Fx.Root(front, feet + new Vector2(x, -20f), "P3ChargeArrow");
+			Vector2[] chev = { new(0f, -size), new(size * 0.8f, -size * 0.1f), new(size * 0.8f, size * 0.35f), new(0f, -size * 0.45f), new(-size * 0.8f, size * 0.35f), new(-size * 0.8f, -size * 0.1f) };
+			Vector2[] core = { new(0f, -size * 0.78f), new(size * 0.5f, -size * 0.12f), new(size * 0.5f, size * 0.08f), new(0f, -size * 0.42f), new(-size * 0.5f, size * 0.08f), new(-size * 0.5f, -size * 0.12f) };
+			Fx.Poly(arrow, chev, new Color(red, 0.95f), additive: true);
+			Fx.Poly(arrow, core, new Color(1f, 0.9f, 0.88f), additive: true);
+			arrow.Modulate = new Color(1f, 1f, 1f, 0f);
+			Vector2 from = arrow.Position;
+			float rise = (feet.Y - head.Y) + Fx.Rand(40f, 120f);
+			Fx.Animate(arrow, 0.75f + delay, t =>
+			{
+				float time = t * (0.75f + delay) - delay;
+				if (time < 0f) return;
+				float u = Mathf.Clamp(time / 0.75f, 0f, 1f);
+				arrow.Position = from + new Vector2(6f * Mathf.Sin(u * 7f + i), -rise * Ease.OutCubic(u));
+				arrow.Scale = new Vector2(1f, 1f + 0.6f * u);
+				arrow.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(u / 0.12f, 0f, 1f) * (1f - Mathf.Clamp((u - 0.65f) / 0.35f, 0f, 1f)));
+			});
+			Fx.FreeAfter(arrow, 0.8f + delay);
+		}
+		P3Fx.Flash(back, center, red, big ? 420f : 300f, 0.3f);
+
+		// 标签：黑色斜条 +「ATTACK UP」（深红斜体）+ 大号「+N」
+		Fx.After(front, 0.25, "charge tag", () =>
+		{
+			Vector2 home = head + new Vector2(120f, -40f);
+			Node2D tag = Fx.Root(front, home, "P3ChargeTag");
+			tag.Rotation = -0.18f;
+			float sc = big ? 1.25f : 1f;
+			Fx.Poly(tag, new[] { new Vector2(-6f, 0f), new Vector2(190f, 0f), new Vector2(178f, 34f), new Vector2(-18f, 34f) }, new Color(0.04f, 0.03f, 0.05f, 0.95f));
+			Fx.Poly(tag, new[] { new Vector2(-6f, 0f), new Vector2(190f, 0f), new Vector2(189f, 3f), new Vector2(-7f, 3f) }, red, additive: true);
+			Typo.Text(tag, "ATTACK UP", Typo.LatinItalic, 26, new Color(1f, 0.32f, 0.35f), new Vector2(6f, 0f));
+			if (amount > 0)
+			{
+				Typo.Text(tag, "+" + amount, Typo.LatinItalic, 54, Pal.White, new Vector2(30f, 28f), outline: 5, outlineColor: deep);
+			}
+			tag.Scale = Vector2.One * sc;
+			Fx.Animate(tag, 1.1f, t =>
+			{
+				float time = t * 1.1f;
+				float inn = Ease.OutBack(Mathf.Clamp(time / 0.14f, 0f, 1f));
+				tag.Position = home + new Vector2(-50f * (1f - inn), -14f * Ease.OutCubic(t));
+				tag.Modulate = new Color(1f, 1f, 1f, inn * (1f - Mathf.Clamp((time - 0.85f) / 0.25f, 0f, 1f)));
+			});
+			Fx.FreeAfter(tag, 1.15);
+		});
+	}
 }
