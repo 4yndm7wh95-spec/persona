@@ -34,6 +34,8 @@ OUT = ROOT / "art/rig/v7"
 STAGE = ROOT / "mod/pck_stage"
 REL = "animations/characters/regent"
 S = 0.98
+# 战斗中整体缩放（根骨骼 scale，以脚底为原点）：原版储君包围框约 369px，结城理原本约 428px；0.92 后约 394px。所有骨骼（hand / evoker_tip 等）一起缩放
+BODY_SCALE = 0.92
 TEX = 0.5
 PAGE = 2048
 FPS = 30
@@ -864,6 +866,8 @@ def main():
         for name, x, y, w, h in items:
             atlas += f"{name}\nbounds:{x},{y},{w},{h}\n"
     (OUT / "regent.atlas").write_text(atlas)
+    root = next(bn for bn in b.data["bones"] if bn["name"] == "root")
+    root["scaleX"] = root["scaleY"] = BODY_SCALE
     (OUT / "regent.spine-json").write_text(json.dumps(b.data, separators=(",", ":")))
     (OUT / "regent.png").write_bytes((BASE / "regent.png").read_bytes())
     print("图集页：", [(p.size, len(it)) for p, it in pages])

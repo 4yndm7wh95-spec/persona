@@ -33,7 +33,16 @@ public static class Makoto
 		return back ? room.BackCombatVfxContainer : room.CombatVfxContainer;
 	}
 
-	public static Vector2 Center(NCreature node) => node.VfxSpawnPosition;
+	/// <summary>战斗立绘的整体缩放（与 tools/rig/build_rig_v7.py 的 BODY_SCALE 一致）。判定框 / 特效生成点是原版场景里固定的，人物缩小后按脚底换算。</summary>
+	public const float BodyScale = 0.92f;
+
+	public static Vector2 Center(NCreature node) => Shrink(node, node.VfxSpawnPosition);
+
+	private static Vector2 Shrink(NCreature node, Vector2 p)
+	{
+		Vector2 feet = node.GetBottomOfHitbox();
+		return feet + (p - feet) * BodyScale;
+	}
 
 	public static Vector2 Feet(NCreature node) => node.GetBottomOfHitbox();
 
@@ -42,6 +51,6 @@ public static class Makoto
 	{
 		Vector2 center = node.VfxSpawnPosition;
 		Vector2 intent = node.Visuals.IntentPosition.GlobalPosition;
-		return center.Lerp(intent, 0.55f) + new Vector2(14f, 0f);
+		return Shrink(node, center.Lerp(intent, 0.55f) + new Vector2(14f, 0f));
 	}
 }
