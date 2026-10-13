@@ -186,8 +186,6 @@ public static class Pose
 		{
 			string anim = FromHolding(state.GetCurrentAnimationName(), "attack_sovereign") ?? "attack_sovereign";
 			_lastSummonAnim = now;
-			// 上膛：召唤器抵到太阳穴的那一刻"咔嚓"一声（attack_sovereign 在 0.14s 到位；从瞄准接招时枪已经在位）
-			Audio.Sfx.Play(Audio.Snd.Cock, 0.8f, delay: anim == "attack_sovereign" ? 0.12f : 0f);
 			return anim;
 		}
 		return null;

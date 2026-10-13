@@ -62,6 +62,7 @@ public static class TargetingFx
 			else if (!attack && !hands.EvokerOut)
 			{
 				Fx.After(front, 0.08, "evoker glint", () => WeaponFx.EvokerGlint(front, node));
+				Audio.Sfx.Play(Audio.Snd.Cock, 0.8f, delay: 0.12f);     // 选中召唤器牌、举起召唤器后稍停一下：上膛"咔嚓"
 				hands.EvokerOut = true;
 			}
 		}
