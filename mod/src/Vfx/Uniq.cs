@@ -552,7 +552,7 @@ public static class Uniq
 			{
 				P3Fx.GlassShatter(front, m + new Vector2(0f, 150f), 8, 0.5f, Pal.Ice);
 			}
-			Audio.Sfx.Clip("swish_heavy_1", 0.8f);
+			Audio.Sfx.Clip("atk_hit_enemy_slash", 0.8f);                 // 割开的一声（不用 swish 风声）
 			Shake(ShakeStrength.Weak);
 		});
 	}

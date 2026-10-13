@@ -58,7 +58,7 @@ public static class Rares
 		tailRoot.TopLevel = true;
 		tailRoot.GlobalPosition = Vector2.Zero;
 		tailRoot.AddChild(tail);
-		Audio.Sfx.Play(Audio.Snd.CutIn, 0.6f, pitch: 0.7f);
+		Audio.Sfx.Clip("morning_star_fall", 1.0f, pitch: 0.85f);   // 坠月：P3R「明けの明星」坠落声（原来的切入声偏风声）
 		Fx.Animate(moon, MoonfallImpact, t =>
 		{
 			float e = Ease.InCubic(t);
