@@ -1,0 +1,79 @@
+【陨星】
+ 1.   0.0s  em0601_impact.ogg
+ 2.   2.1s  em0052_impact_1.ogg
+ 3.   4.2s  em0052_impact_2.ogg
+ 4.   6.3s  evt_200_080_grenade_bomb.ogg
+ 5.   9.9s  evt_m210_150_explosion.ogg
+ 6.  13.5s  A_F305_Rockfall_se_01_1.ogg
+ 7.  17.1s  A_F305_Rockfall_se_01_2.ogg
+ 8.  20.7s  A_F305_Rockfall_se_01_3.ogg
+ 9.  24.3s  A_F305_Rockfall_se_01_4.ogg
+10.  27.9s  2003_QuakeRumble.ogg
+11.  31.5s  evt_impact_01.ogg
+12.  33.9s  skill_0071_0071_cut3.ogg
+13.  37.0s  skill_0072_0072_cut3.ogg
+
+【上膛】
+ 1.   0.0s  sc0255_btl_gun_reload.ogg
+ 2.   0.9s  evt_m300_020_gun_put_01.ogg
+ 3.   3.1s  evt_m300_020_gun_put_02.ogg
+ 4.   5.3s  evt_m310_210_gun_ready_01.ogg
+ 5.   7.3s  em0542_gun_handling_1.ogg
+ 6.   8.4s  em0542_gun_handling_2.ogg
+ 7.   9.6s  em0131_gun_1.ogg
+ 8.  10.8s  em0131_gun_2.ogg
+ 9.  12.0s  em0131_gun_3.ogg
+10.  13.2s  em0131_gun_release.ogg
+11.  15.4s  em0131_gun_skill_1.ogg
+12.  16.7s  em0131_gun_skill_2.ogg
+13.  18.1s  em0131_gun_skill_3.ogg
+14.  19.5s  gun_handling_1.ogg
+15.  20.4s  gun_handling_2.ogg
+16.  21.4s  gun_handling_3.ogg
+
+【打击】
+ 1.   0.0s  bodyfall_heavy_aegis_fx.ogg
+ 2.   1.4s  bodyfall_heavy_aegis_1.ogg
+ 3.   2.9s  bodyfall_heavy_aegis_2.ogg
+ 4.   4.1s  bodyfall_heavy_aegis_3.ogg
+ 5.   5.2s  em0572_hit_1.ogg
+ 6.   6.0s  em0572_hit_2.ogg
+ 7.   6.9s  em0572_hit_3.ogg
+ 8.   7.7s  em0052_hit_1.ogg
+ 9.   8.8s  em0052_hit_2.ogg
+10.   9.8s  em0052_hit_3.ogg
+11.  10.9s  em0052_hit_4.ogg
+12.  12.4s  em0052_hit_5.ogg
+13.  13.9s  em0052_hit_6.ogg
+14.  15.5s  em0053_hit_1.ogg
+15.  17.0s  em0053_hit_2.ogg
+16.  18.6s  em0053_hit_3.ogg
+17.  20.1s  em0053_hit_4.ogg
+18.  21.7s  em0053_hit_5.ogg
+19.  23.3s  em0053_hit_6.ogg
+20.  25.0s  em0122_hit_1.ogg
+21.  26.3s  em0122_hit_2.ogg
+22.  27.5s  em0122_hit_3.ogg
+23.  28.7s  evt_punch_hit_01.ogg
+24.  29.7s  atk_pc07_orgia_l__atk_pc07_orgia_m_1.ogg
+25.  31.4s  atk_pc07_orgia_l__atk_pc07_orgia_m_2.ogg
+26.  33.0s  atk_pc07_orgia_l__atk_pc07_orgia_m_3.ogg
+27.  34.6s  atk_pc07_orgia_l__atk_pc07_orgia_m_4.ogg
+28.  36.2s  atk_pc07_orgia_l__atk_pc07_orgia_m_5.ogg
+29.  37.9s  atk_pc07_orgia_l.ogg
+30.  39.7s  atk_pc07_orgia_l__atk_pc07_orgia_m_6.ogg
+31.  41.5s  atk_pc07_orgia_1.ogg
+32.  43.2s  atk_pc07_orgia_2.ogg
+33.  44.9s  atk_pc07_orgia_3.ogg
+
+【铸剑】
+ 1.   0.0s  em0062_chain_hit_1.ogg
+ 2.   0.8s  em0062_chain_hit_2.ogg
+ 3.   1.6s  em0083_metal.ogg
+ 4.   2.8s  em0111_weapon.ogg
+ 5.   3.9s  em0122_metal_1.ogg
+ 6.   5.1s  em0122_metal_2.ogg
+ 7.   6.2s  evt_c106_020_clash.ogg
+ 8.   7.7s  evt_c106_040_clash.ogg
+ 9.   9.4s  Shop_Top_Weapon.ogg
+10.  10.6s  Shop_Weapon_Compare.ogg
