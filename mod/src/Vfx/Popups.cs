@@ -166,7 +166,8 @@ public static class Popups
 
 	/// <summary>
 	/// P3R「BLOCK」（v0.14.0，逐帧对照 research/p3r_video/NOTES.md 第 4 节）：
-	/// · 字先出现（冲击前一拍），白色粗斜体、每个字母各自轻微歪斜 / 错位，带细黑描边和偏左下的厚黑色"阴影块"（不是底框）；
+	/// · 字先出现（冲击前一拍），白色粗斜体、每个字母各自轻微歪斜 / 错位，带细黑描边；字后面一条黑色斜长条做底，
+	///   但长条比字矮，字母上下都露出长条之外（不是把字框在里面）；
 	/// · 冲击：半透明白色护盾泡猛地胀开（带几道弧形流光）→ 一圈细长的放射火花（白芯 → 黄 → 橙粉，越往外越细越暗）+ 中心黄光；
 	/// · 余韵：人物身后一团红橙色柔光慢慢褪去，地上几片青色碎片，几片黄绿色小纸屑飘落；字停留约 0.7s 缓慢漂移后淡出。
 	/// </summary>
@@ -185,15 +186,16 @@ public static class Popups
 		Node2D root = Fx.Root(layer, home, "P3Block");
 		root.Rotation = -0.21f;
 		const string word = "BLOCK";
-		int fs = (int)(46 * s);
+		int fs = (int)(52 * s);
 		float adv = fs * 0.5f, x0 = -adv * word.Length / 2f;
-		// 偏左下的厚黑阴影块：每个字母一块，比字大一圈、位置随机错开 → 形成参差的黑色底，不是规整的框
-		for (int i = 0; i < word.Length; i++)
+		// 黑色长条底：比字矮（约字高的 6 成）、稍微偏下偏左，字母的上沿和下沿都露出长条之外 —— 字没有被"框"在里面
+		float barW = adv * word.Length + fs * 0.9f, barH = fs * 0.6f, lean = fs * 0.12f;      // 右端比 K 多伸出一截（原版如此）
+		Vector2 bc = new(fs * 0.18f, fs * 0.12f);
+		Fx.Poly(root, new[]
 		{
-			Vector2 p = new(x0 + adv * i - 6f * s + Fx.Rand(-2f, 2f) * s, -fs * 0.62f + 6f * s + Fx.Rand(-2f, 3f) * s);
-			Label sh = Typo.Text(root, word[i].ToString(), Typo.LatinItalic, (int)(fs * 1.06f), BlockInk, p, outline: (int)(9 * s), outlineColor: BlockInk);
-			sh.Rotation = Fx.Rand(-0.08f, 0.08f);
-		}
+			bc + new Vector2(-barW / 2f + lean, -barH / 2f), bc + new Vector2(barW / 2f + lean, -barH / 2f),
+			bc + new Vector2(barW / 2f - lean, barH / 2f), bc + new Vector2(-barW / 2f - lean, barH / 2f),
+		}, new Color(BlockInk, 0.95f));
 		// 字面：白色，细黑描边，每个字母轻微歪斜、上下错位
 		for (int i = 0; i < word.Length; i++)
 		{
