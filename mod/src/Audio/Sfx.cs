@@ -84,7 +84,7 @@ public static class Sfx
 		[Snd.CardDraw] = new[] { new[] { ("card_draw", 0f, 1f) } },
 		[Snd.Cock] = new[] { new[] { ("em0131_gun_1", 0f, 0.75f) } },       // Velvet_Tarot_Flip 原声里有两次翻牌，只截前 0.3 秒（一张）
 		[Snd.TarotShatter] = new[] { new[] { ("ShuffleTime_ArcanaBurst", 0f, 0.9f) } },
-		[Snd.StarGain] = new[] { new[] { ("Theurgia_Up", 0f, 0.7f) } },
+		// StarGain：v0.13.12 起用回合成版（上扬颤音 + 琶音，用户对比后选的），不在这张表里
 		[Snd.StarSpend] = new[] { new[] { ("Sys_Theurgia_Open", 0f, 0.8f) } },
 		[Snd.CutIn] = new[] { new[] { ("flash_cutin", 0f, 0.9f) } },
 		[Snd.Weak] = new[] { new[] { ("ShuffleTime_Select", 0f, 0.8f) } },
@@ -273,7 +273,7 @@ public static class Sfx
 	{
 		[Snd.TarotReveal] = ("event:/sfx/ui/cards/card_transform", 0.9f),
 		[Snd.TarotShatter] = ("event:/sfx/characters/defect/defect_glass_channel", 1f),
-		[Snd.StarGain] = ("event:/sfx/ui/enchant_shimmer", 0.7f),
+		[Snd.StarGain] = null,                                      // 合成
 		[Snd.StarSpend] = ("event:/sfx/ui/enchant_simple", 0.8f),
 		[Snd.Weak] = ("event:/sfx/characters/defect/defect_glass_channel", 0.8f),
 		[Snd.CutIn] = ("event:/sfx/ui/wipe_ironclad", 0.9f),

@@ -598,3 +598,7 @@ Grand.cs 里其余函数暂时保留不用。
   同步：原版 regent_forge / regent_refine 事件（真正锻造的那一刻）→ 打铁声 + 锻造火花（`Motifs.ForgeAtMakoto`）；WroughtInWar / RefineBlade / SpoilsOfBattle 出牌时不再提前放火花。
   铸剑者（TheSmith）每一锤、锻打成形砸下时也是打铁声。原来的 sword_draw / sword_sheath 撤掉。试听：`art/sfx_anvil_test.mp3`（单击 / 铸剑者四锤 / 精炼）。
 - **陨星命中**：`evt_impact_01`（用户选 11 号）。打击类保持 `atk_hit_strike`。
+
+## v0.13.12
+
+- 辉星凝聚（StarGain）用回合成版（上扬颤音 + 琶音）；辉星消耗保持 P3R `Sys_Theurgia_Open`；星尘砸中 `atk_light`、陨星命中 `evt_impact_01` 保持（用户对比 `art/compare_star_meteor.mp3` 后确认）。
