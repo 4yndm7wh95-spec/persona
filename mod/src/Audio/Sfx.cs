@@ -50,6 +50,56 @@ public static class Sfx
 		}
 	});
 
+	/// <summary>
+	/// 第一层改进（v0.13.3）：能用游戏原版 FMOD 音效的，直接用原版（真实录音、和游戏混音统一）；没有合适原版的（召唤器、塔纳托斯）
+	/// 暂时保留合成，之后换成真实素材。null = 用合成。音量是相对原版的倍率。
+	/// </summary>
+	private static readonly Dictionary<Snd, (string Event, float Volume)?> Vanilla = new()
+	{
+		[Snd.TarotReveal] = ("event:/sfx/ui/cards/card_transform", 0.9f),
+		[Snd.TarotShatter] = ("event:/sfx/characters/defect/defect_glass_channel", 1f),
+		[Snd.StarGain] = ("event:/sfx/ui/enchant_shimmer", 0.7f),
+		[Snd.StarSpend] = ("event:/sfx/ui/enchant_simple", 0.8f),
+		[Snd.Weak] = ("event:/sfx/characters/defect/defect_glass_channel", 0.8f),
+		[Snd.CutIn] = ("event:/sfx/ui/wipe_ironclad", 0.9f),
+		[Snd.Gunshot] = null,
+		[Snd.ThanatosSlash] = null,
+	};
+
+	/// <summary>元素命中的原版音效（物理系不加：原版卡牌自己的攻击音效已经在播）。</summary>
+	public static void Element(P3Makoto.Vfx.Element e, float scale = 1f)
+	{
+		string? ev = e switch
+		{
+			P3Makoto.Vfx.Element.Agi => "event:/sfx/characters/attack_fire",
+			P3Makoto.Vfx.Element.Bufu => "event:/sfx/characters/defect/defect_frost_channel",
+			P3Makoto.Vfx.Element.Zio => "event:/sfx/characters/defect/defect_lightning_evoke",
+			P3Makoto.Vfx.Element.Hama => "event:/sfx/characters/defect/defect_plasma_channel",
+			P3Makoto.Vfx.Element.Mudo => "event:/sfx/characters/defect/defect_dark_channel",
+			P3Makoto.Vfx.Element.Megido => "event:/sfx/characters/defect/defect_hyperbeam",
+			P3Makoto.Vfx.Element.Meteor or P3Makoto.Vfx.Element.Star => "event:/sfx/characters/regent/regent_guiding_star",
+			_ => null
+		};
+		if (ev != null)
+		{
+			PlayEvent(ev, (scale < 0.9f ? 0.55f : 0.8f));
+		}
+	}
+
+	private static readonly Dictionary<string, ulong> LastEvent = new();
+
+	/// <summary>播放原版 FMOD 事件（同一事件 60ms 内不叠加）。</summary>
+	public static void PlayEvent(string ev, float volume = 1f) => ModEntry.Safe("fmod " + ev, () =>
+	{
+		ulong now = Time.GetTicksMsec();
+		if (LastEvent.TryGetValue(ev, out ulong last) && now - last < 60)
+		{
+			return;
+		}
+		LastEvent[ev] = now;
+		MegaCrit.Sts2.Core.Nodes.Audio.NAudioManager.Instance?.PlayOneShot(ev, volume);
+	});
+
 	/// <summary>播放；同一音效 45ms 内不重复叠加（多段攻击、群体命中时避免爆音）。</summary>
 	public static void Play(Snd s, float volume = 1f, float delay = 0f, float pitch = 1f) => ModEntry.Safe("sfx " + s, () =>
 	{
@@ -68,6 +118,11 @@ public static class Sfx
 			return;
 		}
 		LastPlay[s] = now;
+		if (Vanilla.TryGetValue(s, out var v) && v is (string ev, float vv))
+		{
+			PlayEvent(ev, Mathf.Clamp(volume * vv, 0f, 1.5f));
+			return;
+		}
 		_bus ??= AudioServer.GetBusIndex("SFX") >= 0 ? new StringName("SFX") : new StringName("Master");
 		AudioStreamPlayer p = new()
 		{

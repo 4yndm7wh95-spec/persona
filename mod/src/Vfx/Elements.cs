@@ -44,6 +44,7 @@ public static class Elements
 	public static void Hit(Element e, Control layer, Vector2 center, Vector2 feet, float scale = 1f)
 	{
 		// v0.9：全部换成"大胆版"（Bold / Motifs）—— 尺寸大、层次多、自带确认感
+		Audio.Sfx.Element(e, scale);
 		switch (e)
 		{
 			case Element.Slash: Motifs.Cleave(layer, center, Pal.Cyan, 0.85f * scale, Fx.Rand(-0.75f, -0.4f)); break;
