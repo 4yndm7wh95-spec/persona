@@ -447,7 +447,7 @@ public static class StarOrbit
 		o.LastTotal = total;
 	}
 
-	/// <summary>轨道已满时的获得：一张牌从胸口凝出，飞到外圈某处，化成光点并入（计数"×N"随后弹一下）。</summary>
+	/// <summary>轨道已满时的获得：一张牌从胸口凝出，飞到外圈某处，化成光点并入。</summary>
 	private static void OverflowBirth(Orbit o, Control front)
 	{
 		if (!GodotObject.IsInstanceValid(o.Creature))
