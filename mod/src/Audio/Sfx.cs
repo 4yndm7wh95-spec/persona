@@ -79,7 +79,7 @@ public static class Sfx
 		[Snd.Gunshot] = new[] { new[] { ("Snd_FX_Btl_Trigger_00", 0f, 1f) }, new[] { ("Snd_FX_Btl_Trigger_01", 0f, 1f) } },
 		[Snd.Summon] = new[] { new[] { ("Snd_FX_Btl_Trigger_00_Flash", 0f, 0.8f) } },
 		[Snd.TarotReveal] = new[] { new[] { ("Snd_FX_Btl_PersonaAura_00", 0f, 0.6f) } },   // 特效里的"浮现"：Persona 光环（翻牌声只留给真实抽牌）
-		[Snd.CardDraw] = new[] { new[] { ("Velvet_Tarot_Flip", 0f, 1f) } },
+		[Snd.CardDraw] = new[] { new[] { ("card_draw", 0f, 1f) } },       // Velvet_Tarot_Flip 原声里有两次翻牌，只截前 0.3 秒（一张）
 		[Snd.TarotShatter] = new[] { new[] { ("ShuffleTime_ArcanaBurst", 0f, 0.9f) } },
 		[Snd.StarGain] = new[] { new[] { ("Theurgia_Up", 0f, 0.7f) } },
 		[Snd.StarSpend] = new[] { new[] { ("Sys_Theurgia_Open", 0f, 0.8f) } },
