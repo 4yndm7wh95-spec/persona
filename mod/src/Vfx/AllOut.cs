@@ -148,7 +148,8 @@ void fragment() {
 	/// <summary>
 	/// 背景 = 湖面水波（用户：怪物死的位置像滴下一滴水，水波向外扩散、互相推挤；过一会儿再滴一滴，推着上一轮走）：
 	///   蓄力 0.7s：四滴紧接着落下（深蓝 → 中蓝 → 浅青 → 底色浅蓝），一波推一波铺满画面；
-	///   高潮之后：每隔 0.5–0.7s 再落一滴（深浅交替），新波纹追上旧波纹时把它往外推、挤窄旧的那一圈，旧圈出了画面就不再画。
+	///   0.45s 落下最后一滴，带出一串 6 圈深浅交替的余波（高潮前成形）；高潮之后不再滴水，余波外快内慢地散开、减速外推，
+	///   新波纹追上旧波纹时把它往外推、挤窄旧的那一圈，旧圈出了画面就不再画。
 	///   没有常驻的圆环 —— 画面上的深色区域都是正在经过的波。
 	///   背景大字 MAJESTIC：整体是深蓝细线空心字；落在深色波里的那一段由跟着波走的遮罩换成深蓝实心（实时）。
 	/// </summary>
@@ -168,13 +169,12 @@ void fragment() {
 			new(0.24f, Cyan, cover * 1.9f, 0.35f, false),
 			new(0.36f, Base, cover * 1.8f, 0.35f, false),
 		};
-		Color[] cycle = { RingBlue, Base, Band, Cyan };                 // 深浅交替：背景字总有一部分落在深色波里
-		float at = Build + 0.12f;
-		for (int k = 0; at < life; k++)
+		// 最后一滴（用户：高潮之后不再往圆心滴水，最后一滴的余波继续往外推）：0.45s 落下，带出一串余波 ——
+		// 6 圈深浅交替的波纹在高潮前陆续成形，外圈走得快、内圈走得慢，高潮之后不再有新水滴，这串余波一边散开一边减速外推
+		Color[] train = { RingBlue, Base, Band, Cyan, RingBlue, Base };
+		for (int j = 0; j < train.Length; j++)
 		{
-			Color col = cycle[k % cycle.Length];
-			drops.Add(new Drop(at, col, cover * (k % 2 == 0 ? 1.15f : 1.3f), 0.75f, col == RingBlue || col == Band));
-			at += k % 2 == 0 ? 0.5f : 0.7f;
+			drops.Add(new Drop(0.45f + 0.045f * j, train[j], cover * (1.75f - 0.2f * j), 0.9f + 0.1f * j, train[j] == RingBlue || train[j] == Band));
 		}
 		const int Slots = 12, MaskN = 4;
 		float minGap = H * 0.045f;                                     // 被挤压时一圈最窄能有多宽
@@ -212,7 +212,7 @@ void fragment() {
 					r[k] = -1f;
 					continue;
 				}
-				float free = drops[k].Reach * (1f - Mathf.Exp(-dt / drops[k].Tau)) + 40f * dt;
+				float free = drops[k].Reach * (1f - Mathf.Exp(-dt / drops[k].Tau)) + 25f * dt;
 				float pushed = -1f;
 				for (int q = k + 1; q < drops.Count; q++)
 				{
