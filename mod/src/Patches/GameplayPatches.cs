@@ -59,14 +59,22 @@ public static class DamagePatch
 		typeof(CreatureCmd).GetMethods(BindingFlags.Public | BindingFlags.Static)
 			.Where(m => m.Name == "Damage" && Sig.Params(m, "choiceContext", "targets", "amount", "props", "dealer", "cardSource", "cardPlay"));
 
-	public static void Prefix(IEnumerable<Creature>? targets, CardModel? cardSource)
+	public static void Prefix(IEnumerable<Creature>? targets, Creature? dealer, CardModel? cardSource)
 	{
 		ModEntry.Safe("Damage", () =>
 		{
-			if (targets != null && CardFx.IsMakotoCard(cardSource))
+			if (targets == null)
+			{
+				return;
+			}
+			if (CardFx.IsMakotoCard(cardSource))
 			{
 				Popups.MarkHits(targets);
 				CardFx.OnHit(cardSource!, targets);
+			}
+			else if (dealer?.Player is Player p && Makoto.Is(p))
+			{
+				Popups.MarkHits(targets);                 // 不是出牌造成的伤害（黑洞等能力）：伤害数字也换成 P3R 样式
 			}
 		});
 	}
