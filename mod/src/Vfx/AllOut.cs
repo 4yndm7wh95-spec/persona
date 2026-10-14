@@ -25,8 +25,9 @@ public static partial class AllOut
 	// 盖满后停一拍等结算页在下面出现，再柔和淡出。覆盖层放在独立的最上层 CanvasLayer，结算页弹出时也被盖着。
 	// v0.14.25（用户：第三圈浅色水波直接换成全透明，动画不变，更自然地切出结算页；浅色纯色停留太久）：
 	// 深一档蓝 → 中蓝两圈照旧扫满，中蓝盖满的那一刻第三圈"透明水波"紧接着从圆心扩开（边缘一道亮边），直接露出下面的结算页；
-	// 同一刻藏掉总攻击层（已被两圈深色完全盖住，看不出来）。滴下时刻对齐到透明波在结算页出现时开始扩开。
-	private const float OutroLen = 0.45f;
+	// 同一刻藏掉总攻击层（已被两圈深色完全盖住，看不出来）。
+	// 用户：透明区足够大时结算页再顺势出来 —— 滴下时刻往前挪：透明波开始扩 0.17s 后（半径约 65% 满屏）正好到 Duration、结算页出现。
+	private const float OutroLen = 0.56f;
 	private const float CoverSweep = 0.42f, ClearSweep = 0.55f;
 	private const float PortraitLead = 0.1f;                         // 立绘比高潮早 0.1s 开始淡入，高潮时已基本到位（用户：人物出现太突兀）
 	public const float Duration = FinishAt + FinishLen;
