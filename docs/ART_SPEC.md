@@ -741,7 +741,7 @@ Grand.cs 里其余函数暂时保留不用。
 - **封印王座**：去掉 Hamaon（升起的白底红线符纸会叠在 Messiah 身上 —— 用户截图里那几条小长条），整段交给弥赛亚降临。
 - **追踪之刃「空间测定」**（`Vfx/SeekFx.cs`，替换分裂光剑 + 黑缝横切 + 斩击音）：时空错位（两次米白闪 + Thanatos 身影 + 光点，时间回转声）→
   黑色虚线一条条横贯战场、每个敌人一个 X、逐个锁定（细圈收缩 + 黄色菱形「?」+ 天鹅绒光标"咔哒"声、音高逐个升高）→
-  左上角 P3R 技能变更面板「THANATOS：BRAVE BLADE 君王之刃 ✕ → VORPAL BLADE 空间杀法 NEW」（skill_change 原声）→ 虚线网淡出。sfx 75 个。
+  左上角 P3R 技能变更面板「THANATOS：BRAVE BLADE 君王之刃 ✕ → VORPAL BLADE 空间杀法 NEW」（skill_change 原声）→ 虚线网淡出。sfx 73 个。
 
 ## 质量要求（用户 2026-10-13，长期有效）
 
