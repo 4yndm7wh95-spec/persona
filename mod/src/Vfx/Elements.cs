@@ -50,7 +50,15 @@ public static class Elements
 			case Element.Slash: Motifs.Cleave(layer, center, Pal.Cyan, 0.85f * scale, Fx.Rand(-0.75f, -0.4f)); break;
 			case Element.Royal: Motifs.Cleave(layer, center, Pal.Royal, 1.15f * scale, -0.6f); break;
 			case Element.Pierce: Motifs.Thrust(layer, center, Pal.Cyan, scale); break;
-			case Element.Strike: Motifs.Smash(layer, center, feet, Pal.Royal, scale, crack: scale >= 0.9f); break;
+			case Element.Strike:
+				// v0.14.24（用户：星形爆闪挡人、空心描边又不好看 —— 直接用「打击」那张牌的命中特效）：同打击的斩痕；
+				// 声音仍是钝击（atk_hit_strike），重击（scale ≥ 0.9）保留地裂
+				Motifs.Cleave(layer, center, Pal.Cyan, 0.85f * scale, Fx.Rand(-0.75f, -0.4f));
+				if (scale >= 0.9f)
+				{
+					Motifs.GroundCrack(layer, feet, scale);
+				}
+				break;
 			case Element.Agi: Bold.Agidyne(layer, center, feet, scale); break;
 			case Element.Bufu: Bold.Bufudyne(layer, center, feet, scale); break;
 			case Element.Zio: Bold.Ziodyne(layer, center, scale); break;
