@@ -1,0 +1,91 @@
+[
+  {
+    "part": "torso",
+    "method": "同零件原像素最近邻克隆，限制在后绘制的完全不透明遮挡下",
+    "pixels": 3000,
+    "unfilled": 458102
+  },
+  {
+    "part": "spire",
+    "method": "同零件原像素最近邻克隆，限制在后绘制的完全不透明遮挡下",
+    "pixels": 6365,
+    "unfilled": 456438
+  },
+  {
+    "part": "wing_left",
+    "method": "同零件原像素最近邻克隆，限制在后绘制的完全不透明遮挡下",
+    "pixels": 4132,
+    "unfilled": 355131
+  },
+  {
+    "part": "wing_right",
+    "method": "同零件原像素最近邻克隆，限制在后绘制的完全不透明遮挡下",
+    "pixels": 7111,
+    "unfilled": 282210
+  },
+  {
+    "part": "leg_left",
+    "method": "同零件原像素最近邻克隆，限制在后绘制的完全不透明遮挡下",
+    "pixels": 1910,
+    "unfilled": 351488
+  },
+  {
+    "part": "leg_right",
+    "method": "同零件原像素最近邻克隆，限制在后绘制的完全不透明遮挡下",
+    "pixels": 869,
+    "unfilled": 358084
+  },
+  {
+    "part": "head",
+    "method": "同零件原像素最近邻克隆，限制在后绘制的完全不透明遮挡下",
+    "pixels": 1524,
+    "unfilled": 414375
+  },
+  {
+    "part": "arm_raised",
+    "method": "同零件原像素最近邻克隆，限制在后绘制的完全不透明遮挡下",
+    "pixels": 0,
+    "unfilled": 396953
+  },
+  {
+    "part": "arm_chain",
+    "method": "同零件原像素最近邻克隆，限制在后绘制的完全不透明遮挡下",
+    "pixels": 169,
+    "unfilled": 373463
+  },
+  {
+    "part": "torso",
+    "method": "同零件原像素最近邻克隆，限制在后绘制的完全不透明遮挡下",
+    "pixels": 1338,
+    "unfilled": 496092
+  },
+  {
+    "part": "torso",
+    "method": "同零件原像素最近邻克隆，限制在后绘制的完全不透明遮挡下",
+    "pixels": 906,
+    "unfilled": 495100
+  },
+  {
+    "part": "torso",
+    "method": "同零件原像素最近邻克隆，限制在后绘制的完全不透明遮挡下",
+    "pixels": 1844,
+    "unfilled": 494461
+  },
+  {
+    "part": "torso",
+    "method": "同零件原像素最近邻克隆，限制在后绘制的完全不透明遮挡下",
+    "pixels": 0,
+    "unfilled": 491919
+  },
+  {
+    "part": "torso",
+    "method": "同零件原像素最近邻克隆，限制在后绘制的完全不透明遮挡下",
+    "pixels": 0,
+    "unfilled": 491919
+  },
+  {
+    "part": "chain",
+    "method": "从原图 581~595 行可见链节循环克隆，补齐四口棺材内部遮挡链段",
+    "pixels": 1708
+  }
+]
