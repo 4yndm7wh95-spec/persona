@@ -2,15 +2,15 @@
 
 importer="texture"
 type="CompressedTexture2D"
-path="res://.godot/imported/tartarus_top.png-c3911e9065b212bf105c5c410a4c61c0.ctex"
+path="res://.godot/imported/tartarus_top_v2_fg.png-ded3a0d65c097f2750c512a3efe25437.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://p3makoto/fx/tartarus_top.png"
-dest_files=["res://.godot/imported/tartarus_top.png-c3911e9065b212bf105c5c410a4c61c0.ctex"]
+source_file="res://p3makoto/fx/tartarus_top_v2_fg.png"
+dest_files=["res://.godot/imported/tartarus_top_v2_fg.png-ded3a0d65c097f2750c512a3efe25437.ctex"]
 
 [params]
 

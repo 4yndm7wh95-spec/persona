@@ -143,8 +143,9 @@ public static class GreatSeal
 			fgLayer.AddChild(fgs);
 			fgs.GlobalPosition = origin;
 		}
-		Vector2 moonAt = origin + (v2 != null ? new Vector2(1250f, 260f) * (tex.GetWidth() / 2048f) : new Vector2(899f, 70f)) * s;     // 原图里月亮的中心
-		float moonR = (v2 != null ? 200f * tex.GetWidth() / 2048f : 230f) * s;
+		// 原图里月亮的中心 / 半径（v14 A 版 1672×941 实测：(992, 208)、r≈165）
+		Vector2 moonAt = origin + (v2 != null ? new Vector2(992f, 208f) * (tex.GetWidth() / 1672f) : new Vector2(899f, 70f)) * s;
+		float moonR = (v2 != null ? 165f * tex.GetWidth() / 1672f : 230f) * s;
 
 		// 月光：两层加色光晕呼吸
 		Sprite2D halo = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Position = moonAt, Modulate = new Color(Moon, 0.35f) };
@@ -460,10 +461,24 @@ public static class GreatSeal
 		m.AddChild(band);
 		Fx.Poly(band, new[] { new Vector2(-W, -H * 0.16f), new Vector2(W, -H * 0.16f), new Vector2(W, H * 0.16f), new Vector2(-W, H * 0.16f) }, new Color(0.03f, 0.14f, 0.62f, 0.95f));
 		Fx.Poly(band, new[] { new Vector2(-W, H * 0.16f), new Vector2(W, H * 0.16f), new Vector2(W, H * 0.175f), new Vector2(-W, H * 0.175f) }, Pal.Cyan, additive: true);
-		Node2D word = new() { Skew = -0.18f };
+		Node2D word = new();
 		band.AddChild(word);
-		int fs = (int)(H * 0.3f);
-		Typo.Text(word, "PERSONA", Typo.LatinItalic, fs, new Color(0.02f, 0.05f, 0.25f), new Vector2(-W * 0.2f, -fs * 0.6f), outline: 6, outlineColor: new Color(0.25f, 0.55f, 1f));
+		// 原版「PERSONA」字形（PLG_UI_Battle Skill_TitleLogo，白色多边形字）：压成深蓝、外描一圈亮蓝
+		if (UiTex("persona_logo") is Texture2D plogo)
+		{
+			float pls = H * 0.42f / plogo.GetHeight();
+			foreach (Vector2 o in new[] { new Vector2(-6, 0), new Vector2(6, 0), new Vector2(0, -6), new Vector2(0, 6) })
+			{
+				word.AddChild(new Sprite2D { Texture = plogo, Scale = Vector2.One * pls, Position = new Vector2(-W * 0.05f, 0f) + o, Modulate = new Color(0.25f, 0.55f, 1f) });
+			}
+			word.AddChild(new Sprite2D { Texture = plogo, Scale = Vector2.One * pls, Position = new Vector2(-W * 0.05f, 0f), Modulate = new Color(0.02f, 0.05f, 0.25f) });
+		}
+		else
+		{
+			int fs = (int)(H * 0.3f);
+			word.Skew = -0.18f;
+			Typo.Text(word, "PERSONA", Typo.LatinItalic, fs, new Color(0.02f, 0.05f, 0.25f), new Vector2(-W * 0.2f, -fs * 0.6f), outline: 6, outlineColor: new Color(0.25f, 0.55f, 1f));
+		}
 		// 剪影
 		Texture2D? sil = UiTex("bu_silhouette");
 		Sprite2D? fig = null;
@@ -481,7 +496,17 @@ public static class GreatSeal
 		Typo.Text(panel, "ARCANA", Typo.LatinItalic, 16, new Color(0.2f, 0.4f, 0.8f), new Vector2(pw - 110f, 14f));
 		Node2D row = new() { Position = new Vector2(-30f, 70f) };
 		panel.AddChild(row);
-		Polygon2D hl = Fx.Poly(row, new[] { new Vector2(0f, 0f), new Vector2(pw, 0f), new Vector2(pw - 14f, 52f), new Vector2(-14f, 52f) }, Pal.White);
+		Node2D hl = new();
+		row.AddChild(hl);
+		if (UiTex("skill_base") is Texture2D sb)
+		{
+			// 原版技能条底板（PLG_UI_Battle SkillName_base_2）拉到条目宽度
+			hl.AddChild(new Sprite2D { Texture = sb, Centered = false, Scale = new Vector2(pw / sb.GetWidth(), 52f / sb.GetHeight()), Position = new Vector2(-14f, 0f) });
+		}
+		else
+		{
+			Fx.Poly(hl, new[] { new Vector2(0f, 0f), new Vector2(pw, 0f), new Vector2(pw - 14f, 52f), new Vector2(-14f, 52f) }, Pal.White);
+		}
 		Fx.Poly(row, new[] { new Vector2(12f, 14f), new Vector2(46f, 14f), new Vector2(40f, 38f), new Vector2(6f, 38f) }, new Color(0.05f, 0.1f, 0.3f));   // 技能图标块
 		Typo.Text(row, Zh ? "伟大封印" : "The Great Seal", Typo.CjkHeavy, 30, new Color(0.03f, 0.05f, 0.12f), new Vector2(60f, 6f));
 		Typo.Text(row, "∞", Typo.LatinItalic, 30, new Color(0.03f, 0.05f, 0.12f), new Vector2(pw - 70f, 4f));
@@ -489,8 +514,10 @@ public static class GreatSeal
 		panel.AddChild(desc);
 		Typo.Text(desc, Zh ? "解放内在的宇宙后获得的力量。" : "Power drawn from the universe within.", Typo.Cjk, 22, new Color(0.6f, 0.9f, 1f), Vector2.Zero, outline: 2, outlineColor: new Color(0.02f, 0.05f, 0.15f));
 		Typo.Text(desc, Zh ? "以自身为封印，封住一切的终结。" : "Become the seal that holds back the end.", Typo.Cjk, 22, new Color(0.6f, 0.9f, 1f), new Vector2(0f, 32f), outline: 2, outlineColor: new Color(0.02f, 0.05f, 0.15f));
-		Audio.Sfx.Clip("lock_tick", 0.7f, 0.55f);
-		Audio.Sfx.Clip("Sys_Theurgia_Open", 0.6f, 1.3f);
+		// 原版战斗菜单音：面板弹出 / 光标落到技能上 / 确认
+		Audio.Sfx.Clip("Btl_CommandPanel", 0.8f, 0.05f);
+		Audio.Sfx.Clip("Sys_Cursor", 0.8f, 0.55f);
+		Audio.Sfx.Clip("Btl_Ok", 0.9f, 1.3f);
 		const float total = 1.95f;
 		Fx.Animate(m, total, t =>
 		{
@@ -645,6 +672,13 @@ public static class GreatSeal
 		Sprite2D? darkS = dark != null ? new Sprite2D { Texture = dark, Centered = false, Scale = Vector2.One * sc, Position = -faceCenter * sc } : null;
 		if (darkS != null) face.AddChild(darkS);
 		Polygon2D sweep = Fx.Poly(face, new[] { new Vector2(-60f, -H), new Vector2(60f, -H), new Vector2(160f, H), new Vector2(40f, H) }, new Color(0.85f, 0.97f, 1f, 0.5f), additive: true);
+		// 有 Codex 做的闭眼 / 半睁差分（ui/face_closed、ui/face_half：从结束立绘 x800,y0 起裁的 500×640 区域编辑而来）就真的"睁眼"；
+		// 没有就保持暗 → 亮 + 扫光的做法
+		Sprite2D? closedS = UiTex("face_closed") is Texture2D fc ? new Sprite2D { Texture = fc, Centered = false, Scale = Vector2.One * sc, Position = (new Vector2(800f, 0f) - faceCenter) * sc } : null;
+		Sprite2D? halfS = UiTex("face_half") is Texture2D fh ? new Sprite2D { Texture = fh, Centered = false, Scale = Vector2.One * sc, Position = (new Vector2(800f, 0f) - faceCenter) * sc, Visible = false } : null;
+		if (closedS != null) face.AddChild(closedS);
+		if (halfS != null) face.AddChild(halfS);
+		if (closedS != null && darkS != null) face.MoveChild(darkS, face.GetChildCount() - 1);   // 暗色版压在差分上面一起褪
 		var glints = new List<Polygon2D>();
 		foreach (Vector2 e in eyes)
 		{
@@ -672,6 +706,14 @@ public static class GreatSeal
 			float sw = Mathf.Clamp((time - 0.9f) / 0.4f, 0f, 1f);
 			sweep.Position = new Vector2(Mathf.Lerp(-W * 0.6f, W * 0.6f, Ease.InOutCubic(sw)), 0f);
 			sweep.Modulate = new Color(1f, 1f, 1f, sw > 0f && sw < 1f ? 1f : 0f);
+			if (closedS != null)
+			{
+				closedS.Visible = time < 1.0f;
+			}
+			if (halfS != null)
+			{
+				halfS.Visible = time >= 1.0f && time < 1.15f;
+			}
 			float gl = time < 1.15f ? 0f : time < 1.3f ? Ease.OutBack((time - 1.15f) / 0.15f) : Mathf.Max(0f, 1f - (time - 1.3f) / 0.35f);
 			foreach (Polygon2D g in glints)
 			{

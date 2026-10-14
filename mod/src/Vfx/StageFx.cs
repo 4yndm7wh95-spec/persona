@@ -343,12 +343,25 @@ public static class StageFx
 			h.Visible = false;                           // 发牌 / 翻牌之前先藏起来（含标题动画期间）
 		}
 		screen.GetNodeOrNull("P3ShuffleDeck")?.QueueFree();
+		// 每次进来都换一个序号：标题动画还没播完就重抽时，旧的"延迟发牌"作废，不会发两次牌
+		int token = (screen.HasMeta("p3_deal") ? screen.GetMeta("p3_deal").AsInt32() : 0) + 1;
+		screen.SetMeta("p3_deal", token);
 		if (first)
 		{
 			TitleIntro(screen);
-			Fx.After(screen, TitleIntroLen, "shuffle deal", () => { if (GodotObject.IsInstanceValid(row)) Deal(screen, row); });
+			Fx.After(screen, TitleIntroLen, "shuffle deal", () =>
+			{
+				if (GodotObject.IsInstanceValid(row) && screen.GetMeta("p3_deal").AsInt32() == token)
+				{
+					Deal(screen, row);
+				}
+			});
 			Fx.After(screen, TitleIntroLen + 3.0, "shuffle failsafe 2", () =>
 			{
+				if (!GodotObject.IsInstanceValid(screen) || screen.GetMeta("p3_deal").AsInt32() != token)
+				{
+					return;
+				}
 				foreach (Control h in holders)
 				{
 					if (GodotObject.IsInstanceValid(h)) h.Visible = true;
@@ -369,8 +382,12 @@ public static class StageFx
 		{
 			return;
 		}
-		Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.6f, 0.15f);
-		ShuffleTitle(screen);
+		screen.GetNodeOrNull("P3ShuffleTitle")?.QueueFree();   // v0.14.13：原版在发牌时没有常驻标题条
+		screen.GetNodeOrNull("P3ShuffleDeck")?.QueueFree();
+		// 这一轮发牌的编号：被新一轮（重抽）取代后，本轮还没触发的翻牌 / 兜底回调全部作废，不会提前把新一轮的牌翻开
+		int run = (screen.HasMeta("p3_deal_run") ? screen.GetMeta("p3_deal_run").AsInt32() : 0) + 1;
+		screen.SetMeta("p3_deal_run", run);
+		bool Current() => GodotObject.IsInstanceValid(screen) && screen.GetMeta("p3_deal_run").AsInt32() == run;
 		Vector2 view = screen.GetViewportRect().Size;
 		float cardH = 330f * view.Y / 1080f;
 		Texture2D? back = ResourceLoader.Exists("res://p3makoto/fx/tarot_back.png") ? ResourceLoader.Load<Texture2D>("res://p3makoto/fx/tarot_back.png") : null;
@@ -405,7 +422,7 @@ public static class StageFx
 		var cards = new System.Collections.Generic.List<(Node2D Node, Sprite2D Face, Sprite2D Glow)>();
 		for (int i = 0; i < n; i++)
 		{
-			Node2D c = new() { Position = center, Scale = Vector2.Zero };
+			Node2D c = new() { Position = targets[i], Scale = Vector2.Zero };
 			deck.AddChild(c);
 			Sprite2D glow = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(Pal.Cyan, 0.35f), Scale = new Vector2(cardH * 0.9f, cardH * 1.25f) / Fx.SoftDot.GetWidth() };
 			c.AddChild(glow);
@@ -413,51 +430,70 @@ public static class StageFx
 			c.AddChild(face);
 			cards.Add((c, face, glow));
 		}
-		// v0.14.8：每张牌一条连续的三次贝塞尔曲线（中间牌堆 → 绕向外侧 → 从上方落进自己的位置），整段一个平滑缓动，
-		// 不再分"绕圈"和"发牌"两段拼接（拼接处速度突变，看起来不丝滑）。
-		const float startAt = 0.12f, gap = 0.09f, flight = 0.85f;
-		float flipAt = startAt + gap * (n - 1) + flight + 0.25f;
-		var paths = new (Vector2 P0, Vector2 P1, Vector2 P2, Vector2 P3, float Side)[n];
+		// v0.14.13（对照 P3R 分镜 art/p3r_tex/shuffle/shuffle_time_storyboard_detail_65frames.png 第 23~27 帧）：
+		// 牌从画面上方、各自位置的正上方斜着落下来 —— 入画时倾斜约 45°，边落边转正，越落越慢（约 0.45s），身后拖两道淡蓝残影；
+		// 几张牌依次落下（间隔 0.12s），落定时轻轻一顿（"嗒"）。全部落定后再一起翻面。
+		const float startAt = 0.05f, gap = 0.12f, fall = 0.45f;
+		float flipAt = startAt + gap * (n - 1) + fall + 0.3f;
+		var starts = new Vector2[n];
+		var spins = new float[n];
 		for (int i = 0; i < n; i++)
 		{
-			float side = n == 1 ? 1f : (i - (n - 1) / 2f) / ((n - 1) / 2f);   // -1 左 … 1 右
-			float sgn = side == 0f ? (i % 2 == 0 ? 1f : -1f) : Mathf.Sign(side);
-			Vector2 p0 = center + new Vector2((i - (n - 1) / 2f) * 4f, -i * 3f);
-			Vector2 p1 = center + new Vector2(sgn * (260f + 120f * Mathf.Abs(side)), 150f);        // 先向外下方甩出
-			Vector2 p2 = targets[i] + new Vector2(sgn * 60f, -220f);                               // 再从斜上方落下
-			paths[i] = (p0, p1, p2, targets[i], sgn);
-			Audio.Sfx.Clip("ShuffleTime_CardSet", 0.5f, startAt + gap * i + flight * 0.96f);
+			float sgn = i % 2 == 0 ? -1f : 1f;
+			starts[i] = targets[i] + new Vector2(sgn * 70f, -view.Y * 0.75f);
+			spins[i] = sgn * 0.8f;
+			Audio.Sfx.Clip("ShuffleTime_CardSet", 0.55f, startAt + gap * i + fall * 0.95f);
 		}
-		static Vector2 Bez(Vector2 a, Vector2 b, Vector2 c, Vector2 d, float t)
+		Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.5f, startAt);
+		// 残影：每张牌两道，沿同一条轨迹落后 0.03 / 0.06s
+		var ghosts = new System.Collections.Generic.List<(Sprite2D S, int I, float Lag)>();
+		for (int i = 0; i < n; i++)
 		{
-			float u = 1f - t;
-			return u * u * u * a + 3f * u * u * t * b + 3f * u * t * t * c + t * t * t * d;
+			for (int k = 1; k <= 2; k++)
+			{
+				Sprite2D g = new() { Texture = back, Scale = Vector2.One * sc, Material = Fx.Additive, Modulate = new Color(0.4f, 0.7f, 1f, 0f) };
+				deck.AddChild(g);
+				deck.MoveChild(g, 0);
+				ghosts.Add((g, i, 0.035f * k));
+			}
 		}
-		static float Smoother(float x) => x * x * x * (x * (x * 6f - 15f) + 10f);
+		(Vector2 Pos, float Rot) At(int i, float time)
+		{
+			float u = Mathf.Clamp((time - startAt - gap * i) / fall, 0f, 1f);
+			float e = Ease.OutCubic(u);
+			return (starts[i].Lerp(targets[i], e), spins[i] * (1f - Ease.OutCubic(Mathf.Min(1f, u * 1.15f))));
+		}
 		Fx.Animate(deck, flipAt + 0.05f, t =>
 		{
 			float time = t * (flipAt + 0.05f);
 			for (int i = 0; i < n; i++)
 			{
 				(Node2D c, Sprite2D face, Sprite2D glow) = cards[i];
-				var (p0, p1, p2, p3, sgn) = paths[i];
-				float pop = Ease.OutBack(Mathf.Clamp(time / 0.12f, 0f, 1f));
-				float u = Mathf.Clamp((time - startAt - gap * i) / flight, 0f, 1f);
-				float e = Smoother(u);
-				Vector2 pos = Bez(p0, p1, p2, p3, e);
-				Vector2 ahead = Bez(p0, p1, p2, p3, Mathf.Min(1f, e + 0.02f));
-				float tilt = u >= 1f ? 0f : Mathf.Clamp((ahead - pos).X * 0.004f, -0.35f, 0.35f) * Mathf.Sin(Mathf.Pi * e);
-				float land = u >= 1f ? Mathf.Max(0f, 1f - (time - startAt - gap * i - flight) / 0.18f) : 0f;
+				float u = Mathf.Clamp((time - startAt - gap * i) / fall, 0f, 1f);
+				var (pos, rot) = At(i, time);
+				float land = u >= 1f ? Mathf.Max(0f, 1f - (time - startAt - gap * i - fall) / 0.18f) : 0f;
 				c.Position = pos;
-				c.Rotation = tilt;
-				c.Scale = Vector2.One * pop * (0.82f + 0.18f * e) * (1f + 0.04f * Mathf.Sin(Mathf.Pi * land));
-				c.ZIndex = u > 0f ? 10 + i : i;
-				glow.Modulate = new Color(Pal.Cyan, 0.25f + 0.25f * Mathf.Sin(Mathf.Pi * e) + 0.35f * land);
+				c.Rotation = rot;
+				c.Scale = u <= 0f ? Vector2.Zero : new Vector2(1f + 0.03f * Mathf.Sin(Mathf.Pi * land), 1f - 0.03f * Mathf.Sin(Mathf.Pi * land));
+				c.ZIndex = 10 + i;
+				glow.Modulate = new Color(Pal.Cyan, 0.2f + 0.3f * (1f - u) * (u > 0f ? 1f : 0f) + 0.35f * land);
+			}
+			foreach (var (g, i, lag) in ghosts)
+			{
+				float u = Mathf.Clamp((time - lag - startAt - gap * i) / fall, 0f, 1f);
+				var (pos, rot) = At(i, time - lag);
+				g.Position = pos;
+				g.Rotation = rot;
+				g.Modulate = new Color(0.4f, 0.7f, 1f, u > 0f && u < 1f ? 0.35f - lag * 3f : 0f);
 			}
 		});
 		// 一起翻面：牌背收窄成线（0.1s）→ 真卡展开（0.2s, OutBack）
 		Fx.After(deck, flipAt, "shuffle flip", () =>
 		{
+			if (!Current() || !GodotObject.IsInstanceValid(deck))
+			{
+				return;
+			}
 			Audio.Sfx.Clip("card_draw", 0.8f);
 			Audio.Sfx.Clip("ShuffleTime_Result", 0.55f, 0.08f);
 			Fx.Animate(deck, 0.1f, t =>
@@ -469,6 +505,10 @@ public static class StageFx
 			});
 			Fx.After(deck, 0.1, "shuffle reveal", () =>
 			{
+				if (!Current() || !GodotObject.IsInstanceValid(deck))
+				{
+					return;
+				}
 				deck.QueueFree();
 				for (int i = 0; i < n; i++)
 				{
@@ -488,6 +528,10 @@ public static class StageFx
 		// 兜底：无论如何 2.2s 后把牌显示出来
 		Fx.After(screen, flipAt + 0.6f, "shuffle failsafe", () =>
 		{
+			if (!Current())
+			{
+				return;
+			}
 			for (int i = 0; i < n; i++)
 			{
 				Control h = holders[i];
@@ -518,12 +562,12 @@ public static class StageFx
 	}
 
 	/// <summary>
-	/// P3R：选牌前先单独播一段「SHUFFLE TIME」标题（v0.14.8，用户：P3R 里是标题动画播完才出牌）：
-	///   0.00  画面压暗成深蓝；一道青白光刃斜着划过画面中央，留下一条倾斜的蓝色宽带
-	///   0.10  「SHUFFLE」从左、「TIME」从右高速滑入，在中间对上（0.35）：白闪 + 轻震 + 八张小阿卡纳牌从字后旋转着炸开
-	///   0.35–0.85  停留：字缓慢放大，一道扫光掠过字面
-	///   0.85–1.15  退场：字和宽带横向拉长、淡出，暗色退去 → 左上角小标题滑入、开始发牌
-	/// 有原版「SHUFFLE TIME」字图（ui/shuffle_title.png）时用原版字图代替文字。
+	/// P3R：选牌前先单独播一段「SHUFFLE TIME」标题（v0.14.13，对照原版分镜第 9~22 帧，约 1.15s）：
+	///   0.00  画面压暗成深蓝，一道斜向的蓝色光带亮起
+	///   0.05  原版字图「SHUFFLE TIME」（白字 + 深蓝描边，向右上倾斜约 7°）从左下沿斜线滑入，身后拖着三层越来越大、越来越淡的蓝色残影
+	///   0.40  主字到位后缓慢漂移，残影继续往右上散开、变淡
+	///   0.75  主字也化开：横向拉长、变成蓝色、淡出；只剩一团斜向的蓝色柔光抹过画面（原版第 18~22 帧）
+	///   1.15  发牌
 	/// </summary>
 	private static void TitleIntro(Control screen)
 	{
@@ -533,89 +577,70 @@ public static class StageFx
 		root.TopLevel = true;
 		root.GlobalPosition = Vector2.Zero;
 		Audio.Sfx.Clip("ShuffleTime_Start", 0.85f);
-		Audio.Sfx.Clip("flash_cutin", 0.7f, 0.33f);
-		ColorRect dim = new() { Size = size, Color = new Color(0.01f, 0.03f, 0.12f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore };
+		ColorRect dim = new() { Size = size, Color = new Color(0.01f, 0.03f, 0.14f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore };
 		root.AddChild(dim);
 		Vector2 c = size / 2f;
-		Node2D band = new() { Position = c, Rotation = -0.14f };
+		const float tilt = -0.12f;
+		Vector2 dir = Vector2.Right.Rotated(tilt);           // 字的走向（向右上）
+		// 斜向蓝色光带（柔光，压在字下面）
+		Sprite2D band = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Position = c, Rotation = tilt, Modulate = new Color(0.15f, 0.35f, 1f, 0f) };
 		root.AddChild(band);
-		float bh = size.Y * 0.24f;
-		Polygon2D slab = Fx.Poly(band, new[] { new Vector2(-size.X, -bh / 2f), new Vector2(size.X, -bh / 2f), new Vector2(size.X, bh / 2f), new Vector2(-size.X, bh / 2f) }, new Color(0.04f, 0.2f, 0.75f, 0.9f));
-		Polygon2D edgeA = Fx.Poly(band, new[] { new Vector2(-size.X, -bh / 2f - 6f), new Vector2(size.X, -bh / 2f - 6f), new Vector2(size.X, -bh / 2f), new Vector2(-size.X, -bh / 2f) }, Pal.Cyan, additive: true);
-		Polygon2D edgeB = Fx.Poly(band, new[] { new Vector2(-size.X, bh / 2f), new Vector2(size.X, bh / 2f), new Vector2(size.X, bh / 2f + 4f), new Vector2(-size.X, bh / 2f + 4f) }, new Color(1f, 1f, 1f, 0.8f), additive: true);
-		Polygon2D blade = Fx.Poly(band, new[] { new Vector2(-60f, -bh * 0.7f), new Vector2(60f, -bh * 0.7f), new Vector2(20f, bh * 0.7f), new Vector2(-100f, bh * 0.7f) }, new Color(0.85f, 0.97f, 1f, 0.95f), additive: true);
-		// 字：原版字图优先，没有就用斜体字
-		Node2D words = new() { Position = c, Rotation = -0.14f };
-		root.AddChild(words);
-		Node2D left, right;
+		float bandScale = 64f / Fx.SoftDot.GetWidth();
 		Texture2D? logo = ResourceLoader.Exists("res://p3makoto/ui/shuffle_title.png") ? ResourceLoader.Load<Texture2D>("res://p3makoto/ui/shuffle_title.png") : null;
-		int fs = (int)(size.Y * 0.17f);
-		if (logo != null)
+		float ls = logo != null ? size.X * 0.62f / logo.GetWidth() : 1f;
+		Node2D MakeWord(Color fill, Color line, bool outline)
 		{
-			float ls = bh * 1.1f / logo.GetHeight();
-			left = new Node2D();
-			words.AddChild(left);
-			left.AddChild(new Sprite2D { Texture = logo, Scale = Vector2.One * ls });
-			right = new Node2D();
-			words.AddChild(right);
-		}
-		else
-		{
-			left = new Node2D();
-			words.AddChild(left);
-			Typo.Text(left, "SHUFFLE", Typo.LatinItalic, fs, Pal.White, new Vector2(-fs * 3.35f + 10f, -fs * 0.62f), outline: 6, outlineColor: new Color(0.02f, 0.06f, 0.3f), shadow: new Color(Pal.Cyan, 0.8f), shadowOffset: new Vector2(8f, 8f));
-			right = new Node2D();
-			words.AddChild(right);
-			Typo.Text(right, "TIME", Typo.LatinItalic, fs, Pal.White, new Vector2(fs * 0.25f, -fs * 0.62f), outline: 6, outlineColor: new Color(0.02f, 0.06f, 0.3f), shadow: new Color(Pal.Cyan, 0.8f), shadowOffset: new Vector2(8f, 8f));
-		}
-		Polygon2D shine = Fx.Poly(words, new[] { new Vector2(0f, -fs * 0.7f), new Vector2(50f, -fs * 0.7f), new Vector2(20f, fs * 0.7f), new Vector2(-30f, fs * 0.7f) }, new Color(1f, 1f, 1f, 0.55f), additive: true);
-		// 炸开的小阿卡纳牌
-		Texture2D? faces = ResourceLoader.Exists("res://p3makoto/fx/arcana_faces.png") ? ResourceLoader.Load<Texture2D>("res://p3makoto/fx/arcana_faces.png") : null;
-		var minis = new System.Collections.Generic.List<(Sprite2D s, Vector2 v, float spin)>();
-		if (faces != null)
-		{
-			for (int k = 0; k < 8; k++)
+			Node2D w = new() { Rotation = tilt, Skew = -0.05f };
+			root.AddChild(w);
+			if (logo != null)
 			{
-				int cell = (k * 5 + 2) % 16 == 14 ? 15 : (k * 5 + 2) % 16;
-				Sprite2D m = new() { Texture = new AtlasTexture { Atlas = faces, Region = new Rect2(cell % 4 * 256, cell / 4 * 256, 256, 256) }, Scale = Vector2.One * (size.Y * 0.09f / 256f), Position = c, Modulate = new Color(1f, 1f, 1f, 0f) };
-				root.AddChild(m);
-				minis.Add((m, Vector2.Right.Rotated(k * Mathf.Tau / 8f + 0.3f) * new Vector2(size.X * 0.42f, size.Y * 0.36f), Fx.Rand(-5f, 5f)));
+				if (outline)
+				{
+					foreach (Vector2 o in new[] { new Vector2(-5, 0), new Vector2(5, 0), new Vector2(0, -5), new Vector2(0, 5), new Vector2(-4, -4), new Vector2(4, 4), new Vector2(-4, 4), new Vector2(4, -4) })
+					{
+						w.AddChild(new Sprite2D { Texture = logo, Scale = Vector2.One * ls, Position = o, Modulate = line });
+					}
+				}
+				w.AddChild(new Sprite2D { Texture = logo, Scale = Vector2.One * ls, Modulate = fill });
 			}
+			else
+			{
+				int fs = (int)(size.Y * 0.14f);
+				Typo.Text(w, "SHUFFLE TIME", Typo.LatinItalic, fs, fill, new Vector2(-fs * 3.1f, -fs * 0.62f), outline: outline ? 6 : 0, outlineColor: line);
+			}
+			return w;
 		}
-		bool met = false;
+		// 残影（原版第 11~17 帧：主字上下各叠着几层更大、更淡的蓝色同款字，往右上散开）
+		var echoes = new System.Collections.Generic.List<(Node2D W, float Lag, float Scale, float Side)>();
+		for (int k = 3; k >= 1; k--)
+		{
+			Node2D e = MakeWord(new Color(0.22f, 0.5f, 1f, 0.6f - 0.12f * k), new Color(0.05f, 0.15f, 0.6f, 0.4f - 0.08f * k), false);
+			echoes.Add((e, 0.05f * k, 1f + 0.1f * k, k % 2 == 0 ? -1f : 1f));
+		}
+		Node2D main = MakeWord(Pal.White, new Color(0.04f, 0.1f, 0.42f), true);
+		Vector2 from = c - dir * size.X * 0.7f + new Vector2(0f, size.Y * 0.08f);
 		Fx.Animate(root, TitleIntroLen, t =>
 		{
 			float time = t * TitleIntroLen;
-			float outT = Ease.InCubic(Mathf.Clamp((time - 0.85f) / 0.3f, 0f, 1f));
-			dim.Color = new Color(0.01f, 0.03f, 0.12f, 0.6f * Mathf.Clamp(time / 0.1f, 0f, 1f) * (1f - outT));
-			// 光刃划过 → 宽带展开
-			float sweep = Ease.OutExpo(Mathf.Clamp(time / 0.2f, 0f, 1f));
-			blade.Position = new Vector2(Mathf.Lerp(-size.X * 0.8f, size.X * 0.8f, sweep), 0f);
-			blade.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp((time - 0.15f) / 0.1f, 0f, 1f));
-			float open = Ease.OutExpo(Mathf.Clamp((time - 0.05f) / 0.2f, 0f, 1f));
-			band.Scale = new Vector2(1f + 0.3f * outT, open * (1f - 0.7f * outT));
-			band.Modulate = new Color(1f, 1f, 1f, 1f - outT);
-			// 字对撞
-			float slide = Ease.OutExpo(Mathf.Clamp((time - 0.1f) / 0.25f, 0f, 1f));
-			left.Position = new Vector2(-size.X * (1f - slide), 0f);
-			right.Position = new Vector2(size.X * (1f - slide), 0f);
-			words.Scale = new Vector2((1f + 0.04f * Mathf.Clamp((time - 0.35f) / 0.5f, 0f, 1f)) * (1f + 0.35f * outT), 1f + 0.04f * Mathf.Clamp((time - 0.35f) / 0.5f, 0f, 1f));
-			words.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((time - 0.1f) / 0.05f, 0f, 1f) * (1f - outT));
-			float sh = Mathf.Clamp((time - 0.45f) / 0.35f, 0f, 1f);
-			shine.Position = new Vector2(Mathf.Lerp(-fs * 3.4f, fs * 2.6f, Ease.InOutCubic(sh)), 0f);
-			shine.Modulate = new Color(1f, 1f, 1f, sh > 0f && sh < 1f ? 1f : 0f);
-			if (!met && time >= 0.35f)
+			float outT = Ease.InCubic(Mathf.Clamp((time - 0.75f) / 0.35f, 0f, 1f));
+			dim.Color = new Color(0.01f, 0.03f, 0.14f, 0.65f * Mathf.Clamp(time / 0.1f, 0f, 1f) * (1f - Mathf.Clamp((time - 1.0f) / 0.15f, 0f, 1f)));
+			float bandOn = Mathf.Clamp(time / 0.15f, 0f, 1f);
+			band.Scale = new Vector2(size.X * 0.9f * (0.6f + 0.6f * outT), size.Y * 0.28f * (1f - 0.5f * outT)) / 64f * bandScale;
+			band.Position = c + dir * size.X * 0.25f * outT;
+			band.Modulate = new Color(0.15f, 0.35f, 1f, (0.55f + 0.35f * outT) * bandOn * (1f - Mathf.Clamp((time - 1.0f) / 0.15f, 0f, 1f)));
+			// 主字：0.05 → 0.4 从左下滑到中心（OutExpo），之后缓慢漂移；0.75 起横向拉长、变蓝、淡出
+			float slide = Ease.OutExpo(Mathf.Clamp((time - 0.05f) / 0.35f, 0f, 1f));
+			main.Position = from.Lerp(c, slide) + dir * 30f * Mathf.Max(0f, time - 0.4f) + dir * size.X * 0.15f * outT;
+			main.Scale = new Vector2(1f + 0.5f * outT, 1f - 0.2f * outT);
+			main.Modulate = new Color(1f - 0.7f * outT, 1f - 0.5f * outT, 1f, Mathf.Clamp((time - 0.05f) / 0.05f, 0f, 1f) * (1f - outT));
+			foreach (var (e, lag, scale, side) in echoes)
 			{
-				met = true;
-				P3Fx.Flash(screen, c, Pal.Ice, size.Y * 0.9f, 0.25f);
-				NGame.Instance?.ScreenShake(ShakeStrength.Weak, ShakeDuration.Short);
-			}
-			float b = Mathf.Clamp((time - 0.35f) / 0.6f, 0f, 1f);
-			foreach ((Sprite2D m, Vector2 v, float spin) in minis)
-			{
-				m.Position = c + v * Ease.OutCubic(b);
-				m.Rotation = spin * b;
-				m.Modulate = new Color(1f, 1f, 1f, time < 0.35f ? 0f : (1f - Ease.InCubic(b)) * (1f - outT));
+				float es = Ease.OutExpo(Mathf.Clamp((time - 0.05f - lag) / 0.35f, 0f, 1f));
+				float spread = Ease.OutCubic(Mathf.Clamp((time - 0.3f) / 0.6f, 0f, 1f));
+				float k = (scale - 1f) * 10f;   // 1..3
+				e.Position = from.Lerp(c, es) + dir * 90f * k * spread + dir.Orthogonal() * side * 70f * k * spread;
+				e.Scale = Vector2.One * Mathf.Lerp(1f, scale, spread);
+				e.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((time - 0.05f - lag) / 0.05f, 0f, 1f) * (1f - Mathf.Clamp((time - 0.6f) / 0.4f, 0f, 1f)));
 			}
 		});
 		Fx.FreeAfter(root, TitleIntroLen + 0.05f);

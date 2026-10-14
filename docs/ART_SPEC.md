@@ -795,6 +795,22 @@ Grand.cs 里其余函数暂时保留不用。
 - **CRITICAL!**（用户：CRITICAL 用原版，BLOCK / WEAK 保留我们的）：原版贴图 T_UI_Battle_06 的 CRITICAL! 预合成为 `ui/critical.png`（白 → 青渐变 + 深蓝立体边）。
   结城理一击实际伤害 ≥ 20 且 ≥ 目标最大生命 30% 时弹出（同一目标 0.8s 内一次）：从 1.8 倍砸到原大（OutBack 0.12s）+ 白闪 + 放射速度线 + 青光，停留后向右上漂、淡出；音效 Btl_Critical。
 
+## v0.14.13（接入 Codex 第二批素材）
+
+- **建筑师房间 v2 背景**：art/v14/tartarus_top_v2_a（1672×941，站人区平地、月亮完整、地面魔法阵）→ `fx/tartarus_top_v2`，前景碎石层 `fx/tartarus_top_v2_fg` 叠在人物前面；
+  站人线 740/1152 对准脚底；月亮实测中心 (992,208)、r≈165。v13 的 tartarus_top 撤出 pck。
+- **P3R 原版素材**（Codex 导出 art/p3r_tex、art/sfx_p3r_c4）：
+  - Shuffle Time 标题用原版多边形字「SHUFFLE TIME」（`ui/shuffle_title`）；伟大封印技能菜单的「PERSONA」用原版 Skill_TitleLogo（`ui/persona_logo`），技能条用原版 SkillName_base_2（`ui/skill_base`）。
+  - 音效：完整版 Allout_Extermination（4.5s，烟云结束后缓出）/ Kime01（2.9s，高潮在 1.0s → 对准立绘亮起）/ Allout_Zoom（峰值 0.7s → 对准定格镜头）；
+    伟大封印技能菜单用原版战斗菜单音 Btl_CommandPanel（面板）/ Sys_Cursor（光标）/ Btl_Ok（确认）。allout_brawl（截短版）撤掉。
+  - 没找到：菜单里结城理的蓝色剪影（原版是运行时渲染，没有静态贴图）→ 继续用 bu_silhouette。
+- **Shuffle Time 按原版分镜**（Codex 做的 65 帧分镜 art/p3r_tex/shuffle/shuffle_time_storyboard_detail_65frames.png）：
+  - 标题：原版字图斜着从左下滑入，上下叠三层更大更淡的蓝色残影往右上散开；主字最后横向拉长、变蓝淡出，只剩一道斜向的蓝色柔光（约 1.15s）。
+  - 发牌：塔罗牌从各自位置的正上方斜着落下（入画倾斜约 45°，边落边转正，OutCubic 约 0.45s，两道淡蓝残影），依次落下，全部落定后一起翻面。
+  - 去掉发牌时的常驻小标题条（原版没有）。修：标题动画期间重抽会发两次牌 / 旧一轮的翻牌回调把新一轮的牌提前翻开。
+- **面部特写**预留闭眼 / 半睁差分接口（ui/face_closed、ui/face_half，等 Codex 编辑出图）。
+- 指天手臂零件：Codex 第一轮失败（坐标要求太严 + 提示词用词被审核拦截），已改写任务（不要求精确坐标、真透明、中性用词）。
+
 ## 质量要求（用户 2026-10-13，长期有效）
 
 后续所有特效 / 动画都要**细节足够、丰富、不草率**：

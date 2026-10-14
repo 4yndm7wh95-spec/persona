@@ -131,7 +131,7 @@ public static class Sfx
 	/// </summary>
 	private static readonly string[] Clips =
 	{
-		"vorpal_blade", "messiah_seal", "great_seal", "select_hit", "bomb_hit", "lock_tick", "morning_star_rain", "morning_star_fall", "Snd_FX_Btl_AlloutUI_00", "Btl_Allout_Wipe", "allout_brawl", "Snd_FX_Btl_Allout_Kime01",
+		"vorpal_blade", "messiah_seal", "great_seal", "select_hit", "bomb_hit", "lock_tick", "Snd_FX_Btl_Allout_Zoom", "Snd_FX_Btl_Allout_Extermination", "Btl_Ok", "Btl_CommandPanel", "Sys_Cursor", "morning_star_rain", "morning_star_fall", "Snd_FX_Btl_AlloutUI_00", "Btl_Allout_Wipe", "Snd_FX_Btl_Allout_Kime01",
 		"ShuffleTime_Start", "ShuffleTime_Whoosh", "ShuffleTime_CardSet", "wheel_click", "clock_tick", "clock_midnight", "clock_spin", "evt_eft_timespin_01",
 		"em0561_sp_roulette_01", "em0561_sp_roulette_03", "ShuffleTime_Result", "Snd_FX_Btl_Summon_00",
 		"ShuffleTime_PowerUp", "Theurgia_Max", "Snd_FX_Btl_StReflection_00_1", "Snd_FX_Btl_StAbsorption_00_1",

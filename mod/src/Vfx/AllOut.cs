@@ -53,11 +53,11 @@ void fragment() {
 
 		Audio.Sfx.Clip("Snd_FX_Btl_AlloutUI_00", 0.9f, PromptAt + 0.25f);
 		Audio.Sfx.Clip("Btl_Allout_Wipe", 0.8f, IrisAt - 0.1f);
-		Audio.Sfx.Clip("Snd_FX_Btl_Allout_Zoom", 0.7f, PoseAt);
-		Audio.Sfx.Clip(Audio.Sfx.Has("Snd_FX_Btl_Allout_Extermination") ? "Snd_FX_Btl_Allout_Extermination" : "allout_brawl", 0.9f, BrawlAt - 0.05f);
+		Audio.Sfx.Clip("Snd_FX_Btl_Allout_Zoom", 0.75f, PoseAt - 0.7f);              // 推镜声的峰值在 0.7s：对准定格镜头切入
+		Audio.Sfx.Clip("Snd_FX_Btl_Allout_Extermination", 0.9f, BrawlAt - 0.05f);        // 完整 4.5s，Tails 在烟云结束（1.9s）后缓出
 		Audio.Sfx.Clip("atk_hit_enemy_slash", 0.9f, KillAt + 0.3f);
 		Audio.Sfx.Clip("sword_finish", 0.7f, KillAt + 1.05f);
-		Audio.Sfx.Clip("Snd_FX_Btl_Allout_Kime01", 1.0f, FinishAt + 0.25f - 0.75f);   // Kime01 的高潮在 0.75s：对准立绘亮起
+		Audio.Sfx.Clip("Snd_FX_Btl_Allout_Kime01", 1.0f, FinishAt + 0.25f - 1.0f);    // 完整版 Kime01 的高潮在 1.0s：对准立绘亮起
 
 		Prompt(root, W, H);
 		Fx.After(root, IrisAt, "allout iris", () => Iris(root, focus, W, H));
