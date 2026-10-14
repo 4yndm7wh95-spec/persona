@@ -8,13 +8,10 @@ namespace P3Makoto.Vfx;
 /// 播了总攻击就不再播普通胜利演出）。
 /// v0.14.16（用户：只要「怪物倒下处展开同心圆 → 顺势切到结算立绘」；同心圆层数、节奏、音效都照原版；字幕要做进背景）：约 3.65s
 ///   音效：只有 Snd_FX_Btl_Allout_Zoom（把原版结算片段和全部 P3R 音效库做互相关得出），前 0.7s 是蓄力、0.7s 到达高潮。
-///   0.30  蓄力 = 同心圆展开（原版 video1 9.4s：浅青 → 中蓝 → 深蓝一波接一波从画面外扫过、每波都铺满）：
-///         从倒下的敌人中心依次涌出四波整屏圆（深蓝 → 中蓝 → 浅青 → 底色浅蓝），圆心一边涌一边滑到结算页圆环的位置；
-///         随后两道环带（外圈浅青、内圈深蓝粗环）从圆心长出来。每一波的前沿有一道细细的青白光边（我们自己的细节，原版没有），落定后褪掉
-///   1.00  高潮 = 同心圆落定成结算页背景（浅蓝底 + 深蓝粗环 + 外圈浅青环），结算立绘同一帧切入（1.3 倍以脸为支点拉回、暗蓝平滑亮起）；
-///         背景之后一直呼吸、扩大、漂移，不静止
-///         背景大字 MAJESTIC 做在背景里（主行 + 错开的一行回声）：浅色区是深蓝细线空心字、深蓝环里是深蓝实心字 ——
-///         同一条细轮廓线跨过区域边界是连续的；分区用随圆环实时变化的裁剪实现，不是预先画好的图
+///   0.30  蓄力 = 湖面水波（圆心在画面右上角外）：第一滴落下，三圈边界先后冲出 —— 深一档蓝前沿扫满全屏、浅蓝、中蓝，
+///         从左到右是「深 · 浅 · 深」；0.36s 后圆心再落一滴，新的浅蓝冲出来把上一轮推开、挤窄，压力一圈圈往外传（环带弹簧模型）
+///   1.00  高潮：结算立绘切入（1.3 倍以脸为支点拉回、暗蓝平滑亮起）；不再滴水，余波回弹、慢慢外扩
+///         背景大字 MAJESTIC：深蓝细线空心字，落在深色带里的那段换成深蓝实心（遮罩跟着水波实时走）
 ///   去掉了左上角「DONE AND DUSTED.」（用户：太突兀）。停留到 3.25 → 0.4s 整体淡出
 /// 结束立绘用 P3R 原版贴图（allout_finish / allout_finish_dark / allout_text），缺图时退回 victory_portrait。
 /// </summary>
@@ -143,45 +140,114 @@ void fragment() {
 		return w;
 	}
 
-	/// <summary>一滴水：t0 时刻从圆心落下，圈内是 col；水波先快后慢（粘滞衰减）再带一点匀速外漂，永不定住。</summary>
-	private readonly record struct Drop(float T0, Color Col, float Reach, float Tau, bool Dark);
+	/// <summary>一圈水波的边界：Spawn 时刻从圆心冲出（初速 V0）；Rest = 它和外面那圈之间的环带"想要"的宽度；Col = 圈内的颜色。</summary>
+	private readonly record struct Wave(float Spawn, float V0, float Rest, Color Col, bool Dark);
 
 	/// <summary>
-	/// 背景 = 湖面水波（用户：怪物死的位置像滴下一滴水，水波向外扩散、互相推挤；过一会儿再滴一滴，推着上一轮走）：
-	///   只滴两滴：怪物刚死时一滴（深蓝前沿 + 浅蓝后浪铺满画面），蓄力中间（0.35s）再一滴（深一档蓝 + 浅蓝）；
-	///   高潮之后不再滴水，余波继续减速外推；新波纹追上旧波纹时把它往外推、挤窄旧的那一圈，旧圈出了画面就不再画。
-	///   没有常驻的圆环 —— 画面上的深色区域都是正在经过的波。
-	///   背景大字 MAJESTIC：整体是深蓝细线空心字；落在深色波里的那一段由跟着波走的遮罩换成深蓝实心（实时）。
+	/// 环带弹簧模型：每圈边界是一个质点（半径 + 速度），相邻两圈之间的环带是弹簧（抗压缩，几乎不抗拉伸），带阻尼，速度不低于匀速外漂。
+	/// 新水滴 = 圆心冲出新的边界 —— 它追上里面那圈时把环带压窄，压力一圈圈往外传（推动、挤压），之后回弹、慢慢散开。
+	/// 每帧从 0 开始以 1/240s 步长重算（确定性，几百步、开销很小）。返回各圈半径（外 → 内，未出生的为 -1）。
+	/// </summary>
+	private static float[] Ripple(IReadOnlyList<Wave> waves, float time)
+	{
+		const float K = 60f, Damp = 2.4f, Drift = 25f, Dt = 1f / 240f;
+		int n = waves.Count;
+		float[] r = new float[n], v = new float[n];
+		bool[] alive = new bool[n];
+		for (float t = 0f; t < time; t += Dt)
+		{
+			for (int i = 0; i < n; i++)
+			{
+				if (!alive[i] && waves[i].Spawn <= t)
+				{
+					alive[i] = true;
+					v[i] = waves[i].V0;
+				}
+			}
+			float[] a = new float[n];
+			for (int i = 0; i < n; i++)
+			{
+				a[i] = -Damp * v[i];
+			}
+			for (int i = 0; i + 1 < n; i++)
+			{
+				if (!alive[i + 1])
+				{
+					break;
+				}
+				float f = K * (waves[i + 1].Rest - (r[i] - r[i + 1]));
+				if (f < 0f)
+				{
+					f *= 0.08f;                                         // 拉伸只给很弱的回拉
+				}
+				a[i] += f;
+				a[i + 1] -= f;
+			}
+			for (int i = 0; i < n; i++)
+			{
+				if (alive[i])
+				{
+					v[i] = Mathf.Max(v[i] + a[i] * Dt, Drift);
+					r[i] += v[i] * Dt;
+				}
+			}
+			for (int i = 0; i + 1 < n; i++)
+			{
+				if (alive[i + 1] && r[i + 1] > r[i] - 2f)
+				{
+					r[i + 1] = r[i] - 2f;
+				}
+			}
+		}
+		for (int i = 0; i < n; i++)
+		{
+			if (!alive[i])
+			{
+				r[i] = -1f;
+			}
+		}
+		return r;
+	}
+
+	/// <summary>
+	/// 背景 = 湖面水波（用户第九轮：圆心在画面右上角外；第一滴落下后从左到右是「深 · 浅 · 深」三层；约 0.36s 后圆心再落一滴，
+	/// 把上一轮的同心圆往外推，要看得出"推动""挤压"）：
+	///   第一滴（怪物刚死）：三圈边界先后冲出 —— 深一档蓝前沿扫满全屏、浅蓝、中蓝；
+	///   第二滴（0.36s）：新的浅蓝从圆心冲出，追上里层的深色带把它压窄，压力往外传，浅色带随后也被挤窄，然后回弹、慢慢散开。
+	///   高潮之后不再滴水，余波一直在缓慢外扩。
+	///   背景大字 MAJESTIC：整体是深蓝细线空心字；落在深色带里的那一段由跟着水波走的遮罩换成深蓝实心（实时）。
 	/// </summary>
 	private static void Background(Node2D n, Vector2 focus, float W, float H, float life)
 	{
+		Vector2 center = new(W * 0.95f, -H * 0.45f);                   // 圆心在画面右上角外（用户指定）
 		float cover = 0f;
 		foreach (Vector2 corner in new[] { Vector2.Zero, new Vector2(W, 0f), new Vector2(0f, H), new Vector2(W, H) })
 		{
-			cover = Mathf.Max(cover, (corner - focus).Length());
+			cover = Mathf.Max(cover, (corner - center).Length());
 		}
-		cover *= 1.05f;
-		// 只滴两滴（用户：同心圆太多，只要两滴 —— 怪物刚死一滴、蓄力中间一滴）。每滴带出"深色前沿 + 浅色后浪"两圈：
-		//   第一滴（0s）：深蓝前沿很快扫满全屏，浅蓝底色紧跟着铺满；
-		//   第二滴（0.35s）：深一档的蓝前沿 + 浅蓝后浪，高潮之后继续外推、减速，深色那圈扫过背景字
-		// Reach = 这一圈最终能走多远（越大越快），Tau = 减速快慢
-		var drops = new List<Drop>
+		float k = H / 720f;                                              // 参数按 720p 调，其他分辨率等比
+		var waves = new List<Wave>
 		{
-			new(0.00f, RingBlue, cover * 2.2f, 0.35f, true),
-			new(0.10f, Base, cover * 2.0f, 0.38f, false),
-			new(0.35f, Band, cover * 1.35f, 0.8f, true),
-			new(0.45f, Base, cover * 1.05f, 1.0f, false),
+			new(0.00f, 5200f * k, 0f, Band, true),                       // 第一滴：深色前沿（最快，扫满全屏）
+			new(0.06f, 3600f * k, 430f * k, Base, false),               //         浅色
+			new(0.12f, 2700f * k, 400f * k, RingBlue, true),            //         深色（离圆心最近）
+			new(0.36f, 3600f * k, 360f * k, Base, false),               // 第二滴：浅色冲出，推挤上一轮
 		};
-		const int Slots = 12, MaskN = 4;
-		float minGap = H * 0.045f;                                     // 被挤压时一圈最窄能有多宽
+		const int MaskN = 2;
 
 		ColorRect disc = new() { Size = new Vector2(W, H), MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Rings } };
 		n.AddChild(disc);
 		ShaderMaterial rm = (ShaderMaterial)disc.Material;
 		rm.SetShaderParameter("size", new Vector2(W, H));
-		rm.SetShaderParameter("center", focus);
+		rm.SetShaderParameter("center", center);
+		Color[] colsAll = new Color[12];
+		for (int i = 0; i < waves.Count; i++)
+		{
+			colsAll[i] = waves[i].Col;
+		}
+		rm.SetShaderParameter("cols", colsAll);
 
-		// 背景大字：一份深蓝细线空心字铺满；深色波各自一个遮罩（只当裁剪、不画），里面放一份深蓝实心字
+		// 背景大字：一份深蓝细线空心字铺满；每条深色带一个遮罩（只当裁剪、不画），里面放一份深色实心字
 		Vector2 wordAt = new(-W * 0.01f, H * 0.52f);
 		Color clear = new(0f, 0f, 0f, 0f);
 		var words = new List<Node2D> { WordCopy(n, wordAt, H, clear, new Color(Navy, 0.85f)) };
@@ -191,92 +257,57 @@ void fragment() {
 			Polygon2D mask = Annulus(n, Colors.White);
 			mask.ClipChildren = CanvasItem.ClipChildrenMode.Only;
 			masks.Add(mask);
-			words.Add(WordCopy(mask, wordAt, H, Ink, Ink));                 // 深色波里的实心字：不透明、比描边再深一点（用户：深色区域的字浅了）
+			words.Add(WordCopy(mask, wordAt, H, Ink, Ink));                 // 深色带里的实心字：不透明、比描边再深一点
 		}
 
+		float prevT = 0f;
+		float[] prevR = new float[waves.Count];
 		Fx.Animate(n, life, t =>
 		{
 			float time = t * life;
-			// 每一滴的"自由"半径（先快后慢 + 匀速外漂），再从新到旧推挤：旧的至少比新的大 minGap
-			int live = 0;
-			float[] r = new float[drops.Count];
-			for (int k = drops.Count - 1; k >= 0; k--)
-			{
-				float dt = time - drops[k].T0;
-				if (dt <= 0f)
-				{
-					r[k] = -1f;
-					continue;
-				}
-				float free = drops[k].Reach * (1f - Mathf.Exp(-dt / drops[k].Tau)) + 25f * dt;
-				float pushed = -1f;
-				for (int q = k + 1; q < drops.Count; q++)
-				{
-					if (r[q] > 0f)
-					{
-						pushed = r[q] + minGap;                        // 紧挨着的下一滴（更新的那滴）
-						break;
-					}
-				}
-				r[k] = Mathf.Max(free, pushed);
-			}
-			// 画面上要画的：最老的那张"已经盖满全屏"的圆当底，往后所有落下的圆依次叠上去
-			int first = 0;
-			for (int k = 0; k < drops.Count; k++)
-			{
-				if (r[k] >= cover)
-				{
-					first = k;
-				}
-			}
-			float[] radii = new float[Slots];
-			Color[] cols = new Color[Slots];
+			float[] r = Ripple(waves, time);
+			float[] radii = new float[12];
 			float[] rimR = new float[4], rimA = new float[4];
-			int rim = 0;
-			for (int k = first; k < drops.Count && live < Slots; k++)
+			int live = 0;
+			for (int i = 0; i < waves.Count && r[i] > 0f; i++)
 			{
-				if (r[k] <= 0f)
+				radii[i] = r[i];
+				live = i + 1;
+				// 波前细光边（我们自己的细节）：跑得快的那几圈前沿带一道很淡的青白细光，减速后褪掉
+				float speed = time > prevT ? (r[i] - prevR[i]) / (time - prevT) : 0f;
+				if (i < 4)
 				{
-					break;
-				}
-				radii[live] = Mathf.Min(r[k], cover * 1.5f);
-				cols[live] = drops[k].Col;
-				live++;
-				// 波前细光边（我们自己的细节）：刚落下、还在快速外扩的那几圈带一道很淡的青白细光
-				float dt = time - drops[k].T0;
-				if (rim < 4 && dt < 0.6f)
-				{
-					rimR[rim] = r[k];
-					rimA[rim] = 0.3f * (1f - dt / 0.6f) * Mathf.Clamp(dt / 0.05f, 0f, 1f);
-					rim++;
+					rimR[i] = r[i];
+					rimA[i] = 0.3f * Mathf.Clamp((speed - 300f * k) / (2500f * k), 0f, 1f);
 				}
 			}
+			System.Array.Copy(r, prevR, r.Length);
+			prevT = time;
 			rm.SetShaderParameter("radii", radii);
-			rm.SetShaderParameter("cols", cols);
 			rm.SetShaderParameter("count", live);
 			rm.SetShaderParameter("rim_r", rimR);
 			rm.SetShaderParameter("rim_a", rimA);
-			// 深色波的环形区域 = 这一滴的圆减去下一滴（更新的）圆
+			// 深色带 = 这一圈减去里面那一圈
 			int mi = 0;
-			for (int k = first; k < drops.Count && mi < MaskN; k++)
+			for (int i = 0; i < waves.Count && mi < MaskN; i++)
 			{
-				if (r[k] <= 0f || !drops[k].Dark)
+				if (r[i] <= 0f || !waves[i].Dark)
 				{
 					continue;
 				}
-				float inner = k + 1 < drops.Count && r[k + 1] > 0f ? r[k + 1] : 0f;
-				SetAnnulus(masks[mi++], focus, Mathf.Min(r[k], cover * 1.5f), inner);
+				float inner = i + 1 < waves.Count && r[i + 1] > 0f ? r[i + 1] : 0f;
+				SetAnnulus(masks[mi++], center, Mathf.Min(r[i], cover * 1.2f), inner);
 			}
 			for (; mi < MaskN; mi++)
 			{
-				SetAnnulus(masks[mi], focus, 0f, 0f);
+				SetAnnulus(masks[mi], center, 0f, 0f);
 			}
 
-			// 背景大字：高潮那一刻起从左侧缓缓滑入（0.7s），之后慢慢右移
+			// 背景大字：高潮那一刻起从左侧缓缓滑入（0.7s），透明度 0.25s 到满，之后慢慢右移
 			float since = time - Build;
 			float wi = Ease.OutCubic(Mathf.Clamp(since / 0.7f, 0f, 1f));
 			Vector2 wp = wordAt + new Vector2(-W * 0.3f * (1f - wi) + 18f * Mathf.Max(0f, since), 0f);
-			float wa = Ease.OutCubic(Mathf.Clamp(since / 0.25f, 0f, 1f));      // 透明度 0.25s 就到满（滑入仍是 0.7s），深色波扫过时字不会发浅
+			float wa = Ease.OutCubic(Mathf.Clamp(since / 0.25f, 0f, 1f));
 			foreach (Node2D w in words)
 			{
 				w.Position = wp;
