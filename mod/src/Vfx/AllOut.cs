@@ -20,7 +20,11 @@ namespace P3Makoto.Vfx;
 public static partial class AllOut
 {
 	private const float IrisAt = 0.3f, Build = 0.7f, FinishAt = IrisAt + Build, FinishLen = 2.95f;
-	private const float OutroLen = 0.75f;                            // 收尾：立绘 / 背景字滑出，水波从圆心退开露出战场（用户：不要草草淡出）
+	// v0.14.24 收尾（用户：之前的结束动画不好 —— 在同一个圆心再滴一滴水，这滴的水波把整层总攻击（背景字、立绘）盖掉，
+	// 盖满后顺势露出后面的结算页面，要丝滑）：Duration - OutroLen 滴下，三圈实心水波依次扫满全屏（最后一圈是原版结算的浅蓝），
+	// 盖满后停一拍等结算页在下面出现，再柔和淡出。覆盖层放在独立的最上层 CanvasLayer，结算页弹出时也被盖着。
+	private const float OutroLen = 0.75f;
+	private const float CoverHold = 0.2f, CoverFade = 0.55f;
 	private const float PortraitLead = 0.1f;                         // 立绘比高潮早 0.1s 开始淡入，高潮时已基本到位（用户：人物出现太突兀）
 	public const float Duration = FinishAt + FinishLen;
 
@@ -53,7 +57,8 @@ public static partial class AllOut
 		Audio.Sfx.Clip("Btl_Allout_Wipe", 0.3f, IrisAt, master: true);
 		Audio.Sfx.Clip("swish_large_1", 0.45f, IrisAt + 0.36f, master: true);
 		Audio.Sfx.Clip("swish_small_2", 0.4f, FinishAt + 0.05f, master: true);
-		Audio.Sfx.Clip("swish_heavy_2", 0.55f, Duration - OutroLen, master: true);
+		Audio.Sfx.Clip("Btl_Allout_Wipe", 0.35f, Duration - OutroLen, master: true);   // 第三滴（和第一滴同一个水滴声）
+		Audio.Sfx.Clip("swish_heavy_2", 0.5f, Duration - OutroLen + 0.08f, master: true);   // 水波扫满全屏
 
 		Node2D bg = new();
 		root.AddChild(bg);
@@ -61,7 +66,68 @@ public static partial class AllOut
 		root.AddChild(fg);
 		Fx.After(root, IrisAt, "allout iris", () => Background(bg, focus, W, H, Duration - IrisAt));
 		Fx.After(root, FinishAt - PortraitLead, "allout finish", () => Portrait(fg, W, H));
+		Fx.After(root, Duration - OutroLen, "allout cover", () => Cover(front, W, H));
 		Fx.FreeAfter(root, Duration + 0.1f);
+	}
+
+	/// <summary>
+	/// 收尾的最后一滴：圆心同前（右上角外）。三圈实心水波（深一档蓝 → 中蓝 → 原版结算浅蓝）依次扫过，
+	/// 前沿带一道青白细光；盖满全屏后停 CoverHold 秒（结算页此时在下面出现），再 CoverFade 秒柔和淡出。
+	/// </summary>
+	private static void Cover(Control anchor, float W, float H)
+	{
+		if (anchor.GetTree()?.Root is not Window win)
+		{
+			return;
+		}
+		CanvasLayer layer = new() { Layer = 120, Name = "P3AllOutCover" };
+		win.AddChild(layer);
+		ColorRect disc = new() { Size = new Vector2(W, H), MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Rings } };
+		layer.AddChild(disc);
+		ShaderMaterial rm = (ShaderMaterial)disc.Material;
+		Vector2 center = new(W * 0.95f, -H * 0.45f);
+		float cover = 0f;
+		foreach (Vector2 corner in new[] { Vector2.Zero, new Vector2(W, 0f), new Vector2(0f, H), new Vector2(W, H) })
+		{
+			cover = Mathf.Max(cover, (corner - center).Length());
+		}
+		rm.SetShaderParameter("size", new Vector2(W, H));
+		rm.SetShaderParameter("center", center);
+		Color[] cols = new Color[12];
+		cols[0] = Band;
+		cols[1] = RingBlue;
+		cols[2] = Base;
+		rm.SetShaderParameter("cols", cols);
+		float[] born = { 0f, 0.09f, 0.18f };
+		const float sweep = 0.5f;                                        // 每圈从圆心扫到盖满的时长
+		float total = OutroLen + CoverHold + CoverFade;
+		Fx.Animate(layer, total, t =>
+		{
+			float time = t * total;
+			float[] radii = new float[12];
+			float[] rimR = new float[4], rimA = new float[4];
+			int live = 0;
+			for (int i = 0; i < 3; i++)
+			{
+				float u = (time - born[i]) / sweep;
+				if (u <= 0f)
+				{
+					break;
+				}
+				// 前快后慢：水滴砸下的冲劲，接近盖满时减速"铺"开
+				radii[i] = cover * 1.04f * Ease.OutCubic(Mathf.Min(u, 1f));
+				live = i + 1;
+				rimR[i] = radii[i];
+				rimA[i] = 0.45f * (1f - Mathf.Clamp(u, 0f, 1f));
+			}
+			rm.SetShaderParameter("radii", radii);
+			rm.SetShaderParameter("count", live);
+			rm.SetShaderParameter("rim_r", rimR);
+			rm.SetShaderParameter("rim_a", rimA);
+			float fade = Mathf.Clamp((time - OutroLen - CoverHold) / CoverFade, 0f, 1f);
+			disc.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InOutSine(fade));
+		});
+		Fx.FreeAfter(layer, total + 0.05f);
 	}
 
 	private static Vector2 Avg(IReadOnlyList<Vector2> pts)
@@ -325,16 +391,15 @@ void fragment() {
 			float since = time - Build;
 			float outK = Mathf.Clamp((time - (life - OutroLen)) / OutroLen, 0f, 1f);
 			float wi = Ease.OutCubic(Mathf.Clamp(since / 0.7f, 0f, 1f));
-			Vector2 wp = wordAt + new Vector2(-W * 0.3f * (1f - wi) + 18f * Mathf.Max(0f, since) - W * 0.45f * Ease.InCubic(outK), 0f);
+			Vector2 wp = wordAt + new Vector2(-W * 0.3f * (1f - wi) + 18f * Mathf.Max(0f, since) - W * 0.06f * Ease.InCubic(outK), 0f);
 			float wa = Ease.OutCubic(Mathf.Clamp(since / 0.25f, 0f, 1f));
 			foreach (Node2D w in words)
 			{
 				w.Position = wp;
 				w.Visible = since >= 0f;
-				w.Modulate = new Color(1f, 1f, 1f, wa * (1f - outK));
+				w.Modulate = new Color(1f, 1f, 1f, wa);
 			}
-			// 收尾：洞从圆心挖开到盖过全屏（水退开、露出战场），背景字往左滑走
-			rm.SetShaderParameter("hole", outK > 0f ? cover * 1.25f * Ease.InOutCubic(outK) : 0f);
+			// 收尾（v0.14.24）：不再挖洞 / 滑走，最后一滴的水波从上层盖过来（Cover）；背景字只被水波推得往左一让
 		});
 		Fx.FreeAfter(n, life + 0.05f);
 	}
@@ -372,10 +437,11 @@ void fragment() {
 			float hsc = 1.3f - 0.3f * ease - 0.015f * Mathf.Max(0f, time);
 			// 收尾：立绘先往左一顿（蓄势），再加速甩出右侧、略放大
 			float outK = Mathf.Clamp((raw - (total - OutroLen)) / OutroLen, 0f, 1f);
-			float exitX = -W * 0.025f * Mathf.Sin(Mathf.Pi * Mathf.Clamp(outK / 0.3f, 0f, 1f)) + W * 0.75f * Ease.InCubic(Mathf.Clamp((outK - 0.15f) / 0.85f, 0f, 1f));
-			heroRoot.Scale = Vector2.One * hsc * (1f + 0.08f * Ease.InCubic(outK));
+			// 收尾（v0.14.24）：立绘不再甩出，被最后一滴的水波推得往左下轻轻一沉，随后被盖住
+			float exitX = -W * 0.03f * Ease.OutCubic(outK);
+			heroRoot.Scale = Vector2.One * hsc;
 			heroRoot.Position = faceAt - faceOff * hs * hsc + new Vector2(W * 0.06f * (1f - enter) - 12f * Mathf.Max(0f, time) + exitX, 3f * Mathf.Sin(raw * 1.6f));
-			heroRoot.Modulate = new Color(1f, 1f, 1f, Ease.OutCubic(Mathf.Clamp(raw / 0.3f, 0f, 1f)) * (1f - Ease.InCubic(Mathf.Clamp((outK - 0.5f) / 0.5f, 0f, 1f))));
+			heroRoot.Modulate = new Color(1f, 1f, 1f, Ease.OutCubic(Mathf.Clamp(raw / 0.3f, 0f, 1f)));
 			float lift = Ease.InOutSine(Mathf.Clamp((time - 0.25f) / 0.4f, 0f, 1f));
 			if (heroDark != null)
 				heroDark.Modulate = new Color(1f, 1f, 1f, 1f - lift);
