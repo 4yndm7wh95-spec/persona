@@ -16,6 +16,9 @@ public static class TargetingFx
 	private static Node2D? _reticle;
 	private static NCreature? _caster;
 	private static NCreature? _hovered;
+	// 每次进入预备姿势 +1：上一张牌打出后留下的"0.6 秒仍在预备就放下"兜底，只对它自己那次预备生效。
+	// 出牌太快时（打击刚出手就拖下一张召唤牌），旧兜底不能把新举起的召唤器放下。
+	private static int _poseToken;
 
 	public static bool Active => _aura != null && GodotObject.IsInstanceValid(_aura);
 
@@ -33,6 +36,7 @@ public static class TargetingFx
 			return;
 		}
 		_caster = node;
+		_poseToken++;
 		// 要花辉星的牌：对应张数的塔罗牌从环绕轨道里抽出，排在身前待命
 		// 不花辉星的牌 GetStarCostWithModifiers() 返回 -1，不能当成 X 费
 		int starCost = card.HasStarCostX ? -1 : card.GetStarCostWithModifiers();
@@ -122,9 +126,10 @@ public static class TargetingFx
 		{
 			return;
 		}
+		int token = _poseToken;
 		Fx.After(caster, 0.6, "pose fallback", () =>
 		{
-			if (GodotObject.IsInstanceValid(caster) && Pose.IsHolding(caster))
+			if (token == _poseToken && !Active && GodotObject.IsInstanceValid(caster) && Pose.IsHolding(caster))
 			{
 				Release(caster);
 			}
