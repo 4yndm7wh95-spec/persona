@@ -489,6 +489,9 @@ class Builder:
         self.hand["die_fall"] = (700.0, 700.0)
         for n in POINT + ["point_sky"]:
             self.hand[n] = self.hand["idle"]
+        # 指天最后一帧："hand" 骨骼放在食指尖（游戏里伟大封印的光柱从这里升起，GreatSeal 读 WeaponFx.Bone(node, "hand")）
+        self.hand["point_8_sky"] = (326.5, 1.0)
+        self.hand["point_sky"] = (326.5, 1.0)
 
     @staticmethod
     def duration(a):

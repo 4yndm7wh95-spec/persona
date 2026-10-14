@@ -68,8 +68,42 @@ public static class GreatSeal
 
 	// ───────────────────────── 房间 ─────────────────────────
 
+	/// <summary>
+	/// v0.14.20（用户：建筑师房间背景仍是原版）：只把塔顶背景挪到最上层不够 —— 原版背景（NCombatBackground）里可能有自带层级 /
+	/// 独立画布层的部分，照样画在上面。直接把容器里除塔顶以外的东西都藏起来（含其中的 CanvasLayer），并在日志里列出藏了什么。
+	/// </summary>
+	private static void HideVanilla(Control bg, Node mine)
+	{
+		foreach (Node c in bg.GetChildren())
+		{
+			if (c == mine)
+			{
+				continue;
+			}
+			HideTree(c);
+			GD.Print($"{ModEntry.Tag} architect bg: hid {c.Name} ({c.GetType().Name})");
+		}
+	}
+
+	private static void HideTree(Node n)
+	{
+		if (n is CanvasItem ci)
+		{
+			ci.Visible = false;
+		}
+		else if (n is CanvasLayer cl)
+		{
+			cl.Visible = false;
+		}
+		foreach (Node c in n.GetChildren())
+		{
+			HideTree(c);                                                  // 子树里藏着的 CanvasLayer 不受父节点可见性影响，要逐个找
+		}
+	}
+
 	public static void Room(NCombatRoom room)
 	{
+		GD.Print($"{ModEntry.Tag} architect room: {room.GetPath()}");
 		if (room.GetNodeOrNull<Control>("%BgContainer") is not Control bg)
 		{
 			return;
@@ -80,6 +114,7 @@ public static class GreatSeal
 		{
 			// v0.14.16（用户：正式流程里建筑师房间还是原版背景）：原版背景可能比我们晚加进同一个容器、盖在上面 —— 每次都挪回最上层
 			bg.MoveChild(existing, bg.GetChildCount() - 1);
+			HideVanilla(bg, existing);
 			return;
 		}
 		if ((v2 ?? Tex("tartarus_top")) is not Texture2D tex)
@@ -90,10 +125,12 @@ public static class GreatSeal
 		const float margin = 60f;                                   // 震屏时不露边
 		Control root = new() { Name = "P3TartarusTop", MouseFilter = Control.MouseFilterEnum.Ignore };
 		bg.AddChild(root);
+		HideVanilla(bg, root);
 		bg.ChildEnteredTree += n =>
 		{
 			if (n != root && GodotObject.IsInstanceValid(root))
 			{
+				Callable.From(() => HideVanilla(bg, root)).CallDeferred();
 				Callable.From(() => { if (GodotObject.IsInstanceValid(root) && root.GetParent() == bg) bg.MoveChild(root, bg.GetChildCount() - 1); }).CallDeferred();
 			}
 		};
@@ -296,9 +333,8 @@ public static class GreatSeal
 	{
 		if (button.GetNodeOrNull<RichTextLabel>("%Text") is RichTextLabel label)
 		{
-			label.Text = Zh
-				? "[color=#ffe7a8][b]伟大封印[/b][/color]\n[color=#9fd8ff]THE GREAT SEAL —— 以生命为封印，终结这一切[/color]"
-				: "[color=#ffe7a8][b]The Great Seal[/b][/color]\n[color=#9fd8ff]Become the seal. End it all.[/color]";
+			// v0.14.20（用户：技能菜单里才是「伟大封印」，这个按钮不再叫这个名字，只留下面那段字）
+			label.Text = Zh ? "[color=#cfe8ff]以生命为封印，终结这一切[/color]" : "[color=#cfe8ff]Become the seal. End it all.[/color]";
 		}
 		if (button.GetNodeOrNull<CanvasItem>("Image") is CanvasItem image)
 		{
@@ -373,18 +409,17 @@ public static class GreatSeal
 	}
 
 	// ───────────────────────── 结局演出 ─────────────────────────
-	// v0.14.9（用户给了原版伟大封印的视频：不是召唤器，而是单手指天；塔罗牌展示和原版关系不大）——按原版重排：
-	//   0.00  P3R 技能菜单：左侧巨大的蓝色平涂剪影（结城理立绘压平）+ 斜切深蓝带上的超大「PERSONA」，
-	//         右上「宇宙」阿卡纳栏，技能列表里「伟大封印」被选中（白底黑字），下方两行说明；1.30 确认一闪
-	//   1.70  左上技能名横幅「伟大封印」；画面转黑
-	//   2.30  电影遮幅（上下黑边）：昏暗的塔顶，结城理脚下亮起蓝白光圈，光雾和细长的光丝从地面升起、光点上飘
-	//   3.60  单手指天：头顶一道细光柱直冲天顶。有 8 帧指天动画（point_sky_in）时照原版节奏 2.40 起手、4.30 指尖到顶出光柱、特写推到 4.75
-	//   4.60  面部特写（P3R 原版立绘 + 眼部差分）：闭眼 → 5.60 半睁 → 5.80 睁开，蓝光在身后流动，镜头缓推
-	//   6.60  回到塔顶：地面中央升起一团光穹，十几道光束从地面扇形射向上方的建筑师，建筑师被三圈封印环锁住、褪成石色
-	//   8.70  光越来越强 → 9.60 全屏白（原声高潮）
-	//   9.60  白里浮现「伟大封印」巨门（10.2 褪尽白），光流汇向门中人像，标题；12.2 再次全屏白 → 12.5 转深蓝「MEMENTO MORI」
-	//  13.60  交还给游戏的胜利流程；覆盖层再 0.8s 淡出后清理
-	public const float Duration = 13.6f;
+	// v0.14.20（用户实机反馈：技能菜单要真的能点；去掉面部特写、伟大封印巨门图、射向建筑师的扇形光束和锁链环；
+	// 光柱要从指尖升起；脚下的光雾太廉价）—— 照原版视频重排：
+	//   菜单  P3R 技能菜单停在画面上，等玩家点「伟大封印」（悬停有光标音、条目发亮；点下确认音 + 一闪）
+	//   0.00  点下：菜单 0.35s 滑出；Nyx 战「封印」原声从这一刻开始（9.6s 处是原声高潮）
+	//   0.40  左上技能名横幅；0.9–1.3 转黑，1.3 起从黑里淡回压暗的塔顶，上下遮幅
+	//   1.30  脚下亮起蓝白光池，水波一圈圈荡开；蓝色光焰从脚下往上流、光点上飘（原版那种身上的蓝色光雾）
+	//   2.40  单手指天（8 帧，约 1.9s）；4.30 指尖到顶 —— 光柱从食指尖直冲天顶
+	//   4.30  地面光盘向四周铺开，光柱越来越粗，天顶亮起，光线往上流 → 8.70 光越来越强 → 9.60 全屏白（原声高潮）
+	//   9.90  白转深蓝，「MEMENTO MORI / ……于是，早晨来临。」；13.0 交还给游戏的胜利流程，覆盖层 0.8s 淡出后清理
+	public const float Duration = 13.0f;
+	private const float WhiteAt = 9.6f;
 
 	private static Texture2D? UiTex(string name)
 	{
@@ -392,7 +427,7 @@ public static class GreatSeal
 		return ResourceLoader.Exists(path) ? ResourceLoader.Load<Texture2D>(path) : null;
 	}
 
-	/// <summary>播放结局演出，Duration 秒后完成（返回 true = 已代替原版的攻击演出）。</summary>
+	/// <summary>播放结局演出：先等玩家在技能菜单里点「伟大封印」，点下后 Duration 秒完成（返回 true = 已代替原版的攻击演出）。</summary>
 	public static Task<bool> Play(NCreature? player, NCreature? architect)
 	{
 		TaskCompletionSource<bool> done = new();
@@ -401,24 +436,32 @@ public static class GreatSeal
 			done.SetResult(false);
 			return done.Task;
 		}
-		ModEntry.Safe("great seal", () => Run(tree, player, architect));
-		tree.CreateTimer(Duration, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () => done.TrySetResult(true);
+		bool started = false;
+		ModEntry.Safe("great seal", () =>
+		{
+			Run(tree, player, architect, () =>
+				tree.CreateTimer(Duration, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () => done.TrySetResult(true));
+			started = true;
+		});
+		if (!started)
+		{
+			done.TrySetResult(false);
+		}
 		return done.Task;
 	}
 
-	private static void Run(SceneTree tree, NCreature? player, NCreature? architect)
+	private static void Run(SceneTree tree, NCreature? player, NCreature? architect, System.Action onStart)
 	{
-		Audio.Sfx.Clip("great_seal", 1.0f);
 		Vector2 view = tree.Root.GetVisibleRect().Size;
 		CanvasLayer top = new() { Layer = 90, Name = "P3GreatSeal" };
 		tree.Root.AddChild(top);
-		Node2D world = new();       // 世界坐标上的效果（脚下光雾、光束……），在遮幅和压暗之上
-		Node2D ui = new();          // 菜单 / 特写 / 白幕
-		Vector2 feet = player != null && GodotObject.IsInstanceValid(player) ? Makoto.Feet(player) : view * new Vector2(0.3f, 0.7f);
-		Vector2 head = player != null && GodotObject.IsInstanceValid(player) ? Makoto.Head(player) : view * new Vector2(0.3f, 0.35f);
-		Vector2 foe = architect != null && GodotObject.IsInstanceValid(architect) ? architect.VfxSpawnPosition : view * new Vector2(0.72f, 0.5f);
+		Node2D world = new();       // 世界坐标上的效果（脚下光雾、光柱……），在遮幅和压暗之上
+		Node2D ui = new();          // 菜单 / 白幕 / 结语
+		bool valid = player != null && GodotObject.IsInstanceValid(player);
+		Vector2 feet = valid ? Makoto.Feet(player!) : view * new Vector2(0.3f, 0.7f);
+		Vector2 head = valid ? Makoto.Head(player!) : view * new Vector2(0.3f, 0.35f);
+		float body = Mathf.Max((feet.Y - head.Y) * 1.15f, 160f);           // 人物大致身高（屏幕像素）
 
-		// 压暗层 + 黑场 + 遮幅（都在 world 下面）
 		ColorRect dim = new() { Size = view, Color = new Color(0.01f, 0.03f, 0.06f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore };
 		top.AddChild(dim);
 		top.AddChild(world);
@@ -428,42 +471,51 @@ public static class GreatSeal
 		top.AddChild(barTop);
 		top.AddChild(barBot);
 		top.AddChild(ui);
-		Fx.Animate(dim, 9.6f, t =>
-		{
-			float time = t * 9.6f;
-			// 1.9–2.3 转黑；2.3–2.9 从黑里淡出到"昏暗的塔顶"（压暗 55%）；面部特写期间被特写盖住
-			float a = time < 1.9f ? 0f : time < 2.3f ? (time - 1.9f) / 0.4f : Mathf.Lerp(1f, 0.55f, Mathf.Clamp((time - 2.3f) / 0.6f, 0f, 1f));
-			dim.Color = new Color(0.01f, 0.03f, 0.06f, a);
-			float bars = Ease.OutCubic(Mathf.Clamp((time - 2.2f) / 0.4f, 0f, 1f));
-			barTop.Position = new Vector2(0f, -barH + barH * bars);
-			barBot.Position = new Vector2(0f, view.Y - barH * bars);
-		});
 
-		SkillMenu(ui, view);
-		Fx.After(ui, 1.7, "seal banner", () => { if (Makoto.FxLayer() is Control front) Uniq.SkillBanner(front, "伟大封印", "THE GREAT SEAL", 1.2f); });
-		Fx.After(world, 2.3, "seal rise", () => Rise(world, feet, view));
-		// 有指天帧动画（point_sky_in，照原版约 1.9s 从身侧慢慢抬到指天）：2.4 起手，4.3 指尖到顶时光柱升起，特写推迟到 4.75；
-		// 没有就按旧节奏 3.6 光柱、4.6 特写
-		// 只有一张指天图时（point_sky_quick：0.3s 处溶解到指天）：3.3 起手，3.6 指天的同时光柱升起，特写仍在 4.6
-		bool frames = HasPointAnim(player), quick = !frames && HasAnim(player, "point_sky_quick");
-		float beamAt = frames ? 4.3f : 3.6f, faceAt = frames ? 4.75f : 4.6f;
-		Fx.After(world, frames ? 2.4 : quick ? 3.3 : 3.6, "seal point", () => PointSky(player));
-		// 单帧指天：光柱从食指尖升起（指尖在头的左上方：按配准数据约 −3% 体宽、−24% 身高）
-		Vector2 beamFrom = quick ? head + new Vector2(-0.03f, -0.24f) * Mathf.Max(feet.Y - head.Y, 100f) - new Vector2(10f, -60f) : head;
-		Fx.After(world, beamAt, "seal beam", () => SkyBeam(world, beamFrom, view));
-		Fx.After(ui, faceAt, "seal face", () => FaceCloseUp(ui, view, barH, 6.65f - faceAt));
-		Fx.After(world, 6.6, "seal dome", () => Dome(world, feet, foe, architect, view));
-		Fx.After(ui, 8.7, "seal white", () => WhiteRise(ui, view));
-		Fx.After(ui, 9.6, "seal gate", () => Gate(top, view));
-		Fx.After(ui, Duration + 0.8, "seal cleanup", () => top.QueueFree());
+		SkillMenu(ui, view, () =>
+		{
+			onStart();
+			Audio.Sfx.Clip("great_seal", 1.0f);
+			Fx.Animate(dim, WhiteAt, t =>
+			{
+				float time = t * WhiteAt;
+				// 0.9–1.3 转黑；1.3–1.9 从黑里淡回压暗 55% 的塔顶
+				float a = time < 0.9f ? 0f : time < 1.3f ? (time - 0.9f) / 0.4f : Mathf.Lerp(1f, 0.55f, Mathf.Clamp((time - 1.3f) / 0.6f, 0f, 1f));
+				dim.Color = new Color(0.01f, 0.03f, 0.06f, a);
+				float bars = Ease.OutCubic(Mathf.Clamp((time - 1.2f) / 0.4f, 0f, 1f));
+				barTop.Position = new Vector2(0f, -barH + barH * bars);
+				barBot.Position = new Vector2(0f, view.Y - barH * bars);
+			});
+			Fx.After(ui, 0.4, "seal banner", () => { if (Makoto.FxLayer() is Control front) Uniq.SkillBanner(front, "伟大封印", "THE GREAT SEAL", 1.0f); });
+			Fx.After(world, 1.3, "seal aura", () => Aura(world, feet, body, WhiteAt + 0.3f - 1.3f));
+			// 8 帧指天：2.4 起手，约 1.9s 后指尖到顶；只有单帧时 3.7 起手（0.3s 处溶解到指天）
+			bool frames = HasAnim(player, "point_sky_in");
+			Fx.After(world, frames ? 2.4 : 3.7, "seal point", () => PointSky(player));
+			Fx.After(world, 4.3, "seal pillar", () =>
+			{
+				// 光柱从食指尖升起：骨骼里 "hand" 在指天最后一帧就放在指尖；读不到（或离头太远）就按身高估
+				Vector2 tip = head + new Vector2(-0.12f, -0.35f) * body;
+				if (valid && GodotObject.IsInstanceValid(player) && WeaponFx.Bone(player!, "hand") is Vector2 b && b.DistanceTo(head) < body * 1.2f)
+				{
+					tip = b;
+				}
+				Ascend(world, tip, feet, body, view, WhiteAt + 0.3f - 4.3f);
+			});
+			Fx.After(ui, WhiteAt - 0.9, "seal white", () => WhiteRise(ui, view));
+			Fx.After(ui, WhiteAt, "seal coda", () => Coda(top, view, Duration + 0.8f - WhiteAt));
+			Fx.After(ui, Duration + 0.8, "seal cleanup", () => top.QueueFree());
+		});
 	}
 
-	// 0.00 P3R 技能菜单
-	private static void SkillMenu(Node2D ui, Vector2 view)
+	// 菜单：P3R 技能菜单，停住等玩家点「伟大封印」
+	private static void SkillMenu(Node2D ui, Vector2 view, System.Action onConfirm)
 	{
 		Node2D m = new();
 		ui.AddChild(m);
 		float W = view.X, H = view.Y;
+		// 挡住下面的游戏按钮（透明，接住点击）
+		ColorRect blocker = new() { Size = view, Color = new Color(0f, 0f, 0f, 0f), MouseFilter = Control.MouseFilterEnum.Stop };
+		m.AddChild(blocker);
 		// 斜切深蓝带 + 超大 PERSONA（被裁切）
 		Node2D band = new() { Position = new Vector2(W * 0.2f, H * 0.62f), Rotation = -0.32f };
 		m.AddChild(band);
@@ -471,7 +523,6 @@ public static class GreatSeal
 		Fx.Poly(band, new[] { new Vector2(-W, H * 0.16f), new Vector2(W, H * 0.16f), new Vector2(W, H * 0.175f), new Vector2(-W, H * 0.175f) }, Pal.Cyan, additive: true);
 		Node2D word = new();
 		band.AddChild(word);
-		// 原版「PERSONA」字形（PLG_UI_Battle Skill_TitleLogo，白色多边形字）：压成深蓝、外描一圈亮蓝
 		if (UiTex("persona_logo") is Texture2D plogo)
 		{
 			float pls = H * 0.42f / plogo.GetHeight();
@@ -487,7 +538,6 @@ public static class GreatSeal
 			word.Skew = -0.18f;
 			Typo.Text(word, "PERSONA", Typo.LatinItalic, fs, new Color(0.02f, 0.05f, 0.25f), new Vector2(-W * 0.2f, -fs * 0.6f), outline: 6, outlineColor: new Color(0.25f, 0.55f, 1f));
 		}
-		// 剪影
 		Texture2D? sil = UiTex("bu_silhouette");
 		Sprite2D? fig = null;
 		if (sil != null)
@@ -496,116 +546,184 @@ public static class GreatSeal
 			m.AddChild(fig);
 		}
 		// 右上：阿卡纳栏 + 技能列表 + 说明
-		Node2D panel = new() { Position = new Vector2(W * 0.5f, H * 0.12f) };
+		Vector2 panelAt = new(W * 0.5f, H * 0.12f);
+		Node2D panel = new() { Position = panelAt };
 		m.AddChild(panel);
 		float pw = W * 0.44f;
 		Fx.Poly(panel, new[] { new Vector2(0f, 0f), new Vector2(pw, 0f), new Vector2(pw - 16f, 44f), new Vector2(-16f, 44f) }, new Color(0.95f, 0.97f, 1f, 0.95f));
 		Typo.Text(panel, Zh ? "宇宙" : "UNIVERSE", Typo.CjkHeavy, 26, new Color(0.05f, 0.1f, 0.3f), new Vector2(24f, 6f));
 		Typo.Text(panel, "ARCANA", Typo.LatinItalic, 16, new Color(0.2f, 0.4f, 0.8f), new Vector2(pw - 110f, 14f));
-		Node2D row = new() { Position = new Vector2(-30f, 70f) };
+		Vector2 rowAt = new(-30f, 70f);
+		Node2D row = new() { Position = rowAt };
 		panel.AddChild(row);
 		Node2D hl = new();
 		row.AddChild(hl);
 		if (UiTex("skill_base") is Texture2D sb)
 		{
-			// 原版技能条底板（PLG_UI_Battle SkillName_base_2）拉到条目宽度
 			hl.AddChild(new Sprite2D { Texture = sb, Centered = false, Scale = new Vector2(pw / sb.GetWidth(), 52f / sb.GetHeight()), Position = new Vector2(-14f, 0f) });
 		}
 		else
 		{
 			Fx.Poly(hl, new[] { new Vector2(0f, 0f), new Vector2(pw, 0f), new Vector2(pw - 14f, 52f), new Vector2(-14f, 52f) }, Pal.White);
 		}
-		Fx.Poly(row, new[] { new Vector2(12f, 14f), new Vector2(46f, 14f), new Vector2(40f, 38f), new Vector2(6f, 38f) }, new Color(0.05f, 0.1f, 0.3f));   // 技能图标块
+		Polygon2D shine = Fx.Poly(row, new[] { new Vector2(0f, 0f), new Vector2(40f, 0f), new Vector2(26f, 52f), new Vector2(-14f, 52f) }, new Color(1f, 1f, 1f, 0f), additive: true);
+		Fx.Poly(row, new[] { new Vector2(12f, 14f), new Vector2(46f, 14f), new Vector2(40f, 38f), new Vector2(6f, 38f) }, new Color(0.05f, 0.1f, 0.3f));
 		Typo.Text(row, Zh ? "伟大封印" : "The Great Seal", Typo.CjkHeavy, 30, new Color(0.03f, 0.05f, 0.12f), new Vector2(60f, 6f));
 		Typo.Text(row, "∞", Typo.LatinItalic, 30, new Color(0.03f, 0.05f, 0.12f), new Vector2(pw - 70f, 4f));
+		// 选中箭头（P3R 菜单左侧的小三角），悬停时左右轻摆
+		Polygon2D cursor = Fx.Poly(row, new[] { new Vector2(-40f, 12f), new Vector2(-18f, 26f), new Vector2(-40f, 40f) }, Pal.Cyan);
 		Node2D desc = new() { Position = new Vector2(-10f, 140f) };
 		panel.AddChild(desc);
 		Typo.Text(desc, Zh ? "解放内在的宇宙后获得的力量。" : "Power drawn from the universe within.", Typo.Cjk, 22, new Color(0.6f, 0.9f, 1f), Vector2.Zero, outline: 2, outlineColor: new Color(0.02f, 0.05f, 0.15f));
 		Typo.Text(desc, Zh ? "以自身为封印，封住一切的终结。" : "Become the seal that holds back the end.", Typo.Cjk, 22, new Color(0.6f, 0.9f, 1f), new Vector2(0f, 32f), outline: 2, outlineColor: new Color(0.02f, 0.05f, 0.15f));
-		// 原版战斗菜单音：面板弹出 / 光标落到技能上 / 确认
-		Audio.Sfx.Clip("Btl_CommandPanel", 0.8f, 0.05f);
-		Audio.Sfx.Clip("Sys_Cursor", 0.8f, 0.55f);
-		Audio.Sfx.Clip("Btl_Ok", 0.9f, 1.3f);
-		const float total = 1.95f;
-		Fx.Animate(m, total, t =>
+		// 点击区域：技能条 + 说明（屏幕坐标）
+		Control hit = new() { Position = panelAt + rowAt + new Vector2(-50f, -6f), Size = new Vector2(pw + 60f, 64f + 110f), MouseFilter = Control.MouseFilterEnum.Stop, MouseDefaultCursorShape = Control.CursorShape.PointingHand };
+		m.AddChild(hit);
+		bool hover = false, confirmed = false;
+		float confirmAt = 0f, hoverK = 0f;
+		ulong t0 = Time.GetTicksMsec();
+		hit.MouseEntered += () =>
 		{
-			float time = t * total;
+			hover = true;
+			if (!confirmed) Audio.Sfx.Clip("Sys_Cursor", 0.7f);
+		};
+		hit.MouseExited += () => hover = false;
+		hit.GuiInput += ev =>
+		{
+			if (!confirmed && ev is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left })
+			{
+				confirmed = true;
+				confirmAt = (Time.GetTicksMsec() - t0) / 1000f;
+				Audio.Sfx.Clip("Btl_Ok", 0.9f);
+				blocker.MouseFilter = hit.MouseFilter = Control.MouseFilterEnum.Ignore;
+				onConfirm();
+				Fx.FreeAfter(m, 0.45f);
+			}
+		};
+		Audio.Sfx.Clip("Btl_CommandPanel", 0.8f, 0.05f);
+		Fx.Animate(m, 3600f, _ =>
+		{
+			float time = (Time.GetTicksMsec() - t0) / 1000f;
 			float inn = Ease.OutExpo(Mathf.Clamp(time / 0.3f, 0f, 1f));
-			float outT = Ease.InCubic(Mathf.Clamp((time - 1.6f) / 0.3f, 0f, 1f));
+			float since = confirmed ? time - confirmAt : 0f;
+			float flash = confirmed ? Mathf.Max(0f, 1f - since / 0.25f) : 0f;
+			float outT = confirmed ? Ease.InCubic(Mathf.Clamp((since - 0.1f) / 0.3f, 0f, 1f)) : 0f;
+			hoverK = Mathf.MoveToward(hoverK, hover || confirmed ? 1f : 0f, 0.12f);
 			if (fig != null)
 			{
 				fig.Position = new Vector2(W * 0.2f - W * 0.3f * (1f - inn) - W * 0.3f * outT, H * 0.6f);
 			}
 			band.Position = new Vector2(W * 0.2f + W * 0.5f * (1f - inn), H * 0.62f);
-			word.Position = new Vector2(-40f * time, 0f);
-			panel.Position = new Vector2(W * 0.5f + W * 0.5f * (1f - Ease.OutExpo(Mathf.Clamp((time - 0.15f) / 0.3f, 0f, 1f))) + W * 0.5f * outT, H * 0.12f);
-			float sel = Mathf.Clamp((time - 0.55f) / 0.1f, 0f, 1f);
-			float confirm = time > 1.3f ? Mathf.Max(0f, 1f - (time - 1.3f) / 0.25f) : 0f;
-			hl.Modulate = new Color(1f, 1f + 0.0f * confirm, 1f, sel);
-			row.Scale = new Vector2(1f + 0.04f * confirm, 1f + 0.04f * confirm);
+			word.Position = new Vector2(-40f * Mathf.Min(time, 3f) - 8f * Mathf.Max(0f, time - 3f), 0f);
+			panel.Position = panelAt + new Vector2(W * 0.5f * (1f - Ease.OutExpo(Mathf.Clamp((time - 0.15f) / 0.3f, 0f, 1f))) + W * 0.5f * outT, 0f);
+			float sel = Mathf.Clamp((time - 0.45f) / 0.12f, 0f, 1f);
+			hl.Modulate = new Color(1f, 1f, 1f, sel);
 			desc.Modulate = new Color(1f, 1f, 1f, sel);
-			m.Modulate = new Color(1f + confirm * 0.6f, 1f + confirm * 0.6f, 1f + confirm * 0.6f, 1f - outT);
+			// 待选时：条目轻轻呼吸，一道光周期性扫过；悬停时更亮、箭头摆动
+			float idle = 0.5f + 0.5f * Mathf.Sin(time * 3.2f);
+			row.Scale = Vector2.One * (1f + 0.025f * hoverK + 0.04f * flash);
+			cursor.Position = new Vector2(-6f * Mathf.Abs(Mathf.Sin(time * 5f)) * (0.4f + 0.6f * hoverK), 0f);
+			cursor.Modulate = new Color(1f, 1f, 1f, sel * (0.6f + 0.4f * Mathf.Max(idle, hoverK)));
+			float sw = Mathf.PosMod(time / 1.8f, 1f);
+			shine.Position = new Vector2(Mathf.Lerp(-30f, pw, Ease.InOutCubic(Mathf.Clamp(sw / 0.5f, 0f, 1f))), 0f);
+			shine.Modulate = new Color(1f, 1f, 1f, sw < 0.5f ? sel * (0.35f + 0.4f * hoverK) : 0f);
+			m.Modulate = new Color(1f + flash * 0.6f, 1f + flash * 0.6f, 1f + flash * 0.6f, 1f - outT);
 		});
-		Fx.FreeAfter(m, total + 0.05f);
 	}
 
-	// 2.30 脚下光雾升起
-	private static void Rise(Node2D world, Vector2 feet, Vector2 view)
+	// 1.30 脚下光池 + 蓝色光焰往上流（原版：指天时身上缭绕的蓝色光雾、脚下的光）
+	private static void Aura(Node2D world, Vector2 feet, float body, float life)
 	{
 		Node2D r = new() { Position = feet };
 		world.AddChild(r);
-		Sprite2D pool = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(0.55f, 0.85f, 1f, 0f), Scale = new Vector2(7f, 1.6f) * (64f / Fx.SoftDot.GetWidth()) };
-		r.AddChild(pool);
-		Node2D ring = new() { Scale = new Vector2(1f, 0.3f) };
-		r.AddChild(ring);
-		Fx.StrokeClosed(ring, Fx.Circle(120f, 64), new Color(0.75f, 0.95f, 1f, 0.8f), 3f);
-		Fx.StrokeClosed(ring, Fx.Circle(150f, 64), new Color(0.5f, 0.85f, 1f, 0.4f), 1.5f);
-		// 细长光丝：从地面升起、越升越淡
-		var wisps = new List<(Line2D l, float x, float speed, float len, float ph)>();
-		for (int i = 0; i < 22; i++)
+		float dot = Fx.SoftDot.GetWidth();
+		Sprite2D Glow(Vector2 sizePx, Color c)
 		{
-			Line2D l = new() { Width = Fx.Rand(1.5f, 4f), Material = Fx.Additive, DefaultColor = new Color(0.7f, 0.92f, 1f, 0f), Points = new[] { Vector2.Zero, Vector2.Zero } };
-			r.AddChild(l);
-			wisps.Add((l, Fx.Rand(-130f, 130f), Fx.Rand(120f, 260f), Fx.Rand(60f, 160f), Fx.Rand(0f, 1f)));
+			Sprite2D s = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = sizePx / dot, Modulate = c };
+			r.AddChild(s);
+			return s;
 		}
-		var motes = new List<(Polygon2D p, float x, float speed, float ph)>();
-		for (int i = 0; i < 30; i++)
+		// 光池（两层）+ 人身后一层很淡的竖向光晕
+		Sprite2D poolWide = Glow(new Vector2(body * 2.2f, body * 0.42f), new Color(0.3f, 0.6f, 1f, 0f));
+		Sprite2D pool = Glow(new Vector2(body * 1.1f, body * 0.22f), new Color(0.75f, 0.95f, 1f, 0f));
+		Sprite2D sheath = Glow(new Vector2(body * 0.9f, body * 1.5f), new Color(0.35f, 0.7f, 1f, 0f));
+		sheath.Position = new Vector2(0f, -body * 0.5f);
+		// 水波：一圈圈柔边光环从脚下荡开（压扁的圆，带宽光晕 + 细亮边）
+		var ripples = new List<(Polygon2D glow, Polygon2D edge, float ph)>();
+		for (int k = 0; k < 3; k++)
 		{
-			Polygon2D p = Fx.Poly(r, Fx.Star4(Fx.Rand(3f, 7f), 0.3f), Pal.Ice, additive: true);
-			motes.Add((p, Fx.Rand(-200f, 200f), Fx.Rand(40f, 110f), Fx.Rand(0f, 1f)));
+			Polygon2D g = Fx.Poly(r, new Vector2[3], new Color(0.45f, 0.8f, 1f, 0f), additive: true);
+			Polygon2D e = Fx.Poly(r, new Vector2[3], new Color(0.85f, 0.97f, 1f, 0f), additive: true);
+			ripples.Add((g, e, k / 3f));
 		}
-		const float total = 4.4f;   // 2.3 → 6.7（面部特写期间被盖住，回来时还在）
-		Fx.Animate(r, total, t =>
+		// 光焰：拉长的柔光团从脚下往上流，左右摆动，越往上越细越淡
+		var flames = new List<(Sprite2D s, float x, float w, float h, float period, float ph, float sway)>();
+		for (int i = 0; i < 34; i++)
 		{
-			float time = t * total;
-			float on = Mathf.Clamp(time / 0.6f, 0f, 1f);
-			pool.Modulate = new Color(0.55f, 0.85f, 1f, (0.5f + 0.2f * Mathf.Sin(time * 3f)) * on);
-			ring.Rotation = time * 0.4f;
-			ring.Modulate = new Color(1f, 1f, 1f, on * (0.7f + 0.3f * Mathf.Sin(time * 4f)));
-			foreach (var (l, x, speed, len, ph) in wisps)
+			float w = body * Fx.Rand(0.07f, 0.16f), h = body * Fx.Rand(0.35f, 0.7f);
+			Sprite2D s = Glow(new Vector2(w, h), new Color(0.45f, 0.8f, 1f, 0f));
+			flames.Add((s, Fx.Rand(-0.26f, 0.26f) * body, w, h, Fx.Rand(1.1f, 1.9f), Fx.Rand(0f, 1f), Fx.Rand(6f, 18f)));
+		}
+		// 光点：细小的四芒星往上飘、闪烁
+		var sparks = new List<(Polygon2D p, float x, float period, float ph)>();
+		for (int i = 0; i < 40; i++)
+		{
+			Polygon2D p = Fx.Poly(r, Fx.Star4(Fx.Rand(2.5f, 6f), 0.25f), Fx.Rng.NextDouble() < 0.6 ? Pal.Ice : Pal.White, additive: true);
+			sparks.Add((p, Fx.Rand(-0.6f, 0.6f) * body, Fx.Rand(1.6f, 3.2f), Fx.Rand(0f, 1f)));
+		}
+		Fx.Animate(r, life, t =>
+		{
+			float time = t * life;
+			float on = Ease.OutCubic(Mathf.Clamp(time / 0.8f, 0f, 1f));
+			float grow = 0.65f + 0.35f * Mathf.Clamp((time - 2.5f) / 3f, 0f, 1f);       // 指天后越来越盛
+			float breathe = 0.85f + 0.15f * Mathf.Sin(time * 2.6f);
+			poolWide.Modulate = new Color(0.3f, 0.6f, 1f, 0.35f * on * grow * breathe);
+			pool.Modulate = new Color(0.75f, 0.95f, 1f, 0.55f * on * grow * breathe);
+			sheath.Modulate = new Color(0.35f, 0.7f, 1f, 0.16f * on * grow * breathe);
+			foreach (var (g, e, ph) in ripples)
 			{
-				float u = Mathf.PosMod(ph + time * speed / 420f, 1f);
-				float y = -u * 420f;
-				l.Points = new[] { new Vector2(x + 8f * Mathf.Sin(time * 2f + ph * 9f), y), new Vector2(x, y + len) };
-				l.DefaultColor = new Color(0.7f, 0.92f, 1f, Mathf.Sin(u * Mathf.Pi) * 0.7f * on);
+				float u = Mathf.PosMod(time / 1.8f + ph, 1f);
+				float rad = body * (0.25f + 0.95f * Ease.OutCubic(u));
+				float a = on * Mathf.Sin(u * Mathf.Pi) * (1f - u * 0.5f);
+				Fx.Reshape(g, Fx.StrokePts(Ring(rad, 0.26f), 12f + 18f * u));
+				Fx.Reshape(e, Fx.StrokePts(Ring(rad, 0.26f), 2f));
+				g.Color = new Color(0.45f, 0.8f, 1f, 0.22f * a);
+				e.Color = new Color(0.85f, 0.97f, 1f, 0.6f * a);
 			}
-			foreach (var (p, x, speed, ph) in motes)
+			foreach (var (s, x, w, h, period, ph, sway) in flames)
 			{
-				float u = Mathf.PosMod(ph + time * speed / 500f, 1f);
-				p.Position = new Vector2(x + 20f * Mathf.Sin(time + ph * 7f), -u * 500f);
-				p.Modulate = new Color(1f, 1f, 1f, Mathf.Sin(u * Mathf.Pi) * on);
-				p.Rotation = time + ph;
+				float u = Mathf.PosMod(time / period + ph, 1f);
+				float y = -u * body * 1.25f;
+				s.Position = new Vector2(x * (1f - 0.45f * u) + sway * Mathf.Sin(time * 2.3f + ph * 11f) * u, y - h * 0.3f);
+				s.Scale = new Vector2(w * (1f - 0.55f * u), h * (0.7f + 0.6f * u)) / dot;
+				s.Modulate = new Color(0.45f + 0.4f * u, 0.8f + 0.15f * u, 1f, 0.5f * Mathf.Sin(u * Mathf.Pi) * on * grow);
 			}
+			foreach (var (p, x, period, ph) in sparks)
+			{
+				float u = Mathf.PosMod(time / period + ph, 1f);
+				p.Position = new Vector2(x + 14f * Mathf.Sin(time * 1.7f + ph * 9f), -u * body * 1.6f);
+				p.Modulate = new Color(1f, 1f, 1f, on * Mathf.Sin(u * Mathf.Pi) * (0.5f + 0.5f * Mathf.Sin(time * 9f + ph * 20f)));
+				p.Rotation = time * 0.8f + ph;
+			}
+			r.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp((time - (life - 0.3f)) / 0.3f, 0f, 1f));
 		});
-		Fx.FreeAfter(r, total + 0.05f);
+		Fx.FreeAfter(r, life + 0.05f);
 	}
 
-	private static bool HasPointAnim(NCreature? player) => HasAnim(player, "point_sky_in");
+	/// <summary>闭合的压扁圆（首尾相接，给 StrokePts 用）。</summary>
+	private static Vector2[] Ring(float radius, float squashY)
+	{
+		Vector2[] c = Fx.Circle(radius, 60, squashY);
+		Vector2[] r = new Vector2[c.Length + 1];
+		c.CopyTo(r, 0);
+		r[^1] = c[0];
+		return r;
+	}
 
 	private static bool HasAnim(NCreature? player, string name) =>
 		player != null && GodotObject.IsInstanceValid(player) && player.Visuals.SpineBody is { } body && body.HasAnimation(name);
 
-	/// <summary>单手指天：骨骼里有 point_sky（_in / _loop）动画就播放，结束后回待机；没有就跳过（光柱照样升起）。</summary>
+	/// <summary>单手指天：骨骼里有 point_sky（_in / _loop）动画就播放，之后停在指天姿势。</summary>
 	private static void PointSky(NCreature? player)
 	{
 		if (player == null || !GodotObject.IsInstanceValid(player) || player.Visuals.SpineBody is not { } body)
@@ -619,222 +737,99 @@ public static class GreatSeal
 			state.SetAnimation(intro, loop: false);
 			state.AddAnimation(body.HasAnimation("point_sky_loop") ? "point_sky_loop" : "idle_loop", 0f, loop: true);
 		}
-		else if (body.HasAnimation("point_sky"))
-		{
-			state.SetAnimation("point_sky", loop: false);
-			state.AddAnimation("idle_loop", 0f, loop: true);
-		}
 	}
 
-	// 3.60 指天：头顶一道细光柱直冲天顶
-	private static void SkyBeam(Node2D world, Vector2 head, Vector2 view)
+	/// <summary>竖直的柔边光柱：左右两半各一个四边形，中间亮、两边透明（顶点色），加色混合。</summary>
+	private static (Polygon2D l, Polygon2D r) Column(Node parent, Color c)
 	{
-		Node2D b = new() { Position = head + new Vector2(10f, -60f) };
-		world.AddChild(b);
-		Line2D core = new() { Width = 6f, Material = Fx.Additive, DefaultColor = new Color(1f, 1f, 1f, 0.95f), Points = new[] { Vector2.Zero, Vector2.Zero } };
-		Line2D glow = new() { Width = 40f, Material = Fx.Additive, DefaultColor = new Color(0.5f, 0.85f, 1f, 0.35f), Points = new[] { Vector2.Zero, Vector2.Zero } };
-		b.AddChild(glow);
-		b.AddChild(core);
-		Polygon2D star = Fx.Poly(b, Fx.Star4(40f, 0.12f), Pal.White, additive: true);
-		float len = b.Position.Y + 40f;
-		const float total = 1.1f;
-		Fx.Animate(b, total, t =>
+		Polygon2D Half()
 		{
-			float time = t * total;
-			float g = Ease.OutExpo(Mathf.Clamp(time / 0.25f, 0f, 1f));
-			core.Points = new[] { Vector2.Zero, new Vector2(0f, -len * g) };
-			glow.Points = core.Points;
-			float fade = 1f - Mathf.Clamp((time - 0.7f) / 0.4f, 0f, 1f);
-			core.Width = 6f * fade + 1f;
-			b.Modulate = new Color(1f, 1f, 1f, fade);
-			star.Scale = Vector2.One * (time < 0.2f ? Ease.OutBack(time / 0.2f) : 1f - 0.5f * Mathf.Clamp((time - 0.2f) / 0.5f, 0f, 1f));
-			star.Rotation = time;
-		});
-		Audio.Sfx.Clip("Theurgia_Up", 0.6f);
-		Fx.FreeAfter(b, total + 0.05f);
+			Polygon2D p = new() { Material = Fx.Additive, Polygon = new Vector2[4], VertexColors = new[] { c, c, c, c } };
+			parent.AddChild(p);
+			return p;
+		}
+		return (Half(), Half());
 	}
 
-	// 4.60 面部特写（v0.14.9：P3R 立绘的眼部 / 嘴部差分要配合原版材质分层，直接叠会有亮色接缝和重影 → 改用总攻击结束立绘的脸）：
-	//      先是暗蓝调（A2），蓝光从身后流过；1.0s 一道光从左到右扫过脸，亮成本色（A1），两只眼睛各闪一下青光 —— "睁眼"的那一拍
-	private static void FaceCloseUp(Node2D ui, Vector2 view, float barH, float total)
+	private static void SetColumn((Polygon2D l, Polygon2D r) col, float x, float yTop, float yBot, float width, Color c, float topFade = 1f)
 	{
-		Texture2D? lit = UiTex("allout_finish");
-		Texture2D? dark = UiTex("allout_finish_dark");
-		if (lit == null)
-		{
-			return;
-		}
+		float hw = width * 0.5f;
+		Color edge = new(c, 0f), core = c, coreTop = new(c, c.A * topFade);
+		col.l.Polygon = new[] { new Vector2(x - hw, yTop), new Vector2(x, yTop), new Vector2(x, yBot), new Vector2(x - hw, yBot) };
+		col.l.VertexColors = new[] { edge, coreTop, core, edge };
+		col.r.Polygon = new[] { new Vector2(x, yTop), new Vector2(x + hw, yTop), new Vector2(x + hw, yBot), new Vector2(x, yBot) };
+		col.r.VertexColors = new[] { coreTop, edge, edge, core };
+	}
+
+	// 4.30 光柱从指尖直冲天顶；地面光盘铺开；光柱越来越粗、天顶亮起、光线往上流 → 全屏白
+	private static void Ascend(Node2D world, Vector2 tip, Vector2 feet, float body, Vector2 view, float life)
+	{
 		Node2D n = new();
-		ui.AddChild(n);
-		float W = view.X, H = view.Y;
-		ColorRect bg = new() { Size = new Vector2(W, H - barH * 2f), Position = new Vector2(0f, barH), Color = new Color(0.03f, 0.14f, 0.38f), MouseFilter = Control.MouseFilterEnum.Ignore };
-		n.AddChild(bg);
-		var streams = new List<(Polygon2D p, float y, float ph, float speed)>();
+		world.AddChild(n);
+		float dot = Fx.SoftDot.GetWidth();
+		// 地面光盘（压扁的柔光，越铺越开）+ 亮边
+		Sprite2D disc = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Position = feet, Modulate = new Color(0.55f, 0.85f, 1f, 0f) };
+		n.AddChild(disc);
+		Polygon2D discEdge = Fx.Poly(n, new Vector2[3], new Color(0.85f, 0.97f, 1f, 0f), additive: true);
+		discEdge.Position = feet;
+		// 天顶的光（光柱打上去的地方）
+		Sprite2D sky = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Position = new Vector2(tip.X, -view.Y * 0.05f), Modulate = new Color(0.8f, 0.95f, 1f, 0f) };
+		n.AddChild(sky);
+		// 光柱：外层宽光晕 + 内层亮芯
+		var glow = Column(n, new Color(0.45f, 0.8f, 1f, 0.55f));
+		var core = Column(n, new Color(1f, 1f, 1f, 1f));
+		// 光柱周围往上流的细光线
+		var streams = new List<((Polygon2D, Polygon2D) col, float dx, float period, float ph, float w)>();
 		for (int i = 0; i < 12; i++)
 		{
-			float y = Fx.Rand(barH, H - barH);
-			Polygon2D p = Fx.Poly(n, new[] { new Vector2(0f, -12f), new Vector2(W * 0.5f, -3f), new Vector2(W * 0.5f, 3f), new Vector2(0f, 12f) }, new Color(0.5f, 0.85f, 1f, 0.16f), additive: true);
-			streams.Add((p, y, Fx.Rand(0f, 1f), Fx.Rand(0.15f, 0.35f)));
+			streams.Add((Column(n, new Color(0.7f, 0.92f, 1f, 0.5f)), Fx.Rand(-1f, 1f) * body * 0.55f, Fx.Rand(0.7f, 1.3f), Fx.Rand(0f, 1f), Fx.Rand(2f, 6f)));
 		}
-		Vector2 faceCenter = new(1075f, 300f);                        // allout_finish 里脸的中心
-		Vector2[] eyes = { new(1005f, 255f), new(1145f, 268f) };
-		float sc = H * 1.75f / lit.GetHeight();
-		Node2D face = new() { Position = new Vector2(W * 0.55f, H * 0.52f) };
-		n.AddChild(face);
-		Sprite2D litS = new() { Texture = lit, Centered = false, Scale = Vector2.One * sc, Position = -faceCenter * sc };
-		face.AddChild(litS);
-		Sprite2D? darkS = dark != null ? new Sprite2D { Texture = dark, Centered = false, Scale = Vector2.One * sc, Position = -faceCenter * sc } : null;
-		if (darkS != null) face.AddChild(darkS);
-		Polygon2D sweep = Fx.Poly(face, new[] { new Vector2(-60f, -H), new Vector2(60f, -H), new Vector2(160f, H), new Vector2(40f, H) }, new Color(0.85f, 0.97f, 1f, 0.5f), additive: true);
-		// 闭眼 / 半睁差分（Codex 从结束立绘编辑，art/v14/face；只裁了眼部 224×99，左上角在立绘的 (967,218)）：
-		// 亮色版叠在 litS 上，暗色版（同一份编辑按原版 亮 → 暗 的颜色对照表转出来）叠在 darkS 上、随它一起褪。没有就保持暗 → 亮 + 扫光的做法
-		Vector2 eyeAt = new(967f, 218f);
-		Sprite2D? Eye(Sprite2D? host, string name, bool visible)
+		// 指尖的闪光
+		Polygon2D star = Fx.Poly(n, Fx.Star4(body * 0.22f, 0.1f), Pal.White, additive: true);
+		star.Position = tip;
+		Sprite2D burst = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Position = tip, Modulate = new Color(0.8f, 0.95f, 1f, 0f) };
+		n.AddChild(burst);
+		Audio.Sfx.Clip("Snd_FX_Btl_Trigger_00_Flash", 0.75f);
+		Audio.Sfx.Clip("Wipe_In_ShadowTime", 0.5f, 1.6f);
+		NGame.Instance?.ScreenShake(ShakeStrength.Weak, ShakeDuration.Short);
+		Fx.Animate(n, life, t =>
 		{
-			if (host == null || UiTex(name) is not Texture2D tx)
+			float time = t * life;
+			// 光柱：0.18s 冲上天顶；之后越来越粗
+			float up = Ease.OutExpo(Mathf.Clamp(time / 0.18f, 0f, 1f));
+			float yTop = Mathf.Lerp(tip.Y, -20f, up);
+			float thick = Ease.InOutCubic(Mathf.Clamp((time - 1.2f) / 3.5f, 0f, 1f));
+			float pulse = 1f + 0.06f * Mathf.Sin(time * 14f);
+			SetColumn(glow, tip.X, yTop, tip.Y, (body * 0.22f + body * 0.9f * thick) * pulse, new Color(0.45f, 0.8f, 1f, 0.5f + 0.3f * thick), 0.6f);
+			SetColumn(core, tip.X, yTop, tip.Y, (6f + body * 0.06f * thick) * pulse, new Color(1f, 1f, 1f, 0.95f));
+			// 指尖闪光：一开始最亮，之后保持一点
+			float fl = time < 0.12f ? time / 0.12f : Mathf.Max(0.35f, 1f - (time - 0.12f) / 0.6f);
+			star.Scale = Vector2.One * fl * (1f + 0.3f * thick);
+			star.Rotation = time * 0.6f;
+			burst.Scale = Vector2.One * body * (0.5f + 0.6f * thick) * fl / dot;
+			burst.Modulate = new Color(0.8f, 0.95f, 1f, 0.7f * fl);
+			// 地面光盘：0.1s 起向四周铺开
+			float spread = Ease.OutCubic(Mathf.Clamp((time - 0.1f) / 2.6f, 0f, 1f));
+			float dw = Mathf.Lerp(body * 0.6f, view.X * 1.3f, spread);
+			disc.Scale = new Vector2(dw, dw * 0.2f) / dot;
+			disc.Modulate = new Color(0.55f, 0.85f, 1f, (0.45f + 0.25f * thick) * Mathf.Clamp(time / 0.2f, 0f, 1f));
+			Fx.Reshape(discEdge, Fx.StrokePts(Ring(dw * 0.42f, 0.2f), 3f));
+			discEdge.Color = new Color(0.85f, 0.97f, 1f, 0.7f * (1f - spread) * Mathf.Clamp(time / 0.2f, 0f, 1f));
+			// 天顶亮起
+			float s2 = Ease.InCubic(Mathf.Clamp((time - 0.5f) / (life - 0.8f), 0f, 1f));
+			sky.Scale = Vector2.One * (body * 1.2f + view.X * 1.4f * s2) / dot;
+			sky.Modulate = new Color(0.8f, 0.95f, 1f, 0.25f + 0.6f * s2);
+			// 往上流的细光线：1.2s 起出现
+			float sOn = Mathf.Clamp((time - 1.2f) / 0.6f, 0f, 1f);
+			foreach (var (col, dx, period, ph, w) in streams)
 			{
-				return null;
-			}
-			Sprite2D e = new() { Texture = tx, Centered = false, Position = eyeAt, Visible = visible };
-			host.AddChild(e);                                         // 子节点：跟着宿主的缩放 / 位置 / 透明度
-			return e;
-		}
-		Sprite2D? closedS = Eye(litS, "face_closed", true), halfS = Eye(litS, "face_half", false);
-		Sprite2D? closedD = Eye(darkS, "face_closed_dark", true), halfD = Eye(darkS, "face_half_dark", false);
-		var glints = new List<Polygon2D>();
-		foreach (Vector2 e in eyes)
-		{
-			Polygon2D g = Fx.Poly(face, Fx.Star4(46f, 0.1f), new Color(0.6f, 0.95f, 1f), additive: true);
-			g.Position = (e - faceCenter) * sc;
-			g.Scale = Vector2.Zero;
-			glints.Add(g);
-		}
-		var motes = new List<(Polygon2D p, Vector2 o, float ph)>();
-		for (int i = 0; i < 26; i++)
-		{
-			Polygon2D p = Fx.Poly(n, Fx.Star4(Fx.Rand(3f, 8f), 0.3f), Pal.Ice, additive: true);
-			motes.Add((p, new Vector2(Fx.Rand(0f, W), Fx.Rand(barH, H - barH)), Fx.Rand(0f, Mathf.Tau)));
-		}
-		Audio.Sfx.Clip("Snd_FX_Btl_PersonaAura_00", 0.6f, 1.0f);
-		Fx.Animate(n, total, t =>
-		{
-			float time = t * total;
-			face.Scale = Vector2.One * (1f + 0.06f * time);
-			face.Position = new Vector2(W * 0.55f - 20f * time, H * 0.52f + 8f * time);
-			float wake = Mathf.Clamp((time - 1.0f) / 0.3f, 0f, 1f);
-			if (darkS != null) darkS.Modulate = new Color(1f, 1f, 1f, 1f - wake);
-			litS.Modulate = new Color(1f, 1f, 1f, darkS != null ? 1f : 0.4f + 0.6f * wake);
-			float sw = Mathf.Clamp((time - 0.9f) / 0.4f, 0f, 1f);
-			sweep.Position = new Vector2(Mathf.Lerp(-W * 0.6f, W * 0.6f, Ease.InOutCubic(sw)), 0f);
-			sweep.Modulate = new Color(1f, 1f, 1f, sw > 0f && sw < 1f ? 1f : 0f);
-			// 闭眼 → 1.0 半睁 → 1.15 睁开（和暗 → 亮的褪色、扫光、眼中青光同一拍）
-			bool closed = time < 1.0f, half = time >= 1.0f && time < 1.15f;
-			if (closedS != null) closedS.Visible = closed;
-			if (closedD != null) closedD.Visible = closed;
-			if (halfS != null) halfS.Visible = half;
-			if (halfD != null) halfD.Visible = half;
-			float gl = time < 1.15f ? 0f : time < 1.3f ? Ease.OutBack((time - 1.15f) / 0.15f) : Mathf.Max(0f, 1f - (time - 1.3f) / 0.35f);
-			foreach (Polygon2D g in glints)
-			{
-				g.Scale = Vector2.One * gl;
-				g.Rotation = time;
-			}
-			foreach (var (p, y, ph, speed) in streams)
-			{
-				float u = Mathf.PosMod(ph + time * speed, 1f);
-				p.Position = new Vector2(W * (1.2f - 1.8f * u), y);
-			}
-			foreach (var (p, o, ph) in motes)
-			{
-				p.Position = o + new Vector2(-30f * time, -40f * time + 6f * Mathf.Sin(time * 2f + ph));
-				p.Modulate = new Color(1f, 1f, 1f, 0.4f + 0.4f * Mathf.Sin(time * 3f + ph));
-			}
-			n.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.15f, 0f, 1f) * (1f - Mathf.Clamp((time - (total - 0.15f)) / 0.15f, 0f, 1f)));
-		});
-		Fx.FreeAfter(n, total + 0.05f);
-	}
-
-	// 6.60 光穹 + 扇形光束射向建筑师；建筑师被封印环锁住、褪成石色
-	private static void Dome(Node2D world, Vector2 feet, Vector2 foe, NCreature? architect, Vector2 view)
-	{
-		Node2D d = new();
-		world.AddChild(d);
-		Vector2 baseAt = new(view.X * 0.5f, view.Y * 0.86f);
-		Sprite2D dome = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Position = baseAt, Modulate = new Color(0.8f, 0.95f, 1f, 0f) };
-		d.AddChild(dome);
-		Polygon2D domeShape = Fx.Poly(d, HalfDisc(view.X * 0.35f, 48), new Color(0.75f, 0.92f, 1f, 0f), additive: true);
-		domeShape.Position = baseAt;
-		var beams = new List<(Polygon2D p, float a, float len, float delay)>();
-		for (int k = 0; k < 14; k++)
-		{
-			Vector2 toFoe = (foe - baseAt).Normalized();
-			float a = toFoe.Angle() + (k - 6.5f) * 0.11f + Fx.Rand(-0.03f, 0.03f);
-			float len = view.Length() * Fx.Rand(0.7f, 1.0f);
-			float w = Fx.Rand(10f, 34f);
-			Polygon2D p = Fx.Poly(d, new[] { new Vector2(0f, -w * 0.2f), new Vector2(len, -w), new Vector2(len, w), new Vector2(0f, w * 0.2f) }, new Color(0.85f, 0.97f, 1f, 0.5f), additive: true);
-			p.Position = baseAt;
-			p.Rotation = a;
-			p.Scale = new Vector2(0f, 1f);
-			beams.Add((p, a, len, Fx.Rand(0.3f, 0.9f)));
-		}
-		// 建筑师身上的封印环
-		Node2D rings = new() { Position = foe };
-		d.AddChild(rings);
-		var rs = new List<Node2D>();
-		for (int i = 0; i < 3; i++)
-		{
-			Node2D r = new() { Position = new Vector2(0f, (i - 1) * 70f), Modulate = new Color(1f, 1f, 1f, 0f) };
-			rings.AddChild(r);
-			Fx.StrokeClosed(r, Fx.Circle(150f, 64, 0.32f), new Color(0.75f, 0.95f, 1f, 0.9f), 3f);
-			for (int k = 0; k < 16; k++)
-			{
-				float ang = k * Mathf.Tau / 16f;
-				Fx.Poly(r, Fx.Star4(5f, 0.3f), Pal.White, additive: true).Position = new Vector2(Mathf.Cos(ang) * 150f, Mathf.Sin(ang) * 150f * 0.32f);
-			}
-			rs.Add(r);
-		}
-		Color? baseMod = architect != null && GodotObject.IsInstanceValid(architect) ? architect.Modulate : null;
-		Audio.Sfx.Clip("Snd_FX_Btl_StAbsorption_00_1", 0.8f, 0.6f);
-		const float total = 3.0f;
-		Fx.Animate(d, total, t =>
-		{
-			float time = t * total;
-			float rise = Ease.OutCubic(Mathf.Clamp(time / 0.8f, 0f, 1f));
-			dome.Scale = new Vector2(view.X * 0.9f, view.Y * 0.8f) * rise / Fx.SoftDot.GetWidth();
-			dome.Modulate = new Color(0.8f, 0.95f, 1f, 0.75f * rise);
-			domeShape.Scale = new Vector2(rise, rise);
-			domeShape.Modulate = new Color(1f, 1f, 1f, 0.35f + 0.2f * Mathf.Sin(time * 6f));
-			foreach (var (p, a, len, delay) in beams)
-			{
-				float g = Ease.OutExpo(Mathf.Clamp((time - delay) / 0.35f, 0f, 1f));
-				p.Scale = new Vector2(g, 1f + 0.3f * Mathf.Sin(time * 8f + a * 10f));
-				p.Modulate = new Color(1f, 1f, 1f, g * (0.7f + 0.3f * Mathf.Sin(time * 10f + a * 7f)));
-			}
-			for (int i = 0; i < rs.Count; i++)
-			{
-				float c = Ease.OutCubic(Mathf.Clamp((time - 0.8f - i * 0.12f) / 0.5f, 0f, 1f));
-				rs[i].Scale = Vector2.One * Mathf.Lerp(1.8f, 0.75f, c);
-				rs[i].Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(c * 3f, 0f, 1f));
-				rs[i].Rotation = (i - 1) * 0.08f;
-			}
-			if (baseMod is Color m && architect != null && GodotObject.IsInstanceValid(architect))
-			{
-				float g = Ease.InOutCubic(Mathf.Clamp((time - 1.1f) / 0.8f, 0f, 1f));
-				architect.Modulate = m.Lerp(new Color(0.55f, 0.62f, 0.82f, m.A), g);
+				float u = Mathf.PosMod(time / period + ph, 1f);
+				float yb = Mathf.Lerp(feet.Y, -view.Y * 0.2f, u);
+				float x = tip.X + dx * (1f + thick);
+				SetColumn(((Polygon2D, Polygon2D))col, x, yb - body * 0.6f, yb, w, new Color(0.7f, 0.92f, 1f, 0.45f * sOn * Mathf.Sin(u * Mathf.Pi)), 0f);
 			}
 		});
-		Fx.FreeAfter(d, total + 0.1f);
-	}
-
-	private static Vector2[] HalfDisc(float r, int n)
-	{
-		Vector2[] pts = new Vector2[n + 1];
-		for (int i = 0; i <= n; i++)
-		{
-			float a = Mathf.Pi + Mathf.Pi * i / n;
-			pts[i] = new Vector2(Mathf.Cos(a) * r, Mathf.Sin(a) * r * 0.6f);
-		}
-		return pts;
+		Fx.FreeAfter(n, life + 0.05f);
 	}
 
 	// 8.70 → 9.60 光越来越强，全屏白（对准原声高潮）
@@ -847,117 +842,28 @@ public static class GreatSeal
 		Fx.FreeAfter(w, 1.6);
 	}
 
-	private static void Gate(CanvasLayer top, Vector2 view)
+	// 9.60 全屏白 → 深蓝 → 「MEMENTO MORI / ……于是，早晨来临。」（用户保留了这一幕；去掉了伟大封印巨门图）
+	private static void Coda(CanvasLayer top, Vector2 view, float total)
 	{
 		Node2D root = new();
 		top.AddChild(root);
-		Texture2D? tex = Tex("great_seal");
-		Node2D art = new() { Position = view / 2f };
-		root.AddChild(art);
-		float s = tex != null ? Mathf.Max(view.X / tex.GetWidth(), view.Y / tex.GetHeight()) * 1.04f : 1f;
-		if (tex != null)
-		{
-			art.AddChild(new Sprite2D { Texture = tex, Scale = Vector2.One * s });
-		}
-		else
-		{
-			art.AddChild(new ColorRect { Size = view, Position = -view / 2f, Color = new Color(0.03f, 0.04f, 0.12f) });
-		}
-		// 门心（原图里人像胸口的位置）
-		Vector2 door = view / 2f + (tex != null ? (new Vector2(760f, 380f) - new Vector2(tex.GetWidth(), tex.GetHeight()) / 2f) * s : Vector2.Zero);
-
-		// 十四道光流：从画面四周弯向门心，逐渐画出，光头沿线跑
-		List<(Line2D line, Polygon2D head, Vector2[] path, float delay)> streams = new();
-		for (int i = 0; i < 14; i++)
-		{
-			float a = i * Mathf.Tau / 14f + Fx.Rand(-0.15f, 0.15f);
-			Vector2 edge = view / 2f + Vector2.Right.Rotated(a) * view.Length() * 0.6f;
-			Vector2 ctrl = door.Lerp(edge, 0.5f) + Vector2.Right.Rotated(a + Mathf.Pi / 2f) * Fx.Rand(120f, 280f);
-			Vector2[] path = new Vector2[32];
-			for (int k = 0; k < path.Length; k++)
-			{
-				float u = k / (path.Length - 1f);
-				path[k] = edge * (1f - u) * (1f - u) + ctrl * 2f * u * (1f - u) + door * u * u;
-			}
-			Line2D line = Fx.Line(root, new[] { edge, edge }, new Color(0.75f, 0.85f, 1f, 0.55f), Fx.Rand(1.5f, 3.5f));
-			Polygon2D head = Fx.Poly(root, Fx.Star4(9f, 0.3f), Pal.White, additive: true);
-			streams.Add((line, head, path, Fx.Rand(0.1f, 0.5f)));
-		}
-		// 漂浮光点
-		List<(Polygon2D p, Vector2 o, Vector2 v)> motes = new();
-		for (int i = 0; i < 40; i++)
-		{
-			Polygon2D m = Fx.Poly(root, Fx.Star4(Fx.Rand(2f, 5f), 0.3f), new Color(0.8f, 0.9f, 1f), additive: true);
-			motes.Add((m, new Vector2(Fx.Rand(0f, view.X), Fx.Rand(0f, view.Y)), new Vector2(Fx.Rand(-12f, 12f), Fx.Rand(-30f, -8f))));
-		}
-		// 门心白光
-		Sprite2D glow = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Position = door, Modulate = new Color(1f, 1f, 1f, 0f) };
-		root.AddChild(glow);
-		// 标题
-		Node2D title = new() { Position = new Vector2(view.X / 2f, view.Y * 0.8f), Modulate = new Color(1f, 1f, 1f, 0f) };
-		root.AddChild(title);
-		int tfs = (int)(view.Y * 0.085f);
-		Typo.Text(title, Zh ? "伟 大 封 印" : "THE GREAT SEAL", Zh ? Typo.CjkHeavy : Typo.LatinItalic, tfs, Pal.White, new Vector2(-view.X / 2f, -tfs * 0.7f), HorizontalAlignment.Center, outline: 5, outlineColor: new Color(0.08f, 0.2f, 0.55f));
-		Typo.Text(title, Zh ? "T H E   G R E A T   S E A L" : "M E M E N T O   M O R I", Typo.LatinItalic, 22, new Color(0.75f, 0.88f, 1f), new Vector2(-view.X / 2f, tfs * 0.55f), HorizontalAlignment.Center, outline: 2, outlineColor: new Color(0.02f, 0.04f, 0.12f));
-		foreach (Node c in title.GetChildren())
-		{
-			if (c is Control ctl)
-			{
-				ctl.Size = new Vector2(view.X, ctl.Size.Y);
-			}
-		}
-		// 全屏白 / 深蓝 / 结语
-		ColorRect white = new() { Size = view, Color = new Color(1f, 1f, 1f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore };
-		root.AddChild(white);
+		ColorRect bg = new() { Size = view, Color = Colors.White, MouseFilter = Control.MouseFilterEnum.Ignore };
+		root.AddChild(bg);
 		Node2D coda = new() { Position = new Vector2(view.X / 2f, view.Y * 0.5f), Modulate = new Color(1f, 1f, 1f, 0f) };
 		root.AddChild(coda);
 		Label codaText = Typo.Text(coda, Zh ? "M E M E N T O   M O R I" : "...and the morning came.", Typo.LatinItalic, 30, new Color(0.8f, 0.9f, 1f), new Vector2(-view.X / 2f, -20f), HorizontalAlignment.Center);
 		codaText.Size = new Vector2(view.X, codaText.Size.Y);
 		Label codaSub = Typo.Text(coda, Zh ? "……于是，早晨来临。" : "", Typo.Cjk, 22, new Color(0.65f, 0.75f, 0.9f), new Vector2(-view.X / 2f, 28f), HorizontalAlignment.Center);
 		codaSub.Size = new Vector2(view.X, codaSub.Size.Y);
-
-		// 9.6s 接 WhiteRise 的全屏白开始；与 Run 的清理时刻（Duration + 0.8）对齐
-		const float total = Duration + 0.8f - 9.6f;
-		white.Color = Pal.White;
 		Fx.Animate(root, total, t =>
 		{
-			float time = t * total;                  // 0 = 9.6s
+			float time = t * total;
+			float toNavy = Ease.InOutSine(Mathf.Clamp((time - 0.3f) / 0.7f, 0f, 1f));
+			bg.Color = Colors.White.Lerp(new Color(0.02f, 0.04f, 0.1f), toNavy);
+			float ci = Ease.OutCubic(Mathf.Clamp((time - 0.9f) / 0.7f, 0f, 1f));
+			coda.Modulate = new Color(1f, 1f, 1f, ci);
+			coda.Position = new Vector2(view.X / 2f, view.Y * 0.5f + 10f * (1f - ci));
 			root.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp((time - (total - 0.7f)) / 0.6f, 0f, 1f));
-			art.Scale = Vector2.One * (1f + 0.07f * Ease.InOutCubic(Mathf.Clamp(time / 2.6f, 0f, 1f)));
-			art.Position = view / 2f + (door - view / 2f) * 0.07f * Ease.InOutCubic(Mathf.Clamp(time / 2.6f, 0f, 1f)) * -1f;
-			foreach ((Line2D line, Polygon2D head, Vector2[] path, float delay) in streams)
-			{
-				float u = Ease.InOutCubic(Mathf.Clamp((time - delay) / 1.0f, 0f, 1f));
-				int nPts = Mathf.Max(2, (int)(u * (path.Length - 1)) + 1);
-				Vector2[] pts = new Vector2[nPts];
-				System.Array.Copy(path, pts, nPts);
-				line.Points = pts;
-				float run = Mathf.PosMod((time - delay) / 1.1f, 1f);
-				head.Position = path[Mathf.Clamp((int)(run * (path.Length - 1)), 0, path.Length - 1)];
-				head.Modulate = new Color(1f, 1f, 1f, u >= 1f ? 0.9f : 0f);
-				line.DefaultColor = new Color(0.75f, 0.85f, 1f, 0.35f + 0.2f * Mathf.Sin(time * 5f + delay * 9f));
-			}
-			foreach ((Polygon2D p, Vector2 o, Vector2 v) in motes)
-			{
-				p.Position = o + v * time;
-				p.Modulate = new Color(1f, 1f, 1f, 0.3f + 0.3f * Mathf.Sin(time * 3f + o.X));
-			}
-			// 门心白光：1.8 起暴涨 → 2.6 全屏白（= 12.2s）
-			float g = Ease.InCubic(Mathf.Clamp((time - 1.8f) / 0.7f, 0f, 1f));
-			glow.Scale = Vector2.One * (Mathf.Lerp(2f, 40f, g) * 64f / Fx.SoftDot.GetWidth());
-			glow.Modulate = new Color(1f, 1f, 1f, 0.3f + 0.7f * g);
-			float ti = Ease.OutCubic(Mathf.Clamp((time - 0.5f) / 0.7f, 0f, 1f));
-			title.Modulate = new Color(1f, 1f, 1f, ti * (1f - Mathf.Clamp((time - 2.2f) / 0.3f, 0f, 1f)));
-			title.Scale = Vector2.One * (1.06f - 0.06f * ti);
-			// 白：开场从全屏白褪出（0.1–0.6，画面从光里浮现）；2.4–2.6 再涨满，2.9 起转深蓝
-			float w = Mathf.Max(1f - Ease.OutCubic(Mathf.Clamp((time - 0.1f) / 0.5f, 0f, 1f)), Mathf.Clamp((time - 2.4f) / 0.2f, 0f, 1f));
-			float toNavy = Ease.InOutCubic(Mathf.Clamp((time - 2.9f) / 0.6f, 0f, 1f));
-			white.Color = new Color(1f, 1f, 1f, w).Lerp(new Color(0.02f, 0.04f, 0.1f, w), toNavy);
-			coda.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((time - 3.2f) / 0.5f, 0f, 1f));
-			if (time > 2.6f && time < 2.7f)
-			{
-				NGame.Instance?.ScreenShake(ShakeStrength.Weak, ShakeDuration.Short);
-			}
 		});
 	}
 }

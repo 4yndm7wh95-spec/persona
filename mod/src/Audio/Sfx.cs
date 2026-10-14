@@ -131,7 +131,7 @@ public static class Sfx
 	/// </summary>
 	private static readonly string[] Clips =
 	{
-		"vorpal_blade", "messiah_seal", "great_seal", "select_hit", "bomb_hit", "lock_tick", "Snd_FX_Btl_Allout_Zoom", "Snd_FX_Btl_Allout_Extermination", "Btl_Ok", "Btl_CommandPanel", "Sys_Cursor", "morning_star_rain", "morning_star_fall", "Snd_FX_Btl_AlloutUI_00", "Btl_Allout_Wipe", "Snd_FX_Btl_Allout_Kime01",
+		"vorpal_blade", "Btl_Down_1", "Wipe_Out_ShadowTime", "Snd_FX_Btl_Trigger_00_Flash", "Wipe_In_ShadowTime", "swish_large_1", "swish_small_2", "swish_heavy_2", "messiah_seal", "great_seal", "select_hit", "bomb_hit", "lock_tick", "Snd_FX_Btl_Allout_Zoom", "Snd_FX_Btl_Allout_Extermination", "Btl_Ok", "Btl_CommandPanel", "Sys_Cursor", "morning_star_rain", "morning_star_fall", "Snd_FX_Btl_AlloutUI_00", "Btl_Allout_Wipe", "Snd_FX_Btl_Allout_Kime01",
 		"ShuffleTime_Start", "ShuffleTime_Whoosh", "ShuffleTime_CardSet", "wheel_click", "clock_tick", "clock_midnight", "clock_spin", "evt_eft_timespin_01",
 		"em0561_sp_roulette_01", "em0561_sp_roulette_03", "ShuffleTime_Result", "Snd_FX_Btl_Summon_00",
 		"ShuffleTime_PowerUp", "Theurgia_Max", "Snd_FX_Btl_StReflection_00_1", "Snd_FX_Btl_StAbsorption_00_1",
@@ -176,7 +176,10 @@ public static class Sfx
 		switch (name)
 		{
 			case "regent_die":
-				return true;
+				// v0.14.20（用户：死亡还是储君的音效）：换成 P3R —— 倒地 + 影时间褪去的长尾
+				Clip("Btl_Down_1", 0.85f);
+				Clip("Wipe_Out_ShadowTime", 0.5f, 0.3f);
+				return false;
 			case "regent_select":
 				// 选人界面选中结城理（v0.14.8，参照原版其他角色的选中音）：一下强起音（切入闪光 + 阿卡纳爆发 + 天鹅绒确认）→
 				// Persona 光环接上持续发声 → 约 2.4s 内平滑衰减淡出，中间没有空档；0.7s 时 CharSelectBg 的召唤器碎玻璃叠在上面（不变）
@@ -273,6 +276,8 @@ public static class Sfx
 	private static readonly Dictionary<string, (float Keep, float Fade)> Tails = new()
 	{
 		["morning_star_rain"] = (1.5f, 0.6f),
+		["Wipe_Out_ShadowTime"] = (1.6f, 0.8f),               // 死亡：长尾缓出
+		["Wipe_In_ShadowTime"] = (2.4f, 0.8f),                // 伟大封印光柱：涨到全屏白前收掉
 		["Snd_FX_Btl_Allout_Extermination"] = (1.9f, 0.4f),     // 总攻击烟云：原 4.5s，全屏白（2.0s 后）收掉            // 流星雨：6 颗落完约 1.2s；原声 3.7s 全程不减弱
 		["morning_star_fall"] = (1.3f, 0.6f),            // 彗星 / 坠月：0.4s 命中，之后长尾 2.5s
 		["megido_hit"] = (0.9f, 0.5f),                   // 万能属性每一击：原 2.5s，多段时叠成一片

@@ -534,17 +534,18 @@ public static class Uniq
 	/// 微光：掌心托起一颗光球，光球一明一暗地"呼吸"三下，每亮一次就放出一圈十字星芒；周围一颗接一颗亮起闪烁的小星，
 	/// 萤火般的光点向上飘；最后光球分成两道光尾，一道飞向抽牌堆、一道绕回来落进手牌区（抽牌、放回）。
 	/// </summary>
-	public static void Glimmer(Control back, Control front, Vector2 center, Vector2 hand)
+	public static void Glimmer(Control back, Control front, Vector2 center, Vector2 above)
 	{
-		Vector2 at = hand + new Vector2(30f, -70f);
-		Node2D orb = Fx.Root(front, at, "P3GlimmerOrb");
-		Sprite2D halo = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = Vector2.One * 5f, Modulate = new Color(Pal.Ice, 0.7f) };
+		// v0.14.20（用户：微光的亮斑挡住人物）：光球放到头顶上方、人物身后的一层，光晕也缩小
+		Vector2 at = above + new Vector2(10f, -30f);
+		Node2D orb = Fx.Root(back, at, "P3GlimmerOrb");
+		Sprite2D halo = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = Vector2.One * 3.2f, Modulate = new Color(Pal.Ice, 0.7f) };
 		orb.AddChild(halo);
 		Polygon2D core = Fx.Poly(orb, Fx.Circle(16f, 24), Pal.White, additive: true);
 		Polygon2D flare = Fx.Poly(orb, Fx.Star4(90f, 0.06f), new Color(Pal.White, 0f), additive: true);
 		Polygon2D flare2 = Fx.Poly(orb, Fx.Star4(60f, 0.06f), new Color(Pal.Cyan, 0f), additive: true);
 		flare2.Rotation = Mathf.Pi / 4f;
-		P3Fx.Flash(back, center, Pal.Ice, 380f, 0.45f);
+		P3Fx.Flash(back, at, Pal.Ice, 300f, 0.45f);
 		const float total = 1.4f;
 		Fx.Animate(orb, total, t =>
 		{

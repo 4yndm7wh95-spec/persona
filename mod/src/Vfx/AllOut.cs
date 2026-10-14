@@ -7,7 +7,9 @@ namespace P3Makoto.Vfx;
 /// 总攻击（All-Out Attack）：精英 / Boss 战的最后一击之后、胜利结算之前播放（AllOutPatch 把战斗结束流程推迟 Duration 秒；
 /// 播了总攻击就不再播普通胜利演出）。
 /// v0.14.16（用户：只要「怪物倒下处展开同心圆 → 顺势切到结算立绘」；同心圆层数、节奏、音效都照原版；字幕要做进背景）：约 3.65s
-///   音效：只有 Snd_FX_Btl_Allout_Zoom（把原版结算片段和全部 P3R 音效库做互相关得出），前 0.7s 是蓄力、0.7s 到达高潮。
+///   音效：主音是 Snd_FX_Btl_Allout_Zoom（把原版结算片段和全部 P3R 音效库做互相关得出），前 0.7s 是蓄力、0.7s 到达高潮；
+///   v0.14.20 另加：第一滴 Allout_Wipe（压低）、第二滴 swish、背景字滑入 swish、收尾 swish（全部走 Master 总线）。
+///   收尾 0.75s（v0.14.20，用户：不要草草淡出）：立绘一顿后甩出右侧、背景字滑向左，水波从圆心挖开一个带亮边的洞、扩到全屏，露出战场，接原版结算。
 ///   0.30  蓄力 = 湖面水波（圆心在画面右上角外）：第一滴落下，三圈边界先后冲出 —— 深一档蓝前沿扫满全屏、浅蓝、中蓝，
 ///         从左到右是「深 · 浅 · 深」；0.36s 后圆心再落一滴，新的浅蓝冲出来把上一轮推开、挤窄，压力一圈圈往外传（环带弹簧模型）
 ///   1.00  高潮：结算立绘切入（1.3 倍以脸为支点拉回、暗蓝平滑亮起）；不再滴水，余波回弹、慢慢外扩
@@ -17,7 +19,8 @@ namespace P3Makoto.Vfx;
 /// </summary>
 public static partial class AllOut
 {
-	private const float IrisAt = 0.3f, Build = 0.7f, FinishAt = IrisAt + Build, FinishLen = 2.65f;
+	private const float IrisAt = 0.3f, Build = 0.7f, FinishAt = IrisAt + Build, FinishLen = 2.95f;
+	private const float OutroLen = 0.75f;                            // 收尾：立绘 / 背景字滑出，水波从圆心退开露出战场（用户：不要草草淡出）
 	private const float PortraitLead = 0.1f;                         // 立绘比高潮早 0.1s 开始淡入，高潮时已基本到位（用户：人物出现太突兀）
 	public const float Duration = FinishAt + FinishLen;
 
@@ -46,6 +49,11 @@ public static partial class AllOut
 		// 蓄力 0.7s = 同心圆展开，峰值 = 同心圆落定、结算页出现
 		// v0.14.16：实测总攻击时没声音 —— 战斗结束时 SFX 总线可能被游戏压低 / 静音，直接走 Master 总线；日志里记一行方便排查
 		Audio.Sfx.Clip("Snd_FX_Btl_Allout_Zoom", 0.8f, FinishAt - 0.7f, master: true);
+		// v0.14.20（用户：音效还不够丰富）：两滴水各一声（第一滴用原版转场音、压低），背景字滑入一声，收尾滑出一声
+		Audio.Sfx.Clip("Btl_Allout_Wipe", 0.3f, IrisAt, master: true);
+		Audio.Sfx.Clip("swish_large_1", 0.45f, IrisAt + 0.36f, master: true);
+		Audio.Sfx.Clip("swish_small_2", 0.4f, FinishAt + 0.05f, master: true);
+		Audio.Sfx.Clip("swish_heavy_2", 0.55f, Duration - OutroLen, master: true);
 
 		Node2D bg = new();
 		root.AddChild(bg);
@@ -81,6 +89,8 @@ uniform float radii[12];
 uniform vec4 cols[12];
 uniform float rim_r[4];
 uniform float rim_a[4];
+uniform vec2 hole_center;
+uniform float hole = 0.0;
 void fragment() {
 	vec2 p = UV * size;
 	float d = distance(p, center);
@@ -96,6 +106,11 @@ void fragment() {
 		float k = rim_a[j] * (1.0 - smoothstep(0.0, 2.5, abs(d - rim_r[j])));
 		c.rgb = mix(c.rgb, vec3(0.88, 0.98, 1.0), k);
 	}
+	// 收尾：从圆心挖开的洞（洞里透明、露出战场），洞的边缘一道亮边
+	float dh = distance(p, hole_center);
+	float edge = hole > 0.0 ? (1.0 - smoothstep(0.0, 7.0, abs(dh - hole))) : 0.0;
+	c.rgb = mix(c.rgb, vec3(0.92, 0.99, 1.0), edge * 0.8);
+	c.a *= hole > 0.0 ? clamp((dh - hole) / aa + 0.5, 0.0, 1.0) : 1.0;
 	COLOR = c;
 }",
 	};
@@ -239,6 +254,7 @@ void fragment() {
 		ShaderMaterial rm = (ShaderMaterial)disc.Material;
 		rm.SetShaderParameter("size", new Vector2(W, H));
 		rm.SetShaderParameter("center", center);
+		rm.SetShaderParameter("hole_center", center);
 		Color[] colsAll = new Color[12];
 		for (int i = 0; i < waves.Count; i++)
 		{
@@ -307,16 +323,18 @@ void fragment() {
 
 			// 背景大字：高潮那一刻起从左侧缓缓滑入（0.7s），透明度 0.25s 到满，之后慢慢右移
 			float since = time - Build;
+			float outK = Mathf.Clamp((time - (life - OutroLen)) / OutroLen, 0f, 1f);
 			float wi = Ease.OutCubic(Mathf.Clamp(since / 0.7f, 0f, 1f));
-			Vector2 wp = wordAt + new Vector2(-W * 0.3f * (1f - wi) + 18f * Mathf.Max(0f, since), 0f);
+			Vector2 wp = wordAt + new Vector2(-W * 0.3f * (1f - wi) + 18f * Mathf.Max(0f, since) - W * 0.45f * Ease.InCubic(outK), 0f);
 			float wa = Ease.OutCubic(Mathf.Clamp(since / 0.25f, 0f, 1f));
 			foreach (Node2D w in words)
 			{
 				w.Position = wp;
 				w.Visible = since >= 0f;
-				w.Modulate = new Color(1f, 1f, 1f, wa);
+				w.Modulate = new Color(1f, 1f, 1f, wa * (1f - outK));
 			}
-			n.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InOutSine(Mathf.Clamp((time - (life - 0.4f)) / 0.4f, 0f, 1f)));
+			// 收尾：洞从圆心挖开到盖过全屏（水退开、露出战场），背景字往左滑走
+			rm.SetShaderParameter("hole", outK > 0f ? cover * 1.25f * Ease.InOutCubic(outK) : 0f);
 		});
 		Fx.FreeAfter(n, life + 0.05f);
 	}
@@ -352,14 +370,16 @@ void fragment() {
 			float enter = Ease.OutCubic(Mathf.Clamp(raw / 0.5f, 0f, 1f));
 			float ease = Ease.OutCubic(Mathf.Clamp(raw / 1.0f, 0f, 1f));
 			float hsc = 1.3f - 0.3f * ease - 0.015f * Mathf.Max(0f, time);
-			heroRoot.Scale = Vector2.One * hsc;
-			heroRoot.Position = faceAt - faceOff * hs * hsc + new Vector2(W * 0.06f * (1f - enter) - 12f * Mathf.Max(0f, time), 3f * Mathf.Sin(raw * 1.6f));
-			heroRoot.Modulate = new Color(1f, 1f, 1f, Ease.OutCubic(Mathf.Clamp(raw / 0.3f, 0f, 1f)));
+			// 收尾：立绘先往左一顿（蓄势），再加速甩出右侧、略放大
+			float outK = Mathf.Clamp((raw - (total - OutroLen)) / OutroLen, 0f, 1f);
+			float exitX = -W * 0.025f * Mathf.Sin(Mathf.Pi * Mathf.Clamp(outK / 0.3f, 0f, 1f)) + W * 0.75f * Ease.InCubic(Mathf.Clamp((outK - 0.15f) / 0.85f, 0f, 1f));
+			heroRoot.Scale = Vector2.One * hsc * (1f + 0.08f * Ease.InCubic(outK));
+			heroRoot.Position = faceAt - faceOff * hs * hsc + new Vector2(W * 0.06f * (1f - enter) - 12f * Mathf.Max(0f, time) + exitX, 3f * Mathf.Sin(raw * 1.6f));
+			heroRoot.Modulate = new Color(1f, 1f, 1f, Ease.OutCubic(Mathf.Clamp(raw / 0.3f, 0f, 1f)) * (1f - Ease.InCubic(Mathf.Clamp((outK - 0.5f) / 0.5f, 0f, 1f))));
 			float lift = Ease.InOutSine(Mathf.Clamp((time - 0.25f) / 0.4f, 0f, 1f));
 			if (heroDark != null)
 				heroDark.Modulate = new Color(1f, 1f, 1f, 1f - lift);
 			flash.Modulate = new Color(1f, 1f, 1f, 0.15f * Mathf.Sin(Mathf.Pi * lift));
-			f.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InOutSine(Mathf.Clamp((raw - (total - 0.4f)) / 0.4f, 0f, 1f)));
 		});
 		Fx.FreeAfter(f, total + 0.05f);
 	}
