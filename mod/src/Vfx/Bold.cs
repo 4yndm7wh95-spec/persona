@@ -259,6 +259,10 @@ public static class Bold
 				cross.Modulate = new Color(1f, 1f, 1f, 1f - t);
 			});
 			Fx.FreeAfter(cross, 0.45);
+			// v0.14.22（用户：十字斩下来没有音效）：命中原声 atk_dark 在 0.5s 前就收尾了，十字这一下补一声：
+			// P3R 倒地的脆响（Btl_Down_2，没在别处用过）+ 压低的暗属性余音
+			Audio.Sfx.Clip("Btl_Down_2", 0.6f * Mathf.Min(1f, s));
+			Audio.Sfx.ClipAny(new[] { "atk_dark_1", "atk_dark_2", "atk_dark_3" }, 0.3f);
 			Impact(layer, center, ElementPal.CurseRed, s, MegaCrit.Sts2.Core.Nodes.Vfx.Utilities.ShakeStrength.Strong);
 		});
 		Fx.FreeAfter(root, 1.0);

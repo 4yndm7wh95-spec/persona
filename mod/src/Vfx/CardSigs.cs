@@ -97,7 +97,7 @@ public static class CardSigs
 		["ParticleWall"] = c => { Node2D p = Fx.Root(c.Front, c.Center + new Vector2(120f, 0f), "P3ParticleWall"); Fx.Sparks(p, Pal.Cyan, 90, 60f, 260f, 0.8f, scaleMin: 0.1f, scaleMax: 0.3f); Fx.FreeAfter(p, 1.0); },
 		["IAmInvincible"] = c => Uniq.Tetrakarn(c.Front, c.Center),
 		["Reflect"] = c => Uniq.Makarakarn(c.Front, c.Center),
-		["CosmicIndifference"] = c => Motifs.DarkClock(c.Front, c.Above, 0.7f),
+		["CosmicIndifference"] = c => Motifs.DarkClock(c.Back, c.Above, 0.7f),
 		["ManifestAuthority"] = c => Uniq.ManifestAuthority(c.Back, c.Front, c.Feet),
 
 		// ═════ 技能：增益 / 减益 ═════
@@ -126,7 +126,7 @@ public static class CardSigs
 		["HiddenCache"] = c => Tarot(c, "IX", "HERMIT", Pal.Royal),
 		["Glow"] = c => { P3Fx.Flash(c.Back, c.Center, Pal.Ice, 520f, 0.4f); P3Fx.ButterflyBurst(c.Front, c.Head, 7, 340f); },
 		["Alignment"] = c => Uniq.Alignment(c.Back, c.Front, c.Above, c.Center),
-		["Convergence"] = c => { Motifs.DarkClock(c.Front, c.Above, 0.8f); P3Fx.Gather(c.Back, c.Center, Pal.DarkHour, 600f, 0.45f); },
+		["Convergence"] = c => { Motifs.DarkClock(c.Back, c.Above, 0.8f); P3Fx.Gather(c.Back, c.Center, Pal.DarkHour, 600f, 0.45f); },
 		["Prophesize"] = c => After(c, 0.15, () => ThemeFx.Compendium(c.Caster)),
 		["ForegoneConclusion"] = c => After(c, 0.15, () => ThemeFx.Contract(c.Caster)),
 		["DecisionsDecisions"] = c => After(c, 0.1, () => ThemeFx.ShuffleTime(c.Caster)),

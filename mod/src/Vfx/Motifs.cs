@@ -179,18 +179,26 @@ public static class Motifs
 			float r = (i % 2 == 0 ? 170f : 70f) * s * Fx.Rand(0.8f, 1.15f);
 			star[i] = Vector2.Right.Rotated(Mathf.Tau * i / 24f) * r;
 		}
-		Fx.Poly(root, star, new Color(tint, 0.85f), additive: true);
+		// v0.14.22（用户：碰撞轨迹的特效挡住人物）：实心星形只在命中瞬间闪一下（约 0.06s 内淡掉），
+		// 之后只剩星形描边继续扩散，不再整块盖住目标
+		Polygon2D fill = Fx.Poly(root, star, new Color(tint, 0.85f), additive: true);
 		var inner = new Vector2[24];
 		for (int i = 0; i < 24; i++)
 		{
 			inner[i] = star[i] * 0.55f;
 		}
-		Fx.Poly(root, inner, Pal.White, additive: true);
+		Polygon2D core = Fx.Poly(root, inner, Pal.White, additive: true);
+		Line2D edge = Fx.Line(root, star, new Color(tint, 0.95f), 5f * s, closed: true);
+		Line2D edgeIn = Fx.Line(root, inner, new Color(Pal.White, 0.7f), 2.5f * s, closed: true);
 		Fx.Animate(root, 0.35f, t =>
 		{
 			root.Scale = Vector2.One * (0.3f + 1.0f * Ease.OutExpo(Mathf.Clamp(t / 0.3f, 0f, 1f)));
 			root.Rotation = t * 0.3f;
 			root.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(t));
+			float flash = 1f - Ease.OutCubic(Mathf.Clamp((t - 0.06f) / 0.14f, 0f, 1f));
+			fill.Modulate = new Color(1f, 1f, 1f, 0.15f + 0.85f * flash);
+			core.Modulate = new Color(1f, 1f, 1f, flash);
+			edgeIn.Modulate = new Color(1f, 1f, 1f, 1f - flash * 0.5f);
 		});
 		Fx.FreeAfter(root, 0.4);
 		P3Fx.SpeedLines(layer, at, Pal.White, 20, 90f * s, 560f * s, 0.3f);
