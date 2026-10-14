@@ -19,7 +19,7 @@ namespace P3Makoto.Vfx;
 /// </summary>
 public static partial class AllOut
 {
-	private const float IrisAt = 0.3f, Build = 0.7f, FinishAt = IrisAt + Build, FinishLen = 2.95f;
+	private const float IrisAt = 0.3f, Build = 0.7f, FinishAt = IrisAt + Build, FinishLen = 2.45f;   // v0.14.26：用户要求完全展开后的停留少 0.5s（原 2.95）
 	// v0.14.24 收尾（用户：之前的结束动画不好 —— 在同一个圆心再滴一滴水，这滴的水波把整层总攻击（背景字、立绘）盖掉，
 	// 盖满后顺势露出后面的结算页面，要丝滑）：Duration - OutroLen 滴下，三圈实心水波依次扫满全屏（最后一圈是原版结算的浅蓝），
 	// 盖满后停一拍等结算页在下面出现，再柔和淡出。覆盖层放在独立的最上层 CanvasLayer，结算页弹出时也被盖着。
