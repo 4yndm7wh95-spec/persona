@@ -626,9 +626,10 @@ class Builder:
                 # 溶解：新姿势在下面已经完全显示，旧姿势盖在上面从不透明淡到透明 —— 60 帧里每帧都在变，不会一下跳过去
                 if soft:
                     fade = max(min(0.09, nxt - t - 0.002), f * 0.5)
-                if p in POINT:                                        # 指天逐帧：相邻帧溶解 0.14s，抬手连贯
-                    fade = max(min(0.14, nxt - t - 0.002), f * 0.5)
-                    soft = True
+                if p in POINT:                                        # 指天逐帧：短溶解（旧帧先快速淡掉，不留半透明的手影）
+                    fade = max(min(0.08, nxt - t - 0.002), f * 0.5)
+                if p == "point_8_sky":                                # 第 8 帧是另画的图（站姿 / 躯干和 1~7 帧不同）：
+                    fade = max(min(0.2, nxt - t - 0.002), f * 0.5)    # 拉长溶解 + 淡青闪光盖住换图（正好是指尖到顶、光柱升起那一刻）
                 if p == "point_sky":                                  # 单帧指天：拉长溶解，像手臂顺势抬起
                     fade = max(min(0.28, nxt - t - 0.002), f * 0.5)
                 a.att("v7_old", t, f"v7_{before}")
@@ -637,9 +638,9 @@ class Builder:
                 a.rgba("v7_old", t + fade, c8(1, 1, 1, 0))
                 a.att("v7_old", t + fade, None)
                 # 不再叠青色残影（用户反馈像重影）；闪光只留给出招 / 扣下 / 受击这几个冲击瞬间
-                if p == "point_sky":
+                if p in ("point_sky", "point_8_sky"):
                     a.att("v7_flash", t + fade * 0.6, f"v7_{p}")
-                    a.rgba("v7_flash", t + fade * 0.6, c8(0.7, 0.95, 1.0, 0.35))
+                    a.rgba("v7_flash", t + fade * 0.6, c8(0.7, 0.95, 1.0, 0.5 if p == "point_8_sky" else 0.35))
                     a.rgba("v7_flash", t + fade * 0.6 + 0.2, c8(0.85, 0.97, 1.0, 0.0))
                     a.att("v7_flash", t + fade * 0.6 + 0.2, None)
                 if p in ("sword_smear", "awaken_peak", "hurt_impact"):
