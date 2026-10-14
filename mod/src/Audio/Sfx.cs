@@ -331,6 +331,10 @@ public static class Sfx
 	/// <summary>元素命中音效：优先 P3R 原声（随机变体），否则原版 FMOD。</summary>
 	public static void Element(P3Makoto.Vfx.Element e, float scale = 1f)
 	{
+		if (P3Makoto.Vfx.Vorpal.Quiet && e is P3Makoto.Vfx.Element.Slash or P3Makoto.Vfx.Element.Royal or P3Makoto.Vfx.Element.Strike or P3Makoto.Vfx.Element.Pierce)
+		{
+			return;                                         // 空间杀法期间不叠"打击"命中音，只留 skill_0117 原声的斩击
+		}
 		float vol = scale < 0.9f ? 0.55f : 0.8f;
 		if (ElementFiles.TryGetValue(e, out string[]? files) && Engine.GetMainLoop() is SceneTree tree)
 		{

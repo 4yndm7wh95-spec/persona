@@ -42,6 +42,10 @@ public static class Vorpal
 		return tcs.Task;
 	}
 
+	/// <summary>v0.14.16（用户：空间杀法释放时那两声"打击"命中音不锋利，去掉）：从起手到释放后 1s 内静音物理系命中音（Sfx.Element 读这个）。</summary>
+	private static ulong _quietUntil;
+	public static bool Quiet => Time.GetTicksMsec() < _quietUntil;
+
 	private static void OpenGate()
 	{
 		if (_gate != null && _gate.TrySetResult(true))
@@ -68,6 +72,7 @@ public static class Vorpal
 		float start = Mathf.Max(release - 0.1f, 0.05f);
 		float k = 1f;
 		float releaseAt = start + cut;                 // 真实时间：时停结束 = 释放
+		_quietUntil = Time.GetTicksMsec() + (ulong)((releaseAt + 1.0f) * 1000f);
 		Vector2 focus = Center(targets, size);
 
 		Node2D root = Fx.Root(front, Vector2.Zero, "P3Vorpal");
