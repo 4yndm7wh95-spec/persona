@@ -612,6 +612,10 @@ public static class ThemeFx
 		Vector2 ctrl = new(hand.X - 40f, Mathf.Min(hand.Y, spot.Y) - 200f);
 		Trail(front, hand, ctrl, spot, 0.24f, Pal.Ice);
 		Audio.Sfx.Play(Audio.Snd.TarotReveal, 0.7f);
+		// v0.14.22（用户：翻页也要有声音，但要和抽牌声区分开）：合成的书本声（tools/sfx/book_pages.py）——
+		// 书皮翻开的"嘭" + 9 页柔和的纸页"唰"（无咔哒起音、中频为主，抽牌声是瞬时的脆响），节奏与下面的翻页时刻一致
+		Audio.Sfx.Clip("book_riffle", 0.75f, 0.24f);
+		Audio.Sfx.Clip("book_close", 0.6f, 1.3f);
 		const float total = 1.6f;
 		Fx.Animate(root, total, t =>
 		{

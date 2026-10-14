@@ -425,6 +425,20 @@ public static class Extras
 	/// 从脚边错落升到头顶 → 头旁弹出 P3R 斜标签「ATTACK UP」+ 大号「+N」（锻造的数值）。v0.14.22 起不再浮现 Persona（锻造不召唤），细节见 ChargeDetails。
 	/// big（铸剑者等一次锻造很多）：箭头更多、标签更大、Persona 更清晰。
 	/// </summary>
+	private static ulong _forgeDeferUntil;
+	private static float _forgeDefer;
+
+	/// <summary>铸剑者：接下来 1.5s 内的锻造推迟 seconds 秒（等锻打演出的新剑入手），且不再拼光剑。</summary>
+	public static void DeferForge(float seconds)
+	{
+		_forgeDeferUntil = Time.GetTicksMsec() + 1500;
+		_forgeDefer = seconds;
+	}
+
+	/// <summary>这次锻造的（推迟秒数，是否拼光剑）。</summary>
+	public static (float Delay, bool Blade) TakeForgeDelay() =>
+		Time.GetTicksMsec() <= _forgeDeferUntil ? (_forgeDefer, false) : (0f, true);
+
 	public static void PersonaCharge(MegaCrit.Sts2.Core.Nodes.Combat.NCreature caster, int amount, bool big)
 	{
 		Control? front = P3Makoto.Core.Makoto.FxLayer();

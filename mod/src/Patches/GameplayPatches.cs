@@ -114,7 +114,29 @@ public static class ForgePatch
 		{
 			if (amount > 0m && Makoto.Is(player) && Makoto.Node(player) is NCreature node)
 			{
-				Extras.PersonaCharge(node, (int)amount, amount >= 10m);      // v0.14.0：锻造 = Persona 蓄力增益（不再敲剑 / 拼光剑）
+				// v0.14.22（用户：保留现在的增益，把之前的铸剑特效加回来）：先是碎光拼成光剑（ForgeBlade，0.3s 成形），
+				// 光剑成形后接 ATTACK UP 增益。铸剑者整张牌的锻打演出（Uniq.TheSmith）进行中时，两者都推迟到新剑入手之后，且不再拼光剑
+				(float delay, bool blade) = Extras.TakeForgeDelay();
+				int n = (int)amount;
+				bool big = amount >= 10m;
+				Fx.After(node, delay, "forge", () =>
+				{
+					if (!Godot.GodotObject.IsInstanceValid(node))
+					{
+						return;
+					}
+					if (blade)
+					{
+						CardFx.OnForge(node);
+					}
+					Fx.After(node, blade ? 0.45 : 0.0, "forge charge", () =>
+					{
+						if (Godot.GodotObject.IsInstanceValid(node))
+						{
+							Extras.PersonaCharge(node, n, big);
+						}
+					});
+				});
 			}
 		});
 	}

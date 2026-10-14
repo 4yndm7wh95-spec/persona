@@ -131,7 +131,7 @@ public static class Sfx
 	/// </summary>
 	private static readonly string[] Clips =
 	{
-		"vorpal_blade", "Btl_Down_1", "Btl_Down_2", "Wipe_Out_ShadowTime", "Snd_FX_Btl_Trigger_00_Flash", "Wipe_In_ShadowTime", "swish_large_1", "swish_small_2", "swish_heavy_2", "messiah_seal", "great_seal", "select_hit", "bomb_hit", "lock_tick", "Snd_FX_Btl_Allout_Zoom", "Snd_FX_Btl_Allout_Extermination", "Btl_Ok", "Btl_CommandPanel", "Sys_Cursor", "morning_star_rain", "morning_star_fall", "Snd_FX_Btl_AlloutUI_00", "Btl_Allout_Wipe", "Snd_FX_Btl_Allout_Kime01",
+		"vorpal_blade", "Btl_Down_1", "Btl_Down_2", "book_riffle", "book_close", "Wipe_Out_ShadowTime", "Snd_FX_Btl_Trigger_00_Flash", "Wipe_In_ShadowTime", "swish_large_1", "swish_small_2", "swish_heavy_2", "messiah_seal", "great_seal", "select_hit", "bomb_hit", "lock_tick", "Snd_FX_Btl_Allout_Zoom", "Snd_FX_Btl_Allout_Extermination", "Btl_Ok", "Btl_CommandPanel", "Sys_Cursor", "morning_star_rain", "morning_star_fall", "Snd_FX_Btl_AlloutUI_00", "Btl_Allout_Wipe", "Snd_FX_Btl_Allout_Kime01",
 		"ShuffleTime_Start", "ShuffleTime_Whoosh", "ShuffleTime_CardSet", "wheel_click", "clock_tick", "clock_midnight", "clock_spin", "evt_eft_timespin_01",
 		"em0561_sp_roulette_01", "em0561_sp_roulette_03", "ShuffleTime_Result", "Snd_FX_Btl_Summon_00",
 		"ShuffleTime_PowerUp", "Theurgia_Max", "Snd_FX_Btl_StReflection_00_1", "Snd_FX_Btl_StAbsorption_00_1",
@@ -191,8 +191,13 @@ public static class Sfx
 					ClipAny(Swings, 0.7f);
 				}
 				break;
-			case "regent_forge":                                   // v0.14.0：锻造改成 Persona 蓄力增益，声音和画面都在 ForgePatch（Extras.PersonaCharge）
+			case "regent_forge":                                   // 锻造 / 精炼：合成的打铁声 + 锻造火花，和原版锻造动画同一时刻（v0.14.22 恢复，用户：把之前的铸剑特效加回来）
+				Play(Snd.Anvil, 0.85f);
+				P3Makoto.Vfx.Motifs.ForgeAtMakoto(1.0f);
+				break;
 			case "regent_refine":
+				Play(Snd.Anvil, 0.7f, pitch: 1.12f);
+				P3Makoto.Vfx.Motifs.ForgeAtMakoto(0.8f);
 				break;
 		}
 		return false;
