@@ -523,7 +523,7 @@ public static class Extras
 				shine.Color = new Color(1f, 0.85f, 0.85f, 0.55f * Mathf.Sin(sw * Mathf.Pi));
 			});
 			Fx.FreeAfter(tag, 1.15);
-			// 标签落定（0.14s）：数字后面一记白色十字星 + 火星向右上溅开，配一声打铁"铛"（锻造的那一下）
+			// 标签落定（0.14s）：数字后面一记白色十字星 + 火星向右上溅开
 			Fx.After(tag, 0.13, "charge clang", () =>
 			{
 				Vector2 at = tag.GlobalPosition + new Vector2(70f, 52f).Rotated(tag.Rotation) * sc;
@@ -543,7 +543,7 @@ public static class Extras
 				pm.Direction = new Vector3(0.5f, -1f, 0f);
 				pm.Spread = 55f;
 				Fx.FreeAfter(sp, 0.6);
-				Audio.Sfx.Play(Audio.Snd.Anvil, big ? 0.75f : 0.6f, pitch: big ? 0.9f : 1.05f);
+				// v0.14.25（用户：打铁声重复 —— 老的锻造特效 / 铸剑者锤击本来就有打铁声）：标签落定不再另加一声
 			});
 		});
 	}
