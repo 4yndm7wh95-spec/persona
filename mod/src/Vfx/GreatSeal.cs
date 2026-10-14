@@ -176,6 +176,8 @@ public static class GreatSeal
 			origin = new Vector2(-margin + (W - tex.GetWidth() * s) / 2f, rimY - rimSrc * s);
 		}
 		Vector2 artSize = new(tex.GetWidth() * s, tex.GetHeight() * s);
+		// v0.14.24（用户：建筑师房间一片虚空）：塔顶主图在 v0.14.9 重写对齐时被误删，之前靠原版背景透出来没发现；v0.14.20 藏掉原版背景后只剩月光 / 雾等叠加层
+		art.AddChild(new Sprite2D { Name = "P3TartarusArt", Texture = tex, Centered = false, Position = origin, Scale = Vector2.One * s });
 		// 前景碎石（新图才有）：叠在人物前面（前层特效容器），增加纵深
 		if (v2 != null && Tex("tartarus_top_v2_fg") is Texture2D fg && room.GetNodeOrNull<Control>("%CombatVfxContainer") is Control fgLayer)
 		{
