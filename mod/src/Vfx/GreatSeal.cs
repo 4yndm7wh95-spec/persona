@@ -18,17 +18,7 @@ namespace P3Makoto.Vfx;
 ///   月光呼吸、低处两层绿雾缓慢横移、光点不停上飘、影时间的暗绿色调。
 /// 对话（Line）：结城理话很少；建筑师问他要什么、问牺牲的意义。三种来访各一套（中 / 英）。
 /// 最后的按钮（DecorateButton）：「伟大封印 / THE GREAT SEAL」—— 深蓝斜切底板 + 金边、左侧旋转的小封印、周期性扫过的光带、外圈呼吸光晕。
-/// 结局演出（Play，约 11.6s，配 Nyx 战「封印」原声 great_seal：前 8s 低鸣、9–10s 高潮）：
-///   1.2  切入结束后画面压暗成影时间的暗绿；
-///   0.2  眼神切入「伟大封印 / PERSONA ▸ UNIVERSE」，召唤器抵住太阳穴 → 扣扳机，玻璃碎裂；
-///   1.4  十五张大阿卡纳（P3R 原版牌面，0 愚者 … XII、XIX 太阳，最后是 XIII 死神）依次在结城理周围翻出，
-///        每张都有一根细细的青色"羁绊"光线连回他胸口，整圈缓慢旋转；
-///   4.6  所有牌螺旋收进胸口 → 5.3 宇宙爆发：白金闪光 + 冲击环 + 速度线 + 12 颗金星的圆环，
-///        黑色斜带上巨大的「UNIVERSE」横移（ARCANA XXI · 宇宙）；
-///   5.8  三道光链从结城理射向建筑师，三圈金色封印环在它身上收紧，建筑师褪成石像般的灰蓝；
-///   6.4  全屏淡入「伟大封印」画面（巨门中的人像、黑月、星海），镜头缓推；十四道光流从四周汇向门心，光点漂浮；
-///   7.0  标题「伟大封印 / THE GREAT SEAL」浮现；9.3 门心白光暴涨 → 9.9 全屏白（原声高潮）；
-///   10.4 白 → 深蓝，「MEMENTO MORI」；11.6 交还给游戏的胜利流程，覆盖层再用 1s 淡出。
+/// 结局演出（Play，约 13.6s，配 Nyx 战「封印」原声 great_seal）：分段时间见 Duration 上方的注释（v0.14.9 按原版视频重排）。
 /// </summary>
 public static class GreatSeal
 {
@@ -379,8 +369,9 @@ public static class GreatSeal
 	//   4.60  面部特写（P3R 原版立绘 + 眼部差分）：闭眼 → 5.60 半睁 → 5.80 睁开，蓝光在身后流动，镜头缓推
 	//   6.60  回到塔顶：地面中央升起一团光穹，十几道光束从地面扇形射向上方的建筑师，建筑师被三圈封印环锁住、褪成石色
 	//   8.70  光越来越强 → 9.60 全屏白（原声高潮）
-	//   9.60  白里浮现「伟大封印」巨门，光流汇向门中人像，标题；10.9 转深蓝「MEMENTO MORI」；12.0 交还给游戏的胜利流程
-	public const float Duration = 12.0f;
+	//   9.60  白里浮现「伟大封印」巨门（10.2 褪尽白），光流汇向门中人像，标题；12.2 再次全屏白 → 12.5 转深蓝「MEMENTO MORI」
+	//  13.60  交还给游戏的胜利流程；覆盖层再 0.8s 淡出后清理
+	public const float Duration = 13.6f;
 
 	private static Texture2D? UiTex(string name)
 	{
@@ -447,7 +438,7 @@ public static class GreatSeal
 		Fx.After(world, 6.6, "seal dome", () => Dome(world, feet, foe, architect, view));
 		Fx.After(ui, 8.7, "seal white", () => WhiteRise(ui, view));
 		Fx.After(ui, 9.6, "seal gate", () => Gate(top, view));
-		Fx.After(ui, Duration + 1.2, "seal cleanup", () => top.QueueFree());
+		Fx.After(ui, Duration + 0.8, "seal cleanup", () => top.QueueFree());
 	}
 
 	// 0.00 P3R 技能菜单
@@ -862,7 +853,7 @@ public static class GreatSeal
 			}
 			Line2D line = Fx.Line(root, new[] { edge, edge }, new Color(0.75f, 0.85f, 1f, 0.55f), Fx.Rand(1.5f, 3.5f));
 			Polygon2D head = Fx.Poly(root, Fx.Star4(9f, 0.3f), Pal.White, additive: true);
-			streams.Add((line, head, path, Fx.Rand(0f, 0.8f)));
+			streams.Add((line, head, path, Fx.Rand(0.1f, 0.5f)));
 		}
 		// 漂浮光点
 		List<(Polygon2D p, Vector2 o, Vector2 v)> motes = new();
@@ -897,16 +888,18 @@ public static class GreatSeal
 		Label codaSub = Typo.Text(coda, Zh ? "……于是，早晨来临。" : "", Typo.Cjk, 22, new Color(0.65f, 0.75f, 0.9f), new Vector2(-view.X / 2f, 28f), HorizontalAlignment.Center);
 		codaSub.Size = new Vector2(view.X, codaSub.Size.Y);
 
-		const float total = Duration - 6.4f + 1.0f;   // 6.4 → 11.6，再加 1s 淡出
+		// 9.6s 接 WhiteRise 的全屏白开始；与 Run 的清理时刻（Duration + 0.8）对齐
+		const float total = Duration + 0.8f - 9.6f;
+		white.Color = Pal.White;
 		Fx.Animate(root, total, t =>
 		{
-			float time = t * total;                  // 0 = 6.4s
-			root.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.5f, 0f, 1f) * (1f - Mathf.Clamp((time - (total - 1f)) / 1f, 0f, 1f)));
-			art.Scale = Vector2.One * (1f + 0.07f * Ease.InOutCubic(Mathf.Clamp(time / 3.6f, 0f, 1f)));
-			art.Position = view / 2f + (door - view / 2f) * 0.07f * Ease.InOutCubic(Mathf.Clamp(time / 3.6f, 0f, 1f)) * -1f;
+			float time = t * total;                  // 0 = 9.6s
+			root.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp((time - (total - 0.7f)) / 0.6f, 0f, 1f));
+			art.Scale = Vector2.One * (1f + 0.07f * Ease.InOutCubic(Mathf.Clamp(time / 2.6f, 0f, 1f)));
+			art.Position = view / 2f + (door - view / 2f) * 0.07f * Ease.InOutCubic(Mathf.Clamp(time / 2.6f, 0f, 1f)) * -1f;
 			foreach ((Line2D line, Polygon2D head, Vector2[] path, float delay) in streams)
 			{
-				float u = Ease.InOutCubic(Mathf.Clamp((time - delay) / 1.6f, 0f, 1f));
+				float u = Ease.InOutCubic(Mathf.Clamp((time - delay) / 1.0f, 0f, 1f));
 				int nPts = Mathf.Max(2, (int)(u * (path.Length - 1)) + 1);
 				Vector2[] pts = new Vector2[nPts];
 				System.Array.Copy(path, pts, nPts);
@@ -921,19 +914,19 @@ public static class GreatSeal
 				p.Position = o + v * time;
 				p.Modulate = new Color(1f, 1f, 1f, 0.3f + 0.3f * Mathf.Sin(time * 3f + o.X));
 			}
-			// 门心白光：3.0 起暴涨 → 3.5 全屏白（= 9.9s）
-			float g = Ease.InCubic(Mathf.Clamp((time - 2.6f) / 0.9f, 0f, 1f));
+			// 门心白光：1.8 起暴涨 → 2.6 全屏白（= 12.2s）
+			float g = Ease.InCubic(Mathf.Clamp((time - 1.8f) / 0.7f, 0f, 1f));
 			glow.Scale = Vector2.One * (Mathf.Lerp(2f, 40f, g) * 64f / Fx.SoftDot.GetWidth());
 			glow.Modulate = new Color(1f, 1f, 1f, 0.3f + 0.7f * g);
-			float ti = Ease.OutCubic(Mathf.Clamp((time - 0.6f) / 0.8f, 0f, 1f));
-			title.Modulate = new Color(1f, 1f, 1f, ti * (1f - Mathf.Clamp((time - 3.0f) / 0.4f, 0f, 1f)));
+			float ti = Ease.OutCubic(Mathf.Clamp((time - 0.5f) / 0.7f, 0f, 1f));
+			title.Modulate = new Color(1f, 1f, 1f, ti * (1f - Mathf.Clamp((time - 2.2f) / 0.3f, 0f, 1f)));
 			title.Scale = Vector2.One * (1.06f - 0.06f * ti);
-			// 白：3.3–3.5 涨满，4.0 起转深蓝
-			float w = Mathf.Clamp((time - 3.25f) / 0.25f, 0f, 1f);
-			float toNavy = Ease.InOutCubic(Mathf.Clamp((time - 4.0f) / 0.8f, 0f, 1f));
+			// 白：开场从全屏白褪出（0.1–0.6，画面从光里浮现）；2.4–2.6 再涨满，2.9 起转深蓝
+			float w = Mathf.Max(1f - Ease.OutCubic(Mathf.Clamp((time - 0.1f) / 0.5f, 0f, 1f)), Mathf.Clamp((time - 2.4f) / 0.2f, 0f, 1f));
+			float toNavy = Ease.InOutCubic(Mathf.Clamp((time - 2.9f) / 0.6f, 0f, 1f));
 			white.Color = new Color(1f, 1f, 1f, w).Lerp(new Color(0.02f, 0.04f, 0.1f, w), toNavy);
-			coda.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((time - 4.4f) / 0.6f, 0f, 1f));
-			if (time > 3.5f && time < 3.6f)
+			coda.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((time - 3.2f) / 0.5f, 0f, 1f));
+			if (time > 2.6f && time < 2.7f)
 			{
 				NGame.Instance?.ScreenShake(ShakeStrength.Weak, ShakeDuration.Short);
 			}

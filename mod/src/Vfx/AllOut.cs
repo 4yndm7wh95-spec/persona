@@ -42,8 +42,12 @@ void fragment() {
 	};
 
 
+	/// <summary>本场已播总攻击：VictoryPatch 读到后跳过普通胜利演出并清掉。</summary>
+	public static bool Played;
+
 	public static void Play(Control front, IReadOnlyList<Vector2> enemies)
 	{
+		Played = true;
 		Vector2 size = front.GetViewportRect().Size;
 		float W = size.X, H = size.Y;
 		Vector2 focus = enemies.Count > 0 ? Avg(enemies) : size * new Vector2(0.68f, 0.5f);
@@ -369,7 +373,9 @@ void fragment() {
 		{
 			for (int c = -9; c <= 9; c++)
 			{
-				Polygon2D p = Fx.Poly(floor, new Vector2[4], new Color(0.25f, 0.5f, 0.95f, 0.9f));
+				// 普通 Polygon2D（不挂抗锯齿材质）：266 块每帧重摆，省掉逐块的 ShaderMaterial 和 Reshape 开销
+				Polygon2D p = new() { Color = new Color(0.25f, 0.5f, 0.95f, 0.9f), Polygon = new Vector2[4] };
+				floor.AddChild(p);
 				tiles.Add((p, r, c));
 			}
 		}
@@ -386,6 +392,11 @@ void fragment() {
 		int shift = (int)Mathf.Floor(scroll);
 		foreach (var (p, row, col) in tiles)
 		{
+			p.Visible = ((row + shift + col) & 1) == 0;
+			if (!p.Visible)
+			{
+				continue;
+			}
 			float z0 = row - frac, z1 = row + 1 - frac;
 			if (z0 < 0f) z0 = 0f;
 			float y0 = Depth(z0), y1 = Depth(z1);
@@ -393,8 +404,7 @@ void fragment() {
 			float tw = W * 0.22f;
 			Vector2 a = new(vx + col * tw * k0, y0), b = new(vx + (col + 1) * tw * k0, y0);
 			Vector2 c = new(vx + (col + 1) * tw * k1, y1), d = new(vx + col * tw * k1, y1);
-			Fx.Reshape(p, new[] { a, b, c, d });
-			p.Visible = ((row + shift + col) & 1) == 0;
+			p.Polygon = new[] { a, b, c, d };
 		}
 	}
 

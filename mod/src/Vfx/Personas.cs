@@ -94,6 +94,7 @@ public static class Personas
 				string path = $"res://p3makoto/persona/{folder}/{p.File}.png";
 				if (!ResourceLoader.Exists(path))
 				{
+					r.Root.QueueFree();                         // 还没进树：连同已建的零件一起释放，免得留下孤儿节点
 					return null;
 				}
 				Sprite2D sp = new() { Texture = ResourceLoader.Load<Texture2D>(path), Centered = false };
