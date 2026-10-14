@@ -213,7 +213,7 @@ void fragment() {
 	/// 背景 = 湖面水波（用户第九轮：圆心在画面右上角外；第一滴落下后从左到右是「深 · 浅 · 深」三层；约 0.36s 后圆心再落一滴，
 	/// 把上一轮的同心圆往外推，要看得出"推动""挤压"）：
 	///   第一滴（怪物刚死）：三圈边界先后冲出 —— 深一档蓝前沿扫满全屏、浅蓝、中蓝；
-	///   第二滴（0.36s）：新的浅蓝从圆心冲出，追上里层的深色带把它压窄，压力往外传，浅色带随后也被挤窄，然后回弹、慢慢散开。
+	///   第二滴（0.36s）：同样冲出「浅 · 深 · 浅」一组新同心圆，追上上一轮里层的深色带把它压窄，压力往外传，浅色带随后也被挤窄，然后回弹、慢慢散开。
 	///   高潮之后不再滴水，余波一直在缓慢外扩。
 	///   背景大字 MAJESTIC：整体是深蓝细线空心字；落在深色带里的那一段由跟着水波走的遮罩换成深蓝实心（实时）。
 	/// </summary>
@@ -231,9 +231,12 @@ void fragment() {
 			new(0.00f, 5200f * k, 0f, Band, true),                       // 第一滴：深色前沿（最快，扫满全屏）
 			new(0.06f, 3600f * k, 430f * k, Base, false),               //         浅色
 			new(0.12f, 2700f * k, 400f * k, RingBlue, true),            //         深色（离圆心最近）
-			new(0.36f, 3600f * k, 360f * k, Base, false),               // 第二滴：浅色冲出，推挤上一轮
+			// 第二滴（用户：第二滴也要有自己的深色同心圆，不能只有浅色）：同样冲出"浅 · 深 · 浅"一组，推挤上一轮
+			new(0.36f, 3800f * k, 340f * k, Base, false),
+			new(0.42f, 3000f * k, 320f * k, RingBlue, true),
+			new(0.48f, 2300f * k, 300f * k, Base, false),
 		};
-		const int MaskN = 2;
+		const int MaskN = 3;
 
 		ColorRect disc = new() { Size = new Vector2(W, H), MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Rings } };
 		n.AddChild(disc);
