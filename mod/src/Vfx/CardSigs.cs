@@ -75,7 +75,7 @@ public static class CardSigs
 		["GammaBlast"] = c => After(c, 0.1, () => Motifs.CutIn(c.Front, c.FirstTarget, "ZIODYNE", ElementPal.Volt)),
 		["Devastate"] = c => After(c, 0.1, () => Motifs.CutIn(c.Front, c.FirstTarget, "MEGIDO", ElementPal.Almighty)),
 		["MakeItSo"] = c => After(c, 0.1, () => Motifs.CutIn(c.Front, c.FirstTarget, "MAKE IT SO", Pal.Cyan)),
-		["Bombardment"] = c => Motifs.MeteorRain(c.Front, c.TargetCenters, 6, Pal.Cyan, 0.9f),
+		["Bombardment"] = c => Motifs.MeteorRain(c.Front, c.TargetCenters, 6, Pal.Cyan, 0.9f, shells: true),
 		["Comet"] = c => Motifs.Comet(c.Front, c.FirstTarget, Pal.Cyan, 1.2f),
 		["CrashLanding"] = c => Rares.Moonfall(c.Targets),
 		["MeteorShower"] = c => Motifs.MeteorRain(c.Front, c.TargetCenters, 14, Pal.Cyan, 1.0f),
@@ -152,7 +152,7 @@ public static class CardSigs
 		["Arsenal"] = c => Uniq.Arsenal(c.Back, c.Front, c.Feet, c.Center),
 		["SwordSage"] = c => After(c, 0.2, () => Uniq.SwordSage(c.Back, c.Front, c.Center)),
 		["HammerTime"] = c => Uniq.HammerTime(c.Back, c.Front, c.Center),
-		["SeekingEdge"] = c => After(c, 0.15, () => Uniq.SeekingEdge(c.Front, c.Head, AllEnemies())),
+		["SeekingEdge"] = c => After(c, 0.1, () => SeekFx.Play(c.Front, c.Caster, AllEnemies())),
 		["Furnace"] = c => After(c, 0.1, () => Rares.Furnace(c.Caster)),
 		["Orbit"] = c => Uniq.Orbit(c.Back, c.Front, c.Center),
 		["PaleBlueDot"] = c => Uniq.PaleBlueDot(c.Back, c.Front, c.Above),
@@ -161,7 +161,7 @@ public static class CardSigs
 		["Royalties"] = c => { Tarot(c, "X", "FORTUNE", ElementPal.HolyGold); After(c, 0.3, () => Grand.CoinRain(c.Front, c.Center, c.Feet.Y, 34)); },
 		["PillarOfCreation"] = c => After(c, 0.1, () => ThemeFx.SummonGate(c.Caster)),
 		["Genesis"] = c => After(c, 0.55, () => Rares.Genesis(c.Caster)),
-		["TheSealedThrone"] = c => After(c, 0.4, () => Bold.Hamaon(c.Back, c.Center, c.Feet, 1.3f)),   // 头顶的位置留给弥赛亚的审判法阵
+		["TheSealedThrone"] = c => { },   // 全部交给弥赛亚降临（Personas.MessiahThrone）；原来的破魔符纸会叠在 Messiah 身上（用户截图里的白底红线小长条）
 	};
 
 	/// <summary>这张牌有自己的专属演出（施法时就不再额外翻一张小塔罗，避免重复）。</summary>

@@ -261,14 +261,25 @@ public static class Motifs
 	}
 
 	/// <summary>流星群：count 颗陨石错落砸向各个目标。</summary>
-	public static void MeteorRain(Control layer, Vector2[] targets, int count, Color tint, float s = 1f)
+	/// <summary>
+	/// 流星雨。shells = false：P3R「明けの明星」（Morning Star，skill_0082 第 3 段）一整段连串坠落（流星雨；v0.14.7 起 1.5s 后缓出）；
+	/// shells = true（轰击，v0.14.7）：不放整段长音，每颗落地时各响一声短促的冲击（bomb_hit，0.45s，音高随机），声音和落点一一对应，整串约 1s。
+	/// </summary>
+	public static void MeteorRain(Control layer, Vector2[] targets, int count, Color tint, float s = 1f, bool shells = false)
 	{
-		// P3R「明けの明星」（Morning Star，skill_0082 第 3 段）：一连串坠落 + 冲击（原来的 swish 破空声像风声）
-		Audio.Sfx.Clip("morning_star_rain", 0.85f);
+		if (!shells)
+		{
+			Audio.Sfx.Clip("morning_star_rain", 0.85f);
+		}
 		for (int i = 0; i < count; i++)
 		{
 			Vector2 t = targets[i % targets.Length] + new Vector2(Fx.Rand(-90f, 90f), Fx.Rand(-60f, 60f));
-			Meteor(layer, t, tint, s * Fx.Rand(0.7f, 1.1f), 0.07f * i + Fx.Rand(0f, 0.04f));
+			float delay = 0.07f * i + Fx.Rand(0f, 0.04f);
+			Meteor(layer, t, tint, s * Fx.Rand(0.7f, 1.1f), delay);
+			if (shells)
+			{
+				Audio.Sfx.Clip("bomb_hit", i == 0 ? 0.75f : 0.5f, delay + 0.22f, Fx.Rand(0.9f, 1.15f));   // 0.22s = 流星落地
+			}
 		}
 	}
 

@@ -621,9 +621,9 @@ Grand.cs 里其余函数暂时保留不用。
 
 ## 待办（v0.14.3 测试反馈，暂不改动）
 
-7. **选人界面选中音效太沉闷、不好听**：v0.14.1 把原版 regent_select 换成了 P3R `Snd_FX_Btl_PersonaAura_00_Cutin`（1.17s，低频为主）。
+7. ✅ v0.14.7 **选人界面选中音效太沉闷、不好听**：v0.14.1 把原版 regent_select 换成了 P3R `Snd_FX_Btl_PersonaAura_00_Cutin`（1.17s，低频为主）。
    计划：换成更亮、更短的确认感（候选：`ShuffleTime_Select` / `Sys_Theurgia_Open` / `Velvet_Book_PersonaSelect__Velvet_Tarot_Ok` / `flash_cutin`，或两层叠加），先出试听让用户选。位置：`Sfx.ReplaceRegent` 里的 regent_select。
-8. **轰击（Bombardment）音效太长、难听**：现在走 `Motifs.MeteorRain` → `morning_star_rain`（Morning Star 第 3 段，3.67s 连串坠落冲击），流星雨也用同一段。
+8. ✅ v0.14.7 **轰击（Bombardment）音效太长、难听**：现在走 `Motifs.MeteorRain` → `morning_star_rain`（Morning Star 第 3 段，3.67s 连串坠落冲击），流星雨也用同一段。
    计划：轰击单独换掉 —— 短的多发炮击感（每颗流星落地一声短促命中，跟着 6 颗落点逐个响，如 `evt_impact_01` / `megido_hit` 截短 / `atk_light` 交替，总长 ≤1.2s），流星雨是否保留原段另问用户；先出试听。
 
 9. **封印王座的 Messiah 太僵硬，只是一张纯贴图**（用户截图 2026-10-14）：现在 `Personas.MessiahThrone` 用的是 P3R 渲染图整张平移 / 缩放，没有任何身体动作。
@@ -729,6 +729,19 @@ Grand.cs 里其余函数暂时保留不用。
 ## v0.14.6
 
 - 新增控制台命令 **`p3seal`**（`mod/src/Debug/SealConsoleCmd.cs`）：一局进行中直接进入建筑师房间，测试伟大封印结局。原版 `event` 命令的列表里没有 THE_ARCHITECT（它不是地图事件），会报 not found。
+
+## v0.14.7
+
+- **长音效缓出**（`Sfx.Tails`，所有原声播放路径都走）：按画面实际长度在 Keep 秒后 Fade 秒内淡出并停止 ——
+  流星雨 morning_star_rain 1.5s+0.6（原 3.7s）、彗星 / 坠月 morning_star_fall 1.3+0.6（原 3.0）、万能每击 megido_hit 0.9+0.5（原 2.5）、陨星每击 evt_impact_01 0.7+0.4（原 1.8）、
+  报时 clock_midnight 1.3+0.6、汇聚 evt_eft_timespin_01 1.2+0.6、粒子墙 StReflection 1.0+0.5、辐射 / 蓄力 ShuffleTime_PowerUp 1.0+0.45、塔罗碎裂 / 选牌 ArcanaBurst 1.0+0.5、浮现 PersonaAura_00 0.9+0.45、轮盘启动 0.8+0.3。
+  great_seal / messiah_seal（当 BGM 用的整段）不缓出。（待办 8 的一半）
+- **选人选中音效**（待办 7）：Persona 光环切入（低频 57%，闷）→ 天鹅绒房间"选定 Persona"确认声 `select_ok`（0.5s，低频 4.5%）+ 一层轻的 Sys_Theurgia_Open 闪音。
+- **轰击音效**（待办 8）：不再放整段 Morning Star；6 颗流星每颗落地各响一声短冲击 `bomb_hit`（evt_impact_01 截 0.45s、音高随机），整串约 1s。流星雨仍用原段（已缓出）。
+- **封印王座**：去掉 Hamaon（升起的白底红线符纸会叠在 Messiah 身上 —— 用户截图里那几条小长条），整段交给弥赛亚降临。
+- **追踪之刃「空间测定」**（`Vfx/SeekFx.cs`，替换分裂光剑 + 黑缝横切 + 斩击音）：时空错位（两次米白闪 + Thanatos 身影 + 光点，时间回转声）→
+  黑色虚线一条条横贯战场、每个敌人一个 X、逐个锁定（细圈收缩 + 黄色菱形「?」+ 天鹅绒光标"咔哒"声、音高逐个升高）→
+  左上角 P3R 技能变更面板「THANATOS：BRAVE BLADE 君王之刃 ✕ → VORPAL BLADE 空间杀法 NEW」（skill_change 原声）→ 虚线网淡出。sfx 75 个。
 
 ## 质量要求（用户 2026-10-13，长期有效）
 

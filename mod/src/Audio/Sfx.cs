@@ -131,7 +131,7 @@ public static class Sfx
 	/// </summary>
 	private static readonly string[] Clips =
 	{
-		"vorpal_blade", "messiah_seal", "great_seal", "morning_star_rain", "morning_star_fall", "Snd_FX_Btl_AlloutUI_00", "Btl_Allout_Wipe", "allout_brawl", "Snd_FX_Btl_Allout_Kime01",
+		"vorpal_blade", "messiah_seal", "great_seal", "select_ok", "bomb_hit", "skill_change", "lock_tick", "morning_star_rain", "morning_star_fall", "Snd_FX_Btl_AlloutUI_00", "Btl_Allout_Wipe", "allout_brawl", "Snd_FX_Btl_Allout_Kime01",
 		"ShuffleTime_Start", "ShuffleTime_Whoosh", "ShuffleTime_CardSet", "wheel_click", "clock_tick", "clock_midnight", "clock_spin", "evt_eft_timespin_01",
 		"em0561_sp_roulette_01", "em0561_sp_roulette_03", "ShuffleTime_Result", "Snd_FX_Btl_Summon_00",
 		"ShuffleTime_PowerUp", "Theurgia_Max", "Snd_FX_Btl_StReflection_00_1", "Snd_FX_Btl_StAbsorption_00_1",
@@ -152,7 +152,7 @@ public static class Sfx
 		}
 		if (Sample(file) is AudioStreamOggVorbis st)
 		{
-			Spawn(tree, st, volume * SampleMaster, pitch * (float)GD.RandRange(0.98, 1.02));
+			Spawn(tree, st, volume * SampleMaster, pitch * (float)GD.RandRange(0.98, 1.02), file);
 		}
 	});
 
@@ -168,8 +168,9 @@ public static class Sfx
 		{
 			case "regent_die":
 				return true;
-			case "regent_select":                                  // 选人界面选中结城理：立刻一声 P3R 的 Persona 光环切入（之后切入演出里还有召唤器枪声）
-				Clip("Snd_FX_Btl_PersonaAura_00_Cutin", 0.8f);
+			case "regent_select":                                  // 选人界面选中结城理（v0.14.7：原来的 Persona 光环切入太闷）→ 天鹅绒房间"选定 Persona"的清亮确认声 + 一层轻微的灵能开启闪音
+				Clip("select_ok", 0.95f);
+				Clip("Sys_Theurgia_Open", 0.4f, 0.05f);
 				break;
 			case "regent_attack":
 				if (!P3Makoto.Core.Pose.SummonActive())           // 召唤开枪不是挥动：不播破空声（之前在召唤动画最前面形成一声"噗"）
@@ -239,7 +240,7 @@ public static class Sfx
 		foreach ((string file, float delay, float gain) in layers)
 		{
 			AudioStreamOggVorbis stream = Sample(file)!;
-			void Go() => Spawn(tree, stream, volume * gain * SampleMaster, ps);
+			void Go() => Spawn(tree, stream, volume * gain * SampleMaster, ps, file);
 			if (delay > 0f)
 			{
 				tree.CreateTimer(delay, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += Go;
@@ -252,7 +253,26 @@ public static class Sfx
 		return true;
 	}
 
-	private static void Spawn(SceneTree tree, AudioStream stream, float volume, float pitch)
+	/// <summary>
+	/// 尾巴太长的原声（v0.14.7，用户：流星雨太长，后面要缓出）：播到 Keep 秒开始在 Fade 秒内淡出并停止。
+	/// 按画面的实际长度定 —— 演出结束后声音不再拖着。整段原声当作 BGM 用的（great_seal / messiah_seal）不在表里。
+	/// </summary>
+	private static readonly Dictionary<string, (float Keep, float Fade)> Tails = new()
+	{
+		["morning_star_rain"] = (1.5f, 0.6f),            // 流星雨：6 颗落完约 1.2s；原声 3.7s 全程不减弱
+		["morning_star_fall"] = (1.3f, 0.6f),            // 彗星 / 坠月：0.4s 命中，之后长尾 2.5s
+		["megido_hit"] = (0.9f, 0.5f),                   // 万能属性每一击：原 2.5s，多段时叠成一片
+		["evt_impact_01"] = (0.7f, 0.4f),                // 陨星属性每一击：原 1.8s
+		["clock_midnight"] = (1.3f, 0.6f),               // 报时长音：原 2.3s
+		["evt_eft_timespin_01"] = (1.2f, 0.6f),          // 汇聚：原 3.1s
+		["Snd_FX_Btl_StReflection_00_1"] = (1.0f, 0.5f), // 粒子墙：原 2.0s
+		["ShuffleTime_PowerUp"] = (1.0f, 0.45f),         // 辐射 / 蓄力增益：原 1.8s
+		["ShuffleTime_ArcanaBurst"] = (1.0f, 0.5f),      // 塔罗碎裂 / 选牌爆发：原 2.0s
+		["Snd_FX_Btl_PersonaAura_00"] = (0.9f, 0.45f),   // 浮现：原 1.45s
+		["em0561_sp_roulette_01"] = (0.8f, 0.3f),        // 轮盘启动：后半是第二声，和点击声重叠
+	};
+
+	private static void Spawn(SceneTree tree, AudioStream stream, float volume, float pitch, string? name = null)
 	{
 		_bus ??= AudioServer.GetBusIndex("SFX") >= 0 ? new StringName("SFX") : new StringName("Master");
 		AudioStreamPlayer p = new()
@@ -266,6 +286,26 @@ public static class Sfx
 		tree.Root.AddChild(p);
 		p.Finished += p.QueueFree;
 		p.Play();
+		if (name != null && Tails.TryGetValue(name, out var tail))
+		{
+			float db0 = p.VolumeDb;
+			Tween tw = p.CreateTween().SetIgnoreTimeScale(true);
+			tw.TweenInterval(tail.Keep / Mathf.Max(pitch, 0.1f));
+			tw.TweenMethod(Callable.From<float>(t =>
+			{
+				if (GodotObject.IsInstanceValid(p))
+				{
+					p.VolumeDb = db0 + Mathf.LinearToDb(Mathf.Max(0.0001f, 1f - t * t * (3f - 2f * t)));
+				}
+			}), 0f, 1f, tail.Fade);
+			tw.TweenCallback(Callable.From(() =>
+			{
+				if (GodotObject.IsInstanceValid(p))
+				{
+					p.QueueFree();
+				}
+			}));
+		}
 	}
 
 	/// <summary>v0.13.3 的原版 FMOD 映射：现在只在 P3R 原声缺失时作为第二级退路。</summary>
@@ -295,10 +335,11 @@ public static class Sfx
 				return;
 			}
 			LastElement[e] = now;
-			AudioStreamOggVorbis? st = Sample(files[(int)(GD.Randi() % (uint)files.Length)]);
+			string pick = files[(int)(GD.Randi() % (uint)files.Length)];
+			AudioStreamOggVorbis? st = Sample(pick);
 			if (st != null)
 			{
-				ModEntry.Safe("sfx element", () => Spawn(tree, st, vol * SampleMaster, (float)GD.RandRange(0.97, 1.03)));
+				ModEntry.Safe("sfx element", () => Spawn(tree, st, vol * SampleMaster, (float)GD.RandRange(0.97, 1.03), pick));
 				return;
 			}
 		}
