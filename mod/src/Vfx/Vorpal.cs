@@ -140,8 +140,11 @@ public static class Vorpal
 				Fx.Stroke(glow, new[] { a, b }, new Color(0.85f, 0.97f, 1f, 0.95f), Mathf.Max(2f, w * 0.6f));
 			}
 			// 大弧斩亮起：最宽最亮的一道光刃；弧内的白色层被"劈开"——闪白、向外撑开后散去
-			Fx.Stroke(glow, arc, new Color(0.35f, 0.75f, 1f, 0.3f), 46f);
-			Fx.Stroke(glow, arc, new Color(0.9f, 0.98f, 1f, 1f), 9f);
+			// v0.14.26（用户：亮起后的大弧成了规整的等宽色块，应该和墨黑那道一样是锋利的斩痕）：
+			// 和墨黑弧同样两头尖、中间粗的笔锋；外层青色辉光 → 白芯 → 偏向外侧的一道极细刃线
+			Fx.Poly(glow, Fx.StrokePts(arc, 52f, taper: true), new Color(0.35f, 0.75f, 1f, 0.28f), additive: true);
+			Fx.Poly(glow, Fx.StrokePts(arc, 20f, taper: true), new Color(0.9f, 0.98f, 1f, 0.95f), additive: true);
+			Fx.Poly(glow, Fx.StrokePts(Offset(arc, focus, 7f), 4f, taper: true), new Color(1f, 1f, 1f, 1f), additive: true);
 			OpenUp(root, arc, focus);
 			P3Fx.SpeedLines(front, focus, Pal.Ice, 26, 120f, size.X * 0.7f, 0.45f);
 			NGame.Instance?.ScreenShake(ShakeStrength.Strong, ShakeDuration.Short);
@@ -221,6 +224,17 @@ public static class Vorpal
 		});
 	}
 
+	/// <summary>把弧线沿远离 focus 的方向平移 d（刃线偏向弧的外侧）。</summary>
+	private static Vector2[] Offset(Vector2[] arc, Vector2 focus, float d)
+	{
+		var o = new Vector2[arc.Length];
+		for (int i = 0; i < arc.Length; i++)
+		{
+			o[i] = arc[i] + (arc[i] - focus).Normalized() * d;
+		}
+		return o;
+	}
+
 	/// <summary>大弧斩的轨迹：从敌群左上方切入，经右侧绕到下方、收向左下（椭圆的大半圈，略倾斜）。</summary>
 	private static Vector2[] ArcPoints(Vector2 focus, Vector2 size)
 	{
@@ -277,12 +291,11 @@ public static class Vorpal
 			local[i] = arc[i] - focus;
 		}
 		Polygon2D fill = Fx.Poly(hole, local, new Color(0.97f, 0.97f, 1f, 0.8f), additive: true);
-		Line2D rim = Fx.Line(hole, local, new Color(0.8f, 0.95f, 1f, 1f), 6f, closed: true);
+		// v0.14.26：去掉等宽的闭合亮边（显得规整），只留闪白撑开
 		AnimRT(hole, 0.28f, t =>
 		{
 			hole.Scale = Vector2.One * (1f + 0.35f * Ease.OutExpo(t));
 			fill.Modulate = new Color(1f, 1f, 1f, 1f - Ease.OutCubic(Mathf.Min(1f, t * 1.6f)));
-			rim.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(t));
 		});
 		FreeRT(hole, 0.3f);
 	}
