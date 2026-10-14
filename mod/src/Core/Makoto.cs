@@ -34,7 +34,7 @@ public static class Makoto
 	}
 
 	/// <summary>战斗立绘的整体缩放（与 tools/rig/build_rig_v7.py 的 BODY_SCALE 一致）。判定框 / 特效生成点是原版场景里固定的，人物缩小后按脚底换算。</summary>
-	public const float BodyScale = 0.92f;
+	public const float BodyScale = 0.89f;
 
 	public static Vector2 Center(NCreature node) => Shrink(node, node.VfxSpawnPosition);
 

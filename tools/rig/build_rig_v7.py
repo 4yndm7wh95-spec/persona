@@ -34,8 +34,8 @@ OUT = ROOT / "art/rig/v7"
 STAGE = ROOT / "mod/pck_stage"
 REL = "animations/characters/regent"
 S = 0.98
-# 战斗中整体缩放（根骨骼 scale，以脚底为原点）：原版储君包围框约 369px，结城理原本约 428px；0.92 后约 394px。所有骨骼（hand / evoker_tip 等）一起缩放
-BODY_SCALE = 0.92
+# 战斗中整体缩放（根骨骼 scale，以脚底为原点）：原版储君包围框约 369px，结城理原本约 428px；0.89 后约 381px。所有骨骼（hand / evoker_tip 等）一起缩放
+BODY_SCALE = 0.89
 TEX = 0.5
 PAGE = 2048
 FPS = 30
