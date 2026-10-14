@@ -186,6 +186,9 @@ public static class Sfx
 		return false;
 	}
 
+	/// <summary>pck 里有没有这个原声片段。</summary>
+	public static bool Has(string file) => Sample(file) != null;
+
 	/// <summary>随机挑一个片段播放。</summary>
 	public static void ClipAny(string[] files, float volume = 1f, float delay = 0f) => Clip(files[(int)(GD.Randi() % (uint)files.Length)], volume, delay);
 
@@ -260,7 +263,8 @@ public static class Sfx
 	/// </summary>
 	private static readonly Dictionary<string, (float Keep, float Fade)> Tails = new()
 	{
-		["morning_star_rain"] = (1.5f, 0.6f),            // 流星雨：6 颗落完约 1.2s；原声 3.7s 全程不减弱
+		["morning_star_rain"] = (1.5f, 0.6f),
+		["Snd_FX_Btl_Allout_Extermination"] = (1.9f, 0.4f),     // 总攻击烟云：原 4.5s，全屏白（2.0s 后）收掉            // 流星雨：6 颗落完约 1.2s；原声 3.7s 全程不减弱
 		["morning_star_fall"] = (1.3f, 0.6f),            // 彗星 / 坠月：0.4s 命中，之后长尾 2.5s
 		["megido_hit"] = (0.9f, 0.5f),                   // 万能属性每一击：原 2.5s，多段时叠成一片
 		["evt_impact_01"] = (0.7f, 0.4f),                // 陨星属性每一击：原 1.8s
