@@ -637,7 +637,7 @@ public static class ThemeFx
 			l.Visible = ca < 0f;
 			l.Scale = new Vector2(Mathf.Max(0.01f, -ca), 1f);
 			cover.Visible = ca >= 0f;
-			Fx.Reshape(cover, new[] { new Vector2(0f, -bh / 2f), new Vector2(half * ca, -bh / 2f - 16f * Mathf.Sin(ang)), new Vector2(half * ca, bh / 2f - 16f * Mathf.Sin(ang)), new Vector2(0f, bh / 2f) });
+			Fx.Reshape(cover, BookTilt(new[] { new Vector2(0f, -bh / 2f), new Vector2(half * ca, -bh / 2f - 16f * Mathf.Sin(ang)), new Vector2(half * ca, bh / 2f - 16f * Mathf.Sin(ang)), new Vector2(0f, bh / 2f) }));
 			glowSpr.Modulate = new Color(Pal.Ice, 0.4f * Mathf.Clamp(op, 0f, 1f));
 			// 翻页：一张接一张从右翻到左，越翻越快
 			for (int i = 0; i < pages.Length; i++)
@@ -647,7 +647,7 @@ public static class ThemeFx
 				pages[i].Visible = u > 0f && u < 1f && time < 1.3f;
 				if (pages[i].Visible)
 				{
-					Fx.Reshape(pages[i], Page(u * Mathf.Pi, bh * 0.78f, half * 0.86f, 44f));
+					Fx.Reshape(pages[i], BookTilt(Page(u * Mathf.Pi, bh * 0.78f, half * 0.86f, 44f)));
 					float sh = 0.82f + 0.18f * Mathf.Abs(Mathf.Cos(u * Mathf.Pi));
 					pages[i].Color = new Color(sh, sh, Mathf.Min(1f, sh + 0.04f));
 				}
@@ -681,6 +681,23 @@ public static class ThemeFx
 			Fx.Animate(root, 0.12f, t => root.Modulate = new Color(1f, 1f, 1f, 1f - t));
 		});
 		Fx.FreeAfter(root, total + 0.1);
+	}
+
+	/// <summary>
+	/// 书页 / 封面套到书本贴图的透视上（v0.14.22，用户：白色翻页太"正"，和歪着的书对不齐）。
+	/// 贴图里书脊从 (−20,−90) 斜到 (15,62)（约 13°），右页沿 (132,−26)、左页沿 (−144,26) 展开（从 book_left/right 拼图上量的）。
+	/// Page() 的坐标：x = 离书脊的横向距离，y = 沿书脊方向。
+	/// </summary>
+	private static Vector2[] BookTilt(Vector2[] pts)
+	{
+		Vector2 mid = new(-2f, -9f), right = new(0.81f, -0.16f), left = new(0.88f, -0.16f), down = new(0.19f, 0.8f);
+		var o = new Vector2[pts.Length];
+		for (int i = 0; i < pts.Length; i++)
+		{
+			Vector2 p = pts[i];
+			o[i] = mid + (p.X >= 0f ? right : left) * p.X + down * p.Y;
+		}
+		return o;
 	}
 
 	/// <summary>从书脊翻起的书页：ang 0（盖在右边）→ π（翻到左边），中间拱起。</summary>

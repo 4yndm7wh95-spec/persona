@@ -422,7 +422,7 @@ public static class Extras
 
 	/// <summary>
 	/// 锻造 = P3R 增益（v0.14.0，取代"碎光拼成光剑"和打铁）：脚下一圈深红色环 → 6 道深红色上升箭头（白芯，像 P3R 的攻击力上升）
-	/// 从脚边错落升到头顶 → 头旁弹出 P3R 斜标签「ATTACK UP」+ 大号「+N」（锻造的数值）；身后 Thanatos 的暗红身影同时浮现（PersonaFx.ChargeGhost）。
+	/// 从脚边错落升到头顶 → 头旁弹出 P3R 斜标签「ATTACK UP」+ 大号「+N」（锻造的数值）。v0.14.22 起不再浮现 Persona（锻造不召唤），细节见 ChargeDetails。
 	/// big（铸剑者等一次锻造很多）：箭头更多、标签更大、Persona 更清晰。
 	/// </summary>
 	public static void PersonaCharge(MegaCrit.Sts2.Core.Nodes.Combat.NCreature caster, int amount, bool big)
@@ -436,7 +436,9 @@ public static class Extras
 		Vector2 feet = P3Makoto.Core.Makoto.Feet(caster), head = P3Makoto.Core.Makoto.Head(caster), center = P3Makoto.Core.Makoto.Center(caster);
 		Color red = new(1f, 0.18f, 0.22f), deep = new(0.55f, 0.02f, 0.08f);
 		Audio.Sfx.Clip("ShuffleTime_PowerUp", big ? 0.9f : 0.7f);
-		PersonaFx.ChargeGhost(caster, big);
+		// v0.14.22（用户：锻造不召唤 Persona —— 只有召唤器动画时身后才能有 Persona；ATTACK+N 太简单，丰富细节）：
+		// 去掉 Thanatos 虚影，补上 起势收束 → 身周红色气焰 → 身后深红剑印 → 标签落定"铛"一声 + 火星 → 余烬 这几层
+		ChargeDetails(front, back, feet, head, center, red, deep, big);
 
 		// 脚下深红环（压扁）
 		Node2D ring = Fx.Root(back, feet, "P3ChargeRing");
@@ -493,14 +495,151 @@ public static class Extras
 				Typo.Text(tag, "+" + amount, Typo.LatinItalic, 54, Pal.White, new Vector2(30f, 28f), outline: 5, outlineColor: deep);
 			}
 			tag.Scale = Vector2.One * sc;
+			// 斜条上扫过一道亮光（落定后）
+			Polygon2D shine = Fx.Poly(tag, new Vector2[4], new Color(1f, 0.85f, 0.85f, 0f), additive: true);
 			Fx.Animate(tag, 1.1f, t =>
 			{
 				float time = t * 1.1f;
 				float inn = Ease.OutBack(Mathf.Clamp(time / 0.14f, 0f, 1f));
 				tag.Position = home + new Vector2(-50f * (1f - inn), -14f * Ease.OutCubic(t));
 				tag.Modulate = new Color(1f, 1f, 1f, inn * (1f - Mathf.Clamp((time - 0.85f) / 0.25f, 0f, 1f)));
+				float sw = Mathf.Clamp((time - 0.16f) / 0.3f, 0f, 1f);
+				float x0 = Mathf.Lerp(-30f, 200f, Ease.InOutCubic(sw));
+				Fx.Reshape(shine, new[] { new Vector2(x0, 0f), new Vector2(x0 + 18f, 0f), new Vector2(x0 + 6f, 34f), new Vector2(x0 - 12f, 34f) });
+				shine.Color = new Color(1f, 0.85f, 0.85f, 0.55f * Mathf.Sin(sw * Mathf.Pi));
 			});
 			Fx.FreeAfter(tag, 1.15);
+			// 标签落定（0.14s）：数字后面一记白色十字星 + 火星向右上溅开，配一声打铁"铛"（锻造的那一下）
+			Fx.After(tag, 0.13, "charge clang", () =>
+			{
+				Vector2 at = tag.GlobalPosition + new Vector2(70f, 52f).Rotated(tag.Rotation) * sc;
+				Node2D star = Fx.Root(front, at, "P3ChargeClang");
+				Fx.Poly(star, Fx.Star4(46f * sc, 0.08f), Pal.White, additive: true);
+				Fx.Poly(star, Fx.Star4(78f * sc, 0.05f), new Color(red, 0.6f), additive: true).Rotation = Mathf.Pi / 4f;
+				Fx.Animate(star, 0.22f, t =>
+				{
+					star.Scale = Vector2.One * (t < 0.3f ? Ease.OutExpo(t / 0.3f) : 1f - Ease.InCubic((t - 0.3f) / 0.7f));
+					star.Rotation = t * 0.6f;
+				});
+				Fx.FreeAfter(star, 0.26);
+				Node2D sp = Fx.Root(front, at, "P3ChargeSparks");
+				GpuParticles2D e = Fx.Sparks(sp, red, big ? 34 : 22, 220f, 560f, 0.45f, gravity: 900f, scaleMin: 0.06f, scaleMax: 0.18f,
+					ramp: new[] { Pal.White, new Color(1f, 0.75f, 0.4f), red });
+				ParticleProcessMaterial pm = (ParticleProcessMaterial)e.ProcessMaterial;
+				pm.Direction = new Vector3(0.5f, -1f, 0f);
+				pm.Spread = 55f;
+				Fx.FreeAfter(sp, 0.6);
+				Audio.Sfx.Play(Audio.Snd.Anvil, big ? 0.75f : 0.6f, pitch: big ? 0.9f : 1.05f);
+			});
 		});
+	}
+
+	/// <summary>锻造增益的细节层（v0.14.22）：起势收束、红色气焰、身后剑印、余烬。都在人物身后或很细，不挡人。</summary>
+	private static void ChargeDetails(Control front, Control back, Vector2 feet, Vector2 head, Vector2 center, Color red, Color deep, bool big)
+	{
+		float bodyH = Mathf.Max(200f, feet.Y - head.Y);
+		// 1. 起势（0~0.2s）：12 道细红光从四周收向胸口（身后层）
+		for (int i = 0; i < 12; i++)
+		{
+			Vector2 dir = Vector2.Right.Rotated(Mathf.Tau * i / 12f + Fx.Rand(-0.15f, 0.15f));
+			float r0 = Fx.Rand(220f, 300f);
+			Line2D streak = Fx.Line(Fx.Root(back, center, "P3ChargeIn"), new[] { dir * r0, dir * r0 }, new Color(red, 0.8f), 3f);
+			Node2D sroot = (Node2D)streak.GetParent();
+			Fx.Animate(sroot, 0.22f, t =>
+			{
+				float a = Ease.InCubic(t), b = Ease.InCubic(Mathf.Max(0f, t - 0.25f) / 0.75f);
+				streak.Points = new[] { dir * Mathf.Lerp(r0, 30f, b), dir * Mathf.Lerp(r0, 30f, a) };
+				streak.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(t) * 0.6f);
+			});
+			Fx.FreeAfter(sroot, 0.24);
+		}
+		// 2. 身周红色气焰（0.1~1.1s）：拉长的柔光从脚下沿身体两侧往上窜（身后层），像 P3R 增益的红色气场
+		int wisps = big ? 30 : 20;
+		for (int i = 0; i < wisps; i++)
+		{
+			float delay = 0.1f + Fx.Rand(0f, 0.65f);
+			float x = Fx.Rand(-1f, 1f);
+			x = Mathf.Sign(x) * Mathf.Pow(Mathf.Abs(x), 0.6f) * 95f;
+			Color c = Fx.Rng.Next(3) == 0 ? new Color(1f, 0.55f, 0.5f) : red;
+			Sprite2D w = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(c, 0f) };
+			Node2D wr = Fx.Root(back, feet + new Vector2(x, -10f), "P3ChargeWisp");
+			wr.AddChild(w);
+			float rise = bodyH * Fx.Rand(0.6f, 1.05f), life = Fx.Rand(0.4f, 0.6f), sx = Fx.Rand(0.5f, 0.9f);
+			Fx.Animate(wr, delay + life, t =>
+			{
+				float u = Mathf.Clamp((t * (delay + life) - delay) / life, 0f, 1f);
+				wr.Position = feet + new Vector2(x * (1f - 0.25f * u), -10f - rise * Ease.OutCubic(u));
+				w.Scale = new Vector2(sx * (1f - 0.5f * u), 1.2f + 3.2f * Mathf.Sin(u * Mathf.Pi));
+				w.Modulate = new Color(c, u <= 0f ? 0f : 0.45f * Mathf.Sin(u * Mathf.Pi));
+			});
+			Fx.FreeAfter(wr, delay + life + 0.05f);
+		}
+		// 3. 身后深红剑印（0.2~1.2s）：君王之刃的轮廓在背后竖起、一道亮光从剑尖扫到剑柄，随后化成火星散去
+		float bs = bodyH / 300f * (big ? 1.25f : 1.05f);
+		Vector2[] blade = { new(0f, -170f), new(14f, -120f), new(10f, 60f), new(26f, 70f), new(26f, 80f), new(6f, 82f), new(6f, 120f), new(-6f, 120f), new(-6f, 82f), new(-26f, 80f), new(-26f, 70f), new(-10f, 60f), new(-14f, -120f) };
+		Vector2 home = center + new Vector2(-bodyH * 0.12f, -bodyH * 0.18f);
+		Node2D sig = Fx.Root(back, home, "P3ChargeBlade");
+		sig.Scale = Vector2.One * bs;
+		sig.Rotation = -0.12f;
+		Polygon2D fill = Fx.Poly(sig, blade, new Color(deep, 0.35f), additive: true);
+		Line2D edge = Fx.Line(sig, blade, new Color(red, 0.95f), 3f, closed: true);
+		Line2D sheen = Fx.Line(sig, new[] { Vector2.Zero, Vector2.Zero }, new Color(1f, 0.92f, 0.9f, 0.9f), 5f);
+		sig.Modulate = new Color(1f, 1f, 1f, 0f);
+		Fx.Animate(sig, 1.25f, t =>
+		{
+			float time = t * 1.25f;
+			float inn = Ease.OutCubic(Mathf.Clamp((time - 0.15f) / 0.25f, 0f, 1f));
+			float outk = Ease.InCubic(Mathf.Clamp((time - 0.9f) / 0.35f, 0f, 1f));
+			sig.Position = home + new Vector2(0f, 40f * (1f - inn) - 20f * outk);
+			sig.Scale = Vector2.One * bs * (0.9f + 0.1f * inn + 0.08f * outk);
+			sig.Modulate = new Color(1f, 1f, 1f, inn * (1f - outk));
+			// 亮光沿剑脊从剑尖扫到剑柄（0.38~0.62s，和标签落定差不多同时）
+			float sw = Mathf.Clamp((time - 0.38f) / 0.24f, 0f, 1f);
+			float y = Mathf.Lerp(-170f, 120f, Ease.InOutCubic(sw));
+			sheen.Points = new[] { new Vector2(0f, Mathf.Max(-170f, y - 50f)), new Vector2(0f, y) };
+			sheen.Modulate = new Color(1f, 1f, 1f, Mathf.Sin(sw * Mathf.Pi));
+			fill.Color = new Color(deep, 0.35f + 0.3f * Mathf.Sin(sw * Mathf.Pi));
+		});
+		Fx.FreeAfter(sig, 1.3);
+		Fx.After(sig, 0.95, "charge blade dissolve", () =>
+		{
+			Node2D dust = Fx.Root(back, home, "P3ChargeBladeDust");
+			GpuParticles2D e = Fx.Sparks(dust, red, big ? 40 : 26, 20f, 90f, 0.8f, gravity: -140f, scaleMin: 0.06f, scaleMax: 0.16f);
+			ParticleProcessMaterial pm = (ParticleProcessMaterial)e.ProcessMaterial;
+			pm.EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box;
+			pm.EmissionBoxExtents = new Vector3(14f * bs, 140f * bs, 0f);
+			Fx.FreeAfter(dust, 1.0);
+		});
+		// 4. 余烬（0.6~1.6s）：几颗红色小火星在身边慢慢往上飘、闪烁熄灭
+		for (int i = 0; i < (big ? 14 : 9); i++)
+		{
+			float delay = 0.6f + Fx.Rand(0f, 0.4f);
+			Vector2 at = feet + new Vector2(Fx.Rand(-120f, 120f), -Fx.Rand(20f, bodyH * 0.9f));
+			Fx.After(front, delay, "charge ember", () =>
+			{
+				Node2D em = Fx.Root(front, at, "P3ChargeEmber");
+				Fx.Poly(em, Fx.Star4(Fx.Rand(3f, 5.5f), 0.25f), Fx.Rng.Next(2) == 0 ? red : new Color(1f, 0.8f, 0.6f), additive: true);
+				Vector2 drift = new(Fx.Rand(-12f, 12f), -Fx.Rand(40f, 80f));
+				float life = Fx.Rand(0.6f, 0.9f);
+				Fx.Animate(em, life, t =>
+				{
+					em.GlobalPosition = at + drift * Ease.OutCubic(t);
+					em.Modulate = new Color(1f, 1f, 1f, (1f - Ease.InCubic(t)) * (0.6f + 0.4f * Mathf.Abs(Mathf.Cos(t * 9f))));
+				});
+				Fx.FreeAfter(em, life + 0.05f);
+			});
+		}
+		// 脚下第二道环（比第一道晚 0.18s、更细），让落地的环有回响
+		Node2D ring2 = Fx.Root(back, feet, "P3ChargeRing2");
+		Fx.StrokeClosed(ring2, Fx.Circle(150f, 56), new Color(1f, 0.6f, 0.6f, 0.7f), 2.5f);
+		ring2.Modulate = new Color(1f, 1f, 1f, 0f);
+		Fx.Animate(ring2, 0.95f, t =>
+		{
+			float u = Mathf.Clamp((t * 0.95f - 0.18f) / 0.77f, 0f, 1f);
+			float k = 0.3f + 1.1f * Ease.OutExpo(u);
+			ring2.Scale = new Vector2(k, k * 0.3f);
+			ring2.Modulate = new Color(1f, 1f, 1f, u <= 0f ? 0f : 1f - Ease.InCubic(u));
+		});
+		Fx.FreeAfter(ring2, 1.0);
 	}
 }
