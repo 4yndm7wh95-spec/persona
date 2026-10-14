@@ -15,7 +15,7 @@ namespace P3Makoto.Vfx;
 ///   去掉了左上角「DONE AND DUSTED.」（用户：太突兀）。停留到 3.25 → 0.4s 整体淡出
 /// 结束立绘用 P3R 原版贴图（allout_finish / allout_finish_dark / allout_text），缺图时退回 victory_portrait。
 /// </summary>
-public static class AllOut
+public static partial class AllOut
 {
 	private const float IrisAt = 0.3f, Build = 0.7f, FinishAt = IrisAt + Build, FinishLen = 2.65f;
 	private const float PortraitLead = 0.1f;                         // 立绘比高潮早 0.1s 开始淡入，高潮时已基本到位（用户：人物出现太突兀）
@@ -140,71 +140,27 @@ void fragment() {
 		return w;
 	}
 
-	/// <summary>一圈水波的边界：Spawn 时刻从圆心冲出（初速 V0）；Rest = 它和外面那圈之间的环带"想要"的宽度；Col = 圈内的颜色。</summary>
-	private readonly record struct Wave(float Spawn, float V0, float Rest, Color Col, bool Dark);
+	/// <summary>一圈水波：圈内颜色、是不是深色带（深色带里的背景字换成实心）。半径来自 RippleTab。</summary>
+	private readonly record struct Wave(Color Col, bool Dark);
 
 	/// <summary>
-	/// 环带弹簧模型：每圈边界是一个质点（半径 + 速度），相邻两圈之间的环带是弹簧（抗压缩，几乎不抗拉伸），带阻尼，速度不低于匀速外漂。
-	/// 新水滴 = 圆心冲出新的边界 —— 它追上里面那圈时把环带压窄，压力一圈圈往外传（推动、挤压），之后回弹、慢慢散开。
-	/// 每帧从 0 开始以 1/240s 步长重算（确定性，几百步、开销很小）。返回各圈半径（外 → 内，未出生的为 -1）。
+	/// 第 time 秒各圈半径（720p 像素，外 → 内，未出生为 -1）。RippleTab 由 tools/vfx/allout_ripple.py 离线算好：
+	/// 环带弹簧模型（新水滴冲出、追上里层把环带压窄、压力外传、回弹）+ σ=0.09s 双向平滑（用户：展开速率偏僵硬）。
+	/// 表按 60Hz 存，这里用 Catmull-Rom 在相邻帧之间插值，速度连续。
 	/// </summary>
-	private static float[] Ripple(IReadOnlyList<Wave> waves, float time)
+	private static float[] Ripple(float time)
 	{
-		const float K = 60f, Damp = 2.4f, Drift = 25f, Dt = 1f / 240f;
-		int n = waves.Count;
-		float[] r = new float[n], v = new float[n];
-		bool[] alive = new bool[n];
-		for (float t = 0f; t < time; t += Dt)
+		int rows = RippleTab.GetLength(0), n = RippleTab.GetLength(1);
+		float f = Mathf.Clamp(time * RippleFps, 0f, rows - 1.001f);
+		int i1 = (int)f;
+		float u = f - i1;
+		int i0 = Mathf.Max(i1 - 1, 0), i2 = Mathf.Min(i1 + 1, rows - 1), i3 = Mathf.Min(i1 + 2, rows - 1);
+		float[] r = new float[n];
+		for (int k = 0; k < n; k++)
 		{
-			for (int i = 0; i < n; i++)
-			{
-				if (!alive[i] && waves[i].Spawn <= t)
-				{
-					alive[i] = true;
-					v[i] = waves[i].V0;
-				}
-			}
-			float[] a = new float[n];
-			for (int i = 0; i < n; i++)
-			{
-				a[i] = -Damp * v[i];
-			}
-			for (int i = 0; i + 1 < n; i++)
-			{
-				if (!alive[i + 1])
-				{
-					break;
-				}
-				float f = K * (waves[i + 1].Rest - (r[i] - r[i + 1]));
-				if (f < 0f)
-				{
-					f *= 0.08f;                                         // 拉伸只给很弱的回拉
-				}
-				a[i] += f;
-				a[i + 1] -= f;
-			}
-			for (int i = 0; i < n; i++)
-			{
-				if (alive[i])
-				{
-					v[i] = Mathf.Max(v[i] + a[i] * Dt, Drift);
-					r[i] += v[i] * Dt;
-				}
-			}
-			for (int i = 0; i + 1 < n; i++)
-			{
-				if (alive[i + 1] && r[i + 1] > r[i] - 2f)
-				{
-					r[i + 1] = r[i] - 2f;
-				}
-			}
-		}
-		for (int i = 0; i < n; i++)
-		{
-			if (!alive[i])
-			{
-				r[i] = -1f;
-			}
+			float p0 = RippleTab[i0, k], p1 = RippleTab[i1, k], p2 = RippleTab[i2, k], p3 = RippleTab[i3, k];
+			float v = 0.5f * (2f * p1 + (-p0 + p2) * u + (2f * p0 - 5f * p1 + 4f * p2 - p3) * u * u + (-p0 + 3f * p1 - 3f * p2 + p3) * u * u * u);
+			r[k] = v > 1f ? v : -1f;
 		}
 		return r;
 	}
@@ -226,15 +182,16 @@ void fragment() {
 			cover = Mathf.Max(cover, (corner - center).Length());
 		}
 		float k = H / 720f;                                              // 参数按 720p 调，其他分辨率等比
+		// 和 RippleTab 的列一一对应（出生时刻、初速、环带宽度见 tools/vfx/allout_ripple.py）
 		var waves = new List<Wave>
 		{
-			new(0.00f, 5200f * k, 0f, Band, true),                       // 第一滴：深色前沿（最快，扫满全屏）
-			new(0.06f, 3600f * k, 430f * k, Base, false),               //         浅色
-			new(0.12f, 2700f * k, 400f * k, RingBlue, true),            //         深色（离圆心最近）
-			// 第二滴（用户：第二滴也要有自己的深色同心圆，不能只有浅色）：同样冲出"浅 · 深 · 浅"一组，推挤上一轮
-			new(0.36f, 3800f * k, 340f * k, Base, false),
-			new(0.42f, 3000f * k, 320f * k, RingBlue, true),
-			new(0.48f, 2300f * k, 300f * k, Base, false),
+			new(Band, true),          // 第一滴 0s：深色前沿（最快，扫满全屏）
+			new(Base, false),         //       0.06s：浅色
+			new(RingBlue, true),      //       0.12s：深色（离圆心最近）
+			// 第二滴（用户：第二滴也要有自己的深色同心圆）：0.36 / 0.42 / 0.48s 冲出「浅 · 深 · 浅」，推挤上一轮
+			new(Base, false),
+			new(RingBlue, true),
+			new(Base, false),
 		};
 		const int MaskN = 3;
 
@@ -268,7 +225,11 @@ void fragment() {
 		Fx.Animate(n, life, t =>
 		{
 			float time = t * life;
-			float[] r = Ripple(waves, time);
+			float[] r = Ripple(time);
+			for (int i = 0; i < r.Length; i++)
+			{
+				if (r[i] > 0f) r[i] *= k;
+			}
 			float[] radii = new float[12];
 			float[] rimR = new float[4], rimA = new float[4];
 			int live = 0;
