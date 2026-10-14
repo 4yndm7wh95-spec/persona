@@ -23,8 +23,11 @@ public static partial class AllOut
 	// v0.14.24 收尾（用户：之前的结束动画不好 —— 在同一个圆心再滴一滴水，这滴的水波把整层总攻击（背景字、立绘）盖掉，
 	// 盖满后顺势露出后面的结算页面，要丝滑）：Duration - OutroLen 滴下，三圈实心水波依次扫满全屏（最后一圈是原版结算的浅蓝），
 	// 盖满后停一拍等结算页在下面出现，再柔和淡出。覆盖层放在独立的最上层 CanvasLayer，结算页弹出时也被盖着。
-	private const float OutroLen = 0.75f;
-	private const float CoverHold = 0.2f, CoverFade = 0.55f;
+	// v0.14.25（用户：第三圈浅色水波直接换成全透明，动画不变，更自然地切出结算页；浅色纯色停留太久）：
+	// 深一档蓝 → 中蓝两圈照旧扫满，中蓝盖满的那一刻第三圈"透明水波"紧接着从圆心扩开（边缘一道亮边），直接露出下面的结算页；
+	// 同一刻藏掉总攻击层（已被两圈深色完全盖住，看不出来）。滴下时刻对齐到透明波在结算页出现时开始扩开。
+	private const float OutroLen = 0.45f;
+	private const float CoverSweep = 0.42f, ClearSweep = 0.55f;
 	private const float PortraitLead = 0.1f;                         // 立绘比高潮早 0.1s 开始淡入，高潮时已基本到位（用户：人物出现太突兀）
 	public const float Duration = FinishAt + FinishLen;
 
@@ -66,15 +69,15 @@ public static partial class AllOut
 		root.AddChild(fg);
 		Fx.After(root, IrisAt, "allout iris", () => Background(bg, focus, W, H, Duration - IrisAt));
 		Fx.After(root, FinishAt - PortraitLead, "allout finish", () => Portrait(fg, W, H));
-		Fx.After(root, Duration - OutroLen, "allout cover", () => Cover(front, W, H));
+		Fx.After(root, Duration - OutroLen, "allout cover", () => Cover(front, root, W, H));
 		Fx.FreeAfter(root, Duration + 0.1f);
 	}
 
 	/// <summary>
-	/// 收尾的最后一滴：圆心同前（右上角外）。三圈实心水波（深一档蓝 → 中蓝 → 原版结算浅蓝）依次扫过，
-	/// 前沿带一道青白细光；盖满全屏后停 CoverHold 秒（结算页此时在下面出现），再 CoverFade 秒柔和淡出。
+	/// 收尾的最后一滴：圆心同前（右上角外）。两圈实心水波（深一档蓝 → 中蓝）依次扫满，前沿带一道青白细光；
+	/// 中蓝盖满的那一刻第三圈透明水波紧接着扩开，露出下面的结算页（总攻击层同时藏掉）。
 	/// </summary>
-	private static void Cover(Control anchor, float W, float H)
+	private static void Cover(Control anchor, Node2D allOut, float W, float H)
 	{
 		if (anchor.GetTree()?.Root is not Window win)
 		{
@@ -93,39 +96,49 @@ public static partial class AllOut
 		}
 		rm.SetShaderParameter("size", new Vector2(W, H));
 		rm.SetShaderParameter("center", center);
+		rm.SetShaderParameter("hole_center", center);
 		Color[] cols = new Color[12];
 		cols[0] = Band;
 		cols[1] = RingBlue;
-		cols[2] = Base;
 		rm.SetShaderParameter("cols", cols);
-		float[] born = { 0f, 0.09f, 0.18f };
-		const float sweep = 0.5f;                                        // 每圈从圆心扫到盖满的时长
-		float total = OutroLen + CoverHold + CoverFade;
+		float[] born = { 0f, 0.08f };
+		// 半径 = cover·1.04·OutCubic(u)：u≈0.75 时已盖满（前快后慢，接近盖满时"铺"开）
+		float clearAt = born[1] + 0.75f * CoverSweep;
+		bool hidden = false;
+		float total = clearAt + ClearSweep;
 		Fx.Animate(layer, total, t =>
 		{
 			float time = t * total;
 			float[] radii = new float[12];
 			float[] rimR = new float[4], rimA = new float[4];
 			int live = 0;
-			for (int i = 0; i < 3; i++)
+			for (int i = 0; i < 2; i++)
 			{
-				float u = (time - born[i]) / sweep;
+				float u = (time - born[i]) / CoverSweep;
 				if (u <= 0f)
 				{
 					break;
 				}
-				// 前快后慢：水滴砸下的冲劲，接近盖满时减速"铺"开
 				radii[i] = cover * 1.04f * Ease.OutCubic(Mathf.Min(u, 1f));
 				live = i + 1;
 				rimR[i] = radii[i];
-				rimA[i] = 0.45f * (1f - Mathf.Clamp(u, 0f, 1f));
+				rimA[i] = 0.45f * (1f - Mathf.Clamp(u / 0.75f, 0f, 1f));
 			}
 			rm.SetShaderParameter("radii", radii);
 			rm.SetShaderParameter("count", live);
 			rm.SetShaderParameter("rim_r", rimR);
 			rm.SetShaderParameter("rim_a", rimA);
-			float fade = Mathf.Clamp((time - OutroLen - CoverHold) / CoverFade, 0f, 1f);
-			disc.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InOutSine(fade));
+			// 第三圈：透明水波（着色器的 hole：洞里透明，边缘一道亮边）
+			float c = (time - clearAt) / ClearSweep;
+			if (c > 0f && !hidden)
+			{
+				hidden = true;
+				if (GodotObject.IsInstanceValid(allOut))
+				{
+					allOut.Visible = false;                              // 已被两圈深色完全盖住
+				}
+			}
+			rm.SetShaderParameter("hole", c > 0f ? cover * 1.06f * Ease.OutCubic(Mathf.Min(c, 1f)) + 1f : 0f);
 		});
 		Fx.FreeAfter(layer, total + 0.05f);
 	}
