@@ -619,6 +619,13 @@ Grand.cs 里其余函数暂时保留不用。
 
 - v0.13.14 补充：上膛声改到"选中召唤器牌、举起召唤器后 0.12s"（TargetingFx，和召唤器闪光同步），不再在开枪动画里播。
 
+## 待办（v0.14.3 测试反馈，暂不改动）
+
+7. **选人界面选中音效太沉闷、不好听**：v0.14.1 把原版 regent_select 换成了 P3R `Snd_FX_Btl_PersonaAura_00_Cutin`（1.17s，低频为主）。
+   计划：换成更亮、更短的确认感（候选：`ShuffleTime_Select` / `Sys_Theurgia_Open` / `Velvet_Book_PersonaSelect__Velvet_Tarot_Ok` / `flash_cutin`，或两层叠加），先出试听让用户选。位置：`Sfx.ReplaceRegent` 里的 regent_select。
+8. **轰击（Bombardment）音效太长、难听**：现在走 `Motifs.MeteorRain` → `morning_star_rain`（Morning Star 第 3 段，3.67s 连串坠落冲击），流星雨也用同一段。
+   计划：轰击单独换掉 —— 短的多发炮击感（每颗流星落地一声短促命中，跟着 6 颗落点逐个响，如 `evt_impact_01` / `megido_hit` 截短 / `atk_light` 交替，总长 ≤1.2s），流星雨是否保留原段另问用户；先出试听。
+
 ## 路线图（v0.14 系列，逐项做；用户 2026-10-13 提出）
 
 参考素材：用户提供两段 P3R 战斗视频（视频 1：结城理从选技能到释放的完整动效、空间杀法、完整总攻击；视频 2：更长的战斗，00:53~00:54 有清晰的空间杀法和 Persona 召唤、还有 BLOCK 字样）。由 Codex 抽帧成预览图放 `research/p3r_video/`。
