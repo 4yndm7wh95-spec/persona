@@ -31,6 +31,7 @@ public static class AllOut
 	private static readonly Color Deep = new(10 / 255f, 30 / 255f, 120 / 255f);
 	private static readonly Color Navy = new(8 / 255f, 26 / 255f, 82 / 255f);
 	private static readonly Color Band = new(23 / 255f, 97 / 255f, 175 / 255f);       // 原版左下深一档的蓝
+	private static readonly Color Ink = new(6 / 255f, 20 / 255f, 66 / 255f);          // 深色波里实心背景字的颜色
 
 	/// <summary>本场已播总攻击：VictoryPatch 读到后跳过普通胜利演出并清掉。</summary>
 	public static bool Played;
@@ -147,9 +148,8 @@ void fragment() {
 
 	/// <summary>
 	/// 背景 = 湖面水波（用户：怪物死的位置像滴下一滴水，水波向外扩散、互相推挤；过一会儿再滴一滴，推着上一轮走）：
-	///   蓄力 0.7s：四滴紧接着落下（深蓝 → 中蓝 → 浅青 → 底色浅蓝），一波推一波铺满画面；
-	///   0.45s 落下最后一滴，带出一串 6 圈深浅交替的余波（高潮前成形）；高潮之后不再滴水，余波外快内慢地散开、减速外推，
-	///   新波纹追上旧波纹时把它往外推、挤窄旧的那一圈，旧圈出了画面就不再画。
+	///   只滴两滴：怪物刚死时一滴（深蓝前沿 + 浅蓝后浪铺满画面），蓄力中间（0.35s）再一滴（深一档蓝 + 浅蓝）；
+	///   高潮之后不再滴水，余波继续减速外推；新波纹追上旧波纹时把它往外推、挤窄旧的那一圈，旧圈出了画面就不再画。
 	///   没有常驻的圆环 —— 画面上的深色区域都是正在经过的波。
 	///   背景大字 MAJESTIC：整体是深蓝细线空心字；落在深色波里的那一段由跟着波走的遮罩换成深蓝实心（实时）。
 	/// </summary>
@@ -161,21 +161,17 @@ void fragment() {
 			cover = Mathf.Max(cover, (corner - focus).Length());
 		}
 		cover *= 1.05f;
-		// 落水表：Reach = 这一波最终能走多远（越大越快），Tau = 减速快慢
+		// 只滴两滴（用户：同心圆太多，只要两滴 —— 怪物刚死一滴、蓄力中间一滴）。每滴带出"深色前沿 + 浅色后浪"两圈：
+		//   第一滴（0s）：深蓝前沿很快扫满全屏，浅蓝底色紧跟着铺满；
+		//   第二滴（0.35s）：深一档的蓝前沿 + 浅蓝后浪，高潮之后继续外推、减速，深色那圈扫过背景字
+		// Reach = 这一圈最终能走多远（越大越快），Tau = 减速快慢
 		var drops = new List<Drop>
 		{
-			new(0.00f, Deep, cover * 2.2f, 0.35f, true),
-			new(0.12f, RingBlue, cover * 2.0f, 0.35f, true),
-			new(0.24f, Cyan, cover * 1.9f, 0.35f, false),
-			new(0.36f, Base, cover * 1.8f, 0.35f, false),
+			new(0.00f, RingBlue, cover * 2.2f, 0.35f, true),
+			new(0.10f, Base, cover * 2.0f, 0.38f, false),
+			new(0.35f, Band, cover * 1.35f, 0.8f, true),
+			new(0.45f, Base, cover * 1.05f, 1.0f, false),
 		};
-		// 最后一滴（用户：高潮之后不再往圆心滴水，最后一滴的余波继续往外推）：0.45s 落下，带出一串余波 ——
-		// 6 圈深浅交替的波纹在高潮前陆续成形，外圈走得快、内圈走得慢，高潮之后不再有新水滴，这串余波一边散开一边减速外推
-		Color[] train = { RingBlue, Base, Band, Cyan, RingBlue, Base };
-		for (int j = 0; j < train.Length; j++)
-		{
-			drops.Add(new Drop(0.45f + 0.045f * j, train[j], cover * (1.75f - 0.2f * j), 0.9f + 0.1f * j, train[j] == RingBlue || train[j] == Band));
-		}
 		const int Slots = 12, MaskN = 4;
 		float minGap = H * 0.045f;                                     // 被挤压时一圈最窄能有多宽
 
@@ -195,7 +191,7 @@ void fragment() {
 			Polygon2D mask = Annulus(n, Colors.White);
 			mask.ClipChildren = CanvasItem.ClipChildrenMode.Only;
 			masks.Add(mask);
-			words.Add(WordCopy(mask, wordAt, H, new Color(Navy, 0.92f), new Color(Navy, 0.92f)));
+			words.Add(WordCopy(mask, wordAt, H, Ink, Ink));                 // 深色波里的实心字：不透明、比描边再深一点（用户：深色区域的字浅了）
 		}
 
 		Fx.Animate(n, life, t =>
@@ -280,11 +276,12 @@ void fragment() {
 			float since = time - Build;
 			float wi = Ease.OutCubic(Mathf.Clamp(since / 0.7f, 0f, 1f));
 			Vector2 wp = wordAt + new Vector2(-W * 0.3f * (1f - wi) + 18f * Mathf.Max(0f, since), 0f);
+			float wa = Ease.OutCubic(Mathf.Clamp(since / 0.25f, 0f, 1f));      // 透明度 0.25s 就到满（滑入仍是 0.7s），深色波扫过时字不会发浅
 			foreach (Node2D w in words)
 			{
 				w.Position = wp;
 				w.Visible = since >= 0f;
-				w.Modulate = new Color(1f, 1f, 1f, wi);
+				w.Modulate = new Color(1f, 1f, 1f, wa);
 			}
 			n.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InOutSine(Mathf.Clamp((time - (life - 0.4f)) / 0.4f, 0f, 1f)));
 		});
