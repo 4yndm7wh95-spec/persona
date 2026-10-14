@@ -663,13 +663,21 @@ public static class GreatSeal
 		Sprite2D? darkS = dark != null ? new Sprite2D { Texture = dark, Centered = false, Scale = Vector2.One * sc, Position = -faceCenter * sc } : null;
 		if (darkS != null) face.AddChild(darkS);
 		Polygon2D sweep = Fx.Poly(face, new[] { new Vector2(-60f, -H), new Vector2(60f, -H), new Vector2(160f, H), new Vector2(40f, H) }, new Color(0.85f, 0.97f, 1f, 0.5f), additive: true);
-		// 有 Codex 做的闭眼 / 半睁差分（ui/face_closed、ui/face_half：从结束立绘 x800,y0 起裁的 500×640 区域编辑而来）就真的"睁眼"；
-		// 没有就保持暗 → 亮 + 扫光的做法
-		Sprite2D? closedS = UiTex("face_closed") is Texture2D fc ? new Sprite2D { Texture = fc, Centered = false, Scale = Vector2.One * sc, Position = (new Vector2(800f, 0f) - faceCenter) * sc } : null;
-		Sprite2D? halfS = UiTex("face_half") is Texture2D fh ? new Sprite2D { Texture = fh, Centered = false, Scale = Vector2.One * sc, Position = (new Vector2(800f, 0f) - faceCenter) * sc, Visible = false } : null;
-		if (closedS != null) face.AddChild(closedS);
-		if (halfS != null) face.AddChild(halfS);
-		if (closedS != null && darkS != null) face.MoveChild(darkS, face.GetChildCount() - 1);   // 暗色版压在差分上面一起褪
+		// 闭眼 / 半睁差分（Codex 从结束立绘编辑，art/v14/face；只裁了眼部 224×99，左上角在立绘的 (967,218)）：
+		// 亮色版叠在 litS 上，暗色版（同一份编辑按原版 亮 → 暗 的颜色对照表转出来）叠在 darkS 上、随它一起褪。没有就保持暗 → 亮 + 扫光的做法
+		Vector2 eyeAt = new(967f, 218f);
+		Sprite2D? Eye(Sprite2D? host, string name, bool visible)
+		{
+			if (host == null || UiTex(name) is not Texture2D tx)
+			{
+				return null;
+			}
+			Sprite2D e = new() { Texture = tx, Centered = false, Position = eyeAt, Visible = visible };
+			host.AddChild(e);                                         // 子节点：跟着宿主的缩放 / 位置 / 透明度
+			return e;
+		}
+		Sprite2D? closedS = Eye(litS, "face_closed", true), halfS = Eye(litS, "face_half", false);
+		Sprite2D? closedD = Eye(darkS, "face_closed_dark", true), halfD = Eye(darkS, "face_half_dark", false);
 		var glints = new List<Polygon2D>();
 		foreach (Vector2 e in eyes)
 		{
@@ -697,14 +705,12 @@ public static class GreatSeal
 			float sw = Mathf.Clamp((time - 0.9f) / 0.4f, 0f, 1f);
 			sweep.Position = new Vector2(Mathf.Lerp(-W * 0.6f, W * 0.6f, Ease.InOutCubic(sw)), 0f);
 			sweep.Modulate = new Color(1f, 1f, 1f, sw > 0f && sw < 1f ? 1f : 0f);
-			if (closedS != null)
-			{
-				closedS.Visible = time < 1.0f;
-			}
-			if (halfS != null)
-			{
-				halfS.Visible = time >= 1.0f && time < 1.15f;
-			}
+			// 闭眼 → 1.0 半睁 → 1.15 睁开（和暗 → 亮的褪色、扫光、眼中青光同一拍）
+			bool closed = time < 1.0f, half = time >= 1.0f && time < 1.15f;
+			if (closedS != null) closedS.Visible = closed;
+			if (closedD != null) closedD.Visible = closed;
+			if (halfS != null) halfS.Visible = half;
+			if (halfD != null) halfD.Visible = half;
 			float gl = time < 1.15f ? 0f : time < 1.3f ? Ease.OutBack((time - 1.15f) / 0.15f) : Mathf.Max(0f, 1f - (time - 1.3f) / 0.35f);
 			foreach (Polygon2D g in glints)
 			{
