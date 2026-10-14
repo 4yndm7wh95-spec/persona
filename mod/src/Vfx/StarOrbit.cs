@@ -145,9 +145,29 @@ public static class StarOrbit
 		trailRoot.AddChild(trail);
 		const float windT = 0.06f, flyT = 0.11f;
 		Audio.Sfx.Play(Audio.Snd.StarSpend, 0.45f);
+		bool glinted = false;
+		Vector2 last = from;
+		Vector2 side = new(-dir.Y, dir.X);
 		Fx.Animate(n, windT + flyT, t =>
 		{
 			float time = t * (windT + flyT);
+			// 细节（v0.14.22）：蓄力到底的一瞬，牌上闪一下十字星光；飞行中沿途洒落星屑，向两侧散开、减速、熄灭
+			if (!glinted && time >= windT * 0.8f)
+			{
+				glinted = true;
+				Twinkle(front, n.GlobalPosition, 30f, 0.16f);
+			}
+			if (time > windT)
+			{
+				Vector2 now = n.GlobalPosition;
+				int k = Mathf.Clamp((int)(now.DistanceTo(last) / 22f), 0, 4);
+				for (int m = 0; m < k; m++)
+				{
+					Vector2 at = last.Lerp(now, (m + Fx.Rand(0f, 1f)) / k);
+					Mote(front, at + side * Fx.Rand(-8f, 8f), side * Fx.Rand(-70f, 70f) - dir * Fx.Rand(10f, 40f), Fx.Rand(3.5f, 7f), Fx.Rand(0.25f, 0.45f), 0.9f);
+				}
+				last = now;
+			}
 			if (time < windT)
 			{
 				n.GlobalPosition = from.Lerp(wind, Ease.OutCubic(time / windT));
@@ -168,9 +188,53 @@ public static class StarOrbit
 			n.QueueFree();
 			onImpact();
 			P3Fx.GlassShatter(front, target, 8, 0.4f, Pal.Ice);
+			// 细节（v0.14.22）：命中后几粒星屑在目标身上缓缓飘落，闪两下再熄（余韵）
+			for (int m = 0; m < 6; m++)
+			{
+				Vector2 at = target + new Vector2(Fx.Rand(-60f, 60f), Fx.Rand(-50f, 30f));
+				Fx.After(front, Fx.Rand(0.04f, 0.2f), "star dust settle", () =>
+					Mote(front, at, new Vector2(Fx.Rand(-14f, 14f), Fx.Rand(18f, 40f)), Fx.Rand(4f, 7f), Fx.Rand(0.6f, 0.95f), 1f, blink: true));
+			}
 			Fx.Animate(trail, 0.18f, t => trail.Modulate = new Color(1f, 1f, 1f, 1f - t));
 			Fx.FreeAfter(trailRoot, 0.2);
 		});
+	}
+
+	/// <summary>一粒星屑：小四芒星，沿 vel 漂移并减速，慢转、淡出；blink 时中途闪一下。</summary>
+	private static void Mote(Control layer, Vector2 at, Vector2 vel, float size, float life, float alpha, bool blink = false)
+	{
+		Node2D root = Fx.Root(layer, at, "P3StarMote");
+		Color tint = Fx.Rng.Next(3) == 0 ? Pal.White : Pal.Ice;
+		Fx.Poly(root, Fx.Star4(size, 0.22f), tint, additive: true);
+		float spin = Fx.Rand(-4f, 4f);
+		Fx.Animate(root, life, t =>
+		{
+			root.GlobalPosition = at + vel * life * Ease.OutCubic(t);
+			root.Rotation = spin * t;
+			float a = alpha * (1f - Ease.InCubic(t));
+			if (blink)
+			{
+				a *= 0.55f + 0.45f * Mathf.Abs(Mathf.Cos(t * Mathf.Pi * 2f));
+			}
+			root.Modulate = new Color(1f, 1f, 1f, a);
+			root.Scale = Vector2.One * (1f - 0.4f * t);
+		});
+		Fx.FreeAfter(root, life + 0.05);
+	}
+
+	/// <summary>十字星光一闪（pop 后收拢）。</summary>
+	private static void Twinkle(Control layer, Vector2 at, float radius, float life)
+	{
+		Node2D root = Fx.Root(layer, at, "P3StarTwinkle");
+		Fx.Poly(root, Fx.Star4(radius, 0.08f), Pal.White, additive: true);
+		Polygon2D halo = Fx.Poly(root, Fx.Star4(radius * 1.7f, 0.05f), new Color(Pal.Cyan, 0.55f), additive: true);
+		halo.Rotation = Mathf.Pi / 4f;
+		Fx.Animate(root, life, t =>
+		{
+			root.Scale = Vector2.One * (t < 0.3f ? Ease.OutExpo(t / 0.3f) : 1f - Ease.InCubic((t - 0.3f) / 0.7f));
+			root.Rotation = t * 0.5f;
+		});
+		Fx.FreeAfter(root, life + 0.05);
 	}
 
 	/// <summary>星尘待命位：头顶后上方一排（人物身后），中间最高。</summary>
@@ -265,6 +329,7 @@ public static class StarOrbit
 			if (_time < o.VolleyUntil)
 			{
 				o.Quiver.Add(c);
+				Twinkle(front, c.Pos, 18f, 0.2f);          // 细节（v0.14.22）：这颗辉星"上膛"留在头顶的一瞬亮一下
 			}
 			else
 			{
@@ -370,6 +435,11 @@ public static class StarOrbit
 			c.Node.Rotation = Mathf.LerpAngle(c.Node.Rotation, 0f, 0.3f);
 			c.Node.Scale = Vector2.One * (1.25f + 0.06f * Mathf.Sin(_time * 7f + i));
 			c.Node.Modulate = Colors.White;
+			// 细节（v0.14.22）：待命的牌底边不断洒下细小的星屑（人物身后图层，很淡，不抢主体）
+			if (Fx.Rng.NextDouble() < dt * 5f)
+			{
+				Mote(back, c.Pos + new Vector2(Fx.Rand(-12f, 12f), 22f), new Vector2(Fx.Rand(-8f, 8f), Fx.Rand(26f, 48f)), Fx.Rand(3f, 5.5f), Fx.Rand(0.5f, 0.8f), 0.7f);
+			}
 		}
 	}
 
