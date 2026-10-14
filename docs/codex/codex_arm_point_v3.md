@@ -5,7 +5,7 @@ P3Makoto 是杀戮尖塔 2 的 mod（结城理换皮），结城理是分件骨�
 
 【找到仓库】
 在本机找 remote 指向 github.com/4yndm7wh95-spec/persona、且含 mod\P3Makoto.json 的 git 仓库（C:\Users\kkk\ 下、桌面、Documents；可能有多个副本，用你上次成功推送的那个），下文记作 <repo>。所有 git 命令加 -c safe.directory=<repo>。
-先 git status：有未提交改动就停下报告（上一轮没提交的手臂图如果还在，先把它们移到 C:\Users\kkk\sts2_tools\arm_old\ 再继续，不要提交它们）。然后 checkout claude/amazing-darwin-b00arn，
+先 git status：有未提交改动就停下报告。然后 checkout claude/amazing-darwin-b00arn，
 git -c safe.directory=<repo> -c http.version=HTTP/1.1 -c http.lowSpeedLimit=0 -c http.lowSpeedTime=999999 fetch origin claude/amazing-darwin-b00arn（失败等 5/10/20/40 秒重试，最多 4 次），git merge --ff-only origin/claude/amazing-darwin-b00arn（不能快进就 git merge --no-edit origin/claude/amazing-darwin-b00arn，不要 rebase）。
 如果仓库是稀疏检出、需要的参考文件不在磁盘上：允许执行 git -c safe.directory=<repo> sparse-checkout add <需要的目录>；路径过长报错时允许单次命令加 -c core.longpaths=true。不要 sparse-checkout disable / set。
 
@@ -47,12 +47,12 @@ git -c safe.directory=<repo> -c http.version=HTTP/1.1 -c http.lowSpeedLimit=0 -c
 4. REPORT_POINT3.md（中文）：最终提示词、每张重画 / 局部重绘了几次、用了哪种办法（整体 / 局部重绘 / 合成）、自检 4 条逐条结果、轮廓包围框、肩部接缝中心点和指尖（拳头）坐标、已知问题。
 
 【提交与推送】
-- 只 git add art\parts_src\ 下本次新增的文件。提交：git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local commit -m "art: Makoto point-to-sky arm parts v3 (index finger up, fist)"
+- 上一轮（提交 44519ee）的 arm_point_up.png、arm_point_mid.png、preview_point.png 手势不合格，本轮**直接覆盖**这三个文件。只 git add art\parts_src\ 下本次新增或覆盖的文件。提交：git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local commit -m "art: Makoto point-to-sky arm parts v3 (index finger up, fist)"
 - push：git -c safe.directory=<repo> -c http.version=HTTP/1.1 -c http.lowSpeedLimit=0 -c http.lowSpeedTime=999999 push origin claude/amazing-darwin-b00arn（失败等 5/10/20/40 秒重试）。被拒绝是因为别的会话先推送了：先 fetch，再 git merge --no-edit origin/claude/amazing-darwin-b00arn（不要 rebase），然后再 push。
 - 完成后用中文报告做了什么、结果在哪、提交号。
 
 【绝对不要做】
-- 不要修改或删除代码和已有资源，只新增上面说的文件（以及把上一轮未提交的旧图移出仓库）。
+- 不要修改或删除代码和其他已有资源；只新增上面说的文件，并覆盖上一轮的 arm_point_up.png、arm_point_mid.png、preview_point.png。
 - 不要改写 git 历史（rebase / reset / amend）；不要用 --force；不要改全局 git config。
 - 不要启动游戏（杀戮尖塔 2 和 P3R 都不要启动）。
 - 不要读取或输出 C:\Users\kkk\.p3record\obs.json，也不要读取或输出任何密码。
