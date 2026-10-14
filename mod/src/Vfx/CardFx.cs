@@ -51,6 +51,7 @@ public static class CardFx
 		bool summon = anim != CardStyles.CardAnim.None && CardStyles.Summons(play.Card);
 		bool sovereign = play.Card.GetType().Name == "SovereignBlade";
 		bool cutIn = summon && CutInFx.Enabled;
+		(string skill, string persona) = CardStyles.CaptionFor(play.Card);   // 随机 Persona 只抽一次，字幕和现身的是同一只
 		// 召唤器 / 施法出招的攻击牌：整次出牌只播一次出招动作（后续多段攻击不再接挥剑）
 		Pose.MarkSingleAttackAnim(caster, play.Card.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Attack && anim != CardStyles.CardAnim.Sword);
 		bool stardust = play.Card.GetType().Name == "Stardust";
@@ -67,20 +68,29 @@ public static class CardFx
 		{
 			Pose.MarkSummon(caster);                      // attack / cast → "召唤开枪"（抵住太阳穴停一拍再扣扳机）
 		}
+		bool throne = play.Card.GetType().Name == "TheSealedThrone";
+		if (cutIn && throne)
+		{
+			ThroneSeal.Defer(caster, 4f);                 // 常驻印记等弥赛亚的法阵落下再出现
+		}
 		if (cutIn)
 		{
 			// P3R 技能切入：眼神特写横幅 → 扣扳机时碎裂 → Persona 现身（君王之刃：Thanatos 冲过去斩击；其他：显形后消散）
 			List<NCreature> cutTargets = Targets(play);
 			Color tint = play.Card.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Power ? Pal.DarkHour : Pal.Cyan;
-			CutInFx.Begin(caster, play.Card.Title, CardStyles.CaptionFor(play.Card).Persona, elapsed =>
+			CutInFx.Begin(caster, play.Card.Title, persona, elapsed =>
 			{
 				if (sovereign)
 				{
 					PersonaFx.SummonThanatos(caster, cutTargets.Count > 0 ? cutTargets[0] : null, elapsed);
 				}
+				else if (throne)
+				{
+					PersonaFx.MessiahThrone(caster);
+				}
 				else
 				{
-					PersonaFx.Apparition(caster, tint);
+					PersonaFx.Apparition(caster, tint, persona);
 				}
 			});
 		}
@@ -123,7 +133,6 @@ public static class CardFx
 		Extra x = style.Extra;
 		if (x.HasFlag(Extra.SkewBand) && !cutIn)            // 有眼神切入时不再叠蓝色色带
 		{
-			(string skill, string persona) = CardStyles.CaptionFor(play.Card);
 			Extras.SkewBand(front, new Extras.Caption(skill, persona, play.Card.Title));
 		}
 		if (x.HasFlag(Extra.DarkHour))

@@ -675,6 +675,20 @@ Grand.cs 里其余函数暂时保留不用。
 - 空间杀法：读屏 shader 在游戏里读不到画面、变成不透明灰蓝挡住全部视野 → 改为半透明色层（反相阶段米白 50%、释放阶段暗蓝 40%），发光线的外晕也调淡。
 - **空间杀法时停**：伤害结算前 0.1s 冻结战斗时间（Engine.TimeScale 0.02），反相 + 割裂在真实时间里进行 1.2s（Vorpal 内全部用 ignoreTimeScale 的动画 / 计时），线条亮起时恢复时间，0.1s 后结算伤害；Persona 挥剑在时停中定格。游戏等待 VorpalWait 2.0 → 1.1（加上时停实际约 2.3s）。保险：冻结最多 2.5s 必恢复。
 
+## v0.14.2
+
+- **P3R 原版贴图入 pck**（`tools/pck/godot_tex.py` 生成 .import + .ctex）：`ui/allout_finish(.png/_dark)`（T_Btl_AlloutFinish_Pc01_A1 / A2，裁边后 ×0.75）、`ui/allout_text`（DONE AND DUSTED. 原版字图）、
+  `persona/orpheus`（T_Pp2001_010_0064）、`persona/messiah`（0183）。imagegen v13 的 orpheus3 / messiah / finish 又是黑底发光、不能抠图 → 不用，改用原版渲染图（自带透明通道）。
+- **总攻击结束立绘**换成原版：青底从右上斜切扫入 + 白闪，斜切深蓝色带，圆环（带 48 道刻度）张开，放射速度线，白色三角碎片外飞；立绘先暗蓝（A2）滑入，0.22s 一道白闪亮成本色（A1）；
+  原版字图「DONE AND DUSTED.」0.24s 放大回弹砸入（深蓝错位阴影 + 白闪）；1.0s 整体褪黑白，「RESULT」黑条从上滑入；1.25s 起淡出。
+- **随机 Persona**（`CardStyles.CaptionFor`）：君王之刃 / 剑圣 / 虚空形态固定 Thanatos，封印王座 / 大爆炸固定 Messiah；陨星（DyingStar）/ 七星 / 流星雨每次随机，Orpheus 65%、Thanatos 35%，
+  切入横幅和色带上的名字跟着抽到的那只走（一次出牌只抽一次）。
+- **Orpheus 现身**（`Personas.Orpheus`，对照 video2 原版召唤）：身后一排绿色方格音量条随节拍跳动；Orpheus 从上方翻滚落下（竖琴一侧先入画、两道残影），落定白闪 + 水波 + 光点；悬浮呼吸后变青白剪影、散成上飘光点。
+- **Messiah 现身**（`Personas.Messiah`，大爆炸）：金色光柱中降下，十二道金白光翼展开，悬停后升入光中。
+- **封印王座 = 弥赛亚降临**（`Personas.MessiahThrone`，约 2.6s，全在人物身后）：金色「审判 XX」法阵一笔画成（外环 → 12 道刻度 → 内环 → XX）；Messiah 从法阵中降下（白光剪影 → 本色），光翼依次展开；
+  金色光羽全程飘落；1.1s「封印」—— 法阵收缩到常驻印记的大小，沿金白光流落进结城理脑后，落点闪光 + 冲击环 + 水波，常驻的 XX 印记（ThroneSeal）正好在这一刻出现（Defer / Release 交接）；
+  之后 Messiah 合拢光翼升入光中。音效：召唤 + Nyx 战「封印」原声（BtlEvent710_Sealed）的高潮段 `messiah_seal`（8.4s 起截 3.4s）。原来头顶的影时钟去掉，把位置让给法阵。sfx 68 个。
+
 ## 质量要求（用户 2026-10-13，长期有效）
 
 后续所有特效 / 动画都要**细节足够、丰富、不草率**：

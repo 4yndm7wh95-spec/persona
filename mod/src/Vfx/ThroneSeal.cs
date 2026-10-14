@@ -25,9 +25,24 @@ public static class ThroneSeal
 
 	private static Vector2 Anchor(NCreature node) => Makoto.Head(node) + new Vector2(-28f, -36f);
 
+	private static readonly Dictionary<ulong, ulong> DeferUntil = new();
+
+	/// <summary>封印王座打出时：先压住印记，等弥赛亚的法阵落进脑后（Release）再出现；最多压 seconds 秒。</summary>
+	public static void Defer(NCreature node, float seconds) => DeferUntil[node.GetInstanceId()] = Time.GetTicksMsec() + (ulong)(seconds * 1000f);
+
+	public static void Release(NCreature node) => DeferUntil.Remove(node.GetInstanceId());
+
 	public static void Tick(NCreature node, Control back, Control front, float time)
 	{
 		ulong id = node.GetInstanceId();
+		if (DeferUntil.TryGetValue(id, out ulong until))
+		{
+			if (Time.GetTicksMsec() < until)
+			{
+				return;
+			}
+			DeferUntil.Remove(id);
+		}
 		bool active = !node.Entity.IsDead && node.Entity.HasPower<MegaCrit.Sts2.Core.Models.Powers.TheSealedThronePower>();
 		Seals.TryGetValue(id, out Seal? s);
 		if (s != null && !GodotObject.IsInstanceValid(s.Root))

@@ -178,9 +178,27 @@ public static class PersonaFx
 		Fx.FreeAfter(root, hold + 0.55f);
 	}
 
-	/// <summary>不攻击的召唤牌：召唤器碎裂后 Persona 在结城理身后显形（光柱 + 水波 + 闪光），悬浮一拍后消散。</summary>
-	public static void Apparition(NCreature caster, Color tint)
+	/// <summary>封印王座：弥赛亚降临（缺立绘时退回普通显形）。</summary>
+	public static void MessiahThrone(NCreature caster)
 	{
+		if (Personas.Tex("messiah") != null)
+		{
+			Personas.MessiahThrone(caster);
+		}
+		else
+		{
+			Apparition(caster, Pal.DarkHour);
+		}
+	}
+
+	/// <summary>不攻击的召唤牌：召唤器碎裂后 Persona 在结城理身后显形（光柱 + 水波 + 闪光），悬浮一拍后消散。
+	/// persona = 字幕上的名字：ORPHEUS / MESSIAH 用原版立绘（Personas），THANATOS 用骨骼动画。</summary>
+	public static void Apparition(NCreature caster, Color tint, string persona = "THANATOS")
+	{
+		if ((persona == "ORPHEUS" && Personas.Orpheus(caster)) || (persona == "MESSIAH" && Personas.Messiah(caster)))
+		{
+			return;
+		}
 		Control? back = Makoto.FxLayer(back: true);
 		Control? front = Makoto.FxLayer();
 		if (back == null || front == null || ResourceLoader.Load(Thanatos) is not Resource data)

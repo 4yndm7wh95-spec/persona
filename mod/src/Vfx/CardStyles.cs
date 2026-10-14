@@ -100,16 +100,28 @@ public static class CardStyles
 	{
 		["SovereignBlade"] = ("BRAVE BLADE", "THANATOS"),
 		["SwordSage"] = ("BRAVE BLADE", "THANATOS"),
-		["DyingStar"] = ("DIE FOR ME!", "THANATOS"),
-		["SevenStars"] = ("MEGIDOLAON", "THANATOS"),
-		["MeteorShower"] = ("MORNING STAR", "MESSIAH"),
+		["DyingStar"] = ("DIE FOR ME!", RandomPersona),
+		["SevenStars"] = ("MEGIDOLAON", RandomPersona),
+		["MeteorShower"] = ("MORNING STAR", RandomPersona),
 		["BigBang"] = ("MEGIDOLAON", "MESSIAH"),
 		["VoidForm"] = ("DARK HOUR", "THANATOS"),
 		["TheSealedThrone"] = ("GREAT SEAL", "MESSIAH")
 	};
 
-	public static (string Skill, string Persona) CaptionFor(object card) =>
-		Captions.TryGetValue(card.GetType().Name, out var c) ? c : ("PERSONA", "ORPHEUS");
+	/// <summary>
+	/// 召唤哪只 Persona（v0.14.2 约定）：君王之刃 / 剑圣 / 虚空形态固定 Thanatos，封印王座 / 大爆炸固定 Messiah（留给最大的场面）；
+	/// 其余召唤牌每次打出随机：Orpheus 65%、Thanatos 35%。色带 / 切入字幕跟着抽到的结果走。
+	/// </summary>
+	private const string RandomPersona = "?";
+
+	public static (string Skill, string Persona) CaptionFor(object card)
+	{
+		if (!Captions.TryGetValue(card.GetType().Name, out var c))
+		{
+			return ("PERSONA", "ORPHEUS");
+		}
+		return c.Persona == RandomPersona ? (c.Skill, Fx.Rng.NextDouble() < 0.65 ? "ORPHEUS" : "THANATOS") : c;
+	}
 
 	/// <summary>
 	/// 出牌时人物做什么动作（与游戏源码一致：OnPlay 里是否 TriggerAnim）。

@@ -161,7 +161,7 @@ public static class CardSigs
 		["Royalties"] = c => { Tarot(c, "X", "FORTUNE", ElementPal.HolyGold); After(c, 0.3, () => Grand.CoinRain(c.Front, c.Center, c.Feet.Y, 34)); },
 		["PillarOfCreation"] = c => After(c, 0.1, () => ThemeFx.SummonGate(c.Caster)),
 		["Genesis"] = c => After(c, 0.55, () => Rares.Genesis(c.Caster)),
-		["TheSealedThrone"] = c => { Motifs.DarkClock(c.Front, c.Above, 1.0f); After(c, 0.4, () => Bold.Hamaon(c.Back, c.Center, c.Feet, 1.3f)); },
+		["TheSealedThrone"] = c => After(c, 0.4, () => Bold.Hamaon(c.Back, c.Center, c.Feet, 1.3f)),   // 头顶的位置留给弥赛亚的审判法阵
 	};
 
 	/// <summary>这张牌有自己的专属演出（施法时就不再额外翻一张小塔罗，避免重复）。</summary>
