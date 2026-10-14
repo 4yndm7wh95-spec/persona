@@ -22,7 +22,7 @@ git -c safe.directory=<repo> -c http.version=HTTP/1.1 -c http.lowSpeedLimit=0 -c
 - 完成后用中文报告做了什么、结果在哪、提交号。
 
 【绝对不要做】
-- 不要修改或删除代码和已有资源，只新增上面说的文件。
+- 不要修改或删除代码和其他已有资源；只原地更新上面列出的 Orpheus 零件、预览图和 README。
 - 不要改写 git 历史（rebase / reset / amend）；不要用 --force；不要改全局 git config。
 - 不要启动游戏（杀戮尖塔 2 和 P3R 都不要启动）。
 - 不要读取或输出 C:\Users\kkk\.p3record\obs.json，也不要读取或输出任何密码。
