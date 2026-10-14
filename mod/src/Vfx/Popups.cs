@@ -164,6 +164,50 @@ public static class Popups
 		P3Fx.Flash(layer, home, Pal.Cyan, 260f, 0.2f);
 	}
 
+	private static readonly Dictionary<ulong, ulong> LastCrit = new();
+
+	/// <summary>
+	/// 「CRITICAL!」（v0.14.12，原版贴图 T_UI_Battle_06：白 → 青渐变斜体 + 深蓝立体边，预合成为 ui/critical.png）。
+	/// 结城理一击造成的实际伤害 ≥ 20 且 ≥ 目标最大生命 30% 时弹出（杀戮尖塔没有暴击，用"打得很重"代替）；同一目标 0.8s 内只弹一次。
+	/// 原版节奏：字从大到小砸进来（0.12s，白闪），同时一圈放射速度线；停留约 0.6s 缓慢向右上漂，淡出。
+	/// </summary>
+	public static void Critical(Control layer, ulong targetId, Vector2 at)
+	{
+		ulong now = Time.GetTicksMsec();
+		if (LastCrit.TryGetValue(targetId, out ulong last) && now - last < 800)
+		{
+			return;
+		}
+		LastCrit[targetId] = now;
+		if (!ResourceLoader.Exists("res://p3makoto/ui/critical.png"))
+		{
+			return;
+		}
+		Texture2D tex = ResourceLoader.Load<Texture2D>("res://p3makoto/ui/critical.png");
+		Vector2 home = at + new Vector2(40f, -215f);
+		Node2D root = Fx.Root(layer, home, "P3Critical");
+		root.Rotation = -0.12f;
+		float sc = 0.62f;
+		Sprite2D word = new() { Texture = tex, Scale = Vector2.One * sc };
+		Sprite2D flash = new() { Texture = tex, Scale = Vector2.One * sc, Material = Fx.Additive };
+		root.AddChild(word);
+		root.AddChild(flash);
+		Audio.Sfx.Play(Audio.Snd.Down, 1.0f, delay: 0.05f);
+		P3Fx.SpeedLines(layer, home, Pal.Ice, 18, 120f, 420f, 0.35f);
+		P3Fx.Flash(layer, home, Pal.Cyan, 320f, 0.2f);
+		const float total = 1.0f;
+		Fx.Animate(root, total, t =>
+		{
+			float time = t * total;
+			float slam = Ease.OutBack(Mathf.Clamp(time / 0.12f, 0f, 1f));
+			root.Scale = Vector2.One * Mathf.Lerp(1.8f, 1f, slam);
+			flash.Modulate = new Color(1f, 1f, 1f, Mathf.Max(0f, 1f - time / 0.2f));
+			root.Position = home + new Vector2(30f, -18f) * Mathf.Clamp((time - 0.12f) / 0.8f, 0f, 1f);
+			root.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.04f, 0f, 1f) * (1f - Ease.InCubic(Mathf.Clamp((time - 0.78f) / 0.22f, 0f, 1f))));
+		});
+		Fx.FreeAfter(root, total + 0.05f);
+	}
+
 	/// <summary>
 	/// P3R「BLOCK」（v0.14.0，逐帧对照 research/p3r_video/NOTES.md 第 4 节）：
 	/// · 字先出现（冲击前一拍），白色粗斜体、每个字母各自轻微歪斜 / 错位，带细黑描边；字后面一条黑色斜长条做底，
