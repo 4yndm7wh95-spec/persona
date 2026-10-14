@@ -40,8 +40,37 @@ public static class PersonaFx
 		caster.Entity?.HasPower<MegaCrit.Sts2.Core.Models.Powers.SeekingEdgePower>() == true;
 
 	/// <summary>elapsed：从出牌到现在（扣扳机那一刻）已经过去的秒数，用来对齐伤害结算时刻。</summary>
+	private static ulong _summonedAt;
+
+	/// <summary>有 Persona 现身：记下时间，并把正在显示的蓄力虚影（P3PersonaCharge）淡出，同一时刻只留一个 Persona。</summary>
+	private static void MarkSummon()
+	{
+		_summonedAt = Time.GetTicksMsec();
+		if (Makoto.FxLayer(back: true) is not Control back)
+		{
+			return;
+		}
+		foreach (Node n in back.GetChildren())
+		{
+			if (n is Node2D ghost && n.Name.ToString().Contains("P3PersonaCharge") && !n.IsQueuedForDeletion())
+			{
+				// 根节点的透明度由虚影自己的动画逐帧写，这里淡出各子节点（辉光 / 本体）
+				foreach (Node c in ghost.GetChildren())
+				{
+					if (c is CanvasItem ci)
+					{
+						Color from = ci.Modulate;
+						Fx.Animate(ci, 0.2f, t => ci.Modulate = new Color(from, from.A * (1f - t)));
+					}
+				}
+				Fx.FreeAfter(ghost, 0.22f);
+			}
+		}
+	}
+
 	public static void SummonThanatos(NCreature caster, NCreature? target, float elapsed = 0f)
 	{
+		MarkSummon();
 		Control? back = Makoto.FxLayer(back: true);
 		Control? front = Makoto.FxLayer();
 		if (back == null || front == null || ResourceLoader.Load(Thanatos) is not Resource data)
@@ -154,7 +183,9 @@ public static class PersonaFx
 	public static void ChargeGhost(NCreature caster, bool big)
 	{
 		Control? back = Makoto.FxLayer(back: true);
-		if (back == null || ResourceLoader.Load(Thanatos) is not Resource data)
+		// v0.14.16（用户：大爆炸召唤了两个 Persona）：同一张牌既召唤 Persona 又锻造时（大爆炸 = Messiah + 锻造），
+		// 蓄力的 Thanatos 虚影会和召唤出的 Persona 叠在一起 —— 切入进行中或刚召唤过就不出虚影（红色箭头照常）
+		if (back == null || CutInFx.Active(caster) || Time.GetTicksMsec() - _summonedAt < 2500 || ResourceLoader.Load(Thanatos) is not Resource data)
 		{
 			return;
 		}
@@ -184,6 +215,7 @@ public static class PersonaFx
 	/// <summary>封印王座：弥赛亚降临（缺立绘时退回普通显形）。</summary>
 	public static void MessiahThrone(NCreature caster)
 	{
+		MarkSummon();
 		if (Personas.Tex("messiah") != null)
 		{
 			Personas.MessiahThrone(caster);
@@ -198,6 +230,7 @@ public static class PersonaFx
 	/// persona = 字幕上的名字：ORPHEUS / MESSIAH 用原版立绘（Personas），THANATOS 用骨骼动画。</summary>
 	public static void Apparition(NCreature caster, Color tint, string persona = "THANATOS")
 	{
+		MarkSummon();
 		if ((persona == "ORPHEUS" && Personas.Orpheus(caster)) || (persona == "MESSIAH" && Personas.Messiah(caster)))
 		{
 			return;

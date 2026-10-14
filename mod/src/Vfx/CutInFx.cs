@@ -44,6 +44,9 @@ public static class CutInFx
 
 	private static readonly Dictionary<ulong, State> Live = new();
 
+	/// <summary>这个角色的眼神切入正在进行（还没扣扳机）：马上会有 Persona 现身。</summary>
+	public static bool Active(NCreature caster) => Live.ContainsKey(caster.GetInstanceId());
+
 	/// <summary>"瞬间"速度下不演（直接回调）。</summary>
 	public static bool Enabled => SaveManager.Instance?.PrefsSave.FastMode != FastModeType.Instant;
 
