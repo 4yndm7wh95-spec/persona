@@ -28,7 +28,7 @@ C. 如果某样找不到，在 README.md 里写清楚找过哪些地方、用了
 【输出】<repo>\art\p3r_tex\<子目录>\*.png + contact_sheet.png，<repo>\art\sfx_p3r_c4\*.ogg + LIST.csv，<repo>\art\p3r_tex\README_v14.md（中文：每样找到 / 没找到、对应的原始资源路径）。
 
 【提交与推送】
-- 只 git add art\\p3r_tex\\ 和 art\\sfx_p3r_c4\\ 下的文件。提交：git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local commit -m "art: P3R originals for Shuffle Time title, command menu, All-Out SFX"
+- 只 git add art\p3r_tex\ 和 art\sfx_p3r_c4\ 下的文件。提交：git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local commit -m "art: P3R originals for Shuffle Time title, command menu, All-Out SFX"
 - push：git -c safe.directory=<repo> -c http.version=HTTP/1.1 -c http.lowSpeedLimit=0 -c http.lowSpeedTime=999999 push origin claude/amazing-darwin-b00arn（失败等 5/10/20/40 秒重试）。
   被拒绝是因为别的会话先推送了：先 fetch，再 git merge --no-edit origin/claude/amazing-darwin-b00arn（合并提交，不要 rebase），然后再 push。
 - 完成后用中文报告做了什么、结果在哪、提交号。

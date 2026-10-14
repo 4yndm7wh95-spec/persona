@@ -25,7 +25,7 @@ git -c safe.directory=<repo> -c http.version=HTTP/1.1 -c http.lowSpeedLimit=0 -c
 【自检】站人线附近必须是平地；月亮完整在画面内；不满足就重画（最多 3 轮），仍不满足就在报告里如实说明。
 
 【提交与推送】
-- 只 git add art\\v14\\ 下的文件。提交：git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local commit -m "art: v14 Tartarus rooftop v2 background (characters stand on the platform)"
+- 只 git add art\v14\ 下的文件。提交：git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local commit -m "art: v14 Tartarus rooftop v2 background (characters stand on the platform)"
 - push：git -c safe.directory=<repo> -c http.version=HTTP/1.1 -c http.lowSpeedLimit=0 -c http.lowSpeedTime=999999 push origin claude/amazing-darwin-b00arn（失败等 5/10/20/40 秒重试）。
   被拒绝是因为别的会话先推送了：先 fetch，再 git merge --no-edit origin/claude/amazing-darwin-b00arn（合并提交，不要 rebase），然后再 push。
 - 完成后用中文报告做了什么、结果在哪、提交号。

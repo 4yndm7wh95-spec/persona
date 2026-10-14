@@ -24,7 +24,7 @@ arm_point_up 的手指尖大约在 (470, 0~40) 一带（如果放不下，允许
 【自检】肩部偏差超过 25 像素、比例明显不对、食指没有指天、出现第二只手或身体时，重画（每张最多 4 轮）；仍不满足就在报告里如实写。
 
 【提交与推送】
-- 只 git add art\\parts_src\\ 下的文件。提交：git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local commit -m "art: Makoto arm parts for the Great Seal pose (point to sky)"
+- 只 git add art\parts_src\ 下的文件。提交：git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local commit -m "art: Makoto arm parts for the Great Seal pose (point to sky)"
 - push：git -c safe.directory=<repo> -c http.version=HTTP/1.1 -c http.lowSpeedLimit=0 -c http.lowSpeedTime=999999 push origin claude/amazing-darwin-b00arn（失败等 5/10/20/40 秒重试）。
   被拒绝是因为别的会话先推送了：先 fetch，再 git merge --no-edit origin/claude/amazing-darwin-b00arn（合并提交，不要 rebase），然后再 push。
 - 完成后用中文报告做了什么、结果在哪、提交号。
