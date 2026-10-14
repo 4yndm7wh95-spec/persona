@@ -355,25 +355,74 @@ public static class Personas
 				ThroneSeal.Release(caster);
 			}
 		});
+		// 离场（v0.14.8，用户：出去的动画不完善）：
+		//   1.45 合拢光翼、身体先往下一沉（蓄势）→ 1.55 一道金色光柱从天而降罩住它 →
+		//   1.60 加速升空：身体被拉长（纵向拉伸、横向收窄）、拖出三道金白残影、整个身影渐渐变成白光剪影 →
+		//   1.75 羽毛从身上向四周炸开、金色光点上飘 → 2.15 头顶出画处一颗十字星闪一下收尾
+		const float exitAt = 1.45f;
+		float Rise(float tt) => Ease.InCubic(Mathf.Clamp((tt - exitAt - 0.15f) / 0.55f, 0f, 1f));
+		float Dip(float tt) => tt > exitAt && tt < exitAt + 0.15f ? Mathf.Sin((tt - exitAt) / 0.15f * Mathf.Pi) : 0f;
+		Vector2 PosAt(float tt)
+		{
+			float inn = Ease.OutCubic(Mathf.Clamp((tt - 0.2f) / 0.6f, 0f, 1f));
+			return home + new Vector2(0f, -height * 0.25f * (1f - inn) + height * 0.03f * Dip(tt) - height * 1.1f * Rise(tt) + 5f * Mathf.Sin(tt * 2.4f));
+		}
+		Node2D trail = Fx.Root(back, home, "P3MessiahTrail");
+		back.MoveChild(trail, root.GetIndex());
+		List<Sprite2D> ghosts = new();
+		for (int i = 0; i < 3; i++)
+		{
+			Sprite2D g = new() { Texture = tex, Scale = fig.Scale, Material = Fx.Additive, Modulate = new Color(1f, 0.92f, 0.7f, 0f) };
+			trail.AddChild(g);
+			ghosts.Add(g);
+		}
 		Fx.Animate(root, total, t =>
 		{
 			float time = t * total;
-			float inn = Ease.OutCubic(Mathf.Clamp((time - 0.2f) / 0.6f, 0f, 1f));
-			float rise = Ease.InCubic(Mathf.Clamp((time - 1.4f) / 0.7f, 0f, 1f));
-			root.Position = home + new Vector2(0f, -height * 0.25f * (1f - inn) - height * 0.2f * rise + 5f * Mathf.Sin(time * 2.4f));
+			float rise = Rise(time);
+			root.GlobalPosition = PosAt(time);
+			root.Scale = new Vector2(1f - 0.15f * rise, 1f + 0.35f * rise);
 			float vis = Mathf.Clamp((time - 0.2f) / 0.15f, 0f, 1f);
-			fig.Modulate = new Color(1f, 1f, 1f, vis * Mathf.Clamp((time - 0.35f) / 0.3f, 0f, 1f) * (1f - rise));
+			float gone = Mathf.Clamp((time - exitAt - 0.55f) / 0.25f, 0f, 1f);
+			fig.Modulate = new Color(1f, 1f, 1f, vis * Mathf.Clamp((time - 0.35f) / 0.3f, 0f, 1f) * (1f - Mathf.Clamp((time - exitAt - 0.3f) / 0.35f, 0f, 1f)));
 			float white = vis * (1f - Mathf.Clamp((time - 0.4f) / 0.35f, 0f, 1f));
 			float pulse = time >= sealAt ? Mathf.Max(0f, 1f - (time - sealAt) / 0.3f) * 0.6f : 0f;
-			flash.Modulate = new Color(1f, 0.97f, 0.88f, Mathf.Max(Mathf.Max(white, pulse), rise * 0.9f) * (1f - Mathf.Clamp((time - 2.3f) / 0.3f, 0f, 1f)));
-			glow.Modulate = new Color(Gold, (0.35f + 0.2f * Mathf.Sin(time * 4f) + pulse) * vis * (1f - rise));
-			// 光翼：依次展开 → 封印时猛张一下 → 上升时合拢
+			float lift = Mathf.Clamp((time - exitAt - 0.1f) / 0.35f, 0f, 1f);
+			flash.Modulate = new Color(1f, 0.97f, 0.88f, Mathf.Max(Mathf.Max(white, pulse), lift) * (1f - gone));
+			glow.Modulate = new Color(Gold, (0.35f + 0.2f * Mathf.Sin(time * 4f) + pulse + 0.4f * lift) * vis * (1f - gone));
+			// 光翼：依次展开 → 封印时猛张一下 → 离场时向上合拢成一束
 			float open = Ease.OutBack(Mathf.Clamp((time - 0.35f) / 0.5f, 0f, 1f));
 			float flare = time >= sealAt ? 0.12f * Mathf.Max(0f, 1f - (time - sealAt) / 0.35f) : 0f;
-			float close = Ease.InCubic(Mathf.Clamp((time - 1.5f) / 0.5f, 0f, 1f));
-			wings.Scale = new Vector2((open + flare) * (1f - 0.8f * close), (open + flare) * (1f - 0.3f * close));
-			wings.Modulate = new Color(1f, 1f, 1f, (0.7f + 0.3f * Mathf.Sin(time * 5f)) * (1f - rise));
+			float close = Ease.InOutCubic(Mathf.Clamp((time - exitAt) / 0.3f, 0f, 1f));
+			wings.Scale = new Vector2((open + flare) * (1f - 0.85f * close), (open + flare) * (1f + 0.25f * close));
+			wings.Modulate = new Color(1f, 1f, 1f, (0.7f + 0.3f * Mathf.Sin(time * 5f)) * (1f - gone));
+			// 残影：沿上升轨迹落后 0.05 / 0.1 / 0.15s
+			for (int i = 0; i < ghosts.Count; i++)
+			{
+				float lagT = time - 0.05f * (i + 1);
+				ghosts[i].GlobalPosition = PosAt(lagT);
+				ghosts[i].Scale = fig.Scale * new Vector2(1f - 0.15f * Rise(lagT), 1f + 0.35f * Rise(lagT));
+				float on = rise > 0.02f ? (0.45f - 0.12f * i) * (1f - gone) : 0f;
+				ghosts[i].Modulate = new Color(1f, 0.92f, 0.7f, on);
+			}
 		});
+		Fx.After(root, exitAt + 0.1, "messiah exit pillar", () =>
+			P3Fx.LightPillar(back, home + new Vector2(0f, height * 0.5f), Gold, height * 0.5f, height * 2.4f, 0.8f));
+		Fx.After(root, exitAt + 0.3, "messiah exit feathers", () => FeatherBurst(back, PosAt(exitAt + 0.3f), height));
+		Fx.After(root, exitAt + 0.7, "messiah exit star", () =>
+		{
+			Vector2 topAt = PosAt(exitAt + 0.7f) - new Vector2(0f, height * 0.2f);
+			P3Fx.Flash(back, topAt, Gold, height * 0.5f, 0.3f);
+			Node2D st = Fx.Root(back, topAt, "P3MessiahExitStar");
+			Fx.Poly(st, Fx.Star4(height * 0.12f, 0.12f), Pal.White, additive: true);
+			Fx.Animate(st, 0.4f, t =>
+			{
+				st.Scale = Vector2.One * (t < 0.3f ? Ease.OutBack(t / 0.3f) : 1f - Ease.InCubic((t - 0.3f) / 0.7f));
+				st.Rotation = t * 0.8f;
+			});
+			Fx.FreeAfter(st, 0.42);
+		});
+		Fx.FreeAfter(trail, total + 0.05);
 		Fx.Animate(feathers, total, t =>
 		{
 			float time = t * total;
@@ -390,10 +439,37 @@ public static class Personas
 			}
 		});
 		Fx.After(root, 0.8, "messiah motes", () => Motes(back, root.GlobalPosition, height, Gold, 18, 1.0f));
-		Fx.After(root, 1.5, "messiah ascend", () => Motes(back, root.GlobalPosition, height, Pal.Ice, 26, 1.0f, up: true));
+		Fx.After(root, 1.6, "messiah ascend", () => Motes(back, root.GlobalPosition, height, Gold, 30, 1.0f, up: true));
 		Fx.FreeAfter(root, total + 0.05);
 		Fx.FreeAfter(circle, total + 0.05);
 		Fx.FreeAfter(feathers, total + 0.05);
+	}
+
+	/// <summary>离场时羽毛从身上向四周炸开：先快后慢、边飞边翻转、往下飘落着淡出。</summary>
+	private static void FeatherBurst(Control layer, Vector2 at, float height)
+	{
+		Node2D root = Fx.Root(layer, at, "P3MessiahFeatherBurst");
+		List<(Polygon2D p, Vector2 o, Vector2 v, float spin)> fs = new();
+		for (int i = 0; i < 22; i++)
+		{
+			float len = Fx.Rand(12f, 26f);
+			Polygon2D f = Fx.Poly(root, new[] { new Vector2(0f, -len), new Vector2(len * 0.22f, 0f), new Vector2(0f, len * 0.6f), new Vector2(-len * 0.22f, 0f) }, new Color(1f, 0.95f, 0.82f, 0.9f), additive: true);
+			f.Position = new Vector2(Fx.Rand(-height * 0.12f, height * 0.12f), Fx.Rand(-height * 0.2f, height * 0.2f));
+			Vector2 v = (f.Position.Normalized() + Fx.RandDir() * 0.4f).Normalized() * Fx.Rand(180f, 420f);
+			fs.Add((f, f.Position, v, Fx.Rand(-6f, 6f)));
+		}
+		Fx.Animate(root, 1.1f, t =>
+		{
+			float time = t * 1.1f;
+			foreach ((Polygon2D p, Vector2 o, Vector2 v, float spin) in fs)
+			{
+				p.Position = o + v * 0.45f * Ease.OutCubic(t) + new Vector2(0f, 60f * time);
+				p.Rotation = spin * time;
+				p.Scale = new Vector2(Mathf.Abs(Mathf.Cos(time * 5f + spin)), 1f);
+				p.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(Mathf.Clamp((time - 0.5f) / 0.6f, 0f, 1f)));
+			}
+		});
+		Fx.FreeAfter(root, 1.15);
 	}
 
 	/// <summary>法阵化成的小印沿光流落进结城理脑后：金白光流 + 落点闪光、水波、冲击环。</summary>

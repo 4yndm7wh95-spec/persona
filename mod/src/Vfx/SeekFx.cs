@@ -1,206 +1,251 @@
 using System.Collections.Generic;
 using Godot;
+using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using MegaCrit.Sts2.Core.Nodes.Vfx.Utilities;
 using P3Makoto.Core;
 
 namespace P3Makoto.Vfx;
 
 /// <summary>
-/// 追踪之刃「空间测定」（v0.14.7，替换 v0.14.0 的分裂光剑 + 黑缝横切）。
-/// 这张牌让之后的君王之刃变成群体的「空间杀法」—— 打出时不砍东西，而是预演一次空间杀法：
-///   0.00  时空错位：画面两次闪成米白（空间杀法反相那一拍的缩小版）；Thanatos 握剑的半透明身影在身后浮现；青白光点外飘
-///         音：时间回转（evt_eft_timespin_01，压低音调，1.2s 后缓出）
-///   0.45  测量：黑色虚线（空间杀法割裂线的样式，但还没"切"）一条条横贯战场，每个敌人身上两条交叉成 X，再补几条穿过敌人之间
-///   锁定：每个敌人画完交叉线 → 头顶落下 P3R 黄色菱形「?」、交叉点闪一下、一声清脆的锁定声（天鹅绒塔罗光标，音高逐个升高）
-///   1.30  习得：左上角 P3R 技能变更面板 —— THANATOS 名下「BRAVE BLADE 君王之刃」被一道斜线划掉，翻成「VORPAL BLADE 空间杀法」（白闪 + NEW）
-///         音：P3R Persona 技能变更（skill_change）
-///   1.90  余韵：虚线网淡出，菱形依次消失，Thanatos 身影散去
-/// 战场上只有细线和小标记，敌人始终看得清；面板在左上角，不挡人物。
+/// 追踪之刃「千刃追踪」（v0.14.8，替换 v0.14.7 的虚线测量 —— 用户：虚线和空间杀法太像、左上面板草率，可以单纯华丽一些）。
+/// 意思：之后的君王之刃会自己找上每一个敌人。全程约 2.6s：
+///   0.00  凝剑：三十片冰蓝玻璃碎片从结城理周围一圈飞来，在他身后拼成一把竖直的巨大光剑（剑身、护手、剑柄），
+///         0.35 剑的半透明本体亮起（白边 + 青色内光）；音：Persona 光环浮现
+///   0.50  蓄势：一道白光从剑柄沿剑刃扫到剑尖，护手处一圈光环，剑身呼吸
+///   0.75  碎裂：剑身白闪后炸开，碎片先向外飞散、再绕着结城理盘旋（带残光拖尾）；音：阿卡纳爆发；轻震
+///   1.10  追踪：碎片分成几股，各自沿弧线追向一个敌人（每片拖一道青白光尾）；音：灵能上扬
+///   1.45  落定：每股碎片在敌人头顶重新拼成一把剑尖朝下的小晶剑（亮光 + 细圈 + 锁定声，音高逐个升高），悬停上下浮动，剑刃有光点闪过；
+///         左上角挂 P3R 技能名小横幅「空间杀法 VORPAL BLADE」
+///   2.25  余韵：所有小晶剑同时一闪，然后散成光点淡出
+/// 不画全屏线条（和空间杀法区分开）；敌人头顶的小剑在身体上方，不挡敌人。
 /// </summary>
 public static class SeekFx
 {
-	private static readonly Color Cream = new(0.97f, 0.93f, 0.86f);
-	private static ImageTexture? _dash;
-
-	/// <summary>虚线贴图：26px 实线 + 14px 空隙（Line2D 平铺）。</summary>
-	private static ImageTexture Dash
+	private sealed class Shard
 	{
-		get
-		{
-			if (_dash == null)
-			{
-				Image img = Image.CreateEmpty(40, 8, false, Image.Format.Rgba8);
-				for (int x = 0; x < 40; x++)
-				{
-					for (int y = 0; y < 8; y++)
-					{
-						img.SetPixel(x, y, x < 26 ? Colors.White : new Color(1f, 1f, 1f, 0f));
-					}
-				}
-				_dash = ImageTexture.CreateFromImage(img);
-			}
-			return _dash;
-		}
+		public Polygon2D Poly = null!;
+		public Line2D Trail = null!;
+		public Vector2 Ring, Blade, Sword;
+		public float Delay, Phase, Radius, Angle;
+		public int Group;
 	}
 
 	public static void Play(Control front, NCreature caster, Vector2[] targets)
 	{
+		Control back = Makoto.FxLayer(back: true) ?? front;
 		Vector2 size = front.GetViewportRect().Size;
+		Vector2 center = Makoto.Center(caster);
+		Vector2 feet = Makoto.Feet(caster);
+		float body = Mathf.Max(260f, (feet.Y - center.Y) * 2.1f);
+		float L = body * 1.25f;                                       // 光剑全长
+		Vector2 hilt = center + new Vector2(-body * 0.12f, body * 0.05f);   // 剑柄底端（在结城理身后）
+		int n = Mathf.Max(1, targets.Length);
+		Vector2[] swordAt = new Vector2[n];
+		for (int g = 0; g < n; g++)
+		{
+			swordAt[g] = targets.Length > 0 ? targets[g] + new Vector2(0f, -175f) : center + new Vector2(300f, -200f);
+		}
+
 		Node2D root = Fx.Root(front, Vector2.Zero, "P3SeekEdge");
 		root.TopLevel = true;
 		root.GlobalPosition = Vector2.Zero;
+		Node2D bladeRoot = Fx.Root(back, Vector2.Zero, "P3SeekBlade");
+		bladeRoot.TopLevel = true;
+		bladeRoot.GlobalPosition = Vector2.Zero;
 
-		// ── 0.00 时空错位 ──
-		Audio.Sfx.Clip("evt_eft_timespin_01", 0.75f, 0f, 0.8f);
-		ColorRect flick = new() { Size = size, Color = new Color(Cream, 0f), MouseFilter = Control.MouseFilterEnum.Ignore };
-		root.AddChild(flick);
-		Fx.Animate(flick, 0.3f, t =>
-		{
-			float time = t * 0.3f;
-			bool on = time < 0.05f || (time > 0.11f && time < 0.15f);
-			flick.Color = new Color(Cream, on ? 0.38f : 0f);
-		});
-		PersonaFx.ChargeGhost(caster, true);
-		Vector2 center = Makoto.Center(caster);
-		Node2D motes = Fx.Root(front, center, "P3SeekMotes");
-		Fx.Sparks(motes, Pal.Ice, 40, 120f, 380f, 0.9f, gravity: -40f);
-		Fx.FreeAfter(motes, 1.3);
+		// ── 剑的半透明本体（后层，在人物身后） ──
+		Vector2 tip = hilt + new Vector2(0f, -L);
+		Vector2 guardY = hilt + new Vector2(0f, -L * 0.2f);
+		float bw = L * 0.055f;
+		Vector2[] bladePoly = { tip, tip + new Vector2(bw, L * 0.12f), guardY + new Vector2(bw, 0f), guardY + new Vector2(-bw, 0f), tip + new Vector2(-bw, L * 0.12f) };
+		Vector2[] guardPoly = { guardY + new Vector2(-L * 0.17f, -6f), guardY + new Vector2(L * 0.17f, -6f), guardY + new Vector2(L * 0.14f, 10f), guardY + new Vector2(-L * 0.14f, 10f) };
+		Vector2[] gripPoly = { guardY + new Vector2(-bw * 0.45f, 10f), guardY + new Vector2(bw * 0.45f, 10f), hilt + new Vector2(bw * 0.45f, 0f), hilt + new Vector2(-bw * 0.45f, 0f) };
+		Node2D ghost = new() { Modulate = new Color(1f, 1f, 1f, 0f) };
+		bladeRoot.AddChild(ghost);
+		ghost.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Position = (tip + hilt) / 2f, Scale = new Vector2(L * 0.35f, L * 1.1f) / Fx.SoftDot.GetWidth(), Modulate = new Color(Pal.Cyan, 0.45f) });
+		Fx.Poly(ghost, bladePoly, new Color(0.55f, 0.85f, 1f, 0.35f), additive: true);
+		Fx.Poly(ghost, guardPoly, new Color(0.7f, 0.9f, 1f, 0.5f), additive: true);
+		Fx.Poly(ghost, gripPoly, new Color(0.5f, 0.75f, 1f, 0.4f), additive: true);
+		Fx.Line(ghost, new[] { bladePoly[0], bladePoly[1], bladePoly[2], bladePoly[3], bladePoly[4], bladePoly[0] }, new Color(1f, 1f, 1f, 0.85f), 2f);
+		Fx.Line(ghost, new[] { tip + new Vector2(0f, 8f), guardY }, new Color(1f, 1f, 1f, 0.5f), 1.5f);   // 剑脊
+		Polygon2D sweep = Fx.Poly(ghost, new[] { new Vector2(-bw * 1.4f, -8f), new Vector2(bw * 1.4f, -8f), new Vector2(bw * 1.4f, 8f), new Vector2(-bw * 1.4f, 8f) }, new Color(1f, 1f, 1f, 0.9f), additive: true);
+		Node2D guardRing = new() { Position = guardY };
+		ghost.AddChild(guardRing);
+		Fx.StrokeClosed(guardRing, Fx.Circle(L * 0.12f, 48, 0.35f), new Color(Pal.Ice, 0.8f), 2f);
 
-		// ── 0.45 测量 + 锁定 ──
-		Node2D net = new();
-		root.AddChild(net);
-		float diag = size.Length();
-		var lines = new List<(Vector2 A, Vector2 B, float At, float W)>();
-		int n = targets.Length;
-		float gap = n > 0 ? Mathf.Min(0.2f, 0.7f / n) : 0.2f;
-		for (int i = 0; i < n; i++)
+		// ── 碎片 ──
+		const int count = 30;
+		var shards = new List<Shard>();
+		for (int i = 0; i < count; i++)
 		{
-			Vector2 c = targets[i];
-			float at = 0.45f + gap * i;
-			float a1 = Fx.Rand(0.3f, 0.6f), a2 = -Fx.Rand(0.3f, 0.6f) + Mathf.Pi;
-			lines.Add((c - Vector2.Right.Rotated(a1) * diag, c + Vector2.Right.Rotated(a1) * diag, at, Fx.Rand(3f, 5f)));
-			lines.Add((c - Vector2.Right.Rotated(a2) * diag, c + Vector2.Right.Rotated(a2) * diag, at + 0.05f, Fx.Rand(3f, 5f)));
-			int idx = i;
-			Fx.After(root, at + 0.14f, "seek lock", () =>
+			float sz = Fx.Rand(10f, 22f);
+			Color col = i % 3 == 0 ? Pal.White : i % 3 == 1 ? Pal.Ice : new Color(0.55f, 0.85f, 1f);
+			Polygon2D p = Fx.Poly(root, new[] { new Vector2(0f, -sz), new Vector2(sz * 0.55f, sz * 0.5f), new Vector2(-sz * 0.6f, sz * 0.35f) }, col, additive: true);
+			p.Modulate = new Color(1f, 1f, 1f, 0f);
+			Line2D trail = new() { Width = sz * 0.45f, Material = Fx.Additive, DefaultColor = new Color(Pal.Cyan, 0f), Points = new[] { Vector2.Zero, Vector2.Zero } };
+			root.AddChild(trail);
+			root.MoveChild(trail, 0);
+			// 剑上的位置：80% 在剑身（越往剑尖越窄），20% 在护手 / 剑柄
+			Vector2 onBlade;
+			if (i < count * 0.8f)
 			{
-				TargetMark(front, c, idx);
-			});
-		}
-		// 补几条穿过敌人之间的线，织成网
-		for (int k = 0; k < 3 && n > 0; k++)
-		{
-			Vector2 p = targets[k % n] + new Vector2(Fx.Rand(-180f, 180f), Fx.Rand(-120f, 120f));
-			float ang = Fx.Rand(-0.25f, 0.25f) + (k == 1 ? Mathf.Pi / 2f - 0.2f : 0f);
-			lines.Add((p - Vector2.Right.Rotated(ang) * diag, p + Vector2.Right.Rotated(ang) * diag, 0.5f + 0.12f * k + gap * n * 0.5f, Fx.Rand(2f, 3.5f)));
-		}
-		foreach (var (a, b, at, w) in lines)
-		{
-			Fx.After(root, at, "seek line", () =>
+				float k = Fx.Rand(0f, 1f);
+				Vector2 axis = guardY.Lerp(tip + new Vector2(0f, L * 0.06f), k);
+				onBlade = axis + new Vector2(Fx.Rand(-1f, 1f) * bw * (1f - 0.7f * k), 0f);
+			}
+			else
 			{
-				Line2D edge = new()
-				{
-					Width = w + 3f, DefaultColor = new Color(1f, 1f, 1f, 0.35f), Texture = Dash,
-					TextureMode = Line2D.LineTextureMode.Tile, TextureRepeat = CanvasItem.TextureRepeatEnum.Enabled,
-					Points = new[] { a, a }
-				};
-				Line2D line = new()
-				{
-					Width = w, DefaultColor = new Color(0.06f, 0.05f, 0.05f, 0.9f), Texture = Dash,
-					TextureMode = Line2D.LineTextureMode.Tile, TextureRepeat = CanvasItem.TextureRepeatEnum.Enabled,
-					Points = new[] { a, a }
-				};
-				net.AddChild(edge);
-				net.AddChild(line);
-				Fx.Animate(line, 0.16f, t =>
-				{
-					Vector2 head = a.Lerp(b, Ease.OutExpo(t));
-					line.Points = new[] { a, head };
-					edge.Points = new[] { a, head };
-				});
+				onBlade = i % 2 == 0 ? guardY + new Vector2(Fx.Rand(-L * 0.15f, L * 0.15f), Fx.Rand(-4f, 8f)) : guardY.Lerp(hilt, Fx.Rand(0.15f, 0.9f));
+			}
+			int group = i % n;
+			// 小晶剑上的位置：剑尖朝下的细长菱形
+			float s = Fx.Rand(0f, 1f);
+			Vector2 onSword = swordAt[group] + new Vector2(Fx.Rand(-1f, 1f) * 12f * (1f - Mathf.Abs(s - 0.35f)), -60f + 120f * s);
+			shards.Add(new Shard
+			{
+				Poly = p, Trail = trail, Group = group,
+				Ring = center + Vector2.Right.Rotated(Fx.Rand(0f, Mathf.Tau)) * Fx.Rand(260f, 360f),
+				Blade = onBlade, Sword = onSword,
+				Delay = Fx.Rand(0f, 0.15f), Phase = Fx.Rand(0f, Mathf.Tau), Radius = Fx.Rand(150f, 230f), Angle = Mathf.Tau * i / count,
 			});
 		}
 
-		// ── 1.30 习得 ──
-		Fx.After(root, 1.3, "seek learn", () => SkillChange(front, size));
-
-		// ── 1.90 余韵 ──
-		Fx.Animate(net, 2.4f, t =>
+		// 每片碎片在时刻 tt 的位置（解析式：残光拖尾直接取过去几个时刻的位置）
+		const float formEnd = 0.5f, burstAt = 0.75f, seekAt = 1.1f, seekLen = 0.38f, groupGap = 0.06f;
+		Vector2 Orbit(Shard sh, float tt)
 		{
-			float time = t * 2.4f;
-			net.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(Mathf.Clamp((time - 1.9f) / 0.5f, 0f, 1f)));
-		});
-		Fx.FreeAfter(root, 2.45);
-	}
-
-	/// <summary>锁定一个敌人：交叉点闪一下 + 细圈收缩 + 头顶黄色菱形「?」+ 锁定声（音高逐个升高）。</summary>
-	private static void TargetMark(Control front, Vector2 c, int index)
-	{
-		Audio.Sfx.Clip("lock_tick", 0.8f, 0f, 1f + 0.08f * index);
-		P3Fx.Flash(front, c, Pal.Ice, 120f, 0.15f);
-		Node2D ring = Fx.Root(front, c, "P3SeekRing");
-		Fx.StrokeClosed(ring, Fx.Circle(46f, 48), new Color(1f, 1f, 1f, 0.9f), 2f);
-		Fx.StrokeClosed(ring, Fx.Circle(38f, 48), new Color(0.06f, 0.05f, 0.05f, 0.8f), 1.5f, additive: false);
-		Fx.Animate(ring, 0.3f, t =>
+			// 碎片均匀分布在一圈椭圆轨道上（每片自己的角度），从剑上的位置甩出去、绕着结城理转
+			float u = Mathf.Clamp((tt - burstAt) / (seekAt - burstAt), 0f, 1f);
+			float a = sh.Angle + 2.4f * Ease.InOutCubic(u);
+			Vector2 ringPos = center + new Vector2(Mathf.Cos(a), Mathf.Sin(a) * 0.6f) * (sh.Radius + 50f * Mathf.Sin(Mathf.Pi * u));
+			return sh.Blade.Lerp(ringPos, Ease.OutCubic(Mathf.Clamp(u * 1.6f, 0f, 1f)));
+		}
+		Vector2 PosAt(Shard sh, float tt)
 		{
-			ring.Scale = Vector2.One * Mathf.Lerp(2.2f, 1f, Ease.OutExpo(t));
-			ring.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(Mathf.Clamp((t - 0.5f) / 0.5f, 0f, 1f)));
-		});
-		Fx.FreeAfter(ring, 0.32);
-		Uniq.TargetDiamond(front, c + new Vector2(0f, -150f), 1.3f - 0.1f * index);
-	}
+			if (tt < formEnd + sh.Delay * 0.3f)
+			{
+				float u = Mathf.Clamp((tt - sh.Delay) / (formEnd - 0.15f), 0f, 1f);
+				return sh.Ring.Lerp(sh.Blade, Ease.OutCubic(u));
+			}
+			if (tt < burstAt)
+			{
+				return sh.Blade;
+			}
+			if (tt < seekAt)
+			{
+				return Orbit(sh, tt);
+			}
+			float st = seekAt + groupGap * sh.Group;
+			float v = Mathf.Clamp((tt - st) / seekLen, 0f, 1f);
+			Vector2 from = Orbit(sh, seekAt);
+			Vector2 ctrl = (from + sh.Sword) / 2f + new Vector2(0f, -220f - 60f * Mathf.Sin(sh.Phase));
+			float e = Ease.InOutCubic(v);
+			float w = 1f - e;
+			Vector2 p = w * w * from + 2f * w * e * ctrl + e * e * sh.Sword;
+			if (v >= 1f)
+			{
+				p += new Vector2(0f, 6f * Mathf.Sin((tt - st - seekLen) * 3f + sh.Group));   // 悬停浮动
+			}
+			return p;
+		}
 
-	/// <summary>P3R 技能变更面板：THANATOS 名下「BRAVE BLADE 君王之刃」划掉 → 翻成「VORPAL BLADE 空间杀法」。</summary>
-	private static void SkillChange(Control front, Vector2 size)
-	{
-		Audio.Sfx.Clip("skill_change", 0.9f);
-		Vector2 home = new(size.X * 0.03f, size.Y * 0.13f);
-		Node2D root = Fx.Root(front, home, "P3SkillChange");
-		root.TopLevel = true;
-		const float w = 440f, h = 132f, slant = 22f;
-		// 底板：深蓝斜切 + 青色顶边 + 右侧青色斜块
-		Fx.Poly(root, new[] { new Vector2(0f, 0f), new Vector2(w, 0f), new Vector2(w - slant, h), new Vector2(-slant, h) }, new Color(0.03f, 0.1f, 0.38f, 0.94f));
-		Fx.Poly(root, new[] { new Vector2(0f, 0f), new Vector2(w, 0f), new Vector2(w - 1.5f, 4f), new Vector2(-1.5f, 4f) }, Pal.Cyan, additive: true);
-		Fx.Poly(root, new[] { new Vector2(w - 30f, 0f), new Vector2(w + 12f, 0f), new Vector2(w - 10f, h), new Vector2(w - 52f, h) }, new Color(Pal.Cyan, 0.9f));
-		Typo.Text(root, "PERSONA  ▸  THANATOS", Typo.LatinItalic, 18, Pal.Cyan, new Vector2(16f, 8f), outline: 2, outlineColor: new Color(0.02f, 0.05f, 0.18f));
-		Fx.Line(root, new[] { new Vector2(14f, 34f), new Vector2(w - 50f, 34f) }, new Color(1f, 1f, 1f, 0.3f), 1f);
-		// 旧技能
-		Node2D old = new() { Position = new Vector2(16f, 40f) };
-		root.AddChild(old);
-		Typo.Text(old, "BRAVE BLADE", Typo.LatinItalic, 30, Pal.White, Vector2.Zero, outline: 2, outlineColor: new Color(0.02f, 0.05f, 0.18f));
-		Typo.Text(old, "君王之刃", Typo.CjkHeavy, 22, new Color(Pal.Ice, 0.9f), new Vector2(200f, 6f));
-		Line2D strike = Fx.Line(old, new[] { new Vector2(-4f, 24f), new Vector2(-4f, 24f) }, new Color(1f, 0.25f, 0.35f, 0.95f), 4f, additive: false);
-		// 新技能
-		Node2D neu = new() { Position = new Vector2(16f, 82f), Modulate = new Color(1f, 1f, 1f, 0f) };
-		root.AddChild(neu);
-		Typo.Text(neu, "VORPAL BLADE", Typo.LatinItalic, 32, Pal.White, Vector2.Zero, outline: 3, outlineColor: new Color(0.05f, 0.25f, 0.7f));
-		Typo.Text(neu, "空间杀法", Typo.CjkHeavy, 24, new Color(1f, 0.92f, 0.6f), new Vector2(214f, 6f));
-		Node2D tag = new() { Position = new Vector2(330f, -6f), Rotation = -0.15f };
-		neu.AddChild(tag);
-		Fx.Poly(tag, new[] { new Vector2(0f, 0f), new Vector2(54f, 0f), new Vector2(48f, 24f), new Vector2(-6f, 24f) }, new Color(1f, 0.85f, 0.25f));
-		Typo.Text(tag, "NEW", Typo.LatinItalic, 18, new Color(0.08f, 0.06f, 0.02f), new Vector2(6f, 0f));
-		Polygon2D shine = Fx.Poly(neu, new[] { new Vector2(0f, -4f), new Vector2(30f, -4f), new Vector2(18f, 44f), new Vector2(-12f, 44f) }, new Color(1f, 1f, 1f, 0.6f), additive: true);
+		Audio.Sfx.Clip("Snd_FX_Btl_PersonaAura_00", 0.7f);
+		Audio.Sfx.Clip("ShuffleTime_ArcanaBurst", 0.8f, burstAt);
+		Audio.Sfx.Clip("Theurgia_Up", 0.55f, seekAt);
+		for (int g = 0; g < n; g++)
+		{
+			Audio.Sfx.Clip("lock_tick", 0.75f, seekAt + groupGap * g + seekLen, 1f + 0.08f * g);
+		}
 
-		const float total = 1.5f;
+		const float total = 2.6f;
+		const float fadeAt = 2.25f;
+		bool burst = false;
+		var landed = new bool[n];
 		Fx.Animate(root, total, t =>
 		{
 			float time = t * total;
-			float inn = Ease.OutExpo(Mathf.Clamp(time / 0.22f, 0f, 1f));
-			float outT = Ease.InCubic(Mathf.Clamp((time - 1.25f) / 0.25f, 0f, 1f));
-			root.GlobalPosition = home + new Vector2(-w * 1.2f * (1f - inn) - w * 1.2f * outT, 0f);
-			// 0.25 划线
-			float st = Ease.OutCubic(Mathf.Clamp((time - 0.25f) / 0.15f, 0f, 1f));
-			strike.Points = new[] { new Vector2(-4f, 26f), new Vector2(-4f + 300f * st, 12f) };
-			old.Modulate = new Color(1f, 1f, 1f, 1f - 0.6f * Mathf.Clamp((time - 0.35f) / 0.15f, 0f, 1f));
-			// 0.42 新技能翻入（纵向翻转 + 扫光）
-			float flip = Mathf.Clamp((time - 0.42f) / 0.16f, 0f, 1f);
-			neu.Modulate = new Color(1f, 1f, 1f, flip);
-			neu.Scale = new Vector2(1f, Ease.OutBack(flip));
-			float sw = Mathf.Clamp((time - 0.55f) / 0.35f, 0f, 1f);
-			shine.Position = new Vector2(Mathf.Lerp(-20f, 360f, Ease.InOutCubic(sw)), 0f);
-			shine.Modulate = new Color(1f, 1f, 1f, sw > 0f && sw < 1f ? 1f : 0f);
-			tag.Scale = Vector2.One * Ease.OutBack(Mathf.Clamp((time - 0.6f) / 0.15f, 0f, 1f));
+			// 剑的本体
+			float show = Mathf.Clamp((time - 0.35f) / 0.15f, 0f, 1f);
+			float gone = Mathf.Clamp((time - burstAt) / 0.08f, 0f, 1f);
+			ghost.Modulate = new Color(1f, 1f, 1f, show * (1f - gone) * (0.85f + 0.15f * Mathf.Sin(time * 14f)));
+			float sw = Mathf.Clamp((time - 0.5f) / 0.22f, 0f, 1f);
+			sweep.Position = hilt.Lerp(tip, Ease.InOutCubic(sw));
+			sweep.Modulate = new Color(1f, 1f, 1f, sw > 0f && sw < 1f ? 1f : 0f);
+			guardRing.Scale = Vector2.One * (0.6f + 0.6f * Ease.OutExpo(Mathf.Clamp((time - 0.5f) / 0.25f, 0f, 1f)));
+			guardRing.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((time - 0.5f) / 0.05f, 0f, 1f) * (1f - gone));
+			if (!burst && time >= burstAt)
+			{
+				burst = true;
+				P3Fx.Flash(back, (tip + hilt) / 2f, Pal.Ice, L * 0.9f, 0.25f);
+				P3Fx.Flash(front, center, Pal.White, body * 0.6f, 0.15f);
+				NGame.Instance?.ScreenShake(ShakeStrength.Weak, ShakeDuration.Short);
+			}
+			float vanish = Mathf.Clamp((time - fadeAt - 0.12f) / 0.25f, 0f, 1f);
+			foreach (Shard sh in shards)
+			{
+				Vector2 p = PosAt(sh, time);
+				sh.Poly.Position = p;
+				Vector2 prev = PosAt(sh, time - 0.03f);
+				sh.Poly.Rotation = (p - prev).LengthSquared() > 1f ? (p - prev).Angle() + Mathf.Pi / 2f : sh.Phase + time * 0.5f;
+				float vis = Mathf.Clamp((time - sh.Delay) / 0.08f, 0f, 1f);
+				float flare = time >= fadeAt && time < fadeAt + 0.12f ? 1.6f : 1f;
+				sh.Poly.Modulate = new Color(flare, flare, flare, vis * (1f - vanish));
+				bool moving = time > burstAt && time < seekAt + groupGap * sh.Group + seekLen;
+				if (moving)
+				{
+					sh.Trail.Points = new[] { PosAt(sh, time - 0.12f), PosAt(sh, time - 0.06f), p };
+					sh.Trail.DefaultColor = new Color(0.6f, 0.9f, 1f, 0.55f);
+				}
+				else
+				{
+					sh.Trail.DefaultColor = new Color(Pal.Cyan, 0f);
+				}
+			}
+			for (int g = 0; g < n; g++)
+			{
+				if (!landed[g] && time >= seekAt + groupGap * g + seekLen)
+				{
+					landed[g] = true;
+					Landed(front, swordAt[g]);
+				}
+			}
+		});
+		Fx.After(root, seekAt + 0.1, "seek banner", () => Uniq.SkillBanner(front, "空间杀法", "VORPAL BLADE", 1.1f));
+		Fx.After(root, fadeAt, "seek swords flash", () =>
+		{
+			foreach (Vector2 a in swordAt)
+			{
+				P3Fx.Flash(front, a, Pal.Ice, 150f, 0.2f);
+				Node2D motes = Fx.Root(front, a, "P3SeekMotes");
+				Fx.Sparks(motes, Pal.Ice, 18, 60f, 200f, 0.6f, gravity: -60f);
+				Fx.FreeAfter(motes, 0.9);
+			}
 		});
 		Fx.FreeAfter(root, total + 0.05f);
-		Fx.After(root, 0.42, "skill new flash", () => P3Fx.Flash(front, home + new Vector2(180f, 100f), Pal.Ice, 260f, 0.2f));
+		Fx.FreeAfter(bladeRoot, total + 0.05f);
+	}
+
+	/// <summary>一股碎片在敌人头顶拼成小晶剑的那一刻：剑形的淡光底 + 闪光 + 收缩细圈。</summary>
+	private static void Landed(Control front, Vector2 at)
+	{
+		P3Fx.Flash(front, at, Pal.Ice, 170f, 0.18f);
+		Node2D root = Fx.Root(front, at, "P3SeekSword");
+		Fx.Poly(root, new[] { new Vector2(0f, 72f), new Vector2(14f, -40f), new Vector2(0f, -62f), new Vector2(-14f, -40f) }, new Color(0.6f, 0.88f, 1f, 0.35f), additive: true);
+		Fx.Poly(root, new[] { new Vector2(-34f, -44f), new Vector2(34f, -44f), new Vector2(28f, -36f), new Vector2(-28f, -36f) }, new Color(1f, 1f, 1f, 0.6f), additive: true);
+		Node2D ring = new();
+		root.AddChild(ring);
+		Fx.StrokeClosed(ring, Fx.Circle(40f, 48, 0.4f), new Color(1f, 1f, 1f, 0.85f), 2f);
+		ring.Position = new Vector2(0f, 76f);
+		const float life = 0.95f;
+		Fx.Animate(root, life, t =>
+		{
+			float time = t * life;
+			ring.Scale = Vector2.One * Mathf.Lerp(2.2f, 1f, Ease.OutExpo(Mathf.Clamp(time / 0.3f, 0f, 1f)));
+			ring.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp((time - 0.3f) / 0.3f, 0f, 1f));
+			root.Position = at + new Vector2(0f, 6f * Mathf.Sin(time * 3f));
+			root.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.1f, 0f, 1f) * (1f - Mathf.Clamp((time - 0.7f) / 0.25f, 0f, 1f)));
+		});
+		Fx.FreeAfter(root, life + 0.05f);
 	}
 }
