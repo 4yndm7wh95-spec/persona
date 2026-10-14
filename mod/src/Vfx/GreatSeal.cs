@@ -101,6 +101,55 @@ public static class GreatSeal
 		}
 	}
 
+	/// <summary>
+	/// v0.14.25（用户：人物和背景不在一个图层，光影没有落到人物身上，也不像真的站在地板上）：
+	/// 人物（结城理和建筑师）整体染上影时间的月光绿、压暗一点；身后一团月光背光（随月光呼吸）；
+	/// 脚下接触阴影（深色压扁椭圆 + 更小更深的核心）；湿石板上一道竖向的绿色倒影光。都画在背景层（人物身后）。
+	/// 返回背光精灵和基础透明度，供呼吸动画用。
+	/// </summary>
+	private static List<(Sprite2D, float)> Grounding(Control root, NCombatRoom room, Vector2 moonAt, float dotSize)
+	{
+		var lit = new List<(Sprite2D, float)>();
+		foreach (NCreature c in room.CreatureNodes)
+		{
+			if (!GodotObject.IsInstanceValid(c))
+			{
+				continue;
+			}
+			c.Visuals.Modulate = new Color(0.8f, 0.93f, 0.84f);
+			Vector2 feet = c.GetBottomOfHitbox();
+			float h = Mathf.Max(200f, (feet.Y - c.VfxSpawnPosition.Y) * 2f);
+			// 月光背光：偏向月亮一侧的竖长柔光
+			Vector2 toMoon = (moonAt - feet).Normalized();
+			Sprite2D back = new()
+			{
+				Texture = Fx.SoftDot, Material = Fx.Additive, Position = feet + new Vector2(toMoon.X * 30f, -h * 0.5f),
+				Scale = new Vector2(h * 0.75f, h * 1.25f) / dotSize, Modulate = new Color(Moon, 0.16f)
+			};
+			root.AddChild(back);
+			lit.Add((back, 0.16f));
+			// 湿地面倒影：脚下往下拖一道淡绿竖光
+			Sprite2D refl = new()
+			{
+				Texture = Fx.SoftDot, Material = Fx.Additive, Position = feet + new Vector2(0f, h * 0.18f),
+				Scale = new Vector2(h * 0.32f, h * 0.5f) / dotSize, Modulate = new Color(0.55f, 0.95f, 0.65f, 0.1f)
+			};
+			root.AddChild(refl);
+			// 接触阴影：外圈淡、核心深
+			root.AddChild(new Sprite2D
+			{
+				Texture = Fx.SoftDot, Position = feet + new Vector2(0f, 4f),
+				Scale = new Vector2(h * 0.62f, h * 0.11f) / dotSize, Modulate = new Color(0f, 0.03f, 0.01f, 0.6f)
+			});
+			root.AddChild(new Sprite2D
+			{
+				Texture = Fx.SoftDot, Position = feet + new Vector2(0f, 2f),
+				Scale = new Vector2(h * 0.3f, h * 0.05f) / dotSize, Modulate = new Color(0f, 0.02f, 0f, 0.75f)
+			});
+		}
+		return lit;
+	}
+
 	public static void Room(NCombatRoom room)
 	{
 		GD.Print($"{ModEntry.Tag} architect room: {room.GetPath()}");
@@ -270,12 +319,17 @@ public static class GreatSeal
 		// 影时间暗绿调 + 四周压暗
 		ColorRect tint = new() { Size = new Vector2(W, H), Position = new Vector2(-margin, -margin), Color = new Color(0.02f, 0.12f, 0.06f, 0.18f), MouseFilter = Control.MouseFilterEnum.Ignore };
 		root.AddChild(tint);
+		var lit = Grounding(root, room, moonAt, dotSize);
 		ulong start = Time.GetTicksMsec();
 		const float loop = 60f;
 		Fx.Animate(root, loop, _ =>
 		{
 			float time = (Time.GetTicksMsec() - start) / 1000f;
 			float breath = 0.5f + 0.5f * Mathf.Sin(time * 0.9f);
+			foreach ((Sprite2D back, float a0) in lit)
+			{
+				back.Modulate = new Color(back.Modulate, a0 * (0.85f + 0.15f * breath));
+			}
 			halo.Scale = Vector2.One * (moonR * 3.4f / dotSize) * (1f + 0.05f * breath);
 			halo.Modulate = new Color(Moon, 0.28f + 0.1f * breath);
 			core.Scale = Vector2.One * (moonR * 2.1f / dotSize);
