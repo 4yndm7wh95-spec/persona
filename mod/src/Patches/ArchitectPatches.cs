@@ -53,13 +53,28 @@ public static class ArchitectRoomPatch
 		{
 			return;
 		}
-		Callable.From(() => ModEntry.Safe("architect room", () =>
+		void Apply() => ModEntry.Safe("architect room", () =>
 		{
-			if (NCombatRoom.Instance is NCombatRoom room && GodotObject.IsInstanceValid(room))
+			if (NCombatRoom.Instance is not NCombatRoom room || !GodotObject.IsInstanceValid(room))
 			{
-				GreatSeal.Room(room);
+				return;
 			}
-		})).CallDeferred();
+			// 只在建筑师确实在这个房间里时才盖背景（补的几次可能落在玩家已经离开之后）
+			if (Traverse.Create(__instance).Property("ArchitectCreature").GetValue() is Creature c && room.GetCreatureNode(c) == null)
+			{
+				return;
+			}
+			GreatSeal.Room(room);
+		});
+		Callable.From(Apply).CallDeferred();
+		// 正式流程里房间场景 / 原版背景可能稍后才建好：再补几次（Room 是幂等的，已加过就只把它挪回最上层）
+		if (Engine.GetMainLoop() is SceneTree tree)
+		{
+			foreach (double at in new[] { 0.3, 1.0, 2.5 })
+			{
+				tree.CreateTimer(at).Timeout += Apply;
+			}
+		}
 	}
 }
 

@@ -76,7 +76,13 @@ public static class GreatSeal
 		}
 		// v14 新背景（Codex 按站位要求重画：站人线 y=740/1152）优先；没有就用 v13 的图（平台前沿 y=745/1024）
 		Texture2D? v2 = Tex("tartarus_top_v2");
-		if (bg.GetNodeOrNull("P3TartarusTop") != null || (v2 ?? Tex("tartarus_top")) is not Texture2D tex)
+		if (bg.GetNodeOrNull<Control>("P3TartarusTop") is Control existing)
+		{
+			// v0.14.16（用户：正式流程里建筑师房间还是原版背景）：原版背景可能比我们晚加进同一个容器、盖在上面 —— 每次都挪回最上层
+			bg.MoveChild(existing, bg.GetChildCount() - 1);
+			return;
+		}
+		if ((v2 ?? Tex("tartarus_top")) is not Texture2D tex)
 		{
 			return;
 		}
@@ -84,6 +90,13 @@ public static class GreatSeal
 		const float margin = 60f;                                   // 震屏时不露边
 		Control root = new() { Name = "P3TartarusTop", MouseFilter = Control.MouseFilterEnum.Ignore };
 		bg.AddChild(root);
+		bg.ChildEnteredTree += n =>
+		{
+			if (n != root && GodotObject.IsInstanceValid(root))
+			{
+				Callable.From(() => { if (GodotObject.IsInstanceValid(root) && root.GetParent() == bg) bg.MoveChild(root, bg.GetChildCount() - 1); }).CallDeferred();
+			}
+		};
 		Transform2D gt = bg.GetGlobalTransform();
 		root.Scale = new Vector2(1f / gt.Scale.X, 1f / gt.Scale.Y);
 		root.GlobalPosition = Vector2.Zero;
