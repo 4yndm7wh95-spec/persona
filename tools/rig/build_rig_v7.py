@@ -54,7 +54,7 @@ HAVE_LOW = (ROOT / "art/v12/transparent/focus_low_a.png").exists()
 # 只用于结局过场（GreatSeal.PointSky 播 point_sky_in → point_sky_loop），不是战斗动画；帧不齐就不建
 PT = ROOT / "art/v15/point"
 POINT = ["point_1_hip", "point_2_waist", "point_3_chest", "point_4_chin", "point_5_brow", "point_6_over", "point_7_diag", "point_8_sky"]
-HAVE_POINT = all((PT / f"{n}.png").exists() for n in POINT)
+HAVE_POINT = all((PT / f"{n}_wip.png").exists() for n in POINT)        # Codex 交付的文件名带 _wip
 # 帧时刻照原版视频（右手从身侧经腰、胸、下巴、额头上方，再斜着扫上去直指天空，约 1.9s；节奏是松弛的，不赶）
 POINT_T = [0.0, 0.33, 0.67, 1.0, 1.33, 1.5, 1.67, 1.9]
 POINT_DUR = 2.4
@@ -100,7 +100,9 @@ POSE_T = {"idle": (1.0, 0.0), "focus_mid": (0.95, 0.0), "focus": (0.95, 0.0), "a
           "hurt_recover": ("via", "hurt", (1.0, -1.0, -2.2)),
           # 第六批：由 focus_mid 编辑出来，按鞋配准（tools/rig/v7_register.py）：缩放 1.000、位移不到 1px
           "focus_low": ("via", "focus_mid", (1.0, -0.4, -0.6)),
-          **{n: (1.0, 0.0) for n in POINT},
+          # 1~7 帧由 idle_a 编辑出来，配准误差 <1px；第 8 帧是用户选定的那张（人物大 10.8%、偏移），按头和鞋配准
+          **{n: (1.0, 0.0) for n in POINT[:-1]},
+          "point_8_sky": ("via", "idle", (1.108, -52.8, -186.8)),
           "point_sky": ("via", "idle", (1.108, -52.8, -186.8))}
 
 
@@ -166,7 +168,7 @@ def sources():
         "v7_sword_recover": load(T / "sword_recover_a.png"),
         "v7_hurt_recover": load(T / "hurt_recover_a.png"),
         **({"v7_focus_low": load(T / "focus_low_a.png")} if HAVE_LOW else {}),
-        **({f"v7_{n}": load(PT / f"{n}.png") for n in POINT} if HAVE_POINT else {}),
+        **({f"v7_{n}": clean_alpha(load(PT / f"{n}_wip.png")) for n in POINT} if HAVE_POINT else {}),
         **({"v7_point_sky": clean_alpha(load(SKY1))} if HAVE_SKY1 else {}),
         "v7_awaken_peak": load(comp.POSES["awaken_peak"][0]),
         "v7_awaken_peak_eyeglow": load(C / "awaken_peak_eyeglow.png"),
@@ -624,6 +626,9 @@ class Builder:
                 # 溶解：新姿势在下面已经完全显示，旧姿势盖在上面从不透明淡到透明 —— 60 帧里每帧都在变，不会一下跳过去
                 if soft:
                     fade = max(min(0.09, nxt - t - 0.002), f * 0.5)
+                if p in POINT:                                        # 指天逐帧：相邻帧溶解 0.14s，抬手连贯
+                    fade = max(min(0.14, nxt - t - 0.002), f * 0.5)
+                    soft = True
                 if p == "point_sky":                                  # 单帧指天：拉长溶解，像手臂顺势抬起
                     fade = max(min(0.28, nxt - t - 0.002), f * 0.5)
                 a.att("v7_old", t, f"v7_{before}")
