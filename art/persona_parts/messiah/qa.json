@@ -1,0 +1,492 @@
+{
+  "canvas": [
+    600,
+    970
+  ],
+  "parts": 14,
+  "source_sha256": "0a8bd11ee14d31b1902d85e8aee82ad0478d6358f37a9dfe372756227c892282",
+  "rest_exact_clean": false,
+  "rest_mismatch_pixels": 2483,
+  "swing_joint_checks": [
+    {
+      "angle": -15,
+      "part": "spire",
+      "parent": "torso",
+      "pivot_pos": [
+        524,
+        610
+      ],
+      "overlap_pixels_near_pivot": 915
+    },
+    {
+      "angle": -15,
+      "part": "wing_left",
+      "parent": "torso",
+      "pivot_pos": [
+        443,
+        667
+      ],
+      "overlap_pixels_near_pivot": 1823
+    },
+    {
+      "angle": -15,
+      "part": "wing_right",
+      "parent": "torso",
+      "pivot_pos": [
+        532,
+        671
+      ],
+      "overlap_pixels_near_pivot": 1394
+    },
+    {
+      "angle": -15,
+      "part": "leg_left",
+      "parent": "torso",
+      "pivot_pos": [
+        457,
+        672
+      ],
+      "overlap_pixels_near_pivot": 1422
+    },
+    {
+      "angle": -15,
+      "part": "leg_right",
+      "parent": "torso",
+      "pivot_pos": [
+        515,
+        672
+      ],
+      "overlap_pixels_near_pivot": 835
+    },
+    {
+      "angle": -15,
+      "part": "head",
+      "parent": "torso",
+      "pivot_pos": [
+        497,
+        503
+      ],
+      "overlap_pixels_near_pivot": 2212
+    },
+    {
+      "angle": -15,
+      "part": "arm_raised",
+      "parent": "torso",
+      "pivot_pos": [
+        436,
+        534
+      ],
+      "overlap_pixels_near_pivot": 1821
+    },
+    {
+      "angle": -15,
+      "part": "arm_chain",
+      "parent": "torso",
+      "pivot_pos": [
+        557,
+        535
+      ],
+      "overlap_pixels_near_pivot": 897
+    },
+    {
+      "angle": -15,
+      "part": "chain",
+      "parent": "arm_chain",
+      "pivot_pos": [
+        686,
+        679
+      ],
+      "overlap_pixels_near_pivot": 184
+    },
+    {
+      "angle": -15,
+      "part": "coffin_1",
+      "parent": "chain",
+      "pivot_pos": [
+        697,
+        701
+      ],
+      "overlap_pixels_near_pivot": 369
+    },
+    {
+      "angle": -15,
+      "part": "coffin_2",
+      "parent": "chain",
+      "pivot_pos": [
+        743,
+        789
+      ],
+      "overlap_pixels_near_pivot": 331
+    },
+    {
+      "angle": -15,
+      "part": "coffin_3",
+      "parent": "chain",
+      "pivot_pos": [
+        782,
+        868
+      ],
+      "overlap_pixels_near_pivot": 327
+    },
+    {
+      "angle": -15,
+      "part": "coffin_4",
+      "parent": "chain",
+      "pivot_pos": [
+        826,
+        959
+      ],
+      "overlap_pixels_near_pivot": 282
+    },
+    {
+      "angle": 15,
+      "part": "spire",
+      "parent": "torso",
+      "pivot_pos": [
+        524,
+        610
+      ],
+      "overlap_pixels_near_pivot": 895
+    },
+    {
+      "angle": 15,
+      "part": "wing_left",
+      "parent": "torso",
+      "pivot_pos": [
+        443,
+        667
+      ],
+      "overlap_pixels_near_pivot": 1764
+    },
+    {
+      "angle": 15,
+      "part": "wing_right",
+      "parent": "torso",
+      "pivot_pos": [
+        532,
+        671
+      ],
+      "overlap_pixels_near_pivot": 1380
+    },
+    {
+      "angle": 15,
+      "part": "leg_left",
+      "parent": "torso",
+      "pivot_pos": [
+        457,
+        672
+      ],
+      "overlap_pixels_near_pivot": 1504
+    },
+    {
+      "angle": 15,
+      "part": "leg_right",
+      "parent": "torso",
+      "pivot_pos": [
+        515,
+        672
+      ],
+      "overlap_pixels_near_pivot": 829
+    },
+    {
+      "angle": 15,
+      "part": "head",
+      "parent": "torso",
+      "pivot_pos": [
+        497,
+        503
+      ],
+      "overlap_pixels_near_pivot": 2160
+    },
+    {
+      "angle": 15,
+      "part": "arm_raised",
+      "parent": "torso",
+      "pivot_pos": [
+        436,
+        534
+      ],
+      "overlap_pixels_near_pivot": 1652
+    },
+    {
+      "angle": 15,
+      "part": "arm_chain",
+      "parent": "torso",
+      "pivot_pos": [
+        557,
+        535
+      ],
+      "overlap_pixels_near_pivot": 950
+    },
+    {
+      "angle": 15,
+      "part": "chain",
+      "parent": "arm_chain",
+      "pivot_pos": [
+        597,
+        724
+      ],
+      "overlap_pixels_near_pivot": 182
+    },
+    {
+      "angle": 15,
+      "part": "coffin_1",
+      "parent": "chain",
+      "pivot_pos": [
+        582,
+        745
+      ],
+      "overlap_pixels_near_pivot": 324
+    },
+    {
+      "angle": 15,
+      "part": "coffin_2",
+      "parent": "chain",
+      "pivot_pos": [
+        530,
+        829
+      ],
+      "overlap_pixels_near_pivot": 306
+    },
+    {
+      "angle": 15,
+      "part": "coffin_3",
+      "parent": "chain",
+      "pivot_pos": [
+        480,
+        902
+      ],
+      "overlap_pixels_near_pivot": 291
+    },
+    {
+      "angle": 15,
+      "part": "coffin_4",
+      "parent": "chain",
+      "pivot_pos": [
+        424,
+        986
+      ],
+      "overlap_pixels_near_pivot": 257
+    }
+  ],
+  "opaque_source_pixel_mismatch": 0,
+  "mean_rgba_absolute_difference_clean": 0.0028144329896907217,
+  "strict_no_holes_certified": false,
+  "notes": [
+    "给定绘制顺序与右腿位于蓝色裙甲后方的源图遮挡关系冲突。保持静态源图优先，不能完整补出所有右大腿隐面。",
+    "部分阴影与轮廓交界的克隆面在±15度应力测试仍有细小碎边/纹理接缝，不能宣称已达到无空洞成品标准。"
+  ],
+  "part_validation": [
+    {
+      "file": "01_spire.png",
+      "size": [
+        600,
+        970
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        273,
+        11,
+        340,
+        443
+      ],
+      "transparent_pixels": 565812
+    },
+    {
+      "file": "02_wing_left.png",
+      "size": [
+        600,
+        970
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        19,
+        425,
+        253,
+        902
+      ],
+      "transparent_pixels": 566807
+    },
+    {
+      "file": "03_wing_right.png",
+      "size": [
+        600,
+        970
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        239,
+        429,
+        397,
+        953
+      ],
+      "transparent_pixels": 541664
+    },
+    {
+      "file": "04_leg_left.png",
+      "size": [
+        600,
+        970
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        206,
+        430,
+        272,
+        771
+      ],
+      "transparent_pixels": 569251
+    },
+    {
+      "file": "05_leg_right.png",
+      "size": [
+        600,
+        970
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        253,
+        430,
+        318,
+        818
+      ],
+      "transparent_pixels": 570937
+    },
+    {
+      "file": "06_torso.png",
+      "size": [
+        600,
+        970
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        190,
+        259,
+        368,
+        469
+      ],
+      "transparent_pixels": 561160
+    },
+    {
+      "file": "07_head.png",
+      "size": [
+        600,
+        970
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        237,
+        200,
+        333,
+        310
+      ],
+      "transparent_pixels": 574939
+    },
+    {
+      "file": "08_arm_raised.png",
+      "size": [
+        600,
+        970
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        177,
+        276,
+        303,
+        394
+      ],
+      "transparent_pixels": 576615
+    },
+    {
+      "file": "09_arm_chain.png",
+      "size": [
+        600,
+        970
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        323,
+        304,
+        437,
+        504
+      ],
+      "transparent_pixels": 574701
+    },
+    {
+      "file": "10_chain.png",
+      "size": [
+        600,
+        970
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        401,
+        487,
+        531,
+        931
+      ],
+      "transparent_pixels": 578083
+    },
+    {
+      "file": "11_coffin_1.png",
+      "size": [
+        600,
+        970
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        395,
+        495,
+        579,
+        585
+      ],
+      "transparent_pixels": 569417
+    },
+    {
+      "file": "12_coffin_2.png",
+      "size": [
+        600,
+        970
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        389,
+        591,
+        573,
+        684
+      ],
+      "transparent_pixels": 569275
+    },
+    {
+      "file": "13_coffin_3.png",
+      "size": [
+        600,
+        970
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        382,
+        680,
+        563,
+        767
+      ],
+      "transparent_pixels": 569912
+    },
+    {
+      "file": "14_coffin_4.png",
+      "size": [
+        600,
+        970
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        379,
+        779,
+        547,
+        875
+      ],
+      "transparent_pixels": 570536
+    }
+  ],
+  "current_source_sha256": "0a8bd11ee14d31b1902d85e8aee82ad0478d6358f37a9dfe372756227c892282"
+}

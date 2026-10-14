@@ -1,0 +1,148 @@
+{
+  "canvas": [
+    600,
+    970
+  ],
+  "parts": [
+    {
+      "name": "spire",
+      "file": "01_spire.png",
+      "z": 1,
+      "parent": "torso",
+      "pivot": [
+        304,
+        390
+      ]
+    },
+    {
+      "name": "wing_left",
+      "file": "02_wing_left.png",
+      "z": 2,
+      "parent": "torso",
+      "pivot": [
+        223,
+        447
+      ]
+    },
+    {
+      "name": "wing_right",
+      "file": "03_wing_right.png",
+      "z": 3,
+      "parent": "torso",
+      "pivot": [
+        312,
+        451
+      ]
+    },
+    {
+      "name": "leg_left",
+      "file": "04_leg_left.png",
+      "z": 4,
+      "parent": "torso",
+      "pivot": [
+        237,
+        452
+      ]
+    },
+    {
+      "name": "leg_right",
+      "file": "05_leg_right.png",
+      "z": 5,
+      "parent": "torso",
+      "pivot": [
+        295,
+        452
+      ]
+    },
+    {
+      "name": "torso",
+      "file": "06_torso.png",
+      "z": 6,
+      "parent": null,
+      "pivot": [
+        277,
+        402
+      ]
+    },
+    {
+      "name": "head",
+      "file": "07_head.png",
+      "z": 7,
+      "parent": "torso",
+      "pivot": [
+        277,
+        283
+      ]
+    },
+    {
+      "name": "arm_raised",
+      "file": "08_arm_raised.png",
+      "z": 8,
+      "parent": "torso",
+      "pivot": [
+        216,
+        314
+      ]
+    },
+    {
+      "name": "arm_chain",
+      "file": "09_arm_chain.png",
+      "z": 9,
+      "parent": "torso",
+      "pivot": [
+        337,
+        315
+      ]
+    },
+    {
+      "name": "chain",
+      "file": "10_chain.png",
+      "z": 10,
+      "parent": "arm_chain",
+      "pivot": [
+        425,
+        488
+      ]
+    },
+    {
+      "name": "coffin_1",
+      "file": "11_coffin_1.png",
+      "z": 11,
+      "parent": "chain",
+      "pivot": [
+        423,
+        513
+      ]
+    },
+    {
+      "name": "coffin_2",
+      "file": "12_coffin_2.png",
+      "z": 12,
+      "parent": "chain",
+      "pivot": [
+        419,
+        612
+      ]
+    },
+    {
+      "name": "coffin_3",
+      "file": "13_coffin_3.png",
+      "z": 13,
+      "parent": "chain",
+      "pivot": [
+        413,
+        700
+      ]
+    },
+    {
+      "name": "coffin_4",
+      "file": "14_coffin_4.png",
+      "z": 14,
+      "parent": "chain",
+      "pivot": [
+        406,
+        801
+      ]
+    }
+  ]
+}
