@@ -221,11 +221,10 @@ public static class EvokerShot
 			return;
 		}
 		_hitStopActive = true;
-		double before = Engine.TimeScale;
-		Engine.TimeScale = 0.08;
+		P3Makoto.Core.TimeScale.HitStop(0.08);
 		tree.CreateTimer(realSeconds, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () =>
 		{
-			Engine.TimeScale = before;
+			P3Makoto.Core.TimeScale.HitStop(1.0);
 			_hitStopActive = false;
 		};
 	}

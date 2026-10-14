@@ -187,10 +187,10 @@ public static class Vorpal
 	{
 		if (on == _frozen) return;
 		_frozen = on;
-		Engine.TimeScale = on ? 0.02 : 1.0;
+		P3Makoto.Core.TimeScale.Freeze(on ? 0.02 : 1.0);
 		if (on && Engine.GetMainLoop() is SceneTree tree)
 		{
-			tree.CreateTimer(2.5, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () => { if (_frozen) { _frozen = false; Engine.TimeScale = 1.0; } };
+			tree.CreateTimer(2.5, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () => { if (_frozen) { _frozen = false; P3Makoto.Core.TimeScale.Freeze(1.0); } };
 		}
 	}
 
