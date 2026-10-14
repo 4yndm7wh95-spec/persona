@@ -38,41 +38,60 @@ public static class Personas
 
 
 	/// <summary>
-	/// Messiah 分件骨骼（v0.14.10，art/persona_parts/messiah：14 个零件 + 关节点，Codex 拆件）。
-	/// 零件按原画布 600×970 的坐标定位；每个零件绕自己的关节点转，子零件跟着父零件走（世界变换逐帧算），绘制顺序按 z 固定。
-	/// 动作都很小（±0.02~0.15 弧度）：拆件补画只保证小角度不露缝（右腿上端有遮挡缺口，几乎不动）。
+	/// Persona 分件骨骼（v0.14.10 Messiah、v0.14.11 Orpheus；零件由 Codex 从 P3R 渲染图拆出，art/persona_parts/*）。
+	/// 零件按原画布坐标定位；每个零件绕自己的关节点转，子零件跟着父零件走（逐帧算世界变换），绘制顺序按 z 固定。
+	/// 拆件的补画只保证小角度不露缝，所以所有动作都很小（≤0.15 弧度，Orpheus 的关节 ≤0.08）。
 	/// </summary>
-	public sealed class MessiahRig
+	public sealed class PartRig
 	{
-		private static readonly (string Name, string File, string? Parent, Vector2 Pivot, Vector2 Origin)[] Parts =
-		{
-			("spire", "01_spire", "torso", new(304, 390), new(273, 11)),
-			("wing_left", "02_wing_left", "torso", new(223, 447), new(19, 425)),
-			("wing_right", "03_wing_right", "torso", new(312, 451), new(239, 429)),
-			("leg_left", "04_leg_left", "torso", new(237, 452), new(206, 430)),
-			("leg_right", "05_leg_right", "torso", new(295, 452), new(253, 430)),
-			("torso", "06_torso", null, new(277, 402), new(190, 259)),
-			("head", "07_head", "torso", new(277, 283), new(237, 200)),
-			("arm_raised", "08_arm_raised", "torso", new(216, 314), new(177, 276)),
-			("arm_chain", "09_arm_chain", "torso", new(337, 315), new(323, 304)),
-			("chain", "10_chain", "arm_chain", new(425, 488), new(401, 487)),
-			("coffin_1", "11_coffin_1", "chain", new(423, 513), new(395, 495)),
-			("coffin_2", "12_coffin_2", "chain", new(419, 612), new(389, 591)),
-			("coffin_3", "13_coffin_3", "chain", new(413, 700), new(382, 680)),
-			("coffin_4", "14_coffin_4", "chain", new(406, 801), new(379, 779)),
-		};
-		private static readonly Vector2 Center = new(300f, 485f);
+		public readonly record struct Part(string Name, string File, string? Parent, Vector2 Pivot, Vector2 Origin);
 
+		public static readonly Part[] MessiahParts =
+		{
+			new("spire", "01_spire", "torso", new(304, 390), new(273, 11)),
+			new("wing_left", "02_wing_left", "torso", new(223, 447), new(19, 425)),
+			new("wing_right", "03_wing_right", "torso", new(312, 451), new(239, 429)),
+			new("leg_left", "04_leg_left", "torso", new(237, 452), new(206, 430)),
+			new("leg_right", "05_leg_right", "torso", new(295, 452), new(253, 430)),
+			new("torso", "06_torso", null, new(277, 402), new(190, 259)),
+			new("head", "07_head", "torso", new(277, 283), new(237, 200)),
+			new("arm_raised", "08_arm_raised", "torso", new(216, 314), new(177, 276)),
+			new("arm_chain", "09_arm_chain", "torso", new(337, 315), new(323, 304)),
+			new("chain", "10_chain", "arm_chain", new(425, 488), new(401, 487)),
+			new("coffin_1", "11_coffin_1", "chain", new(423, 513), new(395, 495)),
+			new("coffin_2", "12_coffin_2", "chain", new(419, 612), new(389, 591)),
+			new("coffin_3", "13_coffin_3", "chain", new(413, 700), new(382, 680)),
+			new("coffin_4", "14_coffin_4", "chain", new(406, 801), new(379, 779)),
+		};
+
+		public static readonly Part[] OrpheusParts =
+		{
+			new("lyre", "01_lyre", "torso", new(237, 218), new(204, 20)),
+			new("thigh_left", "02_thigh_left", "torso", new(130, 375), new(59, 334)),
+			new("shin_left", "03_shin_left", "thigh_left", new(79, 452), new(58, 427)),
+			new("thigh_right", "04_thigh_right", "torso", new(239, 391), new(183, 331)),
+			new("shin_right", "05_shin_right", "thigh_right", new(213, 498), new(122, 475)),
+			new("torso", "06_torso", null, new(182, 346), new(100, 157)),
+			new("head", "07_head", "torso", new(188, 180), new(139, 69)),
+			new("upperarm_left", "08_upperarm_left", "torso", new(119, 238), new(60, 215)),
+			new("forearm_left", "09_forearm_left", "upperarm_left", new(83, 307), new(20, 284)),
+			new("upperarm_right", "10_upperarm_right", "torso", new(265, 239), new(242, 216)),
+			new("forearm_right", "11_forearm_right", "upperarm_right", new(285, 333), new(270, 310)),
+		};
+
+		private Part[] _parts = null!;
+		private Vector2 _center;
 		public Node2D Root = null!;
 		private readonly Dictionary<string, Sprite2D> _sprites = new();
 		public readonly Dictionary<string, float> Angle = new();
 
-		public static MessiahRig? Build(Node2D parent, float scale)
+		/// <summary>folder：res://p3makoto/persona/{folder}/；canvas：原画布尺寸（零件以画布中心为原点摆放，和整张立绘 Sprite 对齐）。</summary>
+		public static PartRig? Build(Node2D parent, float scale, Part[] parts, string folder, Vector2 canvas)
 		{
-			MessiahRig r = new() { Root = new Node2D { Scale = Vector2.One * scale } };
-			foreach (var p in Parts)
+			PartRig r = new() { _parts = parts, _center = canvas / 2f, Root = new Node2D { Scale = Vector2.One * scale } };
+			foreach (Part p in parts)
 			{
-				string path = $"res://p3makoto/persona/messiah_parts/{p.File}.png";
+				string path = $"res://p3makoto/persona/{folder}/{p.File}.png";
 				if (!ResourceLoader.Exists(path))
 				{
 					return null;
@@ -97,23 +116,23 @@ public static class Personas
 				{
 					return w;
 				}
-				var p = System.Array.Find(Parts, x => x.Name == name);
+				Part p = System.Array.Find(_parts, x => x.Name == name);
 				Transform2D local = new Transform2D(0f, p.Pivot) * new Transform2D(Angle[name], Vector2.Zero) * new Transform2D(0f, -p.Pivot);
 				Transform2D res = p.Parent != null ? Get(p.Parent) * local : local;
 				world[name] = res;
 				return res;
 			}
-			foreach (var p in Parts)
+			foreach (Part p in _parts)
 			{
-				_sprites[p.Name].Transform = new Transform2D(0f, -Center) * Get(p.Name) * new Transform2D(0f, p.Origin);
+				_sprites[p.Name].Transform = new Transform2D(0f, -_center) * Get(p.Name) * new Transform2D(0f, p.Origin);
 			}
 		}
 
 		/// <summary>
-		/// 待机动作：头轻点、双臂呼吸、裙甲刃左右错相摆动、长刃微晃、锁链和四口棺材依次滞后摆动（像被风吹的吊坠）。
+		/// Messiah 待机：头轻点、双臂呼吸、裙甲刃左右错相摆动、长刃微晃、锁链和四口棺材依次滞后摆动（像被风吹的吊坠）。
 		/// open（0~1）= 张开：抬着的手放开、垂手外展、翼刃张开；fold（0~1）= 收拢上升时：翼刃和锁链收向身体。
 		/// </summary>
-		public void Idle(float time, float open = 0f, float fold = 0f)
+		public void MessiahIdle(float time, float open = 0f, float fold = 0f)
 		{
 			Angle["head"] = -0.03f + 0.025f * Mathf.Sin(time * 1.6f) - 0.06f * open;
 			Angle["arm_raised"] = 0.03f * Mathf.Sin(time * 1.9f + 0.5f) + 0.12f * open;
@@ -131,12 +150,33 @@ public static class Personas
 			}
 			Apply();
 		}
+
+		/// <summary>
+		/// Orpheus：fall（0~1，下落中）时四肢被风往上甩（手臂外张、小腿后摆），落定瞬间 land（0~1 衰减）四肢一沉回弹；
+		/// 悬浮时呼吸：头轻摆、竖琴随身体微晃、手臂和长腿像吊在空中一样慢慢摆。
+		/// </summary>
+		public void OrpheusIdle(float time, float fall, float land)
+		{
+			float sway = Mathf.Sin(time * 1.5f);
+			Angle["torso"] = 0.015f * Mathf.Sin(time * 1.2f);
+			Angle["head"] = 0.03f * Mathf.Sin(time * 1.4f + 0.6f) - 0.04f * fall;
+			Angle["lyre"] = 0.02f * Mathf.Sin(time * 1.1f + 1f);
+			Angle["upperarm_left"] = 0.05f * sway + 0.08f * fall - 0.05f * land;
+			Angle["forearm_left"] = 0.04f * Mathf.Sin(time * 1.5f - 0.6f) + 0.05f * fall;
+			Angle["upperarm_right"] = -0.05f * Mathf.Sin(time * 1.5f + 0.9f) - 0.08f * fall + 0.05f * land;
+			Angle["forearm_right"] = -0.04f * Mathf.Sin(time * 1.5f + 0.3f) - 0.05f * fall;
+			// 腿：两条长腿交叉处被遮挡的部分没有补全（模拟里转 0.01 弧度就露出切边），完全不动；动作全靠上半身
+			Angle["thigh_left"] = Angle["shin_left"] = Angle["thigh_right"] = Angle["shin_right"] = 0f;
+			Apply();
+		}
 	}
 
 	/// <summary>有分件就用分件骨骼代替整张立绘本体（辉光和白色剪影仍用整张图）。</summary>
-	private static MessiahRig? AttachRig(Node2D root, Sprite2D fig)
+	private static PartRig? AttachRig(Node2D root, Sprite2D fig, bool orpheus = false)
 	{
-		MessiahRig? rig = MessiahRig.Build(root, fig.Scale.X);
+		PartRig? rig = orpheus
+			? PartRig.Build(root, fig.Scale.X, PartRig.OrpheusParts, "orpheus_parts", new Vector2(386f, 858f))
+			: PartRig.Build(root, fig.Scale.X, PartRig.MessiahParts, "messiah_parts", new Vector2(600f, 970f));
 		if (rig == null)
 		{
 			return null;
@@ -185,6 +225,7 @@ public static class Personas
 		EqualizerBars(back, home + new Vector2(0f, height * 0.1f), height, 1.5f);
 
 		var (root, fig, glow, flash) = Figure(back, home, tex, height, Pal.Cyan);
+		PartRig? rig = AttachRig(root, fig, orpheus: true);
 		// 两道残影（下落时拖在上方）
 		List<Sprite2D> trails = new();
 		for (int i = 0; i < 2; i++)
@@ -227,6 +268,12 @@ public static class Personas
 			float land = time < drop ? 0f : Mathf.Max(0f, 1f - (time - drop) / 0.25f);
 			flash.Modulate = new Color(0.85f, 0.97f, 1f, Mathf.Max(land * 0.9f, rise * 0.8f));
 			fig.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.06f, 0f, 1f) * (1f - rise));
+			if (rig != null)
+			{
+				rig.Root.Modulate = fig.Modulate;
+				float landK = time < drop ? 0f : Mathf.Max(0f, 1f - (time - drop) / 0.35f);
+				rig.OrpheusIdle(time, 1f - d, landK * Mathf.Sin((time - drop) * 14f));
+			}
 			glow.Modulate = new Color(Pal.Cyan, (0.35f + 0.15f * Mathf.Sin(time * 5f)) * (1f - rise));
 			flash.Modulate = new Color(flash.Modulate, flash.Modulate.A * (1f - Mathf.Clamp((time - 1.3f) / 0.2f, 0f, 1f)));
 			if (!landed && time >= drop)
@@ -350,7 +397,7 @@ public static class Personas
 		P3Fx.LightPillar(back, new Vector2(home.X, feet.Y), Gold, height * 0.4f, height * 1.4f, 1.3f);
 		var (root, fig, glow, flash) = Figure(back, home, tex, height, Gold);
 		Node2D wings = Wings(root, height, Gold);
-		MessiahRig? rig = AttachRig(root, fig);
+		PartRig? rig = AttachRig(root, fig);
 		Audio.Sfx.Clip("Snd_FX_Btl_Summon_00", 0.8f);
 		const float total = 1.6f;
 		Fx.Animate(root, total, t =>
@@ -368,7 +415,7 @@ public static class Personas
 			if (rig != null)
 			{
 				rig.Root.Modulate = fig.Modulate;
-				rig.Idle(time, Mathf.Clamp((time - 0.3f) / 0.5f, 0f, 1f) * (1f - rise), rise);
+				rig.MessiahIdle(time, Mathf.Clamp((time - 0.3f) / 0.5f, 0f, 1f) * (1f - rise), rise);
 			}
 		});
 		Fx.After(root, 0.5, "messiah settle", () => Motes(back, root.GlobalPosition, height, Gold, 16, 1.0f));
@@ -427,7 +474,7 @@ public static class Personas
 		var (root, fig, glow, flash) = Figure(back, home, tex, height, Gold);
 		Node2D wings = Wings(root, height * 1.15f, Gold);
 		wings.Scale = Vector2.Zero;
-		MessiahRig? rig = AttachRig(root, fig);
+		PartRig? rig = AttachRig(root, fig);
 
 		// ── 飘落的光羽 ──
 		Node2D feathers = Fx.Root(back, circleAt, "P3MessiahFeathers");
@@ -517,7 +564,7 @@ public static class Personas
 			{
 				rig.Root.Modulate = fig.Modulate;
 				float openArms = Mathf.Clamp((time - 0.5f) / 0.5f, 0f, 1f) * 0.5f + flare * 4f;   // 降临后双臂渐渐张开，封印那一拍猛地张开
-				rig.Idle(time, Mathf.Min(openArms, 1f) * (1f - close), close);
+				rig.MessiahIdle(time, Mathf.Min(openArms, 1f) * (1f - close), close);
 			}
 			// 残影：沿上升轨迹落后 0.05 / 0.1 / 0.15s
 			for (int i = 0; i < ghosts.Count; i++)
