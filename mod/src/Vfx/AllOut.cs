@@ -13,10 +13,9 @@ namespace P3Makoto.Vfx;
 ///         随后两道环带（外圈浅青、内圈深蓝粗环）从圆心长出来。每一波的前沿有一道细细的青白光边（我们自己的细节，原版没有），落定后褪掉
 ///   1.00  高潮 = 同心圆落定成结算页背景（浅蓝底 + 深蓝粗环 + 外圈浅青环），结算立绘同一帧切入（1.3 倍以脸为支点拉回、暗蓝平滑亮起）；
 ///         背景之后一直呼吸、扩大、漂移，不静止
-///         背景大字 MAJESTIC 和「DONE AND DUSTED.」的阴影做在背景里：落在哪一圈，就用哪一圈的配色 —— 用随圆环实时变化的裁剪实现，
-///         不是预先画好的图（原版截图里深蓝环上的字是浅色、浅蓝底上的字是深色）
-///   1.67  「DONE AND DUSTED.」从左侧甩入（0.12s）+ 白闪
-///   停留到 3.25 → 0.4s 整体淡出
+///         背景大字 MAJESTIC 做在背景里（主行 + 错开的一行回声）：浅色区是深蓝细线空心字、深蓝环里是深蓝实心字 ——
+///         同一条细轮廓线跨过区域边界是连续的；分区用随圆环实时变化的裁剪实现，不是预先画好的图
+///   去掉了左上角「DONE AND DUSTED.」（用户：太突兀）。停留到 3.25 → 0.4s 整体淡出
 /// 结束立绘用 P3R 原版贴图（allout_finish / allout_finish_dark / allout_text），缺图时退回 victory_portrait。
 /// </summary>
 public static class AllOut
@@ -67,8 +66,42 @@ public static class AllOut
 	private static Texture2D? Tex(string name) =>
 		ResourceLoader.Exists($"res://p3makoto/ui/{name}.png") ? ResourceLoader.Load<Texture2D>($"res://p3makoto/ui/{name}.png") : null;
 
+	private static Shader? _rings;
+
+	/// <summary>同心圆：按顺序一层层画实心圆（后画的盖前面的），环带 = 外径实心圆 + 内径底色圆；fwidth 做 1px 抗锯齿软边。
+	/// rim_*：展开中的波前细光边。</summary>
+	private static Shader Rings => _rings ??= new Shader
+	{
+		Code = @"
+shader_type canvas_item;
+uniform vec2 size;
+uniform vec2 center;
+uniform int count = 0;
+uniform float radii[8];
+uniform vec4 cols[8];
+uniform float rim_r[4];
+uniform float rim_a[4];
+void fragment() {
+	vec2 p = UV * size;
+	float d = distance(p, center);
+	float aa = max(fwidth(d), 0.75);
+	vec4 c = vec4(0.0);
+	for (int i = 0; i < 8; i++) {
+		if (i >= count) break;
+		float cov = clamp((radii[i] - d) / aa + 0.5, 0.0, 1.0);
+		c.rgb = mix(c.rgb, cols[i].rgb, c.a > 0.0 ? cov : 1.0);     // 第一层：直接取色（透明度单独给），边缘不发黑
+		c.a = max(c.a, cov);
+	}
+	for (int j = 0; j < 4; j++) {
+		float k = rim_a[j] * (1.0 - smoothstep(0.0, 2.5, abs(d - rim_r[j])));
+		c.rgb = mix(c.rgb, vec3(0.88, 0.98, 1.0), k);
+	}
+	COLOR = c;
+}",
+	};
+
 	// ── 环带：普通 Polygon2D（外圈 N 点 + 内圈 N 点，每段一个四边形），每帧只改顶点 ──
-	private const int Seg = 120;
+	private const int Seg = 240;
 
 	private static Polygon2D Annulus(Node parent, Color color)
 	{
@@ -97,31 +130,21 @@ public static class AllOut
 	}
 
 	/// <summary>同一段背景大字的一份拷贝：位置 / 变形相同，颜色不同。</summary>
-	/// <remarks>原版深蓝环上的字是"空心描边"（浅色细线描出同一个字形），不是换一种实心填色 —— 实心换色在圆环边界上像一截错开的笔画；
-	/// 描边沿着同一字形的轮廓走，跨过边界时轮廓是连续的。所以每份拷贝都带同样粗细的描边，环里那份只留描边。</remarks>
+	/// <remarks>原版细节（放大原版画面看）：浅色区的字是"深蓝极细线勾出的空心字"，深色区的字是"深蓝实心字"，
+	/// 每一处都是同一条细轮廓线 —— 跨过区域边界时轮廓连续，只是里面填不填色变了；下方还错开叠着一行同样的空心字（回声）。
+	/// 所以每份拷贝都用同样粗细的细描边，只换填色。</remarks>
 	private static Node2D WordCopy(Node parent, Vector2 at, float H, Color fill, Color outline)
 	{
 		Node2D w = new() { Position = at, Rotation = -0.12f, Skew = -0.25f };
 		parent.AddChild(w);
-		Typo.Text(w, "MAJESTIC", Typo.LatinItalic, (int)(H * 0.36f), fill, Vector2.Zero, outline: Mathf.Max(3, (int)(H * 0.006f)), outlineColor: outline);
+		Typo.Text(w, "MAJESTIC", Typo.LatinItalic, (int)(H * 0.36f), fill, Vector2.Zero, outline: Mathf.Max(2, (int)(H * 0.0035f)), outlineColor: outline);
 		return w;
-	}
-
-	private static Sprite2D? ShadowCopy(Node parent, Texture2D? txt, float ts, Color color)
-	{
-		if (txt == null)
-		{
-			return null;
-		}
-		Sprite2D s = new() { Texture = txt, Scale = Vector2.One * ts, Modulate = color };
-		parent.AddChild(s);
-		return s;
 	}
 
 	/// <summary>
 	/// 背景（同心圆 → 结算页底）+ 做进背景里的字：
 	///   四波整屏圆从敌人中心依次涌出（每波前沿带细光边），两道环带随后长出；圆心滑到圆环位置后一直缓慢漂移、呼吸。
-	///   MAJESTIC / DONE AND DUSTED 的阴影：先画一份"浅蓝底上的配色"，环带本身开 ClipChildren，把同一段字的另一种配色画在环带里 ——
+	///   MAJESTIC：先画一份"浅蓝底上的样式"，环带本身开 ClipChildren，把同一段字的另一种样式画在环带里 ——
 	///   环带怎么动，字的分区就怎么变（实时）。
 	/// </summary>
 	private static void Background(Node2D n, Vector2 focus, float W, float H, float life)
@@ -136,38 +159,37 @@ public static class AllOut
 
 		// 四波整屏圆（后一波盖住前一波；最后一波 = 结算页底色）
 		(Color col, float start, float len)[] waves = { (Deep, 0f, 0.36f), (RingBlue, 0.11f, 0.38f), (Cyan, 0.22f, 0.4f), (Base, 0.33f, 0.42f) };
-		var discs = new List<Polygon2D>();
-		foreach (var w in waves)
-		{
-			discs.Add(Fx.Poly(n, Fx.Circle(10f, 160), w.col));
-		}
+		// 画面上的圆全部由一个全屏着色器逐像素算（v0.14.16，用户：圆边有锯齿）：多边形放大到整屏、顶点又超过抗锯齿上限时边缘发毛；
+		// 着色器按到圆心的距离 + fwidth 做 1px 软边，任意大小都是平滑的圆
+		ColorRect disc = new() { Size = new Vector2(W, H), MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Rings } };
+		n.AddChild(disc);
+		ShaderMaterial rm = (ShaderMaterial)disc.Material;
+		rm.SetShaderParameter("size", new Vector2(W, H));
 		// 外圈浅青环（大）+ 内圈深蓝粗环（结算页的主圆环，原版截图量：内 0.55H、外 0.66H）
 		float outIn = H * 1.02f, outOut = H * 1.2f, ringIn = H * 0.55f, ringOut = H * 0.66f;
-		Polygon2D outer = Annulus(n, Cyan);
-		Polygon2D ring = Annulus(n, RingBlue);
-		outer.ClipChildren = CanvasItem.ClipChildrenMode.AndDraw;
-		ring.ClipChildren = CanvasItem.ClipChildrenMode.AndDraw;
-		var rims = new List<Polygon2D>();
-		foreach (var _ in waves)
-		{
-			rims.Add(Annulus(n, new Color(0.85f, 0.98f, 1f, 0f)));
-		}
+		// 两道环带的多边形只当字的裁剪遮罩（不画出来）
+		Polygon2D outer = Annulus(n, Colors.White);
+		Polygon2D ring = Annulus(n, Colors.White);
+		outer.ClipChildren = CanvasItem.ClipChildrenMode.Only;
+		ring.ClipChildren = CanvasItem.ClipChildrenMode.Only;
+		Color[] cols = { Deep, RingBlue, Cyan, Base, Cyan, Base, RingBlue, Base };
+		rm.SetShaderParameter("cols", cols);
+		rm.SetShaderParameter("count", cols.Length);
 
-		// 背景大字 MAJESTIC：底色区深蓝实心字，外圈浅青环里是中蓝实心字（同样的深蓝描边），深蓝粗环里是浅青空心描边字
+		// 背景大字 MAJESTIC（主行 + 下方错开的一行回声）：浅蓝底色区 = 深蓝细线空心字，外圈浅青环 = 中蓝细线空心字，
+		// 深蓝粗环 = 深蓝实心字（同一条细轮廓，只是填满）
 		Vector2 wordAt = new(-W * 0.01f, H * 0.52f);
-		Node2D wordBase = WordCopy(n, wordAt, H, new Color(Navy, 0.9f), new Color(Navy, 0.9f));
-		n.MoveChild(wordBase, outer.GetIndex());                     // 在两道环带下面、底色上面
-		Node2D wordOuter = WordCopy(outer, wordAt, H, new Color(RingBlue, 0.95f), new Color(Navy, 0.9f));
-		Node2D wordRing = WordCopy(ring, wordAt, H, new Color(Cyan, 0f), new Color(Cyan, 0.95f));      // 空心：只有浅青描边
-
-		// 「DONE AND DUSTED.」的错位阴影也做进背景：底色区深蓝、环带里换成环带的深一档
-		Texture2D? txt = Tex("allout_text");
-		float ts = H * 0.3f / (txt?.GetHeight() ?? 241);
-		Vector2 shadowOff = new(8f, 8f);
-		Sprite2D? shBase = ShadowCopy(n, txt, ts, new Color(Navy, 0.9f));
-		if (shBase != null) n.MoveChild(shBase, outer.GetIndex());
-		Sprite2D? shOuter = ShadowCopy(outer, txt, ts, new Color(RingBlue, 0.95f));
-		Sprite2D? shRing = ShadowCopy(ring, txt, ts, new Color(Navy, 0.95f));
+		Vector2 echoOff = new(W * 0.035f, H * 0.2f);
+		Color clear = new(0f, 0f, 0f, 0f);
+		var words = new List<(Node2D node, Vector2 off, float alpha)>();
+		foreach ((Vector2 off, float a) in new[] { (Vector2.Zero, 1f), (echoOff, 0.55f) })
+		{
+			Node2D wb = WordCopy(n, wordAt + off, H, clear, new Color(Navy, 0.85f * a));
+			n.MoveChild(wb, outer.GetIndex());                         // 在两道环带下面、底色上面
+			words.Add((wb, off, a));
+			words.Add((WordCopy(outer, wordAt + off, H, clear, new Color(RingBlue, 0.95f * a)), off, a));
+			words.Add((WordCopy(ring, wordAt + off, H, new Color(Navy, 0.92f * a), new Color(Navy, 0.92f * a)), off, a));
+		}
 
 		Fx.Animate(n, life, t =>
 		{
@@ -175,64 +197,49 @@ public static class AllOut
 			// 圆心：蓄力期间从敌人滑到圆环位置；之后一直缓慢漂移
 			Vector2 c = focus.Lerp(ringAt, Ease.InOutCubic(Mathf.Clamp(time / Build, 0f, 1f))) + new Vector2(-10f, -3f) * Mathf.Max(0f, time - Build);
 			float breathe = 1f + 0.015f * Mathf.Sin(time * 2.2f) + 0.012f * Mathf.Max(0f, time - Build);
+			float[] radii = new float[8];
+			float[] rimR = new float[4], rimA = new float[4];
 			for (int i = 0; i < waves.Length; i++)
 			{
 				float u = Ease.InOutCubic(Mathf.Clamp((time - waves[i].start) / waves[i].len, 0f, 1f));
-				float r = cover * u;
-				discs[i].Position = c;
-				discs[i].Scale = Vector2.One * (r / 10f);
-				// 前沿光边：展开途中亮，到达后褪掉
-				float rimA = u > 0f && u < 1f ? 0.75f * Mathf.Sin(Mathf.Pi * u) : 0f;
-				rims[i].Color = new Color(0.85f, 0.98f, 1f, rimA);
-				SetAnnulus(rims[i], c, r, r - 3f - 5f * u);
+				radii[i] = cover * u;
+				// 前沿光边（我们自己的细节）：展开途中一道很淡的青白细光，到达后褪掉
+				rimR[i] = radii[i];
+				rimA[i] = u > 0f && u < 1f ? 0.35f * Mathf.Sin(Mathf.Pi * u) : 0f;
 			}
 			// 两道环带：外沿先长、内沿随后跟上（像一圈波纹），高潮前后到位；之后带着惯性继续慢慢外扩、速度逐渐衰减（用户：不是马上定格）
 			float drift = 0.07f * (1f - Mathf.Exp(-Mathf.Max(0f, time - 0.8f) / 0.7f));
 			float uo = Ease.OutCubic(Mathf.Clamp((time - 0.36f) / 0.5f, 0f, 1f));
 			float ui = Ease.OutCubic(Mathf.Clamp((time - 0.44f) / 0.46f, 0f, 1f));
 			SetAnnulus(outer, c, outOut * (breathe + drift) * uo, outIn * (breathe + drift) * ui);
+			radii[4] = outOut * (breathe + drift) * uo;
+			radii[5] = Mathf.Min(outIn * (breathe + drift) * ui, radii[4]);
 			float ro = Ease.OutCubic(Mathf.Clamp((time - 0.42f) / 0.48f, 0f, 1f));
 			float ri = Ease.OutCubic(Mathf.Clamp((time - 0.5f) / 0.42f, 0f, 1f));
 			SetAnnulus(ring, c, ringOut * (breathe + drift) * ro, ringIn * (breathe + drift + 0.008f * Mathf.Sin(time * 3.1f)) * ri);
+			radii[6] = ringOut * (breathe + drift) * ro;
+			radii[7] = Mathf.Min(ringIn * (breathe + drift + 0.008f * Mathf.Sin(time * 3.1f)) * ri, radii[6]);
+			rm.SetShaderParameter("center", c);
+			rm.SetShaderParameter("radii", radii);
+			rm.SetShaderParameter("rim_r", rimR);
+			rm.SetShaderParameter("rim_a", rimA);
 
 			// 背景大字：高潮那一刻起从左侧缓缓滑入（0.7s，用户：切入太快），之后慢慢右移
 			float since = time - Build;
 			float wi = Ease.OutCubic(Mathf.Clamp(since / 0.7f, 0f, 1f));
 			Vector2 wp = wordAt + new Vector2(-W * 0.3f * (1f - wi) + 18f * Mathf.Max(0f, since), 0f);
-			foreach (Node2D w in new[] { wordBase, wordOuter, wordRing })
+			foreach ((Node2D w, Vector2 off, float _) in words)
 			{
-				w.Position = wp;
+				w.Position = wp + off + new Vector2(off.X * 0.4f * (1f - wi), 0f);    // 回声那行比主行稍慢一点到位
 				w.Visible = since >= 0f;
 				w.Modulate = new Color(1f, 1f, 1f, wi);
-			}
-			// 阴影跟着字图一起甩入（字图本体在 Portrait 里，时刻一致）
-			float tp = TextT(since);
-			Vector2 tpos = TextPos(W, H, since, tp) + shadowOff;
-			foreach (Sprite2D? s in new[] { shBase, shOuter, shRing })
-			{
-				if (s != null)
-				{
-					s.Position = tpos;
-					s.Visible = tp > 0f;
-					s.SelfModulate = new Color(1f, 1f, 1f, TextAlpha(tp));
-				}
 			}
 			n.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InOutSine(Mathf.Clamp((time - (life - 0.4f)) / 0.4f, 0f, 1f)));
 		});
 		Fx.FreeAfter(n, life + 0.05f);
 	}
 
-	/// <summary>「DONE AND DUSTED.」：高潮后 0.6s 起 0.35s 从左侧滑入 + 淡入（用户：出现太突兀），之后慢慢右移。tp = 进度 0~1。</summary>
-	private const float TextAt = 0.6f, TextLen = 0.5f;
-
-	private static float TextT(float since) => Mathf.Clamp((since - TextAt) / TextLen, 0f, 1f);
-
-	private static Vector2 TextPos(float W, float H, float since, float tp) =>
-		new(W * 0.2f - W * 0.16f * (1f - Ease.OutCubic(tp)) + 6f * Mathf.Max(0f, since - TextAt - TextLen), H * 0.21f);
-
-	private static float TextAlpha(float tp) => Ease.OutCubic(Mathf.Clamp(tp * 1.6f, 0f, 1f));
-
-	/// <summary>结算立绘 + 「DONE AND DUSTED.」本体（阴影和背景大字在 Background 里）。</summary>
+	/// <summary>结算立绘（背景大字在 Background 里）。用户：左上角「DONE AND DUSTED.」太突兀 —— 去掉。</summary>
 	private static void Portrait(Node2D root, float W, float H)
 	{
 		Node2D f = new();
@@ -253,28 +260,9 @@ public static class AllOut
 		Vector2 faceOff = lit != null ? new Vector2(1075f, 262f) - new Vector2(lit.GetWidth(), lit.GetHeight()) / 2f : Vector2.Zero;
 		Vector2 faceAt = heroAt + faceOff * hs;
 
-		Texture2D? txt = Tex("allout_text");
-		Node2D text = new();
-		f.AddChild(text);
-		float ts = H * 0.3f / (txt?.GetHeight() ?? 241);
-		if (txt != null)
-		{
-			text.AddChild(new Sprite2D { Texture = txt, Scale = Vector2.One * ts });
-		}
-		else
-		{
-			int fs = (int)(H * 0.075f);
-			Typo.Text(text, "DONE", Typo.LatinItalic, fs, Pal.White, new Vector2(0f, 0f), outline: 4, outlineColor: Navy);
-			Typo.Text(text, "AND", Typo.LatinItalic, fs, Pal.White, new Vector2(fs * 0.4f, fs * 0.9f), outline: 4, outlineColor: Navy);
-			Typo.Text(text, "DUSTED.", Typo.LatinItalic, fs, Pal.White, new Vector2(0f, fs * 1.8f), outline: 4, outlineColor: Navy);
-		}
-		Sprite2D textFlash = new() { Texture = txt, Scale = Vector2.One * ts, Material = new CanvasItemMaterial { BlendMode = CanvasItemMaterial.BlendModeEnum.Add } };
-		if (txt != null)
-			text.AddChild(textFlash);
-
 		const float total = FinishLen + PortraitLead;
 		// 节奏照原版（video1 18.73s 切入，逐帧量）：立绘切入时 1.3 倍、带蓝色调，以脸为支点 0.7s 拉回原大，之后一直慢漂；
-		// 0.25–0.65s 平滑亮起（不是一下闪白）；0.6s「DONE AND DUSTED.」0.35s 滑入 + 淡入，到位时一层淡白
+		// 0.25–0.65s 平滑亮起（不是一下闪白）
 		Fx.Animate(f, total, t =>
 		{
 			float raw = t * total;
@@ -289,12 +277,6 @@ public static class AllOut
 			if (heroDark != null)
 				heroDark.Modulate = new Color(1f, 1f, 1f, 1f - lift);
 			flash.Modulate = new Color(1f, 1f, 1f, 0.15f * Mathf.Sin(Mathf.Pi * lift));
-			float tp = TextT(time);
-			text.Visible = tp > 0f;
-			text.Position = TextPos(W, H, time, tp);
-			text.Modulate = new Color(1f, 1f, 1f, TextAlpha(tp));
-			float landed = time - TextAt - TextLen * 0.7f;
-			textFlash.Modulate = new Color(1f, 1f, 1f, landed < 0f ? 0f : 0.35f * Mathf.Max(0f, 1f - landed / 0.25f));
 			f.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InOutSine(Mathf.Clamp((raw - (total - 0.4f)) / 0.4f, 0f, 1f)));
 		});
 		Fx.FreeAfter(f, total + 0.05f);
