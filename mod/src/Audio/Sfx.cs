@@ -139,7 +139,8 @@ public static class Sfx
 	};
 
 	/// <summary>按文件名播放一个原声片段（缺文件就不响）。</summary>
-	public static void Clip(string file, float volume = 1f, float delay = 0f, float pitch = 1f) => ModEntry.Safe("clip " + file, () =>
+	/// <param name="master">true = 直接走 Master 总线（不受 SFX 总线在过场 / 战斗结束时被压低的影响），并在日志里记一行。</param>
+	public static void Clip(string file, float volume = 1f, float delay = 0f, float pitch = 1f, bool master = false) => ModEntry.Safe("clip " + file, () =>
 	{
 		if (Engine.GetMainLoop() is not SceneTree tree)
 		{
@@ -147,12 +148,20 @@ public static class Sfx
 		}
 		if (delay > 0f)
 		{
-			tree.CreateTimer(delay, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () => Clip(file, volume, 0f, pitch);
+			tree.CreateTimer(delay, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () => Clip(file, volume, 0f, pitch, master);
 			return;
 		}
 		if (Sample(file) is AudioStreamOggVorbis st)
 		{
-			Spawn(tree, st, volume * SampleMaster, pitch * (float)GD.RandRange(0.98, 1.02), file);
+			Spawn(tree, st, volume * SampleMaster, pitch * (float)GD.RandRange(0.98, 1.02), file, master ? new StringName("Master") : null);
+			if (master)
+			{
+				GD.Print($"{ModEntry.Tag} clip {file} -> Master");
+			}
+		}
+		else if (master)
+		{
+			GD.PrintErr($"{ModEntry.Tag} clip {file} missing");
 		}
 	});
 
@@ -277,13 +286,13 @@ public static class Sfx
 		["em0561_sp_roulette_01"] = (0.8f, 0.3f),        // 轮盘启动：后半是第二声，和点击声重叠
 	};
 
-	private static void Spawn(SceneTree tree, AudioStream stream, float volume, float pitch, string? name = null)
+	private static void Spawn(SceneTree tree, AudioStream stream, float volume, float pitch, string? name = null, StringName? bus = null)
 	{
 		_bus ??= AudioServer.GetBusIndex("SFX") >= 0 ? new StringName("SFX") : new StringName("Master");
 		AudioStreamPlayer p = new()
 		{
 			Stream = stream,
-			Bus = _bus,
+			Bus = bus ?? _bus,
 			VolumeDb = Mathf.LinearToDb(Mathf.Clamp(volume, 0.0001f, 1.4f)),
 			PitchScale = pitch,
 			ProcessMode = Node.ProcessModeEnum.Always,

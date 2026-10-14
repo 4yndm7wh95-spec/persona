@@ -44,7 +44,8 @@ public static partial class AllOut
 		root.GlobalPosition = Vector2.Zero;
 
 		// 蓄力 0.7s = 同心圆展开，峰值 = 同心圆落定、结算页出现
-		Audio.Sfx.Clip("Snd_FX_Btl_Allout_Zoom", 0.8f, FinishAt - 0.7f);
+		// v0.14.16：实测总攻击时没声音 —— 战斗结束时 SFX 总线可能被游戏压低 / 静音，直接走 Master 总线；日志里记一行方便排查
+		Audio.Sfx.Clip("Snd_FX_Btl_Allout_Zoom", 0.8f, FinishAt - 0.7f, master: true);
 
 		Node2D bg = new();
 		root.AddChild(bg);
@@ -128,17 +129,55 @@ void fragment() {
 		p.Polygon = pts;
 	}
 
-	/// <summary>同一段背景大字的一份拷贝：位置 / 变形相同，颜色不同。</summary>
-	/// <remarks>原版细节（放大原版画面看）：浅色区的字是"深蓝极细线勾出的空心字"，深色区的字是"深蓝实心字"，
-	/// 每一处都是同一条细轮廓线 —— 跨过区域边界时轮廓连续，只是里面填不填色变了；下方还错开叠着一行同样的空心字（回声）。
-	/// 所以每份拷贝都用同样粗细的细描边，只换填色。</remarks>
-	private static Node2D WordCopy(Node parent, Vector2 at, float H, Color fill, Color outline)
+	/// <summary>
+	/// 背景大字的一份拷贝：hollow = 深蓝细线空心字，否则 = fill 色实心字（位置 / 变形相同）。
+	/// 原版细节：浅色区是极细线勾出的空心字、深色区是实心字，轮廓跨区连续。
+	/// 空心字不能用字体自带的描边（v0.14.16 实测：Bahnschrift 的字形由多个重叠轮廓拼成，Label 描边把每个轮廓都描出来，字里出现一堆格线）——
+	/// 改成：字先实心画进一个 CanvasGroup（离屏合成后重叠轮廓并成一个形状），再用着色器只描这个形状的边。
+	/// </summary>
+	private static Node2D WordCopy(Node parent, Vector2 at, float H, Color color, bool hollow)
 	{
 		Node2D w = new() { Position = at, Rotation = -0.12f, Skew = -0.25f };
 		parent.AddChild(w);
-		Typo.Text(w, "MAJESTIC", Typo.LatinItalic, (int)(H * 0.36f), fill, Vector2.Zero, outline: Mathf.Max(2, (int)(H * 0.0035f)), outlineColor: outline);
+		int size = (int)(H * 0.36f);
+		if (hollow)
+		{
+			ShaderMaterial m = new() { Shader = HollowShader };
+			m.SetShaderParameter("line_color", color);
+			m.SetShaderParameter("width", Mathf.Max(1.6f, H * 0.0028f));
+			CanvasGroup g = new() { Material = m, FitMargin = 8f, ClearMargin = 8f };
+			w.AddChild(g);
+			Typo.Text(g, "MAJESTIC", Typo.LatinItalic, size, Colors.White, Vector2.Zero);
+		}
+		else
+		{
+			Typo.Text(w, "MAJESTIC", Typo.LatinItalic, size, color, Vector2.Zero);
+		}
 		return w;
 	}
+
+	private static Shader? _hollow;
+
+	/// <summary>CanvasGroup 着色器：读组内合成好的字形，只保留离边缘 width 像素以内的一圈（内描边），并做软边。</summary>
+	private static Shader HollowShader => _hollow ??= new Shader
+	{
+		Code = @"
+shader_type canvas_item;
+uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_linear;
+uniform vec4 line_color : source_color;
+uniform float width = 2.0;
+void fragment() {
+	float a = textureLod(screen_texture, SCREEN_UV, 0.0).a;
+	float mn = 1.0;
+	for (int i = 0; i < 12; i++) {
+		float ang = 6.2831853 * float(i) / 12.0;
+		vec2 d = vec2(cos(ang), sin(ang)) * width * SCREEN_PIXEL_SIZE;
+		mn = min(mn, textureLod(screen_texture, SCREEN_UV + d, 0.0).a);
+	}
+	float edge = clamp(a * (1.0 - mn) * 1.6, 0.0, 1.0);
+	COLOR = vec4(line_color.rgb, line_color.a * edge * COLOR.a);
+}",
+	};
 
 	/// <summary>一圈水波：圈内颜色、是不是深色带（深色带里的背景字换成实心）。半径来自 RippleTab。</summary>
 	private readonly record struct Wave(Color Col, bool Dark);
@@ -209,15 +248,14 @@ void fragment() {
 
 		// 背景大字：一份深蓝细线空心字铺满；每条深色带一个遮罩（只当裁剪、不画），里面放一份深色实心字
 		Vector2 wordAt = new(-W * 0.01f, H * 0.52f);
-		Color clear = new(0f, 0f, 0f, 0f);
-		var words = new List<Node2D> { WordCopy(n, wordAt, H, clear, new Color(Navy, 0.85f)) };
+		var words = new List<Node2D> { WordCopy(n, wordAt, H, new Color(Navy, 0.85f), hollow: true) };
 		var masks = new List<Polygon2D>();
 		for (int m = 0; m < MaskN; m++)
 		{
 			Polygon2D mask = Annulus(n, Colors.White);
 			mask.ClipChildren = CanvasItem.ClipChildrenMode.Only;
 			masks.Add(mask);
-			words.Add(WordCopy(mask, wordAt, H, Ink, Ink));                 // 深色带里的实心字：不透明、比描边再深一点
+			words.Add(WordCopy(mask, wordAt, H, Ink, hollow: false));       // 深色带里的实心字：不透明、比描边再深一点
 		}
 
 		float prevT = 0f;
