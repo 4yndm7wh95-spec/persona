@@ -66,17 +66,17 @@ public static class Personas
 
 		public static readonly Part[] OrpheusParts =
 		{
-			new("lyre", "01_lyre", "torso", new(237, 218), new(204, 20)),
+			new("lyre", "01_lyre", "torso", new(237, 218), new(99, 20)),
 			new("thigh_left", "02_thigh_left", "torso", new(130, 375), new(59, 334)),
 			new("shin_left", "03_shin_left", "thigh_left", new(79, 452), new(58, 427)),
 			new("thigh_right", "04_thigh_right", "torso", new(239, 391), new(183, 331)),
 			new("shin_right", "05_shin_right", "thigh_right", new(213, 498), new(122, 475)),
 			new("torso", "06_torso", null, new(182, 346), new(100, 157)),
 			new("head", "07_head", "torso", new(188, 180), new(139, 69)),
-			new("upperarm_left", "08_upperarm_left", "torso", new(119, 238), new(60, 215)),
+			new("upperarm_left", "08_upperarm_left", "torso", new(119, 238), new(62, 215)),
 			new("forearm_left", "09_forearm_left", "upperarm_left", new(83, 307), new(20, 284)),
 			new("upperarm_right", "10_upperarm_right", "torso", new(265, 239), new(242, 216)),
-			new("forearm_right", "11_forearm_right", "upperarm_right", new(285, 333), new(270, 310)),
+			new("forearm_right", "11_forearm_right", "upperarm_right", new(285, 333), new(265, 310)),
 		};
 
 		private Part[] _parts = null!;
@@ -166,8 +166,13 @@ public static class Personas
 			Angle["forearm_left"] = 0.04f * Mathf.Sin(time * 1.5f - 0.6f) + 0.05f * fall;
 			Angle["upperarm_right"] = -0.05f * Mathf.Sin(time * 1.5f + 0.9f) - 0.08f * fall + 0.05f * land;
 			Angle["forearm_right"] = -0.04f * Mathf.Sin(time * 1.5f + 0.3f) - 0.05f * fall;
-			// 腿：两条长腿交叉处被遮挡的部分没有补全（模拟里转 0.01 弧度就露出切边），完全不动；动作全靠上半身
-			Angle["thigh_left"] = Angle["shin_left"] = Angle["thigh_right"] = Angle["shin_right"] = 0f;
+			// 腿（v0.14.17，Codex 精修补全了交叉处被遮挡的部分，±10° 验收通过）：小幅错相摆动，小腿稍滞后；
+			// 下落时双腿被风往后带一点，落地时膝盖一屈。角度上限约 0.08 弧度（≈4.5°），留足余量
+			float legSway = Mathf.Sin(time * 1.3f + 0.4f);
+			Angle["thigh_left"] = 0.035f * legSway + 0.05f * fall - 0.03f * land;
+			Angle["shin_left"] = 0.03f * Mathf.Sin(time * 1.3f - 0.3f) + 0.03f * fall + 0.04f * land;
+			Angle["thigh_right"] = -0.03f * Mathf.Sin(time * 1.3f + 1.5f) + 0.04f * fall - 0.03f * land;
+			Angle["shin_right"] = -0.03f * Mathf.Sin(time * 1.3f + 0.8f) + 0.025f * fall + 0.04f * land;
 			Apply();
 		}
 	}

@@ -444,10 +444,13 @@ public static class GreatSeal
 		Fx.After(world, 2.3, "seal rise", () => Rise(world, feet, view));
 		// 有指天帧动画（point_sky_in，照原版约 1.9s 从身侧慢慢抬到指天）：2.4 起手，4.3 指尖到顶时光柱升起，特写推迟到 4.75；
 		// 没有就按旧节奏 3.6 光柱、4.6 特写
-		bool frames = HasPointAnim(player);
+		// 只有一张指天图时（point_sky_quick：0.3s 处溶解到指天）：3.3 起手，3.6 指天的同时光柱升起，特写仍在 4.6
+		bool frames = HasPointAnim(player), quick = !frames && HasAnim(player, "point_sky_quick");
 		float beamAt = frames ? 4.3f : 3.6f, faceAt = frames ? 4.75f : 4.6f;
-		Fx.After(world, frames ? 2.4 : 3.6, "seal point", () => PointSky(player));
-		Fx.After(world, beamAt, "seal beam", () => SkyBeam(world, head, view));
+		Fx.After(world, frames ? 2.4 : quick ? 3.3 : 3.6, "seal point", () => PointSky(player));
+		// 单帧指天：光柱从食指尖升起（指尖在头的左上方：按配准数据约 −3% 体宽、−24% 身高）
+		Vector2 beamFrom = quick ? head + new Vector2(-0.03f, -0.24f) * Mathf.Max(feet.Y - head.Y, 100f) - new Vector2(10f, -60f) : head;
+		Fx.After(world, beamAt, "seal beam", () => SkyBeam(world, beamFrom, view));
 		Fx.After(ui, faceAt, "seal face", () => FaceCloseUp(ui, view, barH, 6.65f - faceAt));
 		Fx.After(world, 6.6, "seal dome", () => Dome(world, feet, foe, architect, view));
 		Fx.After(ui, 8.7, "seal white", () => WhiteRise(ui, view));
@@ -597,8 +600,10 @@ public static class GreatSeal
 		Fx.FreeAfter(r, total + 0.05f);
 	}
 
-	private static bool HasPointAnim(NCreature? player) =>
-		player != null && GodotObject.IsInstanceValid(player) && player.Visuals.SpineBody is { } body && body.HasAnimation("point_sky_in");
+	private static bool HasPointAnim(NCreature? player) => HasAnim(player, "point_sky_in");
+
+	private static bool HasAnim(NCreature? player, string name) =>
+		player != null && GodotObject.IsInstanceValid(player) && player.Visuals.SpineBody is { } body && body.HasAnimation(name);
 
 	/// <summary>单手指天：骨骼里有 point_sky（_in / _loop）动画就播放，结束后回待机；没有就跳过（光柱照样升起）。</summary>
 	private static void PointSky(NCreature? player)
@@ -608,9 +613,10 @@ public static class GreatSeal
 			return;
 		}
 		var state = body.GetAnimationState();
-		if (body.HasAnimation("point_sky_in"))
+		string intro = body.HasAnimation("point_sky_in") ? "point_sky_in" : body.HasAnimation("point_sky_quick") ? "point_sky_quick" : "";
+		if (intro.Length > 0)
 		{
-			state.SetAnimation("point_sky_in", loop: false);
+			state.SetAnimation(intro, loop: false);
 			state.AddAnimation(body.HasAnimation("point_sky_loop") ? "point_sky_loop" : "idle_loop", 0f, loop: true);
 		}
 		else if (body.HasAnimation("point_sky"))

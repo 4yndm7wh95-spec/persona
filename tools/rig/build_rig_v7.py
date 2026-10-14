@@ -58,6 +58,10 @@ HAVE_POINT = all((PT / f"{n}.png").exists() for n in POINT)
 # 帧时刻照原版视频（右手从身侧经腰、胸、下巴、额头上方，再斜着扫上去直指天空，约 1.9s；节奏是松弛的，不赶）
 POINT_T = [0.0, 0.33, 0.67, 1.0, 1.33, 1.5, 1.67, 1.9]
 POINT_DUR = 2.4
+# 只有用户选定的最后一帧（art/v15/point/point_8_sky_wip.png，八帧还没齐）：待机 → 指天 一次 0.28s 的柔和溶解 + 换图那一下的淡青闪光，
+# 之后停在指天姿势。按头和鞋配准到待机图（tools/rig/v7_register.py：k=1.108, tx=-52.8, ty=-186.8，误差 4.5px）
+SKY1 = PT / "point_8_sky_wip.png"
+HAVE_SKY1 = SKY1.exists() and not HAVE_POINT
 # 剑：拳头中心 / 剑尖（原图像素，自动检测剑身 + 握剑手，见提交记录里的标定图）
 SWORD = {"sword_rest": ((358.2, 778.4), (807.1, 1263.9)), "sword_ready": ((234.6, 742.9), (821.2, 1378.1)),
          "sword_windup": ((479.9, 132.5), (13.1, 424.6)), "sword_slash": ((637.3, 843.7), (1012.5, 1327.4)),
@@ -96,7 +100,8 @@ POSE_T = {"idle": (1.0, 0.0), "focus_mid": (0.95, 0.0), "focus": (0.95, 0.0), "a
           "hurt_recover": ("via", "hurt", (1.0, -1.0, -2.2)),
           # 第六批：由 focus_mid 编辑出来，按鞋配准（tools/rig/v7_register.py）：缩放 1.000、位移不到 1px
           "focus_low": ("via", "focus_mid", (1.0, -0.4, -0.6)),
-          **{n: (1.0, 0.0) for n in POINT}}
+          **{n: (1.0, 0.0) for n in POINT},
+          "point_sky": ("via", "idle", (1.108, -52.8, -186.8))}
 
 
 def U(p, pose=None):
@@ -129,6 +134,13 @@ def load(p):
     return np.asarray(Image.open(p).convert("RGBA")).astype(np.float32) / 255
 
 
+def clean_alpha(img, floor=16 / 255):
+    """去掉轮廓外的低 alpha 杂点（用户选定的指天图轮廓外有 alpha≤7 的散点）：低于 floor 的一律清零。"""
+    img = img.copy()
+    img[..., 3] = np.where(img[..., 3] < floor, 0.0, img[..., 3])
+    return img
+
+
 # ───────────────────────── 图像 ─────────────────────────
 def sources():
     src = {
@@ -155,6 +167,7 @@ def sources():
         "v7_hurt_recover": load(T / "hurt_recover_a.png"),
         **({"v7_focus_low": load(T / "focus_low_a.png")} if HAVE_LOW else {}),
         **({f"v7_{n}": load(PT / f"{n}.png") for n in POINT} if HAVE_POINT else {}),
+        **({"v7_point_sky": clean_alpha(load(SKY1))} if HAVE_SKY1 else {}),
         "v7_awaken_peak": load(comp.POSES["awaken_peak"][0]),
         "v7_awaken_peak_eyeglow": load(C / "awaken_peak_eyeglow.png"),
         "v7_awaken_eyeglow": load(C / "awaken_eyeglow.png"),
@@ -244,7 +257,7 @@ def skin_blob(img, box):
 
 # ───────────────────────── 网格微动 ─────────────────────────
 GRID = 28            # 网格间距（原图像素）
-NO_MESH = {"die_kneel", "die_fall", "die_down", *POINT}     # 跪地 / 倒地不做呼吸和发梢（整张图）
+NO_MESH = {"die_kneel", "die_fall", "die_down", "point_sky", *POINT}     # 跪地 / 倒地不做呼吸和发梢（整张图）
 # 循环姿势里会动的手 / 衣摆（手工圈的原图像素区域 + 权重从 y0 到 y1 由 0 渐变到 1）。
 # 外套和裤子都是黑色，靠颜色分不开，所以手工圈；握剑的手连着剑，不动。
 EXTRA = {
@@ -472,7 +485,7 @@ class Builder:
         self.hand["hurt_recover"] = (553.0, 800.0)
         self.hand["focus_low"] = (440.0, 690.0)          # 手在腰间枪套旁（正好像把召唤器收回去）
         self.hand["die_fall"] = (700.0, 700.0)
-        for n in POINT:
+        for n in POINT + ["point_sky"]:
             self.hand[n] = self.hand["idle"]
 
     @staticmethod
@@ -524,7 +537,7 @@ class Builder:
         att = d["skins"][0]["attachments"]
         poses = ["idle", "focus_mid", "focus", "awaken", "awaken_peak", "cast_mid", "cast"] + CAST_BACK + SWORD_POSES + \
             ["sword_smear", "sword_raise", "sword_recover", "hurt_impact", "hurt", "hurt_recover", "die_kneel", "die_fall", "die_down"] + \
-            (["focus_low"] if HAVE_LOW else []) + (POINT if HAVE_POINT else [])
+            (["focus_low"] if HAVE_LOW else []) + (POINT if HAVE_POINT else []) + (["point_sky"] if HAVE_SKY1 else [])
         for slot in ("v7_ghost", "v7_old", "v7_flash"):
             att[slot] = {f"v7_{p}": self.region(f"v7_{p}") for p in poses}
         names = [b["name"] for b in d["bones"]]
@@ -611,12 +624,19 @@ class Builder:
                 # 溶解：新姿势在下面已经完全显示，旧姿势盖在上面从不透明淡到透明 —— 60 帧里每帧都在变，不会一下跳过去
                 if soft:
                     fade = max(min(0.09, nxt - t - 0.002), f * 0.5)
+                if p == "point_sky":                                  # 单帧指天：拉长溶解，像手臂顺势抬起
+                    fade = max(min(0.28, nxt - t - 0.002), f * 0.5)
                 a.att("v7_old", t, f"v7_{before}")
                 a.rgba("v7_old", t, c8(1, 1, 1, 1))
                 a.rgba("v7_old", t + fade * (0.5 if soft else 0.35), c8(1, 1, 1, 0.5 if soft else 0.3))
                 a.rgba("v7_old", t + fade, c8(1, 1, 1, 0))
                 a.att("v7_old", t + fade, None)
                 # 不再叠青色残影（用户反馈像重影）；闪光只留给出招 / 扣下 / 受击这几个冲击瞬间
+                if p == "point_sky":
+                    a.att("v7_flash", t + fade * 0.6, f"v7_{p}")
+                    a.rgba("v7_flash", t + fade * 0.6, c8(0.7, 0.95, 1.0, 0.35))
+                    a.rgba("v7_flash", t + fade * 0.6 + 0.2, c8(0.85, 0.97, 1.0, 0.0))
+                    a.att("v7_flash", t + fade * 0.6 + 0.2, None)
                 if p in ("sword_smear", "awaken_peak", "hurt_impact"):
                     a.att("v7_flash", t, f"v7_{p}")
                     a.rgba("v7_flash", t, c8(0.6, 0.9, 1.0, 0.22))
@@ -803,6 +823,13 @@ class Builder:
             A["point_sky_in"] = a
             a = Anim(1.0)
             self.sequence(a, [(0, "point_8_sky")])
+            A["point_sky_loop"] = a
+        elif HAVE_SKY1:
+            a = Anim(0.6)
+            self.sequence(a, [(0, "idle"), (0.3, "point_sky")], prev="idle")
+            A["point_sky_quick"] = a                                 # 单帧版：0.3s 处换到指天（GreatSeal 按这个名字用单帧节奏）
+            a = Anim(1.0)
+            self.sequence(a, [(0, "point_sky")])
             A["point_sky_loop"] = a
 
         for name, a in A.items():
