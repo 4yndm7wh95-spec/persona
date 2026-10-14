@@ -7,10 +7,11 @@ namespace P3Makoto.Vfx;
 /// 总攻击（All-Out Attack）：精英 / Boss 战的最后一击之后、胜利结算之前播放（AllOutPatch 把战斗结束流程推迟 Duration 秒；
 /// 播了总攻击就不再播普通胜利演出）。
 /// v0.14.16（用户：太长了，只要「怪物倒下的位置展开同心圆 → 顺势切到结算立绘」，配好音效，其他都不要）：约 3.7s
-///   0.30  从怪物中心展开浅蓝 / 中蓝 / 深蓝同心大圆铺满画面，两道细圆弧转过                ♪ Btl_Allout_Wipe @0.20
-///   1.05  同心圆的蓝底直接接成结算画面：青底从右上扫入、深蓝色带、刻度圆环、速度线、三角碎片，
-///         立绘暗蓝滑入 → 0.22s 白闪亮起（原版 A2→A1），背后 MAJESTIC；0.5s「DONE AND DUSTED.」从左滑入   ♪ Kime01 高潮对准亮起
-///   停留到 3.35 → 0.35s 淡出
+///   0.30  浅蓝底 / 深蓝 / 浅蓝三层圆从倒下的敌人中心依次展开，圆心同时滑到结算画面圆环的位置 —— 展开完就是结算页的背景
+///         （浅蓝底 + 深蓝粗圆环），之后一直缓慢呼吸、扩大、漂移，不静止
+///   1.05  结算立绘切入（1.3 倍以脸为支点拉回原大、暗蓝平滑亮起），左下深蓝斜带，MAJESTIC 滑入；0.67s「DONE AND DUSTED.」甩入
+///         ♪ 只有 Allout_Zoom（原版这一段的音效），峰值对准切入那一帧
+///   停留到 3.3 → 0.4s 整体淡出
 /// 结束立绘用 P3R 原版贴图（allout_finish / allout_finish_dark / allout_text），缺图时退回 victory_portrait。
 /// </summary>
 public static class AllOut
@@ -31,10 +32,11 @@ public static class AllOut
 		root.TopLevel = true;
 		root.GlobalPosition = Vector2.Zero;
 
-		Audio.Sfx.Clip("Btl_Allout_Wipe", 0.85f, IrisAt - 0.1f);
-		Audio.Sfx.Clip("Snd_FX_Btl_Allout_Kime01", 1.0f, FinishAt - 0.85f);           // Kime01 前 0.85s 是蓄势长音，0.85s 起爆 = 原版切入结算立绘那一帧
+		// 原版（用户给的结算片段，和音效库逐个做互相关）：结算立绘这一段只有 Allout_Zoom，峰值（0.7s）正对切入立绘那一帧；
+		// 没有 Wipe、没有 Kime01（之前两段满音量叠在一起，又吵又不对）
+		Audio.Sfx.Clip("Snd_FX_Btl_Allout_Zoom", 0.8f, FinishAt - 0.7f);
 
-		Fx.After(root, IrisAt, "allout iris", () => Iris(root, focus, W, H));
+		Fx.After(root, IrisAt, "allout iris", () => Iris(root, focus, W, H, Duration - IrisAt));
 		Fx.After(root, FinishAt, "allout finish", () => Finish(root, W, H));
 		Fx.FreeAfter(root, Duration + 0.1f);
 	}
@@ -46,50 +48,45 @@ public static class AllOut
 		return c / pts.Count;
 	}
 
-	// 从怪物中心展开的同心圆（盖住整个画面，接结算画面）
-	private static void Iris(Node2D root, Vector2 focus, float W, float H)
+	// 原版结算画面的配色（从原版截图取色）：浅蓝底 / 深蓝粗圆环 / 左下深一档斜带
+	private static readonly Color Base = new(53 / 255f, 172 / 255f, 239 / 255f), RingBlue = new(23 / 255f, 105 / 255f, 216 / 255f);
+
+	/// <summary>
+	/// 同心圆 = 结算画面的背景（用户：同心圆要顺势过渡成立绘页的背景，不能静止）：
+	/// 浅蓝底 / 深蓝 / 浅蓝三层圆从倒下的敌人中心依次展开，圆心一边展开一边滑到结算画面圆环的位置，
+	/// 展开完正好是「浅蓝底 + 深蓝粗圆环」；之后一直缓慢呼吸、扩大、漂移，直到整段淡出。
+	/// </summary>
+	private static void Iris(Node2D root, Vector2 focus, float W, float H, float life)
 	{
 		Node2D n = new();
 		root.AddChild(n);
-		Color[] cols = { new(0.35f, 0.88f, 1f), new(0.12f, 0.45f, 0.95f), new(0.04f, 0.1f, 0.45f) };
-		var discs = new List<Polygon2D>();
-		for (int i = 0; i < 3; i++)
-		{
-			Polygon2D d = Fx.Poly(n, Fx.Circle(10f, 128), cols[i]);
-			d.Position = focus;
-			discs.Add(d);
-		}
-		Node2D rim = new() { Position = focus };
-		n.AddChild(rim);
-		Fx.StrokeClosed(rim, Fx.Circle(10f, 128), new Color(0.6f, 0.95f, 1f, 0.95f), 0.6f);
-		Node2D arcs = new() { Position = focus };
-		n.AddChild(arcs);
-		P3Ui.Arc(arcs, Vector2.Zero, H * 0.7f, 0f, Mathf.Pi * 0.9f, new Color(0.45f, 0.9f, 1f, 0.8f), 4f);
-		P3Ui.Arc(arcs, Vector2.Zero, H * 1.05f, Mathf.Pi, Mathf.Pi * 1.7f, new Color(1f, 1f, 1f, 0.45f), 2f);
-		// 半径要盖住离圆心最远的屏幕角
-		float R = 0f;
+		Vector2 ringAt = new(W * 0.66f, H * 0.48f);
+		float r1 = H * 0.66f, r2 = H * 0.55f;                     // 深蓝圆环的外 / 内半径（原版截图量）
+		float cover = 0f;
 		foreach (Vector2 corner in new[] { Vector2.Zero, new Vector2(W, 0f), new Vector2(0f, H), new Vector2(W, H) })
 		{
-			R = Mathf.Max(R, (corner - focus).Length());
+			cover = Mathf.Max(cover, Mathf.Max((corner - focus).Length(), (corner - ringAt).Length()));
 		}
-		R *= 1.05f;
-		const float total = 1.25f;
-		Fx.Animate(n, total, t =>
+		cover *= 1.08f;
+		Polygon2D baseDisc = Fx.Poly(n, Fx.Circle(10f, 160), Base);
+		Polygon2D ringDisc = Fx.Poly(n, Fx.Circle(10f, 160), RingBlue);
+		Polygon2D innerDisc = Fx.Poly(n, Fx.Circle(10f, 160), Base);
+		Fx.Animate(n, life, t =>
 		{
-			float time = t * total;
-			for (int i = 0; i < 3; i++)
-			{
-				float u = Ease.InOutCubic(Mathf.Clamp((time - 0.13f * i) / 0.55f, 0f, 1f));
-				discs[i].Scale = Vector2.One * (R * u / 10f);
-			}
-			float ru = Ease.OutCubic(Mathf.Clamp(time / 0.5f, 0f, 1f));
-			rim.Scale = Vector2.One * (R * 1.02f * ru / 10f);
-			rim.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp((time - 0.45f) / 0.15f, 0f, 1f));
-			arcs.Rotation = 0.6f * time;
-			arcs.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((time - 0.7f) / 0.15f, 0f, 1f));
-			n.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp((time - 1.15f) / 0.1f, 0f, 1f));
+			float time = t * life;
+			// 圆心：0.75s 内从敌人滑到圆环位置，之后缓慢向左上漂
+			Vector2 c = focus.Lerp(ringAt, Ease.InOutCubic(Mathf.Clamp(time / 0.75f, 0f, 1f))) + new Vector2(-10f, -3f) * Mathf.Max(0f, time - 0.75f);
+			float breathe = 1f + 0.015f * Mathf.Sin(time * 2.2f) + 0.012f * time;          // 一直在动：轻微呼吸 + 缓慢扩大
+			float u0 = Ease.InOutCubic(Mathf.Clamp(time / 0.55f, 0f, 1f));
+			float u1 = Ease.OutCubic(Mathf.Clamp((time - 0.1f) / 0.6f, 0f, 1f));
+			float u2 = Ease.OutCubic(Mathf.Clamp((time - 0.2f) / 0.6f, 0f, 1f));
+			baseDisc.Position = ringDisc.Position = innerDisc.Position = c;
+			baseDisc.Scale = Vector2.One * (cover * u0 / 10f);
+			ringDisc.Scale = Vector2.One * (r1 * breathe * u1 / 10f);
+			innerDisc.Scale = Vector2.One * (r2 * (breathe + 0.01f * Mathf.Sin(time * 3.1f)) * u2 / 10f);
+			n.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InOutSine(Mathf.Clamp((time - (life - 0.4f)) / 0.4f, 0f, 1f)));
 		});
-		Fx.FreeAfter(n, total + 0.05f);
+		Fx.FreeAfter(n, life + 0.05f);
 	}
 
 	private static Texture2D? Tex(string name) =>
@@ -99,23 +96,8 @@ public static class AllOut
 	{
 		Node2D f = new();
 		root.AddChild(f);
-		ColorRect bg = new() { Size = new Vector2(W, H), Color = new Color(0.25f, 0.72f, 0.95f, 0.97f), MouseFilter = Control.MouseFilterEnum.Ignore };
-		f.AddChild(bg);
 		// 斜切的深一档色带（P3R 结束画面左下的斜块）
-		Polygon2D band = Fx.Poly(f, new[] { new Vector2(-40f, H * 0.78f), new Vector2(W * 0.62f, H * 0.52f), new Vector2(W * 0.7f, H + 40f), new Vector2(-40f, H + 40f) }, new Color(0.14f, 0.52f, 0.88f, 0.85f));
-
-		Node2D ring = new() { Position = new Vector2(W * 0.66f, H * 0.5f) };
-		f.AddChild(ring);
-		Fx.StrokeClosed(ring, Fx.Circle(H * 0.56f, 128), new Color(0.12f, 0.45f, 0.9f, 0.9f), H * 0.1f, additive: false);
-		Fx.StrokeClosed(ring, Fx.Circle(H * 0.43f, 128), new Color(1f, 1f, 1f, 0.55f), 3f);
-		Fx.StrokeClosed(ring, Fx.Circle(H * 0.66f, 128), new Color(1f, 1f, 1f, 0.3f), 2f);
-		// 圆环上的刻度
-		for (int k = 0; k < 48; k++)
-		{
-			Vector2 d = Vector2.Right.Rotated(k * Mathf.Tau / 48f);
-			float len = k % 4 == 0 ? 26f : 12f;
-			Fx.Line(ring, new[] { d * (H * 0.62f), d * (H * 0.62f + len) }, new Color(1f, 1f, 1f, k % 4 == 0 ? 0.6f : 0.3f), k % 4 == 0 ? 3f : 2f);
-		}
+		Polygon2D band = Fx.Poly(f, new[] { new Vector2(-40f, H * 0.78f), new Vector2(W * 0.62f, H * 0.52f), new Vector2(W * 0.7f, H + 40f), new Vector2(-40f, H + 40f) }, new Color(23 / 255f, 97 / 255f, 175 / 255f, 0.9f));
 
 		Node2D word = new() { Position = new Vector2(W * 0.02f, H * 0.62f), Rotation = -0.12f, Skew = -0.25f };
 		f.AddChild(word);
@@ -169,7 +151,6 @@ public static class AllOut
 		{
 			float time = t * total;
 			float ease = Ease.OutCubic(Mathf.Clamp(time / 0.7f, 0f, 1f));            // 镜头后拉：切入时 1.3 倍，0.7s 内拉到原大，之后一直慢漂
-			bg.Position = Vector2.Zero;
 			band.Position = new Vector2(-W * 0.12f * (1f - Ease.OutCubic(Mathf.Clamp(time / 0.4f, 0f, 1f))), 0f);
 			// 以脸为支点缩放（原版：拉镜头时脸基本不动，身体往画面外收）
 			float hsc = 1.3f - 0.3f * ease - 0.015f * time;
@@ -180,8 +161,6 @@ public static class AllOut
 			if (heroDark != null)
 				heroDark.Modulate = new Color(1f, 1f, 1f, 1f - lift);
 			flash.Modulate = new Color(1f, 1f, 1f, 0.15f * Mathf.Sin(Mathf.Pi * lift));
-			ring.Rotation = time * 0.12f;
-			ring.Scale = Vector2.One * (1.1f - 0.1f * ease);
 			float wi = Ease.OutCubic(Mathf.Clamp(time / 0.3f, 0f, 1f));
 			word.Position = new Vector2(W * 0.02f - W * 0.35f * (1f - wi) + 18f * time, H * 0.62f);
 			word.Modulate = new Color(1f, 1f, 1f, wi);
