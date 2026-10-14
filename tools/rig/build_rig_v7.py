@@ -50,6 +50,14 @@ SWORD_POSES = ["sword_rest", "sword_ready", "sword_windup", "sword_slash"]
 CAST_BACK = ["cast_low", "cast_drop", "cast_lower", "cast_settle"]
 # 第六批（可选）："放下途中"（胸口 → 待机之间，手放到腰的高度、空手）。图到了才启用
 HAVE_LOW = (ROOT / "art/v12/transparent/focus_low_a.png").exists()
+# 伟大封印「单手指天」：Codex 从 idle_a 编辑出的 8 张全身帧（docs/codex/codex_point_sky_frames.md），和待机图逐像素对齐。
+# 只用于结局过场（GreatSeal.PointSky 播 point_sky_in → point_sky_loop），不是战斗动画；帧不齐就不建
+PT = ROOT / "art/v15/point"
+POINT = ["point_1_hip", "point_2_waist", "point_3_chest", "point_4_chin", "point_5_brow", "point_6_over", "point_7_diag", "point_8_sky"]
+HAVE_POINT = all((PT / f"{n}.png").exists() for n in POINT)
+# 帧时刻照原版视频（右手从身侧经腰、胸、下巴、额头上方，再斜着扫上去直指天空，约 1.9s；节奏是松弛的，不赶）
+POINT_T = [0.0, 0.33, 0.67, 1.0, 1.33, 1.5, 1.67, 1.9]
+POINT_DUR = 2.4
 # 剑：拳头中心 / 剑尖（原图像素，自动检测剑身 + 握剑手，见提交记录里的标定图）
 SWORD = {"sword_rest": ((358.2, 778.4), (807.1, 1263.9)), "sword_ready": ((234.6, 742.9), (821.2, 1378.1)),
          "sword_windup": ((479.9, 132.5), (13.1, 424.6)), "sword_slash": ((637.3, 843.7), (1012.5, 1327.4)),
@@ -87,7 +95,8 @@ POSE_T = {"idle": (1.0, 0.0), "focus_mid": (0.95, 0.0), "focus": (0.95, 0.0), "a
           "sword_recover": ("via", "sword_slash", (1.0, 0.9, 29.5)),
           "hurt_recover": ("via", "hurt", (1.0, -1.0, -2.2)),
           # 第六批：由 focus_mid 编辑出来，按鞋配准（tools/rig/v7_register.py）：缩放 1.000、位移不到 1px
-          "focus_low": ("via", "focus_mid", (1.0, -0.4, -0.6))}
+          "focus_low": ("via", "focus_mid", (1.0, -0.4, -0.6)),
+          **{n: (1.0, 0.0) for n in POINT}}
 
 
 def U(p, pose=None):
@@ -145,6 +154,7 @@ def sources():
         "v7_sword_recover": load(T / "sword_recover_a.png"),
         "v7_hurt_recover": load(T / "hurt_recover_a.png"),
         **({"v7_focus_low": load(T / "focus_low_a.png")} if HAVE_LOW else {}),
+        **({f"v7_{n}": load(PT / f"{n}.png") for n in POINT} if HAVE_POINT else {}),
         "v7_awaken_peak": load(comp.POSES["awaken_peak"][0]),
         "v7_awaken_peak_eyeglow": load(C / "awaken_peak_eyeglow.png"),
         "v7_awaken_eyeglow": load(C / "awaken_eyeglow.png"),
@@ -234,7 +244,7 @@ def skin_blob(img, box):
 
 # ───────────────────────── 网格微动 ─────────────────────────
 GRID = 28            # 网格间距（原图像素）
-NO_MESH = {"die_kneel", "die_fall", "die_down"}     # 跪地 / 倒地不做呼吸和发梢（整张图）
+NO_MESH = {"die_kneel", "die_fall", "die_down", *POINT}     # 跪地 / 倒地不做呼吸和发梢（整张图）
 # 循环姿势里会动的手 / 衣摆（手工圈的原图像素区域 + 权重从 y0 到 y1 由 0 渐变到 1）。
 # 外套和裤子都是黑色，靠颜色分不开，所以手工圈；握剑的手连着剑，不动。
 EXTRA = {
@@ -462,6 +472,8 @@ class Builder:
         self.hand["hurt_recover"] = (553.0, 800.0)
         self.hand["focus_low"] = (440.0, 690.0)          # 手在腰间枪套旁（正好像把召唤器收回去）
         self.hand["die_fall"] = (700.0, 700.0)
+        for n in POINT:
+            self.hand[n] = self.hand["idle"]
 
     @staticmethod
     def duration(a):
@@ -512,7 +524,7 @@ class Builder:
         att = d["skins"][0]["attachments"]
         poses = ["idle", "focus_mid", "focus", "awaken", "awaken_peak", "cast_mid", "cast"] + CAST_BACK + SWORD_POSES + \
             ["sword_smear", "sword_raise", "sword_recover", "hurt_impact", "hurt", "hurt_recover", "die_kneel", "die_fall", "die_down"] + \
-            (["focus_low"] if HAVE_LOW else [])
+            (["focus_low"] if HAVE_LOW else []) + (POINT if HAVE_POINT else [])
         for slot in ("v7_ghost", "v7_old", "v7_flash"):
             att[slot] = {f"v7_{p}": self.region(f"v7_{p}") for p in poses}
         names = [b["name"] for b in d["bones"]]
@@ -693,7 +705,7 @@ class Builder:
     def end(self, a, name):
         """保证动画时长与 v5 一致（末尾放一个不改变任何东西的关键帧）。"""
         a.rgba("v7_body", 0, "ffffffff")
-        a.rgba("v7_body", self.v5_dur[name], "ffffffff")
+        a.rgba("v7_body", self.v5_dur.get(name, a.dur), "ffffffff")     # 新增的过场动画（point_sky_*）用自己的时长
 
     def build_anims(self):
         A = {}
@@ -784,6 +796,14 @@ class Builder:
         a = Anim(d["die"])
         self.sequence(a, [(0, "hurt_impact"), (IMPACT, "hurt"), (0.24, "die_kneel"), (0.6, "die_fall"), (0.85, "die_down")], prev="idle")
         A["die"] = a
+
+        if HAVE_POINT:
+            a = Anim(POINT_DUR)
+            self.sequence(a, list(zip(POINT_T, POINT)), prev="idle")
+            A["point_sky_in"] = a
+            a = Anim(1.0)
+            self.sequence(a, [(0, "point_8_sky")])
+            A["point_sky_loop"] = a
 
         for name, a in A.items():
             for e in self.v5_events.get(name, []):

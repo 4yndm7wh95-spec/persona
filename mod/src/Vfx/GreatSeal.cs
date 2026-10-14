@@ -365,7 +365,7 @@ public static class GreatSeal
 	//         右上「宇宙」阿卡纳栏，技能列表里「伟大封印」被选中（白底黑字），下方两行说明；1.30 确认一闪
 	//   1.70  左上技能名横幅「伟大封印」；画面转黑
 	//   2.30  电影遮幅（上下黑边）：昏暗的塔顶，结城理脚下亮起蓝白光圈，光雾和细长的光丝从地面升起、光点上飘
-	//   3.60  单手指天（有 point_sky 动画就播，没有也照样）：头顶一道细光柱直冲天顶
+	//   3.60  单手指天：头顶一道细光柱直冲天顶。有 8 帧指天动画（point_sky_in）时照原版节奏 2.40 起手、4.30 指尖到顶出光柱、特写推到 4.75
 	//   4.60  面部特写（P3R 原版立绘 + 眼部差分）：闭眼 → 5.60 半睁 → 5.80 睁开，蓝光在身后流动，镜头缓推
 	//   6.60  回到塔顶：地面中央升起一团光穹，十几道光束从地面扇形射向上方的建筑师，建筑师被三圈封印环锁住、褪成石色
 	//   8.70  光越来越强 → 9.60 全屏白（原声高潮）
@@ -429,12 +429,13 @@ public static class GreatSeal
 		SkillMenu(ui, view);
 		Fx.After(ui, 1.7, "seal banner", () => { if (Makoto.FxLayer() is Control front) Uniq.SkillBanner(front, "伟大封印", "THE GREAT SEAL", 1.2f); });
 		Fx.After(world, 2.3, "seal rise", () => Rise(world, feet, view));
-		Fx.After(world, 3.6, "seal point", () =>
-		{
-			PointSky(player);
-			SkyBeam(world, head, view);
-		});
-		Fx.After(ui, 4.6, "seal face", () => FaceCloseUp(ui, view, barH));
+		// 有指天帧动画（point_sky_in，照原版约 1.9s 从身侧慢慢抬到指天）：2.4 起手，4.3 指尖到顶时光柱升起，特写推迟到 4.75；
+		// 没有就按旧节奏 3.6 光柱、4.6 特写
+		bool frames = HasPointAnim(player);
+		float beamAt = frames ? 4.3f : 3.6f, faceAt = frames ? 4.75f : 4.6f;
+		Fx.After(world, frames ? 2.4 : 3.6, "seal point", () => PointSky(player));
+		Fx.After(world, beamAt, "seal beam", () => SkyBeam(world, head, view));
+		Fx.After(ui, faceAt, "seal face", () => FaceCloseUp(ui, view, barH, 6.65f - faceAt));
 		Fx.After(world, 6.6, "seal dome", () => Dome(world, feet, foe, architect, view));
 		Fx.After(ui, 8.7, "seal white", () => WhiteRise(ui, view));
 		Fx.After(ui, 9.6, "seal gate", () => Gate(top, view));
@@ -583,6 +584,9 @@ public static class GreatSeal
 		Fx.FreeAfter(r, total + 0.05f);
 	}
 
+	private static bool HasPointAnim(NCreature? player) =>
+		player != null && GodotObject.IsInstanceValid(player) && player.Visuals.SpineBody is { } body && body.HasAnimation("point_sky_in");
+
 	/// <summary>单手指天：骨骼里有 point_sky（_in / _loop）动画就播放，结束后回待机；没有就跳过（光柱照样升起）。</summary>
 	private static void PointSky(NCreature? player)
 	{
@@ -633,7 +637,7 @@ public static class GreatSeal
 
 	// 4.60 面部特写（v0.14.9：P3R 立绘的眼部 / 嘴部差分要配合原版材质分层，直接叠会有亮色接缝和重影 → 改用总攻击结束立绘的脸）：
 	//      先是暗蓝调（A2），蓝光从身后流过；1.0s 一道光从左到右扫过脸，亮成本色（A1），两只眼睛各闪一下青光 —— "睁眼"的那一拍
-	private static void FaceCloseUp(Node2D ui, Vector2 view, float barH)
+	private static void FaceCloseUp(Node2D ui, Vector2 view, float barH, float total)
 	{
 		Texture2D? lit = UiTex("allout_finish");
 		Texture2D? dark = UiTex("allout_finish_dark");
@@ -693,7 +697,6 @@ public static class GreatSeal
 			motes.Add((p, new Vector2(Fx.Rand(0f, W), Fx.Rand(barH, H - barH)), Fx.Rand(0f, Mathf.Tau)));
 		}
 		Audio.Sfx.Clip("Snd_FX_Btl_PersonaAura_00", 0.6f, 1.0f);
-		const float total = 2.05f;
 		Fx.Animate(n, total, t =>
 		{
 			float time = t * total;
@@ -727,7 +730,7 @@ public static class GreatSeal
 				p.Position = o + new Vector2(-30f * time, -40f * time + 6f * Mathf.Sin(time * 2f + ph));
 				p.Modulate = new Color(1f, 1f, 1f, 0.4f + 0.4f * Mathf.Sin(time * 3f + ph));
 			}
-			n.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.15f, 0f, 1f) * (1f - Mathf.Clamp((time - 1.9f) / 0.15f, 0f, 1f)));
+			n.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.15f, 0f, 1f) * (1f - Mathf.Clamp((time - (total - 0.15f)) / 0.15f, 0f, 1f)));
 		});
 		Fx.FreeAfter(n, total + 0.05f);
 	}
