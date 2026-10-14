@@ -68,10 +68,15 @@ public static class Vorpal
 		Vector2 size = front.GetViewportRect().Size;
 		// v0.14.1 时停：伤害结算前 0.1s 冻结战斗时间（Engine.TimeScale≈0，敌人 / Persona / 游戏流程全部停住），
 		// 斩线在真实时间里刻 1.2s；斩击结束、线条亮起时恢复时间，0.1s 后游戏照常结算伤害。本类里的动画 / 计时都用真实时间（RT）。
-		float cut = CutDuration;
 		float start = Mathf.Max(release - 0.1f, 0.05f);
-		float k = 1f;
-		float releaseAt = start + cut;                 // 真实时间：时停结束 = 释放
+		// v0.14.22（用户：两阶段之间要有一道明显的斩击来切换，配原声里那声大斩击；之前的弧形斩太小、比声音早）：
+		// 原声 vorpal_blade 在 1.0s 处有一声大斩击（0~0.35 第一刀、0.7~0.97 蓄势、1.0 斩下）。
+		// 大弧斩在原声 0.98s 挥出（0.09s 划完），划完即释放（时停结束、画面转暗蓝），刻线节奏按比例压缩
+		float audioAt = Mathf.Max(start - 0.2f, 0f);
+		float slashAt = audioAt + 0.98f;
+		float releaseAt = Mathf.Max(slashAt + 0.11f, start + 0.5f);   // 真实时间：时停结束 = 释放
+		float cut = releaseAt - start;
+		float k = cut / CutDuration;
 		_quietUntil = Time.GetTicksMsec() + (ulong)((releaseAt + 1.0f) * 1000f);
 		Vector2 focus = Center(targets, size);
 
@@ -99,12 +104,11 @@ public static class Vorpal
 		}
 
 		// P3R 原声 skill_0117（空间杀法）：和视频对齐 —— 音频开始 0.2s 后画面反相，1.0s 前后是斩击密集段，1.4s 释放
-		Audio.Sfx.Clip("vorpal_blade", 1.0f, Mathf.Max(start - 0.2f, 0f));
+		Audio.Sfx.Clip("vorpal_blade", 1.0f, audioAt);
 		AfterRT(root, start, "vorpal invert", () =>
 		{
 			AnimRT(grade, 0.06f, t => grade.Color = new Color(0.97f, 0.93f, 0.86f, 0.5f * t));       // 高调：米白色层 50%
 			BrushStroke(lines, focus, size, k);
-			ArcStroke(lines, focus, k);
 			Flecks(root, focus, size, cut + 0.5f);
 			foreach (var (a, b, w, at) in cuts)
 			{
@@ -116,6 +120,10 @@ public static class Vorpal
 				});
 			}
 		});
+
+		// 切换阶段的大弧斩（墨黑，比第一刀还粗），释放时变成发光的光刃
+		Vector2[] arc = ArcPoints(focus, size);
+		AfterRT(root, slashAt, "vorpal arc", () => ArcStroke(lines, arc));
 
 		// 释放：蓝白强闪 → 暗蓝 + 线条亮起
 		AfterRT(root, start, "vorpal freeze", () => Freeze(true));
@@ -131,6 +139,10 @@ public static class Vorpal
 				Fx.Stroke(glow, new[] { a, b }, new Color(0.35f, 0.75f, 1f, 0.18f), w * 2.6f + 4f);
 				Fx.Stroke(glow, new[] { a, b }, new Color(0.85f, 0.97f, 1f, 0.95f), Mathf.Max(2f, w * 0.6f));
 			}
+			// 大弧斩亮起：最宽最亮的一道光刃；弧内的白色层被"劈开"——闪白、向外撑开后散去
+			Fx.Stroke(glow, arc, new Color(0.35f, 0.75f, 1f, 0.3f), 46f);
+			Fx.Stroke(glow, arc, new Color(0.9f, 0.98f, 1f, 1f), 9f);
+			OpenUp(root, arc, focus);
 			P3Fx.SpeedLines(front, focus, Pal.Ice, 26, 120f, size.X * 0.7f, 0.45f);
 			NGame.Instance?.ScreenShake(ShakeStrength.Strong, ShakeDuration.Short);
 			AnimRT(glow, 0.75f, t =>
@@ -209,25 +221,70 @@ public static class Vorpal
 		});
 	}
 
-	/// <summary>一道绕着敌群的弧形黑斩痕（椭圆的一段），稍晚出现。</summary>
-	private static void ArcStroke(Node2D parent, Vector2 focus, float k)
+	/// <summary>大弧斩的轨迹：从敌群左上方切入，经右侧绕到下方、收向左下（椭圆的大半圈，略倾斜）。</summary>
+	private static Vector2[] ArcPoints(Vector2 focus, Vector2 size)
 	{
-		AfterRT(parent, 0.3f * k, "vorpal arc", () =>
+		const int m = 40;
+		var pts = new Vector2[m + 1];
+		float rx = size.X * 0.24f, ry = size.Y * 0.3f, tilt = -0.25f;
+		for (int i = 0; i <= m; i++)
 		{
-			Polygon2D poly = Fx.Poly(parent, new Vector2[3], new Color(0.06f, 0.05f, 0.05f, 0.85f));
-			float a0 = Fx.Rand(0f, Mathf.Tau);
-			AnimRT(poly, 0.12f, t =>
-			{
-				var pts = new List<Vector2>();
-				int m = 4 + (int)(t * 20f);
-				for (int i = 0; i <= m; i++)
-				{
-					float a = a0 + i * 0.12f;
-					pts.Add(focus + new Vector2(Mathf.Cos(a) * 340f, Mathf.Sin(a) * 120f));
-				}
-				Fx.Reshape(poly, Fx.StrokePts(pts.ToArray(), 7f, taper: true));
-			});
+			float a = Mathf.Lerp(-2.5f, 2.35f, i / (float)m);
+			pts[i] = focus + new Vector2(Mathf.Cos(a) * rx, Mathf.Sin(a) * ry).Rotated(tilt);
+		}
+		return pts;
+	}
+
+	/// <summary>切换阶段的大弧斩（和原声 1.0s 的斩击同步）：粗墨黑毛笔弧 0.09s 划完，刀锋处带一点白，划过处溅出黑色碎屑。</summary>
+	private static void ArcStroke(Node2D parent, Vector2[] arc)
+	{
+		Polygon2D ink = Fx.Poly(parent, new Vector2[3], new Color(0.05f, 0.04f, 0.04f, 0.96f));
+		Polygon2D edge = Fx.Poly(parent, new Vector2[3], new Color(1f, 1f, 1f, 0.85f));
+		AnimRT(ink, 0.09f, t =>
+		{
+			int m = Mathf.Clamp(Mathf.CeilToInt(Ease.OutCubic(t) * (arc.Length - 1)) + 1, 2, arc.Length);
+			Fx.Reshape(ink, Fx.StrokePts(arc[..m], 34f, taper: true));
+			int h = Mathf.Max(0, m - 6);
+			Fx.Reshape(edge, Fx.StrokePts(arc[h..m], 5f, taper: true));
+			edge.Modulate = new Color(1f, 1f, 1f, 1f - t * 0.5f);
 		});
+		for (int i = 0; i < 14; i++)
+		{
+			Vector2 p = arc[Fx.Rng.Next(arc.Length)];
+			float delay = 0.09f * Fx.Rand(0f, 1f);
+			Polygon2D chip = Fx.Poly(parent, new[] { new Vector2(-6f, 0f), new Vector2(0f, -11f), new Vector2(6f, 2f) }, new Color(0.06f, 0.05f, 0.05f, 0.9f));
+			chip.Position = p;
+			chip.Visible = false;
+			Vector2 v = Fx.RandDir() * Fx.Rand(40f, 120f);
+			AnimRT(chip, 0.5f, t =>
+			{
+				float u = Mathf.Clamp((t * 0.5f - delay) / (0.5f - delay), 0f, 1f);
+				chip.Visible = u > 0f;
+				chip.Position = p + v * Ease.OutCubic(u);
+				chip.Rotation = u * 4f;
+			});
+		}
+	}
+
+	/// <summary>释放瞬间：大弧斩围住的区域闪白、向外撑开后散去（像画面从刀口处被劈开）。</summary>
+	private static void OpenUp(Node2D root, Vector2[] arc, Vector2 focus)
+	{
+		Node2D hole = new() { Position = focus };
+		root.AddChild(hole);
+		var local = new Vector2[arc.Length];
+		for (int i = 0; i < arc.Length; i++)
+		{
+			local[i] = arc[i] - focus;
+		}
+		Polygon2D fill = Fx.Poly(hole, local, new Color(0.97f, 0.97f, 1f, 0.8f), additive: true);
+		Line2D rim = Fx.Line(hole, local, new Color(0.8f, 0.95f, 1f, 1f), 6f, closed: true);
+		AnimRT(hole, 0.28f, t =>
+		{
+			hole.Scale = Vector2.One * (1f + 0.35f * Ease.OutExpo(t));
+			fill.Modulate = new Color(1f, 1f, 1f, 1f - Ease.OutCubic(Mathf.Min(1f, t * 1.6f)));
+			rim.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(t));
+		});
+		FreeRT(hole, 0.3f);
 	}
 
 	/// <summary>漂浮的黑色碎屑（小三角，缓慢旋转、四散）。</summary>
