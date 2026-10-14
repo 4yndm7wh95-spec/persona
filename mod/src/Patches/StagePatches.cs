@@ -86,7 +86,7 @@ public static class KnockDownPatch
 		{
 			if (__instance.Entity.IsMonster && Stage.MakotoCombat() && Makoto.FxLayer() is Control front)
 			{
-				StageFx.KnockDown(front, __instance.VfxSpawnPosition);
+				StageFx.KnockDown(front, Makoto.FxLayer(back: true), __instance.VfxSpawnPosition);
 			}
 		});
 	}
@@ -96,8 +96,16 @@ public static class KnockDownPatch
 [HarmonyPatch(typeof(MegaCrit.Sts2.Core.Hooks.Hook), nameof(MegaCrit.Sts2.Core.Hooks.Hook.AfterCombatVictory))]
 public static class VictoryPatch
 {
-	public static void Prefix()
+	public static void Prefix(MegaCrit.Sts2.Core.Rooms.CombatRoom room)
 	{
+		// v0.14.8：这场真的播了总攻击（AllOutPatch，AfterCombatEnd 在 AfterCombatVictory 之前），就不再叠普通胜利演出；
+		// 没播（比如玩家阵亡或总攻击建不起来）仍照常庆祝
+		bool allOut = AllOut.Played;
+		AllOut.Played = false;
+		if (allOut)
+		{
+			return;
+		}
 		Callable.From(() => ModEntry.Safe("victory", () =>
 		{
 			if (Stage.MakotoCombat() && Makoto.FxLayer() is Control front)
@@ -125,8 +133,9 @@ public static class RewardBackdropPatch
 			{
 				vanillaTween.Kill();
 			}
-			StageFx.ShuffleIntro(__instance, row);
-			if (__instance.GetNodeOrNull("P3RewardBackdrop") != null)
+			bool first = __instance.GetNodeOrNull("P3RewardBackdrop") == null;
+			StageFx.ShuffleIntro(__instance, row, first);
+			if (!first)
 			{
 				return;
 			}
@@ -214,9 +223,6 @@ public static class AllOutPatch
 		__result = Delay(__result);
 	}
 
-	private static async System.Threading.Tasks.Task Delay(System.Threading.Tasks.Task inner)
-	{
-		await inner;
-		await System.Threading.Tasks.Task.Delay((int)(AllOut.Duration * 1000f));
-	}
+	private static System.Threading.Tasks.Task Delay(System.Threading.Tasks.Task inner) =>
+		System.Threading.Tasks.Task.WhenAll(inner, System.Threading.Tasks.Task.Delay((int)(AllOut.Duration * 1000f)));
 }

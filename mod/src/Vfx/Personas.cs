@@ -36,6 +36,157 @@ public static class Personas
 	private static readonly Color OrpheusGreen = new(0.35f, 1f, 0.6f);
 	private static readonly Color Gold = new(1f, 0.88f, 0.55f);
 
+
+	/// <summary>
+	/// Persona 分件骨骼（v0.14.10 Messiah、v0.14.11 Orpheus；零件由 Codex 从 P3R 渲染图拆出，art/persona_parts/*）。
+	/// 零件按原画布坐标定位；每个零件绕自己的关节点转，子零件跟着父零件走（逐帧算世界变换），绘制顺序按 z 固定。
+	/// 拆件的补画只保证小角度不露缝，所以所有动作都很小（≤0.15 弧度，Orpheus 的关节 ≤0.08）。
+	/// </summary>
+	public sealed class PartRig
+	{
+		public readonly record struct Part(string Name, string File, string? Parent, Vector2 Pivot, Vector2 Origin);
+
+		public static readonly Part[] MessiahParts =
+		{
+			new("spire", "01_spire", "torso", new(304, 390), new(273, 11)),
+			new("wing_left", "02_wing_left", "torso", new(223, 447), new(19, 425)),
+			new("wing_right", "03_wing_right", "torso", new(312, 451), new(239, 429)),
+			new("leg_left", "04_leg_left", "torso", new(237, 452), new(206, 430)),
+			new("leg_right", "05_leg_right", "torso", new(295, 452), new(253, 430)),
+			new("torso", "06_torso", null, new(277, 402), new(190, 259)),
+			new("head", "07_head", "torso", new(277, 283), new(237, 200)),
+			new("arm_raised", "08_arm_raised", "torso", new(216, 314), new(177, 276)),
+			new("arm_chain", "09_arm_chain", "torso", new(337, 315), new(323, 304)),
+			new("chain", "10_chain", "arm_chain", new(425, 488), new(401, 487)),
+			new("coffin_1", "11_coffin_1", "chain", new(423, 513), new(395, 495)),
+			new("coffin_2", "12_coffin_2", "chain", new(419, 612), new(389, 591)),
+			new("coffin_3", "13_coffin_3", "chain", new(413, 700), new(382, 680)),
+			new("coffin_4", "14_coffin_4", "chain", new(406, 801), new(379, 779)),
+		};
+
+		public static readonly Part[] OrpheusParts =
+		{
+			new("lyre", "01_lyre", "torso", new(237, 218), new(204, 20)),
+			new("thigh_left", "02_thigh_left", "torso", new(130, 375), new(59, 334)),
+			new("shin_left", "03_shin_left", "thigh_left", new(79, 452), new(58, 427)),
+			new("thigh_right", "04_thigh_right", "torso", new(239, 391), new(183, 331)),
+			new("shin_right", "05_shin_right", "thigh_right", new(213, 498), new(122, 475)),
+			new("torso", "06_torso", null, new(182, 346), new(100, 157)),
+			new("head", "07_head", "torso", new(188, 180), new(139, 69)),
+			new("upperarm_left", "08_upperarm_left", "torso", new(119, 238), new(60, 215)),
+			new("forearm_left", "09_forearm_left", "upperarm_left", new(83, 307), new(20, 284)),
+			new("upperarm_right", "10_upperarm_right", "torso", new(265, 239), new(242, 216)),
+			new("forearm_right", "11_forearm_right", "upperarm_right", new(285, 333), new(270, 310)),
+		};
+
+		private Part[] _parts = null!;
+		private Vector2 _center;
+		public Node2D Root = null!;
+		private readonly Dictionary<string, Sprite2D> _sprites = new();
+		public readonly Dictionary<string, float> Angle = new();
+
+		/// <summary>folder：res://p3makoto/persona/{folder}/；canvas：原画布尺寸（零件以画布中心为原点摆放，和整张立绘 Sprite 对齐）。</summary>
+		public static PartRig? Build(Node2D parent, float scale, Part[] parts, string folder, Vector2 canvas)
+		{
+			PartRig r = new() { _parts = parts, _center = canvas / 2f, Root = new Node2D { Scale = Vector2.One * scale } };
+			foreach (Part p in parts)
+			{
+				string path = $"res://p3makoto/persona/{folder}/{p.File}.png";
+				if (!ResourceLoader.Exists(path))
+				{
+					r.Root.QueueFree();                         // 还没进树：连同已建的零件一起释放，免得留下孤儿节点
+					return null;
+				}
+				Sprite2D sp = new() { Texture = ResourceLoader.Load<Texture2D>(path), Centered = false };
+				r.Root.AddChild(sp);
+				r._sprites[p.Name] = sp;
+				r.Angle[p.Name] = 0f;
+			}
+			parent.AddChild(r.Root);
+			r.Apply();
+			return r;
+		}
+
+		/// <summary>按 Angle 逐级算世界变换（父零件的变换 × 绕自身关节点旋转）。</summary>
+		public void Apply()
+		{
+			var world = new Dictionary<string, Transform2D>();
+			Transform2D Get(string name)
+			{
+				if (world.TryGetValue(name, out Transform2D w))
+				{
+					return w;
+				}
+				Part p = System.Array.Find(_parts, x => x.Name == name);
+				Transform2D local = new Transform2D(0f, p.Pivot) * new Transform2D(Angle[name], Vector2.Zero) * new Transform2D(0f, -p.Pivot);
+				Transform2D res = p.Parent != null ? Get(p.Parent) * local : local;
+				world[name] = res;
+				return res;
+			}
+			foreach (Part p in _parts)
+			{
+				_sprites[p.Name].Transform = new Transform2D(0f, -_center) * Get(p.Name) * new Transform2D(0f, p.Origin);
+			}
+		}
+
+		/// <summary>
+		/// Messiah 待机：头轻点、双臂呼吸、裙甲刃左右错相摆动、长刃微晃、锁链和四口棺材依次滞后摆动（像被风吹的吊坠）。
+		/// open（0~1）= 张开：抬着的手放开、垂手外展、翼刃张开；fold（0~1）= 收拢上升时：翼刃和锁链收向身体。
+		/// </summary>
+		public void MessiahIdle(float time, float open = 0f, float fold = 0f)
+		{
+			Angle["head"] = -0.03f + 0.025f * Mathf.Sin(time * 1.6f) - 0.06f * open;
+			Angle["arm_raised"] = 0.03f * Mathf.Sin(time * 1.9f + 0.5f) + 0.12f * open;
+			Angle["arm_chain"] = 0.035f * Mathf.Sin(time * 1.7f) - 0.12f * open + 0.05f * fold;
+			Angle["spire"] = 0.015f * Mathf.Sin(time * 1.1f);
+			Angle["wing_left"] = 0.05f * Mathf.Sin(time * 2.1f) + 0.1f * open - 0.08f * fold;
+			Angle["wing_right"] = -0.04f * Mathf.Sin(time * 2.1f + 1.2f) - 0.08f * open + 0.06f * fold;
+			Angle["leg_left"] = 0.025f * Mathf.Sin(time * 1.3f);
+			Angle["leg_right"] = 0.008f * Mathf.Sin(time * 1.3f + 0.8f);
+			Angle["torso"] = 0.012f * Mathf.Sin(time * 1.2f);
+			Angle["chain"] = 0.06f * Mathf.Sin(time * 1.4f) - 0.1f * fold;
+			for (int i = 1; i <= 4; i++)
+			{
+				Angle[$"coffin_{i}"] = 0.05f * Mathf.Sin(time * 1.4f - 0.45f * i) + 0.02f * i * open;
+			}
+			Apply();
+		}
+
+		/// <summary>
+		/// Orpheus：fall（0~1，下落中）时四肢被风往上甩（手臂外张、小腿后摆），落定瞬间 land（0~1 衰减）四肢一沉回弹；
+		/// 悬浮时呼吸：头轻摆、竖琴随身体微晃、手臂和长腿像吊在空中一样慢慢摆。
+		/// </summary>
+		public void OrpheusIdle(float time, float fall, float land)
+		{
+			float sway = Mathf.Sin(time * 1.5f);
+			Angle["torso"] = 0.015f * Mathf.Sin(time * 1.2f);
+			Angle["head"] = 0.03f * Mathf.Sin(time * 1.4f + 0.6f) - 0.04f * fall;
+			Angle["lyre"] = 0.02f * Mathf.Sin(time * 1.1f + 1f);
+			Angle["upperarm_left"] = 0.05f * sway + 0.08f * fall - 0.05f * land;
+			Angle["forearm_left"] = 0.04f * Mathf.Sin(time * 1.5f - 0.6f) + 0.05f * fall;
+			Angle["upperarm_right"] = -0.05f * Mathf.Sin(time * 1.5f + 0.9f) - 0.08f * fall + 0.05f * land;
+			Angle["forearm_right"] = -0.04f * Mathf.Sin(time * 1.5f + 0.3f) - 0.05f * fall;
+			// 腿：两条长腿交叉处被遮挡的部分没有补全（模拟里转 0.01 弧度就露出切边），完全不动；动作全靠上半身
+			Angle["thigh_left"] = Angle["shin_left"] = Angle["thigh_right"] = Angle["shin_right"] = 0f;
+			Apply();
+		}
+	}
+
+	/// <summary>有分件就用分件骨骼代替整张立绘本体（辉光和白色剪影仍用整张图）。</summary>
+	private static PartRig? AttachRig(Node2D root, Sprite2D fig, bool orpheus = false)
+	{
+		PartRig? rig = orpheus
+			? PartRig.Build(root, fig.Scale.X, PartRig.OrpheusParts, "orpheus_parts", new Vector2(386f, 858f))
+			: PartRig.Build(root, fig.Scale.X, PartRig.MessiahParts, "messiah_parts", new Vector2(600f, 970f));
+		if (rig == null)
+		{
+			return null;
+		}
+		root.MoveChild(rig.Root, fig.GetIndex() + 1);
+		fig.Visible = false;
+		return rig;
+	}
+
 	/// <summary>立绘 + 加色辉光 + 白色剪影闪三层。返回 (根, 本体, 辉光, 剪影)。</summary>
 	private static (Node2D root, Sprite2D body, Sprite2D glow, Sprite2D flash) Figure(Control layer, Vector2 at, Texture2D tex, float height, Color glowTint)
 	{
@@ -75,6 +226,7 @@ public static class Personas
 		EqualizerBars(back, home + new Vector2(0f, height * 0.1f), height, 1.5f);
 
 		var (root, fig, glow, flash) = Figure(back, home, tex, height, Pal.Cyan);
+		PartRig? rig = AttachRig(root, fig, orpheus: true);
 		// 两道残影（下落时拖在上方）
 		List<Sprite2D> trails = new();
 		for (int i = 0; i < 2; i++)
@@ -117,6 +269,12 @@ public static class Personas
 			float land = time < drop ? 0f : Mathf.Max(0f, 1f - (time - drop) / 0.25f);
 			flash.Modulate = new Color(0.85f, 0.97f, 1f, Mathf.Max(land * 0.9f, rise * 0.8f));
 			fig.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.06f, 0f, 1f) * (1f - rise));
+			if (rig != null)
+			{
+				rig.Root.Modulate = fig.Modulate;
+				float landK = time < drop ? 0f : Mathf.Max(0f, 1f - (time - drop) / 0.35f);
+				rig.OrpheusIdle(time, 1f - d, landK * Mathf.Sin((time - drop) * 14f));
+			}
 			glow.Modulate = new Color(Pal.Cyan, (0.35f + 0.15f * Mathf.Sin(time * 5f)) * (1f - rise));
 			flash.Modulate = new Color(flash.Modulate, flash.Modulate.A * (1f - Mathf.Clamp((time - 1.3f) / 0.2f, 0f, 1f)));
 			if (!landed && time >= drop)
@@ -240,6 +398,7 @@ public static class Personas
 		P3Fx.LightPillar(back, new Vector2(home.X, feet.Y), Gold, height * 0.4f, height * 1.4f, 1.3f);
 		var (root, fig, glow, flash) = Figure(back, home, tex, height, Gold);
 		Node2D wings = Wings(root, height, Gold);
+		PartRig? rig = AttachRig(root, fig);
 		Audio.Sfx.Clip("Snd_FX_Btl_Summon_00", 0.8f);
 		const float total = 1.6f;
 		Fx.Animate(root, total, t =>
@@ -254,6 +413,11 @@ public static class Personas
 			float w = Ease.OutBack(Mathf.Clamp((time - 0.15f) / 0.45f, 0f, 1f));
 			wings.Scale = new Vector2(w, w);
 			wings.Modulate = new Color(1f, 1f, 1f, (0.75f + 0.25f * Mathf.Sin(time * 6f)) * (1f - rise));
+			if (rig != null)
+			{
+				rig.Root.Modulate = fig.Modulate;
+				rig.MessiahIdle(time, Mathf.Clamp((time - 0.3f) / 0.5f, 0f, 1f) * (1f - rise), rise);
+			}
 		});
 		Fx.After(root, 0.5, "messiah settle", () => Motes(back, root.GlobalPosition, height, Gold, 16, 1.0f));
 		Fx.After(root, 1.15, "messiah ascend", () => Motes(back, root.GlobalPosition, height, Pal.Ice, 24, 0.9f, up: true));
@@ -311,6 +475,7 @@ public static class Personas
 		var (root, fig, glow, flash) = Figure(back, home, tex, height, Gold);
 		Node2D wings = Wings(root, height * 1.15f, Gold);
 		wings.Scale = Vector2.Zero;
+		PartRig? rig = AttachRig(root, fig);
 
 		// ── 飘落的光羽 ──
 		Node2D feathers = Fx.Root(back, circleAt, "P3MessiahFeathers");
@@ -355,25 +520,80 @@ public static class Personas
 				ThroneSeal.Release(caster);
 			}
 		});
+		// 离场（v0.14.8，用户：出去的动画不完善）：
+		//   1.45 合拢光翼、身体先往下一沉（蓄势）→ 1.55 一道金色光柱从天而降罩住它 →
+		//   1.60 加速升空：身体被拉长（纵向拉伸、横向收窄）、拖出三道金白残影、整个身影渐渐变成白光剪影 →
+		//   1.75 羽毛从身上向四周炸开、金色光点上飘 → 2.15 头顶出画处一颗十字星闪一下收尾
+		const float exitAt = 1.45f;
+		float Rise(float tt) => Ease.InCubic(Mathf.Clamp((tt - exitAt - 0.15f) / 0.55f, 0f, 1f));
+		float Dip(float tt) => tt > exitAt && tt < exitAt + 0.15f ? Mathf.Sin((tt - exitAt) / 0.15f * Mathf.Pi) : 0f;
+		Vector2 PosAt(float tt)
+		{
+			float inn = Ease.OutCubic(Mathf.Clamp((tt - 0.2f) / 0.6f, 0f, 1f));
+			return home + new Vector2(0f, -height * 0.25f * (1f - inn) + height * 0.03f * Dip(tt) - height * 1.1f * Rise(tt) + 5f * Mathf.Sin(tt * 2.4f));
+		}
+		Node2D trail = Fx.Root(back, home, "P3MessiahTrail");
+		back.MoveChild(trail, root.GetIndex());
+		List<Sprite2D> ghosts = new();
+		for (int i = 0; i < 3; i++)
+		{
+			Sprite2D g = new() { Texture = tex, Scale = fig.Scale, Material = Fx.Additive, Modulate = new Color(1f, 0.92f, 0.7f, 0f) };
+			trail.AddChild(g);
+			ghosts.Add(g);
+		}
 		Fx.Animate(root, total, t =>
 		{
 			float time = t * total;
-			float inn = Ease.OutCubic(Mathf.Clamp((time - 0.2f) / 0.6f, 0f, 1f));
-			float rise = Ease.InCubic(Mathf.Clamp((time - 1.4f) / 0.7f, 0f, 1f));
-			root.Position = home + new Vector2(0f, -height * 0.25f * (1f - inn) - height * 0.2f * rise + 5f * Mathf.Sin(time * 2.4f));
+			float rise = Rise(time);
+			root.GlobalPosition = PosAt(time);
+			root.Scale = new Vector2(1f - 0.15f * rise, 1f + 0.35f * rise);
 			float vis = Mathf.Clamp((time - 0.2f) / 0.15f, 0f, 1f);
-			fig.Modulate = new Color(1f, 1f, 1f, vis * Mathf.Clamp((time - 0.35f) / 0.3f, 0f, 1f) * (1f - rise));
+			float gone = Mathf.Clamp((time - exitAt - 0.55f) / 0.25f, 0f, 1f);
+			fig.Modulate = new Color(1f, 1f, 1f, vis * Mathf.Clamp((time - 0.35f) / 0.3f, 0f, 1f) * (1f - Mathf.Clamp((time - exitAt - 0.3f) / 0.35f, 0f, 1f)));
 			float white = vis * (1f - Mathf.Clamp((time - 0.4f) / 0.35f, 0f, 1f));
 			float pulse = time >= sealAt ? Mathf.Max(0f, 1f - (time - sealAt) / 0.3f) * 0.6f : 0f;
-			flash.Modulate = new Color(1f, 0.97f, 0.88f, Mathf.Max(Mathf.Max(white, pulse), rise * 0.9f) * (1f - Mathf.Clamp((time - 2.3f) / 0.3f, 0f, 1f)));
-			glow.Modulate = new Color(Gold, (0.35f + 0.2f * Mathf.Sin(time * 4f) + pulse) * vis * (1f - rise));
-			// 光翼：依次展开 → 封印时猛张一下 → 上升时合拢
+			float lift = Mathf.Clamp((time - exitAt - 0.1f) / 0.35f, 0f, 1f);
+			flash.Modulate = new Color(1f, 0.97f, 0.88f, Mathf.Max(Mathf.Max(white, pulse), lift) * (1f - gone));
+			glow.Modulate = new Color(Gold, (0.35f + 0.2f * Mathf.Sin(time * 4f) + pulse + 0.4f * lift) * vis * (1f - gone));
+			// 光翼：依次展开 → 封印时猛张一下 → 离场时向上合拢成一束
 			float open = Ease.OutBack(Mathf.Clamp((time - 0.35f) / 0.5f, 0f, 1f));
 			float flare = time >= sealAt ? 0.12f * Mathf.Max(0f, 1f - (time - sealAt) / 0.35f) : 0f;
-			float close = Ease.InCubic(Mathf.Clamp((time - 1.5f) / 0.5f, 0f, 1f));
-			wings.Scale = new Vector2((open + flare) * (1f - 0.8f * close), (open + flare) * (1f - 0.3f * close));
-			wings.Modulate = new Color(1f, 1f, 1f, (0.7f + 0.3f * Mathf.Sin(time * 5f)) * (1f - rise));
+			float close = Ease.InOutCubic(Mathf.Clamp((time - exitAt) / 0.3f, 0f, 1f));
+			wings.Scale = new Vector2((open + flare) * (1f - 0.85f * close), (open + flare) * (1f + 0.25f * close));
+			wings.Modulate = new Color(1f, 1f, 1f, (0.7f + 0.3f * Mathf.Sin(time * 5f)) * (1f - gone));
+			if (rig != null)
+			{
+				rig.Root.Modulate = fig.Modulate;
+				float openArms = Mathf.Clamp((time - 0.5f) / 0.5f, 0f, 1f) * 0.5f + flare * 4f;   // 降临后双臂渐渐张开，封印那一拍猛地张开
+				rig.MessiahIdle(time, Mathf.Min(openArms, 1f) * (1f - close), close);
+			}
+			// 残影：沿上升轨迹落后 0.05 / 0.1 / 0.15s
+			for (int i = 0; i < ghosts.Count; i++)
+			{
+				float lagT = time - 0.05f * (i + 1);
+				ghosts[i].GlobalPosition = PosAt(lagT);
+				ghosts[i].Scale = fig.Scale * new Vector2(1f - 0.15f * Rise(lagT), 1f + 0.35f * Rise(lagT));
+				float on = rise > 0.02f ? (0.45f - 0.12f * i) * (1f - gone) : 0f;
+				ghosts[i].Modulate = new Color(1f, 0.92f, 0.7f, on);
+			}
 		});
+		Fx.After(root, exitAt + 0.1, "messiah exit pillar", () =>
+			P3Fx.LightPillar(back, home + new Vector2(0f, height * 0.5f), Gold, height * 0.5f, height * 2.4f, 0.8f));
+		Fx.After(root, exitAt + 0.3, "messiah exit feathers", () => FeatherBurst(back, PosAt(exitAt + 0.3f), height));
+		Fx.After(root, exitAt + 0.7, "messiah exit star", () =>
+		{
+			Vector2 topAt = PosAt(exitAt + 0.7f) - new Vector2(0f, height * 0.2f);
+			P3Fx.Flash(back, topAt, Gold, height * 0.5f, 0.3f);
+			Node2D st = Fx.Root(back, topAt, "P3MessiahExitStar");
+			Fx.Poly(st, Fx.Star4(height * 0.12f, 0.12f), Pal.White, additive: true);
+			Fx.Animate(st, 0.4f, t =>
+			{
+				st.Scale = Vector2.One * (t < 0.3f ? Ease.OutBack(t / 0.3f) : 1f - Ease.InCubic((t - 0.3f) / 0.7f));
+				st.Rotation = t * 0.8f;
+			});
+			Fx.FreeAfter(st, 0.42);
+		});
+		Fx.FreeAfter(trail, total + 0.05);
 		Fx.Animate(feathers, total, t =>
 		{
 			float time = t * total;
@@ -390,10 +610,37 @@ public static class Personas
 			}
 		});
 		Fx.After(root, 0.8, "messiah motes", () => Motes(back, root.GlobalPosition, height, Gold, 18, 1.0f));
-		Fx.After(root, 1.5, "messiah ascend", () => Motes(back, root.GlobalPosition, height, Pal.Ice, 26, 1.0f, up: true));
+		Fx.After(root, 1.6, "messiah ascend", () => Motes(back, root.GlobalPosition, height, Gold, 30, 1.0f, up: true));
 		Fx.FreeAfter(root, total + 0.05);
 		Fx.FreeAfter(circle, total + 0.05);
 		Fx.FreeAfter(feathers, total + 0.05);
+	}
+
+	/// <summary>离场时羽毛从身上向四周炸开：先快后慢、边飞边翻转、往下飘落着淡出。</summary>
+	private static void FeatherBurst(Control layer, Vector2 at, float height)
+	{
+		Node2D root = Fx.Root(layer, at, "P3MessiahFeatherBurst");
+		List<(Polygon2D p, Vector2 o, Vector2 v, float spin)> fs = new();
+		for (int i = 0; i < 22; i++)
+		{
+			float len = Fx.Rand(12f, 26f);
+			Polygon2D f = Fx.Poly(root, new[] { new Vector2(0f, -len), new Vector2(len * 0.22f, 0f), new Vector2(0f, len * 0.6f), new Vector2(-len * 0.22f, 0f) }, new Color(1f, 0.95f, 0.82f, 0.9f), additive: true);
+			f.Position = new Vector2(Fx.Rand(-height * 0.12f, height * 0.12f), Fx.Rand(-height * 0.2f, height * 0.2f));
+			Vector2 v = (f.Position.Normalized() + Fx.RandDir() * 0.4f).Normalized() * Fx.Rand(180f, 420f);
+			fs.Add((f, f.Position, v, Fx.Rand(-6f, 6f)));
+		}
+		Fx.Animate(root, 1.1f, t =>
+		{
+			float time = t * 1.1f;
+			foreach ((Polygon2D p, Vector2 o, Vector2 v, float spin) in fs)
+			{
+				p.Position = o + v * 0.45f * Ease.OutCubic(t) + new Vector2(0f, 60f * time);
+				p.Rotation = spin * time;
+				p.Scale = new Vector2(Mathf.Abs(Mathf.Cos(time * 5f + spin)), 1f);
+				p.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(Mathf.Clamp((time - 0.5f) / 0.6f, 0f, 1f)));
+			}
+		});
+		Fx.FreeAfter(root, 1.15);
 	}
 
 	/// <summary>法阵化成的小印沿光流落进结城理脑后：金白光流 + 落点闪光、水波、冲击环。</summary>

@@ -131,7 +131,7 @@ public static class Sfx
 	/// </summary>
 	private static readonly string[] Clips =
 	{
-		"vorpal_blade", "messiah_seal", "great_seal", "select_ok", "bomb_hit", "skill_change", "lock_tick", "morning_star_rain", "morning_star_fall", "Snd_FX_Btl_AlloutUI_00", "Btl_Allout_Wipe", "allout_brawl", "Snd_FX_Btl_Allout_Kime01",
+		"vorpal_blade", "messiah_seal", "great_seal", "select_hit", "bomb_hit", "lock_tick", "Snd_FX_Btl_Allout_Zoom", "Snd_FX_Btl_Allout_Extermination", "Btl_Ok", "Btl_CommandPanel", "Sys_Cursor", "morning_star_rain", "morning_star_fall", "Snd_FX_Btl_AlloutUI_00", "Btl_Allout_Wipe", "Snd_FX_Btl_Allout_Kime01",
 		"ShuffleTime_Start", "ShuffleTime_Whoosh", "ShuffleTime_CardSet", "wheel_click", "clock_tick", "clock_midnight", "clock_spin", "evt_eft_timespin_01",
 		"em0561_sp_roulette_01", "em0561_sp_roulette_03", "ShuffleTime_Result", "Snd_FX_Btl_Summon_00",
 		"ShuffleTime_PowerUp", "Theurgia_Max", "Snd_FX_Btl_StReflection_00_1", "Snd_FX_Btl_StAbsorption_00_1",
@@ -168,9 +168,10 @@ public static class Sfx
 		{
 			case "regent_die":
 				return true;
-			case "regent_select":                                  // 选人界面选中结城理（v0.14.7：原来的 Persona 光环切入太闷）→ 天鹅绒房间"选定 Persona"的清亮确认声 + 一层轻微的灵能开启闪音
-				Clip("select_ok", 0.95f);
-				Clip("Sys_Theurgia_Open", 0.4f, 0.05f);
+			case "regent_select":
+				// 选人界面选中结城理（v0.14.8，参照原版其他角色的选中音）：一下强起音（切入闪光 + 阿卡纳爆发 + 天鹅绒确认）→
+				// Persona 光环接上持续发声 → 约 2.4s 内平滑衰减淡出，中间没有空档；0.7s 时 CharSelectBg 的召唤器碎玻璃叠在上面（不变）
+				Clip("select_hit", 0.9f);
 				break;
 			case "regent_attack":
 				if (!P3Makoto.Core.Pose.SummonActive())           // 召唤开枪不是挥动：不播破空声（之前在召唤动画最前面形成一声"噗"）
@@ -184,6 +185,9 @@ public static class Sfx
 		}
 		return false;
 	}
+
+	/// <summary>pck 里有没有这个原声片段。</summary>
+	public static bool Has(string file) => Sample(file) != null;
 
 	/// <summary>随机挑一个片段播放。</summary>
 	public static void ClipAny(string[] files, float volume = 1f, float delay = 0f) => Clip(files[(int)(GD.Randi() % (uint)files.Length)], volume, delay);
@@ -259,7 +263,8 @@ public static class Sfx
 	/// </summary>
 	private static readonly Dictionary<string, (float Keep, float Fade)> Tails = new()
 	{
-		["morning_star_rain"] = (1.5f, 0.6f),            // 流星雨：6 颗落完约 1.2s；原声 3.7s 全程不减弱
+		["morning_star_rain"] = (1.5f, 0.6f),
+		["Snd_FX_Btl_Allout_Extermination"] = (1.9f, 0.4f),     // 总攻击烟云：原 4.5s，全屏白（2.0s 后）收掉            // 流星雨：6 颗落完约 1.2s；原声 3.7s 全程不减弱
 		["morning_star_fall"] = (1.3f, 0.6f),            // 彗星 / 坠月：0.4s 命中，之后长尾 2.5s
 		["megido_hit"] = (0.9f, 0.5f),                   // 万能属性每一击：原 2.5s，多段时叠成一片
 		["evt_impact_01"] = (0.7f, 0.4f),                // 陨星属性每一击：原 1.8s
