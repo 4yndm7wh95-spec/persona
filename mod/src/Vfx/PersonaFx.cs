@@ -23,8 +23,9 @@ public static class PersonaFx
 	private const string Thanatos = "res://p3makoto/persona/thanatos_skel_data.tres";
 	private const float FigureHeight = 1440f;          // 立绘在骨骼单位下的高度（原图像素）
 	public const float SovereignWait = 0.92f;          // 君王之刃：出牌 → 伤害结算（普通速度）
-	public const float VorpalWait = 1.1f;              // 追踪之刃生效时（空间杀法）：出牌 → 伤害结算的游戏时间；中间还有 1.2s 真实时间的时停（Vorpal），实际约 2.3s
-	private const float SlashInAttack = 0.18f;         // attack 动画里 slash 事件的时刻
+	public const float VorpalWait = 1.1f;              // 仅用于快速模式等的估算；v0.14.5 起空间杀法的伤害由 Vorpal.Gate 在斩击结束时放行
+	private const float SlashInAttack = 0.18f;
+	public const float VorpalCharge = 0.45f;           // 空间杀法：Persona 现身 → 时停开始前的蓄力（真实时间 ≈ 游戏时间）         // attack 动画里 slash 事件的时刻
 
 	/// <summary>当前速度设置下，出牌到伤害结算的秒数（与 CreatureCmd.TriggerAnim 的等待规则一致）。</summary>
 	public static float DamageDelay(bool vorpal = false) => SaveManager.Instance?.PrefsSave.FastMode switch
@@ -78,7 +79,9 @@ public static class PersonaFx
 		Fx.FreeAfter(motes, 1.2);
 
 		bool vorpal = IsVorpal(caster);
-		float release = DamageDelay(vorpal) - elapsed;
+		// 空间杀法（v0.14.5）：不再按"出牌后多久结算"倒推（眼神切入的耗时不固定，常常算成时停还没开始伤害就已经结算）——
+		// Persona 现身后固定蓄力 VorpalCharge 秒再时停割裂；游戏这边的伤害结算等 Vorpal 释放时开闸（Vorpal.Gate）。
+		float release = vorpal ? VorpalCharge : DamageDelay(vorpal) - elapsed;
 		float attackAt = Mathf.Max(release - SlashInAttack, 0.05f);
 		Vector2 strikeAt = target != null && GodotObject.IsInstanceValid(target)
 			? target.VfxSpawnPosition + new Vector2(-height * 0.42f, -height * 0.32f)
@@ -99,8 +102,8 @@ public static class PersonaFx
 					}
 				}
 			}
-			Vorpal.Play(front, centers, Mathf.Max(release, 0.4f));
-			Uniq.SkillBanner(front, "空间杀法", "VORPAL BLADE", Mathf.Max(release, 0.4f) + 0.6f);   // 横幅用游戏时间：时停期间它也定格，正好挂到技能结束   // P3R：技能名横幅挂到技能结束
+			Vorpal.Play(front, centers, release);
+			Uniq.SkillBanner(front, "空间杀法", "VORPAL BLADE", release + 0.6f);   // 横幅用游戏时间：时停期间它也定格，正好挂到技能结束   // P3R：技能名横幅挂到技能结束
 			Fx.FreeAfter(root, attackAt + 1.6f);   // 游戏时间：时停期间 Persona 也定格
 			return;
 		}

@@ -127,9 +127,31 @@ public static class ForgePatch
 [HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.TriggerAnim))]
 public static class SovereignTimingPatch
 {
+	private static bool _inner;
+
+	/// <summary>调用原版 TriggerAnim（跳过本补丁，避免递归）。</summary>
+	private static System.Threading.Tasks.Task Original(MegaCrit.Sts2.Core.Entities.Creatures.Creature creature, string triggerName, float waitTime)
+	{
+		_inner = true;
+		try
+		{
+			return CreatureCmd.TriggerAnim(creature, triggerName, waitTime);
+		}
+		finally
+		{
+			_inner = false;
+		}
+	}
+
+	private static async System.Threading.Tasks.Task Then(System.Threading.Tasks.Task first, System.Threading.Tasks.Task gate)
+	{
+		await first;
+		await gate;
+	}
+
 	public static bool Prefix(MegaCrit.Sts2.Core.Entities.Creatures.Creature creature, string triggerName, ref float waitTime, ref System.Threading.Tasks.Task __result)
 	{
-		if (!Makoto.Is(creature.Player))
+		if (_inner || !Makoto.Is(creature.Player))
 		{
 			return true;
 		}
@@ -145,7 +167,15 @@ public static class SovereignTimingPatch
 		}
 		if (triggerName == "sovereignBladeTrigger")
 		{
-			waitTime = creature.HasPower<MegaCrit.Sts2.Core.Models.Powers.SeekingEdgePower>() ? Vfx.PersonaFx.VorpalWait : Vfx.PersonaFx.SovereignWait;
+			bool vorpal = creature.HasPower<MegaCrit.Sts2.Core.Models.Powers.SeekingEdgePower>();
+			waitTime = vorpal ? 0.05f : Vfx.PersonaFx.SovereignWait;
+			if (vorpal)
+			{
+				// 空间杀法：伤害等到斩击结束（Vorpal 释放）才结算 —— 先放动作，再等闸门（最多 3.5s 真实时间兜底）
+				System.Threading.Tasks.Task anim = Original(creature, triggerName, waitTime);
+				__result = Then(anim, Vfx.Vorpal.Gate(3.5f));
+				return false;
+			}
 		}
 		// 召唤牌改播"召唤开枪"（~0.42s 扣扳机 → 横幅碎裂、Persona 现身）：伤害 / 效果等到开枪、Persona 现身之后
 		else if (triggerName is "Attack" or "Cast" && Makoto.Node(creature.Player) is NCreature node && Pose.HasSummon(node))

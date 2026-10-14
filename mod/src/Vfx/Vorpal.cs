@@ -17,6 +17,42 @@ namespace P3Makoto.Vfx;
 /// </summary>
 public static class Vorpal
 {
+	// ── 伤害闸门（v0.14.5）：君王之刃的伤害结算等空间杀法释放（斩击结束、线条亮起）才放行 ──
+	private static System.Threading.Tasks.TaskCompletionSource<bool>? _gate;
+	private static ulong _openedAt;
+
+	/// <summary>游戏等待伤害结算时调用：返回在空间杀法释放时完成的 Task（最多等 timeout 秒真实时间）。刚释放过就立即完成。</summary>
+	public static System.Threading.Tasks.Task Gate(float timeout)
+	{
+		if (_openedAt != 0 && Time.GetTicksMsec() - _openedAt < 600)
+		{
+			_openedAt = 0;
+			return System.Threading.Tasks.Task.CompletedTask;
+		}
+		var tcs = new System.Threading.Tasks.TaskCompletionSource<bool>();
+		_gate = tcs;
+		if (Engine.GetMainLoop() is SceneTree tree)
+		{
+			tree.CreateTimer(timeout, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () => tcs.TrySetResult(false);
+		}
+		else
+		{
+			tcs.TrySetResult(false);
+		}
+		return tcs.Task;
+	}
+
+	private static void OpenGate()
+	{
+		if (_gate != null && _gate.TrySetResult(true))
+		{
+			_gate = null;
+			_openedAt = 0;
+			return;
+		}
+		_openedAt = Time.GetTicksMsec();
+	}
+
 	/// <summary>从"割裂开始"到"释放"的标准时长；可用时间不够时等比压缩。</summary>
 	public const float CutDuration = 1.2f;
 
@@ -81,6 +117,7 @@ public static class Vorpal
 		AfterRT(root, releaseAt - 0.02f, "vorpal release", () =>
 		{
 			Freeze(false);
+			OpenGate();                                  // 斩击结束 → 放行伤害结算（数字、WEAK! 都在这之后出现）
 			Flash(root, size);
 			grade.Color = new Color(0.02f, 0.07f, 0.24f, 0.4f);                                            // 释放：暗蓝色层 40%
 			lines.Visible = false;
