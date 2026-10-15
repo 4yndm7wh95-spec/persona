@@ -1056,7 +1056,8 @@ void fragment() {
 	{
 		Polygon2D Half()
 		{
-			Polygon2D p = new() { Material = Fx.Additive, Polygon = new Vector2[4], VertexColors = new[] { c, c, c, c } };
+			Polygon2D p = new() { Material = Fx.Additive, Polygon = new Vector2[6], VertexColors = new[] { c, c, c, c, c, c } };
+			p.Polygons = new Godot.Collections.Array { new[] { 0, 1, 2, 3 }, new[] { 3, 2, 4, 5 } };   // 上段矩形 + 下段收拢梯形
 			parent.AddChild(p);
 			return p;
 		}
@@ -1067,10 +1068,15 @@ void fragment() {
 	{
 		float hw = width * 0.5f;
 		Color edge = new(c, 0f), core = c, coreTop = new(c, c.A * topFade);
-		col.l.Polygon = new[] { new Vector2(x - hw, yTop), new Vector2(x, yTop), new Vector2(x, yBot), new Vector2(x - hw, yBot) };
-		col.l.VertexColors = new[] { edge, coreTop, core, edge };
-		col.r.Polygon = new[] { new Vector2(x, yTop), new Vector2(x + hw, yTop), new Vector2(x + hw, yBot), new Vector2(x, yBot) };
-		col.r.VertexColors = new[] { coreTop, edge, edge, core };
+		// v0.14.28（用户：指天光柱在指尖高度有一道明显的横向分界）：底部不再是满宽、满亮度的平边。
+		// 每半边分两段：上段矩形（外缘透明 → 中心亮），下段向 (x, yBot) 收拢的梯形（同样外缘透明），光从指尖一点发散出去。
+		// 两段分开三角化（Polygons），亮度在交界处连续，不会沿长对角线插值出新的硬边
+		float taper = Mathf.Min(hw * 1.6f, Mathf.Max(0f, yBot - yTop) * 0.5f);
+		float ym = yBot - taper, tipHw = Mathf.Min(hw * 0.06f, 2f);
+		col.l.Polygon = new[] { new Vector2(x - hw, yTop), new Vector2(x, yTop), new Vector2(x, ym), new Vector2(x - hw, ym), new Vector2(x, yBot), new Vector2(x - tipHw, yBot) };
+		col.l.VertexColors = new[] { edge, coreTop, core, edge, core, edge };
+		col.r.Polygon = new[] { new Vector2(x + hw, yTop), new Vector2(x, yTop), new Vector2(x, ym), new Vector2(x + hw, ym), new Vector2(x, yBot), new Vector2(x + tipHw, yBot) };
+		col.r.VertexColors = new[] { edge, coreTop, core, edge, core, edge };
 	}
 
 	// 4.30 光柱从指尖直冲天顶；地面光盘铺开；光柱越来越粗、天顶亮起、光线往上流 → 全屏白
