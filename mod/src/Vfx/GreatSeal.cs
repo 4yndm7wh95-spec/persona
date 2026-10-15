@@ -1278,31 +1278,53 @@ void fragment() {
 		// ── 文字 ──
 		Node2D texts = new();
 		root.AddChild(texts);
+		// v0.14.30：问句、六个小点、「闭上眼睛」都用 P3R 原版简中贴图（art/p3r_tex/ending，CinemaScope_02 图集），按 1080p 原尺寸 × H/1080 缩放；
+		// 位置按原版截图在画面里的比例：问句中心 (0.50, 0.53)、小点中心 (0.38, 0.743)、大字中心 (0.639, 0.726)。没有贴图时退回文字
+		float ui = H / 1080f;
 		int qs = (int)(H * 0.03f);
 		float qy = H * 0.53f;
-		string q = Zh ? "要 闭 上 眼 睛 吗 ？" : "Close your eyes?";
-		Label question = Typo.Text(texts, q, EndingFont, qs, new Color(1f, 1f, 1f), new Vector2(0f, qy - qs * 0.7f), HorizontalAlignment.Center,
-			shadow: new Color(0.1f, 0.1f, 0.2f, 0.6f), shadowOffset: new Vector2(2f, 2f));
-		question.Size = new Vector2(W, question.Size.Y);
-		float qHalf = question.GetMinimumSize().X / 2f;
-		Polygon2D cursor = Fx.Poly(texts, new[] { new Vector2(0f, -qs * 0.32f), new Vector2(qs * 0.5f, 0f), new Vector2(0f, qs * 0.32f) }, Colors.White);
-		cursor.Position = new Vector2(W / 2f - qHalf - qs * 0.9f, qy);
-		var dots = new List<Polygon2D>();
-		for (int i = 0; i < 6; i++)
+		float qHalf;
+		if (UiTex("ending_question") is Texture2D qTex)
 		{
-			Polygon2D d = Fx.Poly(texts, Fx.Circle(H * 0.0058f, 12), Colors.White);
-			d.Position = new Vector2(W * 0.344f + i * W * 0.0144f, H * 0.743f);
-			dots.Add(d);
-		}
-		Node2D big = new() { Position = new Vector2(W * 0.571f, H * 0.79f) };
-		texts.AddChild(big);
-		if (UiTex("ending_closeeye") is Texture2D eyeTex)
-		{
-			float sc = H * 0.12f / eyeTex.GetHeight();
-			big.AddChild(new Sprite2D { Texture = eyeTex, Centered = false, Position = new Vector2(0f, -eyeTex.GetHeight() * sc), Scale = Vector2.One * sc });
+			texts.AddChild(new Sprite2D { Texture = qTex, Position = new Vector2(W * 0.5f, qy), Scale = Vector2.One * ui });
+			qHalf = qTex.GetWidth() * ui / 2f;
+			qs = (int)(qTex.GetHeight() * ui);
 		}
 		else
 		{
+			string q = Zh ? "要 闭 上 眼 睛 吗 ？" : "Close your eyes?";
+			Label question = Typo.Text(texts, q, EndingFont, qs, new Color(1f, 1f, 1f), new Vector2(0f, qy - qs * 0.7f), HorizontalAlignment.Center,
+				shadow: new Color(0.1f, 0.1f, 0.2f, 0.6f), shadowOffset: new Vector2(2f, 2f));
+			question.Size = new Vector2(W, question.Size.Y);
+			qHalf = question.GetMinimumSize().X / 2f;
+		}
+		Polygon2D cursor = Fx.Poly(texts, new[] { new Vector2(0f, -qs * 0.32f), new Vector2(qs * 0.5f, 0f), new Vector2(0f, qs * 0.32f) }, Colors.White);
+		cursor.Position = new Vector2(W / 2f - qHalf - qs * 0.9f, qy);
+		var dots = new List<CanvasItem>();
+		if (UiTex("ending_dots") is Texture2D dTex)
+		{
+			// 原版六点是一张图：整体轻轻呼吸
+			Sprite2D d = new() { Texture = dTex, Position = new Vector2(W * 0.38f, H * 0.743f), Scale = Vector2.One * ui };
+			texts.AddChild(d);
+			dots.Add(d);
+		}
+		else
+		{
+			for (int i = 0; i < 6; i++)
+			{
+				Polygon2D d = Fx.Poly(texts, Fx.Circle(H * 0.0058f, 12), Colors.White);
+				d.Position = new Vector2(W * 0.344f + i * W * 0.0144f, H * 0.743f);
+				dots.Add(d);
+			}
+		}
+		if (UiTex("ending_closeeye") is Texture2D eyeTex)
+		{
+			texts.AddChild(new Sprite2D { Texture = eyeTex, Position = new Vector2(W * 0.639f, H * 0.726f), Scale = Vector2.One * ui });
+		}
+		else
+		{
+			Node2D big = new() { Position = new Vector2(W * 0.571f, H * 0.79f) };
+			texts.AddChild(big);
 			float x = 0f;
 			string word = Zh ? "闭上眼睛" : "CLOSE";
 			for (int i = 0; i < word.Length; i++)
@@ -1370,8 +1392,8 @@ void fragment() {
 			cursor.Modulate = new Color(1f, 1f, 1f, 0.55f + 0.45f * Mathf.Abs(Mathf.Cos(time * 2.6f)));
 			for (int i = 0; i < dots.Count; i++)
 			{
-				float ph = Mathf.PosMod(time * 1.2f - i * 0.18f, 1.2f);
-				dots[i].Modulate = new Color(1f, 1f, 1f, 0.45f + 0.55f * Mathf.Exp(-ph * 4f));
+				float ph = dots.Count == 1 ? time * 1.6f : Mathf.PosMod(time * 1.2f - i * 0.18f, 1.2f);
+				dots[i].Modulate = new Color(1f, 1f, 1f, dots.Count == 1 ? 0.7f + 0.3f * Mathf.Sin(ph) : 0.45f + 0.55f * Mathf.Exp(-ph * 4f));
 			}
 		});
 
