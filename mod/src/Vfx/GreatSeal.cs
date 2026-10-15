@@ -736,14 +736,14 @@ void fragment() {
 		bool started = false;
 		ModEntry.Safe("great seal", () =>
 		{
-			Run(tree, player, architect, () =>
-				tree.CreateTimer(Duration, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () =>
-				{
-					// v0.14.28（用户：光束结束后卡住）：交还流程前保证游戏是 1 倍速，并记一行日志方便排查
-					P3Makoto.Core.TimeScale.Reset();
-					GD.Print($"{ModEntry.Tag} great seal done -> back to the game (TimeScale={Engine.TimeScale})");
-					done.TrySetResult(true);
-				});
+			// v0.14.29：不再按固定时长交还 —— MEMENTO MORI 之后进入「要闭上眼睛吗？」，玩家点了、眼睛完全闭上（全黑）才交还给游戏
+			Run(tree, player, architect, () => { }, () =>
+			{
+				// 交还流程前保证游戏是 1 倍速，并记一行日志方便排查
+				P3Makoto.Core.TimeScale.Reset();
+				GD.Print($"{ModEntry.Tag} great seal done -> back to the game (TimeScale={Engine.TimeScale})");
+				done.TrySetResult(true);
+			});
 			started = true;
 		});
 		if (!started)
@@ -753,7 +753,7 @@ void fragment() {
 		return done.Task;
 	}
 
-	private static void Run(SceneTree tree, NCreature? player, NCreature? architect, System.Action onStart)
+	private static void Run(SceneTree tree, NCreature? player, NCreature? architect, System.Action onStart, System.Action finish)
 	{
 		Vector2 view = tree.Root.GetVisibleRect().Size;
 		CanvasLayer top = new() { Layer = 90, Name = "P3GreatSeal" };
@@ -821,7 +821,7 @@ void fragment() {
 			Fx.After(world, 4.3, "seal pillar", () => Pillar(4.3f));
 			Fx.After(ui, WhiteAt - 0.9, "seal white", () => WhiteRise(ui, view));
 			Fx.After(ui, WhiteAt, "seal coda", () => Coda(top, view, Duration + 0.8f - WhiteAt));
-			Fx.After(ui, Duration + 0.8, "seal cleanup", () => top.QueueFree());
+			Fx.After(ui, Duration - 0.2, "seal eyes", () => CloseEyes(top, view, finish));
 		});
 	}
 
@@ -1189,7 +1189,276 @@ void fragment() {
 			float ci = Ease.OutCubic(Mathf.Clamp((time - 0.9f) / 0.7f, 0f, 1f));
 			coda.Modulate = new Color(1f, 1f, 1f, ci);
 			coda.Position = new Vector2(view.X / 2f, view.Y * 0.5f + 10f * (1f - ci));
-			root.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp((time - (total - 0.7f)) / 0.6f, 0f, 1f));
 		});
+	}
+
+	// ───────────────────────── 要闭上眼睛吗？ ─────────────────────────
+
+	private static Font? _endingFont;
+
+	/// <summary>结局字体：P3R 原版字体（Codex 提取到 p3makoto/fonts/p3r_ending.*）优先，否则系统宋体 / 明朝类。</summary>
+	private static Font EndingFont
+	{
+		get
+		{
+			if (_endingFont != null)
+			{
+				return _endingFont;
+			}
+			foreach (string ext in new[] { "otf", "ttf" })
+			{
+				// pck 里的字体是原始文件（不经过导入），和 CharSelectInfo 的 Barlow 一样用 LoadDynamicFont 读
+				string path = $"res://p3makoto/fonts/p3r_ending.{ext}";
+				FontFile f = new();
+				if (FileAccess.FileExists(path) && f.LoadDynamicFont(path) == Error.Ok)
+				{
+					return _endingFont = f;
+				}
+			}
+			return _endingFont = new SystemFont { FontNames = new[] { "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", "SimSun", "NSimSun", "Yu Mincho", "MS Mincho" }, FontWeight = 600 };
+		}
+	}
+
+	/// <summary>
+	/// v0.14.29（用户：MEMENTO MORI 之后不要接人物倒下的结算画面 —— 照 P3R 原版做「要闭上眼睛吗？」，选择后整个屏幕慢慢闭眼，全黑后才出原版结算 UI，且不显示人物和建筑师）。
+	/// · 画面：黑底上一块上下边缘内弧的"镜头"画框（P3R 原版构图：左右各留 13%，上沿中间下沉、下沉沿中间上拱），里面是模糊的天台背景
+	///   （ui/ending_rooftop.png，美术会话出图；没有时用柔和的淡紫灰渐变代替），左右边缘各一道镜头反光；
+	///   中间「▸要闭上眼睛吗？」（字间留空，光标三角闪烁），左下一排六个小点，右下大号「闭上眼睛」（ui/ending_closeeye.png，P3R 原版贴图；没有时用文字大小交错排）。
+	/// · 点击任意处 → 文字淡出 → 上下眼睑（带羽化边的弧形黑幕）慢慢合上：先垂到四成、微微抬起、再缓缓闭紧（约 4s），画面随之变暗；
+	///   全黑停 0.7s 后交还游戏（finish）。黑幕留着，等结算画面打开时（ArchitectGameOverPatch）再淡出；保险：12s 后无论如何移除。
+	/// </summary>
+	private static void CloseEyes(CanvasLayer top, Vector2 view, System.Action finish)
+	{
+		float W = view.X, H = view.Y;
+		Node2D root = new() { Name = "P3SealEyes", Modulate = new Color(1f, 1f, 1f, 0f) };
+		top.AddChild(root);
+		root.AddChild(new ColorRect { Size = view, Color = Colors.Black, MouseFilter = Control.MouseFilterEnum.Ignore });
+
+		// ── 镜头画框 ──
+		const int N = 48;
+		float x0 = W * 0.132f, x1 = W * 0.868f;
+		var band = new Vector2[N * 2];
+		for (int i = 0; i < N; i++)
+		{
+			float u = i / (N - 1f), bow = 1f - (2f * u - 1f) * (2f * u - 1f);
+			float x = Mathf.Lerp(x0, x1, u);
+			band[i] = new Vector2(x, H * 0.076f + H * 0.022f * bow);
+			band[N * 2 - 1 - i] = new Vector2(x, H * 0.724f - H * 0.025f * bow);
+		}
+		Node2D frame = new();
+		root.AddChild(frame);
+		if (UiTex("ending_rooftop") is Texture2D bgTex)
+		{
+			// 按画框外接矩形"铺满"贴图（等比放大、居中裁切）
+			float bw = x1 - x0, bh = H * 0.648f, by = H * 0.076f;
+			float sc = Mathf.Max(bw / bgTex.GetWidth(), bh / bgTex.GetHeight());
+			Vector2 off = new((bgTex.GetWidth() * sc - bw) / 2f, (bgTex.GetHeight() * sc - bh) / 2f);
+			var uv = new Vector2[band.Length];
+			for (int i = 0; i < band.Length; i++)
+			{
+				uv[i] = (band[i] - new Vector2(x0, by) + off) / sc;
+			}
+			frame.AddChild(Fx.TexPoly(bgTex, band, uv));
+		}
+		else
+		{
+			Polygon2D g = Fx.Poly(frame, band, Colors.White);
+			var vc = new Color[band.Length];
+			for (int i = 0; i < band.Length; i++)
+			{
+				float v = (band[i].Y - H * 0.076f) / (H * 0.648f);
+				vc[i] = new Color(0.80f, 0.80f, 0.88f).Lerp(new Color(0.66f, 0.68f, 0.78f), v);
+			}
+			g.VertexColors = vc;
+			float dot = Fx.SoftDot.GetWidth();
+			foreach ((Vector2 at, Vector2 sz, Color c) in new[]
+			{
+				(new Vector2(0.47f, 0.47f), new Vector2(0.22f, 0.07f), new Color(0.12f, 0.12f, 0.25f, 0.35f)),   // 远处躺着的人影
+				(new Vector2(0.44f, 0.38f), new Vector2(0.05f, 0.1f), new Color(0.95f, 0.92f, 0.85f, 0.3f)),
+				(new Vector2(0.58f, 0.40f), new Vector2(0.08f, 0.1f), new Color(0.35f, 0.18f, 0.15f, 0.3f)),
+				(new Vector2(0.70f, 0.42f), new Vector2(0.12f, 0.18f), new Color(0.92f, 0.93f, 0.97f, 0.35f)),
+				(new Vector2(0.25f, 0.15f), new Vector2(0.3f, 0.06f), new Color(0.4f, 0.42f, 0.55f, 0.3f)),
+			})
+			{
+				frame.AddChild(new Sprite2D { Texture = Fx.SoftDot, Position = new Vector2(W * at.X, H * at.Y), Scale = new Vector2(W * sz.X, H * sz.Y) / dot, Modulate = c });
+			}
+		}
+		float dotW = Fx.SoftDot.GetWidth();
+		foreach (float gx in new[] { x0 + W * 0.03f, x1 - W * 0.03f })
+		{
+			root.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Position = new Vector2(gx, H * 0.64f), Scale = new Vector2(W * 0.12f, H * 0.03f) / dotW, Modulate = new Color(1f, 1f, 1f, 0.55f) });
+		}
+
+		// ── 文字 ──
+		Node2D texts = new();
+		root.AddChild(texts);
+		int qs = (int)(H * 0.024f);
+		string q = Zh ? "要 闭 上 眼 睛 吗 ？" : "Close your eyes?";
+		Label question = Typo.Text(texts, q, EndingFont, qs, new Color(1f, 1f, 1f), new Vector2(0f, H * 0.49f - qs * 0.7f), HorizontalAlignment.Center,
+			shadow: new Color(0.1f, 0.1f, 0.2f, 0.6f), shadowOffset: new Vector2(2f, 2f));
+		question.Size = new Vector2(W, question.Size.Y);
+		float qHalf = question.GetMinimumSize().X / 2f;
+		Polygon2D cursor = Fx.Poly(texts, new[] { new Vector2(0f, -qs * 0.32f), new Vector2(qs * 0.5f, 0f), new Vector2(0f, qs * 0.32f) }, Colors.White);
+		cursor.Position = new Vector2(W / 2f - qHalf - qs * 0.9f, H * 0.49f);
+		var dots = new List<Polygon2D>();
+		for (int i = 0; i < 6; i++)
+		{
+			Polygon2D d = Fx.Poly(texts, Fx.Circle(H * 0.0045f, 12), Colors.White);
+			d.Position = new Vector2(W * 0.386f + i * W * 0.0105f, H * 0.655f);
+			dots.Add(d);
+		}
+		Node2D big = new() { Position = new Vector2(W * 0.553f, H * 0.685f) };
+		texts.AddChild(big);
+		if (UiTex("ending_closeeye") is Texture2D eyeTex)
+		{
+			float sc = H * 0.085f / eyeTex.GetHeight();
+			big.AddChild(new Sprite2D { Texture = eyeTex, Centered = false, Position = new Vector2(0f, -eyeTex.GetHeight() * sc), Scale = Vector2.One * sc });
+		}
+		else
+		{
+			float x = 0f;
+			string word = Zh ? "闭上眼睛" : "CLOSE";
+			for (int i = 0; i < word.Length; i++)
+			{
+				int sz = (int)(H * (i % 2 == 0 ? 0.062f : 0.034f));
+				Label ch = Typo.Text(big, word[i].ToString(), EndingFont, sz, new Color(0.93f, 0.93f, 0.97f, 0.85f), new Vector2(x, -sz * 1.25f),
+					shadow: new Color(0.25f, 0.25f, 0.35f, 0.7f), shadowOffset: new Vector2(3f, 3f));
+				x += ch.GetMinimumSize().X * 0.92f;
+			}
+		}
+
+		// ── 眼睑：弧形黑幕 + 羽化边 ──
+		float bowLid = H * 0.08f, feather = H * 0.09f;
+		Node2D MakeLid(bool upper)
+		{
+			Node2D lid = new();
+			root.AddChild(lid);
+			const int M = 40;
+			var solid = new List<Vector2>();
+			var fe = new Vector2[M * 2];
+			var fc = new Color[M * 2];
+			float s = upper ? 1f : -1f;
+			for (int i = 0; i < M; i++)
+			{
+				float u = i / (M - 1f), bow = 1f - (2f * u - 1f) * (2f * u - 1f);
+				float x = Mathf.Lerp(-W * 0.1f, W * 1.1f, u);
+				float y = -s * bowLid * bow;                      // 眼睑边缘弧向外（上眼睑中间上拱、下眼睑中间下弯）：睁开的形状是两头尖、中间宽的杏仁形，闭眼时眼角先合、中间最后合上
+				solid.Add(new Vector2(x, y));
+				fe[i] = new Vector2(x, y);
+				fe[M * 2 - 1 - i] = new Vector2(x, y + s * feather);
+				fc[i] = Colors.Black;
+				fc[M * 2 - 1 - i] = new Color(0f, 0f, 0f, 0f);
+			}
+			solid.Add(new Vector2(W * 1.1f, -s * H * 1.2f));
+			solid.Add(new Vector2(-W * 0.1f, -s * H * 1.2f));
+			Fx.Poly(lid, solid.ToArray(), Colors.Black);
+			Polygon2D f = Fx.Poly(lid, fe, Colors.White);
+			f.VertexColors = fc;
+			return lid;
+		}
+		Node2D lidTop = MakeLid(true), lidBot = MakeLid(false);
+		void PlaceLids(float p)
+		{
+			// p=0：睁开（眼睑刚好在画框外）；p=1：上下眼睑在画框中线（0.40H）重叠，全黑。画框外本来就是黑的，所以从画框上下沿起步，开合上下对称
+			float mid = H * 0.40f;
+			float openTop = H * 0.076f - feather - 4f, openBot = H * 0.724f + feather + 4f;   // 眼角处（弧最靠外的两端）刚好在画框外
+			lidTop.Position = new Vector2(0f, Mathf.Lerp(openTop, mid + bowLid, p));        // 闭紧时眼睑中间也越过中线
+			lidBot.Position = new Vector2(0f, Mathf.Lerp(openBot, mid - bowLid, p));
+		}
+		PlaceLids(0f);
+
+		// 入场：从 MEMENTO MORI 的深蓝里淡入
+		Fx.Animate(root, 0.9f, t => root.Modulate = new Color(1f, 1f, 1f, Ease.InOutSine(t)));
+		Fx.Animate(texts, 600f, t =>
+		{
+			float time = t * 600f;
+			cursor.Modulate = new Color(1f, 1f, 1f, 0.55f + 0.45f * Mathf.Abs(Mathf.Cos(time * 2.6f)));
+			for (int i = 0; i < dots.Count; i++)
+			{
+				float ph = Mathf.PosMod(time * 1.2f - i * 0.18f, 1.2f);
+				dots[i].Modulate = new Color(1f, 1f, 1f, 0.45f + 0.55f * Mathf.Exp(-ph * 4f));
+			}
+		});
+
+		// ── 等玩家选择 ──
+		bool chosen = false;
+		Control hit = new() { Size = view, MouseFilter = Control.MouseFilterEnum.Stop, MouseDefaultCursorShape = Control.CursorShape.PointingHand };
+		top.AddChild(hit);
+		hit.MouseEntered += () => Audio.Sfx.Clip("Sys_Cursor", 0.5f);
+		hit.GuiInput += ev =>
+		{
+			if (chosen || ev is not InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left })
+			{
+				return;
+			}
+			chosen = true;
+			Audio.Sfx.Clip("Btl_Ok", 0.6f);
+			hit.QueueFree();
+			Close();
+		};
+
+		void Close()
+		{
+			const float closeLen = 4.0f, hold = 0.7f;
+			Fx.Animate(root, closeLen + hold, t =>
+			{
+				float time = t * (closeLen + hold);
+				texts.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InOutSine(Mathf.Clamp(time / 0.6f, 0f, 1f)));
+				// 先垂到四成（1.5s），微微抬起到 0.34（0.6s），再缓缓闭紧（1.9s）
+				float p = time < 1.5f ? 0.4f * Ease.InOutSine(time / 1.5f)
+					: time < 2.1f ? Mathf.Lerp(0.4f, 0.34f, Ease.InOutSine((time - 1.5f) / 0.6f))
+					: Mathf.Lerp(0.34f, 1f, Ease.InOutSine(Mathf.Clamp((time - 2.1f) / 1.9f, 0f, 1f)));
+				PlaceLids(p);
+				float dark = 1f - 0.45f * p;
+				frame.Modulate = new Color(dark, dark, dark * 1.02f);
+			});
+			Fx.After(root, closeLen + hold, "seal eyes closed", () =>
+			{
+				// 全黑：其余层（深蓝结语、压暗、光柱……）都藏起来，之后淡出黑幕时直接露出结算画面
+				foreach (Node c in top.GetChildren())
+				{
+					if (c != root && c is CanvasItem ci)
+					{
+						ci.Visible = false;
+					}
+				}
+				foreach (Node c in root.GetChildren())
+				{
+					if (c is CanvasItem ci && c != root.GetChild(0))
+					{
+						ci.Visible = false;
+					}
+				}
+				finish();
+				// 保险：结算画面一直没打开就 12s 后移除黑幕
+				top.GetTree().CreateTimer(12.0, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () =>
+				{
+					if (GodotObject.IsInstanceValid(top))
+					{
+						top.QueueFree();
+					}
+				};
+			});
+		}
+	}
+
+	/// <summary>结算画面打开后调用：闭眼留下的黑幕淡出，露出原版结算 UI。</summary>
+	public static void RevealGameOver()
+	{
+		if (Engine.GetMainLoop() is not SceneTree tree || tree.Root.GetNodeOrNull<CanvasLayer>("P3GreatSeal") is not CanvasLayer top)
+		{
+			return;
+		}
+		if (top.GetNodeOrNull<Node2D>("P3SealEyes") is Node2D eyes)
+		{
+			Fx.Animate(eyes, 0.8f, t => eyes.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InOutSine(t)));
+		}
+		top.GetTree().CreateTimer(0.85, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () =>
+		{
+			if (GodotObject.IsInstanceValid(top))
+			{
+				top.QueueFree();
+			}
+		};
 	}
 }

@@ -141,7 +141,7 @@ public static class ArchitectNoCounterPatch
 [HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Screens.GameOverScreen.NGameOverScreen), nameof(MegaCrit.Sts2.Core.Nodes.Screens.GameOverScreen.NGameOverScreen.AfterOverlayOpened))]
 public static class ArchitectGameOverPatch
 {
-	public static void Postfix()
+	public static void Postfix(MegaCrit.Sts2.Core.Nodes.Screens.GameOverScreen.NGameOverScreen __instance)
 	{
 		ModEntry.Safe("architect game over", () =>
 		{
@@ -149,6 +149,12 @@ public static class ArchitectGameOverPatch
 				&& ev.EmbeddedCombatRoom?.GetNodeOrNull("%BgContainer/P3TartarusTop") != null)
 			{
 				ev.Visible = false;
+				// v0.14.29（用户：闭眼之后的原版结算 UI 不再展示人物和建筑师）：结算画面把人物挪到自己的容器里显示，整个容器藏掉
+				if (Traverse.Create(__instance).Field("_creatureContainer").GetValue() is CanvasItem creatures)
+				{
+					creatures.Visible = false;
+				}
+				GreatSeal.RevealGameOver();                                          // 闭眼留下的黑幕淡出，露出结算 UI
 				GD.Print($"{ModEntry.Tag} architect room hidden behind game over screen");
 			}
 		});
