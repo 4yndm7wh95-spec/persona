@@ -537,7 +537,19 @@ void fragment() {
 			lowMist.Add((m, Fx.Rand(14f, 30f) * (k % 2 == 0 ? 1f : -1f), Fx.Rand(0f, 1f)));
 		}
 		// 远处云层里的闪电：每 5~9 秒天空闪一下（两次短闪）
-		ColorRect sky = new() { Size = new Vector2(W, H * 0.55f), Position = new Vector2(-margin, -margin), Color = new Color(0.7f, 1f, 0.75f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore, Material = Fx.Additive };
+		// v0.14.28（用户：闪电光效有明显的分界线）：原来是高 55% 屏的纯色矩形，下边缘一道硬边。
+		// 改成整屏的竖向渐变：天顶最亮，往下平滑衰减到地平线附近，地面只留很淡的一层（湿石板反光）
+		var skyGrad = new Gradient
+		{
+			Offsets = new[] { 0f, 0.3f, 0.5f, 0.62f, 1f },
+			Colors = new[] { new Color(1f, 1f, 1f, 1f), new Color(1f, 1f, 1f, 0.7f), new Color(1f, 1f, 1f, 0.3f), new Color(1f, 1f, 1f, 0.12f), new Color(1f, 1f, 1f, 0.06f) }
+		};
+		TextureRect sky = new()
+		{
+			Texture = new GradientTexture2D { Gradient = skyGrad, Width = 4, Height = 256, FillFrom = new Vector2(0f, 0f), FillTo = new Vector2(0f, 1f) },
+			Size = new Vector2(W, H), Position = new Vector2(-margin, -margin), StretchMode = TextureRect.StretchModeEnum.Scale,
+			Modulate = new Color(0.7f, 1f, 0.75f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore, Material = Fx.Additive
+		};
 		root.AddChild(sky);
 		float nextBolt = Fx.Rand(3f, 6f);
 		float boltAt = -10f;
@@ -607,7 +619,7 @@ void fragment() {
 			}
 			float bt = time - boltAt;
 			float bolt = bt < 0f ? 0f : bt < 0.07f ? 1f : bt < 0.14f ? 0.2f : bt < 0.2f ? 0.7f : Mathf.Max(0f, 0.7f - (bt - 0.2f) * 2f);
-			sky.Color = new Color(0.7f, 1f, 0.75f, 0.14f * bolt);
+			sky.Modulate = new Color(0.7f, 1f, 0.75f, 0.16f * bolt);
 			details?.Invoke(time, bolt);
 		}).SetLoops();
 	}
