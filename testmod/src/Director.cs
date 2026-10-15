@@ -49,6 +49,7 @@ public static class Director
 			case "/wait": return await Wait(a);
 			case "/kill": return new { ok = true, message = Runtime.KillDummy() };
 			case "/hurt": return new { ok = true, message = Runtime.HurtMe(Bridge.Int(a, "amount", 3)) };
+			case "/dummy": return new { ok = true, message = Runtime.ReplaceWithDummy() };
 			case "/mouse/move": return await MouseMove(a);
 			case "/mouse/click": return await MouseClick(a);
 			case "/mouse/park": return await MousePark(a);

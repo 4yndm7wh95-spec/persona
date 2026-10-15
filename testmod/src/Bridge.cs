@@ -146,6 +146,7 @@ public static class Bridge
 				object payload;
 				try
 				{
+					Runtime.RecordingTopUp = true;                 // 录制脚本要连续出牌：单人局里能量 / 辉星保持 99
 					object? result = await OnMain(() => Director.Dispatch(path.TrimEnd('/'), args));
 					payload = result ?? new { ok = true };
 				}

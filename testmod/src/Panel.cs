@@ -18,7 +18,8 @@ namespace P3TestMod;
 /// 测试面板（F8 开关，或点左上角的"测试"按钮）：
 /// · 卡牌按原版卡面显示（原版牌组 / 图鉴用的同一个卡牌格子 NGridCardHolder），点一下加入手牌；
 /// · 筛选：储君 / 无色 / 全部，按名称搜索；每页 12 张，卡与卡之间留足空隙；
-/// · 按钮：击杀假人（看胜利特效）、让我受击（看受击动画）、清空手牌、消耗手牌（也可以按 F7，面板关着也行）。
+/// · 按钮：击杀木桩（看胜利特效）、让我受击（看受击动画）、清空手牌、消耗手牌（也可以按 F7，面板关着也行）、不死开关、打开日志文件夹。
+/// · v1.2：左上角常驻「换成木桩」「+3 能量」「+3 辉星」；会改游戏状态的按钮全部走联机同步的控制台命令（Runtime → Net.Send）。
 /// </summary>
 public static class Panel
 {
@@ -30,6 +31,8 @@ public static class Panel
 	private static CanvasLayer? _layer;
 	private static Control? _window;
 	private static Button? _open;
+	private static VBoxContainer? _quick;
+	private static Button? _immortal;
 	private static GridContainer? _grid;
 	private static Label? _status, _pageLabel;
 	private static LineEdit? _search;
@@ -64,6 +67,10 @@ public static class Panel
 		{
 			_open.Visible = showButton;
 		}
+		if (_quick != null && GodotObject.IsInstanceValid(_quick))
+		{
+			_quick.Visible = showButton;
+		}
 	}
 
 	public static void Hide()
@@ -89,11 +96,30 @@ public static class Panel
 			theme.DefaultFont = cjk;
 		}
 
-		// 左上角常驻的小按钮（F8 也可以）
-		Button open = new() { Text = "测试 (F8)", Position = new Vector2(8f, 140f), FocusMode = Control.FocusModeEnum.None, Theme = theme };
+		// 左上角常驻的小按钮（F8 也可以）+ 三个快捷按钮（联机同步）
+		VBoxContainer quick = new() { Position = new Vector2(8f, 140f), Theme = theme };
+		quick.AddThemeConstantOverride("separation", 4);
+		_layer.AddChild(quick);
+		_quick = quick;
+		Button open = new() { Text = "测试 (F8)", FocusMode = Control.FocusModeEnum.None };
 		open.Pressed += Toggle;
-		_layer.AddChild(open);
+		quick.AddChild(open);
 		_open = open;
+		foreach ((string label, Func<string> act) in new (string, Func<string>)[]
+		{
+			("换成木桩", Runtime.ReplaceWithDummy),
+			("+3 能量", () => Runtime.AddEnergy(3)),
+			("+3 辉星", () => Runtime.AddStars(3)),
+		})
+		{
+			Button q = new() { Text = label, FocusMode = Control.FocusModeEnum.None };
+			q.Pressed += () => Toast(act());
+			quick.AddChild(q);
+		}
+		_toast = new Label { Theme = theme, Position = new Vector2(8f, 300f), Modulate = new Color(1f, 1f, 1f, 0f) };
+		_toast.AddThemeColorOverride("font_outline_color", Colors.Black);
+		_toast.AddThemeConstantOverride("outline_size", 6);
+		_layer.AddChild(_toast);
 
 		Vector2 view = tree.Root.GetVisibleRect().Size;
 		float w = Columns * CardSize.X * CardScale + (Columns - 1) * GapX + 90f, h = 2 * CardSize.Y * CardScale + GapY + 230f;
@@ -133,12 +159,16 @@ public static class Panel
 			b.Pressed += () => Say(act());
 			actions.AddChild(b);
 		}
-		AddButton("击杀假人", Runtime.KillDummy);
+		AddButton("击杀敌人", Runtime.KillDummy);
 		AddButton("让我受击", () => Runtime.HurtMe(3));
-		AddButton("清空手牌", ClearHand);
+		AddButton("清空手牌", Runtime.ClearHand);
 		AddButton("消耗手牌 (F7)", Runtime.ExhaustHand);
 		AddButton("试播：水流圆弧", () => FxDemo("arc"));
 		AddButton("试播：水流斜条", () => FxDemo("bar"));
+		_immortal = new Button { Text = "不死：关", FocusMode = Control.FocusModeEnum.None };
+		_immortal.Pressed += () => Say(Runtime.ToggleImmortal());
+		actions.AddChild(_immortal);
+		AddButton("打开日志文件夹", () => { OS.ShellOpen(MpLog.Dir); return MpLog.FilePath ?? MpLog.Dir; });
 
 		// 卡牌网格（每页 12 张）
 		_grid = new GridContainer { Columns = Columns };
@@ -231,23 +261,7 @@ public static class Panel
 		}
 	}
 
-	private static string AddToHand(CardModel model)
-	{
-		CombatState? state = Runtime.Combat;
-		Player? me = Runtime.Me;
-		if (state == null || me == null)
-		{
-			return "不在战斗中：先进一场战斗";
-		}
-		CardPile hand = PileType.Hand.GetPile(me);
-		if (hand.Cards.Count >= CardPile.MaxCardsInHand)
-		{
-			return "手牌满了（10 张）：先出牌或点\"清空手牌\"";
-		}
-		CardModel card = ((ICardScope)state).CreateCard(model, me);           // 和原版 card 命令一样走 ICardScope
-		TaskHelper.RunSafely(CardPileCmd.Add(card, PileType.Hand));
-		return $"已加入手牌：{model.TitleLocString.GetRawText()}";
-	}
+	private static string AddToHand(CardModel model) => Runtime.AddCard(model);
 
 	/// <summary>调用 P3Makoto 里的新特效试播入口（反射：测试工具不直接依赖正式 mod 的程序集）。播放前先关掉面板，免得挡住画面。</summary>
 	private static string FxDemo(string which)
@@ -264,15 +278,35 @@ public static class Panel
 		return demo.Invoke(null, new object[] { which }) as string ?? "";
 	}
 
-	private static string ClearHand()
+	private static Label? _toast;
+	private static ulong _toastUntil;
+
+	/// <summary>左上角快捷按钮的结果提示（面板关着也能看到），2.5 秒后淡出。</summary>
+	private static void Toast(string text)
 	{
-		if (Runtime.Me is not Player me) return "不在战斗中";
-		List<CardModel> cards = PileType.Hand.GetPile(me).Cards.ToList();
-		if (cards.Count == 0) return "手牌已经是空的";
-		foreach (CardModel c in cards)
+		Say(text);
+		if (_toast != null && GodotObject.IsInstanceValid(_toast))
 		{
-			TaskHelper.RunSafely(CardPileCmd.Add(c, PileType.Discard));
+			_toast.Text = text;
+			_toastUntil = Time.GetTicksMsec() + 2500;
 		}
-		return $"已把 {cards.Count} 张手牌移到弃牌堆";
+	}
+
+	/// <summary>每帧：提示淡出；不死按钮显示当前状态（联机时别的玩家也能开关）。</summary>
+	public static void Tick()
+	{
+		if (_layer == null || !GodotObject.IsInstanceValid(_layer))
+		{
+			Build();                                  // 一开游戏就显示左上角的按钮（以前要先按一次 F8）
+		}
+		if (_toast != null && GodotObject.IsInstanceValid(_toast))
+		{
+			long left = (long)_toastUntil - (long)Time.GetTicksMsec();
+			_toast.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(left / 400f, 0f, 1f));
+		}
+		if (_immortal != null && GodotObject.IsInstanceValid(_immortal))
+		{
+			_immortal.Text = Runtime.Immortal ? "不死：开" : "不死：关";
+		}
 	}
 }

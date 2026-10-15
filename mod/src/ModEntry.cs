@@ -12,7 +12,7 @@ public static class ModEntry
 
 	public static void Init()
 	{
-		GD.Print($"{Tag} init v0.14.35");
+		GD.Print($"{Tag} init v0.14.36");
 		try
 		{
 			// v0.14.31：逐个补丁类应用（PatchAll 遇到第一个失败就整体中断，后面的补丁全部不生效）；失败的单独记日志
@@ -64,7 +64,23 @@ public static class ModEntry
 		}
 		catch (Exception e)
 		{
-			GD.PrintErr($"{Tag} {where} failed: {e}");
+			Warn($"{where} failed: {e}");
+		}
+	}
+
+	/// <summary>
+	/// 报错同时写进 Godot 输出和原版日志（MegaCrit Log）：原版日志会被测试工具的多人日志（P3TestMod MpLog）一并收集，
+	/// 联机测试时能看到本 mod 的报错发生在哪个动作前后。
+	/// </summary>
+	public static void Warn(string text)
+	{
+		GD.PrintErr($"{Tag} {text}");
+		try
+		{
+			MegaCrit.Sts2.Core.Logging.Log.Warn($"{Tag} {text}");
+		}
+		catch
+		{
 		}
 	}
 }

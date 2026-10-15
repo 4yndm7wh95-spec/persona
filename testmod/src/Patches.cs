@@ -1,72 +1,103 @@
-using System.Threading.Tasks;
 using HarmonyLib;
-using MegaCrit.Sts2.Core.Entities.Players;
-using MegaCrit.Sts2.Core.Models;
-using MegaCrit.Sts2.Core.Models.Encounters;
+using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models.Monsters;
-using MegaCrit.Sts2.Core.Rooms;
-using MegaCrit.Sts2.Core.Runs;
 
 namespace P3TestMod;
 
-/// <summary>
-/// 所有房间都换成训练假人战斗：拦截原版生成房间的统一入口 RunManager.CreateRoom（地图本身除外）。
-/// 地图照常显示、照常行走，走到哪个节点都是同一场假人战斗；假人战斗不给奖励，打完直接回地图。
-/// </summary>
-[HarmonyPatch(typeof(RunManager), "CreateRoom")]
-public static class AllRoomsAreDummyPatch
+// v1.2：不再把所有房间换成假人、能量 / 辉星也不再无限（正常关卡）。
+// 下面这些补丁只改"被测试按钮召出来的木桩"和"开了不死的玩家"，而且全部是确定性的：
+// 触发它们的状态（Runtime.DummyEncounter / Runtime.Immortal）只由联机同步的控制台命令（TestCmd）改写，
+// 每个玩家的游戏里都在同一个动作里、按同样的顺序执行，所以联机时各端的数值保持一致，不会不同步。
+
+/// <summary>木桩召出来的时候血量 999999（只对 p3test dummy 召出的那一场生效；原版"战损假人"事件不受影响）。</summary>
+[HarmonyPatch(typeof(BattleFriendV1), nameof(BattleFriendV1.MinInitialHp), MethodType.Getter)]
+public static class DummyMinHpPatch
 {
-	public static bool Prefix(RunManager __instance, RoomType roomType, ref AbstractRoom __result)
+	public static void Postfix(ref int __result)
 	{
-		if (roomType == RoomType.Map)
+		if (Runtime.DummyPending)
 		{
-			return true;
+			__result = Runtime.DummyHp;
 		}
-		RunState? state = Traverse.Create(__instance).Property("State").GetValue<RunState>();
-		if (state == null)
-		{
-			return true;
-		}
-		EncounterModel encounter = ModelDb.Encounter<BattlewornDummyEventV1Encounter>().ToMutable();
-		encounter.DebugRandomizeRng();                                   // 和原版 fight 命令一样：给遭遇战一个随机种子
-		__result = new CombatRoom(encounter, state);
-		return false;
 	}
 }
 
-/// <summary>训练假人上场时会挂一个"3 回合时限"（时间到战斗就结束）：测试时不要。</summary>
+[HarmonyPatch(typeof(BattleFriendV1), nameof(BattleFriendV1.MaxInitialHp), MethodType.Getter)]
+public static class DummyMaxHpPatch
+{
+	public static void Postfix(ref int __result)
+	{
+		if (Runtime.DummyPending)
+		{
+			__result = Runtime.DummyHp;
+		}
+	}
+}
+
+/// <summary>木桩上场时会挂一个"3 回合时限"（时间到战斗就结束）：测试按钮召出来的木桩不要。</summary>
 [HarmonyPatch(typeof(BattleFriendV1), nameof(BattleFriendV1.AfterAddedToRoom))]
 public static class DummyNoTimeLimitPatch
 {
-	public static bool Prefix(ref Task __result)
+	public static bool Prefix(ref System.Threading.Tasks.Task __result)
 	{
-		__result = Task.CompletedTask;
+		if (!Runtime.InDummyCombat)
+		{
+			return true;
+		}
+		__result = System.Threading.Tasks.Task.CompletedTask;
 		return false;
 	}
 }
 
-/// <summary>能量始终不低于 99：出牌扣费会被立刻顶回 99（直接改数值，不触发"获得能量"的动画）。</summary>
-[HarmonyPatch(typeof(PlayerCombatState), nameof(PlayerCombatState.Energy), MethodType.Setter)]
-public static class InfiniteEnergyPatch
+/// <summary>
+/// 扣血（原版所有伤害最后都走 Creature.LoseHpInternal，各端在同一个动作里执行）：
+/// · 开了不死的玩家：这一下最多扣到剩 1 点；扣完低于 30% 就补满；
+/// · 测试木桩：扣完低于一半就补满（血量真的归零 = "击杀木桩"按钮 / kill 命令，不拦）。
+/// </summary>
+[HarmonyPatch(typeof(Creature), nameof(Creature.LoseHpInternal))]
+public static class LoseHpPatch
 {
-	public static void Prefix(ref int value)
+	public static void Prefix(Creature __instance, ref decimal amount)
 	{
-		if (value < Runtime.Infinite)
+		if (Runtime.Immortal && __instance.IsPlayer && __instance.CurrentHp > 1 && amount >= __instance.CurrentHp)
 		{
-			value = Runtime.Infinite;
+			amount = __instance.CurrentHp - 1;
+		}
+	}
+
+	public static void Postfix(Creature __instance)
+	{
+		if (__instance.CurrentHp <= 0)
+		{
+			return;
+		}
+		if (__instance.IsPlayer)
+		{
+			if (Runtime.Immortal && __instance.CurrentHp < __instance.MaxHp * 0.3m)
+			{
+				__instance.SetCurrentHpInternal(__instance.MaxHp);
+				MpLog.Event($"immortal refill player {__instance.Player?.NetId} -> {__instance.MaxHp}");
+			}
+			return;
+		}
+		if (__instance.Monster is BattleFriendV1 && Runtime.InDummyCombat && __instance.CurrentHp < __instance.MaxHp / 2)
+		{
+			__instance.SetCurrentHpInternal(__instance.MaxHp);
 		}
 	}
 }
 
-/// <summary>辉星始终不低于 99。</summary>
-[HarmonyPatch(typeof(PlayerCombatState), nameof(PlayerCombatState.Stars), MethodType.Setter)]
-public static class InfiniteStarsPatch
+/// <summary>和 CombatManager.CombatSetUp 一起：木桩那一场的血量设定只对这一次建房生效。</summary>
+public static class DummyHooks
 {
-	public static void Prefix(ref int value)
+	public static void OnCombatSetUp(CombatState state)
 	{
-		if (value < Runtime.Infinite)
+		if (Runtime.DummyPending)
 		{
-			value = Runtime.Infinite;
+			Runtime.DummyEncounter = state.Encounter;            // 记下这一场实际用的遭遇实例（各端各自记自己的，同一时刻）
+			Runtime.DummyPending = false;
+			MpLog.Event($"dummy combat set up: encounter={state.Encounter?.Id.Entry} enemies={state.Enemies.Count} hp={string.Join(",", System.Linq.Enumerable.Select(state.Enemies, e => e.CurrentHp + "/" + e.MaxHp))}");
 		}
 	}
 }

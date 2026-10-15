@@ -173,6 +173,21 @@ public static class SovereignTimingPatch
 
 	public static bool Prefix(MegaCrit.Sts2.Core.Entities.Creatures.Creature creature, string triggerName, ref float waitTime, ref System.Threading.Tasks.Task __result)
 	{
+		// v0.14.36（联机稳定性）：这个补丁在游戏的动作流程里（出牌 / 攻击结算都要经过它），出错时一律退回原版行为，
+		// 不能让异常打断动作 —— 联机时一端的动作中断会让两端不同步
+		try
+		{
+			return Inner(creature, triggerName, ref waitTime, ref __result);
+		}
+		catch (System.Exception e)
+		{
+			ModEntry.Warn($"TriggerAnim {triggerName} patch failed, fallback to vanilla: {e}");
+			return true;
+		}
+	}
+
+	private static bool Inner(MegaCrit.Sts2.Core.Entities.Creatures.Creature creature, string triggerName, ref float waitTime, ref System.Threading.Tasks.Task __result)
+	{
 		if (_inner || !Makoto.Is(creature.Player))
 		{
 			return true;
