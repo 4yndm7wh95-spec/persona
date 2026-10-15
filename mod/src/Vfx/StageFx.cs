@@ -113,11 +113,11 @@ public static class StageFx
 		// v0.14.28（用户：击杀特效没有音效，加一个不太大声、能听出反馈的）：P3R 敌人消散声两种随机，压低音量（01 开头更响，再低一点）
 		if (Fx.Rng.Next(2) == 0)
 		{
-			Audio.Sfx.Clip("Snd_FX_Btl_EnemyDead_00", 0.35f);
+			Audio.Sfx.Clip("Snd_FX_Btl_EnemyDead_00", 0.65f);
 		}
 		else
 		{
-			Audio.Sfx.Clip("Snd_FX_Btl_EnemyDead_01", 0.28f);
+			Audio.Sfx.Clip("Snd_FX_Btl_EnemyDead_01", 0.52f);
 		}
 		// v0.14.8（用户：击败特效把怪物挡住了）：水之圆改到人物后层、半透明、无焦散，只在敌人身后亮一下
 		Node2D discRoot = Fx.Root(back ?? layer, at, "P3KnockDownDisc");
