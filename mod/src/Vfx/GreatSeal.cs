@@ -102,6 +102,190 @@ public static class GreatSeal
 	}
 
 	/// <summary>
+	/// v16 塔顶的房间细节（v0.14.26）。坐标按 v16 B 版原图（2048×1152）量：魔法阵椭圆中心 (1024, 820)、半轴 752×158；
+	/// 地平线 422；石碑底 y≈412、x≈80/330/600/810/1320/1570/1780/1980；月光倒影柱 x≈1098。
+	/// · 魔法阵：沿刻槽的两圈淡绿微光，24 个符文点按顺序一圈圈亮起（像在缓慢运转）；
+	/// · 月光柱里的光尘：只在倒影柱附近亮，缓慢飘；
+	/// · 远处石碑旁的磷火：几团小绿火上下浮动、闪烁；
+	/// · 湿地面倒影（人物）：屏幕纹理镜像，画在人物前层、脚下（只倒映脚以上的画面），带水波扰动；
+	/// · 近地薄雾：前层、贴着脚面，从小腿前飘过；前层几片灰烬；
+	/// · 远处闪电时人物也被照亮一下。
+	/// 返回每帧更新（time, bolt）。
+	/// </summary>
+	private static System.Action<float, float> RoomDetails(Control root, NCombatRoom room, Texture2D tex, Vector2 origin, float s, Vector2 moonAt, float floorTop, float dotSize)
+	{
+		float k = tex.GetWidth() / 2048f * s;
+		Vector2 P(float x, float y) => origin + new Vector2(x, y) * k;
+		Vector2 view = room.GetViewportRect().Size;
+		Control? front = room.GetNodeOrNull<Control>("%CombatVfxContainer");
+
+		// ── 魔法阵 ──
+		Node2D circle = new() { Position = P(1024f, 820f) };
+		root.AddChild(circle);
+		Vector2[] Ellipse(float rx, float ry, int n = 96)
+		{
+			var e = new Vector2[n];
+			for (int i = 0; i < n; i++)
+			{
+				float a = Mathf.Tau * i / n;
+				e[i] = new Vector2(Mathf.Cos(a) * rx, Mathf.Sin(a) * ry);
+			}
+			return e;
+		}
+		Line2D ringOut = Fx.Line(circle, Ellipse(752f * k, 158f * k), new Color(0.45f, 1f, 0.6f, 0.22f), 3f, closed: true);
+		Line2D ringIn = Fx.Line(circle, Ellipse(600f * k, 118f * k), new Color(0.45f, 1f, 0.6f, 0.16f), 2f, closed: true);
+		var runes = new List<(Polygon2D p, float a)>();
+		for (int i = 0; i < 24; i++)
+		{
+			float a = Mathf.Tau * i / 24f;
+			Polygon2D r = Fx.Poly(circle, Fx.Star4(7f * k + 2f, 0.25f), new Color(0.6f, 1f, 0.7f), additive: true);
+			r.Position = new Vector2(Mathf.Cos(a) * 676f * k, Mathf.Sin(a) * 138f * k);
+			r.Scale = new Vector2(1f, 0.45f);                                 // 贴地压扁
+			runes.Add((r, a));
+		}
+
+		// ── 月光柱里的光尘 ──
+		float colX = P(1098f, 0f).X;
+		var dust = new List<(Polygon2D p, float x, float y, float sp, float ph)>();
+		for (int i = 0; i < 40; i++)
+		{
+			Polygon2D d = Fx.Poly(root, Fx.Circle(Fx.Rand(1.2f, 2.6f), 6), new Color(0.85f, 1f, 0.85f), additive: true);
+			dust.Add((d, colX + Fx.Rand(-1f, 1f) * 200f * k, Fx.Rand(floorTop - 260f * k, view.Y), Fx.Rand(6f, 16f), Fx.Rand(0f, Mathf.Tau)));
+		}
+
+		// ── 石碑旁的磷火 ──
+		var wisps = new List<(Sprite2D sp, Vector2 at, float ph)>();
+		foreach (float x in new[] { 330f, 810f, 1320f, 1780f })
+		{
+			Vector2 at = P(x + 60f + Fx.Rand(-10f, 10f), 372f);           // 石碑右侧、半空（不压在碑面上）
+			Sprite2D w = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Position = at, Scale = Vector2.One * 18f * k / dotSize, Modulate = new Color(0.5f, 1f, 0.6f, 0.5f) };
+			root.AddChild(w);
+			wisps.Add((w, at, Fx.Rand(0f, Mathf.Tau)));
+		}
+
+		// ── 人物：倒影（前层、脚下）+ 闪电照亮 ──
+		var creatures = new List<NCreature>();
+		var reflections = new List<ColorRect>();
+		foreach (NCreature c in room.CreatureNodes)
+		{
+			if (!GodotObject.IsInstanceValid(c))
+			{
+				continue;
+			}
+			creatures.Add(c);
+			if (front == null)
+			{
+				continue;
+			}
+			Vector2 feet = c.GetBottomOfHitbox();
+			float h = Mathf.Max(200f, (feet.Y - c.VfxSpawnPosition.Y) * 2f);
+			ColorRect refl = new() { Size = new Vector2(h * 0.9f, h * 0.75f), MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Reflection } };
+			front.AddChild(refl);
+			refl.GlobalPosition = feet + new Vector2(-h * 0.45f, -2f);
+			reflections.Add(refl);
+		}
+
+		// ── 前层：近地薄雾 + 灰烬 ──
+		var mist = new List<(Sprite2D sp, float y, float speed, float ph)>();
+		var ash = new List<(Polygon2D p, float x, float y, float sp, float ph)>();
+		if (front != null)
+		{
+			float feetY = creatures.Count > 0 ? creatures[0].GetBottomOfHitbox().Y : view.Y * 0.66f;
+			for (int i = 0; i < 4; i++)
+			{
+				Sprite2D m = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(0.55f, 0.9f, 0.65f, 0.045f), Scale = new Vector2(Fx.Rand(9f, 13f), 0.9f) * (view.X / 1920f) * (64f / dotSize) };
+				front.AddChild(m);
+				mist.Add((m, feetY + Fx.Rand(-20f, 30f), Fx.Rand(18f, 34f) * (i % 2 == 0 ? 1f : -1f), Fx.Rand(0f, 1f)));
+			}
+			for (int i = 0; i < 9; i++)
+			{
+				Polygon2D a = Fx.Poly(front, new[] { new Vector2(-3f, 0f), new Vector2(0f, -2f), new Vector2(4f, 1f), new Vector2(0f, 2f) }, new Color(0.25f, 0.35f, 0.3f, 0.6f));
+				ash.Add((a, Fx.Rand(0f, view.X), Fx.Rand(0f, view.Y), Fx.Rand(10f, 26f), Fx.Rand(0f, Mathf.Tau)));
+			}
+		}
+
+		return (time, bolt) =>
+		{
+			// 魔法阵：整体呼吸 + 符文按顺序一圈圈亮起
+			float br = 0.5f + 0.5f * Mathf.Sin(time * 0.7f);
+			ringOut.Modulate = new Color(1f, 1f, 1f, 0.6f + 0.4f * br + bolt * 0.6f);
+			ringIn.Modulate = new Color(1f, 1f, 1f, 0.5f + 0.5f * (1f - br));
+			float head = Mathf.PosMod(time * 0.9f, Mathf.Tau);
+			foreach ((Polygon2D r, float a) in runes)
+			{
+				float d = Mathf.PosMod(head - a, Mathf.Tau);
+				float lit = Mathf.Exp(-d * 1.6f);
+				r.Modulate = new Color(1f, 1f, 1f, 0.12f + 0.75f * lit + bolt * 0.3f);
+			}
+			// 光尘：只在月光柱附近显形
+			foreach ((Polygon2D d, float x, float y, float sp, float ph) in dust)
+			{
+				float span = view.Y - (floorTop - 260f * k);
+				float yy = (floorTop - 260f * k) + Mathf.PosMod(y - (floorTop - 260f * k) - sp * time, span);
+				float xx = x + 18f * Mathf.Sin(time * 0.4f + ph);
+				d.Position = new Vector2(xx, yy);
+				float inCol = Mathf.Exp(-Mathf.Pow((xx - colX) / (130f * k), 2f));
+				d.Modulate = new Color(1f, 1f, 1f, inCol * (0.35f + 0.35f * Mathf.Sin(time * 2.3f + ph * 3f)));
+			}
+			foreach ((Sprite2D w, Vector2 at, float ph) in wisps)
+			{
+				w.Position = at + new Vector2(6f * Mathf.Sin(time * 0.7f + ph), -10f * Mathf.Sin(time * 0.5f + ph * 2f));
+				w.Modulate = new Color(0.5f, 1f, 0.6f, 0.35f + 0.25f * Mathf.Sin(time * 3.1f + ph) * Mathf.Sin(time * 1.7f + ph * 2f));
+			}
+			foreach (ColorRect refl in reflections)
+			{
+				if (GodotObject.IsInstanceValid(refl) && refl.Material is ShaderMaterial m)
+				{
+					m.SetShaderParameter("time_s", time);
+				}
+			}
+			foreach (NCreature c in creatures)
+			{
+				if (GodotObject.IsInstanceValid(c))
+				{
+					c.Visuals.Modulate = new Color(0.8f + 0.25f * bolt, 0.93f + 0.07f * bolt, 0.84f + 0.2f * bolt);
+				}
+			}
+			foreach ((Sprite2D m, float y, float speed, float ph) in mist)
+			{
+				float span = view.X + 900f;
+				m.Position = new Vector2(Mathf.PosMod(ph * span + speed * time, span) - 450f, y + 5f * Mathf.Sin(time * 0.6f + ph * 4f));
+			}
+			foreach ((Polygon2D a, float x, float y, float sp, float ph) in ash)
+			{
+				a.Position = new Vector2(Mathf.PosMod(x + sp * 1.4f * time + 30f * Mathf.Sin(time * 0.5f + ph), view.X + 40f) - 20f, Mathf.PosMod(y + sp * time, view.Y + 40f) - 20f);
+				a.Rotation = time * (0.6f + ph * 0.2f);
+			}
+		};
+	}
+
+	private static Shader? _reflection;
+
+	/// <summary>
+	/// 湿地面倒影：取屏幕上脚以上的画面镜像到脚下。矩形顶边 = 脚底线；用导数推出顶边在屏幕 UV 里的位置，和画布变换无关。
+	/// 越往下越淡、左右两边羽化，带两层水波扰动，染一点月光绿。
+	/// </summary>
+	private static Shader Reflection => _reflection ??= new Shader
+	{
+		Code = @"
+shader_type canvas_item;
+uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
+uniform float time_s = 0.0;
+uniform float strength = 0.32;
+void fragment() {
+	float dsy = dFdy(SCREEN_UV.y);
+	float duy = dFdy(UV.y);
+	float per = abs(duy) > 1e-6 ? dsy / duy : 0.0;                 // 矩形高度对应的屏幕 UV
+	float top = SCREEN_UV.y - UV.y * per;
+	float my = top - (SCREEN_UV.y - top);
+	float wob = sin(UV.y * 60.0 + time_s * 2.2) * 0.0016 + sin(UV.y * 23.0 - time_s * 1.3) * 0.0012;
+	vec4 c = textureLod(screen_tex, vec2(SCREEN_UV.x + wob * (0.4 + UV.y), my), 0.0);
+	float fade = pow(1.0 - UV.y, 1.6) * sin(3.14159 * UV.x);
+	COLOR = vec4(c.rgb * vec3(0.7, 0.95, 0.78), strength * fade);
+}",
+	};
+
+	/// <summary>
 	/// v0.14.25（用户：人物和背景不在一个图层，光影没有落到人物身上，也不像真的站在地板上）：
 	/// 人物（结城理和建筑师）整体染上影时间的月光绿、压暗一点；身后一团月光背光（随月光呼吸）；
 	/// 脚下接触阴影（深色压扁椭圆 + 更小更深的核心）；湿石板上一道竖向的绿色倒影光。都画在背景层（人物身后）。
@@ -157,8 +341,10 @@ public static class GreatSeal
 		{
 			return;
 		}
-		// v14 新背景（Codex 按站位要求重画：站人线 y=740/1152）优先；没有就用 v13 的图（平台前沿 y=745/1024）
-		Texture2D? v2 = Tex("tartarus_top_v2");
+		// v16 新背景（v0.14.26，透视修正：地平线 422/1152 ≈ 人眼高度，站人线 740/1152）优先；
+		// 其次 v14（站人线 740/1152，但地平线 620 太低，近大远小对不上）；都没有用 v13 的图（平台前沿 y=745/1024）
+		Texture2D? v3 = Tex("tartarus_top_v3");
+		Texture2D? v2 = v3 ?? Tex("tartarus_top_v2");
 		if (bg.GetNodeOrNull<Control>("P3TartarusTop") is Control existing)
 		{
 			// v0.14.16（用户：正式流程里建筑师房间还是原版背景）：原版背景可能比我们晚加进同一个容器、盖在上面 —— 每次都挪回最上层
@@ -228,15 +414,16 @@ public static class GreatSeal
 		// v0.14.24（用户：建筑师房间一片虚空）：塔顶主图在 v0.14.9 重写对齐时被误删，之前靠原版背景透出来没发现；v0.14.20 藏掉原版背景后只剩月光 / 雾等叠加层
 		art.AddChild(new Sprite2D { Name = "P3TartarusArt", Texture = tex, Centered = false, Position = origin, Scale = Vector2.One * s });
 		// 前景碎石（新图才有）：叠在人物前面（前层特效容器），增加纵深
-		if (v2 != null && Tex("tartarus_top_v2_fg") is Texture2D fg && room.GetNodeOrNull<Control>("%CombatVfxContainer") is Control fgLayer)
+		if (v2 != null && Tex(v3 != null ? "tartarus_top_v3_fg" : "tartarus_top_v2_fg") is Texture2D fg && room.GetNodeOrNull<Control>("%CombatVfxContainer") is Control fgLayer)
 		{
 			Sprite2D fgs = new() { Name = "P3TartarusFg", Texture = fg, Centered = false, Scale = Vector2.One * s };
 			fgLayer.AddChild(fgs);
 			fgs.GlobalPosition = origin;
 		}
 		// 原图里月亮的中心 / 半径（v14 A 版 1672×941 实测：(992, 208)、r≈165）
-		Vector2 moonAt = origin + (v2 != null ? new Vector2(992f, 208f) * (tex.GetWidth() / 1672f) : new Vector2(899f, 70f)) * s;
-		float moonR = (v2 != null ? 165f * tex.GetWidth() / 1672f : 230f) * s;
+		// v16 B 版（2048×1152）实测月亮 (1098, 200)、r≈149
+		Vector2 moonAt = origin + (v3 != null ? new Vector2(1098f, 200f) * (tex.GetWidth() / 2048f) : v2 != null ? new Vector2(992f, 208f) * (tex.GetWidth() / 1672f) : new Vector2(899f, 70f)) * s;
+		float moonR = (v3 != null ? 149f * tex.GetWidth() / 2048f : v2 != null ? 165f * tex.GetWidth() / 1672f : 230f) * s;
 
 		// 月光：两层加色光晕呼吸
 		Sprite2D halo = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Position = moonAt, Modulate = new Color(Moon, 0.35f) };
@@ -293,7 +480,7 @@ public static class GreatSeal
 		}
 		// 湿地面的反光：平台地面上若隐若现的横向细光
 		var glints = new List<(Polygon2D p, float ph, float rate)>();
-		float floorTop = origin.Y + (v2 != null ? 620f / 1152f * tex.GetHeight() : 760f) * s;
+		float floorTop = origin.Y + (v3 != null ? 422f / 1152f * tex.GetHeight() : v2 != null ? 620f / 1152f * tex.GetHeight() : 760f) * s;
 		for (int k = 0; k < 16; k++)
 		{
 			float y = Fx.Rand(floorTop + 20f, view.Y + 20f);
@@ -320,6 +507,8 @@ public static class GreatSeal
 		ColorRect tint = new() { Size = new Vector2(W, H), Position = new Vector2(-margin, -margin), Color = new Color(0.02f, 0.12f, 0.06f, 0.18f), MouseFilter = Control.MouseFilterEnum.Ignore };
 		root.AddChild(tint);
 		var lit = Grounding(root, room, moonAt, dotSize);
+		// v0.14.26 房间细节（用户：光影再细腻一些，看上去是这个房间的内容而不只是背景）：只在 v16 新图上（位置按新图量的）
+		System.Action<float, float>? details = v3 != null ? RoomDetails(root, room, tex, origin, s, moonAt, floorTop, dotSize) : null;
 		ulong start = Time.GetTicksMsec();
 		const float loop = 60f;
 		Fx.Animate(root, loop, _ =>
@@ -380,6 +569,7 @@ public static class GreatSeal
 			float bt = time - boltAt;
 			float bolt = bt < 0f ? 0f : bt < 0.07f ? 1f : bt < 0.14f ? 0.2f : bt < 0.2f ? 0.7f : Mathf.Max(0f, 0.7f - (bt - 0.2f) * 2f);
 			sky.Color = new Color(0.7f, 1f, 0.75f, 0.14f * bolt);
+			details?.Invoke(time, bolt);
 		}).SetLoops();
 	}
 
