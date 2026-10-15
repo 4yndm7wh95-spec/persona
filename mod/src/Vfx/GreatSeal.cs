@@ -102,14 +102,12 @@ public static class GreatSeal
 	}
 
 	/// <summary>
-	/// v16 塔顶的房间细节（v0.14.26）。坐标按 v16 B 版原图（2048×1152）量：魔法阵椭圆中心 (1024, 820)、半轴 752×158；
-	/// 地平线 422；石碑底 y≈412、x≈80/330/600/810/1320/1570/1780/1980；月光倒影柱 x≈1098。
-	/// · 魔法阵：沿刻槽的两圈淡绿微光，24 个符文点按顺序一圈圈亮起（像在缓慢运转）；
-	/// · 月光柱里的光尘：只在倒影柱附近亮，缓慢飘；
-	/// · 远处石碑旁的磷火：几团小绿火上下浮动、闪烁；
-	/// · 湿地面倒影（人物）：屏幕纹理镜像，画在人物前层、脚下（只倒映脚以上的画面），带水波扰动；
-	/// · 近地薄雾：前层、贴着脚面，从小腿前飘过；前层几片灰烬；
-	/// · 远处闪电时人物也被照亮一下。
+	/// v16 塔顶的房间细节（v0.14.27 重做：用户反馈 v0.14.26 的细节基本看不到 —— 太淡太小，跟人物有关的部分在背景创建时人物还没放进事件房间，一个都没生成）。
+	/// 坐标按 v16 B 版原图（2048×1152）实测：魔法阵中心 (1028, 820)、外圈半轴 752×159，内圈 590×125；地平线 422；月光倒影柱 x≈1098。
+	/// · 魔法阵：沿刻槽的两圈绿光（宽辉光 + 细亮线），24 个符文沿两圈之间按顺序亮起，带柔光；
+	/// · 月光柱里的光尘；石碑旁的磷火（柔光 + 亮芯）；
+	/// · 人物（每帧检查，新出现的立刻补上，位置每帧跟随）：月光染色、身后背光、脚下接触阴影、湿地面倒影（屏幕纹理镜像 + 水波）；
+	/// · 前层：近地薄雾、灰烬；远处闪电时人物和魔法阵一起被照亮。
 	/// 返回每帧更新（time, bolt）。
 	/// </summary>
 	private static System.Action<float, float> RoomDetails(Control root, NCombatRoom room, Texture2D tex, Vector2 origin, float s, Vector2 moonAt, float floorTop, float dotSize)
@@ -118,11 +116,12 @@ public static class GreatSeal
 		Vector2 P(float x, float y) => origin + new Vector2(x, y) * k;
 		Vector2 view = room.GetViewportRect().Size;
 		Control? front = room.GetNodeOrNull<Control>("%CombatVfxContainer");
+		Color green = new(0.5f, 1f, 0.62f);
 
 		// ── 魔法阵 ──
-		Node2D circle = new() { Position = P(1024f, 820f) };
+		Node2D circle = new() { Position = P(1026f, 820f) };
 		root.AddChild(circle);
-		Vector2[] Ellipse(float rx, float ry, int n = 96)
+		Vector2[] Ellipse(float rx, float ry, int n = 128)
 		{
 			var e = new Vector2[n];
 			for (int i = 0; i < n; i++)
@@ -132,57 +131,77 @@ public static class GreatSeal
 			}
 			return e;
 		}
-		Line2D ringOut = Fx.Line(circle, Ellipse(752f * k, 158f * k), new Color(0.45f, 1f, 0.6f, 0.22f), 3f, closed: true);
-		Line2D ringIn = Fx.Line(circle, Ellipse(600f * k, 118f * k), new Color(0.45f, 1f, 0.6f, 0.16f), 2f, closed: true);
-		var runes = new List<(Polygon2D p, float a)>();
+		var rings = new List<(Line2D glow, Line2D core)>();
+		foreach ((float rx, float ry) in new[] { (752f, 159f), (590f, 125f) })
+		{
+			Line2D g = Fx.Line(circle, Ellipse(rx * k, ry * k), new Color(green, 0.22f), 14f, closed: true);
+			Line2D c = Fx.Line(circle, Ellipse(rx * k, ry * k), new Color(0.75f, 1f, 0.8f, 0.85f), 2.5f, closed: true);
+			rings.Add((g, c));
+		}
+		var runes = new List<(Node2D n, float a)>();
 		for (int i = 0; i < 24; i++)
 		{
 			float a = Mathf.Tau * i / 24f;
-			Polygon2D r = Fx.Poly(circle, Fx.Star4(7f * k + 2f, 0.25f), new Color(0.6f, 1f, 0.7f), additive: true);
-			r.Position = new Vector2(Mathf.Cos(a) * 676f * k, Mathf.Sin(a) * 138f * k);
-			r.Scale = new Vector2(1f, 0.45f);                                 // 贴地压扁
-			runes.Add((r, a));
+			Node2D rn = new() { Position = new Vector2(Mathf.Cos(a) * 671f * k, Mathf.Sin(a) * 142f * k), Scale = new Vector2(1f, 0.5f) };   // 贴地压扁
+			circle.AddChild(rn);
+			rn.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = Vector2.One * 70f * k / dotSize, Modulate = new Color(green, 0.6f) });
+			Fx.Poly(rn, Fx.Star4(15f * k, 0.22f), new Color(0.85f, 1f, 0.88f), additive: true);
+			Fx.Line(rn, Fx.Circle(11f * k, 16), new Color(0.75f, 1f, 0.8f, 0.8f), 1.5f, closed: true);
+			runes.Add((rn, a));
 		}
 
 		// ── 月光柱里的光尘 ──
 		float colX = P(1098f, 0f).X;
+		float dustTop = floorTop - 300f * k;
 		var dust = new List<(Polygon2D p, float x, float y, float sp, float ph)>();
-		for (int i = 0; i < 40; i++)
+		for (int i = 0; i < 70; i++)
 		{
-			Polygon2D d = Fx.Poly(root, Fx.Circle(Fx.Rand(1.2f, 2.6f), 6), new Color(0.85f, 1f, 0.85f), additive: true);
-			dust.Add((d, colX + Fx.Rand(-1f, 1f) * 200f * k, Fx.Rand(floorTop - 260f * k, view.Y), Fx.Rand(6f, 16f), Fx.Rand(0f, Mathf.Tau)));
+			Polygon2D d = Fx.Poly(root, Fx.Star4(Fx.Rand(2.5f, 5f), 0.35f), new Color(0.9f, 1f, 0.9f), additive: true);
+			dust.Add((d, colX + Fx.Rand(-1f, 1f) * 240f * k, Fx.Rand(dustTop, view.Y), Fx.Rand(8f, 22f), Fx.Rand(0f, Mathf.Tau)));
 		}
 
 		// ── 石碑旁的磷火 ──
-		var wisps = new List<(Sprite2D sp, Vector2 at, float ph)>();
+		var wisps = new List<(Node2D n, Vector2 at, float ph)>();
 		foreach (float x in new[] { 330f, 810f, 1320f, 1780f })
 		{
 			Vector2 at = P(x + 60f + Fx.Rand(-10f, 10f), 372f);           // 石碑右侧、半空（不压在碑面上）
-			Sprite2D w = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Position = at, Scale = Vector2.One * 18f * k / dotSize, Modulate = new Color(0.5f, 1f, 0.6f, 0.5f) };
+			Node2D w = new() { Position = at };
 			root.AddChild(w);
+			w.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = Vector2.One * 60f * k / dotSize, Modulate = new Color(green, 0.7f) });
+			w.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = Vector2.One * 16f * k / dotSize, Modulate = new Color(0.9f, 1f, 0.9f, 1f) });
 			wisps.Add((w, at, Fx.Rand(0f, Mathf.Tau)));
 		}
 
-		// ── 人物：倒影（前层、脚下）+ 闪电照亮 ──
-		var creatures = new List<NCreature>();
-		var reflections = new List<ColorRect>();
-		foreach (NCreature c in room.CreatureNodes)
+		// ── 人物：每帧检查，新出现的补上；位置每帧跟随 ──
+		var decorated = new Dictionary<ulong, (NCreature c, Sprite2D back, Sprite2D shadow, Sprite2D core, Sprite2D glow, ColorRect? refl, float h)>();
+		void Decorate()
 		{
-			if (!GodotObject.IsInstanceValid(c))
+			foreach (NCreature c in room.CreatureNodes)
 			{
-				continue;
+				if (!GodotObject.IsInstanceValid(c) || decorated.ContainsKey(c.GetInstanceId()))
+				{
+					continue;
+				}
+				Vector2 feet = c.GetBottomOfHitbox();
+				float h = Mathf.Max(200f, (feet.Y - c.VfxSpawnPosition.Y) * 2f);
+				Sprite2D back = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = new Vector2(h * 0.9f, h * 1.4f) / dotSize, Modulate = new Color(Moon, 0.22f) };
+				Sprite2D glow = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = new Vector2(h * 0.5f, h * 0.14f) / dotSize, Modulate = new Color(0.55f, 1f, 0.65f, 0.25f) };
+				Sprite2D shadow = new() { Texture = Fx.SoftDot, Scale = new Vector2(h * 0.75f, h * 0.13f) / dotSize, Modulate = new Color(0f, 0.03f, 0.01f, 0.7f) };
+				Sprite2D core = new() { Texture = Fx.SoftDot, Scale = new Vector2(h * 0.36f, h * 0.06f) / dotSize, Modulate = new Color(0f, 0.02f, 0f, 0.85f) };
+				root.AddChild(back);
+				root.AddChild(glow);
+				root.AddChild(shadow);
+				root.AddChild(core);
+				ColorRect? refl = null;
+				if (front != null)
+				{
+					refl = new() { Size = new Vector2(h * 0.9f, h * 0.8f), MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Reflection } };
+					front.AddChild(refl);
+					front.MoveChild(refl, 0);                                       // 前层最底下：不盖住其他前层特效
+				}
+				decorated[c.GetInstanceId()] = (c, back, shadow, core, glow, refl, h);
+				GD.Print($"{ModEntry.Tag} architect room: grounded {c.Name} (h={h:0})");
 			}
-			creatures.Add(c);
-			if (front == null)
-			{
-				continue;
-			}
-			Vector2 feet = c.GetBottomOfHitbox();
-			float h = Mathf.Max(200f, (feet.Y - c.VfxSpawnPosition.Y) * 2f);
-			ColorRect refl = new() { Size = new Vector2(h * 0.9f, h * 0.75f), MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Reflection } };
-			front.AddChild(refl);
-			refl.GlobalPosition = feet + new Vector2(-h * 0.45f, -2f);
-			reflections.Add(refl);
 		}
 
 		// ── 前层：近地薄雾 + 灰烬 ──
@@ -190,66 +209,86 @@ public static class GreatSeal
 		var ash = new List<(Polygon2D p, float x, float y, float sp, float ph)>();
 		if (front != null)
 		{
-			float feetY = creatures.Count > 0 ? creatures[0].GetBottomOfHitbox().Y : view.Y * 0.66f;
-			for (int i = 0; i < 4; i++)
+			float feetY = P(0f, 740f).Y;
+			for (int i = 0; i < 5; i++)
 			{
-				Sprite2D m = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(0.55f, 0.9f, 0.65f, 0.045f), Scale = new Vector2(Fx.Rand(9f, 13f), 0.9f) * (view.X / 1920f) * (64f / dotSize) };
+				Sprite2D m = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(0.55f, 0.9f, 0.65f, 0.1f), Scale = new Vector2(Fx.Rand(9f, 13f), 1.0f) * (view.X / 1920f) * (64f / dotSize) };
 				front.AddChild(m);
-				mist.Add((m, feetY + Fx.Rand(-20f, 30f), Fx.Rand(18f, 34f) * (i % 2 == 0 ? 1f : -1f), Fx.Rand(0f, 1f)));
+				mist.Add((m, feetY + Fx.Rand(-24f, 30f), Fx.Rand(20f, 38f) * (i % 2 == 0 ? 1f : -1f), Fx.Rand(0f, 1f)));
 			}
-			for (int i = 0; i < 9; i++)
+			for (int i = 0; i < 14; i++)
 			{
-				Polygon2D a = Fx.Poly(front, new[] { new Vector2(-3f, 0f), new Vector2(0f, -2f), new Vector2(4f, 1f), new Vector2(0f, 2f) }, new Color(0.25f, 0.35f, 0.3f, 0.6f));
-				ash.Add((a, Fx.Rand(0f, view.X), Fx.Rand(0f, view.Y), Fx.Rand(10f, 26f), Fx.Rand(0f, Mathf.Tau)));
+				float sz = Fx.Rand(3f, 6f);
+				Polygon2D a = Fx.Poly(front, new[] { new Vector2(-sz, 0f), new Vector2(0f, -sz * 0.6f), new Vector2(sz * 1.2f, sz * 0.3f), new Vector2(0f, sz * 0.6f) }, new Color(0.3f, 0.45f, 0.38f, 0.75f));
+				ash.Add((a, Fx.Rand(0f, view.X), Fx.Rand(0f, view.Y), Fx.Rand(12f, 30f), Fx.Rand(0f, Mathf.Tau)));
 			}
 		}
 
+		float nextScan = 0f;
 		return (time, bolt) =>
 		{
+			if (time >= nextScan)
+			{
+				nextScan = time + 0.5f;
+				Decorate();
+			}
 			// 魔法阵：整体呼吸 + 符文按顺序一圈圈亮起
 			float br = 0.5f + 0.5f * Mathf.Sin(time * 0.7f);
-			ringOut.Modulate = new Color(1f, 1f, 1f, 0.6f + 0.4f * br + bolt * 0.6f);
-			ringIn.Modulate = new Color(1f, 1f, 1f, 0.5f + 0.5f * (1f - br));
+			for (int i = 0; i < rings.Count; i++)
+			{
+				float b = i == 0 ? br : 1f - br;
+				rings[i].glow.Modulate = new Color(1f, 1f, 1f, 0.55f + 0.45f * b + bolt);
+				rings[i].core.Modulate = new Color(1f, 1f, 1f, 0.5f + 0.5f * b + bolt);
+			}
 			float head = Mathf.PosMod(time * 0.9f, Mathf.Tau);
-			foreach ((Polygon2D r, float a) in runes)
+			foreach ((Node2D rn, float a) in runes)
 			{
 				float d = Mathf.PosMod(head - a, Mathf.Tau);
-				float lit = Mathf.Exp(-d * 1.6f);
-				r.Modulate = new Color(1f, 1f, 1f, 0.12f + 0.75f * lit + bolt * 0.3f);
+				float lit = Mathf.Exp(-d * 1.4f);
+				rn.Modulate = new Color(1f, 1f, 1f, 0.25f + 0.75f * lit + bolt * 0.4f);
+				rn.Scale = new Vector2(1f + 0.25f * lit, 0.5f * (1f + 0.25f * lit));
 			}
 			// 光尘：只在月光柱附近显形
+			float span = view.Y - dustTop;
 			foreach ((Polygon2D d, float x, float y, float sp, float ph) in dust)
 			{
-				float span = view.Y - (floorTop - 260f * k);
-				float yy = (floorTop - 260f * k) + Mathf.PosMod(y - (floorTop - 260f * k) - sp * time, span);
-				float xx = x + 18f * Mathf.Sin(time * 0.4f + ph);
+				float yy = dustTop + Mathf.PosMod(y - dustTop - sp * time, span);
+				float xx = x + 22f * Mathf.Sin(time * 0.4f + ph);
 				d.Position = new Vector2(xx, yy);
-				float inCol = Mathf.Exp(-Mathf.Pow((xx - colX) / (130f * k), 2f));
-				d.Modulate = new Color(1f, 1f, 1f, inCol * (0.35f + 0.35f * Mathf.Sin(time * 2.3f + ph * 3f)));
+				d.Rotation = time * 0.6f + ph;
+				float inCol = Mathf.Exp(-Mathf.Pow((xx - colX) / (170f * k), 2f));
+				d.Modulate = new Color(1f, 1f, 1f, inCol * (0.55f + 0.45f * Mathf.Sin(time * 2.3f + ph * 3f)));
 			}
-			foreach ((Sprite2D w, Vector2 at, float ph) in wisps)
+			foreach ((Node2D w, Vector2 at, float ph) in wisps)
 			{
-				w.Position = at + new Vector2(6f * Mathf.Sin(time * 0.7f + ph), -10f * Mathf.Sin(time * 0.5f + ph * 2f));
-				w.Modulate = new Color(0.5f, 1f, 0.6f, 0.35f + 0.25f * Mathf.Sin(time * 3.1f + ph) * Mathf.Sin(time * 1.7f + ph * 2f));
+				w.Position = at + new Vector2(8f * Mathf.Sin(time * 0.7f + ph), -14f * Mathf.Sin(time * 0.5f + ph * 2f));
+				w.Modulate = new Color(1f, 1f, 1f, 0.65f + 0.35f * Mathf.Sin(time * 3.1f + ph) * Mathf.Sin(time * 1.7f + ph * 2f));
 			}
-			foreach (ColorRect refl in reflections)
+			// 人物：位置跟随、染色、闪电照亮、背光呼吸、倒影水波
+			foreach (var (c, back, shadow, core, glow, refl, h) in decorated.Values)
 			{
-				if (GodotObject.IsInstanceValid(refl) && refl.Material is ShaderMaterial m)
+				if (!GodotObject.IsInstanceValid(c))
 				{
-					m.SetShaderParameter("time_s", time);
+					continue;
 				}
-			}
-			foreach (NCreature c in creatures)
-			{
-				if (GodotObject.IsInstanceValid(c))
+				Vector2 feet = c.GetBottomOfHitbox();
+				Vector2 toMoon = (moonAt - feet).Normalized();
+				back.Position = feet + new Vector2(toMoon.X * 30f, -h * 0.5f);
+				back.Modulate = new Color(Moon, 0.18f + 0.06f * br + 0.3f * bolt);
+				glow.Position = feet + new Vector2(0f, 6f);
+				shadow.Position = feet + new Vector2(0f, 4f);
+				core.Position = feet + new Vector2(0f, 2f);
+				c.Visuals.Modulate = new Color(0.78f + 0.3f * bolt, 0.92f + 0.08f * bolt, 0.82f + 0.25f * bolt);
+				if (refl != null && GodotObject.IsInstanceValid(refl) && refl.Material is ShaderMaterial m)
 				{
-					c.Visuals.Modulate = new Color(0.8f + 0.25f * bolt, 0.93f + 0.07f * bolt, 0.84f + 0.2f * bolt);
+					refl.GlobalPosition = feet + new Vector2(-h * 0.45f, -2f);
+					m.SetShaderParameter("time_s", time);
 				}
 			}
 			foreach ((Sprite2D m, float y, float speed, float ph) in mist)
 			{
-				float span = view.X + 900f;
-				m.Position = new Vector2(Mathf.PosMod(ph * span + speed * time, span) - 450f, y + 5f * Mathf.Sin(time * 0.6f + ph * 4f));
+				float sp2 = view.X + 900f;
+				m.Position = new Vector2(Mathf.PosMod(ph * sp2 + speed * time, sp2) - 450f, y + 6f * Mathf.Sin(time * 0.6f + ph * 4f));
 			}
 			foreach ((Polygon2D a, float x, float y, float sp, float ph) in ash)
 			{
@@ -271,7 +310,7 @@ public static class GreatSeal
 shader_type canvas_item;
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
 uniform float time_s = 0.0;
-uniform float strength = 0.32;
+uniform float strength = 0.45;
 void fragment() {
 	float dsy = dFdy(SCREEN_UV.y);
 	float duy = dFdy(UV.y);
@@ -506,7 +545,7 @@ void fragment() {
 		// 影时间暗绿调 + 四周压暗
 		ColorRect tint = new() { Size = new Vector2(W, H), Position = new Vector2(-margin, -margin), Color = new Color(0.02f, 0.12f, 0.06f, 0.18f), MouseFilter = Control.MouseFilterEnum.Ignore };
 		root.AddChild(tint);
-		var lit = Grounding(root, room, moonAt, dotSize);
+		var lit = v3 != null ? new List<(Sprite2D, float)>() : Grounding(root, room, moonAt, dotSize);   // v16 图上由 RoomDetails 每帧处理人物
 		// v0.14.26 房间细节（用户：光影再细腻一些，看上去是这个房间的内容而不只是背景）：只在 v16 新图上（位置按新图量的）
 		System.Action<float, float>? details = v3 != null ? RoomDetails(root, room, tex, origin, s, moonAt, floorTop, dotSize) : null;
 		ulong start = Time.GetTicksMsec();
@@ -737,16 +776,31 @@ void fragment() {
 			// 8 帧指天：2.4 起手，约 1.9s 后指尖到顶；只有单帧时 3.7 起手（0.3s 处溶解到指天）
 			bool frames = HasAnim(player, "point_sky_in");
 			Fx.After(world, frames ? 2.4 : 3.7, "seal point", () => PointSky(player));
-			Fx.After(world, 4.3, "seal pillar", () =>
+			// 光柱从食指尖升起：骨骼里 "hand" 在指天最后一帧就放在指尖。
+			// v0.14.27（用户：光束有时从身体部位射出）：4.3s 正好是指天动画切到最后一帧的时刻，稍有卡顿读到的就是抬手途中的手。
+			// 现在要等动画进入 point_sky_loop 且手在头顶上方才取点；没到就每 0.05s 再看一次，最多 0.5s，仍不行按身高估
+			void Pillar(float at)
 			{
-				// 光柱从食指尖升起：骨骼里 "hand" 在指天最后一帧就放在指尖；读不到（或离头太远）就按身高估
 				Vector2 tip = head + new Vector2(-0.12f, -0.35f) * body;
+				bool ready = false;
 				if (valid && GodotObject.IsInstanceValid(player) && WeaponFx.Bone(player!, "hand") is Vector2 b && b.DistanceTo(head) < body * 1.2f)
 				{
-					tip = b;
+					string? cur = player!.Visuals.SpineBody?.GetAnimationState().GetCurrentAnimationName();
+					bool posed = !frames || cur == "point_sky_loop";
+					if (posed && b.Y < head.Y - body * 0.05f)
+					{
+						tip = b;
+						ready = true;
+					}
 				}
-				Ascend(world, tip, feet, body, view, WhiteAt + 0.3f - 4.3f);
-			});
+				if (!ready && at < 4.8f)
+				{
+					Fx.After(world, 0.05, "seal pillar wait", () => Pillar(at + 0.05f));
+					return;
+				}
+				Ascend(world, tip, feet, body, view, WhiteAt + 0.3f - at);
+			}
+			Fx.After(world, 4.3, "seal pillar", () => Pillar(4.3f));
 			Fx.After(ui, WhiteAt - 0.9, "seal white", () => WhiteRise(ui, view));
 			Fx.After(ui, WhiteAt, "seal coda", () => Coda(top, view, Duration + 0.8f - WhiteAt));
 			Fx.After(ui, Duration + 0.8, "seal cleanup", () => top.QueueFree());
