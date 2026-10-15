@@ -18,6 +18,7 @@ public static class Ease
 	public static float InOutCubic(float t) => t < 0.5f ? 4f * t * t * t : 1f - Mathf.Pow(-2f * t + 2f, 3f) / 2f;
 
 	public static float InOutSine(float t) => -(Mathf.Cos(Mathf.Pi * t) - 1f) / 2f;
+	public static float OutSine(float t) => Mathf.Sin(t * Mathf.Pi / 2f);
 
 	public static float OutBack(float t)
 	{

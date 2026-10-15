@@ -1399,15 +1399,26 @@ void fragment() {
 
 		void Close()
 		{
-			const float closeLen = 4.0f, hold = 0.7f;
+			// v0.14.30（用户：先由慢到快闭上 → 由快到慢睁开（眨一次眼）→ 缓慢闭到只剩一条缝、还能看见一点背景 → 速度降得很低，慢慢慢慢闭紧）
+			//   0.00–0.85  慢→快闭上（InCubic，0 → 1，全黑）
+			//   0.85–0.95  闭着停一瞬
+			//   0.95–1.95  快→慢睁开（OutCubic，1 → 0.12）
+			//   1.95–4.25  缓慢闭到一条缝（InOutSine，0.12 → 0.88）
+			//   4.25–7.25  极慢地闭紧（OutSine，0.88 → 1）
+			const float closeLen = 7.25f, hold = 0.7f;
+			static float Lids(float time)
+			{
+				if (time < 0.85f) return Ease.InCubic(time / 0.85f);
+				if (time < 0.95f) return 1f;
+				if (time < 1.95f) return Mathf.Lerp(1f, 0.12f, Ease.OutCubic((time - 0.95f) / 1.0f));
+				if (time < 4.25f) return Mathf.Lerp(0.12f, 0.88f, Ease.InOutSine((time - 1.95f) / 2.3f));
+				return Mathf.Lerp(0.88f, 1f, Ease.OutSine(Mathf.Clamp((time - 4.25f) / 3.0f, 0f, 1f)));
+			}
 			Fx.Animate(root, closeLen + hold, t =>
 			{
 				float time = t * (closeLen + hold);
 				texts.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InOutSine(Mathf.Clamp(time / 0.6f, 0f, 1f)));
-				// 先垂到四成（1.5s），微微抬起到 0.34（0.6s），再缓缓闭紧（1.9s）
-				float p = time < 1.5f ? 0.4f * Ease.InOutSine(time / 1.5f)
-					: time < 2.1f ? Mathf.Lerp(0.4f, 0.34f, Ease.InOutSine((time - 1.5f) / 0.6f))
-					: Mathf.Lerp(0.34f, 1f, Ease.InOutSine(Mathf.Clamp((time - 2.1f) / 1.9f, 0f, 1f)));
+				float p = Lids(time);
 				PlaceLids(p);
 				float dark = 1f - 0.45f * p;
 				frame.Modulate = new Color(dark, dark, dark * 1.02f);
