@@ -2,7 +2,7 @@
 
 【背景】
 测试工具 v1.2 支持联机：会改游戏状态的按钮都走原版控制台的联机同步通道，每个游戏进程单独写一份多人日志（%APPDATA%\SlayTheSpire2\logs\p3_mp\）。
-原版自带本机联机测试参数 --fastmp：联机不走 Steam，改用本机 ENet（127.0.0.1:33771）。房主不加 clientId，客机加 --clientId 1001。
+原版自带本机联机测试参数 --fastmp <模式>：联机不走 Steam，改用本机 ENet（127.0.0.1:33771）。--fastmp 后面必须跟模式：host_standard（自动开房当房主）/ join（自动加入本机房主）；客机还要加 --clientId 1001。
 原版的 -wpos x y 参数会把游戏放成窗口并摆到指定位置。
 
 【找到仓库】
@@ -23,10 +23,10 @@
 
 【启动两个实例】（这次允许启动游戏，但只做下面这些，不要在游戏里点任何东西）
 8. 找到游戏主程序（<游戏安装目录> 下的杀戮尖塔 2 主 exe），用 Start-Process 启动，工作目录设为游戏安装目录：
-   - 实例 A（房主）：参数 --fastmp -wpos 0 0
+   - 实例 A（房主）：参数 --fastmp host_standard -wpos 0 0
    - 等 20 秒，确认进程还在、窗口出来了，再启动：
-   - 实例 B（客机）：参数 --fastmp --clientId 1001 -wpos 960 0；启动前给这个进程设环境变量 P3_BRIDGE=0（关掉测试工具的本机接口，否则和实例 A 端口冲突）。
-     PowerShell 示例：$env:P3_BRIDGE='0'; Start-Process -FilePath <exe> -ArgumentList '--fastmp','--clientId','1001','-wpos','960','0' -WorkingDirectory <游戏目录>; Remove-Item Env:P3_BRIDGE
+   - 实例 B（客机）：参数 --fastmp join --clientId 1001 -wpos 960 0；启动前给这个进程设环境变量 P3_BRIDGE=0（关掉测试工具的本机接口，否则和实例 A 端口冲突）。
+     PowerShell 示例：$env:P3_BRIDGE='0'; Start-Process -FilePath <exe> -ArgumentList '--fastmp','join','--clientId','1001','-wpos','960','0' -WorkingDirectory <游戏目录>; Remove-Item Env:P3_BRIDGE
 9. 再等 20 秒，确认两个进程都在运行。看 C:\Users\kkk\AppData\Roaming\SlayTheSpire2\logs\p3_mp\ 下是否新出现了两个 p3mp_*_pid<进程号>.log，每个文件开头应有 "P3TestMod 1.2.0 log start" 和各自的启动参数。
 10. 如果某个实例弹出 Steam 初始化失败的提示，或者进程自己退出了：不要反复重启。把两个实例都关掉（正常关闭窗口），改为两个实例都额外加参数 --force-steam off 再按第 8~9 步启动一次（这样不连 Steam，会用一个单独的本地档，不会碰 Steam 存档）；还是不行就停下来报告，把日志里相关的几行（敏感信息用 *** 代替）发出来。
 

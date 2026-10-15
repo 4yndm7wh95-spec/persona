@@ -22,9 +22,10 @@
   每行立即写盘，游戏崩溃也不会丢。
 
 ## 本机双开联机测试
-原版自带的本机联机测试参数 `--fastmp`：联机不走 Steam，改用本机 ENet（127.0.0.1:33771）。
-- 房主：`SlayTheSpire2.exe --fastmp -wpos 0 0` → 多人游戏 → 主持；
-- 客机：`SlayTheSpire2.exe --fastmp --clientId 1001 -wpos 960 0` → 多人游戏 → 加入（自动连本机房主）；
+原版自带的本机联机测试参数 `--fastmp <模式>`：联机不走 Steam，改用本机 ENet（127.0.0.1:33771）。模式必须写（只写 `--fastmp` 会报 invalid value）：
+- 房主：`SlayTheSpire2.exe --fastmp host_standard -wpos 0 0`（自动开一个标准模式的房间）；
+- 客机：`SlayTheSpire2.exe --fastmp join --clientId 1001 -wpos 960 0`（自动加入本机房主，房主开好房间后再启动）；
+- 游戏的模组设置里要启用 P3TestMod（被禁用时日志里是 "Skipping loading mod P3TestMod, it is set to disabled in settings"）；
 - `-wpos x y` 是原版的窗口位置参数（会把游戏切成窗口模式，并记进设置）；
 - 第二个游戏的导演接口端口会冲突：启动前设环境变量 `P3_BRIDGE=0` 关掉它。
 两个进程用同一个存档目录，测试前先备份存档。
