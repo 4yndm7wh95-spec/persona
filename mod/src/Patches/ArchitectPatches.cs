@@ -128,15 +128,23 @@ public static class ArchitectNoCounterPatch
 		{
 			return true;
 		}
+		GD.Print($"{ModEntry.Tag} architect: skip counter attack -> RunManager.WinRun next");
 		__result = Task.CompletedTask;
 		return false;
 	}
 }
 
+/// <summary>结局排查（v0.14.30）：记录 RunManager.WinRun 被调用（之后游戏应结束本局并打开结算画面）。</summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Runs.RunManager), nameof(MegaCrit.Sts2.Core.Runs.RunManager.WinRun))]
+public static class ArchitectWinRunLogPatch
+{
+	public static void Prefix() => GD.Print($"{ModEntry.Tag} RunManager.WinRun called");
+}
+
 /// <summary>
 /// v0.14.28（用户：建筑师房间里结算画面「胜利……？」出来后按 ESC，背景变回之前的房间）：
 /// 结算画面是叠加界面（人物被挪到它上面、暗红底遮住房间）；暂停时游戏会临时藏起叠加界面，后面的塔顶背景、对话气泡、结局按钮就露出来。
-/// 结算画面打开时（人物已经挪走）把建筑师房间整个藏起来，暂停时背后是空的暗底。只在我们的塔顶房间生效。
+/// v0.14.30 改为在房间前层垫黑底（不再藏整个事件房间），见 Postfix 注释。只在我们的塔顶房间生效。
 /// </summary>
 [HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Screens.GameOverScreen.NGameOverScreen), nameof(MegaCrit.Sts2.Core.Nodes.Screens.GameOverScreen.NGameOverScreen.AfterOverlayOpened))]
 public static class ArchitectGameOverPatch
@@ -145,18 +153,28 @@ public static class ArchitectGameOverPatch
 	{
 		ModEntry.Safe("architect game over", () =>
 		{
-			if (NEventRoom.Instance is NEventRoom ev && GodotObject.IsInstanceValid(ev)
-				&& ev.EmbeddedCombatRoom?.GetNodeOrNull("%BgContainer/P3TartarusTop") != null)
+			GD.Print($"{ModEntry.Tag} game over screen opened");
+			// v0.14.30：不再藏整个事件房间（v0.14.28 那样做之后结局流程卡住，怀疑与之有关）。
+			// 改为：只在塔顶房间里，往房间的前层垫一块全屏黑底（暂停时游戏临时藏起结算画面，后面看到的只是黑），
+			// 并藏起结算画面里的人物容器（闭眼之后的结算 UI 不显示人物和建筑师），再淡出闭眼留下的黑幕
+			NCombatRoom? room = NEventRoom.Instance?.EmbeddedCombatRoom;
+			if (room == null || !GodotObject.IsInstanceValid(room) || room.GetNodeOrNull("%BgContainer/P3TartarusTop") == null)
 			{
-				ev.Visible = false;
-				// v0.14.29（用户：闭眼之后的原版结算 UI 不再展示人物和建筑师）：结算画面把人物挪到自己的容器里显示，整个容器藏掉
-				if (Traverse.Create(__instance).Field("_creatureContainer").GetValue() is CanvasItem creatures)
-				{
-					creatures.Visible = false;
-				}
-				GreatSeal.RevealGameOver();                                          // 闭眼留下的黑幕淡出，露出结算 UI
-				GD.Print($"{ModEntry.Tag} architect room hidden behind game over screen");
+				return;
 			}
+			if (room.GetNodeOrNull<Control>("%CombatVfxContainer") is Control front && front.GetNodeOrNull("P3EndBlack") == null)
+			{
+				Vector2 size = room.GetViewportRect().Size;
+				ColorRect black = new() { Name = "P3EndBlack", Color = Colors.Black, MouseFilter = Control.MouseFilterEnum.Ignore, Size = size * 3f };
+				front.AddChild(black);
+				black.GlobalPosition = -size;
+			}
+			if (Traverse.Create(__instance).Field("_creatureContainer").GetValue() is CanvasItem creatures)
+			{
+				creatures.Visible = false;
+			}
+			GreatSeal.RevealGameOver();
+			GD.Print($"{ModEntry.Tag} architect room covered behind game over screen");
 		});
 	}
 }

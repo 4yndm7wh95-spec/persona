@@ -820,8 +820,8 @@ void fragment() {
 			}
 			Fx.After(world, 4.3, "seal pillar", () => Pillar(4.3f));
 			Fx.After(ui, WhiteAt - 0.9, "seal white", () => WhiteRise(ui, view));
-			Fx.After(ui, WhiteAt, "seal coda", () => Coda(top, view, Duration + 0.8f - WhiteAt));
-			Fx.After(ui, Duration - 0.2, "seal eyes", () => CloseEyes(top, view, finish));
+			// v0.14.30：白幕之后先问「要闭上眼睛吗？」，闭眼全黑后才是 MEMENTO MORI（用户：闭眼应排在 MEMENTO MORI 前面）
+			Fx.After(ui, WhiteAt, "seal eyes", () => CloseEyes(top, view, finish));
 		});
 	}
 
@@ -1220,12 +1220,14 @@ void fragment() {
 	}
 
 	/// <summary>
-	/// v0.14.29（用户：MEMENTO MORI 之后不要接人物倒下的结算画面 —— 照 P3R 原版做「要闭上眼睛吗？」，选择后整个屏幕慢慢闭眼，全黑后才出原版结算 UI，且不显示人物和建筑师）。
-	/// · 画面：黑底上一块上下边缘内弧的"镜头"画框（P3R 原版构图：左右各留 13%，上沿中间下沉、下沉沿中间上拱），里面是模糊的天台背景
-	///   （ui/ending_rooftop.png，美术会话出图；没有时用柔和的淡紫灰渐变代替），左右边缘各一道镜头反光；
-	///   中间「▸要闭上眼睛吗？」（字间留空，光标三角闪烁），左下一排六个小点，右下大号「闭上眼睛」（ui/ending_closeeye.png，P3R 原版贴图；没有时用文字大小交错排）。
-	/// · 点击任意处 → 文字淡出 → 上下眼睑（带羽化边的弧形黑幕）慢慢合上：先垂到四成、微微抬起、再缓缓闭紧（约 4s），画面随之变暗；
-	///   全黑停 0.7s 后交还游戏（finish）。黑幕留着，等结算画面打开时（ArchitectGameOverPatch）再淡出；保险：12s 后无论如何移除。
+	/// 「要闭上眼睛吗？」（v0.14.29 起，v0.14.30 按实机反馈改：全屏、排在 MEMENTO MORI 前面、去掉眼睑边缘的细白线）。
+	/// · 从白幕里淡入全屏的模糊天台（ui/ending_rooftop.png，美术会话出图；没有时用淡紫灰渐变 + 柔光块代替）；
+	///   中间「▸要 闭 上 眼 睛 吗 ？」（光标三角闪烁），左下六个小点依次亮，右下大号「闭上眼睛」（ui/ending_closeeye.png，P3R 原版；没有时文字大小交错排）。
+	///   位置按原版截图在画面里的比例：问句 (0.50, 0.53)、小点 x 0.344–0.416 / y 0.743、大字 x 0.571 / 底 y 0.79。
+	/// · 点击任意处 → 文字淡出 → 眨一次眼，再缓慢闭到一条缝，最后极慢地闭紧（Lids 曲线）；
+	///   全黑后黑底上 MEMENTO MORI / ……于是，早晨来临。淡入淡出，然后才交还游戏（finish）。
+	///   黑幕留着，等结算画面打开时（ArchitectGameOverPatch → RevealGameOver）再淡出；保险：交还 12s 后无论如何移除。
+	/// · 眼睑用普通 Polygon2D（不走 Fx.Poly 的抗锯齿着色器：它给每个多边形边缘加一圈柔边，实心块和羽化带的接缝处会出现细白线）。
 	/// </summary>
 	private static void CloseEyes(CanvasLayer top, Vector2 view, System.Action finish)
 	{
@@ -1234,84 +1236,57 @@ void fragment() {
 		top.AddChild(root);
 		root.AddChild(new ColorRect { Size = view, Color = Colors.Black, MouseFilter = Control.MouseFilterEnum.Ignore });
 
-		// ── 镜头画框 ──
-		const int N = 48;
-		float x0 = W * 0.132f, x1 = W * 0.868f;
-		var band = new Vector2[N * 2];
-		for (int i = 0; i < N; i++)
-		{
-			float u = i / (N - 1f), bow = 1f - (2f * u - 1f) * (2f * u - 1f);
-			float x = Mathf.Lerp(x0, x1, u);
-			band[i] = new Vector2(x, H * 0.076f + H * 0.022f * bow);
-			band[N * 2 - 1 - i] = new Vector2(x, H * 0.724f - H * 0.025f * bow);
-		}
+		// ── 全屏背景 ──
 		Node2D frame = new();
 		root.AddChild(frame);
 		if (UiTex("ending_rooftop") is Texture2D bgTex)
 		{
-			// 按画框外接矩形"铺满"贴图（等比放大、居中裁切）
-			float bw = x1 - x0, bh = H * 0.648f, by = H * 0.076f;
-			float sc = Mathf.Max(bw / bgTex.GetWidth(), bh / bgTex.GetHeight());
-			Vector2 off = new((bgTex.GetWidth() * sc - bw) / 2f, (bgTex.GetHeight() * sc - bh) / 2f);
-			var uv = new Vector2[band.Length];
-			for (int i = 0; i < band.Length; i++)
-			{
-				uv[i] = (band[i] - new Vector2(x0, by) + off) / sc;
-			}
-			frame.AddChild(Fx.TexPoly(bgTex, band, uv));
+			float sc = Mathf.Max(W / bgTex.GetWidth(), H / bgTex.GetHeight());
+			frame.AddChild(new Sprite2D { Texture = bgTex, Position = view / 2f, Scale = Vector2.One * sc });
 		}
 		else
 		{
-			Polygon2D g = Fx.Poly(frame, band, Colors.White);
-			var vc = new Color[band.Length];
-			for (int i = 0; i < band.Length; i++)
-			{
-				float v = (band[i].Y - H * 0.076f) / (H * 0.648f);
-				vc[i] = new Color(0.80f, 0.80f, 0.88f).Lerp(new Color(0.66f, 0.68f, 0.78f), v);
-			}
-			g.VertexColors = vc;
+			Polygon2D g = new() { Polygon = new[] { Vector2.Zero, new Vector2(W, 0f), view, new Vector2(0f, H) } };
+			g.VertexColors = new[] { new Color(0.80f, 0.80f, 0.88f), new Color(0.80f, 0.80f, 0.88f), new Color(0.66f, 0.68f, 0.78f), new Color(0.66f, 0.68f, 0.78f) };
+			frame.AddChild(g);
 			float dot = Fx.SoftDot.GetWidth();
 			foreach ((Vector2 at, Vector2 sz, Color c) in new[]
 			{
-				(new Vector2(0.47f, 0.47f), new Vector2(0.22f, 0.07f), new Color(0.12f, 0.12f, 0.25f, 0.35f)),   // 远处躺着的人影
-				(new Vector2(0.44f, 0.38f), new Vector2(0.05f, 0.1f), new Color(0.95f, 0.92f, 0.85f, 0.3f)),
-				(new Vector2(0.58f, 0.40f), new Vector2(0.08f, 0.1f), new Color(0.35f, 0.18f, 0.15f, 0.3f)),
-				(new Vector2(0.70f, 0.42f), new Vector2(0.12f, 0.18f), new Color(0.92f, 0.93f, 0.97f, 0.35f)),
-				(new Vector2(0.25f, 0.15f), new Vector2(0.3f, 0.06f), new Color(0.4f, 0.42f, 0.55f, 0.3f)),
+				(new Vector2(0.45f, 0.58f), new Vector2(0.28f, 0.09f), new Color(0.12f, 0.12f, 0.25f, 0.35f)),   // 远处躺着的人影
+				(new Vector2(0.41f, 0.46f), new Vector2(0.06f, 0.13f), new Color(0.95f, 0.92f, 0.85f, 0.3f)),
+				(new Vector2(0.60f, 0.48f), new Vector2(0.10f, 0.13f), new Color(0.35f, 0.18f, 0.15f, 0.3f)),
+				(new Vector2(0.75f, 0.52f), new Vector2(0.15f, 0.24f), new Color(0.92f, 0.93f, 0.97f, 0.35f)),
+				(new Vector2(0.18f, 0.12f), new Vector2(0.40f, 0.08f), new Color(0.4f, 0.42f, 0.55f, 0.3f)),
 			})
 			{
 				frame.AddChild(new Sprite2D { Texture = Fx.SoftDot, Position = new Vector2(W * at.X, H * at.Y), Scale = new Vector2(W * sz.X, H * sz.Y) / dot, Modulate = c });
 			}
 		}
-		float dotW = Fx.SoftDot.GetWidth();
-		foreach (float gx in new[] { x0 + W * 0.03f, x1 - W * 0.03f })
-		{
-			root.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Position = new Vector2(gx, H * 0.64f), Scale = new Vector2(W * 0.12f, H * 0.03f) / dotW, Modulate = new Color(1f, 1f, 1f, 0.55f) });
-		}
 
 		// ── 文字 ──
 		Node2D texts = new();
 		root.AddChild(texts);
-		int qs = (int)(H * 0.024f);
+		int qs = (int)(H * 0.03f);
+		float qy = H * 0.53f;
 		string q = Zh ? "要 闭 上 眼 睛 吗 ？" : "Close your eyes?";
-		Label question = Typo.Text(texts, q, EndingFont, qs, new Color(1f, 1f, 1f), new Vector2(0f, H * 0.49f - qs * 0.7f), HorizontalAlignment.Center,
+		Label question = Typo.Text(texts, q, EndingFont, qs, new Color(1f, 1f, 1f), new Vector2(0f, qy - qs * 0.7f), HorizontalAlignment.Center,
 			shadow: new Color(0.1f, 0.1f, 0.2f, 0.6f), shadowOffset: new Vector2(2f, 2f));
 		question.Size = new Vector2(W, question.Size.Y);
 		float qHalf = question.GetMinimumSize().X / 2f;
 		Polygon2D cursor = Fx.Poly(texts, new[] { new Vector2(0f, -qs * 0.32f), new Vector2(qs * 0.5f, 0f), new Vector2(0f, qs * 0.32f) }, Colors.White);
-		cursor.Position = new Vector2(W / 2f - qHalf - qs * 0.9f, H * 0.49f);
+		cursor.Position = new Vector2(W / 2f - qHalf - qs * 0.9f, qy);
 		var dots = new List<Polygon2D>();
 		for (int i = 0; i < 6; i++)
 		{
-			Polygon2D d = Fx.Poly(texts, Fx.Circle(H * 0.0045f, 12), Colors.White);
-			d.Position = new Vector2(W * 0.386f + i * W * 0.0105f, H * 0.655f);
+			Polygon2D d = Fx.Poly(texts, Fx.Circle(H * 0.0058f, 12), Colors.White);
+			d.Position = new Vector2(W * 0.344f + i * W * 0.0144f, H * 0.743f);
 			dots.Add(d);
 		}
-		Node2D big = new() { Position = new Vector2(W * 0.553f, H * 0.685f) };
+		Node2D big = new() { Position = new Vector2(W * 0.571f, H * 0.79f) };
 		texts.AddChild(big);
 		if (UiTex("ending_closeeye") is Texture2D eyeTex)
 		{
-			float sc = H * 0.085f / eyeTex.GetHeight();
+			float sc = H * 0.12f / eyeTex.GetHeight();
 			big.AddChild(new Sprite2D { Texture = eyeTex, Centered = false, Position = new Vector2(0f, -eyeTex.GetHeight() * sc), Scale = Vector2.One * sc });
 		}
 		else
@@ -1320,55 +1295,63 @@ void fragment() {
 			string word = Zh ? "闭上眼睛" : "CLOSE";
 			for (int i = 0; i < word.Length; i++)
 			{
-				int sz = (int)(H * (i % 2 == 0 ? 0.062f : 0.034f));
+				int sz = (int)(H * (i % 2 == 0 ? 0.09f : 0.05f));
 				Label ch = Typo.Text(big, word[i].ToString(), EndingFont, sz, new Color(0.93f, 0.93f, 0.97f, 0.85f), new Vector2(x, -sz * 1.25f),
 					shadow: new Color(0.25f, 0.25f, 0.35f, 0.7f), shadowOffset: new Vector2(3f, 3f));
 				x += ch.GetMinimumSize().X * 0.92f;
 			}
 		}
 
-		// ── 眼睑：弧形黑幕 + 羽化边 ──
-		float bowLid = H * 0.08f, feather = H * 0.09f;
+		// ── 眼睑：杏仁形弧边 + 羽化（普通 Polygon2D，同一个多边形里实心 + 羽化，没有接缝） ──
+		float bowLid = H * 0.1f, feather = H * 0.11f;
 		Node2D MakeLid(bool upper)
 		{
 			Node2D lid = new();
 			root.AddChild(lid);
-			const int M = 40;
-			var solid = new List<Vector2>();
-			var fe = new Vector2[M * 2];
-			var fc = new Color[M * 2];
+			const int M = 48;
 			float s = upper ? 1f : -1f;
+			// 顶点：0..M-1 眼睑边缘（全黑），M..2M-1 羽化外沿（透明），2M、2M+1 远处两角（全黑）
+			var pts = new Vector2[M * 2 + 2];
+			var cols = new Color[M * 2 + 2];
 			for (int i = 0; i < M; i++)
 			{
 				float u = i / (M - 1f), bow = 1f - (2f * u - 1f) * (2f * u - 1f);
 				float x = Mathf.Lerp(-W * 0.1f, W * 1.1f, u);
-				float y = -s * bowLid * bow;                      // 眼睑边缘弧向外（上眼睑中间上拱、下眼睑中间下弯）：睁开的形状是两头尖、中间宽的杏仁形，闭眼时眼角先合、中间最后合上
-				solid.Add(new Vector2(x, y));
-				fe[i] = new Vector2(x, y);
-				fe[M * 2 - 1 - i] = new Vector2(x, y + s * feather);
-				fc[i] = Colors.Black;
-				fc[M * 2 - 1 - i] = new Color(0f, 0f, 0f, 0f);
+				float y = -s * bowLid * bow;                      // 弧向外：睁开的形状两头尖、中间宽，闭眼时眼角先合
+				pts[i] = new Vector2(x, y);
+				pts[M + i] = new Vector2(x, y + s * feather);
+				cols[i] = Colors.Black;
+				cols[M + i] = new Color(0f, 0f, 0f, 0f);
 			}
-			solid.Add(new Vector2(W * 1.1f, -s * H * 1.2f));
-			solid.Add(new Vector2(-W * 0.1f, -s * H * 1.2f));
-			Fx.Poly(lid, solid.ToArray(), Colors.Black);
-			Polygon2D f = Fx.Poly(lid, fe, Colors.White);
-			f.VertexColors = fc;
+			pts[M * 2] = new Vector2(-W * 0.1f, -s * H * 1.3f);
+			pts[M * 2 + 1] = new Vector2(W * 1.1f, -s * H * 1.3f);
+			cols[M * 2] = cols[M * 2 + 1] = Colors.Black;
+			var polys = new Godot.Collections.Array();
+			for (int i = 0; i < M - 1; i++)
+			{
+				polys.Add(new[] { i, i + 1, M + i + 1, M + i });                 // 羽化带
+				polys.Add(new[] { M * 2, i, i + 1 });                           // 实心部分（扇形连到远处一角）
+			}
+			polys.Add(new[] { M * 2, M - 1, M * 2 + 1 });
+			lid.AddChild(new Polygon2D { Polygon = pts, VertexColors = cols, Polygons = polys });
 			return lid;
 		}
 		Node2D lidTop = MakeLid(true), lidBot = MakeLid(false);
 		void PlaceLids(float p)
 		{
-			// p=0：睁开（眼睑刚好在画框外）；p=1：上下眼睑在画框中线（0.40H）重叠，全黑。画框外本来就是黑的，所以从画框上下沿起步，开合上下对称
-			float mid = H * 0.40f;
-			float openTop = H * 0.076f - feather - 4f, openBot = H * 0.724f + feather + 4f;   // 眼角处（弧最靠外的两端）刚好在画框外
-			lidTop.Position = new Vector2(0f, Mathf.Lerp(openTop, mid + bowLid, p));        // 闭紧时眼睑中间也越过中线
+			// p=0：睁开（眼角处刚好在画面外）；p=1：上下眼睑在中线重叠，全黑
+			float mid = H * 0.5f;
+			float openTop = -feather - 4f, openBot = H + feather + 4f;
+			lidTop.Position = new Vector2(0f, Mathf.Lerp(openTop, mid + bowLid, p));
 			lidBot.Position = new Vector2(0f, Mathf.Lerp(openBot, mid - bowLid, p));
 		}
 		PlaceLids(0f);
 
-		// 入场：从 MEMENTO MORI 的深蓝里淡入
-		Fx.Animate(root, 0.9f, t => root.Modulate = new Color(1f, 1f, 1f, Ease.InOutSine(t)));
+		// 入场：从白幕里淡入（白 → 画面）
+		ColorRect white = new() { Size = view, Color = Colors.White, MouseFilter = Control.MouseFilterEnum.Ignore };
+		root.AddChild(white);
+		root.Modulate = Colors.White;
+		Fx.Animate(white, 1.2f, t => white.Color = new Color(1f, 1f, 1f, 1f - Ease.InOutSine(t)));
 		Fx.Animate(texts, 600f, t =>
 		{
 			float time = t * 600f;
@@ -1399,13 +1382,9 @@ void fragment() {
 
 		void Close()
 		{
-			// v0.14.30（用户：先由慢到快闭上 → 由快到慢睁开（眨一次眼）→ 缓慢闭到只剩一条缝、还能看见一点背景 → 速度降得很低，慢慢慢慢闭紧）
-			//   0.00–0.85  慢→快闭上（InCubic，0 → 1，全黑）
-			//   0.85–0.95  闭着停一瞬
-			//   0.95–1.95  快→慢睁开（OutCubic，1 → 0.12）
-			//   1.95–4.25  缓慢闭到一条缝（InOutSine，0.12 → 0.88）
-			//   4.25–7.25  极慢地闭紧（OutSine，0.88 → 1）
-			const float closeLen = 7.25f, hold = 0.7f;
+			// 先由慢到快闭上 → 由快到慢睁开（眨一次眼）→ 缓慢闭到只剩一条缝 → 极慢地闭紧
+			//   0.00–0.85 慢→快闭上（全黑）；停 0.1；0.95–1.95 快→慢睁开到 12%；1.95–4.25 缓慢闭到 88%；4.25–7.25 极慢闭紧
+			const float closeLen = 7.25f, hold = 0.6f;
 			static float Lids(float time)
 			{
 				if (time < 0.85f) return Ease.InCubic(time / 0.85f);
@@ -1425,7 +1404,7 @@ void fragment() {
 			});
 			Fx.After(root, closeLen + hold, "seal eyes closed", () =>
 			{
-				// 全黑：其余层（深蓝结语、压暗、光柱……）都藏起来，之后淡出黑幕时直接露出结算画面
+				// 全黑：其余层都藏起来（之后淡出黑幕时直接露出结算画面），黑底上出 MEMENTO MORI
 				foreach (Node c in top.GetChildren())
 				{
 					if (c != root && c is CanvasItem ci)
@@ -1433,24 +1412,47 @@ void fragment() {
 						ci.Visible = false;
 					}
 				}
+				Node first = root.GetChild(0);
 				foreach (Node c in root.GetChildren())
 				{
-					if (c is CanvasItem ci && c != root.GetChild(0))
+					if (c != first && c is CanvasItem ci)
 					{
 						ci.Visible = false;
 					}
 				}
-				finish();
-				// 保险：结算画面一直没打开就 12s 后移除黑幕
-				top.GetTree().CreateTimer(12.0, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () =>
+				Memento(root, view, () =>
 				{
-					if (GodotObject.IsInstanceValid(top))
+					finish();
+					top.GetTree().CreateTimer(12.0, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () =>
 					{
-						top.QueueFree();
-					}
-				};
+						if (GodotObject.IsInstanceValid(top))
+						{
+							top.QueueFree();
+						}
+					};
+				});
 			});
 		}
+	}
+
+	/// <summary>闭眼全黑后：黑底上 MEMENTO MORI / ……于是，早晨来临。淡入（0.9s）、停留（2.2s）、淡出（0.9s），然后 then()。</summary>
+	private static void Memento(Node2D root, Vector2 view, System.Action then)
+	{
+		Node2D coda = new() { Position = new Vector2(view.X / 2f, view.Y * 0.5f), Modulate = new Color(1f, 1f, 1f, 0f) };
+		root.AddChild(coda);
+		Label codaText = Typo.Text(coda, "M E M E N T O   M O R I", Typo.LatinItalic, 30, new Color(0.8f, 0.9f, 1f), new Vector2(-view.X / 2f, -20f), HorizontalAlignment.Center);
+		codaText.Size = new Vector2(view.X, codaText.Size.Y);
+		Label codaSub = Typo.Text(coda, Zh ? "……于是，早晨来临。" : "...and the morning came.", Typo.Cjk, 22, new Color(0.65f, 0.75f, 0.9f), new Vector2(-view.X / 2f, 28f), HorizontalAlignment.Center);
+		codaSub.Size = new Vector2(view.X, codaSub.Size.Y);
+		const float fin = 0.9f, stay = 2.2f, fout = 0.9f;
+		Fx.Animate(coda, fin + stay + fout, t =>
+		{
+			float time = t * (fin + stay + fout);
+			float a = time < fin ? Ease.OutCubic(time / fin) : time < fin + stay ? 1f : 1f - Ease.InOutSine((time - fin - stay) / fout);
+			coda.Modulate = new Color(1f, 1f, 1f, a);
+			coda.Position = new Vector2(view.X / 2f, view.Y * 0.5f + 10f * (1f - Mathf.Min(1f, time / fin)));
+		});
+		Fx.After(coda, fin + stay + fout + 0.3, "seal memento done", () => ModEntry.Safe("seal finish", then));
 	}
 
 	/// <summary>结算画面打开后调用：闭眼留下的黑幕淡出，露出原版结算 UI。</summary>
