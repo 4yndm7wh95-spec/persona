@@ -168,7 +168,7 @@ public static class Sfx
 	private static readonly string[] Swings = { "swish_mid_1", "swish_mid_2", "swish_mid_3", "swish_mid_4" };
 
 	/// <summary>
-	/// 原版储君角色音效的替换表（RegentSfxMutePatch 调用）。返回 true = 原版照常播放（只有死亡音效），false = 已拦截。
+	/// 原版储君角色音效的替换表（RegentSfxMutePatch 调用）。返回 true = 原版照常播放，false = 已拦截（死亡音效也拦截：v0.14.42 起死亡不播任何音效）。
 	/// 施法 / 能力 / 君王之刃 / 引导之星：本 mod 的特效自带音效，原版直接静音；选人换成 P3R Persona 光环切入。
 	/// </summary>
 	public static bool ReplaceRegent(string name)
@@ -176,9 +176,7 @@ public static class Sfx
 		switch (name)
 		{
 			case "regent_die":
-				// v0.14.20（用户：死亡还是储君的音效）：换成 P3R —— 倒地 + 影时间褪去的长尾
-				Clip("Btl_Down_1", 0.85f);
-				Clip("Wipe_Out_ShadowTime", 0.5f, 0.3f);
+				// v0.14.42（用户：死亡时那声像"晕眩"的音效去掉，不需要死亡音效）：原版储君的死亡音效照样静音，也不再补 P3R 倒地 + 影时间褪去
 				return false;
 			case "regent_select":
 				// 选人界面选中结城理（v0.14.8，参照原版其他角色的选中音）：一下强起音（切入闪光 + 阿卡纳爆发 + 天鹅绒确认）→

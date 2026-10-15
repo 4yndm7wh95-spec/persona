@@ -61,8 +61,9 @@ public static partial class AllOut
 		Audio.Sfx.Clip("Btl_Allout_Wipe", 0.3f, IrisAt, master: true);
 		Audio.Sfx.Clip("swish_large_1", 0.45f, IrisAt + 0.36f, master: true);
 		Audio.Sfx.Clip("swish_small_2", 0.4f, FinishAt + 0.05f, master: true);
-		Audio.Sfx.Clip("Btl_Allout_Wipe", 0.35f, Duration - OutroLen, master: true);   // 第三滴（和第一滴同一个水滴声）
-		Audio.Sfx.Clip("swish_heavy_2", 0.5f, Duration - OutroLen + 0.08f, master: true);   // 水波扫满全屏
+		// v0.14.42（用户：后半段 —— 收尾水波盖过立绘那一下 —— 声音小一些）：0.35 / 0.5 → 0.16 / 0.22
+		Audio.Sfx.Clip("Btl_Allout_Wipe", 0.16f, Duration - OutroLen, master: true);   // 第三滴（和第一滴同一个水滴声）
+		Audio.Sfx.Clip("swish_heavy_2", 0.22f, Duration - OutroLen + 0.08f, master: true);   // 水波扫满全屏
 
 		Node2D bg = new();
 		root.AddChild(bg);
