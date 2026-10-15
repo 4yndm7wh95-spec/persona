@@ -1229,6 +1229,8 @@ void fragment() {
 	///   黑幕留着，等结算画面打开时（ArchitectGameOverPatch → RevealGameOver）再淡出；保险：交还 12s 后无论如何移除。
 	/// · 眼睑用普通 Polygon2D（不走 Fx.Poly 的抗锯齿着色器：它给每个多边形边缘加一圈柔边，实心块和羽化带的接缝处会出现细白线）。
 	/// </summary>
+	private const float LidCloseLen = 7.25f;
+
 	private static void CloseEyes(CanvasLayer top, Vector2 view, System.Action finish)
 	{
 		float W = view.X, H = view.Y;
@@ -1274,6 +1276,17 @@ void fragment() {
 				frame.AddChild(new Sprite2D { Texture = Fx.SoftDot, Position = new Vector2(W * at.X, H * at.Y), Scale = new Vector2(W * sz.X, H * sz.Y) / dot, Modulate = c });
 			}
 		}
+
+		// ── 场景的动态细节（v0.14.33，用户：别那么"死"）──
+		var bgSprites = new List<(Sprite2D sp, float sc)>();
+		foreach (Node c in frame.GetChildren())
+		{
+			if (c is Sprite2D sp && sp.Texture != Fx.SoftDot)
+			{
+				bgSprites.Add((sp, sp.Scale.X));
+			}
+		}
+		Ambient(root, view, bgSprites);
 
 		// ── 文字 ──
 		Node2D texts = new();
@@ -1452,11 +1465,20 @@ void fragment() {
 			Close();
 		};
 
+		// 点下之后：蓝蝶先飞（左下飞入 → 中间绕一圈 → 右上飞走），飞走时才开始闭眼
 		void Close()
+		{
+			// v0.14.33（用户：眼睛完全闭上时蝴蝶正好飞出）：蝴蝶和闭眼同时开始、同样时长，画在眼睑之上（闭到一条缝、全黑时仍看得见它发光）
+			Fx.Animate(texts, 0.6f, t => texts.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InOutSine(t)));
+			Butterfly(root, view, LidCloseLen);
+			CloseLids();
+		}
+
+		void CloseLids()
 		{
 			// 先由慢到快闭上 → 由快到慢睁开（眨一次眼）→ 缓慢闭到只剩一条缝 → 极慢地闭紧
 			//   0.00–0.85 慢→快闭上（全黑）；停 0.1；0.95–1.95 快→慢睁开到 12%；1.95–4.25 缓慢闭到 88%；4.25–7.25 极慢闭紧
-			const float closeLen = 7.25f, hold = 0.6f;
+			const float closeLen = LidCloseLen, hold = 0.6f;
 			static float Lids(float time)
 			{
 				if (time < 0.85f) return Ease.InCubic(time / 0.85f);
@@ -1468,7 +1490,6 @@ void fragment() {
 			Fx.Animate(root, closeLen + hold, t =>
 			{
 				float time = t * (closeLen + hold);
-				texts.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InOutSine(Mathf.Clamp(time / 0.6f, 0f, 1f)));
 				float p = Lids(time);
 				PlaceLids(p);
 				float dark = 1f - 0.45f * p;
@@ -1514,6 +1535,284 @@ void fragment() {
 				});
 			});
 		}
+	}
+
+	/// <summary>
+	/// 闭眼场景的动态细节（v0.14.33）：
+	/// · 镜头呼吸：背景（含两档模糊）极慢地推近 / 平移（±2.5%，周期约 26s）；
+	/// · 左上方的阳光：几道暖白色斜光束缓慢起伏 + 一团柔光晕；
+	/// · 空气里的光尘：细小的暖白光点慢慢上浮、闪烁；
+	/// · 樱花瓣（P3 的结局在 3 月 5 日）：几片花瓣翻转着斜飘过画面；
+	/// · 云影：两团很淡的冷色暗影从地面上缓缓移过；
+	/// · 四周暗角轻微呼吸。
+	/// 都在背景之上、文字之下。
+	/// </summary>
+	private static void Ambient(Node2D root, Vector2 view, List<(Sprite2D sp, float sc)> bg)
+	{
+		float W = view.X, H = view.Y, dot = Fx.SoftDot.GetWidth();
+		Node2D amb = new();
+		root.AddChild(amb);
+		// 云影
+		var clouds = new List<(Sprite2D s, float y, float speed, float ph)>();
+		for (int i = 0; i < 2; i++)
+		{
+			Sprite2D c = new() { Texture = Fx.SoftDot, Scale = new Vector2(W * 0.55f, H * 0.32f) / dot, Modulate = new Color(0.25f, 0.24f, 0.4f, 0.13f) };
+			amb.AddChild(c);
+			clouds.Add((c, H * (0.45f + 0.3f * i), W * (0.018f + 0.008f * i), i * 0.55f));
+		}
+		// 阳光：光束 + 光晕
+		Vector2 sun = new(W * 0.04f, -H * 0.12f);
+		var rays = new List<(Polygon2D p, float a, float ph)>();
+		for (int i = 0; i < 5; i++)
+		{
+			float a = 0.55f + i * 0.13f + Fx.Rand(-0.03f, 0.03f), len = H * Fx.Rand(1.2f, 1.6f), wid = H * Fx.Rand(0.05f, 0.11f);
+			Polygon2D r = new()
+			{
+				Polygon = new[] { new Vector2(0f, -wid * 0.1f), new Vector2(len, -wid), new Vector2(len, wid), new Vector2(0f, wid * 0.1f) },
+				VertexColors = new[] { new Color(1f, 0.95f, 0.85f, 0.16f), new Color(1f, 0.95f, 0.85f, 0f), new Color(1f, 0.95f, 0.85f, 0f), new Color(1f, 0.95f, 0.85f, 0.16f) },
+				Material = Fx.Additive, Position = sun, Rotation = a
+			};
+			amb.AddChild(r);
+			rays.Add((r, a, Fx.Rand(0f, Mathf.Tau)));
+		}
+		Sprite2D bloom = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Position = new Vector2(W * 0.1f, H * 0.05f), Scale = Vector2.One * H * 0.9f / dot, Modulate = new Color(1f, 0.93f, 0.85f, 0.18f) };
+		amb.AddChild(bloom);
+		// 光尘
+		var motes = new List<(Sprite2D s, Vector2 at, float speed, float ph, float sz)>();
+		for (int i = 0; i < 46; i++)
+		{
+			float sz = H * Fx.Rand(0.003f, 0.008f);
+			Sprite2D m = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = Vector2.One * sz * 2f / dot };
+			amb.AddChild(m);
+			motes.Add((m, new Vector2(Fx.Rand(0f, W), Fx.Rand(0f, H)), H * Fx.Rand(0.008f, 0.025f), Fx.Rand(0f, Mathf.Tau), sz));
+		}
+		// 樱花瓣
+		var petals = new List<(Node2D n, Polygon2D p, Vector2 start, float speed, float ph, float spin)>();
+		for (int i = 0; i < 9; i++)
+		{
+			Node2D n = new();
+			amb.AddChild(n);
+			float sz = H * Fx.Rand(0.008f, 0.013f);
+			Polygon2D petal = Fx.Poly(n, new[] { new Vector2(0f, -sz), new Vector2(sz * 0.55f, -sz * 0.2f), new Vector2(sz * 0.35f, sz * 0.7f), new Vector2(0f, sz * 0.5f),
+				new Vector2(-sz * 0.35f, sz * 0.7f), new Vector2(-sz * 0.55f, -sz * 0.2f) }, new Color(1f, 0.86f, 0.9f, 0.85f));
+			petals.Add((n, petal, new Vector2(Fx.Rand(-0.3f, 0.9f) * W, Fx.Rand(-0.3f, 0.2f) * H), Fx.Rand(0.045f, 0.075f), Fx.Rand(0f, 1f), Fx.Rand(1.2f, 2.6f)));
+		}
+		// 暗角
+		TextureRect vignette = new()
+		{
+			Texture = new GradientTexture2D
+			{
+				Gradient = new Gradient { Offsets = new[] { 0f, 0.55f, 1f }, Colors = new[] { new Color(0f, 0f, 0f, 0f), new Color(0.05f, 0.04f, 0.1f, 0.05f), new Color(0.05f, 0.04f, 0.1f, 0.42f) } },
+				Fill = GradientTexture2D.FillEnum.Radial, FillFrom = new Vector2(0.5f, 0.5f), FillTo = new Vector2(1.05f, 0.5f), Width = 256, Height = 144
+			},
+			Size = view, StretchMode = TextureRect.StretchModeEnum.Scale, MouseFilter = Control.MouseFilterEnum.Ignore
+		};
+		amb.AddChild(vignette);
+
+		Fx.Animate(amb, 900f, t =>
+		{
+			float time = t * 900f;
+			float cam = 0.5f - 0.5f * Mathf.Cos(time * Mathf.Tau / 26f);
+			foreach ((Sprite2D sp, float sc) in bg)
+			{
+				sp.Scale = Vector2.One * sc * (1f + 0.025f * cam);
+				sp.Position = view / 2f + new Vector2(-W * 0.008f * cam, -H * 0.006f * cam);
+			}
+			foreach ((Sprite2D c, float y, float speed, float ph) in clouds)
+			{
+				float span = W * 1.8f;
+				c.Position = new Vector2(Mathf.PosMod(ph * span + speed * time, span) - W * 0.4f, y + H * 0.02f * Mathf.Sin(time * 0.1f + ph * 5f));
+			}
+			foreach ((Polygon2D r, float a, float ph) in rays)
+			{
+				r.Rotation = a + 0.015f * Mathf.Sin(time * 0.21f + ph);
+				r.Modulate = new Color(1f, 1f, 1f, 0.55f + 0.45f * Mathf.Sin(time * 0.35f + ph));
+			}
+			bloom.Modulate = new Color(1f, 0.93f, 0.85f, 0.15f + 0.05f * Mathf.Sin(time * 0.6f));
+			foreach ((Sprite2D m, Vector2 at, float speed, float ph, float sz) in motes)
+			{
+				float y = Mathf.PosMod(at.Y - speed * time, H * 1.1f) - H * 0.05f;
+				m.Position = new Vector2(at.X + W * 0.012f * Mathf.Sin(time * 0.3f + ph), y);
+				float tw = 0.5f + 0.5f * Mathf.Sin(time * 1.7f + ph * 3f);
+				m.Modulate = new Color(1f, 0.97f, 0.9f, 0.2f + 0.45f * tw * tw);
+			}
+			foreach ((Node2D n, Polygon2D p, Vector2 start, float speed, float ph, float spin) in petals)
+			{
+				float u = Mathf.PosMod(ph + time * speed / 1.6f, 1f);          // 一片花瓣 1/speed 秒左右飘过一轮
+				Vector2 path = new(W * 0.9f * u, H * 1.25f * u);
+				n.Position = start + path + new Vector2(W * 0.03f * Mathf.Sin(time * 0.9f + ph * 7f), 0f);
+				n.Rotation = time * 0.6f * spin + ph * 6f;
+				n.Scale = new Vector2(Mathf.Cos(time * spin + ph * 4f), 1f);    // 翻转
+				p.Modulate = new Color(1f, 1f, 1f, Mathf.Sin(u * Mathf.Pi));
+			}
+			vignette.Modulate = new Color(1f, 1f, 1f, 0.9f + 0.1f * Mathf.Sin(time * 0.4f));
+		});
+	}
+
+	/// <summary>
+	/// 蓝蝶（P3 菲莱蒙的蝴蝶，v0.14.33）：从左下角飞入 → 屏幕中间绕一圈 → 右上角飞走，fly 秒。
+	/// 轨迹：一条过所有控制点的向心 Catmull-Rom 样条，按弧长取点（速度只取决于路程，不会因控制点疏密忽快忽慢），
+	///   速度曲线 = 起飞柔和加速、绕圈略慢、离开时再加速；朝向逐帧平滑追随速度方向（不会甩头）。
+	/// 扇翅：左右翅分开以身体为轴横向缩放（cos 节奏，约 6 次/秒，每隔一会儿张开滑翔片刻，过渡都是平滑插值）；身体随扇翅轻微起伏。
+	/// 贴图：ui/butterfly_wing_l / _wing_r / _body（同画布、身体在画布中心、头朝上；美术会话出图）；没有时用多边形画一只。
+	/// 身后：一串蓝色亮粉，外加一团跟随的柔光。
+	/// </summary>
+	private static void Butterfly(Node2D parent, Vector2 view, float fly)
+	{
+		float W = view.X, H = view.Y, dot = Fx.SoftDot.GetWidth();
+		// ── 轨迹 ──
+		Vector2[] ctrl =
+		{
+			new(-0.08f, 1.10f), new(0.10f, 0.86f), new(0.27f, 0.66f), new(0.40f, 0.56f), new(0.52f, 0.58f), new(0.62f, 0.49f),
+			new(0.62f, 0.36f), new(0.53f, 0.28f), new(0.42f, 0.32f), new(0.39f, 0.44f), new(0.47f, 0.52f), new(0.60f, 0.46f),
+			new(0.75f, 0.30f), new(0.90f, 0.13f), new(1.10f, -0.10f),
+		};
+		var pts = new List<Vector2>();
+		for (int i = 0; i < ctrl.Length; i++)
+		{
+			pts.Add(new Vector2(ctrl[i].X * W, ctrl[i].Y * H));
+		}
+		var samples = new List<Vector2>();
+		for (int i = 0; i < pts.Count - 1; i++)
+		{
+			Vector2 p0 = pts[Mathf.Max(i - 1, 0)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Mathf.Min(i + 2, pts.Count - 1)];
+			for (int k = 0; k < 24; k++)
+			{
+				samples.Add(CentripetalCatmull(p0, p1, p2, p3, k / 24f));
+			}
+		}
+		samples.Add(pts[^1]);
+		var cum = new float[samples.Count];
+		for (int i = 1; i < samples.Count; i++)
+		{
+			cum[i] = cum[i - 1] + samples[i].DistanceTo(samples[i - 1]);
+		}
+		float total = cum[^1];
+		Vector2 At(float d)
+		{
+			d = Mathf.Clamp(d, 0f, total);
+			int lo = 0, hi = cum.Length - 1;
+			while (hi - lo > 1)
+			{
+				int mid = (lo + hi) / 2;
+				if (cum[mid] < d) lo = mid; else hi = mid;
+			}
+			float seg = cum[hi] - cum[lo];
+			return samples[lo].Lerp(samples[hi], seg > 0f ? (d - cum[lo]) / seg : 0f);
+		}
+		// 速度：起飞 0→1 柔和加速（前 18%），绕圈段（路程 38%–72%）降到 0.8，离开时回到 1.15；对时间积分后归一到总路程
+		static float Speed(float u) => Mathf.Lerp(0.35f, 1f, Ease.InOutSine(Mathf.Clamp(u / 0.18f, 0f, 1f)))
+			* (1f - 0.2f * Mathf.Sin(Mathf.Pi * Mathf.Clamp((u - 0.36f) / 0.38f, 0f, 1f)))
+			* (1f + 0.15f * Ease.InOutSine(Mathf.Clamp((u - 0.75f) / 0.2f, 0f, 1f)));
+		const int N = 400;
+		var dist = new float[N + 1];
+		for (int i = 1; i <= N; i++)
+		{
+			dist[i] = dist[i - 1] + Speed((i - 0.5f) / N);
+		}
+		float Dist(float u)
+		{
+			float f = Mathf.Clamp(u, 0f, 1f) * N;
+			int i = Mathf.Min((int)f, N - 1);
+			return Mathf.Lerp(dist[i], dist[i + 1], f - i) / dist[N] * total;
+		}
+
+		// ── 蝴蝶 ──
+		Node2D fly1 = new() { Name = "P3Butterfly" };
+		parent.AddChild(fly1);
+		float size = H * 0.085f;
+		Sprite2D aura = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = Vector2.One * size * 3.2f / dot, Modulate = new Color(0.35f, 0.7f, 1f, 0.5f) };
+		fly1.AddChild(aura);
+		Node2D wingL = new(), wingR = new(), body = new();
+		fly1.AddChild(wingL);
+		fly1.AddChild(wingR);
+		fly1.AddChild(body);
+		Texture2D? tl = UiTex("butterfly_wing_l"), tr = UiTex("butterfly_wing_r"), tb = UiTex("butterfly_body");
+		if (tl != null && tr != null)
+		{
+			float sc = size * 2f / tl.GetWidth();
+			wingL.AddChild(new Sprite2D { Texture = tl, Scale = Vector2.One * sc });
+			wingR.AddChild(new Sprite2D { Texture = tr, Scale = Vector2.One * sc });
+			if (tb != null)
+			{
+				body.AddChild(new Sprite2D { Texture = tb, Scale = Vector2.One * sc });
+			}
+		}
+		else
+		{
+			foreach ((Node2D w, float sgn) in new[] { (wingL, -1f), (wingR, 1f) })
+			{
+				Vector2[] fore = { new(0f, -size * 0.05f), new(sgn * size * 0.5f, -size * 0.75f), new(sgn * size * 1.0f, -size * 0.6f), new(sgn * size * 0.85f, -size * 0.1f), new(sgn * size * 0.2f, size * 0.05f) };
+				Vector2[] hind = { new(0f, size * 0.05f), new(sgn * size * 0.7f, size * 0.15f), new(sgn * size * 0.75f, size * 0.55f), new(sgn * size * 0.3f, size * 0.75f), new(sgn * size * 0.05f, size * 0.35f) };
+				foreach (Vector2[] shape in new[] { fore, hind })
+				{
+					Polygon2D g = Fx.Poly(w, shape, new Color(0.35f, 0.75f, 1f, 0.55f), additive: true);
+					g.Scale = Vector2.One * 1.12f;
+					Fx.Poly(w, shape, new Color(0.12f, 0.45f, 1f, 0.85f));
+					Fx.Line(w, shape, new Color(0.8f, 0.95f, 1f, 0.9f), 2f, closed: true);
+				}
+			}
+			Fx.Poly(body, new[] { new Vector2(0f, -size * 0.35f), new Vector2(size * 0.05f, 0f), new Vector2(0f, size * 0.4f), new Vector2(-size * 0.05f, 0f) }, new Color(0.1f, 0.15f, 0.35f));
+		}
+		Node2D trail = new();
+		parent.AddChild(trail);
+		parent.MoveChild(trail, fly1.GetIndex());
+
+		float prevAngle = 0f;
+		bool first = true;
+		float lastDust = 0f;
+		Fx.Animate(fly1, fly, t =>
+		{
+			float time = t * fly;
+			float d = Dist(t);
+			Vector2 p = At(d), ahead = At(d + total * 0.01f);
+			// 朝向：头朝速度方向（贴图头朝上），逐帧平滑追随
+			float target = (ahead - p).Angle() + Mathf.Pi / 2f;
+			prevAngle = first ? target : Mathf.LerpAngle(prevAngle, target, 0.12f);
+			first = false;
+			// 扇翅：约 6 次/秒；每 ~1.6s 滑翔一次（翅膀张开、扇动幅度平滑降低）
+			float glide = Mathf.Pow(0.5f + 0.5f * Mathf.Cos(time * Mathf.Tau / 1.6f), 6f);
+			float flap = Mathf.Cos(time * Mathf.Tau * 6f);
+			float open = Mathf.Lerp(0.18f + 0.82f * (0.5f + 0.5f * flap), 0.92f, glide);
+			wingL.Scale = new Vector2(open, 1f);
+			wingR.Scale = new Vector2(open, 1f);
+			float bob = (1f - glide) * size * 0.06f * Mathf.Sin(time * Mathf.Tau * 6f + 1.2f);
+			fly1.Position = p + new Vector2(0f, bob);
+			fly1.Rotation = prevAngle + 0.08f * Mathf.Sin(time * 2.3f);
+			float inOut = Mathf.Clamp(time / 0.4f, 0f, 1f) * Mathf.Clamp((fly - time) / 0.5f, 0f, 1f);
+			fly1.Modulate = new Color(1f, 1f, 1f, inOut);
+			aura.Modulate = new Color(0.35f, 0.7f, 1f, (0.4f + 0.15f * flap) * inOut);
+			// 亮粉：每 0.03s 落一粒，向下飘、渐隐
+			if (time - lastDust > 0.03f)
+			{
+				lastDust = time;
+				Sprite2D g = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Position = p + Fx.RandDir() * size * 0.15f, Scale = Vector2.One * size * Fx.Rand(0.08f, 0.16f) / dot, Modulate = new Color(0.55f, 0.85f, 1f, 0.8f) };
+				trail.AddChild(g);
+				Vector2 g0 = g.Position, drift = new(Fx.Rand(-8f, 8f), Fx.Rand(14f, 34f));
+				Fx.Animate(g, 0.9f, u =>
+				{
+					g.Position = g0 + drift * Ease.OutCubic(u);
+					g.Modulate = new Color(0.55f, 0.85f, 1f, 0.8f * (1f - u) * (0.6f + 0.4f * Mathf.Abs(Mathf.Cos(u * 9f))));
+				});
+				Fx.FreeAfter(g, 0.95f);
+			}
+		});
+		Fx.FreeAfter(fly1, fly + 0.05f);
+		Fx.FreeAfter(trail, fly + 1.0f);
+	}
+
+	/// <summary>向心 Catmull-Rom（alpha = 0.5）：过控制点、不打结、不过冲。</summary>
+	private static Vector2 CentripetalCatmull(Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3, float t)
+	{
+		static float Knot(float ti, Vector2 a, Vector2 b) => ti + Mathf.Max(Mathf.Sqrt(a.DistanceTo(b)), 1e-3f);
+		float t0 = 0f, t1 = Knot(t0, p0, p1), t2 = Knot(t1, p1, p2), t3 = Knot(t2, p2, p3);
+		float tt = Mathf.Lerp(t1, t2, t);
+		Vector2 a1 = (t1 - tt) / (t1 - t0) * p0 + (tt - t0) / (t1 - t0) * p1;
+		Vector2 a2 = (t2 - tt) / (t2 - t1) * p1 + (tt - t1) / (t2 - t1) * p2;
+		Vector2 a3 = (t3 - tt) / (t3 - t2) * p2 + (tt - t2) / (t3 - t2) * p3;
+		Vector2 b1 = (t2 - tt) / (t2 - t0) * a1 + (tt - t0) / (t2 - t0) * a2;
+		Vector2 b2 = (t3 - tt) / (t3 - t1) * a2 + (tt - t1) / (t3 - t1) * a3;
+		return (t2 - tt) / (t2 - t1) * b1 + (tt - t1) / (t2 - t1) * b2;
 	}
 
 	/// <summary>闭眼全黑后：黑底上 MEMENTO MORI / ……于是，早晨来临。淡入（0.9s）、停留（2.2s）、淡出（0.9s），然后 then()。</summary>

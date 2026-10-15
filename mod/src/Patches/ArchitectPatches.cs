@@ -168,6 +168,23 @@ public static class ArchitectWinRunLogPatch
 [HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Screens.GameOverScreen.NGameOverScreen), nameof(MegaCrit.Sts2.Core.Nodes.Screens.GameOverScreen.NGameOverScreen.AfterOverlayOpened))]
 public static class ArchitectGameOverPatch
 {
+	public const string EndingMeta = "p3_ending";
+
+	private static void HideOptions(Node n)
+	{
+		foreach (Node c in n.GetChildren())
+		{
+			if (c is NEventOptionButton b)
+			{
+				b.Visible = false;
+			}
+			else
+			{
+				HideOptions(c);
+			}
+		}
+	}
+
 	public static void Postfix(MegaCrit.Sts2.Core.Nodes.Screens.GameOverScreen.NGameOverScreen __instance)
 	{
 		ModEntry.Safe("architect game over", () =>
@@ -181,6 +198,7 @@ public static class ArchitectGameOverPatch
 			{
 				return;
 			}
+			// 结算画面背后垫黑（结算画面出场时遮住房间）；事件房间里的「以生命为封印」等选项按钮全部藏起
 			if (room.GetNodeOrNull<Control>("%CombatVfxContainer") is Control front && front.GetNodeOrNull("P3EndBlack") == null)
 			{
 				Vector2 size = room.GetViewportRect().Size;
@@ -188,6 +206,11 @@ public static class ArchitectGameOverPatch
 				front.AddChild(black);
 				black.GlobalPosition = -size;
 			}
+			if (NEventRoom.Instance is NEventRoom ev)
+			{
+				HideOptions(ev);
+			}
+			__instance.SetMeta(EndingMeta, true);
 			if (Traverse.Create(__instance).Field("_creatureContainer").GetValue() is CanvasItem creatures)
 			{
 				creatures.Visible = false;
@@ -195,5 +218,23 @@ public static class ArchitectGameOverPatch
 			GreatSeal.RevealGameOver();
 			GD.Print($"{ModEntry.Tag} architect room covered behind game over screen");
 		});
+	}
+}
+
+/// <summary>
+/// v0.14.33（用户：结局结算画面按 ESC 时，背景应直接就是结算画面本身）：
+/// 原版打开暂停菜单会 HideOverlays → 结算画面 Visible=false，露出底下的房间。结局的结算画面不隐藏，暂停菜单直接盖在它上面。
+/// </summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Screens.Overlays.NOverlayStack), nameof(MegaCrit.Sts2.Core.Nodes.Screens.Overlays.NOverlayStack.HideOverlays))]
+public static class ArchitectGameOverKeepPatch
+{
+	public static bool Prefix(MegaCrit.Sts2.Core.Nodes.Screens.Overlays.NOverlayStack __instance)
+	{
+		if (__instance.Peek() is MegaCrit.Sts2.Core.Nodes.Screens.GameOverScreen.NGameOverScreen screen && screen.HasMeta(ArchitectGameOverPatch.EndingMeta))
+		{
+			GD.Print($"{ModEntry.Tag} pause over ending results -> keep results screen visible");
+			return false;
+		}
+		return true;
 	}
 }
