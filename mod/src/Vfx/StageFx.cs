@@ -339,6 +339,16 @@ public static class StageFx
 	/// </summary>
 	public const float TitleIntroLen = 1.15f;
 
+	/// <summary>
+	/// v0.14.38（用户：问号事件选牌 / 看牌组时牌乱飞，有两张半透明的牌停在左上角）：
+	/// 原版的卡牌格子（NGridCardHolder）是对象池复用的 —— 选牌界面关掉后，同一个格子会被下一个界面（事件选牌、牌组）拿去用。
+	/// 以前我们的动画补间绑在格子上（Fx.Animate(格子, …)），界面关掉时还没跑完的补间跟着格子进了对象池（不在场景树里就暂停），
+	/// 格子被复用后补间接着跑，把牌拖回选牌界面的旧坐标、压暗 —— 就是"乱飞"和左上角的半透明牌。
+	/// 现在所有对原版格子的改动都：补间绑在选牌界面上（界面释放补间就没了），每一帧先确认格子还在这一排里（没被回收复用）才动它。
+	/// </summary>
+	private static bool StillInRow(Control h, Control row) =>
+		GodotObject.IsInstanceValid(h) && GodotObject.IsInstanceValid(row) && h.GetParent() == row;
+
 	/// <summary>first = 这次打开选牌界面的第一次（先播独立的 SHUFFLE TIME 标题动画再发牌）；重抽时直接发牌。</summary>
 	public static void ShuffleIntro(Control screen, Control row, bool first = true)
 	{
@@ -373,7 +383,7 @@ public static class StageFx
 				}
 				foreach (Control h in holders)
 				{
-					if (GodotObject.IsInstanceValid(h)) h.Visible = true;
+					if (StillInRow(h, row)) h.Visible = true;
 				}
 			});
 		}
@@ -522,14 +532,14 @@ public static class StageFx
 				for (int i = 0; i < n; i++)
 				{
 					Control h = holders[i];
-					if (!GodotObject.IsInstanceValid(h))
+					if (!StillInRow(h, row))
 					{
 						continue;
 					}
 					Vector2 bs = baseScales[i];
 					h.Visible = true;
 					h.Scale = new Vector2(0.01f, bs.Y);
-					Fx.Animate(h, 0.2f, t => { if (GodotObject.IsInstanceValid(h)) h.Scale = new Vector2(bs.X * Mathf.Max(0.01f, Ease.OutBack(t)), bs.Y); });
+					Fx.Animate(screen, 0.2f, t => { if (StillInRow(h, row)) h.Scale = new Vector2(bs.X * Mathf.Max(0.01f, Ease.OutBack(t)), bs.Y); });
 					Glint(screen, targets[i], cardH);
 				}
 			});
@@ -544,7 +554,7 @@ public static class StageFx
 			for (int i = 0; i < n; i++)
 			{
 				Control h = holders[i];
-				if (GodotObject.IsInstanceValid(h) && !h.Visible)
+				if (StillInRow(h, row) && !h.Visible)
 				{
 					h.Visible = true;
 					h.Scale = baseScales[i];
@@ -702,9 +712,9 @@ public static class StageFx
 			{
 				if (other == picked) continue;
 				Vector2 p0 = other.Position;
-				Fx.Animate(other, 0.3f, t =>
+				Fx.Animate(screen, 0.3f, t =>
 				{
-					if (!GodotObject.IsInstanceValid(other)) return;
+					if (!StillInRow(other, row)) return;
 					other.Position = p0 + new Vector2(0f, 40f * Ease.InCubic(t));
 					other.Modulate = new Color(1f - 0.5f * t, 1f - 0.5f * t, 1f - 0.4f * t, 1f - 0.6f * t);
 				});
