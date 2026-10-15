@@ -49,13 +49,8 @@ public static class CardSigs
 		["HeirloomHammer"] = c => After(c, 0.1, () => Uniq.HeirloomHammer(c.Front, c.FirstTarget, c.Targets.Count > 0 ? c.Targets[0].GetBottomOfHitbox() : c.Feet)),
 		["KnockoutBlow"] = c => After(c, 0.16, () => Motifs.CutIn(c.Front, c.FirstTarget, "ONE MORE!", Pal.Royal)),
 		["KinglyKick"] = c => After(c, 0.12, () => Motifs.CutIn(c.Front, c.FirstTarget, "GOD'S HAND", Pal.Royal)),   // 踢的弧光在命中时（Kingly.Kick）
-		["CrushUnder"] = c => After(c, 0.14, () =>
-		{
-			foreach (NCreature t in c.Targets)
-			{
-				Motifs.Seal(c.Front, t.VfxSpawnPosition, t.GetBottomOfHitbox(), Pal.Blood, up: false, 0.8f);
-			}
-		}),
+		// v0.14.40：一块横跨所有敌人的符文石板在头顶现身、缓缓下压，伤害结算时砸下（CardFx.OnHit → Uniq.CrushUnderImpact）
+		["CrushUnder"] = c => After(c, 0.08, () => Uniq.CrushUnderBegin(c.Front, c.Back, c.Targets)),
 		["CrescentSpear"] = c => After(c, 0.1, () => Motifs.FullMoon(c.Back, c.FirstTarget, 0.6f)),
 		["PhotonCut"] = c => After(c, 0.1, () => P3Fx.SpeedLines(c.Front, c.FirstTarget, Pal.Ice, 26, 60f, 700f, 0.3f)),
 		["HeavenlyDrill"] = c => { foreach (NCreature t in c.Targets) { Rares.DrillDescend(t); } },

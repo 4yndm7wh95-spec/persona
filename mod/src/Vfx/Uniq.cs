@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 using MegaCrit.Sts2.Core.Nodes.Vfx.Utilities;
 using P3Makoto.Core;
@@ -1639,55 +1640,329 @@ public static class Uniq
 		Fx.FreeAfter(root, 0.32);
 	}
 
-	/// <summary>
-	/// 下砸命中（v0.14.35）：重力把敌人压进地面。施法时脚下的血红法阵已经落下（CardSigs），命中这一刻：
-	/// 脚底一圈压扁的血红冲击环向外推开（两层，内层更亮更快）→ 地裂 → 贴地向两侧翻滚的尘土 → 几粒碎石弹起又落下。
-	/// 全部贴在脚下，不挡敌人身体。
-	/// </summary>
-	public static void CrushHit(Control front, MegaCrit.Sts2.Core.Nodes.Combat.NCreature node, float s = 1f)
+	// ═════════ 下砸（v0.14.40，用户：要真的有东西砸下来，并且体现群伤）═════════
+	// 一块横跨所有敌人的血红符文石板：出牌时在敌人群上方现身、缓缓下压（地上一整片阴影罩住所有敌人、头顶红色压力线），
+	// 伤害结算那一刻（CardFx.OnHit）猛地砸在所有敌人头顶 —— 敌人一起被压扁回弹，石板碎成大块四散落地，
+	// 地面一圈贯穿整排敌人的冲击波 + 两侧尘墙 + 每人脚下地裂。石板只落到头顶高度，不挡身体。
+
+	private sealed class Slab
 	{
-		Vector2 feet = node.GetBottomOfHitbox();
-		Color blood = Pal.Blood;
-		Motifs.GroundCrack(front, feet, 1.3f * s);
-		for (int k = 0; k < 2; k++)
+		public Node2D Root = null!;
+		public Node2D Shadow = null!;
+		public List<MegaCrit.Sts2.Core.Nodes.Combat.NCreature> Targets = new();
+		public float Cx, HalfW, ImpactY, GroundY, Y;
+		public bool Dropped;
+	}
+
+	private static Slab? _slab;
+	private static readonly Color SlabTop = new(0.30f, 0.12f, 0.15f, 0.96f);
+	private static readonly Color SlabSide = new(0.13f, 0.04f, 0.06f, 0.97f);
+	private const float SlabDepth = 92f, SlabThick = 48f;
+
+	/// <summary>石板一个面的四个角（中心 x、顶面后沿 y）：顶面是透视压扁的平行四边形，侧面是它下面的厚度。</summary>
+	private static Vector2[] SlabTopFace(float hw) => new[]
+	{
+		new Vector2(-hw + 70f, -SlabDepth), new Vector2(hw + 70f, -SlabDepth), new Vector2(hw, 0f), new Vector2(-hw, 0f),
+	};
+
+	private static Vector2[] SlabFrontFace(float hw) => new[]
+	{
+		new Vector2(-hw, 0f), new Vector2(hw, 0f), new Vector2(hw, SlabThick), new Vector2(-hw, SlabThick),
+	};
+
+	private static Vector2[] SlabSideFace(float hw) => new[]
+	{
+		new Vector2(hw, 0f), new Vector2(hw + 70f, -SlabDepth), new Vector2(hw + 70f, -SlabDepth + SlabThick), new Vector2(hw, SlabThick),
+	};
+
+	/// <summary>出牌（施法抬手）时：石板在敌人群上方现身、缓缓下压，等 CrushUnderImpact 砸下（1.8s 没等到就自己砸）。</summary>
+	public static void CrushUnderBegin(Control front, Control back, List<MegaCrit.Sts2.Core.Nodes.Combat.NCreature> targets)
+	{
+		_slab?.Root.QueueFree();
+		_slab = null;
+		targets = targets.Where(GodotObject.IsInstanceValid).ToList();
+		if (targets.Count == 0)
 		{
-			Node2D ring = Fx.Root(front, feet, "P3CrushRing");
-			Fx.StrokeClosed(ring, Fx.Circle(150f * s, 48, 0.26f), k == 0 ? new Color(1f, 0.75f, 0.75f, 0.95f) : new Color(blood, 0.8f), (k == 0 ? 5f : 3f) * s);
-			float len = k == 0 ? 0.32f : 0.5f, grow = k == 0 ? 1.3f : 2f;
-			Fx.Animate(ring, len, t =>
-			{
-				ring.Scale = Vector2.One * (0.3f + grow * Ease.OutExpo(t));
-				ring.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(t));
-			});
-			Fx.FreeAfter(ring, len + 0.02f);
+			return;
 		}
-		// 脚下一下压暗的血红闪（贴地的扁椭圆）
-		Node2D glow = Fx.Root(front, feet, "P3CrushGlow");
-		Sprite2D g = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = new Vector2(3.2f, 0.7f) * s * 200f / Fx.SoftDot.GetWidth(), Modulate = new Color(blood, 0.7f) };
-		glow.AddChild(g);
-		Fx.Animate(glow, 0.45f, t => g.Modulate = new Color(blood, 0.7f * (1f - Ease.OutCubic(t))));
-		Fx.FreeAfter(glow, 0.47f);
-		// 贴地向两侧翻滚的尘土
-		foreach (float dir in new[] { -1f, 1f })
+		float minX = targets.Min(t => t.GetBottomOfHitbox().X), maxX = targets.Max(t => t.GetBottomOfHitbox().X);
+		float top = targets.Min(t => t.GetTopOfHitbox().Y);
+		float ground = targets.Average(t => t.GetBottomOfHitbox().Y);
+		Slab sl = new()
 		{
-			for (int i = 0; i < 6; i++)
+			Targets = targets,
+			Cx = (minX + maxX) * 0.5f,
+			HalfW = (maxX - minX) * 0.5f + 210f,
+			ImpactY = top - SlabThick - 6f,
+			GroundY = ground,
+		};
+		// 不出屏：右端（含透视后沿 70px）和左端都留 20px
+		float view = front.GetViewportRect().Size.X;
+		sl.HalfW = Mathf.Min(sl.HalfW, (view - 110f) * 0.5f);
+		sl.Cx = Mathf.Clamp(sl.Cx, sl.HalfW + 20f, view - sl.HalfW - 90f);
+		float startY = Mathf.Min(sl.ImpactY - 260f, 150f);
+		sl.Y = startY;
+		_slab = sl;
+		Audio.Sfx.Clip("swish_heavy_1", 0.45f);
+
+		// 地上阴影：一整片扁椭圆罩住所有敌人，随石板下压变深
+		Node2D shadow = Fx.Root(back, new Vector2(sl.Cx, ground), "P3SlabShadow");
+		Sprite2D sh = new() { Texture = Fx.SoftDot, Modulate = new Color(0.12f, 0f, 0.03f, 0f), Scale = new Vector2(sl.HalfW * 2.4f, 140f) / Fx.SoftDot.GetWidth() };
+		shadow.AddChild(sh);
+		sl.Shadow = shadow;
+
+		// 石板本体
+		Node2D root = Fx.Root(front, new Vector2(sl.Cx, startY), "P3Slab");
+		root.Modulate = new Color(1f, 1f, 1f, 0f);
+		sl.Root = root;
+		float hw = sl.HalfW;
+		Sprite2D under = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Position = new Vector2(0f, SlabThick + 10f), Scale = new Vector2(hw * 2.6f, 120f) / Fx.SoftDot.GetWidth(), Modulate = new Color(Pal.Blood, 0f) };
+		root.AddChild(under);
+		Fx.Poly(root, SlabSideFace(hw), SlabSide);
+		Fx.Poly(root, SlabFrontFace(hw), SlabSide);
+		Fx.Poly(root, SlabTopFace(hw), SlabTop);
+		// 顶面的符文：压扁的双圆环 + 六边形 + 一圈刻度，沿顶面中心
+		Node2D runes = new() { Position = new Vector2(35f, -SlabDepth * 0.5f), Scale = new Vector2(1f, 0.26f) };
+		root.AddChild(runes);
+		float rr = Mathf.Min(hw * 0.55f, 260f);
+		Line2D ring1 = Fx.Line(runes, Fx.Circle(rr, 64), new Color(Pal.Blood, 0f), 7f, closed: true);
+		Line2D ring2 = Fx.Line(runes, Fx.Circle(rr * 0.78f, 64), new Color(Pal.Blood, 0f), 3f, closed: true);
+		Line2D hex = Fx.Line(runes, Fx.Hexagon(rr * 0.7f), new Color(Pal.Blood, 0f), 4f, closed: true);
+		var ticks = new List<Line2D>();
+		for (int i = 0; i < 18; i++)
+		{
+			Vector2 d = Vector2.Right.Rotated(Mathf.Tau * i / 18f);
+			ticks.Add(Fx.Line(runes, new[] { d * rr * 0.84f, d * rr * 0.96f }, new Color(Pal.Blood, 0f), 4f));
+		}
+		// 边缘的发光接缝（顶面前沿 + 侧面中线）
+		Line2D seamTop = Fx.Line(root, new[] { new Vector2(-hw, 0f), new Vector2(hw, 0f), new Vector2(hw + 70f, -SlabDepth) }, new Color(1f, 0.45f, 0.45f, 0f), 3f);
+		Line2D seamMid = Fx.Line(root, new[] { new Vector2(-hw + 6f, SlabThick * 0.5f), new Vector2(hw - 6f, SlabThick * 0.5f) }, new Color(Pal.Blood, 0f), 2f);
+
+		// 每个敌人头顶的压力线（红色细线往下压）
+		foreach (var t in targets)
+		{
+			Vector2 head = t.GetTopOfHitbox();
+			for (int k = 0; k < 5; k++)
 			{
-				Sprite2D d = new() { Texture = Fx.SoftDot, Position = feet + new Vector2(dir * Fx.Rand(10f, 50f) * s, Fx.Rand(-8f, 4f)), Modulate = new Color(0.62f, 0.55f, 0.55f, 0f) };
-				front.AddChild(d);
-				Vector2 p0 = d.Position, drift = new(dir * Fx.Rand(90f, 190f) * s, Fx.Rand(-30f, -8f));
-				float sz = Fx.Rand(50f, 95f) * s / Fx.SoftDot.GetWidth(), life = Fx.Rand(0.55f, 0.85f);
-				Fx.Animate(d, life, t =>
+				float x = head.X + Fx.Rand(-70f, 70f);
+				Node2D streak = Fx.Root(front, new Vector2(x, head.Y - 220f), "P3SlabPress");
+				Line2D l = Fx.Line(streak, new[] { Vector2.Zero, new Vector2(0f, Fx.Rand(60f, 120f)) }, new Color(Pal.Blood, 0f), Fx.Rand(2f, 4f));
+				float delay = 0.15f + k * 0.12f;
+				Fx.Animate(streak, 1.4f, u =>
 				{
-					d.Position = p0 + drift * Ease.OutCubic(t);
-					d.Scale = new Vector2(1.6f, 1f) * sz * (0.6f + 0.8f * t);
-					d.Modulate = new Color(0.62f, 0.55f, 0.55f, 0.45f * Ease.Envelope(t, 0.12f, 0.6f));
+					float time = u * 1.4f - delay;
+					float ph = Mathf.PosMod(time, 0.55f) / 0.55f;
+					streak.Position = new Vector2(x, head.Y - 230f + 200f * Ease.InCubic(ph));
+					l.DefaultColor = new Color(Pal.Blood, time < 0f || (_slab?.Dropped ?? true) ? 0f : 0.7f * Mathf.Sin(Mathf.Pi * ph));
 				});
-				Fx.FreeAfter(d, life + 0.02f);
+				Fx.FreeAfter(streak, 1.45);
 			}
 		}
-		// 碎石：从地裂处弹起又落下
-		Node2D rocks = Fx.Root(front, feet + new Vector2(0f, -6f), "P3CrushRocks");
-		Fx.Sparks(rocks, new Color(0.45f, 0.38f, 0.38f), 18, 160f * s, 340f * s, 0.7f, gravity: 900f, scaleMin: 0.06f, scaleMax: 0.14f);
-		Fx.FreeAfter(rocks, 0.9);
+
+		float hoverEnd = sl.ImpactY - 150f;
+		Fx.Animate(root, 1.8f, u =>
+		{
+			if (sl.Dropped)
+			{
+				return;
+			}
+			float time = u * 1.8f;
+			float a = Ease.OutCubic(Mathf.Clamp(time / 0.2f, 0f, 1f));
+			root.Modulate = new Color(1f, 1f, 1f, a);
+			// 缓缓下压（越来越快），微微晃
+			sl.Y = Mathf.Lerp(startY, hoverEnd, Ease.InOutSine(Mathf.Clamp(time / 1.1f, 0f, 1f)));
+			root.Position = new Vector2(sl.Cx + 3f * Mathf.Sin(time * 17f) * Mathf.Clamp(time / 0.6f, 0f, 1f), sl.Y);
+			root.Rotation = 0.012f * Mathf.Sin(time * 3.1f);
+			// 符文依次点亮
+			float glow = Mathf.Clamp((time - 0.1f) / 0.4f, 0f, 1f);
+			ring1.DefaultColor = new Color(Pal.Blood, 0.9f * glow);
+			ring2.DefaultColor = new Color(Pal.Blood, 0.7f * Mathf.Clamp((time - 0.2f) / 0.3f, 0f, 1f));
+			hex.DefaultColor = new Color(1f, 0.5f, 0.5f, 0.8f * Mathf.Clamp((time - 0.3f) / 0.3f, 0f, 1f));
+			for (int i = 0; i < ticks.Count; i++)
+			{
+				ticks[i].DefaultColor = new Color(Pal.Blood, Mathf.Clamp((time - 0.15f - i * 0.02f) / 0.1f, 0f, 1f) * (0.6f + 0.4f * Mathf.Sin(time * 9f + i)));
+			}
+			runes.Rotation = time * 0.6f;
+			seamTop.DefaultColor = new Color(1f, 0.45f, 0.45f, 0.8f * glow);
+			seamMid.DefaultColor = new Color(Pal.Blood, 0.6f * glow);
+			float near = Mathf.Clamp((sl.Y - startY) / Mathf.Max(1f, hoverEnd - startY), 0f, 1f);
+			under.Modulate = new Color(Pal.Blood, 0.35f * near * glow);
+			sh.Modulate = new Color(0.12f, 0f, 0.03f, 0.25f + 0.4f * near);
+			sh.Scale = new Vector2(sl.HalfW * (2.9f - 0.5f * near), 140f) / Fx.SoftDot.GetWidth();
+		});
+		// 兜底：一直没等到伤害结算就自己砸下（画面不能停在半空）
+		Fx.After(front, 1.8, "crush slab failsafe", () =>
+		{
+			if (_slab == sl && !sl.Dropped)
+			{
+				CrushUnderImpact(front, true);
+			}
+		});
+	}
+
+	/// <summary>伤害结算那一刻：石板 0.08s 砸到所有敌人头顶 → 碎裂四散 + 冲击波 + 尘墙 + 地裂 + 敌人压扁回弹。</summary>
+	public static void CrushUnderImpact(Control front, bool silent = false)
+	{
+		Slab? sl = _slab;
+		if (sl == null || sl.Dropped || !GodotObject.IsInstanceValid(sl.Root))
+		{
+			return;
+		}
+		sl.Dropped = true;
+		Node2D root = sl.Root;
+		float fromY = root.Position.Y;
+		root.Modulate = Colors.White;
+		Fx.Animate(root, 0.08f, u => root.Position = new Vector2(sl.Cx, Mathf.Lerp(fromY, sl.ImpactY, Ease.InCubic(u))));
+		Fx.After(front, 0.08, "crush slab hit", () => Shatter(front, sl, silent));
+	}
+
+	private static void Shatter(Control front, Slab sl, bool silent)
+	{
+		if (_slab == sl)
+		{
+			_slab = null;
+		}
+		if (!silent)
+		{
+			EvokerShot.HitStop(0.08);
+			MegaCrit.Sts2.Core.Nodes.NGame.Instance?.ScreenShake(MegaCrit.Sts2.Core.Nodes.Vfx.Utilities.ShakeStrength.Strong, MegaCrit.Sts2.Core.Nodes.Vfx.Utilities.ShakeDuration.Short);
+		}
+		Audio.Sfx.Clip("crush_gravity", 0.95f);
+		float hw = sl.HalfW, cx = sl.Cx, y = sl.ImpactY;
+		if (GodotObject.IsInstanceValid(sl.Root))
+		{
+			sl.Root.QueueFree();
+		}
+		// 撞击闪光：石板底沿一道横向白红闪
+		Node2D flash = Fx.Root(front, new Vector2(cx, y + SlabThick), "P3SlabFlash");
+		Sprite2D fl = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = new Vector2(hw * 2.6f, 90f) / Fx.SoftDot.GetWidth(), Modulate = new Color(1f, 0.75f, 0.75f, 0.95f) };
+		flash.AddChild(fl);
+		Fx.Animate(flash, 0.3f, u => { fl.Modulate = new Color(1f, 0.6f, 0.6f, 0.95f * (1f - Ease.OutCubic(u))); flash.Scale = new Vector2(1f + 0.3f * u, 1f); });
+		Fx.FreeAfter(flash, 0.32);
+		// 碎块：沿石板宽度切成十几块，各自带一截侧面，往两侧 / 上方崩开再落下、旋转、淡出
+		int n = Mathf.Clamp((int)(hw / 45f), 10, 18);
+		for (int i = 0; i < n; i++)
+		{
+			float x0 = -hw + 2f * hw * i / n, x1 = -hw + 2f * hw * (i + 1) / n;
+			float jag = Fx.Rand(-14f, 14f);
+			Vector2 c0 = new((x0 + x1) * 0.5f, 0f);
+			Vector2[] top = { new(x0 + 70f * 0.5f - c0.X + jag, -SlabDepth * 0.5f), new(x1 + 35f - c0.X, -SlabDepth * 0.5f), new(x1 - c0.X, 0f), new(x0 - c0.X + jag * 0.5f, 0f) };
+			Vector2[] side = { new(x0 - c0.X + jag * 0.5f, 0f), new(x1 - c0.X, 0f), new(x1 - c0.X, SlabThick), new(x0 - c0.X, SlabThick) };
+			Node2D chunk = Fx.Root(front, new Vector2(cx + c0.X, y), "P3SlabChunk");
+			Fx.Poly(chunk, side, SlabSide);
+			Fx.Poly(chunk, top, SlabTop);
+			Fx.Line(chunk, new[] { top[3], top[2] }, new Color(1f, 0.45f, 0.45f, 0.8f), 2f);
+			float side01 = (c0.X / hw);
+			Vector2 v = new(side01 * Fx.Rand(260f, 520f) + Fx.Rand(-60f, 60f), Fx.Rand(-420f, -180f));
+			float spin = Fx.Rand(-5f, 5f), life = Fx.Rand(0.7f, 0.95f);
+			Vector2 p0 = chunk.Position;
+			float floor = sl.GroundY - 10f;
+			Fx.Animate(chunk, life, u =>
+			{
+				float t = u * life;
+				Vector2 p = p0 + v * t + new Vector2(0f, 1500f * t * t);
+				if (p.Y > floor) p.Y = floor;
+				chunk.Position = p;
+				chunk.Rotation = spin * t;
+				chunk.Scale = Vector2.One * (1f - 0.35f * u);
+				chunk.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(Mathf.Clamp((u - 0.55f) / 0.45f, 0f, 1f)));
+			});
+			Fx.FreeAfter(chunk, life + 0.02);
+		}
+		// 碎石屑
+		Node2D bits = Fx.Root(front, new Vector2(cx, y + SlabThick * 0.5f), "P3SlabBits");
+		Fx.Sparks(bits, new Color(0.45f, 0.2f, 0.22f), 50, 200f, 520f, 0.8f, gravity: 1100f, scaleMin: 0.08f, scaleMax: 0.2f);
+		Fx.FreeAfter(bits, 1.0);
+		// 地面：贯穿整排敌人的压扁冲击波（两层）+ 地上一道血红闪
+		for (int k = 0; k < 2; k++)
+		{
+			Node2D ring = Fx.Root(front, new Vector2(cx, sl.GroundY), "P3SlabWave");
+			Fx.StrokeClosed(ring, Fx.Circle(hw * 0.7f, 64, 0.2f), k == 0 ? new Color(1f, 0.8f, 0.8f, 0.95f) : new Color(Pal.Blood, 0.85f), k == 0 ? 6f : 4f);
+			float len = k == 0 ? 0.4f : 0.6f, grow = k == 0 ? 1.0f : 1.6f;
+			float delay = 0.04f * k;
+			Fx.Animate(ring, len + delay, u =>
+			{
+				float t = Mathf.Clamp((u * (len + delay) - delay) / len, 0f, 1f);
+				ring.Scale = new Vector2(0.5f + grow * Ease.OutExpo(t), 0.5f + grow * Ease.OutExpo(t));
+				ring.Modulate = new Color(1f, 1f, 1f, t <= 0f ? 0f : 1f - Ease.InCubic(t));
+			});
+			Fx.FreeAfter(ring, len + delay + 0.02);
+		}
+		Node2D groundGlow = Fx.Root(front, new Vector2(cx, sl.GroundY), "P3SlabGroundGlow");
+		Sprite2D gg = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = new Vector2(hw * 2.8f, 110f) / Fx.SoftDot.GetWidth(), Modulate = new Color(Pal.Blood, 0.75f) };
+		groundGlow.AddChild(gg);
+		Fx.Animate(groundGlow, 0.5f, u => gg.Modulate = new Color(Pal.Blood, 0.75f * (1f - Ease.OutCubic(u))));
+		Fx.FreeAfter(groundGlow, 0.52);
+		// 两侧尘墙：从整排敌人的两端往外翻滚
+		foreach (float dir in new[] { -1f, 1f })
+		{
+			for (int i = 0; i < 9; i++)
+			{
+				Vector2 start = new(cx + dir * (hw - 120f + Fx.Rand(-40f, 40f)), sl.GroundY + Fx.Rand(-10f, 6f));
+				Sprite2D d = new() { Texture = Fx.SoftDot, Position = start, Modulate = new Color(0.6f, 0.5f, 0.5f, 0f) };
+				front.AddChild(d);
+				Vector2 drift = new(dir * Fx.Rand(120f, 260f), Fx.Rand(-70f, -15f));
+				float sz = Fx.Rand(70f, 130f) / Fx.SoftDot.GetWidth(), life = Fx.Rand(0.6f, 0.9f);
+				Fx.Animate(d, life, u =>
+				{
+					d.GlobalPosition = start + drift * Ease.OutCubic(u);
+					d.Scale = new Vector2(1.6f, 1f) * sz * (0.6f + 0.9f * u);
+					d.Modulate = new Color(0.6f, 0.5f, 0.5f, 0.5f * Ease.Envelope(u, 0.1f, 0.55f));
+				});
+				Fx.FreeAfter(d, life + 0.02);
+			}
+		}
+		// 每个敌人：石板底到头顶一道红色冲击光柱（个子矮、没被石板直接碰到的也挨了这一下）+ 脚下地裂 + 一起被压扁再回弹（只改显示缩放，结束时还原）
+		foreach (var t in sl.Targets)
+		{
+			if (!GodotObject.IsInstanceValid(t))
+			{
+				continue;
+			}
+			Vector2 head = t.GetTopOfHitbox();
+			float from = y + SlabThick;
+			float len = Mathf.Max(30f, head.Y - from + 40f);
+			Node2D beam = Fx.Root(front, new Vector2(head.X, from), "P3SlabBeam");
+			Sprite2D bm = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Position = new Vector2(0f, len * 0.5f), Scale = new Vector2(150f, len * 2.2f) / Fx.SoftDot.GetWidth(), Modulate = new Color(1f, 0.35f, 0.4f, 0.85f) };
+			beam.AddChild(bm);
+			Fx.Animate(beam, 0.28f, u =>
+			{
+				bm.Modulate = new Color(1f, 0.35f, 0.4f, 0.85f * (1f - Ease.OutCubic(u)));
+				beam.Scale = new Vector2(1f - 0.6f * u, 1f);
+			});
+			Fx.FreeAfter(beam, 0.3);
+			Motifs.GroundCrack(front, t.GetBottomOfHitbox(), 1.2f);
+			Squash(t);
+		}
+		if (GodotObject.IsInstanceValid(sl.Shadow))
+		{
+			Node2D shadow = sl.Shadow;
+			Fx.Animate(shadow, 0.4f, u => shadow.Modulate = new Color(1f, 1f, 1f, 1f - u));
+			Fx.FreeAfter(shadow, 0.42);
+		}
+	}
+
+	private static void Squash(MegaCrit.Sts2.Core.Nodes.Combat.NCreature t)
+	{
+		Node2D? vis = t.Visuals;
+		if (vis == null || !GodotObject.IsInstanceValid(vis) || vis.HasMeta("p3_squash"))
+		{
+			return;
+		}
+		Vector2 orig = vis.Scale;
+		vis.SetMeta("p3_squash", true);
+		Fx.Animate(vis, 0.45f, u =>
+		{
+			// 先压扁（0.06s）再弹簧回弹
+			float k = u < 0.13f ? Ease.OutCubic(u / 0.13f) : Mathf.Exp(-6f * (u - 0.13f)) * Mathf.Cos(14f * (u - 0.13f));
+			vis.Scale = orig * new Vector2(1f + 0.10f * k, 1f - 0.20f * k);
+		}).Finished += () =>
+		{
+			if (GodotObject.IsInstanceValid(vis))
+			{
+				vis.Scale = orig;
+				vis.RemoveMeta("p3_squash");
+			}
+		};
 	}
 }
