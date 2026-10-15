@@ -737,7 +737,13 @@ void fragment() {
 		ModEntry.Safe("great seal", () =>
 		{
 			Run(tree, player, architect, () =>
-				tree.CreateTimer(Duration, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () => done.TrySetResult(true));
+				tree.CreateTimer(Duration, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () =>
+				{
+					// v0.14.28（用户：光束结束后卡住）：交还流程前保证游戏是 1 倍速，并记一行日志方便排查
+					P3Makoto.Core.TimeScale.Reset();
+					GD.Print($"{ModEntry.Tag} great seal done -> back to the game (TimeScale={Engine.TimeScale})");
+					done.TrySetResult(true);
+				});
 			started = true;
 		});
 		if (!started)
@@ -1057,7 +1063,9 @@ void fragment() {
 		Polygon2D Half()
 		{
 			Polygon2D p = new() { Material = Fx.Additive, Polygon = new Vector2[6], VertexColors = new[] { c, c, c, c, c, c } };
-			p.Polygons = new Godot.Collections.Array { new[] { 0, 1, 2, 3 }, new[] { 3, 2, 4, 5 } };   // 上段矩形 + 下段收拢梯形
+			// 上段矩形 + 下段收拢梯形。v0.14.28 第二版（用户：锥形侧边仍有明显边界）：梯形按 (3,2,5)+(2,4,5) 切分，
+			// 每一行都是从外缘透明线性过渡到中心，不会在指尖附近挤成 2px 宽的硬边
+			p.Polygons = new Godot.Collections.Array { new[] { 0, 1, 2, 3 }, new[] { 3, 2, 5 }, new[] { 2, 4, 5 } };
 			parent.AddChild(p);
 			return p;
 		}

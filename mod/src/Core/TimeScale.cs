@@ -17,5 +17,8 @@ public static class TimeScale
 
 	public static void Freeze(double scale) { _freeze = scale; Apply(); }
 
+	/// <summary>保险：所有减速来源清零，回到 1 倍速（长演出把流程交还给游戏前调用）。</summary>
+	public static void Reset() { _hit = 1.0; _freeze = 1.0; Apply(); }
+
 	private static void Apply() => Engine.TimeScale = System.Math.Min(_hit, _freeze);
 }
