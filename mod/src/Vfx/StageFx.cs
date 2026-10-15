@@ -104,8 +104,8 @@ public static class StageFx
 
 	// ───────────────────────── 击倒 ─────────────────────────
 	/// <summary>
-	/// 击倒敌人：两道交叉的长色块（白 / 深蓝，各带一道红边）0.07s 切过敌人，定格一拍后沿各自法线方向错开分离、变细淡出；
-	/// 中心一个小水之圆张开又收拢，加玻璃碎片与闪光。总长约 0.6s。
+	/// 击倒敌人：两道交叉的长色块（白 / 深蓝，各带一道红边）像两刀先后切过敌人（细光线划过 → 色块从一端划到另一端 → 切口张开），
+	/// 定格一拍后沿各自法线方向错开分离、变细淡出；中心一个小水之圆张开又收拢，加闪光与玻璃碎片。总长约 0.66s。
 	/// </summary>
 	public static void KnockDown(Control layer, Control? back, Vector2 at)
 	{
@@ -122,37 +122,70 @@ public static class StageFx
 		// v0.14.8（用户：击败特效把怪物挡住了）：水之圆改到人物后层、半透明、无焦散，只在敌人身后亮一下
 		Node2D discRoot = Fx.Root(back ?? layer, at, "P3KnockDownDisc");
 		float len = 900f;
-		Node2D MakeBar(float angle, Color color)
+		// v0.14.43（用户：两条斜杠像是突然出现的，有违和感，要有切入的动效）：
+		// 以前色块从中间向两头一下子展开（0.07s），像凭空冒出来。现在是"刀切进来"：
+		//   先一道细亮光线沿刀路飞速划过（带拖尾），色块紧跟着从一端"划"到另一端（此时只有 25% 粗），
+		//   划完之后切口张开到全宽（带一点回弹）；白条从左往右切，深蓝条晚 0.04s 从右往左切，两刀交叉时中心一闪；
+		//   定格一拍后照旧沿各自法线错开分离、变细淡出。
+		// fromStart = true：从轴的负端划向正端；false：从正端划向负端。
+		(Node2D bar, Node2D sweep, Line2D streak) MakeBar(float angle, Color color, bool fromStart)
 		{
 			Node2D bar = new() { Rotation = angle };
 			root.AddChild(bar);
-			P3Ui.Slab(bar, -len * 0.5f, len * 0.5f, -16f, 16f, 22f, color);
-			P3Ui.Slab(bar, -len * 0.5f, len * 0.5f, 16f, 21f, 4f, new Color(0.9f, 0.08f, 0.22f, 0.95f));
-			return bar;
+			Node2D sweep = new() { Position = new Vector2(fromStart ? -len * 0.5f : len * 0.5f, 0f), Scale = new Vector2(0f, 1f) };
+			bar.AddChild(sweep);
+			float a0 = fromStart ? 0f : -len, a1 = fromStart ? len : 0f;
+			P3Ui.Slab(sweep, a0, a1, -16f, 16f, 22f, color);
+			P3Ui.Slab(sweep, a0, a1, 16f, 21f, 4f, new Color(0.9f, 0.08f, 0.22f, 0.95f));
+			Line2D streak = Fx.Line(bar, new[] { Vector2.Zero, Vector2.Zero }, new Color(1f, 1f, 1f, 0f), 4f);
+			return (bar, sweep, streak);
 		}
-		Node2D w = MakeBar(-0.45f, new Color(0.96f, 0.98f, 1f, 0.95f));
-		Node2D n = MakeBar(0.42f, new Color(0.03f, 0.08f, 0.3f, 0.95f));
+		var (w, ws, wl) = MakeBar(-0.45f, new Color(0.96f, 0.98f, 1f, 0.95f), true);
+		var (n, ns, nl) = MakeBar(0.42f, new Color(0.03f, 0.08f, 0.3f, 0.95f), false);
 		ColorRect disc = P3Ui.WaterDisc(discRoot, Vector2.Zero, 150f);
 		Fx.SetParam(disc, "caustics", 0f);
 		Fx.SetParam(disc, "alpha", back != null ? 0.6f : 0.35f);
-		Fx.FreeAfter(discRoot, 0.67);
+		Fx.FreeAfter(discRoot, 0.71);
 		Vector2 nw = new Vector2(Mathf.Cos(-0.45f + Mathf.Pi / 2f), Mathf.Sin(-0.45f + Mathf.Pi / 2f));
 		Vector2 nn = new Vector2(Mathf.Cos(0.42f + Mathf.Pi / 2f), Mathf.Sin(0.42f + Mathf.Pi / 2f));
-		const float total = 0.62f;
+		const float total = 0.66f;
+
+		// 一刀：streakAt 起光线划过（0.06s，拖尾晚 0.035s），cutAt 起色块划过（0.07s），openAt 起切口张开（0.07s，回弹）
+		void Cut(Node2D bar, Node2D sweep, Line2D streak, bool fromStart, float time, float t0)
+		{
+			float dir = fromStart ? 1f : -1f;
+			float head = Ease.OutCubic(Seg(time, t0, 0.06f));
+			float tail = Ease.InCubic(Seg(time, t0 + 0.035f, 0.06f));
+			float start = -len * 0.55f * dir;
+			streak.Points = new[] { new Vector2(start + dir * len * 1.1f * tail, 0f), new Vector2(start + dir * len * 1.1f * head, 0f) };
+			streak.DefaultColor = new Color(1f, 1f, 1f, time < t0 ? 0f : 0.95f * (1f - tail));
+			streak.Width = 3f + 3f * (1f - head);
+			float cut = Ease.OutExpo(Seg(time, t0 + 0.015f, 0.07f));
+			float open = Seg(time, t0 + 0.07f, 0.07f);
+			float thick = time < t0 + 0.07f ? 0.25f : 0.25f + 0.75f * Ease.OutBack(open);
+			sweep.Scale = new Vector2(cut, 1f);
+			bar.Scale = new Vector2(1f, thick);
+		}
+
 		Fx.Animate(root, total, t =>
 		{
 			float time = t * total;
-			float cut = Ease.OutExpo(Seg(time, 0f, 0.07f));
-			float split = Ease.InCubic(Seg(time, 0.16f, 0.4f));
-			w.Scale = new Vector2(cut, 1f - 0.85f * split);
-			n.Scale = new Vector2(Ease.OutExpo(Seg(time, 0.03f, 0.07f)), 1f - 0.85f * split);
+			Cut(w, ws, wl, true, time, 0f);
+			Cut(n, ns, nl, false, time, 0.04f);
+			float split = Ease.InCubic(Seg(time, 0.22f, 0.4f));
+			if (split > 0f)
+			{
+				w.Scale = new Vector2(1f, 1f - 0.85f * split);
+				n.Scale = new Vector2(1f, 1f - 0.85f * split);
+			}
 			w.Position = nw * 70f * split;
 			n.Position = -nn * 70f * split;
 			w.Modulate = n.Modulate = new Color(1f, 1f, 1f, 1f - split);
-			Fx.SetParam(disc, "reveal", Ease.OutExpo(Seg(time, 0.02f, 0.14f)) * (1f - Ease.InCubic(Seg(time, 0.2f, 0.3f))));
+			Fx.SetParam(disc, "reveal", Ease.OutExpo(Seg(time, 0.08f, 0.14f)) * (1f - Ease.InCubic(Seg(time, 0.26f, 0.3f))));
 		});
-		P3Fx.Flash(layer, at, Pal.Ice, 320f, 0.16f);
-		Fx.After(root, 0.16, "knockdown shatter", () => P3Fx.GlassShatter(layer, at, 22, 1.0f, Pal.Cyan));
+		// 两刀交叉的那一刻（深蓝那刀划过中心，约 0.1s）中心一闪，再碎玻璃
+		P3Fx.Flash(layer, at, Pal.Ice, 320f, 0.16f, delay: 0.09f);
+		Fx.After(root, 0.2, "knockdown shatter", () => P3Fx.GlassShatter(layer, at, 22, 1.0f, Pal.Cyan));
 		Fx.FreeAfter(root, total + 0.05);
 	}
 
