@@ -31,6 +31,8 @@ public static class CutInFx
 		public Node2D Ui = null!;
 		public Node2D? Ka;
 		public Node2D Decor = null!;
+		public ColorRect? Disc;
+		public bool DiscClosing;
 		public Texture2D Eyes = null!;
 		public Vector2 Screen;
 		public float Cy, HalfH, Pan;
@@ -136,6 +138,7 @@ public static class CutInFx
 		Vector2 discAt = new(size.X * 0.84f, st.Cy + size.Y * 0.06f);
 		float discR = size.Y * 0.62f;
 		ColorRect disc = P3Ui.WaterDisc(decor, discAt, discR);
+		st.Disc = disc;
 		Node2D arcs = new() { Position = discAt };
 		decor.AddChild(arcs);
 		Line2D arc1 = P3Ui.Arc(arcs, Vector2.Zero, discR * 1.07f, Mathf.Pi * 0.55f, Mathf.Pi * 1.45f, new Color(Pal.Cyan, 0.55f), 3f);
@@ -148,7 +151,12 @@ public static class CutInFx
 			slabs.Position = new Vector2(-size.X * 0.5f * (1f - a), 0f);
 			topSlab.Position = new Vector2(size.X * 0.5f * (1f - b), 0f);
 			word.Position = new Vector2(size.X * 0.03f + 30f * time, size.Y * 1.08f);
-			Fx.SetParam(disc, "reveal", Ease.OutQuint(Mathf.Clamp((time - 0.03f) / 0.36f, 0f, 1f)));
+			// v0.14.27（用户：虚空形态等召唤时右侧的大蓝圆突然出现、没有动效）：先淡入，再像水面一样从中心柔和地扩开（0.55s）
+			if (!st.DiscClosing)
+			{
+				Fx.SetParam(disc, "reveal", Ease.OutCubic(Mathf.Clamp((time - 0.02f) / 0.55f, 0f, 1f)));
+				disc.Modulate = new Color(1f, 1f, 1f, Ease.OutCubic(Mathf.Clamp(time / 0.2f, 0f, 1f)));
+			}
 			arc1.Rotation = 0.25f * time;
 			arc2.Rotation = -0.18f * time;
 			arc1.Modulate = arc2.Modulate = new Color(1f, 1f, 1f, b);
@@ -261,8 +269,15 @@ public static class CutInFx
 		if (GodotObject.IsInstanceValid(st.Decor))
 		{
 			Node2D decor = st.Decor;
+			// 收尾：水之圆从外向中心收拢（配合整体淡出），不再停在满圆上直接消失
+			st.DiscClosing = true;
+			ColorRect? disc = st.Disc;
 			Fx.Animate(decor, 0.55, t =>
 			{
+				if (disc != null && GodotObject.IsInstanceValid(disc))
+				{
+					Fx.SetParam(disc, "reveal", 1f - 0.85f * Ease.InCubic(t));
+				}
 				decor.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InOutCubic(t));
 				decor.Scale = Vector2.One * (1f + 0.05f * Ease.OutCubic(t));
 			});

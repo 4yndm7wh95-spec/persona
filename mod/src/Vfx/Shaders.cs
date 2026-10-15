@@ -612,6 +612,7 @@ float caustic(vec2 p, float t) {
 	return clamp(pow(abs(c), 8.0), 0.0, 4.0);
 }
 void fragment() {
+	vec4 mod_col = COLOR;                                            // v0.14.27：节点的 modulate（之前直接覆盖 COLOR，父节点淡出对水之圆无效）
 	vec2 d = UV * 2.0 - 1.0;
 	float r = length(d);
 	float R = max(reveal, 0.001);
@@ -625,7 +626,7 @@ void fragment() {
 	col += (vec3(0.45, 0.8, 1.0) * hi * 0.35 + vec3(0.4, 0.8, 1.0) * pow(wave, 6.0) * 0.12 * (1.0 - r)) * (1.0 - caustics);
 	float rim = smoothstep(R - 0.06, R - 0.004, r) * inside;
 	col += vec3(0.35, 0.8, 1.0) * rim * 0.6;
-	COLOR = vec4(col, inside * alpha);
+	COLOR = vec4(col * mod_col.rgb, inside * alpha * mod_col.a);
 }");
 
 	private static Shader? _drown;
