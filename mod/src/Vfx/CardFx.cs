@@ -271,6 +271,13 @@ public static class CardFx
 			return;
 		}
 		WeakShown[key] = now;
+		// v0.14.37（用户：空间杀法打群怪时每只怪都叠着 WEAK! 和 CRITICAL!）：空间杀法（君王之刃 + 寻刃）不弹 WEAK!，只弹 CRITICAL!
+		// （伤害数字那边打得重时也会弹 CRITICAL!，Popups.Critical 对同一目标 0.8s 内只弹一次，不会重复）
+		if (card.GetType().Name == "SovereignBlade" && card.Owner?.Creature?.HasPower<MegaCrit.Sts2.Core.Models.Powers.SeekingEdgePower>() == true)
+		{
+			Popups.Critical(front, node.GetInstanceId(), node.VfxSpawnPosition);
+			return;
+		}
 		Popups.Weak(front, node.VfxSpawnPosition);
 	}
 

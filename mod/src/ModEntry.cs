@@ -12,7 +12,7 @@ public static class ModEntry
 
 	public static void Init()
 	{
-		GD.Print($"{Tag} init v0.14.36");
+		GD.Print($"{Tag} init v0.14.37");
 		try
 		{
 			// v0.14.31：逐个补丁类应用（PatchAll 遇到第一个失败就整体中断，后面的补丁全部不生效）；失败的单独记日志
