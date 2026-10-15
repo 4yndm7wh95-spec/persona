@@ -278,6 +278,7 @@ public static class CardFx
 			Popups.Critical(front, node.GetInstanceId(), node.VfxSpawnPosition);
 			return;
 		}
+		Popups.MarkWeak(node.GetInstanceId());
 		Popups.Weak(front, node.VfxSpawnPosition);
 	}
 

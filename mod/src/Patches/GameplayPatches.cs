@@ -249,7 +249,7 @@ public static class DamageNumberPatch
 		__result.QueueFree();
 		__result = null;                                     // 调用方拿到 null 就不显示原版数字
 		ModEntry.Safe("P3 damage number", () => Popups.Damage(layer, node.GetInstanceId(), node.VfxSpawnPosition, amount));
-		if (amount >= 20 && amount >= target.MaxHp * 0.3m)   // 击杀一击也算上溢出伤害
+		if (amount >= 20 && amount >= target.MaxHp * 0.3m && !Popups.RecentWeak(node.GetInstanceId()))   // 击杀一击也算上溢出伤害；刚弹过 WEAK! 的不再叠 CRITICAL!
 		{
 			ModEntry.Safe("P3 critical", () => Popups.Critical(layer, node.GetInstanceId(), node.VfxSpawnPosition));
 		}

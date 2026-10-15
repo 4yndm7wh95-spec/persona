@@ -165,6 +165,16 @@ public static class Popups
 	}
 
 	private static readonly Dictionary<ulong, ulong> LastCrit = new();
+	private static readonly Dictionary<ulong, ulong> LastWeak = new();
+
+	/// <summary>
+	/// v0.14.39（用户：普通君王之刃劈中怪物也同时弹 WEAK! 和 CRITICAL!，普通大剑应该只有 WEAK!）：
+	/// 弹过 WEAK! 的目标在 1.5s 内不再因"打得重"弹 CRITICAL!（空间杀法那边不弹 WEAK!、直接弹 CRITICAL!，不受影响）。
+	/// </summary>
+	public static void MarkWeak(ulong targetId) => LastWeak[targetId] = Time.GetTicksMsec();
+
+	public static bool RecentWeak(ulong targetId) =>
+		LastWeak.TryGetValue(targetId, out ulong t) && Time.GetTicksMsec() - t < 1500;
 
 	/// <summary>
 	/// 「CRITICAL!」（v0.14.12，原版贴图 T_UI_Battle_06：白 → 青渐变斜体 + 深蓝立体边，预合成为 ui/critical.png）。
