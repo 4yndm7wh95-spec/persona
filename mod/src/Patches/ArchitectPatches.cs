@@ -132,3 +132,25 @@ public static class ArchitectNoCounterPatch
 		return false;
 	}
 }
+
+/// <summary>
+/// v0.14.28（用户：建筑师房间里结算画面「胜利……？」出来后按 ESC，背景变回之前的房间）：
+/// 结算画面是叠加界面（人物被挪到它上面、暗红底遮住房间）；暂停时游戏会临时藏起叠加界面，后面的塔顶背景、对话气泡、结局按钮就露出来。
+/// 结算画面打开时（人物已经挪走）把建筑师房间整个藏起来，暂停时背后是空的暗底。只在我们的塔顶房间生效。
+/// </summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Screens.GameOverScreen.NGameOverScreen), nameof(MegaCrit.Sts2.Core.Nodes.Screens.GameOverScreen.NGameOverScreen.AfterOverlayOpened))]
+public static class ArchitectGameOverPatch
+{
+	public static void Postfix()
+	{
+		ModEntry.Safe("architect game over", () =>
+		{
+			if (NEventRoom.Instance is NEventRoom ev && GodotObject.IsInstanceValid(ev)
+				&& ev.EmbeddedCombatRoom?.GetNodeOrNull("%BgContainer/P3TartarusTop") != null)
+			{
+				ev.Visible = false;
+				GD.Print($"{ModEntry.Tag} architect room hidden behind game over screen");
+			}
+		});
+	}
+}
