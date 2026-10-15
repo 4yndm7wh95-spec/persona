@@ -1239,10 +1239,22 @@ void fragment() {
 		// ── 全屏背景 ──
 		Node2D frame = new();
 		root.AddChild(frame);
+		// 闭眼越来越模糊（用户：只用美术会话的第一张图，模糊效果由 Claude 做）：同一张图预先做了两档更模糊的版本
+		// （ending_rooftop_blur1 / blur2，tools/vfx/ending_blur.py），闭眼时按眼睑合上的程度交叉淡入
+		var blurs = new List<Sprite2D>();
 		if (UiTex("ending_rooftop") is Texture2D bgTex)
 		{
 			float sc = Mathf.Max(W / bgTex.GetWidth(), H / bgTex.GetHeight());
 			frame.AddChild(new Sprite2D { Texture = bgTex, Position = view / 2f, Scale = Vector2.One * sc });
+			foreach (string b in new[] { "ending_rooftop_blur1", "ending_rooftop_blur2" })
+			{
+				if (UiTex(b) is Texture2D bt)
+				{
+					Sprite2D sp = new() { Texture = bt, Position = view / 2f, Scale = Vector2.One * Mathf.Max(W / bt.GetWidth(), H / bt.GetHeight()), Modulate = new Color(1f, 1f, 1f, 0f) };
+					frame.AddChild(sp);
+					blurs.Add(sp);
+				}
+			}
 		}
 		else
 		{
@@ -1401,6 +1413,15 @@ void fragment() {
 				PlaceLids(p);
 				float dark = 1f - 0.45f * p;
 				frame.Modulate = new Color(dark, dark, dark * 1.02f);
+				// 模糊：眨眼那一下几乎不变；闭到一条缝的过程中换成第一档，最后极慢合上时换成第二档
+				if (blurs.Count > 0)
+				{
+					blurs[0].Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((time - 2.2f) / 1.8f, 0f, 1f));
+				}
+				if (blurs.Count > 1)
+				{
+					blurs[1].Modulate = new Color(1f, 1f, 1f, Ease.InOutSine(Mathf.Clamp((time - 4.0f) / 2.5f, 0f, 1f)));
+				}
 			});
 			Fx.After(root, closeLen + hold, "seal eyes closed", () =>
 			{
