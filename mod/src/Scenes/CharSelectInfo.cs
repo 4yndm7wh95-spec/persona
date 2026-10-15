@@ -272,6 +272,11 @@ public static class CharSelectInfo
 		// ── 常驻（入场之后）：扫光、"愚者"漂移、整组极轻微浮动、下划线呼吸 ──
 		Fx.After(deco, intro, "info panel idle", () =>
 		{
+			// 选人界面已经切走时标签可能已被释放（日志：info panel idle failed: ObjectDisposedException）
+			if (!GodotObject.IsInstanceValid(hpLabel) || !GodotObject.IsInstanceValid(goldLabel))
+			{
+				return;
+			}
 			hpLabel.Text = hp;
 			goldLabel.Text = gold;
 			Fx.Animate(deco, 3600.0, t =>

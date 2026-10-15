@@ -134,6 +134,25 @@ public static class ArchitectNoCounterPatch
 	}
 }
 
+/// <summary>
+/// v0.14.32（用户：伟大封印 / 闭眼之后黑屏几秒又回到房间）：日志里是原版的空引用异常 ——
+/// RunManager.WinRun → OnEnded → SaveManager.UpdateProgressWithRunData → ProgressSaveManager.UpdateWithRunData 抛 NullReferenceException，
+/// 后面的"击杀玩家 → 打开结算画面"都没执行，流程停在房间里。（多半是测试跳关（F8）的局里存档数据不完整。）
+/// 保存进度统计出错时只记日志、不再抛出，让本局照常结束；代价只是这一局的统计（时长、胜场等）可能没记上。
+/// </summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Saves.Managers.ProgressSaveManager), nameof(MegaCrit.Sts2.Core.Saves.Managers.ProgressSaveManager.UpdateWithRunData))]
+public static class ProgressSaveGuardPatch
+{
+	public static System.Exception? Finalizer(System.Exception? __exception)
+	{
+		if (__exception != null)
+		{
+			GD.PrintErr($"{ModEntry.Tag} progress save failed at run end (ignored so the run can finish): {__exception.GetType().Name}: {__exception.Message}");
+		}
+		return null;
+	}
+}
+
 /// <summary>结局排查（v0.14.30）：记录 RunManager.WinRun 被调用（之后游戏应结束本局并打开结算画面）。</summary>
 [HarmonyPatch(typeof(MegaCrit.Sts2.Core.Runs.RunManager), nameof(MegaCrit.Sts2.Core.Runs.RunManager.WinRun))]
 public static class ArchitectWinRunLogPatch

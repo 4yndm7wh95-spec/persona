@@ -1030,4 +1030,9 @@ Grand.cs 里其余函数暂时保留不用。
 - 闭眼画面 UI 整体上移 0.08H；只有「闭上眼睛」能点（全屏透明挡板只拦截）：待机轻轻呼吸，悬停放大 1.08 + 柔光 + 上浮 6px + 光标三角挪过去指着它，点下放大 1.15、一闪后随文字淡出。
 - 结局流程仍卡（MEMENTO MORI 后黑屏几秒回到房间、血量未变 = 游戏没走到 WinRun 里的击杀）。Harmony 改为逐个补丁类应用（PatchAll 遇到第一个失败就整体中断），失败的单独记日志；请编译会话顺便取回日志定位。
 
+## v0.14.32
+- 结局卡住的根因（编译会话取回的日志 art/logs/ending_stuck_log.txt）：原版 `ProgressSaveManager.UpdateWithRunData` 在 WinRun → OnEnded 里抛 NullReferenceException，
+  后面的击杀玩家 / 结算画面都没执行。加 `ProgressSaveGuardPatch`（Finalizer）：保存进度统计出错只记日志不抛出，本局照常结束（代价：这局统计可能没记上）。
+- 选人界面信息面板：界面切走后 idle 回调还在改已释放的 Label（ObjectDisposedException）→ 先检查 IsInstanceValid。
+
 ## 待办（用户实机反馈，先记录）
