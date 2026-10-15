@@ -1,0 +1,153 @@
+Source log: C:\Users\kkk\AppData\Roaming\SlayTheSpire2\logs\godot.log
+Last modified: 2026-10-15T03:14:48-05:00
+Source SHA-256: a645f8f964f15a5eef934622a31ede9afe5844a55a4d90af43b6a6003542455a
+Encoding: UTF-8; source read-only; sensitive values redacted as ***.
+Total source lines: 518; selected P3Makoto lines: 44; error matches: 22.
+
+=== Last 150 lines containing [P3Makoto] ===
+54: [P3Makoto] init v0.14.30
+55: [P3Makoto] harmony patches applied
+59: [P3Makoto] P3R sfx loaded 87/87
+98: [P3Makoto] perf preload res://p3makoto/portrait/portrait_skel_data.tres ready at +5659ms
+99: [P3Makoto] perf preload res://p3makoto/ui/charselect_portrait.png ready at +5659ms
+100: [P3Makoto] perf preload res://p3makoto/ui/cutin_ka.png ready at +5659ms
+101: [P3Makoto] perf preload res://p3makoto/ui/cutin_eyes.png ready at +5659ms
+102: [P3Makoto] perf preload res://p3makoto/ui/info_head_ghost.png ready at +5659ms
+103: [P3Makoto] perf preload res://p3makoto/ui/info_head.png ready at +5659ms
+104: [P3Makoto] perf preload res://fonts/jpn/NotoSansCJKjp-Medium.otf ready at +5659ms
+105: [P3Makoto] perf preload res://fonts/jpn/NotoSansCJKjp-Bold.otf ready at +5659ms
+162: [P3Makoto] perf spine portrait warmed at +5778ms
+200: [P3Makoto] perf info panel apply 1.2ms
+201: [P3Makoto] perf charselect bg build 9.4ms
+204: [P3Makoto] perf info panel apply 0.9ms
+206: [P3Makoto] perf info panel build 77.1ms
+207: [P3Makoto] perf frame select makoto +923ms took 82.9ms
+210: [P3Makoto] perf frame select makoto +1209ms took 53.8ms
+212: [P3Makoto] perf frame select makoto +2008ms took 47.5ms
+213: [P3Makoto] perf frame select makoto +2170ms took 94.6ms
+216: [P3Makoto] perf frame select makoto +2508ms took 27.8ms
+218: [P3Makoto] perf frame select makoto +2668ms took 142.9ms
+233: [P3Makoto] architect room: /root/Game/RootSceneContainer/Run/RoomContainer/EventRoom/EventContainer/CombatEventLayout/CombatRoomContainer/CombatRoom
+234: [P3Makoto] architect bg: hid TheArchitectVictoryBackground (NCombatBackground)
+235: [P3Makoto] architect room: grounded Creature (h=356)
+236: [P3Makoto] architect room: grounded Creature (h=452)
+237: [P3Makoto] architect room: /root/Game/RootSceneContainer/Run/RoomContainer/EventRoom/EventContainer/CombatEventLayout/CombatRoomContainer/CombatRoom
+238: [P3Makoto] architect bg: hid TheArchitectVictoryBackground (NCombatBackground)
+239: [P3Makoto] architect room: /root/Game/RootSceneContainer/Run/RoomContainer/EventRoom/EventContainer/CombatEventLayout/CombatRoomContainer/CombatRoom
+240: [P3Makoto] architect bg: hid TheArchitectVictoryBackground (NCombatBackground)
+241: [P3Makoto] architect: skip counter attack -> RunManager.WinRun next
+242: [P3Makoto] architect room: /root/Game/RootSceneContainer/Run/RoomContainer/EventRoom/EventContainer/CombatEventLayout/CombatRoomContainer/CombatRoom
+243: [P3Makoto] architect bg: hid TheArchitectVictoryBackground (NCombatBackground)
+265: [P3Makoto] great seal done -> back to the game (TimeScale=1)
+266: [P3Makoto] architect: skip counter attack -> RunManager.WinRun next
+267: [P3Makoto] RunManager.WinRun called
+403: [P3Makoto] perf info panel apply 0.0ms
+404: [P3Makoto] perf charselect bg build 1.3ms
+407: [P3Makoto] perf info panel apply 0.1ms
+411: [P3Makoto] perf info panel build 2.1ms
+416: [P3Makoto] perf frame select makoto +1695ms took 112.8ms
+417: [P3Makoto] info panel idle failed: System.ObjectDisposedException: Cannot access a disposed object.
+427: [P3Makoto] perf frame select makoto +2323ms took 116.4ms
+434: [P3Makoto] perf frame select makoto +2415ms took 37.3ms
+
+=== ERROR / Exception / error / failed + next 10 lines (overlaps merged) ===
+
+--- source lines 268-303 ---
+268: [ERROR] System.NullReferenceException: Object reference not set to an instance of an object.
+269:    at MegaCrit.Sts2.Core.Saves.Managers.ProgressSaveManager.UpdateWithRunData(SerializableRun serializableRun, Boolean victory)
+270:    at MegaCrit.Sts2.Core.Saves.SaveManager.UpdateProgressWithRunData(SerializableRun serializableRun, Boolean victory)
+271:    at MegaCrit.Sts2.Core.Runs.RunManager.OnEnded(Boolean isVictory)
+272:    at MegaCrit.Sts2.Core.Runs.RunManager.WinRun()
+273:    at MegaCrit.Sts2.Core.Models.Events.TheArchitect.WinRun()
+274:    at MegaCrit.Sts2.Core.Events.EventOption.Chosen()
+275:    at MegaCrit.Sts2.Core.Helpers.TaskHelper.LogTaskExceptions(Task task)
+276:    at MegaCrit.Sts2.Core.Helpers.TaskHelper.LogTaskExceptions(Task task)
+277:    at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+278:    at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.MoveNext(Thread threadPoolThread)
+279:    at System.Threading.Tasks.AwaitTaskContinuation.RunCallback(ContextCallback callback, Object state, Task& currentTask)
+280:    at System.Threading.Tasks.Task.RunContinuations(Object continuationObject)
+281:    at System.Threading.Tasks.Task.FinishSlow(Boolean userDelegateExecute)
+282:    at System.Threading.Tasks.Task.TrySetException(Object exceptionObject)
+283:    at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.SetException(Exception exception, Task`1& taskField)
+284:    at MegaCrit.Sts2.Core.Events.EventOption.Chosen()
+285:    at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.ExecutionContextCallback(Object s)
+286:    at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+287:    at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.MoveNext(Thread threadPoolThread)
+288:    at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.MoveNext()
+289:    at System.Threading.Tasks.AwaitTaskContinuation.RunCallback(ContextCallback callback, Object state, Task& currentTask)
+290:    at System.Threading.Tasks.Task.RunContinuations(Object continuationObject)
+291:    at System.Threading.Tasks.Task.FinishSlow(Boolean userDelegateExecute)
+292:    at System.Threading.Tasks.Task.TrySetException(Object exceptionObject)
+293:    at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.SetException(Exception exception, Task`1& taskField)
+294:    at MegaCrit.Sts2.Core.Models.Events.TheArchitect.WinRun()
+295:    at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.ExecutionContextCallback(Object s)
+296:    at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+297:    at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.MoveNext(Thread threadPoolThread)
+298:    at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.MoveNext()
+299:    at System.Threading.Tasks.AwaitTaskContinuation.RunCallback(ContextCallback callback, Object state, Task& currentTask)
+300:    at System.Threading.Tasks.Task.RunContinuations(Object continuationObject)
+301:    at System.Threading.Tasks.Task`1.TrySetResult(TResult result)
+302:    at System.Threading.Tasks.TaskCompletionSource`1.TrySetResult(TResult result)
+303:    at P3Makoto.Vfx.GreatSeal.<>c__DisplayClass22_0.<Play>b__2()
+
+--- source lines 375-385 ---
+375: [ERROR] Error deleting path modded/profile3/saves/current_run.save.backup: Failed
+376:    at MegaCrit.Sts2.Core.Saves.GodotFileIo.DeleteFile(String path)
+377:    at MegaCrit.Sts2.Core.Saves.CloudSaveStore.DeleteFile(String path)
+378:    at MegaCrit.Sts2.Core.Saves.Managers.RunSaveManager.DeleteCurrentRun()
+379:    at MegaCrit.Sts2.Core.Saves.SaveManager.DeleteCurrentRun()
+380:    at MegaCrit.Sts2.Core.Nodes.Screens.MainMenu.NMainMenu.AbandonRun()
+381:    at MegaCrit.Sts2.Core.Nodes.CommonUi.NAbandonRunConfirmPopup.OnYesButtonPressed(NButton _)
+382:    at Godot.Callable.<From>g__Trampoline|2_0[T0](Object delegateObj, NativeVariantPtrArgs args, godot_variant& ret)
+383:    at Godot.DelegateUtils.InvokeWithVariantArgs(IntPtr delegateGCHandle, Void* trampoline, godot_variant** args, Int32 argc, godot_variant* outRet)
+384:    at Godot.NativeCalls.godot_icall_2_873(IntPtr method, IntPtr ptr, godot_string_name arg1, ReadOnlySpan`1 arg2, godot_string_name caller)
+385:    at Godot.GodotObject.EmitSignal(StringName signal, Variant[] args)
+
+--- source lines 397-407 ---
+397:    at Godot.Bridge.CSharpInstanceBridge.Call(IntPtr godotObjectGCHandle, godot_string_name* method, godot_variant** args, Int32 argCount, godot_variant_call_error* refCallError, godot_variant* ret)
+398: 
+399: [WARN] Asset not cached: res://scenes/screens/singleplayer_submenu.tscn
+400: [INFO] Max ascension changed to 0
+401: [INFO] Max ascension changed to 10
+402: [INFO] [StartRunLobby (1)] CHARACTER.IRONCLAD ascension set to preferred: 0
+403: [P3Makoto] perf info panel apply 0.0ms
+404: [P3Makoto] perf charselect bg build 1.3ms
+405: [INFO] Max ascension changed to 10
+406: [INFO] [StartRunLobby (1)] CHARACTER.REGENT ascension set to preferred: 10
+407: [P3Makoto] perf info panel apply 0.1ms
+
+--- source lines 417-427 ---
+417: [P3Makoto] info panel idle failed: System.ObjectDisposedException: Cannot access a disposed object.
+418: Object name: 'Godot.Label'.
+419:    at Godot.GodotObject.GetPtr(GodotObject instance)
+420:    at Godot.Label.set_Text(String value)
+421:    at P3Makoto.Scenes.CharSelectInfo.<>c__DisplayClass28_0.<Build>b__1()
+422:    at P3Makoto.ModEntry.Safe(String where, Action action)
+423: [INFO] Preloading 'Act=UNDERDOCKS' assets... count=0 vfx=0
+424: [INFO] Preloading 'Act=UNDERDOCKS' Complete: assets=0 time_elapsed=4ms
+425: [INFO] Wrote 114370 bytes to path=user://steam/76561199463988886/modded/profile3/saves/progress.save save_dir=user://steam/76561199463988886
+426: [INFO] Wrote 114370 bytes to modded/profile3/saves/progress.save in steam remote store
+427: [P3Makoto] perf frame select makoto +2323ms took 116.4ms
+
+--- source lines 498-518 ---
+498: ERROR: 1 RID allocations of type 'N26RendererEnvironmentStorage11EnvironmentE' were leaked at exit.
+499: ERROR: 5 shaders of type CanvasShaderRD were never freed
+500:    at: ~ShaderRD (servers/rendering/renderer_rd/shader_rd.cpp:1044)
+501: ERROR: 20 RID allocations of type 'N10RendererRD16ParticlesStorage9ParticlesE' were leaked at exit.
+502: ERROR: 1 shaders of type ParticlesShaderRD were never freed
+503:    at: ~ShaderRD (servers/rendering/renderer_rd/shader_rd.cpp:1044)
+504: ERROR: 20 RID allocations of type 'N10RendererRD11MeshStorage4MeshE' were leaked at exit.
+505: ERROR: 67 RID allocations of type 'N10RendererRD15MaterialStorage8MaterialE' were leaked at exit.
+506: ERROR: 6 RID allocations of type 'N10RendererRD15MaterialStorage6ShaderE' were leaked at exit.
+507: ERROR: 178 RID allocations of type 'N10RendererRD14TextureStorage7TextureE' were leaked at exit.
+508: WARNING: 127 RIDs of type "UniformBuffer" were leaked.
+509:    at: _free_rids (servers/rendering/rendering_device.cpp:6981)
+510: WARNING: 352 RIDs of type "Texture" were leaked.
+511:    at: finalize (servers/rendering/rendering_device.cpp:7191)
+512: ERROR: 241 RID allocations of type 'PN18TextServerAdvanced22ShapedTextDataAdvancedE' were leaked at exit.
+513: ERROR: 9 RID allocations of type 'PN18TextServerAdvanced12FontAdvancedE' were leaked at exit.
+514: ERROR: 6 RID allocations of type 'PN18TextServerAdvanced27FontAdvancedLinkedVariationE' were leaked at exit.
+515: WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+516:    at: cleanup (core/object/object.cpp:2514)
+517: ERROR: 228 resources still in use at exit (run with --verbose for details).
+518:    at: clear (core/io/resource.cpp:795)
