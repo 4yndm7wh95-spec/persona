@@ -1282,7 +1282,8 @@ void fragment() {
 		// 位置按原版截图在画面里的比例：问句中心 (0.50, 0.53)、小点中心 (0.38, 0.743)、大字中心 (0.639, 0.726)。没有贴图时退回文字
 		float ui = H / 1080f;
 		int qs = (int)(H * 0.03f);
-		float qy = H * 0.53f;
+		// v0.14.31（用户：UI 整体往上挪一点）：整组上移 0.08H
+		float qy = H * 0.45f;
 		float qHalf;
 		if (UiTex("ending_question") is Texture2D qTex)
 		{
@@ -1304,7 +1305,7 @@ void fragment() {
 		if (UiTex("ending_dots") is Texture2D dTex)
 		{
 			// 原版六点是一张图：整体轻轻呼吸
-			Sprite2D d = new() { Texture = dTex, Position = new Vector2(W * 0.38f, H * 0.743f), Scale = Vector2.One * ui };
+			Sprite2D d = new() { Texture = dTex, Position = new Vector2(W * 0.38f, H * 0.663f), Scale = Vector2.One * ui };
 			texts.AddChild(d);
 			dots.Add(d);
 		}
@@ -1313,24 +1314,31 @@ void fragment() {
 			for (int i = 0; i < 6; i++)
 			{
 				Polygon2D d = Fx.Poly(texts, Fx.Circle(H * 0.0058f, 12), Colors.White);
-				d.Position = new Vector2(W * 0.344f + i * W * 0.0144f, H * 0.743f);
+				d.Position = new Vector2(W * 0.344f + i * W * 0.0144f, H * 0.663f);
 				dots.Add(d);
 			}
 		}
+		// 「闭上眼睛」是按钮（v0.14.31，用户：之前点哪里都行；选中时要有动效）：big 以自身中心为原点，方便缩放
+		Vector2 bigAt = new(W * 0.639f, H * 0.646f);
+		Node2D big = new() { Position = bigAt };
+		texts.AddChild(big);
+		Vector2 bigSize;
+		Sprite2D bigGlow = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(1f, 1f, 1f, 0f) };
+		big.AddChild(bigGlow);
 		if (UiTex("ending_closeeye") is Texture2D eyeTex)
 		{
-			texts.AddChild(new Sprite2D { Texture = eyeTex, Position = new Vector2(W * 0.639f, H * 0.726f), Scale = Vector2.One * ui });
+			bigSize = new Vector2(eyeTex.GetWidth(), eyeTex.GetHeight()) * ui;
+			big.AddChild(new Sprite2D { Texture = eyeTex, Scale = Vector2.One * ui });
 		}
 		else
 		{
-			Node2D big = new() { Position = new Vector2(W * 0.571f, H * 0.79f) };
-			texts.AddChild(big);
-			float x = 0f;
+			bigSize = new Vector2(H * 0.25f, H * 0.1f);
+			float x = -bigSize.X / 2f;
 			string word = Zh ? "闭上眼睛" : "CLOSE";
 			for (int i = 0; i < word.Length; i++)
 			{
 				int sz = (int)(H * (i % 2 == 0 ? 0.09f : 0.05f));
-				Label ch = Typo.Text(big, word[i].ToString(), EndingFont, sz, new Color(0.93f, 0.93f, 0.97f, 0.85f), new Vector2(x, -sz * 1.25f),
+				Label ch = Typo.Text(big, word[i].ToString(), EndingFont, sz, new Color(0.93f, 0.93f, 0.97f, 0.85f), new Vector2(x, bigSize.Y * 0.5f - sz * 1.25f),
 					shadow: new Color(0.25f, 0.25f, 0.35f, 0.7f), shadowOffset: new Vector2(3f, 3f));
 				x += ch.GetMinimumSize().X * 0.92f;
 			}
@@ -1397,11 +1405,35 @@ void fragment() {
 			}
 		});
 
-		// ── 等玩家选择 ──
-		bool chosen = false;
-		Control hit = new() { Size = view, MouseFilter = Control.MouseFilterEnum.Stop, MouseDefaultCursorShape = Control.CursorShape.PointingHand };
+		// ── 等玩家选择：只有「闭上眼睛」能点 ──
+		// 全屏透明挡板只拦截点击（不触发），按钮区域 = 大字外扩一圈。
+		// 待机：大字轻轻呼吸；悬停：放大到 1.08、亮起一团柔光、轻微上浮，光标三角挪到大字左侧指着它；点下：一闪、放大到 1.15 后随文字淡出
+		bool chosen = false, hover = false;
+		ColorRect blocker = new() { Size = view, Color = new Color(0f, 0f, 0f, 0f), MouseFilter = Control.MouseFilterEnum.Stop };
+		top.AddChild(blocker);
+		Vector2 pad = new(H * 0.03f, H * 0.02f);
+		Control hit = new() { Position = bigAt - bigSize / 2f - pad, Size = bigSize + pad * 2f, MouseFilter = Control.MouseFilterEnum.Stop, MouseDefaultCursorShape = Control.CursorShape.PointingHand };
 		top.AddChild(hit);
-		hit.MouseEntered += () => Audio.Sfx.Clip("Sys_Cursor", 0.5f);
+		bigGlow.Scale = new Vector2(bigSize.X * 1.4f, bigSize.Y * 1.6f) / Fx.SoftDot.GetWidth();
+		Vector2 cursorHome = cursor.Position, cursorBig = bigAt + new Vector2(-bigSize.X / 2f - qs * 1.1f, 0f);
+		float hoverK = 0f;
+		hit.MouseEntered += () => { if (!chosen) { hover = true; Audio.Sfx.Clip("Sys_Cursor", 0.5f); } };
+		hit.MouseExited += () => hover = false;
+		Fx.Animate(big, 600f, t =>
+		{
+			if (chosen)
+			{
+				return;
+			}
+			float time = t * 600f;
+			hoverK = Mathf.MoveToward(hoverK, hover ? 1f : 0f, 1f / 60f / 0.18f);
+			float e = Ease.OutCubic(hoverK);
+			big.Scale = Vector2.One * (1f + 0.08f * e + 0.012f * Mathf.Sin(time * 2f) * (1f - e));
+			big.Position = bigAt + new Vector2(0f, -6f * e);
+			big.Modulate = new Color(1f, 1f, 1f, 0.82f + 0.18f * e + 0.06f * Mathf.Sin(time * 2f) * (1f - e));
+			bigGlow.Modulate = new Color(0.85f, 0.9f, 1f, 0.35f * e);
+			cursor.Position = cursorHome.Lerp(cursorBig, e);
+		});
 		hit.GuiInput += ev =>
 		{
 			if (chosen || ev is not InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left })
@@ -1410,7 +1442,13 @@ void fragment() {
 			}
 			chosen = true;
 			Audio.Sfx.Clip("Btl_Ok", 0.6f);
-			hit.QueueFree();
+			hit.QueueFree();                                                        // 挡板留着：闭眼期间点击不能漏到下面的游戏界面
+			Vector2 s0 = big.Scale;
+			Fx.Animate(big, 0.35f, t =>
+			{
+				big.Scale = s0.Lerp(Vector2.One * 1.15f, Ease.OutCubic(t));
+				bigGlow.Modulate = new Color(1f, 1f, 1f, 0.6f * (1f - t));
+			});
 			Close();
 		};
 

@@ -12,11 +12,30 @@ public static class ModEntry
 
 	public static void Init()
 	{
-		GD.Print($"{Tag} init v0.14.30");
+		GD.Print($"{Tag} init v0.14.31");
 		try
 		{
-			new Harmony("brooks.p3makoto").PatchAll(typeof(ModEntry).Assembly);
-			GD.Print($"{Tag} harmony patches applied");
+			// v0.14.31：逐个补丁类应用（PatchAll 遇到第一个失败就整体中断，后面的补丁全部不生效）；失败的单独记日志
+			Harmony harmony = new("brooks.p3makoto");
+			int ok = 0, failed = 0;
+			foreach (Type t in AccessTools.GetTypesFromAssembly(typeof(ModEntry).Assembly))
+			{
+				if (t.GetCustomAttributes(typeof(HarmonyPatch), true).Length == 0)
+				{
+					continue;
+				}
+				try
+				{
+					harmony.CreateClassProcessor(t).Patch();
+					ok++;
+				}
+				catch (Exception e)
+				{
+					failed++;
+					GD.PrintErr($"{Tag} patch {t.Name} failed: {e.Message}");
+				}
+			}
+			GD.Print($"{Tag} harmony patches applied: {ok} ok, {failed} failed");
 		}
 		catch (Exception e)
 		{
