@@ -110,6 +110,19 @@ public static class Pose
 	public static float TakeCastHold(NCreature node) =>
 		CastHold.Remove(node.GetInstanceId(), out var e) && Godot.Time.GetTicksMsec() <= e.Until ? e.Seconds : 0f;
 
+	/// <summary>
+	/// 先 TriggerAnim("Cast") 再 DamageCmd.Attack 的攻击牌（下砸、彗星、引路星）：施法动作就算这次出牌的出招，
+	/// 之后的 Attack 触发不再接斩击。
+	/// </summary>
+	public static void CountCastAsAttack(NCreature node)
+	{
+		ulong id = node.GetInstanceId();
+		if (SingleAttack.TryGetValue(id, out var e) && Godot.Time.GetTicksMsec() <= e.Until)
+		{
+			SingleAttack[id] = (e.Until, System.Math.Max(e.Count, 1));
+		}
+	}
+
 	/// <summary>这次 Attack 触发是否应跳过动作（本次出牌已经播过一次）。</summary>
 	public static bool SkipRepeatAttack(NCreature node)
 	{

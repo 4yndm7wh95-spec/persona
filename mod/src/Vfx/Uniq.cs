@@ -1638,4 +1638,56 @@ public static class Uniq
 		});
 		Fx.FreeAfter(root, 0.32);
 	}
+
+	/// <summary>
+	/// 下砸命中（v0.14.35）：重力把敌人压进地面。施法时脚下的血红法阵已经落下（CardSigs），命中这一刻：
+	/// 脚底一圈压扁的血红冲击环向外推开（两层，内层更亮更快）→ 地裂 → 贴地向两侧翻滚的尘土 → 几粒碎石弹起又落下。
+	/// 全部贴在脚下，不挡敌人身体。
+	/// </summary>
+	public static void CrushHit(Control front, MegaCrit.Sts2.Core.Nodes.Combat.NCreature node, float s = 1f)
+	{
+		Vector2 feet = node.GetBottomOfHitbox();
+		Color blood = Pal.Blood;
+		Motifs.GroundCrack(front, feet, 1.3f * s);
+		for (int k = 0; k < 2; k++)
+		{
+			Node2D ring = Fx.Root(front, feet, "P3CrushRing");
+			Fx.StrokeClosed(ring, Fx.Circle(150f * s, 48, 0.26f), k == 0 ? new Color(1f, 0.75f, 0.75f, 0.95f) : new Color(blood, 0.8f), (k == 0 ? 5f : 3f) * s);
+			float len = k == 0 ? 0.32f : 0.5f, grow = k == 0 ? 1.3f : 2f;
+			Fx.Animate(ring, len, t =>
+			{
+				ring.Scale = Vector2.One * (0.3f + grow * Ease.OutExpo(t));
+				ring.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(t));
+			});
+			Fx.FreeAfter(ring, len + 0.02f);
+		}
+		// 脚下一下压暗的血红闪（贴地的扁椭圆）
+		Node2D glow = Fx.Root(front, feet, "P3CrushGlow");
+		Sprite2D g = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = new Vector2(3.2f, 0.7f) * s * 200f / Fx.SoftDot.GetWidth(), Modulate = new Color(blood, 0.7f) };
+		glow.AddChild(g);
+		Fx.Animate(glow, 0.45f, t => g.Modulate = new Color(blood, 0.7f * (1f - Ease.OutCubic(t))));
+		Fx.FreeAfter(glow, 0.47f);
+		// 贴地向两侧翻滚的尘土
+		foreach (float dir in new[] { -1f, 1f })
+		{
+			for (int i = 0; i < 6; i++)
+			{
+				Sprite2D d = new() { Texture = Fx.SoftDot, Position = feet + new Vector2(dir * Fx.Rand(10f, 50f) * s, Fx.Rand(-8f, 4f)), Modulate = new Color(0.62f, 0.55f, 0.55f, 0f) };
+				front.AddChild(d);
+				Vector2 p0 = d.Position, drift = new(dir * Fx.Rand(90f, 190f) * s, Fx.Rand(-30f, -8f));
+				float sz = Fx.Rand(50f, 95f) * s / Fx.SoftDot.GetWidth(), life = Fx.Rand(0.55f, 0.85f);
+				Fx.Animate(d, life, t =>
+				{
+					d.Position = p0 + drift * Ease.OutCubic(t);
+					d.Scale = new Vector2(1.6f, 1f) * sz * (0.6f + 0.8f * t);
+					d.Modulate = new Color(0.62f, 0.55f, 0.55f, 0.45f * Ease.Envelope(t, 0.12f, 0.6f));
+				});
+				Fx.FreeAfter(d, life + 0.02f);
+			}
+		}
+		// 碎石：从地裂处弹起又落下
+		Node2D rocks = Fx.Root(front, feet + new Vector2(0f, -6f), "P3CrushRocks");
+		Fx.Sparks(rocks, new Color(0.45f, 0.38f, 0.38f), 18, 160f * s, 340f * s, 0.7f, gravity: 900f, scaleMin: 0.06f, scaleMax: 0.14f);
+		Fx.FreeAfter(rocks, 0.9);
+	}
 }

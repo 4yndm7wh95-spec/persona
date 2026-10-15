@@ -324,6 +324,22 @@ public static class CardFx
 			}
 			return;
 		}
+		// 下砸（v0.14.35，用户：做成施法 + 声音不要像拳击）：不再是斩痕 + 钝击声，改为重力压地 —— 脚下压扁的冲击环、地裂、扬尘，
+		// 声音是低沉的压地闷响 + 石地碎裂（crush_gravity，每次出牌只播一次）
+		if (card.GetType().Name == "CrushUnder")
+		{
+			EvokerShot.HitStop(0.06);
+			MegaCrit.Sts2.Core.Nodes.NGame.Instance?.ScreenShake(MegaCrit.Sts2.Core.Nodes.Vfx.Utilities.ShakeStrength.Medium, MegaCrit.Sts2.Core.Nodes.Vfx.Utilities.ShakeDuration.Short);
+			Audio.Sfx.Clip("crush_gravity", 0.95f);
+			foreach (Creature c in list)
+			{
+				if (room.GetCreatureNode(c) is NCreature n)
+				{
+					Uniq.CrushHit(front, n, scale);
+				}
+			}
+			return;
+		}
 		// 月面射击：每一击 = 目标头顶的月亮削下一道新月光刃
 		if (card.GetType().Name == "LunarBlast")
 		{

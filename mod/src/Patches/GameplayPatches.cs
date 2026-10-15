@@ -187,6 +187,10 @@ public static class SovereignTimingPatch
 		{
 			waitTime = System.Math.Max(waitTime, hold);
 		}
+		if (triggerName == "Cast" && Makoto.Node(creature.Player) is NCreature caster2)
+		{
+			Pose.CountCastAsAttack(caster2);
+		}
 		if (triggerName == "sovereignBladeTrigger")
 		{
 			bool vorpal = creature.HasPower<MegaCrit.Sts2.Core.Models.Powers.SeekingEdgePower>();

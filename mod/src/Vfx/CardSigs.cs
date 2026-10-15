@@ -53,7 +53,6 @@ public static class CardSigs
 		{
 			foreach (NCreature t in c.Targets)
 			{
-				Motifs.GroundCrack(c.Front, t.GetBottomOfHitbox(), 1.4f);
 				Motifs.Seal(c.Front, t.VfxSpawnPosition, t.GetBottomOfHitbox(), Pal.Blood, up: false, 0.8f);
 			}
 		}),
@@ -174,7 +173,7 @@ public static class CardSigs
 		["Radiate"] = ("ShuffleTime_PowerUp", 0.7f, 0f),
 		["Glitterstream"] = ("Snd_FX_Btl_PersonaAura_00", 0.5f, 0.1f),
 		["ParticleWall"] = ("Snd_FX_Btl_StReflection_00_1", 0.7f, 0.05f),
-		["Patter"] = ("Snd_FX_Btl_StAbsorption_00_1", 0.8f, 0f),
+		["Patter"] = ("patter_sparkle", 0.75f, 0f),          // v0.14.35：原 StAbsorption 像晕眩声，换成上行星光钟音（tools/sfx/patter_sparkle.py）
 		["Glow"] = ("Theurgia_Up", 0.6f, 0f),
 		["Convergence"] = ("evt_eft_timespin_01", 0.9f, 0f),   // 黑圈内收（P2 是时钟，DarkClock 自带）
 	};
