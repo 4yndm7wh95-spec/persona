@@ -46,7 +46,11 @@ public static class Compat
 		}
 	}
 
-	/// <summary>轨道上正在播的动画名；轨道为空或读不到时返回 null（不抛异常）。</summary>
+	/// <summary>
+	/// 轨道上正在播的动画名；轨道为空或读不到时返回 null（不抛异常）。
+	/// 先用原生 get_current 判断轨道是否为空（0.107 的游戏方法在空轨道上会抛空引用），Variant 用完立即释放；
+	/// 不空时交给游戏自己的 GetCurrentAnimationName —— 0.111 起它会及时释放 Spine 临时包装（PRG-6985：交给终结器线程释放会和主线程抢、损坏内存）。
+	/// </summary>
 	public static string? CurrentAnimation(MegaAnimationState? state, int track = 0)
 	{
 		try
@@ -55,16 +59,14 @@ public static class Compat
 			{
 				return null;
 			}
-			if (native.Call("get_current", track).AsGodotObject() is not GodotObject entry || !GodotObject.IsInstanceValid(entry))
+			using (Variant current = native.Call("get_current", track))
 			{
-				return null;
+				if (current.VariantType != Variant.Type.Object || current.AsGodotObject() == null)
+				{
+					return null;
+				}
 			}
-			if (entry.Call("get_animation").AsGodotObject() is not GodotObject anim || !GodotObject.IsInstanceValid(anim))
-			{
-				return null;
-			}
-			string name = anim.Call("get_name").AsString();
-			return name.Length == 0 ? null : name;
+			return state.GetCurrentAnimationName(track);
 		}
 		catch (Exception)
 		{
@@ -101,15 +103,19 @@ public static class Compat
 		{
 			if (native.HasMethod(GetGlobalBone))
 			{
-				Variant v = native.Call(GetGlobalBone, bone);
+				using Variant v = native.Call(GetGlobalBone, bone);
 				return v.VariantType == Variant.Type.Transform2D ? v.AsTransform2D() : null;
 			}
 			// 旧版 Spine 扩展没有上面那个方法：骨架 → 找骨骼 → 骨骼的全局变换
-			if (native.Call("get_skeleton").AsGodotObject() is GodotObject skeleton
-				&& skeleton.Call("find_bone", bone).AsGodotObject() is GodotObject b && GodotObject.IsInstanceValid(b))
+			using Variant skeletonV = native.Call("get_skeleton");
+			if (skeletonV.AsGodotObject() is GodotObject skeleton)
 			{
-				Variant v = b.Call("get_global_transform");
-				return v.VariantType == Variant.Type.Transform2D ? v.AsTransform2D() : null;
+				using Variant boneV = skeleton.Call("find_bone", bone);
+				if (boneV.AsGodotObject() is GodotObject b && GodotObject.IsInstanceValid(b))
+				{
+					using Variant v = b.Call("get_global_transform");
+					return v.VariantType == Variant.Type.Transform2D ? v.AsTransform2D() : null;
+				}
 			}
 		}
 		catch (Exception)

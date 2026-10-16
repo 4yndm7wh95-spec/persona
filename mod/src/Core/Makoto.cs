@@ -47,9 +47,9 @@ public static class Makoto
 		bool ours;
 		try
 		{
-			if (body.GetSkeleton() == null)
+			if (!body.IsAnimationStateReady())
 			{
-				return AssetsOurs;                      // 骨骼还没建好（HasAnimation 会是 false）：先按资源判断，不缓存
+				return AssetsOurs;                      // 骨骼还没建好（HasAnimation 会是 false 或抛异常）：先按资源判断，不缓存
 			}
 			ours = body.HasAnimation(Signature);
 		}
