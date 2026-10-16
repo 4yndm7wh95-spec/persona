@@ -110,7 +110,7 @@ public static class CharSelectInfo
 		panel.AddChild(deco);
 		// 等选中时的召唤切入（眼神横幅 0.7s 后碎裂）结束再入场，两者不同时出现
 		// v0.14.45：搭新面板出错时恢复原版面板（不能留下一块空白）
-		Fx.After(deco, CutInFx.Enabled ? 0.85 : 0.1, "info panel", () =>
+		Fx.After(deco, Core.P3Settings.SelectSummon ? 0.85 : 0.1, "info panel", () =>
 		{
 			// 审查：快速切走再切回结城理时，上一次的计时器仍会触发 —— 它的面板已经不是当前这块了，什么都不做（否则会把新面板拆掉）
 			if (!GodotObject.IsInstanceValid(deco) || deco.GetParent() != panel || deco.IsQueuedForDeletion())

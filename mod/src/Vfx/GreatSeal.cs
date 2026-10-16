@@ -57,9 +57,15 @@ public static class GreatSeal
 	private const string Prefix = "THE_ARCHITECT.talk.REGENT.";
 
 	/// <summary>建筑师对话（REGENT 那一套）换成结城理的台词；不是这些键返回 null。</summary>
+	/// <summary>
+	/// v0.14.46：这次建筑师房间用不用 P3 结局（设置里可关 = 全部原版）。进房间那一刻按设置定下，房间里中途改设置不影响这一次，
+	/// 免得台词 / 按钮 / 结局演出 / 不反击各走各的、流程对不上。
+	/// </summary>
+	public static bool Active = true;
+
 	public static string? Line(string table, string key)
 	{
-		if (table != "ancients" || !key.StartsWith(Prefix) || !Lines.TryGetValue(key[Prefix.Length..], out var l))
+		if (!Active || table != "ancients" || !key.StartsWith(Prefix) || !Lines.TryGetValue(key[Prefix.Length..], out var l))
 		{
 			return null;
 		}

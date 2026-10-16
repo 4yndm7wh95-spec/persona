@@ -124,7 +124,7 @@ public static class VictoryPatch
 		}
 		Callable.From(() => ModEntry.Safe("victory", () =>
 		{
-			if (Stage.MakotoCombat() && Makoto.FxLayer() is Control front)
+			if (P3Settings.Victory && Stage.MakotoCombat() && Makoto.FxLayer() is Control front)
 			{
 				StageFx.Victory(front);
 			}
@@ -140,7 +140,7 @@ public static class RewardBackdropPatch
 	{
 		ModEntry.Safe("reward backdrop", () =>
 		{
-			if (!Stage.MakotoRun || Traverse.Create(__instance).Field("_cardRow").GetValue() is not Control row)
+			if (!P3Settings.ShuffleTime || !Stage.MakotoRun || Traverse.Create(__instance).Field("_cardRow").GetValue() is not Control row)
 			{
 				return;
 			}
@@ -170,7 +170,7 @@ public static class RewardPickPatch
 	{
 		ModEntry.Safe("reward pick", () =>
 		{
-			if (Stage.MakotoRun)
+			if (P3Settings.ShuffleTime && Stage.MakotoRun && __instance.GetNodeOrNull("P3RewardBackdrop") != null)
 			{
 				StageFx.ShufflePick(__instance, cardHolder);
 			}
@@ -212,7 +212,8 @@ public static class AllOutPatch
 		bool play = false;
 		ModEntry.Safe("allout check", () =>
 		{
-			play = room.RoomType is MegaCrit.Sts2.Core.Rooms.RoomType.Elite or MegaCrit.Sts2.Core.Rooms.RoomType.Boss
+			play = P3Settings.AllOut
+				&& room.RoomType is MegaCrit.Sts2.Core.Rooms.RoomType.Elite or MegaCrit.Sts2.Core.Rooms.RoomType.Boss
 				&& Stage.MakotoCombat()
 				&& combatState != null
 				&& System.Linq.Enumerable.All(combatState.Enemies, e => !e.IsAlive)

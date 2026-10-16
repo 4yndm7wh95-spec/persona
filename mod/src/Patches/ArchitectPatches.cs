@@ -84,7 +84,8 @@ public static class ArchitectRoomPatch
 	[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
 	private static void Inner(TheArchitect __instance)
 	{
-		if (!Makoto.Is(__instance.Owner))
+		GreatSeal.Active = P3Settings.Architect;
+		if (!GreatSeal.Active || !Makoto.Is(__instance.Owner))
 		{
 			return;
 		}
@@ -121,7 +122,7 @@ public static class ArchitectButtonPatch
 	{
 		ModEntry.Safe("seal button", () =>
 		{
-			if (__instance.Event is TheArchitect && __instance.Option.TextKey == "PROCEED" && Makoto.Is(__instance.Event.Owner))
+			if (GreatSeal.Active && __instance.Event is TheArchitect && __instance.Option.TextKey == "PROCEED" && Makoto.Is(__instance.Event.Owner))
 			{
 				GreatSeal.DecorateButton(__instance);
 			}
@@ -153,7 +154,7 @@ public static class ArchitectEndingPatch
 	[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
 	private static bool Inner(TheArchitect __instance, ArchitectAttackers attackers, ref Task<bool> __result)
 	{
-		if (attackers == ArchitectAttackers.None || !Makoto.Is(__instance.Owner))
+		if (attackers == ArchitectAttackers.None || !GreatSeal.Active || !Makoto.Is(__instance.Owner))
 		{
 			return true;
 		}
@@ -195,7 +196,7 @@ public static class ArchitectNoCounterPatch
 	[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
 	private static bool Inner(TheArchitect __instance, ref Task __result)
 	{
-		if (!Makoto.Is(__instance.Owner))
+		if (!GreatSeal.Active || !Makoto.Is(__instance.Owner))
 		{
 			return true;
 		}

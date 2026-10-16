@@ -50,7 +50,7 @@ public static class CutInFx
 	public static bool Active(NCreature caster) => Live.ContainsKey(caster.GetInstanceId());
 
 	/// <summary>"瞬间"速度下不演（直接回调）。</summary>
-	public static bool Enabled => SaveManager.Instance?.PrefsSave.FastMode != FastModeType.Instant;
+	public static bool Enabled => P3Settings.CutIn;                 // v0.14.46：设置里可关（快速模式「极速」也算关）
 
 	private static bool Fast => SaveManager.Instance?.PrefsSave.FastMode == FastModeType.Fast;
 

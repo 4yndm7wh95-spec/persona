@@ -161,7 +161,10 @@ public static class CharSelectBg
 			glow.Position = main.Position;
 			glow.Modulate = new Color(Pal.Cyan, 0.22f * u);
 		});
-		Fx.After(main, 0.45, "portrait landed", () => Selected(root, group));
+		if (Core.P3Settings.SelectSummon)                         // v0.14.46：设置里可关
+		{
+			Fx.After(main, 0.45, "portrait landed", () => Selected(root, group));
+		}
 		Fx.FreeAfter(ghost1, 0.7);
 		Fx.FreeAfter(ghost2, 0.7);
 
