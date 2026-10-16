@@ -3,7 +3,7 @@
   "name": "P3 测试工具（仅展示用）",
   "author": "brooks",
   "description": "测试特效和动画用：正常关卡；左上角一键把当前战斗换成打不死的木桩、+3 能量、+3 辉星；F8 面板一键加卡。支持联机（所有玩家都要装），每个游戏进程单独记录多人日志。不要在正式对局里开。",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "has_pck": false,
   "has_dll": true,
   "affects_gameplay": true

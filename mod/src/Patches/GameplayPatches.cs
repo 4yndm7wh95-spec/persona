@@ -235,6 +235,24 @@ public static class DamageNumberPatch
 	public static void Postfix(Creature target, MegaCrit.Sts2.Core.Entities.Creatures.DamageResult result,
 		ref MegaCrit.Sts2.Core.Nodes.Vfx.NDamageNumVfx? __result)
 	{
+		if (Guard.Off("damage number"))
+		{
+			return;
+		}
+		try
+		{
+			Inner(target, result, ref __result);
+		}
+		catch (System.Exception e)
+		{
+			Guard.Fail("damage number", e);
+		}
+	}
+
+	[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+	private static void Inner(Creature target, MegaCrit.Sts2.Core.Entities.Creatures.DamageResult result,
+		ref MegaCrit.Sts2.Core.Nodes.Vfx.NDamageNumVfx? __result)
+	{
 		if (__result == null || target.IsPlayer || !Popups.IsMakotoHit(target))
 		{
 			return;
@@ -295,6 +313,23 @@ public static class TyrannyTurnPatch
 	public static ulong ArmedUntil;
 
 	public static void Prefix(MegaCrit.Sts2.Core.Models.Powers.TyrannyPower __instance, Player player)
+	{
+		if (Guard.Off("tyranny turn"))
+		{
+			return;
+		}
+		try
+		{
+			Inner(__instance, player);
+		}
+		catch (System.Exception e)
+		{
+			Guard.Fail("tyranny turn", e);
+		}
+	}
+
+	[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+	private static void Inner(MegaCrit.Sts2.Core.Models.Powers.TyrannyPower __instance, Player player)
 	{
 		if (player == __instance.Owner.Player && Makoto.Is(player))
 		{
@@ -393,6 +428,24 @@ public static class BlockPopupPatch
 public static class BlockSparkPatch
 {
 	public static bool Prefix(Creature target, ref MegaCrit.Sts2.Core.Nodes.Vfx.NBlockSparkVfx? __result)
+	{
+		if (Guard.Off("block spark"))
+		{
+			return true;
+		}
+		try
+		{
+			return Inner(target, ref __result);
+		}
+		catch (System.Exception e)
+		{
+			Guard.Fail("block spark", e);
+			return true;
+		}
+	}
+
+	[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+	private static bool Inner(Creature target, ref MegaCrit.Sts2.Core.Nodes.Vfx.NBlockSparkVfx? __result)
 	{
 		if (target.IsPlayer && Makoto.Is(target.Player))
 		{

@@ -728,7 +728,7 @@ Grand.cs 里其余函数暂时保留不用。
 
 ## v0.14.6
 
-- 新增控制台命令 **`p3seal`**（`mod/src/Debug/SealConsoleCmd.cs`）：一局进行中直接进入建筑师房间，测试伟大封印结局。原版 `event` 命令的列表里没有 THE_ARCHITECT（它不是地图事件），会报 not found。
+- 新增控制台命令 **`p3seal`**（v0.14.44 起移到测试工具 `testmod/src/SealConsoleCmd.cs`，装了 P3TestMod 才有）：一局进行中直接进入建筑师房间，测试伟大封印结局。原版 `event` 命令的列表里没有 THE_ARCHITECT（它不是地图事件），会报 not found。
 
 ## v0.14.7
 
@@ -1164,6 +1164,30 @@ Grand.cs 里其余函数暂时保留不用。
 - 歌曲放在 mods\P3MusicBox\music\，不打包进 mod（版权）。
 - 格式：.ncm 解出 MP3 的保持原样（避免二次有损），FLAC 转 Ogg Vorbis q6（Godot 原生支持，约 190kbps）。
 - Codex 提示词：docs/codex/codex_musicbox.md。
+
+## v0.14.44（多版本兼容；音乐盒 1.0.1）
+
+用户：mod 只支持 0.111.0 版本的塔 2，换皮 mod 不应该只支持一个版本。
+- **查清楚的事实**：游戏加载 mod 时只看清单里的 `min_game_version`（我们没写，所以任何版本都不会被拒绝加载）。
+  真正的问题是 DLL 按 0.111.0 的 sts2.dll 编译：别的版本里某个类型 / 方法改名或删掉，就会出这几类问题：
+  ① 补丁目标不存在 → 那一个补丁类失败（v0.14.31 起已是逐个应用，不影响其他补丁）；
+  ② 补丁方法里直接用到的成员不存在 → 每次调用都抛异常、打断游戏流程（例如每段文字都要经过的台词补丁）；
+  ③ 程序集里有继承游戏类的类型（控制台命令 `p3seal` 继承 AbstractConsoleCmd）→ 基类一改，整个程序集的类型都读不出来，**整个 mod 加载失败**。
+- **改法**：
+  - ③：`p3seal` 移到测试工具（P3TestMod 1.2.1）；P3Makoto 里不再有任何继承游戏类的类型。
+  - ②：剩下直接调用游戏成员、没包保护的 8 个补丁（建筑师台词 / 房间 / 结局演出 / 不反击 / 结算画面保留、伤害数字、暴政、格挡火花）改成"保护壳 + 不内联的本体"：
+    本体出现"成员不存在 / 类型加载失败"时壳接住，这个补丁就此关闭、走原版（`Guard`，ModEntry.cs）；其余补丁本来就包在 `ModEntry.Safe` 里。
+  - ①：读补丁特性（typeof(目标类型)）也放进 try —— 目标类型被删时读特性本身就会抛异常，以前会中断后面所有补丁。
+  - `ModEntry.Safe` 同一处出错只记前 3 次（以前别的版本里反复失败会刷满日志）；启动时日志写游戏版本（`[P3Makoto] game version …`）。
+- **兼容检查工具** `tools/compat/ApiCheck`：读 mod 的 DLL，把它用到的每个游戏类型 / 方法 / 字段（按名字 + 签名）和每个补丁目标，到指定版本的 sts2.dll（+ 同目录 GodotSharp.dll）里逐个找，列出缺的。
+  `dotnet run -c Release --project tools/compat/ApiCheck -- <mod.dll> <游戏目录>/data_sts2_windows_x86_64/sts2.dll [更多 mod.dll]`；退出码 = 缺失数量。
+  用 0.111.0 检查三个 mod：P3Makoto 764 处、音乐盒 238 处、测试工具 389 处引用，全部能找到；把游戏 DLL 里两个方法名改掉做反向验证，能准确报出"方法不存在""补丁目标方法不存在"。
+  局限：Traverse / AccessTools 用字符串访问的私有成员查不到（那些找不到时只是那一处表现跳过，不会出错）。
+- **音乐盒 1.0.1**（用户：播放暂停无作用）：
+  - 音量乘了两遍主音量²：游戏自己已经把主音量（和后台静音）加在 Godot 的 Master 总线上，音乐盒又乘一遍，默认设置下只剩约 6%，听起来像没反应。现在只乘音乐盒自己的音量。
+  - 点击 / 悬停改为每帧按鼠标位置自己判断（GuiInput 收得到时照常用并吃掉点击，同一次按下只处理一次）：游戏上层的全屏界面节点可能把点击吃掉。关歌单的那次点击不会被当成按钮点击。
+  - 游戏暂停时音乐照常放（CanvasLayer ProcessMode=Always）。
+  - 日志：每次点击 `[P3MusicBox] click left via gui/poll, state …, N songs`，每次播放 `[P3MusicBox] play 文件名 (时长)`。
 
 ## 待办（用户实机反馈，先记录）
 

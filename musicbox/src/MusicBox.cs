@@ -25,7 +25,7 @@ namespace P3MusicBox;
 public static class MusicBox
 {
 	public const string Tag = "[P3MusicBox]";
-	public const string Version = "1.0.0";
+	public const string Version = "1.0.1";
 
 	// 配色（和 P3Makoto 一致的 P3R 蓝）
 	private static readonly Color Navy = new(0.02f, 0.06f, 0.22f, 0.94f);
@@ -58,7 +58,6 @@ public static class MusicBox
 	private static float _fade, _fadeTarget, _fadeSpeed = 1f;
 	private static Action? _afterFadeOut;
 	private static float _bgm = 1f, _lastBgmApplied = -1f;
-	private static float _focus = 1f;
 	private static ulong _lastTick, _lastBgmPush, _lastNote;
 	private static string _modDir = "";
 
@@ -76,6 +75,8 @@ public static class MusicBox
 	private static Button? _modeButton, _lyricsButton;
 	private static Label? _nowLabel;
 	private static bool _hover;
+	private static bool _wasLeft, _wasRight;
+	private static ulong _lastClickFrame;
 	private static Font? _font;
 
 	private static string PrefsPath => ProjectSettings.GlobalizePath("user://p3musicbox.json");
@@ -234,6 +235,7 @@ public static class MusicBox
 				GD.PrintErr($"{Tag} cannot load {s.File}");
 				return;
 			}
+			GD.Print($"{Tag} play {Path.GetFileName(s.File)} ({st.GetLength():0}s)");
 			if (s.Lines == null && s.Lrc != null)
 			{
 				Safe("lrc", () => s.Lines = ParseLrc(s.Lrc));
@@ -305,11 +307,9 @@ public static class MusicBox
 			}
 		}
 		SettingsSave? set = SaveManager.Instance?.SettingsSave;
-		bool focused = _layer.GetTree()?.Root?.HasFocus() ?? true;
-		bool muteBg = SaveManager.Instance?.PrefsSave?.MuteInBackground ?? false;
-		_focus = Mathf.MoveToward(_focus, !focused && muteBg ? 0f : 1f, dt);
-		float master = set?.VolumeMaster ?? 0.5f;
-		float lin = SmoothFade(_fade) * _prefs.Volume * master * master * _focus * 0.85f;
+		// v1.0.1（用户：播放暂停无作用）：以前这里又乘了一遍主音量² 和后台静音 —— 游戏自己已经把这两项加在 Godot 的 Master 总线上了，
+		// 乘两遍之后默认设置下只剩约 6% 的音量，听起来像没反应。现在只算音乐盒自己的音量和淡入淡出
+		float lin = SmoothFade(_fade) * _prefs.Volume * 0.85f;
 		if (_player != null)
 		{
 			_player.VolumeDb = lin <= 0.0001f ? -80f : Mathf.LinearToDb(lin);
@@ -343,7 +343,7 @@ public static class MusicBox
 			return;
 		}
 		_font = ResourceLoader.Load("res://fonts/jpn/NotoSansCJKjp-Medium.otf") as Font;
-		_layer = new CanvasLayer { Layer = 89, Name = "P3MusicBox" };
+		_layer = new CanvasLayer { Layer = 89, Name = "P3MusicBox", ProcessMode = Node.ProcessModeEnum.Always };   // 游戏暂停时音乐照常放
 		tree.Root.AddChild(_layer);
 		_player = new AudioStreamPlayer { Bus = "Master", VolumeDb = -80f, Name = "P3MusicBoxPlayer" };
 		_layer.AddChild(_player);
@@ -373,14 +373,11 @@ public static class MusicBox
 		_hoverTitle = new Label { HorizontalAlignment = HorizontalAlignment.Right, MouseFilter = Control.MouseFilterEnum.Ignore, Modulate = new Color(1f, 1f, 1f, 0f) };
 		Style(_hoverTitle, 17, Colors.White, outline: 6);
 		_layer.AddChild(_hoverTitle);
-		box.MouseEntered += () => _hover = true;
-		box.MouseExited += () => _hover = false;
 		box.GuiInput += e => Safe("click", () =>
 		{
-			if (e is InputEventMouseButton { Pressed: true } mb)
+			if (e is InputEventMouseButton { Pressed: true } mb && mb.ButtonIndex is MouseButton.Left or MouseButton.Right)
 			{
-				if (mb.ButtonIndex == MouseButton.Left) Toggle();
-				else if (mb.ButtonIndex == MouseButton.Right) TogglePopup();
+				Click(mb.ButtonIndex == MouseButton.Left, "gui");
 				box.AcceptEvent();
 			}
 		});
@@ -426,6 +423,42 @@ public static class MusicBox
 		return new Vector2(view.X - 84f, 96f);
 	}
 
+	/// <summary>左键播放 / 暂停，右键歌单。GuiInput 和每帧轮询都会走到这里，同一次按下只处理一次。</summary>
+	private static void Click(bool left, string via)
+	{
+		ulong frame = Engine.GetProcessFrames();
+		if (frame - _lastClickFrame <= 2)
+		{
+			return;
+		}
+		_lastClickFrame = frame;
+		GD.Print($"{Tag} click {(left ? "left" : "right")} via {via}, state {_state}, {Songs.Count} songs");
+		if (left) Toggle();
+		else TogglePopup();
+	}
+
+	/// <summary>
+	/// v1.0.1：悬停和点击改为按鼠标位置自己判断 —— 只靠 Godot 的界面事件时，游戏里盖在上层的全屏界面节点会把点击吃掉，按钮收不到。
+	/// GuiInput 收得到时照常用（并吃掉这次点击）；收不到时由这里补上。
+	/// </summary>
+	private static void PollMouse(bool hidden)
+	{
+		if (_button == null)
+		{
+			return;
+		}
+		bool inside = !hidden && _button.GetGlobalRect().HasPoint(_button.GetGlobalMousePosition());
+		_hover = inside;
+		bool l = Input.IsMouseButtonPressed(MouseButton.Left), r = Input.IsMouseButtonPressed(MouseButton.Right);
+		if (inside && _popup?.Visible != true)
+		{
+			if (l && !_wasLeft) Click(true, "poll");
+			else if (r && !_wasRight) Click(false, "poll");
+		}
+		_wasLeft = l;
+		_wasRight = r;
+	}
+
 	private static void UpdateButton(ulong now, float dt)
 	{
 		if (_button == null || _icon == null || _ring == null || _rim == null || _glyph == null)
@@ -436,6 +469,7 @@ public static class MusicBox
 		_button.Visible = !hidden;
 		if (hidden && _popup != null) ClosePopup();
 		_button.Position = Anchor();
+		PollMouse(hidden);
 		bool playing = _state == State.Playing;
 		float target = _hover ? 1.08f : 1f;
 		_icon.Scale = _icon.Scale.Lerp(Vector2.One * target, Mathf.Min(1f, dt * 14f));
@@ -621,6 +655,10 @@ public static class MusicBox
 	private static void ClosePopup()
 	{
 		if (_popup == null || _catcher == null) return;
+		if (_popup.Visible)
+		{
+			_lastClickFrame = Engine.GetProcessFrames();       // 关歌单的这次点击不要再被每帧轮询当成按钮点击
+		}
 		_popup.Visible = false;
 		_catcher.Visible = false;
 	}

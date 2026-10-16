@@ -22,6 +22,24 @@ public static class ArchitectLinePatch
 {
 	public static bool Prefix(LocString __instance, ref string __result)
 	{
+		if (Guard.Off("architect line"))
+		{
+			return true;
+		}
+		try
+		{
+			return Inner(__instance, ref __result);
+		}
+		catch (System.Exception e)
+		{
+			Guard.Fail("architect line", e);
+			return true;
+		}
+	}
+
+	[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+	private static bool Inner(LocString __instance, ref string __result)
+	{
 		if (__instance.LocTable != "ancients")                // 热路径：绝大多数文本直接放行
 		{
 			return true;
@@ -48,6 +66,23 @@ public static class ArchitectLineRawPatch
 public static class ArchitectRoomPatch
 {
 	public static void Postfix(TheArchitect __instance)
+	{
+		if (Guard.Off("architect room"))
+		{
+			return;
+		}
+		try
+		{
+			Inner(__instance);
+		}
+		catch (System.Exception e)
+		{
+			Guard.Fail("architect room", e);
+		}
+	}
+
+	[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+	private static void Inner(TheArchitect __instance)
 	{
 		if (!Makoto.Is(__instance.Owner))
 		{
@@ -100,6 +135,24 @@ public static class ArchitectEndingPatch
 {
 	public static bool Prefix(TheArchitect __instance, ArchitectAttackers attackers, ref Task<bool> __result)
 	{
+		if (Guard.Off("architect ending"))
+		{
+			return true;
+		}
+		try
+		{
+			return Inner(__instance, attackers, ref __result);
+		}
+		catch (System.Exception e)
+		{
+			Guard.Fail("architect ending", e);
+			return true;
+		}
+	}
+
+	[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+	private static bool Inner(TheArchitect __instance, ArchitectAttackers attackers, ref Task<bool> __result)
+	{
 		if (attackers == ArchitectAttackers.None || !Makoto.Is(__instance.Owner))
 		{
 			return true;
@@ -123,6 +176,24 @@ public static class ArchitectEndingPatch
 public static class ArchitectNoCounterPatch
 {
 	public static bool Prefix(TheArchitect __instance, ref Task __result)
+	{
+		if (Guard.Off("architect no counter"))
+		{
+			return true;
+		}
+		try
+		{
+			return Inner(__instance, ref __result);
+		}
+		catch (System.Exception e)
+		{
+			Guard.Fail("architect no counter", e);
+			return true;
+		}
+	}
+
+	[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+	private static bool Inner(TheArchitect __instance, ref Task __result)
 	{
 		if (!Makoto.Is(__instance.Owner))
 		{
@@ -229,6 +300,24 @@ public static class ArchitectGameOverPatch
 public static class ArchitectGameOverKeepPatch
 {
 	public static bool Prefix(MegaCrit.Sts2.Core.Nodes.Screens.Overlays.NOverlayStack __instance)
+	{
+		if (Guard.Off("ending results keep"))
+		{
+			return true;
+		}
+		try
+		{
+			return Inner(__instance);
+		}
+		catch (System.Exception e)
+		{
+			Guard.Fail("ending results keep", e);
+			return true;
+		}
+	}
+
+	[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+	private static bool Inner(MegaCrit.Sts2.Core.Nodes.Screens.Overlays.NOverlayStack __instance)
 	{
 		if (__instance.Peek() is MegaCrit.Sts2.Core.Nodes.Screens.GameOverScreen.NGameOverScreen screen && screen.HasMeta(ArchitectGameOverPatch.EndingMeta))
 		{

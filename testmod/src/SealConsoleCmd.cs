@@ -7,11 +7,13 @@ using MegaCrit.Sts2.Core.Models.Events;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 
-namespace P3Makoto.Debug;
+namespace P3TestMod;
 
 /// <summary>
 /// 控制台命令 p3seal：直接进入建筑师房间（伟大封印结局的测试用）。
 /// 原版的 event 命令只认地图事件和先古之民，建筑师（最终房间）不在列表里，所以单独加这一条。
+/// v0.14.44 从 P3Makoto 移到测试工具：控制台命令要继承游戏的 AbstractConsoleCmd，别的游戏版本里这个基类一改，
+/// 整个程序集的类型都读不出来、mod 直接加载失败；换皮 mod 本体不能冒这个险。
 /// </summary>
 public class SealConsoleCmd : AbstractConsoleCmd
 {
@@ -19,7 +21,7 @@ public class SealConsoleCmd : AbstractConsoleCmd
 
 	public override string Args => "";
 
-	public override string Description => "P3Makoto: jump to The Architect (Great Seal ending test).";
+	public override string Description => "P3TestMod: jump to The Architect (Great Seal ending test).";
 
 	public override bool IsNetworked => false;
 

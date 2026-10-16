@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    版本兼容检查：列出 mod DLL 用到、但某个版本的 sts2.dll 里不存在的类型 / 方法 / 字段 / 补丁目标。
+    用法见 docs/codex/codex_compat_check.md（本机 .NET 9 SDK 用 dotnet run）。
+    云端只有 .NET 8 时加 -p:ApiCheckTfm=net8.0。
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <ApiCheckTfm Condition="'$(ApiCheckTfm)' == ''">net9.0</ApiCheckTfm>
+    <TargetFramework>$(ApiCheckTfm)</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RollForward>Major</RollForward>
+  </PropertyGroup>
+</Project>
