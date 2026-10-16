@@ -1,0 +1,13 @@
+[remap]
+
+importer="spine.json"
+type="SpineSkeletonFileResource"
+path="res://.godot/imported/regent.spine-json-da45321090b22a100c00db97383510ca.spjson"
+
+[deps]
+
+source_file="res://p3makoto/rig/characters/regent.spine-json"
+dest_files=["res://.godot/imported/regent.spine-json-da45321090b22a100c00db97383510ca.spjson"]
+
+[params]
+

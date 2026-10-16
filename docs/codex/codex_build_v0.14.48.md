@@ -1,4 +1,4 @@
-你在用户的 Windows 电脑上工作。任务：把 P3Makoto v0.14.47、音乐盒 P3MusicBox 1.1.0、测试工具 P3TestMod 1.2.2 编译、打包，安装到本机**两个**杀戮尖塔 2（0.107.1 正式版和 0.111 测试版），再用兼容检查工具对两个版本各检查一遍。只做编译、打包、安装、检查，不改任何代码。
+你在用户的 Windows 电脑上工作。任务：把 P3Makoto v0.14.48、音乐盒 P3MusicBox 1.1.0、测试工具 P3TestMod 1.2.2 编译、打包，安装到本机**两个**杀戮尖塔 2（0.107.1 正式版和 0.111 测试版），再用兼容检查工具对两个版本各检查一遍。只做编译、打包、安装、检查，不改任何代码。
 
 【两个游戏目录】
 - <G111> = C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2（以前编译用的那个）。
@@ -20,7 +20,7 @@
    git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local merge --no-edit origin/claude/amazing-darwin-b00arn
    - 有冲突就停下来报告。
    - 这次不需要 push。
-6. 确认 git log 里有提交「v0.14.47: presentation settings …」。
+6. 确认 git log 里有提交「v0.14.48: asset guard …」。
 7. 稀疏检出缺目录时，允许执行：
    git -c safe.directory=<repo> sparse-checkout add mod musicbox testmod tools/compat research/libs_0.107.1
    - 路径过长时，这一条命令可以加 -c core.longpaths=true。
@@ -37,7 +37,7 @@
 
 【4. 打包 pck】（和以前一样）
 1. 把 <repo>\mod\pck_stage 整个复制到 <repo>\mod\_build\stage_<时间戳>\（包括 .godot，可以用 robocopy /E）。
-2. 核对 p3makoto\sfx\ 下有 90 个 .ogg。
+2. 核对 p3makoto\sfx\ 下有 90 个 .ogg；p3makoto\rig\characters\ 下有 regent_skel_data.tres 和 regent.atlas.import；.godot\imported\ 下有两个文件名含 p3private 的 .spatlas。
 3. 用 GDRE Tools 打包：
    <gdre_tools.exe> --headless --pck-create=<stage目录> --output=<repo>\mod\_build\P3Makoto.pck --pck-version=3 --pck-engine-version=4.5.1
 
@@ -46,7 +46,7 @@
    - 目标是 <游戏>\mods\ 下当前装着 P3Makoto.json 的那个文件夹（可能是嵌套的 mods\P3Makoto\P3Makoto\，以实际位置为准）；没有就新建 <游戏>\mods\P3Makoto\。
    - 先把旧的 P3Makoto.json / .dll / .pck 备份到 <repo>\mod\_build\backup_<时间戳>_<107或111>\。
    - 再复制新的 P3Makoto.json、dll、pck。
-   - 核对 version 是 "0.14.47"。
+   - 核对 version 是 "0.14.48"。
 2. 音乐盒：
    - 复制 P3MusicBox.dll 和 P3MusicBox.json 到 <游戏>\mods\ 下当前装着 P3MusicBox.json 的那个文件夹（以实际位置为准；没有就新建 mods\P3MusicBox\）。
    - **不要动 music\ 里的歌曲和歌词。**
@@ -87,7 +87,8 @@
 4. 设置 → 常规 最下面有一栏「P3MAKOTO · 结城理演出」，六项各有「完整 / 关闭」按钮（总攻击、战斗胜利演出、选卡 Shuffle Time、Persona 召唤切入、选人时的召唤演出、建筑师房间）。
    关掉总攻击后打赢精英 / Boss 应直接进奖励；关掉 Shuffle Time 后选卡界面是原版样子。设置会保存（重开游戏仍是关闭）。
 5. 手柄 / 键盘：伟大封印结局里的「伟大封印」和「闭上眼睛」可以用确认键选。
-6. 日志开头应有 "[P3Makoto] game version v0.107.1"（或 0.111.x），以及 "harmony patches applied: N ok, 0 failed"。
+6. 日志里应有一行 "[P3Makoto] asset guard (init): N Regent path(s) pointed back to P3Makoto resources"（N 一般是 8）。
+7. 日志开头应有 "[P3Makoto] game version v0.107.1"（或 0.111.x），以及 "harmony patches applied: N ok, 0 failed"。
 
 【绝对不要做】
 - 不要修改或删除代码；不要 rebase / reset / amend；不要 --force；不要改全局 git config；不要提交，也不要推送。

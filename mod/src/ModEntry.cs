@@ -13,7 +13,7 @@ public static class ModEntry
 
 	public static void Init()
 	{
-		GD.Print($"{Tag} init v0.14.47");
+		GD.Print($"{Tag} init v0.14.48");
 		// v0.14.44（多版本兼容）：记下游戏版本，换版本出问题时日志里一眼能看到是哪个版本
 		Safe("game version", () => GD.Print($"{Tag} game version {P3Makoto.Core.Compat.GameVersion()}"));
 		try
@@ -44,6 +44,12 @@ public static class ModEntry
 		catch (Exception e)
 		{
 			GD.PrintErr($"{Tag} harmony patch failed: {e}");
+		}
+		// v0.14.48：把原版储君路径指回本 mod 的资源；所有 mod 加载完之后（下一帧）再来一次，盖过后加载的 mod
+		Safe("asset guard", () => Core.AssetGuard.Apply("init"));
+		if (Engine.GetMainLoop() is SceneTree tree)
+		{
+			tree.CreateTimer(0.0).Timeout += () => Safe("asset guard", () => Core.AssetGuard.Apply("after all mods"));
 		}
 		Safe("sfx prewarm", Audio.Sfx.Prewarm);
 		Safe("star orbit", Vfx.StarOrbit.Install);

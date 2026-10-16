@@ -74,6 +74,17 @@ public static class Makoto
 
 	private static bool? _assetsOurs;
 
+	/// <summary>AssetGuard 把路径盖回来之后重新判断（之前可能判成了"不是我们的"）。</summary>
+	public static void ResetAssetCheck()
+	{
+		_assetsOurs = null;
+		_warned = false;
+		lock (Bodies)
+		{
+			Bodies.Clear();
+		}
+	}
+
 	/// <summary>资源层面：res:// 里的储君战斗骨骼是不是本 mod 的（没有战斗节点时用，例如选人界面）。读不出来时当作是。</summary>
 	public static bool AssetsOurs
 	{

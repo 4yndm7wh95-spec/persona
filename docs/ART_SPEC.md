@@ -1242,6 +1242,19 @@ Grand.cs 里其余函数暂时保留不用。
   关闭 = 不播、直接走原版流程；游戏快速模式「极速」时全部视为关闭。
 - 建筑师房间：进房间那一刻定下（GreatSeal.Active），台词 / 背景 / 伟大封印按钮 / 结局演出 / 不反击 / 结算画面保留 全部一起开关，房间里中途改设置下次进房间才生效。
 
+## v0.14.48（和 Skin Changer 等换资源的 mod 共存）
+
+玩家（0.111.0，装了 Skin Changer、BossSkin、Regent FX Omnistar 等 30 个 mod）：本 mod 的美术一个都没加载（选人立绘、头像、特效全是原版），但设置里的 P3MAKOTO 一栏在（= DLL 正常运行）。
+截图里选人界面有 Skin Changer 的「游戏默认」下拉框和「管理皮肤包」按钮。没有日志，推断：
+① Skin Changer 等后加载 / 运行中换资源的 mod 把原版储君路径（骨骼、选人图、头像）换回了原版文件；v0.14.45 的"别的储君换皮生效就让路"随即把特效也关了 = 什么都没有；
+② 或者玩家那边 P3Makoto.pck 根本没装上（代码照常跑，美术全无）。
+- 资源包里另放一份私有路径的引用（res://p3makoto/rig/…、res://p3makoto/override/…，tools/pck/make_private_copies.py 生成：只是 .import / .tres / 图集小文件，指向同一份导入数据，不增加体积；
+  图集 .spatlas 另存一份，source_path 改到私有目录）。
+- Core/AssetGuard.cs：启动时、所有 mod 加载完的下一帧、选人时、每次预加载（主菜单 / 开局 / 战斗 / 商店 / 休息处 / 事件）之前，用 Resource.TakeOverPath 把私有副本盖回原版路径
+  （补丁优先级最低，别的 mod 的同类前缀先跑）；盖回后重新判断"是不是我们的骨骼"。
+- P3Makoto.pck 不在时日志写明：`P3Makoto.pck resources are missing … check that P3Makoto.pck sits next to P3Makoto.dll`。
+- 局限：如果别的 mod 是在节点创建后直接替换 SpineSprite 的骨骼（而不是换文件），这个办法管不到；需要那位玩家的日志确认。
+
 ## 待办（用户实机反馈，先记录）
 
 - 闭眼场景（v0.14.34 实机）：左上斜射的暖色光束轮廓太硬，每道光的两条边像画出来的直线。要改成柔和的丁达尔光：
