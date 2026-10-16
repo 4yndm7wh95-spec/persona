@@ -5,3 +5,6 @@ research/PCK_*_LOG.txt
 __pycache__/
 testmod/bin/
 testmod/obj/
+musicbox/bin/
+musicbox/obj/
+musicbox/music/
