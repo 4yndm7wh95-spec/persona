@@ -803,7 +803,7 @@ void fragment() {
 				bool ready = false;
 				if (valid && GodotObject.IsInstanceValid(player) && WeaponFx.Bone(player!, "hand") is Vector2 b && b.DistanceTo(head) < body * 1.2f)
 				{
-					string? cur = player!.Visuals.SpineBody?.GetAnimationState().GetCurrentAnimationName();
+					string? cur = P3Makoto.Core.Compat.CurrentAnimation(player!.Visuals.SpineBody);
 					bool posed = !frames || cur == "point_sky_loop";
 					if (posed && b.Y < head.Y - body * 0.05f)
 					{
@@ -1052,8 +1052,8 @@ void fragment() {
 		string intro = body.HasAnimation("point_sky_in") ? "point_sky_in" : body.HasAnimation("point_sky_quick") ? "point_sky_quick" : "";
 		if (intro.Length > 0)
 		{
-			state.SetAnimation(intro, loop: false);
-			state.AddAnimation(body.HasAnimation("point_sky_loop") ? "point_sky_loop" : "idle_loop", 0f, loop: true);
+			P3Makoto.Core.Compat.SetAnimation(state, intro, loop: false);
+			P3Makoto.Core.Compat.AddAnimation(state, body.HasAnimation("point_sky_loop") ? "point_sky_loop" : "idle_loop", 0f, loop: true);
 		}
 	}
 

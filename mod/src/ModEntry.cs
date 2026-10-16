@@ -13,9 +13,9 @@ public static class ModEntry
 
 	public static void Init()
 	{
-		GD.Print($"{Tag} init v0.14.44");
+		GD.Print($"{Tag} init v0.14.45");
 		// v0.14.44（多版本兼容）：记下游戏版本，换版本出问题时日志里一眼能看到是哪个版本
-		Safe("game version", () => GD.Print($"{Tag} game version {MegaCrit.Sts2.Core.Nodes.NGame.GetGameVersion()}"));
+		Safe("game version", () => GD.Print($"{Tag} game version {P3Makoto.Core.Compat.GameVersion()}"));
 		try
 		{
 			// v0.14.31：逐个补丁类应用（PatchAll 遇到第一个失败就整体中断，后面的补丁全部不生效）；失败的单独记日志

@@ -117,6 +117,6 @@ public static class Runtime
 	public static async System.Threading.Tasks.Task ExhaustAll(List<CardModel> cards)
 	{
 		// 所有手牌同时开始消耗（不一张一张等），一起播原版的消耗动画
-		await System.Threading.Tasks.Task.WhenAll(cards.Select(c => CardCmd.Exhaust(new BlockingPlayerChoiceContext(), c)));
+		await System.Threading.Tasks.Task.WhenAll(cards.Select(c => Compat.Exhaust(new BlockingPlayerChoiceContext(), c)));
 	}
 }

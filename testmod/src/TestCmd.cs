@@ -85,7 +85,7 @@ public class TestCmd : AbstractConsoleCmd
 				{
 					return new CmdResult(success: false, "A run is currently not in progress!");
 				}
-				EncounterModel encounter = ModelDb.Encounter<BattlewornDummyEventV1Encounter>().ToMutable();
+				EncounterModel encounter = Compat.DummyEncounter().ToMutable();
 				encounter.DebugRandomizeRng();
 				Runtime.DummyPending = true;
 				Task task = RunManager.Instance.EnterRoomDebug(RoomType.Monster, MegaCrit.Sts2.Core.Map.MapPointType.Unassigned, encounter);
@@ -101,7 +101,7 @@ public class TestCmd : AbstractConsoleCmd
 					return new CmdResult(success: false, "This command only works in combat.");
 				}
 				int amount = args.Length > 1 && int.TryParse(args[1], out int n) ? n : 3;
-				Task task = CreatureCmd.Damage(new BlockingPlayerChoiceContext(), new List<Creature> { pc }, amount, ValueProp.Unpowered, null, null, null);
+				Task task = Compat.Damage(new BlockingPlayerChoiceContext(), new List<Creature> { pc }, amount, ValueProp.Unpowered);
 				return new CmdResult(task, success: true, $"Hurt player {issuingPlayer.NetId} by {amount}.");
 			}
 			case "hand":
@@ -124,7 +124,7 @@ public class TestCmd : AbstractConsoleCmd
 	{
 		foreach (CardModel c in cards)
 		{
-			await CardCmd.Exhaust(new BlockingPlayerChoiceContext(), c);
+			await Compat.Exhaust(new BlockingPlayerChoiceContext(), c);
 		}
 	}
 

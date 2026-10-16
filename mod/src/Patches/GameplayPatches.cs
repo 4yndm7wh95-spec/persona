@@ -51,13 +51,15 @@ public static class AttackHitVfxPatch
 	}
 }
 
-/// <summary>每一击伤害（所有 Damage 重载最终都汇到这个签名）。</summary>
+/// <summary>每一击伤害（所有 Damage 重载最终都汇到这个签名；0.111 带 cardPlay，0.107 不带）。</summary>
 [HarmonyPatch]
 public static class DamagePatch
 {
 	public static IEnumerable<MethodBase> TargetMethods() =>
 		typeof(CreatureCmd).GetMethods(BindingFlags.Public | BindingFlags.Static)
-			.Where(m => m.Name == "Damage" && Sig.Params(m, "choiceContext", "targets", "amount", "props", "dealer", "cardSource", "cardPlay"));
+			.Where(m => m.Name == "Damage" && (Sig.Params(m, "choiceContext", "targets", "amount", "props", "dealer", "cardSource", "cardPlay")
+				|| Sig.Params(m, "choiceContext", "targets", "amount", "props", "dealer", "cardSource")))      // 0.107：最终那个重载还没有 cardPlay 参数
+			.OrderByDescending(m => m.GetParameters().Length).Take(1);            // 两种都在时只挂参数多的那个（别的重载都汇到它）
 
 	public static void Prefix(IEnumerable<Creature>? targets, Creature? dealer, CardModel? cardSource)
 	{
@@ -386,7 +388,7 @@ public static class RegentSfxMutePatch
 
 	public static bool Prefix(object[] __args)
 	{
-		if (__args.Length == 0 || __args[0] is not string path || !path.StartsWith("event:/sfx/characters/regent/", System.StringComparison.Ordinal))
+		if (__args.Length == 0 || __args[0] is not string path || !path.StartsWith("event:/sfx/characters/regent/", System.StringComparison.Ordinal) || !Makoto.AssetsOurs)
 		{
 			return true;
 		}

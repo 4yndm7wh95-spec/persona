@@ -175,7 +175,7 @@ public static class MerchantScalePatch
 	{
 		ModEntry.Safe("merchant scale", () =>
 		{
-			if (__instance.SceneFilePath.Contains("regent_merchant") && __instance.GetChildCount() > 0 && __instance.GetChild(0) is Node2D sprite)
+			if (Makoto.AssetsOurs && __instance.SceneFilePath.Contains("regent_merchant") && __instance.GetChildCount() > 0 && __instance.GetChild(0) is Node2D sprite)
 			{
 				sprite.Scale = Vector2.One * Scale;
 			}

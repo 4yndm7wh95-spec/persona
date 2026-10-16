@@ -21,7 +21,7 @@
    - 用 ffprobe 读标题、歌手标签；没有标签就从文件名猜（网易云的文件名一般是「歌手 - 歌名」）。
    - 按上面的格式规则输出到 musicbox_music\，文件名用「两位序号_歌名」（去掉 Windows 不允许的字符，序号按 <SRC> 里文件名排序）。
    - 找对应的 .lrc：先找同名（不含扩展名）的；没有就找文件名里包含同样「歌名」的；还找不到就不配歌词，记下来报告。配上的转成 UTF-8 存成和歌曲同名的 .lrc。
-5. 生成 musicbox_music\playlist.json（UTF-8），按序号排：
+5. 生成 musicbox_music\playlist.txt（内容是 JSON；不要用 .json 扩展名，游戏会把 mod 文件夹里的 .json 当成 mod 清单读而报错）（UTF-8），按序号排：
    [{"file": "01_歌名.mp3", "lrc": "01_歌名.lrc", "title": "歌名", "artist": "歌手"}, …]（没歌词的那首 "lrc": null）
 6. 自检：每个输出文件用 ffprobe 能读出时长；.ogg 的编码是 vorbis；.mp3 的码率和解出来的原文件一致（说明没重新编码）。统计：原 .ncm 总大小、输出总大小。
 

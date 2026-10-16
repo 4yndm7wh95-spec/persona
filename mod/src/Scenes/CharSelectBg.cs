@@ -17,8 +17,27 @@ public static class CharSelectBg
 	private const float HorizonY = 830f;
 	private static readonly Vector2 MoonPos = new(720f, 150f);      // 立绘贴右边后，月亮挪到中上方的空天上（水面倒影跟着走）
 
+	/// <summary>
+	/// v0.14.45（用户：选人界面立绘丢失，0.107.1 上最常见）：以前先藏原版立绘再搭我们的，中途出错就两边都没有。
+	/// 现在先完整搭好，成功了才藏原版；出错就拆掉我们搭了一半的东西，原版立绘保持原样。
+	/// </summary>
 	public static void Build(Control bg)
 	{
+		Control root = new() { Name = "P3RBackground", MouseFilter = Control.MouseFilterEnum.Ignore, Size = new Vector2(W, H) };
+		bg.AddChild(root);
+		bg.MoveChild(root, 0);
+		try
+		{
+			BuildInto(root);
+		}
+		catch (System.Exception)
+		{
+			if (GodotObject.IsInstanceValid(root))
+			{
+				root.QueueFree();
+			}
+			throw;                                      // 由补丁的 Safe 记日志
+		}
 		foreach (Node c in bg.GetChildren())
 		{
 			if (c is Node2D n2)
@@ -26,10 +45,10 @@ public static class CharSelectBg
 				n2.Visible = false;                     // 原版 SpineSprite、星星粒子
 			}
 		}
+	}
 
-		Control root = new() { Name = "P3RBackground", MouseFilter = Control.MouseFilterEnum.Ignore, Size = new Vector2(W, H) };
-		bg.AddChild(root);
-		bg.MoveChild(root, 0);
+	private static void BuildInto(Control root)
+	{
 
 		const float pad = 300f;
 		ShaderMaterial sky = new() { Shader = Shaders.Menu };
@@ -215,7 +234,7 @@ public static class CharSelectBg
 		MegaSprite sprite = new(spine);
 		if (sprite.TryGetAnimationState() is MegaAnimationState state)
 		{
-			state.SetAnimation("idle_loop", loop: true);
+			P3Makoto.Core.Compat.SetAnimation(state, "idle_loop", loop: true);
 			return;
 		}
 		if (triesLeft > 0)

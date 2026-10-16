@@ -36,19 +36,19 @@ public static class Pose
 		string inAnim = Transitions[loopAnim].In;
 		if (body.HasAnimation(inAnim))
 		{
-			state.SetAnimation(inAnim, loop: false);
-			state.AddAnimation(loopAnim, 0f, loop: true);
+			P3Makoto.Core.Compat.SetAnimation(state, inAnim, loop: false);
+			P3Makoto.Core.Compat.AddAnimation(state, loopAnim, 0f, loop: true);
 		}
 		else
 		{
-			state.SetAnimation(loopAnim, loop: true);
+			P3Makoto.Core.Compat.SetAnimation(state, loopAnim, loop: true);
 		}
 		return true;
 	}
 
 	public static bool IsHolding(NCreature? node)
 	{
-		string? current = node?.Visuals.SpineBody?.GetAnimationState().GetCurrentAnimationName();
+		string? current = P3Makoto.Core.Compat.CurrentAnimation(node?.Visuals.SpineBody);
 		return current != null && Holding.Contains(current);
 	}
 
@@ -61,7 +61,7 @@ public static class Pose
 			return false;
 		}
 		MegaAnimationState state = body.GetAnimationState();
-		string? current = state.GetCurrentAnimationName();
+		string? current = P3Makoto.Core.Compat.CurrentAnimation(state);
 		if (current == null || !Holding.Contains(current))
 		{
 			return false;
@@ -72,12 +72,12 @@ public static class Pose
 		string idle = lowHealth ? "low_health_loop" : "idle_loop";
 		if (body.HasAnimation(outAnim))
 		{
-			state.SetAnimation(outAnim, loop: false);
-			state.AddAnimation(idle, 0f, loop: true);
+			P3Makoto.Core.Compat.SetAnimation(state, outAnim, loop: false);
+			P3Makoto.Core.Compat.AddAnimation(state, idle, 0f, loop: true);
 		}
 		else
 		{
-			state.SetAnimation(idle, loop: true);
+			P3Makoto.Core.Compat.SetAnimation(state, idle, loop: true);
 		}
 		return true;
 	}
@@ -197,7 +197,7 @@ public static class Pose
 		}
 		if (requested is "attack" or "cast" or "attack_sovereign" && Summon.Remove(id, out ulong until2) && now <= until2)
 		{
-			string anim = FromHolding(state.GetCurrentAnimationName(), "attack_sovereign") ?? "attack_sovereign";
+			string anim = FromHolding(P3Makoto.Core.Compat.CurrentAnimation(state), "attack_sovereign") ?? "attack_sovereign";
 			_lastSummonAnim = now;
 			return anim;
 		}

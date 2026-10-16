@@ -13,7 +13,7 @@ public static class WeaponFx
 	public static Vector2? Bone(NCreature node, string bone)
 	{
 		MegaSprite? body = node.Visuals.SpineBody;
-		Transform2D? t = body?.GetGlobalBoneTransform(bone);
+		Transform2D? t = P3Makoto.Core.Compat.BoneTransform(body, bone);
 		return t?.Origin;
 	}
 

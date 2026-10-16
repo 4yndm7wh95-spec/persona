@@ -92,7 +92,7 @@ public static class MpLog
 		{
 			return;
 		}
-		Event($"net role {_lastType} -> {type}, local netId {net?.NetId}, connected {net?.IsConnected}, game {NGame.GetGameVersion()}");
+		Event($"net role {_lastType} -> {type}, local netId {net?.NetId}, connected {net?.IsConnected}, game {Compat.GameVersion()}");
 		bool mp = type is NetGameType.Host or NetGameType.Client;
 		MegaCrit.Sts2.Core.Logging.Logger.SetLogLevelForType(LogType.Actions, mp ? LogLevel.Debug : LogLevel.Info);
 		MegaCrit.Sts2.Core.Logging.Logger.SetLogLevelForType(LogType.GameSync, mp ? LogLevel.Debug : LogLevel.Info);

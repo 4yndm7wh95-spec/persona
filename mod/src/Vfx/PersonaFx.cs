@@ -280,20 +280,20 @@ public static class PersonaFx
 			}
 			return;
 		}
-		state.SetAnimation("summon", loop: false);
-		state.AddAnimation("idle_loop", 0f, loop: true);
+		P3Makoto.Core.Compat.SetAnimation(state, "summon", loop: false);
+		P3Makoto.Core.Compat.AddAnimation(state, "idle_loop", 0f, loop: true);
 		Fx.After(spine, Mathf.Max(attackAt, 0f), "persona attack", () =>
 		{
 			if (sprite.TryGetAnimationState() is MegaAnimationState s)
 			{
 				if (attack)
 				{
-					s.SetAnimation("attack", loop: false);
-					s.AddAnimation("dismiss", 0f, loop: false);
+					P3Makoto.Core.Compat.SetAnimation(s, "attack", loop: false);
+					P3Makoto.Core.Compat.AddAnimation(s, "dismiss", 0f, loop: false);
 				}
 				else
 				{
-					s.SetAnimation("dismiss", loop: false);
+					P3Makoto.Core.Compat.SetAnimation(s, "dismiss", loop: false);
 				}
 			}
 		});

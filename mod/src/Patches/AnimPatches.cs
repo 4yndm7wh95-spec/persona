@@ -13,9 +13,14 @@ public static class AnimRenamePatch
 {
 	public static void Prefix(MegaAnimationState __instance, ref string animationName)
 	{
+		// v0.14.45：只有结城理会被替换的这几个动作才往下查（这个入口所有生物的每次换动画都会经过，怪物的动作一概不碰）
+		if (animationName is not ("cast" or "attack" or "attack_sovereign"))
+		{
+			return;
+		}
 		string requested = animationName;
 		string? replacement = null;
-		ModEntry.Safe("AnimRename", () => replacement = Pose.Light(__instance, requested) ?? Pose.FromHolding(__instance.GetCurrentAnimationName(), requested));
+		ModEntry.Safe("AnimRename", () => replacement = Pose.Light(__instance, requested) ?? Pose.FromHolding(Compat.CurrentAnimation(__instance), requested));
 		if (replacement != null)
 		{
 			animationName = replacement;

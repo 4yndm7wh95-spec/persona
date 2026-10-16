@@ -71,7 +71,7 @@ public static class CharSelectInfo
 			return;
 		}
 		Restore(panel);
-		if (button.IsRandom || button.IsLocked || model.GetType().Name != "Regent")
+		if (button.IsRandom || button.IsLocked || model.GetType().Name != "Regent" || !Core.Makoto.AssetsOurs)
 		{
 			return;
 		}
@@ -109,7 +109,22 @@ public static class CharSelectInfo
 		Node2D deco = new() { Name = DecoName, Visible = false };
 		panel.AddChild(deco);
 		// 等选中时的召唤切入（眼神横幅 0.7s 后碎裂）结束再入场，两者不同时出现
-		Fx.After(deco, CutInFx.Enabled ? 0.85 : 0.1, "info panel", () => Perf.Time("info panel build", () => Build(deco, hp, gold, Regex.Replace(relicTitle, @"\[[^\]]*\]", ""), relicDesc, relicIcon)));
+		// v0.14.45：搭新面板出错时恢复原版面板（不能留下一块空白）
+		Fx.After(deco, CutInFx.Enabled ? 0.85 : 0.1, "info panel", () =>
+		{
+			try
+			{
+				Perf.Time("info panel build", () => Build(deco, hp, gold, Regex.Replace(relicTitle, @"\[[^\]]*\]", ""), relicDesc, relicIcon));
+			}
+			catch (System.Exception)
+			{
+				if (GodotObject.IsInstanceValid(panel))
+				{
+					Restore(panel);
+				}
+				throw;
+			}
+		});
 	}
 
 	private static string ShortDesc()

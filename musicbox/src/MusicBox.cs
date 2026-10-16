@@ -15,7 +15,7 @@ namespace P3MusicBox;
 
 /// <summary>
 /// P3 音乐盒：右上角设置（齿轮）按钮下方的小圆按钮。
-/// · 默认不播放；左键 播放 / 暂停，右键 打开歌单（点歌切换、播放模式、歌词开关、音量）；
+/// · 默认不播放；点击打开面板（播放 / 暂停、上一首 / 下一首、点歌切换、播放模式、歌词开关、音量）；
 /// · 播放时原版背景音乐淡出到静音，暂停后淡回原来的音量；播放 / 暂停 / 切歌都有淡入淡出；
 /// · 歌曲放在本 mod 文件夹的 music\ 里（.ogg / .mp3；同名 .lrc 显示歌词；playlist.json 决定顺序和标题，没有就按文件名）。
 /// · 纯界面 + 本地播放，不影响玩法（清单里 affects_gameplay=false），联机时只装在自己这边也可以。
@@ -25,7 +25,7 @@ namespace P3MusicBox;
 public static class MusicBox
 {
 	public const string Tag = "[P3MusicBox]";
-	public const string Version = "1.0.1";
+	public const string Version = "1.1.0";
 
 	// 配色（和 P3Makoto 一致的 P3R 蓝）
 	private static readonly Color Navy = new(0.02f, 0.06f, 0.22f, 0.94f);
@@ -72,10 +72,10 @@ public static class MusicBox
 	private static string _lyricShown = "";
 	private static Control? _popup, _catcher;
 	private static VBoxContainer? _list;
-	private static Button? _modeButton, _lyricsButton;
+	private static Button? _modeButton, _lyricsButton, _playButton;
 	private static Label? _nowLabel;
 	private static bool _hover;
-	private static bool _wasLeft, _wasRight;
+	private static bool _wasLeft;
 	private static ulong _lastClickFrame;
 	private static Font? _font;
 
@@ -119,7 +119,14 @@ public static class MusicBox
 			GD.Print($"{Tag} no music folder: {dir}");
 			return;
 		}
-		string list = Path.Combine(dir, "playlist.json");
+		// v1.1.0：歌单改名 playlist.txt（内容还是 JSON）—— 游戏会把 mod 文件夹里所有 .json 都当成 mod 清单读，playlist.json 每次启动都报一条红字错误。
+		// 旧的 playlist.json 仍然认，但建议改名
+		string list = Path.Combine(dir, "playlist.txt");
+		if (!File.Exists(list) && File.Exists(Path.Combine(dir, "playlist.json")))
+		{
+			list = Path.Combine(dir, "playlist.json");
+			GD.Print($"{Tag} using legacy playlist.json; rename it to playlist.txt to stop the game's manifest error");
+		}
 		if (File.Exists(list))
 		{
 			using JsonDocument doc = JsonDocument.Parse(File.ReadAllText(list));
@@ -276,6 +283,16 @@ public static class MusicBox
 		Start(n);
 	}
 
+	/// <summary>面板里的上一首 / 下一首：随机模式下一首随机挑，其余按顺序；正在放就淡出再换。</summary>
+	private static void Skip(int dir)
+	{
+		if (Songs.Count == 0) return;
+		int n = dir > 0 && _prefs.Mode == 2 && Songs.Count > 1
+			? (_index + 1 + (int)(GD.Randi() % (uint)(Songs.Count - 1))) % Songs.Count
+			: _index + dir;
+		Start(n);
+	}
+
 	private static void FadeTo(float target, float seconds, Action? then = null)
 	{
 		_fadeTarget = target;
@@ -375,9 +392,9 @@ public static class MusicBox
 		_layer.AddChild(_hoverTitle);
 		box.GuiInput += e => Safe("click", () =>
 		{
-			if (e is InputEventMouseButton { Pressed: true } mb && mb.ButtonIndex is MouseButton.Left or MouseButton.Right)
+			if (e is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left })
 			{
-				Click(mb.ButtonIndex == MouseButton.Left, "gui");
+				Click("gui");
 				box.AcceptEvent();
 			}
 		});
@@ -423,8 +440,8 @@ public static class MusicBox
 		return new Vector2(view.X - 84f, 96f);
 	}
 
-	/// <summary>左键播放 / 暂停，右键歌单。GuiInput 和每帧轮询都会走到这里，同一次按下只处理一次。</summary>
-	private static void Click(bool left, string via)
+	/// <summary>v1.1.0（用户：不再用右键）：左键打开 / 关上面板，播放暂停在面板里。GuiInput 和每帧轮询都会走到这里，同一次按下只处理一次。</summary>
+	private static void Click(string via)
 	{
 		ulong frame = Engine.GetProcessFrames();
 		if (frame - _lastClickFrame <= 2)
@@ -432,9 +449,8 @@ public static class MusicBox
 			return;
 		}
 		_lastClickFrame = frame;
-		GD.Print($"{Tag} click {(left ? "left" : "right")} via {via}, state {_state}, {Songs.Count} songs");
-		if (left) Toggle();
-		else TogglePopup();
+		GD.Print($"{Tag} click via {via}, state {_state}, {Songs.Count} songs");
+		TogglePopup();
 	}
 
 	/// <summary>
@@ -449,14 +465,12 @@ public static class MusicBox
 		}
 		bool inside = !hidden && _button.GetGlobalRect().HasPoint(_button.GetGlobalMousePosition());
 		_hover = inside;
-		bool l = Input.IsMouseButtonPressed(MouseButton.Left), r = Input.IsMouseButtonPressed(MouseButton.Right);
-		if (inside && _popup?.Visible != true)
+		bool l = Input.IsMouseButtonPressed(MouseButton.Left);
+		if (inside && _popup?.Visible != true && l && !_wasLeft)
 		{
-			if (l && !_wasLeft) Click(true, "poll");
-			else if (r && !_wasRight) Click(false, "poll");
+			Click("poll");
 		}
 		_wasLeft = l;
-		_wasRight = r;
 	}
 
 	private static void UpdateButton(ulong now, float dt)
@@ -487,7 +501,7 @@ public static class MusicBox
 		// 悬停：左侧显示当前歌名
 		if (_hoverTitle != null)
 		{
-			string title = Songs.Count == 0 ? "（没有歌曲）" : Songs[_index].Title + (_state == State.Playing ? "" : _state == State.Paused ? "  (暂停)" : "  (左键播放 / 右键歌单)");
+			string title = Songs.Count == 0 ? "（没有歌曲）" : Songs[_index].Title + (_state == State.Playing ? "" : _state == State.Paused ? "  (暂停)" : "  (点击打开音乐盒)");
 			_hoverTitle.Text = title;
 			_hoverTitle.Size = new Vector2(520f, 30f);
 			_hoverTitle.Position = _button.Position + new Vector2(-532f, 11f);
@@ -604,6 +618,15 @@ public static class MusicBox
 		Style(_nowLabel, 16, new Color(1f, 1f, 1f, 0.8f));
 		col.AddChild(_nowLabel);
 
+		// 播放控制：上一首 / 播放·暂停 / 下一首
+		HBoxContainer transport = new() { Alignment = BoxContainer.AlignmentMode.Center };
+		transport.AddThemeConstantOverride("separation", 10);
+		col.AddChild(transport);
+		SmallButton(transport, "◀ 上一首", () => Skip(-1), 15);
+		_playButton = SmallButton(transport, "", Toggle, 17);
+		_playButton.CustomMinimumSize = new Vector2(132f, 36f);
+		SmallButton(transport, "下一首 ▶", () => Skip(1), 15);
+
 		HBoxContainer vol = new();
 		vol.AddThemeConstantOverride("separation", 8);
 		col.AddChild(vol);
@@ -619,16 +642,16 @@ public static class MusicBox
 		_list = new VBoxContainer { SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
 		_list.AddThemeConstantOverride("separation", 2);
 		scroll.AddChild(_list);
-		Label hint = new() { Text = "左键音乐盒：播放 / 暂停　右键：歌单" };
+		Label hint = new() { Text = "点歌名切歌　点面板外关闭" };
 		Style(hint, 13, new Color(1f, 1f, 1f, 0.5f));
 		col.AddChild(hint);
 	}
 
-	private static Button SmallButton(Control parent, string text, Action act)
+	private static Button SmallButton(Control parent, string text, Action act, int size = 14)
 	{
 		Button b = new() { Text = text, FocusMode = Control.FocusModeEnum.None };
 		if (_font != null) b.AddThemeFontOverride("font", _font);
-		b.AddThemeFontSizeOverride("font_size", 14);
+		b.AddThemeFontSizeOverride("font_size", size);
 		b.AddThemeStyleboxOverride("normal", new StyleBoxFlat { BgColor = new Color(Blue, 0.6f), ContentMarginLeft = 8, ContentMarginRight = 8, ContentMarginTop = 2, ContentMarginBottom = 2 });
 		b.AddThemeStyleboxOverride("hover", new StyleBoxFlat { BgColor = new Color(Cyan, 0.5f), ContentMarginLeft = 8, ContentMarginRight = 8, ContentMarginTop = 2, ContentMarginBottom = 2 });
 		b.AddThemeStyleboxOverride("pressed", new StyleBoxFlat { BgColor = Cyan, ContentMarginLeft = 8, ContentMarginRight = 8, ContentMarginTop = 2, ContentMarginBottom = 2 });
@@ -668,10 +691,11 @@ public static class MusicBox
 		if (_list == null) return;
 		if (_modeButton != null) _modeButton.Text = _prefs.Mode switch { 1 => "单曲循环", 2 => "随机播放", _ => "顺序播放" };
 		if (_lyricsButton != null) _lyricsButton.Text = _prefs.Lyrics ? "歌词：开" : "歌词：关";
+		if (_playButton != null) _playButton.Text = _state == State.Playing ? "‖ 暂停" : "▶ 播放";
 		if (_nowLabel != null)
 		{
 			_nowLabel.Text = Songs.Count == 0 ? $"没有歌曲：把 .ogg / .mp3 放进 {Path.Combine(_modDir, "music")}"
-				: (_state == State.Playing ? "▶ " : _state == State.Paused ? "❚❚ " : "■ ") + Songs[_index].Title + (Songs[_index].Artist.Length > 0 ? " — " + Songs[_index].Artist : "");
+				: (_state == State.Playing ? "▶ " : _state == State.Paused ? "‖ " : "■ ") + Songs[_index].Title + (Songs[_index].Artist.Length > 0 ? " — " + Songs[_index].Artist : "");
 		}
 		foreach (Node c in _list.GetChildren())
 		{

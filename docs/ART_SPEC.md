@@ -1189,6 +1189,28 @@ Grand.cs 里其余函数暂时保留不用。
   - 游戏暂停时音乐照常放（CanvasLayer ProcessMode=Always）。
   - 日志：每次点击 `[P3MusicBox] click left via gui/poll, state …, N songs`，每次播放 `[P3MusicBox] play 文件名 (时长)`。
 
+## v0.14.45（0.107.1 正式版兼容；音乐盒 1.1.0；测试工具 1.2.2）
+
+用户：0.107.1 上特效不显示、人物动作错误、选人界面立绘丢失（最常见）、击杀「毛绒伏地虫」后整局卡住；担心和别的储君换皮 / 卡面 mod 冲突。
+- **事实**：0.107.1 是 Steam 正式版（0.111 是测试版，日志里别的 mod 写着 Max supported: public-beta），大多数玩家用的是它。
+  Codex 把 0.107.1 的 sts2.dll 等放进 research/libs_0.107.1/（含储君场景 research/regent_scenes_0.107.1/），反编译对照后主 mod 只有这些差异：
+  MegaAnimationState.SetAnimation / AddAnimation 返回类型不同；MegaSprite.GetGlobalBoneTransform、CardPlay.Player、NGame.GetGameVersion、NVoidFormVfx 在 0.107 不存在；
+  CreatureCmd.Damage 最终重载少一个 cardPlay 参数；0.107 的 GetCurrentAnimationName 在轨道为空时自己抛空引用。私有字段、补丁目标名、储君资源 / 场景两版一致（regent.tscn 只多一个 FormVfx 节点）。
+- **改法**：
+  - 新增 `Core/Compat.cs` 版本适配层：上面这些全部走它（反射按当前版本调用；骨骼坐标直接调 Spine 原生 get_global_bone_transform，没有就骨骼 get_global_transform；当前动画直接读原生轨道）。
+  - DamagePatch 两种签名都认；虚空形态在 0.111 挂原版特效（按类型名找，0.107 自动跳过），0.107 改挂 PowerModel.AfterApplied / AfterRemoved 基类（只认 VoidFormPower，自建宿主节点）。
+  - 结果：ApiCheck 对 0.107.1 和 0.111.0 两个版本都是「全部能找到」（主 mod 774 处、音乐盒 241 处、测试工具 382 处）。
+  - 动作替换补丁（MegaAnimationState.SetAnimation 前缀，所有生物换动画都经过）：只对 cast / attack / attack_sovereign 往下查，怪物的动作一概不碰（以前每次都去读当前动画，0.107 上对怪物会抛异常）。
+  - 选人立绘：先搭好 P3R 背景，成功了才藏原版；出错就拆掉，原版立绘保持原样（以前先藏原版，中途出错两边都没有 = "立绘丢失"）。介绍面板同理：搭新面板出错时恢复原版面板。
+- **和别的储君换皮 mod 的冲突**：本 mod 覆盖原版储君骨骼文件，别的储君换皮 mod 后加载会盖掉它。现在 `Makoto.Is` 额外检查实际用的骨骼里有没有本 mod 独有的 "sword_in" 动画
+  （战斗里查人物节点；没节点时查 res:// 里的储君骨骼资源；骨骼没加载好时当作是）。不是本 mod 的就整套让路：动作替换、出牌特效、舞台演出、选人界面、角色音效替换、商店缩放全部不做，日志写一行说明。
+  卡面替换 mod：本 mod 不替换任何卡面文件，不冲突。
+- **卡住**：两份只装本 mod 的 0.107.1 日志都停在"打击击杀毛绒伏地虫之后"，没有任何报错（另一份击杀甲虫正常结束）。静态对照没找到确定原因；
+  0.107 上之前出牌特效 / 预备姿势只执行一半就出错，这次已全部修正。新增流程日志 `[P3Makoto] trace card done / death … anim Ns / combat end`（Patches/TracePatches.cs），再卡住时看最后一行就知道停在哪一步。
+- 测试工具 1.2.2：木桩遭遇（0.107 叫 BattlewornDummyEventEncounter）、CardCmd.Exhaust、CreatureCmd.Damage、游戏版本号都改为反射，0.107.1 上也能用。
+- **音乐盒 1.1.0**（用户：不再用右键，点击打开面板、播放暂停放进面板）：点击按钮开 / 关面板；面板顶部加「◀ 上一首 / ▶ 播放 · ‖ 暂停 / 下一首 ▶」（随机模式下一首随机）。
+  歌单文件改名 playlist.txt（游戏会把 mod 文件夹里所有 .json 当 mod 清单读，playlist.json 每次启动报红字错误；旧名仍认）。
+
 ## 待办（用户实机反馈，先记录）
 
 - 闭眼场景（v0.14.34 实机）：左上斜射的暖色光束轮廓太硬，每道光的两条边像画出来的直线。要改成柔和的丁达尔光：

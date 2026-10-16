@@ -29,11 +29,11 @@ public static class CardFx
 
 	public static void OnPlay(CardPlay play)
 	{
-		if (!Makoto.Is(play.Player))
+		if (!Makoto.Is(play.Card.Owner))
 		{
 			return;
 		}
-		NCreature? caster = Makoto.Node(play.Player);
+		NCreature? caster = Makoto.Node(play.Card.Owner);
 		Control? front = Makoto.FxLayer();
 		Control? back = Makoto.FxLayer(back: true);
 		if (caster == null || front == null || back == null)
