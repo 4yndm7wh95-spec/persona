@@ -8,3 +8,5 @@ testmod/obj/
 musicbox/bin/
 musicbox/obj/
 musicbox/music/
+tools/compat/ApiCheck/bin/
+tools/compat/ApiCheck/obj/
