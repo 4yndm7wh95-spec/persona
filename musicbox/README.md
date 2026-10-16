@@ -29,7 +29,7 @@ P3Makoto 的扩展 mod，也可以单独使用。纯界面 + 本地播放，不�
 ```
 `playlist.json` 格式：`[{"file": "01_xxx.ogg", "lrc": "01_xxx.lrc", "title": "歌名", "artist": "歌手"}, …]`
 
-**歌曲不打包进 mod**：音乐有版权，公开发布 mod 时 `music\` 文件夹留空，让玩家放自己的歌。
+发布时把 `music\` 文件夹一起打包即可（歌曲不进 git 仓库，只是因为体积大）。
 
 ## 编译
 `dotnet build -c Release -p:GameDir="<游戏安装目录>"`（musicbox 目录），把 `bin\Release\net9.0\P3MusicBox.dll` 和 `P3MusicBox.json` 放进 `<游戏目录>\mods\P3MusicBox\`。
