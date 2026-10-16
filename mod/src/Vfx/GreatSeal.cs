@@ -384,6 +384,12 @@ void fragment() {
 		// 其次 v14（站人线 740/1152，但地平线 620 太低，近大远小对不上）；都没有用 v13 的图（平台前沿 y=745/1024）
 		Texture2D? v3 = Tex("tartarus_top_v3");
 		Texture2D? v2 = v3 ?? Tex("tartarus_top_v2");
+		if (bg.GetNodeOrNull<Control>("P3TartarusTop") is Control broken && broken.FindChild("P3TartarusArt", true, false) == null)
+		{
+			// v0.14.45：上次搭到一半出错（没有主图）：拆掉重搭，不能留一个空的背景还把原版藏着
+			broken.Name = "P3TartarusTopBroken";
+			broken.QueueFree();
+		}
 		if (bg.GetNodeOrNull<Control>("P3TartarusTop") is Control existing)
 		{
 			// v0.14.16（用户：正式流程里建筑师房间还是原版背景）：原版背景可能比我们晚加进同一个容器、盖在上面 —— 每次都挪回最上层
@@ -399,15 +405,6 @@ void fragment() {
 		const float margin = 60f;                                   // 震屏时不露边
 		Control root = new() { Name = "P3TartarusTop", MouseFilter = Control.MouseFilterEnum.Ignore };
 		bg.AddChild(root);
-		HideVanilla(bg, root);
-		bg.ChildEnteredTree += n =>
-		{
-			if (n != root && GodotObject.IsInstanceValid(root))
-			{
-				Callable.From(() => HideVanilla(bg, root)).CallDeferred();
-				Callable.From(() => { if (GodotObject.IsInstanceValid(root) && root.GetParent() == bg) bg.MoveChild(root, bg.GetChildCount() - 1); }).CallDeferred();
-			}
-		};
 		Transform2D gt = bg.GetGlobalTransform();
 		root.Scale = new Vector2(1f / gt.Scale.X, 1f / gt.Scale.Y);
 		root.GlobalPosition = Vector2.Zero;
@@ -452,6 +449,16 @@ void fragment() {
 		Vector2 artSize = new(tex.GetWidth() * s, tex.GetHeight() * s);
 		// v0.14.24（用户：建筑师房间一片虚空）：塔顶主图在 v0.14.9 重写对齐时被误删，之前靠原版背景透出来没发现；v0.14.20 藏掉原版背景后只剩月光 / 雾等叠加层
 		art.AddChild(new Sprite2D { Name = "P3TartarusArt", Texture = tex, Centered = false, Position = origin, Scale = Vector2.One * s });
+		// v0.14.45：主图放好之后才藏原版背景（以前先藏再搭，中途出错就是一片空）
+		HideVanilla(bg, root);
+		bg.ChildEnteredTree += n =>
+		{
+			if (n != root && GodotObject.IsInstanceValid(root))
+			{
+				Callable.From(() => HideVanilla(bg, root)).CallDeferred();
+				Callable.From(() => { if (GodotObject.IsInstanceValid(root) && root.GetParent() == bg) bg.MoveChild(root, bg.GetChildCount() - 1); }).CallDeferred();
+			}
+		};
 		// 前景碎石（新图才有）：叠在人物前面（前层特效容器），增加纵深
 		if (v2 != null && Tex(v3 != null ? "tartarus_top_v3_fg" : "tartarus_top_v2_fg") is Texture2D fg && room.GetNodeOrNull<Control>("%CombatVfxContainer") is Control fgLayer)
 		{
@@ -737,13 +744,29 @@ void fragment() {
 		ModEntry.Safe("great seal", () =>
 		{
 			// v0.14.29：不再按固定时长交还 —— MEMENTO MORI 之后进入「要闭上眼睛吗？」，玩家点了、眼睛完全闭上（全黑）才交还给游戏
-			Run(tree, player, architect, () => { }, () =>
+			CanvasLayer top = Run(tree, player, architect, () => { }, () =>
 			{
-				// 交还流程前保证游戏是 1 倍速，并记一行日志方便排查
+				// 交还流程前保证游戏是 1 倍速，并记一行日志方便排查（可能被看门狗 / 出错兜底重复调用，只生效一次）
+				if (done.Task.IsCompleted)
+				{
+					return;
+				}
 				P3Makoto.Core.TimeScale.Reset();
 				GD.Print($"{ModEntry.Tag} great seal done -> back to the game (TimeScale={Engine.TimeScale})");
 				done.TrySetResult(true);
 			});
+			// v0.14.45：演出中途保存退出 / 放弃本局时，整层（含全屏挡点击的透明板）跟着本局一起清掉，不能盖在主菜单上
+			if (MegaCrit.Sts2.Core.Nodes.NRun.Instance is Node run)
+			{
+				run.TreeExiting += () =>
+				{
+					if (GodotObject.IsInstanceValid(top))
+					{
+						top.QueueFree();
+					}
+					P3Makoto.Core.TimeScale.Reset();
+				};
+			}
 			started = true;
 		});
 		if (!started)
@@ -753,7 +776,7 @@ void fragment() {
 		return done.Task;
 	}
 
-	private static void Run(SceneTree tree, NCreature? player, NCreature? architect, System.Action onStart, System.Action finish)
+	private static CanvasLayer Run(SceneTree tree, NCreature? player, NCreature? architect, System.Action onStart, System.Action finish)
 	{
 		Vector2 view = tree.Root.GetVisibleRect().Size;
 		CanvasLayer top = new() { Layer = 90, Name = "P3GreatSeal" };
@@ -777,6 +800,16 @@ void fragment() {
 
 		SkillMenu(ui, view, () =>
 		{
+			// v0.14.45 看门狗：点下「伟大封印」之后，无论中间哪一步出错、玩家多久不点「闭上眼睛」，最晚这时一定交还游戏（结局不会卡死）
+			tree.CreateTimer(WhiteAt + 90.0, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () =>
+			{
+				if (GodotObject.IsInstanceValid(top))
+				{
+					GD.Print($"{ModEntry.Tag} great seal watchdog -> finishing");
+					finish();
+					top.QueueFree();
+				}
+			};
 			onStart();
 			Audio.Sfx.Clip("great_seal", 1.0f);
 			Fx.Animate(dim, WhiteAt, t =>
@@ -821,8 +854,20 @@ void fragment() {
 			Fx.After(world, 4.3, "seal pillar", () => Pillar(4.3f));
 			Fx.After(ui, WhiteAt - 0.9, "seal white", () => WhiteRise(ui, view));
 			// v0.14.30：白幕之后先问「要闭上眼睛吗？」，闭眼全黑后才是 MEMENTO MORI（用户：闭眼应排在 MEMENTO MORI 前面）
-			Fx.After(ui, WhiteAt, "seal eyes", () => CloseEyes(top, view, finish));
+			Fx.After(ui, WhiteAt, "seal eyes", () =>
+			{
+				try
+				{
+					CloseEyes(top, view, finish);
+				}
+				catch (System.Exception)
+				{
+					finish();                           // 闭眼这段搭不起来：直接交还游戏（结算画面出场后整层由 RevealGameOver 清掉）
+					throw;
+				}
+			});
 		});
+		return top;
 	}
 
 	// 菜单：P3R 技能菜单，停住等玩家点「伟大封印」
@@ -906,18 +951,34 @@ void fragment() {
 			if (!confirmed) Audio.Sfx.Clip("Sys_Cursor", 0.7f);
 		};
 		hit.MouseExited += () => hover = false;
+		void Confirm()
+		{
+			if (confirmed)
+			{
+				return;
+			}
+			confirmed = true;
+			confirmAt = (Time.GetTicksMsec() - t0) / 1000f;
+			Audio.Sfx.Clip("Btl_Ok", 0.9f);
+			blocker.MouseFilter = hit.MouseFilter = Control.MouseFilterEnum.Ignore;
+			Fx.FreeAfter(m, 0.45f);
+			onConfirm();
+		}
 		hit.GuiInput += ev =>
 		{
-			if (!confirmed && ev is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left })
+			if (ev is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left })
 			{
-				confirmed = true;
-				confirmAt = (Time.GetTicksMsec() - t0) / 1000f;
-				Audio.Sfx.Clip("Btl_Ok", 0.9f);
-				blocker.MouseFilter = hit.MouseFilter = Control.MouseFilterEnum.Ignore;
-				onConfirm();
-				Fx.FreeAfter(m, 0.45f);
+				Confirm();
 			}
 		};
+		// v0.14.45：手柄 / 键盘（确认键）也能选（以前只认鼠标左键，手柄玩家在这里会卡住）
+		Fx.Animate(m, 3600f, _ =>
+		{
+			if (!confirmed && Time.GetTicksMsec() - t0 > 400 && Input.IsActionJustPressed("ui_accept"))
+			{
+				Confirm();
+			}
+		});
 		Audio.Sfx.Clip("Btl_CommandPanel", 0.8f, 0.05f);
 		Fx.Animate(m, 3600f, _ =>
 		{
@@ -1447,9 +1508,10 @@ void fragment() {
 			bigGlow.Modulate = new Color(0.85f, 0.9f, 1f, 0.35f * e);
 			cursor.Position = cursorHome.Lerp(cursorBig, e);
 		});
-		hit.GuiInput += ev =>
+		ulong shownAt = Time.GetTicksMsec();
+		void Choose()
 		{
-			if (chosen || ev is not InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left })
+			if (chosen)
 			{
 				return;
 			}
@@ -1463,7 +1525,22 @@ void fragment() {
 				bigGlow.Modulate = new Color(1f, 1f, 1f, 0.6f * (1f - t));
 			});
 			Close();
+		}
+		hit.GuiInput += ev =>
+		{
+			if (ev is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left })
+			{
+				Choose();
+			}
 		};
+		// v0.14.45：手柄 / 键盘确认键也能选
+		Fx.Animate(top, 600f, _ =>
+		{
+			if (!chosen && Time.GetTicksMsec() - shownAt > 400 && Input.IsActionJustPressed("ui_accept"))
+			{
+				Choose();
+			}
+		});
 
 		// 点下之后：蓝蝶先飞（左下飞入 → 中间绕一圈 → 右上飞走），飞走时才开始闭眼
 		void Close()

@@ -20,7 +20,11 @@ public static class CardPlayedPatch
 	{
 		ModEntry.Safe("CardPlayed", () =>
 		{
-			TargetingFx.EndPlayed();
+			// v0.14.45（审查：联机时队友出牌会把自己正在瞄准的预备姿势收掉）：只有自己的牌才结束自己的瞄准表现
+			if (LocalPlayer.Owns(cardPlay.Card))
+			{
+				TargetingFx.EndPlayed();
+			}
 			CardFx.OnPlay(cardPlay);
 		});
 	}

@@ -98,6 +98,8 @@ public static class EndTurnSkin
 			builtText = label?.Text ?? "";
 		}
 
+		bool broken = false;
+
 		void Skin(bool on)
 		{
 			if (on == skinned)
@@ -142,14 +144,24 @@ public static class EndTurnSkin
 			}
 			ModEntry.Safe("end turn tick", () =>
 			{
-				Skin(Stage.MakotoCombat());
+				Skin(!broken && Stage.MakotoCombat());
 				if (!skinned)
 				{
 					return;
 				}
 				if ((!Mathf.IsEqualApprox(builtW, image.Size.X) || (label != null && label.Text != builtText)) && image.Size.X > 1f)
 				{
-					Build(image.Position, image.Size);
+					try
+					{
+						Build(image.Position, image.Size);
+					}
+					catch (System.Exception)
+					{
+						// v0.14.45：P3R 外观搭不起来就整个退回原版按钮（以前原版已经藏了、新的又没有，每帧重试每帧失败）
+						broken = true;
+						Skin(false);
+						throw;
+					}
 				}
 				t += 0.05f;
 				string state = Traverse.Create(button).Field("_state").GetValue()?.ToString() ?? "Enabled";

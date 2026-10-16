@@ -408,19 +408,20 @@ public static class StageFx
 					Deal(screen, row);
 				}
 			});
-			Fx.After(screen, TitleIntroLen + 3.0, "shuffle failsafe 2", () =>
-			{
-				if (!GodotObject.IsInstanceValid(screen) || screen.GetMeta("p3_deal").AsInt32() != token)
-				{
-					return;
-				}
-				foreach (Control h in holders)
-				{
-					if (StillInRow(h, row)) h.Visible = true;
-				}
-			});
 		}
-		else
+		// 兜底（v0.14.45：重抽也有 —— 以前只有首次打开才有，重抽时 Deal 出错牌就一直藏着、点不了）：无论如何最晚这时把牌显示出来
+		Fx.After(screen, (first ? TitleIntroLen : 0f) + 3.0, "shuffle failsafe 2", () =>
+		{
+			if (!GodotObject.IsInstanceValid(screen) || screen.GetMeta("p3_deal").AsInt32() != token)
+			{
+				return;
+			}
+			foreach (Control h in holders)
+			{
+				if (StillInRow(h, row)) h.Visible = true;
+			}
+		});
+		if (!first)
 		{
 			Deal(screen, row);
 		}

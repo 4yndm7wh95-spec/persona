@@ -1678,7 +1678,11 @@ public static class Uniq
 	/// <summary>出牌（施法抬手）时：石板在敌人群上方现身、缓缓下压，等 CrushUnderImpact 砸下（1.8s 没等到就自己砸）。</summary>
 	public static void CrushUnderBegin(Control front, Control back, List<MegaCrit.Sts2.Core.Nodes.Combat.NCreature> targets)
 	{
-		_slab?.Root.QueueFree();
+		// v0.14.45（审查：下砸途中保存退出后，旧石板节点已被释放，这里每次都抛异常，下砸特效整局失效）
+		if (_slab != null && GodotObject.IsInstanceValid(_slab.Root))
+		{
+			_slab.Root.QueueFree();
+		}
 		_slab = null;
 		targets = targets.Where(GodotObject.IsInstanceValid).ToList();
 		if (targets.Count == 0)
@@ -1806,6 +1810,10 @@ public static class Uniq
 		Slab? sl = _slab;
 		if (sl == null || sl.Dropped || !GodotObject.IsInstanceValid(sl.Root))
 		{
+			if (sl != null && !GodotObject.IsInstanceValid(sl.Root))
+			{
+				_slab = null;
+			}
 			return;
 		}
 		sl.Dropped = true;

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 
 namespace P3Makoto.Vfx;
@@ -120,6 +121,14 @@ public static class Popups
 	public static void MarkHits(IEnumerable<MegaCrit.Sts2.Core.Entities.Creatures.Creature> targets)
 	{
 		ulong now = Time.GetTicksMsec();
+		// v0.14.45（审查：这张表一直留着打过的每个敌人，连带整场战斗的数据整局都释放不了）：过期的顺手清掉
+		if (Marked.Count > 32)
+		{
+			foreach (var old in Marked.Where(kv => now - kv.Value > 1500).Select(kv => kv.Key).ToList())
+			{
+				Marked.Remove(old);
+			}
+		}
 		foreach (var c in targets)
 		{
 			Marked[c] = now;

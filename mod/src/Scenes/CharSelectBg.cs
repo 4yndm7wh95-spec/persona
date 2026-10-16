@@ -101,7 +101,8 @@ public static class CharSelectBg
 	{
 		if (ResourceLoader.Load(PortraitPath) is not Texture2D tex)
 		{
-			return;
+			// v0.14.45：立绘图读不到就整个背景不搭（Build 会回滚、保留原版立绘），不能留一个没有人的背景
+			throw new System.InvalidOperationException($"char-select portrait missing: {PortraitPath}");
 		}
 		Node2D group = new() { Name = "Portrait" };                 // 立绘（含残影、光晕）一组，切入横幅和碎片都插在它下面
 		root.AddChild(group);
@@ -112,13 +113,24 @@ public static class CharSelectBg
 		{
 			Node2D h = new() { Position = from, Scale = Vector2.One * PortraitScale * extraScale, Modulate = modulate };
 			group.AddChild(h);
-			Node2D? spine = live && ResourceLoader.Load(PortraitSpine) is Resource data ? ClassDB.Instantiate("SpineSprite").AsGodotObject() as Node2D : null;
+			// v0.14.45：骨骼数据确实加载好了才用 Spine（图集 / 骨骼文件坏了会是一个空的 SpineSprite = 看不见立绘），否则用静态图
+			Resource? data = live ? ResourceLoader.Load(PortraitSpine) : null;
+			bool dataOk = data != null && (!data.HasMethod("is_skeleton_data_loaded") || data.Call("is_skeleton_data_loaded").AsBool());
+			Node2D? spine = dataOk ? ClassDB.Instantiate("SpineSprite").AsGodotObject() as Node2D : null;
 			if (spine != null)
 			{
 				spine.Position = new Vector2(0f, 768f);
 				h.AddChild(spine);
-				spine.Set("skeleton_data_res", ResourceLoader.Load(PortraitSpine));
-				PlayIdle(spine, 30);
+				spine.Set("skeleton_data_res", data!);
+				PlayIdle(spine, 30, () =>
+				{
+					// 动画状态一直建不起来：换成静态立绘
+					if (GodotObject.IsInstanceValid(h))
+					{
+						spine.QueueFree();
+						h.AddChild(new Sprite2D { Texture = tex });
+					}
+				});
 			}
 			else
 			{
@@ -225,7 +237,7 @@ public static class CharSelectBg
 	}
 
 	/// <summary>SpineSprite 加进场景树后下一帧才有动画状态：取不到就稍后再试。</summary>
-	private static void PlayIdle(Node2D spine, int triesLeft)
+	private static void PlayIdle(Node2D spine, int triesLeft, System.Action giveUp)
 	{
 		if (!GodotObject.IsInstanceValid(spine))
 		{
@@ -239,7 +251,11 @@ public static class CharSelectBg
 		}
 		if (triesLeft > 0)
 		{
-			Fx.After(spine, 0.016, "portrait spine", () => PlayIdle(spine, triesLeft - 1));
+			Fx.After(spine, 0.016, "portrait spine", () => PlayIdle(spine, triesLeft - 1, giveUp));
+		}
+		else
+		{
+			giveUp();
 		}
 	}
 

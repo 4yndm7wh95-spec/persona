@@ -37,15 +37,32 @@ public static class FormFx
 		}
 	}
 
+	/// <summary>v0.14.45：先搭影时间，成功了才藏原版虚空形态特效；搭到一半出错就拆掉自己的，原版照常显示。</summary>
 	public static void DarkHour(Node2D vanilla, NCreature creature)
 	{
+		try
+		{
+			BuildDarkHour(vanilla, creature);
+		}
+		catch (System.Exception)
+		{
+			if (vanilla.GetNodeOrNull(AuraName) is Node partial)
+			{
+				partial.QueueFree();                    // 它的 TreeExiting 会一并清掉挂在身后层的天色和月亮
+			}
+			throw;
+		}
 		foreach (Node c in vanilla.GetChildren())
 		{
-			if (c is CanvasItem ci)
+			if (c is CanvasItem ci && c.Name != AuraName)
 			{
 				ci.Visible = false;
 			}
 		}
+	}
+
+	private static void BuildDarkHour(Node2D vanilla, NCreature creature)
+	{
 		Node2D root = new() { Name = AuraName, ShowBehindParent = true };
 		vanilla.AddChild(root);
 		root.GlobalPosition = Makoto.Center(creature) + new Vector2(4f, -70f);     // v0.13.10：人物缩到 0.92 后重新居中（原 -20,-90 偏左上）

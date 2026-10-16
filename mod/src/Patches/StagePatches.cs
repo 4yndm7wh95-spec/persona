@@ -13,7 +13,10 @@ namespace P3Makoto.Patches;
 /// <summary>战斗舞台演出（StageFx）的挂载点。只在结城理的对局里生效，其他角色保持原版。</summary>
 internal static class Stage
 {
-	/// <summary>当前战斗里有没有结城理（顺便记住"这一局是结城理"，给不在战斗房间里的界面用，例如选牌）。</summary>
+	/// <summary>
+	/// 本机玩家是不是结城理，并且正在战斗房间里。
+	/// v0.14.45（审查：联机时队友是结城理、自己是别的角色，也会套上 P3R 的结束回合按钮 / 回合横幅 / Shuffle Time）：只看本机玩家。
+	/// </summary>
 	public static bool MakotoCombat()
 	{
 		NCombatRoom? room = NCombatRoom.Instance;
@@ -21,12 +24,25 @@ internal static class Stage
 		{
 			return false;
 		}
-		bool yes = room.CreatureNodes.Any(n => n.Entity.Player is Player p && Makoto.Is(p));
-		MakotoRun = yes;
-		return yes;
+		return MakotoRun;
 	}
 
-	public static bool MakotoRun;
+	/// <summary>本机玩家这一局是不是结城理（不在战斗里也能用，例如选牌界面）。每次现查，换局不会残留上一局的结果。</summary>
+	public static bool MakotoRun
+	{
+		get
+		{
+			try
+			{
+				var players = MegaCrit.Sts2.Core.Runs.RunManager.Instance?.DebugOnlyGetState()?.Players;
+				return players != null && Makoto.Is(MegaCrit.Sts2.Core.Context.LocalContext.GetMe(players));
+			}
+			catch (System.Exception)
+			{
+				return false;
+			}
+		}
+	}
 }
 
 /// <summary>玩家回合横幅换成 P3R 风格（原版的不再创建：返回 null，原版调用处 AddChildSafely 会忽略 null）。</summary>
@@ -192,6 +208,7 @@ public static class AllOutPatch
 {
 	public static void Postfix(MegaCrit.Sts2.Core.Rooms.CombatRoom room, MegaCrit.Sts2.Core.Combat.ICombatState? combatState, ref System.Threading.Tasks.Task __result)
 	{
+		AllOut.Played = false;                       // v0.14.45：上一场总攻击途中退出时留下的标记，在这里清掉（否则下一场胜利演出被吞）
 		bool play = false;
 		ModEntry.Safe("allout check", () =>
 		{

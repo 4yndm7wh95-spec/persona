@@ -112,6 +112,11 @@ public static class CharSelectInfo
 		// v0.14.45：搭新面板出错时恢复原版面板（不能留下一块空白）
 		Fx.After(deco, CutInFx.Enabled ? 0.85 : 0.1, "info panel", () =>
 		{
+			// 审查：快速切走再切回结城理时，上一次的计时器仍会触发 —— 它的面板已经不是当前这块了，什么都不做（否则会把新面板拆掉）
+			if (!GodotObject.IsInstanceValid(deco) || deco.GetParent() != panel || deco.IsQueuedForDeletion())
+			{
+				return;
+			}
 			try
 			{
 				Perf.Time("info panel build", () => Build(deco, hp, gold, Regex.Replace(relicTitle, @"\[[^\]]*\]", ""), relicDesc, relicIcon));
