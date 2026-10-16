@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    P3 音乐盒（P3Makoto 的扩展 mod，可单独使用）。
+    编译方法：dotnet build -c Release -p:GameDir="<游戏安装目录>"
+    产物：bin/Release/net9.0/P3MusicBox.dll
+  -->
+  <PropertyGroup>
+    <AssemblyName>P3MusicBox</AssemblyName>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>13.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <GameDir Condition="'$(GameDir)' == ''">C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2</GameDir>
+    <GameData>$(GameDir)\data_sts2_windows_x86_64</GameData>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="src/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="sts2"><HintPath>$(GameData)\sts2.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="0Harmony"><HintPath>$(GameData)\0Harmony.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="GodotSharp"><HintPath>$(GameData)\GodotSharp.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+</Project>
