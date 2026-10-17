@@ -13,7 +13,7 @@ namespace P3Makoto.Vfx;
 /// </summary>
 public static class EvokerShot
 {
-	private static bool _hitStopActive;
+	private static ulong _hitStopUntil;
 
 	public static void Fire(Control layer, Vector2 muzzle, Vector2 dir, float power = 1f, Color? tint = null)
 	{
@@ -216,17 +216,16 @@ public static class EvokerShot
 	/// <summary>顿帧：短暂放慢全局时间，给扣扳机一个"定格"的确认感。用真实时间计时恢复。</summary>
 	public static void HitStop(double realSeconds)
 	{
-		if (_hitStopActive || Engine.GetMainLoop() is not SceneTree tree)
+		// v0.14.51：用截止时间代替"进行中"标记 —— 恢复回调万一没执行，标记不会永远挡住之后的顿帧；速度本身由 TimeScale 的看门狗兜底
+		ulong now = Time.GetTicksMsec();
+		if (now < _hitStopUntil || Engine.GetMainLoop() is not SceneTree tree)
 		{
 			return;
 		}
-		_hitStopActive = true;
-		P3Makoto.Core.TimeScale.HitStop(0.08);
+		_hitStopUntil = now + (ulong)(realSeconds * 1000.0);
+		P3Makoto.Core.TimeScale.HitStop(0.08, realSeconds + 0.3);
 		tree.CreateTimer(realSeconds, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () =>
-		{
 			P3Makoto.Core.TimeScale.HitStop(1.0);
-			_hitStopActive = false;
-		};
 	}
 
 	/// <summary>全屏冷色提亮（很淡，不刺眼；强度靠局部闪光和震屏表现）。</summary>

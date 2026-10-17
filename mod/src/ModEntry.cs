@@ -13,7 +13,7 @@ public static class ModEntry
 
 	public static void Init()
 	{
-		GD.Print($"{Tag} init v0.14.50");
+		GD.Print($"{Tag} init v0.14.51");
 		// v0.14.44（多版本兼容）：记下游戏版本，换版本出问题时日志里一眼能看到是哪个版本
 		Safe("game version", () => GD.Print($"{Tag} game version {P3Makoto.Core.Compat.GameVersion()}"));
 		try
@@ -51,6 +51,7 @@ public static class ModEntry
 		{
 			tree.CreateTimer(0.0).Timeout += () => Safe("asset guard", () => Core.AssetGuard.Apply("after all mods"));
 		}
+		Safe("timescale watchdog", Core.TimeScale.Install);     // v0.14.51：减速没恢复时自己恢复（玩家：一直像子弹时间）
 		Safe("sfx prewarm", Audio.Sfx.Prewarm);
 		Safe("star orbit", Vfx.StarOrbit.Install);
 		Safe("preload", Vfx.Preload.Start);                  // 选中结城理时要用的大资源后台预加载 + 着色器预编译（避免第一次选中掉帧）
