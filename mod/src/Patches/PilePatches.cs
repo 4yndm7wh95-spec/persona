@@ -28,3 +28,15 @@ public static class PileScreenPatch
 		});
 	}
 }
+
+/// <summary>v0.14.55：关闭牌堆界面时先播退场动画（PileFx.TryExit 接管原版的"藏起来 + 删掉"，播完再做）。出错就走原版。</summary>
+[HarmonyPatch(typeof(NCardPileScreen), nameof(NCardPileScreen.AfterCapstoneClosed))]
+public static class PileScreenClosePatch
+{
+	public static bool Prefix(NCardPileScreen __instance)
+	{
+		bool handled = false;
+		ModEntry.Safe("pile screen exit", () => handled = PileFx.TryExit(__instance));
+		return !handled;
+	}
+}

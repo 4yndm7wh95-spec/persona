@@ -71,8 +71,35 @@ public static class PileFx
 		return !Compat.UsingDirectionalNav() && screen.Pile != null;
 	}
 
+	private const float ExitTime = 0.42f;
+	private static readonly Dictionary<ulong, Action> Exits = new();
+
+	/// <summary>
+	/// v0.14.55 退场动画：游戏关闭界面时调 AfterCapstoneClosed（原版：藏起来 + 删掉）。这里接管：先播 0.42s 退场，播完再按原版的方式藏起来、删掉。
+	/// 关闭流程的其他部分（战斗恢复、遮罩淡出、当前界面清空）照常立即执行，只是这个界面晚一点消失。返回 false = 没有我们的界面，走原版。
+	/// </summary>
+	public static bool TryExit(Control screen)
+	{
+		if (!Exits.Remove(screen.GetInstanceId(), out Action? exit))
+		{
+			return false;
+		}
+		exit();
+		return true;
+	}
+
+	private static void Finalize(Control screen)
+	{
+		if (GodotObject.IsInstanceValid(screen))
+		{
+			screen.Visible = false;
+			screen.QueueFreeSafely();
+		}
+	}
+
 	public static void Rollback(NCardPileScreen screen)
 	{
+		Exits.Remove(screen.GetInstanceId());
 		screen.GetNodeOrNull(RootName)?.QueueFree();
 		if (screen.GetNodeOrNull<CanvasItem>("CardGrid") is CanvasItem grid)
 		{
@@ -123,7 +150,7 @@ public static class PileFx
 		root.AddChild(bg);
 		float diag = Mathf.Sqrt(view.X * view.X / (view.Y * view.Y) + 1f) + 0.1f;
 		Fx.Animate(bg, 0.55, t => water.SetShaderParameter("radius", diag * Ease.OutCubic(t)));
-		Bubbles(root, view, k);
+		Node2D bubbles = Bubbles(root, view, k);
 
 		// ── 右侧：白色大圆盘 + 立体大字 + 立绘 ──
 		Node2D right = new() { Position = new Vector2(700f * k, 0f), Modulate = new Color(1f, 1f, 1f, 0f) };
@@ -176,6 +203,8 @@ public static class PileFx
 		float focusP = 0f;
 		bool focusOn = false;
 		float lastNow = 0f;
+		bool exiting = false, finalized = false;
+		float exitT0 = 0f;
 
 		List<Item> items = new();
 		List<Section> sections = new();
@@ -412,6 +441,30 @@ public static class PileFx
 				float fe = Ease.InOutCubic(focusP);
 				Vector2 focusCenter = FocusCenter * k;
 				Animate(fx, fe, focusP, focusOn, now, focusCenter, k);
+				// 退场（v0.14.55）：0.42s —— 卡牌按顺序往下沉、淡出；标题往左退；圆盘和立绘往右滑出；水下圆孔缩回牌堆按钮；最后才真正关掉界面
+				float ex = exiting ? Mathf.Clamp((now - exitT0) / ExitTime, 0f, 1f) : 0f;
+				if (exiting)
+				{
+					float ei = Ease.InCubic(ex);
+					right.Position = new Vector2(820f * k * ei, 0f);
+					right.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(Mathf.Clamp((ex - 0.3f) / 0.7f, 0f, 1f)));
+					water.SetShaderParameter("radius", diag * (1f - Ease.InOutCubic(Mathf.Clamp((ex - 0.15f) / 0.85f, 0f, 1f))));
+					bubbles.Modulate = new Color(1f, 1f, 1f, 1f - ex);
+					if (screen.GetNodeOrNull<CanvasItem>("BackButton") is CanvasItem backBtn)
+					{
+						backBtn.Modulate = new Color(1f, 1f, 1f, 1f - Ease.OutCubic(ex));
+					}
+					fx.Layer.Modulate = new Color(1f, 1f, 1f, 1f - ex);
+					if (flip != null)
+					{
+						flip.Node.Modulate = new Color(1f, 1f, 1f, 1f - ex);
+					}
+					if (ex >= 1f && !finalized)
+					{
+						finalized = true;
+						Finalize(screen);
+					}
+				}
 				// 圆孔张开一小会儿之后开始建卡牌节点（每帧 4 张，避免一帧卡顿）；入场按序号错开
 				if (now > 0.12f)
 				{
@@ -448,10 +501,14 @@ public static class PileFx
 				{
 					Vector2 p = Screen(new Vector2(0f, s.Y + HeaderH * 0.5f));
 					s.Head.Position = p + new Vector2(-14f * k, 0f);
-					s.Head.Modulate = new Color(1f, 1f, 1f, Fade(p.Y - 20f * k, p.Y + 20f * k) * Mathf.Clamp((now - 0.2f) / 0.25f, 0f, 1f) * (1f - fe));
+					s.Head.Modulate = new Color(1f, 1f, 1f, Fade(p.Y - 20f * k, p.Y + 20f * k) * Mathf.Clamp((now - 0.2f) / 0.25f, 0f, 1f) * (1f - fe) * (1f - ex));
 					s.Head.Position += new Vector2(-60f * k * fe, 0f);
 				}
-				head.Modulate = new Color(1f, 1f, 1f, 1f - 0.85f * fe);
+				head.Modulate = new Color(1f, 1f, 1f, (1f - 0.85f * fe) * (1f - ex));
+				if (exiting)
+				{
+					head.Position = new Vector2(-260f * k * Ease.InCubic(ex), 0f);
+				}
 				if (focused != null)
 				{
 					hovered = null;
@@ -524,6 +581,16 @@ public static class PileFx
 						rot += Mathf.DegToRad(-5f) * r;
 						alpha *= 1f - 0.9f * r;
 					}
+					if (exiting)
+					{
+						// 按排列顺序依次下沉（每张晚 0.012 的进度，最多晚 0.35），边沉边缩小、转一点、淡出
+						float r = Mathf.Clamp((ex - Mathf.Min(0.35f, it.Index * 0.012f)) / 0.65f, 0f, 1f);
+						float ri = Ease.InCubic(r);
+						p += new Vector2(-20f, 130f) * k * ri;
+						want *= 1f - 0.12f * ri;
+						rot += Mathf.DegToRad(4f) * ri;
+						alpha *= 1f - Ease.OutCubic(r);
+					}
 					it.Slot.Position = p;
 					it.Slot.Rotation = rot;
 					float own = Mathf.Max(0.01f, h.Scale.X);
@@ -557,8 +624,50 @@ public static class PileFx
 		}
 
 		tree.ProcessFrame += Tick;
+		ulong sid = screen.GetInstanceId();
+		Exits[sid] = () =>
+		{
+			if (exiting)
+			{
+				return;
+			}
+			exiting = true;
+			exitT0 = Now();
+			// 关闭流程已经把界面的处理模式关了：退场期间打开（立绘 / 粒子继续动），并且不再接受鼠标
+			screen.ProcessMode = Node.ProcessModeEnum.Always;
+			root.MouseFilter = Control.MouseFilterEnum.Ignore;
+			if (screen.GetNodeOrNull<Control>("BackButton") is Control back)
+			{
+				back.MouseFilter = Control.MouseFilterEnum.Ignore;
+				foreach (Node n in back.FindChildren("*", "Control", true, false))
+				{
+					((Control)n).MouseFilter = Control.MouseFilterEnum.Ignore;
+				}
+			}
+			catcher.Visible = false;
+			plate.Visible = false;
+			hovered = null;
+			foreach (Item it in items)
+			{
+				if (it.Holder != null && GodotObject.IsInstanceValid(it.Holder))
+				{
+					it.Holder.Hitbox.MouseFilter = Control.MouseFilterEnum.Ignore;
+				}
+			}
+			Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.3f);
+			// 保险：真实时间 1s 后无论如何关掉（每帧逻辑出问题也不会留着不关）
+			tree.CreateTimer(1.0, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () =>
+			{
+				if (!finalized)
+				{
+					finalized = true;
+					Finalize(screen);
+				}
+			};
+		};
 		root.TreeExiting += () =>
 		{
+			Exits.Remove(sid);
 			tree.ProcessFrame -= Tick;
 			pile.ContentsChanged -= onChanged;
 			FreeFlip(flip);                                  // 特写中途关掉界面：翻转替身借的卡牌还回对象池
@@ -914,7 +1023,7 @@ public static class PileFx
 		return n;
 	}
 
-	private static void Bubbles(Control root, Vector2 view, float k)
+	private static Node2D Bubbles(Control root, Vector2 view, float k)
 	{
 		Node2D layer = new();
 		root.AddChild(layer);
@@ -932,6 +1041,7 @@ public static class PileFx
 			tw.TweenInterval(delay * 0.3);
 			tw.TweenProperty(ring, "position", new Vector2(x + rng.RandfRange(-40f, 40f) * k, -30f), dur).From(new Vector2(x, view.Y + 20f));
 		}
+		return layer;
 	}
 
 	private static Label Text(Node parent, string text, Font? font, int size, Color color, Vector2 at, int outline, Color outlineColor)
