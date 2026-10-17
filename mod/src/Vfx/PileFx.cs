@@ -364,13 +364,36 @@ public static class PileFx
 		pile.ContentsChanged += onChanged;
 
 		SceneTree tree = screen.GetTree();
+		// v0.14.53 兜底：每帧的排版连续出错 3 次 → 拆掉这个界面、退回原版网格（不能留一堆没排好的牌）
+		int tickFails = 0;
+		void RunTick(Action body)
+		{
+			try
+			{
+				body();
+				tickFails = 0;
+			}
+			catch (Exception e)
+			{
+				ModEntry.Report("pile tick", e);
+				if (++tickFails >= 3)
+				{
+					tree.ProcessFrame -= Tick;
+					ModEntry.Warn("pile screen: layout keeps failing -> back to the vanilla grid");
+					FreeFlip(flip);
+					flip = null;
+					Rollback(screen);
+				}
+			}
+		}
+
 		void Tick()
 		{
 			if (!GodotObject.IsInstanceValid(root) || !root.IsVisibleInTree())
 			{
 				return;
 			}
-			ModEntry.Safe("pile tick", () =>
+			RunTick(() =>
 			{
 				float now = Now();
 				float dt = Mathf.Clamp(now - lastNow, 0f, 0.1f);
@@ -536,6 +559,8 @@ public static class PileFx
 		{
 			tree.ProcessFrame -= Tick;
 			pile.ContentsChanged -= onChanged;
+			FreeFlip(flip);                                  // 特写中途关掉界面：翻转替身借的卡牌还回对象池
+			flip = null;
 		};
 		Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.45f);
 	}
