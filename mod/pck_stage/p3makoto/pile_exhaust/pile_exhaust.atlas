@@ -1,0 +1,8 @@
+pile_exhaust.png
+size:2048,1024
+filter:Linear,Linear
+pma:false
+body
+bounds:0,0,286,794
+body_rim
+bounds:288,0,286,794

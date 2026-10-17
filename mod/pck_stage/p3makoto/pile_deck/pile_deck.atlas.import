@@ -1,0 +1,15 @@
+[remap]
+
+importer="spine.atlas"
+type="SpineAtlasResource"
+path="res://.godot/imported/pile_deck.atlas-1ee011e8d8b858affc5f6dad1d64a74f.spatlas"
+
+[deps]
+
+source_file="res://p3makoto/pile_deck/pile_deck.atlas"
+dest_files=["res://.godot/imported/pile_deck.atlas-1ee011e8d8b858affc5f6dad1d64a74f.spatlas"]
+
+[params]
+
+normal_map_prefix="n"
+specular_map_prefix="s"

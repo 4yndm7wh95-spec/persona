@@ -1,0 +1,12 @@
+pile_discard.png
+size:2048,2048
+filter:Linear,Linear
+pma:false
+body
+bounds:0,0,802,1210
+body_rim
+bounds:804,0,802,1210
+eye_half
+bounds:1608,0,111,71
+eye_closed
+bounds:1721,0,111,71

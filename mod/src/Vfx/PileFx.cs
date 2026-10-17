@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Cards;
 using MegaCrit.Sts2.Core.Nodes.Cards.Holders;
+using MegaCrit.Sts2.Core.Nodes.CommonUi;
 using MegaCrit.Sts2.Core.Nodes.Screens;
 using P3Makoto.Core;
 
@@ -27,14 +28,54 @@ public static class PileFx
 	private const string RootName = "P3PileScreen";
 	private const string PortraitPath = "res://p3makoto/ui/pile_portrait.png";
 	private const string PortraitSpine = "res://p3makoto/pile/pile_skel_data.tres";
-
-	// 布局都按 1920×1080 写，运行时乘 k = 视口高 / 1080；右侧的东西贴右边缘
-	private const float Cols = 5;
-	private const float CardW = 160f;                 // 网格里一张牌的宽（参考分辨率像素）
-	private const float CellW = 178f, CellH = 252f;
-	private const float GridX = 190f, GridTop = 262f, GridBottom = 1010f;
 	private const float HeaderH = 58f;
-	private const float Slant = 0.05f;                // 网格沿屏幕向右下斜：每往下 1px 右移 0.05px
+
+	/// <summary>v0.14.56：四个牌堆界面各有不同的版式和动画（用户：每个牌堆都要有不同的表现）。</summary>
+	public enum Kind { Draw, Discard, Exhaust, Deck }
+
+	/// <summary>
+	/// 每个界面的版式（都按 1920×1080 写，运行时乘 k = 视口高 / 1080）。RightSide = 网格贴屏幕右边（宽屏时跟着右移）。
+	/// Slant：网格沿屏幕斜（每往下 1px 横移多少）；Side：装饰 + 立绘那一组从哪边滑进来（+1 右、-1 左）。
+	/// </summary>
+	private sealed class Layout
+	{
+		public Kind Kind;
+		public int Cols = 5;
+		public float CardW = 160f, CellW = 178f, CellH = 252f;
+		public float GridX = 190f, GridTop = 262f, GridBottom = 1010f, Slant = 0.05f;
+		public bool RightSide;
+		public Vector2 Focus = new(700f, 560f);
+		public float InfoX = 60f, TitleX = 58f, Side = 1f;
+		public Vector2 Iris;
+		public string Title = "", Word = "";
+	}
+
+	private static Layout For(Kind kind) => kind switch
+	{
+		Kind.Deck => new Layout
+		{
+			Kind = kind, CardW = 166f, CellW = 186f, GridX = 1920f - 70f - 5 * 186f, Slant = -0.05f, RightSide = true,
+			Focus = new Vector2(1260f, 560f), InfoX = 1520f, TitleX = 930f, Side = -1f, Iris = new Vector2(0.93f, 0.04f), Title = "DECK", Word = "DECK",
+		},
+		Kind.Discard => new Layout
+		{
+			Kind = kind, GridX = 200f, GridTop = 270f, Slant = -0.04f, Focus = new Vector2(720f, 560f),
+			Iris = new Vector2(0.96f, 0.95f), Title = "DISCARD PILE", Word = "DISCARD",
+		},
+		Kind.Exhaust => new Layout
+		{
+			Kind = kind, Slant = 0f, Iris = new Vector2(0.96f, 0.82f), Title = "EXHAUST PILE", Word = "EXHAUST",
+		},
+		_ => new Layout { Kind = Kind.Draw, Iris = new Vector2(0.04f, 0.95f), Title = "DRAW PILE", Word = "DRAW" },
+	};
+
+	public static Kind KindOf(PileType type) => type switch
+	{
+		PileType.Discard => Kind.Discard,
+		PileType.Exhaust => Kind.Exhaust,
+		PileType.Deck => Kind.Deck,
+		_ => Kind.Draw,
+	};
 	private const float PorScale = 0.74f;             // 立绘（1024×1536 画布）缩放
 	private static readonly Vector2 PorTopLeft = new(1150f, -20f);   // 1920 宽下的左上角
 
@@ -62,14 +103,17 @@ public static class PileFx
 		public float Y;
 	}
 
-	public static bool Enabled(NCardPileScreen screen)
+	public static bool Enabled(CardPile? pile)
 	{
 		if (!P3Settings.PileScreen || !Patches.Stage.MakotoRun)
 		{
 			return false;
 		}
-		return !Compat.UsingDirectionalNav() && screen.Pile != null;
+		return !Compat.UsingDirectionalNav() && pile != null;
 	}
+
+	/// <summary>原版界面里要藏起来的节点（牌组界面另有排序按钮条）。回滚时恢复显示。</summary>
+	private static readonly string[] Hidden = { "CardGrid", "%BottomLabel", "%SortingBg", "%ObtainedSorter", "%CardTypeSorter", "%CostSorter", "%AlphabeticalSorter" };
 
 	private const float ExitTime = 0.42f;
 	private static readonly Dictionary<ulong, Action> Exits = new();
@@ -97,21 +141,20 @@ public static class PileFx
 		}
 	}
 
-	public static void Rollback(NCardPileScreen screen)
+	public static void Rollback(Control screen)
 	{
 		Exits.Remove(screen.GetInstanceId());
 		screen.GetNodeOrNull(RootName)?.QueueFree();
-		if (screen.GetNodeOrNull<CanvasItem>("CardGrid") is CanvasItem grid)
+		foreach (string path in Hidden)
 		{
-			grid.Visible = true;
-		}
-		if (screen.GetNodeOrNull<CanvasItem>("%BottomLabel") is CanvasItem bottom)
-		{
-			bottom.Visible = true;
+			if (screen.GetNodeOrNull<CanvasItem>(path) is CanvasItem ci)
+			{
+				ci.Visible = true;
+			}
 		}
 	}
 
-	public static void Build(NCardPileScreen screen)
+	public static void Build(Control screen, CardPile pile, Kind kind)
 	{
 		if (screen.GetNodeOrNull(RootName) != null || screen.GetNodeOrNull<Control>("CardGrid") is not Control grid)
 		{
@@ -120,7 +163,8 @@ public static class PileFx
 		Vector2 view = screen.GetViewportRect().Size;
 		float k = view.Y / 1080f;
 		float rx = view.X - 1920f * k;                    // 右侧元素的水平偏移（宽屏时贴右边缘）
-		CardPile pile = screen.Pile;
+		Layout L = For(kind);
+		float gx = L.GridX + (L.RightSide ? rx / k : 0f);   // 网格左边（参考像素）
 		Font font = Typo.Barlow;
 		float t0 = Time.GetTicksMsec() / 1000f;
 		float Now() => Time.GetTicksMsec() / 1000f - t0;
@@ -129,19 +173,16 @@ public static class PileFx
 		root.SetAnchorsPreset(Control.LayoutPreset.FullRect);
 		screen.AddChild(root);
 		screen.MoveChild(root, grid.GetIndex());             // 在原版网格的位置：返回按钮仍在上面
-		grid.Visible = false;
-		if (screen.GetNodeOrNull<CanvasItem>("%BottomLabel") is CanvasItem bottom)
+		foreach (string path in Hidden)
 		{
-			bottom.Visible = false;                          // 原版说明写的是"按稀有度排序"，这里不是
+			if (screen.GetNodeOrNull<CanvasItem>(path) is CanvasItem ci)
+			{
+				ci.Visible = false;                          // 原版网格、说明（写的是"按稀有度排序"）、牌组的排序按钮条
+			}
 		}
 
 		// ── 背景：圆孔从牌堆按钮那个角张开 ──
-		Vector2 from = pile.Type switch
-		{
-			PileType.Draw => new Vector2(0.04f, 0.95f),
-			PileType.Discard => new Vector2(0.96f, 0.95f),
-			_ => new Vector2(0.96f, 0.82f),
-		};
+		Vector2 from = L.Iris;
 		ShaderMaterial water = new() { Shader = Shaders.Underwater };
 		water.SetShaderParameter("aspect", view.X / view.Y);
 		water.SetShaderParameter("center", from);
@@ -152,32 +193,52 @@ public static class PileFx
 		Fx.Animate(bg, 0.55, t => water.SetShaderParameter("radius", diag * Ease.OutCubic(t)));
 		Node2D bubbles = Bubbles(root, view, k);
 
-		// ── 右侧：白色大圆盘 + 立体大字 + 立绘 ──
-		Node2D right = new() { Position = new Vector2(700f * k, 0f), Modulate = new Color(1f, 1f, 1f, 0f) };
+		// ── 装饰 + 立绘（每个界面不同），整组从一侧滑进来 ──
+		Node2D right = new() { Position = new Vector2(700f * k * L.Side, 0f), Modulate = new Color(1f, 1f, 1f, 0f) };
 		root.AddChild(right);
-		Disc(right, pile.Type, font, k, rx);
-		Portrait(right, k, rx);
+		switch (kind)
+		{
+			case Kind.Deck:
+				DeckDecor(right, view, font, k);
+				break;
+			case Kind.Discard:
+				DiscardDecor(right, view, font, k, rx);
+				break;
+			case Kind.Exhaust:
+				ExhaustDecor(root, right, view, font, k, rx);
+				break;
+			default:
+				Disc(right, L.Word, font, k, rx);
+				Portrait(right, k, rx);
+				break;
+		}
 		Fx.After(right, 0.1, "pile right in", () => Fx.Animate(right, 0.5, t =>
 		{
-			right.Position = new Vector2(700f * k * (1f - Ease.OutExpo(t)), 0f);
+			right.Position = new Vector2(700f * k * L.Side * (1f - Ease.OutExpo(t)), 0f);
 			right.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(t * 3f, 0f, 1f));
 		}));
 
 		// ── 左上：牌堆名 + 张数 + 一行说明 ──
-		Node2D head = new() { Position = new Vector2(-640f * k, 0f) };
+		float headFrom = (L.RightSide ? 900f : -640f) * k;    // 标题从网格那一侧滑进来
+		Node2D head = new() { Position = new Vector2(headFrom, 0f) };
 		root.AddChild(head);
-		string title = pile.Type switch { PileType.Draw => "DRAW PILE", PileType.Discard => "DISCARD PILE", PileType.Exhaust => "EXHAUST PILE", _ => "PILE" };
+		string title = L.Title;
+		float tx = L.TitleX + (L.RightSide ? rx / k : 0f);
 		// 标题：Barlow 粗斜体，白字深蓝描边，右下错开一层宝蓝投影（P3R 菜单标题的叠影）
-		Text(head, title, font, (int)(92f * k), new Color(0.12f, 0.36f, 1f), new Vector2(66f * k, 98f * k), (int)(5f * k), new Color(0.12f, 0.36f, 1f));
-		Label titleL = Text(head, title, font, (int)(92f * k), Colors.White, new Vector2(58f * k, 90f * k), (int)(5f * k), Ink);
-		Label countL = Text(head, "0", font, (int)(112f * k), Cyan, new Vector2((58f + 26f) * k + titleL.GetMinimumSize().X, 74f * k), (int)(5f * k), Ink);
-		Fx.Poly(head, new[] { new Vector2(56f, 200f) * k, new Vector2(560f, 200f) * k, new Vector2(552f, 228f) * k, new Vector2(48f, 228f) * k }, Navy);
-		Fx.Poly(head, new[] { new Vector2(56f, 200f) * k, new Vector2(70f, 200f) * k, new Vector2(62f, 228f) * k, new Vector2(48f, 228f) * k }, Cyan);
-		string note = pile.Type == PileType.Draw
-			? (Zh ? "抽牌顺序随机 · 按类型 → 费用排列" : "DRAW ORDER IS HIDDEN · SORTED BY TYPE → COST")
-			: (Zh ? "按进入牌堆的先后排列 · 最新在前" : "MOST RECENT FIRST");
-		Text(head, note, Zh ? Typo.CjkBold : font, (int)(19f * k), new Color(0.8f, 0.93f, 1f), new Vector2(84f * k, 202f * k), 0, Ink);
-		Fx.After(head, 0.16, "pile head in", () => Fx.Animate(head, 0.45, t => head.Position = new Vector2(-640f * k * (1f - Ease.OutExpo(t)), 0f)));
+		Text(head, title, font, (int)(92f * k), new Color(0.12f, 0.36f, 1f), new Vector2((tx + 8f) * k, 98f * k), (int)(5f * k), new Color(0.12f, 0.36f, 1f));
+		Label titleL = Text(head, title, font, (int)(92f * k), Colors.White, new Vector2(tx * k, 90f * k), (int)(5f * k), Ink);
+		Label countL = Text(head, "0", font, (int)(112f * k), Cyan, new Vector2((tx + 26f) * k + titleL.GetMinimumSize().X, 74f * k), (int)(5f * k), Ink);
+		Fx.Poly(head, new[] { new Vector2(tx - 2f, 200f) * k, new Vector2(tx + 502f, 200f) * k, new Vector2(tx + 494f, 228f) * k, new Vector2(tx - 10f, 228f) * k }, Navy);
+		Fx.Poly(head, new[] { new Vector2(tx - 2f, 200f) * k, new Vector2(tx + 12f, 200f) * k, new Vector2(tx + 4f, 228f) * k, new Vector2(tx - 10f, 228f) * k }, Cyan);
+		string note = kind switch
+		{
+			Kind.Draw => Zh ? "抽牌顺序随机 · 按类型 → 费用排列" : "DRAW ORDER IS HIDDEN · SORTED BY TYPE → COST",
+			Kind.Deck => Zh ? "整副牌组 · 按类型 → 费用排列" : "WHOLE DECK · SORTED BY TYPE → COST",
+			Kind.Exhaust => Zh ? "本场战斗中消耗的牌 · 最新在前" : "EXHAUSTED THIS COMBAT · MOST RECENT FIRST",
+			_ => Zh ? "按进入牌堆的先后排列 · 最新在前" : "MOST RECENT FIRST",
+		};
+		Text(head, note, Zh ? Typo.CjkBold : font, (int)(19f * k), new Color(0.8f, 0.93f, 1f), new Vector2((tx + 26f) * k, 202f * k), 0, Ink);
+		Fx.After(head, 0.16, "pile head in", () => Fx.Animate(head, 0.45, t => head.Position = new Vector2(headFrom * (1f - Ease.OutExpo(t)), 0f)));
 
 		// ── 网格 ──
 		Control cards = new() { MouseFilter = Control.MouseFilterEnum.Ignore };
@@ -187,13 +248,14 @@ public static class PileFx
 		root.AddChild(heads);
 		root.MoveChild(heads, cards.GetIndex());              // 段标题在卡牌下面（放大的牌可以盖住标题）
 		Node2D plate = NamePlate(root, k);                     // 名牌在最上面
-		Label empty = Text(root, "EMPTY", font, (int)(90f * k), new Color(1f, 1f, 1f, 0.45f), new Vector2(GridX, GridTop + 60f) * k, 0, Ink);
+		Label empty = Text(root, "EMPTY", font, (int)(90f * k), new Color(1f, 1f, 1f, 0.45f), new Vector2(gx, L.GridTop + 60f) * k, 0, Ink);
 		empty.Visible = false;
 
 		// ── 点击特写：压暗层 + 白色斜带 + 旋转光芒 + 左侧说明；挡点击的透明层 ──
 		// v0.14.54：这几层都和卡牌放在同一个父节点（cards）里，特写时只调前后顺序（压暗层 → 挡点击层 → 特写那张牌）。
 		// 之前把特写的牌 Reparent 到另一层：holder 离开场景树时游戏会回收它的牌面（NGridCardHolder._ExitTree），牌就消失了
-		Focus fx = FocusLayer(cards, view, k, font);
+		Vector2 focusAt = L.Focus + new Vector2(L.RightSide ? rx / k : 0f, 0f);
+		Focus fx = FocusLayer(cards, view, k, font, focusAt, L.InfoX + (L.RightSide ? rx / k : 0f));
 		Control catcher = new() { MouseFilter = Control.MouseFilterEnum.Stop, Visible = false };
 		catcher.SetAnchorsPreset(Control.LayoutPreset.FullRect);
 		cards.AddChild(catcher);
@@ -207,6 +269,21 @@ public static class PileFx
 		float exitT0 = 0f;
 
 		List<Item> items = new();
+		// 牌组界面原版的「查看升级」勾选框保留：勾上 / 取消时把网格里能升级的牌都切到升级后 / 升级前
+		NTickbox? upgrades = kind == Kind.Deck ? screen.GetNodeOrNull<NTickbox>("%Upgrades") : null;
+		if (upgrades != null)
+		{
+			upgrades.Toggled += tb => ModEntry.Safe("deck upgrades", () =>
+			{
+				foreach (Item it in items)
+				{
+					if (it.Holder != null && GodotObject.IsInstanceValid(it.Holder) && it.Card.IsUpgradable)
+					{
+						it.Holder.SetIsPreviewingUpgrade(tb.IsTicked);
+					}
+				}
+			});
+		}
 		List<Section> sections = new();
 		List<CardModel> pending = new();
 		Item? hovered = null;
@@ -249,7 +326,7 @@ public static class PileFx
 
 			List<CardModel> all = pile.Cards.ToList();
 			List<(string En, string Zh, List<CardModel> Cards)> groups = new();
-			if (pile.Type == PileType.Draw)
+			if (kind == Kind.Draw || kind == Kind.Deck)
 			{
 				foreach (IGrouping<int, CardModel> g in all.GroupBy(c => TypeOrder(c.Type)).OrderBy(g => g.Key))
 				{
@@ -266,21 +343,21 @@ public static class PileFx
 			int index = 0;
 			foreach ((string en, string zh, List<CardModel> list) in groups)
 			{
-				sections.Add(new Section { Head = SectionHead(heads, en, zh, list.Count, font, k), Y = y });
+				sections.Add(new Section { Head = SectionHead(heads, en, zh, list.Count, font, k, L.Cols * L.CellW), Y = y });
 				y += HeaderH;
 				for (int i = 0; i < list.Count; i++)
 				{
 					pending.Add(list[i]);
-					items.Add(new Item { Card = list[i], Index = index++, At = new Vector2((i % (int)Cols) * CellW + CellW / 2f, y + (i / (int)Cols) * CellH + CellH / 2f) });
+					items.Add(new Item { Card = list[i], Index = index++, At = new Vector2((i % L.Cols) * L.CellW + L.CellW / 2f, y + (i / L.Cols) * L.CellH + L.CellH / 2f) });
 				}
-				y += Mathf.Ceil(list.Count / Cols) * CellH + 16f;
+				y += Mathf.Ceil(list.Count / (float)L.Cols) * L.CellH + 16f;
 			}
 			contentH = y;
 			countL.Text = all.Count.ToString();
 			target = Mathf.Clamp(target, 0f, MaxScroll());
 		}
 
-		float MaxScroll() => Mathf.Max(0f, contentH - (GridBottom - GridTop));
+		float MaxScroll() => Mathf.Max(0f, contentH - (L.GridBottom - L.GridTop));
 
 		void Create(Item it)
 		{
@@ -297,6 +374,10 @@ public static class PileFx
 			h.MouseFilter = Control.MouseFilterEnum.Pass;
 			slot.AddChild(h);
 			card!.UpdateVisuals(pile.Type, CardPreviewMode.Normal);
+			if (upgrades != null && upgrades.IsTicked && it.Card.IsUpgradable)
+			{
+				h.SetIsPreviewingUpgrade(true);                // 牌组界面勾了「查看升级」
+			}
 			it.Slot = slot;
 			it.Holder = h;
 			it.Born = Mathf.Max(Now(), nextBorn);
@@ -362,8 +443,8 @@ public static class PileFx
 		{
 			if (ev is InputEventMouseButton { Pressed: true } mb)
 			{
-				if (mb.ButtonIndex == MouseButton.WheelUp) target -= CellH * 0.6f;
-				else if (mb.ButtonIndex == MouseButton.WheelDown) target += CellH * 0.6f;
+				if (mb.ButtonIndex == MouseButton.WheelUp) target -= L.CellH * 0.6f;
+				else if (mb.ButtonIndex == MouseButton.WheelDown) target += L.CellH * 0.6f;
 			}
 		}
 
@@ -439,14 +520,14 @@ public static class PileFx
 					flip = null;
 				}
 				float fe = Ease.InOutCubic(focusP);
-				Vector2 focusCenter = FocusCenter * k;
+				Vector2 focusCenter = focusAt * k;
 				Animate(fx, fe, focusP, focusOn, now, focusCenter, k);
 				// 退场（v0.14.55）：0.42s —— 卡牌按顺序往下沉、淡出；标题往左退；圆盘和立绘往右滑出；水下圆孔缩回牌堆按钮；最后才真正关掉界面
 				float ex = exiting ? Mathf.Clamp((now - exitT0) / ExitTime, 0f, 1f) : 0f;
 				if (exiting)
 				{
 					float ei = Ease.InCubic(ex);
-					right.Position = new Vector2(820f * k * ei, 0f);
+					right.Position = new Vector2(820f * k * L.Side * ei, 0f);
 					right.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(Mathf.Clamp((ex - 0.3f) / 0.7f, 0f, 1f)));
 					water.SetShaderParameter("radius", diag * (1f - Ease.InOutCubic(Mathf.Clamp((ex - 0.15f) / 0.85f, 0f, 1f))));
 					bubbles.Modulate = new Color(1f, 1f, 1f, 1f - ex);
@@ -492,10 +573,10 @@ public static class PileFx
 
 				Vector2 Screen(Vector2 at)
 				{
-					float sy = GridTop + at.Y - scroll;
-					return new Vector2(GridX + at.X + (sy - GridTop) * Slant, sy) * k;
+					float sy = L.GridTop + at.Y - scroll;
+					return new Vector2(gx + at.X + (sy - L.GridTop) * L.Slant, sy) * k;
 				}
-				float Fade(float top, float bottom) => Mathf.Clamp((top - (GridTop - 22f) * k) / (36f * k), 0f, 1f) * Mathf.Clamp((GridBottom * k - bottom) / (50f * k), 0f, 1f);
+				float Fade(float top, float bottom) => Mathf.Clamp((top - (L.GridTop - 22f) * k) / (36f * k), 0f, 1f) * Mathf.Clamp((L.GridBottom * k - bottom) / (50f * k), 0f, 1f);
 
 				foreach (Section s in sections)
 				{
@@ -507,7 +588,7 @@ public static class PileFx
 				head.Modulate = new Color(1f, 1f, 1f, (1f - 0.85f * fe) * (1f - ex));
 				if (exiting)
 				{
-					head.Position = new Vector2(-260f * k * Ease.InCubic(ex), 0f);
+					head.Position = new Vector2((L.RightSide ? 320f : -260f) * k * Ease.InCubic(ex), 0f);
 				}
 				if (focused != null)
 				{
@@ -527,27 +608,48 @@ public static class PileFx
 					}
 					NGridCardHolder h = it.Holder;
 					Vector2 cs = h.Hitbox.Size.X > 1f ? h.Hitbox.Size : new Vector2(300f, 422f);
-					float baseScale = CardW * k / cs.X;
+					float baseScale = L.CardW * k / cs.X;
 					float half = cs.Y * baseScale * 0.5f;
 					Vector2 p = Screen(it.At);
 					float fade = Fade(p.Y - half, p.Y + half);
-					// 入场：从左下方弹入（OutBack），带淡入
-					float born = Mathf.Clamp((now - it.Born) / 0.38f, 0f, 1f);
+					// 入场（每个界面不同）：抽牌堆从左下弹入；牌组一列列从右侧滑入；弃牌堆从上方飘落（左右摆着转）；消耗堆由光点聚拢显形（从大到小、淡入）
+					float born = Mathf.Clamp((now - it.Born) / (kind == Kind.Discard ? 0.6f : 0.38f), 0f, 1f);
 					float pop = Ease.OutBack(born);
+					float enterRot = 0f, enterScale = 1f;
 					it.Lift = Mathf.MoveToward(it.Lift, it == hovered ? 1f : 0f, 0.12f);
 					float lift = Ease.OutCubic(it.Lift);
 					it.Dim = Mathf.MoveToward(it.Dim, any && it != hovered ? 0.55f : 1f, 0.07f);
-					p += new Vector2(-40f, 46f) * k * (1f - pop) + new Vector2(0f, -14f) * k * lift;
+					switch (kind)
+					{
+						case Kind.Deck:
+							p += new Vector2(160f, 0f) * k * (1f - Ease.OutExpo(born));
+							pop = 1f;
+							break;
+						case Kind.Discard:
+							float fall = 1f - Ease.OutCubic(born);
+							p += new Vector2(Mathf.Sin(born * Mathf.Pi * 2.2f) * 26f * fall, -190f * fall) * k;
+							enterRot = Mathf.DegToRad(16f) * Mathf.Sin(born * Mathf.Pi * 2.2f) * fall;
+							pop = 1f;
+							break;
+						case Kind.Exhaust:
+							enterScale = 1f + 0.3f * (1f - Ease.OutCubic(born));
+							pop = 1f;
+							break;
+						default:
+							p += new Vector2(-40f, 46f) * k * (1f - pop);
+							break;
+					}
+					p += new Vector2(0f, -14f) * k * lift;
 					bool on = fade > 0.01f || it == hovered;
 					it.Slot.Visible = on;
 					if (!on)
 					{
 						continue;
 					}
-					float rot = Mathf.DegToRad(-2f) * (1f - lift);
+					float rot = Mathf.DegToRad(L.Slant < 0f ? 2f : L.Slant > 0f ? -2f : 0f) * (1f - lift) + enterRot;
 					// 原版悬停会把 holder 自己的 Scale 从 0.8 跳到 1.0；这里按它当前的 Scale 反算，让总缩放平滑
-					float want = baseScale * (0.85f + 0.15f * pop) * (1f + 0.26f * lift);
-					float alpha = Mathf.Clamp(born * 3f, 0f, 1f) * (it == hovered ? 1f : fade);
+					float want = baseScale * (0.85f + 0.15f * pop) * enterScale * (1f + 0.26f * lift);
+					float alpha = Mathf.Clamp(born * (kind == Kind.Exhaust ? 1.4f : 3f), 0f, 1f) * (it == hovered ? 1f : fade);
 					if (it == focused)
 					{
 						// 特写：沿上拱的弧线飞到中间、放大，途中绕竖轴真正翻一圈（带透视：正面 → 塔罗牌背 → 正面），落定后轻轻浮动。
@@ -586,9 +688,25 @@ public static class PileFx
 						// 按排列顺序依次下沉（每张晚 0.012 的进度，最多晚 0.35），边沉边缩小、转一点、淡出
 						float r = Mathf.Clamp((ex - Mathf.Min(0.35f, it.Index * 0.012f)) / 0.65f, 0f, 1f);
 						float ri = Ease.InCubic(r);
-						p += new Vector2(-20f, 130f) * k * ri;
-						want *= 1f - 0.12f * ri;
-						rot += Mathf.DegToRad(4f) * ri;
+						// 退场也各不相同：牌组往右滑走；弃牌堆继续往下掉（转着）；消耗堆放大散去；抽牌堆往下沉
+						switch (kind)
+						{
+							case Kind.Deck:
+								p += new Vector2(300f, 0f) * k * ri;
+								break;
+							case Kind.Discard:
+								p += new Vector2(30f, 280f) * k * ri;
+								rot += Mathf.DegToRad(12f) * ri;
+								break;
+							case Kind.Exhaust:
+								want *= 1f + 0.35f * ri;
+								break;
+							default:
+								p += new Vector2(-20f, 130f) * k * ri;
+								want *= 1f - 0.12f * ri;
+								rot += Mathf.DegToRad(4f) * ri;
+								break;
+						}
 						alpha *= 1f - Ease.OutCubic(r);
 					}
 					it.Slot.Position = p;
@@ -596,7 +714,9 @@ public static class PileFx
 					float own = Mathf.Max(0.01f, h.Scale.X);
 					it.Slot.Scale = Vector2.One * (want / own);
 					float d = it == focused ? 1f : it.Dim;
-					it.Slot.Modulate = new Color(d * 0.9f + 0.1f, d * 0.94f + 0.06f, Mathf.Min(1f, d + 0.1f), alpha);
+					// 消耗堆的牌偏冷灰（已经被"用掉"的感觉）
+					float cool = kind == Kind.Exhaust && it != focused ? 0.78f : 1f;
+					it.Slot.Modulate = new Color((d * 0.9f + 0.1f) * cool, (d * 0.94f + 0.06f) * (cool + (1f - cool) * 0.4f), Mathf.Min(1f, d + 0.1f), alpha);
 				}
 				// 指到的那张移到最上层（绘制和鼠标判定都按节点顺序）
 				if (any && hovered?.Slot is Control top && top.GetParent() == cards && top.GetIndex() != cards.GetChildCount() - 1)
@@ -677,7 +797,6 @@ public static class PileFx
 	}
 
 	// ── 点击特写 ──
-	private static readonly Vector2 FocusCenter = new(700f, 560f);   // 特写卡牌中心（参考像素）
 	private const float FocusW = 450f;                               // 特写卡牌宽
 
 	private sealed class Focus
@@ -690,16 +809,17 @@ public static class PileFx
 		public Label Name = null!;
 		public Label Kind = null!;
 		public Label Copies = null!;
+		public float InfoBase;                    // 左侧说明整体的横向位置（牌组界面的说明在特写卡牌右边）
 	}
 
 	/// <summary>特写的背景层：压暗、穿过卡牌的 P3R 白色斜带（带红 / 青细条）、卡牌后面慢转的光芒和两道细圆、左侧说明（牌名 / 类型费用 / 同名张数）。</summary>
-	private static Focus FocusLayer(Control parent, Vector2 view, float k, Font font)
+	private static Focus FocusLayer(Control parent, Vector2 view, float k, Font font, Vector2 center, float infoX)
 	{
 		Focus f = new() { Layer = new Node2D { Visible = false } };
 		parent.AddChild(f.Layer);
 		f.Dim = new ColorRect { Size = view, Color = new Color(0.01f, 0.03f, 0.13f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore };
 		f.Layer.AddChild(f.Dim);
-		Vector2 c = FocusCenter * k;
+		Vector2 c = center * k;
 		// 斜带：以特写中心为轴转 -16°，很长；从左下方滑进来
 		f.Band = new Node2D { Position = c, Rotation = Mathf.DegToRad(-16f) };
 		f.Layer.AddChild(f.Band);
@@ -719,6 +839,7 @@ public static class PileFx
 		f.Rays.AddChild(new Line2D { Points = Fx.Circle(430f * k, 96).Append(Fx.Circle(430f * k, 96)[0]).ToArray(), Width = 1f * k, DefaultColor = new Color(0.6f, 0.9f, 1f, 0.45f), Antialiased = true });
 		// 左侧说明
 		f.Info = new Node2D();
+		f.InfoBase = (infoX - 60f) * k;
 		f.Layer.AddChild(f.Info);
 		f.Name = Text(f.Info, "", Typo.CjkBold, (int)(54f * k), Colors.White, new Vector2(60f, 300f) * k, (int)(6f * k), Ink);
 		Fx.Poly(f.Info, new[] { new Vector2(60f, 382f) * k, new Vector2(400f, 382f) * k, new Vector2(394f, 390f) * k, new Vector2(54f, 390f) * k }, Red);
@@ -752,11 +873,11 @@ public static class PileFx
 		f.Rays.Modulate = new Color(1f, 1f, 1f, e);
 		float ia = on ? Mathf.Clamp((p - 0.45f) / 0.4f, 0f, 1f) : e;
 		f.Info.Modulate = new Color(1f, 1f, 1f, ia);
-		f.Info.Position = new Vector2(-90f * k * (1f - Ease.OutCubic(ia)), 0f);
+		f.Info.Position = new Vector2(f.InfoBase - 90f * k * (1f - Ease.OutCubic(ia)), 0f);
 	}
 
 	/// <summary>白色大圆盘：中心纯白、边缘淡青（顶点色渐变），三道同心细圆、外圈青 / 白刻度弧；立体大字只画在圆盘里面。</summary>
-	private static void Disc(Node2D parent, PileType type, Font? font, float k, float rx)
+	private static void Disc(Node2D parent, string word, Font? font, float k, float rx)
 	{
 		Vector2 c = new Vector2(1760f, 500f) * k + new Vector2(rx, 0f);
 		float r = 640f * k;
@@ -784,7 +905,6 @@ public static class PileFx
 			disc.AddChild(new Line2D { Points = new[] { new Vector2(o - r, -r), new Vector2(o + r, r) }, Width = 1.5f * k, DefaultColor = new Color(0.55f, 0.68f, 0.82f, 0.12f) });
 		}
 		// 立体大字：深灰投影 + 浅灰字身，沿圆盘左下边缘往上走，下半截被圆盘裁掉
-		string word = type switch { PileType.Draw => "DRAW", PileType.Discard => "DISCARD", PileType.Exhaust => "EXHAUST", _ => "PILE" };
 		Vector2 origin = new Vector2(1190f, 1150f) * k + new Vector2(rx, 0f) - c;
 		float rot = Mathf.DegToRad(-76f);
 		int size = (int)(250f * k);
@@ -810,6 +930,125 @@ public static class PileFx
 		Tween spin = outer.CreateTween().SetLoops();
 		spin.TweenProperty(outer, "rotation", Mathf.DegToRad(-6f), 9.0).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
 		spin.TweenProperty(outer, "rotation", 0f, 9.0).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+	}
+
+	/// <summary>会动的立绘：Spine 待机动画（骨骼数据读不到就用静态图）。center = 画布中心的位置，scale = 画布缩放；返回装立绘的节点。</summary>
+	private static Node2D SpinePortrait(Node2D parent, string spinePath, string texPath, Vector2 center, float scale, float canvasH)
+	{
+		Node2D holder = new() { Position = center, Scale = Vector2.One * scale };
+		parent.AddChild(holder);
+		Texture2D? tex = ResourceLoader.Exists(texPath) ? ResourceLoader.Load(texPath) as Texture2D : null;
+		Resource? data = ResourceLoader.Exists(spinePath) ? ResourceLoader.Load(spinePath) : null;
+		bool dataOk = data != null && (!data.HasMethod("is_skeleton_data_loaded") || data.Call("is_skeleton_data_loaded").AsBool());
+		Node2D? spine = dataOk ? ClassDB.Instantiate("SpineSprite").AsGodotObject() as Node2D : null;
+		if (spine != null)
+		{
+			spine.Position = new Vector2(0f, canvasH / 2f);            // 骨骼原点在画布底边中点
+			holder.AddChild(spine);
+			spine.Set("skeleton_data_res", data!);
+			Scenes.CharSelectBg.PlayIdle(spine, 30, () =>
+			{
+				if (GodotObject.IsInstanceValid(holder) && tex != null)
+				{
+					spine.QueueFree();
+					holder.AddChild(new Sprite2D { Texture = tex });
+				}
+			});
+		}
+		else if (tex != null)
+		{
+			holder.AddChild(new Sprite2D { Texture = tex });
+		}
+		return holder;
+	}
+
+	/// <summary>灰色立体大字（深灰投影 + 浅灰字身），旋转后放在 at（参考像素，左上角是字的起点）。</summary>
+	private static void BigWord(Node parent, string word, Font? font, float k, Vector2 at, float rotDeg, float size, float alpha = 1f)
+	{
+		Label shadow = Text(parent, word, font, (int)(size * k), new Color(0.46f, 0.5f, 0.56f, alpha), at + new Vector2(22f, 18f) * k, 0, Ink);
+		shadow.Rotation = Mathf.DegToRad(rotDeg);
+		Label body = Text(parent, word, font, (int)(size * k), new Color(0.84f, 0.86f, 0.9f, alpha), at, (int)(3f * k), new Color(0.59f, 0.63f, 0.69f, alpha));
+		body.Rotation = Mathf.DegToRad(rotDeg);
+	}
+
+	/// <summary>
+	/// 牌组（仿 P3R STATUS）：左边一大块白色斜切板（右边是一道斜切口），横躺的脸部特写裁在板里；切口外贴深蓝斜条 + 青色细线 + 红色细线；
+	/// 卡牌网格在右边。
+	/// </summary>
+	private static void DeckDecor(Node2D parent, Vector2 view, Font? font, float k)
+	{
+		Vector2[] slabPts = { new(-80f, 70f), new(820f, 70f), new(600f, 1100f), new(-80f, 1100f) };
+		// 切口外：深蓝宽斜条、青色细线、红色细线
+		Vector2 top = new(820f, 70f), bottom = new(600f, 1100f);
+		Vector2 n = new Vector2(1030f, 220f).Normalized();             // 切口的外法向（大致朝右）
+		void Strip(float a, float b, Color c) => Fx.Poly(parent, new[] { (top + n * a) * k, (top + n * b) * k, (bottom + n * b) * k, (bottom + n * a) * k }, c);
+		Strip(0f, 46f, new Color(0.03f, 0.07f, 0.24f, 0.92f));
+		Strip(52f, 56f, Cyan);
+		Strip(70f, 73f, Red);
+		Polygon2D slab = new() { Polygon = slabPts.Select(p => p * k).ToArray(), Color = new Color(0.95f, 0.97f, 1f, 0.97f), ClipChildren = CanvasItem.ClipChildrenMode.AndDraw };
+		parent.AddChild(slab);
+		for (int i = -12; i <= 24; i++)
+		{
+			float o = i * 52f * k;
+			slab.AddChild(new Line2D { Points = new[] { new Vector2(o, 0f), new Vector2(o - 1100f * k, 1100f * k) }, Width = 1.5f * k, DefaultColor = new Color(0.55f, 0.68f, 0.82f, 0.1f) });
+		}
+		SpinePortrait(slab, "res://p3makoto/pile_deck/pile_deck_skel_data.tres", "res://p3makoto/ui/pile_deck.png", new Vector2(514f, 546f) * k, 0.9f * k, 1254f);
+	}
+
+	/// <summary>弃牌堆（仿 P3R ITEM）：右上、右下两块白色大三角 + 一道青色斜光片 + 一道红色细斜线；后仰下沉的立绘贴右边（大字会被立绘挡住，不放）。</summary>
+	private static void DiscardDecor(Node2D parent, Vector2 view, Font? font, float k, float rx)
+	{
+		Vector2 o = new(rx, 0f);
+		Fx.Poly(parent, new[] { new Vector2(1300f, 1080f) * k + o, new Vector2(1360f, 1080f) * k + o, new Vector2(1760f, 330f) * k + o, new Vector2(1720f, 330f) * k + o }, new Color(0.55f, 0.88f, 1f, 0.35f));
+		Fx.Poly(parent, new[] { new Vector2(1240f, 70f) * k + o, new Vector2(1920f, 70f) * k + o, new Vector2(1920f, 660f) * k + o }, new Color(0.95f, 0.97f, 1f, 0.95f));
+		Fx.Poly(parent, new[] { new Vector2(1500f, 1080f) * k + o, new Vector2(1920f, 560f) * k + o, new Vector2(1920f, 1080f) * k + o }, new Color(0.95f, 0.97f, 1f, 0.93f));
+		Fx.Poly(parent, new[] { new Vector2(1232f, 70f) * k + o, new Vector2(1240f, 70f) * k + o, new Vector2(1920f, 668f) * k + o, new Vector2(1920f, 676f) * k + o }, Red);
+		SpinePortrait(parent, "res://p3makoto/pile_discard/pile_discard_skel_data.tres", "res://p3makoto/ui/pile_discard.png", new Vector2(1552f, 537f) * k + o, 0.72f * k, 1536f);
+	}
+
+	/// <summary>
+	/// 消耗堆（仿 P3R QUEST）：整屏再压暗一层深海蓝 + 细网格线（像深海里的坐标格），右边远处背对镜头漂走的小小身影，身边慢慢上升的青色光点；
+	/// 竖排的半透明大字 EXHAUST 贴右边缘。
+	/// </summary>
+	private static void ExhaustDecor(Control root, Node2D parent, Vector2 view, Font? font, float k, float rx)
+	{
+		ColorRect deep = new() { Size = view, Color = new Color(0.0f, 0.02f, 0.1f, 0.5f), MouseFilter = Control.MouseFilterEnum.Ignore };
+		root.AddChild(deep);
+		root.MoveChild(deep, parent.GetIndex());
+		Node2D gridLines = new();
+		root.AddChild(gridLines);
+		root.MoveChild(gridLines, parent.GetIndex());
+		for (float x = 0f; x < view.X; x += 96f * k)
+		{
+			gridLines.AddChild(new Line2D { Points = new[] { new Vector2(x, 0f), new Vector2(x, view.Y) }, Width = 1f, DefaultColor = new Color(0.45f, 0.8f, 1f, 0.07f) });
+		}
+		for (float y = 0f; y < view.Y; y += 96f * k)
+		{
+			gridLines.AddChild(new Line2D { Points = new[] { new Vector2(0f, y), new Vector2(view.X, y) }, Width = 1f, DefaultColor = new Color(0.45f, 0.8f, 1f, 0.07f) });
+		}
+		Vector2 o = new(rx, 0f);
+		BigWord(parent, "EXHAUST", font, k, new Vector2(1700f, 1100f) * k + o, -90f, 230f, 0.22f);
+		SpinePortrait(parent, "res://p3makoto/pile_exhaust/pile_exhaust_skel_data.tres", "res://p3makoto/ui/pile_exhaust.png", new Vector2(1500f, 560f) * k + o, 0.8f * k, 1536f);
+		CpuParticles2D motes = new()
+		{
+			Position = new Vector2(1500f, 700f) * k + o,
+			Amount = 22,
+			Lifetime = 4.0,
+			Preprocess = 3.0,
+			EmissionShape = CpuParticles2D.EmissionShapeEnum.Rectangle,
+			EmissionRectExtents = new Vector2(200f, 260f) * k,
+			Direction = new Vector2(0f, -1f),
+			Spread = 20f,
+			Gravity = new Vector2(0f, -4f) * k,
+			InitialVelocityMin = 10f * k,
+			InitialVelocityMax = 26f * k,
+			ScaleAmountMin = 1.2f * k,
+			ScaleAmountMax = 3f * k,
+			Color = new Color(0.6f, 0.92f, 1f, 0.85f),
+			ColorRamp = new Gradient { Offsets = new[] { 0f, 0.2f, 0.75f, 1f }, Colors = new[] { new Color(1f, 1f, 1f, 0f), new Color(1f, 1f, 1f, 1f), new Color(1f, 1f, 1f, 0.6f), new Color(1f, 1f, 1f, 0f) } },
+			Material = Fx.Additive,
+		};
+		parent.AddChild(motes);
 	}
 
 	private static Vector2[] Arc(float r, float a0, float a1, int n)
@@ -891,7 +1130,7 @@ public static class PileFx
 	}
 
 	/// <summary>段标题：深色斜切牌（左边一道青色）+ 英文类型 + 中文 + 青色张数，后面一条细线和箭头延伸到网格右边。</summary>
-	private static Node2D SectionHead(Node2D parent, string en, string zh, int count, Font? font, float k)
+	private static Node2D SectionHead(Node2D parent, string en, string zh, int count, Font? font, float k, float width)
 	{
 		Node2D n = new() { Modulate = new Color(1f, 1f, 1f, 0f) };
 		parent.AddChild(n);
@@ -906,8 +1145,8 @@ public static class PileFx
 		Label c = Text(n, "×" + count, font, (int)(38f * k), Cyan, new Vector2(250f, -25f) * k, 0, Ink);
 		c.HorizontalAlignment = HorizontalAlignment.Right;
 		c.Size = new Vector2(60f * k, c.Size.Y);
-		n.AddChild(new Line2D { Points = new[] { new Vector2(338f, 0f) * k, new Vector2(Cols * CellW - 6f, 0f) * k }, Width = 2f * k, DefaultColor = new Color(0.6f, 0.86f, 1f, 0.55f) });
-		Fx.Poly(n, new[] { new Vector2(Cols * CellW - 6f, -6f) * k, new Vector2(Cols * CellW + 6f, 0f) * k, new Vector2(Cols * CellW - 6f, 6f) * k }, new Color(0.6f, 0.86f, 1f, 0.8f));
+		n.AddChild(new Line2D { Points = new[] { new Vector2(338f, 0f) * k, new Vector2(width - 6f, 0f) * k }, Width = 2f * k, DefaultColor = new Color(0.6f, 0.86f, 1f, 0.55f) });
+		Fx.Poly(n, new[] { new Vector2(width - 6f, -6f) * k, new Vector2(width + 6f, 0f) * k, new Vector2(width - 6f, 6f) * k }, new Color(0.6f, 0.86f, 1f, 0.8f));
 		return n;
 	}
 

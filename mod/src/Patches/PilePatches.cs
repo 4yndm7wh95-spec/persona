@@ -1,4 +1,5 @@
 using HarmonyLib;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Nodes.Screens;
 using P3Makoto.Vfx;
 
@@ -12,13 +13,13 @@ public static class PileScreenPatch
 	{
 		ModEntry.Safe("pile screen", () =>
 		{
-			if (!PileFx.Enabled(__instance))
+			if (!PileFx.Enabled(__instance.Pile))
 			{
 				return;
 			}
 			try
 			{
-				PileFx.Build(__instance);
+				PileFx.Build(__instance, __instance.Pile, PileFx.KindOf(__instance.Pile.Type));
 			}
 			catch
 			{
@@ -37,6 +38,44 @@ public static class PileScreenClosePatch
 	{
 		bool handled = false;
 		ModEntry.Safe("pile screen exit", () => handled = PileFx.TryExit(__instance));
+		return !handled;
+	}
+}
+
+/// <summary>v0.14.56：右上角「牌组」界面（NDeckViewScreen，地图上和战斗里都能打开）也换成 P3R 风格（PileFx.Kind.Deck：立绘在左、卡牌在右）。</summary>
+[HarmonyPatch(typeof(NDeckViewScreen), nameof(NDeckViewScreen._Ready))]
+public static class DeckScreenPatch
+{
+	public static void Postfix(NDeckViewScreen __instance)
+	{
+		ModEntry.Safe("deck screen", () =>
+		{
+			CardPile? pile = Traverse.Create(__instance).Field("_pile").GetValue<CardPile>();
+			if (!PileFx.Enabled(pile))
+			{
+				return;
+			}
+			try
+			{
+				PileFx.Build(__instance, pile!, PileFx.Kind.Deck);
+			}
+			catch
+			{
+				PileFx.Rollback(__instance);
+				throw;
+			}
+		});
+	}
+}
+
+/// <summary>v0.14.56：牌组界面关闭时也先播退场动画（NDeckViewScreen 重写的 AfterCapstoneClosed 会先调这个基类方法）。</summary>
+[HarmonyPatch(typeof(NCardsViewScreen), nameof(NCardsViewScreen.AfterCapstoneClosed))]
+public static class CardsViewClosePatch
+{
+	public static bool Prefix(NCardsViewScreen __instance)
+	{
+		bool handled = false;
+		ModEntry.Safe("deck screen exit", () => handled = PileFx.TryExit(__instance));
 		return !handled;
 	}
 }

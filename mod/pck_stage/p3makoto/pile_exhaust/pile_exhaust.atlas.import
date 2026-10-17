@@ -1,0 +1,15 @@
+[remap]
+
+importer="spine.atlas"
+type="SpineAtlasResource"
+path="res://.godot/imported/pile_exhaust.atlas-f9528f5e2f07dd52080411627fbefc5d.spatlas"
+
+[deps]
+
+source_file="res://p3makoto/pile_exhaust/pile_exhaust.atlas"
+dest_files=["res://.godot/imported/pile_exhaust.atlas-f9528f5e2f07dd52080411627fbefc5d.spatlas"]
+
+[params]
+
+normal_map_prefix="n"
+specular_map_prefix="s"

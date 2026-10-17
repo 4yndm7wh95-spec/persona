@@ -1,0 +1,13 @@
+[remap]
+
+importer="spine.json"
+type="SpineSkeletonFileResource"
+path="res://.godot/imported/pile_exhaust.spine-json-698470ba548a3ac14f6f8397cefe8ace.spjson"
+
+[deps]
+
+source_file="res://p3makoto/pile_exhaust/pile_exhaust.spine-json"
+dest_files=["res://.godot/imported/pile_exhaust.spine-json-698470ba548a3ac14f6f8397cefe8ace.spjson"]
+
+[params]
+

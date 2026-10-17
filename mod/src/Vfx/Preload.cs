@@ -22,6 +22,9 @@ public static class Preload
 		PortraitSpine,                                     // 选人界面的 Spine 立绘（骨骼数据 + 图集）
 		"res://p3makoto/pile/pile_skel_data.tres",         // v0.14.49 牌堆界面的 Spine 立绘（第一次打开牌堆时不卡）
 		"res://p3makoto/ui/pile_portrait.png",
+		"res://p3makoto/pile_deck/pile_deck_skel_data.tres",       // v0.14.56 牌组 / 弃牌堆 / 消耗堆界面的立绘
+		"res://p3makoto/pile_discard/pile_discard_skel_data.tres",
+		"res://p3makoto/pile_exhaust/pile_exhaust_skel_data.tres",
 	};
 	private const string PortraitSpine = "res://p3makoto/portrait/portrait_skel_data.tres";
 

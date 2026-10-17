@@ -1,0 +1,12 @@
+pile_deck.png
+size:2048,2048
+filter:Linear,Linear
+pma:false
+body
+bounds:0,0,1003,1001
+body_rim
+bounds:1005,0,1003,1001
+eye_half
+bounds:0,1003,127,103
+eye_closed
+bounds:129,1003,127,103

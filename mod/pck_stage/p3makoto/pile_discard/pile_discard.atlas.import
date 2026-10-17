@@ -1,0 +1,15 @@
+[remap]
+
+importer="spine.atlas"
+type="SpineAtlasResource"
+path="res://.godot/imported/pile_discard.atlas-13d263eeb0a76e7a66d0c76eb0369d93.spatlas"
+
+[deps]
+
+source_file="res://p3makoto/pile_discard/pile_discard.atlas"
+dest_files=["res://.godot/imported/pile_discard.atlas-13d263eeb0a76e7a66d0c76eb0369d93.spatlas"]
+
+[params]
+
+normal_map_prefix="n"
+specular_map_prefix="s"

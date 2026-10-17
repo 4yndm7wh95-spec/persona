@@ -1,0 +1,1 @@
+{"atlas_data":"pile_deck.png\nsize:2048,2048\nfilter:Linear,Linear\npma:false\nbody\nbounds:0,0,1003,1001\nbody_rim\nbounds:1005,0,1003,1001\neye_half\nbounds:0,1003,127,103\neye_closed\nbounds:129,1003,127,103\n","normal_texture_prefix":"n","source_path":"res://p3makoto/pile_deck/pile_deck.atlas","specular_texture_prefix":"s"}

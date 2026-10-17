@@ -1,0 +1,1 @@
+{"atlas_data":"pile_discard.png\nsize:2048,2048\nfilter:Linear,Linear\npma:false\nbody\nbounds:0,0,802,1210\nbody_rim\nbounds:804,0,802,1210\neye_half\nbounds:1608,0,111,71\neye_closed\nbounds:1721,0,111,71\n","normal_texture_prefix":"n","source_path":"res://p3makoto/pile_discard/pile_discard.atlas","specular_texture_prefix":"s"}
