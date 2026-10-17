@@ -163,14 +163,14 @@ public static class PileFx
 		Label empty = Text(root, "EMPTY", font, (int)(90f * k), new Color(1f, 1f, 1f, 0.45f), new Vector2(GridX, GridTop + 60f) * k, 0, Ink);
 		empty.Visible = false;
 
-		// ── 点击特写：压暗层 + 白色斜带 + 旋转光芒 + 左侧说明；挡点击的透明层；放特写卡牌的最上层 ──
-		Focus fx = FocusLayer(root, view, k, font);
+		// ── 点击特写：压暗层 + 白色斜带 + 旋转光芒 + 左侧说明；挡点击的透明层 ──
+		// v0.14.54：这几层都和卡牌放在同一个父节点（cards）里，特写时只调前后顺序（压暗层 → 挡点击层 → 特写那张牌）。
+		// 之前把特写的牌 Reparent 到另一层：holder 离开场景树时游戏会回收它的牌面（NGridCardHolder._ExitTree），牌就消失了
+		Focus fx = FocusLayer(cards, view, k, font);
 		Control catcher = new() { MouseFilter = Control.MouseFilterEnum.Stop, Visible = false };
 		catcher.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		root.AddChild(catcher);
-		Control front = new() { MouseFilter = Control.MouseFilterEnum.Ignore };
-		front.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		root.AddChild(front);
+		cards.AddChild(catcher);
+		Control front = cards;
 		Item? focused = null;
 		Flip? flip = null;
 		float focusP = 0f;
@@ -306,7 +306,9 @@ public static class PileFx
 				}
 				focused = it;
 				focusOn = true;
-				it.Slot.Reparent(front, true);
+				cards.MoveChild(fx.Layer, cards.GetChildCount() - 1);
+				cards.MoveChild(catcher, cards.GetChildCount() - 1);
+				cards.MoveChild(it.Slot, cards.GetChildCount() - 1);
 				flip = MakeFlip(root, front, it.Card, pile.Type, it.Holder);
 				catcher.Visible = true;
 				Fill(fx, it.Card, pile, k);
@@ -402,10 +404,6 @@ public static class PileFx
 				focusP = Mathf.MoveToward(focusP, focusOn ? 1f : 0f, dt / (focusOn ? 0.5f : 0.42f));
 				if (focused != null && !focusOn && focusP <= 0f)
 				{
-					if (focused.Slot != null && GodotObject.IsInstanceValid(focused.Slot))
-					{
-						focused.Slot.Reparent(cards, true);
-					}
 					focused = null;
 					catcher.Visible = false;
 					FreeFlip(flip);
@@ -586,10 +584,10 @@ public static class PileFx
 	}
 
 	/// <summary>特写的背景层：压暗、穿过卡牌的 P3R 白色斜带（带红 / 青细条）、卡牌后面慢转的光芒和两道细圆、左侧说明（牌名 / 类型费用 / 同名张数）。</summary>
-	private static Focus FocusLayer(Control root, Vector2 view, float k, Font font)
+	private static Focus FocusLayer(Control parent, Vector2 view, float k, Font font)
 	{
 		Focus f = new() { Layer = new Node2D { Visible = false } };
-		root.AddChild(f.Layer);
+		parent.AddChild(f.Layer);
 		f.Dim = new ColorRect { Size = view, Color = new Color(0.01f, 0.03f, 0.13f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore };
 		f.Layer.AddChild(f.Dim);
 		Vector2 c = FocusCenter * k;
