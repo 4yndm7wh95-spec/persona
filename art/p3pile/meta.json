@@ -1,0 +1,76 @@
+{
+  "canvas": [
+    1024,
+    1536
+  ],
+  "coordinate_origin": "top-left; pixels",
+  "selected_candidate": "pile_cand_b.png",
+  "visible_eye_center": [
+    575,
+    270
+  ],
+  "visible_eye": "anatomical left, screen right",
+  "card_corners": {
+    "top_left": [
+      132,
+      320
+    ],
+    "top_right": [
+      267,
+      311
+    ],
+    "bottom_right": [
+      291,
+      523
+    ],
+    "bottom_left": [
+      155,
+      538
+    ]
+  },
+  "head_top": [
+    550,
+    10
+  ],
+  "chin": [
+    573,
+    455
+  ],
+  "shoulders": {
+    "screen_left": [
+      320,
+      518
+    ],
+    "screen_right": [
+      910,
+      633
+    ]
+  },
+  "hair_outer_edges": {
+    "screen_left": [
+      303,
+      259
+    ],
+    "screen_right": [
+      782,
+      174
+    ]
+  },
+  "blink_edit": {
+    "ellipse_center": [
+      578,
+      274
+    ],
+    "ellipse_radii": [
+      51,
+      35
+    ],
+    "feather_px": 8,
+    "outside_ellipse_changed_pixels": 0
+  },
+  "notes": [
+    "Coordinates are approximate visual anchors; card bottom-left partly obscured by fingers.",
+    "Right eye is fully covered by fringe; no second eye patch.",
+    "Lower torso intentionally exits lower canvas edge."
+  ]
+}
