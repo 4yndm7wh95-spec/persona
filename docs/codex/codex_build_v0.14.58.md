@@ -1,4 +1,4 @@
-你在用户的 Windows 电脑上工作。任务：把 P3Makoto v0.14.56、音乐盒 P3MusicBox 1.1.0、测试工具 P3TestMod 1.2.2 编译、打包，安装到本机**两个**杀戮尖塔 2（0.107.1 正式版和 0.111 测试版），再用兼容检查工具对两个版本各检查一遍。只做编译、打包、安装、检查，不改任何代码。
+你在用户的 Windows 电脑上工作。任务：把 P3Makoto v0.14.58、音乐盒 P3MusicBox 1.1.0、测试工具 P3TestMod 1.2.2 编译、打包，安装到本机**两个**杀戮尖塔 2（0.107.1 正式版和 0.111 测试版），再用兼容检查工具对两个版本各检查一遍。只做编译、打包、安装、检查，不改任何代码。
 
 【两个游戏目录】
 - <G111> = C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2（以前编译用的那个）。
@@ -20,7 +20,7 @@
    git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local merge --no-edit origin/claude/amazing-darwin-b00arn
    - 有冲突就停下来报告。
    - 这次不需要 push。
-6. 确认 git log 里有提交「v0.14.56: deck / discard / exhaust screens …」。
+6. 确认 git log 里有提交「Merge … into claude/amazing-darwin-b00arn」之后的最新提交（v0.14.58：牌组 / 弃牌堆 / 消耗堆界面 + 合并了 Codex 的 v0.14.56 / v0.14.57 修复）。
 7. 稀疏检出缺目录时，允许执行：
    git -c safe.directory=<repo> sparse-checkout add mod musicbox testmod tools/compat research/libs_0.107.1
    - 路径过长时，这一条命令可以加 -c core.longpaths=true。
@@ -46,7 +46,7 @@
    - 目标是 <游戏>\mods\ 下当前装着 P3Makoto.json 的那个文件夹（可能是嵌套的 mods\P3Makoto\P3Makoto\，以实际位置为准）；没有就新建 <游戏>\mods\P3Makoto\。
    - 先把旧的 P3Makoto.json / .dll / .pck 备份到 <repo>\mod\_build\backup_<时间戳>_<107或111>\。
    - 再复制新的 P3Makoto.json、dll、pck。
-   - 核对 version 是 "0.14.56"。
+   - 核对 version 是 "0.14.58"。
 2. 音乐盒：
    - 复制 P3MusicBox.dll 和 P3MusicBox.json 到 <游戏>\mods\ 下当前装着 P3MusicBox.json 的那个文件夹（以实际位置为准；没有就新建 mods\P3MusicBox\）。
    - **不要动 music\ 里的歌曲和歌词。**
@@ -82,7 +82,8 @@
    - 消耗堆（出过消耗牌后右侧的按钮）：背景更暗、有细网格线，右边远处一个漂走的背影，卡牌偏灰、淡入显形。
    - 四个界面都能点牌特写（翻转飞到中间）、返回时有各自的退场动画。
 3. 设置里「牌堆 / 牌组界面（P3R 风格）」关掉后，四个界面都是原版。
-4. 日志开头应有 "[P3Makoto] init v0.14.56"、"game version …"、"harmony patches applied: N ok, 0 failed"；有问题请把含 "P3Makoto" 的行发给 Claude（特别是 "pile" / "deck screen" 相关的错误）。
+4. Codex 的 v0.14.57：Shuffle Time 按实际奖励卡牌张数排版（奖励 2 张 / 4 张时位置正确）。
+5. 日志开头应有 "[P3Makoto] init v0.14.58"、"game version …"、"harmony patches applied: N ok, 0 failed"；有问题请把含 "P3Makoto" 的行发给 Claude（特别是 "pile" / "deck screen" 相关的错误）。
 
 【绝对不要做】
 - 不要修改或删除代码；不要 rebase / reset / amend；不要 --force；不要改全局 git config；不要提交，也不要推送。

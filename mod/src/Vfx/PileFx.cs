@@ -371,7 +371,6 @@ public static class PileFx
 			Control slot = new() { MouseFilter = Control.MouseFilterEnum.Ignore, Modulate = new Color(1f, 1f, 1f, 0f) };
 			cards.AddChild(slot);
 			h.Visible = true;
-			h.MouseFilter = Control.MouseFilterEnum.Pass;
 			slot.AddChild(h);
 			card!.UpdateVisuals(pile.Type, CardPreviewMode.Normal);
 			if (upgrades != null && upgrades.IsTicked && it.Card.IsUpgradable)
@@ -753,27 +752,13 @@ public static class PileFx
 			}
 			exiting = true;
 			exitT0 = Now();
-			// 关闭流程已经把界面的处理模式关了：退场期间打开（立绘 / 粒子继续动），并且不再接受鼠标
+			// 退场期间继续动画，只在这个即将销毁的界面上禁用鼠标。
+			// NGridCardHolder / Hitbox 会回对象池；改它们的 MouseFilter 会污染奖励、升级等后续界面。
 			screen.ProcessMode = Node.ProcessModeEnum.Always;
-			root.MouseFilter = Control.MouseFilterEnum.Ignore;
-			if (screen.GetNodeOrNull<Control>("BackButton") is Control back)
-			{
-				back.MouseFilter = Control.MouseFilterEnum.Ignore;
-				foreach (Node n in back.FindChildren("*", "Control", true, false))
-				{
-					((Control)n).MouseFilter = Control.MouseFilterEnum.Ignore;
-				}
-			}
+			screen.MouseBehaviorRecursive = Control.MouseBehaviorRecursiveEnum.Disabled;
 			catcher.Visible = false;
 			plate.Visible = false;
 			hovered = null;
-			foreach (Item it in items)
-			{
-				if (it.Holder != null && GodotObject.IsInstanceValid(it.Holder))
-				{
-					it.Holder.Hitbox.MouseFilter = Control.MouseFilterEnum.Ignore;
-				}
-			}
 			Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.3f);
 			// 保险：真实时间 1s 后无论如何关掉（每帧逻辑出问题也不会留着不关）
 			tree.CreateTimer(1.0, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () =>

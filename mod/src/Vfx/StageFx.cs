@@ -2,7 +2,9 @@ using System;
 using System.Linq;
 using Godot;
 using MegaCrit.Sts2.Core.Nodes;
+using MegaCrit.Sts2.Core.Nodes.Cards.Holders;
 using MegaCrit.Sts2.Core.Nodes.Vfx.Utilities;
+using P3Makoto.Core;
 
 namespace P3Makoto.Vfx;
 
@@ -382,11 +384,15 @@ public static class StageFx
 	private static bool StillInRow(Control h, Control row) =>
 		GodotObject.IsInstanceValid(h) && GodotObject.IsInstanceValid(row) && h.GetParent() == row;
 
+	// CardRow 可能还有翻页按钮等 Control；它们不是奖励牌，也不能参与发牌/翻牌。
+	private static NGridCardHolder[] RewardHolders(Control row) => row.GetChildren()
+		.OfType<NGridCardHolder>().Where(h => !h.IsQueuedForDeletion()).ToArray();
+
 	/// <summary>first = 这次打开选牌界面的第一次（先播独立的 SHUFFLE TIME 标题动画再发牌）；重抽时直接发牌。</summary>
 	public static void ShuffleIntro(Control screen, Control row, bool first = true)
 	{
-		var holders = row.GetChildren().OfType<Control>().ToList();
-		if (holders.Count == 0)
+		var holders = RewardHolders(row);
+		if (holders.Length == 0)
 		{
 			return;
 		}
@@ -429,8 +435,8 @@ public static class StageFx
 
 	private static void Deal(Control screen, Control row)
 	{
-		var holders = row.GetChildren().OfType<Control>().ToList();
-		int n = holders.Count;
+		var holders = RewardHolders(row);
+		int n = holders.Length;
 		if (n == 0)
 		{
 			return;
@@ -440,21 +446,33 @@ public static class StageFx
 		// 这一轮发牌的编号：被新一轮（重抽）取代后，本轮还没触发的翻牌 / 兜底回调全部作废，不会提前把新一轮的牌翻开
 		int run = (screen.HasMeta("p3_deal_run") ? screen.GetMeta("p3_deal_run").AsInt32() : 0) + 1;
 		screen.SetMeta("p3_deal_run", run);
-		bool Current() => GodotObject.IsInstanceValid(screen) && screen.GetMeta("p3_deal_run").AsInt32() == run;
+		int introToken = screen.GetMeta("p3_deal").AsInt32();
+		bool Current() => GodotObject.IsInstanceValid(screen)
+			&& screen.GetMeta("p3_deal_run").AsInt32() == run
+			&& screen.GetMeta("p3_deal").AsInt32() == introToken;
 		Vector2 view = screen.GetViewportRect().Size;
-		float cardH = 330f * view.Y / 1080f;
 		Texture2D? back = ResourceLoader.Exists("res://p3makoto/fx/tarot_back.png") ? ResourceLoader.Load<Texture2D>("res://p3makoto/fx/tarot_back.png") : null;
-		float spacing = 350f;
+		// 每次重抽从原始整行缩放重新算，避免 3→4→3 张时越缩越小。
+		if (!row.HasMeta("p3_reward_row_scale")) row.SetMeta("p3_reward_row_scale", row.Scale);
+		Vector2 originalRowScale = row.GetMeta("p3_reward_row_scale").AsVector2();
+		row.Scale = originalRowScale;
+		float rowScaleX = row.GetGlobalTransform().X.Length();
+		// 按悬停时的完整牌宽预留余量；只缩整行，原版的悬停放大仍然有效。
+		float cardWidth = holders.Max(h => Mathf.Max(300f, h.Hitbox.Size.X)) * 1.05f;
+		float fit = ShuffleLayout.RowScale(n, view.X, rowScaleX, cardWidth, view.X * 0.06f);
+		row.Scale = originalRowScale * fit;
+		row.GlobalPosition = new Vector2(view.X * 0.5f, row.GlobalPosition.Y);
+		float spacing = ShuffleLayout.Spacing;
 		Vector2 origin = Vector2.Left * (n - 1) * spacing * 0.5f;
 		Transform2D rowXf = row.GetGlobalTransform();
-		Vector2 center = rowXf * Vector2.Zero;
+		float cardH = holders.Max(h => Mathf.Max(422f, h.Hitbox.Size.Y) * h.SmallScale.Y) * rowXf.Y.Length();
 		var baseScales = new Vector2[n];
 		var targets = new Vector2[n];
 		for (int i = 0; i < n; i++)
 		{
 			Control h = holders[i];
 			Vector2 final = origin + Vector2.Right * spacing * i;
-			baseScales[i] = h.Scale;
+			baseScales[i] = holders[i].SmallScale;
 			h.Position = final;
 			h.Rotation = 0f;
 			h.Scale = baseScales[i];
@@ -486,8 +504,9 @@ public static class StageFx
 		// v0.14.13（对照 P3R 分镜 art/p3r_tex/shuffle/shuffle_time_storyboard_detail_65frames.png 第 23~27 帧）：
 		// 牌从画面上方、各自位置的正上方斜着落下来 —— 入画时倾斜约 45°，边落边转正，越落越慢（约 0.45s），身后拖两道淡蓝残影；
 		// 几张牌依次落下（间隔 0.12s），落定时轻轻一顿（"嗒"）。全部落定后再一起翻面。
-		const float startAt = 0.05f, gap = 0.12f, fall = 0.45f;
-		float flipAt = startAt + gap * (n - 1) + fall + 0.3f;
+		const float startAt = ShuffleLayout.StartAt, fall = ShuffleLayout.Fall;
+		float gap = ShuffleLayout.Gap(n);
+		float flipAt = ShuffleLayout.FlipAt(n);
 		var starts = new Vector2[n];
 		var spins = new float[n];
 		for (int i = 0; i < n; i++)
@@ -573,7 +592,7 @@ public static class StageFx
 					Vector2 bs = baseScales[i];
 					h.Visible = true;
 					h.Scale = new Vector2(0.01f, bs.Y);
-					Fx.Animate(screen, 0.2f, t => { if (StillInRow(h, row)) h.Scale = new Vector2(bs.X * Mathf.Max(0.01f, Ease.OutBack(t)), bs.Y); });
+					Fx.Animate(screen, 0.2f, t => { if (Current() && StillInRow(h, row)) h.Scale = new Vector2(bs.X * Mathf.Max(0.01f, Ease.OutBack(t)), bs.Y); });
 					Glint(screen, targets[i], cardH);
 				}
 			});
@@ -742,7 +761,7 @@ public static class StageFx
 		Fx.FreeAfter(root, 0.47);
 		if (picked.GetParent() is Control row)
 		{
-			foreach (Control other in row.GetChildren().OfType<Control>())
+			foreach (Control other in RewardHolders(row))
 			{
 				if (other == picked) continue;
 				Vector2 p0 = other.Position;
