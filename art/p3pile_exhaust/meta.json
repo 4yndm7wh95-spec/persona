@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "canvas": {
+    "width": 1024,
+    "height": 1536,
+    "mode": "RGBA"
+  },
+  "coordinate_system": "top-left pixel coordinates; bbox right/bottom exclusive",
+  "source_candidate": "exhaust_cand_c.png",
+  "bbox": {
+    "left": 181,
+    "top": 103,
+    "right": 930,
+    "bottom": 1505
+  },
+  "visible_bbox": {
+    "left": 366,
+    "top": 322,
+    "right": 717,
+    "bottom": 1309
+  },
+  "head": [
+    443,
+    540
+  ],
+  "raised_hand": [
+    642,
+    363
+  ],
+  "lowered_hand": [
+    390,
+    946
+  ],
+  "coat_hem_left": [
+    465,
+    857
+  ],
+  "coat_hem_right": [
+    715,
+    747
+  ],
+  "hair_tips": [
+    [
+      453,
+      474
+    ],
+    [
+      402,
+      493
+    ],
+    [
+      376,
+      542
+    ],
+    [
+      479,
+      495
+    ]
+  ],
+  "qa": {
+    "alpha": {
+      "alpha_bbox": [
+        181,
+        103,
+        930,
+        1505
+      ],
+      "solid_bbox_alpha_gt_127": [
+        366,
+        322,
+        717,
+        1309
+      ],
+      "solid_height_fraction": 0.642578,
+      "alpha_extrema": [
+        0,
+        254
+      ],
+      "alpha_1_to_3_pixels": 9207,
+      "alpha_zero_pixels": 1427009
+    }
+  },
+  "known_limitations": [
+    "Low alpha 1..3/255 speckles remain; strict all-background-alpha-zero gate not fully passed.",
+    "Final cleanup attempts 3 and 4 changed scale/placement and were not selected."
+  ]
+}

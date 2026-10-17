@@ -1,0 +1,39 @@
+{
+  "baseline": "cd2356e",
+  "tool": "built-in imagegen",
+  "selected": "discard_v3_cand_b.png",
+  "candidates": [
+    {
+      "file": "discard_v3_cand_a.png",
+      "prompt": "Create a NEW Persona 3 Reload DISCARD menu illustration, candidate A v3. Exactly 1024x1536 portrait RGBA, real alpha=0 transparent background. Reference 1 is approved Makoto Yuki FACE and flat cel style; reference 2 ONLY suggests backward reclining, ignore its UI and head-down layout. Character upright orientation, HEAD AT TOP, waist toward BOTTOM, NOT upside down. Three-quarter side view of slender Makoto gently FALLING BACKWARD 40 degrees, face tilted up, chin slightly raised, chest open, back reclining naturally as if slowly sinking. Half to three-quarter body, lower legs may be outside bottom edge. Two arms naturally opened to the sides BELOW shoulder level, relaxed elbows, wrists and five normal fingers per hand; never arms above head. Calm narrow half-open blue-grey eye visible gazing diagonally upward; fine straight nose, small neutral mouth, tapered jaw; exact same recognizable face as reference 1. Navy asymmetrical hair covering right eye, cyan hard highlight blocks; hair, thin black neck ribbon, headphone cord and black jacket tails float UPWARD. Gekkoukan black school jacket, white shirt, slim black ribbon, red neck headphones, red left upper-arm armband, red only those two accents. STRICT P3R menu flat cel solids: white and pale cyan lights, cobalt/ultramarine shadows, deep navy darkest, hard black ink. No gradients, realistic lighting, glow or outside shadow. Isolated character only, clean transparency, no backdrop, water, bubbles, UI, text, signature, watermark, card or weapons. Natural anatomy is critical. Keep both hands inside canvas.",
+      "generation_count": 1
+    },
+    {
+      "file": "discard_v3_cand_b.png",
+      "prompt": "Persona 3 Reload Makoto Yuki DISCARD portrait candidate B v3, 1024x1536 transparent RGBA cutout. Input image is ONLY FACE, costume and flat ink style reference; replace entire pose. Makoto gently FALLS BACKWARDS: natural 3/4 side view, HEAD UPPER LEFT at approx(360,350), shoulders near(520,650), hips LOWER RIGHT near(770,1320), upper torso reclining 40 degrees. Chin tilted slightly up and gaze diagonally upward, narrow half-lidded blue-grey visible eye; slim tapered face, straight nose, neutral short mouth. Navy hair obscures right eye. Both arms open at sides and angled DOWN below shoulders, relaxed bent elbows and natural wrists, both five-finger hands fully inside canvas. No contorted joints. No hand on head. Black Gekkoukan blazer, white shirt, thin black ribbon tie, red headphones AT NECK, red LEFT armband. Hair, tie, cable and coat hems float UP. Same character as reference. Flat P3R MENU ink drawing: entirely SOLID white/pale cyan skin, cobalt/ultramarine and navy shadows, crisp black contours, cyan hair highlight shapes. NO SOFT SHADING. Genuine HARD CUTOUT alpha silhouette. Outside character alpha exactly 0, absolutely NO colored clouds, glow, halo, edge shadow, fog or ambient light whatsoever. No scenery, water, bubbles, UI, text, cards, weapons, watermark. Lower body may crop bottom; head and hands must remain complete. Upright head-over-waist composition, not upside-down.",
+      "generation_count": 1
+    },
+    {
+      "file": "discard_v3_cand_c.png",
+      "prompt": "Use case stylized-concept. A clean TRANSPARENT CUTOUT anime game sprite of Makoto Yuki from Persona 3 Reload, exactly 1024x1536 RGBA. P3R flat two-color menu illustration, hard black ink, absolutely flat white/pale cyan lights, cobalt/ultramarine and navy shadow blocks. Navy blue long asymmetric bangs cover right eye, cyan solid hair highlights. Canonical slim tapered Makoto face, narrow half-lidded blue-grey eye, quiet tired neutral expression, fine straight nose, small closed mouth. White shirt, black Gekkoukan school blazer, slim black ribbon tie, red headphones hanging at NECK, red LEFT armband, cable. Backward-falling floating pose, three-quarter SIDE VIEW, HEAD AT TOP LEFT, hips bottom-right: upper body gently reclines BACKWARD about 40deg, slight arch of back, chin up and gaze diagonally skyward. Both arms naturally opened at sides BELOW shoulders, elbows slightly flexed, hands relaxed and graceful with exactly five normal fingers, complete inside canvas. No hand on forehead. Waist/legs may crop at bottom. Hair, tie, cable and jacket hems buoyantly stream UP. Do not hang him upside down. Transparent empty space around figure MUST have alpha=0, crisp isolated silhouette, no glow, halo, blur, lighting or shadow outside. No background/scenery, no water or bubbles, text, UI, watermark, card or weapon. Only character. Natural shoulder, elbow, wrist anatomy; slender male adolescent proportions, no generic cute round eyes, no smile, no gradient shading.",
+      "generation_count": 1
+    }
+  ],
+  "edits": [
+    {
+      "purpose": "Background extraction diagnostic; not selected, original B retained",
+      "prompt": "BACKGROUND EXTRACTION EDIT ONLY. Remove ALL soft colored clouds, all white/blue/red glows, all halos, all backdrop and every pixel outside the actual character silhouette from the input image. Replace with genuine fully transparent alpha=0. Do not draw any background, checkerboard, color, shadow, glow, light bloom or atmospheric effects. Keep the character's face, hair, exact pose, costume, hands, fingers, colors, linework, dimensions and position identical. Retain only opaque character and natural thin antialiased contour. Cut holes between fingers, strands, arm and torso to full transparency. This is a game SPRITE CUTOUT, not a poster. No new lighting. 1024x1536 RGBA PNG.",
+      "count": 1
+    },
+    {
+      "purpose": "Closed eye",
+      "prompt": "PRECISE EYE BLINK EDIT ONLY on this Makoto Yuki portrait, same 1024x1536 RGBA dimensions. Change ONLY the ONE visible eye near pixel (330,220): NATURALLY FULLY CLOSED eye, upper eyelid lowered into one calm thin curved black eyelash line, NO iris, NO pupil, NO white eye opening. Preserve the eye's tilted direction and peaceful expression. Keep face, brow, hair, nose, mouth, head pose, all limbs/hands, every clothing detail, composition, palette and transparency unchanged. Do not move or rescale anything. Do not redraw other parts. Preserve existing genuine transparent background; do not introduce backdrop, halos, glow, text or gradients. Only small eye edit, precise alignment for an animated blink.",
+      "count": 1
+    },
+    {
+      "purpose": "Half eye",
+      "prompt": "PRECISE EYE BLINK EDIT ONLY on supplied Makoto Yuki portrait, exactly 1024x1536 RGBA. Change ONLY the visible eye near pixel (330,220) to HALF-OPEN: upper lid lowers farther and covers the UPPER HALF of the iris/pupil, leaving a narrow calm opening with lower part of blue-grey iris still visible. Clearly less open than original, but not fully closed. Preserve eye angle, narrow almond shape and peaceful tired gaze. Keep ALL OTHER pixels conceptually identical: face/brow/hair/nose/mouth, pose, hands, body, clothing, colors, size, location, existing transparent background. Do not rescale or shift. No new background, halo, glow, text or gradients. Small aligned local eyelid change only, for animated blink.",
+      "count": 1
+    }
+  ]
+}

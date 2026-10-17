@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "canvas": {
+    "width": 1024,
+    "height": 1536,
+    "mode": "RGBA"
+  },
+  "coordinate_system": "top-left pixel coordinates; bbox right/bottom exclusive",
+  "source_candidate": "discard_v3_cand_b.png",
+  "bbox": {
+    "left": 0,
+    "top": 21,
+    "right": 1024,
+    "bottom": 1536
+  },
+  "visible_bbox": {
+    "left": 24,
+    "top": 27,
+    "right": 1024,
+    "bottom": 1536
+  },
+  "eye_center": [
+    330,
+    222
+  ],
+  "blink_ellipse": {
+    "center": [
+      330,
+      222
+    ],
+    "radii": [
+      49,
+      25
+    ],
+    "rotation_degrees": -20,
+    "feather_px": 8
+  },
+  "head_outermost": [
+    360,
+    28
+  ],
+  "chin": [
+    470,
+    335
+  ],
+  "hair_tips": [
+    [
+      367,
+      29
+    ],
+    [
+      460,
+      87
+    ],
+    [
+      492,
+      112
+    ],
+    [
+      82,
+      331
+    ],
+    [
+      112,
+      388
+    ]
+  ],
+  "hands": {
+    "image_left": [
+      194,
+      1260
+    ],
+    "image_right": [
+      951,
+      982
+    ]
+  },
+  "qa": {
+    "alpha": {
+      "alpha_bbox": [
+        0,
+        21,
+        1024,
+        1536
+      ],
+      "solid_bbox_alpha_gt_127": [
+        24,
+        27,
+        1024,
+        1536
+      ],
+      "solid_height_fraction": 0.982422,
+      "alpha_extrema": [
+        0,
+        254
+      ],
+      "alpha_1_to_3_pixels": 25216,
+      "alpha_zero_pixels": 674173
+    },
+    "blink": {
+      "closed": {
+        "raw_changes_outside_ellipse": 1390390,
+        "restored_changes_outside_ellipse": 0,
+        "changed_pixels_inside": 3440,
+        "feather_px": 8
+      },
+      "half": {
+        "raw_changes_outside_ellipse": 1568016,
+        "restored_changes_outside_ellipse": 0,
+        "changed_pixels_inside": 3416,
+        "feather_px": 8
+      }
+    }
+  },
+  "known_limitations": [
+    "Low alpha 1..3/255 speckles remain; strict all-background-alpha-zero gate not fully passed.",
+    "Body reclines naturally; 40 degrees is a visual target, not a 3D measurement."
+  ]
+}

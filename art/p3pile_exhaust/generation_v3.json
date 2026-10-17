@@ -1,0 +1,40 @@
+{
+  "baseline": "cd2356e",
+  "tool": "built-in imagegen",
+  "selected": "exhaust_cand_c.png",
+  "candidates": [
+    {
+      "file": "exhaust_cand_a.png",
+      "prompt": "Create EXHAUST candidate A: Persona 3 Reload Makoto Yuki isolated game menu sprite, 1024x1536 portrait transparent RGBA. Image reference supplies SAME character, costume, clean hard cel style ONLY; replace pose/view. A DISTANT FULL BODY three-quarter BACK VIEW of Makoto floating gently AWAY from viewer, back toward camera, NO visible eyes or face. Figure occupies ONLY 65% of canvas height: head near y=280, lowest shoe y=1278, ample transparent space on all sides, ALL fingertips, hair and shoes fully within frame. Slim body slightly curled, knees subtly bent in a relaxed drifting pose. One arm reaches UP naturally toward upper right, other arm hangs down loosely. Natural joints and five fingers each, black school blazer hems and navy hair float UP. White collar, thin black ribbon (only if visible), red headphones around neck and red LEFT upper arm armband, dark trousers, brown loafers rendered in restricted navy/blue shadows. Strict P3R MENU drawing: SOLID white/pale cyan lights, cobalt/ultramarine shadows, deepest navy, crisp hard black ink, cyan hair blocks, red ONLY headphones/armband. No gradient or painterly lighting, glow, texture or shadow. Real alpha=0 background outside clean silhouette, no water, bubbles, background, UI, text, watermark, weapons, cards. Distant small receding back silhouette, not a big front portrait, do not crop any body part.",
+      "generation_count": 1
+    },
+    {
+      "file": "exhaust_cand_b.png",
+      "prompt": "Create EXHAUST candidate A: Persona 3 Reload Makoto Yuki isolated game menu sprite, 1024x1536 portrait transparent RGBA. Image reference supplies SAME character, costume, clean hard cel style ONLY; replace pose/view. A DISTANT FULL BODY three-quarter BACK VIEW of Makoto floating gently AWAY from viewer, back toward camera, NO visible eyes or face. Figure occupies ONLY 65% of canvas height: head near y=280, lowest shoe y=1278, ample transparent space on all sides, ALL fingertips, hair and shoes fully within frame. Slim body slightly curled, knees subtly bent in a relaxed drifting pose. One arm reaches UP naturally toward upper right, other arm hangs down loosely. Natural joints and five fingers each, black school blazer hems and navy hair float UP. White collar, thin black ribbon (only if visible), red headphones around neck and red LEFT upper arm armband, dark trousers, brown loafers rendered in restricted navy/blue shadows. Strict P3R MENU drawing: SOLID white/pale cyan lights, cobalt/ultramarine shadows, deepest navy, crisp hard black ink, cyan hair blocks, red ONLY headphones/armband. No gradient or painterly lighting, glow, texture or shadow. Real alpha=0 background outside clean silhouette, no water, bubbles, background, UI, text, watermark, weapons, cards. Distant small receding back silhouette, not a big front portrait, do not crop any body part.\nCandidate B, critical scale revision: ENTIRE figure including raised hand and shoes must fit ONLY inside bounding rectangle x=240..800, y=270..1268 on the 1024x1536 canvas. Highest raised fingertip y=270, head top y=430, lowest shoe y=1268. Leave 270px TRANSPARENT margin above all fingers and 268px below shoes; do not fill canvas. Back clearly visible, head facing away with ZERO visible eye. Gentle curled knees and one raised right hand, one dangling left hand. Same flat white/cobalt/navy style and natural anatomy. All outside figure truly alpha zero.",
+      "generation_count": 1
+    },
+    {
+      "file": "exhaust_cand_c.png",
+      "prompt": "1024x1536 RGBA TRANSPARENT sprite canvas, generous EMPTY transparent padding all around. Persona 3 Reload Makoto Yuki FULL BODY in distant 3/4 BACK VIEW slowly floating away, slightly curled torso and gently bent knees. One right arm reaching upward, other hanging freely down; all body parts natural and complete, all fingers and shoes inside. IMPORTANT: ENTIRE FIGURE including raised hand occupies only CENTER 65% canvas height, exactly around y=270 to y=1260, no higher or lower! Top quarter and bottom sixth mostly empty transparent space. Draw character SMALL and distant, not filling frame. Navy asymmetric hair flutters up, no visible eye or face. Red headphones at neck and red armband on LEFT arm, black Gekkoukan uniform blazer and trousers, white collar, thin black neck ribbon if visible. Coat tails flutter up. Clean modern P3R MENU flat ink art: sharp black linework, white/pale cyan highlight shapes, cobalt/ultramarine and deep navy shadows, cyan solid hair highlights, no gradient or textured painting or light bloom. Red only two costume accents. Pale shoes rendered in navy. Absolutely isolated cutout with genuine alpha=0 outside silhouette, no background, water, bubbles, shadow, halo, glow, UI, text, borders, weapons or card. Same slim Makoto Yuki costume and design as approved portrait; mature slender proportions. Highest fingertip about(680,280), head about(470,450), lowest shoe about(540,1250).",
+      "generation_count": 1
+    }
+  ],
+  "edits": [
+    {
+      "purpose": "Candidate C scale correction, selected",
+      "prompt": "Edit ONLY scale and placement of the supplied complete back-view Makoto sprite. Keep EXACT same pose, head facing away, face invisible, outfit, flat white/cobalt/navy cel ink style, hands, fingers and full body. Uniformly SHRINK the entire figure including raised hand by 8 percent about canvas center, so on the SAME 1024x1536 transparent RGBA canvas its silhouette bbox runs approximately y=300 to y=1298, height about 998px (65% of canvas). Do not crop, stretch, change perspective, draw background or introduce shadows. Preserve generous genuine alpha=0 transparent padding. Retain complete shoes and five-finger hands. Do not make the figure fill canvas. No text, UI, watermark.",
+      "count": 1
+    },
+    {
+      "purpose": "Round3 cleanup rejected: enlarged figure",
+      "prompt": "Technical alpha cleanup ONLY, no artwork alteration. Input is a 1024x1536 RGBA game sprite; keep same size and same figure at x366..718, y321..1310. There are extremely faint detached alpha=1..3 speckles OUTSIDE the figure: remove ALL detached alpha noise so all empty backdrop is EXACT alpha=0, especially the wide outer margins x<350,x>740,y<310,y>1320. Do not add any new marks, halo, glow, lighting or shadow. Keep the character identity, pose, face unseen, hands, five fingers, full body, shape, colors, placement, size and clean flat cel ink EXACT. Keep narrow natural antialias only immediately on actual silhouette boundary. Genuine transparent PNG cutout, NO RGB backdrop. No text or UI.",
+      "count": 1
+    },
+    {
+      "purpose": "Round4 cleanup rejected: altered placement and scale",
+      "prompt": "Final precise sprite cleanup: retain entire 1024x1536 canvas including ALL transparent margins. DO NOT AUTO-CROP OR ZOOM the input. Character must remain SMALL occupying about 65% of canvas, ONLY inside x360..720, y320..1310. Highest fingertip y320 and lowest shoe y1310. Keep same Makoto back view, pose, five-finger hands, full shoes, red headphones/left armband, white/cobalt/navy hard flat cel style. Remove only detached barely visible alpha speckles; outside the character silhouette must be exactly alpha=0. All padding above/below/left/right preserved. Do not replace background with glow, shadow, RGB clouds, or a color. No gradients, backdrop, text or UI. Critical: preserve size and placement, no enlargement, head and eyes facing away.",
+      "count": 1
+    }
+  ],
+  "rounds": 4
+}
