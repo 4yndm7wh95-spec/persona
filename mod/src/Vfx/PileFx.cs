@@ -27,7 +27,6 @@ public static class PileFx
 	private const string RootName = "P3PileScreen";
 	private const string PortraitPath = "res://p3makoto/ui/pile_portrait.png";
 	private const string PortraitSpine = "res://p3makoto/pile/pile_skel_data.tres";
-	private const string FontPath = "res://p3makoto/fonts/BarlowCondensed-900Italic.ttf";
 
 	// 布局都按 1920×1080 写，运行时乘 k = 视口高 / 1080；右侧的东西贴右边缘
 	private const float Cols = 5;
@@ -96,7 +95,7 @@ public static class PileFx
 		float k = view.Y / 1080f;
 		float rx = view.X - 1920f * k;                    // 右侧元素的水平偏移（宽屏时贴右边缘）
 		CardPile pile = screen.Pile;
-		Font? font = ResourceLoader.Load(FontPath) as Font;
+		Font font = Typo.Barlow;
 		float t0 = Time.GetTicksMsec() / 1000f;
 		float Now() => Time.GetTicksMsec() / 1000f - t0;
 
@@ -142,14 +141,16 @@ public static class PileFx
 		Node2D head = new() { Position = new Vector2(-640f * k, 0f) };
 		root.AddChild(head);
 		string title = pile.Type switch { PileType.Draw => "DRAW PILE", PileType.Discard => "DISCARD PILE", PileType.Exhaust => "EXHAUST PILE", _ => "PILE" };
-		Label titleL = Text(head, title, font, (int)(84f * k), Colors.White, new Vector2(58f * k, 96f * k), (int)(5f * k), Ink);
-		Label countL = Text(head, "0", font, (int)(100f * k), Cyan, new Vector2((58f + 30f) * k + titleL.GetMinimumSize().X, 82f * k), (int)(5f * k), Ink);
+		// 标题：Barlow 粗斜体，白字深蓝描边，右下错开一层宝蓝投影（P3R 菜单标题的叠影）
+		Text(head, title, font, (int)(92f * k), new Color(0.12f, 0.36f, 1f), new Vector2(66f * k, 98f * k), (int)(5f * k), new Color(0.12f, 0.36f, 1f));
+		Label titleL = Text(head, title, font, (int)(92f * k), Colors.White, new Vector2(58f * k, 90f * k), (int)(5f * k), Ink);
+		Label countL = Text(head, "0", font, (int)(112f * k), Cyan, new Vector2((58f + 26f) * k + titleL.GetMinimumSize().X, 74f * k), (int)(5f * k), Ink);
 		Fx.Poly(head, new[] { new Vector2(56f, 200f) * k, new Vector2(560f, 200f) * k, new Vector2(552f, 228f) * k, new Vector2(48f, 228f) * k }, Navy);
 		Fx.Poly(head, new[] { new Vector2(56f, 200f) * k, new Vector2(70f, 200f) * k, new Vector2(62f, 228f) * k, new Vector2(48f, 228f) * k }, Cyan);
 		string note = pile.Type == PileType.Draw
 			? (Zh ? "抽牌顺序随机 · 按类型 → 费用排列" : "DRAW ORDER IS HIDDEN · SORTED BY TYPE → COST")
 			: (Zh ? "按进入牌堆的先后排列 · 最新在前" : "MOST RECENT FIRST");
-		Text(head, note, Zh ? Typo.CjkHeavy : font, (int)(19f * k), new Color(0.8f, 0.93f, 1f), new Vector2(84f * k, 202f * k), 0, Ink);
+		Text(head, note, Zh ? Typo.CjkBold : font, (int)(19f * k), new Color(0.8f, 0.93f, 1f), new Vector2(84f * k, 202f * k), 0, Ink);
 		Fx.After(head, 0.16, "pile head in", () => Fx.Animate(head, 0.45, t => head.Position = new Vector2(-640f * k * (1f - Ease.OutExpo(t)), 0f)));
 
 		// ── 网格 ──
@@ -162,6 +163,19 @@ public static class PileFx
 		Node2D plate = NamePlate(root, k);                     // 名牌在最上面
 		Label empty = Text(root, "EMPTY", font, (int)(90f * k), new Color(1f, 1f, 1f, 0.45f), new Vector2(GridX, GridTop + 60f) * k, 0, Ink);
 		empty.Visible = false;
+
+		// ── 点击特写：压暗层 + 白色斜带 + 旋转光芒 + 左侧说明；挡点击的透明层；放特写卡牌的最上层 ──
+		Focus fx = FocusLayer(root, view, k, font);
+		Control catcher = new() { MouseFilter = Control.MouseFilterEnum.Stop, Visible = false };
+		catcher.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		root.AddChild(catcher);
+		Control front = new() { MouseFilter = Control.MouseFilterEnum.Ignore };
+		front.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		root.AddChild(front);
+		Item? focused = null;
+		float focusP = 0f;
+		bool focusOn = false;
+		float lastNow = 0f;
 
 		List<Item> items = new();
 		List<Section> sections = new();
@@ -197,6 +211,10 @@ public static class PileFx
 			sections.Clear();
 			pending.Clear();
 			hovered = null;
+			focused = null;
+			focusOn = false;
+			focusP = 0f;
+			catcher.Visible = false;
 
 			List<CardModel> all = pile.Cards.ToList();
 			List<(string En, string Zh, List<CardModel> Cards)> groups = new();
@@ -263,8 +281,50 @@ public static class PileFx
 				}
 			};
 			h.Hitbox.MouseExited += () => { if (hovered == it) hovered = null; };
-			h.Hitbox.GuiInput += Wheel;
+			h.Hitbox.GuiInput += ev => ModEntry.Safe("pile card input", () =>
+			{
+				if (ev is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left or MouseButton.Right })
+				{
+					h.Hitbox.AcceptEvent();                 // 不传给底层（否则会当成拖动开始）
+					Toggle(it);
+				}
+				else if (focused == null)
+				{
+					Wheel(ev);
+				}
+			});
 		}
+
+		// 左 / 右键点牌：这张飞到中间特写；再点它或点任意空白处：飞回原位
+		void Toggle(Item it)
+		{
+			if (focused == null)
+			{
+				if (it.Slot == null)
+				{
+					return;
+				}
+				focused = it;
+				focusOn = true;
+				it.Slot.Reparent(front, true);
+				catcher.Visible = true;
+				Fill(fx, it.Card, pile, k);
+				Audio.Sfx.Clip("ShuffleTime_Select", 0.5f);
+			}
+			else if (focusOn)
+			{
+				focusOn = false;
+				Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.3f);
+			}
+		}
+		catcher.GuiInput += ev => ModEntry.Safe("pile focus input", () =>
+		{
+			if (ev is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left or MouseButton.Right } && focused != null)
+			{
+				catcher.AcceptEvent();
+				Toggle(focused);
+			}
+		});
 
 		void Wheel(InputEvent ev)
 		{
@@ -277,6 +337,10 @@ public static class PileFx
 
 		root.GuiInput += ev => ModEntry.Safe("pile input", () =>
 		{
+			if (focused != null)
+			{
+				return;
+			}
 			Wheel(ev);
 			if (ev is InputEventMouseButton { ButtonIndex: MouseButton.Left } b)
 			{
@@ -308,6 +372,22 @@ public static class PileFx
 			ModEntry.Safe("pile tick", () =>
 			{
 				float now = Now();
+				float dt = Mathf.Clamp(now - lastNow, 0f, 0.1f);
+				lastNow = now;
+				// 特写进度：进 0.5s、退 0.42s
+				focusP = Mathf.MoveToward(focusP, focusOn ? 1f : 0f, dt / (focusOn ? 0.5f : 0.42f));
+				if (focused != null && !focusOn && focusP <= 0f)
+				{
+					if (focused.Slot != null && GodotObject.IsInstanceValid(focused.Slot))
+					{
+						focused.Slot.Reparent(cards, true);
+					}
+					focused = null;
+					catcher.Visible = false;
+				}
+				float fe = Ease.InOutCubic(focusP);
+				Vector2 focusCenter = FocusCenter * k;
+				Animate(fx, fe, focusP, focusOn, now, focusCenter, k);
 				// 圆孔张开一小会儿之后开始建卡牌节点（每帧 4 张，避免一帧卡顿）；入场按序号错开
 				if (now > 0.12f)
 				{
@@ -344,7 +424,13 @@ public static class PileFx
 				{
 					Vector2 p = Screen(new Vector2(0f, s.Y + HeaderH * 0.5f));
 					s.Head.Position = p + new Vector2(-14f * k, 0f);
-					s.Head.Modulate = new Color(1f, 1f, 1f, Fade(p.Y - 20f * k, p.Y + 20f * k) * Mathf.Clamp((now - 0.2f) / 0.25f, 0f, 1f));
+					s.Head.Modulate = new Color(1f, 1f, 1f, Fade(p.Y - 20f * k, p.Y + 20f * k) * Mathf.Clamp((now - 0.2f) / 0.25f, 0f, 1f) * (1f - fe));
+					s.Head.Position += new Vector2(-60f * k * fe, 0f);
+				}
+				head.Modulate = new Color(1f, 1f, 1f, 1f - 0.85f * fe);
+				if (focused != null)
+				{
+					hovered = null;
 				}
 
 				bool any = hovered != null && hovered.Slot != null && GodotObject.IsInstanceValid(hovered.Holder) && hovered.Slot.Visible;
@@ -377,19 +463,44 @@ public static class PileFx
 					{
 						continue;
 					}
-					it.Slot.Position = p;
-					it.Slot.Rotation = Mathf.DegToRad(-2f) * (1f - lift);
+					float rot = Mathf.DegToRad(-2f) * (1f - lift);
 					// 原版悬停会把 holder 自己的 Scale 从 0.8 跳到 1.0；这里按它当前的 Scale 反算，让总缩放平滑
 					float want = baseScale * (0.85f + 0.15f * pop) * (1f + 0.26f * lift);
+					float flip = 1f, alpha = Mathf.Clamp(born * 3f, 0f, 1f) * (it == hovered ? 1f : fade);
+					float frameA = lift;
+					if (it == focused)
+					{
+						// 特写：沿上拱的弧线飞到中间、放大，途中像翻牌一样横向收窄再展开（正好一次翻面），落定后轻轻浮动
+						Vector2 to = focusCenter + new Vector2(0f, Mathf.Sin(now * 1.6f) * 4f * k * fe);
+						p = p.Lerp(to, fe) + new Vector2(0f, -170f * k) * Mathf.Sin(Mathf.Pi * fe);
+						want = Mathf.Lerp(want, FocusW * k / cs.X, fe);
+						flip = Mathf.Max(0.03f, Mathf.Abs(Mathf.Cos(Mathf.Pi * fe)));
+						rot = Mathf.Lerp(rot, 0f, fe) + Mathf.DegToRad(-12f) * Mathf.Sin(Mathf.Pi * fe);
+						alpha = 1f;
+						frameA = Mathf.Max(lift, fe);
+						it.Slot.Visible = true;
+					}
+					else if (focused != null)
+					{
+						// 其他牌"退下"：离特写那张越远越晚，往下沉、缩小、转一点、淡出
+						float dist = (it.At - focused.At).Length();
+						float r = Ease.OutCubic(Mathf.Clamp(focusP * 1.6f - Mathf.Min(0.5f, dist / 1600f), 0f, 1f));
+						p += new Vector2(-24f, 80f) * k * r;
+						want *= 1f - 0.16f * r;
+						rot += Mathf.DegToRad(-5f) * r;
+						alpha *= 1f - 0.9f * r;
+					}
+					it.Slot.Position = p;
+					it.Slot.Rotation = rot;
 					float own = Mathf.Max(0.01f, h.Scale.X);
-					it.Slot.Scale = Vector2.One * (want / own);
+					it.Slot.Scale = new Vector2(want / own * flip, want / own);
 					it.Frame.Scale = Vector2.One * own;
-					it.Frame.Modulate = new Color(1f, 1f, 1f, lift);
-					float d = it.Dim;
-					it.Slot.Modulate = new Color(d * 0.9f + 0.1f, d * 0.94f + 0.06f, Mathf.Min(1f, d + 0.1f), Mathf.Clamp(born * 3f, 0f, 1f) * (it == hovered ? 1f : fade));
+					it.Frame.Modulate = new Color(1f, 1f, 1f, frameA);
+					float d = it == focused ? 1f : it.Dim;
+					it.Slot.Modulate = new Color(d * 0.9f + 0.1f, d * 0.94f + 0.06f, Mathf.Min(1f, d + 0.1f), alpha);
 				}
 				// 指到的那张移到最上层（绘制和鼠标判定都按节点顺序）
-				if (any && hovered!.Slot.GetIndex() != cards.GetChildCount() - 1)
+				if (any && hovered!.Slot!.GetParent() == cards && hovered.Slot.GetIndex() != cards.GetChildCount() - 1)
 				{
 					cards.MoveChild(hovered.Slot, cards.GetChildCount() - 1);
 				}
@@ -416,6 +527,85 @@ public static class PileFx
 			pile.ContentsChanged -= onChanged;
 		};
 		Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.45f);
+	}
+
+	// ── 点击特写 ──
+	private static readonly Vector2 FocusCenter = new(700f, 560f);   // 特写卡牌中心（参考像素）
+	private const float FocusW = 450f;                               // 特写卡牌宽
+
+	private sealed class Focus
+	{
+		public Node2D Layer = null!;
+		public ColorRect Dim = null!;
+		public Node2D Band = null!;
+		public Node2D Rays = null!;
+		public Node2D Info = null!;
+		public Label Name = null!;
+		public Label Kind = null!;
+		public Label Copies = null!;
+	}
+
+	/// <summary>特写的背景层：压暗、穿过卡牌的 P3R 白色斜带（带红 / 青细条）、卡牌后面慢转的光芒和两道细圆、左侧说明（牌名 / 类型费用 / 同名张数）。</summary>
+	private static Focus FocusLayer(Control root, Vector2 view, float k, Font font)
+	{
+		Focus f = new() { Layer = new Node2D { Visible = false } };
+		root.AddChild(f.Layer);
+		f.Dim = new ColorRect { Size = view, Color = new Color(0.01f, 0.03f, 0.13f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore };
+		f.Layer.AddChild(f.Dim);
+		Vector2 c = FocusCenter * k;
+		// 斜带：以特写中心为轴转 -16°，很长；从左下方滑进来
+		f.Band = new Node2D { Position = c, Rotation = Mathf.DegToRad(-16f) };
+		f.Layer.AddChild(f.Band);
+		float len = 2600f * k, h = 240f * k;
+		Fx.Poly(f.Band, new[] { new Vector2(-len, -h / 2), new Vector2(len, -h / 2), new Vector2(len, h / 2), new Vector2(-len, h / 2) }, new Color(0.96f, 0.98f, 1f, 0.9f));
+		Fx.Poly(f.Band, new[] { new Vector2(-len, h / 2 + 10f * k), new Vector2(len, h / 2 + 10f * k), new Vector2(len, h / 2 + 22f * k), new Vector2(-len, h / 2 + 22f * k) }, Red);
+		Fx.Poly(f.Band, new[] { new Vector2(-len, -h / 2 - 16f * k), new Vector2(len, -h / 2 - 16f * k), new Vector2(len, -h / 2 - 10f * k), new Vector2(-len, -h / 2 - 10f * k) }, Cyan);
+		// 光芒：16 道细楔形（加色），两道细圆
+		f.Rays = new Node2D { Position = c };
+		f.Layer.AddChild(f.Rays);
+		for (int i = 0; i < 16; i++)
+		{
+			float a = Mathf.Tau * i / 16f, w = Mathf.DegToRad(i % 2 == 0 ? 3.2f : 1.6f), r = 900f * k;
+			Fx.Poly(f.Rays, new[] { Vector2.Zero, new Vector2(Mathf.Cos(a - w), Mathf.Sin(a - w)) * r, new Vector2(Mathf.Cos(a + w), Mathf.Sin(a + w)) * r }, new Color(0.45f, 0.85f, 1f, 0.16f), true);
+		}
+		f.Rays.AddChild(new Line2D { Points = Fx.Circle(400f * k, 96).Append(Fx.Circle(400f * k, 96)[0]).ToArray(), Width = 2f * k, DefaultColor = new Color(0.8f, 0.95f, 1f, 0.7f), Antialiased = true });
+		f.Rays.AddChild(new Line2D { Points = Fx.Circle(430f * k, 96).Append(Fx.Circle(430f * k, 96)[0]).ToArray(), Width = 1f * k, DefaultColor = new Color(0.6f, 0.9f, 1f, 0.45f), Antialiased = true });
+		// 左侧说明
+		f.Info = new Node2D();
+		f.Layer.AddChild(f.Info);
+		f.Name = Text(f.Info, "", Typo.CjkBold, (int)(54f * k), Colors.White, new Vector2(60f, 300f) * k, (int)(6f * k), Ink);
+		Fx.Poly(f.Info, new[] { new Vector2(60f, 382f) * k, new Vector2(400f, 382f) * k, new Vector2(394f, 390f) * k, new Vector2(54f, 390f) * k }, Red);
+		f.Kind = Text(f.Info, "", font, (int)(40f * k), Cyan, new Vector2(60f, 398f) * k, (int)(4f * k), Ink);
+		f.Copies = Text(f.Info, "", font, (int)(34f * k), Colors.White, new Vector2(60f, 448f) * k, (int)(4f * k), Ink);
+		Text(f.Info, Zh ? "点击任意处返回" : "CLICK ANYWHERE TO RETURN", Zh ? Typo.CjkBold : font, (int)(20f * k), new Color(0.75f, 0.88f, 1f, 0.8f), new Vector2(62f, 508f) * k, (int)(3f * k), Ink);
+		return f;
+	}
+
+	private static void Fill(Focus f, CardModel card, CardPile pile, float k)
+	{
+		f.Name.Text = card.Title;
+		int cost = Cost(card);
+		f.Kind.Text = $"{TypeEn(card.Type)}  ·  COST {(cost < 0 ? "X" : cost.ToString())}";
+		int copies = pile.Cards.Count(c => c.Id.Entry == card.Id.Entry && c.IsUpgraded == card.IsUpgraded);
+		f.Copies.Text = Zh ? $"牌堆中 ×{copies}" : $"IN PILE ×{copies}";
+	}
+
+	private static void Animate(Focus f, float e, float p, bool on, float now, Vector2 center, float k)
+	{
+		f.Layer.Visible = e > 0.001f;
+		if (!f.Layer.Visible)
+		{
+			return;
+		}
+		f.Dim.Color = new Color(0.01f, 0.03f, 0.13f, 0.62f * e);
+		f.Band.Position = center + new Vector2(-1f, 0.29f).Normalized() * 2400f * k * (1f - Ease.OutExpo(Mathf.Clamp(p * 1.4f - 0.1f, 0f, 1f)));
+		f.Band.Modulate = new Color(1f, 1f, 1f, e);
+		f.Rays.Rotation = now * 0.12f;
+		f.Rays.Scale = Vector2.One * (0.6f + 0.4f * e);
+		f.Rays.Modulate = new Color(1f, 1f, 1f, e);
+		float ia = on ? Mathf.Clamp((p - 0.45f) / 0.4f, 0f, 1f) : e;
+		f.Info.Modulate = new Color(1f, 1f, 1f, ia);
+		f.Info.Position = new Vector2(-90f * k * (1f - Ease.OutCubic(ia)), 0f);
 	}
 
 	/// <summary>白色大圆盘：中心纯白、边缘淡青（顶点色渐变），三道同心细圆、外圈青 / 白刻度弧；立体大字只画在圆盘里面。</summary>
@@ -564,7 +754,7 @@ public static class PileFx
 		Label enL = Text(n, en, font, (int)(36f * k), Colors.White, new Vector2(34f, -24f) * k, 0, Ink);
 		if (zh.Length > 0)
 		{
-			Text(n, zh, Typo.CjkHeavy, (int)(20f * k), Ice, new Vector2(44f * k + enL.GetMinimumSize().X, -14f * k), 0, Ink);
+			Text(n, zh, Typo.CjkBold, (int)(20f * k), Ice, new Vector2(44f * k + enL.GetMinimumSize().X, -14f * k), 0, Ink);
 		}
 		Label c = Text(n, "×" + count, font, (int)(38f * k), Cyan, new Vector2(250f, -25f) * k, 0, Ink);
 		c.HorizontalAlignment = HorizontalAlignment.Right;
@@ -597,7 +787,7 @@ public static class PileFx
 		Fx.Poly(n, new[] { new Vector2(14f, 0f), new Vector2(w + 30f, 0f), new Vector2(w + 18f, h), new Vector2(0f, h) }.Select(p => p * k).ToArray(), new Color(0.98f, 0.99f, 1f));
 		Fx.Poly(n, new[] { new Vector2(18f, 4f), new Vector2(w + 6f, 4f), new Vector2(w - 6f, h - 4f), new Vector2(6f, h - 4f) }.Select(p => p * k).ToArray(), new Color(0.02f, 0.03f, 0.09f));
 		Fx.Poly(n, new[] { new Vector2(w + 10f, 4f), new Vector2(w + 26f, 4f), new Vector2(w + 14f, h - 4f), new Vector2(w - 2f, h - 4f) }.Select(p => p * k).ToArray(), Red);
-		Label l = Text(n, "", Typo.CjkHeavy, (int)(32f * k), Colors.White, new Vector2(32f, 5f) * k, 0, Ink);
+		Label l = Text(n, "", Typo.CjkBold, (int)(32f * k), Colors.White, new Vector2(32f, 5f) * k, 0, Ink);
 		l.ClipText = true;
 		l.Size = new Vector2((w - 40f) * k, (h - 8f) * k);
 		return n;

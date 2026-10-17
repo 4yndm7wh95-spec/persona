@@ -37,16 +37,19 @@ public static class P3Ui
 		return w;
 	}
 
-	/// <summary>"选中项"标签：白色平行四边形 + 错开的黑块 + 红色粗斜体字。</summary>
+	/// <summary>"选中项"标签：白色平行四边形 + 错开的黑块 + 红色字（底板斜切；英文跟着斜，中文保持正体 —— v0.14.50 用户：中文斜着别扭）。</summary>
 	public static Node2D RedTag(Node2D parent, string text, Vector2 pos, int size, bool cjk = true)
 	{
-		Node2D tag = new() { Position = pos, Skew = -0.25f };
+		Node2D tag = new() { Position = pos };
 		parent.AddChild(tag);
+		Node2D plate = new() { Skew = -0.25f };
+		tag.AddChild(plate);
 		float w = text.Length * size * (cjk ? 1.05f : 0.62f) + size * 1.6f, h = size * 1.45f;
-		Fx.Poly(tag, new[] { new Vector2(10f, 10f), new Vector2(w + 34f, 4f), new Vector2(w + 10f, h + 14f), new Vector2(-6f, h + 10f) }, new Color(0.02f, 0.02f, 0.05f, 0.95f));
-		Fx.Poly(tag, new[] { new Vector2(0f, 0f), new Vector2(w + 22f, -6f), new Vector2(w, h), new Vector2(-14f, h) }, new Color(0.98f, 0.98f, 1f, 0.97f));
-		Fx.Poly(tag, new[] { new Vector2(-14f, h - 6f), new Vector2(w, h - 6f), new Vector2(w, h), new Vector2(-14f, h) }, new Color(0.9f, 0.1f, 0.25f, 0.95f));
-		Typo.Text(tag, text, cjk ? Typo.Cjk : Typo.Latin, size, new Color(0.88f, 0.06f, 0.16f), new Vector2(size * 0.8f, h * 0.5f - size * 0.68f),
+		Fx.Poly(plate, new[] { new Vector2(10f, 10f), new Vector2(w + 34f, 4f), new Vector2(w + 10f, h + 14f), new Vector2(-6f, h + 10f) }, new Color(0.02f, 0.02f, 0.05f, 0.95f));
+		Fx.Poly(plate, new[] { new Vector2(0f, 0f), new Vector2(w + 22f, -6f), new Vector2(w, h), new Vector2(-14f, h) }, new Color(0.98f, 0.98f, 1f, 0.97f));
+		Fx.Poly(plate, new[] { new Vector2(-14f, h - 6f), new Vector2(w, h - 6f), new Vector2(w, h), new Vector2(-14f, h) }, new Color(0.9f, 0.1f, 0.25f, 0.95f));
+		Typo.Text(cjk ? tag : plate, text, cjk ? Typo.CjkHeavy : Typo.Latin, size, new Color(0.88f, 0.06f, 0.16f),
+			new Vector2(size * 0.8f, h * 0.5f - size * 0.68f),
 			shadow: new Color(0.02f, 0.02f, 0.05f, 0.9f), shadowOffset: new Vector2(4f, 3f));
 		return tag;
 	}

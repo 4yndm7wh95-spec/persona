@@ -1244,7 +1244,7 @@ void fragment() {
 		root.AddChild(bg);
 		Node2D coda = new() { Position = new Vector2(view.X / 2f, view.Y * 0.5f), Modulate = new Color(1f, 1f, 1f, 0f) };
 		root.AddChild(coda);
-		Label codaText = Typo.Text(coda, Zh ? "M E M E N T O   M O R I" : "...and the morning came.", Typo.LatinItalic, 30, new Color(0.8f, 0.9f, 1f), new Vector2(-view.X / 2f, -20f), HorizontalAlignment.Center);
+		Label codaText = Typo.Text(coda, Zh ? "M E M E N T O   M O R I" : "...and the morning came.", Typo.Latin, 30, new Color(0.8f, 0.9f, 1f), new Vector2(-view.X / 2f, -20f), HorizontalAlignment.Center);
 		codaText.Size = new Vector2(view.X, codaText.Size.Y);
 		Label codaSub = Typo.Text(coda, Zh ? "……于是，早晨来临。" : "", Typo.Cjk, 22, new Color(0.65f, 0.75f, 0.9f), new Vector2(-view.X / 2f, 28f), HorizontalAlignment.Center);
 		codaSub.Size = new Vector2(view.X, codaSub.Size.Y);
@@ -1903,7 +1903,7 @@ void fragment() {
 	{
 		Node2D coda = new() { Position = new Vector2(view.X / 2f, view.Y * 0.5f), Modulate = new Color(1f, 1f, 1f, 0f) };
 		root.AddChild(coda);
-		Label codaText = Typo.Text(coda, "M E M E N T O   M O R I", Typo.LatinItalic, 30, new Color(0.8f, 0.9f, 1f), new Vector2(-view.X / 2f, -20f), HorizontalAlignment.Center);
+		Label codaText = Typo.Text(coda, "M E M E N T O   M O R I", Typo.Latin, 30, new Color(0.8f, 0.9f, 1f), new Vector2(-view.X / 2f, -20f), HorizontalAlignment.Center);
 		codaText.Size = new Vector2(view.X, codaText.Size.Y);
 		Label codaSub = Typo.Text(coda, Zh ? "……于是，早晨来临。" : "...and the morning came.", Typo.Cjk, 22, new Color(0.65f, 0.75f, 0.9f), new Vector2(-view.X / 2f, 28f), HorizontalAlignment.Center);
 		codaSub.Size = new Vector2(view.X, codaSub.Size.Y);

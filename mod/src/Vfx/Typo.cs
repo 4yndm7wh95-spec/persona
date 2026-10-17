@@ -36,14 +36,40 @@ public static class Typo
 		}
 	}
 
+	private static Font? _barlow;
+	private static Font? _cjkBold;
+
+	/// <summary>
+	/// v0.14.50 Barlow Condensed 900 Italic（P3R 菜单标题那种窄体粗斜体，打包在 p3makoto/fonts）。
+	/// 资源包里的 .ttf 没有导入文件，ResourceLoader.Load 读不到，要用 FontFile.LoadDynamicFont；读不到退回 Latin。中文字符回退到 CjkBold。
+	/// </summary>
+	public static Font Barlow
+	{
+		get
+		{
+			if (_barlow == null)
+			{
+				FontFile f = new();
+				if (f.LoadDynamicFont("res://p3makoto/fonts/BarlowCondensed-900Italic.ttf") == Error.Ok)
+				{
+					f.Fallbacks = new Godot.Collections.Array<Font> { CjkBold };
+					_barlow = f;
+				}
+			}
+			return _barlow ?? Latin;
+		}
+	}
+
+	/// <summary>游戏自带的思源黑体粗体（正体，不斜切）；读不到用系统中文粗体。</summary>
+	public static Font CjkBold => _cjkBold ??= ResourceLoader.Load("res://fonts/jpn/NotoSansCJKjp-Bold.otf") as Font ?? Cjk;
+
 	private static FontVariation? _cjkHeavy;
 
-	/// <summary>P3R 标题风格：粗体 + 右斜（选中项、名字、按钮文字用）。</summary>
+	/// <summary>P3R 标题风格：加粗的中文（选中项、名字、按钮文字用）。v0.14.50 起是正体：中文斜切看着别扭（用户实机反馈），斜体只留给英文。</summary>
 	public static Font CjkHeavy => _cjkHeavy ??= new FontVariation
 	{
 		BaseFont = Cjk,
 		VariationEmbolden = 0.3f,
-		VariationTransform = new Transform2D(new Vector2(1f, 0f), new Vector2(-0.22f, 1f), Vector2.Zero),
 	};
 
 	private static FontVariation? _latinItalic;

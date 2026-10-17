@@ -209,7 +209,7 @@ def count_badge(n):
 
 def name_plate(name, size=40):
     """名牌：白边黑底斜切条 + 红色尾边，牌名用粗斜体。"""
-    tag = text_img(name, cjk(size), (255, 255, 255, 255), shear=0.22, bold=1)
+    tag = text_img(name, cjk(size), (255, 255, 255, 255), bold=1)
     h = int(size * 1.55)
     w = tag.width + 70
     plate = Image.new("RGBA", (w + 30, h))
@@ -254,7 +254,7 @@ COLS, CARD_W, CELL_W, CELL_H = 5, 160, 178, 252          # 与 mod/src/Vfx/PileF
 GRID_X, GRID_TOP, GRID_BOTTOM, HEADER_H, SLANT = 190, 262, 1010, 58, 0.05
 
 
-def grid(im, faces, groups, mode, hover=None, scroll=0.0, t=2.0):
+def grid(im, faces, groups, mode, hover=None, scroll=0.0, t=2.0, focus=None, fp=0.0):
     """网格（与游戏里 PileFx 同一套布局）：按类型分段，段标题斜切牌，段内逐张平铺；整片沿屏幕向右下微斜；悬停放大 + 白框 + 名牌。"""
     if mode == "draw":
         sections = [("ATTACK", "攻击", groups[:5]), ("SKILL", "技能", groups[5:])]
@@ -273,6 +273,7 @@ def grid(im, faces, groups, mode, hover=None, scroll=0.0, t=2.0):
     y = 0.0
     k = 0
     hov = None
+    foc = None
     cards = []
     for en, zh, gs in sections:
         flat = [n for n, c in gs for _ in range(c)]
@@ -282,7 +283,7 @@ def grid(im, faces, groups, mode, hover=None, scroll=0.0, t=2.0):
             d.polygon([(hx + 12, hy - 22), (hx + 330, hy - 22), (hx + 320, hy + 22), (hx, hy + 22)], fill=(5, 8, 23, 240))
             d.polygon([(hx + 12, hy - 22), (hx + 24, hy - 22), (hx + 14, hy + 22), (hx + 2, hy + 22)], fill=CYAN + (255,))
             put(lay, text_img(en, lat(36), (255, 255, 255, 255)), (hx + 34, hy), "lm")
-            put(lay, text_img(zh, cjk(20), (150, 220, 255, 255), shear=0.22, bold=1), (hx + 44 + lat(36).getlength(en), hy + 2), "lm")
+            put(lay, text_img(zh, cjk(20), (150, 220, 255, 255), bold=1), (hx + 44 + lat(36).getlength(en), hy + 2), "lm")
             put(lay, text_img(f"×{len(flat)}", lat(38), CYAN + (255,)), (hx + 310, hy), "rm")
             d.line([(hx + 338, hy), (hx + COLS * CELL_W - 6, hy)], fill=(150, 220, 255, 140), width=2)
             d.polygon([(hx + COLS * CELL_W - 6, hy - 6), (hx + COLS * CELL_W + 6, hy), (hx + COLS * CELL_W - 6, hy + 6)], fill=(150, 220, 255, 200))
@@ -294,21 +295,89 @@ def grid(im, faces, groups, mode, hover=None, scroll=0.0, t=2.0):
             born = min(1.0, max(0.0, (t - 0.22 - 0.022 * k) / 0.38))
             if k == hover:
                 hov = (n, cx, cy - 14)
+            elif k == focus:
+                foc = (n, cx, cy)
             elif f > 0.01 and born > 0:
                 pop = ease_out_back(born, 1.7)
-                spr = card_sprite(faces[n], 1, sc * (0.85 + 0.15 * pop), dim=0.5 if hover is not None else 0.0).rotate(2, expand=True, resample=Image.BICUBIC)
-                spr.putalpha(spr.split()[3].point(lambda v: int(v * f * min(1, born * 3))))
-                cards.append((spr, (cx - 40 * (1 - pop), cy + 46 * (1 - pop))))
+                r = 0.0
+                if focus is not None:
+                    r = min(1.0, max(0.0, fp * 1.6 - min(0.5, abs(k - focus) * 60 / 1600)))
+                    r = 1 - (1 - r) ** 3
+                spr = card_sprite(faces[n], 1, sc * (0.85 + 0.15 * pop) * (1 - 0.16 * r), dim=0.5 if hover is not None else 0.0).rotate(2 + 5 * r, expand=True, resample=Image.BICUBIC)
+                a = f * min(1, born * 3) * (1 - 0.9 * r)
+                spr.putalpha(spr.split()[3].point(lambda v: int(v * a)))
+                cards.append((spr, (cx - 40 * (1 - pop) - 24 * r, cy + 46 * (1 - pop) + 80 * r)))
             k += 1
         y += math.ceil(len(flat) / COLS) * CELL_H + 16
     for spr, p in cards:
         put(lay, spr, p, "mm")
+    if foc:
+        im.alpha_composite(lay)
+        lay = Image.new("RGBA", (W, H))
+        focus_layer(lay, fp)
+        n, cx, cy = foc
+        e = fp * fp * (3 - 2 * fp)
+        px = cx + (700 - cx) * e
+        py = cy + (560 - cy) * e - 170 * math.sin(math.pi * e)
+        scale = sc + (450 / 260 - sc) * e
+        flip = max(0.03, abs(math.cos(math.pi * e)))
+        spr = card_sprite(faces[n], 1, scale, frame=e)
+        spr = spr.resize((max(1, int(spr.width * flip)), spr.height), Image.LANCZOS).rotate(12 * math.sin(math.pi * e), expand=True, resample=Image.BICUBIC)
+        put(lay, spr, (px, py), "mm")
+        if e > 0.45:
+            info(lay, n, min(1.0, (fp - 0.45) / 0.4))
     if hov:
         n, cx, cy = hov
         spr = card_sprite(faces[n], 1, sc * 1.26, frame=1.0)
         put(lay, spr, (cx, cy), "mm")
         put(lay, name_plate(n, 32), (cx - 20, cy + 358 * sc * 1.26 / 2 + 8), "lt")
     im.alpha_composite(lay)
+
+
+def focus_layer(lay, fp):
+    """特写背景：压暗、穿过卡牌的白色斜带（红 / 青细条）、慢转光芒和细圆。与 PileFx.FocusLayer 一致。"""
+    e = fp * fp * (3 - 2 * fp)
+    lay.alpha_composite(Image.new("RGBA", (W, H), (3, 8, 33, int(255 * 0.62 * e))))
+    c = np.array([700.0, 560.0])
+    ang = math.radians(-16)
+    ax = np.array([math.cos(ang), math.sin(ang)])
+    nx = np.array([-ax[1], ax[0]])
+    slide = 1 - (1 - 2 ** (-10 * min(1.0, max(0.0, fp * 1.4 - 0.1))))
+    o = c + np.array([-1.0, 0.29]) / np.hypot(1, 0.29) * 2400 * slide
+    band = Image.new("RGBA", (W, H))
+    d = ImageDraw.Draw(band)
+
+    def strip(a, b, col):
+        pts = [o - ax * 2600 + nx * a, o + ax * 2600 + nx * a, o + ax * 2600 + nx * b, o - ax * 2600 + nx * b]
+        d.polygon([tuple(p) for p in pts], fill=col)
+    strip(-120, 120, (245, 250, 255, int(230 * e)))
+    strip(130, 142, RED + (int(255 * e),))
+    strip(-136, -130, CYAN + (int(255 * e),))
+    rays = Image.new("RGBA", (W, H))
+    rd = ImageDraw.Draw(rays)
+    for i in range(16):
+        a = math.tau * i / 16 + 0.3
+        w = math.radians(3.2 if i % 2 == 0 else 1.6)
+        r = 900 * (0.6 + 0.4 * e)
+        rd.polygon([tuple(c), tuple(c + r * np.array([math.cos(a - w), math.sin(a - w)])), tuple(c + r * np.array([math.cos(a + w), math.sin(a + w)]))], fill=(115, 217, 255, int(40 * e)))
+    for rr, wd, al in ((400, 2, 180), (430, 1, 115)):
+        rr *= 0.6 + 0.4 * e
+        rd.ellipse([c[0] - rr, c[1] - rr, c[0] + rr, c[1] + rr], outline=(205, 242, 255, int(al * e)), width=wd)
+    lay.alpha_composite(band)
+    lay.alpha_composite(rays)
+
+
+def info(lay, name, a):
+    """特写左侧说明：牌名（正体粗黑）、红线、类型 · 费用、牌堆中张数、返回提示。"""
+    x = -90 * (1 - (1 - (1 - a) ** 3))
+    tmp = Image.new("RGBA", (W, H))
+    put(tmp, text_img(name, cjk(54), (255, 255, 255, 255), stroke=6, stroke_fill=NAVY + (255,), bold=1), (60 + x, 300))
+    ImageDraw.Draw(tmp).polygon([(60 + x, 382), (400 + x, 382), (394 + x, 390), (54 + x, 390)], fill=RED + (255,))
+    put(tmp, text_img("SKILL  ·  COST 1", lat(40), CYAN + (255,), stroke=4, stroke_fill=NAVY + (255,)), (60 + x, 398))
+    put(tmp, text_img("牌堆中 ×3", cjk(30), (255, 255, 255, 255), stroke=4, stroke_fill=NAVY + (255,), bold=1), (60 + x, 452))
+    put(tmp, text_img("点击任意处返回", cjk(20), (190, 225, 255, 205), stroke=3, stroke_fill=NAVY + (255,)), (62 + x, 512))
+    tmp.putalpha(tmp.split()[3].point(lambda v: int(v * a)))
+    lay.alpha_composite(tmp)
 
 
 def chrome(im, shot):
@@ -327,7 +396,7 @@ def header(im, mode, total):
     d.polygon([(56, 200), (560, 200), (552, 228), (48, 228)], fill=(8, 18, 60, 240))
     d.polygon([(56, 200), (70, 200), (62, 228), (48, 228)], fill=CYAN + (255,))
     note = "抽牌顺序随机 · 按类型 → 费用排列" if mode == "draw" else "按进入牌堆的先后排列 · 最新在前"
-    put(im, text_img(note, cjk(19), (205, 237, 255, 255), shear=0.22, bold=1), (84, 214), "lm")
+    put(im, text_img(note, cjk(19), (205, 237, 255, 255), bold=1), (84, 214), "lm")
 
 
 def deck(shot, mode):
@@ -347,7 +416,7 @@ def deck(shot, mode):
     return faces, groups
 
 
-def frame(shot, mode, t, hover=None, scroll=0.0):
+def frame(shot, mode, t, hover=None, scroll=0.0, focus=None, fp=0.0):
     rng = np.random.default_rng(3)
     im = background(t)
     src = SRC_DRAW if mode == "draw" else SRC_DISCARD
@@ -356,8 +425,8 @@ def frame(shot, mode, t, hover=None, scroll=0.0):
     disc(im, "DRAW" if mode == "draw" else "DISCARD", ease_out_back((t - 0.1) / 0.5, 1.0))
     portrait(im, np.random.default_rng(5), min(1.0, max(0.0, (t - 0.18) / 0.5)), t)
     faces, groups = deck(shot, mode)
-    grid(im, faces, groups, mode, hover, scroll, t)
     header(im, mode, sum(c for _, c in groups))
+    grid(im, faces, groups, mode, hover, scroll, t, focus, fp)
     chrome(im, shot)
     if rad < 2300:
         old = Image.open(shot).convert("RGBA").resize((W, H))
@@ -389,6 +458,16 @@ def main(shot, outdir):
     frame(shot, "draw", 2.0, hover=3).convert("RGB").save(out / "pile_grid_hover.png")
     frame(shot, "draw", 2.0, scroll=300).convert("RGB").save(out / "pile_grid_scrolled.png")
     frame(shot, "discard", 2.0, hover=1).convert("RGB").save(out / "pile_discard.png")
+    fps = [0.15, 0.3, 0.45, 0.6, 0.8, 1.0]
+    frames = [frame(shot, "draw", 2.0, focus=10, fp=f).convert("RGB").resize((640, 360), Image.LANCZOS) for f in fps]
+    sheet = Image.new("RGB", (640 * 3 + 40, 360 * 2 + 30), (8, 10, 20))
+    d = ImageDraw.Draw(sheet)
+    for k, (f, fr) in enumerate(zip(fps, frames)):
+        x, y = 10 + (k % 3) * 650, 10 + (k // 3) * 370
+        sheet.paste(fr, (x, y))
+        d.text((x + 8, y + 300), f"{f * 0.5:.2f}s", font=lat(30), fill=(255, 230, 60))
+    sheet.save(out / "pile_focus_anim.png")
+    frame(shot, "draw", 2.0, focus=10, fp=1.0).convert("RGB").save(out / "pile_focus.png")
 
 
 if __name__ == "__main__":
