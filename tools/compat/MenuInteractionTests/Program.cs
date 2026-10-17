@@ -12,6 +12,13 @@ void Near(Vector2 a, Vector2 b, string message) => Check(Vector2.Distance(a, b) 
 
 Vector2 view = new(1920, 1080), pos = new(100, 100), down = new(117, 123);
 IconDrag drag = new();
+drag.Begin(100, down, pos);
+drag.Step(120, down + new Vector2(6, 0), view);
+Check(drag.Dragging, "movement threshold starts drag without waiting 450ms");
+Near(drag.Position, pos + new Vector2(6, 0), "first drag movement must immediately follow cursor");
+drag.Step(125, down + new Vector2(150, 30), view);
+Near(drag.Position, pos + new Vector2(150, 30), "drag must have no interpolation or accumulated delay");
+Check(!drag.Release(130, down + new Vector2(150, 30), view, true), "quick drag must never become a click");
 drag.Begin(1000, down, pos);
 Check(drag.Pressed && !drag.Dragging, "press must not open popup or start dragging");
 drag.Begin(1030, down + new Vector2(3), pos); // GUI + poll reporting the same physical press.

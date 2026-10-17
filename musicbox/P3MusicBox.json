@@ -3,7 +3,7 @@
   "name": "P3 音乐盒",
   "author": "brooks",
   "description": "右上角设置按钮下方的小音乐盒：短按打开面板，长按图标可拖动并记住位置：播放 / 暂停、切歌、歌单。播放时原版背景音乐淡出静音，暂停后淡回。歌曲放在本 mod 文件夹的 music 子文件夹里（.ogg / .mp3，同名 .lrc 显示歌词）。纯界面，不影响玩法，联机时只装在自己这边也可以。",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "has_pck": false,
   "has_dll": true,
   "affects_gameplay": false

@@ -25,7 +25,7 @@ namespace P3MusicBox;
 public static class MusicBox
 {
 	public const string Tag = "[P3MusicBox]";
-	public const string Version = "1.1.1";
+	public const string Version = "1.1.2";
 
 	// 配色（和 P3Makoto 一致的 P3R 蓝）
 	private static readonly Color Navy = new(0.02f, 0.06f, 0.22f, 0.94f);
@@ -396,6 +396,7 @@ public static class MusicBox
 		_layer.AddChild(_hoverTitle);
 		box.GuiInput += e => Safe("click", () =>
 		{
+			if (e is InputEventMouseMotion && Drag.Pressed) MoveIcon();
 			if (e is InputEventMouseButton { ButtonIndex: MouseButton.Left } mb)
 			{
 				if (mb.Pressed) BeginIconPress();
@@ -417,7 +418,11 @@ public static class MusicBox
 		_dragCapture = new Control { Name = "IconDragCapture", Visible = false, MouseFilter = Control.MouseFilterEnum.Stop, MouseDefaultCursorShape = Control.CursorShape.Drag };
 		_dragCapture.SetAnchorsPreset(Control.LayoutPreset.FullRect);
 		_layer.AddChild(_dragCapture);
-		_dragCapture.GuiInput += _ => _dragCapture.AcceptEvent();
+		_dragCapture.GuiInput += e => Safe("icon drag input", () =>
+		{
+			if (e is InputEventMouseMotion && Drag.Pressed) MoveIcon();
+			_dragCapture.AcceptEvent();
+		});
 	}
 
 	private static void Style(Label l, int size, Color color, int outline = 0)
@@ -482,6 +487,16 @@ public static class MusicBox
 		GD.Print($"{Tag} icon moved to {Drag.Position.X:0},{Drag.Position.Y:0}");
 	}
 
+	// 鼠标移动事件直接更新位置；每帧轮询仅作兜底，不插值、不累积固定延迟。
+	private static void MoveIcon()
+	{
+		if (_button == null || !Drag.Pressed) return;
+		Drag.Step(Time.GetTicksMsec(), Num(_button.GetGlobalMousePosition()), Num(ViewSize()));
+		if (!Drag.Dragging) return;
+		ClosePopup();
+		_button.Position = Gd(Drag.Position);
+	}
+
 	/// <summary>GUI 和轮询共用手势；离开图标后仍跟踪拖动，在隐藏或失焦时释放输入捕获。</summary>
 	private static void PollMouse(bool hidden)
 	{
@@ -501,12 +516,7 @@ public static class MusicBox
 			if (inside && left && !_wasLeft) BeginIconPress(); // GUI 与轮询重复开始由 Drag.Begin 合并。
 			if (Drag.Pressed)
 			{
-				Drag.Step(Time.GetTicksMsec(), Num(mouse), Num(ViewSize()));
-				if (Drag.Dragging)
-				{
-					ClosePopup();
-					_button.Position = Gd(Drag.Position);
-				}
+				MoveIcon();
 				if (!left)
 				{
 					bool click = Drag.Release(Time.GetTicksMsec(), Num(mouse), Num(ViewSize()), inside);

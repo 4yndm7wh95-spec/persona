@@ -7,6 +7,7 @@ namespace P3MusicBox;
 internal sealed class IconDrag
 {
 	internal const ulong HoldMs = 450;
+	internal const float DragThreshold = 6f;
 	internal bool Pressed { get; private set; }
 	internal bool Dragging { get; private set; }
 	internal bool Moved { get; private set; }
@@ -31,7 +32,7 @@ internal sealed class IconDrag
 	{
 		if (!Pressed) return;
 		travel = MathF.Max(travel, Vector2.Distance(cursor, pressAt));
-		if (now - downAt >= HoldMs) Dragging = true;
+		if (now - downAt >= HoldMs || travel >= DragThreshold) Dragging = true;
 		if (Dragging)
 		{
 			Position = Clamp(cursor - offset, viewport);
