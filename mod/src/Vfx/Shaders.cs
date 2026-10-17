@@ -671,4 +671,33 @@ uniform vec4 tint : source_color = vec4(0.22, 0.85, 1.0, 1.0);
 void fragment() {
 	COLOR = vec4(tint.rgb, texture(TEXTURE, UV).a * tint.a);
 }");
+
+	private static Shader? _underwater;
+
+	/// <summary>
+	/// v0.14.49 牌堆界面（P3R 游戏内菜单）：深蓝水下 —— 上亮下暗的渐变、顶部缓慢流动的焦散网、斜射的光柱。
+	/// 圆形开孔：center（UV，0~1）/ radius（以画面高度为单位，0 = 全关）只显示圆内，边缘一道青白亮环。
+	/// </summary>
+	public static Shader Underwater => _underwater ??= Make(@"
+shader_type canvas_item;
+uniform float aspect = 1.777;
+uniform vec2 center = vec2(0.1, 0.9);
+uniform float radius = 3.0;
+void fragment() {
+	vec2 uv = UV;
+	vec3 top = vec3(0.16, 0.47, 0.90), bot = vec3(0.02, 0.08, 0.36);
+	vec3 c = mix(top, bot, clamp(uv.y * 1.1, 0.0, 1.0));
+	float u = uv.x * aspect, t = TIME * 0.35;
+	float a = sin(u * 22.0 + sin(uv.y * 9.0 + u * 3.5 + t) * 2.2 + t * 1.3);
+	float b = sin(u * 15.0 - uv.y * 25.0 + sin(u * 7.0 - t) * 1.7 - t);
+	float net = pow(clamp(1.0 - abs(a + b) * 2.4, 0.0, 1.0), 3.0);
+	c += vec3(0.45, 0.75, 1.0) * net * clamp(1.0 - uv.y * 1.8, 0.0, 1.0) * 0.38;
+	float rays = pow(clamp(sin(u * 7.0 + uv.y * 2.0 + sin(t * 0.5) * 0.6) * 0.5 + 0.5, 0.0, 1.0), 8.0);
+	c += vec3(0.6, 0.85, 1.0) * rays * clamp(1.0 - uv.y * 1.3, 0.0, 1.0) * 0.14;
+	vec2 d = (uv - center) * vec2(aspect, 1.0);
+	float r = length(d);
+	float inside = smoothstep(radius, radius - 0.01, r);
+	float rim = smoothstep(0.02, 0.0, abs(r - radius)) * step(0.001, radius);
+	COLOR = vec4(c + vec3(0.7, 0.95, 1.0) * rim * 0.9, max(inside, rim * 0.9));
+}");
 }

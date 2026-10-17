@@ -70,8 +70,8 @@ public static class P3SettingsSectionPatch
 
 		Label hint = new()
 		{
-			Text = Zh ? "关闭 = 不播这段演出，直接走原版流程。快速模式为「极速」时全部视为关闭。建筑师房间在下次进房间时生效。"
-				: "Off = skip it and use the vanilla flow. Instant fast mode turns all of these off. The Architect room applies on the next visit.",
+			Text = Zh ? "关闭 = 不播这段演出，直接走原版流程。快速模式为「极速」时全部视为关闭（牌堆界面除外）。建筑师房间在下次进房间时生效。"
+				: "Off = skip it and use the vanilla flow. Instant fast mode turns all of these off (except the pile screen). The Architect room applies on the next visit.",
 			AutowrapMode = TextServer.AutowrapMode.WordSmart,
 		};
 		Style(hint, font, Mathf.Max(16, size - 8), new Color(color, 0.65f));
@@ -84,6 +84,7 @@ public static class P3SettingsSectionPatch
 		Row(section, font, size, color, rowH, Zh ? "Persona 召唤切入（眼神特写）" : "Persona summon cut-in", () => d.CutIn, v => d.CutIn = v);
 		Row(section, font, size, color, rowH, Zh ? "选人时的召唤演出" : "Character select summon", () => d.SelectSummon, v => d.SelectSummon = v);
 		Row(section, font, size, color, rowH, Zh ? "建筑师房间（关闭 = 全部原版）" : "Architect room (off = all vanilla)", () => d.Architect, v => d.Architect = v);
+		Row(section, font, size, color, rowH, Zh ? "抽牌堆 / 弃牌堆界面（P3R 风格）" : "Draw / discard pile screen (P3R style)", () => d.PileScreen, v => d.PileScreen = v);
 	}
 
 	private static void Row(VBoxContainer parent, Font? font, int size, Color color, float rowH, string text, Func<bool> get, Action<bool> set)

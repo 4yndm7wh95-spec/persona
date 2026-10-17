@@ -240,7 +240,7 @@ public static class CharSelectBg
 	}
 
 	/// <summary>SpineSprite 加进场景树后下一帧才有动画状态：取不到就稍后再试。</summary>
-	private static void PlayIdle(Node2D spine, int triesLeft, System.Action giveUp)
+	internal static void PlayIdle(Node2D spine, int triesLeft, System.Action giveUp)
 	{
 		if (!GodotObject.IsInstanceValid(spine))
 		{

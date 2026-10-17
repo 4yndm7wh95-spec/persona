@@ -22,6 +22,7 @@ public static class P3Settings
 		public bool CutIn { get; set; } = true;           // Persona 召唤切入（眼神特写）
 		public bool SelectSummon { get; set; } = true;    // 选人时的召唤演出
 		public bool Architect { get; set; } = true;       // 建筑师房间（关闭 = 全部原版）
+		public bool PileScreen { get; set; } = true;      // 抽牌堆 / 弃牌堆界面（P3R 菜单风格）
 	}
 
 	private static Data? _data;
@@ -82,4 +83,6 @@ public static class P3Settings
 	public static bool CutIn => Current.CutIn && !Instant;
 	public static bool SelectSummon => Current.SelectSummon && !Instant;
 	public static bool Architect => Current.Architect && !Instant;
+	// 牌堆界面不是演出（不拖节奏），极速模式下也照常
+	public static bool PileScreen => Current.PileScreen;
 }

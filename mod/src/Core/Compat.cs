@@ -12,7 +12,8 @@ namespace P3Makoto.Core;
 ///   · MegaAnimationState.SetAnimation / AddAnimation：0.107 返回 MegaTrackEntry，0.111 返回 void（参数相同）→ 反射调用；
 ///   · MegaSprite.GetGlobalBoneTransform：0.107 没有 → 直接调 Spine 原生方法 get_global_bone_transform，再不行用骨骼的 get_global_transform；
 ///   · MegaAnimationState.GetCurrentAnimationName：0.107 在轨道为空时会抛空引用 → 直接读原生轨道；
-///   · NGame.GetGameVersion：0.107 没有 → 反射，取不到就算了。
+///   · NGame.GetGameVersion：0.107 没有 → 反射，取不到就算了；
+///   · NControllerManager.IsUsingDirectionalNavigation：0.107 没有（只有 IsUsingController）→ 反射，两个都试。
 /// </summary>
 public static class Compat
 {
@@ -122,6 +123,26 @@ public static class Compat
 		{
 		}
 		return null;
+	}
+
+	/// <summary>玩家是否在用手柄 / 方向键导航（0.111：IsUsingDirectionalNavigation；0.107：IsUsingController）。取不到当作没有。</summary>
+	public static bool UsingDirectionalNav()
+	{
+		try
+		{
+			object? mgr = MegaCrit.Sts2.Core.Nodes.CommonUi.NControllerManager.Instance;
+			if (mgr == null)
+			{
+				return false;
+			}
+			Type t = mgr.GetType();
+			PropertyInfo? p = t.GetProperty("IsUsingDirectionalNavigation") ?? t.GetProperty("IsUsingController");
+			return p?.GetValue(mgr) is bool b && b;
+		}
+		catch (Exception)
+		{
+			return false;
+		}
 	}
 
 	/// <summary>游戏版本号（"v0.107.1" 之类）；取不到返回 "?"。</summary>

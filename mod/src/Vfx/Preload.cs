@@ -20,6 +20,8 @@ public static class Preload
 		"res://p3makoto/ui/cutin_ka.png",
 		"res://p3makoto/ui/charselect_portrait.png",
 		PortraitSpine,                                     // 选人界面的 Spine 立绘（骨骼数据 + 图集）
+		"res://p3makoto/pile/pile_skel_data.tres",         // v0.14.49 牌堆界面的 Spine 立绘（第一次打开牌堆时不卡）
+		"res://p3makoto/ui/pile_portrait.png",
 	};
 	private const string PortraitSpine = "res://p3makoto/portrait/portrait_skel_data.tres";
 
