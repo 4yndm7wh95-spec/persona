@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Nodes.Combat;
@@ -8,38 +12,105 @@ using P3Makoto.Vfx;
 namespace P3Makoto.Patches;
 
 /// <summary>
-/// 鼠标光标换成 P3R 风格（p3makoto/ui/cursor*.png，48×48，尖端在原版热点 (14,5)）：
-/// 在光标管理器第一次设置光标之前替换它的两张默认图（普通 / 按下倾斜），原版的按下切换、"查看"光标、临时覆盖都照常工作。
+/// 鼠标光标换成 P3R 风格（p3makoto/ui/cursor*.png，64×64，热点 (14,5)）。
+/// 启动、晚加载补应用、原版刷新共用一次性替换；保留查看/临时覆盖/手柄隐藏逻辑。
 /// </summary>
 [HarmonyPatch(typeof(NCursorManager), "_EnterTree")]
 public static class CursorPatch
 {
-	public static void Prefix(NCursorManager __instance)
+	private sealed class State
 	{
-		ModEntry.Safe("cursor", () =>
+		internal bool Applied;
+		internal int Attempts;
+		internal ulong NextTry;
+	}
+	private static readonly ConditionalWeakTable<NCursorManager, State> States = new();
+	private static readonly FieldInfo? NormalField = AccessTools.Field(typeof(NCursorManager), "_cursorNotTilted");
+	private static readonly FieldInfo? TiltedField = AccessTools.Field(typeof(NCursorManager), "_cursorTilted");
+	private static readonly MethodInfo? Update = AccessTools.Method(typeof(NCursorManager), "UpdateCursor");
+	private static Image? normal, tilted;
+
+	public static void Prefix(NCursorManager __instance) => Ensure(__instance);
+
+	internal static bool Ensure(NCursorManager manager)
+	{
+		if (!GodotObject.IsInstanceValid(manager)) return false;
+		State state = States.GetValue(manager, _ => new State());
+		if (state.Applied) return true;
+		if (state.Attempts >= 3 || Time.GetTicksMsec() < state.NextTry) return false;
+		state.Attempts++;
+		state.NextTry = Time.GetTicksMsec() + 1000;
+		try
 		{
-			if (Load("res://p3makoto/ui/cursor.png") is Image normal && Load("res://p3makoto/ui/cursor_tilted.png") is Image tilted)
+			if (NormalField == null || TiltedField == null || Update == null)
+				throw new MissingMemberException("NCursorManager cursor fields/UpdateCursor unavailable");
+			normal ??= Load("res://p3makoto/ui/cursor.png");
+			tilted ??= Load("res://p3makoto/ui/cursor_tilted.png");
+			NormalField.SetValue(manager, normal);
+			TiltedField.SetValue(manager, tilted);
+			state.Applied = true;
+			GD.Print($"{ModEntry.Tag} cursor skin applied: {normal.GetWidth()}x{normal.GetHeight()}, hotspot=(14,5), attempt={state.Attempts}");
+			return true;
+		}
+		catch (Exception e)
+		{
+			ModEntry.Warn($"cursor skin attempt {state.Attempts}/3 failed: {e.Message}; keeping vanilla cursor");
+			if (state.Attempts < 3 && manager.IsInsideTree())
 			{
-				Traverse t = Traverse.Create(__instance);
-				t.Field("_cursorNotTilted").SetValue(normal);
-				t.Field("_cursorTilted").SetValue(tilted);
+				manager.GetTree().CreateTimer(1.05).Timeout += () => ModEntry.Safe("cursor retry", () => Refresh(manager));
 			}
-		});
+			return false;
+		}
 	}
 
-	private static Image? Load(string path)
+	private static void Refresh(NCursorManager manager)
 	{
-		if (ResourceLoader.Load(path) is not Texture2D tex || tex.GetImage() is not Image img)
+		if (GodotObject.IsInstanceValid(manager) && manager.IsInsideTree() && Ensure(manager))
+			Update?.Invoke(manager, null); // 让原版选择当前普通/按下/临时覆盖，不强制写一个 Arrow 覆盖其他状态。
+	}
+
+	/// <summary>兼容 mod 初始化之前光标节点已经入树的情况；只扫描一次，不逐帧抢占光标。</summary>
+	internal static void RefreshExisting()
+	{
+		if (Engine.GetMainLoop() is not SceneTree tree) return;
+		Stack<Node> pending = new();
+		pending.Push(tree.Root);
+		while (pending.Count > 0)
 		{
-			return null;
+			Node node = pending.Pop();
+			if (node is NCursorManager manager) Refresh(manager);
+			foreach (Node child in node.GetChildren()) pending.Push(child);
 		}
-		if (img.IsCompressed())
+	}
+
+	private static Image Load(string path)
+	{
+		Image? img = null;
+		try
 		{
-			img.Decompress();
+			if (ResourceLoader.Exists(path) && ResourceLoader.Load(path) is Texture2D tex) img = tex.GetImage();
+			if (img != null && img.IsCompressed() && img.Decompress() != Error.Ok) img = null;
 		}
+		catch (Exception e) { img = null; GD.Print($"{ModEntry.Tag} cursor texture read failed: {path}: {e.Message}; trying PNG"); }
+		if (img == null || img.IsEmpty())
+		{
+			if (!FileAccess.FileExists(path)) throw new InvalidOperationException("cursor image missing: " + path);
+			img = new Image();
+			Error error = img.LoadPngFromBuffer(FileAccess.GetFileAsBytes(path));
+			if (error != Error.Ok) throw new InvalidOperationException($"cursor PNG decode failed ({error}): {path}");
+			GD.Print($"{ModEntry.Tag} cursor raw PNG fallback: {path}");
+		}
+		if (img.GetWidth() <= 14 || img.GetHeight() <= 5 || img.GetWidth() > 256 || img.GetHeight() > 256)
+			throw new InvalidOperationException($"invalid cursor size {img.GetWidth()}x{img.GetHeight()}: {path}");
 		img.Convert(Image.Format.Rgba8);
 		return img;
 	}
+}
+
+[HarmonyPatch(typeof(NCursorManager), "UpdateCursor")]
+public static class CursorRefreshPatch
+{
+	public static void Prefix(NCursorManager __instance) => CursorPatch.Ensure(__instance);
 }
 
 /// <summary>

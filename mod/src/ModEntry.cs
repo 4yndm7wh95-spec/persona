@@ -47,6 +47,7 @@ public static class ModEntry
 		}
 		// v0.14.48：把原版储君路径指回本 mod 的资源；所有 mod 加载完之后（下一帧）再来一次，盖过后加载的 mod
 		Safe("asset guard", () => Core.AssetGuard.Apply("init"));
+		Callable.From(() => Safe("cursor late init", Patches.CursorPatch.RefreshExisting)).CallDeferred();
 		if (Engine.GetMainLoop() is SceneTree tree)
 		{
 			tree.CreateTimer(0.0).Timeout += () => Safe("asset guard", () => Core.AssetGuard.Apply("after all mods"));
