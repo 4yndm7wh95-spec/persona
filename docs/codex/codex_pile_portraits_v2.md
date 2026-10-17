@@ -27,7 +27,7 @@
 【2. 参考图】
 - 人物设定和画风：以 <repo>\art\p3pile\pile_base.png 为准（同一个人、同一套配色和线条），三张新图放在一起要像同一套立绘。
 - 姿势参考：<repo>\ref_sheets\ref3_overview_9.jpg 和 ref3_overview_10.jpg 是 1920×1344 的分镜表，每格 320×224，左上角黄字是时间。按格子实际边界裁出下面几格（去掉黄色时间字），各放大 3 倍，存到对应的 ref\ 子目录：
-  - 牌组：ref3_overview_9 的 58.00s（第 5 行第 1 格）和 58.33s（第 5 行第 2 格）→ <repo>\art\p3pile_deck\ref\
+  - 牌组：ref3_overview_9 的 58.00s（第 5 行第 1 格）和 58.33s（第 5 行第 3 格）→ <repo>\art\p3pile_deck\ref\
   - 弃牌堆：ref3_overview_9 的 54.00s（第 1 行第 1 格）、54.17s（第 1 行第 2 格）→ <repo>\art\p3pile_discard\ref\
   - 消耗堆：ref3_overview_10 的 60.83s（第 1 行第 6 格）和 61.00s（第 2 行第 1 格）→ <repo>\art\p3pile_exhaust\ref\
 - 参考图只用来定姿势和构图，不要照抄里面的 UI、文字和背景。
