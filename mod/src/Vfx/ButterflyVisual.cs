@@ -55,7 +55,7 @@ internal sealed class ButterflyVisual
 		}
 	}
 
-	internal void Update(Vector2 at, float angle, float time, float alpha, float perspective = 1f, bool emit = true)
+	internal void Update(Vector2 at, float angle, float time, float alpha, float perspective = 1f, bool emit = true, float planeAlpha = 1f)
 	{
 		float glide = Mathf.Pow(0.5f + 0.5f * Mathf.Cos(time * Mathf.Tau / 1.6f), 6f);
 		float flap = Mathf.Cos(time * Mathf.Tau * 6f);
@@ -66,7 +66,8 @@ internal sealed class ButterflyVisual
 		Fly.Position = at + new Vector2(0f, bob * perspective);
 		Fly.Rotation = angle + 0.08f * Mathf.Sin(time * 2.3f);
 		Fly.Scale = Vector2.One * perspective;
-		Fly.Modulate = new Color(1f, 1f, 1f, alpha);
+		// 切换人物前后层时只混合蓝蝶本身；已落下的亮粉留在各自出生的深度层。
+		Fly.Modulate = new Color(1f, 1f, 1f, alpha * planeAlpha);
 		aura.Modulate = new Color(0.35f, 0.7f, 1f, (0.4f + 0.15f * flap) * alpha);
 		if (emit && time - lastDust > 0.03f)
 		{

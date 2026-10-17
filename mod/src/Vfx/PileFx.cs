@@ -77,6 +77,7 @@ public static class PileFx
 		_ => Kind.Draw,
 	};
 	private const float PorScale = 0.74f;             // 立绘（1024×1536 画布）缩放
+	private const float DeckPorScale = 0.78f, DiscardPorScale = 0.72f, ExhaustPorScale = 0.8f;
 	private static readonly Vector2 PorTopLeft = new(1150f, -20f);   // 1920 宽下的左上角
 
 	private static readonly Color Navy = new(0.03f, 0.07f, 0.24f, 0.94f);
@@ -113,7 +114,8 @@ public static class PileFx
 	}
 
 	/// <summary>原版界面里要藏起来的节点（牌组界面另有排序按钮条）。回滚时恢复显示。</summary>
-	private static readonly string[] Hidden = { "CardGrid", "%BottomLabel", "%SortingBg", "%ObtainedSorter", "%CardTypeSorter", "%CostSorter", "%AlphabeticalSorter" };
+	// BottomLabel 的黑色底板是兄弟节点：隐藏整个 BottomText 才不会留下 124×40 的空黑块。
+	private static readonly string[] Hidden = { "CardGrid", "BottomText", "%SortingBg", "%ObtainedSorter", "%CardTypeSorter", "%CostSorter", "%AlphabeticalSorter" };
 
 	private const float ExitTime = 0.42f;
 	private static readonly Dictionary<ulong, Action> Exits = new();
@@ -210,10 +212,11 @@ public static class PileFx
 				break;
 			default:
 				Disc(right, L.Word, font, k, rx);
-				butterfly = new PileButterfly(right, kind, k, rx);
+				butterfly = new PileButterfly(right, kind, k, rx, PorScale);
 				Portrait(right, k, rx);
 				break;
 		}
+		butterfly.AttachForeground(right);                 // 装饰底板 → 后景蓝蝶 → 立绘 → 前景蓝蝶；卡牌仍在整组之上。
 		Fx.After(right, 0.1, "pile right in", () => Fx.Animate(right, 0.5, t =>
 		{
 			right.Position = new Vector2(700f * k * L.Side * (1f - Ease.OutExpo(t)), 0f);
@@ -981,11 +984,11 @@ public static class PileFx
 			float o = i * 52f * k;
 			slab.AddChild(new Line2D { Points = new[] { new Vector2(o, 0f), new Vector2(o - 1100f * k, 1100f * k) }, Width = 1.5f * k, DefaultColor = new Color(0.55f, 0.68f, 0.82f, 0.1f) });
 		}
-		PileButterfly butterfly = new(parent, Kind.Deck, k, 0f);
+		PileButterfly butterfly = new(parent, Kind.Deck, k, 0f, DeckPorScale);
 		// 白色底板 → 蓝蝶/亮粉 → 单独裁切的立绘；蓝蝶可越过斜边，人物仍按原版板形裁切。
 		Polygon2D portraitClip = new() { Polygon = slab.Polygon, ClipChildren = CanvasItem.ClipChildrenMode.Only };
 		parent.AddChild(portraitClip);
-		SpinePortrait(portraitClip, "res://p3makoto/pile_deck/pile_deck_skel_data.tres", "res://p3makoto/ui/pile_deck.png", new Vector2(350f, 590f) * k, 0.78f * k, 1254f);
+		SpinePortrait(portraitClip, "res://p3makoto/pile_deck/pile_deck_skel_data.tres", "res://p3makoto/ui/pile_deck.png", new Vector2(350f, 590f) * k, DeckPorScale * k, 1254f);
 		return butterfly;
 	}
 
@@ -997,8 +1000,8 @@ public static class PileFx
 		Fx.Poly(parent, new[] { new Vector2(1240f, 70f) * k + o, new Vector2(1920f, 70f) * k + o, new Vector2(1920f, 660f) * k + o }, new Color(0.95f, 0.97f, 1f, 0.95f));
 		Fx.Poly(parent, new[] { new Vector2(1500f, 1080f) * k + o, new Vector2(1920f, 560f) * k + o, new Vector2(1920f, 1080f) * k + o }, new Color(0.95f, 0.97f, 1f, 0.93f));
 		Fx.Poly(parent, new[] { new Vector2(1232f, 70f) * k + o, new Vector2(1240f, 70f) * k + o, new Vector2(1920f, 668f) * k + o, new Vector2(1920f, 676f) * k + o }, Red);
-		PileButterfly butterfly = new(parent, Kind.Discard, k, rx);
-		SpinePortrait(parent, "res://p3makoto/pile_discard/pile_discard_skel_data.tres", "res://p3makoto/ui/pile_discard.png", new Vector2(1552f, 537f) * k + o, 0.72f * k, 1536f);
+		PileButterfly butterfly = new(parent, Kind.Discard, k, rx, DiscardPorScale);
+		SpinePortrait(parent, "res://p3makoto/pile_discard/pile_discard_skel_data.tres", "res://p3makoto/ui/pile_discard.png", new Vector2(1552f, 537f) * k + o, DiscardPorScale * k, 1536f);
 		return butterfly;
 	}
 
@@ -1024,8 +1027,8 @@ public static class PileFx
 		}
 		Vector2 o = new(rx, 0f);
 		BigWord(parent, "EXHAUST", font, k, new Vector2(1700f, 1100f) * k + o, -90f, 230f, 0.22f);
-		PileButterfly butterfly = new(parent, Kind.Exhaust, k, rx);
-		SpinePortrait(parent, "res://p3makoto/pile_exhaust/pile_exhaust_skel_data.tres", "res://p3makoto/ui/pile_exhaust.png", new Vector2(1500f, 560f) * k + o, 0.8f * k, 1536f);
+		PileButterfly butterfly = new(parent, Kind.Exhaust, k, rx, ExhaustPorScale);
+		SpinePortrait(parent, "res://p3makoto/pile_exhaust/pile_exhaust_skel_data.tres", "res://p3makoto/ui/pile_exhaust.png", new Vector2(1500f, 560f) * k + o, ExhaustPorScale * k, 1536f);
 		CpuParticles2D motes = new()
 		{
 			Position = new Vector2(1500f, 700f) * k + o,
