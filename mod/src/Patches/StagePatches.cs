@@ -155,7 +155,7 @@ public static class RewardBackdropPatch
 			{
 				return;
 			}
-			Vector2 center = row.GetGlobalRect().GetCenter();
+			Vector2 center = new(__instance.GetViewportRect().Size.X * 0.5f, row.GlobalPosition.Y);
 			StageFx.RewardBackdrop(__instance, center, () =>
 				row.GetChildren().OfType<Control>().Select(c => c.GetGlobalRect().GetCenter()).ToArray());
 		});
