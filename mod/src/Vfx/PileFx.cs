@@ -534,22 +534,26 @@ public static class PileFx
 					it.Slot.Modulate = new Color(d * 0.9f + 0.1f, d * 0.94f + 0.06f, Mathf.Min(1f, d + 0.1f), alpha);
 				}
 				// 指到的那张移到最上层（绘制和鼠标判定都按节点顺序）
-				if (any && hovered!.Slot!.GetParent() == cards && hovered.Slot.GetIndex() != cards.GetChildCount() - 1)
+				if (any && hovered?.Slot is Control top && top.GetParent() == cards && top.GetIndex() != cards.GetChildCount() - 1)
 				{
-					cards.MoveChild(hovered.Slot, cards.GetChildCount() - 1);
+					cards.MoveChild(top, cards.GetChildCount() - 1);
 				}
 				// 名牌：放大那张牌的正下方
-				plate.Visible = any;
-				if (any)
+				// v0.14.53（Codex 编译警告 CS8602）：用显式的非空局部变量，节点失效就藏起名牌
+				if (any && hovered is { Slot: Control ps, Holder: NGridCardHolder ph } hv && GodotObject.IsInstanceValid(ps) && GodotObject.IsInstanceValid(ph))
 				{
-					Item it = hovered!;
-					Vector2 cs = it.Holder.Hitbox.Size.X > 1f ? it.Holder.Hitbox.Size : new Vector2(300f, 422f);
-					float half = cs.Y * it.Slot.Scale.Y * it.Holder.Scale.Y * 0.5f;
-					plate.Position = it.Slot.Position + new Vector2(-20f * k, half + 8f * k);
-					((Label)plate.GetChild(plate.GetChildCount() - 1)).Text = it.Card.Title;
-					float a = Ease.OutCubic(it.Lift);
+					plate.Visible = true;
+					Vector2 cs = ph.Hitbox.Size.X > 1f ? ph.Hitbox.Size : new Vector2(300f, 422f);
+					float half = cs.Y * ps.Scale.Y * ph.Scale.Y * 0.5f;
+					plate.Position = ps.Position + new Vector2(-20f * k, half + 8f * k);
+					((Label)plate.GetChild(plate.GetChildCount() - 1)).Text = hv.Card.Title;
+					float a = Ease.OutCubic(hv.Lift);
 					plate.Modulate = new Color(1f, 1f, 1f, a);
 					plate.Scale = new Vector2(Mathf.Lerp(0.7f, 1f, a), 1f);
+				}
+				else
+				{
+					plate.Visible = false;
 				}
 			});
 		}
