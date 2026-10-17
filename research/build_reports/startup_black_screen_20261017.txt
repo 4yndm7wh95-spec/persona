@@ -1,0 +1,66 @@
+启动主菜单前黑屏：筛选日志摘录（不是完整日志）
+诊断时版本：P3Makoto 0.14.58 / StS2 v0.111.0
+此摘录形成于修复 DLL 安装后；下面所选文件是修复前的启动记录。
+敏感字段如 token/password/secret/api_key/authorization 统一替换为 ***。
+
+来源：C:\Users\kkk\AppData\Roaming\SlayTheSpire2\logs\godot2026-10-17T07.55.27.log
+文件修改时间：2026-10-17T07:55:27.290270-05:00
+L176: [P3Makoto] init v0.14.58
+L177: [P3Makoto] game version v0.111.0
+L178: [P3Makoto] harmony patches applied: 65 ok, 0 failed
+L242: [ERROR] [com.ritsukage.sts2-RitsuLib] Framework initialization failed: critical framework patches failed.
+L309: [P3Makoto] perf preload res://p3makoto/pile_exhaust/pile_exhaust_skel_data.tres ready at +6846ms
+L310: [P3Makoto] perf preload res://p3makoto/pile_discard/pile_discard_skel_data.tres ready at +6846ms
+L311: [P3Makoto] perf preload res://p3makoto/pile_deck/pile_deck_skel_data.tres ready at +6846ms
+L312: [P3Makoto] perf preload res://p3makoto/ui/pile_portrait.png ready at +6846ms
+L313: [P3Makoto] perf preload res://p3makoto/pile/pile_skel_data.tres ready at +6846ms
+L314: [P3Makoto] perf preload res://p3makoto/portrait/portrait_skel_data.tres ready at +6847ms
+L315: [P3Makoto] perf preload res://p3makoto/ui/charselect_portrait.png ready at +6847ms
+L316: [P3Makoto] perf preload res://p3makoto/ui/cutin_ka.png ready at +6847ms
+L317: [P3Makoto] perf preload res://p3makoto/ui/cutin_eyes.png ready at +6848ms
+L318: [P3Makoto] perf preload res://p3makoto/ui/info_head_ghost.png ready at +6848ms
+L319: [P3Makoto] perf preload res://p3makoto/ui/info_head.png ready at +6848ms
+L320: [P3Makoto] perf preload res://fonts/jpn/NotoSansCJKjp-Medium.otf ready at +6848ms
+L321: [P3Makoto] perf preload res://fonts/jpn/NotoSansCJKjp-Bold.otf ready at +6848ms
+L323: Timestamp: 10/17/2026 07:23:45
+L377: [INFO] Preloading 'IntroLogo' assets... count=3 vfx=0
+L378: [P3Makoto] perf spine portrait warmed at +7332ms
+L379: [INFO] Preloading 'IntroLogo' Complete: assets=3 time_elapsed=29ms
+
+来源：C:\Users\kkk\AppData\Roaming\SlayTheSpire2\logs\godot2026-10-17T07.56.26.log
+文件修改时间：2026-10-17T07:56:26.485608-05:00
+L176: [P3Makoto] init v0.14.58
+L177: [P3Makoto] game version v0.111.0
+L178: [P3Makoto] harmony patches applied: 65 ok, 0 failed
+L242: [ERROR] [com.ritsukage.sts2-RitsuLib] Framework initialization failed: critical framework patches failed.
+L314: [P3Makoto] perf preload res://p3makoto/pile_deck/pile_deck_skel_data.tres ready at +5423ms
+L315: [P3Makoto] perf preload res://p3makoto/ui/pile_portrait.png ready at +5423ms
+L316: [P3Makoto] perf preload res://p3makoto/pile/pile_skel_data.tres ready at +5423ms
+L317: [P3Makoto] perf preload res://p3makoto/ui/charselect_portrait.png ready at +5423ms
+L318: [P3Makoto] perf preload res://p3makoto/ui/cutin_ka.png ready at +5423ms
+L319: [P3Makoto] perf preload res://p3makoto/ui/cutin_eyes.png ready at +5423ms
+L320: [P3Makoto] perf preload res://p3makoto/ui/info_head_ghost.png ready at +5424ms
+L321: [P3Makoto] perf preload res://p3makoto/ui/info_head.png ready at +5424ms
+L322: [P3Makoto] perf preload res://fonts/jpn/NotoSansCJKjp-Medium.otf ready at +5424ms
+L323: [P3Makoto] perf preload res://fonts/jpn/NotoSansCJKjp-Bold.otf ready at +5424ms
+L325: Timestamp: 10/17/2026 07:55:28
+L379: [INFO] Preloading 'IntroLogo' assets... count=3 vfx=0
+
+来源：C:\Users\kkk\AppData\Roaming\SlayTheSpire2\logs\godot.log
+文件修改时间：2026-10-17T08:03:06.784403-05:00
+L176: [P3Makoto] init v0.14.58
+L177: [P3Makoto] game version v0.111.0
+L178: [P3Makoto] harmony patches applied: 65 ok, 0 failed
+L242: [ERROR] [com.ritsukage.sts2-RitsuLib] Framework initialization failed: critical framework patches failed.
+L309: [P3Makoto] perf preload res://p3makoto/pile_deck/pile_deck_skel_data.tres ready at +5972ms
+L310: [P3Makoto] perf preload res://p3makoto/ui/pile_portrait.png ready at +5972ms
+L311: [P3Makoto] perf preload res://p3makoto/pile/pile_skel_data.tres ready at +5972ms
+L312: [P3Makoto] perf preload res://p3makoto/ui/charselect_portrait.png ready at +5972ms
+L313: [P3Makoto] perf preload res://p3makoto/ui/cutin_ka.png ready at +5972ms
+L314: [P3Makoto] perf preload res://p3makoto/ui/cutin_eyes.png ready at +5972ms
+L315: [P3Makoto] perf preload res://p3makoto/ui/info_head_ghost.png ready at +5972ms
+L316: [P3Makoto] perf preload res://p3makoto/ui/info_head.png ready at +5972ms
+L317: [P3Makoto] perf preload res://fonts/jpn/NotoSansCJKjp-Medium.otf ready at +5972ms
+L318: [P3Makoto] perf preload res://fonts/jpn/NotoSansCJKjp-Bold.otf ready at +5972ms
+L320: Timestamp: 10/17/2026 07:56:27
+L374: [INFO] Preloading 'IntroLogo' assets... count=3 vfx=0

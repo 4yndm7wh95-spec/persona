@@ -4,9 +4,9 @@ using Godot;
 namespace P3Makoto.Vfx;
 
 /// <summary>
-/// 预加载：选中结城理那一刻要用到的大资源（中文字体 17MB、介绍板 / 切入 / 立绘贴图）在 mod 初始化时就放到后台线程加载，
+/// 预加载：选中结城理那一刻要用到的普通资源（中文字体 17MB、介绍板 / 切入 / 立绘贴图）在 mod 初始化时放到后台线程加载，
 /// 加载完一直持有引用（不被资源缓存释放）；同时在屏幕角落用几乎透明的小节点画几帧，让常用着色器提前编译。
-/// 这样第一次选中时不会因为同步读盘 / 编译着色器而掉帧。
+/// 减少第一次选中时同步读盘 / 编译着色器的掉帧。Spine 不参与启动期的线程加载，以避免与 Logo 预加载竞争。
 /// </summary>
 public static class Preload
 {
@@ -41,9 +41,17 @@ public static class Preload
 		}
 		_started = true;
 		_t0 = Time.GetTicksMsec();
+		// Spine 的导入器包含图集/骨骼依赖，不能在启动阶段和原版 Logo 资源争用并行加载任务。
+		// 两次黑屏记录都停在 IntroLogo，同时三个 Spine 资源一直没有 ready；普通贴图/字体已完成。
+		// 这里仅预热普通资源；Spine 留给已有的界面按需加载和静态图回退，不影响立绘动画本身。
+		GD.Print($"{ModEntry.Tag} perf preload: Spine resources load on demand; startup threaded Spine warmup disabled");
 		foreach (string p in Paths)
 		{
-			if (ResourceLoader.Exists(p) && ResourceLoader.LoadThreadedRequest(p, "", true) == Error.Ok)
+			if (p.EndsWith("_skel_data.tres", System.StringComparison.Ordinal))
+			{
+				continue;
+			}
+			if (ResourceLoader.Exists(p) && ResourceLoader.LoadThreadedRequest(p, "", false) == Error.Ok)
 			{
 				Pending.Add(p);
 			}

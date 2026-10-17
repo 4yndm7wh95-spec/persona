@@ -1742,7 +1742,7 @@ void fragment() {
 	/// </summary>
 	private static void Butterfly(Node2D parent, Vector2 view, float fly)
 	{
-		float W = view.X, H = view.Y, dot = Fx.SoftDot.GetWidth();
+		float W = view.X, H = view.Y;
 		// ── 轨迹 ──
 		Vector2[] ctrl =
 		{
@@ -1800,88 +1800,23 @@ void fragment() {
 			return Mathf.Lerp(dist[i], dist[i + 1], f - i) / dist[N] * total;
 		}
 
-		// ── 蝴蝶 ──
-		Node2D fly1 = new() { Name = "P3Butterfly" };
-		parent.AddChild(fly1);
-		float size = H * 0.085f;
-		Sprite2D aura = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = Vector2.One * size * 3.2f / dot, Modulate = new Color(0.35f, 0.7f, 1f, 0.5f) };
-		fly1.AddChild(aura);
-		Node2D wingL = new(), wingR = new(), body = new();
-		fly1.AddChild(wingL);
-		fly1.AddChild(wingR);
-		fly1.AddChild(body);
-		Texture2D? tl = UiTex("butterfly_wing_l"), tr = UiTex("butterfly_wing_r"), tb = UiTex("butterfly_body");
-		if (tl != null && tr != null)
-		{
-			float sc = size * 2f / tl.GetWidth();
-			wingL.AddChild(new Sprite2D { Texture = tl, Scale = Vector2.One * sc });
-			wingR.AddChild(new Sprite2D { Texture = tr, Scale = Vector2.One * sc });
-			if (tb != null)
-			{
-				body.AddChild(new Sprite2D { Texture = tb, Scale = Vector2.One * sc });
-			}
-		}
-		else
-		{
-			foreach ((Node2D w, float sgn) in new[] { (wingL, -1f), (wingR, 1f) })
-			{
-				Vector2[] fore = { new(0f, -size * 0.05f), new(sgn * size * 0.5f, -size * 0.75f), new(sgn * size * 1.0f, -size * 0.6f), new(sgn * size * 0.85f, -size * 0.1f), new(sgn * size * 0.2f, size * 0.05f) };
-				Vector2[] hind = { new(0f, size * 0.05f), new(sgn * size * 0.7f, size * 0.15f), new(sgn * size * 0.75f, size * 0.55f), new(sgn * size * 0.3f, size * 0.75f), new(sgn * size * 0.05f, size * 0.35f) };
-				foreach (Vector2[] shape in new[] { fore, hind })
-				{
-					Polygon2D g = Fx.Poly(w, shape, new Color(0.35f, 0.75f, 1f, 0.55f), additive: true);
-					g.Scale = Vector2.One * 1.12f;
-					Fx.Poly(w, shape, new Color(0.12f, 0.45f, 1f, 0.85f));
-					Fx.Line(w, shape, new Color(0.8f, 0.95f, 1f, 0.9f), 2f, closed: true);
-				}
-			}
-			Fx.Poly(body, new[] { new Vector2(0f, -size * 0.35f), new Vector2(size * 0.05f, 0f), new Vector2(0f, size * 0.4f), new Vector2(-size * 0.05f, 0f) }, new Color(0.1f, 0.15f, 0.35f));
-		}
-		Node2D trail = new();
-		parent.AddChild(trail);
-		parent.MoveChild(trail, fly1.GetIndex());
-
+		// 共用结局的振翅、柔光和亮粉；结局路径、速度曲线和时间保持原值。
+		ButterflyVisual blue = new(parent, H * 0.085f);
 		float prevAngle = 0f;
 		bool first = true;
-		float lastDust = 0f;
-		Fx.Animate(fly1, fly, t =>
+		Fx.Animate(blue.Fly, fly, t =>
 		{
 			float time = t * fly;
 			float d = Dist(t);
 			Vector2 p = At(d), ahead = At(d + total * 0.01f);
-			// 朝向：头朝速度方向（贴图头朝上），逐帧平滑追随
 			float target = (ahead - p).Angle() + Mathf.Pi / 2f;
 			prevAngle = first ? target : Mathf.LerpAngle(prevAngle, target, 0.12f);
 			first = false;
-			// 扇翅：约 6 次/秒；每 ~1.6s 滑翔一次（翅膀张开、扇动幅度平滑降低）
-			float glide = Mathf.Pow(0.5f + 0.5f * Mathf.Cos(time * Mathf.Tau / 1.6f), 6f);
-			float flap = Mathf.Cos(time * Mathf.Tau * 6f);
-			float open = Mathf.Lerp(0.18f + 0.82f * (0.5f + 0.5f * flap), 0.92f, glide);
-			wingL.Scale = new Vector2(open, 1f);
-			wingR.Scale = new Vector2(open, 1f);
-			float bob = (1f - glide) * size * 0.06f * Mathf.Sin(time * Mathf.Tau * 6f + 1.2f);
-			fly1.Position = p + new Vector2(0f, bob);
-			fly1.Rotation = prevAngle + 0.08f * Mathf.Sin(time * 2.3f);
 			float inOut = Mathf.Clamp(time / 0.4f, 0f, 1f) * Mathf.Clamp((fly - time) / 0.5f, 0f, 1f);
-			fly1.Modulate = new Color(1f, 1f, 1f, inOut);
-			aura.Modulate = new Color(0.35f, 0.7f, 1f, (0.4f + 0.15f * flap) * inOut);
-			// 亮粉：每 0.03s 落一粒，向下飘、渐隐
-			if (time - lastDust > 0.03f)
-			{
-				lastDust = time;
-				Sprite2D g = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Position = p + Fx.RandDir() * size * 0.15f, Scale = Vector2.One * size * Fx.Rand(0.08f, 0.16f) / dot, Modulate = new Color(0.55f, 0.85f, 1f, 0.8f) };
-				trail.AddChild(g);
-				Vector2 g0 = g.Position, drift = new(Fx.Rand(-8f, 8f), Fx.Rand(14f, 34f));
-				Fx.Animate(g, 0.9f, u =>
-				{
-					g.Position = g0 + drift * Ease.OutCubic(u);
-					g.Modulate = new Color(0.55f, 0.85f, 1f, 0.8f * (1f - u) * (0.6f + 0.4f * Mathf.Abs(Mathf.Cos(u * 9f))));
-				});
-				Fx.FreeAfter(g, 0.95f);
-			}
+			blue.Update(p, prevAngle, time, inOut);
 		});
-		Fx.FreeAfter(fly1, fly + 0.05f);
-		Fx.FreeAfter(trail, fly + 1.0f);
+		Fx.FreeAfter(blue.Fly, fly + 0.05f);
+		Fx.FreeAfter(blue.Root, fly + 1.0f);
 	}
 
 	/// <summary>向心 Catmull-Rom（alpha = 0.5）：过控制点、不打结、不过冲。</summary>

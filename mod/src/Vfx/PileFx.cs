@@ -196,19 +196,21 @@ public static class PileFx
 		// ── 装饰 + 立绘（每个界面不同），整组从一侧滑进来 ──
 		Node2D right = new() { Position = new Vector2(700f * k * L.Side, 0f), Modulate = new Color(1f, 1f, 1f, 0f) };
 		root.AddChild(right);
+		PileButterfly butterfly;
 		switch (kind)
 		{
 			case Kind.Deck:
-				DeckDecor(right, view, font, k);
+				butterfly = DeckDecor(right, view, font, k);
 				break;
 			case Kind.Discard:
-				DiscardDecor(right, view, font, k, rx);
+				butterfly = DiscardDecor(right, view, font, k, rx);
 				break;
 			case Kind.Exhaust:
-				ExhaustDecor(root, right, view, font, k, rx);
+				butterfly = ExhaustDecor(root, right, view, font, k, rx);
 				break;
 			default:
 				Disc(right, L.Word, font, k, rx);
+				butterfly = new PileButterfly(right, kind, k, rx);
 				Portrait(right, k, rx);
 				break;
 		}
@@ -523,6 +525,7 @@ public static class PileFx
 				Animate(fx, fe, focusP, focusOn, now, focusCenter, k);
 				// 退场（v0.14.55）：0.42s —— 卡牌按顺序往下沉、淡出；标题往左退；圆盘和立绘往右滑出；水下圆孔缩回牌堆按钮；最后才真正关掉界面
 				float ex = exiting ? Mathf.Clamp((now - exitT0) / ExitTime, 0f, 1f) : 0f;
+				butterfly.Update(now, dt);
 				if (exiting)
 				{
 					float ei = Ease.InCubic(ex);
@@ -752,6 +755,7 @@ public static class PileFx
 			}
 			exiting = true;
 			exitT0 = Now();
+			butterfly.BeginExit(exitT0);
 			// 退场期间继续动画，只在这个即将销毁的界面上禁用鼠标。
 			// NGridCardHolder / Hitbox 会回对象池；改它们的 MouseFilter 会污染奖励、升级等后续界面。
 			screen.ProcessMode = Node.ProcessModeEnum.Always;
@@ -960,7 +964,7 @@ public static class PileFx
 	/// 牌组（仿 P3R STATUS）：左边一大块白色斜切板（右边是一道斜切口），横躺的脸部特写裁在板里；切口外贴深蓝斜条 + 青色细线 + 红色细线；
 	/// 卡牌网格在右边。
 	/// </summary>
-	private static void DeckDecor(Node2D parent, Vector2 view, Font? font, float k)
+	private static PileButterfly DeckDecor(Node2D parent, Vector2 view, Font? font, float k)
 	{
 		Vector2[] slabPts = { new(-80f, 70f), new(820f, 70f), new(600f, 1100f), new(-80f, 1100f) };
 		// 切口外：深蓝宽斜条、青色细线、红色细线
@@ -977,25 +981,32 @@ public static class PileFx
 			float o = i * 52f * k;
 			slab.AddChild(new Line2D { Points = new[] { new Vector2(o, 0f), new Vector2(o - 1100f * k, 1100f * k) }, Width = 1.5f * k, DefaultColor = new Color(0.55f, 0.68f, 0.82f, 0.1f) });
 		}
-		SpinePortrait(slab, "res://p3makoto/pile_deck/pile_deck_skel_data.tres", "res://p3makoto/ui/pile_deck.png", new Vector2(514f, 546f) * k, 0.9f * k, 1254f);
+		PileButterfly butterfly = new(parent, Kind.Deck, k, 0f);
+		// 白色底板 → 蓝蝶/亮粉 → 单独裁切的立绘；蓝蝶可越过斜边，人物仍按原版板形裁切。
+		Polygon2D portraitClip = new() { Polygon = slab.Polygon, ClipChildren = CanvasItem.ClipChildrenMode.Only };
+		parent.AddChild(portraitClip);
+		SpinePortrait(portraitClip, "res://p3makoto/pile_deck/pile_deck_skel_data.tres", "res://p3makoto/ui/pile_deck.png", new Vector2(350f, 590f) * k, 0.78f * k, 1254f);
+		return butterfly;
 	}
 
 	/// <summary>弃牌堆（仿 P3R ITEM）：右上、右下两块白色大三角 + 一道青色斜光片 + 一道红色细斜线；后仰下沉的立绘贴右边（大字会被立绘挡住，不放）。</summary>
-	private static void DiscardDecor(Node2D parent, Vector2 view, Font? font, float k, float rx)
+	private static PileButterfly DiscardDecor(Node2D parent, Vector2 view, Font? font, float k, float rx)
 	{
 		Vector2 o = new(rx, 0f);
 		Fx.Poly(parent, new[] { new Vector2(1300f, 1080f) * k + o, new Vector2(1360f, 1080f) * k + o, new Vector2(1760f, 330f) * k + o, new Vector2(1720f, 330f) * k + o }, new Color(0.55f, 0.88f, 1f, 0.35f));
 		Fx.Poly(parent, new[] { new Vector2(1240f, 70f) * k + o, new Vector2(1920f, 70f) * k + o, new Vector2(1920f, 660f) * k + o }, new Color(0.95f, 0.97f, 1f, 0.95f));
 		Fx.Poly(parent, new[] { new Vector2(1500f, 1080f) * k + o, new Vector2(1920f, 560f) * k + o, new Vector2(1920f, 1080f) * k + o }, new Color(0.95f, 0.97f, 1f, 0.93f));
 		Fx.Poly(parent, new[] { new Vector2(1232f, 70f) * k + o, new Vector2(1240f, 70f) * k + o, new Vector2(1920f, 668f) * k + o, new Vector2(1920f, 676f) * k + o }, Red);
+		PileButterfly butterfly = new(parent, Kind.Discard, k, rx);
 		SpinePortrait(parent, "res://p3makoto/pile_discard/pile_discard_skel_data.tres", "res://p3makoto/ui/pile_discard.png", new Vector2(1552f, 537f) * k + o, 0.72f * k, 1536f);
+		return butterfly;
 	}
 
 	/// <summary>
 	/// 消耗堆（仿 P3R QUEST）：整屏再压暗一层深海蓝 + 细网格线（像深海里的坐标格），右边远处背对镜头漂走的小小身影，身边慢慢上升的青色光点；
 	/// 竖排的半透明大字 EXHAUST 贴右边缘。
 	/// </summary>
-	private static void ExhaustDecor(Control root, Node2D parent, Vector2 view, Font? font, float k, float rx)
+	private static PileButterfly ExhaustDecor(Control root, Node2D parent, Vector2 view, Font? font, float k, float rx)
 	{
 		ColorRect deep = new() { Size = view, Color = new Color(0.0f, 0.02f, 0.1f, 0.5f), MouseFilter = Control.MouseFilterEnum.Ignore };
 		root.AddChild(deep);
@@ -1013,6 +1024,7 @@ public static class PileFx
 		}
 		Vector2 o = new(rx, 0f);
 		BigWord(parent, "EXHAUST", font, k, new Vector2(1700f, 1100f) * k + o, -90f, 230f, 0.22f);
+		PileButterfly butterfly = new(parent, Kind.Exhaust, k, rx);
 		SpinePortrait(parent, "res://p3makoto/pile_exhaust/pile_exhaust_skel_data.tres", "res://p3makoto/ui/pile_exhaust.png", new Vector2(1500f, 560f) * k + o, 0.8f * k, 1536f);
 		CpuParticles2D motes = new()
 		{
@@ -1034,6 +1046,7 @@ public static class PileFx
 			Material = Fx.Additive,
 		};
 		parent.AddChild(motes);
+		return butterfly;
 	}
 
 	private static Vector2[] Arc(float r, float a0, float a1, int n)
