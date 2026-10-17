@@ -320,18 +320,70 @@ def grid(im, faces, groups, mode, hover=None, scroll=0.0, t=2.0, focus=None, fp=
         px = cx + (700 - cx) * e
         py = cy + (560 - cy) * e - 170 * math.sin(math.pi * e)
         scale = sc + (450 / 260 - sc) * e
-        flip = max(0.03, abs(math.cos(math.pi * e)))
-        spr = card_sprite(faces[n], 1, scale, frame=e)
-        spr = spr.resize((max(1, int(spr.width * flip)), spr.height), Image.LANCZOS).rotate(12 * math.sin(math.pi * e), expand=True, resample=Image.BICUBIC)
+        rot = 8 * math.sin(math.pi * e)
+        spr = flip_render(faces[n], scale, math.tau * e).rotate(rot, expand=True, resample=Image.BICUBIC)
         put(lay, spr, (px, py), "mm")
         if e > 0.45:
             info(lay, n, min(1.0, (fp - 0.45) / 0.4))
     if hov:
         n, cx, cy = hov
-        spr = card_sprite(faces[n], 1, sc * 1.26, frame=1.0)
+        spr = card_sprite(faces[n], 1, sc * 1.26)
         put(lay, spr, (cx, cy), "mm")
         put(lay, name_plate(n, 32), (cx - 20, cy + 358 * sc * 1.26 / 2 + 8), "lt")
     im.alpha_composite(lay)
+
+
+BACK = Image.open(ROOT / "art/fx/pile_card_back.png").convert("RGBA")
+
+
+def flip_render(face, scale, theta, strips=14):
+    """真实翻转（与 PileFx.Pose 一致）：绕竖轴转 theta，每条竖条按 z = x·sinθ 透视缩放；背面朝前时贴塔罗牌背，越接近侧面越暗。"""
+    w, h = face.width * scale, face.height * scale
+    cam = w * 2.6
+    c, sn = math.cos(theta), math.sin(theta)
+    src = face if c >= 0 else BACK.resize(face.size, Image.LANCZOS)
+    out = Image.new("RGBA", (int(w * 1.6) + 20, int(h * 1.6) + 20))
+    ox, oy = out.width / 2, out.height / 2
+    for i in range(strips):
+        u0, u1 = i / strips, (i + 1) / strips
+        pts = []
+        for u in (u0, u1):
+            x = (u - 0.5) * w
+            persp = cam / (cam + x * sn)
+            pts.append((ox + x * c * persp, oy - h / 2 * persp, oy + h / 2 * persp))
+        (xa, ta, ba), (xb, tb, bb) = pts
+        su0, su1 = (u0, u1) if c >= 0 else (1 - u0, 1 - u1)
+        strip = src.crop((int(min(su0, su1) * src.width), 0, max(int(min(su0, su1) * src.width) + 1, int(round(max(su0, su1) * src.width))), src.height))
+        if c < 0:
+            strip = strip.transpose(Image.FLIP_LEFT_RIGHT)
+        x0, x1 = min(xa, xb), max(xa, xb)
+        if x1 - x0 < 0.5:
+            continue
+        top, bot = min(ta, tb), max(ba, bb)
+        bw, bh = int(x1 - x0) + 2, int(bot - top) + 2
+        # QUAD：目标四边形（左上、左下、右下、右上）← 源条带四角
+        left, right = ((xa, ta, ba), (xb, tb, bb)) if xa <= xb else ((xb, tb, bb), (xa, ta, ba))
+        if xa > xb:
+            strip = strip.transpose(Image.FLIP_LEFT_RIGHT)
+        quad_dst = [(left[0] - x0, left[1] - top), (left[0] - x0, left[2] - top), (right[0] - x0, right[2] - top), (right[0] - x0, right[1] - top)]
+        # PIL QUAD 是"目标像素 → 源四边形"的反向映射：这里用透视系数解出从目标矩形到源的变换
+        coeffs = _persp_coeffs(quad_dst, [(0, 0), (0, strip.height), (strip.width, strip.height), (strip.width, 0)])
+        piece = strip.transform((bw, bh), Image.PERSPECTIVE, coeffs, Image.BICUBIC)
+        out.alpha_composite(piece, (int(x0 + 0.5), int(top + 0.5)))
+    light = 0.55 + 0.45 * abs(c)
+    arr = np.asarray(out).astype(np.float32)
+    arr[..., :3] *= light
+    return Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8), "RGBA")
+
+
+def _persp_coeffs(dst, src):
+    m = []
+    for (x, y), (X, Y) in zip(dst, src):
+        m.append([x, y, 1, 0, 0, 0, -X * x, -X * y])
+        m.append([0, 0, 0, x, y, 1, -Y * x, -Y * y])
+    A = np.array(m, dtype=np.float64)
+    B = np.array([v for p in src for v in p], dtype=np.float64)
+    return np.linalg.solve(A, B).tolist()
 
 
 def focus_layer(lay, fp):
@@ -458,7 +510,7 @@ def main(shot, outdir):
     frame(shot, "draw", 2.0, hover=3).convert("RGB").save(out / "pile_grid_hover.png")
     frame(shot, "draw", 2.0, scroll=300).convert("RGB").save(out / "pile_grid_scrolled.png")
     frame(shot, "discard", 2.0, hover=1).convert("RGB").save(out / "pile_discard.png")
-    fps = [0.15, 0.3, 0.45, 0.6, 0.8, 1.0]
+    fps = [0.12, 0.28, 0.42, 0.55, 0.72, 1.0]
     frames = [frame(shot, "draw", 2.0, focus=10, fp=f).convert("RGB").resize((640, 360), Image.LANCZOS) for f in fps]
     sheet = Image.new("RGB", (640 * 3 + 40, 360 * 2 + 30), (8, 10, 20))
     d = ImageDraw.Draw(sheet)

@@ -48,7 +48,6 @@ public static class PileFx
 	{
 		public Control? Slot;
 		public NGridCardHolder? Holder;
-		public Node2D? Frame;
 		public CardModel Card = null!;
 		public int Index;
 		public float Born = -1f;
@@ -173,6 +172,7 @@ public static class PileFx
 		front.SetAnchorsPreset(Control.LayoutPreset.FullRect);
 		root.AddChild(front);
 		Item? focused = null;
+		Flip? flip = null;
 		float focusP = 0f;
 		bool focusOn = false;
 		float lastNow = 0f;
@@ -215,6 +215,8 @@ public static class PileFx
 			focusOn = false;
 			focusP = 0f;
 			catcher.Visible = false;
+			FreeFlip(flip);
+			flip = null;
 
 			List<CardModel> all = pile.Cards.ToList();
 			List<(string En, string Zh, List<CardModel> Cards)> groups = new();
@@ -266,10 +268,8 @@ public static class PileFx
 			h.MouseFilter = Control.MouseFilterEnum.Pass;
 			slot.AddChild(h);
 			card!.UpdateVisuals(pile.Type, CardPreviewMode.Normal);
-			Node2D frame = CardFrame(slot);
 			it.Slot = slot;
 			it.Holder = h;
-			it.Frame = frame;
 			it.Born = Mathf.Max(Now(), nextBorn);
 			nextBorn = it.Born + 0.022f;
 			h.Hitbox.MouseEntered += () =>
@@ -307,6 +307,7 @@ public static class PileFx
 				focused = it;
 				focusOn = true;
 				it.Slot.Reparent(front, true);
+				flip = MakeFlip(root, front, it.Card, pile.Type, it.Holder);
 				catcher.Visible = true;
 				Fill(fx, it.Card, pile, k);
 				Audio.Sfx.Clip("ShuffleTime_Select", 0.5f);
@@ -384,6 +385,8 @@ public static class PileFx
 					}
 					focused = null;
 					catcher.Visible = false;
+					FreeFlip(flip);
+					flip = null;
 				}
 				float fe = Ease.InOutCubic(focusP);
 				Vector2 focusCenter = FocusCenter * k;
@@ -466,19 +469,29 @@ public static class PileFx
 					float rot = Mathf.DegToRad(-2f) * (1f - lift);
 					// 原版悬停会把 holder 自己的 Scale 从 0.8 跳到 1.0；这里按它当前的 Scale 反算，让总缩放平滑
 					float want = baseScale * (0.85f + 0.15f * pop) * (1f + 0.26f * lift);
-					float flip = 1f, alpha = Mathf.Clamp(born * 3f, 0f, 1f) * (it == hovered ? 1f : fade);
-					float frameA = lift;
+					float alpha = Mathf.Clamp(born * 3f, 0f, 1f) * (it == hovered ? 1f : fade);
 					if (it == focused)
 					{
-						// 特写：沿上拱的弧线飞到中间、放大，途中像翻牌一样横向收窄再展开（正好一次翻面），落定后轻轻浮动
+						// 特写：沿上拱的弧线飞到中间、放大，途中绕竖轴真正翻一圈（带透视：正面 → 塔罗牌背 → 正面），落定后轻轻浮动。
+						// 飞行中显示的是翻转用的替身（这张牌的离屏渲染 + 牌背），落定 / 飞回原位时换回真正的卡牌
 						Vector2 to = focusCenter + new Vector2(0f, Mathf.Sin(now * 1.6f) * 4f * k * fe);
 						p = p.Lerp(to, fe) + new Vector2(0f, -170f * k) * Mathf.Sin(Mathf.Pi * fe);
 						want = Mathf.Lerp(want, FocusW * k / cs.X, fe);
-						flip = Mathf.Max(0.03f, Mathf.Abs(Mathf.Cos(Mathf.Pi * fe)));
-						rot = Mathf.Lerp(rot, 0f, fe) + Mathf.DegToRad(-12f) * Mathf.Sin(Mathf.Pi * fe);
+						rot = Mathf.Lerp(rot, 0f, fe) + Mathf.DegToRad(-8f) * Mathf.Sin(Mathf.Pi * fe);
 						alpha = 1f;
-						frameA = Mathf.Max(lift, fe);
-						it.Slot.Visible = true;
+						bool flying = flip != null && fe > 0.004f && fe < 0.996f;
+						it.Slot.Visible = !flying;
+						if (flip != null)
+						{
+							flip.Node.Visible = flying;
+							if (flying)
+							{
+								flip.Node.Position = p;
+								flip.Node.Rotation = rot;
+								flip.Node.Scale = Vector2.One * want;
+								Pose(flip, Mathf.Tau * fe);
+							}
+						}
 					}
 					else if (focused != null)
 					{
@@ -493,9 +506,7 @@ public static class PileFx
 					it.Slot.Position = p;
 					it.Slot.Rotation = rot;
 					float own = Mathf.Max(0.01f, h.Scale.X);
-					it.Slot.Scale = new Vector2(want / own * flip, want / own);
-					it.Frame.Scale = Vector2.One * own;
-					it.Frame.Modulate = new Color(1f, 1f, 1f, frameA);
+					it.Slot.Scale = Vector2.One * (want / own);
 					float d = it == focused ? 1f : it.Dim;
 					it.Slot.Modulate = new Color(d * 0.9f + 0.1f, d * 0.94f + 0.06f, Mathf.Min(1f, d + 0.1f), alpha);
 				}
@@ -764,18 +775,101 @@ public static class PileFx
 		return n;
 	}
 
-	/// <summary>悬停白框：外圈一层青色柔光 + 白色细框（画在卡牌外沿，按卡牌原始大小，跟着 slot 缩放）。</summary>
-	private static Node2D CardFrame(Control slot)
+	// ── 真实翻转：离屏渲染这张牌（SubViewport，1.5 倍分辨率）作正面，P3R 塔罗牌背作背面，贴在一条按透视投影的竖条网格上 ──
+	private const string BackPath = "res://p3makoto/fx/pile_card_back.png";
+	private const int FlipStrips = 14;
+	private const float FlipRes = 1.5f;
+
+	private sealed class Flip
 	{
-		Node2D f = new() { Modulate = new Color(1f, 1f, 1f, 0f) };
-		slot.AddChild(f);
-		Vector2 half = new(150f + 10f, 211f + 10f);
-		Vector2[] rect = { new(-half.X, -half.Y), new(half.X, -half.Y), new(half.X, half.Y), new(-half.X, half.Y), new(-half.X, -half.Y) };
-		f.AddChild(new Line2D { Points = rect, Width = 22f, DefaultColor = new Color(0.55f, 0.9f, 1f, 0.28f), JointMode = Line2D.LineJointMode.Round, Material = Fx.Additive });
-		f.AddChild(new Line2D { Points = rect, Width = 6f, DefaultColor = Colors.White, JointMode = Line2D.LineJointMode.Round });
-		// 左上角一块红色三角（P3R 选中标记）
-		Fx.Poly(f, new[] { new Vector2(-half.X - 4f, -half.Y + 56f), new Vector2(-half.X - 4f, -half.Y - 4f), new Vector2(-half.X + 56f, -half.Y - 4f) }, Red);
+		public SubViewport Vp = null!;
+		public NCard? Card;
+		public Node2D Node = null!;
+		public Polygon2D Mesh = null!;
+		public Texture2D? Back;
+		public Vector2 Size;                      // 卡牌原始像素大小（holder 坐标）
+	}
+
+	private static Flip? MakeFlip(Control root, Control front, CardModel model, PileType pileType, NGridCardHolder? holder)
+	{
+		Vector2 size = holder != null && holder.Hitbox.Size.X > 1f ? holder.Hitbox.Size : new Vector2(300f, 422f);
+		NCard? card = NCard.Create(model);
+		if (card == null)
+		{
+			return null;
+		}
+		SubViewport vp = new() { Size = (Vector2I)(size * FlipRes).Ceil(), TransparentBg = true, RenderTargetUpdateMode = SubViewport.UpdateMode.Always };
+		root.AddChild(vp);
+		vp.AddChild(card);
+		card.Position = size * FlipRes / 2f;
+		card.Scale = Vector2.One * FlipRes;
+		card.UpdateVisuals(pileType, CardPreviewMode.Normal);
+		Flip f = new() { Vp = vp, Card = card, Size = size, Back = ResourceLoader.Load(BackPath) as Texture2D };
+		f.Node = new Node2D { Visible = false };
+		front.AddChild(f.Node);
+		f.Mesh = new Polygon2D { TextureFilter = CanvasItem.TextureFilterEnum.Linear };
+		f.Node.AddChild(f.Mesh);
+		Godot.Collections.Array polys = new();
+		for (int i = 0; i < FlipStrips; i++)
+		{
+			polys.Add(new[] { i, i + 1, FlipStrips + 1 + i + 1, FlipStrips + 1 + i });
+		}
+		f.Mesh.Polygons = polys;
 		return f;
+	}
+
+	/// <summary>绕竖轴转 theta（弧度）：每条竖线按 z = x·sinθ 做透视缩放；背面朝前时贴牌背（u 反过来，不是镜像），越接近侧面越暗。</summary>
+	private static void Pose(Flip f, float theta)
+	{
+		float w = f.Size.X, h = f.Size.Y, cam = w * 2.6f;
+		float c = Mathf.Cos(theta), sn = Mathf.Sin(theta);
+		bool frontFace = c >= 0f;
+		Texture2D? tex = frontFace ? f.Vp.GetTexture() : f.Back;
+		if (tex == null)
+		{
+			tex = f.Vp.GetTexture();
+		}
+		Vector2 ts = tex.GetSize();
+		int n = FlipStrips + 1;
+		Vector2[] pts = new Vector2[n * 2];
+		Vector2[] uv = new Vector2[n * 2];
+		for (int i = 0; i < n; i++)
+		{
+			float u = (float)i / FlipStrips;
+			float x = (u - 0.5f) * w;
+			float persp = cam / (cam + x * sn);
+			float px = x * c * persp;
+			pts[i] = new Vector2(px, -h / 2f * persp);
+			pts[n + i] = new Vector2(px, h / 2f * persp);
+			float tu = (frontFace ? u : 1f - u) * ts.X;
+			uv[i] = new Vector2(tu, 0f);
+			uv[n + i] = new Vector2(tu, ts.Y);
+		}
+		f.Mesh.Texture = tex;
+		f.Mesh.Polygon = pts;
+		f.Mesh.UV = uv;
+		float light = 0.55f + 0.45f * Mathf.Abs(c);
+		f.Mesh.Color = new Color(light, light, Mathf.Min(1f, light + 0.05f));
+	}
+
+	private static void FreeFlip(Flip? f)
+	{
+		if (f == null)
+		{
+			return;
+		}
+		if (f.Card != null && GodotObject.IsInstanceValid(f.Card))
+		{
+			f.Card.QueueFreeSafely();                  // NCard 是对象池里的：还回池子
+		}
+		if (GodotObject.IsInstanceValid(f.Node))
+		{
+			f.Node.QueueFree();
+		}
+		if (GodotObject.IsInstanceValid(f.Vp))
+		{
+			f.Vp.QueueFree();
+		}
 	}
 
 	/// <summary>名牌：白边黑底斜切条 + 红色尾边，牌名用粗斜体中文。最后一个子节点是文字。</summary>
