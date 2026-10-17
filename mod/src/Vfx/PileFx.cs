@@ -163,6 +163,7 @@ public static class PileFx
 			return;
 		}
 		Vector2 view = screen.GetViewportRect().Size;
+		ulong buildStart = Time.GetTicksUsec();
 		float k = view.Y / 1080f;
 		float rx = view.X - 1920f * k;                    // 右侧元素的水平偏移（宽屏时贴右边缘）
 		Layout L = For(kind);
@@ -217,6 +218,7 @@ public static class PileFx
 				break;
 		}
 		butterfly.AttachForeground(right);                 // 装饰底板 → 后景蓝蝶 → 立绘 → 前景蓝蝶；卡牌仍在整组之上。
+		float decorMs = (Time.GetTicksUsec() - buildStart) / 1000f;
 		Fx.After(right, 0.1, "pile right in", () => Fx.Animate(right, 0.5, t =>
 		{
 			right.Position = new Vector2(700f * k * L.Side * (1f - Ease.OutExpo(t)), 0f);
@@ -786,6 +788,7 @@ public static class PileFx
 			flip = null;
 		};
 		Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.45f);
+		GD.Print($"{ModEntry.Tag} perf pile {kind} build {(Time.GetTicksUsec() - buildStart) / 1000f:0.0}ms (decor {decorMs:0.0}ms); idle warmup complete={IdleWarmup.Complete}");
 	}
 
 	// ── 点击特写 ──

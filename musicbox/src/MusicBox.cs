@@ -15,9 +15,9 @@ namespace P3MusicBox;
 
 /// <summary>
 /// P3 音乐盒：右上角设置（齿轮）按钮下方的小圆按钮。
-/// · 默认不播放；点击打开面板（播放 / 暂停、上一首 / 下一首、点歌切换、播放模式、歌词开关、音量）；
+/// · 默认不播放；短按打开面板，长按 450ms 后拖动图标并记住位置；
 /// · 播放时原版背景音乐淡出到静音，暂停后淡回原来的音量；播放 / 暂停 / 切歌都有淡入淡出；
-/// · 歌曲放在本 mod 文件夹的 music\ 里（.ogg / .mp3；同名 .lrc 显示歌词；playlist.json 决定顺序和标题，没有就按文件名）。
+/// · 歌曲放在本 mod 文件夹的 music\ 里（.ogg / .mp3；同名 .lrc 显示歌词；playlist.txt 决定顺序和标题，没有就按文件名）。
 /// · 纯界面 + 本地播放，不影响玩法（清单里 affects_gameplay=false），联机时只装在自己这边也可以。
 /// 不重写 Godot 虚函数（mod 程序集没有 Godot 源生成器，_Draw / _GuiInput 之类不会被调用），全部用普通节点 + 信号 + 每帧回调。
 /// </summary>
@@ -25,7 +25,7 @@ namespace P3MusicBox;
 public static class MusicBox
 {
 	public const string Tag = "[P3MusicBox]";
-	public const string Version = "1.1.0";
+	public const string Version = "1.1.1";
 
 	// 配色（和 P3Makoto 一致的 P3R 蓝）
 	private static readonly Color Navy = new(0.02f, 0.06f, 0.22f, 0.94f);
@@ -47,6 +47,8 @@ public static class MusicBox
 		public int Mode { get; set; }                 // 0 顺序循环 1 单曲循环 2 随机
 		public bool Lyrics { get; set; } = true;
 		public int Last { get; set; }
+		public float? IconX { get; set; }
+		public float? IconY { get; set; }
 	}
 
 	private enum State { Stopped, Playing, Paused }
@@ -76,6 +78,8 @@ public static class MusicBox
 	private static Label? _nowLabel;
 	private static bool _hover;
 	private static bool _wasLeft;
+	private static readonly IconDrag Drag = new();
+	private static Control? _dragCapture;
 	private static ulong _lastClickFrame;
 	private static Font? _font;
 
@@ -392,9 +396,9 @@ public static class MusicBox
 		_layer.AddChild(_hoverTitle);
 		box.GuiInput += e => Safe("click", () =>
 		{
-			if (e is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left })
+			if (e is InputEventMouseButton { ButtonIndex: MouseButton.Left } mb)
 			{
-				Click("gui");
+				if (mb.Pressed) BeginIconPress();
 				box.AcceptEvent();
 			}
 		});
@@ -409,6 +413,11 @@ public static class MusicBox
 			_lyric[i] = l;
 		}
 		BuildPopup();
+		_layer.MoveChild(box, _layer.GetChildCount() - 1);  // 面板打开时图标仍可短按关闭或长按拖动。
+		_dragCapture = new Control { Name = "IconDragCapture", Visible = false, MouseFilter = Control.MouseFilterEnum.Stop, MouseDefaultCursorShape = Control.CursorShape.Drag };
+		_dragCapture.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		_layer.AddChild(_dragCapture);
+		_dragCapture.GuiInput += _ => _dragCapture.AcceptEvent();
 	}
 
 	private static void Style(Label l, int size, Color color, int outline = 0)
@@ -440,7 +449,7 @@ public static class MusicBox
 		return new Vector2(view.X - 84f, 96f);
 	}
 
-	/// <summary>v1.1.0（用户：不再用右键）：左键打开 / 关上面板，播放暂停在面板里。GuiInput 和每帧轮询都会走到这里，同一次按下只处理一次。</summary>
+	/// <summary>短按松开时打开 / 关上面板；长按拖动不触发。保留帧去重，避免关面板的同次输入又打开它。</summary>
 	private static void Click(string via)
 	{
 		ulong frame = Engine.GetProcessFrames();
@@ -453,24 +462,75 @@ public static class MusicBox
 		TogglePopup();
 	}
 
-	/// <summary>
-	/// v1.0.1：悬停和点击改为按鼠标位置自己判断 —— 只靠 Godot 的界面事件时，游戏里盖在上层的全屏界面节点会把点击吃掉，按钮收不到。
-	/// GuiInput 收得到时照常用（并吃掉这次点击）；收不到时由这里补上。
-	/// </summary>
+	private static System.Numerics.Vector2 Num(Vector2 p) => new(p.X, p.Y);
+	private static Vector2 Gd(System.Numerics.Vector2 p) => new(p.X, p.Y);
+	private static Vector2 ViewSize() => _layer?.GetViewport()?.GetVisibleRect().Size ?? new Vector2(1920f, 1080f);
+
+	private static void BeginIconPress()
+	{
+		if (_button == null || !_button.Visible || Drag.Pressed) return;
+		Drag.Begin(Time.GetTicksMsec(), Num(_button.GetGlobalMousePosition()), Num(_button.Position));
+		if (_dragCapture != null) _dragCapture.Visible = true;
+	}
+
+	private static void SaveIconPosition()
+	{
+		var unit = IconDrag.ToSaved(Drag.Position, Num(ViewSize()));
+		_prefs.IconX = unit.X;
+		_prefs.IconY = unit.Y;
+		SavePrefs();
+		GD.Print($"{Tag} icon moved to {Drag.Position.X:0},{Drag.Position.Y:0}");
+	}
+
+	/// <summary>GUI 和轮询共用手势；离开图标后仍跟踪拖动，在隐藏或失焦时释放输入捕获。</summary>
 	private static void PollMouse(bool hidden)
 	{
-		if (_button == null)
-		{
-			return;
-		}
-		bool inside = !hidden && _button.GetGlobalRect().HasPoint(_button.GetGlobalMousePosition());
+		if (_button == null) return;
+		Vector2 mouse = _button.GetGlobalMousePosition();
+		bool inside = !hidden && _button.GetGlobalRect().HasPoint(mouse);
+		bool left = Input.IsMouseButtonPressed(MouseButton.Left);
+		bool focused = _button.GetWindow().HasFocus();
 		_hover = inside;
-		bool l = Input.IsMouseButtonPressed(MouseButton.Left);
-		if (inside && _popup?.Visible != true && l && !_wasLeft)
+		if (hidden || !focused)
 		{
-			Click("poll");
+			if (Drag.Pressed && Drag.Moved) SaveIconPosition();
+			Drag.Cancel();
 		}
-		_wasLeft = l;
+		else
+		{
+			if (inside && left && !_wasLeft) BeginIconPress(); // GUI 与轮询重复开始由 Drag.Begin 合并。
+			if (Drag.Pressed)
+			{
+				Drag.Step(Time.GetTicksMsec(), Num(mouse), Num(ViewSize()));
+				if (Drag.Dragging)
+				{
+					ClosePopup();
+					_button.Position = Gd(Drag.Position);
+				}
+				if (!left)
+				{
+					bool click = Drag.Release(Time.GetTicksMsec(), Num(mouse), Num(ViewSize()), inside);
+					if (Drag.Moved) SaveIconPosition();
+					if (click) Click("release");
+				}
+			}
+		}
+		if (_dragCapture != null) { _dragCapture.Size = ViewSize(); _dragCapture.Visible = Drag.Pressed; }
+		_wasLeft = left;
+	}
+
+	private static Vector2 ButtonPosition()
+	{
+		if (Drag.Pressed) return Gd(IconDrag.Clamp(Drag.Position, Num(ViewSize())));
+		if (_prefs.IconX is float x && _prefs.IconY is float y && float.IsFinite(x) && float.IsFinite(y))
+			return Gd(IconDrag.FromSaved(new(x, y), Num(ViewSize())));
+		return Gd(IconDrag.Clamp(Num(Anchor()), Num(ViewSize())));
+	}
+
+	private static Vector2 ClampOverlay(Vector2 at, Vector2 size)
+	{
+		Vector2 view = ViewSize();
+		return new Vector2(Mathf.Clamp(at.X, 8f, Mathf.Max(8f, view.X - size.X - 8f)), Mathf.Clamp(at.Y, 8f, Mathf.Max(8f, view.Y - size.Y - 8f)));
 	}
 
 	private static void UpdateButton(ulong now, float dt)
@@ -482,10 +542,10 @@ public static class MusicBox
 		bool hidden = NCapstoneContainer.Instance?.InUse ?? false;     // 暂停菜单 / 设置 / 牌组等全屏界面打开时藏起来
 		_button.Visible = !hidden;
 		if (hidden && _popup != null) ClosePopup();
-		_button.Position = Anchor();
+		_button.Position = ButtonPosition();
 		PollMouse(hidden);
 		bool playing = _state == State.Playing;
-		float target = _hover ? 1.08f : 1f;
+		float target = Mathf.Min(_hover ? 1.08f : 1f, Mathf.Min(ViewSize().X, ViewSize().Y) / 64f);
 		_icon.Scale = _icon.Scale.Lerp(Vector2.One * target, Mathf.Min(1f, dt * 14f));
 		_ring.Rotation += dt * (playing ? 0.9f : 0f);
 		_ring.Modulate = new Color(1f, 1f, 1f, playing ? 1f : 0.35f);
@@ -504,13 +564,15 @@ public static class MusicBox
 			string title = Songs.Count == 0 ? "（没有歌曲）" : Songs[_index].Title + (_state == State.Playing ? "" : _state == State.Paused ? "  (暂停)" : "  (点击打开音乐盒)");
 			_hoverTitle.Text = title;
 			_hoverTitle.Size = new Vector2(520f, 30f);
-			_hoverTitle.Position = _button.Position + new Vector2(-532f, 11f);
+			_hoverTitle.Position = ClampOverlay(_button.Position + new Vector2(_button.Position.X < 532f ? 62f : -532f, 11f), _hoverTitle.Size);
 			float a = _hoverTitle.Modulate.A;
 			_hoverTitle.Modulate = new Color(1f, 1f, 1f, Mathf.MoveToward(a, _hover && !hidden && _popup?.Visible != true ? 1f : 0f, dt * 6f));
 		}
 		if (_popup != null && _popup.Visible)
 		{
-			_popup.Position = _button.Position + new Vector2(52f - _popup.Size.X, 60f);
+			Vector2 at = _button.Position + new Vector2(52f - _popup.Size.X, 60f);
+			if (at.Y + _popup.Size.Y > ViewSize().Y - 8f) at.Y = _button.Position.Y - _popup.Size.Y - 8f;
+			_popup.Position = ClampOverlay(at, _popup.Size);
 		}
 	}
 
@@ -554,7 +616,7 @@ public static class MusicBox
 		if (_button == null || _lyric.Length < 2) return;
 		foreach (Label l in _lyric)
 		{
-			l.Position = _button.Position + new Vector2(52f - 640f, 62f);
+			l.Position = ClampOverlay(_button.Position + new Vector2(52f - 640f, _button.Position.Y + 122f > ViewSize().Y ? -68f : 62f), l.Size);
 			l.Visible = _button.Visible && _popup?.Visible != true;
 		}
 		if (!_prefs.Lyrics || _player == null || Songs.Count == 0 || _state == State.Stopped)

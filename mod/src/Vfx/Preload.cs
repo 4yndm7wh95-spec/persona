@@ -32,6 +32,7 @@ public static class Preload
 	private static readonly List<string> Pending = new();
 	private static bool _started;
 	private static ulong _t0;
+	internal static bool OrdinaryReady => _started && Pending.Count == 0;
 
 	public static void Start()
 	{
@@ -43,8 +44,8 @@ public static class Preload
 		_t0 = Time.GetTicksMsec();
 		// Spine 的导入器包含图集/骨骼依赖，不能在启动阶段和原版 Logo 资源争用并行加载任务。
 		// 两次黑屏记录都停在 IntroLogo，同时三个 Spine 资源一直没有 ready；普通贴图/字体已完成。
-		// 这里仅预热普通资源；Spine 留给已有的界面按需加载和静态图回退，不影响立绘动画本身。
-		GD.Print($"{ModEntry.Tag} perf preload: Spine resources load on demand; startup threaded Spine warmup disabled");
+		// 启动期仅预热普通资源；Spine 等主菜单稳定后在主线程逐项预热，仍保留界面按需加载和静态图回退。
+		GD.Print($"{ModEntry.Tag} perf preload: startup threaded Spine warmup disabled; serial idle warmup scheduled");
 		foreach (string p in Paths)
 		{
 			if (p.EndsWith("_skel_data.tres", System.StringComparison.Ordinal))
@@ -59,6 +60,7 @@ public static class Preload
 		tree.ProcessFrame += Poll;
 		// 着色器预编译：等场景树空闲后加一个几乎透明的 2×2 小节点，画 6 帧后删掉
 		Callable.From(() => ModEntry.Safe("shader warmup", Warm)).CallDeferred();
+		IdleWarmup.Start();                      // 主菜单稳定且原版队列空闲后，再逐项预热牌堆立绘。
 	}
 
 	private static void Poll()
