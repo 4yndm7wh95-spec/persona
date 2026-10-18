@@ -242,7 +242,7 @@ public static class SettingsSkin
 		pm.SetShaderParameter("edge", Edge.Select(e => new Vector2(e.X / 1920f, e.Y / 1080f)).ToArray());
 		pm.SetShaderParameter("aspect", 16f / 9f);
 		pm.SetShaderParameter("panel", 1f);
-		pm.SetShaderParameter("zone_tex", Load("res://p3makoto/ui/system_zone.png"));
+		if (Load("res://p3makoto/ui/system_zone.png") is Texture2D zoneTex) pm.SetShaderParameter("zone_tex", zoneTex);
 		pm.SetShaderParameter("screen_aspect", view.X / view.Y);
 		st.PortraitMat = pm;
 		// v0.14.77（用户对照原版 #70：头发压在竖排大字上面）：层次 = 水 → 白色区域（跟人物走）→ 左边白条 → 竖排大字 → 人物（头发画成水）→ 气泡。
