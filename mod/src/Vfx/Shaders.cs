@@ -766,11 +766,11 @@ vec3 water_at(vec2 wuv, float aspect, float sun_x, float wt) {
 	float cone = (1.0 - smoothstep(0.0, 0.5 * aspect * max(0.0, 1.0 - y / 0.62), dx)) * (1.0 - smoothstep(0.08, 0.6, y));
 	float band = 1.0 - smoothstep(0.02, 0.16, y);
 	float region = clamp(max(cone, band * 0.75), 0.0, 1.0);
-	float th = mix(0.78, 0.44, region);
+	float th = mix(0.84, 0.56, region);   // 用户：光斑太亮太多 —— 门槛提高、强度减半
 	float p1 = smoothstep(th, th + 0.015, n);
 	float p2 = smoothstep(th + 0.11, th + 0.125, n);
-	c = mix(c, vec3(0.40, 0.88, 1.0), p1 * smoothstep(0.02, 0.2, region) * 0.85);
-	c = mix(c, vec3(0.72, 0.97, 1.0), p2 * smoothstep(0.1, 0.4, region) * 0.8);
+	c = mix(c, vec3(0.40, 0.88, 1.0), p1 * smoothstep(0.02, 0.2, region) * 0.5);
+	c = mix(c, vec3(0.72, 0.97, 1.0), p2 * smoothstep(0.1, 0.4, region) * 0.45);
 	// 斜射光柱（很淡）
 	float rays = pow(clamp(sin(x * 4.6 + y * 1.6 + sin(t * 0.4) * 0.7) * 0.5 + 0.5, 0.0, 1.0), 10.0);
 	c += vec3(0.55, 0.88, 1.0) * rays * clamp(1.0 - y * 1.3, 0.0, 1.0) * 0.12;
@@ -849,6 +849,11 @@ void fragment() {
 		// 画布下面（人物还没落定时露出来）：按画布最下一行往下延伸 —— 头发那几列是水，最左白条那几列是白（不再整条变水，出一道直线）
 		// 画布下面（入场时人物还在上方）：只有最左边大字那一条是白，其余是水（不再把画布最下一行往下拉成一块白色矩形）
 		float zt = cuv.y < 0.0 ? 1.0 : cuv.y > 1.0 ? 1.0 - smoothstep(0.06, 0.065, SCREEN_UV.x) : texture(zone_tex, clamp(cuv, vec2(0.0005), vec2(0.9995))).r;
+		// v0.14.78（左下那条斜线 / 色块）：头发底下不铺白 —— 头发画成水，头发边缘的半透明像素下面也是水，画布边上不会透出一道白线
+		if (cuv.y >= 0.0 && cuv.y <= 1.0 && cuv.x >= 0.0 && cuv.x <= 1.0) {
+			vec4 hp = texture(TEXTURE, cuv);
+			zt *= 1.0 - hairness(hp) * smoothstep(0.52, 0.58, cuv.y);
+		}
 		float rx = mix(-0.05, 0.75, zone_reveal) - SCREEN_UV.y * 0.12;
 		float z = zt * (1.0 - smoothstep(exz - 1.5 * pxz, exz + 1.5 * pxz, cuv.x)) * panel_zone * panel
 			* (1.0 - smoothstep(rx - 0.002, rx + 0.002, SCREEN_UV.x));

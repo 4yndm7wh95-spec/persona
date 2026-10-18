@@ -224,8 +224,9 @@ public static class SettingsSkin
 		// 字的下半截被画面左边裁掉，只露出字头那一半，整个词也比画面长（下面一截出画）
 		st.SystemWord = new Node2D { Position = new Vector2(0.23f * view.X, -0.03f * view.Y), Rotation = Mathf.Pi / 2f };
 		st.Root.AddChild(st.SystemWord);
-		Typo.Text(st.SystemWord, "SYSTEM", Typo.Barlow, (int)(560f * k), new Color(0.58f, 0.61f, 0.66f), new Vector2(-40f * k, -22f * k));
-		Typo.Text(st.SystemWord, "SYSTEM", Typo.Barlow, (int)(560f * k), Ink, Vector2.Zero);
+		// v0.14.78（对照原版 #82 量的）：字头朝右、字底贴着画面左边，字沿阅读方向拉长 2 倍（Scale.X）；灰色错影在黑字前面一截（画面上方）露出来
+		Typo.Text(st.SystemWord, "SYSTEM", Typo.Barlow, (int)(230f * k), new Color(0.58f, 0.61f, 0.66f), new Vector2(-60f * k, 0f));
+		Typo.Text(st.SystemWord, "SYSTEM", Typo.Barlow, (int)(230f * k), Ink, Vector2.Zero);
 
 		// 倒挂立绘（融水着色器）
 		st.Open = Load("res://p3makoto/ui/system_portrait.png");
@@ -870,20 +871,19 @@ public static class SettingsSkin
 		(float dy, float rot, float dx) = DivePose(t);
 		st.PortraitMat.SetShaderParameter("bottom_fade", 0f);   // v0.14.77：头发已经是水色，画布下沿看不出来，不再渐隐（渐隐反而出一条白→蓝的渐变带）
 		st.Portrait.PivotOffset = new Vector2(650f, 977f) * k * PortraitScale;   // 原版模板匹配得到的旋转中心
-		st.Portrait.Rotation = Mathf.DegToRad(rot);
+		st.Portrait.Rotation = Mathf.DegToRad(rot + PortraitRot);
 		// 用户：人物往左移一些，参考原版位置 —— 整体左移 0.05 屏宽（头发左缘对上原版 #90）
 		st.Portrait.Position = new Vector2((dx - PortraitShiftX) * view.X, (dy - PortraitShiftY) * view.Y) + new Vector2(0f, (1f - Mathf.Cos(now * 0.6f)) * 3f * k);
 		Vector2 zoff = new(0.5f * st.Portrait.Size.X, st.Portrait.Size.Y);
 		st.ZoneLayer.PivotOffset = st.Portrait.PivotOffset + zoff;
 		st.ZoneLayer.Rotation = st.Portrait.Rotation;
 		st.ZoneLayer.Position = st.Portrait.Position - zoff;
-		float zr = Ease.OutCubic(Mathf.Clamp((t - 0.36f) / 0.2f, 0f, 1f));   // 原版 #40 左边还是水，#44 起白从左边扫出来
+		float zr = Ease.OutCubic(Mathf.Clamp((t - 0.41f) / 0.16f, 0f, 1f));   // 原版 #42 左边还是水，#46 只有脸周围和左上是白，#52 铺满
 		((ShaderMaterial)st.ZoneLayer.Material).SetShaderParameter("zone_reveal", zr);
 		bool poses = st.DivePoses.All(x => x != null);
 		st.PortraitMat.SetShaderParameter("head_angle", poses ? 0f : Mathf.DegToRad(rot) * 0.35f);
 		float eWord = Ease.OutCubic(Mathf.Clamp((t - 0.34f) / 0.3f, 0f, 1f));
-		st.SystemWord.GlobalPosition = st.Root.GetGlobalTransform() * new Vector2(0.23f * view.X - 320f * k * (1f - eWord), -0.03f * view.Y);
-		st.SystemWord.GlobalRotation = Mathf.Pi / 2f;
+		st.SystemWord.GlobalTransform = st.Root.GetGlobalTransform() * new Transform2D(Mathf.Pi / 2f, new Vector2(2f, 1f), 0f, new Vector2(212f * k - 320f * k * (1f - eWord), 0.10f * view.Y));
 		float eContent = Ease.OutCubic(Mathf.Clamp((t - 0.5f) / 0.3f, 0f, 1f));
 		st.Scroll.Modulate = new Color(st.OrigModulate, st.OrigModulate.A * eContent);
 
@@ -1272,14 +1272,15 @@ public static class SettingsSkin
 	}
 
 	private const int DiveFirst = 20, DiveLast = 52;
-	// v0.14.77（用户：先把头的大致轮廓对准原版）：立绘放大 1.1 倍、左移 0.084 屏宽、上移 0.027 屏高 —— 和原版 #82 的头发轮廓做匹配（IoU 最大）
-	private const float PortraitShiftX = 0.084f, PortraitShiftY = 0.027f, PortraitScale = 1.1f;
+	// 用户：照原版逐帧抄。按原版 #42/#46/#50/#54/#58/#64/#82 上的四个标志点（领结、耳机、嘴角、主眼）解相似变换：
+	// 立绘 1:1（不放大）、最终姿态逆时针 2°；左移 0.06 屏宽、下移 0.035 屏高
+	private const float PortraitShiftX = 0.060f, PortraitShiftY = -0.035f, PortraitScale = 1.0f, PortraitRot = -2f;
 
-	// (t, 下沉 dy / 屏高, 顺时针角度°, 横移 dx / 屏宽)：t = 原视频时间 − 0.30s。0.367~0.80 是量出来的，0.30 往前外推（人物刚从画面上沿进来）
+	// (t, 下沉 dy / 屏高, 顺时针角度°（相对最终姿态）, 横移 dx / 屏宽)：t = 原视频时间 − 0.30s。0.40~0.767 是量出来的，0.30/0.367 外推（人物刚从画面上沿进来）
 	private static readonly (float T, float Dy, float Rot, float Dx)[] DiveKeys =
 	{
-		(0.30f, -0.78f, 36f, -0.10f), (0.367f, -0.48f, 28f, -0.085f), (0.40f, -0.36f, 20f, -0.08f), (0.433f, -0.24f, 17f, -0.07f),
-		(0.467f, -0.19f, 12f, -0.04f), (0.533f, -0.14f, 9f, -0.02f), (0.60f, -0.06f, 2.5f, 0f), (0.70f, -0.03f, 1.5f, 0f), (0.80f, 0f, 0f, 0f),
+		(0.30f, -0.70f, 42f, -0.13f), (0.367f, -0.51f, 35f, -0.11f), (0.40f, -0.389f, 29.6f, -0.090f), (0.467f, -0.262f, 20.8f, -0.061f),
+		(0.533f, -0.162f, 13f, -0.034f), (0.60f, -0.104f, 6.8f, -0.016f), (0.667f, -0.053f, 4.5f, -0.008f), (0.767f, -0.03f, 1.6f, 0f), (1.0f, 0f, 0f, 0f),
 	};
 
 	private static (float, float, float) DivePose(float t)
