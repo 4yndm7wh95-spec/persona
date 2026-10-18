@@ -286,20 +286,19 @@ public static class PileFx
 		// 牌组界面原版的「查看升级」勾选框：勾上时网格里能升级的牌都显示升级后的样子
 		bool upgradeOn = false;
 		NTickbox? upgrades = kind == Kind.Deck ? screen.GetNodeOrNull<NTickbox>("%Upgrades") : null;
-		if (upgrades != null)
+		void SyncGridUpgradePreview()
 		{
+			// _Ready 时 NTickbox 的默认值是 true；AfterCapstoneOpened 随后直接写 false，不发 Toggled。
+			// 每帧只比较实际值，发生变化才刷新已建卡牌，兼容原版开屏初始化和手柄切换。
+			if (upgrades == null || !GodotObject.IsInstanceValid(upgrades) || upgradeOn == upgrades.IsTicked) return;
 			upgradeOn = upgrades.IsTicked;
-			upgrades.Toggled += tb => ModEntry.Safe("deck upgrades", () =>
+			foreach (Item it in items)
 			{
-				upgradeOn = tb.IsTicked;
-				foreach (Item it in items)
+				if (it.Holder != null && GodotObject.IsInstanceValid(it.Holder) && it != focused)
 				{
-					if (it.Holder != null && GodotObject.IsInstanceValid(it.Holder) && it.Card.IsUpgradable && it != focused)
-					{
-						it.Holder.SetIsPreviewingUpgrade(upgradeOn);
-					}
+					it.Holder.SetIsPreviewingUpgrade(upgradeOn && it.Card.IsUpgradable);
 				}
-			});
+			}
 		}
 		// v0.14.65 特写里的「查看升级」按钮（四个界面都有，在特写卡牌右下角外侧）：点一下卡牌翻一圈（正面 → 牌背 → 升级后的正面），再点翻回来。
 		// 已经满级的牌：按钮变灰写「已升级」；本来就不能升级的（诅咒 / 状态等）：不显示。可多次升级的牌照常翻到下一级。
@@ -444,10 +443,7 @@ public static class PileFx
 			h.Visible = true;
 			slot.AddChild(h);
 			card!.UpdateVisuals(pile.Type, CardPreviewMode.Normal);
-			if (upgradeOn && it.Card.IsUpgradable)
-			{
-				h.SetIsPreviewingUpgrade(true);                // 勾了「查看升级」
-			}
+			h.SetIsPreviewingUpgrade(upgradeOn && it.Card.IsUpgradable);
 			it.Slot = slot;
 			it.Holder = h;
 			it.Born = Mathf.Max(Now(), nextBorn);
@@ -757,6 +753,7 @@ public static class PileFx
 			}
 			RunTick(() =>
 			{
+				SyncGridUpgradePreview();                      // 必须早于本帧分批建牌，不能沿用 _Ready 的默认选中值。
 				float now = Now();
 				float dt = Mathf.Clamp(now - lastNow, 0f, 0.1f);
 				lastNow = now;
@@ -1448,6 +1445,7 @@ public static class PileFx
 	private const string BackPath = "res://p3makoto/fx/pile_card_back.png";
 	private const int FlipStrips = 14;
 	private const float FlipRes = 1.5f;
+	private const float FlipPadding = 48f;                 // 命中框不含费用圆标、标题飘带和阴影，四边留透明空间。
 
 	private sealed class Flip
 	{
@@ -1467,10 +1465,11 @@ public static class PileFx
 		{
 			return null;
 		}
-		SubViewport vp = new() { Size = (Vector2I)(size * FlipRes).Ceil(), TransparentBg = true, RenderTargetUpdateMode = SubViewport.UpdateMode.Always };
+		Vector2 captureSize = size + Vector2.One * (FlipPadding * 2f);
+		SubViewport vp = new() { Size = (Vector2I)(captureSize * FlipRes).Ceil(), TransparentBg = true, RenderTargetUpdateMode = SubViewport.UpdateMode.Always };
 		root.AddChild(vp);
 		vp.AddChild(card);
-		card.Position = size * FlipRes / 2f;
+		card.Position = captureSize * FlipRes / 2f;
 		card.Scale = Vector2.One * FlipRes;
 		card.UpdateVisuals(pileType, CardPreviewMode.Normal);
 		Flip f = new() { Vp = vp, Card = card, Size = size, Back = ResourceLoader.Load(BackPath) as Texture2D };
@@ -1490,9 +1489,13 @@ public static class PileFx
 	/// <summary>绕竖轴转 theta（弧度）：每条竖线按 z = x·sinθ 做透视缩放；背面朝前时贴牌背（u 反过来，不是镜像），越接近侧面越暗。</summary>
 	private static void Pose(Flip f, float theta)
 	{
-		float w = f.Size.X, h = f.Size.Y, cam = w * 2.6f;
+		float cam = f.Size.X * 2.6f;
 		float c = Mathf.Cos(theta), sn = Mathf.Sin(theta);
 		bool frontFace = c >= 0f;
+		// 正面网格也扩到透明留边，否则即使画布放大，伸出命中框的装饰仍会被映射回主体矩形。
+		// 背面继续使用原卡牌尺寸；透视距离、外层缩放和转轴均按主体尺寸，不把整张牌变大。
+		float pad = frontFace ? FlipPadding * 2f : 0f;
+		float w = f.Size.X + pad, h = f.Size.Y + pad;
 		Texture2D? tex = frontFace ? f.Vp.GetTexture() : f.Back;
 		if (tex == null)
 		{
