@@ -87,6 +87,7 @@ void fragment() {
 	}
 }";
 	private static Shader? _aa, _aaAdd;
+	private static readonly Vector2[] AaBuf = new Vector2[AaMax];
 	private static Shader AaShader => _aa ??= new Shader { Code = "shader_type canvas_item;\n" + AaBody };
 	private static Shader AaAddShader => _aaAdd ??= new Shader { Code = "shader_type canvas_item;\nrender_mode blend_add;\n" + AaBody };
 
@@ -117,9 +118,10 @@ void fragment() {
 		if (poly.Material is ShaderMaterial m)
 		{
 			int n = points.Length <= AaMax ? points.Length : 0;            // 顶点太多就不做抗锯齿
-			var arr = new Vector2[AaMax];
-			System.Array.Copy(points, arr, System.Math.Min(points.Length, AaMax));
-			m.SetShaderParameter("pts", arr);
+			// v0.14.62：复用同一个缓冲区（以前每次 new 一个 128 长度的数组：每帧改形状的特效会产生大量垃圾、触发 GC 卡顿）。
+			// 着色器只读前 n 个点，后面残留的旧数据不影响。只在主线程调用。
+			System.Array.Copy(points, AaBuf, System.Math.Min(points.Length, AaMax));
+			m.SetShaderParameter("pts", AaBuf);
 			m.SetShaderParameter("n", n);
 		}
 	}

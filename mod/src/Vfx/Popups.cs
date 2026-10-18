@@ -238,13 +238,28 @@ public static class Popups
 	{
 		Vector2 impact = center + new Vector2(50f, -10f) * s;              // 冲击点：身前（敌人在右边）
 		Vector2 home = center + new Vector2(62f, -62f) * s;                // 字：胸口偏上、稍微靠前
-		BlockWord(layer, home, s);
-		Fx.After(layer, 0.05, "block impact", () => BlockImpact(layer, impact, s));
+		// v0.14.62（玩家：格挡多段攻击时掉帧）：连续格挡（上一次还不到 0.7s）时
+		// · 字只留一个：上一个 BLOCK 立刻淡掉，新的照常弹出（P3R 里也只看到一个字）；
+		// · 冲击用轻量版：护盾泡 + 8 道火花（每道 2 段）+ 中心光，不再叠碎片、纸屑、身后柔光。
+		ulong now = Time.GetTicksMsec();
+		bool chain = now - _lastBlock < 700;
+		_lastBlock = now;
+		if (_lastWord is Node2D old && GodotObject.IsInstanceValid(old))
+		{
+			old.Name = "P3BlockOld";
+			Fx.Animate(old, 0.08f, t => old.Modulate = new Color(1f, 1f, 1f, old.Modulate.A * (1f - t)));
+			Fx.FreeAfter(old, 0.1);
+		}
+		_lastWord = BlockWord(layer, home, s);
+		Fx.After(layer, 0.05, "block impact", () => BlockImpact(layer, impact, s, light: chain));
 	}
+
+	private static ulong _lastBlock;
+	private static Node2D? _lastWord;
 
 	private static readonly Color BlockInk = new(0.04f, 0.04f, 0.07f);
 
-	private static void BlockWord(Control layer, Vector2 home, float s)
+	private static Node2D BlockWord(Control layer, Vector2 home, float s)
 	{
 		Node2D root = Fx.Root(layer, home, "P3Block");
 		root.Rotation = -0.21f;
@@ -278,9 +293,10 @@ public static class Popups
 			root.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.04f, 0f, 1f) * (1f - Ease.InCubic(Mathf.Clamp((time - 0.78f) / 0.22f, 0f, 1f))));
 		});
 		Fx.FreeAfter(root, total + 0.05);
+		return root;
 	}
 
-	private static void BlockImpact(Control layer, Vector2 at, float s)
+	private static void BlockImpact(Control layer, Vector2 at, float s, bool light = false)
 	{
 		// 护盾泡：柔光圆 + 亮边 + 三道弧形流光，0.12s 胀开后淡出
 		Node2D bubble = Fx.Root(layer, at, "P3BlockBubble");
@@ -309,14 +325,19 @@ public static class Popups
 			Node2D rays = Fx.Root(layer, at, "P3BlockSparks");
 			var sparks = new System.Collections.Generic.List<(Polygon2D[] P, Vector2 D, float L, float Delay)>();
 			Color[] cols = { new(1f, 1f, 0.95f, 0.95f), new(1f, 0.85f, 0.35f, 0.9f), new(1f, 0.45f, 0.45f, 0.75f) };
-			for (int i = 0; i < 16; i++)
+			int count = light ? 8 : 16;
+			for (int i = 0; i < count; i++)
 			{
-				Vector2 d = Vector2.Right.Rotated(Mathf.Tau * i / 16f + Fx.Rand(-0.15f, 0.15f));
-				float len = (i % 4 == 0 ? Fx.Rand(220f, 320f) : Fx.Rand(90f, 190f)) * s;
-				var polys = new Polygon2D[4];
+				Vector2 d = Vector2.Right.Rotated(Mathf.Tau * i / count + Fx.Rand(-0.15f, 0.15f));
+				float len = (i % 4 == 0 ? Fx.Rand(220f, 320f) : Fx.Rand(90f, 190f)) * s * (light ? 0.8f : 1f);
+				// 轻量版每道只有光晕 + 一段黄色主体（polys[2]），其余为 null
+				var polys = new Polygon2D?[4];
 				polys[0] = Fx.Poly(rays, new Vector2[3], new Color(1f, 0.6f, 0.3f, 0.25f), additive: true);   // 光晕
-				for (int k = 0; k < 3; k++) polys[k + 1] = Fx.Poly(rays, new Vector2[3], cols[k], additive: true);
-				sparks.Add((polys, d, len, Fx.Rand(0f, 0.05f)));
+				for (int k = 0; k < 3; k++)
+				{
+					if (!light || k == 1) polys[k + 1] = Fx.Poly(rays, new Vector2[3], cols[k], additive: true);
+				}
+				sparks.Add((polys!, d, len, Fx.Rand(0f, 0.05f)));
 			}
 			Fx.Animate(rays, 0.34f, t =>
 			{
@@ -324,10 +345,21 @@ public static class Popups
 				foreach (var (polys, d, len, delay) in sparks)
 				{
 					float u = Mathf.Clamp((time - delay) / 0.26f, 0f, 1f);
+					if (u >= 1f && t < 1f && polys[0].Visible)
+					{
+						foreach (Polygon2D? p in polys) if (p != null) p.Visible = false;   // 这道已经收完：不再每帧改形状
+						continue;
+					}
+					if (u >= 1f) continue;
 					float head = 18f * s + len * Ease.OutExpo(u), tail = 18f * s + len * Ease.InCubic(u) * 0.95f;
 					float span = Mathf.Max(head - tail, 0.5f), w = 3.4f * s * (1f - 0.6f * u);
 					Vector2 a = d * tail, b = d * (tail + span * 0.45f), c = d * (tail + span * 0.8f), e = d * head;
 					Fx.Reshape(polys[0], Fx.StrokePts(new[] { a, e }, w * 4f, taper: true));
+					if (light)
+					{
+						Fx.Reshape(polys[2], Fx.StrokePts(new[] { a, e }, w * 1.1f, taper: true));
+						continue;
+					}
 					Fx.Reshape(polys[3], Fx.StrokePts(new[] { a, b }, w * 0.7f, taper: true));
 					Fx.Reshape(polys[2], Fx.StrokePts(new[] { b, c }, w, taper: false));
 					Fx.Reshape(polys[1], Fx.StrokePts(new[] { c, e }, w * 1.2f, taper: true));
@@ -341,6 +373,10 @@ public static class Popups
 			Fx.FreeAfter(coreRoot, 0.27);
 		});
 
+		if (light)
+		{
+			return;                                              // 连续格挡：余韵只在第一下出现，后面几下不再叠
+		}
 		// 余韵：身后红橙柔光（0.7s 褪去）、地上青色碎片、黄绿小纸屑飘落
 		Node2D after = Fx.Root(layer, at + new Vector2(-30f, 10f) * s, "P3BlockAfterglow");
 		Sprite2D warm = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(1f, 0.32f, 0.22f, 0f), Scale = new Vector2(3.2f, 4.2f) * s };
