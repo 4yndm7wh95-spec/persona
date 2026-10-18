@@ -10,7 +10,7 @@
    - remote 指向 github.com/4yndm7wh95-spec/persona；
    - 仓库里有 mod\P3Makoto.json。
 2. 所有 git 命令都加 -c safe.directory=<repo>。
-3. 执行 git -c safe.directory=<repo> status -sb。有进行中的合并或未提交改动就停下来报告。
+3. 执行 git -c safe.directory=<repo> status -sb。有进行中的合并或已跟踪文件的未提交改动就停下来报告；未跟踪的 art/treasure_hands/ 是之前保留的素材，原样保留、忽略它继续（不要移动、删除或提交它）。
 4. fetch：
    git -c safe.directory=<repo> -c http.version=HTTP/1.1 -c http.lowSpeedLimit=0 -c http.lowSpeedTime=999999 fetch origin claude/amazing-darwin-b00arn
    失败时分别等 5 / 10 / 20 / 40 秒重试，最多 4 次。
@@ -20,7 +20,7 @@
    git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local merge --no-edit origin/claude/amazing-darwin-b00arn
    - 有冲突就停下来报告。
    - 这次不需要 push。
-6. 确认 git log 最新的提交是 v0.14.59（战斗图标 P3R 化 + iOS 专用包 + 复查 Codex 蓝蝶 / 预热 / 光标改动）。
+6. 确认 git log 最新的提交是「v0.14.59: drop the iOS package」（前一个是 v0.14.59 战斗图标 P3R 化）。
 7. 稀疏检出缺目录时，允许执行：
    git -c safe.directory=<repo> sparse-checkout add mod musicbox testmod tools/compat research/libs_0.107.1
    - 路径过长时，这一条命令可以加 -c core.longpaths=true。
@@ -40,11 +40,6 @@
 2. 核对 p3makoto\sfx\ 下有 90 个 .ogg；p3makoto\pile_deck、pile_discard、pile_exhaust 下各有 *_skel_data.tres；p3makoto\pile\ 下有 pile_skel_data.tres、pile.atlas.import、pile.spine-json.import；p3makoto\rig\characters\ 下有 regent_skel_data.tres 和 regent.atlas.import；.godot\imported\ 下有两个文件名含 p3private 的 .spatlas。
 3. 用 GDRE Tools 打包：
    <gdre_tools.exe> --headless --pck-create=<stage目录> --output=<repo>\mod\_build\P3Makoto.pck --pck-version=3 --pck-engine-version=4.5.1
-
-【4b. iOS 专用包（只打包，不安装）】
-1. 新建 <repo>\mod\_build\ios\P3Makoto\，只放两样：<repo>\mod\ios\P3Makoto.json（has_dll 为 false）和上一步的 P3Makoto.pck。**不要放 dll。**
-2. 压缩成 <repo>\mod\_build\P3Makoto_iOS_v0.14.59.zip（压缩包里顶层是 P3Makoto 文件夹）。
-3. 报告压缩包路径和大小。
 
 【5. 安装到两个游戏（<G111> 和 <G107> 各做一遍）】
 1. P3Makoto：
@@ -87,9 +82,8 @@
    - 用别的角色开局：这些图标都是原版。
    - 结束回合按钮的中文是正体（不再斜）。
 3. 牌堆界面：四个界面都有蓝色蝴蝶绕着立绘飞（Codex 的改动），牌组界面底部没有空黑块。
-4. iOS 包只是打出来交给用户，不需要在电脑上测试。
-5. 设置里「牌堆 / 牌组界面（P3R 风格）」关掉后，四个界面都是原版。
-6. 日志开头应有 "[P3Makoto] init v0.14.59"、"game version …"、"harmony patches applied: N ok, 0 failed"；有问题请把含 "P3Makoto" 的行发给 Claude（特别是 "pile" / "deck screen" / "hud" 相关的错误）。
+4. 设置里「牌堆 / 牌组界面（P3R 风格）」关掉后，四个界面都是原版。
+5. 日志开头应有 "[P3Makoto] init v0.14.59"、"game version …"、"harmony patches applied: N ok, 0 failed"；有问题请把含 "P3Makoto" 的行发给 Claude（特别是 "pile" / "deck screen" / "hud" 相关的错误）。
 
 【绝对不要做】
 - 不要修改或删除代码；不要 rebase / reset / amend；不要 --force；不要改全局 git config；不要提交，也不要推送。

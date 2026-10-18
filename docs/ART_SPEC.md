@@ -1353,7 +1353,7 @@ Grand.cs 里其余函数暂时保留不用。
 - 结束回合按钮的中文改成正体（去掉 FontVariation 的斜切变换）。
 - iOS（玩家：iOS 移植版 0.110.1 报 PlatformNotSupportedException，不删 DLL 进不了游戏）：
   报错类型是 MOD_ERROR.EXCEPTION —— 游戏在 AssemblyLoadContext.LoadFromAssemblyPath 这一步就失败了（iOS 不允许加载任何代码），我们的代码一行都没执行，
-  DLL 里怎么改都修不了。解决：发一个 iOS 专用包（mod/ios/P3Makoto.json：has_dll = false，只配 P3Makoto.pck），皮肤（选人、战斗骨骼、头像、地图标记、休息处 / 商店）照常，所有特效都没有。
+  DLL 里怎么改都修不了。iOS 玩家只能删掉 DLL、只用 pck 的皮肤（用户决定不单独出 iOS 包）。
   另外 ModEntry.Init 加了兜底：OS 是 iOS / Web 或运行时不支持动态代码时不打任何 Harmony 补丁，只做 AssetGuard。
 - 复查 Codex（3e959c0 ~ ecc761c）：蓝蝶环绕（PileButterfly / ButterflyOrbit / ButterflyVisual，GreatSeal 的蝴蝶改成共用 ButterflyVisual）、空 BottomText 整个藏起来、
   光标晚加载补应用、音乐盒拖动、空闲预热 —— 没发现会出错的地方；只改了一处：IdleWarmup 判断"在地图上"原来每 150ms 遍历整棵场景树，改成直接读 NMapScreen.Instance.IsOpen。
