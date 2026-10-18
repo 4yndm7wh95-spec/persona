@@ -871,7 +871,7 @@ public static class SettingsSkin
 		st.PortraitMat.SetShaderParameter("bottom_fade", 0f);   // v0.14.77：头发已经是水色，画布下沿看不出来，不再渐隐（渐隐反而出一条白→蓝的渐变带）
 		st.Portrait.PivotOffset = new Vector2(650f, 977f) * k;                 // 原版模板匹配得到的旋转中心
 		st.Portrait.Rotation = Mathf.DegToRad(rot);
-		// 用户：人物往左移一些，参考原版位置 —— 和原版 #90 的白色轮廓做匹配，整体左移 0.083 屏宽
+		// 用户：人物往左移一些，参考原版位置 —— 整体左移 0.05 屏宽（头发左缘对上原版 #90）
 		st.Portrait.Position = new Vector2((dx - PortraitShiftX) * view.X, dy * view.Y) + new Vector2(0f, (1f - Mathf.Cos(now * 0.6f)) * 3f * k);
 		Vector2 zoff = new(0.5f * st.Portrait.Size.X, view.Y);
 		st.ZoneLayer.PivotOffset = st.Portrait.PivotOffset + zoff;
@@ -1272,7 +1272,7 @@ public static class SettingsSkin
 	}
 
 	private const int DiveFirst = 20, DiveLast = 52;
-	private const float PortraitShiftX = 0.083f;
+	private const float PortraitShiftX = 0.05f;   // 原版 #90：头发左缘约在 0.07~0.10 屏宽
 
 	// (t, 下沉 dy / 屏高, 顺时针角度°, 横移 dx / 屏宽)：t = 原视频时间 − 0.30s。0.367~0.80 是量出来的，0.30 往前外推（人物刚从画面上沿进来）
 	private static readonly (float T, float Dy, float Rot, float Dx)[] DiveKeys =
