@@ -96,6 +96,7 @@ public static class SettingsSkin
 		internal bool On, P3Page;
 		internal int Current = -1, Pending = -1;
 		internal float T0, WipeT0 = -1f, NextBlink, BlinkT0 = -1f;
+		internal float IntroT;   // 入场时间轴（按帧累加、每帧最多 1/30s：打开时第一次编译着色器 / 上传贴图卡一下，动画不会被跳过）
 		internal Vector2 WipeAt;
 		internal Vector2 OrigPos, OrigScale, OrigSize, OrigPivot;
 		internal Rect2 Src;
@@ -172,6 +173,7 @@ public static class SettingsSkin
 		if (st.On)
 		{
 			st.T0 = Now;                                         // 每次打开都重播入场
+			st.IntroT = 0f;
 			Audio.Sfx.Clip("sys_dive", 0.55f);
 			st.NextBlink = st.T0 + 2.5f;
 			st.Root.Material = st.MaskMat;
@@ -244,6 +246,8 @@ public static class SettingsSkin
 		pm.SetShaderParameter("panel", 1f);
 		if (Load("res://p3makoto/ui/system_zone.png") is Texture2D zoneTex) pm.SetShaderParameter("zone_tex", zoneTex);
 		pm.SetShaderParameter("screen_aspect", view.X / view.Y);
+		pm.SetShaderParameter("view_size", view);
+		pm.SetShaderParameter("sway", 0.35f);   // v0.14.79（实机：身体漂动感太强）：飘带 / 头发 / 刘海的摆动减到 1/3
 		st.PortraitMat = pm;
 		// v0.14.77（用户对照原版 #70：头发压在竖排大字上面）：层次 = 水 → 白色区域（跟人物走）→ 左边白条 → 竖排大字 → 人物（头发画成水）→ 气泡。
 		// 白色区域单独一层（同一个着色器 layer = 1 只画白区），人物那层 layer = 2 不画白区
@@ -253,10 +257,9 @@ public static class SettingsSkin
 		// 白区那层比画布大（宽 2 倍、高 3 倍，画布在 (0.5pw, H) 处），画布外也铺白（见着色器 layer 1）
 		st.ZoneLayer = new TextureRect { Texture = st.Open, Material = zm, MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, Size = new Vector2(2f * pw, 3f * view.Y) * PortraitScale };
 		st.Root.AddChild(st.ZoneLayer);
-		// v0.14.77（用户：字要在水的图层之下）：竖排大字只在白区里露出来 —— 挂在白区那层下面，白区当裁切遮罩；水（头发、右边的水）都压在字上面。
-		// 字的位置每帧按屏幕坐标设（不跟着人物转）
-		st.ZoneLayer.ClipChildren = CanvasItem.ClipChildrenMode.AndDraw;
-		st.SystemWord.Reparent(st.ZoneLayer, false);
+		// v0.14.77（用户：字要在水的图层之下）：竖排大字在白区上面、人物（头发画成水）下面。字的位置每帧按屏幕坐标设（不跟着人物转）
+		// v0.14.79：不再用白区当裁切遮罩 —— 入场时 Root 本身是裁切遮罩，Godot 不支持裁切嵌套（实机：顶上一截白区没了）；字跟着白区一起淡入
+		st.Root.MoveChild(st.SystemWord, -1);
 		st.Portrait = new TextureRect { Texture = st.Open, Material = pm, MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, Size = new Vector2(pw, view.Y) * PortraitScale };
 		st.Root.AddChild(st.Portrait);
 		st.Root.MoveChild(st.Bubbles, -1);                                   // 待机气泡在人物上面
@@ -834,7 +837,9 @@ public static class SettingsSkin
 
 	private static void Frame(State st, float dt)
 	{
-		float now = Now, t = now - st.T0;
+		float now = Now, t = st.IntroT;
+		// v0.14.79（实机：进设置卡一下就直接到最终画面）：入场用累加的时间，卡顿的那一帧最多走 1/30s
+		st.IntroT += Mathf.Min(dt, 1f / 30f);
 		Vector2 view = st.Screen.GetViewportRect().Size;
 		float k = view.Y / 1080f;
 
@@ -879,6 +884,10 @@ public static class SettingsSkin
 		st.ZoneLayer.Position = st.Portrait.Position - zoff;
 		float zr = Ease.OutCubic(Mathf.Clamp((t - 0.41f) / 0.16f, 0f, 1f));   // 原版 #42 左边还是水，#46 只有脸周围和左上是白，#52 铺满
 		((ShaderMaterial)st.ZoneLayer.Material).SetShaderParameter("zone_reveal", zr);
+		Vector2 ro = st.Root.GetGlobalTransform().Origin;
+		((ShaderMaterial)st.ZoneLayer.Material).SetShaderParameter("root_origin", ro);
+		st.PortraitMat.SetShaderParameter("root_origin", ro);
+		st.SystemWord.Modulate = new Color(1f, 1f, 1f, zr);
 		bool poses = st.DivePoses.All(x => x != null);
 		st.PortraitMat.SetShaderParameter("head_angle", poses ? 0f : Mathf.DegToRad(rot) * 0.35f);
 		float eWord = Ease.OutCubic(Mathf.Clamp((t - 0.34f) / 0.3f, 0f, 1f));

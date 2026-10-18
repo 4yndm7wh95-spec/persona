@@ -818,6 +818,11 @@ uniform float panel_zone = 1.0;
 uniform float zone_reveal = 1.0;   // 入场：白区从屏幕左边往右扫出来（屏幕坐标，不跟人物转）
 uniform int layer = 0;   // 0 = 人物 + 白区，1 = 只画白区，2 = 只画人物
 uniform sampler2D zone_tex : filter_linear;   // 白色区域蒙版（tools/ui/build_system_portrait.py：分界线左边、头发以上），跟着立绘一起动
+// v0.14.79（实机：最顶上一截白区没了）：不用 SCREEN_UV（白区那层开了 ClipChildren，在游戏的渲染器里 SCREEN_UV 不可靠），
+// 改用 Root 坐标：顶点的世界坐标减去 Root 原点，除以画面大小 —— 和背景水（Root 里铺满的 ColorRect，用 UV）是同一套坐标
+uniform vec2 view_size = vec2(1920.0, 1080.0);
+uniform vec2 root_origin = vec2(0.0);
+varying vec2 ruv;
 float edge_x(float y) {
 	for (int i = 0; i < 12; i++) {
 		if (y <= edge[i + 1].y) {
@@ -835,6 +840,9 @@ float hairness(vec4 p) {
 	// 不乘透明度：头发边缘的半透明像素也要整个变成水，否则会混进一点原来的颜色，留下一圈细线
 	return step(0.02, p.a) * step(0.6, p.b) * step(0.25, p.b - p.r) * (1.0 - step(0.82, mn));
 }
+void vertex() {
+	ruv = ((MODEL_MATRIX * vec4(VERTEX, 0.0, 1.0)).xy - root_origin) / view_size;
+}
 vec2 rot(vec2 p, float a) {
 	float c = cos(a), s = sin(a);
 	return vec2(c * p.x - s * p.y, s * p.x + c * p.y);
@@ -849,15 +857,15 @@ void fragment() {
 		float pxz = 1.0 / 1920.0;
 		// 画布下面（人物还没落定时露出来）：按画布最下一行往下延伸 —— 头发那几列是水，最左白条那几列是白（不再整条变水，出一道直线）
 		// 画布下面（入场时人物还在上方）：只有最左边大字那一条是白，其余是水（不再把画布最下一行往下拉成一块白色矩形）
-		float zt = cuv.y < 0.0 ? 1.0 : cuv.y > 1.0 ? 1.0 - smoothstep(0.06, 0.065, SCREEN_UV.x) : texture(zone_tex, clamp(cuv, vec2(0.0005), vec2(0.9995))).r;
+		float zt = cuv.y < 0.0 ? 1.0 : cuv.y > 1.0 ? 1.0 - smoothstep(0.06, 0.065, ruv.x) : texture(zone_tex, clamp(cuv, vec2(0.0005), vec2(0.9995))).r;
 		// v0.14.78（左下那条斜线 / 色块）：头发底下不铺白 —— 头发画成水，头发边缘的半透明像素下面也是水，画布边上不会透出一道白线
 		if (cuv.y >= 0.0 && cuv.y <= 1.0 && cuv.x >= 0.0 && cuv.x <= 1.0) {
 			vec4 hp = texture(TEXTURE, cuv);
 			zt *= 1.0 - hairness(hp) * smoothstep(0.52, 0.58, cuv.y);
 		}
-		float rx = mix(-0.05, 0.75, zone_reveal) - SCREEN_UV.y * 0.12;
+		float rx = mix(-0.05, 0.75, zone_reveal) - ruv.y * 0.12;
 		float z = zt * (1.0 - smoothstep(exz - 1.5 * pxz, exz + 1.5 * pxz, cuv.x)) * panel_zone * panel
-			* (1.0 - smoothstep(rx - 0.002, rx + 0.002, SCREEN_UV.x));
+			* (1.0 - smoothstep(rx - 0.002, rx + 0.002, ruv.x));
 		COLOR = vec4(1.0, 1.0, 1.0, z);
 	} else {   // fragment 里不能 return（Godot 报错，整个着色器编译失败 —— v0.14.77 实机：水全白、立绘原图直出）
 	vec2 uv = UV;
@@ -903,7 +911,7 @@ void fragment() {
 	// v0.14.78：头发里原版那几块亮天青发束保留原色（用户：原版头发的青色阴影要搬过来），只有深钴蓝的部分画成水
 	float cyanH = smoothstep(0.55, 0.7, c.g) * (1.0 - smoothstep(0.85, 0.95, c.r));
 	float toWater = max(hair * (1.0 - cyanH), side);
-	vec3 w = water_at(SCREEN_UV, screen_aspect, sun_x, TIME);
+	vec3 w = water_at(ruv, screen_aspect, sun_x, TIME);
 	// 用户：不要浅色反光，那样反而有边界 —— 头发就是水本身的颜色（不压暗：压暗一点在头发外沿、立绘下沿都会出一条色差分界）
 	vec3 wc = w;
 	vec3 fc = mix(c.rgb, wc, toWater);
@@ -911,9 +919,9 @@ void fragment() {
 	// 白色面板：分界线左边、人物上半截（左下角留给水和头发）
 	// 白色区域：蒙版（人物轮廓以上）× 分界线左边；画布外（人物还在上方时）是水
 	float inside = step(0.0, uv.x) * step(uv.x, 1.0) * step(0.0, uv.y) * step(uv.y, 1.0);
-	float rx = mix(-0.05, 0.75, zone_reveal) - SCREEN_UV.y * 0.12;
+	float rx = mix(-0.05, 0.75, zone_reveal) - ruv.y * 0.12;
 	float zone = texture(zone_tex, clamp(uv, vec2(0.0), vec2(1.0))).r * inside * (1.0 - side) * panel_zone * panel
-		* (1.0 - smoothstep(rx - 0.002, rx + 0.002, SCREEN_UV.x));
+		* (1.0 - smoothstep(rx - 0.002, rx + 0.002, ruv.x));
 	if (layer == 1) { fa = 0.0; }
 	if (layer == 2) { zone = 0.0; }
 	float fa2 = fa + zone * (1.0 - fa);
