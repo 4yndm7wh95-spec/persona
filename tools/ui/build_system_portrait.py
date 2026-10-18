@@ -100,23 +100,23 @@ def blink(base, f):
     return Image.fromarray(o, "RGBA")
 
 
+REF_SB = ROOT / "art/p3menu_system/ref/menu_transition_frames_020-107/storyboards"
+SHIFT_PX = 96          # SettingsSkin.PortraitShiftX × 1920：落定时立绘画布左移的像素
+
+
+def ref_frame(i):
+    """用户推送的原版 60fps 分镜里的第 i 帧（1414×884，去掉左右黑边）。"""
+    page, cell = (i - 20) // 4 + 1, (i - 20) % 4
+    x, y = [(24, 138), (1968, 138), (24, 1090), (1968, 1090)][cell]
+    sb = Image.open(REF_SB / f"storyboard_{page:02d}.png").convert("RGB")
+    return np.asarray(sb.crop((x, y, x + 1920, y + 884)).crop((244, 0, 1658, 884))).astype(np.int32)
+
+
 def zone_of(im, name):
-    """白色区域蒙版（v0.14.77 第三版，用户对照原版 #70：白和水的边界就是人物的头发）。
-    每一列：从上往下到头发上沿为止是白，头发以下（包括画面左下角）都是水 —— 头发本身画成水色，所以头发和下面的水连成一片。
-    · 头发只在头部（y > 560，衣领以下）认，衬衫上的蓝色阴影 / 线条不算；
-    · 只用立绘真实的头发轮廓，不往左补（原版 #90：头发左边、画面最左那一条是白 + 大字）。"""
-    a = np.asarray(im.convert("RGBA")).astype(np.int32)
-    r, g, b, al = a[..., 0], a[..., 1], a[..., 2], a[..., 3]
-    h, w = al.shape
-    hair = (al > 127) & (b > 150) & (b - r > 60) & (np.minimum(np.minimum(r, g), b) < 210)
-    hair[:560] = False
-    hair = ndimage.binary_opening(hair, iterations=6)
-    top = np.where(hair.any(axis=0), hair.argmax(axis=0), h).astype(np.float64)
-    # （不再往左编造头发：原版头发也没长到脸左边上方；头发左边、画面最左那一条是白 + 大字，和原版 #90 一样）
-    top = ndimage.uniform_filter1d(top, 3)
-    zone = (np.arange(h)[:, None] < top[None, :]).astype(np.float32)
-    zone = Image.fromarray((zone * 255).astype(np.uint8), "L").filter(ImageFilter.GaussianBlur(1.0))
-    godot_tex.write_texture(STAGE, f"p3makoto/ui/{name}", Image.merge("RGBA", [zone, zone, zone, Image.new("L", zone.size, 255)]))
+    """白区蒙版（v0.14.77 第五版，用户：要的是一个正常的头）：分界线左边整片是白，头发就是立绘自己的头发（画成水色）压在白上 ——
+    不抠原版、不往外补头发。头的位置 / 大小改成和原版对齐（SettingsSkin：立绘放大 1.1 倍、左移，和原版 #82 的头发轮廓匹配）。"""
+    zone = Image.new("L", im.size, 255)
+    godot_tex.write_texture(STAGE, f"p3makoto/ui/{name}", Image.merge("RGBA", [zone, Image.new("L", im.size, 0), Image.new("L", im.size, 0), Image.new("L", im.size, 255)]))
     return zone
 
 

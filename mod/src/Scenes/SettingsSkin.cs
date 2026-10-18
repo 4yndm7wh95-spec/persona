@@ -251,13 +251,13 @@ public static class SettingsSkin
 		zm.SetShaderParameter("layer", 1);
 		pm.SetShaderParameter("layer", 2);
 		// 白区那层比画布大（宽 2 倍、高 3 倍，画布在 (0.5pw, H) 处），画布外也铺白（见着色器 layer 1）
-		st.ZoneLayer = new TextureRect { Texture = st.Open, Material = zm, MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, Size = new Vector2(2f * pw, 3f * view.Y) };
+		st.ZoneLayer = new TextureRect { Texture = st.Open, Material = zm, MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, Size = new Vector2(2f * pw, 3f * view.Y) * PortraitScale };
 		st.Root.AddChild(st.ZoneLayer);
 		// v0.14.77（用户：字要在水的图层之下）：竖排大字只在白区里露出来 —— 挂在白区那层下面，白区当裁切遮罩；水（头发、右边的水）都压在字上面。
 		// 字的位置每帧按屏幕坐标设（不跟着人物转）
 		st.ZoneLayer.ClipChildren = CanvasItem.ClipChildrenMode.AndDraw;
 		st.SystemWord.Reparent(st.ZoneLayer, false);
-		st.Portrait = new TextureRect { Texture = st.Open, Material = pm, MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, Size = new Vector2(pw, view.Y) };
+		st.Portrait = new TextureRect { Texture = st.Open, Material = pm, MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, Size = new Vector2(pw, view.Y) * PortraitScale };
 		st.Root.AddChild(st.Portrait);
 		st.Root.MoveChild(st.Bubbles, -1);                                   // 待机气泡在人物上面
 		st.NextBlink = Now + 2.5f;
@@ -869,11 +869,11 @@ public static class SettingsSkin
 		// 待机只往下轻轻浮动（往上浮会在画面底边露出一条白缝 —— v0.14.69 实机）
 		(float dy, float rot, float dx) = DivePose(t);
 		st.PortraitMat.SetShaderParameter("bottom_fade", 0f);   // v0.14.77：头发已经是水色，画布下沿看不出来，不再渐隐（渐隐反而出一条白→蓝的渐变带）
-		st.Portrait.PivotOffset = new Vector2(650f, 977f) * k;                 // 原版模板匹配得到的旋转中心
+		st.Portrait.PivotOffset = new Vector2(650f, 977f) * k * PortraitScale;   // 原版模板匹配得到的旋转中心
 		st.Portrait.Rotation = Mathf.DegToRad(rot);
 		// 用户：人物往左移一些，参考原版位置 —— 整体左移 0.05 屏宽（头发左缘对上原版 #90）
-		st.Portrait.Position = new Vector2((dx - PortraitShiftX) * view.X, dy * view.Y) + new Vector2(0f, (1f - Mathf.Cos(now * 0.6f)) * 3f * k);
-		Vector2 zoff = new(0.5f * st.Portrait.Size.X, view.Y);
+		st.Portrait.Position = new Vector2((dx - PortraitShiftX) * view.X, (dy - PortraitShiftY) * view.Y) + new Vector2(0f, (1f - Mathf.Cos(now * 0.6f)) * 3f * k);
+		Vector2 zoff = new(0.5f * st.Portrait.Size.X, st.Portrait.Size.Y);
 		st.ZoneLayer.PivotOffset = st.Portrait.PivotOffset + zoff;
 		st.ZoneLayer.Rotation = st.Portrait.Rotation;
 		st.ZoneLayer.Position = st.Portrait.Position - zoff;
@@ -1244,7 +1244,7 @@ public static class SettingsSkin
 		if (Fx.Rand(0f, 1f) < 0.6f)
 		{
 			Vector2 e = Edge[(int)Fx.Rand(3f, 8.99f)];
-			x = (e.X / 1920f - PortraitShiftX) * view.Y * 16f / 9f + Fx.Rand(10f, 70f) * k;
+			x = (e.X / 1920f * PortraitScale - PortraitShiftX) * view.Y * 16f / 9f + Fx.Rand(10f, 70f) * k;
 		}
 		else
 		{
@@ -1272,7 +1272,8 @@ public static class SettingsSkin
 	}
 
 	private const int DiveFirst = 20, DiveLast = 52;
-	private const float PortraitShiftX = 0.05f;   // 原版 #90：头发左缘约在 0.07~0.10 屏宽
+	// v0.14.77（用户：先把头的大致轮廓对准原版）：立绘放大 1.1 倍、左移 0.084 屏宽、上移 0.027 屏高 —— 和原版 #82 的头发轮廓做匹配（IoU 最大）
+	private const float PortraitShiftX = 0.084f, PortraitShiftY = 0.027f, PortraitScale = 1.1f;
 
 	// (t, 下沉 dy / 屏高, 顺时针角度°, 横移 dx / 屏宽)：t = 原视频时间 − 0.30s。0.367~0.80 是量出来的，0.30 往前外推（人物刚从画面上沿进来）
 	private static readonly (float T, float Dy, float Rot, float Dx)[] DiveKeys =
