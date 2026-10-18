@@ -86,6 +86,7 @@ public static class P3SettingsSectionPatch
 		Row(section, font, size, color, rowH, Zh ? "建筑师房间（关闭 = 全部原版）" : "Architect room (off = all vanilla)", () => d.Architect, v => d.Architect = v);
 		Row(section, font, size, color, rowH, Zh ? "牌堆 / 牌组界面（P3R 风格）" : "Pile / deck screens (P3R style)", () => d.PileScreen, v => d.PileScreen = v);
 		Row(section, font, size, color, rowH, Zh ? "状态说明列表（P3R 风格，可滚动）" : "Status tip list (P3R style, scrollable)", () => d.TipList, v => d.TipList = v);
+		Row(section, font, size, color, rowH, Zh ? "设置界面（P3R 主菜单风格，下次打开生效）" : "Settings screen (P3R menu style, next time it opens)", () => d.SettingsSkin, v => d.SettingsSkin = v);
 	}
 
 	private static void Row(VBoxContainer parent, Font? font, int size, Color color, float rowH, string text, Func<bool> get, Action<bool> set)
@@ -96,12 +97,10 @@ public static class P3SettingsSectionPatch
 		Style(label, font, size, color);
 		row.AddChild(label);
 		Button toggle = new() { ToggleMode = true, ButtonPressed = get(), CustomMinimumSize = new Vector2(150f, rowH * 0.7f), SizeFlagsVertical = Control.SizeFlags.ShrinkCenter };
-		if (font != null)
-		{
-			toggle.AddThemeFontOverride("font", font);
-		}
+		toggle.AddThemeFontOverride("font", TranslationServer.GetLocale().StartsWith("zh") ? Vfx.Typo.CjkBold : Vfx.Typo.Barlow);
 		toggle.AddThemeFontSizeOverride("font_size", Mathf.Max(16, size - 4));
-		StyleBoxFlat Box(Color bg, Color border) => new() { BgColor = bg, BorderColor = border, BorderWidthLeft = 2, BorderWidthRight = 2, BorderWidthTop = 2, BorderWidthBottom = 2, ContentMarginLeft = 12, ContentMarginRight = 12 };
+		// v0.14.67：斜切（P3R 风格）—— 开：深蓝底青边，关：灰底；悬停提亮；焦点白边
+		StyleBoxFlat Box(Color bg, Color border) => new() { BgColor = bg, BorderColor = border, BorderWidthLeft = 2, BorderWidthRight = 2, BorderWidthTop = 2, BorderWidthBottom = 2, ContentMarginLeft = 14, ContentMarginRight = 14, Skew = new Vector2(0.3f, 0f), AntiAliasing = true };
 		void Refresh()
 		{
 			bool on = toggle.ButtonPressed;
@@ -136,5 +135,22 @@ public static class P3SettingsSectionPatch
 		}
 		l.AddThemeFontSizeOverride("font_size", size);
 		l.AddThemeColorOverride("font_color", color);
+	}
+}
+
+/// <summary>v0.14.67：设置界面 P3R 主菜单风格（Scenes/SettingsSkin）；推迟一帧挂，确保本 mod 那一栏已经建好。</summary>
+[HarmonyPatch(typeof(NSettingsScreen), nameof(NSettingsScreen._Ready))]
+public static class SettingsSkinPatch
+{
+	public static void Postfix(NSettingsScreen __instance)
+	{
+		NSettingsScreen s = __instance;
+		Callable.From(() => ModEntry.Safe("settings skin", () =>
+		{
+			if (GodotObject.IsInstanceValid(s))
+			{
+				Scenes.SettingsSkin.Attach(s);
+			}
+		})).CallDeferred();
 	}
 }

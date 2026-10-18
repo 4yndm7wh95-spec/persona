@@ -24,6 +24,7 @@ public static class P3Settings
 		public bool Architect { get; set; } = true;       // 建筑师房间（关闭 = 全部原版）
 		public bool PileScreen { get; set; } = true;      // 抽牌堆 / 弃牌堆界面（P3R 菜单风格）
 		public bool TipList { get; set; } = true;         // v0.14.66 角色状态说明：P3R 滚动列表
+		public bool SettingsSkin { get; set; } = true;    // v0.14.67 设置界面（P3R 主菜单风格）
 	}
 
 	private static Data? _data;
@@ -87,4 +88,5 @@ public static class P3Settings
 	// 牌堆界面不是演出（不拖节奏），极速模式下也照常
 	public static bool PileScreen => Current.PileScreen;
 	public static bool TipList => Current.TipList;
+	public static bool SettingsSkin => Current.SettingsSkin;
 }

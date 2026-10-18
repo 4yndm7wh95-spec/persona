@@ -700,4 +700,85 @@ void fragment() {
 	float rim = smoothstep(0.02, 0.0, abs(r - radius)) * step(0.001, radius);
 	COLOR = vec4(c + vec3(0.7, 0.95, 1.0) * rim * 0.9, max(inside, rim * 0.9));
 }");
+
+	private static Shader? _campWater, _campPortrait, _gradientMap;
+
+	/// <summary>
+	/// v0.14.67 设置界面（P3R 主菜单 52s）的水下背景：上方是很亮的青色水面（流动的亮斑焦散），往下变钴蓝、深蓝；斜射光柱；中段若隐若现的暗色块（远处的水底建筑）。
+	/// </summary>
+	public static Shader CampWater => _campWater ??= Make(@"
+shader_type canvas_item;
+uniform float aspect = 1.777;
+void fragment() {
+	vec2 uv = UV;
+	float t = TIME * 0.3;
+	vec3 top = vec3(0.20, 0.80, 1.0), mid = vec3(0.07, 0.40, 0.95), bot = vec3(0.03, 0.12, 0.55);
+	vec3 c = uv.y < 0.38 ? mix(top, mid, uv.y / 0.38) : mix(mid, bot, (uv.y - 0.38) / 0.62);
+	float u = uv.x * aspect;
+	// 水面亮斑：两组交错的正弦，阈值成一块块不规则的亮片，只在上部
+	float n = sin(u * 8.0 + sin(uv.y * 13.0 + t * 2.0) * 1.6 + t * 1.5) * sin(uv.y * 21.0 - u * 3.2 + sin(u * 4.6 - t) * 1.3 - t * 1.1);
+	float blob = smoothstep(0.30, 0.72, n) * smoothstep(0.45, 0.02, uv.y);
+	c = mix(c, vec3(0.78, 0.97, 1.0), blob * 0.8);
+	// 细焦散网（全画面，越往下越淡）
+	float a = sin(u * 22.0 + sin(uv.y * 9.0 + u * 3.5 + t) * 2.2 + t * 1.3);
+	float b = sin(u * 15.0 - uv.y * 25.0 + sin(u * 7.0 - t) * 1.7 - t);
+	float net = pow(clamp(1.0 - abs(a + b) * 2.4, 0.0, 1.0), 3.0);
+	c += vec3(0.5, 0.85, 1.0) * net * clamp(1.0 - uv.y * 1.4, 0.0, 1.0) * 0.22;
+	// 斜射光柱
+	float rays = pow(clamp(sin(u * 4.6 + uv.y * 1.6 + sin(t * 0.4) * 0.7) * 0.5 + 0.5, 0.0, 1.0), 10.0);
+	c += vec3(0.55, 0.88, 1.0) * rays * clamp(1.0 - uv.y * 1.1, 0.0, 1.0) * 0.2;
+	// 远处的暗色块（模糊的水底建筑）
+	float bx = smoothstep(0.08, 0.0, abs(fract(u * 1.6 + 0.3) - 0.5) - 0.32) * smoothstep(0.30, 0.45, uv.y) * smoothstep(0.75, 0.55, uv.y);
+	c = mix(c, c * 0.82, bx * 0.5);
+	COLOR = vec4(c, 1.0);
+}");
+
+	/// <summary>
+	/// v0.14.67 设置界面倒挂立绘的"融进水里"：沿人物右侧轮廓的分界线（edge，UV 坐标，按 y 递增），
+	/// 线左边保持原样（白色和白底面板连成一片）；线右边白色变透明透出水（留一点浅青的釉色），蓝色部分随水微微闪，深色线条像沉在水里一样变淡。
+	/// 白色按容差判断（生图的白不是精确 #FFFFFF）：最小通道 0.80~0.93 渐入、饱和度低。头发 / 飘带区域有轻微的水波扭动。
+	/// </summary>
+	public static Shader CampPortrait => _campPortrait ??= Make(@"
+shader_type canvas_item;
+uniform vec2 edge[11];
+uniform float feather = 0.025;
+uniform float sway = 1.0;
+float edge_x(float y) {
+	for (int i = 0; i < 10; i++) {
+		if (y <= edge[i + 1].y) {
+			float k = (y - edge[i].y) / max(edge[i + 1].y - edge[i].y, 0.0001);
+			return mix(edge[i].x, edge[i + 1].x, clamp(k, 0.0, 1.0));
+		}
+	}
+	return edge[10].x;
+}
+void fragment() {
+	vec2 uv = UV;
+	float hair = smoothstep(0.30, 0.70, uv.x) + smoothstep(0.45, 0.05, uv.y) * smoothstep(0.20, 0.30, uv.x) * smoothstep(0.55, 0.40, uv.x);
+	uv.x += sin(TIME * 1.1 + uv.y * 7.0) * 0.0035 * hair * sway;
+	uv.y += sin(TIME * 0.9 + uv.x * 5.0) * 0.0025 * hair * sway;
+	vec4 c = texture(TEXTURE, uv);
+	float mn = min(c.r, min(c.g, c.b)), mx = max(c.r, max(c.g, c.b));
+	float white = smoothstep(0.80, 0.93, mn) * (1.0 - smoothstep(0.08, 0.22, mx - mn));
+	float ex = edge_x(UV.y) + sin(TIME * 1.3 + UV.y * 12.0) * 0.004;
+	float side = smoothstep(ex - feather, ex + feather, UV.x);
+	vec3 col = mix(c.rgb, vec3(0.66, 0.92, 1.0), white * side * 0.55);
+	float sh = sin(UV.x * 40.0 + TIME * 2.0 + sin(UV.y * 30.0 - TIME) * 2.0) * 0.5 + 0.5;
+	col += vec3(0.25, 0.4, 0.5) * sh * side * (1.0 - white) * 0.12;
+	float dark = 1.0 - smoothstep(0.15, 0.35, mx);
+	col = mix(col, vec3(0.05, 0.12, 0.40), dark * side * 0.5);
+	float keep = 1.0 - white * side * 0.88;
+	COLOR = vec4(col, c.a * keep * (1.0 - dark * side * 0.25));
+}");
+
+	/// <summary>v0.14.67 设置界面：把原版控件的贴图（米黄 / 棕色系）按亮度映射到 P3R 的深蓝 → 钴蓝 → 冰白，保留透明度。</summary>
+	public static Shader GradientMap => _gradientMap ??= Make(@"
+shader_type canvas_item;
+void fragment() {
+	vec4 c = texture(TEXTURE, UV) * COLOR;
+	float l = dot(c.rgb, vec3(0.3, 0.55, 0.15));
+	vec3 navy = vec3(0.03, 0.08, 0.30), royal = vec3(0.10, 0.42, 1.0), ice = vec3(0.86, 0.97, 1.0);
+	vec3 m = l < 0.5 ? mix(navy, royal, l * 2.0) : mix(royal, ice, (l - 0.5) * 2.0);
+	COLOR = vec4(m, c.a);
+}");
 }
