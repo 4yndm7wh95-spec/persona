@@ -345,7 +345,7 @@ public static class Popups
 				foreach (var (polys, d, len, delay) in sparks)
 				{
 					float u = Mathf.Clamp((time - delay) / 0.26f, 0f, 1f);
-					if (u >= 1f && t < 1f && polys[0].Visible)
+					if (u >= 1f && t < 1f && polys[0]!.Visible)
 					{
 						foreach (Polygon2D? p in polys) if (p != null) p.Visible = false;   // 这道已经收完：不再每帧改形状
 						continue;
@@ -354,15 +354,15 @@ public static class Popups
 					float head = 18f * s + len * Ease.OutExpo(u), tail = 18f * s + len * Ease.InCubic(u) * 0.95f;
 					float span = Mathf.Max(head - tail, 0.5f), w = 3.4f * s * (1f - 0.6f * u);
 					Vector2 a = d * tail, b = d * (tail + span * 0.45f), c = d * (tail + span * 0.8f), e = d * head;
-					Fx.Reshape(polys[0], Fx.StrokePts(new[] { a, e }, w * 4f, taper: true));
+					Fx.Reshape(polys[0]!, Fx.StrokePts(new[] { a, e }, w * 4f, taper: true));
 					if (light)
 					{
-						Fx.Reshape(polys[2], Fx.StrokePts(new[] { a, e }, w * 1.1f, taper: true));
+						Fx.Reshape(polys[2]!, Fx.StrokePts(new[] { a, e }, w * 1.1f, taper: true));
 						continue;
 					}
-					Fx.Reshape(polys[3], Fx.StrokePts(new[] { a, b }, w * 0.7f, taper: true));
-					Fx.Reshape(polys[2], Fx.StrokePts(new[] { b, c }, w, taper: false));
-					Fx.Reshape(polys[1], Fx.StrokePts(new[] { c, e }, w * 1.2f, taper: true));
+					Fx.Reshape(polys[3]!, Fx.StrokePts(new[] { a, b }, w * 0.7f, taper: true));
+					Fx.Reshape(polys[2]!, Fx.StrokePts(new[] { b, c }, w, taper: false));
+					Fx.Reshape(polys[1]!, Fx.StrokePts(new[] { c, e }, w * 1.2f, taper: true));
 				}
 			});
 			Fx.FreeAfter(rays, 0.36);

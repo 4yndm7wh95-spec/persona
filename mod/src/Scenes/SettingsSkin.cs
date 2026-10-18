@@ -82,8 +82,10 @@ public static class SettingsSkin
 		internal int Current = -1, Pending = -1;
 		internal float T0, WipeT0 = -1f, NextBlink, BlinkT0 = -1f;
 		internal Vector2 WipeAt;
-		internal Vector2 OrigPos, OrigScale;
+		internal Vector2 OrigPos, OrigScale, OrigSize, OrigPivot;
 		internal Rect2 Src;
+		internal Control? Bar;
+		internal Vector2 BarOrig;
 		internal bool SrcValid;
 		internal Color OrigModulate;
 		internal Action? Tick;
@@ -224,28 +226,36 @@ public static class SettingsSkin
 		Fx.StrokeClosed(info, new[] { new Vector2(0f, 0f), new Vector2(250f, 0f) * k, new Vector2(250f, 74f) * k, new Vector2(0f, 74f) * k }, Ink, 2f * k, additive: false);
 		Typo.Text(info, "P3MAKOTO", Typo.Barlow, (int)(34f * k), Ink, new Vector2(12f, 2f) * k);
 		Typo.Text(info, "system settings · v" + ModVersion, Typo.Latin, (int)(14f * k), new Color(0.2f, 0.22f, 0.3f), new Vector2(14f, 46f) * k);
-		Node2D hint = new() { Position = new Vector2(view.X - 330f * k, view.Y - 84f * k) };   // 内容区下沿之下
+		Node2D hint = new() { Position = new Vector2(view.X - 330f * k, view.Y - 72f * k) };   // 内容区下沿之下
 		st.Root.AddChild(hint);
 		st.HintZh = Typo.Text(hint, "", Typo.CjkBold, (int)(26f * k), Colors.White, new Vector2(0f, 0f), outline: (int)(4f * k), outlineColor: new Color(0.02f, 0.08f, 0.3f));
 		Fx.Poly(hint, new[] { new Vector2(0f, 40f) * k, new Vector2(300f, 40f) * k, new Vector2(300f, 42f) * k, new Vector2(0f, 42f) * k }, Colors.White);
 		st.HintEn = Typo.Text(hint, "", Typo.Barlow, (int)(17f * k), new Color(0.85f, 0.95f, 1f), new Vector2(0f, 42f) * k);
 
 		// 3. 内容区：原版滚动区整体缩放、移到右侧；背后垫 P3R 面板
-		st.OrigPos = st.Manager.Position;
-		st.OrigScale = st.Manager.Scale;
-		st.OrigModulate = st.Manager.Modulate;
+		// v0.14.69（实机节点结构 docs/qa/v0.14.68/settings_tree.log）：设置内容不在分页管理器（那只是顶部的分页按钮栏）下面，
+		// 而在设置界面直属的全屏滚动区 ScrollContainer（Mask → Clipper → 四个分页面板，x 454~1466；滚动条 x 1604）里。
+		// 移动 / 缩放的对象是这个滚动区；面板背景挂在滚动区的第一个子节点（画在内容后面、跟着内容一起缩放）。
+		Control sc = st.Scroll;
+		st.OrigPos = sc.Position;
+		st.OrigScale = sc.Scale;
+		st.OrigSize = sc.Size;
+		st.OrigPivot = sc.PivotOffset;
+		st.OrigModulate = sc.Modulate;
 		st.Undo.Add(() =>
 		{
-			if (GodotObject.IsInstanceValid(st.Manager))
+			if (GodotObject.IsInstanceValid(sc))
 			{
-				st.Manager.Scale = st.OrigScale;
-				st.Manager.Position = st.OrigPos;
-				st.Manager.Modulate = st.OrigModulate;
+				sc.Scale = st.OrigScale;
+				sc.PivotOffset = st.OrigPivot;
+				sc.Position = st.OrigPos;
+				sc.Size = st.OrigSize;
+				sc.Modulate = st.OrigModulate;
 			}
 		});
 		st.PanelDeco = new Node2D { Name = "P3PanelDeco" };
-		st.Manager.AddChild(st.PanelDeco);
-		st.Manager.MoveChild(st.PanelDeco, 0);
+		sc.AddChild(st.PanelDeco);
+		sc.MoveChild(st.PanelDeco, 0);
 		st.Undo.Add(() => { if (GodotObject.IsInstanceValid(st.PanelDeco)) st.PanelDeco.QueueFree(); });
 		st.PanelTitle = Typo.Text(st.PanelDeco, "", Typo.Barlow, 64, Colors.White, Vector2.Zero, outline: 6, outlineColor: new Color(0.02f, 0.08f, 0.3f));
 		st.PanelWater = Typo.Text(st.PanelDeco, "", Typo.Barlow, 230, new Color(0.7f, 0.9f, 1f, 0.07f), Vector2.Zero);
@@ -305,6 +315,7 @@ public static class SettingsSkin
 		st.Styled.Clear();
 		st.On = false;
 		st.SrcValid = false;
+		st.Bar = null;
 		st.P3Page = false;
 		st.Current = -1;
 	}
@@ -440,7 +451,7 @@ public static class SettingsSkin
 		st.Words.SetAnchorsPreset(Control.LayoutPreset.FullRect);
 		st.Screen.AddChild(st.Words);
 		st.Undo.Add(() => { if (GodotObject.IsInstanceValid(st.Words)) st.Words.QueueFree(); });
-		int fs = (int)(70f * k);
+		int fs = (int)(64f * k);
 		float[] zig = { 0f, 30f, 12f, -10f, 26f };
 		for (int i = 0; i < st.Tabs.Count; i++)
 		{
@@ -459,7 +470,7 @@ public static class SettingsSkin
 			Fx.StrokeClosed(t.Sel, flag, Red, 3f * k, additive: false);
 			t.Shadow = Typo.Text(t.Node, t.En, Typo.Barlow, fs, new Color(0.02f, 0.10f, 0.40f, 0.45f), new Vector2(5f, 6f) * k);
 			t.Text = Typo.Text(t.Node, t.En, Typo.Barlow, fs, Pale, Vector2.Zero);
-			t.Hit = new Control { Size = new Vector2(w + 40f * k, fs * 1.0f), Position = new Vector2(-10f * k, fs * 0.05f), MouseFilter = Control.MouseFilterEnum.Stop, MouseDefaultCursorShape = Control.CursorShape.PointingHand };
+			t.Hit = new Control { Size = new Vector2(w + 12f * k, fs * 0.82f), Position = new Vector2(-4f * k, fs * 0.12f), MouseFilter = Control.MouseFilterEnum.Stop, MouseDefaultCursorShape = Control.CursorShape.PointingHand };
 			t.Node.AddChild(t.Hit);
 			t.Hit.MouseEntered += () =>
 			{
@@ -475,7 +486,7 @@ public static class SettingsSkin
 					Choose(st, idx);
 				}
 			});
-			t.Node.SetMeta("x", (880f + zig[i % zig.Length]) * k);       // 人物轮廓右边的水里（同参考图，菜单字不压在白色上）
+			t.Node.SetMeta("x", (815f + zig[i % zig.Length]) * k);       // 人物轮廓右边的水里（同参考图，菜单字不压在白色上）
 			t.Node.SetMeta("y", (330f + i * fs * 0.86f / k) * k);
 		}
 	}
@@ -664,9 +675,11 @@ public static class SettingsSkin
 					rt.AddThemeColorOverride("font_outline_color", new Color(0.02f, 0.06f, 0.22f));
 					rt.AddThemeConstantOverride("outline_size", 3);
 					d.Labels.Add(rt);
+					Color rtSelf = rt.SelfModulate;
 					st.Undo.Add(() =>
 					{
 						if (!GodotObject.IsInstanceValid(rt)) return;
+						rt.SelfModulate = rtSelf;                           // 悬停时给的深蓝色调（v0.14.69 实机：关掉换皮后残留）
 						rt.RemoveThemeFontOverride("normal_font");
 						rt.RemoveThemeFontOverride("bold_font");
 						rt.RemoveThemeColorOverride("default_color");
@@ -681,9 +694,11 @@ public static class SettingsSkin
 					lb.AddThemeFontOverride("font", LabelFont);
 					lb.AddThemeColorOverride("font_color", Colors.White);
 					d.Labels.Add(lb);
+					Color lbSelf = lb.SelfModulate;
 					st.Undo.Add(() =>
 					{
 						if (!GodotObject.IsInstanceValid(lb)) return;
+						lb.SelfModulate = lbSelf;
 						undo();
 						lb.RemoveThemeFontOverride("font");
 						lb.RemoveThemeColorOverride("font_color");
@@ -814,7 +829,7 @@ public static class SettingsSkin
 		st.Portrait.Position = new Vector2(0f, -120f * k * (1f - ePor) + Mathf.Sin(now * 0.6f) * 6f * k);
 		st.Portrait.Modulate = new Color(1f, 1f, 1f, ePor);
 		float eContent = Ease.OutCubic(Mathf.Clamp((t - 0.35f) / 0.35f, 0f, 1f));
-		st.Manager.Modulate = new Color(st.OrigModulate, st.OrigModulate.A * eContent);
+		st.Scroll.Modulate = new Color(st.OrigModulate, st.OrigModulate.A * eContent);
 
 		// 眨眼：每 3~6 秒一次（半睁 0.05s → 闭 0.09s → 半睁 0.05s）
 		if (st.Open != null && st.Half != null && st.Closed != null)
@@ -865,63 +880,70 @@ public static class SettingsSkin
 		}
 	}
 
-	/// <summary>原版滚动区缩放到右侧目标框里（每帧对齐，原版容器重排后也会拉回来）；背后的面板按滚动区大小画。</summary>
+	/// <summary>
+	/// 设置内容（全屏滚动区）缩放、平移到右侧目标框：按实测的内容列（各分页面板最左 → 滚动条最右）算缩放；
+	/// 同时把滚动区加高，让缩放后可见区域一直到目标框底边（否则缩小后下面一截空着）。每帧对齐（游戏改了它也拉回来）。
+	/// 面板背景（滚动区局部坐标，跟着缩放）：斜切深蓝底、青色上沿、红色下沿、页名标题、超大水印字。
+	/// </summary>
 	private static void LayoutContent(State st, Vector2 view, float k)
 	{
-		Control m = st.Manager;
-		Transform2D inv = m.GetGlobalTransform().AffineInverse();
-		// v0.14.68（实机：内容没移到右边）：滚动区自身可能是 0 尺寸（内容溢出摆放）→ 依次用 滚动区 / 当前分页面板（宽）+ 管理器（高）/ 管理器 的范围。
-		// 只在第一次（缩放前）量一次原始范围，之后一直用它（避免缩放后量到的结果反过来影响自己）。
+		Control sc = st.Scroll;
 		if (!st.SrcValid)
 		{
-			Rect2 Local(Rect2 g)
+			// 第一次（还没缩放）量内容列：滚动区局部坐标 = 全局 - 滚动区全局位置（此时缩放为 1）
+			Vector2 o = sc.GetGlobalRect().Position;
+			float left = float.MaxValue, right = float.MinValue, top = float.MaxValue;
+			foreach (Tab t in st.Tabs)
 			{
-				Vector2 a = inv * g.Position, b = inv * g.End;
-				return new Rect2(a, b - a);
-			}
-			Rect2 scroll = Local(st.Scroll.GetGlobalRect());
-			Rect2 mgr = new(Vector2.Zero, m.Size);
-			Rect2 src = scroll;
-			string how = "scroll";
-			if (src.Size.X < 100f || src.Size.Y < 100f)
-			{
-				NSettingsPanel? panel = st.Tabs.Count > 0 ? st.Tabs.FirstOrDefault(x => x.Panel != null && x.Panel.Visible)?.Panel : null;
-				Rect2 pr = panel != null ? Local(panel.GetGlobalRect()) : default;
-				if (pr.Size.X >= 100f && mgr.Size.Y >= 100f)
+				if (t.Panel != null)
 				{
-					src = new Rect2(new Vector2(pr.Position.X, Mathf.Max(pr.Position.Y, mgr.Position.Y)), new Vector2(pr.Size.X, mgr.End.Y - Mathf.Max(pr.Position.Y, mgr.Position.Y)));
-					how = "panel+manager";
-				}
-				else if (mgr.Size.X >= 100f && mgr.Size.Y >= 100f)
-				{
-					src = mgr;
-					how = "manager";
-				}
-				else
-				{
-					return;                                         // 还没排版好，下一帧再量
+					Rect2 r = t.Panel.GetGlobalRect();
+					if (r.Size.X > 50f)
+					{
+						left = Mathf.Min(left, r.Position.X - o.X);
+						right = Mathf.Max(right, r.End.X - o.X);
+						top = Mathf.Min(top, r.Position.Y - o.Y);
+					}
 				}
 			}
-			st.Src = src;
+			if (left == float.MaxValue || right - left < 100f)
+			{
+				return;                                             // 还没排版好，下一帧再量
+			}
+			// 滚动条（原版在 x 1604，离面板很远）挪到紧贴面板右边，缩放只按面板宽算（字更大）；记录原位置可还原
+			if (sc.GetNodeOrNull<Control>("Scrollbar") is Control bar && bar.Size.X > 1f)
+			{
+				st.Bar = bar;
+				st.BarOrig = bar.Position;
+				st.Undo.Add(() => { if (GodotObject.IsInstanceValid(bar)) bar.Position = st.BarOrig; });
+				right += 14f + bar.Size.X;
+			}
+			st.Src = new Rect2(left, top, right - left, Mathf.Max(100f, sc.Size.Y - top));
 			st.SrcValid = true;
-			GD.Print($"{ModEntry.Tag} settings layout: source={how} {src} (scroll {scroll}, manager {mgr}), view {view}, manager parent {m.GetParent()?.GetClass()}");
+			GD.Print($"{ModEntry.Tag} settings layout v2: content column {st.Src} in scroll {sc.GetGlobalRect()} scale {sc.Scale}, view {view}");
 			DumpTree(st.Screen);
 		}
-		Rect2 local = st.Src;
-		Rect2 target = new(new Vector2(view.X * 0.60f, view.Y * 0.17f), new Vector2(view.X * 0.375f, view.Y * 0.72f));
-		float s = Mathf.Min(1f, Mathf.Min(target.Size.X / local.Size.X, target.Size.Y / local.Size.Y));
-		Vector2 want = target.Position + new Vector2((target.Size.X - local.Size.X * s) / 2f, 0f) - local.Position * s;
-		if (!m.Scale.IsEqualApprox(Vector2.One * s))
+		Rect2 src = st.Src;
+		Rect2 target = new(new Vector2(view.X * 0.565f, view.Y * 0.165f), new Vector2(view.X * 0.415f, view.Y * 0.745f));
+		float s = Mathf.Clamp(target.Size.X / src.Size.X, 0.5f, 0.85f);
+		Vector2 pos = target.Position - src.Position * s;
+		Vector2 size = new(st.OrigSize.X, Mathf.Max(st.OrigSize.Y, (target.End.Y - pos.Y) / s));
+		if (!sc.PivotOffset.IsEqualApprox(Vector2.Zero)) sc.PivotOffset = Vector2.Zero;
+		if (!sc.Scale.IsEqualApprox(Vector2.One * s)) sc.Scale = Vector2.One * s;
+		if (!sc.Size.IsEqualApprox(size)) sc.Size = size;
+		if (sc.Position.DistanceTo(pos) > 0.5f) sc.Position = pos;
+		if (st.Bar != null && GodotObject.IsInstanceValid(st.Bar))
 		{
-			m.PivotOffset = Vector2.Zero;
-			m.Scale = Vector2.One * s;
+			float bx = src.End.X - st.Bar.Size.X;
+			if (Mathf.Abs(st.Bar.Position.X - bx) > 0.5f)
+			{
+				st.Bar.Position = new Vector2(bx, st.Bar.Position.Y);
+			}
 		}
-		if (m.GlobalPosition.DistanceTo(want) > 0.5f)
-		{
-			m.GlobalPosition = want;
-		}
-		// 面板（管理器的局部坐标，跟着缩放）
-		string key = $"{local.Position.X:0}|{local.Position.Y:0}|{local.Size.X:0}|{local.Size.Y:0}";
+
+		// 面板背景（滚动区局部坐标）
+		float x0 = src.Position.X - 50f, x1 = src.End.X + 24f, y0 = src.Position.Y - 34f, y1 = (target.End.Y - pos.Y) / s + 10f, lean = 60f;
+		string key = $"{x0:0}|{x1:0}|{y0:0}|{y1:0}";
 		if ((string)st.PanelDeco.GetMeta("key", "") != key)
 		{
 			st.PanelDeco.SetMeta("key", key);
@@ -932,19 +954,19 @@ public static class SettingsSkin
 					n.QueueFree();
 				}
 			}
-			float x0 = local.Position.X - 40f, x1 = local.End.X + 30f, y0 = local.Position.Y - 30f, y1 = local.End.Y + 26f, lean = 46f;
 			Vector2[] Box(float a, float b, float c, float d) => new[] { new Vector2(a + lean, c), new Vector2(b + lean, c), new Vector2(b, d), new Vector2(a, d) };
-			Polygon2D shadow = Fx.Poly(st.PanelDeco, Box(x0 + 18f, x1 + 18f, y0 + 18f, y1 + 18f), new Color(0f, 0.02f, 0.1f, 0.4f));
+			Polygon2D bottom = Fx.Poly(st.PanelDeco, Box(x0 + (x1 - x0) * 0.4f, x1, y1 - 8f, y1), Red);
+			Polygon2D topLine = Fx.Poly(st.PanelDeco, Box(x0 + 40f, x1 + 14f, y0, y0 + 7f), Cyan);
 			Polygon2D body = Fx.Poly(st.PanelDeco, Box(x0, x1, y0, y1), Navy);
-			Polygon2D topLine = Fx.Poly(st.PanelDeco, Box(x0 + 30f, x1 + 10f, y0, y0 + 5f), Cyan);
-			Polygon2D bottom = Fx.Poly(st.PanelDeco, Box(x0 + (x1 - x0) * 0.4f, x1, y1 - 6f, y1), Red);
-			foreach (Polygon2D p in new[] { shadow, body, topLine, bottom })
+			Polygon2D shadow = Fx.Poly(st.PanelDeco, Box(x0 + 24f, x1 + 24f, y0 + 24f, y1 + 24f), new Color(0f, 0.02f, 0.1f, 0.4f));
+			foreach (Polygon2D p in new[] { bottom, topLine, body, shadow })
 			{
-				st.PanelDeco.MoveChild(p, 0);
+				st.PanelDeco.MoveChild(p, 0);                          // 结果顺序：投影 → 底 → 青上沿 → 红下沿 → 文字
 			}
-			st.PanelDeco.MoveChild(shadow, 0);
-			st.PanelTitle.Position = new Vector2(x0 + lean + 10f, y0 - 82f);
-			st.PanelWater.Position = new Vector2(x1 - 820f, y1 - 250f);
+			st.PanelTitle.Position = new Vector2(x0 + lean + 16f, y0 - 104f);
+			st.PanelTitle.LabelSettings.FontSize = 86;
+			st.PanelWater.Position = new Vector2(x1 - 900f, y1 - 300f);
+			st.PanelWater.LabelSettings.FontSize = 300;
 		}
 		if (st.Current >= 0 && st.Current < st.Tabs.Count)
 		{
