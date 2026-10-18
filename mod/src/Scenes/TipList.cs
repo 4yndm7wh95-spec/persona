@@ -652,7 +652,7 @@ public static class StatusButton
 	public static void Attach(NCreature creature)
 	{
 		ulong id = creature.GetInstanceId();
-		if (Buttons.ContainsKey(id) || creature.GetNodeOrNull<Control>("%HealthBar") is not Control display || display.GetNodeOrNull<Control>("%HealthBar") is not Control bar)
+		if (Buttons.ContainsKey(id) || creature.GetNodeOrNull<Control>("%HealthBar") is not Control display || display.GetNodeOrNull<Control>("%HealthBar") is not Control healthBar || healthBar.GetNodeOrNull<Control>("%HpBarContainer") is not Control bar)
 		{
 			return;
 		}
@@ -749,9 +749,11 @@ public static class StatusButton
 			}
 			return;
 		}
-		// 血条右边一点，竖直居中对齐血条
-		Vector2 scale = bar.GetGlobalTransform().Scale;
-		Vector2 at = bar.GlobalPosition + new Vector2(bar.Size.X * scale.X + 12f, (bar.Size.Y * scale.Y - H) / 2f);
+		// NHealthBar 根节点不代表可见血条的宽度；用完整 HpBarContainer（不是随当前血量变化的填充条）。
+		// 留 24px 间距，包含按钮悬停放大 / 弹动和阴影的余量，不压住血量数字或下方状态图标。
+		Rect2 hp = bar.GetGlobalRect();
+		Vector2 scale = b.Hit.GetParent<Control>().GetGlobalTransform().Scale.Abs();
+		Vector2 at = new(hp.End.X + 24f * scale.X, hp.GetCenter().Y - H * scale.Y / 2f);
 		b.Hit.GlobalPosition = at;
 		bool open = TipList.IsOpen(creature);
 		b.Hover = Mathf.MoveToward(b.Hover, b.Mouse ? 1f : 0f, dt / 0.12f);
