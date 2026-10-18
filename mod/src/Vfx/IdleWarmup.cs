@@ -24,6 +24,8 @@ internal static class IdleWarmup
 		"res://p3makoto/pile/pile_skel_data.tres", "res://p3makoto/pile_deck/pile_deck_skel_data.tres",
 		"res://p3makoto/pile_discard/pile_discard_skel_data.tres", "res://p3makoto/pile_exhaust/pile_exhaust_skel_data.tres",
 		"res://p3makoto/portrait/portrait_skel_data.tres",
+		// v0.14.68：设置界面（第一次打开卡了约 0.9s：三张 1920×1080 立绘解码 + 三个新着色器编译）
+		"@system shaders", "res://p3makoto/ui/system_portrait.png", "res://p3makoto/ui/system_portrait_half.png", "res://p3makoto/ui/system_portrait_closed.png",
 	});
 	private static readonly List<Resource> Held = new();
 	private static readonly FieldInfo? LoaderInstance = AccessTools.Field(typeof(NAssetLoader), "_instance");
@@ -117,6 +119,14 @@ internal static class IdleWarmup
 		frames = 0;
 		Node2D tiny = new() { Position = new Vector2(2f, 2f), Scale = Vector2.One * 0.002f, Modulate = new Color(1f, 1f, 1f, 0.004f) };
 		active.AddChild(tiny);                    // 在可视区真实绘制极小的图形，屏外节点会被裁掉而无法预热 GPU。
+		if (path == "@system shaders")
+		{
+			foreach (Shader sh in new[] { Shaders.CampWater, Shaders.CampPortrait, Shaders.GradientMap })
+			{
+				tiny.AddChild(new ColorRect { Size = new Vector2(1000f, 1000f), Material = new ShaderMaterial { Shader = sh }, MouseFilter = Control.MouseFilterEnum.Ignore });
+			}
+			return;
+		}
 		if (path == "@pile shaders")
 		{
 			ColorRect bg = new() { Size = new Vector2(1000f, 1000f), Material = new ShaderMaterial { Shader = Shaders.Underwater }, MouseFilter = Control.MouseFilterEnum.Ignore };

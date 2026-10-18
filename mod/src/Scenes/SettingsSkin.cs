@@ -50,7 +50,7 @@ public static class SettingsSkin
 		internal Control Hit = null!;
 		internal Node2D Node = null!, Sel = null!;
 		internal Label Text = null!, Shadow = null!;
-		internal float Hover, SelK, Born;
+		internal float Hover, SelK;
 		internal bool Mouse;
 	}
 
@@ -83,6 +83,8 @@ public static class SettingsSkin
 		internal float T0, WipeT0 = -1f, NextBlink, BlinkT0 = -1f;
 		internal Vector2 WipeAt;
 		internal Vector2 OrigPos, OrigScale;
+		internal Rect2 Src;
+		internal bool SrcValid;
 		internal Color OrigModulate;
 		internal Action? Tick;
 	}
@@ -292,6 +294,7 @@ public static class SettingsSkin
 	private static void Restore(State st)
 	{
 		StopTick(st);
+		try { SetP3Page(st, false, force: true); } catch (Exception e) { ModEntry.Report("settings skin restore page", e); }
 		for (int i = st.Undo.Count - 1; i >= 0; i--)
 		{
 			try { st.Undo[i](); } catch (Exception e) { ModEntry.Report("settings skin restore", e); }
@@ -301,6 +304,7 @@ public static class SettingsSkin
 		st.Rows.Clear();
 		st.Styled.Clear();
 		st.On = false;
+		st.SrcValid = false;
 		st.P3Page = false;
 		st.Current = -1;
 	}
@@ -324,17 +328,13 @@ public static class SettingsSkin
 			}
 			if (c == st.Manager)
 			{
+				Neutralise(st, ci);
 				HideDecor(st, c);                                   // 管理器自己的背景 / 边框
 				continue;
 			}
 			if (Essential(c))
 			{
-				if (ci is TextureRect or NinePatchRect or ColorRect or Panel or PanelContainer)
-				{
-					Color old = ci.SelfModulate;
-					ci.SelfModulate = new Color(1f, 1f, 1f, 0f);
-					st.Undo.Add(() => { if (GodotObject.IsInstanceValid(ci)) ci.SelfModulate = old; });
-				}
+				Neutralise(st, ci);
 				HideDecor(st, c);
 			}
 			else if (ci.Visible)
@@ -342,6 +342,33 @@ public static class SettingsSkin
 				ci.Visible = false;
 				st.Undo.Add(() => { if (GodotObject.IsInstanceValid(ci)) ci.Visible = true; });
 			}
+		}
+	}
+
+	/// <summary>
+	/// v0.14.68（实机：整屏持续压暗）：含关键节点的祖先只把"它自己画的东西"去掉 ——
+	/// 自身贴图 / 底色设透明；**着色器材质去掉**（原版背景是读屏幕的模糊 + 压暗着色器，它不受透明度影响，会把画在它前面的水下背景 / 立绘模糊压暗后再铺一层）；
+	/// 裁切遮罩关掉（原版顶部的渐隐遮罩，换位置后会切掉内容）。都记录、可还原。
+	/// </summary>
+	private static void Neutralise(State st, CanvasItem ci)
+	{
+		if (ci is TextureRect or NinePatchRect or ColorRect or Panel or PanelContainer)
+		{
+			Color old = ci.SelfModulate;
+			ci.SelfModulate = new Color(1f, 1f, 1f, 0f);
+			st.Undo.Add(() => { if (GodotObject.IsInstanceValid(ci)) ci.SelfModulate = old; });
+		}
+		if (ci.Material != null)
+		{
+			Material m = ci.Material;
+			ci.Material = null;
+			st.Undo.Add(() => { if (GodotObject.IsInstanceValid(ci)) ci.Material = m; });
+		}
+		if (ci.ClipChildren != CanvasItem.ClipChildrenMode.Disabled)
+		{
+			CanvasItem.ClipChildrenMode old = ci.ClipChildren;
+			ci.ClipChildren = CanvasItem.ClipChildrenMode.Disabled;
+			st.Undo.Add(() => { if (GodotObject.IsInstanceValid(ci)) ci.ClipChildren = old; });
 		}
 	}
 
@@ -413,7 +440,7 @@ public static class SettingsSkin
 		st.Words.SetAnchorsPreset(Control.LayoutPreset.FullRect);
 		st.Screen.AddChild(st.Words);
 		st.Undo.Add(() => { if (GodotObject.IsInstanceValid(st.Words)) st.Words.QueueFree(); });
-		int fs = (int)(76f * k);
+		int fs = (int)(70f * k);
 		float[] zig = { 0f, 30f, 12f, -10f, 26f };
 		for (int i = 0; i < st.Tabs.Count; i++)
 		{
@@ -448,7 +475,7 @@ public static class SettingsSkin
 					Choose(st, idx);
 				}
 			});
-			t.Node.SetMeta("x", (905f + zig[i % zig.Length]) * k);       // 人物轮廓右边的水里（同参考图，菜单字不压在白色上）
+			t.Node.SetMeta("x", (880f + zig[i % zig.Length]) * k);       // 人物轮廓右边的水里（同参考图，菜单字不压在白色上）
 			t.Node.SetMeta("y", (330f + i * fs * 0.86f / k) * k);
 		}
 	}
@@ -501,28 +528,52 @@ public static class SettingsSkin
 		st.Current = idx;
 	}
 
-	/// <summary>P3MAKOTO 页：常规页里只显示本 mod 那一栏（其余行暂时藏起来，离开时恢复）。</summary>
-	private static void SetP3Page(State st, bool on)
+	/// <summary>
+	/// P3MAKOTO 页：常规页里只显示本 mod 那一栏（其余行暂时藏起来，离开时恢复）。
+	/// v0.14.68（实机）：语言下拉框不在"语言"那一行里（单独摆放），以前没藏到，压在本 mod 那一栏的标题上 —— 常规页里所有不属于本 mod 栏的下拉框也一起藏。
+	/// 还原按每个节点上记的原可见性来做，不依赖 P3Page 标志（以前关掉换皮时标志被清掉，筛选就再也恢复不了）。
+	/// </summary>
+	private static void SetP3Page(State st, bool on, bool force = false)
 	{
-		if (on == st.P3Page || st.Tabs.Count == 0 || st.Tabs[0].Panel is not NSettingsPanel panel || panel.Content is not Control content)
+		if ((on == st.P3Page && !force) || st.Tabs.Count == 0 || st.Tabs[0].Panel is not NSettingsPanel panel || panel.Content is not Control content)
 		{
 			return;
 		}
 		st.P3Page = on;
+		Node? section = content.GetNodeOrNull("P3MakotoSettings");
+		List<CanvasItem> targets = new();
 		foreach (Node n in content.GetChildren())
 		{
-			if (n is CanvasItem ci && n.Name.ToString() != "P3MakotoSettings")
+			if (n is CanvasItem ci && n != section)
 			{
-				if (on)
+				targets.Add(ci);
+			}
+		}
+		foreach (Node n in panel.FindChildren("*", "", true, false))
+		{
+			if (n is NDropdown dd && (section == null || !section.IsAncestorOf(dd)) && !targets.Contains(dd))
+			{
+				targets.Add(dd);
+			}
+		}
+		if (st.Screen.GetNodeOrNull<CanvasItem>("%LanguageDropdown") is CanvasItem lang && !targets.Contains(lang))
+		{
+			targets.Add(lang);                                    // 语言下拉框可能不在常规页面板里
+		}
+		foreach (CanvasItem ci in targets)
+		{
+			if (on)
+			{
+				if (!ci.HasMeta("p3_vis"))
 				{
 					ci.SetMeta("p3_vis", ci.Visible);
-					ci.Visible = false;
 				}
-				else if (ci.HasMeta("p3_vis"))
-				{
-					ci.Visible = ci.GetMeta("p3_vis").AsBool();
-					ci.RemoveMeta("p3_vis");
-				}
+				ci.Visible = false;
+			}
+			else if (ci.HasMeta("p3_vis"))
+			{
+				ci.Visible = ci.GetMeta("p3_vis").AsBool();
+				ci.RemoveMeta("p3_vis");
 			}
 		}
 		AccessTools.Method(typeof(NSettingsPanel), "RefreshSize")?.Invoke(panel, null);
@@ -819,14 +870,45 @@ public static class SettingsSkin
 	{
 		Control m = st.Manager;
 		Transform2D inv = m.GetGlobalTransform().AffineInverse();
-		Rect2 g = st.Scroll.GetGlobalRect();
-		Vector2 lp = inv * g.Position, le = inv * g.End;
-		Rect2 local = new(lp, le - lp);
-		if (local.Size.X < 10f || local.Size.Y < 10f)
+		// v0.14.68（实机：内容没移到右边）：滚动区自身可能是 0 尺寸（内容溢出摆放）→ 依次用 滚动区 / 当前分页面板（宽）+ 管理器（高）/ 管理器 的范围。
+		// 只在第一次（缩放前）量一次原始范围，之后一直用它（避免缩放后量到的结果反过来影响自己）。
+		if (!st.SrcValid)
 		{
-			return;
+			Rect2 Local(Rect2 g)
+			{
+				Vector2 a = inv * g.Position, b = inv * g.End;
+				return new Rect2(a, b - a);
+			}
+			Rect2 scroll = Local(st.Scroll.GetGlobalRect());
+			Rect2 mgr = new(Vector2.Zero, m.Size);
+			Rect2 src = scroll;
+			string how = "scroll";
+			if (src.Size.X < 100f || src.Size.Y < 100f)
+			{
+				NSettingsPanel? panel = st.Tabs.Count > 0 ? st.Tabs.FirstOrDefault(x => x.Panel != null && x.Panel.Visible)?.Panel : null;
+				Rect2 pr = panel != null ? Local(panel.GetGlobalRect()) : default;
+				if (pr.Size.X >= 100f && mgr.Size.Y >= 100f)
+				{
+					src = new Rect2(new Vector2(pr.Position.X, Mathf.Max(pr.Position.Y, mgr.Position.Y)), new Vector2(pr.Size.X, mgr.End.Y - Mathf.Max(pr.Position.Y, mgr.Position.Y)));
+					how = "panel+manager";
+				}
+				else if (mgr.Size.X >= 100f && mgr.Size.Y >= 100f)
+				{
+					src = mgr;
+					how = "manager";
+				}
+				else
+				{
+					return;                                         // 还没排版好，下一帧再量
+				}
+			}
+			st.Src = src;
+			st.SrcValid = true;
+			GD.Print($"{ModEntry.Tag} settings layout: source={how} {src} (scroll {scroll}, manager {mgr}), view {view}, manager parent {m.GetParent()?.GetClass()}");
+			DumpTree(st.Screen);
 		}
-		Rect2 target = new(new Vector2(view.X * 0.625f, view.Y * 0.17f), new Vector2(view.X * 0.345f, view.Y * 0.72f));
+		Rect2 local = st.Src;
+		Rect2 target = new(new Vector2(view.X * 0.60f, view.Y * 0.17f), new Vector2(view.X * 0.375f, view.Y * 0.72f));
 		float s = Mathf.Min(1f, Mathf.Min(target.Size.X / local.Size.X, target.Size.Y / local.Size.Y));
 		Vector2 want = target.Position + new Vector2((target.Size.X - local.Size.X * s) / 2f, 0f) - local.Position * s;
 		if (!m.Scale.IsEqualApprox(Vector2.One * s))
@@ -1032,6 +1114,46 @@ public static class SettingsSkin
 				}
 			}
 		}
+	}
+
+	private static bool _dumped;
+
+	/// <summary>v0.14.68 诊断：第一次换皮时把设置界面的节点结构写进日志（类型、名字、可见、矩形、调制、材质、裁切），实机有问题时对照用。每次游戏启动只写一次。</summary>
+	private static void DumpTree(Node root)
+	{
+		if (_dumped)
+		{
+			return;
+		}
+		_dumped = true;
+		int lines = 0;
+		void Walk(Node n, int depth)
+		{
+			if (lines > 260 || depth > 7 || n.Name.ToString().StartsWith("P3", StringComparison.Ordinal))
+			{
+				return;
+			}
+			lines++;
+			string info = n.GetClass() + (n.GetScript().Obj is Script sc ? "(" + System.IO.Path.GetFileNameWithoutExtension(sc.ResourcePath) + ")" : "");
+			if (n is Control c)
+			{
+				info += $" vis={c.Visible} rect={c.GetGlobalRect()} mod={c.Modulate.ToHtml()} self={c.SelfModulate.ToHtml()} clip={c.ClipChildren} mat={(c.Material is ShaderMaterial ? "shader" : c.Material != null ? "other" : "-")} mouse={c.MouseFilter}";
+			}
+			else if (n is CanvasItem ci)
+			{
+				info += $" vis={ci.Visible} mod={ci.Modulate.ToHtml()} mat={(ci.Material != null ? "yes" : "-")}";
+			}
+			GD.Print($"{ModEntry.Tag} settings tree {new string(' ', depth * 2)}{n.Name} : {info}");
+			if (n is NSettingsPanel && n.Name.ToString() != "GeneralSettings")
+			{
+				return;                                                // 只展开常规页（语言下拉框等的位置），其他页的每一行不展开（太长）
+			}
+			foreach (Node ch in n.GetChildren())
+			{
+				Walk(ch, depth + 1);
+			}
+		}
+		Walk(root, 0);
 	}
 
 	private static Vector2[] Circle(float r, int n)

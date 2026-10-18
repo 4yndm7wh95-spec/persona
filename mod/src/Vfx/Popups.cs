@@ -323,7 +323,7 @@ public static class Popups
 		Fx.After(layer, 0.06, "block sparks", () =>
 		{
 			Node2D rays = Fx.Root(layer, at, "P3BlockSparks");
-			var sparks = new System.Collections.Generic.List<(Polygon2D[] P, Vector2 D, float L, float Delay)>();
+			var sparks = new System.Collections.Generic.List<(Polygon2D?[] P, Vector2 D, float L, float Delay)>();
 			Color[] cols = { new(1f, 1f, 0.95f, 0.95f), new(1f, 0.85f, 0.35f, 0.9f), new(1f, 0.45f, 0.45f, 0.75f) };
 			int count = light ? 8 : 16;
 			for (int i = 0; i < count; i++)
@@ -337,7 +337,7 @@ public static class Popups
 				{
 					if (!light || k == 1) polys[k + 1] = Fx.Poly(rays, new Vector2[3], cols[k], additive: true);
 				}
-				sparks.Add((polys!, d, len, Fx.Rand(0f, 0.05f)));
+				sparks.Add((polys, d, len, Fx.Rand(0f, 0.05f)));
 			}
 			Fx.Animate(rays, 0.34f, t =>
 			{
