@@ -110,7 +110,7 @@ public static class PileFx
 		{
 			return false;
 		}
-		return !Compat.UsingDirectionalNav() && pile != null;
+		return pile != null;                               // v0.14.61：手柄也用我们的界面（方向键选牌、确认键特写，见 Build 里的 Nav）
 	}
 
 	/// <summary>原版界面里要藏起来的节点（牌组界面另有排序按钮条）。回滚时恢复显示。</summary>
@@ -266,6 +266,13 @@ public static class PileFx
 		Control catcher = new() { MouseFilter = Control.MouseFilterEnum.Stop, Visible = false };
 		catcher.SetAnchorsPreset(Control.LayoutPreset.FullRect);
 		cards.AddChild(catcher);
+		// v0.14.61 手柄：焦点停在这个看不见的控件上（四个方向的邻居都是它自己），不让游戏把焦点交给藏起来的原版网格；
+		// 选牌由 Nav 自己按网格位置移动。不改对象池里 holder 的焦点邻居（不会被池子复位）。
+		Control navFocus = new() { Name = "P3PileNavFocus", FocusMode = Control.FocusModeEnum.All, MouseFilter = Control.MouseFilterEnum.Ignore, Size = Vector2.One };
+		NodePath self = new(".");
+		navFocus.FocusNeighborLeft = navFocus.FocusNeighborRight = navFocus.FocusNeighborTop = navFocus.FocusNeighborBottom = self;
+		navFocus.FocusNext = navFocus.FocusPrevious = self;
+		root.AddChild(navFocus);
 		Control front = cards;
 		Item? focused = null;
 		Flip? flip = null;
@@ -445,6 +452,173 @@ public static class PileFx
 			}
 		});
 
+		// 动作名用字面量（MegaInput 的同名字段在 0.107 不全，例如没有 confirm）；不存在的动作由 Pressed 里的 HasAction 跳过
+		// ── 手柄（v0.14.61）：方向键在网格里移动选中（按住连发），确认键特写 / 收回；特写时返回键只收回特写，不关界面 ──
+		Item? sel = null;
+		string? heldDir = null;
+		float repeatAt = 0f;
+		bool backBound = false;
+		Action unzoom = () => ModEntry.Safe("pile pad back", () => { if (focused != null && focusOn) Toggle(focused); });
+		Action swallow = () => { };
+		string[] backKeys = { "ui_cancel", "mega_pause_and_back", "mega_back" };
+		(string Action, int X, int Y)[] dirs = { ("ui_left", -1, 0), ("ui_right", 1, 0), ("ui_up", 0, -1), ("ui_down", 0, 1) };
+
+		void BindBack(bool on)
+		{
+			if (on == backBound || NHotkeyManager.Instance is not NHotkeyManager hk)
+			{
+				return;
+			}
+			backBound = on;
+			foreach (string key in backKeys)
+			{
+				if (!InputMap.HasAction(key))
+				{
+					continue;                                    // 旧版本没有的动作不挂（否则每次按键都会报"动作不存在"）
+				}
+				if (on)
+				{
+					hk.PushHotkeyPressedBinding(key, unzoom);
+					hk.PushHotkeyReleasedBinding(key, swallow);   // 原版返回按钮可能挂在"松开"上：特写期间一并挡住
+				}
+				else
+				{
+					hk.RemoveHotkeyPressedBinding(key, unzoom);
+					hk.RemoveHotkeyReleasedBinding(key, swallow);
+				}
+			}
+		}
+
+		bool Pressed(string action) => InputMap.HasAction(action) && Input.IsActionJustPressed(action);
+
+		void Move(int dx, int dy)
+		{
+			Item? cur = sel != null && items.Contains(sel) ? sel : null;
+			if (cur == null)
+			{
+				sel = items.FirstOrDefault();
+				return;
+			}
+			Item? best = null;
+			float bestD = float.MaxValue;
+			if (dy == 0)
+			{
+				// 同一行里左右相邻的一张（不跨行）
+				foreach (Item it in items)
+				{
+					float d = (it.At.X - cur.At.X) * dx;
+					if (Mathf.IsEqualApprox(it.At.Y, cur.At.Y) && d > 1f && d < bestD)
+					{
+						best = it;
+						bestD = d;
+					}
+				}
+			}
+			else
+			{
+				// 上 / 下最近的一行里横向最近的一张（跨段标题也行）
+				float rowY = float.NaN;
+				foreach (Item it in items)
+				{
+					float d = (it.At.Y - cur.At.Y) * dy;
+					if (d > 1f && (float.IsNaN(rowY) || d < (rowY - cur.At.Y) * dy))
+					{
+						rowY = it.At.Y;
+					}
+				}
+				foreach (Item it in items)
+				{
+					float d = Mathf.Abs(it.At.X - cur.At.X);
+					if (!float.IsNaN(rowY) && Mathf.IsEqualApprox(it.At.Y, rowY) && d < bestD)
+					{
+						best = it;
+						bestD = d;
+					}
+				}
+			}
+			if (best != null)
+			{
+				sel = best;
+				Audio.Sfx.Clip("Sys_Cursor", 0.35f);
+			}
+		}
+
+		void Nav(float now)
+		{
+			if (exiting)
+			{
+				return;
+			}
+			Viewport vp = root.GetViewport();
+			Control? owner = vp.GuiGetFocusOwner();
+			bool usingPad = Compat.UsingDirectionalNav();
+			if (usingPad && owner != navFocus && (owner == null || !owner.IsVisibleInTree() || grid.IsAncestorOf(owner)))
+			{
+				navFocus.GrabFocus();                            // 游戏默认把焦点给原版网格的第一张牌（已藏起来）
+				owner = navFocus;
+				sel ??= items.FirstOrDefault();
+			}
+			bool pad = owner == navFocus && usingPad;          // 中途换回鼠标：交还给鼠标悬停
+			BindBack(pad && focused != null && focusOn);
+			if (!pad)
+			{
+				return;
+			}
+			if (focused != null)
+			{
+				if (focusOn && (Pressed("ui_select") || Pressed("ui_confirm")))
+				{
+					Toggle(focused);
+				}
+				return;
+			}
+			if (sel != null && !items.Contains(sel))
+			{
+				sel = items.FirstOrDefault();                    // 牌堆内容变了（Refill）
+			}
+			string? dir = null;
+			int dx = 0, dy = 0;
+			foreach ((string a, int x, int y) in dirs)
+			{
+				if (InputMap.HasAction(a) && Input.IsActionPressed(a))
+				{
+					(dir, dx, dy) = (a, x, y);
+					break;
+				}
+			}
+			if (dir == null)
+			{
+				heldDir = null;
+			}
+			else if (dir != heldDir)
+			{
+				heldDir = dir;
+				repeatAt = now + 0.38f;
+				Move(dx, dy);
+			}
+			else if (now >= repeatAt)
+			{
+				repeatAt = now + 0.09f;
+				Move(dx, dy);
+			}
+			if (sel != null)
+			{
+				// 选中的牌保持在可见区里
+				float visH = L.GridBottom - L.GridTop;
+				float topY = sel.At.Y - L.CellH * 0.5f - HeaderH;   // 上面留一个段标题的高度
+				if (topY < target) target = Mathf.Max(0f, topY);
+				if (sel.At.Y + L.CellH * 0.5f > target + visH) target = Mathf.Min(MaxScroll(), sel.At.Y + L.CellH * 0.5f - visH);
+				if (sel.Slot != null)
+				{
+					hovered = sel;
+				}
+				if (Pressed("ui_select") || Pressed("ui_confirm"))
+				{
+					Toggle(sel);
+				}
+			}
+		}
+
 		void Wheel(InputEvent ev)
 		{
 			if (ev is InputEventMouseButton { Pressed: true } mb)
@@ -497,6 +671,7 @@ public static class PileFx
 				if (++tickFails >= 3)
 				{
 					tree.ProcessFrame -= Tick;
+					BindBack(false);
 					ModEntry.Warn("pile screen: layout keeps failing -> back to the vanilla grid");
 					FreeFlip(flip);
 					flip = null;
@@ -520,6 +695,7 @@ public static class PileFx
 				focusP = Mathf.MoveToward(focusP, focusOn ? 1f : 0f, dt / (focusOn ? 0.5f : 0.42f));
 				if (focused != null && !focusOn && focusP <= 0f)
 				{
+					BindBack(false);
 					focused = null;
 					catcher.Visible = false;
 					FreeFlip(flip);
@@ -597,6 +773,7 @@ public static class PileFx
 				{
 					head.Position = new Vector2((L.RightSide ? 320f : -260f) * k * Ease.InCubic(ex), 0f);
 				}
+				Nav(now);
 				if (focused != null)
 				{
 					hovered = null;
@@ -768,6 +945,7 @@ public static class PileFx
 			catcher.Visible = false;
 			plate.Visible = false;
 			hovered = null;
+			BindBack(false);
 			Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.3f);
 			// 保险：真实时间 1s 后无论如何关掉（每帧逻辑出问题也不会留着不关）
 			tree.CreateTimer(1.0, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () =>
@@ -783,6 +961,7 @@ public static class PileFx
 		{
 			Exits.Remove(sid);
 			tree.ProcessFrame -= Tick;
+			BindBack(false);
 			pile.ContentsChanged -= onChanged;
 			FreeFlip(flip);                                  // 特写中途关掉界面：翻转替身借的卡牌还回对象池
 			flip = null;
