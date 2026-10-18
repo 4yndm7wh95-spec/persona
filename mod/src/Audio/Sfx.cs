@@ -294,6 +294,9 @@ public static class Sfx
 		["em0561_sp_roulette_01"] = (0.8f, 0.3f),        // 轮盘启动：后半是第二声，和点击声重叠
 	};
 
+	/// <summary>还没释放的音效播放器数（健康日志用）。</summary>
+	public static int Live { get; private set; }
+
 	private static void Spawn(SceneTree tree, AudioStream stream, float volume, float pitch, string? name = null, StringName? bus = null)
 	{
 		_bus ??= AudioServer.GetBusIndex("SFX") >= 0 ? new StringName("SFX") : new StringName("Master");
@@ -306,8 +309,19 @@ public static class Sfx
 			ProcessMode = Node.ProcessModeEnum.Always,
 		};
 		tree.Root.AddChild(p);
+		Live++;
+		p.TreeExiting += () => Live--;
 		p.Finished += p.QueueFree;
 		p.Play();
+		// v0.14.60 保险：Finished 没发出来（循环导入的音频、播放失败）时，最多活到音频时长 + 2 秒（真实时间），不在根节点下越积越多
+		double life = (stream.GetLength() > 0 ? stream.GetLength() / Mathf.Max(pitch, 0.1f) : 8.0) + 2.0;
+		tree.CreateTimer(life, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () =>
+		{
+			if (GodotObject.IsInstanceValid(p))
+			{
+				p.QueueFree();
+			}
+		};
 		if (name != null && Tails.TryGetValue(name, out var tail))
 		{
 			float db0 = p.VolumeDb;

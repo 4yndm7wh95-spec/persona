@@ -1359,6 +1359,13 @@ Grand.cs 里其余函数暂时保留不用。
 - 复查 Codex（3e959c0 ~ ecc761c）：蓝蝶环绕（PileButterfly / ButterflyOrbit / ButterflyVisual，GreatSeal 的蝴蝶改成共用 ButterflyVisual）、空 BottomText 整个藏起来、
   光标晚加载补应用、音乐盒拖动、空闲预热 —— 没发现会出错的地方；只改了一处：IdleWarmup 判断"在地图上"原来每 150ms 遍历整棵场景树，改成直接读 NMapScreen.Instance.IsOpen。
 
+## v0.14.60（玩家：玩储君时每次快到一层 Boss 就很卡，像被调低了倍速）
+
+- 倍速卡住在 v0.14.51 已修（每个减速有截止时间 + 看门狗；非本 mod 的减速超过 2.5 秒也拉回 1）。这次的描述更像越玩越卡（帧率下降），静态排查没找到确定的累积源。
+- Core/Health.cs：卡顿诊断日志。每 60 秒一行 "health fps / timescale / nodes / orphans / root_children / sfx_players"；
+  帧率连续 5 秒低于 30 时，额外列出根节点和战斗特效层里数量最多的节点类型。请玩家复现后发 godot.log 里含 "health" 的行。
+- 音效播放器保险：Finished 没发出来（循环导入的音频、播放失败）时，最多活到音频时长 + 2 秒，不会在根节点下越积越多。
+
 ## 待办（用户实机反馈，先记录）
 
 - P3R 主菜单打开动画（用户给的分镜 0.50~1.83s）：水面上有东西砸进来，带大片水花切入，水花散开后才看清是结城理倒着把头探进水里。之后找地方用（用户：先做牌堆，这个后面再做）。
