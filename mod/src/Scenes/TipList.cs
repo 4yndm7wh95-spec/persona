@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using MegaCrit.Sts2.addons.mega_text;
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.HoverTips;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Nodes.Screens.ScreenContext;
 using MegaCrit.Sts2.Core.Saves;
 using P3Makoto.Vfx;
 
@@ -50,15 +52,14 @@ public static class TipList
 		internal Node2D Up = null!, Down = null!;
 		internal Node2D Head = null!;
 		internal Label Count = null!;
-		internal Control Catcher = null!;
+		internal Control Catcher = null!, Dismiss = null!;
 		internal NCreature Creature = null!;
 		internal float NextRefresh;
-		internal Node2D Back = null!;                           // 背景：斜切深蓝条带 + 青边 + 斜纹 + 竖排水印 + 气泡 + 打开时的白色斜光
-		internal string BackKey = "";
-		internal readonly List<(Sprite2D S, float X, float Y, float V, float Ph)> Bubbles = new();
 		internal Vector2 Mouse;
 		internal bool MouseIn;
 		internal Action? Tick;
+		internal Action? ContextChanged;
+		internal Action? CreatureExiting;
 	}
 
 	private const string TipScene = "res://scenes/ui/hover_tip.tscn";
@@ -81,6 +82,13 @@ public static class TipList
 
 	internal static bool IsOpen(NCreature creature) =>
 		Lists.TryGetValue(creature.GetInstanceId(), out State? st) && st.CloseT0 < 0f;
+
+	// 战斗房间的单例在牌堆、地图、暂停/设置覆盖期间仍可能存在；必须确认当前交互页面也是这场战斗。
+	internal static bool CanShow(NCreature creature) =>
+		Core.P3Settings.TipList && Patches.Stage.MakotoCombat() && CombatManager.Instance.IsInProgress &&
+		GodotObject.IsInstanceValid(creature) && !creature.Entity.IsDead && creature.IsVisibleInTree() &&
+		NCombatRoom.Instance is NCombatRoom room && GodotObject.IsInstanceValid(room) &&
+		room.IsAncestorOf(creature) && ActiveScreenContext.Instance.IsCurrent(room);
 
 	/// <summary>悬停角色时（替代 NCreature.ShowHoverTips）：文字说明不弹出（看「状态」按钮），只把引用卡牌的预览交给原版。返回 true = 已处理。</summary>
 	public static bool Hover(NCreature creature, IEnumerable<IHoverTip> hoverTips)
@@ -116,8 +124,9 @@ public static class TipList
 		{
 			Free(id, old);
 		}
+		if (!CanShow(creature)) return;
 		_scene ??= ResourceLoader.Load<PackedScene>(TipScene);
-		if (_scene == null || NGame.Instance?.HoverTipsContainer is not Node container)
+		if (_scene == null || NCombatRoom.Instance?.Ui is not Control container)
 		{
 			return;
 		}
@@ -128,11 +137,17 @@ public static class TipList
 		}
 		NHoverTipSet.Remove(creature.Hitbox);
 		State st = new() { Owner = creature.Hitbox, Creature = creature, Sig = Sig(text), Right = HoverTip.GetHoverTipAlignment(creature, 0.5f) != HoverTipAlignment.Left, T0 = Now };
-		st.Root = new Control { Name = "P3TipList", MouseFilter = Control.MouseFilterEnum.Ignore };
+		st.Root = new Control { Name = "P3TipList", TopLevel = true, MouseFilter = Control.MouseFilterEnum.Ignore };
 		container.AddChild(st.Root);
-		// 列表区域接滚轮（鼠标在列表上时滚动；点击穿不过去，关闭用按钮）
-		st.Back = new Node2D { Name = "Back" };
-		st.Root.AddChild(st.Back);
+		// 透明的外部点击层在列表命中区后面：关闭这次点击，不把它穿透成出牌/点击敌人。
+		st.Dismiss = new Control { Name = "Dismiss", MouseFilter = Control.MouseFilterEnum.Stop };
+		st.Root.AddChild(st.Dismiss);
+		st.Dismiss.GuiInput += ev =>
+		{
+			st.Dismiss.AcceptEvent();
+			if (ev is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left }) Close(id);
+		};
+		// 列表区域接滚轮。按钮被列表范围覆盖时，也允许在原按钮位置再次点击关闭。
 		st.Catcher = new Control { MouseFilter = Control.MouseFilterEnum.Stop };
 		st.Root.AddChild(st.Catcher);
 		st.Catcher.GuiInput += ev => ModEntry.Safe("tip list wheel", () =>
@@ -142,13 +157,26 @@ public static class TipList
 				st.Mouse = st.Catcher.GetGlobalMousePosition();
 				st.MouseIn = true;
 			}
+			if (ev is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left } &&
+				StatusButton.Contains(creature, st.Catcher.GetGlobalMousePosition()))
+			{
+				st.Catcher.AcceptEvent();
+				Close(id);
+				return;
+			}
 			Wheel(creature, ev);
 		});
 		st.Catcher.MouseExited += () => st.MouseIn = false;
 		BuildChrome(st);
 		Fill(st, text);
 		Lists[id] = st;
-		creature.TreeExiting += () => Free(id, st);
+		st.ContextChanged = () =>
+		{
+			if (!GodotObject.IsInstanceValid(creature) || !CanShow(creature)) Free(id, st);
+		};
+		ActiveScreenContext.Instance.Updated += st.ContextChanged;
+		st.CreatureExiting = () => Free(id, st);
+		creature.TreeExiting += st.CreatureExiting;
 		Audio.Sfx.Clip("Sys_Cursor", 0.4f);
 		Drive(id, st);
 	}
@@ -198,6 +226,16 @@ public static class TipList
 
 	private static void Free(ulong id, State st)
 	{
+		if (st.CreatureExiting != null)
+		{
+			if (GodotObject.IsInstanceValid(st.Creature)) st.Creature.TreeExiting -= st.CreatureExiting;
+			st.CreatureExiting = null;
+		}
+		if (st.ContextChanged != null)
+		{
+			ActiveScreenContext.Instance.Updated -= st.ContextChanged;
+			st.ContextChanged = null;
+		}
 		if (Lists.TryGetValue(id, out State? cur) && cur == st)
 		{
 			Lists.Remove(id);
@@ -209,6 +247,7 @@ public static class TipList
 		}
 		if (GodotObject.IsInstanceValid(st.Root))
 		{
+			st.Root.Hide();                                    // 换页时立即消失，不能等 QueueFree 到帧末才隐藏。
 			st.Root.QueueFree();
 		}
 	}
@@ -263,6 +302,10 @@ public static class TipList
 			Control ctl = _scene!.Instantiate<Control>();
 			node.AddChild(ctl);
 			ctl.MouseFilter = Control.MouseFilterEnum.Ignore;
+			foreach (Node child in ctl.FindChildren("*", "Control", true, false))
+			{
+				((Control)child).MouseFilter = Control.MouseFilterEnum.Ignore;
+			}
 			if (ctl.GetNodeOrNull<MegaLabel>("%Title") is MegaLabel title)
 			{
 				if (tip.Title == null)
@@ -316,14 +359,13 @@ public static class TipList
 		float rx = x0 + (x1 - x0) * 0.45f;
 		Fx.Poly(r.Plate, new[] { new Vector2(rx + k * 4f, y1 - 4f), new Vector2(x1 + k * 4f, y1 - 4f), new Vector2(x1, y1), new Vector2(rx, y1) }, Red);
 		Fx.StrokeClosed(r.Plate, Box(x0, x1, y0, y1), new Color(1f, 1f, 1f, 0.28f), 1.5f, additive: false);
-		// 选中层（在底板后面）：白底错开 + 红色细框再错开一点（P3R 菜单的选中行）
+		// 选中层只保留错开的红色细框，不再叠白色底板。
 		r.Sel?.QueueFree();
 		r.Sel = new Node2D { Modulate = new Color(1f, 1f, 1f, 0f) };
 		r.Node.AddChild(r.Sel);
 		r.Node.MoveChild(r.Sel, 0);
 		float sx = r.Right ? 1f : -1f;
 		Fx.StrokeClosed(r.Sel, Box(x0 + 11f * sx, x1 + 11f * sx, y0 - 10f, y1 - 10f), Red, 2.2f, additive: false);
-		Fx.Poly(r.Sel, Box(x0 + 6f * sx, x1 + 6f * sx, y0 - 5f, y1 - 5f), new Color(0.97f, 0.98f, 1f, 0.95f));
 		// 外侧指示箭头（青色三角 + 白芯）
 		r.Pointer?.QueueFree();
 		float px = r.Right ? x1 + lean + 16f : x0 - 16f;
@@ -362,9 +404,10 @@ public static class TipList
 					Free(id, st);
 					return;
 				}
-				if (st.CloseT0 < 0f && (st.Creature.Entity.IsDead || !Patches.Stage.MakotoCombat()))
+				if (!CanShow(st.Creature))
 				{
-					Close(id);
+					Free(id, st);
+					return;
 				}
 				if (st.CloseT0 < 0f && Now >= st.NextRefresh)
 				{
@@ -500,7 +543,7 @@ public static class TipList
 			r.Node.Visible = alpha > 0.01f;
 		}
 
-		Backdrop(st, baseX, w, bulge, top, side, now, dt, closing);
+		st.Dismiss.Size = view;
 		// 接滚轮的区域：整个列表窗口（含弧形外扩）
 		st.Catcher.Position = new Vector2(st.Right ? baseX - 30f : baseX - bulge - 30f, top - 70f);
 		st.Catcher.Size = new Vector2(w + bulge + 60f, st.WindowH + 80f);
@@ -541,88 +584,6 @@ public static class TipList
 		st.Down.Position += new Vector2(0f, bob);
 	}
 
-	/// <summary>
-	/// 列表背景（P3R 菜单的水下质感）：斜切深蓝条带（上下渐隐）+ 内侧青色细边 + 几道很淡的斜纹 + 外侧竖排半透明大字 STATUS
-	/// + 慢慢上浮、左右摆的小气泡；打开时一道白色斜光从内侧扫到外侧。
-	/// </summary>
-	private static void Backdrop(State st, float baseX, float w, float bulge, float top, float side, float now, float dt, float closing)
-	{
-		float pad = 46f, slant = 60f;
-		float inner = st.Right ? baseX - pad : baseX + w + pad;
-		float outer = st.Right ? baseX + w + bulge + pad : baseX - bulge - pad;
-		float T = top - 96f, B = top + st.WindowH + 60f;
-		string key = $"{inner:0}|{outer:0}|{T:0}|{B:0}";
-		if (key != st.BackKey)
-		{
-			st.BackKey = key;
-			foreach (Node n in st.Back.GetChildren())
-			{
-				if (n is not Sprite2D)
-				{
-					n.QueueFree();
-				}
-			}
-			float l = Mathf.Min(inner, outer), r = Mathf.Max(inner, outer), mid1 = T + (B - T) * 0.2f, mid2 = T + (B - T) * 0.8f;
-			Vector2 S(float x, float y) => new(x + slant * (B - y) / (B - T), y);   // 整条往上斜
-			Polygon2D band = new()
-			{
-				Polygon = new[] { S(l, T), S(r, T), S(r, mid1), S(r, mid2), S(r, B), S(l, B), S(l, mid2), S(l, mid1) },
-				VertexColors = new[] { new Color(Navy, 0f), new Color(Navy, 0f), new Color(Navy, 0.55f), new Color(Navy, 0.55f), new Color(Navy, 0f), new Color(Navy, 0f), new Color(Navy, 0.55f), new Color(Navy, 0.55f) },
-			};
-			st.Back.AddChild(band);
-			Gradient fade = new() { Offsets = new[] { 0f, 0.2f, 0.8f, 1f }, Colors = new[] { new Color(1f, 1f, 1f, 0f), Colors.White, Colors.White, new Color(1f, 1f, 1f, 0f) } };
-			st.Back.AddChild(new Line2D { Points = new[] { S(inner, T), S(inner, B) }, Width = 2.5f, DefaultColor = Cyan, Gradient = fade, Antialiased = true });
-			st.Back.AddChild(new Line2D { Points = new[] { S(inner + 8f * side, T), S(inner + 8f * side, B) }, Width = 1f, DefaultColor = new Color(1f, 1f, 1f, 0.4f), Gradient = fade, Antialiased = true });
-			for (float x = l + 30f; x < r; x += 46f)
-			{
-				st.Back.AddChild(new Line2D { Points = new[] { S(x, T), S(x - 140f, B) }, Width = 1f, DefaultColor = new Color(0.6f, 0.85f, 1f, 0.07f), Gradient = fade, Antialiased = true });
-			}
-			Label word = Typo.Text(st.Back, "STATUS", Typo.Barlow, 150, new Color(0.75f, 0.9f, 1f, 0.07f), Vector2.Zero);
-			word.Rotation = -Mathf.Pi / 2f;
-			word.Position = new Vector2(st.Right ? r - 120f : l - 30f, B - 30f);
-			// 打开时的白色斜光
-			Node2D wipe = new() { Name = "Wipe" };
-			st.Back.AddChild(wipe);
-			Fx.Poly(wipe, new[] { S(0f, T), S(60f, T), S(60f, B), S(0f, B) }, new Color(1f, 1f, 1f, 0.5f), additive: true);
-			Fx.Poly(wipe, new[] { S(70f, T), S(78f, T), S(78f, B), S(70f, B) }, new Color(0.6f, 0.95f, 1f, 0.6f), additive: true);
-			if (st.Bubbles.Count == 0)
-			{
-				for (int i = 0; i < 12; i++)
-				{
-					Sprite2D b = new() { Texture = Fx.SoftDot, Material = Fx.Additive };
-					st.Back.AddChild(b);
-					st.Bubbles.Add((b, Fx.Rand(0f, 1f), Fx.Rand(0f, 1f), Fx.Rand(0.035f, 0.08f), Fx.Rand(0f, Mathf.Tau)));
-				}
-			}
-		}
-		float open = Ease.OutCubic(Mathf.Clamp((now - st.T0) / 0.25f, 0f, 1f));
-		st.Back.Modulate = new Color(1f, 1f, 1f, open * (1f - closing));
-		if (st.Back.GetNodeOrNull<Node2D>("Wipe") is Node2D wp)
-		{
-			float u = Mathf.Clamp((now - st.T0) / 0.4f, 0f, 1f);
-			wp.Visible = u < 1f;
-			wp.Position = new Vector2(Mathf.Lerp(inner, outer, Ease.InOutCubic(u)) - (st.Right ? 0f : 60f), 0f);
-			wp.Modulate = new Color(1f, 1f, 1f, Mathf.Sin(Mathf.Pi * u));
-		}
-		// 气泡：在条带里上浮（一圈约 10~25s），左右轻摆，靠近上下边淡出
-		float lo = Mathf.Min(inner, outer), hi = Mathf.Max(inner, outer), T2 = top - 60f, B2 = top + st.WindowH + 40f;
-		for (int i = 0; i < st.Bubbles.Count; i++)
-		{
-			(Sprite2D sp, float bx, float by, float v, float ph) = st.Bubbles[i];
-			by -= v * dt;
-			if (by < 0f)
-			{
-				by += 1f;
-				bx = Fx.Rand(0f, 1f);
-			}
-			st.Bubbles[i] = (sp, bx, by, v, ph);
-			float yy = Mathf.Lerp(T2, B2, by);
-			sp.Position = new Vector2(Mathf.Lerp(lo + 20f, hi - 20f, bx) + Mathf.Sin(now * 1.3f + ph) * 8f + 60f * (B2 - yy) / (B2 - T2), yy);
-			float size = 0.05f + 0.05f * Mathf.Abs(Mathf.Sin(ph));
-			sp.Scale = Vector2.One * size;
-			sp.Modulate = new Color(0.6f, 0.9f, 1f, 0.35f * Mathf.Sin(Mathf.Pi * by));
-		}
-	}
 }
 
 /// <summary>
@@ -726,6 +687,10 @@ public static class StatusButton
 		}
 	}
 
+	internal static bool Contains(NCreature creature, Vector2 point) =>
+		Buttons.TryGetValue(creature.GetInstanceId(), out Btn? b) &&
+		GodotObject.IsInstanceValid(b.Hit) && b.Hit.IsVisibleInTree() && b.Hit.GetGlobalRect().HasPoint(point);
+
 	private static void Tick(NCreature creature, Btn b, Control bar, float dt)
 	{
 		float t = Time.GetTicksMsec() / 1000f;
@@ -739,7 +704,7 @@ public static class StatusButton
 				b.Count.Text = "×" + n;
 			}
 		}
-		bool show = b.Shown > 0 && Core.P3Settings.TipList && Patches.Stage.MakotoCombat() && bar.IsVisibleInTree();
+		bool show = b.Shown > 0 && TipList.CanShow(creature) && bar.IsVisibleInTree();
 		b.Hit.Visible = show;
 		if (!show)
 		{
