@@ -222,7 +222,7 @@ public static class SettingsSkin
 		// 竖排大字 SYSTEM（灰色错影 + 黑字，从下往上读，被左边缘裁掉一点）
 		// v0.14.77（用户对照原版 #70：背景里那一长串大字没有完全放出来）：顺时针竖排、从上往下读、超大，
 		// 字的下半截被画面左边裁掉，只露出字头那一半，整个词也比画面长（下面一截出画）
-		st.SystemWord = new Node2D { Position = new Vector2(0.165f * view.X, -0.03f * view.Y), Rotation = Mathf.Pi / 2f };
+		st.SystemWord = new Node2D { Position = new Vector2(0.23f * view.X, -0.03f * view.Y), Rotation = Mathf.Pi / 2f };
 		st.Root.AddChild(st.SystemWord);
 		Typo.Text(st.SystemWord, "SYSTEM", Typo.Barlow, (int)(560f * k), new Color(0.58f, 0.61f, 0.66f), new Vector2(-40f * k, -22f * k));
 		Typo.Text(st.SystemWord, "SYSTEM", Typo.Barlow, (int)(560f * k), Ink, Vector2.Zero);
@@ -875,7 +875,7 @@ public static class SettingsSkin
 		bool poses = st.DivePoses.All(x => x != null);
 		st.PortraitMat.SetShaderParameter("head_angle", poses ? 0f : Mathf.DegToRad(rot) * 0.35f);
 		float eWord = Ease.OutCubic(Mathf.Clamp((t - 0.34f) / 0.3f, 0f, 1f));
-		st.SystemWord.Position = new Vector2(0.165f * view.X - 320f * k * (1f - eWord), -0.03f * view.Y);
+		st.SystemWord.Position = new Vector2(0.23f * view.X - 320f * k * (1f - eWord), -0.03f * view.Y);
 		float eContent = Ease.OutCubic(Mathf.Clamp((t - 0.5f) / 0.3f, 0f, 1f));
 		st.Scroll.Modulate = new Color(st.OrigModulate, st.OrigModulate.A * eContent);
 

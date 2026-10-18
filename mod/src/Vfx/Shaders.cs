@@ -747,8 +747,9 @@ vec3 water_at(vec2 wuv, float aspect, float sun_x, float wt) {
 	vec2 uv = wuv;
 	float t = wt;
 	float y = uv.y, x = uv.x * aspect;
-	vec3 c0 = vec3(0.22, 0.82, 1.0), c1 = vec3(0.10, 0.56, 0.98), c2 = vec3(0.06, 0.34, 0.88), c3 = vec3(0.04, 0.18, 0.66);
-	vec3 c = y < 0.3 ? mix(c0, c1, smoothstep(0.0, 0.3, y)) : y < 0.62 ? mix(c1, c2, smoothstep(0.3, 0.62, y)) : mix(c2, c3, smoothstep(0.62, 1.0, y));
+	// v0.14.77（用户：深水处还太浅）：按原版 #90 逐行取色拟合 —— 顶部亮青，往下很快变深，下半屏是很深的群青
+	vec3 c0 = vec3(0.12, 0.86, 1.0), c1 = vec3(0.11, 0.53, 0.91), c2 = vec3(0.05, 0.27, 0.71), c3 = vec3(0.02, 0.08, 0.70);
+	vec3 c = y < 0.25 ? mix(c0, c1, smoothstep(0.0, 0.25, y)) : y < 0.55 ? mix(c1, c2, smoothstep(0.25, 0.55, y)) : mix(c2, c3, smoothstep(0.55, 1.0, y));
 	// 焦散光斑
 	vec2 q = vec2(x * 13.0 + sin(y * 30.0 + t * 0.9) * 0.5, y * 42.0 - t * 0.5);
 	float n = vnoise(q) * 0.62 + vnoise(q * 2.3 + vec2(t * 0.35, 1.7)) * 0.38;
@@ -820,7 +821,8 @@ float hairness(vec4 p) {
 	// 头发：钴蓝 / 天青（蓝色为主、不白、不是深色线条）
 	// v0.14.77：头发里的浅青碎片也算头发（以前 r > 0.5 的浅青块漏掉，留在水里像单独画上去的）—— 偏蓝、不是近白
 	float mn = min(p.r, min(p.g, p.b));
-	return p.a * step(0.6, p.b) * step(0.25, p.b - p.r) * (1.0 - step(0.82, mn));
+	// 不乘透明度：头发边缘的半透明像素也要整个变成水，否则会混进一点原来的颜色，留下一圈细线
+	return step(0.02, p.a) * step(0.6, p.b) * step(0.25, p.b - p.r) * (1.0 - step(0.82, mn));
 }
 vec2 rot(vec2 p, float a) {
 	float c = cos(a), s = sin(a);
@@ -861,7 +863,8 @@ void fragment() {
 	}
 	// 只在头部（立绘下半部，衣领以下）认头发 —— 衬衫上的浅青阴影不算
 	float hair = hairness(c) * smoothstep(3.0, 4.5, hn) * smoothstep(0.52, 0.58, uv.y);
-	float toWater = max(hair, side * c.a);
+	// 分界线右边整片都是水：不乘透明度（以前乘了 c.a，线条 / 发丝的半透明边缘只变一半，留下一条条细接缝）
+	float toWater = max(hair, side);
 	vec3 w = water_at(SCREEN_UV, screen_aspect, sun_x, TIME);
 	// 用户：不要浅色反光，那样反而有边界 —— 头发就是水本身的颜色（不压暗：压暗一点在头发外沿、立绘下沿都会出一条色差分界）
 	vec3 wc = w;
