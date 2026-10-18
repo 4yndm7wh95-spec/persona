@@ -85,6 +85,7 @@ public static class P3SettingsSectionPatch
 		Row(section, font, size, color, rowH, Zh ? "选人时的召唤演出" : "Character select summon", () => d.SelectSummon, v => d.SelectSummon = v);
 		Row(section, font, size, color, rowH, Zh ? "建筑师房间（关闭 = 全部原版）" : "Architect room (off = all vanilla)", () => d.Architect, v => d.Architect = v);
 		Row(section, font, size, color, rowH, Zh ? "牌堆 / 牌组界面（P3R 风格）" : "Pile / deck screens (P3R style)", () => d.PileScreen, v => d.PileScreen = v);
+		Row(section, font, size, color, rowH, Zh ? "状态说明列表（P3R 风格，可滚动）" : "Status tip list (P3R style, scrollable)", () => d.TipList, v => d.TipList = v);
 	}
 
 	private static void Row(VBoxContainer parent, Font? font, int size, Color color, float rowH, string text, Func<bool> get, Action<bool> set)

@@ -170,3 +170,39 @@ public static class CombatPileSkinPatch
 {
 	public static void Postfix(NCombatCardPile __instance) => ModEntry.Safe("hud pile skin", () => HudSkin.ApplyPile(__instance));
 }
+
+/// <summary>
+/// v0.14.66：结城理的对局里，玩家角色的状态说明改成血条右边的「状态」按钮 + P3R 滚动列表（Scenes/TipList）；
+/// 悬停玩家角色不再弹出原版那一大片文字说明（引用卡牌的预览照常）。敌人保持原版。设置里可关。
+/// </summary>
+[HarmonyPatch(typeof(NCreature), nameof(NCreature.ShowHoverTips))]
+public static class CreatureTipListPatch
+{
+	public static bool Prefix(NCreature __instance, IEnumerable<MegaCrit.Sts2.Core.HoverTips.IHoverTip> hoverTips)
+	{
+		if (!Core.P3Settings.TipList || !Stage.MakotoCombat() || __instance.Entity?.Player is not MegaCrit.Sts2.Core.Entities.Players.Player p || !Core.Makoto.Is(p))
+		{
+			return true;
+		}
+		bool handled = false;
+		ModEntry.Safe("tip list hover", () => handled = TipList.Hover(__instance, hoverTips));
+		return !handled;
+	}
+}
+
+/// <summary>玩家角色节点就绪后挂上「状态」按钮（是否显示由按钮每帧自己判断）。</summary>
+[HarmonyPatch(typeof(NCreature), nameof(NCreature._Ready))]
+public static class CreatureStatusButtonPatch
+{
+	public static void Postfix(NCreature __instance)
+	{
+		NCreature c = __instance;
+		Callable.From(() => ModEntry.Safe("status button", () =>
+		{
+			if (GodotObject.IsInstanceValid(c) && c.Entity?.Player is MegaCrit.Sts2.Core.Entities.Players.Player p && Core.Makoto.Is(p))
+			{
+				StatusButton.Attach(c);
+			}
+		})).CallDeferred();
+	}
+}

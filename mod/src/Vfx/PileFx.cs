@@ -829,7 +829,16 @@ public static class PileFx
 					float sy = L.GridTop + at.Y - scroll;
 					return new Vector2(gx + at.X + (sy - L.GridTop) * L.Slant, sy) * k;
 				}
-				float Fade(float top, float bottom) => Mathf.Clamp((top - (L.GridTop - 22f) * k) / (36f * k), 0f, 1f) * Mathf.Clamp((L.GridBottom * k - bottom) / (50f * k), 0f, 1f);
+				// v0.14.66（用户：稍微往下滚一点，上面那行牌就直接消失了）：按"露在网格外的比例"平滑淡出 ——
+				// 整张在网格里 = 不透明；越过边界 65% 的高度（中心已出界 15%）才完全透明，中间用 smoothstep。
+				// 区域最短 60px（段标题这种矮的也有足够的过渡）。
+				float Fade(float top, float bottom)
+				{
+					float zone = Mathf.Max((bottom - top) * 0.65f, 60f * k);
+					float a = Mathf.SmoothStep(0f, 1f, (top - (L.GridTop * k - zone)) / zone);
+					float b = Mathf.SmoothStep(0f, 1f, ((L.GridBottom * k + zone) - bottom) / zone);
+					return a * b;
+				}
 
 				foreach (Section s in sections)
 				{
@@ -902,7 +911,8 @@ public static class PileFx
 					}
 					float rot = Mathf.DegToRad(L.Slant < 0f ? 2f : L.Slant > 0f ? -2f : 0f) * (1f - lift) + enterRot;
 					// 原版悬停会把 holder 自己的 Scale 从 0.8 跳到 1.0；这里按它当前的 Scale 反算，让总缩放平滑
-					float want = baseScale * (0.85f + 0.15f * pop) * enterScale * (1f + 0.26f * lift);
+					// 淡出中的牌稍微缩小一点（"退到远处"的虚化感），整张在网格里时不变
+					float want = baseScale * (0.85f + 0.15f * pop) * enterScale * (1f + 0.26f * lift) * (0.93f + 0.07f * Mathf.Max(fade, lift));
 					float alpha = Mathf.Clamp(born * (kind == Kind.Exhaust ? 1.4f : 3f), 0f, 1f) * (it == hovered ? 1f : fade);
 					if (it == focused)
 					{
