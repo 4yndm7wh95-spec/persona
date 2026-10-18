@@ -1,0 +1,177 @@
+{
+  "schema_version": 1,
+  "canvas": {
+    "width": 1920,
+    "height": 1080,
+    "mode": "RGBA"
+  },
+  "coordinate_system": "top-left pixels, bbox right/bottom exclusive",
+  "source_candidate": "system_cand_c.png",
+  "eye_center": [
+    493,
+    925
+  ],
+  "blink_ellipse": {
+    "center": [
+      493,
+      925
+    ],
+    "radii": [
+      64,
+      49
+    ],
+    "feather_px": 8
+  },
+  "face_center": [
+    525,
+    850
+  ],
+  "chin": [
+    390,
+    600
+  ],
+  "head_top_direction_point": [
+    450,
+    1079
+  ],
+  "hand_center": [
+    900,
+    920
+  ],
+  "ribbons": [
+    {
+      "root": [
+        643,
+        453
+      ],
+      "tip": [
+        882,
+        62
+      ]
+    },
+    {
+      "root": [
+        632,
+        448
+      ],
+      "tip": [
+        668,
+        218
+      ]
+    },
+    {
+      "root": [
+        629,
+        449
+      ],
+      "tip": [
+        511,
+        282
+      ]
+    }
+  ],
+  "hair_tips": [
+    [
+      810,
+      1020
+    ],
+    [
+      828,
+      1066
+    ],
+    [
+      785,
+      1079
+    ],
+    [
+      270,
+      685
+    ],
+    [
+      153,
+      954
+    ]
+  ],
+  "bbox": {
+    "left": 137,
+    "top": 0,
+    "right": 1548,
+    "bottom": 1080
+  },
+  "water_boundary_polyline": [
+    [
+      1014,
+      0
+    ],
+    [
+      947,
+      108
+    ],
+    [
+      883,
+      216
+    ],
+    [
+      828,
+      324
+    ],
+    [
+      789,
+      432
+    ],
+    [
+      852,
+      540
+    ],
+    [
+      859,
+      648
+    ],
+    [
+      906,
+      756
+    ],
+    [
+      968,
+      864
+    ],
+    [
+      977,
+      972
+    ],
+    [
+      800,
+      1079
+    ]
+  ],
+  "water_boundary_note": "Rightmost alpha>127 silhouette samples at eleven rows; initial integration hint, not semantic ground truth. White retained left of polyline and made water-transmissive to right by integration shader.",
+  "qa": {
+    "white": {
+      "definition": "alpha>127 and min(R,G,B)>=240",
+      "near_white_pixels": 203656,
+      "pure_white_pixels": 16885,
+      "nonpure_near_white_pixels": 186771,
+      "strict_pass": false
+    },
+    "blink": {
+      "half": {
+        "outside_eye_changed_pixels": 0,
+        "inside_eye_changed_pixels": 8707
+      },
+      "closed": {
+        "outside_eye_changed_pixels": 0,
+        "inside_eye_changed_pixels": 8933
+      }
+    },
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "alpha_1_to_3_pixel_count": 12494
+  },
+  "known_limitations": [
+    "Near-white shader requirement not strictly met; no local palette thresholding performed.",
+    "A far-eye fragment remains visible; only main eye animated.",
+    "Reference alignment, hand proportions and ribbon count require integration review."
+  ]
+}
