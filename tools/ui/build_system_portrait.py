@@ -144,18 +144,10 @@ def clean(im):
 
 def main(preview=None):
     done = {}
-    head = SRC / "head" / "system_head_open.png"
-    if head.exists():
-        # v0.14.78：用户给的新立绘（完整的头，构图照原版 #82）。眨眼帧等 Codex 的闭眼版（head/system_head_closed.png），没有就先全用睁眼
-        base = Image.open(head).convert("RGBA")
-        closed = SRC / "head" / "system_head_closed.png"
-        cl = Image.open(closed).convert("RGBA") if closed.exists() else base
-        frames = {"open": base, "q1": base, "half": cl if closed.exists() else base, "q3": cl, "closed": cl}
-    else:
-        base = remove_hand(Image.open(SRC / "system_base.png"))
-        # v0.14.72（用户：眨眼也像低帧率）：眨眼 5 档（0 / 25% / 50% / 75% / 100%），游戏里按 60fps 连续切
-        frames = {"open": base, "q1": blink(base, 0.25), "half": blink(base, 0.5), "q3": blink(base, 0.75), "closed": blink(base, 1.0)}
+    base = remove_hand(Image.open(SRC / "system_base.png"))
     print("edge", edge_polyline(base))
+    # v0.14.72（用户：眨眼也像低帧率）：眨眼 5 档（0 / 25% / 50% / 75% / 100%），游戏里按 60fps 连续切
+    frames = {"open": base, "q1": blink(base, 0.25), "half": blink(base, 0.5), "q3": blink(base, 0.75), "closed": blink(base, 1.0)}
     for key, dst in OUT.items():
         im, n = clean(frames[key])
         godot_tex.write_texture(STAGE, f"p3makoto/ui/{dst}", im)

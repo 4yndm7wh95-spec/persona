@@ -43,11 +43,9 @@ public static class SettingsSkin
 	// 线左边是人物 + 白色面板，线右边是水（立绘着色器、白色面板、待机气泡共用）
 	private static readonly Vector2[] Edge =
 	{
-		// v0.14.78 新立绘（完整的头）：人物右侧外轮廓 + 6px（tools/ui/build_system_portrait.py 量出）
-		new(1019f, 0f), new(976f, 90f), new(922f, 180f), new(870f, 270f), new(826f, 360f), new(800f, 450f), new(863f, 540f),
-		new(857f, 630f), new(723f, 720f), new(787f, 810f), new(809f, 900f), new(784f, 990f), new(623f, 1080f),
+		new(1000f, 0f), new(905f, 200f), new(812f, 385f), new(795f, 470f), new(775f, 560f), new(760f, 650f), new(745f, 700f),
+		new(748f, 745f), new(752f, 860f), new(740f, 925f), new(700f, 935f), new(650f, 965f), new(630f, 1080f),   // v0.14.77：贴紧耳机右边（以前和头发之间留了一块白）
 	};
-
 
 
 	private sealed class Tab
@@ -879,9 +877,7 @@ public static class SettingsSkin
 		st.ZoneLayer.PivotOffset = st.Portrait.PivotOffset + zoff;
 		st.ZoneLayer.Rotation = st.Portrait.Rotation;
 		st.ZoneLayer.Position = st.Portrait.Position - zoff;
-		// 用户：用水把人物盖住，不要有明显边界 —— 人物还在倾斜、画布下沿还露在画面里的时候，左边全是水（不画白区，就不会有画布的直线边）；
-		// 人物基本落定（0.55s）后白区才从左边扫出来
-		float zr = Ease.OutCubic(Mathf.Clamp((t - 0.55f) / 0.22f, 0f, 1f));
+		float zr = Ease.OutCubic(Mathf.Clamp((t - 0.36f) / 0.2f, 0f, 1f));   // 原版 #40 左边还是水，#44 起白从左边扫出来
 		((ShaderMaterial)st.ZoneLayer.Material).SetShaderParameter("zone_reveal", zr);
 		bool poses = st.DivePoses.All(x => x != null);
 		st.PortraitMat.SetShaderParameter("head_angle", poses ? 0f : Mathf.DegToRad(rot) * 0.35f);
@@ -1277,7 +1273,7 @@ public static class SettingsSkin
 
 	private const int DiveFirst = 20, DiveLast = 52;
 	// v0.14.77（用户：先把头的大致轮廓对准原版）：立绘放大 1.1 倍、左移 0.084 屏宽、上移 0.027 屏高 —— 和原版 #82 的头发轮廓做匹配（IoU 最大）
-	private const float PortraitShiftX = 0f, PortraitShiftY = 0f, PortraitScale = 1f;   // v0.14.78：新立绘本身就按原版构图画，不再缩放平移
+	private const float PortraitShiftX = 0.084f, PortraitShiftY = 0.027f, PortraitScale = 1.1f;
 
 	// (t, 下沉 dy / 屏高, 顺时针角度°, 横移 dx / 屏宽)：t = 原视频时间 − 0.30s。0.367~0.80 是量出来的，0.30 往前外推（人物刚从画面上沿进来）
 	private static readonly (float T, float Dy, float Rot, float Dx)[] DiveKeys =
