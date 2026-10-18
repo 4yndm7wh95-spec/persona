@@ -139,6 +139,33 @@ public static class SettingsSkin
 		{
 			OnVisible(st);
 		}
+		else
+		{
+			// v0.14.80（用户：点设置卡约 0.5s 才进，要即点即开）：设置界面在主菜单里是藏着的，挂上 1.5s 后就在后台把整套换皮搭好（Root 先隐藏），
+			// 点开时只重播入场动画，不再现搭节点 / 排大号字
+			screen.GetTree().CreateTimer(1.5).Timeout += () => ModEntry.Safe("settings skin prebuild", () => Prebuild(st));
+		}
+	}
+
+	private static void Prebuild(State st)
+	{
+		if (!GodotObject.IsInstanceValid(st.Screen) || st.On || st.Screen.IsVisibleInTree() || !P3Settings.SettingsSkin || !States.ContainsValue(st))
+		{
+			return;
+		}
+		ulong b0 = Time.GetTicksUsec();
+		try
+		{
+			Build(st);
+			st.Root.Visible = false;
+		}
+		catch (Exception e)
+		{
+			ModEntry.Report("settings skin prebuild", e);
+			Restore(st);
+			return;
+		}
+		GD.Print($"{ModEntry.Tag} perf settings skin prebuild {(Time.GetTicksUsec() - b0) / 1000f:0.0}ms");
 	}
 
 	private static void OnVisible(State st)
@@ -157,7 +184,9 @@ public static class SettingsSkin
 		{
 			try
 			{
+				ulong b0 = Time.GetTicksUsec();
 				Build(st);
+				GD.Print($"{ModEntry.Tag} perf settings skin build {(Time.GetTicksUsec() - b0) / 1000f:0.0}ms");   // v0.14.80：点设置后卡约 0.5s，量一下
 			}
 			catch (Exception e)
 			{
@@ -174,10 +203,9 @@ public static class SettingsSkin
 		{
 			st.T0 = Now;                                         // 每次打开都重播入场
 			st.IntroT = 0f;
-			Audio.Sfx.Clip("sys_dive", 0.55f);
+			Audio.Sfx.Clip("sys_dive", 0.55f);                   // 入水声：0.00s 的"噗"对齐水花炸开，气泡声对齐上浮的气泡
 			st.NextBlink = st.T0 + 2.5f;
-			st.Root.Material = st.MaskMat;
-			st.Root.ClipChildren = CanvasItem.ClipChildrenMode.Only;                   // 入水声：0.00s 的"噗"对齐水花炸开，气泡声对齐上浮的气泡
+			st.Root.Visible = st.DiveFrames.Count == 0;
 			StartTick(st);
 		}
 	}
@@ -197,7 +225,9 @@ public static class SettingsSkin
 		// 2. 背景层（放在最底下）
 		// v0.14.72：Root 本身是入水遮罩（只在 V 形水团里面显示设置界面），入场结束后关掉
 		st.MaskMat = new ShaderMaterial { Shader = Shaders.DiveMask };
-		st.Root = new ColorRect { Name = RootName, Color = new Color(1f, 1f, 1f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore, Material = st.MaskMat, ClipChildren = CanvasItem.ClipChildrenMode.Only };
+		st.Root = new ColorRect { Name = RootName, Color = new Color(1f, 1f, 1f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore, Visible = false };
+		// v0.14.80（实机：入水时背景一片白、没有人物）：Root 不再当 ClipChildren 遮罩（游戏的渲染器里不正常，子节点裁切里还套着裁切更不行）。
+		// 入水开头只有水花在原来的画面上，0.34s 水花盖满整屏时 Root 再出现
 		st.Root.SetAnchorsPreset(Control.LayoutPreset.FullRect);
 		screen.AddChild(st.Root);
 		screen.MoveChild(st.Root, 0);
@@ -837,6 +867,7 @@ public static class SettingsSkin
 
 	private static void Frame(State st, float dt)
 	{
+		if (st.IntroT < 0.3f && dt > 0.05f) GD.Print($"{ModEntry.Tag} perf settings skin intro frame {dt * 1000f:0.0}ms at t={st.IntroT:0.00}");
 		float now = Now, t = st.IntroT;
 		// v0.14.79（实机：进设置卡一下就直接到最终画面）：入场用累加的时间，卡顿的那一帧最多走 1/30s
 		st.IntroT += Mathf.Min(dt, 1f / 30f);
@@ -862,11 +893,7 @@ public static class SettingsSkin
 		{
 			Splash(st, view, k, t);
 		}
-		else if (st.Root.ClipChildren != CanvasItem.ClipChildrenMode.Disabled)
-		{
-			st.Root.ClipChildren = CanvasItem.ClipChildrenMode.Disabled;     // 入场结束：遮罩关掉（ColorRect 本身透明）
-			st.Root.Material = null;
-		}
+		st.Root.Visible = !entering || t >= 0.34f || st.DiveFrames.Count == 0;
 		float show = Mathf.Clamp((t - 0.24f) / 0.06f, 0f, 1f);
 		st.Words.Modulate = new Color(1f, 1f, 1f, show);
 		// v0.14.74（用户：切入僵硬）：按原版逐帧量出来的位置 / 角度（分镜 #40~#72 和最终帧做模板匹配，见 DiveKeys），

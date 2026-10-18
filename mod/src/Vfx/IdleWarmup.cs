@@ -33,7 +33,7 @@ internal static class IdleWarmup
 	{
 		if (!P3Makoto.Scenes.SettingsSkin.Enabled) yield break;
 		// v0.14.68：设置界面（第一次打开卡了约 0.9s：三张 1920×1080 立绘解码 + 三个新着色器编译）
-		foreach (string p in new[] { "@system shaders", "res://p3makoto/ui/system_portrait.png", "res://p3makoto/ui/system_portrait_q1.png", "res://p3makoto/ui/system_portrait_half.png", "res://p3makoto/ui/system_portrait_q3.png", "res://p3makoto/ui/system_portrait_closed.png" })
+		foreach (string p in new[] { "@system shaders", "@system type", "res://p3makoto/ui/system_portrait.png", "res://p3makoto/ui/system_portrait_q1.png", "res://p3makoto/ui/system_portrait_half.png", "res://p3makoto/ui/system_portrait_q3.png", "res://p3makoto/ui/system_portrait_closed.png" })
 		{
 			yield return p;
 		}
@@ -149,6 +149,17 @@ internal static class IdleWarmup
 			foreach (Shader sh in new[] { Shaders.CampPanel, Shaders.CampWater, Shaders.CampPortrait, Shaders.GradientMap, Shaders.BlobWipe, Shaders.DiveSplash, Shaders.DiveMask })
 			{
 				tiny.AddChild(new ColorRect { Size = new Vector2(1000f, 1000f), Material = new ShaderMaterial { Shader = sh }, MouseFilter = Control.MouseFilterEnum.Ignore });
+			}
+			return;
+		}
+		if (path == "@system type")
+		{
+			// v0.14.80（点设置后卡约 0.5s）：设置界面的大号字（竖排 SYSTEM 230px、分页大字、面板标题）先栅格化一遍
+			float k = tree.Root.GetVisibleRect().Size.Y / 1080f;
+			const string latin = "SYSTEMGENRALPHICOUNDP3MAKTabcdefghijklmnopqrstuvwxyz0123456789 ·.";
+			foreach (int size in new[] { (int)(230f * k), 230, 64, (int)(70f * k), (int)(58f * k), (int)(64f * k), (int)(56f * k), (int)(60f * k), (int)(34f * k), (int)(17f * k) })
+			{
+				Typo.Text(tiny, latin, Typo.Barlow, size, Colors.White, Vector2.Zero);
 			}
 			return;
 		}
