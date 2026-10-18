@@ -39,13 +39,14 @@ public static class SettingsSkin
 	private static readonly Color Red = new(0.90f, 0.10f, 0.20f);
 	private static readonly Color White = new(0.97f, 0.98f, 1f);
 
-	// 人物右侧轮廓（art/p3menu_system/meta.json 的 water_boundary_polyline，1920×1080 像素），白色面板和融水着色器共用
+	// v0.14.75 人物和水的分界线（1920×1080 像素，y 递增）：衬衫右沿 → 绕开袖口那一截（原版没有）→ 耳机 → 绕开右下伸进水里的头发 → 脸下边。
+	// 线左边是人物 + 白色面板，线右边是水（立绘着色器、白色面板、待机气泡共用）
 	private static readonly Vector2[] Edge =
 	{
-		// v0.14.70：多出来的那只手去掉后重算（tools/ui/build_system_portrait.py 打印的折线）
-		new(1014f, 0f), new(947f, 108f), new(883f, 216f), new(828f, 324f), new(789f, 432f), new(852f, 540f),
-		new(856f, 648f), new(736f, 756f), new(792f, 864f), new(826f, 972f), new(800f, 1080f),
+		new(1000f, 0f), new(905f, 200f), new(812f, 385f), new(795f, 470f), new(775f, 560f), new(760f, 650f), new(745f, 700f),
+		new(790f, 760f), new(800f, 860f), new(770f, 925f), new(700f, 935f), new(650f, 965f), new(630f, 1080f),
 	};
+
 
 	private sealed class Tab
 	{
@@ -76,6 +77,7 @@ public static class SettingsSkin
 		internal Control Root = null!, Words = null!, Top = null!;
 		internal TextureRect Portrait = null!;
 		internal Texture2D? Open, Q1, Half, Q3, Closed;
+		internal Texture2D?[] DivePoses = new Texture2D?[3];
 		internal ShaderMaterial PortraitMat = null!;
 		internal ColorRect PanelRect = null!;
 		internal Node2D PanelDeco = null!, Bubbles = null!;
@@ -229,6 +231,11 @@ public static class SettingsSkin
 		st.Half = Load("res://p3makoto/ui/system_portrait_half.png");
 		st.Q3 = Load("res://p3makoto/ui/system_portrait_q3.png");
 		st.Closed = Load("res://p3makoto/ui/system_portrait_closed.png");
+		// v0.14.75：入水时"低头 → 抬头"的几张姿势帧（Codex imagegen，docs/codex/codex_settings_dive_frames.md）；还没有就用旋转近似
+		for (int i = 0; i < 3; i++)
+		{
+			st.DivePoses[i] = Load($"res://p3makoto/ui/system_dive_{(char)('a' + i)}.png");
+		}
 		ShaderMaterial pm = new() { Shader = Shaders.CampPortrait };
 		pm.SetShaderParameter("edge", Edge.Select(e => new Vector2(e.X / 1920f, e.Y / 1080f)).ToArray());
 		pm.SetShaderParameter("aspect", 16f / 9f);
@@ -236,6 +243,16 @@ public static class SettingsSkin
 		st.PortraitMat = pm;
 		st.Portrait = new TextureRect { Texture = st.Open, Material = pm, MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, Size = new Vector2(pw, view.Y) };
 		st.Root.AddChild(st.Portrait);
+		// v0.14.75（用户：右边这块水是在人物图层之上的）：同一个水着色器再画一层盖在人物上面，只画分界线右边；人物沉入时从这层水下面穿过
+		ShaderMaterial waterTop = new() { Shader = Shaders.CampWater };
+		waterTop.SetShaderParameter("aspect", view.X / view.Y);
+		waterTop.SetShaderParameter("masked", 1f);
+		waterTop.SetShaderParameter("edge_scale", view.X / pw);
+		waterTop.SetShaderParameter("edge", Edge.Select(e => new Vector2(e.X / 1920f, e.Y / 1080f)).ToArray());
+		ColorRect waterTopRect = new() { Material = waterTop, MouseFilter = Control.MouseFilterEnum.Ignore };
+		waterTopRect.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		st.Root.AddChild(waterTopRect);
+		st.Root.MoveChild(st.Bubbles, -1);                                   // 待机气泡在上层水的上面
 		st.NextBlink = Now + 2.5f;
 
 		// 左上信息框（仿金额框）、右下当前分页提示
@@ -849,7 +866,8 @@ public static class SettingsSkin
 		st.Portrait.PivotOffset = new Vector2(650f, 977f) * k;                 // 原版模板匹配得到的旋转中心
 		st.Portrait.Rotation = Mathf.DegToRad(rot);
 		st.Portrait.Position = new Vector2(dx * view.X, dy * view.Y) + new Vector2(0f, (1f - Mathf.Cos(now * 0.6f)) * 3f * k);
-		st.PortraitMat.SetShaderParameter("head_angle", Mathf.DegToRad(rot) * 0.35f);
+		bool poses = st.DivePoses.All(x => x != null);
+		st.PortraitMat.SetShaderParameter("head_angle", poses ? 0f : Mathf.DegToRad(rot) * 0.35f);
 		float eWord = Ease.OutCubic(Mathf.Clamp((t - 0.34f) / 0.3f, 0f, 1f));
 		st.SystemWord.Position = new Vector2(-34f * k - 320f * k * (1f - eWord), view.Y + 40f * k);
 		float eContent = Ease.OutCubic(Mathf.Clamp((t - 0.5f) / 0.3f, 0f, 1f));
@@ -877,6 +895,11 @@ public static class SettingsSkin
 				}
 			}
 			Texture2D eye = lid < 0.125f ? st.Open : lid < 0.375f ? st.Q1 : lid < 0.625f ? st.Half : lid < 0.875f ? st.Q3 : st.Closed;
+			// 入水姿势帧（原版 #40~#52：低着头闭眼 → 抬头 → 睁眼），按原版的"两帧一换"节奏切
+			if (st.DivePoses.All(x => x != null) && t < 0.52f)
+			{
+				eye = t < 0.40f ? st.DivePoses[0]! : t < 0.46f ? st.DivePoses[1]! : st.DivePoses[2]!;
+			}
 			if (st.Portrait.Texture != eye)
 			{
 				st.Portrait.Texture = eye;
@@ -1205,7 +1228,7 @@ public static class SettingsSkin
 		float x;
 		if (Fx.Rand(0f, 1f) < 0.6f)
 		{
-			Vector2 e = Edge[(int)Fx.Rand(5f, 9.99f)];
+			Vector2 e = Edge[(int)Fx.Rand(3f, 8.99f)];
 			x = e.X * sx + Fx.Rand(10f, 70f) * k;
 		}
 		else

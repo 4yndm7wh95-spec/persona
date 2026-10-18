@@ -710,28 +710,28 @@ void fragment() {
 	/// v0.14.74 设置界面左边的白色面板（屏幕上固定，不跟人物动）：右沿 = 人物右轮廓往左收 140px 再抹平，
 	/// 120px 宽的过渡带：白 → 浅青 → 透明（下面的水），没有硬边。
 	/// </summary>
+	/// <summary>
+	/// v0.14.75 设置界面左边的白色面板（屏幕上固定，不跟人物动）：右沿就是人物和水的分界线（同立绘着色器），左白右水，
+	/// 分界只有 2px 的抗锯齿，不加浅青过渡（原版就是干净的两块）。reveal：入场时从画面左外侧扫到位。
+	/// </summary>
 	public static Shader CampPanel => _campPanel ??= Make(@"
 shader_type canvas_item;
-uniform vec2 edge[11];
-uniform float reveal = 1.0;   // 入场：右沿从画面左外侧扫到位（原版 #40 左边还是水，#44 起白底出来）
+uniform vec2 edge[13];
+uniform float reveal = 1.0;
 float edge_x(float y) {
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < 12; i++) {
 		if (y <= edge[i + 1].y) {
 			float k = (y - edge[i].y) / max(edge[i + 1].y - edge[i].y, 0.0001);
 			return mix(edge[i].x, edge[i + 1].x, clamp(k, 0.0, 1.0));
 		}
 	}
-	return edge[10].x;
+	return edge[12].x;
 }
 void fragment() {
-	float ex = 0.0;
-	for (int j = -2; j <= 2; j++) { ex += edge_x(clamp(UV.y + float(j) * 0.06, 0.0, 1.0)); }
-	ex = ex / 5.0 - 0.073 + sin(UV.y * 9.0 + TIME * 0.8) * 0.004;
-	ex = mix(-0.15, ex, reveal);
-	float d = (UV.x - ex) / 0.0625;
-	float a = 1.0 - smoothstep(-0.2, 1.0, d);
-	vec3 c = mix(vec3(1.0), vec3(0.62, 0.90, 1.0), smoothstep(-0.4, 0.8, d));
-	COLOR = vec4(c, a);
+	float ex = mix(-0.15, edge_x(UV.y), reveal);
+	float px = 1.0 / 1920.0;
+	float a = 1.0 - smoothstep(ex - 1.5 * px, ex + 1.5 * px, UV.x);
+	COLOR = vec4(1.0, 1.0, 1.0, a);
 }");
 
 	public static Shader CampWater => _campWater ??= Make(@"
@@ -741,6 +741,21 @@ shader_type canvas_item;
 // 集中在顶部偏右一个倒三角里（阳光从那里照下来），越往下越小越稀，最上面一条整片都有；缓慢漂动。
 uniform float aspect = 1.777;
 uniform float sun_x = 0.64;
+// v0.14.75：masked = 1 时是盖在人物上面的那层水 —— 只画分界线 edge 右边（edge 是 16:9 画布比例坐标，edge_scale = 屏宽 / 16:9 画布宽），
+// over_alpha 略小于 1，人物伸进水里的部分隐约透出来
+uniform float masked = 0.0;
+uniform float over_alpha = 0.9;
+uniform float edge_scale = 1.0;
+uniform vec2 edge[13];
+float edge_x(float y) {
+	for (int i = 0; i < 12; i++) {
+		if (y <= edge[i + 1].y) {
+			float k = (y - edge[i].y) / max(edge[i + 1].y - edge[i].y, 0.0001);
+			return mix(edge[i].x, edge[i + 1].x, clamp(k, 0.0, 1.0));
+		}
+	}
+	return edge[12].x;
+}
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float vnoise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
@@ -771,7 +786,9 @@ void fragment() {
 	// 远处的暗色块（模糊的水底建筑）
 	float bx = smoothstep(0.08, 0.0, abs(fract(x * 1.6 + 0.3) - 0.5) - 0.32) * smoothstep(0.30, 0.45, y) * smoothstep(0.75, 0.55, y);
 	c = mix(c, c * 0.86, bx * 0.5);
-	COLOR = vec4(c, 1.0);
+	float cx = UV.x * edge_scale;
+	float mk = masked > 0.5 ? smoothstep(edge_x(UV.y) - 0.0008, edge_x(UV.y) + 0.0008, cx) * over_alpha : 1.0;
+	COLOR = vec4(c, mk);
 }");
 
 	/// <summary>
@@ -785,8 +802,7 @@ shader_type canvas_item;
 // · 白色面板并进这个着色器：轮廓线左边是白，右边是水，和人物白色透水用同一条羽化带 —— 不再是两层各自的硬边；
 // · head_angle：头部绕脖子转（入水时先低着头，再抬起来），从衣领往下渐变生效，身体不动；
 // · 飘带 / 头发分区摆动（幅度比以前大，一直在动）。
-uniform vec2 edge[11];
-uniform float feather = 0.045;
+uniform vec2 edge[13];
 uniform float sway = 1.0;
 uniform float panel = 1.0;
 uniform float head_angle = 0.0;
@@ -794,13 +810,13 @@ uniform vec2 head_pivot = vec2(0.215, 0.53);
 uniform float bottom_fade = 0.0;   // v0.14.74：入场时人物在上方，立绘画布下沿（头发被裁掉的直线）露在画面里 —— 下沿 8% 渐隐
 uniform float aspect = 1.7778;
 float edge_x(float y) {
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < 12; i++) {
 		if (y <= edge[i + 1].y) {
 			float k = (y - edge[i].y) / max(edge[i + 1].y - edge[i].y, 0.0001);
 			return mix(edge[i].x, edge[i + 1].x, clamp(k, 0.0, 1.0));
 		}
 	}
-	return edge[10].x;
+	return edge[12].x;
 }
 vec2 rot(vec2 p, float a) {
 	float c = cos(a), s = sin(a);
@@ -828,44 +844,15 @@ void fragment() {
 	vec4 c = texture(TEXTURE, clamp(uv, vec2(0.0), vec2(1.0)));
 	float mn = min(c.r, min(c.g, c.b)), mx = max(c.r, max(c.g, c.b));
 	float white = smoothstep(0.80, 0.93, mn) * (1.0 - smoothstep(0.08, 0.22, mx - mn));
-	float ex = edge_x(UV.y) + sin(TIME * 1.3 + UV.y * 12.0) * 0.004;
-	// v0.14.74（用户：人物和水之间有轮廓、有边界，原版头发也融进水里）—— 对照原版：右侧白衬衫没有轮廓线，白色直接接一圈浅青的光再到水；
-	// 伸进水里的头发 / 衣服变浅、半透明
-	float near = smoothstep(ex - 0.07, ex - 0.01, UV.x);              // 人物右侧轮廓附近 + 水里
-	float deep = smoothstep(ex - 0.05, ex + 0.08, UV.x);              // 越往水里越深
-	vec2 tp = TEXTURE_PIXEL_SIZE;
-	// 1. 右侧轮廓线去掉：线条像素右边几像素是透明、左边几像素是白 → 当成白
-	float aR = min(texture(TEXTURE, uv + vec2(4.0, 0.0) * tp).a, texture(TEXTURE, uv + vec2(8.0, 0.0) * tp).a);
-	vec4 lw = texture(TEXTURE, uv - vec2(6.0, 0.0) * tp);
-	float wl = smoothstep(0.85, 0.95, min(lw.r, min(lw.g, lw.b))) * lw.a;
-	float isLine = (1.0 - white) * (1.0 - smoothstep(0.25, 0.6, aR)) * wl * c.a * near;
-	c.rgb = mix(c.rgb, vec3(1.0), isLine);
-	white = max(white, isLine);
-	// 2. 白色越往水里越带浅青、略透明
-	vec3 col = mix(c.rgb, vec3(0.80, 0.95, 1.0), white * deep * 0.7);
-	float a = c.a * (1.0 - white * deep * 0.35);
-	// 3. 头发 / 衣服的彩色和线条：往水里变浅变透
-	col = mix(col, vec3(0.45, 0.80, 1.0), (1.0 - white) * deep * 0.55);
-	a *= 1.0 - (1.0 - white) * deep * 0.45;
-	// 4. 人物右侧外沿的浅青光晕（透明处看左边 2.5~20 像素有没有人物，越近越亮）—— 白衬衫、头发的外轮廓都柔化进水里
-	float g = 0.0;
-	for (int i = 1; i <= 8; i++) {
-		float d = float(i) * 2.5;
-		float fall = 1.0 - float(i - 1) / 8.0;
-		g = max(g, texture(TEXTURE, uv - vec2(d, 0.0) * tp).a * fall);
-		g = max(g, texture(TEXTURE, uv - vec2(d * 0.7, d * 0.7) * tp).a * fall);
-		g = max(g, texture(TEXTURE, uv - vec2(d * 0.7, -d * 0.7) * tp).a * fall);
-	}
-	g = g * g * near * (1.0 - a);
-	float sh = sin(UV.x * 40.0 + TIME * 2.0 + sin(UV.y * 30.0 - TIME) * 2.0) * 0.5 + 0.5;
-	col += vec3(0.20, 0.32, 0.40) * sh * deep * 0.08;
-	float ga = g * 0.75;
-	float oa = a + ga * (1.0 - a);
-	vec3 oc = (col * a + vec3(0.72, 0.93, 1.0) * ga * (1.0 - a)) / max(oa, 0.0001);
-	// 旧的白色面板参数保留（v0.14.74 起面板是单独一层，这里传 0）
-	float pan = panel * (1.0 - smoothstep(ex - feather, ex + feather, UV.x));
-	float fa = oa + pan * (1.0 - oa);
-	vec3 fc = (oc * oa + vec3(1.0) * pan * (1.0 - oa)) / max(fa, 0.0001);
+	// v0.14.75（用户：右边的水是盖在人物图层上面的一层）：人物这里原样画，右边的水由 CampWater（masked）盖在上面
+	float side = 0.0;
+	float fa = c.a;
+	vec3 fc = c.rgb;
+	// 旧的白色面板参数保留（面板是单独一层，这里传 0）
+	float pan = panel * (1.0 - side);
+	float fa2 = fa + pan * (1.0 - fa);
+	fc = (fc * fa + vec3(1.0) * pan * (1.0 - fa)) / max(fa2, 0.0001);
+	fa = fa2;
 	fa *= 1.0 - bottom_fade * smoothstep(0.90, 0.995, UV.y);
 	COLOR = vec4(fc, fa);
 }");

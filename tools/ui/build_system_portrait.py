@@ -133,6 +133,13 @@ def main(preview=None):
         godot_tex.write_texture(STAGE, f"p3makoto/ui/{dst}", im)
         done[dst] = (im, n)
         print(dst, im.size, "snapped-to-white", n)
+    # v0.14.75：入水姿势帧（Codex imagegen，art/p3menu_system/dive/system_dive_{a,b,c}.png；已经是去掉手的版本）
+    for key in "abc":
+        src = SRC / "dive" / f"system_dive_{key}.png"
+        if src.exists():
+            im, n = clean(Image.open(src))
+            godot_tex.write_texture(STAGE, f"p3makoto/ui/system_dive_{key}.png", im)
+            print(f"system_dive_{key}.png", im.size, "snapped-to-white", n)
     if preview:
         base = done["system_portrait.png"][0]
         bg = Image.new("RGBA", base.size, (20, 70, 200, 255))
