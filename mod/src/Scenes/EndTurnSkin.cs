@@ -25,10 +25,8 @@ public static class EndTurnSkin
 	private static readonly Color Red = new(0.91f, 0.12f, 0.23f);
 	private static Font? _font;
 
-	/// <summary>游戏自带的 Noto Sans CJK 粗黑体 + 右斜（原版简中按钮用的是思源宋体）。</summary>
-	private static Font LabelFont => _font ??= ResourceLoader.Load(CjkBoldPath) is Font f
-		? new FontVariation { BaseFont = f, VariationTransform = new Transform2D(new Vector2(1f, 0f), new Vector2(-0.18f, 1f), Vector2.Zero) }
-		: Typo.CjkHeavy;
+	/// <summary>游戏自带的 Noto Sans CJK 粗黑体，正体（v0.14.59：玩家不要斜的中文）。</summary>
+	private static Font LabelFont => _font ??= ResourceLoader.Load(CjkBoldPath) as Font ?? Typo.CjkBold;
 
 	public static void Apply(NEndTurnButton button)
 	{

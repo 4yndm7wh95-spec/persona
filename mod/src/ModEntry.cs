@@ -13,9 +13,18 @@ public static class ModEntry
 
 	public static void Init()
 	{
-		GD.Print($"{Tag} init v0.14.58");
+		GD.Print($"{Tag} init v0.14.59");
 		// v0.14.44（多版本兼容）：记下游戏版本，换版本出问题时日志里一眼能看到是哪个版本
 		Safe("game version", () => GD.Print($"{Tag} game version {P3Makoto.Core.Compat.GameVersion()}"));
+		// v0.14.59（玩家：iOS 移植版报 PlatformNotSupportedException）：iOS / 纯 AOT 平台不能在运行时生成代码，
+		// Harmony 打补丁会抛异常甚至让游戏起不来。这种平台上什么补丁和特效都不装，只留资源包里的皮肤（资源包自己就覆盖原版路径）。
+		// 注：目前 iOS 版在加载 DLL 这一步就失败了（代码根本跑不到这里），要用 mod/ios 下不带 DLL 的清单；这里是兜底。
+		if (!CanPatch(out string why))
+		{
+			GD.Print($"{Tag} runtime code patching unavailable ({why}) -> effects disabled, only the skin art from the pck is used");
+			Safe("asset guard", () => Core.AssetGuard.Apply("init (no patching)"));
+			return;
+		}
 		try
 		{
 			// v0.14.31：逐个补丁类应用（PatchAll 遇到第一个失败就整体中断，后面的补丁全部不生效）；失败的单独记日志
@@ -65,6 +74,31 @@ public static class ModEntry
 		{
 			GD.PrintErr($"{Tag} showcase start failed: {e}");
 		}
+	}
+
+	private static bool CanPatch(out string why)
+	{
+		why = "";
+		try
+		{
+			string os = OS.GetName();
+			if (os == "iOS" || os == "Web")
+			{
+				why = "platform " + os;
+				return false;
+			}
+			if (!System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported || !System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeCompiled)
+			{
+				why = "no dynamic code (AOT)";
+				return false;
+			}
+		}
+		catch (Exception e)
+		{
+			why = e.GetType().Name;
+			return false;
+		}
+		return true;
 	}
 
 	/// <summary>特效代码出错时只记日志，绝不让异常冒泡进游戏逻辑。</summary>

@@ -7,6 +7,7 @@ using HarmonyLib;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Screens.Capstones;
+using MegaCrit.Sts2.Core.Nodes.Screens.Map;
 using P3Makoto.Core;
 
 namespace P3Makoto.Vfx;
@@ -56,16 +57,8 @@ internal static class IdleWarmup
 	private static bool MenuOrMap()
 	{
 		if (NGame.Instance?.MainMenu is CanvasItem menu && menu.IsVisibleInTree()) return true;
-		if (NRun.Instance == null || CombatManager.Instance.IsInProgress || tree == null) return false;
-		Stack<Node> pending = new();
-		pending.Push(tree.Root);
-		while (pending.Count > 0)
-		{
-			Node n = pending.Pop();
-			if (n is CanvasItem ci && n.GetType().Name == "NMapScreen" && ci.IsVisibleInTree()) return true;
-			foreach (Node child in n.GetChildren()) pending.Push(child);
-		}
-		return false;
+		// 原版的地图单例；不再每 150ms 全树遍历找 NMapScreen。
+		return NRun.Instance != null && !CombatManager.Instance.IsInProgress && NMapScreen.Instance is NMapScreen map && GodotObject.IsInstanceValid(map) && map.IsOpen && map.IsVisibleInTree();
 	}
 
 	private static void Stop()

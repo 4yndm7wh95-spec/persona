@@ -1340,6 +1340,24 @@ Grand.cs 里其余函数暂时保留不用。
 - 规则（Codex v0.14.56 指出）：对象池里的 NGridCardHolder / NCard 不要改 MouseFilter 等不会被池子复位的属性（会污染之后的奖励 / 升级界面）；退场禁用鼠标改用 screen.MouseBehaviorRecursive。
   我们建卡时给 holder 设的 MouseFilter = Pass 也去掉了。
 
+## v0.14.59（战斗图标 P3R 化、iOS、复查 Codex 的蓝蝶 / 预热 / 光标改动）
+
+- 战斗图标（Scenes/HudSkin.cs，样式 = tools/ui/hud_preview.py，只在结城理的对局显示，否则自动恢复原版）：
+  - 能量（NEnergyCounter，128×128）：原版 %Layers 和两层粒子藏起来、Label 只设透明（数字从它的 "3/3" 文本读）；
+    白边深蓝圆盘 + 按上限分格的青色格子（最多 10 格，超过按比例）+ 斜切黑底大号斜体数字 + "/上限" + 外圈慢转青弧 / 刻度点 + 反向转的红色短弧 + ENERGY 标签；
+    能量增加：圆盘弹一下 + 外扩光环；为 0：压暗、数字变红；超过上限：格子呼吸发亮。
+  - 辉星（NStarCounter）：Icon 只设 SelfModulate 透明、%RotationLayers 隐藏、%CountLabel 透明；装饰挂在 Icon 下：白边深蓝菱形 + 内圈青线 + 顶部四角星 + 数字，背后慢转的细线方框；增加时金色光环。
+  - 牌堆按钮（NCombatCardPile 的抽 / 弃 / 消耗）：装饰挂在原版 Icon 下（跟着悬停放大、按下变暗），两张塔罗牌背（pile_card_back.png）斜叠 + 青色小字；
+    张数牌挂在 CountContainer 下，跟着原版数字的弹跳缩放；右侧两个按钮左右镜像；空堆时整体变灰。
+  - 每帧用 SceneTree.ProcessFrame 驱动，节点没了自动退订；任何一帧出错就整套退回原版（不每帧重试）。
+- 结束回合按钮的中文改成正体（去掉 FontVariation 的斜切变换）。
+- iOS（玩家：iOS 移植版 0.110.1 报 PlatformNotSupportedException，不删 DLL 进不了游戏）：
+  报错类型是 MOD_ERROR.EXCEPTION —— 游戏在 AssemblyLoadContext.LoadFromAssemblyPath 这一步就失败了（iOS 不允许加载任何代码），我们的代码一行都没执行，
+  DLL 里怎么改都修不了。解决：发一个 iOS 专用包（mod/ios/P3Makoto.json：has_dll = false，只配 P3Makoto.pck），皮肤（选人、战斗骨骼、头像、地图标记、休息处 / 商店）照常，所有特效都没有。
+  另外 ModEntry.Init 加了兜底：OS 是 iOS / Web 或运行时不支持动态代码时不打任何 Harmony 补丁，只做 AssetGuard。
+- 复查 Codex（3e959c0 ~ ecc761c）：蓝蝶环绕（PileButterfly / ButterflyOrbit / ButterflyVisual，GreatSeal 的蝴蝶改成共用 ButterflyVisual）、空 BottomText 整个藏起来、
+  光标晚加载补应用、音乐盒拖动、空闲预热 —— 没发现会出错的地方；只改了一处：IdleWarmup 判断"在地图上"原来每 150ms 遍历整棵场景树，改成直接读 NMapScreen.Instance.IsOpen。
+
 ## 待办（用户实机反馈，先记录）
 
 - P3R 主菜单打开动画（用户给的分镜 0.50~1.83s）：水面上有东西砸进来，带大片水花切入，水花散开后才看清是结城理倒着把头探进水里。之后找地方用（用户：先做牌堆，这个后面再做）。

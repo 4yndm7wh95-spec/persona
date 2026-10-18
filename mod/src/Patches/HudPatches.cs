@@ -150,3 +150,23 @@ public static class EndTurnButtonPatch
 		});
 	}
 }
+
+/// <summary>v0.14.59：能量 / 辉星 / 牌堆按钮换成 P3R 风格（见 HudSkin），只在结城理的对局里显示，逻辑完全是原版的。</summary>
+[HarmonyPatch(typeof(NEnergyCounter), nameof(NEnergyCounter._Ready))]
+public static class EnergyCounterSkinPatch
+{
+	public static void Postfix(NEnergyCounter __instance) => ModEntry.Safe("hud energy skin", () => HudSkin.ApplyEnergy(__instance));
+}
+
+[HarmonyPatch(typeof(NStarCounter), nameof(NStarCounter._Ready))]
+public static class StarCounterSkinPatch
+{
+	public static void Postfix(NStarCounter __instance) => ModEntry.Safe("hud star skin", () => HudSkin.ApplyStars(__instance));
+}
+
+/// <summary>三个牌堆按钮的 _Ready 都只调用 ConnectSignals（基类的），在它之后挂装饰。</summary>
+[HarmonyPatch(typeof(NCombatCardPile), "ConnectSignals")]
+public static class CombatPileSkinPatch
+{
+	public static void Postfix(NCombatCardPile __instance) => ModEntry.Safe("hud pile skin", () => HudSkin.ApplyPile(__instance));
+}
