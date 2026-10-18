@@ -848,7 +848,8 @@ void fragment() {
 		float pxz = 1.0 / 1920.0;
 		// 画布下面（人物还没落定时露出来）：按画布最下一行往下延伸 —— 头发那几列是水，最左白条那几列是白（不再整条变水，出一道直线）
 		// 画布下面（入场时人物还在上方）：只有最左边大字那一条是白，其余是水（不再把画布最下一行往下拉成一块白色矩形）
-		float zt = cuv.y < 0.0 ? 1.0 : cuv.y > 1.0 ? 1.0 - smoothstep(0.06, 0.065, SCREEN_UV.x) : texture(zone_tex, clamp(cuv, vec2(0.0005), vec2(0.9995))).r;
+		// 画布下面（入场时人物还在上方）：每一列按画布最下一行往下延伸 —— 最下一行是头发的列是水，其余是白（不出一条直线边界）
+		float zt = cuv.y < 0.0 ? 1.0 : cuv.y > 1.0 ? 1.0 - hairness(texture(TEXTURE, vec2(clamp(cuv.x, 0.0005, 0.9995), 0.996))) : texture(zone_tex, clamp(cuv, vec2(0.0005), vec2(0.9995))).r;
 		float rx = mix(-0.05, 0.75, zone_reveal) - SCREEN_UV.y * 0.12;
 		float z = zt * (1.0 - smoothstep(exz - 1.5 * pxz, exz + 1.5 * pxz, cuv.x)) * panel_zone * panel
 			* (1.0 - smoothstep(rx - 0.002, rx + 0.002, SCREEN_UV.x));
@@ -891,8 +892,8 @@ void fragment() {
 	float hair = hairness(c) * smoothstep(3.0, 4.5, hn) * smoothstep(0.52, 0.58, uv.y);
 	// 用户：眼睛颜色不对 —— 两只眼的虹膜也是青蓝，被当成头发画成了水；眼睛范围内不转（立绘像素坐标）
 	vec2 pp = uv * vec2(1920.0, 1080.0);
-	float eyes = max(1.0 - smoothstep(62.0, 72.0, length((pp - vec2(497.0, 925.0)) * vec2(0.85, 1.25))),
-		1.0 - smoothstep(30.0, 38.0, length((pp - vec2(357.0, 845.0)) * vec2(1.3, 0.9))));
+	float eyes = max(1.0 - smoothstep(28.0, 36.0, length((pp - vec2(490.0, 879.0)) * vec2(0.9, 1.1))),
+		1.0 - smoothstep(18.0, 24.0, length((pp - vec2(355.0, 821.0)) * vec2(1.2, 0.9))));   // v0.14.78 新立绘的两只眼
 	hair *= 1.0 - eyes;
 	// 分界线右边整片都是水：不乘透明度（以前乘了 c.a，线条 / 发丝的半透明边缘只变一半，留下一条条细接缝）
 	float toWater = max(hair, side);
