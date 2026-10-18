@@ -818,8 +818,9 @@ float edge_x(float y) {
 " + WaterFn + @"
 float hairness(vec4 p) {
 	// 头发：钴蓝 / 天青（蓝色为主、不白、不是深色线条）
-	float mx = max(p.r, max(p.g, p.b));
-	return p.a * step(0.6, p.b) * step(p.r, 0.5) * step(0.55, mx);
+	// v0.14.77：头发里的浅青碎片也算头发（以前 r > 0.5 的浅青块漏掉，留在水里像单独画上去的）—— 偏蓝、不是近白
+	float mn = min(p.r, min(p.g, p.b));
+	return p.a * step(0.6, p.b) * step(0.25, p.b - p.r) * (1.0 - step(0.82, mn));
 }
 vec2 rot(vec2 p, float a) {
 	float c = cos(a), s = sin(a);
@@ -858,15 +859,23 @@ void fragment() {
 		float an = float(k) * 0.7854;
 		hn += hairness(texture(TEXTURE, clamp(uv + vec2(cos(an), sin(an)) * tp, vec2(0.0), vec2(1.0))));
 	}
-	float hair = hairness(c) * smoothstep(3.0, 4.5, hn);
+	// 只在头部（立绘下半部，衣领以下）认头发 —— 衬衫上的浅青阴影不算
+	float hair = hairness(c) * smoothstep(3.0, 4.5, hn) * smoothstep(0.52, 0.58, uv.y);
 	float toWater = max(hair, side * c.a);
 	vec3 w = water_at(SCREEN_UV, screen_aspect, sun_x, TIME);
 	// 用户：不要浅色反光，那样反而有边界 —— 头发就是水本身的颜色（不压暗：压暗一点在头发外沿、立绘下沿都会出一条色差分界）
 	vec3 wc = w;
 	// 用户对照原版 #56：脸左侧的头发里，浅色发束是平涂的亮天青（没有线、没有渐变）—— 只在脸左边保留，右边伸进水里的仍是水色
 	float leftSide = 1.0 - smoothstep(0.20, 0.27, UV.x);
-	float strand = smoothstep(0.62, 0.72, c.g) * hair * leftSide;
-	wc = mix(wc, vec3(0.16, 0.74, 1.0), strand);
+	// 用户：头发和水是一起的 —— 亮发束只留在头发外轮廓贴着背景白区的那一截（原版 #56 左边），脸旁、发梢都是水色
+	float nearW = 0.0;
+	for (int k = 0; k < 8; k++) {
+		float an = float(k) * 0.7854;
+		vec2 o = vec2(cos(an), sin(an)) * TEXTURE_PIXEL_SIZE * 30.0;
+		nearW = max(nearW, texture(zone_tex, clamp(uv + o, vec2(0.0), vec2(1.0))).r);   // 只看背景白区（脸旁、发梢不算）
+	}
+	float strand = smoothstep(0.62, 0.72, c.g) * hair * leftSide * nearW;
+	wc = mix(wc, vec3(0.16, 0.74, 1.0), strand * 0.85);
 	vec3 fc = mix(c.rgb, wc, toWater);
 	float fa = c.a;
 	// 白色面板：分界线左边、人物上半截（左下角留给水和头发）

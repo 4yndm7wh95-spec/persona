@@ -88,7 +88,6 @@ public static class SettingsSkin
 		internal ShaderMaterial WipeMat = null!;
 		internal Label PanelTitle = null!, PanelWater = null!, HintZh = null!, HintEn = null!;
 		internal Node2D SystemWord = null!;
-		internal ColorRect SystemStrip = null!;
 		internal TextureRect ZoneLayer = null!;
 		internal readonly List<Tab> Tabs = new();
 		internal readonly List<RowDeco> Rows = new();
@@ -253,8 +252,7 @@ public static class SettingsSkin
 		pm.SetShaderParameter("layer", 2);
 		st.ZoneLayer = new TextureRect { Texture = st.Open, Material = zm, MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, Size = new Vector2(pw, view.Y) };
 		st.Root.AddChild(st.ZoneLayer);
-		st.SystemStrip = new ColorRect { Color = Colors.White, MouseFilter = Control.MouseFilterEnum.Ignore, Size = new Vector2(0.15f * view.X, view.Y) };
-		st.Root.AddChild(st.SystemStrip);
+		// （v0.14.77：不再单独铺左边白条 —— 它的右沿在头发下面露成一条竖直的硬边；左边的白由跟着人物走的白色区域提供）
 		st.Root.MoveChild(st.SystemWord, -1);
 		st.Portrait = new TextureRect { Texture = st.Open, Material = pm, MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, Size = new Vector2(pw, view.Y) };
 		st.Root.AddChild(st.Portrait);
@@ -878,7 +876,6 @@ public static class SettingsSkin
 		st.PortraitMat.SetShaderParameter("head_angle", poses ? 0f : Mathf.DegToRad(rot) * 0.35f);
 		float eWord = Ease.OutCubic(Mathf.Clamp((t - 0.34f) / 0.3f, 0f, 1f));
 		st.SystemWord.Position = new Vector2(0.165f * view.X - 320f * k * (1f - eWord), -0.03f * view.Y);
-		st.SystemStrip.Position = new Vector2(-st.SystemStrip.Size.X * (1f - eWord), 0f);
 		float eContent = Ease.OutCubic(Mathf.Clamp((t - 0.5f) / 0.3f, 0f, 1f));
 		st.Scroll.Modulate = new Color(st.OrigModulate, st.OrigModulate.A * eContent);
 
