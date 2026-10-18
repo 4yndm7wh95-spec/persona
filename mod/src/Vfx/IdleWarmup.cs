@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -26,7 +27,17 @@ internal static class IdleWarmup
 		"res://p3makoto/portrait/portrait_skel_data.tres",
 		// v0.14.68：设置界面（第一次打开卡了约 0.9s：三张 1920×1080 立绘解码 + 三个新着色器编译）
 		"@system shaders", "res://p3makoto/ui/system_portrait.png", "res://p3makoto/ui/system_portrait_q1.png", "res://p3makoto/ui/system_portrait_half.png", "res://p3makoto/ui/system_portrait_q3.png", "res://p3makoto/ui/system_portrait_closed.png",
-	});
+	}.Concat(DiveFrames()));
+
+	/// <summary>v0.14.73 设置界面入水转场的原版水花逐帧图（只导出了不重复的帧，存在哪几张预热哪几张）。</summary>
+	private static IEnumerable<string> DiveFrames()
+	{
+		for (int f = 20; f <= 52; f++)
+		{
+			string p = $"res://p3makoto/ui/dive/dive_{f:000}.png";
+			if (ResourceLoader.Exists(p)) yield return p;
+		}
+	}
 	private static readonly List<Resource> Held = new();
 	private static readonly FieldInfo? LoaderInstance = AccessTools.Field(typeof(NAssetLoader), "_instance");
 	private static readonly FieldInfo? Current = AccessTools.Field(typeof(NAssetLoader), "_currentSession");

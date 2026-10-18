@@ -80,8 +80,8 @@ public static class SettingsSkin
 		internal Node2D PanelDeco = null!, Bubbles = null!;
 		internal ColorRect SplashRect = null!;
 		internal ShaderMaterial SplashMat = null!, MaskMat = null!;
-		internal readonly Vector4[] SplashCols = new Vector4[8], SplashCols2 = new Vector4[8], SplashBlobs = new Vector4[96];
-		internal readonly List<Vector4> BlobSeeds = new();
+		internal readonly List<(int Frame, Texture2D Tex)> DiveFrames = new();
+		internal Texture2D? DiveShown;
 		internal ColorRect Wipe = null!;
 		internal ShaderMaterial WipeMat = null!;
 		internal Label PanelTitle = null!, PanelWater = null!, HintZh = null!, HintEn = null!;
@@ -314,7 +314,8 @@ public static class SettingsSkin
 		st.Tabs.Clear();
 		st.Rows.Clear();
 		st.Styled.Clear();
-		st.BlobSeeds.Clear();
+		st.DiveFrames.Clear();
+		st.DiveShown = null;
 		st.WipeT0 = -1f;
 		st.On = false;
 		st.SrcValid = false;
@@ -1214,116 +1215,49 @@ public static class SettingsSkin
 		st.SplashRect = new ColorRect { Material = st.SplashMat, MouseFilter = Control.MouseFilterEnum.Ignore, Visible = false };
 		st.SplashRect.SetAnchorsPreset(Control.LayoutPreset.FullRect);
 		st.Top.AddChild(st.SplashRect);
-		// 96 个泡沫 / 气泡的种子：(出生时刻, 组, 随机 1, 随机 2)；位置和大小每帧按时间算（Splash）
-		for (int i = 0; i < 96; i++)
+		// v0.14.73：原版水花逐帧图（tools/ui/build_dive_flipbook.py；录像里重复的帧没导出，存在哪几帧就按哪几帧切）
+		for (int f = DiveFirst; f <= DiveLast; f++)
 		{
-			float group = i < 32 ? 0f : i < 44 ? 1f : i < 58 ? 2f : 3f;   // 0 开场往下泼的泡沫（挤得很密）、1 顶部白云、2 两侧甩出的水花、3 气泡
-			float born = group switch { 0f => 0f, 1f => Fx.Rand(0.05f, 0.09f), 2f => Fx.Rand(0.08f, 0.30f), _ => Fx.Rand(0.05f, 0.7f) };
-			st.BlobSeeds.Add(new Vector4(born, group, Fx.Rand(0f, 1f), Fx.Rand(0f, 1f)));
+			if (Load($"res://p3makoto/ui/dive/dive_{f:000}.png") is Texture2D tex)
+			{
+				st.DiveFrames.Add((f, tex));
+			}
 		}
 	}
 
+	private const int DiveFirst = 20, DiveLast = 52;
+
 	/// <summary>
-	/// 入水转场每帧（时间对照用户推送的 60fps 分镜，t = 原视频时间 − 0.30s）：
-	/// · 0.00s（#20）一大片泡沫从顶部往下泼（中间偏上一列，0.12~0.37s 内由下往上缩没）；
-	/// · 0.03~0.33s V 形水团：先又窄又深（#22：顶宽 0.34W、尖端到底），再越来越宽（#28 顶宽 0.66W），0.33s（#38）盖满；
-	///   三道细长水纹往 V 尖端汇聚（#22~#26），0.10s 起五道边缘起伏的宽水柱从上往下长、略往中间斜（#28~#40），0.38s 起变淡缩回（#44~#50）；
-	/// · 0.05s 起顶部中间一团白云（#24~#30）；0.12~0.32s 水团两侧甩出水花泡沫（#28~#36）；0.05~0.55s 成串的气泡往上冒。
+	/// 入水转场每帧：按原视频时间（t + 0.30s）找到当前该显示的原版帧（原版水花本身就是每 2~4 帧换一张图的作画，照原样切，不插值）；
+	/// 开头 0.03s 淡入，最后一帧之后 0.13s 淡出；水团的蓝色 0.30~0.42s 褪掉（下面的设置界面露出来）；遮罩 0.34s 起整屏。
 	/// </summary>
 	private static void Splash(State st, Vector2 view, float k, float t)
 	{
-		float cx = view.X * 0.5f;
-		float u = Mathf.Clamp((t - 0.03f) / 0.30f, 0f, 1f);
-		float half = t < 0.03f ? 0f : view.X * (0.10f + 1.0f * Mathf.Pow(u, 1.6f));
-		float tip = view.Y * (0.55f + 1.15f * Mathf.Sqrt(u));
-		float tint = 1f - Ease.InOutCubic(Mathf.Clamp((t - 0.30f) / 0.12f, 0f, 1f));
-		Vector4 funnel = new(cx, half, tip, tint);
-		foreach (ShaderMaterial m in new[] { st.SplashMat, st.MaskMat })
+		if (st.DiveFrames.Count == 0)
 		{
-			m.SetShaderParameter("size", view);
-			m.SetShaderParameter("funnel", funnel);
-			m.SetShaderParameter("t", t);
-			m.SetShaderParameter("k", k);
+			st.MaskMat.SetShaderParameter("full", 1f);
+			st.SplashRect.Visible = false;
+			return;
 		}
-		st.MaskMat.SetShaderParameter("full", t >= 0.34f ? 1f : 0f);
-
-		// 细水纹（0~2）：从顶部往 V 尖端汇聚
-		float[] sx = { -0.12f, 0.0f, 0.1f }, sw = { 30f, 40f, 26f };
-		for (int i = 0; i < 3; i++)
+		float src = (t + 0.30f) * 60f;
+		Texture2D tex = st.DiveFrames[0].Tex;
+		foreach ((int f, Texture2D tx) in st.DiveFrames)
 		{
-			float x0 = cx + sx[i] * view.X;
-			float g = Ease.OutCubic(Mathf.Clamp((t - 0.03f - i * 0.01f) / 0.09f, 0f, 1f));
-			float fade = 1f - Mathf.Clamp((t - 0.18f) / 0.12f, 0f, 1f);
-			st.SplashCols[i] = new Vector4(x0, sw[i] * k, view.Y * 0.85f * g, 3.1f * i + 0.7f);
-			st.SplashCols2[i] = new Vector4((cx - x0) / (view.Y * 0.9f), g > 0f ? fade : 0f, 0.5f, 0f);
-		}
-		// 宽水柱（3~7）
-		(float X, float W, float L)[] cols = { (0.24f, 150f, 0.80f), (0.40f, 95f, 0.60f), (0.54f, 210f, 0.98f), (0.69f, 120f, 0.72f), (0.84f, 165f, 0.86f) };
-		for (int j = 0; j < 5; j++)
-		{
-			float x0 = cols[j].X * view.X;
-			float g = Ease.OutCubic(Mathf.Clamp((t - 0.10f - j % 3 * 0.025f) / 0.22f, 0f, 1f));
-			float back = Ease.InOutCubic(Mathf.Clamp((t - 0.36f - j * 0.02f) / 0.2f, 0f, 1f));
-			st.SplashCols[3 + j] = new Vector4(x0, cols[j].W * k, cols[j].L * view.Y * g * (1f - 0.5f * back), 1.9f * j + 5f);
-			st.SplashCols2[3 + j] = new Vector4((cx - x0) * 0.5f / view.Y, g > 0f ? 1f - back * back : 0f, 0.28f, 0f);
-		}
-
-		for (int i = 0; i < st.BlobSeeds.Count; i++)
-		{
-			Vector4 sd = st.BlobSeeds[i];
-			float age = t - sd.X, r1 = sd.Z, r2 = sd.W;
-			Vector4 b = Vector4.Zero;
-			if (age >= 0f)
+			if (f <= src)
 			{
-				switch ((int)sd.Y)
-				{
-					case 0:
-					{
-						// 开场往下泼的泡沫：中间一列，下面的先缩没
-						float life = 0.12f + 0.25f * (1f - r2), v = Mathf.Clamp(age / life, 0f, 1f);
-						float side = r1 < 0.5f ? -1f : 1f;
-						Vector2 at = new Vector2(view.X * (0.40f + 0.28f * r1) + side * 120f * k * Ease.OutCubic(v), view.Y * 0.85f * Mathf.Pow(r2, 1.2f) - 60f * k * Ease.OutCubic(v));
-						float r = Mathf.Lerp(105f, 55f, r2) * k * (0.8f + 0.4f * Mathf.Abs(Mathf.Sin(r1 * 23f))) * Mathf.Min(1f, age / 0.03f) * (1f - Ease.InCubic(v));
-						b = new Vector4(at.X, at.Y, r, 0.3f * Mathf.Abs(Mathf.Sin(r1 * 91f + r2 * 17f)));
-						break;
-					}
-					case 1:
-					{
-						// 顶部中间的白云
-						float r = Mathf.Lerp(70f, 125f, r2) * k * Ease.OutCubic(Mathf.Clamp(age / 0.09f, 0f, 1f)) * (1f - Ease.InCubic(Mathf.Clamp((t - 0.22f) / 0.13f, 0f, 1f)));
-						b = new Vector4(view.X * (0.30f + 0.40f * r1), view.Y * 0.30f * r2, r, 2f + 0.3f * r1);
-						break;
-					}
-					case 2:
-					{
-						// 两侧甩出的水花：从当时的水团边缘往外、往上
-						float v = Mathf.Clamp(age / 0.3f, 0f, 1f), y = view.Y * Mathf.Lerp(0.3f, 0.85f, r1);
-						float s = Mathf.Clamp(y / tip, 0f, 1f), side = r2 < 0.5f ? -1f : 1f;
-						float ex = cx + side * half * Mathf.Pow(1f - s, 0.75f);
-						Vector2 at = new(ex + side * 150f * k * Ease.OutCubic(v), y - 110f * k * Ease.OutCubic(v));
-						b = new Vector4(at.X, at.Y, Mathf.Lerp(35f, 80f, r1) * k * Mathf.Sin(Mathf.Pi * Mathf.Min(1f, v * 1.1f)), 0.3f * r2);
-						break;
-					}
-					default:
-					{
-						// 气泡：成串（5 个串的起点），往上冲、越来越慢、左右晃，最后缩没；三分之一实心
-						float v = Mathf.Clamp(age / 0.9f, 0f, 1f);
-						int cl = (int)(r1 * 6f) % 6;
-						float[] ax = { 0.30f, 0.40f, 0.52f, 0.62f, 0.75f, 0.88f };
-						Vector2 p0 = new(view.X * ax[cl] + (r2 - 0.5f) * 110f * k, view.Y * (0.55f + 0.45f * Mathf.Abs(Mathf.Sin(r1 * 37f))));
-						Vector2 at = p0 + new Vector2(Mathf.Sin(v * 9f + r1 * 6f) * 10f * k, -Mathf.Lerp(250f, 520f, r2) * k * 0.75f * (v - 0.35f * v * v));
-						float r = Mathf.Lerp(9f, 28f, Mathf.Abs(Mathf.Sin(r2 * 51f))) * k * Mathf.Min(1f, v / 0.08f) * (1f - Ease.InCubic(Mathf.Clamp((v - 0.6f) / 0.4f, 0f, 1f)));
-						b = new Vector4(at.X, at.Y, r, i % 3 == 0 ? 3f : 1f);
-						break;
-					}
-				}
+				tex = tx;
 			}
-			st.SplashBlobs[i] = b;
 		}
-		st.SplashMat.SetShaderParameter("cols", st.SplashCols);
-		st.SplashMat.SetShaderParameter("cols2", st.SplashCols2);
-		st.SplashMat.SetShaderParameter("blobs", st.SplashBlobs);
-		st.SplashMat.SetShaderParameter("field", Mathf.Clamp((t - 0.12f) / 0.1f, 0f, 1f) * (1f - Mathf.Clamp((t - 0.55f) / 0.3f, 0f, 1f)));
+		if (st.DiveShown != tex)
+		{
+			st.DiveShown = tex;
+			st.SplashMat.SetShaderParameter("frame_tex", tex);
+			st.MaskMat.SetShaderParameter("frame_tex", tex);
+		}
+		float end = DiveLast / 60f - 0.30f;
+		st.SplashMat.SetShaderParameter("alpha", Mathf.Clamp(t / 0.03f, 0f, 1f) * (1f - Mathf.Clamp((t - end) / 0.13f, 0f, 1f)));
+		st.SplashMat.SetShaderParameter("tint", 1f - Ease.InOutCubic(Mathf.Clamp((t - 0.30f) / 0.12f, 0f, 1f)));
+		st.MaskMat.SetShaderParameter("full", t >= 0.34f ? 1f : 0f);
 	}
 
 	private static bool _dumped;
