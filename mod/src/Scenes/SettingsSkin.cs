@@ -89,6 +89,7 @@ public static class SettingsSkin
 		internal Label PanelTitle = null!, PanelWater = null!, HintZh = null!, HintEn = null!;
 		internal Node2D SystemWord = null!;
 		internal ColorRect SystemStrip = null!;
+		internal TextureRect ZoneLayer = null!;
 		internal readonly List<Tab> Tabs = new();
 		internal readonly List<RowDeco> Rows = new();
 		internal readonly List<Action> Undo = new();
@@ -220,10 +221,12 @@ public static class SettingsSkin
 		float pw = view.Y * 16f / 9f;
 
 		// 竖排大字 SYSTEM（灰色错影 + 黑字，从下往上读，被左边缘裁掉一点）
-		st.SystemWord = new Node2D { Position = new Vector2(-34f * k, view.Y + 40f * k), Rotation = -Mathf.Pi / 2f };
+		// v0.14.77（用户对照原版 #70：背景里那一长串大字没有完全放出来）：顺时针竖排、从上往下读、超大，
+		// 字的下半截被画面左边裁掉，只露出字头那一半，整个词也比画面长（下面一截出画）
+		st.SystemWord = new Node2D { Position = new Vector2(0.165f * view.X, -0.03f * view.Y), Rotation = Mathf.Pi / 2f };
 		st.Root.AddChild(st.SystemWord);
-		Typo.Text(st.SystemWord, "SYSTEM", Typo.Barlow, (int)(300f * k), new Color(0.58f, 0.61f, 0.66f), new Vector2(40f * k, -16f * k));
-		Typo.Text(st.SystemWord, "SYSTEM", Typo.Barlow, (int)(300f * k), Ink, Vector2.Zero);
+		Typo.Text(st.SystemWord, "SYSTEM", Typo.Barlow, (int)(560f * k), new Color(0.58f, 0.61f, 0.66f), new Vector2(-40f * k, -22f * k));
+		Typo.Text(st.SystemWord, "SYSTEM", Typo.Barlow, (int)(560f * k), Ink, Vector2.Zero);
 
 		// 倒挂立绘（融水着色器）
 		st.Open = Load("res://p3makoto/ui/system_portrait.png");
@@ -243,14 +246,19 @@ public static class SettingsSkin
 		pm.SetShaderParameter("zone_tex", Load("res://p3makoto/ui/system_zone.png"));
 		pm.SetShaderParameter("screen_aspect", view.X / view.Y);
 		st.PortraitMat = pm;
-		st.Portrait = new TextureRect { Texture = st.Open, Material = pm, MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, Size = new Vector2(pw, view.Y) };
-		st.Root.AddChild(st.Portrait);
-		// v0.14.77：伸进水里的部分和头发都在立绘着色器里直接画成水（WaterFn），不再另盖一层水
-		st.Root.MoveChild(st.Bubbles, -1);                                   // 待机气泡在人物上面
-		// 最左边的白条 + 竖排大字（原版 #44 起从左边滑进来，压在人物上面）
-		st.SystemStrip = new ColorRect { Color = Colors.White, MouseFilter = Control.MouseFilterEnum.Ignore, Size = new Vector2(0.105f * view.X, view.Y) };
+		// v0.14.77（用户对照原版 #70：头发压在竖排大字上面）：层次 = 水 → 白色区域（跟人物走）→ 左边白条 → 竖排大字 → 人物（头发画成水）→ 气泡。
+		// 白色区域单独一层（同一个着色器 layer = 1 只画白区），人物那层 layer = 2 不画白区
+		ShaderMaterial zm = (ShaderMaterial)pm.Duplicate();
+		zm.SetShaderParameter("layer", 1);
+		pm.SetShaderParameter("layer", 2);
+		st.ZoneLayer = new TextureRect { Texture = st.Open, Material = zm, MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, Size = new Vector2(pw, view.Y) };
+		st.Root.AddChild(st.ZoneLayer);
+		st.SystemStrip = new ColorRect { Color = Colors.White, MouseFilter = Control.MouseFilterEnum.Ignore, Size = new Vector2(0.15f * view.X, view.Y) };
 		st.Root.AddChild(st.SystemStrip);
 		st.Root.MoveChild(st.SystemWord, -1);
+		st.Portrait = new TextureRect { Texture = st.Open, Material = pm, MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, Size = new Vector2(pw, view.Y) };
+		st.Root.AddChild(st.Portrait);
+		st.Root.MoveChild(st.Bubbles, -1);                                   // 待机气泡在人物上面
 		st.NextBlink = Now + 2.5f;
 
 		// 左上信息框（仿金额框）、右下当前分页提示
@@ -863,10 +871,13 @@ public static class SettingsSkin
 		st.Portrait.PivotOffset = new Vector2(650f, 977f) * k;                 // 原版模板匹配得到的旋转中心
 		st.Portrait.Rotation = Mathf.DegToRad(rot);
 		st.Portrait.Position = new Vector2(dx * view.X, dy * view.Y) + new Vector2(0f, (1f - Mathf.Cos(now * 0.6f)) * 3f * k);
+		st.ZoneLayer.PivotOffset = st.Portrait.PivotOffset;
+		st.ZoneLayer.Rotation = st.Portrait.Rotation;
+		st.ZoneLayer.Position = st.Portrait.Position;
 		bool poses = st.DivePoses.All(x => x != null);
 		st.PortraitMat.SetShaderParameter("head_angle", poses ? 0f : Mathf.DegToRad(rot) * 0.35f);
 		float eWord = Ease.OutCubic(Mathf.Clamp((t - 0.34f) / 0.3f, 0f, 1f));
-		st.SystemWord.Position = new Vector2(-34f * k - 320f * k * (1f - eWord), view.Y + 40f * k);
+		st.SystemWord.Position = new Vector2(0.165f * view.X - 320f * k * (1f - eWord), -0.03f * view.Y);
 		st.SystemStrip.Position = new Vector2(-st.SystemStrip.Size.X * (1f - eWord), 0f);
 		float eContent = Ease.OutCubic(Mathf.Clamp((t - 0.5f) / 0.3f, 0f, 1f));
 		st.Scroll.Modulate = new Color(st.OrigModulate, st.OrigModulate.A * eContent);
@@ -901,6 +912,7 @@ public static class SettingsSkin
 			if (st.Portrait.Texture != eye)
 			{
 				st.Portrait.Texture = eye;
+				st.ZoneLayer.Texture = eye;
 			}
 		}
 

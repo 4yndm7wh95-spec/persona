@@ -804,6 +804,7 @@ uniform float aspect = 1.7778;
 uniform float screen_aspect = 1.7778;
 uniform float sun_x = 0.64;
 uniform float panel_zone = 1.0;
+uniform int layer = 0;   // 0 = 人物 + 白区，1 = 只画白区，2 = 只画人物
 uniform sampler2D zone_tex : filter_linear;   // 白色区域蒙版（tools/ui/build_system_portrait.py：分界线左边、头发以上），跟着立绘一起动
 float edge_x(float y) {
 	for (int i = 0; i < 12; i++) {
@@ -872,6 +873,8 @@ void fragment() {
 	// 白色区域：蒙版（人物轮廓以上）× 分界线左边；画布外（人物还在上方时）是水
 	float inside = step(0.0, uv.x) * step(uv.x, 1.0) * step(0.0, uv.y) * step(uv.y, 1.0);
 	float zone = texture(zone_tex, clamp(uv, vec2(0.0), vec2(1.0))).r * inside * (1.0 - side) * panel_zone * panel;
+	if (layer == 1) { fa = 0.0; }
+	if (layer == 2) { zone = 0.0; }
 	float fa2 = fa + zone * (1.0 - fa);
 	fc = (fc * fa + vec3(1.0) * zone * (1.0 - fa)) / max(fa2, 0.0001);
 	fa = fa2;
