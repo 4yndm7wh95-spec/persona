@@ -839,6 +839,18 @@ vec2 rot(vec2 p, float a) {
 	return vec2(c * p.x - s * p.y, s * p.x + c * p.y);
 }
 void fragment() {
+	// v0.14.77（用户：入场时左下有一条直线边界）：白区那层（layer 1）是一张比立绘画布大的矩形（宽 2 倍、高 3 倍，画布在中间偏上），
+	// 画布外面也按规则铺白：左边整片白、下面只到最左 235px（画布最下一行头发从这里开始）、上面到分界线顶端 —— 白区不再在画布边上断成一条直线
+	if (layer == 1) {
+		vec2 cuv = UV * vec2(2.0, 3.0) - vec2(0.5, 1.0);
+		float exz = cuv.y > 1.0 - 4.0 / 1080.0 ? 235.0 / 1920.0 : cuv.y < 0.0 ? edge[0].x : edge_x(cuv.y);
+		float pxz = 1.0 / 1920.0;
+		float rx = mix(-0.05, 0.75, zone_reveal) - SCREEN_UV.y * 0.12;
+		float z = (1.0 - smoothstep(exz - 1.5 * pxz, exz + 1.5 * pxz, cuv.x)) * panel_zone * panel
+			* (1.0 - smoothstep(rx - 0.002, rx + 0.002, SCREEN_UV.x));
+		COLOR = vec4(1.0, 1.0, 1.0, z);
+		return;
+	}
 	vec2 uv = UV;
 	// 头部旋转（反向采样）：衣领以下逐渐生效，离脖子很远的地方（画面右侧的水里）减弱
 	vec2 q = (uv - head_pivot) * vec2(aspect, 1.0);

@@ -89,8 +89,6 @@ public static class SettingsSkin
 		internal Label PanelTitle = null!, PanelWater = null!, HintZh = null!, HintEn = null!;
 		internal Node2D SystemWord = null!;
 		internal TextureRect ZoneLayer = null!;
-		internal Control ZoneTail = null!;
-		internal ColorRect ZoneTailRect = null!;
 		internal readonly List<Tab> Tabs = new();
 		internal readonly List<RowDeco> Rows = new();
 		internal readonly List<Action> Undo = new();
@@ -252,13 +250,8 @@ public static class SettingsSkin
 		ShaderMaterial zm = (ShaderMaterial)pm.Duplicate();
 		zm.SetShaderParameter("layer", 1);
 		pm.SetShaderParameter("layer", 2);
-		st.ZoneLayer = new TextureRect { Texture = st.Open, Material = zm, MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, Size = new Vector2(pw, view.Y) };
-		// 立绘画布下沿以下（入场时人物还在上方，画布下沿露在画面里）：白区接着往下铺（画布最下一行左边 168px 是白），不留一条渐变带。
-		// 单独一层、每帧跟着白区的变换（白区那层要当竖排大字的裁切遮罩，子节点会被裁掉）
-		st.ZoneTail = new Control { MouseFilter = Control.MouseFilterEnum.Ignore, Size = new Vector2(pw, view.Y) };
-		st.ZoneTailRect = new ColorRect { Color = Colors.White, Material = new ShaderMaterial { Shader = Shaders.ZoneTail }, MouseFilter = Control.MouseFilterEnum.Ignore, Position = new Vector2(-0.5f * pw, view.Y - 1f), Size = new Vector2(0.5f * pw + 168f / 1920f * pw, view.Y) };   // 画布最下一行左边 168px 是白，往右是头发（水色），延伸也只到这里
-		st.ZoneTail.AddChild(st.ZoneTailRect);
-		st.Root.AddChild(st.ZoneTail);
+		// 白区那层比画布大（宽 2 倍、高 3 倍，画布在 (0.5pw, H) 处），画布外也铺白（见着色器 layer 1）
+		st.ZoneLayer = new TextureRect { Texture = st.Open, Material = zm, MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, Size = new Vector2(2f * pw, 3f * view.Y) };
 		st.Root.AddChild(st.ZoneLayer);
 		// v0.14.77（用户：字要在水的图层之下）：竖排大字只在白区里露出来 —— 挂在白区那层下面，白区当裁切遮罩；水（头发、右边的水）都压在字上面。
 		// 字的位置每帧按屏幕坐标设（不跟着人物转）
@@ -878,16 +871,14 @@ public static class SettingsSkin
 		st.PortraitMat.SetShaderParameter("bottom_fade", 0f);   // v0.14.77：头发已经是水色，画布下沿看不出来，不再渐隐（渐隐反而出一条白→蓝的渐变带）
 		st.Portrait.PivotOffset = new Vector2(650f, 977f) * k;                 // 原版模板匹配得到的旋转中心
 		st.Portrait.Rotation = Mathf.DegToRad(rot);
-		st.Portrait.Position = new Vector2(dx * view.X, dy * view.Y) + new Vector2(0f, (1f - Mathf.Cos(now * 0.6f)) * 3f * k);
-		st.ZoneLayer.PivotOffset = st.Portrait.PivotOffset;
+		// 用户：人物往左移一些，参考原版位置 —— 和原版 #90 的白色轮廓做匹配，整体左移 0.083 屏宽
+		st.Portrait.Position = new Vector2((dx - PortraitShiftX) * view.X, dy * view.Y) + new Vector2(0f, (1f - Mathf.Cos(now * 0.6f)) * 3f * k);
+		Vector2 zoff = new(0.5f * st.Portrait.Size.X, view.Y);
+		st.ZoneLayer.PivotOffset = st.Portrait.PivotOffset + zoff;
 		st.ZoneLayer.Rotation = st.Portrait.Rotation;
-		st.ZoneLayer.Position = st.Portrait.Position;
-		st.ZoneTail.PivotOffset = st.Portrait.PivotOffset;
-		st.ZoneTail.Rotation = st.Portrait.Rotation;
-		st.ZoneTail.Position = st.Portrait.Position;
+		st.ZoneLayer.Position = st.Portrait.Position - zoff;
 		float zr = Ease.OutCubic(Mathf.Clamp((t - 0.36f) / 0.2f, 0f, 1f));   // 原版 #40 左边还是水，#44 起白从左边扫出来
 		((ShaderMaterial)st.ZoneLayer.Material).SetShaderParameter("zone_reveal", zr);
-		((ShaderMaterial)st.ZoneTailRect.Material).SetShaderParameter("zone_reveal", zr);
 		bool poses = st.DivePoses.All(x => x != null);
 		st.PortraitMat.SetShaderParameter("head_angle", poses ? 0f : Mathf.DegToRad(rot) * 0.35f);
 		float eWord = Ease.OutCubic(Mathf.Clamp((t - 0.34f) / 0.3f, 0f, 1f));
@@ -1253,7 +1244,7 @@ public static class SettingsSkin
 		if (Fx.Rand(0f, 1f) < 0.6f)
 		{
 			Vector2 e = Edge[(int)Fx.Rand(3f, 8.99f)];
-			x = e.X * sx + Fx.Rand(10f, 70f) * k;
+			x = (e.X / 1920f - PortraitShiftX) * view.Y * 16f / 9f + Fx.Rand(10f, 70f) * k;
 		}
 		else
 		{
@@ -1281,6 +1272,7 @@ public static class SettingsSkin
 	}
 
 	private const int DiveFirst = 20, DiveLast = 52;
+	private const float PortraitShiftX = 0.083f;
 
 	// (t, 下沉 dy / 屏高, 顺时针角度°, 横移 dx / 屏宽)：t = 原视频时间 − 0.30s。0.367~0.80 是量出来的，0.30 往前外推（人物刚从画面上沿进来）
 	private static readonly (float T, float Dy, float Rot, float Dx)[] DiveKeys =
