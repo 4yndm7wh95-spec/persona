@@ -701,11 +701,39 @@ void fragment() {
 	COLOR = vec4(c + vec3(0.7, 0.95, 1.0) * rim * 0.9, max(inside, rim * 0.9));
 }");
 
-	private static Shader? _campWater, _campPortrait, _gradientMap, _blobWipe, _diveSplash, _diveMask;
+	private static Shader? _campPanel, _campWater, _campPortrait, _gradientMap, _blobWipe, _diveSplash, _diveMask;
 
 	/// <summary>
 	/// v0.14.67 设置界面（P3R 主菜单 52s）的水下背景：上方是很亮的青色水面（流动的亮斑焦散），往下变钴蓝、深蓝；斜射光柱；中段若隐若现的暗色块（远处的水底建筑）。
 	/// </summary>
+	/// <summary>
+	/// v0.14.74 设置界面左边的白色面板（屏幕上固定，不跟人物动）：右沿 = 人物右轮廓往左收 140px 再抹平，
+	/// 120px 宽的过渡带：白 → 浅青 → 透明（下面的水），没有硬边。
+	/// </summary>
+	public static Shader CampPanel => _campPanel ??= Make(@"
+shader_type canvas_item;
+uniform vec2 edge[11];
+uniform float reveal = 1.0;   // 入场：右沿从画面左外侧扫到位（原版 #40 左边还是水，#44 起白底出来）
+float edge_x(float y) {
+	for (int i = 0; i < 10; i++) {
+		if (y <= edge[i + 1].y) {
+			float k = (y - edge[i].y) / max(edge[i + 1].y - edge[i].y, 0.0001);
+			return mix(edge[i].x, edge[i + 1].x, clamp(k, 0.0, 1.0));
+		}
+	}
+	return edge[10].x;
+}
+void fragment() {
+	float ex = 0.0;
+	for (int j = -2; j <= 2; j++) { ex += edge_x(clamp(UV.y + float(j) * 0.06, 0.0, 1.0)); }
+	ex = ex / 5.0 - 0.073 + sin(UV.y * 9.0 + TIME * 0.8) * 0.004;
+	ex = mix(-0.15, ex, reveal);
+	float d = (UV.x - ex) / 0.0625;
+	float a = 1.0 - smoothstep(-0.2, 1.0, d);
+	vec3 c = mix(vec3(1.0), vec3(0.62, 0.90, 1.0), smoothstep(-0.4, 0.8, d));
+	COLOR = vec4(c, a);
+}");
+
 	public static Shader CampWater => _campWater ??= Make(@"
 shader_type canvas_item;
 // v0.14.72（用户：水里没有原版细腻 —— 原版从水面浅色慢慢过渡到深蓝；水面有一片片光斑）：
@@ -763,6 +791,7 @@ uniform float sway = 1.0;
 uniform float panel = 1.0;
 uniform float head_angle = 0.0;
 uniform vec2 head_pivot = vec2(0.215, 0.53);
+uniform float bottom_fade = 0.0;   // v0.14.74：入场时人物在上方，立绘画布下沿（头发被裁掉的直线）露在画面里 —— 下沿 8% 渐隐
 uniform float aspect = 1.7778;
 float edge_x(float y) {
 	for (int i = 0; i < 10; i++) {
@@ -800,19 +829,45 @@ void fragment() {
 	float mn = min(c.r, min(c.g, c.b)), mx = max(c.r, max(c.g, c.b));
 	float white = smoothstep(0.80, 0.93, mn) * (1.0 - smoothstep(0.08, 0.22, mx - mn));
 	float ex = edge_x(UV.y) + sin(TIME * 1.3 + UV.y * 12.0) * 0.004;
-	float side = smoothstep(ex - feather, ex + feather, UV.x);
-	vec3 col = mix(c.rgb, vec3(0.66, 0.92, 1.0), white * side * 0.55);
+	// v0.14.74（用户：人物和水之间有轮廓、有边界，原版头发也融进水里）—— 对照原版：右侧白衬衫没有轮廓线，白色直接接一圈浅青的光再到水；
+	// 伸进水里的头发 / 衣服变浅、半透明
+	float near = smoothstep(ex - 0.07, ex - 0.01, UV.x);              // 人物右侧轮廓附近 + 水里
+	float deep = smoothstep(ex - 0.05, ex + 0.08, UV.x);              // 越往水里越深
+	vec2 tp = TEXTURE_PIXEL_SIZE;
+	// 1. 右侧轮廓线去掉：线条像素右边几像素是透明、左边几像素是白 → 当成白
+	float aR = min(texture(TEXTURE, uv + vec2(4.0, 0.0) * tp).a, texture(TEXTURE, uv + vec2(8.0, 0.0) * tp).a);
+	vec4 lw = texture(TEXTURE, uv - vec2(6.0, 0.0) * tp);
+	float wl = smoothstep(0.85, 0.95, min(lw.r, min(lw.g, lw.b))) * lw.a;
+	float isLine = (1.0 - white) * (1.0 - smoothstep(0.25, 0.6, aR)) * wl * c.a * near;
+	c.rgb = mix(c.rgb, vec3(1.0), isLine);
+	white = max(white, isLine);
+	// 2. 白色越往水里越带浅青、略透明
+	vec3 col = mix(c.rgb, vec3(0.80, 0.95, 1.0), white * deep * 0.7);
+	float a = c.a * (1.0 - white * deep * 0.35);
+	// 3. 头发 / 衣服的彩色和线条：往水里变浅变透
+	col = mix(col, vec3(0.45, 0.80, 1.0), (1.0 - white) * deep * 0.55);
+	a *= 1.0 - (1.0 - white) * deep * 0.45;
+	// 4. 人物右侧外沿的浅青光晕（透明处看左边 2.5~20 像素有没有人物，越近越亮）—— 白衬衫、头发的外轮廓都柔化进水里
+	float g = 0.0;
+	for (int i = 1; i <= 8; i++) {
+		float d = float(i) * 2.5;
+		float fall = 1.0 - float(i - 1) / 8.0;
+		g = max(g, texture(TEXTURE, uv - vec2(d, 0.0) * tp).a * fall);
+		g = max(g, texture(TEXTURE, uv - vec2(d * 0.7, d * 0.7) * tp).a * fall);
+		g = max(g, texture(TEXTURE, uv - vec2(d * 0.7, -d * 0.7) * tp).a * fall);
+	}
+	g = g * g * near * (1.0 - a);
 	float sh = sin(UV.x * 40.0 + TIME * 2.0 + sin(UV.y * 30.0 - TIME) * 2.0) * 0.5 + 0.5;
-	col += vec3(0.25, 0.4, 0.5) * sh * side * (1.0 - white) * 0.12;
-	float dark = 1.0 - smoothstep(0.15, 0.35, mx);
-	col = mix(col, vec3(0.05, 0.12, 0.40), dark * side * 0.5);
-	float pa = c.a * (1.0 - white * side * 0.88) * (1.0 - dark * side * 0.25);
-	// 白色面板：和人物白色透水同一条羽化带，靠近分界处带一点浅青
-	float pan = panel * (1.0 - side);
-	vec3 pcol = mix(vec3(1.0), vec3(0.80, 0.95, 1.0), smoothstep(0.0, 0.9, side * 2.0));
-	float a = pa + pan * (1.0 - pa);
-	vec3 outc = (col * pa + pcol * pan * (1.0 - pa)) / max(a, 0.0001);
-	COLOR = vec4(outc, a);
+	col += vec3(0.20, 0.32, 0.40) * sh * deep * 0.08;
+	float ga = g * 0.75;
+	float oa = a + ga * (1.0 - a);
+	vec3 oc = (col * a + vec3(0.72, 0.93, 1.0) * ga * (1.0 - a)) / max(oa, 0.0001);
+	// 旧的白色面板参数保留（v0.14.74 起面板是单独一层，这里传 0）
+	float pan = panel * (1.0 - smoothstep(ex - feather, ex + feather, UV.x));
+	float fa = oa + pan * (1.0 - oa);
+	vec3 fc = (oc * oa + vec3(1.0) * pan * (1.0 - oa)) / max(fa, 0.0001);
+	fa *= 1.0 - bottom_fade * smoothstep(0.90, 0.995, UV.y);
+	COLOR = vec4(fc, fa);
 }");
 
 	/// <summary>v0.14.67 设置界面：把原版控件的贴图（米黄 / 棕色系）按亮度映射到 P3R 的深蓝 → 钴蓝 → 冰白，保留透明度。</summary>
@@ -871,7 +926,7 @@ void fragment() {
 
 	/// <summary>
 	/// v0.14.73 入水转场的水（用户：自己拼的水柱不自然 —— 照原版画）：播放从原版 60fps 分镜里抠出来的逐帧图（tools/ui/build_dive_flipbook.py）。
-	/// R = 浅青的水（锐化成干净的平涂边），G = 浅青水里是亮度（浅青 ↔ 接近白）、浅青水外是气泡（天青半透明），B = V 形水团（上浅下深的半透明蓝）。
+	/// R = 水的覆盖（锐化成干净的平涂边），G = 色调（天青半透明 / 浅青 → 近白），B = V 形水团（上浅下深的半透明蓝）。
 	/// </summary>
 	public static Shader DiveSplash => _diveSplash ??= Make(@"
 shader_type canvas_item;
@@ -889,11 +944,13 @@ void fragment() {
 	float body = smoothstep(0.35, 0.65, m.b);
 	o = over(o, mix(vec3(0.22, 0.60, 1.0), vec3(0.05, 0.24, 0.86), UV.y), body * tint * 0.72);
 	float w = fwidth(m.r) * 0.75 + 0.02;
-	float pale = smoothstep(0.5 - w, 0.5 + w, m.r);
-	float light = clamp(m.g / max(m.r, 0.05), 0.0, 1.0);
-	float bub = (1.0 - smoothstep(0.2, 0.5, m.r)) * smoothstep(0.25, 0.6, m.g);
-	o = over(o, vec3(0.42, 0.76, 1.0), bub * 0.85);
-	o = over(o, mix(vec3(0.64, 0.89, 1.0), vec3(0.95, 0.99, 1.0), smoothstep(0.35, 0.9, light)), pale * 0.95);
+	float cov = smoothstep(0.5 - w, 0.5 + w, m.r);
+	// 色调（G / R 还原成覆盖内的值）：< 0.28 天青半透明（泡沫暗面、气泡），之上浅青 → 近白
+	float tone = clamp(m.g / max(m.r, 0.05), 0.0, 1.0);
+	float isMid = 1.0 - smoothstep(0.24, 0.32, tone);
+	vec3 paleC = mix(vec3(0.64, 0.89, 1.0), vec3(0.95, 0.99, 1.0), smoothstep(0.55, 0.95, tone));
+	vec3 col = mix(paleC, vec3(0.36, 0.74, 1.0), isMid);
+	o = over(o, col, cov * mix(0.95, 0.78, isMid));
 	COLOR = vec4(o.rgb, o.a * alpha);
 }");
 }

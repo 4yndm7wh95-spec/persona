@@ -77,6 +77,7 @@ public static class SettingsSkin
 		internal TextureRect Portrait = null!;
 		internal Texture2D? Open, Q1, Half, Q3, Closed;
 		internal ShaderMaterial PortraitMat = null!;
+		internal ColorRect PanelRect = null!;
 		internal Node2D PanelDeco = null!, Bubbles = null!;
 		internal ColorRect SplashRect = null!;
 		internal ShaderMaterial SplashMat = null!, MaskMat = null!;
@@ -207,8 +208,14 @@ public static class SettingsSkin
 			IdleRespawn(b, view, k, Fx.Rand(0f, 1f) * view.Y);
 		}
 
-		// v0.14.72：白色面板并进立绘着色器（同一条羽化带，人物和水之间不再有硬边；跟着人物一起下沉、旋转）
+		// v0.14.74（用户：人物带着左边那块白一起动）：白色面板是屏幕上固定的一层（不跟人物动），右沿在人物轮廓左边一截、宽羽化带过渡成浅青再到水；
+		// 人物右侧和水的融合在立绘着色器里做
 		float pw = view.Y * 16f / 9f;
+		ShaderMaterial panelMat = new() { Shader = Shaders.CampPanel };
+		panelMat.SetShaderParameter("edge", Edge.Select(e => new Vector2(e.X / 1920f, e.Y / 1080f)).ToArray());
+		ColorRect panelRect = new() { Material = panelMat, MouseFilter = Control.MouseFilterEnum.Ignore, Size = new Vector2(pw, view.Y) };
+		st.Root.AddChild(panelRect);
+		st.PanelRect = panelRect;
 
 		// 竖排大字 SYSTEM（灰色错影 + 黑字，从下往上读，被左边缘裁掉一点）
 		st.SystemWord = new Node2D { Position = new Vector2(-34f * k, view.Y + 40f * k), Rotation = -Mathf.Pi / 2f };
@@ -225,6 +232,7 @@ public static class SettingsSkin
 		ShaderMaterial pm = new() { Shader = Shaders.CampPortrait };
 		pm.SetShaderParameter("edge", Edge.Select(e => new Vector2(e.X / 1920f, e.Y / 1080f)).ToArray());
 		pm.SetShaderParameter("aspect", 16f / 9f);
+		pm.SetShaderParameter("panel", 0f);
 		st.PortraitMat = pm;
 		st.Portrait = new TextureRect { Texture = st.Open, Material = pm, MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, Size = new Vector2(pw, view.Y) };
 		st.Root.AddChild(st.Portrait);
@@ -832,16 +840,16 @@ public static class SettingsSkin
 		}
 		float show = Mathf.Clamp((t - 0.24f) / 0.06f, 0f, 1f);
 		st.Words.Modulate = new Color(1f, 1f, 1f, show);
-		// v0.14.72（用户推送的 60fps 分镜 #40~#56）：人物连同白色部分从画面上方沉下来（0.30~0.56s，减速停稳），
-		// 一开始整个人往顺时针偏 12°、头再多偏 24°（闭着眼），一边下沉一边转正（头比身体晚一点到位），落定时睁眼；
+		// v0.14.74（用户：切入僵硬）：按原版逐帧量出来的位置 / 角度（分镜 #40~#72 和最终帧做模板匹配，见 DiveKeys），
+		// 两段式：0.30~0.45s 快速沉入、转正大半，之后 0.35s 慢慢下沉到位、角度归零；中间平滑插值（三次 Hermite），不是一条缓动曲线。
 		// 待机只往下轻轻浮动（往上浮会在画面底边露出一条白缝 —— v0.14.69 实机）
-		float eDive = Ease.OutCubic(Mathf.Clamp((t - 0.30f) / 0.26f, 0f, 1f));
-		Vector2 dive = new Vector2(0.06f * view.X, -0.72f * view.Y) * (1f - eDive);
-		st.Portrait.PivotOffset = new Vector2(493f, 925f) * k;                // 露出的那只眼
-		st.Portrait.Rotation = Mathf.DegToRad(12f) * (1f - eDive);
-		st.Portrait.Position = dive + new Vector2(0f, (1f - Mathf.Cos(now * 0.6f)) * 3f * k);
-		float eHead = Ease.OutCubic(Mathf.Clamp((t - 0.32f) / 0.32f, 0f, 1f));
-		st.PortraitMat.SetShaderParameter("head_angle", 0.42f * (1f - eHead));
+		(float dy, float rot, float dx) = DivePose(t);
+		((ShaderMaterial)st.PanelRect.Material).SetShaderParameter("reveal", Ease.OutCubic(Mathf.Clamp((t - 0.36f) / 0.2f, 0f, 1f)));   // 原版 #40 左边还是水，#44 起白底从左边出来
+		st.PortraitMat.SetShaderParameter("bottom_fade", Mathf.Clamp(-dy * 10f, 0f, 1f));
+		st.Portrait.PivotOffset = new Vector2(650f, 977f) * k;                 // 原版模板匹配得到的旋转中心
+		st.Portrait.Rotation = Mathf.DegToRad(rot);
+		st.Portrait.Position = new Vector2(dx * view.X, dy * view.Y) + new Vector2(0f, (1f - Mathf.Cos(now * 0.6f)) * 3f * k);
+		st.PortraitMat.SetShaderParameter("head_angle", Mathf.DegToRad(rot) * 0.35f);
 		float eWord = Ease.OutCubic(Mathf.Clamp((t - 0.34f) / 0.3f, 0f, 1f));
 		st.SystemWord.Position = new Vector2(-34f * k - 320f * k * (1f - eWord), view.Y + 40f * k);
 		float eContent = Ease.OutCubic(Mathf.Clamp((t - 0.5f) / 0.3f, 0f, 1f));
@@ -1226,6 +1234,37 @@ public static class SettingsSkin
 	}
 
 	private const int DiveFirst = 20, DiveLast = 52;
+
+	// (t, 下沉 dy / 屏高, 顺时针角度°, 横移 dx / 屏宽)：t = 原视频时间 − 0.30s。0.367~0.80 是量出来的，0.30 往前外推（人物刚从画面上沿进来）
+	private static readonly (float T, float Dy, float Rot, float Dx)[] DiveKeys =
+	{
+		(0.30f, -0.78f, 36f, -0.10f), (0.367f, -0.48f, 28f, -0.085f), (0.40f, -0.36f, 20f, -0.08f), (0.433f, -0.24f, 17f, -0.07f),
+		(0.467f, -0.19f, 12f, -0.04f), (0.533f, -0.14f, 9f, -0.02f), (0.60f, -0.06f, 2.5f, 0f), (0.70f, -0.03f, 1.5f, 0f), (0.80f, 0f, 0f, 0f),
+	};
+
+	private static (float, float, float) DivePose(float t)
+	{
+		var K = DiveKeys;
+		if (t <= K[0].T) return (K[0].Dy, K[0].Rot, K[0].Dx);
+		if (t >= K[^1].T) return (0f, 0f, 0f);
+		int i = 0;
+		while (t > K[i + 1].T) i++;
+		float u = (t - K[i].T) / (K[i + 1].T - K[i].T);
+		float H(Func<(float T, float Dy, float Rot, float Dx), float> f)
+		{
+			// 单调三次 Hermite：切线取两侧斜率的调和平均，不会过冲
+			float Slope(int a) => (f(K[a + 1]) - f(K[a])) / (K[a + 1].T - K[a].T);
+			float Tan(int j)
+			{
+				if (j == 0 || j == K.Length - 1) return 0f;
+				float s0 = Slope(j - 1), s1 = Slope(j);
+				return s0 * s1 <= 0f ? 0f : 2f * s0 * s1 / (s0 + s1);
+			}
+			float h = K[i + 1].T - K[i].T, u2 = u * u, u3 = u2 * u;
+			return (2f * u3 - 3f * u2 + 1f) * f(K[i]) + (u3 - 2f * u2 + u) * h * Tan(i) + (-2f * u3 + 3f * u2) * f(K[i + 1]) + (u3 - u2) * h * Tan(i + 1);
+		}
+		return (H(k => k.Dy), H(k => k.Rot), H(k => k.Dx));
+	}
 
 	/// <summary>
 	/// 入水转场每帧：按原视频时间（t + 0.30s）找到当前该显示的原版帧（原版水花本身就是每 2~4 帧换一张图的作画，照原样切，不插值）；

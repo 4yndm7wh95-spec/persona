@@ -1,9 +1,9 @@
 """v0.14.73 设置界面入水转场的水花逐帧图：直接从用户录的 P3R 60fps 分镜（art/p3menu_system/ref/menu_transition_frames_020-107）
 里抠出原版水的轮廓（用户：自己拼的水柱形状、排布都不自然 —— 照原版画）。
 每帧一张 800×500 的图（分镜是 16:10，游戏里拉满全屏）：
-  R = 浅青的水（水柱、泡沫、白色水花云、气泡）的不透明度（下采样自带抗锯齿，游戏里再锐化）
-  G = 浅青水里：亮度（0 = 普通浅青，1 = 接近白），保留原版的明暗块；浅青水以外：气泡（原版是比水柱深一档的天青色半透明圈 / 团）
-      （两者不重叠，游戏里按 R 区分；不用 alpha 通道 —— 无损 WebP 会丢掉 alpha=0 处的颜色）
+  R = 水（水柱、泡沫、白色水花云、气泡）的覆盖（下采样自带抗锯齿，游戏里再锐化）
+  G = 色调：0.15 = 天青半透明（泡沫暗面、气泡），0.4~1 = 浅青 → 近白（保留原版的明暗块）
+      （不用 alpha 通道 —— 无损 WebP 会丢掉 alpha=0 处的颜色）
   B = V 形水团（深蓝的水体，加上浅青的水）范围 —— 设置界面只在这个范围里显示；#38 起整屏
 帧 20~52（原视频 0.333~0.867s）。录像是隔帧重复的（实际 30fps）：和上一帧一样的帧不输出，游戏里按存在的帧号插值。剔除：右上 / 左上的界面框和文字、#41 起人物所在的左边、店铺背景里的零星杂色。
 用法：python3 tools/ui/build_dive_flipbook.py [预览输出.png]"""
@@ -34,6 +34,7 @@ def frame(i):
 
 
 def masks(i):
+    """返回 (覆盖, 色调, 水团)。色调：0.15 = 天青半透明（泡沫的暗面、气泡），0.4~1 = 浅青 → 近白。"""
     a = frame(i)
     r, g, b = a[..., 0], a[..., 1], a[..., 2]
     h, w = r.shape
@@ -43,34 +44,51 @@ def masks(i):
     ui = ((xx < 0.25 * w) & (yy < 0.16 * h)) | ((xx > 0.83 * w) & (yy > 0.84 * h)) | ((xx < 0.12 * w) & (yy > 0.93 * h))
     if i <= 34:
         pale |= (r > 215) & (g > 230) & (b > 235) & ~ui           # 白色水花云（#24~#34）
-    pale &= ~(ui & (yy < 0.07 * h)) & ~((xx < 0.12 * w) & (yy > 0.93 * h))   # 水印字（水花本身在金额框附近照留）
-    lab, n = ndimage.label(pale)
+    pale &= ~(ui & (yy < 0.07 * h)) & ~((xx < 0.12 * w) & (yy > 0.93 * h))   # 水印字
+    light = np.clip((r - 125) / 130.0, 0.0, 1.0)
+    # v0.14.74（用户：泡沫里有很多透明 / 空心的地方）：原版泡沫的暗面和气泡是天青色的半透明块（约 RGB 75~120, 175~210, 240+），单独一档
+    mid = (b > 215) & (g > 145) & (r > 40) & (r <= 140) & (b - r > 90) & ~pale
+    if i >= 36:
+        gb = ndimage.uniform_filter(g.astype(float), 31)
+        mid &= g - gb > 22                                          # 整屏都是水以后，只取比周围亮一截的（气泡），不取水本身
+    mid &= ~((xx < 0.12 * w) & (yy > 0.93 * h)) & ~((xx > 0.83 * w) & (yy > 0.84 * h))
+    cover = pale | mid
+    lab, n = ndimage.label(cover)
     if n:
         size = ndimage.sum(np.ones_like(lab), lab, index=np.arange(1, n + 1))
-        pale &= np.isin(lab, np.arange(1, n + 1)[size >= 12])    # 去掉零星杂点
-    light = np.clip((r - 125) / 130.0, 0.0, 1.0) * pale
+        cover &= np.isin(lab, np.arange(1, n + 1)[size >= 12])    # 去掉零星杂点
+    # 小的空洞补上（抠图阈值漏掉的描边 / 阴影）：面积 < 700 的洞填成天青
+    filled = ndimage.binary_fill_holes(cover)
+    holes, hn = ndimage.label(filled & ~cover)
+    if hn:
+        hs = ndimage.sum(np.ones_like(holes), holes, index=np.arange(1, hn + 1))
+        cover |= np.isin(holes, np.arange(1, hn + 1)[hs < 700])
+    tone = np.where(pale, 0.4 + 0.6 * light, 0.15)
     if i >= 38:
-        body = np.ones_like(pale)
+        body = np.ones_like(cover)
     else:
         blue = (b > 150) & (r < 90) & (g < 170) & (b - r > 110)
-        body = ndimage.binary_closing(blue | pale, iterations=6)
+        body = ndimage.binary_closing(blue | cover, iterations=6)
         lab, n = ndimage.label(body)
         if n:
             size = ndimage.sum(np.ones_like(lab), lab, index=np.arange(1, n + 1))
             body = lab == (1 + int(np.argmax(size)))
         body = ndimage.binary_fill_holes(body)
-        body |= pale & (yy < 0.5 * h)                             # 开场往下泼的泡沫也算在水里
-    # 气泡：天青色、比周围亮一截（和周围 15px 内的平均亮度比），不是浅青水
-    gb = ndimage.uniform_filter(g.astype(float), 31)
-    bub = (g > 140) & (b > 210) & (r > 50) & (r <= 140) & (g - gb > 22) & ~pale
-    lab, n = ndimage.label(bub)
-    if n:
-        size = ndimage.sum(np.ones_like(lab), lab, index=np.arange(1, n + 1))
-        bub &= np.isin(lab, np.arange(1, n + 1)[size >= 10])
-    fade = np.ones(pale.shape)
-    if i >= 41:
-        fade = np.clip((xx / w - 0.30) / 0.08, 0.0, 1.0)          # 人物进画面以后，左边渐隐（人物头发也是浅青，不取）
-    return pale * fade, light * fade, body, bub * fade
+        body |= cover & (yy < 0.5 * h)                            # 开场往下泼的泡沫也算在水里
+    fade = np.ones(cover.shape)
+    if i >= 40:
+        # 人物进画面以后：人物的浅青头发 / 衣服不算水 —— 和人物白色部分大面积挨着的浅青块去掉（水柱是从人物前面穿过的大块，挨着的比例很小，保留）
+        char = ndimage.binary_dilation((r > 225) & (g > 225) & (b > 225) & (xx < 0.5 * w), iterations=18)
+        lab, n = ndimage.label(cover)
+        if n:
+            idx = np.arange(1, n + 1)
+            tot = ndimage.sum(np.ones_like(lab), lab, index=idx)
+            hit = ndimage.sum(char, lab, index=idx)
+            cover &= ~np.isin(lab, idx[hit / np.maximum(tot, 1) > 0.25])
+    if i >= 44:
+        # 菜单字（QUEST / COMMU …，天青色）从这时起出现在画面中下部，不是水
+        cover &= ~((xx > 0.40 * w) & (xx < 0.78 * w) & (yy > 0.40 * h) & (tone < 0.3))
+    return cover * fade, tone * cover * fade, body
 
 
 def build(preview=None):
@@ -80,8 +98,8 @@ def build(preview=None):
     for old in (STAGE / ".godot/imported").glob("dive_*.ctex"):
         old.unlink()
     for i in range(FIRST, LAST + 1):
-        pale, light, body, bub = masks(i)
-        rgb = np.dstack([pale * 255.0, np.where(pale > 0.5, light, bub) * 255.0, body * 255.0]).astype(np.uint8)
+        cover, tone, body = masks(i)
+        rgb = np.dstack([cover * 255.0, tone * 255.0, body * 255.0]).astype(np.uint8)
         if prev is not None and np.abs(rgb.astype(int) - prev.astype(int)).mean() < 0.5:
             continue
         prev = rgb
