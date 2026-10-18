@@ -1349,6 +1349,7 @@ Grand.cs 里其余函数暂时保留不用。
   - 辉星（NStarCounter）：Icon 只设 SelfModulate 透明、%RotationLayers 隐藏、%CountLabel 透明；装饰挂在 Icon 下：白边深蓝菱形 + 内圈青线 + 顶部四角星 + 数字，背后慢转的细线方框；增加时金色光环。
   - 牌堆按钮（NCombatCardPile 的抽 / 弃 / 消耗）：装饰挂在原版 Icon 下（跟着悬停放大、按下变暗），两张塔罗牌背（pile_card_back.png）斜叠 + 青色小字；
     张数牌挂在 CountContainer 下，跟着原版数字的弹跳缩放；右侧两个按钮左右镜像；空堆时整体变灰。
+  - 数字按笔画中心排版（HudSkin.PlaceInk：Barlow 数字高 0.7em 坐在基线上，按行高居中会往下坠）；"大数字 + /上限"整组居中。
   - 每帧用 SceneTree.ProcessFrame 驱动，节点没了自动退订；任何一帧出错就整套退回原版（不每帧重试）。
 - 结束回合按钮的中文改成正体（去掉 FontVariation 的斜切变换）。
 - iOS（玩家：iOS 移植版 0.110.1 报 PlatformNotSupportedException，不删 DLL 进不了游戏）：

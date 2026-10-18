@@ -20,7 +20,7 @@
    git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local merge --no-edit origin/claude/amazing-darwin-b00arn
    - 有冲突就停下来报告。
    - 这次不需要 push。
-6. 确认 git log 最新的提交是「v0.14.59: drop the iOS package」（前一个是 v0.14.59 战斗图标 P3R 化）。
+6. 确认 git log 最新的提交是「v0.14.59: center HUD numbers on their glyphs」（之前是 v0.14.59 战斗图标 P3R 化、去掉 iOS 包）。
 7. 稀疏检出缺目录时，允许执行：
    git -c safe.directory=<repo> sparse-checkout add mod musicbox testmod tools/compat research/libs_0.107.1
    - 路径过长时，这一条命令可以加 -c core.longpaths=true。

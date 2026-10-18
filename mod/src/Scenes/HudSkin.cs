@@ -84,6 +84,21 @@ public static class HudSkin
 		return l;
 	}
 
+	/// <summary>
+	/// 把数字的"笔画中心"放到 ink（不是按行高居中）：Barlow 的数字高 0.7em、坐在基线上，按行高居中会往下坠约 0.05em。
+	/// align = Left 时 ink.X 是字的左边缘，否则是字的水平中心。
+	/// </summary>
+	private static void PlaceInk(Label l, Vector2 ink, float boxW, HorizontalAlignment align = HorizontalAlignment.Center)
+	{
+		int size = l.LabelSettings?.FontSize ?? 16;
+		Font f = l.LabelSettings?.Font ?? Typo.Barlow;
+		float ascent = f.GetAscent(size);
+		l.VerticalAlignment = VerticalAlignment.Top;
+		l.HorizontalAlignment = align;
+		l.Size = new Vector2(boxW, f.GetHeight(size));
+		l.Position = new Vector2(align == HorizontalAlignment.Left ? ink.X : ink.X - boxW * 0.5f, ink.Y - (ascent - 0.35f * size));
+	}
+
 	/// <summary>P3R 斜切标签：白边 + 黑底 + 右端红色尾边，白色粗斜体字（中心对齐到 center）。</summary>
 	private static (Node2D Root, Label Text) Tag(Node2D parent, Vector2 center, string text, int size, float h, bool red = true)
 	{
@@ -91,11 +106,17 @@ public static class HudSkin
 		parent.AddChild(root);
 		float w = Typo.Barlow.GetStringSize(text, HorizontalAlignment.Left, -1, size).X + h * 0.9f;
 		Rebuild(root, w, h, red);
-		Label l = Typo.Text(root, text, Typo.Barlow, size, Colors.White, new Vector2(-w * 0.5f, -h * 0.5f), HorizontalAlignment.Center);
-		l.VerticalAlignment = VerticalAlignment.Center;
-		l.Size = new Vector2(w - (red ? h * 0.28f : 0f), h);
+		Label l = Typo.Text(root, text, Typo.Barlow, size, Colors.White, Vector2.Zero, HorizontalAlignment.Center);
+		PlaceTagText(l, w, h, red);
 		l.Name = "Text";
 		return (root, l);
+	}
+
+	/// <summary>标签字放在去掉红尾后的黑底中心（斜切让上沿右移 lean，所以再往右挪 lean/2）。</summary>
+	private static void PlaceTagText(Label l, float w, float h, bool red)
+	{
+		float tail = red ? h * 0.28f : 0f;
+		PlaceInk(l, new Vector2(-w * 0.5f + (w - tail) * 0.5f + h * 0.15f, 0f), w);
 	}
 
 	private static void Rebuild(Node2D root, float w, float h, bool red)
@@ -205,11 +226,20 @@ public static class HudSkin
 		Node2D ring = new();
 		disc.AddChild(ring);
 		Fx.Poly(disc, new[] { new Vector2(-34f, -22f), new Vector2(40f, -22f), new Vector2(32f, 24f), new Vector2(-42f, 24f) }, new Color(Ink, 0.92f));
+		// 大数字的笔画中心对准斜切黑底的中心；"/上限"和大数字底边对齐，贴在它右下
 		Label big = Number(disc, 62, Colors.White, 4, new Vector2(90f, 76f));
-		big.Position += new Vector2(-8f, 0f);
 		Label max = Number(disc, 26, Pal.Cyan, 3, new Vector2(48f, 32f));
-		max.Position += new Vector2(26f, 20f);
-		max.HorizontalAlignment = HorizontalAlignment.Left;
+		void LayoutNumbers(int size)
+		{
+			big.LabelSettings.FontSize = size;
+			// "大数字 + /上限" 整组的水平中心对准黑底中心（x = -1）
+			float digitW = Typo.Barlow.GetStringSize(big.Text, HorizontalAlignment.Left, -1, size).X;
+			float slashW = max.Text.Length > 0 ? Typo.Barlow.GetStringSize(max.Text, HorizontalAlignment.Left, -1, 26).X + 1f : 0f;
+			float bx = -1f - slashW * 0.5f;
+			PlaceInk(big, new Vector2(bx, 1f), 90f);
+			float bottom = 1f + 0.35f * size;
+			PlaceInk(max, new Vector2(bx + digitW * 0.5f + 1f, bottom - 0.35f * 26f), 48f, HorizontalAlignment.Left);
+		}
 		Tag(deco, new Vector2(-2f, -r - 12f), "ENERGY", 20, 24f);
 
 		int builtMax = -1, shown = -1;
@@ -257,9 +287,9 @@ public static class HudSkin
 				}
 				shown = cur;
 				big.Text = cur.ToString();
-				big.LabelSettings.FontSize = cur >= 10 ? 48 : 62;
 				big.LabelSettings.FontColor = cur == 0 ? Pal.Blood : Colors.White;
 				max.Text = mx > 0 ? "/" + mx : "";
+				LayoutNumbers(cur >= 10 ? 46 : 62);
 				int lit = mx <= 10 ? Mathf.Min(cur, segs) : Mathf.RoundToInt(Mathf.Clamp(cur / (float)mx, 0f, 1f) * segs);
 				int i = 0;
 				foreach (Node c in ring.GetChildren())
@@ -326,7 +356,7 @@ public static class HudSkin
 			float a = 9f * s / 40f, b = 2.5f * s / 40f;
 			Fx.Poly(badge, new[] { st + new Vector2(0f, -a), st + new Vector2(b, -b), st + new Vector2(a, 0f), st + new Vector2(b, b), st + new Vector2(0f, a), st + new Vector2(-b, b), st + new Vector2(-a, 0f), st + new Vector2(-b, -b) }, Colors.White);
 			num.LabelSettings.FontSize = Mathf.RoundToInt(40f * s / 40f);
-			num.Position = new Vector2(-35f, -25f + 8f * s / 40f);
+			PlaceInk(num, new Vector2(0f, s * 0.12f), 70f * s / 40f);   // 菱形中心略偏下（上面有四角星）
 			builtS = s;
 			_ = sh;
 		}
@@ -482,8 +512,7 @@ public static class HudSkin
 				{
 					tagW = w;
 					Rebuild(tag, w, 34f, true);
-					tagText.Position = new Vector2(-w * 0.5f, -17f);
-					tagText.Size = new Vector2(w - 34f * 0.28f, 34f);
+					PlaceTagText(tagText, w, 34f, true);
 				}
 				tag.Modulate = shownText == "0" ? new Color(0.62f, 0.66f, 0.75f, 1f) : Colors.White;
 			}

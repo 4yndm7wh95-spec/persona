@@ -24,6 +24,12 @@ def text(im, xy, s, size, fill, stroke=0, stroke_fill=INK, anchor="mm"):
     ImageDraw.Draw(im).text(xy, s, font=lat(size), fill=fill, stroke_width=stroke, stroke_fill=stroke_fill, anchor=anchor)
 
 
+def ink(im, xy, s, size, fill, stroke=0, left=False):
+    """和 HudSkin.PlaceInk 一致：数字笔画中心（不是行高中心）放在 xy；left=True 时 xy.x 是左边缘。数字高 0.7em，基线 = 中心 + 0.35em。"""
+    x, y = xy
+    ImageDraw.Draw(im).text((x, y + 0.35 * size), s, font=lat(size), fill=fill, stroke_width=stroke, stroke_fill=INK, anchor="ls" if left else "ms")
+
+
 def erase(im, box):
     """把原版图标所在区域糊掉（实机里是把原版图层设成透明，这里只是近似）。"""
     reg = im.crop(box).filter(ImageFilter.GaussianBlur(28))
@@ -56,7 +62,7 @@ def tag(im, xy, s, size, h, red=True):
     d.polygon([(x + lean, y), (x + w + lean, y), (x + w, y + h), (x, y + h)], fill=INK + (255,))
     if red:
         d.polygon([(x + w - h * 0.28 + lean, y), (x + w + lean, y), (x + w, y + h), (x + w - h * 0.28, y + h)], fill=RED + (255,))
-    text(im, (x + lean * 0.5 + (w - (h * 0.28 if red else 0)) / 2, y + h / 2 + 1), s, size, (255, 255, 255, 255))
+    ink(im, (x + (w - (h * 0.28 if red else 0)) / 2 + h * 0.15, y + h / 2), s, size, (255, 255, 255, 255))
 
 
 def energy(im, c, cur, mx):
@@ -78,8 +84,11 @@ def energy(im, c, cur, mx):
     # 中心：斜切深色底板 + 大号数字
     d.polygon([(c[0] - 34, c[1] - 22), (c[0] + 40, c[1] - 22), (c[0] + 32, c[1] + 24), (c[0] - 42, c[1] + 24)], fill=INK + (235,))
     im.alpha_composite(lay)
-    text(im, (c[0] - 8, c[1] + 2), str(cur), 62, (255, 255, 255, 255), 4)
-    text(im, (c[0] + 24, c[1] + 18), f"/{mx}", 26, CYAN + (255,), 3)
+    big = 62
+    dw = lat(big).getlength(str(cur))
+    bx = c[0] - 1 - (lat(26).getlength(f"/{mx}") + 1) / 2
+    ink(im, (bx, c[1] + 1), str(cur), big, (255, 255, 255, 255), 4)
+    ink(im, (bx + dw / 2 + 1, c[1] + 1 + 0.35 * big - 0.35 * 26), f"/{mx}", 26, CYAN + (255,), 3, left=True)
     tag(im, (c[0] - 52, c[1] - r - 26), "ENERGY", 20, 24)
 
 
@@ -100,7 +109,7 @@ def stars(im, c, n):
     st = (c[0], c[1] - s + 13)
     d.polygon([(st[0], st[1] - 9), (st[0] + 2.5, st[1] - 2.5), (st[0] + 9, st[1]), (st[0] + 2.5, st[1] + 2.5), (st[0], st[1] + 9), (st[0] - 2.5, st[1] + 2.5), (st[0] - 9, st[1]), (st[0] - 2.5, st[1] - 2.5)], fill=(255, 255, 255, 255))
     im.alpha_composite(lay)
-    text(im, (c[0], c[1] + 8), str(n), 40, (255, 255, 255, 255), 3)
+    ink(im, (c[0], c[1] + s * 0.12), str(n), 40, (255, 255, 255, 255), 3)
 
 
 def pile(im, c, n, word, mirror=False):
