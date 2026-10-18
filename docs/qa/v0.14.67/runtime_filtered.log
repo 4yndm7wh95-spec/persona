@@ -1,0 +1,26 @@
+[P3Makoto] init v0.14.67
+[P3Makoto] harmony patches applied: 72 ok, 0 failed
+[P3Makoto] health spike asset guard 345.2ms polys+0 labels+0 anims+0
+[P3Makoto] cursor skin applied: 64x64, hotspot=(14,5), attempt=1
+[P3Makoto] health spike cursor late init 42.4ms polys+0 labels+0 anims+0
+[P3Makoto] health spike shader warmup 2739.4ms polys+2 labels+6 anims+0
+[P3Makoto] health spike health 98.8ms polys+0 labels+0 anims+0
+[P3Makoto] health spike settings section 29.8ms polys+0 labels+0 anims+0
+[P3Makoto] perf pile idle warmup finished; complete=True; failed=0
+[P3Makoto] health p3_ms_per_frame=1.06 over 3089 frames; top: shader warmup 0.89ms×1 (max 2739.4), charselect info warmup 0.27ms×1 (max 841.6), asset guard 0.11ms×2 (max 345.2), health 0.03ms×3088 (max 98.8), cursor late init 0.01ms×1 (max 42.4), settings section 0.01ms×1 (max 29.8), timescale watchdog 0.00ms×3090 (max 0.2), star orbit 0.00ms×3089 (max 0.7)
+[P3Makoto] health spike settings skin visible 927.0ms polys+31 labels+18 anims+0
+[P3Makoto] health p3_ms_per_frame=0.22 over 4372 frames; top: settings skin visible 0.21ms×1 (max 927.0), timescale watchdog 0.00ms×4372 (max 0.1), star orbit 0.00ms×4372 (max 0.1), health 0.00ms×4372 (max 0.3)
+[P3Makoto] health p3_ms_per_frame=0.01 over 4497 frames; top: timescale watchdog 0.00ms×4497 (max 0.1), star orbit 0.00ms×4497 (max 0.1), health 0.00ms×4497 (max 0.3), clip Sys_Cursor 0.00ms×1 (max 3.4), settings tab word 0.00ms×7 (max 0.7), clip ShuffleTime_Whoosh 0.00ms×1 (max 0.5), clip Btl_Ok 0.00ms×1 (max 0.5)
+[P3Makoto] health p3_ms_per_frame=0.01 over 4501 frames; top: timescale watchdog 0.00ms×4501 (max 0.1), star orbit 0.00ms×4501 (max 0.0), health 0.00ms×4501 (max 0.3), settings skin visible 0.00ms×1 (max 0.1)
+[P3Makoto] health p3_ms_per_frame=0.01 over 4499 frames; top: timescale watchdog 0.00ms×4499 (max 0.1), star orbit 0.00ms×4499 (max 0.1), health 0.00ms×4499 (max 0.3), clip Sys_Cursor 0.00ms×1 (max 0.5), settings tab word 0.00ms×8 (max 0.5), clip Btl_Ok 0.00ms×1 (max 0.5), clip ShuffleTime_Whoosh 0.00ms×1 (max 0.5), settings skin visible 0.00ms×1 (max 0.0)
+[P3Makoto] health p3_ms_per_frame=0.01 over 4493 frames; top: timescale watchdog 0.00ms×4493 (max 0.1), star orbit 0.00ms×4493 (max 0.0), health 0.00ms×4493 (max 0.4), clip ShuffleTime_Whoosh 0.00ms×1 (max 0.5), clip Sys_Cursor 0.00ms×1 (max 0.5), settings tab word 0.00ms×8 (max 0.5), clip Btl_Ok 0.00ms×1 (max 0.5)
+[P3Makoto] health p3_ms_per_frame=0.01 over 4501 frames; top: timescale watchdog 0.00ms×4501 (max 0.1), star orbit 0.00ms×4501 (max 0.1), health 0.00ms×4501 (max 0.3), clip Sys_Cursor 0.00ms×1 (max 0.5), settings tab word 0.00ms×44 (max 0.5), clip ShuffleTime_Whoosh 0.00ms×1 (max 0.5), clip Btl_Ok 0.00ms×1 (max 0.5)
+[P3Makoto] health p3_ms_per_frame=0.01 over 4501 frames; top: timescale watchdog 0.00ms×4501 (max 0.1), star orbit 0.00ms×4501 (max 0.1), health 0.00ms×4501 (max 0.5), settings toggle 0.00ms×1 (max 2.3)
+[P3Makoto] health p3_ms_per_frame=0.01 over 4501 frames; top: timescale watchdog 0.00ms×4501 (max 0.2), star orbit 0.00ms×4501 (max 0.1), health 0.00ms×4501 (max 0.3), settings skin visible 0.00ms×1 (max 0.0)
+[P3Makoto] health spike settings skin visible 68.6ms polys+0 labels+0 anims+0
+[P3Makoto] health p3_ms_per_frame=0.02 over 4498 frames; top: settings skin visible 0.02ms×1 (max 68.6), timescale watchdog 0.00ms×4498 (max 0.1), star orbit 0.00ms×4498 (max 0.0), health 0.00ms×4498 (max 0.3)
+[P3Makoto] health p3_ms_per_frame=0.01 over 4501 frames; top: timescale watchdog 0.00ms×4501 (max 0.1), star orbit 0.00ms×4501 (max 0.1), health 0.00ms×4501 (max 0.4), settings toggle 0.00ms×1 (max 0.9), settings skin visible 0.00ms×1 (max 0.0)
+[P3Makoto] health spike settings skin visible 16.3ms polys+31 labels+18 anims+0
+[P3Makoto] health p3_ms_per_frame=0.01 over 4501 frames; top: settings skin visible 0.00ms×1 (max 16.3), timescale watchdog 0.00ms×4501 (max 0.1), star orbit 0.00ms×4501 (max 0.0), health 0.00ms×4501 (max 0.5)
+[P3Makoto] health p3_ms_per_frame=0.01 over 4500 frames; top: timescale watchdog 0.00ms×4500 (max 0.1), star orbit 0.00ms×4500 (max 0.1), health 0.00ms×4500 (max 0.3), clip Sys_Cursor 0.00ms×1 (max 0.5), settings tab word 0.00ms×5 (max 0.0)
+[P3Makoto] health p3_ms_per_frame=0.01 over 4501 frames; top: timescale watchdog 0.00ms×4501 (max 0.1), star orbit 0.00ms×4501 (max 0.1), health 0.00ms×4501 (max 0.3), settings skin visible 0.00ms×1 (max 0.0), settings tab word 0.00ms×1 (max 0.0)
