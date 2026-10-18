@@ -101,10 +101,39 @@ def blink(base, f):
 
 
 def zone_of(im, name):
-    """白色区域蒙版。v0.14.77 第二版（用户：头发被做得又厚又长，像是为了盖住字）：以前是"每列从上往下白到第一块头发为止"，
-    头发以下全成了水，看起来像一大片头发。原版是分界线左边整片都是白，头发本身（画成水色）压在白上，发丝之间、头发下面也是白。
-    所以蒙版就是整张白；入场时由着色器的 zone_reveal 从左往右扫出来（原版 #40 左边还是水，#44 起白出来）。"""
-    zone = Image.new("L", im.size, 255)
+    """白色区域蒙版（v0.14.77 第三版，用户对照原版 #70：白和水的边界就是人物的头发）。
+    每一列：从上往下到头发上沿为止是白，头发以下（包括画面左下角）都是水 —— 头发本身画成水色，所以头发和下面的水连成一片。
+    · 头发只在头部（y > 560，衣领以下）认，衬衫上的蓝色阴影 / 线条不算；
+    · 立绘左下角头发没画到画面边（x < 250 处只剩几根细发梢，人物左移后正好在屏幕左边缘）：照原版让头发一直延伸到画面左边 ——
+      用 x 250~420 那段真实头发上沿的锯齿形状，往左镜像接出去，整体略往下斜（原版发梢一簇簇朝左上），边界还是"头发"的样子，不是直线。"""
+    a = np.asarray(im.convert("RGBA")).astype(np.int32)
+    r, g, b, al = a[..., 0], a[..., 1], a[..., 2], a[..., 3]
+    h, w = al.shape
+    hair = (al > 127) & (b > 150) & (b - r > 60) & (np.minimum(np.minimum(r, g), b) < 210)
+    hair[:560] = False
+    hair = ndimage.binary_opening(hair, iterations=6)
+    top = np.where(hair.any(axis=0), hair.argmax(axis=0), h).astype(np.float64)
+    # 左边延伸：一簇簇朝左上的尖发梢（不对称三角形，宽 30~90px、高 35~85px，固定随机种子），底线从 x=260 处的真实上沿往左略微抬高
+    rng = np.random.default_rng(3)
+    xs = 260
+    base0 = float(top[xs:xs + 20].max()) - 20.0
+    tips = []
+    x = xs
+    while x > -80:
+        wdt = rng.uniform(30, 90)
+        tips.append((x - wdt, x, rng.uniform(35, 85), rng.uniform(0.55, 0.85)))
+        x -= wdt
+    for xx in range(0, xs):
+        base = base0 - 0.18 * (xs - xx)
+        y = base
+        for l, rr, hgt, peak in tips:
+            if l <= xx < rr:
+                u = (rr - xx) / (rr - l)                     # 0 在右端 … 1 在左端；尖端偏左（朝左上）
+                y = base - hgt * (u / peak if u < peak else (1 - u) / (1 - peak))
+        top[xx] = min(top[xx], y) if xx >= xs - 10 else y
+    top = ndimage.uniform_filter1d(top, 3)
+    zone = (np.arange(h)[:, None] < top[None, :]).astype(np.float32)
+    zone = Image.fromarray((zone * 255).astype(np.uint8), "L").filter(ImageFilter.GaussianBlur(1.0))
     godot_tex.write_texture(STAGE, f"p3makoto/ui/{name}", Image.merge("RGBA", [zone, zone, zone, Image.new("L", zone.size, 255)]))
     return zone
 

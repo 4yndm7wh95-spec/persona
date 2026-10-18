@@ -843,10 +843,12 @@ void fragment() {
 	// 画布外面也按规则铺白：左边整片白、下面只到最左 235px（画布最下一行头发从这里开始）、上面到分界线顶端 —— 白区不再在画布边上断成一条直线
 	if (layer == 1) {
 		vec2 cuv = UV * vec2(2.0, 3.0) - vec2(0.5, 1.0);
-		float exz = cuv.y > 1.0 - 4.0 / 1080.0 ? 235.0 / 1920.0 : cuv.y < 0.0 ? edge[0].x : edge_x(cuv.y);
+		// 画布里：头发上沿以上是白（zone_tex，头发以下是水）；画布左边按最左一列延伸；画布下面全是水；画布上面到分界线顶端是白
+		float exz = cuv.y < 0.0 ? edge[0].x : edge_x(clamp(cuv.y, 0.0, 1.0));
 		float pxz = 1.0 / 1920.0;
+		float zt = cuv.y > 1.0 - 2.0 / 1080.0 ? 0.0 : cuv.y < 0.0 ? 1.0 : texture(zone_tex, vec2(max(cuv.x, 0.0005), cuv.y)).r;
 		float rx = mix(-0.05, 0.75, zone_reveal) - SCREEN_UV.y * 0.12;
-		float z = (1.0 - smoothstep(exz - 1.5 * pxz, exz + 1.5 * pxz, cuv.x)) * panel_zone * panel
+		float z = zt * (1.0 - smoothstep(exz - 1.5 * pxz, exz + 1.5 * pxz, cuv.x)) * panel_zone * panel
 			* (1.0 - smoothstep(rx - 0.002, rx + 0.002, SCREEN_UV.x));
 		COLOR = vec4(1.0, 1.0, 1.0, z);
 		return;
@@ -896,7 +898,7 @@ void fragment() {
 	// 用户：不要浅色反光，那样反而有边界 —— 头发就是水本身的颜色（不压暗：压暗一点在头发外沿、立绘下沿都会出一条色差分界）
 	vec3 wc = w;
 	// 用户对照原版 #56：脸左侧的头发里，浅色发束是平涂的亮天青（没有线、没有渐变）—— 只在脸左边保留，右边伸进水里的仍是水色
-	float leftSide = 1.0 - smoothstep(0.20, 0.27, UV.x);
+	float leftSide = 1.0 - smoothstep(0.12, 0.16, UV.x);   // 只在脸左边外侧的头发（用户：眼睛下面不要青色小块）
 	// 用户：头发和水是一起的 —— 亮发束只留在头发外轮廓贴着背景白区的那一截（原版 #56 左边），脸旁、发梢都是水色
 	float nearW = 0.0;
 	for (int k = 0; k < 8; k++) {
