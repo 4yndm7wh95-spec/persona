@@ -120,6 +120,22 @@ def zone_of(im, name):
     return zone
 
 
+def flatten_hair_shadows(im):
+    """头发（深钴蓝）里比主色暗的阴影条 → 主色平涂；亮天青发束、眼睛、黑线不动。"""
+    from collections import Counter
+    a = np.asarray(im.convert("RGBA")).astype(np.int32)
+    r, g, b, al = a[..., 0], a[..., 1], a[..., 2], a[..., 3]
+    hair = (al > 128) & (b > 100) & (b - r > 80) & (g < 110)
+    q = (a[hair][:, :3] // 8) * 8
+    main = np.array(Counter(map(tuple, q)).most_common(1)[0][0]) + 4
+    lum = 0.3 * r + 0.55 * g + 0.15 * b
+    ml = 0.3 * main[0] + 0.55 * main[1] + 0.15 * main[2]
+    dark = ndimage.binary_opening(hair & (lum < ml - 3), iterations=1) & ~((al > 128) & (lum < 25))
+    a[dark, :3] = main
+    print("hair main colour", main.tolist(), "flattened", int(dark.sum()))
+    return Image.fromarray(a.astype(np.uint8), "RGBA")
+
+
 def edge_polyline(im):
     """人物右侧外轮廓：11 行（0, 108, … 1079）每行最右边 alpha>127 的像素。"""
     al = np.asarray(im)[..., 3]
@@ -144,7 +160,12 @@ def clean(im):
 
 def main(preview=None):
     done = {}
-    base = remove_hand(Image.open(SRC / "system_base.png"))
+    trace = SRC / "trace" / "system_trace_open.png"
+    if trace.exists():
+        # v0.14.78：头发照原版重画的立绘（Codex imagegen，用户认可；其余像素和旧底图一致）。头发里的深色阴影条填成主色（用户：阴影用色块填平）
+        base = flatten_hair_shadows(Image.open(trace))
+    else:
+        base = remove_hand(Image.open(SRC / "system_base.png"))
     print("edge", edge_polyline(base))
     # v0.14.72（用户：眨眼也像低帧率）：眨眼 5 档（0 / 25% / 50% / 75% / 100%），游戏里按 60fps 连续切
     frames = {"open": base, "q1": blink(base, 0.25), "half": blink(base, 0.5), "q3": blink(base, 0.75), "closed": blink(base, 1.0)}

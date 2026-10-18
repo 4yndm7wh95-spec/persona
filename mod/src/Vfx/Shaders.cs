@@ -895,7 +895,9 @@ void fragment() {
 		1.0 - smoothstep(30.0, 38.0, length((pp - vec2(357.0, 845.0)) * vec2(1.3, 0.9))));
 	hair *= 1.0 - eyes;
 	// 分界线右边整片都是水：不乘透明度（以前乘了 c.a，线条 / 发丝的半透明边缘只变一半，留下一条条细接缝）
-	float toWater = max(hair, side);
+	// v0.14.78：头发里原版那几块亮天青发束保留原色（用户：原版头发的青色阴影要搬过来），只有深钴蓝的部分画成水
+	float cyanH = smoothstep(0.55, 0.7, c.g) * (1.0 - smoothstep(0.85, 0.95, c.r));
+	float toWater = max(hair * (1.0 - cyanH), side);
 	vec3 w = water_at(SCREEN_UV, screen_aspect, sun_x, TIME);
 	// 用户：不要浅色反光，那样反而有边界 —— 头发就是水本身的颜色（不压暗：压暗一点在头发外沿、立绘下沿都会出一条色差分界）
 	vec3 wc = w;
