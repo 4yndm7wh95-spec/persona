@@ -751,19 +751,20 @@ float vnoise(vec2 p) {
 	vec2 u = f * f * (3.0 - 2.0 * f);
 	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
 }
-vec3 water_at(vec2 wuv, float aspect, float sun_x, float wt) {
+vec3 water_at(vec2 wuv, float w_aspect, float w_sun, float wt) {
+	// 参数名避开 uniform 名（aspect / sun_x），免得混淆
 
 	vec2 uv = wuv;
 	float t = wt;
-	float y = uv.y, x = uv.x * aspect;
+	float y = uv.y, x = uv.x * w_aspect;
 	// v0.14.77（用户：深水处还太浅）：按原版 #90 逐行取色拟合 —— 顶部亮青，往下很快变深，下半屏是很深的群青
 	vec3 c0 = vec3(0.12, 0.86, 1.0), c1 = vec3(0.11, 0.53, 0.91), c2 = vec3(0.05, 0.27, 0.71), c3 = vec3(0.02, 0.08, 0.70);
 	vec3 c = y < 0.25 ? mix(c0, c1, smoothstep(0.0, 0.25, y)) : y < 0.55 ? mix(c1, c2, smoothstep(0.25, 0.55, y)) : mix(c2, c3, smoothstep(0.55, 1.0, y));
 	// 焦散光斑
 	vec2 q = vec2(x * 13.0 + sin(y * 30.0 + t * 0.9) * 0.5, y * 42.0 - t * 0.5);
 	float n = vnoise(q) * 0.62 + vnoise(q * 2.3 + vec2(t * 0.35, 1.7)) * 0.38;
-	float dx = abs(x - sun_x * aspect);
-	float cone = (1.0 - smoothstep(0.0, 0.5 * aspect * max(0.0, 1.0 - y / 0.62), dx)) * (1.0 - smoothstep(0.08, 0.6, y));
+	float dx = abs(x - w_sun * w_aspect);
+	float cone = (1.0 - smoothstep(0.0, 0.5 * w_aspect * max(0.0, 1.0 - y / 0.62), dx)) * (1.0 - smoothstep(0.08, 0.6, y));
 	float band = 1.0 - smoothstep(0.02, 0.16, y);
 	float region = clamp(max(cone, band * 0.75), 0.0, 1.0);
 	float th = mix(0.84, 0.56, region);   // 用户：光斑太亮太多 —— 门槛提高、强度减半
@@ -858,8 +859,7 @@ void fragment() {
 		float z = zt * (1.0 - smoothstep(exz - 1.5 * pxz, exz + 1.5 * pxz, cuv.x)) * panel_zone * panel
 			* (1.0 - smoothstep(rx - 0.002, rx + 0.002, SCREEN_UV.x));
 		COLOR = vec4(1.0, 1.0, 1.0, z);
-		return;
-	}
+	} else {   // fragment 里不能 return（Godot 报错，整个着色器编译失败 —— v0.14.77 实机：水全白、立绘原图直出）
 	vec2 uv = UV;
 	// 头部旋转（反向采样）：衣领以下逐渐生效，离脖子很远的地方（画面右侧的水里）减弱
 	vec2 q = (uv - head_pivot) * vec2(aspect, 1.0);
@@ -921,6 +921,7 @@ void fragment() {
 	fa = fa2;
 	if (layer != 1) { fa *= 1.0 - bottom_fade * smoothstep(0.90, 0.995, UV.y); }   // 白区不渐隐（下面接着铺白）
 	COLOR = vec4(fc, fa);
+	}
 }");
 
 	/// <summary>v0.14.67 设置界面：把原版控件的贴图（米黄 / 棕色系）按亮度映射到 P3R 的深蓝 → 钴蓝 → 冰白，保留透明度。</summary>
