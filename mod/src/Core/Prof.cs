@@ -13,7 +13,7 @@ public static class Prof
 {
 	private sealed class Acc
 	{
-		internal readonly Dictionary<string, (long Ticks, int Calls)> Items = new();
+		internal readonly Dictionary<string, (long Ticks, int Calls, long Max)> Items = new();
 		internal long Top;
 		internal int Frames;
 
@@ -35,9 +35,20 @@ public static class Prof
 		{
 			return 0;
 		}
+		if (_depth == 0)
+		{
+			_polys0 = Polys;
+			_labels0 = Labels;
+			_anims0 = Anims;
+		}
 		_depth++;
 		return Stopwatch.GetTimestamp();
 	}
+
+	/// <summary>Fx.Poly / Typo.Text / Fx.Animate 各自 +1，用来看一次尖峰里新建了多少东西。</summary>
+	public static int Polys, Labels, Anims;
+	private static int _polys0, _labels0, _anims0, _spikes;
+	private static ulong _spikeMinute;
 
 	public static void End(string key, long t0)
 	{
@@ -49,11 +60,26 @@ public static class Prof
 		_depth = System.Math.Max(0, _depth - 1);       // Begin/End 都在 finally 里成对调用；保险不让深度变负
 		Add(Minute, key, dt);
 		Add(Window, key, dt);
+		// 单次（最外层）超过 6ms：立刻记一行，带上这次新建的多边形 / 文字 / 动画数量（每分钟最多 40 行）
+		double ms = dt * 1000.0 / Stopwatch.Frequency;
+		if (_depth == 0 && ms > 6.0)
+		{
+			ulong minute = Godot.Time.GetTicksMsec() / 60000;
+			if (minute != _spikeMinute)
+			{
+				_spikeMinute = minute;
+				_spikes = 0;
+			}
+			if (++_spikes <= 40)
+			{
+				Godot.GD.Print($"{ModEntry.Tag} health spike {key} {ms:0.0}ms polys+{Polys - _polys0} labels+{Labels - _labels0} anims+{Anims - _anims0}");
+			}
+		}
 	}
 
 	private static void Add(Acc a, string key, long dt)
 	{
-		a.Items[key] = a.Items.TryGetValue(key, out var v) ? (v.Ticks + dt, v.Calls + 1) : (dt, 1);
+		a.Items[key] = a.Items.TryGetValue(key, out var v) ? (v.Ticks + dt, v.Calls + 1, System.Math.Max(v.Max, dt)) : (dt, 1, dt);
 		if (_depth == 0)
 		{
 			a.Top += dt;
@@ -92,7 +118,7 @@ public static class Prof
 		double ms(long t) => t * 1000.0 / Stopwatch.Frequency;
 		int f = System.Math.Max(1, a.Frames);
 		string top = string.Join(", ", a.Items.OrderByDescending(kv => kv.Value.Ticks).Take(8)
-			.Select(kv => $"{kv.Key} {ms(kv.Value.Ticks) / f:0.00}ms×{kv.Value.Calls}"));
+			.Select(kv => $"{kv.Key} {ms(kv.Value.Ticks) / f:0.00}ms×{kv.Value.Calls} (max {ms(kv.Value.Max):0.0})"));
 		return $"p3_ms_per_frame={ms(a.Top) / f:0.00} over {a.Frames} frames; top: {top}";
 	}
 }

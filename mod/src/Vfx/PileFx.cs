@@ -283,21 +283,78 @@ public static class PileFx
 		float exitT0 = 0f;
 
 		List<Item> items = new();
-		// 牌组界面原版的「查看升级」勾选框保留：勾上 / 取消时把网格里能升级的牌都切到升级后 / 升级前
+		// 牌组界面原版的「查看升级」勾选框：勾上时网格里能升级的牌都显示升级后的样子
+		bool upgradeOn = false;
 		NTickbox? upgrades = kind == Kind.Deck ? screen.GetNodeOrNull<NTickbox>("%Upgrades") : null;
 		if (upgrades != null)
 		{
+			upgradeOn = upgrades.IsTicked;
 			upgrades.Toggled += tb => ModEntry.Safe("deck upgrades", () =>
 			{
+				upgradeOn = tb.IsTicked;
 				foreach (Item it in items)
 				{
-					if (it.Holder != null && GodotObject.IsInstanceValid(it.Holder) && it.Card.IsUpgradable)
+					if (it.Holder != null && GodotObject.IsInstanceValid(it.Holder) && it.Card.IsUpgradable && it != focused)
 					{
-						it.Holder.SetIsPreviewingUpgrade(tb.IsTicked);
+						it.Holder.SetIsPreviewingUpgrade(upgradeOn);
 					}
 				}
 			});
 		}
+		// v0.14.65 特写里的「查看升级」按钮（四个界面都有，在特写卡牌右下角外侧）：点一下卡牌翻一圈（正面 → 牌背 → 升级后的正面），再点翻回来。
+		// 已经满级的牌：按钮变灰写「已升级」；本来就不能升级的（诅咒 / 状态等）：不显示。可多次升级的牌照常翻到下一级。
+		UpgradeButton upBtn = UpgradeButton.Build(cards, k, font);
+		bool focusUp = false;                                   // 特写这张现在显示的是不是升级后
+		float upT0 = -1f;                                       // 翻转开始的时间（< 0 = 没在翻）
+		bool upSwapped = false;
+		CardModel? upModel = null;
+		const float UpFlipTime = 0.6f;
+
+		void ShowFace(Item it, bool up)
+		{
+			if (up && upModel == null)
+			{
+				upModel = (CardModel)it.Card.MutableClone();
+				upModel.UpgradeInternal();
+			}
+			if (flip?.Card is NCard fc && GodotObject.IsInstanceValid(fc))
+			{
+				if (up && upModel != null)
+				{
+					fc.Model = upModel;
+					fc.ShowUpgradePreview();
+				}
+				else
+				{
+					fc.Model = it.Card;
+					fc.UpdateVisuals(pile.Type, CardPreviewMode.Normal);
+				}
+			}
+			if (it.Holder != null && GodotObject.IsInstanceValid(it.Holder) && it.Card.IsUpgradable)
+			{
+				it.Holder.SetIsPreviewingUpgrade(up);
+			}
+			Fill(fx, up && upModel != null ? upModel : it.Card, pile, k);
+		}
+
+		void FlipUpgrade()
+		{
+			if (focused == null || !focusOn || upT0 >= 0f || !focused.Card.IsUpgradable || flip == null)
+			{
+				return;
+			}
+			upT0 = Now();
+			upSwapped = false;
+			Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.35f);
+		}
+		upBtn.Hit.GuiInput += ev => ModEntry.Safe("pile upgrade flip", () =>
+		{
+			if (ev is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left } && focused != null)
+			{
+				upBtn.Hit.AcceptEvent();
+				FlipUpgrade();
+			}
+		});
 		List<Section> sections = new();
 		List<CardModel> pending = new();
 		Item? hovered = null;
@@ -387,9 +444,9 @@ public static class PileFx
 			h.Visible = true;
 			slot.AddChild(h);
 			card!.UpdateVisuals(pile.Type, CardPreviewMode.Normal);
-			if (upgrades != null && upgrades.IsTicked && it.Card.IsUpgradable)
+			if (upgradeOn && it.Card.IsUpgradable)
 			{
-				h.SetIsPreviewingUpgrade(true);                // 牌组界面勾了「查看升级」
+				h.SetIsPreviewingUpgrade(true);                // 勾了「查看升级」
 			}
 			it.Slot = slot;
 			it.Holder = h;
@@ -432,9 +489,14 @@ public static class PileFx
 				cards.MoveChild(fx.Layer, cards.GetChildCount() - 1);
 				cards.MoveChild(catcher, cards.GetChildCount() - 1);
 				cards.MoveChild(it.Slot, cards.GetChildCount() - 1);
+				cards.MoveChild(upBtn.Root, cards.GetChildCount() - 1);     // 按钮在挡点击层上面才点得到
 				flip = MakeFlip(root, front, it.Card, pile.Type, it.Holder);
 				catcher.Visible = true;
-				Fill(fx, it.Card, pile, k);
+				upModel = null;
+				upT0 = -1f;
+				focusUp = upgradeOn && it.Card.IsUpgradable;               // 牌组界面勾了「查看升级」：特写从升级后开始
+				ShowFace(it, focusUp);
+				upBtn.Show(it.Card.IsUpgradable, it.Card.IsUpgraded, focusUp, it.Card.CurrentUpgradeLevel + 1, it.Card.MaxUpgradeLevel > 1);
 				Audio.Sfx.Clip("ShuffleTime_Select", 0.5f);
 			}
 			else if (focusOn)
@@ -568,7 +630,14 @@ public static class PileFx
 			{
 				if (focusOn && (Pressed("ui_select") || Pressed("ui_confirm")))
 				{
-					Toggle(focused);
+					if (focused.Card.IsUpgradable)
+					{
+						FlipUpgrade();                           // 手柄：特写时确认 = 查看升级 / 翻回；返回键收回特写
+					}
+					else
+					{
+						Toggle(focused);
+					}
 				}
 				return;
 			}
@@ -696,6 +765,7 @@ public static class PileFx
 				if (focused != null && !focusOn && focusP <= 0f)
 				{
 					BindBack(false);
+					upBtn.Hide();
 					focused = null;
 					catcher.Visible = false;
 					FreeFlip(flip);
@@ -843,7 +913,37 @@ public static class PileFx
 						want = Mathf.Lerp(want, FocusW * k / cs.X, fe);
 						rot = Mathf.Lerp(rot, 0f, fe) + Mathf.DegToRad(-8f) * Mathf.Sin(Mathf.Pi * fe);
 						alpha = 1f;
-						bool flying = flip != null && fe > 0.004f && fe < 0.996f;
+						// 飞回原位的半路（背面朝前时）换回网格的状态（牌组勾了「查看升级」= 升级后，否则原版）
+						bool gridUp = upgradeOn && it.Card.IsUpgradable;
+						if (!focusOn && fe < 0.5f && focusUp != gridUp)
+						{
+							focusUp = gridUp;
+							ShowFace(it, focusUp);
+						}
+						// 查看升级：在原地绕竖轴翻一整圈（0.6s），转到背面时换成升级后 / 升级前
+						float upE = upT0 >= 0f ? Mathf.Clamp((now - upT0) / UpFlipTime, 0f, 1f) : 0f;
+						if (upT0 >= 0f && (upE >= 1f || !focusOn))
+						{
+							if (!upSwapped)
+							{
+								focusUp = !focusUp;
+								ShowFace(it, focusUp);
+							}
+							upT0 = -1f;
+							upE = 0f;
+							upBtn.Set(focusUp);
+						}
+						else if (upT0 >= 0f && !upSwapped && upE >= 0.5f)
+						{
+							upSwapped = true;
+							focusUp = !focusUp;
+							ShowFace(it, focusUp);
+							Audio.Sfx.Clip("ShuffleTime_Select", 0.35f);
+						}
+						bool upFlipping = upT0 >= 0f;
+						float halfW = FocusW * k * 0.5f, halfH = halfW * cs.Y / cs.X;
+						upBtn.Place(to + new Vector2(halfW + 18f * k, halfH - 34f * k), focusOn && fe > 0.95f ? Mathf.Clamp((fe - 0.95f) / 0.05f, 0f, 1f) : 0f);
+						bool flying = flip != null && ((fe > 0.004f && fe < 0.996f) || upFlipping);
 						it.Slot.Visible = !flying;
 						if (flip != null)
 						{
@@ -852,8 +952,8 @@ public static class PileFx
 							{
 								flip.Node.Position = p;
 								flip.Node.Rotation = rot;
-								flip.Node.Scale = Vector2.One * want;
-								Pose(flip, Mathf.Tau * fe);
+								flip.Node.Scale = Vector2.One * want * (1f + 0.06f * Mathf.Sin(Mathf.Pi * upE));
+								Pose(flip, upFlipping ? Mathf.Tau * Ease.InOutCubic(upE) : Mathf.Tau * fe);
 							}
 						}
 					}
@@ -946,6 +1046,7 @@ public static class PileFx
 			plate.Visible = false;
 			hovered = null;
 			BindBack(false);
+			upBtn.Hide();
 			Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.3f);
 			// 保险：真实时间 1s 后无论如何关掉（每帧逻辑出问题也不会留着不关）
 			tree.CreateTimer(1.0, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () =>
@@ -1482,6 +1583,121 @@ public static class PileFx
 	}
 
 	private static bool Zh => TranslationServer.GetLocale().StartsWith("zh");
+
+	/// <summary>
+	/// v0.14.65 特写里的「查看升级」按钮：深蓝斜切条 + 左边青色翻转箭头图标 + 文字；悬停白底深蓝字（P3R 选中行）。
+	/// 文字：查看升级（可多次升级的牌写「查看升级 +N」）/ 查看升级前；满级的牌灰色「已升级」不能点。
+	/// </summary>
+	private sealed class UpgradeButton
+	{
+		internal Node2D Root = null!;
+		internal Control Hit = null!;
+		private Polygon2D _sel = null!;
+		private Node2D _icon = null!;
+		private Label _text = null!;
+		private bool _mouse, _enabled, _up, _multi;
+		private int _level;
+		private float _k;
+
+		internal static UpgradeButton Build(Control parent, float k, Font font)
+		{
+			UpgradeButton b = new() { _k = k };
+			float w = 214f * k, h = 34f * k, lean = 9f * k;
+			b.Root = new Node2D { Name = "P3UpgradeButton", Visible = false };
+			parent.AddChild(b.Root);
+			Fx.Poly(b.Root, new[] { new Vector2(lean + 5f * k, 5f * k), new Vector2(w + lean + 5f * k, 5f * k), new Vector2(w + 5f * k, h + 5f * k), new Vector2(5f * k, h + 5f * k) }, new Color(0f, 0f, 0.03f, 0.5f));
+			Fx.Poly(b.Root, new[] { new Vector2(lean, 0f), new Vector2(w + lean, 0f), new Vector2(w, h), new Vector2(0f, h) }, Navy);
+			b._sel = Fx.Poly(b.Root, new[] { new Vector2(lean, 0f), new Vector2(w + lean, 0f), new Vector2(w, h), new Vector2(0f, h) }, new Color(0.96f, 0.98f, 1f));
+			Fx.Poly(b.Root, new[] { new Vector2(0f, h - 3f * k), new Vector2(w, h - 3f * k), new Vector2(w, h), new Vector2(0f, h) }, Red);
+			// 图标：一个青色斜方块里两道弧形箭头（"翻转"）
+			b._icon = new Node2D { Position = new Vector2(24f * k, h * 0.5f) };
+			b.Root.AddChild(b._icon);
+			float r = 9f * k;
+			Vector2[] Arc(float a0, float a1)
+			{
+				Vector2[] pts = new Vector2[9];
+				for (int i = 0; i < 9; i++)
+				{
+					float a = Mathf.Lerp(a0, a1, i / 8f);
+					pts[i] = new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r;
+				}
+				return pts;
+			}
+			Fx.Stroke(b._icon, Arc(-2.6f, 0.2f), Cyan, 2.4f * k, additive: false);
+			Fx.Stroke(b._icon, Arc(0.54f, 3.34f), Cyan, 2.4f * k, additive: false);
+			Fx.Poly(b._icon, new[] { new Vector2(r + 4f * k, 0f), new Vector2(r - 4f * k, 0f), new Vector2(r, 5f * k) }.Select(v => v.Rotated(0.2f)).ToArray(), Cyan);
+			Fx.Poly(b._icon, new[] { new Vector2(-r - 4f * k, 0f), new Vector2(-r + 4f * k, 0f), new Vector2(-r, -5f * k) }.Select(v => v.Rotated(0.2f)).ToArray(), Cyan);
+			b._text = Text(b.Root, "", Zh ? Typo.CjkBold : font, (int)(18f * k), Colors.White, new Vector2(42f * k, h * 0.5f - 13f * k), 0, Ink);
+			b.Hit = new Control { Size = new Vector2(w + lean, h), MouseFilter = Control.MouseFilterEnum.Stop, MouseDefaultCursorShape = Control.CursorShape.PointingHand };
+			b.Root.AddChild(b.Hit);
+			b.Hit.MouseEntered += () => { b._mouse = true; b.Refresh(); };
+			b.Hit.MouseExited += () => { b._mouse = false; b.Refresh(); };
+			return b;
+		}
+
+		/// <summary>特写开始时：这张能不能升级、是不是已经升级过、现在显示的是哪一面。</summary>
+		internal void Show(bool upgradable, bool upgraded, bool showingUp, int nextLevel, bool multi)
+		{
+			if (!upgradable && !upgraded)
+			{
+				Hide();
+				return;
+			}
+			_enabled = upgradable;
+			_up = showingUp;
+			_level = nextLevel;
+			_multi = multi;
+			Root.Visible = true;
+			Root.Modulate = new Color(1f, 1f, 1f, 0f);
+			Refresh();
+		}
+
+		internal void Hide()
+		{
+			if (GodotObject.IsInstanceValid(Root))
+			{
+				Root.Visible = false;
+				_enabled = false;
+				_mouse = false;
+			}
+		}
+
+		internal void Set(bool showingUp)
+		{
+			_up = showingUp;
+			Refresh();
+		}
+
+		/// <summary>每帧：放到特写卡牌右下角外侧，按特写进度淡入。没落定时不接收点击。</summary>
+		internal void Place(Vector2 at, float alpha)
+		{
+			if (!Root.Visible)
+			{
+				return;
+			}
+			Root.Position = at;
+			Root.Modulate = new Color(1f, 1f, 1f, alpha * (_enabled ? 1f : 0.55f));
+			Hit.MouseFilter = alpha > 0.9f && _enabled ? Control.MouseFilterEnum.Stop : Control.MouseFilterEnum.Ignore;
+		}
+
+		private void Refresh()
+		{
+			if (!GodotObject.IsInstanceValid(Root))
+			{
+				return;
+			}
+			bool lit = _mouse && _enabled;
+			_sel.Visible = lit;
+			_icon.Visible = _enabled;
+			string text = !_enabled ? (Zh ? "已升级" : "UPGRADED")
+				: _up ? (Zh ? "查看升级前" : "VIEW BASE")
+				: _multi ? (Zh ? $"查看升级 +{_level}" : $"VIEW UPGRADE +{_level}")
+				: (Zh ? "查看升级" : "VIEW UPGRADE");
+			_text.Text = text;
+			_text.Position = new Vector2((_enabled ? 42f : 18f) * _k, _text.Position.Y);
+			_text.AddThemeColorOverride("font_color", lit ? new Color(0.03f, 0.07f, 0.24f) : Colors.White);
+		}
+	}
 
 	private static int Cost(CardModel c)
 	{

@@ -52,6 +52,7 @@ public static class Fx
 	/// <summary>用 0→1 的进度驱动任意动画。</summary>
 	public static Tween Animate(Node owner, double seconds, Action<float> step)
 	{
+		Core.Prof.Anims++;
 		string key = "anim " + EffectName(owner);              // v0.14.64：每帧回调按所属特效计时（Core/Prof）
 		Tween tween = owner.CreateTween();
 		tween.TweenMethod(Callable.From<float>(t =>
@@ -121,6 +122,7 @@ void fragment() {
 
 	public static Polygon2D Poly(Node parent, Vector2[] points, Color color, bool additive = false)
 	{
+		Core.Prof.Polys++;
 		Polygon2D poly = new Polygon2D { Color = color, Material = new ShaderMaterial { Shader = additive ? AaAddShader : AaShader } };
 		Reshape(poly, points);
 		parent.AddChild(poly);

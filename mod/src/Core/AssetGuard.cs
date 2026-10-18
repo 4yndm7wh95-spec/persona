@@ -47,6 +47,11 @@ public static class AssetGuard
 		int taken = 0;
 		foreach ((string vanilla, string mine) in Map)
 		{
+			// v0.14.65（实机日志：ObjectDisposedException at TakeOverPath）：我们拿着的私有副本被别处 Dispose 了（C# 包装失效）→ 丢掉重新加载
+			if (Held.TryGetValue(vanilla, out Resource? held) && !GodotObject.IsInstanceValid(held))
+			{
+				Held.Remove(vanilla);
+			}
 			if (!Held.TryGetValue(vanilla, out Resource? res))
 			{
 				if (!ResourceLoader.Exists(mine))
@@ -65,8 +70,15 @@ public static class AssetGuard
 			{
 				continue;
 			}
-			res.TakeOverPath(vanilla);
-			taken++;
+			try
+			{
+				res.TakeOverPath(vanilla);
+				taken++;
+			}
+			catch (System.ObjectDisposedException)
+			{
+				Held.Remove(vanilla);                          // 下次再加载一份新的；这一项不影响其他路径
+			}
 		}
 		if (taken > 0)
 		{

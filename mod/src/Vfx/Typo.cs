@@ -206,6 +206,7 @@ void fragment() {
 		HorizontalAlignment align = HorizontalAlignment.Left, int outline = 0, Color? outlineColor = null,
 		Color? shadow = null, Vector2? shadowOffset = null)
 	{
+		Core.Prof.Labels++;
 		LabelSettings ls = new LabelSettings
 		{
 			Font = font,
