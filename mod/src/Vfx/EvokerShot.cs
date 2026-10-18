@@ -222,7 +222,8 @@ public static class EvokerShot
 		{
 			return;
 		}
-		_hitStopUntil = now + (ulong)(realSeconds * 1000.0);
+		// v0.14.63（玩家：多段攻击时像被放慢）：一次顿帧之后 0.35s 内不再顿帧 —— 多段攻击只有第一下定格，后面几下照常速度
+		_hitStopUntil = now + (ulong)(realSeconds * 1000.0) + 350;
 		P3Makoto.Core.TimeScale.HitStop(0.08, realSeconds + 0.3);
 		tree.CreateTimer(realSeconds, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () =>
 			P3Makoto.Core.TimeScale.HitStop(1.0);

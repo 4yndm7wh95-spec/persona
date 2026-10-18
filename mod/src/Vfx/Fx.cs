@@ -69,11 +69,15 @@ public static class Fx
 	private const string AaBody = @"
 uniform vec2 pts[128];
 uniform int n = 0;
+uniform vec3 circle = vec3(0.0);
 varying vec2 lp;
 void vertex() { lp = VERTEX; }
 void fragment() {
 	COLOR *= texture(TEXTURE, UV);
-	if (n >= 3) {
+	if (circle.z > 0.0) {
+		float px = max(length(fwidth(lp)) * 0.7071, 1e-4);
+		COLOR.a *= clamp((circle.z - length(lp - circle.xy)) / px, 0.0, 1.0);
+	} else if (n >= 3) {
 		float d = 1e9;
 		for (int i = 0; i < 128; i++) {
 			if (i >= n) { break; }
@@ -111,6 +115,43 @@ void fragment() {
 		return poly;
 	}
 
+	/// <summary>顶点 ≥ 16 个且都在同一个圆上（半径误差 &lt; 0.5px）时返回 (圆心, 半径)，否则 z = 0。</summary>
+	private static Vector3 CircleOf(Vector2[] pts)
+	{
+		if (pts.Length < 16)
+		{
+			return Vector3.Zero;
+		}
+		Vector2 c = Vector2.Zero;
+		foreach (Vector2 p in pts) c += p;
+		c /= pts.Length;
+		float r = pts[0].DistanceTo(c);
+		foreach (Vector2 p in pts)
+		{
+			if (Mathf.Abs(p.DistanceTo(c) - r) > 0.5f)
+			{
+				return Vector3.Zero;
+			}
+		}
+		// 内接正多边形的边比圆往里缩一点：用边心距当半径，边缘不会溢出多边形
+		return new Vector3(c.X, c.Y, r * Mathf.Cos(Mathf.Pi / pts.Length));
+	}
+
+	/// <summary>
+	/// v0.14.63 自适应特效密度：按游戏最近的帧率给粒子 / 碎片 / 速度线等"数量型"元素打折（≥ 50fps 不变，35~50 打六折，更低打三五折）。
+	/// 只影响数量，不影响主体图形。
+	/// </summary>
+	public static float Quality
+	{
+		get
+		{
+			double fps = Engine.GetFramesPerSecond();
+			return fps <= 0 || fps >= 50 ? 1f : fps >= 35 ? 0.6f : 0.35f;
+		}
+	}
+
+	public static int N(int count) => count <= 2 ? count : Mathf.Max(2, Mathf.RoundToInt(count * Quality));
+
 	/// <summary>改多边形形状（同步抗锯齿着色器里的顶点）。Fx.Poly 创建的多边形改形状都要走这里，不要直接赋 Polygon。</summary>
 	public static void Reshape(Polygon2D poly, Vector2[] points)
 	{
@@ -122,6 +163,8 @@ void fragment() {
 			// 着色器只读前 n 个点，后面残留的旧数据不影响。只在主线程调用。
 			System.Array.Copy(points, AaBuf, System.Math.Min(points.Length, AaMax));
 			m.SetShaderParameter("pts", AaBuf);
+			// v0.14.63：正多边形近似的圆（Fx.Circle，顶点多、面积大）走快速路径：到圆心的距离，不再每个像素遍历几十条边
+			m.SetShaderParameter("circle", CircleOf(points));
 			m.SetShaderParameter("n", n);
 		}
 	}
@@ -235,6 +278,7 @@ void fragment() {
 	public static GpuParticles2D Sparks(Node parent, Color color, int amount, float speedMin, float speedMax,
 		float lifetime, float gravity = 0f, float scaleMin = 0.15f, float scaleMax = 0.45f, bool oneShot = true, Color[]? ramp = null)
 	{
+		amount = N(amount);
 		Gradient gradient = ramp == null
 			? new Gradient
 			{

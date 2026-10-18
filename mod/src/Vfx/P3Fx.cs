@@ -117,6 +117,7 @@ public static class P3Fx
 	public static void SpeedLines(Control layer, Vector2 at, Color tint, int count = 14, float inner = 50f, float outer = 380f, float duration = 0.38f, float delay = 0f)
 	{
 		Node2D root = Fx.Root(layer, at, "P3SpeedLines");
+		count = Fx.N(count);
 		float total = duration + delay + 0.08f;
 		for (int i = 0; i < count; i++)
 		{
@@ -144,6 +145,7 @@ public static class P3Fx
 	public static void GlassShatter(Control layer, Vector2 at, int count = 30, float power = 1f, Color? tint = null)
 	{
 		Color glass = tint ?? Pal.Ice;
+		count = Fx.N(count);
 		Node2D root = Fx.Root(layer, at, "P3GlassShatter");
 		const float duration = 1.0f;
 		for (int i = 0; i < count; i++)
