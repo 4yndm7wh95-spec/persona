@@ -860,8 +860,12 @@ void fragment() {
 	float hair = hairness(c) * smoothstep(3.0, 4.5, hn);
 	float toWater = max(hair, side * c.a);
 	vec3 w = water_at(SCREEN_UV, screen_aspect, sun_x, TIME);
-	// 用户：不要浅色反光，那样反而有边界 —— 头发就是水本身的颜色（略深一点，原版头发比周围的水稍深）
-	vec3 wc = w * 0.9;
+	// 用户：不要浅色反光，那样反而有边界 —— 头发就是水本身的颜色（不压暗：压暗一点在头发外沿、立绘下沿都会出一条色差分界）
+	vec3 wc = w;
+	// 用户对照原版 #56：脸左侧的头发里，浅色发束是平涂的亮天青（没有线、没有渐变）—— 只在脸左边保留，右边伸进水里的仍是水色
+	float leftSide = 1.0 - smoothstep(0.20, 0.27, UV.x);
+	float strand = smoothstep(0.62, 0.72, c.g) * hair * leftSide;
+	wc = mix(wc, vec3(0.16, 0.74, 1.0), strand);
 	vec3 fc = mix(c.rgb, wc, toWater);
 	float fa = c.a;
 	// 白色面板：分界线左边、人物上半截（左下角留给水和头发）
