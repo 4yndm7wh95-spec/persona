@@ -26,8 +26,22 @@ internal static class IdleWarmup
 		"res://p3makoto/pile_discard/pile_discard_skel_data.tres", "res://p3makoto/pile_exhaust/pile_exhaust_skel_data.tres",
 		"res://p3makoto/portrait/portrait_skel_data.tres",
 		// v0.14.68：设置界面（第一次打开卡了约 0.9s：三张 1920×1080 立绘解码 + 三个新着色器编译）
-		"@system shaders", "res://p3makoto/ui/system_portrait.png", "res://p3makoto/ui/system_portrait_q1.png", "res://p3makoto/ui/system_portrait_half.png", "res://p3makoto/ui/system_portrait_q3.png", "res://p3makoto/ui/system_portrait_closed.png",
-	}.Concat(DiveFrames()));
+	}.Concat(SystemJobs()));
+
+	/// <summary>设置界面（P3R 风格）的资源；v0.14.76 起这个界面先关着（SettingsSkin.Enabled），关着就不预热。</summary>
+	private static IEnumerable<string> SystemJobs()
+	{
+		if (!P3Makoto.Scenes.SettingsSkin.Enabled) yield break;
+		// v0.14.68：设置界面（第一次打开卡了约 0.9s：三张 1920×1080 立绘解码 + 三个新着色器编译）
+		foreach (string p in new[] { "@system shaders", "res://p3makoto/ui/system_portrait.png", "res://p3makoto/ui/system_portrait_q1.png", "res://p3makoto/ui/system_portrait_half.png", "res://p3makoto/ui/system_portrait_q3.png", "res://p3makoto/ui/system_portrait_closed.png" })
+		{
+			yield return p;
+		}
+		foreach (string p in DiveFrames())
+		{
+			yield return p;
+		}
+	}
 
 	/// <summary>v0.14.73 设置界面入水转场的原版水花逐帧图（只导出了不重复的帧，存在哪几张预热哪几张）。</summary>
 	private static IEnumerable<string> DiveFrames()

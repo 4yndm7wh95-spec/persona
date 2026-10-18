@@ -108,6 +108,12 @@ public static class SettingsSkin
 
 	private static readonly Dictionary<ulong, State> States = new();
 
+	/// <summary>
+	/// v0.14.76（用户：入场动画还没做完，先发一个只修 bug 的版本）：P3R 风格设置界面整体先关掉 —— 不挂、设置里的开关不显示、空闲预热不加载它的资源。
+	/// 做完后改回 true。
+	/// </summary>
+	public static readonly bool Enabled = false;
+
 	private static bool Zh => TranslationServer.GetLocale().StartsWith("zh");
 	private static float Now => Time.GetTicksMsec() / 1000f;
 	private static Font LabelFont => Zh ? Typo.CjkBold : Typo.Barlow;
@@ -116,7 +122,7 @@ public static class SettingsSkin
 	public static void Attach(NSettingsScreen screen)
 	{
 		ulong id = screen.GetInstanceId();
-		if (States.ContainsKey(id) || screen.GetNodeOrNull<NSettingsTabManager>("%SettingsTabManager") is not NSettingsTabManager manager
+		if (!Enabled || States.ContainsKey(id) || screen.GetNodeOrNull<NSettingsTabManager>("%SettingsTabManager") is not NSettingsTabManager manager
 			|| manager.GetNodeOrNull<NScrollableContainer>("%ScrollContainer") is not NScrollableContainer scroll)
 		{
 			return;
