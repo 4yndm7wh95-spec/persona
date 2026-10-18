@@ -90,6 +90,7 @@ public static class SettingsSkin
 		internal Node2D SystemWord = null!;
 		internal TextureRect ZoneLayer = null!;
 		internal Control ZoneTail = null!;
+		internal ColorRect ZoneTailRect = null!;
 		internal readonly List<Tab> Tabs = new();
 		internal readonly List<RowDeco> Rows = new();
 		internal readonly List<Action> Undo = new();
@@ -255,7 +256,8 @@ public static class SettingsSkin
 		// 立绘画布下沿以下（入场时人物还在上方，画布下沿露在画面里）：白区接着往下铺（画布最下一行左边 168px 是白），不留一条渐变带。
 		// 单独一层、每帧跟着白区的变换（白区那层要当竖排大字的裁切遮罩，子节点会被裁掉）
 		st.ZoneTail = new Control { MouseFilter = Control.MouseFilterEnum.Ignore, Size = new Vector2(pw, view.Y) };
-		st.ZoneTail.AddChild(new ColorRect { Color = Colors.White, MouseFilter = Control.MouseFilterEnum.Ignore, Position = new Vector2(-0.5f * pw, view.Y - 1f), Size = new Vector2(0.5f * pw + 168f / 1920f * pw, view.Y) });
+		st.ZoneTailRect = new ColorRect { Color = Colors.White, Material = new ShaderMaterial { Shader = Shaders.ZoneTail }, MouseFilter = Control.MouseFilterEnum.Ignore, Position = new Vector2(-0.5f * pw, view.Y - 1f), Size = new Vector2(0.5f * pw + 168f / 1920f * pw, view.Y) };   // 画布最下一行左边 168px 是白，往右是头发（水色），延伸也只到这里
+		st.ZoneTail.AddChild(st.ZoneTailRect);
 		st.Root.AddChild(st.ZoneTail);
 		st.Root.AddChild(st.ZoneLayer);
 		// v0.14.77（用户：字要在水的图层之下）：竖排大字只在白区里露出来 —— 挂在白区那层下面，白区当裁切遮罩；水（头发、右边的水）都压在字上面。
@@ -883,6 +885,9 @@ public static class SettingsSkin
 		st.ZoneTail.PivotOffset = st.Portrait.PivotOffset;
 		st.ZoneTail.Rotation = st.Portrait.Rotation;
 		st.ZoneTail.Position = st.Portrait.Position;
+		float zr = Ease.OutCubic(Mathf.Clamp((t - 0.36f) / 0.2f, 0f, 1f));   // 原版 #40 左边还是水，#44 起白从左边扫出来
+		((ShaderMaterial)st.ZoneLayer.Material).SetShaderParameter("zone_reveal", zr);
+		((ShaderMaterial)st.ZoneTailRect.Material).SetShaderParameter("zone_reveal", zr);
 		bool poses = st.DivePoses.All(x => x != null);
 		st.PortraitMat.SetShaderParameter("head_angle", poses ? 0f : Mathf.DegToRad(rot) * 0.35f);
 		float eWord = Ease.OutCubic(Mathf.Clamp((t - 0.34f) / 0.3f, 0f, 1f));

@@ -701,7 +701,7 @@ void fragment() {
 	COLOR = vec4(c + vec3(0.7, 0.95, 1.0) * rim * 0.9, max(inside, rim * 0.9));
 }");
 
-	private static Shader? _campPanel, _campWater, _campPortrait, _gradientMap, _blobWipe, _diveSplash, _diveMask;
+	private static Shader? _zoneTail, _campPanel, _campWater, _campPortrait, _gradientMap, _blobWipe, _diveSplash, _diveMask;
 
 	/// <summary>
 	/// v0.14.67 设置界面（P3R 主菜单 52s）的水下背景：上方是很亮的青色水面（流动的亮斑焦散），往下变钴蓝、深蓝；斜射光柱；中段若隐若现的暗色块（远处的水底建筑）。
@@ -714,6 +714,15 @@ void fragment() {
 	/// v0.14.75 设置界面左边的白色面板（屏幕上固定，不跟人物动）：右沿就是人物和水的分界线（同立绘着色器），左白右水，
 	/// 分界只有 2px 的抗锯齿，不加浅青过渡（原版就是干净的两块）。reveal：入场时从画面左外侧扫到位。
 	/// </summary>
+	/// <summary>v0.14.77：立绘画布下沿以下的白区延伸（入场时人物还在上方）；和白区一样按屏幕坐标从左往右扫出来。</summary>
+	public static Shader ZoneTail => _zoneTail ??= Make(@"
+shader_type canvas_item;
+uniform float zone_reveal = 1.0;
+void fragment() {
+	float rx = mix(-0.05, 0.75, zone_reveal) - SCREEN_UV.y * 0.12;
+	COLOR = vec4(1.0, 1.0, 1.0, 1.0 - smoothstep(rx - 0.002, rx + 0.002, SCREEN_UV.x));
+}");
+
 	public static Shader CampPanel => _campPanel ??= Make(@"
 shader_type canvas_item;
 uniform vec2 edge[13];
@@ -805,6 +814,7 @@ uniform float aspect = 1.7778;
 uniform float screen_aspect = 1.7778;
 uniform float sun_x = 0.64;
 uniform float panel_zone = 1.0;
+uniform float zone_reveal = 1.0;   // 入场：白区从屏幕左边往右扫出来（屏幕坐标，不跟人物转）
 uniform int layer = 0;   // 0 = 人物 + 白区，1 = 只画白区，2 = 只画人物
 uniform sampler2D zone_tex : filter_linear;   // 白色区域蒙版（tools/ui/build_system_portrait.py：分界线左边、头发以上），跟着立绘一起动
 float edge_x(float y) {
@@ -863,6 +873,11 @@ void fragment() {
 	}
 	// 只在头部（立绘下半部，衣领以下）认头发 —— 衬衫上的浅青阴影不算
 	float hair = hairness(c) * smoothstep(3.0, 4.5, hn) * smoothstep(0.52, 0.58, uv.y);
+	// 用户：眼睛颜色不对 —— 两只眼的虹膜也是青蓝，被当成头发画成了水；眼睛范围内不转（立绘像素坐标）
+	vec2 pp = uv * vec2(1920.0, 1080.0);
+	float eyes = max(1.0 - smoothstep(62.0, 72.0, length((pp - vec2(497.0, 925.0)) * vec2(0.85, 1.25))),
+		1.0 - smoothstep(30.0, 38.0, length((pp - vec2(357.0, 845.0)) * vec2(1.3, 0.9))));
+	hair *= 1.0 - eyes;
 	// 分界线右边整片都是水：不乘透明度（以前乘了 c.a，线条 / 发丝的半透明边缘只变一半，留下一条条细接缝）
 	float toWater = max(hair, side);
 	vec3 w = water_at(SCREEN_UV, screen_aspect, sun_x, TIME);
@@ -884,7 +899,9 @@ void fragment() {
 	// 白色面板：分界线左边、人物上半截（左下角留给水和头发）
 	// 白色区域：蒙版（人物轮廓以上）× 分界线左边；画布外（人物还在上方时）是水
 	float inside = step(0.0, uv.x) * step(uv.x, 1.0) * step(0.0, uv.y) * step(uv.y, 1.0);
-	float zone = texture(zone_tex, clamp(uv, vec2(0.0), vec2(1.0))).r * inside * (1.0 - side) * panel_zone * panel;
+	float rx = mix(-0.05, 0.75, zone_reveal) - SCREEN_UV.y * 0.12;
+	float zone = texture(zone_tex, clamp(uv, vec2(0.0), vec2(1.0))).r * inside * (1.0 - side) * panel_zone * panel
+		* (1.0 - smoothstep(rx - 0.002, rx + 0.002, SCREEN_UV.x));
 	if (layer == 1) { fa = 0.0; }
 	if (layer == 2) { zone = 0.0; }
 	float fa2 = fa + zone * (1.0 - fa);

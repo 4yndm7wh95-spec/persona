@@ -101,16 +101,10 @@ def blink(base, f):
 
 
 def zone_of(im, name):
-    """白色区域蒙版（v0.14.77，对照原版 #48~#70）：分界线左边、头发以上的部分全是白（人物的白衬衫 / 脸和白区连成一片，
-    左下的头发是水色）。每一列从上往下，到第一块大面积头发为止都是白区；头发以下（发梢之间的空隙）是水。分界线在着色器里再切。"""
-    a = np.asarray(im.convert("RGBA")).astype(np.int32)
-    r, g, b, al = a[..., 0], a[..., 1], a[..., 2], a[..., 3]
-    hair = (al > 127) & (b > 150) & (r < 130) & (np.maximum(np.maximum(r, g), b) > 140)
-    hair = ndimage.binary_opening(hair, iterations=6)                    # 细线（耳机线、轮廓线）不算
-    h, w = hair.shape
-    top = np.where(hair.any(axis=0), hair.argmax(axis=0), h)
-    zone = (np.arange(h)[:, None] < top[None, :]).astype(np.float32)
-    zone = Image.fromarray((zone * 255).astype(np.uint8), "L").filter(ImageFilter.GaussianBlur(1.2))
+    """白色区域蒙版。v0.14.77 第二版（用户：头发被做得又厚又长，像是为了盖住字）：以前是"每列从上往下白到第一块头发为止"，
+    头发以下全成了水，看起来像一大片头发。原版是分界线左边整片都是白，头发本身（画成水色）压在白上，发丝之间、头发下面也是白。
+    所以蒙版就是整张白；入场时由着色器的 zone_reveal 从左往右扫出来（原版 #40 左边还是水，#44 起白出来）。"""
+    zone = Image.new("L", im.size, 255)
     godot_tex.write_texture(STAGE, f"p3makoto/ui/{name}", Image.merge("RGBA", [zone, zone, zone, Image.new("L", zone.size, 255)]))
     return zone
 
