@@ -890,7 +890,7 @@ void fragment() {
 	float fa2 = fa + zone * (1.0 - fa);
 	fc = (fc * fa + vec3(1.0) * zone * (1.0 - fa)) / max(fa2, 0.0001);
 	fa = fa2;
-	fa *= 1.0 - bottom_fade * smoothstep(0.90, 0.995, UV.y);
+	if (layer != 1) { fa *= 1.0 - bottom_fade * smoothstep(0.90, 0.995, UV.y); }   // 白区不渐隐（下面接着铺白）
 	COLOR = vec4(fc, fa);
 }");
 

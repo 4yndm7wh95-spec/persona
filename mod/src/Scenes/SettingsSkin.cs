@@ -252,6 +252,8 @@ public static class SettingsSkin
 		pm.SetShaderParameter("layer", 2);
 		st.ZoneLayer = new TextureRect { Texture = st.Open, Material = zm, MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, Size = new Vector2(pw, view.Y) };
 		st.Root.AddChild(st.ZoneLayer);
+		// 立绘画布下沿以下（入场时人物还在上方，画布下沿露在画面里）：白区接着往下铺（画布最下一行左边 168px 是白），不留一条渐变带
+		st.ZoneLayer.AddChild(new ColorRect { Color = Colors.White, MouseFilter = Control.MouseFilterEnum.Ignore, Position = new Vector2(-0.5f * pw, view.Y - 1f), Size = new Vector2(0.5f * pw + 168f / 1920f * pw, view.Y) });
 		// （v0.14.77：不再单独铺左边白条 —— 它的右沿在头发下面露成一条竖直的硬边；左边的白由跟着人物走的白色区域提供）
 		st.Root.MoveChild(st.SystemWord, -1);
 		st.Portrait = new TextureRect { Texture = st.Open, Material = pm, MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, Size = new Vector2(pw, view.Y) };
@@ -865,7 +867,7 @@ public static class SettingsSkin
 		// 两段式：0.30~0.45s 快速沉入、转正大半，之后 0.35s 慢慢下沉到位、角度归零；中间平滑插值（三次 Hermite），不是一条缓动曲线。
 		// 待机只往下轻轻浮动（往上浮会在画面底边露出一条白缝 —— v0.14.69 实机）
 		(float dy, float rot, float dx) = DivePose(t);
-		st.PortraitMat.SetShaderParameter("bottom_fade", Mathf.Clamp(-dy * 10f, 0f, 1f));
+		st.PortraitMat.SetShaderParameter("bottom_fade", 0f);   // v0.14.77：头发已经是水色，画布下沿看不出来，不再渐隐（渐隐反而出一条白→蓝的渐变带）
 		st.Portrait.PivotOffset = new Vector2(650f, 977f) * k;                 // 原版模板匹配得到的旋转中心
 		st.Portrait.Rotation = Mathf.DegToRad(rot);
 		st.Portrait.Position = new Vector2(dx * view.X, dy * view.Y) + new Vector2(0f, (1f - Mathf.Cos(now * 0.6f)) * 3f * k);
