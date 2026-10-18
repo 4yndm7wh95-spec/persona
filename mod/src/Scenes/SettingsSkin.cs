@@ -89,6 +89,7 @@ public static class SettingsSkin
 		internal Label PanelTitle = null!, PanelWater = null!, HintZh = null!, HintEn = null!;
 		internal Node2D SystemWord = null!;
 		internal TextureRect ZoneLayer = null!;
+		internal Control ZoneTail = null!;
 		internal readonly List<Tab> Tabs = new();
 		internal readonly List<RowDeco> Rows = new();
 		internal readonly List<Action> Undo = new();
@@ -251,11 +252,16 @@ public static class SettingsSkin
 		zm.SetShaderParameter("layer", 1);
 		pm.SetShaderParameter("layer", 2);
 		st.ZoneLayer = new TextureRect { Texture = st.Open, Material = zm, MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, Size = new Vector2(pw, view.Y) };
+		// 立绘画布下沿以下（入场时人物还在上方，画布下沿露在画面里）：白区接着往下铺（画布最下一行左边 168px 是白），不留一条渐变带。
+		// 单独一层、每帧跟着白区的变换（白区那层要当竖排大字的裁切遮罩，子节点会被裁掉）
+		st.ZoneTail = new Control { MouseFilter = Control.MouseFilterEnum.Ignore, Size = new Vector2(pw, view.Y) };
+		st.ZoneTail.AddChild(new ColorRect { Color = Colors.White, MouseFilter = Control.MouseFilterEnum.Ignore, Position = new Vector2(-0.5f * pw, view.Y - 1f), Size = new Vector2(0.5f * pw + 168f / 1920f * pw, view.Y) });
+		st.Root.AddChild(st.ZoneTail);
 		st.Root.AddChild(st.ZoneLayer);
-		// 立绘画布下沿以下（入场时人物还在上方，画布下沿露在画面里）：白区接着往下铺（画布最下一行左边 168px 是白），不留一条渐变带
-		st.ZoneLayer.AddChild(new ColorRect { Color = Colors.White, MouseFilter = Control.MouseFilterEnum.Ignore, Position = new Vector2(-0.5f * pw, view.Y - 1f), Size = new Vector2(0.5f * pw + 168f / 1920f * pw, view.Y) });
-		// （v0.14.77：不再单独铺左边白条 —— 它的右沿在头发下面露成一条竖直的硬边；左边的白由跟着人物走的白色区域提供）
-		st.Root.MoveChild(st.SystemWord, -1);
+		// v0.14.77（用户：字要在水的图层之下）：竖排大字只在白区里露出来 —— 挂在白区那层下面，白区当裁切遮罩；水（头发、右边的水）都压在字上面。
+		// 字的位置每帧按屏幕坐标设（不跟着人物转）
+		st.ZoneLayer.ClipChildren = CanvasItem.ClipChildrenMode.AndDraw;
+		st.SystemWord.Reparent(st.ZoneLayer, false);
 		st.Portrait = new TextureRect { Texture = st.Open, Material = pm, MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, Size = new Vector2(pw, view.Y) };
 		st.Root.AddChild(st.Portrait);
 		st.Root.MoveChild(st.Bubbles, -1);                                   // 待机气泡在人物上面
@@ -874,10 +880,14 @@ public static class SettingsSkin
 		st.ZoneLayer.PivotOffset = st.Portrait.PivotOffset;
 		st.ZoneLayer.Rotation = st.Portrait.Rotation;
 		st.ZoneLayer.Position = st.Portrait.Position;
+		st.ZoneTail.PivotOffset = st.Portrait.PivotOffset;
+		st.ZoneTail.Rotation = st.Portrait.Rotation;
+		st.ZoneTail.Position = st.Portrait.Position;
 		bool poses = st.DivePoses.All(x => x != null);
 		st.PortraitMat.SetShaderParameter("head_angle", poses ? 0f : Mathf.DegToRad(rot) * 0.35f);
 		float eWord = Ease.OutCubic(Mathf.Clamp((t - 0.34f) / 0.3f, 0f, 1f));
-		st.SystemWord.Position = new Vector2(0.23f * view.X - 320f * k * (1f - eWord), -0.03f * view.Y);
+		st.SystemWord.GlobalPosition = st.Root.GetGlobalTransform() * new Vector2(0.23f * view.X - 320f * k * (1f - eWord), -0.03f * view.Y);
+		st.SystemWord.GlobalRotation = Mathf.Pi / 2f;
 		float eContent = Ease.OutCubic(Mathf.Clamp((t - 0.5f) / 0.3f, 0f, 1f));
 		st.Scroll.Modulate = new Color(st.OrigModulate, st.OrigModulate.A * eContent);
 
