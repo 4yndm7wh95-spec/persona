@@ -20,7 +20,7 @@ import godot_tex  # noqa: E402
 
 SRC = ROOT / "art/p3menu_system"
 STAGE = ROOT / "mod/pck_stage"
-OUT = {"open": "system_portrait.png", "half": "system_portrait_half.png", "closed": "system_portrait_closed.png"}
+OUT = {"open": "system_portrait.png", "q1": "system_portrait_q1.png", "half": "system_portrait_half.png", "q3": "system_portrait_q3.png", "closed": "system_portrait_closed.png"}
 
 
 def remove_hand(im):
@@ -126,7 +126,8 @@ def main(preview=None):
     done = {}
     base = remove_hand(Image.open(SRC / "system_base.png"))
     print("edge", edge_polyline(base))
-    frames = {"open": base, "half": blink(base, 0.5), "closed": blink(base, 1.0)}
+    # v0.14.72（用户：眨眼也像低帧率）：眨眼 5 档（0 / 25% / 50% / 75% / 100%），游戏里按 60fps 连续切
+    frames = {"open": base, "q1": blink(base, 0.25), "half": blink(base, 0.5), "q3": blink(base, 0.75), "closed": blink(base, 1.0)}
     for key, dst in OUT.items():
         im, n = clean(frames[key])
         godot_tex.write_texture(STAGE, f"p3makoto/ui/{dst}", im)

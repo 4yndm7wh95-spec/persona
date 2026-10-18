@@ -701,35 +701,48 @@ void fragment() {
 	COLOR = vec4(c + vec3(0.7, 0.95, 1.0) * rim * 0.9, max(inside, rim * 0.9));
 }");
 
-	private static Shader? _campWater, _campPortrait, _gradientMap, _blobWipe;
+	private static Shader? _campWater, _campPortrait, _gradientMap, _blobWipe, _diveSplash, _diveMask;
 
 	/// <summary>
 	/// v0.14.67 设置界面（P3R 主菜单 52s）的水下背景：上方是很亮的青色水面（流动的亮斑焦散），往下变钴蓝、深蓝；斜射光柱；中段若隐若现的暗色块（远处的水底建筑）。
 	/// </summary>
 	public static Shader CampWater => _campWater ??= Make(@"
 shader_type canvas_item;
+// v0.14.72（用户：水里没有原版细腻 —— 原版从水面浅色慢慢过渡到深蓝；水面有一片片光斑）：
+// 四段平滑渐变（亮青 → 天青 → 钴蓝 → 深蓝）；水面焦散：横向拉长、边缘清楚的亮青色块（两层亮度），
+// 集中在顶部偏右一个倒三角里（阳光从那里照下来），越往下越小越稀，最上面一条整片都有；缓慢漂动。
 uniform float aspect = 1.777;
+uniform float sun_x = 0.64;
+float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float vnoise(vec2 p) {
+	vec2 i = floor(p), f = fract(p);
+	vec2 u = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
+}
 void fragment() {
 	vec2 uv = UV;
-	float t = TIME * 0.3;
-	vec3 top = vec3(0.20, 0.80, 1.0), mid = vec3(0.07, 0.40, 0.95), bot = vec3(0.03, 0.12, 0.55);
-	vec3 c = uv.y < 0.38 ? mix(top, mid, uv.y / 0.38) : mix(mid, bot, (uv.y - 0.38) / 0.62);
-	float u = uv.x * aspect;
-	// 水面亮斑：两组交错的正弦，阈值成一块块不规则的亮片，只在上部
-	float n = sin(u * 8.0 + sin(uv.y * 13.0 + t * 2.0) * 1.6 + t * 1.5) * sin(uv.y * 21.0 - u * 3.2 + sin(u * 4.6 - t) * 1.3 - t * 1.1);
-	float blob = smoothstep(0.30, 0.72, n) * smoothstep(0.45, 0.02, uv.y);
-	c = mix(c, vec3(0.78, 0.97, 1.0), blob * 0.8);
-	// 细焦散网（全画面，越往下越淡）
-	float a = sin(u * 22.0 + sin(uv.y * 9.0 + u * 3.5 + t) * 2.2 + t * 1.3);
-	float b = sin(u * 15.0 - uv.y * 25.0 + sin(u * 7.0 - t) * 1.7 - t);
-	float net = pow(clamp(1.0 - abs(a + b) * 2.4, 0.0, 1.0), 3.0);
-	c += vec3(0.5, 0.85, 1.0) * net * clamp(1.0 - uv.y * 1.4, 0.0, 1.0) * 0.22;
-	// 斜射光柱
-	float rays = pow(clamp(sin(u * 4.6 + uv.y * 1.6 + sin(t * 0.4) * 0.7) * 0.5 + 0.5, 0.0, 1.0), 10.0);
-	c += vec3(0.55, 0.88, 1.0) * rays * clamp(1.0 - uv.y * 1.1, 0.0, 1.0) * 0.2;
+	float t = TIME;
+	float y = uv.y, x = uv.x * aspect;
+	vec3 c0 = vec3(0.22, 0.82, 1.0), c1 = vec3(0.10, 0.56, 0.98), c2 = vec3(0.06, 0.34, 0.88), c3 = vec3(0.04, 0.18, 0.66);
+	vec3 c = y < 0.3 ? mix(c0, c1, smoothstep(0.0, 0.3, y)) : y < 0.62 ? mix(c1, c2, smoothstep(0.3, 0.62, y)) : mix(c2, c3, smoothstep(0.62, 1.0, y));
+	// 焦散光斑
+	vec2 q = vec2(x * 13.0 + sin(y * 30.0 + t * 0.9) * 0.5, y * 42.0 - t * 0.5);
+	float n = vnoise(q) * 0.62 + vnoise(q * 2.3 + vec2(t * 0.35, 1.7)) * 0.38;
+	float dx = abs(x - sun_x * aspect);
+	float cone = (1.0 - smoothstep(0.0, 0.5 * aspect * max(0.0, 1.0 - y / 0.62), dx)) * (1.0 - smoothstep(0.08, 0.6, y));
+	float band = 1.0 - smoothstep(0.02, 0.16, y);
+	float region = clamp(max(cone, band * 0.75), 0.0, 1.0);
+	float th = mix(0.78, 0.44, region);
+	float p1 = smoothstep(th, th + 0.015, n);
+	float p2 = smoothstep(th + 0.11, th + 0.125, n);
+	c = mix(c, vec3(0.40, 0.88, 1.0), p1 * smoothstep(0.02, 0.2, region) * 0.85);
+	c = mix(c, vec3(0.72, 0.97, 1.0), p2 * smoothstep(0.1, 0.4, region) * 0.8);
+	// 斜射光柱（很淡）
+	float rays = pow(clamp(sin(x * 4.6 + y * 1.6 + sin(t * 0.4) * 0.7) * 0.5 + 0.5, 0.0, 1.0), 10.0);
+	c += vec3(0.55, 0.88, 1.0) * rays * clamp(1.0 - y * 1.3, 0.0, 1.0) * 0.12;
 	// 远处的暗色块（模糊的水底建筑）
-	float bx = smoothstep(0.08, 0.0, abs(fract(u * 1.6 + 0.3) - 0.5) - 0.32) * smoothstep(0.30, 0.45, uv.y) * smoothstep(0.75, 0.55, uv.y);
-	c = mix(c, c * 0.82, bx * 0.5);
+	float bx = smoothstep(0.08, 0.0, abs(fract(x * 1.6 + 0.3) - 0.5) - 0.32) * smoothstep(0.30, 0.45, y) * smoothstep(0.75, 0.55, y);
+	c = mix(c, c * 0.86, bx * 0.5);
 	COLOR = vec4(c, 1.0);
 }");
 
@@ -740,9 +753,17 @@ void fragment() {
 	/// </summary>
 	public static Shader CampPortrait => _campPortrait ??= Make(@"
 shader_type canvas_item;
+// v0.14.72（用户：人物和水有明显分界线、人物没有动作、动画像低帧率）：
+// · 白色面板并进这个着色器：轮廓线左边是白，右边是水，和人物白色透水用同一条羽化带 —— 不再是两层各自的硬边；
+// · head_angle：头部绕脖子转（入水时先低着头，再抬起来），从衣领往下渐变生效，身体不动；
+// · 飘带 / 头发分区摆动（幅度比以前大，一直在动）。
 uniform vec2 edge[11];
-uniform float feather = 0.025;
+uniform float feather = 0.045;
 uniform float sway = 1.0;
+uniform float panel = 1.0;
+uniform float head_angle = 0.0;
+uniform vec2 head_pivot = vec2(0.215, 0.53);
+uniform float aspect = 1.7778;
 float edge_x(float y) {
 	for (int i = 0; i < 10; i++) {
 		if (y <= edge[i + 1].y) {
@@ -752,12 +773,30 @@ float edge_x(float y) {
 	}
 	return edge[10].x;
 }
+vec2 rot(vec2 p, float a) {
+	float c = cos(a), s = sin(a);
+	return vec2(c * p.x - s * p.y, s * p.x + c * p.y);
+}
 void fragment() {
 	vec2 uv = UV;
-	float hair = smoothstep(0.30, 0.70, uv.x) + smoothstep(0.45, 0.05, uv.y) * smoothstep(0.20, 0.30, uv.x) * smoothstep(0.55, 0.40, uv.x);
-	uv.x += sin(TIME * 1.1 + uv.y * 7.0) * 0.0035 * hair * sway;
-	uv.y += sin(TIME * 0.9 + uv.x * 5.0) * 0.0025 * hair * sway;
-	vec4 c = texture(TEXTURE, uv);
+	// 头部旋转（反向采样）：衣领以下逐渐生效，离脖子很远的地方（画面右侧的水里）减弱
+	vec2 q = (uv - head_pivot) * vec2(aspect, 1.0);
+	float hw = smoothstep(-0.03, 0.12, q.y) * (1.0 - smoothstep(0.75, 1.05, length(q)));
+	q = rot(q, -head_angle * hw);
+	uv = head_pivot + q / vec2(aspect, 1.0);
+	// 飘带（画面上方中间，越往上端摆得越大）
+	float rib = smoothstep(0.20, 0.27, uv.x) * smoothstep(0.50, 0.43, uv.x) * smoothstep(0.46, 0.36, uv.y);
+	float tip = clamp((0.46 - uv.y) / 0.46, 0.0, 1.0);
+	uv.x += sin(TIME * 1.7 + uv.y * 9.0) * 0.007 * rib * tip * sway;
+	uv.y += sin(TIME * 1.3 + uv.x * 7.0) * 0.003 * rib * tip * sway;
+	// 右侧飘进水里的头发 / 衣服
+	float hr = smoothstep(0.34, 0.52, uv.x) * smoothstep(0.55, 0.75, uv.y);
+	uv.x += sin(TIME * 1.25 + uv.y * 8.0) * 0.0045 * hr * sway;
+	uv.y += sin(TIME * 1.05 + uv.x * 6.0) * 0.0035 * hr * sway;
+	// 画面最下边的刘海
+	float fr = smoothstep(0.86, 0.98, uv.y) * (1.0 - smoothstep(0.25, 0.32, abs(uv.x - 0.26)));
+	uv.x += sin(TIME * 1.5 + uv.x * 10.0) * 0.003 * fr * sway;
+	vec4 c = texture(TEXTURE, clamp(uv, vec2(0.0), vec2(1.0)));
 	float mn = min(c.r, min(c.g, c.b)), mx = max(c.r, max(c.g, c.b));
 	float white = smoothstep(0.80, 0.93, mn) * (1.0 - smoothstep(0.08, 0.22, mx - mn));
 	float ex = edge_x(UV.y) + sin(TIME * 1.3 + UV.y * 12.0) * 0.004;
@@ -767,8 +806,13 @@ void fragment() {
 	col += vec3(0.25, 0.4, 0.5) * sh * side * (1.0 - white) * 0.12;
 	float dark = 1.0 - smoothstep(0.15, 0.35, mx);
 	col = mix(col, vec3(0.05, 0.12, 0.40), dark * side * 0.5);
-	float keep = 1.0 - white * side * 0.88;
-	COLOR = vec4(col, c.a * keep * (1.0 - dark * side * 0.25));
+	float pa = c.a * (1.0 - white * side * 0.88) * (1.0 - dark * side * 0.25);
+	// 白色面板：和人物白色透水同一条羽化带，靠近分界处带一点浅青
+	float pan = panel * (1.0 - side);
+	vec3 pcol = mix(vec3(1.0), vec3(0.80, 0.95, 1.0), smoothstep(0.0, 0.9, side * 2.0));
+	float a = pa + pan * (1.0 - pa);
+	vec3 outc = (col * pa + pcol * pan * (1.0 - pa)) / max(a, 0.0001);
+	COLOR = vec4(outc, a);
 }");
 
 	/// <summary>v0.14.67 设置界面：把原版控件的贴图（米黄 / 棕色系）按亮度映射到 P3R 的深蓝 → 钴蓝 → 冰白，保留透明度。</summary>
@@ -811,5 +855,149 @@ void fragment() {
 	float shade = 0.85 + 0.15 * smoothstep(ro * 0.4, ro, d);
 	vec3 col = mix(fill.rgb * shade, vec3(1.0), ring);
 	COLOR = vec4(col, body * mix(fill.a, 1.0, ring));
+}");
+
+	// v0.14.72 入水转场（用户推送的 60fps 分镜 #20~#56）：V 形水团的形状，遮罩和水花着色器共用。funnel = (中心 x, 顶部半宽, 尖端 y, 色调强度)，像素坐标
+	private const string FunnelFn = @"
+uniform vec2 size = vec2(1920.0, 1080.0);
+uniform vec4 funnel = vec4(960.0, 0.0, 0.0, 0.0);
+uniform float t = 0.0;
+uniform float k = 1.0;
+float funnel_d(vec2 p) {
+	float s = clamp(p.y / max(funnel.z, 1.0), 0.0, 1.0);
+	float hw = funnel.y * pow(1.0 - s, 0.75);
+	float wob = sin(p.y * 0.011 + t * 9.0) * 16.0 * k * (1.0 - 0.5 * s) + sin(p.y * 0.031 - t * 5.0) * 7.0 * k;
+	float d = hw - abs(p.x - funnel.x - wob);
+	return p.y > funnel.z ? -1.0 : d;
+}
+";
+
+	/// <summary>入水转场遮罩：设置界面本体只在 V 形水团里面显示（水团外还是打开前的画面）。full = 1 时整屏显示。</summary>
+	public static Shader DiveMask => _diveMask ??= Make(@"
+shader_type canvas_item;
+uniform float full = 0.0;
+" + FunnelFn + @"
+void fragment() {
+	vec2 p = UV * size;
+	COLOR = vec4(1.0, 1.0, 1.0, max(full, smoothstep(0.0, 1.5, funnel_d(p))));
+}");
+
+	/// <summary>
+	/// 入水转场的水（P3R 赛璐璐风格，逐像素算、60fps 连续）：半透明的 V 形水团（上浅下深，深蓝描边 + 内侧浅色带）；
+	/// 8 道水柱（cols = 顶部 x、宽、长、种子；cols2 = 倾斜、透明度、圆头比例）：前几道是往 V 尖端汇聚的细长水纹，后几道是边缘起伏的宽水柱；
+	/// 泡沫团（圆的平滑并集 —— 凹凸的一团团，不会胀成一个大球；深蓝描边 + 左上高光）；气泡（空心圈 / 实心泡，粗描边）。
+	/// blobs = (x, y, 半径, 种类 + 0.3 × 种子：0 浅青泡沫 / 2 白色水花云 / 1 空心圈 / 3 实心泡)，半径 0 不画；泡沫每团按种子做不规则轮廓。
+	/// </summary>
+	public static Shader DiveSplash => _diveSplash ??= Make(@"
+shader_type canvas_item;
+uniform vec4 cols[8];
+uniform vec4 cols2[8];
+uniform vec4 blobs[96];
+uniform float field = 0.0;
+" + FunnelFn + @"
+vec4 over(vec4 dst, vec3 c, float a) {
+	float oa = a + dst.a * (1.0 - a);
+	vec3 oc = (c * a + dst.rgb * dst.a * (1.0 - a)) / max(oa, 0.0001);
+	return vec4(oc, oa);
+}
+float smin(float a, float b, float r) {
+	float h = clamp(0.5 + 0.5 * (b - a) / r, 0.0, 1.0);
+	return mix(b, a, h) - r * h * (1.0 - h);
+}
+void fragment() {
+	vec2 p = UV * size;
+	vec4 o = vec4(0.0);
+	float px = 1.2 * k;
+	// v0.14.72（用户：轮廓感太强，原版没有这么重的线）：水柱 / 白云不描边，泡沫和气泡只有很淡的浅蓝细边
+	float line = 1.6 * k;
+	vec3 ink = vec3(0.38, 0.70, 1.0);
+	// 水团
+	float fd = funnel_d(p);
+	if (fd > -2.0 && funnel.w > 0.0) {
+		float s = clamp(p.y / max(funnel.z, 1.0), 0.0, 1.0);
+		o = over(o, mix(vec3(0.22, 0.58, 1.0), vec3(0.05, 0.24, 0.86), s), funnel.w * 0.78 * smoothstep(0.0, px, fd));
+		o = over(o, vec3(0.50, 0.85, 1.0), funnel.w * 0.5 * (smoothstep(line + 2.0 * k, line + 4.0 * k, fd) - smoothstep(line + 9.0 * k, line + 13.0 * k, fd)));
+		o = over(o, vec3(0.12, 0.38, 0.92), funnel.w * 0.6 * smoothstep(-px, 0.0, fd) * (1.0 - smoothstep(line, line + px, fd)));
+	}
+	// 水柱 / 水纹
+	for (int i = 0; i < 8; i++) {
+		vec4 c = cols[i];
+		vec4 c2 = cols2[i];
+		if (c2.y <= 0.001 || c.z <= 1.0) continue;
+		float rt = c.y * c2.z;
+		if (p.y > c.z + rt + 4.0) continue;
+		float y = min(p.y, c.z);
+		float s = clamp(y / c.z, 0.0, 1.0);
+		float n = 0.24 * sin(y * 0.014 / k + c.w) + 0.16 * sin(y * 0.033 / k - c.w * 2.0 + t * 4.0) + 0.10 * sin(y * 0.071 / k + c.w * 3.0) + 0.09 * sign(sin(y * 0.11 / k - c.w)) * step(0.6, abs(sin(y * 0.11 / k - c.w)));
+		float hw = c.y * 0.5 * (1.0 - pow(s, 1.4)) * (1.0 + n) + rt;
+		float cx = c.x + c2.x * y + sin(y * 0.010 / k + c.w + t * 3.0) * 12.0 * k;
+		float d = p.y <= c.z ? hw - abs(p.x - cx) : rt - length(vec2(p.x - cx - c2.x * 0.0, p.y - c.z));
+		if (d < -line - 2.0) continue;
+		float a = c2.y;
+		// 平涂、略透明（下面的画面隐约可见），边缘 2px 柔化；靠上的地方稍亮
+		vec3 fill = mix(vec3(0.80, 0.96, 1.0), vec3(0.68, 0.91, 1.0), smoothstep(0.0, 0.45, s));
+		o = over(o, fill, a * 0.9 * smoothstep(-2.0 * k, 1.0 * k, d));
+	}
+	// 泡沫团（平滑并集）+ 高光；气泡
+	float fo = 1e5, fh = 1e5, fw = 1e5;
+	vec4 bub = vec4(0.0);
+	for (int i = 0; i < 96; i++) {
+		vec4 b = blobs[i];
+		if (b.z <= 0.5) continue;
+		vec2 dv = p - b.xy;
+		float dist = length(dv);
+		float kind = floor(b.w + 0.001);
+		if (kind < 0.5 || (kind > 1.5 && kind < 2.5)) {
+			if (dist > b.z * 1.4 + 20.0 * k) {
+				if (kind < 0.5) { fo = smin(fo, dist - b.z * 1.2, 14.0 * k); } else { fw = smin(fw, dist - b.z * 1.2, 18.0 * k); }
+				continue;
+			}
+			float sd = fract(b.w) * 66.0;
+			float an = atan(dv.y, dv.x);
+			float rr = b.z * (1.0 + 0.14 * sin(an * 3.0 + sd) + 0.08 * sin(an * 5.0 - sd * 1.7) + 0.04 * sin(an * 9.0 + sd * 0.6));
+			if (kind < 0.5) {
+				fo = smin(fo, dist - rr, 14.0 * k);
+				fh = min(fh, length(dv + b.z * 0.22) - rr * 0.6);
+			} else {
+				fw = smin(fw, dist - rr, 18.0 * k);
+			}
+		} else {
+			float w = max(b.z * 0.2, 2.0 * k);
+			float edge = abs(dist - b.z);
+			if (kind > 2.5) {
+				bub = over(bub, vec3(0.62, 0.88, 1.0), 1.0 - smoothstep(b.z, b.z + px, dist));
+			}
+			bub = over(bub, ink, 1.0 - smoothstep(w, w + px, edge));
+			bub = over(bub, vec3(0.82, 0.97, 1.0), 1.0 - smoothstep(w * 0.45, w * 0.45 + px, edge));
+			bub = over(bub, vec3(1.0), 1.0 - smoothstep(b.z * 0.2, b.z * 0.2 + px, length(dv + b.z * 0.42)));
+		}
+	}
+	o = over(o, ink, 0.55 * smoothstep(line + px, line, fo));
+	o = over(o, vec3(0.62, 0.88, 1.0), 0.95 * smoothstep(px, 0.0, fo));
+	o = over(o, vec3(0.84, 0.97, 1.0), 0.95 * smoothstep(px, 0.0, fh) * smoothstep(px, 0.0, fo + 3.0 * k));
+	o = over(o, vec3(0.95, 0.99, 1.0), 0.95 * smoothstep(2.0 * k, -1.0 * k, fw));
+	// 成片的小气泡（网格：每格最多一个，整体往上漂、左右晃；每个像素只算自己这一格）—— 原版 #36~#50 下半屏几十个小气泡
+	if (field > 0.001) {
+		float cs = 64.0 * k;
+		vec2 q = p + vec2(0.0, t * 300.0 * k);
+		vec2 cell = floor(q / cs);
+		float h1 = fract(sin(dot(cell, vec2(12.9898, 78.233))) * 43758.5453);
+		float h2 = fract(sin(dot(cell, vec2(39.3468, 11.135))) * 24634.6345);
+		float clump = smoothstep(0.1, 0.7, sin(cell.x * 0.9 + cell.y * 0.35 + 1.3) * sin(cell.y * 0.6 - cell.x * 0.25 + 0.4));
+		if (h1 > 1.0 - 0.6 * clump) {
+			vec2 c = (cell + 0.5 + (vec2(h1, h2) - 0.5) * 0.5) * cs + vec2(sin(t * 7.0 + h2 * 20.0) * 4.0 * k, 0.0);
+			float r = cs * mix(0.10, 0.27, h2);
+			float dist = length(q - c);
+			float a = field * smoothstep(0.30, 0.55, p.y / size.y) * smoothstep(0.36, 0.46, p.x / size.x) * step(0.0, fd + (funnel.w < 0.01 ? 1e5 : 0.0));
+			float w = max(r * 0.22, 1.8 * k);
+			if (h2 > 0.6) {
+				o = over(o, vec3(0.62, 0.88, 1.0), a * (1.0 - smoothstep(r, r + px, dist)));
+			}
+			o = over(o, ink, a * (1.0 - smoothstep(w, w + px, abs(dist - r))));
+			o = over(o, vec3(0.82, 0.97, 1.0), a * (1.0 - smoothstep(w * 0.45, w * 0.45 + px, abs(dist - r))));
+		}
+	}
+	o = over(o, bub.rgb, bub.a);
+	COLOR = o;
 }");
 }

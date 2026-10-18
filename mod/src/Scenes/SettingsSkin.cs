@@ -23,9 +23,9 @@ namespace P3Makoto.Scenes;
 /// · 内容区：原版的滚动区整体缩放、移到右侧，背后一块斜切深蓝面板（青色上沿、红色下沿、页名标题和超大水印字）；
 ///   每一行设置垫一条斜切深蓝底，悬停 / 手柄选中时变白底 + 错开的红框（P3R 选中行）；文字换思源黑体 Bold（中文）/ Barlow（英文）白字；
 ///   勾选框换成 P3R 斜方框；其余控件贴图按亮度映射成深蓝 → 钴蓝 → 冰白。
-/// · 打开时（v0.14.70 按用户录的 P3R 视频逐帧复刻，30fps）：0.00s 顶部中间炸开一团浅青水花 + 气泡；0.03~0.30s 深蓝水团呈 V 形往下冲、
-///   越冲越宽直到盖满整屏，里面挂着一根根往下长的浅青锯齿水柱；0.28s 起人物（连同白色部分）从左上方斜着沉入、0.64s 停稳，
-///   水团变透明露出水下背景，水柱往上缩回；0.46s 起菜单字依次浮现，0.72s 红色选中条展开；内容区 0.5s 起从右淡入；全程空心 / 实心气泡往上冒。
+/// · 打开时（v0.14.72 按用户推送的 60fps 分镜逐帧复刻，时间轴见 Splash 的注释和 docs/ART_SPEC.md）：泡沫往下泼 → V 形水团又窄又深地冲下、
+///   越来越宽直到盖满（设置界面只在水团里显示）→ 宽水柱、白色水花云、两侧水花、成串气泡 → 人物闭着眼、偏着头从上方沉下来、转正、睁眼；
+///   菜单字依次浮现，红色选中条最后展开，内容区从右淡入。
 ///   待机时人物身边稀疏地冒气泡串。音效（程序合成的入水声 + 气泡声）和画面对齐。
 /// 设置里「设置界面（P3R 风格）」关掉后，下次打开恢复原版（所有改动都有记录、可还原）。
 /// </summary>
@@ -75,15 +75,17 @@ public static class SettingsSkin
 		internal NScrollableContainer Scroll = null!;
 		internal Control Root = null!, Words = null!, Top = null!;
 		internal TextureRect Portrait = null!;
-		internal Texture2D? Open, Half, Closed;
-		internal Node2D PanelDeco = null!, Splash = null!, Bubbles = null!;
-		internal Polygon2D Mass = null!;
-		internal readonly List<Polygon2D> Columns = new(), Blobs = new();
-		internal readonly List<Node2D> SplashRings = new();
+		internal Texture2D? Open, Q1, Half, Q3, Closed;
+		internal ShaderMaterial PortraitMat = null!;
+		internal Node2D PanelDeco = null!, Bubbles = null!;
+		internal ColorRect SplashRect = null!;
+		internal ShaderMaterial SplashMat = null!, MaskMat = null!;
+		internal readonly Vector4[] SplashCols = new Vector4[8], SplashCols2 = new Vector4[8], SplashBlobs = new Vector4[96];
+		internal readonly List<Vector4> BlobSeeds = new();
 		internal ColorRect Wipe = null!;
 		internal ShaderMaterial WipeMat = null!;
 		internal Label PanelTitle = null!, PanelWater = null!, HintZh = null!, HintEn = null!;
-		internal Node2D WhitePanel = null!, SystemWord = null!;
+		internal Node2D SystemWord = null!;
 		internal readonly List<Tab> Tabs = new();
 		internal readonly List<RowDeco> Rows = new();
 		internal readonly List<Action> Undo = new();
@@ -162,7 +164,10 @@ public static class SettingsSkin
 		if (st.On)
 		{
 			st.T0 = Now;                                         // 每次打开都重播入场
-			Audio.Sfx.Clip("sys_dive", 0.55f);                   // 入水声：0.00s 的"噗"对齐水花炸开，气泡声对齐上浮的气泡
+			Audio.Sfx.Clip("sys_dive", 0.55f);
+			st.NextBlink = st.T0 + 2.5f;
+			st.Root.Material = st.MaskMat;
+			st.Root.ClipChildren = CanvasItem.ClipChildrenMode.Only;                   // 入水声：0.00s 的"噗"对齐水花炸开，气泡声对齐上浮的气泡
 			StartTick(st);
 		}
 	}
@@ -180,7 +185,9 @@ public static class SettingsSkin
 		HideDecor(st, screen);
 
 		// 2. 背景层（放在最底下）
-		st.Root = new Control { Name = RootName, MouseFilter = Control.MouseFilterEnum.Ignore };
+		// v0.14.72：Root 本身是入水遮罩（只在 V 形水团里面显示设置界面），入场结束后关掉
+		st.MaskMat = new ShaderMaterial { Shader = Shaders.DiveMask };
+		st.Root = new ColorRect { Name = RootName, Color = new Color(1f, 1f, 1f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore, Material = st.MaskMat, ClipChildren = CanvasItem.ClipChildrenMode.Only };
 		st.Root.SetAnchorsPreset(Control.LayoutPreset.FullRect);
 		screen.AddChild(st.Root);
 		screen.MoveChild(st.Root, 0);
@@ -200,18 +207,8 @@ public static class SettingsSkin
 			IdleRespawn(b, view, k, Fx.Rand(0f, 1f) * view.Y);
 		}
 
-		// 白色面板：左边到人物右轮廓，边缘一圈很淡的白色渐隐（不是硬边）
-		float pw = view.Y * 16f / 9f, sx = pw / 1920f, sy = view.Y / 1080f;
-		st.WhitePanel = new Node2D();
-		st.Root.AddChild(st.WhitePanel);
-		// 入场时白色部分跟着人物从左上方斜着滑进来：多边形往左多留一截（下边不加长 —— 人物下边沿往上移时，下面露出的是水，不是一条白块）
-		List<Vector2> poly = new() { new Vector2(-40f - view.X * 0.4f, -10f) };
-		poly.AddRange(Edge.Select(e => new Vector2(e.X * sx, e.Y * sy)));
-		poly.Add(new Vector2(-40f - view.X * 0.4f, view.Y + 10f));
-		st.WhitePanel.AddChild(new Polygon2D { Polygon = poly.ToArray(), Color = Colors.White });
-		Vector2[] edgeLine = Edge.Select(e => new Vector2(e.X * sx, e.Y * sy)).ToArray();
-		st.WhitePanel.AddChild(new Line2D { Points = edgeLine.Select(p => p + new Vector2(10f * k, 0f)).ToArray(), Width = 26f * k, DefaultColor = new Color(1f, 1f, 1f, 0.32f), JointMode = Line2D.LineJointMode.Round, Antialiased = true });
-		st.WhitePanel.AddChild(new Line2D { Points = edgeLine.Select(p => p + new Vector2(28f * k, 0f)).ToArray(), Width = 18f * k, DefaultColor = new Color(0.85f, 0.97f, 1f, 0.18f), JointMode = Line2D.LineJointMode.Round, Antialiased = true });
+		// v0.14.72：白色面板并进立绘着色器（同一条羽化带，人物和水之间不再有硬边；跟着人物一起下沉、旋转）
+		float pw = view.Y * 16f / 9f;
 
 		// 竖排大字 SYSTEM（灰色错影 + 黑字，从下往上读，被左边缘裁掉一点）
 		st.SystemWord = new Node2D { Position = new Vector2(-34f * k, view.Y + 40f * k), Rotation = -Mathf.Pi / 2f };
@@ -221,10 +218,14 @@ public static class SettingsSkin
 
 		// 倒挂立绘（融水着色器）
 		st.Open = Load("res://p3makoto/ui/system_portrait.png");
+		st.Q1 = Load("res://p3makoto/ui/system_portrait_q1.png");
 		st.Half = Load("res://p3makoto/ui/system_portrait_half.png");
+		st.Q3 = Load("res://p3makoto/ui/system_portrait_q3.png");
 		st.Closed = Load("res://p3makoto/ui/system_portrait_closed.png");
 		ShaderMaterial pm = new() { Shader = Shaders.CampPortrait };
 		pm.SetShaderParameter("edge", Edge.Select(e => new Vector2(e.X / 1920f, e.Y / 1080f)).ToArray());
+		pm.SetShaderParameter("aspect", 16f / 9f);
+		st.PortraitMat = pm;
 		st.Portrait = new TextureRect { Texture = st.Open, Material = pm, MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, Size = new Vector2(pw, view.Y) };
 		st.Root.AddChild(st.Portrait);
 		st.NextBlink = Now + 2.5f;
@@ -313,9 +314,7 @@ public static class SettingsSkin
 		st.Tabs.Clear();
 		st.Rows.Clear();
 		st.Styled.Clear();
-		st.Columns.Clear();
-		st.Blobs.Clear();
-		st.SplashRings.Clear();
+		st.BlobSeeds.Clear();
 		st.WipeT0 = -1f;
 		st.On = false;
 		st.SrcValid = false;
@@ -819,40 +818,59 @@ public static class SettingsSkin
 		}
 
 		// 入场（时间轴见类注释；视频第 12 帧 = 0s）
-		st.Splash.Visible = t < 1.4f;
-		if (st.Splash.Visible)
+		bool entering = t < 1.2f;
+		st.SplashRect.Visible = entering;
+		if (entering)
 		{
 			Splash(st, view, k, t);
 		}
-		float show = Mathf.Clamp((t - 0.24f) / 0.06f, 0f, 1f);       // 水团盖满之前，下面露出的还是打开前的画面
-		st.Root.Modulate = new Color(1f, 1f, 1f, show);
+		else if (st.Root.ClipChildren != CanvasItem.ClipChildrenMode.Disabled)
+		{
+			st.Root.ClipChildren = CanvasItem.ClipChildrenMode.Disabled;     // 入场结束：遮罩关掉（ColorRect 本身透明）
+			st.Root.Material = null;
+		}
+		float show = Mathf.Clamp((t - 0.24f) / 0.06f, 0f, 1f);
 		st.Words.Modulate = new Color(1f, 1f, 1f, show);
-		// 人物连同白色部分从左上方斜着沉入（0.28~0.64s，减速停稳）；待机只往下轻轻浮动（往上浮会在画面底边露出一条白缝 —— v0.14.69 实机）
-		float eDive = Ease.OutCubic(Mathf.Clamp((t - 0.28f) / 0.36f, 0f, 1f));
-		Vector2 dive = new Vector2(-0.30f * view.X, -0.62f * view.Y) * (1f - eDive);
-		st.WhitePanel.Position = dive;
+		// v0.14.72（用户推送的 60fps 分镜 #40~#56）：人物连同白色部分从画面上方沉下来（0.30~0.56s，减速停稳），
+		// 一开始整个人往顺时针偏 12°、头再多偏 24°（闭着眼），一边下沉一边转正（头比身体晚一点到位），落定时睁眼；
+		// 待机只往下轻轻浮动（往上浮会在画面底边露出一条白缝 —— v0.14.69 实机）
+		float eDive = Ease.OutCubic(Mathf.Clamp((t - 0.30f) / 0.26f, 0f, 1f));
+		Vector2 dive = new Vector2(0.06f * view.X, -0.72f * view.Y) * (1f - eDive);
+		st.Portrait.PivotOffset = new Vector2(493f, 925f) * k;                // 露出的那只眼
+		st.Portrait.Rotation = Mathf.DegToRad(12f) * (1f - eDive);
 		st.Portrait.Position = dive + new Vector2(0f, (1f - Mathf.Cos(now * 0.6f)) * 3f * k);
+		float eHead = Ease.OutCubic(Mathf.Clamp((t - 0.32f) / 0.32f, 0f, 1f));
+		st.PortraitMat.SetShaderParameter("head_angle", 0.42f * (1f - eHead));
 		float eWord = Ease.OutCubic(Mathf.Clamp((t - 0.34f) / 0.3f, 0f, 1f));
 		st.SystemWord.Position = new Vector2(-34f * k - 320f * k * (1f - eWord), view.Y + 40f * k);
 		float eContent = Ease.OutCubic(Mathf.Clamp((t - 0.5f) / 0.3f, 0f, 1f));
 		st.Scroll.Modulate = new Color(st.OrigModulate, st.OrigModulate.A * eContent);
 
-		// 眨眼：每 3~6 秒一次（半睁 0.05s → 闭 0.09s → 半睁 0.05s）
-		if (st.Open != null && st.Half != null && st.Closed != null)
+		// 眼睛（v0.14.72：5 档连续切，按真实时间算，60fps 下闭眼 4 帧、停 2~3 帧、睁眼 5 帧）：入场下沉时闭着，0.52s 起睁开；之后每 3~6 秒眨一次
+		if (st.Open != null && st.Q1 != null && st.Half != null && st.Q3 != null && st.Closed != null)
 		{
-			if (st.BlinkT0 < 0f && now >= st.NextBlink)
+			float lid = t < 0.52f ? 1f : 1f - Mathf.Clamp((t - 0.52f) / 0.08f, 0f, 1f);
+			if (lid <= 0f)
 			{
-				st.BlinkT0 = now;
-			}
-			if (st.BlinkT0 >= 0f)
-			{
-				float b = now - st.BlinkT0;
-				st.Portrait.Texture = b < 0.05f ? st.Half : b < 0.14f ? st.Closed : b < 0.19f ? st.Half : st.Open;
-				if (b >= 0.19f)
+				if (st.BlinkT0 < 0f && now >= st.NextBlink)
 				{
-					st.BlinkT0 = -1f;
-					st.NextBlink = now + Fx.Rand(3f, 6f);
+					st.BlinkT0 = now;
 				}
+				if (st.BlinkT0 >= 0f)
+				{
+					float b = now - st.BlinkT0;
+					lid = b < 0.06f ? b / 0.06f : b < 0.1f ? 1f : 1f - Mathf.Clamp((b - 0.1f) / 0.08f, 0f, 1f);
+					if (b >= 0.18f)
+					{
+						st.BlinkT0 = -1f;
+						st.NextBlink = now + Fx.Rand(3f, 6f);
+					}
+				}
+			}
+			Texture2D eye = lid < 0.125f ? st.Open : lid < 0.375f ? st.Q1 : lid < 0.625f ? st.Half : lid < 0.875f ? st.Q3 : st.Closed;
+			if (st.Portrait.Texture != eye)
+			{
+				st.Portrait.Texture = eye;
 			}
 		}
 
@@ -1192,132 +1210,120 @@ public static class SettingsSkin
 
 	private static void BuildSplash(State st, Vector2 view, float k)
 	{
-		st.Splash = new Node2D { Visible = false };
-		st.Top.AddChild(st.Splash);
-		st.Mass = new Polygon2D { Color = new Color(0.06f, 0.24f, 0.80f), Antialiased = true };
-		st.Splash.AddChild(st.Mass);
-		// 浅青锯齿水柱（从上边往下长，之后往上缩回）：x（屏宽比例）、顶宽、最长（屏高比例）；视频里是少数几根很宽、边缘起伏的
-		(float X, float W, float L)[] cols = { (0.2f, 260f, 0.92f), (0.35f, 140f, 0.62f), (0.5f, 330f, 1.02f), (0.64f, 180f, 0.78f), (0.78f, 280f, 0.88f), (0.92f, 120f, 0.55f) };
-		for (int i = 0; i < cols.Length; i++)
+		st.SplashMat = new ShaderMaterial { Shader = Shaders.DiveSplash };
+		st.SplashRect = new ColorRect { Material = st.SplashMat, MouseFilter = Control.MouseFilterEnum.Ignore, Visible = false };
+		st.SplashRect.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		st.Top.AddChild(st.SplashRect);
+		// 96 个泡沫 / 气泡的种子：(出生时刻, 组, 随机 1, 随机 2)；位置和大小每帧按时间算（Splash）
+		for (int i = 0; i < 96; i++)
 		{
-			Polygon2D c = new() { Color = new Color(0.64f, 0.9f, 1f, 0.97f), Antialiased = true };
-			c.SetMeta("x", cols[i].X * view.X);
-			c.SetMeta("w", cols[i].W * k);
-			c.SetMeta("l", cols[i].L * view.Y);
-			c.SetMeta("d", 0.05f + i % 3 * 0.03f);
-			c.SetMeta("s", Fx.Rand(0f, 6.28f));
-			float[] jag = new float[16];
-			for (int j = 0; j < jag.Length; j++)
-			{
-				jag[j] = Fx.Rand(0.55f, 1.08f);                     // 每个点固定的凹凸，边缘不规则
-			}
-			c.SetMeta("j", jag);
-			st.Splash.AddChild(c);
-			st.Columns.Add(c);
-		}
-		// 0s 顶部中间炸开的浅青水花团（形状不规则）
-		Vector2 o = new(view.X * 0.52f, view.Y * 0.16f);
-		for (int i = 0; i < 14; i++)
-		{
-			float r = Fx.Rand(40f, 120f) * k, sd = Fx.Rand(0f, 6.28f);
-			Vector2[] pts = new Vector2[20];
-			for (int j = 0; j < pts.Length; j++)
-			{
-				float a = Mathf.Tau * j / pts.Length;
-				pts[j] = new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r * (1f + 0.16f * Mathf.Sin(a * 3f + sd) + 0.08f * Mathf.Sin(a * 5f - sd));
-			}
-			Polygon2D b = new() { Polygon = pts, Color = i % 4 == 0 ? new Color(0.92f, 0.99f, 1f) : new Color(0.62f, 0.89f, 1f), Antialiased = true };
-			Vector2 p0 = o + new Vector2(Fx.Rand(-0.12f, 0.12f) * view.X, Fx.Rand(-0.08f, 0.14f) * view.Y);
-			b.SetMeta("p", p0);
-			b.SetMeta("v", (p0 - o).Normalized() * Fx.Rand(500f, 1300f) * k + new Vector2(0f, Fx.Rand(-200f, 300f) * k));
-			st.Splash.AddChild(b);
-			st.Blobs.Add(b);
-		}
-		// 往上冒的气泡（空心为主，三分之一实心）
-		for (int i = 0; i < 34; i++)
-		{
-			Node2D b = Ring(st.Splash, Fx.Rand(6f, 28f) * k, i % 3 == 0);
-			b.SetMeta("t", Fx.Rand(0.04f, 0.5f));
-			b.SetMeta("p", new Vector2(Fx.Rand(0.08f, 0.95f) * view.X, Fx.Rand(0.35f, 1.05f) * view.Y));
-			b.SetMeta("v", Fx.Rand(260f, 620f) * k);
-			b.SetMeta("w", Fx.Rand(0f, 6.28f));
-			st.SplashRings.Add(b);
+			float group = i < 32 ? 0f : i < 44 ? 1f : i < 58 ? 2f : 3f;   // 0 开场往下泼的泡沫（挤得很密）、1 顶部白云、2 两侧甩出的水花、3 气泡
+			float born = group switch { 0f => 0f, 1f => Fx.Rand(0.05f, 0.09f), 2f => Fx.Rand(0.08f, 0.30f), _ => Fx.Rand(0.05f, 0.7f) };
+			st.BlobSeeds.Add(new Vector4(born, group, Fx.Rand(0f, 1f), Fx.Rand(0f, 1f)));
 		}
 	}
 
+	/// <summary>
+	/// 入水转场每帧（时间对照用户推送的 60fps 分镜，t = 原视频时间 − 0.30s）：
+	/// · 0.00s（#20）一大片泡沫从顶部往下泼（中间偏上一列，0.12~0.37s 内由下往上缩没）；
+	/// · 0.03~0.33s V 形水团：先又窄又深（#22：顶宽 0.34W、尖端到底），再越来越宽（#28 顶宽 0.66W），0.33s（#38）盖满；
+	///   三道细长水纹往 V 尖端汇聚（#22~#26），0.10s 起五道边缘起伏的宽水柱从上往下长、略往中间斜（#28~#40），0.38s 起变淡缩回（#44~#50）；
+	/// · 0.05s 起顶部中间一团白云（#24~#30）；0.12~0.32s 水团两侧甩出水花泡沫（#28~#36）；0.05~0.55s 成串的气泡往上冒。
+	/// </summary>
 	private static void Splash(State st, Vector2 view, float k, float t)
 	{
-		float cx = view.X * 0.52f;
-		// 深蓝水团：V 形往下冲、越来越宽，0.30s 盖满整屏，0.30~0.52s 变透明露出水下背景
-		float e = Ease.OutCubic(Mathf.Clamp((t - 0.03f) / 0.27f, 0f, 1f));
-		float half = view.X * (0.16f + 0.92f * e), tip = view.Y * (0.30f + 1.35f * e);
-		const int N = 14;
-		Vector2[] mass = new Vector2[N * 2 + 1];
-		for (int i = 0; i <= N; i++)
+		float cx = view.X * 0.5f;
+		float u = Mathf.Clamp((t - 0.03f) / 0.30f, 0f, 1f);
+		float half = t < 0.03f ? 0f : view.X * (0.10f + 1.0f * Mathf.Pow(u, 1.6f));
+		float tip = view.Y * (0.55f + 1.15f * Mathf.Sqrt(u));
+		float tint = 1f - Ease.InOutCubic(Mathf.Clamp((t - 0.30f) / 0.12f, 0f, 1f));
+		Vector4 funnel = new(cx, half, tip, tint);
+		foreach (ShaderMaterial m in new[] { st.SplashMat, st.MaskMat })
 		{
-			float s = (float)i / N, y = -30f + (tip + 30f) * s, wob = Mathf.Sin(s * 11f + t * 9f) * 16f * k * (1f - s * 0.5f);
-			mass[i] = new Vector2(cx - half * Mathf.Pow(1f - s, 0.75f) + wob, y);
-			if (i < N)
-			{
-				float wob2 = Mathf.Sin(s * 13f - t * 8f + 2f) * 16f * k * (1f - s * 0.5f);
-				mass[N * 2 - i] = new Vector2(cx + half * Mathf.Pow(1f - s, 0.75f) + wob2, y);
-			}
+			m.SetShaderParameter("size", view);
+			m.SetShaderParameter("funnel", funnel);
+			m.SetShaderParameter("t", t);
+			m.SetShaderParameter("k", k);
 		}
-		st.Mass.Polygon = mass;
-		st.Mass.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InOutCubic(Mathf.Clamp((t - 0.30f) / 0.22f, 0f, 1f)));
+		st.MaskMat.SetShaderParameter("full", t >= 0.34f ? 1f : 0f);
 
-		// 水柱：往下长（0.25s），0.36s 起往上缩回、变淡，0.6s 前收干净（不挡人物和菜单字）
-		for (int i = 0; i < st.Columns.Count; i++)
+		// 细水纹（0~2）：从顶部往 V 尖端汇聚
+		float[] sx = { -0.12f, 0.0f, 0.1f }, sw = { 30f, 40f, 26f };
+		for (int i = 0; i < 3; i++)
 		{
-			Polygon2D c = st.Columns[i];
-			float x = (float)c.GetMeta("x"), w = (float)c.GetMeta("w"), lmax = (float)c.GetMeta("l"), d = (float)c.GetMeta("d"), sd = (float)c.GetMeta("s");
-			float grow = Ease.OutCubic(Mathf.Clamp((t - d) / 0.25f, 0f, 1f));
-			float back = Ease.InOutCubic(Mathf.Clamp((t - 0.36f - i * 0.015f) / 0.2f, 0f, 1f));
-			float len = lmax * grow * (1f - back);
-			c.Visible = len > 4f;
-			if (!c.Visible)
-			{
-				continue;
-			}
-			const int M = 8;
-			float[] jag = (float[])c.GetMeta("j");
-			Vector2[] pts = new Vector2[M * 2 + 1];
-			for (int j = 0; j < M; j++)
-			{
-				float s = (float)j / M, hw = w * 0.5f * Mathf.Pow(1f - s, 0.7f);
-				float y = -30f + (len + 30f) * s;
-				pts[j] = new Vector2(x - hw * jag[j] + Mathf.Sin(s * 9f + sd + t * 6f) * 12f * k, y);
-				pts[M * 2 - j] = new Vector2(x + hw * jag[j + M] + Mathf.Sin(s * 8f + sd * 1.7f - t * 5f) * 12f * k, y);
-			}
-			pts[M] = new Vector2(x + Mathf.Sin(sd) * 20f * k, len);
-			c.Polygon = pts;
-			c.Modulate = new Color(1f, 1f, 1f, 1f - back * back);
+			float x0 = cx + sx[i] * view.X;
+			float g = Ease.OutCubic(Mathf.Clamp((t - 0.03f - i * 0.01f) / 0.09f, 0f, 1f));
+			float fade = 1f - Mathf.Clamp((t - 0.18f) / 0.12f, 0f, 1f);
+			st.SplashCols[i] = new Vector4(x0, sw[i] * k, view.Y * 0.85f * g, 3.1f * i + 0.7f);
+			st.SplashCols2[i] = new Vector4((cx - x0) / (view.Y * 0.9f), g > 0f ? fade : 0f, 0.5f, 0f);
+		}
+		// 宽水柱（3~7）
+		(float X, float W, float L)[] cols = { (0.24f, 150f, 0.80f), (0.40f, 95f, 0.60f), (0.54f, 210f, 0.98f), (0.69f, 120f, 0.72f), (0.84f, 165f, 0.86f) };
+		for (int j = 0; j < 5; j++)
+		{
+			float x0 = cols[j].X * view.X;
+			float g = Ease.OutCubic(Mathf.Clamp((t - 0.10f - j % 3 * 0.025f) / 0.22f, 0f, 1f));
+			float back = Ease.InOutCubic(Mathf.Clamp((t - 0.36f - j * 0.02f) / 0.2f, 0f, 1f));
+			st.SplashCols[3 + j] = new Vector4(x0, cols[j].W * k, cols[j].L * view.Y * g * (1f - 0.5f * back), 1.9f * j + 5f);
+			st.SplashCols2[3 + j] = new Vector4((cx - x0) * 0.5f / view.Y, g > 0f ? 1f - back * back : 0f, 0.28f, 0f);
 		}
 
-		// 水花团：0~0.34s 往外飞、变大、淡出
-		foreach (Polygon2D b in st.Blobs)
+		for (int i = 0; i < st.BlobSeeds.Count; i++)
 		{
-			float u = Mathf.Clamp(t / 0.34f, 0f, 1f);
-			b.Visible = u < 1f;
-			b.Position = (Vector2)b.GetMeta("p") + (Vector2)b.GetMeta("v") * 0.34f * Ease.OutCubic(u) * 0.6f;
-			b.Scale = Vector2.One * (0.5f + 0.7f * Ease.OutCubic(u));
-			b.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(u));
-		}
-
-		// 气泡：各自的出生时刻起 0.8s，往上冲（越来越慢）、左右晃
-		foreach (Node2D b in st.SplashRings)
-		{
-			float u = (t - (float)b.GetMeta("t")) / 0.8f;
-			b.Visible = u > 0f && u < 1f;
-			if (!b.Visible)
+			Vector4 sd = st.BlobSeeds[i];
+			float age = t - sd.X, r1 = sd.Z, r2 = sd.W;
+			Vector4 b = Vector4.Zero;
+			if (age >= 0f)
 			{
-				continue;
+				switch ((int)sd.Y)
+				{
+					case 0:
+					{
+						// 开场往下泼的泡沫：中间一列，下面的先缩没
+						float life = 0.12f + 0.25f * (1f - r2), v = Mathf.Clamp(age / life, 0f, 1f);
+						float side = r1 < 0.5f ? -1f : 1f;
+						Vector2 at = new Vector2(view.X * (0.40f + 0.28f * r1) + side * 120f * k * Ease.OutCubic(v), view.Y * 0.85f * Mathf.Pow(r2, 1.2f) - 60f * k * Ease.OutCubic(v));
+						float r = Mathf.Lerp(105f, 55f, r2) * k * (0.8f + 0.4f * Mathf.Abs(Mathf.Sin(r1 * 23f))) * Mathf.Min(1f, age / 0.03f) * (1f - Ease.InCubic(v));
+						b = new Vector4(at.X, at.Y, r, 0.3f * Mathf.Abs(Mathf.Sin(r1 * 91f + r2 * 17f)));
+						break;
+					}
+					case 1:
+					{
+						// 顶部中间的白云
+						float r = Mathf.Lerp(70f, 125f, r2) * k * Ease.OutCubic(Mathf.Clamp(age / 0.09f, 0f, 1f)) * (1f - Ease.InCubic(Mathf.Clamp((t - 0.22f) / 0.13f, 0f, 1f)));
+						b = new Vector4(view.X * (0.30f + 0.40f * r1), view.Y * 0.30f * r2, r, 2f + 0.3f * r1);
+						break;
+					}
+					case 2:
+					{
+						// 两侧甩出的水花：从当时的水团边缘往外、往上
+						float v = Mathf.Clamp(age / 0.3f, 0f, 1f), y = view.Y * Mathf.Lerp(0.3f, 0.85f, r1);
+						float s = Mathf.Clamp(y / tip, 0f, 1f), side = r2 < 0.5f ? -1f : 1f;
+						float ex = cx + side * half * Mathf.Pow(1f - s, 0.75f);
+						Vector2 at = new(ex + side * 150f * k * Ease.OutCubic(v), y - 110f * k * Ease.OutCubic(v));
+						b = new Vector4(at.X, at.Y, Mathf.Lerp(35f, 80f, r1) * k * Mathf.Sin(Mathf.Pi * Mathf.Min(1f, v * 1.1f)), 0.3f * r2);
+						break;
+					}
+					default:
+					{
+						// 气泡：成串（5 个串的起点），往上冲、越来越慢、左右晃，最后缩没；三分之一实心
+						float v = Mathf.Clamp(age / 0.9f, 0f, 1f);
+						int cl = (int)(r1 * 6f) % 6;
+						float[] ax = { 0.30f, 0.40f, 0.52f, 0.62f, 0.75f, 0.88f };
+						Vector2 p0 = new(view.X * ax[cl] + (r2 - 0.5f) * 110f * k, view.Y * (0.55f + 0.45f * Mathf.Abs(Mathf.Sin(r1 * 37f))));
+						Vector2 at = p0 + new Vector2(Mathf.Sin(v * 9f + r1 * 6f) * 10f * k, -Mathf.Lerp(250f, 520f, r2) * k * 0.75f * (v - 0.35f * v * v));
+						float r = Mathf.Lerp(9f, 28f, Mathf.Abs(Mathf.Sin(r2 * 51f))) * k * Mathf.Min(1f, v / 0.08f) * (1f - Ease.InCubic(Mathf.Clamp((v - 0.6f) / 0.4f, 0f, 1f)));
+						b = new Vector4(at.X, at.Y, r, i % 3 == 0 ? 3f : 1f);
+						break;
+					}
+				}
 			}
-			Vector2 p0 = (Vector2)b.GetMeta("p");
-			float v = (float)b.GetMeta("v"), w = (float)b.GetMeta("w");
-			b.Position = p0 + new Vector2(Mathf.Sin(u * 9f + w) * 10f * k, -v * 0.8f * (u - 0.35f * u * u));
-			b.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, u / 0.08f) * (1f - Mathf.Clamp((u - 0.6f) / 0.4f, 0f, 1f)));
+			st.SplashBlobs[i] = b;
 		}
+		st.SplashMat.SetShaderParameter("cols", st.SplashCols);
+		st.SplashMat.SetShaderParameter("cols2", st.SplashCols2);
+		st.SplashMat.SetShaderParameter("blobs", st.SplashBlobs);
+		st.SplashMat.SetShaderParameter("field", Mathf.Clamp((t - 0.12f) / 0.1f, 0f, 1f) * (1f - Mathf.Clamp((t - 0.55f) / 0.3f, 0f, 1f)));
 	}
 
 	private static bool _dumped;
