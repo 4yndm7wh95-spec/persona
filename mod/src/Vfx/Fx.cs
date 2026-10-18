@@ -185,6 +185,12 @@ void fragment() {
 		if (poly.Material is ShaderMaterial m)
 		{
 			int n = points.Length <= AaMax ? points.Length : 0;            // 顶点太多就不做抗锯齿
+			// v0.14.71（玩家笔记本显卡掉帧）：抗锯齿着色器每个像素要遍历所有边，顶点多的大多边形很吃显卡；
+			// 帧率掉到 50 以下时，超过 24 个顶点的多边形先不做边缘抗锯齿（圆形走下面的快速路径，不受影响）
+			if (n > 24 && Quality < 1f)
+			{
+				n = 0;
+			}
 			// v0.14.62：复用同一个缓冲区（以前每次 new 一个 128 长度的数组：每帧改形状的特效会产生大量垃圾、触发 GC 卡顿）。
 			// 着色器只读前 n 个点，后面残留的旧数据不影响。只在主线程调用。
 			System.Array.Copy(points, AaBuf, System.Math.Min(points.Length, AaMax));
@@ -391,6 +397,13 @@ void fragment() {
 			ModEntry.Safe(what, action);
 			return;
 		}
-		anchor.GetTree().CreateTimer(seconds).Timeout += () => ModEntry.Safe(what, action);
+		anchor.GetTree().CreateTimer(seconds).Timeout += () =>
+		{
+			// v0.14.71（玩家日志：选人界面来回切换时一串 ObjectDisposedException + 堆栈）：锚点已经释放就不跑
+			if (GodotObject.IsInstanceValid(anchor) && anchor.IsInsideTree())
+			{
+				ModEntry.Safe(what, action);
+			}
+		};
 	}
 }

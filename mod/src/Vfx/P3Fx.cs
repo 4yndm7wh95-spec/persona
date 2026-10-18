@@ -23,12 +23,23 @@ public static class Pal
 /// </summary>
 public static class P3Fx
 {
+	private static int _ripples;
+
 	// ───────────────────────── 基础元素 ─────────────────────────
 
 	/// <summary>水面折射冲击波。</summary>
 	public static void Ripple(Control layer, Vector2 at, float size = 560f, float duration = 0.7f, float strength = 0.03f, float squashY = 1f, float delay = 0f)
 	{
+		// v0.14.71（玩家笔记本显卡：防御多段 / 放大剑时掉帧）：折射波要读整屏画面、每个像素采样三次，叠多了很吃显卡 ——
+		// 同时最多 3 个；帧率掉到 50 以下时最多 1 个
+		int cap = Fx.Quality < 1f ? 1 : 3;
+		if (_ripples >= cap)
+		{
+			return;
+		}
+		_ripples++;
 		Node2D root = Fx.Root(layer, at, "P3Ripple");
+		root.TreeExiting += () => _ripples--;
 		ColorRect quad = Fx.ShaderQuad(root, Shaders.Refract, size, squashY);
 		Fx.SetParam(quad, "strength", strength);
 		Fx.SetParam(quad, "alpha", 0f);

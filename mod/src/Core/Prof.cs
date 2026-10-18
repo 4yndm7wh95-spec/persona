@@ -87,8 +87,14 @@ public static class Prof
 	}
 
 	/// <summary>每帧调一次（Health）；每 2 秒把窗口存成 LastWindow。</summary>
+	private static long _frameTop0;
+
+	/// <summary>v0.14.71：上一帧（到下一次 Frame 调用为止）本 mod 一共花的毫秒 —— Health 的 hitch 行用。</summary>
+	internal static double LastFrameMs => (Minute.Top - _frameTop0) * 1000.0 / Stopwatch.Frequency;
+
 	internal static void Frame(bool rollWindow)
 	{
+		_frameTop0 = Minute.Top;
 		Minute.Frames++;
 		Window.Frames++;
 		if (rollWindow)
@@ -107,6 +113,7 @@ public static class Prof
 		if (reset)
 		{
 			Minute.Clear();
+			_frameTop0 = 0;
 		}
 		return s;
 	}

@@ -427,7 +427,7 @@ public static class HudSkin
 		Label caption = Typo.Text(deco, word, Typo.Barlow, 17, Pal.Cyan, Vector2.Zero, HorizontalAlignment.Center, 3, Ink);
 		caption.VerticalAlignment = VerticalAlignment.Center;
 		caption.Size = new Vector2(120f, 22f);
-		Node2D countHolder = new() { Name = DecoName };
+		Node2D countHolder = new() { Name = DecoName, Visible = false };   // v0.14.71：默认藏着 —— 其他角色时 Skin(false) 直接返回，以前数字牌一直显示在原版牌堆上
 		box.AddChild(countHolder);
 		(Node2D tag, Label tagText) = Tag(countHolder, Vector2.Zero, "0", 30, 34f);
 		Sprite2D[] backs = new Sprite2D[2];
