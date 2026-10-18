@@ -25,7 +25,7 @@ namespace P3MusicBox;
 public static class MusicBox
 {
 	public const string Tag = "[P3MusicBox]";
-	public const string Version = "1.1.2";
+	public const string Version = "1.1.3";
 
 	// 配色（和 P3Makoto 一致的 P3R 蓝）
 	private static readonly Color Navy = new(0.02f, 0.06f, 0.22f, 0.94f);
@@ -151,13 +151,17 @@ public static class MusicBox
 				});
 			}
 		}
-		if (Songs.Count == 0)
+		// v1.1.3（玩家：自己往 music 里加了 mp3 却不显示）：以前有歌单时只认歌单里的歌；现在歌单里的在前（按歌单顺序），
+		// 文件夹里没写进歌单的 .ogg / .mp3 按文件名接在后面（有同名 .lrc 就带歌词）。
+		HashSet<string> listed = new(Songs.Select(x => Path.GetFullPath(x.File)), StringComparer.OrdinalIgnoreCase);
+		foreach (string f in Directory.GetFiles(dir).Where(f => f.EndsWith(".ogg", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase)).OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
 		{
-			foreach (string f in Directory.GetFiles(dir).Where(f => f.EndsWith(".ogg", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase)).OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
+			if (listed.Contains(Path.GetFullPath(f)))
 			{
-				string lrc = Path.ChangeExtension(f, ".lrc");
-				Songs.Add(new Song { File = f, Title = Path.GetFileNameWithoutExtension(f), Lrc = File.Exists(lrc) ? lrc : null });
+				continue;
 			}
+			string lrc = Path.ChangeExtension(f, ".lrc");
+			Songs.Add(new Song { File = f, Title = Path.GetFileNameWithoutExtension(f), Lrc = File.Exists(lrc) ? lrc : null });
 		}
 		_index = Math.Clamp(_prefs.Last, 0, Math.Max(0, Songs.Count - 1));
 		GD.Print($"{Tag} {Songs.Count} songs in {dir}");

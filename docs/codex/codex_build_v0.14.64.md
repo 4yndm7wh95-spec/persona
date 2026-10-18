@@ -1,4 +1,4 @@
-你在用户的 Windows 电脑上工作。任务：把 P3Makoto v0.14.64、音乐盒 P3MusicBox 1.1.2、测试工具 P3TestMod 1.2.2 编译、打包，安装到本机**两个**杀戮尖塔 2（0.107.1 正式版和 0.111 测试版），再用兼容检查工具对两个版本各检查一遍。只做编译、打包、安装、检查，不改任何代码。
+你在用户的 Windows 电脑上工作。任务：把 P3Makoto v0.14.64、音乐盒 P3MusicBox 1.1.3、测试工具 P3TestMod 1.2.2 编译、打包，安装到本机**两个**杀戮尖塔 2（0.107.1 正式版和 0.111 测试版），再用兼容检查工具对两个版本各检查一遍。只做编译、打包、安装、检查，不改任何代码。
 
 【两个游戏目录】
 - <G111> = C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2（以前编译用的那个）。
@@ -20,7 +20,7 @@
    git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local merge --no-edit origin/claude/amazing-darwin-b00arn
    - 有冲突就停下来报告。
    - 这次不需要 push。
-6. 确认 git log 最新的提交是 v0.14.64（本 mod 耗时统计；之前是 v0.14.63 全特效性能复查）。
+6. 确认 git log 最新的提交是「musicbox 1.1.3: …」（之前是 v0.14.64 本 mod 耗时统计）。
 7. 稀疏检出缺目录时，允许执行：
    git -c safe.directory=<repo> sparse-checkout add mod musicbox testmod tools/compat research/libs_0.107.1
    - 路径过长时，这一条命令可以加 -c core.longpaths=true。
@@ -53,7 +53,7 @@
    - 如果 music\ 里有 playlist.json，把它**改名**为 playlist.txt（内容不变）；已经有 playlist.txt 就不动。
      原因：游戏会把 mod 文件夹里所有 .json 当成 mod 清单读，每次启动都报一条红字错误。
    - 某个游戏里还没装过音乐盒、也没有 music 文件夹：从另一个游戏的 music\ 整个复制过来。
-   - 核对 version 是 "1.1.2"。
+   - 核对 version 是 "1.1.3"。
 3. 测试工具：只在 <游戏>\mods\P3TestMod\ 已经存在时才复制 P3TestMod.dll 和 P3TestMod.json 过去，核对 version 是 "1.2.2"；不存在就跳过，并在报告里说明。
 4. 两个游戏的 mods 里如果还有别的 mod，不要动，在报告里列出来就行。
 
@@ -87,7 +87,8 @@
 6. 格挡多段攻击（让敌人用多段攻击打在格挡上）：只看到一个 BLOCK 字，第一下有完整的碎片 / 纸屑，后面几下是轻量的火花；不应再明显掉帧。
 7. 手柄：插上手柄用手柄打开抽牌堆 / 弃牌堆 / 牌组，应是 P3R 界面；方向键移动选中（选中的牌放大）、确认键特写、特写时按返回键只收回特写，再按返回键关界面。
 8. 卡顿诊断：游戏开着时日志每 60 秒应有两行 "[P3Makoto] health fps=…" 和 "[P3Makoto] health p3_ms_per_frame=…"；掉帧时会多出 "health LOW" 的行。掉帧后把所有含 "health" 的行发给 Claude。
-9. 日志开头应有 "[P3Makoto] init v0.14.64"、"game version …"、"harmony patches applied: N ok, 0 failed"；有问题请把含 "P3Makoto" 的行发给 Claude（特别是 "pile" / "deck screen" / "hud" 相关的错误）。
+9. 音乐盒 1.1.3：往 music 文件夹里放一首不在 playlist.txt 里的 mp3，它应该出现在歌单最后（文件名当标题）。
+10. 日志开头应有 "[P3Makoto] init v0.14.64"、"game version …"、"harmony patches applied: N ok, 0 failed"；有问题请把含 "P3Makoto" 的行发给 Claude（特别是 "pile" / "deck screen" / "hud" 相关的错误）。
 
 【绝对不要做】
 - 不要修改或删除代码；不要 rebase / reset / amend；不要 --force；不要改全局 git config；不要提交，也不要推送。

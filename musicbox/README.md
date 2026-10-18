@@ -26,6 +26,7 @@ P3Makoto 的扩展 mod，也可以单独使用。纯界面 + 本地播放，不�
     P3MusicBox.json
     music\
         playlist.txt       （可选，内容是 JSON：顺序、标题、歌手；没有就按文件名排序、文件名当标题）
+                           1.1.3 起：没写进歌单的 .ogg / .mp3 也会显示，排在歌单后面（文件名当标题）
         01_xxx.ogg / .mp3
         01_xxx.lrc         （可选，和歌曲同名，UTF-8）
 ```
