@@ -8,11 +8,11 @@ namespace P3Makoto.Core;
 /// <summary>
 /// v0.14.60（玩家：玩储君时每次快到一层 Boss 就很卡，像被调低了倍速）：卡顿诊断日志，只写日志不改游戏。
 /// · 每 60 秒一行：帧率、时间倍速、节点总数、孤儿节点数、根节点下的子节点数、本 mod 还活着的音效播放器数；
-/// · 帧率连续 5 秒低于 30：额外列出根节点和战斗特效层里数量最多的节点类型（每 60 秒最多一次），用来找越积越多的东西。
+/// · 帧率连续 1.5 秒低于 30（v0.14.64 起；最多 20 秒一次）：额外列出根节点和战斗特效层里数量最多的节点类型（每 60 秒最多一次），用来找越积越多的东西。
 /// </summary>
 public static class Health
 {
-	private static ulong _next, _lowSince, _nextDetail;
+	private static ulong _next, _lowSince, _nextDetail, _nextWindow;
 	private static bool _hooked;
 
 	public static void Install()
@@ -30,10 +30,17 @@ public static class Health
 	{
 		ulong now = Time.GetTicksMsec();
 		double fps = Engine.GetFramesPerSecond();
+		bool roll = now >= _nextWindow;
+		if (roll)
+		{
+			_nextWindow = now + 2000;
+		}
+		Prof.Frame(roll);
 		if (now >= _next)
 		{
 			_next = now + 60000;
 			GD.Print($"{ModEntry.Tag} health fps={fps:0} timescale={Engine.TimeScale:0.###} nodes={Performance.GetMonitor(Performance.Monitor.ObjectNodeCount):0} orphans={Performance.GetMonitor(Performance.Monitor.ObjectOrphanNodeCount):0} root_children={tree.Root.GetChildCount()} sfx_players={Audio.Sfx.Live}");
+			GD.Print($"{ModEntry.Tag} health {Prof.MinuteReport(reset: true)}");
 		}
 		if (fps >= 30.0)
 		{
@@ -45,12 +52,13 @@ public static class Health
 			_lowSince = now;
 			return;
 		}
-		if (now - _lowSince < 5000 || now < _nextDetail)
+		if (now - _lowSince < 1500 || now < _nextDetail)
 		{
 			return;
 		}
-		_nextDetail = now + 60000;
+		_nextDetail = now + 20000;
 		GD.Print($"{ModEntry.Tag} health LOW fps={fps:0} for {(now - _lowSince) / 1000}s timescale={Engine.TimeScale:0.###}; root: {Top(tree.Root)}");
+		GD.Print($"{ModEntry.Tag} health LOW last 2s: {Prof.WindowReport()}; frame_ms={1000.0 / System.Math.Max(fps, 1.0):0.0} process_ms={Performance.GetMonitor(Performance.Monitor.TimeProcess) * 1000.0:0.0} draw_calls={Performance.GetMonitor(Performance.Monitor.RenderTotalDrawCallsInFrame):0} objects={Performance.GetMonitor(Performance.Monitor.RenderTotalObjectsInFrame):0}");
 		if (NCombatRoom.Instance is NCombatRoom room && GodotObject.IsInstanceValid(room))
 		{
 			GD.Print($"{ModEntry.Tag} health LOW combat vfx: front {room.CombatVfxContainer.GetChildCount()} [{Top(room.CombatVfxContainer)}], back {room.BackCombatVfxContainer.GetChildCount()} [{Top(room.BackCombatVfxContainer)}]");

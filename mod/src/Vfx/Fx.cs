@@ -52,15 +52,39 @@ public static class Fx
 	/// <summary>用 0→1 的进度驱动任意动画。</summary>
 	public static Tween Animate(Node owner, double seconds, Action<float> step)
 	{
+		string key = "anim " + EffectName(owner);              // v0.14.64：每帧回调按所属特效计时（Core/Prof）
 		Tween tween = owner.CreateTween();
 		tween.TweenMethod(Callable.From<float>(t =>
 		{
 			if (GodotObject.IsInstanceValid(owner))
 			{
-				step(t);
+				long t0 = Core.Prof.Begin();
+				try
+				{
+					step(t);
+				}
+				finally
+				{
+					Core.Prof.End(key, t0);
+				}
 			}
 		}), 0f, 1f, seconds);
 		return tween;
+	}
+
+	/// <summary>往上找最近一个 "P3" 开头的节点名（特效根节点都这样命名），找不到用节点类型。只在创建动画时走一次。</summary>
+	private static string EffectName(Node node)
+	{
+		for (Node? n = node; n != null; n = n.GetParent())
+		{
+			string name = n.Name.ToString();
+			if (name.StartsWith("P3", System.StringComparison.Ordinal))
+			{
+				int at = name.IndexOf('@');
+				return at > 0 ? name[..at] : name;
+			}
+		}
+		return node.GetClass();
 	}
 
 	// Godot 4 的 Polygon2D 边缘不做抗锯齿（Antialiased 属性不生效，MSAA 也不一定开）：

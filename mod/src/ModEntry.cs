@@ -13,7 +13,7 @@ public static class ModEntry
 
 	public static void Init()
 	{
-		GD.Print($"{Tag} init v0.14.63");
+		GD.Print($"{Tag} init v0.14.64");
 		// v0.14.44（多版本兼容）：记下游戏版本，换版本出问题时日志里一眼能看到是哪个版本
 		Safe("game version", () => GD.Print($"{Tag} game version {P3Makoto.Core.Compat.GameVersion()}"));
 		// v0.14.59（玩家：iOS 移植版报 PlatformNotSupportedException）：iOS / 纯 AOT 平台不能在运行时生成代码，
@@ -105,6 +105,7 @@ public static class ModEntry
 	/// <summary>特效代码出错时只记日志，绝不让异常冒泡进游戏逻辑。</summary>
 	public static void Safe(string where, Action action)
 	{
+		long t0 = Core.Prof.Begin();                       // v0.14.64：耗时统计（见 Core/Prof.cs）
 		try
 		{
 			action();
@@ -112,6 +113,10 @@ public static class ModEntry
 		catch (Exception e)
 		{
 			Report(where, e);
+		}
+		finally
+		{
+			Core.Prof.End(where, t0);
 		}
 	}
 
