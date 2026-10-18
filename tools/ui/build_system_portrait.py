@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 from scipy import ndimage
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -100,6 +100,21 @@ def blink(base, f):
     return Image.fromarray(o, "RGBA")
 
 
+def zone_of(im, name):
+    """白色区域蒙版（v0.14.77，对照原版 #48~#70）：分界线左边、头发以上的部分全是白（人物的白衬衫 / 脸和白区连成一片，
+    左下的头发是水色）。每一列从上往下，到第一块大面积头发为止都是白区；头发以下（发梢之间的空隙）是水。分界线在着色器里再切。"""
+    a = np.asarray(im.convert("RGBA")).astype(np.int32)
+    r, g, b, al = a[..., 0], a[..., 1], a[..., 2], a[..., 3]
+    hair = (al > 127) & (b > 150) & (r < 130) & (np.maximum(np.maximum(r, g), b) > 140)
+    hair = ndimage.binary_opening(hair, iterations=6)                    # 细线（耳机线、轮廓线）不算
+    h, w = hair.shape
+    top = np.where(hair.any(axis=0), hair.argmax(axis=0), h)
+    zone = (np.arange(h)[:, None] < top[None, :]).astype(np.float32)
+    zone = Image.fromarray((zone * 255).astype(np.uint8), "L").filter(ImageFilter.GaussianBlur(1.2))
+    godot_tex.write_texture(STAGE, f"p3makoto/ui/{name}", Image.merge("RGBA", [zone, zone, zone, Image.new("L", zone.size, 255)]))
+    return zone
+
+
 def edge_polyline(im):
     """人物右侧外轮廓：11 行（0, 108, … 1079）每行最右边 alpha>127 的像素。"""
     al = np.asarray(im)[..., 3]
@@ -133,12 +148,16 @@ def main(preview=None):
         godot_tex.write_texture(STAGE, f"p3makoto/ui/{dst}", im)
         done[dst] = (im, n)
         print(dst, im.size, "snapped-to-white", n)
+    # v0.14.77 白色区域蒙版（用户对照原版：白区的下沿就是人物的轮廓 —— 白色从画面上边一直铺到人物为止）：
+    # 每一列里，最上面那个不透明像素以上的透明部分记为白区；只取分界线左边（右边是水）。眨眼几帧轮廓一样，共用一张
+    zone_of(base, "system_zone.png")
     # v0.14.75：入水姿势帧（Codex imagegen，art/p3menu_system/dive/system_dive_{a,b,c}.png；已经是去掉手的版本）
     for key in "abc":
         src = SRC / "dive" / f"system_dive_{key}.png"
         if src.exists():
             im, n = clean(Image.open(src))
             godot_tex.write_texture(STAGE, f"p3makoto/ui/system_dive_{key}.png", im)
+            zone_of(im, f"system_zone_{key}.png")
             print(f"system_dive_{key}.png", im.size, "snapped-to-white", n)
     if preview:
         base = done["system_portrait.png"][0]

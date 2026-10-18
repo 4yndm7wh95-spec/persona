@@ -734,37 +734,18 @@ void fragment() {
 	COLOR = vec4(1.0, 1.0, 1.0, a);
 }");
 
-	public static Shader CampWater => _campWater ??= Make(@"
-shader_type canvas_item;
-// v0.14.72（用户：水里没有原版细腻 —— 原版从水面浅色慢慢过渡到深蓝；水面有一片片光斑）：
-// 四段平滑渐变（亮青 → 天青 → 钴蓝 → 深蓝）；水面焦散：横向拉长、边缘清楚的亮青色块（两层亮度），
-// 集中在顶部偏右一个倒三角里（阳光从那里照下来），越往下越小越稀，最上面一条整片都有；缓慢漂动。
-uniform float aspect = 1.777;
-uniform float sun_x = 0.64;
-// v0.14.75：masked = 1 时是盖在人物上面的那层水 —— 只画分界线 edge 右边（edge 是 16:9 画布比例坐标，edge_scale = 屏宽 / 16:9 画布宽），
-// over_alpha 略小于 1，人物伸进水里的部分隐约透出来
-uniform float masked = 0.0;
-uniform float over_alpha = 0.9;
-uniform float edge_scale = 1.0;
-uniform vec2 edge[13];
-float edge_x(float y) {
-	for (int i = 0; i < 12; i++) {
-		if (y <= edge[i + 1].y) {
-			float k = (y - edge[i].y) / max(edge[i + 1].y - edge[i].y, 0.0001);
-			return mix(edge[i].x, edge[i + 1].x, clamp(k, 0.0, 1.0));
-		}
-	}
-	return edge[12].x;
-}
+	// v0.14.77：水的颜色抽成函数（背景水和立绘里「变成水」的那部分共用，保证一模一样、看不出接缝）
+	private const string WaterFn = @"
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float vnoise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
 	vec2 u = f * f * (3.0 - 2.0 * f);
 	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
 }
-void fragment() {
-	vec2 uv = UV;
-	float t = TIME;
+vec3 water_at(vec2 wuv, float aspect, float sun_x, float wt) {
+
+	vec2 uv = wuv;
+	float t = wt;
 	float y = uv.y, x = uv.x * aspect;
 	vec3 c0 = vec3(0.22, 0.82, 1.0), c1 = vec3(0.10, 0.56, 0.98), c2 = vec3(0.06, 0.34, 0.88), c3 = vec3(0.04, 0.18, 0.66);
 	vec3 c = y < 0.3 ? mix(c0, c1, smoothstep(0.0, 0.3, y)) : y < 0.62 ? mix(c1, c2, smoothstep(0.3, 0.62, y)) : mix(c2, c3, smoothstep(0.62, 1.0, y));
@@ -786,9 +767,18 @@ void fragment() {
 	// 远处的暗色块（模糊的水底建筑）
 	float bx = smoothstep(0.08, 0.0, abs(fract(x * 1.6 + 0.3) - 0.5) - 0.32) * smoothstep(0.30, 0.45, y) * smoothstep(0.75, 0.55, y);
 	c = mix(c, c * 0.86, bx * 0.5);
-	float cx = UV.x * edge_scale;
-	float mk = masked > 0.5 ? smoothstep(edge_x(UV.y) - 0.0008, edge_x(UV.y) + 0.0008, cx) * over_alpha : 1.0;
-	COLOR = vec4(c, mk);
+	return c;
+}
+";
+
+	public static Shader CampWater => _campWater ??= Make(@"
+shader_type canvas_item;
+// v0.14.72：四段渐变 + 水面焦散光斑（见 WaterFn）
+uniform float aspect = 1.777;
+uniform float sun_x = 0.64;
+" + WaterFn + @"
+void fragment() {
+	COLOR = vec4(water_at(UV, aspect, sun_x, TIME), 1.0);
 }");
 
 	/// <summary>
@@ -809,6 +799,12 @@ uniform float head_angle = 0.0;
 uniform vec2 head_pivot = vec2(0.215, 0.53);
 uniform float bottom_fade = 0.0;   // v0.14.74：入场时人物在上方，立绘画布下沿（头发被裁掉的直线）露在画面里 —— 下沿 8% 渐隐
 uniform float aspect = 1.7778;
+// v0.14.77：头发「现场渲染」成水（用户：不要画头发，全部用水来模拟）—— 头发像素按它在屏幕上的位置取背景水的颜色（WaterFn，和背景同一个函数），
+// 浅色发束只稍微提亮一点留出走向；细的耳机线 / 线条不算头发。白色面板也在这里画：分界线左边、人物上半截的空白处填白，跟着人物一起沉下来
+uniform float screen_aspect = 1.7778;
+uniform float sun_x = 0.64;
+uniform float panel_zone = 1.0;
+uniform sampler2D zone_tex : filter_linear;   // 白色区域蒙版（tools/ui/build_system_portrait.py：分界线左边、头发以上），跟着立绘一起动
 float edge_x(float y) {
 	for (int i = 0; i < 12; i++) {
 		if (y <= edge[i + 1].y) {
@@ -817,6 +813,12 @@ float edge_x(float y) {
 		}
 	}
 	return edge[12].x;
+}
+" + WaterFn + @"
+float hairness(vec4 p) {
+	// 头发：钴蓝 / 天青（蓝色为主、不白、不是深色线条）
+	float mx = max(p.r, max(p.g, p.b));
+	return p.a * step(0.6, p.b) * step(p.r, 0.5) * step(0.55, mx);
 }
 vec2 rot(vec2 p, float a) {
 	float c = cos(a), s = sin(a);
@@ -844,14 +846,30 @@ void fragment() {
 	vec4 c = texture(TEXTURE, clamp(uv, vec2(0.0), vec2(1.0)));
 	float mn = min(c.r, min(c.g, c.b)), mx = max(c.r, max(c.g, c.b));
 	float white = smoothstep(0.80, 0.93, mn) * (1.0 - smoothstep(0.08, 0.22, mx - mn));
-	// v0.14.75（用户：右边的水是盖在人物图层上面的一层）：人物这里原样画，右边的水由 CampWater（masked）盖在上面
-	float side = 0.0;
+	// 分界线右边的人物（伸进水里的头发 / 袖口）也变成水
+	float ex = edge_x(UV.y);
+	float px = TEXTURE_PIXEL_SIZE.x;
+	float side = smoothstep(ex - 1.5 * px, ex + 1.5 * px, UV.x);
+	// 头发判定：周围 8 个点（半径 4px）里至少一半也是头发 —— 大块头发算，细耳机线不算
+	vec2 tp = TEXTURE_PIXEL_SIZE * 4.0;
+	float hn = 0.0;
+	for (int k = 0; k < 8; k++) {
+		float an = float(k) * 0.7854;
+		hn += hairness(texture(TEXTURE, clamp(uv + vec2(cos(an), sin(an)) * tp, vec2(0.0), vec2(1.0))));
+	}
+	float hair = hairness(c) * smoothstep(3.0, 4.5, hn);
+	float toWater = max(hair, side * c.a);
+	vec3 w = water_at(SCREEN_UV, screen_aspect, sun_x, TIME);
+	// 用户：不要浅色反光，那样反而有边界 —— 头发就是水本身的颜色（略深一点，原版头发比周围的水稍深）
+	vec3 wc = w * 0.9;
+	vec3 fc = mix(c.rgb, wc, toWater);
 	float fa = c.a;
-	vec3 fc = c.rgb;
-	// 旧的白色面板参数保留（面板是单独一层，这里传 0）
-	float pan = panel * (1.0 - side);
-	float fa2 = fa + pan * (1.0 - fa);
-	fc = (fc * fa + vec3(1.0) * pan * (1.0 - fa)) / max(fa2, 0.0001);
+	// 白色面板：分界线左边、人物上半截（左下角留给水和头发）
+	// 白色区域：蒙版（人物轮廓以上）× 分界线左边；画布外（人物还在上方时）是水
+	float inside = step(0.0, uv.x) * step(uv.x, 1.0) * step(0.0, uv.y) * step(uv.y, 1.0);
+	float zone = texture(zone_tex, clamp(uv, vec2(0.0), vec2(1.0))).r * inside * (1.0 - side) * panel_zone * panel;
+	float fa2 = fa + zone * (1.0 - fa);
+	fc = (fc * fa + vec3(1.0) * zone * (1.0 - fa)) / max(fa2, 0.0001);
 	fa = fa2;
 	fa *= 1.0 - bottom_fade * smoothstep(0.90, 0.995, UV.y);
 	COLOR = vec4(fc, fa);

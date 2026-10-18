@@ -44,7 +44,7 @@ public static class SettingsSkin
 	private static readonly Vector2[] Edge =
 	{
 		new(1000f, 0f), new(905f, 200f), new(812f, 385f), new(795f, 470f), new(775f, 560f), new(760f, 650f), new(745f, 700f),
-		new(790f, 760f), new(800f, 860f), new(770f, 925f), new(700f, 935f), new(650f, 965f), new(630f, 1080f),
+		new(748f, 745f), new(752f, 860f), new(740f, 925f), new(700f, 935f), new(650f, 965f), new(630f, 1080f),   // v0.14.77：贴紧耳机右边（以前和头发之间留了一块白）
 	};
 
 
@@ -79,7 +79,6 @@ public static class SettingsSkin
 		internal Texture2D? Open, Q1, Half, Q3, Closed;
 		internal Texture2D?[] DivePoses = new Texture2D?[3];
 		internal ShaderMaterial PortraitMat = null!;
-		internal ColorRect PanelRect = null!;
 		internal Node2D PanelDeco = null!, Bubbles = null!;
 		internal ColorRect SplashRect = null!;
 		internal ShaderMaterial SplashMat = null!, MaskMat = null!;
@@ -89,6 +88,7 @@ public static class SettingsSkin
 		internal ShaderMaterial WipeMat = null!;
 		internal Label PanelTitle = null!, PanelWater = null!, HintZh = null!, HintEn = null!;
 		internal Node2D SystemWord = null!;
+		internal ColorRect SystemStrip = null!;
 		internal readonly List<Tab> Tabs = new();
 		internal readonly List<RowDeco> Rows = new();
 		internal readonly List<Action> Undo = new();
@@ -216,14 +216,8 @@ public static class SettingsSkin
 			IdleRespawn(b, view, k, Fx.Rand(0f, 1f) * view.Y);
 		}
 
-		// v0.14.74（用户：人物带着左边那块白一起动）：白色面板是屏幕上固定的一层（不跟人物动），右沿在人物轮廓左边一截、宽羽化带过渡成浅青再到水；
-		// 人物右侧和水的融合在立绘着色器里做
+		// v0.14.77（用户对照原版分镜：一开始左边也是水；白色区域是跟着人物一起沉下来的）：白色面板画在立绘着色器里（随人物移动），不再是屏幕上固定的一层
 		float pw = view.Y * 16f / 9f;
-		ShaderMaterial panelMat = new() { Shader = Shaders.CampPanel };
-		panelMat.SetShaderParameter("edge", Edge.Select(e => new Vector2(e.X / 1920f, e.Y / 1080f)).ToArray());
-		ColorRect panelRect = new() { Material = panelMat, MouseFilter = Control.MouseFilterEnum.Ignore, Size = new Vector2(pw, view.Y) };
-		st.Root.AddChild(panelRect);
-		st.PanelRect = panelRect;
 
 		// 竖排大字 SYSTEM（灰色错影 + 黑字，从下往上读，被左边缘裁掉一点）
 		st.SystemWord = new Node2D { Position = new Vector2(-34f * k, view.Y + 40f * k), Rotation = -Mathf.Pi / 2f };
@@ -245,20 +239,18 @@ public static class SettingsSkin
 		ShaderMaterial pm = new() { Shader = Shaders.CampPortrait };
 		pm.SetShaderParameter("edge", Edge.Select(e => new Vector2(e.X / 1920f, e.Y / 1080f)).ToArray());
 		pm.SetShaderParameter("aspect", 16f / 9f);
-		pm.SetShaderParameter("panel", 0f);
+		pm.SetShaderParameter("panel", 1f);
+		pm.SetShaderParameter("zone_tex", Load("res://p3makoto/ui/system_zone.png"));
+		pm.SetShaderParameter("screen_aspect", view.X / view.Y);
 		st.PortraitMat = pm;
 		st.Portrait = new TextureRect { Texture = st.Open, Material = pm, MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, Size = new Vector2(pw, view.Y) };
 		st.Root.AddChild(st.Portrait);
-		// v0.14.75（用户：右边这块水是在人物图层之上的）：同一个水着色器再画一层盖在人物上面，只画分界线右边；人物沉入时从这层水下面穿过
-		ShaderMaterial waterTop = new() { Shader = Shaders.CampWater };
-		waterTop.SetShaderParameter("aspect", view.X / view.Y);
-		waterTop.SetShaderParameter("masked", 1f);
-		waterTop.SetShaderParameter("edge_scale", view.X / pw);
-		waterTop.SetShaderParameter("edge", Edge.Select(e => new Vector2(e.X / 1920f, e.Y / 1080f)).ToArray());
-		ColorRect waterTopRect = new() { Material = waterTop, MouseFilter = Control.MouseFilterEnum.Ignore };
-		waterTopRect.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		st.Root.AddChild(waterTopRect);
-		st.Root.MoveChild(st.Bubbles, -1);                                   // 待机气泡在上层水的上面
+		// v0.14.77：伸进水里的部分和头发都在立绘着色器里直接画成水（WaterFn），不再另盖一层水
+		st.Root.MoveChild(st.Bubbles, -1);                                   // 待机气泡在人物上面
+		// 最左边的白条 + 竖排大字（原版 #44 起从左边滑进来，压在人物上面）
+		st.SystemStrip = new ColorRect { Color = Colors.White, MouseFilter = Control.MouseFilterEnum.Ignore, Size = new Vector2(0.105f * view.X, view.Y) };
+		st.Root.AddChild(st.SystemStrip);
+		st.Root.MoveChild(st.SystemWord, -1);
 		st.NextBlink = Now + 2.5f;
 
 		// 左上信息框（仿金额框）、右下当前分页提示
@@ -867,7 +859,6 @@ public static class SettingsSkin
 		// 两段式：0.30~0.45s 快速沉入、转正大半，之后 0.35s 慢慢下沉到位、角度归零；中间平滑插值（三次 Hermite），不是一条缓动曲线。
 		// 待机只往下轻轻浮动（往上浮会在画面底边露出一条白缝 —— v0.14.69 实机）
 		(float dy, float rot, float dx) = DivePose(t);
-		((ShaderMaterial)st.PanelRect.Material).SetShaderParameter("reveal", Ease.OutCubic(Mathf.Clamp((t - 0.36f) / 0.2f, 0f, 1f)));   // 原版 #40 左边还是水，#44 起白底从左边出来
 		st.PortraitMat.SetShaderParameter("bottom_fade", Mathf.Clamp(-dy * 10f, 0f, 1f));
 		st.Portrait.PivotOffset = new Vector2(650f, 977f) * k;                 // 原版模板匹配得到的旋转中心
 		st.Portrait.Rotation = Mathf.DegToRad(rot);
@@ -876,6 +867,7 @@ public static class SettingsSkin
 		st.PortraitMat.SetShaderParameter("head_angle", poses ? 0f : Mathf.DegToRad(rot) * 0.35f);
 		float eWord = Ease.OutCubic(Mathf.Clamp((t - 0.34f) / 0.3f, 0f, 1f));
 		st.SystemWord.Position = new Vector2(-34f * k - 320f * k * (1f - eWord), view.Y + 40f * k);
+		st.SystemStrip.Position = new Vector2(-st.SystemStrip.Size.X * (1f - eWord), 0f);
 		float eContent = Ease.OutCubic(Mathf.Clamp((t - 0.5f) / 0.3f, 0f, 1f));
 		st.Scroll.Modulate = new Color(st.OrigModulate, st.OrigModulate.A * eContent);
 
