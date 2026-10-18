@@ -701,7 +701,7 @@ void fragment() {
 	COLOR = vec4(c + vec3(0.7, 0.95, 1.0) * rim * 0.9, max(inside, rim * 0.9));
 }");
 
-	private static Shader? _campWater, _campPortrait, _gradientMap;
+	private static Shader? _campWater, _campPortrait, _gradientMap, _blobWipe;
 
 	/// <summary>
 	/// v0.14.67 设置界面（P3R 主菜单 52s）的水下背景：上方是很亮的青色水面（流动的亮斑焦散），往下变钴蓝、深蓝；斜射光柱；中段若隐若现的暗色块（远处的水底建筑）。
@@ -780,5 +780,36 @@ void fragment() {
 	vec3 navy = vec3(0.03, 0.08, 0.30), royal = vec3(0.10, 0.42, 1.0), ice = vec3(0.86, 0.97, 1.0);
 	vec3 m = l < 0.5 ? mix(navy, royal, l * 2.0) : mix(royal, ice, (l - 0.5) * 2.0);
 	COLOR = vec4(m, c.a);
+}");
+
+	/// <summary>
+	/// v0.14.70 设置界面切分页（P3R 53.33s 进子菜单）：从选中的字涌出一团边缘起伏的深蓝水团（半透明，下面的人物线条隐约可见），
+	/// 盖满后中间再撑开一个带白边的洞露出新的一页。r_out = 水团外半径，r_in = 洞的半径（像素）。
+	/// </summary>
+	public static Shader BlobWipe => _blobWipe ??= Make(@"
+shader_type canvas_item;
+uniform vec2 center;
+uniform vec2 size = vec2(1920.0, 1080.0);
+uniform float r_out = 0.0;
+uniform float r_in = 0.0;
+uniform float seed = 0.0;
+uniform float rim = 7.0;
+uniform vec4 fill : source_color = vec4(0.05, 0.20, 0.78, 0.86);
+float wob(float a, float s) {
+	return 1.0 + 0.09 * sin(a * 3.0 + s + TIME * 2.2) + 0.05 * sin(a * 5.0 - s * 1.7 - TIME * 1.3) + 0.035 * sin(a * 9.0 + s * 3.1);
+}
+void fragment() {
+	vec2 p = UV * size - center;
+	float d = length(p);
+	float a = atan(p.y, p.x);
+	float ro = r_out * wob(a, seed);
+	float ri = r_in * wob(a + 1.3, seed + 4.0);
+	float outer = 1.0 - smoothstep(ro - 1.5, ro + 1.5, d);
+	float hole = r_in > 0.5 ? smoothstep(ri - 1.5, ri + 1.5, d) : 1.0;
+	float ring = r_in > 0.5 ? 1.0 - smoothstep(ri + rim - 1.5, ri + rim + 1.5, d) : 0.0;
+	float body = outer * hole;
+	float shade = 0.85 + 0.15 * smoothstep(ro * 0.4, ro, d);
+	vec3 col = mix(fill.rgb * shade, vec3(1.0), ring);
+	COLOR = vec4(col, body * mix(fill.a, 1.0, ring));
 }");
 }

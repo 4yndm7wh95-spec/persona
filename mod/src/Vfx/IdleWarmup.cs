@@ -121,7 +121,7 @@ internal static class IdleWarmup
 		active.AddChild(tiny);                    // 在可视区真实绘制极小的图形，屏外节点会被裁掉而无法预热 GPU。
 		if (path == "@system shaders")
 		{
-			foreach (Shader sh in new[] { Shaders.CampWater, Shaders.CampPortrait, Shaders.GradientMap })
+			foreach (Shader sh in new[] { Shaders.CampWater, Shaders.CampPortrait, Shaders.GradientMap, Shaders.BlobWipe })
 			{
 				tiny.AddChild(new ColorRect { Size = new Vector2(1000f, 1000f), Material = new ShaderMaterial { Shader = sh }, MouseFilter = Control.MouseFilterEnum.Ignore });
 			}

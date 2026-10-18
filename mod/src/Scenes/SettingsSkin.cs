@@ -17,12 +17,16 @@ namespace P3Makoto.Scenes;
 /// · 背景：P3R 水下（亮青水面焦散 → 钴蓝 → 深蓝、光柱）+ 左边白色面板（右边缘就是人物轮廓）+ 倒挂入水的结城理（着色器让人物的白色在水那一侧透出水，
 ///   头发 / 飘带随水微动，定时眨眼）+ 最左边竖排黑色大字 SYSTEM（灰色错影）+ 上浮气泡；左上信息框、右下当前分页提示。
 /// · 分页：原版顶部的分页按钮藏起来，换成画面中间斜排的 P3R 菜单大字 GENERAL / GRAPHICS / SOUND / INPUT / P3MAKOTO；
-///   当前项黑字 + 红色斜切条 + 右端白色小旗（同 SKILL），其余浅青；点击时从那个字涨出深蓝圆形盖住内容区，换页后再退开（同 53.33s）。
+///   当前项黑字 + 红色斜切条 + 右端白色小旗（同 SKILL），其余浅青；点击时从那个字涌出边缘起伏的半透明深蓝水团盖满整屏，
+///   换页后中间撑开一个白边的洞露出新的一页（同 P3R 进子菜单）。v0.14.70：整列字放在内容面板左边，不再和面板重叠，行距加大。
 ///   P3MAKOTO = 常规页里只显示本 mod 的那一栏。
 /// · 内容区：原版的滚动区整体缩放、移到右侧，背后一块斜切深蓝面板（青色上沿、红色下沿、页名标题和超大水印字）；
 ///   每一行设置垫一条斜切深蓝底，悬停 / 手柄选中时变白底 + 错开的红框（P3R 选中行）；文字换思源黑体 Bold（中文）/ Barlow（英文）白字；
 ///   勾选框换成 P3R 斜方框；其余控件贴图按亮度映射成深蓝 → 钴蓝 → 冰白。
-/// · 打开时：水花从右往左泼过整屏（51.67s），白面板从左滑入、人物往下沉入、菜单字依次飞入、内容区淡入。
+/// · 打开时（v0.14.70 按用户录的 P3R 视频逐帧复刻，30fps）：0.00s 顶部中间炸开一团浅青水花 + 气泡；0.03~0.30s 深蓝水团呈 V 形往下冲、
+///   越冲越宽直到盖满整屏，里面挂着一根根往下长的浅青锯齿水柱；0.28s 起人物（连同白色部分）从左上方斜着沉入、0.64s 停稳，
+///   水团变透明露出水下背景，水柱往上缩回；0.46s 起菜单字依次浮现，0.72s 红色选中条展开；内容区 0.5s 起从右淡入；全程空心 / 实心气泡往上冒。
+///   待机时人物身边稀疏地冒气泡串。音效（程序合成的入水声 + 气泡声）和画面对齐。
 /// 设置里「设置界面（P3R 风格）」关掉后，下次打开恢复原版（所有改动都有记录、可还原）。
 /// </summary>
 public static class SettingsSkin
@@ -38,8 +42,9 @@ public static class SettingsSkin
 	// 人物右侧轮廓（art/p3menu_system/meta.json 的 water_boundary_polyline，1920×1080 像素），白色面板和融水着色器共用
 	private static readonly Vector2[] Edge =
 	{
+		// v0.14.70：多出来的那只手去掉后重算（tools/ui/build_system_portrait.py 打印的折线）
 		new(1014f, 0f), new(947f, 108f), new(883f, 216f), new(828f, 324f), new(789f, 432f), new(852f, 540f),
-		new(859f, 648f), new(906f, 756f), new(968f, 864f), new(977f, 972f), new(800f, 1080f),
+		new(856f, 648f), new(736f, 756f), new(792f, 864f), new(826f, 972f), new(800f, 1080f),
 	};
 
 	private sealed class Tab
@@ -71,7 +76,12 @@ public static class SettingsSkin
 		internal Control Root = null!, Words = null!, Top = null!;
 		internal TextureRect Portrait = null!;
 		internal Texture2D? Open, Half, Closed;
-		internal Node2D PanelDeco = null!, Splash = null!, Wipe = null!, Bubbles = null!;
+		internal Node2D PanelDeco = null!, Splash = null!, Bubbles = null!;
+		internal Polygon2D Mass = null!;
+		internal readonly List<Polygon2D> Columns = new(), Blobs = new();
+		internal readonly List<Node2D> SplashRings = new();
+		internal ColorRect Wipe = null!;
+		internal ShaderMaterial WipeMat = null!;
 		internal Label PanelTitle = null!, PanelWater = null!, HintZh = null!, HintEn = null!;
 		internal Node2D WhitePanel = null!, SystemWord = null!;
 		internal readonly List<Tab> Tabs = new();
@@ -152,6 +162,7 @@ public static class SettingsSkin
 		if (st.On)
 		{
 			st.T0 = Now;                                         // 每次打开都重播入场
+			Audio.Sfx.Clip("sys_dive", 0.55f);                   // 入水声：0.00s 的"噗"对齐水花炸开，气泡声对齐上浮的气泡
 			StartTick(st);
 		}
 	}
@@ -180,24 +191,23 @@ public static class SettingsSkin
 		ColorRect waterRect = new() { Material = water, MouseFilter = Control.MouseFilterEnum.Ignore };
 		waterRect.SetAnchorsPreset(Control.LayoutPreset.FullRect);
 		st.Root.AddChild(waterRect);
+		// 待机气泡（P3R 的空心圈 + 高光点，少数实心）：从人物轮廓右边 / 画面下方稀疏地冒出来往上浮（画在内容面板后面）
 		st.Bubbles = new Node2D();
 		st.Root.AddChild(st.Bubbles);
-		for (int i = 0; i < 22; i++)
+		for (int i = 0; i < 16; i++)
 		{
-			Sprite2D b = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Position = new Vector2(Fx.Rand(0.4f, 1f) * view.X, Fx.Rand(0f, 1f) * view.Y) };
-			b.SetMeta("v", Fx.Rand(22f, 60f) * k);
-			b.SetMeta("p", Fx.Rand(0f, 6.28f));
-			b.SetMeta("s", Fx.Rand(0.04f, 0.11f) * k);
-			st.Bubbles.AddChild(b);
+			Node2D b = Ring(st.Bubbles, Fx.Rand(5f, 15f) * k, i % 4 == 0);
+			IdleRespawn(b, view, k, Fx.Rand(0f, 1f) * view.Y);
 		}
 
 		// 白色面板：左边到人物右轮廓，边缘一圈很淡的白色渐隐（不是硬边）
 		float pw = view.Y * 16f / 9f, sx = pw / 1920f, sy = view.Y / 1080f;
 		st.WhitePanel = new Node2D();
 		st.Root.AddChild(st.WhitePanel);
-		List<Vector2> poly = new() { new Vector2(-40f, -10f) };
+		// 入场时白色部分跟着人物从左上方斜着滑进来：多边形往左多留一截（下边不加长 —— 人物下边沿往上移时，下面露出的是水，不是一条白块）
+		List<Vector2> poly = new() { new Vector2(-40f - view.X * 0.4f, -10f) };
 		poly.AddRange(Edge.Select(e => new Vector2(e.X * sx, e.Y * sy)));
-		poly.Add(new Vector2(-40f, view.Y + 10f));
+		poly.Add(new Vector2(-40f - view.X * 0.4f, view.Y + 10f));
 		st.WhitePanel.AddChild(new Polygon2D { Polygon = poly.ToArray(), Color = Colors.White });
 		Vector2[] edgeLine = Edge.Select(e => new Vector2(e.X * sx, e.Y * sy)).ToArray();
 		st.WhitePanel.AddChild(new Line2D { Points = edgeLine.Select(p => p + new Vector2(10f * k, 0f)).ToArray(), Width = 26f * k, DefaultColor = new Color(1f, 1f, 1f, 0.32f), JointMode = Line2D.LineJointMode.Round, Antialiased = true });
@@ -272,21 +282,11 @@ public static class SettingsSkin
 			screen.MoveChild(st.Top, back.GetIndex());
 		}
 		st.Undo.Add(() => { if (GodotObject.IsInstanceValid(st.Top)) st.Top.QueueFree(); });
-		st.Wipe = new Node2D { Visible = false };
+		st.WipeMat = new ShaderMaterial { Shader = Shaders.BlobWipe };
+		st.Wipe = new ColorRect { Material = st.WipeMat, MouseFilter = Control.MouseFilterEnum.Ignore, Visible = false };
+		st.Wipe.SetAnchorsPreset(Control.LayoutPreset.FullRect);
 		st.Top.AddChild(st.Wipe);
-		st.Wipe.AddChild(new Polygon2D { Polygon = Circle(1f, 64), Color = new Color(0.04f, 0.12f, 0.46f, 0.97f) });
-		st.Wipe.AddChild(new Line2D { Points = Circle(1f, 64), Closed = true, Width = 0.012f, DefaultColor = new Color(0.55f, 0.9f, 1f, 0.9f), Antialiased = true });
-		st.Splash = new Node2D { Visible = false };
-		st.Top.AddChild(st.Splash);
-		for (int i = 0; i < 30; i++)
-		{
-			float r = Fx.Rand(70f, 260f) * k;
-			Polygon2D blob = new() { Polygon = Circle(r, 28), Color = i % 3 == 0 ? new Color(1f, 1f, 1f, 0.95f) : new Color(0.55f, 0.88f, 1f, 0.92f) };
-			blob.SetMeta("y", Fx.Rand(-0.1f, 1.1f) * view.Y);
-			blob.SetMeta("d", Fx.Rand(0f, 0.12f));
-			blob.SetMeta("r", r);
-			st.Splash.AddChild(blob);
-		}
+		BuildSplash(st, view, k);
 
 		// 6. 每一行设置的样式（四个分页一起处理；之后新出现的行由 Tick 补）
 		StyleRows(st);
@@ -313,6 +313,10 @@ public static class SettingsSkin
 		st.Tabs.Clear();
 		st.Rows.Clear();
 		st.Styled.Clear();
+		st.Columns.Clear();
+		st.Blobs.Clear();
+		st.SplashRings.Clear();
+		st.WipeT0 = -1f;
 		st.On = false;
 		st.SrcValid = false;
 		st.Bar = null;
@@ -451,12 +455,16 @@ public static class SettingsSkin
 		st.Words.SetAnchorsPreset(Control.LayoutPreset.FullRect);
 		st.Screen.AddChild(st.Words);
 		st.Undo.Add(() => { if (GodotObject.IsInstanceValid(st.Words)) st.Words.QueueFree(); });
-		int fs = (int)(64f * k);
-		float[] zig = { 0f, 30f, 12f, -10f, 26f };
+		// v0.14.70（用户实机：挤在一起、压到右边面板）：P3R 菜单字大小不一、左右错开；整列放在人物和面板之间（x 0.355W 起），
+		// 选中放大 + 右端小旗也不超过面板左沿（面板 0.6W 起）；行距 = 字号 × 1.08（以前 0.86）
+		float[] sizes = { 70f, 58f, 64f, 56f, 60f };
+		float[] zig = { 0f, 34f, 14f, -8f, 30f };
+		float yCursor = 318f * k;
 		for (int i = 0; i < st.Tabs.Count; i++)
 		{
 			Tab t = st.Tabs[i];
 			int idx = i;
+			int fs = (int)(sizes[i % sizes.Length] * k);
 			t.Node = new Node2D { Rotation = -0.2f };
 			st.Words.AddChild(t.Node);
 			t.Sel = new Node2D { Modulate = new Color(1f, 1f, 1f, 0f) };
@@ -468,7 +476,7 @@ public static class SettingsSkin
 			Vector2[] flag = { new Vector2(w + 34f * k, y0 + h), new Vector2(w + 84f * k, y0 - fs * 0.62f), new Vector2(w + 70f * k, y0 + h * 0.2f) };
 			Fx.Poly(t.Sel, flag, White);
 			Fx.StrokeClosed(t.Sel, flag, Red, 3f * k, additive: false);
-			t.Shadow = Typo.Text(t.Node, t.En, Typo.Barlow, fs, new Color(0.02f, 0.10f, 0.40f, 0.45f), new Vector2(5f, 6f) * k);
+			t.Shadow = Typo.Text(t.Node, t.En, Typo.Barlow, fs, new Color(0.02f, 0.10f, 0.40f, 0.7f), new Vector2(5f, 6f) * k);
 			t.Text = Typo.Text(t.Node, t.En, Typo.Barlow, fs, Pale, Vector2.Zero);
 			t.Hit = new Control { Size = new Vector2(w + 12f * k, fs * 0.82f), Position = new Vector2(-4f * k, fs * 0.12f), MouseFilter = Control.MouseFilterEnum.Stop, MouseDefaultCursorShape = Control.CursorShape.PointingHand };
 			t.Node.AddChild(t.Hit);
@@ -486,8 +494,9 @@ public static class SettingsSkin
 					Choose(st, idx);
 				}
 			});
-			t.Node.SetMeta("x", (815f + zig[i % zig.Length]) * k);       // 人物轮廓右边的水里（同参考图，菜单字不压在白色上）
-			t.Node.SetMeta("y", (330f + i * fs * 0.86f / k) * k);
+			t.Node.SetMeta("x", view.X * 0.355f + zig[i % zig.Length] * k);
+			t.Node.SetMeta("y", yCursor);
+			yCursor += fs * 1.08f;
 		}
 	}
 
@@ -512,7 +521,7 @@ public static class SettingsSkin
 		}
 	}
 
-	/// <summary>点分页大字：深蓝圆从这个字涨出盖住内容区，盖满时换页，再退开（同 P3R 53.33s 的进子菜单）。</summary>
+	/// <summary>点分页大字：深蓝水团从这个字涌出盖满整屏，盖满时换页，再从中间撑开白边的洞露出新的一页（同 P3R 进子菜单，视频 1.57~1.83s）。</summary>
 	private static void Choose(State st, int idx)
 	{
 		if (idx == st.Current || st.WipeT0 >= 0f)
@@ -523,7 +532,9 @@ public static class SettingsSkin
 		st.WipeT0 = Now;
 		Tab t = st.Tabs[idx];
 		st.WipeAt = t.Text.GetGlobalRect().GetCenter();
+		st.WipeMat.SetShaderParameter("seed", Fx.Rand(0f, 6.28f));
 		Audio.Sfx.Clip("Btl_Ok", 0.5f);
+		Audio.Sfx.Clip("sys_blob", 0.6f);                         // 水团涌出的闷响，0.16~0.33s 的气泡声对齐洞撑开
 	}
 
 	private static void ApplyTab(State st, int idx)
@@ -807,28 +818,23 @@ public static class SettingsSkin
 			st.Current = idx;
 		}
 
-		// 入场
-		float splash = Mathf.Clamp(t / 0.55f, 0f, 1f);
-		st.Splash.Visible = splash < 1f;
+		// 入场（时间轴见类注释；视频第 12 帧 = 0s）
+		st.Splash.Visible = t < 1.4f;
 		if (st.Splash.Visible)
 		{
-			foreach (Node n in st.Splash.GetChildren())
-			{
-				Polygon2D b = (Polygon2D)n;
-				float dly = (float)b.GetMeta("d"), r = (float)b.GetMeta("r");
-				float u = Mathf.Clamp((t - dly) / 0.42f, 0f, 1f);
-				b.Position = new Vector2(Mathf.Lerp(view.X + r, -r - view.X * 0.1f, Ease.InOutCubic(u)), (float)b.GetMeta("y") + Mathf.Sin(u * 3f + r) * 30f * k);
-				b.Scale = Vector2.One * (0.6f + 0.6f * Mathf.Sin(Mathf.Pi * u));
-			}
+			Splash(st, view, k, t);
 		}
-		float ePanel = Ease.OutCubic(Mathf.Clamp((t - 0.12f) / 0.4f, 0f, 1f));
-		st.WhitePanel.Position = new Vector2(-260f * k * (1f - ePanel), 0f);
-		st.SystemWord.Modulate = new Color(1f, 1f, 1f, ePanel);
-		st.SystemWord.Position = new Vector2(-34f * k, view.Y + 40f * k + 140f * k * (1f - ePanel));
-		float ePor = Ease.OutCubic(Mathf.Clamp((t - 0.2f) / 0.6f, 0f, 1f));
-		st.Portrait.Position = new Vector2(0f, -120f * k * (1f - ePor) + Mathf.Sin(now * 0.6f) * 6f * k);
-		st.Portrait.Modulate = new Color(1f, 1f, 1f, ePor);
-		float eContent = Ease.OutCubic(Mathf.Clamp((t - 0.35f) / 0.35f, 0f, 1f));
+		float show = Mathf.Clamp((t - 0.24f) / 0.06f, 0f, 1f);       // 水团盖满之前，下面露出的还是打开前的画面
+		st.Root.Modulate = new Color(1f, 1f, 1f, show);
+		st.Words.Modulate = new Color(1f, 1f, 1f, show);
+		// 人物连同白色部分从左上方斜着沉入（0.28~0.64s，减速停稳）；待机只往下轻轻浮动（往上浮会在画面底边露出一条白缝 —— v0.14.69 实机）
+		float eDive = Ease.OutCubic(Mathf.Clamp((t - 0.28f) / 0.36f, 0f, 1f));
+		Vector2 dive = new Vector2(-0.30f * view.X, -0.62f * view.Y) * (1f - eDive);
+		st.WhitePanel.Position = dive;
+		st.Portrait.Position = dive + new Vector2(0f, (1f - Mathf.Cos(now * 0.6f)) * 3f * k);
+		float eWord = Ease.OutCubic(Mathf.Clamp((t - 0.34f) / 0.3f, 0f, 1f));
+		st.SystemWord.Position = new Vector2(-34f * k - 320f * k * (1f - eWord), view.Y + 40f * k);
+		float eContent = Ease.OutCubic(Mathf.Clamp((t - 0.5f) / 0.3f, 0f, 1f));
 		st.Scroll.Modulate = new Color(st.OrigModulate, st.OrigModulate.A * eContent);
 
 		// 眨眼：每 3~6 秒一次（半睁 0.05s → 闭 0.09s → 半睁 0.05s）
@@ -850,22 +856,25 @@ public static class SettingsSkin
 			}
 		}
 
-		// 气泡上浮
+		// 待机气泡上浮（左右晃、轻微变形）；入场水花退掉以后才出现
+		float idle = Mathf.Clamp((t - 0.6f) / 0.5f, 0f, 1f);
 		foreach (Node n in st.Bubbles.GetChildren())
 		{
-			Sprite2D b = (Sprite2D)n;
-			float v = (float)b.GetMeta("v"), ph = (float)b.GetMeta("p"), s = (float)b.GetMeta("s");
-			Vector2 p = b.Position + new Vector2(Mathf.Sin(now * 1.2f + ph) * 10f * dt, -v * dt);
-			if (p.Y < -20f)
+			Node2D b = (Node2D)n;
+			float v = (float)b.GetMeta("v"), ph = (float)b.GetMeta("p");
+			Vector2 p = b.Position + new Vector2(Mathf.Sin(now * 2.1f + ph) * 16f * k * dt, -v * dt);
+			if (p.Y < -30f * k)
 			{
-				p = new Vector2(Fx.Rand(0.42f, 1f) * view.X, view.Y + 20f);
+				IdleRespawn(b, view, k, view.Y + 30f * k);
+				continue;
 			}
 			b.Position = p;
-			b.Scale = Vector2.One * s;
-			b.Modulate = new Color(0.7f, 0.95f, 1f, 0.45f * Mathf.Clamp(p.Y / view.Y * 2f, 0f, 1f));
+			float w = Mathf.Sin(now * 5f + ph) * 0.07f;
+			b.Scale = new Vector2(1f + w, 1f - w);
+			b.Modulate = new Color(1f, 1f, 1f, 0.6f * idle * Mathf.Clamp(p.Y / (view.Y * 0.25f), 0f, 1f));
 		}
 
-		LayoutContent(st, view, k);
+		LayoutContent(st, view, k, 80f * k * (1f - eContent));
 		Words(st, view, k, t, dt, now);
 		Wipe(st, view, k, now);
 		Rows(st, k, dt);
@@ -885,7 +894,7 @@ public static class SettingsSkin
 	/// 同时把滚动区加高，让缩放后可见区域一直到目标框底边（否则缩小后下面一截空着）。每帧对齐（游戏改了它也拉回来）。
 	/// 面板背景（滚动区局部坐标，跟着缩放）：斜切深蓝底、青色上沿、红色下沿、页名标题、超大水印字。
 	/// </summary>
-	private static void LayoutContent(State st, Vector2 view, float k)
+	private static void LayoutContent(State st, Vector2 view, float k, float slide)
 	{
 		Control sc = st.Scroll;
 		if (!st.SrcValid)
@@ -924,9 +933,10 @@ public static class SettingsSkin
 			DumpTree(st.Screen);
 		}
 		Rect2 src = st.Src;
-		Rect2 target = new(new Vector2(view.X * 0.565f, view.Y * 0.165f), new Vector2(view.X * 0.415f, view.Y * 0.745f));
+		// v0.14.70：面板往右收（0.565W → 0.6W），左边整列菜单字不再压到面板上
+		Rect2 target = new(new Vector2(view.X * 0.6f, view.Y * 0.165f), new Vector2(view.X * 0.38f, view.Y * 0.745f));
 		float s = Mathf.Clamp(target.Size.X / src.Size.X, 0.5f, 0.85f);
-		Vector2 pos = target.Position - src.Position * s;
+		Vector2 pos = target.Position - src.Position * s + new Vector2(slide, 0f);
 		Vector2 size = new(st.OrigSize.X, Mathf.Max(st.OrigSize.Y, (target.End.Y - pos.Y) / s));
 		if (!sc.PivotOffset.IsEqualApprox(Vector2.Zero)) sc.PivotOffset = Vector2.Zero;
 		if (!sc.Scale.IsEqualApprox(Vector2.One * s)) sc.Scale = Vector2.One * s;
@@ -987,16 +997,18 @@ public static class SettingsSkin
 			bool sel = i == (st.WipeT0 >= 0f && st.Pending >= 0 ? st.Pending : st.Current);
 			w.SelK = Mathf.MoveToward(w.SelK, sel ? 1f : 0f, dt / 0.14f);
 			w.Hover = Mathf.MoveToward(w.Hover, w.Mouse && !sel ? 1f : 0f, dt / 0.1f);
-			float e = Ease.OutCubic(Mathf.Clamp((t - 0.22f - i * 0.05f) / 0.35f, 0f, 1f));
-			float sk = Ease.OutBack(w.SelK) , hv = Ease.OutCubic(w.Hover);
+			// 0.46s 起依次浮现（先是半透明的浅色残影，再变实）；红色选中条 0.72s 才从左往右展开（同视频 1.10s 那几帧）
+			float e = Ease.OutCubic(Mathf.Clamp((t - 0.46f - i * 0.04f) / 0.3f, 0f, 1f));
+			float gate = Ease.OutCubic(Mathf.Clamp((t - 0.72f) / 0.14f, 0f, 1f));
+			float sk = Ease.OutBack(w.SelK) * gate, hv = Ease.OutCubic(w.Hover);
 			float x = (float)w.Node.GetMeta("x"), y = (float)w.Node.GetMeta("y");
-			w.Node.Position = new Vector2(x + 180f * k * (1f - e) + 12f * k * hv + 10f * k * w.SelK, y);
-			w.Node.Modulate = new Color(1f, 1f, 1f, e);
-			w.Node.Scale = Vector2.One * (1f + 0.1f * w.SelK);
+			w.Node.Position = new Vector2(x + 50f * k * (1f - e) + 12f * k * hv + 10f * k * w.SelK * gate, y - 16f * k * (1f - e));
+			w.Node.Modulate = new Color(1f, 1f, 1f, e * e);
+			w.Node.Scale = Vector2.One * (1f + 0.1f * w.SelK * gate);
 			w.Sel.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(sk, 0f, 1f));
 			w.Sel.Scale = new Vector2(Mathf.Clamp(sk, 0.01f, 1.2f), 1f);
-			w.Text.LabelSettings.FontColor = Pale.Lerp(Colors.White, hv).Lerp(Ink, w.SelK);
-			w.Shadow.LabelSettings.FontColor = new Color(0.02f, 0.10f, 0.40f, 0.45f).Lerp(new Color(1f, 1f, 1f, 0.95f), w.SelK);
+			w.Text.LabelSettings.FontColor = Pale.Lerp(Colors.White, hv).Lerp(Ink, w.SelK * gate);
+			w.Shadow.LabelSettings.FontColor = new Color(0.02f, 0.10f, 0.40f, 0.7f).Lerp(new Color(1f, 1f, 1f, 0.95f), w.SelK * gate);
 		}
 	}
 
@@ -1008,11 +1020,18 @@ public static class SettingsSkin
 			return;
 		}
 		float u = now - st.WipeT0;
-		float full = new Vector2(view.X, view.Y).Length();
-		float r;
-		if (u < 0.24f)
+		// 盖满需要的半径：到最远的角，再除以边缘起伏的最小值（0.82）
+		float far = 0f;
+		foreach (Vector2 c in new[] { Vector2.Zero, new Vector2(view.X, 0f), new Vector2(0f, view.Y), view })
 		{
-			r = full * 0.75f * Ease.InCubic(u / 0.24f);
+			far = Mathf.Max(far, c.DistanceTo(st.WipeAt));
+		}
+		float full = far / 0.82f;
+		const float Grow = 0.2f, Hold = 0.04f, Open = 0.3f;
+		float rOut, rIn = 0f;
+		if (u < Grow)
+		{
+			rOut = full * Ease.InOutCubic(u / Grow);
 		}
 		else
 		{
@@ -1020,11 +1039,10 @@ public static class SettingsSkin
 			{
 				ApplyTab(st, st.Pending);                        // 盖满的那一刻换页
 				st.Pending = -1;
-				Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.3f);
 			}
-			float v = Mathf.Clamp((u - 0.24f) / 0.3f, 0f, 1f);
-			r = full * 0.75f * (1f + 0.35f * Ease.OutCubic(v));
-			st.Wipe.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(v));
+			rOut = full * 1.05f;
+			float v = Mathf.Clamp((u - Grow - Hold) / Open, 0f, 1f);
+			rIn = full * 1.1f * Ease.InOutCubic(v);
 			if (v >= 1f)
 			{
 				st.WipeT0 = -1f;
@@ -1032,13 +1050,12 @@ public static class SettingsSkin
 				return;
 			}
 		}
-		if (u < 0.24f)
-		{
-			st.Wipe.Modulate = Colors.White;
-		}
 		st.Wipe.Visible = true;
-		st.Wipe.Position = st.WipeAt;
-		st.Wipe.Scale = Vector2.One * Mathf.Max(r, 1f);
+		st.WipeMat.SetShaderParameter("center", st.WipeAt);
+		st.WipeMat.SetShaderParameter("size", view);
+		st.WipeMat.SetShaderParameter("r_out", rOut);
+		st.WipeMat.SetShaderParameter("r_in", rIn);
+		st.WipeMat.SetShaderParameter("rim", 7f * k);
 	}
 
 	private static void Rows(State st, float k, float dt)
@@ -1135,6 +1152,171 @@ public static class SettingsSkin
 					Fx.Stroke(box, new[] { c0 + new Vector2(-h * 0.55f, 0f), c0 + new Vector2(-h * 0.1f, h * 0.5f), c0 + new Vector2(h * 0.7f, -h * 0.6f) }, Colors.White, 4f, additive: false);
 				}
 			}
+		}
+	}
+
+	// ── 气泡 / 入场水花 ──
+
+	/// <summary>P3R 的气泡：空心圈（细描边）+ 左上一个高光点；filled = 实心浅青团。点按真实半径建（不用缩放，描边才不会糊）。</summary>
+	private static Node2D Ring(Node parent, float r, bool filled)
+	{
+		Node2D b = new();
+		if (filled)
+		{
+			b.AddChild(new Polygon2D { Polygon = Circle(r, 16), Color = new Color(0.62f, 0.9f, 1f, 0.75f), Antialiased = true });
+		}
+		b.AddChild(new Line2D { Points = Circle(r, 18), Closed = true, Width = Mathf.Max(1.5f, r * 0.16f), DefaultColor = new Color(0.72f, 0.95f, 1f, 0.95f), Antialiased = true });
+		b.AddChild(new Polygon2D { Polygon = Circle(Mathf.Max(1.2f, r * 0.22f), 8), Position = new Vector2(-0.4f, -0.4f) * r, Color = new Color(1f, 1f, 1f, 0.95f), Antialiased = true });
+		parent.AddChild(b);
+		return b;
+	}
+
+	/// <summary>待机气泡重生：六成从人物轮廓右边一点（人物吐出来的气泡串），四成在右半屏随机。</summary>
+	private static void IdleRespawn(Node2D b, Vector2 view, float k, float y)
+	{
+		float sx = view.Y * 16f / 9f / 1920f;
+		float x;
+		if (Fx.Rand(0f, 1f) < 0.6f)
+		{
+			Vector2 e = Edge[(int)Fx.Rand(5f, 9.99f)];
+			x = e.X * sx + Fx.Rand(10f, 70f) * k;
+		}
+		else
+		{
+			x = Fx.Rand(0.45f, 0.98f) * view.X;
+		}
+		b.Position = new Vector2(x, y);
+		b.SetMeta("v", Fx.Rand(40f, 95f) * k);
+		b.SetMeta("p", Fx.Rand(0f, 6.28f));
+	}
+
+	private static void BuildSplash(State st, Vector2 view, float k)
+	{
+		st.Splash = new Node2D { Visible = false };
+		st.Top.AddChild(st.Splash);
+		st.Mass = new Polygon2D { Color = new Color(0.06f, 0.24f, 0.80f), Antialiased = true };
+		st.Splash.AddChild(st.Mass);
+		// 浅青锯齿水柱（从上边往下长，之后往上缩回）：x（屏宽比例）、顶宽、最长（屏高比例）；视频里是少数几根很宽、边缘起伏的
+		(float X, float W, float L)[] cols = { (0.2f, 260f, 0.92f), (0.35f, 140f, 0.62f), (0.5f, 330f, 1.02f), (0.64f, 180f, 0.78f), (0.78f, 280f, 0.88f), (0.92f, 120f, 0.55f) };
+		for (int i = 0; i < cols.Length; i++)
+		{
+			Polygon2D c = new() { Color = new Color(0.64f, 0.9f, 1f, 0.97f), Antialiased = true };
+			c.SetMeta("x", cols[i].X * view.X);
+			c.SetMeta("w", cols[i].W * k);
+			c.SetMeta("l", cols[i].L * view.Y);
+			c.SetMeta("d", 0.05f + i % 3 * 0.03f);
+			c.SetMeta("s", Fx.Rand(0f, 6.28f));
+			float[] jag = new float[16];
+			for (int j = 0; j < jag.Length; j++)
+			{
+				jag[j] = Fx.Rand(0.55f, 1.08f);                     // 每个点固定的凹凸，边缘不规则
+			}
+			c.SetMeta("j", jag);
+			st.Splash.AddChild(c);
+			st.Columns.Add(c);
+		}
+		// 0s 顶部中间炸开的浅青水花团（形状不规则）
+		Vector2 o = new(view.X * 0.52f, view.Y * 0.16f);
+		for (int i = 0; i < 14; i++)
+		{
+			float r = Fx.Rand(40f, 120f) * k, sd = Fx.Rand(0f, 6.28f);
+			Vector2[] pts = new Vector2[20];
+			for (int j = 0; j < pts.Length; j++)
+			{
+				float a = Mathf.Tau * j / pts.Length;
+				pts[j] = new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r * (1f + 0.16f * Mathf.Sin(a * 3f + sd) + 0.08f * Mathf.Sin(a * 5f - sd));
+			}
+			Polygon2D b = new() { Polygon = pts, Color = i % 4 == 0 ? new Color(0.92f, 0.99f, 1f) : new Color(0.62f, 0.89f, 1f), Antialiased = true };
+			Vector2 p0 = o + new Vector2(Fx.Rand(-0.12f, 0.12f) * view.X, Fx.Rand(-0.08f, 0.14f) * view.Y);
+			b.SetMeta("p", p0);
+			b.SetMeta("v", (p0 - o).Normalized() * Fx.Rand(500f, 1300f) * k + new Vector2(0f, Fx.Rand(-200f, 300f) * k));
+			st.Splash.AddChild(b);
+			st.Blobs.Add(b);
+		}
+		// 往上冒的气泡（空心为主，三分之一实心）
+		for (int i = 0; i < 34; i++)
+		{
+			Node2D b = Ring(st.Splash, Fx.Rand(6f, 28f) * k, i % 3 == 0);
+			b.SetMeta("t", Fx.Rand(0.04f, 0.5f));
+			b.SetMeta("p", new Vector2(Fx.Rand(0.08f, 0.95f) * view.X, Fx.Rand(0.35f, 1.05f) * view.Y));
+			b.SetMeta("v", Fx.Rand(260f, 620f) * k);
+			b.SetMeta("w", Fx.Rand(0f, 6.28f));
+			st.SplashRings.Add(b);
+		}
+	}
+
+	private static void Splash(State st, Vector2 view, float k, float t)
+	{
+		float cx = view.X * 0.52f;
+		// 深蓝水团：V 形往下冲、越来越宽，0.30s 盖满整屏，0.30~0.52s 变透明露出水下背景
+		float e = Ease.OutCubic(Mathf.Clamp((t - 0.03f) / 0.27f, 0f, 1f));
+		float half = view.X * (0.16f + 0.92f * e), tip = view.Y * (0.30f + 1.35f * e);
+		const int N = 14;
+		Vector2[] mass = new Vector2[N * 2 + 1];
+		for (int i = 0; i <= N; i++)
+		{
+			float s = (float)i / N, y = -30f + (tip + 30f) * s, wob = Mathf.Sin(s * 11f + t * 9f) * 16f * k * (1f - s * 0.5f);
+			mass[i] = new Vector2(cx - half * Mathf.Pow(1f - s, 0.75f) + wob, y);
+			if (i < N)
+			{
+				float wob2 = Mathf.Sin(s * 13f - t * 8f + 2f) * 16f * k * (1f - s * 0.5f);
+				mass[N * 2 - i] = new Vector2(cx + half * Mathf.Pow(1f - s, 0.75f) + wob2, y);
+			}
+		}
+		st.Mass.Polygon = mass;
+		st.Mass.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InOutCubic(Mathf.Clamp((t - 0.30f) / 0.22f, 0f, 1f)));
+
+		// 水柱：往下长（0.25s），0.36s 起往上缩回、变淡，0.6s 前收干净（不挡人物和菜单字）
+		for (int i = 0; i < st.Columns.Count; i++)
+		{
+			Polygon2D c = st.Columns[i];
+			float x = (float)c.GetMeta("x"), w = (float)c.GetMeta("w"), lmax = (float)c.GetMeta("l"), d = (float)c.GetMeta("d"), sd = (float)c.GetMeta("s");
+			float grow = Ease.OutCubic(Mathf.Clamp((t - d) / 0.25f, 0f, 1f));
+			float back = Ease.InOutCubic(Mathf.Clamp((t - 0.36f - i * 0.015f) / 0.2f, 0f, 1f));
+			float len = lmax * grow * (1f - back);
+			c.Visible = len > 4f;
+			if (!c.Visible)
+			{
+				continue;
+			}
+			const int M = 8;
+			float[] jag = (float[])c.GetMeta("j");
+			Vector2[] pts = new Vector2[M * 2 + 1];
+			for (int j = 0; j < M; j++)
+			{
+				float s = (float)j / M, hw = w * 0.5f * Mathf.Pow(1f - s, 0.7f);
+				float y = -30f + (len + 30f) * s;
+				pts[j] = new Vector2(x - hw * jag[j] + Mathf.Sin(s * 9f + sd + t * 6f) * 12f * k, y);
+				pts[M * 2 - j] = new Vector2(x + hw * jag[j + M] + Mathf.Sin(s * 8f + sd * 1.7f - t * 5f) * 12f * k, y);
+			}
+			pts[M] = new Vector2(x + Mathf.Sin(sd) * 20f * k, len);
+			c.Polygon = pts;
+			c.Modulate = new Color(1f, 1f, 1f, 1f - back * back);
+		}
+
+		// 水花团：0~0.34s 往外飞、变大、淡出
+		foreach (Polygon2D b in st.Blobs)
+		{
+			float u = Mathf.Clamp(t / 0.34f, 0f, 1f);
+			b.Visible = u < 1f;
+			b.Position = (Vector2)b.GetMeta("p") + (Vector2)b.GetMeta("v") * 0.34f * Ease.OutCubic(u) * 0.6f;
+			b.Scale = Vector2.One * (0.5f + 0.7f * Ease.OutCubic(u));
+			b.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(u));
+		}
+
+		// 气泡：各自的出生时刻起 0.8s，往上冲（越来越慢）、左右晃
+		foreach (Node2D b in st.SplashRings)
+		{
+			float u = (t - (float)b.GetMeta("t")) / 0.8f;
+			b.Visible = u > 0f && u < 1f;
+			if (!b.Visible)
+			{
+				continue;
+			}
+			Vector2 p0 = (Vector2)b.GetMeta("p");
+			float v = (float)b.GetMeta("v"), w = (float)b.GetMeta("w");
+			b.Position = p0 + new Vector2(Mathf.Sin(u * 9f + w) * 10f * k, -v * 0.8f * (u - 0.35f * u * u));
+			b.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, u / 0.08f) * (1f - Mathf.Clamp((u - 0.6f) / 0.4f, 0f, 1f)));
 		}
 	}
 
