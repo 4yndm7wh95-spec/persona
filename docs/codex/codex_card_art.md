@@ -218,7 +218,7 @@
 - 第 5 批：particle_wall, plot, pillar_of_creation, prophesize, quasar, radiate, reflect, resonance, royal_gamble, shining_strike, spectrum_shift, stardust, summon_forth, supermassive
 - 第 6 批：terraforming, arsenal, beat_into_shape, bombardment, bundle_of_joy, comet, crash_landing, decisions_decisions, dying_star, foregone_conclusion, genesis, guards, hammer_time, heavenly_drill
 - 第 7 批：heirloom_hammer, i_am_invincible, make_it_so, monarchs_gaze, neutron_aegis, royalties, seeking_edge, seven_stars, sword_sage, tutor, void_form, meteor_shower, the_sealed_throne, reserves, royal_corona
-- 第 2 批起：先打开 <repo>\art\cards\README.md 看第 1 批用户 / Claude 的反馈（如果有"画风调整"一节，按那一节改提示词），画风和第 1 批选定的图保持一致（把第 1 批选定的 2~3 张一起作为风格参考图）。
+- 第 2 批起：先打开 <repo>\art\cards\v3\README.md 看第 1 批用户 / Claude 的反馈（如果有"画风调整"一节，按那一节改提示词），画风和第 1 批选定的图保持一致（把第 1 批选定的 2~3 张一起作为风格参考图）。
 
 【9. 提交与推送】
 1. 只 add 这个目录：
