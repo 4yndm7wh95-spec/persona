@@ -28,6 +28,7 @@ public static class CardFrameSkin
 	private static readonly AccessTools.FieldRef<NCard, TextureRect> Banner = AccessTools.FieldRefAccess<NCard, TextureRect>("_banner");
 	private static readonly AccessTools.FieldRef<NCard, NinePatchRect> Plaque = AccessTools.FieldRefAccess<NCard, NinePatchRect>("_typePlaque");
 	private static readonly AccessTools.FieldRef<NCard, TextureRect> Portrait = AccessTools.FieldRefAccess<NCard, TextureRect>("_portrait");
+	private static readonly AccessTools.FieldRef<NCard, Label> Title = AccessTools.FieldRefAccess<NCard, Label>("_titleLabel");
 
 	private static readonly Dictionary<string, Texture2D?> Cache = new();
 	private static Texture2D? _vanillaPlaque;
@@ -98,6 +99,7 @@ public static class CardFrameSkin
 			{
 				tab.Visible = false;
 			}
+			TitleStyle(card, null);
 			return;
 		}
 
@@ -119,6 +121,7 @@ public static class CardFrameSkin
 			Portrait(card).Texture = art;
 		}
 
+		TitleStyle(card, m);
 		tab ??= MakeTab(card);
 		tab.Visible = Arcana.ContainsKey(id);
 		if (tab.Visible)
@@ -128,6 +131,59 @@ public static class CardFrameSkin
 			// 升级后数字变金（塔罗的"正位"觉醒）
 			num.AddThemeColorOverride("font_color", m.IsUpgraded ? new Color(1f, 0.86f, 0.5f) : Colors.White);
 		}
+	}
+
+	private static Font? _titleZh, _titleZht;
+
+	/// <summary>
+	/// 卡名（用户：原来的字体丑）：像塔罗牌的铭牌 —— 金属横幅上刻出来的深色衬线字，不要原版的粗描边。
+	/// 中文用游戏自带的思源宋体（fonts/zhs、zht），其他语言用 Cinzel（缺字回退到原字体）；升级后的卡沿用原版"绿色"的约定，用深绿。
+	/// NCard 复用给别的卡时（m = null）还原原版的字体、颜色、描边、阴影。
+	/// </summary>
+	private static void TitleStyle(NCard card, CardModel? m)
+	{
+		Label t = Title(card);
+		if (m == null)
+		{
+			if (t.HasMeta("p3_font"))
+			{
+				t.AddThemeFontOverride("font", t.GetMeta("p3_font").As<Font>());
+				t.AddThemeColorOverride("font_shadow_color", t.GetMeta("p3_shadow").AsColor());
+				t.AddThemeConstantOverride("outline_size", t.GetMeta("p3_outline").AsInt32());
+				t.AddThemeConstantOverride("shadow_outline_size", t.GetMeta("p3_shadow_outline").AsInt32());
+				t.AddThemeConstantOverride("shadow_offset_x", t.GetMeta("p3_sx").AsInt32());
+				t.AddThemeConstantOverride("shadow_offset_y", t.GetMeta("p3_sy").AsInt32());
+				t.RemoveMeta("p3_font");
+			}
+			return;
+		}
+		if (!t.HasMeta("p3_font"))
+		{
+			Font orig = t.GetThemeFont("font");
+			t.SetMeta("p3_font", orig);
+			t.SetMeta("p3_shadow", t.GetThemeColor("font_shadow_color"));
+			t.SetMeta("p3_outline", t.GetThemeConstant("outline_size"));
+			t.SetMeta("p3_shadow_outline", t.GetThemeConstant("shadow_outline_size"));
+			t.SetMeta("p3_sx", t.GetThemeConstant("shadow_offset_x"));
+			t.SetMeta("p3_sy", t.GetThemeConstant("shadow_offset_y"));
+			string loc = TranslationServer.GetLocale().ToLowerInvariant();
+			bool zht = loc.StartsWith("zh") && (loc.Contains("tw") || loc.Contains("hk") || loc.Contains("hant") || loc.Contains("zht"));
+			string path = zht ? "res://fonts/zht/SourceHanSerifTC-Bold.otf" : "res://fonts/zhs/SourceHanSerifSC-Bold.otf";
+			Font? serif = null;
+			if (loc.StartsWith("zh") && ResourceLoader.Exists(path))
+			{
+				serif = zht ? (_titleZht ??= ResourceLoader.Load<Font>(path)) : (_titleZh ??= ResourceLoader.Load<Font>(path));
+			}
+			Font baseFont = serif ?? Typo.Cinzel;
+			t.AddThemeFontOverride("font", new FontVariation { BaseFont = baseFont, SpacingGlyph = serif != null ? 2 : 1, Fallbacks = new Godot.Collections.Array<Font> { orig } });
+			t.AddThemeConstantOverride("outline_size", 0);
+			t.AddThemeConstantOverride("shadow_outline_size", 0);
+			t.AddThemeConstantOverride("shadow_offset_x", 0);
+			t.AddThemeConstantOverride("shadow_offset_y", 1);
+			t.AddThemeColorOverride("font_shadow_color", new Color(1f, 1f, 1f, 0.55f));   // 浅色压印：字像刻进金属里
+		}
+		Color ink = m.IsUpgraded ? new Color(0.04f, 0.3f, 0.18f) : m.Rarity == CardRarity.Rare ? new Color(0.24f, 0.17f, 0.04f) : new Color(0.07f, 0.14f, 0.24f);
+		t.AddThemeColorOverride("font_color", ink);
 	}
 
 	/// <summary>卡框下沿正中的数字牌：场景坐标 (-42, 183) ~ (42, 215)，和 tools/ui/card_compose.py 的 "arcana" 一致。</summary>
@@ -158,6 +214,13 @@ public static class CardFrameSkin
 /// <summary>原版 NCard.Reload 设完卡框 / 横幅 / 标签之后换成塔罗卡框（UpdatePortrait 单独被调用时也会重设卡框和横幅，一起补上）。</summary>
 [HarmonyPatch(typeof(NCard), "Reload")]
 public static class CardFrameReloadPatch
+{
+	public static void Postfix(NCard __instance) => ModEntry.Safe("card frame", () => CardFrameSkin.Apply(__instance));
+}
+
+/// <summary>原版 UpdateTitleLabel 每次都把卡名颜色设回奶油色 / 绿色，之后再上一次我们的颜色。</summary>
+[HarmonyPatch(typeof(NCard), "UpdateTitleLabel")]
+public static class CardFrameTitlePatch
 {
 	public static void Postfix(NCard __instance) => ModEntry.Safe("card frame", () => CardFrameSkin.Apply(__instance));
 }

@@ -1591,6 +1591,7 @@ Grand.cs 里其余函数暂时保留不用。
 - 卡框照 P3R 原版阿卡纳牌（art/p3r_tex/shuffle/T_FX_Arcana_01_Col.png）由 imagegen 画（docs/codex/codex_card_frame_art.md），tools/ui/frame_postprocess.py 对齐到原版小图的准确形状。
 - 游戏里（mod/src/Scenes/CardFrameSkin.cs）：NCard.Reload / UpdatePortrait 之后换掉卡框（按类型）、横幅 / 卡图边框 / 类型标签（按稀有度：银白 / 冰蓝 / 暗金），去掉原版 hsv 上色材质；
   卡框下沿加阿卡纳罗马数字牌（Cinzel，升级后变金）；有重绘卡图的卡换卡图（p3makoto/cards/，目前 6 张）。只作用于储君卡池的普通 / 罕见 / 稀有卡；设置里可关。
+- v0.14.82（用户：卡名字体丑）：卡名改成刻在横幅上的深色衬线字（中文用游戏自带思源宋体，其他语言 Cinzel），浅色 1px 压印、去掉原版粗描边；升级后深绿。
 - 预览：tools/ui/card_compose.py（按 card.tscn 拼卡，--vanilla 和游戏截图对过）、tools/ui/card_frame_preview.py；真 Godot 渲染核对过 AtlasTexture margin、九宫格和字体。
 
 ## 待办（用户实机反馈，先记录）
