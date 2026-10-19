@@ -257,3 +257,9 @@ Makoto rear-facing at horizontal anvil, original reference action with RIGHT han
 
 - 第 1 批定稿的画风通过：干净的斜切大色块背景 + 一个大的 P3R 元素。第 2 批起把 strike_regent、defend_regent、tyranny、the_smith 四张选定图一起作为风格参考。
 - 避免 93 张全是一个蓝：按卡的类型给背景加一种第二色（只占一块斜切色带的面积）：攻击 = 原版的红 / 品红；技能 = 青 / 冰白；能力 = 影时间的黄绿月亮或墨绿。原版主色仍保留在主体特效上。
+
+## 用户反馈（第 1 批）
+
+- venerate：原版下方是储君的两个**仆从**在膜拜，不是一双手 —— 和卡牌逻辑不符，第 2 批开头补做。
+- black_hole：怪物只是把原图换了配色（"就是给原图套了个滤镜"），要重新设计成 P3R 暗影，第 2 批开头补做。
+- 规则已写进 docs/codex/codex_card_art.md【3】：仆从 → 人格面具；敌人必须重新设计。

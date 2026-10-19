@@ -64,6 +64,11 @@
   - Thanatos：a towering black reaper-like guardian spirit with a pale skull-like mask, a ring of chained black coffins floating behind its back, a long sword；
   - Messiah：a radiant white winged guardian spirit with a coffin-shaped halo-like frame behind it。
 - 敌人 / 小怪 → P3R 的 Shadow（暗影）：黑色黏稠的团块 / 伸出很多黑手，脸上戴着蓝色的阿卡纳面具。
+  **必须重新设计**：只保留原版怪物在画面里的位置、大小和动作，不能沿用原版怪物的轮廓、眼睛、触手、配色（v3 黑洞被用户指出"就是给原图套了个滤镜"）。
+- **原版储君的仆从**（棕色、木纹 / 陶土质感、圆滚滚的小人或巨大的手臂；出现在崇拜、护驾、暗淡蓝点、战利品、征召上前、慷慨捐助、新生之喜等卡）→ 结城理的**人格面具**（仆从 = 为他而战的面具，对应关系最自然）：
+  - 小的仆从 → 小人格面具（用描述，不写名字）：雪人小妖精 a small snowman-like imp with a blue jester hat and a big grin；小仙子 a tiny fairy with blue wings in a leotard；南瓜灯小妖精 a small pumpkin-headed lantern imp with a cape；
+  - 大的仆从 → Orpheus / Thanatos。
+  - 画之前先看清原版里哪个是储君、哪个是仆从：储君 = 戴尖帽的斗篷身影 / 他的金棕色护手；仆从 = 棕色圆滚滚、没有尖帽的小人。仆从不能画成理的手。
 - 场景元素（只在【5】里这张卡写到时才用，不要额外加）：塔尔塔罗斯（Tartarus，高耸的扭曲高塔）、影时间（墨绿色天空、诡异的大月亮、立着的黑色棺材）、天鹅绒房间（深蓝色的房间、蓝色天鹅绒）、塔罗牌、钟表、月相。
 - 不要：文字、字母、数字、水印、签名、UI、卡框、边框（卡框由游戏画，图要满版出血）。
 
@@ -84,7 +89,7 @@
 - strike_regent | 0 愚者 | 斜向的发光短剑 + 三道剑光，从左上劈向右下 | 剑换成理的单手直剑（细长、单刃），金白色剑光保留，背景深蓝 + 一道红色斜切色带，碎玻璃片飞散。
 - defend_regent | 0 愚者 | 储君躲在左边，一块巨大的石板盾挡住右边射来的三道光 | 理侧身举起一面由蓝色碎玻璃 / 塔罗牌拼成的巨大护盾，挡住三道光；石板的木纹换成玻璃裂纹。
 - falling_star | XVII 星星 | 储君在左边伸手，右边一团砸下来的火焰陨星和碎石 | 理在左边抬手，召唤器碎片环绕；右边橙色陨星（保留火焰橙）砸进地面，碎石变成蓝色玻璃碎块。
-- venerate | V 教皇 | 下方左右两只手捧着，中间一串星座连线和两颗四角星 | 两只手换成理的手，星座保留；背景加一张半透明的教皇塔罗牌剪影和几只蓝蝴蝶。
+- venerate | V 教皇 | 下方左右两个**储君的仆从**（棕色圆滚滚的小人，从背后看、低头膜拜），中间一串星座连线和两颗四角星 | 两个仆从换成两个小人格面具，也是从背后看、低头 / 举手膜拜（左：雪人小妖精；右：小仙子），星座和两颗星保留。**不是一双手**。
 
 **普通**
 - astral_pulse | XVIII 月亮 | 前景一大片粉色星球弧面，后面一个怪物 | 前景换成巨大的月面弧（冷白 / 青），后面是戴蓝面具的暗影被冲击波震开。
@@ -104,13 +109,13 @@
 - photon_cut | I 魔术师 | 一把长刀横向切开，切出一团黄光，刀刃上方有一块肉块状的敌人 | 理的单手直剑横向切出黄白色光弧，被切开的是暗影。
 - refine_blade | XIV 节制 | 储君双手捧着一把剑横放，剑身被锤打发光 | 理的手横捧一把剑，剑身中段亮起青色光，蓝色火星飞溅。
 - solar_strike | XIX 太阳 | 左边一团被太阳光灼烧的敌人，右上一大片红白色的太阳弧 | 右上巨大的太阳弧保留（橙红），左边暗影被灼烧；像 P3R 火系技能的演出。
-- spoils_of_battle | VII 战车 | 两只手捧着一团蓝色宝物，中间一把剑插下 | 理的两只手捧着一团蓝色玻璃宝珠，中间插着一把发光的剑。
+- spoils_of_battle | VII 战车 | 左右两个仆从抱着中间一团蓝色宝物，一把剑插下 | 左右两个小人格面具抱着中间一团蓝色宝物，一把发光的剑插下。
 - wrought_in_war | VII 战车 | 储君握着一把蓝色大剑向左斜刺，红色背景 | 理双手握剑向左斜刺，剑身是蓝色玻璃质感，红色只留在剑光边缘。
 - begone | XIII 死神 | 储君在左边伸手，一个敌人被打成碎片 | 理伸手，对面的暗影被打碎成碎玻璃，背景有一具立着的黑色棺材。
 
 **罕见**
 - alignment | XVII 星星 | 两颗大四角星 + 星座连线（只有特效，绿色背景） | 保留两颗星和连线；绿色换成影时间的墨绿 + 青。
-- black_hole | XIII 死神 | 一个怪物被拉进圆形的黑洞 / 漩涡，四周一圈蓝色电光 | 黑洞保留，周围是 Thanatos 的棺材环；被吸进去的是暗影。
+- black_hole | XIII 死神 | 一个怪物被拉进圆形的黑洞 / 漩涡，左下一块砖，四周一圈蓝色电光 | 黑洞和蓝色电光保留；怪物**重新设计**成 P3R 暗影（见【3】，不能沿用原版怪物的轮廓、大眼睛、触手），被吸进黑洞；左下那块砖换成一具黑色棺材。
 - bulwark | VIII 正义 | 储君背对，面前竖起一排巨大的冰晶城墙 | 理背对镜头，面前竖起一排蓝色玻璃 / 冰晶墙。
 - charge | VII 战车 | 一颗四角星 + 周围的岩石（几乎全是特效） | 四角星保留，四周换成塔尔塔罗斯的扭曲墙面。
 - child_of_the_stars | XVII 星星 | 储君站在左边，右边一团巨大的冰晶 / 星星碎片 | 理站在左边，右边巨大的蓝色碎玻璃星形。
@@ -125,12 +130,12 @@
 - kingly_kick | IV 皇帝 | 储君一脚踢碎一块石头 | 理一脚踢出，脚下的石块碎成蓝色玻璃。
 - kingly_punch | IV 皇帝 | 储君一拳打出，拳头周围冲击光 | 理一拳打出，拳头周围白色冲击光 + 蓝色碎片。
 - knockout_blow | XIII 死神 | 储君挥拳，一个敌人被电光击飞 | 理挥拳，暗影被青白色电光击飞，面具碎裂。
-- largesse | III 女皇 | 一只大手把一团光递给一个小小的人 | 理的手把一团光递出，接光的是一个蓝色的小人影 / 蝴蝶。
+- largesse | III 女皇 | 左边暗处一个大仆从把一团光递给右边一个人 | 左边暗处理的剪影把一团光递给右边一个小仙子（小人格面具）。
 - lunar_blast | XVIII 月亮 | 左边一颗月亮，一道光束射向右边的岩石 | 月亮保留（冷白），光束打碎右边的暗影 / 岩石（像冰系技能）。
 - manifest_authority | IV 皇帝 | 储君张开手掌，一圈带刺的光环 + 红色箭头 | 理张开手掌，一圈带刺的光环保留，红色箭头换成蓝白色。
 - monologue | IX 隐者 | 储君的大脸 + 手里一个骷髅，旁边飘着文字碎片 | 理拿着一个白色的面具（像 P3R 的面具）低头独白，旁边飘着音符（MP3 / 耳机的意象），不要文字。
 - orbit | X 命运之轮 | 一颗蓝色光球，外面一圈轨道光环，两边岩石 | 光球和轨道环保留，轨道上有钟表刻度。
-- pale_blue_dot | XVII 星星 | 储君躲在后面，前面两块蓝色玻璃板，中间一个小白点 | 理在后面，前面两块蓝色玻璃板，中间一个小小的蓝白光点。
+- pale_blue_dot | XVII 星星 | 储君在后面中间，左右四个仆从探头，前面两块蓝色玻璃板，中间一个小白点 | 理在后面中间，左右几个小人格面具探头，前面两块蓝色玻璃板，中间一个蓝白光点。
 - parry | VIII 正义 | 储君在左边，一把剑从右上斜劈下来被挡开 | 理用单手剑格挡斜劈下来的一刀，交叉处碎玻璃飞溅。
 - particle_wall | XI 力量 | 一只植物怪物 + 一堵蓝色方块墙 | 暗影 + 一堵蓝色玻璃方块墙。
 - plot | XV 恶魔 | 储君和一个骷髅凑在一起看一团绿光 | 理和一个戴蓝面具的身影凑在一起看一团绿光（影时间的绿）。
@@ -140,11 +145,11 @@
 - radiate | XIX 太阳 | 中间一个小小的发光人形，四周放射状光 | 中间一个小小的发光人形（理的剪影），四周放射状金光保留，背景深蓝。
 - reflect | XVIII 月亮 | 储君和一个发光的半透明分身对峙 | 理和一个发光的半透明分身（玻璃 / 水的倒影）对峙，像照镜子。
 - resonance | VI 恋人 | 储君和一棵树状的东西，绿黄色漩涡 | 理闭眼，耳机里传出一圈圈黄绿色的音波漩涡。
-- royal_gamble | X 命运之轮 | 下方一只手握着一把扇形展开的牌 | 理的手握着一把扇形展开的塔罗牌（牌背是 P3R 塔罗牌背），上方是储君的身影换成理的剪影。
+- royal_gamble | X 命运之轮 | 上方储君的尖帽俯视，下方一只手握着一把扇形展开的牌 | 上方是理从高处往下看（只露出头发和一只眼睛），下方理的手握着一把扇形展开的塔罗牌（P3R 塔罗牌背）。
 - shining_strike | XIX 太阳 | 一道巨大的金色光击中一个敌人 | 金色光保留，击中暗影，暗影碎成黑色碎片。
 - spectrum_shift | XIV 节制 | 一道彩虹色的光带从左下延伸到右上 | 彩虹色光带保留，但改成碎玻璃拼成的光带。
 - stardust | XVII 星星 | 一只手往下洒出星尘 | 理的手往下洒出星尘（金色保留），落下的地方变成蓝色水面。
-- summon_forth | VII 战车 | 储君跪着，一把剑从空中飞来 | 理单膝跪地，一把发光的剑从空中飞来，碎玻璃片在剑身周围。
+- summon_forth | VII 战车 | 一个仆从单膝跪地，一把剑从左边飞来 | Orpheus 单膝跪地，一把发光的剑从左边飞到它手里（像献剑）。
 - supermassive | XXI 世界 | 一只手的手指间一个发光的黄绿色环，绿色背景 | 理的手指间一个发光的黄绿色环（保留），背景换成影时间的墨绿。
 - terraforming | III 女皇 | 储君捏着一张发光的星网 | 理的手指捏着一张发光的蛛网状星图。
 
@@ -153,14 +158,14 @@
 - beat_into_shape | XV 恶魔 | 储君举起手，手里一团发光的金属在被锤打 | 理举手，手里一团蓝色发光的金属，四周电光。
 - big_bang | XXI 世界 | 两只手之间爆发出太阳、剑、卡片等一堆东西 | 理的两只手之间爆发出一颗太阳、一把剑、一张塔罗牌和星星。
 - bombardment | XVI 塔 | 一颗巨大的火流星斜着冲下来 | 火流星保留（橙），尾迹是蓝色玻璃碎片，背景是塔尔塔罗斯。
-- bundle_of_joy | III 女皇 | 一只大手捧着一块金色的石头 | 理的手捧着一块金色的发光宝石，四周蓝蝴蝶。
+- bundle_of_joy | III 女皇 | 一个仆从捧着一块金色的石头，储君在后面 | 一个雪人小妖精捧着一块金色宝石，理在后面。
 - comet | XVII 星星 | 一个绿色的敌人被一道蓝白色彗星打中 | 蓝白色彗星保留，打中暗影。
 - crash_landing | XVI 塔 | 储君从天上砸下来，地面裂开 | 理从天上砸下来，地面碎成碎玻璃，冲击波青白色。
 - decisions_decisions | X 命运之轮 | 储君俯身，手里抛着几颗金色的球 | 理俯身，手里抛着几张塔罗牌，四周金色光点（Shuffle Time 的意象）。
 - dying_star | XIII 死神 | 一颗巨大的星在爆炸，碎石飞出 | 爆炸的星保留，碎石换成碎玻璃，暗影被冲散。
 - foregone_conclusion | XX 审判 | 一张卷起来的羊皮纸，上面有绿色的星图 | 卷起来的纸上是绿色的星图 + 一个钟表。
 - genesis | XX 审判 | 一只手从右上伸出，指尖碰到一颗大四角星 | 理的手指尖碰到一颗大四角星（像创造亚当的构图），背景深蓝星空。
-- guards | VIII 正义 | 两个大大的守卫身影，中间一颗星 | 两个人格面具身影（Orpheus 和另一个）护在两边，中间一颗星。
+- guards | VIII 正义 | 两个大的仆从弯着腰从左右护住中间一颗星 | 两个大的人格面具（Orpheus 和 Thanatos）从左右弯腰护住中间一颗星。
 - hammer_time | XV 恶魔 | 储君挥舞一把大锤 | 理挥舞一把大锤，锤头是蓝色玻璃质感。
 - heavenly_drill | XVI 塔 | 储君推着一个巨大的钻头 | 理推着一个巨大的螺旋光钻（青白色）。
 - heirloom_hammer | XV 恶魔 | 储君举起一把巨大的锤子，锤头里有蓝色发光的东西 | 理举起一把巨大的锤子，锤头里嵌着发光的蓝色玻璃。
@@ -168,7 +173,7 @@
 - make_it_so | I 魔术师 | 储君挥手，一群青色飞弹飞出去 | 理挥手，一群青色光弹 / 蝴蝶飞出去。
 - monarchs_gaze | IV 皇帝 | 一个绿色的球状怪物，四周橙色闪光 | 一个戴蓝面具的暗影，被四周橙色的视线 / 闪光锁定。
 - neutron_aegis | VIII 正义 | 储君被一圈原子轨道包围 | 理被一圈原子轨道包围，轨道是蓝白色。
-- royalties | III 女皇 | 一只大手把金币撒出去 | 理的手把金币撒出去（金色保留），背景深蓝。
+- royalties | III 女皇 | 一个仆从的大手把金币撒出去 | 一个南瓜灯小妖精（小人格面具）把金币撒出去（金色保留）。
 - seeking_edge | VIII 正义 | 一个倒挂的人形，一道红色光线射穿 | 一个倒挂的身影（理的剪影，像倒吊人），一道红色光线射穿。
 - seven_stars | XVII 星星 | 一串星星连成线，打中几个敌人 | 北斗七星连成线，打中几个暗影。
 - sword_sage | VII 战车 | 储君被一圈发光的剑围绕 | 理被一圈蓝色玻璃剑围绕。
@@ -207,7 +212,7 @@
 
 【8. 分批】
 - 第 1 批（试点，先做这一批，定画风；v1、v2 都被否，现在按 v3 重做第 1 批）：strike_regent, defend_regent, falling_star, venerate, big_bang, black_hole, tyranny, the_smith
-- 第 2 批：astral_pulse, celestial_might, cloak_of_stars, collision_course, cosmic_indifference, crescent_spear, crush_under, gather_light, glitterstream, glow, guiding_star, hidden_cache, know_thy_place, patter
+- 第 2 批（先补做第 1 批的 venerate、black_hole，按新的仆从 / 暗影规则重做，选定后覆盖 art/cards/v3/ 下这两张）：astral_pulse, celestial_might, cloak_of_stars, collision_course, cosmic_indifference, crescent_spear, crush_under, gather_light, glitterstream, glow, guiding_star, hidden_cache, know_thy_place, patter
 - 第 3 批：photon_cut, refine_blade, solar_strike, spoils_of_battle, wrought_in_war, begone, alignment, bulwark, charge, child_of_the_stars, conqueror, constellation, convergence, devastate
 - 第 4 批：furnace, gamma_blast, glimmer, hegemony, kingly_kick, kingly_punch, knockout_blow, largesse, lunar_blast, manifest_authority, monologue, orbit, pale_blue_dot, parry
 - 第 5 批：particle_wall, plot, pillar_of_creation, prophesize, quasar, radiate, reflect, resonance, royal_gamble, shining_strike, spectrum_shift, stardust, summon_forth, supermassive
