@@ -203,3 +203,37 @@ Candidate b main visual difference: ONE large connected cyan summoning fracture 
 
 原始生成文件：`exec-46366827-8e74-4b7b-bed2-e97835d8348a.png`。
 
+
+## 合并 fabe737 后的补充检查与修正
+
+远端新增安全区、原版主体比例、裸手白衬衫袖口及去除储君专属造型要求。额外生成 3 次：strike a、tyranny a、the_smith b 各一次；累计 27 次。替换这些候选及对应选定文件，其余不动。strike a 去掉袖口红条纹，暴政鞋与锻造锤头收回画布。以下提示词与来源取代前文对应候选记录。
+
+限制：重要物体未被画布直接截断的情况有所改善，但生成器没有保证所有候选的全部尖端严格留在 10% 安全线内，也没有保证主体轮廓与原版像素重合；这些项仍不能宣称完全过关，须用户/Claude 在卡框中复核。未启动游戏。
+
+### 更新 strike_regent a
+
+```text
+Clean Persona 3 Reload anime cel illustration for a full-bleed opaque game card, landscape ratio 1000:760. Reference 1 ONLY composition/recognizable action, not edit target. At least 60% deep navy #071a4a, royal blue #1f5cff, cyan #39d8ff and ice white #d8f4ff. Original signature color only in main effect plus ONE diagonal stripe, together under 25% area; crimson #ff2a4a only tiny accent. Background: only 2 or 3 LARGE flat color blocks cut by sharp diagonal parallelograms like P3R menus; no scenery detail. ONE large clean P3R visual element specified below, no additional motifs. Two-tone HARD cel shading, clean dark outlines, large simple flat shapes, highly legible at 250x190. NO scattered shards, particles, tiny dots or stars, lens flares, glow fog, tiny highlights, metal reflections, smooth gradients, water reflections or fine texture. Effects use SOLID shapes without bloom. No text, letters, digits, watermark, signature, UI controls or frame/border. Subject centered in inner80%, edges full bleed. 
+UPDATED REQUIREMENTS fabe737. Match reference sword main bounding box: hilt near(18%,15%), guard(38%,38%), tip(80%,80%). Slender SINGLE-EDGED straight sword, simple small black oval guard, NOT star guard. Bare pale teenage hand, NO glove, grips hilt within left-upper safe area, black school-blazer sleeve and a small WHITE shirt cuff. NO RED STRIPES on cuffs, NO red armband anywhere in this close-up. Sword must remain as large as reference, do not shrink to fit hand. Exactly three gold-white slash strokes, all tips within(10%-90%)safe area. Navy/royal blue 2-3 big menu parallelograms plus ONE magenta stripe, no particles, bloom, extra highlights or texture. Bare fingers visible and anatomically normal.
+```
+
+生成来源：`exec-7741e493-b207-4df0-9131-4243de397fc6.png`。
+
+### 更新 tyranny a
+
+```text
+Clean Persona 3 Reload anime cel illustration for a full-bleed opaque game card, landscape ratio 1000:760. Reference 1 ONLY composition/recognizable action, not edit target. At least 60% deep navy #071a4a, royal blue #1f5cff, cyan #39d8ff and ice white #d8f4ff. Original signature color only in main effect plus ONE diagonal stripe, together under 25% area; crimson #ff2a4a only tiny accent. Background: only 2 or 3 LARGE flat color blocks cut by sharp diagonal parallelograms like P3R menus; no scenery detail. ONE large clean P3R visual element specified below, no additional motifs. Two-tone HARD cel shading, clean dark outlines, large simple flat shapes, highly legible at 250x190. NO scattered shards, particles, tiny dots or stars, lens flares, glow fog, tiny highlights, metal reflections, smooth gradients, water reflections or fine texture. Effects use SOLID shapes without bloom. No text, letters, digits, watermark, signature, UI controls or frame/border. Subject centered in inner80%, edges full bleed. Character refs2/3 identity only, do NOT copy their lighting detail: slender Makoto Yuki, long navy bangs covering one eye, calm grey eye, black school blazer over white shirt, red armband and red-white headphones. Hands pale and anatomically correct, black uniform cuff and white shirt cuff. No extra limbs. No gun directed at head.
+Original central imposing seated figure on dark angular throne, black surroundings. Main P3R element = Makoto seated composed, black school blazer white shirt red headphones, grey eye with fringe hiding other. NO moon or tower/scenery. Throne plain angular silhouette. Navy/royal blue menu block background plus ONE muted plum diagonal stripe. Calm strong silhouette, no glass or water.
+UPDATED fabe737: preserve central original throne composition but EVERY important extremity has10%canvasmargin: head top at15%, both shoes bottom at85%, figure width30%-70%, throne fillscenter. Full body seen seated, torso facingcamera, normal hands restingon sword, simple slim straight blade. No original Regent armor or pointedhat. Wide quiet negative space around seated Makoto, do not crop shoes or head. One plum diagonal stripe, no scene props.
+```
+
+生成来源：`exec-d4266638-388a-4c5d-95d8-561738b80e97.png`。
+
+### 更新 the_smith b
+
+```text
+Clean Persona 3 Reload anime cel illustration for a full-bleed opaque game card, landscape ratio 1000:760. Reference 1 ONLY composition/recognizable action, not edit target. At least 60% deep navy #071a4a, royal blue #1f5cff, cyan #39d8ff and ice white #d8f4ff. Original signature color only in main effect plus ONE diagonal stripe, together under 25% area; crimson #ff2a4a only tiny accent. Background: only 2 or 3 LARGE flat color blocks cut by sharp diagonal parallelograms like P3R menus; no scenery detail. ONE large clean P3R visual element specified below, no additional motifs. Two-tone HARD cel shading, clean dark outlines, large simple flat shapes, highly legible at 250x190. NO scattered shards, particles, tiny dots or stars, lens flares, glow fog, tiny highlights, metal reflections, smooth gradients, water reflections or fine texture. Effects use SOLID shapes without bloom. No text, letters, digits, watermark, signature, UI controls or frame/border. Subject centered in inner80%, edges full bleed. Character refs2/3 identity only, do NOT copy their lighting detail: slender Makoto Yuki, long navy bangs covering one eye, calm grey eye, black school blazer over white shirt, red armband and red-white headphones. Hands pale and anatomically correct, black uniform cuff and white shirt cuff. No extra limbs. No gun directed at head.
+Makoto rear-facing at horizontal anvil, original reference action with RIGHT hand raising hammer, LEFT gripping forging tongs. NO Regent pointedhat, cloak or armor. Candidate b features ONE big connected angular cyan summoning crack silhouette behind anvil, not loose shards. UPDATED fabe737: head, fingers and hammerhead FULLY inside10%-90% safe rectangle: hammerhead around(70%,20%), head(45%,38%), left hand(25%,68%), anvilat75%height. Whole rear-view figure same center asreference, not cropped portrait. Black blazer white cuffs, RED armband only on UPPER ARM, never at wrists. Navy/royal blue broad flat menu cuts plus one muted purple stripe; no tiny highlights, sparks, gradients or scenery.
+```
+
+生成来源：`exec-230754f1-72c8-44df-9901-6648914a01e0.png`。
