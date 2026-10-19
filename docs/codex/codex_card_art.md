@@ -35,7 +35,7 @@
 > 历史：v1（满屏碎玻璃、全部刷蓝）用户说"太花哨、AI 味重"；v2（贴原版、保留原版底色、几乎不加东西）用户说"又太没风格化，没有 P3R 的要素"（例：v2 的打击只是红紫底上一把普通的剑）。
 > **v3 = 两者中间：画面干净（v2 的优点），但每张都有清楚的 P3R 视觉语言（v1 想要但做过头的东西）。** 以这一节为准；【5】里写到的碎玻璃 / 蝴蝶 / 光点只在下面"一个大元素"允许的范围内用。
 
-每张卡都必须同时做到下面 4 条（这是一套固定配方，保证张张都像 P3R、又不花）：
+每张卡都必须同时做到下面 7 条（这是一套固定配方，保证张张都像 P3R、又不花）：
 1. **P3R 配色为主，原版主色为辅**：画面 60% 以上是 P3R 的蓝系（深海军蓝 #071a4a、皇家蓝 #1f5cff、青 #39d8ff、冰白 #d8f4ff）；
    原版这张卡最有辨识度的颜色（打击的金、陨星的火焰橙、超质量体的黄绿、原版底色的红 / 绿 / 紫……）保留在 **主体特效** 上，再加 **一条** 斜切色带，合计不超过画面 25%。红色 #ff2a4a 只做小点缀。
 2. **P3R 菜单式的背景构成**：背景只用 2~3 块 **大的** 平涂色块，用锐利的斜线切开（平行四边形、斜切的色带，像 P3R 的菜单 UI），不画场景细节；可以有一个很淡的大号几何形（大圆月、一张塔罗牌的轮廓）。
@@ -43,11 +43,16 @@
    原版里没有人物的卡（例如打击），也要用这一条加进一个 P3R 元素（打击 = 结城理的手握着剑挥出）。
 4. **干净的 P3R 动画画法**：赛璐璐两层硬边阴影、干净的深色描线、大色块；**不要**满屏碎片 / 粒子 / 光点 / 星星点点 / 镜头光晕 / 发光雾 / 细碎高光 / 金属反光 / 光滑渐变。缩到卡牌大小（约 250×190）要一眼看清主体。
 
+5. **主体大小和位置跟原版一样**：原版主体占多大、放在哪，新图的主体就占多大、放在哪（把原版缩到同尺寸叠在一起比，主体外轮廓差不多重合）。
+   加进来的 P3R 元素（例如握剑的手）不能把主体挤小；所有重要的东西（手、脸、剑尖、特效尖端）都在中间 80% 安全区里，不要贴边、不要被画面边缘切掉 —— 游戏的卡框和卡名横幅会盖住四边。
+6. **结城理的手**：**不戴手套**，是白皙的少年的手；袖子是黑色校服外套的袖口，里面露出一点白衬衫袖口；红色臂章在**上臂**（离手很远，多数时候不入画），**不要**画在袖口上，袖口也不要有红色条纹。
+7. **把原版储君的专属造型换成 P3R 的**：例如原版那把带四角星护手的剑 → 结城理的细长单刃直剑（简单的护手）；原版储君的尖帽 / 金色护手不要出现。
+
 - 两个候选 a / b 的区别：**挑的 P3R 大元素不同**（例：打击 a = 理的手握剑挥出，b = 剑 + 身后一个大的召唤碎裂形状 / 一张塔罗牌轮廓）。两张都要满足上面 4 条。
 - 不再用"编辑原图"的做法（v2 的 a），原版卡图只作构图参考。
 
 示范（打击 strike_regent）：
-> Clean Persona 3 Reload anime cel illustration for a game card. Composition from reference 1: a sword slashing diagonally from upper left to lower right with three golden slash streaks. The sword is a slender single-edged straight sword gripped by a pale young man's hand in a black school-uniform sleeve with a white shirt cuff and a red armband edge visible at the frame corner. Background: deep navy and royal blue split by sharp diagonal parallelogram cuts like a Persona 3 menu, with one crimson-magenta diagonal stripe (kept from the original's red/purple). Golden-white slash streaks kept. Two-tone hard cel shading, clean dark outlines, large flat shapes. No glass shards, no particles, no sparkles, no glow haze, no text.
+> Clean Persona 3 Reload anime cel illustration for a game card. Composition from reference 1: a sword slashing diagonally from upper left to lower right with three golden slash streaks. The sword, as large and as centered as in reference 1, is a slender single-edged straight sword with a simple guard, gripped by a bare pale young man's hand (no glove) coming from a black school-blazer sleeve with a little white shirt cuff showing; the hand stays well inside the frame. Background: deep navy and royal blue split by sharp diagonal parallelogram cuts like a Persona 3 menu, with one crimson-magenta diagonal stripe (kept from the original's red/purple). Golden-white slash streaks kept. Two-tone hard cel shading, clean dark outlines, large flat shapes. No glass shards, no particles, no sparkles, no glow haze, no text.
 
 - 结城理（需要时）：
   > a slender Japanese high school boy, Persona 3 protagonist style: dark navy-blue hair with long bangs covering one eye, calm expressionless grey eyes, black school blazer worn open over a white shirt, red armband on the upper arm, red-and-white headphones around the neck with the cord leading to an MP3 player
@@ -187,7 +192,7 @@
 
 【7. 自检】不满足就重做那一张，最多 3 轮；仍不满足就如实写进 README：
 1. 能一眼认出是原版的哪张卡：主体、构图方向、动作和原版对得上（把新图和原版并排看）。
-2. 能一眼看出是 P3R：【3】的 4 条都满足（蓝系为主 + 原版主色做特效和一条色带、斜切大色块背景、一个大的 P3R 元素、干净的赛璐璐）。
+2. 能一眼看出是 P3R：【3】的 7 条都满足（蓝系为主 + 原版主色做特效和一条色带、斜切大色块背景、一个大的 P3R 元素、干净的赛璐璐）。
 6. 不花哨：背景干净，没有碎玻璃 / 粒子 / 光点 / 光晕 / 细碎高光；缩小到 250×190 看主体依然清楚。
 3. 画到理时：头发遮一只眼、灰色眼睛、黑色外套白衬衫、红色耳机或臂章至少一样可见；手指数量正常、没有多余的手或肢体。
 4. 没有文字、字母、数字、水印、边框、UI。
