@@ -1,5 +1,5 @@
 你在用户的 Windows 电脑上工作。任务：用 imagegen 把储君的卡牌卡图（card portrait）逐张重绘成 P3R / 结城理风格。只做美术，不改代码。
-本文件分 7 批（见【8. 分批】），**每次会话只做一批**：用户说"做第 N 批"就做第 N 批；没说就**按 v2 画风重做第 1 批**（试点）。做完一批就提交推送并报告，然后停下。
+本文件分 7 批（见【8. 分批】），**每次会话只做一批**：用户说"做第 N 批"就做第 N 批；没说就**按 v3 画风重做第 1 批**（试点）。做完一批就提交推送并报告，然后停下。
 
 【背景】
 - P3Makoto 是杀戮尖塔 2 的 mod，把储君（Regent）换成 P3R（女神异闻录 3 Reload）的主角结城理。现在卡背已经是 P3R 的塔罗牌，卡面还是原版储君的画。
@@ -32,16 +32,23 @@
 - 配色规范：<repo>\docs\STYLE_P3R.md（只读）。
 
 【3. 画风（所有卡共用，写进每张的 imagegen 提示词）】
-> **v2（第 1 批用户反馈："风格化太重，整个卡面很花哨，AI 味很重"）**：第 1 批每张都铺满碎玻璃、光点、速度线，全部刷成蓝色 —— 这些全部取消。
-> 下面是 v2 的规则，以这一节为准；【5】里每张卡方案中提到的碎玻璃 / 蝴蝶 / 光点 / 速度线一律删掉不画（除非那就是这张卡的主体）。
+> 历史：v1（满屏碎玻璃、全部刷蓝）用户说"太花哨、AI 味重"；v2（贴原版、保留原版底色、几乎不加东西）用户说"又太没风格化，没有 P3R 的要素"（例：v2 的打击只是红紫底上一把普通的剑）。
+> **v3 = 两者中间：画面干净（v2 的优点），但每张都有清楚的 P3R 视觉语言（v1 想要但做过头的东西）。** 以这一节为准；【5】里写到的碎玻璃 / 蝴蝶 / 光点只在下面"一个大元素"允许的范围内用。
 
-- **少**：每张卡只放 **一个** P3R 元素（结城理 / 他的手 / 人格面具 / 暗影 / 塔罗牌 / 影时间的月亮，选【5】里写的那一个最主要的），其余都跟原版走。
-- **背景简单**：两三块大的平涂色块或很缓的两色过渡，像原版那样留白；**不要**碎玻璃、碎片、粒子、光点、星星点点、镜头光晕、速度线、满屏特效、水面反光、细碎纹理。
-- **底色保留原版这张卡自己的颜色**（红就还是红、绿就还是绿、紫就还是紫），只稍微降一点饱和度、偏冷一点；**不要**全部刷成蓝色。主体特效的颜色也跟原版走。
-- **画法**：大色块、两层硬边阴影、粗细一致的深色描线；形状简单、轮廓清楚；**不要**金属反光、光滑渐变、发光边、细碎高光、过度细节。缩到卡牌大小（约 250×190）还要一眼看清主体。
-- 两个方向，每张卡各出一个候选（这就是 a / b 的区别，不再是"贴近 / 大胆"）：
-  - **a = 贴原版画法**：用 imagegen 的图像编辑，把原版卡图当底图直接改。背景、构图、配色、画法（原版的厚涂 + 粗描线）基本不动，只把储君 / 他的手 / 小怪换成【5】里写的结城理 / 他的手 / 人格面具 / 暗影，换上去的部分也用原版的画法画，和原图融为一体。
-  - **b = 克制的 P3R 动画风**：参考原版构图重新画，用 P3R 的干净赛璐璐画法，但严格遵守上面的"少""背景简单""底色保留"三条。
+每张卡都必须同时做到下面 4 条（这是一套固定配方，保证张张都像 P3R、又不花）：
+1. **P3R 配色为主，原版主色为辅**：画面 60% 以上是 P3R 的蓝系（深海军蓝 #071a4a、皇家蓝 #1f5cff、青 #39d8ff、冰白 #d8f4ff）；
+   原版这张卡最有辨识度的颜色（打击的金、陨星的火焰橙、超质量体的黄绿、原版底色的红 / 绿 / 紫……）保留在 **主体特效** 上，再加 **一条** 斜切色带，合计不超过画面 25%。红色 #ff2a4a 只做小点缀。
+2. **P3R 菜单式的背景构成**：背景只用 2~3 块 **大的** 平涂色块，用锐利的斜线切开（平行四边形、斜切的色带，像 P3R 的菜单 UI），不画场景细节；可以有一个很淡的大号几何形（大圆月、一张塔罗牌的轮廓）。
+3. **一个大的 P3R 元素，画得大而干净**：从【5】这张卡写的里面挑最主要的一个——结城理 / 他的手（黑色校服袖口 + 白衬衫袖口，必要时露出红臂章）/ 人格面具 / 戴蓝面具的暗影 / 塔罗牌 / 影时间的大月亮 / 黑棺材 / 一只大蓝蝴蝶 / **一个**大的碎裂形状（召唤时的玻璃碎裂，只在主体后面炸开一次，不是满屏碎片）。
+   原版里没有人物的卡（例如打击），也要用这一条加进一个 P3R 元素（打击 = 结城理的手握着剑挥出）。
+4. **干净的 P3R 动画画法**：赛璐璐两层硬边阴影、干净的深色描线、大色块；**不要**满屏碎片 / 粒子 / 光点 / 星星点点 / 镜头光晕 / 发光雾 / 细碎高光 / 金属反光 / 光滑渐变。缩到卡牌大小（约 250×190）要一眼看清主体。
+
+- 两个候选 a / b 的区别：**挑的 P3R 大元素不同**（例：打击 a = 理的手握剑挥出，b = 剑 + 身后一个大的召唤碎裂形状 / 一张塔罗牌轮廓）。两张都要满足上面 4 条。
+- 不再用"编辑原图"的做法（v2 的 a），原版卡图只作构图参考。
+
+示范（打击 strike_regent）：
+> Clean Persona 3 Reload anime cel illustration for a game card. Composition from reference 1: a sword slashing diagonally from upper left to lower right with three golden slash streaks. The sword is a slender single-edged straight sword gripped by a pale young man's hand in a black school-uniform sleeve with a white shirt cuff and a red armband edge visible at the frame corner. Background: deep navy and royal blue split by sharp diagonal parallelogram cuts like a Persona 3 menu, with one crimson-magenta diagonal stripe (kept from the original's red/purple). Golden-white slash streaks kept. Two-tone hard cel shading, clean dark outlines, large flat shapes. No glass shards, no particles, no sparkles, no glow haze, no text.
+
 - 结城理（需要时）：
   > a slender Japanese high school boy, Persona 3 protagonist style: dark navy-blue hair with long bangs covering one eye, calm expressionless grey eyes, black school blazer worn open over a white shirt, red armband on the upper arm, red-and-white headphones around the neck with the cord leading to an MP3 player
   - 原版储君的"手"→ 结城理的手：干净的白皙少年的手，黑色校服袖口里露出白衬衫袖口（原版是棕金色的粗糙护手，不要照抄）。
@@ -59,7 +66,7 @@
 - 尺寸和原版一样：1000×760（the_sealed_throne、meteor_shower 为 606×852）。imagegen 出不了这个尺寸时，出最接近比例的更大尺寸，再等比缩放 + 居中裁切到目标尺寸（不要拉伸变形）。
 - **满版不透明 RGB**（卡图是整张背景，这是《生图一律真透明底》规则的例外，不要透明）。
 - 主体放在中间 80% 的安全区里（四边各留约 10%，游戏的卡框会盖住一点边）。
-- 每张出 2 个候选：a = 贴原版画法（编辑原图），b = 克制的 P3R 动画风（见【3】）。
+- 每张出 2 个候选：a / b 挑的 P3R 大元素不同（见【3】）。
 
 【5. 每张卡的重绘方案】
 格式：文件名 | 阿卡纳（卡在 P3R 里对应的大阿卡纳，用来定基调，不要把文字画进图里）| 原版辨识锚点（必须保留的构图 / 主体）| 重绘方案。
@@ -171,7 +178,7 @@
 - royal_corona | IV 皇帝 | 一顶由星星连成的王冠 | 一顶由蓝色星光连成的王冠，悬在理的剪影头上。
 
 【6. 要交付的文件】
-（v2 重做第 1 批时，文件放在 <repo>\art\cards\v2\ 下，结构同下面 —— cand\、preview\batch1.png、README.md；不要覆盖 art\cards\ 下第 1 批 v1 的文件。v2 定稿后的批次直接放 art\cards\v2\。）
+（v3 重做第 1 批时，文件放在 <repo>\art\cards\v3\ 下，结构同下面 —— cand\、preview\batch1.png、README.md；不要覆盖 art\cards\ 下 v1、art\cards\v2\ 下 v2 的文件。v3 定稿后的批次直接放 art\cards\v3\。）
 1. 每张卡：
    - 候选：<repo>\art\cards\cand\<名字>_a.png 和 <名字>_b.png；
    - 选定：<repo>\art\cards\<名字>.png（从 a / b 里挑一张复制过来，按【7. 自检】挑）。
@@ -180,14 +187,14 @@
 
 【7. 自检】不满足就重做那一张，最多 3 轮；仍不满足就如实写进 README：
 1. 能一眼认出是原版的哪张卡：主体、构图方向、动作和原版对得上（把新图和原版并排看）。
-2. 能一眼看出是 P3R：有且只有一个主要的 P3R 元素；底色和原版同一色系（没有全部变蓝）。
+2. 能一眼看出是 P3R：【3】的 4 条都满足（蓝系为主 + 原版主色做特效和一条色带、斜切大色块背景、一个大的 P3R 元素、干净的赛璐璐）。
 6. 不花哨：背景干净，没有碎玻璃 / 粒子 / 光点 / 光晕 / 细碎高光；缩小到 250×190 看主体依然清楚。
 3. 画到理时：头发遮一只眼、灰色眼睛、黑色外套白衬衫、红色耳机或臂章至少一样可见；手指数量正常、没有多余的手或肢体。
 4. 没有文字、字母、数字、水印、边框、UI。
 5. 尺寸正确、不透明、没有被拉伸变形。
 
 【8. 分批】
-- 第 1 批（试点，先做这一批，定画风；v1 已做完被否，现在按 v2 重做第 1 批）：strike_regent, defend_regent, falling_star, venerate, big_bang, black_hole, tyranny, the_smith
+- 第 1 批（试点，先做这一批，定画风；v1、v2 都被否，现在按 v3 重做第 1 批）：strike_regent, defend_regent, falling_star, venerate, big_bang, black_hole, tyranny, the_smith
 - 第 2 批：astral_pulse, celestial_might, cloak_of_stars, collision_course, cosmic_indifference, crescent_spear, crush_under, gather_light, glitterstream, glow, guiding_star, hidden_cache, know_thy_place, patter
 - 第 3 批：photon_cut, refine_blade, solar_strike, spoils_of_battle, wrought_in_war, begone, alignment, bulwark, charge, child_of_the_stars, conqueror, constellation, convergence, devastate
 - 第 4 批：furnace, gamma_blast, glimmer, hegemony, kingly_kick, kingly_punch, knockout_blow, largesse, lunar_blast, manifest_authority, monologue, orbit, pale_blue_dot, parry
@@ -198,9 +205,9 @@
 
 【9. 提交与推送】
 1. 只 add 这个目录：
-   git -c safe.directory=<repo> add art/cards/v2
+   git -c safe.directory=<repo> add art/cards/v3
 2. 提交：
-   git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local commit -m "art: P3R-style card portraits v2, batch <N>"
+   git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local commit -m "art: P3R-style card portraits v3, batch <N>"
 3. push：
    git -c safe.directory=<repo> -c http.version=HTTP/1.1 -c http.lowSpeedLimit=0 -c http.lowSpeedTime=999999 push origin claude/amazing-darwin-b00arn
    - 失败时分别等 5 / 10 / 20 / 40 秒重试，最多 4 次。
