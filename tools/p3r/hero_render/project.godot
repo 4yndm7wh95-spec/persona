@@ -1,0 +1,6 @@
+config_version=5
+[application]
+run/main_scene=""
+[rendering]
+viewport/transparent_background=true
+anti_aliasing/quality/msaa_3d=2
