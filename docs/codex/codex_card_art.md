@@ -70,7 +70,10 @@
 【4. 每张图的规格】
 - 尺寸和原版一样：1000×760（the_sealed_throne、meteor_shower 为 606×852）。imagegen 出不了这个尺寸时，出最接近比例的更大尺寸，再等比缩放 + 居中裁切到目标尺寸（不要拉伸变形）。
 - **满版不透明 RGB**（卡图是整张背景，这是《生图一律真透明底》规则的例外，不要透明）。
-- 主体放在中间 80% 的安全区里（四边各留约 10%，游戏的卡框会盖住一点边）。
+- 主体放在安全区里。游戏卡框的实测遮挡（用户截图 art/cards/ref/card_attack_solar_strike.png，按卡图 1000×760 的比例）：
+  - 上面约 4% 被卡名横幅盖住（横幅本身还会压住上面中间约 5%~15% 高的一条）；左右各约 2% 被卡框盖住；
+  - 攻击牌下边是 V 形：左右两侧从 78% 高度往下、斜着往中间切掉，最下面中间被"攻击"类型标签盖住；
+  - 所以重要的东西（脸、手、剑尖、特效尖端）放在 横向 8%~92%、纵向 12%~75% 的范围里。
 - 每张出 2 个候选：a / b 挑的 P3R 大元素不同（见【3】）。
 
 【5. 每张卡的重绘方案】
@@ -187,8 +190,11 @@
 1. 每张卡：
    - 候选：<repo>\art\cards\cand\<名字>_a.png 和 <名字>_b.png；
    - 选定：<repo>\art\cards\<名字>.png（从 a / b 里挑一张复制过来，按【7. 自检】挑）。
-2. 每批的预览：<repo>\art\cards\preview\batch<N>.png。每张卡一行：原版 | a | b，选中的那张加一圈细边框；左上角写卡名。
-3. <repo>\art\cards\README.md（中文，追加，不要覆盖之前批次的内容）：每张卡写用的提示词全文、挑了哪张以及原因、已知问题。
+2. 套进真实卡框的预览：
+   python <repo>\tools\ui\card_mockup.py <repo>\art\cards\v3\preview\in_frame_batch<N>.png <这一批选定的卡图...>
+   （需要 Pillow；只读 art/cards/ref/ 下的卡框截图和遮罩）。用它检查有没有重要内容被卡名横幅、V 形下边、类型标签盖住。
+3. 每批的预览：<repo>\art\cards\preview\batch<N>.png。每张卡一行：原版 | a | b，选中的那张加一圈细边框；左上角写卡名。
+4. <repo>\art\cards\README.md（中文，追加，不要覆盖之前批次的内容）：每张卡写用的提示词全文、挑了哪张以及原因、已知问题。
 
 【7. 自检】不满足就重做那一张，最多 3 轮；仍不满足就如实写进 README：
 1. 能一眼认出是原版的哪张卡：主体、构图方向、动作和原版对得上（把新图和原版并排看）。
@@ -197,6 +203,7 @@
 3. 画到理时：头发遮一只眼、灰色眼睛、黑色外套白衬衫、红色耳机或臂章至少一样可见；手指数量正常、没有多余的手或肢体。
 4. 没有文字、字母、数字、水印、边框、UI。
 5. 尺寸正确、不透明、没有被拉伸变形。
+7. 套进卡框的预览里（in_frame_batch<N>.png），脸 / 手 / 主体没有被卡名横幅、V 形下边、类型标签挡住。
 
 【8. 分批】
 - 第 1 批（试点，先做这一批，定画风；v1、v2 都被否，现在按 v3 重做第 1 批）：strike_regent, defend_regent, falling_star, venerate, big_bang, black_hole, tyranny, the_smith
@@ -211,6 +218,7 @@
 【9. 提交与推送】
 1. 只 add 这个目录：
    git -c safe.directory=<repo> add art/cards/v3
+   （in_frame 预览也在 art/cards/v3/preview/ 下，一起提交）
 2. 提交：
    git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local commit -m "art: P3R-style card portraits v3, batch <N>"
 3. push：
