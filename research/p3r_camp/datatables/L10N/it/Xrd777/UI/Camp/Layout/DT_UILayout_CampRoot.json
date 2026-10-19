@@ -1,0 +1,197 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_CampRoot",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/it/Xrd777/UI/Camp/Layout/DT_UILayout_CampRoot",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "TOP_HELP_SKILL": {
+        "X": 1649.0,
+        "Y": 933.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_HELP_ITEM": {
+        "X": 1595.0,
+        "Y": 933.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_HELP_EQUIP": {
+        "X": 1383.0,
+        "Y": 933.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_HELP_PERSONA": {
+        "X": 1504.0,
+        "Y": 933.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_HELP_STATUS": {
+        "X": 1322.0,
+        "Y": 933.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_HELP_QUEST": {
+        "X": 1644.0,
+        "Y": 933.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_HELP_COMMU": {
+        "X": 1552.0,
+        "Y": 933.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_HELP_CALENDAR": {
+        "X": 1619.0,
+        "Y": 933.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_HELP_SYSTEM": {
+        "X": 1585.0,
+        "Y": 933.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_HELP_TEXT_SKILL": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_HELP_TEXT_ITEM": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_HELP_TEXT_EQUIP": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_HELP_TEXT_PERSONA": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_HELP_TEXT_STATUS": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_HELP_TEXT_QUEST": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_HELP_TEXT_COMMU": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_HELP_TEXT_CALENDAR": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_HELP_TEXT_SYSTEM": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_ITEM_SKILL": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": -28.0,
+        "Scale": 0.65
+      },
+      "TOP_ITEM_ITEM": {
+        "X": 42.0,
+        "Y": 55.0,
+        "Angle": -15.0,
+        "Scale": 0.6
+      },
+      "TOP_ITEM_EQUIP": {
+        "X": 19.0,
+        "Y": 111.0,
+        "Angle": -22.0,
+        "Scale": 0.64
+      },
+      "TOP_ITEM_PERSONA": {
+        "X": 37.0,
+        "Y": 174.0,
+        "Angle": -20.0,
+        "Scale": 0.7
+      },
+      "TOP_ITEM_STATUS": {
+        "X": 80.0,
+        "Y": 238.0,
+        "Angle": -10.0,
+        "Scale": 0.65
+      },
+      "TOP_ITEM_QUEST": {
+        "X": 9.0,
+        "Y": 302.0,
+        "Angle": -14.0,
+        "Scale": 0.62
+      },
+      "TOP_ITEM_COMMU": {
+        "X": 130.0,
+        "Y": 346.0,
+        "Angle": -8.0,
+        "Scale": 0.6
+      },
+      "TOP_ITEM_CALENDAR": {
+        "X": 39.0,
+        "Y": 418.0,
+        "Angle": -4.0,
+        "Scale": 0.61
+      },
+      "TOP_ITEM_SYSTEM": {
+        "X": 55.0,
+        "Y": 488.0,
+        "Angle": 10.0,
+        "Scale": 0.6
+      },
+      "TOP_MONEY": {
+        "X": 0.0,
+        "Y": -35.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_MONEY_TEXT": {
+        "X": -114.0,
+        "Y": 8.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_THEURGIA_MAX_ICON": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

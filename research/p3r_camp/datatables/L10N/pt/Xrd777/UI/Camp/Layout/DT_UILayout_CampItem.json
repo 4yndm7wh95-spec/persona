@@ -1,0 +1,71 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_CampItem",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/pt/Xrd777/UI/Camp/Layout/DT_UILayout_CampItem",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "ITEM_HELP": {
+        "X": 1383.0,
+        "Y": 931.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "ITEM_HELP_TEXT": {
+        "X": 49.0,
+        "Y": 2.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "ITEM_HELP_SECOND": {
+        "X": 1267.0,
+        "Y": 931.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "ITEM_HELP_TEXT_SECOND": {
+        "X": 48.0,
+        "Y": 2.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "USE_ITEM_HELP": {
+        "X": 1461.0,
+        "Y": 931.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "USE_ITEM_HELP_TEXT": {
+        "X": 48.0,
+        "Y": 2.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "ITEM_INFO": {
+        "X": 1295.0,
+        "Y": 775.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CATEGORY_NAME": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "ITEM_NONE": {
+        "X": 0.0,
+        "Y": -20.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

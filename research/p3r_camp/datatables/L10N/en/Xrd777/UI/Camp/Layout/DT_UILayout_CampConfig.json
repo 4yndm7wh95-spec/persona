@@ -1,0 +1,53 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_CampConfig",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/en/Xrd777/UI/Camp/Layout/DT_UILayout_CampConfig",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "PLAYLIST_POS": {
+        "X": -234.0,
+        "Y": -90.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SET_POS": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "INFO_POS": {
+        "X": -54.0,
+        "Y": 16.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "INFO_TEXT_POS": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "BUTTON_TEXT_POS": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "AUDIO_DEVICE_BASELINE": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

@@ -1,0 +1,129 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UITriangularCursor_CampSystem",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/tr/Xrd777/UI/Camp/Layout/DT_UITriangularCursor_CampSystem",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UITriangularCursor'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "SYSTEM_TUTORIAL_W": {
+        "X0": 235.0,
+        "Y0": -130.0,
+        "X1": 160.0,
+        "Y1": 25.0,
+        "X2": -190.0,
+        "Y2": 70.0
+      },
+      "SYSTEM_CONFIG_W": {
+        "X0": 255.0,
+        "Y0": -100.0,
+        "X1": 155.0,
+        "Y1": 39.0,
+        "X2": -160.0,
+        "Y2": 50.0
+      },
+      "SYSTEM_DICTIONARY_W": {
+        "X0": 245.0,
+        "Y0": -110.0,
+        "X1": 150.0,
+        "Y1": 50.0,
+        "X2": -185.0,
+        "Y2": 50.0
+      },
+      "SYSTEM_DATALOAD_W": {
+        "X0": 331.0,
+        "Y0": -105.0,
+        "X1": 209.0,
+        "Y1": 90.0,
+        "X2": -331.0,
+        "Y2": 53.0
+      },
+      "SYSTEM_DATASAVE_W": {
+        "X0": 330.0,
+        "Y0": -110.0,
+        "X1": 213.0,
+        "Y1": 57.0,
+        "X2": -388.0,
+        "Y2": 102.0
+      },
+      "SYSTEM_ROLLBACK_W": {
+        "X0": 240.0,
+        "Y0": -80.0,
+        "X1": 85.0,
+        "Y1": 45.0,
+        "X2": -285.0,
+        "Y2": 25.0
+      },
+      "SYSTEM_BACKTOTITLE_W": {
+        "X0": 365.0,
+        "Y0": -120.0,
+        "X1": 173.0,
+        "Y1": 69.0,
+        "X2": -315.0,
+        "Y2": 46.0
+      },
+      "SYSTEM_TUTORIAL_R": {
+        "X0": 265.0,
+        "Y0": -135.0,
+        "X1": 180.0,
+        "Y1": 35.0,
+        "X2": -220.0,
+        "Y2": 70.0
+      },
+      "SYSTEM_CONFIG_R": {
+        "X0": 260.0,
+        "Y0": -90.0,
+        "X1": 155.0,
+        "Y1": 50.0,
+        "X2": -165.0,
+        "Y2": 40.0
+      },
+      "SYSTEM_DICTIONARY_R": {
+        "X0": 255.0,
+        "Y0": -100.0,
+        "X1": 155.0,
+        "Y1": 60.0,
+        "X2": -185.0,
+        "Y2": 50.0
+      },
+      "SYSTEM_DATALOAD_R": {
+        "X0": 348.0,
+        "Y0": -102.0,
+        "X1": 221.0,
+        "Y1": 84.0,
+        "X2": -333.0,
+        "Y2": 46.0
+      },
+      "SYSTEM_DATASAVE_R": {
+        "X0": 338.0,
+        "Y0": -96.0,
+        "X1": 217.0,
+        "Y1": 67.0,
+        "X2": -384.0,
+        "Y2": 90.0
+      },
+      "SYSTEM_ROLLBACK_R": {
+        "X0": 255.0,
+        "Y0": -65.0,
+        "X1": 95.0,
+        "Y1": 55.0,
+        "X2": -310.0,
+        "Y2": 20.0
+      },
+      "SYSTEM_BACKTOTITLE_R": {
+        "X0": 382.0,
+        "Y0": -110.0,
+        "X1": 187.0,
+        "Y1": 79.0,
+        "X2": -318.0,
+        "Y2": 46.0
+      }
+    }
+  }
+]

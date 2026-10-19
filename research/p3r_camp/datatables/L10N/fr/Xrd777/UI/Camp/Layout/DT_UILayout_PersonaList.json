@@ -1,0 +1,47 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_PersonaList",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/fr/Xrd777/UI/Camp/Layout/DT_UILayout_PersonaList",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "PERSONA_LIST_EQUIP_CARD": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_LIST_EQUIP_SPARKLING": {
+        "X": 3.0,
+        "Y": -26.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_LIST_HELP": {
+        "X": 1241.0,
+        "Y": 931.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_LIST_HELP_TEXT": {
+        "X": 0.0,
+        "Y": 2.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_NAME_TEXTCOL": {
+        "X": 350.0,
+        "Y": 45.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

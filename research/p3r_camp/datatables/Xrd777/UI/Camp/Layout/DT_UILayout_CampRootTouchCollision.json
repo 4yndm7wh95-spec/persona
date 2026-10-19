@@ -1,0 +1,71 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_CampRootTouchCollision",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/Xrd777/UI/Camp/Layout/DT_UILayout_CampRootTouchCollision",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "TOP_SKILL_WH": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_ITEM_WH": {
+        "X": 30.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_EQUIP_WH": {
+        "X": 0.0,
+        "Y": -40.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_PERSONA_WH": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_STATUS_WH": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_QUEST_WH": {
+        "X": 0.0,
+        "Y": -35.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_COMMU_WH": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_CALENDAR_WH": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TOP_SYSTEM_WH": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

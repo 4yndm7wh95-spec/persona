@@ -1,0 +1,83 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_CampHelpOthers",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/es/Xrd777/UI/Camp/Layout/DT_UILayout_CampHelpOthers",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "TUTORIAL_HELP": {
+        "X": 1418.0,
+        "Y": 933.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TUTORIAL_HELPBAR_OFFSET": {
+        "X": 0.0,
+        "Y": -2.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "DICTIONARY_HELP": {
+        "X": 1411.0,
+        "Y": 933.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "DICTIONARY_HELPBAR_OFFSET": {
+        "X": 0.0,
+        "Y": -2.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CONFIG_HELP": {
+        "X": 1463.0,
+        "Y": 933.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CONFIG_HELPBAR_OFFSET": {
+        "X": 0.0,
+        "Y": -2.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CONFIG_BGM_HELP": {
+        "X": 1412.0,
+        "Y": 933.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CONFIG_BGM_HELPBAR_OFFSET": {
+        "X": 0.0,
+        "Y": -2.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SKILL_HELP": {
+        "X": 1536.0,
+        "Y": 932.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "ITEM_HELP": {
+        "X": 1496.0,
+        "Y": 932.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TUTORIAL_DICTIONARY_NONE": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

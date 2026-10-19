@@ -1,0 +1,53 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_PartyPanel",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/ru/Xrd777/UI/Camp/Layout/DT_UILayout_PartyPanel",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "CHARACTER_NAME_COLLISION": {
+        "X": 225.0,
+        "Y": 40.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CHARACTER_NAME_COLLISION_EQUIP": {
+        "X": 225.0,
+        "Y": 40.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CHARACTER_NAME_EQUIP_POS_Y": {
+        "X": 0.0,
+        "Y": -10.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TACTICS_NAME": {
+        "X": 280.0,
+        "Y": 40.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "TACTICS_NAME_POS_Y": {
+        "X": 0.0,
+        "Y": 22.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CHARACTER_NAME_POS_Y": {
+        "X": 0.0,
+        "Y": -10.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

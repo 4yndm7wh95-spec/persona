@@ -1,0 +1,383 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_CampOthers",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/zh-Hant/Xrd777/UI/Camp/Layout/DT_UILayout_CampOthers",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "CALENDAR_HELP": {
+        "X": 1528.0,
+        "Y": 931.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CALENDAR_HELPBAR_OFFSET": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CALENDAR_WORK": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CALENDAR_INFO": {
+        "X": -63.0,
+        "Y": 14.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "COMMU_LIST_HELP": {
+        "X": 1589.0,
+        "Y": 932.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "COMMU_LIST_HELPBAR_OFFSET": {
+        "X": 0.0,
+        "Y": -1.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "COMMU_LIST_ARCANA_NAME": {
+        "X": 94.0,
+        "Y": 8.0,
+        "Angle": 0.0,
+        "Scale": 0.72
+      },
+      "COMMU_LIST_NAME_TEXT": {
+        "X": 307.0,
+        "Y": 95.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "COMMU_ARCANA_NAME": {
+        "X": -202.0,
+        "Y": 40.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "COMMU_CHARACTER_NAME_TEXT": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "EQUIP_LIST_HELP_CHARA": {
+        "X": 1618.0,
+        "Y": 932.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "EQUIP_LIST_HELP_CATEGORY": {
+        "X": 1587.0,
+        "Y": 932.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "EQUIP_LIST_HELP_LIST": {
+        "X": 1590.0,
+        "Y": 932.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "EQUIP_LIST_HELP_COMPARE": {
+        "X": 1588.0,
+        "Y": 934.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "EQUIP_LIST_HELPBAR_OFFSET_CHARA": {
+        "X": 0.0,
+        "Y": -1.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "EQUIP_LIST_HELPBAR_OFFSET_CATEGORY": {
+        "X": 0.0,
+        "Y": -1.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "EQUIP_LIST_HELPBAR_OFFSET_LIST": {
+        "X": 0.0,
+        "Y": -1.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "EQUIP_CHARA_PANEL_LEADER": {
+        "X": 15.0,
+        "Y": 42.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "EQUIP_CHARA_PANEL_PARTY": {
+        "X": 15.0,
+        "Y": 42.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "EQUIP_CHARA_PANEL_NAVI": {
+        "X": 15.0,
+        "Y": 42.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "EQUIP_CHARA_NAME_TEXT": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "EQUIP_CHARA_TITLE_1": {
+        "X": 494.0,
+        "Y": 45.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "EQUIP_CHARA_TITLE_2": {
+        "X": 726.0,
+        "Y": 45.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "EQUIP_CHARA_TITLE_ATTACK": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "EQUIP_CHARA_TITLE_ACCURACY": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "EQUIP_CHARA_TITLE_DEFENSE": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "EQUIP_CHARA_TITLE_EVASION": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "EQUIP_COMPARE_TITLE_ATTACK": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "EQUIP_COMPARE_TITLE_ACCURACY": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "EQUIP_COMPARE_TITLE_DEFENSE": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "EQUIP_COMPARE_TITLE_EVASION": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "EQUIP_INFO_ICON": {
+        "X": -56.0,
+        "Y": 14.0,
+        "Angle": 0.0,
+        "Scale": 0.0
+      },
+      "STATUS_HELP_STATUS": {
+        "X": 1626.0,
+        "Y": 932.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "STATUS_HELP_TACTICS": {
+        "X": 1556.0,
+        "Y": 932.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "STATUS_HELPBAR_OFFSET_STATUS": {
+        "X": 1.0,
+        "Y": -1.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "STATUS_HELPBAR_OFFSET_TACTICS": {
+        "X": 1.0,
+        "Y": -1.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "STATUS_ATTACK_TYPE": {
+        "X": -22.0,
+        "Y": -33.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "STATUS_NEXT_EXP": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "HUMAN_PARAM_EQUIPMENT_CARD": {
+        "X": -198.0,
+        "Y": -56.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "HUMAN_PARAM_EQUIPMENT_KIRA": {
+        "X": -199.0,
+        "Y": -80.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "HUMAN_PARAM_ARCANA_NAME": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "HUMAN_PARAM_ATTACK_POWER": {
+        "X": -9.0,
+        "Y": 21.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "HUMAN_PARAM_DEFENSE_POWER": {
+        "X": -9.0,
+        "Y": 21.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "HUMAN_PARAM_THEURGIA": {
+        "X": -93.0,
+        "Y": -38.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "HUMAN_PARAM_PERSONA": {
+        "X": 77.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "HUMAN_PARAM_APPEAL": {
+        "X": 24.0,
+        "Y": -14.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "HUMAN_PARAM_COURAGE": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "HUMAN_PARAM_KNOWLEDGE": {
+        "X": 24.0,
+        "Y": -5.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "HUMAN_PARAM_APPEAL_MAX": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "HUMAN_PARAM_COURAGE_MAX": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "HUMAN_PARAM_KNOWLEDGE_MAX": {
+        "X": 24.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "HUMAN_PARAM_NAME_OFFSET": {
+        "X": -1.0,
+        "Y": -12.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "STATUS_CHARA_NAME_OFFSET": {
+        "X": 71.0,
+        "Y": -104.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "COMMU_TITLE": {
+        "X": -77.0,
+        "Y": -127.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "COMMU_LIST_TITLE": {
+        "X": 103.0,
+        "Y": -50.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "COMMU_LIST_MINI_TITLE": {
+        "X": -130.0,
+        "Y": -43.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "HUMAN_PARAM_THEURGIA_SUB": {
+        "X": -81.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "HUMAN_PARAM_PERSONA_SUB": {
+        "X": 76.0,
+        "Y": 33.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CALENDAR_EVENT_DATE": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "STATUS_TACTICS_NAME": {
+        "X": 1192.0,
+        "Y": 104.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CALENDAR_TITLE": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

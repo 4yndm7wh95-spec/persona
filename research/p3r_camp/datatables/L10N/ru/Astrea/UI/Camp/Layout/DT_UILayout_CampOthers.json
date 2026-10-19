@@ -1,0 +1,53 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_CampOthers",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/ru/Astrea/UI/Camp/Layout/DT_UILayout_CampOthers",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "HUMAN_PARAM_APPEAL": {
+        "X": -110.0,
+        "Y": 28.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "HUMAN_PARAM_COURAGE": {
+        "X": 48.0,
+        "Y": 17.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "HUMAN_PARAM_KNOWLEDGE": {
+        "X": -133.0,
+        "Y": 50.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "HUMAN_PARAM_APPEAL_HELP_TEXT_OFFSET": {
+        "X": -25.0,
+        "Y": 16.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "HUMAN_PARAM_COURAGE_HELP_TEXT_OFFSET": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "HUMAN_PARAM_KNOWLEDGE_HELP_TEXT_OFFSET": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

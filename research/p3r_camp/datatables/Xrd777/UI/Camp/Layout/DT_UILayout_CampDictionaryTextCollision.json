@@ -1,0 +1,29 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_CampDictionaryTextCollision",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/Xrd777/UI/Camp/Layout/DT_UILayout_CampDictionaryTextCollision",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "ITEM_TEXT_COLLISION": {
+        "X": 887.0,
+        "Y": 31.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "NONE_DICTIONARY_TEXT_COLLISION": {
+        "X": 780.0,
+        "Y": 31.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

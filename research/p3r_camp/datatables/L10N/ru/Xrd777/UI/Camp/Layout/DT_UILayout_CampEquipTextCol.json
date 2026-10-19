@@ -1,0 +1,89 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_CampEquipTextCol",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/ru/Xrd777/UI/Camp/Layout/DT_UILayout_CampEquipTextCol",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "CHARA_SELECT_EQUIP_NAME": {
+        "X": 370.0,
+        "Y": 45.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CHARA_SELECT_EQUIP_NAME_POS_Y": {
+        "X": 0.0,
+        "Y": -2.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CATEGORY_CHARA_NAME": {
+        "X": 550.0,
+        "Y": 50.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CATEGORY_CHARA_NAME_POS_Y": {
+        "X": 0.0,
+        "Y": -10.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CATEGORY_EQUIP_NAME": {
+        "X": 350.0,
+        "Y": 50.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CATEGORY_EQUIP_NAME_POS_Y": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CATEGORY_EFFECT": {
+        "X": 570.0,
+        "Y": 50.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CATEGORY_EFFECT_POS_Y": {
+        "X": 0.0,
+        "Y": -2.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CATEGORY_DESCRIPTION": {
+        "X": 416.0,
+        "Y": 150.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CATEGORY_DESCRIPTION_POS_Y": {
+        "X": 0.0,
+        "Y": -3.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CATEGORY_DESCRIPTION_ROW_OFFSET": {
+        "X": 0.0,
+        "Y": 2.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "LIST_EQUIP_NAME": {
+        "X": 370.0,
+        "Y": 45.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

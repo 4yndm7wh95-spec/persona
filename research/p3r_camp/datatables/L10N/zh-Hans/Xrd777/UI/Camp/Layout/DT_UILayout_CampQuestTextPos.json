@@ -1,0 +1,95 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_CampQuestTextPos",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/zh-Hans/Xrd777/UI/Camp/Layout/DT_UILayout_CampQuestTextPos",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "QUEST_ORDER_NAME": {
+        "X": 0.0,
+        "Y": 10.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_ORDER_NAME_HATENA": {
+        "X": -5.0,
+        "Y": -5.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_CRITERIA": {
+        "X": 70.0,
+        "Y": 68.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_CRITERIA_ADJUST_POS_Y": {
+        "X": 0.0,
+        "Y": 10.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_CRITERIA_ROW_OFFSET": {
+        "X": 0.0,
+        "Y": 2.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_ORDER_DETAIL": {
+        "X": 65.0,
+        "Y": 74.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_ORDER_DETAIL_ROW_OFFSET": {
+        "X": 0.0,
+        "Y": 2.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "MISSING_PERSON_NAME": {
+        "X": 0.0,
+        "Y": 10.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "MISSING_PERSON_NAME_HATENA": {
+        "X": -5.0,
+        "Y": -5.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "MISSING_PERSON_PROFILE": {
+        "X": 90.0,
+        "Y": -8.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "MISSING_INFORMATION_LIST": {
+        "X": 70.0,
+        "Y": 78.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "MISSING_INFORMATION_DETAIL": {
+        "X": 75.0,
+        "Y": 74.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "MISSING_INFORMATION_ROW_OFFSET": {
+        "X": 0.0,
+        "Y": 2.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

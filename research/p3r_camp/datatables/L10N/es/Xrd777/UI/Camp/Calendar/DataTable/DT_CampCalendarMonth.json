@@ -1,0 +1,65 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_CampCalendarMonth",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/es/Xrd777/UI/Camp/Calendar/DataTable/DT_CampCalendarMonth",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UICmpCalendarDrawStringItem'",
+        "ObjectPath": "/Script/xrd777"
+      }
+    },
+    "Rows": {
+      "0": {
+        "String": "Ene",
+        "Comment": "1月"
+      },
+      "1": {
+        "String": "Feb",
+        "Comment": "2月"
+      },
+      "2": {
+        "String": "Mar",
+        "Comment": "3月"
+      },
+      "3": {
+        "String": "Abr",
+        "Comment": "4月"
+      },
+      "4": {
+        "String": "May",
+        "Comment": "5月"
+      },
+      "5": {
+        "String": "Jun",
+        "Comment": "6月"
+      },
+      "6": {
+        "String": "Jul",
+        "Comment": "7月"
+      },
+      "7": {
+        "String": "Ago",
+        "Comment": "8月"
+      },
+      "8": {
+        "String": "Sep",
+        "Comment": "9月"
+      },
+      "9": {
+        "String": "Oct",
+        "Comment": "10月"
+      },
+      "10": {
+        "String": "Nov",
+        "Comment": "11月"
+      },
+      "11": {
+        "String": "Dic",
+        "Comment": "12月"
+      }
+    }
+  }
+]

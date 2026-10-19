@@ -1,0 +1,53 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_CampQuestTextCol",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/ru/Xrd777/UI/Camp/Layout/DT_UILayout_CampQuestTextCol",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "QUEST_ORDER_NAME": {
+        "X": 700.0,
+        "Y": 50.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_CRITERIA": {
+        "X": 750.0,
+        "Y": 100.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_REWARD": {
+        "X": 370.0,
+        "Y": 40.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_ORDER_DETAIL": {
+        "X": 750.0,
+        "Y": 250.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "MISSING_PERSON_NAME": {
+        "X": 700.0,
+        "Y": 50.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "MISSING_INFORMATION": {
+        "X": 750.0,
+        "Y": 100.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

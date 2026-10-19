@@ -1,0 +1,59 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_CampItemTextCol",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/ko/Xrd777/UI/Camp/Layout/DT_UILayout_CampItemTextCol",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "LIST_ITEM_NAME": {
+        "X": 350.0,
+        "Y": 45.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "ITEM_DETAIL": {
+        "X": 416.0,
+        "Y": 150.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "ITEM_DETAIL_POS_Y": {
+        "X": 0.0,
+        "Y": 8.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "ITEM_DETAIL_ROW_OFFSET": {
+        "X": 0.0,
+        "Y": 2.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "NONE_TEXT": {
+        "X": 600.0,
+        "Y": 50.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "NONE_TEXT_POS": {
+        "X": 0.0,
+        "Y": 74.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "CATEGORY_NAME": {
+        "X": 350.0,
+        "Y": 50.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

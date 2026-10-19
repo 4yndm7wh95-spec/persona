@@ -1,0 +1,43 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_CampParamItem",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/Astrea/UI/Camp/Param/DT_CampParamItem",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'CampParamTableItemRow'",
+        "ObjectPath": "/Script/xrd777"
+      }
+    },
+    "Rows": {
+      "NewRow": {
+        "ItemInDist": -100.0,
+        "ItemSilhouetteAnimType": "EOneAnimType::CurveUp2",
+        "ItemSilhouetteFrame": 20,
+        "ItemSilhouetteWait": 10,
+        "ItemSilhouetteOriginal": {
+          "X": 0.0,
+          "Y": 0.0
+        },
+        "ItemSilhouetteTarget": {
+          "X": -90.0,
+          "Y": -110.0
+        },
+        "ItemSiroItaAnimType": "EOneAnimType::CurveUp1",
+        "ItemSiroItaFrame": 10,
+        "ItemSiroItaWait": 0,
+        "ItemTitleAnimType": "EOneAnimType::CurveUp2",
+        "ItemTitleFrame": 8,
+        "ItemTitleWait": 0,
+        "ItemListAnimType": "EOneAnimType::CurveUp2",
+        "ItemListFrame": 10,
+        "ItemListWait": 2,
+        "ItemTabAnimType": "EOneAnimType::CurveUp2",
+        "ItemTabFrame": 8,
+        "ItemTabWait": 0
+      }
+    }
+  }
+]

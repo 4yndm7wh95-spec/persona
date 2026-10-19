@@ -1,0 +1,141 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_CampCalendarDay",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/zh-Hant/Xrd777/UI/Camp/Calendar/DataTable/DT_CampCalendarDay",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UICmpCalendarDrawStringItem'",
+        "ObjectPath": "/Script/xrd777"
+      }
+    },
+    "Rows": {
+      "0": {
+        "String": "１日",
+        "Comment": "1日"
+      },
+      "1": {
+        "String": "２日",
+        "Comment": "2日"
+      },
+      "2": {
+        "String": "３日",
+        "Comment": "3日"
+      },
+      "3": {
+        "String": "４日",
+        "Comment": "4日"
+      },
+      "4": {
+        "String": "５日",
+        "Comment": "5日"
+      },
+      "5": {
+        "String": "６日",
+        "Comment": "6日"
+      },
+      "6": {
+        "String": "７日",
+        "Comment": "7日"
+      },
+      "7": {
+        "String": "８日",
+        "Comment": "8日"
+      },
+      "8": {
+        "String": "９日",
+        "Comment": "9日"
+      },
+      "9": {
+        "String": "１０日",
+        "Comment": "10日"
+      },
+      "10": {
+        "String": "１１日",
+        "Comment": "11日"
+      },
+      "11": {
+        "String": "１２日",
+        "Comment": "12日"
+      },
+      "12": {
+        "String": "１３日",
+        "Comment": "13日"
+      },
+      "13": {
+        "String": "１４日",
+        "Comment": "14日"
+      },
+      "14": {
+        "String": "１５日",
+        "Comment": "15日"
+      },
+      "15": {
+        "String": "１６日",
+        "Comment": "16日"
+      },
+      "16": {
+        "String": "１７日",
+        "Comment": "17日"
+      },
+      "17": {
+        "String": "１８日",
+        "Comment": "18日"
+      },
+      "18": {
+        "String": "１９日",
+        "Comment": "19日"
+      },
+      "19": {
+        "String": "２０日",
+        "Comment": "20日"
+      },
+      "20": {
+        "String": "２１日",
+        "Comment": "21日"
+      },
+      "21": {
+        "String": "２２日",
+        "Comment": "22日"
+      },
+      "22": {
+        "String": "２３日",
+        "Comment": "23日"
+      },
+      "23": {
+        "String": "２４日",
+        "Comment": "24日"
+      },
+      "24": {
+        "String": "２５日",
+        "Comment": "25日"
+      },
+      "25": {
+        "String": "２６日",
+        "Comment": "26日"
+      },
+      "26": {
+        "String": "２７日",
+        "Comment": "27日"
+      },
+      "27": {
+        "String": "２８日",
+        "Comment": "28日"
+      },
+      "28": {
+        "String": "２９日",
+        "Comment": "29日"
+      },
+      "29": {
+        "String": "３０日",
+        "Comment": "30日"
+      },
+      "30": {
+        "String": "３１日",
+        "Comment": "31日"
+      }
+    }
+  }
+]

@@ -1,0 +1,41 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_CampCalendarTextCollision",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/fr/Xrd777/UI/Camp/Layout/DT_UILayout_CampCalendarTextCollision",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "SCHEDULE_TEXT_COLLISION": {
+        "X": 600.0,
+        "Y": 50.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PART_TIME_JOB_TEXT_COLLISION": {
+        "X": 750.0,
+        "Y": 225.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PART_TIME_JOB_TEXT_POS_Y": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PART_TIME_JOB_TEXT_ROW_OFFSET": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

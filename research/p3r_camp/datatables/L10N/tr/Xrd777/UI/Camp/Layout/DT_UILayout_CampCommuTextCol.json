@@ -1,0 +1,83 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_CampCommuTextCol",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/tr/Xrd777/UI/Camp/Layout/DT_UILayout_CampCommuTextCol",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "COMMU_NAME_LIST": {
+        "X": 450.0,
+        "Y": 45.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "COMMU_NAME": {
+        "X": 450.0,
+        "Y": 45.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "COMMU_NAME_POS_Y": {
+        "X": 0.0,
+        "Y": -12.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "COMMU_DETAIL": {
+        "X": 650.0,
+        "Y": 200.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "COMMU_DETAIL_POS_Y": {
+        "X": 0.0,
+        "Y": -5.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "COMMU_DETAIL_ROW_OFFSET": {
+        "X": 0.0,
+        "Y": 1.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "COMMU_MEMBER_NAME": {
+        "X": 300.0,
+        "Y": 27.5,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "COMMU_MEMBER_NAME_POS": {
+        "X": 0.0,
+        "Y": -14.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "COMMU_MEMBER_DETAIL": {
+        "X": 600.0,
+        "Y": 160.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "COMMU_MEMBER_DETAIL_POSY": {
+        "X": 0.0,
+        "Y": 88.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "COMMU_MEMBER_DETAIL_ROW_OFFSET": {
+        "X": 0.0,
+        "Y": 1.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

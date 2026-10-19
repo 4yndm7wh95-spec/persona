@@ -1,0 +1,41 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_CampSkill2",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/fr/Xrd777/UI/Camp/Layout/DT_UILayout_CampSkill2",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "SKILL_COST": {
+        "X": 547.0,
+        "Y": -64.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SKILL_INFO": {
+        "X": -56.0,
+        "Y": 12.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SKILL_DETAIL_TEXT_POS_Y": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SKILL_DETAIL_TEXT_ROW_OFFSET": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

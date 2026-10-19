@@ -1,0 +1,45 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_CampCalendarWeek",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/pl/Xrd777/UI/Camp/Calendar/DataTable/DT_CampCalendarWeek",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UICmpCalendarDrawStringItem'",
+        "ObjectPath": "/Script/xrd777"
+      }
+    },
+    "Rows": {
+      "0": {
+        "String": "(Nie)",
+        "Comment": "日曜日"
+      },
+      "1": {
+        "String": "(Pon)",
+        "Comment": "月曜日"
+      },
+      "2": {
+        "String": "(Wt)",
+        "Comment": "火曜日"
+      },
+      "3": {
+        "String": "(Śr)",
+        "Comment": "水曜日"
+      },
+      "4": {
+        "String": "(Czw)",
+        "Comment": "木曜日"
+      },
+      "5": {
+        "String": "(Pt)",
+        "Comment": "金曜日"
+      },
+      "6": {
+        "String": "(Sob)",
+        "Comment": "土曜日"
+      }
+    }
+  }
+]

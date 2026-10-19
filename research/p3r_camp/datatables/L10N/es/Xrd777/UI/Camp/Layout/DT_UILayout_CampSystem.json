@@ -1,0 +1,185 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_CampSystem",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/es/Xrd777/UI/Camp/Layout/DT_UILayout_CampSystem",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "SYSTEM_HELP_TUTORIAL": {
+        "X": 1623.0,
+        "Y": 933.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_HELP_CONFIG": {
+        "X": 1508.0,
+        "Y": 933.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_HELP_DICTIONARY": {
+        "X": 1604.0,
+        "Y": 933.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_HELP_DATALOAD": {
+        "X": 1352.0,
+        "Y": 933.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_HELP_DATASAVE": {
+        "X": 1557.0,
+        "Y": 933.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_HELP_ROLLBACK": {
+        "X": 1459.0,
+        "Y": 933.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_HELP_BACKTOTITLE": {
+        "X": 1405.0,
+        "Y": 933.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_HELP_TEXT_TUTORIAL": {
+        "X": 20.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_HELP_TEXT_CONFIG": {
+        "X": 20.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_HELP_TEXT_DICTIONARY": {
+        "X": 20.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_HELP_TEXT_DATALOAD": {
+        "X": 20.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_HELP_TEXT_DATASAVE": {
+        "X": 20.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_HELP_TEXT_ROLLBACK": {
+        "X": 20.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_HELP_TEXT_BACKTOTITLE": {
+        "X": 20.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_ITEM_ON_TUTORIAL": {
+        "X": 0.0,
+        "Y": -20.0,
+        "Angle": -7.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_ITEM_ON_CONFIG": {
+        "X": 6.0,
+        "Y": 55.0,
+        "Angle": 1.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_ITEM_ON_DICTIONARY": {
+        "X": 50.0,
+        "Y": 125.0,
+        "Angle": -6.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_ITEM_ON_DATALOAD": {
+        "X": 70.0,
+        "Y": 205.0,
+        "Angle": 2.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_ITEM_ON_DATASAVE": {
+        "X": 0.0,
+        "Y": 265.0,
+        "Angle": -4.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_ITEM_ON_ROLLBACK": {
+        "X": 110.0,
+        "Y": 345.0,
+        "Angle": 2.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_ITEM_ON_BACKTOTITLE": {
+        "X": 0.0,
+        "Y": 420.0,
+        "Angle": 7.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_ITEM_OFF_TUTORIAL": {
+        "X": -30.0,
+        "Y": 0.0,
+        "Angle": -7.0,
+        "Scale": 0.65
+      },
+      "SYSTEM_ITEM_OFF_CONFIG": {
+        "X": 6.0,
+        "Y": 55.0,
+        "Angle": 1.0,
+        "Scale": 0.7
+      },
+      "SYSTEM_ITEM_OFF_DICTIONARY": {
+        "X": 50.0,
+        "Y": 125.0,
+        "Angle": -6.0,
+        "Scale": 0.65
+      },
+      "SYSTEM_ITEM_OFF_DATALOAD": {
+        "X": 70.0,
+        "Y": 205.0,
+        "Angle": 2.0,
+        "Scale": 0.6
+      },
+      "SYSTEM_ITEM_OFF_DATASAVE": {
+        "X": 0.0,
+        "Y": 265.0,
+        "Angle": -4.0,
+        "Scale": 0.7
+      },
+      "SYSTEM_ITEM_OFF_ROLLBACK": {
+        "X": 110.0,
+        "Y": 345.0,
+        "Angle": 2.0,
+        "Scale": 0.68
+      },
+      "SYSTEM_ITEM_OFF_BACKTOTITLE": {
+        "X": 0.0,
+        "Y": 420.0,
+        "Angle": 7.0,
+        "Scale": 0.6
+      }
+    }
+  }
+]

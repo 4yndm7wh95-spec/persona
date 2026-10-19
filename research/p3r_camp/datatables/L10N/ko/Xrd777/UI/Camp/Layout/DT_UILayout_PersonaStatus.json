@@ -1,0 +1,197 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_PersonaStatus",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/ko/Xrd777/UI/Camp/Layout/DT_UILayout_PersonaStatus",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "PERSONA_STATUS_ARCANA_CAPTION": {
+        "X": -205.0,
+        "Y": -18.0,
+        "Angle": -11.45,
+        "Scale": 1.0
+      },
+      "PERSONA_STATUS_ARCANA_NAME": {
+        "X": -237.0,
+        "Y": -48.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_STATUS_EQUIP_CARD": {
+        "X": -200.0,
+        "Y": 84.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_STATUS_EQUIP_SPARKLING": {
+        "X": -197.0,
+        "Y": 50.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_STATUS_PLAYER_NAME": {
+        "X": -171.0,
+        "Y": -98.0,
+        "Angle": -11.45,
+        "Scale": 1.0
+      },
+      "PERSONA_STATUS_PERSONA_NAME": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": -11.45,
+        "Scale": 1.0
+      },
+      "PERSONA_STATUS_PERSONA_NAME_BLANK": {
+        "X": 222.0,
+        "Y": -27.0,
+        "Angle": -11.45,
+        "Scale": 1.0
+      },
+      "PERSONA_STATUS_PARAM": {
+        "X": -89.0,
+        "Y": 18.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_COMBINE_TAB_ROOT": {
+        "X": -286.0,
+        "Y": -38.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_COMBINE_TAB_OFFSET": {
+        "X": -17.0,
+        "Y": 4.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_COMBINE_RESULT_OFFSET": {
+        "X": 36.0,
+        "Y": 1.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_STATUS_HELP": {
+        "X": 20.0,
+        "Y": -2.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_STATUS_HELP_TEXT": {
+        "X": 0.0,
+        "Y": 1.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_SKILL_REVIVAL_HELP": {
+        "X": 21.0,
+        "Y": -2.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_SKILL_REVIVAL_HELP_TEXT": {
+        "X": 0.0,
+        "Y": 1.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_RESISTANCE_ICON_NORMAL": {
+        "X": 123.0,
+        "Y": -24.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_RESISTANCE_ICON_FIRE": {
+        "X": 156.0,
+        "Y": -31.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_RESISTANCE_ICON_HEAD": {
+        "X": 139.0,
+        "Y": 431.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_STATUS_NEXT": {
+        "X": 72.0,
+        "Y": 56.0,
+        "Angle": -11.45,
+        "Scale": 1.0
+      },
+      "PERSONA_STATUS_NEXTSKILL": {
+        "X": 29.0,
+        "Y": 245.0,
+        "Angle": -11.45,
+        "Scale": 1.0
+      },
+      "PERSONA_STATUS_ITEM": {
+        "X": -140.0,
+        "Y": -62.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_STATUS_SKILL": {
+        "X": -70.0,
+        "Y": -27.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_STATUS_INFO": {
+        "X": -56.0,
+        "Y": 12.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_STATUS_SKILLSELECT": {
+        "X": 257.0,
+        "Y": -135.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_STATUS_TOP_REGIST_HEADER": {
+        "X": -46.0,
+        "Y": -17.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_STATUS_BOTTOM_REGIST_HEADER": {
+        "X": 55.0,
+        "Y": 17.0,
+        "Angle": 0.0,
+        "Scale": 0.75
+      },
+      "PERSONA_STATUS_NONE": {
+        "X": 331.0,
+        "Y": 261.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_STATUS_STORY": {
+        "X": -45.0,
+        "Y": -76.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_DETAIL_OFFSET": {
+        "X": 0.0,
+        "Y": 4.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_STATUS_SKILL_NONE": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

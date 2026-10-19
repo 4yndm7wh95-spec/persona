@@ -1,0 +1,95 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_CampQuest",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/tr/Xrd777/UI/Camp/Layout/DT_UILayout_CampQuest",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "QUEST_TAB_REQUEST": {
+        "X": -136.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_TAB_MISSING": {
+        "X": 136.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_REWARD_EARNED": {
+        "X": 152.0,
+        "Y": -58.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_MISSING_POLICE_LOGO": {
+        "X": 862.0,
+        "Y": 355.0,
+        "Angle": -4.75,
+        "Scale": 1.0
+      },
+      "QUEST_HELP_REQUEST_ROOT": {
+        "X": 1301.0,
+        "Y": 931.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_HELP_REQUEST_TEXT": {
+        "X": 30.0,
+        "Y": 1.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_HELP_MISSING_ROOT": {
+        "X": 1355.0,
+        "Y": 931.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_HELP_MISSING_TEXT": {
+        "X": 29.0,
+        "Y": 1.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_HELP_UNKNOWN_ROOT": {
+        "X": 1628.0,
+        "Y": 931.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_HELP_UNKNOWN_TEXT": {
+        "X": 29.0,
+        "Y": 1.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_HELP_ACHIEVABLE_ROOT": {
+        "X": 1676.0,
+        "Y": 931.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_HELP_ACHIEVABLE_TEXT": {
+        "X": 29.0,
+        "Y": 1.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_EXCLAMATION_MARK": {
+        "X": -104.0,
+        "Y": -7.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

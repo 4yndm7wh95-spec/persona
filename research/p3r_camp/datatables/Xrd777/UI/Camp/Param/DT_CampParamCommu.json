@@ -1,0 +1,65 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_CampParamCommu",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/Xrd777/UI/Camp/Param/DT_CampParamCommu",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'CampParamTableCommuRow'",
+        "ObjectPath": "/Script/xrd777"
+      }
+    },
+    "Rows": {
+      "NewRow": {
+        "CommListInSilhouetteAnimType": "EOneAnimType::CurveUp2",
+        "CommListInSilhouetteFrame": 14,
+        "CommListInSilhouetteWait": 0,
+        "CommListInSilhouetteOriginal": {
+          "X": 0.0,
+          "Y": 0.0
+        },
+        "CommListInSilhouetteTarget": {
+          "X": 72.0,
+          "Y": 20.0
+        },
+        "CommListInSiroItaAnimType": "EOneAnimType::CurveUp2",
+        "CommListInSiroItaFrame": 14,
+        "CommListInSiroItaWait": 0,
+        "CommListOutSiroItaFrame": 5,
+        "CommListInListAnimType": "EOneAnimType::CurveUp2",
+        "CommListInListFrame": 5,
+        "CommListInListWait": 0,
+        "CommListOutListFrame": 6,
+        "CommDetlInDetailAnimType": "EOneAnimType::CurveUp2",
+        "CommDetlInDetailFrame": 6,
+        "CommDetlInDetailWait": 0,
+        "CommDetlOutDetailFrame": 4,
+        "CommDetlInDescriAnimType": "EOneAnimType::CurveUp2",
+        "CommDetlInDescriFrame": 6,
+        "CommDetlInDescriWait": 0,
+        "CommDetlInMemberAnimType": "EOneAnimType::CurveUp2",
+        "CommDetlInMemberFrame": 6,
+        "CommDetlInMemberWait": 0,
+        "CommDetlInBustupAnimType": "EOneAnimType::CurveUp2",
+        "CommDetlInBustupFrame": 7,
+        "CommDetlInBustupWait": 0,
+        "CommDetlBustupChangeFrame": 5,
+        "CommuCardAnimType": "EOneAnimType::Linear",
+        "CommuCardFrameMin": 150,
+        "CommuCardFrameMax": 200,
+        "CommuCardWaitMin": 30,
+        "CommuCardWaitMax": 60,
+        "CommuCardScaleMin": 0.6,
+        "CommuCardScaleMax": 1.0,
+        "CommuCardXAccMin": 0.01,
+        "CommuCardXAccMax": 0.05,
+        "CommuCardRotAxis1Min": 3.0,
+        "CommuCardRotAxis1Max": 4.0,
+        "CommuCardRotAxis2Min": 3.0,
+        "CommuCardRotAxis2Max": 4.0
+      }
+    }
+  }
+]

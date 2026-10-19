@@ -1,0 +1,59 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_CampSystemTouchCollision",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/it/Xrd777/UI/Camp/Layout/DT_UILayout_CampSystemTouchCollision",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "SYSTEM_TUTORIAL_WH": {
+        "X": -300.0,
+        "Y": -70.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_CONFIG_WH": {
+        "X": -400.0,
+        "Y": -60.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_DICTIONARY_WH": {
+        "X": -200.0,
+        "Y": -60.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_DATALOAD_WH": {
+        "X": -500.0,
+        "Y": -50.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_DATASAVE_WH": {
+        "X": -500.0,
+        "Y": -70.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_ROLLBACK_WH": {
+        "X": -600.0,
+        "Y": -60.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SYSTEM_RETURNTOTITLE_WH": {
+        "X": -250.0,
+        "Y": -50.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

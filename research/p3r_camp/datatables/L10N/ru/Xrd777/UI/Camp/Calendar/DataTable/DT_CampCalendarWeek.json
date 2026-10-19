@@ -1,0 +1,45 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_CampCalendarWeek",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/ru/Xrd777/UI/Camp/Calendar/DataTable/DT_CampCalendarWeek",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UICmpCalendarDrawStringItem'",
+        "ObjectPath": "/Script/xrd777"
+      }
+    },
+    "Rows": {
+      "0": {
+        "String": "(Вс)",
+        "Comment": "日曜日"
+      },
+      "1": {
+        "String": "(Пн)",
+        "Comment": "月曜日"
+      },
+      "2": {
+        "String": "(Вт)",
+        "Comment": "火曜日"
+      },
+      "3": {
+        "String": "(Ср)",
+        "Comment": "水曜日"
+      },
+      "4": {
+        "String": "(Чт)",
+        "Comment": "木曜日"
+      },
+      "5": {
+        "String": "(Пт)",
+        "Comment": "金曜日"
+      },
+      "6": {
+        "String": "(Сб)",
+        "Comment": "土曜日"
+      }
+    }
+  }
+]
