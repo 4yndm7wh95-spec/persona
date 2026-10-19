@@ -1,0 +1,3740 @@
+[
+  {
+    "Type": "Function",
+    "Name": "ExecuteUbergraph_BP_VelvetRoomDraw",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "ChildProperties": [
+      {
+        "Type": "IntProperty",
+        "Name": "EntryPoint",
+        "Flags": "RF_Public",
+        "ElementSize": 4,
+        "PropertyFlags": "BlueprintVisible | BlueprintReadOnly | Parm"
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "Temp_int_Loop_Counter_Variable",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "CallFunc_Add_IntInt_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "Temp_int_Array_Index_Variable",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "Temp_int_Loop_Counter_Variable_1",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "DelegateProperty",
+        "Name": "K2Node_CreateDelegate_OutputDelegate",
+        "Flags": "RF_Public",
+        "ElementSize": 20,
+        "SignatureFunction": {
+          "ObjectName": "Class'UIVelvetRoomDraw_CustomEvent__DelegateSignature'",
+          "ObjectPath": "/Script/xrd777"
+        }
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "CallFunc_Add_IntInt_ReturnValue_1",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "Temp_int_Loop_Counter_Variable_2",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "CallFunc_Add_IntInt_ReturnValue_2",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "Temp_int_Array_Index_Variable_1",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "Temp_int_Array_Index_Variable_2",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "ByteProperty",
+        "Name": "CallFunc_MakeLiteralByte_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "Enum": null
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "Temp_int_Array_Index_Variable_3",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_1",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ByteProperty",
+        "Name": "CallFunc_MakeLiteralByte_ReturnValue_1",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "Enum": null
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_2",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_3",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_4",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ByteProperty",
+        "Name": "CallFunc_MakeLiteralByte_ReturnValue_2",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "Enum": null
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_5",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_6",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "Temp_int_Array_Index_Variable_4",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "ByteProperty",
+        "Name": "CallFunc_MakeLiteralByte_ReturnValue_3",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "Enum": null
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "Temp_int_Loop_Counter_Variable_3",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_7",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "CallFunc_Add_IntInt_ReturnValue_3",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "Temp_int_Array_Index_Variable_5",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "ArrayProperty",
+        "Name": "CallFunc_GetAllActorsOfClass_OutActors",
+        "Flags": "RF_Public",
+        "ElementSize": 16,
+        "PropertyFlags": "ReferenceParm",
+        "Inner": {
+          "Type": "ObjectProperty",
+          "Name": "CallFunc_GetAllActorsOfClass_OutActors",
+          "Flags": "RF_Public",
+          "ElementSize": 8,
+          "PropertyClass": {
+            "ObjectName": "BlueprintGeneratedClass'BP_FldNpcMain_C'",
+            "ObjectPath": "/Game/Xrd777/Blueprints/Field/Character/BP_FldNpcMain.0"
+          }
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_8",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_FldNpcMain_C'",
+          "ObjectPath": "/Game/Xrd777/Blueprints/Field/Character/BP_FldNpcMain.0"
+        }
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "CallFunc_Array_Length_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_GetFaceMesh_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyFlags": "InstancedReference",
+        "PropertyClass": {
+          "ObjectName": "Class'SkeletalMeshComponent'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_GetHairMesh_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyFlags": "InstancedReference",
+        "PropertyClass": {
+          "ObjectName": "Class'SkeletalMeshComponent'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "ArrayProperty",
+        "Name": "CallFunc_GetMaterials_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 16,
+        "PropertyFlags": "ReferenceParm",
+        "Inner": {
+          "Type": "ObjectProperty",
+          "Name": "CallFunc_GetMaterials_ReturnValue",
+          "Flags": "RF_Public",
+          "ElementSize": 8,
+          "PropertyClass": {
+            "ObjectName": "Class'MaterialInterface'",
+            "ObjectPath": "/Script/Engine"
+          }
+        }
+      },
+      {
+        "Type": "ArrayProperty",
+        "Name": "CallFunc_GetMaterials_ReturnValue_1",
+        "Flags": "RF_Public",
+        "ElementSize": 16,
+        "PropertyFlags": "ReferenceParm",
+        "Inner": {
+          "Type": "ObjectProperty",
+          "Name": "CallFunc_GetMaterials_ReturnValue_1",
+          "Flags": "RF_Public",
+          "ElementSize": 8,
+          "PropertyClass": {
+            "ObjectName": "Class'MaterialInterface'",
+            "ObjectPath": "/Script/Engine"
+          }
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_9",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'MaterialInterface'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "CallFunc_Array_Length_ReturnValue_1",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "CallFunc_IsValid_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_CreateDynamicMaterialInstance_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'MaterialInstanceDynamic'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "CallFunc_Array_Add_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "CallFunc_Array_Length_ReturnValue_2",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "CallFunc_Array_Add_ReturnValue_1",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "CallFunc_Less_IntInt_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_GetCostumeMesh_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyFlags": "InstancedReference",
+        "PropertyClass": {
+          "ObjectName": "Class'SkeletalMeshComponent'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "ArrayProperty",
+        "Name": "CallFunc_GetMaterials_ReturnValue_2",
+        "Flags": "RF_Public",
+        "ElementSize": 16,
+        "PropertyFlags": "ReferenceParm",
+        "Inner": {
+          "Type": "ObjectProperty",
+          "Name": "CallFunc_GetMaterials_ReturnValue_2",
+          "Flags": "RF_Public",
+          "ElementSize": 8,
+          "PropertyClass": {
+            "ObjectName": "Class'MaterialInterface'",
+            "ObjectPath": "/Script/Engine"
+          }
+        }
+      },
+      {
+        "Type": "ByteProperty",
+        "Name": "CallFunc_MakeLiteralByte_ReturnValue_4",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "Enum": null
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "CallFunc_Array_Length_ReturnValue_3",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "ByteProperty",
+        "Name": "CallFunc_MakeLiteralByte_ReturnValue_5",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "Enum": null
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "Temp_int_Loop_Counter_Variable_4",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "CallFunc_Add_IntInt_ReturnValue_4",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "K2Node_DynamicCast_AsBP_Combine_Hero_Set_Shadow",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_Combine_HeroSet_Shadow_C'",
+          "ObjectPath": "/Game/Xrd777/Blueprints/UI/Facility/Combine/BP_Combine_HeroSet_Shadow.9"
+        }
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "K2Node_DynamicCast_bSuccess",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "DelegateProperty",
+        "Name": "K2Node_CreateDelegate_OutputDelegate_1",
+        "Flags": "RF_Public",
+        "ElementSize": 20,
+        "SignatureFunction": {
+          "ObjectName": "Class'UIVelvetRoomDraw_CustomEvent__DelegateSignature'",
+          "ObjectPath": "/Script/xrd777"
+        }
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "Temp_int_Array_Index_Variable_6",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_10",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'MaterialInstanceDynamic'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_11",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'MaterialInterface'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "CallFunc_IsValid_ReturnValue_1",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_CreateDynamicMaterialInstance_ReturnValue_1",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'MaterialInstanceDynamic'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "CallFunc_Array_Add_ReturnValue_2",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "CallFunc_Array_Length_ReturnValue_4",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "CallFunc_Less_IntInt_ReturnValue_1",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_12",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'MaterialInstanceDynamic'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "CallFunc_Array_Length_ReturnValue_5",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "CallFunc_Less_IntInt_ReturnValue_2",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_13",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_FldNpcMain_C'",
+          "ObjectPath": "/Game/Xrd777/Blueprints/Field/Character/BP_FldNpcMain.0"
+        }
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "CallFunc_Array_Length_ReturnValue_6",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "CallFunc_Less_IntInt_ReturnValue_3",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_14",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_FldNpcMain_C'",
+          "ObjectPath": "/Game/Xrd777/Blueprints/Field/Character/BP_FldNpcMain.0"
+        }
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "CallFunc_Array_Length_ReturnValue_7",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "CallFunc_Less_IntInt_ReturnValue_4",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "Temp_int_Loop_Counter_Variable_5",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "DelegateProperty",
+        "Name": "K2Node_CreateDelegate_OutputDelegate_2",
+        "Flags": "RF_Public",
+        "ElementSize": 20,
+        "SignatureFunction": {
+          "ObjectName": "Class'UIVelvetRoomDraw_CustomEvent__DelegateSignature'",
+          "ObjectPath": "/Script/xrd777"
+        }
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "CallFunc_Less_IntInt_ReturnValue_5",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "CallFunc_Add_IntInt_ReturnValue_5",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "Temp_int_Loop_Counter_Variable_6",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "DelegateProperty",
+        "Name": "K2Node_CreateDelegate_OutputDelegate_3",
+        "Flags": "RF_Public",
+        "ElementSize": 20,
+        "SignatureFunction": {
+          "ObjectName": "Class'AppActor_CustomEvent__DelegateSignature'",
+          "ObjectPath": "/Script/xrd777"
+        }
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "CallFunc_Less_IntInt_ReturnValue_6",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "CallFunc_Add_IntInt_ReturnValue_6",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "DelegateProperty",
+        "Name": "K2Node_CreateDelegate_OutputDelegate_4",
+        "Flags": "RF_Public",
+        "ElementSize": 20,
+        "SignatureFunction": {
+          "ObjectName": "Class'AppActor_CustomEvent__DelegateSignature'",
+          "ObjectPath": "/Script/xrd777"
+        }
+      },
+      {
+        "Type": "DelegateProperty",
+        "Name": "K2Node_CreateDelegate_OutputDelegate_5",
+        "Flags": "RF_Public",
+        "ElementSize": 20,
+        "SignatureFunction": {
+          "ObjectName": "Class'UIDrawBaseActor_CustomEvent__DelegateSignature'",
+          "ObjectPath": "/Script/xrd777"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "K2Node_DynamicCast_AsBP_Combine_Hero_Set_Shadow_1",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_Combine_HeroSet_Shadow_C'",
+          "ObjectPath": "/Game/Xrd777/Blueprints/UI/Facility/Combine/BP_Combine_HeroSet_Shadow.9"
+        }
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "K2Node_DynamicCast_bSuccess_1",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "DelegateProperty",
+        "Name": "K2Node_CreateDelegate_OutputDelegate_6",
+        "Flags": "RF_Public",
+        "ElementSize": 20,
+        "SignatureFunction": {
+          "ObjectName": "Class'UIVelvetRoomDraw_CustomEvent__DelegateSignature'",
+          "ObjectPath": "/Script/xrd777"
+        }
+      },
+      {
+        "Type": "FloatProperty",
+        "Name": "K2Node_Event_DeltaSeconds",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "CallFunc_Sync_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "Temp_int_Array_Index_Variable_7",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "K2Node_SwitchEnum_CmpSuccess",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_15",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'MaterialInterface'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "CallFunc_IsValid_ReturnValue_2",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_CreateDynamicMaterialInstance_ReturnValue_2",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'MaterialInstanceDynamic'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "CallFunc_Array_Add_ReturnValue_3",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "K2Node_SwitchInteger_CmpSuccess",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "K2Node_DynamicCast_AsBP_Combine_Hero_Set_Shadow_2",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_Combine_HeroSet_Shadow_C'",
+          "ObjectPath": "/Game/Xrd777/Blueprints/UI/Facility/Combine/BP_Combine_HeroSet_Shadow.9"
+        }
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "K2Node_DynamicCast_bSuccess_2",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "Temp_int_Loop_Counter_Variable_7",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "CallFunc_Less_IntInt_ReturnValue_7",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "CallFunc_Add_IntInt_ReturnValue_7",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "CallFunc_Add_VectorVector_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 12,
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "CallFunc_Add_VectorVector_ReturnValue_1",
+        "Flags": "RF_Public",
+        "ElementSize": 12,
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "CallFunc_Add_VectorVector_ReturnValue_2",
+        "Flags": "RF_Public",
+        "ElementSize": 12,
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "CallFunc_Add_VectorVector_ReturnValue_3",
+        "Flags": "RF_Public",
+        "ElementSize": 12,
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "K2Node_DynamicCast_AsBP_Combine_Igor_Set",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_Combine_Igor_Set_C'",
+          "ObjectPath": "/Game/Xrd777/Blueprints/UI/Facility/Combine/BP_Combine_Igor_Set.4"
+        }
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "K2Node_DynamicCast_bSuccess_3",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "K2Node_DynamicCast_AsBP_Combine_Igor_Set_1",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_Combine_Igor_Set_C'",
+          "ObjectPath": "/Game/Xrd777/Blueprints/UI/Facility/Combine/BP_Combine_Igor_Set.4"
+        }
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "K2Node_DynamicCast_bSuccess_4",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "K2Node_DynamicCast_AsBP_Combine_Igor_Set_2",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_Combine_Igor_Set_C'",
+          "ObjectPath": "/Game/Xrd777/Blueprints/UI/Facility/Combine/BP_Combine_Igor_Set.4"
+        }
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "K2Node_DynamicCast_bSuccess_5",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "K2Node_DynamicCast_AsBP_Combine_Elizabeth",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_Combine_Elizabeth_C'",
+          "ObjectPath": "/Game/Xrd777/Blueprints/Characters/UI/Facility/Combine/BP_Combine_Elizabeth.8"
+        }
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "K2Node_DynamicCast_bSuccess_6",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "K2Node_DynamicCast_AsBP_Combine_Elizabeth_1",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_Combine_Elizabeth_C'",
+          "ObjectPath": "/Game/Xrd777/Blueprints/Characters/UI/Facility/Combine/BP_Combine_Elizabeth.8"
+        }
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "K2Node_DynamicCast_bSuccess_7",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "K2Node_DynamicCast_AsBP_Combine_Igor_Set_3",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_Combine_Igor_Set_C'",
+          "ObjectPath": "/Game/Xrd777/Blueprints/UI/Facility/Combine/BP_Combine_Igor_Set.4"
+        }
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "K2Node_DynamicCast_bSuccess_8",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "CallFunc_Array_Add_ReturnValue_4",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "CallFunc_Add_VectorVector_ReturnValue_4",
+        "Flags": "RF_Public",
+        "ElementSize": 12,
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "CallFunc_Add_VectorVector_ReturnValue_5",
+        "Flags": "RF_Public",
+        "ElementSize": 12,
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "K2Node_DynamicCast_AsBP_Combine_Hero_Set_Shadow_3",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_Combine_HeroSet_Shadow_C'",
+          "ObjectPath": "/Game/Xrd777/Blueprints/UI/Facility/Combine/BP_Combine_HeroSet_Shadow.9"
+        }
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "K2Node_DynamicCast_bSuccess_9",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "IntProperty",
+        "Name": "CallFunc_GetHeroCostumeID_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "K2Node_DynamicCast_AsBP_Combine_Hero_Set_Astrea",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_Combine_HeroSet_Astrea_C'",
+          "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_Combine_HeroSet_Astrea.9"
+        }
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "K2Node_DynamicCast_bSuccess_10",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "CallFunc_Check_Play_Motion_IsPlay",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      }
+    ],
+    "FunctionFlags": "FUNC_Final | FUNC_UbergraphFunction | FUNC_HasDefaults"
+  },
+  {
+    "Type": "Function",
+    "Name": "OnUniqeMotionEvent_Core",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "FunctionFlags": "FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "UnPauseFrontEvent_イベント_0",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "FunctionFlags": "FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "OnPauseFrontEvent",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "FunctionFlags": "FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "OnSyncEndEvent",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "FunctionFlags": "FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "OnTopOutAnimationEvent_イベント_0",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "FunctionFlags": "FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "OnTopInAnimationEvent_Core",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "FunctionFlags": "FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "OnCardSelectEvent_Core",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "FunctionFlags": "FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "ReceiveTick",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "SuperStruct": {
+      "ObjectName": "Class'Actor:ReceiveTick'",
+      "ObjectPath": "/Script/Engine"
+    },
+    "ChildProperties": [
+      {
+        "Type": "FloatProperty",
+        "Name": "DeltaSeconds",
+        "Flags": "RF_Public",
+        "ElementSize": 4,
+        "PropertyFlags": "BlueprintVisible | BlueprintReadOnly | Parm"
+      }
+    ],
+    "FunctionFlags": "FUNC_Event | FUNC_Public | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "ReceiveBeginPlay",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "SuperStruct": {
+      "ObjectName": "Class'Actor:ReceiveBeginPlay'",
+      "ObjectPath": "/Script/Engine"
+    },
+    "FunctionFlags": "FUNC_Event | FUNC_Protected | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "Scene Top",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "ChildProperties": [
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_1",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "CallFunc_GetRelativeTransform_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 48,
+        "Struct": {
+          "ObjectName": "Class'Transform'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ArrayProperty",
+        "Name": "K2Node_MakeArray_Array",
+        "Flags": "RF_Public",
+        "ElementSize": 16,
+        "PropertyFlags": "ConstParm | ReferenceParm",
+        "Inner": {
+          "Type": "IntProperty",
+          "Name": "K2Node_MakeArray_Array",
+          "Flags": "RF_Public",
+          "ElementSize": 4
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_2",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_3",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_4",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      }
+    ],
+    "FunctionFlags": "FUNC_Public | FUNC_HasDefaults | FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "Scene Combine 2 Persona",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "ChildProperties": [
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_1",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_2",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_3",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_4",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ArrayProperty",
+        "Name": "K2Node_MakeArray_Array",
+        "Flags": "RF_Public",
+        "ElementSize": 16,
+        "PropertyFlags": "ConstParm | ReferenceParm",
+        "Inner": {
+          "Type": "IntProperty",
+          "Name": "K2Node_MakeArray_Array",
+          "Flags": "RF_Public",
+          "ElementSize": 4
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_5",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_6",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      }
+    ],
+    "FunctionFlags": "FUNC_Public | FUNC_HasDefaults | FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "Scene Combine Search",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "ChildProperties": [
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_1",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_2",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_3",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_4",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_5",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_6",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ArrayProperty",
+        "Name": "K2Node_MakeArray_Array",
+        "Flags": "RF_Public",
+        "ElementSize": 16,
+        "PropertyFlags": "ConstParm | ReferenceParm",
+        "Inner": {
+          "Type": "IntProperty",
+          "Name": "K2Node_MakeArray_Array",
+          "Flags": "RF_Public",
+          "ElementSize": 4
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_7",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_8",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      }
+    ],
+    "FunctionFlags": "FUNC_Public | FUNC_HasDefaults | FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "Scene Combine Special",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "ChildProperties": [
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_1",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_2",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_3",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_4",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_5",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_6",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ArrayProperty",
+        "Name": "K2Node_MakeArray_Array",
+        "Flags": "RF_Public",
+        "ElementSize": 16,
+        "PropertyFlags": "ConstParm | ReferenceParm",
+        "Inner": {
+          "Type": "IntProperty",
+          "Name": "K2Node_MakeArray_Array",
+          "Flags": "RF_Public",
+          "ElementSize": 4
+        }
+      }
+    ],
+    "FunctionFlags": "FUNC_Public | FUNC_HasDefaults | FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "Scene Drawer",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "ChildProperties": [
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_1",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_2",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_3",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_4",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_5",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_6",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_7",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_8",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ArrayProperty",
+        "Name": "K2Node_MakeArray_Array",
+        "Flags": "RF_Public",
+        "ElementSize": 16,
+        "PropertyFlags": "ConstParm | ReferenceParm",
+        "Inner": {
+          "Type": "IntProperty",
+          "Name": "K2Node_MakeArray_Array",
+          "Flags": "RF_Public",
+          "ElementSize": 4
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_9",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      }
+    ],
+    "FunctionFlags": "FUNC_Public | FUNC_HasDefaults | FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "Scene Registry",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "ChildProperties": [
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_1",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_2",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_3",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_4",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_5",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ArrayProperty",
+        "Name": "K2Node_MakeArray_Array",
+        "Flags": "RF_Public",
+        "ElementSize": 16,
+        "PropertyFlags": "ConstParm | ReferenceParm",
+        "Inner": {
+          "Type": "IntProperty",
+          "Name": "K2Node_MakeArray_Array",
+          "Flags": "RF_Public",
+          "ElementSize": 4
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_Array_Get_Item_6",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      }
+    ],
+    "FunctionFlags": "FUNC_Public | FUNC_HasDefaults | FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "Capture Camera Transform",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "ChildProperties": [
+      {
+        "Type": "StructProperty",
+        "Name": "Delta Location",
+        "Flags": "RF_Public",
+        "ElementSize": 12,
+        "PropertyFlags": "BlueprintVisible | BlueprintReadOnly | Parm",
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Delta Rotation",
+        "Flags": "RF_Public",
+        "ElementSize": 12,
+        "PropertyFlags": "BlueprintVisible | BlueprintReadOnly | Parm",
+        "Struct": {
+          "ObjectName": "Class'Rotator'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "FloatProperty",
+        "Name": "FOV",
+        "Flags": "RF_Public",
+        "ElementSize": 4,
+        "PropertyFlags": "BlueprintVisible | BlueprintReadOnly | Parm"
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "CallFunc_K2_SetRelativeLocation_SweepHitResult",
+        "Flags": "RF_Public",
+        "ElementSize": 144,
+        "PropertyFlags": "ContainsInstancedReference",
+        "Struct": {
+          "ObjectName": "Class'HitResult'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "CallFunc_K2_SetRelativeRotation_SweepHitResult",
+        "Flags": "RF_Public",
+        "ElementSize": 144,
+        "PropertyFlags": "ContainsInstancedReference",
+        "Struct": {
+          "ObjectName": "Class'HitResult'",
+          "ObjectPath": "/Script/Engine"
+        }
+      }
+    ],
+    "FunctionFlags": "FUNC_Public | FUNC_HasDefaults | FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "Scene None",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "FunctionFlags": "FUNC_Public | FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "Light Transform",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "ChildProperties": [
+      {
+        "Type": "StructProperty",
+        "Name": "Location",
+        "Flags": "RF_Public",
+        "ElementSize": 12,
+        "PropertyFlags": "BlueprintVisible | BlueprintReadOnly | Parm",
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Rotation",
+        "Flags": "RF_Public",
+        "ElementSize": 12,
+        "PropertyFlags": "BlueprintVisible | BlueprintReadOnly | Parm",
+        "Struct": {
+          "ObjectName": "Class'Rotator'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "CallFunc_K2_SetRelativeLocation_SweepHitResult",
+        "Flags": "RF_Public",
+        "ElementSize": 144,
+        "PropertyFlags": "ContainsInstancedReference",
+        "Struct": {
+          "ObjectName": "Class'HitResult'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "CallFunc_K2_SetRelativeRotation_SweepHitResult",
+        "Flags": "RF_Public",
+        "ElementSize": 144,
+        "PropertyFlags": "ContainsInstancedReference",
+        "Struct": {
+          "ObjectName": "Class'HitResult'",
+          "ObjectPath": "/Script/Engine"
+        }
+      }
+    ],
+    "FunctionFlags": "FUNC_Public | FUNC_HasDefaults | FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "BlueprintGeneratedClass",
+    "Name": "BP_VelvetRoomDraw_C",
+    "Flags": "RF_Public | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'BlueprintGeneratedClass'",
+    "Package": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw",
+    "Properties": {
+      "SimpleConstructionScript": {
+        "ObjectName": "SimpleConstructionScript'BP_VelvetRoomDraw_C:SimpleConstructionScript_0'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.41"
+      },
+      "UberGraphFunction": {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:ExecuteUbergraph_BP_VelvetRoomDraw'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.0"
+      }
+    },
+    "SuperStruct": {
+      "ObjectName": "Class'UIVelvetRoomDraw'",
+      "ObjectPath": "/Script/xrd777"
+    },
+    "Children": [
+      {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:Light Transform'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.18"
+      },
+      {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:Scene None'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.17"
+      },
+      {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:Capture Camera Transform'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.16"
+      },
+      {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:Scene Registry'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.15"
+      },
+      {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:Scene Drawer'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.14"
+      },
+      {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:Scene Combine Special'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.13"
+      },
+      {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:Scene Combine Search'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.12"
+      },
+      {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:Scene Combine 2 Persona'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.11"
+      },
+      {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:Scene Top'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.10"
+      },
+      {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:ReceiveBeginPlay'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.9"
+      },
+      {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:ReceiveTick'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.8"
+      },
+      {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:OnCardSelectEvent_Core'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.7"
+      },
+      {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:OnTopInAnimationEvent_Core'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.6"
+      },
+      {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:OnTopOutAnimationEvent_イベント_0'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.5"
+      },
+      {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:OnSyncEndEvent'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.4"
+      },
+      {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:OnPauseFrontEvent'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.3"
+      },
+      {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:UnPauseFrontEvent_イベント_0'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.2"
+      },
+      {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:OnUniqeMotionEvent_Core'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.1"
+      },
+      {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:ExecuteUbergraph_BP_VelvetRoomDraw'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.0"
+      }
+    ],
+    "ChildProperties": [
+      {
+        "Type": "StructProperty",
+        "Name": "UberGraphFrame",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 16,
+        "PropertyFlags": "Transient | DuplicateTransient",
+        "Struct": {
+          "ObjectName": "Class'PointerToUberGraphFrame'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "BP_Combine_Igor_Set",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | InstancedReference | NonTransactional",
+        "PropertyClass": {
+          "ObjectName": "Class'ChildActorComponent'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "BP_Comibne_Elizabeth",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | InstancedReference | NonTransactional",
+        "PropertyClass": {
+          "ObjectName": "Class'ChildActorComponent'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "BP_Combine_HeroSet_Shadow",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | InstancedReference | NonTransactional",
+        "PropertyClass": {
+          "ObjectName": "Class'ChildActorComponent'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "BP_Combine_HeroSet",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | InstancedReference | NonTransactional",
+        "PropertyClass": {
+          "ObjectName": "Class'ChildActorComponent'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "Arrow1",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | InstancedReference | NonTransactional",
+        "PropertyClass": {
+          "ObjectName": "Class'ArrowComponent'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "VelvetRoomDrawSpotLight",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | InstancedReference | NonTransactional",
+        "PropertyClass": {
+          "ObjectName": "Class'SpotLightComponent'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "SceneCaptureComponent2D",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | InstancedReference | NonTransactional",
+        "PropertyClass": {
+          "ObjectName": "Class'SceneCaptureComponent2D'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "DefaultSceneRoot",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | InstancedReference | NonTransactional",
+        "PropertyClass": {
+          "ObjectName": "Class'SceneComponent'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "ArrayProperty",
+        "Name": "Scene Top Panel Colors",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 16,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Inner": {
+          "Type": "StructProperty",
+          "Name": "Scene Top Panel Colors",
+          "Flags": "RF_Public",
+          "ElementSize": 4,
+          "Struct": {
+            "ObjectName": "Class'Color'",
+            "ObjectPath": "/Script/CoreUObject"
+          }
+        }
+      },
+      {
+        "Type": "ArrayProperty",
+        "Name": "Scene 2Combine Panel Colors",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 16,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Inner": {
+          "Type": "StructProperty",
+          "Name": "Scene 2Combine Panel Colors",
+          "Flags": "RF_Public",
+          "ElementSize": 4,
+          "Struct": {
+            "ObjectName": "Class'Color'",
+            "ObjectPath": "/Script/CoreUObject"
+          }
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Igor 2Combine Offset Location",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Igor 2Combine Offset Rotation",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Rotator'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Igor Special Combine Offset Location",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Igor Special Combine Offset Rotation",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Rotator'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Igor Search Combine Offset Location",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Igor Search Combine Offset Rotation",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Rotator'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Top Camera Offset Point",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Top Camera Offset Rotation",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Rotator'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "FloatProperty",
+        "Name": "Top Camera Offset Fov",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 4,
+        "PropertyFlags": "Edit | BlueprintVisible"
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "2Combine Camera Offset Point",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "2Combine Camera Offset Rotation",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Rotator'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "FloatProperty",
+        "Name": "2Combine Camera Offset Fov",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 4,
+        "PropertyFlags": "Edit | BlueprintVisible"
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Special Combine Camera Offset Location",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Special Combine Camera Offset Rotation",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Rotator'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "FloatProperty",
+        "Name": "Special Combine Camera Offset Fov",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 4,
+        "PropertyFlags": "Edit | BlueprintVisible"
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Search Combine Camera Offset Location",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Search Combine Camera Offset Rotation",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Rotator'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "FloatProperty",
+        "Name": "Search Combine Camera  Offset Fov",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 4,
+        "PropertyFlags": "Edit | BlueprintVisible"
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Drawer Camera Offset Location",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Drawer Camera Offset Rotation",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Rotator'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "FloatProperty",
+        "Name": "Drawer Camera  Offset Fov",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 4,
+        "PropertyFlags": "Edit | BlueprintVisible"
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Registry Camera Offset Location",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Registry Camera Offset Rotation",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Rotator'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "FloatProperty",
+        "Name": "Registry Camera  Offset Fov",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 4,
+        "PropertyFlags": "Edit | BlueprintVisible"
+      },
+      {
+        "Type": "ArrayProperty",
+        "Name": "Material List",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 16,
+        "PropertyFlags": "Edit | BlueprintVisible | DisableEditOnInstance",
+        "Inner": {
+          "Type": "ObjectProperty",
+          "Name": "Material List",
+          "Flags": "RF_Public",
+          "ElementSize": 8,
+          "PropertyClass": {
+            "ObjectName": "Class'MaterialInstanceDynamic'",
+            "ObjectPath": "/Script/Engine"
+          }
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "Hero Material",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "Edit | BlueprintVisible | DisableEditOnInstance",
+        "PropertyClass": {
+          "ObjectName": "Class'MaterialInstance'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "ArrayProperty",
+        "Name": "Fld Npc List",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 16,
+        "PropertyFlags": "Edit | BlueprintVisible | DisableEditOnTemplate | DisableEditOnInstance",
+        "Inner": {
+          "Type": "ObjectProperty",
+          "Name": "Fld Npc List",
+          "Flags": "RF_Public",
+          "ElementSize": 8,
+          "PropertyClass": {
+            "ObjectName": "BlueprintGeneratedClass'BP_FldNpcMain_C'",
+            "ObjectPath": "/Game/Xrd777/Blueprints/Field/Character/BP_FldNpcMain.0"
+          }
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Top Light Location",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Top Light Rotation",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Rotator'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "2Combine Light Location",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "2Combine Light Rotation",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Rotator'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Special Light Location",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Special Light Rotation",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Rotator'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Search Light Location",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Search Light Rotation",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Rotator'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Book Light Location",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Book Light Rotation",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Rotator'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Regist Light Location",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Regist Light Rotation",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Rotator'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Elizabeth Drawer Offset Location",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Elizabeth Drawer Offset Rotation",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Rotator'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Elizabeth Registry Offset Location",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Vector'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Elizabeth Registry Offset Rotation",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible",
+        "Struct": {
+          "ObjectName": "Class'Rotator'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "BP_Combine_HeroSet_Astrea",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "Edit | BlueprintVisible | DisableEditOnTemplate | DisableEditOnInstance",
+        "PropertyClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_Combine_HeroSet_Astrea_C'",
+          "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_Combine_HeroSet_Astrea.9"
+        }
+      }
+    ],
+    "FuncMap": {
+      "ExecuteUbergraph_BP_VelvetRoomDraw": {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:ExecuteUbergraph_BP_VelvetRoomDraw'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.0"
+      },
+      "OnUniqeMotionEvent_Core": {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:OnUniqeMotionEvent_Core'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.1"
+      },
+      "UnPauseFrontEvent_イベント_0": {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:UnPauseFrontEvent_イベント_0'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.2"
+      },
+      "OnPauseFrontEvent": {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:OnPauseFrontEvent'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.3"
+      },
+      "OnSyncEndEvent": {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:OnSyncEndEvent'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.4"
+      },
+      "OnTopOutAnimationEvent_イベント_0": {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:OnTopOutAnimationEvent_イベント_0'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.5"
+      },
+      "OnTopInAnimationEvent_Core": {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:OnTopInAnimationEvent_Core'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.6"
+      },
+      "OnCardSelectEvent_Core": {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:OnCardSelectEvent_Core'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.7"
+      },
+      "ReceiveTick": {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:ReceiveTick'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.8"
+      },
+      "ReceiveBeginPlay": {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:ReceiveBeginPlay'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.9"
+      },
+      "Scene Top": {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:Scene Top'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.10"
+      },
+      "Scene Combine 2 Persona": {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:Scene Combine 2 Persona'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.11"
+      },
+      "Scene Combine Search": {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:Scene Combine Search'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.12"
+      },
+      "Scene Combine Special": {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:Scene Combine Special'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.13"
+      },
+      "Scene Drawer": {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:Scene Drawer'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.14"
+      },
+      "Scene Registry": {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:Scene Registry'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.15"
+      },
+      "Capture Camera Transform": {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:Capture Camera Transform'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.16"
+      },
+      "Scene None": {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:Scene None'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.17"
+      },
+      "Light Transform": {
+        "ObjectName": "Function'BP_VelvetRoomDraw_C:Light Transform'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.18"
+      }
+    },
+    "ClassFlags": "CLASS_Config | CLASS_Optional | CLASS_ReplicationDataIsSetUp | CLASS_CompiledFromBlueprint | CLASS_HasInstancedReference",
+    "ClassWithin": {
+      "ObjectName": "Class'Object'",
+      "ObjectPath": "/Script/CoreUObject"
+    },
+    "ClassConfigName": "Engine",
+    "bCooked": true,
+    "ClassDefaultObject": {
+      "ObjectName": "BP_VelvetRoomDraw_C'Default__BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.20"
+    }
+  },
+  {
+    "Type": "BP_VelvetRoomDraw_C",
+    "Name": "Default__BP_VelvetRoomDraw_C",
+    "Flags": "RF_Public | RF_ClassDefaultObject | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "BlueprintGeneratedClass'/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.BP_VelvetRoomDraw_C'",
+    "Package": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw",
+    "Properties": {
+      "UberGraphFrame": {},
+      "Scene Top Panel Colors": [
+        {
+          "B": 225,
+          "G": 19,
+          "R": 0,
+          "A": 255,
+          "Hex": "0013E1"
+        },
+        {
+          "B": 104,
+          "G": 108,
+          "R": 0,
+          "A": 255,
+          "Hex": "006C68"
+        }
+      ],
+      "Scene 2Combine Panel Colors": [
+        {
+          "B": 218,
+          "G": 19,
+          "R": 0,
+          "A": 255,
+          "Hex": "0013DA"
+        },
+        {
+          "B": 104,
+          "G": 108,
+          "R": 0,
+          "A": 255,
+          "Hex": "006C68"
+        }
+      ],
+      "Igor 2Combine Offset Location": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "Igor 2Combine Offset Rotation": {
+        "Pitch": 0.0,
+        "Yaw": 0.0,
+        "Roll": 0.0
+      },
+      "Igor Special Combine Offset Location": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "Igor Special Combine Offset Rotation": {
+        "Pitch": 0.0,
+        "Yaw": 0.0,
+        "Roll": 0.0
+      },
+      "Igor Search Combine Offset Location": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "Igor Search Combine Offset Rotation": {
+        "Pitch": 0.0,
+        "Yaw": 0.0,
+        "Roll": 0.0
+      },
+      "Top Camera Offset Point": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "Top Camera Offset Rotation": {
+        "Pitch": 0.0,
+        "Yaw": 0.0,
+        "Roll": 0.0
+      },
+      "2Combine Camera Offset Point": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "2Combine Camera Offset Rotation": {
+        "Pitch": 0.0,
+        "Yaw": 0.0,
+        "Roll": 0.0
+      },
+      "Special Combine Camera Offset Location": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "Special Combine Camera Offset Rotation": {
+        "Pitch": 0.0,
+        "Yaw": 0.0,
+        "Roll": 0.0
+      },
+      "Search Combine Camera Offset Location": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "Search Combine Camera Offset Rotation": {
+        "Pitch": 0.0,
+        "Yaw": 0.0,
+        "Roll": 0.0
+      },
+      "Drawer Camera Offset Location": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "Drawer Camera Offset Rotation": {
+        "Pitch": 0.0,
+        "Yaw": 0.0,
+        "Roll": 0.0
+      },
+      "Registry Camera Offset Location": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "Registry Camera Offset Rotation": {
+        "Pitch": 0.0,
+        "Yaw": 0.0,
+        "Roll": 0.0
+      },
+      "Hero Material": {
+        "ObjectName": "MaterialInstanceConstant'MI_Combine_BlackGradation'",
+        "ObjectPath": "/Game/Xrd777/UI/Facility/Combine/Material/MI_Combine_BlackGradation.0"
+      },
+      "Top Light Location": {
+        "X": -139.0,
+        "Y": 800.0,
+        "Z": 800.0
+      },
+      "Top Light Rotation": {
+        "Pitch": -60.0,
+        "Yaw": 0.0,
+        "Roll": 0.0
+      },
+      "2Combine Light Location": {
+        "X": 0.0,
+        "Y": 12.0,
+        "Z": 500.0
+      },
+      "2Combine Light Rotation": {
+        "Pitch": -60.0,
+        "Yaw": 0.0,
+        "Roll": 0.0
+      },
+      "Special Light Location": {
+        "X": 0.0,
+        "Y": 20.0,
+        "Z": 600.0
+      },
+      "Special Light Rotation": {
+        "Pitch": -60.0,
+        "Yaw": 0.0,
+        "Roll": 0.0
+      },
+      "Search Light Location": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 680.0
+      },
+      "Search Light Rotation": {
+        "Pitch": -60.0,
+        "Yaw": 0.0,
+        "Roll": 0.0
+      },
+      "Book Light Location": {
+        "X": 0.0,
+        "Y": 17.0,
+        "Z": 240.0
+      },
+      "Book Light Rotation": {
+        "Pitch": -15.0,
+        "Yaw": 5.0,
+        "Roll": 0.0
+      },
+      "Regist Light Location": {
+        "X": 0.0,
+        "Y": 12.0,
+        "Z": 500.0
+      },
+      "Regist Light Rotation": {
+        "Pitch": -28.0,
+        "Yaw": 0.0,
+        "Roll": 0.0
+      },
+      "Elizabeth Drawer Offset Location": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "Elizabeth Drawer Offset Rotation": {
+        "Pitch": 0.0,
+        "Yaw": 0.0,
+        "Roll": 0.0
+      },
+      "Elizabeth Registry Offset Location": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "Elizabeth Registry Offset Rotation": {
+        "Pitch": 0.0,
+        "Yaw": 0.0,
+        "Roll": 0.0
+      },
+      "Edit_Equipe_Icon_Animation_Time": 0.3,
+      "Edit_Equipe_Icon_FadeOut_Frame": 6,
+      "Edit_InAnimationFrame_Lattice": 11,
+      "Edit_HelpMessageInAnimationFrame": 4,
+      "Edit_HelpMessageChangeAnimationFrame": 4,
+      "Edit_CardOffsetPosition": {
+        "X": 15.0,
+        "Y": -30.0,
+        "Z": -20.0
+      },
+      "Edit_CardOffsetRotation": {
+        "X": -2.0,
+        "Y": -22.0,
+        "Z": 10.0
+      },
+      "Edit_CardSadowOffsetPosition": {
+        "X": 15.0,
+        "Y": -20.0,
+        "Z": -20.0
+      },
+      "Edit_BlackScreenLow_FadeIn_Frame": 10,
+      "Edit_BlackScreenLow_FadeIn_Delay": 1,
+      "Edit_BlackScreenMiddle_FadeIn_Frame": 7,
+      "Edit_BlackScreenMiddle_FadeIn_Delay": 1,
+      "Edit_BlackScreenHigh_FadeIn_Delay": 24,
+      "Edit_VelvetRoomTop_CardIn_Delay": 55,
+      "Edit_VelvetRoomTop_Hero_Wave1_Fade_Delay": 0,
+      "Edit_VelvetRoomTop_Hero_Wave1_Fade_Frame": 90,
+      "Edit_VelvetRoomTop_Hero_Wave2_Fade_Delay": 120,
+      "Edit_VelvetRoomTop_Hero_Wave2_Fade_Frame": 160,
+      "pHeroWaveMaterial1": {
+        "ObjectName": "MaterialInstanceConstant'MI_Combine_Wave'",
+        "ObjectPath": "/Game/Xrd777/UI/Facility/Combine/Material/MI_Combine_Wave.0"
+      },
+      "pHeroWaveMaterial2": {
+        "ObjectName": "MaterialInstanceConstant'MI_Combine_Wave_2'",
+        "ObjectPath": "/Game/Xrd777/UI/Facility/Combine/Material/MI_Combine_Wave_2.0"
+      },
+      "Edit_SearchCombine_List_Fade_In_Delay": 0,
+      "Edit_SearchCombine_List_Fade_In_Frame": 1,
+      "Edit_SearchCombine_List_Slide_In_Frame": 5,
+      "Edit_Drawer_Money_InAnimation_Delay": 8,
+      "Edit_Drawer_Money_InAnimation_Frame": 8,
+      "Edit_Drawer_Money_OutAnimation_Delay": 6,
+      "Edit_Drawer_Money_OutAnimation_Frame": 12,
+      "Edit_Drawer_Help_Message_InAnimation_Frame": 5,
+      "Edit_Drawer_List_InAnimation_Frame": 5,
+      "Edit_Drawer_List_LockIcon_FadeIn_Frame": 1,
+      "Edit_Drawer_List_LockIcon_Animation_Delay": 2,
+      "Edit_Drawer_List_LockIcon_Animation_Frame1": 1,
+      "Edit_Drawer_List_LockIcon_Animation_Frame2": 1,
+      "Edit_Drawer_List_LockIcon_Animation_Frame3": 1,
+      "Edit_Drawer_List_LockIcon_Scale1": 1.0,
+      "Edit_Drawer_List_LockIcon_Scale2": 1.0,
+      "Edit_Drawer_List_LockIcon_Scale3": 1.0,
+      "Edit_Drawer_List_LockIcon_Scale4": 1.0,
+      "Edit_Drawer_List_LockIcon_Angle1": -6.0,
+      "Edit_Drawer_List_LockIcon_Angle2": 5.0,
+      "Edit_Drawer_List_LockIcon_Angle3": -4.0,
+      "Edit_Drawer_List_Change_Category_Fade_In_Delay": 0,
+      "Edit_Drawer_List_Change_Category_Fade_In_Frame": 1,
+      "Edit_Drawer_List_Change_Category_Slide_In_Frame": 5,
+      "Edit_Registry_Help_Message_InAnimation_Frame": 5,
+      "Edit_Registry_List_InAnimation_Frame": 5
+    }
+  },
+  {
+    "Type": "BP_Combine_Elizabeth_C",
+    "Name": "BP_Comibne_Elizabeth_GEN_VARIABLE_BP_Comibne_Elizabeth_C_CAT",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "BlueprintGeneratedClass'/Game/Xrd777/Blueprints/Characters/UI/Facility/Combine/BP_Combine_Elizabeth.BP_Combine_Elizabeth_C'",
+    "Outer": {
+      "ObjectName": "ChildActorComponent'BP_VelvetRoomDraw_C:BP_Comibne_Elizabeth_GEN_VARIABLE'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.30"
+    },
+    "Template": {
+      "ObjectName": "BP_Combine_Elizabeth_C'Default__BP_Combine_Elizabeth_C'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/Characters/UI/Facility/Combine/BP_Combine_Elizabeth.9"
+    },
+    "Properties": {
+      "Mesh": {
+        "ObjectName": "SkeletalMeshComponent'BP_VelvetRoomDraw_C:BP_Comibne_Elizabeth_GEN_VARIABLE.BP_Comibne_Elizabeth_GEN_VARIABLE_BP_Comibne_Elizabeth_C_CAT.CharacterMesh0'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.42"
+      },
+      "CharacterMovement": {
+        "ObjectName": "CharacterMovementComponent'BP_VelvetRoomDraw_C:BP_Comibne_Elizabeth_GEN_VARIABLE.BP_Comibne_Elizabeth_GEN_VARIABLE_BP_Comibne_Elizabeth_C_CAT.CharMoveComp'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.26"
+      },
+      "CapsuleComponent": {
+        "ObjectName": "CapsuleComponent'BP_VelvetRoomDraw_C:BP_Comibne_Elizabeth_GEN_VARIABLE.BP_Comibne_Elizabeth_GEN_VARIABLE_BP_Comibne_Elizabeth_C_CAT.CollisionCylinder'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.25"
+      },
+      "RootComponent": {
+        "ObjectName": "CapsuleComponent'BP_VelvetRoomDraw_C:BP_Comibne_Elizabeth_GEN_VARIABLE.BP_Comibne_Elizabeth_GEN_VARIABLE_BP_Comibne_Elizabeth_C_CAT.CollisionCylinder'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.25"
+      }
+    }
+  },
+  {
+    "Type": "BP_Combine_HeroSet_Astrea_C",
+    "Name": "BP_Combine_HeroSet_GEN_VARIABLE_BP_Combine_HeroSet_C_CAT",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "BlueprintGeneratedClass'/Game/Astrea/Blueprints/UI/Facility/Combine/BP_Combine_HeroSet_Astrea.BP_Combine_HeroSet_Astrea_C'",
+    "Outer": {
+      "ObjectName": "ChildActorComponent'BP_VelvetRoomDraw_C:BP_Combine_HeroSet_GEN_VARIABLE'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.27"
+    },
+    "Template": {
+      "ObjectName": "BP_Combine_HeroSet_Astrea_C'Default__BP_Combine_HeroSet_Astrea_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_Combine_HeroSet_Astrea.10"
+    }
+  },
+  {
+    "Type": "BP_Combine_HeroSet_Shadow_Astrea_C",
+    "Name": "BP_Combine_HeroSet_Shadow_GEN_VARIABLE_BP_Combine_HeroSet_Shadow_Astrea_C_CAT",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "BlueprintGeneratedClass'/Game/Astrea/Blueprints/UI/Facility/Combine/BP_Combine_HeroSet_Shadow_Astrea.BP_Combine_HeroSet_Shadow_Astrea_C'",
+    "Outer": {
+      "ObjectName": "ChildActorComponent'BP_VelvetRoomDraw_C:BP_Combine_HeroSet_Shadow_GEN_VARIABLE'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.28"
+    },
+    "Template": {
+      "ObjectName": "BP_Combine_HeroSet_Shadow_Astrea_C'Default__BP_Combine_HeroSet_Shadow_Astrea_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_Combine_HeroSet_Shadow_Astrea.9"
+    }
+  },
+  {
+    "Type": "BP_Combine_Igor_Set_C",
+    "Name": "BP_Combine_Igor_Set_GEN_VARIABLE_BP_Combine_Igor_Set_C_CAT",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "BlueprintGeneratedClass'/Game/Xrd777/Blueprints/UI/Facility/Combine/BP_Combine_Igor_Set.BP_Combine_Igor_Set_C'",
+    "Outer": {
+      "ObjectName": "ChildActorComponent'BP_VelvetRoomDraw_C:BP_Combine_Igor_Set_GEN_VARIABLE'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.29"
+    },
+    "Template": {
+      "ObjectName": "BP_Combine_Igor_Set_C'Default__BP_Combine_Igor_Set_C'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/UI/Facility/Combine/BP_Combine_Igor_Set.5"
+    }
+  },
+  {
+    "Type": "CapsuleComponent",
+    "Name": "CollisionCylinder",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CapsuleComponent'",
+    "Outer": {
+      "ObjectName": "BP_Combine_Elizabeth_C'BP_VelvetRoomDraw_C:BP_Comibne_Elizabeth_GEN_VARIABLE.BP_Comibne_Elizabeth_GEN_VARIABLE_BP_Comibne_Elizabeth_C_CAT'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.21"
+    },
+    "Template": {
+      "ObjectName": "CapsuleComponent'Default__BP_Combine_Elizabeth_C:CollisionCylinder'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/Characters/UI/Facility/Combine/BP_Combine_Elizabeth.11"
+    }
+  },
+  {
+    "Type": "CharacterMovementComponent",
+    "Name": "CharMoveComp",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CharacterMovementComponent'",
+    "Outer": {
+      "ObjectName": "BP_Combine_Elizabeth_C'BP_VelvetRoomDraw_C:BP_Comibne_Elizabeth_GEN_VARIABLE.BP_Comibne_Elizabeth_GEN_VARIABLE_BP_Comibne_Elizabeth_C_CAT'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.21"
+    },
+    "Template": {
+      "ObjectName": "CharacterMovementComponent'Default__BP_Combine_Elizabeth_C:CharMoveComp'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/Characters/UI/Facility/Combine/BP_Combine_Elizabeth.12"
+    }
+  },
+  {
+    "Type": "ChildActorComponent",
+    "Name": "BP_Combine_HeroSet_GEN_VARIABLE",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'ChildActorComponent'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "Properties": {
+      "ChildActorClass": {
+        "ObjectName": "BlueprintGeneratedClass'BP_Combine_HeroSet_Astrea_C'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_Combine_HeroSet_Astrea.9"
+      },
+      "ChildActorTemplate": {
+        "ObjectName": "BP_Combine_HeroSet_Astrea_C'BP_VelvetRoomDraw_C:BP_Combine_HeroSet_GEN_VARIABLE.BP_Combine_HeroSet_GEN_VARIABLE_BP_Combine_HeroSet_C_CAT'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.22"
+      },
+      "RelativeLocation": {
+        "X": 8.324889,
+        "Y": 549.4506,
+        "Z": 220.63678
+      },
+      "RelativeRotation": {
+        "Pitch": 8.371531,
+        "Yaw": -85.83645,
+        "Roll": -4.330599
+      },
+      "RelativeScale3D": {
+        "X": 1.2,
+        "Y": 1.2,
+        "Z": 1.2
+      }
+    }
+  },
+  {
+    "Type": "ChildActorComponent",
+    "Name": "BP_Combine_HeroSet_Shadow_GEN_VARIABLE",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'ChildActorComponent'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "Properties": {
+      "ChildActorClass": {
+        "ObjectName": "BlueprintGeneratedClass'BP_Combine_HeroSet_Shadow_Astrea_C'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_Combine_HeroSet_Shadow_Astrea.8"
+      },
+      "ChildActorTemplate": {
+        "ObjectName": "BP_Combine_HeroSet_Shadow_Astrea_C'BP_VelvetRoomDraw_C:BP_Combine_HeroSet_Shadow_GEN_VARIABLE.BP_Combine_HeroSet_Shadow_GEN_VARIABLE_BP_Combine_HeroSet_Shadow_Astrea_C_CAT'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.23"
+      },
+      "RelativeLocation": {
+        "X": 2.9548461,
+        "Y": -29.624645,
+        "Z": 2.0328534
+      },
+      "RelativeRotation": {
+        "Pitch": 16.0,
+        "Yaw": -2.0,
+        "Roll": 89.0
+      },
+      "RelativeScale3D": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 2.6
+      }
+    }
+  },
+  {
+    "Type": "ChildActorComponent",
+    "Name": "BP_Combine_Igor_Set_GEN_VARIABLE",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'ChildActorComponent'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "Properties": {
+      "ChildActorClass": {
+        "ObjectName": "BlueprintGeneratedClass'BP_Combine_Igor_Set_C'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/UI/Facility/Combine/BP_Combine_Igor_Set.4"
+      },
+      "ChildActorTemplate": {
+        "ObjectName": "BP_Combine_Igor_Set_C'BP_VelvetRoomDraw_C:BP_Combine_Igor_Set_GEN_VARIABLE.BP_Combine_Igor_Set_GEN_VARIABLE_BP_Combine_Igor_Set_C_CAT'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.24"
+      }
+    }
+  },
+  {
+    "Type": "ChildActorComponent",
+    "Name": "BP_Comibne_Elizabeth_GEN_VARIABLE",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'ChildActorComponent'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "Properties": {
+      "ChildActorClass": {
+        "ObjectName": "BlueprintGeneratedClass'BP_Combine_Elizabeth_C'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Characters/UI/Facility/Combine/BP_Combine_Elizabeth.8"
+      },
+      "ChildActorTemplate": {
+        "ObjectName": "BP_Combine_Elizabeth_C'BP_VelvetRoomDraw_C:BP_Comibne_Elizabeth_GEN_VARIABLE.BP_Comibne_Elizabeth_GEN_VARIABLE_BP_Comibne_Elizabeth_C_CAT'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.21"
+      },
+      "RelativeLocation": {
+        "X": 230.0,
+        "Y": -120.0,
+        "Z": 10.0
+      }
+    }
+  },
+  {
+    "Type": "SceneCaptureComponent2D",
+    "Name": "SceneCaptureComponent2D_GEN_VARIABLE",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SceneCaptureComponent2D'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "Properties": {
+      "TextureTarget": {
+        "ObjectName": "TextureRenderTarget2D'RT_UI_CampSceneCapture2D'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/Textures/RT_UI_CampSceneCapture2D.0"
+      },
+      "AtlSceneCaptureMode": "ASCM_WriteSceneAlpha",
+      "PrimitiveRenderMode": "ESceneCapturePrimitiveRenderMode::PRM_UseShowOnlyList",
+      "CaptureSource": "SCS_FinalColorLDR",
+      "ShowFlagSettings": [
+        {
+          "ShowFlagName": "TextRender",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "InstancedGrass",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "InstancedStaticMeshes",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "InstancedFoliage",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "Game",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "Paper2DSprites",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "DistanceFieldAO",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "ReflectionEnvironment",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "LightFunctions",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "VolumetricFog",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "LightShafts",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "TexturedLightProfiles",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "ScreenSpaceReflections",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "AmbientCubemap",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "AmbientOcclusion",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "SkyLighting",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "EyeAdaptation",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "Bloom",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "ToneCurve",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "Atmosphere",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "Landscape",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "Fog",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "Particles",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "Decals",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "BSP",
+          "Enabled": false
+        }
+      ]
+    }
+  },
+  {
+    "Type": "SceneComponent",
+    "Name": "DefaultSceneRoot_GEN_VARIABLE",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SceneComponent'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    }
+  },
+  {
+    "Type": "SCS_Node",
+    "Name": "SCS_Node_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SCS_Node'",
+    "Outer": {
+      "ObjectName": "SimpleConstructionScript'BP_VelvetRoomDraw_C:SimpleConstructionScript_0'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.41"
+    },
+    "Properties": {
+      "ComponentClass": {
+        "ObjectName": "Class'SceneComponent'",
+        "ObjectPath": "/Script/Engine"
+      },
+      "ComponentTemplate": {
+        "ObjectName": "SceneComponent'BP_VelvetRoomDraw_C:DefaultSceneRoot_GEN_VARIABLE'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.32"
+      },
+      "ChildNodes": [
+        {
+          "ObjectName": "SCS_Node'BP_VelvetRoomDraw_C:SimpleConstructionScript_0.SCS_Node_1'",
+          "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.34"
+        },
+        {
+          "ObjectName": "SCS_Node'BP_VelvetRoomDraw_C:SimpleConstructionScript_0.SCS_Node_4'",
+          "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.37"
+        },
+        {
+          "ObjectName": "SCS_Node'BP_VelvetRoomDraw_C:SimpleConstructionScript_0.SCS_Node_3'",
+          "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.36"
+        },
+        {
+          "ObjectName": "SCS_Node'BP_VelvetRoomDraw_C:SimpleConstructionScript_0.SCS_Node_2'",
+          "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.35"
+        },
+        {
+          "ObjectName": "SCS_Node'BP_VelvetRoomDraw_C:SimpleConstructionScript_0.SCS_Node_8'",
+          "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.40"
+        }
+      ],
+      "VariableGuid": "67565161-46E83873-FD00B58B-A7427385",
+      "InternalVariableName": "DefaultSceneRoot"
+    }
+  },
+  {
+    "Type": "SCS_Node",
+    "Name": "SCS_Node_1",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SCS_Node'",
+    "Outer": {
+      "ObjectName": "SimpleConstructionScript'BP_VelvetRoomDraw_C:SimpleConstructionScript_0'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.41"
+    },
+    "Properties": {
+      "ComponentClass": {
+        "ObjectName": "Class'SceneCaptureComponent2D'",
+        "ObjectPath": "/Script/Engine"
+      },
+      "ComponentTemplate": {
+        "ObjectName": "SceneCaptureComponent2D'BP_VelvetRoomDraw_C:SceneCaptureComponent2D_GEN_VARIABLE'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.31"
+      },
+      "VariableGuid": "28ED5E4C-41F98D49-00F0E19D-E25A4776",
+      "InternalVariableName": "SceneCaptureComponent2D"
+    }
+  },
+  {
+    "Type": "SCS_Node",
+    "Name": "SCS_Node_2",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SCS_Node'",
+    "Outer": {
+      "ObjectName": "SimpleConstructionScript'BP_VelvetRoomDraw_C:SimpleConstructionScript_0'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.41"
+    },
+    "Properties": {
+      "ComponentClass": {
+        "ObjectName": "Class'ChildActorComponent'",
+        "ObjectPath": "/Script/Engine"
+      },
+      "ComponentTemplate": {
+        "ObjectName": "ChildActorComponent'BP_VelvetRoomDraw_C:BP_Comibne_Elizabeth_GEN_VARIABLE'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.30"
+      },
+      "VariableGuid": "26DD92E0-4AC4E338-3D840E8F-C2A34CEE",
+      "InternalVariableName": "BP_Comibne_Elizabeth"
+    }
+  },
+  {
+    "Type": "SCS_Node",
+    "Name": "SCS_Node_3",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SCS_Node'",
+    "Outer": {
+      "ObjectName": "SimpleConstructionScript'BP_VelvetRoomDraw_C:SimpleConstructionScript_0'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.41"
+    },
+    "Properties": {
+      "ComponentClass": {
+        "ObjectName": "Class'ChildActorComponent'",
+        "ObjectPath": "/Script/Engine"
+      },
+      "ComponentTemplate": {
+        "ObjectName": "ChildActorComponent'BP_VelvetRoomDraw_C:BP_Combine_HeroSet_GEN_VARIABLE'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.27"
+      },
+      "ChildNodes": [
+        {
+          "ObjectName": "SCS_Node'BP_VelvetRoomDraw_C:SimpleConstructionScript_0.SCS_Node_7'",
+          "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.39"
+        }
+      ],
+      "VariableGuid": "08FC26D4-4C2A2D01-53FD6A8A-716CB611",
+      "InternalVariableName": "BP_Combine_HeroSet"
+    }
+  },
+  {
+    "Type": "SCS_Node",
+    "Name": "SCS_Node_4",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SCS_Node'",
+    "Outer": {
+      "ObjectName": "SimpleConstructionScript'BP_VelvetRoomDraw_C:SimpleConstructionScript_0'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.41"
+    },
+    "Properties": {
+      "ComponentClass": {
+        "ObjectName": "Class'SpotLightComponent'",
+        "ObjectPath": "/Script/Engine"
+      },
+      "ComponentTemplate": {
+        "ObjectName": "SpotLightComponent'BP_VelvetRoomDraw_C:VelvetRoomDrawSpotLight_GEN_VARIABLE'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.43"
+      },
+      "ChildNodes": [
+        {
+          "ObjectName": "SCS_Node'BP_VelvetRoomDraw_C:SimpleConstructionScript_0.SCS_Node_5'",
+          "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.38"
+        }
+      ],
+      "VariableGuid": "039DDCD8-4AFD818A-E641769D-3A53377D",
+      "InternalVariableName": "VelvetRoomDrawSpotLight"
+    }
+  },
+  {
+    "Type": "SCS_Node",
+    "Name": "SCS_Node_5",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SCS_Node'",
+    "Outer": {
+      "ObjectName": "SimpleConstructionScript'BP_VelvetRoomDraw_C:SimpleConstructionScript_0'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.41"
+    },
+    "Properties": {
+      "ComponentClass": {
+        "ObjectName": "Class'ArrowComponent'",
+        "ObjectPath": "/Script/Engine"
+      },
+      "ComponentTemplate": null,
+      "VariableGuid": "8FF9A94F-4234BE89-B2F8E9BB-6717CB9B",
+      "InternalVariableName": "Arrow1"
+    }
+  },
+  {
+    "Type": "SCS_Node",
+    "Name": "SCS_Node_7",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SCS_Node'",
+    "Outer": {
+      "ObjectName": "SimpleConstructionScript'BP_VelvetRoomDraw_C:SimpleConstructionScript_0'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.41"
+    },
+    "Properties": {
+      "ComponentClass": {
+        "ObjectName": "Class'ChildActorComponent'",
+        "ObjectPath": "/Script/Engine"
+      },
+      "ComponentTemplate": {
+        "ObjectName": "ChildActorComponent'BP_VelvetRoomDraw_C:BP_Combine_HeroSet_Shadow_GEN_VARIABLE'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.28"
+      },
+      "VariableGuid": "2042BA92-48EFF724-DC8B5283-CA09EA9A",
+      "InternalVariableName": "BP_Combine_HeroSet_Shadow"
+    }
+  },
+  {
+    "Type": "SCS_Node",
+    "Name": "SCS_Node_8",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SCS_Node'",
+    "Outer": {
+      "ObjectName": "SimpleConstructionScript'BP_VelvetRoomDraw_C:SimpleConstructionScript_0'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.41"
+    },
+    "Properties": {
+      "ComponentClass": {
+        "ObjectName": "Class'ChildActorComponent'",
+        "ObjectPath": "/Script/Engine"
+      },
+      "ComponentTemplate": {
+        "ObjectName": "ChildActorComponent'BP_VelvetRoomDraw_C:BP_Combine_Igor_Set_GEN_VARIABLE'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.29"
+      },
+      "VariableGuid": "FF081000-436F8EAC-5D8119B1-FABE9DC1",
+      "InternalVariableName": "BP_Combine_Igor_Set"
+    }
+  },
+  {
+    "Type": "SimpleConstructionScript",
+    "Name": "SimpleConstructionScript_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SimpleConstructionScript'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "Properties": {
+      "RootNodes": [
+        {
+          "ObjectName": "SCS_Node'BP_VelvetRoomDraw_C:SimpleConstructionScript_0.SCS_Node_0'",
+          "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.33"
+        }
+      ],
+      "AllNodes": [
+        {
+          "ObjectName": "SCS_Node'BP_VelvetRoomDraw_C:SimpleConstructionScript_0.SCS_Node_0'",
+          "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.33"
+        },
+        {
+          "ObjectName": "SCS_Node'BP_VelvetRoomDraw_C:SimpleConstructionScript_0.SCS_Node_1'",
+          "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.34"
+        },
+        {
+          "ObjectName": "SCS_Node'BP_VelvetRoomDraw_C:SimpleConstructionScript_0.SCS_Node_4'",
+          "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.37"
+        },
+        {
+          "ObjectName": "SCS_Node'BP_VelvetRoomDraw_C:SimpleConstructionScript_0.SCS_Node_5'",
+          "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.38"
+        },
+        {
+          "ObjectName": "SCS_Node'BP_VelvetRoomDraw_C:SimpleConstructionScript_0.SCS_Node_3'",
+          "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.36"
+        },
+        {
+          "ObjectName": "SCS_Node'BP_VelvetRoomDraw_C:SimpleConstructionScript_0.SCS_Node_7'",
+          "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.39"
+        },
+        {
+          "ObjectName": "SCS_Node'BP_VelvetRoomDraw_C:SimpleConstructionScript_0.SCS_Node_2'",
+          "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.35"
+        },
+        {
+          "ObjectName": "SCS_Node'BP_VelvetRoomDraw_C:SimpleConstructionScript_0.SCS_Node_8'",
+          "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.40"
+        }
+      ],
+      "DefaultSceneRootNode": {
+        "ObjectName": "SCS_Node'BP_VelvetRoomDraw_C:SimpleConstructionScript_0.SCS_Node_0'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.33"
+      }
+    }
+  },
+  {
+    "Type": "SkeletalMeshComponent",
+    "Name": "CharacterMesh0",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SkeletalMeshComponent'",
+    "Outer": {
+      "ObjectName": "BP_Combine_Elizabeth_C'BP_VelvetRoomDraw_C:BP_Comibne_Elizabeth_GEN_VARIABLE.BP_Comibne_Elizabeth_GEN_VARIABLE_BP_Comibne_Elizabeth_C_CAT'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.21"
+    },
+    "Template": {
+      "ObjectName": "SkeletalMeshComponent'Default__BP_Combine_Elizabeth_C:CharacterMesh0'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/Characters/UI/Facility/Combine/BP_Combine_Elizabeth.20"
+    },
+    "Properties": {
+      "AttachParent": {
+        "ObjectName": "CapsuleComponent'BP_VelvetRoomDraw_C:BP_Comibne_Elizabeth_GEN_VARIABLE.BP_Comibne_Elizabeth_GEN_VARIABLE_BP_Comibne_Elizabeth_C_CAT.CollisionCylinder'",
+        "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.25"
+      }
+    }
+  },
+  {
+    "Type": "SpotLightComponent",
+    "Name": "VelvetRoomDrawSpotLight_GEN_VARIABLE",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SpotLightComponent'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_VelvetRoomDraw_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/UI/Facility/Combine/BP_VelvetRoomDraw.19"
+    },
+    "Properties": {
+      "InnerConeAngle": 28.838099,
+      "OuterConeAngle": 37.86667,
+      "IntensityUnits": "ELightUnits::Candelas",
+      "AttenuationRadius": 1500.0,
+      "Intensity": 200.0,
+      "IndirectLightingIntensity": 5.0,
+      "RelativeLocation": {
+        "X": 218.1879,
+        "Y": -201.25815,
+        "Z": 524.7247
+      },
+      "RelativeRotation": {
+        "Pitch": -79.999115,
+        "Yaw": 429.99927,
+        "Roll": -449.99942
+      }
+    },
+    "IntensityNits": 0.0
+  }
+]

@@ -1,0 +1,140 @@
+[
+  {
+    "Type": "WidgetBlueprintGeneratedClass",
+    "Name": "WBP_CampCustomStensilRendring_C",
+    "Flags": "RF_Public | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'WidgetBlueprintGeneratedClass'",
+    "Package": "/Game/Xrd777/UI/Camp/WBP_CampCustomStensilRendring",
+    "Properties": {
+      "WidgetTree": {
+        "ObjectName": "WidgetTree'WBP_CampCustomStensilRendring_C:WidgetTree'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/WBP_CampCustomStensilRendring.5"
+      }
+    },
+    "SuperStruct": {
+      "ObjectName": "Class'UserWidget'",
+      "ObjectPath": "/Script/UMG"
+    },
+    "ChildProperties": [
+      {
+        "Type": "ObjectProperty",
+        "Name": "Image_53",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | ExportObject | InstancedReference | RepSkip | PersistentInstance",
+        "PropertyClass": {
+          "ObjectName": "Class'Image'",
+          "ObjectPath": "/Script/UMG"
+        }
+      }
+    ],
+    "ClassFlags": "CLASS_Optional | CLASS_ReplicationDataIsSetUp | CLASS_EditInlineNew | CLASS_CompiledFromBlueprint | CLASS_DefaultToInstanced | CLASS_HasInstancedReference",
+    "ClassWithin": {
+      "ObjectName": "Class'Object'",
+      "ObjectPath": "/Script/CoreUObject"
+    },
+    "ClassConfigName": "Engine",
+    "bCooked": true,
+    "ClassDefaultObject": {
+      "ObjectName": "WBP_CampCustomStensilRendring_C'Default__WBP_CampCustomStensilRendring_C'",
+      "ObjectPath": "/Game/Xrd777/UI/Camp/WBP_CampCustomStensilRendring.1"
+    }
+  },
+  {
+    "Type": "WBP_CampCustomStensilRendring_C",
+    "Name": "Default__WBP_CampCustomStensilRendring_C",
+    "Flags": "RF_Public | RF_ClassDefaultObject | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "WidgetBlueprintGeneratedClass'/Game/Xrd777/UI/Camp/WBP_CampCustomStensilRendring.WBP_CampCustomStensilRendring_C'",
+    "Package": "/Game/Xrd777/UI/Camp/WBP_CampCustomStensilRendring",
+    "Properties": {
+      "bHasScriptImplementedTick": false,
+      "bHasScriptImplementedPaint": false
+    }
+  },
+  {
+    "Type": "CanvasPanel",
+    "Name": "CanvasPanel_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanel'",
+    "Outer": {
+      "ObjectName": "WidgetTree'WBP_CampCustomStensilRendring_C:WidgetTree'",
+      "ObjectPath": "/Game/Xrd777/UI/Camp/WBP_CampCustomStensilRendring.5"
+    },
+    "Properties": {
+      "Slots": [
+        {
+          "ObjectName": "CanvasPanelSlot'WBP_CampCustomStensilRendring_C:WidgetTree.CanvasPanel_0.CanvasPanelSlot_1'",
+          "ObjectPath": "/Game/Xrd777/UI/Camp/WBP_CampCustomStensilRendring.3"
+        }
+      ]
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_1",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'WBP_CampCustomStensilRendring_C:WidgetTree.CanvasPanel_0'",
+      "ObjectPath": "/Game/Xrd777/UI/Camp/WBP_CampCustomStensilRendring.2"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Right": 1921.9219,
+          "Bottom": 1081.081
+        }
+      },
+      "Parent": {
+        "ObjectName": "CanvasPanel'WBP_CampCustomStensilRendring_C:WidgetTree.CanvasPanel_0'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/WBP_CampCustomStensilRendring.2"
+      },
+      "Content": {
+        "ObjectName": "Image'WBP_CampCustomStensilRendring_C:WidgetTree.Image_53'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/WBP_CampCustomStensilRendring.4"
+      }
+    }
+  },
+  {
+    "Type": "Image",
+    "Name": "Image_53",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Image'",
+    "Outer": {
+      "ObjectName": "WidgetTree'WBP_CampCustomStensilRendring_C:WidgetTree'",
+      "ObjectPath": "/Game/Xrd777/UI/Camp/WBP_CampCustomStensilRendring.5"
+    },
+    "Properties": {
+      "Brush": {
+        "ImageSize": {
+          "X": 1920.0,
+          "Y": 1080.0
+        },
+        "ResourceObject": {
+          "ObjectName": "Material'MM_UI_CampCustomStencil'",
+          "ObjectPath": "/Game/Xrd777/UI/Camp/Material/MM_UI_CampCustomStencil.0"
+        }
+      },
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'WBP_CampCustomStensilRendring_C:WidgetTree.CanvasPanel_0.CanvasPanelSlot_1'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/WBP_CampCustomStensilRendring.3"
+      }
+    }
+  },
+  {
+    "Type": "WidgetTree",
+    "Name": "WidgetTree",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'WidgetTree'",
+    "Outer": {
+      "ObjectName": "WidgetBlueprintGeneratedClass'WBP_CampCustomStensilRendring_C'",
+      "ObjectPath": "/Game/Xrd777/UI/Camp/WBP_CampCustomStensilRendring.0"
+    },
+    "Properties": {
+      "RootWidget": {
+        "ObjectName": "CanvasPanel'WBP_CampCustomStensilRendring_C:WidgetTree.CanvasPanel_0'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/WBP_CampCustomStensilRendring.2"
+      }
+    }
+  }
+]

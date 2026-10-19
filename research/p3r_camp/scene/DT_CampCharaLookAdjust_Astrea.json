@@ -1,0 +1,643 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_CampCharaLookAdjust",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/Astrea/UI/Camp/Param/DT_CampCharaLookAdjust",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'CampCharaLookAdjust'",
+        "ObjectPath": "/Script/xrd777"
+      }
+    },
+    "Rows": {
+      "NewRow": {
+        "LightPositionTop": {
+          "X": 20.0,
+          "Y": -2.0,
+          "Z": 50.0
+        },
+        "LightPositionAdjustTop": {
+          "X": 10.0,
+          "Y": -150.0,
+          "Z": -3.0
+        },
+        "LightPositionAdjustRimTop": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "GradationColorATop": {
+          "R": 0.278431,
+          "G": 0.372549,
+          "B": 0.741176,
+          "A": 1.0,
+          "Hex": "90A4E0"
+        },
+        "GradationColorBTop": {
+          "R": 0.443137,
+          "G": 0.247059,
+          "B": 0.552941,
+          "A": 1.0,
+          "Hex": "B288C4"
+        },
+        "AngleAlignedTop": 0.0,
+        "AngleAlignedPowerTop": 1.0,
+        "GradationOFFTop": 0.0,
+        "SphereColorTop": {
+          "R": 1.0,
+          "G": 1.0,
+          "B": 1.0,
+          "A": 0.0,
+          "Hex": "FFFFFF"
+        },
+        "SpherePosTop": {
+          "X": 0.304878,
+          "Y": 0.265854
+        },
+        "SpherePowerTop": 1.0,
+        "SphereRadiusTop": 628.7254,
+        "ShpereHardnessTop": 0.157822,
+        "SphereReverseTop": 1.0,
+        "RimLightColorTop": {
+          "R": 0.609375,
+          "G": 0.863281,
+          "B": 1.0,
+          "A": 1.0,
+          "Hex": "CDEFFF"
+        },
+        "RimLightWidthMinTop": 0.0,
+        "RimLightWidthMaxTop": 500.0,
+        "RTShadowColorTop": {
+          "R": 1.0,
+          "G": 1.0,
+          "B": 1.0,
+          "A": 0.0,
+          "Hex": "FFFFFF"
+        },
+        "RTShadowColor_BlendTop": 0.5,
+        "GaussMaskTextureTopColorTop": {
+          "B": 255,
+          "G": 255,
+          "R": 255,
+          "A": 255,
+          "Hex": "FFFFFF"
+        },
+        "GaussMaskTextureBottomColorTop": {
+          "B": 255,
+          "G": 255,
+          "R": 255,
+          "A": 255,
+          "Hex": "FFFFFF"
+        },
+        "LightPositionSkill": {
+          "X": -28.042187,
+          "Y": 6.391372,
+          "Z": 50.0
+        },
+        "LightPositionAdjustSkill": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "LightPositionAdjustRimSkill": {
+          "X": 0.0,
+          "Y": 10.0,
+          "Z": 5.0
+        },
+        "GradationColorASkill": {
+          "R": 0.278431,
+          "G": 0.372549,
+          "B": 0.741176,
+          "A": 1.0,
+          "Hex": "90A4E0"
+        },
+        "GradationColorBSkill": {
+          "R": 0.443137,
+          "G": 0.247059,
+          "B": 0.552941,
+          "A": 1.0,
+          "Hex": "B288C4"
+        },
+        "AngleAlignedSkill": 0.0,
+        "AngleAlignedPowerSkill": 1.0,
+        "GradationOFFSkill": 0.0,
+        "SphereColorSkill": {
+          "R": 0.516377,
+          "G": 0.866668,
+          "B": 0.813337,
+          "A": 0.5,
+          "Hex": "7FBEF0E9"
+        },
+        "SpherePosSkill": {
+          "X": 0.656097,
+          "Y": 0.081514
+        },
+        "SpherePowerSkill": 1.0,
+        "SphereRadiusSkill": 1038.7188,
+        "ShpereHardnessSkill": 0.3,
+        "SphereReverseSkill": 1.0,
+        "RimLightColorSkill": {
+          "R": 0.609375,
+          "G": 0.863281,
+          "B": 1.0,
+          "A": 1.0,
+          "Hex": "CDEFFF"
+        },
+        "RimLightWidthMinSkill": 0.0,
+        "RimLightWidthMaxSkill": 2500.0,
+        "RTShadowColorSkill": {
+          "R": 1.0,
+          "G": 1.0,
+          "B": 1.0,
+          "A": 1.0,
+          "Hex": "FFFFFF"
+        },
+        "RTShadowColor_BlendSkill": 0.5,
+        "GaussMaskTextureTopColorSkill": {
+          "B": 255,
+          "G": 255,
+          "R": 255,
+          "A": 255,
+          "Hex": "FFFFFF"
+        },
+        "GaussMaskTextureBottomColorSkill": {
+          "B": 255,
+          "G": 255,
+          "R": 255,
+          "A": 255,
+          "Hex": "FFFFFF"
+        },
+        "LightPositionItem": {
+          "X": 180.0,
+          "Y": 404.21774,
+          "Z": 780.0
+        },
+        "LightPositionAdjustItem": {
+          "X": 207.0,
+          "Y": -1002.97687,
+          "Z": 0.0
+        },
+        "LightPositionAdjustRimItem": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 154.13289
+        },
+        "GradationColorAItem": {
+          "R": 0.278431,
+          "G": 0.372549,
+          "B": 0.741176,
+          "A": 1.0,
+          "Hex": "90A4E0"
+        },
+        "GradationColorBItem": {
+          "R": 0.443137,
+          "G": 0.247059,
+          "B": 0.552941,
+          "A": 1.0,
+          "Hex": "B288C4"
+        },
+        "AngleAlignedItem": 0.0,
+        "AngleAlignedPowerItem": 1.0,
+        "GradationOFFItem": 0.0,
+        "SphereColorItem": {
+          "R": 0.866668,
+          "G": 0.866668,
+          "B": 0.866668,
+          "A": 1.0,
+          "Hex": "F0F0F0"
+        },
+        "SpherePosItem": {
+          "X": 0.489813,
+          "Y": 0.558537
+        },
+        "SpherePowerItem": 1.0,
+        "SphereRadiusItem": 1005.5288,
+        "ShpereHardnessItem": 0.0,
+        "SphereReverseItem": 1.0,
+        "RimLightColorItem": {
+          "R": 0.609375,
+          "G": 0.863281,
+          "B": 1.0,
+          "A": 1.0,
+          "Hex": "CDEFFF"
+        },
+        "RimLightWidthMinItem": 0.0,
+        "RimLightWidthMaxItem": 300.0,
+        "RTShadowColorItem": {
+          "R": 1.0,
+          "G": 1.0,
+          "B": 1.0,
+          "A": 1.0,
+          "Hex": "FFFFFF"
+        },
+        "RTShadowColor_BlendItem": 0.5,
+        "GaussMaskTextureTopColorItem": {
+          "B": 225,
+          "G": 225,
+          "R": 225,
+          "A": 255,
+          "Hex": "E1E1E1"
+        },
+        "GaussMaskTextureBottomColorItem": {
+          "B": 137,
+          "G": 137,
+          "R": 137,
+          "A": 255,
+          "Hex": "898989"
+        },
+        "LightPositionEquip": {
+          "X": -28.042187,
+          "Y": 6.391372,
+          "Z": 50.0
+        },
+        "LightPositionAdjustEquip": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "LightPositionAdjustRimEquip": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 50.0
+        },
+        "GradationColorAEquip": {
+          "R": 0.278431,
+          "G": 0.372549,
+          "B": 0.741176,
+          "A": 1.0,
+          "Hex": "90A4E0"
+        },
+        "GradationColorBEquip": {
+          "R": 0.443137,
+          "G": 0.247059,
+          "B": 0.552941,
+          "A": 1.0,
+          "Hex": "B288C4"
+        },
+        "AngleAlignedEquip": 0.0,
+        "AngleAlignedPowerEquip": 1.0,
+        "GradationOFFEquip": 0.0,
+        "SphereColorEquip": {
+          "R": 0.714,
+          "G": 1.0,
+          "B": 0.813207,
+          "A": 1.0,
+          "Hex": "DCFFE9"
+        },
+        "SpherePosEquip": {
+          "X": 0.857426,
+          "Y": 0.168292
+        },
+        "SpherePowerEquip": 1.0,
+        "SphereRadiusEquip": 450.0,
+        "ShpereHardnessEquip": 0.0,
+        "SphereReverseEquip": 1.0,
+        "RimLightColorEquip": {
+          "R": 0.609375,
+          "G": 0.863281,
+          "B": 1.0,
+          "A": 1.0,
+          "Hex": "CDEFFF"
+        },
+        "RimLightWidthMinEquip": 0.0,
+        "RimLightWidthMaxEquip": 300.0,
+        "RTShadowColorEquip": {
+          "R": 1.0,
+          "G": 1.0,
+          "B": 1.0,
+          "A": 1.0,
+          "Hex": "FFFFFF"
+        },
+        "RTShadowColor_BlendEquip": 0.5,
+        "GaussMaskTextureTopColorEquip": {
+          "B": 255,
+          "G": 255,
+          "R": 255,
+          "A": 255,
+          "Hex": "FFFFFF"
+        },
+        "GaussMaskTextureBottomColorEquip": {
+          "B": 255,
+          "G": 255,
+          "R": 255,
+          "A": 255,
+          "Hex": "FFFFFF"
+        },
+        "LightPositionStatus": {
+          "X": 50.0,
+          "Y": 25.0,
+          "Z": 57.725018
+        },
+        "LightPositionAdjustStatus": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 90.0
+        },
+        "LightPositionAdjustRimStatus": {
+          "X": 27.664837,
+          "Y": 0.0,
+          "Z": 60.0
+        },
+        "GradationColorAStatus": {
+          "R": 0.278431,
+          "G": 0.372549,
+          "B": 0.741176,
+          "A": 1.0,
+          "Hex": "90A4E0"
+        },
+        "GradationColorBStatus": {
+          "R": 0.443137,
+          "G": 0.247059,
+          "B": 0.552941,
+          "A": 1.0,
+          "Hex": "B288C4"
+        },
+        "AngleAlignedStatus": 0.0,
+        "AngleAlignedPowerStatus": 1.0,
+        "GradationOFFStatus": 0.0,
+        "SphereColorStatus": {
+          "R": 0.792,
+          "G": 0.801689,
+          "B": 1.0,
+          "A": 0.25,
+          "Hex": "3FE6E8FF"
+        },
+        "SpherePosStatus": {
+          "X": 0.671595,
+          "Y": 0.68646
+        },
+        "SpherePowerStatus": 1.0,
+        "SphereRadiusStatus": 589.32874,
+        "ShpereHardnessStatus": 0.3,
+        "SphereReverseStatus": 1.0,
+        "RimLightColorStatus": {
+          "R": 0.609375,
+          "G": 0.863281,
+          "B": 1.0,
+          "A": 1.0,
+          "Hex": "CDEFFF"
+        },
+        "RimLightWidthMinStatus": 0.0,
+        "RimLightWidthMaxStatus": 250.0,
+        "RTShadowColorStatus": {
+          "R": 1.0,
+          "G": 1.0,
+          "B": 1.0,
+          "A": 1.0,
+          "Hex": "FFFFFF"
+        },
+        "RTShadowColor_BlendStatus": 0.5,
+        "GaussMaskTextureTopColorStatus": {
+          "B": 255,
+          "G": 255,
+          "R": 255,
+          "A": 255,
+          "Hex": "FFFFFF"
+        },
+        "GaussMaskTextureBottomColorStatus": {
+          "B": 255,
+          "G": 255,
+          "R": 255,
+          "A": 255,
+          "Hex": "FFFFFF"
+        },
+        "LightPositionQuest": {
+          "X": -30.201368,
+          "Y": 34.563766,
+          "Z": 58.11202
+        },
+        "LightPositionAdjustQuest": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "LightPositionAdjustRimQuest": {
+          "X": -700.5931,
+          "Y": 520.39087,
+          "Z": 1187.6575
+        },
+        "GradationColorAQuest": {
+          "R": 0.278431,
+          "G": 0.372549,
+          "B": 0.741176,
+          "A": 1.0,
+          "Hex": "90A4E0"
+        },
+        "GradationColorBQuest": {
+          "R": 0.443137,
+          "G": 0.247059,
+          "B": 0.552941,
+          "A": 1.0,
+          "Hex": "B288C4"
+        },
+        "AngleAlignedQuest": 0.0,
+        "AngleAlignedPowerQuest": 1.0,
+        "GradationOFFQuest": 0.0,
+        "SphereColorQuest": {
+          "R": 0.63,
+          "G": 0.858167,
+          "B": 1.0,
+          "A": 1.0,
+          "Hex": "D0EFFF"
+        },
+        "SpherePosQuest": {
+          "X": 0.808717,
+          "Y": -0.048781
+        },
+        "SpherePowerQuest": 1.0,
+        "SphereRadiusQuest": 750.0,
+        "ShpereHardnessQuest": 0.3,
+        "SphereReverseQuest": 1.0,
+        "RimLightColorQuest": {
+          "R": 0.609375,
+          "G": 0.863281,
+          "B": 1.0,
+          "A": 1.0,
+          "Hex": "CDEFFF"
+        },
+        "RimLightWidthMinQuest": 0.0,
+        "RimLightWidthMaxQuest": 947.4248,
+        "RTShadowColorQuest": {
+          "R": 1.0,
+          "G": 1.0,
+          "B": 1.0,
+          "A": 1.0,
+          "Hex": "FFFFFF"
+        },
+        "RTShadowColor_BlendQuest": 0.2,
+        "GaussMaskTextureTopColorQuest": {
+          "B": 255,
+          "G": 255,
+          "R": 255,
+          "A": 255,
+          "Hex": "FFFFFF"
+        },
+        "GaussMaskTextureBottomColorQuest": {
+          "B": 255,
+          "G": 255,
+          "R": 255,
+          "A": 255,
+          "Hex": "FFFFFF"
+        },
+        "LightPositionSystem": {
+          "X": -20.0,
+          "Y": 52.95532,
+          "Z": 50.0
+        },
+        "LightPositionAdjustSystem": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "LightPositionAdjustRimSystem": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "GradationColorASystem": {
+          "R": 0.278431,
+          "G": 0.372549,
+          "B": 0.741176,
+          "A": 1.0,
+          "Hex": "90A4E0"
+        },
+        "GradationColorBSystem": {
+          "R": 0.443137,
+          "G": 0.247059,
+          "B": 0.552941,
+          "A": 1.0,
+          "Hex": "B288C4"
+        },
+        "AngleAlignedSystem": 0.0,
+        "AngleAlignedPowerSystem": 1.0,
+        "GradationOFFSystem": 0.0,
+        "SphereColorSystem": {
+          "R": 0.396,
+          "G": 0.821338,
+          "B": 1.0,
+          "A": 1.0,
+          "Hex": "A9EAFF"
+        },
+        "SpherePosSystem": {
+          "X": 0.5,
+          "Y": 0.75
+        },
+        "SpherePowerSystem": 1.0,
+        "SphereRadiusSystem": 1250.0,
+        "ShpereHardnessSystem": 0.0,
+        "SphereReverseSystem": 1.0,
+        "RimLightColorSystem": {
+          "R": 0.609375,
+          "G": 0.863281,
+          "B": 1.0,
+          "A": 1.0,
+          "Hex": "CDEFFF"
+        },
+        "RimLightWidthMinSystem": 0.0,
+        "RimLightWidthMaxSystem": 500.0,
+        "RTShadowColorSystem": {
+          "R": 1.0,
+          "G": 1.0,
+          "B": 1.0,
+          "A": 1.0,
+          "Hex": "FFFFFF"
+        },
+        "RTShadowColor_BlendSystem": 0.5,
+        "GaussMaskTextureTopColorSystem": {
+          "B": 255,
+          "G": 255,
+          "R": 255,
+          "A": 255,
+          "Hex": "FFFFFF"
+        },
+        "GaussMaskTextureBottomColorSystem": {
+          "B": 255,
+          "G": 255,
+          "R": 255,
+          "A": 255,
+          "Hex": "FFFFFF"
+        },
+        "LightPositionConfig": {
+          "X": -20.0,
+          "Y": 50.0,
+          "Z": 150.0
+        },
+        "LightPositionAdjustConfig": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "LightPositionAdjustRimConfig": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "GradationColorAConfig": {
+          "R": 0.278431,
+          "G": 0.372549,
+          "B": 0.741176,
+          "A": 1.0,
+          "Hex": "90A4E0"
+        },
+        "GradationColorBConfig": {
+          "R": 0.443137,
+          "G": 0.247059,
+          "B": 0.552941,
+          "A": 1.0,
+          "Hex": "B288C4"
+        },
+        "AngleAlignedConfig": 0.0,
+        "AngleAlignedPowerConfig": 1.0,
+        "GradationOFFConfig": 0.0,
+        "SphereColorConfig": {
+          "R": 1.0,
+          "G": 1.0,
+          "B": 1.0,
+          "A": 1.0,
+          "Hex": "FFFFFF"
+        },
+        "SpherePosConfig": {
+          "X": 0.603659,
+          "Y": 0.3
+        },
+        "SpherePowerConfig": 1.0,
+        "SphereRadiusConfig": 1000.0,
+        "ShpereHardnessConfig": 0.0,
+        "SphereReverseConfig": 1.0,
+        "RimLightColorConfig": {
+          "R": 0.609375,
+          "G": 0.863281,
+          "B": 1.0,
+          "A": 1.0,
+          "Hex": "CDEFFF"
+        },
+        "RimLightWidthMinConfig": 0.0,
+        "RimLightWidthMaxConfig": 750.0,
+        "RTShadowColorConfig": {
+          "R": 1.0,
+          "G": 1.0,
+          "B": 1.0,
+          "A": 1.0,
+          "Hex": "FFFFFF"
+        },
+        "RTShadowColor_BlendConfig": 0.5,
+        "GaussMaskTextureTopColorConfig": {
+          "B": 255,
+          "G": 255,
+          "R": 255,
+          "A": 255,
+          "Hex": "FFFFFF"
+        },
+        "GaussMaskTextureBottomColorConfig": {
+          "B": 255,
+          "G": 255,
+          "R": 255,
+          "A": 255,
+          "Hex": "FFFFFF"
+        }
+      }
+    }
+  }
+]
