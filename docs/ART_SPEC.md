@@ -1595,6 +1595,11 @@ Grand.cs 里其余函数暂时保留不用。
 - v0.14.86（用户：金卡偏暗淡）：稀有卡的横幅 / 卡图边框 / 类型标签换成更亮、更饱和的暖金（tools/ui/frame_postprocess.py 的 rare 渐变）。
 - 预览：tools/ui/card_compose.py（按 card.tscn 拼卡，--vanilla 和游戏截图对过）、tools/ui/card_frame_preview.py；真 Godot 渲染核对过 AtlasTexture margin、九宫格和字体。
 
+### v0.14.87 设置界面（P3R 营地菜单风格）整体撤下
+
+- 用户：先撤下来。SettingsSkin.Enabled = false（不挂、设置里的开关不显示、空闲预热不加载）；代码和素材保留。
+- 之后等 docs/codex/codex_p3r_camp_rip.md 把 P3R 原版营地菜单的贴图 / UIM 动画 / 布局导出来，照原版数据重做。
+
 ## 待办（用户实机反馈，先记录）
 
 - P3R 主菜单打开动画（用户给的分镜 0.50~1.83s）：水面上有东西砸进来，带大片水花切入，水花散开后才看清是结城理倒着把头探进水里。之后找地方用（用户：先做牌堆，这个后面再做）。

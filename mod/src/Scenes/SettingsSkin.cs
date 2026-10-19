@@ -110,9 +110,9 @@ public static class SettingsSkin
 	private static readonly Dictionary<ulong, State> States = new();
 
 	/// <summary>
-	/// v0.14.76 先整体关掉（入场动画没做完）；v0.14.77 重新打开（用户：这一版可以，先装到游戏里看）。关掉时不挂、设置里的开关不显示、空闲预热不加载它的资源。
+	/// v0.14.76 先整体关掉（入场动画没做完）；v0.14.77 重新打开；v0.14.87 再次整体撤下（用户：先撤下来，等 P3R 原版营地菜单的素材 / 动画导出后照原版重做）。关掉时不挂、设置里的开关不显示、空闲预热不加载它的资源。
 	/// </summary>
-	public static readonly bool Enabled = true;
+	public static readonly bool Enabled = false;
 
 	private static bool Zh => TranslationServer.GetLocale().StartsWith("zh");
 	private static float Now => Time.GetTicksMsec() / 1000f;
