@@ -1592,6 +1592,7 @@ Grand.cs 里其余函数暂时保留不用。
 - 游戏里（mod/src/Scenes/CardFrameSkin.cs）：NCard.Reload / UpdatePortrait 之后换掉卡框（按类型）、横幅 / 卡图边框 / 类型标签（按稀有度：银白 / 冰蓝 / 暗金），去掉原版 hsv 上色材质；
   卡框下沿加阿卡纳罗马数字牌（Cinzel，升级后变金）；有重绘卡图的卡换卡图（p3makoto/cards/，目前 6 张）。只作用于储君卡池的普通 / 罕见 / 稀有卡；设置里可关。
 - v0.14.82~83（用户：卡名字体丑）：卡名用衬线体（中文用游戏自带思源宋体，其他语言 Cinzel）；三种写法里用户选了 C：白字 + 深蓝描边；v0.14.84（银白横幅上看不清）试过用投影做柔光，边缘太硬；v0.14.85 改成字后面垫一块羽化的深色椭圆（GradientTexture2D 径向，中心 0.7 → 边缘 0），描边 6 + 轻投影；升级后浅青绿。
+- v0.14.86（用户：金卡偏暗淡）：稀有卡的横幅 / 卡图边框 / 类型标签换成更亮、更饱和的暖金（tools/ui/frame_postprocess.py 的 rare 渐变）。
 - 预览：tools/ui/card_compose.py（按 card.tscn 拼卡，--vanilla 和游戏截图对过）、tools/ui/card_frame_preview.py；真 Godot 渲染核对过 AtlasTexture margin、九宫格和字体。
 
 ## 待办（用户实机反馈，先记录）
