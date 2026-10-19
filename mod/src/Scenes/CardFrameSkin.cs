@@ -143,6 +143,7 @@ public static class CardFrameSkin
 	private static void TitleStyle(NCard card, CardModel? m)
 	{
 		Label t = Title(card);
+		Shade(t, m != null);
 		if (m == null)
 		{
 			if (t.HasMeta("p3_font"))
@@ -176,16 +177,53 @@ public static class CardFrameSkin
 			}
 			Font baseFont = serif ?? Typo.Cinzel;
 			t.AddThemeFontOverride("font", new FontVariation { BaseFont = baseFont, SpacingGlyph = serif != null ? 2 : 1, Fallbacks = new Godot.Collections.Array<Font> { orig } });
-			// 用户选 C：白字 + 深蓝描边；v0.14.84（用户：银白横幅上白字看不清）描边加粗加深，再用投影做字后面一圈深色柔光，任何底色上都清楚
-			t.AddThemeConstantOverride("outline_size", 8);
-			t.AddThemeConstantOverride("shadow_outline_size", 22);
+			// 用户选 C：白字 + 深蓝描边 + 轻投影；v0.14.85（v0.14.84 用投影做的"柔光"边缘太硬）：字后面另放一块羽化的深色椭圆（见 Shade）
+			t.AddThemeConstantOverride("outline_size", 6);
+			t.AddThemeConstantOverride("shadow_outline_size", 6);
 			t.AddThemeConstantOverride("shadow_offset_x", 0);
-			t.AddThemeConstantOverride("shadow_offset_y", 0);
-			t.AddThemeColorOverride("font_shadow_color", new Color(0.02f, 0.05f, 0.12f, 0.55f));
+			t.AddThemeConstantOverride("shadow_offset_y", 2);
+			t.AddThemeColorOverride("font_shadow_color", new Color(0f, 0f, 0f, 0.35f));
 		}
 		// 升级后沿用原版"绿色卡名"的约定，换成和塔罗卡框搭的浅青绿
 		t.AddThemeColorOverride("font_color", m.IsUpgraded ? new Color(0.62f, 1f, 0.78f) : Colors.White);
 		t.AddThemeColorOverride("font_outline_color", new Color(0.03f, 0.07f, 0.14f));
+	}
+
+	private static GradientTexture2D? _shadeTex;
+
+	/// <summary>
+	/// 卡名后面一块羽化的深色椭圆（中心 70% 不透明的深海军蓝 → 边缘全透明），垫在横幅和字之间，让白字在银白 / 冰蓝 / 暗金横幅上都看得清。
+	/// 放在卡名节点前面一个位置（同一个父节点），矩形和卡名一样居中、略小：(-95, -200) ~ (95, -152)。
+	/// </summary>
+	private static void Shade(Label title, bool on)
+	{
+		Node parent = title.GetParent();
+		TextureRect? sh = parent.GetNodeOrNull<TextureRect>("P3TitleShade");
+		if (sh == null)
+		{
+			if (!on)
+			{
+				return;
+			}
+			if (_shadeTex == null)
+			{
+				Color c = new(0.02f, 0.06f, 0.14f);
+				Gradient g = new();
+				g.SetColor(0, new Color(c, 0.7f));
+				g.SetColor(1, new Color(c, 0f));
+				g.AddPoint(0.55f, new Color(c, 0.32f));
+				_shadeTex = new GradientTexture2D { Gradient = g, Fill = GradientTexture2D.FillEnum.Radial, FillFrom = new Vector2(0.5f, 0.5f), FillTo = new Vector2(1f, 0.5f), Width = 128, Height = 64 };
+			}
+			sh = new TextureRect { Name = "P3TitleShade", Texture = _shadeTex, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, MouseFilter = Control.MouseFilterEnum.Ignore };
+			sh.SetAnchorsPreset(Control.LayoutPreset.Center);
+			sh.OffsetLeft = -95f;
+			sh.OffsetTop = -200f;
+			sh.OffsetRight = 95f;
+			sh.OffsetBottom = -152f;
+			parent.AddChild(sh);
+			parent.MoveChild(sh, title.GetIndex());
+		}
+		sh.Visible = on;
 	}
 
 	/// <summary>卡框下沿正中的数字牌：场景坐标 (-42, 183) ~ (42, 215)，和 tools/ui/card_compose.py 的 "arcana" 一致。</summary>
