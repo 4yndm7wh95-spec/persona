@@ -1,5 +1,5 @@
 你在用户的 Windows 电脑上工作。任务：用 imagegen 把储君的卡牌卡图（card portrait）逐张重绘成 P3R / 结城理风格。只做美术，不改代码。
-本文件分 7 批（见【8. 分批】），**每次会话只做一批**：用户说"做第 N 批"就做第 N 批；没说就做第 1 批（试点）。做完一批就提交推送并报告，然后停下。
+本文件分 7 批（见【8. 分批】），**每次会话只做一批**：用户说"做第 N 批"就做第 N 批；没说就**按 v2 画风重做第 1 批**（试点）。做完一批就提交推送并报告，然后停下。
 
 【背景】
 - P3Makoto 是杀戮尖塔 2 的 mod，把储君（Regent）换成 P3R（女神异闻录 3 Reload）的主角结城理。现在卡背已经是 P3R 的塔罗牌，卡面还是原版储君的画。
@@ -32,13 +32,16 @@
 - 配色规范：<repo>\docs\STYLE_P3R.md（只读）。
 
 【3. 画风（所有卡共用，写进每张的 imagegen 提示词）】
-- P3R 的技能 / 演出插画风：干净的现代动画赛璐璐上色，清楚的硬边阴影，深色描线；构图大胆，斜切的几何形状（平行四边形、斜线、细弧线、三角），速度线；
-  水、玻璃、碎玻璃片的质感；蓝色蝴蝶偶尔点缀（一张最多 2~6 只，不是每张都有）。
-- 配色（我定的规则）：
-  - 底色统一往 P3R 靠：深海军蓝 #071a4a、皇家蓝 #1f5cff、青 #39d8ff、冰白 #d8f4ff。
-  - **保留原版这张卡最有辨识度的那个主色，用在主体特效上**（例：打击的金色剑光、陨星的火焰橙、太阳打击的橙红太阳、月面射击的冷白月光、超质量体的黄绿），这是认出原版的锚点之一；但原版大面积的暖色背景（红、橙、紫红）要换成蓝系。
-  - 能力牌（Power）可以加"影时间"的绿色（#6dff9e、诡异的黄绿色大月亮）。
-  - 红色 #ff2a4a 只做少量点缀（耳机、臂章、刀光边缘等）。
+> **v2（第 1 批用户反馈："风格化太重，整个卡面很花哨，AI 味很重"）**：第 1 批每张都铺满碎玻璃、光点、速度线，全部刷成蓝色 —— 这些全部取消。
+> 下面是 v2 的规则，以这一节为准；【5】里每张卡方案中提到的碎玻璃 / 蝴蝶 / 光点 / 速度线一律删掉不画（除非那就是这张卡的主体）。
+
+- **少**：每张卡只放 **一个** P3R 元素（结城理 / 他的手 / 人格面具 / 暗影 / 塔罗牌 / 影时间的月亮，选【5】里写的那一个最主要的），其余都跟原版走。
+- **背景简单**：两三块大的平涂色块或很缓的两色过渡，像原版那样留白；**不要**碎玻璃、碎片、粒子、光点、星星点点、镜头光晕、速度线、满屏特效、水面反光、细碎纹理。
+- **底色保留原版这张卡自己的颜色**（红就还是红、绿就还是绿、紫就还是紫），只稍微降一点饱和度、偏冷一点；**不要**全部刷成蓝色。主体特效的颜色也跟原版走。
+- **画法**：大色块、两层硬边阴影、粗细一致的深色描线；形状简单、轮廓清楚；**不要**金属反光、光滑渐变、发光边、细碎高光、过度细节。缩到卡牌大小（约 250×190）还要一眼看清主体。
+- 两个方向，每张卡各出一个候选（这就是 a / b 的区别，不再是"贴近 / 大胆"）：
+  - **a = 贴原版画法**：用 imagegen 的图像编辑，把原版卡图当底图直接改。背景、构图、配色、画法（原版的厚涂 + 粗描线）基本不动，只把储君 / 他的手 / 小怪换成【5】里写的结城理 / 他的手 / 人格面具 / 暗影，换上去的部分也用原版的画法画，和原图融为一体。
+  - **b = 克制的 P3R 动画风**：参考原版构图重新画，用 P3R 的干净赛璐璐画法，但严格遵守上面的"少""背景简单""底色保留"三条。
 - 结城理（需要时）：
   > a slender Japanese high school boy, Persona 3 protagonist style: dark navy-blue hair with long bangs covering one eye, calm expressionless grey eyes, black school blazer worn open over a white shirt, red armband on the upper arm, red-and-white headphones around the neck with the cord leading to an MP3 player
   - 原版储君的"手"→ 结城理的手：干净的白皙少年的手，黑色校服袖口里露出白衬衫袖口（原版是棕金色的粗糙护手，不要照抄）。
@@ -49,14 +52,14 @@
   - Thanatos：a towering black reaper-like guardian spirit with a pale skull-like mask, a ring of chained black coffins floating behind its back, a long sword；
   - Messiah：a radiant white winged guardian spirit with a coffin-shaped halo-like frame behind it。
 - 敌人 / 小怪 → P3R 的 Shadow（暗影）：黑色黏稠的团块 / 伸出很多黑手，脸上戴着蓝色的阿卡纳面具。
-- 场景元素可选：塔尔塔罗斯（Tartarus，高耸的扭曲高塔）、影时间（墨绿色天空、诡异的大月亮、立着的黑色棺材）、天鹅绒房间（深蓝色的房间、蓝色天鹅绒）、塔罗牌、钟表、月相。
+- 场景元素（只在【5】里这张卡写到时才用，不要额外加）：塔尔塔罗斯（Tartarus，高耸的扭曲高塔）、影时间（墨绿色天空、诡异的大月亮、立着的黑色棺材）、天鹅绒房间（深蓝色的房间、蓝色天鹅绒）、塔罗牌、钟表、月相。
 - 不要：文字、字母、数字、水印、签名、UI、卡框、边框（卡框由游戏画，图要满版出血）。
 
 【4. 每张图的规格】
 - 尺寸和原版一样：1000×760（the_sealed_throne、meteor_shower 为 606×852）。imagegen 出不了这个尺寸时，出最接近比例的更大尺寸，再等比缩放 + 居中裁切到目标尺寸（不要拉伸变形）。
 - **满版不透明 RGB**（卡图是整张背景，这是《生图一律真透明底》规则的例外，不要透明）。
 - 主体放在中间 80% 的安全区里（四边各留约 10%，游戏的卡框会盖住一点边）。
-- 每张出 2 个候选（a / b），重绘力度可以不同：a 贴近原版构图，b 更大胆。
+- 每张出 2 个候选：a = 贴原版画法（编辑原图），b = 克制的 P3R 动画风（见【3】）。
 
 【5. 每张卡的重绘方案】
 格式：文件名 | 阿卡纳（卡在 P3R 里对应的大阿卡纳，用来定基调，不要把文字画进图里）| 原版辨识锚点（必须保留的构图 / 主体）| 重绘方案。
@@ -168,6 +171,7 @@
 - royal_corona | IV 皇帝 | 一顶由星星连成的王冠 | 一顶由蓝色星光连成的王冠，悬在理的剪影头上。
 
 【6. 要交付的文件】
+（v2 重做第 1 批时，文件放在 <repo>\art\cards\v2\ 下，结构同下面 —— cand\、preview\batch1.png、README.md；不要覆盖 art\cards\ 下第 1 批 v1 的文件。v2 定稿后的批次直接放 art\cards\v2\。）
 1. 每张卡：
    - 候选：<repo>\art\cards\cand\<名字>_a.png 和 <名字>_b.png；
    - 选定：<repo>\art\cards\<名字>.png（从 a / b 里挑一张复制过来，按【7. 自检】挑）。
@@ -176,13 +180,14 @@
 
 【7. 自检】不满足就重做那一张，最多 3 轮；仍不满足就如实写进 README：
 1. 能一眼认出是原版的哪张卡：主体、构图方向、动作和原版对得上（把新图和原版并排看）。
-2. 能一眼看出是 P3R 风格：配色以蓝系为主，保留了原版的那个主色锚点，有 P3R 的元素（理 / 手 / 人格面具 / 暗影 / 塔罗 / 碎玻璃 / 蝴蝶 / 影时间至少一样）。
+2. 能一眼看出是 P3R：有且只有一个主要的 P3R 元素；底色和原版同一色系（没有全部变蓝）。
+6. 不花哨：背景干净，没有碎玻璃 / 粒子 / 光点 / 光晕 / 细碎高光；缩小到 250×190 看主体依然清楚。
 3. 画到理时：头发遮一只眼、灰色眼睛、黑色外套白衬衫、红色耳机或臂章至少一样可见；手指数量正常、没有多余的手或肢体。
 4. 没有文字、字母、数字、水印、边框、UI。
 5. 尺寸正确、不透明、没有被拉伸变形。
 
 【8. 分批】
-- 第 1 批（试点，先做这一批，定画风）：strike_regent, defend_regent, falling_star, venerate, big_bang, black_hole, tyranny, the_smith
+- 第 1 批（试点，先做这一批，定画风；v1 已做完被否，现在按 v2 重做第 1 批）：strike_regent, defend_regent, falling_star, venerate, big_bang, black_hole, tyranny, the_smith
 - 第 2 批：astral_pulse, celestial_might, cloak_of_stars, collision_course, cosmic_indifference, crescent_spear, crush_under, gather_light, glitterstream, glow, guiding_star, hidden_cache, know_thy_place, patter
 - 第 3 批：photon_cut, refine_blade, solar_strike, spoils_of_battle, wrought_in_war, begone, alignment, bulwark, charge, child_of_the_stars, conqueror, constellation, convergence, devastate
 - 第 4 批：furnace, gamma_blast, glimmer, hegemony, kingly_kick, kingly_punch, knockout_blow, largesse, lunar_blast, manifest_authority, monologue, orbit, pale_blue_dot, parry
@@ -193,9 +198,9 @@
 
 【9. 提交与推送】
 1. 只 add 这个目录：
-   git -c safe.directory=<repo> add art/cards
+   git -c safe.directory=<repo> add art/cards/v2
 2. 提交：
-   git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local commit -m "art: P3R-style card portraits, batch <N>"
+   git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local commit -m "art: P3R-style card portraits v2, batch <N>"
 3. push：
    git -c safe.directory=<repo> -c http.version=HTTP/1.1 -c http.lowSpeedLimit=0 -c http.lowSpeedTime=999999 push origin claude/amazing-darwin-b00arn
    - 失败时分别等 5 / 10 / 20 / 40 秒重试，最多 4 次。
