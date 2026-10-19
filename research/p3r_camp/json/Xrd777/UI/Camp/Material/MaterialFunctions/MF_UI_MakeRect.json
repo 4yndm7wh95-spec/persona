@@ -1,0 +1,12 @@
+[
+  {
+    "Type": "MaterialFunction",
+    "Name": "MF_UI_MakeRect",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MaterialFunction'",
+    "Package": "/Game/Xrd777/UI/Camp/Material/MaterialFunctions/MF_UI_MakeRect",
+    "Properties": {
+      "StateId": "BD3E4162-4387615A-1814E4AC-27284F88"
+    }
+  }
+]

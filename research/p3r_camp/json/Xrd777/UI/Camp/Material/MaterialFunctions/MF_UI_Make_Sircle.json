@@ -1,0 +1,12 @@
+[
+  {
+    "Type": "MaterialFunction",
+    "Name": "MF_UI_Make_Sircle",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MaterialFunction'",
+    "Package": "/Game/Xrd777/UI/Camp/Material/MaterialFunctions/MF_UI_Make_Sircle",
+    "Properties": {
+      "StateId": "E517338B-469CA250-047D7395-51C37F5C"
+    }
+  }
+]

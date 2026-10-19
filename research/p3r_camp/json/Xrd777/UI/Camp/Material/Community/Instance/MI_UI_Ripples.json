@@ -1,0 +1,85 @@
+[
+  {
+    "Type": "MaterialInstanceConstant",
+    "Name": "MI_UI_Ripples",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MaterialInstanceConstant'",
+    "Package": "/Game/Xrd777/UI/Camp/Material/Community/Instance/MI_UI_Ripples",
+    "Properties": {
+      "Parent": {
+        "ObjectName": "Material'MM_UI_Ripples'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/Material/Community/MasterMaterials/MM_UI_Ripples.0"
+      },
+      "ScalarParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "Alpha",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.35,
+          "ExpressionGUID": "691DB4BC-4CE0D77F-28B51999-E693457F"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "Blur",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.015,
+          "ExpressionGUID": "14059AB1-44C3D09D-1F1FF794-DC75FC6F"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "Size",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.8,
+          "ExpressionGUID": "0A8F2FAE-4E8BAB59-EF3F2D85-C006F953"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "width",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.03,
+          "ExpressionGUID": "19D446EB-453FD06B-20387B81-AB1D68B5"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "RefractionDepthBias",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.0,
+          "ExpressionGUID": "00000000-00000000-00000000-00000000"
+        }
+      ],
+      "VectorParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "Color",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "R": 0.003347,
+            "G": 0.341914,
+            "B": 0.545724,
+            "A": 1.0,
+            "Hex": "0B9EC3"
+          },
+          "ExpressionGUID": "D580C6E9-46323CA5-C2EECDAA-F8B1D9AB"
+        }
+      ],
+      "BasePropertyOverrides": {
+        "BlendMode": "BLEND_Additive",
+        "ShadingModel": "MSM_Unlit",
+        "OpacityMaskClipValue": 0.3333
+      }
+    },
+    "LoadedMaterialResources": []
+  }
+]

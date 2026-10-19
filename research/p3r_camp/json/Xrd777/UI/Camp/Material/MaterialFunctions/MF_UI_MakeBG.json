@@ -1,0 +1,12 @@
+[
+  {
+    "Type": "MaterialFunction",
+    "Name": "MF_UI_MakeBG",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MaterialFunction'",
+    "Package": "/Game/Xrd777/UI/Camp/Material/MaterialFunctions/MF_UI_MakeBG",
+    "Properties": {
+      "StateId": "89FC73A6-43849189-485A15B0-679689DF"
+    }
+  }
+]

@@ -1,0 +1,269 @@
+[
+  {
+    "Type": "Material",
+    "Name": "MM_UI_OneMask",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Material'",
+    "Package": "/Game/Xrd777/UI/Camp/Root/Material/MM_UI_OneMask",
+    "Properties": {
+      "EmissiveColor": {
+        "Expression": null,
+        "OutputIndex": 0,
+        "InputName": "None",
+        "Mask": 0,
+        "MaskR": 0,
+        "MaskG": 0,
+        "MaskB": 0,
+        "MaskA": 0,
+        "ExpressionName": "MaterialExpressionMultiply_12",
+        "UseConstant": false,
+        "Constant": {
+          "B": 0,
+          "G": 0,
+          "R": 0,
+          "A": 0,
+          "Hex": "000000"
+        }
+      },
+      "MaterialDomain": "MD_UI",
+      "BlendMode": "BLEND_AlphaHoldout",
+      "ShadingModel": "MSM_Unlit",
+      "ShadingModels": {
+        "ShadingModelField": 1
+      },
+      "bWriteOnlyAlpha": true,
+      "BlendableLocation": "BL_BeforeTonemapping",
+      "BlendableOutputAlpha": true,
+      "StateId": "50E04712-4A5FB469-62BF759E-F98D7015",
+      "CachedExpressionData": {
+        "Parameters": {
+          "RuntimeEntries[2]": {
+            "NameHashes": [
+              8370121904344411576,
+              14875327213206359456
+            ],
+            "ParameterInfos": [
+              {
+                "Name": "Texture",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "SceneTexture",
+                "Association": "GlobalParameter",
+                "Index": -1
+              }
+            ],
+            "ExpressionGuids": [
+              "BABD1C34-470F24E8-1D3978B1-05DFE046",
+              "A31B25A2-4E7EFFC8-B5AB1A99-86E65195"
+            ]
+          },
+          "TextureValues": [
+            {
+              "ObjectName": "Texture2D'T_UI_Common_Dummy_00_Alp'",
+              "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00_Alp.0"
+            },
+            {
+              "ObjectName": "Texture2D'T_UI_Common_Dummy_00_Alp'",
+              "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00_Alp.0"
+            }
+          ]
+        },
+        "ReferencedTextures": [
+          {
+            "ObjectName": "Texture2D'T_UI_Common_Dummy_00_Alp'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00_Alp.0"
+          },
+          null
+        ],
+        "FunctionInfos": [
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          }
+        ],
+        "QualityLevelsUsed": [
+          false,
+          false,
+          false,
+          false
+        ]
+      }
+    },
+    "LoadedMaterialResources": [],
+    "CachedExpressionData": {
+      "Parameters": {
+        "RuntimeEntries[2]": {
+          "NameHashes": [
+            8370121904344411576,
+            14875327213206359456
+          ],
+          "ParameterInfos": [
+            {
+              "Name": "Texture",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "SceneTexture",
+              "Association": "GlobalParameter",
+              "Index": -1
+            }
+          ],
+          "ExpressionGuids": [
+            "BABD1C34-470F24E8-1D3978B1-05DFE046",
+            "A31B25A2-4E7EFFC8-B5AB1A99-86E65195"
+          ]
+        },
+        "TextureValues": [
+          {
+            "ObjectName": "Texture2D'T_UI_Common_Dummy_00_Alp'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00_Alp.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_UI_Common_Dummy_00_Alp'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00_Alp.0"
+          }
+        ]
+      },
+      "ReferencedTextures": [
+        {
+          "ObjectName": "Texture2D'T_UI_Common_Dummy_00_Alp'",
+          "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00_Alp.0"
+        },
+        null
+      ],
+      "FunctionInfos": [
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        }
+      ],
+      "QualityLevelsUsed": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  }
+]

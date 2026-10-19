@@ -1,0 +1,164 @@
+[
+  {
+    "Type": "MaterialInstanceConstant",
+    "Name": "MI_UI_Community_BG",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MaterialInstanceConstant'",
+    "Package": "/Game/Xrd777/UI/Camp/Material/Community/Instance/MI_UI_Community_BG",
+    "Properties": {
+      "Parent": {
+        "ObjectName": "Material'MM_UI_Community_BG'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/Material/Community/MasterMaterials/MM_UI_Community_BG.0"
+      },
+      "ScalarParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "A_Threshold",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 1.7,
+          "ExpressionGUID": "49F43C02-4CE5DD59-7ABDFCA8-D4528E07"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "B_Threshold",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.63,
+          "ExpressionGUID": "0F8D95DF-442A5BA2-E028E18D-4EA87AA9"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "C_Threshold",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.49,
+          "ExpressionGUID": "1B792473-4EE9836E-A314C9A6-653F34AA"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "Contrast",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.0,
+          "ExpressionGUID": "C1EEFD4B-49C6392A-0CC522A2-2C625627"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "Curve",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.0,
+          "ExpressionGUID": "C9F904BA-407FE132-36706EA4-F1C8CB9B"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "D_Threshold",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.8,
+          "ExpressionGUID": "002A379C-4A3F1E24-9AB0D1B2-54E1DD8E"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "E_Threshold",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.08,
+          "ExpressionGUID": "A313A5C4-40F781E1-7574029B-63BD8C9B"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "LineWidth",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.0,
+          "ExpressionGUID": "B0744728-46676F6D-6095C6BC-5610E10D"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "RefractionDepthBias",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.0,
+          "ExpressionGUID": "00000000-00000000-00000000-00000000"
+        }
+      ],
+      "VectorParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "Param1",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "R": 1.0,
+            "G": 0.791298,
+            "B": 0.814847,
+            "A": 1.0,
+            "Hex": "FFE6E9"
+          },
+          "ExpressionGUID": "3FF6C4EF-4FD9BD60-441A2DAA-F0A8CF41"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "Param2",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "R": 1.0,
+            "G": 0.0,
+            "B": 0.467784,
+            "A": 1.0,
+            "Hex": "FF00B6"
+          },
+          "ExpressionGUID": "4A0CFBB8-4A0F3983-B07A6EBA-0CA145B2"
+        }
+      ],
+      "TextureParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "Texture",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "ObjectName": "Texture2D'T_UI_Common_Dummy_00_Alp'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00_Alp.0"
+          },
+          "ExpressionGUID": "390E4AE0-4CE47B32-A75E1087-2BBEE973"
+        }
+      ],
+      "BasePropertyOverrides": {
+        "ShadingModel": "MSM_Unlit",
+        "OpacityMaskClipValue": 0.3333
+      },
+      "CachedReferencedTextures": [
+        {
+          "ObjectName": "CurveLinearColorAtlas'CA_UI_Community'",
+          "ObjectPath": "/Game/Xrd777/UI/Camp/Material/Community/Curve/CA_UI_Community.0"
+        },
+        {
+          "ObjectName": "TextureRenderTarget2D'RT_Temp1'",
+          "ObjectPath": "/Game/Xrd777/Kernel/Textures/RT_Temp1.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_UI_Common_Dummy_00_Alp'",
+          "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00_Alp.0"
+        },
+        null
+      ]
+    },
+    "LoadedMaterialResources": []
+  }
+]

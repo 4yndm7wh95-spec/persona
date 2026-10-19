@@ -1,0 +1,12 @@
+[
+  {
+    "Type": "MaterialFunction",
+    "Name": "MF_UI_MakeGradation",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MaterialFunction'",
+    "Package": "/Game/Xrd777/UI/Camp/Material/MaterialFunctions/MF_UI_MakeGradation",
+    "Properties": {
+      "StateId": "535DE261-4854423B-C1564FB0-A85BA6CF"
+    }
+  }
+]

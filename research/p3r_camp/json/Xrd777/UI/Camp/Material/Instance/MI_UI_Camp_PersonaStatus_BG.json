@@ -1,0 +1,116 @@
+[
+  {
+    "Type": "MaterialInstanceConstant",
+    "Name": "MI_UI_Camp_PersonaStatus_BG",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MaterialInstanceConstant'",
+    "Package": "/Game/Xrd777/UI/Camp/Material/Instance/MI_UI_Camp_PersonaStatus_BG",
+    "Properties": {
+      "Parent": {
+        "ObjectName": "Material'MM_UI_Camp_PersonaStatus_BG'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/Material/MasterMaterials/MM_UI_Camp_PersonaStatus_BG.0"
+      },
+      "ScalarParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "RefractionDepthBias",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.0,
+          "ExpressionGUID": "00000000-00000000-00000000-00000000"
+        }
+      ],
+      "VectorParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "GradationA",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "R": 0.001214,
+            "G": 0.313989,
+            "B": 0.545724,
+            "A": 0.0,
+            "Hex": "0498C3"
+          },
+          "ExpressionGUID": "A67B9C01-40B01A71-84A0DE84-10C92E47"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "GradationB",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "R": 0.0,
+            "G": 0.135633,
+            "B": 0.871367,
+            "A": 0.0,
+            "Hex": "0067F0"
+          },
+          "ExpressionGUID": "42AB2EDF-4A2820F5-2BE3D78F-5522DCB5"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "MultipleBulePanel",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "R": 0.0,
+            "G": 0.031896,
+            "B": 0.533276,
+            "A": 0.662745,
+            "Hex": "A90032C1"
+          },
+          "ExpressionGUID": "CA2BB072-42E09E1B-1D1F1E86-3EA24DAA"
+        }
+      ],
+      "TextureParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "Texture",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "ObjectName": "Texture2D'T_UI_Common_Dummy_00'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00.0"
+          },
+          "ExpressionGUID": "390E4AE0-4CE47B32-A75E1087-2BBEE973"
+        }
+      ],
+      "BasePropertyOverrides": {
+        "BlendMode": "BLEND_Translucent",
+        "ShadingModel": "MSM_Unlit",
+        "OpacityMaskClipValue": 0.3333
+      },
+      "CachedReferencedTextures": [
+        null,
+        {
+          "ObjectName": "Texture2D'T_UI_Common_Dummy_00'",
+          "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_UI_Field_Day_Wave_Warp_01'",
+          "ObjectPath": "/Game/Xrd777/UI/Facility/DAY_WAVE/Texture/Wave/T_UI_Field_Day_Wave_Warp_01.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_UI_Camp_Caustics_00'",
+          "ObjectPath": "/Game/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_Caustics_00.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_UI_Field_Day_Wave_Warp_00'",
+          "ObjectPath": "/Game/Xrd777/UI/Facility/DAY_WAVE/Texture/Wave/T_UI_Field_Day_Wave_Warp_00.0"
+        },
+        {
+          "ObjectName": "CurveLinearColorAtlas'CA_UI_Camp_PersonaStatus'",
+          "ObjectPath": "/Game/Xrd777/UI/Camp/Material/Curve/CA_UI_Camp_PersonaStatus.0"
+        }
+      ]
+    },
+    "LoadedMaterialResources": []
+  }
+]

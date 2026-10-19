@@ -1,0 +1,32 @@
+{
+  "BlendMode": 0,
+  "ShadingModel": 0,
+  "Textures": {
+    "ColorTex": {
+      "ObjectName": "Texture2D'T_CH_Black_00_Col'",
+      "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_Black_00_Col.0"
+    },
+    "T_CH_Black_00_Col": {
+      "ObjectName": "Texture2D'T_CH_Black_00_Col'",
+      "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_Black_00_Col.0"
+    }
+  },
+  "Colors": {},
+  "Scalars": {
+    "Offset_RLS": 0.0,
+    "RefractionDepthBias": 0.0
+  },
+  "Switches": {},
+  "Properties": {
+    "BasePropertyOverrides": {
+      "ShadingModel": "MSM_Unlit",
+      "OpacityMaskClipValue": 0.3333
+    }
+  },
+  "HasTopDiffuse": false,
+  "HasTopNormals": false,
+  "HasTopSpecularMasks": false,
+  "HasTopEmissive": false,
+  "IsTranslucent": false,
+  "IsNull": false
+}

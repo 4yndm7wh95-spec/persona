@@ -1,0 +1,377 @@
+[
+  {
+    "Type": "Material",
+    "Name": "MM_UI_Camp_Wave",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Material'",
+    "Package": "/Game/Xrd777/UI/Camp/Root/Material/MM_UI_Camp_Wave",
+    "Properties": {
+      "EmissiveColor": {
+        "Expression": null,
+        "OutputIndex": 0,
+        "InputName": "None",
+        "Mask": 0,
+        "MaskR": 0,
+        "MaskG": 0,
+        "MaskB": 0,
+        "MaskA": 0,
+        "ExpressionName": "MaterialExpressionAdd_0",
+        "UseConstant": false,
+        "Constant": {
+          "B": 0,
+          "G": 0,
+          "R": 0,
+          "A": 0,
+          "Hex": "000000"
+        }
+      },
+      "MaterialDomain": "MD_UI",
+      "BlendMode": "BLEND_Translucent",
+      "bCanMaskedBeAssumedOpaque": true,
+      "StateId": "0858A543-467DB415-D3743D8C-B0CDD6F2",
+      "CachedExpressionData": {
+        "Parameters": {
+          "RuntimeEntries": {
+            "NameHashes": [
+              2757768282552392503,
+              5439387637458368515,
+              6092361138760736742,
+              7151030092660431010,
+              7957871862311406816,
+              10745979202085677987,
+              13597675472260542664,
+              13976886622501566801,
+              15119815665414407281
+            ],
+            "ParameterInfos": [
+              {
+                "Name": "V1",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "U1",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "ReflectedLightSpeed",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "ProgTime",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "WaveSpeed",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "ScaleHight",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "U0",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "ScaleWidth",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "V0",
+                "Association": "GlobalParameter",
+                "Index": -1
+              }
+            ],
+            "ExpressionGuids": [
+              "0B106AF6-42565B62-C2DE53B0-154119D6",
+              "2331353E-404FB81E-314CF28D-6C129DB1",
+              "2C71B59F-441AD2B7-C5E14CB8-9F252D82",
+              "123CACEA-4265433B-46C31396-3B6FACC5",
+              "FD684850-401724D3-0A6A80B1-294D46BE",
+              "70C6DB6A-41B966A0-15AE3E87-E20494A6",
+              "6F9DACB2-456815A4-8C75B69C-BF065DD2",
+              "70DB2FAC-4164F713-F49BC7AD-4818E08C",
+              "CF8D0A68-40EDC84E-75591BB1-F695D29D"
+            ]
+          },
+          "RuntimeEntries[1]": {
+            "NameHashes": [
+              12279385124011487613
+            ],
+            "ParameterInfos": [
+              {
+                "Name": "Color",
+                "Association": "GlobalParameter",
+                "Index": -1
+              }
+            ],
+            "ExpressionGuids": [
+              "552ED944-4C7551EE-A1A661A0-17E3A1A5"
+            ]
+          },
+          "RuntimeEntries[2]": {
+            "NameHashes": [
+              8370121904344411576
+            ],
+            "ParameterInfos": [
+              {
+                "Name": "Texture",
+                "Association": "GlobalParameter",
+                "Index": -1
+              }
+            ],
+            "ExpressionGuids": [
+              "DB3CBF08-48F5B4A5-85F9088C-299D82E4"
+            ]
+          },
+          "ScalarValues": [
+            0.0,
+            0.0,
+            0.5,
+            0.0,
+            0.5,
+            0.03,
+            0.0,
+            0.014,
+            0.0
+          ],
+          "VectorValues": [
+            {
+              "R": 1.0,
+              "G": 1.0,
+              "B": 1.0,
+              "A": 1.0,
+              "Hex": "FFFFFF"
+            }
+          ],
+          "TextureValues": [
+            {
+              "ObjectName": "Texture2D'T_UI_Common_Dummy_00_Alp'",
+              "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00_Alp.0"
+            }
+          ]
+        },
+        "ReferencedTextures": [
+          {
+            "ObjectName": "Texture2D'T_UI_Common_Dummy_00_Alp'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00_Alp.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_UI_Field_Day_Wave_Warp_00'",
+            "ObjectPath": "/Game/Xrd777/UI/Facility/DAY_WAVE/Texture/Wave/T_UI_Field_Day_Wave_Warp_00.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_UI_Field_Day_Wave_Warp_01'",
+            "ObjectPath": "/Game/Xrd777/UI/Facility/DAY_WAVE/Texture/Wave/T_UI_Field_Day_Wave_Warp_01.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_UI_Camp_Caustics_00'",
+            "ObjectPath": "/Game/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_Caustics_00.0"
+          }
+        ],
+        "FunctionInfos": [
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          }
+        ],
+        "QualityLevelsUsed": [
+          false,
+          false,
+          false,
+          false
+        ]
+      }
+    },
+    "LoadedMaterialResources": [],
+    "CachedExpressionData": {
+      "Parameters": {
+        "RuntimeEntries": {
+          "NameHashes": [
+            2757768282552392503,
+            5439387637458368515,
+            6092361138760736742,
+            7151030092660431010,
+            7957871862311406816,
+            10745979202085677987,
+            13597675472260542664,
+            13976886622501566801,
+            15119815665414407281
+          ],
+          "ParameterInfos": [
+            {
+              "Name": "V1",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "U1",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "ReflectedLightSpeed",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "ProgTime",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "WaveSpeed",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "ScaleHight",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "U0",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "ScaleWidth",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "V0",
+              "Association": "GlobalParameter",
+              "Index": -1
+            }
+          ],
+          "ExpressionGuids": [
+            "0B106AF6-42565B62-C2DE53B0-154119D6",
+            "2331353E-404FB81E-314CF28D-6C129DB1",
+            "2C71B59F-441AD2B7-C5E14CB8-9F252D82",
+            "123CACEA-4265433B-46C31396-3B6FACC5",
+            "FD684850-401724D3-0A6A80B1-294D46BE",
+            "70C6DB6A-41B966A0-15AE3E87-E20494A6",
+            "6F9DACB2-456815A4-8C75B69C-BF065DD2",
+            "70DB2FAC-4164F713-F49BC7AD-4818E08C",
+            "CF8D0A68-40EDC84E-75591BB1-F695D29D"
+          ]
+        },
+        "RuntimeEntries[1]": {
+          "NameHashes": [
+            12279385124011487613
+          ],
+          "ParameterInfos": [
+            {
+              "Name": "Color",
+              "Association": "GlobalParameter",
+              "Index": -1
+            }
+          ],
+          "ExpressionGuids": [
+            "552ED944-4C7551EE-A1A661A0-17E3A1A5"
+          ]
+        },
+        "RuntimeEntries[2]": {
+          "NameHashes": [
+            8370121904344411576
+          ],
+          "ParameterInfos": [
+            {
+              "Name": "Texture",
+              "Association": "GlobalParameter",
+              "Index": -1
+            }
+          ],
+          "ExpressionGuids": [
+            "DB3CBF08-48F5B4A5-85F9088C-299D82E4"
+          ]
+        },
+        "ScalarValues": [
+          0.0,
+          0.0,
+          0.5,
+          0.0,
+          0.5,
+          0.03,
+          0.0,
+          0.014,
+          0.0
+        ],
+        "VectorValues": [
+          {
+            "R": 1.0,
+            "G": 1.0,
+            "B": 1.0,
+            "A": 1.0,
+            "Hex": "FFFFFF"
+          }
+        ],
+        "TextureValues": [
+          {
+            "ObjectName": "Texture2D'T_UI_Common_Dummy_00_Alp'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00_Alp.0"
+          }
+        ]
+      },
+      "ReferencedTextures": [
+        {
+          "ObjectName": "Texture2D'T_UI_Common_Dummy_00_Alp'",
+          "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00_Alp.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_UI_Field_Day_Wave_Warp_00'",
+          "ObjectPath": "/Game/Xrd777/UI/Facility/DAY_WAVE/Texture/Wave/T_UI_Field_Day_Wave_Warp_00.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_UI_Field_Day_Wave_Warp_01'",
+          "ObjectPath": "/Game/Xrd777/UI/Facility/DAY_WAVE/Texture/Wave/T_UI_Field_Day_Wave_Warp_01.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_UI_Camp_Caustics_00'",
+          "ObjectPath": "/Game/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_Caustics_00.0"
+        }
+      ],
+      "FunctionInfos": [
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        }
+      ],
+      "QualityLevelsUsed": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  }
+]

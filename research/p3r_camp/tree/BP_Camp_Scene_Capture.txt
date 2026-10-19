@@ -1,0 +1,6 @@
+BP_Camp_Scene_Capture
+└─ DefaultSceneRoot_GEN_VARIABLE : SceneComponent
+   └─ NewSceneCaptureComponent2D : SceneCaptureComponent2D
+      └─ TextureRenderTarget2D: RT_UI_CampSceneCapture2D
+
+来源：`BP_Camp_Scene_Capture` 属性 JSON。该组件实时捕获场景画面。

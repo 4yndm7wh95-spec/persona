@@ -1,0 +1,232 @@
+[
+  {
+    "Type": "Material",
+    "Name": "MM_UI_Ripples",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Material'",
+    "Package": "/Game/Xrd777/UI/Camp/Material/Community/MasterMaterials/MM_UI_Ripples",
+    "Properties": {
+      "EmissiveColor": {
+        "Expression": null,
+        "OutputIndex": 0,
+        "InputName": "None",
+        "Mask": 1,
+        "MaskR": 1,
+        "MaskG": 1,
+        "MaskB": 1,
+        "MaskA": 0,
+        "ExpressionName": "MaterialExpressionVectorParameter_0",
+        "UseConstant": false,
+        "Constant": {
+          "B": 0,
+          "G": 0,
+          "R": 0,
+          "A": 0,
+          "Hex": "000000"
+        }
+      },
+      "MaterialDomain": "MD_UI",
+      "BlendMode": "BLEND_Additive",
+      "StateId": "311FFE85-4691106E-E601C0BA-EC0A6FBF",
+      "CachedExpressionData": {
+        "Parameters": {
+          "RuntimeEntries": {
+            "NameHashes": [
+              3898997905868556578,
+              5637445051491827862,
+              10177412275863633798,
+              13574984594942950721
+            ],
+            "ParameterInfos": [
+              {
+                "Name": "Blur",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Alpha",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Size",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "width",
+                "Association": "GlobalParameter",
+                "Index": -1
+              }
+            ],
+            "ExpressionGuids": [
+              "14059AB1-44C3D09D-1F1FF794-DC75FC6F",
+              "691DB4BC-4CE0D77F-28B51999-E693457F",
+              "0A8F2FAE-4E8BAB59-EF3F2D85-C006F953",
+              "19D446EB-453FD06B-20387B81-AB1D68B5"
+            ]
+          },
+          "RuntimeEntries[1]": {
+            "NameHashes": [
+              12279385124011487613
+            ],
+            "ParameterInfos": [
+              {
+                "Name": "Color",
+                "Association": "GlobalParameter",
+                "Index": -1
+              }
+            ],
+            "ExpressionGuids": [
+              "D580C6E9-46323CA5-C2EECDAA-F8B1D9AB"
+            ]
+          },
+          "ScalarValues": [
+            0.015,
+            0.35,
+            1.0,
+            0.04
+          ],
+          "VectorValues": [
+            {
+              "R": 1.0,
+              "G": 1.0,
+              "B": 1.0,
+              "A": 1.0,
+              "Hex": "FFFFFF"
+            }
+          ]
+        },
+        "FunctionInfos": [
+          {
+            "StateId": "5E28F255-4817E6E7-2D027C9A-2F7126C6",
+            "Function": {
+              "ObjectName": "MaterialFunction'VectorToRadialValue'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/VectorToRadialValue.0"
+            }
+          },
+          {
+            "StateId": "AB126D3E-46D0D8F7-A271B2BC-7BC932DA",
+            "Function": {
+              "ObjectName": "MaterialFunction'SmoothStep'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/SmoothStep.0"
+            }
+          },
+          {
+            "StateId": "AB126D3E-46D0D8F7-A271B2BC-7BC932DA",
+            "Function": {
+              "ObjectName": "MaterialFunction'SmoothStep'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/SmoothStep.0"
+            }
+          }
+        ],
+        "QualityLevelsUsed": [
+          false,
+          false,
+          false,
+          false
+        ]
+      }
+    },
+    "LoadedMaterialResources": [],
+    "CachedExpressionData": {
+      "Parameters": {
+        "RuntimeEntries": {
+          "NameHashes": [
+            3898997905868556578,
+            5637445051491827862,
+            10177412275863633798,
+            13574984594942950721
+          ],
+          "ParameterInfos": [
+            {
+              "Name": "Blur",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Alpha",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Size",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "width",
+              "Association": "GlobalParameter",
+              "Index": -1
+            }
+          ],
+          "ExpressionGuids": [
+            "14059AB1-44C3D09D-1F1FF794-DC75FC6F",
+            "691DB4BC-4CE0D77F-28B51999-E693457F",
+            "0A8F2FAE-4E8BAB59-EF3F2D85-C006F953",
+            "19D446EB-453FD06B-20387B81-AB1D68B5"
+          ]
+        },
+        "RuntimeEntries[1]": {
+          "NameHashes": [
+            12279385124011487613
+          ],
+          "ParameterInfos": [
+            {
+              "Name": "Color",
+              "Association": "GlobalParameter",
+              "Index": -1
+            }
+          ],
+          "ExpressionGuids": [
+            "D580C6E9-46323CA5-C2EECDAA-F8B1D9AB"
+          ]
+        },
+        "ScalarValues": [
+          0.015,
+          0.35,
+          1.0,
+          0.04
+        ],
+        "VectorValues": [
+          {
+            "R": 1.0,
+            "G": 1.0,
+            "B": 1.0,
+            "A": 1.0,
+            "Hex": "FFFFFF"
+          }
+        ]
+      },
+      "FunctionInfos": [
+        {
+          "StateId": "5E28F255-4817E6E7-2D027C9A-2F7126C6",
+          "Function": {
+            "ObjectName": "MaterialFunction'VectorToRadialValue'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/VectorToRadialValue.0"
+          }
+        },
+        {
+          "StateId": "AB126D3E-46D0D8F7-A271B2BC-7BC932DA",
+          "Function": {
+            "ObjectName": "MaterialFunction'SmoothStep'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/SmoothStep.0"
+          }
+        },
+        {
+          "StateId": "AB126D3E-46D0D8F7-A271B2BC-7BC932DA",
+          "Function": {
+            "ObjectName": "MaterialFunction'SmoothStep'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/SmoothStep.0"
+          }
+        }
+      ],
+      "QualityLevelsUsed": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  }
+]

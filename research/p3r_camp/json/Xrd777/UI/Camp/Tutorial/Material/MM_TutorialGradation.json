@@ -1,0 +1,297 @@
+[
+  {
+    "Type": "Material",
+    "Name": "MM_TutorialGradation",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Material'",
+    "Package": "/Game/Xrd777/UI/Camp/Tutorial/Material/MM_TutorialGradation",
+    "Properties": {
+      "EmissiveColor": {
+        "Expression": null,
+        "OutputIndex": 0,
+        "InputName": "None",
+        "Mask": 0,
+        "MaskR": 0,
+        "MaskG": 0,
+        "MaskB": 0,
+        "MaskA": 0,
+        "ExpressionName": "MaterialExpressionAdd_4",
+        "UseConstant": false,
+        "Constant": {
+          "B": 0,
+          "G": 0,
+          "R": 0,
+          "A": 0,
+          "Hex": "000000"
+        }
+      },
+      "MaterialDomain": "MD_UI",
+      "BlendMode": "BLEND_Translucent",
+      "bCanMaskedBeAssumedOpaque": true,
+      "StateId": "27CBA595-462D134D-4ECF1786-8EA57CE8",
+      "CachedExpressionData": {
+        "Parameters": {
+          "RuntimeEntries": {
+            "NameHashes": [
+              911200576530625817,
+              1368924840154555007,
+              1481193212920298835,
+              1728677125572494816,
+              2392727009516114655,
+              5593718444323238323,
+              9782660703601971524,
+              13478939235833892483,
+              13673536163011670276,
+              15666386942691285444,
+              16044955528820558233,
+              17827385090299048983
+            ],
+            "ParameterInfos": [
+              {
+                "Name": "BattleRate",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "BattleCurve",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "DungeonCurve",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "DictionaryRate",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "DungeonRate",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "DictionaryCurve",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "CombineCurve",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "SystemCurve",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "DailyCurve",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "DailyRate",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "CombineRate",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "SystemRate",
+                "Association": "GlobalParameter",
+                "Index": -1
+              }
+            ],
+            "ExpressionGuids": [
+              "2EBE9D0D-4F6E1D09-9B570CA1-C19B3DD5",
+              "4581173E-492AB95E-68BF22AC-C7BF67B7",
+              "34CCAAEA-4FE9EED7-81C8249D-44BC6FDE",
+              "2C0E9E70-457362C3-AB645596-CC57F862",
+              "435AEF6A-4AE40408-6A671F9B-0444E717",
+              "83E89839-472893B3-592372BC-A298A91E",
+              "5E17105C-4BFB31C1-D6F2E58F-44A2ADD5",
+              "6635330C-4BA20508-3DA98CBC-4AB90225",
+              "C6F33D62-4F3552FD-44F6BEA5-7D8E69CF",
+              "B11368DE-49760300-2D1525B8-746DA3B3",
+              "DB4E4F1A-431688DF-A530D3A5-3875C8CC",
+              "2E35D874-4A26E836-C80EAD90-9D3B6E51"
+            ]
+          },
+          "ScalarValues": [
+            0.0,
+            0.0,
+            4.0,
+            0.0,
+            0.0,
+            3.0,
+            1.0,
+            5.0,
+            2.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "ReferencedTextures": [
+          {
+            "ObjectName": "CurveLinearColorAtlas'CA_Tutorial'",
+            "ObjectPath": "/Game/Xrd777/UI/Camp/Tutorial/Curve/CA_Tutorial.0"
+          }
+        ],
+        "FunctionInfos": [
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          }
+        ],
+        "QualityLevelsUsed": [
+          false,
+          false,
+          false,
+          false
+        ]
+      }
+    },
+    "LoadedMaterialResources": [],
+    "CachedExpressionData": {
+      "Parameters": {
+        "RuntimeEntries": {
+          "NameHashes": [
+            911200576530625817,
+            1368924840154555007,
+            1481193212920298835,
+            1728677125572494816,
+            2392727009516114655,
+            5593718444323238323,
+            9782660703601971524,
+            13478939235833892483,
+            13673536163011670276,
+            15666386942691285444,
+            16044955528820558233,
+            17827385090299048983
+          ],
+          "ParameterInfos": [
+            {
+              "Name": "BattleRate",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "BattleCurve",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "DungeonCurve",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "DictionaryRate",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "DungeonRate",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "DictionaryCurve",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "CombineCurve",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "SystemCurve",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "DailyCurve",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "DailyRate",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "CombineRate",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "SystemRate",
+              "Association": "GlobalParameter",
+              "Index": -1
+            }
+          ],
+          "ExpressionGuids": [
+            "2EBE9D0D-4F6E1D09-9B570CA1-C19B3DD5",
+            "4581173E-492AB95E-68BF22AC-C7BF67B7",
+            "34CCAAEA-4FE9EED7-81C8249D-44BC6FDE",
+            "2C0E9E70-457362C3-AB645596-CC57F862",
+            "435AEF6A-4AE40408-6A671F9B-0444E717",
+            "83E89839-472893B3-592372BC-A298A91E",
+            "5E17105C-4BFB31C1-D6F2E58F-44A2ADD5",
+            "6635330C-4BA20508-3DA98CBC-4AB90225",
+            "C6F33D62-4F3552FD-44F6BEA5-7D8E69CF",
+            "B11368DE-49760300-2D1525B8-746DA3B3",
+            "DB4E4F1A-431688DF-A530D3A5-3875C8CC",
+            "2E35D874-4A26E836-C80EAD90-9D3B6E51"
+          ]
+        },
+        "ScalarValues": [
+          0.0,
+          0.0,
+          4.0,
+          0.0,
+          0.0,
+          3.0,
+          1.0,
+          5.0,
+          2.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "ReferencedTextures": [
+        {
+          "ObjectName": "CurveLinearColorAtlas'CA_Tutorial'",
+          "ObjectPath": "/Game/Xrd777/UI/Camp/Tutorial/Curve/CA_Tutorial.0"
+        }
+      ],
+      "FunctionInfos": [
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        }
+      ],
+      "QualityLevelsUsed": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  }
+]

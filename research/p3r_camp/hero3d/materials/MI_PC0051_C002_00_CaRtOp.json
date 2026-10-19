@@ -1,0 +1,22 @@
+{
+  "BlendMode": 0,
+  "ShadingModel": 0,
+  "Textures": {},
+  "Colors": {},
+  "Scalars": {
+    "RefractionDepthBias": 0.0
+  },
+  "Switches": {},
+  "Properties": {
+    "BasePropertyOverrides": {
+      "ShadingModel": "MSM_Unlit",
+      "OpacityMaskClipValue": 0.3333
+    }
+  },
+  "HasTopDiffuse": false,
+  "HasTopNormals": false,
+  "HasTopSpecularMasks": false,
+  "HasTopEmissive": false,
+  "IsTranslucent": false,
+  "IsNull": true
+}

@@ -1,0 +1,160 @@
+[
+  {
+    "Type": "MaterialInstanceConstant",
+    "Name": "MI_UI_Community_Text",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MaterialInstanceConstant'",
+    "Package": "/Game/Xrd777/UI/Camp/Material/Community/Instance/MI_UI_Community_Text",
+    "Properties": {
+      "Parent": {
+        "ObjectName": "Material'MM_UI_Community_Text'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/Material/Community/MasterMaterials/MM_UI_Community_Text.0"
+      },
+      "ScalarParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "Alpha",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 1.0,
+          "ExpressionGUID": "622EC64D-420BDAAE-60D9A68D-328A425D"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "ScaleHight",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.03,
+          "ExpressionGUID": "F97928F5-4E89472E-13A5FD83-B276387E"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "ScaleWidth",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.014,
+          "ExpressionGUID": "5E813B3E-4D6A18BD-06BDB2AB-4841080C"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "TextureNum",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 1.0,
+          "ExpressionGUID": "BEC31CAA-43AD01A1-0A799881-FF7F7117"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "Time",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.0,
+          "ExpressionGUID": "9571C91A-4A353E42-78E86394-61346C99"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "WaveSpeed",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.5,
+          "ExpressionGUID": "C32A1AF8-4DABD208-DE0C5FA0-DAA5ACA8"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "RefractionDepthBias",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.0,
+          "ExpressionGUID": "00000000-00000000-00000000-00000000"
+        }
+      ],
+      "VectorParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "Color",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "R": 1.0,
+            "G": 1.0,
+            "B": 1.0,
+            "A": 1.0,
+            "Hex": "FFFFFF"
+          },
+          "ExpressionGUID": "552ED944-4C7551EE-A1A661A0-17E3A1A5"
+        }
+      ],
+      "TextureParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "CTexture",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "ObjectName": "Texture2D'T_UI_Common_Dummy_00'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00.0"
+          },
+          "ExpressionGUID": "06D838EE-49F9AB5E-E175D6B1-2ED3CE8F"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "LTexture",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "ObjectName": "Texture2D'T_UI_Common_Dummy_00'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00.0"
+          },
+          "ExpressionGUID": "812BFA75-4605D5D2-ADEE2D89-5988353B"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "RTexture",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "ObjectName": "Texture2D'T_UI_Common_Dummy_00'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00.0"
+          },
+          "ExpressionGUID": "F2CE9529-40CC1519-803B849F-C8812F6F"
+        }
+      ],
+      "BasePropertyOverrides": {
+        "BlendMode": "BLEND_Translucent",
+        "ShadingModel": "MSM_Unlit",
+        "OpacityMaskClipValue": 0.3333
+      },
+      "CachedReferencedTextures": [
+        null,
+        {
+          "ObjectName": "Texture2D'DefaultDiffuse'",
+          "ObjectPath": "/Engine/EngineMaterials/DefaultDiffuse.0"
+        },
+        {
+          "ObjectName": "TextureRenderTarget2D'RT_Temp1'",
+          "ObjectPath": "/Game/Xrd777/Kernel/Textures/RT_Temp1.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_UI_Field_Day_Wave_Warp_00'",
+          "ObjectPath": "/Game/Xrd777/UI/Facility/DAY_WAVE/Texture/Wave/T_UI_Field_Day_Wave_Warp_00.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_UI_Field_Day_Wave_Warp_01'",
+          "ObjectPath": "/Game/Xrd777/UI/Facility/DAY_WAVE/Texture/Wave/T_UI_Field_Day_Wave_Warp_01.0"
+        }
+      ]
+    },
+    "LoadedMaterialResources": []
+  }
+]

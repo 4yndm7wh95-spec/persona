@@ -1,0 +1,499 @@
+[
+  {
+    "Type": "Material",
+    "Name": "MM_UI_P_Monochrome",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Material'",
+    "Package": "/Game/Xrd777/UI/Camp/Material/MM_UI_P_Monochrome",
+    "Properties": {
+      "EmissiveColor": {
+        "Expression": null,
+        "OutputIndex": 0,
+        "InputName": "None",
+        "Mask": 0,
+        "MaskR": 0,
+        "MaskG": 0,
+        "MaskB": 0,
+        "MaskA": 0,
+        "ExpressionName": "MaterialExpressionLinearInterpolate_3",
+        "UseConstant": false,
+        "Constant": {
+          "B": 0,
+          "G": 0,
+          "R": 0,
+          "A": 0,
+          "Hex": "000000"
+        }
+      },
+      "MaterialDomain": "MD_PostProcess",
+      "ShadingModel": "MSM_Unlit",
+      "ShadingModels": {
+        "ShadingModelField": 1
+      },
+      "bCanMaskedBeAssumedOpaque": true,
+      "BlendableOutputAlpha": true,
+      "StateId": "AB146883-4AAB5153-810F2597-9F43CE62",
+      "CachedExpressionData": {
+        "Parameters": {
+          "RuntimeEntries": {
+            "NameHashes": [
+              822996717678771882,
+              2276851640606111535,
+              2705874673900273297,
+              5637445051491827862,
+              6023765347835985100,
+              6264270488230138023,
+              9376946835800737074,
+              10371715421228879687,
+              11751743063868190963,
+              13944820955667218073,
+              16660933995480973869
+            ],
+            "ParameterInfos": [
+              {
+                "Name": "LineWidth",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Contrast",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "TexSize_X",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Alpha",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "TexSize_Y",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "A_Threshold",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "B_Threshold",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Param",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "D_Threshold",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "E_Threshold",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "C_Threshold",
+                "Association": "GlobalParameter",
+                "Index": -1
+              }
+            ],
+            "ExpressionGuids": [
+              "C212FC23-49C8E98D-2D705681-C24002CD",
+              "20F134F0-41CACC1B-50E88BA1-53CA1FC2",
+              "09FC9E17-49B9F1F1-9711F1BC-4D750ED9",
+              "2B523D6B-4791B8CB-3FAEC0A2-BF20B4F7",
+              "C45B1742-4E1EE384-CF83A39B-1107611B",
+              "B3722226-436D6B6B-0992BDAA-D3C78359",
+              "3F080ED3-460EF7B7-D9E89984-7747362E",
+              "C9F904BA-407FE132-36706EA4-F1C8CB9B",
+              "5F0365DF-4EC7608B-E93FAA85-37C81520",
+              "68CDBEDD-4C23F482-644DFDAE-FFCFBE70",
+              "FEC19325-48E0CF4C-F3690B8A-D3013B9C"
+            ]
+          },
+          "RuntimeEntries[2]": {
+            "NameHashes": [
+              8370121904344411576
+            ],
+            "ParameterInfos": [
+              {
+                "Name": "Texture",
+                "Association": "GlobalParameter",
+                "Index": -1
+              }
+            ],
+            "ExpressionGuids": [
+              "390E4AE0-4CE47B32-A75E1087-2BBEE973"
+            ]
+          },
+          "ScalarValues": [
+            2.0,
+            0.3,
+            1024.0,
+            1.0,
+            1024.0,
+            0.9,
+            0.8,
+            0.0,
+            0.3,
+            0.15,
+            0.6
+          ],
+          "TextureValues": [
+            {
+              "ObjectName": "Texture2D'T_UI_Common_Dummy_00_Alp'",
+              "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00_Alp.0"
+            }
+          ]
+        },
+        "ReferencedTextures": [
+          {
+            "ObjectName": "CurveLinearColorAtlas'CA_UI_CampColorCurve'",
+            "ObjectPath": "/Game/Xrd777/UI/Camp/Material/CA_UI_CampColorCurve.0"
+          },
+          {
+            "ObjectName": "TextureRenderTarget2D'RT_Temp1'",
+            "ObjectPath": "/Game/Xrd777/Kernel/Textures/RT_Temp1.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_UI_Common_Dummy_00_Alp'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00_Alp.0"
+          },
+          null
+        ],
+        "FunctionInfos": [
+          {
+            "StateId": "B7C71B91-4E2BB667-772D6CBE-2AB55665",
+            "Function": {
+              "ObjectName": "MaterialFunction'LinearGradient'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Gradient/LinearGradient.0"
+            }
+          },
+          {
+            "StateId": "1F3C7ECC-4653CAFB-2A6AEE82-B1F2F3A5",
+            "Function": {
+              "ObjectName": "MaterialFunction'CheapContrast'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/ImageAdjustment/CheapContrast.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "CD179978-44432CC8-0E4B5C95-E70CC3AF",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_UI_SceneColorPixelOffset'",
+              "ObjectPath": "/Game/Xrd777/UI/Common/2D/MasterMaterials/Function/MF_UI_SceneColorPixelOffset.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "CD179978-44432CC8-0E4B5C95-E70CC3AF",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_UI_SceneColorPixelOffset'",
+              "ObjectPath": "/Game/Xrd777/UI/Common/2D/MasterMaterials/Function/MF_UI_SceneColorPixelOffset.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "CD179978-44432CC8-0E4B5C95-E70CC3AF",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_UI_SceneColorPixelOffset'",
+              "ObjectPath": "/Game/Xrd777/UI/Common/2D/MasterMaterials/Function/MF_UI_SceneColorPixelOffset.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "CD179978-44432CC8-0E4B5C95-E70CC3AF",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_UI_SceneColorPixelOffset'",
+              "ObjectPath": "/Game/Xrd777/UI/Common/2D/MasterMaterials/Function/MF_UI_SceneColorPixelOffset.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "081C516B-44407F3B-3C937394-F33EC4D7",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_UI_ColorDifferenceOutline'",
+              "ObjectPath": "/Game/Xrd777/UI/Common/2D/MasterMaterials/Function/MF_UI_ColorDifferenceOutline.0"
+            }
+          }
+        ],
+        "QualityLevelsUsed": [
+          false,
+          false,
+          false,
+          false
+        ]
+      }
+    },
+    "LoadedMaterialResources": [],
+    "CachedExpressionData": {
+      "Parameters": {
+        "RuntimeEntries": {
+          "NameHashes": [
+            822996717678771882,
+            2276851640606111535,
+            2705874673900273297,
+            5637445051491827862,
+            6023765347835985100,
+            6264270488230138023,
+            9376946835800737074,
+            10371715421228879687,
+            11751743063868190963,
+            13944820955667218073,
+            16660933995480973869
+          ],
+          "ParameterInfos": [
+            {
+              "Name": "LineWidth",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Contrast",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "TexSize_X",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Alpha",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "TexSize_Y",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "A_Threshold",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "B_Threshold",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Param",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "D_Threshold",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "E_Threshold",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "C_Threshold",
+              "Association": "GlobalParameter",
+              "Index": -1
+            }
+          ],
+          "ExpressionGuids": [
+            "C212FC23-49C8E98D-2D705681-C24002CD",
+            "20F134F0-41CACC1B-50E88BA1-53CA1FC2",
+            "09FC9E17-49B9F1F1-9711F1BC-4D750ED9",
+            "2B523D6B-4791B8CB-3FAEC0A2-BF20B4F7",
+            "C45B1742-4E1EE384-CF83A39B-1107611B",
+            "B3722226-436D6B6B-0992BDAA-D3C78359",
+            "3F080ED3-460EF7B7-D9E89984-7747362E",
+            "C9F904BA-407FE132-36706EA4-F1C8CB9B",
+            "5F0365DF-4EC7608B-E93FAA85-37C81520",
+            "68CDBEDD-4C23F482-644DFDAE-FFCFBE70",
+            "FEC19325-48E0CF4C-F3690B8A-D3013B9C"
+          ]
+        },
+        "RuntimeEntries[2]": {
+          "NameHashes": [
+            8370121904344411576
+          ],
+          "ParameterInfos": [
+            {
+              "Name": "Texture",
+              "Association": "GlobalParameter",
+              "Index": -1
+            }
+          ],
+          "ExpressionGuids": [
+            "390E4AE0-4CE47B32-A75E1087-2BBEE973"
+          ]
+        },
+        "ScalarValues": [
+          2.0,
+          0.3,
+          1024.0,
+          1.0,
+          1024.0,
+          0.9,
+          0.8,
+          0.0,
+          0.3,
+          0.15,
+          0.6
+        ],
+        "TextureValues": [
+          {
+            "ObjectName": "Texture2D'T_UI_Common_Dummy_00_Alp'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00_Alp.0"
+          }
+        ]
+      },
+      "ReferencedTextures": [
+        {
+          "ObjectName": "CurveLinearColorAtlas'CA_UI_CampColorCurve'",
+          "ObjectPath": "/Game/Xrd777/UI/Camp/Material/CA_UI_CampColorCurve.0"
+        },
+        {
+          "ObjectName": "TextureRenderTarget2D'RT_Temp1'",
+          "ObjectPath": "/Game/Xrd777/Kernel/Textures/RT_Temp1.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_UI_Common_Dummy_00_Alp'",
+          "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00_Alp.0"
+        },
+        null
+      ],
+      "FunctionInfos": [
+        {
+          "StateId": "B7C71B91-4E2BB667-772D6CBE-2AB55665",
+          "Function": {
+            "ObjectName": "MaterialFunction'LinearGradient'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Gradient/LinearGradient.0"
+          }
+        },
+        {
+          "StateId": "1F3C7ECC-4653CAFB-2A6AEE82-B1F2F3A5",
+          "Function": {
+            "ObjectName": "MaterialFunction'CheapContrast'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/ImageAdjustment/CheapContrast.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "CD179978-44432CC8-0E4B5C95-E70CC3AF",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_UI_SceneColorPixelOffset'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/2D/MasterMaterials/Function/MF_UI_SceneColorPixelOffset.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "CD179978-44432CC8-0E4B5C95-E70CC3AF",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_UI_SceneColorPixelOffset'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/2D/MasterMaterials/Function/MF_UI_SceneColorPixelOffset.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "CD179978-44432CC8-0E4B5C95-E70CC3AF",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_UI_SceneColorPixelOffset'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/2D/MasterMaterials/Function/MF_UI_SceneColorPixelOffset.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "CD179978-44432CC8-0E4B5C95-E70CC3AF",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_UI_SceneColorPixelOffset'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/2D/MasterMaterials/Function/MF_UI_SceneColorPixelOffset.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "081C516B-44407F3B-3C937394-F33EC4D7",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_UI_ColorDifferenceOutline'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/2D/MasterMaterials/Function/MF_UI_ColorDifferenceOutline.0"
+          }
+        }
+      ],
+      "QualityLevelsUsed": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  }
+]

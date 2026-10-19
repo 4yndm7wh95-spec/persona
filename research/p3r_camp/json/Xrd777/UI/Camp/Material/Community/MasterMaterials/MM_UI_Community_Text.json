@@ -1,0 +1,430 @@
+[
+  {
+    "Type": "Material",
+    "Name": "MM_UI_Community_Text",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Material'",
+    "Package": "/Game/Xrd777/UI/Camp/Material/Community/MasterMaterials/MM_UI_Community_Text",
+    "Properties": {
+      "EmissiveColor": {
+        "Expression": null,
+        "OutputIndex": 0,
+        "InputName": "None",
+        "Mask": 1,
+        "MaskR": 1,
+        "MaskG": 1,
+        "MaskB": 1,
+        "MaskA": 0,
+        "ExpressionName": "MaterialExpressionVectorParameter_0",
+        "UseConstant": false,
+        "Constant": {
+          "B": 0,
+          "G": 0,
+          "R": 0,
+          "A": 0,
+          "Hex": "000000"
+        }
+      },
+      "MaterialDomain": "MD_UI",
+      "BlendMode": "BLEND_Translucent",
+      "StateId": "CBDBA1FA-41B78682-642EC7B5-47286C35",
+      "CachedExpressionData": {
+        "Parameters": {
+          "RuntimeEntries": {
+            "NameHashes": [
+              5637445051491827862,
+              7957871862311406816,
+              10745979202085677987,
+              13976886622501566801,
+              14725048992408533910,
+              15736644213480454918
+            ],
+            "ParameterInfos": [
+              {
+                "Name": "Alpha",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "WaveSpeed",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "ScaleHight",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "ScaleWidth",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Time",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "TextureNum",
+                "Association": "GlobalParameter",
+                "Index": -1
+              }
+            ],
+            "ExpressionGuids": [
+              "622EC64D-420BDAAE-60D9A68D-328A425D",
+              "C32A1AF8-4DABD208-DE0C5FA0-DAA5ACA8",
+              "F97928F5-4E89472E-13A5FD83-B276387E",
+              "5E813B3E-4D6A18BD-06BDB2AB-4841080C",
+              "9571C91A-4A353E42-78E86394-61346C99",
+              "BEC31CAA-43AD01A1-0A799881-FF7F7117"
+            ]
+          },
+          "RuntimeEntries[1]": {
+            "NameHashes": [
+              12279385124011487613
+            ],
+            "ParameterInfos": [
+              {
+                "Name": "Color",
+                "Association": "GlobalParameter",
+                "Index": -1
+              }
+            ],
+            "ExpressionGuids": [
+              "552ED944-4C7551EE-A1A661A0-17E3A1A5"
+            ]
+          },
+          "RuntimeEntries[2]": {
+            "NameHashes": [
+              6469408832921312142,
+              8096988882673584670,
+              17308069727750488232
+            ],
+            "ParameterInfos": [
+              {
+                "Name": "CTexture",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "LTexture",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "RTexture",
+                "Association": "GlobalParameter",
+                "Index": -1
+              }
+            ],
+            "ExpressionGuids": [
+              "06D838EE-49F9AB5E-E175D6B1-2ED3CE8F",
+              "812BFA75-4605D5D2-ADEE2D89-5988353B",
+              "F2CE9529-40CC1519-803B849F-C8812F6F"
+            ]
+          },
+          "ScalarValues": [
+            1.0,
+            0.0,
+            0.03,
+            0.014,
+            0.0,
+            3.0
+          ],
+          "VectorValues": [
+            {
+              "R": 1.0,
+              "G": 1.0,
+              "B": 1.0,
+              "A": 1.0,
+              "Hex": "FFFFFF"
+            }
+          ],
+          "TextureValues": [
+            {
+              "ObjectName": "TextureRenderTarget2D'RT_Temp1'",
+              "ObjectPath": "/Game/Xrd777/Kernel/Textures/RT_Temp1.0"
+            },
+            {
+              "ObjectName": "TextureRenderTarget2D'RT_Temp1'",
+              "ObjectPath": "/Game/Xrd777/Kernel/Textures/RT_Temp1.0"
+            },
+            {
+              "ObjectName": "TextureRenderTarget2D'RT_Temp1'",
+              "ObjectPath": "/Game/Xrd777/Kernel/Textures/RT_Temp1.0"
+            }
+          ]
+        },
+        "ReferencedTextures": [
+          null,
+          {
+            "ObjectName": "Texture2D'DefaultDiffuse'",
+            "ObjectPath": "/Engine/EngineMaterials/DefaultDiffuse.0"
+          },
+          {
+            "ObjectName": "TextureRenderTarget2D'RT_Temp1'",
+            "ObjectPath": "/Game/Xrd777/Kernel/Textures/RT_Temp1.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_UI_Field_Day_Wave_Warp_00'",
+            "ObjectPath": "/Game/Xrd777/UI/Facility/DAY_WAVE/Texture/Wave/T_UI_Field_Day_Wave_Warp_00.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_UI_Field_Day_Wave_Warp_01'",
+            "ObjectPath": "/Game/Xrd777/UI/Facility/DAY_WAVE/Texture/Wave/T_UI_Field_Day_Wave_Warp_01.0"
+          }
+        ],
+        "FunctionInfos": [
+          {
+            "StateId": "A9CC16D5-4B375243-36F3CF86-3EF27E55",
+            "Function": {
+              "ObjectName": "MaterialFunction'TextureCropping'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Texturing/TextureCropping.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "A9CC16D5-4B375243-36F3CF86-3EF27E55",
+            "Function": {
+              "ObjectName": "MaterialFunction'TextureCropping'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Texturing/TextureCropping.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "A9CC16D5-4B375243-36F3CF86-3EF27E55",
+            "Function": {
+              "ObjectName": "MaterialFunction'TextureCropping'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Texturing/TextureCropping.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          }
+        ],
+        "QualityLevelsUsed": [
+          false,
+          false,
+          false,
+          false
+        ]
+      }
+    },
+    "LoadedMaterialResources": [],
+    "CachedExpressionData": {
+      "Parameters": {
+        "RuntimeEntries": {
+          "NameHashes": [
+            5637445051491827862,
+            7957871862311406816,
+            10745979202085677987,
+            13976886622501566801,
+            14725048992408533910,
+            15736644213480454918
+          ],
+          "ParameterInfos": [
+            {
+              "Name": "Alpha",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "WaveSpeed",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "ScaleHight",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "ScaleWidth",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Time",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "TextureNum",
+              "Association": "GlobalParameter",
+              "Index": -1
+            }
+          ],
+          "ExpressionGuids": [
+            "622EC64D-420BDAAE-60D9A68D-328A425D",
+            "C32A1AF8-4DABD208-DE0C5FA0-DAA5ACA8",
+            "F97928F5-4E89472E-13A5FD83-B276387E",
+            "5E813B3E-4D6A18BD-06BDB2AB-4841080C",
+            "9571C91A-4A353E42-78E86394-61346C99",
+            "BEC31CAA-43AD01A1-0A799881-FF7F7117"
+          ]
+        },
+        "RuntimeEntries[1]": {
+          "NameHashes": [
+            12279385124011487613
+          ],
+          "ParameterInfos": [
+            {
+              "Name": "Color",
+              "Association": "GlobalParameter",
+              "Index": -1
+            }
+          ],
+          "ExpressionGuids": [
+            "552ED944-4C7551EE-A1A661A0-17E3A1A5"
+          ]
+        },
+        "RuntimeEntries[2]": {
+          "NameHashes": [
+            6469408832921312142,
+            8096988882673584670,
+            17308069727750488232
+          ],
+          "ParameterInfos": [
+            {
+              "Name": "CTexture",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "LTexture",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "RTexture",
+              "Association": "GlobalParameter",
+              "Index": -1
+            }
+          ],
+          "ExpressionGuids": [
+            "06D838EE-49F9AB5E-E175D6B1-2ED3CE8F",
+            "812BFA75-4605D5D2-ADEE2D89-5988353B",
+            "F2CE9529-40CC1519-803B849F-C8812F6F"
+          ]
+        },
+        "ScalarValues": [
+          1.0,
+          0.0,
+          0.03,
+          0.014,
+          0.0,
+          3.0
+        ],
+        "VectorValues": [
+          {
+            "R": 1.0,
+            "G": 1.0,
+            "B": 1.0,
+            "A": 1.0,
+            "Hex": "FFFFFF"
+          }
+        ],
+        "TextureValues": [
+          {
+            "ObjectName": "TextureRenderTarget2D'RT_Temp1'",
+            "ObjectPath": "/Game/Xrd777/Kernel/Textures/RT_Temp1.0"
+          },
+          {
+            "ObjectName": "TextureRenderTarget2D'RT_Temp1'",
+            "ObjectPath": "/Game/Xrd777/Kernel/Textures/RT_Temp1.0"
+          },
+          {
+            "ObjectName": "TextureRenderTarget2D'RT_Temp1'",
+            "ObjectPath": "/Game/Xrd777/Kernel/Textures/RT_Temp1.0"
+          }
+        ]
+      },
+      "ReferencedTextures": [
+        null,
+        {
+          "ObjectName": "Texture2D'DefaultDiffuse'",
+          "ObjectPath": "/Engine/EngineMaterials/DefaultDiffuse.0"
+        },
+        {
+          "ObjectName": "TextureRenderTarget2D'RT_Temp1'",
+          "ObjectPath": "/Game/Xrd777/Kernel/Textures/RT_Temp1.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_UI_Field_Day_Wave_Warp_00'",
+          "ObjectPath": "/Game/Xrd777/UI/Facility/DAY_WAVE/Texture/Wave/T_UI_Field_Day_Wave_Warp_00.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_UI_Field_Day_Wave_Warp_01'",
+          "ObjectPath": "/Game/Xrd777/UI/Facility/DAY_WAVE/Texture/Wave/T_UI_Field_Day_Wave_Warp_01.0"
+        }
+      ],
+      "FunctionInfos": [
+        {
+          "StateId": "A9CC16D5-4B375243-36F3CF86-3EF27E55",
+          "Function": {
+            "ObjectName": "MaterialFunction'TextureCropping'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Texturing/TextureCropping.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "A9CC16D5-4B375243-36F3CF86-3EF27E55",
+          "Function": {
+            "ObjectName": "MaterialFunction'TextureCropping'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Texturing/TextureCropping.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "A9CC16D5-4B375243-36F3CF86-3EF27E55",
+          "Function": {
+            "ObjectName": "MaterialFunction'TextureCropping'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Texturing/TextureCropping.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        }
+      ],
+      "QualityLevelsUsed": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  }
+]

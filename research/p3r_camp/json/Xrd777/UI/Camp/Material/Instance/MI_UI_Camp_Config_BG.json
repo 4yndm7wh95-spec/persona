@@ -1,0 +1,46 @@
+[
+  {
+    "Type": "MaterialInstanceConstant",
+    "Name": "MI_UI_Camp_Config_BG",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MaterialInstanceConstant'",
+    "Package": "/Game/Xrd777/UI/Camp/Material/Instance/MI_UI_Camp_Config_BG",
+    "Properties": {
+      "Parent": {
+        "ObjectName": "Material'MM_UI_Camp_Config_BG'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/Material/MasterMaterials/MM_UI_Camp_Config_BG.0"
+      },
+      "ScalarParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "RefractionDepthBias",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.0,
+          "ExpressionGUID": "00000000-00000000-00000000-00000000"
+        }
+      ],
+      "BasePropertyOverrides": {
+        "ShadingModel": "MSM_Unlit",
+        "OpacityMaskClipValue": 0.3333
+      },
+      "CachedReferencedTextures": [
+        {
+          "ObjectName": "TextureRenderTarget2D'RT_Temp1'",
+          "ObjectPath": "/Game/Xrd777/Kernel/Textures/RT_Temp1.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_UI_Common_Dummy_00_Alp'",
+          "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00_Alp.0"
+        },
+        {
+          "ObjectName": "CurveLinearColorAtlas'CA_UI_Camp_Config'",
+          "ObjectPath": "/Game/Xrd777/UI/Camp/Material/Curve/CA_UI_Camp_Config.0"
+        },
+        null
+      ]
+    },
+    "LoadedMaterialResources": []
+  }
+]

@@ -1,0 +1,2458 @@
+[
+  {
+    "Type": "Material",
+    "Name": "MM_UI_Camp_PersonaStatus_BG",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Material'",
+    "Package": "/Game/Xrd777/UI/Camp/Material/MasterMaterials/MM_UI_Camp_PersonaStatus_BG",
+    "Properties": {
+      "EmissiveColor": {
+        "Expression": null,
+        "OutputIndex": 0,
+        "InputName": "None",
+        "Mask": 0,
+        "MaskR": 0,
+        "MaskG": 0,
+        "MaskB": 0,
+        "MaskA": 0,
+        "ExpressionName": "MaterialExpressionLinearInterpolate_2",
+        "UseConstant": false,
+        "Constant": {
+          "B": 0,
+          "G": 0,
+          "R": 0,
+          "A": 0,
+          "Hex": "000000"
+        }
+      },
+      "MaterialDomain": "MD_UI",
+      "BlendMode": "BLEND_Translucent",
+      "ShadingModel": "MSM_Unlit",
+      "ShadingModels": {
+        "ShadingModelField": 1
+      },
+      "bCanMaskedBeAssumedOpaque": true,
+      "BlendableOutputAlpha": true,
+      "StateId": "481D9EC3-4C5AD8D0-5F53188F-DA21B24D",
+      "CachedExpressionData": {
+        "Parameters": {
+          "RuntimeEntries": {
+            "NameHashes": [
+              721706536605591453,
+              822996717678771882,
+              1431167012350086935,
+              2027780708101274317,
+              2276851640606111535,
+              2408783053482586449,
+              2757768282552392503,
+              3789240943574663036,
+              3937322735314189820,
+              4688212010653795269,
+              5084398511730497906,
+              5286983038991652181,
+              5439387637458368515,
+              5637445051491827862,
+              6092361138760736742,
+              6264270488230138023,
+              6313083291823051016,
+              6770441375373397285,
+              7095427592681088541,
+              7353680500636186291,
+              7937999199998450187,
+              8499041373283357468,
+              8719972777509576297,
+              8920032454822444543,
+              9180417403246796045,
+              9376946835800737074,
+              10554617171058617378,
+              10981034125889048479,
+              11751743063868190963,
+              12896533814640143775,
+              13476931850128574009,
+              13597675472260542664,
+              13620818255622596751,
+              13944820955667218073,
+              14106365119022795624,
+              15119815665414407281,
+              15153124033596957524,
+              16660933995480973869,
+              16773134648523836385,
+              17679128944558143888
+            ],
+            "ParameterInfos": [
+              {
+                "Name": "SpeedX",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "LineWidth",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "RectAngle",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Curve",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Contrast",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "FadeAlpha",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "V1",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "CausticsOffsetY",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "CausticsWidth",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "CausticsPointY",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "RectWidth3",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Amount2",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "U1",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Alpha",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "ReflectedLightSpeed",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "A_Threshold",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "SelectPlateRectWidth",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "RectWidth2",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "CausticsPointX",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Amount1",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "RectWidth1",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "SelectPlateScale",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "SelectPlateRectHeight",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "CausticsOffsetX",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "CausticsHeight",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "B_Threshold",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "RectScale",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "RectHeight1",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "D_Threshold",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "RectPointX",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "RectHeight2",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "U0",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "RectHeight3",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "E_Threshold",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "CausticsAngle",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "V0",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "RectPointY",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "C_Threshold",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "SpeedY",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "UseGamma",
+                "Association": "GlobalParameter",
+                "Index": -1
+              }
+            ],
+            "ExpressionGuids": [
+              "5F5F653D-4A4A99D5-B263E7AE-04480A0D",
+              "B0744728-46676F6D-6095C6BC-5610E10D",
+              "B3BFA28F-46A617ED-787135AA-D2624505",
+              "E1CD1876-44349D99-A3F5999E-F86551FF",
+              "C1EEFD4B-49C6392A-0CC522A2-2C625627",
+              "F8116A41-402FE9B3-F1A73489-A56B20B1",
+              "8E741648-40EB47CF-1C16398D-5BE73CCA",
+              "D9ABC6C6-4C4463E1-CF751AA2-CFDBABBA",
+              "B73C455A-49C34320-51CB6FBF-0D38903F",
+              "FC53F4FD-4490E65A-387D348F-DEB25FE5",
+              "7EE7CA3C-4992667B-0E27A585-974A319E",
+              "FDDB7CC6-41F23A90-B6CBF4A5-7425BDBE",
+              "551192FC-40D618B2-C2DE6280-3ED9C44A",
+              "79626444-491BAFCB-3DF1FEAD-7E35EC5E",
+              "A9CBAB83-4F3878BF-50B3398D-89C04C2A",
+              "49F43C02-4CE5DD59-7ABDFCA8-D4528E07",
+              "C9F81BD6-4A60AA2C-D68680A8-F70BB72F",
+              "E67586BD-40205B35-B37BC690-29BF6393",
+              "ACA5F900-4B0672BF-23896086-81CD7AEB",
+              "61CC0941-418687ED-99DC7995-744214D6",
+              "39B98D2C-458E6888-6F0C328E-1A214711",
+              "C618F172-4A243FDD-1DE27598-43A7D5B3",
+              "02DFF638-49222425-1ECA3D81-D1069FC2",
+              "5609E8A9-4288AA23-EC386AA6-345AF352",
+              "A704FFA6-4E47CD64-67B25998-9A0CA200",
+              "0F8D95DF-442A5BA2-E028E18D-4EA87AA9",
+              "E8D7F72A-40AF32C6-F7B03C8C-90E0E79C",
+              "5D151856-41F5D3E2-B6948A97-933F34D0",
+              "002A379C-4A3F1E24-9AB0D1B2-54E1DD8E",
+              "0C2D7D5E-4FE8CA7D-E112C494-789930A4",
+              "FE889FF5-4DD76D10-1C46059C-2D2ADEB8",
+              "8807C729-42F35BE4-DF9203B4-B8CBE040",
+              "85C8AE05-4265F5A2-54387196-A87253BD",
+              "A313A5C4-40F781E1-7574029B-63BD8C9B",
+              "3B5ACB66-4654A445-2B7C09A7-91B29703",
+              "D6C06C90-4B945E60-D0BD67BC-F4F13F2C",
+              "AFA50B5B-485E5692-42BFF3BC-8695A022",
+              "1B792473-4EE9836E-A314C9A6-653F34AA",
+              "CD9F8A6F-4A2A01FE-FB02F588-91EDC613",
+              "977F490F-45600A8E-96E3C0B5-B5E2FE3D"
+            ]
+          },
+          "RuntimeEntries[1]": {
+            "NameHashes": [
+              782796484607824179,
+              1170210671186259904,
+              2106525465901126708,
+              3020762924952101968,
+              4132791159178272374,
+              5448734007124448095,
+              10111606149762477730,
+              13471045440407130723
+            ],
+            "ParameterInfos": [
+              {
+                "Name": "MultipleBulePanel",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "CosticesColor",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "CausticsPlateColor",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Param2",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Param1",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "GradationA",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "SelectPlateColor",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "GradationB",
+                "Association": "GlobalParameter",
+                "Index": -1
+              }
+            ],
+            "ExpressionGuids": [
+              "CA2BB072-42E09E1B-1D1F1E86-3EA24DAA",
+              "F8DA1EE8-4F93A349-F715BFA2-1DEB0769",
+              "21A71F79-4230B66C-0417B6B3-3CF32544",
+              "4A0CFBB8-4A0F3983-B07A6EBA-0CA145B2",
+              "3FF6C4EF-4FD9BD60-441A2DAA-F0A8CF41",
+              "A67B9C01-40B01A71-84A0DE84-10C92E47",
+              "CEC0950B-49435AB2-E36966BA-A7367205",
+              "42AB2EDF-4A2820F5-2BE3D78F-5522DCB5"
+            ]
+          },
+          "RuntimeEntries[2]": {
+            "NameHashes": [
+              8370121904344411576,
+              10525032251864820274,
+              13734106384616994652
+            ],
+            "ParameterInfos": [
+              {
+                "Name": "Texture",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Grayscake Texture2",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Grayscake Texture1",
+                "Association": "GlobalParameter",
+                "Index": -1
+              }
+            ],
+            "ExpressionGuids": [
+              "390E4AE0-4CE47B32-A75E1087-2BBEE973",
+              "EB45657C-46EE59CF-C3BFF1AB-AEB04266",
+              "87EDD037-497CA358-7F021587-CB76D39F"
+            ]
+          },
+          "ScalarValues": [
+            0.213809,
+            0.0,
+            45.0,
+            0.0,
+            0.2,
+            1.0,
+            1.0,
+            752.0,
+            2261.0,
+            751.0,
+            808.0,
+            0.249048,
+            1.0,
+            0.0,
+            0.05,
+            0.4,
+            850.0,
+            816.0,
+            970.0,
+            0.12381,
+            850.0,
+            0.0,
+            850.0,
+            272.0,
+            470.0,
+            0.1,
+            0.0,
+            850.0,
+            0.2,
+            1457.0,
+            816.0,
+            0.0,
+            808.0,
+            0.3,
+            11.45,
+            0.0,
+            725.0,
+            0.2,
+            0.24238,
+            0.0
+          ],
+          "VectorValues": [
+            {
+              "R": 0.0,
+              "G": 0.06,
+              "B": 0.51,
+              "A": 0.7,
+              "Hex": "B30045BD"
+            },
+            {
+              "R": 0.0,
+              "G": 0.070588,
+              "B": 0.680112,
+              "A": 1.0,
+              "Hex": "004BD7"
+            },
+            {
+              "R": 0.0,
+              "G": 0.070588,
+              "B": 0.803922,
+              "A": 1.0,
+              "Hex": "004BE8"
+            },
+            {
+              "R": 0.0,
+              "G": 0.062745,
+              "B": 0.505882,
+              "A": 0.7,
+              "Hex": "B30047BD"
+            },
+            {
+              "R": 1.0,
+              "G": 0.791298,
+              "B": 0.814847,
+              "A": 1.0,
+              "Hex": "FFE6E9"
+            },
+            {
+              "R": 0.04,
+              "G": 0.3,
+              "B": 0.69,
+              "A": 0.0,
+              "Hex": "3895D9"
+            },
+            {
+              "R": 0.011765,
+              "G": 0.007843,
+              "B": 0.231373,
+              "A": 0.0,
+              "Hex": "1C1584"
+            },
+            {
+              "R": 0.0,
+              "G": 0.05,
+              "B": 0.5,
+              "A": 0.0,
+              "Hex": "003FBC"
+            }
+          ],
+          "TextureValues": [
+            {
+              "ObjectName": "Texture2D'T_UI_Common_Dummy_00'",
+              "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00.0"
+            },
+            {
+              "ObjectName": "Texture2D'T_UI_Field_Day_Wave_Warp_01'",
+              "ObjectPath": "/Game/Xrd777/UI/Facility/DAY_WAVE/Texture/Wave/T_UI_Field_Day_Wave_Warp_01.0"
+            },
+            {
+              "ObjectName": "Texture2D'T_UI_Field_Day_Wave_Warp_00'",
+              "ObjectPath": "/Game/Xrd777/UI/Facility/DAY_WAVE/Texture/Wave/T_UI_Field_Day_Wave_Warp_00.0"
+            }
+          ]
+        },
+        "ReferencedTextures": [
+          null,
+          {
+            "ObjectName": "Texture2D'T_UI_Common_Dummy_00'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_UI_Field_Day_Wave_Warp_01'",
+            "ObjectPath": "/Game/Xrd777/UI/Facility/DAY_WAVE/Texture/Wave/T_UI_Field_Day_Wave_Warp_01.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_UI_Camp_Caustics_00'",
+            "ObjectPath": "/Game/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_Caustics_00.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_UI_Field_Day_Wave_Warp_00'",
+            "ObjectPath": "/Game/Xrd777/UI/Facility/DAY_WAVE/Texture/Wave/T_UI_Field_Day_Wave_Warp_00.0"
+          },
+          {
+            "ObjectName": "CurveLinearColorAtlas'CA_UI_Camp_PersonaStatus'",
+            "ObjectPath": "/Game/Xrd777/UI/Camp/Material/Curve/CA_UI_Camp_PersonaStatus.0"
+          }
+        ],
+        "FunctionInfos": [
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "9266BF7A-41122BB3-EC5C82B7-A3E751C3",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat4'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat4.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "127A25CC-4BE0E6F9-0A2D99BF-43C74E15",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat4Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat4Components.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "BDDE84CA-4E8DB39F-391F9FA1-03A94906",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_Wave'",
+              "ObjectPath": "/Game/Xrd777/UI/Facility/Combine/Material/MF_Wave.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "127A25CC-4BE0E6F9-0A2D99BF-43C74E15",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat4Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat4Components.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "BDDE84CA-4E8DB39F-391F9FA1-03A94906",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_Wave'",
+              "ObjectPath": "/Game/Xrd777/UI/Facility/Combine/Material/MF_Wave.0"
+            }
+          },
+          {
+            "StateId": "E572D701-496E6D38-CC53A5BD-C450B0ED",
+            "Function": {
+              "ObjectName": "MaterialFunction'CustomRotator'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Texturing/CustomRotator.0"
+            }
+          },
+          {
+            "StateId": "6BB97146-49B75878-03A98399-9B3C01AF",
+            "Function": {
+              "ObjectName": "MaterialFunction'VectorLength'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/VectorLength.0"
+            }
+          },
+          {
+            "StateId": "9DEEF089-488C7FFC-CBA6D499-986AEB61",
+            "Function": {
+              "ObjectName": "MaterialFunction'BoxMask-2D'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Gradient/BoxMask-2D.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "BD3E4162-4387615A-1814E4AC-27284F88",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_UI_MakeRect'",
+              "ObjectPath": "/Game/Xrd777/UI/Camp/Material/MaterialFunctions/MF_UI_MakeRect.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "E572D701-496E6D38-CC53A5BD-C450B0ED",
+            "Function": {
+              "ObjectName": "MaterialFunction'CustomRotator'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Texturing/CustomRotator.0"
+            }
+          },
+          {
+            "StateId": "6BB97146-49B75878-03A98399-9B3C01AF",
+            "Function": {
+              "ObjectName": "MaterialFunction'VectorLength'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/VectorLength.0"
+            }
+          },
+          {
+            "StateId": "9DEEF089-488C7FFC-CBA6D499-986AEB61",
+            "Function": {
+              "ObjectName": "MaterialFunction'BoxMask-2D'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Gradient/BoxMask-2D.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "BD3E4162-4387615A-1814E4AC-27284F88",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_UI_MakeRect'",
+              "ObjectPath": "/Game/Xrd777/UI/Camp/Material/MaterialFunctions/MF_UI_MakeRect.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "E572D701-496E6D38-CC53A5BD-C450B0ED",
+            "Function": {
+              "ObjectName": "MaterialFunction'CustomRotator'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Texturing/CustomRotator.0"
+            }
+          },
+          {
+            "StateId": "6BB97146-49B75878-03A98399-9B3C01AF",
+            "Function": {
+              "ObjectName": "MaterialFunction'VectorLength'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/VectorLength.0"
+            }
+          },
+          {
+            "StateId": "9DEEF089-488C7FFC-CBA6D499-986AEB61",
+            "Function": {
+              "ObjectName": "MaterialFunction'BoxMask-2D'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Gradient/BoxMask-2D.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "BD3E4162-4387615A-1814E4AC-27284F88",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_UI_MakeRect'",
+              "ObjectPath": "/Game/Xrd777/UI/Camp/Material/MaterialFunctions/MF_UI_MakeRect.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "E572D701-496E6D38-CC53A5BD-C450B0ED",
+            "Function": {
+              "ObjectName": "MaterialFunction'CustomRotator'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Texturing/CustomRotator.0"
+            }
+          },
+          {
+            "StateId": "6BB97146-49B75878-03A98399-9B3C01AF",
+            "Function": {
+              "ObjectName": "MaterialFunction'VectorLength'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/VectorLength.0"
+            }
+          },
+          {
+            "StateId": "9DEEF089-488C7FFC-CBA6D499-986AEB61",
+            "Function": {
+              "ObjectName": "MaterialFunction'BoxMask-2D'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Gradient/BoxMask-2D.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "BD3E4162-4387615A-1814E4AC-27284F88",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_UI_MakeRect'",
+              "ObjectPath": "/Game/Xrd777/UI/Camp/Material/MaterialFunctions/MF_UI_MakeRect.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "E572D701-496E6D38-CC53A5BD-C450B0ED",
+            "Function": {
+              "ObjectName": "MaterialFunction'CustomRotator'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Texturing/CustomRotator.0"
+            }
+          },
+          {
+            "StateId": "6BB97146-49B75878-03A98399-9B3C01AF",
+            "Function": {
+              "ObjectName": "MaterialFunction'VectorLength'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/VectorLength.0"
+            }
+          },
+          {
+            "StateId": "9DEEF089-488C7FFC-CBA6D499-986AEB61",
+            "Function": {
+              "ObjectName": "MaterialFunction'BoxMask-2D'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Gradient/BoxMask-2D.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "BD3E4162-4387615A-1814E4AC-27284F88",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_UI_MakeRect'",
+              "ObjectPath": "/Game/Xrd777/UI/Camp/Material/MaterialFunctions/MF_UI_MakeRect.0"
+            }
+          },
+          {
+            "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat2'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+            }
+          },
+          {
+            "StateId": "E6A85460-4E707DD6-EBF457B4-A3E80A43",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat3'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat3.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "127A25CC-4BE0E6F9-0A2D99BF-43C74E15",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat4Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat4Components.0"
+            }
+          },
+          {
+            "StateId": "535DE261-4854423B-C1564FB0-A85BA6CF",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_UI_MakeGradation'",
+              "ObjectPath": "/Game/Xrd777/UI/Camp/Material/MaterialFunctions/MF_UI_MakeGradation.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "B6558A1F-4EB9A2E0-9A1C00A8-4B0E1D47",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_EN_P_SceneColorPixelOffset'",
+              "ObjectPath": "/Game/Xrd777/Environments/MasterMaterials/Function/MF_EN_P_SceneColorPixelOffset.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "B6558A1F-4EB9A2E0-9A1C00A8-4B0E1D47",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_EN_P_SceneColorPixelOffset'",
+              "ObjectPath": "/Game/Xrd777/Environments/MasterMaterials/Function/MF_EN_P_SceneColorPixelOffset.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "B6558A1F-4EB9A2E0-9A1C00A8-4B0E1D47",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_EN_P_SceneColorPixelOffset'",
+              "ObjectPath": "/Game/Xrd777/Environments/MasterMaterials/Function/MF_EN_P_SceneColorPixelOffset.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "B6558A1F-4EB9A2E0-9A1C00A8-4B0E1D47",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_EN_P_SceneColorPixelOffset'",
+              "ObjectPath": "/Game/Xrd777/Environments/MasterMaterials/Function/MF_EN_P_SceneColorPixelOffset.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "B6558A1F-4EB9A2E0-9A1C00A8-4B0E1D47",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_EN_P_SceneColorPixelOffset'",
+              "ObjectPath": "/Game/Xrd777/Environments/MasterMaterials/Function/MF_EN_P_SceneColorPixelOffset.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "B6558A1F-4EB9A2E0-9A1C00A8-4B0E1D47",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_EN_P_SceneColorPixelOffset'",
+              "ObjectPath": "/Game/Xrd777/Environments/MasterMaterials/Function/MF_EN_P_SceneColorPixelOffset.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "B6558A1F-4EB9A2E0-9A1C00A8-4B0E1D47",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_EN_P_SceneColorPixelOffset'",
+              "ObjectPath": "/Game/Xrd777/Environments/MasterMaterials/Function/MF_EN_P_SceneColorPixelOffset.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "B6558A1F-4EB9A2E0-9A1C00A8-4B0E1D47",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_EN_P_SceneColorPixelOffset'",
+              "ObjectPath": "/Game/Xrd777/Environments/MasterMaterials/Function/MF_EN_P_SceneColorPixelOffset.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "370F2D41-43BE4B32-BED96C84-4E6EF052",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_EN_P_ColorDifferenceOutline'",
+              "ObjectPath": "/Game/Xrd777/Environments/MasterMaterials/Function/MF_EN_P_ColorDifferenceOutline.0"
+            }
+          },
+          {
+            "StateId": "B7C71B91-4E2BB667-772D6CBE-2AB55665",
+            "Function": {
+              "ObjectName": "MaterialFunction'LinearGradient'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Gradient/LinearGradient.0"
+            }
+          },
+          {
+            "StateId": "1F3C7ECC-4653CAFB-2A6AEE82-B1F2F3A5",
+            "Function": {
+              "ObjectName": "MaterialFunction'CheapContrast'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/ImageAdjustment/CheapContrast.0"
+            }
+          },
+          {
+            "StateId": "89FC73A6-43849189-485A15B0-679689DF",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_UI_MakeBG'",
+              "ObjectPath": "/Game/Xrd777/UI/Camp/Material/MaterialFunctions/MF_UI_MakeBG.0"
+            }
+          },
+          {
+            "StateId": "9266BF7A-41122BB3-EC5C82B7-A3E751C3",
+            "Function": {
+              "ObjectName": "MaterialFunction'MakeFloat4'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat4.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "CD179978-44432CC8-0E4B5C95-E70CC3AF",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_UI_SceneColorPixelOffset'",
+              "ObjectPath": "/Game/Xrd777/UI/Common/2D/MasterMaterials/Function/MF_UI_SceneColorPixelOffset.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "CD179978-44432CC8-0E4B5C95-E70CC3AF",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_UI_SceneColorPixelOffset'",
+              "ObjectPath": "/Game/Xrd777/UI/Common/2D/MasterMaterials/Function/MF_UI_SceneColorPixelOffset.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "CD179978-44432CC8-0E4B5C95-E70CC3AF",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_UI_SceneColorPixelOffset'",
+              "ObjectPath": "/Game/Xrd777/UI/Common/2D/MasterMaterials/Function/MF_UI_SceneColorPixelOffset.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "CD179978-44432CC8-0E4B5C95-E70CC3AF",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_UI_SceneColorPixelOffset'",
+              "ObjectPath": "/Game/Xrd777/UI/Common/2D/MasterMaterials/Function/MF_UI_SceneColorPixelOffset.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "081C516B-44407F3B-3C937394-F33EC4D7",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_UI_ColorDifferenceOutline'",
+              "ObjectPath": "/Game/Xrd777/UI/Common/2D/MasterMaterials/Function/MF_UI_ColorDifferenceOutline.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          }
+        ],
+        "QualityLevelsUsed": [
+          false,
+          false,
+          false,
+          false
+        ]
+      }
+    },
+    "LoadedMaterialResources": [],
+    "CachedExpressionData": {
+      "Parameters": {
+        "RuntimeEntries": {
+          "NameHashes": [
+            721706536605591453,
+            822996717678771882,
+            1431167012350086935,
+            2027780708101274317,
+            2276851640606111535,
+            2408783053482586449,
+            2757768282552392503,
+            3789240943574663036,
+            3937322735314189820,
+            4688212010653795269,
+            5084398511730497906,
+            5286983038991652181,
+            5439387637458368515,
+            5637445051491827862,
+            6092361138760736742,
+            6264270488230138023,
+            6313083291823051016,
+            6770441375373397285,
+            7095427592681088541,
+            7353680500636186291,
+            7937999199998450187,
+            8499041373283357468,
+            8719972777509576297,
+            8920032454822444543,
+            9180417403246796045,
+            9376946835800737074,
+            10554617171058617378,
+            10981034125889048479,
+            11751743063868190963,
+            12896533814640143775,
+            13476931850128574009,
+            13597675472260542664,
+            13620818255622596751,
+            13944820955667218073,
+            14106365119022795624,
+            15119815665414407281,
+            15153124033596957524,
+            16660933995480973869,
+            16773134648523836385,
+            17679128944558143888
+          ],
+          "ParameterInfos": [
+            {
+              "Name": "SpeedX",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "LineWidth",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "RectAngle",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Curve",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Contrast",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "FadeAlpha",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "V1",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "CausticsOffsetY",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "CausticsWidth",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "CausticsPointY",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "RectWidth3",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Amount2",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "U1",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Alpha",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "ReflectedLightSpeed",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "A_Threshold",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "SelectPlateRectWidth",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "RectWidth2",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "CausticsPointX",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Amount1",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "RectWidth1",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "SelectPlateScale",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "SelectPlateRectHeight",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "CausticsOffsetX",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "CausticsHeight",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "B_Threshold",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "RectScale",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "RectHeight1",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "D_Threshold",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "RectPointX",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "RectHeight2",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "U0",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "RectHeight3",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "E_Threshold",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "CausticsAngle",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "V0",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "RectPointY",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "C_Threshold",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "SpeedY",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "UseGamma",
+              "Association": "GlobalParameter",
+              "Index": -1
+            }
+          ],
+          "ExpressionGuids": [
+            "5F5F653D-4A4A99D5-B263E7AE-04480A0D",
+            "B0744728-46676F6D-6095C6BC-5610E10D",
+            "B3BFA28F-46A617ED-787135AA-D2624505",
+            "E1CD1876-44349D99-A3F5999E-F86551FF",
+            "C1EEFD4B-49C6392A-0CC522A2-2C625627",
+            "F8116A41-402FE9B3-F1A73489-A56B20B1",
+            "8E741648-40EB47CF-1C16398D-5BE73CCA",
+            "D9ABC6C6-4C4463E1-CF751AA2-CFDBABBA",
+            "B73C455A-49C34320-51CB6FBF-0D38903F",
+            "FC53F4FD-4490E65A-387D348F-DEB25FE5",
+            "7EE7CA3C-4992667B-0E27A585-974A319E",
+            "FDDB7CC6-41F23A90-B6CBF4A5-7425BDBE",
+            "551192FC-40D618B2-C2DE6280-3ED9C44A",
+            "79626444-491BAFCB-3DF1FEAD-7E35EC5E",
+            "A9CBAB83-4F3878BF-50B3398D-89C04C2A",
+            "49F43C02-4CE5DD59-7ABDFCA8-D4528E07",
+            "C9F81BD6-4A60AA2C-D68680A8-F70BB72F",
+            "E67586BD-40205B35-B37BC690-29BF6393",
+            "ACA5F900-4B0672BF-23896086-81CD7AEB",
+            "61CC0941-418687ED-99DC7995-744214D6",
+            "39B98D2C-458E6888-6F0C328E-1A214711",
+            "C618F172-4A243FDD-1DE27598-43A7D5B3",
+            "02DFF638-49222425-1ECA3D81-D1069FC2",
+            "5609E8A9-4288AA23-EC386AA6-345AF352",
+            "A704FFA6-4E47CD64-67B25998-9A0CA200",
+            "0F8D95DF-442A5BA2-E028E18D-4EA87AA9",
+            "E8D7F72A-40AF32C6-F7B03C8C-90E0E79C",
+            "5D151856-41F5D3E2-B6948A97-933F34D0",
+            "002A379C-4A3F1E24-9AB0D1B2-54E1DD8E",
+            "0C2D7D5E-4FE8CA7D-E112C494-789930A4",
+            "FE889FF5-4DD76D10-1C46059C-2D2ADEB8",
+            "8807C729-42F35BE4-DF9203B4-B8CBE040",
+            "85C8AE05-4265F5A2-54387196-A87253BD",
+            "A313A5C4-40F781E1-7574029B-63BD8C9B",
+            "3B5ACB66-4654A445-2B7C09A7-91B29703",
+            "D6C06C90-4B945E60-D0BD67BC-F4F13F2C",
+            "AFA50B5B-485E5692-42BFF3BC-8695A022",
+            "1B792473-4EE9836E-A314C9A6-653F34AA",
+            "CD9F8A6F-4A2A01FE-FB02F588-91EDC613",
+            "977F490F-45600A8E-96E3C0B5-B5E2FE3D"
+          ]
+        },
+        "RuntimeEntries[1]": {
+          "NameHashes": [
+            782796484607824179,
+            1170210671186259904,
+            2106525465901126708,
+            3020762924952101968,
+            4132791159178272374,
+            5448734007124448095,
+            10111606149762477730,
+            13471045440407130723
+          ],
+          "ParameterInfos": [
+            {
+              "Name": "MultipleBulePanel",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "CosticesColor",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "CausticsPlateColor",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Param2",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Param1",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "GradationA",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "SelectPlateColor",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "GradationB",
+              "Association": "GlobalParameter",
+              "Index": -1
+            }
+          ],
+          "ExpressionGuids": [
+            "CA2BB072-42E09E1B-1D1F1E86-3EA24DAA",
+            "F8DA1EE8-4F93A349-F715BFA2-1DEB0769",
+            "21A71F79-4230B66C-0417B6B3-3CF32544",
+            "4A0CFBB8-4A0F3983-B07A6EBA-0CA145B2",
+            "3FF6C4EF-4FD9BD60-441A2DAA-F0A8CF41",
+            "A67B9C01-40B01A71-84A0DE84-10C92E47",
+            "CEC0950B-49435AB2-E36966BA-A7367205",
+            "42AB2EDF-4A2820F5-2BE3D78F-5522DCB5"
+          ]
+        },
+        "RuntimeEntries[2]": {
+          "NameHashes": [
+            8370121904344411576,
+            10525032251864820274,
+            13734106384616994652
+          ],
+          "ParameterInfos": [
+            {
+              "Name": "Texture",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Grayscake Texture2",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Grayscake Texture1",
+              "Association": "GlobalParameter",
+              "Index": -1
+            }
+          ],
+          "ExpressionGuids": [
+            "390E4AE0-4CE47B32-A75E1087-2BBEE973",
+            "EB45657C-46EE59CF-C3BFF1AB-AEB04266",
+            "87EDD037-497CA358-7F021587-CB76D39F"
+          ]
+        },
+        "ScalarValues": [
+          0.213809,
+          0.0,
+          45.0,
+          0.0,
+          0.2,
+          1.0,
+          1.0,
+          752.0,
+          2261.0,
+          751.0,
+          808.0,
+          0.249048,
+          1.0,
+          0.0,
+          0.05,
+          0.4,
+          850.0,
+          816.0,
+          970.0,
+          0.12381,
+          850.0,
+          0.0,
+          850.0,
+          272.0,
+          470.0,
+          0.1,
+          0.0,
+          850.0,
+          0.2,
+          1457.0,
+          816.0,
+          0.0,
+          808.0,
+          0.3,
+          11.45,
+          0.0,
+          725.0,
+          0.2,
+          0.24238,
+          0.0
+        ],
+        "VectorValues": [
+          {
+            "R": 0.0,
+            "G": 0.06,
+            "B": 0.51,
+            "A": 0.7,
+            "Hex": "B30045BD"
+          },
+          {
+            "R": 0.0,
+            "G": 0.070588,
+            "B": 0.680112,
+            "A": 1.0,
+            "Hex": "004BD7"
+          },
+          {
+            "R": 0.0,
+            "G": 0.070588,
+            "B": 0.803922,
+            "A": 1.0,
+            "Hex": "004BE8"
+          },
+          {
+            "R": 0.0,
+            "G": 0.062745,
+            "B": 0.505882,
+            "A": 0.7,
+            "Hex": "B30047BD"
+          },
+          {
+            "R": 1.0,
+            "G": 0.791298,
+            "B": 0.814847,
+            "A": 1.0,
+            "Hex": "FFE6E9"
+          },
+          {
+            "R": 0.04,
+            "G": 0.3,
+            "B": 0.69,
+            "A": 0.0,
+            "Hex": "3895D9"
+          },
+          {
+            "R": 0.011765,
+            "G": 0.007843,
+            "B": 0.231373,
+            "A": 0.0,
+            "Hex": "1C1584"
+          },
+          {
+            "R": 0.0,
+            "G": 0.05,
+            "B": 0.5,
+            "A": 0.0,
+            "Hex": "003FBC"
+          }
+        ],
+        "TextureValues": [
+          {
+            "ObjectName": "Texture2D'T_UI_Common_Dummy_00'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_UI_Field_Day_Wave_Warp_01'",
+            "ObjectPath": "/Game/Xrd777/UI/Facility/DAY_WAVE/Texture/Wave/T_UI_Field_Day_Wave_Warp_01.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_UI_Field_Day_Wave_Warp_00'",
+            "ObjectPath": "/Game/Xrd777/UI/Facility/DAY_WAVE/Texture/Wave/T_UI_Field_Day_Wave_Warp_00.0"
+          }
+        ]
+      },
+      "ReferencedTextures": [
+        null,
+        {
+          "ObjectName": "Texture2D'T_UI_Common_Dummy_00'",
+          "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_UI_Field_Day_Wave_Warp_01'",
+          "ObjectPath": "/Game/Xrd777/UI/Facility/DAY_WAVE/Texture/Wave/T_UI_Field_Day_Wave_Warp_01.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_UI_Camp_Caustics_00'",
+          "ObjectPath": "/Game/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_Caustics_00.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_UI_Field_Day_Wave_Warp_00'",
+          "ObjectPath": "/Game/Xrd777/UI/Facility/DAY_WAVE/Texture/Wave/T_UI_Field_Day_Wave_Warp_00.0"
+        },
+        {
+          "ObjectName": "CurveLinearColorAtlas'CA_UI_Camp_PersonaStatus'",
+          "ObjectPath": "/Game/Xrd777/UI/Camp/Material/Curve/CA_UI_Camp_PersonaStatus.0"
+        }
+      ],
+      "FunctionInfos": [
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "9266BF7A-41122BB3-EC5C82B7-A3E751C3",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat4'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat4.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "127A25CC-4BE0E6F9-0A2D99BF-43C74E15",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat4Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat4Components.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "BDDE84CA-4E8DB39F-391F9FA1-03A94906",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_Wave'",
+            "ObjectPath": "/Game/Xrd777/UI/Facility/Combine/Material/MF_Wave.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "127A25CC-4BE0E6F9-0A2D99BF-43C74E15",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat4Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat4Components.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "BDDE84CA-4E8DB39F-391F9FA1-03A94906",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_Wave'",
+            "ObjectPath": "/Game/Xrd777/UI/Facility/Combine/Material/MF_Wave.0"
+          }
+        },
+        {
+          "StateId": "E572D701-496E6D38-CC53A5BD-C450B0ED",
+          "Function": {
+            "ObjectName": "MaterialFunction'CustomRotator'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Texturing/CustomRotator.0"
+          }
+        },
+        {
+          "StateId": "6BB97146-49B75878-03A98399-9B3C01AF",
+          "Function": {
+            "ObjectName": "MaterialFunction'VectorLength'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/VectorLength.0"
+          }
+        },
+        {
+          "StateId": "9DEEF089-488C7FFC-CBA6D499-986AEB61",
+          "Function": {
+            "ObjectName": "MaterialFunction'BoxMask-2D'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Gradient/BoxMask-2D.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "BD3E4162-4387615A-1814E4AC-27284F88",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_UI_MakeRect'",
+            "ObjectPath": "/Game/Xrd777/UI/Camp/Material/MaterialFunctions/MF_UI_MakeRect.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "E572D701-496E6D38-CC53A5BD-C450B0ED",
+          "Function": {
+            "ObjectName": "MaterialFunction'CustomRotator'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Texturing/CustomRotator.0"
+          }
+        },
+        {
+          "StateId": "6BB97146-49B75878-03A98399-9B3C01AF",
+          "Function": {
+            "ObjectName": "MaterialFunction'VectorLength'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/VectorLength.0"
+          }
+        },
+        {
+          "StateId": "9DEEF089-488C7FFC-CBA6D499-986AEB61",
+          "Function": {
+            "ObjectName": "MaterialFunction'BoxMask-2D'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Gradient/BoxMask-2D.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "BD3E4162-4387615A-1814E4AC-27284F88",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_UI_MakeRect'",
+            "ObjectPath": "/Game/Xrd777/UI/Camp/Material/MaterialFunctions/MF_UI_MakeRect.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "E572D701-496E6D38-CC53A5BD-C450B0ED",
+          "Function": {
+            "ObjectName": "MaterialFunction'CustomRotator'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Texturing/CustomRotator.0"
+          }
+        },
+        {
+          "StateId": "6BB97146-49B75878-03A98399-9B3C01AF",
+          "Function": {
+            "ObjectName": "MaterialFunction'VectorLength'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/VectorLength.0"
+          }
+        },
+        {
+          "StateId": "9DEEF089-488C7FFC-CBA6D499-986AEB61",
+          "Function": {
+            "ObjectName": "MaterialFunction'BoxMask-2D'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Gradient/BoxMask-2D.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "BD3E4162-4387615A-1814E4AC-27284F88",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_UI_MakeRect'",
+            "ObjectPath": "/Game/Xrd777/UI/Camp/Material/MaterialFunctions/MF_UI_MakeRect.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "E572D701-496E6D38-CC53A5BD-C450B0ED",
+          "Function": {
+            "ObjectName": "MaterialFunction'CustomRotator'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Texturing/CustomRotator.0"
+          }
+        },
+        {
+          "StateId": "6BB97146-49B75878-03A98399-9B3C01AF",
+          "Function": {
+            "ObjectName": "MaterialFunction'VectorLength'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/VectorLength.0"
+          }
+        },
+        {
+          "StateId": "9DEEF089-488C7FFC-CBA6D499-986AEB61",
+          "Function": {
+            "ObjectName": "MaterialFunction'BoxMask-2D'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Gradient/BoxMask-2D.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "BD3E4162-4387615A-1814E4AC-27284F88",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_UI_MakeRect'",
+            "ObjectPath": "/Game/Xrd777/UI/Camp/Material/MaterialFunctions/MF_UI_MakeRect.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "E572D701-496E6D38-CC53A5BD-C450B0ED",
+          "Function": {
+            "ObjectName": "MaterialFunction'CustomRotator'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Texturing/CustomRotator.0"
+          }
+        },
+        {
+          "StateId": "6BB97146-49B75878-03A98399-9B3C01AF",
+          "Function": {
+            "ObjectName": "MaterialFunction'VectorLength'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/VectorLength.0"
+          }
+        },
+        {
+          "StateId": "9DEEF089-488C7FFC-CBA6D499-986AEB61",
+          "Function": {
+            "ObjectName": "MaterialFunction'BoxMask-2D'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Gradient/BoxMask-2D.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "BD3E4162-4387615A-1814E4AC-27284F88",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_UI_MakeRect'",
+            "ObjectPath": "/Game/Xrd777/UI/Camp/Material/MaterialFunctions/MF_UI_MakeRect.0"
+          }
+        },
+        {
+          "StateId": "7560E2DA-4356343C-18E6818A-A015BAC5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat2'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat2.0"
+          }
+        },
+        {
+          "StateId": "E6A85460-4E707DD6-EBF457B4-A3E80A43",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat3'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat3.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "127A25CC-4BE0E6F9-0A2D99BF-43C74E15",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat4Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat4Components.0"
+          }
+        },
+        {
+          "StateId": "535DE261-4854423B-C1564FB0-A85BA6CF",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_UI_MakeGradation'",
+            "ObjectPath": "/Game/Xrd777/UI/Camp/Material/MaterialFunctions/MF_UI_MakeGradation.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "B6558A1F-4EB9A2E0-9A1C00A8-4B0E1D47",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_EN_P_SceneColorPixelOffset'",
+            "ObjectPath": "/Game/Xrd777/Environments/MasterMaterials/Function/MF_EN_P_SceneColorPixelOffset.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "B6558A1F-4EB9A2E0-9A1C00A8-4B0E1D47",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_EN_P_SceneColorPixelOffset'",
+            "ObjectPath": "/Game/Xrd777/Environments/MasterMaterials/Function/MF_EN_P_SceneColorPixelOffset.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "B6558A1F-4EB9A2E0-9A1C00A8-4B0E1D47",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_EN_P_SceneColorPixelOffset'",
+            "ObjectPath": "/Game/Xrd777/Environments/MasterMaterials/Function/MF_EN_P_SceneColorPixelOffset.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "B6558A1F-4EB9A2E0-9A1C00A8-4B0E1D47",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_EN_P_SceneColorPixelOffset'",
+            "ObjectPath": "/Game/Xrd777/Environments/MasterMaterials/Function/MF_EN_P_SceneColorPixelOffset.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "B6558A1F-4EB9A2E0-9A1C00A8-4B0E1D47",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_EN_P_SceneColorPixelOffset'",
+            "ObjectPath": "/Game/Xrd777/Environments/MasterMaterials/Function/MF_EN_P_SceneColorPixelOffset.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "B6558A1F-4EB9A2E0-9A1C00A8-4B0E1D47",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_EN_P_SceneColorPixelOffset'",
+            "ObjectPath": "/Game/Xrd777/Environments/MasterMaterials/Function/MF_EN_P_SceneColorPixelOffset.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "B6558A1F-4EB9A2E0-9A1C00A8-4B0E1D47",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_EN_P_SceneColorPixelOffset'",
+            "ObjectPath": "/Game/Xrd777/Environments/MasterMaterials/Function/MF_EN_P_SceneColorPixelOffset.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "B6558A1F-4EB9A2E0-9A1C00A8-4B0E1D47",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_EN_P_SceneColorPixelOffset'",
+            "ObjectPath": "/Game/Xrd777/Environments/MasterMaterials/Function/MF_EN_P_SceneColorPixelOffset.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "370F2D41-43BE4B32-BED96C84-4E6EF052",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_EN_P_ColorDifferenceOutline'",
+            "ObjectPath": "/Game/Xrd777/Environments/MasterMaterials/Function/MF_EN_P_ColorDifferenceOutline.0"
+          }
+        },
+        {
+          "StateId": "B7C71B91-4E2BB667-772D6CBE-2AB55665",
+          "Function": {
+            "ObjectName": "MaterialFunction'LinearGradient'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Gradient/LinearGradient.0"
+          }
+        },
+        {
+          "StateId": "1F3C7ECC-4653CAFB-2A6AEE82-B1F2F3A5",
+          "Function": {
+            "ObjectName": "MaterialFunction'CheapContrast'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/ImageAdjustment/CheapContrast.0"
+          }
+        },
+        {
+          "StateId": "89FC73A6-43849189-485A15B0-679689DF",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_UI_MakeBG'",
+            "ObjectPath": "/Game/Xrd777/UI/Camp/Material/MaterialFunctions/MF_UI_MakeBG.0"
+          }
+        },
+        {
+          "StateId": "9266BF7A-41122BB3-EC5C82B7-A3E751C3",
+          "Function": {
+            "ObjectName": "MaterialFunction'MakeFloat4'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/MakeFloat4.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "CD179978-44432CC8-0E4B5C95-E70CC3AF",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_UI_SceneColorPixelOffset'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/2D/MasterMaterials/Function/MF_UI_SceneColorPixelOffset.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "CD179978-44432CC8-0E4B5C95-E70CC3AF",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_UI_SceneColorPixelOffset'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/2D/MasterMaterials/Function/MF_UI_SceneColorPixelOffset.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "CD179978-44432CC8-0E4B5C95-E70CC3AF",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_UI_SceneColorPixelOffset'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/2D/MasterMaterials/Function/MF_UI_SceneColorPixelOffset.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "CD179978-44432CC8-0E4B5C95-E70CC3AF",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_UI_SceneColorPixelOffset'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/2D/MasterMaterials/Function/MF_UI_SceneColorPixelOffset.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "081C516B-44407F3B-3C937394-F33EC4D7",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_UI_ColorDifferenceOutline'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/2D/MasterMaterials/Function/MF_UI_ColorDifferenceOutline.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        }
+      ],
+      "QualityLevelsUsed": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  }
+]

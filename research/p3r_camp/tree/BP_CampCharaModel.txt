@@ -1,0 +1,10 @@
+BP_CampCharaModel (PC0051)
+└─ DefaultSceneRoot
+   └─ CharacterMesh0 : SkeletalMeshComponent
+      ├─ SkeletalMesh: SK_PC0051_BaseSkelton
+      ├─ AnimClass: ABP_PC0051_C
+      ├─ CostumeMesh : SkeletalMeshComponent → SK_PC0051_C002
+      ├─ FaceMesh : SkeletalMeshComponent → SK_PC0051_F000
+      └─ HairMesh : SkeletalMeshComponent → SK_PC0051_H000
+
+来源：`BP_CampCharaModel` 属性 JSON。

@@ -1,0 +1,9 @@
+[
+  {
+    "Type": "UimAsset",
+    "Name": "UIM_UI_Camp_Skill_Gun_L_In",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'UimAsset'",
+    "Package": "/Game/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_Gun_L_In"
+  }
+]

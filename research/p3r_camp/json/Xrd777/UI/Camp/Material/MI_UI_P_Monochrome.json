@@ -1,0 +1,141 @@
+[
+  {
+    "Type": "MaterialInstanceConstant",
+    "Name": "MI_UI_P_Monochrome",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MaterialInstanceConstant'",
+    "Package": "/Game/Xrd777/UI/Camp/Material/MI_UI_P_Monochrome",
+    "Properties": {
+      "Parent": {
+        "ObjectName": "Material'MM_UI_P_Monochrome'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/Material/MM_UI_P_Monochrome.0"
+      },
+      "ScalarParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "A_Threshold",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.4,
+          "ExpressionGUID": "B3722226-436D6B6B-0992BDAA-D3C78359"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "B_Threshold",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.14,
+          "ExpressionGUID": "3F080ED3-460EF7B7-D9E89984-7747362E"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "C_Threshold",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.176,
+          "ExpressionGUID": "FEC19325-48E0CF4C-F3690B8A-D3013B9C"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "Contrast",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.0,
+          "ExpressionGUID": "20F134F0-41CACC1B-50E88BA1-53CA1FC2"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "D_Threshold",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.026,
+          "ExpressionGUID": "5F0365DF-4EC7608B-E93FAA85-37C81520"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "E_Threshold",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.36,
+          "ExpressionGUID": "68CDBEDD-4C23F482-644DFDAE-FFCFBE70"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "TexSize_X",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 512.0,
+          "ExpressionGUID": "09FC9E17-49B9F1F1-9711F1BC-4D750ED9"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "TexSize_Y",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 512.0,
+          "ExpressionGUID": "C45B1742-4E1EE384-CF83A39B-1107611B"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "LineWidth",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.5,
+          "ExpressionGUID": "C212FC23-49C8E98D-2D705681-C24002CD"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "RefractionDepthBias",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.0,
+          "ExpressionGUID": "00000000-00000000-00000000-00000000"
+        }
+      ],
+      "TextureParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "Texture",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "ObjectName": "Texture2D'T_UI_Common_Dummy_00_Alp'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00_Alp.0"
+          },
+          "ExpressionGUID": "390E4AE0-4CE47B32-A75E1087-2BBEE973"
+        }
+      ],
+      "BasePropertyOverrides": {
+        "ShadingModel": "MSM_Unlit",
+        "OpacityMaskClipValue": 0.3333
+      },
+      "CachedReferencedTextures": [
+        {
+          "ObjectName": "CurveLinearColorAtlas'CA_UI_CampColorCurve'",
+          "ObjectPath": "/Game/Xrd777/UI/Camp/Material/CA_UI_CampColorCurve.0"
+        },
+        {
+          "ObjectName": "TextureRenderTarget2D'RT_Temp1'",
+          "ObjectPath": "/Game/Xrd777/Kernel/Textures/RT_Temp1.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_UI_Common_Dummy_00_Alp'",
+          "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00_Alp.0"
+        },
+        null
+      ]
+    },
+    "LoadedMaterialResources": []
+  }
+]

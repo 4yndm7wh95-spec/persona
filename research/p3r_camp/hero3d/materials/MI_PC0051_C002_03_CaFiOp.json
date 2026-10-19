@@ -1,0 +1,30 @@
+{
+  "BlendMode": 0,
+  "ShadingModel": 0,
+  "Textures": {},
+  "Colors": {
+    "FillColor": {
+      "R": 0.337076,
+      "G": 0.409802,
+      "B": 0.567708,
+      "A": 1.0,
+      "Hex": "9DACC7"
+    }
+  },
+  "Scalars": {
+    "RefractionDepthBias": 0.0
+  },
+  "Switches": {},
+  "Properties": {
+    "BasePropertyOverrides": {
+      "ShadingModel": "MSM_Unlit",
+      "OpacityMaskClipValue": 0.3333
+    }
+  },
+  "HasTopDiffuse": false,
+  "HasTopNormals": false,
+  "HasTopSpecularMasks": false,
+  "HasTopEmissive": false,
+  "IsTranslucent": false,
+  "IsNull": true
+}

@@ -1,0 +1,86 @@
+[
+  {
+    "Type": "MaterialInstanceConstant",
+    "Name": "MI_UI_P_CampHologram",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MaterialInstanceConstant'",
+    "Package": "/Game/Xrd777/UI/Camp/Material/MI_UI_P_CampHologram",
+    "Properties": {
+      "Parent": {
+        "ObjectName": "MaterialInstanceConstant'MB_UI_P_Hologram'",
+        "ObjectPath": "/Game/Xrd777/UI/Common/3D/BaseMaterials/MB_UI_P_Hologram.0"
+      },
+      "ScalarParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "ColorOffset_Holo",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.0,
+          "ExpressionGUID": "F3D1EF88-448EF6F2-3A0C5AB3-57553887"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "TransitionRate_Holo",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.0,
+          "ExpressionGUID": "D02F7022-44F2BE84-E555CA97-3BEB4A2C"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "RefractionDepthBias",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.0,
+          "ExpressionGUID": "00000000-00000000-00000000-00000000"
+        }
+      ],
+      "TextureParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "MaskTex_Holo",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "ObjectName": "Texture2D'T_UI_HologramMask_00_Alp'",
+            "ObjectPath": "/Game/Xrd777/UI/Camp/Textures/T_UI_HologramMask_00_Alp.0"
+          },
+          "ExpressionGUID": "93F720E5-4F9A0A09-BF541DBB-FB10B359"
+        }
+      ],
+      "BasePropertyOverrides": {
+        "ShadingModel": "MSM_Unlit",
+        "OpacityMaskClipValue": 0.3333
+      },
+      "CachedReferencedTextures": [
+        {
+          "ObjectName": "Texture2D'BlendFunc_DefBlend'",
+          "ObjectPath": "/Engine/EngineMaterials/BlendFunc_DefBlend.0"
+        },
+        {
+          "ObjectName": "Texture2D'BlendFunc_DefBase'",
+          "ObjectPath": "/Engine/EngineMaterials/BlendFunc_DefBase.0"
+        },
+        {
+          "ObjectName": "CurveLinearColorAtlas'CA_UI_CampColorCurve'",
+          "ObjectPath": "/Game/Xrd777/UI/Camp/Material/CA_UI_CampColorCurve.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_UI_3D_DummyAlp_01'",
+          "ObjectPath": "/Game/Xrd777/UI/Common/3D/Textures/T_UI_3D_DummyAlp_01.0"
+        },
+        null,
+        {
+          "ObjectName": "Texture2D'T_UI_DummyBC7_00_Col'",
+          "ObjectPath": "/Game/Xrd777/UI/Common/3D/Textures/T_UI_DummyBC7_00_Col.0"
+        }
+      ]
+    },
+    "LoadedMaterialResources": []
+  }
+]

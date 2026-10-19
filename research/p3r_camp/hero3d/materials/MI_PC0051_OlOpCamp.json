@@ -1,0 +1,31 @@
+{
+  "BlendMode": 0,
+  "ShadingModel": 0,
+  "Textures": {},
+  "Colors": {
+    "FillColor": {
+      "R": 0.468262,
+      "G": 0.550695,
+      "B": 0.65625,
+      "A": 1.0,
+      "Hex": "B6C4D4"
+    }
+  },
+  "Scalars": {
+    "LineWidthNear": 0.05,
+    "LineWidthFar": 0.65,
+    "RefractionDepthBias": 0.0
+  },
+  "Switches": {},
+  "Properties": {
+    "BasePropertyOverrides": {
+      "OpacityMaskClipValue": 0.3333
+    }
+  },
+  "HasTopDiffuse": false,
+  "HasTopNormals": false,
+  "HasTopSpecularMasks": false,
+  "HasTopEmissive": false,
+  "IsTranslucent": false,
+  "IsNull": true
+}

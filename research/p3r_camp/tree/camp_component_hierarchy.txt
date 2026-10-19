@@ -1,0 +1,20 @@
+P3R Camp 角色 / 场景组件树（由 CUE4Parse 属性 JSON 摘录；不是人工猜测的 UMG 层级）
+
+BP_Camp_Scene_Capture
+└─ DefaultSceneRoot_GEN_VARIABLE : SceneComponent
+   └─ NewSceneCaptureComponent2D : SceneCaptureComponent2D
+      └─ TextureRenderTarget2D: RT_UI_CampSceneCapture2D
+
+BP_CampCharaModel (PC0051)
+└─ DefaultSceneRoot
+   └─ CharacterMesh0 : SkeletalMeshComponent
+      ├─ SkeletalMesh: SK_PC0051_BaseSkelton
+      ├─ AnimClass: ABP_PC0051_C
+      ├─ CostumeMesh : SkeletalMeshComponent → SK_PC0051_C002
+      ├─ FaceMesh : SkeletalMeshComponent → SK_PC0051_F000
+      └─ HairMesh : SkeletalMeshComponent → SK_PC0051_H000
+
+WBP_CampCustomStensilRendring
+└─ 已找到并导出完整可见属性 JSON；源 JSON 未提供可还原的完整 UMG WidgetTree 子节点列表。
+
+说明：当前挂载资源中没有发现营地根菜单及各子菜单完整 WidgetBlueprint/WidgetAnimation 的可读 WidgetTree；不能据此伪造锚点、位置或控件名。UIM 网格动画和角色 UAnimSequence 单独保存在 anim/、json/ 及 hero3d/。

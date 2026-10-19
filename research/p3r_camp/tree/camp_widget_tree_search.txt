@@ -1,0 +1,3 @@
+营地主界面及子菜单 WidgetTree 检索结论
+
+在成功挂载并筛出的资源中，仅识别到一个 WidgetBlueprint：`WBP_CampCustomStensilRendring`。没有读取到营地根菜单和各子菜单的完整 UMG WidgetTree，也没有识别到标准 WidgetAnimation / LevelSequence 对象。已导出的 UIM 网格动画和 PC0051 `UAnimSequence` 可供重建视觉过渡，但不能替代缺失的控件树数据。

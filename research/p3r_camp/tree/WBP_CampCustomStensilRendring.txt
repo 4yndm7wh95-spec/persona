@@ -1,0 +1,3 @@
+WBP_CampCustomStensilRendring
+
+找到并导出了属性 JSON。CUE4Parse 可见属性没有包含可还原的完整 WidgetTree 子节点列表；控件名、锚点、位置和尺寸未提供，不推测补写。

@@ -1,0 +1,102 @@
+[
+  {
+    "Type": "MaterialInstanceConstant",
+    "Name": "MI_UI_Camp_Quest_BG",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MaterialInstanceConstant'",
+    "Package": "/Game/Xrd777/UI/Camp/Material/Instance/MI_UI_Camp_Quest_BG",
+    "Properties": {
+      "Parent": {
+        "ObjectName": "Material'MM_UI_Camp_Quest_BG'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/Material/MasterMaterials/MM_UI_Camp_Quest_BG.0"
+      },
+      "ScalarParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "PlusBlue",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 1.0,
+          "ExpressionGUID": "F4338F0C-49FB9A93-C5684DBA-68A325A0"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "RefractionDepthBias",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.0,
+          "ExpressionGUID": "00000000-00000000-00000000-00000000"
+        }
+      ],
+      "VectorParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "GradationA",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "R": 0.001214,
+            "G": 0.313989,
+            "B": 0.545725,
+            "A": 0.0,
+            "Hex": "0498C3"
+          },
+          "ExpressionGUID": "6BE0EF3C-42026074-7F88E0AF-1F658C26"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "GradationB",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "R": 0.0,
+            "G": 0.068967,
+            "B": 0.692708,
+            "A": 0.0,
+            "Hex": "004AD9"
+          },
+          "ExpressionGUID": "A6B51F8A-4F6D0542-35DF45A3-F8204276"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "MultipleBulePanel",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "R": 0.0,
+            "G": 0.02417,
+            "B": 0.413541,
+            "A": 0.8,
+            "Hex": "CC002BAC"
+          },
+          "ExpressionGUID": "94768451-4791823A-3771A58B-CD586765"
+        }
+      ],
+      "TextureParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "Texture",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "ObjectName": "Texture2D'T_UI_Common_Dummy_00_Alp'",
+            "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00_Alp.0"
+          },
+          "ExpressionGUID": "390E4AE0-4CE47B32-A75E1087-2BBEE973"
+        }
+      ],
+      "BasePropertyOverrides": {
+        "BlendMode": "BLEND_Translucent",
+        "ShadingModel": "MSM_Unlit",
+        "OpacityMaskClipValue": 0.3333
+      }
+    },
+    "LoadedMaterialResources": []
+  }
+]

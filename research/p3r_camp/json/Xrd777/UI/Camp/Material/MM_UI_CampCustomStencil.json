@@ -1,0 +1,229 @@
+[
+  {
+    "Type": "Material",
+    "Name": "MM_UI_CampCustomStencil",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Material'",
+    "Package": "/Game/Xrd777/UI/Camp/Material/MM_UI_CampCustomStencil",
+    "Properties": {
+      "EmissiveColor": {
+        "Expression": null,
+        "OutputIndex": 0,
+        "InputName": "None",
+        "Mask": 0,
+        "MaskR": 0,
+        "MaskG": 0,
+        "MaskB": 0,
+        "MaskA": 0,
+        "ExpressionName": "MaterialExpressionClamp_2",
+        "UseConstant": false,
+        "Constant": {
+          "B": 0,
+          "G": 0,
+          "R": 0,
+          "A": 0,
+          "Hex": "000000"
+        }
+      },
+      "MaterialDomain": "MD_UI",
+      "BlendMode": "BLEND_Translucent",
+      "ShadingModel": "MSM_Unlit",
+      "ShadingModels": {
+        "ShadingModelField": 1
+      },
+      "bCanMaskedBeAssumedOpaque": true,
+      "bUseTranslucencyVertexFog": false,
+      "BlendableOutputAlpha": true,
+      "StateId": "71C7C550-4B5E69A1-52AC3C9C-C6AA0FDD",
+      "CachedExpressionData": {
+        "FunctionInfos": [
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "B2F4A5A7-4EDE33D8-E70A4A83-A28D1503",
+            "Function": {
+              "ObjectName": "MaterialFunction'ScaleUVsByCenter'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Texturing/ScaleUVsByCenter.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "391DDAD7-4E9DCC58-FD37D7B7-2AF07FC2",
+            "Function": {
+              "ObjectName": "MaterialFunction'ScreenResolution'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/ScreenResolution.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "B2F4A5A7-4EDE33D8-E70A4A83-A28D1503",
+            "Function": {
+              "ObjectName": "MaterialFunction'ScaleUVsByCenter'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Texturing/ScaleUVsByCenter.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "391DDAD7-4E9DCC58-FD37D7B7-2AF07FC2",
+            "Function": {
+              "ObjectName": "MaterialFunction'ScreenResolution'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/ScreenResolution.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "8530673E-4E3F2FF5-ED3C5090-177441DA",
+            "Function": {
+              "ObjectName": "MaterialFunction'ScreenAlignedUVs'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Texturing/ScreenAlignedUVs.0"
+            }
+          }
+        ],
+        "QualityLevelsUsed": [
+          false,
+          false,
+          false,
+          false
+        ]
+      }
+    },
+    "LoadedMaterialResources": [],
+    "CachedExpressionData": {
+      "FunctionInfos": [
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "B2F4A5A7-4EDE33D8-E70A4A83-A28D1503",
+          "Function": {
+            "ObjectName": "MaterialFunction'ScaleUVsByCenter'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Texturing/ScaleUVsByCenter.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "391DDAD7-4E9DCC58-FD37D7B7-2AF07FC2",
+          "Function": {
+            "ObjectName": "MaterialFunction'ScreenResolution'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/ScreenResolution.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "B2F4A5A7-4EDE33D8-E70A4A83-A28D1503",
+          "Function": {
+            "ObjectName": "MaterialFunction'ScaleUVsByCenter'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Texturing/ScaleUVsByCenter.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "391DDAD7-4E9DCC58-FD37D7B7-2AF07FC2",
+          "Function": {
+            "ObjectName": "MaterialFunction'ScreenResolution'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/ScreenResolution.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "8530673E-4E3F2FF5-ED3C5090-177441DA",
+          "Function": {
+            "ObjectName": "MaterialFunction'ScreenAlignedUVs'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Texturing/ScreenAlignedUVs.0"
+          }
+        }
+      ],
+      "QualityLevelsUsed": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  }
+]

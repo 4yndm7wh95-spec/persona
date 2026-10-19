@@ -1,0 +1,60 @@
+[
+  {
+    "Type": "CurveLinearColorAtlas",
+    "Name": "CA_Tutorial",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CurveLinearColorAtlas'",
+    "Package": "/Game/Xrd777/UI/Camp/Tutorial/Curve/CA_Tutorial",
+    "Properties": {
+      "GradientCurves": [
+        {
+          "ObjectName": "CurveLinearColor'CRV_TutorialBattleCurve'",
+          "ObjectPath": "/Game/Xrd777/UI/Camp/Tutorial/Curve/CRV_TutorialBattleCurve.0"
+        },
+        {
+          "ObjectName": "CurveLinearColor'CRV_TutorialCombineCurve'",
+          "ObjectPath": "/Game/Xrd777/UI/Camp/Tutorial/Curve/CRV_TutorialCombineCurve.0"
+        },
+        {
+          "ObjectName": "CurveLinearColor'CRV_TutorialDailyCurve'",
+          "ObjectPath": "/Game/Xrd777/UI/Camp/Tutorial/Curve/CRV_TutorialDailyCurve.0"
+        },
+        {
+          "ObjectName": "CurveLinearColor'CRV_TutorialDictionaryCurve'",
+          "ObjectPath": "/Game/Xrd777/UI/Camp/Tutorial/Curve/CRV_TutorialDictionaryCurve.0"
+        },
+        {
+          "ObjectName": "CurveLinearColor'CRV_TutorialDungeonCurve'",
+          "ObjectPath": "/Game/Xrd777/UI/Camp/Tutorial/Curve/CRV_TutorialDungeonCurve.0"
+        },
+        {
+          "ObjectName": "CurveLinearColor'CRV_TutorialSystemCurve'",
+          "ObjectPath": "/Game/Xrd777/UI/Camp/Tutorial/Curve/CRV_TutorialSystemCurve.0"
+        }
+      ],
+      "ImportedSize": {
+        "X": 256,
+        "Y": 256
+      },
+      "LightingGuid": "299F881D-472B33C2-0BA5B38D-F7BEE61B"
+    },
+    "SizeX": 256,
+    "SizeY": 256,
+    "PackedData": 1,
+    "PixelFormat": "PF_FloatRGBA",
+    "FirstMipToSerialize": 0,
+    "Mips": [
+      {
+        "BulkData": {
+          "BulkDataFlags": "BULKDATA_SingleUse | BULKDATA_ForceInlinePayload",
+          "ElementCount": 524288,
+          "SizeOnDisk": 524288,
+          "OffsetInFile": "0x80F43"
+        },
+        "SizeX": 256,
+        "SizeY": 256,
+        "SizeZ": 1
+      }
+    ]
+  }
+]

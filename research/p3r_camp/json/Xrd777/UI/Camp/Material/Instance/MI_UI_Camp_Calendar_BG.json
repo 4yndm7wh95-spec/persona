@@ -1,0 +1,157 @@
+[
+  {
+    "Type": "MaterialInstanceConstant",
+    "Name": "MI_UI_Camp_Calendar_BG",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MaterialInstanceConstant'",
+    "Package": "/Game/Xrd777/UI/Camp/Material/Instance/MI_UI_Camp_Calendar_BG",
+    "Properties": {
+      "Parent": {
+        "ObjectName": "Material'MM_UI_Camp_Calendar_BG'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/Material/MasterMaterials/MM_UI_Camp_Calendar_BG.0"
+      },
+      "ScalarParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "A_Threshold",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.928275,
+          "ExpressionGUID": "49F43C02-4CE5DD59-7ABDFCA8-D4528E07"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "B_Threshold",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.061907,
+          "ExpressionGUID": "0F8D95DF-442A5BA2-E028E18D-4EA87AA9"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "Blur",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.002,
+          "ExpressionGUID": "E964BF28-46C42A1A-99E2D99C-FA4201E0"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "C_Threshold",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.28958,
+          "ExpressionGUID": "1B792473-4EE9836E-A314C9A6-653F34AA"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "Contrast",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.199999,
+          "ExpressionGUID": "C1EEFD4B-49C6392A-0CC522A2-2C625627"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "D_Threshold",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.109993,
+          "ExpressionGUID": "002A379C-4A3F1E24-9AB0D1B2-54E1DD8E"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "E_Threshold",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.66685,
+          "ExpressionGUID": "A313A5C4-40F781E1-7574029B-63BD8C9B"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "RefractionDepthBias",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.0,
+          "ExpressionGUID": "00000000-00000000-00000000-00000000"
+        }
+      ],
+      "VectorParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "GradationA",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "R": 0.223882,
+            "G": 0.433802,
+            "B": 0.595833,
+            "A": 0.0,
+            "Hex": "82B0CB"
+          },
+          "ExpressionGUID": "0721CF73-4B014B98-5ACD869A-6CB88728"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "GradationB",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "R": 0.0,
+            "G": 0.008021,
+            "B": 0.308333,
+            "A": 1.0,
+            "Hex": "001697"
+          },
+          "ExpressionGUID": "DC3D6EF5-454B7F88-2B1FC7B3-329C8B23"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "MultipleBulePanel",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "R": 0.343992,
+            "G": 0.720229,
+            "B": 1.0,
+            "A": 0.8,
+            "Hex": "CC9FDDFF"
+          },
+          "ExpressionGUID": "5133B1C0-465EFD2D-482186B5-FCC65F74"
+        }
+      ],
+      "BasePropertyOverrides": {
+        "BlendMode": "BLEND_Translucent",
+        "ShadingModel": "MSM_Unlit",
+        "OpacityMaskClipValue": 0.3333
+      },
+      "CachedReferencedTextures": [
+        {
+          "ObjectName": "CurveLinearColorAtlas'CA_UI_Camp_Calendar'",
+          "ObjectPath": "/Game/Xrd777/UI/Camp/Material/Curve/CA_UI_Camp_Calendar.0"
+        },
+        {
+          "ObjectName": "TextureRenderTarget2D'RT_Temp1'",
+          "ObjectPath": "/Game/Xrd777/Kernel/Textures/RT_Temp1.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_UI_Common_Dummy_00_Alp'",
+          "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00_Alp.0"
+        },
+        null
+      ]
+    },
+    "LoadedMaterialResources": []
+  }
+]
