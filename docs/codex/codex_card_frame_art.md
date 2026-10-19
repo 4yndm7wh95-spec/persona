@@ -11,7 +11,7 @@
    - remote 指向 github.com/4yndm7wh95-spec/persona；
    - 仓库里有 mod\P3Makoto.json。
 2. 所有 git 命令都加 -c safe.directory=<repo>。
-3. 执行 git -c safe.directory=<repo> status -sb。有进行中的合并或已跟踪文件的未提交改动就停下来报告；未跟踪的 art/treasure_hands/、docs/qa/v0.14.69/、mod/_build/ 原样保留、忽略它们继续（不要移动、删除或提交）。
+3. 执行 git -c safe.directory=<repo> status -sb。有进行中的合并或已跟踪文件的未提交改动就停下来报告；未跟踪的 art/treasure_hands/、docs/qa/v0.14.69/、mod/_build/、mod_build/、art/p3menu_system/ref/menu_transition_frames_020-107/frames/、research/p3r_camp/（另一个会话正在导出、还没提交）原样保留、忽略它们继续（不要移动、删除或提交）。
 4. fetch：
    git -c safe.directory=<repo> -c http.version=HTTP/1.1 -c http.lowSpeedLimit=0 -c http.lowSpeedTime=999999 fetch origin claude/amazing-darwin-b00arn
    失败时分别等 5 / 10 / 20 / 40 秒重试，最多 4 次。
