@@ -176,16 +176,16 @@ public static class CardFrameSkin
 			}
 			Font baseFont = serif ?? Typo.Cinzel;
 			t.AddThemeFontOverride("font", new FontVariation { BaseFont = baseFont, SpacingGlyph = serif != null ? 2 : 1, Fallbacks = new Godot.Collections.Array<Font> { orig } });
-			// 用户选 C：白字 + 细深蓝描边 + 轻微下投影（比原版的粗描边细很多）
-			t.AddThemeConstantOverride("outline_size", 5);
-			t.AddThemeConstantOverride("shadow_outline_size", 5);
+			// 用户选 C：白字 + 深蓝描边；v0.14.84（用户：银白横幅上白字看不清）描边加粗加深，再用投影做字后面一圈深色柔光，任何底色上都清楚
+			t.AddThemeConstantOverride("outline_size", 8);
+			t.AddThemeConstantOverride("shadow_outline_size", 22);
 			t.AddThemeConstantOverride("shadow_offset_x", 0);
-			t.AddThemeConstantOverride("shadow_offset_y", 2);
-			t.AddThemeColorOverride("font_shadow_color", new Color(0f, 0f, 0f, 0.35f));
+			t.AddThemeConstantOverride("shadow_offset_y", 0);
+			t.AddThemeColorOverride("font_shadow_color", new Color(0.02f, 0.05f, 0.12f, 0.55f));
 		}
 		// 升级后沿用原版"绿色卡名"的约定，换成和塔罗卡框搭的浅青绿
 		t.AddThemeColorOverride("font_color", m.IsUpgraded ? new Color(0.62f, 1f, 0.78f) : Colors.White);
-		t.AddThemeColorOverride("font_outline_color", new Color(0.07f, 0.14f, 0.24f));
+		t.AddThemeColorOverride("font_outline_color", new Color(0.03f, 0.07f, 0.14f));
 	}
 
 	/// <summary>卡框下沿正中的数字牌：场景坐标 (-42, 183) ~ (42, 215)，和 tools/ui/card_compose.py 的 "arcana" 一致。</summary>
