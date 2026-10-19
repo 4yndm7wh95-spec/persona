@@ -25,6 +25,7 @@ internal static class IdleWarmup
 		"res://p3makoto/pile/pile_skel_data.tres", "res://p3makoto/pile_deck/pile_deck_skel_data.tres",
 		"res://p3makoto/pile_discard/pile_discard_skel_data.tres", "res://p3makoto/pile_exhaust/pile_exhaust_skel_data.tres",
 		"res://p3makoto/portrait/portrait_skel_data.tres",
+		"@card frame",   // v0.14.88：塔罗卡框 / 重绘卡图 / 卡名字体（打开牌堆第一次会卡一下）
 		// v0.14.68：设置界面（第一次打开卡了约 0.9s：三张 1920×1080 立绘解码 + 三个新着色器编译）
 	}.Concat(SystemJobs()));
 
@@ -150,6 +151,11 @@ internal static class IdleWarmup
 			{
 				tiny.AddChild(new ColorRect { Size = new Vector2(1000f, 1000f), Material = new ShaderMaterial { Shader = sh }, MouseFilter = Control.MouseFilterEnum.Ignore });
 			}
+			return;
+		}
+		if (path == "@card frame")
+		{
+			P3Makoto.Scenes.CardFrameSkin.Warm(tiny);
 			return;
 		}
 		if (path == "@system type")

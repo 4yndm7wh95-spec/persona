@@ -133,11 +133,102 @@ public static class CardFrameSkin
 		}
 	}
 
-	private static Font? _titleZh, _titleZht;
+	private static Font? _titleBase;
+	private static readonly Dictionary<ulong, FontVariation> TitleFonts = new();
+
+	/// <summary>
+	/// 卡名用的字体（只加载一次）：
+	/// 简体中文 = 霞鹜文楷 Bold（OFL；v0.14.88 用户：思源宋体太板正，从候选里选了文楷），只打包储君卡名用到的 212 个字（88KB，p3makoto/fonts/LXGWWenKai-Bold-CardTitles.ttf）；
+	/// 繁体中文 = 游戏自带思源宋体 TC（文楷子集没有繁体字）；其他语言 = Cinzel。缺字都回退到原字体。
+	/// </summary>
+	private static Font TitleBase()
+	{
+		if (_titleBase == null)
+		{
+			string loc = TranslationServer.GetLocale().ToLowerInvariant();
+			bool zh = loc.StartsWith("zh");
+			bool zht = zh && (loc.Contains("tw") || loc.Contains("hk") || loc.Contains("hant") || loc.Contains("zht"));
+			if (zh && !zht)
+			{
+				FontFile f = new();
+				if (f.LoadDynamicFont("res://p3makoto/fonts/LXGWWenKai-Bold-CardTitles.ttf") == Error.Ok)
+				{
+					_titleBase = f;
+				}
+			}
+			if (_titleBase == null && zht && ResourceLoader.Exists("res://fonts/zht/SourceHanSerifTC-Bold.otf"))
+			{
+				_titleBase = ResourceLoader.Load<Font>("res://fonts/zht/SourceHanSerifTC-Bold.otf");
+			}
+			_titleBase ??= Typo.Cinzel;
+		}
+		return _titleBase;
+	}
+
+	/// <summary>
+	/// v0.14.88（用户：打开牌堆等有新卡面的地方会卡一下）：卡名字体全局共用一个 FontVariation（以前每张卡 new 一个，
+	/// 每个新实例都要重新排版 / 栅格化字形，牌一多就卡）；按原字体（缺字回退用）各缓存一份。
+	/// </summary>
+	private static Font TitleFont(Font orig)
+	{
+		ulong key = orig.GetInstanceId();
+		if (!TitleFonts.TryGetValue(key, out FontVariation? fv))
+		{
+			fv = new FontVariation { BaseFont = TitleBase(), SpacingGlyph = 1, Fallbacks = new Godot.Collections.Array<Font> { orig } };
+			TitleFonts[key] = fv;
+		}
+		return fv;
+	}
+
+	/// <summary>储君卡名用到的全部汉字（localization/zhs/cards.json，含君王之剑和 "+"），预热时先栅格化。</summary>
+	private const string TitleChars = "+一七上下世中之事产人传伽位体何倒偏僭光共冲决冷凝击刀刃切划列创利券前剑割力助印去召向君品喜器国圣在地型墙大天太头好如子宇宙定导封射尘就崇序库座引彗形彩征御微态慨慷成战所打承抉护招拜择拳指捐授撞收改政敌斗新无既时明星映暗暴月服权架柱此武汇洞流淡淬溢漠火灭炉炸点炼熔爆独王环甚生界白盾矛破砸碰秘移穹空筹篷类粒纪绕群耀者胜脉自荟萃葬蓝藏虚视言谱质资超越踢踪轨轰辉辐迫迹追送造道量钻铸锋锤锻长间防阳际降陨隐集雨霸面项预马驾鸣黑！，";
+
+	/// <summary>
+	/// v0.14.88 空闲预热（IdleWarmup "@card frame"）：卡框 / 卡图贴图先加载并在极小的画布上画一次（上传显存），
+	/// 卡名字体先加载、把所有卡名用到的字在常用字号下画一遍（栅格化进字形缓存），阿卡纳数字也画一遍。打开牌堆时就不用现做。
+	/// </summary>
+	public static void Warm(Node2D tiny)
+	{
+		ulong t0 = Time.GetTicksUsec();
+		var paths = new List<string> { Dir + "arcana_tab.png" };
+		foreach (string kind in new[] { "attack", "skill", "power" })
+		{
+			paths.Add(Dir + $"card_frame_{kind}_s.png");
+			foreach (string r in new[] { "common", "uncommon", "rare" })
+			{
+				paths.Add(Dir + $"card_portrait_border_{kind}_{r}.png");
+			}
+		}
+		foreach (string r in new[] { "common", "uncommon", "rare" })
+		{
+			paths.Add(Dir + $"card_portrait_border_plaque_{r}.png");
+			BannerTex(r);
+		}
+		foreach (string id in Arcana.Keys)
+		{
+			paths.Add($"res://p3makoto/cards/{id}.png");
+		}
+		float x = 0f;
+		foreach (string p in paths)
+		{
+			if (Tex(p) is Texture2D tex)
+			{
+				tiny.AddChild(new Sprite2D { Texture = tex, Position = new Vector2(x, 0f) });
+				x += 8f;
+			}
+		}
+		Font font = TitleBase();
+		for (int size = 16; size <= 26; size += 2)
+		{
+			tiny.AddChild(new Label { Text = TitleChars, LabelSettings = new LabelSettings { Font = font, FontSize = size, OutlineSize = 6, ShadowSize = 6 }, Position = new Vector2(0f, size * 2f) });
+		}
+		tiny.AddChild(new Label { Text = "0 I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII XIX XX XXI", LabelSettings = new LabelSettings { Font = Typo.Cinzel, FontSize = 17, OutlineSize = 4 } });
+		GD.Print($"{ModEntry.Tag} perf card frame warm {(Time.GetTicksUsec() - t0) / 1000f:0.0}ms ({paths.Count} textures)");
+	}
 
 	/// <summary>
 	/// 卡名（用户：原来的字体丑）：衬线白字 + 细深蓝描边（用户在三种写法里选的 C），不要原版的粗描边。
-	/// 中文用游戏自带的思源宋体（fonts/zhs、zht），其他语言用 Cinzel（缺字回退到原字体）；升级后的卡沿用原版"绿色"的约定，用浅青绿。
+	/// 字体见 TitleBase（简中霞鹜文楷 / 繁中思源宋体 / 其他 Cinzel）；升级后的卡沿用原版"绿色"的约定，用浅青绿。
 	/// NCard 复用给别的卡时（m = null）还原原版的字体、颜色、描边、阴影。
 	/// </summary>
 	private static void TitleStyle(NCard card, CardModel? m)
@@ -167,16 +258,7 @@ public static class CardFrameSkin
 			t.SetMeta("p3_shadow_outline", t.GetThemeConstant("shadow_outline_size"));
 			t.SetMeta("p3_sx", t.GetThemeConstant("shadow_offset_x"));
 			t.SetMeta("p3_sy", t.GetThemeConstant("shadow_offset_y"));
-			string loc = TranslationServer.GetLocale().ToLowerInvariant();
-			bool zht = loc.StartsWith("zh") && (loc.Contains("tw") || loc.Contains("hk") || loc.Contains("hant") || loc.Contains("zht"));
-			string path = zht ? "res://fonts/zht/SourceHanSerifTC-Bold.otf" : "res://fonts/zhs/SourceHanSerifSC-Bold.otf";
-			Font? serif = null;
-			if (loc.StartsWith("zh") && ResourceLoader.Exists(path))
-			{
-				serif = zht ? (_titleZht ??= ResourceLoader.Load<Font>(path)) : (_titleZh ??= ResourceLoader.Load<Font>(path));
-			}
-			Font baseFont = serif ?? Typo.Cinzel;
-			t.AddThemeFontOverride("font", new FontVariation { BaseFont = baseFont, SpacingGlyph = serif != null ? 2 : 1, Fallbacks = new Godot.Collections.Array<Font> { orig } });
+			t.AddThemeFontOverride("font", TitleFont(orig));
 			// 用户选 C：白字 + 深蓝描边 + 轻投影；v0.14.85（v0.14.84 用投影做的"柔光"边缘太硬）：字后面另放一块羽化的深色椭圆（见 Shade）
 			t.AddThemeConstantOverride("outline_size", 6);
 			t.AddThemeConstantOverride("shadow_outline_size", 6);
