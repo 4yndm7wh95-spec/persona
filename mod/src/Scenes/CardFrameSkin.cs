@@ -136,8 +136,8 @@ public static class CardFrameSkin
 	private static Font? _titleZh, _titleZht;
 
 	/// <summary>
-	/// 卡名（用户：原来的字体丑）：像塔罗牌的铭牌 —— 金属横幅上刻出来的深色衬线字，不要原版的粗描边。
-	/// 中文用游戏自带的思源宋体（fonts/zhs、zht），其他语言用 Cinzel（缺字回退到原字体）；升级后的卡沿用原版"绿色"的约定，用深绿。
+	/// 卡名（用户：原来的字体丑）：衬线白字 + 细深蓝描边（用户在三种写法里选的 C），不要原版的粗描边。
+	/// 中文用游戏自带的思源宋体（fonts/zhs、zht），其他语言用 Cinzel（缺字回退到原字体）；升级后的卡沿用原版"绿色"的约定，用浅青绿。
 	/// NCard 复用给别的卡时（m = null）还原原版的字体、颜色、描边、阴影。
 	/// </summary>
 	private static void TitleStyle(NCard card, CardModel? m)
@@ -176,14 +176,16 @@ public static class CardFrameSkin
 			}
 			Font baseFont = serif ?? Typo.Cinzel;
 			t.AddThemeFontOverride("font", new FontVariation { BaseFont = baseFont, SpacingGlyph = serif != null ? 2 : 1, Fallbacks = new Godot.Collections.Array<Font> { orig } });
-			t.AddThemeConstantOverride("outline_size", 0);
-			t.AddThemeConstantOverride("shadow_outline_size", 0);
+			// 用户选 C：白字 + 细深蓝描边 + 轻微下投影（比原版的粗描边细很多）
+			t.AddThemeConstantOverride("outline_size", 5);
+			t.AddThemeConstantOverride("shadow_outline_size", 5);
 			t.AddThemeConstantOverride("shadow_offset_x", 0);
-			t.AddThemeConstantOverride("shadow_offset_y", 1);
-			t.AddThemeColorOverride("font_shadow_color", new Color(1f, 1f, 1f, 0.55f));   // 浅色压印：字像刻进金属里
+			t.AddThemeConstantOverride("shadow_offset_y", 2);
+			t.AddThemeColorOverride("font_shadow_color", new Color(0f, 0f, 0f, 0.35f));
 		}
-		Color ink = m.IsUpgraded ? new Color(0.04f, 0.3f, 0.18f) : m.Rarity == CardRarity.Rare ? new Color(0.24f, 0.17f, 0.04f) : new Color(0.07f, 0.14f, 0.24f);
-		t.AddThemeColorOverride("font_color", ink);
+		// 升级后沿用原版"绿色卡名"的约定，换成和塔罗卡框搭的浅青绿
+		t.AddThemeColorOverride("font_color", m.IsUpgraded ? new Color(0.62f, 1f, 0.78f) : Colors.White);
+		t.AddThemeColorOverride("font_outline_color", new Color(0.07f, 0.14f, 0.24f));
 	}
 
 	/// <summary>卡框下沿正中的数字牌：场景坐标 (-42, 183) ~ (42, 215)，和 tools/ui/card_compose.py 的 "arcana" 一致。</summary>
