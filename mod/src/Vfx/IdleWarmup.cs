@@ -18,14 +18,14 @@ internal static class IdleWarmup
 {
 	private static readonly Queue<string> Jobs = new(new[]
 	{
-		"@pile shaders",
-		"@pile title", "@pile big type", "@pile chinese",
-		"res://p3makoto/ui/pile_deck.png", "res://p3makoto/ui/pile_discard.png", "res://p3makoto/ui/pile_exhaust.png",
-		"res://p3makoto/ui/butterfly_wing_l.png", "res://p3makoto/ui/butterfly_wing_r.png", "res://p3makoto/ui/butterfly_body.png",
-		"res://p3makoto/pile/pile_skel_data.tres", "res://p3makoto/pile_deck/pile_deck_skel_data.tres",
-		"res://p3makoto/pile_discard/pile_discard_skel_data.tres", "res://p3makoto/pile_exhaust/pile_exhaust_skel_data.tres",
-		"res://p3makoto/portrait/portrait_skel_data.tres",
+		// v0.14.89（实机日志：玩家很快开局，预热只跑了几项就进了战斗，第一次打开牌堆仍卡）：最常用、最重的排前面
 		"@card frame",   // v0.14.88：塔罗卡框 / 重绘卡图 / 卡名字体（打开牌堆第一次会卡一下）
+		"@pile shaders",
+		"res://p3makoto/pile/pile_skel_data.tres", "res://p3makoto/portrait/portrait_skel_data.tres",
+		"@pile title", "@pile big type", "@pile chinese",
+		"res://p3makoto/ui/butterfly_wing_l.png", "res://p3makoto/ui/butterfly_wing_r.png", "res://p3makoto/ui/butterfly_body.png",
+		"res://p3makoto/pile_deck/pile_deck_skel_data.tres", "res://p3makoto/pile_discard/pile_discard_skel_data.tres", "res://p3makoto/pile_exhaust/pile_exhaust_skel_data.tres",
+		"res://p3makoto/ui/pile_deck.png", "res://p3makoto/ui/pile_discard.png", "res://p3makoto/ui/pile_exhaust.png",
 		// v0.14.68：设置界面（第一次打开卡了约 0.9s：三张 1920×1080 立绘解码 + 三个新着色器编译）
 	}.Concat(SystemJobs()));
 
@@ -86,7 +86,9 @@ internal static class IdleWarmup
 	{
 		if (NGame.Instance?.MainMenu is CanvasItem menu && menu.IsVisibleInTree()) return true;
 		// 原版的地图单例；不再每 150ms 全树遍历找 NMapScreen。
-		return NRun.Instance != null && !CombatManager.Instance.IsInProgress && NMapScreen.Instance is NMapScreen map && GodotObject.IsInstanceValid(map) && map.IsOpen && map.IsVisibleInTree();
+		if (NRun.Instance != null && !CombatManager.Instance.IsInProgress && NMapScreen.Instance is NMapScreen map && GodotObject.IsInstanceValid(map) && map.IsOpen && map.IsVisibleInTree()) return true;
+		// v0.14.89：战斗里也做（每项 2~30ms，远低于打开牌堆的那一下）；牌堆等界面开着时 NCapstoneContainer.InUse 已经挡住
+		return NRun.Instance != null && CombatManager.Instance.IsInProgress;
 	}
 
 	private static void Stop()

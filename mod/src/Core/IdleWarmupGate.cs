@@ -8,6 +8,6 @@ internal sealed class IdleWarmupGate
 	{
 		if (!eligible) { since = null; return false; }
 		since ??= now;
-		return now - since.Value >= 800;
+		return now - since.Value >= 300;   // v0.14.89：800 → 300ms，十几项在主菜单停几秒就能做完
 	}
 }
