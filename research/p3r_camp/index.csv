@@ -38,7 +38,7 @@ P3R/Content/Astrea/UI/Camp/Param/DT_CampParamSkill.uasset,DataTable,,,2463,UData
 P3R/Content/Astrea/UI/Camp/Param/DT_CampParamStatus.uasset,DataTable,,,13440,UDataTable,yes,d_layout_or_polygon,yes
 P3R/Content/Astrea/UI/Camp/Param/DT_CampParamSystem.uasset,DataTable,,,5496,UDataTable,yes,d_layout_or_polygon,yes
 P3R/Content/Astrea/UI/Camp/Param/DT_CampParamTop.uasset,DataTable,,,1713,UDataTable,yes,d_layout_or_polygon,yes
-P3R/Content/Astrea/UI/Camp/Root/Plg/PLG_UI_Camp.uasset,PLG_…,,,1828,UObject,no,d_layout_or_polygon,no
+P3R/Content/Astrea/UI/Camp/Root/Plg/PLG_UI_Camp.uasset,PLG_…,,,1828,UObject,yes,d_layout_or_polygon,yes
 P3R/Content/Astrea/UI/Camp/Root/Texture/SPR_UI_Camp.uasset,other,,,587596,UObject,no,a_root_or_character,no
 P3R/Content/Astrea/UI/Camp/Root/Texture/SPR_UI_Camp_Ex.uasset,other,,,588339,UObject,no,a_root_or_character,no
 P3R/Content/Astrea/UI/Camp/Root/Texture/SPR_UI_Camp_Theurgia.uasset,other,,,104237,UObject,no,a_root_or_character,no
@@ -1970,8 +1970,8 @@ P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_29.uasset,ot
 P3R/Content/Xrd777/UI/Camp/Root/Material/MM_UI_AllMask.uasset,Material,,,97505,UMaterial,yes,a_root_or_character,yes
 P3R/Content/Xrd777/UI/Camp/Root/Material/MM_UI_Camp_Wave.uasset,Material,,,108974,UMaterial,yes,a_root_or_character,yes
 P3R/Content/Xrd777/UI/Camp/Root/Material/MM_UI_OneMask.uasset,Material,,,100216,UMaterial,yes,a_root_or_character,yes
-P3R/Content/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset,PLG_…,,,1874561,UObject,yes,d_layout_or_polygon,no
-P3R/Content/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp_Theurgia.uasset,PLG_…,,,173298,UObject,yes,d_layout_or_polygon,no
+P3R/Content/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset,PLG_…,,,1874561,UObject,yes,d_layout_or_polygon,yes
+P3R/Content/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp_Theurgia.uasset,PLG_…,,,173298,UObject,yes,d_layout_or_polygon,yes
 P3R/Content/Xrd777/UI/Camp/Root/Texture/SPR_UI_Camp.uasset,other,,,661728,UObject,yes,a_root_or_character,no
 P3R/Content/Xrd777/UI/Camp/Root/Texture/SPR_UI_Camp_Theurgia.uasset,other,,,105463,UObject,yes,a_root_or_character,no
 P3R/Content/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_00_texture.uasset,Texture2D,1024,1024,1049409,UTexture2D,yes,a_root_or_character,yes
