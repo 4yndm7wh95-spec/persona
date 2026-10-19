@@ -184,6 +184,16 @@ public static class PileFx
 			}
 		}
 
+		// v0.14.89：分段计时（日志 perf pile 一行里列出），定位第一次打开时卡在哪一块
+		var laps = new System.Text.StringBuilder();
+		ulong lapAt = Time.GetTicksUsec();
+		void lap(string what)
+		{
+			ulong n = Time.GetTicksUsec();
+			laps.Append($" {what}={(n - lapAt) / 1000f:0.0}");
+			lapAt = n;
+		}
+		lap("hide");
 		// ── 背景：圆孔从牌堆按钮那个角张开 ──
 		Vector2 from = L.Iris;
 		ShaderMaterial water = new() { Shader = Shaders.Underwater };
@@ -194,7 +204,9 @@ public static class PileFx
 		root.AddChild(bg);
 		float diag = Mathf.Sqrt(view.X * view.X / (view.Y * view.Y) + 1f) + 0.1f;
 		Fx.Animate(bg, 0.55, t => water.SetShaderParameter("radius", diag * Ease.OutCubic(t)));
+		lap("water");
 		Node2D bubbles = Bubbles(root, view, k);
+		lap("bubbles");
 
 		// ── 装饰 + 立绘（每个界面不同），整组从一侧滑进来 ──
 		Node2D right = new() { Position = new Vector2(700f * k * L.Side, 0f), Modulate = new Color(1f, 1f, 1f, 0f) };
@@ -213,10 +225,14 @@ public static class PileFx
 				break;
 			default:
 				Disc(right, L.Word, font, k, rx);
+				lap("disc");
 				butterfly = new PileButterfly(right, kind, k, rx, PorScale);
+				lap("butterfly");
 				Portrait(right, k, rx);
+				lap("portrait");
 				break;
 		}
+		lap("decor");
 		butterfly.AttachForeground(right);                 // 装饰底板 → 后景蓝蝶 → 立绘 → 前景蓝蝶；卡牌仍在整组之上。
 		float decorMs = (Time.GetTicksUsec() - buildStart) / 1000f;
 		Fx.After(right, 0.1, "pile right in", () => Fx.Animate(right, 0.5, t =>
@@ -1075,7 +1091,7 @@ public static class PileFx
 			flip = null;
 		};
 		Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.45f);
-		GD.Print($"{ModEntry.Tag} perf pile {kind} build {(Time.GetTicksUsec() - buildStart) / 1000f:0.0}ms (decor {decorMs:0.0}ms); idle warmup complete={IdleWarmup.Complete}");
+		GD.Print($"{ModEntry.Tag} perf pile {kind} build {(Time.GetTicksUsec() - buildStart) / 1000f:0.0}ms (decor {decorMs:0.0}ms;{laps}); idle warmup complete={IdleWarmup.Complete}");
 	}
 
 	// ── 点击特写 ──

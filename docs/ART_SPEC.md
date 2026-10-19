@@ -1600,6 +1600,13 @@ Grand.cs 里其余函数暂时保留不用。
 - 用户：先撤下来。SettingsSkin.Enabled = false（不挂、设置里的开关不显示、空闲预热不加载）；代码和素材保留。
 - 之后等 docs/codex/codex_p3r_camp_rip.md 把 P3R 原版营地菜单的贴图 / UIM 动画 / 布局导出来，照原版数据重做。
 
+### v0.14.89 牌堆第一次打开仍卡（实机日志）
+
+- 日志：预热只在主菜单 / 地图空闲时做、每项间隔 0.8s，玩家很快开局 —— 第一次打开抽牌堆时预热才做了几项（idle warmup complete=False），"@card frame" 排在最后根本没轮到。
+  另外牌堆界面自身搭建 52~79ms（decor 48~73ms），每次打开都有。
+- 修：预热顺序把卡框 / 牌堆着色器 / 立绘骨骼数据排最前；间隔 0.8 → 0.3s；战斗里也继续预热（牌堆等界面开着时不做）。
+  "perf pile … build" 日志加分段耗时（hide / water / bubbles / disc / butterfly / portrait / decor），下一份日志定位 decor 里具体哪块重。
+
 ### v0.14.88 卡面卡顿修复 + 卡名字体换霞鹜文楷
 
 - 卡顿（用户：打开牌堆等有新卡面的地方会卡一下，多几次就不卡）：原因是卡名字体每张卡 new 一个 FontVariation（每个实例重新排版 / 栅格化），
