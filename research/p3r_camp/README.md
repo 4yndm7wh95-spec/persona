@@ -3,13 +3,13 @@
 
 本节更新之前关于 PSA 超限动画的初次整理记录：oversize_animations.csv 中的 13 个原始 PSA 现已按原始字节流分块收录在 hero3d/animations_split/。每块为 19 MiB（最后一块为余数），原始文件未改写；12 个 27,145,600 字节的 PSA 各分为 2 块，56,491,840 字节的 SYSTEMTOP 分为 3 块，共 27 块。sha256.txt 为每个原文件记录 SHA-256 和分块数；本机已逐块串接计算并与源文件校验一致。
 
-本次分块追加 382,239,040 字节；营地 DataTable 补充 412 份、约 0.99 MB；当前目录约 486.86 MB。所有分块均小于 20 MB。定向水光效果与 PLG 多边形仍待补充。
+本次分块追加 382,239,040 字节；营地 DataTable 补充 412 份，根菜单 WaterLight 再补 60 个逐帧 UIM JSON。所有分块均小于 20 MB；未纳入的通用水光与 PLG 多边形仍待筛选。
 
 ## 结果与范围
 
 从本机 P3R pak 只读提取了营地菜单根界面和子菜单素材，以及用户补充要求的结城理实时 3D 角色资料。没有启动游戏，也没有修改游戏文件或已有仓库资源。
 
-本机完整候选集共 2,440 条，完整临时导出为 484,228,341 字节。仓库纳入 a（根菜单/主角营地动作）、b（各子菜单 UI）以及 `datatables/` 中全部 412 个营地 DataTable JSON；c（通用水光/遮罩效果）和 d 类 PLG 多边形仍只保留在 `index.csv` 清单中，`repo_exported=no` 表示尚未纳入。仓库提交目录中没有单个文件超过 20 MB。
+本机完整候选集共 2,440 条，完整临时导出为 484,228,341 字节。仓库纳入 a（根菜单/主角营地动作）、b（各子菜单 UI）、`datatables/` 中全部 412 个营地 DataTable JSON，以及 `waterfx/` 中根菜单直接引用的 60 个 WaterLight UIM 帧；其余通用 c 类效果与 d 类 PLG 多边形仍只保留在 `index.csv` 清单中，`repo_exported=no` 表示尚未纳入。仓库提交目录中没有单个文件超过 20 MB。
 
 |目录|内容|
 |---|---|
@@ -17,6 +17,7 @@
 |`tex/`|40 张 PNG 原始贴图与 7 张分目录浏览图；原尺寸与透明通道保留。|
 |`json/`|96 份根菜单/子菜单、材质及主角菜单动作的原始属性 JSON。|
 |`datatables/`|全部 412 个 `UI/Camp/` DataTable JSON（含语言目录），约 0.99 MB。|
+|`waterfx/`|营地根菜单 WaterLight 的 60 个单帧 UIM JSON；Caustics PNG 与 Wave 材质在 `tex/`、`json/`。|
 |`anim/`|6 份可展开查看的 UIM 网格逐帧数据。|
 |`tree/`|场景捕获、主角骨骼组件关系和可见 Widget Blueprint 调查结果。|
 |`hero3d/`|GLB 与 PSK 骨骼网格、受单文件大小限制筛出的 PSA 动画、材质参数 JSON、PNG 贴图。|
@@ -36,7 +37,7 @@
 |界面|找到的角色菜单动作 / UI 动画|备注|
 |---|---|---|
 |根菜单 / 入场|`CampTopStart`、`CampTopLoop`；`UIM_UI_Camp_In`、`UIM_UI_Camp_Loop_L`、光标入场/选中|UIM 入场 75 帧、循环 210 帧；原数据无 FPS。|
-|SKILL|`CampSkillStart`、`CampSkillLoop`；`UIM_UI_Camp_Skill_Gun_Loop`|另有多组 WaterLight 静态网格变体，归到 c 类，未纳入仓库。|
+|SKILL|`CampSkillStart`、`CampSkillLoop`；`UIM_UI_Camp_Skill_Gun_Loop`|根菜单 WaterLight a/b 的 60 个逐帧 UIM 已放入 `waterfx/uim/`；其他子页及通用效果仍未纳入。|
 |ITEM|`CampItemStart`、`CampItemLoop`|动作 JSON 保留；超限 PSA 循环不提交。|
 |EQUIP|`Campequip`、`CampequipLoop`、`CampequipUni01/02`|角色动作 JSON 保留；超限 PSA 循环不提交。|
 |STATUS|`CampSTATUSStart`、`CampSTATUSLoop`|同上。|
@@ -77,8 +78,8 @@
 
 ## 未纳入仓库的类别与限制
 
-- `datatables/` 已补齐索引中的 412 个营地 DataTable JSON。`index.csv` 中 844 条 c 类定向水光/遮罩候选与 21 条 d 类 PLG 候选尚未纳入，后续按用户要求继续筛选并控制体积。
-- PLG 三角网格的原始属性资源在命中清单中；按体积规则本次不提交 PLG JSON/抗锯齿 PNG。没有把它们伪装成已渲染资产。
+- `datatables/` 已补齐 412 个营地 DataTable JSON；`waterfx/` 已补充 60 个根菜单 WaterLight UIM 帧。`index.csv` 中剩余的通用 c 类效果与 21 条 d 类 PLG 候选尚未纳入，后续按用户要求继续筛选并控制体积。
+- PLG 三角网格的原始属性资源仍在命中清单中；尚未提交 PLG JSON/抗锯齿 PNG。没有把它们伪装成已渲染资产。
 - 1 个 pak 归档未挂载，可能含有本次无法检索的资源。
 - 没有导出音效；本次没有确认到可可靠归属营地菜单的独立音效名。
 

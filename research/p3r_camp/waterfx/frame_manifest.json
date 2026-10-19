@@ -1,0 +1,547 @@
+{
+  "source": "/Game/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_{a,b}_{00..29}",
+  "frame_rate": "not provided",
+  "note": "Each numbered UIM asset is one source frame; full geometry UVs, indices, and vertex-offset data are kept in the per-frame JSON.",
+  "frames": [
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_00",
+      "sequence": "a",
+      "frame": 0,
+      "vertex_count": 2000,
+      "polygon_count": 2499,
+      "index_count": 7497,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_00.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_01",
+      "sequence": "a",
+      "frame": 1,
+      "vertex_count": 2000,
+      "polygon_count": 2197,
+      "index_count": 6591,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_01.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_02",
+      "sequence": "a",
+      "frame": 2,
+      "vertex_count": 2000,
+      "polygon_count": 2211,
+      "index_count": 6633,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_02.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_03",
+      "sequence": "a",
+      "frame": 3,
+      "vertex_count": 2000,
+      "polygon_count": 2235,
+      "index_count": 6705,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_03.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_04",
+      "sequence": "a",
+      "frame": 4,
+      "vertex_count": 2000,
+      "polygon_count": 2202,
+      "index_count": 6606,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_04.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_05",
+      "sequence": "a",
+      "frame": 5,
+      "vertex_count": 2000,
+      "polygon_count": 2187,
+      "index_count": 6561,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_05.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_06",
+      "sequence": "a",
+      "frame": 6,
+      "vertex_count": 2000,
+      "polygon_count": 2443,
+      "index_count": 7329,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_06.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_07",
+      "sequence": "a",
+      "frame": 7,
+      "vertex_count": 2000,
+      "polygon_count": 2269,
+      "index_count": 6807,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_07.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_08",
+      "sequence": "a",
+      "frame": 8,
+      "vertex_count": 2000,
+      "polygon_count": 2175,
+      "index_count": 6525,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_08.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_09",
+      "sequence": "a",
+      "frame": 9,
+      "vertex_count": 2000,
+      "polygon_count": 2147,
+      "index_count": 6441,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_09.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_10",
+      "sequence": "a",
+      "frame": 10,
+      "vertex_count": 2000,
+      "polygon_count": 2155,
+      "index_count": 6465,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_10.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_11",
+      "sequence": "a",
+      "frame": 11,
+      "vertex_count": 2000,
+      "polygon_count": 2207,
+      "index_count": 6621,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_11.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_12",
+      "sequence": "a",
+      "frame": 12,
+      "vertex_count": 2000,
+      "polygon_count": 2186,
+      "index_count": 6558,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_12.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_13",
+      "sequence": "a",
+      "frame": 13,
+      "vertex_count": 2000,
+      "polygon_count": 2205,
+      "index_count": 6615,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_13.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_14",
+      "sequence": "a",
+      "frame": 14,
+      "vertex_count": 2000,
+      "polygon_count": 2183,
+      "index_count": 6549,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_14.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_15",
+      "sequence": "a",
+      "frame": 15,
+      "vertex_count": 2000,
+      "polygon_count": 2156,
+      "index_count": 6468,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_15.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_16",
+      "sequence": "a",
+      "frame": 16,
+      "vertex_count": 2000,
+      "polygon_count": 2164,
+      "index_count": 6492,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_16.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_17",
+      "sequence": "a",
+      "frame": 17,
+      "vertex_count": 2000,
+      "polygon_count": 2200,
+      "index_count": 6600,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_17.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_18",
+      "sequence": "a",
+      "frame": 18,
+      "vertex_count": 2000,
+      "polygon_count": 2180,
+      "index_count": 6540,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_18.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_19",
+      "sequence": "a",
+      "frame": 19,
+      "vertex_count": 2000,
+      "polygon_count": 2172,
+      "index_count": 6516,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_19.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_20",
+      "sequence": "a",
+      "frame": 20,
+      "vertex_count": 2000,
+      "polygon_count": 2176,
+      "index_count": 6528,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_20.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_21",
+      "sequence": "a",
+      "frame": 21,
+      "vertex_count": 2000,
+      "polygon_count": 2251,
+      "index_count": 6753,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_21.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_22",
+      "sequence": "a",
+      "frame": 22,
+      "vertex_count": 2000,
+      "polygon_count": 2213,
+      "index_count": 6639,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_22.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_23",
+      "sequence": "a",
+      "frame": 23,
+      "vertex_count": 2000,
+      "polygon_count": 2158,
+      "index_count": 6474,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_23.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_24",
+      "sequence": "a",
+      "frame": 24,
+      "vertex_count": 2000,
+      "polygon_count": 2174,
+      "index_count": 6522,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_24.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_25",
+      "sequence": "a",
+      "frame": 25,
+      "vertex_count": 2000,
+      "polygon_count": 2161,
+      "index_count": 6483,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_25.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_26",
+      "sequence": "a",
+      "frame": 26,
+      "vertex_count": 2000,
+      "polygon_count": 2166,
+      "index_count": 6498,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_26.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_27",
+      "sequence": "a",
+      "frame": 27,
+      "vertex_count": 2000,
+      "polygon_count": 2213,
+      "index_count": 6639,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_27.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_28",
+      "sequence": "a",
+      "frame": 28,
+      "vertex_count": 2000,
+      "polygon_count": 2180,
+      "index_count": 6540,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_28.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_a_29",
+      "sequence": "a",
+      "frame": 29,
+      "vertex_count": 2000,
+      "polygon_count": 2196,
+      "index_count": 6588,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_29.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_00",
+      "sequence": "b",
+      "frame": 0,
+      "vertex_count": 3000,
+      "polygon_count": 3336,
+      "index_count": 10008,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_00.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_01",
+      "sequence": "b",
+      "frame": 1,
+      "vertex_count": 3000,
+      "polygon_count": 3350,
+      "index_count": 10050,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_01.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_02",
+      "sequence": "b",
+      "frame": 2,
+      "vertex_count": 3000,
+      "polygon_count": 3404,
+      "index_count": 10212,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_02.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_03",
+      "sequence": "b",
+      "frame": 3,
+      "vertex_count": 3000,
+      "polygon_count": 3245,
+      "index_count": 9735,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_03.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_04",
+      "sequence": "b",
+      "frame": 4,
+      "vertex_count": 3000,
+      "polygon_count": 3903,
+      "index_count": 11709,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_04.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_05",
+      "sequence": "b",
+      "frame": 5,
+      "vertex_count": 3000,
+      "polygon_count": 3244,
+      "index_count": 9732,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_05.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_06",
+      "sequence": "b",
+      "frame": 6,
+      "vertex_count": 3000,
+      "polygon_count": 3199,
+      "index_count": 9597,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_06.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_07",
+      "sequence": "b",
+      "frame": 7,
+      "vertex_count": 3000,
+      "polygon_count": 3278,
+      "index_count": 9834,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_07.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_08",
+      "sequence": "b",
+      "frame": 8,
+      "vertex_count": 3000,
+      "polygon_count": 3474,
+      "index_count": 10422,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_08.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_09",
+      "sequence": "b",
+      "frame": 9,
+      "vertex_count": 3000,
+      "polygon_count": 3266,
+      "index_count": 9798,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_09.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_10",
+      "sequence": "b",
+      "frame": 10,
+      "vertex_count": 3000,
+      "polygon_count": 3456,
+      "index_count": 10368,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_10.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_11",
+      "sequence": "b",
+      "frame": 11,
+      "vertex_count": 3000,
+      "polygon_count": 3360,
+      "index_count": 10080,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_11.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_12",
+      "sequence": "b",
+      "frame": 12,
+      "vertex_count": 3000,
+      "polygon_count": 3343,
+      "index_count": 10029,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_12.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_13",
+      "sequence": "b",
+      "frame": 13,
+      "vertex_count": 3000,
+      "polygon_count": 3404,
+      "index_count": 10212,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_13.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_14",
+      "sequence": "b",
+      "frame": 14,
+      "vertex_count": 3000,
+      "polygon_count": 3337,
+      "index_count": 10011,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_14.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_15",
+      "sequence": "b",
+      "frame": 15,
+      "vertex_count": 3000,
+      "polygon_count": 3393,
+      "index_count": 10179,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_15.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_16",
+      "sequence": "b",
+      "frame": 16,
+      "vertex_count": 3000,
+      "polygon_count": 3472,
+      "index_count": 10416,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_16.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_17",
+      "sequence": "b",
+      "frame": 17,
+      "vertex_count": 3000,
+      "polygon_count": 3392,
+      "index_count": 10176,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_17.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_18",
+      "sequence": "b",
+      "frame": 18,
+      "vertex_count": 3000,
+      "polygon_count": 3356,
+      "index_count": 10068,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_18.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_19",
+      "sequence": "b",
+      "frame": 19,
+      "vertex_count": 3000,
+      "polygon_count": 3399,
+      "index_count": 10197,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_19.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_20",
+      "sequence": "b",
+      "frame": 20,
+      "vertex_count": 3000,
+      "polygon_count": 3410,
+      "index_count": 10230,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_20.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_21",
+      "sequence": "b",
+      "frame": 21,
+      "vertex_count": 3000,
+      "polygon_count": 3391,
+      "index_count": 10173,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_21.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_22",
+      "sequence": "b",
+      "frame": 22,
+      "vertex_count": 3000,
+      "polygon_count": 3562,
+      "index_count": 10686,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_22.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_23",
+      "sequence": "b",
+      "frame": 23,
+      "vertex_count": 3000,
+      "polygon_count": 3370,
+      "index_count": 10110,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_23.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_24",
+      "sequence": "b",
+      "frame": 24,
+      "vertex_count": 3000,
+      "polygon_count": 3403,
+      "index_count": 10209,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_24.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_25",
+      "sequence": "b",
+      "frame": 25,
+      "vertex_count": 3000,
+      "polygon_count": 3407,
+      "index_count": 10221,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_25.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_26",
+      "sequence": "b",
+      "frame": 26,
+      "vertex_count": 3000,
+      "polygon_count": 3407,
+      "index_count": 10221,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_26.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_27",
+      "sequence": "b",
+      "frame": 27,
+      "vertex_count": 3000,
+      "polygon_count": 3527,
+      "index_count": 10581,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_27.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_28",
+      "sequence": "b",
+      "frame": 28,
+      "vertex_count": 2996,
+      "polygon_count": 3525,
+      "index_count": 10575,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_28.json"
+    },
+    {
+      "asset": "UIM_UI_Camp_Top_WaterLight_b_29",
+      "sequence": "b",
+      "frame": 29,
+      "vertex_count": 3000,
+      "polygon_count": 3322,
+      "index_count": 9966,
+      "file": "Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_29.json"
+    }
+  ]
+}
