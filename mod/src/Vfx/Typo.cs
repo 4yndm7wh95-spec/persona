@@ -60,6 +60,25 @@ public static class Typo
 		}
 	}
 
+	private static Font? _cinzel;
+
+	/// <summary>v0.14.81 Cinzel Bold（OFL，罗马碑文体）：塔罗卡框底部的阿卡纳罗马数字（P3R 原版牌底的数字就是这种衬线大写）。读不到退回 Latin。</summary>
+	public static Font Cinzel
+	{
+		get
+		{
+			if (_cinzel == null)
+			{
+				FontFile f = new();
+				if (f.LoadDynamicFont("res://p3makoto/fonts/Cinzel-Bold.ttf") == Error.Ok)
+				{
+					_cinzel = f;
+				}
+			}
+			return _cinzel ?? Latin;
+		}
+	}
+
 	/// <summary>游戏自带的思源黑体粗体（正体，不斜切）；读不到用系统中文粗体。</summary>
 	public static Font CjkBold => _cjkBold ??= ResourceLoader.Load("res://fonts/jpn/NotoSansCJKjp-Bold.otf") as Font ?? Cjk;
 

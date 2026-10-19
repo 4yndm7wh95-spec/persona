@@ -1586,6 +1586,13 @@ Grand.cs 里其余函数暂时保留不用。
 - 点设置卡约 0.5s（用户：要即点即开、动画丝滑）：主菜单里设置界面藏着的时候，挂上 1.5s 后在后台把整套换皮提前搭好；空闲预热加一项"大号字栅格化"。
   日志里新增 "perf settings skin prebuild / build / intro frame"，还卡的话看这几行定位。
 
+### v0.14.81 储君卡牌：P3R 塔罗牌卡框
+
+- 卡框照 P3R 原版阿卡纳牌（art/p3r_tex/shuffle/T_FX_Arcana_01_Col.png）由 imagegen 画（docs/codex/codex_card_frame_art.md），tools/ui/frame_postprocess.py 对齐到原版小图的准确形状。
+- 游戏里（mod/src/Scenes/CardFrameSkin.cs）：NCard.Reload / UpdatePortrait 之后换掉卡框（按类型）、横幅 / 卡图边框 / 类型标签（按稀有度：银白 / 冰蓝 / 暗金），去掉原版 hsv 上色材质；
+  卡框下沿加阿卡纳罗马数字牌（Cinzel，升级后变金）；有重绘卡图的卡换卡图（p3makoto/cards/，目前 6 张）。只作用于储君卡池的普通 / 罕见 / 稀有卡；设置里可关。
+- 预览：tools/ui/card_compose.py（按 card.tscn 拼卡，--vanilla 和游戏截图对过）、tools/ui/card_frame_preview.py；真 Godot 渲染核对过 AtlasTexture margin、九宫格和字体。
+
 ## 待办（用户实机反馈，先记录）
 
 - P3R 主菜单打开动画（用户给的分镜 0.50~1.83s）：水面上有东西砸进来，带大片水花切入，水花散开后才看清是结城理倒着把头探进水里。之后找地方用（用户：先做牌堆，这个后面再做）。

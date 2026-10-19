@@ -25,6 +25,7 @@ public static class P3Settings
 		public bool PileScreen { get; set; } = true;      // 抽牌堆 / 弃牌堆界面（P3R 菜单风格）
 		public bool TipList { get; set; } = true;         // v0.14.66 角色状态说明：P3R 滚动列表
 		public bool SettingsSkin { get; set; } = true;    // v0.14.67 设置界面（P3R 主菜单风格）
+		public bool CardFrame { get; set; } = true;       // v0.14.81 储君卡牌的卡框（P3R 塔罗牌风格）
 	}
 
 	private static Data? _data;
@@ -89,4 +90,5 @@ public static class P3Settings
 	public static bool PileScreen => Current.PileScreen;
 	public static bool TipList => Current.TipList;
 	public static bool SettingsSkin => Current.SettingsSkin;
+	public static bool CardFrame => Current.CardFrame;
 }
