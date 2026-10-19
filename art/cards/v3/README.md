@@ -237,3 +237,23 @@ Makoto rear-facing at horizontal anvil, original reference action with RIGHT han
 ```
 
 生成来源：`exec-230754f1-72c8-44df-9901-6648914a01e0.png`。
+
+## Claude 复选（第 1 批定稿）
+
+用户让 Claude 选。选定文件已按下表覆盖 art/cards/v3/<名字>.png；卡牌大小对照见 preview/picked_claude.png。
+
+| 卡 | 选 | 理由 |
+|---|---|---|
+| strike_regent | a | 理的手握剑，主体清楚，原版方向和三道剑光都在 |
+| defend_regent | b | 塔罗牌当盾，P3R 感最强，结构仍是"人躲盾后挡三道光" |
+| falling_star | a | 陨星砸地，和原版构图一致；b 的火球悬空 |
+| venerate | a | 背景干净；b 的城堡剪影和紫带抢主体 |
+| big_bang | b | 橙色卡片换成塔罗牌 |
+| black_hole | a | 怪物换成蓝色暗影；b 的怪物还是原版配色 |
+| tyranny | b | 影时间的大月亮 + 跷腿的压迫感，P3R 感更强 |
+| the_smith | a | 砧台横线和原版一致；b 的碎裂形状偏乱 |
+
+## 画风调整（第 2 批起照做）
+
+- 第 1 批定稿的画风通过：干净的斜切大色块背景 + 一个大的 P3R 元素。第 2 批起把 strike_regent、defend_regent、tyranny、the_smith 四张选定图一起作为风格参考。
+- 避免 93 张全是一个蓝：按卡的类型给背景加一种第二色（只占一块斜切色带的面积）：攻击 = 原版的红 / 品红；技能 = 青 / 冰白；能力 = 影时间的黄绿月亮或墨绿。原版主色仍保留在主体特效上。
