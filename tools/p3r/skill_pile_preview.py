@@ -63,7 +63,9 @@ def layer_siro():
     im = Image.new('RGBA', (W, H)); d = ImageDraw.Draw(im)
     # 原版：水是一个尖朝下的 V 形 —— 左边界从左上角斜到底部 0.746 宽处，右边界从那里弯着翻到右边 0.38 高处（用户在原版截图上描的线）
     d.polygon([(0, 0), (0.055 * W, 0), (0.746 * W, H), (0, H)], fill=(244, 247, 252, 255))
-    d.polygon([(0.746 * W, H), (0.849 * W, 0.765 * H), (0.93 * W, 0.62 * H), (0.986 * W, 0.525 * H), (W, 0.47 * H), (W, H)], fill=(244, 247, 252, 255))
+    # 右边界用一条平滑的二次曲线（用户：折线拼接处冒出小尖角）
+    curve = [((1 - u) ** 2 * 0.746 * W + 2 * (1 - u) * u * 0.90 * W + u * u * W, (1 - u) ** 2 * H + 2 * (1 - u) * u * 0.66 * H + u * u * 0.42 * H) for u in np.linspace(0, 1, 40)]
+    d.polygon(curve + [(W, H)], fill=(244, 247, 252, 255))
     return im
 
 
@@ -143,8 +145,7 @@ for n in ONLY:
         SIRO_NOW = Image.new('RGBA', (W, H))
         SIRO_NOW.alpha_composite(lay, (int(-100 * (1 - p)), 0)) if p < 1 else SIRO_NOW.alpha_composite(lay)
         c, a, sil = hero(tp)
-        sp = prog('sil', tp)
-        dx, dy = HERO_DX + SIL_TO[0] * sp, -120 + SIL_TO[1] * sp     # 起点上移 120，落位后（+170）脸在画面下部露出（对照参考视频）
+        dx, dy = HERO_DX + SIL_TO[0], -120 + SIL_TO[1]     # 一步到位：直接放在原版 Silhouette 的落点（用户：入场后不要再被往下拽一下）
         c, a = shift(c, a, dx, dy)
         _, sil = shift(np.zeros((H, W, 3)), sil, dx, dy)
         # 白底在人物剪影处挖空（同 COMMU 的 HeroCut）：人物透明的地方透出的是水，不是白底
@@ -157,6 +158,8 @@ for n in ONLY:
         sh = np.asarray(Image.fromarray((sh * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(14))).astype(float) / 255
         sa = (sh * (1 - sil))[..., None]
         out_rgb = out_rgb * (1 - sa * SHADOW[1] * wa) + SHADOW[0] * (sa * SHADOW[1] * wa)
+        # 轮廓外沿落在水上的一圈窄阴影（同一个错开的剪影，深海军蓝）
+        out_rgb = out_rgb * (1 - sa * 0.5 * (1 - wa)) + np.array([0.02, 0.07, 0.25]) * (sa * 0.5 * (1 - wa))
         # 人物透明的地方（外套 / 头发暗部）直接透出水，不压暗、不填色（用户：和入水那段一样）；水上不投影，只有白底上有灰影
         out_rgb = out_rgb * (1 - a[..., None]) + c * a[..., None]
         # 水光加亮叠在人物和背景上（UI 之下）：人物和水融在一起，不显得是贴上去的 3D 模型；人物身上减半，保住外套的深色
