@@ -17,7 +17,10 @@ internal static class HeroStage
 	private static Stage? cached;
 	private static bool failed;
 
-	private static readonly string[] Images = { "T_PC0051_C002_00_Col.png", "T_PC0051_F000_00_Col.png", "T_PC0051_E000_00_Col.png", "T_Pp2001_030_0017.png", "T_Pp2001_Backside_00.png", "T_UI_Camp_Caustics_00.png", "commu_word.png",
+	private static readonly string[] Images = { "T_PC0051_C002_00_Col.png", "T_PC0051_F000_00_Col.png", "T_PC0051_E000_00_Col.png", "T_Pp2001_030_0017.png", "T_Pp2001_Backside_00.png", "T_UI_Camp_Caustics_00.png", "commu_word.png" };
+
+	/// <summary>v0.14.96：营地主菜单（牌组入水）的资源单独读，读不到只影响牌组，不连累抽牌堆的 COMMU。</summary>
+	private static readonly string[] DiveImages = {
 		"../dive/splash_00.png", "../dive/splash_01.png", "../dive/splash_02.png", "../dive/splash_03.png", "../dive/splash_04.png", "../dive/splash_05.png", "../dive/splash_06.png", "../dive/splash_07.png", "../dive/splash_08.png", "../dive/splash_09.png",
 		"../dive/mask_00.png", "../dive/mask_01.png", "../dive/mask_02.png", "../dive/mask_03.png", "../dive/mask_04.png", "../dive/mask_05.png", "../dive/mask_06.png", "../dive/mask_07.png", "../dive/mask_08.png", "../dive/mask_09.png" };
 
@@ -38,6 +41,7 @@ internal static class HeroStage
 		internal readonly List<(string Model, Node Scene)> Scenes = new();
 		internal readonly Dictionary<string, Clip> Clips = new(StringComparer.Ordinal);
 		internal float[] Warp = Array.Empty<float>();
+		internal string? DiveError;
 	}
 
 	/// <summary>v0.14.91（实机日志：主线程一次加载 ~150ms，选人界面掉帧）：在后台线程开始解析，可重复调用。</summary>
@@ -67,8 +71,22 @@ internal static class HeroStage
 				p.Clips.Add(name, new Clip(name, true));
 				p.Clips.Add("Card_" + name, new Clip("Card_" + name, false));
 			}
-			foreach (string name in TopNames) p.Clips.Add(name, new Clip(name, true));
-			p.Warp = Floats("dive/warp.bin", 75 * 10 * 17 * 2);
+			try
+			{
+				foreach (string file in DiveImages)
+				{
+					Image image = new();
+					if (image.LoadPngFromBuffer(Read(file[3..])) != Error.Ok || image.IsEmpty())
+						throw new InvalidOperationException("invalid dive texture: " + file);
+					p.Images.Add(file, image);
+				}
+				foreach (string name in TopNames) p.Clips.Add(name, new Clip(name, true));
+				p.Warp = Floats("dive/warp.bin", 75 * 10 * 17 * 2);
+			}
+			catch (Exception e)
+			{
+				p.DiveError = e.Message;   // 主线程装配时报警告；牌组退回原样式
+			}
 			return p;
 		});
 	}
@@ -86,6 +104,7 @@ internal static class HeroStage
 		{
 			stage.Load(prep!.GetAwaiter().GetResult());   // 预热没赶上时（很快就开了抽牌堆）在这里等后台解析完
 			cached = stage;
+			GD.Print($"{ModEntry.Tag} hero3d ready (dive {(stage.WarpData.Length > 0 ? "ok" : "unavailable")})");
 			return true;
 		}
 		catch (Exception e)
@@ -98,7 +117,7 @@ internal static class HeroStage
 
 	private static void Fail(Exception e)
 	{
-		if (!failed) GD.PushWarning($"[P3Makoto] hero3d unavailable; using portrait: {e.Message}");
+		if (!failed) GD.PushWarning($"[P3Makoto] hero3d unavailable; using portrait: {e}");   // 带调用栈，便于从日志定位
 		failed = true;
 	}
 
@@ -113,7 +132,8 @@ internal static class HeroStage
 		catch (Exception e)
 		{
 			cached!.Close();
-			Fail(e);
+			if (act == Act.Top) GD.PushWarning($"[P3Makoto] dive open failed: {e.Message}");   // 只牌组退回原样式
+			else Fail(e);
 			return false;
 		}
 	}
@@ -391,8 +411,16 @@ internal static class HeroStage
 			if (spinBones.Count == 0) throw new InvalidOperationException("card spin bone missing");
 			foreach (string name in MotionNames)
 				motions.Add(new Motion(name, p.Clips[name], p.Clips["Card_" + name], heroes, cards));
-			foreach (string name in TopNames)
-				topMotions.Add(new Motion(name, p.Clips[name], null, heroes, cards));
+			if (p.DiveError == null)
+			{
+				foreach (string name in TopNames)
+					topMotions.Add(new Motion(name, p.Clips[name], null, heroes, cards));
+			}
+			else
+			{
+				WarpData = Array.Empty<float>();
+				GD.PushWarning($"[P3Makoto] dive (deck pile) unavailable: {p.DiveError}");
+			}
 			seq = motions;
 			ShaderMaterial keyOut = new() { Shader = Shaders.HeroKeyOut };
 			Display.Material = keyOut;
@@ -481,6 +509,7 @@ internal static class HeroStage
 		{
 			Close();
 			Resize(view);
+			if (which == Act.Top && topMotions.Count == 0) throw new InvalidOperationException("dive assets unavailable");
 			act = which;
 			seq = which == Act.Top ? topMotions : motions;
 			foreach (Node3D c in cardScenes) c.Visible = which == Act.Commu;
