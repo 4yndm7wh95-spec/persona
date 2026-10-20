@@ -26,6 +26,7 @@ public static class P3Settings
 		public bool TipList { get; set; } = true;         // v0.14.66 角色状态说明：P3R 滚动列表
 		public bool SettingsSkin { get; set; } = true;    // v0.14.67 设置界面（P3R 主菜单风格）
 		public bool CardFrame { get; set; } = true;       // v0.14.81 储君卡牌的卡框（P3R 塔罗牌风格）
+		public bool DrawPileOrder { get; set; } = true;   // v0.14.98 抽牌堆按原版顺序排（SL 看抽牌顺序用）；false = 按类型分区
 	}
 
 	private static Data? _data;
