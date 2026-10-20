@@ -2,8 +2,8 @@
 （工具、AES 配置和方法沿用 research/p3r_camp/ 那次导出和 art/p3r_tex/README_v14.md；中间文件放 C:\Users\kkk\sts2_tools\p3r_pages_<日期>\。导出格式照 research/p3r_camp/commu_card/README.md 那次。）
 
 【背景】
-用户定的分工：弃牌堆 = 原版 ITEM 页，消耗堆 = 原版 SKILL 页；ESC 设置沿用已做好的入水动画，设置里四个分类各一套 UI 动画：
-游戏设置 = 原版 SYSTEM → CONFIG 页，音频设置 = CONFIG BGM 页，视频设置复用 ITEM 页，操作设置复用 SKILL 页（或抽牌堆的 COMMU 页）。
+用户定的分工：弃牌堆 = 原版 ITEM 页，消耗堆 = 原版 SKILL 页；暂停菜单点「设置」→ 入水动画 → 分类页（复用抽牌堆的 COMMU 页，只列 游戏 / 视频 / 音频 / 操作 四项）→ 每一类各一套不重样的 UI 动画：
+游戏设置 = 原版 SYSTEM → CONFIG 页，音频设置 = CONFIG BGM 页，视频设置复用 ITEM 页，操作设置复用 SKILL 页。
 现在仓库里只有这几页的人物动作（research/p3r_camp/hero3d/）、页级镜头偏移（DT_CampCameraTable）和版式 DataTable（Layout/），
 缺页面本身的 UIM 动画、贴图、PLG 字形和文字。research/p3r_camp/index.csv 里这些目录标的是 "no"（没导出），而且 index 每个目录只列了 60 行，实际文件可能更多。
 
