@@ -7,6 +7,55 @@ public static class Shaders
 {
 	private static Shader Make(string code) => new Shader { Code = code };
 
+	private static Shader? _heroFlat, _heroRamp, _heroOutline, _heroKeyOut;
+
+	// 与 tools/p3r/hero_render/render.gd 的 FLAT / RAMP / OUTLINE 一致，移除离线 mask_pass。
+	public static Shader HeroFlat => _heroFlat ??= Make(@"
+shader_type spatial;
+render_mode unshaded, cull_disabled;
+uniform vec3 col = vec3(1.0);
+void fragment() { ALBEDO = col; }
+");
+
+	public static Shader HeroRamp => _heroRamp ??= Make(@"
+shader_type spatial;
+render_mode unshaded, cull_disabled;
+uniform sampler2D tex : source_color, filter_linear;
+uniform vec3 c0 = vec3(0.02, 0.05, 0.30);
+uniform vec3 c1 = vec3(0.05, 0.30, 0.85);
+uniform vec3 c2 = vec3(0.50, 0.78, 1.0);
+uniform vec3 c3 = vec3(1.0);
+void fragment() {
+	vec4 t = texture(tex, UV);
+	float l = dot(t.rgb, vec3(0.333));
+	vec3 c = l < 0.33 ? mix(c0, c1, l / 0.33) : l < 0.66 ? mix(c1, c2, (l - 0.33) / 0.33) : mix(c2, c3, (l - 0.66) / 0.34);
+	ALBEDO = c;
+}
+");
+
+	public static Shader HeroOutline => _heroOutline ??= Make(@"
+shader_type spatial;
+render_mode unshaded, cull_front;
+uniform vec3 col = vec3(0.714, 0.769, 0.831);
+uniform float width = 0.004;
+void vertex() { VERTEX += NORMAL * width; }
+void fragment() { ALBEDO = col; }
+");
+
+	public static Shader HeroKeyOut => _heroKeyOut ??= Make(@"
+shader_type canvas_item;
+uniform vec4 key_color : source_color = vec4(0.0, 1.0, 0.0, 1.0);
+uniform float key_low = 0.25;
+uniform float key_high = 0.45;
+varying vec4 hero_modulate;
+void vertex() { hero_modulate = COLOR; }
+void fragment() {
+	vec4 t = texture(TEXTURE, UV);
+	float alpha = smoothstep(key_low, key_high, distance(t.rgb, key_color.rgb));
+	COLOR = vec4(t.rgb, t.a * alpha) * hero_modulate;
+}
+");
+
 	private static Shader? _ring;
 
 	/// <summary>冲击波圆环：radius 0~1，width 环宽，alpha 整体透明度。</summary>

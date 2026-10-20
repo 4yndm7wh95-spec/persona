@@ -20,6 +20,7 @@ internal static class IdleWarmup
 	{
 		// v0.14.89（实机日志：玩家很快开局，预热只跑了几项就进了战斗，第一次打开牌堆仍卡）：最常用、最重的排前面
 		"@card frame",   // v0.14.88：塔罗卡框 / 重绘卡图 / 卡名字体（打开牌堆第一次会卡一下）
+		"@hero3d",       // v0.14.90：原版 COMMU 模型 / 动作 / 材质，离屏渲染两帧。
 		"@pile shaders",
 		"res://p3makoto/pile/pile_skel_data.tres", "res://p3makoto/portrait/portrait_skel_data.tres",
 		"@pile title", "@pile big type", "@pile chinese",
@@ -158,6 +159,11 @@ internal static class IdleWarmup
 		if (path == "@card frame")
 		{
 			P3Makoto.Scenes.CardFrameSkin.Warm(tiny);
+			return;
+		}
+		if (path == "@hero3d")
+		{
+			if (!HeroStage.Warm(tiny)) failed++;
 			return;
 		}
 		if (path == "@system type")

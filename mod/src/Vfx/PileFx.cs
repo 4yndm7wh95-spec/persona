@@ -29,6 +29,7 @@ public static class PileFx
 	private const string PortraitPath = "res://p3makoto/ui/pile_portrait.png";
 	private const string PortraitSpine = "res://p3makoto/pile/pile_skel_data.tres";
 	private const float HeaderH = 58f;
+	public const float HeroShiftX = 0.22f;
 
 	/// <summary>v0.14.56：四个牌堆界面各有不同的版式和动画（用户：每个牌堆都要有不同的表现）。</summary>
 	public enum Kind { Draw, Discard, Exhaust, Deck }
@@ -146,6 +147,7 @@ public static class PileFx
 	public static void Rollback(Control screen)
 	{
 		Exits.Remove(screen.GetInstanceId());
+		if (screen.GetNodeOrNull(RootName) is Node root) HeroStage.Close(root);
 		screen.GetNodeOrNull(RootName)?.QueueFree();
 		foreach (string path in Hidden)
 		{
@@ -228,8 +230,13 @@ public static class PileFx
 				lap("disc");
 				butterfly = new PileButterfly(right, kind, k, rx, PorScale);
 				lap("butterfly");
-				Portrait(right, k, rx);
-				lap("portrait");
+				bool hero = HeroStage.Open(right, view, HeroShiftX * view.X * L.Side);
+				lap("hero3d");
+				if (!hero)
+				{
+					Portrait(right, k, rx);
+					lap("portrait");
+				}
 				break;
 		}
 		lap("decor");
@@ -470,6 +477,7 @@ public static class PileFx
 				{
 					hovered = it;
 					Audio.Sfx.Clip("Sys_Cursor", 0.35f);
+					if (kind == Kind.Draw) HeroStage.Kick();
 				}
 			};
 			h.Hitbox.MouseExited += () => { if (hovered == it) hovered = null; };
@@ -1059,6 +1067,7 @@ public static class PileFx
 				return;
 			}
 			exiting = true;
+			if (kind == Kind.Draw) HeroStage.Close(right);
 			exitT0 = Now();
 			butterfly.BeginExit(exitT0);
 			// 退场期间继续动画，只在这个即将销毁的界面上禁用鼠标。
@@ -1083,6 +1092,7 @@ public static class PileFx
 		};
 		root.TreeExiting += () =>
 		{
+			if (kind == Kind.Draw) HeroStage.Close(right);
 			Exits.Remove(sid);
 			tree.ProcessFrame -= Tick;
 			BindBack(false);
