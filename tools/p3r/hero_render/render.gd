@@ -91,6 +91,10 @@ func _initialize():
 		var s = load_glb(p)
 		if s == null: continue
 		w.add_child(s)
+		# 原版 DT_CampCameraTable 的页级角色偏移（UE cm → glTF m：x→x、z→y、y→−z）和偏航
+		if cfg.has("chara_pos"):
+			var cp = cfg["chara_pos"]; s.position = Vector3(cp[0], cp[2], -cp[1]) / 100.0
+		if cfg.has("chara_yaw"): s.rotation_degrees.y = cfg["chara_yaw"]
 		walk(s, func(n):
 			if n is Skeleton3D: skels.append(n)
 			if n is MeshInstance3D:
@@ -133,24 +137,29 @@ func _initialize():
 	else:
 		var f = cfg["look_from"]; var t = cfg["look_at"]; var u = cfg.get("up", [0, 1, 0])
 		cam.look_at_from_position(Vector3(f[0], f[1], f[2]), Vector3(t[0], t[1], t[2]), Vector3(u[0], u[1], u[2]))
-	var fr = cfg["frames"]
-	for f in range(fr[0], min(fr[1], anim["frames"] - 1) + 1, fr[2]): frames_todo.append(f)
+	if cfg.has("frame_list"):
+		frames_todo = cfg["frame_list"]
+	else:
+		var fr = cfg["frames"]
+		for f in range(fr[0], min(fr[1], anim["frames"] - 1) + 1, fr[2]): frames_todo.append(f)
 	DirAccess.make_dir_recursive_absolute(cfg["out"])
 
 func pose_skels(ss, an, dt, f):
-	var n = an["bones"].size(); f = min(f, an["frames"] - 1)
+	# f 可以是小数：相邻两帧插值（位置 lerp、旋转 slerp），和游戏里 HeroStage 一样
+	var n = an["bones"].size(); f = clamp(float(f), 0.0, an["frames"] - 1.0)
+	var fa = int(floor(f)); var fb = min(fa + 1, an["frames"] - 1); var t = f - fa
 	for s in ss:
 		for b in n:
 			var i = s.find_bone(an["bones"][b])
 			if i < 0: continue
-			var o = (f * n + b) * 7
-			s.set_bone_pose_position(i, Vector3(dt[o], dt[o + 1], dt[o + 2]))
-			s.set_bone_pose_rotation(i, Quaternion(dt[o + 3], dt[o + 4], dt[o + 5], dt[o + 6]).normalized())
+			var oa = (fa * n + b) * 7; var ob = (fb * n + b) * 7
+			s.set_bone_pose_position(i, Vector3(dt[oa], dt[oa + 1], dt[oa + 2]).lerp(Vector3(dt[ob], dt[ob + 1], dt[ob + 2]), t))
+			s.set_bone_pose_rotation(i, Quaternion(dt[oa + 3], dt[oa + 4], dt[oa + 5], dt[oa + 6]).normalized().slerp(Quaternion(dt[ob + 3], dt[ob + 4], dt[ob + 5], dt[ob + 6]).normalized(), t))
 
 func pose(f):
 	pose_skels(skels, anim, data, f)
 	if sc_names.size() > 0:
-		var n = sc_names.size(); var g = min(f, sc_data.size() / (n * 3) - 1)
+		var n = sc_names.size(); var g = min(int(f), sc_data.size() / (n * 3) - 1)
 		for s in skels:
 			for b in n:
 				var o = (g * n + b) * 3
@@ -169,8 +178,8 @@ func _process(_d):
 	if fi >= 0:
 		var img = root.get_texture().get_image()
 		if phase == 0:
-			img.save_png("%s/color_%03d.png" % [cfg["out"], frames_todo[fi]]); set_mask(true); phase = 1; wait = 2; return
-		img.save_png("%s/mask_%03d.png" % [cfg["out"], frames_todo[fi]]); set_mask(false); phase = 0
+			img.save_png(("%s/color_%04d.png" % [cfg["out"], fi]) if cfg.has("frame_list") else ("%s/color_%03d.png" % [cfg["out"], frames_todo[fi]])); set_mask(true); phase = 1; wait = 2; return
+		img.save_png(("%s/mask_%04d.png" % [cfg["out"], fi]) if cfg.has("frame_list") else ("%s/mask_%03d.png" % [cfg["out"], frames_todo[fi]])); set_mask(false); phase = 0
 	fi += 1
 	if fi >= frames_todo.size(): print("rendered ", frames_todo.size()); quit(); return
 	pose(frames_todo[fi]); wait = 2
