@@ -20,11 +20,12 @@ void fragment() {
 	vec4 t = texture(tex, UV);
 	float l = dot(t.rgb, vec3(0.333));
 	vec3 c = l < 0.25 ? mix(c0, c1, l / 0.25) : l < 0.6 ? mix(c1, c2, (l - 0.25) / 0.35) : mix(c2, c3, (l - 0.6) / 0.4);
-	float nl = dot(normalize(wn), normalize(vec3(-0.4, 0.6, 0.7)));
+	float side = FRONT_FACING ? 1.0 : -1.0;
+	float nl = dot(normalize(wn) * side, normalize(vec3(-0.4, 0.6, 0.7)));
 	float lit = smoothstep(-0.2 - 0.1, -0.2 + 0.1, nl);
 	c *= mix(shade, vec3(1.0), lit);
 	c = mix(c, vec3(0.0, 1.0, 0.0), 0.5 * (1.0 - lit));   // 暗部 50% 透出水（原版 RTShadowColor_Blend 0.5），用色键表示
-	float rim = pow(1.0 - clamp(dot(normalize(NORMAL), VIEW), 0.0, 1.0), 4.0);
+	float rim = pow(1.0 - abs(dot(normalize(NORMAL), VIEW)), 4.0);
 	c = mix(c, vec3(0.80, 0.94, 1.0), rim * 0.6);
 	ALBEDO = mask_pass ? vec3(0.0) : c;
 }

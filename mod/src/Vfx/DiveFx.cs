@@ -28,43 +28,54 @@ internal static class DiveFx
 		float sx = 1.06f * view.X / 961f, sy = 1.6f * view.Y / 949f;
 		TextureRect splash = new() { MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale };
 		root.AddChild(splash);
+		// v0.14.97（用户：入水特效帧率有点低）：原版水花只有 10 帧（约 19fps），相邻两帧交叉淡化；波浪逐帧之间插值，按屏幕刷新率走
+		TextureRect next = new() { MouseFilter = Control.MouseFilterEnum.Ignore, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale };
+		root.AddChild(next);
 		bg.SetShaderParameter("reveal", 0f);
 		bg.SetShaderParameter("warp_tex", warpTex);
 		HeroStage.SetWarp(warpTex, 0f);
 		ulong t0 = Time.GetTicksUsec();
-		int lastWarp = -1, lastSplash = -2;
+		int lastSplash = -2;
+		float[] frame = new float[17 * 10 * 2];
+		byte[] bytes = new byte[17 * 10 * 2 * 4];
 		bool done = false;
 		void Tick()
 		{
 			if (done) return;
-			if (!GodotObject.IsInstanceValid(root) || !GodotObject.IsInstanceValid(splash)) { Stop(); return; }
+			if (!GodotObject.IsInstanceValid(root) || !GodotObject.IsInstanceValid(splash) || !GodotObject.IsInstanceValid(next)) { Stop(); return; }
 			float t = (Time.GetTicksUsec() - t0) / 1_000_000f;
-			// 水花
-			int si = (int)(t / SplashStep);
+			// 水花：当前帧 + 下一帧按进度淡入
+			float fs = t / SplashStep;
+			int si = (int)fs;
+			float frac = fs - si;
+			float Alpha(int i) => i < 7 ? 1f : Mathf.Max(0f, 1f - (i - 6) / 4f);
+			void Place(TextureRect r, int i)
+			{
+				if (HeroStage.Tex($"splash_{i:00}.png") is not Texture2D tex) { r.Visible = false; return; }
+				r.Visible = true;
+				r.Texture = tex;
+				r.Size = new Vector2(tex.GetWidth() * sx, tex.GetHeight() * sy);
+				r.Position = new Vector2((view.X - r.Size.X) / 2f, -0.10f * view.Y);
+			}
 			if (si != lastSplash)
 			{
 				lastSplash = si;
-				if (si <= 9 && HeroStage.Tex($"splash_{si:00}.png") is Texture2D tex)
-				{
-					splash.Texture = tex;
-					splash.Size = new Vector2(tex.GetWidth() * sx, tex.GetHeight() * sy);
-					splash.Position = new Vector2((view.X - splash.Size.X) / 2f, -0.10f * view.Y);
-					splash.Modulate = new Color(1f, 1f, 1f, si < 7 ? 1f : 1f - (si - 6) / 4f);
-					if (HeroStage.Tex($"mask_{si:00}.png") is Texture2D mask) bg.SetShaderParameter("mask_tex", mask);
-				}
-				else splash.Visible = false;
+				if (si <= 9) Place(splash, si); else splash.Visible = false;
+				if (si + 1 <= 9) Place(next, si + 1); else next.Visible = false;
+				if (si <= 9 && HeroStage.Tex($"mask_{si:00}.png") is Texture2D mask) bg.SetShaderParameter("mask_tex", mask);
 			}
+			if (si <= 9) splash.Modulate = new Color(1f, 1f, 1f, Alpha(si) * (si + 1 <= 9 ? 1f - frac : 1f - frac));
+			if (si + 1 <= 9) next.Modulate = new Color(1f, 1f, 1f, Alpha(si + 1) * frac);
 			bg.SetShaderParameter("reveal", t >= Full ? 1f : 0f);
-			// 波浪
-			int wf = Math.Min((int)(t * WarpFps), (int)WarpFrames - 1);
-			if (wf != lastWarp)
-			{
-				lastWarp = wf;
-				byte[] bytes = new byte[17 * 10 * 2 * 4];
-				Buffer.BlockCopy(warp, wf * 17 * 10 * 2 * 4, bytes, 0, bytes.Length);
-				img.SetData(17, 10, false, Image.Format.Rgf, bytes);
-				warpTex.Update(img);
-			}
+			// 波浪：相邻两帧线性插值
+			float wfF = Mathf.Min(t * WarpFps, WarpFrames - 1);
+			int wa = (int)wfF, wb = Math.Min(wa + 1, (int)WarpFrames - 1);
+			float wt = wfF - wa;
+			const int n = 17 * 10 * 2;
+			for (int i = 0; i < n; i++) frame[i] = warp[wa * n + i] * (1f - wt) + warp[wb * n + i] * wt;
+			Buffer.BlockCopy(frame, 0, bytes, 0, bytes.Length);
+			img.SetData(17, 10, false, Image.Format.Rgf, bytes);
+			warpTex.Update(img);
 			float end = WarpFrames / WarpFps;
 			float on = t < end ? 1f : Mathf.Clamp(1f - (t - end) / WarpFade, 0f, 1f);
 			bg.SetShaderParameter("warp_on", on);
@@ -77,6 +88,7 @@ internal static class DiveFx
 			done = true;
 			tree.ProcessFrame -= Tick;
 			if (GodotObject.IsInstanceValid(splash)) splash.QueueFree();
+			if (GodotObject.IsInstanceValid(next)) next.QueueFree();
 			if (GodotObject.IsInstanceValid(bg)) { bg.SetShaderParameter("warp_on", 0f); bg.SetShaderParameter("reveal", 1f); }
 			HeroStage.SetWarp(null, 0f);
 		}

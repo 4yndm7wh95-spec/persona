@@ -10,7 +10,7 @@ namespace P3Makoto;
 public static class ModEntry
 {
 	public const string Tag = "[P3Makoto]";
-	public const string Version = "0.14.96";
+	public const string Version = "0.14.97";
 
 	public static void Init()
 	{
