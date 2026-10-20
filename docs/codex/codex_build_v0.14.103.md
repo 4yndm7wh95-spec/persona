@@ -1,5 +1,7 @@
 你在用户的 Windows 电脑上工作。任务：把 P3Makoto v0.14.103、音乐盒 P3MusicBox 1.1.3、测试工具 P3TestMod 1.2.2 编译、打包，安装到本机**两个**杀戮尖塔 2（0.107.1 正式版和 0.111 测试版），再用兼容检查工具对两个版本各检查一遍。只做编译、打包、安装、检查，不改任何代码。
 
+**先读 docs/codex/README.md，按里面的长期规则和「和 Claude 同时改代码」的合并规则来**：本地有你自己没提交的代码先提交 → fetch → merge（能快进就 --ff-only，否则 merge --no-edit，不 rebase）→ 编译 → 兼容检查通过后本地多了提交就 push。冲突拿不准就停下来报告。
+
 【两个游戏目录】
 - <G111> = C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2（以前编译用的那个）。
 - <G107> = C:\Users\kkk\Downloads\Slay the Spire 2。
