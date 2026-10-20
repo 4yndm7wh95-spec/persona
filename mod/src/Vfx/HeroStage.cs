@@ -29,9 +29,15 @@ internal static class HeroStage
 	private static readonly string[] Models = { "SK_PC0051_C002.glb", "SK_PC0051_F000.glb", "SK_PC0051_H000.glb", "SK_Pp2001_000.glb" };
 	private static readonly string[] MotionNames = { "CommuStart", "CommuListStart", "CommuListLoop", "CommuLoop", "CommuListCancel" };
 	private static readonly string[] TopNames = { "CampTopStart", "CampTopLoop" };
+	/// <summary>v0.14.101 弃牌堆 = 原版营地 ITEM 页：伸手（进入 3.33s → 循环 6.67s）；资源单独读，读不到只影响弃牌堆。</summary>
+	private static readonly string[] ItemNames = { "CampItemStart", "CampItemLoop" };
+	private const string ItemWord = "item_word.png";
 
-	/// <summary>舞台演哪一页：COMMU（抽牌堆：拿牌 → 松手，牌浮空自转）；Top（营地主菜单：倒入水 → 水下待机，牌组牌堆 / ESC 设置用，不显示牌）。</summary>
-	internal enum Act { Commu, Top }
+	/// <summary>原版 DT_CampParamCommon 的 Edit_Item_FillColor：ITEM 页人物几乎整个压成这个深海军蓝（不透水）。</summary>
+	private static readonly Color ItemFill = new(0.027746f, 0.082817f, 0.255208f);
+
+	/// <summary>舞台演哪一页：COMMU（抽牌堆：拿牌 → 松手，牌浮空自转）；Top（营地主菜单：倒入水 → 水下待机，牌组牌堆，不显示牌）；Item（弃牌堆：ITEM 页伸手，人物填深海军蓝）。</summary>
+	internal enum Act { Commu, Top, Item }
 	private static Task<Prepared>? prep;
 
 	/// <summary>后台线程里能做的部分：PNG 解码、GLB 解析 + 生成场景（还没进场景树）、动作数据读取校验。</summary>
@@ -41,7 +47,7 @@ internal static class HeroStage
 		internal readonly List<(string Model, Node Scene)> Scenes = new();
 		internal readonly Dictionary<string, Clip> Clips = new(StringComparer.Ordinal);
 		internal float[] Warp = Array.Empty<float>();
-		internal string? DiveError;
+		internal string? DiveError, ItemError;
 	}
 
 	/// <summary>v0.14.91（实机日志：主线程一次加载 ~150ms，选人界面掉帧）：在后台线程开始解析，可重复调用。</summary>
@@ -91,6 +97,18 @@ internal static class HeroStage
 			{
 				p.DiveError = e.Message;   // 主线程装配时报警告；牌组退回原样式
 			}
+			try
+			{
+				Image word = new();
+				if (word.LoadPngFromBuffer(Read("tex/" + ItemWord)) != Error.Ok || word.IsEmpty())
+					throw new InvalidOperationException("invalid item texture: " + ItemWord);
+				p.Images.Add(ItemWord, word);
+				foreach (string name in ItemNames) p.Clips.Add(name, new Clip(name, true));
+			}
+			catch (Exception e)
+			{
+				p.ItemError = e.Message;   // 只弃牌堆退回原样式
+			}
 			return p;
 		});
 	}
@@ -136,7 +154,7 @@ internal static class HeroStage
 		catch (Exception e)
 		{
 			cached!.Close();
-			if (act == Act.Top) GD.PushWarning($"[P3Makoto] dive open failed: {e.Message}");   // 只牌组退回原样式
+			if (act != Act.Commu) GD.PushWarning($"[P3Makoto] {act} open failed: {e.Message}");   // 只牌组 / 弃牌堆退回原样式
 			else Fail(e);
 			return false;
 		}
@@ -188,6 +206,15 @@ internal static class HeroStage
 		m.SetShaderParameter("warp_on", on);
 		m.SetShaderParameter("warp_frame", frame);
 	}
+
+	/// <summary>ITEM 页人物落位那一下（原版 ItemSilhouette：等 10 帧、20 帧 CurveUp2 移到 (-90, -110)）：在 Open 的位置上再偏移。</summary>
+	internal static void Nudge(Vector2 offset)
+	{
+		if (cached is { Playing: true } stage) stage.Display.Position = stage.Base + offset;
+	}
+
+	/// <summary>ITEM 页能用（资源读到了）。</summary>
+	internal static bool ItemReady => cached is { ItemReady: true };
 
 	internal static void Kick()
 	{
@@ -378,6 +405,9 @@ internal static class HeroStage
 		private readonly List<(Skeleton3D Skeleton, int Index)> spinBones = new();
 		private readonly List<Motion> motions = new();
 		private readonly List<Motion> topMotions = new();
+		private readonly List<Motion> itemMotions = new();
+		internal bool ItemReady => itemMotions.Count > 0;
+		internal Vector2 Base;
 		private readonly List<Node3D> cardScenes = new();
 		private List<Motion> seq = null!;
 		private Act act;
@@ -436,6 +466,15 @@ internal static class HeroStage
 			else
 			{
 				GD.PushWarning($"[P3Makoto] dive (deck pile) unavailable: {p.DiveError}");
+			}
+			if (p.ItemError == null)
+			{
+				foreach (string name in ItemNames)
+					itemMotions.Add(new Motion(name, p.Clips[name], null, heroes, cards));
+			}
+			else
+			{
+				GD.PushWarning($"[P3Makoto] ITEM page (discard pile) unavailable: {p.ItemError}");
 			}
 			seq = motions;
 			ShaderMaterial keyOut = new() { Shader = Shaders.HeroKeyOut };
@@ -526,13 +565,16 @@ internal static class HeroStage
 			Close();
 			Resize(view);
 			if (which == Act.Top && topMotions.Count == 0) throw new InvalidOperationException("dive assets unavailable");
+			if (which == Act.Item && itemMotions.Count == 0) throw new InvalidOperationException("item page assets unavailable");
 			act = which;
-			seq = which == Act.Top ? topMotions : motions;
+			seq = which switch { Act.Top => topMotions, Act.Item => itemMotions, _ => motions };
 			foreach (Node3D c in cardScenes) c.Visible = which == Act.Commu;
 			if (Display.Material is ShaderMaterial km)
 			{
 				km.SetShaderParameter("warp_on", 0f);
 				km.SetShaderParameter("entry_full", 1f);
+				km.SetShaderParameter("fill_on", which == Act.Item ? 1f : 0f);
+				km.SetShaderParameter("fill_col", ItemFill);
 			}
 			phase = 0;
 			time = 0;
@@ -540,7 +582,7 @@ internal static class HeroStage
 			releaseTime = baseAngle = extra = velocity = Target = 0;
 			seq[0].Pose(0);
 			Display.Size = view;
-			Display.Position = new Vector2(shift, 0);
+			Display.Position = Base = new Vector2(shift, 0);
 			owner = parent;
 			owner.AddChild(Display);
 			owner.TreeExiting += Close;
@@ -634,7 +676,8 @@ internal static class HeroStage
 			while (phase < last && time >= seq[phase].Hero.Duration)
 			{
 				time -= seq[phase].Hero.Duration;
-				if (act == Act.Commu && phase == 0) { blendFrom = 0; blendTime = 0; }   // 拿牌 → 松手：两段首尾不连续，做混合过渡（另两处首尾本来就连续）
+				// 拿牌 → 松手：两段首尾不连续，做混合过渡（另两处首尾本来就连续）；ITEM 进入 → 循环也按 UE 切换动作的默认混合过渡，避免跳
+				if ((act == Act.Commu || act == Act.Item) && phase == 0) { blendFrom = 0; blendTime = 0; }
 				phase++;
 			}
 			if (phase == last) time %= seq[last].Hero.Duration;
