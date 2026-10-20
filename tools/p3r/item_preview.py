@@ -28,7 +28,6 @@ IN_DIST = -100
 SIL_TO = (-90, -110)
 HERO_DX = -520                  # 人物整体左移，给右边的牌堆让位（用户：不必完整露出人物）
 FILL = np.array([0.027746, 0.082817, 0.255208])        # Edit_Item_FillColor
-WIPE_A, WIPE_B, WIPE_B_WAIT = 12, 11, 2
 
 
 def up(n, x):
@@ -311,20 +310,10 @@ def place(base, im, p, dx_from):
     base.alpha_composite(a, (x, 0)) if x >= 0 else base.alpha_composite(a.crop((-x, 0, W, H)), (0, 0))
 
 
-# ── 切页遮罩：原版 WipeChange（A 12 帧水滴盖满，B 等 2 帧后 11 帧露出）。水滴形状用图集里的水滴 162 ──
-DROP = np.asarray(spr(162).convert('L')).astype(float) / 255
-
-
-def drop_mask(r, cx=0.5, cy=0.5):
-    """以 (cx, cy) 为中心、半径 r（屏幕高的倍数）的水滴形遮罩（1 = 被盖住）。"""
-    Y, X = np.ogrid[0:H, 0:W]
-    d = np.sqrt(((X - cx * W) / H) ** 2 + ((Y - cy * H) / H) ** 2)
-    return np.clip((r - d) / 0.02, 0, 1)
-
-
-T_PAGE = (WIPE_A + WIPE_B_WAIT) * TICK              # 页面开始入场 = 遮罩开始露出
+T_PAGE = 0.10                                    # 圆孔张开 0.1s 后页面各部件开始入场（同 SKILL 预览，用户认可）
 CURSOR_AT = [(1.70, 1), (2.05, 2), (2.40, 3)]       # 光标下移（原版 ListRedSlide 6 帧 CurveUp2）
 N = int(3.0 * FPS)
+YY, XX = np.ogrid[0:H, 0:W]
 os.makedirs(S + '/item/frames', exist_ok=True)
 ONLY = [int(x) for x in sys.argv[2].split(',')] if len(sys.argv) > 2 else range(N)   # 调试：只渲几帧
 for n in ONLY:
@@ -346,14 +335,10 @@ for n in ONLY:
         place(pil, LAY['head'], prog('title', tp), -IN_DIST)
         place(pil, LAY['grid'], prog('lst', tp), -IN_DIST)
     page = np.asarray(pil.convert('RGB')).astype(float) / 255
-    # 遮罩：A 段水滴从屏幕中心长大盖满（深蓝），B 段水滴缩回露出新页面
-    ta = t / (WIPE_A * TICK)
-    tb = (t - T_PAGE) / (WIPE_B * TICK)
-    if tb < 0:
-        cover = drop_mask(1.2 * up(1, ta))
-        out = game * (1 - cover[..., None]) + np.array([0.0, 0.16, 0.55]) * cover[..., None]
-    else:
-        cover = drop_mask(1.2 * (1 - down(1, tb)))
-        out = page * (1 - cover[..., None]) + np.array([0.0, 0.16, 0.55]) * cover[..., None]
+    # 切入：从右下角弃牌堆按钮张开圆孔（0.45s，EaseOutExpo），孔里是新页面，孔外还是战斗画面（用户：之前那种从按钮展开就挺好）
+    r = (1 - 2 ** (-10 * min(t / 0.45, 1))) * 2.3
+    d2 = np.sqrt(((XX / W - 0.96) * W / H) ** 2 + (YY / H - 0.94) ** 2)
+    m = np.clip((r - d2) / 0.01, 0, 1)[..., None]
+    out = game * (1 - m) + page * m
     Image.fromarray((out * 255).clip(0, 255).astype(np.uint8)).save(S + '/item/frames/f%04d.png' % n)
 print('ok', N)
