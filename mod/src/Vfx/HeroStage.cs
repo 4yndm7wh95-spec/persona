@@ -24,8 +24,8 @@ internal static class HeroStage
 		"../dive/splash_00.png", "../dive/splash_01.png", "../dive/splash_02.png", "../dive/splash_03.png", "../dive/splash_04.png", "../dive/splash_05.png", "../dive/splash_06.png", "../dive/splash_07.png", "../dive/splash_08.png", "../dive/splash_09.png",
 		"../dive/mask_00.png", "../dive/mask_01.png", "../dive/mask_02.png", "../dive/mask_03.png", "../dive/mask_04.png", "../dive/mask_05.png", "../dive/mask_06.png", "../dive/mask_07.png", "../dive/mask_08.png", "../dive/mask_09.png" };
 
-	/// <summary>入水转场的原版波浪网格偏差（stage_hero3d.py：75 帧 × 10 行 × 17 列 × [dx, dy]）。</summary>
-	internal static float[]? Warp => cached?.WarpData;
+	/// <summary>原版入水 75 帧 + 循环 210 帧缓存为一张 RG 图，播放时只更新帧号。</summary>
+	internal static Texture2D? Warp => cached?.WarpTexture;
 	private static readonly string[] Models = { "SK_PC0051_C002.glb", "SK_PC0051_F000.glb", "SK_PC0051_H000.glb", "SK_Pp2001_000.glb" };
 	private static readonly string[] MotionNames = { "CommuStart", "CommuListStart", "CommuListLoop", "CommuLoop", "CommuListCancel" };
 	private static readonly string[] TopNames = { "CampTopStart", "CampTopLoop" };
@@ -81,7 +81,11 @@ internal static class HeroStage
 					p.Images.Add(file, image);
 				}
 				foreach (string name in TopNames) p.Clips.Add(name, new Clip(name, true));
-				p.Warp = Floats("dive/warp.bin", 75 * 10 * 17 * 2);
+				float[] enter = Floats("dive/warp.bin", 75 * 10 * 17 * 2);
+				float[] loop = Floats("dive/warp_loop.bin", 210 * 10 * 17 * 2);
+				p.Warp = new float[enter.Length + loop.Length];
+				Array.Copy(enter, p.Warp, enter.Length);
+				Array.Copy(loop, 0, p.Warp, enter.Length, loop.Length);
 			}
 			catch (Exception e)
 			{
@@ -104,7 +108,7 @@ internal static class HeroStage
 		{
 			stage.Load(prep!.GetAwaiter().GetResult());   // 预热没赶上时（很快就开了抽牌堆）在这里等后台解析完
 			cached = stage;
-			GD.Print($"{ModEntry.Tag} hero3d ready (dive {(stage.WarpData.Length > 0 ? "ok" : "unavailable")})");
+			GD.Print($"{ModEntry.Tag} hero3d ready (dive {(stage.WarpTexture != null ? "ok" : "unavailable")}); materials=ink-preserve; dive_mode=native-layout-loop210");
 			return true;
 		}
 		catch (Exception e)
@@ -177,11 +181,12 @@ internal static class HeroStage
 	}
 
 	/// <summary>入水转场的波浪扭曲（Shaders.WarpGlsl）：warp = 网格偏差贴图，on = 0~1。</summary>
-	internal static void SetWarp(Texture2D? warp, float on)
+	internal static void SetWarp(Texture2D? warp, float on, float frame = 0f)
 	{
 		if (cached?.Display.Material is not ShaderMaterial m) return;
 		if (warp != null) m.SetShaderParameter("warp_tex", warp);
 		m.SetShaderParameter("warp_on", on);
+		m.SetShaderParameter("warp_frame", frame);
 	}
 
 	internal static void Kick()
@@ -359,7 +364,7 @@ internal static class HeroStage
 		private readonly List<Rig> heroes = new(), cards = new();
 		private readonly Dictionary<string, Texture2D> textures = new(StringComparer.Ordinal);
 		internal Dictionary<string, Texture2D> Textures => textures;
-		internal float[] WarpData = Array.Empty<float>();
+		internal Texture2D? WarpTexture;
 		private readonly ShaderMaterial shadowMat = new() { Shader = Shaders.HeroShadow };
 		private readonly Dictionary<string, Material> materials = new(StringComparer.Ordinal);
 		private readonly List<(Skeleton3D Skeleton, int Index)> spinBones = new();
@@ -384,7 +389,6 @@ internal static class HeroStage
 
 		internal void Load(Prepared p)
 		{
-			WarpData = p.Warp;
 			foreach ((string file, Image image) in p.Images)
 			{
 				textures.Add(file, ImageTexture.CreateFromImage(image));
@@ -416,10 +420,13 @@ internal static class HeroStage
 			{
 				foreach (string name in TopNames)
 					topMotions.Add(new Motion(name, p.Clips[name], null, heroes, cards));
+				byte[] warpBytes = new byte[p.Warp.Length * sizeof(float)];
+				Buffer.BlockCopy(p.Warp, 0, warpBytes, 0, warpBytes.Length);
+				using Image warpImage = Image.CreateFromData(17, (75 + 210) * 10, false, Image.Format.Rgf, warpBytes);
+				WarpTexture = ImageTexture.CreateFromImage(warpImage);
 			}
 			else
 			{
-				WarpData = Array.Empty<float>();
 				GD.PushWarning($"[P3Makoto] dive (deck pile) unavailable: {p.DiveError}");
 			}
 			seq = motions;
@@ -577,6 +584,7 @@ internal static class HeroStage
 			parent.AddChild(clip);
 			clip.AddChild(new TextureRect { Texture = Display.Texture, Material = shadowMat, Size = new Vector2(64, 64), ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, MouseFilter = Control.MouseFilterEnum.Ignore });
 			if (Tex("commu_word.png") is Texture2D word) clip.AddChild(new Sprite2D { Texture = word, Scale = Vector2.One * 0.05f, Material = cut });
+			DiveFx.Warm(parent);   // 单帧水花、遮罩、整段波浪图在空闲预热阶段实际画过，避免入水时才首次提交。
 			warmFrames = 2;
 			RenderingServer.FramePostDraw += WarmDrawn;
 			warmHooked = true;

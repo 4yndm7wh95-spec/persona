@@ -16,17 +16,26 @@ uniform vec3 shade = vec3(0.55, 0.85, 1.0);
 uniform bool mask_pass = false;
 varying vec3 wn;
 void vertex() { wn = (MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz; }
+vec3 hero_linear(vec3 c) {
+	return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
+}
 void fragment() {
 	vec4 t = texture(tex, UV);
 	float l = dot(t.rgb, vec3(0.333));
 	vec3 c = l < 0.25 ? mix(c0, c1, l / 0.25) : l < 0.6 ? mix(c1, c2, (l - 0.25) / 0.35) : mix(c2, c3, (l - 0.6) / 0.4);
+	// Preserve the original dark straps and face strokes before applying the menu's bright effects.
+	float ink = smoothstep(0.12, 0.60, dot(OUTPUT_IS_SRGB ? hero_linear(t.rgb) : t.rgb, vec3(1.0 / 3.0)));
+	vec3 dark_base = OUTPUT_IS_SRGB ? vec3(0.065, 0.075, 0.090) : hero_linear(vec3(0.065, 0.075, 0.090));
+	c = mix(max(t.rgb, dark_base), c, ink);
 	float side = FRONT_FACING ? 1.0 : -1.0;
 	float nl = dot(normalize(wn) * side, normalize(vec3(-0.4, 0.6, 0.7)));
 	float lit = smoothstep(-0.2 - 0.1, -0.2 + 0.1, nl);
 	c *= mix(shade, vec3(1.0), lit);
-	c = mix(c, vec3(0.0, 1.0, 0.0), 0.5 * (1.0 - lit));   // 暗部 50% 透出水（原版 RTShadowColor_Blend 0.5），用色键表示
+	c = mix(c, vec3(0.0, 1.0, 0.0), 0.5 * (1.0 - lit) * ink);   // 亮色材质的阴影透水；深色笔画保持不透明
 	float rim = pow(1.0 - abs(dot(normalize(NORMAL), VIEW)), 4.0);
-	c = mix(c, vec3(0.80, 0.94, 1.0), rim * 0.6);
+	vec3 dark_rim = OUTPUT_IS_SRGB ? vec3(0.20, 0.23, 0.27) : hero_linear(vec3(0.20, 0.23, 0.27));
+	c = mix(c, dark_rim, rim * (1.0 - ink) * 0.65);
+	c = mix(c, vec3(0.80, 0.94, 1.0), rim * 0.6 * ink);
 	ALBEDO = mask_pass ? vec3(0.0) : c;
 }
 """
