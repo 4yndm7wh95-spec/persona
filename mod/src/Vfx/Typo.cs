@@ -80,7 +80,49 @@ public static class Typo
 	}
 
 	/// <summary>游戏自带的思源黑体粗体（正体，不斜切）；读不到用系统中文粗体。</summary>
-	public static Font CjkBold => _cjkBold ??= ResourceLoader.Load(PileFx.CjkFontPath) as Font ?? Cjk;
+	public static Font CjkBold => _cjkBold ??= ResourceLoader.Load("res://fonts/jpn/NotoSansCJKjp-Bold.otf") as Font ?? Cjk;
+
+	private static Font? _pileCjk, _pileLatin;
+
+	/// <summary>同字形小子集，按实际字号普通栅格化，避免完整游戏字体的首次 MSDF 生成。</summary>
+	public static Font PileCjk
+	{
+		get
+		{
+			if (_pileCjk != null) return _pileCjk;
+			FontFile font = new();
+			if (font.LoadDynamicFont(PileFx.CjkFontPath) == Error.Ok)
+			{
+				font.MultichannelSignedDistanceField = false;
+				font.AllowSystemFallback = false;
+				return _pileCjk = font;
+			}
+			ModEntry.Warn("pile font missing; using game font");
+			return _pileCjk = CjkBold;
+		}
+	}
+
+	/// <summary>未知卡名按需使用完整原字体，固定文案和已有卡名无需加载它。</summary>
+	public static Font PileCjkFor(string text)
+	{
+		Font font = PileCjk;
+		foreach (char c in text)
+			if (!char.IsControl(c) && !font.HasChar(c)) return CjkBold;
+		return font;
+	}
+
+	public static Font PileBarlow
+	{
+		get
+		{
+			if (_pileLatin != null) return _pileLatin;
+			FontFile font = new();
+			if (font.LoadDynamicFont("res://p3makoto/fonts/BarlowCondensed-900Italic.ttf") != Error.Ok)
+				return _pileLatin = Latin;
+			font.Fallbacks = new Godot.Collections.Array<Font> { PileCjk };
+			return _pileLatin = font;
+		}
+	}
 
 	private static FontVariation? _cjkHeavy;
 
