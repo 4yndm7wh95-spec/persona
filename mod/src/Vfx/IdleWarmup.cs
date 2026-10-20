@@ -127,6 +127,17 @@ internal static class IdleWarmup
 
 	private static readonly HashSet<string> Requested = new(StringComparer.Ordinal);
 	private static List<(Font Font, int Size, int Outline, string Text, bool Cjk)>? TextJobs;
+	private static bool cjkInitialized;
+	private static bool textBatch;
+	private static bool TextJob(string path) => path.StartsWith("@pile text #", StringComparison.Ordinal);
+
+	private static bool CanWarm(string path, bool calm)
+	{
+		// 不能跳过初始化项、却让后面的中文批次抢先初始化字体。
+		if (TextJob(path) && TextJobs != null && TextJobs[int.Parse(path[12..])].Cjk && !cjkInitialized)
+			return calm;
+		return calm || !Heavy(path);
+	}
 
 	/// <summary>贴图类先交给后台线程读进缓存（不是 Spine，不碰启动黑屏那个问题），读完再在主线程画一下；3D 主角等它的后台解析完。</summary>
 	private static bool Prefetched(string path)
@@ -157,7 +168,8 @@ internal static class IdleWarmup
 			if (++frames < 4) return;
 			if (GodotObject.IsInstanceValid(active)) active.QueueFree();
 			active = null;
-			nextCheck = Time.GetTicksMsec() + 150;
+			// 文字小批次已经跨四帧保留到真实绘制；不再额外等 150ms。
+			nextCheck = Time.GetTicksMsec() + (textBatch ? 0UL : 150UL);
 			return;
 		}
 		if (Jobs.Count == 0)
@@ -174,7 +186,7 @@ internal static class IdleWarmup
 		if (eligible) HeroStage.Prefetch();              // 3D 主角的模型 / 贴图 / 动作在后台线程解析，越早开始越好
 		if (!Gate.Ready(now, eligible)) return;
 		bool calm = MapIdle() || Quiet(now);
-		int pick = Jobs.FindIndex(j => calm || !Heavy(j));
+		int pick = Jobs.FindIndex(j => CanWarm(j, calm));
 		if (pick < 0) return;                             // 只剩重活，等地图界面或鼠标停下来再做
 		string path = Jobs[pick];
 		if (path == "@pile text" && tree != null)
@@ -187,7 +199,11 @@ internal static class IdleWarmup
 		if (!Prefetched(path)) return;                    // 后台还在读，下次再看
 		Jobs.RemoveAt(pick);
 		ulong start = Time.GetTicksUsec();
-		try { WarmOne(path); }
+		try
+		{
+			WarmOne(path);
+			if (TextJob(path) && TextJobs![int.Parse(path[12..])].Cjk) cjkInitialized = true;
+		}
 		catch (Exception e) { failed++; ModEntry.Report("idle warmup " + path, e); }
 		GD.Print($"{ModEntry.Tag} perf idle warmup {path} {(Time.GetTicksUsec() - start) / 1000f:0.0}ms; {Jobs.Count} remaining");
 	}
@@ -195,6 +211,7 @@ internal static class IdleWarmup
 	private static void WarmOne(string path)
 	{
 		if (tree == null) return;
+		textBatch = TextJob(path);
 		Resource? res = null;
 		if (!path.StartsWith("@", StringComparison.Ordinal))
 		{

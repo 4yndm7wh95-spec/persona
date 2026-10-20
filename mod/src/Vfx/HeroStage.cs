@@ -215,7 +215,8 @@ internal static class HeroStage
 				throw new InvalidOperationException("invalid animation metadata: " + name);
 			Data = Floats("anim/" + name + ".bin", checked(Frames * Bones.Length * 7));
 			ScaleBones = hero ? Names(root.GetProperty("scale_bones")) : Array.Empty<string>();
-			Scales = hero ? Floats("anim/" + name + ".scale.bin", checked(Frames * ScaleBones.Length * 3)) : Array.Empty<float>();
+			// 无缩放骨骼的动作合法地对应零字节 scale.bin，无需读取。
+			Scales = ScaleBones.Length > 0 ? Floats("anim/" + name + ".scale.bin", checked(Frames * ScaleBones.Length * 3)) : Array.Empty<float>();
 			// 坏四元数在初始化时拒绝，正常播放时不扫描 / 分配大数组。
 			for (int o = 0; o < Data.Length; o += 7)
 			{
