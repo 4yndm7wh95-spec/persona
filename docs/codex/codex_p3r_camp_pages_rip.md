@@ -1,8 +1,8 @@
-你在用户的 Windows 电脑上工作。任务：从本机 P3R 资源里**只读地**导出营地菜单 ITEM、SKILL 两个子页面复刻 UI 动画要用的全部原版数据，放进仓库。不改代码，不生图，不启动游戏。
+你在用户的 Windows 电脑上工作。任务：从本机 P3R 资源里**只读地**导出营地菜单 ITEM、SKILL、QUEST 三个子页面复刻 UI 动画要用的全部原版数据，放进仓库。不改代码，不生图，不启动游戏。
 （工具、AES 配置和方法沿用 research/p3r_camp/ 那次导出和 art/p3r_tex/README_v14.md；中间文件放 C:\Users\kkk\sts2_tools\p3r_pages_<日期>\。导出格式照 research/p3r_camp/commu_card/README.md 那次。）
 
 【背景】
-用户定的分工：弃牌堆 = 原版 ITEM 页，消耗堆 = 原版 SKILL 页。设置界面复用四个牌堆的界面（不用另做页面），所以这次只需要 ITEM 和 SKILL 两页的数据。
+用户定的分工：弃牌堆 = 原版 ITEM 页，消耗堆 = 原版 SKILL 页。设置分类页复用牌组的入水界面；四类设置里 游戏 = 抽牌堆 COMMU、视频 = ITEM、音频 = SKILL、操作 = 原版 QUEST 页。所以这次要 ITEM、SKILL、QUEST 三页的数据。
 现在仓库里只有这几页的人物动作（research/p3r_camp/hero3d/）、页级镜头偏移（DT_CampCameraTable）和版式 DataTable（Layout/），
 缺页面本身的 UIM 动画、贴图、PLG 字形和文字。research/p3r_camp/index.csv 里这些目录标的是 "no"（没导出），而且 index 每个目录只列了 60 行，实际文件可能更多。
 
@@ -26,14 +26,15 @@
 1. 目录（整个目录递归，每个资源都导）：
    - P3R/Content/Xrd777/UI/Camp/Item/
    - P3R/Content/Xrd777/UI/Camp/Skill/（已导出的 3 个 Gun UIM 不用重复）
+   - P3R/Content/Xrd777/UI/Camp/Quest/
    - P3R/Content/Xrd777/UI/Camp/Root/ 里还没导出的（对照 index.csv 的 repo_exported 列）
    - P3R/Content/Xrd777/UI/Camp/Textures/、P3R/Content/Xrd777/UI/PartyPanel/、营地用到的 KeyHelp（按键提示）
    - 营地页面文字：BMD_CampSystem、BMD_CampSystemExt（及 L10N 版本）
-2. 再按名字搜（任何目录）：含 Camp 且含 Item / Skill / Party / Member / Tab / Cursor / Scroll / List / In / Out / Change / Select 的 UIM、PLG、材质、贴图、WidgetBlueprint、DataTable、CurveFloat / CurveLinearColor；
+2. 再按名字搜（任何目录）：含 Camp 且含 Item / Skill / Quest / Party / Member / Tab / Cursor / Scroll / List / In / Out / Change / Select 的 UIM、PLG、材质、贴图、WidgetBlueprint、DataTable、CurveFloat / CurveLinearColor；
    以及营地主菜单 → 子页面、子页面 → 营地主菜单、子页面之间 LB / RB 切换时调用的 UIM（在 BP / WBP 的函数里找引用）。
-3. 营地 UI 的逻辑：营地菜单是哪个 Widget / Actor 类驱动的（WBP_Camp*、BP_Camp*、原生类名），把它们和 ITEM / SKILL 相关的函数、时间轴、动画轨（UWidgetAnimation 的 MovieScene 轨道：位置 / 缩放 / 透明度 / 材质参数的关键帧原值和插值方式）完整属性 JSON 原样保存。
-4. 已有的人物动作（research/p3r_camp/hero3d/animations*/ 的 Skill / Item 及各自 Loop）不用重导；
-   如果还有这些页的其他动作（例如 ItemCancel、SkillCancel）没在仓库里，补导 PSA + AnimSequence JSON + 缩放轨（格式同 hero3d/scale/）。
+3. 营地 UI 的逻辑：营地菜单是哪个 Widget / Actor 类驱动的（WBP_Camp*、BP_Camp*、原生类名），把它们和 ITEM / SKILL / QUEST 相关的函数、时间轴、动画轨（UWidgetAnimation 的 MovieScene 轨道：位置 / 缩放 / 透明度 / 材质参数的关键帧原值和插值方式）完整属性 JSON 原样保存。
+4. 已有的人物动作（research/p3r_camp/hero3d/animations*/ 的 Skill / Item / QUEST 及各自 Loop）不用重导；
+   如果还有这些页的其他动作（例如 ItemCancel、SkillCancel、QuestCancel）没在仓库里，补导 PSA + AnimSequence JSON + 缩放轨（格式同 hero3d/scale/）。
 
 【3. 输出（<repo>\research\p3r_camp\pages\）】
 - uim\<名字>.json：UIM 原始 JSON + 按 research/p3r_camp/anim/ 的格式整理的版本（时间、顶点 / 位置、缩放、旋转、透明度、颜色、插值原值都放进去；frameNum / fps 原样记录，原始资产没有就写"未提供"）。
@@ -41,11 +42,11 @@
 - plg\：PLG 原始 JSON + 按 research/p3r_camp/plg/ 的方式渲染的 PNG。
 - widget\：WBP / BP / UWidgetAnimation / 曲线 / DataTable 的完整属性 JSON。
 - text\：BMD 导成 UTF-8 JSON（消息 ID → 文本），zh-Hans / zh-Hant / en 各一份。
-- manifest.csv：每个导出文件一行——原 pak 路径、类型、导出后路径、大小、属于哪一页（ITEM / SKILL / 公用）。
+- manifest.csv：每个导出文件一行——原 pak 路径、类型、导出后路径、大小、属于哪一页（ITEM / SKILL / QUEST / 公用）。
 单个文件超过 20MB 的不提交，在 README 里列出。
 
 【4. README（<repo>\research\p3r_camp\pages\README.md，中文）】
-按页写（ITEM / SKILL / 公用）：
+按页写（ITEM / SKILL / QUEST / 公用）：
 1. 这一页由哪些 UIM / 贴图 / PLG / Widget 组成；
 2. 进入、待机循环、光标移动、LB/RB 切换、退出各用哪段动画，各自时长、帧率、关键帧时间点（找得到就写原值，找不到写"没找到"并写清楚搜过哪里）；
 3. 人物动作和 UI 动画谁先谁后（有延时 / 事件的写原值）；
@@ -54,7 +55,7 @@
 
 【5. 提交与推送】
 1. 只 add：git -c safe.directory=<repo> add research/p3r_camp/pages research/p3r_camp/hero3d
-2. 提交：git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local commit -m "research: P3R camp ITEM / SKILL page UI data"
+2. 提交：git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local commit -m "research: P3R camp ITEM / SKILL / QUEST page UI data"
 3. push：
    git -c safe.directory=<repo> -c http.version=HTTP/1.1 -c http.lowSpeedLimit=0 -c http.lowSpeedTime=999999 push origin claude/amazing-darwin-b00arn
    - 失败时分别等 5 / 10 / 20 / 40 秒重试，最多 4 次。
