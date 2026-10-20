@@ -14,6 +14,7 @@ OUT = "mod/pck_stage/p3makoto/hero3d/"
 HERO = {  # 名字 → (PSA 编号, 是否分块)
     "CommuStart": ("0013", False), "CommuLoop": ("0014", True), "CommuListStart": ("0015", False),
     "CommuListLoop": ("0016", True), "CommuListCancel": ("0025", False),
+    "CampTopStart": ("0001", False), "CampTopLoop": ("0002", True),   # 营地主菜单：倒入水 → 水下待机（牌组牌堆 / ESC 设置用）
 }
 CARD = {"CommuStart": "0023", "CommuLoop": "0024", "CommuListStart": "0025", "CommuListLoop": "0026", "CommuListCancel": "0027"}
 
@@ -41,6 +42,39 @@ def commu_word(out):
     im.save(out)
 
 
+def dive(out):
+    """入水转场：原版水花 10 帧（art/p3menu_system/p3r/splash_NN.png）+ 每帧的"露出水下"遮罩（水花轮廓填实后逐帧累积，480×270）
+    + 原版 UIM_UI_Camp_In 网格的逐帧偏差（17×10 网格，各顶点 位置 −（按 UV 的静止位置），1920×1184 坐标），存成 warp.bin（float32 75×10×17×2）。"""
+    from PIL import Image
+    from scipy.ndimage import binary_closing, binary_fill_holes
+    os.makedirs(out, exist_ok=True)
+    W, H = 480, 270
+    acc = np.zeros((H, W), bool)
+    for i in range(10):
+        src = "art/p3menu_system/p3r/splash_%02d.png" % i
+        shutil.copy(src, out + "splash_%02d.png" % i)
+        a = np.asarray(Image.open(src).convert("RGBA"))[..., 3] > 25
+        # 和游戏里水花的摆法一致：横向铺满 1.06 倍屏宽，纵向 1.6 倍（949 高），上边缘在 −10% 处，水平居中
+        im = Image.fromarray((a * 255).astype(np.uint8)).resize((int(a.shape[1] * 1.06 * W / 961), int(a.shape[0] * 1.6 * H / 949)))
+        m = np.zeros((H, W), bool); arr = np.asarray(im) > 127
+        x0 = (W - im.width) // 2; y0 = int(-0.10 * H)
+        ys, xs = max(0, -y0), max(0, -x0); ye, xe = min(im.height, H - y0), min(im.width, W - x0)
+        m[y0 + ys:y0 + ye, x0 + xs:x0 + xe] = arr[ys:ye, xs:xe]
+        acc |= binary_fill_holes(binary_closing(m, iterations=3))
+        Image.fromarray((acc * 255).astype(np.uint8)).save(out + "mask_%02d.png" % i)
+    uim = json.load(open(R + "anim/UIM_UI_Camp_In__UIM_UI_Camp_In.json"))
+    off = np.array([k["value"] for k in uim["tracks"][0]["keys"]], np.float32)          # 75×170×2
+    g = json.load(open(R + "json/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_In.json")); g = g[0] if isinstance(g, list) else g
+    gv = g["Properties"]["UimData"]["p2DGeomVertUV"]
+    base = np.array([[v["x"], v["y"]] for v in gv], np.float32); uv = np.array([[v["u0"], v["v0"]] for v in gv], np.float32)
+    rest = np.stack([uv[:, 0] * 1920 - 960, uv[:, 1] * 1184 - 556], -1)
+    dev = (base[None] + off - rest[None]).reshape(75, 10, 17, 2)
+    # 网格行是从下往上排的（第 0 行 v=1）：翻成从上往下，方便当贴图用
+    order = np.argsort(uv.reshape(10, 17, 2)[:, 0, 1])
+    dev[:, :, :, :] = dev[:, order]
+    dev.astype(np.float32).tofile(out + "warp.bin")
+
+
 def main():
     os.makedirs(OUT + "anim", exist_ok=True)
     for f in ["SK_PC0051_C002.glb", "SK_PC0051_F000.glb", "SK_PC0051_H000.glb"]:
@@ -54,6 +88,7 @@ def main():
     # COMMU 页背景用：原版焦散贴图；原版 PLG 的 COMMU 字形（灰 165,165,172，2 倍分辨率，游戏里按 0.7 缩放）
     shutil.copy(R + "tex/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_Caustics_00.png", OUT + "tex/T_UI_Camp_Caustics_00.png")
     commu_word(OUT + "tex/commu_word.png")
+    dive(OUT + "dive/")
     tmp = tempfile.mkdtemp()
     for name, (num, split) in HERO.items():
         base = f"A_PC0051_UIA{num}_BASE_{name}"

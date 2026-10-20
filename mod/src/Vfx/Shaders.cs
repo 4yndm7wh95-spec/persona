@@ -9,6 +9,23 @@ public static class Shaders
 
 	private static Shader? _heroFlat, _heroRamp, _heroKeyOut, _heroShadow, _heroCut, _commuBg;
 
+	/// <summary>
+	/// v0.14.95 入水转场的原版波浪（UIM_UI_Camp_In）：17×10 网格，各顶点"位置 − 按 UV 的静止位置"的偏差（1920×1184 坐标，单位像素）
+	/// 逐帧写进 warp_tex（17×10 RG 浮点贴图，第 0 行在上）。屏幕 uv → 去掉偏差后的取样 uv。warp_on = 0 时原样。
+	/// </summary>
+	private const string WarpGlsl = @"
+uniform sampler2D warp_tex : filter_linear, repeat_disable;
+uniform float warp_on = 0.0;
+vec2 warp_uv(vec2 suv) {
+	if (warp_on <= 0.0) return suv;
+	vec2 p = vec2(suv.x * 1920.0, suv.y * 1080.0 + 22.0);           // 网格坐标：x 0~1920，y 0~1184（上下各多出 52）
+	vec2 g = p / vec2(1920.0, 1184.0);
+	vec2 dev = texture(warp_tex, vec2((g.x * 16.0 + 0.5) / 17.0, (g.y * 9.0 + 0.5) / 10.0)).rg;
+	p -= dev * warp_on;
+	return vec2(p.x / 1920.0, (p.y - 22.0) / 1080.0);
+}
+";
+
 	// 与 tools/p3r/hero_render/render.gd 的 FLAT / RAMP 一致（v0.14.90 对照原版 COMMU 截图调过），移除离线 mask_pass。
 	// 纯绿 = 透出后面的水（原版 CaRtOp）；不描边（用户：原版没有描边）。
 	public static Shader HeroFlat => _heroFlat ??= Make(@"
@@ -47,10 +64,11 @@ void fragment() {
 	// 主角所有颜色都满足 g <= max(r, b)，所以只有色键被扣掉；半绿的边缘像素还原成原色 + 半透明。
 	public static Shader HeroKeyOut => _heroKeyOut ??= Make(@"
 shader_type canvas_item;
+" + WarpGlsl + @"
 varying vec4 hero_modulate;
 void vertex() { hero_modulate = COLOR; }
 void fragment() {
-	vec4 t = texture(TEXTURE, UV);
+	vec4 t = texture(TEXTURE, warp_uv(UV));   // 显示框铺满屏幕时 UV = 屏幕 uv（入水转场时人物跟水一起晃）
 	vec3 c = t.a > 0.0 ? t.rgb / t.a : vec3(0.0);
 	float s = clamp(c.g - max(c.r, c.b), 0.0, 1.0);
 	float alpha = 1.0 - s;
@@ -98,6 +116,9 @@ void fragment() {
 	/// </summary>
 	public static Shader CommuBg => _commuBg ??= Make(@"
 shader_type canvas_item;
+" + WarpGlsl + @"
+uniform sampler2D mask_tex : filter_linear;   // 入水：水花轮廓里先露出水下（v0.14.95）
+uniform float reveal = 1.0;                   // 1 = 全屏水下
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
 uniform sampler2D caustics : repeat_enable, filter_linear;
 uniform float aspect = 1.777;
@@ -109,19 +130,20 @@ float curve(float x, vec4 xs, vec4 ys) {
 	return mix(ys.z, ys.w, clamp((x - xs.z) / (xs.w - xs.z), 0.0, 1.0));
 }
 void fragment() {
-	vec3 src = texture(screen_tex, SCREEN_UV).rgb;
+	vec2 wuv = warp_uv(SCREEN_UV);
+	vec3 src = texture(screen_tex, wuv).rgb;
 	float l = dot(pow(src, vec3(2.2)), vec3(0.2126, 0.7152, 0.0722));
 	l = clamp((l - 0.5) * 1.2 + 0.5, 0.0, 1.0);
 	vec3 c = vec3(curve(l, vec4(0.0, 0.1, 0.9, 1.0), vec4(0.0, 0.1, 0.6, 0.8)),
 		curve(l, vec4(0.0, 0.1, 0.7, 1.0), vec4(0.3, 0.5, 0.7, 0.85)),
 		curve(l, vec4(0.0, 0.1, 0.7, 1.0), vec4(0.7, 0.8, 0.85, 0.9)));
-	float y = UV.y;
+	float y = wuv.y;
 	c = c * (1.0 - 0.7 * y) + vec3(0.0, 0.063, 0.506) * 0.7 * y;
 	float sh = pow(clamp(1.0 - y / 0.32, 0.0, 1.0), 1.5);
 	c = mix(c, vec3(0.235, 0.843, 0.941), 0.75 * sh);
 	vec2 tile = vec2(900.0 / 1920.0, 240.0 / 1080.0);
 	float row = floor(y / tile.y);
-	vec2 cuv = vec2(UV.x / tile.x + 0.5 * mod(row, 2.0) + TIME * 0.012, y / tile.y);
+	vec2 cuv = vec2(wuv.x / tile.x + 0.5 * mod(row, 2.0) + TIME * 0.012, y / tile.y);
 	vec4 ct = texture(caustics, cuv);
 	float cl = (ct.r + ct.g + ct.b) / 3.0 * ct.a * clamp(1.0 - y * 1.4, 0.0, 1.0);
 	c = 1.0 - (1.0 - c) * (1.0 - cl * vec3(0.6, 0.95, 1.0) * 0.8);
@@ -129,7 +151,8 @@ void fragment() {
 	float r = length(d);
 	float inside = smoothstep(radius, radius - 0.01, r);
 	float rim = smoothstep(0.02, 0.0, abs(r - radius)) * step(0.001, radius);
-	COLOR = vec4(c + vec3(0.7, 0.95, 1.0) * rim * 0.9, max(inside, rim * 0.9));
+	float shown = max(texture(mask_tex, SCREEN_UV).r, reveal);
+	COLOR = vec4(c + vec3(0.7, 0.95, 1.0) * rim * 0.9, max(inside, rim * 0.9) * shown);
 }
 ");
 	private static Shader? _ring;

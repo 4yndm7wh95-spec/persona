@@ -201,15 +201,18 @@ public static class PileFx
 		Vector2 from = L.Iris;
 		// v0.14.90：抽牌堆 = 原版营地 COMMU 页（原版 3D 主角 + 原版背景上色 + 白色斜块）；舞台加载失败就退回原来的水下背景和立绘。
 		bool commu = kind == Kind.Draw && HeroStage.Available(screen.GetTree());
-		ShaderMaterial water = new() { Shader = commu ? Shaders.CommuBg : Shaders.Underwater };
-		if (commu) water.SetShaderParameter("caustics", HeroStage.Tex("T_UI_Camp_Caustics_00.png")!);
+		// v0.14.95：牌组 = 原版营地主菜单的"倒入水"（DiveFx：原版水花 + 水下露出 + 原版波浪；HeroStage.Act.Top 倒入水 → 水下待机）
+		bool dive = kind == Kind.Deck && HeroStage.Available(screen.GetTree()) && DiveFx.Ready;
+		ShaderMaterial water = new() { Shader = commu || dive ? Shaders.CommuBg : Shaders.Underwater };
+		if (commu || dive) water.SetShaderParameter("caustics", HeroStage.Tex("T_UI_Camp_Caustics_00.png")!);
 		water.SetShaderParameter("aspect", view.X / view.Y);
 		water.SetShaderParameter("center", from);
 		water.SetShaderParameter("radius", 0f);
 		ColorRect bg = new() { Size = view, Material = water, MouseFilter = Control.MouseFilterEnum.Ignore };
 		root.AddChild(bg);
 		float diag = Mathf.Sqrt(view.X * view.X / (view.Y * view.Y) + 1f) + 0.1f;
-		Fx.Animate(bg, 0.55, t => water.SetShaderParameter("radius", diag * Ease.OutCubic(t)));
+		if (dive) water.SetShaderParameter("radius", diag);   // 入水转场自己负责露出（水花轮廓），不用圆孔
+		else Fx.Animate(bg, 0.55, t => water.SetShaderParameter("radius", diag * Ease.OutCubic(t)));
 		lap("water");
 		Node2D bubbles = Bubbles(root, view, k);
 		lap("bubbles");
@@ -221,7 +224,16 @@ public static class PileFx
 		switch (kind)
 		{
 			case Kind.Deck:
-				butterfly = DeckDecor(right, view, font, k);
+				if (dive && HeroStage.Open(right, view, 0f, HeroStage.Act.Top))
+				{
+					butterfly = new PileButterfly(right, Kind.Deck, k, 0f, DeckPorScale);   // 原版镜头：倒着的结城理在左边，右边留给牌
+					lap("hero3d");
+				}
+				else
+				{
+					dive = false;
+					butterfly = DeckDecor(right, view, font, k);
+				}
 				break;
 			case Kind.Discard:
 				butterfly = DiscardDecor(right, view, font, k, rx);
@@ -263,7 +275,12 @@ public static class PileFx
 		lap("decor");
 		butterfly.AttachForeground(right);                 // 装饰底板 → 后景蓝蝶 → 立绘 → 前景蓝蝶；卡牌仍在整组之上。
 		float decorMs = (Time.GetTicksUsec() - buildStart) / 1000f;
-		Fx.After(right, 0.1, "pile right in", () => Fx.Animate(right, 0.5, t =>
+		if (dive)
+		{
+			right.Position = Vector2.Zero;                   // 人物自己从画面外沉下来，整组不滑入
+			right.Modulate = Colors.White;
+		}
+		else Fx.After(right, 0.1, "pile right in", () => Fx.Animate(right, 0.5, t =>
 		{
 			right.Position = new Vector2(700f * k * L.Side * (1f - Ease.OutExpo(t)), 0f);
 			right.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(t * 3f, 0f, 1f));
@@ -406,7 +423,7 @@ public static class PileFx
 		float scroll = 0f, target = 0f, contentH = 0f;
 		bool dragging = false;
 		float dragFrom = 0f, dragScroll = 0f;
-		float nextBorn = 0.22f;
+		float nextBorn = dive ? 0.35f : 0.22f;              // 入水：等水花散开再出牌
 
 		void Refill()
 		{
@@ -1125,6 +1142,7 @@ public static class PileFx
 		};
 		// 同上跳过静音引子；再延到下一帧才播：建界面这一帧要几十毫秒，立刻播的话声音会抢在画面前面
 		Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.45f, delay: 0.001f, from: WhooshSkip);
+		if (dive) DiveFx.Start(root, water, view);       // 水花在最上层，最后加
 		lap("tail");
 		GD.Print($"{ModEntry.Tag} perf pile {kind} build {(Time.GetTicksUsec() - buildStart) / 1000f:0.0}ms (decor {decorMs:0.0}ms;{laps}); idle warmup complete={IdleWarmup.Complete}");
 	}

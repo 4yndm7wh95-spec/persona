@@ -17,9 +17,18 @@ internal static class HeroStage
 	private static Stage? cached;
 	private static bool failed;
 
-	private static readonly string[] Images = { "T_PC0051_C002_00_Col.png", "T_PC0051_F000_00_Col.png", "T_PC0051_E000_00_Col.png", "T_Pp2001_030_0017.png", "T_Pp2001_Backside_00.png", "T_UI_Camp_Caustics_00.png", "commu_word.png" };
+	private static readonly string[] Images = { "T_PC0051_C002_00_Col.png", "T_PC0051_F000_00_Col.png", "T_PC0051_E000_00_Col.png", "T_Pp2001_030_0017.png", "T_Pp2001_Backside_00.png", "T_UI_Camp_Caustics_00.png", "commu_word.png",
+		"../dive/splash_00.png", "../dive/splash_01.png", "../dive/splash_02.png", "../dive/splash_03.png", "../dive/splash_04.png", "../dive/splash_05.png", "../dive/splash_06.png", "../dive/splash_07.png", "../dive/splash_08.png", "../dive/splash_09.png",
+		"../dive/mask_00.png", "../dive/mask_01.png", "../dive/mask_02.png", "../dive/mask_03.png", "../dive/mask_04.png", "../dive/mask_05.png", "../dive/mask_06.png", "../dive/mask_07.png", "../dive/mask_08.png", "../dive/mask_09.png" };
+
+	/// <summary>入水转场的原版波浪网格偏差（stage_hero3d.py：75 帧 × 10 行 × 17 列 × [dx, dy]）。</summary>
+	internal static float[]? Warp => cached?.WarpData;
 	private static readonly string[] Models = { "SK_PC0051_C002.glb", "SK_PC0051_F000.glb", "SK_PC0051_H000.glb", "SK_Pp2001_000.glb" };
 	private static readonly string[] MotionNames = { "CommuStart", "CommuListStart", "CommuListLoop", "CommuLoop", "CommuListCancel" };
+	private static readonly string[] TopNames = { "CampTopStart", "CampTopLoop" };
+
+	/// <summary>舞台演哪一页：COMMU（抽牌堆：拿牌 → 松手，牌浮空自转）；Top（营地主菜单：倒入水 → 水下待机，牌组牌堆 / ESC 设置用，不显示牌）。</summary>
+	internal enum Act { Commu, Top }
 	private static Task<Prepared>? prep;
 
 	/// <summary>后台线程里能做的部分：PNG 解码、GLB 解析 + 生成场景（还没进场景树）、动作数据读取校验。</summary>
@@ -28,6 +37,7 @@ internal static class HeroStage
 		internal readonly Dictionary<string, Image> Images = new(StringComparer.Ordinal);
 		internal readonly List<(string Model, Node Scene)> Scenes = new();
 		internal readonly Dictionary<string, Clip> Clips = new(StringComparer.Ordinal);
+		internal float[] Warp = Array.Empty<float>();
 	}
 
 	/// <summary>v0.14.91（实机日志：主线程一次加载 ~150ms，选人界面掉帧）：在后台线程开始解析，可重复调用。</summary>
@@ -40,7 +50,7 @@ internal static class HeroStage
 			foreach (string file in Images)
 			{
 				Image image = new();
-				if (image.LoadPngFromBuffer(Read("tex/" + file)) != Error.Ok || image.IsEmpty())
+				if (image.LoadPngFromBuffer(Read(file.StartsWith("../", StringComparison.Ordinal) ? file[3..] : "tex/" + file)) != Error.Ok || image.IsEmpty())
 					throw new InvalidOperationException("invalid hero texture: " + file);
 				p.Images.Add(file, image);
 			}
@@ -57,6 +67,8 @@ internal static class HeroStage
 				p.Clips.Add(name, new Clip(name, true));
 				p.Clips.Add("Card_" + name, new Clip("Card_" + name, false));
 			}
+			foreach (string name in TopNames) p.Clips.Add(name, new Clip(name, true));
+			p.Warp = Floats("dive/warp.bin", 75 * 10 * 17 * 2);
 			return p;
 		});
 	}
@@ -90,12 +102,12 @@ internal static class HeroStage
 		failed = true;
 	}
 
-	internal static bool Open(Node2D parent, Vector2 view, float shift)
+	internal static bool Open(Node2D parent, Vector2 view, float shift, Act act = Act.Commu)
 	{
 		if (!Ensure(parent.GetTree())) return false;
 		try
 		{
-			cached!.Open(parent, view, shift);
+			cached!.Open(parent, view, shift, act);
 			return true;
 		}
 		catch (Exception e)
@@ -118,7 +130,7 @@ internal static class HeroStage
 	internal static bool Available(SceneTree tree) => Ensure(tree);
 
 	/// <summary>舞台里一起读进来的原版 UI 贴图（焦散、COMMU 字形）。</summary>
-	internal static Texture2D? Tex(string file) => cached != null && cached.Textures.TryGetValue(file, out Texture2D? t) ? t : null;
+	internal static Texture2D? Tex(string file) => cached != null && (cached.Textures.TryGetValue(file, out Texture2D? t) || cached.Textures.TryGetValue("../dive/" + file, out t)) ? t : null;
 
 	/// <summary>Open 之后调用：人物剪影的灰色小阴影（加在白色斜块下面、被它裁剪）。</summary>
 	internal static void AddShadow(Node parent, Vector2 offset)
@@ -142,6 +154,14 @@ internal static class HeroStage
 			m.SetShaderParameter("xo", t.Origin);
 		}
 		item.Material = m;
+	}
+
+	/// <summary>入水转场的波浪扭曲（Shaders.WarpGlsl）：warp = 网格偏差贴图，on = 0~1。</summary>
+	internal static void SetWarp(Texture2D? warp, float on)
+	{
+		if (cached?.Display.Material is not ShaderMaterial m) return;
+		if (warp != null) m.SetShaderParameter("warp_tex", warp);
+		m.SetShaderParameter("warp_on", on);
 	}
 
 	internal static void Kick()
@@ -277,15 +297,16 @@ internal static class HeroStage
 	{
 		internal readonly Clip Hero;
 		internal readonly Binding[] Bindings;
-		internal Motion(string name, Clip hero, Clip card, List<Rig> heroes, List<Rig> cards)
+		internal Motion(string name, Clip hero, Clip? card, List<Rig> heroes, List<Rig> cards)
 		{
 			Hero = hero;
-			if (Hero.Frames != card.Frames || Math.Abs(Hero.Fps - card.Fps) > 0.001)
+			if (card == null) cards = new List<Rig>();   // 营地主菜单那几段没有牌
+			if (card != null && (Hero.Frames != card.Frames || Math.Abs(Hero.Fps - card.Fps) > 0.001))
 				throw new InvalidOperationException("hero/card timeline mismatch: " + name);
 			Bindings = new Binding[heroes.Count + cards.Count];
 			int i = 0;
 			foreach (Rig r in heroes) Bindings[i++] = new Binding(r, Hero);
-			foreach (Rig r in cards) Bindings[i++] = new Binding(r, card);
+			foreach (Rig r in cards) Bindings[i++] = new Binding(r, card!);
 		}
 		internal void Pose(double time)
 		{
@@ -317,10 +338,15 @@ internal static class HeroStage
 		private readonly List<Rig> heroes = new(), cards = new();
 		private readonly Dictionary<string, Texture2D> textures = new(StringComparer.Ordinal);
 		internal Dictionary<string, Texture2D> Textures => textures;
+		internal float[] WarpData = Array.Empty<float>();
 		private readonly ShaderMaterial shadowMat = new() { Shader = Shaders.HeroShadow };
 		private readonly Dictionary<string, Material> materials = new(StringComparer.Ordinal);
 		private readonly List<(Skeleton3D Skeleton, int Index)> spinBones = new();
 		private readonly List<Motion> motions = new();
+		private readonly List<Motion> topMotions = new();
+		private readonly List<Node3D> cardScenes = new();
+		private List<Motion> seq = null!;
+		private Act act;
 		private Node2D? owner;
 		private int phase, warmFrames, blendFrom = -1;
 		private double blendTime;
@@ -331,12 +357,13 @@ internal static class HeroStage
 		private float releaseTime, baseAngle, extra, velocity;
 		internal float Target;
 		internal bool Playing { get; private set; }
-		internal bool Released => phase > 0;
+		internal bool Released => act == Act.Commu && phase > 0;
 
 		internal Stage(SceneTree t) { tree = t; }
 
 		internal void Load(Prepared p)
 		{
+			WarpData = p.Warp;
 			foreach ((string file, Image image) in p.Images)
 			{
 				textures.Add(file, ImageTexture.CreateFromImage(image));
@@ -350,6 +377,7 @@ internal static class HeroStage
 			{
 				world.AddChild(scene); // 根节点不作位移 / 旋转，位置全来自动作。
 				bool card = model == "SK_Pp2001_000.glb";
+				if (card && scene is Node3D n3) cardScenes.Add(n3);
 				int count = card ? cards.Count : heroes.Count;
 				Walk(scene, card);
 				if ((card ? cards.Count : heroes.Count) == count)
@@ -363,6 +391,9 @@ internal static class HeroStage
 			if (spinBones.Count == 0) throw new InvalidOperationException("card spin bone missing");
 			foreach (string name in MotionNames)
 				motions.Add(new Motion(name, p.Clips[name], p.Clips["Card_" + name], heroes, cards));
+			foreach (string name in TopNames)
+				topMotions.Add(new Motion(name, p.Clips[name], null, heroes, cards));
+			seq = motions;
 			ShaderMaterial keyOut = new() { Shader = Shaders.HeroKeyOut };
 			Display.Material = keyOut;
 			Display.Texture = viewport.GetTexture();
@@ -446,15 +477,19 @@ internal static class HeroStage
 			viewport.Size = new Vector2I(Math.Max(1, (int)(view.X * scale)), Math.Max(1, (int)(view.Y * scale)));
 		}
 
-		internal void Open(Node2D parent, Vector2 view, float shift)
+		internal void Open(Node2D parent, Vector2 view, float shift, Act which)
 		{
 			Close();
 			Resize(view);
+			act = which;
+			seq = which == Act.Top ? topMotions : motions;
+			foreach (Node3D c in cardScenes) c.Visible = which == Act.Commu;
+			if (Display.Material is ShaderMaterial km) km.SetShaderParameter("warp_on", 0f);
 			phase = 0;
 			time = 0;
 			blendFrom = -1;
 			releaseTime = baseAngle = extra = velocity = Target = 0;
-			motions[0].Pose(0);
+			seq[0].Pose(0);
 			Display.Size = view;
 			Display.Position = new Vector2(shift, 0);
 			owner = parent;
@@ -541,26 +576,28 @@ internal static class HeroStage
 			// 单帧最多推进 1/20 秒：打开牌堆那一帧要建界面（几十毫秒），不夹住的话入场动作会直接跳掉一截。
 			double elapsed = Math.Min((now - lastTick) / 1000000.0, 0.05);
 			lastTick = now;
-			double beforeRelease = phase == 0 ? Math.Max(0, motions[0].Hero.Duration - time) : 0;
+			double beforeRelease = phase == 0 ? Math.Max(0, seq[0].Hero.Duration - time) : 0;
 			time += elapsed;
-			while (phase < 2 && time >= motions[phase].Hero.Duration)
+			int last = seq.Count - 1;
+			if (act == Act.Commu) last = 2;              // CommuStart → CommuListStart → CommuListLoop（循环）
+			while (phase < last && time >= seq[phase].Hero.Duration)
 			{
-				time -= motions[phase].Hero.Duration;
-				if (phase == 0) { blendFrom = 0; blendTime = 0; }   // 拿牌 → 松手：两段首尾不连续，做混合过渡（另两处首尾本来就连续）
+				time -= seq[phase].Hero.Duration;
+				if (act == Act.Commu && phase == 0) { blendFrom = 0; blendTime = 0; }   // 拿牌 → 松手：两段首尾不连续，做混合过渡（另两处首尾本来就连续）
 				phase++;
 			}
-			if (phase == 2) time %= motions[2].Hero.Duration;
+			if (phase == last) time %= seq[last].Hero.Duration;
 			if (blendFrom >= 0)
 			{
 				blendTime += elapsed;
 				float w = (float)Math.Clamp(blendTime / BlendSeconds, 0, 1);
 				w = w * w * (3f - 2f * w);
-				motions[phase].Pose(time, motions[blendFrom], motions[blendFrom].Hero.Duration, w); // 上一段停在末帧
+				seq[phase].Pose(time, seq[blendFrom], seq[blendFrom].Hero.Duration, w); // 上一段停在末帧
 				if (w >= 1f) blendFrom = -1;
 			}
 			else
 			{
-				motions[phase].Pose(time); // 主角与牌永远用同一段、同一秒数。
+				seq[phase].Pose(time); // 主角与牌永远用同一段、同一秒数。
 			}
 			if (!Released) return;
 			float dt = (float)Math.Clamp(elapsed - beforeRelease, 0, 1.0 / 30.0);
