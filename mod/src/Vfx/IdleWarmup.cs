@@ -23,7 +23,7 @@ internal static class IdleWarmup
 		"@hero3d",       // v0.14.90：原版 COMMU 模型 / 动作 / 材质，离屏渲染两帧。
 		"@pile shaders",
 		"res://p3makoto/pile/pile_skel_data.tres", "res://p3makoto/portrait/portrait_skel_data.tres",
-		"@pile title", "@pile big type", "@pile chinese",
+		"@pile text 0", "@pile text 1", "@pile text 2", "@pile text 3", "@pile text 4",   // v0.14.91：牌堆界面的全部字号（PileFx.WarmText）
 		"res://p3makoto/ui/butterfly_wing_l.png", "res://p3makoto/ui/butterfly_wing_r.png", "res://p3makoto/ui/butterfly_body.png",
 		"res://p3makoto/pile_deck/pile_deck_skel_data.tres", "res://p3makoto/pile_discard/pile_discard_skel_data.tres", "res://p3makoto/pile_exhaust/pile_exhaust_skel_data.tres",
 		"res://p3makoto/ui/pile_deck.png", "res://p3makoto/ui/pile_discard.png", "res://p3makoto/ui/pile_exhaust.png",
@@ -107,7 +107,20 @@ internal static class IdleWarmup
 	/// v0.14.91（实机日志：预热在选人界面一项接一项在主线程上跑，单项 50~290ms，选人动画一直掉帧）：
 	/// 只能在主线程同步做、又很重的几项（Spine 立绘数据、中文大字体），只在地图界面空闲时做（开局必先经过地图）。
 	/// </summary>
-	private static bool Heavy(string path) => path.EndsWith("_skel_data.tres", StringComparison.Ordinal) || path == "@pile chinese";
+	private static bool Heavy(string path) => path.EndsWith("_skel_data.tres", StringComparison.Ordinal);
+
+	/// <summary>
+	/// v0.14.91（第二份日志：读档直接进战斗，没经过地图，重活一直没做，第一次开牌堆时才做）：
+	/// 战斗里也允许做重活，但要等玩家安静下来 —— 连续 1.5 秒鼠标没动。
+	/// </summary>
+	private static Vector2 lastMouse;
+	private static ulong mouseStill;
+	private static bool Quiet(ulong now)
+	{
+		Vector2 m = DisplayServer.MouseGetPosition();
+		if (m != lastMouse) { lastMouse = m; mouseStill = now; }
+		return now - mouseStill >= 1500;
+	}
 
 	private static bool MapIdle() => NRun.Instance != null && !CombatManager.Instance.IsInProgress && NMapScreen.Instance is NMapScreen map && GodotObject.IsInstanceValid(map) && map.IsOpen && map.IsVisibleInTree();
 
@@ -118,7 +131,9 @@ internal static class IdleWarmup
 	{
 		if (path == "@hero3d") return HeroStage.PrefetchDone;
 		List<string> pre = path == "@card frame" ? P3Makoto.Scenes.CardFrameSkin.WarmPaths()
-			: path.EndsWith(".png", StringComparison.Ordinal) ? new List<string> { path } : new List<string>();
+			: path.EndsWith(".png", StringComparison.Ordinal) ? new List<string> { path }
+			: path is "@pile text 2" or "@pile text 3" or "@pile text 4" ? new List<string> { PileFx.CjkFontPath }   // 中文字体文件后台读
+			: new List<string>();
 		bool done = true;
 		foreach (string p in pre)
 		{
@@ -156,9 +171,9 @@ internal static class IdleWarmup
 		bool eligible = Preload.OrdinaryReady && NCapstoneContainer.Instance?.InUse != true && NativeIdle() && MenuOrMap();
 		if (eligible) HeroStage.Prefetch();              // 3D 主角的模型 / 贴图 / 动作在后台线程解析，越早开始越好
 		if (!Gate.Ready(now, eligible)) return;
-		bool map = MapIdle();
-		int pick = Jobs.FindIndex(j => map || !Heavy(j));
-		if (pick < 0) return;                             // 只剩重活，等到地图界面再做
+		bool calm = MapIdle() || Quiet(now);
+		int pick = Jobs.FindIndex(j => calm || !Heavy(j));
+		if (pick < 0) return;                             // 只剩重活，等地图界面或鼠标停下来再做
 		string path = Jobs[pick];
 		if (!Prefetched(path)) return;                    // 后台还在读，下次再看
 		Jobs.RemoveAt(pick);
@@ -219,13 +234,9 @@ internal static class IdleWarmup
 			tiny.AddChild(bg);
 			return;
 		}
-		if (path.StartsWith("@pile", StringComparison.Ordinal))
+		if (path.StartsWith("@pile text ", StringComparison.Ordinal))
 		{
-			float k = tree.Root.GetVisibleRect().Size.Y / 1080f;
-			bool chinese = path == "@pile chinese";
-			int size = (int)((chinese ? 19f : path == "@pile title" ? 92f : 250f) * k);
-			Label label = Typo.Text(tiny, chinese ? "抽牌堆弃牌堆消耗牌组攻击技能能力诅咒整副牌按类型费用排列最新在前" : "DRAW PILE DISCARD EXHAUST DECK ATTACK SKILL POWER CURSE 0123456789", chinese ? Typo.CjkBold : Typo.Barlow, size, Colors.White, Vector2.Zero);
-			label.AddThemeConstantOverride("outline_size", chinese ? 0 : (int)(5f * k));
+			PileFx.WarmText(tiny, path[^1] - '0', tree.Root.GetVisibleRect().Size.Y / 1080f);
 			return;
 		}
 		if (res is Texture2D tex) tiny.AddChild(new Sprite2D { Texture = tex });

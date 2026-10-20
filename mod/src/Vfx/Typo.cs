@@ -80,7 +80,7 @@ public static class Typo
 	}
 
 	/// <summary>游戏自带的思源黑体粗体（正体，不斜切）；读不到用系统中文粗体。</summary>
-	public static Font CjkBold => _cjkBold ??= ResourceLoader.Load("res://fonts/jpn/NotoSansCJKjp-Bold.otf") as Font ?? Cjk;
+	public static Font CjkBold => _cjkBold ??= ResourceLoader.Load(PileFx.CjkFontPath) as Font ?? Cjk;
 
 	private static FontVariation? _cjkHeavy;
 

@@ -81,6 +81,12 @@ public static class CardFrameSkin
 
 	public static void Apply(NCard card)
 	{
+		// v0.14.91（实机日志：Apply 里空引用 ×3）：卡牌节点还没 _Ready 时原版就可能调 UpdateTitleLabel 等，这时 _frame 等字段还是空的；
+		// 跳过即可，_Ready 后的 Reload 会再走一遍。
+		if (card.Body == null || Frame(card) == null || Border(card) == null || Banner(card) == null || Plaque(card) == null || Portrait(card) == null || Title(card) == null)
+		{
+			return;
+		}
 		CardModel? m = card.Model;
 		NinePatchRect plaque = Plaque(card);
 		_vanillaPlaque ??= plaque.Texture;
@@ -181,7 +187,7 @@ public static class CardFrameSkin
 	}
 
 	/// <summary>储君卡名用到的全部汉字（localization/zhs/cards.json，含君王之剑和 "+"），预热时先栅格化。</summary>
-	private const string TitleChars = "+一七上下世中之事产人传伽位体何倒偏僭光共冲决冷凝击刀刃切划列创利券前剑割力助印去召向君品喜器国圣在地型墙大天太头好如子宇宙定导封射尘就崇序库座引彗形彩征御微态慨慷成战所打承抉护招拜择拳指捐授撞收改政敌斗新无既时明星映暗暴月服权架柱此武汇洞流淡淬溢漠火灭炉炸点炼熔爆独王环甚生界白盾矛破砸碰秘移穹空筹篷类粒纪绕群耀者胜脉自荟萃葬蓝藏虚视言谱质资超越踢踪轨轰辉辐迫迹追送造道量钻铸锋锤锻长间防阳际降陨隐集雨霸面项预马驾鸣黑！，";
+	internal const string TitleChars = "+一七上下世中之事产人传伽位体何倒偏僭光共冲决冷凝击刀刃切划列创利券前剑割力助印去召向君品喜器国圣在地型墙大天太头好如子宇宙定导封射尘就崇序库座引彗形彩征御微态慨慷成战所打承抉护招拜择拳指捐授撞收改政敌斗新无既时明星映暗暴月服权架柱此武汇洞流淡淬溢漠火灭炉炸点炼熔爆独王环甚生界白盾矛破砸碰秘移穹空筹篷类粒纪绕群耀者胜脉自荟萃葬蓝藏虚视言谱质资超越踢踪轨轰辉辐迫迹追送造道量钻铸锋锤锻长间防阳际降陨隐集雨霸面项预马驾鸣黑！，";
 
 	/// <summary>
 	/// v0.14.88 空闲预热（IdleWarmup "@card frame"）：卡框 / 卡图贴图先加载并在极小的画布上画一次（上传显存），

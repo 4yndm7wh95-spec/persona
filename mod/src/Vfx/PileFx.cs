@@ -1665,6 +1665,42 @@ public static class PileFx
 		return layer;
 	}
 
+	/// <summary>
+	/// v0.14.91（实机日志：首开抽牌堆 head=70ms / focus=31ms，复开 1ms）：牌堆界面实际用到的每一组 字体 × 字号 × 描边 先栅格化，
+	/// 和 Build / FocusLayer 里的写法一一对应（改那边的字号时这里一起改）。分 5 份，每份一个预热项，战斗里也能做。
+	/// </summary>
+	internal const int WarmTextParts = 5;
+	internal const string CjkFontPath = "res://fonts/jpn/NotoSansCJKjp-Bold.otf";
+
+	internal static void WarmText(Node parent, int part, float k)
+	{
+		const string latin = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ·→×";
+		switch (part)
+		{
+			case 0:
+				Text(parent, latin, Typo.Barlow, (int)(92f * k), Colors.White, Vector2.Zero, (int)(5f * k), Ink);     // 标题
+				Text(parent, "0123456789", Typo.Barlow, (int)(112f * k), Cyan, Vector2.Zero, (int)(5f * k), Ink);   // 张数
+				break;
+			case 1:
+				Text(parent, "EMPTY", Typo.Barlow, (int)(90f * k), Colors.White, Vector2.Zero, 0, Ink);
+				Text(parent, latin, Typo.Barlow, (int)(40f * k), Cyan, Vector2.Zero, (int)(4f * k), Ink);           // 特写：类型
+				Text(parent, latin, Typo.Barlow, (int)(34f * k), Colors.White, Vector2.Zero, (int)(4f * k), Ink);   // 特写：张数
+				Text(parent, latin, Typo.Barlow, (int)(19f * k), Colors.White, Vector2.Zero, 0, Ink);
+				Text(parent, latin, Typo.Barlow, (int)(20f * k), Colors.White, Vector2.Zero, (int)(3f * k), Ink);
+				break;
+			case 2:
+				Text(parent, "抽牌顺序随机按类型费用排列整副牌组本场战斗中消耗的牌最新在前弃牌堆攻击技能能力诅咒状态张", Typo.CjkBold, (int)(19f * k), Colors.White, Vector2.Zero, 0, Ink);
+				Text(parent, "点击任意处返回攻击技能能力诅咒状态", Typo.CjkBold, (int)(20f * k), Colors.White, Vector2.Zero, (int)(3f * k), Ink);
+				break;
+			default:
+				// 特写的卡名（54px + 6px 描边），一半一份
+				string names = Scenes.CardFrameSkin.TitleChars;
+				int half = names.Length / 2;
+				Text(parent, part == 3 ? names[..half] : names[half..], Typo.CjkBold, (int)(54f * k), Colors.White, Vector2.Zero, (int)(6f * k), Ink);
+				break;
+		}
+	}
+
 	private static Label Text(Node parent, string text, Font? font, int size, Color color, Vector2 at, int outline, Color outlineColor)
 	{
 		Label l = new() { Text = text, Position = at, MouseFilter = Control.MouseFilterEnum.Ignore };
