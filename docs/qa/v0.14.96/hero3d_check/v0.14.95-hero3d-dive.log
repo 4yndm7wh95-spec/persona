@@ -1,0 +1,16 @@
+WARNING: [P3Makoto] hero3d unavailable; using portrait: missing / empty hero resource: anim/CampTopStart.scale.bin
+   at: void P3Makoto.Vfx.HeroStage.Fail(System.Exception) (:0)
+   C# backtrace (most recent call first):
+       [0] void Godot.GD.PushWarning(string)
+       [1] void P3Makoto.Vfx.HeroStage.Fail(System.Exception)
+       [2] bool P3Makoto.Vfx.HeroStage.Ensure(Godot.SceneTree)
+       [3] bool P3Makoto.Vfx.HeroStage.Warm(Godot.Node)
+       [4] void P3Makoto.Vfx.IdleWarmup.WarmOne(string)
+       [5] void P3Makoto.Vfx.IdleWarmup.Step()
+       [6] void P3Makoto.Vfx.IdleWarmup.Tick()
+       [7] void Godot.Callable.<From>g__Trampoline|1_0(object, Godot.NativeInterop.NativeVariantPtrArgs, Godot.NativeInterop.godot_variant&)
+       [8] void Godot.DelegateUtils.InvokeWithVariantArgs(nint, System.Void*, Godot.NativeInterop.godot_variant**, int, Godot.NativeInterop.godot_variant*)
+[P3Makoto] perf idle warmup @hero3d 15.0ms; 13 remaining
+[P3Makoto] perf pile Draw build 69.4ms (decor 59.7ms; hide=0.1 water=0.2 bubbles=1.3 disc=3.6 butterfly=9.7 hero3d=0.0 portrait=44.3 decor=0.0 head=2.8 focus=1.5 tail=5.2); idle warmup complete=False
+[P3Makoto] perf pile Draw build 9.2ms (decor 6.1ms; hide=0.0 water=0.0 bubbles=0.3 disc=0.5 butterfly=4.3 hero3d=0.0 portrait=0.8 decor=0.0 head=1.1 focus=0.7 tail=1.3); idle warmup complete=False
+[P3Makoto] perf pile Draw build 43.4ms (decor 40.4ms; hide=0.0 water=0.0 bubbles=0.3 disc=0.5 butterfly=0.1 hero3d=0.0 portrait=39.3 decor=0.0 head=1.2 focus=0.6 tail=1.3); idle warmup complete=False

@@ -1709,7 +1709,7 @@ public static class PileFx
 		void Cjk(string chars, int size, int outline)
 		{
 			string uniq = new(chars.Distinct().Where(c => c > 0x2000).ToArray());
-			int n = size >= 40 ? 3 : 6;   // 大字号带描边每个字约 4ms，一份控制在 15~25ms
+			int n = size >= 40 ? 1 : 2;   // 缩小不可中断的主线程调用；实际耗时继续由日志验证。
 			for (int i = 0; i < uniq.Length; i += n)
 				jobs.Add((Typo.CjkBold, size, outline, uniq.Substring(i, Math.Min(n, uniq.Length - i)), true));
 		}

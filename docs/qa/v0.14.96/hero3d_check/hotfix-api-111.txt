@@ -1,0 +1,11 @@
+游戏程序集：C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\data_sts2_windows_x86_64\sts2.dll（sts2 + GodotSharp，14586 个类型）
+
+== P3Makoto.dll ==
+检查了 1165 处引用
+
+== P3MusicBox.dll ==
+检查了 249 处引用
+
+== P3TestMod.dll ==
+检查了 382 处引用
+结果：全部能找到 ✓
