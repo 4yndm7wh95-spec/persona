@@ -107,8 +107,7 @@ internal static class IdleWarmup
 	/// v0.14.91（实机日志：预热在选人界面一项接一项在主线程上跑，单项 50~290ms，选人动画一直掉帧）：
 	/// 只能在主线程同步做、又很重的几项（Spine 立绘数据、中文大字体），只在地图界面空闲时做（开局必先经过地图）。
 	/// </summary>
-	private static bool Heavy(string path) => path.EndsWith("_skel_data.tres", StringComparison.Ordinal)
-		|| (path.StartsWith("@pile text #", StringComparison.Ordinal) && TextJobs != null && TextJobs.FindIndex(j => j.Cjk) == int.Parse(path[12..]));   // 中文字体首次初始化
+	private static bool Heavy(string path) => path.EndsWith("_skel_data.tres", StringComparison.Ordinal);
 
 	/// <summary>
 	/// v0.14.91（第二份日志：读档直接进战斗，没经过地图，重活一直没做，第一次开牌堆时才做）：
@@ -127,17 +126,8 @@ internal static class IdleWarmup
 
 	private static readonly HashSet<string> Requested = new(StringComparer.Ordinal);
 	private static List<(Font Font, int Size, int Outline, string Text, bool Cjk)>? TextJobs;
-	private static bool cjkInitialized;
 	private static bool textBatch;
 	private static bool TextJob(string path) => path.StartsWith("@pile text #", StringComparison.Ordinal);
-
-	private static bool CanWarm(string path, bool calm)
-	{
-		// 不能跳过初始化项、却让后面的中文批次抢先初始化字体。
-		if (TextJob(path) && TextJobs != null && TextJobs[int.Parse(path[12..])].Cjk && !cjkInitialized)
-			return calm;
-		return calm || !Heavy(path);
-	}
 
 	/// <summary>贴图类先交给后台线程读进缓存（不是 Spine，不碰启动黑屏那个问题），读完再在主线程画一下；3D 主角等它的后台解析完。</summary>
 	private static bool Prefetched(string path)
@@ -145,7 +135,6 @@ internal static class IdleWarmup
 		if (path == "@hero3d") return HeroStage.PrefetchDone;
 		List<string> pre = path == "@card frame" ? P3Makoto.Scenes.CardFrameSkin.WarmPaths()
 			: path.EndsWith(".png", StringComparison.Ordinal) ? new List<string> { path }
-			: path.StartsWith("@pile text #", StringComparison.Ordinal) && TextJobs![int.Parse(path[12..])].Cjk ? new List<string> { PileFx.CjkFontPath }   // 中文字体文件后台读
 			: new List<string>();
 		bool done = true;
 		foreach (string p in pre)
@@ -186,7 +175,7 @@ internal static class IdleWarmup
 		if (eligible) HeroStage.Prefetch();              // 3D 主角的模型 / 贴图 / 动作在后台线程解析，越早开始越好
 		if (!Gate.Ready(now, eligible)) return;
 		bool calm = MapIdle() || Quiet(now);
-		int pick = Jobs.FindIndex(j => CanWarm(j, calm));
+		int pick = Jobs.FindIndex(j => calm || !Heavy(j));
 		if (pick < 0) return;                             // 只剩重活，等地图界面或鼠标停下来再做
 		string path = Jobs[pick];
 		if (path == "@pile text" && tree != null)
@@ -202,7 +191,6 @@ internal static class IdleWarmup
 		try
 		{
 			WarmOne(path);
-			if (TextJob(path) && TextJobs![int.Parse(path[12..])].Cjk) cjkInitialized = true;
 		}
 		catch (Exception e) { failed++; ModEntry.Report("idle warmup " + path, e); }
 		GD.Print($"{ModEntry.Tag} perf idle warmup {path} {(Time.GetTicksUsec() - start) / 1000f:0.0}ms; {Jobs.Count} remaining");

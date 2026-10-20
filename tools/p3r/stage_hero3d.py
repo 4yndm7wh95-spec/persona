@@ -43,36 +43,10 @@ def commu_word(out):
 
 
 def dive(out):
-    """入水转场：原版水花 10 帧（art/p3menu_system/p3r/splash_NN.png）+ 每帧的"露出水下"遮罩（水花轮廓填实后逐帧累积，480×270）
-    + 原版 UIM_UI_Camp_In 网格的逐帧偏差（17×10 网格，各顶点 位置 −（按 UV 的静止位置），1920×1184 坐标），存成 warp.bin（float32 75×10×17×2）。"""
-    from PIL import Image
-    from scipy.ndimage import binary_closing, binary_fill_holes
-    os.makedirs(out, exist_ok=True)
-    W, H = 480, 270
-    acc = np.zeros((H, W), bool)
-    for i in range(10):
-        src = "art/p3menu_system/p3r/splash_%02d.png" % i
-        shutil.copy(src, out + "splash_%02d.png" % i)
-        a = np.asarray(Image.open(src).convert("RGBA"))[..., 3] > 25
-        # 和游戏里水花的摆法一致：横向铺满 1.06 倍屏宽，纵向 1.6 倍（949 高），上边缘在 −10% 处，水平居中
-        im = Image.fromarray((a * 255).astype(np.uint8)).resize((int(a.shape[1] * 1.06 * W / 961), int(a.shape[0] * 1.6 * H / 949)))
-        m = np.zeros((H, W), bool); arr = np.asarray(im) > 127
-        x0 = (W - im.width) // 2; y0 = int(-0.10 * H)
-        ys, xs = max(0, -y0), max(0, -x0); ye, xe = min(im.height, H - y0), min(im.width, W - x0)
-        m[y0 + ys:y0 + ye, x0 + xs:x0 + xe] = arr[ys:ye, xs:xe]
-        acc |= binary_fill_holes(binary_closing(m, iterations=3))
-        Image.fromarray((acc * 255).astype(np.uint8)).save(out + "mask_%02d.png" % i)
-    uim = json.load(open(R + "anim/UIM_UI_Camp_In__UIM_UI_Camp_In.json"))
-    off = np.array([k["value"] for k in uim["tracks"][0]["keys"]], np.float32)          # 75×170×2
-    g = json.load(open(R + "json/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_In.json")); g = g[0] if isinstance(g, list) else g
-    gv = g["Properties"]["UimData"]["p2DGeomVertUV"]
-    base = np.array([[v["x"], v["y"]] for v in gv], np.float32); uv = np.array([[v["u0"], v["v0"]] for v in gv], np.float32)
-    rest = np.stack([uv[:, 0] * 1920 - 960, uv[:, 1] * 1184 - 556], -1)
-    dev = (base[None] + off - rest[None]).reshape(75, 10, 17, 2)
-    # 网格行是从下往上排的（第 0 行 v=1）：翻成从上往下，方便当贴图用
-    order = np.argsort(uv.reshape(10, 17, 2)[:, 0, 1])
-    dev[:, :, :, :] = dev[:, order]
-    dev.astype(np.float32).tofile(out + "warp.bin")
+    # Shared generator: measured placement and the original In -> Loop_L geometry.
+    from pathlib import Path
+    from dive_geometry import build
+    build(Path(__file__).resolve().parents[2], out)
 
 
 def main():

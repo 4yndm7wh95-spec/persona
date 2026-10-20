@@ -7,20 +7,28 @@ public static class Shaders
 {
 	private static Shader Make(string code) => new Shader { Code = code };
 
-	private static Shader? _heroFlat, _heroRamp, _heroKeyOut, _heroShadow, _heroCut, _commuBg;
+	private static Shader? _heroFlat, _heroRamp, _heroKeyOut, _heroShadow, _heroCut, _commuBg, _pileSplash;
 
 	/// <summary>
 	/// v0.14.95 入水转场的原版波浪（UIM_UI_Camp_In）：17×10 网格，各顶点"位置 − 按 UV 的静止位置"的偏差（1920×1184 坐标，单位像素）
-	/// 逐帧写进 warp_tex（17×10 RG 浮点贴图，第 0 行在上）。屏幕 uv → 去掉偏差后的取样 uv。warp_on = 0 时原样。
+	/// warp_tex 一次上传原版 In + Loop_L（75+210 帧，每帧 10 行）；GPU 按 warp_frame 插值，不再逐帧上传。
+	/// 屏幕 uv → 去掉偏差后的取样 uv。warp_on = 0 时原样。
 	/// </summary>
 	private const string WarpGlsl = @"
 uniform sampler2D warp_tex : filter_linear, repeat_disable;
 uniform float warp_on = 0.0;
+uniform float warp_frame = 0.0;
 vec2 warp_uv(vec2 suv) {
 	if (warp_on <= 0.0) return suv;
 	vec2 p = vec2(suv.x * 1920.0, suv.y * 1080.0 + 22.0);           // 网格坐标：x 0~1920，y 0~1184（上下各多出 52）
-	vec2 g = p / vec2(1920.0, 1184.0);
-	vec2 dev = texture(warp_tex, vec2((g.x * 16.0 + 0.5) / 17.0, (g.y * 9.0 + 0.5) / 10.0)).rg;
+	vec2 g = clamp(p / vec2(1920.0, 1184.0), vec2(0.0), vec2(1.0));
+	float height = float(textureSize(warp_tex, 0).y);
+	float last = height / 10.0 - 1.0;
+	float f = clamp(warp_frame, 0.0, last);
+	float a = floor(f), b = min(a + 1.0, last);
+	vec2 uv = vec2((g.x * 16.0 + 0.5) / 17.0, (g.y * 9.0 + 0.5) / height);
+	vec2 dev = mix(texture(warp_tex, uv + vec2(0.0, a * 10.0 / height)).rg,
+		texture(warp_tex, uv + vec2(0.0, b * 10.0 / height)).rg, f - a);
 	p -= dev * warp_on;
 	return vec2(p.x / 1920.0, (p.y - 22.0) / 1080.0);
 }
@@ -35,7 +43,26 @@ uniform vec3 col = vec3(1.0);
 void fragment() { ALBEDO = col; }
 ");
 
-	// 卡通明暗（原版 ToonThreshold -0.2 / Softness 0.1）+ 边缘光；暗部 50% 透出水（原版 RTShadowColor_Blend 0.5，用色键表示）。
+	/// <summary>牌组水花只采样当前一张，避免相邻形态交叉淡化产生两套水滴轮廓。</summary>
+	public static Shader PileSplash => _pileSplash ??= Make(@"
+shader_type canvas_item;
+render_mode unshaded, blend_premul_alpha;
+uniform sampler2D frame_tex : filter_linear, repeat_disable;
+uniform vec4 frame_map = vec4(1.0, 1.0, 0.0, 0.0);
+uniform float fade = 1.0;
+varying vec4 splash_modulate;
+void vertex() { splash_modulate = COLOR; }
+void fragment() {
+	vec2 uv = UV * frame_map.xy + frame_map.zw;
+	float inside = step(0.0, uv.x) * step(uv.x, 1.0) * step(0.0, uv.y) * step(uv.y, 1.0);
+	vec4 c = texture(frame_tex, uv);
+	float alpha = c.a * fade * inside * splash_modulate.a;
+	COLOR = vec4(c.rgb * splash_modulate.rgb * alpha, alpha);
+}
+");
+
+
+	// 原贴图的黑色带子 / 睫毛 / 细线保留；只有亮色区域参与蓝色调、透水阴影和边缘光。
 	public static Shader HeroRamp => _heroRamp ??= Make(@"
 shader_type spatial;
 render_mode unshaded, cull_disabled;
@@ -47,18 +74,28 @@ uniform vec3 c3 = vec3(1.0);
 uniform vec3 shade = vec3(0.55, 0.85, 1.0);
 varying vec3 wn;
 void vertex() { wn = (MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz; }
+vec3 hero_linear(vec3 c) {
+	return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
+}
 void fragment() {
 	vec4 t = texture(tex, UV);
 	float l = dot(t.rgb, vec3(0.333));
 	vec3 c = l < 0.25 ? mix(c0, c1, l / 0.25) : l < 0.6 ? mix(c1, c2, (l - 0.25) / 0.35) : mix(c2, c3, (l - 0.6) / 0.4);
-	// v0.14.97（实机：耳机线 / 睫毛这些两面都看得到的薄片在游戏里发白）：背面的法线要翻过来；D3D12 / Vulkan 和测试用的兼容渲染器对背面处理不同
+	// v0.14.97 修正：法线翻面并不能阻止蓝色 ramp / 浅色 rim 把原贴图里的黑色提亮。
+	// 两个渲染器的取样空间不同；以线性亮度识别原贴图的深色笔画，避免兼容渲染器漏保护。
+	float ink = smoothstep(0.12, 0.60, dot(OUTPUT_IS_SRGB ? hero_linear(t.rgb) : t.rgb, vec3(1.0 / 3.0)));
+	// 暗部仍保留低强度受光和掠射反光，避免把纯黑贴图画成没有层次的黑剪影。
+	vec3 dark_base = OUTPUT_IS_SRGB ? vec3(0.065, 0.075, 0.090) : hero_linear(vec3(0.065, 0.075, 0.090));
+	c = mix(max(t.rgb, dark_base), c, ink);
 	float side = FRONT_FACING ? 1.0 : -1.0;
 	float nl = dot(normalize(wn) * side, normalize(vec3(-0.4, 0.6, 0.7)));
 	float lit = smoothstep(-0.3, -0.1, nl);
 	c *= mix(shade, vec3(1.0), lit);
-	c = mix(c, vec3(0.0, 1.0, 0.0), 0.5 * (1.0 - lit));
+	c = mix(c, vec3(0.0, 1.0, 0.0), 0.5 * (1.0 - lit) * ink);
 	float rim = pow(1.0 - abs(dot(normalize(NORMAL), VIEW)), 4.0);
-	ALBEDO = mix(c, vec3(0.80, 0.94, 1.0), rim * 0.6);
+	vec3 dark_rim = OUTPUT_IS_SRGB ? vec3(0.20, 0.23, 0.27) : hero_linear(vec3(0.20, 0.23, 0.27));
+	c = mix(c, dark_rim, rim * (1.0 - ink) * 0.65);
+	ALBEDO = mix(c, vec3(0.80, 0.94, 1.0), rim * 0.6 * ink);
 }
 ");
 
@@ -120,6 +157,8 @@ void fragment() {
 shader_type canvas_item;
 " + WarpGlsl + @"
 uniform sampler2D mask_tex : filter_linear;   // 入水：水花轮廓里先露出水下（v0.14.95）
+uniform sampler2D mask_next : filter_linear;
+uniform float mask_mix = 0.0;
 uniform float reveal = 1.0;                   // 1 = 全屏水下
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
 uniform sampler2D caustics : repeat_enable, filter_linear;
@@ -153,7 +192,8 @@ void fragment() {
 	float r = length(d);
 	float inside = smoothstep(radius, radius - 0.01, r);
 	float rim = smoothstep(0.02, 0.0, abs(r - radius)) * step(0.001, radius);
-	float shown = max(texture(mask_tex, SCREEN_UV).r, reveal);
+	float shown = reveal;
+	if (shown < 1.0) shown = max(mix(texture(mask_tex, SCREEN_UV).r, texture(mask_next, SCREEN_UV).r, mask_mix), reveal);
 	COLOR = vec4(c + vec3(0.7, 0.95, 1.0) * rim * 0.9, max(inside, rim * 0.9) * shown);
 }
 ");
