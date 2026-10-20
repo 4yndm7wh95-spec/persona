@@ -220,48 +220,11 @@ public static class CardFrameSkin
 		GD.Print($"{ModEntry.Tag} perf card frame warm {(Time.GetTicksUsec() - t0) / 1000f:0.0}ms ({paths.Count} textures)");
 	}
 
-	/// <summary>
-	/// 卡名：白字 + 细深蓝描边（用户在三种写法里选的 C），不要原版的粗描边。
-	/// 字体用原版的（v0.14.99，见 VanillaTitleFont）；升级后的卡沿用原版"绿色"的约定，用浅青绿。
-	/// NCard 复用给别的卡时（m = null）还原原版的颜色、描边、阴影。
-	/// </summary>
+	/// <summary>卡名完全沿用原版字体、颜色、描边、阴影及升级颜色；只隐藏旧的自定义底衬。</summary>
 	private static void TitleStyle(NCard card, CardModel? m)
 	{
-		Label t = Title(card);
-		Shade(t, false);   // v0.14.91（用户：卡名后面那块阴影看着很脏）：不再垫深色椭圆，只留文字描边；旧卡上已有的会被移除
-		if (m == null)
-		{
-			if (t.HasMeta("p3_title"))
-			{
-				t.AddThemeColorOverride("font_shadow_color", t.GetMeta("p3_shadow").AsColor());
-				t.AddThemeConstantOverride("outline_size", t.GetMeta("p3_outline").AsInt32());
-				t.AddThemeConstantOverride("shadow_outline_size", t.GetMeta("p3_shadow_outline").AsInt32());
-				t.AddThemeConstantOverride("shadow_offset_x", t.GetMeta("p3_sx").AsInt32());
-				t.AddThemeConstantOverride("shadow_offset_y", t.GetMeta("p3_sy").AsInt32());
-				t.RemoveMeta("p3_title");
-			}
-			return;
-		}
-		if (!t.HasMeta("p3_title"))
-		{
-			t.SetMeta("p3_title", true);
-			t.SetMeta("p3_shadow", t.GetThemeColor("font_shadow_color"));
-			t.SetMeta("p3_outline", t.GetThemeConstant("outline_size"));
-			t.SetMeta("p3_shadow_outline", t.GetThemeConstant("shadow_outline_size"));
-			t.SetMeta("p3_sx", t.GetThemeConstant("shadow_offset_x"));
-			t.SetMeta("p3_sy", t.GetThemeConstant("shadow_offset_y"));
-			// 用户选 C：白字 + 深蓝描边 + 轻投影；v0.14.85（v0.14.84 用投影做的"柔光"边缘太硬）：字后面另放一块羽化的深色椭圆（见 Shade）
-			t.AddThemeConstantOverride("outline_size", 6);
-			t.AddThemeConstantOverride("shadow_outline_size", 6);
-			t.AddThemeConstantOverride("shadow_offset_x", 0);
-			t.AddThemeConstantOverride("shadow_offset_y", 2);
-			t.AddThemeColorOverride("font_shadow_color", new Color(0f, 0f, 0f, 0.35f));
-		}
-		// 升级后沿用原版"绿色卡名"的约定，换成和塔罗卡框搭的浅青绿
-		t.AddThemeColorOverride("font_color", m.IsUpgraded ? new Color(0.62f, 1f, 0.78f) : Colors.White);
-		t.AddThemeColorOverride("font_outline_color", new Color(0.03f, 0.07f, 0.14f));
+		Shade(Title(card), false);
 	}
-
 	private static GradientTexture2D? _shadeTex;
 
 	/// <summary>
@@ -331,7 +294,7 @@ public static class CardFrameReloadPatch
 	public static void Postfix(NCard __instance) => ModEntry.Safe("card frame", () => CardFrameSkin.Apply(__instance));
 }
 
-/// <summary>原版 UpdateTitleLabel 每次都把卡名颜色设回奶油色 / 绿色，之后再上一次我们的颜色。</summary>
+/// <summary>原版更新卡名后同步卡框；保留原版的卡名样式。</summary>
 [HarmonyPatch(typeof(NCard), "UpdateTitleLabel")]
 public static class CardFrameTitlePatch
 {
