@@ -263,3 +263,165 @@ Makoto rear-facing at horizontal anvil, original reference action with RIGHT han
 - venerate：原版下方是储君的两个**仆从**在膜拜，不是一双手 —— 和卡牌逻辑不符，第 2 批开头补做。
 - black_hole：怪物只是把原图换了配色（"就是给原图套了个滤镜"），要重新设计成 P3R 暗影，第 2 批开头补做。
 - 规则已写进 docs/codex/codex_card_art.md【3】：仆从 → 人格面具；敌人必须重新设计。
+
+
+## 第 3 批：14 张 A 版；7 张已通过并选定
+
+用户明确要求后续只生成 A 版，不自动补 B 版。本批均为 1000×760、不透明 RGB。按用户审批，已选定 photon_cut、charge，以及最后生成并明确通过的 child_of_the_stars、conqueror、constellation、convergence、devastate；其余保留 A 候选等待反馈。预览：`preview/batch3.png`（原版 | A；青框表示已选）；真实卡框检查：`preview/in_frame_batch3.png`。未修改代码。
+
+| 卡名 | 状态 | 来源 / 说明 |
+|---|---|---|
+| `photon_cut` | 已通过，复制为定稿 | 经用户指出脸型问题后按参考重绘脸部；修正版通过。 |
+| `refine_blade` | A 候选，待审 | A 版候选；脸部按用户反馈修正，尚未收到明确通过。 |
+| `solar_strike` | A 候选，待审 | A 版候选；画面右上额外出现人物，待审。 |
+| `spoils_of_battle` | A 候选，待审 | A 版候选；仆从替换为人格面具，待审。 |
+| `wrought_in_war` | A 候选，待审 | A 版候选；画面有额外暗影，待审。 |
+| `begone` | A 候选，待审 | A 版候选，待审。 |
+| `alignment` | A 候选，待审 | A 版候选，待审。 |
+| `bulwark` | A 候选，待审 | A 版候选，待审。 |
+| `charge` | 已通过，复制为定稿 | 原版四角星构图配塔尔塔罗斯断墙；初版储君脸被用户否决后重画，修正版通过。 |
+| `child_of_the_stars` | 已通过，复制为定稿 | 用户确认通过。星形主体边缘接近画布边缘。 |
+| `conqueror` | 已通过，复制为定稿 | 用户确认通过。前景手与剑柄的抓握表现仍有可改进处。 |
+| `constellation` | 已通过，复制为定稿 | 用户确认通过。 |
+| `convergence` | 已通过，复制为定稿 | 用户确认通过。青色轨迹略像实体带状，背景时钟刻度仍可见。 |
+| `devastate` | 已通过，复制为定稿 | 用户确认通过。 |
+
+### photon_cut（A）
+
+生成来源：`exec-7ca0c6d5-897e-4de2-9d08-2ab8d876e17a.png`。经用户指出脸型问题后按参考重绘脸部；修正版通过。
+
+提示词全文：
+
+```text
+Generate ONE opaque full-bleed landscape game card 1000:760 aspect. Reference1 ORIGINAL composition guide, not edit target: preserve large subject scale, positions and recognizable action. Reference2 four-panel approved P3R STYLE BOARD ONLY, do not make panels. Repaint in clean Persona3Reload anime hard two-tone cel shading, dark outlines, big flat shapes legible at250x190. At least60% navy071a4a/royalblue1f5cff/cyan39d8ff/icewhite d8f4ff. Background2-3 LARGE flat diagonal menu blocks only; one secondary stripe under25% together with signature effect. No particles/tiny dots/scattered shards/bloom/glossy gradients/tiny highlights/scenery detail. ONE main P3R motif specified. Bare pale teenage hands, black uniform blazer WHITE shirt cuffs, NO gloves/red wrist stripes. Makoto Yuki: slender teenage boy, long navy fringe hides one eye, narrow calm blue-grey visible eye, small straight neutral mouth, slender oval face fine nose, black blazer white shirt red-white neck headphones and upper-arm red armband. Face identity use supporting ref3 when present; not generic cheerful hero. Enemy MUST be redesigned black-fluid Shadow with BLUE arcana mask, no original monster eyes/tentacles/outline merely recolored. Regent servants are Persona creatures, never human hands; no Regent armor/hats/cloak/gold gauntlets/star swordguards. Faces/hands/weapontips/main effects within x8-92%,y12-75% safe box. No words/letters/numbers/watermark/UI/borders. Original long horizontal sword slicing a yellow-white arc, enemy chunk above blade. Makoto's bare hand with white cuff grips a slender single-edged straight sword with simple guard, sweeping across center. Yellow-white cut arc retained. Enemy above is sliced black fluid blue-mask Shadow, NO gore. Navy/royalblue background with one crimson stripe.
+```
+
+### refine_blade（A）
+
+生成来源：`exec-80bb236e-7eb4-4f5d-a91b-be153af64560.png`。A 版候选；脸部按用户反馈修正，尚未收到明确通过。
+
+提示词全文：
+
+```text
+Generate ONE opaque full-bleed landscape game card 1000:760 aspect. Reference1 ORIGINAL composition guide, not edit target: preserve large subject scale, positions and recognizable action. Reference2 four-panel approved P3R STYLE BOARD ONLY, do not make panels. Repaint in clean Persona3Reload anime hard two-tone cel shading, dark outlines, big flat shapes legible at250x190. At least60% navy071a4a/royalblue1f5cff/cyan39d8ff/icewhite d8f4ff. Background2-3 LARGE flat diagonal menu blocks only; one secondary stripe under25% together with signature effect. No particles/tiny dots/scattered shards/bloom/glossy gradients/tiny highlights/scenery detail. ONE main P3R motif specified. Bare pale teenage hands, black uniform blazer WHITE shirt cuffs, NO gloves/red wrist stripes. Makoto Yuki: slender teenage boy, long navy fringe hides one eye, narrow calm blue-grey visible eye, small straight neutral mouth, slender oval face fine nose, black blazer white shirt red-white neck headphones and upper-arm red armband. Face identity use supporting ref3 when present; not generic cheerful hero. Enemy MUST be redesigned black-fluid Shadow with BLUE arcana mask, no original monster eyes/tentacles/outline merely recolored. Regent servants are Persona creatures, never human hands; no Regent armor/hats/cloak/gold gauntlets/star swordguards. Faces/hands/weapontips/main effects within x8-92%,y12-75% safe box. No words/letters/numbers/watermark/UI/borders. Original two hands cradle sword horizontally as sword midsection shines. Two bare pale Makoto hands black sleeves WHITE cuffs hold slender simple-guard sword horizontally across center, cyan-white angular light at blade midpoint. ONE large faint tarot-card silhouette behind blade. No hammer, no particles or spark field. Cyan/ice diagonal stripe.
+```
+
+### solar_strike（A）
+
+生成来源：`exec-a11ef764-ddb7-4e66-86bf-839d7d7f6ae4.png`。A 版候选；画面右上额外出现人物，待审。
+
+提示词全文：
+
+```text
+Generate ONE opaque full-bleed landscape game card 1000:760 aspect. Reference1 ORIGINAL composition guide, not edit target: preserve large subject scale, positions and recognizable action. Reference2 four-panel approved P3R STYLE BOARD ONLY, do not make panels. Repaint in clean Persona3Reload anime hard two-tone cel shading, dark outlines, big flat shapes legible at250x190. At least60% navy071a4a/royalblue1f5cff/cyan39d8ff/icewhite d8f4ff. Background2-3 LARGE flat diagonal menu blocks only; one secondary stripe under25% together with signature effect. No particles/tiny dots/scattered shards/bloom/glossy gradients/tiny highlights/scenery detail. ONE main P3R motif specified. Bare pale teenage hands, black uniform blazer WHITE shirt cuffs, NO gloves/red wrist stripes. Makoto Yuki: slender teenage boy, long navy fringe hides one eye, narrow calm blue-grey visible eye, small straight neutral mouth, slender oval face fine nose, black blazer white shirt red-white neck headphones and upper-arm red armband. Face identity use supporting ref3 when present; not generic cheerful hero. Enemy MUST be redesigned black-fluid Shadow with BLUE arcana mask, no original monster eyes/tentacles/outline merely recolored. Regent servants are Persona creatures, never human hands; no Regent armor/hats/cloak/gold gauntlets/star swordguards. Faces/hands/weapontips/main effects within x8-92%,y12-75% safe box. No words/letters/numbers/watermark/UI/borders. Original burnt enemy on left, immense red-white solar arc upper-right sweeping into it. Retain huge orange-red solar arc and yellow-white hit shape at same scale. Left target redesigned flowing black Shadow wearing blue arcana mask, not original enemy. Navy/royalblue menu background with one magenta stripe, no human extra.
+```
+
+### spoils_of_battle（A）
+
+生成来源：`exec-25476677-a579-4ac8-975d-6930d28ded62.png`。A 版候选；仆从替换为人格面具，待审。
+
+提示词全文：
+
+```text
+Generate ONE opaque full-bleed landscape game card 1000:760 aspect. Reference1 ORIGINAL composition guide, not edit target: preserve large subject scale, positions and recognizable action. Reference2 four-panel approved P3R STYLE BOARD ONLY, do not make panels. Repaint in clean Persona3Reload anime hard two-tone cel shading, dark outlines, big flat shapes legible at250x190. At least60% navy071a4a/royalblue1f5cff/cyan39d8ff/icewhite d8f4ff. Background2-3 LARGE flat diagonal menu blocks only; one secondary stripe under25% together with signature effect. No particles/tiny dots/scattered shards/bloom/glossy gradients/tiny highlights/scenery detail. ONE main P3R motif specified. Bare pale teenage hands, black uniform blazer WHITE shirt cuffs, NO gloves/red wrist stripes. Makoto Yuki: slender teenage boy, long navy fringe hides one eye, narrow calm blue-grey visible eye, small straight neutral mouth, slender oval face fine nose, black blazer white shirt red-white neck headphones and upper-arm red armband. Face identity use supporting ref3 when present; not generic cheerful hero. Enemy MUST be redesigned black-fluid Shadow with BLUE arcana mask, no original monster eyes/tentacles/outline merely recolored. Regent servants are Persona creatures, never human hands; no Regent armor/hats/cloak/gold gauntlets/star swordguards. Faces/hands/weapontips/main effects within x8-92%,y12-75% safe box. No words/letters/numbers/watermark/UI/borders. Original two servants left and right embracing central blue treasure with sword inserted downward. Replace left servant by small round snowman imp blue jesterhat grinning, right by tiny blue-winged fairy in simple leotard. They hold central large blue treasure, slender straight simpleguard sword points down into treasure. No human hands in place of servants. Navy/royalblue with one magenta stripe. STRICT: ONLY two small Persona creatures and treasure/sword. NO human, NO Makoto portrait, NO giant face, NO additional shadow. Styleboard characters must NOT be copied.
+```
+
+### wrought_in_war（A）
+
+生成来源：`exec-bd42825d-f149-4b8f-a20c-83ada557a8a8.png`。A 版候选；画面有额外暗影，待审。
+
+提示词全文：
+
+```text
+Generate ONE opaque full-bleed landscape game card 1000:760 aspect. Reference1 ORIGINAL composition guide, not edit target: preserve large subject scale, positions and recognizable action. Reference2 four-panel approved P3R STYLE BOARD ONLY, do not make panels. Repaint in clean Persona3Reload anime hard two-tone cel shading, dark outlines, big flat shapes legible at250x190. At least60% navy071a4a/royalblue1f5cff/cyan39d8ff/icewhite d8f4ff. Background2-3 LARGE flat diagonal menu blocks only; one secondary stripe under25% together with signature effect. No particles/tiny dots/scattered shards/bloom/glossy gradients/tiny highlights/scenery detail. ONE main P3R motif specified. Bare pale teenage hands, black uniform blazer WHITE shirt cuffs, NO gloves/red wrist stripes. Makoto Yuki: slender teenage boy, long navy fringe hides one eye, narrow calm blue-grey visible eye, small straight neutral mouth, slender oval face fine nose, black blazer white shirt red-white neck headphones and upper-arm red armband. Face identity use supporting ref3 when present; not generic cheerful hero. Enemy MUST be redesigned black-fluid Shadow with BLUE arcana mask, no original monster eyes/tentacles/outline merely recolored. Regent servants are Persona creatures, never human hands; no Regent armor/hats/cloak/gold gauntlets/star swordguards. Faces/hands/weapontips/main effects within x8-92%,y12-75% safe box. No words/letters/numbers/watermark/UI/borders. Makoto holds slender straight single-edged sword with TWO bare hands and lunges diagonally LEFT same original pose and scale. Sword has flat blue glass facets and thin crimson edge effect; simple guard NOT star. Exactly two arms. Navy/royalblue background one crimson stripe. Reference3 is precise FACE identity, neutral sleepy narrow eye and small straight mouth, copy face proportions rather than styleboard generic eye.
+```
+
+### begone（A）
+
+生成来源：`exec-1c91a70b-8e24-43b3-89db-d11767c9e2d7.png`。A 版候选，待审。
+
+提示词全文：
+
+```text
+Generate ONE opaque full-bleed landscape game card 1000:760 aspect. Reference1 ORIGINAL composition guide, not edit target: preserve large subject scale, positions and recognizable action. Reference2 four-panel approved P3R STYLE BOARD ONLY, do not make panels. Repaint in clean Persona3Reload anime hard two-tone cel shading, dark outlines, big flat shapes legible at250x190. At least60% navy071a4a/royalblue1f5cff/cyan39d8ff/icewhite d8f4ff. Background2-3 LARGE flat diagonal menu blocks only; one secondary stripe under25% together with signature effect. No particles/tiny dots/scattered shards/bloom/glossy gradients/tiny highlights/scenery detail. ONE main P3R motif specified. Bare pale teenage hands, black uniform blazer WHITE shirt cuffs, NO gloves/red wrist stripes. Makoto Yuki: slender teenage boy, long navy fringe hides one eye, narrow calm blue-grey visible eye, small straight neutral mouth, slender oval face fine nose, black blazer white shirt red-white neck headphones and upper-arm red armband. Face identity use supporting ref3 when present; not generic cheerful hero. Enemy MUST be redesigned black-fluid Shadow with BLUE arcana mask, no original monster eyes/tentacles/outline merely recolored. Regent servants are Persona creatures, never human hands; no Regent armor/hats/cloak/gold gauntlets/star swordguards. Faces/hands/weapontips/main effects within x8-92%,y12-75% safe box. No words/letters/numbers/watermark/UI/borders. Makoto at left extends bare hand toward right Shadow shattering into ONE large connected blue-black fractured silhouette, not particle spray. One upright black coffin silhouette behind enemy as original specified scene prop. Same original left-right action. Navy/royalblue one magenta stripe. Reference3 locks Makoto face: detached sleepy narrow eye, small neutral mouth. Only specified seated/extending-hand action, not sword pose from styleboard.
+```
+
+### alignment（A）
+
+生成来源：`exec-81e71d5e-d68d-47a0-ae03-00ef1c91c015.png`。A 版候选，待审。
+
+提示词全文：
+
+```text
+Generate ONE opaque full-bleed landscape game card 1000:760 aspect. Reference1 ORIGINAL composition guide, not edit target: preserve large subject scale, positions and recognizable action. Reference2 four-panel approved P3R STYLE BOARD ONLY, do not make panels. Repaint in clean Persona3Reload anime hard two-tone cel shading, dark outlines, big flat shapes legible at250x190. At least60% navy071a4a/royalblue1f5cff/cyan39d8ff/icewhite d8f4ff. Background2-3 LARGE flat diagonal menu blocks only; one secondary stripe under25% together with signature effect. No particles/tiny dots/scattered shards/bloom/glossy gradients/tiny highlights/scenery detail. ONE main P3R motif specified. Bare pale teenage hands, black uniform blazer WHITE shirt cuffs, NO gloves/red wrist stripes. Makoto Yuki: slender teenage boy, long navy fringe hides one eye, narrow calm blue-grey visible eye, small straight neutral mouth, slender oval face fine nose, black blazer white shirt red-white neck headphones and upper-arm red armband. Face identity use supporting ref3 when present; not generic cheerful hero. Enemy MUST be redesigned black-fluid Shadow with BLUE arcana mask, no original monster eyes/tentacles/outline merely recolored. Regent servants are Persona creatures, never human hands; no Regent armor/hats/cloak/gold gauntlets/star swordguards. Faces/hands/weapontips/main effects within x8-92%,y12-75% safe box. No words/letters/numbers/watermark/UI/borders. Original two LARGE four-point stars joined by clean constellation line, same composition. Main P3R motif one large muted green Dark Hour moon disk behind them. Cyan/icewhite stars and connecting line, navy/royalblue background one darkgreen stripe. No additional tiny stars. STRICT only stars, connecting lines and moon. NO people, hands, monsters or tarot cards, do NOT copy any subjects from styleboard.
+```
+
+### bulwark（A）
+
+生成来源：`exec-ca63632d-2421-4509-9e77-c6ca6860e4ce.png`。A 版候选，待审。
+
+提示词全文：
+
+```text
+Generate ONE opaque full-bleed landscape game card 1000:760 aspect. Reference1 ORIGINAL composition guide, not edit target: preserve large subject scale, positions and recognizable action. Reference2 four-panel approved P3R STYLE BOARD ONLY, do not make panels. Repaint in clean Persona3Reload anime hard two-tone cel shading, dark outlines, big flat shapes legible at250x190. At least60% navy071a4a/royalblue1f5cff/cyan39d8ff/icewhite d8f4ff. Background2-3 LARGE flat diagonal menu blocks only; one secondary stripe under25% together with signature effect. No particles/tiny dots/scattered shards/bloom/glossy gradients/tiny highlights/scenery detail. ONE main P3R motif specified. Bare pale teenage hands, black uniform blazer WHITE shirt cuffs, NO gloves/red wrist stripes. Makoto Yuki: slender teenage boy, long navy fringe hides one eye, narrow calm blue-grey visible eye, small straight neutral mouth, slender oval face fine nose, black blazer white shirt red-white neck headphones and upper-arm red armband. Face identity use supporting ref3 when present; not generic cheerful hero. Enemy MUST be redesigned black-fluid Shadow with BLUE arcana mask, no original monster eyes/tentacles/outline merely recolored. Regent servants are Persona creatures, never human hands; no Regent armor/hats/cloak/gold gauntlets/star swordguards. Faces/hands/weapontips/main effects within x8-92%,y12-75% safe box. No words/letters/numbers/watermark/UI/borders. Rear-view Makoto left foreground same original scale facing row of enormous vertical blue glass/ice wall slabs ahead. Clean large faceted slabs, no tiny shards or detailed scenery. Rear navy hair black blazer white collar red neck headphones. Navy/royalblue with cyan stripe. ONLY rear-view small figure and huge wall, no enemy, face, sword or tarot shield copied from styleboard.
+```
+
+### charge（A）
+
+生成来源：`exec-be0167e3-5270-4d75-a660-0e2fbb866655.png`。原版四角星构图配塔尔塔罗斯断墙；初版储君脸被用户否决后重画，修正版通过。
+
+提示词全文：
+
+```text
+Generate ONE opaque full-bleed landscape game card 1000:760 aspect. Reference1 ORIGINAL composition guide, not edit target: preserve large subject scale, positions and recognizable action. Reference2 four-panel approved P3R STYLE BOARD ONLY, do not make panels. Repaint in clean Persona3Reload anime hard two-tone cel shading, dark outlines, big flat shapes legible at250x190. At least60% navy071a4a/royalblue1f5cff/cyan39d8ff/icewhite d8f4ff. Background2-3 LARGE flat diagonal menu blocks only; one secondary stripe under25% together with signature effect. No particles/tiny dots/scattered shards/bloom/glossy gradients/tiny highlights/scenery detail. ONE main P3R motif specified. Bare pale teenage hands, black uniform blazer WHITE shirt cuffs, NO gloves/red wrist stripes. Makoto Yuki: slender teenage boy, long navy fringe hides one eye, narrow calm blue-grey visible eye, small straight neutral mouth, slender oval face fine nose, black blazer white shirt red-white neck headphones and upper-arm red armband. Face identity use supporting ref3 when present; not generic cheerful hero. Enemy MUST be redesigned black-fluid Shadow with BLUE arcana mask, no original monster eyes/tentacles/outline merely recolored. Regent servants are Persona creatures, never human hands; no Regent armor/hats/cloak/gold gauntlets/star swordguards. Faces/hands/weapontips/main effects within x8-92%,y12-75% safe box. No words/letters/numbers/watermark/UI/borders. Original huge central four-point star surrounded by rocks, preserve star scale. Rocks redesigned as few LARGE twisting Tartarus wall fragments enclosing star, no detailed scene. Star icewhite/cyan with small original warm core. Navy/royalblue one muted plum stripe. No extra motifs. STRICT only central star enclosed by four large dark-blue Tartarus masonry fragments; no human, no monster, no hands, no sword, no moon, no tarot. Geometry close to reference1, not a new action scene.
+```
+
+### child_of_the_stars（A）
+
+生成来源：`exec-017560ab-edaf-4fce-b8f7-942a7285de8b.png`。用户确认通过。星形主体边缘接近画布边缘。
+
+提示词全文：
+
+```text
+Generate ONE opaque full-bleed landscape game card 1000:760 aspect. Reference1 ORIGINAL composition guide, not edit target: preserve large subject scale, positions and recognizable action. Reference2 four-panel approved P3R STYLE BOARD ONLY, do not make panels. Repaint in clean Persona3Reload anime hard two-tone cel shading, dark outlines, big flat shapes legible at250x190. At least60% navy071a4a/royalblue1f5cff/cyan39d8ff/icewhite d8f4ff. Background2-3 LARGE flat diagonal menu blocks only; one secondary stripe under25% together with signature effect. No particles/tiny dots/scattered shards/bloom/glossy gradients/tiny highlights/scenery detail. ONE main P3R motif specified. Bare pale teenage hands, black uniform blazer WHITE shirt cuffs, NO gloves/red wrist stripes. Makoto Yuki: slender teenage boy, long navy fringe hides one eye, narrow calm blue-grey visible eye, small straight neutral mouth, slender oval face fine nose, black blazer white shirt red-white neck headphones and upper-arm red armband. Face identity use supporting ref3 when present; not generic cheerful hero. Enemy MUST be redesigned black-fluid Shadow with BLUE arcana mask, no original monster eyes/tentacles/outline merely recolored. Regent servants are Persona creatures, never human hands; no Regent armor/hats/cloak/gold gauntlets/star swordguards. Faces/hands/weapontips/main effects within x8-92%,y12-75% safe box. No words/letters/numbers/watermark/UI/borders. Makoto standing LEFT original pose, huge blue glass STAR mass fills RIGHT. One connected large angular star-shaped glass form, not many scattered pieces. Makoto face calm narrow eye, bangs hide other, headphones. Navy/royalblue one cyan stripe. Reference3 is FACE IDENTITY: narrow sleepy eye, neutral small straight mouth, calm detached Makoto expression. DO NOT reproduce Regent's starhead/pointedhat in any form; actual human face and round navy haircut. ONLY human and large glass star, no shadow enemy or tarot shield.
+```
+
+### conqueror（A）
+
+生成来源：`exec-e71c2ee9-2c92-47ff-9739-9e5c6ecd3669.png`。用户确认通过。前景手与剑柄的抓握表现仍有可改进处。
+
+提示词全文：
+
+```text
+Generate ONE opaque full-bleed landscape game card 1000:760 aspect. Reference1 ORIGINAL composition guide, not edit target: preserve large subject scale, positions and recognizable action. Reference2 four-panel approved P3R STYLE BOARD ONLY, do not make panels. Repaint in clean Persona3Reload anime hard two-tone cel shading, dark outlines, big flat shapes legible at250x190. At least60% navy071a4a/royalblue1f5cff/cyan39d8ff/icewhite d8f4ff. Background2-3 LARGE flat diagonal menu blocks only; one secondary stripe under25% together with signature effect. No particles/tiny dots/scattered shards/bloom/glossy gradients/tiny highlights/scenery detail. ONE main P3R motif specified. Bare pale teenage hands, black uniform blazer WHITE shirt cuffs, NO gloves/red wrist stripes. Makoto Yuki: slender teenage boy, long navy fringe hides one eye, narrow calm blue-grey visible eye, small straight neutral mouth, slender oval face fine nose, black blazer white shirt red-white neck headphones and upper-arm red armband. Face identity use supporting ref3 when present; not generic cheerful hero. Enemy MUST be redesigned black-fluid Shadow with BLUE arcana mask, no original monster eyes/tentacles/outline merely recolored. Regent servants are Persona creatures, never human hands; no Regent armor/hats/cloak/gold gauntlets/star swordguards. Faces/hands/weapontips/main effects within x8-92%,y12-75% safe box. No words/letters/numbers/watermark/UI/borders. Original oversized hand grips glowing sword against red background. Replace goldclaw by Makoto BARE pale hand from black uniform WHITE cuff, gripping simpleguard thin singleedged straight sword at same scale. Blade cyan/ice. Navy/royalblue one crimson stripe. No armor or red wrist trim. Original shows a foreground grasp reaching toward blade and small figure behind: make one LARGE bare pale hand at foreground grasping cyan sword, Makoto upper body farther behind at upper-right same perspective. Reference3 face identity if visible, neutral sleepy narrow eye. No armored claw, NO Regent head or hat, replace all such outline. Do not add enemies or tarot cards.
+```
+
+### constellation（A）
+
+生成来源：`exec-fec567df-9a1f-46c0-b75a-170741b58e1a.png`。用户确认通过。
+
+提示词全文：
+
+```text
+Generate ONE opaque full-bleed landscape game card 1000:760 aspect. Reference1 ORIGINAL composition guide, not edit target: preserve large subject scale, positions and recognizable action. Reference2 four-panel approved P3R STYLE BOARD ONLY, do not make panels. Repaint in clean Persona3Reload anime hard two-tone cel shading, dark outlines, big flat shapes legible at250x190. At least60% navy071a4a/royalblue1f5cff/cyan39d8ff/icewhite d8f4ff. Background2-3 LARGE flat diagonal menu blocks only; one secondary stripe under25% together with signature effect. No particles/tiny dots/scattered shards/bloom/glossy gradients/tiny highlights/scenery detail. ONE main P3R motif specified. Bare pale teenage hands, black uniform blazer WHITE shirt cuffs, NO gloves/red wrist stripes. Makoto Yuki: slender teenage boy, long navy fringe hides one eye, narrow calm blue-grey visible eye, small straight neutral mouth, slender oval face fine nose, black blazer white shirt red-white neck headphones and upper-arm red armband. Face identity use supporting ref3 when present; not generic cheerful hero. Enemy MUST be redesigned black-fluid Shadow with BLUE arcana mask, no original monster eyes/tentacles/outline merely recolored. Regent servants are Persona creatures, never human hands; no Regent armor/hats/cloak/gold gauntlets/star swordguards. Faces/hands/weapontips/main effects within x8-92%,y12-75% safe box. No words/letters/numbers/watermark/UI/borders. Original two hands passing starlight across mechanical constellation instrument. Two bare pale hands enter from opposite sides, black school sleeves WHITE cuffs, hold ONE clean cyan-white light mass above simple mechanical celestial instrument of large blue rings. P3R motif large faint tarot outline behind. Navy/royalblue one ice stripe, no tiny stars/numbers. STRICT HAND CLOSE-UP ONLY, NO full human character, no faces, no masks/monsters, no swords, no throne. Keep original diagonally opposing hand positions: left enters lower-left, right enters upper-right. Mechanical constellation instrument small gold/cyan beneath center. No extra hands beyond TWO.
+```
+
+### convergence（A）
+
+生成来源：`exec-bc661fa3-2bd6-4291-b385-4649532aa8c0.png`。用户确认通过。青色轨迹略像实体带状，背景时钟刻度仍可见。
+
+提示词全文：
+
+```text
+Generate ONE opaque full-bleed landscape game card 1000:760 aspect. Reference1 ORIGINAL composition guide, not edit target: preserve large subject scale, positions and recognizable action. Reference2 four-panel approved P3R STYLE BOARD ONLY, do not make panels. Repaint in clean Persona3Reload anime hard two-tone cel shading, dark outlines, big flat shapes legible at250x190. At least60% navy071a4a/royalblue1f5cff/cyan39d8ff/icewhite d8f4ff. Background2-3 LARGE flat diagonal menu blocks only; one secondary stripe under25% together with signature effect. No particles/tiny dots/scattered shards/bloom/glossy gradients/tiny highlights/scenery detail. ONE main P3R motif specified. Bare pale teenage hands, black uniform blazer WHITE shirt cuffs, NO gloves/red wrist stripes. Makoto Yuki: slender teenage boy, long navy fringe hides one eye, narrow calm blue-grey visible eye, small straight neutral mouth, slender oval face fine nose, black blazer white shirt red-white neck headphones and upper-arm red armband. Face identity use supporting ref3 when present; not generic cheerful hero. Enemy MUST be redesigned black-fluid Shadow with BLUE arcana mask, no original monster eyes/tentacles/outline merely recolored. Regent servants are Persona creatures, never human hands; no Regent armor/hats/cloak/gold gauntlets/star swordguards. Faces/hands/weapontips/main effects within x8-92%,y12-75% safe box. No words/letters/numbers/watermark/UI/borders. Makoto waves hand in original pose, ONE large curved cyan light orbit circles torso like clockhand trajectory. Energy arc thin translucent fading current, NOT solid cloth ribbon, no plastic band. Minimal simple clockdial silhouette behind him, NO numerals. Navy/royalblue one cyan stripe. Reference3 precise face identity: relaxed slightly sleepy narrow blue-grey eye, small neutral mouth, oval youthful face, long fringe fully hides other eye. Makoto right-center waving one hand toward upper-left light arc. No sword, no enemy, no throne. Arc is intangible mostly transparent thin cyan energy, faint fading edge with background visible through it, NOT thick solid ribbon. One simple faint clock ring, no numeral marks.
+```
+
+### devastate（A）
+
+生成来源：`exec-d2fe635f-0d01-4511-ad28-c174542212bd.png`。用户确认通过。
+
+提示词全文：
+
+```text
+Generate ONE opaque full-bleed landscape game card 1000:760 aspect. Reference1 ORIGINAL composition guide, not edit target: preserve large subject scale, positions and recognizable action. Reference2 four-panel approved P3R STYLE BOARD ONLY, do not make panels. Repaint in clean Persona3Reload anime hard two-tone cel shading, dark outlines, big flat shapes legible at250x190. At least60% navy071a4a/royalblue1f5cff/cyan39d8ff/icewhite d8f4ff. Background2-3 LARGE flat diagonal menu blocks only; one secondary stripe under25% together with signature effect. No particles/tiny dots/scattered shards/bloom/glossy gradients/tiny highlights/scenery detail. ONE main P3R motif specified. Bare pale teenage hands, black uniform blazer WHITE shirt cuffs, NO gloves/red wrist stripes. Makoto Yuki: slender teenage boy, long navy fringe hides one eye, narrow calm blue-grey visible eye, small straight neutral mouth, slender oval face fine nose, black blazer white shirt red-white neck headphones and upper-arm red armband. Face identity use supporting ref3 when present; not generic cheerful hero. Enemy MUST be redesigned black-fluid Shadow with BLUE arcana mask, no original monster eyes/tentacles/outline merely recolored. Regent servants are Persona creatures, never human hands; no Regent armor/hats/cloak/gold gauntlets/star swordguards. Faces/hands/weapontips/main effects within x8-92%,y12-75% safe box. No words/letters/numbers/watermark/UI/borders. Original enemy hit diagonally by HUGE yellow-white beam, preserve beam direction/size. Redesigned black flowing Shadow wearing blue mask at impact. Beam from a long sword extending into frame, hint Thanatos black reaper guardian pale skullmask with chained blackcoffin ring as ONE clean silhouette behind source if space, not competing small objects. Navy/royalblue one magenta stripe. No gore. Main enemy large foreground at RIGHT, struck by diagonal golden beam from UPPER LEFT as reference1. Entirely new black fluid body and blue oval arcana mask, NO original rockmonster head, NO pointedhat. Behind beam source very small distant Thanatos silhouette (black reaper skull-mask and coffin ring), not a human boy portrait. NO Makoto/human face, NO tarot cards. Preserve devastating long diagonal impact, no gore.
+```
