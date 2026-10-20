@@ -10,3 +10,5 @@ musicbox/obj/
 musicbox/music/
 tools/compat/ApiCheck/bin/
 tools/compat/ApiCheck/obj/
+tools/compat/ControllerTests/bin/
+tools/compat/ControllerTests/obj/
