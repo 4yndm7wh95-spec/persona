@@ -12,7 +12,7 @@
    HeroStage 里 KeyDistanceLow / KeyDistanceHigh 和对应的 SetShaderParameter 删掉。
 
 【2. HeroStage.cs MaterialFor】
-1. CaRtOp（名字以 CaRtOp 结尾）：col = new Color(0.02f, 0.10f, 0.35f).Lerp(HeroKey, 0.72f)（深蓝 72% 透，看得出衣服轮廓，同 render.gd），**不挂描边**。
+1. CaRtOp（名字以 CaRtOp 结尾）：col = HeroKey（纯色键 = 完全透明，直接透出后面的水；用户确认：不要自己填色），**不挂描边**。
 2. 描边只挂在 FILLS / 贴图材质 / 眼睛上（现在是所有 m != null 都挂）。
 
 【3. PileFx.cs】
