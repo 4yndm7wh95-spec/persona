@@ -7,7 +7,7 @@ public static class Shaders
 {
 	private static Shader Make(string code) => new Shader { Code = code };
 
-	private static Shader? _heroFlat, _heroRamp, _heroKeyOut, _heroShadow, _heroCut, _commuBg, _pileSplash;
+	private static Shader? _heroFlat, _heroRamp, _heroKeyOut, _heroShadow, _heroCut, _commuBg, _pileSplash, _waterLight;
 
 	/// <summary>
 	/// v0.14.95 入水转场的原版波浪（UIM_UI_Camp_In）：17×10 网格，各顶点"位置 − 按 UV 的静止位置"的偏差（1920×1184 坐标，单位像素）
@@ -41,6 +41,28 @@ shader_type spatial;
 render_mode unshaded, cull_disabled;
 uniform vec3 col = vec3(1.0);
 void fragment() { ALBEDO = col; }
+");
+
+	/// <summary>
+	/// 原版营地页水光（Nami，v0.14.103）：tools/p3r/stage_waterlight.py 烘的图集，R = a 层、G = b 层，5 列 × 6 行共 30 帧，
+	/// 每格是屏幕上方 768/1080 那一段；每帧停原版 NamiOneFrame = 5 个 30fps 帧（= 6 帧/秒）；两层各按原版颜色 × 不透明度加亮叠加。
+	/// </summary>
+	public static Shader WaterLight => _waterLight ??= Make(@"
+shader_type canvas_item;
+render_mode blend_add;
+uniform sampler2D atlas : filter_linear, repeat_disable;
+uniform vec4 col_a = vec4(0.647, 1.0, 1.0, 0.137);
+uniform vec4 col_b = vec4(0.0, 0.545, 0.753, 0.059);
+varying vec4 light_modulate;
+void vertex() { light_modulate = COLOR; }
+void fragment() {
+	float f = mod(floor(TIME * 6.0), 30.0);
+	vec2 cell = vec2(mod(f, 5.0), floor(f / 5.0));
+	vec2 uv = (cell + clamp(UV, vec2(0.002), vec2(0.998))) / vec2(5.0, 6.0);
+	vec2 l = texture(atlas, uv).rg;
+	vec3 add = col_a.rgb * col_a.a * l.r + col_b.rgb * col_b.a * l.g;
+	COLOR = vec4(add * light_modulate.rgb * light_modulate.a, 1.0);
+}
 ");
 
 	/// <summary>牌组水花只采样当前一张，避免相邻形态交叉淡化产生两套水滴轮廓。</summary>

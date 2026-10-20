@@ -78,7 +78,7 @@ public static class PileFx
 		Focus = new Vector2(1260f, 560f), InfoX = 1520f, TitleX = 930f, Side = -1f, Iris = new Vector2(0.96f, 0.95f), Title = "DISCARD PILE", Word = "DISCARD",
 	};
 
-	// 原版 DT_CampParamItem / DT_CampParamCommon（30fps 帧）：白板 10 帧 CurveUp1；人物 ItemSilhouette 等 10 帧、20 帧 CurveUp2 移到 (-90, -110)；InDist -100
+	// 原版 DT_CampParamItem / DT_CampParamCommon（30fps 帧）：白板 10 帧 CurveUp1；人物 ItemSilhouette 等 10 帧、20 帧 CurveUp2 移到 (-90, -110)（游戏里改成 0.05s 起步、0.7s CurveUp3，见入场处）；InDist -100
 	private const float ItemShiftX = -520f;                 // 人物整体左移（1920 宽下的像素），给右边的牌堆让位
 	private static readonly Vector2 ItemSilhouette = new(-90f, -110f);
 
@@ -347,7 +347,9 @@ public static class PileFx
 				board.Position = new Vector2(-100f * k * (1f - e), 0f);
 				board.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((float)t * 1.6f, 0f, 1f));
 			}));
-			Fx.After(right, 10.0 / 30.0, "item silhouette", () => Fx.Animate(right, 20.0 / 30.0, t => HeroStage.Nudge(ItemSilhouette * u * CurveUp(2, (float)t))));
+			// 人物落位：原版等 10 帧再动，那 10 帧在原版被切页遮罩盖着；这里圆孔一张开人物就看得见，停着不动再突然起步显得僵（v0.14.103 用户反馈）。
+			// 改成和淡入几乎同时起步（只让开打开牌堆那一两帧的卡顿，免得曲线开头被吞掉跳一下），一路减速到原版落点，时长 0.7s，CurveUp3 收尾更软
+			Fx.After(right, 0.05, "item silhouette", () => Fx.Animate(right, 0.7, t => HeroStage.Nudge(ItemSilhouette * u * CurveUp(3, (float)t))));
 		}
 		else Fx.After(right, 0.1, "pile right in", () => Fx.Animate(right, 0.5, t =>
 		{
@@ -1572,7 +1574,17 @@ public static class PileFx
 		{
 			board.AddChild(new Sprite2D { Texture = word, Centered = false, Position = new Vector2(40f, -60f) * k, Scale = Vector2.One * 2f * k, Modulate = new Color(214f / 255f, 219f / 255f, 228f / 255f) });
 		}
-		if (HeroStage.Open(parent, view, ItemShiftX * u, HeroStage.Act.Item)) return true;
+		if (HeroStage.Open(parent, view, ItemShiftX * u, HeroStage.Act.Item))
+		{
+			// 原版 ITEM 页水光（Nami A / B）：屏幕上方的水面光斑，加亮叠在人物和水上（白板在它下面，白色加亮后不变；牌在它上面），人物和背景融在一起，不像贴上去的 3D 模型
+			if (HeroStage.Tex(HeroStage.ItemWaterLight) is Texture2D light)
+			{
+				ShaderMaterial m = new() { Shader = Shaders.WaterLight };
+				m.SetShaderParameter("atlas", light);
+				parent.AddChild(new ColorRect { Size = new Vector2(view.X, view.Y * 768f / 1080f), Material = m, MouseFilter = Control.MouseFilterEnum.Ignore });
+			}
+			return true;
+		}
 		board.QueueFree();
 		return false;
 	}

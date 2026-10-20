@@ -32,6 +32,7 @@ internal static class HeroStage
 	/// <summary>v0.14.101 弃牌堆 = 原版营地 ITEM 页：伸手（进入 3.33s → 循环 6.67s）；资源单独读，读不到只影响弃牌堆。</summary>
 	private static readonly string[] ItemNames = { "CampItemStart", "CampItemLoop" };
 	private const string ItemWord = "item_word.png";
+	internal const string ItemWaterLight = "item_waterlight.png";
 
 	/// <summary>ITEM 页人物色键部分（外套 / 头发暗部）的填色：深海军蓝（不透水）；其余部分按亮度上蓝色渐变，见 Shaders.HeroKeyOut。</summary>
 	private static readonly Color ItemFill = new(0.06f, 0.15f, 0.45f);
@@ -108,6 +109,15 @@ internal static class HeroStage
 			catch (Exception e)
 			{
 				p.ItemError = e.Message;   // 只弃牌堆退回原样式
+			}
+			try
+			{
+				Image light = new();
+				if (light.LoadPngFromBuffer(Read("tex/" + ItemWaterLight)) == Error.Ok && !light.IsEmpty()) p.Images.Add(ItemWaterLight, light);
+			}
+			catch (Exception)
+			{
+				// 水光可有可无：缺了只是弃牌堆少一层原版水光
 			}
 			return p;
 		});
