@@ -9,3 +9,12 @@
 - **编译 / 安装类任务不做实机验收**（用户 2026-10-19）：Codex 不启动游戏、不用 Computer Use，用户自己验收；build 文档里不写实机复验步骤。
 - 允许忽略的未跟踪目录（原样保留，不移动 / 删除 / 提交）：art/treasure_hands/、docs/qa/v0.14.69/、mod/_build/、mod_build/、art/p3menu_system/ref/menu_transition_frames_020-107/frames/，以及别的会话正在生成、还没提交的目录（例如 research/p3r_camp/）。
 - git 命令都带 -c safe.directory=<repo>；fetch / push 带 HTTP/1.1 参数并按 5/10/20/40 秒重试；被拒绝先 fetch 再 merge --no-edit（不 rebase）。
+
+
+## 和 Claude 同时改代码（v0.14.98 起）
+
+用户让 Codex 和 Claude 都改 mod 代码，分支都是 claude/amazing-darwin-b00arn。为了不互相覆盖：
+1. **改代码的任务**：开始前先 fetch + merge 远端；改完立刻提交并 push（被拒就 fetch + merge --no-edit 再 push），提交信息写清楚改了什么、为什么。不要攒着不推。
+2. **编译安装的任务**：本地有你在别的任务里改了还没提交的代码 → 先提交；然后 fetch + merge 远端 → 编译 → 编译和兼容检查都通过后，如果本地多了提交就 push。报告里列出编进去的你自己的提交。
+3. **冲突**：同一处两边都改了、拿不准保留哪边 → 停下来报告（文件、两边的改动），交给 Claude 合并；不要自己挑一边，不要 rebase / --force。
+4. Claude 每次开始写代码前也会先 fetch + merge，并审读你的提交；你的改动会写进 docs/ART_SPEC.md 的版本记录。

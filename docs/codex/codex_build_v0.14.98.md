@@ -10,18 +10,22 @@
    - remote 指向 github.com/4yndm7wh95-spec/persona；
    - 仓库里有 mod\P3Makoto.json。
 2. 所有 git 命令都加 -c safe.directory=<repo>。
-3. 执行 git -c safe.directory=<repo> status -sb。有进行中的合并或已跟踪文件的未提交改动就停下来报告；未跟踪的 art/treasure_hands/、docs/qa/v0.14.69/、mod/_build/、mod_build/、art/p3menu_system/ref/menu_transition_frames_020-107/frames/、research/p3r_camp/ 下如有未跟踪文件原样保留、忽略它们继续（不要移动、删除或提交）。
+3. 执行 git -c safe.directory=<repo> status -sb（协同规则见 docs/codex/README.md「和 Claude 同时改代码」）：
+   - 有进行中的合并 / rebase：停下来报告。
+   - 有你（Codex）在别的任务里改了、还没提交的代码：先提交（只 add 你改的文件，提交信息写清楚改了什么、为什么），再继续；不是你改的、说不清来源的改动：停下来报告。
+   - 未跟踪的 art/treasure_hands/、docs/qa/v0.14.69/、mod/_build/、mod_build/、art/p3menu_system/ref/menu_transition_frames_020-107/frames/ 原样保留、忽略。
 4. fetch：
    git -c safe.directory=<repo> -c http.version=HTTP/1.1 -c http.lowSpeedLimit=0 -c http.lowSpeedTime=999999 fetch origin claude/amazing-darwin-b00arn
    失败时分别等 5 / 10 / 20 / 40 秒重试，最多 4 次。
-5. 合并：先执行
+5. 合并（把 Claude 的改动并进你本地，你的提交保留）：先执行
    git -c safe.directory=<repo> merge --ff-only origin/claude/amazing-darwin-b00arn
    不能快进时改用
    git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local merge --no-edit origin/claude/amazing-darwin-b00arn
-   - 有冲突就停下来报告。
-   - 这次不需要 push。
-6. 确认 git log 里有 "v0.14.98: draw pile original order" 这个提交（抽牌堆立绘换成原版 COMMU 3D 实时渲染 + 牌浮空自转 + 卡框提亮）。
-   docs/codex/codex_fix_v0.14.98_hero_materials.md 已由 Claude 直接改完，**不用再执行那份文档**。
+   - 有冲突：同一处两边都改了、拿不准保留哪边的，停下来报告（列出冲突文件和两边的改动），不要自己挑一边。
+   - 合并后先编译（第 3 节）。编译通过、兼容检查全部能找到后，如果本地比远端多了提交（你的代码提交或合并提交），push 上去：
+     git -c safe.directory=<repo> -c http.version=HTTP/1.1 -c http.lowSpeedLimit=0 -c http.lowSpeedTime=999999 push origin claude/amazing-darwin-b00arn
+     被拒（远端又有新提交）就再 fetch + merge --no-edit + 编译一次再 push；不要 rebase，不要 --force。
+6. 确认 git log 里有 "v0.14.98: draw pile original order" 这个提交。报告里写明：这次编进去的你自己的提交有哪些（提交号 + 一句话）。
 7. 稀疏检出缺目录时，允许执行：
    git -c safe.directory=<repo> sparse-checkout add mod musicbox testmod tools/compat research/libs_0.107.1
    - 路径过长时，这一条命令可以加 -c core.longpaths=true。
@@ -85,7 +89,7 @@
 3. 日志开头 "[P3Makoto] init v0.14.98"。
 
 【绝对不要做】
-- 不要修改或删除代码；不要 rebase / reset / amend；不要 --force；不要改全局 git config；不要提交或推送任何东西。
+- 编译安装这个任务本身不改代码（改代码是单独的任务，按 README 的协同规则先提交）；不要 rebase / reset / amend；不要 --force；不要改全局 git config；除第 5 步说的情况外不要提交或推送。
 - 不要启动游戏（杀戮尖塔 2 和 P3R 都不要启动），不要用 Computer Use；不要修改存档。
 - 不要读取或输出 C:\Users\kkk\.p3record\obs.json，也不要读取或输出任何密码。
 - 不要修改 P3R 或杀戮尖塔 2 的游戏原文件（release_info.json、sts2.dll 都只读）。游戏目录里只允许写 mods\ 下 P3Makoto、P3MusicBox（歌曲和歌词不动，只改 playlist 名）、P3TestMod 三个文件夹。
