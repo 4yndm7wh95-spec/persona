@@ -80,9 +80,13 @@ public static class P3SettingsSectionPatch
 		P3Settings.Data d = P3Settings.Current;
 		Row(section, font, size, color, rowH, Zh ? "总攻击（精英 / Boss 战胜利）" : "All-Out Attack (elite / boss wins)", () => d.AllOut, v => d.AllOut = v);
 		Row(section, font, size, color, rowH, Zh ? "战斗胜利演出" : "Victory banner", () => d.Victory, v => d.Victory = v);
-		Row(section, font, size, color, rowH, Zh ? "选卡 Shuffle Time" : "Card reward Shuffle Time", () => d.ShuffleTime, v => d.ShuffleTime = v);
-		Row(section, font, size, color, rowH, Zh ? "选卡节奏" : "Card reward pacing", () => d.ShuffleFull, v => d.ShuffleFull = v,
-			on => on ? (Zh ? "完整" : "Full") : (Zh ? "精简" : "Quick"));
+		// One selector, keeping the existing saved flags compatible: Full -> Quick -> Off.
+		Row(section, font, size, color, rowH, "SHUFFLE TIME", () => d.ShuffleTime, _ =>
+		{
+			if (!d.ShuffleTime) { d.ShuffleTime = true; d.ShuffleFull = true; }
+			else if (d.ShuffleFull) d.ShuffleFull = false;
+			else d.ShuffleTime = false;
+		}, on => !on ? (Zh ? "关闭" : "Off") : d.ShuffleFull ? (Zh ? "完整" : "Full") : (Zh ? "精简" : "Quick"));
 		Row(section, font, size, color, rowH, Zh ? "Persona 召唤切入（眼神特写）" : "Persona summon cut-in", () => d.CutIn, v => d.CutIn = v);
 		Row(section, font, size, color, rowH, Zh ? "选人时的召唤演出" : "Character select summon", () => d.SelectSummon, v => d.SelectSummon = v);
 		Row(section, font, size, color, rowH, Zh ? "建筑师房间（关闭 = 全部原版）" : "Architect room (off = all vanilla)", () => d.Architect, v => d.Architect = v);
@@ -111,7 +115,8 @@ public static class P3SettingsSectionPatch
 		StyleBoxFlat Box(Color bg, Color border) => new() { BgColor = bg, BorderColor = border, BorderWidthLeft = 2, BorderWidthRight = 2, BorderWidthTop = 2, BorderWidthBottom = 2, ContentMarginLeft = 14, ContentMarginRight = 14, Skew = new Vector2(0.3f, 0f), AntiAliasing = true };
 		void Refresh()
 		{
-			bool on = toggle.ButtonPressed;
+			bool on = get();
+			toggle.SetPressedNoSignal(on);
 			toggle.Text = display != null ? display(on) : (on ? (Zh ? "完整" : "Full") : (Zh ? "关闭" : "Off"));
 			Color bg = on ? Navy : new Color(0.12f, 0.12f, 0.14f, 0.9f);
 			Color border = on ? Cyan : new Color(0.5f, 0.5f, 0.55f);

@@ -1679,6 +1679,7 @@ Grand.cs 里其余函数暂时保留不用。
   LXGWWenKai-Bold-CardTitles.ttf 暂留在 pck_stage（不再加载），确认不回退后再删。
 
 ## v0.14.100
+- Codex 选卡设置合并（2026-10-20）：两行合成单项 SHUFFLE TIME，点击循环“完整 → 精简 → 关闭”；兼容原先两个布尔设置，保留已保存选择。
 - Codex 手柄问题补齐（2026-10-20）：Shuffle Time 每轮捕获奖励牌原始顺序，避免自动聚焦改变绘制顺序后延迟发牌错排；建筑师两个 CG 确认点支持游戏 ui_select/ui_confirm 与键盘兼容键，独立焦点与热键隔离、手柄高亮及正常/中断清理。详见 docs/qa/controller_reward_architect_fix_20261020.md。
 - Codex 卡名恢复原版（2026-10-20，用户要求试用）：移除 CardFrameSkin 对卡名颜色、描边、阴影的覆盖，直接保留 NCard.UpdateTitleLabel 的普通/升级/隐藏卡名逻辑及原版字体与字号；P3R 卡框和卡图不变。Release 编译及双版本兼容检查通过，暂不安装。
 - Codex 玩家日志慢放修复（2026-10-20）：针对万向斩后 125 FPS / 0.08 倍速残留，顿帧按真实时间截止点结束、状态统一主线程更新，已结束的 0.08 残留持续 100ms 后恢复；保留正常顿帧、时停及多段命中冷却。26 项回归检查及双版本兼容通过；用户要求暂不安装，未实机验收。详见 docs/qa/player_slowdown_log_fix_20261020.md。
