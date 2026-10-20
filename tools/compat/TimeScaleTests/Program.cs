@@ -40,17 +40,80 @@ Check(Engine.TimeScale == 1, "A normal release must remain at normal speed");
 
 Engine.TimeScale = 0.08; // Another writer / old state, with no active P3 source.
 Advance(1);
-Advance(2499);
-Check(Engine.TimeScale == 0.08, "Orphan slowdown gets the watchdog's grace period");
-Advance(2);
-Check(Engine.TimeScale == 1, "Orphan 0.08 must recover after 2.5 seconds");
+Advance(99);
+Check(Engine.TimeScale == 0.08, "Stale hit stop gets a short grace period");
+Advance(1);
+Check(Engine.TimeScale == 1, "Player's stale 0.08 must recover after 100ms, not 2.5 seconds");
+
+Engine.TimeScale = 0.1;
+Advance(1);
+Advance(150);
+Check(Engine.TimeScale == 0.1, "Do not cut off vanilla's 0.1 hit stop");
+Engine.TimeScale = 0.35;
+Advance(150);
+Check(Engine.TimeScale == 0.35, "Do not cut off vanilla's easing back to normal");
+Engine.TimeScale = 1;
+Advance(1);
+
+Engine.TimeScale = 0.1;
+Advance(1);
+Advance(2000);
+Check(Engine.TimeScale == 0.1, "Preserve vanilla's full two-second Forever hit stop");
+Engine.TimeScale = 1;
+Advance(1);
+Engine.TimeScale = 0.4;
+Advance(1);
+Advance(2501);
+Check(Engine.TimeScale == 1, "Retain the existing 2.5s fallback for unknown stale scales");
+
+Clock.Freeze(0.02, 3);
+Engine.TimeScale = 0.08;
+Advance(200);
+Check(Engine.TimeScale == 0.08, "Stale hit recovery must not release an active cinematic freeze");
+Clock.Freeze(1);
+
+// Background requests must not mutate live state or gain extra duration while queued.
+OS.Caller = 2;
+Clock.HitStop(0.08, 0.04);
+Check(Engine.TimeScale == 1, "Background hit stop must wait for the main thread");
+Time.Msec += 100;
+OS.Caller = 1;
+Callable.Flush();
+Check(Engine.TimeScale == 1, "An expired queued hit stop must never start late");
+OS.Caller = 2;
+Clock.HitStop(0.08, 0.1);
+Time.Msec += 25;
+OS.Caller = 1;
+Callable.Flush();
+Check(Engine.TimeScale == 0.08, "A still-valid queued hit stop must start on main thread");
+Advance(75);
+Check(Engine.TimeScale == 1, "Queued hit stop must retain the original deadline");
+
+// The actual pulse length is 40ms; a missing timer cannot add a 300ms safety tail.
+Clock.HitStop(0.08, 0.04);
+Advance(39);
+Check(Engine.TimeScale == 0.08, "Keep intended short pulse");
+Advance(1);
+Check(Engine.TimeScale == 1, "Short pulse ends exactly at its real-time deadline");
 
 Clock.Freeze(0.02);
 Clock.HitStop(0.08);
 Clock.Reset();
 Check(Engine.TimeScale == 1, "Reset must clear both slowdown sources");
-Check(GD.Lines.Any(s => s.Contains("hit stop")) && GD.Lines.Any(s => s.Contains("freeze")) &&
-      GD.Lines.Any(s => s.Contains("stuck at 0.08")), "Every watchdog recovery must leave diagnostic evidence");
+OS.Caller = 2;
+Clock.Freeze(0.02, 1);
+Check(Engine.TimeScale == 1, "Background freeze must wait for main thread");
+OS.Caller = 1;
+Callable.Flush();
+Check(Engine.TimeScale == 0.02, "Queued freeze must apply on main thread");
+OS.Caller = 2;
+Clock.Reset();
+Check(Engine.TimeScale == 0.02, "Background reset must not mutate live state");
+OS.Caller = 1;
+Callable.Flush();
+Check(Engine.TimeScale == 1, "Queued reset must release freeze on main thread");
+Check(GD.Lines.Any(s => s.Contains("freeze")) &&
+      GD.Lines.Any(s => s.Contains("stale hit stop 0.08")), "Abnormal recoveries must leave diagnostic evidence");
 Console.WriteLine($"PASS: {checks} production TimeScale checks; lost timer, overlapping sources, orphan slowdown, reset, single subscription");
 
 namespace Godot
@@ -70,7 +133,8 @@ namespace Godot
     }
     public static class OS
     {
-        public static ulong GetThreadCallerId() => 1;
+        public static ulong Caller = 1;
+        public static ulong GetThreadCallerId() => Caller;
         public static ulong GetMainThreadId() => 1;
     }
     public sealed class Callable
@@ -78,7 +142,9 @@ namespace Godot
         private readonly Action _action;
         private Callable(Action action) => _action = action;
         public static Callable From(Action action) => new(action);
-        public void CallDeferred() => _action();
+        private static readonly Queue<Action> Pending = new();
+        public void CallDeferred() => Pending.Enqueue(_action);
+        public static void Flush() { while (Pending.TryDequeue(out var action)) action(); }
     }
     public static class GD
     {

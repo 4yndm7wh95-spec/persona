@@ -14,37 +14,61 @@ namespace P3Makoto.Core;
 /// · 每个减速都带一个真实时间的截止点，看门狗每帧检查，过期没恢复就自己恢复（并写日志）；
 /// · 我们没有任何减速、速度却一直不是 1 超过 2.5 秒（原版自己的顿帧最长不到 1 秒），也拉回 1；
 /// · 写 Engine.TimeScale 一律在主线程（不在主线程就推迟到主线程）。
+/// 2026-10-20：顿帧按实际时长直接到期；状态与截止点也只在主线程修改。
+/// 玩家日志中已结束的 0.08 仍反复残留，针对该数值缩短恢复等待；原版从 0.1 开始的顿帧不受此快速恢复影响。
 /// </summary>
 public static class TimeScale
 {
 	private static double _hit = 1.0, _freeze = 1.0;
 	private static ulong _hitUntil, _freezeUntil, _offSince;
 	private static bool _hooked;
+	private static bool _hasHitStop;
+	private static ulong _staleHitSince;
 
 	private static ulong Now => Time.GetTicksMsec();
 
 	/// <summary>顿帧系数；scale &lt; 1 时最多保持 maxSeconds（真实时间），过期由看门狗恢复。</summary>
 	public static void HitStop(double scale, double maxSeconds = 0.6)
 	{
+		ulong until = scale < 1.0 ? Now + (ulong)(maxSeconds * 1000.0) : 0;
+		OnMain(() => SetHitStop(scale, until));
+	}
+
+	private static void SetHitStop(double scale, ulong until)
+	{
+		// A queued request keeps its original real-time deadline, even if the main thread was busy.
+		if (scale < 1.0 && Now >= until) return;
+		_hasHitStop |= scale < 1.0;
 		_hit = scale;
-		_hitUntil = scale < 1.0 ? Now + (ulong)(maxSeconds * 1000.0) : 0;
+		_hitUntil = until;
 		Apply();
 	}
 
 	/// <summary>时停系数；scale &lt; 1 时最多保持 maxSeconds（真实时间）。</summary>
 	public static void Freeze(double scale, double maxSeconds = 3.0)
 	{
-		_freeze = scale;
-		_freezeUntil = scale < 1.0 ? Now + (ulong)(maxSeconds * 1000.0) : 0;
-		Apply();
+		ulong until = scale < 1.0 ? Now + (ulong)(maxSeconds * 1000.0) : 0;
+		OnMain(() =>
+		{
+			if (scale < 1.0 && Now >= until) return;
+			_freeze = scale;
+			_freezeUntil = until;
+			Apply();
+		});
 	}
 
 	/// <summary>保险：所有减速来源清零，回到 1 倍速（长演出把流程交还给游戏前调用）。</summary>
 	public static void Reset()
 	{
+		OnMain(ResetOnMain);
+	}
+
+	private static void ResetOnMain()
+	{
 		_hit = 1.0;
 		_freeze = 1.0;
 		_hitUntil = _freezeUntil = 0;
+		_offSince = _staleHitSince = 0;
 		Apply();
 	}
 
@@ -63,9 +87,9 @@ public static class TimeScale
 	{
 		ulong now = Now;
 		bool changed = false;
-		if (_hit < 1.0 && now > _hitUntil)
+		if (_hit < 1.0 && now >= _hitUntil)
 		{
-			GD.Print($"{ModEntry.Tag} timescale: hit stop {_hit:0.##} was never released -> back to 1");
+			// Normal hit-stop completion uses the frame watchdog, not a second timer.
 			_hit = 1.0;
 			changed = true;
 		}
@@ -79,7 +103,23 @@ public static class TimeScale
 		{
 			Apply();
 		}
-		// 我们没有减速，速度却不是 1（谁写进去没恢复）：原版顿帧不到 1 秒，超过 2.5 秒就当是卡住了
+		// Player log: 125 FPS, but an already released 0.08 was present again (27 recoveries).
+		// Vanilla hit stop bottoms out at 0.1. Only repair our exact 0.08 signature,
+		// after a hit stop has actually run, and never during a valid hit/freeze lease.
+		bool staleHit = _hasHitStop && _hit >= 1.0 && _freeze >= 1.0
+			&& System.Math.Abs(Engine.TimeScale - 0.08) < 0.000001;
+		if (staleHit)
+		{
+			if (_staleHitSince == 0) _staleHitSince = now;
+			else if (now - _staleHitSince >= 100)
+			{
+				GD.Print($"{ModEntry.Tag} timescale: stale hit stop 0.08 with no active lease for 100ms -> back to 1");
+				Engine.TimeScale = 1.0;
+				_staleHitSince = _offSince = 0;
+			}
+		}
+		else _staleHitSince = 0;
+		// 其他未知残留沿用 2.5 秒兜底；原版最长 Forever 顿帧为 2 秒。
 		if (_hit >= 1.0 && _freeze >= 1.0 && Engine.TimeScale < 0.999)
 		{
 			if (_offSince == 0)
@@ -101,11 +141,16 @@ public static class TimeScale
 
 	private static void Apply()
 	{
+		Engine.TimeScale = System.Math.Min(_hit, _freeze);
+	}
+
+	private static void OnMain(System.Action action)
+	{
 		if (OS.GetThreadCallerId() != OS.GetMainThreadId())
 		{
-			Callable.From(Apply).CallDeferred();
+			Callable.From(action).CallDeferred();
 			return;
 		}
-		Engine.TimeScale = System.Math.Min(_hit, _freeze);
+		action();
 	}
 }
