@@ -7,6 +7,7 @@ using HarmonyLib;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.CommonUi;
 using P3Makoto.Scenes;
+using P3Makoto.Core;
 using P3Makoto.Vfx;
 
 namespace P3Makoto.Patches;
@@ -21,6 +22,8 @@ public static class CursorPatch
 	private sealed class State
 	{
 		internal bool Applied;
+		internal bool? RequestedSkin;
+		internal Image? OriginalNormal, OriginalTilted;
 		internal int Attempts;
 		internal ulong NextTry;
 	}
@@ -36,7 +39,14 @@ public static class CursorPatch
 	{
 		if (!GodotObject.IsInstanceValid(manager)) return false;
 		State state = States.GetValue(manager, _ => new State());
-		if (state.Applied) return true;
+		bool wantSkin = P3Settings.Current.CursorSkin;
+		if (state.RequestedSkin != wantSkin)
+		{
+			state.RequestedSkin = wantSkin;
+			state.Attempts = 0;
+			state.NextTry = 0;
+		}
+		if (state.Applied == wantSkin) return true;
 		if (state.Attempts >= 3 || Time.GetTicksMsec() < state.NextTry) return false;
 		state.Attempts++;
 		state.NextTry = Time.GetTicksMsec() + 1000;
@@ -44,17 +54,30 @@ public static class CursorPatch
 		{
 			if (NormalField == null || TiltedField == null || Update == null)
 				throw new MissingMemberException("NCursorManager cursor fields/UpdateCursor unavailable");
-			normal ??= Load("res://p3makoto/ui/cursor.png");
-			tilted ??= Load("res://p3makoto/ui/cursor_tilted.png");
-			NormalField.SetValue(manager, normal);
-			TiltedField.SetValue(manager, tilted);
-			state.Applied = true;
-			GD.Print($"{ModEntry.Tag} cursor skin applied: {normal.GetWidth()}x{normal.GetHeight()}, hotspot=(14,5), attempt={state.Attempts}");
+			if (wantSkin)
+			{
+				normal ??= Load("res://p3makoto/ui/cursor.png");
+				tilted ??= Load("res://p3makoto/ui/cursor_tilted.png");
+				// 保留这个游戏版本、这个节点实际加载的原图；恢复时不猜路径或换成系统箭头。
+				state.OriginalNormal ??= NormalField.GetValue(manager) as Image;
+				state.OriginalTilted ??= TiltedField.GetValue(manager) as Image;
+				if (!GodotObject.IsInstanceValid(state.OriginalNormal) || !GodotObject.IsInstanceValid(state.OriginalTilted))
+					throw new InvalidOperationException("vanilla cursor images unavailable");
+				NormalField.SetValue(manager, normal);
+				TiltedField.SetValue(manager, tilted);
+			}
+			else
+			{
+				NormalField.SetValue(manager, state.OriginalNormal);
+				TiltedField.SetValue(manager, state.OriginalTilted);
+			}
+			state.Applied = wantSkin;
+			GD.Print($"{ModEntry.Tag} cursor style applied: {(wantSkin ? "P3R" : "vanilla")}, attempt={state.Attempts}");
 			return true;
 		}
 		catch (Exception e)
 		{
-			ModEntry.Warn($"cursor skin attempt {state.Attempts}/3 failed: {e.Message}; keeping vanilla cursor");
+			ModEntry.Warn($"cursor skin attempt {state.Attempts}/3 failed: {e.Message}; keeping current cursor");
 			if (state.Attempts < 3 && manager.IsInsideTree())
 			{
 				manager.GetTree().CreateTimer(1.05).Timeout += () => ModEntry.Safe("cursor retry", () => Refresh(manager));
@@ -69,7 +92,7 @@ public static class CursorPatch
 			Update?.Invoke(manager, null); // 让原版选择当前普通/按下/临时覆盖，不强制写一个 Arrow 覆盖其他状态。
 	}
 
-	/// <summary>兼容 mod 初始化之前光标节点已经入树的情况；只扫描一次，不逐帧抢占光标。</summary>
+	/// <summary>兼容 mod 初始化之前光标节点已经入树的情况；初始化和设置切换时扫描，不逐帧抢占光标。</summary>
 	internal static void RefreshExisting()
 	{
 		if (Engine.GetMainLoop() is not SceneTree tree) return;

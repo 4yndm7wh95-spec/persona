@@ -87,10 +87,15 @@ public static class P3SettingsSectionPatch
 		Row(section, font, size, color, rowH, Zh ? "牌堆 / 牌组界面（P3R 风格）" : "Pile / deck screens (P3R style)", () => d.PileScreen, v => d.PileScreen = v);
 		Row(section, font, size, color, rowH, Zh ? "状态说明列表（P3R 风格，可滚动）" : "Status tip list (P3R style, scrollable)", () => d.TipList, v => d.TipList = v);
 		Row(section, font, size, color, rowH, Zh ? "卡框（P3R 塔罗牌风格）" : "Card frames (P3R tarot style)", () => d.CardFrame, v => d.CardFrame = v);
+		Row(section, font, size, color, rowH, Zh ? "鼠标光标（立即生效）" : "Mouse cursor (applies immediately)", () => d.CursorSkin, v =>
+		{
+			d.CursorSkin = v;
+			CursorPatch.RefreshExisting();
+		}, on => on ? "P3R" : (Zh ? "游戏原版" : "Vanilla"));
 		if (Scenes.SettingsSkin.Enabled) Row(section, font, size, color, rowH, Zh ? "设置界面（P3R 主菜单风格，下次打开生效）" : "Settings screen (P3R menu style, next time it opens)", () => d.SettingsSkin, v => d.SettingsSkin = v);
 	}
 
-	private static void Row(VBoxContainer parent, Font? font, int size, Color color, float rowH, string text, Func<bool> get, Action<bool> set)
+	private static void Row(VBoxContainer parent, Font? font, int size, Color color, float rowH, string text, Func<bool> get, Action<bool> set, Func<bool, string>? display = null)
 	{
 		HBoxContainer row = new() { CustomMinimumSize = new Vector2(0f, rowH) };
 		parent.AddChild(row);
@@ -105,7 +110,7 @@ public static class P3SettingsSectionPatch
 		void Refresh()
 		{
 			bool on = toggle.ButtonPressed;
-			toggle.Text = on ? (Zh ? "完整" : "Full") : (Zh ? "关闭" : "Off");
+			toggle.Text = display != null ? display(on) : (on ? (Zh ? "完整" : "Full") : (Zh ? "关闭" : "Off"));
 			Color bg = on ? Navy : new Color(0.12f, 0.12f, 0.14f, 0.9f);
 			Color border = on ? Cyan : new Color(0.5f, 0.5f, 0.55f);
 			toggle.AddThemeStyleboxOverride("normal", Box(bg, border));
