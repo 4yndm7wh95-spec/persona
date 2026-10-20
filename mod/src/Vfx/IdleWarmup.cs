@@ -23,7 +23,7 @@ internal static class IdleWarmup
 		"@hero3d",       // v0.14.90：原版 COMMU 模型 / 动作 / 材质，离屏渲染两帧。
 		"@pile shaders",
 		"res://p3makoto/pile/pile_skel_data.tres", "res://p3makoto/portrait/portrait_skel_data.tres",
-		"@pile text 0", "@pile text 1", "@pile text 2", "@pile text 3", "@pile text 4",   // v0.14.91：牌堆界面的全部字号（PileFx.WarmText）
+		"@pile text",   // v0.14.91：牌堆界面的全部字号（PileFx.WarmTextJobs）；第一次轮到时展开成每份 6 个中文字的小项
 		"res://p3makoto/ui/butterfly_wing_l.png", "res://p3makoto/ui/butterfly_wing_r.png", "res://p3makoto/ui/butterfly_body.png",
 		"res://p3makoto/pile_deck/pile_deck_skel_data.tres", "res://p3makoto/pile_discard/pile_discard_skel_data.tres", "res://p3makoto/pile_exhaust/pile_exhaust_skel_data.tres",
 		"res://p3makoto/ui/pile_deck.png", "res://p3makoto/ui/pile_discard.png", "res://p3makoto/ui/pile_exhaust.png",
@@ -107,7 +107,8 @@ internal static class IdleWarmup
 	/// v0.14.91（实机日志：预热在选人界面一项接一项在主线程上跑，单项 50~290ms，选人动画一直掉帧）：
 	/// 只能在主线程同步做、又很重的几项（Spine 立绘数据、中文大字体），只在地图界面空闲时做（开局必先经过地图）。
 	/// </summary>
-	private static bool Heavy(string path) => path.EndsWith("_skel_data.tres", StringComparison.Ordinal);
+	private static bool Heavy(string path) => path.EndsWith("_skel_data.tres", StringComparison.Ordinal)
+		|| (path.StartsWith("@pile text #", StringComparison.Ordinal) && TextJobs != null && TextJobs.FindIndex(j => j.Cjk) == int.Parse(path[12..]));   // 中文字体首次初始化
 
 	/// <summary>
 	/// v0.14.91（第二份日志：读档直接进战斗，没经过地图，重活一直没做，第一次开牌堆时才做）：
@@ -125,6 +126,7 @@ internal static class IdleWarmup
 	private static bool MapIdle() => NRun.Instance != null && !CombatManager.Instance.IsInProgress && NMapScreen.Instance is NMapScreen map && GodotObject.IsInstanceValid(map) && map.IsOpen && map.IsVisibleInTree();
 
 	private static readonly HashSet<string> Requested = new(StringComparer.Ordinal);
+	private static List<(Font Font, int Size, int Outline, string Text, bool Cjk)>? TextJobs;
 
 	/// <summary>贴图类先交给后台线程读进缓存（不是 Spine，不碰启动黑屏那个问题），读完再在主线程画一下；3D 主角等它的后台解析完。</summary>
 	private static bool Prefetched(string path)
@@ -132,7 +134,7 @@ internal static class IdleWarmup
 		if (path == "@hero3d") return HeroStage.PrefetchDone;
 		List<string> pre = path == "@card frame" ? P3Makoto.Scenes.CardFrameSkin.WarmPaths()
 			: path.EndsWith(".png", StringComparison.Ordinal) ? new List<string> { path }
-			: path is "@pile text 2" or "@pile text 3" or "@pile text 4" ? new List<string> { PileFx.CjkFontPath }   // 中文字体文件后台读
+			: path.StartsWith("@pile text #", StringComparison.Ordinal) && TextJobs![int.Parse(path[12..])].Cjk ? new List<string> { PileFx.CjkFontPath }   // 中文字体文件后台读
 			: new List<string>();
 		bool done = true;
 		foreach (string p in pre)
@@ -175,6 +177,13 @@ internal static class IdleWarmup
 		int pick = Jobs.FindIndex(j => calm || !Heavy(j));
 		if (pick < 0) return;                             // 只剩重活，等地图界面或鼠标停下来再做
 		string path = Jobs[pick];
+		if (path == "@pile text" && tree != null)
+		{
+			TextJobs = PileFx.WarmTextJobs(tree.Root.GetVisibleRect().Size.Y / 1080f);
+			Jobs.RemoveAt(pick);
+			Jobs.InsertRange(pick, Enumerable.Range(0, TextJobs.Count).Select(i => "@pile text #" + i));
+			return;
+		}
 		if (!Prefetched(path)) return;                    // 后台还在读，下次再看
 		Jobs.RemoveAt(pick);
 		ulong start = Time.GetTicksUsec();
@@ -234,9 +243,9 @@ internal static class IdleWarmup
 			tiny.AddChild(bg);
 			return;
 		}
-		if (path.StartsWith("@pile text ", StringComparison.Ordinal))
+		if (path.StartsWith("@pile text #", StringComparison.Ordinal))
 		{
-			PileFx.WarmText(tiny, path[^1] - '0', tree.Root.GetVisibleRect().Size.Y / 1080f);
+			PileFx.WarmText(tiny, TextJobs![int.Parse(path[12..])]);
 			return;
 		}
 		if (res is Texture2D tex) tiny.AddChild(new Sprite2D { Texture = tex });

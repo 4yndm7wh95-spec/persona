@@ -1665,40 +1665,45 @@ public static class PileFx
 		return layer;
 	}
 
-	/// <summary>
-	/// v0.14.91（实机日志：首开抽牌堆 head=70ms / focus=31ms，复开 1ms）：牌堆界面实际用到的每一组 字体 × 字号 × 描边 先栅格化，
-	/// 和 Build / FocusLayer 里的写法一一对应（改那边的字号时这里一起改）。分 5 份，每份一个预热项，战斗里也能做。
-	/// </summary>
-	internal const int WarmTextParts = 5;
 	internal const string CjkFontPath = "res://fonts/jpn/NotoSansCJKjp-Bold.otf";
 
-	internal static void WarmText(Node parent, int part, float k)
+	/// <summary>
+	/// v0.14.91（实机日志：首开抽牌堆 head=70ms / focus=31ms，复开 1ms）：牌堆界面实际用到的每一组 字体 × 字号 × 描边 先栅格化，
+	/// 和 Build / FocusLayer 里的写法一一对应（改那边的字号时这里一起改）。
+	/// v0.14.94（Codex 截的 v0.14.92 日志：中文三份各卡 216 / 457 / 585ms —— 一次画上百个 54px 带描边的中文字形）：
+	/// 中文按每份 3~6 个字拆开，一份一个预热项。
+	/// </summary>
+	internal static List<(Font Font, int Size, int Outline, string Text, bool Cjk)> WarmTextJobs(float k)
 	{
 		const string latin = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ·→×";
-		switch (part)
+		var jobs = new List<(Font, int, int, string, bool)>
 		{
-			case 0:
-				Text(parent, latin, Typo.Barlow, (int)(92f * k), Colors.White, Vector2.Zero, (int)(5f * k), Ink);     // 标题
-				Text(parent, "0123456789", Typo.Barlow, (int)(112f * k), Cyan, Vector2.Zero, (int)(5f * k), Ink);   // 张数
-				break;
-			case 1:
-				Text(parent, "EMPTY", Typo.Barlow, (int)(90f * k), Colors.White, Vector2.Zero, 0, Ink);
-				Text(parent, latin, Typo.Barlow, (int)(40f * k), Cyan, Vector2.Zero, (int)(4f * k), Ink);           // 特写：类型
-				Text(parent, latin, Typo.Barlow, (int)(34f * k), Colors.White, Vector2.Zero, (int)(4f * k), Ink);   // 特写：张数
-				Text(parent, latin, Typo.Barlow, (int)(19f * k), Colors.White, Vector2.Zero, 0, Ink);
-				Text(parent, latin, Typo.Barlow, (int)(20f * k), Colors.White, Vector2.Zero, (int)(3f * k), Ink);
-				break;
-			case 2:
-				Text(parent, "抽牌顺序随机按类型费用排列整副牌组本场战斗中消耗的牌最新在前弃牌堆攻击技能能力诅咒状态张", Typo.CjkBold, (int)(19f * k), Colors.White, Vector2.Zero, 0, Ink);
-				Text(parent, "点击任意处返回攻击技能能力诅咒状态", Typo.CjkBold, (int)(20f * k), Colors.White, Vector2.Zero, (int)(3f * k), Ink);
-				break;
-			default:
-				// 特写的卡名（54px + 6px 描边），一半一份
-				string names = Scenes.CardFrameSkin.TitleChars;
-				int half = names.Length / 2;
-				Text(parent, part == 3 ? names[..half] : names[half..], Typo.CjkBold, (int)(54f * k), Colors.White, Vector2.Zero, (int)(6f * k), Ink);
-				break;
+			(Typo.Barlow, (int)(92f * k), (int)(5f * k), latin, false),           // 标题
+			(Typo.Barlow, (int)(112f * k), (int)(5f * k), "0123456789", false),   // 张数
+			(Typo.Barlow, (int)(90f * k), 0, "EMPTY", false),
+			(Typo.Barlow, (int)(40f * k), (int)(4f * k), latin, false),           // 特写：类型
+			(Typo.Barlow, (int)(34f * k), (int)(4f * k), latin, false),           // 特写：张数
+			(Typo.Barlow, (int)(19f * k), 0, latin, false),
+			(Typo.Barlow, (int)(20f * k), (int)(3f * k), latin, false),
+		};
+		// 第一项只画 1 个字：中文字体第一次栅格化要初始化整个字体（约 17MB 的 CFF），单独成一项，好让它只在安静时做
+		jobs.Add((Typo.CjkBold, (int)(19f * k), 0, "抽", true));
+		void Cjk(string chars, int size, int outline)
+		{
+			string uniq = new(chars.Distinct().Where(c => c > 0x2000).ToArray());
+			int n = size >= 40 ? 3 : 6;   // 大字号带描边每个字约 4ms，一份控制在 15~25ms
+			for (int i = 0; i < uniq.Length; i += n)
+				jobs.Add((Typo.CjkBold, size, outline, uniq.Substring(i, Math.Min(n, uniq.Length - i)), true));
 		}
+		Cjk("抽牌顺序随机按类型费用排列整副牌组本场战斗中消耗的最新在前弃堆", (int)(19f * k), 0);        // 说明
+		Cjk("点击任意处返回", (int)(20f * k), (int)(3f * k));                                             // 特写：提示
+		Cjk("攻击技能能力诅咒状态张" + Scenes.CardFrameSkin.TitleChars, (int)(54f * k), (int)(6f * k));   // 特写：卡名 / 类型
+		return jobs;
+	}
+
+	internal static void WarmText(Node parent, (Font Font, int Size, int Outline, string Text, bool Cjk) job)
+	{
+		Text(parent, job.Text, job.Font, job.Size, Colors.White, Vector2.Zero, job.Outline, Ink);
 	}
 
 	private static Label Text(Node parent, string text, Font? font, int size, Color color, Vector2 at, int outline, Color outlineColor)
