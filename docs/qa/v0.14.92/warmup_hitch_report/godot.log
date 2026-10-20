@@ -1,0 +1,593 @@
+MegaDot v4.5.1.m.14.mono.custom_build - https://godotengine.org
+D3D12 12_0 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 4060 Laptop GPU
+WARNING: PSO caching is not implemented yet in the Direct3D 12 driver.
+   at: pipeline_cache_create (drivers/d3d12/rendering_device_driver_d3d12.cpp:4469)
+
+FMOD Sound System: Successfully initialized
+[INFO] Found release_info.json at: C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\release_info.json
+[INFO] [Sentry.NET] Initialized: env=unknown, release=v0.111.0
+[INFO] Steamworks: attempting initialization...
+[INFO] Steam is running: True
+[INFO] Steamworks initialization succeeded!
+[INFO] Steam is enabled, we will write saves to steam storage. Enabled for account: True, app: True 
+[INFO] Registered 22 migrations
+[INFO] Current save versions: PrefsSave v2; ProfileSave v2; SerializableProgress v24; RunHistory v10; SerializableRun v20; SettingsSave v8
+[INFO] Found mod manifest file C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\P3Makoto\P3Makoto.json
+[INFO] Found mod manifest file C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\P3MusicBox\P3MusicBox.json
+[INFO] Found mod manifest file C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\P3TestMod\P3TestMod.json
+[INFO] Found mod manifest file C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\TowerMaster\TowerMaster.json
+[INFO] Found mod manifest file C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\TowerMaster\towermaster.test.json
+[INFO] JSON file C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\TowerMaster\towermaster.test.json does not look like a mod manifest; skipping it.
+[INFO] Found mod manifest file C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\TowerMaster\art\rig_anims.json
+[INFO] JSON file C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\TowerMaster\art\rig_anims.json does not look like a mod manifest; skipping it.
+[INFO] Found mod manifest file C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\TowerMaster\art\rig_master.json
+[INFO] JSON file C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\TowerMaster\art\rig_master.json does not look like a mod manifest; skipping it.
+[INFO] Found mod manifest file C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\[IP直连1.4.0][v0.111]\DirectConnectIP.json
+[INFO] Found mod manifest file C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\mvm\mvm\mvm.json
+[INFO] Found mod manifest file C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\quickRestart2\quickRestart2.json
+[INFO] Found mod manifest file C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\万象辉星0.3.0(1)\RegentFX\RegentFX.json
+[INFO] Found mod manifest file C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\万象辉星0.3.0(1)\STS2-RitsuLib.0.4.13.variant-pack\mod_manifest.json
+[INFO] Found mod manifest file C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\万象辉星0.3.0(1)\STS2-RitsuLib.0.4.13.variant-pack\ritsulib-variants.json
+[INFO] JSON file C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\万象辉星0.3.0(1)\STS2-RitsuLib.0.4.13.variant-pack\ritsulib-variants.json does not look like a mod manifest; skipping it.
+[INFO] Found mod manifest file C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\万象辉星0.3.0(1)\__MACOSX\RegentFX\._RegentFX.json
+[ERROR] Caught System.Text.Json.JsonReaderException trying to deserialize mod manifest json at path C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\万象辉星0.3.0(1)\__MACOSX\RegentFX\._RegentFX.json:
+System.Text.Json.JsonReaderException: '0x00' is an invalid start of a value. LineNumber: 0 | BytePositionInLine: 0.
+   at System.Text.Json.ThrowHelper.ThrowJsonReaderException(Utf8JsonReader& json, ExceptionResource resource, Byte nextByte, ReadOnlySpan`1 bytes)
+   at System.Text.Json.Utf8JsonReader.ConsumeValue(Byte marker)
+   at System.Text.Json.Utf8JsonReader.ReadFirstToken(Byte first)
+   at System.Text.Json.Utf8JsonReader.ReadSingleSegment()
+   at System.Text.Json.Utf8JsonReader.Read()
+   at System.Text.Json.JsonDocument.Parse(ReadOnlySpan`1 utf8JsonSpan, JsonReaderOptions readerOptions, MetadataDb& database, StackRowStack& stack)
+   at System.Text.Json.JsonDocument.ParseUnrented(ReadOnlyMemory`1 utf8Json, JsonReaderOptions readerOptions, JsonTokenType tokenType)
+   at System.Text.Json.JsonDocument.ParseValue(Stream utf8Json, JsonDocumentOptions options)
+   at System.Text.Json.Nodes.JsonNode.Parse(Stream utf8Json, Nullable`1 nodeOptions, JsonDocumentOptions documentOptions)
+   at MegaCrit.Sts2.Core.Modding.ModManifest.ReadFromStream(Stream stream, List`1& errors)
+   at MegaCrit.Sts2.Core.Modding.ModManager.ReadModManifest(String filename, ModSource source)
+   at MegaCrit.Sts2.Core.Modding.ModManager.ReadModManifest(String filename, ModSource source)
+   at MegaCrit.Sts2.Core.Modding.ModManager.ReadModsInDirRecursive(String path, ModSource source, List`1 newMods)
+   at MegaCrit.Sts2.Core.Modding.ModManager.ReadModsInDirRecursive(String path, ModSource source, List`1 newMods)
+   at MegaCrit.Sts2.Core.Modding.ModManager.ReadModsInDirRecursive(String path, ModSource source, List`1 newMods)
+   at MegaCrit.Sts2.Core.Modding.ModManager.ReadModsInDirRecursive(String path, ModSource source, List`1 newMods)
+   at MegaCrit.Sts2.Core.Modding.ModManager.Initialize(IModManagerFileIo fileIo, ModSettings settings, SemanticVersion gameVersion)
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+   at MegaCrit.Sts2.Core.Modding.ModManager.Initialize(IModManagerFileIo fileIo, ModSettings settings, SemanticVersion gameVersion)
+   at MegaCrit.Sts2.Core.Helpers.OneTimeInitialization.ExecuteVeryEarly()
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+   at MegaCrit.Sts2.Core.Helpers.OneTimeInitialization.ExecuteVeryEarly()
+   at MegaCrit.Sts2.Core.Nodes.NGame.GameStartup()
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+   at MegaCrit.Sts2.Core.Nodes.NGame.GameStartup()
+   at MegaCrit.Sts2.Core.Nodes.NGame.GameStartupWrapper()
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+   at MegaCrit.Sts2.Core.Nodes.NGame.GameStartupWrapper()
+   at MegaCrit.Sts2.Core.Nodes.NGame._EnterTree()
+   at Godot.Node.InvokeGodotClassMethod(godot_string_name& method, NativeVariantPtrArgs args, godot_variant& ret)
+   at Godot.CanvasItem.InvokeGodotClassMethod(godot_string_name& method, NativeVariantPtrArgs args, godot_variant& ret)
+   at Godot.Control.InvokeGodotClassMethod(godot_string_name& method, NativeVariantPtrArgs args, godot_variant& ret)
+   at MegaCrit.Sts2.Core.Nodes.NGame.InvokeGodotClassMethod(godot_string_name& method, NativeVariantPtrArgs args, godot_variant& ret)
+   at Godot.Bridge.CSharpInstanceBridge.Call(IntPtr godotObjectGCHandle, godot_string_name* method, godot_variant** args, Int32 argCount, godot_variant_call_error* refCallError, godot_variant* ret)
+
+[INFO] Found mod manifest file C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\万象辉星0.3.0(1)\__MACOSX\STS2-RitsuLib.0.4.13.variant-pack\._mod_manifest.json
+[ERROR] Caught System.Text.Json.JsonReaderException trying to deserialize mod manifest json at path C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\万象辉星0.3.0(1)\__MACOSX\STS2-RitsuLib.0.4.13.variant-pack\._mod_manifest.json:
+System.Text.Json.JsonReaderException: '0x00' is an invalid start of a value. LineNumber: 0 | BytePositionInLine: 0.
+   at System.Text.Json.ThrowHelper.ThrowJsonReaderException(Utf8JsonReader& json, ExceptionResource resource, Byte nextByte, ReadOnlySpan`1 bytes)
+   at System.Text.Json.Utf8JsonReader.ConsumeValue(Byte marker)
+   at System.Text.Json.Utf8JsonReader.ReadFirstToken(Byte first)
+   at System.Text.Json.Utf8JsonReader.ReadSingleSegment()
+   at System.Text.Json.Utf8JsonReader.Read()
+   at System.Text.Json.JsonDocument.Parse(ReadOnlySpan`1 utf8JsonSpan, JsonReaderOptions readerOptions, MetadataDb& database, StackRowStack& stack)
+   at System.Text.Json.JsonDocument.ParseUnrented(ReadOnlyMemory`1 utf8Json, JsonReaderOptions readerOptions, JsonTokenType tokenType)
+   at System.Text.Json.JsonDocument.ParseValue(Stream utf8Json, JsonDocumentOptions options)
+   at System.Text.Json.Nodes.JsonNode.Parse(Stream utf8Json, Nullable`1 nodeOptions, JsonDocumentOptions documentOptions)
+   at MegaCrit.Sts2.Core.Modding.ModManifest.ReadFromStream(Stream stream, List`1& errors)
+   at MegaCrit.Sts2.Core.Modding.ModManager.ReadModManifest(String filename, ModSource source)
+   at MegaCrit.Sts2.Core.Modding.ModManager.ReadModManifest(String filename, ModSource source)
+   at MegaCrit.Sts2.Core.Modding.ModManager.ReadModsInDirRecursive(String path, ModSource source, List`1 newMods)
+   at MegaCrit.Sts2.Core.Modding.ModManager.ReadModsInDirRecursive(String path, ModSource source, List`1 newMods)
+   at MegaCrit.Sts2.Core.Modding.ModManager.ReadModsInDirRecursive(String path, ModSource source, List`1 newMods)
+   at MegaCrit.Sts2.Core.Modding.ModManager.ReadModsInDirRecursive(String path, ModSource source, List`1 newMods)
+   at MegaCrit.Sts2.Core.Modding.ModManager.Initialize(IModManagerFileIo fileIo, ModSettings settings, SemanticVersion gameVersion)
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+   at MegaCrit.Sts2.Core.Modding.ModManager.Initialize(IModManagerFileIo fileIo, ModSettings settings, SemanticVersion gameVersion)
+   at MegaCrit.Sts2.Core.Helpers.OneTimeInitialization.ExecuteVeryEarly()
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+   at MegaCrit.Sts2.Core.Helpers.OneTimeInitialization.ExecuteVeryEarly()
+   at MegaCrit.Sts2.Core.Nodes.NGame.GameStartup()
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+   at MegaCrit.Sts2.Core.Nodes.NGame.GameStartup()
+   at MegaCrit.Sts2.Core.Nodes.NGame.GameStartupWrapper()
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+   at MegaCrit.Sts2.Core.Nodes.NGame.GameStartupWrapper()
+   at MegaCrit.Sts2.Core.Nodes.NGame._EnterTree()
+   at Godot.Node.InvokeGodotClassMethod(godot_string_name& method, NativeVariantPtrArgs args, godot_variant& ret)
+   at Godot.CanvasItem.InvokeGodotClassMethod(godot_string_name& method, NativeVariantPtrArgs args, godot_variant& ret)
+   at Godot.Control.InvokeGodotClassMethod(godot_string_name& method, NativeVariantPtrArgs args, godot_variant& ret)
+   at MegaCrit.Sts2.Core.Nodes.NGame.InvokeGodotClassMethod(godot_string_name& method, NativeVariantPtrArgs args, godot_variant& ret)
+   at Godot.Bridge.CSharpInstanceBridge.Call(IntPtr godotObjectGCHandle, godot_string_name* method, godot_variant** args, Int32 argCount, godot_variant_call_error* refCallError, godot_variant* ret)
+
+[INFO] Found mod manifest file C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\万象辉星0.3.0(1)\__MACOSX\STS2-RitsuLib.0.4.13.variant-pack\._ritsulib-variants.json
+[ERROR] Caught System.Text.Json.JsonReaderException trying to deserialize mod manifest json at path C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\万象辉星0.3.0(1)\__MACOSX\STS2-RitsuLib.0.4.13.variant-pack\._ritsulib-variants.json:
+System.Text.Json.JsonReaderException: '0x00' is an invalid start of a value. LineNumber: 0 | BytePositionInLine: 0.
+   at System.Text.Json.ThrowHelper.ThrowJsonReaderException(Utf8JsonReader& json, ExceptionResource resource, Byte nextByte, ReadOnlySpan`1 bytes)
+   at System.Text.Json.Utf8JsonReader.ConsumeValue(Byte marker)
+   at System.Text.Json.Utf8JsonReader.ReadFirstToken(Byte first)
+   at System.Text.Json.Utf8JsonReader.ReadSingleSegment()
+   at System.Text.Json.Utf8JsonReader.Read()
+   at System.Text.Json.JsonDocument.Parse(ReadOnlySpan`1 utf8JsonSpan, JsonReaderOptions readerOptions, MetadataDb& database, StackRowStack& stack)
+   at System.Text.Json.JsonDocument.ParseUnrented(ReadOnlyMemory`1 utf8Json, JsonReaderOptions readerOptions, JsonTokenType tokenType)
+   at System.Text.Json.JsonDocument.ParseValue(Stream utf8Json, JsonDocumentOptions options)
+   at System.Text.Json.Nodes.JsonNode.Parse(Stream utf8Json, Nullable`1 nodeOptions, JsonDocumentOptions documentOptions)
+   at MegaCrit.Sts2.Core.Modding.ModManifest.ReadFromStream(Stream stream, List`1& errors)
+   at MegaCrit.Sts2.Core.Modding.ModManager.ReadModManifest(String filename, ModSource source)
+   at MegaCrit.Sts2.Core.Modding.ModManager.ReadModManifest(String filename, ModSource source)
+   at MegaCrit.Sts2.Core.Modding.ModManager.ReadModsInDirRecursive(String path, ModSource source, List`1 newMods)
+   at MegaCrit.Sts2.Core.Modding.ModManager.ReadModsInDirRecursive(String path, ModSource source, List`1 newMods)
+   at MegaCrit.Sts2.Core.Modding.ModManager.ReadModsInDirRecursive(String path, ModSource source, List`1 newMods)
+   at MegaCrit.Sts2.Core.Modding.ModManager.ReadModsInDirRecursive(String path, ModSource source, List`1 newMods)
+   at MegaCrit.Sts2.Core.Modding.ModManager.Initialize(IModManagerFileIo fileIo, ModSettings settings, SemanticVersion gameVersion)
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+   at MegaCrit.Sts2.Core.Modding.ModManager.Initialize(IModManagerFileIo fileIo, ModSettings settings, SemanticVersion gameVersion)
+   at MegaCrit.Sts2.Core.Helpers.OneTimeInitialization.ExecuteVeryEarly()
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+   at MegaCrit.Sts2.Core.Helpers.OneTimeInitialization.ExecuteVeryEarly()
+   at MegaCrit.Sts2.Core.Nodes.NGame.GameStartup()
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+   at MegaCrit.Sts2.Core.Nodes.NGame.GameStartup()
+   at MegaCrit.Sts2.Core.Nodes.NGame.GameStartupWrapper()
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+   at MegaCrit.Sts2.Core.Nodes.NGame.GameStartupWrapper()
+   at MegaCrit.Sts2.Core.Nodes.NGame._EnterTree()
+   at Godot.Node.InvokeGodotClassMethod(godot_string_name& method, NativeVariantPtrArgs args, godot_variant& ret)
+   at Godot.CanvasItem.InvokeGodotClassMethod(godot_string_name& method, NativeVariantPtrArgs args, godot_variant& ret)
+   at Godot.Control.InvokeGodotClassMethod(godot_string_name& method, NativeVariantPtrArgs args, godot_variant& ret)
+   at MegaCrit.Sts2.Core.Nodes.NGame.InvokeGodotClassMethod(godot_string_name& method, NativeVariantPtrArgs args, godot_variant& ret)
+   at Godot.Bridge.CSharpInstanceBridge.Call(IntPtr godotObjectGCHandle, godot_string_name* method, godot_variant** args, Int32 argCount, godot_variant_call_error* refCallError, godot_variant* ret)
+
+[INFO] Found mod manifest file C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\刘川 战士 动画测试版 20260914 新待机与打击特效 v2\liuchuan.json
+[INFO] Skipping loading mod TowerMaster, it is set to disabled in settings
+[INFO] Skipping loading mod mvm, it is set to disabled in settings
+[INFO] Skipping loading mod RegentFX, it is set to disabled in settings
+[INFO] Skipping loading mod liuchuan, it is set to disabled in settings
+[INFO] Mods have been re-sorted because we detected a change or dependency order was broken. New sorting order:
+[INFO]   0: DirectConnectIP (DirectConnectIP)
+[INFO]   1: quickRestart2 (quickRestart2)
+[INFO]   2: P3 结城理（储君换皮） (P3Makoto)
+[INFO]   3: P3 音乐盒 (P3MusicBox)
+[INFO]   4: RitsuLib (STS2-RitsuLib)
+[INFO]   5: P3 测试工具（仅展示用） (P3TestMod)
+[WARN] Mod DirectConnectIP does not declare min game version. Assuming that it is supported.
+[INFO] Loading assembly DLL C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\[IP直连1.4.0][v0.111]\DirectConnectIP.dll
+[INFO] Loading Godot PCK C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\[IP直连1.4.0][v0.111]\DirectConnectIP.pck
+[INFO] Calling initializer method of type DirectConnectIP.ModEntry for DirectConnectIP, Version=1.4.0.0, Culture=neutral, PublicKeyToken=null
+[INFO] [DirectConnectIP] 当前版本：v1.4.0
+[INFO] [DirectConnectIP] 游戏网络能力: 直连=True, 离线托管=True, 战斗托管API=False（实际开关=关闭）, 地图=True, 事件=True, 宝箱=True, 章节=True, 运行中重连=True, 读档重连=True, 程序集=0.1.0.0
+[WARN] [DirectConnectIP] 当前游戏的战斗准备状态API不可兼容，战斗托管已关闭；非战斗托管不受此项影响。
+[INFO] Finished mod initialization for 'DirectConnectIP' (DirectConnectIP).
+[WARN] Mod quickRestart2 does not declare min game version. Assuming that it is supported.
+[INFO] Loading assembly DLL C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\quickRestart2\quickRestart2.dll
+[INFO] Loading Godot PCK C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\quickRestart2\quickRestart2.pck
+[INFO] Calling initializer method of type quickRestart2.MainFile for quickRestart2, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+[INFO] [quickRestart2] quickRestart2 patches applied.
+[INFO] Finished mod initialization for 'quickRestart2' (quickRestart2).
+[WARN] Mod P3Makoto does not declare min game version. Assuming that it is supported.
+[INFO] Loading assembly DLL C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\P3Makoto\P3Makoto.dll
+[INFO] Loading Godot PCK C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\P3Makoto\P3Makoto.pck
+[INFO] Calling initializer method of type P3Makoto.ModEntry for P3Makoto, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+[P3Makoto] init v0.14.92
+[P3Makoto] game version v0.111.0
+[P3Makoto] harmony patches applied: 75 ok, 0 failed
+[P3Makoto] asset guard (init): 8 Regent path(s) pointed back to P3Makoto resources
+[P3Makoto] health spike asset guard 286.8ms polys+0 labels+0 anims+0
+[P3Makoto] perf preload: startup threaded Spine warmup disabled; serial idle warmup scheduled
+[INFO] Finished mod initialization for 'P3 结城理（储君换皮）' (P3Makoto).
+[WARN] Mod P3MusicBox does not declare min game version. Assuming that it is supported.
+[INFO] Loading assembly DLL C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\P3MusicBox\P3MusicBox.dll
+[INFO] Calling initializer method of type P3MusicBox.MusicBox for P3MusicBox, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+[P3MusicBox] init v1.1.3
+[P3MusicBox] 9 songs in C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\P3MusicBox\music
+[INFO] Finished mod initialization for 'P3 音乐盒' (P3MusicBox).
+[INFO] Loading assembly DLL C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\万象辉星0.3.0(1)\STS2-RitsuLib.0.4.13.variant-pack\STS2-RitsuLib.dll
+[INFO] Calling initializer method of type STS2RitsuLib.Loader.Bootstrap for STS2-RitsuLib.Loader, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+[P3Makoto] P3R sfx loaded 89/89
+[INFO] [RitsuLib.Loader] Host version label=v0.111.0 numeric=0.111.0; picked variant 0.107.0.
+[INFO] [com.ritsukage.sts2-RitsuLib] Framework ID: com.ritsukage.sts2-RitsuLib
+[INFO] [com.ritsukage.sts2-RitsuLib] Framework Name: RitsuLib
+[INFO] [com.ritsukage.sts2-RitsuLib] Version: 0.4.13 [compat branch: 0.107.0]
+[INFO] [com.ritsukage.sts2-RitsuLib] Initializing shared framework...
+[INFO] [com.ritsukage.sts2-RitsuLib] [Config] Debug compatibility master is disabled. Sub-flags (only when master on): LocTable=True, UnlockEpoch=True, AncientArchitect=True. Mod Steam cloud mirror: disabled. Config file: user://steam/76561199463988886/mod_data/com.ritsukage.sts2-RitsuLib/settings.json
+[INFO] [com.ritsukage.sts2-RitsuLib] [DebugLogViewer] Local debug log viewer listening at http://127.0.0.1:18742/?token=e303c8b83212f8e318ac8b83692afb1c
+[INFO] [com.ritsukage.sts2-RitsuLib] [Godot] RitsuGodot node factories initialized.
+[INFO] [com.ritsukage.sts2-RitsuLib] [SmartFormat] Registered Formatter: STS2RitsuLib.Combat.SecondaryResources.SecondaryResourceIconsFormatter (order=0).
+[INFO] [com.ritsukage.sts2-RitsuLib] [Patcher - framework core] Applying 367 patches...
+[ERROR] [com.ritsukage.sts2-RitsuLib] [Patcher - framework core] [Critical] ritsulib_card_capability_result_pile - Failed ✗
+[Patcher - framework core]   Description: Apply model-capability card play result pile overrides -> CardModel.GetResultPileTypeForCardPlay(no parameters)
+[Patcher - framework core]   Error: Target method not found: CardModel.GetResultPileTypeForCardPlay
+
+[ERROR] [com.ritsukage.sts2-RitsuLib] [Patcher - framework core] [Critical] ritsulib_orb_capability_explicit_passive - Failed ✗
+[Patcher - framework core]   Description: Notify orb capabilities after OrbCmd.Passive -> OrbCmd.Passive(PlayerChoiceContext, OrbModel, Creature)
+[Patcher - framework core]   Error: Target method not found: OrbCmd.Passive
+
+[ERROR] [com.ritsukage.sts2-RitsuLib] [Patcher - framework core] [Optional] additional_hook_lifecycle_Hook_AfterBlockBroken - Failed ✗
+[Patcher - framework core]   Description: Publish additional strongly typed lifecycle events for stable game hooks -> Hook.AfterBlockBroken(ICombatState, Creature)
+[Patcher - framework core]   Error: Target method not found: Hook.AfterBlockBroken
+
+[ERROR] [com.ritsukage.sts2-RitsuLib] [Patcher - framework core] [Optional] additional_hook_lifecycle_Hook_AfterTurnEnd - Failed ✗
+[Patcher - framework core]   Description: Publish additional strongly typed lifecycle events for stable game hooks -> Hook.AfterTurnEnd(ICombatState, CombatSide, IEnumerable`1)
+[Patcher - framework core]   Error: Target method not found: Hook.AfterTurnEnd
+
+[ERROR] [com.ritsukage.sts2-RitsuLib] [Patcher - framework core] [Optional] additional_hook_lifecycle_Hook_BeforeTurnEnd - Failed ✗
+[Patcher - framework core]   Description: Publish additional strongly typed lifecycle events for stable game hooks -> Hook.BeforeTurnEnd(ICombatState, CombatSide, IEnumerable`1)
+[Patcher - framework core]   Error: Target method not found: Hook.BeforeTurnEnd
+
+[ERROR] [com.ritsukage.sts2-RitsuLib] [Patcher - framework core] [Optional] ritsulib_run_saved_data_lobby_player_joined - Failed ✗
+[Patcher - framework core]   Description: Publish lobby staging events when players join -> StartRunLobby.TryAddPlayerInFirstAvailableSlot(SerializableUnlockState, Int32, UInt64)
+[Patcher - framework core]   Error: Target method not found: StartRunLobby.TryAddPlayerInFirstAvailableSlot
+
+[ERROR] [com.ritsukage.sts2-RitsuLib] [Patcher - framework core] [Optional] unlock_increment_lifecycle - Failed ✗
+[Patcher - framework core]   Description: Publish agnostic unlock increment lifecycle events -> SaveManager.IncrementUnlock(no parameters)
+[Patcher - framework core]   Error: Target method not found: SaveManager.IncrementUnlock
+
+[INFO] [com.ritsukage.sts2-RitsuLib] [Patcher - framework core] Patch application complete: 360 applied, 0 ignored, 7 failed, 367 total
+[ERROR] [com.ritsukage.sts2-RitsuLib] [Patcher - framework core] 7 patch(es) failed
+[ERROR] [com.ritsukage.sts2-RitsuLib] [Patcher - framework core] 2 critical patch(es) failed, mod loading blocked
+[ERROR] [com.ritsukage.sts2-RitsuLib] [Patcher - framework core] Critical patch(es) failed, rolling back all patches...
+[INFO] [com.ritsukage.sts2-RitsuLib] [Patcher - framework core] Removing 360 applied patches...
+[INFO] [com.ritsukage.sts2-RitsuLib] [Patcher - framework core] All patches removed
+[ERROR] [com.ritsukage.sts2-RitsuLib] Framework initialization failed: critical framework patches failed.
+[INFO] [com.ritsukage.sts2-RitsuLib] 
+=== RitsuLib Startup Audit: initialization (failed) ===
+  settingsStore: 49.4 ms
+  debugLogViewer: 10.2 ms
+  modSettingsBootstrap: 19.1 ms
+  telemetryBootstrap: 1.3 ms
+  mobileSteamRuntime: 0.0 ms
+  imageResourceLoader: 4.7 ms
+  godotNodeFactories: 1.3 ms
+  modTypeDiscoveryBuiltIns: 0.2 ms
+  secondaryResourceLocalization: 1.0 ms
+  secondaryResourceCloneBridge: 0.8 ms
+  frameworkBuiltIns: 0.1 ms (inclusive 8.1 ms)
+  registerPatches: 25.5 ms
+  patchAll.Core(367): 970.3 ms
+  patchAll: 0.9 ms (inclusive 971.2 ms)
+  ---
+  RitsuLib exclusive self-time total: 1084.8 ms
+[INFO] Finished mod initialization for 'RitsuLib' (STS2-RitsuLib).
+[WARN] Mod P3TestMod does not declare min game version. Assuming that it is supported.
+[INFO] Loading assembly DLL C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\P3TestMod\P3TestMod.dll
+[INFO] Calling initializer method of type P3TestMod.TestEntry for P3TestMod, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+[P3TestMod] init v1.2.2
+[P3TestMod] multiplayer log -> C:/Users/kkk/AppData/Roaming/SlayTheSpire2/logs/p3_mp\p3mp_20261020_000621_pid34636.log
+[P3TestMod] harmony patches applied
+[P3TestMod] director bridge listening on 127.0.0.1:47021
+[INFO] Finished mod initialization for 'P3 测试工具（仅展示用）' (P3TestMod).
+[INFO] [com.ritsukage.sts2-RitsuLib] 
+=== RitsuLib Mod Debug Information ===
+Host Version: v0.111.0
+RitsuLib Version: 0.4.13 [compat branch: 0.107.0]
+Loaded Mods: 6
+Registered Mods: 10
+Mod List:
+  * DirectConnectIP (1.4.0)
+  * quickRestart2 (v0.1.107)
+  * P3 结城理（储君换皮） [P3Makoto] (0.14.92)
+  * P3 音乐盒 [P3MusicBox] (1.1.3)
+  * RitsuLib [STS2-RitsuLib] (0.4.13)
+  * P3 测试工具（仅展示用） [P3TestMod] (1.2.2)
+
+[INFO]  --- RUNNING MODDED! --- Loaded 6 mods (10 total)
+[WARN] Asset not cached: res://scenes/debug/dev_console.tscn
+[INFO] Syncing cloud save files to the local save directory
+[WARN] Asset not cached: res://scenes/cards/card.tscn
+[WARN] Asset not cached: res://scenes/cards/holders/grid_card_holder.tscn
+[INFO] AtlasManager: Loaded ui_atlas with 102 sprites
+[INFO] AtlasManager: Loaded compressed with 45 sprites
+[INFO] Loading locale path=res://localization/eng
+[INFO] Found loc table from mod: eng gameplay_ui.json. Merging with base loc table
+[INFO] Found loc table from mod: eng main_menu_ui.json. Merging with base loc table
+[INFO] Loading locale path=res://localization/zhs
+[INFO] Found loc table from mod: zhs gameplay_ui.json. Merging with base loc table
+[INFO] Found loc table from mod: zhs main_menu_ui.json. Merging with base loc table
+[INFO] ModelIdSerializationCache initialized. Categories: 20 Entries: 1658 Epochs: 57 Properties: 47 Hash: 1568834832
+[INFO]   There are mods included that do not affect gameplay. Hash may not include all IDs.
+[P3Makoto] cursor skin applied: 64x64, hotspot=(14,5), attempt=1
+[INFO] Profile-scoped data path initialized: user://steam/76561199463988886/modded/profile3
+[INFO] [Sentry.NET] Is running modded
+[INFO] [Sentry.NET] Shutting down because event reporting is disabled.
+[INFO] [Sentry.NET] Shutting down
+[INFO] AtlasManager: Loaded controller_atlas with 112 sprites
+[INFO] MuteInBackground: FocusIn received [tween=False, msSinceFocusOut=7648, windowFocused=True]
+[P3Makoto] health spike shader warmup 253.4ms polys+2 labels+6 anims+0
+[INFO] Applying display settings...
+  FULLSCREEN: False
+  ASPECT_RATIO: (SixteenByNine)
+  TARGET_DISPLAY: (1)
+  WINDOW_SIZE: (1920, 1057)
+  POSITION: (0, 23)
+[INFO] [Display] Min size: (64, 64) Max size: (16384, 16384)
+[INFO] [Display] Attempting WINDOWED mode on Display 2 of 2 at position (0, 23)
+[INFO] [Display] SUCCESS: (1920, 1057) Windowed mode in Display 1: Position (2560, 352) ((0, 23))
+[INFO] Window changed! New size: (1920, 1057)
+[INFO] [Display] New size: (1920, 1057) position: (2560, 352)
+[INFO] VSync: Adaptive
+[P3Makoto] perf preload res://p3makoto/ui/pile_portrait.png ready at +5876ms
+[P3Makoto] perf preload res://p3makoto/ui/charselect_portrait.png ready at +5876ms
+[P3Makoto] perf preload res://p3makoto/ui/cutin_ka.png ready at +5876ms
+[P3Makoto] perf preload res://p3makoto/ui/cutin_eyes.png ready at +5876ms
+[P3Makoto] perf preload res://p3makoto/ui/info_head_ghost.png ready at +5876ms
+[P3Makoto] perf preload res://p3makoto/ui/info_head.png ready at +5876ms
+[P3Makoto] perf preload res://fonts/jpn/NotoSansCJKjp-Medium.otf ready at +5876ms
+[P3Makoto] perf preload res://fonts/jpn/NotoSansCJKjp-Bold.otf ready at +5876ms
+[INFO] === Godot OS Debug Information ===
+Timestamp: 10/20/2026 00:06:19
+OS: Windows
+OS Version: 10.0.26200
+Distribution Name: Windows
+Device Model: JiguangPro Series GM6PQ0X
+Is Debug Build: False
+Is Sandboxed: False
+Executable Path: C:/Users/kkk/Desktop/slaythespire/Slay the Spire 2/SlayTheSpire2.exe
+Data Directory: C:/Users/kkk/AppData/Roaming
+User Data Directory: C:/Users/kkk/AppData/Roaming/SlayTheSpire2
+Command Line Args: 
+User Command Line Args: 
+OS Locale: en_US
+OS Language: en
+Game Locale: en_US
+Is UserFS Persistent: True
+Is Stdout Verbose: False
+Is Low Processor Usage Mode: False
+Architecture: x86_64
+Engine Version: 4.5.1-m.14 (custom_build)
+Is Editor: False
+Release Version: v0.111.0
+Release Commit: 41cef1ea
+Release Date: 08/14/2026 00:39:18
+Processor Count: 16
+Processor Name: 13th Gen Intel(R) Core(TM) i5-13450HX
+Main assembly hash: 222455745
+Rendering device name: NVIDIA GeForce RTX 4060 Laptop GPU
+  Graphics adapter 0: NVIDIA GeForce RTX 4060 Laptop GPU
+  version: 32.0.16.0
+  Graphics adapter 1: NVIDIA GeForce RTX 4060 Laptop GPU
+  version: 32.0.16.0
+  Graphics adapter 2: Microsoft Basic Render Driver
+  version: 10.0.26100.0
+Screen info (primary 1):
+  Index 0: Size: (1707, 1067) Orientation: Landscape Scale: 1 DPI: 96 Refresh Rate: 165.004
+  Index 1: Size: (1920, 1080) Orientation: Landscape Scale: 1 DPI: 96 Refresh Rate: 165.004
+Video Memory Used: 0.0B
+Memory Info:
+  physical: 15.7GB
+  free: 3.4GB
+  available: 31.5GB
+  stack: 8.0MB
+  Static Memory Usage: 0.0B
+  Static Memory Peak Usage: 0.0B
+Disk Info:
+  Index 0: Name: C:\ Type: Fixed Format: NTFS Available: 43.7GB Total Free: 43.7GB Total Size: 475.4GB
+  Index 1: Name: G:\ Type: Fixed Format: NTFS Available: 93.5GB Total Free: 93.5GB Total Size: 238.5GB
+Important Environment Variables:
+  PATH: C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\NVIDIA Corporation\NVIDIA App\NvDLISR;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\dotnet\;C:\Program Files (x86)\dotnet\;D:\A1Python\PythonProject\.venv\Scripts;D:\A1Python\PythonProject\.venv\;C:\Program Files\Git\cmd;C:\Program Files\GitHub CLI\;C:\Program Files\nodejs\;%USERPROFILE%\AppData\Local\Programs\Python\Launcher\;%USERPROFILE%\AppData\Local\Microsoft\WindowsApps;%USERPROFILE%\.dotnet\tools;%USERPROFILE%\AppData\Roaming\npm;%USERPROFILE%\AppData\Local\Microsoft\WinGet\Links;%USERPROFILE%\AppData\Local\Microsoft\WinGet\Packages\yt-dlp.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-N-126374-g089a48eb36-win64-gpl\bin;
+  GODOT_ROOT_DIR: 
+  HOME: 
+  DYLD_LIBRARY_PATH: 
+  LD_LIBRARY_PATH: 
+
+[INFO] Preloading 'IntroLogo' assets... count=3 vfx=0
+[P3Makoto] health hitch 483ms gpu=0.0ms render_cpu=0.0ms p3=1.7ms process=483.2ms vfx_nodes=-1 fps=1
+[INFO] Preloading 'IntroLogo' Complete: assets=3 time_elapsed=22ms
+[INFO] Preloading 'MainMenuEssentials' assets... count=5 vfx=0
+[INFO] Preloading 'MainMenuEssentials' Complete: assets=5 time_elapsed=201ms
+[WARN] Asset not cached: res://debug_audio/SOTE_Logo_Echoing_ShortTail.mp3
+[P3Makoto] health spike settings section 25.1ms polys+0 labels+0 anims+0
+[INFO] [Startup] Time to main menu (Godot ticks): 17460ms
+[WARN] Asset not cached: res://images/ui/top_panel/character_icon_regent.png
+[INFO] [Startup] Time to main menu: 17,565ms
+[INFO] [Startup] Resource stats (main menu loaded (essential)): StaticMem=0B, VRAM=529.5MB, Objects=9,346, Resources=689, Nodes=1,719, CachedAssets=12
+[INFO] AtlasManager: Loaded epoch_atlas with 57 sprites
+[INFO] AtlasManager: Loaded relic_atlas with 346 sprites
+[INFO] AtlasManager: Loaded relic_outline_atlas with 346 sprites
+[INFO] AtlasManager: Loaded power_atlas with 271 sprites
+[INFO] AtlasManager: Loaded card_atlas with 626 sprites
+[INFO] AtlasManager: Loaded potion_atlas with 64 sprites
+[INFO] AtlasManager: Loaded potion_outline_atlas with 64 sprites
+[INFO] AtlasManager: Loaded stats_screen_atlas with 16 sprites
+[INFO] AtlasManager: Loaded intent_atlas with 310 sprites
+[INFO] AtlasManager: Loaded era_atlas with 27 sprites
+[INFO] Unloading 5 missed cache assets
+[INFO] Preloading 'Common' assets... count=698 vfx=94
+[INFO] [Startup] Resource stats (main menu loaded (complete)): StaticMem=0B, VRAM=829.1MB, Objects=9,087, Resources=685, Nodes=1,717, CachedAssets=5
+[P3Makoto] health hitch 1132ms gpu=0.3ms render_cpu=0.1ms p3=25.3ms process=5.5ms vfx_nodes=-1 fps=200
+[P3Makoto] health hitch 57ms gpu=0.6ms render_cpu=0.2ms p3=0.0ms process=1130.0ms vfx_nodes=-1 fps=56
+[P3Makoto] health hitch 58ms gpu=0.5ms render_cpu=0.1ms p3=0.0ms process=56.2ms vfx_nodes=-1 fps=106
+[INFO] Preloading 'Common' Complete: assets=792 time_elapsed=2,140ms
+[P3Makoto] perf card frame warm 44.5ms (110 textures)
+[P3Makoto] perf idle warmup @card frame 46.1ms; 18 remaining
+[P3Makoto] health hitch 296ms gpu=1.6ms render_cpu=0.2ms p3=0.0ms process=10.9ms vfx_nodes=-1 fps=199
+[P3Makoto] perf idle warmup @hero3d 38.1ms; 17 remaining
+[P3Makoto] health hitch 59ms gpu=1.7ms render_cpu=0.2ms p3=0.0ms process=10.9ms vfx_nodes=-1 fps=199
+[P3Makoto] perf idle warmup @pile shaders 2.2ms; 16 remaining
+[P3Makoto] perf idle warmup @pile text 0 7.4ms; 15 remaining
+[P3Makoto] perf idle warmup @pile text 1 3.7ms; 14 remaining
+[P3Makoto] perf idle warmup @pile text 2 215.9ms; 13 remaining
+[P3Makoto] health hitch 221ms gpu=1.7ms render_cpu=0.2ms p3=0.0ms process=293.2ms vfx_nodes=-1 fps=133
+[P3Makoto] perf idle warmup @pile text 3 456.6ms; 12 remaining
+[P3Makoto] health hitch 462ms gpu=1.7ms render_cpu=0.2ms p3=0.0ms process=293.2ms vfx_nodes=-1 fps=133
+[P3Makoto] perf idle warmup @pile text 4 584.8ms; 11 remaining
+[INFO] FPS Limit: 240
+[P3Makoto] health hitch 595ms gpu=1.7ms render_cpu=0.2ms p3=0.0ms process=459.1ms vfx_nodes=-1 fps=89
+[INFO] FPS Limit: 165
+[P3Makoto] perf idle warmup res://p3makoto/ui/butterfly_wing_l.png 0.1ms; 10 remaining
+[P3Makoto] perf idle warmup res://p3makoto/ui/butterfly_wing_r.png 0.1ms; 9 remaining
+[INFO] FPS Limit: 240
+[P3Makoto] perf idle warmup res://p3makoto/ui/butterfly_body.png 0.1ms; 8 remaining
+[P3Makoto] perf idle warmup res://p3makoto/ui/pile_deck.png 0.1ms; 7 remaining
+[INFO] Wrote 4492 bytes to path=user://steam/76561199463988886/settings.save save_dir=user://steam/76561199463988886
+[INFO] Wrote 363 bytes to path=user://steam/76561199463988886/modded/profile3/saves/prefs.save save_dir=user://steam/76561199463988886
+[INFO] Wrote 363 bytes to modded/profile3/saves/prefs.save in steam remote store
+[P3Makoto] perf idle warmup res://p3makoto/ui/pile_discard.png 0.1ms; 6 remaining
+[P3Makoto] perf idle warmup res://p3makoto/ui/pile_exhaust.png 0.1ms; 5 remaining
+[INFO] Wrote 52247 bytes to path=user://steam/76561199463988886/modded/profile3/saves/current_run.save save_dir=user://steam/76561199463988886
+[INFO] Wrote 52247 bytes to modded/profile3/saves/current_run.save in steam remote store
+[INFO] Continuing run with character: CHARACTER.REGENT
+[P3Makoto] asset guard (LoadRunAssets): 1 Regent path(s) pointed back to P3Makoto resources
+[INFO] Preloading 'characters=REGENT' assets... count=37 vfx=6
+[INFO] Preloading 'characters=REGENT' Complete: assets=43 time_elapsed=201ms
+[INFO] Preloading 'Act=OVERGROWTH' assets... count=8 vfx=0
+[INFO] Preloading 'Act=OVERGROWTH' Complete: assets=8 time_elapsed=17ms
+[P3Makoto] asset guard (LoadRoomCombatAssets): 2 Regent path(s) pointed back to P3Makoto resources
+[INFO] Preloading 'Combat Room' assets... count=9 vfx=0
+[P3Makoto] health hitch 204ms gpu=1.2ms render_cpu=0.1ms p3=5.7ms process=16.2ms vfx_nodes=-1 fps=192
+[INFO] Preloading 'Combat Room' Complete: assets=9 time_elapsed=103ms
+[INFO] Creating NCombatRoom with mode=ActiveCombat encounter=FUZZY_WURM_CRAWLER_WEAK.
+[P3Makoto] health hitch 108ms gpu=0.3ms render_cpu=0.1ms p3=12.0ms process=9.3ms vfx_nodes=0 fps=160
+[P3Makoto] health spike star orbit 6.8ms polys+2 labels+0 anims+1
+[P3Makoto] health spike end turn tick 12.8ms polys+11 labels+0 anims+0
+[INFO] Player 1 playing card DEFEND_REGENT (no target)
+[P3Makoto] trace card done CARD.DEFEND_REGENT (t=30630ms, timescale=1)
+[INFO] Player 1 playing card DEFEND_REGENT (no target)
+[P3Makoto] trace card done CARD.DEFEND_REGENT (t=32107ms, timescale=1)
+[INFO] Player 1 playing card STRIKE_REGENT (targeting 毛绒伏地虫 (index 1))
+[P3Makoto] health spike Damage 11.8ms polys+4 labels+0 anims+3
+[P3Makoto] trace card done CARD.STRIKE_REGENT (t=33088ms, timescale=1)
+[INFO] Monster FUZZY_WURM_CRAWLER performing move FIRST_ACID_GOOP
+[WARN] Asset not cached: res://images/packed/sprite_fonts/star_icon.png
+[INFO] Player 1 playing card VENERATE (no target)
+[P3Makoto] trace card done CARD.VENERATE (t=36722ms, timescale=1)
+[WARN] Asset not cached: res://scenes/ui/card_hover_tip.tscn
+[INFO] Player 1 playing card THE_SMITH (no target)
+[P3Makoto] health spike CardPlayed 10.0ms polys+17 labels+0 anims+19
+[P3Makoto] health spike BladeReskin 8.0ms polys+0 labels+0 anims+0
+[P3Makoto] trace card done CARD.THE_SMITH (t=37415ms, timescale=1)
+[INFO] Player 1 playing card STRIKE_REGENT (targeting 毛绒伏地虫 (index 1))
+[P3Makoto] trace card done CARD.STRIKE_REGENT (t=38339ms, timescale=1)
+[P3Makoto] perf pile Draw build 13.3ms (decor 4.5ms; hide=0.1 water=0.2 bubbles=0.9 butterfly=1.9 hero3d=0.5 decor=0.6 head=2.8 focus=1.4 tail=4.3); idle warmup complete=False
+[P3Makoto] health spike pile screen 15.0ms polys+39 labels+0 anims+1
+[P3Makoto] health spike star orbit 8.6ms polys+0 labels+0 anims+0
+[P3Makoto] perf pile Draw build 3.5ms (decor 0.7ms; hide=0.0 water=0.0 bubbles=0.4 butterfly=0.1 hero3d=0.1 decor=0.1 head=1.1 focus=0.7 tail=0.9); idle warmup complete=False
+[P3Makoto] perf pile Draw build 3.2ms (decor 0.7ms; hide=0.0 water=0.0 bubbles=0.3 butterfly=0.1 hero3d=0.1 decor=0.1 head=1.0 focus=0.6 tail=0.9); idle warmup complete=False
+[P3Makoto] perf pile Draw build 3.4ms (decor 0.7ms; hide=0.0 water=0.1 bubbles=0.3 butterfly=0.2 hero3d=0.1 decor=0.1 head=1.1 focus=0.7 tail=0.9); idle warmup complete=False
+[P3Makoto] perf pile Draw build 3.2ms (decor 0.7ms; hide=0.0 water=0.0 bubbles=0.3 butterfly=0.1 hero3d=0.1 decor=0.1 head=1.1 focus=0.6 tail=0.9); idle warmup complete=False
+[P3Makoto] perf pile Draw build 3.4ms (decor 0.7ms; hide=0.0 water=0.0 bubbles=0.4 butterfly=0.1 hero3d=0.1 decor=0.1 head=1.1 focus=0.6 tail=1.0); idle warmup complete=False
+[P3Makoto] perf pile Draw build 3.2ms (decor 0.6ms; hide=0.0 water=0.0 bubbles=0.3 butterfly=0.1 hero3d=0.1 decor=0.1 head=1.0 focus=0.6 tail=0.9); idle warmup complete=False
+[P3Makoto] health fps=196 timescale=1 nodes=4117 orphans=847 root_children=7 sfx_players=1
+[P3Makoto] health gpu_ms avg=1.3 max=4.8 render_cpu_ms avg=0.3 max=6.3 quality=1
+[P3Makoto] health p3_ms_per_frame=0.11 over 9968 frames; top: asset guard 0.03ms×4 (max 286.8), shader warmup 0.03ms×1 (max 253.4), charselect info warmup 0.02ms×1 (max 198.4), star orbit 0.01ms×9968 (max 8.6), pile screen 0.00ms×7 (max 15.0), health 0.00ms×9967 (max 1.3), settings section 0.00ms×2 (max 25.1), end turn tick 0.00ms×678 (max 12.8)
+[P3Makoto] perf pile Draw build 3.3ms (decor 0.7ms; hide=0.0 water=0.0 bubbles=0.3 butterfly=0.1 hero3d=0.1 decor=0.1 head=1.1 focus=0.7 tail=0.9); idle warmup complete=False
+[P3Makoto] perf pile Draw build 3.2ms (decor 0.6ms; hide=0.0 water=0.0 bubbles=0.3 butterfly=0.1 hero3d=0.1 decor=0.1 head=1.0 focus=0.7 tail=0.9); idle warmup complete=False
+[INFO] MuteInBackground: environment [displayServer=Windows, os=Windows]
+[INFO] MuteInBackground: FocusOut received [tween=False, windowFocused=False]
+[INFO] Limiting background FPS to 30
+[INFO] MuteInBackground: FocusIn received [tween=True, msSinceFocusOut=468, windowFocused=True]
+[INFO] MuteInBackground: Unmuted, restored volume to 0.48
+[INFO] Restored foreground FPS
+[P3Makoto] perf pile Draw build 3.3ms (decor 0.6ms; hide=0.0 water=0.0 bubbles=0.3 butterfly=0.1 hero3d=0.1 decor=0.1 head=1.1 focus=0.6 tail=1.0); idle warmup complete=False
+[INFO] MuteInBackground: FocusOut received [tween=False, windowFocused=False]
+[INFO] Limiting background FPS to 30
+[P3Makoto] health hitch 77ms gpu=1.9ms render_cpu=0.3ms p3=0.0ms process=3.9ms vfx_nodes=3 fps=30
+[P3Makoto] perf idle warmup res://p3makoto/pile/pile_skel_data.tres 45.8ms; 4 remaining
+[P3Makoto] health hitch 54ms gpu=0.6ms render_cpu=0.4ms p3=0.0ms process=2.6ms vfx_nodes=3 fps=30
+[P3Makoto] perf idle warmup res://p3makoto/portrait/portrait_skel_data.tres 38.6ms; 3 remaining
+[P3Makoto] perf idle warmup res://p3makoto/pile_deck/pile_deck_skel_data.tres 42.0ms; 2 remaining
+[P3Makoto] perf idle warmup res://p3makoto/pile_discard/pile_discard_skel_data.tres 42.9ms; 1 remaining
+[P3Makoto] perf idle warmup res://p3makoto/pile_exhaust/pile_exhaust_skel_data.tres 13.2ms; 0 remaining
+[P3Makoto] perf pile idle warmup finished; complete=True; failed=0
+[INFO] MuteInBackground: FocusIn received [tween=True, msSinceFocusOut=15704, windowFocused=True]
+[INFO] MuteInBackground: Unmuted, restored volume to 0.48
+[INFO] Restored foreground FPS
+[P3Makoto] perf pile Draw build 6.5ms (decor 0.8ms; hide=0.0 water=0.1 bubbles=0.4 butterfly=0.1 hero3d=0.1 decor=0.1 head=1.9 focus=1.6 tail=2.2); idle warmup complete=True
+[P3Makoto] health spike pile screen 6.6ms polys+39 labels+0 anims+1
+[INFO] MuteInBackground: FocusOut received [tween=False, windowFocused=False]
+[INFO] Limiting background FPS to 30
+[INFO] MuteInBackground: FocusIn received [tween=True, msSinceFocusOut=1037, windowFocused=True]
+[INFO] MuteInBackground: Unmuted, restored volume to 0.48
+[INFO] Restored foreground FPS
+[P3Makoto] health hitch 97ms gpu=0.9ms render_cpu=0.4ms p3=0.0ms process=95.1ms vfx_nodes=3 fps=181
+[P3Makoto] health hitch 110ms gpu=0.6ms render_cpu=0.5ms p3=0.0ms process=95.1ms vfx_nodes=3 fps=181
+[INFO] MuteInBackground: FocusOut received [tween=False, windowFocused=False]
+[INFO] Limiting background FPS to 30
+[INFO] MuteInBackground: FocusIn received [tween=True, msSinceFocusOut=2501, windowFocused=True]
+[INFO] MuteInBackground: Unmuted, restored volume to 0.48
+[INFO] Restored foreground FPS
+[P3Makoto] perf pile Draw build 3.2ms (decor 0.6ms; hide=0.0 water=0.0 bubbles=0.3 butterfly=0.1 hero3d=0.1 decor=0.1 head=1.1 focus=0.6 tail=1.0); idle warmup complete=True
+[INFO] MuteInBackground: FocusOut received [tween=False, windowFocused=False]
+[INFO] Limiting background FPS to 30
+[INFO] MuteInBackground: FocusIn received [tween=True, msSinceFocusOut=2505, windowFocused=True]
+[INFO] MuteInBackground: Unmuted, restored volume to 0.48
+[INFO] Restored foreground FPS
+[P3Makoto] health hitch 52ms gpu=3.1ms render_cpu=0.7ms p3=0.1ms process=4.8ms vfx_nodes=3 fps=30
+[INFO] MuteInBackground: FocusOut received [tween=False, windowFocused=False]
+[INFO] Limiting background FPS to 30
+[INFO] MuteInBackground: FocusIn received [tween=True, msSinceFocusOut=799, windowFocused=True]
+[INFO] MuteInBackground: Unmuted, restored volume to 0.48
+[INFO] Restored foreground FPS
+[P3Makoto] perf pile Draw build 3.2ms (decor 0.6ms; hide=0.0 water=0.0 bubbles=0.3 butterfly=0.1 hero3d=0.1 decor=0.1 head=1.1 focus=0.6 tail=0.9); idle warmup complete=True
+[INFO] MuteInBackground: FocusOut received [tween=False, windowFocused=False]
+[INFO] Limiting background FPS to 30
+[INFO] MuteInBackground: FocusIn received [tween=True, msSinceFocusOut=1969, windowFocused=True]
+[INFO] MuteInBackground: Unmuted, restored volume to 0.48
+[INFO] Restored foreground FPS
+[P3Makoto] health hitch 92ms gpu=1.8ms render_cpu=0.9ms p3=0.1ms process=5.3ms vfx_nodes=3 fps=37
+[INFO] MuteInBackground: FocusOut received [tween=False, windowFocused=False]
+[INFO] Limiting background FPS to 30
+[INFO] MuteInBackground: FocusIn received [tween=True, msSinceFocusOut=9532, windowFocused=True]
+[INFO] MuteInBackground: Unmuted, restored volume to 0.48
+[INFO] Restored foreground FPS
+[P3Makoto] perf pile Draw build 3.7ms (decor 0.8ms; hide=0.0 water=0.1 bubbles=0.3 butterfly=0.1 hero3d=0.1 decor=0.1 head=1.2 focus=0.7 tail=1.0); idle warmup complete=True
+[INFO] MuteInBackground: FocusOut received [tween=False, windowFocused=False]
+[INFO] Limiting background FPS to 30
+[P3Makoto] health fps=30 timescale=1 nodes=3842 orphans=947 root_children=6 sfx_players=0
+[P3Makoto] health gpu_ms avg=1.5 max=13.9 render_cpu_ms avg=0.4 max=1.1 quality=0.35
+[P3Makoto] health p3_ms_per_frame=0.04 over 5727 frames; top: star orbit 0.02ms×5727 (max 0.2), pile screen 0.00ms×7 (max 6.6), end turn tick 0.00ms×1200 (max 0.1), anim P3PileScreen 0.00ms×48971 (max 0.2), health 0.00ms×5727 (max 3.4), clip ShuffleTime_Whoosh 0.00ms×23 (max 2.2), timescale watchdog 0.00ms×5727 (max 0.0), pile screen exit 0.00ms×8 (max 1.0)
+[P3Makoto] health fps=30 timescale=1 nodes=3842 orphans=947 root_children=6 sfx_players=0
+[P3Makoto] health gpu_ms avg=5.4 max=36.5 render_cpu_ms avg=0.4 max=0.8 quality=0.35
+[P3Makoto] health p3_ms_per_frame=0.04 over 1801 frames; top: star orbit 0.02ms×1801 (max 0.2), end turn tick 0.01ms×1201 (max 0.1), timescale watchdog 0.00ms×1801 (max 0.1), health 0.00ms×1801 (max 0.3), status button tick 0.00ms×1801 (max 0.1)
+[INFO] MuteInBackground: FocusIn received [tween=True, msSinceFocusOut=91966, windowFocused=True]
+[INFO] MuteInBackground: Unmuted, restored volume to 0.48
+[INFO] Restored foreground FPS
+[INFO] Monster FUZZY_WURM_CRAWLER performing move INHALE
+[INFO] MuteInBackground: FocusOut received [tween=False, windowFocused=False]
+[INFO] Limiting background FPS to 30
+[WARN] Asset not cached: res://images/powers/strength_power.png
+[INFO] NGame.Quit called
+[INFO] [Display] On exit, saving window size: (1920, 1057) display: 1 position: (0, 23)
+[INFO] Wrote 4492 bytes to path=user://steam/76561199463988886/settings.save save_dir=user://steam/76561199463988886
+[INFO] Wrote 363 bytes to path=user://steam/76561199463988886/modded/profile3/saves/prefs.save save_dir=user://steam/76561199463988886
+[INFO] Wrote 363 bytes to modded/profile3/saves/prefs.save in steam remote store
+[INFO] Wrote 117582 bytes to path=user://steam/76561199463988886/modded/profile3/saves/progress.save save_dir=user://steam/76561199463988886
+[INFO] Wrote 117582 bytes to modded/profile3/saves/progress.save in steam remote store
+[INFO] Wrote 52 bytes to path=user://steam/76561199463988886/modded/profile.save save_dir=user://steam/76561199463988886
+[INFO] Wrote 52 bytes to modded/profile.save in steam remote store
+[WARN] Warning: Packet writer is growing from 1024 bytes to 2048 bytes!
+[WARN] Warning: Packet writer is growing from 2048 bytes to 4096 bytes!
+[WARN] Warning: Packet writer is growing from 4096 bytes to 8192 bytes!
+[WARN] Warning: Packet writer is growing from 8192 bytes to 16384 bytes!
+[WARN] Warning: Packet writer is growing from 16384 bytes to 32768 bytes!
+[P3Makoto] health hitch 88ms gpu=0.7ms render_cpu=0.4ms p3=0.0ms process=3.4ms vfx_nodes=3 fps=30
+[INFO] Steamworks: shutting down...
+[INFO] Steamworks shutdown succeeded!
+FMOD Sound System: System released
+WARNING: 835 RIDs of type "CanvasItem" were leaked.
+   at: _free_rids (servers/rendering/renderer_canvas_cull.cpp:2678)
+ERROR: 1 RID allocations of type 'N26RendererEnvironmentStorage11EnvironmentE' were leaked at exit.
+ERROR: 6 shaders of type CanvasShaderRD were never freed
+   at: ~ShaderRD (servers/rendering/renderer_rd/shader_rd.cpp:1044)
+ERROR: 24 RID allocations of type 'N10RendererRD16ParticlesStorage9ParticlesE' were leaked at exit.
+ERROR: 1 shaders of type ParticlesShaderRD were never freed
+   at: ~ShaderRD (servers/rendering/renderer_rd/shader_rd.cpp:1044)
+ERROR: 24 RID allocations of type 'N10RendererRD11MeshStorage4MeshE' were leaked at exit.
+ERROR: 72 RID allocations of type 'N10RendererRD15MaterialStorage8MaterialE' were leaked at exit.
+ERROR: 7 RID allocations of type 'N10RendererRD15MaterialStorage6ShaderE' were leaked at exit.
+ERROR: 224 RID allocations of type 'N10RendererRD14TextureStorage7TextureE' were leaked at exit.
+WARNING: 135 RIDs of type "UniformBuffer" were leaked.
+   at: _free_rids (servers/rendering/rendering_device.cpp:6981)
+WARNING: 404 RIDs of type "Texture" were leaked.
+   at: finalize (servers/rendering/rendering_device.cpp:7191)
+ERROR: 306 RID allocations of type 'PN18TextServerAdvanced22ShapedTextDataAdvancedE' were leaked at exit.
+ERROR: 11 RID allocations of type 'PN18TextServerAdvanced12FontAdvancedE' were leaked at exit.
+ERROR: 7 RID allocations of type 'PN18TextServerAdvanced27FontAdvancedLinkedVariationE' were leaked at exit.
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2514)
+ERROR: 231 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:795)
