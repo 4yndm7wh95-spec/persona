@@ -1,6 +1,6 @@
 extends SceneTree
 ## P3R 营地菜单主角离线渲染：原版模型（GLB）+ 原版动作（tools/p3r/psa_to_bin.py 的输出）+ 原版材质参数。
-## 色键：纯绿 (0,1,0) 表示"透出水"，合成时 溢色 s = g − max(r,b)，alpha = 1 − s，颜色 = (rgb − s·绿) / (1 − s)。
+## 色键：纯绿 (0,1,0) 表示"透出水"。透明底上的抗锯齿边是预乘的（如 (0,128,0,128)），合成时先 rgb /= a 反预乘，再算溢色 s = g − max(r,b)，alpha = 1 − s，颜色 = (rgb − s·绿) / (1 − s)。
 ## 透水的衣服 / 头发 = 完全透明（用户：不要自己填色，衣服的样子交给原版水背景）；贴图材质暗部 50% 透（原版 RTShadowColor_Blend 0.5）。
 ## 每帧输出两张：color_NNN.png（画出来的部分：脸、手、衬衫、描边，透明底）和 mask_NNN.png（原版 CaRtOp 材质 = "这里显示水"的区域，白）。
 ## 用法：godot --path tools/p3r/hero_render -s render.gd -- <config.json>
@@ -99,7 +99,7 @@ func _initialize():
 					if m == null:
 						var h = StandardMaterial3D.new(); h.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA; h.albedo_color = Color(0, 0, 0, 0); m = h
 					else:
-						if not m.has_meta("no_outline"): m.next_pass = outline   # 透水的衣服 / 头发不描边（对照原版截图）
+						# v0.14.90：不描边（用户：原版没有描边；对照截图去掉后更接近）
 						mats.append(m)
 					n.set_surface_override_material(si, m))
 	if cfg.has("scale"):
