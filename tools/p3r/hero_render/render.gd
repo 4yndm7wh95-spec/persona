@@ -1,5 +1,7 @@
 extends SceneTree
 ## P3R 营地菜单主角离线渲染：原版模型（GLB）+ 原版动作（tools/p3r/psa_to_bin.py 的输出）+ 原版材质参数。
+## 色键：纯绿 (0,1,0) 表示"透出水"，合成时 溢色 s = g − max(r,b)，alpha = 1 − s，颜色 = (rgb − s·绿) / (1 − s)。
+## 透水的衣服 / 头发 = 深蓝 72% 透（看得出衣服轮廓）；贴图材质暗部 50% 透（原版 RTShadowColor_Blend 0.5）。
 ## 每帧输出两张：color_NNN.png（画出来的部分：脸、手、衬衫、描边，透明底）和 mask_NNN.png（原版 CaRtOp 材质 = "这里显示水"的区域，白）。
 ## 用法：godot --path tools/p3r/hero_render -s render.gd -- <config.json>
 ## config: { "models": [...glb 路径], "textures_dir": "...", "anim": "<prefix>", "frames": [起, 止, 步长], "out": "<dir>",
@@ -21,6 +23,7 @@ void fragment() {
 	float nl = dot(normalize(wn), normalize(vec3(-0.4, 0.6, 0.7)));
 	float lit = smoothstep(-0.2 - 0.1, -0.2 + 0.1, nl);
 	c *= mix(shade, vec3(1.0), lit);
+	c = mix(c, vec3(0.0, 1.0, 0.0), 0.5 * (1.0 - lit));   // 暗部 50% 透出水（原版 RTShadowColor_Blend 0.5），用色键表示
 	float rim = pow(1.0 - clamp(dot(normalize(NORMAL), VIEW), 0.0, 1.0), 4.0);
 	c = mix(c, vec3(0.80, 0.94, 1.0), rim * 0.6);
 	ALBEDO = mask_pass ? vec3(0.0) : c;
@@ -70,7 +73,7 @@ func make_mat(n):
 	if FILLS.has(n):
 		var m = sm(FLAT); m.set_shader_parameter("col", Color(FILLS[n])); return m
 	if n.ends_with("CaRtOp"):
-		var m = sm(FLAT); m.set_shader_parameter("col", Color("2050C0")); m.set_shader_parameter("water", true); m.set_meta("no_outline", true); return m
+		var m = sm(FLAT); m.set_shader_parameter("col", Color(0.02, 0.10, 0.35).lerp(Color(0, 1, 0), 0.72)); m.set_shader_parameter("water", true); m.set_meta("no_outline", true); return m
 	if TEXMAP.has(n):
 		var m = sm(RAMP); m.set_shader_parameter("tex", ImageTexture.create_from_image(Image.load_from_file(cfg["textures_dir"] + "/" + TEXMAP[n]))); return m
 	if n == "MI_PC0051_F000_00_CaEyOp":
