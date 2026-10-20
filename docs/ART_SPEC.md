@@ -1735,6 +1735,9 @@ Grand.cs 里其余函数暂时保留不用。
   版式同牌组（牌堆在右），圆孔仍从弃牌堆按钮张开；左上白板 + 原版图集裁出的淡灰大字 ITEM（hero3d/tex/item_word.png，tools/p3r/stage_hero3d.py item）。
   入场：整组 0.3s 淡入；白板 0.1s 后按原版 10 帧 CurveUp1 从左 100px 滑入；人物 10 帧后 20 帧 CurveUp2 偏移 (-90, -110)（原版 ItemSilhouette）。
   ITEM 资源单独读，读不到只弃牌堆退回旧样式（日志 "ITEM page (discard pile) unavailable"）。消耗堆保持旧版。
+- 选卡节奏（用户：每场战斗结束的选卡太拖沓，保留 Shuffle Time 特色但不耽误看牌选牌；原版是三张牌从中间向左右展开、始终是正面）：
+  新增设置「选卡节奏」，默认「精简」（P3Settings.ShuffleFull = false）：StageFx.QuickDeal —— 三张牌一开始就是正面、从中间同时向两边展开 0.3s（OutCubic + 轻微 OutBack），
+  马上能点；特色放在不挡操作的地方：顶部 SHUFFLE TIME 字图带两层残影滑过（约 1s，只在本次打开的第一次）、落位十字闪光、Shuffle Time 音效。「完整」= 原来的标题 → 洗牌 → 翻牌。
 
 ## 待办（用户实机反馈，先记录）
 

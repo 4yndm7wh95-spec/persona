@@ -81,6 +81,8 @@ public static class P3SettingsSectionPatch
 		Row(section, font, size, color, rowH, Zh ? "总攻击（精英 / Boss 战胜利）" : "All-Out Attack (elite / boss wins)", () => d.AllOut, v => d.AllOut = v);
 		Row(section, font, size, color, rowH, Zh ? "战斗胜利演出" : "Victory banner", () => d.Victory, v => d.Victory = v);
 		Row(section, font, size, color, rowH, Zh ? "选卡 Shuffle Time" : "Card reward Shuffle Time", () => d.ShuffleTime, v => d.ShuffleTime = v);
+		Row(section, font, size, color, rowH, Zh ? "选卡节奏" : "Card reward pacing", () => d.ShuffleFull, v => d.ShuffleFull = v,
+			on => on ? (Zh ? "完整" : "Full") : (Zh ? "精简" : "Quick"));
 		Row(section, font, size, color, rowH, Zh ? "Persona 召唤切入（眼神特写）" : "Persona summon cut-in", () => d.CutIn, v => d.CutIn = v);
 		Row(section, font, size, color, rowH, Zh ? "选人时的召唤演出" : "Character select summon", () => d.SelectSummon, v => d.SelectSummon = v);
 		Row(section, font, size, color, rowH, Zh ? "建筑师房间（关闭 = 全部原版）" : "Architect room (off = all vanilla)", () => d.Architect, v => d.Architect = v);
