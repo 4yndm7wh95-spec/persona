@@ -65,6 +65,29 @@ internal static class HeroStage
 		cached.Close();
 	}
 
+	/// <summary>舞台能用（已加载或能加载）；抽牌堆据此决定换不换原版 COMMU 背景。</summary>
+	internal static bool Available(SceneTree tree) => Ensure(tree);
+
+	/// <summary>舞台里一起读进来的原版 UI 贴图（焦散、COMMU 字形）。</summary>
+	internal static Texture2D? Tex(string file) => cached != null && cached.Textures.TryGetValue(file, out Texture2D? t) ? t : null;
+
+	/// <summary>Open 之后调用：人物剪影的灰色小阴影（加在白色斜块下面、被它裁剪）。</summary>
+	internal static void AddShadow(Node parent, Vector2 offset)
+	{
+		if (cached is { Playing: true } stage) parent.AddChild(stage.Shadow(offset));
+	}
+
+	/// <summary>Open 之后调用：让这个多边形在人物剪影处挖空（Shaders.HeroCut）。</summary>
+	internal static void CutOut(CanvasItem item)
+	{
+		if (cached is not { Playing: true } stage) return;
+		ShaderMaterial m = new() { Shader = Shaders.HeroCut };
+		m.SetShaderParameter("hero", stage.Display.Texture);
+		m.SetShaderParameter("hero_pos", stage.Display.Position);
+		m.SetShaderParameter("hero_size", stage.Display.Size);
+		item.Material = m;
+	}
+
 	internal static void Kick()
 	{
 		if (cached is { Playing: true, Released: true } stage) stage.Target += KickDeg;
@@ -206,6 +229,8 @@ internal static class HeroStage
 		};
 		private readonly List<Rig> heroes = new(), cards = new();
 		private readonly Dictionary<string, Texture2D> textures = new(StringComparer.Ordinal);
+		internal Dictionary<string, Texture2D> Textures => textures;
+		private readonly ShaderMaterial shadowMat = new() { Shader = Shaders.HeroShadow };
 		private readonly Dictionary<string, Material> materials = new(StringComparer.Ordinal);
 		private readonly List<(Skeleton3D Skeleton, int Index)> spinBones = new();
 		private readonly List<Motion> motions = new();
@@ -222,7 +247,7 @@ internal static class HeroStage
 
 		internal void Load()
 		{
-			foreach (string file in new[] { "T_PC0051_C002_00_Col.png", "T_PC0051_F000_00_Col.png", "T_PC0051_E000_00_Col.png", "T_Pp2001_030_0017.png", "T_Pp2001_Backside_00.png" })
+			foreach (string file in new[] { "T_PC0051_C002_00_Col.png", "T_PC0051_F000_00_Col.png", "T_PC0051_E000_00_Col.png", "T_Pp2001_030_0017.png", "T_Pp2001_Backside_00.png", "T_UI_Camp_Caustics_00.png", "commu_word.png" })
 			{
 				using Image image = new();
 				if (image.LoadPngFromBuffer(Read("tex/" + file)) != Error.Ok || image.IsEmpty())
@@ -355,6 +380,17 @@ internal static class HeroStage
 			lastTick = Time.GetTicksUsec();
 			tree.ProcessFrame += Tick;
 			viewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Always;
+		}
+
+		internal TextureRect Shadow(Vector2 offset)
+		{
+			shadowMat.SetShaderParameter("cut", offset / Display.Size);
+			return new TextureRect
+			{
+				Texture = Display.Texture, Material = shadowMat, Size = Display.Size, Position = Display.Position + offset,
+				ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale,
+				MouseFilter = Control.MouseFilterEnum.Ignore,
+			};
 		}
 
 		internal void Close()

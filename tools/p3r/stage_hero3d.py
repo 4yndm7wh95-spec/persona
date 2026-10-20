@@ -30,6 +30,17 @@ def fix_fps(prefix, seq_json):
     return j
 
 
+def commu_word(out):
+    from PIL import Image, ImageDraw
+    pd = json.load(open(R + "plg/json/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.json"))
+    pd = pd[0] if isinstance(pd, list) else pd
+    p = next(x for x in pd["Properties"]["PlgData"]["PlgDatas"] if x["Name"] == "COMMU")
+    im = Image.new("RGBA", (2200, 520), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
+    v = [((q["X"]) * 2 + 1100, (q["Y"]) * 2 + 260) for q in p["Vertices"]]; ix = p["Indices"]
+    for t in range(0, len(ix), 3): d.polygon([v[ix[t]], v[ix[t + 1]], v[ix[t + 2]]], fill=(165, 165, 172, 255))
+    im.save(out)
+
+
 def main():
     os.makedirs(OUT + "anim", exist_ok=True)
     for f in ["SK_PC0051_C002.glb", "SK_PC0051_F000.glb", "SK_PC0051_H000.glb"]:
@@ -40,6 +51,9 @@ def main():
         shutil.copy(R + "hero3d/textures/" + f, OUT + "tex/" + f)
     for f in ["T_Pp2001_030_0017.png", "T_Pp2001_Backside_00.png"]:
         shutil.copy(R + "commu_card/textures/" + f, OUT + "tex/" + f)
+    # COMMU 页背景用：原版焦散贴图；原版 PLG 的 COMMU 字形（灰 165,165,172，2 倍分辨率，游戏里按 0.7 缩放）
+    shutil.copy(R + "tex/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_Caustics_00.png", OUT + "tex/T_UI_Camp_Caustics_00.png")
+    commu_word(OUT + "tex/commu_word.png")
     tmp = tempfile.mkdtemp()
     for name, (num, split) in HERO.items():
         base = f"A_PC0051_UIA{num}_BASE_{name}"

@@ -20,7 +20,7 @@
    git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local merge --no-edit origin/claude/amazing-darwin-b00arn
    - 有冲突就停下来报告。
    - 这次不需要 push。
-6. 确认 git log 里有 "v0.14.90 build: hero materials fixed by Claude" 这个提交（抽牌堆立绘换成原版 COMMU 3D 实时渲染 + 牌浮空自转 + 卡框提亮）。
+6. 确认 git log 里有 "v0.14.90 build: original COMMU background" 这个提交（抽牌堆立绘换成原版 COMMU 3D 实时渲染 + 牌浮空自转 + 卡框提亮）。
    docs/codex/codex_fix_v0.14.90_hero_materials.md 已由 Claude 直接改完，**不用再执行那份文档**。
 7. 稀疏检出缺目录时，允许执行：
    git -c safe.directory=<repo> sparse-checkout add mod musicbox testmod tools/compat research/libs_0.107.1
@@ -39,7 +39,7 @@
 【4. 打包 pck】（和以前一样）
 1. 把 <repo>\mod\pck_stage 整个复制到 <repo>\mod\_build\stage_<时间戳>\（包括 .godot，可以用 robocopy /E）。
 2. 核对 p3makoto\ui\ 下有 system_portrait.png、system_portrait_q1.png、system_portrait_half.png、system_portrait_q3.png、system_portrait_closed.png 及各自的 .import，.godot\imported\ 下有五个对应的 .ctex；p3makoto\ui\dive\ 下有 14 张 dive_*.png 及各自的 .import，.godot\imported\ 下有 14 个 dive_*.ctex；p3makoto\sfx\ 下有 92 个 .ogg（新增 sys_dive.ogg、sys_blob.ogg）；p3makoto\pile_deck、pile_discard、pile_exhaust 下各有 *_skel_data.tres；p3makoto\pile\ 下有 pile_skel_data.tres、pile.atlas.import、pile.spine-json.import；p3makoto\rig\characters\ 下有 regent_skel_data.tres 和 regent.atlas.import；.godot\imported\ 下有两个文件名含 p3private 的 .spatlas。
-   另外（v0.14.90 新增）：p3makoto\hero3d\ 下有 4 个 .glb（SK_PC0051_C002 / F000 / H000、SK_Pp2001_000）、tex\ 下 5 张 png、anim\ 下 30 个文件（5 段主角动作各 .json/.bin/.scale.bin，5 段 Card_ 动作各 .json/.bin），合计约 11MB；这些是运行时直接读的原始文件，**没有也不需要 .import**，原样打进 pck。
+   另外（v0.14.90 新增）：p3makoto\hero3d\ 下有 4 个 .glb（SK_PC0051_C002 / F000 / H000、SK_Pp2001_000）、tex\ 下 7 张 png（含 T_UI_Camp_Caustics_00.png、commu_word.png）、anim\ 下 30 个文件（5 段主角动作各 .json/.bin/.scale.bin，5 段 Card_ 动作各 .json/.bin），合计约 11MB；这些是运行时直接读的原始文件，**没有也不需要 .import**，原样打进 pck。
    v0.14.89 起已有：p3makoto\card_frame\ 下有 19 张 png（card_frame_attack_s / skill_s / power_s、card_banner_*、card_portrait_border_*、arcana_tab）及各自的 .import；p3makoto\cards\ 下有 6 张 png（strike_regent、defend_regent、falling_star、big_bang、tyranny、the_smith）及 .import；.godot\imported\ 下有对应的 .ctex；p3makoto\fonts\ 下有 Cinzel-Bold.ttf、LXGWWenKai-Bold-CardTitles.ttf（约 88KB）和 OFL-LXGWWenKai.txt。
 3. 用 GDRE Tools 打包：
    <gdre_tools.exe> --headless --pck-create=<stage目录> --output=<repo>\mod\_build\P3Makoto.pck --pck-version=3 --pck-engine-version=4.5.1
@@ -80,7 +80,7 @@
 用户自己进游戏验收：**不要启动游戏，不要用 Computer Use 操作游戏**。安装和兼容检查做完、报告发出就结束。
 
 报告最后附上给用户的测试要点（用户自己验收用）：
-1. 打开抽牌堆：右边是原版 P3R 营地 COMMU 页的结城理（原版模型 + 原版动作，实时 3D）。入场拿着牌 → 松手，牌浮到胸前 → 牌在空中慢慢自转（约 10 秒一圈）。外套、头发透出后面的水。
+1. 打开抽牌堆：整个界面换成原版 P3R 营地 COMMU 页 —— 背景是后面的战斗画面套原版颜色（上方浅水泛青、焦散水纹），右边白色斜块 + 灰色 COMMU 大字，结城理是原版模型 + 原版动作（实时 3D），外套和头发透出水，在白块上显出轮廓和小阴影。入场拿着牌 → 松手，牌浮到胸前 → 牌在空中慢慢自转（约 10 秒一圈）。外套、头发透出后面的水。
 2. 光标在卡牌上移动：每碰到一张牌，浮空的牌明显加速转一下（约 120°）；快速扫过一排时应连续加速、不停顿不卡顿。
 3. 重点看丝滑：入场、松手、自转、加速转，整个过程有没有掉帧、跳帧、突然停一下。有的话把日志 godot.log 发给 Claude（"perf pile … build" 那行现在带 hero3d 分段耗时）。
 4. 关掉抽牌堆时人物跟着整组滑出去，不会先消失。卡组 / 弃牌 / 消耗三个牌堆这次没变。

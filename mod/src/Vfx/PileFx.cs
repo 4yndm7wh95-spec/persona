@@ -198,7 +198,10 @@ public static class PileFx
 		lap("hide");
 		// ── 背景：圆孔从牌堆按钮那个角张开 ──
 		Vector2 from = L.Iris;
-		ShaderMaterial water = new() { Shader = Shaders.Underwater };
+		// v0.14.90：抽牌堆 = 原版营地 COMMU 页（原版 3D 主角 + 原版背景上色 + 白色斜块）；舞台加载失败就退回原来的水下背景和立绘。
+		bool commu = kind == Kind.Draw && HeroStage.Available(screen.GetTree());
+		ShaderMaterial water = new() { Shader = commu ? Shaders.CommuBg : Shaders.Underwater };
+		if (commu) water.SetShaderParameter("caustics", HeroStage.Tex("T_UI_Camp_Caustics_00.png"));
 		water.SetShaderParameter("aspect", view.X / view.Y);
 		water.SetShaderParameter("center", from);
 		water.SetShaderParameter("radius", 0f);
@@ -226,14 +229,31 @@ public static class PileFx
 				butterfly = ExhaustDecor(root, right, view, font, k, rx);
 				break;
 			default:
-				Disc(right, L.Word, font, k, rx);
-				lap("disc");
+				if (!commu)
+				{
+					Disc(right, L.Word, font, k, rx);
+					lap("disc");
+				}
 				butterfly = new PileButterfly(right, kind, k, rx, PorScale);
 				lap("butterfly");
-				bool hero = HeroStage.Open(right, view, HeroShiftX * view.X * L.Side);
+				Node2D? panel = commu ? CommuPanel(right, view) : null;
+				bool hero = commu && HeroStage.Open(right, view, HeroShiftX * view.X * L.Side);
 				lap("hero3d");
-				if (!hero)
+				if (hero)
 				{
+					float u = view.X / 1920f;
+					HeroStage.CutOut(panel!);                                   // 白块和灰影在人物剪影处挖空：外套透出的是水
+					HeroStage.CutOut((CanvasItem)panel!.GetMeta("shadow").AsGodotObject());
+					HeroStage.AddShadow(panel!, new Vector2(24f, 10f) * u);   // 人物投在白块上的小阴影（被白块裁剪）
+					CommuWord(panel!, view);
+				}
+				else
+				{
+					if (panel != null)
+					{
+						((Node)panel.GetMeta("shadow").AsGodotObject()).QueueFree();
+						panel.QueueFree();
+					}
 					Portrait(right, k, rx);
 					lap("portrait");
 				}
@@ -1379,6 +1399,38 @@ public static class PileFx
 	}
 
 	/// <summary>立绘：Spine 待机动画（读不到就用静态图），牌边一圈慢慢上浮的光粒子 + 两颗闪烁的十字星。</summary>
+	/// <summary>
+	/// v0.14.90 原版 COMMU 页的白色斜块（左缘撕裂碎片 + 左侧灰影）。原版资源里没有它在屏幕上的摆放数据，
+	/// 坐标是对着用户的原版截图（半尺寸 2000×920 截图里游戏画面 x 125~865、y 0~460，人物中心 x≈560）描的，
+	/// 换算到我们的版式：人物中心对齐 HeroStage 的人物（屏幕中心 + HeroShiftX），按视口宽等比缩放。
+	/// 返回白块本身（ClipChildren：人物阴影和 COMMU 字只出现在白块上）。
+	/// </summary>
+	private static Node2D CommuPanel(Node2D parent, Vector2 view)
+	{
+		float u = view.X / 1920f, s = 1080f / 460f;
+		float ox = 960f + HeroShiftX * 1920f - (560f - 125f) * s;
+		Vector2 P(float x, float y) => new(((x - 125f) * s + ox - 960f) * u + view.X / 2f, (y * s - 540f) * u + view.Y / 2f);
+		Vector2[] pts = { P(705, 0), P(900, 0), P(900, 300), P(800, 460), P(262, 460), P(300, 425), P(275, 418), P(330, 370) };
+		Vector2[] shadow = new Vector2[pts.Length];
+		for (int i = 0; i < pts.Length; i++) shadow[i] = pts[i] + new Vector2(-30f, 6f) * u;
+		Polygon2D shade = new() { Polygon = shadow, Color = new Color(150 / 255f, 158 / 255f, 175 / 255f) };
+		parent.AddChild(shade);
+		Polygon2D panel = new() { Polygon = pts, Color = Colors.White, ClipChildren = CanvasItem.ClipChildrenMode.AndDraw };
+		panel.SetMeta("shadow", shade);
+		parent.AddChild(panel);
+		return panel;
+	}
+
+	/// <summary>原版 PLG 的 COMMU 字形（灰色，斜 57°），压在人物阴影上面。</summary>
+	private static void CommuWord(Node2D panel, Vector2 view)
+	{
+		if (HeroStage.Tex("commu_word.png") is not Texture2D tex) return;
+		float u = view.X / 1920f, s = 1080f / 460f;
+		float ox = 960f + HeroShiftX * 1920f - (560f - 125f) * s;
+		Vector2 at = new(((760f - 125f) * s + ox - 960f) * u + view.X / 2f, (300f * s - 540f) * u + view.Y / 2f);
+		panel.AddChild(new Sprite2D { Texture = tex, Position = at, Rotation = Mathf.DegToRad(-57f), Scale = Vector2.One * 0.7f * u });
+	}
+
 	private static void Portrait(Node2D parent, float k, float rx)
 	{
 		float s = PorScale * k;

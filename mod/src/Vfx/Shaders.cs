@@ -7,7 +7,7 @@ public static class Shaders
 {
 	private static Shader Make(string code) => new Shader { Code = code };
 
-	private static Shader? _heroFlat, _heroRamp, _heroKeyOut;
+	private static Shader? _heroFlat, _heroRamp, _heroKeyOut, _heroShadow, _heroCut, _commuBg;
 
 	// 与 tools/p3r/hero_render/render.gd 的 FLAT / RAMP 一致（v0.14.90 对照原版 COMMU 截图调过），移除离线 mask_pass。
 	// 纯绿 = 透出后面的水（原版 CaRtOp）；不描边（用户：原版没有描边）。
@@ -56,6 +56,77 @@ void fragment() {
 	float alpha = 1.0 - s;
 	vec3 rgb = (c - vec3(0.0, s, 0.0)) / max(alpha, 0.001);
 	COLOR = vec4(rgb, t.a * alpha) * hero_modulate;
+}
+");
+
+	/// <summary>
+	/// v0.14.90 COMMU 白色斜块 / 它的灰影：在人物剪影（含透水部分）的位置挖空，人物透水的地方就透出底下的水，不透出白块（原版就是这样）。
+	/// hero_pos / hero_size：人物显示框在同一父节点坐标里的位置和大小。（不用屏幕缓冲：白块的 ClipChildren 会重拷屏幕缓冲。）
+	/// </summary>
+	public static Shader HeroCut => _heroCut ??= Make(@"
+shader_type canvas_item;
+uniform sampler2D hero : filter_linear;
+uniform vec2 hero_pos = vec2(0.0);
+uniform vec2 hero_size = vec2(1920.0, 1080.0);
+varying vec2 local;
+void vertex() { local = VERTEX; }
+void fragment() {
+	vec2 huv = (local - hero_pos) / hero_size;
+	float a = all(greaterThanEqual(huv, vec2(0.0))) && all(lessThanEqual(huv, vec2(1.0))) ? texture(hero, huv).a : 0.0;
+	COLOR.a *= 1.0 - a;
+}
+");
+
+	/// <summary>v0.14.90 人物投在 COMMU 白色斜块上的小阴影：整个剪影（含透水部分）画成灰色；人物本身盖住的地方不画（cut = 偏移量 / 显示框大小）。</summary>
+	public static Shader HeroShadow => _heroShadow ??= Make(@"
+shader_type canvas_item;
+uniform vec2 cut = vec2(0.0);
+void fragment() {
+	vec2 h = UV + cut;
+	float self = all(greaterThanEqual(h, vec2(0.0))) && all(lessThanEqual(h, vec2(1.0))) ? texture(TEXTURE, h).a : 0.0;
+	COLOR = vec4(0.47, 0.51, 0.59, 0.55 * texture(TEXTURE, UV).a * (1.0 - self));
+}
+");
+
+	/// <summary>
+	/// v0.14.90 原版营地 COMMU 页背景（MM_UI_Camp_Commu_BG）：原版是把暂停时的游戏画面按亮度套 CRV_Camp_Commu_BGCurve 重新上色，
+	/// 再往下压原版 Param2 深蓝 (0, 0.063, 0.506, A 0.7)；上方浅水泛青 + 原版焦散贴图 T_UI_Camp_Caustics_00。
+	/// 这里读的是牌堆后面的战斗画面。center / radius / aspect 同 Underwater（圆孔张开）。
+	/// </summary>
+	public static Shader CommuBg => _commuBg ??= Make(@"
+shader_type canvas_item;
+uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
+uniform sampler2D caustics : repeat_enable, filter_linear;
+uniform float aspect = 1.777;
+uniform vec2 center = vec2(0.1, 0.9);
+uniform float radius = 3.0;
+float curve(float x, vec4 xs, vec4 ys) {
+	if (x < xs.y) return mix(ys.x, ys.y, (x - xs.x) / (xs.y - xs.x));
+	if (x < xs.z) return mix(ys.y, ys.z, (x - xs.y) / (xs.z - xs.y));
+	return mix(ys.z, ys.w, clamp((x - xs.z) / (xs.w - xs.z), 0.0, 1.0));
+}
+void fragment() {
+	vec3 src = texture(screen_tex, SCREEN_UV).rgb;
+	float l = dot(pow(src, vec3(2.2)), vec3(0.2126, 0.7152, 0.0722));
+	l = clamp((l - 0.5) * 1.2 + 0.5, 0.0, 1.0);
+	vec3 c = vec3(curve(l, vec4(0.0, 0.1, 0.9, 1.0), vec4(0.0, 0.1, 0.6, 0.8)),
+		curve(l, vec4(0.0, 0.1, 0.7, 1.0), vec4(0.3, 0.5, 0.7, 0.85)),
+		curve(l, vec4(0.0, 0.1, 0.7, 1.0), vec4(0.7, 0.8, 0.85, 0.9)));
+	float y = UV.y;
+	c = c * (1.0 - 0.7 * y) + vec3(0.0, 0.063, 0.506) * 0.7 * y;
+	float sh = pow(clamp(1.0 - y / 0.32, 0.0, 1.0), 1.5);
+	c = mix(c, vec3(0.235, 0.843, 0.941), 0.75 * sh);
+	vec2 tile = vec2(900.0 / 1920.0, 240.0 / 1080.0);
+	float row = floor(y / tile.y);
+	vec2 cuv = vec2(UV.x / tile.x + 0.5 * mod(row, 2.0) + TIME * 0.012, y / tile.y);
+	vec4 ct = texture(caustics, cuv);
+	float cl = (ct.r + ct.g + ct.b) / 3.0 * ct.a * clamp(1.0 - y * 1.4, 0.0, 1.0);
+	c = 1.0 - (1.0 - c) * (1.0 - cl * vec3(0.6, 0.95, 1.0) * 0.8);
+	vec2 d = (UV - center) * vec2(aspect, 1.0);
+	float r = length(d);
+	float inside = smoothstep(radius, radius - 0.01, r);
+	float rim = smoothstep(0.02, 0.0, abs(r - radius)) * step(0.001, radius);
+	COLOR = vec4(c + vec3(0.7, 0.95, 1.0) * rim * 0.9, max(inside, rim * 0.9));
 }
 ");
 	private static Shader? _ring;
