@@ -10,6 +10,16 @@
 refine_blade_a、solar_strike_a、spoils_of_battle_a、wrought_in_war_a、begone_a、alignment_a、bulwark_a（去掉 _a 后缀）。
 README 第 3 批表格对应行后面追加一句"用户：没评价的基本都能用，转为定稿"（只追加，不改原文）。
 
+【1b. 用户已认可的重画版没进仓库，先补上】
+用户指出：black_hole（黑洞）、alignment（星位序列）你已经按用户反馈重画过，用户认可的是**重画后的版本**，不是仓库里现在这张
+（仓库里 black_hole 还是第 1 批那张"给原图套了滤镜"的 a；alignment 是第 3 批的 A 候选）。
+1. 在你本机（imagegen 输出目录 / 上次会话的中间目录）找到这两张用户认可的重画版，原样（按【4】规格等比缩放 + 居中裁切到 1000×760，不透明 RGB）覆盖：
+   art\cards\v3\black_hole.png、art\cards\v3\alignment.png，同时各复制一份到 art\cards\v3\cand\<名字>_a.png。
+2. venerate（崇拜）同理：如果你也按用户反馈重画过（两个小人格面具从背后膜拜，不是一双手）并得到用户认可，同样覆盖；
+   如果没重画过，就把 venerate 加进这次的生成列表，段落用：
+   `venerate（S）：Original two Regent servants seen from behind at the bottom left and right, bowing in worship toward a constellation of linked lines with two four-point stars above. Replace the two servants with two small Persona creatures seen from behind, bowing / raising arms in worship: left a small snowman-like imp with a blue jester hat, right a tiny fairy with blue wings in a simple leotard. Keep the constellation and two stars. STRICT no human hands, no Makoto.`
+3. 找不到用户认可的那张就停下来报告，不要自己挑一张顶上。README 里对应条目追加一句说明来源。
+
 【2. 参考图（每张都喂给 imagegen）】
 - Reference1 = 原版卡图 research\regent_assets\images\packed\card_portraits\regent\<名字>.png（只作构图参考，不是编辑对象）。
 - Reference2 = 风格板：把已定稿的 art\cards\v3\strike_regent.png、defend_regent.png、tyranny.png、the_smith.png 拼成 2×2（每格 500×380，无边框无字），存到本机中间目录（不提交）。第 3 批用的就是这块板，沿用即可。
