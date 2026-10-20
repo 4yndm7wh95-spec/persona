@@ -1428,7 +1428,9 @@ public static class PileFx
 		float u = view.X / 1920f, s = 1080f / 460f;
 		float ox = 960f + HeroShiftX * 1920f - (560f - 125f) * s;
 		Vector2 at = new(((760f - 125f) * s + ox - 960f) * u + view.X / 2f, (300f * s - 540f) * u + view.Y / 2f);
-		panel.AddChild(new Sprite2D { Texture = tex, Position = at, Rotation = Mathf.DegToRad(-57f), Scale = Vector2.One * 0.7f * u });
+		Sprite2D word = new() { Texture = tex, Position = at, Rotation = Mathf.DegToRad(-57f), Scale = Vector2.One * 0.7f * u };
+		panel.AddChild(word);
+		HeroStage.CutOut(word);   // 字在人物下面：人物剪影处不画（白块的裁剪不认白块材质里挖的空）
 	}
 
 	private static void Portrait(Node2D parent, float k, float rx)

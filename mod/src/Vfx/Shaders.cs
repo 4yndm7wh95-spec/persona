@@ -61,15 +61,18 @@ void fragment() {
 
 	/// <summary>
 	/// v0.14.90 COMMU 白色斜块 / 它的灰影：在人物剪影（含透水部分）的位置挖空，人物透水的地方就透出底下的水，不透出白块（原版就是这样）。
-	/// hero_pos / hero_size：人物显示框在同一父节点坐标里的位置和大小。（不用屏幕缓冲：白块的 ClipChildren 会重拷屏幕缓冲。）
+	/// hero_pos / hero_size：人物显示框在它父节点坐标里的位置和大小；xa / xb / xo：本节点到那个父节点的变换（白块里的 COMMU 字是旋转缩放过的子节点）。（不用屏幕缓冲：白块的 ClipChildren 会重拷屏幕缓冲。）
 	/// </summary>
 	public static Shader HeroCut => _heroCut ??= Make(@"
 shader_type canvas_item;
 uniform sampler2D hero : filter_linear;
 uniform vec2 hero_pos = vec2(0.0);
 uniform vec2 hero_size = vec2(1920.0, 1080.0);
+uniform vec2 xa = vec2(1.0, 0.0);   // 本节点坐标 → 人物显示框所在父节点坐标（Transform2D 的 x / y / origin）
+uniform vec2 xb = vec2(0.0, 1.0);
+uniform vec2 xo = vec2(0.0);
 varying vec2 local;
-void vertex() { local = VERTEX; }
+void vertex() { local = xa * VERTEX.x + xb * VERTEX.y + xo; }
 void fragment() {
 	vec2 huv = (local - hero_pos) / hero_size;
 	float a = all(greaterThanEqual(huv, vec2(0.0))) && all(lessThanEqual(huv, vec2(1.0))) ? texture(hero, huv).a : 0.0;

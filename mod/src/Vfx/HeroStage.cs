@@ -85,6 +85,13 @@ internal static class HeroStage
 		m.SetShaderParameter("hero", stage.Display.Texture);
 		m.SetShaderParameter("hero_pos", stage.Display.Position);
 		m.SetShaderParameter("hero_size", stage.Display.Size);
+		if (item is Node2D n && stage.Display.GetParent() is Node2D host)
+		{
+			Transform2D t = host.GlobalTransform.AffineInverse() * n.GlobalTransform;
+			m.SetShaderParameter("xa", t.X);
+			m.SetShaderParameter("xb", t.Y);
+			m.SetShaderParameter("xo", t.Origin);
+		}
 		item.Material = m;
 	}
 
