@@ -19,9 +19,9 @@ BARLOW = 'mod/pck_stage/p3makoto/fonts/BarlowCondensed-900Italic.ttf'
 TICK = 1 / 30
 P = dict(siro=(10, 0, 1), title=(10, 0, 1), lst=(10, 0, 1), sil=(10, 23, 1))
 SIL_TO = (10, 170)
-HERO_DX = -110                                 # 接近原版位置（原版头在 0.54 宽处），稍右一点免得手和召唤器压到牌堆标题
+HERO_DX = -225                                 # 原版位置（原版截图量：头中心 0.56 宽、手和召唤器 0.47 宽）
 CAPTURE = np.array([0.0, 42 / 255, 108 / 255])         # 原版 DT_CampParamCommon.HeroCaptureBgColor
-SHADOW = (np.array([0.47, 0.51, 0.59]), 0.55, (24, 10))   # 人物投在白底上的灰影：同 COMMU（Shaders.HeroShadow：颜色、不透明度、偏移）
+SHADOW = (np.array([0.47, 0.51, 0.59]), 0.6, (-22, 16))   # 人物投在白底上的灰影：同 COMMU（Shaders.HeroShadow：颜色、不透明度、偏移）
 
 
 def up(n, x): x = min(max(x, 0.0), 1.0); return 1 - (1 - x) ** (n + 1)
@@ -127,6 +127,7 @@ def water_light():
 
 
 SIRO, HEAD, CARDS = layer_siro(), layer_head(), cards()
+LEFT_SIDE = (np.arange(W)[None, :, None] < 0.8 * W - (np.arange(H)[:, None, None] - H) * 0).astype(float) * (np.arange(W)[None, :, None] < W * 0.75)   # 右下白三角所在的右侧不挖
 NAMI = water_light()
 _tb = Image.open(S + '/../images/296.webp').convert('RGBA').resize((W, 1089)).crop((0, 31, W, 119))
 TOPBAR = Image.new('RGBA', (W, H)); TOPBAR.alpha_composite(_tb, (0, 0))
@@ -151,16 +152,19 @@ for n in ONLY:
         # 白底在人物剪影处挖空（同 COMMU 的 HeroCut）：人物透明的地方透出的是水，不是白底
         base = np.asarray(Image.fromarray((img * 255).clip(0, 255).astype(np.uint8))).astype(float) / 255
         wl = np.asarray(SIRO_NOW).astype(float) / 255
-        wa = wl[..., 3:4] * (1 - sil[..., None])
+        wa = wl[..., 3:4]                         # 白底不挖空（原版：白底上看不到透明的外套）
         out_rgb = base * (1 - wa) + wl[..., :3] * wa
         # 人物投在白底上的灰影：剪影错开 (24, 10) 再羽化（同 COMMU）
-        _, sh = shift(np.zeros((H, W, 3)), sil, SHADOW[2][0], SHADOW[2][1])
-        sh = np.asarray(Image.fromarray((sh * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(14))).astype(float) / 255
-        sa = (sh * (1 - sil))[..., None]
+        _, sh = shift(np.zeros((H, W, 3)), sil, SHADOW[2][0], SHADOW[2][1])   # 阴影 = 人物立绘的完整轮廓（含透明的外套 / 头发暗部），跟着人物位置走
+        sh = np.asarray(Image.fromarray((sh * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(8))).astype(float) / 255
+        sa = (sh * (1 - sil))[..., None]          # 只落在轮廓外面
         out_rgb = out_rgb * (1 - sa * SHADOW[1] * wa) + SHADOW[0] * (sa * SHADOW[1] * wa)
         # 轮廓外沿落在水上的一圈窄阴影（同一个错开的剪影，深海军蓝）
         out_rgb = out_rgb * (1 - sa * 0.5 * (1 - wa)) + np.array([0.02, 0.07, 0.25]) * (sa * 0.5 * (1 - wa))
         # 人物透明的地方（外套 / 头发暗部）直接透出水，不压暗、不填色（用户：和入水那段一样）；水上不投影，只有白底上有灰影
+        # 人物透明部分：落在水上透出水；落在白底上显示原版人物底色（HeroCaptureBgColor 深海军蓝），头发暗部才不会在白底上消失
+        tr = (sil * (1 - a))[..., None] * wa
+        out_rgb = out_rgb * (1 - tr) + CAPTURE * tr
         out_rgb = out_rgb * (1 - a[..., None]) + c * a[..., None]
         # 水光加亮叠在人物和背景上（UI 之下）：人物和水融在一起，不显得是贴上去的 3D 模型；人物身上减半，保住外套的深色
         fi = int(tp / TICK / 5) % 30
