@@ -93,6 +93,7 @@ func _initialize():
 	var e = Environment.new(); e.background_mode = Environment.BG_CLEAR_COLOR
 	var we = WorldEnvironment.new(); we.environment = e; w.add_child(we)
 	cam = Camera3D.new(); w.add_child(cam); cam.fov = cfg.get("fov", 30.0)
+	if cfg.get("fov_horizontal", false): cam.keep_aspect = Camera3D.KEEP_WIDTH   # UE 的 FOVAngle 是水平视角
 	if cfg.has("cam_basis"):
 		var b = cfg["cam_basis"]; var o = cfg["cam_origin"]
 		cam.global_transform = Transform3D(Basis(Vector3(b[0][0], b[0][1], b[0][2]), Vector3(b[1][0], b[1][1], b[1][2]), Vector3(b[2][0], b[2][1], b[2][2])), Vector3(o[0], o[1], o[2]))
