@@ -1,0 +1,819 @@
+[
+  {
+    "Type": "Function",
+    "Name": "ExecuteUbergraph_BP_Pp2001_TarotCardBase",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_Pp2001_TarotCardBase_C'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.8"
+    },
+    "ChildProperties": [
+      {
+        "Type": "IntProperty",
+        "Name": "EntryPoint",
+        "Flags": "RF_Public",
+        "ElementSize": 4,
+        "PropertyFlags": "BlueprintVisible | BlueprintReadOnly | Parm"
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "K2Node_CustomEvent_Loaded_1",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "Temp_object_Variable",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "K2Node_DynamicCast_AsTexture",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Texture'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "K2Node_DynamicCast_bSuccess",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "StrProperty",
+        "Name": "CallFunc_Concat_StrStr_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 16
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "K2Node_CustomEvent_Loaded",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "Temp_object_Variable_1",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "K2Node_DynamicCast_AsTexture_1",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'Texture'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "K2Node_DynamicCast_bSuccess_1",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "K2Node_Event_param",
+        "Flags": "RF_Public",
+        "ElementSize": 12,
+        "Struct": {
+          "ObjectName": "Class'AppPropsCardParam'",
+          "ObjectPath": "/Script/xrd777"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_GetMaterial_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'MaterialInterface'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "NameProperty",
+        "Name": "CallFunc_MakeCardTableRowName_RowName",
+        "Flags": "RF_Public",
+        "ElementSize": 12
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_CreateDynamicMaterialInstance_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'MaterialInstanceDynamic'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "CallFunc_GetDataTableRowFromName_OutRow",
+        "Flags": "RF_Public",
+        "ElementSize": 64,
+        "Struct": {
+          "ObjectName": "Class'AppPropsCardTable'",
+          "ObjectPath": "/Script/xrd777"
+        }
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "CallFunc_GetDataTableRowFromName_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "StrProperty",
+        "Name": "CallFunc_Conv_NameToString_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 16
+      },
+      {
+        "Type": "StrProperty",
+        "Name": "CallFunc_Concat_StrStr_ReturnValue_1",
+        "Flags": "RF_Public",
+        "ElementSize": 16
+      },
+      {
+        "Type": "StrProperty",
+        "Name": "CallFunc_Concat_StrStr_ReturnValue_2",
+        "Flags": "RF_Public",
+        "ElementSize": 16
+      },
+      {
+        "Type": "StrProperty",
+        "Name": "CallFunc_Concat_StrStr_ReturnValue_3",
+        "Flags": "RF_Public",
+        "ElementSize": 16
+      },
+      {
+        "Type": "DelegateProperty",
+        "Name": "K2Node_CreateDelegate_OutputDelegate",
+        "Flags": "RF_Public",
+        "ElementSize": 20,
+        "SignatureFunction": {
+          "ObjectName": "Class'KismetSystemLibrary:OnAssetLoaded__DelegateSignature'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_GetMaterial_ReturnValue_1",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'MaterialInterface'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "DelegateProperty",
+        "Name": "K2Node_CreateDelegate_OutputDelegate_1",
+        "Flags": "RF_Public",
+        "ElementSize": 20,
+        "SignatureFunction": {
+          "ObjectName": "Class'KismetSystemLibrary:OnAssetLoaded__DelegateSignature'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CallFunc_CreateDynamicMaterialInstance_ReturnValue_1",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyClass": {
+          "ObjectName": "Class'MaterialInstanceDynamic'",
+          "ObjectPath": "/Script/Engine"
+        }
+      }
+    ],
+    "FunctionFlags": "FUNC_Final | FUNC_UbergraphFunction | FUNC_HasDefaults"
+  },
+  {
+    "Type": "Function",
+    "Name": "TarotCardSetup",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_Pp2001_TarotCardBase_C'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.8"
+    },
+    "ChildProperties": [
+      {
+        "Type": "StructProperty",
+        "Name": "param",
+        "Flags": "RF_Public",
+        "ElementSize": 12,
+        "PropertyFlags": "BlueprintVisible | BlueprintReadOnly | Parm",
+        "Struct": {
+          "ObjectName": "Class'AppPropsCardParam'",
+          "ObjectPath": "/Script/xrd777"
+        }
+      }
+    ],
+    "FunctionFlags": "FUNC_Event | FUNC_Public | FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "OnLoaded_F63DE3974F8478B36C703AB363FE0426",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_Pp2001_TarotCardBase_C'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.8"
+    },
+    "ChildProperties": [
+      {
+        "Type": "ObjectProperty",
+        "Name": "Loaded",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | BlueprintReadOnly | Parm",
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      }
+    ],
+    "FunctionFlags": "FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "OnLoaded_27DEC6194ED2342DEA4210801676A7AA",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_Pp2001_TarotCardBase_C'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.8"
+    },
+    "ChildProperties": [
+      {
+        "Type": "ObjectProperty",
+        "Name": "Loaded",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | BlueprintReadOnly | Parm",
+        "PropertyClass": {
+          "ObjectName": "Class'Object'",
+          "ObjectPath": "/Script/CoreUObject"
+        }
+      }
+    ],
+    "FunctionFlags": "FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "MakeCardTableRowName",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_Pp2001_TarotCardBase_C'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.8"
+    },
+    "ChildProperties": [
+      {
+        "Type": "NameProperty",
+        "Name": "RowName",
+        "Flags": "RF_Public",
+        "ElementSize": 12,
+        "PropertyFlags": "Parm | OutParm"
+      },
+      {
+        "Type": "StrProperty",
+        "Name": "String",
+        "Flags": "RF_Public",
+        "ElementSize": 16,
+        "PropertyFlags": "Edit | BlueprintVisible"
+      },
+      {
+        "Type": "StrProperty",
+        "Name": "CallFunc_Conv_IntToString_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 16
+      },
+      {
+        "Type": "StrProperty",
+        "Name": "CallFunc_Conv_IntToString_ReturnValue_1",
+        "Flags": "RF_Public",
+        "ElementSize": 16
+      },
+      {
+        "Type": "StrProperty",
+        "Name": "CallFunc_Conv_IntToString_ReturnValue_2",
+        "Flags": "RF_Public",
+        "ElementSize": 16
+      },
+      {
+        "Type": "StrProperty",
+        "Name": "CallFunc_Concat_StrStr_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 16
+      },
+      {
+        "Type": "StrProperty",
+        "Name": "CallFunc_Concat_StrStr_ReturnValue_1",
+        "Flags": "RF_Public",
+        "ElementSize": 16
+      },
+      {
+        "Type": "StrProperty",
+        "Name": "CallFunc_Concat_StrStr_ReturnValue_2",
+        "Flags": "RF_Public",
+        "ElementSize": 16
+      },
+      {
+        "Type": "StrProperty",
+        "Name": "CallFunc_Concat_StrStr_ReturnValue_3",
+        "Flags": "RF_Public",
+        "ElementSize": 16
+      },
+      {
+        "Type": "NameProperty",
+        "Name": "CallFunc_Conv_StringToName_ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 12
+      },
+      {
+        "Type": "StrProperty",
+        "Name": "CallFunc_Conv_IntToString_ReturnValue_3",
+        "Flags": "RF_Public",
+        "ElementSize": 16
+      },
+      {
+        "Type": "StrProperty",
+        "Name": "CallFunc_Concat_StrStr_ReturnValue_4",
+        "Flags": "RF_Public",
+        "ElementSize": 16
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "K2Node_SwitchEnum_CmpSuccess",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      }
+    ],
+    "FunctionFlags": "FUNC_Public | FUNC_HasOutParms | FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "TarotCardSync",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_Pp2001_TarotCardBase_C'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.8"
+    },
+    "ChildProperties": [
+      {
+        "Type": "BoolProperty",
+        "Name": "ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 1,
+        "PropertyFlags": "Parm | OutParm | ReturnParm",
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      }
+    ],
+    "FunctionFlags": "FUNC_Event | FUNC_Public | FUNC_HasOutParms | FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "GetFrontMaterial",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_Pp2001_TarotCardBase_C'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.8"
+    },
+    "ChildProperties": [
+      {
+        "Type": "ObjectProperty",
+        "Name": "ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyFlags": "Parm | OutParm | ReturnParm",
+        "PropertyClass": {
+          "ObjectName": "Class'MaterialInstanceDynamic'",
+          "ObjectPath": "/Script/Engine"
+        }
+      }
+    ],
+    "FunctionFlags": "FUNC_Event | FUNC_Public | FUNC_HasOutParms | FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "GetBackMaterial",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_Pp2001_TarotCardBase_C'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.8"
+    },
+    "ChildProperties": [
+      {
+        "Type": "ObjectProperty",
+        "Name": "ReturnValue",
+        "Flags": "RF_Public",
+        "ElementSize": 8,
+        "PropertyFlags": "Parm | OutParm | ReturnParm",
+        "PropertyClass": {
+          "ObjectName": "Class'MaterialInstanceDynamic'",
+          "ObjectPath": "/Script/Engine"
+        }
+      }
+    ],
+    "FunctionFlags": "FUNC_Event | FUNC_Public | FUNC_HasOutParms | FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "BlueprintGeneratedClass",
+    "Name": "BP_Pp2001_TarotCardBase_C",
+    "Flags": "RF_Public | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'BlueprintGeneratedClass'",
+    "Package": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase",
+    "Super": {
+      "ObjectName": "BlueprintGeneratedClass'BP_AppPropsBase_C'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_AppPropsBase.0"
+    },
+    "Properties": {
+      "SimpleConstructionScript": {
+        "ObjectName": "SimpleConstructionScript'BP_Pp2001_TarotCardBase_C:SimpleConstructionScript_0'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.13"
+      },
+      "UberGraphFunction": {
+        "ObjectName": "Function'BP_Pp2001_TarotCardBase_C:ExecuteUbergraph_BP_Pp2001_TarotCardBase'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.0"
+      }
+    },
+    "Children": [
+      {
+        "ObjectName": "Function'BP_Pp2001_TarotCardBase_C:GetBackMaterial'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.7"
+      },
+      {
+        "ObjectName": "Function'BP_Pp2001_TarotCardBase_C:GetFrontMaterial'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.6"
+      },
+      {
+        "ObjectName": "Function'BP_Pp2001_TarotCardBase_C:TarotCardSync'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.5"
+      },
+      {
+        "ObjectName": "Function'BP_Pp2001_TarotCardBase_C:MakeCardTableRowName'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.4"
+      },
+      {
+        "ObjectName": "Function'BP_Pp2001_TarotCardBase_C:OnLoaded_27DEC6194ED2342DEA4210801676A7AA'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.3"
+      },
+      {
+        "ObjectName": "Function'BP_Pp2001_TarotCardBase_C:OnLoaded_F63DE3974F8478B36C703AB363FE0426'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.2"
+      },
+      {
+        "ObjectName": "Function'BP_Pp2001_TarotCardBase_C:TarotCardSetup'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.1"
+      },
+      {
+        "ObjectName": "Function'BP_Pp2001_TarotCardBase_C:ExecuteUbergraph_BP_Pp2001_TarotCardBase'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.0"
+      }
+    ],
+    "ChildProperties": [
+      {
+        "Type": "StructProperty",
+        "Name": "UberGraphFrame",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 16,
+        "PropertyFlags": "Transient | DuplicateTransient",
+        "Struct": {
+          "ObjectName": "Class'PointerToUberGraphFrame'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Param",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 12,
+        "PropertyFlags": "Edit | BlueprintVisible | DisableEditOnInstance",
+        "Struct": {
+          "ObjectName": "Class'AppPropsCardParam'",
+          "ObjectPath": "/Script/xrd777"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "Source Material",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "Edit | BlueprintVisible | DisableEditOnInstance",
+        "PropertyClass": {
+          "ObjectName": "Class'MaterialInterface'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "MaterialInstanceDynamic",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "Edit | BlueprintVisible | DisableEditOnInstance",
+        "PropertyClass": {
+          "ObjectName": "Class'MaterialInstanceDynamic'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "DataTable",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "Edit | BlueprintVisible | DisableEditOnInstance",
+        "PropertyClass": {
+          "ObjectName": "Class'DataTable'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "StructProperty",
+        "Name": "Table",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 64,
+        "PropertyFlags": "Edit | BlueprintVisible | DisableEditOnInstance",
+        "Struct": {
+          "ObjectName": "Class'AppPropsCardTable'",
+          "ObjectPath": "/Script/xrd777"
+        }
+      },
+      {
+        "Type": "BoolProperty",
+        "Name": "Loading",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 1,
+        "PropertyFlags": "Edit | BlueprintVisible | DisableEditOnInstance",
+        "FieldSize": 1,
+        "ByteOffset": 0,
+        "ByteMask": 1,
+        "FieldMask": 255,
+        "BoolSize": 1,
+        "bIsNativeBool": true
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "BackMaterialInstanceDynamic",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "Edit | BlueprintVisible | DisableEditOnInstance",
+        "PropertyClass": {
+          "ObjectName": "Class'MaterialInstanceDynamic'",
+          "ObjectPath": "/Script/Engine"
+        }
+      }
+    ],
+    "FuncMap": {
+      "ExecuteUbergraph_BP_Pp2001_TarotCardBase": {
+        "ObjectName": "Function'BP_Pp2001_TarotCardBase_C:ExecuteUbergraph_BP_Pp2001_TarotCardBase'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.0"
+      },
+      "TarotCardSetup": {
+        "ObjectName": "Function'BP_Pp2001_TarotCardBase_C:TarotCardSetup'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.1"
+      },
+      "OnLoaded_F63DE3974F8478B36C703AB363FE0426": {
+        "ObjectName": "Function'BP_Pp2001_TarotCardBase_C:OnLoaded_F63DE3974F8478B36C703AB363FE0426'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.2"
+      },
+      "OnLoaded_27DEC6194ED2342DEA4210801676A7AA": {
+        "ObjectName": "Function'BP_Pp2001_TarotCardBase_C:OnLoaded_27DEC6194ED2342DEA4210801676A7AA'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.3"
+      },
+      "MakeCardTableRowName": {
+        "ObjectName": "Function'BP_Pp2001_TarotCardBase_C:MakeCardTableRowName'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.4"
+      },
+      "TarotCardSync": {
+        "ObjectName": "Function'BP_Pp2001_TarotCardBase_C:TarotCardSync'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.5"
+      },
+      "GetFrontMaterial": {
+        "ObjectName": "Function'BP_Pp2001_TarotCardBase_C:GetFrontMaterial'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.6"
+      },
+      "GetBackMaterial": {
+        "ObjectName": "Function'BP_Pp2001_TarotCardBase_C:GetBackMaterial'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.7"
+      }
+    },
+    "ClassFlags": "CLASS_Config | CLASS_Optional | CLASS_ReplicationDataIsSetUp | CLASS_CompiledFromBlueprint | CLASS_HasInstancedReference",
+    "ClassWithin": {
+      "ObjectName": "Class'Object'",
+      "ObjectPath": "/Script/CoreUObject"
+    },
+    "ClassConfigName": "Engine",
+    "Interfaces": [
+      {
+        "Class": {
+          "ObjectName": "Class'AppPropsCardInterface'",
+          "ObjectPath": "/Script/xrd777"
+        },
+        "PointerProperty": null,
+        "PointerOffset": 0,
+        "bImplementedByK2": true
+      }
+    ],
+    "bCooked": true,
+    "ClassDefaultObject": {
+      "ObjectName": "BP_Pp2001_TarotCardBase_C'Default__BP_Pp2001_TarotCardBase_C'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.9"
+    }
+  },
+  {
+    "Type": "BP_Pp2001_TarotCardBase_C",
+    "Name": "Default__BP_Pp2001_TarotCardBase_C",
+    "Flags": "RF_Public | RF_ClassDefaultObject | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "BlueprintGeneratedClass'/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.BP_Pp2001_TarotCardBase_C'",
+    "Package": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase",
+    "Template": {
+      "ObjectName": "BP_AppPropsBase_C'Default__BP_AppPropsBase_C'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_AppPropsBase.1"
+    },
+    "Properties": {
+      "UberGraphFrame": {},
+      "Param": {
+        "Type": "EAppPropsCardType::Blank",
+        "ID": 0,
+        "Rank": 0
+      },
+      "DataTable": {
+        "ObjectName": "DataTable'DT_AppPropsCard'",
+        "ObjectPath": "/Game/Xrd777/Props/Pp2001/DT_AppPropsCard.0"
+      },
+      "Table": {
+        "type": "EAppPropsCardType::Blank",
+        "Texture": {
+          "AssetPathName": "None",
+          "SubPathString": ""
+        }
+      },
+      "Root": {
+        "ObjectName": "SceneComponent'Default__BP_Pp2001_TarotCardBase_C:Root'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.11"
+      },
+      "SkeletalMesh": {
+        "ObjectName": "SkeletalMeshComponent'Default__BP_Pp2001_TarotCardBase_C:SkeltalMesh0'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.14"
+      },
+      "RootComponent": {
+        "ObjectName": "SceneComponent'Default__BP_Pp2001_TarotCardBase_C:Root'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.11"
+      }
+    }
+  },
+  {
+    "Type": "SceneComponent",
+    "Name": "DefaultSceneRoot_GEN_VARIABLE",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SceneComponent'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_Pp2001_TarotCardBase_C'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.8"
+    }
+  },
+  {
+    "Type": "SceneComponent",
+    "Name": "Root",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SceneComponent'",
+    "Outer": {
+      "ObjectName": "BP_Pp2001_TarotCardBase_C'Default__BP_Pp2001_TarotCardBase_C'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.9"
+    },
+    "Template": {
+      "ObjectName": "SceneComponent'Default__BP_AppPropsBase_C:Root'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_AppPropsBase.3"
+    }
+  },
+  {
+    "Type": "SCS_Node",
+    "Name": "SCS_Node_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SCS_Node'",
+    "Outer": {
+      "ObjectName": "SimpleConstructionScript'BP_Pp2001_TarotCardBase_C:SimpleConstructionScript_0'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.13"
+    },
+    "Properties": {
+      "ComponentClass": {
+        "ObjectName": "Class'SceneComponent'",
+        "ObjectPath": "/Script/Engine"
+      },
+      "ComponentTemplate": {
+        "ObjectName": "SceneComponent'BP_Pp2001_TarotCardBase_C:DefaultSceneRoot_GEN_VARIABLE'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.10"
+      },
+      "VariableGuid": "6E4B33E9-4C28FC88-E646569F-A178096E",
+      "InternalVariableName": "DefaultSceneRoot"
+    }
+  },
+  {
+    "Type": "SimpleConstructionScript",
+    "Name": "SimpleConstructionScript_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SimpleConstructionScript'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_Pp2001_TarotCardBase_C'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.8"
+    },
+    "Properties": {
+      "DefaultSceneRootNode": {
+        "ObjectName": "SCS_Node'BP_Pp2001_TarotCardBase_C:SimpleConstructionScript_0.SCS_Node_0'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.12"
+      }
+    }
+  },
+  {
+    "Type": "SkeletalMeshComponent",
+    "Name": "SkeltalMesh0",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SkeletalMeshComponent'",
+    "Outer": {
+      "ObjectName": "BP_Pp2001_TarotCardBase_C'Default__BP_Pp2001_TarotCardBase_C'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.9"
+    },
+    "Template": {
+      "ObjectName": "SkeletalMeshComponent'Default__BP_AppPropsBase_C:SkeltalMesh0'",
+      "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_AppPropsBase.6"
+    },
+    "Properties": {
+      "AnimClass": {
+        "ObjectName": "AnimBlueprintGeneratedClass'ABP_Pp2001_C'",
+        "ObjectPath": "/Game/Xrd777/Props/Pp2001/ABP_Pp2001.5"
+      },
+      "AnimationMode": "EAnimationMode::AnimationBlueprint",
+      "SkeletalMesh": {
+        "ObjectName": "SkeletalMesh'SK_Pp2001_000'",
+        "ObjectPath": "/Game/Xrd777/Props/Pp2001/Models/SK_Pp2001_000.0"
+      },
+      "OverrideMaterials": [
+        null
+      ],
+      "BoundsScale": 2.0,
+      "AttachParent": {
+        "ObjectName": "SceneComponent'Default__BP_Pp2001_TarotCardBase_C:Root'",
+        "ObjectPath": "/Game/Xrd777/Blueprints/Props/BP_Pp2001_TarotCardBase.11"
+      }
+    }
+  }
+]

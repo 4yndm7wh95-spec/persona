@@ -1,0 +1,2019 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_AppPropsCard",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/Xrd777/Props/Pp2001/DT_AppPropsCard",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'AppPropsCardTable'",
+        "ObjectPath": "/Script/xrd777"
+      }
+    },
+    "Rows": {
+      "Blank": {
+        "type": "EAppPropsCardType::Blank",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_Backside_00.T_Pp2001_Backside_00",
+          "SubPathString": ""
+        }
+      },
+      "Minor_0_0": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0001.T_Pp2001_020_0001",
+          "SubPathString": ""
+        }
+      },
+      "Minor_1_0": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0101.T_Pp2001_020_0101",
+          "SubPathString": ""
+        }
+      },
+      "Minor_2_0": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0201.T_Pp2001_020_0201",
+          "SubPathString": ""
+        }
+      },
+      "Minor_3_0": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0301.T_Pp2001_020_0301",
+          "SubPathString": ""
+        }
+      },
+      "Persona_156": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0156.T_Pp2001_010_0156",
+          "SubPathString": ""
+        }
+      },
+      "Minor_0_1": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0002.T_Pp2001_020_0002",
+          "SubPathString": ""
+        }
+      },
+      "Minor_1_1": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0102.T_Pp2001_020_0102",
+          "SubPathString": ""
+        }
+      },
+      "Minor_2_1": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0202.T_Pp2001_020_0202",
+          "SubPathString": ""
+        }
+      },
+      "Minor_3_1": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0302.T_Pp2001_020_0302",
+          "SubPathString": ""
+        }
+      },
+      "Persona_1": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0001.T_Pp2001_010_0001",
+          "SubPathString": ""
+        }
+      },
+      "Persona_2": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0002.T_Pp2001_010_0002",
+          "SubPathString": ""
+        }
+      },
+      "Persona_3": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0003.T_Pp2001_010_0003",
+          "SubPathString": ""
+        }
+      },
+      "Persona_4": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0004.T_Pp2001_010_0004",
+          "SubPathString": ""
+        }
+      },
+      "Persona_5": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0005.T_Pp2001_010_0005",
+          "SubPathString": ""
+        }
+      },
+      "Persona_6": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0006.T_Pp2001_010_0006",
+          "SubPathString": ""
+        }
+      },
+      "Persona_7": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0007.T_Pp2001_010_0007",
+          "SubPathString": ""
+        }
+      },
+      "Persona_8": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0008.T_Pp2001_010_0008",
+          "SubPathString": ""
+        }
+      },
+      "Persona_9": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0009.T_Pp2001_010_0009",
+          "SubPathString": ""
+        }
+      },
+      "Persona_10": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0010.T_Pp2001_010_0010",
+          "SubPathString": ""
+        }
+      },
+      "Persona_11": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0011.T_Pp2001_010_0011",
+          "SubPathString": ""
+        }
+      },
+      "Persona_12": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0012.T_Pp2001_010_0012",
+          "SubPathString": ""
+        }
+      },
+      "Persona_13": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0013.T_Pp2001_010_0013",
+          "SubPathString": ""
+        }
+      },
+      "Persona_14": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0014.T_Pp2001_010_0014",
+          "SubPathString": ""
+        }
+      },
+      "Persona_15": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0015.T_Pp2001_010_0015",
+          "SubPathString": ""
+        }
+      },
+      "Persona_16": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0016.T_Pp2001_010_0016",
+          "SubPathString": ""
+        }
+      },
+      "Persona_35": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0035.T_Pp2001_010_0035",
+          "SubPathString": ""
+        }
+      },
+      "Persona_36": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0036.T_Pp2001_010_0036",
+          "SubPathString": ""
+        }
+      },
+      "Persona_37": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0037.T_Pp2001_010_0037",
+          "SubPathString": ""
+        }
+      },
+      "Persona_38": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0038.T_Pp2001_010_0038",
+          "SubPathString": ""
+        }
+      },
+      "Persona_39": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0039.T_Pp2001_010_0039",
+          "SubPathString": ""
+        }
+      },
+      "Persona_40": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0040.T_Pp2001_010_0040",
+          "SubPathString": ""
+        }
+      },
+      "Persona_41": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0041.T_Pp2001_010_0041",
+          "SubPathString": ""
+        }
+      },
+      "Persona_42": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0042.T_Pp2001_010_0042",
+          "SubPathString": ""
+        }
+      },
+      "Persona_43": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0043.T_Pp2001_010_0043",
+          "SubPathString": ""
+        }
+      },
+      "Persona_44": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0044.T_Pp2001_010_0044",
+          "SubPathString": ""
+        }
+      },
+      "Persona_45": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0045.T_Pp2001_010_0045",
+          "SubPathString": ""
+        }
+      },
+      "Persona_46": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0046.T_Pp2001_010_0046",
+          "SubPathString": ""
+        }
+      },
+      "Persona_47": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0047.T_Pp2001_010_0047",
+          "SubPathString": ""
+        }
+      },
+      "Persona_48": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0048.T_Pp2001_010_0048",
+          "SubPathString": ""
+        }
+      },
+      "Persona_49": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0049.T_Pp2001_010_0049",
+          "SubPathString": ""
+        }
+      },
+      "Persona_50": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0050.T_Pp2001_010_0050",
+          "SubPathString": ""
+        }
+      },
+      "Persona_51": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0051.T_Pp2001_010_0051",
+          "SubPathString": ""
+        }
+      },
+      "Persona_52": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0052.T_Pp2001_010_0052",
+          "SubPathString": ""
+        }
+      },
+      "Persona_53": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0053.T_Pp2001_010_0053",
+          "SubPathString": ""
+        }
+      },
+      "Persona_54": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0054.T_Pp2001_010_0054",
+          "SubPathString": ""
+        }
+      },
+      "Persona_55": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0055.T_Pp2001_010_0055",
+          "SubPathString": ""
+        }
+      },
+      "Persona_56": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0056.T_Pp2001_010_0056",
+          "SubPathString": ""
+        }
+      },
+      "Persona_57": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0057.T_Pp2001_010_0057",
+          "SubPathString": ""
+        }
+      },
+      "Persona_58": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0058.T_Pp2001_010_0058",
+          "SubPathString": ""
+        }
+      },
+      "Persona_59": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0059.T_Pp2001_010_0059",
+          "SubPathString": ""
+        }
+      },
+      "Persona_60": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0060.T_Pp2001_010_0060",
+          "SubPathString": ""
+        }
+      },
+      "Persona_61": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0061.T_Pp2001_010_0061",
+          "SubPathString": ""
+        }
+      },
+      "Persona_62": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0062.T_Pp2001_010_0062",
+          "SubPathString": ""
+        }
+      },
+      "Persona_63": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0063.T_Pp2001_010_0063",
+          "SubPathString": ""
+        }
+      },
+      "Persona_64": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0064.T_Pp2001_010_0064",
+          "SubPathString": ""
+        }
+      },
+      "Persona_65": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0065.T_Pp2001_010_0065",
+          "SubPathString": ""
+        }
+      },
+      "Persona_66": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0066.T_Pp2001_010_0066",
+          "SubPathString": ""
+        }
+      },
+      "Persona_67": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0067.T_Pp2001_010_0067",
+          "SubPathString": ""
+        }
+      },
+      "Persona_68": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0068.T_Pp2001_010_0068",
+          "SubPathString": ""
+        }
+      },
+      "Persona_69": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0069.T_Pp2001_010_0069",
+          "SubPathString": ""
+        }
+      },
+      "Persona_70": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0070.T_Pp2001_010_0070",
+          "SubPathString": ""
+        }
+      },
+      "Persona_71": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0071.T_Pp2001_010_0071",
+          "SubPathString": ""
+        }
+      },
+      "Persona_72": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0072.T_Pp2001_010_0072",
+          "SubPathString": ""
+        }
+      },
+      "Persona_73": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0073.T_Pp2001_010_0073",
+          "SubPathString": ""
+        }
+      },
+      "Persona_74": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0074.T_Pp2001_010_0074",
+          "SubPathString": ""
+        }
+      },
+      "Persona_75": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0075.T_Pp2001_010_0075",
+          "SubPathString": ""
+        }
+      },
+      "Persona_76": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0076.T_Pp2001_010_0076",
+          "SubPathString": ""
+        }
+      },
+      "Persona_77": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0077.T_Pp2001_010_0077",
+          "SubPathString": ""
+        }
+      },
+      "Persona_78": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0078.T_Pp2001_010_0078",
+          "SubPathString": ""
+        }
+      },
+      "Persona_79": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0079.T_Pp2001_010_0079",
+          "SubPathString": ""
+        }
+      },
+      "Persona_80": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0080.T_Pp2001_010_0080",
+          "SubPathString": ""
+        }
+      },
+      "Persona_81": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0081.T_Pp2001_010_0081",
+          "SubPathString": ""
+        }
+      },
+      "Persona_82": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0082.T_Pp2001_010_0082",
+          "SubPathString": ""
+        }
+      },
+      "Persona_83": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0083.T_Pp2001_010_0083",
+          "SubPathString": ""
+        }
+      },
+      "Persona_84": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0084.T_Pp2001_010_0084",
+          "SubPathString": ""
+        }
+      },
+      "Persona_85": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0085.T_Pp2001_010_0085",
+          "SubPathString": ""
+        }
+      },
+      "Persona_86": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0086.T_Pp2001_010_0086",
+          "SubPathString": ""
+        }
+      },
+      "Persona_87": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0087.T_Pp2001_010_0087",
+          "SubPathString": ""
+        }
+      },
+      "Persona_88": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0088.T_Pp2001_010_0088",
+          "SubPathString": ""
+        }
+      },
+      "Persona_89": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0089.T_Pp2001_010_0089",
+          "SubPathString": ""
+        }
+      },
+      "Persona_90": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0090.T_Pp2001_010_0090",
+          "SubPathString": ""
+        }
+      },
+      "Persona_91": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0091.T_Pp2001_010_0091",
+          "SubPathString": ""
+        }
+      },
+      "Persona_92": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0092.T_Pp2001_010_0092",
+          "SubPathString": ""
+        }
+      },
+      "Persona_93": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0093.T_Pp2001_010_0093",
+          "SubPathString": ""
+        }
+      },
+      "Persona_94": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0094.T_Pp2001_010_0094",
+          "SubPathString": ""
+        }
+      },
+      "Persona_95": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0095.T_Pp2001_010_0095",
+          "SubPathString": ""
+        }
+      },
+      "Persona_96": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0096.T_Pp2001_010_0096",
+          "SubPathString": ""
+        }
+      },
+      "Persona_97": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0097.T_Pp2001_010_0097",
+          "SubPathString": ""
+        }
+      },
+      "Persona_98": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0098.T_Pp2001_010_0098",
+          "SubPathString": ""
+        }
+      },
+      "Persona_99": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0099.T_Pp2001_010_0099",
+          "SubPathString": ""
+        }
+      },
+      "Persona_100": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0100.T_Pp2001_010_0100",
+          "SubPathString": ""
+        }
+      },
+      "Persona_101": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0101.T_Pp2001_010_0101",
+          "SubPathString": ""
+        }
+      },
+      "Persona_102": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0102.T_Pp2001_010_0102",
+          "SubPathString": ""
+        }
+      },
+      "Persona_103": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0103.T_Pp2001_010_0103",
+          "SubPathString": ""
+        }
+      },
+      "Persona_104": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0104.T_Pp2001_010_0104",
+          "SubPathString": ""
+        }
+      },
+      "Persona_105": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0105.T_Pp2001_010_0105",
+          "SubPathString": ""
+        }
+      },
+      "Persona_106": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0106.T_Pp2001_010_0106",
+          "SubPathString": ""
+        }
+      },
+      "Persona_107": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0107.T_Pp2001_010_0107",
+          "SubPathString": ""
+        }
+      },
+      "Persona_108": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0108.T_Pp2001_010_0108",
+          "SubPathString": ""
+        }
+      },
+      "Persona_109": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0109.T_Pp2001_010_0109",
+          "SubPathString": ""
+        }
+      },
+      "Persona_110": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0110.T_Pp2001_010_0110",
+          "SubPathString": ""
+        }
+      },
+      "Persona_111": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0111.T_Pp2001_010_0111",
+          "SubPathString": ""
+        }
+      },
+      "Persona_112": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0112.T_Pp2001_010_0112",
+          "SubPathString": ""
+        }
+      },
+      "Persona_113": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0113.T_Pp2001_010_0113",
+          "SubPathString": ""
+        }
+      },
+      "Persona_114": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0114.T_Pp2001_010_0114",
+          "SubPathString": ""
+        }
+      },
+      "Persona_115": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0115.T_Pp2001_010_0115",
+          "SubPathString": ""
+        }
+      },
+      "Persona_116": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0116.T_Pp2001_010_0116",
+          "SubPathString": ""
+        }
+      },
+      "Persona_117": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0117.T_Pp2001_010_0117",
+          "SubPathString": ""
+        }
+      },
+      "Persona_118": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0118.T_Pp2001_010_0118",
+          "SubPathString": ""
+        }
+      },
+      "Persona_119": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0119.T_Pp2001_010_0119",
+          "SubPathString": ""
+        }
+      },
+      "Persona_120": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0120.T_Pp2001_010_0120",
+          "SubPathString": ""
+        }
+      },
+      "Persona_121": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0121.T_Pp2001_010_0121",
+          "SubPathString": ""
+        }
+      },
+      "Persona_122": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0122.T_Pp2001_010_0122",
+          "SubPathString": ""
+        }
+      },
+      "Persona_123": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0123.T_Pp2001_010_0123",
+          "SubPathString": ""
+        }
+      },
+      "Persona_124": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0124.T_Pp2001_010_0124",
+          "SubPathString": ""
+        }
+      },
+      "Persona_125": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0125.T_Pp2001_010_0125",
+          "SubPathString": ""
+        }
+      },
+      "Persona_126": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0126.T_Pp2001_010_0126",
+          "SubPathString": ""
+        }
+      },
+      "Persona_127": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0127.T_Pp2001_010_0127",
+          "SubPathString": ""
+        }
+      },
+      "Persona_128": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0128.T_Pp2001_010_0128",
+          "SubPathString": ""
+        }
+      },
+      "Persona_129": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0129.T_Pp2001_010_0129",
+          "SubPathString": ""
+        }
+      },
+      "Persona_130": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0130.T_Pp2001_010_0130",
+          "SubPathString": ""
+        }
+      },
+      "Persona_131": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0131.T_Pp2001_010_0131",
+          "SubPathString": ""
+        }
+      },
+      "Persona_132": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0132.T_Pp2001_010_0132",
+          "SubPathString": ""
+        }
+      },
+      "Persona_133": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0133.T_Pp2001_010_0133",
+          "SubPathString": ""
+        }
+      },
+      "Persona_134": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0134.T_Pp2001_010_0134",
+          "SubPathString": ""
+        }
+      },
+      "Persona_135": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0135.T_Pp2001_010_0135",
+          "SubPathString": ""
+        }
+      },
+      "Persona_136": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0136.T_Pp2001_010_0136",
+          "SubPathString": ""
+        }
+      },
+      "Persona_137": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0137.T_Pp2001_010_0137",
+          "SubPathString": ""
+        }
+      },
+      "Persona_138": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0138.T_Pp2001_010_0138",
+          "SubPathString": ""
+        }
+      },
+      "Persona_139": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0139.T_Pp2001_010_0139",
+          "SubPathString": ""
+        }
+      },
+      "Persona_140": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0140.T_Pp2001_010_0140",
+          "SubPathString": ""
+        }
+      },
+      "Persona_141": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0141.T_Pp2001_010_0141",
+          "SubPathString": ""
+        }
+      },
+      "Persona_142": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0142.T_Pp2001_010_0142",
+          "SubPathString": ""
+        }
+      },
+      "Persona_143": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0143.T_Pp2001_010_0143",
+          "SubPathString": ""
+        }
+      },
+      "Persona_144": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0144.T_Pp2001_010_0144",
+          "SubPathString": ""
+        }
+      },
+      "Persona_145": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0145.T_Pp2001_010_0145",
+          "SubPathString": ""
+        }
+      },
+      "Persona_146": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0146.T_Pp2001_010_0146",
+          "SubPathString": ""
+        }
+      },
+      "Persona_147": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0147.T_Pp2001_010_0147",
+          "SubPathString": ""
+        }
+      },
+      "Persona_148": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0148.T_Pp2001_010_0148",
+          "SubPathString": ""
+        }
+      },
+      "Persona_149": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0149.T_Pp2001_010_0149",
+          "SubPathString": ""
+        }
+      },
+      "Persona_150": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0150.T_Pp2001_010_0150",
+          "SubPathString": ""
+        }
+      },
+      "Persona_151": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0151.T_Pp2001_010_0151",
+          "SubPathString": ""
+        }
+      },
+      "Persona_152": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0152.T_Pp2001_010_0152",
+          "SubPathString": ""
+        }
+      },
+      "Persona_153": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0153.T_Pp2001_010_0153",
+          "SubPathString": ""
+        }
+      },
+      "Persona_154": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0154.T_Pp2001_010_0154",
+          "SubPathString": ""
+        }
+      },
+      "Persona_155": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0155.T_Pp2001_010_0155",
+          "SubPathString": ""
+        }
+      },
+      "Persona_157": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0157.T_Pp2001_010_0157",
+          "SubPathString": ""
+        }
+      },
+      "Persona_158": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0158.T_Pp2001_010_0158",
+          "SubPathString": ""
+        }
+      },
+      "Persona_159": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0159.T_Pp2001_010_0159",
+          "SubPathString": ""
+        }
+      },
+      "Persona_160": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0160.T_Pp2001_010_0160",
+          "SubPathString": ""
+        }
+      },
+      "Persona_161": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0161.T_Pp2001_010_0161",
+          "SubPathString": ""
+        }
+      },
+      "Persona_162": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0162.T_Pp2001_010_0162",
+          "SubPathString": ""
+        }
+      },
+      "Persona_163": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0163.T_Pp2001_010_0163",
+          "SubPathString": ""
+        }
+      },
+      "Persona_164": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0164.T_Pp2001_010_0164",
+          "SubPathString": ""
+        }
+      },
+      "Persona_165": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0165.T_Pp2001_010_0165",
+          "SubPathString": ""
+        }
+      },
+      "Persona_166": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0166.T_Pp2001_010_0166",
+          "SubPathString": ""
+        }
+      },
+      "Persona_167": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0167.T_Pp2001_010_0167",
+          "SubPathString": ""
+        }
+      },
+      "Persona_168": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0168.T_Pp2001_010_0168",
+          "SubPathString": ""
+        }
+      },
+      "Persona_169": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0169.T_Pp2001_010_0169",
+          "SubPathString": ""
+        }
+      },
+      "Persona_170": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0170.T_Pp2001_010_0170",
+          "SubPathString": ""
+        }
+      },
+      "Persona_171": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0171.T_Pp2001_010_0171",
+          "SubPathString": ""
+        }
+      },
+      "Persona_172": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0172.T_Pp2001_010_0172",
+          "SubPathString": ""
+        }
+      },
+      "Persona_173": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0173.T_Pp2001_010_0173",
+          "SubPathString": ""
+        }
+      },
+      "Persona_174": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0174.T_Pp2001_010_0174",
+          "SubPathString": ""
+        }
+      },
+      "Persona_175": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0175.T_Pp2001_010_0175",
+          "SubPathString": ""
+        }
+      },
+      "Persona_176": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0176.T_Pp2001_010_0176",
+          "SubPathString": ""
+        }
+      },
+      "Persona_177": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0177.T_Pp2001_010_0177",
+          "SubPathString": ""
+        }
+      },
+      "Persona_178": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0178.T_Pp2001_010_0178",
+          "SubPathString": ""
+        }
+      },
+      "Persona_179": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0179.T_Pp2001_010_0179",
+          "SubPathString": ""
+        }
+      },
+      "Persona_180": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0180.T_Pp2001_010_0180",
+          "SubPathString": ""
+        }
+      },
+      "Persona_181": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0181.T_Pp2001_010_0181",
+          "SubPathString": ""
+        }
+      },
+      "Persona_182": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0182.T_Pp2001_010_0182",
+          "SubPathString": ""
+        }
+      },
+      "Persona_183": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0183.T_Pp2001_010_0183",
+          "SubPathString": ""
+        }
+      },
+      "Persona_184": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0184.T_Pp2001_010_0184",
+          "SubPathString": ""
+        }
+      },
+      "Persona_185": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0185.T_Pp2001_010_0185",
+          "SubPathString": ""
+        }
+      },
+      "Persona_186": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0186.T_Pp2001_010_0186",
+          "SubPathString": ""
+        }
+      },
+      "Persona_187": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0187.T_Pp2001_010_0187",
+          "SubPathString": ""
+        }
+      },
+      "Persona_188": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0188.T_Pp2001_010_0188",
+          "SubPathString": ""
+        }
+      },
+      "Persona_189": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0189.T_Pp2001_010_0189",
+          "SubPathString": ""
+        }
+      },
+      "Persona_190": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0190.T_Pp2001_010_0190",
+          "SubPathString": ""
+        }
+      },
+      "Persona_191": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0191.T_Pp2001_010_0191",
+          "SubPathString": ""
+        }
+      },
+      "Persona_192": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0192.T_Pp2001_010_0192",
+          "SubPathString": ""
+        }
+      },
+      "Persona_194": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0194.T_Pp2001_010_0194",
+          "SubPathString": ""
+        }
+      },
+      "Persona_195": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0195.T_Pp2001_010_0195",
+          "SubPathString": ""
+        }
+      },
+      "Persona_196": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0196.T_Pp2001_010_0196",
+          "SubPathString": ""
+        }
+      },
+      "Persona_197": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0197.T_Pp2001_010_0197",
+          "SubPathString": ""
+        }
+      },
+      "Persona_198": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0198.T_Pp2001_010_0198",
+          "SubPathString": ""
+        }
+      },
+      "Persona_199": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0199.T_Pp2001_010_0199",
+          "SubPathString": ""
+        }
+      },
+      "Persona_200": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0200.T_Pp2001_010_0200",
+          "SubPathString": ""
+        }
+      },
+      "Persona_201": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0201.T_Pp2001_010_0201",
+          "SubPathString": ""
+        }
+      },
+      "Persona_202": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0202.T_Pp2001_010_0202",
+          "SubPathString": ""
+        }
+      },
+      "Persona_203": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0203.T_Pp2001_010_0203",
+          "SubPathString": ""
+        }
+      },
+      "Persona_204": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0204.T_Pp2001_010_0204",
+          "SubPathString": ""
+        }
+      },
+      "Persona_205": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0205.T_Pp2001_010_0205",
+          "SubPathString": ""
+        }
+      },
+      "Persona_206": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0206.T_Pp2001_010_0206",
+          "SubPathString": ""
+        }
+      },
+      "Persona_207": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0207.T_Pp2001_010_0207",
+          "SubPathString": ""
+        }
+      },
+      "Persona_208": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0208.T_Pp2001_010_0208",
+          "SubPathString": ""
+        }
+      },
+      "Minor_0_2": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0003.T_Pp2001_020_0003",
+          "SubPathString": ""
+        }
+      },
+      "Minor_0_3": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0004.T_Pp2001_020_0004",
+          "SubPathString": ""
+        }
+      },
+      "Minor_0_4": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0005.T_Pp2001_020_0005",
+          "SubPathString": ""
+        }
+      },
+      "Minor_0_5": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0006.T_Pp2001_020_0006",
+          "SubPathString": ""
+        }
+      },
+      "Minor_0_6": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0007.T_Pp2001_020_0007",
+          "SubPathString": ""
+        }
+      },
+      "Minor_0_7": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0008.T_Pp2001_020_0008",
+          "SubPathString": ""
+        }
+      },
+      "Minor_0_8": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0009.T_Pp2001_020_0009",
+          "SubPathString": ""
+        }
+      },
+      "Minor_0_9": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0010.T_Pp2001_020_0010",
+          "SubPathString": ""
+        }
+      },
+      "Minor_0_10": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0011.T_Pp2001_020_0011",
+          "SubPathString": ""
+        }
+      },
+      "Minor_0_11": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0012.T_Pp2001_020_0012",
+          "SubPathString": ""
+        }
+      },
+      "Minor_0_12": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0013.T_Pp2001_020_0013",
+          "SubPathString": ""
+        }
+      },
+      "Minor_1_2": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0103.T_Pp2001_020_0103",
+          "SubPathString": ""
+        }
+      },
+      "Minor_1_3": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0104.T_Pp2001_020_0104",
+          "SubPathString": ""
+        }
+      },
+      "Minor_1_4": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0105.T_Pp2001_020_0105",
+          "SubPathString": ""
+        }
+      },
+      "Minor_1_5": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0106.T_Pp2001_020_0106",
+          "SubPathString": ""
+        }
+      },
+      "Minor_1_6": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0107.T_Pp2001_020_0107",
+          "SubPathString": ""
+        }
+      },
+      "Minor_1_7": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0108.T_Pp2001_020_0108",
+          "SubPathString": ""
+        }
+      },
+      "Minor_1_8": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0109.T_Pp2001_020_0109",
+          "SubPathString": ""
+        }
+      },
+      "Minor_1_9": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0110.T_Pp2001_020_0110",
+          "SubPathString": ""
+        }
+      },
+      "Minor_1_10": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0111.T_Pp2001_020_0111",
+          "SubPathString": ""
+        }
+      },
+      "Minor_1_11": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0112.T_Pp2001_020_0112",
+          "SubPathString": ""
+        }
+      },
+      "Minor_1_12": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0113.T_Pp2001_020_0113",
+          "SubPathString": ""
+        }
+      },
+      "Minor_2_2": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0203.T_Pp2001_020_0203",
+          "SubPathString": ""
+        }
+      },
+      "Minor_2_3": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0204.T_Pp2001_020_0204",
+          "SubPathString": ""
+        }
+      },
+      "Minor_2_4": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0205.T_Pp2001_020_0205",
+          "SubPathString": ""
+        }
+      },
+      "Minor_2_5": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0206.T_Pp2001_020_0206",
+          "SubPathString": ""
+        }
+      },
+      "Minor_2_6": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0207.T_Pp2001_020_0207",
+          "SubPathString": ""
+        }
+      },
+      "Persona_300": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0300.T_Pp2001_010_0300",
+          "SubPathString": ""
+        }
+      },
+      "Persona_301": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0301.T_Pp2001_010_0301",
+          "SubPathString": ""
+        }
+      },
+      "Persona_302": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0302.T_Pp2001_010_0302",
+          "SubPathString": ""
+        }
+      },
+      "Persona_303": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0303.T_Pp2001_010_0303",
+          "SubPathString": ""
+        }
+      },
+      "Persona_304": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0304.T_Pp2001_010_0304",
+          "SubPathString": ""
+        }
+      },
+      "Persona_305": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0305.T_Pp2001_010_0305",
+          "SubPathString": ""
+        }
+      },
+      "Persona_306": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0306.T_Pp2001_010_0306",
+          "SubPathString": ""
+        }
+      },
+      "Persona_307": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0307.T_Pp2001_010_0307",
+          "SubPathString": ""
+        }
+      },
+      "Persona_308": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0308.T_Pp2001_010_0308",
+          "SubPathString": ""
+        }
+      },
+      "Persona_309": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0309.T_Pp2001_010_0309",
+          "SubPathString": ""
+        }
+      },
+      "Persona_310": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0310.T_Pp2001_010_0310",
+          "SubPathString": ""
+        }
+      },
+      "Persona_311": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0311.T_Pp2001_010_0311",
+          "SubPathString": ""
+        }
+      },
+      "Persona_312": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0312.T_Pp2001_010_0312",
+          "SubPathString": ""
+        }
+      },
+      "Persona_313": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0313.T_Pp2001_010_0313",
+          "SubPathString": ""
+        }
+      },
+      "Persona_314": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0314.T_Pp2001_010_0314",
+          "SubPathString": ""
+        }
+      },
+      "Persona_315": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0315.T_Pp2001_010_0315",
+          "SubPathString": ""
+        }
+      },
+      "Persona_316": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0316.T_Pp2001_010_0316",
+          "SubPathString": ""
+        }
+      },
+      "Persona_317": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0317.T_Pp2001_010_0317",
+          "SubPathString": ""
+        }
+      },
+      "Persona_318": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0318.T_Pp2001_010_0318",
+          "SubPathString": ""
+        }
+      },
+      "Persona_319": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0319.T_Pp2001_010_0319",
+          "SubPathString": ""
+        }
+      },
+      "Persona_320": {
+        "type": "EAppPropsCardType::Persona",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_010_0320.T_Pp2001_010_0320",
+          "SubPathString": ""
+        }
+      },
+      "Minor_2_7": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0208.T_Pp2001_020_0208",
+          "SubPathString": ""
+        }
+      },
+      "Minor_2_8": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0209.T_Pp2001_020_0209",
+          "SubPathString": ""
+        }
+      },
+      "Minor_2_9": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0210.T_Pp2001_020_0210",
+          "SubPathString": ""
+        }
+      },
+      "Minor_2_10": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0211.T_Pp2001_020_0211",
+          "SubPathString": ""
+        }
+      },
+      "Minor_2_11": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0212.T_Pp2001_020_0212",
+          "SubPathString": ""
+        }
+      },
+      "Minor_2_12": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0213.T_Pp2001_020_0213",
+          "SubPathString": ""
+        }
+      },
+      "Minor_3_2": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0303.T_Pp2001_020_0303",
+          "SubPathString": ""
+        }
+      },
+      "Minor_3_3": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0304.T_Pp2001_020_0304",
+          "SubPathString": ""
+        }
+      },
+      "Minor_3_4": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0305.T_Pp2001_020_0305",
+          "SubPathString": ""
+        }
+      },
+      "Minor_3_5": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0306.T_Pp2001_020_0306",
+          "SubPathString": ""
+        }
+      },
+      "Minor_3_6": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0307.T_Pp2001_020_0307",
+          "SubPathString": ""
+        }
+      },
+      "Minor_3_7": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0308.T_Pp2001_020_0308",
+          "SubPathString": ""
+        }
+      },
+      "Minor_3_8": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0309.T_Pp2001_020_0309",
+          "SubPathString": ""
+        }
+      },
+      "Minor_3_9": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0310.T_Pp2001_020_0310",
+          "SubPathString": ""
+        }
+      },
+      "Minor_3_10": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0311.T_Pp2001_020_0311",
+          "SubPathString": ""
+        }
+      },
+      "Minor_3_11": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0312.T_Pp2001_020_0312",
+          "SubPathString": ""
+        }
+      },
+      "Minor_3_12": {
+        "type": "EAppPropsCardType::MinorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_020_0313.T_Pp2001_020_0313",
+          "SubPathString": ""
+        }
+      },
+      "Major_0": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0000.T_Pp2001_030_0000",
+          "SubPathString": ""
+        }
+      },
+      "Major_1": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0001.T_Pp2001_030_0001",
+          "SubPathString": ""
+        }
+      },
+      "Major_2": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0002.T_Pp2001_030_0002",
+          "SubPathString": ""
+        }
+      },
+      "Major_3": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0003.T_Pp2001_030_0003",
+          "SubPathString": ""
+        }
+      },
+      "Major_4": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0004.T_Pp2001_030_0004",
+          "SubPathString": ""
+        }
+      },
+      "Major_5": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0005.T_Pp2001_030_0005",
+          "SubPathString": ""
+        }
+      },
+      "Major_6": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0006.T_Pp2001_030_0006",
+          "SubPathString": ""
+        }
+      },
+      "Major_7": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0007.T_Pp2001_030_0007",
+          "SubPathString": ""
+        }
+      },
+      "Major_8": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0008.T_Pp2001_030_0008",
+          "SubPathString": ""
+        }
+      },
+      "Major_9": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0009.T_Pp2001_030_0009",
+          "SubPathString": ""
+        }
+      },
+      "Major_10": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0010.T_Pp2001_030_0010",
+          "SubPathString": ""
+        }
+      },
+      "Major_11": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0011.T_Pp2001_030_0011",
+          "SubPathString": ""
+        }
+      },
+      "Major_12": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0012.T_Pp2001_030_0012",
+          "SubPathString": ""
+        }
+      },
+      "Major_13": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0013.T_Pp2001_030_0013",
+          "SubPathString": ""
+        }
+      },
+      "Major_14": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0014.T_Pp2001_030_0014",
+          "SubPathString": ""
+        }
+      },
+      "Major_15": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0015.T_Pp2001_030_0015",
+          "SubPathString": ""
+        }
+      },
+      "Major_16": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0016.T_Pp2001_030_0016",
+          "SubPathString": ""
+        }
+      },
+      "Major_17": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0017.T_Pp2001_030_0017",
+          "SubPathString": ""
+        }
+      },
+      "Major_18": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0018.T_Pp2001_030_0018",
+          "SubPathString": ""
+        }
+      },
+      "Major_19": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0019.T_Pp2001_030_0019",
+          "SubPathString": ""
+        }
+      },
+      "Major_20": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0020.T_Pp2001_030_0020",
+          "SubPathString": ""
+        }
+      },
+      "Major_21": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0021.T_Pp2001_030_0021",
+          "SubPathString": ""
+        }
+      },
+      "Major_23": {
+        "type": "EAppPropsCardType::MajorArcana",
+        "Texture": {
+          "AssetPathName": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_030_0023.T_Pp2001_030_0023",
+          "SubPathString": ""
+        }
+      }
+    }
+  }
+]

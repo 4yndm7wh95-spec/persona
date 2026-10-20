@@ -1,0 +1,66 @@
+[
+  {
+    "Type": "MaterialInstanceConstant",
+    "Name": "MI_Pp2001_010_0000",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MaterialInstanceConstant'",
+    "Package": "/Game/Xrd777/Props/Pp2001/Models/MI_Pp2001_010_0000",
+    "Properties": {
+      "Parent": {
+        "ObjectName": "MaterialInstanceConstant'MB_CH_PpPersonaCard'",
+        "ObjectPath": "/Game/Xrd777/Characters/Common/BaseMaterials/MB_CH_PpPersonaCard.0"
+      },
+      "ScalarParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "RefractionDepthBias",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.0,
+          "ExpressionGUID": "00000000-00000000-00000000-00000000"
+        }
+      ],
+      "BasePropertyOverrides": {
+        "BlendMode": "BLEND_Translucent",
+        "ShadingModel": "MSM_Unlit",
+        "OpacityMaskClipValue": 0.3333
+      },
+      "CachedReferencedTextures": [
+        {
+          "ObjectName": "Texture2D'T_CH_WaterCaustics_00_Alp'",
+          "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_WaterCaustics_00_Alp.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_CH_DummyBC7_00_Col'",
+          "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyBC7_00_Col.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_CH_DummyDXT1_00_Col'",
+          "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyDXT1_00_Col.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_CH_WaterCaustics_01_Alp'",
+          "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_WaterCaustics_01_Alp.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_CH_Distortion_00_Nrm'",
+          "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_Distortion_00_Nrm.0"
+        }
+      ],
+      "TextureStreamingData": [
+        {
+          "SamplingScale": 2.5625,
+          "UVChannelIndex": 0,
+          "TextureName": "T_CH_Distortion_00_Nrm"
+        },
+        {
+          "SamplingScale": 1.0,
+          "UVChannelIndex": 0,
+          "TextureName": "T_CH_WaterCaustics_00_Alp"
+        }
+      ]
+    },
+    "LoadedMaterialResources": []
+  }
+]

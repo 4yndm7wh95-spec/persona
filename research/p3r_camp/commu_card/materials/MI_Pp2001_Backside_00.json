@@ -1,0 +1,75 @@
+[
+  {
+    "Type": "MaterialInstanceConstant",
+    "Name": "MI_Pp2001_Backside_00",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MaterialInstanceConstant'",
+    "Package": "/Game/Xrd777/Props/Pp2001/Models/MI_Pp2001_Backside_00",
+    "Properties": {
+      "Parent": {
+        "ObjectName": "MaterialInstanceConstant'MB_CH_PpTarotBackside'",
+        "ObjectPath": "/Game/Xrd777/Characters/Common/BaseMaterials/MB_CH_PpTarotBackside.0"
+      },
+      "ScalarParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "RefractionDepthBias",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.0,
+          "ExpressionGUID": "00000000-00000000-00000000-00000000"
+        }
+      ],
+      "TextureParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "BacksideTex",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "ObjectName": "Texture2D'T_Pp2001_Backside_00'",
+            "ObjectPath": "/Game/Xrd777/Props/Pp2001/Models/T_Pp2001_Backside_00.0"
+          },
+          "ExpressionGUID": "2D99F823-4C4D1977-385D56A0-8548D8F1"
+        }
+      ],
+      "BasePropertyOverrides": {
+        "BlendMode": "BLEND_Translucent",
+        "ShadingModel": "MSM_Unlit",
+        "OpacityMaskClipValue": 0.3333
+      },
+      "CachedReferencedTextures": [
+        {
+          "ObjectName": "Texture2D'T_CH_WaterCaustics_00_Alp'",
+          "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_WaterCaustics_00_Alp.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_CH_WaterCaustics_01_Alp'",
+          "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_WaterCaustics_01_Alp.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_CH_Distortion_00_Nrm'",
+          "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_Distortion_00_Nrm.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_CH_MetalGlare_01_Alp'",
+          "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_MetalGlare_01_Alp.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_CH_DummyBC7_00_Col'",
+          "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyBC7_00_Col.0"
+        }
+      ],
+      "TextureStreamingData": [
+        {
+          "SamplingScale": 1.28125,
+          "UVChannelIndex": 0,
+          "TextureName": "T_CH_Distortion_00_Nrm"
+        }
+      ]
+    },
+    "LoadedMaterialResources": []
+  }
+]
