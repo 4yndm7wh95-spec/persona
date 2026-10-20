@@ -223,19 +223,38 @@ internal static class HeroStage
 			for (int i = 0; i < map.Length; i++) map[i] = rig.Index(names[i]);
 			return map;
 		}
-		internal void Pose(double time)
+		internal void Pose(double time) => Pose(time, null, 0, 1f);
+
+		/// <summary>
+		/// v0.14.92（用户：拿牌 → 松手那一下衣角和挂坠跳一下）：原版 CommuStart 末帧和 CommuListStart 首帧的外套 / 耳机线骨骼差 23°，
+		/// 原版靠 UE 切换动作时的混合过渡抹平。from 不为空时：先算上一段在 fromTime 的姿势，再按 w 过渡到这一段（两段骨骼列表一致）。
+		/// </summary>
+		internal void Pose(double time, Binding? from, double fromTime, float w)
 		{
-			double f = Math.Clamp(time * clip.Fps, 0, clip.Frames - 1);
-			int a = (int)f, b = Math.Min(a + 1, clip.Frames - 1);
-			float t = (float)(f - a);
+			(int a, int b, float t) = Frames(clip, time);
+			int fa = 0, fb = 0;
+			float ft = 0f;
+			bool blend = from != null && w < 1f && from.clip.Bones.Length == clip.Bones.Length;
+			if (blend) (fa, fb, ft) = Frames(from!.clip, fromTime);
 			Skeleton3D skeleton = rig.Skeleton;
 			for (int i = 0; i < bones.Length; i++)
 			{
 				int index = bones[i];
 				if (index < 0) continue;
 				int oa = (a * bones.Length + i) * 7, ob = (b * bones.Length + i) * 7;
-				skeleton.SetBonePosePosition(index, Vector(clip.Data, oa).Lerp(Vector(clip.Data, ob), t));
-				skeleton.SetBonePoseRotation(index, Rotation(clip.Data, oa).Normalized().Slerp(Rotation(clip.Data, ob).Normalized(), t));
+				Vector3 pos = Vector(clip.Data, oa).Lerp(Vector(clip.Data, ob), t);
+				Quaternion rot = Rotation(clip.Data, oa).Normalized().Slerp(Rotation(clip.Data, ob).Normalized(), t);
+				if (blend)
+				{
+					float[] d = from!.clip.Data;
+					int pa = (fa * bones.Length + i) * 7, pb = (fb * bones.Length + i) * 7;
+					Vector3 fpos = Vector(d, pa).Lerp(Vector(d, pb), ft);
+					Quaternion frot = Rotation(d, pa).Normalized().Slerp(Rotation(d, pb).Normalized(), ft);
+					pos = fpos.Lerp(pos, w);
+					rot = frot.Slerp(rot, w);
+				}
+				skeleton.SetBonePosePosition(index, pos);
+				skeleton.SetBonePoseRotation(index, rot);
 			}
 			for (int i = 0; i < scales.Length; i++)
 			{
@@ -244,6 +263,13 @@ internal static class HeroStage
 				// stage_hero3d.py 已换好轴；包括值为 1 的帧也要应用，清掉上段动作的缩放。
 				skeleton.SetBonePoseScale(scales[i], Vector(clip.Scales, oa).Lerp(Vector(clip.Scales, ob), t));
 			}
+		}
+
+		private static (int A, int B, float T) Frames(Clip c, double time)
+		{
+			double f = Math.Clamp(time * c.Fps, 0, c.Frames - 1);
+			int a = (int)f;
+			return (a, Math.Min(a + 1, c.Frames - 1), (float)(f - a));
 		}
 	}
 
@@ -264,6 +290,12 @@ internal static class HeroStage
 		internal void Pose(double time)
 		{
 			foreach (Binding b in Bindings) b.Pose(time);
+		}
+
+		/// <summary>从 from（停在 fromTime 的姿势）过渡到这一段，w 0→1。</summary>
+		internal void Pose(double time, Motion from, double fromTime, float w)
+		{
+			for (int i = 0; i < Bindings.Length; i++) Bindings[i].Pose(time, from.Bindings[i], fromTime, w);
 		}
 	}
 
@@ -290,7 +322,9 @@ internal static class HeroStage
 		private readonly List<(Skeleton3D Skeleton, int Index)> spinBones = new();
 		private readonly List<Motion> motions = new();
 		private Node2D? owner;
-		private int phase, warmFrames;
+		private int phase, warmFrames, blendFrom = -1;
+		private double blendTime;
+		private const double BlendSeconds = 0.25;   // UE 切换动作的默认混合时长
 		private bool ticking, warmHooked;   // v0.14.91：只解绑真绑上的回调（实机日志 18 条 "Attempt to disconnect"，每条带整段调用栈）
 		private ulong lastTick;
 		private double time;
@@ -418,6 +452,7 @@ internal static class HeroStage
 			Resize(view);
 			phase = 0;
 			time = 0;
+			blendFrom = -1;
 			releaseTime = baseAngle = extra = velocity = Target = 0;
 			motions[0].Pose(0);
 			Display.Size = view;
@@ -511,10 +546,22 @@ internal static class HeroStage
 			while (phase < 2 && time >= motions[phase].Hero.Duration)
 			{
 				time -= motions[phase].Hero.Duration;
+				if (phase == 0) { blendFrom = 0; blendTime = 0; }   // 拿牌 → 松手：两段首尾不连续，做混合过渡（另两处首尾本来就连续）
 				phase++;
 			}
 			if (phase == 2) time %= motions[2].Hero.Duration;
-			motions[phase].Pose(time); // 主角与牌永远用同一段、同一秒数。
+			if (blendFrom >= 0)
+			{
+				blendTime += elapsed;
+				float w = (float)Math.Clamp(blendTime / BlendSeconds, 0, 1);
+				w = w * w * (3f - 2f * w);
+				motions[phase].Pose(time, motions[blendFrom], motions[blendFrom].Hero.Duration, w); // 上一段停在末帧
+				if (w >= 1f) blendFrom = -1;
+			}
+			else
+			{
+				motions[phase].Pose(time); // 主角与牌永远用同一段、同一秒数。
+			}
 			if (!Released) return;
 			float dt = (float)Math.Clamp(elapsed - beforeRelease, 0, 1.0 / 30.0);
 			releaseTime += dt;
