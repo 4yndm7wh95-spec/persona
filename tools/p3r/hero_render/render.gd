@@ -40,6 +40,8 @@ const FILLS = {"MI_PC0051_C002_02_CaFiOp": "5BBCFF", "MI_PC0051_C002_03_CaFiOp":
 const TEXMAP = {"MI_PC0051_C002_00_CaBaOp": "T_PC0051_C002_00_Col.png", "MI_PC0051_F000_00_CaBaOp": "T_PC0051_F000_00_Col.png"}
 
 var cfg; var skels = []; var mats = []; var anim; var data; var nb
+var sc_names = []; var sc_data = PackedFloat32Array()   # 可选：原版缩放轨（道具骨骼缩到 0.001 = 隐藏）
+var props = []   # 可选：独立道具（原版 COMMU 的塔罗牌 SK_Pp2001_000），各自用自己的动作
 var frames_todo = []; var fi = -1; var phase = 0; var wait = 0
 var cam
 
@@ -87,6 +89,23 @@ func _initialize():
 					else:
 						m.next_pass = outline; mats.append(m)
 					n.set_surface_override_material(si, m))
+	if cfg.has("scale"):
+		sc_names = JSON.parse_string(FileAccess.get_file_as_string(cfg["scale"] + ".json"))["bones"]
+		sc_data = FileAccess.get_file_as_bytes(cfg["scale"] + ".bin").to_float32_array()
+	for pr in cfg.get("props", []):
+		var s = load_glb(pr["model"]); w.add_child(s)
+		var ps = []
+		walk(s, func(n):
+			if n is Skeleton3D: ps.append(n)
+			if n is MeshInstance3D:
+				for si in n.mesh.get_surface_count():
+					var src = n.mesh.surface_get_material(si); var nm = src.resource_name if src else ""
+					var m = StandardMaterial3D.new(); m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED; m.cull_mode = BaseMaterial3D.CULL_DISABLED
+					m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+					m.albedo_texture = ImageTexture.create_from_image(Image.load_from_file(pr["tex_back"] if nm.contains("Backside") else pr["tex_front"]))
+					n.set_surface_override_material(si, m))
+		var pa = JSON.parse_string(FileAccess.get_file_as_string(pr["anim"] + ".json"))
+		props.append({"skels": ps, "anim": pa, "data": FileAccess.get_file_as_bytes(pr["anim"] + ".bin").to_float32_array()})
 	anim = JSON.parse_string(FileAccess.get_file_as_string(cfg["anim"] + ".json"))
 	data = FileAccess.get_file_as_bytes(cfg["anim"] + ".bin").to_float32_array()
 	nb = anim["bones"].size()
@@ -104,14 +123,27 @@ func _initialize():
 	for f in range(fr[0], min(fr[1], anim["frames"] - 1) + 1, fr[2]): frames_todo.append(f)
 	DirAccess.make_dir_recursive_absolute(cfg["out"])
 
-func pose(f):
-	for s in skels:
-		for b in nb:
-			var i = s.find_bone(anim["bones"][b])
+func pose_skels(ss, an, dt, f):
+	var n = an["bones"].size(); f = min(f, an["frames"] - 1)
+	for s in ss:
+		for b in n:
+			var i = s.find_bone(an["bones"][b])
 			if i < 0: continue
-			var o = (f * nb + b) * 7
-			s.set_bone_pose_position(i, Vector3(data[o], data[o + 1], data[o + 2]))
-			s.set_bone_pose_rotation(i, Quaternion(data[o + 3], data[o + 4], data[o + 5], data[o + 6]).normalized())
+			var o = (f * n + b) * 7
+			s.set_bone_pose_position(i, Vector3(dt[o], dt[o + 1], dt[o + 2]))
+			s.set_bone_pose_rotation(i, Quaternion(dt[o + 3], dt[o + 4], dt[o + 5], dt[o + 6]).normalized())
+
+func pose(f):
+	pose_skels(skels, anim, data, f)
+	if sc_names.size() > 0:
+		var n = sc_names.size(); var g = min(f, sc_data.size() / (n * 3) - 1)
+		for s in skels:
+			for b in n:
+				var o = (g * n + b) * 3
+				if abs(sc_data[o] - 1.0) < 0.0005 and abs(sc_data[o + 1] - 1.0) < 0.0005 and abs(sc_data[o + 2] - 1.0) < 0.0005: continue
+				var i = s.find_bone(sc_names[b])
+				if i >= 0: s.set_bone_pose_scale(i, Vector3(sc_data[o], sc_data[o + 2], sc_data[o + 1]))   # UE (x,y,z) → glTF (x,z,y)
+	for pr in props: pose_skels(pr["skels"], pr["anim"], pr["data"], f)
 
 func set_mask(on):
 	for m in mats:
