@@ -411,7 +411,7 @@ public static class StageFx
 			{
 				if (GodotObject.IsInstanceValid(row) && screen.GetMeta("p3_deal").AsInt32() == token)
 				{
-					Deal(screen, row);
+					Deal(screen, row, holders);
 				}
 			});
 		}
@@ -429,13 +429,15 @@ public static class StageFx
 		});
 		if (!first)
 		{
-			Deal(screen, row);
+			Deal(screen, row, holders);
 		}
 	}
 
-	private static void Deal(Control screen, Control row)
+	private static void Deal(Control screen, Control row, NGridCardHolder[] originalOrder)
 	{
-		var holders = RewardHolders(row);
+		// Focus moves a holder to the front of the draw order. That must not change
+		// its dealt position relative to the navigation links created by RefreshOptions.
+		var holders = originalOrder.Where(h => StillInRow(h, row) && !h.IsQueuedForDeletion()).ToArray();
 		int n = holders.Length;
 		if (n == 0)
 		{

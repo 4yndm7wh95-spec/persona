@@ -762,6 +762,11 @@ void fragment() {
 				done.TrySetResult(true);
 			});
 			// v0.14.45：演出中途保存退出 / 放弃本局时，整层（含全屏挡点击的透明板）跟着本局一起清掉，不能盖在主菜单上
+			top.TreeExiting += () =>
+			{
+				P3Makoto.Core.TimeScale.Reset();
+				done.TrySetResult(false); // an interrupted cinematic must not leave its caller waiting forever
+			};
 			if (MegaCrit.Sts2.Core.Nodes.NRun.Instance is Node run)
 			{
 				run.TreeExiting += () =>
@@ -787,6 +792,12 @@ void fragment() {
 		Vector2 view = tree.Root.GetVisibleRect().Size;
 		CanvasLayer top = new() { Layer = 90, Name = "P3GreatSeal" };
 		tree.Root.AddChild(top);
+		CinematicConfirm input = new(top);
+		void Finish()
+		{
+			input.Dispose();
+			finish();
+		}
 		Node2D world = new();       // 世界坐标上的效果（脚下光雾、光柱……），在遮幅和压暗之上
 		Node2D ui = new();          // 菜单 / 白幕 / 结语
 		bool valid = player != null && GodotObject.IsInstanceValid(player);
@@ -804,7 +815,7 @@ void fragment() {
 		top.AddChild(barBot);
 		top.AddChild(ui);
 
-		SkillMenu(ui, view, () =>
+		SkillMenu(ui, view, input, () =>
 		{
 			// v0.14.45 看门狗：点下「伟大封印」之后，无论中间哪一步出错、玩家多久不点「闭上眼睛」，最晚这时一定交还游戏（结局不会卡死）
 			tree.CreateTimer(WhiteAt + 90.0, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () =>
@@ -812,7 +823,7 @@ void fragment() {
 				if (GodotObject.IsInstanceValid(top))
 				{
 					GD.Print($"{ModEntry.Tag} great seal watchdog -> finishing");
-					finish();
+					Finish();
 					top.QueueFree();
 				}
 			};
@@ -864,11 +875,11 @@ void fragment() {
 			{
 				try
 				{
-					CloseEyes(top, view, finish);
+					CloseEyes(top, view, input, Finish);
 				}
 				catch (System.Exception)
 				{
-					finish();                           // 闭眼这段搭不起来：直接交还游戏（结算画面出场后整层由 RevealGameOver 清掉）
+					Finish();                           // 闭眼这段搭不起来：直接交还游戏（结算画面出场后整层由 RevealGameOver 清掉）
 					throw;
 				}
 			});
@@ -877,7 +888,7 @@ void fragment() {
 	}
 
 	// 菜单：P3R 技能菜单，停住等玩家点「伟大封印」
-	private static void SkillMenu(Node2D ui, Vector2 view, System.Action onConfirm)
+	private static void SkillMenu(Node2D ui, Vector2 view, CinematicConfirm input, System.Action onConfirm)
 	{
 		Node2D m = new();
 		ui.AddChild(m);
@@ -964,6 +975,7 @@ void fragment() {
 				return;
 			}
 			confirmed = true;
+			input.Disarm();
 			confirmAt = (Time.GetTicksMsec() - t0) / 1000f;
 			Audio.Sfx.Clip("Btl_Ok", 0.9f);
 			blocker.MouseFilter = hit.MouseFilter = Control.MouseFilterEnum.Ignore;
@@ -977,14 +989,7 @@ void fragment() {
 				Confirm();
 			}
 		};
-		// v0.14.45：手柄 / 键盘（确认键）也能选（以前只认鼠标左键，手柄玩家在这里会卡住）
-		Fx.Animate(m, 3600f, _ =>
-		{
-			if (!confirmed && Time.GetTicksMsec() - t0 > 400 && Input.IsActionJustPressed("ui_accept"))
-			{
-				Confirm();
-			}
-		});
+		input.Arm(Confirm);
 		Audio.Sfx.Clip("Btl_CommandPanel", 0.8f, 0.05f);
 		Fx.Animate(m, 3600f, _ =>
 		{
@@ -993,7 +998,7 @@ void fragment() {
 			float since = confirmed ? time - confirmAt : 0f;
 			float flash = confirmed ? Mathf.Max(0f, 1f - since / 0.25f) : 0f;
 			float outT = confirmed ? Ease.InCubic(Mathf.Clamp((since - 0.1f) / 0.3f, 0f, 1f)) : 0f;
-			hoverK = Mathf.MoveToward(hoverK, hover || confirmed ? 1f : 0f, 0.12f);
+			hoverK = Mathf.MoveToward(hoverK, hover || confirmed || Compat.UsingDirectionalNav() ? 1f : 0f, 0.12f);
 			if (fig != null)
 			{
 				fig.Position = new Vector2(W * 0.2f - W * 0.3f * (1f - inn) - W * 0.3f * outT, H * 0.6f);
@@ -1298,7 +1303,7 @@ void fragment() {
 	/// </summary>
 	private const float LidCloseLen = 7.25f;
 
-	private static void CloseEyes(CanvasLayer top, Vector2 view, System.Action finish)
+	private static void CloseEyes(CanvasLayer top, Vector2 view, CinematicConfirm input, System.Action finish)
 	{
 		float W = view.X, H = view.Y;
 		Node2D root = new() { Name = "P3SealEyes", Modulate = new Color(1f, 1f, 1f, 0f) };
@@ -1506,7 +1511,7 @@ void fragment() {
 				return;
 			}
 			float time = t * 600f;
-			hoverK = Mathf.MoveToward(hoverK, hover ? 1f : 0f, 1f / 60f / 0.18f);
+			hoverK = Mathf.MoveToward(hoverK, hover || Compat.UsingDirectionalNav() ? 1f : 0f, 1f / 60f / 0.18f);
 			float e = Ease.OutCubic(hoverK);
 			big.Scale = Vector2.One * (1f + 0.08f * e + 0.012f * Mathf.Sin(time * 2f) * (1f - e));
 			big.Position = bigAt + new Vector2(0f, -6f * e);
@@ -1514,7 +1519,6 @@ void fragment() {
 			bigGlow.Modulate = new Color(0.85f, 0.9f, 1f, 0.35f * e);
 			cursor.Position = cursorHome.Lerp(cursorBig, e);
 		});
-		ulong shownAt = Time.GetTicksMsec();
 		void Choose()
 		{
 			if (chosen)
@@ -1522,6 +1526,7 @@ void fragment() {
 				return;
 			}
 			chosen = true;
+			input.Disarm();
 			Audio.Sfx.Clip("Btl_Ok", 0.6f);
 			hit.QueueFree();                                                        // 挡板留着：闭眼期间点击不能漏到下面的游戏界面
 			Vector2 s0 = big.Scale;
@@ -1539,14 +1544,7 @@ void fragment() {
 				Choose();
 			}
 		};
-		// v0.14.45：手柄 / 键盘确认键也能选
-		Fx.Animate(top, 600f, _ =>
-		{
-			if (!chosen && Time.GetTicksMsec() - shownAt > 400 && Input.IsActionJustPressed("ui_accept"))
-			{
-				Choose();
-			}
-		});
+		input.Arm(Choose);
 
 		// 点下之后：蓝蝶先飞（左下飞入 → 中间绕一圈 → 右上飞走），飞走时才开始闭眼
 		void Close()
