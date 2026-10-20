@@ -1,3 +1,5 @@
+> 已由 Claude 直接改完（提交 "v0.14.90 build: hero materials fixed by Claude"），不用再执行。
+
 你是这个项目的"手"。Claude 审完了你推的 v0.14.90（8b64869），代码结构很好，类型检查、shader 编译、两个版本的 API 检查都过了。下面是要改的地方（还是 0.14.90，不改版本号）。仓库 / git / 绝对不要做 的规则同 docs/codex/codex_impl_v0.14.90_pile_hero3d.md。不启动游戏。
 
 【背景】用户对照原版截图指出：我们的立绘描边太粗、手上线条粗、嘴糊，而且原版人物有不少部分是和后面的水融在一起的。Claude 已在 tools/p3r/hero_render/render.gd 里调好并对过截图，这次把它搬进游戏。

@@ -7,9 +7,10 @@ public static class Shaders
 {
 	private static Shader Make(string code) => new Shader { Code = code };
 
-	private static Shader? _heroFlat, _heroRamp, _heroOutline, _heroKeyOut;
+	private static Shader? _heroFlat, _heroRamp, _heroKeyOut;
 
-	// 与 tools/p3r/hero_render/render.gd 的 FLAT / RAMP / OUTLINE 一致，移除离线 mask_pass。
+	// 与 tools/p3r/hero_render/render.gd 的 FLAT / RAMP 一致（v0.14.90 对照原版 COMMU 截图调过），移除离线 mask_pass。
+	// 纯绿 = 透出后面的水（原版 CaRtOp）；不描边（用户：原版没有描边）。
 	public static Shader HeroFlat => _heroFlat ??= Make(@"
 shader_type spatial;
 render_mode unshaded, cull_disabled;
@@ -17,45 +18,46 @@ uniform vec3 col = vec3(1.0);
 void fragment() { ALBEDO = col; }
 ");
 
+	// 卡通明暗（原版 ToonThreshold -0.2 / Softness 0.1）+ 边缘光；暗部 50% 透出水（原版 RTShadowColor_Blend 0.5，用色键表示）。
 	public static Shader HeroRamp => _heroRamp ??= Make(@"
 shader_type spatial;
 render_mode unshaded, cull_disabled;
 uniform sampler2D tex : source_color, filter_linear;
-uniform vec3 c0 = vec3(0.02, 0.05, 0.30);
-uniform vec3 c1 = vec3(0.05, 0.30, 0.85);
-uniform vec3 c2 = vec3(0.50, 0.78, 1.0);
+uniform vec3 c0 = vec3(0.03, 0.08, 0.28);
+uniform vec3 c1 = vec3(0.25, 0.62, 0.92);
+uniform vec3 c2 = vec3(0.80, 0.95, 1.0);
 uniform vec3 c3 = vec3(1.0);
+uniform vec3 shade = vec3(0.55, 0.85, 1.0);
+varying vec3 wn;
+void vertex() { wn = (MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz; }
 void fragment() {
 	vec4 t = texture(tex, UV);
 	float l = dot(t.rgb, vec3(0.333));
-	vec3 c = l < 0.33 ? mix(c0, c1, l / 0.33) : l < 0.66 ? mix(c1, c2, (l - 0.33) / 0.33) : mix(c2, c3, (l - 0.66) / 0.34);
-	ALBEDO = c;
+	vec3 c = l < 0.25 ? mix(c0, c1, l / 0.25) : l < 0.6 ? mix(c1, c2, (l - 0.25) / 0.35) : mix(c2, c3, (l - 0.6) / 0.4);
+	float nl = dot(normalize(wn), normalize(vec3(-0.4, 0.6, 0.7)));
+	float lit = smoothstep(-0.3, -0.1, nl);
+	c *= mix(shade, vec3(1.0), lit);
+	c = mix(c, vec3(0.0, 1.0, 0.0), 0.5 * (1.0 - lit));
+	float rim = pow(1.0 - clamp(dot(normalize(NORMAL), VIEW), 0.0, 1.0), 4.0);
+	ALBEDO = mix(c, vec3(0.80, 0.94, 1.0), rim * 0.6);
 }
 ");
 
-	public static Shader HeroOutline => _heroOutline ??= Make(@"
-shader_type spatial;
-render_mode unshaded, cull_front;
-uniform vec3 col = vec3(0.714, 0.769, 0.831);
-uniform float width = 0.004;
-void vertex() { VERTEX += NORMAL * width; }
-void fragment() { ALBEDO = col; }
-");
-
+	// 去溢色扣绿：透明 SubViewport 的抗锯齿边是预乘的（如 (0, 0.5, 0, 0.5)），先反预乘，否则耳机线 / 衣服边缘留一圈暗线。
+	// 主角所有颜色都满足 g <= max(r, b)，所以只有色键被扣掉；半绿的边缘像素还原成原色 + 半透明。
 	public static Shader HeroKeyOut => _heroKeyOut ??= Make(@"
 shader_type canvas_item;
-uniform vec4 key_color : source_color = vec4(0.0, 1.0, 0.0, 1.0);
-uniform float key_low = 0.25;
-uniform float key_high = 0.45;
 varying vec4 hero_modulate;
 void vertex() { hero_modulate = COLOR; }
 void fragment() {
 	vec4 t = texture(TEXTURE, UV);
-	float alpha = smoothstep(key_low, key_high, distance(t.rgb, key_color.rgb));
-	COLOR = vec4(t.rgb, t.a * alpha) * hero_modulate;
+	vec3 c = t.a > 0.0 ? t.rgb / t.a : vec3(0.0);
+	float s = clamp(c.g - max(c.r, c.b), 0.0, 1.0);
+	float alpha = 1.0 - s;
+	vec3 rgb = (c - vec3(0.0, s, 0.0)) / max(alpha, 0.001);
+	COLOR = vec4(rgb, t.a * alpha) * hero_modulate;
 }
 ");
-
 	private static Shader? _ring;
 
 	/// <summary>冲击波圆环：radius 0~1，width 环宽，alpha 整体透明度。</summary>

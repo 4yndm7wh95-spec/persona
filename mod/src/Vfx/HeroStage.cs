@@ -12,7 +12,6 @@ internal static class HeroStage
 	public const float KickDeg = 120f;
 	public const float KickOmega = 9f;
 	public static readonly Color HeroKey = new(0f, 1f, 0f);
-	public const float KeyDistanceLow = 0.25f, KeyDistanceHigh = 0.45f;
 	private const string Path = "res://p3makoto/hero3d/";
 	private static Stage? cached;
 	private static bool failed;
@@ -211,7 +210,6 @@ internal static class HeroStage
 		private readonly List<(Skeleton3D Skeleton, int Index)> spinBones = new();
 		private readonly List<Motion> motions = new();
 		private Node2D? owner;
-		private ShaderMaterial outline = null!;
 		private int phase, warmFrames;
 		private ulong lastTick;
 		private double time;
@@ -231,7 +229,6 @@ internal static class HeroStage
 					throw new InvalidOperationException("invalid hero texture: " + file);
 				textures.Add(file, ImageTexture.CreateFromImage(image));
 			}
-			outline = new ShaderMaterial { Shader = Shaders.HeroOutline };
 			Node3D world = new();
 			viewport.AddChild(world);
 			world.AddChild(new Camera3D { KeepAspect = Camera3D.KeepAspectEnum.Width, Fov = 37.35f, Current = true });
@@ -259,9 +256,6 @@ internal static class HeroStage
 			foreach (string name in new[] { "CommuStart", "CommuListStart", "CommuListLoop", "CommuLoop", "CommuListCancel" })
 				motions.Add(new Motion(name, heroes, cards));
 			ShaderMaterial keyOut = new() { Shader = Shaders.HeroKeyOut };
-			keyOut.SetShaderParameter("key_color", HeroKey);
-			keyOut.SetShaderParameter("key_low", KeyDistanceLow);
-			keyOut.SetShaderParameter("key_high", KeyDistanceHigh);
 			Display.Material = keyOut;
 			Display.Texture = viewport.GetTexture();
 			motions[0].Pose(0);
@@ -299,7 +293,7 @@ internal static class HeroStage
 			}
 			else
 			{
-				// FILLS / TEXMAP 与 tools/p3r/hero_render/render.gd 保持一致。
+				// FILLS / TEXMAP 与 tools/p3r/hero_render/render.gd 保持一致；CaRtOp = 纯色键，完全透出后面的水（用户：不要自己填色）。
 				string? fill = name switch
 				{
 					"MI_PC0051_C002_02_CaFiOp" => "5BBCFF", "MI_PC0051_C002_03_CaFiOp" => "9DACC7",
@@ -332,7 +326,6 @@ internal static class HeroStage
 						AlbedoTexture = textures["T_PC0051_E000_00_Col.png"], Transparency = BaseMaterial3D.TransparencyEnum.AlphaScissor,
 					};
 				}
-				if (m != null) m.NextPass = outline;
 			}
 			m ??= new StandardMaterial3D { Transparency = BaseMaterial3D.TransparencyEnum.Alpha, AlbedoColor = new Color(0, 0, 0, 0) };
 			materials.Add(key, m);
@@ -410,7 +403,8 @@ internal static class HeroStage
 		{
 			if (!Playing) return;
 			ulong now = Time.GetTicksUsec();
-			double elapsed = (now - lastTick) / 1000000.0;
+			// 单帧最多推进 1/20 秒：打开牌堆那一帧要建界面（几十毫秒），不夹住的话入场动作会直接跳掉一截。
+			double elapsed = Math.Min((now - lastTick) / 1000000.0, 0.05);
 			lastTick = now;
 			double beforeRelease = phase == 0 ? Math.Max(0, motions[0].Hero.Duration - time) : 0;
 			time += elapsed;

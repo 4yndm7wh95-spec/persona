@@ -1067,7 +1067,6 @@ public static class PileFx
 				return;
 			}
 			exiting = true;
-			if (kind == Kind.Draw) HeroStage.Close(right);
 			exitT0 = Now();
 			butterfly.BeginExit(exitT0);
 			// 退场期间继续动画，只在这个即将销毁的界面上禁用鼠标。
