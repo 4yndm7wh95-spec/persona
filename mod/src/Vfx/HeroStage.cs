@@ -33,8 +33,8 @@ internal static class HeroStage
 	private static readonly string[] ItemNames = { "CampItemStart", "CampItemLoop" };
 	private const string ItemWord = "item_word.png";
 
-	/// <summary>原版 DT_CampParamCommon 的 Edit_Item_FillColor：ITEM 页人物几乎整个压成这个深海军蓝（不透水）。</summary>
-	private static readonly Color ItemFill = new(0.027746f, 0.082817f, 0.255208f);
+	/// <summary>ITEM 页人物色键部分（外套 / 头发暗部）的填色：深海军蓝（不透水）；其余部分按亮度上蓝色渐变，见 Shaders.HeroKeyOut。</summary>
+	private static readonly Color ItemFill = new(0.06f, 0.15f, 0.45f);
 
 	/// <summary>舞台演哪一页：COMMU（抽牌堆：拿牌 → 松手，牌浮空自转）；Top（营地主菜单：倒入水 → 水下待机，牌组牌堆，不显示牌）；Item（弃牌堆：ITEM 页伸手，人物填深海军蓝）。</summary>
 	internal enum Act { Commu, Top, Item }
