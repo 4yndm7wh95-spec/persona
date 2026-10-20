@@ -187,9 +187,9 @@ public static class CardFrameSkin
 	/// v0.14.88 空闲预热（IdleWarmup "@card frame"）：卡框 / 卡图贴图先加载并在极小的画布上画一次（上传显存），
 	/// 卡名字体先加载、把所有卡名用到的字在常用字号下画一遍（栅格化进字形缓存），阿卡纳数字也画一遍。打开牌堆时就不用现做。
 	/// </summary>
-	public static void Warm(Node2D tiny)
+	/// <summary>预热要读的全部贴图路径（IdleWarmup 先在后台线程把它们读进缓存，v0.14.91）。</summary>
+	public static List<string> WarmPaths()
 	{
-		ulong t0 = Time.GetTicksUsec();
 		var paths = new List<string> { Dir + "arcana_tab.png" };
 		foreach (string kind in new[] { "attack", "skill", "power" })
 		{
@@ -202,11 +202,22 @@ public static class CardFrameSkin
 		foreach (string r in new[] { "common", "uncommon", "rare" })
 		{
 			paths.Add(Dir + $"card_portrait_border_plaque_{r}.png");
-			BannerTex(r);
+			paths.Add(Dir + "card_banner_" + r + ".png");
 		}
 		foreach (string id in Arcana.Keys)
 		{
 			paths.Add($"res://p3makoto/cards/{id}.png");
+		}
+		return paths;
+	}
+
+	public static void Warm(Node2D tiny)
+	{
+		ulong t0 = Time.GetTicksUsec();
+		List<string> paths = WarmPaths();
+		foreach (string r in new[] { "common", "uncommon", "rare" })
+		{
+			BannerTex(r);
 		}
 		float x = 0f;
 		foreach (string p in paths)

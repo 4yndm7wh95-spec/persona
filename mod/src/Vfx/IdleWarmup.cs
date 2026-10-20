@@ -13,10 +13,10 @@ using P3Makoto.Core;
 
 namespace P3Makoto.Vfx;
 
-/// <summary>主菜单/地图空闲后逐项在主线程预热，不在 Logo 阶段提交 Spine 后台加载。</summary>
+/// <summary>主菜单/地图空闲后逐项预热（贴图、3D 主角在后台线程读，重的同步项只在地图界面做），不在 Logo 阶段提交 Spine 后台加载。</summary>
 internal static class IdleWarmup
 {
-	private static readonly Queue<string> Jobs = new(new[]
+	private static readonly List<string> Jobs = new(new[]
 	{
 		// v0.14.89（实机日志：玩家很快开局，预热只跑了几项就进了战斗，第一次打开牌堆仍卡）：最常用、最重的排前面
 		"@card frame",   // v0.14.88：塔罗卡框 / 重绘卡图 / 卡名字体（打开牌堆第一次会卡一下）
@@ -103,6 +103,36 @@ internal static class IdleWarmup
 		catch (Exception e) { ModEntry.Report("idle warmup", e); Stop(); }
 	}
 
+	/// <summary>
+	/// v0.14.91（实机日志：预热在选人界面一项接一项在主线程上跑，单项 50~290ms，选人动画一直掉帧）：
+	/// 只能在主线程同步做、又很重的几项（Spine 立绘数据、中文大字体），只在地图界面空闲时做（开局必先经过地图）。
+	/// </summary>
+	private static bool Heavy(string path) => path.EndsWith("_skel_data.tres", StringComparison.Ordinal) || path == "@pile chinese";
+
+	private static bool MapIdle() => NRun.Instance != null && !CombatManager.Instance.IsInProgress && NMapScreen.Instance is NMapScreen map && GodotObject.IsInstanceValid(map) && map.IsOpen && map.IsVisibleInTree();
+
+	private static readonly HashSet<string> Requested = new(StringComparer.Ordinal);
+
+	/// <summary>贴图类先交给后台线程读进缓存（不是 Spine，不碰启动黑屏那个问题），读完再在主线程画一下；3D 主角等它的后台解析完。</summary>
+	private static bool Prefetched(string path)
+	{
+		if (path == "@hero3d") return HeroStage.PrefetchDone;
+		List<string> pre = path == "@card frame" ? P3Makoto.Scenes.CardFrameSkin.WarmPaths()
+			: path.EndsWith(".png", StringComparison.Ordinal) ? new List<string> { path } : new List<string>();
+		bool done = true;
+		foreach (string p in pre)
+		{
+			if (Requested.Add(p))
+			{
+				if (!ResourceLoader.Exists(p) || ResourceLoader.LoadThreadedRequest(p, "", false) != Error.Ok) continue;
+			}
+			ResourceLoader.ThreadLoadStatus st = ResourceLoader.LoadThreadedGetStatus(p);
+			if (st == ResourceLoader.ThreadLoadStatus.InProgress) done = false;
+			else if (st == ResourceLoader.ThreadLoadStatus.Loaded && ResourceLoader.LoadThreadedGet(p) is Resource r) Held.Add(r);
+		}
+		return done;
+	}
+
 	private static void Step()
 	{
 		if (active != null)
@@ -124,8 +154,14 @@ internal static class IdleWarmup
 		if (now < nextCheck) return;
 		nextCheck = now + 150;
 		bool eligible = Preload.OrdinaryReady && NCapstoneContainer.Instance?.InUse != true && NativeIdle() && MenuOrMap();
+		if (eligible) HeroStage.Prefetch();              // 3D 主角的模型 / 贴图 / 动作在后台线程解析，越早开始越好
 		if (!Gate.Ready(now, eligible)) return;
-		string path = Jobs.Dequeue();
+		bool map = MapIdle();
+		int pick = Jobs.FindIndex(j => map || !Heavy(j));
+		if (pick < 0) return;                             // 只剩重活，等到地图界面再做
+		string path = Jobs[pick];
+		if (!Prefetched(path)) return;                    // 后台还在读，下次再看
+		Jobs.RemoveAt(pick);
 		ulong start = Time.GetTicksUsec();
 		try { WarmOne(path); }
 		catch (Exception e) { failed++; ModEntry.Report("idle warmup " + path, e); }

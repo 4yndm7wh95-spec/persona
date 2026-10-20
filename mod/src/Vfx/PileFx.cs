@@ -306,7 +306,9 @@ public static class PileFx
 		// v0.14.54：这几层都和卡牌放在同一个父节点（cards）里，特写时只调前后顺序（压暗层 → 挡点击层 → 特写那张牌）。
 		// 之前把特写的牌 Reparent 到另一层：holder 离开场景树时游戏会回收它的牌面（NGridCardHolder._ExitTree），牌就消失了
 		Vector2 focusAt = L.Focus + new Vector2(L.RightSide ? rx / k : 0f, 0f);
+		lap("head");
 		Focus fx = FocusLayer(cards, view, k, font, focusAt, L.InfoX + (L.RightSide ? rx / k : 0f));
+		lap("focus");
 		Control catcher = new() { MouseFilter = Control.MouseFilterEnum.Stop, Visible = false };
 		catcher.SetAnchorsPreset(Control.LayoutPreset.FullRect);
 		cards.AddChild(catcher);
@@ -1123,6 +1125,7 @@ public static class PileFx
 		};
 		// 同上跳过静音引子；再延到下一帧才播：建界面这一帧要几十毫秒，立刻播的话声音会抢在画面前面
 		Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.45f, delay: 0.001f, from: WhooshSkip);
+		lap("tail");
 		GD.Print($"{ModEntry.Tag} perf pile {kind} build {(Time.GetTicksUsec() - buildStart) / 1000f:0.0}ms (decor {decorMs:0.0}ms;{laps}); idle warmup complete={IdleWarmup.Complete}");
 	}
 

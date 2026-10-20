@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Godot;
 
 namespace P3Makoto.Vfx;
@@ -16,14 +17,62 @@ internal static class HeroStage
 	private static Stage? cached;
 	private static bool failed;
 
+	private static readonly string[] Images = { "T_PC0051_C002_00_Col.png", "T_PC0051_F000_00_Col.png", "T_PC0051_E000_00_Col.png", "T_Pp2001_030_0017.png", "T_Pp2001_Backside_00.png", "T_UI_Camp_Caustics_00.png", "commu_word.png" };
+	private static readonly string[] Models = { "SK_PC0051_C002.glb", "SK_PC0051_F000.glb", "SK_PC0051_H000.glb", "SK_Pp2001_000.glb" };
+	private static readonly string[] MotionNames = { "CommuStart", "CommuListStart", "CommuListLoop", "CommuLoop", "CommuListCancel" };
+	private static Task<Prepared>? prep;
+
+	/// <summary>后台线程里能做的部分：PNG 解码、GLB 解析 + 生成场景（还没进场景树）、动作数据读取校验。</summary>
+	private sealed class Prepared
+	{
+		internal readonly Dictionary<string, Image> Images = new(StringComparer.Ordinal);
+		internal readonly List<(string Model, Node Scene)> Scenes = new();
+		internal readonly Dictionary<string, Clip> Clips = new(StringComparer.Ordinal);
+	}
+
+	/// <summary>v0.14.91（实机日志：主线程一次加载 ~150ms，选人界面掉帧）：在后台线程开始解析，可重复调用。</summary>
+	internal static void Prefetch()
+	{
+		if (prep != null || cached != null || failed) return;
+		prep = Task.Run(() =>
+		{
+			Prepared p = new();
+			foreach (string file in Images)
+			{
+				Image image = new();
+				if (image.LoadPngFromBuffer(Read("tex/" + file)) != Error.Ok || image.IsEmpty())
+					throw new InvalidOperationException("invalid hero texture: " + file);
+				p.Images.Add(file, image);
+			}
+			foreach (string model in Models)
+			{
+				using GltfDocument doc = new();
+				using GltfState state = new();
+				if (doc.AppendFromBuffer(Read(model), Path, state) != Error.Ok)
+					throw new InvalidOperationException("invalid hero model: " + model);
+				p.Scenes.Add((model, doc.GenerateScene(state) ?? throw new InvalidOperationException("empty hero scene: " + model)));
+			}
+			foreach (string name in MotionNames)
+			{
+				p.Clips.Add(name, new Clip(name, true));
+				p.Clips.Add("Card_" + name, new Clip("Card_" + name, false));
+			}
+			return p;
+		});
+	}
+
+	/// <summary>后台解析已结束（成功或失败）；IdleWarmup 等到这一步再在主线程装配、渲染预热。</summary>
+	internal static bool PrefetchDone => cached != null || failed || prep is { IsCompleted: true };
+
 	private static bool Ensure(SceneTree tree)
 	{
 		if (failed) return false;
 		if (cached != null) return true;
+		Prefetch();
 		Stage stage = new(tree);
 		try
 		{
-			stage.Load();
+			stage.Load(prep!.GetAwaiter().GetResult());   // 预热没赶上时（很快就开了抽牌堆）在这里等后台解析完
 			cached = stage;
 			return true;
 		}
@@ -202,10 +251,9 @@ internal static class HeroStage
 	{
 		internal readonly Clip Hero;
 		internal readonly Binding[] Bindings;
-		internal Motion(string name, List<Rig> heroes, List<Rig> cards)
+		internal Motion(string name, Clip hero, Clip card, List<Rig> heroes, List<Rig> cards)
 		{
-			Hero = new Clip(name, true);
-			Clip card = new("Card_" + name, false);
+			Hero = hero;
 			if (Hero.Frames != card.Frames || Math.Abs(Hero.Fps - card.Fps) > 0.001)
 				throw new InvalidOperationException("hero/card timeline mismatch: " + name);
 			Bindings = new Binding[heroes.Count + cards.Count];
@@ -243,6 +291,7 @@ internal static class HeroStage
 		private readonly List<Motion> motions = new();
 		private Node2D? owner;
 		private int phase, warmFrames;
+		private bool ticking, warmHooked;   // v0.14.91：只解绑真绑上的回调（实机日志 18 条 "Attempt to disconnect"，每条带整段调用栈）
 		private ulong lastTick;
 		private double time;
 		private float releaseTime, baseAngle, extra, velocity;
@@ -252,26 +301,19 @@ internal static class HeroStage
 
 		internal Stage(SceneTree t) { tree = t; }
 
-		internal void Load()
+		internal void Load(Prepared p)
 		{
-			foreach (string file in new[] { "T_PC0051_C002_00_Col.png", "T_PC0051_F000_00_Col.png", "T_PC0051_E000_00_Col.png", "T_Pp2001_030_0017.png", "T_Pp2001_Backside_00.png", "T_UI_Camp_Caustics_00.png", "commu_word.png" })
+			foreach ((string file, Image image) in p.Images)
 			{
-				using Image image = new();
-				if (image.LoadPngFromBuffer(Read("tex/" + file)) != Error.Ok || image.IsEmpty())
-					throw new InvalidOperationException("invalid hero texture: " + file);
 				textures.Add(file, ImageTexture.CreateFromImage(image));
+				image.Dispose();
 			}
 			Node3D world = new();
 			viewport.AddChild(world);
 			world.AddChild(new Camera3D { KeepAspect = Camera3D.KeepAspectEnum.Width, Fov = 37.35f, Current = true });
 			world.AddChild(new WorldEnvironment { Environment = new Godot.Environment { BackgroundMode = Godot.Environment.BGMode.ClearColor } });
-			foreach (string model in new[] { "SK_PC0051_C002.glb", "SK_PC0051_F000.glb", "SK_PC0051_H000.glb", "SK_Pp2001_000.glb" })
+			foreach ((string model, Node scene) in p.Scenes)
 			{
-				using GltfDocument doc = new();
-				using GltfState state = new();
-				if (doc.AppendFromBuffer(Read(model), Path, state) != Error.Ok)
-					throw new InvalidOperationException("invalid hero model: " + model);
-				Node scene = doc.GenerateScene(state) ?? throw new InvalidOperationException("empty hero scene: " + model);
 				world.AddChild(scene); // 根节点不作位移 / 旋转，位置全来自动作。
 				bool card = model == "SK_Pp2001_000.glb";
 				int count = card ? cards.Count : heroes.Count;
@@ -285,8 +327,8 @@ internal static class HeroStage
 				if (index >= 0) spinBones.Add((r.Skeleton, index));
 			}
 			if (spinBones.Count == 0) throw new InvalidOperationException("card spin bone missing");
-			foreach (string name in new[] { "CommuStart", "CommuListStart", "CommuListLoop", "CommuLoop", "CommuListCancel" })
-				motions.Add(new Motion(name, heroes, cards));
+			foreach (string name in MotionNames)
+				motions.Add(new Motion(name, p.Clips[name], p.Clips["Card_" + name], heroes, cards));
 			ShaderMaterial keyOut = new() { Shader = Shaders.HeroKeyOut };
 			Display.Material = keyOut;
 			Display.Texture = viewport.GetTexture();
@@ -386,6 +428,7 @@ internal static class HeroStage
 			Playing = true;
 			lastTick = Time.GetTicksUsec();
 			tree.ProcessFrame += Tick;
+			ticking = true;
 			viewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Always;
 		}
 
@@ -403,7 +446,8 @@ internal static class HeroStage
 		internal void Close()
 		{
 			Playing = false;
-			tree.ProcessFrame -= Tick;
+			if (ticking) tree.ProcessFrame -= Tick;
+			ticking = false;
 			CancelWarm();
 			viewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled;
 			if (owner != null && GodotObject.IsInstanceValid(owner)) owner.TreeExiting -= Close;
@@ -435,6 +479,7 @@ internal static class HeroStage
 			if (Tex("commu_word.png") is Texture2D word) clip.AddChild(new Sprite2D { Texture = word, Scale = Vector2.One * 0.05f, Material = cut });
 			warmFrames = 2;
 			RenderingServer.FramePostDraw += WarmDrawn;
+			warmHooked = true;
 			viewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Once;
 		}
 
@@ -449,7 +494,8 @@ internal static class HeroStage
 		}
 		private void CancelWarm()
 		{
-			RenderingServer.FramePostDraw -= WarmDrawn;
+			if (warmHooked) RenderingServer.FramePostDraw -= WarmDrawn;
+			warmHooked = false;
 			warmFrames = 0;
 		}
 
