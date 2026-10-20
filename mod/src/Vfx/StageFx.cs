@@ -396,6 +396,11 @@ public static class StageFx
 		{
 			return;
 		}
+		if (!P3Settings.ShuffleFull)
+		{
+			QuickDeal(screen, row, holders, first);
+			return;
+		}
 		foreach (Control h in holders)
 		{
 			h.Visible = false;                           // 发牌 / 翻牌之前先藏起来（含标题动画期间）
@@ -431,6 +436,98 @@ public static class StageFx
 		{
 			Deal(screen, row, holders);
 		}
+	}
+
+	/// <summary>
+	/// v0.14.101 选卡「精简」（默认；用户：结算和选卡太拖沓，保留 Shuffle Time 特色但不耽误看牌选牌）：
+	/// 点开就能看到、能点 —— 三张牌一开始就是正面，从中间同时向两边展开（左边那张往左、右边那张往右，同原版），0.3s 到位；
+	/// 特色保留在不挡操作的地方：顶部 SHUFFLE TIME 字图带残影滑过（只在这次打开的第一次）、落位时的十字闪光、Shuffle Time 音效。
+	/// </summary>
+	private static void QuickDeal(Control screen, Control row, NGridCardHolder[] holders, bool first)
+	{
+		int n = holders.Length;
+		screen.GetNodeOrNull("P3ShuffleTitle")?.QueueFree();
+		screen.GetNodeOrNull("P3ShuffleDeck")?.QueueFree();
+		int run = (screen.HasMeta("p3_deal_run") ? screen.GetMeta("p3_deal_run").AsInt32() : 0) + 1;
+		screen.SetMeta("p3_deal_run", run);
+		bool Current() => GodotObject.IsInstanceValid(screen) && screen.GetMeta("p3_deal_run").AsInt32() == run;
+		Vector2 view = screen.GetViewportRect().Size;
+		// 排版同 Deal：每次从原始整行缩放重新算，只缩整行
+		if (!row.HasMeta("p3_reward_row_scale")) row.SetMeta("p3_reward_row_scale", row.Scale);
+		Vector2 originalRowScale = row.GetMeta("p3_reward_row_scale").AsVector2();
+		row.Scale = originalRowScale;
+		float rowScaleX = row.GetGlobalTransform().X.Length();
+		float cardWidth = holders.Max(h => Mathf.Max(300f, h.Hitbox.Size.X)) * 1.05f;
+		float fit = ShuffleLayout.RowScale(n, view.X, rowScaleX, cardWidth, view.X * 0.06f);
+		row.Scale = originalRowScale * fit;
+		row.GlobalPosition = new Vector2(view.X * 0.5f, row.GlobalPosition.Y);
+		float spacing = ShuffleLayout.Spacing;
+		Vector2 origin = Vector2.Left * (n - 1) * spacing * 0.5f;
+		Transform2D rowXf = row.GetGlobalTransform();
+		float cardH = holders.Max(h => Mathf.Max(422f, h.Hitbox.Size.Y) * h.SmallScale.Y) * rowXf.Y.Length();
+		const float spread = 0.3f;
+		for (int i = 0; i < n; i++)
+		{
+			NGridCardHolder h = holders[i];
+			Vector2 final = origin + Vector2.Right * spacing * i;
+			Vector2 bs = h.SmallScale;
+			h.Visible = true;
+			h.Rotation = 0f;
+			h.Position = Vector2.Zero;                   // 全部从中间出发（一直是正面）
+			h.Scale = bs * 0.9f;
+			h.Modulate = new Color(1f, 1f, 1f, 0f);
+			// 补间绑在选牌界面上、每帧确认格子还在这一排里（对象池复用的教训，见 StillInRow）
+			Fx.Animate(screen, spread, t =>
+			{
+				if (!Current() || !StillInRow(h, row)) return;
+				h.Position = final * Ease.OutCubic(t);
+				h.Scale = bs * (0.9f + 0.1f * Ease.OutBack(t));
+				h.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(t * 4f, 0f, 1f));
+			});
+			Vector2 at = rowXf * final;
+			Fx.After(screen, spread * 0.75, "shuffle quick glint", () => { if (Current()) Glint(screen, at, cardH); });
+		}
+		Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.45f);
+		Audio.Sfx.Clip("ShuffleTime_CardSet", 0.55f, spread * 0.8f);
+		if (first) QuickTitle(screen);
+	}
+
+	/// <summary>精简模式的标题：原版字图 SHUFFLE TIME 在画面上方带两层残影从左滑到中间、停一下、横向化开淡出（共约 1s），不压暗、不挡点击。</summary>
+	private static void QuickTitle(Control screen)
+	{
+		Texture2D? logo = ResourceLoader.Exists("res://p3makoto/ui/shuffle_title.png") ? ResourceLoader.Load<Texture2D>("res://p3makoto/ui/shuffle_title.png") : null;
+		if (logo == null) return;
+		Vector2 size = screen.GetViewportRect().Size;
+		Node2D root = new() { Name = "P3ShuffleTitle", ZIndex = 50 };
+		screen.AddChild(root);
+		root.TopLevel = true;
+		root.GlobalPosition = Vector2.Zero;
+		Audio.Sfx.Clip("ShuffleTime_Start", 0.6f);
+		const float tilt = -0.12f;
+		float ls = size.X * 0.34f / logo.GetWidth();
+		Vector2 at = new(size.X * 0.5f, size.Y * 0.14f);
+		var layers = new System.Collections.Generic.List<(Sprite2D S, float Lag, float A)>();
+		foreach ((float lag, float a, bool glow) in new[] { (0.06f, 0.25f, true), (0.03f, 0.45f, true), (0f, 1f, false) })
+		{
+			Sprite2D sp = new() { Texture = logo, Scale = Vector2.One * ls, Rotation = tilt, Skew = -0.05f, Modulate = glow ? new Color(0.3f, 0.6f, 1f, 0f) : new Color(1f, 1f, 1f, 0f) };
+			if (glow) sp.Material = Fx.Additive;
+			root.AddChild(sp);
+			layers.Add((sp, lag, a));
+		}
+		Fx.Animate(root, 1.0, t =>
+		{
+			float time = t * 1.0f;
+			foreach (var (sp, lag, a) in layers)
+			{
+				float u = Mathf.Clamp((time - lag) / 0.25f, 0f, 1f);
+				float x = Mathf.Lerp(-size.X * 0.35f, 0f, Ease.OutExpo(u));
+				float fade = time < 0.7f ? Mathf.Clamp(u * 3f, 0f, 1f) : 1f - Mathf.Clamp((time - 0.7f) / 0.3f, 0f, 1f);
+				sp.Position = at + new Vector2(x, 0f).Rotated(tilt);
+				sp.Scale = new Vector2(ls * (1f + (time > 0.7f ? (time - 0.7f) * 1.2f : 0f)), ls);
+				sp.Modulate = new Color(sp.Modulate.R, sp.Modulate.G, sp.Modulate.B, a * fade);
+			}
+		});
+		Fx.FreeAfter(root, 1.05);
 	}
 
 	private static void Deal(Control screen, Control row, NGridCardHolder[] originalOrder)

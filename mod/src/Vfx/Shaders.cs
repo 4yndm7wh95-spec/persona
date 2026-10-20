@@ -106,6 +106,10 @@ shader_type canvas_item;
 " + WarpGlsl + @"
 uniform sampler2D entry_mask : filter_linear, repeat_disable;
 uniform float entry_full = 1.0;
+// v0.14.101 弃牌堆 = 原版 ITEM 页：人物压成原版填色（Edit_Item_FillColor），只留一点偏蓝的明暗；色键部分也填成这个色，不透水（用户：原版是深色、不透明）
+uniform float fill_on = 0.0;
+uniform vec3 fill_col = vec3(0.028, 0.083, 0.255);
+uniform vec3 fill_keep = vec3(0.20, 0.22, 0.36);
 varying vec4 hero_modulate;
 void vertex() { hero_modulate = COLOR; }
 void fragment() {
@@ -114,6 +118,10 @@ void fragment() {
 	float s = clamp(c.g - max(c.r, c.b), 0.0, 1.0);
 	float alpha = 1.0 - s;
 	vec3 rgb = (c - vec3(0.0, s, 0.0)) / max(alpha, 0.001);
+	rgb = clamp(rgb, 0.0, 1.0);   // 纯色键像素 alpha = 0 时这里会除出很大的数，夹住免得填色混出 NaN
+	vec3 filled = mix(fill_col + (rgb - fill_col) * fill_keep, fill_col, s);
+	rgb = mix(rgb, filled, fill_on);
+	alpha = mix(alpha, 1.0, fill_on);
 	float shown = max(entry_full, texture(entry_mask, SCREEN_UV).r);
 	COLOR = vec4(rgb, t.a * alpha * shown) * hero_modulate;
 }

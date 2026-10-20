@@ -15,7 +15,9 @@ HERO = {  # 名字 → (PSA 编号, 是否分块)
     "CommuStart": ("0013", False), "CommuLoop": ("0014", True), "CommuListStart": ("0015", False),
     "CommuListLoop": ("0016", True), "CommuListCancel": ("0025", False),
     "CampTopStart": ("0001", False), "CampTopLoop": ("0002", True),   # 营地主菜单：倒入水 → 水下待机（牌组牌堆 / ESC 设置用）
+    "CampItemStart": ("0005", False), "CampItemLoop": ("0006", True),  # 营地 ITEM 页：伸手（弃牌堆用）
 }
+ITEM = ("CampItemStart", "CampItemLoop")
 CARD = {"CommuStart": "0023", "CommuLoop": "0024", "CommuListStart": "0025", "CommuListLoop": "0026", "CommuListCancel": "0027"}
 
 
@@ -49,6 +51,43 @@ def dive(out):
     build(Path(__file__).resolve().parents[2], out)
 
 
+def item_word(out):
+    """原版 ITEM 页左上的大字 ITEM：SPR_UI_Camp（简中）第 16 块，原样裁出（白字，游戏里再着色）。"""
+    sys.path.insert(0, os.path.dirname(__file__))
+    from camp_spr import spr
+    spr(16).save(out)
+
+
+def hero_anim(name, num, split, tmp):
+    base = f"A_PC0051_UIA{num}_BASE_{name}"
+    src = R + "hero3d/animations/" + base + ".psa"
+    if split:
+        src = os.path.join(tmp, base + ".psa")
+        parts = sorted(p for p in os.listdir(R + "hero3d/animations_split") if p.startswith(base + ".psa.part"))
+        with open(src, "wb") as o:
+            for p in parts: o.write(open(R + "hero3d/animations_split/" + p, "rb").read())
+    pre = OUT + "anim/" + name
+    psa(src, pre, "tools/p3r/hero_keep_bones.json")
+    j = fix_fps(pre, f"{R}json/Xrd777/Characters/Player/PC0051/AnmUI/{base}.json")
+    sj = json.load(open(f"{R}hero3d/scale/{base}.json"))
+    s = np.fromfile(f"{R}hero3d/scale/{base}.bin", np.float32).reshape(sj["frames"], len(sj["bones"]), 3)
+    idx = [i for i in range(s.shape[1]) if np.abs(s[:, i] - 1).max() > 1e-3]
+    s = s[:, idx][:, :, [0, 2, 1]]
+    s.astype(np.float32).tofile(pre + ".scale.bin")
+    j["scale_bones"] = [sj["bones"][i] for i in idx]
+    json.dump(j, open(pre + ".json", "w"))
+
+
+def main_item():
+    """只整理弃牌堆（ITEM 页）新增的资源，不动其他已打包的文件：python3 tools/p3r/stage_hero3d.py item"""
+    tmp = tempfile.mkdtemp()
+    for name in ITEM:
+        hero_anim(name, *HERO[name], tmp)
+    shutil.rmtree(tmp)
+    item_word(OUT + "tex/item_word.png")
+    print("staged item", OUT)
+
+
 def main():
     os.makedirs(OUT + "anim", exist_ok=True)
     for f in ["SK_PC0051_C002.glb", "SK_PC0051_F000.glb", "SK_PC0051_H000.glb"]:
@@ -65,23 +104,8 @@ def main():
     dive(OUT + "dive/")
     tmp = tempfile.mkdtemp()
     for name, (num, split) in HERO.items():
-        base = f"A_PC0051_UIA{num}_BASE_{name}"
-        src = R + "hero3d/animations/" + base + ".psa"
-        if split:
-            src = os.path.join(tmp, base + ".psa")
-            parts = sorted(p for p in os.listdir(R + "hero3d/animations_split") if p.startswith(base + ".psa.part"))
-            with open(src, "wb") as o:
-                for p in parts: o.write(open(R + "hero3d/animations_split/" + p, "rb").read())
-        pre = OUT + "anim/" + name
-        psa(src, pre, "tools/p3r/hero_keep_bones.json")
-        j = fix_fps(pre, f"{R}json/Xrd777/Characters/Player/PC0051/AnmUI/{base}.json")
-        sj = json.load(open(f"{R}hero3d/scale/{base}.json"))
-        s = np.fromfile(f"{R}hero3d/scale/{base}.bin", np.float32).reshape(sj["frames"], len(sj["bones"]), 3)
-        idx = [i for i in range(s.shape[1]) if np.abs(s[:, i] - 1).max() > 1e-3]
-        s = s[:, idx][:, :, [0, 2, 1]]
-        s.astype(np.float32).tofile(pre + ".scale.bin")
-        j["scale_bones"] = [sj["bones"][i] for i in idx]
-        json.dump(j, open(pre + ".json", "w"))
+        hero_anim(name, num, split, tmp)
+    item_word(OUT + "tex/item_word.png")
     for name, num in CARD.items():
         base = f"A_Pp2001_UIA{num}_BASE_{name}"
         pre = OUT + "anim/Card_" + name
@@ -93,4 +117,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main_item() if sys.argv[1:] == ["item"] else main()

@@ -19,6 +19,7 @@ public static class P3Settings
 		public bool AllOut { get; set; } = true;          // 总攻击（精英 / Boss 战胜利）
 		public bool Victory { get; set; } = true;         // 战斗胜利大字
 		public bool ShuffleTime { get; set; } = true;     // 选卡 Shuffle Time
+		public bool ShuffleFull { get; set; } = false;    // v0.14.101 选卡节奏：false = 精简（默认：三张牌正面从中间展开、马上能选）；true = 完整（标题 → 洗牌发牌 → 翻牌）
 		public bool CutIn { get; set; } = true;           // Persona 召唤切入（眼神特写）
 		public bool SelectSummon { get; set; } = true;    // 选人时的召唤演出
 		public bool Architect { get; set; } = true;       // 建筑师房间（关闭 = 全部原版）
@@ -85,6 +86,7 @@ public static class P3Settings
 	public static bool AllOut => Current.AllOut && !Instant;
 	public static bool Victory => Current.Victory && !Instant;
 	public static bool ShuffleTime => Current.ShuffleTime && !Instant;
+	public static bool ShuffleFull => Current.ShuffleFull;
 	public static bool CutIn => Current.CutIn && !Instant;
 	public static bool SelectSummon => Current.SelectSummon && !Instant;
 	public static bool Architect => Current.Architect && !Instant;

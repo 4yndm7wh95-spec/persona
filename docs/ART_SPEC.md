@@ -1730,6 +1730,16 @@ Grand.cs 里其余函数暂时保留不用。
   17. 先出全分辨率离线预览给用户看，再进游戏；预览和游戏同一套 shader 参数、同一条时间轴。
   18. 和 Codex 并行改代码：先提交再 fetch + merge；合并后逐项确认对方的优化还在（子集字体、惰性特写、预热调度、空缩放轨修复）。
 
+## v0.14.101
+- 弃牌堆 = 原版营地 ITEM 页（预览 v3，用户认可）：HeroStage.Act.Item（CampItemStart 3.33s → CampItemLoop，0.25s 混合衔接），
+  人物在 HeroKeyOut 里按原版 Edit_Item_FillColor 压成深海军蓝（fill_on / fill_col / fill_keep），色键部分也填色、不透水；整体左移 520px（1920 宽）。
+  版式同牌组（牌堆在右），圆孔仍从弃牌堆按钮张开；左上白板 + 原版图集裁出的淡灰大字 ITEM（hero3d/tex/item_word.png，tools/p3r/stage_hero3d.py item）。
+  入场：整组 0.3s 淡入；白板 0.1s 后按原版 10 帧 CurveUp1 从左 100px 滑入；人物 10 帧后 20 帧 CurveUp2 偏移 (-90, -110)（原版 ItemSilhouette）。
+  ITEM 资源单独读，读不到只弃牌堆退回旧样式（日志 "ITEM page (discard pile) unavailable"）。消耗堆保持旧版。
+- 选卡节奏（用户：每场战斗结束的选卡太拖沓，保留 Shuffle Time 特色但不耽误看牌选牌；原版是三张牌从中间向左右展开、始终是正面）：
+  新增设置「选卡节奏」，默认「精简」（P3Settings.ShuffleFull = false）：StageFx.QuickDeal —— 三张牌一开始就是正面、从中间同时向两边展开 0.3s（OutCubic + 轻微 OutBack），
+  马上能点；特色放在不挡操作的地方：顶部 SHUFFLE TIME 字图带两层残影滑过（约 1s，只在本次打开的第一次）、落位十字闪光、Shuffle Time 音效。「完整」= 原来的标题 → 洗牌 → 翻牌。
+
 ## 待办（用户实机反馈，先记录）
 
 - P3R 主菜单打开动画（用户给的分镜 0.50~1.83s）：水面上有东西砸进来，带大片水花切入，水花散开后才看清是结城理倒着把头探进水里。之后找地方用（用户：先做牌堆，这个后面再做）。

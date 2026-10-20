@@ -71,6 +71,20 @@ public static class PileFx
 		_ => new Layout { Kind = Kind.Draw, Iris = new Vector2(0.04f, 0.95f), Title = "DRAW PILE", Word = "DRAW" },
 	};
 
+	/// <summary>v0.14.101 弃牌堆 = 原版 ITEM 页（用户：牌堆和抽牌堆 / 牌组一样，放右边；人物往左挪，不必完整露出）：版式同牌组，圆孔仍从弃牌堆按钮张开。</summary>
+	private static Layout ItemLayout() => new()
+	{
+		Kind = Kind.Discard, CardW = 166f, CellW = 186f, GridX = 1920f - 70f - 5 * 186f, Slant = -0.05f, RightSide = true,
+		Focus = new Vector2(1260f, 560f), InfoX = 1520f, TitleX = 930f, Side = -1f, Iris = new Vector2(0.96f, 0.95f), Title = "DISCARD PILE", Word = "DISCARD",
+	};
+
+	// 原版 DT_CampParamItem / DT_CampParamCommon（30fps 帧）：白板 10 帧 CurveUp1；人物 ItemSilhouette 等 10 帧、20 帧 CurveUp2 移到 (-90, -110)；InDist -100
+	private const float ItemShiftX = -520f;                 // 人物整体左移（1920 宽下的像素），给右边的牌堆让位
+	private static readonly Vector2 ItemSilhouette = new(-90f, -110f);
+
+	/// <summary>原版 EOneAnimType::CurveUpN 的近似（曲线写在原版程序里，资源里没有）：1 - (1 - t)^(N+1)。</summary>
+	private static float CurveUp(int n, float t) => 1f - Mathf.Pow(1f - Mathf.Clamp(t, 0f, 1f), n + 1);
+
 	public static Kind KindOf(PileType type) => type switch
 	{
 		PileType.Discard => Kind.Discard,
@@ -199,7 +213,8 @@ public static class PileFx
 		ulong buildStart = Time.GetTicksUsec();
 		float k = view.Y / 1080f;
 		float rx = view.X - 1920f * k;                    // 右侧元素的水平偏移（宽屏时贴右边缘）
-		Layout L = For(kind);
+		bool item = kind == Kind.Discard && HeroStage.Available(screen.GetTree()) && HeroStage.ItemReady;
+		Layout L = item ? ItemLayout() : For(kind);
 		float gx = L.GridX + (L.RightSide ? rx / k : 0f);   // 网格左边（参考像素）
 		Font font = Typo.PileBarlow;
 		float t0 = Time.GetTicksMsec() / 1000f;
@@ -233,8 +248,8 @@ public static class PileFx
 		bool commu = kind == Kind.Draw && HeroStage.Available(screen.GetTree());
 		// v0.14.95：牌组 = 原版营地主菜单的"倒入水"（DiveFx：原版水花 + 水下露出 + 原版波浪；HeroStage.Act.Top 倒入水 → 水下待机）
 		bool dive = kind == Kind.Deck && HeroStage.Available(screen.GetTree()) && DiveFx.Ready;
-		ShaderMaterial water = new() { Shader = commu || dive ? Shaders.CommuBg : Shaders.Underwater };
-		if (commu || dive) water.SetShaderParameter("caustics", HeroStage.Tex("T_UI_Camp_Caustics_00.png")!);
+		ShaderMaterial water = new() { Shader = commu || dive || item ? Shaders.CommuBg : Shaders.Underwater };
+		if (commu || dive || item) water.SetShaderParameter("caustics", HeroStage.Tex("T_UI_Camp_Caustics_00.png")!);
 		water.SetShaderParameter("aspect", view.X / view.Y);
 		water.SetShaderParameter("center", from);
 		water.SetShaderParameter("radius", 0f);
@@ -266,7 +281,16 @@ public static class PileFx
 				}
 				break;
 			case Kind.Discard:
-				butterfly = DiscardDecor(right, view, font, k, rx);
+				if (item && ItemDecor(right, view, k))
+				{
+					butterfly = new PileButterfly(right, Kind.Deck, k, 0f, DeckPorScale);   // 人物在左边，蓝蝶位置同牌组
+					lap("hero3d");
+				}
+				else
+				{
+					item = false;
+					butterfly = DiscardDecor(right, view, font, k, rx);
+				}
 				break;
 			case Kind.Exhaust:
 				butterfly = ExhaustDecor(root, right, view, font, k, rx);
@@ -309,6 +333,21 @@ public static class PileFx
 		{
 			right.Position = Vector2.Zero;                   // 人物自己从画面外沉下来，整组不滑入
 			right.Modulate = Colors.White;
+		}
+		else if (item)
+		{
+			// ITEM 页：整组不滑入；随圆孔张开淡入，白板按原版参数从左滑进，人物按原版 ItemSilhouette 落位
+			right.Position = Vector2.Zero;
+			float u = view.X / 1920f;
+			Node2D board = right.GetNode<Node2D>("ItemBoard");
+			Fx.Animate(right, 0.3, t => right.Modulate = new Color(1f, 1f, 1f, Ease.OutCubic((float)t)));
+			Fx.After(right, 0.1, "item board in", () => Fx.Animate(board, 10.0 / 30.0, t =>
+			{
+				float e = CurveUp(1, (float)t);
+				board.Position = new Vector2(-100f * k * (1f - e), 0f);
+				board.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((float)t * 1.6f, 0f, 1f));
+			}));
+			Fx.After(right, 10.0 / 30.0, "item silhouette", () => Fx.Animate(right, 20.0 / 30.0, t => HeroStage.Nudge(ItemSilhouette * u * CurveUp(2, (float)t))));
 		}
 		else Fx.After(right, 0.1, "pile right in", () => Fx.Animate(right, 0.5, t =>
 		{
@@ -1299,7 +1338,7 @@ public static class PileFx
 		};
 		root.TreeExiting += () =>
 		{
-			if (kind == Kind.Draw) HeroStage.Close(right);
+			if (kind == Kind.Draw || item) HeroStage.Close(right);
 			Exits.Remove(sid);
 			tree.ProcessFrame -= Tick;
 			BindBack(false);
@@ -1516,6 +1555,26 @@ public static class PileFx
 		parent.AddChild(portraitClip);
 		SpinePortrait(portraitClip, "res://p3makoto/pile_deck/pile_deck_skel_data.tres", "res://p3makoto/ui/pile_deck.png", new Vector2(350f, 590f) * k, DeckPorScale * k, 1254f);
 		return butterfly;
+	}
+
+	/// <summary>
+	/// v0.14.101 弃牌堆 = 原版营地 ITEM 页（预览 v3 用户认可，tools/p3r/item_preview.py）：左上白板 + 淡灰大字 ITEM（原版图集原样裁出），
+	/// 人物（原版 CampItemStart → Loop，填原版深海军蓝、不透水）压在白板上、整体左移给牌堆让位。打不开就返回 false，退回旧样式。
+	/// </summary>
+	private static bool ItemDecor(Node2D parent, Vector2 view, float k)
+	{
+		float u = view.X / 1920f;
+		Node2D board = new() { Name = "ItemBoard", Modulate = new Color(1f, 1f, 1f, 0f) };
+		parent.AddChild(board);
+		Fx.Poly(board, new[] { new Vector2(0f, 0f) * k, new Vector2(960f, 0f) * k, new Vector2(930f, 150f) * k, new Vector2(0f, 150f) * k }, Colors.White);
+		Fx.Poly(board, new[] { new Vector2(0f, 158f) * k, new Vector2(926f, 158f) * k, new Vector2(918f, 196f) * k, new Vector2(0f, 196f) * k }, new Color(18f / 255f, 70f / 255f, 190f / 255f, 200f / 255f));
+		if (HeroStage.Tex("item_word.png") is Texture2D word)
+		{
+			board.AddChild(new Sprite2D { Texture = word, Centered = false, Position = new Vector2(40f, -60f) * k, Scale = Vector2.One * 2f * k, Modulate = new Color(214f / 255f, 219f / 255f, 228f / 255f) });
+		}
+		if (HeroStage.Open(parent, view, ItemShiftX * u, HeroStage.Act.Item)) return true;
+		board.QueueFree();
+		return false;
 	}
 
 	/// <summary>弃牌堆（仿 P3R ITEM）：右上、右下两块白色大三角 + 一道青色斜光片 + 一道红色细斜线；后仰下沉的立绘贴右边（大字会被立绘挡住，不放）。</summary>
