@@ -31,14 +31,27 @@ internal static class HeroStage
 	private static readonly string[] TopNames = { "CampTopStart", "CampTopLoop" };
 	/// <summary>v0.14.101 弃牌堆 = 原版营地 ITEM 页：伸手（进入 3.33s → 循环 6.67s）；资源单独读，读不到只影响弃牌堆。</summary>
 	private static readonly string[] ItemNames = { "CampItemStart", "CampItemLoop" };
+	/// <summary>v0.14.104 消耗堆 = 原版营地 SKILL 页：倒挂举召唤器（进入 3.17s → 循环 6.67s）；读不到只影响消耗堆。</summary>
+	private static readonly string[] SkillNames = { "CampSkillStart", "CampSkillLoop" };
 	private const string ItemWord = "item_word.png";
-	internal const string ItemWaterLight = "item_waterlight.png";
 
 	/// <summary>ITEM 页人物色键部分（外套 / 头发暗部）的填色：深海军蓝（不透水）；其余部分按亮度上蓝色渐变，见 Shaders.HeroKeyOut。</summary>
 	private static readonly Color ItemFill = new(0.06f, 0.15f, 0.45f);
+	/// <summary>v0.14.104 ITEM 页人物整体调淡的程度（往浅水蓝靠，Shaders.HeroKeyOut 的 wash）。</summary>
+	private const float ItemWash = 0.35f;
 
 	/// <summary>舞台演哪一页：COMMU（抽牌堆：拿牌 → 松手，牌浮空自转）；Top（营地主菜单：倒入水 → 水下待机，牌组牌堆，不显示牌）；Item（弃牌堆：ITEM 页伸手，人物填深海军蓝）。</summary>
-	internal enum Act { Commu, Top, Item }
+	internal enum Act { Commu, Top, Item, Skill }
+
+	/// <summary>
+	/// SKILL 页的镜头 / 光 / 召唤器，与 tools/p3r/skill_pile_preview.py 用的离线渲染（tools/p3r/hero_render/render.gd）一致：
+	/// 人物放在 (6.87cm, 0, 0)、偏航 -2°，镜头高 5cm；光从下方 (-0.4, -0.6, 0.7)；召唤器深灰 5E6680 分两层明暗（用户：原来像橡皮泥白模）。
+	/// </summary>
+	private static readonly Vector3 SkillCharaPos = new(0.06868873f, 0f, 0f), SkillCamPos = new(0f, 0.05f, 0f);
+	private const float SkillCharaYaw = -2f;
+	private static readonly Vector3 DefaultLight = new(-0.4f, 0.6f, 0.7f), SkillLight = new(-0.4f, -0.6f, 0.7f);
+	private static readonly Color GunCol = new("9DACC7"), SkillGunCol = new("5E6680");
+	private const float SkillGunToon = 0.25f;
 	private static Task<Prepared>? prep;
 
 	/// <summary>后台线程里能做的部分：PNG 解码、GLB 解析 + 生成场景（还没进场景树）、动作数据读取校验。</summary>
@@ -48,7 +61,7 @@ internal static class HeroStage
 		internal readonly List<(string Model, Node Scene)> Scenes = new();
 		internal readonly Dictionary<string, Clip> Clips = new(StringComparer.Ordinal);
 		internal float[] Warp = Array.Empty<float>();
-		internal string? DiveError, ItemError;
+		internal string? DiveError, ItemError, SkillError;
 	}
 
 	/// <summary>v0.14.91（实机日志：主线程一次加载 ~150ms，选人界面掉帧）：在后台线程开始解析，可重复调用。</summary>
@@ -112,12 +125,11 @@ internal static class HeroStage
 			}
 			try
 			{
-				Image light = new();
-				if (light.LoadPngFromBuffer(Read("tex/" + ItemWaterLight)) == Error.Ok && !light.IsEmpty()) p.Images.Add(ItemWaterLight, light);
+				foreach (string name in SkillNames) p.Clips.Add(name, new Clip(name, true));
 			}
-			catch (Exception)
+			catch (Exception e)
 			{
-				// 水光可有可无：缺了只是弃牌堆少一层原版水光
+				p.SkillError = e.Message;   // 只消耗堆退回原样式
 			}
 			return p;
 		});
@@ -185,9 +197,9 @@ internal static class HeroStage
 	internal static Texture2D? Tex(string file) => cached != null && (cached.Textures.TryGetValue(file, out Texture2D? t) || cached.Textures.TryGetValue("../dive/" + file, out t)) ? t : null;
 
 	/// <summary>Open 之后调用：人物剪影的灰色小阴影（加在白色斜块下面、被它裁剪）。</summary>
-	internal static void AddShadow(Node parent, Vector2 offset)
+	internal static void AddShadow(Node parent, Vector2 offset, float opacity = 0.55f, float soft = 0f)
 	{
-		if (cached is { Playing: true } stage) parent.AddChild(stage.Shadow(offset));
+		if (cached is { Playing: true } stage) parent.AddChild(stage.Shadow(offset, opacity, soft));
 	}
 
 	/// <summary>Open 之后调用：让这个多边形在人物剪影处挖空（Shaders.HeroCut）。</summary>
@@ -225,6 +237,28 @@ internal static class HeroStage
 
 	/// <summary>ITEM 页能用（资源读到了）。</summary>
 	internal static bool ItemReady => cached is { ItemReady: true };
+
+	/// <summary>SKILL 页能用（资源读到了）。</summary>
+	internal static bool SkillReady => cached is { SkillReady: true };
+
+	/// <summary>Open 之后调用：白底上人物透明的地方（外套 / 头发暗部）显示原版人物底色，不透出白（Shaders.HeroTint）。坐标换算同 CutOut。</summary>
+	internal static void TintUnder(CanvasItem item, Color col)
+	{
+		if (cached is not { Playing: true } stage) return;
+		ShaderMaterial m = new() { Shader = Shaders.HeroTint };
+		m.SetShaderParameter("hero", stage.Display.Texture);
+		m.SetShaderParameter("hero_pos", stage.Display.Position);
+		m.SetShaderParameter("hero_size", stage.Display.Size);
+		m.SetShaderParameter("tint", col);
+		if (item is Node2D n && stage.Display.GetParent() is Node2D host)
+		{
+			Transform2D t = host.GlobalTransform.AffineInverse() * n.GlobalTransform;
+			m.SetShaderParameter("xa", t.X);
+			m.SetShaderParameter("xb", t.Y);
+			m.SetShaderParameter("xo", t.Origin);
+		}
+		item.Material = m;
+	}
 
 	internal static void Kick()
 	{
@@ -416,7 +450,13 @@ internal static class HeroStage
 		private readonly List<Motion> motions = new();
 		private readonly List<Motion> topMotions = new();
 		private readonly List<Motion> itemMotions = new();
+		private readonly List<Motion> skillMotions = new();
+		private readonly List<Node3D> heroScenes = new();
+		private readonly List<ShaderMaterial> rampMats = new();
+		private ShaderMaterial? gunMat;
+		private Camera3D? camera;
 		internal bool ItemReady => itemMotions.Count > 0;
+		internal bool SkillReady => skillMotions.Count > 0;
 		internal Vector2 Base;
 		private readonly List<Node3D> cardScenes = new();
 		private List<Motion> seq = null!;
@@ -444,13 +484,15 @@ internal static class HeroStage
 			}
 			Node3D world = new();
 			viewport.AddChild(world);
-			world.AddChild(new Camera3D { KeepAspect = Camera3D.KeepAspectEnum.Width, Fov = 37.35f, Current = true });
+			camera = new Camera3D { KeepAspect = Camera3D.KeepAspectEnum.Width, Fov = 37.35f, Current = true };
+			world.AddChild(camera);
 			world.AddChild(new WorldEnvironment { Environment = new Godot.Environment { BackgroundMode = Godot.Environment.BGMode.ClearColor } });
 			foreach ((string model, Node scene) in p.Scenes)
 			{
 				world.AddChild(scene); // 根节点不作位移 / 旋转，位置全来自动作。
 				bool card = model == "SK_Pp2001_000.glb";
 				if (card && scene is Node3D n3) cardScenes.Add(n3);
+				else if (scene is Node3D h3) heroScenes.Add(h3);
 				int count = card ? cards.Count : heroes.Count;
 				Walk(scene, card);
 				if ((card ? cards.Count : heroes.Count) == count)
@@ -485,6 +527,15 @@ internal static class HeroStage
 			else
 			{
 				GD.PushWarning($"[P3Makoto] ITEM page (discard pile) unavailable: {p.ItemError}");
+			}
+			if (p.SkillError == null)
+			{
+				foreach (string name in SkillNames)
+					skillMotions.Add(new Motion(name, p.Clips[name], null, heroes, cards));
+			}
+			else
+			{
+				GD.PushWarning($"[P3Makoto] SKILL page (exhaust pile) unavailable: {p.SkillError}");
 			}
 			seq = motions;
 			ShaderMaterial keyOut = new() { Shader = Shaders.HeroKeyOut };
@@ -542,12 +593,14 @@ internal static class HeroStage
 				{
 					ShaderMaterial flat = new() { Shader = Shaders.HeroFlat };
 					flat.SetShaderParameter("col", fill != null ? new Color(fill) : HeroKey);
+					if (name == "MI_PC0051_C002_03_CaFiOp") gunMat = flat;
 					m = flat;
 				}
 				else if (tex != null)
 				{
 					ShaderMaterial ramp = new() { Shader = Shaders.HeroRamp };
 					ramp.SetShaderParameter("tex", textures[tex]);
+					rampMats.Add(ramp);
 					m = ramp;
 				}
 				else if (name == "MI_PC0051_F000_00_CaEyOp")
@@ -576,8 +629,23 @@ internal static class HeroStage
 			Resize(view);
 			if (which == Act.Top && topMotions.Count == 0) throw new InvalidOperationException("dive assets unavailable");
 			if (which == Act.Item && itemMotions.Count == 0) throw new InvalidOperationException("item page assets unavailable");
+			if (which == Act.Skill && skillMotions.Count == 0) throw new InvalidOperationException("skill page assets unavailable");
 			act = which;
-			seq = which switch { Act.Top => topMotions, Act.Item => itemMotions, _ => motions };
+			seq = which switch { Act.Top => topMotions, Act.Item => itemMotions, Act.Skill => skillMotions, _ => motions };
+			bool skill = which == Act.Skill;
+			foreach (Node3D h in heroScenes)
+			{
+				h.Position = skill ? SkillCharaPos : Vector3.Zero;
+				h.RotationDegrees = new Vector3(0f, skill ? SkillCharaYaw : 0f, 0f);
+			}
+			if (camera != null) camera.Position = skill ? SkillCamPos : Vector3.Zero;
+			foreach (ShaderMaterial r in rampMats) r.SetShaderParameter("light_dir", skill ? SkillLight : DefaultLight);
+			if (gunMat != null)
+			{
+				gunMat.SetShaderParameter("col", skill ? SkillGunCol : GunCol);
+				gunMat.SetShaderParameter("toon", skill ? SkillGunToon : 0f);
+				gunMat.SetShaderParameter("light_dir", skill ? SkillLight : DefaultLight);
+			}
 			foreach (Node3D c in cardScenes) c.Visible = which == Act.Commu;
 			if (Display.Material is ShaderMaterial km)
 			{
@@ -585,6 +653,7 @@ internal static class HeroStage
 				km.SetShaderParameter("entry_full", 1f);
 				km.SetShaderParameter("fill_on", which == Act.Item ? 1f : 0f);
 				km.SetShaderParameter("fill_col", ItemFill);
+				km.SetShaderParameter("wash", which == Act.Item ? ItemWash : 0f);
 			}
 			phase = 0;
 			time = 0;
@@ -603,9 +672,11 @@ internal static class HeroStage
 			viewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Always;
 		}
 
-		internal TextureRect Shadow(Vector2 offset)
+		internal TextureRect Shadow(Vector2 offset, float opacity, float soft)
 		{
 			shadowMat.SetShaderParameter("cut", offset / Display.Size);
+			shadowMat.SetShaderParameter("opacity", opacity);
+			shadowMat.SetShaderParameter("soft", new Vector2(soft, soft) / Display.Size);
 			return new TextureRect
 			{
 				Texture = Display.Texture, Material = shadowMat, Size = Display.Size, Position = Display.Position + offset,
@@ -687,7 +758,7 @@ internal static class HeroStage
 			{
 				time -= seq[phase].Hero.Duration;
 				// 拿牌 → 松手：两段首尾不连续，做混合过渡（另两处首尾本来就连续）；ITEM 进入 → 循环也按 UE 切换动作的默认混合过渡，避免跳
-				if ((act == Act.Commu || act == Act.Item) && phase == 0) { blendFrom = 0; blendTime = 0; }
+				if ((act == Act.Commu || act == Act.Item || act == Act.Skill) && phase == 0) { blendFrom = 0; blendTime = 0; }
 				phase++;
 			}
 			if (phase == last) time %= seq[last].Hero.Duration;

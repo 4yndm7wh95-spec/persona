@@ -16,8 +16,10 @@ HERO = {  # 名字 → (PSA 编号, 是否分块)
     "CommuListLoop": ("0016", True), "CommuListCancel": ("0025", False),
     "CampTopStart": ("0001", False), "CampTopLoop": ("0002", True),   # 营地主菜单：倒入水 → 水下待机（牌组牌堆 / ESC 设置用）
     "CampItemStart": ("0005", False), "CampItemLoop": ("0006", True),  # 营地 ITEM 页：伸手（弃牌堆用）
+    "CampSkillStart": ("0003", False), "CampSkillLoop": ("0004", True),  # 营地 SKILL 页：倒挂举召唤器（消耗堆用）
 }
 ITEM = ("CampItemStart", "CampItemLoop")
+SKILL = ("CampSkillStart", "CampSkillLoop")
 CARD = {"CommuStart": "0023", "CommuLoop": "0024", "CommuListStart": "0025", "CommuListLoop": "0026", "CommuListCancel": "0027"}
 
 
@@ -88,6 +90,15 @@ def main_item():
     print("staged item", OUT)
 
 
+def main_skill():
+    """只整理消耗堆（SKILL 页）新增的动作：python3 tools/p3r/stage_hero3d.py skill"""
+    tmp = tempfile.mkdtemp()
+    for name in SKILL:
+        hero_anim(name, *HERO[name], tmp)
+    shutil.rmtree(tmp)
+    print("staged skill", OUT)
+
+
 def main():
     os.makedirs(OUT + "anim", exist_ok=True)
     for f in ["SK_PC0051_C002.glb", "SK_PC0051_F000.glb", "SK_PC0051_H000.glb"]:
@@ -117,4 +128,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main_item() if sys.argv[1:] == ["item"] else main()
+    {"item": main_item, "skill": main_skill}.get(sys.argv[1] if sys.argv[1:] else "", main)()

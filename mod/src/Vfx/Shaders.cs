@@ -7,7 +7,7 @@ public static class Shaders
 {
 	private static Shader Make(string code) => new Shader { Code = code };
 
-	private static Shader? _heroFlat, _heroRamp, _heroKeyOut, _heroShadow, _heroCut, _commuBg, _pileSplash, _waterLight;
+	private static Shader? _heroFlat, _heroRamp, _heroKeyOut, _heroShadow, _heroCut, _heroTint, _commuBg, _pileSplash;
 
 	/// <summary>
 	/// v0.14.95 入水转场的原版波浪（UIM_UI_Camp_In）：17×10 网格，各顶点"位置 − 按 UV 的静止位置"的偏差（1920×1184 坐标，单位像素）
@@ -40,28 +40,14 @@ vec2 warp_uv(vec2 suv) {
 shader_type spatial;
 render_mode unshaded, cull_disabled;
 uniform vec3 col = vec3(1.0);
-void fragment() { ALBEDO = col; }
-");
-
-	/// <summary>
-	/// 原版营地页水光（Nami，v0.14.103）：tools/p3r/stage_waterlight.py 烘的图集，R = a 层、G = b 层，5 列 × 6 行共 30 帧，
-	/// 每格是屏幕上方 768/1080 那一段；每帧停原版 NamiOneFrame = 5 个 30fps 帧（= 6 帧/秒）；两层各按原版颜色 × 不透明度加亮叠加。
-	/// </summary>
-	public static Shader WaterLight => _waterLight ??= Make(@"
-shader_type canvas_item;
-render_mode blend_add;
-uniform sampler2D atlas : filter_linear, repeat_disable;
-uniform vec4 col_a = vec4(0.647, 1.0, 1.0, 0.137);
-uniform vec4 col_b = vec4(0.0, 0.545, 0.753, 0.059);
-varying vec4 light_modulate;
-void vertex() { light_modulate = COLOR; }
+uniform float toon = 0.0;                       // >0：平涂色再分亮 / 暗两层（v0.14.104 消耗堆召唤器：深灰 + 受光一侧浅一层）
+uniform vec3 light_dir = vec3(-0.4, 0.6, 0.7);
+varying vec3 wn;
+void vertex() { wn = (MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz; }
 void fragment() {
-	float f = mod(floor(TIME * 6.0), 30.0);
-	vec2 cell = vec2(mod(f, 5.0), floor(f / 5.0));
-	vec2 uv = (cell + clamp(UV, vec2(0.002), vec2(0.998))) / vec2(5.0, 6.0);
-	vec2 l = texture(atlas, uv).rg;
-	vec3 add = col_a.rgb * col_a.a * l.r + col_b.rgb * col_b.a * l.g;
-	COLOR = vec4(add * light_modulate.rgb * light_modulate.a, 1.0);
+	float side = FRONT_FACING ? 1.0 : -1.0;
+	float lit = smoothstep(-0.05, 0.05, dot(normalize(wn) * side, normalize(light_dir)));
+	ALBEDO = col * mix(1.0 - toon, 1.0 + toon * 0.35, lit);
 }
 ");
 
@@ -94,6 +80,7 @@ uniform vec3 c1 = vec3(0.25, 0.62, 0.92);
 uniform vec3 c2 = vec3(0.80, 0.95, 1.0);
 uniform vec3 c3 = vec3(1.0);
 uniform vec3 shade = vec3(0.55, 0.85, 1.0);
+uniform vec3 light_dir = vec3(-0.4, 0.6, 0.7);   // 按页面换（v0.14.104 消耗堆 SKILL 页：光从下方，人物是倒挂的）
 varying vec3 wn;
 void vertex() { wn = (MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz; }
 vec3 hero_linear(vec3 c) {
@@ -110,7 +97,7 @@ void fragment() {
 	vec3 dark_base = OUTPUT_IS_SRGB ? vec3(0.065, 0.075, 0.090) : hero_linear(vec3(0.065, 0.075, 0.090));
 	c = mix(max(t.rgb, dark_base), c, ink);
 	float side = FRONT_FACING ? 1.0 : -1.0;
-	float nl = dot(normalize(wn) * side, normalize(vec3(-0.4, 0.6, 0.7)));
+	float nl = dot(normalize(wn) * side, normalize(light_dir));
 	float lit = smoothstep(-0.3, -0.1, nl);
 	c *= mix(shade, vec3(1.0), lit);
 	c = mix(c, vec3(0.0, 1.0, 0.0), 0.5 * (1.0 - lit) * ink);
@@ -135,6 +122,9 @@ uniform vec3 fill_col = vec3(0.06, 0.15, 0.45);
 uniform vec3 ramp_lo = vec3(0.08, 0.18, 0.50);
 uniform vec3 ramp_mid = vec3(0.27, 0.42, 0.86);
 uniform vec3 ramp_hi = vec3(0.72, 0.74, 1.0);
+// v0.14.104 用户：立绘整体调淡（原版 ITEM 页人物是淡淡地融在水里的）：最后整体往浅水蓝靠
+uniform float wash = 0.0;
+uniform vec3 wash_col = vec3(0.45, 0.60, 0.92);
 varying vec4 hero_modulate;
 void vertex() { hero_modulate = COLOR; }
 void fragment() {
@@ -151,6 +141,7 @@ void fragment() {
 	vec3 filled = mix(tone, fill_col, s);
 	rgb = mix(rgb, filled, fill_on);
 	alpha = mix(alpha, 1.0, fill_on);
+	rgb = mix(rgb, wash_col, wash);
 	float shown = max(entry_full, texture(entry_mask, SCREEN_UV).r);
 	COLOR = vec4(rgb, t.a * alpha * shown) * hero_modulate;
 }
@@ -177,14 +168,44 @@ void fragment() {
 }
 ");
 
+	/// <summary>
+	/// v0.14.104 消耗堆（原版 SKILL 页）白底：人物透明的地方（色键部分：外套 / 头发暗部）落在白底上时显示原版人物底色（HeroCaptureBgColor 深海军蓝），
+	/// 落在水上时照样透出水（白底以外不画）。坐标参数同 HeroCut。
+	/// </summary>
+	public static Shader HeroTint => _heroTint ??= Make(@"
+shader_type canvas_item;
+uniform sampler2D hero : filter_linear;
+uniform vec2 hero_pos = vec2(0.0);
+uniform vec2 hero_size = vec2(1920.0, 1080.0);
+uniform vec2 xa = vec2(1.0, 0.0);
+uniform vec2 xb = vec2(0.0, 1.0);
+uniform vec2 xo = vec2(0.0);
+uniform vec4 tint : source_color = vec4(0.0, 0.165, 0.424, 1.0);
+varying vec2 local;
+void vertex() { local = xa * VERTEX.x + xb * VERTEX.y + xo; }
+void fragment() {
+	vec2 huv = (local - hero_pos) / hero_size;
+	vec4 h = all(greaterThanEqual(huv, vec2(0.0))) && all(lessThanEqual(huv, vec2(1.0))) ? texture(hero, huv) : vec4(0.0);
+	vec3 c = h.a > 0.0 ? h.rgb / h.a : vec3(0.0);
+	float keyed = h.a * clamp(c.g - max(c.r, c.b), 0.0, 1.0);
+	COLOR.rgb = mix(COLOR.rgb, tint.rgb, keyed);
+}
+");
+
 	/// <summary>v0.14.90 人物投在 COMMU 白色斜块上的小阴影：整个剪影（含透水部分）画成灰色；人物本身盖住的地方不画（cut = 偏移量 / 显示框大小）。</summary>
 	public static Shader HeroShadow => _heroShadow ??= Make(@"
 shader_type canvas_item;
 uniform vec2 cut = vec2(0.0);
+uniform float opacity = 0.55;
+uniform vec2 soft = vec2(0.0);   // v0.14.104 消耗堆：羽化半径（UV），3×3 取样
 void fragment() {
 	vec2 h = UV + cut;
 	float self = all(greaterThanEqual(h, vec2(0.0))) && all(lessThanEqual(h, vec2(1.0))) ? texture(TEXTURE, h).a : 0.0;
-	COLOR = vec4(0.47, 0.51, 0.59, 0.55 * texture(TEXTURE, UV).a * (1.0 - self));
+	float a = 0.0;
+	for (int i = -1; i <= 1; i++)
+		for (int j = -1; j <= 1; j++)
+			a += texture(TEXTURE, UV + soft * vec2(float(i), float(j))).a * (i == 0 && j == 0 ? 4.0 : (i == 0 || j == 0 ? 2.0 : 1.0));
+	COLOR = vec4(0.47, 0.51, 0.59, opacity * a / 16.0 * (1.0 - self));
 }
 ");
 
