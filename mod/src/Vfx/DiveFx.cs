@@ -7,16 +7,15 @@ namespace P3Makoto.Vfx;
 /// <summary>原版入水：单帧水花按节奏切换，露出遮罩与缓存波浪独立连续运动。</summary>
 internal static class DiveFx
 {
-	internal static bool Ready => HeroStage.Tex("splash_00.png") != null && HeroStage.Tex("mask_00.png") != null && HeroStage.Warp != null;
+	internal static bool Ready => HeroStage.Tex("splash_09.png") != null && HeroStage.Tex("mask_04.png") != null && HeroStage.Tex("mask_blank.png") != null && HeroStage.Warp != null;
 
 	private static void Bind(ShaderMaterial mat, int index, Vector2 view)
 	{
 		Texture2D tex = HeroStage.Tex($"splash_{Math.Min(index, 9):00}.png")!;
 		mat.SetShaderParameter("frame_tex", tex);
-		// 末两张是 908×600 的裁切图，不能按前八张 961×949 拉伸。
-		// 原版录屏 #20/26/32/38 实测：前八张正好铺满画面，不是旧摆法的 106%×160%。
-		Vector2 size = new(tex.GetWidth() * view.X / 961f, tex.GetHeight() * view.Y / 949f);
-		Vector2 pos = new((view.X - size.X) / 2f, 0f);
+		// SPR_UI_Camp：十张统一 960×948；原生缩放 (2,1.1392)、中心 (960,540)。
+		Vector2 size = new(tex.GetWidth() * 2f * view.X / 1920f, tex.GetHeight() * 1.1392f * view.Y / 1080f);
+		Vector2 pos = (view - size) / 2f;
 		mat.SetShaderParameter("frame_map", new Vector4(view.X / size.X, view.Y / size.Y, -pos.X / size.X, -pos.Y / size.Y));
 	}
 	private static ShaderMaterial SplashMaterial(Vector2 view, int index)
@@ -34,12 +33,13 @@ internal static class DiveFx
 		{
 			ShaderMaterial splash = SplashMaterial(new Vector2(1920, 1080), a);
 			parent.AddChild(new ColorRect { Size = new Vector2(1000, 1000), Material = splash, MouseFilter = Control.MouseFilterEnum.Ignore });
-			if ((a & 1) != 0) continue;   // 遮罩仍按两张一组预热，不重复增加背景绘制。
+			if ((a & 1) != 0) continue;
+			Texture2D mask = HeroStage.Tex($"mask_{a / 2:00}.png")!;
 			ShaderMaterial bg = new() { Shader = Shaders.CommuBg };
 			bg.SetShaderParameter("reveal", 0f);
-			bg.SetShaderParameter("mask_tex", HeroStage.Tex($"mask_{a:00}.png")!);
-			bg.SetShaderParameter("mask_next", HeroStage.Tex($"mask_{Math.Min(a + 1, 9):00}.png")!);
-			bg.SetShaderParameter("mask_mix", 0.5f);
+			bg.SetShaderParameter("mask_tex", mask);
+			bg.SetShaderParameter("mask_next", mask);
+			bg.SetShaderParameter("mask_mix", 0f);
 			bg.SetShaderParameter("warp_tex", HeroStage.Warp!);
 			bg.SetShaderParameter("warp_on", 1f);
 			bg.SetShaderParameter("warp_frame", a * 7f + 0.5f);
@@ -58,7 +58,7 @@ internal static class DiveFx
 		bg.SetShaderParameter("warp_tex", HeroStage.Warp!);
 		HeroStage.SetWarp(HeroStage.Warp, 0f);
 		ulong t0 = Time.GetTicksUsec(), previous = t0;
-		int lastSplash = -1, frames = 0, slowFrames = 0;
+		int lastSplash = -1, lastMask = -2, frames = 0, slowFrames = 0;
 		double totalCpu = 0, maxCpu = 0, maxGap = 0;
 		bool done = false, completed = false;
 		void Tick()
@@ -76,21 +76,27 @@ internal static class DiveFx
 			previous = begin;
 			DiveTimeline.Frame state = DiveTimeline.At(t);
 			int si = state.Splash;
+			splash.Visible = si < DiveTimeline.SplashFrames;
 			if (si < DiveTimeline.SplashFrames)
 			{
 				if (si != lastSplash)
 				{
 					lastSplash = si;
 					Bind(splashMat, si, view);
-					bg.SetShaderParameter("mask_tex", HeroStage.Tex($"mask_{si:00}.png")!);
-					bg.SetShaderParameter("mask_next", HeroStage.Tex($"mask_{state.MaskNext:00}.png")!);
 				}
 				splashMat.SetShaderParameter("fade", state.Alpha);
-				bg.SetShaderParameter("mask_mix", state.MaskMix);
 			}
-			else splash.Visible = false;
-			// 露出时间随原作水花节奏对齐，不能沿用旧 53ms 换帧时的 0.30s 截点。
+			if (state.Mask != lastMask)
+			{
+				lastMask = state.Mask;
+				Texture2D mask = HeroStage.Tex(state.Mask < 0 ? "mask_blank.png" : $"mask_{state.Mask:00}.png")!;
+				bg.SetShaderParameter("mask_tex", mask);
+				bg.SetShaderParameter("mask_next", mask);
+				bg.SetShaderParameter("mask_mix", 0f);
+				HeroStage.SetEntryMask(mask, state.Reveal);
+			}
 			bg.SetShaderParameter("reveal", state.Reveal);
+			HeroStage.SetEntryMask(null, state.Reveal);
 			// 原版 In 末帧仍有静态弯曲；接 Loop_L，同一个基准网格继续动，不能在这里归零。
 			bg.SetShaderParameter("warp_frame", state.Warp);
 			bg.SetShaderParameter("warp_on", 1f);
@@ -101,7 +107,7 @@ internal static class DiveFx
 			frames++;
 			if (!completed && t >= 2.5) { completed = true; Report(); }
 		}
-		void Report() => GD.Print($"{ModEntry.Tag} perf dive frames={frames} tick_avg={totalCpu / Math.Max(1, frames):0.000}ms tick_max={maxCpu:0.000}ms frame_max={maxGap:0.0}ms slow33={slowFrames} completed={completed} loop=original210 splash=single15");
+		void Report() => GD.Print($"{ModEntry.Tag} perf dive frames={frames} tick_avg={totalCpu / Math.Max(1, frames):0.000}ms tick_max={maxCpu:0.000}ms frame_max={maxGap:0.0}ms slow33={slowFrames} completed={completed} loop=original210 splash=native30tick24 masks=original5");
 		void Stop()
 		{
 			if (done) return;
@@ -111,6 +117,7 @@ internal static class DiveFx
 			if (GodotObject.IsInstanceValid(splash)) splash.QueueFree();
 			if (GodotObject.IsInstanceValid(bg)) { bg.SetShaderParameter("warp_on", 0f); bg.SetShaderParameter("reveal", 1f); }
 			HeroStage.SetWarp(null, 0f);
+			HeroStage.SetEntryMask(null, 1f);
 			if (!completed) Report();
 		}
 		tree.ProcessFrame += Tick;

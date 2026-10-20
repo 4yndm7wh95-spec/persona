@@ -22,7 +22,7 @@ internal static class HeroStage
 	/// <summary>v0.14.96：营地主菜单（牌组入水）的资源单独读，读不到只影响牌组，不连累抽牌堆的 COMMU。</summary>
 	private static readonly string[] DiveImages = {
 		"../dive/splash_00.png", "../dive/splash_01.png", "../dive/splash_02.png", "../dive/splash_03.png", "../dive/splash_04.png", "../dive/splash_05.png", "../dive/splash_06.png", "../dive/splash_07.png", "../dive/splash_08.png", "../dive/splash_09.png",
-		"../dive/mask_00.png", "../dive/mask_01.png", "../dive/mask_02.png", "../dive/mask_03.png", "../dive/mask_04.png", "../dive/mask_05.png", "../dive/mask_06.png", "../dive/mask_07.png", "../dive/mask_08.png", "../dive/mask_09.png" };
+		"../dive/mask_00.png", "../dive/mask_01.png", "../dive/mask_02.png", "../dive/mask_03.png", "../dive/mask_04.png", "../dive/mask_blank.png" };
 
 	/// <summary>原版入水 75 帧 + 循环 210 帧缓存为一张 RG 图，播放时只更新帧号。</summary>
 	internal static Texture2D? Warp => cached?.WarpTexture;
@@ -192,6 +192,14 @@ internal static class HeroStage
 	internal static void Kick()
 	{
 		if (cached is { Playing: true, Released: true } stage) stage.Target += KickDeg;
+	}
+
+	/// <summary>人物与水面共用入场遮罩；空纹理参数只更新是否完全露出。</summary>
+	internal static void SetEntryMask(Texture2D? mask, float full)
+	{
+		if (cached?.Display.Material is not ShaderMaterial m) return;
+		if (mask != null) m.SetShaderParameter("entry_mask", mask);
+		m.SetShaderParameter("entry_full", full);
 	}
 
 	internal static bool Warm(Node parent)
@@ -521,7 +529,11 @@ internal static class HeroStage
 			act = which;
 			seq = which == Act.Top ? topMotions : motions;
 			foreach (Node3D c in cardScenes) c.Visible = which == Act.Commu;
-			if (Display.Material is ShaderMaterial km) km.SetShaderParameter("warp_on", 0f);
+			if (Display.Material is ShaderMaterial km)
+			{
+				km.SetShaderParameter("warp_on", 0f);
+				km.SetShaderParameter("entry_full", 1f);
+			}
 			phase = 0;
 			time = 0;
 			blendFrom = -1;
@@ -552,6 +564,7 @@ internal static class HeroStage
 
 		internal void Close()
 		{
+			if (Display.Material is ShaderMaterial km) km.SetShaderParameter("entry_full", 1f);
 			Playing = false;
 			if (ticking) tree.ProcessFrame -= Tick;
 			ticking = false;

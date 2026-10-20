@@ -104,6 +104,8 @@ void fragment() {
 	public static Shader HeroKeyOut => _heroKeyOut ??= Make(@"
 shader_type canvas_item;
 " + WarpGlsl + @"
+uniform sampler2D entry_mask : filter_linear, repeat_disable;
+uniform float entry_full = 1.0;
 varying vec4 hero_modulate;
 void vertex() { hero_modulate = COLOR; }
 void fragment() {
@@ -112,7 +114,8 @@ void fragment() {
 	float s = clamp(c.g - max(c.r, c.b), 0.0, 1.0);
 	float alpha = 1.0 - s;
 	vec3 rgb = (c - vec3(0.0, s, 0.0)) / max(alpha, 0.001);
-	COLOR = vec4(rgb, t.a * alpha) * hero_modulate;
+	float shown = max(entry_full, texture(entry_mask, SCREEN_UV).r);
+	COLOR = vec4(rgb, t.a * alpha * shown) * hero_modulate;
 }
 ");
 

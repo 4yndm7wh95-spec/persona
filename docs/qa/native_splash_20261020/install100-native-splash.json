@@ -1,0 +1,65 @@
+[
+  {
+    "Game": "v0.111.0",
+    "Version": "0.14.100",
+    "Path": "C:\\Users\\kkk\\Desktop\\slaythespire\\Slay the Spire 2\\mods\\P3Makoto",
+    "Backup": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\mod\\_build\\backup_native100_20261020_082946_111",
+    "DllSHA256": "A046B4B60DFB6C90CEFA3923BADB979B2450763160876FC2F32E69B99AA914B2",
+    "PckSHA256": "478941C988F134383E315F3CFCEF5F24FE738836724F145D3EAEFEC385A4A793",
+    "PckBytes": 127313444,
+    "ModsInstalled": [
+      {
+        "Name": "P3Makoto",
+        "Version": "0.14.100",
+        "Path": "C:\\Users\\kkk\\Desktop\\slaythespire\\Slay the Spire 2\\mods\\P3Makoto",
+        "VerifiedFiles": 3
+      },
+      {
+        "Name": "P3MusicBox",
+        "Version": "1.1.3",
+        "Path": "C:\\Users\\kkk\\Desktop\\slaythespire\\Slay the Spire 2\\mods\\P3MusicBox",
+        "VerifiedFiles": 2
+      },
+      {
+        "Name": "P3TestMod",
+        "Version": "1.2.2",
+        "Path": "C:\\Users\\kkk\\Desktop\\slaythespire\\Slay the Spire 2\\mods\\P3TestMod",
+        "VerifiedFiles": 2
+      }
+    ],
+    "Playlist": "already playlist.txt or absent; unchanged",
+    "OtherModDirectories": [
+      "[IP直连1.4.0][v0.111]",
+      "mvm",
+      "quickRestart2",
+      "TowerMaster",
+      "万象辉星0.3.0(1)",
+      "刘川 战士 动画测试版 20260914 新待机与打击特效 v2"
+    ]
+  },
+  {
+    "Game": "v0.107.1",
+    "Version": "0.14.100",
+    "Path": "C:\\Users\\kkk\\Downloads\\Slay the Spire 2\\mods\\P3Makoto\\P3Makoto",
+    "Backup": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\mod\\_build\\backup_native100_20261020_082946_107",
+    "DllSHA256": "A046B4B60DFB6C90CEFA3923BADB979B2450763160876FC2F32E69B99AA914B2",
+    "PckSHA256": "478941C988F134383E315F3CFCEF5F24FE738836724F145D3EAEFEC385A4A793",
+    "PckBytes": 127313444,
+    "ModsInstalled": [
+      {
+        "Name": "P3Makoto",
+        "Version": "0.14.100",
+        "Path": "C:\\Users\\kkk\\Downloads\\Slay the Spire 2\\mods\\P3Makoto\\P3Makoto",
+        "VerifiedFiles": 3
+      },
+      {
+        "Name": "P3MusicBox",
+        "Version": "1.1.3",
+        "Path": "C:\\Users\\kkk\\Downloads\\Slay the Spire 2\\mods\\P3MusicBox\\P3MusicBox",
+        "VerifiedFiles": 2
+      }
+    ],
+    "Playlist": "already playlist.txt or absent; unchanged",
+    "OtherModDirectories": []
+  }
+]

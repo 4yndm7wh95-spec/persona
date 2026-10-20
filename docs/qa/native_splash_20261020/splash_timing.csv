@@ -1,0 +1,11 @@
+﻿sprite_id,frame_index,logical_tick_first,logical_tick_last,start_seconds,end_seconds,hold_ms,source_texture,canvas_width,canvas_height
+140,0,1,1,0.016666667,0.05,33.333333,T_UI_Camp_03_texture,960,948
+141,1,2,3,0.05,0.116666667,66.666667,T_UI_Camp_03_texture,960,948
+142,2,4,5,0.116666667,0.183333333,66.666667,T_UI_Camp_03_texture,960,948
+143,3,6,7,0.183333333,0.25,66.666667,T_UI_Camp_03_texture,960,948
+144,4,8,9,0.25,0.316666667,66.666667,T_UI_Camp_04_texture,960,948
+145,5,10,11,0.316666667,0.383333333,66.666667,T_UI_Camp_04_texture,960,948
+146,6,12,13,0.383333333,0.45,66.666667,T_UI_Camp_04_texture,960,948
+147,7,14,16,0.45,0.55,100.0,T_UI_Camp_04_texture,960,948
+148,8,17,19,0.55,0.65,100.0,T_UI_Camp_05_texture,960,948
+149,9,20,23,0.65,0.783333333,133.333333,T_UI_Camp_05_texture,960,948

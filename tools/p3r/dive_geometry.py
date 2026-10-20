@@ -1,21 +1,10 @@
-"""Stage the original dive resources with the placement measured from reference frames.
+"""Stage native sprite UV cuts, five original geometry masks and the cached water mesh.
 Only NumPy and Pillow are required; no game files are changed.
 """
 import json
 from pathlib import Path
 import numpy as np
-from PIL import Image, ImageDraw
-
-def close_and_fill(a):
-    # Match scipy's default cross structure, three dilation / erosion iterations.
-    for dilate in (True, False):
-        for _ in range(3):
-            p = np.pad(a, 1, constant_values=False)
-            parts = [p[1:-1, 1:-1], p[:-2, 1:-1], p[2:, 1:-1], p[1:-1, :-2], p[1:-1, 2:]]
-            a = np.logical_or.reduce(parts) if dilate else np.logical_and.reduce(parts)
-    im = Image.fromarray(np.pad(a, 1).astype(np.uint8) * 255).copy()
-    ImageDraw.floodfill(im, (0, 0), 128)
-    return np.asarray(im)[1:-1, 1:-1] != 128
+from PIL import Image
 
 def mesh(repo, name):
     root = repo / "research/p3r_camp"
@@ -34,22 +23,17 @@ def build(repo, out):
     import shutil
     repo, out = Path(repo), Path(out)
     out.mkdir(parents=True, exist_ok=True)
-    w, h = 480, 270
-    acc = np.zeros((h, w), bool)
     for i in range(10):
         src = repo / ("art/p3menu_system/p3r/splash_%02d.png" % i)
+        assert Image.open(src).size == (960, 948), "Run cut_splash.py for native UV cuts first"
         shutil.copyfile(src, out / ("splash_%02d.png" % i))
-        a = np.asarray(Image.open(src).convert("RGBA"))[..., 3] > 25
-        # First eight cells fill the viewport; last two keep their original cropped dimensions.
-        im = Image.fromarray(a.astype(np.uint8) * 255).resize((int(a.shape[1] * w / 961), int(a.shape[0] * h / 949)))
-        arr = np.asarray(im) > 127
-        x0, y0 = (w - im.width) // 2, 0
-        canvas = np.zeros((h, w), bool)
-        canvas[y0:y0 + min(h, im.height), x0:x0 + im.width] = arr[:h]
-        acc |= close_and_fill(canvas)
-        if i == 0:
-            assert acc.any() and not acc.all(), "First reveal mask must be partial"
-        Image.fromarray(acc.astype(np.uint8) * 255).save(out / ("mask_%02d.png" % i))
+    # Frozen raster caches from PLG_UI_Camp[12..16], including vertex edge alpha.
+    # Rebuild with tools/p3r/mask_render/render.gd; no runtime mesh work.
+    for i in range(5):
+        src = repo / ("art/p3menu_system/p3r/in_mask_%02d.png" % i)
+        assert Image.open(src).size == (1280, 720)
+        shutil.copyfile(src, out / ("mask_%02d.png" % i))
+    Image.new("L", (1, 1), 0).save(out / "mask_blank.png")
     enter = mesh(repo, "UIM_UI_Camp_In")
     loop = mesh(repo, "UIM_UI_Camp_Loop_L")
     assert enter.shape == (75, 10, 17, 2) and loop.shape == (210, 10, 17, 2)
@@ -57,7 +41,7 @@ def build(repo, out):
     assert np.allclose(loop[-1], loop[0], atol=0.001), "Loop is not seamless"
     enter.tofile(out / "warp.bin")
     loop.tofile(out / "warp_loop.bin")
-    print("dive staged: native viewport placement, 10 masks, In75 + Loop210")
+    print("dive staged: native UV canvas, 5 original masks + blank, In75 + Loop210; legacy mask_05..09 unused")
 
 if __name__ == "__main__":
     repo = Path(__file__).resolve().parents[2]

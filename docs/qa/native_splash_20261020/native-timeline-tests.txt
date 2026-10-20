@@ -1,0 +1,27 @@
+PASS native sprite 140
+PASS native sprite 141
+PASS native sprite 142
+PASS native sprite 143
+PASS native sprite 144
+PASS native sprite 145
+PASS native sprite 146
+PASS native sprite 147
+PASS native sprite 148
+PASS native sprite 149
+PASS initial frame hides splash and entry scene
+PASS roundf clock first half-tick boundary
+PASS first sprite boundary
+PASS longer native tail hold
+PASS last native sprite boundary
+PASS stop at tick 24 without extra fade
+PASS original mask 12
+PASS original mask 13
+PASS original mask 14
+PASS original mask 15
+PASS original mask 16
+PASS entry scene fully shown at tick 10
+PASS hitch skips directly to native state
+PASS negative clock clamps to start
+PASS In to Loop baseline preserved
+PASS water loop wrap preserved
+PASS: 26 native timing, mask, hitch, alpha and continuous water checks
