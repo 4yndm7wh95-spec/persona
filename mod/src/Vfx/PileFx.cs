@@ -201,7 +201,7 @@ public static class PileFx
 		// v0.14.90：抽牌堆 = 原版营地 COMMU 页（原版 3D 主角 + 原版背景上色 + 白色斜块）；舞台加载失败就退回原来的水下背景和立绘。
 		bool commu = kind == Kind.Draw && HeroStage.Available(screen.GetTree());
 		ShaderMaterial water = new() { Shader = commu ? Shaders.CommuBg : Shaders.Underwater };
-		if (commu) water.SetShaderParameter("caustics", HeroStage.Tex("T_UI_Camp_Caustics_00.png"));
+		if (commu) water.SetShaderParameter("caustics", HeroStage.Tex("T_UI_Camp_Caustics_00.png")!);
 		water.SetShaderParameter("aspect", view.X / view.Y);
 		water.SetShaderParameter("center", from);
 		water.SetShaderParameter("radius", 0f);
