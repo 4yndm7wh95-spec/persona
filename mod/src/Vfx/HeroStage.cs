@@ -422,6 +422,17 @@ internal static class HeroStage
 				Texture = Display.Texture, Material = Display.Material, Size = new Vector2(1000, 1000),
 				ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, MouseFilter = Control.MouseFilterEnum.Ignore,
 			});
+			// v0.14.91（用户：第一次开抽牌堆仍卡一下）：COMMU 背景 / 白块挖空 / 人物阴影这几个 2D 着色器和"裁剪子节点"的绘制路径也先画一遍
+			ShaderMaterial bg = new() { Shader = Shaders.CommuBg };
+			if (Tex("T_UI_Camp_Caustics_00.png") is Texture2D caustics) bg.SetShaderParameter("caustics", caustics);
+			parent.AddChild(new ColorRect { Material = bg, Size = new Vector2(64, 64), MouseFilter = Control.MouseFilterEnum.Ignore });
+			Polygon2D clip = new() { Polygon = new[] { Vector2.Zero, new Vector2(64, 0), new Vector2(0, 64) }, ClipChildren = CanvasItem.ClipChildrenMode.AndDraw };
+			ShaderMaterial cut = new() { Shader = Shaders.HeroCut };
+			cut.SetShaderParameter("hero", Display.Texture);
+			clip.Material = cut;
+			parent.AddChild(clip);
+			clip.AddChild(new TextureRect { Texture = Display.Texture, Material = shadowMat, Size = new Vector2(64, 64), ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, MouseFilter = Control.MouseFilterEnum.Ignore });
+			if (Tex("commu_word.png") is Texture2D word) clip.AddChild(new Sprite2D { Texture = word, Scale = Vector2.One * 0.05f, Material = cut });
 			warmFrames = 2;
 			RenderingServer.FramePostDraw += WarmDrawn;
 			viewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Once;

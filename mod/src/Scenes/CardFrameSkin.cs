@@ -234,7 +234,7 @@ public static class CardFrameSkin
 	private static void TitleStyle(NCard card, CardModel? m)
 	{
 		Label t = Title(card);
-		Shade(t, m != null);
+		Shade(t, false);   // v0.14.91（用户：卡名后面那块阴影看着很脏）：不再垫深色椭圆，只留文字描边；旧卡上已有的会被移除
 		if (m == null)
 		{
 			if (t.HasMeta("p3_font"))

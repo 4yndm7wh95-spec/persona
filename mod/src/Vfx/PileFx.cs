@@ -119,6 +119,7 @@ public static class PileFx
 	private static readonly string[] Hidden = { "CardGrid", "BottomText", "%SortingBg", "%ObtainedSorter", "%CardTypeSorter", "%CostSorter", "%AlphabeticalSorter" };
 
 	private const float ExitTime = 0.42f;
+	private const float WhooshSkip = 0.3f;   // ShuffleTime_Whoosh 前 0.36s 是静音引子
 	private static readonly Dictionary<ulong, Action> Exits = new();
 
 	/// <summary>
@@ -1098,7 +1099,8 @@ public static class PileFx
 			hovered = null;
 			BindBack(false);
 			upBtn.Hide();
-			Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.3f);
+			// v0.14.91（用户：进出音效没跟上动画）：这个嗖声前 0.36s 几乎静音、0.67s 最响，而退场只有 0.42s —— 从 0.3s 处开始播，最响处落在退场后段
+			Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.3f, from: WhooshSkip);
 			// 保险：真实时间 1s 后无论如何关掉（每帧逻辑出问题也不会留着不关）
 			tree.CreateTimer(1.0, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () =>
 			{
@@ -1119,7 +1121,8 @@ public static class PileFx
 			FreeFlip(flip);                                  // 特写中途关掉界面：翻转替身借的卡牌还回对象池
 			flip = null;
 		};
-		Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.45f);
+		// 同上跳过静音引子；再延到下一帧才播：建界面这一帧要几十毫秒，立刻播的话声音会抢在画面前面
+		Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.45f, delay: 0.001f, from: WhooshSkip);
 		GD.Print($"{ModEntry.Tag} perf pile {kind} build {(Time.GetTicksUsec() - buildStart) / 1000f:0.0}ms (decor {decorMs:0.0}ms;{laps}); idle warmup complete={IdleWarmup.Complete}");
 	}
 

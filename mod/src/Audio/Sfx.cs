@@ -140,7 +140,8 @@ public static class Sfx
 
 	/// <summary>按文件名播放一个原声片段（缺文件就不响）。</summary>
 	/// <param name="master">true = 直接走 Master 总线（不受 SFX 总线在过场 / 战斗结束时被压低的影响），并在日志里记一行。</param>
-	public static void Clip(string file, float volume = 1f, float delay = 0f, float pitch = 1f, bool master = false) => ModEntry.Safe("clip " + file, () =>
+	/// <param name="from">从音频第几秒开始播（跳过前面的静音引子，让声音和动画对齐）。</param>
+	public static void Clip(string file, float volume = 1f, float delay = 0f, float pitch = 1f, bool master = false, float from = 0f) => ModEntry.Safe("clip " + file, () =>
 	{
 		if (Engine.GetMainLoop() is not SceneTree tree)
 		{
@@ -148,12 +149,12 @@ public static class Sfx
 		}
 		if (delay > 0f)
 		{
-			tree.CreateTimer(delay, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () => Clip(file, volume, 0f, pitch, master);
+			tree.CreateTimer(delay, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () => Clip(file, volume, 0f, pitch, master, from);
 			return;
 		}
 		if (Sample(file) is AudioStreamOggVorbis st)
 		{
-			Spawn(tree, st, volume * SampleMaster, pitch * (float)GD.RandRange(0.98, 1.02), file, master ? new StringName("Master") : null);
+			Spawn(tree, st, volume * SampleMaster, pitch * (float)GD.RandRange(0.98, 1.02), file, master ? new StringName("Master") : null, from);
 			if (master)
 			{
 				GD.Print($"{ModEntry.Tag} clip {file} -> Master");
@@ -297,7 +298,7 @@ public static class Sfx
 	/// <summary>还没释放的音效播放器数（健康日志用）。</summary>
 	public static int Live { get; private set; }
 
-	private static void Spawn(SceneTree tree, AudioStream stream, float volume, float pitch, string? name = null, StringName? bus = null)
+	private static void Spawn(SceneTree tree, AudioStream stream, float volume, float pitch, string? name = null, StringName? bus = null, float from = 0f)
 	{
 		_bus ??= AudioServer.GetBusIndex("SFX") >= 0 ? new StringName("SFX") : new StringName("Master");
 		AudioStreamPlayer p = new()
@@ -312,7 +313,7 @@ public static class Sfx
 		Live++;
 		p.TreeExiting += () => Live--;
 		p.Finished += p.QueueFree;
-		p.Play();
+		p.Play(from);
 		// v0.14.60 保险：Finished 没发出来（循环导入的音频、播放失败）时，最多活到音频时长 + 2 秒（真实时间），不在根节点下越积越多
 		double life = (stream.GetLength() > 0 ? stream.GetLength() / Mathf.Max(pitch, 0.1f) : 8.0) + 2.0;
 		tree.CreateTimer(life, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () =>
