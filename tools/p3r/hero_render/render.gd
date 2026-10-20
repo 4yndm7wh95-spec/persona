@@ -40,13 +40,13 @@ void fragment() { ALBEDO = mask_pass ? vec3(water ? 1.0 : 0.0) : col; }
 const OUTLINE = """
 shader_type spatial;
 render_mode unshaded, cull_front;
-uniform vec3 col = vec3(0.04, 0.10, 0.30);
-uniform float width = 0.0012;
+uniform vec3 col = vec3(0.714, 0.769, 0.831);
+uniform float width = 0.0006;
 uniform bool mask_pass = false;
 void vertex() { VERTEX += NORMAL * width; }
 void fragment() { ALBEDO = mask_pass ? vec3(0.0) : col; }
 """
-# v0.14.90 对照原版 COMMU 截图调过：贴图材质加卡通明暗（原版 ToonThreshold -0.2 / Softness 0.1）+ 边缘光 CDEFFF，描边改深色细线、透水部分不描边。
+# v0.14.90 对照原版 COMMU 截图调过：贴图材质加卡通明暗（原版 ToonThreshold -0.2 / Softness 0.1）+ 边缘光 CDEFFF，描边用原版浅色 B6C4D4 极细（用户：原版手上没有重描边），透水部分不描边。
 # 原版材质（research/p3r_camp/hero3d/materials/*.json）：CaFi = 平涂色，CaBa = 贴图（灰度 → 蓝色调），CaRt = 显示水，OlOpCamp = 描边
 const FILLS = {"MI_PC0051_C002_02_CaFiOp": "5BBCFF", "MI_PC0051_C002_03_CaFiOp": "9DACC7", "MI_PC0051_C002_04_CaFiOp": "444444", "MI_PC0051_C002_05_CaFiOp": "0961B5", "MI_PC0051_C002_06_CaFiOp": "BCC4D2", "MI_PC0051_C002_01_CaFiOpTxRs": "000000", "MI_PC0051_H000_00_CaBaOp": "00E7F8"}
 const TEXMAP = {"MI_PC0051_C002_00_CaBaOp": "T_PC0051_C002_00_Col.png", "MI_PC0051_F000_00_CaBaOp": "T_PC0051_F000_00_Col.png"}

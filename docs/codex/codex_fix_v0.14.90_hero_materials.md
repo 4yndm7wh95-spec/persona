@@ -4,7 +4,7 @@
 
 【1. Shaders.cs】
 1. HeroRamp：照 render.gd 新的 RAMP 改（vertex 里算世界法线 wn；固定光方向 (-0.4, 0.6, 0.7)；lit = smoothstep(-0.3, -0.1, nl)；c *= mix(shade, 1, lit)；边缘光 rim = pow(1 − clamp(dot(NORMAL, VIEW)), 4) × 0.6 混 (0.80, 0.94, 1.0)；最后 c = mix(c, 纯绿, 0.5 × (1 − lit))）。c0..c3 / shade 的数值照抄 render.gd。去掉 mask_pass。
-2. HeroOutline：col = (0.04, 0.10, 0.30)，width = 0.0012。
+2. HeroOutline：col 保持原版浅色 (0.714, 0.769, 0.831)，width 改成 0.0006（用户：原版手上没有重描边；浅色细线落在白皮肤上看不见，落在水上是一道浅边）。
 3. HeroKeyOut：改成"去溢色"算法（不再用距离阈值）：
    s = clamp(t.g − max(t.r, t.b), 0, 1); alpha = 1 − s; rgb = (t.rgb − vec3(0, s, 0)) / max(alpha, 0.001);
    COLOR = vec4(rgb, t.a × alpha) × hero_modulate。
@@ -20,5 +20,5 @@
 
 【4. 自检、提交、推送】
 1. dotnet build 通过，0 个新警告；对照上面逐条打勾。
-2. 只 add mod/src；提交信息："v0.14.90: hero materials matched to the original COMMU screenshot (toon + rim, thin dark outline, water shows through jacket/hair/shadows), despill key-out, keep hero visible during pile exit"
+2. 只 add mod/src；提交信息："v0.14.90: hero materials matched to the original COMMU screenshot (toon + rim, thin light outline, water shows through jacket/hair/shadows), despill key-out, keep hero visible during pile exit"
 3. push（规则同前，被拒先 fetch + merge --no-edit）；中文简短报告 + 提交号。
