@@ -1,0 +1,82 @@
+[INFO] Preloading 'Common' assets... count=698 vfx=94
+[INFO] [Startup] Resource stats (main menu loaded (complete)): StaticMem=0B, VRAM=765.1MB, Objects=9,088, Resources=686, Nodes=1,717, CachedAssets=5
+[P3Makoto] health hitch 1045ms gpu=0.1ms render_cpu=0.0ms p3=32.0ms process=9.3ms vfx_nodes=-1 fps=201
+[P3Makoto] health hitch 63ms gpu=0.5ms render_cpu=0.1ms p3=0.0ms process=36.9ms vfx_nodes=-1 fps=25
+[INFO] Wrote 52247 bytes to path=user://steam/76561199463988886/modded/profile3/saves/current_run.save save_dir=user://steam/76561199463988886
+[INFO] Wrote 52247 bytes to modded/profile3/saves/current_run.save in steam remote store
+[INFO] Continuing run with character: CHARACTER.REGENT
+[INFO] Preloading 'Common' Complete: assets=792 time_elapsed=2,471ms
+[P3Makoto] perf card frame warm 43.3ms (110 textures)
+[P3Makoto] perf idle warmup @card frame 44.7ms; 16 remaining
+[P3Makoto] health hitch 289ms gpu=1.5ms render_cpu=0.1ms p3=0.0ms process=16.2ms vfx_nodes=-1 fps=200
+[P3Makoto] asset guard (LoadRunAssets): 1 Regent path(s) pointed back to P3Makoto resources
+[INFO] Preloading 'characters=REGENT' assets... count=37 vfx=6
+[INFO] Preloading 'characters=REGENT' Complete: assets=43 time_elapsed=201ms
+[INFO] Preloading 'Act=OVERGROWTH' assets... count=8 vfx=0
+[INFO] Preloading 'Act=OVERGROWTH' Complete: assets=8 time_elapsed=18ms
+[P3Makoto] asset guard (LoadRoomCombatAssets): 2 Regent path(s) pointed back to P3Makoto resources
+[INFO] Preloading 'Combat Room' assets... count=9 vfx=0
+[P3Makoto] health hitch 222ms gpu=1.7ms render_cpu=0.1ms p3=5.6ms process=288.6ms vfx_nodes=-1 fps=163
+[INFO] Preloading 'Combat Room' Complete: assets=9 time_elapsed=109ms
+[INFO] Creating NCombatRoom with mode=ActiveCombat encounter=FUZZY_WURM_CRAWLER_WEAK.
+[P3Makoto] health hitch 128ms gpu=0.3ms render_cpu=0.1ms p3=12.6ms process=288.6ms vfx_nodes=0 fps=163
+[P3Makoto] health spike star orbit 13.3ms polys+2 labels+0 anims+1
+[P3Makoto] health spike end turn tick 12.6ms polys+11 labels+0 anims+0
+[P3Makoto] health hitch 53ms gpu=0.3ms render_cpu=0.1ms p3=28.0ms process=288.6ms vfx_nodes=3 fps=163
+[P3Makoto] perf idle warmup @hero3d 83.1ms; 15 remaining
+[P3Makoto] health hitch 99ms gpu=1.6ms render_cpu=0.2ms p3=0.0ms process=53.1ms vfx_nodes=8 fps=99
+[P3Makoto] perf idle warmup @pile shaders 7.0ms; 14 remaining
+[P3Makoto] perf idle warmup @pile title 1.3ms; 13 remaining
+[P3Makoto] card frame failed: System.NullReferenceException: Object reference not set to an instance of an object.
+   at P3Makoto.Scenes.CardFrameSkin.Apply(NCard card)
+   at P3Makoto.Scenes.CardFrameReloadPatch.<>c__DisplayClass0_0.<Postfix>b__0()
+   at P3Makoto.ModEntry.Safe(String where, Action action)
+[WARN] [P3Makoto] card frame failed: System.NullReferenceException: Object reference not set to an instance of an object.
+   at P3Makoto.Scenes.CardFrameSkin.Apply(NCard card)
+   at P3Makoto.Scenes.CardFrameReloadPatch.<>c__DisplayClass0_0.<Postfix>b__0()
+   at P3Makoto.ModEntry.Safe(String where, Action action)
+[P3Makoto] perf idle warmup @pile big type 2.0ms; 12 remaining
+[P3Makoto] card frame failed: System.NullReferenceException: Object reference not set to an instance of an object.
+   at P3Makoto.Scenes.CardFrameSkin.Apply(NCard card)
+   at P3Makoto.Scenes.CardFrameReloadPatch.<>c__DisplayClass0_0.<Postfix>b__0()
+   at P3Makoto.ModEntry.Safe(String where, Action action)
+[WARN] [P3Makoto] card frame failed: System.NullReferenceException: Object reference not set to an instance of an object.
+   at P3Makoto.Scenes.CardFrameSkin.Apply(NCard card)
+   at P3Makoto.Scenes.CardFrameReloadPatch.<>c__DisplayClass0_0.<Postfix>b__0()
+   at P3Makoto.ModEntry.Safe(String where, Action action)
+[P3Makoto] card frame failed: System.NullReferenceException: Object reference not set to an instance of an object.
+   at P3Makoto.Scenes.CardFrameSkin.Apply(NCard card)
+   at P3Makoto.Scenes.CardFrameReloadPatch.<>c__DisplayClass0_0.<Postfix>b__0()
+   at P3Makoto.ModEntry.Safe(String where, Action action) (further errors here are not logged)
+[WARN] [P3Makoto] card frame failed: System.NullReferenceException: Object reference not set to an instance of an object.
+   at P3Makoto.Scenes.CardFrameSkin.Apply(NCard card)
+   at P3Makoto.Scenes.CardFrameReloadPatch.<>c__DisplayClass0_0.<Postfix>b__0()
+   at P3Makoto.ModEntry.Safe(String where, Action action) (further errors here are not logged)
+[P3Makoto] perf idle warmup res://p3makoto/ui/butterfly_wing_l.png 0.1ms; 11 remaining
+[P3Makoto] health hitch 52ms gpu=1.9ms render_cpu=0.3ms p3=0.5ms process=99.0ms vfx_nodes=3 fps=177
+[P3Makoto] perf idle warmup res://p3makoto/ui/butterfly_wing_r.png 0.1ms; 10 remaining
+[P3Makoto] perf idle warmup res://p3makoto/ui/butterfly_body.png 0.1ms; 9 remaining
+[P3Makoto] perf idle warmup res://p3makoto/ui/pile_deck.png 0.1ms; 8 remaining
+[P3Makoto] health spike ShowMultiTargeting 10.0ms polys+0 labels+0 anims+1
+[P3Makoto] perf idle warmup res://p3makoto/ui/pile_discard.png 0.1ms; 7 remaining
+[INFO] Player 1 playing card DEFEND_REGENT (no target)
+[P3Makoto] health spike GainBlock 8.7ms polys+37 labels+0 anims+39
+[P3Makoto] trace card done CARD.DEFEND_REGENT (t=21551ms, timescale=1)
+[P3Makoto] perf idle warmup res://p3makoto/ui/pile_exhaust.png 0.1ms; 6 remaining
+[INFO] Player 1 playing card DEFEND_REGENT (no target)
+[P3Makoto] trace card done CARD.DEFEND_REGENT (t=22449ms, timescale=1)
+[INFO] Player 1 playing card STRIKE_REGENT (targeting 毛绒伏地虫 (index 1))
+[P3Makoto] health spike Damage 11.6ms polys+4 labels+0 anims+3
+[P3Makoto] trace card done CARD.STRIKE_REGENT (t=22797ms, timescale=1)
+[P3Makoto] perf pile Draw build 141.9ms (decor 6.4ms; hide=0.1 water=0.2 bubbles=0.9 butterfly=3.4 hero3d=0.6 decor=0.8 head=70.6 focus=30.6 tail=34.0); idle warmup complete=False
+[P3Makoto] health spike pile screen 143.6ms polys+42 labels+0 anims+1
+[WARN] Asset not cached: res://images/packed/sprite_fonts/star_icon.png
+[P3Makoto] health hitch 335ms gpu=1.7ms render_cpu=0.5ms p3=146.2ms process=37.6ms vfx_nodes=26 fps=191
+[P3Makoto] health hitch 88ms gpu=1.1ms render_cpu=0.3ms p3=0.0ms process=6.4ms vfx_nodes=5 fps=200
+[P3Makoto] perf pile Draw build 3.6ms (decor 0.7ms; hide=0.0 water=0.0 bubbles=0.3 butterfly=0.1 hero3d=0.1 decor=0.1 head=1.0 focus=0.7 tail=1.3); idle warmup complete=False
+[P3Makoto] health hitch 96ms gpu=1.1ms render_cpu=0.3ms p3=0.0ms process=87.5ms vfx_nodes=4 fps=186
+[P3Makoto] perf pile Discard build 77.2ms (decor 37.1ms; hide=0.0 water=0.0 bubbles=0.3 decor=36.6 head=38.5 focus=0.9 tail=0.7); idle warmup complete=False
+[P3Makoto] health spike pile screen 77.3ms polys+40 labels+0 anims+1
+[P3Makoto] health hitch 95ms gpu=0.6ms render_cpu=0.3ms p3=77.5ms process=87.5ms vfx_nodes=4 fps=186
+[P3Makoto] perf pile Draw build 3.9ms (decor 0.7ms; hide=0.0 water=0.0 bubbles=0.3 butterfly=0.1 hero3d=0.1 decor=0.1 head=1.4 focus=0.7 tail=1.2); idle warmup complete=False
+[P3Makoto] health hitch 85ms gpu=1.1ms render_cpu=0.3ms p3=0.0ms process=5.2ms vfx_nodes=4 fps=200

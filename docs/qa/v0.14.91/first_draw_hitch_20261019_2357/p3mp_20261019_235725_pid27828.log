@@ -1,0 +1,124 @@
+23:57:25.808 [EVT] P3TestMod 1.2.2 log start, pid 27828, args: 
+23:57:25.814 [EVT] harmony patches applied
+23:57:32.903 [INFO] === Godot OS Debug Information ===
+Timestamp: 10/19/2026 23:57:23
+OS: Windows
+OS Version: 10.0.26200
+Distribution Name: Windows
+Device Model: JiguangPro Series GM6PQ0X
+Is Debug Build: False
+Is Sandboxed: False
+Executable Path: C:/Users/kkk/Desktop/slaythespire/Slay the Spire 2/SlayTheSpire2.exe
+Data Directory: C:/Users/kkk/AppData/Roaming
+User Data Directory: C:/Users/kkk/AppData/Roaming/SlayTheSpire2
+Command Line Args: 
+User Command Line Args: 
+OS Locale: en_US
+OS Language: en
+Game Locale: en_US
+Is UserFS Persistent: True
+Is Stdout Verbose: False
+Is Low Processor Usage Mode: False
+Architecture: x86_64
+Engine Version: 4.5.1-m.14 (custom_build)
+Is Editor: False
+Release Version: v0.111.0
+Release Commit: 41cef1ea
+Release Date: 08/14/2026 00:39:18
+Processor Count: 16
+Processor Name: 13th Gen Intel(R) Core(TM) i5-13450HX
+Main assembly hash: 222455745
+Rendering device name: NVIDIA GeForce RTX 4060 Laptop GPU
+  Graphics adapter 0: NVIDIA GeForce RTX 4060 Laptop GPU
+  version: 32.0.16.0
+  Graphics adapter 1: NVIDIA GeForce RTX 4060 Laptop GPU
+  version: 32.0.16.0
+  Graphics adapter 2: Microsoft Basic Render Driver
+  version: 10.0.26100.0
+Screen info (primary 1):
+  Index 0: Size: (1707, 1067) Orientation: Landscape Scale: 1 DPI: 96 Refresh Rate: 165.004
+  Index 1: Size: (1920, 1080) Orientation: Landscape Scale: 1 DPI: 96 Refresh Rate: 165.004
+Video Memory Used: 0.0B
+Memory Info:
+  physical: 15.7GB
+  free: 4.3GB
+  available: 31.5GB
+  stack: 8.0MB
+  Static Memory Usage: 0.0B
+  Static Memory Peak Usage: 0.0B
+Disk Info:
+  Index 0: Name: C:\ Type: Fixed Format: NTFS Available: 44.1GB Total Free: 44.1GB Total Size: 475.4GB
+  Index 1: Name: G:\ Type: Fixed Format: NTFS Available: 93.5GB Total Free: 93.5GB Total Size: 238.5GB
+Important Environment Variables:
+  PATH: C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\NVIDIA Corporation\NVIDIA App\NvDLISR;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\dotnet\;C:\Program Files (x86)\dotnet\;D:\A1Python\PythonProject\.venv\Scripts;D:\A1Python\PythonProject\.venv\;C:\Program Files\Git\cmd;C:\Program Files\GitHub CLI\;C:\Program Files\nodejs\;%USERPROFILE%\AppData\Local\Programs\Python\Launcher\;%USERPROFILE%\AppData\Local\Microsoft\WindowsApps;%USERPROFILE%\.dotnet\tools;%USERPROFILE%\AppData\Roaming\npm;%USERPROFILE%\AppData\Local\Microsoft\WinGet\Links;%USERPROFILE%\AppData\Local\Microsoft\WinGet\Packages\yt-dlp.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-N-126374-g089a48eb36-win64-gpl\bin;
+  GODOT_ROOT_DIR: 
+  HOME: 
+  DYLD_LIBRARY_PATH: 
+  LD_LIBRARY_PATH: 
+
+23:57:32.904 [INFO] Preloading 'IntroLogo' assets... count=3 vfx=0
+23:57:32.929 [INFO] Preloading 'IntroLogo' Complete: assets=3 time_elapsed=24ms
+23:57:32.937 [INFO] Preloading 'MainMenuEssentials' assets... count=5 vfx=0
+23:57:33.173 [INFO] Preloading 'MainMenuEssentials' Complete: assets=5 time_elapsed=235ms
+23:57:34.913 [INFO] [Startup] Time to main menu (Godot ticks): 13959ms
+23:57:35.022 [WARN] Asset not cached: res://images/ui/top_panel/character_icon_regent.png
+23:57:35.025 [INFO] [Startup] Time to main menu: 14,071ms
+23:57:35.026 [INFO] [Startup] Resource stats (main menu loaded (essential)): StaticMem=0B, VRAM=561.5MB, Objects=9,116, Resources=688, Nodes=1,719, CachedAssets=11
+23:57:35.030 [INFO] AtlasManager: Loaded epoch_atlas with 57 sprites
+23:57:35.037 [INFO] AtlasManager: Loaded relic_atlas with 346 sprites
+23:57:35.042 [INFO] AtlasManager: Loaded relic_outline_atlas with 346 sprites
+23:57:35.045 [INFO] AtlasManager: Loaded power_atlas with 271 sprites
+23:57:35.082 [INFO] AtlasManager: Loaded card_atlas with 626 sprites
+23:57:35.089 [INFO] AtlasManager: Loaded potion_atlas with 64 sprites
+23:57:35.092 [INFO] AtlasManager: Loaded potion_outline_atlas with 64 sprites
+23:57:35.095 [INFO] AtlasManager: Loaded stats_screen_atlas with 16 sprites
+23:57:35.101 [INFO] AtlasManager: Loaded intent_atlas with 310 sprites
+23:57:35.102 [INFO] AtlasManager: Loaded era_atlas with 27 sprites
+23:57:35.259 [INFO] Unloading 4 missed cache assets
+23:57:35.760 [INFO] Preloading 'Common' assets... count=698 vfx=94
+23:57:35.761 [INFO] [Startup] Resource stats (main menu loaded (complete)): StaticMem=0B, VRAM=765.1MB, Objects=9,088, Resources=686, Nodes=1,717, CachedAssets=5
+23:57:38.149 [INFO] Wrote 52247 bytes to path=user://steam/76561199463988886/modded/profile3/saves/current_run.save save_dir=user://steam/76561199463988886
+23:57:38.167 [INFO] Wrote 52247 bytes to modded/profile3/saves/current_run.save in steam remote store
+23:57:38.181 [INFO] Continuing run with character: CHARACTER.REGENT
+23:57:38.232 [INFO] Preloading 'Common' Complete: assets=792 time_elapsed=2,471ms
+23:57:38.262 [EVT] net role None -> Singleplayer, local netId 1, connected True, game v0.111.0
+23:57:39.126 [INFO] Preloading 'characters=REGENT' assets... count=37 vfx=6
+23:57:39.327 [INFO] Preloading 'characters=REGENT' Complete: assets=43 time_elapsed=201ms
+23:57:39.354 [INFO] Preloading 'Act=OVERGROWTH' assets... count=8 vfx=0
+23:57:39.372 [INFO] Preloading 'Act=OVERGROWTH' Complete: assets=8 time_elapsed=18ms
+23:57:39.578 [INFO] Preloading 'Combat Room' assets... count=9 vfx=0
+23:57:39.687 [INFO] Preloading 'Combat Room' Complete: assets=9 time_elapsed=109ms
+23:57:39.752 [INFO] Creating NCombatRoom with mode=ActiveCombat encounter=FUZZY_WURM_CRAWLER_WEAK.
+23:57:39.780 [SNAP] combat set up | P1 hp 51/75 blk 0 [] en 0 st 0 hand 0 draw 13 disc 0 | FUZZY_WURM_CRAWLER hp 59/59 blk 0 [] | 
+23:57:39.805 [EVT] room entered: Monster FUZZY_WURM_CRAWLER_WEAK floor 3 act 0
+23:57:40.736 [WARN] [P3Makoto] card frame failed: System.NullReferenceException: Object reference not set to an instance of an object.
+   at P3Makoto.Scenes.CardFrameSkin.Apply(NCard card)
+   at P3Makoto.Scenes.CardFrameReloadPatch.<>c__DisplayClass0_0.<Postfix>b__0()
+   at P3Makoto.ModEntry.Safe(String where, Action action)
+23:57:40.826 [WARN] [P3Makoto] card frame failed: System.NullReferenceException: Object reference not set to an instance of an object.
+   at P3Makoto.Scenes.CardFrameSkin.Apply(NCard card)
+   at P3Makoto.Scenes.CardFrameReloadPatch.<>c__DisplayClass0_0.<Postfix>b__0()
+   at P3Makoto.ModEntry.Safe(String where, Action action)
+23:57:40.928 [WARN] [P3Makoto] card frame failed: System.NullReferenceException: Object reference not set to an instance of an object.
+   at P3Makoto.Scenes.CardFrameSkin.Apply(NCard card)
+   at P3Makoto.Scenes.CardFrameReloadPatch.<>c__DisplayClass0_0.<Postfix>b__0()
+   at P3Makoto.ModEntry.Safe(String where, Action action) (further errors here are not logged)
+23:57:41.263 [SNAP] turn start (round 1, side Player) | P1 hp 51/75 blk 0 [] en 3 st 3 hand 5 draw 8 disc 0 | FUZZY_WURM_CRAWLER hp 59/59 blk 0 [] | 
+23:57:42.420 [INFO] Player 1 playing card DEFEND_REGENT (no target)
+23:57:43.304 [INFO] Player 1 playing card DEFEND_REGENT (no target)
+23:57:43.514 [INFO] Player 1 playing card STRIKE_REGENT (targeting 毛绒伏地虫 (index 1))
+23:57:44.580 [WARN] Asset not cached: res://images/packed/sprite_fonts/star_icon.png
+23:57:52.281 [INFO] NGame.Quit called
+23:57:52.281 [INFO] [Display] On exit, saving window size: (1920, 1057) display: 1 position: (0, 23)
+23:57:52.290 [INFO] Wrote 4492 bytes to path=user://steam/76561199463988886/settings.save save_dir=user://steam/76561199463988886
+23:57:52.296 [INFO] Wrote 363 bytes to path=user://steam/76561199463988886/modded/profile3/saves/prefs.save save_dir=user://steam/76561199463988886
+23:57:52.298 [INFO] Wrote 363 bytes to modded/profile3/saves/prefs.save in steam remote store
+23:57:52.308 [INFO] Wrote 117582 bytes to path=user://steam/76561199463988886/modded/profile3/saves/progress.save save_dir=user://steam/76561199463988886
+23:57:52.309 [INFO] Wrote 117582 bytes to modded/profile3/saves/progress.save in steam remote store
+23:57:52.316 [INFO] Wrote 52 bytes to path=user://steam/76561199463988886/modded/profile.save save_dir=user://steam/76561199463988886
+23:57:52.316 [INFO] Wrote 52 bytes to modded/profile.save in steam remote store
+23:57:52.327 [WARN] Warning: Packet writer is growing from 1024 bytes to 2048 bytes!
+23:57:52.327 [WARN] Warning: Packet writer is growing from 2048 bytes to 4096 bytes!
+23:57:52.331 [WARN] Warning: Packet writer is growing from 4096 bytes to 8192 bytes!
+23:57:52.364 [INFO] Steamworks: shutting down...
+23:57:52.367 [INFO] Steamworks shutdown succeeded!
