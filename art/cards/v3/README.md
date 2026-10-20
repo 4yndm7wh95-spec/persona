@@ -425,3 +425,22 @@ Generate ONE opaque full-bleed landscape game card 1000:760 aspect. Reference1 O
 ```text
 Generate ONE opaque full-bleed landscape game card 1000:760 aspect. Reference1 ORIGINAL composition guide, not edit target: preserve large subject scale, positions and recognizable action. Reference2 four-panel approved P3R STYLE BOARD ONLY, do not make panels. Repaint in clean Persona3Reload anime hard two-tone cel shading, dark outlines, big flat shapes legible at250x190. At least60% navy071a4a/royalblue1f5cff/cyan39d8ff/icewhite d8f4ff. Background2-3 LARGE flat diagonal menu blocks only; one secondary stripe under25% together with signature effect. No particles/tiny dots/scattered shards/bloom/glossy gradients/tiny highlights/scenery detail. ONE main P3R motif specified. Bare pale teenage hands, black uniform blazer WHITE shirt cuffs, NO gloves/red wrist stripes. Makoto Yuki: slender teenage boy, long navy fringe hides one eye, narrow calm blue-grey visible eye, small straight neutral mouth, slender oval face fine nose, black blazer white shirt red-white neck headphones and upper-arm red armband. Face identity use supporting ref3 when present; not generic cheerful hero. Enemy MUST be redesigned black-fluid Shadow with BLUE arcana mask, no original monster eyes/tentacles/outline merely recolored. Regent servants are Persona creatures, never human hands; no Regent armor/hats/cloak/gold gauntlets/star swordguards. Faces/hands/weapontips/main effects within x8-92%,y12-75% safe box. No words/letters/numbers/watermark/UI/borders. Original enemy hit diagonally by HUGE yellow-white beam, preserve beam direction/size. Redesigned black flowing Shadow wearing blue mask at impact. Beam from a long sword extending into frame, hint Thanatos black reaper guardian pale skullmask with chained blackcoffin ring as ONE clean silhouette behind source if space, not competing small objects. Navy/royalblue one magenta stripe. No gore. Main enemy large foreground at RIGHT, struck by diagonal golden beam from UPPER LEFT as reference1. Entirely new black fluid body and blue oval arcana mask, NO original rockmonster head, NO pointedhat. Behind beam source very small distant Thanatos silhouette (black reaper skull-mask and coffin ring), not a human boy portrait. NO Makoto/human face, NO tarot cards. Preserve devastating long diagonal impact, no gore.
 ```
+
+
+## 第 3 批待审 A 版转定稿
+
+保留上文历史审批记录，以下为本次用户更新的最终状态。七张均从对应 A 版原样复制，像素未改。
+
+| 卡名 | 更新状态 |
+|---|---|
+| `refine_blade` | 用户：没评价的基本都能用，转为定稿 |
+| `solar_strike` | 用户：没评价的基本都能用，转为定稿 |
+| `spoils_of_battle` | 用户：没评价的基本都能用，转为定稿 |
+| `wrought_in_war` | 用户：没评价的基本都能用，转为定稿 |
+| `begone` | 用户：没评价的基本都能用，转为定稿 |
+| `alignment` | 用户：没评价的基本都能用，转为定稿 |
+| `bulwark` | 用户：没评价的基本都能用，转为定稿 |
+
+## 剩余卡一次性生成
+
+按 `docs/codex/codex_card_art_rest.md`，使用内置 imagegen，每卡一张；每约 15 张保存预览、提示词全文并提交推送。卡图为不透明 RGB，非透明素材。
