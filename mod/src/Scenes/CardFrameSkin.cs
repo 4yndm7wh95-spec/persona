@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Localization;
+using MegaCrit.Sts2.Core.Localization.Fonts;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.CardPools;
 using MegaCrit.Sts2.Core.Nodes.Cards;
@@ -139,51 +141,26 @@ public static class CardFrameSkin
 		}
 	}
 
-	private static Font? _titleBase;
-	private static readonly Dictionary<ulong, FontVariation> TitleFonts = new();
-
 	/// <summary>
-	/// 卡名用的字体（只加载一次）：
-	/// 简体中文 = 霞鹜文楷 Bold（OFL；v0.14.88 用户：思源宋体太板正，从候选里选了文楷），只打包储君卡名用到的 212 个字（88KB，p3makoto/fonts/LXGWWenKai-Bold-CardTitles.ttf）；
-	/// 繁体中文 = 游戏自带思源宋体 TC（文楷子集没有繁体字）；其他语言 = Cinzel。缺字都回退到原字体。
+	/// v0.14.99（用户：卡名直接用杀戮尖塔 2 原版字体）：卡名不再换字体（以前简中霞鹜文楷 / 繁中思源宋体 / 其他 Cinzel），
+	/// 用标签自己的字体 = 原版 card.tscn 的 Kreon（FontVariation，spacing_glyph 1），中日韩俄泰等语言由 MegaLabel 按语言换成原版的替换字体。
+	/// 这里取同一份，供预热在新描边宽度下先栅格化卡名用到的字。
 	/// </summary>
-	private static Font TitleBase()
+	private static Font VanillaTitleFont()
 	{
-		if (_titleBase == null)
+		Font? f = null;
+		try
 		{
-			string loc = TranslationServer.GetLocale().ToLowerInvariant();
-			bool zh = loc.StartsWith("zh");
-			bool zht = zh && (loc.Contains("tw") || loc.Contains("hk") || loc.Contains("hant") || loc.Contains("zht"));
-			if (zh && !zht)
+			if (LocManager.Instance != null)
 			{
-				FontFile f = new();
-				if (f.LoadDynamicFont("res://p3makoto/fonts/LXGWWenKai-Bold-CardTitles.ttf") == Error.Ok)
-				{
-					_titleBase = f;
-				}
+				f = FontManager.GetSubstituteFont(LocManager.Instance.Language, FontType.Regular);
 			}
-			if (_titleBase == null && zht && ResourceLoader.Exists("res://fonts/zht/SourceHanSerifTC-Bold.otf"))
-			{
-				_titleBase = ResourceLoader.Load<Font>("res://fonts/zht/SourceHanSerifTC-Bold.otf");
-			}
-			_titleBase ??= Typo.Cinzel;
 		}
-		return _titleBase;
-	}
-
-	/// <summary>
-	/// v0.14.88（用户：打开牌堆等有新卡面的地方会卡一下）：卡名字体全局共用一个 FontVariation（以前每张卡 new 一个，
-	/// 每个新实例都要重新排版 / 栅格化字形，牌一多就卡）；按原字体（缺字回退用）各缓存一份。
-	/// </summary>
-	private static Font TitleFont(Font orig)
-	{
-		ulong key = orig.GetInstanceId();
-		if (!TitleFonts.TryGetValue(key, out FontVariation? fv))
+		catch (Exception e)
 		{
-			fv = new FontVariation { BaseFont = TitleBase(), SpacingGlyph = 1, Fallbacks = new Godot.Collections.Array<Font> { orig } };
-			TitleFonts[key] = fv;
+			GD.Print($"{ModEntry.Tag} title font lookup failed: {e.Message}");
 		}
-		return fv;
+		return f ?? ResourceLoader.Load<Font>("res://themes/kreon_regular_shared.tres") ?? ThemeDB.FallbackFont;
 	}
 
 	/// <summary>储君卡名用到的全部汉字（localization/zhs/cards.json，含君王之剑和 "+"），预热时先栅格化。</summary>
@@ -234,7 +211,7 @@ public static class CardFrameSkin
 				x += 8f;
 			}
 		}
-		Font font = TitleBase();
+		Font font = VanillaTitleFont();
 		for (int size = 16; size <= 26; size += 2)
 		{
 			tiny.AddChild(new Label { Text = TitleChars, LabelSettings = new LabelSettings { Font = font, FontSize = size, OutlineSize = 6, ShadowSize = 6 }, Position = new Vector2(0f, size * 2f) });
@@ -244,9 +221,9 @@ public static class CardFrameSkin
 	}
 
 	/// <summary>
-	/// 卡名（用户：原来的字体丑）：衬线白字 + 细深蓝描边（用户在三种写法里选的 C），不要原版的粗描边。
-	/// 字体见 TitleBase（简中霞鹜文楷 / 繁中思源宋体 / 其他 Cinzel）；升级后的卡沿用原版"绿色"的约定，用浅青绿。
-	/// NCard 复用给别的卡时（m = null）还原原版的字体、颜色、描边、阴影。
+	/// 卡名：白字 + 细深蓝描边（用户在三种写法里选的 C），不要原版的粗描边。
+	/// 字体用原版的（v0.14.99，见 VanillaTitleFont）；升级后的卡沿用原版"绿色"的约定，用浅青绿。
+	/// NCard 复用给别的卡时（m = null）还原原版的颜色、描边、阴影。
 	/// </summary>
 	private static void TitleStyle(NCard card, CardModel? m)
 	{
@@ -254,28 +231,25 @@ public static class CardFrameSkin
 		Shade(t, false);   // v0.14.91（用户：卡名后面那块阴影看着很脏）：不再垫深色椭圆，只留文字描边；旧卡上已有的会被移除
 		if (m == null)
 		{
-			if (t.HasMeta("p3_font"))
+			if (t.HasMeta("p3_title"))
 			{
-				t.AddThemeFontOverride("font", t.GetMeta("p3_font").As<Font>());
 				t.AddThemeColorOverride("font_shadow_color", t.GetMeta("p3_shadow").AsColor());
 				t.AddThemeConstantOverride("outline_size", t.GetMeta("p3_outline").AsInt32());
 				t.AddThemeConstantOverride("shadow_outline_size", t.GetMeta("p3_shadow_outline").AsInt32());
 				t.AddThemeConstantOverride("shadow_offset_x", t.GetMeta("p3_sx").AsInt32());
 				t.AddThemeConstantOverride("shadow_offset_y", t.GetMeta("p3_sy").AsInt32());
-				t.RemoveMeta("p3_font");
+				t.RemoveMeta("p3_title");
 			}
 			return;
 		}
-		if (!t.HasMeta("p3_font"))
+		if (!t.HasMeta("p3_title"))
 		{
-			Font orig = t.GetThemeFont("font");
-			t.SetMeta("p3_font", orig);
+			t.SetMeta("p3_title", true);
 			t.SetMeta("p3_shadow", t.GetThemeColor("font_shadow_color"));
 			t.SetMeta("p3_outline", t.GetThemeConstant("outline_size"));
 			t.SetMeta("p3_shadow_outline", t.GetThemeConstant("shadow_outline_size"));
 			t.SetMeta("p3_sx", t.GetThemeConstant("shadow_offset_x"));
 			t.SetMeta("p3_sy", t.GetThemeConstant("shadow_offset_y"));
-			t.AddThemeFontOverride("font", TitleFont(orig));
 			// 用户选 C：白字 + 深蓝描边 + 轻投影；v0.14.85（v0.14.84 用投影做的"柔光"边缘太硬）：字后面另放一块羽化的深色椭圆（见 Shade）
 			t.AddThemeConstantOverride("outline_size", 6);
 			t.AddThemeConstantOverride("shadow_outline_size", 6);
