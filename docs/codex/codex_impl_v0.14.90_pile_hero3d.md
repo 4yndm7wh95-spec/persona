@@ -29,6 +29,13 @@
   3. 牌模型的面是单面且绕序反了：牌的材质要 cull_disabled（否则松手后看不到牌）。牌材质 = unshaded + 贴图（名字含 Backside 的面用背面贴图，其余用正面贴图），alpha scissor。
   4. 牌的**自转轴**：骨骼 Jnt_C_Center_01 的局部 +Y（牌的长边方向）。这根骨骼原版动作里一直是单位旋转，所以我们的自转直接写在它上面（set_bone_pose_rotation(Center_01, Quaternion(Vector3.Up, 角度))），和原版 Center_00 的翻面 / 摆动叠加，互不干扰。
 
+【2.5 材质更新（Claude 对照原版截图后补充，以这里为准）】
+tools/p3r/hero_render/render.gd 里的 RAMP / OUTLINE shader 和描边挂载规则已更新（提交说明里写了 v0.14.90 材质）：
+- RAMP：加了卡通明暗（顶点里算世界法线，固定光方向 (-0.4, 0.6, 0.7)，阈值 -0.2、柔和 0.1，暗部乘青色 shade）和边缘光 (0.80, 0.94, 1.0)；
+- OUTLINE：深色细线 (0.04, 0.10, 0.30)，宽 0.0012；
+- CaRtOp（透水）材质不挂描边（next_pass 只挂在 FLAT / RAMP 上）。
+如果你已经按旧版写完，照新版 render.gd 改这三处即可。
+
 【3. 要写的代码】
 A. 新文件 mod/src/Vfx/HeroStage.cs（命名空间、风格照 PileFx.cs / IdleWarmup.cs）：
   1. 一个缓存的实例（static，第一次用时创建，之后每次开牌堆复用，不要每次重建）。结构：

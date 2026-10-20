@@ -9,12 +9,20 @@ const RAMP = """
 shader_type spatial;
 render_mode unshaded, cull_disabled;
 uniform sampler2D tex : source_color, filter_linear;
-uniform vec3 c0 = vec3(0.02, 0.05, 0.30); uniform vec3 c1 = vec3(0.05, 0.30, 0.85); uniform vec3 c2 = vec3(0.50, 0.78, 1.0); uniform vec3 c3 = vec3(1.0);
+uniform vec3 c0 = vec3(0.03, 0.08, 0.28); uniform vec3 c1 = vec3(0.25, 0.62, 0.92); uniform vec3 c2 = vec3(0.80, 0.95, 1.0); uniform vec3 c3 = vec3(1.0);
+uniform vec3 shade = vec3(0.55, 0.85, 1.0);
 uniform bool mask_pass = false;
+varying vec3 wn;
+void vertex() { wn = (MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz; }
 void fragment() {
 	vec4 t = texture(tex, UV);
 	float l = dot(t.rgb, vec3(0.333));
-	vec3 c = l < 0.33 ? mix(c0, c1, l / 0.33) : l < 0.66 ? mix(c1, c2, (l - 0.33) / 0.33) : mix(c2, c3, (l - 0.66) / 0.34);
+	vec3 c = l < 0.25 ? mix(c0, c1, l / 0.25) : l < 0.6 ? mix(c1, c2, (l - 0.25) / 0.35) : mix(c2, c3, (l - 0.6) / 0.4);
+	float nl = dot(normalize(wn), normalize(vec3(-0.4, 0.6, 0.7)));
+	float lit = smoothstep(-0.2 - 0.1, -0.2 + 0.1, nl);
+	c *= mix(shade, vec3(1.0), lit);
+	float rim = pow(1.0 - clamp(dot(normalize(NORMAL), VIEW), 0.0, 1.0), 4.0);
+	c = mix(c, vec3(0.80, 0.94, 1.0), rim * 0.6);
 	ALBEDO = mask_pass ? vec3(0.0) : c;
 }
 """
@@ -29,12 +37,13 @@ void fragment() { ALBEDO = mask_pass ? vec3(water ? 1.0 : 0.0) : col; }
 const OUTLINE = """
 shader_type spatial;
 render_mode unshaded, cull_front;
-uniform vec3 col = vec3(0.714, 0.769, 0.831);
-uniform float width = 0.004;
+uniform vec3 col = vec3(0.04, 0.10, 0.30);
+uniform float width = 0.0012;
 uniform bool mask_pass = false;
 void vertex() { VERTEX += NORMAL * width; }
 void fragment() { ALBEDO = mask_pass ? vec3(0.0) : col; }
 """
+# v0.14.90 对照原版 COMMU 截图调过：贴图材质加卡通明暗（原版 ToonThreshold -0.2 / Softness 0.1）+ 边缘光 CDEFFF，描边改深色细线、透水部分不描边。
 # 原版材质（research/p3r_camp/hero3d/materials/*.json）：CaFi = 平涂色，CaBa = 贴图（灰度 → 蓝色调），CaRt = 显示水，OlOpCamp = 描边
 const FILLS = {"MI_PC0051_C002_02_CaFiOp": "5BBCFF", "MI_PC0051_C002_03_CaFiOp": "9DACC7", "MI_PC0051_C002_04_CaFiOp": "444444", "MI_PC0051_C002_05_CaFiOp": "0961B5", "MI_PC0051_C002_06_CaFiOp": "BCC4D2", "MI_PC0051_C002_01_CaFiOpTxRs": "000000", "MI_PC0051_H000_00_CaBaOp": "00E7F8"}
 const TEXMAP = {"MI_PC0051_C002_00_CaBaOp": "T_PC0051_C002_00_Col.png", "MI_PC0051_F000_00_CaBaOp": "T_PC0051_F000_00_Col.png"}
@@ -61,7 +70,7 @@ func make_mat(n):
 	if FILLS.has(n):
 		var m = sm(FLAT); m.set_shader_parameter("col", Color(FILLS[n])); return m
 	if n.ends_with("CaRtOp"):
-		var m = sm(FLAT); m.set_shader_parameter("col", Color("2050C0")); m.set_shader_parameter("water", true); return m
+		var m = sm(FLAT); m.set_shader_parameter("col", Color("2050C0")); m.set_shader_parameter("water", true); m.set_meta("no_outline", true); return m
 	if TEXMAP.has(n):
 		var m = sm(RAMP); m.set_shader_parameter("tex", ImageTexture.create_from_image(Image.load_from_file(cfg["textures_dir"] + "/" + TEXMAP[n]))); return m
 	if n == "MI_PC0051_F000_00_CaEyOp":
@@ -87,7 +96,8 @@ func _initialize():
 					if m == null:
 						var h = StandardMaterial3D.new(); h.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA; h.albedo_color = Color(0, 0, 0, 0); m = h
 					else:
-						m.next_pass = outline; mats.append(m)
+						if not m.has_meta("no_outline"): m.next_pass = outline   # 透水的衣服 / 头发不描边（对照原版截图）
+						mats.append(m)
 					n.set_surface_override_material(si, m))
 	if cfg.has("scale"):
 		sc_names = JSON.parse_string(FileAccess.get_file_as_string(cfg["scale"] + ".json"))["bones"]
