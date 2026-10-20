@@ -326,21 +326,23 @@ public static class PileFx
 		Text(head, title, font, (int)(92f * k), new Color(0.12f, 0.36f, 1f), new Vector2((tx + 8f) * k, 98f * k), (int)(5f * k), new Color(0.12f, 0.36f, 1f));
 		Label titleL = Text(head, title, font, (int)(92f * k), Colors.White, new Vector2(tx * k, 90f * k), (int)(5f * k), Ink);
 		Label countL = Text(head, "0", font, (int)(112f * k), Cyan, new Vector2((tx + 26f) * k + titleL.GetMinimumSize().X, 74f * k), (int)(5f * k), Ink);
-		Fx.Poly(head, new[] { new Vector2(tx - 2f, 200f) * k, new Vector2(tx + 502f, 200f) * k, new Vector2(tx + 494f, 228f) * k, new Vector2(tx - 10f, 228f) * k }, Navy);
-		Fx.Poly(head, new[] { new Vector2(tx - 2f, 200f) * k, new Vector2(tx + 12f, 200f) * k, new Vector2(tx + 4f, 228f) * k, new Vector2(tx - 10f, 228f) * k }, Cyan);
+		// v0.14.100（用户：切换条已经起到说明作用，说明文字没用）：抽牌堆不画说明条，切换条放在说明条的位置
+		bool hasSwitch = kind == Kind.Draw;
+		if (!hasSwitch)
+		{
+			Fx.Poly(head, new[] { new Vector2(tx - 2f, 200f) * k, new Vector2(tx + 502f, 200f) * k, new Vector2(tx + 494f, 228f) * k, new Vector2(tx - 10f, 228f) * k }, Navy);
+			Fx.Poly(head, new[] { new Vector2(tx - 2f, 200f) * k, new Vector2(tx + 12f, 200f) * k, new Vector2(tx + 4f, 228f) * k, new Vector2(tx - 10f, 228f) * k }, Cyan);
+		}
 		bool orderMode = kind == Kind.Draw && P3Settings.Current.DrawPileOrder;
-		string Note(bool order) => order
-			? (Zh ? "和原版抽牌堆同一顺序 · 从左到右、从上往下" : "SAME ORDER AS THE ORIGINAL DRAW PILE SCREEN")
-			: (Zh ? "按类型 → 费用排列" : "SORTED BY TYPE → COST");
 		string note = kind switch
 		{
-			Kind.Draw => Note(orderMode),
+			Kind.Draw => "",
 			Kind.Deck => Zh ? "整副牌组 · 按类型 → 费用排列" : "WHOLE DECK · SORTED BY TYPE → COST",
 			Kind.Exhaust => Zh ? "本场战斗中消耗的牌 · 最新在前" : "EXHAUSTED THIS COMBAT · MOST RECENT FIRST",
 			_ => Zh ? "按进入牌堆的先后排列 · 最新在前" : "MOST RECENT FIRST",
 		};
-		Label noteL = Text(head, note, Zh ? Typo.CjkBold : font, (int)(19f * k), new Color(0.8f, 0.93f, 1f), new Vector2((tx + 26f) * k, 202f * k), 0, Ink);
-		ModeSwitch modeSwitch = ModeSwitch.Build(head, new Vector2(tx + 520f, 200f) * k, k, font, orderMode, kind == Kind.Draw);
+		if (note.Length > 0) Text(head, note, Zh ? Typo.CjkBold : font, (int)(19f * k), new Color(0.8f, 0.93f, 1f), new Vector2((tx + 26f) * k, 202f * k), 0, Ink);
+		ModeSwitch modeSwitch = ModeSwitch.Build(head, new Vector2(tx - 10f, 200f) * k, k, font, orderMode, hasSwitch);
 		Fx.After(head, 0.16, "pile head in", () => Fx.Animate(head, 0.45, t => head.Position = new Vector2(headFrom * (1f - Ease.OutExpo(t)), 0f)));
 
 		// ── 网格 ──
@@ -507,7 +509,7 @@ public static class PileFx
 			if (kind == Kind.Draw && orderMode)
 			{
 				// 原版顺序：一整段，从左到右、从上往下（行宽按我们的版式，不照抄原版一行几张）
-				if (all.Count > 0) groups.Add(("DRAW ORDER", Zh ? "原版抽牌堆顺序" : "", VanillaOrder(grid, pile)));
+				if (all.Count > 0) groups.Add(("DRAW ORDER", "", VanillaOrder(grid, pile)));   // v0.14.100：不加中文副标题（和 ×张数 叠在一起，也没用）
 			}
 			else if (kind == Kind.Draw || kind == Kind.Deck)
 			{
@@ -520,7 +522,7 @@ public static class PileFx
 			else if (all.Count > 0)
 			{
 				all.Reverse();
-				groups.Add(("RECENT", Zh ? "最新在前" : "", all));
+				groups.Add(("RECENT", "", all));   // 说明条已经写了"最新在前"
 			}
 			return groups;
 		}
@@ -598,7 +600,6 @@ public static class PileFx
 			target = Mathf.Clamp(target, 0f, MaxScroll());
 			sweepT0 = now;
 			modeSwitch.Set(toOrder);
-			noteL.Text = Note(toOrder);
 			Audio.Sfx.Clip("ShuffleTime_CardSet", 0.4f);
 		}
 		modeSwitch.Changed = Switch;
