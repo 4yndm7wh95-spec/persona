@@ -159,8 +159,7 @@ for n in ONLY:
         sh = np.asarray(Image.fromarray((sh * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(8))).astype(float) / 255
         sa = (sh * (1 - sil))[..., None]          # 只落在轮廓外面
         out_rgb = out_rgb * (1 - sa * SHADOW[1] * wa) + SHADOW[0] * (sa * SHADOW[1] * wa)
-        # 轮廓外沿落在水上的一圈窄阴影（同一个错开的剪影，深海军蓝）
-        out_rgb = out_rgb * (1 - sa * 0.5 * (1 - wa)) + np.array([0.02, 0.07, 0.25]) * (sa * 0.5 * (1 - wa))
+        # 水上不投影：透明外套的轮廓投在水上会冒出一块深色突起（用户两次指出）
         # 人物透明的地方（外套 / 头发暗部）直接透出水，不压暗、不填色（用户：和入水那段一样）；水上不投影，只有白底上有灰影
         # 人物透明部分：落在水上透出水；落在白底上显示原版人物底色（HeroCaptureBgColor 深海军蓝），头发暗部才不会在白底上消失
         tr = (sil * (1 - a))[..., None] * wa
