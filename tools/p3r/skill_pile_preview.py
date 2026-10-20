@@ -7,7 +7,7 @@ python3 tools/p3r/skill_pile_preview.py <scratch>   （先用 hero_render 渲好
 """
 import sys, os, math
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 S = sys.argv[1]
 R = 'research/p3r_camp/'
@@ -19,8 +19,9 @@ BARLOW = 'mod/pck_stage/p3makoto/fonts/BarlowCondensed-900Italic.ttf'
 TICK = 1 / 30
 P = dict(siro=(10, 0, 1), title=(10, 0, 1), lst=(10, 0, 1), sil=(10, 23, 1))
 SIL_TO = (10, 170)
-HERO_DX = 40                                   # 人物基本在原版位置（中右），只右移一点给左边的牌堆让位
-JACKET = np.array([0.05, 0.10, 0.40])          # 外套（色键部分）填实心深蓝，不透水（参考视频里外套是实心的）
+HERO_DX = -110                                 # 接近原版位置（原版头在 0.54 宽处），稍右一点免得手和召唤器压到牌堆标题
+CAPTURE = np.array([0.0, 42 / 255, 108 / 255])         # 原版 DT_CampParamCommon.HeroCaptureBgColor
+SHADOW = (np.array([0.47, 0.51, 0.59]), 0.55, (24, 10))   # 人物投在白底上的灰影：同 COMMU（Shaders.HeroShadow：颜色、不透明度、偏移）
 
 
 def up(n, x): x = min(max(x, 0.0), 1.0); return 1 - (1 - x) ** (n + 1)
@@ -35,18 +36,17 @@ ci = lambda ks: np.interp(l, [k[0] for k in ks], [k[1] for k in ks])
 under = np.stack([ci([(0, 0), (0.1, 0.1), (0.9, 0.6), (1, 0.8)]), ci([(0, .3), (.1, .5), (.7, .7), (1, .85)]), ci([(0, .7), (.1, .8), (.7, .85), (1, .9)])], -1)
 yy = np.linspace(0, 1, H)[:, None, None]
 under = under * (1 - 0.7 * yy) + np.array([0, 0.063, 0.506]) * 0.7 * yy
-under = under * 0.82 + np.array([0.0, 0.05, 0.45]) * 0.18          # 蓝面板比 COMMU 更深一点（参考视频）
+under = under * 0.85 + np.array([0.10, 0.22, 0.85]) * 0.15          # 蓝面板偏亮的皇家蓝（参考视频：面板比人物外套亮）
 
 
 def hero(tp):
     i = min(int(round(tp * 60)), 190)
-    a = np.asarray(Image.open(S + '/skill/start/color_%04d.png' % i).convert('RGBA')).astype(float) / 255
+    a = np.asarray(Image.open(S + '/skill/start2/color_%04d.png' % i).convert('RGBA')).astype(float) / 255   # 光从下方（倒挂）+ 召唤器深灰两层明暗
     rgb, al = a[..., :3], a[..., 3]
     c = np.clip(rgb / np.maximum(al, 1e-3)[..., None], 0, 1)
     s = np.clip(c[..., 1] - np.maximum(c[..., 0], c[..., 2]), 0, 1)
     c = np.clip((c - np.stack([0 * s, s, 0 * s], -1)) / np.maximum(1 - s, 1e-3)[..., None], 0, 1)
-    c = c * (1 - s[..., None]) + JACKET * s[..., None]
-    return c, al
+    return c, (1 - s) * al, al          # 颜色、人物显示的不透明度（色键 = 透明，透出水；同 COMMU）、人物剪影（含透明部分，挖白底 / 投影用）
 
 
 def shift(c, a, dx, dy):
@@ -61,10 +61,9 @@ def shift(c, a, dx, dy):
 def layer_siro():
     """原版 SKILL 页的白底：左边一整块（斜切右缘）+ 右下白三角；右缘一道青线。"""
     im = Image.new('RGBA', (W, H)); d = ImageDraw.Draw(im)
-    d.polygon([(0, 0), (0.47 * W, 0), (0.43 * W, H), (0, H)], fill=(244, 247, 252, 255))
-    d.line((0.47 * W, 0, 0.43 * W, H), fill=(57, 216, 255), width=5)
-    d.polygon([(W, 0.40 * H), (W, H), (0.80 * W, H)], fill=(244, 247, 252, 255))
-    d.line((W, 0.40 * H, 0.80 * W, H), fill=(57, 216, 255), width=4)
+    # 原版：水是一个尖朝下的 V 形 —— 左边界从左上角斜到底部 0.746 宽处，右边界从那里弯着翻到右边 0.38 高处（用户在原版截图上描的线）
+    d.polygon([(0, 0), (0.055 * W, 0), (0.746 * W, H), (0, H)], fill=(244, 247, 252, 255))
+    d.polygon([(0.746 * W, H), (0.849 * W, 0.765 * H), (0.93 * W, 0.62 * H), (0.986 * W, 0.525 * H), (W, 0.47 * H), (W, H)], fill=(244, 247, 252, 255))
     return im
 
 
@@ -104,7 +103,31 @@ def cards():
     return res
 
 
+def water_light():
+    """原版 Nami（水光）：WaterLight_a / b 各 30 帧单帧网格，SKILL 页参数 —— A 偏移 (200,-200) 缩放 (0.8,0.7) 色 (165,255,255,80)，
+    B 偏移 (0,-50) 缩放 (1,1) 色 (46,243,255,51)，都是加亮叠加；每帧停 NamiOneFrame = 5 个 30fps 帧；轻微高斯模糊（VeryWeak）。
+    网格坐标以屏幕中心为原点、y 向下（原版 UE UI 坐标）。"""
+    import json
+    layers = []
+    for ab, ofs, sc, col in (('a', (200, -200), (0.8, 0.7), (165, 255, 255, 80)), ('b', (0, -50), (1.0, 1.0), (46, 243, 255, 51))):
+        frames = []
+        for i in range(30):
+            d = json.load(open(R + 'pages/uim/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_%s_%02d.json' % (ab, i)))
+            d = d[0] if isinstance(d, list) else d
+            u = d['Properties']['UimData']; v = u['p2DGeomVertex']; ix = u['Indices']
+            im = Image.new('L', (W, H), 0); dr = ImageDraw.Draw(im)
+            P = [(W / 2 + p['x'] * sc[0] + ofs[0], H / 2 + p['y'] * sc[1] + ofs[1]) for p in v]
+            for t in range(0, len(ix) - 2, 3):
+                dr.polygon([P[ix[t]], P[ix[t + 1]], P[ix[t + 2]]], fill=255)
+            frames.append(np.asarray(im.filter(ImageFilter.GaussianBlur(2.5))).astype(np.float32) / 255 * (col[3] / 255))
+        layers.append((frames, np.array(col[:3]) / 255))
+    return layers
+
+
 SIRO, HEAD, CARDS = layer_siro(), layer_head(), cards()
+NAMI = water_light()
+_tb = Image.open(S + '/../images/296.webp').convert('RGBA').resize((W, 1089)).crop((0, 31, W, 119))
+TOPBAR = Image.new('RGBA', (W, H)); TOPBAR.alpha_composite(_tb, (0, 0))
 YY, XX = np.ogrid[0:H, 0:W]
 T_PAGE = 0.10
 N = int(3.0 * FPS)
@@ -117,13 +140,31 @@ for n in ONLY:
     if tp > 0:
         p = prog('siro', tp)
         lay = SIRO if p >= 1 else Image.fromarray((np.asarray(SIRO).astype(float) * np.array([1, 1, 1, min(1, p * 1.6)])).astype(np.uint8))
-        pil.alpha_composite(lay, (int(-100 * (1 - p)), 0)) if p < 1 else pil.alpha_composite(lay)
-        c, a = hero(tp)
+        SIRO_NOW = Image.new('RGBA', (W, H))
+        SIRO_NOW.alpha_composite(lay, (int(-100 * (1 - p)), 0)) if p < 1 else SIRO_NOW.alpha_composite(lay)
+        c, a, sil = hero(tp)
         sp = prog('sil', tp)
-        c, a = shift(c, a, HERO_DX + SIL_TO[0] * sp, -120 + SIL_TO[1] * sp)   # 起点上移 120，落位后（+170）脸在画面下部露出（对照参考视频）
-        arr = np.asarray(pil).astype(float) / 255
-        arr[..., :3] = arr[..., :3] * (1 - a[..., None]) + c * a[..., None]
-        pil = Image.fromarray((arr * 255).clip(0, 255).astype(np.uint8))
+        dx, dy = HERO_DX + SIL_TO[0] * sp, -120 + SIL_TO[1] * sp     # 起点上移 120，落位后（+170）脸在画面下部露出（对照参考视频）
+        c, a = shift(c, a, dx, dy)
+        _, sil = shift(np.zeros((H, W, 3)), sil, dx, dy)
+        # 白底在人物剪影处挖空（同 COMMU 的 HeroCut）：人物透明的地方透出的是水，不是白底
+        base = np.asarray(Image.fromarray((img * 255).clip(0, 255).astype(np.uint8))).astype(float) / 255
+        wl = np.asarray(SIRO_NOW).astype(float) / 255
+        wa = wl[..., 3:4] * (1 - sil[..., None])
+        out_rgb = base * (1 - wa) + wl[..., :3] * wa
+        # 人物投在白底上的灰影：剪影错开 (24, 10) 再羽化（同 COMMU）
+        _, sh = shift(np.zeros((H, W, 3)), sil, SHADOW[2][0], SHADOW[2][1])
+        sh = np.asarray(Image.fromarray((sh * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(14))).astype(float) / 255
+        sa = (sh * (1 - sil))[..., None]
+        out_rgb = out_rgb * (1 - sa * SHADOW[1] * wa) + SHADOW[0] * (sa * SHADOW[1] * wa)
+        # 人物透明的地方（外套 / 头发暗部）直接透出水，不压暗、不填色（用户：和入水那段一样）；水上不投影，只有白底上有灰影
+        out_rgb = out_rgb * (1 - a[..., None]) + c * a[..., None]
+        # 水光加亮叠在人物和背景上（UI 之下）：人物和水融在一起，不显得是贴上去的 3D 模型；人物身上减半，保住外套的深色
+        fi = int(tp / TICK / 5) % 30
+        on_hero = 1.0
+        for frames, col in NAMI:
+            out_rgb = np.clip(out_rgb + frames[fi][..., None] * col * on_hero, 0, 1)
+        pil = Image.fromarray((np.dstack([out_rgb, np.ones((H, W, 1))]) * 255).clip(0, 255).astype(np.uint8))
         p = prog('title', tp)
         if p > 0:
             hl = HEAD if p >= 1 else Image.fromarray((np.asarray(HEAD).astype(float) * np.array([1, 1, 1, min(1, p * 1.6)])).astype(np.uint8))
@@ -137,6 +178,7 @@ for n in ONLY:
             y = 340 + row * 252
             cc = cd if q >= 1 else Image.fromarray((np.asarray(cd).astype(float) * np.array([1, 1, 1, min(1, q * 1.6)])).astype(np.uint8))
             pil.alpha_composite(cc, (x, y))
+    pil.alpha_composite(TOPBAR)                     # 游戏里顶栏（血量 / 金币 / 地图）一直盖在牌堆界面上面
     page = np.asarray(pil.convert('RGB')).astype(float) / 255
     # 切入：圆孔从消耗堆按钮（右下偏上，Iris 0.96, 0.82）张开，0.45s EaseOutExpo
     r = out_expo(min(t / 0.45, 1)) * 2.3

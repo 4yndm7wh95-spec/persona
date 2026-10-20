@@ -13,6 +13,7 @@ render_mode unshaded, cull_disabled;
 uniform sampler2D tex : source_color, filter_linear;
 uniform vec3 c0 = vec3(0.03, 0.08, 0.28); uniform vec3 c1 = vec3(0.25, 0.62, 0.92); uniform vec3 c2 = vec3(0.80, 0.95, 1.0); uniform vec3 c3 = vec3(1.0);
 uniform vec3 shade = vec3(0.55, 0.85, 1.0);
+uniform vec3 light_dir = vec3(-0.4, 0.6, 0.7);   // 按页面换（原版 DT_CampParamCommon.LightVecOfs*）
 uniform bool mask_pass = false;
 varying vec3 wn;
 void vertex() { wn = (MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz; }
@@ -28,7 +29,7 @@ void fragment() {
 	vec3 dark_base = OUTPUT_IS_SRGB ? vec3(0.065, 0.075, 0.090) : hero_linear(vec3(0.065, 0.075, 0.090));
 	c = mix(max(t.rgb, dark_base), c, ink);
 	float side = FRONT_FACING ? 1.0 : -1.0;
-	float nl = dot(normalize(wn) * side, normalize(vec3(-0.4, 0.6, 0.7)));
+	float nl = dot(normalize(wn) * side, normalize(light_dir));
 	float lit = smoothstep(-0.2 - 0.1, -0.2 + 0.1, nl);
 	c *= mix(shade, vec3(1.0), lit);
 	c = mix(c, vec3(0.0, 1.0, 0.0), 0.5 * (1.0 - lit) * ink);   // 亮色材质的阴影透水；深色笔画保持不透明
@@ -45,7 +46,16 @@ render_mode unshaded, cull_disabled;
 uniform vec3 col = vec3(1.0);
 uniform bool water = false;
 uniform bool mask_pass = false;
-void fragment() { ALBEDO = mask_pass ? vec3(water ? 1.0 : 0.0) : col; }
+uniform float toon = 0.0;                       // >0：平涂色再分亮 / 暗两层（召唤器：原版是深灰 + 上沿一道浅灰）
+uniform vec3 light_dir = vec3(-0.4, 0.6, 0.7);
+varying vec3 wn;
+void vertex() { wn = (MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz; }
+void fragment() {
+	float side = FRONT_FACING ? 1.0 : -1.0;
+	float lit = smoothstep(-0.05, 0.05, dot(normalize(wn) * side, normalize(light_dir)));
+	vec3 c = col * mix(1.0 - toon, 1.0 + toon * 0.35, lit);
+	ALBEDO = mask_pass ? vec3(water ? 1.0 : 0.0) : c;
+}
 """
 const OUTLINE = """
 shader_type spatial;
@@ -81,11 +91,17 @@ func sm(code):
 
 func make_mat(n):
 	if FILLS.has(n):
-		var m = sm(FLAT); m.set_shader_parameter("col", Color(FILLS[n])); return m
+		var m = sm(FLAT); m.set_shader_parameter("col", Color(FILLS[n]))
+		if n == "MI_PC0051_C002_03_CaFiOp" and cfg.has("gun"):   # 召唤器：颜色 + 两层明暗
+			m.set_shader_parameter("col", Color(cfg["gun"][0])); m.set_shader_parameter("toon", cfg["gun"][1])
+		if cfg.has("light"): m.set_shader_parameter("light_dir", Vector3(cfg["light"][0], cfg["light"][1], cfg["light"][2]))
+		return m
 	if n.ends_with("CaRtOp"):
 		var m = sm(FLAT); m.set_shader_parameter("col", Color(0, 1, 0)); m.set_shader_parameter("water", true); m.set_meta("no_outline", true); return m
 	if TEXMAP.has(n):
-		var m = sm(RAMP); m.set_shader_parameter("tex", ImageTexture.create_from_image(Image.load_from_file(cfg["textures_dir"] + "/" + TEXMAP[n]))); return m
+		var m = sm(RAMP); m.set_shader_parameter("tex", ImageTexture.create_from_image(Image.load_from_file(cfg["textures_dir"] + "/" + TEXMAP[n])))
+		if cfg.has("light"): m.set_shader_parameter("light_dir", Vector3(cfg["light"][0], cfg["light"][1], cfg["light"][2]))
+		return m
 	if n == "MI_PC0051_F000_00_CaEyOp":
 		var m = StandardMaterial3D.new(); m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 		m.albedo_texture = ImageTexture.create_from_image(Image.load_from_file(cfg["textures_dir"] + "/T_PC0051_E000_00_Col.png")); m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
