@@ -1,0 +1,34 @@
+[
+  {
+    "Type": "Texture2D",
+    "Name": "T_UI_Camp_12_texture",
+    "Flags": "RF_Public | RF_Standalone | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Texture2D'",
+    "Package": "/Game/L10N/zh-Hant/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_12_texture",
+    "Properties": {
+      "ImportedSize": {
+        "X": 2048,
+        "Y": 1024
+      },
+      "CompressionSettings": "TC_BC7"
+    },
+    "SizeX": 2048,
+    "SizeY": 1024,
+    "PackedData": 1,
+    "PixelFormat": "PF_BC7",
+    "FirstMipToSerialize": 0,
+    "Mips": [
+      {
+        "BulkData": {
+          "BulkDataFlags": "BULKDATA_SingleUse | BULKDATA_ForceInlinePayload",
+          "ElementCount": 2097152,
+          "SizeOnDisk": 2097152,
+          "OffsetInFile": "0x20077E"
+        },
+        "SizeX": 2048,
+        "SizeY": 1024,
+        "SizeZ": 1
+      }
+    ]
+  }
+]

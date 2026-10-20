@@ -1,0 +1,438 @@
+[
+  [
+    "P3R/Content/Astrea/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/L10N/zh-Hans/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_00_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/L10N/zh-Hans/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_01_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/L10N/zh-Hans/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_02_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/L10N/zh-Hans/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_03_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/L10N/zh-Hans/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_04_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/L10N/zh-Hans/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_05_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/L10N/zh-Hans/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_06_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/L10N/zh-Hans/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_07_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/L10N/zh-Hans/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_08_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/L10N/zh-Hans/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_09_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/L10N/zh-Hans/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_10_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/L10N/zh-Hans/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_11_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/L10N/zh-Hans/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_12_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/L10N/zh-Hans/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_13_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/L10N/zh-Hans/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_14_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/L10N/zh-Hans/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_15_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/L10N/zh-Hans/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_Theurgia_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Material/MM_UI_AllMask.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Material/MM_UI_Camp_Wave.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Material/MM_UI_OneMask.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp_Theurgia.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_00_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_01_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_02_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_03_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_04_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_05_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_06_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_07_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_08_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_09_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_10_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_11_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_12_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_13_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_14_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_15_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_Caustics_00.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Texture/T_UI_Camp_Theurgia_texture.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Cursor_In_Bounce.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Cursor_On.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_In.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Loop_L.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_00.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_01.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_02.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_03.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_04.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_05.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_06.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_07.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_08.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_09.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_10.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_11.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_12.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_13.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_14.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_15.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_16.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_17.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_18.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_19.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_20.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_21.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_22.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_23.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_24.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_25.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_26.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_27.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_28.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_a_29.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_00.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_01.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_02.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_03.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_04.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_05.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_06.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_07.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_08.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_09.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_10.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_11.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_12.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_13.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_14.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_15.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_16.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_17.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_18.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_19.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_20.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_21.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_22.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_23.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_24.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_25.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_26.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_27.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_28.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Top_WaterLight_b_29.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Root/Uim/UIM_UI_Camp_Txt_Cursor_On.uasset",
+    "index.csv repo_exported=yes"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_Gun_L_In.uasset",
+    "existing Skill Gun"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_Gun_Loop.uasset",
+    "existing Skill Gun"
+  ],
+  [
+    "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_Gun_S_In.uasset",
+    "existing Skill Gun"
+  ]
+]

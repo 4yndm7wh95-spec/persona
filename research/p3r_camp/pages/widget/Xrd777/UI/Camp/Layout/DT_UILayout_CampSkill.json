@@ -1,0 +1,83 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_CampSkill",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/Xrd777/UI/Camp/Layout/DT_UILayout_CampSkill",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "SKILL_HELP1": {
+        "X": 1536.0,
+        "Y": 932.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SKILL_HELP_TEXT1": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SKILL_HELP2": {
+        "X": 1536.0,
+        "Y": 932.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SKILL_HELP_TEXT2": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SKILL_HELP3": {
+        "X": 1536.0,
+        "Y": 932.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SKILL_HELP_TEXT3": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SKILL_NAME_TEXTCOL": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SKILL_DETAIL_TEXTCOL": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SKILL_NONE_TEXTCOL": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SKILL_NONE_TEXT_POS": {
+        "X": 0.0,
+        "Y": 74.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SKILL_NONE": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

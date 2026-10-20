@@ -1,0 +1,37 @@
+[
+  {
+    "Type": "Texture2D",
+    "Name": "T_UI_HeroGaussMaskCommuList",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Texture2D'",
+    "Package": "/Game/Xrd777/UI/Camp/Textures/HeroGaussMask/T_UI_HeroGaussMaskCommuList",
+    "Properties": {
+      "ImportedSize": {
+        "X": 1280,
+        "Y": 720
+      },
+      "LightingGuid": "8A4A0491-4147C7A8-B56F8393-FDFB9230",
+      "CompressionSettings": "TC_BC7",
+      "LODGroup": "TEXTUREGROUP_UI",
+      "NeverStream": true
+    },
+    "SizeX": 1280,
+    "SizeY": 720,
+    "PackedData": 1,
+    "PixelFormat": "PF_BC7",
+    "FirstMipToSerialize": 0,
+    "Mips": [
+      {
+        "BulkData": {
+          "BulkDataFlags": "BULKDATA_SingleUse | BULKDATA_ForceInlinePayload",
+          "ElementCount": 921600,
+          "SizeOnDisk": 921600,
+          "OffsetInFile": "0xE1972"
+        },
+        "SizeX": 1280,
+        "SizeY": 720,
+        "SizeZ": 1
+      }
+    ]
+  }
+]

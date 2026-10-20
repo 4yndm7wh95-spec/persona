@@ -1,0 +1,59 @@
+[
+  {
+    "Type": "CurveFloat",
+    "Name": "CRV_UI_IceYScale",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CurveFloat'",
+    "Package": "/Game/Xrd777/UI/PartyPanel/Param/CRV_UI_IceYScale",
+    "Properties": {
+      "FloatCurve": {
+        "Keys": [
+          {
+            "InterpMode": "RCIM_Cubic",
+            "TangentMode": "RCTM_User",
+            "TangentWeightMode": "RCTWM_WeightedNone",
+            "Time": 0.0,
+            "Value": -2.3498956E-08,
+            "ArriveTangent": 0.0,
+            "ArriveTangentWeight": 0.0,
+            "LeaveTangent": 0.0,
+            "LeaveTangentWeight": 0.0
+          },
+          {
+            "InterpMode": "RCIM_Cubic",
+            "TangentMode": "RCTM_User",
+            "TangentWeightMode": "RCTWM_WeightedNone",
+            "Time": 0.5,
+            "Value": 0.99999994,
+            "ArriveTangent": 0.006867385,
+            "ArriveTangentWeight": 0.0,
+            "LeaveTangent": 0.006867385,
+            "LeaveTangentWeight": 0.0
+          },
+          {
+            "InterpMode": "RCIM_Cubic",
+            "TangentMode": "RCTM_User",
+            "TangentWeightMode": "RCTWM_WeightedNone",
+            "Time": 1.0,
+            "Value": -2.0715563E-08,
+            "ArriveTangent": 0.013308896,
+            "ArriveTangentWeight": 0.0,
+            "LeaveTangent": 0.013308896,
+            "LeaveTangentWeight": 0.0
+          },
+          {
+            "InterpMode": "RCIM_Cubic",
+            "TangentMode": "RCTM_User",
+            "TangentWeightMode": "RCTWM_WeightedNone",
+            "Time": 1.5,
+            "Value": 0.9999999,
+            "ArriveTangent": -0.0102135455,
+            "ArriveTangentWeight": 0.0,
+            "LeaveTangent": -0.0102135455,
+            "LeaveTangentWeight": 0.0
+          }
+        ]
+      }
+    }
+  }
+]

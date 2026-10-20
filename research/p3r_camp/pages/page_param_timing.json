@@ -1,0 +1,148 @@
+[
+  {
+    "pak_path": "P3R/Content/Astrea/UI/Camp/Param/DT_CampParamItem.uasset",
+    "raw_rows": {
+      "NewRow": {
+        "ItemInDist": -100.0,
+        "ItemSilhouetteAnimType": "EOneAnimType::CurveUp2",
+        "ItemSilhouetteFrame": 20,
+        "ItemSilhouetteWait": 10,
+        "ItemSilhouetteOriginal": {
+          "X": 0.0,
+          "Y": 0.0
+        },
+        "ItemSilhouetteTarget": {
+          "X": -90.0,
+          "Y": -110.0
+        },
+        "ItemSiroItaAnimType": "EOneAnimType::CurveUp1",
+        "ItemSiroItaFrame": 10,
+        "ItemSiroItaWait": 0,
+        "ItemTitleAnimType": "EOneAnimType::CurveUp2",
+        "ItemTitleFrame": 8,
+        "ItemTitleWait": 0,
+        "ItemListAnimType": "EOneAnimType::CurveUp2",
+        "ItemListFrame": 10,
+        "ItemListWait": 2,
+        "ItemTabAnimType": "EOneAnimType::CurveUp2",
+        "ItemTabFrame": 8,
+        "ItemTabWait": 0
+      }
+    }
+  },
+  {
+    "pak_path": "P3R/Content/Astrea/UI/Camp/Param/DT_CampParamSkill.uasset",
+    "raw_rows": {
+      "NewRow": {
+        "SkillInDist": -100.0,
+        "SkillSilhouetteAnimType": "EOneAnimType::CurveUp1",
+        "SkillSilhouetteFrame": 10,
+        "SkillSilhouetteWait": 23,
+        "SkillSilhouetteOriginal": {
+          "X": 0.0,
+          "Y": 0.0
+        },
+        "SkillSilhouetteTarget": {
+          "X": 10.0,
+          "Y": 170.0
+        },
+        "SkillSiroItaAnimType": "EOneAnimType::CurveUp1",
+        "SkillSiroItaFrame": 10,
+        "SkillSiroItaWait": 0,
+        "SkillTitleAnimType": "EOneAnimType::CurveUp1",
+        "SkillTitleFrame": 10,
+        "SkillTitleWait": 0,
+        "SkillListAnimType": "EOneAnimType::CurveUp1",
+        "SkillListFrame": 10,
+        "SkillListWait": 0,
+        "SkillPartyAnimType": "EOneAnimType::CurveUp3",
+        "SkillPartyFrame": 6,
+        "SkillPartyWait": 0,
+        "SkillPartyFadeFrame": 1,
+        "SkillPartyInterval": 1,
+        "GunRefRotAnimType": "EOneAnimType::EaseInOut",
+        "GunRefInFrame": 8,
+        "GunRefInWait": 8,
+        "GunRefNextFrame": 5,
+        "GunRefPos": {
+          "X": 0.0,
+          "Y": 95.0
+        },
+        "GunRefOffset": 150.0
+      }
+    }
+  },
+  {
+    "pak_path": "P3R/Content/Xrd777/UI/Camp/Param/DT_CampParamItem.uasset",
+    "raw_rows": {
+      "NewRow": {
+        "ItemInDist": -100.0,
+        "ItemSilhouetteAnimType": "EOneAnimType::CurveUp2",
+        "ItemSilhouetteFrame": 20,
+        "ItemSilhouetteWait": 10,
+        "ItemSilhouetteOriginal": {
+          "X": 0.0,
+          "Y": 0.0
+        },
+        "ItemSilhouetteTarget": {
+          "X": -90.0,
+          "Y": -110.0
+        },
+        "ItemSiroItaAnimType": "EOneAnimType::CurveUp1",
+        "ItemSiroItaFrame": 10,
+        "ItemSiroItaWait": 0,
+        "ItemTitleAnimType": "EOneAnimType::CurveUp2",
+        "ItemTitleFrame": 8,
+        "ItemTitleWait": 0,
+        "ItemListAnimType": "EOneAnimType::CurveUp2",
+        "ItemListFrame": 10,
+        "ItemListWait": 2,
+        "ItemTabAnimType": "EOneAnimType::CurveUp2",
+        "ItemTabFrame": 8,
+        "ItemTabWait": 0
+      }
+    }
+  },
+  {
+    "pak_path": "P3R/Content/Xrd777/UI/Camp/Param/DT_CampParamSkill.uasset",
+    "raw_rows": {
+      "NewRow": {
+        "SkillInDist": -100.0,
+        "SkillSilhouetteAnimType": "EOneAnimType::CurveUp1",
+        "SkillSilhouetteFrame": 10,
+        "SkillSilhouetteWait": 23,
+        "SkillSilhouetteOriginal": {
+          "X": 0.0,
+          "Y": 0.0
+        },
+        "SkillSilhouetteTarget": {
+          "X": 10.0,
+          "Y": 170.0
+        },
+        "SkillSiroItaAnimType": "EOneAnimType::CurveUp1",
+        "SkillSiroItaFrame": 10,
+        "SkillSiroItaWait": 0,
+        "SkillTitleAnimType": "EOneAnimType::CurveUp1",
+        "SkillTitleFrame": 10,
+        "SkillTitleWait": 0,
+        "SkillListAnimType": "EOneAnimType::CurveUp1",
+        "SkillListFrame": 10,
+        "SkillListWait": 0,
+        "SkillPartyAnimType": "EOneAnimType::CurveUp3",
+        "SkillPartyFrame": 6,
+        "SkillPartyWait": 0,
+        "SkillPartyFadeFrame": 1,
+        "SkillPartyInterval": 1,
+        "GunRefRotAnimType": "EOneAnimType::EaseInOut",
+        "GunRefInFrame": 8,
+        "GunRefInWait": 8,
+        "GunRefNextFrame": 5,
+        "GunRefPos": {
+          "X": 120.0,
+          "Y": 15.0
+        },
+        "GunRefOffset": 150.0
+      }
+    }
+  }
+]

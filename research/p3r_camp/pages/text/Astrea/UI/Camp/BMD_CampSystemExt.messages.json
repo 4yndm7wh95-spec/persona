@@ -1,0 +1,116 @@
+{
+  "messages": {
+    "SYS_DIFFICULTY_CHECK_AST": "[f 0:5 65278][f 2:1 ]難易度『[f 0:1 2][f 2:4 0][f 0:1 27]』で始めますが\r\nよろしいですか？\n[f 1:4 1][f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_SAFE": "[f 0:5 65278][f 2:1 ]戦闘で全滅しても、無制限にその場で復活できます。\n[f 0:1 43]どの難易度を選んでも、物語の内容は変わりません。\nまた、後から『HEARTLESS』以外の\n難易度に変更することも可能です。[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_EASY": "[f 0:5 65278][f 2:1 ]『NORMAL』に比べ、戦闘が易しくなっています。\n[f 0:1 43]どの難易度を選んでも、物語の内容は変わりません。\nまた、後から『HEARTLESS』以外の\n難易度に変更することも可能です。[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_NORM": "[f 0:5 65278][f 2:1 ]適度な緊張感をもって戦闘を楽しむことができます。\n[f 0:1 43]どの難易度を選んでも、物語の内容は変わりません。\nまた、後から『HEARTLESS』以外の\n難易度に変更することも可能です。[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_HARD": "[f 0:5 65278][f 2:1 ]『NORMAL』に比べ、戦闘の難易度が上がります。\n[f 0:1 43]どの難易度を選んでも、物語の内容は変わりません。\nまた、後から『HEARTLESS』以外の\n難易度に変更することも可能です。[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_HEAR": "[f 0:5 65278][f 2:1 ]『HARD』よりも戦闘が格段に難しくなっています。\n[f 0:1 43]どの難易度を選んでも、物語の内容は変わりません。[f 0:1 27]\nまた、他の難易度への変更は可能ですが、\r\n一度変更したら『HEARTLESS』には戻せません。\r\n[f 1:1 ]",
+    "SYS_INHERITANCE_LOAD_CHE": "[f 0:5 65278][f 2:1 ]このデータを引き継ぎますか？\n[f 1:4 1][f 1:1 ]",
+    "SYS_SAVE_VERSION_ERROR": "[f 0:5 65278][f 2:1 ]ロードしたセーブデータとゲームバージョンが\r\n一致しないため、ゲームを再開できません。\n[f 1:1 ]",
+    "SYS_SAVE_EPISODE_ERROR": "[f 0:5 65278][f 2:1 ]ロードしたセーブデータは選択しているエピソードと\n一致しないため、ゲームを再開できません。\n[f 1:1 ]",
+    "SYS_VELVETROOM_INFO_INHE": "[f 0:5 65278][f 2:1 ]全書引出し画面で、あなたの物語から引き継いだ\nペルソナ全書に切り替えて、\r\nペルソナを引き出すことができるようになりました。\n[f 1:1 ]\n[page]\n[f 0:5 65278][f 2:1 ][f 1:3 118]を押すことであなたの物語の\r\nペルソナ全書に切り替えることができます。\n[f 1:1 ]\n[page]\n[f 0:5 65278][f 2:1 ]引き継いだ全書からペルソナを引き出す際には、\n通常よりも高い費用が必要となり、さらにペルソナと\n同等以上のレベルが必要です。\n[f 1:1 ]",
+    "MSG_FLORIST_CHECK": "[f 0:5 65278][f 2:1 ][f 5:21 1,101]こちらでよろしいですか？\n[f 1:1 ]",
+    "SEL_FLORIST_CHECK": "[f 0:5 65278][f 2:1 ]お願いする\r\n[page]\n[f 0:5 65278][f 2:1 ]やめておく\r",
+    "SYS_CONF_DIFF_CHECK_ASTR": "[f 0:5 65278][f 2:1 ]最高難易度から変更すると、\r\n元の難易度に戻すことはできませんが\r\nよろしいですか？\n[f 1:4 1][f 1:1 ]"
+  },
+  "raw_dialogs": {
+    "SYS_DIFFICULTY_CHECK_AST": {
+      "kind": 0,
+      "page_offsets": [
+        156
+      ],
+      "raw_text_hex": "fef205fffffef141e99ba3e69893e5baa6e3808efef2010301fef2440101fef2011c01e3808fe381a7e5a78be38281e381bee38199e3818c0d0ae38288e3828de38197e38184e381a7e38199e3818befbc9f0afef2240201fef12100"
+    },
+    "SYS_DIFFICULTY_INFO_SAFE": {
+      "kind": 0,
+      "page_offsets": [
+        284
+      ],
+      "raw_text_hex": "fef205fffffef141e688a6e99798e381a7e585a8e6bb85e38197e381a6e38282e38081e784a1e588b6e99990e381abe3819de381aee5a0b4e381a7e5bea9e6b4bbe381a7e3818de381bee38199e380820afef2012c01e381a9e381aee99ba3e69893e5baa6e38292e981b8e38293e381a7e38282e38081e789a9e8aa9ee381aee58685e5aeb9e381afe5a489e3828fe3828ae381bee3819be38293e380820ae381bee3819fe38081e5be8ce3818be38289e3808e48454152544c455353e3808fe4bba5e5a496e381ae0ae99ba3e69893e5baa6e381abe5a489e69bb4e38199e3828be38193e381a8e38282e58fafe883bde381a7e38199e38082fef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_EASY": {
+      "kind": 0,
+      "page_offsets": [
+        580
+      ],
+      "raw_text_hex": "fef205fffffef141e3808e4e4f524d414ce3808fe381abe6af94e381b9e38081e688a6e99798e3818ce69893e38197e3818fe381aae381a3e381a6e38184e381bee38199e380820afef2012c01e381a9e381aee99ba3e69893e5baa6e38292e981b8e38293e381a7e38282e38081e789a9e8aa9ee381aee58685e5aeb9e381afe5a489e3828fe3828ae381bee3819be38293e380820ae381bee3819fe38081e5be8ce3818be38289e3808e48454152544c455353e3808fe4bba5e5a496e381ae0ae99ba3e69893e5baa6e381abe5a489e69bb4e38199e3828be38193e381a8e38282e58fafe883bde381a7e38199e38082fef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_NORM": {
+      "kind": 0,
+      "page_offsets": [
+        868
+      ],
+      "raw_text_hex": "fef205fffffef141e981a9e5baa6e381aae7b78ae5bcb5e6849fe38292e38282e381a3e381a6e688a6e99798e38292e6a5bde38197e38280e38193e381a8e3818ce381a7e3818de381bee38199e380820afef2012c01e381a9e381aee99ba3e69893e5baa6e38292e981b8e38293e381a7e38282e38081e789a9e8aa9ee381aee58685e5aeb9e381afe5a489e3828fe3828ae381bee3819be38293e380820ae381bee3819fe38081e5be8ce3818be38289e3808e48454152544c455353e3808fe4bba5e5a496e381ae0ae99ba3e69893e5baa6e381abe5a489e69bb4e38199e3828be38193e381a8e38282e58fafe883bde381a7e38199e38082fef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_HARD": {
+      "kind": 0,
+      "page_offsets": [
+        1164
+      ],
+      "raw_text_hex": "fef205fffffef141e3808e4e4f524d414ce3808fe381abe6af94e381b9e38081e688a6e99798e381aee99ba3e69893e5baa6e3818ce4b88ae3818ce3828ae381bee38199e380820afef2012c01e381a9e381aee99ba3e69893e5baa6e38292e981b8e38293e381a7e38282e38081e789a9e8aa9ee381aee58685e5aeb9e381afe5a489e3828fe3828ae381bee3819be38293e380820ae381bee3819fe38081e5be8ce3818be38289e3808e48454152544c455353e3808fe4bba5e5a496e381ae0ae99ba3e69893e5baa6e381abe5a489e69bb4e38199e3828be38193e381a8e38282e58fafe883bde381a7e38199e38082fef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_HEAR": {
+      "kind": 0,
+      "page_offsets": [
+        1452
+      ],
+      "raw_text_hex": "fef205fffffef141e3808e48415244e3808fe38288e3828ae38282e688a6e99798e3818ce6a0bce6aeb5e381abe99ba3e38197e3818fe381aae381a3e381a6e38184e381bee38199e380820afef2012c01e381a9e381aee99ba3e69893e5baa6e38292e981b8e38293e381a7e38282e38081e789a9e8aa9ee381aee58685e5aeb9e381afe5a489e3828fe3828ae381bee3819be38293e38082fef2011c010ae381bee3819fe38081e4bb96e381aee99ba3e69893e5baa6e381b8e381aee5a489e69bb4e381afe58fafe883bde381a7e38199e3818ce380810d0ae4b880e5baa6e5a489e69bb4e38197e3819fe38289e3808e48454152544c455353e3808fe381abe381afe688bbe3819be381bee3819be38293e380820d0afef12100"
+    },
+    "SYS_INHERITANCE_LOAD_CHE": {
+      "kind": 0,
+      "page_offsets": [
+        1772
+      ],
+      "raw_text_hex": "fef205fffffef141e38193e381aee38387e383bce382bfe38292e5bc95e3818de7b699e3818ee381bee38199e3818befbc9f0afef2240201fef12100"
+    },
+    "SYS_SAVE_VERSION_ERROR": {
+      "kind": 0,
+      "page_offsets": [
+        1868
+      ],
+      "raw_text_hex": "fef205fffffef141e383ade383bce38389e38197e3819fe382bbe383bce38396e38387e383bce382bfe381a8e382b2e383bce383a0e38390e383bce382b8e383a7e383b3e3818c0d0ae4b880e887b4e38197e381aae38184e3819fe38281e38081e382b2e383bce383a0e38292e5868de9968be381a7e3818de381bee3819be38293e380820afef12100"
+    },
+    "SYS_SAVE_EPISODE_ERROR": {
+      "kind": 0,
+      "page_offsets": [
+        2044
+      ],
+      "raw_text_hex": "fef205fffffef141e383ade383bce38389e38197e3819fe382bbe383bce38396e38387e383bce382bfe381afe981b8e68a9ee38197e381a6e38184e3828be382a8e38394e382bde383bce38389e381a80ae4b880e887b4e38197e381aae38184e3819fe38281e38081e382b2e383bce383a0e38292e5868de9968be381a7e3818de381bee3819be38293e380820afef12100"
+    },
+    "SYS_VELVETROOM_INFO_INHE": {
+      "kind": 0,
+      "page_offsets": [
+        2236,
+        2428,
+        2546
+      ],
+      "raw_text_hex": "fef205fffffef141e585a8e69bb8e5bc95e587bae38197e794bbe99da2e381a7e38081e38182e381aae3819fe381aee789a9e8aa9ee3818be38289e5bc95e3818de7b699e38184e381a00ae3839ae383abe382bde3838ae585a8e69bb8e381abe58887e3828ae69bbfe38188e381a6e380810d0ae3839ae383abe382bde3838ae38292e5bc95e3818de587bae38199e38193e381a8e3818ce381a7e3818de3828be38288e38186e381abe381aae3828ae381bee38197e3819fe380820afef121fef205fffffef141fef2237701e38292e68abce38199e38193e381a8e381a7e38182e381aae3819fe381aee789a9e8aa9ee381ae0d0ae3839ae383abe382bde3838ae585a8e69bb8e381abe58887e3828ae69bbfe38188e3828be38193e381a8e3818ce381a7e3818de381bee38199e380820afef121fef205fffffef141e5bc95e3818de7b699e38184e381a0e585a8e69bb8e3818be38289e3839ae383abe382bde3838ae38292e5bc95e3818de587bae38199e99a9be381abe381afe380810ae9809ae5b8b8e38288e3828ae38282e9ab98e38184e8b2bbe794a8e3818ce5bf85e8a681e381a8e381aae3828ae38081e38195e38289e381abe3839ae383abe382bde3838ae381a80ae5908ce7ad89e4bba5e4b88ae381aee383ace38399e383abe3818ce5bf85e8a681e381a7e38199e380820afef12100"
+    },
+    "MSG_FLORIST_CHECK": {
+      "kind": 0,
+      "page_offsets": [
+        2780
+      ],
+      "raw_text_hex": "fef205fffffef141fef3b502016601e38193e381a1e38289e381a7e38288e3828de38197e38184e381a7e38199e3818befbc9f0afef12100"
+    },
+    "SEL_FLORIST_CHECK": {
+      "kind": 1,
+      "page_offsets": [
+        2880,
+        2905
+      ],
+      "raw_text_hex": "fef205fffffef141e3818ae9a198e38184e38199e3828b0d00fef205fffffef141e38284e38281e381a6e3818ae3818f0d0000"
+    },
+    "SYS_CONF_DIFF_CHECK_ASTR": {
+      "kind": 0,
+      "page_offsets": [
+        2968
+      ],
+      "raw_text_hex": "fef205fffffef141e69c80e9ab98e99ba3e69893e5baa6e3818be38289e5a489e69bb4e38199e3828be381a8e380810d0ae58583e381aee99ba3e69893e5baa6e381abe688bbe38199e38193e381a8e381afe381a7e3818de381bee3819be38293e3818c0d0ae38288e3828de38197e38184e381a7e38199e3818befbc9f0afef2240201fef12100"
+    }
+  },
+  "encoding": "UTF-8",
+  "control_codes": "[f table:index arguments]；不删除功能标签",
+  "format": "MSG1 big endian / P3R Reload"
+}

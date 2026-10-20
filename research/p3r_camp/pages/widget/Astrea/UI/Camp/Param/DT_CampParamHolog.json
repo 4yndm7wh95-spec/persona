@@ -1,0 +1,23 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_CampParamHolog",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/Astrea/UI/Camp/Param/DT_CampParamHolog",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'CampParamTableHologRow'",
+        "ObjectPath": "/Script/xrd777"
+      }
+    },
+    "Rows": {
+      "NewRow": {
+        "HologAnimType": "EOneAnimType::CurveUp2",
+        "HologTransFrame": 16,
+        "HologTransWait": 3,
+        "HologColorWait": 800
+      }
+    }
+  }
+]

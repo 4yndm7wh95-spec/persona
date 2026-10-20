@@ -1,0 +1,269 @@
+[
+  {
+    "Type": "Material",
+    "Name": "MM_Btl_PartyPanel_Smoke_Grey",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Material'",
+    "Package": "/Game/Xrd777/UI/PartyPanel/MasterMaterials/MM_Btl_PartyPanel_Smoke_Grey",
+    "Properties": {
+      "EmissiveColor": {
+        "Expression": null,
+        "OutputIndex": 0,
+        "InputName": "None",
+        "Mask": 1,
+        "MaskR": 1,
+        "MaskG": 1,
+        "MaskB": 1,
+        "MaskA": 0,
+        "ExpressionName": "MaterialExpressionVectorParameter_0",
+        "UseConstant": false,
+        "Constant": {
+          "B": 0,
+          "G": 0,
+          "R": 0,
+          "A": 0,
+          "Hex": "000000"
+        }
+      },
+      "MaterialDomain": "MD_UI",
+      "BlendMode": "BLEND_Translucent",
+      "bCanMaskedBeAssumedOpaque": true,
+      "StateId": "300F2E35-490D9628-AD1031AA-1CE00C96",
+      "CachedExpressionData": {
+        "Parameters": {
+          "RuntimeEntries": {
+            "NameHashes": [
+              15522664777351049077
+            ],
+            "ParameterInfos": [
+              {
+                "Name": "Speed",
+                "Association": "GlobalParameter",
+                "Index": -1
+              }
+            ],
+            "ExpressionGuids": [
+              "D4581067-4E55408B-85DD80AC-8B035D38"
+            ]
+          },
+          "RuntimeEntries[1]": {
+            "NameHashes": [
+              13303972603470701770
+            ],
+            "ParameterInfos": [
+              {
+                "Name": "Color_",
+                "Association": "GlobalParameter",
+                "Index": -1
+              }
+            ],
+            "ExpressionGuids": [
+              "A674F424-416F85B5-2E13D2B9-69C77CF4"
+            ]
+          },
+          "RuntimeEntries[2]": {
+            "NameHashes": [
+              8370121904344411576
+            ],
+            "ParameterInfos": [
+              {
+                "Name": "Texture",
+                "Association": "GlobalParameter",
+                "Index": -1
+              }
+            ],
+            "ExpressionGuids": [
+              "E1AC850B-4C0207FD-3719F890-2BF15729"
+            ]
+          },
+          "ScalarValues": [
+            3.0
+          ],
+          "VectorValues": [
+            {
+              "R": 0.7291667,
+              "G": 0.7291667,
+              "B": 0.7291667,
+              "A": 0.0,
+              "Hex": "DEDEDE"
+            }
+          ],
+          "TextureValues": [
+            {
+              "ObjectName": "Texture2D'T_UI_PartyPanel_Smoke_01'",
+              "ObjectPath": "/Game/Xrd777/UI/PartyPanel/Textures/T_UI_PartyPanel_Smoke_01.0"
+            }
+          ]
+        },
+        "ReferencedTextures": [
+          {
+            "ObjectName": "Texture2D'T_UI_PartyPanel_Smoke_01'",
+            "ObjectPath": "/Game/Xrd777/UI/PartyPanel/Textures/T_UI_PartyPanel_Smoke_01.0"
+          },
+          null
+        ],
+        "FunctionInfos": [
+          {
+            "StateId": "5E28F255-4817E6E7-2D027C9A-2F7126C6",
+            "Function": {
+              "ObjectName": "MaterialFunction'VectorToRadialValue'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/VectorToRadialValue.0"
+            }
+          },
+          {
+            "StateId": "AB126D3E-46D0D8F7-A271B2BC-7BC932DA",
+            "Function": {
+              "ObjectName": "MaterialFunction'SmoothStep'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/SmoothStep.0"
+            }
+          },
+          {
+            "StateId": "5E28F255-4817E6E7-2D027C9A-2F7126C6",
+            "Function": {
+              "ObjectName": "MaterialFunction'VectorToRadialValue'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/VectorToRadialValue.0"
+            }
+          },
+          {
+            "StateId": "AB126D3E-46D0D8F7-A271B2BC-7BC932DA",
+            "Function": {
+              "ObjectName": "MaterialFunction'SmoothStep'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/SmoothStep.0"
+            }
+          },
+          {
+            "StateId": "26C105A5-4DBE01D8-26CFF3B1-322B02C2",
+            "Function": {
+              "ObjectName": "MaterialFunction'GeneratedBand'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions03/Procedurals/GeneratedBand.0"
+            }
+          }
+        ],
+        "QualityLevelsUsed": [
+          false,
+          false,
+          false,
+          false
+        ]
+      }
+    },
+    "LoadedMaterialResources": [],
+    "CachedExpressionData": {
+      "Parameters": {
+        "RuntimeEntries": {
+          "NameHashes": [
+            15522664777351049077
+          ],
+          "ParameterInfos": [
+            {
+              "Name": "Speed",
+              "Association": "GlobalParameter",
+              "Index": -1
+            }
+          ],
+          "ExpressionGuids": [
+            "D4581067-4E55408B-85DD80AC-8B035D38"
+          ]
+        },
+        "RuntimeEntries[1]": {
+          "NameHashes": [
+            13303972603470701770
+          ],
+          "ParameterInfos": [
+            {
+              "Name": "Color_",
+              "Association": "GlobalParameter",
+              "Index": -1
+            }
+          ],
+          "ExpressionGuids": [
+            "A674F424-416F85B5-2E13D2B9-69C77CF4"
+          ]
+        },
+        "RuntimeEntries[2]": {
+          "NameHashes": [
+            8370121904344411576
+          ],
+          "ParameterInfos": [
+            {
+              "Name": "Texture",
+              "Association": "GlobalParameter",
+              "Index": -1
+            }
+          ],
+          "ExpressionGuids": [
+            "E1AC850B-4C0207FD-3719F890-2BF15729"
+          ]
+        },
+        "ScalarValues": [
+          3.0
+        ],
+        "VectorValues": [
+          {
+            "R": 0.7291667,
+            "G": 0.7291667,
+            "B": 0.7291667,
+            "A": 0.0,
+            "Hex": "DEDEDE"
+          }
+        ],
+        "TextureValues": [
+          {
+            "ObjectName": "Texture2D'T_UI_PartyPanel_Smoke_01'",
+            "ObjectPath": "/Game/Xrd777/UI/PartyPanel/Textures/T_UI_PartyPanel_Smoke_01.0"
+          }
+        ]
+      },
+      "ReferencedTextures": [
+        {
+          "ObjectName": "Texture2D'T_UI_PartyPanel_Smoke_01'",
+          "ObjectPath": "/Game/Xrd777/UI/PartyPanel/Textures/T_UI_PartyPanel_Smoke_01.0"
+        },
+        null
+      ],
+      "FunctionInfos": [
+        {
+          "StateId": "5E28F255-4817E6E7-2D027C9A-2F7126C6",
+          "Function": {
+            "ObjectName": "MaterialFunction'VectorToRadialValue'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/VectorToRadialValue.0"
+          }
+        },
+        {
+          "StateId": "AB126D3E-46D0D8F7-A271B2BC-7BC932DA",
+          "Function": {
+            "ObjectName": "MaterialFunction'SmoothStep'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/SmoothStep.0"
+          }
+        },
+        {
+          "StateId": "5E28F255-4817E6E7-2D027C9A-2F7126C6",
+          "Function": {
+            "ObjectName": "MaterialFunction'VectorToRadialValue'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/VectorToRadialValue.0"
+          }
+        },
+        {
+          "StateId": "AB126D3E-46D0D8F7-A271B2BC-7BC932DA",
+          "Function": {
+            "ObjectName": "MaterialFunction'SmoothStep'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/SmoothStep.0"
+          }
+        },
+        {
+          "StateId": "26C105A5-4DBE01D8-26CFF3B1-322B02C2",
+          "Function": {
+            "ObjectName": "MaterialFunction'GeneratedBand'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions03/Procedurals/GeneratedBand.0"
+          }
+        }
+      ],
+      "QualityLevelsUsed": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  }
+]

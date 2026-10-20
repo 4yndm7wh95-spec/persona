@@ -1,0 +1,53 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_PersonaStatusText",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/zh-Hant/Xrd777/UI/Camp/Layout/DT_UILayout_PersonaStatusText",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "CHARA_NAME": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_NAME": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SKILL_ITEM_NAME": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SKILL_HELP": {
+        "X": 416.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "PERSONA_HELP": {
+        "X": 679.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "SKILL_CARD_NAME": {
+        "X": 315.0,
+        "Y": 20.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

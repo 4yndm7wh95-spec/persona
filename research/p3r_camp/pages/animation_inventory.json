@@ -1,0 +1,74 @@
+[
+  {
+    "path": "P3R/Content/Astrea/Characters/Player/PC0062/AnmUI/A_PC0062_UIA0003_BASE_CampSkillStart.uasset",
+    "name": "A_PC0062_UIA0003_BASE_CampSkillStart",
+    "frames": 96,
+    "seconds": 3.1666667
+  },
+  {
+    "path": "P3R/Content/Astrea/Characters/Player/PC0062/AnmUI/A_PC0062_UIA0004_BASE_CampSkillLoop.uasset",
+    "name": "A_PC0062_UIA0004_BASE_CampSkillLoop",
+    "frames": 201,
+    "seconds": 6.6666665
+  },
+  {
+    "path": "P3R/Content/Astrea/Characters/Player/PC0062/AnmUI/A_PC0062_UIA0005_BASE_CampItemStart.uasset",
+    "name": "A_PC0062_UIA0005_BASE_CampItemStart",
+    "frames": 101,
+    "seconds": 3.3333333
+  },
+  {
+    "path": "P3R/Content/Astrea/Characters/Player/PC0062/AnmUI/A_PC0062_UIA0006_BASE_CampItemLoop.uasset",
+    "name": "A_PC0062_UIA0006_BASE_CampItemLoop",
+    "frames": 201,
+    "seconds": 6.6666665
+  },
+  {
+    "path": "P3R/Content/Astrea/Characters/Player/PC0062/AnmUI/A_PC0062_UIA0011_BASE_CampQUEST.uasset",
+    "name": "A_PC0062_UIA0011_BASE_CampQUEST",
+    "frames": 21,
+    "seconds": 0.6666667
+  },
+  {
+    "path": "P3R/Content/Astrea/Characters/Player/PC0062/AnmUI/A_PC0062_UIA0012_BASE_CampQUESTLoop.uasset",
+    "name": "A_PC0062_UIA0012_BASE_CampQUESTLoop",
+    "frames": 201,
+    "seconds": 6.6666665
+  },
+  {
+    "path": "P3R/Content/Xrd777/Characters/Player/PC0051/AnmUI/A_PC0051_UIA0003_BASE_CampSkillStart.uasset",
+    "name": "A_PC0051_UIA0003_BASE_CampSkillStart",
+    "frames": 96,
+    "seconds": 3.1666667
+  },
+  {
+    "path": "P3R/Content/Xrd777/Characters/Player/PC0051/AnmUI/A_PC0051_UIA0004_BASE_CampSkillLoop.uasset",
+    "name": "A_PC0051_UIA0004_BASE_CampSkillLoop",
+    "frames": 201,
+    "seconds": 6.6666665
+  },
+  {
+    "path": "P3R/Content/Xrd777/Characters/Player/PC0051/AnmUI/A_PC0051_UIA0005_BASE_CampItemStart.uasset",
+    "name": "A_PC0051_UIA0005_BASE_CampItemStart",
+    "frames": 101,
+    "seconds": 3.3333333
+  },
+  {
+    "path": "P3R/Content/Xrd777/Characters/Player/PC0051/AnmUI/A_PC0051_UIA0006_BASE_CampItemLoop.uasset",
+    "name": "A_PC0051_UIA0006_BASE_CampItemLoop",
+    "frames": 201,
+    "seconds": 6.6666665
+  },
+  {
+    "path": "P3R/Content/Xrd777/Characters/Player/PC0051/AnmUI/A_PC0051_UIA0011_BASE_CampQUEST.uasset",
+    "name": "A_PC0051_UIA0011_BASE_CampQUEST",
+    "frames": 21,
+    "seconds": 0.6666667
+  },
+  {
+    "path": "P3R/Content/Xrd777/Characters/Player/PC0051/AnmUI/A_PC0051_UIA0012_BASE_CampQUESTLoop.uasset",
+    "name": "A_PC0051_UIA0012_BASE_CampQUESTLoop",
+    "frames": 201,
+    "seconds": 6.6666665
+  }
+]

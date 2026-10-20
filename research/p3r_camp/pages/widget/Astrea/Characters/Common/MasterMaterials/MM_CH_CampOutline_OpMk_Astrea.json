@@ -1,0 +1,1988 @@
+[
+  {
+    "Type": "Material",
+    "Name": "MM_CH_CampOutline_OpMk_Astrea",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Material'",
+    "Package": "/Game/Astrea/Characters/Common/MasterMaterials/MM_CH_CampOutline_OpMk_Astrea",
+    "Properties": {
+      "Metallic": {
+        "Expression": null,
+        "OutputIndex": 0,
+        "InputName": "None",
+        "Mask": 0,
+        "MaskR": 0,
+        "MaskG": 0,
+        "MaskB": 0,
+        "MaskA": 0,
+        "ExpressionName": "MaterialExpressionStaticSwitchParameter_1",
+        "UseConstant": false,
+        "Constant": 0.0
+      },
+      "Specular": {
+        "Expression": null,
+        "OutputIndex": 0,
+        "InputName": "None",
+        "Mask": 0,
+        "MaskR": 0,
+        "MaskG": 0,
+        "MaskB": 0,
+        "MaskA": 0,
+        "ExpressionName": "MaterialExpressionConstant_5",
+        "UseConstant": false,
+        "Constant": 0.5
+      },
+      "Normal": {
+        "Expression": null,
+        "OutputIndex": 0,
+        "InputName": "None",
+        "Mask": 0,
+        "MaskR": 0,
+        "MaskG": 0,
+        "MaskB": 0,
+        "MaskA": 0,
+        "ExpressionName": "MaterialExpressionMaterialFunctionCall_1",
+        "UseConstant": false,
+        "Constant": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        }
+      },
+      "EmissiveColor": {
+        "Expression": null,
+        "OutputIndex": 0,
+        "InputName": "None",
+        "Mask": 0,
+        "MaskR": 0,
+        "MaskG": 0,
+        "MaskB": 0,
+        "MaskA": 0,
+        "ExpressionName": "MaterialExpressionMaterialFunctionCall_10",
+        "UseConstant": false,
+        "Constant": {
+          "B": 0,
+          "G": 0,
+          "R": 0,
+          "A": 0,
+          "Hex": "000000"
+        }
+      },
+      "ShadingModel": "MSM_Unlit",
+      "ShadingModels": {
+        "ShadingModelField": 1
+      },
+      "WorldPositionOffset": {
+        "Expression": null,
+        "OutputIndex": 0,
+        "InputName": "None",
+        "Mask": 0,
+        "MaskR": 0,
+        "MaskG": 0,
+        "MaskB": 0,
+        "MaskA": 0,
+        "ExpressionName": "MaterialExpressionLinearInterpolate_2",
+        "UseConstant": false,
+        "Constant": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        }
+      },
+      "PixelDepthOffset": {
+        "Expression": null,
+        "OutputIndex": 0,
+        "InputName": "None",
+        "Mask": 0,
+        "MaskR": 0,
+        "MaskG": 0,
+        "MaskB": 0,
+        "MaskA": 0,
+        "ExpressionName": "MaterialExpressionStaticSwitchParameter_0",
+        "UseConstant": false,
+        "Constant": 0.0
+      },
+      "bEnableSeparateTranslucency": false,
+      "bTangentSpaceNormal": false,
+      "bUsedWithSkeletalMesh": true,
+      "bAutomaticallySetUsageInEditor": false,
+      "StateId": "75B23B45-4F009FEE-DA627584-2B36042D",
+      "CachedExpressionData": {
+        "Parameters": {
+          "RuntimeEntries": {
+            "NameHashes": [
+              78242625341405018,
+              1319512020058900390,
+              2273794347408021388,
+              2596898614516841752,
+              3471491352727848290,
+              3505563132095332060,
+              4272836139060574129,
+              4330403412629873873,
+              4432109565236121776,
+              4436650786465396892,
+              4842968819294215927,
+              5151890100793504486,
+              5167449118480819304,
+              5175945858743525908,
+              5913289803649331027,
+              6046875669983009809,
+              7135121651139985356,
+              7347098278571760703,
+              7361567533545478478,
+              7535609225841625195,
+              8265213331078389513,
+              8294465248869812977,
+              8561158957358853760,
+              9277309947405170033,
+              10212509431096046560,
+              10298772268144688459,
+              10371715421228879687,
+              10415671088499097343,
+              11033200424213612085,
+              11314408466567039558,
+              11539472780320325373,
+              12417276327691514611,
+              12886317007178100646,
+              13319789646747508354,
+              13960570989892026441,
+              14604678772484218681,
+              14929890260018884373,
+              15635029786836361854,
+              15684328969772911168,
+              16156667872727205955,
+              16386882313628687125,
+              16499567728623135162,
+              16814893310464394927,
+              17797452405119948620
+            ],
+            "ParameterInfos": [
+              {
+                "Name": "Min",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Opacity_AnmEx",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Intensity_Flare",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "EndPosition_Para",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Offset_VG",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "AlphaCrunch",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Radius",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "StartPosition_Flare",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "ColorMode_UI",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "X",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Intensity_Para",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "HeightOffset_SpN",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "AngleAligne",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "StartPosition_VG",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Opacity_PG",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "UVScroll_V",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "LayeredColorTexIntensity",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "CenterDepthOffset_SpN",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "EndPosition_VG",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "DistortionNoise_AFE",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Hardness",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "LayeredShadowTexIntensity",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "EndPosition_Flare",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Angle_Flare",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Angle_Para",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "LineWidthViewBias",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Param",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "LineWidthFar",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Max",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "DownwardVectorOffset_SpN",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "UVScroll_U",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "LineWidthLightBias",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "StartPosition_Para",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "ShadowColorDesaturation",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "AnimSpeed_AFE",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "DepthOffset",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "MA_AlphaBlend",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Opacity_Anm",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Opacity",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "LineWidthNear",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Threshold_VG",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "SelfEmissive",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Y",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Intensity_VG",
+                "Association": "GlobalParameter",
+                "Index": -1
+              }
+            ],
+            "ExpressionGuids": [
+              "74A75679-4DD990E2-531C8F83-E6FDA364",
+              "AC331B4B-48E9682D-E1F0AEBE-92FA9B26",
+              "C42375DB-4E7D9494-C6BF07B7-51E33D38",
+              "E5C050B0-40C57EE9-C6FEE0A0-12075E4A",
+              "3D452717-4C6960A6-F032C4A5-B0B93DCF",
+              "0FB07B0B-468DE524-D2BA55A7-AA193A16",
+              "20ECC80F-491892C0-8ACDDBAA-03326481",
+              "AB7CCD03-4724FC05-CCCD6089-51985488",
+              "7CCE48B5-4D23F772-11B695A3-B1C4ED49",
+              "0E79740C-405A7D10-8B362BA8-9B446BA9",
+              "C2495609-473E84CB-2363FD86-9950EE2B",
+              "16B419D4-4230A983-6CA2F5B0-03283F9F",
+              "BCA21650-4BAED32B-2CC7AD86-6D809BE2",
+              "18D86D6D-477F8C1A-EEA21897-FF64A064",
+              "01465CB2-44244492-8BC4D982-D8FF92DC",
+              "BEB1CA7D-4A20D855-A548A297-508F248D",
+              "DF51B5DF-40F24C89-2E5A8EA4-CBF68708",
+              "85587F8A-47A20D1F-F025CEBE-BCFC3CFD",
+              "9C8AEF54-406A4E2D-1A4B0BAA-7A5B4A55",
+              "2E32E69A-4308B6E9-9866CAA4-2F81FD68",
+              "331CE251-4E59F2D6-4DA674B6-FEAFFB71",
+              "31163C13-47862E08-573C79A1-795CBAA6",
+              "6ECD26FD-4F997E4A-4FA63587-18B838DB",
+              "881A2CC3-46F28678-31050993-D06D0517",
+              "1B4D2DE6-438ACCA8-B36074AC-FB63C29A",
+              "D2D0741F-400D6E94-2D7E1DAF-F815A7C0",
+              "275D767A-496BD36F-5BDFF780-7F8DEB75",
+              "04751CB5-4D80690D-2494299D-2ABE67A6",
+              "31AE63AB-48E01A4A-83E2B390-91BFECC5",
+              "5ABA9AB6-4A455B76-DC8B04AC-F1178179",
+              "BAECB740-4474A48B-AA36948B-E574F94B",
+              "BDF55EF9-4B0E177D-3338D3B4-68AABC44",
+              "25FA6D93-43C6FF4E-505A1CBE-B1898184",
+              "67F421F4-4D80E989-F253D28E-66482D22",
+              "2927457C-47639832-694D8F9E-9886E497",
+              "B2946477-44D10589-4AC34A83-E59F40C7",
+              "D431B049-436A4AA3-3F1A7F9F-E8A5A756",
+              "3B729BED-4AE1F767-39368D96-F297834E",
+              "E0C1FC1D-4AAF37E3-67E736B4-8BD060C9",
+              "1A6DFC5F-417B0FD2-1F510B98-2A320288",
+              "89EDC1FA-46235ABB-63763E88-59FD3ABD",
+              "747776C5-43F45AE0-4AF5AB91-074DDED4",
+              "EBF50E00-4644346A-3643879C-3D909F2D",
+              "70B95A1D-4FCC036A-41EF8B8F-45568AB6"
+            ]
+          },
+          "RuntimeEntries[1]": {
+            "NameHashes": [
+              1719140160367506680,
+              4359573834631900570,
+              5570462305925891124,
+              5715783085211599032,
+              6693911901540438480,
+              10371715421228879687,
+              10525737954021470230,
+              11261893466713623255,
+              12737676234730629607,
+              15510085454078952426,
+              16268147394637143951,
+              16688501659084694282
+            ],
+            "ParameterInfos": [
+              {
+                "Name": "DirLightVector",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "ColorB_Flare",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "ColorB_Para",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Param_1",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "StartPositionVec_VG",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Param",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "ColorA_Flare",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "ColorA_Para",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "BadStatusColor",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "FillColor",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "EndPositionVec_VG",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "LineColor",
+                "Association": "GlobalParameter",
+                "Index": -1
+              }
+            ],
+            "ExpressionGuids": [
+              "9B974A5D-45D9B113-4B9CD99A-13E53227",
+              "C0231767-4D1284B7-46772F81-5A7D5AED",
+              "60404399-487BBD12-06C4AF95-D4C2665A",
+              "D2825371-449D71C7-46C8B78F-DFA41E83",
+              "3B0D95A5-4040863E-D2048D8A-510FFE5B",
+              "29D6E720-436A17A9-743CB3B8-7FFBC376",
+              "BC3F91BE-4457EF54-275558BF-8473BFE1",
+              "952030DB-4F0851E7-DBDF2C9A-1C269623",
+              "76F1A392-452103F7-B8BA9397-5B2FDFF2",
+              "815A9AE0-4AE87858-094CB4B4-30DC3455",
+              "F392C195-42220191-5499CEB9-AAEE6C10",
+              "4C7763B0-43AAFA12-CBA1B196-C5495C97"
+            ]
+          },
+          "RuntimeEntries[2]": {
+            "NameHashes": [
+              412283961861090459,
+              519598128377298424,
+              3405934690832585956,
+              8370121904344411576,
+              10336139956058062353,
+              15912615438876472745,
+              18192297863666764829
+            ],
+            "ParameterInfos": [
+              {
+                "Name": "MaskTex_A",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "LayeredShadowTex",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "LayeredColorTex",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "Texture",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "MaskTex_B",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "ColorTex",
+                "Association": "GlobalParameter",
+                "Index": -1
+              },
+              {
+                "Name": "ShadowColorTex",
+                "Association": "GlobalParameter",
+                "Index": -1
+              }
+            ],
+            "ExpressionGuids": [
+              "7B385D9D-49B89EFD-EA3668AA-5355E327",
+              "4A9F7E82-474B3968-34CFF9B4-FCB17265",
+              "75CF2E19-4C71B726-D095429A-C1DE67B1",
+              "3D0BC04D-49207DEE-D0EDCCA4-8F5768B8",
+              "F611D545-43891D28-C058F28C-F4E7A039",
+              "346D3463-42A700D5-4B49DEA9-E4564F50",
+              "73F79F5B-4F612357-FF323794-4EA7B366"
+            ]
+          },
+          "ScalarValues": [
+            0.0,
+            1.0,
+            0.0,
+            0.2,
+            0.0,
+            0.0,
+            340.37216,
+            0.5,
+            0.0,
+            960.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0075,
+            0.3,
+            1.0,
+            0.2,
+            0.0,
+            0.0,
+            0.2,
+            0.5,
+            1.0,
+            1.0,
+            0.75,
+            0.0,
+            0.2,
+            0.5,
+            0.5,
+            1.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            0.05,
+            1.0,
+            0.5,
+            643.36536,
+            0.8
+          ],
+          "VectorValues": [
+            {
+              "R": 0.0,
+              "G": 0.0,
+              "B": 1.0,
+              "A": 1.0,
+              "Hex": "0000FF"
+            },
+            {
+              "R": 0.0,
+              "G": 0.0,
+              "B": 0.0,
+              "A": 1.0,
+              "Hex": "000000"
+            },
+            {
+              "R": 0.0,
+              "G": 0.0,
+              "B": 0.0,
+              "A": 1.0,
+              "Hex": "000000"
+            },
+            {
+              "R": 0.278431,
+              "G": 0.372549,
+              "B": 0.741176,
+              "A": 0.0,
+              "Hex": "90A4E0"
+            },
+            {
+              "R": 0.0,
+              "G": 0.0,
+              "B": 0.0,
+              "A": 0.0,
+              "Hex": "000000"
+            },
+            {
+              "R": 0.443137,
+              "G": 0.247059,
+              "B": 0.552941,
+              "A": 0.0,
+              "Hex": "B288C4"
+            },
+            {
+              "R": 1.0,
+              "G": 1.0,
+              "B": 1.0,
+              "A": 1.0,
+              "Hex": "FFFFFF"
+            },
+            {
+              "R": 1.0,
+              "G": 1.0,
+              "B": 1.0,
+              "A": 1.0,
+              "Hex": "FFFFFF"
+            },
+            {
+              "R": 0.5,
+              "G": 0.5,
+              "B": 0.5,
+              "A": 0.0,
+              "Hex": "BCBCBC"
+            },
+            {
+              "R": 0.0,
+              "G": 0.0,
+              "B": 0.0,
+              "A": 0.0,
+              "Hex": "000000"
+            },
+            {
+              "R": 0.0,
+              "G": 0.0,
+              "B": 0.0,
+              "A": 0.0,
+              "Hex": "000000"
+            },
+            {
+              "R": 0.2,
+              "G": 0.2,
+              "B": 0.2,
+              "A": 1.0,
+              "Hex": "7C7C7C"
+            }
+          ],
+          "TextureValues": [
+            {
+              "ObjectName": "Texture2D'T_CH_DummyMsk_00_Msk'",
+              "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyMsk_00_Msk.0"
+            },
+            {
+              "ObjectName": "Texture2D'T_CH_DummyAlp_01_Alp'",
+              "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyAlp_01_Alp.0"
+            },
+            {
+              "ObjectName": "Texture2D'T_CH_DummyBC7_00_Col'",
+              "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyBC7_00_Col.0"
+            },
+            {
+              "ObjectName": "Texture2D'T_CH_Black_00_Col'",
+              "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_Black_00_Col.0"
+            },
+            {
+              "ObjectName": "Texture2D'T_CH_DummyMsk_00_Msk'",
+              "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyMsk_00_Msk.0"
+            },
+            {
+              "ObjectName": "Texture2D'T_CH_DummyBC7_00_Col'",
+              "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyBC7_00_Col.0"
+            },
+            {
+              "ObjectName": "Texture2D'T_CH_DummyDXT1_00_Col'",
+              "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyDXT1_00_Col.0"
+            }
+          ]
+        },
+        "ReferencedTextures": [
+          {
+            "ObjectName": "Texture2D'BlendFunc_DefBlend'",
+            "ObjectPath": "/Engine/EngineMaterials/BlendFunc_DefBlend.0"
+          },
+          {
+            "ObjectName": "Texture2D'BlendFunc_DefBase'",
+            "ObjectPath": "/Engine/EngineMaterials/BlendFunc_DefBase.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_CH_Noise_01_Alp'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_Noise_01_Alp.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_CH_DummyBC7_00_Col'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyBC7_00_Col.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_CH_DummyDXT1_00_Col'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyDXT1_00_Col.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_CH_DummyAlp_01_Alp'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyAlp_01_Alp.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_CH_DummyMsk_00_Msk'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyMsk_00_Msk.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_CH_Black_00_Col'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_Black_00_Col.0"
+          }
+        ],
+        "FunctionInfos": [
+          {
+            "StateId": "12B6F73F-4D5D4FF9-D2FBF18B-43945D5B",
+            "Function": {
+              "ObjectName": "MaterialFunction'Blend_Overlay'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions03/Blends/Blend_Overlay.0"
+            }
+          },
+          {
+            "StateId": "5B938C50-440B6892-955AD79F-CD1A8337",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat3Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat3Components.0"
+            }
+          },
+          {
+            "StateId": "571ECC1D-4F67416E-839FC8AB-5F026EA8",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_CH_SphereNormal'",
+              "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_SphereNormal.0"
+            }
+          },
+          {
+            "StateId": "1C4084F1-40A77315-4CCD7FA5-EAB70415",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_CH_SelfEmissive'",
+              "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_SelfEmissive.0"
+            }
+          },
+          {
+            "StateId": "50F817DC-4CA6F030-069CCFB9-1A2DDE31",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_CH_DitherTemporalAA'",
+              "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_DitherTemporalAA.0"
+            }
+          },
+          {
+            "StateId": "B3D7FA93-449F8FB5-BF37BE92-528C7249",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_CH_OpacityMask'",
+              "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_OpacityMask.0"
+            }
+          },
+          {
+            "StateId": "E572D701-496E6D38-CC53A5BD-C450B0ED",
+            "Function": {
+              "ObjectName": "MaterialFunction'CustomRotator'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Texturing/CustomRotator.0"
+            }
+          },
+          {
+            "StateId": "AB126D3E-46D0D8F7-A271B2BC-7BC932DA",
+            "Function": {
+              "ObjectName": "MaterialFunction'SmoothStep'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/SmoothStep.0"
+            }
+          },
+          {
+            "StateId": "3579CFD1-422D8732-87E9618E-16283247",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_CH_SSGradation'",
+              "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_SSGradation.0"
+            }
+          },
+          {
+            "StateId": "4265787C-4E17104E-B31A5DBD-BCF47D06",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_CH_Flare'",
+              "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_Flare.0"
+            }
+          },
+          {
+            "StateId": "E10865A2-49C09CE3-24EA34BE-3E46EEF2",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_CH_VerticalGradation'",
+              "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_VerticalGradation.0"
+            }
+          },
+          {
+            "StateId": "DE36398D-4742C47A-21AFADA6-0CA5CB70",
+            "Function": {
+              "ObjectName": "MaterialFunction'FOV'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/FOV.0"
+            }
+          },
+          {
+            "StateId": "E572D701-496E6D38-CC53A5BD-C450B0ED",
+            "Function": {
+              "ObjectName": "MaterialFunction'CustomRotator'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Texturing/CustomRotator.0"
+            }
+          },
+          {
+            "StateId": "AB126D3E-46D0D8F7-A271B2BC-7BC932DA",
+            "Function": {
+              "ObjectName": "MaterialFunction'SmoothStep'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/SmoothStep.0"
+            }
+          },
+          {
+            "StateId": "3579CFD1-422D8732-87E9618E-16283247",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_CH_SSGradation'",
+              "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_SSGradation.0"
+            }
+          },
+          {
+            "StateId": "E5E304F5-402E6FA5-64DCE4B3-78151FE5",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_CH_Para'",
+              "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_Para.0"
+            }
+          },
+          {
+            "StateId": "99C6A720-40B82B22-A95D169E-BF320FD4",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_CH_ArseneFaceEff'",
+              "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_ArseneFaceEff.0"
+            }
+          },
+          {
+            "StateId": "8682309C-4822BA58-8616F0B0-5B41AD19",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_CH_UV'",
+              "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_UV.0"
+            }
+          },
+          {
+            "StateId": "132C5B37-4194E12F-BC5193BE-AC1F39E2",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_CH_BaseParameter'",
+              "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_BaseParameter.0"
+            }
+          },
+          {
+            "StateId": "7A276736-419AE1FA-70F30FA5-D0D97681",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_CH_LightVector'",
+              "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_LightVector.0"
+            }
+          },
+          {
+            "StateId": "084B78F3-4C4C7D55-4B65FE86-BC341535",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_CH_BadStatusColor'",
+              "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_BadStatusColor.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "B2F4A5A7-4EDE33D8-E70A4A83-A28D1503",
+            "Function": {
+              "ObjectName": "MaterialFunction'ScaleUVsByCenter'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Texturing/ScaleUVsByCenter.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "391DDAD7-4E9DCC58-FD37D7B7-2AF07FC2",
+            "Function": {
+              "ObjectName": "MaterialFunction'ScreenResolution'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/ScreenResolution.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "B2F4A5A7-4EDE33D8-E70A4A83-A28D1503",
+            "Function": {
+              "ObjectName": "MaterialFunction'ScaleUVsByCenter'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Texturing/ScaleUVsByCenter.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "391DDAD7-4E9DCC58-FD37D7B7-2AF07FC2",
+            "Function": {
+              "ObjectName": "MaterialFunction'ScreenResolution'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/ScreenResolution.0"
+            }
+          },
+          {
+            "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+            "Function": {
+              "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+            }
+          },
+          {
+            "StateId": "8530673E-4E3F2FF5-ED3C5090-177441DA",
+            "Function": {
+              "ObjectName": "MaterialFunction'ScreenAlignedUVs'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Texturing/ScreenAlignedUVs.0"
+            }
+          },
+          {
+            "StateId": "E572D701-496E6D38-CC53A5BD-C450B0ED",
+            "Function": {
+              "ObjectName": "MaterialFunction'CustomRotator'",
+              "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Texturing/CustomRotator.0"
+            }
+          },
+          {
+            "StateId": "9BF3A59E-45A32D37-792B959D-85BFB54D",
+            "Function": {
+              "ObjectName": "MaterialFunction'MF_CH_CampAdjust_Astrea'",
+              "ObjectPath": "/Game/Astrea/Characters/Common/MasterMaterials/Function/MF_CH_CampAdjust_Astrea.0"
+            }
+          }
+        ],
+        "ParameterCollectionInfos": [
+          {
+            "StateId": "B1ADECAC-40D3063D-B8D75D9B-2FE879F9",
+            "ParameterCollection": {
+              "ObjectName": "MaterialParameterCollection'MPC_LightSource'",
+              "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/MPC_LightSource.0"
+            }
+          },
+          {
+            "StateId": "EF6B0F6F-4C2B25BD-2ECD4691-E57F4536",
+            "ParameterCollection": {
+              "ObjectName": "MaterialParameterCollection'MPC_CampCharaLookAdjust'",
+              "ObjectPath": "/Game/Astrea/Characters/Common/MasterMaterials/MPC_CampCharaLookAdjust.0"
+            }
+          }
+        ],
+        "QualityLevelsUsed": [
+          false,
+          false,
+          false,
+          false
+        ]
+      },
+      "TextureStreamingData": [
+        {
+          "SamplingScale": 1.0,
+          "UVChannelIndex": 0,
+          "TextureName": "T_CH_DummyBC7_00_Col"
+        }
+      ]
+    },
+    "LoadedMaterialResources": [],
+    "CachedExpressionData": {
+      "Parameters": {
+        "RuntimeEntries": {
+          "NameHashes": [
+            78242625341405018,
+            1319512020058900390,
+            2273794347408021388,
+            2596898614516841752,
+            3471491352727848290,
+            3505563132095332060,
+            4272836139060574129,
+            4330403412629873873,
+            4432109565236121776,
+            4436650786465396892,
+            4842968819294215927,
+            5151890100793504486,
+            5167449118480819304,
+            5175945858743525908,
+            5913289803649331027,
+            6046875669983009809,
+            7135121651139985356,
+            7347098278571760703,
+            7361567533545478478,
+            7535609225841625195,
+            8265213331078389513,
+            8294465248869812977,
+            8561158957358853760,
+            9277309947405170033,
+            10212509431096046560,
+            10298772268144688459,
+            10371715421228879687,
+            10415671088499097343,
+            11033200424213612085,
+            11314408466567039558,
+            11539472780320325373,
+            12417276327691514611,
+            12886317007178100646,
+            13319789646747508354,
+            13960570989892026441,
+            14604678772484218681,
+            14929890260018884373,
+            15635029786836361854,
+            15684328969772911168,
+            16156667872727205955,
+            16386882313628687125,
+            16499567728623135162,
+            16814893310464394927,
+            17797452405119948620
+          ],
+          "ParameterInfos": [
+            {
+              "Name": "Min",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Opacity_AnmEx",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Intensity_Flare",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "EndPosition_Para",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Offset_VG",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "AlphaCrunch",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Radius",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "StartPosition_Flare",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "ColorMode_UI",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "X",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Intensity_Para",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "HeightOffset_SpN",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "AngleAligne",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "StartPosition_VG",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Opacity_PG",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "UVScroll_V",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "LayeredColorTexIntensity",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "CenterDepthOffset_SpN",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "EndPosition_VG",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "DistortionNoise_AFE",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Hardness",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "LayeredShadowTexIntensity",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "EndPosition_Flare",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Angle_Flare",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Angle_Para",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "LineWidthViewBias",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Param",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "LineWidthFar",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Max",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "DownwardVectorOffset_SpN",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "UVScroll_U",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "LineWidthLightBias",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "StartPosition_Para",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "ShadowColorDesaturation",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "AnimSpeed_AFE",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "DepthOffset",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "MA_AlphaBlend",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Opacity_Anm",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Opacity",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "LineWidthNear",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Threshold_VG",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "SelfEmissive",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Y",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Intensity_VG",
+              "Association": "GlobalParameter",
+              "Index": -1
+            }
+          ],
+          "ExpressionGuids": [
+            "74A75679-4DD990E2-531C8F83-E6FDA364",
+            "AC331B4B-48E9682D-E1F0AEBE-92FA9B26",
+            "C42375DB-4E7D9494-C6BF07B7-51E33D38",
+            "E5C050B0-40C57EE9-C6FEE0A0-12075E4A",
+            "3D452717-4C6960A6-F032C4A5-B0B93DCF",
+            "0FB07B0B-468DE524-D2BA55A7-AA193A16",
+            "20ECC80F-491892C0-8ACDDBAA-03326481",
+            "AB7CCD03-4724FC05-CCCD6089-51985488",
+            "7CCE48B5-4D23F772-11B695A3-B1C4ED49",
+            "0E79740C-405A7D10-8B362BA8-9B446BA9",
+            "C2495609-473E84CB-2363FD86-9950EE2B",
+            "16B419D4-4230A983-6CA2F5B0-03283F9F",
+            "BCA21650-4BAED32B-2CC7AD86-6D809BE2",
+            "18D86D6D-477F8C1A-EEA21897-FF64A064",
+            "01465CB2-44244492-8BC4D982-D8FF92DC",
+            "BEB1CA7D-4A20D855-A548A297-508F248D",
+            "DF51B5DF-40F24C89-2E5A8EA4-CBF68708",
+            "85587F8A-47A20D1F-F025CEBE-BCFC3CFD",
+            "9C8AEF54-406A4E2D-1A4B0BAA-7A5B4A55",
+            "2E32E69A-4308B6E9-9866CAA4-2F81FD68",
+            "331CE251-4E59F2D6-4DA674B6-FEAFFB71",
+            "31163C13-47862E08-573C79A1-795CBAA6",
+            "6ECD26FD-4F997E4A-4FA63587-18B838DB",
+            "881A2CC3-46F28678-31050993-D06D0517",
+            "1B4D2DE6-438ACCA8-B36074AC-FB63C29A",
+            "D2D0741F-400D6E94-2D7E1DAF-F815A7C0",
+            "275D767A-496BD36F-5BDFF780-7F8DEB75",
+            "04751CB5-4D80690D-2494299D-2ABE67A6",
+            "31AE63AB-48E01A4A-83E2B390-91BFECC5",
+            "5ABA9AB6-4A455B76-DC8B04AC-F1178179",
+            "BAECB740-4474A48B-AA36948B-E574F94B",
+            "BDF55EF9-4B0E177D-3338D3B4-68AABC44",
+            "25FA6D93-43C6FF4E-505A1CBE-B1898184",
+            "67F421F4-4D80E989-F253D28E-66482D22",
+            "2927457C-47639832-694D8F9E-9886E497",
+            "B2946477-44D10589-4AC34A83-E59F40C7",
+            "D431B049-436A4AA3-3F1A7F9F-E8A5A756",
+            "3B729BED-4AE1F767-39368D96-F297834E",
+            "E0C1FC1D-4AAF37E3-67E736B4-8BD060C9",
+            "1A6DFC5F-417B0FD2-1F510B98-2A320288",
+            "89EDC1FA-46235ABB-63763E88-59FD3ABD",
+            "747776C5-43F45AE0-4AF5AB91-074DDED4",
+            "EBF50E00-4644346A-3643879C-3D909F2D",
+            "70B95A1D-4FCC036A-41EF8B8F-45568AB6"
+          ]
+        },
+        "RuntimeEntries[1]": {
+          "NameHashes": [
+            1719140160367506680,
+            4359573834631900570,
+            5570462305925891124,
+            5715783085211599032,
+            6693911901540438480,
+            10371715421228879687,
+            10525737954021470230,
+            11261893466713623255,
+            12737676234730629607,
+            15510085454078952426,
+            16268147394637143951,
+            16688501659084694282
+          ],
+          "ParameterInfos": [
+            {
+              "Name": "DirLightVector",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "ColorB_Flare",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "ColorB_Para",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Param_1",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "StartPositionVec_VG",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Param",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "ColorA_Flare",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "ColorA_Para",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "BadStatusColor",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "FillColor",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "EndPositionVec_VG",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "LineColor",
+              "Association": "GlobalParameter",
+              "Index": -1
+            }
+          ],
+          "ExpressionGuids": [
+            "9B974A5D-45D9B113-4B9CD99A-13E53227",
+            "C0231767-4D1284B7-46772F81-5A7D5AED",
+            "60404399-487BBD12-06C4AF95-D4C2665A",
+            "D2825371-449D71C7-46C8B78F-DFA41E83",
+            "3B0D95A5-4040863E-D2048D8A-510FFE5B",
+            "29D6E720-436A17A9-743CB3B8-7FFBC376",
+            "BC3F91BE-4457EF54-275558BF-8473BFE1",
+            "952030DB-4F0851E7-DBDF2C9A-1C269623",
+            "76F1A392-452103F7-B8BA9397-5B2FDFF2",
+            "815A9AE0-4AE87858-094CB4B4-30DC3455",
+            "F392C195-42220191-5499CEB9-AAEE6C10",
+            "4C7763B0-43AAFA12-CBA1B196-C5495C97"
+          ]
+        },
+        "RuntimeEntries[2]": {
+          "NameHashes": [
+            412283961861090459,
+            519598128377298424,
+            3405934690832585956,
+            8370121904344411576,
+            10336139956058062353,
+            15912615438876472745,
+            18192297863666764829
+          ],
+          "ParameterInfos": [
+            {
+              "Name": "MaskTex_A",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "LayeredShadowTex",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "LayeredColorTex",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "Texture",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "MaskTex_B",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "ColorTex",
+              "Association": "GlobalParameter",
+              "Index": -1
+            },
+            {
+              "Name": "ShadowColorTex",
+              "Association": "GlobalParameter",
+              "Index": -1
+            }
+          ],
+          "ExpressionGuids": [
+            "7B385D9D-49B89EFD-EA3668AA-5355E327",
+            "4A9F7E82-474B3968-34CFF9B4-FCB17265",
+            "75CF2E19-4C71B726-D095429A-C1DE67B1",
+            "3D0BC04D-49207DEE-D0EDCCA4-8F5768B8",
+            "F611D545-43891D28-C058F28C-F4E7A039",
+            "346D3463-42A700D5-4B49DEA9-E4564F50",
+            "73F79F5B-4F612357-FF323794-4EA7B366"
+          ]
+        },
+        "ScalarValues": [
+          0.0,
+          1.0,
+          0.0,
+          0.2,
+          0.0,
+          0.0,
+          340.37216,
+          0.5,
+          0.0,
+          960.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0075,
+          0.3,
+          1.0,
+          0.2,
+          0.0,
+          0.0,
+          0.2,
+          0.5,
+          1.0,
+          1.0,
+          0.75,
+          0.0,
+          0.2,
+          0.5,
+          0.5,
+          1.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          0.05,
+          1.0,
+          0.5,
+          643.36536,
+          0.8
+        ],
+        "VectorValues": [
+          {
+            "R": 0.0,
+            "G": 0.0,
+            "B": 1.0,
+            "A": 1.0,
+            "Hex": "0000FF"
+          },
+          {
+            "R": 0.0,
+            "G": 0.0,
+            "B": 0.0,
+            "A": 1.0,
+            "Hex": "000000"
+          },
+          {
+            "R": 0.0,
+            "G": 0.0,
+            "B": 0.0,
+            "A": 1.0,
+            "Hex": "000000"
+          },
+          {
+            "R": 0.278431,
+            "G": 0.372549,
+            "B": 0.741176,
+            "A": 0.0,
+            "Hex": "90A4E0"
+          },
+          {
+            "R": 0.0,
+            "G": 0.0,
+            "B": 0.0,
+            "A": 0.0,
+            "Hex": "000000"
+          },
+          {
+            "R": 0.443137,
+            "G": 0.247059,
+            "B": 0.552941,
+            "A": 0.0,
+            "Hex": "B288C4"
+          },
+          {
+            "R": 1.0,
+            "G": 1.0,
+            "B": 1.0,
+            "A": 1.0,
+            "Hex": "FFFFFF"
+          },
+          {
+            "R": 1.0,
+            "G": 1.0,
+            "B": 1.0,
+            "A": 1.0,
+            "Hex": "FFFFFF"
+          },
+          {
+            "R": 0.5,
+            "G": 0.5,
+            "B": 0.5,
+            "A": 0.0,
+            "Hex": "BCBCBC"
+          },
+          {
+            "R": 0.0,
+            "G": 0.0,
+            "B": 0.0,
+            "A": 0.0,
+            "Hex": "000000"
+          },
+          {
+            "R": 0.0,
+            "G": 0.0,
+            "B": 0.0,
+            "A": 0.0,
+            "Hex": "000000"
+          },
+          {
+            "R": 0.2,
+            "G": 0.2,
+            "B": 0.2,
+            "A": 1.0,
+            "Hex": "7C7C7C"
+          }
+        ],
+        "TextureValues": [
+          {
+            "ObjectName": "Texture2D'T_CH_DummyMsk_00_Msk'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyMsk_00_Msk.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_CH_DummyAlp_01_Alp'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyAlp_01_Alp.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_CH_DummyBC7_00_Col'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyBC7_00_Col.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_CH_Black_00_Col'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_Black_00_Col.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_CH_DummyMsk_00_Msk'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyMsk_00_Msk.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_CH_DummyBC7_00_Col'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyBC7_00_Col.0"
+          },
+          {
+            "ObjectName": "Texture2D'T_CH_DummyDXT1_00_Col'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyDXT1_00_Col.0"
+          }
+        ]
+      },
+      "ReferencedTextures": [
+        {
+          "ObjectName": "Texture2D'BlendFunc_DefBlend'",
+          "ObjectPath": "/Engine/EngineMaterials/BlendFunc_DefBlend.0"
+        },
+        {
+          "ObjectName": "Texture2D'BlendFunc_DefBase'",
+          "ObjectPath": "/Engine/EngineMaterials/BlendFunc_DefBase.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_CH_Noise_01_Alp'",
+          "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_Noise_01_Alp.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_CH_DummyBC7_00_Col'",
+          "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyBC7_00_Col.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_CH_DummyDXT1_00_Col'",
+          "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyDXT1_00_Col.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_CH_DummyAlp_01_Alp'",
+          "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyAlp_01_Alp.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_CH_DummyMsk_00_Msk'",
+          "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_DummyMsk_00_Msk.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_CH_Black_00_Col'",
+          "ObjectPath": "/Game/Xrd777/Characters/Common/Textures/T_CH_Black_00_Col.0"
+        }
+      ],
+      "FunctionInfos": [
+        {
+          "StateId": "12B6F73F-4D5D4FF9-D2FBF18B-43945D5B",
+          "Function": {
+            "ObjectName": "MaterialFunction'Blend_Overlay'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions03/Blends/Blend_Overlay.0"
+          }
+        },
+        {
+          "StateId": "5B938C50-440B6892-955AD79F-CD1A8337",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat3Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat3Components.0"
+          }
+        },
+        {
+          "StateId": "571ECC1D-4F67416E-839FC8AB-5F026EA8",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_CH_SphereNormal'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_SphereNormal.0"
+          }
+        },
+        {
+          "StateId": "1C4084F1-40A77315-4CCD7FA5-EAB70415",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_CH_SelfEmissive'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_SelfEmissive.0"
+          }
+        },
+        {
+          "StateId": "50F817DC-4CA6F030-069CCFB9-1A2DDE31",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_CH_DitherTemporalAA'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_DitherTemporalAA.0"
+          }
+        },
+        {
+          "StateId": "B3D7FA93-449F8FB5-BF37BE92-528C7249",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_CH_OpacityMask'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_OpacityMask.0"
+          }
+        },
+        {
+          "StateId": "E572D701-496E6D38-CC53A5BD-C450B0ED",
+          "Function": {
+            "ObjectName": "MaterialFunction'CustomRotator'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Texturing/CustomRotator.0"
+          }
+        },
+        {
+          "StateId": "AB126D3E-46D0D8F7-A271B2BC-7BC932DA",
+          "Function": {
+            "ObjectName": "MaterialFunction'SmoothStep'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/SmoothStep.0"
+          }
+        },
+        {
+          "StateId": "3579CFD1-422D8732-87E9618E-16283247",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_CH_SSGradation'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_SSGradation.0"
+          }
+        },
+        {
+          "StateId": "4265787C-4E17104E-B31A5DBD-BCF47D06",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_CH_Flare'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_Flare.0"
+          }
+        },
+        {
+          "StateId": "E10865A2-49C09CE3-24EA34BE-3E46EEF2",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_CH_VerticalGradation'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_VerticalGradation.0"
+          }
+        },
+        {
+          "StateId": "DE36398D-4742C47A-21AFADA6-0CA5CB70",
+          "Function": {
+            "ObjectName": "MaterialFunction'FOV'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/FOV.0"
+          }
+        },
+        {
+          "StateId": "E572D701-496E6D38-CC53A5BD-C450B0ED",
+          "Function": {
+            "ObjectName": "MaterialFunction'CustomRotator'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Texturing/CustomRotator.0"
+          }
+        },
+        {
+          "StateId": "AB126D3E-46D0D8F7-A271B2BC-7BC932DA",
+          "Function": {
+            "ObjectName": "MaterialFunction'SmoothStep'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/SmoothStep.0"
+          }
+        },
+        {
+          "StateId": "3579CFD1-422D8732-87E9618E-16283247",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_CH_SSGradation'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_SSGradation.0"
+          }
+        },
+        {
+          "StateId": "E5E304F5-402E6FA5-64DCE4B3-78151FE5",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_CH_Para'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_Para.0"
+          }
+        },
+        {
+          "StateId": "99C6A720-40B82B22-A95D169E-BF320FD4",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_CH_ArseneFaceEff'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_ArseneFaceEff.0"
+          }
+        },
+        {
+          "StateId": "8682309C-4822BA58-8616F0B0-5B41AD19",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_CH_UV'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_UV.0"
+          }
+        },
+        {
+          "StateId": "132C5B37-4194E12F-BC5193BE-AC1F39E2",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_CH_BaseParameter'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_BaseParameter.0"
+          }
+        },
+        {
+          "StateId": "7A276736-419AE1FA-70F30FA5-D0D97681",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_CH_LightVector'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_LightVector.0"
+          }
+        },
+        {
+          "StateId": "084B78F3-4C4C7D55-4B65FE86-BC341535",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_CH_BadStatusColor'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/Function/MF_CH_BadStatusColor.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "B2F4A5A7-4EDE33D8-E70A4A83-A28D1503",
+          "Function": {
+            "ObjectName": "MaterialFunction'ScaleUVsByCenter'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Texturing/ScaleUVsByCenter.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "391DDAD7-4E9DCC58-FD37D7B7-2AF07FC2",
+          "Function": {
+            "ObjectName": "MaterialFunction'ScreenResolution'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/ScreenResolution.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "B2F4A5A7-4EDE33D8-E70A4A83-A28D1503",
+          "Function": {
+            "ObjectName": "MaterialFunction'ScaleUVsByCenter'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions01/Texturing/ScaleUVsByCenter.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "391DDAD7-4E9DCC58-FD37D7B7-2AF07FC2",
+          "Function": {
+            "ObjectName": "MaterialFunction'ScreenResolution'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/ScreenResolution.0"
+          }
+        },
+        {
+          "StateId": "2C1DDB6E-406BC9FC-1D4141A1-7C82122A",
+          "Function": {
+            "ObjectName": "MaterialFunction'BreakOutFloat2Components'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat2Components.0"
+          }
+        },
+        {
+          "StateId": "8530673E-4E3F2FF5-ED3C5090-177441DA",
+          "Function": {
+            "ObjectName": "MaterialFunction'ScreenAlignedUVs'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Texturing/ScreenAlignedUVs.0"
+          }
+        },
+        {
+          "StateId": "E572D701-496E6D38-CC53A5BD-C450B0ED",
+          "Function": {
+            "ObjectName": "MaterialFunction'CustomRotator'",
+            "ObjectPath": "/Engine/Functions/Engine_MaterialFunctions02/Texturing/CustomRotator.0"
+          }
+        },
+        {
+          "StateId": "9BF3A59E-45A32D37-792B959D-85BFB54D",
+          "Function": {
+            "ObjectName": "MaterialFunction'MF_CH_CampAdjust_Astrea'",
+            "ObjectPath": "/Game/Astrea/Characters/Common/MasterMaterials/Function/MF_CH_CampAdjust_Astrea.0"
+          }
+        }
+      ],
+      "ParameterCollectionInfos": [
+        {
+          "StateId": "B1ADECAC-40D3063D-B8D75D9B-2FE879F9",
+          "ParameterCollection": {
+            "ObjectName": "MaterialParameterCollection'MPC_LightSource'",
+            "ObjectPath": "/Game/Xrd777/Characters/Common/MasterMaterials/MPC_LightSource.0"
+          }
+        },
+        {
+          "StateId": "EF6B0F6F-4C2B25BD-2ECD4691-E57F4536",
+          "ParameterCollection": {
+            "ObjectName": "MaterialParameterCollection'MPC_CampCharaLookAdjust'",
+            "ObjectPath": "/Game/Astrea/Characters/Common/MasterMaterials/MPC_CampCharaLookAdjust.0"
+          }
+        }
+      ],
+      "QualityLevelsUsed": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  }
+]

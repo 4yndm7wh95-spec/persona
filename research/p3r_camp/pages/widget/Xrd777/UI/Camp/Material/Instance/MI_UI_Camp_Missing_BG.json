@@ -1,0 +1,93 @@
+[
+  {
+    "Type": "MaterialInstanceConstant",
+    "Name": "MI_UI_Camp_Missing_BG",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MaterialInstanceConstant'",
+    "Package": "/Game/Xrd777/UI/Camp/Material/Instance/MI_UI_Camp_Missing_BG",
+    "Properties": {
+      "Parent": {
+        "ObjectName": "Material'MM_UI_Camp_Missing_BG'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/Material/MasterMaterials/MM_UI_Camp_Missing_BG.0"
+      },
+      "ScalarParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "RefractionDepthBias",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.0,
+          "ExpressionGUID": "00000000-00000000-00000000-00000000"
+        }
+      ],
+      "VectorParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "GradationA",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "R": 0.001214,
+            "G": 0.313989,
+            "B": 0.545724,
+            "A": 0.0,
+            "Hex": "0498C3"
+          },
+          "ExpressionGUID": "19B2B5FC-445B993E-71FD1D8F-53A047EE"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "GradationB",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "R": 0.0,
+            "G": 0.135633,
+            "B": 0.871367,
+            "A": 0.0,
+            "Hex": "0067F0"
+          },
+          "ExpressionGUID": "D3C66A59-4D4866EA-7E2016A6-CA7D3990"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "MultipleBulePanel",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "R": 0.0,
+            "G": 0.031896,
+            "B": 0.533276,
+            "A": 0.8,
+            "Hex": "CC0032C1"
+          },
+          "ExpressionGUID": "8B1F0B3D-45A53D08-15CF0D9B-43DC61DA"
+        }
+      ],
+      "BasePropertyOverrides": {
+        "ShadingModel": "MSM_Unlit",
+        "OpacityMaskClipValue": 0.3333
+      },
+      "CachedReferencedTextures": [
+        {
+          "ObjectName": "TextureRenderTarget2D'RT_Temp1'",
+          "ObjectPath": "/Game/Xrd777/Kernel/Textures/RT_Temp1.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_UI_Common_Dummy_00_Alp'",
+          "ObjectPath": "/Game/Xrd777/UI/Common/Material/T_UI_Common_Dummy_00_Alp.0"
+        },
+        {
+          "ObjectName": "CurveLinearColorAtlas'CA_UI_Camp_Missing'",
+          "ObjectPath": "/Game/Xrd777/UI/Camp/Material/Curve/CA_UI_Camp_Missing.0"
+        },
+        null
+      ]
+    },
+    "LoadedMaterialResources": []
+  }
+]

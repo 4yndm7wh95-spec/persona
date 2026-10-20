@@ -1,0 +1,88 @@
+[
+  {
+    "Type": "UIParameterAsset",
+    "Name": "UIP_PartyPanel",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'UIParameterAsset'",
+    "Package": "/Game/Xrd777/UI/PartyPanel/Param/UIP_PartyPanel",
+    "Properties": {
+      "UIParameters": [
+        {
+          "Value": 1.0,
+          "Key": "THUNDER_INTERVAL",
+          "Info": "デフォルト電気が再生されるまでの間隔"
+        },
+        {
+          "Value": 2.5,
+          "Key": "THUNDER_SP_INTERVAL",
+          "Info": "特別な電気が再生されるまでの間隔"
+        },
+        {
+          "Value": 0.5,
+          "Key": "ICE_CRYSTAL_SCALE",
+          "Info": "結晶の大きさ"
+        },
+        {
+          "Value": 12.0,
+          "Key": "POISON_MOVEFRAME",
+          "Info": "毒の動き"
+        },
+        {
+          "Value": 3.0,
+          "Key": "POISON_RADIUS",
+          "Info": "毒の移動半径"
+        },
+        {
+          "Value": 5.0,
+          "Key": "UPSET_SWEAT_INTERVAL",
+          "Info": "動揺の汗の再生間隔 random"
+        },
+        {
+          "Value": 5.0,
+          "Key": "UPSET_ANIM_FRAME",
+          "Info": "動揺の汗のアニメフレーム"
+        },
+        {
+          "Value": 30.0,
+          "Key": "ORGIA_HEAD_LIGHT_WAVE",
+          "Info": "オルギア時のヘッドの点滅速度 30フレームで15フレームでαを上げ下げする"
+        },
+        {
+          "Value": 8.0,
+          "Key": "ORGIA_OVER_HEAT_SMOKE_X",
+          "Info": "オーバーヒートの煙のX位置"
+        },
+        {
+          "Value": 0.0,
+          "Key": "ORGIA_OVER_HEAT_SMOKE_Y",
+          "Info": "オーバーヒートの煙の高さ"
+        },
+        {
+          "Value": -7.0,
+          "Key": "ORGIA_OVER_HEAT_LEFT_SMOKE_X",
+          "Info": "オーバーヒートの左の煙のX位置"
+        },
+        {
+          "Value": 0.7,
+          "Key": "ORGIA_OVER_HEAT_LEFT_SMOKE_WIDTH_SCALE",
+          "Info": "オーバーヒートの左の煙の横幅の割合"
+        },
+        {
+          "Value": 0.9,
+          "Key": "ORGIA_OVER_HEAT_RIGHT_SMOKE_WIDTH_SCALE",
+          "Info": "オーバーヒートの右の煙の横幅の割合"
+        },
+        {
+          "Value": 1.1,
+          "Key": "ORGIA_OVER_HEAT_CENTER_SMOKE_HEIGHT_SCALE",
+          "Info": "オーバーヒートの真ん中の煙の高幅の割合"
+        },
+        {
+          "Value": 1.3,
+          "Key": "ORGIA_OVER_HEAT_RIGHT_SMOKE_HEIGHT_SCALE",
+          "Info": "オーバーヒートの右の煙の高幅の割合"
+        }
+      ]
+    }
+  }
+]

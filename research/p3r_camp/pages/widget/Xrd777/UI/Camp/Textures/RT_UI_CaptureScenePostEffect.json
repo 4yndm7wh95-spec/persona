@@ -1,0 +1,30 @@
+[
+  {
+    "Type": "TextureRenderTarget2D",
+    "Name": "RT_UI_CaptureScenePostEffect",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'TextureRenderTarget2D'",
+    "Package": "/Game/Xrd777/UI/Camp/Textures/RT_UI_CaptureScenePostEffect",
+    "Properties": {
+      "SizeX": 1920,
+      "SizeY": 1080,
+      "ClearColor": {
+        "R": 0.0,
+        "G": 0.0,
+        "B": 0.0,
+        "A": 0.0,
+        "Hex": "000000"
+      },
+      "AddressX": "TA_Clamp",
+      "AddressY": "TA_Clamp",
+      "RenderTargetFormat": "RTF_RGBA8",
+      "LightingGuid": "79C479D8-41158076-B000D7B3-58EAD0A3",
+      "SRGB": false
+    },
+    "SizeX": 0,
+    "SizeY": 0,
+    "PackedData": 0,
+    "PixelFormat": "PF_Unknown",
+    "FirstMipToSerialize": -1
+  }
+]

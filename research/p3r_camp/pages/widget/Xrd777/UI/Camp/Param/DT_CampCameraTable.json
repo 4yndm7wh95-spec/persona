@@ -1,0 +1,237 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_CampCameraTable",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/Xrd777/UI/Camp/Param/DT_CampCameraTable",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'CampCameraTableRow'",
+        "ObjectPath": "/Script/xrd777"
+      }
+    },
+    "Rows": {
+      "Top": {
+        "CameraPos": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "CameraRot": {
+          "Pitch": 0.0,
+          "Yaw": 0.0,
+          "Roll": 0.0
+        },
+        "CharaPos": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "CharaRot": {
+          "Pitch": 0.0,
+          "Yaw": 0.0,
+          "Roll": 0.0
+        }
+      },
+      "Skill": {
+        "CameraPos": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 5.0
+        },
+        "CameraRot": {
+          "Pitch": 0.0,
+          "Yaw": 0.0,
+          "Roll": 0.0
+        },
+        "CharaPos": {
+          "X": 6.868873,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "CharaRot": {
+          "Pitch": 0.0,
+          "Yaw": -2.0,
+          "Roll": 0.0
+        }
+      },
+      "Item": {
+        "CameraPos": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "CameraRot": {
+          "Pitch": 0.0,
+          "Yaw": 0.0,
+          "Roll": 0.0
+        },
+        "CharaPos": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "CharaRot": {
+          "Pitch": 0.0,
+          "Yaw": 0.0,
+          "Roll": 0.0
+        }
+      },
+      "Equip": {
+        "CameraPos": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "CameraRot": {
+          "Pitch": 0.0,
+          "Yaw": 0.0,
+          "Roll": 0.0
+        },
+        "CharaPos": {
+          "X": 22.110437,
+          "Y": -2.424381,
+          "Z": 0.706703
+        },
+        "CharaRot": {
+          "Pitch": 0.0,
+          "Yaw": -6.872659,
+          "Roll": -1.0
+        }
+      },
+      "Persona": {
+        "CameraPos": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "CameraRot": {
+          "Pitch": 0.0,
+          "Yaw": 0.0,
+          "Roll": 0.0
+        },
+        "CharaPos": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "CharaRot": {
+          "Pitch": 0.0,
+          "Yaw": 0.0,
+          "Roll": 0.0
+        }
+      },
+      "Status": {
+        "CameraPos": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "CameraRot": {
+          "Pitch": 0.0,
+          "Yaw": 0.0,
+          "Roll": 0.0
+        },
+        "CharaPos": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "CharaRot": {
+          "Pitch": 0.0,
+          "Yaw": 0.0,
+          "Roll": 0.0
+        }
+      },
+      "Quest": {
+        "CameraPos": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "CameraRot": {
+          "Pitch": 0.0,
+          "Yaw": 0.0,
+          "Roll": 0.0
+        },
+        "CharaPos": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "CharaRot": {
+          "Pitch": 0.0,
+          "Yaw": 0.0,
+          "Roll": 0.0
+        }
+      },
+      "Commu": {
+        "CameraPos": {
+          "X": 0.0,
+          "Y": 0.420382,
+          "Z": 0.0
+        },
+        "CameraRot": {
+          "Pitch": 0.0,
+          "Yaw": 0.0,
+          "Roll": 0.0
+        },
+        "CharaPos": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "CharaRot": {
+          "Pitch": 0.0,
+          "Yaw": 0.0,
+          "Roll": 0.0
+        }
+      },
+      "Calender": {
+        "CameraPos": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "CameraRot": {
+          "Pitch": 0.0,
+          "Yaw": 0.0,
+          "Roll": 0.0
+        },
+        "CharaPos": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "CharaRot": {
+          "Pitch": 0.0,
+          "Yaw": 0.0,
+          "Roll": 0.0
+        }
+      },
+      "System": {
+        "CameraPos": {
+          "X": 14.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "CameraRot": {
+          "Pitch": 0.0,
+          "Yaw": 0.0,
+          "Roll": 0.0
+        },
+        "CharaPos": {
+          "X": 0.0,
+          "Y": 0.0,
+          "Z": 0.0
+        },
+        "CharaRot": {
+          "Pitch": 0.0,
+          "Yaw": 0.0,
+          "Roll": 0.0
+        }
+      }
+    }
+  }
+]

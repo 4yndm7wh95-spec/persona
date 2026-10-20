@@ -1,0 +1,67 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_CampParamPersona",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/Xrd777/UI/Camp/Param/DT_CampParamPersona",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'CampParamTablePersonaRow'",
+        "ObjectPath": "/Script/xrd777"
+      }
+    },
+    "Rows": {
+      "NewRow": {
+        "PersonaEquipScaleAnimType": "EOneAnimType::CurveUp2",
+        "PersonaEquipScaleFrame": 6,
+        "PersonaEquipScaleWait": 20,
+        "PersonaEquipRotAnimType": "EOneAnimType::CurveUp2",
+        "PersonaEquipRotFrame": 6,
+        "PersonaEquipRotWait": 20,
+        "PersonaEquipSlideAnimType": "EOneAnimType::CurveUp2",
+        "PersonaEquipSlideFrame": 3,
+        "PersonaEquipSlideWait": 0,
+        "PersonaLightSpeed": 0.15,
+        "PersonaWaveSpeed": 0.3,
+        "PersonaArcanaFadeAnimType": "EOneAnimType::CurveUp2",
+        "PersonaArcanaFadeFrame": 10,
+        "PersonaInDist": -100.0,
+        "PersonaInSilhouetteAnimType": "EOneAnimType::CurveUp2",
+        "PersonaInSilhouetteFrame": 10,
+        "PersonaInSilhouetteWait": 0,
+        "PersonaInSilhouetteOriginal": {
+          "X": 0.0,
+          "Y": 0.0
+        },
+        "PersonaInSilhouetteTarget": {
+          "X": -90.0,
+          "Y": -110.0
+        },
+        "PersonaInPersonaAnimType": "EOneAnimType::CurveUp2",
+        "PersonaInPersonaFrame": 20,
+        "PersonaInPersonaWait": 0,
+        "PersonaInPersonaDist": 300.0,
+        "PersonaInSiroItaAnimType": "EOneAnimType::CurveUp2",
+        "PersonaInSiroItaFrame": 10,
+        "PersonaInSiroItaWait": 0,
+        "PersonaInTitleAnimType": "EOneAnimType::CurveUp2",
+        "PersonaInTitleFrame": 10,
+        "PersonaInTitleWait": 0,
+        "PersonaInListAnimType": "EOneAnimType::CurveUp2",
+        "PersonaInListFrame": 6,
+        "PersonaInListWait": 0,
+        "PersonaInArcanaAnimType": "EOneAnimType::CurveUp2",
+        "PersonaInArcanaFrame": 7,
+        "PersonaInArcanaWait": 20,
+        "ItemPerListInAnimType": "EOneAnimType::CurveUp2",
+        "ItemPerListInFrame": 5,
+        "ItemPerListInWait": 8,
+        "ItemPerListInBackFrame": 5,
+        "ItemPerListInBgAnimType": "EOneAnimType::EaseInOut",
+        "ItemPerListInBgFrame": 12,
+        "ItemPerListInBgBackFrame": 12
+      }
+    }
+  }
+]

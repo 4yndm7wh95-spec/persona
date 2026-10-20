@@ -1,0 +1,116 @@
+{
+  "messages": {
+    "SYS_DIFFICULTY_CHECK_AST": "[f 0:5 65278][f 2:1 ]將以「[f 0:1 2][f 2:4 0][f 0:1 27]」難易度開始遊戲，\r\n確定要繼續嗎？\r\n[f 1:4 1][f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_SAFE": "[f 0:5 65278][f 2:1 ]即使在戰鬥中全滅，也可以無限制地當場復活。\r\n[f 0:1 43]不管選擇哪種難易度，都不會對故事劇情產生影響。\r\n此外除了「ＨＥＡＲＴＬＥＳＳ」以外的難易度\r\n也能在之後進行更改。[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_EASY": "[f 0:5 65278][f 2:1 ]戰鬥的難易度比「ＮＯＲＭＡＬ」更加容易。\n[f 0:1 43]不管選擇哪種難易度，都不會對故事劇情產生影響。\r\n此外除了「ＨＥＡＲＴＬＥＳＳ」以外的難易度\r\n也能在之後進行更改。[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_NORM": "[f 0:5 65278][f 2:1 ]能以適當的緊張感享受戰鬥。\r\n[f 0:1 43]不管選擇哪種難易度，都不會對故事劇情產生影響。\r\n此外除了「ＨＥＡＲＴＬＥＳＳ」以外的難易度\r\n也能在之後進行更改。[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_HARD": "[f 0:5 65278][f 2:1 ]戰鬥的難易度比「ＮＯＲＭＡＬ」更加困難。\n[f 0:1 43]不管選擇哪種難易度，都不會對故事劇情產生影響。\r\n此外除了「ＨＥＡＲＴＬＥＳＳ」以外的難易度\r\n也能在之後進行更改。[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_HEAR": "[f 0:5 65278][f 2:1 ]戰鬥的難易度比「ＨＡＲＤ」更困難許多。\r\n[f 0:1 43]不管選擇哪種難易度，都不會對故事劇情產生影響。[f 0:1 27]\n此外雖然能更改成其他難易度，\n但更改過後就無法設定回「ＨＥＡＲＴＬＥＳＳ」了。\n[f 1:1 ]",
+    "SYS_INHERITANCE_LOAD_CHE": "[f 0:5 65278][f 2:1 ]要繼承這份資料嗎？\r\n[f 1:4 1][f 1:1 ]",
+    "SYS_SAVE_VERSION_ERROR": "[f 0:5 65278][f 2:1 ]載入的保存資料與遊戲版本不符，\r\n因此無法以這個保存資料繼續遊戲。\n[f 1:1 ]",
+    "SYS_SAVE_EPISODE_ERROR": "[f 0:5 65278][f 2:1 ]載入的保存資料與所選章節不符，\r\n因此無法以這個保存資料繼續遊戲。\n[f 1:1 ]",
+    "SYS_VELVETROOM_INFO_INHE": "[f 0:5 65278][f 2:1 ]在從全書取出畫面中可切換為\r\n繼承自你的故事的人格面具全書，\r\n並可調出人格面具。\r\n[f 1:1 ]\n[page]\n[f 0:5 65278][f 2:1 ]按下[f 1:3 118]即可切換為\r\n你的故事的人格面具全書。\n[f 1:1 ]\n[page]\n[f 0:5 65278][f 2:1 ]從繼承下來的人格面具全書調出人格面具時，\n需要花費比平常還多的費用，\r\n並且也必須具備與人格面具同等或以上的等級。\r\n[f 1:1 ]",
+    "MSG_FLORIST_CHECK": "[f 0:5 65278][f 2:1 ][f 5:21 1,101]確定要選這個嗎？\n[f 1:1 ]",
+    "SEL_FLORIST_CHECK": "[f 0:5 65278][f 2:1 ]拜託你了\n[page]\n[f 0:5 65278][f 2:1 ]還是算了",
+    "SYS_CONF_DIFF_CHECK_ASTR": "[f 0:5 65278][f 2:1 ]如果在採用最高的難易度時選擇更改遊戲難易度，\n將無法再次變更回原本的難易度，\r\n確定要繼續嗎？\r\n[f 1:4 1][f 1:1 ]"
+  },
+  "raw_dialogs": {
+    "SYS_DIFFICULTY_CHECK_AST": {
+      "kind": 0,
+      "page_offsets": [
+        156
+      ],
+      "raw_text_hex": "fef205fffffef141e5b087e4bba5e3808cfef2010301fef2440101fef2011c01e3808de99ba3e69893e5baa6e9968be5a78be9818ae688b2efbc8c0d0ae7a2bae5ae9ae8a681e7b9bce7ba8ce5978eefbc9f0d0afef2240201fef12100"
+    },
+    "SYS_DIFFICULTY_INFO_SAFE": {
+      "kind": 0,
+      "page_offsets": [
+        288
+      ],
+      "raw_text_hex": "fef205fffffef141e58db3e4bdbfe59ca8e688b0e9aca5e4b8ade585a8e6bb85efbc8ce4b99fe58fafe4bba5e784a1e99990e588b6e59cb0e795b6e5a0b4e5bea9e6b4bbe380820d0afef2012c01e4b88de7aea1e981b8e69387e593aae7a8aee99ba3e69893e5baa6efbc8ce983bde4b88de69c83e5b08de69585e4ba8be58a87e68385e794a2e7949fe5bdb1e99fbfe380820d0ae6ada4e5a496e999a4e4ba86e3808cefbca8efbca5efbca1efbcb2efbcb4efbcacefbca5efbcb3efbcb3e3808de4bba5e5a496e79a84e99ba3e69893e5baa60d0ae4b99fe883bde59ca8e4b98be5be8ce980b2e8a18ce69bb4e694b9e38082fef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_EASY": {
+      "kind": 0,
+      "page_offsets": [
+        580
+      ],
+      "raw_text_hex": "fef205fffffef141e688b0e9aca5e79a84e99ba3e69893e5baa6e6af94e3808cefbcaeefbcafefbcb2efbcadefbca1efbcace3808de69bb4e58aa0e5aeb9e69893e380820afef2012c01e4b88de7aea1e981b8e69387e593aae7a8aee99ba3e69893e5baa6efbc8ce983bde4b88de69c83e5b08de69585e4ba8be58a87e68385e794a2e7949fe5bdb1e99fbfe380820d0ae6ada4e5a496e999a4e4ba86e3808cefbca8efbca5efbca1efbcb2efbcb4efbcacefbca5efbcb3efbcb3e3808de4bba5e5a496e79a84e99ba3e69893e5baa60d0ae4b99fe883bde59ca8e4b98be5be8ce980b2e8a18ce69bb4e694b9e38082fef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_NORM": {
+      "kind": 0,
+      "page_offsets": [
+        868
+      ],
+      "raw_text_hex": "fef205fffffef141e883bde4bba5e981a9e795b6e79a84e7b78ae5bcb5e6849fe4baabe58f97e688b0e9aca5e380820d0afef2012c01e4b88de7aea1e981b8e69387e593aae7a8aee99ba3e69893e5baa6efbc8ce983bde4b88de69c83e5b08de69585e4ba8be58a87e68385e794a2e7949fe5bdb1e99fbfe380820d0ae6ada4e5a496e999a4e4ba86e3808cefbca8efbca5efbca1efbcb2efbcb4efbcacefbca5efbcb3efbcb3e3808de4bba5e5a496e79a84e99ba3e69893e5baa60d0ae4b99fe883bde59ca8e4b98be5be8ce980b2e8a18ce69bb4e694b9e38082fef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_HARD": {
+      "kind": 0,
+      "page_offsets": [
+        1136
+      ],
+      "raw_text_hex": "fef205fffffef141e688b0e9aca5e79a84e99ba3e69893e5baa6e6af94e3808cefbcaeefbcafefbcb2efbcadefbca1efbcace3808de69bb4e58aa0e59bb0e99ba3e380820afef2012c01e4b88de7aea1e981b8e69387e593aae7a8aee99ba3e69893e5baa6efbc8ce983bde4b88de69c83e5b08de69585e4ba8be58a87e68385e794a2e7949fe5bdb1e99fbfe380820d0ae6ada4e5a496e999a4e4ba86e3808cefbca8efbca5efbca1efbcb2efbcb4efbcacefbca5efbcb3efbcb3e3808de4bba5e5a496e79a84e99ba3e69893e5baa60d0ae4b99fe883bde59ca8e4b98be5be8ce980b2e8a18ce69bb4e694b9e38082fef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_HEAR": {
+      "kind": 0,
+      "page_offsets": [
+        1424
+      ],
+      "raw_text_hex": "fef205fffffef141e688b0e9aca5e79a84e99ba3e69893e5baa6e6af94e3808cefbca8efbca1efbcb2efbca4e3808de69bb4e59bb0e99ba3e8a8b1e5a49ae380820d0afef2012c01e4b88de7aea1e981b8e69387e593aae7a8aee99ba3e69893e5baa6efbc8ce983bde4b88de69c83e5b08de69585e4ba8be58a87e68385e794a2e7949fe5bdb1e99fbfe38082fef2011c010ae6ada4e5a496e99b96e784b6e883bde69bb4e694b9e68890e585b6e4bb96e99ba3e69893e5baa6efbc8c0ae4bd86e69bb4e694b9e9818ee5be8ce5b0b1e784a1e6b395e8a8ade5ae9ae59b9ee3808cefbca8efbca5efbca1efbcb2efbcb4efbcacefbca5efbcb3efbcb3e3808de4ba86e380820afef12100"
+    },
+    "SYS_INHERITANCE_LOAD_CHE": {
+      "kind": 0,
+      "page_offsets": [
+        1728
+      ],
+      "raw_text_hex": "fef205fffffef141e8a681e7b9bce689bfe98099e4bbbde8b387e69699e5978eefbc9f0d0afef2240201fef12100"
+    },
+    "SYS_SAVE_VERSION_ERROR": {
+      "kind": 0,
+      "page_offsets": [
+        1812
+      ],
+      "raw_text_hex": "fef205fffffef141e8bc89e585a5e79a84e4bf9de5ad98e8b387e69699e88887e9818ae688b2e78988e69cace4b88de7aca6efbc8c0d0ae59ba0e6ada4e784a1e6b395e4bba5e98099e5808be4bf9de5ad98e8b387e69699e7b9bce7ba8ce9818ae688b2e380820afef12100"
+    },
+    "SYS_SAVE_EPISODE_ERROR": {
+      "kind": 0,
+      "page_offsets": [
+        1956
+      ],
+      "raw_text_hex": "fef205fffffef141e8bc89e585a5e79a84e4bf9de5ad98e8b387e69699e88887e68980e981b8e7aba0e7af80e4b88de7aca6efbc8c0d0ae59ba0e6ada4e784a1e6b395e4bba5e98099e5808be4bf9de5ad98e8b387e69699e7b9bce7ba8ce9818ae688b2e380820afef12100"
+    },
+    "SYS_VELVETROOM_INFO_INHE": {
+      "kind": 0,
+      "page_offsets": [
+        2108,
+        2236,
+        2312
+      ],
+      "raw_text_hex": "fef205fffffef141e59ca8e5be9ee585a8e69bb8e58f96e587bae795abe99da2e4b8ade58fafe58887e68f9be782ba0d0ae7b9bce689bfe887aae4bda0e79a84e69585e4ba8be79a84e4babae6a0bce99da2e585b7e585a8e69bb8efbc8c0d0ae4b8a6e58fafe8aabfe587bae4babae6a0bce99da2e585b7e380820d0afef121fef205fffffef141e68c89e4b88bfef2237701e58db3e58fafe58887e68f9be782ba0d0ae4bda0e79a84e69585e4ba8be79a84e4babae6a0bce99da2e585b7e585a8e69bb8e380820afef121fef205fffffef141e5be9ee7b9bce689bfe4b88be4be86e79a84e4babae6a0bce99da2e585b7e585a8e69bb8e8aabfe587bae4babae6a0bce99da2e585b7e69982efbc8c0ae99c80e8a681e88ab1e8b2bbe6af94e5b9b3e5b8b8e98284e5a49ae79a84e8b2bbe794a8efbc8c0d0ae4b8a6e4b894e4b99fe5bf85e9a088e585b7e58299e88887e4babae6a0bce99da2e585b7e5908ce7ad89e68896e4bba5e4b88ae79a84e7ad89e7b49ae380820d0afef12100"
+    },
+    "MSG_FLORIST_CHECK": {
+      "kind": 0,
+      "page_offsets": [
+        2528
+      ],
+      "raw_text_hex": "fef205fffffef141fef3b502016601e7a2bae5ae9ae8a681e981b8e98099e5808be5978eefbc9f0afef12100"
+    },
+    "SEL_FLORIST_CHECK": {
+      "kind": 1,
+      "page_offsets": [
+        2616,
+        2637
+      ],
+      "raw_text_hex": "fef205fffffef141e68b9ce8a897e4bda0e4ba8600fef205fffffef141e98284e698afe7ae97e4ba860000"
+    },
+    "SYS_CONF_DIFF_CHECK_ASTR": {
+      "kind": 0,
+      "page_offsets": [
+        2696
+      ],
+      "raw_text_hex": "fef205fffffef141e5a682e69e9ce59ca8e68ea1e794a8e69c80e9ab98e79a84e99ba3e69893e5baa6e69982e981b8e69387e69bb4e694b9e9818ae688b2e99ba3e69893e5baa6efbc8c0ae5b087e784a1e6b395e5868de6aca1e8ae8ae69bb4e59b9ee58e9fe69cace79a84e99ba3e69893e5baa6efbc8c0d0ae7a2bae5ae9ae8a681e7b9bce7ba8ce5978eefbc9f0d0afef2240201fef12100"
+    }
+  },
+  "encoding": "UTF-8",
+  "control_codes": "[f table:index arguments]；不删除功能标签",
+  "format": "MSG1 big endian / P3R Reload"
+}

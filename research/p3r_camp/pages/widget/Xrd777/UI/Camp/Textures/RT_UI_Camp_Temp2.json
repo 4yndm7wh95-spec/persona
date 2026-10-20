@@ -1,0 +1,21 @@
+[
+  {
+    "Type": "TextureRenderTarget2D",
+    "Name": "RT_UI_Camp_Temp2",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'TextureRenderTarget2D'",
+    "Package": "/Game/Xrd777/UI/Camp/Textures/RT_UI_Camp_Temp2",
+    "Properties": {
+      "SizeX": 1920,
+      "SizeY": 1080,
+      "RenderTargetFormat": "RTF_RGBA8",
+      "LightingGuid": "3CA6CDF6-4A14E8AA-DFA41F9E-B78E078D",
+      "SRGB": false
+    },
+    "SizeX": 0,
+    "SizeY": 0,
+    "PackedData": 0,
+    "PixelFormat": "PF_Unknown",
+    "FirstMipToSerialize": -1
+  }
+]

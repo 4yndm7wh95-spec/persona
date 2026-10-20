@@ -1,0 +1,4402 @@
+[
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_00.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_01.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_02.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_03.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_04.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_05.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_06.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_07.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_08.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_09.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_10.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_11.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_12.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_13.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_14.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_15.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_16.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_17.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_18.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_19.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_20.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_21.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_22.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_23.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_24.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_25.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_26.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_27.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_28.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_a_29.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_00.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_01.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_02.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_03.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_04.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_05.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_06.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_07.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_08.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_09.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_10.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_11.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_12.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_13.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_14.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_15.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_16.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_17.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_18.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_19.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_20.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_21.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_22.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_23.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_24.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_25.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_26.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_27.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_28.uasset",
+    "frames": 1,
+    "vertices": 2996,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Item/Uim/UIM_UI_Camp_Item_WaterLight_b_29.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_00.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_01.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_02.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_03.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_04.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_05.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_06.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_07.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_08.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_09.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_10.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_11.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_12.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_13.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_14.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_15.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_16.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_17.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_18.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_19.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_20.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_21.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_22.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_23.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_24.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_25.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_26.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_27.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_28.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_a_29.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_00.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_01.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_02.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_03.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_04.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_05.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_06.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_07.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_08.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_09.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_10.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_11.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_12.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_13.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_14.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_15.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_16.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_17.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_18.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_19.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_20.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_21.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_22.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_23.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_24.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_25.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_26.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_27.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_28.uasset",
+    "frames": 1,
+    "vertices": 2996,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Persona/Uim/UIM_UI_Camp_PersonaList_WaterLight_b_29.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_00.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_01.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_02.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_03.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_04.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_05.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_06.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_07.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_08.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_09.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_10.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_11.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_12.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_13.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_14.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_15.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_16.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_17.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_18.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_19.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_20.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_21.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_22.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_23.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_24.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_25.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_26.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_27.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_28.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_a_29.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_00.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_01.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_02.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_03.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_04.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_05.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_06.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_07.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_08.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_09.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_10.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_11.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_12.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_13.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_14.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_15.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_16.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_17.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_18.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_19.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_20.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_21.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_22.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_23.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_24.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_25.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_26.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_27.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_28.uasset",
+    "frames": 1,
+    "vertices": 2996,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Quest/Uim/UIM_UI_Camp_Quest_WaterLight_b_29.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_00.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_01.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_02.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_03.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_04.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_05.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_06.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_07.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_08.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_09.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_10.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_11.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_12.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_13.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_14.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_15.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_16.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_17.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_18.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_19.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_20.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_21.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_22.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_23.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_24.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_25.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_26.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_27.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_28.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_a_29.uasset",
+    "frames": 1,
+    "vertices": 2000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_00.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_01.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_02.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_03.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_04.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_05.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_06.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_07.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_08.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_09.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_10.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_11.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_12.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_13.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_14.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_15.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_16.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_17.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_18.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_19.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_20.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_21.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_22.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_23.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_24.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_25.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_26.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_27.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_28.uasset",
+    "frames": 1,
+    "vertices": 2996,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Skill/Uim/UIM_UI_Camp_Skill_WaterLight_b_29.uasset",
+    "frames": 1,
+    "vertices": 3000,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "coordinate",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Textures/Misc/UIM_UI_CampMisc00.uasset",
+    "frames": 24,
+    "vertices": 4,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Textures/Misc/UIM_UI_CampMisc01.uasset",
+    "frames": 24,
+    "vertices": 4,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Textures/Misc/UIM_UI_CampMisc02.uasset",
+    "frames": 24,
+    "vertices": 4,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Textures/Misc/UIM_UI_CampMisc03.uasset",
+    "frames": 24,
+    "vertices": 4,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Textures/Misc/UIM_UI_CampMisc04.uasset",
+    "frames": 24,
+    "vertices": 4,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Textures/Misc/UIM_UI_CampMisc05.uasset",
+    "frames": 24,
+    "vertices": 4,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Textures/Misc/UIM_UI_CampMisc06.uasset",
+    "frames": 24,
+    "vertices": 4,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Textures/Misc/UIM_UI_CampMisc07.uasset",
+    "frames": 24,
+    "vertices": 4,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Textures/Misc/UIM_UI_CampMisc08.uasset",
+    "frames": 24,
+    "vertices": 4,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Textures/Misc/UIM_UI_CampMisc09.uasset",
+    "frames": 24,
+    "vertices": 4,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Textures/Misc/UIM_UI_CampMisc10.uasset",
+    "frames": 24,
+    "vertices": 4,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Textures/Misc/UIM_UI_CampMisc11.uasset",
+    "frames": 24,
+    "vertices": 4,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Textures/Misc/UIM_UI_CampMisc12.uasset",
+    "frames": 24,
+    "vertices": 4,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Textures/Misc/UIM_UI_CampMisc13.uasset",
+    "frames": 24,
+    "vertices": 4,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Textures/Misc/UIM_UI_CampMisc14.uasset",
+    "frames": 24,
+    "vertices": 4,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Textures/Misc/UIM_UI_CampMisc15.uasset",
+    "frames": 24,
+    "vertices": 4,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Textures/Misc/UIM_UI_CampMisc16.uasset",
+    "frames": 24,
+    "vertices": 4,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Textures/Misc/UIM_UI_CampMisc17.uasset",
+    "frames": 24,
+    "vertices": 4,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Textures/Misc/UIM_UI_CampMisc18.uasset",
+    "frames": 24,
+    "vertices": 4,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  },
+  {
+    "path": "P3R/Content/Xrd777/UI/Camp/Textures/Misc/UIM_UI_CampMisc19.uasset",
+    "frames": 24,
+    "vertices": 4,
+    "fields": [
+      "frameNum",
+      "vertexNum",
+      "polygonNum",
+      "indexNum",
+      "geomFormat",
+      "animFormat",
+      "p2DGeomVertex",
+      "p2DAnimVertex",
+      "Indices"
+    ]
+  }
+]

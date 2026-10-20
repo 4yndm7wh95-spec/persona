@@ -1,0 +1,116 @@
+{
+  "messages": {
+    "SYS_DIFFICULTY_CHECK_AST": "[f 0:5 65278][f 2:1 ]将以“[f 0:1 2][f 2:4 0][f 0:1 27]”难度开始游戏。\n确定要开始吗？\r\n[f 1:4 1][f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_SAFE": "[f 0:5 65278][f 2:1 ]即使在战斗中全灭，也能无限制地当场复活。\n[f 0:1 43]无论选择哪个难度，故事内容都不会有变化。\n另外，也可以之后再更改为\n“HEARTLESS”以外的难度。[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_EASY": "[f 0:5 65278][f 2:1 ]和“NORMAL”相比，战斗更简单。\n[f 0:1 43]无论选择哪个难度，故事内容都不会有变化。\n另外，也可以之后再更改为\n“HEARTLESS”以外的难度。[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_NORM": "[f 0:5 65278][f 2:1 ]可以在适度的紧张感中享受战斗的乐趣。\n[f 0:1 43]无论选择哪个难度，故事内容都不会有变化。\n另外，也可以之后再更改为\n“HEARTLESS”以外的难度。[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_HARD": "[f 0:5 65278][f 2:1 ]和“NORMAL”相比，战斗难度更高。\r\n[f 0:1 43]无论选择哪个难度，故事内容都不会有变化。\n另外，也可以之后再更改为\n“HEARTLESS”以外的难度。[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_HEAR": "[f 0:5 65278][f 2:1 ]和“HARD”相比，战斗难度大幅提高。\r\n[f 0:1 43]无论选择哪个难度，故事内容都不会有变化。[f 0:1 27]\n另外，虽然可以更改为其他难度，\r\n但更改之后无法回到“HEARTLESS”。\n[f 1:1 ]",
+    "SYS_INHERITANCE_LOAD_CHE": "[f 0:5 65278][f 2:1 ]要继承这个数据吗？\r\n[f 1:4 1][f 1:1 ]",
+    "SYS_SAVE_VERSION_ERROR": "[f 0:5 65278][f 2:1 ]读取的保存数据和游戏版本不一致，\n因此无法继续游戏。\r\n[f 1:1 ]",
+    "SYS_SAVE_EPISODE_ERROR": "[f 0:5 65278][f 2:1 ]读取的保存数据和选择的篇章不一致，\r\n因此无法继续游戏。\r\n[f 1:1 ]",
+    "SYS_VELVETROOM_INFO_INHE": "[f 0:5 65278][f 2:1 ]从现在开始，可于“从全书抽出”画面切换至\n从您的故事继承而来的人格面具全书，\r\n并从这里抽出人格面具。\r\n[f 1:1 ]\n[page]\n[f 0:5 65278][f 2:1 ]按[f 1:3 118]可切换至来自于您的故事的\n人格面具全书。\r\n[f 1:1 ]\n[page]\n[f 0:5 65278][f 2:1 ]从继承的全书中抽出人格面具时，\r\n需要的费用会比正常情况更高，\n且必须达到至少和人格面具一样的等级。\n[f 1:1 ]",
+    "MSG_FLORIST_CHECK": "[f 0:5 65278][f 2:1 ][f 5:21 1,101]这样可以吗？\n[f 1:1 ]",
+    "SEL_FLORIST_CHECK": "[f 0:5 65278][f 2:1 ]拜托了\r\n[page]\n[f 0:5 65278][f 2:1 ]还是算了",
+    "SYS_CONF_DIFF_CHECK_ASTR": "[f 0:5 65278][f 2:1 ]若从最高难度更改为其他难度，\n将无法返回原来的难度。\r\n确定要更改吗？\r\n[f 1:4 1][f 1:1 ]"
+  },
+  "raw_dialogs": {
+    "SYS_DIFFICULTY_CHECK_AST": {
+      "kind": 0,
+      "page_offsets": [
+        156
+      ],
+      "raw_text_hex": "fef205fffffef141e5b086e4bba5e2809cfef2010301fef2440101fef2011c01e2809de99abee5baa6e5bc80e5a78be6b8b8e6888fe380820ae7a1aee5ae9ae8a681e5bc80e5a78be59097efbc9f0d0afef2240201fef12100"
+    },
+    "SYS_DIFFICULTY_INFO_SAFE": {
+      "kind": 0,
+      "page_offsets": [
+        284
+      ],
+      "raw_text_hex": "fef205fffffef141e58db3e4bdbfe59ca8e68898e69697e4b8ade585a8e781adefbc8ce4b99fe883bde697a0e99990e588b6e59cb0e5bd93e59cbae5a48de6b4bbe380820afef2012c01e697a0e8aebae98089e68ba9e593aae4b8aae99abee5baa6efbc8ce69585e4ba8be58685e5aeb9e983bde4b88de4bc9ae69c89e58f98e58c96e380820ae58fa6e5a496efbc8ce4b99fe58fafe4bba5e4b98be5908ee5868de69bb4e694b9e4b8ba0ae2809c48454152544c455353e2809de4bba5e5a496e79a84e99abee5baa6e38082fef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_EASY": {
+      "kind": 0,
+      "page_offsets": [
+        536
+      ],
+      "raw_text_hex": "fef205fffffef141e5928ce2809c4e4f524d414ce2809de79bb8e6af94efbc8ce68898e69697e69bb4e7ae80e58d95e380820afef2012c01e697a0e8aebae98089e68ba9e593aae4b8aae99abee5baa6efbc8ce69585e4ba8be58685e5aeb9e983bde4b88de4bc9ae69c89e58f98e58c96e380820ae58fa6e5a496efbc8ce4b99fe58fafe4bba5e4b98be5908ee5868de69bb4e694b9e4b8ba0ae2809c48454152544c455353e2809de4bba5e5a496e79a84e99abee5baa6e38082fef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_NORM": {
+      "kind": 0,
+      "page_offsets": [
+        772
+      ],
+      "raw_text_hex": "fef205fffffef141e58fafe4bba5e59ca8e98082e5baa6e79a84e7b4a7e5bca0e6849fe4b8ade4baabe58f97e68898e69697e79a84e4b990e8b6a3e380820afef2012c01e697a0e8aebae98089e68ba9e593aae4b8aae99abee5baa6efbc8ce69585e4ba8be58685e5aeb9e983bde4b88de4bc9ae69c89e58f98e58c96e380820ae58fa6e5a496efbc8ce4b99fe58fafe4bba5e4b98be5908ee5868de69bb4e694b9e4b8ba0ae2809c48454152544c455353e2809de4bba5e5a496e79a84e99abee5baa6e38082fef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_HARD": {
+      "kind": 0,
+      "page_offsets": [
+        1020
+      ],
+      "raw_text_hex": "fef205fffffef141e5928ce2809c4e4f524d414ce2809de79bb8e6af94efbc8ce68898e69697e99abee5baa6e69bb4e9ab98e380820d0afef2012c01e697a0e8aebae98089e68ba9e593aae4b8aae99abee5baa6efbc8ce69585e4ba8be58685e5aeb9e983bde4b88de4bc9ae69c89e58f98e58c96e380820ae58fa6e5a496efbc8ce4b99fe58fafe4bba5e4b98be5908ee5868de69bb4e694b9e4b8ba0ae2809c48454152544c455353e2809de4bba5e5a496e79a84e99abee5baa6e38082fef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_HEAR": {
+      "kind": 0,
+      "page_offsets": [
+        1260
+      ],
+      "raw_text_hex": "fef205fffffef141e5928ce2809c48415244e2809de79bb8e6af94efbc8ce68898e69697e99abee5baa6e5a4a7e5b985e68f90e9ab98e380820d0afef2012c01e697a0e8aebae98089e68ba9e593aae4b8aae99abee5baa6efbc8ce69585e4ba8be58685e5aeb9e983bde4b88de4bc9ae69c89e58f98e58c96e38082fef2011c010ae58fa6e5a496efbc8ce899bde784b6e58fafe4bba5e69bb4e694b9e4b8bae585b6e4bb96e99abee5baa6efbc8c0d0ae4bd86e69bb4e694b9e4b98be5908ee697a0e6b395e59b9ee588b0e2809c48454152544c455353e2809de380820afef12100"
+    },
+    "SYS_INHERITANCE_LOAD_CHE": {
+      "kind": 0,
+      "page_offsets": [
+        1524
+      ],
+      "raw_text_hex": "fef205fffffef141e8a681e7bba7e689bfe8bf99e4b8aae695b0e68daee59097efbc9f0d0afef2240201fef12100"
+    },
+    "SYS_SAVE_VERSION_ERROR": {
+      "kind": 0,
+      "page_offsets": [
+        1608
+      ],
+      "raw_text_hex": "fef205fffffef141e8afbbe58f96e79a84e4bf9de5ad98e695b0e68daee5928ce6b8b8e6888fe78988e69cace4b88de4b880e887b4efbc8c0ae59ba0e6ada4e697a0e6b395e7bba7e7bbade6b8b8e6888fe380820d0afef12100"
+    },
+    "SYS_SAVE_EPISODE_ERROR": {
+      "kind": 0,
+      "page_offsets": [
+        1736
+      ],
+      "raw_text_hex": "fef205fffffef141e8afbbe58f96e79a84e4bf9de5ad98e695b0e68daee5928ce98089e68ba9e79a84e7af87e7aba0e4b88de4b880e887b4efbc8c0d0ae59ba0e6ada4e697a0e6b395e7bba7e7bbade6b8b8e6888fe380820d0afef12100"
+    },
+    "SYS_VELVETROOM_INFO_INHE": {
+      "kind": 0,
+      "page_offsets": [
+        1876,
+        2036,
+        2115
+      ],
+      "raw_text_hex": "fef205fffffef141e4bb8ee78eb0e59ca8e5bc80e5a78befbc8ce58fafe4ba8ee2809ce4bb8ee585a8e4b9a6e68abde587bae2809de794bbe99da2e58887e68da2e887b30ae4bb8ee682a8e79a84e69585e4ba8be7bba7e689bfe8808ce69da5e79a84e4babae6a0bce99da2e585b7e585a8e4b9a6efbc8c0d0ae5b9b6e4bb8ee8bf99e9878ce68abde587bae4babae6a0bce99da2e585b7e380820d0afef121fef205fffffef141e68c89fef2237701e58fafe58887e68da2e887b3e69da5e887aae4ba8ee682a8e79a84e69585e4ba8be79a840ae4babae6a0bce99da2e585b7e585a8e4b9a6e380820d0afef121fef205fffffef141e4bb8ee7bba7e689bfe79a84e585a8e4b9a6e4b8ade68abde587bae4babae6a0bce99da2e585b7e697b6efbc8c0d0ae99c80e8a681e79a84e8b4b9e794a8e4bc9ae6af94e6ada3e5b8b8e68385e586b5e69bb4e9ab98efbc8c0ae4b894e5bf85e9a1bbe8bebee588b0e887b3e5b091e5928ce4babae6a0bce99da2e585b7e4b880e6a0b7e79a84e7ad89e7baa7e380820afef12100"
+    },
+    "MSG_FLORIST_CHECK": {
+      "kind": 0,
+      "page_offsets": [
+        2308
+      ],
+      "raw_text_hex": "fef205fffffef141fef3b502016601e8bf99e6a0b7e58fafe4bba5e59097efbc9f0afef12100"
+    },
+    "SEL_FLORIST_CHECK": {
+      "kind": 1,
+      "page_offsets": [
+        2392,
+        2411
+      ],
+      "raw_text_hex": "fef205fffffef141e68b9ce68998e4ba860d00fef205fffffef141e8bf98e698afe7ae97e4ba860000"
+    },
+    "SYS_CONF_DIFF_CHECK_ASTR": {
+      "kind": 0,
+      "page_offsets": [
+        2472
+      ],
+      "raw_text_hex": "fef205fffffef141e88ba5e4bb8ee69c80e9ab98e99abee5baa6e69bb4e694b9e4b8bae585b6e4bb96e99abee5baa6efbc8c0ae5b086e697a0e6b395e8bf94e59b9ee58e9fe69da5e79a84e99abee5baa6e380820d0ae7a1aee5ae9ae8a681e69bb4e694b9e59097efbc9f0d0afef2240201fef12100"
+    }
+  },
+  "encoding": "UTF-8",
+  "control_codes": "[f table:index arguments]；不删除功能标签",
+  "format": "MSG1 big endian / P3R Reload"
+}

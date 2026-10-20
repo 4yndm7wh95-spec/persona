@@ -1,0 +1,701 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_CampCalendarEditParameterDataTable",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/Xrd777/UI/Camp/Calendar/DataTable/DT_CampCalendarEditParameterDataTable",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UICmpCalendarDrawEditParameterItem'",
+        "ObjectPath": "/Script/xrd777"
+      }
+    },
+    "Rows": {
+      "Edit_White_Sircle_Scale_Up_Frame": {
+        "Frame": 6,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_White_Sircle_Scale_Up_Frame_Comment",
+          "SourceString": "/* 入り演出時の白円の拡大フレーム */",
+          "LocalizedString": "/* 入り演出時の白円の拡大フレーム */"
+        }
+      },
+      "Edit_Mask_Sircle_Scale_Up_Delay": {
+        "Frame": 3,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Mask_Sircle_Scale_Up_Delay_Comment",
+          "SourceString": "/* 入り演出時のマスク円の拡大遅延フレーム */",
+          "LocalizedString": "/* 入り演出時のマスク円の拡大遅延フレーム */"
+        }
+      },
+      "Edit_Mask_Sircle_Scale_Up_Frame": {
+        "Frame": 6,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Mask_Sircle_Scale_Up_Frame_Comment",
+          "SourceString": "/* 入り演出時のマスク円の拡大フレーム */",
+          "LocalizedString": "/* 入り演出時のマスク円の拡大フレーム */"
+        }
+      },
+      "Edit_Help_Slide_In_Delay": {
+        "Frame": 3,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Help_Slide_In_Delay_Comment",
+          "SourceString": "/* 入り演出時の画面ヘルプ文のスライドイン遅延フレーム */",
+          "LocalizedString": "/* 入り演出時の画面ヘルプ文のスライドイン遅延フレーム */"
+        }
+      },
+      "Edit_Help_Slide_In_Frame": {
+        "Frame": 3,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Help_Slide_In_Frame_Comment",
+          "SourceString": "/* 入り演出時の画面ヘルプ文のスライドインフレーム */",
+          "LocalizedString": "/* 入り演出時の画面ヘルプ文のスライドインフレーム */"
+        }
+      },
+      "Edit_Year_Fade_In_Delay": {
+        "Frame": 3,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Year_Fade_In_Delay_Comment",
+          "SourceString": "/* 入り演出時の年のフェードイン遅延フレーム */",
+          "LocalizedString": "/* 入り演出時の年のフェードイン遅延フレーム */"
+        }
+      },
+      "Edit_Year_Fade_In_Frame": {
+        "Frame": 1,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Year_Fade_In_Frame_Comment",
+          "SourceString": "/* 入り演出時の年のフェードインフレーム */",
+          "LocalizedString": "/* 入り演出時の年のフェードインフレーム */"
+        }
+      },
+      "Edit_Month_Fade_In_Delay": {
+        "Frame": 7,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Month_Fade_In_Delay_Comment",
+          "SourceString": "/* 入り演出時の月のフェードイン遅延フレーム */",
+          "LocalizedString": "/* 入り演出時の月のフェードイン遅延フレーム */"
+        }
+      },
+      "Edit_Month_Fade_In_Frame": {
+        "Frame": 3,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Month_Fade_In_Frame_Comment",
+          "SourceString": "/* 入り演出時の月のフェードインフレーム */",
+          "LocalizedString": "/* 入り演出時の月のフェードインフレーム */"
+        }
+      },
+      "Edit_Job_Title_Slide_In_Delay": {
+        "Frame": 7,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Title_Slide_In_Delay_Comment",
+          "SourceString": "/* 入り演出時のJobタイトルのスライドイン遅延フレーム */",
+          "LocalizedString": "/* 入り演出時のJobタイトルのスライドイン遅延フレーム */"
+        }
+      },
+      "Edit_Job_Title_Slide_In_Frame": {
+        "Frame": 3,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Title_Slide_In_Frame_Comment",
+          "SourceString": "/* 入り演出時のJobタイトルのスライドインフレーム */",
+          "LocalizedString": "/* 入り演出時のJobタイトルのスライドインフレーム */"
+        }
+      },
+      "Edit_L1R1_Fade_In_Delay": {
+        "Frame": 9,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_L1R1_Fade_In_Delay_Comment",
+          "SourceString": "/* 入り演出時のL1R1のフェードイン遅延フレーム */",
+          "LocalizedString": "/* 入り演出時のL1R1のフェードイン遅延フレーム */"
+        }
+      },
+      "Edit_L1R1_Fade_In_Frame": {
+        "Frame": 3,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_L1R1_Fade_In_Frame_Comment",
+          "SourceString": "/* 入り演出時のL1R1のフェードインフレーム */",
+          "LocalizedString": "/* 入り演出時のL1R1のフェードインフレーム */"
+        }
+      },
+      "Edit_Day_Fade_In_Delay": {
+        "Frame": 9,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Day_Fade_In_Delay_Comment",
+          "SourceString": "/* 入り演出時の日のフェードイン遅延フレーム */",
+          "LocalizedString": "/* 入り演出時の日のフェードイン遅延フレーム */"
+        }
+      },
+      "Edit_Day_Fade_In_Frame": {
+        "Frame": 3,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Day_Fade_In_Frame_Comment",
+          "SourceString": "/* 入り演出時の日のフェードインフレーム */",
+          "LocalizedString": "/* 入り演出時の日のフェードインフレーム */"
+        }
+      },
+      "Edit_Day_Event_Fade_In_Delay": {
+        "Frame": 9,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Day_Event_Fade_In_Delay_Comment",
+          "SourceString": "/* 入り演出時の日付固定イベントのフェードイン遅延フレーム */",
+          "LocalizedString": "/* 入り演出時の日付固定イベントのフェードイン遅延フレーム */"
+        }
+      },
+      "Edit_Day_Event_Fade_In_Frame": {
+        "Frame": 3,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Day_Event_Fade_In_Frame_Comment",
+          "SourceString": "/* 入り演出時の日付固定イベントのフェードインフレーム */",
+          "LocalizedString": "/* 入り演出時の日付固定イベントのフェードインフレーム */"
+        }
+      },
+      "Edid_Job_Banner_In_Anima_1_Delay": {
+        "Frame": 1,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edid_Job_Banner_In_Anima_1_Delay_Comment",
+          "SourceString": "/* 入り演出時のアルバイトバナーの１バナーの間のフレーム */",
+          "LocalizedString": "/* 入り演出時のアルバイトバナーの１バナーの間のフレーム */"
+        }
+      },
+      "Edit_Job_Banner_In_Anima_Slide_In_Delay": {
+        "Frame": 9,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Banner_In_Anima_Slide_In_Delay_Comment",
+          "SourceString": "/* 入り演出時のアルバイトバナーのスライドイン遅延フレーム */",
+          "LocalizedString": "/* 入り演出時のアルバイトバナーのスライドイン遅延フレーム */"
+        }
+      },
+      "Edit_Job_Banner_In_Anima_Slide_In_Frame": {
+        "Frame": 3,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Banner_In_Anima_Slide_In_Frame_Comment",
+          "SourceString": "/* 入り演出時のアルバイトバナーのスライドインフレーム */",
+          "LocalizedString": "/* 入り演出時のアルバイトバナーのスライドインフレーム */"
+        }
+      },
+      "Edit_Job_Plate_Slide_In_Frame": {
+        "Frame": 4,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Plate_Slide_In_Frame_Comment",
+          "SourceString": "/* アルバイト下地のスライドインフレーム */",
+          "LocalizedString": "/* アルバイト下地のスライドインフレーム */"
+        }
+      },
+      "Edit_Job_Plate_Slide_Out_Delay": {
+        "Frame": 2,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Plate_Slide_Out_Delay_Comment",
+          "SourceString": "/* アルバイト下地のスライドアウト遅延フレーム */",
+          "LocalizedString": "/* アルバイト下地のスライドアウト遅延フレーム */"
+        }
+      },
+      "Edit_Job_Plate_Slide_Out_Frame": {
+        "Frame": 3,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Plate_Slide_Out_Frame_Comment",
+          "SourceString": "/* アルバイト下地のスライドアウトフレーム */",
+          "LocalizedString": "/* アルバイト下地のスライドアウトフレーム */"
+        }
+      },
+      "Edit_Job_Banner_Slide_In_Delay": {
+        "Frame": 2,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Banner_Slide_In_Delay_Comment",
+          "SourceString": "/* アルバイトバナーのスライドイン遅延フレーム */",
+          "LocalizedString": "/* アルバイトバナーのスライドイン遅延フレーム */"
+        }
+      },
+      "Edit_Job_Banner_Slide_In_Frame": {
+        "Frame": 3,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Banner_Slide_In_Frame_Comment",
+          "SourceString": "/* アルバイトバナーのスライドインフレーム */",
+          "LocalizedString": "/* アルバイトバナーのスライドインフレーム */"
+        }
+      },
+      "Edit_Job_Banner_Slide_Out_Delay": {
+        "Frame": 0,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Banner_Slide_Out_Delay_Comment",
+          "SourceString": "/* アルバイトバナーのスライドアウト遅延フレーム */",
+          "LocalizedString": "/* アルバイトバナーのスライドアウト遅延フレーム */"
+        }
+      },
+      "Edit_Job_Banner_Slide_Out_Frame": {
+        "Frame": 3,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Banner_Slide_Out_Frame_Comment",
+          "SourceString": "/* アルバイトバナーのスライドアウトフレーム */",
+          "LocalizedString": "/* アルバイトバナーのスライドアウトフレーム */"
+        }
+      },
+      "Edit_Job_Banner_Cursor_Fade_In_Delay": {
+        "Frame": 2,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Banner_Cursor_Fade_In_Delay_Comment",
+          "SourceString": "/* アルバイトバナーの（白）カーソルのフェードイン遅延フレーム */",
+          "LocalizedString": "/* アルバイトバナーの（白）カーソルのフェードイン遅延フレーム */"
+        }
+      },
+      "Edit_Job_Banner_Cursor_Fade_In_Frame": {
+        "Frame": 3,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Banner_Cursor_Fade_In_Frame_Comment",
+          "SourceString": "/* アルバイトバナーの（白）カーソルのフェードインフレーム */",
+          "LocalizedString": "/* アルバイトバナーの（白）カーソルのフェードインフレーム */"
+        }
+      },
+      "Edit_Job_Banner_Cursor_Fade_Out_Delay": {
+        "Frame": 0,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Banner_Cursor_Fade_Out_Delay_Comment",
+          "SourceString": "/* アルバイトバナーの（白）カーソルのフェードアウト遅延フレーム */",
+          "LocalizedString": "/* アルバイトバナーの（白）カーソルのフェードアウト遅延フレーム */"
+        }
+      },
+      "Edit_Job_Banner_Cursor_Fade_Out_Frame": {
+        "Frame": 3,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Banner_Cursor_Fade_Out_Frame_Comment",
+          "SourceString": "/* アルバイトバナーの（白）カーソルのフェードアウトフレーム */",
+          "LocalizedString": "/* アルバイトバナーの（白）カーソルのフェードアウトフレーム */"
+        }
+      },
+      "Edit_Job_Banner_SubCursor_Slide_In_Delay": {
+        "Frame": 5,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Banner_SubCursor_Slide_In_Delay_Comment",
+          "SourceString": "/* アルバイトバナーの（赤）カーソルのスライドイン遅延フレーム */",
+          "LocalizedString": "/* アルバイトバナーの（赤）カーソルのスライドイン遅延フレーム */"
+        }
+      },
+      "Edit_Job_Banner_SubCursor_Slide_In_Frame": {
+        "Frame": 2,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Banner_SubCursor_Slide_In_Frame_Comment",
+          "SourceString": "/* アルバイトバナーの（赤）カーソルのスライドインフレーム */",
+          "LocalizedString": "/* アルバイトバナーの（赤）カーソルのスライドインフレーム */"
+        }
+      },
+      "Edit_Job_Banner_Time_Mark_Color_Change_Frame": {
+        "Frame": 2,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Banner_Time_Mark_Color_Change_Frame_Comment",
+          "SourceString": "/* アルバイトバナーの時間帯マークの色変更フレーム */",
+          "LocalizedString": "/* アルバイトバナーの時間帯マークの色変更フレーム */"
+        }
+      },
+      "Edit_Job_Info_Slide_In_Delay": {
+        "Frame": 4,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Info_Slide_In_Delay_Comment",
+          "SourceString": "/* アルバイト情報のスライドイン遅延フレーム */",
+          "LocalizedString": "/* アルバイト情報のスライドイン遅延フレーム */"
+        }
+      },
+      "Edit_Job_Info_Slide_In_Frame": {
+        "Frame": 3,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Info_Slide_In_Frame_Comment",
+          "SourceString": "/* アルバイト情報のスライドインフレーム */",
+          "LocalizedString": "/* アルバイト情報のスライドインフレーム */"
+        }
+      },
+      "Edit_Job_Info_Fade_In_Delay": {
+        "Frame": 4,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Info_Fade_In_Delay_Comment",
+          "SourceString": "/* アルバイト情報のフェードイン遅延フレーム */",
+          "LocalizedString": "/* アルバイト情報のフェードイン遅延フレーム */"
+        }
+      },
+      "Edit_Job_Info_Fade_In_Frame": {
+        "Frame": 3,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Info_Fade_In_Frame_Comment",
+          "SourceString": "/* アルバイト情報のフェードインフレーム */",
+          "LocalizedString": "/* アルバイト情報のフェードインフレーム */"
+        }
+      },
+      "Edit_Job_Info_Fade_Out_Delay": {
+        "Frame": 0,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Info_Fade_Out_Delay_Comment",
+          "SourceString": "/* アルバイト情報のフェードアウト遅延フレーム */",
+          "LocalizedString": "/* アルバイト情報のフェードアウト遅延フレーム */"
+        }
+      },
+      "Edit_Job_Info_Fade_Out_Frame": {
+        "Frame": 1,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Info_Fade_Out_Frame_Comment",
+          "SourceString": "/* アルバイト情報のフェードアウトフレーム */",
+          "LocalizedString": "/* アルバイト情報のフェードアウトフレーム */"
+        }
+      },
+      "Edit_Job_Info_Change_Fade_In_Delay": {
+        "Frame": 4,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Info_Change_Fade_In_Delay_Comment",
+          "SourceString": "/* アルバイト情報の切り替え時のフェードイン遅延フレーム */",
+          "LocalizedString": "/* アルバイト情報の切り替え時のフェードイン遅延フレーム */"
+        }
+      },
+      "Edit_Job_Info_Change_Fade_In_Frame": {
+        "Frame": 3,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Info_Change_Fade_In_Frame_Comment",
+          "SourceString": "/* アルバイト情報の切り替え時のフェードインフレーム */",
+          "LocalizedString": "/* アルバイト情報の切り替え時のフェードインフレーム */"
+        }
+      },
+      "Edit_Job_Info_Change_Fade_Out_Delay": {
+        "Frame": 0,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Info_Change_Fade_Out_Delay_Comment",
+          "SourceString": "/* アルバイト情報の切り替え時のフェードイン遅延フレーム */",
+          "LocalizedString": "/* アルバイト情報の切り替え時のフェードイン遅延フレーム */"
+        }
+      },
+      "Edit_Job_Info_Change_Fade_Out_Frame": {
+        "Frame": 3,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Job_Info_Change_Fade_Out_Frame_Comment",
+          "SourceString": "/* アルバイト情報の切り替え時のフェードインフレーム */",
+          "LocalizedString": "/* アルバイト情報の切り替え時のフェードインフレーム */"
+        }
+      },
+      "Edit_FullMoon_Loop_Anima_Frame": {
+        "Frame": 90,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_FullMoon_Loop_Anima_Frame_Comment",
+          "SourceString": "/* 満月のループフレーム */",
+          "LocalizedString": "/* 満月のループフレーム */"
+        }
+      },
+      "Edit_Day_Cursor_Slide_Loop_Frame1": {
+        "Frame": 8,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Day_Cursor_Slide_Loop_Frame1_Comment",
+          "SourceString": "/* 日付カーソルのスライドループアニメのフレーム1 */",
+          "LocalizedString": "/* 日付カーソルのスライドループアニメのフレーム1 */"
+        }
+      },
+      "Edit_Day_Cursor_Slide_Loop_Frame2": {
+        "Frame": 2,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Day_Cursor_Slide_Loop_Frame2_Comment",
+          "SourceString": "/* 日付カーソルのスライドループアニメのフレーム2 */",
+          "LocalizedString": "/* 日付カーソルのスライドループアニメのフレーム2 */"
+        }
+      },
+      "Edit_Day_Cursor_Gray_Out_Frame": {
+        "Frame": 3,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Day_Cursor_Gray_Out_Frame_Comment",
+          "SourceString": "/* 日付カーソルのグレーアウトフレーム */",
+          "LocalizedString": "/* 日付カーソルのグレーアウトフレーム */"
+        }
+      },
+      "Edit_Day_Cursor_Move_Frame": {
+        "Frame": 3,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Day_Cursor_Move_Frame_Comment",
+          "SourceString": "/* 日付カーソルの移動フレーム */",
+          "LocalizedString": "/* 日付カーソルの移動フレーム */"
+        }
+      },
+      "Edit_Day_Color_Change_Frame": {
+        "Frame": 3,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Day_Color_Change_Frame_Comment",
+          "SourceString": "/* 日付の色変更のフレーム */",
+          "LocalizedString": "/* 日付の色変更のフレーム */"
+        }
+      },
+      "Edit_Day_Event_Help_Fade_In_Delay": {
+        "Frame": 2,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Day_Event_Help_Fade_In_Delay_Comment",
+          "SourceString": "/* 日付イベント詳細のフェードイン遅延フレーム */",
+          "LocalizedString": "/* 日付イベント詳細のフェードイン遅延フレーム */"
+        }
+      },
+      "Edit_Day_Event_Help_Fade_In_Frame": {
+        "Frame": 2,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Day_Event_Help_Fade_In_Frame_Comment",
+          "SourceString": "/* 日付イベント詳細のフェードインフレーム */",
+          "LocalizedString": "/* 日付イベント詳細のフェードインフレーム */"
+        }
+      },
+      "Edit_Day_Event_Help_Fade_Out_Delay": {
+        "Frame": 0,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Day_Event_Help_Fade_Out_Delay_Comment",
+          "SourceString": "/* 日付イベント詳細のフェードアウト遅延フレーム */",
+          "LocalizedString": "/* 日付イベント詳細のフェードアウト遅延フレーム */"
+        }
+      },
+      "Edit_Day_Event_Help_Fade_Out_Frame": {
+        "Frame": 2,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Day_Event_Help_Fade_Out_Frame_Comment",
+          "SourceString": "/* 日付イベント詳細のフェードアウトフレーム */",
+          "LocalizedString": "/* 日付イベント詳細のフェードアウトフレーム */"
+        }
+      },
+      "Edit_L1R1_Loop_Animation_Frame": {
+        "Frame": 14,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_L1R1_Loop_Animation_Frame_Comment",
+          "SourceString": "/* L1 or R1 のループアニメのフレーム */",
+          "LocalizedString": "/* L1 or R1 のループアニメのフレーム */"
+        }
+      },
+      "Edit_L1R1_Push_Animation_Frame": {
+        "Frame": 4,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_L1R1_Push_Animation_Frame_Comment",
+          "SourceString": "/* L1 or R1 を押した時のアニメのフレーム */",
+          "LocalizedString": "/* L1 or R1 を押した時のアニメのフレーム */"
+        }
+      },
+      "Edit_Month_Change_Slide_Out_Delay": {
+        "Frame": 0,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Month_Change_Slide_Out_Delay_Comment",
+          "SourceString": "/* 月切り替わり時の月のスライドアウト遅延フレーム */",
+          "LocalizedString": "/* 月切り替わり時の月のスライドアウト遅延フレーム */"
+        }
+      },
+      "Edit_Month_Change_Slide_Out_Frame": {
+        "Frame": 2,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Month_Change_Slide_Out_Frame_Comment",
+          "SourceString": "/* 月切り替わり時の月のスライドアウトフレーム */",
+          "LocalizedString": "/* 月切り替わり時の月のスライドアウトフレーム */"
+        }
+      },
+      "Edit_Month_Change_Slide_In_Delay": {
+        "Frame": 0,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Month_Change_Slide_In_Delay_Comment",
+          "SourceString": "/* 月切り替わり時の月のスライドイン遅延フレーム */",
+          "LocalizedString": "/* 月切り替わり時の月のスライドイン遅延フレーム */"
+        }
+      },
+      "Edit_Month_Change_Slide_In_Frame": {
+        "Frame": 2,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Month_Change_Slide_In_Frame_Comment",
+          "SourceString": "/* 月切り替わり時の月のスライドインフレーム */",
+          "LocalizedString": "/* 月切り替わり時の月のスライドインフレーム */"
+        }
+      },
+      "Edit_Month_Change_Fade_In_Delay": {
+        "Frame": 0,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Month_Change_Fade_In_Delay_Comment",
+          "SourceString": "/* 月切り替わり時の月のフェードイン遅延フレーム */",
+          "LocalizedString": "/* 月切り替わり時の月のフェードイン遅延フレーム */"
+        }
+      },
+      "Edit_Month_Change_Fade_In_Frame": {
+        "Frame": 2,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Month_Change_Fade_In_Frame_Comment",
+          "SourceString": "/* 月切り替わり時の月のフェードインフレーム */",
+          "LocalizedString": "/* 月切り替わり時の月のフェードインフレーム */"
+        }
+      },
+      "Edit_Month_Change_Fade_Out_Delay": {
+        "Frame": 0,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Month_Change_Fade_Out_Delay_Comment",
+          "SourceString": "/* 月切り替わり時の月のフェードアウト遅延フレーム */",
+          "LocalizedString": "/* 月切り替わり時の月のフェードアウト遅延フレーム */"
+        }
+      },
+      "Edit_Month_Change_Fade_Out_Frame": {
+        "Frame": 2,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Month_Change_Fade_Out_Frame_Comment",
+          "SourceString": "/* 月切り替わり時の月のフェードアウトフレーム */",
+          "LocalizedString": "/* 月切り替わり時の月のフェードアウトフレーム */"
+        }
+      },
+      "Edit_Year_Change_Fade_Out_Delay": {
+        "Frame": 0,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Year_Change_Fade_Out_Delay_Comment",
+          "SourceString": "/* 月切り替わり時の年のフェードアウト遅延フレーム */",
+          "LocalizedString": "/* 月切り替わり時の年のフェードアウト遅延フレーム */"
+        }
+      },
+      "Edit_Year_Change_Fade_Out_Frame": {
+        "Frame": 2,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Year_Change_Fade_Out_Frame_Comment",
+          "SourceString": "/* 月切り替わり時の年のフェードアウトフレーム */",
+          "LocalizedString": "/* 月切り替わり時の年のフェードアウトフレーム */"
+        }
+      },
+      "Edit_Year_Change_Fade_In_Delay": {
+        "Frame": 0,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Year_Change_Fade_In_Delay_Comment",
+          "SourceString": "/* 月切り替わり時の年のフェードイン遅延フレーム */",
+          "LocalizedString": "/* 月切り替わり時の年のフェードイン遅延フレーム */"
+        }
+      },
+      "Edit_Year_Change_Fade_In_Frame": {
+        "Frame": 2,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Year_Change_Fade_In_Frame_Comment",
+          "SourceString": "/* 月切り替わり時の年のフェードインフレーム */",
+          "LocalizedString": "/* 月切り替わり時の年のフェードインフレーム */"
+        }
+      },
+      "Edit_Day_Change_Slide_Out_Delay": {
+        "Frame": 0,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Day_Change_Slide_Out_Delay_Comment",
+          "SourceString": "/* 月切り替わり時の日のスライドアウト遅延フレーム */",
+          "LocalizedString": "/* 月切り替わり時の日のスライドアウト遅延フレーム */"
+        }
+      },
+      "Edit_Day_Change_Slide_Out_Frame": {
+        "Frame": 2,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Day_Change_Slide_Out_Frame_Comment",
+          "SourceString": "/* 月切り替わり時の日のスライドアウトフレーム */",
+          "LocalizedString": "/* 月切り替わり時の日のスライドアウトフレーム */"
+        }
+      },
+      "Edit_Day_Change_Slide_In_Delay": {
+        "Frame": 0,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Day_Change_Slide_In_Delay_Comment",
+          "SourceString": "/* 月切り替わり時の日のスライドイン遅延フレーム */",
+          "LocalizedString": "/* 月切り替わり時の日のスライドイン遅延フレーム */"
+        }
+      },
+      "Edit_Day_Change_Slide_In_Frame": {
+        "Frame": 2,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Day_Change_Slide_In_Frame_Comment",
+          "SourceString": "/* 月切り替わり時の日のスライドインフレーム */",
+          "LocalizedString": "/* 月切り替わり時の日のスライドインフレーム */"
+        }
+      },
+      "Edit_Day_Event_Change_Fade_Out_Delay": {
+        "Frame": 0,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Day_Event_Change_Fade_Out_Delay_Comment",
+          "SourceString": "/* 月切り替わり時の日付固定イベントのフェードアウト遅延フレーム */",
+          "LocalizedString": "/* 月切り替わり時の日付固定イベントのフェードアウト遅延フレーム */"
+        }
+      },
+      "Edit_Day_Event_Change_Fade_Out_Frame": {
+        "Frame": 2,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Day_Event_Change_Fade_Out_Frame_Comment",
+          "SourceString": "/* 月切り替わり時の日付固定イベントのフェードアウトフレーム */",
+          "LocalizedString": "/* 月切り替わり時の日付固定イベントのフェードアウトフレーム */"
+        }
+      },
+      "Edit_Day_Event_Change_Fade_In_Delay": {
+        "Frame": 0,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Day_Event_Change_Fade_In_Delay_Comment",
+          "SourceString": "/* 月切り替わり時の日付固定イベントのフェードイン遅延フレーム */",
+          "LocalizedString": "/* 月切り替わり時の日付固定イベントのフェードイン遅延フレーム */"
+        }
+      },
+      "Edit_Day_Event_Change_Fade_In_Frame": {
+        "Frame": 2,
+        "Comment": {
+          "Namespace": "CampCalendarEditParameterDataTable",
+          "Key": "Edit_Day_Event_Change_Fade_In_Frame_Comment",
+          "SourceString": "/* 月切り替わり時の日付固定イベントのフェードインフレーム */",
+          "LocalizedString": "/* 月切り替わり時の日付固定イベントのフェードインフレーム */"
+        }
+      }
+    }
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "pak_path": "P3R/Content/Astrea/Characters/Player/PC0062/AnmUI/A_PC0062_UIA0004_BASE_CampSkillLoop.uasset",
+    "output": "research\\p3r_camp\\hero3d\\animations_astrea\\A_PC0062_UIA0004_BASE_CampSkillLoop.psa",
+    "bytes": 27145600
+  },
+  {
+    "pak_path": "P3R/Content/Astrea/Characters/Player/PC0062/AnmUI/A_PC0062_UIA0006_BASE_CampItemLoop.uasset",
+    "output": "research\\p3r_camp\\hero3d\\animations_astrea\\A_PC0062_UIA0006_BASE_CampItemLoop.psa",
+    "bytes": 27145600
+  },
+  {
+    "pak_path": "P3R/Content/Astrea/Characters/Player/PC0062/AnmUI/A_PC0062_UIA0012_BASE_CampQUESTLoop.uasset",
+    "output": "research\\p3r_camp\\hero3d\\animations_astrea\\A_PC0062_UIA0012_BASE_CampQUESTLoop.psa",
+    "bytes": 27145600
+  }
+]

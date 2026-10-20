@@ -1,0 +1,456 @@
+[
+  {
+    "Type": "Function",
+    "Name": "ExecuteUbergraph_BP_CampCharaModel",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_CampCharaModel_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.3"
+    },
+    "ChildProperties": [
+      {
+        "Type": "IntProperty",
+        "Name": "EntryPoint",
+        "Flags": "RF_Public",
+        "ElementSize": 4,
+        "PropertyFlags": "BlueprintVisible | BlueprintReadOnly | Parm"
+      }
+    ],
+    "FunctionFlags": "FUNC_Final | FUNC_UbergraphFunction"
+  },
+  {
+    "Type": "Function",
+    "Name": "ReceiveBeginPlay",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_CampCharaModel_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.3"
+    },
+    "SuperStruct": {
+      "ObjectName": "Class'Actor:ReceiveBeginPlay'",
+      "ObjectPath": "/Script/Engine"
+    },
+    "FunctionFlags": "FUNC_Event | FUNC_Protected | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "UserConstructionScript",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_CampCharaModel_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.3"
+    },
+    "SuperStruct": {
+      "ObjectName": "Class'Actor:UserConstructionScript'",
+      "ObjectPath": "/Script/Engine"
+    },
+    "FunctionFlags": "FUNC_Event | FUNC_Public | FUNC_BlueprintCallable | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "BlueprintGeneratedClass",
+    "Name": "BP_CampCharaModel_C",
+    "Flags": "RF_Public | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'BlueprintGeneratedClass'",
+    "Package": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel",
+    "Properties": {
+      "SimpleConstructionScript": {
+        "ObjectName": "SimpleConstructionScript'BP_CampCharaModel_C:SimpleConstructionScript_0'",
+        "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.12"
+      },
+      "UberGraphFunction": {
+        "ObjectName": "Function'BP_CampCharaModel_C:ExecuteUbergraph_BP_CampCharaModel'",
+        "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.0"
+      }
+    },
+    "SuperStruct": {
+      "ObjectName": "Class'Character'",
+      "ObjectPath": "/Script/Engine"
+    },
+    "Children": [
+      {
+        "ObjectName": "Function'BP_CampCharaModel_C:UserConstructionScript'",
+        "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.2"
+      },
+      {
+        "ObjectName": "Function'BP_CampCharaModel_C:ReceiveBeginPlay'",
+        "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.1"
+      },
+      {
+        "ObjectName": "Function'BP_CampCharaModel_C:ExecuteUbergraph_BP_CampCharaModel'",
+        "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.0"
+      }
+    ],
+    "ChildProperties": [
+      {
+        "Type": "StructProperty",
+        "Name": "UberGraphFrame",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 16,
+        "PropertyFlags": "Transient | DuplicateTransient",
+        "Struct": {
+          "ObjectName": "Class'PointerToUberGraphFrame'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "FaceMesh",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | InstancedReference | NonTransactional",
+        "PropertyClass": {
+          "ObjectName": "Class'SkeletalMeshComponent'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "HairMesh",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | InstancedReference | NonTransactional",
+        "PropertyClass": {
+          "ObjectName": "Class'SkeletalMeshComponent'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CostumeMesh",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | InstancedReference | NonTransactional",
+        "PropertyClass": {
+          "ObjectName": "Class'SkeletalMeshComponent'",
+          "ObjectPath": "/Script/Engine"
+        }
+      }
+    ],
+    "FuncMap": {
+      "ExecuteUbergraph_BP_CampCharaModel": {
+        "ObjectName": "Function'BP_CampCharaModel_C:ExecuteUbergraph_BP_CampCharaModel'",
+        "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.0"
+      },
+      "ReceiveBeginPlay": {
+        "ObjectName": "Function'BP_CampCharaModel_C:ReceiveBeginPlay'",
+        "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.1"
+      },
+      "UserConstructionScript": {
+        "ObjectName": "Function'BP_CampCharaModel_C:UserConstructionScript'",
+        "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.2"
+      }
+    },
+    "ClassFlags": "CLASS_Config | CLASS_Optional | CLASS_ReplicationDataIsSetUp | CLASS_CompiledFromBlueprint | CLASS_HasInstancedReference",
+    "ClassWithin": {
+      "ObjectName": "Class'Object'",
+      "ObjectPath": "/Script/CoreUObject"
+    },
+    "ClassConfigName": "Game",
+    "bCooked": true,
+    "ClassDefaultObject": {
+      "ObjectName": "BP_CampCharaModel_C'Default__BP_CampCharaModel_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.4"
+    }
+  },
+  {
+    "Type": "BP_CampCharaModel_C",
+    "Name": "Default__BP_CampCharaModel_C",
+    "Flags": "RF_Public | RF_ClassDefaultObject | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "BlueprintGeneratedClass'/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.BP_CampCharaModel_C'",
+    "Package": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel",
+    "Properties": {
+      "UberGraphFrame": {},
+      "Mesh": {
+        "ObjectName": "SkeletalMeshComponent'Default__BP_CampCharaModel_C:CharacterMesh0'",
+        "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.16"
+      },
+      "CharacterMovement": {
+        "ObjectName": "CharacterMovementComponent'Default__BP_CampCharaModel_C:CharMoveComp'",
+        "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.6"
+      },
+      "CapsuleComponent": {
+        "ObjectName": "CapsuleComponent'Default__BP_CampCharaModel_C:CollisionCylinder'",
+        "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.5"
+      },
+      "RootComponent": {
+        "ObjectName": "CapsuleComponent'Default__BP_CampCharaModel_C:CollisionCylinder'",
+        "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.5"
+      }
+    }
+  },
+  {
+    "Type": "CapsuleComponent",
+    "Name": "CollisionCylinder",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CapsuleComponent'",
+    "Outer": {
+      "ObjectName": "BP_CampCharaModel_C'Default__BP_CampCharaModel_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.4"
+    },
+    "Properties": {
+      "CapsuleHalfHeight": 85.0,
+      "CapsuleRadius": 25.0,
+      "AreaClass": {
+        "ObjectName": "Class'NavArea_Obstacle'",
+        "ObjectPath": "/Script/NavigationSystem"
+      }
+    }
+  },
+  {
+    "Type": "CharacterMovementComponent",
+    "Name": "CharMoveComp",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CharacterMovementComponent'",
+    "Outer": {
+      "ObjectName": "BP_CampCharaModel_C'Default__BP_CampCharaModel_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.4"
+    }
+  },
+  {
+    "Type": "SceneComponent",
+    "Name": "DefaultSceneRoot_GEN_VARIABLE",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SceneComponent'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_CampCharaModel_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.3"
+    }
+  },
+  {
+    "Type": "SCS_Node",
+    "Name": "SCS_Node_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SCS_Node'",
+    "Outer": {
+      "ObjectName": "SimpleConstructionScript'BP_CampCharaModel_C:SimpleConstructionScript_0'",
+      "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.12"
+    },
+    "Properties": {
+      "ComponentClass": {
+        "ObjectName": "Class'SceneComponent'",
+        "ObjectPath": "/Script/Engine"
+      },
+      "ComponentTemplate": {
+        "ObjectName": "SceneComponent'BP_CampCharaModel_C:DefaultSceneRoot_GEN_VARIABLE'",
+        "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.7"
+      },
+      "VariableGuid": "D69818EF-49545935-D1663CA7-9BEB5264",
+      "InternalVariableName": "DefaultSceneRoot"
+    }
+  },
+  {
+    "Type": "SCS_Node",
+    "Name": "SCS_Node_1",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SCS_Node'",
+    "Outer": {
+      "ObjectName": "SimpleConstructionScript'BP_CampCharaModel_C:SimpleConstructionScript_0'",
+      "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.12"
+    },
+    "Properties": {
+      "ComponentClass": {
+        "ObjectName": "Class'SkeletalMeshComponent'",
+        "ObjectPath": "/Script/Engine"
+      },
+      "ComponentTemplate": {
+        "ObjectName": "SkeletalMeshComponent'BP_CampCharaModel_C:CostumeMesh_GEN_VARIABLE'",
+        "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.13"
+      },
+      "ParentComponentOrVariableName": "CharacterMesh0",
+      "bIsParentComponentNative": true,
+      "VariableGuid": "A7D89E02-47F3E1B3-DE874CBF-51632D37",
+      "InternalVariableName": "CostumeMesh"
+    }
+  },
+  {
+    "Type": "SCS_Node",
+    "Name": "SCS_Node_2",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SCS_Node'",
+    "Outer": {
+      "ObjectName": "SimpleConstructionScript'BP_CampCharaModel_C:SimpleConstructionScript_0'",
+      "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.12"
+    },
+    "Properties": {
+      "ComponentClass": {
+        "ObjectName": "Class'SkeletalMeshComponent'",
+        "ObjectPath": "/Script/Engine"
+      },
+      "ComponentTemplate": {
+        "ObjectName": "SkeletalMeshComponent'BP_CampCharaModel_C:HairMesh_GEN_VARIABLE'",
+        "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.15"
+      },
+      "ParentComponentOrVariableName": "CharacterMesh0",
+      "bIsParentComponentNative": true,
+      "VariableGuid": "3FADBD9D-4B329C33-5EFDC59C-EE77CB23",
+      "InternalVariableName": "HairMesh"
+    }
+  },
+  {
+    "Type": "SCS_Node",
+    "Name": "SCS_Node_3",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SCS_Node'",
+    "Outer": {
+      "ObjectName": "SimpleConstructionScript'BP_CampCharaModel_C:SimpleConstructionScript_0'",
+      "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.12"
+    },
+    "Properties": {
+      "ComponentClass": {
+        "ObjectName": "Class'SkeletalMeshComponent'",
+        "ObjectPath": "/Script/Engine"
+      },
+      "ComponentTemplate": {
+        "ObjectName": "SkeletalMeshComponent'BP_CampCharaModel_C:FaceMesh_GEN_VARIABLE'",
+        "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.14"
+      },
+      "ParentComponentOrVariableName": "CharacterMesh0",
+      "bIsParentComponentNative": true,
+      "VariableGuid": "1B1224A5-49F881E9-F77AC485-B4746B6E",
+      "InternalVariableName": "FaceMesh"
+    }
+  },
+  {
+    "Type": "SimpleConstructionScript",
+    "Name": "SimpleConstructionScript_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SimpleConstructionScript'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_CampCharaModel_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.3"
+    },
+    "Properties": {
+      "RootNodes": [
+        {
+          "ObjectName": "SCS_Node'BP_CampCharaModel_C:SimpleConstructionScript_0.SCS_Node_1'",
+          "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.9"
+        },
+        {
+          "ObjectName": "SCS_Node'BP_CampCharaModel_C:SimpleConstructionScript_0.SCS_Node_2'",
+          "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.10"
+        },
+        {
+          "ObjectName": "SCS_Node'BP_CampCharaModel_C:SimpleConstructionScript_0.SCS_Node_3'",
+          "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.11"
+        }
+      ],
+      "AllNodes": [
+        {
+          "ObjectName": "SCS_Node'BP_CampCharaModel_C:SimpleConstructionScript_0.SCS_Node_1'",
+          "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.9"
+        },
+        {
+          "ObjectName": "SCS_Node'BP_CampCharaModel_C:SimpleConstructionScript_0.SCS_Node_2'",
+          "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.10"
+        },
+        {
+          "ObjectName": "SCS_Node'BP_CampCharaModel_C:SimpleConstructionScript_0.SCS_Node_3'",
+          "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.11"
+        }
+      ],
+      "DefaultSceneRootNode": {
+        "ObjectName": "SCS_Node'BP_CampCharaModel_C:SimpleConstructionScript_0.SCS_Node_0'",
+        "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.8"
+      }
+    }
+  },
+  {
+    "Type": "SkeletalMeshComponent",
+    "Name": "CostumeMesh_GEN_VARIABLE",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SkeletalMeshComponent'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_CampCharaModel_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.3"
+    },
+    "Properties": {
+      "ClothingSimulationFactory": {
+        "ObjectName": "Class'ClothingSimulationFactoryNv'",
+        "ObjectPath": "/Script/ClothingSystemRuntimeNv"
+      },
+      "SkeletalMesh": {
+        "ObjectName": "SkeletalMesh'SK_PC0062_C202'",
+        "ObjectPath": "/Game/Astrea/Characters/Player/PC0062/Models/SK_PC0062_C202.0"
+      },
+      "CastShadow": false,
+      "bUseAttachParentBound": true
+    }
+  },
+  {
+    "Type": "SkeletalMeshComponent",
+    "Name": "FaceMesh_GEN_VARIABLE",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SkeletalMeshComponent'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_CampCharaModel_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.3"
+    },
+    "Properties": {
+      "ClothingSimulationFactory": {
+        "ObjectName": "Class'ClothingSimulationFactoryNv'",
+        "ObjectPath": "/Script/ClothingSystemRuntimeNv"
+      },
+      "SkeletalMesh": {
+        "ObjectName": "SkeletalMesh'SK_PC0062_F000'",
+        "ObjectPath": "/Game/Astrea/Characters/Player/PC0062/Models/SK_PC0062_F000.0"
+      },
+      "CastShadow": false,
+      "bUseAttachParentBound": true
+    }
+  },
+  {
+    "Type": "SkeletalMeshComponent",
+    "Name": "HairMesh_GEN_VARIABLE",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SkeletalMeshComponent'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_CampCharaModel_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.3"
+    },
+    "Properties": {
+      "ClothingSimulationFactory": {
+        "ObjectName": "Class'ClothingSimulationFactoryNv'",
+        "ObjectPath": "/Script/ClothingSystemRuntimeNv"
+      },
+      "SkeletalMesh": {
+        "ObjectName": "SkeletalMesh'SK_PC0062_H000'",
+        "ObjectPath": "/Game/Astrea/Characters/Player/PC0062/Models/SK_PC0062_H000.0"
+      },
+      "CastShadow": false,
+      "bUseAttachParentBound": true
+    }
+  },
+  {
+    "Type": "SkeletalMeshComponent",
+    "Name": "CharacterMesh0",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SkeletalMeshComponent'",
+    "Outer": {
+      "ObjectName": "BP_CampCharaModel_C'Default__BP_CampCharaModel_C'",
+      "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.4"
+    },
+    "Properties": {
+      "AnimClass": {
+        "ObjectName": "AnimBlueprintGeneratedClass'ABP_PC0062_C'",
+        "ObjectPath": "/Game/Astrea/Characters/Player/PC0062/ABP_PC0062.6"
+      },
+      "ClothingSimulationFactory": {
+        "ObjectName": "Class'ClothingSimulationFactoryNv'",
+        "ObjectPath": "/Script/ClothingSystemRuntimeNv"
+      },
+      "SkeletalMesh": {
+        "ObjectName": "SkeletalMesh'SK_PC0062_BaseSkelton'",
+        "ObjectPath": "/Game/Astrea/Characters/Player/PC0062/Models/SK_PC0062_BaseSkelton.0"
+      },
+      "CastShadow": false,
+      "BoundsScale": 200.0,
+      "AttachParent": {
+        "ObjectName": "CapsuleComponent'Default__BP_CampCharaModel_C:CollisionCylinder'",
+        "ObjectPath": "/Game/Astrea/Blueprints/Characters/Player/BP_CampCharaModel.5"
+      }
+    }
+  }
+]

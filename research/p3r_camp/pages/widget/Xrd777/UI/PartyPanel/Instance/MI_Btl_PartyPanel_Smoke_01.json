@@ -1,0 +1,28 @@
+[
+  {
+    "Type": "MaterialInstanceConstant",
+    "Name": "MI_Btl_PartyPanel_Smoke_01",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MaterialInstanceConstant'",
+    "Package": "/Game/Xrd777/UI/PartyPanel/Instance/MI_Btl_PartyPanel_Smoke_01",
+    "Properties": {
+      "Parent": {
+        "ObjectName": "Material'MM_Btl_PartyPanel_Smoke'",
+        "ObjectPath": "/Game/Xrd777/UI/PartyPanel/MasterMaterials/MM_Btl_PartyPanel_Smoke.0"
+      },
+      "BasePropertyOverrides": {
+        "BlendMode": "BLEND_Translucent",
+        "ShadingModel": "MSM_Unlit",
+        "OpacityMaskClipValue": 0.3333
+      },
+      "CachedReferencedTextures": [
+        {
+          "ObjectName": "Texture2D'T_UI_PartyPanel_Smoke_01'",
+          "ObjectPath": "/Game/Xrd777/UI/PartyPanel/Textures/T_UI_PartyPanel_Smoke_01.0"
+        },
+        null
+      ]
+    },
+    "LoadedMaterialResources": []
+  }
+]

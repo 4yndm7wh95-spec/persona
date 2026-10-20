@@ -1,0 +1,708 @@
+[
+  {
+    "Type": "SprAsset",
+    "Name": "SPR_UI_Field_PartyPanel",
+    "Flags": "RF_Public | RF_Standalone | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SprAsset'",
+    "Package": "/Game/Astrea/UI/PartyPanel/SPR_UI_Field_PartyPanel",
+    "Properties": {
+      "mTexArray": [
+        {
+          "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+          "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+        }
+      ],
+      "SprDatas": [
+        {
+          "Key": "0",
+          "Value": {
+            "SprDatas": [
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 168.0,
+                "Height": 153.0,
+                "U0": 0.001953125,
+                "V0": 0.00390625,
+                "U1": 0.33007812,
+                "V1": 0.6015625,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 168.0,
+                "Height": 153.0,
+                "U0": 0.33203125,
+                "V0": 0.00390625,
+                "U1": 0.66015625,
+                "V1": 0.6015625,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/Astrea/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+]

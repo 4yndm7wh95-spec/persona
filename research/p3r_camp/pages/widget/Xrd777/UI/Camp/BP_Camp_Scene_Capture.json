@@ -1,0 +1,414 @@
+[
+  {
+    "Type": "Function",
+    "Name": "ExecuteUbergraph_BP_Camp_Scene_Capture",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_Camp_Scene_Capture_C'",
+      "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.3"
+    },
+    "ChildProperties": [
+      {
+        "Type": "IntProperty",
+        "Name": "EntryPoint",
+        "Flags": "RF_Public",
+        "ElementSize": 4,
+        "PropertyFlags": "BlueprintVisible | BlueprintReadOnly | Parm"
+      },
+      {
+        "Type": "FloatProperty",
+        "Name": "K2Node_Event_DeltaSeconds",
+        "Flags": "RF_Public",
+        "ElementSize": 4
+      }
+    ],
+    "FunctionFlags": "FUNC_Final | FUNC_UbergraphFunction"
+  },
+  {
+    "Type": "Function",
+    "Name": "ReceiveTick",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_Camp_Scene_Capture_C'",
+      "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.3"
+    },
+    "SuperStruct": {
+      "ObjectName": "Class'Actor:ReceiveTick'",
+      "ObjectPath": "/Script/Engine"
+    },
+    "ChildProperties": [
+      {
+        "Type": "FloatProperty",
+        "Name": "DeltaSeconds",
+        "Flags": "RF_Public",
+        "ElementSize": 4,
+        "PropertyFlags": "BlueprintVisible | BlueprintReadOnly | Parm"
+      }
+    ],
+    "FunctionFlags": "FUNC_Event | FUNC_Public | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "ReceiveBeginPlay",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_Camp_Scene_Capture_C'",
+      "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.3"
+    },
+    "SuperStruct": {
+      "ObjectName": "Class'Actor:ReceiveBeginPlay'",
+      "ObjectPath": "/Script/Engine"
+    },
+    "FunctionFlags": "FUNC_Event | FUNC_Protected | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "BlueprintGeneratedClass",
+    "Name": "BP_Camp_Scene_Capture_C",
+    "Flags": "RF_Public | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'BlueprintGeneratedClass'",
+    "Package": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture",
+    "Properties": {
+      "SimpleConstructionScript": {
+        "ObjectName": "SimpleConstructionScript'BP_Camp_Scene_Capture_C:SimpleConstructionScript_0'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.9"
+      },
+      "UberGraphFunction": {
+        "ObjectName": "Function'BP_Camp_Scene_Capture_C:ExecuteUbergraph_BP_Camp_Scene_Capture'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.0"
+      }
+    },
+    "SuperStruct": {
+      "ObjectName": "Class'CampSceneCapture'",
+      "ObjectPath": "/Script/xrd777"
+    },
+    "Children": [
+      {
+        "ObjectName": "Function'BP_Camp_Scene_Capture_C:ReceiveBeginPlay'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.2"
+      },
+      {
+        "ObjectName": "Function'BP_Camp_Scene_Capture_C:ReceiveTick'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.1"
+      },
+      {
+        "ObjectName": "Function'BP_Camp_Scene_Capture_C:ExecuteUbergraph_BP_Camp_Scene_Capture'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.0"
+      }
+    ],
+    "ChildProperties": [
+      {
+        "Type": "StructProperty",
+        "Name": "UberGraphFrame",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 16,
+        "PropertyFlags": "Transient | DuplicateTransient",
+        "Struct": {
+          "ObjectName": "Class'PointerToUberGraphFrame'",
+          "ObjectPath": "/Script/Engine"
+        }
+      }
+    ],
+    "FuncMap": {
+      "ExecuteUbergraph_BP_Camp_Scene_Capture": {
+        "ObjectName": "Function'BP_Camp_Scene_Capture_C:ExecuteUbergraph_BP_Camp_Scene_Capture'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.0"
+      },
+      "ReceiveTick": {
+        "ObjectName": "Function'BP_Camp_Scene_Capture_C:ReceiveTick'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.1"
+      },
+      "ReceiveBeginPlay": {
+        "ObjectName": "Function'BP_Camp_Scene_Capture_C:ReceiveBeginPlay'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.2"
+      }
+    },
+    "ClassFlags": "CLASS_Config | CLASS_Optional | CLASS_ReplicationDataIsSetUp | CLASS_CompiledFromBlueprint | CLASS_HasInstancedReference",
+    "ClassWithin": {
+      "ObjectName": "Class'Object'",
+      "ObjectPath": "/Script/CoreUObject"
+    },
+    "ClassConfigName": "Engine",
+    "bCooked": true,
+    "ClassDefaultObject": {
+      "ObjectName": "BP_Camp_Scene_Capture_C'Default__BP_Camp_Scene_Capture_C'",
+      "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.4"
+    }
+  },
+  {
+    "Type": "BP_Camp_Scene_Capture_C",
+    "Name": "Default__BP_Camp_Scene_Capture_C",
+    "Flags": "RF_Public | RF_ClassDefaultObject | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "BlueprintGeneratedClass'/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.BP_Camp_Scene_Capture_C'",
+    "Package": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture",
+    "Properties": {
+      "UberGraphFrame": {},
+      "CaptureComponent2D": {
+        "ObjectName": "SceneCaptureComponent2D'Default__BP_Camp_Scene_Capture_C:NewSceneCaptureComponent2D'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.5"
+      },
+      "SceneComponent": {
+        "ObjectName": "SceneComponent'Default__BP_Camp_Scene_Capture_C:SceneComponent'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.7"
+      },
+      "PrimaryActorTick": {
+        "bCanEverTick": true
+      },
+      "RootComponent": {
+        "ObjectName": "SceneComponent'Default__BP_Camp_Scene_Capture_C:SceneComponent'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.7"
+      }
+    }
+  },
+  {
+    "Type": "SceneCaptureComponent2D",
+    "Name": "NewSceneCaptureComponent2D",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SceneCaptureComponent2D'",
+    "Outer": {
+      "ObjectName": "BP_Camp_Scene_Capture_C'Default__BP_Camp_Scene_Capture_C'",
+      "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.4"
+    },
+    "Properties": {
+      "FOVAngle": 37.35,
+      "OrthoWidth": 1920.0,
+      "TextureTarget": {
+        "ObjectName": "TextureRenderTarget2D'RT_UI_CampSceneCapture2D'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/Textures/RT_UI_CampSceneCapture2D.0"
+      },
+      "AtlSceneCaptureMode": "ASCM_WriteSceneAlpha",
+      "PostProcessSettings": {
+        "bOverride_BlueCorrection": true,
+        "bOverride_ExpandGamut": true,
+        "bOverride_ToneCurveAmount": true,
+        "bOverride_SceneColorTint": true,
+        "bOverride_SceneFringeIntensity": true,
+        "bOverride_AmbientCubemapIntensity": true,
+        "bOverride_BloomIntensity": true,
+        "bOverride_BloomDirtMaskIntensity": true,
+        "bOverride_AutoExposureMinBrightness": true,
+        "bOverride_AutoExposureMaxBrightness": true,
+        "bOverride_AutoExposureBias": true,
+        "bOverride_LensFlareIntensity": true,
+        "bOverride_VignetteIntensity": true,
+        "bOverride_AmbientOcclusionIntensity": true,
+        "bOverride_RayTracingAOIntensity": true,
+        "bOverride_LPVIntensity": true,
+        "bOverride_LPVDirectionalOcclusionIntensity": true,
+        "bOverride_LPVDiffuseOcclusionIntensity": true,
+        "bOverride_LPVSpecularOcclusionIntensity": true,
+        "bOverride_LPVSecondaryOcclusionIntensity": true,
+        "bOverride_LPVSecondaryBounceIntensity": true,
+        "bOverride_LPVEmissiveInjectionIntensity": true,
+        "bOverride_IndirectLightingIntensity": true,
+        "bOverride_ColorGradingIntensity": true,
+        "bOverride_MotionBlurAmount": true,
+        "bOverride_ScreenSpaceReflectionIntensity": true,
+        "BlueCorrection": 0.0,
+        "ExpandGamut": 0.0,
+        "ToneCurveAmount": 0.0,
+        "BloomIntensity": 0.0,
+        "AmbientCubemapIntensity": 0.0,
+        "AutoExposureBias": 0.0,
+        "AutoExposureMinBrightness": 0.0,
+        "AutoExposureMaxBrightness": 0.0,
+        "LensFlareIntensity": 0.0,
+        "VignetteIntensity": 0.0,
+        "AmbientOcclusionIntensity": 0.0,
+        "RayTracingAOIntensity": 0.0,
+        "IndirectLightingIntensity": 0.0,
+        "ColorGradingIntensity": 0.0,
+        "MotionBlurAmount": 0.0,
+        "LPVIntensity": 0.0,
+        "LPVEmissiveInjectionIntensity": 0.0,
+        "LPVDiffuseOcclusionIntensity": 0.0,
+        "LPVSpecularOcclusionIntensity": 0.0,
+        "ScreenSpaceReflectionIntensity": 0.0
+      },
+      "PrimitiveRenderMode": "ESceneCapturePrimitiveRenderMode::PRM_UseShowOnlyList",
+      "CaptureSource": "SCS_FinalToneCurveHDR",
+      "ShowFlagSettings": [
+        {
+          "ShowFlagName": "BSP",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "StaticMeshes",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "Decals",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "Fog",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "Landscape",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "Atmosphere",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "DeferredLighting",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "Paper2DSprites",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "InstancedStaticMeshes",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "InstancedFoliage",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "TextRender",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "InstancedGrass",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "SkyLighting",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "AmbientOcclusion",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "DynamicShadows",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "AmbientCubemap",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "ScreenSpaceReflections",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "TexturedLightProfiles",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "VolumetricFog",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "LightShafts",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "LightFunctions",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "ReflectionEnvironment",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "DistanceFieldAO",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "Bloom",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "EyeAdaptation",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "Lighting",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "Game",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "Particles",
+          "Enabled": false
+        },
+        {
+          "ShowFlagName": "ToneCurve",
+          "Enabled": false
+        }
+      ],
+      "AttachParent": {
+        "ObjectName": "SceneComponent'Default__BP_Camp_Scene_Capture_C:SceneComponent'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.7"
+      }
+    }
+  },
+  {
+    "Type": "SceneComponent",
+    "Name": "DefaultSceneRoot_GEN_VARIABLE",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SceneComponent'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_Camp_Scene_Capture_C'",
+      "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.3"
+    }
+  },
+  {
+    "Type": "SceneComponent",
+    "Name": "SceneComponent",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SceneComponent'",
+    "Outer": {
+      "ObjectName": "BP_Camp_Scene_Capture_C'Default__BP_Camp_Scene_Capture_C'",
+      "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.4"
+    }
+  },
+  {
+    "Type": "SCS_Node",
+    "Name": "SCS_Node_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SCS_Node'",
+    "Outer": {
+      "ObjectName": "SimpleConstructionScript'BP_Camp_Scene_Capture_C:SimpleConstructionScript_0'",
+      "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.9"
+    },
+    "Properties": {
+      "ComponentClass": {
+        "ObjectName": "Class'SceneComponent'",
+        "ObjectPath": "/Script/Engine"
+      },
+      "ComponentTemplate": {
+        "ObjectName": "SceneComponent'BP_Camp_Scene_Capture_C:DefaultSceneRoot_GEN_VARIABLE'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.6"
+      },
+      "VariableGuid": "E6B6F01B-46165456-455806A4-30665B42",
+      "InternalVariableName": "DefaultSceneRoot"
+    }
+  },
+  {
+    "Type": "SimpleConstructionScript",
+    "Name": "SimpleConstructionScript_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SimpleConstructionScript'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'BP_Camp_Scene_Capture_C'",
+      "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.3"
+    },
+    "Properties": {
+      "DefaultSceneRootNode": {
+        "ObjectName": "SCS_Node'BP_Camp_Scene_Capture_C:SimpleConstructionScript_0.SCS_Node_0'",
+        "ObjectPath": "/Game/Xrd777/UI/Camp/BP_Camp_Scene_Capture.8"
+      }
+    }
+  }
+]

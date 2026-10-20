@@ -1,0 +1,45 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_CampCalendarWeek",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/L10N/zh-Hant/Xrd777/UI/Camp/Calendar/DataTable/DT_CampCalendarWeek",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UICmpCalendarDrawStringItem'",
+        "ObjectPath": "/Script/xrd777"
+      }
+    },
+    "Rows": {
+      "0": {
+        "String": "(日)",
+        "Comment": "日曜日"
+      },
+      "1": {
+        "String": "(一)",
+        "Comment": "月曜日"
+      },
+      "2": {
+        "String": "(二)",
+        "Comment": "火曜日"
+      },
+      "3": {
+        "String": "(三)",
+        "Comment": "水曜日"
+      },
+      "4": {
+        "String": "(四)",
+        "Comment": "木曜日"
+      },
+      "5": {
+        "String": "(五)",
+        "Comment": "金曜日"
+      },
+      "6": {
+        "String": "(六)",
+        "Comment": "土曜日"
+      }
+    }
+  }
+]

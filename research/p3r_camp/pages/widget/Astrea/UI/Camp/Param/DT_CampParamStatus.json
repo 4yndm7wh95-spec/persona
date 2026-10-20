@@ -1,0 +1,290 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_CampParamStatus",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/Astrea/UI/Camp/Param/DT_CampParamStatus",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'CampParamTableStatusRow'",
+        "ObjectPath": "/Script/xrd777"
+      }
+    },
+    "Rows": {
+      "NewRow": {
+        "ListTabChangeFrame": 6,
+        "StatListPartyRightSideFadeOutFrame": 2,
+        "StatListPartyRightSideFadeInFrame": 3,
+        "StatListKoshoLogoRotFrame": 2000,
+        "StatListGlassCharaFrame": 5,
+        "StatListGlassCharaWait": 1,
+        "StatListBgNoiseRandFrameMin": 100,
+        "StatListBgNoiseRandFrameMax": 300,
+        "StatListInDist": -100.0,
+        "StatListInSilhouetteAnimType": "EOneAnimType::CurveUp2",
+        "StatListInSilhouetteFrame": 10,
+        "StatListInSilhouetteWait": 0,
+        "StatListInSilhouetteOriginal": {
+          "X": 0.0,
+          "Y": 0.0
+        },
+        "StatListInSilhouetteTarget": {
+          "X": -150.0,
+          "Y": -140.0
+        },
+        "StatListInKoshoAnimType": "EOneAnimType::CurveUp2",
+        "StatListInKoshoFrame": 20,
+        "StatListInKoshoWait": 0,
+        "StatListInTabAnimType": "EOneAnimType::CurveUp2",
+        "StatListInTabFrame": 5,
+        "StatListInTabWait": 7,
+        "StatListBgNoiseAnimType": "EOneAnimType::CurveUp2",
+        "StatListBgNoiseFrame": 14,
+        "StatListBgTextAnimType": "EOneAnimType::CurveUp2",
+        "StatListBgTextFrame": 3,
+        "StatListOpeListAnimType": "EOneAnimType::CurveUp2",
+        "StatListOpeListFrame": 3,
+        "StatDetailRotation": -11.45,
+        "StatDetailInfoSlideAnimType": "EOneAnimType::CurveUp2",
+        "StatDetailInfoSlideFrame": 4,
+        "StatDetailBgNumSlideAnimType": "EOneAnimType::CurveUp3",
+        "StatDetailBgNumSlideOutFrame": 6,
+        "StatDetailBgNumSlideInFrame": 6,
+        "StatDetailHanshaSlideAnimType": "EOneAnimType::CurveUp2",
+        "StatDetailHanshaSlideFrame": 4,
+        "StatDetailHahenShadowSlideAnimType": "EOneAnimType::CurveUp2",
+        "StatDetailHahenShadowSlideFrame": 4,
+        "StatDetailCharaShadowSlideAnimType": "EOneAnimType::CurveUp2",
+        "StatDetailCharaShadowSlideFrame": 1,
+        "StatDetailLeaderRotAnimType": "EOneAnimType::CurveUp2",
+        "StatDetailLeaderRotOutFrame": 3,
+        "StatDetailLeaderRotInFrame": 6,
+        "StatDetailInOutlineAnimType": "EOneAnimType::CurveUp2",
+        "StatDetailInOutlineFrame": 5,
+        "StatDetailInOutlineWait": 0,
+        "StatDetailInOutlineOutFrame": 3,
+        "StatDetailPanelSlideAnimType": "EOneAnimType::CurveUp2",
+        "StatDetailPanelSlideFrame": 8,
+        "StatDetailToTheurLeaderRotFrame": 4,
+        "StatDetailToTheurDetailInfoSlideAnimType": "EOneAnimType::CurveUp2",
+        "StatDetailToTheurDetailInfoSlideFrame": 4,
+        "StatDetailToTheurBgNumSlideFrame": 3,
+        "HumanHamonAlphaFrameDown": 10,
+        "HumanHamonAlphaFrameUp": 10,
+        "HumanHamonAlphaFrameStay": 5,
+        "HumanHamonAlphaInterval": 5,
+        "HumanSankakuRed": {
+          "B": 0,
+          "G": 0,
+          "R": 10,
+          "A": 255,
+          "Hex": "0A0000"
+        },
+        "HumanSankakuGreen": {
+          "B": 20,
+          "G": 30,
+          "R": 10,
+          "A": 255,
+          "Hex": "0A1E14"
+        },
+        "HumanBokasiRed": {
+          "B": 0,
+          "G": 0,
+          "R": 50,
+          "A": 255,
+          "Hex": "320000"
+        },
+        "HumanBokasiGreen": {
+          "B": 20,
+          "G": 60,
+          "R": 20,
+          "A": 255,
+          "Hex": "143C14"
+        },
+        "HumanInBgSankakuFrame": 4,
+        "HumanInSankakuFrame": 6,
+        "HumanInHamonFrame": 5,
+        "HumanInRankRotFrame": 4,
+        "HumanInRankSlideFrame": 5,
+        "HumanInHelpSlideFrame": 4,
+        "HumanInTitleSlideFrame": 5,
+        "HumanPointUpTextSlideOneFrame": 0,
+        "HumanPointUpTextSlideTwoFrame": 0,
+        "HumanPointUpTextSlideThreeFrame": 0,
+        "HumanPointUpTextFadeOneFrame": 0,
+        "HumanPointUpTextFadeTwoFrame": 0,
+        "HumanPointUpTextFadeThreeFrame": 0,
+        "HumanPointUpHamonScaleFrame": 0,
+        "HumanPointUpHamonFadeFrame": 0,
+        "HumanPointUpBlueCircleFadeScaleOneFrame": 0,
+        "HumanPointUpBlueCircleFadeScaleTwoFrame": 0,
+        "HumanPointUpBlueCircleFadeScaleThreeFrame": 0,
+        "HumanRankUpTextSlideOneFrame": 0,
+        "HumanRankUpTextSlideTwoFrame": 0,
+        "HumanRankUpTextSlideThreeFrame": 0,
+        "HumanRankUpTextFadeOneFrame": 0,
+        "HumanRankUpTextFadeTwoFrame": 0,
+        "HumanRankUpTextFadeThreeFrame": 0,
+        "HumanRankUpHamonScaleFrame": 0,
+        "HumanRankUpHamonFadeFrame": 0,
+        "HumanRankUpWhiteCircleColorOneFrame": 0,
+        "HumanRankUpWhiteCircleColorTwoFrame": 0,
+        "HumanRankUpWhiteCircleColorThreeFrame": 0,
+        "HumanRankUpWhiteCircleScaleOneFrame": 0,
+        "HumanRankUpWhiteCircleScaleTwoFrame": 0,
+        "HumanRankUpWhiteCircleScaleThreeFrame": 0,
+        "HumanRankUpAllCircleScaleFrame": 0,
+        "HumanRankUpCurrentNumberFadeFrame": 0,
+        "HumanRankUpNextNumberFadeSlideFrame": 0,
+        "HumanRankUpCurrentHelpTextFadeFrame": 0,
+        "HumanRankUpNextHelpTextFadeSlideFrame": 0,
+        "HumanRankUpMaskCircleFrame": 0,
+        "KeyHelpFadeFrame": 0,
+        "KeyHelpMaskSlideOneFrame": 0,
+        "KeyHelpMaskSlideTwoFrame": 0,
+        "KeyHelpMaskSlideThreeFrame": 0,
+        "KeyHelpMaskSlideOneWaitFrame": 0,
+        "KeyHelpMaskSlideTwoWaitFrame": 0,
+        "KeyHelpMaskSlideThreeWaitFrame": 0,
+        "HumanMaxHamonScaleFlame": 0,
+        "HumanMaxHamonFadeOneFlame": 0,
+        "HumanMaxHamonFadeTwoFlame": 0,
+        "HumanMaxCircleFadeOneFlame": 0,
+        "HumanMaxCircleFadeTwoFlame": 0,
+        "HumanCircleLoopFlame": 0,
+        "HumanPlusHamonFlame": 0,
+        "HumanOutHelpSlideFrame": 2,
+        "HumanOutHamonFrame": 3,
+        "HumanOutSankakuFrame": 5,
+        "HumanOutRankRotFrame": 3,
+        "HumanOutBgSankakuFrame": 3,
+        "HumanHamonLoopScaleDownFrame": 0,
+        "HumanHamonLoopWaitFrame": 0,
+        "HumanHamonLoopScaleUpFrame": 0,
+        "FldTheurPanelSlideAnimType": "EOneAnimType::CurveUp2",
+        "FldTheurPanelSlideFrame": 8,
+        "FldTheurPanelSlideWait": 10,
+        "FldTheurBgNumSlideFrame": 8,
+        "FldTheurBgNumSlideWait": 3,
+        "FldTheurBustupSlideAnimType": "EOneAnimType::CurveUp2",
+        "FldTheurBustupSlideInFrame": 5,
+        "FldTheurBustupSlideInWait": 14,
+        "FldTheurBustupSlideOutFrame": 4,
+        "TheurCharaMaskColor": {
+          "B": 41,
+          "G": 14,
+          "R": 11,
+          "A": 70,
+          "Hex": "460B0E29"
+        },
+        "TheurCharaPosHero": {
+          "X": 652.0,
+          "Y": 303.0
+        },
+        "TheurShadowPosHero": {
+          "X": -168.0,
+          "Y": 318.0
+        },
+        "TheurCharaPosYukari": {
+          "X": 652.0,
+          "Y": 303.0
+        },
+        "TheurShadowPosYukari": {
+          "X": -168.0,
+          "Y": 318.0
+        },
+        "TheurCharaPosJunpei": {
+          "X": 652.0,
+          "Y": 303.0
+        },
+        "TheurShadowPosJunpei": {
+          "X": -168.0,
+          "Y": 318.0
+        },
+        "TheurCharaPosSanada": {
+          "X": 652.0,
+          "Y": 303.0
+        },
+        "TheurShadowPosSanada": {
+          "X": -168.0,
+          "Y": 318.0
+        },
+        "TheurCharaPosMituru": {
+          "X": 652.0,
+          "Y": 303.0
+        },
+        "TheurShadowPosMituru": {
+          "X": -168.0,
+          "Y": 318.0
+        },
+        "TheurCharaPosFuka": {
+          "X": 652.0,
+          "Y": 303.0
+        },
+        "TheurShadowPosFuka": {
+          "X": -168.0,
+          "Y": 318.0
+        },
+        "TheurCharaPosAegis": {
+          "X": 539.0,
+          "Y": 255.0
+        },
+        "TheurShadowPosAegis": {
+          "X": -216.0,
+          "Y": 380.0
+        },
+        "TheurCharaPosAmada": {
+          "X": 570.0,
+          "Y": 329.0
+        },
+        "TheurShadowPosAmada": {
+          "X": -220.0,
+          "Y": 284.0
+        },
+        "TheurCharaPosKoromaru": {
+          "X": 652.0,
+          "Y": 303.0
+        },
+        "TheurShadowPosKoromaru": {
+          "X": -168.0,
+          "Y": 318.0
+        },
+        "TheurCharaPosAragaki": {
+          "X": 552.0,
+          "Y": 313.0
+        },
+        "TheurShadowPosAragaki": {
+          "X": -226.0,
+          "Y": 334.0
+        },
+        "Edit_MaskA_InAnimation_SlideIn_Type": "EOneAnimType::CurveUp2",
+        "Edit_MaskA_InAnimation_SlideIn_Frame": 10,
+        "Edit_MaskA_InAnimation_SlideIn_Delay": 2,
+        "Edit_MaskA_OutAnimation_SlideIn_Type": "EOneAnimType::CurveUp2",
+        "Edit_MaskA_OutAnimation_SlideIn_Frame": 6,
+        "Edit_MaskA_OutAnimation_SlideIn_Delay": 0,
+        "Edit_MaskA_Change_SlideIn_Type": "EOneAnimType::CurveUp2",
+        "Edit_MaskA_Change_SlideIn_Frame": 6,
+        "Edit_MaskA_Change_SlideIn_Delay": 1,
+        "Edit_MaskB_InAnimation_SlideIn_Type": "EOneAnimType::CurveDown2",
+        "Edit_MaskB_InAnimation_SlideIn_Frame": 8,
+        "Edit_MaskB_InAnimation_SlideIn_Delay": 14,
+        "Edit_MaskB_OutAnimation_SlideIn_Type": "EOneAnimType::CurveDown2",
+        "Edit_MaskB_OutAnimation_SlideIn_Frame": 6,
+        "Edit_MaskB_OutAnimation_SlideIn_Delay": 6,
+        "Edit_MaskB_Change_SlideIn_Type": "EOneAnimType::CurveDown2",
+        "Edit_MaskB_Change_SlideIn_Frame": 6,
+        "Edit_MaskB_Change_SlideIn_Delay": 6,
+        "Edit_CharacterShadow_InAnimation_SlideIn_Type": "EOneAnimType::CurveUp2",
+        "Edit_CharacterShadow_InAnimation_SlideIn_Frame": 6,
+        "Edit_CharacterShadow_InAnimation_SlideIn_Delay": 10,
+        "Edit_CharacterShadow_Change_SlideIn_Type": "EOneAnimType::CurveUp2",
+        "Edit_CharacterShadow_Change_SlideIn_Frame": 6,
+        "Edit_CharacterShadow_Change_SlideIn_Delay": 10,
+        "Edit_Theurgia_Icon_Fade_In_Frame": 4,
+        "Edit_Theurgia_Icon_Fade_In_Delay": 12
+      }
+    }
+  }
+]

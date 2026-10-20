@@ -1,0 +1,62 @@
+[
+  {
+    "Type": "MaterialInstanceConstant",
+    "Name": "MI_Btl_PartyPanel_Smoke_02",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MaterialInstanceConstant'",
+    "Package": "/Game/Xrd777/UI/PartyPanel/Instance/MI_Btl_PartyPanel_Smoke_02",
+    "Properties": {
+      "Parent": {
+        "ObjectName": "Material'MM_Btl_PartyPanel_Smoke'",
+        "ObjectPath": "/Game/Xrd777/UI/PartyPanel/MasterMaterials/MM_Btl_PartyPanel_Smoke.0"
+      },
+      "ScalarParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "Speed",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 5.0,
+          "ExpressionGUID": "D4581067-4E55408B-85DD80AC-8B035D38"
+        },
+        {
+          "ParameterInfo": {
+            "Name": "RefractionDepthBias",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": 0.0,
+          "ExpressionGUID": "00000000-00000000-00000000-00000000"
+        }
+      ],
+      "TextureParameterValues": [
+        {
+          "ParameterInfo": {
+            "Name": "Texture",
+            "Association": "GlobalParameter",
+            "Index": -1
+          },
+          "ParameterValue": {
+            "ObjectName": "Texture2D'T_UI_PartyPanel_Smoke_03'",
+            "ObjectPath": "/Game/Xrd777/UI/PartyPanel/Textures/T_UI_PartyPanel_Smoke_03.0"
+          },
+          "ExpressionGUID": "E1AC850B-4C0207FD-3719F890-2BF15729"
+        }
+      ],
+      "BasePropertyOverrides": {
+        "BlendMode": "BLEND_Translucent",
+        "ShadingModel": "MSM_Unlit",
+        "OpacityMaskClipValue": 0.3333
+      },
+      "CachedReferencedTextures": [
+        {
+          "ObjectName": "Texture2D'T_UI_PartyPanel_Smoke_01'",
+          "ObjectPath": "/Game/Xrd777/UI/PartyPanel/Textures/T_UI_PartyPanel_Smoke_01.0"
+        },
+        null
+      ]
+    },
+    "LoadedMaterialResources": []
+  }
+]

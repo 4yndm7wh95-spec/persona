@@ -1,0 +1,561 @@
+{
+  "messages": {
+    "SYS_PERSONA_DROP": "[f 0:5 65278][f 2:1 ]Are you sure you want to release [f 0:1 35][f 2:4 0][f 0:1 27]?\n[f 1:4 1][f 1:1 ]",
+    "SYS_PERSONA_DROP_NG": "[f 0:5 65278][f 2:1 ]You cannot release a Persona that is currently equipped.\n[f 1:1 ]",
+    "SYS_PERSONA_SET": "[f 0:5 65278][f 2:1 ]Equip this Persona?\n[f 1:4 1][f 1:1 ]",
+    "SYS_PERSONA_EQUIPED": "[f 0:5 65278][f 2:1 ][f 0:1 35][f 2:4 0][f 0:1 27] is already equipped.\n[f 1:1 ]",
+    "SYS_SKILL_FULL": "[f 0:5 65278][f 2:1 ]This Persona cannot learn any more skills. Please choose one to forget.\n[f 1:1 ]",
+    "SYS_SKILL_FORGET": "[f 0:5 65278][f 2:1 ]Forget [f 0:1 35][f 2:4 0][f 0:1 27]?\n[f 1:4 1][f 1:1 ]",
+    "SYS_BIRTH_CONCEPTION": "[f 0:5 65278][f 2:1 ][f 0:1 35][f 2:4 0][f 0:1 27] created [f 4:4 1,37,1,1].\n[f 1:1 ]",
+    "SYS_SKILLCARD_ALREADY": "[f 0:5 65278][f 2:1 ][f 0:1 35][f 2:4 0][f 0:1 27] has already been learned.\n[f 1:1 ]",
+    "SYS_SKILL_CHANGE": "",
+    "SYS_REMEMBER_CONF": "[f 0:5 65278][f 2:1 ]Are you sure you want to exit?\n[f 1:4 1][f 1:1 ]",
+    "SYS_NO_EFFECT_INCENSE": "[f 0:5 65278][f 2:1 ]The limit has already been reached.\n[f 1:1 ]",
+    "SYS_SYSTEM_BACK_TO_TITLE": "[f 0:5 65278][f 2:1 ]Return to the title screen?\n[f 1:4 1][f 1:1 ]",
+    "SYS_TITL_USE_NETWORK": "[f 0:5 65278][f 2:1 ][f 1:4 1]This game supports online features when connected to the network. Would you like to enable these features now?\n[f 1:1 ]",
+    "SYS_TITL_DONT_USE_NETWOR": "[f 0:5 65278][f 2:1 ]Network functionality has been turned [f 0:1 2]OFF[f 0:1 27]. You can change this at any time from the Config menu.\n[f 1:1 ]",
+    "SYS_SAVE_LOAD_CHECK": "[f 0:5 65278][f 2:1 ]Load this save data?\n[f 1:4 1][f 1:1 ]",
+    "SYS_SAVE_LOAD_OK": "",
+    "SYS_SAVE_NETWORK_LOAD": "[f 0:5 65278][f 2:1 ]Loading network save data...\n[f 1:1 ]",
+    "SYS_SAVE_NETWORK_LOAD_OK": "[f 0:5 65278][f 2:1 ]Network save data has been successfully loaded.\n[f 1:1 ]",
+    "SYS_SAVE_NETWORK_LOAD_ER": "[f 0:5 65278][f 2:1 ]Network save data could not be loaded.\n[f 1:1 ]",
+    "SYS_SAVE_NETWORK_UP": "[f 0:5 65278][f 2:1 ]Uploading save data...\n[f 1:1 ]",
+    "SYS_SAVE_NETWORK_UP_OK": "[f 0:5 65278][f 2:1 ]Save data has been successfully uploaded.\n[f 1:1 ]",
+    "SYS_SAVE_NETWORK_UP_ERRO": "[f 0:5 65278][f 2:1 ]Save data could not be uploaded.\n[f 1:1 ]",
+    "SYS_SAVE_NETWORK_BROKEN": "[f 0:5 65278][f 2:1 ]Network save data is corrupted.\n[f 1:1 ]",
+    "SYS_SAVE_NETWORK_INVALID": "[f 0:5 65278][f 2:1 ]Network functionality is currently disabled. You can change this setting from the Config menu.\n[f 1:1 ]",
+    "SYS_SAVE_NETWORK_NOTEXIS": "[f 0:5 65278][f 2:1 ]There is no save data on the network.\n[f 1:1 ]",
+    "SYS_SAVE_OVERWRITE_CHECK": "[f 0:5 65278][f 2:1 ]Save data already exists. Do you want to overwrite this data?\n[f 1:4 1][f 1:1 ]",
+    "SYS_SAVE_OK": "",
+    "SYS_SAVE_ROLLBACK_CHECK": "[f 0:5 65278][f 2:1 ]If you return to this point, any more recent rewind data will be lost. Continue?\n[f 1:4 1][f 1:1 ]",
+    "SYS_CONF_CLOSE_CHECK": "[f 0:5 65278][f 2:1 ]Exit without applying changes?\n[f 1:4 1][f 1:1 ]",
+    "SYS_CONF_DIFF_CHECK": "[f 0:5 65278][f 2:1 ]If you change the difficulty from Merciless, you won't be able to change it back. Are you sure you want to proceed?\n[f 1:4 1][f 1:1 ]",
+    "SYS_CONF_DIFF_CHANGED": "[f 0:5 65278][f 2:1 ]The difficulty level has been changed to [f 0:1 2][f 2:4 0][f 0:1 27].\n[f 1:1 ]",
+    "SYS_CONF_CONNECT_ERROR": "[f 0:5 65278][f 2:1 ]Network connection failed.\n[f 1:1 ]",
+    "SYS_CONF_CONNECTING": "[f 0:5 65278][f 2:1 ]Connecting to the network...\n[f 1:1 ]",
+    "SYS_PARTY_MEMBEROVER_0_0": "[f 0:5 65278][f 2:1 ]You are [f 2:4 0] member(s) over max party size.\n[f 1:1 ]",
+    "SYS_DIFFICULTY_CHECK": "[f 0:5 65278][f 2:1 ]Begin the game at [f 0:1 2][f 2:4 0][f 0:1 27] difficulty?\n[f 1:4 1][f 1:1 ]",
+    "SYS_DIFFICULTY_DESC_SAFE": "[f 0:5 65278][f 2:1 ]For players who want to focus on the story.\n[f 1:1 ]",
+    "SYS_DIFFICULTY_DESC_EASY": "[f 0:5 65278][f 2:1 ]For casual players.\n[f 1:1 ]",
+    "SYS_DIFFICULTY_DESC_NORM": "[f 0:5 65278][f 2:1 ]For experienced players.\n[f 1:1 ]",
+    "SYS_DIFFICULTY_DESC_HARD": "[f 0:5 65278][f 2:1 ]For players who enjoy strategizing.\n[f 1:1 ]",
+    "SYS_DIFFICULTY_DESC_LUNA": "[f 0:5 65278][f 2:1 ]For highly advanced players.\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_SAFE": "[f 0:5 65278][f 2:1 ]Your party auto-revives after defeat. [f 0:1 43]Your choice of difficulty will not affect the story and can be changed at any time (excluding Merciless).[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_EASY": "[f 0:5 65278][f 2:1 ]Low-stress combat. [f 0:1 43]Your choice of difficulty will not affect the story and can be changed at any time (excluding Merciless).[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_NORM": "[f 0:5 65278][f 2:1 ]Moderately challenging combat. [f 0:1 43]Your choice of difficulty will not affect the story and can be changed at any time (excluding Merciless).[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_HARD": "[f 0:5 65278][f 2:1 ]Significantly challenging combat. [f 0:1 43]Your choice of difficulty will not affect the story and can be changed at any time (excluding Merciless).[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_LUNA": "[f 0:5 65278][f 2:1 ]Exceedingly challenging combat. [f 0:1 43]Your choice of difficulty will not affect the story and can be changed at any time, but you cannot return to Merciless once leaving it.[f 0:1 27]\n[f 1:1 ]",
+    "MND_SKILL_NOT_CHANGE": "[f 0:5 65278][f 2:1 ][Not used] [f 2:4 2] gave a sharp cry.\n[f 1:1 ]",
+    "SYS_NETWORK_CONNECT_CHEC": "",
+    "SYS_NETWORK_CONNECT_YES": "[f 0:5 65278][f 2:1 ]Network functionality has been turned [f 0:1 2]ON[f 0:1 27]. You can change this at any time from the Config menu.\n[f 1:1 ]",
+    "SYS_NETWORK_CONNECT_NO": "",
+    "SYS_NETWORK_VOICE_ERROR": "[f 0:5 65278][f 2:1 ]Network error. Please check your connection.\n[f 1:1 ]",
+    "MSG_SKILL_CHANGE": "[f 0:5 65278][f 2:1 ]Oh...? A skill seems to be on the verge of changing... Will you see this through?\n[f 1:1 ]",
+    "SEL_SKILL_CHANGE": "[f 0:5 65278][f 2:1 ]Prevent skill change\n[page]\n[f 0:5 65278][f 2:1 ]Accept skill change\n[page]\n[f 0:5 65278][f 2:1 ]Check skills",
+    "SYS_PARTY_FIXED_MEMBER_0": "[f 0:5 65278][f 2:1 ][f 2:4 0] must be in your party.\n[f 1:1 ]",
+    "SYS_RECHECK_BACK_TO_TITL": "[f 0:5 65278][f 2:1 ]You will lose all progress made from the last time you saved up to this point. Are you sure you want to return to the title screen?\n[f 1:4 1][f 1:1 ]",
+    "SYS_GAMEDATA_INSTALL": "[f 0:5 65278][f 2:1 ]Installing game data...\n[f 1:1 ]",
+    "SYS_GAMEDATA_INSTALL_OK": "[f 0:5 65278][f 2:1 ]Installation complete.\n[f 1:1 ]",
+    "SYS_ACTIVITY_DATA_NOT_MA": "[f 0:5 65278][f 2:1 ]The selected activity did not match the state of the latest save data. The game will start normally.\n[f 1:1 ]",
+    "SYS_KEYCONFIG_ASSIGN": "[f 0:5 65278][f 2:1 ]Enter a key to bind to [f 0:1 35][f 2:4 0][f 0:1 27]. Press Esc to return to the settings menu.\n[f 1:1 ]",
+    "SYS_KEYCONFIG_OVERWRITE": "[f 0:5 65278][f 2:1 ]There is a conflict with the following key binding: [f 0:1 2][f 2:4 0][f 0:1 27]\n[f 1:5 0]Overwrite the existing key binding?\n[f 1:5 0][f 1:4 1][f 1:1 ]",
+    "SYS_KEYCONFIG_FINISH": "[f 0:5 65278][f 2:1 ]Finish with current settings?\n[f 1:4 1][f 1:1 ]",
+    "SYS_KEYCONFIG_NOT_SET": "[f 0:5 65278][f 2:1 ]Some configurations have not been set.\n[f 1:1 ]",
+    "SYS_KEYCONFIG_RESET_KEYB": "[f 0:5 65278][f 2:1 ]Restore keyboard configuration to default settings?\n[f 1:4 1][f 1:1 ]",
+    "SYS_KEYCONFIG_RESET_MOUS": "[f 0:5 65278][f 2:1 ]Restore mouse configuration to default settings?\n[f 1:4 1][f 1:1 ]",
+    "SYS_KEYCONFIG_RESET_GAME": "[f 0:5 65278][f 2:1 ]Restore gamepad configuration to default settings?\n[f 1:4 1][f 1:1 ]",
+    "SYS_CONF_DISPLAY_CHECK": "[f 0:5 65278][f 2:1 ]Display settings have been adjusted. Do you wish to keep these changes? (Settings will revert in [f 2:4 0] seconds.)\n[f 1:4 1][f 1:1 ]",
+    "SYS_INPUT_DEVICE_LOST": "[f 0:5 65278][f 2:1 ]A device was disconnected. Please check the status of the connection.\n[f 1:1 ]",
+    "SYS_SAVE_NO_SPACE": "[f 0:5 65278][f 2:1 ]Save failed. Please check available system storage space.\n[f 1:1 ]",
+    "SYS_APP_QUIT": "[f 0:5 65278][f 2:1 ]Exit the game?\n[f 1:4 1][f 1:1 ]",
+    "SYS_APPLY_INIT_NAME_STOR": "[f 0:5 65278][f 2:1 ]Due to a change in language settings, the protagonist's name will default to \"Makoto Yuki.\" To restore the original name, the language must match the one that was set when the name was entered.\n[f 1:1 ]",
+    "SYS_APPLY_INIT_NAME_NETW": "[f 0:5 65278][f 2:1 ]Due to a change in language settings, the protagonist's name will default to \"Makoto Yuki.\" To restore the original name, the language must match the one that was set when the name was entered.\n[f 1:1 ]"
+  },
+  "raw_dialogs": {
+    "SYS_PERSONA_DROP": {
+      "kind": 0,
+      "page_offsets": [
+        612
+      ],
+      "raw_text_hex": "fef205fffffef14141726520796f75207375726520796f752077616e7420746f2072656c6561736520fef2012401fef2440101fef2011c013f0afef2240201fef12100"
+    },
+    "SYS_PERSONA_DROP_NG": {
+      "kind": 0,
+      "page_offsets": [
+        716
+      ],
+      "raw_text_hex": "fef205fffffef141596f752063616e6e6f742072656c65617365206120506572736f6e6120746861742069732063757272656e746c792065717569707065642e0afef12100"
+    },
+    "SYS_PERSONA_SET": {
+      "kind": 0,
+      "page_offsets": [
+        824
+      ],
+      "raw_text_hex": "fef205fffffef1414571756970207468697320506572736f6e613f0afef2240201fef12100"
+    },
+    "SYS_PERSONA_EQUIPED": {
+      "kind": 0,
+      "page_offsets": [
+        900
+      ],
+      "raw_text_hex": "fef205fffffef141fef2012401fef2440101fef2011c0120697320616c72656164792065717569707065642e0afef12100"
+    },
+    "SYS_SKILL_FULL": {
+      "kind": 0,
+      "page_offsets": [
+        988
+      ],
+      "raw_text_hex": "fef205fffffef1415468697320506572736f6e612063616e6e6f74206c6561726e20616e79206d6f726520736b696c6c732e20506c656173652063686f6f7365206f6e6520746f20666f726765742e0afef12100"
+    },
+    "SYS_SKILL_FORGET": {
+      "kind": 0,
+      "page_offsets": [
+        1108
+      ],
+      "raw_text_hex": "fef205fffffef141466f7267657420fef2012401fef2440101fef2011c013f0afef2240201fef12100"
+    },
+    "SYS_BIRTH_CONCEPTION": {
+      "kind": 0,
+      "page_offsets": [
+        1188
+      ],
+      "raw_text_hex": "fef205fffffef141fef2012401fef2440101fef2011c01206372656174656420fef58402012601020102012e0afef12100"
+    },
+    "SYS_SKILLCARD_ALREADY": {
+      "kind": 0,
+      "page_offsets": [
+        1276
+      ],
+      "raw_text_hex": "fef205fffffef141fef2012401fef2440101fef2011c012068617320616c7265616479206265656e206c6561726e65642e0afef12100"
+    },
+    "SYS_SKILL_CHANGE": {
+      "kind": 0,
+      "page_offsets": [],
+      "raw_text_hex": ""
+    },
+    "SYS_REMEMBER_CONF": {
+      "kind": 0,
+      "page_offsets": [
+        1396
+      ],
+      "raw_text_hex": "fef205fffffef14141726520796f75207375726520796f752077616e7420746f20657869743f0afef2240201fef12100"
+    },
+    "SYS_NO_EFFECT_INCENSE": {
+      "kind": 0,
+      "page_offsets": [
+        1480
+      ],
+      "raw_text_hex": "fef205fffffef141546865206c696d69742068617320616c7265616479206265656e20726561636865642e0afef12100"
+    },
+    "SYS_SYSTEM_BACK_TO_TITLE": {
+      "kind": 0,
+      "page_offsets": [
+        1564
+      ],
+      "raw_text_hex": "fef205fffffef14152657475726e20746f20746865207469746c652073637265656e3f0afef2240201fef12100"
+    },
+    "SYS_TITL_USE_NETWORK": {
+      "kind": 0,
+      "page_offsets": [
+        1648
+      ],
+      "raw_text_hex": "fef205fffffef141fef2240201546869732067616d6520737570706f727473206f6e6c696e65206665617475726573207768656e20636f6e6e656374656420746f20746865206e6574776f726b2e20576f756c6420796f75206c696b6520746f20656e61626c65207468657365206665617475726573206e6f773f0afef12100"
+    },
+    "SYS_TITL_DONT_USE_NETWOR": {
+      "kind": 0,
+      "page_offsets": [
+        1812
+      ],
+      "raw_text_hex": "fef205fffffef1414e6574776f726b2066756e6374696f6e616c69747920686173206265656e207475726e656420fef20103014f4646fef2011c012e20596f752063616e206368616e6765207468697320617420616e792074696d652066726f6d2074686520436f6e666967206d656e752e0afef12100"
+    },
+    "SYS_SAVE_LOAD_CHECK": {
+      "kind": 0,
+      "page_offsets": [
+        1968
+      ],
+      "raw_text_hex": "fef205fffffef1414c6f61642074686973207361766520646174613f0afef2240201fef12100"
+    },
+    "SYS_SAVE_LOAD_OK": {
+      "kind": 0,
+      "page_offsets": [],
+      "raw_text_hex": ""
+    },
+    "SYS_SAVE_NETWORK_LOAD": {
+      "kind": 0,
+      "page_offsets": [
+        2072
+      ],
+      "raw_text_hex": "fef205fffffef1414c6f6164696e67206e6574776f726b207361766520646174612e2e2e0afef12100"
+    },
+    "SYS_SAVE_NETWORK_LOAD_OK": {
+      "kind": 0,
+      "page_offsets": [
+        2152
+      ],
+      "raw_text_hex": "fef205fffffef1414e6574776f726b2073617665206461746120686173206265656e207375636365737366756c6c79206c6f616465642e0afef12100"
+    },
+    "SYS_SAVE_NETWORK_LOAD_ER": {
+      "kind": 0,
+      "page_offsets": [
+        2248
+      ],
+      "raw_text_hex": "fef205fffffef1414e6574776f726b2073617665206461746120636f756c64206e6f74206265206c6f616465642e0afef12100"
+    },
+    "SYS_SAVE_NETWORK_UP": {
+      "kind": 0,
+      "page_offsets": [
+        2336
+      ],
+      "raw_text_hex": "fef205fffffef14155706c6f6164696e67207361766520646174612e2e2e0afef12100"
+    },
+    "SYS_SAVE_NETWORK_UP_OK": {
+      "kind": 0,
+      "page_offsets": [
+        2408
+      ],
+      "raw_text_hex": "fef205fffffef14153617665206461746120686173206265656e207375636365737366756c6c792075706c6f616465642e0afef12100"
+    },
+    "SYS_SAVE_NETWORK_UP_ERRO": {
+      "kind": 0,
+      "page_offsets": [
+        2500
+      ],
+      "raw_text_hex": "fef205fffffef14153617665206461746120636f756c64206e6f742062652075706c6f616465642e0afef12100"
+    },
+    "SYS_SAVE_NETWORK_BROKEN": {
+      "kind": 0,
+      "page_offsets": [
+        2584
+      ],
+      "raw_text_hex": "fef205fffffef1414e6574776f726b2073617665206461746120697320636f727275707465642e0afef12100"
+    },
+    "SYS_SAVE_NETWORK_INVALID": {
+      "kind": 0,
+      "page_offsets": [
+        2664
+      ],
+      "raw_text_hex": "fef205fffffef1414e6574776f726b2066756e6374696f6e616c6974792069732063757272656e746c792064697361626c65642e20596f752063616e206368616e676520746869732073657474696e672066726f6d2074686520436f6e666967206d656e752e0afef12100"
+    },
+    "SYS_SAVE_NETWORK_NOTEXIS": {
+      "kind": 0,
+      "page_offsets": [
+        2808
+      ],
+      "raw_text_hex": "fef205fffffef1415468657265206973206e6f20736176652064617461206f6e20746865206e6574776f726b2e0afef12100"
+    },
+    "SYS_SAVE_OVERWRITE_CHECK": {
+      "kind": 0,
+      "page_offsets": [
+        2896
+      ],
+      "raw_text_hex": "fef205fffffef14153617665206461746120616c7265616479206578697374732e20446f20796f752077616e7420746f206f7665727772697465207468697320646174613f0afef2240201fef12100"
+    },
+    "SYS_SAVE_OK": {
+      "kind": 0,
+      "page_offsets": [],
+      "raw_text_hex": ""
+    },
+    "SYS_SAVE_ROLLBACK_CHECK": {
+      "kind": 0,
+      "page_offsets": [
+        3040
+      ],
+      "raw_text_hex": "fef205fffffef141496620796f752072657475726e20746f207468697320706f696e742c20616e79206d6f726520726563656e7420726577696e6420646174612077696c6c206265206c6f73742e20436f6e74696e75653f0afef2240201fef12100"
+    },
+    "SYS_CONF_CLOSE_CHECK": {
+      "kind": 0,
+      "page_offsets": [
+        3176
+      ],
+      "raw_text_hex": "fef205fffffef1414578697420776974686f7574206170706c79696e67206368616e6765733f0afef2240201fef12100"
+    },
+    "SYS_CONF_DIFF_CHECK": {
+      "kind": 0,
+      "page_offsets": [
+        3260
+      ],
+      "raw_text_hex": "fef205fffffef141496620796f75206368616e67652074686520646966666963756c74792066726f6d204d657263696c6573732c20796f7520776f6e27742062652061626c6520746f206368616e6765206974206261636b2e2041726520796f75207375726520796f752077616e7420746f2070726f636565643f0afef2240201fef12100"
+    },
+    "SYS_CONF_DIFF_CHANGED": {
+      "kind": 0,
+      "page_offsets": [
+        3432
+      ],
+      "raw_text_hex": "fef205fffffef14154686520646966666963756c7479206c6576656c20686173206265656e206368616e67656420746f20fef2010301fef2440101fef2011c012e0afef12100"
+    },
+    "SYS_CONF_CONNECT_ERROR": {
+      "kind": 0,
+      "page_offsets": [
+        3540
+      ],
+      "raw_text_hex": "fef205fffffef1414e6574776f726b20636f6e6e656374696f6e206661696c65642e0afef12100"
+    },
+    "SYS_CONF_CONNECTING": {
+      "kind": 0,
+      "page_offsets": [
+        3616
+      ],
+      "raw_text_hex": "fef205fffffef141436f6e6e656374696e6720746f20746865206e6574776f726b2e2e2e0afef12100"
+    },
+    "SYS_PARTY_MEMBEROVER_0_0": {
+      "kind": 0,
+      "page_offsets": [
+        3696
+      ],
+      "raw_text_hex": "fef205fffffef141596f752061726520fef2440101206d656d626572287329206f766572206d61782070617274792073697a652e0afef12100"
+    },
+    "SYS_DIFFICULTY_CHECK": {
+      "kind": 0,
+      "page_offsets": [
+        3792
+      ],
+      "raw_text_hex": "fef205fffffef141426567696e207468652067616d6520617420fef2010301fef2440101fef2011c0120646966666963756c74793f0afef2240201fef12100"
+    },
+    "SYS_DIFFICULTY_DESC_SAFE": {
+      "kind": 0,
+      "page_offsets": [
+        3892
+      ],
+      "raw_text_hex": "fef205fffffef141466f7220706c61796572732077686f2077616e7420746f20666f637573206f6e207468652073746f72792e0afef12100"
+    },
+    "SYS_DIFFICULTY_DESC_EASY": {
+      "kind": 0,
+      "page_offsets": [
+        3984
+      ],
+      "raw_text_hex": "fef205fffffef141466f722063617375616c20706c61796572732e0afef12100"
+    },
+    "SYS_DIFFICULTY_DESC_NORM": {
+      "kind": 0,
+      "page_offsets": [
+        4052
+      ],
+      "raw_text_hex": "fef205fffffef141466f7220657870657269656e63656420706c61796572732e0afef12100"
+    },
+    "SYS_DIFFICULTY_DESC_HARD": {
+      "kind": 0,
+      "page_offsets": [
+        4128
+      ],
+      "raw_text_hex": "fef205fffffef141466f7220706c61796572732077686f20656e6a6f792073747261746567697a696e672e0afef12100"
+    },
+    "SYS_DIFFICULTY_DESC_LUNA": {
+      "kind": 0,
+      "page_offsets": [
+        4212
+      ],
+      "raw_text_hex": "fef205fffffef141466f7220686967686c7920616476616e63656420706c61796572732e0afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_SAFE": {
+      "kind": 0,
+      "page_offsets": [
+        4292
+      ],
+      "raw_text_hex": "fef205fffffef141596f7572207061727479206175746f2d72657669766573206166746572206465666561742e20fef2012c01596f75722063686f696365206f6620646966666963756c74792077696c6c206e6f7420616666656374207468652073746f727920616e642063616e206265206368616e67656420617420616e792074696d6520286578636c7564696e67204d657263696c657373292efef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_EASY": {
+      "kind": 0,
+      "page_offsets": [
+        4496
+      ],
+      "raw_text_hex": "fef205fffffef1414c6f772d73747265737320636f6d6261742e20fef2012c01596f75722063686f696365206f6620646966666963756c74792077696c6c206e6f7420616666656374207468652073746f727920616e642063616e206265206368616e67656420617420616e792074696d6520286578636c7564696e67204d657263696c657373292efef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_NORM": {
+      "kind": 0,
+      "page_offsets": [
+        4680
+      ],
+      "raw_text_hex": "fef205fffffef1414d6f6465726174656c79206368616c6c656e67696e6720636f6d6261742e20fef2012c01596f75722063686f696365206f6620646966666963756c74792077696c6c206e6f7420616666656374207468652073746f727920616e642063616e206265206368616e67656420617420616e792074696d6520286578636c7564696e67204d657263696c657373292efef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_HARD": {
+      "kind": 0,
+      "page_offsets": [
+        4876
+      ],
+      "raw_text_hex": "fef205fffffef1415369676e69666963616e746c79206368616c6c656e67696e6720636f6d6261742e20fef2012c01596f75722063686f696365206f6620646966666963756c74792077696c6c206e6f7420616666656374207468652073746f727920616e642063616e206265206368616e67656420617420616e792074696d6520286578636c7564696e67204d657263696c657373292efef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_LUNA": {
+      "kind": 0,
+      "page_offsets": [
+        5076
+      ],
+      "raw_text_hex": "fef205fffffef141457863656564696e676c79206368616c6c656e67696e6720636f6d6261742e20fef2012c01596f75722063686f696365206f6620646966666963756c74792077696c6c206e6f7420616666656374207468652073746f727920616e642063616e206265206368616e67656420617420616e792074696d652c2062757420796f752063616e6e6f742072657475726e20746f204d657263696c657373206f6e6365206c656176696e672069742efef2011c010afef12100"
+    },
+    "MND_SKILL_NOT_CHANGE": {
+      "kind": 0,
+      "page_offsets": [
+        5304
+      ],
+      "raw_text_hex": "fef205fffffef1415b4e6f7420757365645d20fef244030120676176652061207368617270206372792e0afef12100"
+    },
+    "SYS_NETWORK_CONNECT_CHEC": {
+      "kind": 0,
+      "page_offsets": [],
+      "raw_text_hex": ""
+    },
+    "SYS_NETWORK_CONNECT_YES": {
+      "kind": 0,
+      "page_offsets": [
+        5416
+      ],
+      "raw_text_hex": "fef205fffffef1414e6574776f726b2066756e6374696f6e616c69747920686173206265656e207475726e656420fef20103014f4efef2011c012e20596f752063616e206368616e6765207468697320617420616e792074696d652066726f6d2074686520436f6e666967206d656e752e0afef12100"
+    },
+    "SYS_NETWORK_CONNECT_NO": {
+      "kind": 0,
+      "page_offsets": [],
+      "raw_text_hex": ""
+    },
+    "SYS_NETWORK_VOICE_ERROR": {
+      "kind": 0,
+      "page_offsets": [
+        5600
+      ],
+      "raw_text_hex": "fef205fffffef1414e6574776f726b206572726f722e20506c6561736520636865636b20796f757220636f6e6e656374696f6e2e0afef12100"
+    },
+    "MSG_SKILL_CHANGE": {
+      "kind": 0,
+      "page_offsets": [
+        5696
+      ],
+      "raw_text_hex": "fef205fffffef1414f682e2e2e3f204120736b696c6c207365656d7320746f206265206f6e20746865207665726765206f66206368616e67696e672e2e2e2057696c6c20796f75207365652074686973207468726f7567683f0afef12100"
+    },
+    "SEL_SKILL_CHANGE": {
+      "kind": 1,
+      "page_offsets": [
+        5840,
+        5869,
+        5897
+      ],
+      "raw_text_hex": "fef205fffffef14150726576656e7420736b696c6c206368616e676500fef205fffffef14141636365707420736b696c6c206368616e676500fef205fffffef141436865636b20736b696c6c730000"
+    },
+    "SYS_PARTY_FIXED_MEMBER_0": {
+      "kind": 0,
+      "page_offsets": [
+        5956
+      ],
+      "raw_text_hex": "fef205fffffef141fef2440101206d75737420626520696e20796f75722070617274792e0afef12100"
+    },
+    "SYS_RECHECK_BACK_TO_TITL": {
+      "kind": 0,
+      "page_offsets": [
+        6036
+      ],
+      "raw_text_hex": "fef205fffffef141596f752077696c6c206c6f736520616c6c2070726f6772657373206d6164652066726f6d20746865206c6173742074696d6520796f7520736176656420757020746f207468697320706f696e742e2041726520796f75207375726520796f752077616e7420746f2072657475726e20746f20746865207469746c652073637265656e3f0afef2240201fef12100"
+    },
+    "SYS_GAMEDATA_INSTALL": {
+      "kind": 0,
+      "page_offsets": [
+        6224
+      ],
+      "raw_text_hex": "fef205fffffef141496e7374616c6c696e672067616d6520646174612e2e2e0afef12100"
+    },
+    "SYS_GAMEDATA_INSTALL_OK": {
+      "kind": 0,
+      "page_offsets": [
+        6296
+      ],
+      "raw_text_hex": "fef205fffffef141496e7374616c6c6174696f6e20636f6d706c6574652e0afef12100"
+    },
+    "SYS_ACTIVITY_DATA_NOT_MA": {
+      "kind": 0,
+      "page_offsets": [
+        6368
+      ],
+      "raw_text_hex": "fef205fffffef1415468652073656c656374656420616374697669747920646964206e6f74206d6174636820746865207374617465206f6620746865206c6174657374207361766520646174612e205468652067616d652077696c6c207374617274206e6f726d616c6c792e0afef12100"
+    },
+    "SYS_KEYCONFIG_ASSIGN": {
+      "kind": 0,
+      "page_offsets": [
+        6520
+      ],
+      "raw_text_hex": "fef205fffffef141456e7465722061206b657920746f2062696e6420746f20fef2012401fef2440101fef2011c012e2050726573732045736320746f2072657475726e20746f207468652073657474696e6773206d656e752e0afef12100"
+    },
+    "SYS_KEYCONFIG_OVERWRITE": {
+      "kind": 0,
+      "page_offsets": [
+        6652
+      ],
+      "raw_text_hex": "fef205fffffef1415468657265206973206120636f6e666c69637420776974682074686520666f6c6c6f77696e67206b65792062696e64696e673a20fef2010301fef2440101fef2011c010afef22501014f766572777269746520746865206578697374696e67206b65792062696e64696e673f0afef2250101fef2240201fef12100"
+    },
+    "SYS_KEYCONFIG_FINISH": {
+      "kind": 0,
+      "page_offsets": [
+        6820
+      ],
+      "raw_text_hex": "fef205fffffef14146696e69736820776974682063757272656e742073657474696e67733f0afef2240201fef12100"
+    },
+    "SYS_KEYCONFIG_NOT_SET": {
+      "kind": 0,
+      "page_offsets": [
+        6904
+      ],
+      "raw_text_hex": "fef205fffffef141536f6d6520636f6e66696775726174696f6e732068617665206e6f74206265656e207365742e0afef12100"
+    },
+    "SYS_KEYCONFIG_RESET_KEYB": {
+      "kind": 0,
+      "page_offsets": [
+        6992
+      ],
+      "raw_text_hex": "fef205fffffef141526573746f7265206b6579626f61726420636f6e66696775726174696f6e20746f2064656661756c742073657474696e67733f0afef2240201fef12100"
+    },
+    "SYS_KEYCONFIG_RESET_MOUS": {
+      "kind": 0,
+      "page_offsets": [
+        7100
+      ],
+      "raw_text_hex": "fef205fffffef141526573746f7265206d6f75736520636f6e66696775726174696f6e20746f2064656661756c742073657474696e67733f0afef2240201fef12100"
+    },
+    "SYS_KEYCONFIG_RESET_GAME": {
+      "kind": 0,
+      "page_offsets": [
+        7204
+      ],
+      "raw_text_hex": "fef205fffffef141526573746f72652067616d6570616420636f6e66696775726174696f6e20746f2064656661756c742073657474696e67733f0afef2240201fef12100"
+    },
+    "SYS_CONF_DISPLAY_CHECK": {
+      "kind": 0,
+      "page_offsets": [
+        7308
+      ],
+      "raw_text_hex": "fef205fffffef141446973706c61792073657474696e67732068617665206265656e2061646a75737465642e20446f20796f75207769736820746f206b656570207468657365206368616e6765733f202853657474696e67732077696c6c2072657665727420696e20fef2440101207365636f6e64732e290afef2240201fef12100"
+    },
+    "SYS_INPUT_DEVICE_LOST": {
+      "kind": 0,
+      "page_offsets": [
+        7476
+      ],
+      "raw_text_hex": "fef205fffffef14141206465766963652077617320646973636f6e6e65637465642e20506c6561736520636865636b2074686520737461747573206f662074686520636f6e6e656374696f6e2e0afef12100"
+    },
+    "SYS_SAVE_NO_SPACE": {
+      "kind": 0,
+      "page_offsets": [
+        7596
+      ],
+      "raw_text_hex": "fef205fffffef14153617665206661696c65642e20506c6561736520636865636b20617661696c61626c652073797374656d2073746f726167652073706163652e0afef12100"
+    },
+    "SYS_APP_QUIT": {
+      "kind": 0,
+      "page_offsets": [
+        7704
+      ],
+      "raw_text_hex": "fef205fffffef14145786974207468652067616d653f0afef2240201fef12100"
+    },
+    "SYS_APPLY_INIT_NAME_STOR": {
+      "kind": 0,
+      "page_offsets": [
+        7772
+      ],
+      "raw_text_hex": "fef205fffffef14144756520746f2061206368616e676520696e206c616e67756167652073657474696e67732c207468652070726f7461676f6e6973742773206e616d652077696c6c2064656661756c7420746f20224d616b6f746f2059756b692e2220546f20726573746f726520746865206f726967696e616c206e616d652c20746865206c616e6775616765206d757374206d6174636820746865206f6e6520746861742077617320736574207768656e20746865206e616d652077617320656e74657265642e0afef12100"
+    },
+    "SYS_APPLY_INIT_NAME_NETW": {
+      "kind": 0,
+      "page_offsets": [
+        8016
+      ],
+      "raw_text_hex": "fef205fffffef14144756520746f2061206368616e676520696e206c616e67756167652073657474696e67732c207468652070726f7461676f6e6973742773206e616d652077696c6c2064656661756c7420746f20224d616b6f746f2059756b692e2220546f20726573746f726520746865206f726967696e616c206e616d652c20746865206c616e6775616765206d757374206d6174636820746865206f6e6520746861742077617320736574207768656e20746865206e616d652077617320656e74657265642e0afef12100"
+    }
+  },
+  "encoding": "UTF-8",
+  "control_codes": "[f table:index arguments]；不删除功能标签",
+  "format": "MSG1 big endian / P3R Reload"
+}

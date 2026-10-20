@@ -1,0 +1,35 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_CampParamTop",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/Astrea/UI/Camp/Param/DT_CampParamTop",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'CampParamTableTopRow'",
+        "ObjectPath": "/Script/xrd777"
+      }
+    },
+    "Rows": {
+      "NewRow": {
+        "TopInDist": -1150.0,
+        "TopInMenuDist": -50.0,
+        "TopInTitleAnimType": "EOneAnimType::CurveUp2",
+        "TopInTitleFrame": 10,
+        "TopInTitleWait": 8,
+        "TopInMenuAnimType": "EOneAnimType::CurveUp2",
+        "TopInMenuFrame": 24,
+        "TopInMenuWait": 0,
+        "TopInMenuInterval": 2,
+        "TopInWhiteCursorAnimType": "EOneAnimType::CurveUp2",
+        "TopInWhiteCursorFrame": 10,
+        "TopInWhiteCursorWait": 20,
+        "TopInRedCursorAnimType": "EOneAnimType::CurveUp2",
+        "TopInRedCursorFrame": 10,
+        "TopInRedCursorWait": 28,
+        "Edit_Top_Reselect_Key_Lock_Frame": 10
+      }
+    }
+  }
+]

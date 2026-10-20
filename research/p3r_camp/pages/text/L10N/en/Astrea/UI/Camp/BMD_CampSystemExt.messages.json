@@ -1,0 +1,116 @@
+{
+  "messages": {
+    "SYS_DIFFICULTY_CHECK_AST": "[f 0:5 65278][f 2:1 ]Begin the game at [f 0:1 2][f 2:4 0][f 0:1 27] difficulty?\n[f 1:4 1][f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_SAFE": "[f 0:5 65278][f 2:1 ]Your party auto-revives after defeat. [f 0:1 43]Your choice of difficulty will not affect the story and can be changed at any time (excluding Heartless).[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_EASY": "[f 0:5 65278][f 2:1 ]Low-stress combat. [f 0:1 43]Your choice of difficulty will not affect the story and can be changed at any time (excluding Heartless).[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_NORM": "[f 0:5 65278][f 2:1 ]Moderately challenging combat. [f 0:1 43]Your choice of difficulty will not affect the story and can be changed at any time (excluding Heartless).[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_HARD": "[f 0:5 65278][f 2:1 ]Significantly challenging combat. [f 0:1 43]Your choice of difficulty will not affect the story and can be changed at any time (excluding Heartless).[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_HEAR": "[f 0:5 65278][f 2:1 ]Exceedingly challenging combat. [f 0:1 43]Your choice of difficulty will not affect the story and can be changed at any time, but you cannot return to Heartless once leaving it.\n[f 1:1 ]",
+    "SYS_INHERITANCE_LOAD_CHE": "[f 0:5 65278][f 2:1 ]Carry over this data?\n[f 1:5 0][f 1:4 1][f 1:1 ]",
+    "SYS_SAVE_VERSION_ERROR": "[f 0:5 65278][f 2:1 ]Unable to resume play. The loaded save data and game version do not match.\n[f 1:1 ]",
+    "SYS_SAVE_EPISODE_ERROR": "[f 0:5 65278][f 2:1 ]Unable to resume play. The loaded save data does not match the selected story episode.\n[f 1:1 ]",
+    "SYS_VELVETROOM_INFO_INHE": "[f 0:5 65278][f 2:1 ]When summoning from the Compendium, you now have the option to use the one carried over from the main story.\n[f 1:1 ]\n[page]\n[f 0:5 65278][f 2:1 ]Press [f 1:3 118] to switch between the two Compendiums.\n[f 1:1 ]\n[page]\n[f 0:5 65278][f 2:1 ]Summoning from the carried-over Compendium will cost more than usual. You must also be at the same level or higher than the desired Persona.\n[f 1:1 ]",
+    "MSG_FLORIST_CHECK": "[f 0:5 65278][f 2:1 ][f 5:21 1,101]Does this look right?\n[f 1:1 ]",
+    "SEL_FLORIST_CHECK": "[f 0:5 65278][f 2:1 ]Yes.\n[page]\n[f 0:5 65278][f 2:1 ]Maybe not.",
+    "SYS_CONF_DIFF_CHECK_ASTR": "[f 0:5 65278][f 2:1 ]If you reduce the difficulty from the highest level, you won't be able to change it back. Are you sure you want to proceed?\n[f 1:5 0][f 1:4 1][f 1:1 ]"
+  },
+  "raw_dialogs": {
+    "SYS_DIFFICULTY_CHECK_AST": {
+      "kind": 0,
+      "page_offsets": [
+        156
+      ],
+      "raw_text_hex": "fef205fffffef141426567696e207468652067616d6520617420fef2010301fef2440101fef2011c0120646966666963756c74793f0afef2240201fef12100"
+    },
+    "SYS_DIFFICULTY_INFO_SAFE": {
+      "kind": 0,
+      "page_offsets": [
+        256
+      ],
+      "raw_text_hex": "fef205fffffef141596f7572207061727479206175746f2d72657669766573206166746572206465666561742e20fef2012c01596f75722063686f696365206f6620646966666963756c74792077696c6c206e6f7420616666656374207468652073746f727920616e642063616e206265206368616e67656420617420616e792074696d6520286578636c7564696e672048656172746c657373292efef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_EASY": {
+      "kind": 0,
+      "page_offsets": [
+        460
+      ],
+      "raw_text_hex": "fef205fffffef1414c6f772d73747265737320636f6d6261742e20fef2012c01596f75722063686f696365206f6620646966666963756c74792077696c6c206e6f7420616666656374207468652073746f727920616e642063616e206265206368616e67656420617420616e792074696d6520286578636c7564696e672048656172746c657373292efef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_NORM": {
+      "kind": 0,
+      "page_offsets": [
+        644
+      ],
+      "raw_text_hex": "fef205fffffef1414d6f6465726174656c79206368616c6c656e67696e6720636f6d6261742e20fef2012c01596f75722063686f696365206f6620646966666963756c74792077696c6c206e6f7420616666656374207468652073746f727920616e642063616e206265206368616e67656420617420616e792074696d6520286578636c7564696e672048656172746c657373292efef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_HARD": {
+      "kind": 0,
+      "page_offsets": [
+        840
+      ],
+      "raw_text_hex": "fef205fffffef1415369676e69666963616e746c79206368616c6c656e67696e6720636f6d6261742e20fef2012c01596f75722063686f696365206f6620646966666963756c74792077696c6c206e6f7420616666656374207468652073746f727920616e642063616e206265206368616e67656420617420616e792074696d6520286578636c7564696e672048656172746c657373292efef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_HEAR": {
+      "kind": 0,
+      "page_offsets": [
+        1040
+      ],
+      "raw_text_hex": "fef205fffffef141457863656564696e676c79206368616c6c656e67696e6720636f6d6261742e20fef2012c01596f75722063686f696365206f6620646966666963756c74792077696c6c206e6f7420616666656374207468652073746f727920616e642063616e206265206368616e67656420617420616e792074696d652c2062757420796f752063616e6e6f742072657475726e20746f2048656172746c657373206f6e6365206c656176696e672069742e0afef12100"
+    },
+    "SYS_INHERITANCE_LOAD_CHE": {
+      "kind": 0,
+      "page_offsets": [
+        1264
+      ],
+      "raw_text_hex": "fef205fffffef1414361727279206f766572207468697320646174613f0afef2250101fef2240201fef12100"
+    },
+    "SYS_SAVE_VERSION_ERROR": {
+      "kind": 0,
+      "page_offsets": [
+        1344
+      ],
+      "raw_text_hex": "fef205fffffef141556e61626c6520746f20726573756d6520706c61792e20546865206c6f616465642073617665206461746120616e642067616d652076657273696f6e20646f206e6f74206d617463682e0afef12100"
+    },
+    "SYS_SAVE_EPISODE_ERROR": {
+      "kind": 0,
+      "page_offsets": [
+        1468
+      ],
+      "raw_text_hex": "fef205fffffef141556e61626c6520746f20726573756d6520706c61792e20546865206c6f616465642073617665206461746120646f6573206e6f74206d61746368207468652073656c65637465642073746f727920657069736f64652e0afef12100"
+    },
+    "SYS_VELVETROOM_INFO_INHE": {
+      "kind": 0,
+      "page_offsets": [
+        1612,
+        1732,
+        1794
+      ],
+      "raw_text_hex": "fef205fffffef1415768656e2073756d6d6f6e696e672066726f6d2074686520436f6d70656e6469756d2c20796f75206e6f77206861766520746865206f7074696f6e20746f2075736520746865206f6e652063617272696564206f7665722066726f6d20746865206d61696e2073746f72792e0afef121fef205fffffef141507265737320fef223770120746f20737769746368206265747765656e207468652074776f20436f6d70656e6469756d732e0afef121fef205fffffef14153756d6d6f6e696e672066726f6d2074686520636172726965642d6f76657220436f6d70656e6469756d2077696c6c20636f7374206d6f7265207468616e20757375616c2e20596f75206d75737420616c736f206265206174207468652073616d65206c6576656c206f7220686967686572207468616e20746865206465736972656420506572736f6e612e0afef12100"
+    },
+    "MSG_FLORIST_CHECK": {
+      "kind": 0,
+      "page_offsets": [
+        1984
+      ],
+      "raw_text_hex": "fef205fffffef141fef3b502016601446f65732074686973206c6f6f6b2072696768743f0afef12100"
+    },
+    "SEL_FLORIST_CHECK": {
+      "kind": 1,
+      "page_offsets": [
+        2072,
+        2085
+      ],
+      "raw_text_hex": "fef205fffffef1415965732e00fef205fffffef1414d61796265206e6f742e0000"
+    },
+    "SYS_CONF_DIFF_CHECK_ASTR": {
+      "kind": 0,
+      "page_offsets": [
+        2144
+      ],
+      "raw_text_hex": "fef205fffffef141496620796f75207265647563652074686520646966666963756c74792066726f6d207468652068696768657374206c6576656c2c20796f7520776f6e27742062652061626c6520746f206368616e6765206974206261636b2e2041726520796f75207375726520796f752077616e7420746f2070726f636565643f0afef2250101fef2240201fef12100"
+    }
+  },
+  "encoding": "UTF-8",
+  "control_codes": "[f table:index arguments]；不删除功能标签",
+  "format": "MSG1 big endian / P3R Reload"
+}

@@ -1,0 +1,162 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_CampParamSystem",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/Xrd777/UI/Camp/Param/DT_CampParamSystem",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'CampParamTableSystemRow'",
+        "ObjectPath": "/Script/xrd777"
+      }
+    },
+    "Rows": {
+      "NewRow": {
+        "SystemTopInMenuDist": -50.0,
+        "SystemTopInTopMenuFrame1": 1200,
+        "SystemTopInTopMenuFrame2": 800,
+        "SystemTopInTopMenuRotFrame": 400,
+        "SystemTopInAoItaAnimType": "EOneAnimType::CurveUp2",
+        "SystemTopInAoItaFrame": 12,
+        "SystemTopInAoItaWait": 0,
+        "SystemTopInTitleAnimType": "EOneAnimType::CurveUp2",
+        "SystemTopInTitleFrame": 12,
+        "SystemTopInTitleWait": 0,
+        "SystemTopTutorialOnPos": {
+          "X": 0.0,
+          "Y": -20.0
+        },
+        "SystemTopTutorialOnRot": -7.0,
+        "SystemTopConfigOnPos": {
+          "X": 6.0,
+          "Y": 55.0
+        },
+        "SystemTopConfigOnRot": 1.0,
+        "SystemTopDictionaryOnPos": {
+          "X": 50.0,
+          "Y": 125.0
+        },
+        "SystemTopDictionaryOnRot": -6.0,
+        "SystemTopDataloadOnPos": {
+          "X": 140.0,
+          "Y": 205.0
+        },
+        "SystemTopDataloadOnRot": 2.0,
+        "SystemTopDatasaveOnPos": {
+          "X": 80.0,
+          "Y": 265.0
+        },
+        "SystemTopDatasaveOnRot": -4.0,
+        "SystemTopRollbackOnPos": {
+          "X": 110.0,
+          "Y": 335.0
+        },
+        "SystemTopRollbackOnRot": 2.0,
+        "SystemTopTitleOnPos": {
+          "X": 0.0,
+          "Y": 420.0
+        },
+        "SystemTopTitleOnRot": 7.0,
+        "SystemTopTutorialOffPos": {
+          "X": -30.0,
+          "Y": 0.0
+        },
+        "SystemTopTutorialOffRot": -7.0,
+        "SystemTopConfigOffPos": {
+          "X": 6.0,
+          "Y": 55.0
+        },
+        "SystemTopConfigOffRot": 1.0,
+        "SystemTopDictionaryOffPos": {
+          "X": 50.0,
+          "Y": 125.0
+        },
+        "SystemTopDictionaryOffRot": -6.0,
+        "SystemTopDataloadOffPos": {
+          "X": 140.0,
+          "Y": 205.0
+        },
+        "SystemTopDataloadOffRot": 2.0,
+        "SystemTopDatasaveOffPos": {
+          "X": 80.0,
+          "Y": 265.0
+        },
+        "SystemTopDatasaveOffRot": -4.0,
+        "SystemTopRollbackOffPos": {
+          "X": 110.0,
+          "Y": 335.0
+        },
+        "SystemTopRollbackOffRot": 2.0,
+        "SystemTopTitleOffPos": {
+          "X": 0.0,
+          "Y": 420.0
+        },
+        "SystemTopTitleOffRot": 7.0,
+        "Edit_CursorOn_Tutorial_Text_Scale": {
+          "X": 0.95,
+          "Y": 0.92
+        },
+        "Edit_CursorOn_Tutorial_Cursor_Scale": {
+          "X": 1.5,
+          "Y": 1.3
+        },
+        "Edit_CursorOn_Config_Text_Scale": {
+          "X": 0.9,
+          "Y": 0.9
+        },
+        "Edit_CursorOn_Config_Cursor_Scale": {
+          "X": 1.5,
+          "Y": 1.3
+        },
+        "Edit_CursorOn_Dictionary_Text_Scale": {
+          "X": 0.9,
+          "Y": 0.9
+        },
+        "Edit_CursorOn_Dictionary_Cursor_Scale": {
+          "X": 1.4,
+          "Y": 1.1
+        },
+        "Edit_CursorOn_DataLoad_Text_Scale": {
+          "X": 0.95,
+          "Y": 0.95
+        },
+        "Edit_CursorOn_DataLoad_Cursor_Scale": {
+          "X": 1.3,
+          "Y": 1.0
+        },
+        "Edit_CursorOn_DataSave_Text_Scale": {
+          "X": 0.95,
+          "Y": 0.95
+        },
+        "Edit_CursorOn_DataSave_Cursor_Scale": {
+          "X": 1.2,
+          "Y": 1.1
+        },
+        "Edit_CursorOn_RollBack_Text_Scale": {
+          "X": 0.9,
+          "Y": 0.9
+        },
+        "Edit_CursorOn_RollBack_Cursor_Scale": {
+          "X": 1.3,
+          "Y": 1.3
+        },
+        "Edit_CursorOn_ReturnToTitle_Text_Scale": {
+          "X": 0.75,
+          "Y": 0.75
+        },
+        "Edit_CursorOn_ReturnToTitle_Cursor_Scale": {
+          "X": 1.3,
+          "Y": 1.0
+        },
+        "Edit_CursorOn_Tutorial_Cursor_Angle": 12.5,
+        "Edit_CursorOn_Config_Cursor_Angle": 12.0,
+        "Edit_CursorOn_Dictionary_Cursor_Angle": 5.0,
+        "Edit_CursorOn_DataLoad_Cursor_Angle": 8.0,
+        "Edit_CursorOn_DataSave_Cursor_Angle": 10.0,
+        "Edit_CursorOn_RollBack_Cursor_Angle": 8.0,
+        "Edit_CursorOn_ReturnToTitle_Cursor_Angle": 11.0
+      }
+    }
+  }
+]

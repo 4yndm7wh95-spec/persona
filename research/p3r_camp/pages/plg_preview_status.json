@@ -1,0 +1,357 @@
+[
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 11,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 17,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 18,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 19,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 20,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 27,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 28,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 29,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 30,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 31,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 32,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 33,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 34,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 38,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 39,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 43,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 44,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 50,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 51,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 52,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 55,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 56,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 57,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 58,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 59,
+    "reason": "原始坐标范围大于400万像素，保留JSON未栅格化"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 77,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 82,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 83,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 84,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 85,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 86,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 87,
+    "reason": "原始坐标范围大于400万像素，保留JSON未栅格化"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 88,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 89,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 90,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 98,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 103,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 106,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 124,
+    "reason": "原始坐标范围大于400万像素，保留JSON未栅格化"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 125,
+    "reason": "原始坐标范围大于400万像素，保留JSON未栅格化"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 127,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 128,
+    "reason": "原始坐标范围大于400万像素，保留JSON未栅格化"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 133,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 136,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 137,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 138,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 139,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 144,
+    "reason": "原始坐标范围大于400万像素，保留JSON未栅格化"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 146,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 147,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 148,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 149,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 150,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 165,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 166,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 167,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 168,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 169,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp.uasset",
+    "mesh": 171,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp_Theurgia.uasset",
+    "mesh": 2,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp_Theurgia.uasset",
+    "mesh": 3,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp_Theurgia.uasset",
+    "mesh": 4,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp_Theurgia.uasset",
+    "mesh": 5,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp_Theurgia.uasset",
+    "mesh": 6,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp_Theurgia.uasset",
+    "mesh": 7,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp_Theurgia.uasset",
+    "mesh": 8,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp_Theurgia.uasset",
+    "mesh": 9,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp_Theurgia.uasset",
+    "mesh": 10,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp_Theurgia.uasset",
+    "mesh": 11,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp_Theurgia.uasset",
+    "mesh": 12,
+    "reason": "源 mesh 无顶点或三角索引"
+  },
+  {
+    "pak_path": "P3R/Content/L10N/en/Xrd777/UI/Camp/Root/Plg/PLG_UI_Camp_Theurgia.uasset",
+    "mesh": 18,
+    "reason": "源 mesh 无顶点或三角索引"
+  }
+]

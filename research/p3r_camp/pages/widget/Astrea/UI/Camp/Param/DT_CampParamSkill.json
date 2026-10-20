@@ -1,0 +1,54 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_CampParamSkill",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/Astrea/UI/Camp/Param/DT_CampParamSkill",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'CampParamTableSkillRow'",
+        "ObjectPath": "/Script/xrd777"
+      }
+    },
+    "Rows": {
+      "NewRow": {
+        "SkillInDist": -100.0,
+        "SkillSilhouetteAnimType": "EOneAnimType::CurveUp1",
+        "SkillSilhouetteFrame": 10,
+        "SkillSilhouetteWait": 23,
+        "SkillSilhouetteOriginal": {
+          "X": 0.0,
+          "Y": 0.0
+        },
+        "SkillSilhouetteTarget": {
+          "X": 10.0,
+          "Y": 170.0
+        },
+        "SkillSiroItaAnimType": "EOneAnimType::CurveUp1",
+        "SkillSiroItaFrame": 10,
+        "SkillSiroItaWait": 0,
+        "SkillTitleAnimType": "EOneAnimType::CurveUp1",
+        "SkillTitleFrame": 10,
+        "SkillTitleWait": 0,
+        "SkillListAnimType": "EOneAnimType::CurveUp1",
+        "SkillListFrame": 10,
+        "SkillListWait": 0,
+        "SkillPartyAnimType": "EOneAnimType::CurveUp3",
+        "SkillPartyFrame": 6,
+        "SkillPartyWait": 0,
+        "SkillPartyFadeFrame": 1,
+        "SkillPartyInterval": 1,
+        "GunRefRotAnimType": "EOneAnimType::EaseInOut",
+        "GunRefInFrame": 8,
+        "GunRefInWait": 8,
+        "GunRefNextFrame": 5,
+        "GunRefPos": {
+          "X": 0.0,
+          "Y": 95.0
+        },
+        "GunRefOffset": 150.0
+      }
+    }
+  }
+]

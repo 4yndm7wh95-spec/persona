@@ -1,0 +1,561 @@
+{
+  "messages": {
+    "SYS_PERSONA_DROP": "[f 0:5 65278][f 2:1 ]将消灭[f 0:1 35][f 2:4 0][f 0:1 27]。\r\n确定要消灭吗？\r\n[f 1:4 1][f 1:1 ]",
+    "SYS_PERSONA_DROP_NG": "[f 0:5 65278][f 2:1 ]无法消灭装备中的人格面具。\r\n[f 1:1 ]",
+    "SYS_PERSONA_SET": "[f 0:5 65278][f 2:1 ]要装备这个人格面具吗？\r\n[f 1:4 1][f 1:1 ]",
+    "SYS_PERSONA_EQUIPED": "[f 0:5 65278][f 2:1 ]已经装备了\r\n[f 0:1 35][f 2:4 0][f 0:1 27]。\r\n[f 1:1 ]",
+    "SYS_SKILL_FULL": "[f 0:5 65278][f 2:1 ]技能已经满了。\r\n请选择要忘记的技能。\n[f 1:1 ]",
+    "SYS_SKILL_FORGET": "[f 0:5 65278][f 2:1 ]要忘记[f 0:1 35][f 2:4 0][f 0:1 27]吗？\n[f 1:4 1][f 1:1 ]",
+    "SYS_BIRTH_CONCEPTION": "[f 0:5 65278][f 2:1 ][f 0:1 35][f 2:4 0][f 0:1 27]创造出了“[f 4:4 1,37,1,1]”。\n[f 1:1 ]",
+    "SYS_SKILLCARD_ALREADY": "[f 0:5 65278][f 2:1 ]已经学会了\r\n[f 0:1 35][f 2:4 0][f 0:1 27]。\r\n[f 1:1 ]",
+    "SYS_SKILL_CHANGE": "",
+    "SYS_REMEMBER_CONF": "[f 0:5 65278][f 2:1 ]确定要结束吗？\r\n[f 1:4 1][f 1:1 ]",
+    "SYS_NO_EFFECT_INCENSE": "[f 0:5 65278][f 2:1 ]无法继续叠加效果。\r\n[f 1:1 ]",
+    "SYS_SYSTEM_BACK_TO_TITLE": "[f 0:5 65278][f 2:1 ]要返回标题画面吗？\r\n[f 1:4 1][f 1:1 ]",
+    "SYS_TITL_USE_NETWORK": "[f 0:5 65278][f 2:1 ][f 1:4 1]若已连接网络，\r\n那么在把网络功能设置为ＯＮ后，\r\n将可在游戏内使用各种功能。\r\n[f 1:5 0]要把网络功能设置为ＯＮ吗？\r\n[f 1:1 ]",
+    "SYS_TITL_DONT_USE_NETWOR": "[f 0:5 65278][f 2:1 ]已把网络功能设置为[f 0:1 2]ＯＦＦ[f 0:1 27]。\r\n将在不使用网络功能的情况下继续游戏。\n在ＣＯＮＦＩＧ中可随时更改设置。\n[f 1:1 ]",
+    "SYS_SAVE_LOAD_CHECK": "[f 0:5 65278][f 2:1 ]要读取保存数据吗？\r\n[f 1:4 1][f 1:1 ]",
+    "SYS_SAVE_LOAD_OK": "",
+    "SYS_SAVE_NETWORK_LOAD": "[f 0:5 65278][f 2:1 ]正在获取在线备份的保存数据。\n[f 1:1 ]",
+    "SYS_SAVE_NETWORK_LOAD_OK": "[f 0:5 65278][f 2:1 ]已成功获取\r\n在线备份的保存数据。\n[f 1:1 ]",
+    "SYS_SAVE_NETWORK_LOAD_ER": "[f 0:5 65278][f 2:1 ]在线备份的保存数据\r\n获取失败。\r\n[f 1:1 ]",
+    "SYS_SAVE_NETWORK_UP": "[f 0:5 65278][f 2:1 ]正在上传保存数据。\r\n[f 1:1 ]",
+    "SYS_SAVE_NETWORK_UP_OK": "[f 0:5 65278][f 2:1 ]已成功上传保存数据。\n[f 1:1 ]",
+    "SYS_SAVE_NETWORK_UP_ERRO": "[f 0:5 65278][f 2:1 ]保存数据上传失败。\r\n[f 1:1 ]",
+    "SYS_SAVE_NETWORK_BROKEN": "[f 0:5 65278][f 2:1 ]在线备份的保存数据\r\n已损坏。\n[f 1:1 ]",
+    "SYS_SAVE_NETWORK_INVALID": "[f 0:5 65278][f 2:1 ]网络功能已设置为ＯＦＦ。\n在ＣＯＮＦＩＧ中可更改设置。\n[f 1:1 ]",
+    "SYS_SAVE_NETWORK_NOTEXIS": "[f 0:5 65278][f 2:1 ]无网络保存数据。\n[f 1:1 ]",
+    "SYS_SAVE_OVERWRITE_CHECK": "[f 0:5 65278][f 2:1 ]已有保存数据。\r\n确定要覆盖吗？\r\n[f 1:4 1][f 1:1 ]",
+    "SYS_SAVE_OK": "",
+    "SYS_SAVE_ROLLBACK_CHECK": "[f 0:5 65278][f 2:1 ]若要从选择的数据重新开始，\r\n日期·时间段比选择数据更靠后的数据\n将被删除，确定要继续吗？\n[f 1:4 1][f 1:1 ]",
+    "SYS_CONF_CLOSE_CHECK": "[f 0:5 65278][f 2:1 ]不应用设置直接返回吗？\r\n[f 1:4 1][f 1:1 ]",
+    "SYS_CONF_DIFF_CHECK": "[f 0:5 65278][f 2:1 ]若从最高难度更改为其他难度，\n将无法返回原来的难度。\r\n确定要更改吗？\r\n[f 1:4 1][f 1:1 ]",
+    "SYS_CONF_DIFF_CHANGED": "[f 0:5 65278][f 2:1 ]难度已更改为“[f 0:1 2][f 2:4 0][f 0:1 27]”。\n[f 1:1 ]",
+    "SYS_CONF_CONNECT_ERROR": "[f 0:5 65278][f 2:1 ]网络连接失败。\r\n[f 1:1 ]",
+    "SYS_CONF_CONNECTING": "[f 0:5 65278][f 2:1 ]正在连接网络。\r\n[f 1:1 ]",
+    "SYS_PARTY_MEMBEROVER_0_0": "[f 0:5 65278][f 2:1 ]队伍的编成超过了最大人数[f 2:4 0]人。\n[f 1:1 ]",
+    "SYS_DIFFICULTY_CHECK": "[f 0:5 65278][f 2:1 ]将以“[f 0:1 2][f 2:4 0][f 0:1 27]”难度开始游戏。\n确定要开始吗？\r\n[f 1:4 1][f 1:1 ]",
+    "SYS_DIFFICULTY_DESC_SAFE": "[f 0:5 65278][f 2:1 ]该难度面向希望专注于故事的玩家。\n[f 1:1 ]",
+    "SYS_DIFFICULTY_DESC_EASY": "[f 0:5 65278][f 2:1 ]该难度面向对游戏研究不深的玩家。\n[f 1:1 ]",
+    "SYS_DIFFICULTY_DESC_NORM": "[f 0:5 65278][f 2:1 ]该难度面向对游戏有所研究的玩家。\n[f 1:1 ]",
+    "SYS_DIFFICULTY_DESC_HARD": "[f 0:5 65278][f 2:1 ]该难度面向希望进一步享受战略的玩家。\n[f 1:1 ]",
+    "SYS_DIFFICULTY_DESC_LUNA": "[f 0:5 65278][f 2:1 ]该难度面向真正的顶尖玩家。\r\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_SAFE": "[f 0:5 65278][f 2:1 ]即使在战斗中全灭，也能无限制地当场复活。\n[f 0:1 43]无论选择哪个难度，您的故事都不会有所变化。\r\n另外，也可以之后再更改为\n“LUNATIC”以外的难度。[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_EASY": "[f 0:5 65278][f 2:1 ]和“NORMAL”相比，战斗更简单。\n[f 0:1 43]无论选择哪个难度，您的故事都不会有所变化。\r\n另外，也可以之后再更改为\n“LUNATIC”以外的难度。[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_NORM": "[f 0:5 65278][f 2:1 ]可以在适度的紧张感中享受战斗的乐趣。\n[f 0:1 43]无论选择哪个难度，您的故事都不会有所变化。\r\n另外，也可以之后再更改为\n“LUNATIC”以外的难度。[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_HARD": "[f 0:5 65278][f 2:1 ]和“NORMAL”相比，战斗难度更高。\r\n[f 0:1 43]无论选择哪个难度，您的故事都不会有所变化。\r\n另外，也可以之后再更改为\n“LUNATIC”以外的难度。[f 0:1 27]\n[f 1:1 ]",
+    "SYS_DIFFICULTY_INFO_LUNA": "[f 0:5 65278][f 2:1 ]和“HARD”相比，战斗难度大幅提高。\r\n[f 0:1 43]无论选择哪个难度，您的故事都不会有所变化。[f 0:1 27]\n另外，虽然可以更改为其他难度，\r\n但更改之后无法回到“LUNATIC”。\n[f 1:1 ]",
+    "MND_SKILL_NOT_CHANGE": "[f 0:5 65278][f 2:1 ][f 1:5 0][f 1:1 ]",
+    "SYS_NETWORK_CONNECT_CHEC": "",
+    "SYS_NETWORK_CONNECT_YES": "[f 0:5 65278][f 2:1 ]已把网络功能设置为[f 0:1 2]ＯＮ[f 0:1 27]。\r\n[f 1:5 0]将在启用网络功能的情况下继续游戏。\r\n在ＣＯＮＦＩＧ中可随时更改设置。\n[f 1:1 ]",
+    "SYS_NETWORK_CONNECT_NO": "",
+    "SYS_NETWORK_VOICE_ERROR": "[f 0:5 65278][f 2:1 ]发生网络错误。\r\n请查看网络连接。\n[f 1:1 ]",
+    "MSG_SKILL_CHANGE": "[f 0:5 65278][f 2:1 ]噢……看来技能要发生变化了啊。\r\n要继续见证吗？\r\n[f 1:1 ]",
+    "SEL_SKILL_CHANGE": "[f 0:5 65278][f 2:1 ]阻止变化\n[page]\n[f 0:5 65278][f 2:1 ]见证变化\n[page]\n[f 0:5 65278][f 2:1 ]查看技能",
+    "SYS_PARTY_FIXED_MEMBER_0": "[f 0:5 65278][f 2:1 ]必须参加队伍的[f 2:4 0]\n未被编入队伍。\r\n[f 1:1 ]",
+    "SYS_RECHECK_BACK_TO_TITL": "[f 0:5 65278][f 2:1 ]将失去从上次保存\n直到现在的游戏进度。\n确定要继续吗？\r\n[f 1:4 1][f 1:1 ]",
+    "SYS_GAMEDATA_INSTALL": "[f 0:5 65278][f 2:1 ]正在安装游戏数据。\r\n[f 1:1 ]",
+    "SYS_GAMEDATA_INSTALL_OK": "[f 0:5 65278][f 2:1 ]数据已安装完毕。\n[f 1:1 ]",
+    "SYS_ACTIVITY_DATA_NOT_MA": "[f 0:5 65278][f 2:1 ]选择的活动和最后记录的\r\n保存数据的条件不一致。\r\n[f 1:5 0]将依照普通的启动方式开始游戏。\r\n[f 1:1 ]",
+    "SYS_KEYCONFIG_ASSIGN": "[f 0:5 65278][f 2:1 ]请按下想要\r\n分配至“[f 0:1 35][f 2:4 0][f 0:1 27]”的按键。\r\n[f 1:5 0]按下Ｅｓｃ键可返回设置画面。\n[f 1:1 ]",
+    "SYS_KEYCONFIG_OVERWRITE": "[f 0:5 65278][f 2:1 ]更改后的键位和其他键位重复。\n“[f 0:1 2][f 2:4 0][f 0:1 27]”\r\n[f 1:5 0]要用更改后的键位覆盖设置吗？\n[f 1:4 1][f 1:1 ]",
+    "SYS_KEYCONFIG_FINISH": "[f 0:5 65278][f 2:1 ]要保存当前设置，完成更改吗？\n[f 1:4 1][f 1:1 ]",
+    "SYS_KEYCONFIG_NOT_SET": "[f 0:5 65278][f 2:1 ]还有未完成设置的项目。\r\n[f 1:1 ]",
+    "SYS_KEYCONFIG_RESET_KEYB": "[f 0:5 65278][f 2:1 ]将把键盘的键位设置\r\n重置为初始状态。\n确定要重置吗？\r\n[f 1:4 1][f 1:1 ]",
+    "SYS_KEYCONFIG_RESET_MOUS": "[f 0:5 65278][f 2:1 ]将把鼠标的键位设置\r\n重置为初始状态。\n确定要重置吗？\r\n[f 1:4 1][f 1:1 ]",
+    "SYS_KEYCONFIG_RESET_GAME": "[f 0:5 65278][f 2:1 ]将把手柄的键位设置\r\n重置为初始状态。\n确定要重置吗？\r\n[f 1:4 1][f 1:1 ]",
+    "SYS_CONF_DISPLAY_CHECK": "[f 0:5 65278][f 2:1 ]已应用更改后的显示设置。\n要保存当前设置吗？\r\n若无指令输入，将在[f 2:4 0]秒后还原回先前设置。\n[f 1:4 1][f 1:1 ]",
+    "SYS_INPUT_DEVICE_LOST": "[f 0:5 65278][f 2:1 ]和设备的连接已断开。\n请查看连接状态。\n[f 1:1 ]",
+    "SYS_SAVE_NO_SPACE": "[f 0:5 65278][f 2:1 ]未能正常保存。\r\n请查看存储空间的剩余容量。\r\n[f 1:1 ]",
+    "SYS_APP_QUIT": "[f 0:5 65278][f 2:1 ]要退出游戏吗？\r\n[f 1:4 1][f 1:1 ]",
+    "SYS_APPLY_INIT_NAME_STOR": "[f 0:5 65278][f 2:1 ]由于语言设置已更改，\n主角的姓名将显示为“结城 理”。\r\n[f 1:5 0]若您希望以开始游戏时设置的姓名游玩，\n则需要将游戏语言改回设置姓名时的语言。\r\n[f 1:1 ]",
+    "SYS_APPLY_INIT_NAME_NETW": "[f 0:5 65278][f 2:1 ]由于语言设置有异，\r\n主角的姓名将显示为“结城 理”。\r\n[f 1:5 0]若您希望以开始游戏时设置的姓名游玩，\n则需要将游戏语言改回设置姓名时的语言。\r\n[f 1:1 ]"
+  },
+  "raw_dialogs": {
+    "SYS_PERSONA_DROP": {
+      "kind": 0,
+      "page_offsets": [
+        612
+      ],
+      "raw_text_hex": "fef205fffffef141e5b086e6b688e781adfef2012401fef2440101fef2011c01e380820d0ae7a1aee5ae9ae8a681e6b688e781ade59097efbc9f0d0afef2240201fef12100"
+    },
+    "SYS_PERSONA_DROP_NG": {
+      "kind": 0,
+      "page_offsets": [
+        720
+      ],
+      "raw_text_hex": "fef205fffffef141e697a0e6b395e6b688e781ade8a385e5a487e4b8ade79a84e4babae6a0bce99da2e585b7e380820d0afef12100"
+    },
+    "SYS_PERSONA_SET": {
+      "kind": 0,
+      "page_offsets": [
+        812
+      ],
+      "raw_text_hex": "fef205fffffef141e8a681e8a385e5a487e8bf99e4b8aae4babae6a0bce99da2e585b7e59097efbc9f0d0afef2240201fef12100"
+    },
+    "SYS_PERSONA_EQUIPED": {
+      "kind": 0,
+      "page_offsets": [
+        900
+      ],
+      "raw_text_hex": "fef205fffffef141e5b7b2e7bb8fe8a385e5a487e4ba860d0afef2012401fef2440101fef2011c01e380820d0afef12100"
+    },
+    "SYS_SKILL_FULL": {
+      "kind": 0,
+      "page_offsets": [
+        988
+      ],
+      "raw_text_hex": "fef205fffffef141e68a80e883bde5b7b2e7bb8fe6bba1e4ba86e380820d0ae8afb7e98089e68ba9e8a681e5bf98e8aeb0e79a84e68a80e883bde380820afef12100"
+    },
+    "SYS_SKILL_FORGET": {
+      "kind": 0,
+      "page_offsets": [
+        1092
+      ],
+      "raw_text_hex": "fef205fffffef141e8a681e5bf98e8aeb0fef2012401fef2440101fef2011c01e59097efbc9f0afef2240201fef12100"
+    },
+    "SYS_BIRTH_CONCEPTION": {
+      "kind": 0,
+      "page_offsets": [
+        1176
+      ],
+      "raw_text_hex": "fef205fffffef141fef2012401fef2440101fef2011c01e5889be980a0e587bae4ba86e2809cfef5840201260102010201e2809de380820afef12100"
+    },
+    "SYS_SKILLCARD_ALREADY": {
+      "kind": 0,
+      "page_offsets": [
+        1272
+      ],
+      "raw_text_hex": "fef205fffffef141e5b7b2e7bb8fe5ada6e4bc9ae4ba860d0afef2012401fef2440101fef2011c01e380820d0afef12100"
+    },
+    "SYS_SKILL_CHANGE": {
+      "kind": 0,
+      "page_offsets": [],
+      "raw_text_hex": ""
+    },
+    "SYS_REMEMBER_CONF": {
+      "kind": 0,
+      "page_offsets": [
+        1388
+      ],
+      "raw_text_hex": "fef205fffffef141e7a1aee5ae9ae8a681e7bb93e69d9fe59097efbc9f0d0afef2240201fef12100"
+    },
+    "SYS_NO_EFFECT_INCENSE": {
+      "kind": 0,
+      "page_offsets": [
+        1464
+      ],
+      "raw_text_hex": "fef205fffffef141e697a0e6b395e7bba7e7bbade58fa0e58aa0e69588e69e9ce380820d0afef12100"
+    },
+    "SYS_SYSTEM_BACK_TO_TITLE": {
+      "kind": 0,
+      "page_offsets": [
+        1544
+      ],
+      "raw_text_hex": "fef205fffffef141e8a681e8bf94e59b9ee6a087e9a298e794bbe99da2e59097efbc9f0d0afef2240201fef12100"
+    },
+    "SYS_TITL_USE_NETWORK": {
+      "kind": 0,
+      "page_offsets": [
+        1628
+      ],
+      "raw_text_hex": "fef205fffffef141fef2240201e88ba5e5b7b2e8bf9ee68ea5e7bd91e7bb9cefbc8c0d0ae982a3e4b988e59ca8e68a8ae7bd91e7bb9ce58a9fe883bde8aebee7bdaee4b8baefbcafefbcaee5908eefbc8c0d0ae5b086e58fafe59ca8e6b8b8e6888fe58685e4bdbfe794a8e59084e7a78de58a9fe883bde380820d0afef2250101e8a681e68a8ae7bd91e7bb9ce58a9fe883bde8aebee7bdaee4b8baefbcafefbcaee59097efbc9f0d0afef12100"
+    },
+    "SYS_TITL_DONT_USE_NETWOR": {
+      "kind": 0,
+      "page_offsets": [
+        1840
+      ],
+      "raw_text_hex": "fef205fffffef141e5b7b2e68a8ae7bd91e7bb9ce58a9fe883bde8aebee7bdaee4b8bafef2010301efbcafefbca6efbca6fef2011c01e380820d0ae5b086e59ca8e4b88de4bdbfe794a8e7bd91e7bb9ce58a9fe883bde79a84e68385e586b5e4b88be7bba7e7bbade6b8b8e6888fe380820ae59ca8efbca3efbcafefbcaeefbca6efbca9efbca7e4b8ade58fafe99a8fe697b6e69bb4e694b9e8aebee7bdaee380820afef12100"
+    },
+    "SYS_SAVE_LOAD_CHECK": {
+      "kind": 0,
+      "page_offsets": [
+        2044
+      ],
+      "raw_text_hex": "fef205fffffef141e8a681e8afbbe58f96e4bf9de5ad98e695b0e68daee59097efbc9f0d0afef2240201fef12100"
+    },
+    "SYS_SAVE_LOAD_OK": {
+      "kind": 0,
+      "page_offsets": [],
+      "raw_text_hex": ""
+    },
+    "SYS_SAVE_NETWORK_LOAD": {
+      "kind": 0,
+      "page_offsets": [
+        2156
+      ],
+      "raw_text_hex": "fef205fffffef141e6ada3e59ca8e88eb7e58f96e59ca8e7babfe5a487e4bbbde79a84e4bf9de5ad98e695b0e68daee380820afef12100"
+    },
+    "SYS_SAVE_NETWORK_LOAD_OK": {
+      "kind": 0,
+      "page_offsets": [
+        2248
+      ],
+      "raw_text_hex": "fef205fffffef141e5b7b2e68890e58a9fe88eb7e58f960d0ae59ca8e7babfe5a487e4bbbde79a84e4bf9de5ad98e695b0e68daee380820afef12100"
+    },
+    "SYS_SAVE_NETWORK_LOAD_ER": {
+      "kind": 0,
+      "page_offsets": [
+        2344
+      ],
+      "raw_text_hex": "fef205fffffef141e59ca8e7babfe5a487e4bbbde79a84e4bf9de5ad98e695b0e68dae0d0ae88eb7e58f96e5a4b1e8b4a5e380820d0afef12100"
+    },
+    "SYS_SAVE_NETWORK_UP": {
+      "kind": 0,
+      "page_offsets": [
+        2440
+      ],
+      "raw_text_hex": "fef205fffffef141e6ada3e59ca8e4b88ae4bca0e4bf9de5ad98e695b0e68daee380820d0afef12100"
+    },
+    "SYS_SAVE_NETWORK_UP_OK": {
+      "kind": 0,
+      "page_offsets": [
+        2520
+      ],
+      "raw_text_hex": "fef205fffffef141e5b7b2e68890e58a9fe4b88ae4bca0e4bf9de5ad98e695b0e68daee380820afef12100"
+    },
+    "SYS_SAVE_NETWORK_UP_ERRO": {
+      "kind": 0,
+      "page_offsets": [
+        2600
+      ],
+      "raw_text_hex": "fef205fffffef141e4bf9de5ad98e695b0e68daee4b88ae4bca0e5a4b1e8b4a5e380820d0afef12100"
+    },
+    "SYS_SAVE_NETWORK_BROKEN": {
+      "kind": 0,
+      "page_offsets": [
+        2680
+      ],
+      "raw_text_hex": "fef205fffffef141e59ca8e7babfe5a487e4bbbde79a84e4bf9de5ad98e695b0e68dae0d0ae5b7b2e68d9fe59d8fe380820afef12100"
+    },
+    "SYS_SAVE_NETWORK_INVALID": {
+      "kind": 0,
+      "page_offsets": [
+        2772
+      ],
+      "raw_text_hex": "fef205fffffef141e7bd91e7bb9ce58a9fe883bde5b7b2e8aebee7bdaee4b8baefbcafefbca6efbca6e380820ae59ca8efbca3efbcafefbcaeefbca6efbca9efbca7e4b8ade58fafe69bb4e694b9e8aebee7bdaee380820afef12100"
+    },
+    "SYS_SAVE_NETWORK_NOTEXIS": {
+      "kind": 0,
+      "page_offsets": [
+        2900
+      ],
+      "raw_text_hex": "fef205fffffef141e697a0e7bd91e7bb9ce4bf9de5ad98e695b0e68daee380820afef12100"
+    },
+    "SYS_SAVE_OVERWRITE_CHECK": {
+      "kind": 0,
+      "page_offsets": [
+        2976
+      ],
+      "raw_text_hex": "fef205fffffef141e5b7b2e69c89e4bf9de5ad98e695b0e68daee380820d0ae7a1aee5ae9ae8a681e8a686e79b96e59097efbc9f0d0afef2240201fef12100"
+    },
+    "SYS_SAVE_OK": {
+      "kind": 0,
+      "page_offsets": [],
+      "raw_text_hex": ""
+    },
+    "SYS_SAVE_ROLLBACK_CHECK": {
+      "kind": 0,
+      "page_offsets": [
+        3104
+      ],
+      "raw_text_hex": "fef205fffffef141e88ba5e8a681e4bb8ee98089e68ba9e79a84e695b0e68daee9878de696b0e5bc80e5a78befbc8c0d0ae697a5e69c9fc2b7e697b6e997b4e6aeb5e6af94e98089e68ba9e695b0e68daee69bb4e99da0e5908ee79a84e695b0e68dae0ae5b086e8a2abe588a0e999a4efbc8ce7a1aee5ae9ae8a681e7bba7e7bbade59097efbc9f0afef2240201fef12100"
+    },
+    "SYS_CONF_CLOSE_CHECK": {
+      "kind": 0,
+      "page_offsets": [
+        3288
+      ],
+      "raw_text_hex": "fef205fffffef141e4b88de5ba94e794a8e8aebee7bdaee79bb4e68ea5e8bf94e59b9ee59097efbc9f0d0afef2240201fef12100"
+    },
+    "SYS_CONF_DIFF_CHECK": {
+      "kind": 0,
+      "page_offsets": [
+        3376
+      ],
+      "raw_text_hex": "fef205fffffef141e88ba5e4bb8ee69c80e9ab98e99abee5baa6e69bb4e694b9e4b8bae585b6e4bb96e99abee5baa6efbc8c0ae5b086e697a0e6b395e8bf94e59b9ee58e9fe69da5e79a84e99abee5baa6e380820d0ae7a1aee5ae9ae8a681e69bb4e694b9e59097efbc9f0d0afef2240201fef12100"
+    },
+    "SYS_CONF_DIFF_CHANGED": {
+      "kind": 0,
+      "page_offsets": [
+        3532
+      ],
+      "raw_text_hex": "fef205fffffef141e99abee5baa6e5b7b2e69bb4e694b9e4b8bae2809cfef2010301fef2440101fef2011c01e2809de380820afef12100"
+    },
+    "SYS_CONF_CONNECT_ERROR": {
+      "kind": 0,
+      "page_offsets": [
+        3624
+      ],
+      "raw_text_hex": "fef205fffffef141e7bd91e7bb9ce8bf9ee68ea5e5a4b1e8b4a5e380820d0afef12100"
+    },
+    "SYS_CONF_CONNECTING": {
+      "kind": 0,
+      "page_offsets": [
+        3696
+      ],
+      "raw_text_hex": "fef205fffffef141e6ada3e59ca8e8bf9ee68ea5e7bd91e7bb9ce380820d0afef12100"
+    },
+    "SYS_PARTY_MEMBEROVER_0_0": {
+      "kind": 0,
+      "page_offsets": [
+        3768
+      ],
+      "raw_text_hex": "fef205fffffef141e9989fe4bc8de79a84e7bc96e68890e8b685e8bf87e4ba86e69c80e5a4a7e4babae695b0fef2440101e4babae380820afef12100"
+    },
+    "SYS_DIFFICULTY_CHECK": {
+      "kind": 0,
+      "page_offsets": [
+        3864
+      ],
+      "raw_text_hex": "fef205fffffef141e5b086e4bba5e2809cfef2010301fef2440101fef2011c01e2809de99abee5baa6e5bc80e5a78be6b8b8e6888fe380820ae7a1aee5ae9ae8a681e5bc80e5a78be59097efbc9f0d0afef2240201fef12100"
+    },
+    "SYS_DIFFICULTY_DESC_SAFE": {
+      "kind": 0,
+      "page_offsets": [
+        3992
+      ],
+      "raw_text_hex": "fef205fffffef141e8afa5e99abee5baa6e99da2e59091e5b88ce69c9be4b893e6b3a8e4ba8ee69585e4ba8be79a84e78ea9e5aeb6e380820afef12100"
+    },
+    "SYS_DIFFICULTY_DESC_EASY": {
+      "kind": 0,
+      "page_offsets": [
+        4092
+      ],
+      "raw_text_hex": "fef205fffffef141e8afa5e99abee5baa6e99da2e59091e5afb9e6b8b8e6888fe7a094e7a9b6e4b88de6b7b1e79a84e78ea9e5aeb6e380820afef12100"
+    },
+    "SYS_DIFFICULTY_DESC_NORM": {
+      "kind": 0,
+      "page_offsets": [
+        4192
+      ],
+      "raw_text_hex": "fef205fffffef141e8afa5e99abee5baa6e99da2e59091e5afb9e6b8b8e6888fe69c89e68980e7a094e7a9b6e79a84e78ea9e5aeb6e380820afef12100"
+    },
+    "SYS_DIFFICULTY_DESC_HARD": {
+      "kind": 0,
+      "page_offsets": [
+        4292
+      ],
+      "raw_text_hex": "fef205fffffef141e8afa5e99abee5baa6e99da2e59091e5b88ce69c9be8bf9be4b880e6ada5e4baabe58f97e68898e795a5e79a84e78ea9e5aeb6e380820afef12100"
+    },
+    "SYS_DIFFICULTY_DESC_LUNA": {
+      "kind": 0,
+      "page_offsets": [
+        4396
+      ],
+      "raw_text_hex": "fef205fffffef141e8afa5e99abee5baa6e99da2e59091e79c9fe6ada3e79a84e9a1b6e5b096e78ea9e5aeb6e380820d0afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_SAFE": {
+      "kind": 0,
+      "page_offsets": [
+        4488
+      ],
+      "raw_text_hex": "fef205fffffef141e58db3e4bdbfe59ca8e68898e69697e4b8ade585a8e781adefbc8ce4b99fe883bde697a0e99990e588b6e59cb0e5bd93e59cbae5a48de6b4bbe380820afef2012c01e697a0e8aebae98089e68ba9e593aae4b8aae99abee5baa6efbc8ce682a8e79a84e69585e4ba8be983bde4b88de4bc9ae69c89e68980e58f98e58c96e380820d0ae58fa6e5a496efbc8ce4b99fe58fafe4bba5e4b98be5908ee5868de69bb4e694b9e4b8ba0ae2809c4c554e41544943e2809de4bba5e5a496e79a84e99abee5baa6e38082fef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_EASY": {
+      "kind": 0,
+      "page_offsets": [
+        4744
+      ],
+      "raw_text_hex": "fef205fffffef141e5928ce2809c4e4f524d414ce2809de79bb8e6af94efbc8ce68898e69697e69bb4e7ae80e58d95e380820afef2012c01e697a0e8aebae98089e68ba9e593aae4b8aae99abee5baa6efbc8ce682a8e79a84e69585e4ba8be983bde4b88de4bc9ae69c89e68980e58f98e58c96e380820d0ae58fa6e5a496efbc8ce4b99fe58fafe4bba5e4b98be5908ee5868de69bb4e694b9e4b8ba0ae2809c4c554e41544943e2809de4bba5e5a496e79a84e99abee5baa6e38082fef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_NORM": {
+      "kind": 0,
+      "page_offsets": [
+        4980
+      ],
+      "raw_text_hex": "fef205fffffef141e58fafe4bba5e59ca8e98082e5baa6e79a84e7b4a7e5bca0e6849fe4b8ade4baabe58f97e68898e69697e79a84e4b990e8b6a3e380820afef2012c01e697a0e8aebae98089e68ba9e593aae4b8aae99abee5baa6efbc8ce682a8e79a84e69585e4ba8be983bde4b88de4bc9ae69c89e68980e58f98e58c96e380820d0ae58fa6e5a496efbc8ce4b99fe58fafe4bba5e4b98be5908ee5868de69bb4e694b9e4b8ba0ae2809c4c554e41544943e2809de4bba5e5a496e79a84e99abee5baa6e38082fef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_HARD": {
+      "kind": 0,
+      "page_offsets": [
+        5228
+      ],
+      "raw_text_hex": "fef205fffffef141e5928ce2809c4e4f524d414ce2809de79bb8e6af94efbc8ce68898e69697e99abee5baa6e69bb4e9ab98e380820d0afef2012c01e697a0e8aebae98089e68ba9e593aae4b8aae99abee5baa6efbc8ce682a8e79a84e69585e4ba8be983bde4b88de4bc9ae69c89e68980e58f98e58c96e380820d0ae58fa6e5a496efbc8ce4b99fe58fafe4bba5e4b98be5908ee5868de69bb4e694b9e4b8ba0ae2809c4c554e41544943e2809de4bba5e5a496e79a84e99abee5baa6e38082fef2011c010afef12100"
+    },
+    "SYS_DIFFICULTY_INFO_LUNA": {
+      "kind": 0,
+      "page_offsets": [
+        5468
+      ],
+      "raw_text_hex": "fef205fffffef141e5928ce2809c48415244e2809de79bb8e6af94efbc8ce68898e69697e99abee5baa6e5a4a7e5b985e68f90e9ab98e380820d0afef2012c01e697a0e8aebae98089e68ba9e593aae4b8aae99abee5baa6efbc8ce682a8e79a84e69585e4ba8be983bde4b88de4bc9ae69c89e68980e58f98e58c96e38082fef2011c010ae58fa6e5a496efbc8ce899bde784b6e58fafe4bba5e69bb4e694b9e4b8bae585b6e4bb96e99abee5baa6efbc8c0d0ae4bd86e69bb4e694b9e4b98be5908ee697a0e6b395e59b9ee588b0e2809c4c554e41544943e2809de380820afef12100"
+    },
+    "MND_SKILL_NOT_CHANGE": {
+      "kind": 0,
+      "page_offsets": [
+        5732
+      ],
+      "raw_text_hex": "fef205fffffef141fef2250101fef12100"
+    },
+    "SYS_NETWORK_CONNECT_CHEC": {
+      "kind": 0,
+      "page_offsets": [],
+      "raw_text_hex": ""
+    },
+    "SYS_NETWORK_CONNECT_YES": {
+      "kind": 0,
+      "page_offsets": [
+        5816
+      ],
+      "raw_text_hex": "fef205fffffef141e5b7b2e68a8ae7bd91e7bb9ce58a9fe883bde8aebee7bdaee4b8bafef2010301efbcafefbcaefef2011c01e380820d0afef2250101e5b086e59ca8e590afe794a8e7bd91e7bb9ce58a9fe883bde79a84e68385e586b5e4b88be7bba7e7bbade6b8b8e6888fe380820d0ae59ca8efbca3efbcafefbcaeefbca6efbca9efbca7e4b8ade58fafe99a8fe697b6e69bb4e694b9e8aebee7bdaee380820afef12100"
+    },
+    "SYS_NETWORK_CONNECT_NO": {
+      "kind": 0,
+      "page_offsets": [],
+      "raw_text_hex": ""
+    },
+    "SYS_NETWORK_VOICE_ERROR": {
+      "kind": 0,
+      "page_offsets": [
+        6048
+      ],
+      "raw_text_hex": "fef205fffffef141e58f91e7949fe7bd91e7bb9ce99499e8afafe380820d0ae8afb7e69fa5e79c8be7bd91e7bb9ce8bf9ee68ea5e380820afef12100"
+    },
+    "MSG_SKILL_CHANGE": {
+      "kind": 0,
+      "page_offsets": [
+        6144
+      ],
+      "raw_text_hex": "fef205fffffef141e599a2e280a6e280a6e79c8be69da5e68a80e883bde8a681e58f91e7949fe58f98e58c96e4ba86e5958ae380820d0ae8a681e7bba7e7bbade8a781e8af81e59097efbc9f0d0afef12100"
+    },
+    "SEL_SKILL_CHANGE": {
+      "kind": 1,
+      "page_offsets": [
+        6276,
+        6297,
+        6318
+      ],
+      "raw_text_hex": "fef205fffffef141e998bbe6ada2e58f98e58c9600fef205fffffef141e8a781e8af81e58f98e58c9600fef205fffffef141e69fa5e79c8be68a80e883bd0000"
+    },
+    "SYS_PARTY_FIXED_MEMBER_0": {
+      "kind": 0,
+      "page_offsets": [
+        6376
+      ],
+      "raw_text_hex": "fef205fffffef141e5bf85e9a1bbe58f82e58aa0e9989fe4bc8de79a84fef24401010ae69caae8a2abe7bc96e585a5e9989fe4bc8de380820d0afef12100"
+    },
+    "SYS_RECHECK_BACK_TO_TITL": {
+      "kind": 0,
+      "page_offsets": [
+        6476
+      ],
+      "raw_text_hex": "fef205fffffef141e5b086e5a4b1e58ebbe4bb8ee4b88ae6aca1e4bf9de5ad980ae79bb4e588b0e78eb0e59ca8e79a84e6b8b8e6888fe8bf9be5baa6e380820ae7a1aee5ae9ae8a681e7bba7e7bbade59097efbc9f0d0afef2240201fef12100"
+    },
+    "SYS_GAMEDATA_INSTALL": {
+      "kind": 0,
+      "page_offsets": [
+        6608
+      ],
+      "raw_text_hex": "fef205fffffef141e6ada3e59ca8e5ae89e8a385e6b8b8e6888fe695b0e68daee380820d0afef12100"
+    },
+    "SYS_GAMEDATA_INSTALL_OK": {
+      "kind": 0,
+      "page_offsets": [
+        6688
+      ],
+      "raw_text_hex": "fef205fffffef141e695b0e68daee5b7b2e5ae89e8a385e5ae8ce6af95e380820afef12100"
+    },
+    "SYS_ACTIVITY_DATA_NOT_MA": {
+      "kind": 0,
+      "page_offsets": [
+        6764
+      ],
+      "raw_text_hex": "fef205fffffef141e98089e68ba9e79a84e6b4bbe58aa8e5928ce69c80e5908ee8aeb0e5bd95e79a840d0ae4bf9de5ad98e695b0e68daee79a84e69da1e4bbb6e4b88de4b880e887b4e380820d0afef2250101e5b086e4be9de785a7e699aee9809ae79a84e590afe58aa8e696b9e5bc8fe5bc80e5a78be6b8b8e6888fe380820d0afef12100"
+    },
+    "SYS_KEYCONFIG_ASSIGN": {
+      "kind": 0,
+      "page_offsets": [
+        6936
+      ],
+      "raw_text_hex": "fef205fffffef141e8afb7e68c89e4b88be683b3e8a6810d0ae58886e9858de887b3e2809cfef2012401fef2440101fef2011c01e2809de79a84e68c89e994aee380820d0afef2250101e68c89e4b88befbca5efbd93efbd83e994aee58fafe8bf94e59b9ee8aebee7bdaee794bbe99da2e380820afef12100"
+    },
+    "SYS_KEYCONFIG_OVERWRITE": {
+      "kind": 0,
+      "page_offsets": [
+        7096
+      ],
+      "raw_text_hex": "fef205fffffef141e69bb4e694b9e5908ee79a84e994aee4bd8de5928ce585b6e4bb96e994aee4bd8de9878de5a48de380820ae2809cfef2010301fef2440101fef2011c01e2809d0d0afef2250101e8a681e794a8e69bb4e694b9e5908ee79a84e994aee4bd8de8a686e79b96e8aebee7bdaee59097efbc9f0afef2240201fef12100"
+    },
+    "SYS_KEYCONFIG_FINISH": {
+      "kind": 0,
+      "page_offsets": [
+        7264
+      ],
+      "raw_text_hex": "fef205fffffef141e8a681e4bf9de5ad98e5bd93e5898de8aebee7bdaeefbc8ce5ae8ce68890e69bb4e694b9e59097efbc9f0afef2240201fef12100"
+    },
+    "SYS_KEYCONFIG_NOT_SET": {
+      "kind": 0,
+      "page_offsets": [
+        7360
+      ],
+      "raw_text_hex": "fef205fffffef141e8bf98e69c89e69caae5ae8ce68890e8aebee7bdaee79a84e9a1b9e79baee380820d0afef12100"
+    },
+    "SYS_KEYCONFIG_RESET_KEYB": {
+      "kind": 0,
+      "page_offsets": [
+        7444
+      ],
+      "raw_text_hex": "fef205fffffef141e5b086e68a8ae994aee79b98e79a84e994aee4bd8de8aebee7bdae0d0ae9878de7bdaee4b8bae5889de5a78be78ab6e68081e380820ae7a1aee5ae9ae8a681e9878de7bdaee59097efbc9f0d0afef2240201fef12100"
+    },
+    "SYS_KEYCONFIG_RESET_MOUS": {
+      "kind": 0,
+      "page_offsets": [
+        7576
+      ],
+      "raw_text_hex": "fef205fffffef141e5b086e68a8ae9bca0e6a087e79a84e994aee4bd8de8aebee7bdae0d0ae9878de7bdaee4b8bae5889de5a78be78ab6e68081e380820ae7a1aee5ae9ae8a681e9878de7bdaee59097efbc9f0d0afef2240201fef12100"
+    },
+    "SYS_KEYCONFIG_RESET_GAME": {
+      "kind": 0,
+      "page_offsets": [
+        7708
+      ],
+      "raw_text_hex": "fef205fffffef141e5b086e68a8ae6898be69f84e79a84e994aee4bd8de8aebee7bdae0d0ae9878de7bdaee4b8bae5889de5a78be78ab6e68081e380820ae7a1aee5ae9ae8a681e9878de7bdaee59097efbc9f0d0afef2240201fef12100"
+    },
+    "SYS_CONF_DISPLAY_CHECK": {
+      "kind": 0,
+      "page_offsets": [
+        7840
+      ],
+      "raw_text_hex": "fef205fffffef141e5b7b2e5ba94e794a8e69bb4e694b9e5908ee79a84e698bee7a4bae8aebee7bdaee380820ae8a681e4bf9de5ad98e5bd93e5898de8aebee7bdaee59097efbc9f0d0ae88ba5e697a0e68c87e4bba4e8be93e585a5efbc8ce5b086e59ca8fef2440101e7a792e5908ee8bf98e58e9fe59b9ee58588e5898de8aebee7bdaee380820afef2240201fef12100"
+    },
+    "SYS_INPUT_DEVICE_LOST": {
+      "kind": 0,
+      "page_offsets": [
+        8024
+      ],
+      "raw_text_hex": "fef205fffffef141e5928ce8aebee5a487e79a84e8bf9ee68ea5e5b7b2e696ade5bc80e380820ae8afb7e69fa5e79c8be8bf9ee68ea5e78ab6e68081e380820afef12100"
+    },
+    "SYS_SAVE_NO_SPACE": {
+      "kind": 0,
+      "page_offsets": [
+        8128
+      ],
+      "raw_text_hex": "fef205fffffef141e69caae883bde6ada3e5b8b8e4bf9de5ad98e380820d0ae8afb7e69fa5e79c8be5ad98e582a8e7a9bae997b4e79a84e589a9e4bd99e5aeb9e9878fe380820d0afef12100"
+    },
+    "SYS_APP_QUIT": {
+      "kind": 0,
+      "page_offsets": [
+        8240
+      ],
+      "raw_text_hex": "fef205fffffef141e8a681e98080e587bae6b8b8e6888fe59097efbc9f0d0afef2240201fef12100"
+    },
+    "SYS_APPLY_INIT_NAME_STOR": {
+      "kind": 0,
+      "page_offsets": [
+        8316
+      ],
+      "raw_text_hex": "fef205fffffef141e794b1e4ba8ee8afade8a880e8aebee7bdaee5b7b2e69bb4e694b9efbc8c0ae4b8bbe8a792e79a84e5a793e5908de5b086e698bee7a4bae4b8bae2809ce7bb93e59f8e20e79086e2809de380820d0afef2250101e88ba5e682a8e5b88ce69c9be4bba5e5bc80e5a78be6b8b8e6888fe697b6e8aebee7bdaee79a84e5a793e5908de6b8b8e78ea9efbc8c0ae58899e99c80e8a681e5b086e6b8b8e6888fe8afade8a880e694b9e59b9ee8aebee7bdaee5a793e5908de697b6e79a84e8afade8a880e380820d0afef12100"
+    },
+    "SYS_APPLY_INIT_NAME_NETW": {
+      "kind": 0,
+      "page_offsets": [
+        8564
+      ],
+      "raw_text_hex": "fef205fffffef141e794b1e4ba8ee8afade8a880e8aebee7bdaee69c89e5bc82efbc8c0d0ae4b8bbe8a792e79a84e5a793e5908de5b086e698bee7a4bae4b8bae2809ce7bb93e59f8e20e79086e2809de380820d0afef2250101e88ba5e682a8e5b88ce69c9be4bba5e5bc80e5a78be6b8b8e6888fe697b6e8aebee7bdaee79a84e5a793e5908de6b8b8e78ea9efbc8c0ae58899e99c80e8a681e5b086e6b8b8e6888fe8afade8a880e694b9e59b9ee8aebee7bdaee5a793e5908de697b6e79a84e8afade8a880e380820d0afef12100"
+    }
+  },
+  "encoding": "UTF-8",
+  "control_codes": "[f table:index arguments]；不删除功能标签",
+  "format": "MSG1 big endian / P3R Reload"
+}

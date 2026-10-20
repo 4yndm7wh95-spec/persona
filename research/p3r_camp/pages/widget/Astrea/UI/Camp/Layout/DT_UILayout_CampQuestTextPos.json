@@ -1,0 +1,59 @@
+[
+  {
+    "Type": "DataTable",
+    "Name": "DT_UILayout_CampQuestTextPos",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'DataTable'",
+    "Package": "/Game/Astrea/UI/Camp/Layout/DT_UILayout_CampQuestTextPos",
+    "Properties": {
+      "RowStruct": {
+        "ObjectName": "Class'UILayout'",
+        "ObjectPath": "/Script/UiLayoutAssetPlugin"
+      }
+    },
+    "Rows": {
+      "QUEST_BAR_POS_OFFSET": {
+        "X": 50.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_ID_TEXT_POS_OFFSET": {
+        "X": 50.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_ORDER_TEXT_POS_OFFSET": {
+        "X": 50.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_STATUS_TEXT_POS_OFFSET": {
+        "X": -90.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_FULFILL_CONDITIONS_TEXT_POS_OFFSET": {
+        "X": 50.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_CURSOR_ROOT_POS_OFFSET": {
+        "X": 50.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      },
+      "QUEST_CURSOR_LENGTH_OFFSET": {
+        "X": -130.0,
+        "Y": 0.0,
+        "Angle": 0.0,
+        "Scale": 1.0
+      }
+    }
+  }
+]

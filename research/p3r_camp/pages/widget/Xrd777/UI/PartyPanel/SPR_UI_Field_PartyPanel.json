@@ -1,0 +1,668 @@
+[
+  {
+    "Type": "SprAsset",
+    "Name": "SPR_UI_Field_PartyPanel",
+    "Flags": "RF_Public | RF_Standalone | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SprAsset'",
+    "Package": "/Game/Xrd777/UI/PartyPanel/SPR_UI_Field_PartyPanel",
+    "Properties": {
+      "mTexArray": [
+        {
+          "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+          "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+        },
+        {
+          "ObjectName": "Texture2D'T_UI_Field_PartyPanel_01_texture'",
+          "ObjectPath": "/Game/L10N/es/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_01_texture.0"
+        }
+      ],
+      "SprDatas": [
+        {
+          "Key": "0",
+          "Value": {
+            "SprDatas": [
+              {
+                "Width": 113.0,
+                "Height": 83.0,
+                "U0": 0.06933594,
+                "V0": 0.6113281,
+                "U1": 0.1796875,
+                "V1": 0.7734375,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 130.0,
+                "Height": 36.0,
+                "U0": 0.6279297,
+                "V0": 0.61328125,
+                "U1": 0.7548828,
+                "V1": 0.68359375,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 81.0,
+                "Height": 43.0,
+                "U0": 0.5703125,
+                "V0": 0.7128906,
+                "U1": 0.64941406,
+                "V1": 0.796875,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 114.0,
+                "Height": 112.0,
+                "U0": 0.31933594,
+                "V0": 0.671875,
+                "U1": 0.43066406,
+                "V1": 0.890625,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 68.0,
+                "Height": 112.0,
+                "U0": 0.25195312,
+                "V0": 0.671875,
+                "U1": 0.31835938,
+                "V1": 0.890625,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 280.0,
+                "Height": 100.0,
+                "U0": 0.72558594,
+                "V0": 0.8027344,
+                "U1": 0.99902344,
+                "V1": 0.9980469,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 82.0,
+                "Height": 102.0,
+                "U0": 0.56933594,
+                "V0": 0.7988281,
+                "U1": 0.64941406,
+                "V1": 0.9980469,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 231.0,
+                "Height": 284.0,
+                "U0": 0.00390625,
+                "V0": 0.001953125,
+                "U1": 0.90625,
+                "V1": 0.5566406,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_01_texture'",
+                  "ObjectPath": "/Game/L10N/es/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_01_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 210.0,
+                "Height": 54.0,
+                "U0": 0.20703125,
+                "V0": 0.8925781,
+                "U1": 0.41210938,
+                "V1": 0.9980469,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 210.0,
+                "Height": 114.0,
+                "U0": 0.0009765625,
+                "V0": 0.7753906,
+                "U1": 0.20605469,
+                "V1": 0.9980469,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 168.0,
+                "Height": 153.0,
+                "U0": 0.0009765625,
+                "V0": 0.001953125,
+                "U1": 0.16503906,
+                "V1": 0.30078125,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 168.0,
+                "Height": 153.0,
+                "U0": 0.16601562,
+                "V0": 0.001953125,
+                "U1": 0.33007812,
+                "V1": 0.30078125,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 168.0,
+                "Height": 153.0,
+                "U0": 0.3310547,
+                "V0": 0.001953125,
+                "U1": 0.4951172,
+                "V1": 0.30078125,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 168.0,
+                "Height": 153.0,
+                "U0": 0.49609375,
+                "V0": 0.001953125,
+                "U1": 0.66015625,
+                "V1": 0.30078125,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 244.0,
+                "Height": 153.0,
+                "U0": 0.49609375,
+                "V0": 0.30273438,
+                "U1": 0.734375,
+                "V1": 0.6015625,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 168.0,
+                "Height": 153.0,
+                "U0": 0.8261719,
+                "V0": 0.001953125,
+                "U1": 0.9902344,
+                "V1": 0.30078125,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 168.0,
+                "Height": 153.0,
+                "U0": 0.0009765625,
+                "V0": 0.30273438,
+                "U1": 0.16503906,
+                "V1": 0.6015625,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 168.0,
+                "Height": 153.0,
+                "U0": 0.16601562,
+                "V0": 0.30273438,
+                "U1": 0.33007812,
+                "V1": 0.6015625,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 168.0,
+                "Height": 153.0,
+                "U0": 0.3310547,
+                "V0": 0.30273438,
+                "U1": 0.4951172,
+                "V1": 0.6015625,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 168.0,
+                "Height": 153.0,
+                "U0": 0.6611328,
+                "V0": 0.001953125,
+                "U1": 0.8251953,
+                "V1": 0.30078125,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 0.0,
+                "Height": 0.0,
+                "U0": 0.0,
+                "V0": 0.0,
+                "U1": 0.0,
+                "V1": 0.0,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 210.0,
+                "Height": 190.0,
+                "U0": 0.00390625,
+                "V0": 0.55859375,
+                "U1": 0.82421875,
+                "V1": 0.9296875,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_01_texture'",
+                  "ObjectPath": "/Game/L10N/es/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_01_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 210.0,
+                "Height": 190.0,
+                "U0": 0.7939453,
+                "V0": 0.30273438,
+                "U1": 0.99902344,
+                "V1": 0.6738281,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 159.0,
+                "Height": 160.0,
+                "U0": 0.56933594,
+                "V0": 0.6855469,
+                "U1": 0.7246094,
+                "V1": 0.9980469,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              },
+              {
+                "Width": 140.0,
+                "Height": 148.0,
+                "U0": 0.43164062,
+                "V0": 0.7089844,
+                "U1": 0.5683594,
+                "V1": 0.9980469,
+                "Texture": {
+                  "ObjectName": "Texture2D'T_UI_Field_PartyPanel_00_texture'",
+                  "ObjectPath": "/Game/L10N/tr/Xrd777/UI/PartyPanel/T_UI_Field_PartyPanel_00_texture.0"
+                },
+                "RGBA": 4294967295,
+                "RGBA[1]": 4294967295,
+                "RGBA[2]": 4294967295,
+                "RGBA[3]": 4294967295,
+                "StretchLen": 0,
+                "StretchLen[1]": 0,
+                "StretchLen[2]": 0,
+                "StretchLen[3]": 0,
+                "ScalingSize": 0,
+                "ScalingSize[1]": 0
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+]
