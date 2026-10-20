@@ -444,3 +444,24 @@ Generate ONE opaque full-bleed landscape game card 1000:760 aspect. Reference1 O
 ## 剩余卡一次性生成
 
 按 `docs/codex/codex_card_art_rest.md`，使用内置 imagegen，每卡一张；每约 15 张保存预览、提示词全文并提交推送。卡图为不透明 RGB，非透明素材。
+
+
+## 聊天选图核对后恢复（2026-10-20）
+
+用户看过核对说明后授权继续。崇拜及黑洞改回明确选择的重画版，补交遗漏的第二批，保留审计来源。alignment 被误称重画的记录已查清：储君头被否决后重画的是 charge，alignment 保留现有 A，不猜测替换。patter 修脸版获得“感觉还行”的评价，之前误标 photon_cut 的历史记录以此更正。
+
+| 卡名 | 选择依据 | 原始来源 |
+|---|---|---|
+| venerate | P1通过（2026-10-19聊天原文） | `C:\Users\kkk\ChatGPT-Accounts\Account2\codex\generated_images\01a148fe-57b1-7a43-ae27-1d97f4a3942e\exec-b056d659-1c4e-4348-94d6-25d111fddbc1.png` |
+| black_hole | P3通过（2026-10-19聊天原文） | `C:\Users\kkk\ChatGPT-Accounts\Account2\codex\generated_images\01a148fe-57b1-7a43-ae27-1d97f4a3942e\exec-5d24d482-1bfe-4ceb-bc8b-6c5641e3c1d2.png` |
+| astral_pulse | P5通过（2026-10-19聊天原文） | `C:\Users\kkk\ChatGPT-Accounts\Account2\codex\generated_images\01a148fe-57b1-7a43-ae27-1d97f4a3942e\exec-75b1bc04-b0bf-4cc9-8357-929815d033b6.png` |
+| collision_course | 用P12（2026-10-19聊天原文） | `C:\Users\kkk\ChatGPT-Accounts\Account2\codex\generated_images\01a148fe-57b1-7a43-ae27-1d97f4a3942e\exec-5638932c-5b8a-449f-a665-2eef79da3459.png` |
+| cosmic_indifference | 用P14（2026-10-19聊天原文） | `C:\Users\kkk\ChatGPT-Accounts\Account2\codex\generated_images\01a148fe-57b1-7a43-ae27-1d97f4a3942e\exec-7f1a6596-7da5-4f47-9be1-d3b479567d79.png` |
+| crescent_spear | 用P16（2026-10-19聊天原文） | `C:\Users\kkk\ChatGPT-Accounts\Account2\codex\generated_images\01a148fe-57b1-7a43-ae27-1d97f4a3942e\exec-ec474875-d8dc-456a-a231-8b5d90cbf45d.png` |
+| crush_under | P17可以（2026-10-19聊天原文） | `C:\Users\kkk\ChatGPT-Accounts\Account2\codex\generated_images\01a148fe-57b1-7a43-ae27-1d97f4a3942e\exec-3c44981c-bcaf-4de4-a819-5608f2298bad.png` |
+| gather_light | P20保留（2026-10-19聊天原文） | `C:\Users\kkk\ChatGPT-Accounts\Account2\codex\generated_images\01a148fe-57b1-7a43-ae27-1d97f4a3942e\exec-71f6a6e9-0592-48b8-992a-14e9aa613a07.png` |
+| glitterstream | 用P22（2026-10-19聊天原文） | `C:\Users\kkk\ChatGPT-Accounts\Account2\codex\generated_images\01a148fe-57b1-7a43-ae27-1d97f4a3942e\exec-272ae1db-c765-403b-ae1f-9f3cb25c7ab0.png` |
+| guiding_star | P25可以，直接用 | `C:\Users\kkk\ChatGPT-Accounts\Account2\codex\generated_images\01a148fe-57b1-7a43-ae27-1d97f4a3942e\exec-714b7ede-edac-408f-a40b-cb990e6f9465.png` |
+| patter | 修脸后：感觉还行，继续生成吧 | `C:\Users\kkk\ChatGPT-Accounts\Account2\codex\generated_images\01a148fe-57b1-7a43-ae27-1d97f4a3942e\exec-7c0e4b00-a9ca-4874-a2cb-f1b860772487.png` |
+| cloak_of_stars | 核对总览后用户同意继续，采用按要求修改版 | `C:\Users\kkk\Documents\Codex\2026-10-17\windows-remote-github-com-4yndm7wh95-spec\outputs\card_edits\cloak_of_stars_wisps.png` |
+| glow | 核对总览后用户同意继续，采用按要求修改版 | `C:\Users\kkk\Documents\Codex\2026-10-17\windows-remote-github-com-4yndm7wh95-spec\outputs\card_edits\glow_moon_butterfly.png` |
