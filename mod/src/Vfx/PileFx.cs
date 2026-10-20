@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
+using HarmonyLib;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models;
@@ -97,12 +98,41 @@ public static class PileFx
 		public float Lift;
 		public float Dim = 1f;
 		public Vector2 At;                     // 网格里的位置（未滚动、未斜切，参考像素）
+		public Vector2 From;                   // v0.14.98 切换排列模式：从 From 飞到 At
+		public float MoveT0 = -1f, MoveDelay;
 	}
 
 	private sealed class Section
 	{
 		public Node2D Head = null!;
 		public float Y;
+		public float Born = -1f, Die = -1f;    // v0.14.98 切换排列模式时标题淡入 / 淡出
+	}
+
+	private static readonly AccessTools.FieldRef<NCardGrid, List<CardModel>>? GridCards = Field();
+	private static AccessTools.FieldRef<NCardGrid, List<CardModel>>? Field()
+	{
+		try { return AccessTools.FieldRefAccess<NCardGrid, List<CardModel>>("_cards"); }
+		catch { return null; }
+	}
+
+	/// <summary>
+	/// v0.14.98（用户：按类型分区看不习惯，也看不出抽牌顺序，影响 SL）：原版抽牌堆界面的顺序。
+	/// 原版是 Pile.Cards 再按 稀有度 → Id 用 List.Sort（不稳定排序）排一次 —— 同名牌谁在前取决于牌堆里的实际位置，SL 靠的就是这个。
+	/// 优先直接读原版网格（我们只是把它藏起来，它照样排好了），游戏更新了排法也跟着变；读不到时按同一段代码现算（同输入同算法 = 同结果）。
+	/// </summary>
+	private static List<CardModel> VanillaOrder(Control grid, CardPile pile)
+	{
+		List<CardModel> cards = pile.Cards.ToList();
+		if (grid is NCardGrid g && GridCards != null && GridCards(g) is List<CardModel> shown && shown.Count == cards.Count && shown.All(c => cards.Contains(c)))
+		{
+			return shown.ToList();
+		}
+		if (pile.Type == PileType.Draw)
+		{
+			cards.Sort((c1, c2) => c1.Rarity != c2.Rarity ? c1.Rarity.CompareTo(c2.Rarity) : string.Compare(c1.Id.Entry, c2.Id.Entry, StringComparison.Ordinal));
+		}
+		return cards;
 	}
 
 	public static bool Enabled(CardPile? pile)
@@ -298,14 +328,19 @@ public static class PileFx
 		Label countL = Text(head, "0", font, (int)(112f * k), Cyan, new Vector2((tx + 26f) * k + titleL.GetMinimumSize().X, 74f * k), (int)(5f * k), Ink);
 		Fx.Poly(head, new[] { new Vector2(tx - 2f, 200f) * k, new Vector2(tx + 502f, 200f) * k, new Vector2(tx + 494f, 228f) * k, new Vector2(tx - 10f, 228f) * k }, Navy);
 		Fx.Poly(head, new[] { new Vector2(tx - 2f, 200f) * k, new Vector2(tx + 12f, 200f) * k, new Vector2(tx + 4f, 228f) * k, new Vector2(tx - 10f, 228f) * k }, Cyan);
+		bool orderMode = kind == Kind.Draw && P3Settings.Current.DrawPileOrder;
+		string Note(bool order) => order
+			? (Zh ? "和原版抽牌堆同一顺序 · 从左到右、从上往下" : "SAME ORDER AS THE ORIGINAL DRAW PILE SCREEN")
+			: (Zh ? "按类型 → 费用排列" : "SORTED BY TYPE → COST");
 		string note = kind switch
 		{
-			Kind.Draw => Zh ? "抽牌顺序随机 · 按类型 → 费用排列" : "DRAW ORDER IS HIDDEN · SORTED BY TYPE → COST",
+			Kind.Draw => Note(orderMode),
 			Kind.Deck => Zh ? "整副牌组 · 按类型 → 费用排列" : "WHOLE DECK · SORTED BY TYPE → COST",
 			Kind.Exhaust => Zh ? "本场战斗中消耗的牌 · 最新在前" : "EXHAUSTED THIS COMBAT · MOST RECENT FIRST",
 			_ => Zh ? "按进入牌堆的先后排列 · 最新在前" : "MOST RECENT FIRST",
 		};
-		Text(head, note, Zh ? Typo.CjkBold : font, (int)(19f * k), new Color(0.8f, 0.93f, 1f), new Vector2((tx + 26f) * k, 202f * k), 0, Ink);
+		Label noteL = Text(head, note, Zh ? Typo.CjkBold : font, (int)(19f * k), new Color(0.8f, 0.93f, 1f), new Vector2((tx + 26f) * k, 202f * k), 0, Ink);
+		ModeSwitch modeSwitch = ModeSwitch.Build(head, new Vector2(tx + 520f, 200f) * k, k, font, orderMode, kind == Kind.Draw);
 		Fx.After(head, 0.16, "pile head in", () => Fx.Animate(head, 0.45, t => head.Position = new Vector2(headFrom * (1f - Ease.OutExpo(t)), 0f)));
 
 		// ── 网格 ──
@@ -418,6 +453,8 @@ public static class PileFx
 			}
 		});
 		List<Section> sections = new();
+		List<Section> dying = new();
+		float sweepT0 = -10f;
 		List<CardModel> pending = new();
 		Item? hovered = null;
 		float scroll = 0f, target = 0f, contentH = 0f;
@@ -458,8 +495,21 @@ public static class PileFx
 			flip = null;
 
 			List<CardModel> all = pile.Cards.ToList();
+			float y = Place(Groups(all), null);
+			contentH = y;
+			countL.Text = all.Count.ToString();
+			target = Mathf.Clamp(target, 0f, MaxScroll());
+		}
+
+		List<(string En, string Zh, List<CardModel> Cards)> Groups(List<CardModel> all)
+		{
 			List<(string En, string Zh, List<CardModel> Cards)> groups = new();
-			if (kind == Kind.Draw || kind == Kind.Deck)
+			if (kind == Kind.Draw && orderMode)
+			{
+				// 原版顺序：一整段，从左到右、从上往下（行宽按我们的版式，不照抄原版一行几张）
+				if (all.Count > 0) groups.Add(("DRAW ORDER", Zh ? "原版抽牌堆顺序" : "", VanillaOrder(grid, pile)));
+			}
+			else if (kind == Kind.Draw || kind == Kind.Deck)
 			{
 				foreach (IGrouping<int, CardModel> g in all.GroupBy(c => TypeOrder(c.Type)).OrderBy(g => g.Key))
 				{
@@ -472,23 +522,89 @@ public static class PileFx
 				all.Reverse();
 				groups.Add(("RECENT", Zh ? "最新在前" : "", all));
 			}
+			return groups;
+		}
+
+		// 按分组摆位置。reuse == null：新建 Item（之后分批建牌）；否则沿用已有的牌，只给新位置（切换排列模式，牌飞过去）
+		float Place(List<(string En, string Zh, List<CardModel> Cards)> groups, Dictionary<CardModel, Item>? reuse)
+		{
 			float y = 0f;
 			int index = 0;
+			float now = Now();
+			List<Item> order = new();
 			foreach ((string en, string zh, List<CardModel> list) in groups)
 			{
-				sections.Add(new Section { Head = SectionHead(heads, en, zh, list.Count, font, k, L.Cols * L.CellW), Y = y });
+				sections.Add(new Section { Head = SectionHead(heads, en, zh, list.Count, font, k, L.Cols * L.CellW), Y = y, Born = reuse != null ? now + 0.18f : -1f });
 				y += HeaderH;
 				for (int i = 0; i < list.Count; i++)
 				{
+					Vector2 at = new((i % L.Cols) * L.CellW + L.CellW / 2f, y + (i / L.Cols) * L.CellH + L.CellH / 2f);
+					if (reuse != null && reuse.Remove(list[i], out Item? it))
+					{
+						it.From = it.At;
+						it.At = at;
+						it.Index = index;
+						it.MoveT0 = now;
+						it.MoveDelay = Mathf.Min(0.3f, index * 0.014f);
+						order.Add(it);
+						index++;
+						continue;
+					}
 					pending.Add(list[i]);
-					items.Add(new Item { Card = list[i], Index = index++, At = new Vector2((i % L.Cols) * L.CellW + L.CellW / 2f, y + (i / L.Cols) * L.CellH + L.CellH / 2f) });
+					Item n = new() { Card = list[i], Index = index++, At = at };
+					items.Add(n);
+					order.Add(n);
 				}
 				y += Mathf.Ceil(list.Count / (float)L.Cols) * L.CellH + 16f;
 			}
-			contentH = y;
-			countL.Text = all.Count.ToString();
-			target = Mathf.Clamp(target, 0f, MaxScroll());
+			if (reuse != null)
+			{
+				items.Clear();
+				items.AddRange(order);
+			}
+			return y;
 		}
+
+		// v0.14.98 抽牌堆：原版顺序 ⇄ 按类型。牌不重建，每张从旧位置沿弧线飞到新位置（按新顺序依次出发），段标题淡出 / 淡入，一道青色扫光掠过网格
+		void Switch(bool toOrder)
+		{
+			if (kind != Kind.Draw || orderMode == toOrder || exiting || focused != null)
+			{
+				return;
+			}
+			orderMode = toOrder;
+			P3Settings.Current.DrawPileOrder = toOrder;
+			P3Settings.Save();
+			float now = Now();
+			foreach (Section s in sections)
+			{
+				s.Die = now;
+			}
+			dying.AddRange(sections);
+			sections.Clear();
+			Dictionary<CardModel, Item> reuse = new(ReferenceEqualityComparer.Instance);
+			foreach (Item it in items)
+			{
+				reuse[it.Card] = it;
+			}
+			List<Item> before = items.ToList();
+			contentH = Place(Groups(pile.Cards.ToList()), reuse);
+			foreach (Item gone in reuse.Values)
+			{
+				// 牌堆在切换的同一帧变了（极少见）：多出来的直接还回去
+				if (gone.Holder != null && GodotObject.IsInstanceValid(gone.Holder)) gone.Holder.QueueFreeSafely();
+				if (gone.Slot != null && GodotObject.IsInstanceValid(gone.Slot)) gone.Slot.QueueFree();
+			}
+			target = Mathf.Clamp(target, 0f, MaxScroll());
+			sweepT0 = now;
+			modeSwitch.Set(toOrder);
+			noteL.Text = Note(toOrder);
+			Audio.Sfx.Clip("ShuffleTime_CardSet", 0.4f);
+		}
+		modeSwitch.Changed = Switch;
+		// 扫光：一道青色细光带从网格顶扫到底（切换排列模式时）
+		Polygon2D sweep = new() { Color = new Color(0.55f, 0.9f, 1f, 0f), Polygon = new[] { new Vector2(-20f, -3f), new Vector2(L.Cols * L.CellW + 20f, -3f), new Vector2(L.Cols * L.CellW + 20f, 3f), new Vector2(-20f, 3f) }.Select(v => v * k).ToArray() };
+		heads.AddChild(sweep);
 
 		float MaxScroll() => Mathf.Max(0f, contentH - (L.GridBottom - L.GridTop));
 
@@ -904,9 +1020,36 @@ public static class PileFx
 				foreach (Section s in sections)
 				{
 					Vector2 p = Screen(new Vector2(0f, s.Y + HeaderH * 0.5f));
-					s.Head.Position = p + new Vector2(-14f * k, 0f);
-					s.Head.Modulate = new Color(1f, 1f, 1f, Fade(p.Y - 20f * k, p.Y + 20f * k) * Mathf.Clamp((now - 0.2f) / 0.25f, 0f, 1f) * (1f - fe) * (1f - ex));
+					float sIn = s.Born < 0f ? 1f : Ease.OutCubic(Mathf.Clamp((now - s.Born) / 0.3f, 0f, 1f));   // 切换后新标题从左滑入
+					s.Head.Position = p + new Vector2(-14f * k - 80f * k * (1f - sIn), 0f);
+					s.Head.Modulate = new Color(1f, 1f, 1f, Fade(p.Y - 20f * k, p.Y + 20f * k) * Mathf.Clamp((now - 0.2f) / 0.25f, 0f, 1f) * sIn * (1f - fe) * (1f - ex));
 					s.Head.Position += new Vector2(-60f * k * fe, 0f);
+				}
+				for (int i = dying.Count - 1; i >= 0; i--)
+				{
+					// 旧标题往右滑出、淡掉，然后删
+					Section s = dying[i];
+					float d = Mathf.Clamp((now - s.Die) / 0.25f, 0f, 1f);
+					if (d >= 1f || !GodotObject.IsInstanceValid(s.Head))
+					{
+						if (GodotObject.IsInstanceValid(s.Head)) s.Head.QueueFree();
+						dying.RemoveAt(i);
+						continue;
+					}
+					Vector2 p = Screen(new Vector2(0f, s.Y + HeaderH * 0.5f));
+					s.Head.Position = p + new Vector2(-14f * k + 120f * k * Ease.InCubic(d), 0f);
+					s.Head.Modulate = new Color(1f, 1f, 1f, (1f - d) * Fade(p.Y - 20f * k, p.Y + 20f * k));
+				}
+				{
+					float se = Mathf.Clamp((now - sweepT0) / 0.6f, 0f, 1f);
+					sweep.Visible = se < 1f;
+					if (se < 1f)
+					{
+						Vector2 sp = Screen(new Vector2(0f, scroll + (L.GridBottom - L.GridTop) * Ease.InOutCubic(se)));
+						sweep.Position = sp;
+						sweep.Color = new Color(0.55f, 0.9f, 1f, 0.7f * Mathf.Sin(Mathf.Pi * se));
+						sweep.Rotation = Mathf.Atan(L.Slant);
+					}
 				}
 				head.Modulate = new Color(1f, 1f, 1f, (1f - 0.85f * fe) * (1f - ex));
 				if (exiting)
@@ -934,8 +1077,19 @@ public static class PileFx
 					Vector2 cs = h.Hitbox.Size.X > 1f ? h.Hitbox.Size : new Vector2(300f, 422f);
 					float baseScale = L.CardW * k / cs.X;
 					float half = cs.Y * baseScale * 0.5f;
-					Vector2 p = Screen(it.At);
-					float fade = Fade(p.Y - half, p.Y + half);
+					// v0.14.98 切换排列模式：从旧位置沿弧线飞到新位置（先慢后快再慢），途中略放大、转一点
+					float move = 0f;
+					Vector2 at = it.At;
+					if (it.MoveT0 >= 0f)
+					{
+						float me = Mathf.Clamp((now - it.MoveT0 - it.MoveDelay) / 0.46f, 0f, 1f);
+						float mc = Ease.InOutCubic(me);
+						at = it.From.Lerp(it.At, mc);
+						move = Mathf.Sin(Mathf.Pi * mc);
+						if (me >= 1f) it.MoveT0 = -1f;
+					}
+					Vector2 p = Screen(at) + new Vector2(0f, -42f * k * move);
+					float fade = Mathf.Max(Fade(p.Y - half, p.Y + half), move * 0.85f);
 					// 入场（每个界面不同）：抽牌堆从左下弹入；牌组一列列从右侧滑入；弃牌堆从上方飘落（左右摆着转）；消耗堆由光点聚拢显形（从大到小、淡入）
 					float born = Mathf.Clamp((now - it.Born) / (kind == Kind.Discard ? 0.6f : 0.38f), 0f, 1f);
 					float pop = Ease.OutBack(born);
@@ -973,7 +1127,8 @@ public static class PileFx
 					float rot = Mathf.DegToRad(L.Slant < 0f ? 2f : L.Slant > 0f ? -2f : 0f) * (1f - lift) + enterRot;
 					// 原版悬停会把 holder 自己的 Scale 从 0.8 跳到 1.0；这里按它当前的 Scale 反算，让总缩放平滑
 					// 淡出中的牌稍微缩小一点（"退到远处"的虚化感），整张在网格里时不变
-					float want = baseScale * (0.85f + 0.15f * pop) * enterScale * (1f + 0.26f * lift) * (0.93f + 0.07f * Mathf.Max(fade, lift));
+					float want = baseScale * (0.85f + 0.15f * pop) * enterScale * (1f + 0.26f * lift) * (0.93f + 0.07f * Mathf.Max(fade, lift)) * (1f + 0.07f * move);
+					rot += Mathf.DegToRad(-4f) * move;
 					float alpha = Mathf.Clamp(born * (kind == Kind.Exhaust ? 1.4f : 3f), 0f, 1f) * (it == hovered ? 1f : fade);
 					if (it == focused)
 					{
@@ -1524,6 +1679,71 @@ public static class PileFx
 	}
 
 	/// <summary>段标题：深色斜切牌（左边一道青色）+ 英文类型 + 中文 + 青色张数，后面一条细线和箭头延伸到网格右边。</summary>
+	/// <summary>
+	/// v0.14.98 抽牌堆排列模式切换条（标题说明条右边）：深蓝斜切底板，左「原版顺序」右「按类型」，
+	/// 青色斜切高亮块滑到选中的一侧（OutExpo 0.32s），选中的字变深色；悬停整体提亮一点。点一下切换。
+	/// </summary>
+	private sealed class ModeSwitch
+	{
+		private const float W = 330f, H = 28f;
+		public Action<bool>? Changed;
+		private Node2D root = null!;
+		private Polygon2D knob = null!;
+		private Label left = null!, right = null!;
+		private float k;
+		private bool order;
+
+		public static ModeSwitch Build(Node2D parent, Vector2 at, float k, Font? font, bool order, bool visible)
+		{
+			ModeSwitch m = new() { k = k, order = order };
+			m.root = new Node2D { Position = at, Visible = visible };
+			parent.AddChild(m.root);
+			Fx.Poly(m.root, new[] { new Vector2(8f, 0f), new Vector2(W, 0f), new Vector2(W - 8f, H), new Vector2(0f, H) }.Select(p => p * k).ToArray(), Navy);
+			m.knob = new Polygon2D { Color = Cyan, Polygon = new[] { new Vector2(8f, 0f), new Vector2(W / 2f, 0f), new Vector2(W / 2f - 8f, H), new Vector2(0f, H) }.Select(p => p * k).ToArray() };
+			m.root.AddChild(m.knob);
+			Font cjk = Zh ? Typo.CjkBold : font ?? Typo.CjkBold;
+			m.left = Text(m.root, Zh ? "原版顺序" : "ORDER", cjk, (int)(17f * k), Colors.White, Vector2.Zero, 0, Ink);
+			m.right = Text(m.root, Zh ? "按类型" : "BY TYPE", cjk, (int)(17f * k), Colors.White, Vector2.Zero, 0, Ink);
+			foreach ((Label l, float cx) in new[] { (m.left, W * 0.25f), (m.right, W * 0.75f) })
+			{
+				l.HorizontalAlignment = HorizontalAlignment.Center;
+				l.VerticalAlignment = VerticalAlignment.Center;
+				l.Size = new Vector2(W / 2f * k, H * k);
+				l.Position = new Vector2((cx - W / 4f) * k, 0f);
+			}
+			Control hit = new() { Size = new Vector2(W, H) * k, MouseFilter = Control.MouseFilterEnum.Stop, MouseDefaultCursorShape = Control.CursorShape.PointingHand };
+			m.root.AddChild(hit);
+			hit.MouseEntered += () => m.root.Modulate = new Color(1.15f, 1.15f, 1.15f);
+			hit.MouseExited += () => m.root.Modulate = Colors.White;
+			hit.GuiInput += ev => ModEntry.Safe("pile mode switch", () =>
+			{
+				if (ev is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left } mb)
+				{
+					hit.AcceptEvent();
+					bool want = mb.Position.X < W * k / 2f;            // 点左半 = 原版顺序，点右半 = 按类型；点当前那一侧 = 切到另一侧
+					m.Changed?.Invoke(want == m.order ? !m.order : want);
+				}
+			});
+			m.Paint(1f);
+			return m;
+		}
+
+		public void Set(bool toOrder)
+		{
+			order = toOrder;
+			Fx.Animate(knob, 0.32, t => Paint(Ease.OutExpo(t)));
+			Audio.Sfx.Clip("Sys_Cursor", 0.35f);
+		}
+
+		private void Paint(float t)
+		{
+			float from = order ? W / 2f : 0f, to = order ? 0f : W / 2f;
+			knob.Position = new Vector2(Mathf.Lerp(from, to, t) * k, 0f);
+			left.AddThemeColorOverride("font_color", order ? Ink : Ice);
+			right.AddThemeColorOverride("font_color", order ? Ice : Ink);
+		}
+	}
+
 	private static Node2D SectionHead(Node2D parent, string en, string zh, int count, Font? font, float k, float width)
 	{
 		Node2D n = new() { Modulate = new Color(1f, 1f, 1f, 0f) };
