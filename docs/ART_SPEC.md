@@ -1753,6 +1753,15 @@ Grand.cs 里其余函数暂时保留不用。
   tools/p3r/stage_waterlight.py 烘成图集 hero3d/tex/item_waterlight.png（R = a、G = b，屏幕上方 768 像素，1/3 分辨率，5×6 格），Shaders.WaterLight 按 TIME 播放、blend_add，紧贴人物显示框之上（白板在下面不受影响，牌在上面）。
 - 入场：原版人物等 10 帧再用 20 帧 CurveUp2 落位，那 10 帧原版被切页遮罩盖着；我们圆孔一开人物就可见，停住再从最大速度起步 → 僵。改成 0.05s（让开开牌堆那一两帧卡顿）起步、0.7s CurveUp3 一路减速。
 
+## v0.14.104 消耗堆 = 原版 SKILL 页进游戏；弃牌堆改回原版 ITEM 排版；去掉水光
+
+- 用户：水面光斑解决不了 3D 感，太丑，去掉（v0.14.103 的 Nami 图集、着色器、staging 脚本全删）。
+- 弃牌堆：用户「学原版的排版和思路：牌堆放左边挡住立绘大部分，只露脸和手；立绘整体调淡」。版式改成网格在左（GridX 120），人物 ItemShiftX +200；HeroKeyOut 新增 wash（ITEM 0.35，往浅水蓝 (0.45, 0.60, 0.92) 靠）。
+- 消耗堆：照 tools/p3r/skill_pile_preview.py 做进游戏（HeroStage.Act.Skill，原版 CampSkillStart / Loop）。
+  镜头 / 光 / 召唤器与离线渲染一致：人物 (6.87cm, 0, 0)、偏航 -2°、镜头高 5cm；HeroRamp / HeroFlat 新增 light_dir（SKILL 页光从下方 (-0.4, -0.6, 0.7)），召唤器 5E6680 + toon 0.25。
+  白底两块（左斜边 + 右下二次曲线弧边），HeroTint：人物透明部分在白底上显示 HeroCaptureBgColor；HeroShadow 加 opacity / soft（3×3 羽化），影子 = 完整轮廓往 (-22, 16) 错开，只画在白底上。
+  白底 10 帧 CurveUp1 从左 100px 滑入时，着色器坐标换算和影子位置跟着更新（SkillBoard.Move）。
+
 ## 待办（用户实机反馈，先记录）
 
 - P3R 主菜单打开动画（用户给的分镜 0.50~1.83s）：水面上有东西砸进来，带大片水花切入，水花散开后才看清是结城理倒着把头探进水里。之后找地方用（用户：先做牌堆，这个后面再做）。

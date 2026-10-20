@@ -71,15 +71,16 @@ public static class PileFx
 		_ => new Layout { Kind = Kind.Draw, Iris = new Vector2(0.04f, 0.95f), Title = "DRAW PILE", Word = "DRAW" },
 	};
 
-	/// <summary>v0.14.101 弃牌堆 = 原版 ITEM 页（用户：牌堆和抽牌堆 / 牌组一样，放右边；人物往左挪，不必完整露出）：版式同牌组，圆孔仍从弃牌堆按钮张开。</summary>
+	/// <summary>
+	/// v0.14.104 弃牌堆 = 原版 ITEM 页（用户：学原版，牌堆放左边挡住立绘大部分，只露脸和手）：版式同抽牌堆（网格在左），圆孔仍从弃牌堆按钮张开。
+	/// </summary>
 	private static Layout ItemLayout() => new()
 	{
-		Kind = Kind.Discard, CardW = 166f, CellW = 186f, GridX = 1920f - 70f - 5 * 186f, Slant = -0.05f, RightSide = true,
-		Focus = new Vector2(1260f, 560f), InfoX = 1520f, TitleX = 930f, Side = -1f, Iris = new Vector2(0.96f, 0.95f), Title = "DISCARD PILE", Word = "DISCARD",
+		Kind = Kind.Discard, GridX = 120f, Iris = new Vector2(0.96f, 0.95f), Title = "DISCARD PILE", Word = "DISCARD",
 	};
 
 	// 原版 DT_CampParamItem / DT_CampParamCommon（30fps 帧）：白板 10 帧 CurveUp1；人物 ItemSilhouette 等 10 帧、20 帧 CurveUp2 移到 (-90, -110)（游戏里改成 0.05s 起步、0.7s CurveUp3，见入场处）；InDist -100
-	private const float ItemShiftX = -520f;                 // 人物整体左移（1920 宽下的像素），给右边的牌堆让位
+	private const float ItemShiftX = 200f;                  // 人物在原版位置上稍右移（1920 宽下的像素）：身子藏在左边的牌后面（同原版左边的队伍条），脸和手露在牌右边
 	private static readonly Vector2 ItemSilhouette = new(-90f, -110f);
 
 	/// <summary>原版 EOneAnimType::CurveUpN 的近似（曲线写在原版程序里，资源里没有）：1 - (1 - t)^(N+1)。</summary>
@@ -214,6 +215,8 @@ public static class PileFx
 		float k = view.Y / 1080f;
 		float rx = view.X - 1920f * k;                    // 右侧元素的水平偏移（宽屏时贴右边缘）
 		bool item = kind == Kind.Discard && HeroStage.Available(screen.GetTree()) && HeroStage.ItemReady;
+		bool skill = kind == Kind.Exhaust && HeroStage.Available(screen.GetTree()) && HeroStage.SkillReady;
+		SkillBoard? skillBoard = null;
 		Layout L = item ? ItemLayout() : For(kind);
 		float gx = L.GridX + (L.RightSide ? rx / k : 0f);   // 网格左边（参考像素）
 		Font font = Typo.PileBarlow;
@@ -248,8 +251,8 @@ public static class PileFx
 		bool commu = kind == Kind.Draw && HeroStage.Available(screen.GetTree());
 		// v0.14.95：牌组 = 原版营地主菜单的"倒入水"（DiveFx：原版水花 + 水下露出 + 原版波浪；HeroStage.Act.Top 倒入水 → 水下待机）
 		bool dive = kind == Kind.Deck && HeroStage.Available(screen.GetTree()) && DiveFx.Ready;
-		ShaderMaterial water = new() { Shader = commu || dive || item ? Shaders.CommuBg : Shaders.Underwater };
-		if (commu || dive || item) water.SetShaderParameter("caustics", HeroStage.Tex("T_UI_Camp_Caustics_00.png")!);
+		ShaderMaterial water = new() { Shader = commu || dive || item || skill ? Shaders.CommuBg : Shaders.Underwater };
+		if (commu || dive || item || skill) water.SetShaderParameter("caustics", HeroStage.Tex("T_UI_Camp_Caustics_00.png")!);
 		water.SetShaderParameter("aspect", view.X / view.Y);
 		water.SetShaderParameter("center", from);
 		water.SetShaderParameter("radius", 0f);
@@ -293,7 +296,16 @@ public static class PileFx
 				}
 				break;
 			case Kind.Exhaust:
-				butterfly = ExhaustDecor(root, right, view, font, k, rx);
+				if (skill && (skillBoard = SkillDecor(right, view)) != null)
+				{
+					butterfly = new PileButterfly(right, Kind.Deck, k, 0f, DeckPorScale);
+					lap("hero3d");
+				}
+				else
+				{
+					skill = false;
+					butterfly = ExhaustDecor(root, right, view, font, k, rx);
+				}
 				break;
 			default:
 				if (!commu)
@@ -350,6 +362,19 @@ public static class PileFx
 			// 人物落位：原版等 10 帧再动，那 10 帧在原版被切页遮罩盖着；这里圆孔一张开人物就看得见，停着不动再突然起步显得僵（v0.14.103 用户反馈）。
 			// 改成和淡入几乎同时起步（只让开打开牌堆那一两帧的卡顿，免得曲线开头被吞掉跳一下），一路减速到原版落点，时长 0.7s，CurveUp3 收尾更软
 			Fx.After(right, 0.05, "item silhouette", () => Fx.Animate(right, 0.7, t => HeroStage.Nudge(ItemSilhouette * u * CurveUp(3, (float)t))));
+		}
+		else if (skill)
+		{
+			// SKILL 页：整组不滑入，随圆孔张开淡入；白底按原版 10 帧 CurveUp1 从左 100px 滑进；人物一步到位（用户：不要入场后再被往下拽）
+			right.Position = Vector2.Zero;
+			SkillBoard sb = skillBoard!;
+			sb.Move(-100f * k);
+			Fx.Animate(right, 0.3, t => right.Modulate = new Color(1f, 1f, 1f, Ease.OutCubic((float)t)));
+			Fx.After(right, 0.1, "skill board in", () => Fx.Animate(sb.Board, 10.0 / 30.0, t =>
+			{
+				sb.Move(-100f * k * (1f - CurveUp(1, (float)t)));
+				sb.Board.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((float)t * 1.6f, 0f, 1f));
+			}));
 		}
 		else Fx.After(right, 0.1, "pile right in", () => Fx.Animate(right, 0.5, t =>
 		{
@@ -1340,7 +1365,7 @@ public static class PileFx
 		};
 		root.TreeExiting += () =>
 		{
-			if (kind == Kind.Draw || item) HeroStage.Close(right);
+			if (kind == Kind.Draw || item || skill) HeroStage.Close(right);
 			Exits.Remove(sid);
 			tree.ProcessFrame -= Tick;
 			BindBack(false);
@@ -1576,17 +1601,70 @@ public static class PileFx
 		}
 		if (HeroStage.Open(parent, view, ItemShiftX * u, HeroStage.Act.Item))
 		{
-			// 原版 ITEM 页水光（Nami A / B）：屏幕上方的水面光斑，加亮叠在人物和水上（白板在它下面，白色加亮后不变；牌在它上面），人物和背景融在一起，不像贴上去的 3D 模型
-			if (HeroStage.Tex(HeroStage.ItemWaterLight) is Texture2D light)
-			{
-				ShaderMaterial m = new() { Shader = Shaders.WaterLight };
-				m.SetShaderParameter("atlas", light);
-				parent.AddChild(new ColorRect { Size = new Vector2(view.X, view.Y * 768f / 1080f), Material = m, MouseFilter = Control.MouseFilterEnum.Ignore });
-			}
 			return true;
 		}
 		board.QueueFree();
 		return false;
+	}
+
+	// v0.14.104 消耗堆 = 原版 SKILL 页（tools/p3r/skill_pile_preview.py，用户认可的预览）：
+	// 人物放在原版 Silhouette 落点（离线渲染坐标 -225 + 10, -120 + 170）；白底左边一块斜边 + 右下一块弧边，两块之间的 V 字露出水；
+	// 人物透明的地方落在白底上显示原版人物底色 HeroCaptureBgColor (0, 42, 108)，落在水上透出水；白底上有人物完整轮廓的灰影（往左下错开，羽化），水上没有。
+	private static readonly Vector2 SkillHeroAt = new(-215f, 50f);
+	private static readonly Color SkillCapture = new(0f, 42f / 255f, 108f / 255f);
+	private static readonly Vector2 SkillShadowOffset = new(-22f, 16f);
+
+	/// <summary>SKILL 页白底：两块多边形放在 Board 里一起滑；着色器里的坐标换算和影子位置跟着 Board 的位移更新（Move）。</summary>
+	private sealed class SkillBoard
+	{
+		public Node2D Board = null!;
+		public readonly List<(ShaderMaterial Mat, Vector2 Origin)> Tints = new();
+		public readonly List<(Control Shadow, Vector2 At)> Shadows = new();
+
+		public void Move(float x)
+		{
+			Board.Position = new Vector2(x, 0f);
+			foreach ((ShaderMaterial m, Vector2 o) in Tints) m.SetShaderParameter("xo", o + Board.Position);
+			foreach ((Control c, Vector2 at) in Shadows) c.Position = at - Board.Position;   // 影子是白底的子节点（被白底裁剪），但位置钉在人物上
+		}
+	}
+
+	private static SkillBoard? SkillDecor(Node2D parent, Vector2 view)
+	{
+		float u = view.X / 1920f;
+		SkillBoard sb = new() { Board = new Node2D { Name = "SkillBoard", Modulate = new Color(1f, 1f, 1f, 0f) } };
+		parent.AddChild(sb.Board);
+		float W = view.X, H = view.Y;
+		Vector2[] left = { new(0f, 0f), new(0.055f * W, 0f), new(0.746f * W, H), new(0f, H) };
+		List<Vector2> right = new();
+		Vector2 a = new(0.746f * W, H), c = new(0.90f * W, 0.66f * H), b = new(W, 0.42f * H);
+		for (int i = 0; i <= 24; i++)
+		{
+			float t = i / 24f;
+			right.Add((1 - t) * (1 - t) * a + 2 * (1 - t) * t * c + t * t * b);
+		}
+		right.Add(new Vector2(W, H));
+		Polygon2D[] polys =
+		{
+			new() { Polygon = left, Color = Colors.White, ClipChildren = CanvasItem.ClipChildrenMode.AndDraw },
+			new() { Polygon = right.ToArray(), Color = Colors.White, ClipChildren = CanvasItem.ClipChildrenMode.AndDraw },
+		};
+		foreach (Polygon2D p in polys) sb.Board.AddChild(p);
+		if (!HeroStage.Open(parent, view, SkillHeroAt.X * u, HeroStage.Act.Skill))
+		{
+			sb.Board.QueueFree();
+			return null;
+		}
+		HeroStage.Nudge(new Vector2(0f, SkillHeroAt.Y * u));   // 先落位，下面的换算和影子都按落位后的位置
+		foreach (Polygon2D p in polys)
+		{
+			HeroStage.TintUnder(p, SkillCapture);
+			if (p.Material is ShaderMaterial m) sb.Tints.Add((m, (Vector2)m.GetShaderParameter("xo") - sb.Board.Position));
+			int before = p.GetChildCount();
+			HeroStage.AddShadow(p, SkillShadowOffset * u, 0.6f, 8f * u);
+			if (p.GetChildCount() > before && p.GetChild(before) is Control sh) sb.Shadows.Add((sh, sh.Position));
+		}
+		return sb;
 	}
 
 	/// <summary>弃牌堆（仿 P3R ITEM）：右上、右下两块白色大三角 + 一道青色斜光片 + 一道红色细斜线；后仰下沉的立绘贴右边（大字会被立绘挡住，不放）。</summary>
