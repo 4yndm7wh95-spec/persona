@@ -7,7 +7,7 @@ public static class Shaders
 {
 	private static Shader Make(string code) => new Shader { Code = code };
 
-	private static Shader? _heroFlat, _heroRamp, _heroKeyOut, _heroShadow, _heroCut, _heroTint, _commuBg, _pileSplash;
+	private static Shader? _heroFlat, _heroRamp, _heroKeyOut, _heroShadow, _heroCut, _heroOutline, _commuBg, _pileSplash;
 
 	/// <summary>
 	/// v0.14.95 入水转场的原版波浪（UIM_UI_Camp_In）：17×10 网格，各顶点"位置 − 按 UV 的静止位置"的偏差（1920×1184 坐标，单位像素）
@@ -48,6 +48,23 @@ void fragment() {
 	float side = FRONT_FACING ? 1.0 : -1.0;
 	float lit = smoothstep(-0.05, 0.05, dot(normalize(wn) * side, normalize(light_dir)));
 	ALBEDO = col * mix(1.0 - toon, 1.0 + toon * 0.35, lit);
+}
+");
+
+	/// <summary>
+	/// v0.14.105 原版描边（MI_PC0051_OlOpCamp，反向外壳：顶点沿法线外推、只画背面）：只在弃牌堆（ITEM 页）打开，鼻梁、下巴、耳朵这些线要靠它；
+	/// 其他页 on = 0 不画（用户 v0.14.90：COMMU 不要描边）。颜色比原版 B6C4D4 深一档，过了 ITEM 的亮度曲线才接近原版截图里的深蓝线。
+	/// </summary>
+	public static Shader HeroOutline => _heroOutline ??= Make(@"
+shader_type spatial;
+render_mode unshaded, cull_front;
+uniform vec3 col = vec3(0.478, 0.541, 0.627);
+uniform float width = 0.0008;
+uniform float on = 0.0;
+void vertex() { VERTEX += NORMAL * width * on; }
+void fragment() {
+	if (on < 0.5) discard;
+	ALBEDO = col;
 }
 ");
 
@@ -115,16 +132,17 @@ shader_type canvas_item;
 " + WarpGlsl + @"
 uniform sampler2D entry_mask : filter_linear, repeat_disable;
 uniform float entry_full = 1.0;
-// 弃牌堆 = 原版 ITEM 页：人物按亮度上蓝色三段渐变（暗部深海军蓝 → 亮蓝 → 淡紫白，对照参考视频 55.33s），
-// 彩色部分（青发梢、眼睛）保留原色；色键部分填 fill_col，不透水（v0.14.102 用户：v0.14.101 的整块压暗太暗淡，选了方案 B）
+// 弃牌堆 = 原版 ITEM 页（v0.14.105，对照用户截的原版特写）：整个人物是低对比的蓝色单色 —— 白皮肤 → 中蓝 (15, 66, 131)，
+// 阴影 / 描线往深海军蓝走（鼻梁、脸侧这种很淡的阴影线经过陡的亮度曲线也看得出来）；青发梢、眼睛也压进同一套蓝里，只略亮。
+// 色键部分不透水，按原版上色：头发暗部 hair_col（Open 时头发色键改成 (0.02, 1, 0)，c.r 就是头发的标记）、外套 coat_col。
 uniform float fill_on = 0.0;
-uniform vec3 fill_col = vec3(0.06, 0.15, 0.45);
-uniform vec3 ramp_lo = vec3(0.08, 0.18, 0.50);
-uniform vec3 ramp_mid = vec3(0.27, 0.42, 0.86);
-uniform vec3 ramp_hi = vec3(0.72, 0.74, 1.0);
-// v0.14.104 用户：立绘整体调淡（原版 ITEM 页人物是淡淡地融在水里的）：最后整体往浅水蓝靠
-uniform float wash = 0.0;
-uniform vec3 wash_col = vec3(0.45, 0.60, 0.92);
+uniform vec3 ramp_lo = vec3(0.015, 0.07, 0.33);
+uniform vec3 ramp_mid = vec3(0.035, 0.20, 0.47);
+uniform vec3 ramp_hi = vec3(0.075, 0.29, 0.56);
+uniform float ramp_split = 0.8;
+uniform vec3 streak_col = vec3(0.12, 0.50, 0.88);
+uniform vec3 hair_col = vec3(0.065, 0.27, 0.60);
+uniform vec3 coat_col = vec3(0.03, 0.16, 0.43);
 varying vec4 hero_modulate;
 void vertex() { hero_modulate = COLOR; }
 void fragment() {
@@ -135,13 +153,13 @@ void fragment() {
 	vec3 rgb = (c - vec3(0.0, s, 0.0)) / max(alpha, 0.001);
 	rgb = clamp(rgb, 0.0, 1.0);   // 纯色键像素 alpha = 0 时这里会除出很大的数，夹住免得填色混出 NaN
 	float lum = dot(rgb, vec3(0.2126, 0.7152, 0.0722));
-	vec3 tone = lum < 0.5 ? mix(ramp_lo, ramp_mid, lum / 0.5) : mix(ramp_mid, ramp_hi, (lum - 0.5) / 0.5);
+	vec3 tone = lum < ramp_split ? mix(ramp_lo, ramp_mid, lum / ramp_split) : mix(ramp_mid, ramp_hi, (lum - ramp_split) / (1.0 - ramp_split));
 	float sat = max(max(rgb.r, rgb.g), rgb.b) - min(min(rgb.r, rgb.g), rgb.b);
-	tone = mix(tone, rgb, clamp((sat - 0.25) / 0.35, 0.0, 1.0));
-	vec3 filled = mix(tone, fill_col, s);
+	tone = mix(tone, streak_col * (0.6 + 0.4 * lum), clamp((sat - 0.25) / 0.35, 0.0, 1.0));
+	float hair = clamp(c.r * 25.0, 0.0, 1.0) * step(0.5, s);
+	vec3 filled = mix(tone, mix(coat_col, hair_col, hair), s);
 	rgb = mix(rgb, filled, fill_on);
 	alpha = mix(alpha, 1.0, fill_on);
-	rgb = mix(rgb, wash_col, wash);
 	float shown = max(entry_full, texture(entry_mask, SCREEN_UV).r);
 	COLOR = vec4(rgb, t.a * alpha * shown) * hero_modulate;
 }
@@ -165,30 +183,6 @@ void fragment() {
 	vec2 huv = (local - hero_pos) / hero_size;
 	float a = all(greaterThanEqual(huv, vec2(0.0))) && all(lessThanEqual(huv, vec2(1.0))) ? texture(hero, huv).a : 0.0;
 	COLOR.a *= 1.0 - a;
-}
-");
-
-	/// <summary>
-	/// v0.14.104 消耗堆（原版 SKILL 页）白底：人物透明的地方（色键部分：外套 / 头发暗部）落在白底上时显示原版人物底色（HeroCaptureBgColor 深海军蓝），
-	/// 落在水上时照样透出水（白底以外不画）。坐标参数同 HeroCut。
-	/// </summary>
-	public static Shader HeroTint => _heroTint ??= Make(@"
-shader_type canvas_item;
-uniform sampler2D hero : filter_linear;
-uniform vec2 hero_pos = vec2(0.0);
-uniform vec2 hero_size = vec2(1920.0, 1080.0);
-uniform vec2 xa = vec2(1.0, 0.0);
-uniform vec2 xb = vec2(0.0, 1.0);
-uniform vec2 xo = vec2(0.0);
-uniform vec4 tint : source_color = vec4(0.0, 0.165, 0.424, 1.0);
-varying vec2 local;
-void vertex() { local = xa * VERTEX.x + xb * VERTEX.y + xo; }
-void fragment() {
-	vec2 huv = (local - hero_pos) / hero_size;
-	vec4 h = all(greaterThanEqual(huv, vec2(0.0))) && all(lessThanEqual(huv, vec2(1.0))) ? texture(hero, huv) : vec4(0.0);
-	vec3 c = h.a > 0.0 ? h.rgb / h.a : vec3(0.0);
-	float keyed = h.a * clamp(c.g - max(c.r, c.b), 0.0, 1.0);
-	COLOR.rgb = mix(COLOR.rgb, tint.rgb, keyed);
 }
 ");
 

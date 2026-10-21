@@ -80,7 +80,7 @@ public static class PileFx
 	};
 
 	// 原版 DT_CampParamItem / DT_CampParamCommon（30fps 帧）：白板 10 帧 CurveUp1；人物 ItemSilhouette 等 10 帧、20 帧 CurveUp2 移到 (-90, -110)（游戏里改成 0.05s 起步、0.7s CurveUp3，见入场处）；InDist -100
-	private const float ItemShiftX = 200f;                  // 人物在原版位置上稍右移（1920 宽下的像素）：身子藏在左边的牌后面（同原版左边的队伍条），脸和手露在牌右边
+	private const float ItemShiftX = 160f;                  // 人物在原版位置上稍右移（1920 宽下的像素）：身子藏在左边的牌后面（同原版左边的队伍条），脸和手露在牌右边；v0.14.105 起是平移镜头，不再露断层
 	private static readonly Vector2 ItemSilhouette = new(-90f, -110f);
 
 	/// <summary>原版 EOneAnimType::CurveUpN 的近似（曲线写在原版程序里，资源里没有）：1 - (1 - t)^(N+1)。</summary>
@@ -1609,9 +1609,8 @@ public static class PileFx
 
 	// v0.14.104 消耗堆 = 原版 SKILL 页（tools/p3r/skill_pile_preview.py，用户认可的预览）：
 	// 人物放在原版 Silhouette 落点（离线渲染坐标 -225 + 10, -120 + 170）；白底左边一块斜边 + 右下一块弧边，两块之间的 V 字露出水；
-	// 人物透明的地方落在白底上显示原版人物底色 HeroCaptureBgColor (0, 42, 108)，落在水上透出水；白底上有人物完整轮廓的灰影（往左下错开，羽化），水上没有。
+	// 人物透明的地方（外套 / 头发暗部）不管落在白底还是水上都透出水；白底上有人物完整轮廓的灰影（往左下错开，羽化），水上没有。
 	private static readonly Vector2 SkillHeroAt = new(-215f, 50f);
-	private static readonly Color SkillCapture = new(0f, 42f / 255f, 108f / 255f);
 	private static readonly Vector2 SkillShadowOffset = new(-22f, 16f);
 
 	/// <summary>SKILL 页白底：两块多边形放在 Board 里一起滑；着色器里的坐标换算和影子位置跟着 Board 的位移更新（Move）。</summary>
@@ -1658,7 +1657,7 @@ public static class PileFx
 		HeroStage.Nudge(new Vector2(0f, SkillHeroAt.Y * u));   // 先落位，下面的换算和影子都按落位后的位置
 		foreach (Polygon2D p in polys)
 		{
-			HeroStage.TintUnder(p, SkillCapture);
+			HeroStage.CutOut(p);   // v0.14.105 用户：外套 / 头发暗部是透明的，用水填（白底在人物剪影处挖空，透出底下的水），不要自己涂色
 			if (p.Material is ShaderMaterial m) sb.Tints.Add((m, (Vector2)m.GetShaderParameter("xo") - sb.Board.Position));
 			int before = p.GetChildCount();
 			HeroStage.AddShadow(p, SkillShadowOffset * u, 0.6f, 8f * u);

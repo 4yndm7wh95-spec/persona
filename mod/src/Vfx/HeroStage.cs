@@ -35,10 +35,8 @@ internal static class HeroStage
 	private static readonly string[] SkillNames = { "CampSkillStart", "CampSkillLoop" };
 	private const string ItemWord = "item_word.png";
 
-	/// <summary>ITEM 页人物色键部分（外套 / 头发暗部）的填色：深海军蓝（不透水）；其余部分按亮度上蓝色渐变，见 Shaders.HeroKeyOut。</summary>
-	private static readonly Color ItemFill = new(0.06f, 0.15f, 0.45f);
-	/// <summary>v0.14.104 ITEM 页人物整体调淡的程度（往浅水蓝靠，Shaders.HeroKeyOut 的 wash）。</summary>
-	private const float ItemWash = 0.35f;
+	/// <summary>ITEM 页头发色键带一点红（Shaders.HeroKeyOut 靠 c.r 认出头发，和外套分开上色）；其他页是纯色键。</summary>
+	private static readonly Color ItemHairKey = new(0.02f, 1f, 0f);
 
 	/// <summary>舞台演哪一页：COMMU（抽牌堆：拿牌 → 松手，牌浮空自转）；Top（营地主菜单：倒入水 → 水下待机，牌组牌堆，不显示牌）；Item（弃牌堆：ITEM 页伸手，人物填深海军蓝）。</summary>
 	internal enum Act { Commu, Top, Item, Skill }
@@ -232,7 +230,9 @@ internal static class HeroStage
 	/// <summary>ITEM 页人物落位那一下（原版 ItemSilhouette：等 10 帧、20 帧 CurveUp2 移到 (-90, -110)）：在 Open 的位置上再偏移。</summary>
 	internal static void Nudge(Vector2 offset)
 	{
-		if (cached is { Playing: true } stage) stage.Display.Position = stage.Base + offset;
+		if (cached is not { Playing: true } stage) return;
+		if (stage.Panned) stage.Pan(stage.Base + offset);
+		else stage.Display.Position = stage.Base + offset;
 	}
 
 	/// <summary>ITEM 页能用（资源读到了）。</summary>
@@ -240,25 +240,6 @@ internal static class HeroStage
 
 	/// <summary>SKILL 页能用（资源读到了）。</summary>
 	internal static bool SkillReady => cached is { SkillReady: true };
-
-	/// <summary>Open 之后调用：白底上人物透明的地方（外套 / 头发暗部）显示原版人物底色，不透出白（Shaders.HeroTint）。坐标换算同 CutOut。</summary>
-	internal static void TintUnder(CanvasItem item, Color col)
-	{
-		if (cached is not { Playing: true } stage) return;
-		ShaderMaterial m = new() { Shader = Shaders.HeroTint };
-		m.SetShaderParameter("hero", stage.Display.Texture);
-		m.SetShaderParameter("hero_pos", stage.Display.Position);
-		m.SetShaderParameter("hero_size", stage.Display.Size);
-		m.SetShaderParameter("tint", col);
-		if (item is Node2D n && stage.Display.GetParent() is Node2D host)
-		{
-			Transform2D t = host.GlobalTransform.AffineInverse() * n.GlobalTransform;
-			m.SetShaderParameter("xa", t.X);
-			m.SetShaderParameter("xb", t.Y);
-			m.SetShaderParameter("xo", t.Origin);
-		}
-		item.Material = m;
-	}
 
 	internal static void Kick()
 	{
@@ -453,7 +434,8 @@ internal static class HeroStage
 		private readonly List<Motion> skillMotions = new();
 		private readonly List<Node3D> heroScenes = new();
 		private readonly List<ShaderMaterial> rampMats = new();
-		private ShaderMaterial? gunMat;
+		private ShaderMaterial? gunMat, hairKeyMat;
+		private readonly List<ShaderMaterial> outlineMats = new();
 		private Camera3D? camera;
 		internal bool ItemReady => itemMotions.Count > 0;
 		internal bool SkillReady => skillMotions.Count > 0;
@@ -594,6 +576,7 @@ internal static class HeroStage
 					ShaderMaterial flat = new() { Shader = Shaders.HeroFlat };
 					flat.SetShaderParameter("col", fill != null ? new Color(fill) : HeroKey);
 					if (name == "MI_PC0051_C002_03_CaFiOp") gunMat = flat;
+					if (name == "MI_PC0051_H000_00_CaRtOp") hairKeyMat = flat;
 					m = flat;
 				}
 				else if (tex != null)
@@ -602,6 +585,12 @@ internal static class HeroStage
 					ramp.SetShaderParameter("tex", textures[tex]);
 					rampMats.Add(ramp);
 					m = ramp;
+				}
+				else if (name == "MI_PC0051_OlOpCamp")
+				{
+					ShaderMaterial outline = new() { Shader = Shaders.HeroOutline };
+					outlineMats.Add(outline);
+					m = outline;
 				}
 				else if (name == "MI_PC0051_F000_00_CaEyOp")
 				{
@@ -652,16 +641,28 @@ internal static class HeroStage
 				km.SetShaderParameter("warp_on", 0f);
 				km.SetShaderParameter("entry_full", 1f);
 				km.SetShaderParameter("fill_on", which == Act.Item ? 1f : 0f);
-				km.SetShaderParameter("fill_col", ItemFill);
-				km.SetShaderParameter("wash", which == Act.Item ? ItemWash : 0f);
 			}
+			foreach (ShaderMaterial o in outlineMats) o.SetShaderParameter("on", which == Act.Item ? 1f : 0f);
+			hairKeyMat?.SetShaderParameter("col", which == Act.Item ? ItemHairKey : HeroKey);
 			phase = 0;
 			time = 0;
 			blendFrom = -1;
 			releaseTime = baseAngle = extra = velocity = Target = 0;
 			seq[0].Pose(0);
 			Display.Size = view;
-			Display.Position = Base = new Vector2(shift, 0);
+			// v0.14.105：ITEM / SKILL 页挪人物改成平移镜头的取景（视锥偏移），显示框始终铺满屏幕 —— 挪显示框会在屏幕边上露出一条没有人物的断层（用户截图）
+			Panned = which == Act.Item || which == Act.Skill;
+			if (Panned)
+			{
+				Display.Position = Vector2.Zero;
+				Base = new Vector2(shift, 0);
+				Pan(Base);
+			}
+			else
+			{
+				if (camera != null) camera.Projection = Camera3D.ProjectionType.Perspective;
+				Display.Position = Base = new Vector2(shift, 0);
+			}
 			owner = parent;
 			owner.AddChild(Display);
 			owner.TreeExiting += Close;
@@ -670,6 +671,19 @@ internal static class HeroStage
 			tree.ProcessFrame += Tick;
 			ticking = true;
 			viewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Always;
+		}
+
+		internal bool Panned { get; private set; }
+
+		/// <summary>人物在屏幕上平移 px（屏幕像素，右 / 下为正）：透视镜头换成等价的视锥（近平面宽 = 2·near·tan(fov/2)），再偏移视锥。</summary>
+		internal void Pan(Vector2 px)
+		{
+			if (camera == null) return;
+			float w = Math.Max(Display.Size.X, 1f);
+			float size = 2f * camera.Near * Mathf.Tan(Mathf.DegToRad(37.35f) / 2f);
+			camera.Projection = Camera3D.ProjectionType.Frustum;
+			camera.Size = size;
+			camera.FrustumOffset = new Vector2(-px.X / w * size, px.Y / w * size);
 		}
 
 		internal TextureRect Shadow(Vector2 offset, float opacity, float soft)
