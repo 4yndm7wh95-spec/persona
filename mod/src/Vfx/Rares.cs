@@ -798,6 +798,18 @@ public static class Rares
 		Color ink = new(0.01f, 0.06f, 0.03f);
 
 		Node2D root = Fx.Root(back, Vector2.Zero, "P3Tyranny");
+		// The three panels form one screen composition. The room camera must not shrink or shift it.
+		// Fit the complete original layout uniformly between the HUD and the hand, including skew and drift.
+		root.GlobalTransform = Transform2D.Identity;
+		Rect2 safe = new(new Vector2(W * 0.08f, H * 0.13f), new Vector2(W * 0.86f, H * 0.64f));
+		Rect2 design = new(new Vector2(-W * 0.08f, H * 0.04f), new Vector2(W * 1.2f, H));
+		float fit = Mathf.Min(safe.Size.X / design.Size.X, safe.Size.Y / design.Size.Y);
+		Node2D panels = new()
+		{
+			Position = safe.GetCenter() - design.GetCenter() * fit,
+			Scale = Vector2.One * fit
+		};
+		root.AddChild(panels);
 		int idx = formSky ? FormFx.SkyIndex + 1 : 0;
 		if (ThemeFx.GateRoot is Node2D gate && gate.GetParent() == back)
 		{
@@ -813,13 +825,13 @@ public static class Rares
 		// 一块斜切面板：错位深蓝底板 + 裁切框（内容放进返回的 content）+ 领头的绿色边线 + 下沿白线。dir = +1 从右切入，-1 从左切入。
 		Node2D Panel(float x0, float x1, float yT, float yB, float lean, float inAt, float outAt, float dir, Color fill, float parallax = 0.55f, bool underlay = true)
 		{
-			Polygon2D? under = underlay ? Fx.Poly(root, new Vector2[3], new Color(0.02f, 0.05f, 0.2f, 0.9f)) : null;
+			Polygon2D? under = underlay ? Fx.Poly(panels, new Vector2[3], new Color(0.02f, 0.05f, 0.2f, 0.9f)) : null;
 			Polygon2D frame = new() { ClipChildren = CanvasItem.ClipChildrenMode.AndDraw, Color = fill };
-			root.AddChild(frame);
+			panels.AddChild(frame);
 			Node2D content = new();
 			frame.AddChild(content);
-			Polygon2D lead = Fx.Poly(root, new Vector2[3], Pal.DarkHour, additive: true);
-			Polygon2D baseLine = Fx.Poly(root, new Vector2[3], new Color(1f, 1f, 1f, 0.85f));
+			Polygon2D lead = Fx.Poly(panels, new Vector2[3], Pal.DarkHour, additive: true);
+			Polygon2D baseLine = Fx.Poly(panels, new Vector2[3], new Color(1f, 1f, 1f, 0.85f));
 			Vector2[] Pts(float dx, float sq)
 			{
 				float cy = (yT + yB) * 0.5f, t = cy + (yT - cy) * sq, b = cy + (yB - cy) * sq;
@@ -992,7 +1004,7 @@ public static class Rares
 		{
 			float r = Fx.Rand(10f, 26f);
 			Vector2[] tri = { Vector2.Right.Rotated(Fx.Rand(0f, 2f)) * r, Vector2.Right.Rotated(Fx.Rand(2.1f, 4f)) * r * 0.7f, Vector2.Right.Rotated(Fx.Rand(4.2f, 6f)) * r };
-			Polygon2D sh = Fx.Poly(root, tri, new Color(i % 3 == 0 ? Pal.Ice : Pal.DarkHour, 0f), additive: true);
+			Polygon2D sh = Fx.Poly(panels, tri, new Color(i % 3 == 0 ? Pal.Ice : Pal.DarkHour, 0f), additive: true);
 			Vector2 from = new(W * Fx.Rand(0.2f, 0.45f), H * Fx.Rand(0.1f, 0.5f));
 			shards.Add((sh, from, new Vector2(Fx.Rand(60f, 160f), Fx.Rand(-40f, 20f)), Fx.Rand(-2f, 2f)));
 		}
@@ -1049,14 +1061,14 @@ public static class Rares
 				p.Color = new Color(p.Color, 0.4f * a);
 			}
 		});
-		Fx.After(root, 0.08, "tyranny panel in", () => { Audio.Sfx.Play(Audio.Snd.CutIn, 0.5f, pitch: 0.7f); P3Fx.Ripple(back, mid, W * 0.6f, 0.7f, 0.015f); });
+		Fx.After(root, 0.08, "tyranny panel in", () => { Audio.Sfx.Play(Audio.Snd.CutIn, 0.5f, pitch: 0.7f); P3Fx.Ripple(FxSpace.Screen(back), panels.ToGlobal(mid), W * 0.6f * fit, 0.7f, 0.015f); });
 		Audio.Sfx.Clip("clock_tick", 0.8f, 0.3f);                     // 时钟面板：滴答两下 → 指针飞转 → 0:00 报时长音
 		Audio.Sfx.Clip("clock_tick", 0.8f, 0.5f);
 		Audio.Sfx.Clip("clock_spin", 0.55f, strike - 0.5f);
 		Fx.After(root, strike, "tyranny midnight", () =>
 		{
 			Audio.Sfx.Clip("clock_midnight", 0.85f);
-			P3Fx.Ripple(back, mid, W * 0.9f, 0.9f, 0.025f);
+			P3Fx.Ripple(FxSpace.Screen(back), panels.ToGlobal(mid), W * 0.9f * fit, 0.9f, 0.025f);
 			Shake(ShakeStrength.Weak);
 		});
 		Fx.After(root, 1.95, "tyranny panel out", () => Audio.Sfx.Play(Audio.Snd.StarSpend, 0.5f, pitch: 0.5f));
