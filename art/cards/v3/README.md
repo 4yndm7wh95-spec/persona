@@ -1329,3 +1329,8 @@ Generate ONE opaque full bleed game card. Landscape1000:760. Reference1 original
 ```
 
 光谱偏移双主体旧版找回：exec-3adf9ed4-078a-4f24-a6f5-61d6658bafa8.png，存为 cand/spectrum_shift_two_figures_recovered.png；仅供复审，未替换当前定稿。新流星雨尺寸606×852；人物已缩为远处小身影。新环绕轨道主体为塔罗牌而非原光球，新粒子墙改为塔罗屏障，新超质量体改为引力球吸引塔罗及塔尔塔罗斯。
+
+
+### 光谱偏移用户最终选择
+
+用户明确选用带人物版本（结城理＋暗影）：exec-3adf9ed4-078a-4f24-a6f5-61d6658bafa8.png。已原样复制 recovered 候选为 spectrum_shift.png 和 cand/spectrum_shift_a.png，覆盖前面的无人版本选择。用户选择优先于文档原有 no people 限制。SHA256：b81385aeb7560e3dd437aa99b4b15f736e43557b3eb3aace365a60575816d35d。
