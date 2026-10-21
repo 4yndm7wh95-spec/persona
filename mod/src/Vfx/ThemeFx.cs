@@ -101,8 +101,8 @@ public static class ThemeFx
 	// 0.80：门洞 ≈ 455px，比结城理（≈428px）略高；门框总高 ≈ 614px、宽 ≈ 410px —— 1080p 下门顶离顶部状态栏还有一段、左边不贴屏幕边
 	// （0.64 时门洞比人矮；0.86 时门顶和左边都贴到了屏幕边缘）
 	private const float DoorScale = 0.80f * Makoto.BodyScale;   // 跟人物一起缩（v0.13.7）
-	// 落点沿用用户认可的位置；可见门框直接使用认可图，门板在 GateView 中作铰链旋转。
-	private static readonly Vector2 DoorOffset = new(-185f, -70f);
+	// 按实机箭头向左 25、向下 60；整组门与出牌光点、回声共用此落点。
+	private static readonly Vector2 DoorOffset = new(-210f, -10f);
 
 	private sealed class Gate
 	{
