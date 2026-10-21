@@ -131,7 +131,7 @@ public static class CardFx
 		}
 
 		Extra x = style.Extra;
-		if (x.HasFlag(Extra.SkewBand) && !cutIn)            // 有眼神切入时不再叠蓝色色带
+		if (x.HasFlag(Extra.SkewBand) && !cutIn && CutInFx.Enabled)            // 有眼神切入时不再叠蓝色色带
 		{
 			Extras.SkewBand(front, new Extras.Caption(skill, persona, play.Card.Title));
 		}

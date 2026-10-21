@@ -30,6 +30,25 @@ public static class P3Settings
 		public bool DrawPileOrder { get; set; } = true;   // v0.14.98 抽牌堆按原版顺序排（SL 看抽牌顺序用）；false = 按类型分区
 	}
 
+	public static int Mode
+	{
+		get
+		{
+			Data d = Current;
+			bool[] flags = { d.AllOut, d.Victory, d.ShuffleTime, d.ShuffleFull, d.CutIn, d.SelectSummon, d.Architect, d.PileScreen, d.TipList, d.CursorSkin };
+			bool all = true, any = false;
+			foreach (bool flag in flags) { all &= flag; any |= flag; }
+			return all ? 1 : any ? 2 : 0;
+		}
+	}
+
+	public static void ApplyMode(bool enabled)
+	{
+		Data d = Current;
+		d.AllOut = d.Victory = d.ShuffleTime = d.ShuffleFull = d.CutIn = d.SelectSummon = d.Architect = d.PileScreen = d.TipList = d.CursorSkin = enabled;
+		Save();
+	}
+
 	private static Data? _data;
 
 	private static string Path => ProjectSettings.GlobalizePath("user://p3makoto_settings.json");

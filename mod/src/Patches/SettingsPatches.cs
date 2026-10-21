@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Nodes.Screens.Settings;
@@ -57,41 +58,89 @@ public static class P3SettingsSectionPatch
 		header.VerticalAlignment = VerticalAlignment.Center;
 		section.AddChild(header);
 
-		Label hint = new()
-		{
-			Text = Zh ? "设置自动保存。极速模式会跳过战斗动画。建筑师房间下次进入生效。"
-				: "Changes save automatically. Instant mode skips combat animations. Architect changes apply on the next visit.",
-			AutowrapMode = TextServer.AutowrapMode.WordSmart,
-		};
-		Style(hint, font, Mathf.Max(16, size - 8), new Color(color, 0.65f));
-		section.AddChild(hint);
-
 		P3Settings.Data d = P3Settings.Current;
-		Row(section, font, size, color, rowH, Zh ? "抽牌堆排序" : "Draw pile sorting", () => d.DrawPileOrder, v => d.DrawPileOrder = v, on => on ? (Zh ? "原版顺序" : "Original") : (Zh ? "按类型" : "By type"));
-		Row(section, font, size, color, rowH, Zh ? "精英/首领战结算动画" : "Elite / boss victory animation", () => d.AllOut, v => d.AllOut = v);
-		Row(section, font, size, color, rowH, Zh ? "胜利提示" : "Victory message", () => d.Victory, v => d.Victory = v);
+		List<Action> refreshers = new();
+		void RefreshAll() { foreach (Action refresh in refreshers) refresh(); }
+		BuildModes(section, font, size, rowH, refreshers, RefreshAll);
+		void Option(string text, Func<bool> get, Action<bool> set, Func<bool, string>? display = null) =>
+			Row(section, font, size, color, rowH, text, get, set, display, refreshers, RefreshAll);
+		Option( Zh ? "精英/首领战结算动画" : "Elite / boss victory animation", () => d.AllOut, v => d.AllOut = v);
+		Option( Zh ? "胜利提示" : "Victory message", () => d.Victory, v => d.Victory = v);
 		// One selector, keeping the existing saved flags compatible: Full -> Quick -> Off.
-		Row(section, font, size, color, rowH, Zh ? "选牌动画" : "Card reward animation", () => d.ShuffleTime, _ =>
+		Option( Zh ? "选牌动画" : "Card reward animation", () => d.ShuffleTime, _ =>
 		{
 			if (!d.ShuffleTime) { d.ShuffleTime = true; d.ShuffleFull = true; }
 			else if (d.ShuffleFull) d.ShuffleFull = false;
 			else d.ShuffleTime = false;
 		}, on => !on ? (Zh ? "关闭" : "Off") : d.ShuffleFull ? (Zh ? "完整" : "Full") : (Zh ? "精简" : "Quick"));
-		Row(section, font, size, color, rowH, Zh ? "召唤时眼部特写" : "Summon eye close-up", () => d.CutIn, v => d.CutIn = v);
-		Row(section, font, size, color, rowH, Zh ? "选人动画" : "Character select animation", () => d.SelectSummon, v => d.SelectSummon = v);
-		Row(section, font, size, color, rowH, Zh ? "建筑师房间动画" : "Architect room animation", () => d.Architect, v => d.Architect = v);
-		Row(section, font, size, color, rowH, Zh ? "牌堆界面样式" : "Pile screen style", () => d.PileScreen, v => d.PileScreen = v, StyleName);
-		Row(section, font, size, color, rowH, Zh ? "状态说明样式" : "Status tooltip style", () => d.TipList, v => d.TipList = v, StyleName);
-		Row(section, font, size, color, rowH, Zh ? "鼠标样式" : "Cursor style", () => d.CursorSkin, v =>
+		Option( Zh ? "召唤时眼部特写" : "Summon eye close-up", () => d.CutIn, v => d.CutIn = v);
+		Option( Zh ? "选人动画" : "Character select animation", () => d.SelectSummon, v => d.SelectSummon = v);
+		Option( Zh ? "建筑师房间动画" : "Architect room animation", () => d.Architect, v => d.Architect = v);
+		Option( Zh ? "牌堆界面样式" : "Pile screen style", () => d.PileScreen, v => d.PileScreen = v, StyleName);
+		Option( Zh ? "状态说明样式" : "Status tooltip style", () => d.TipList, v => d.TipList = v, StyleName);
+		Option( Zh ? "鼠标样式" : "Cursor style", () => d.CursorSkin, v =>
 		{
 			d.CursorSkin = v;
 			CursorPatch.RefreshExisting();
 		}, on => on ? (Zh ? "P3风格" : "P3 style") : (Zh ? "原版" : "Original"));
 	}
 
+	private static void BuildModes(VBoxContainer section, Font? font, int size, float rowH, List<Action> refreshers, Action refreshAll)
+	{
+		PanelContainer panel = new() { CustomMinimumSize = new Vector2(0f, rowH * 1.7f) };
+		panel.AddThemeStyleboxOverride("panel", new StyleBoxFlat { BgColor = Navy, BorderColor = Cyan, BorderWidthLeft = 6, BorderWidthTop = 2, BorderWidthBottom = 2, BorderWidthRight = 2, ContentMarginLeft = 24, ContentMarginRight = 20, ContentMarginTop = 16, ContentMarginBottom = 16 });
+		section.AddChild(panel);
+		HBoxContainer row = new();
+		row.AddThemeConstantOverride("separation", 14);
+		panel.AddChild(row);
+		Label label = new() { Text = Zh ? "模式" : "MODE", SizeFlagsHorizontal = Control.SizeFlags.ExpandFill, VerticalAlignment = VerticalAlignment.Center };
+		Style(label, font, size + 6, Cyan);
+		row.AddChild(label);
+		P3Settings.Data custom = System.Text.Json.JsonSerializer.Deserialize<P3Settings.Data>(System.Text.Json.JsonSerializer.Serialize(P3Settings.Current))!;
+		for (int i = 0; i < 3; i++)
+		{
+			int mode = i;
+			Button button = new() { Text = Zh ? new[] { "极简", "完整", "自定义" }[i] : new[] { "Minimal", "Full", "Custom" }[i], CustomMinimumSize = new Vector2(160f, rowH), ToggleMode = true };
+			button.AddThemeFontOverride("font", font ?? (Zh ? Vfx.Typo.CjkBold : Vfx.Typo.Barlow));
+			button.AddThemeFontSizeOverride("font_size", size + 2);
+			void Refresh()
+			{
+				bool selected = P3Settings.Mode == mode;
+				button.SetPressedNoSignal(selected);
+				StyleBoxFlat Box(Color bg, Color edge) => new() { BgColor = bg, BorderColor = edge, BorderWidthLeft = 2, BorderWidthRight = 2, BorderWidthTop = 2, BorderWidthBottom = 2, ContentMarginLeft = 14, ContentMarginRight = 14 };
+				button.AddThemeStyleboxOverride("normal", Box(Navy, Cyan));
+				button.AddThemeStyleboxOverride("pressed", Box(Cyan, Colors.White));
+				button.AddThemeStyleboxOverride("hover", Box(Navy.Lightened(0.2f), Colors.White));
+				button.AddThemeStyleboxOverride("hover_pressed", Box(Cyan.Lightened(0.1f), Colors.White));
+				button.AddThemeStyleboxOverride("focus", Box(Colors.Transparent, Colors.White));
+				button.AddThemeColorOverride("font_color", Colors.White);
+				button.AddThemeColorOverride("font_pressed_color", Navy);
+				button.AddThemeColorOverride("font_hover_pressed_color", Navy);
+			}
+			button.Pressed += () => ModEntry.Safe("settings mode", () =>
+			{
+				if (P3Settings.Mode == 2) custom = System.Text.Json.JsonSerializer.Deserialize<P3Settings.Data>(System.Text.Json.JsonSerializer.Serialize(P3Settings.Current))!;
+				if (mode < 2) P3Settings.ApplyMode(mode == 1);
+				else
+				{
+					P3Settings.Data d = P3Settings.Current;
+					d.AllOut = custom.AllOut; d.Victory = custom.Victory; d.ShuffleTime = custom.ShuffleTime; d.ShuffleFull = custom.ShuffleFull;
+					d.CutIn = custom.CutIn; d.SelectSummon = custom.SelectSummon; d.Architect = custom.Architect;
+					d.PileScreen = custom.PileScreen; d.TipList = custom.TipList; d.CursorSkin = custom.CursorSkin;
+					P3Settings.Save();
+				}
+				CursorPatch.RefreshExisting();
+				refreshAll();
+			});
+			refreshers.Add(Refresh);
+			Refresh();
+			row.AddChild(button);
+		}
+	}
+
 	private static string StyleName(bool on) => on ? (Zh ? "P3风格" : "P3 style") : (Zh ? "原版" : "Original");
 
-	private static void Row(VBoxContainer parent, Font? font, int size, Color color, float rowH, string text, Func<bool> get, Action<bool> set, Func<bool, string>? display = null)
+	private static void Row(VBoxContainer parent, Font? font, int size, Color color, float rowH, string text, Func<bool> get, Action<bool> set, Func<bool, string>? display = null, List<Action>? refreshers = null, Action? changed = null)
 	{
 		HBoxContainer row = new() { CustomMinimumSize = new Vector2(0f, rowH) };
 		parent.AddChild(row);
@@ -125,7 +174,9 @@ public static class P3SettingsSectionPatch
 			set(on);
 			P3Settings.Save();
 			Refresh();
+			changed?.Invoke();
 		});
+		refreshers?.Add(Refresh);
 		Refresh();
 		row.AddChild(toggle);
 	}
