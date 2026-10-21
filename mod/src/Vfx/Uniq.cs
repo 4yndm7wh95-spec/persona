@@ -70,10 +70,10 @@ public static class Uniq
 	/// 1.2 淬火：蒸汽喷涌、剑变成 P3 的青蓝，冰晶般的十字星闪；
 	/// 1.45 新剑立起、转向，化作一道青光飞进人物手里（被吸收的闪光 + 小冲击环）。
 	/// </summary>
-	public static void TheSmith(Control back, Control front, Vector2 center, float facing = 1f)
+	public static void TheSmith(Control back, Control front, Vector2 center)
 	{
-		Vector2 at = center + FxSpace.Vector(front, new Vector2(380f * facing, 50f));       // 剑胚中心：离人物足够远，法阵不碰到人物脚下
-		Vector2 floor = at + FxSpace.Vector(front, new Vector2(0f, 95f));
+		Vector2 at = center + new Vector2(380f, 50f);       // 剑胚中心：离人物足够远，法阵不碰到人物脚下
+		Vector2 floor = at + new Vector2(0f, 95f);
 		Color hot = new(1f, 0.5f, 0.12f), gold = new(1f, 0.82f, 0.4f);
 		const float total = 1.9f;
 
@@ -106,7 +106,7 @@ public static class Uniq
 		billet.Rotation = 0.04f;
 
 		// 锤柄握点在剑胚右侧：锤头从右上方抡下砸在剑胚上，永远不会扫到人物那一侧
-		Node2D hamRoot = Fx.Root(front, at + FxSpace.Vector(front, new Vector2(200f * facing, -30f)), "P3SmithHammer");
+		Node2D hamRoot = Fx.Root(front, at + new Vector2(200f, -30f), "P3SmithHammer");
 		Node2D ham = Hammer(hamRoot, 0.9f, Pal.Ice);
 		Sprite2D hamGlow = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(Pal.Cyan, 0.45f), Scale = Vector2.One * 2.5f, Position = new Vector2(0f, -170f) };
 		ham.AddChild(hamGlow);
@@ -128,7 +128,7 @@ public static class Uniq
 			});
 			Fx.FreeAfter(m, 0.32);
 		}
-		P3Fx.Ripple(back, at + FxSpace.Vector(front, new Vector2(0f, -40f)), 360f, 1.2f, 0.015f);
+		P3Fx.Ripple(back, at + new Vector2(0f, -40f), 360f, 1.2f, 0.015f);
 
 		float[] blows = { 0.35f, 0.6f, 0.85f, 1.1f };
 		for (int i = 0; i < blows.Length; i++)
@@ -137,7 +137,7 @@ public static class Uniq
 			bool big = k == 3;
 			Fx.After(billet, blows[i], "smith blow", () =>
 			{
-				Vector2 hit = at + FxSpace.Vector(front, new Vector2((big ? 0f : 10f + 15f * k) * facing, -20f));
+				Vector2 hit = at + new Vector2(big ? 0f : 10f + 15f * k, -20f);
 				Node2D sp = Fx.Root(front, hit, "P3SmithSparks");
 				Fx.Sparks(sp, hot, big ? 80 : 45, 220f, big ? 760f : 540f, 0.55f, gravity: 1000f, scaleMin: 0.08f, scaleMax: 0.28f,
 					ramp: new[] { new Color(1f, 0.97f, 0.8f), new Color(1f, 0.6f, 0.15f), new Color(0.6f, 0.1f, 0.05f, 0f) });
@@ -170,12 +170,12 @@ public static class Uniq
 					swing = ph < 0.55f ? Mathf.Lerp(strike, lift, Ease.OutCubic(ph / 0.55f)) : Mathf.Lerp(lift, strike, Ease.InCubic(Mathf.Clamp((ph - 0.55f) / 0.45f, 0f, 1f)));
 				}
 			}
-			hamRoot.Rotation = swing * facing;
-			hamRoot.Scale = new Vector2(facing, 1f) * (time > 0.85f ? 1.25f : 1f);
+			hamRoot.Rotation = swing;
+			hamRoot.Scale = Vector2.One * (time > 0.85f ? 1.25f : 1f);
 			hamRoot.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((time - 0.08f) / 0.08f, 0f, 1f) * (1f - Mathf.Clamp((time - 1.12f) / 0.12f, 0f, 1f)));
 		});
 
-		Vector2 hand = center + FxSpace.Vector(front, new Vector2(-10f * facing, 20f));
+		Vector2 hand = center + new Vector2(-10f, 20f);
 		Fx.Animate(billet, total, t =>
 		{
 			float time = t * total;
@@ -203,9 +203,9 @@ public static class Uniq
 			// 立起、飞进人物手里
 			float rise = Ease.OutBack(Mathf.Clamp((time - 1.42f) / 0.16f, 0f, 1f));
 			float fly = Ease.InCubic(Mathf.Clamp((time - 1.58f) / 0.2f, 0f, 1f));
-			billet.Rotation = (Mathf.Lerp(0.04f, -Mathf.Pi / 2f, rise) + fly * 1.2f) * facing;
-			billet.GlobalPosition = (at + FxSpace.Vector(front, new Vector2(0f, -60f * rise))).Lerp(hand, fly);
-			billet.Scale = new Vector2(facing, 1f) * (1f - 0.5f * fly);
+			billet.Rotation = Mathf.Lerp(0.04f, -Mathf.Pi / 2f, rise) + fly * 1.2f;
+			billet.GlobalPosition = (at + new Vector2(0f, -60f * rise)).Lerp(hand, fly);
+			billet.Scale = Vector2.One * (1f - 0.5f * fly);
 			billet.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.12f, 0f, 1f));
 
 			float fh = time < 0.05f ? 0f : time < 1.15f ? Ease.OutCubic(Mathf.Clamp((time - 0.05f) / 0.3f, 0f, 1f)) : 1f - Ease.InCubic(Mathf.Clamp((time - 1.15f) / 0.3f, 0f, 1f));
@@ -218,13 +218,13 @@ public static class Uniq
 		});
 		Fx.After(billet, 1.2, "smith quench", () =>
 		{
-			Node2D steam = Fx.Root(front, at + FxSpace.Vector(front, new Vector2(20f, -10f)), "P3SmithSteam");
+			Node2D steam = Fx.Root(front, at + new Vector2(20f, -10f), "P3SmithSteam");
 			GpuParticles2D e = Fx.Sparks(steam, Pal.White, 40, 60f, 220f, 0.8f, gravity: -260f, scaleMin: 0.4f, scaleMax: 1.0f,
 				ramp: new[] { new Color(1f, 1f, 1f, 0.7f), new Color(0.75f, 0.9f, 1f, 0f) });
 			((ParticleProcessMaterial)e.ProcessMaterial).EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box;
 			((ParticleProcessMaterial)e.ProcessMaterial).EmissionBoxExtents = new Vector3(110f, 8f, 0f);
 			Fx.FreeAfter(steam, 1.0);
-			Node2D star = Fx.Root(front, at + FxSpace.Vector(front, new Vector2(90f, 0f)), "P3SmithGlint");
+			Node2D star = Fx.Root(front, at + new Vector2(90f, 0f), "P3SmithGlint");
 			Fx.Poly(star, Fx.Star4(70f, 0.08f), Pal.White, additive: true);
 			Fx.Animate(star, 0.3f, t => { star.Scale = Vector2.One * Mathf.Sin(t * Mathf.Pi); star.Rotation = t * 0.8f; });
 			Fx.FreeAfter(star, 0.32);
@@ -267,11 +267,11 @@ public static class Uniq
 	}
 
 	/// <summary>武器库：人物身后浮现一排扇形排开的光剑（武器架），依次亮起，最后一齐插进他脚下的地面。</summary>
-	public static void Arsenal(Control back, Control front, Vector2 feet, Vector2 center, float facing = 1f)
+	public static void Arsenal(Control back, Control front, Vector2 feet, Vector2 center)
 	{
 		const int n = 7;
 		var swords = new List<Node2D>();
-		Node2D root = Fx.Root(back, center + FxSpace.Vector(front, new Vector2(-10f * facing, -40f)), "P3Arsenal");
+		Node2D root = Fx.Root(back, center + new Vector2(-10f, -40f), "P3Arsenal");
 		for (int i = 0; i < n; i++)
 		{
 			float a = Mathf.Lerp(-2.4f, -0.74f, i / (float)(n - 1));          // 扇形：从左上到右上
@@ -290,7 +290,7 @@ public static class Uniq
 				float a = Mathf.Lerp(-2.4f, -0.74f, i / (float)(n - 1));
 				float dive = Ease.InCubic(Mathf.Clamp((time - 0.8f) / 0.2f, 0f, 1f));
 				Vector2 home = Vector2.Right.Rotated(a) * (60f + 30f * on);
-				Vector2 ground = FxSpace.LocalVector(back, feet - root.GlobalPosition) + new Vector2((i - n / 2) * 46f, 0f);
+				Vector2 ground = feet - root.GlobalPosition + new Vector2((i - n / 2) * 46f, 0f);
 				swords[i].Position = home.Lerp(ground, dive);
 				swords[i].Rotation = Mathf.LerpAngle(a, Mathf.Pi / 2f, dive);
 				swords[i].Modulate = new Color(1f, 1f, 1f, on * (1f - Mathf.Clamp((time - 1.1f) / 0.2f, 0f, 1f)));
@@ -307,10 +307,9 @@ public static class Uniq
 	}
 
 	/// <summary>剑圣：三把剑的残影绕着人物旋转一圈（越转越快），最后合成一把，向前一指，剑尖一闪。</summary>
-	public static void SwordSage(Control back, Control front, Vector2 center, float facing = 1f)
+	public static void SwordSage(Control back, Control front, Vector2 center)
 	{
 		Node2D root = Fx.Root(front, center, "P3SwordSage");
-		root.Scale = new Vector2(facing, 1f);
 		var blades = new List<Node2D>();
 		for (int i = 0; i < 3; i++)
 		{
@@ -333,7 +332,7 @@ public static class Uniq
 		});
 		Fx.After(root, 1.0, "sage point", () =>
 		{
-			Vector2 tip = center + FxSpace.Vector(front, new Vector2(200f * facing, -50f));
+			Vector2 tip = center + new Vector2(200f, -50f);
 			P3Fx.Flash(front, tip, Pal.White, 180f, 0.2f);
 			P3Fx.SpeedLines(front, tip, Pal.Ice, 12, 30f, 260f, 0.3f);
 			Audio.Sfx.Play(Audio.Snd.Weak, 0.6f, pitch: 1.2f);
@@ -342,9 +341,9 @@ public static class Uniq
 	}
 
 	/// <summary>铸墙：身前的火花聚拢成一块块六边形钢板，咔哒咔哒拼成一面墙，最后整面一亮。</summary>
-	public static void Bulwark(Control front, Vector2 center, float facing = 1f)
+	public static void Bulwark(Control front, Vector2 center)
 	{
-		Vector2 wall = center + FxSpace.Vector(front, new Vector2(130f * facing, 0f));
+		Vector2 wall = center + new Vector2(130f, 0f);
 		var cells = new List<Vector2>();
 		for (int row = -2; row <= 2; row++)
 		{
@@ -354,7 +353,6 @@ public static class Uniq
 			}
 		}
 		Node2D root = Fx.Root(front, wall, "P3Bulwark");
-		root.Scale = new Vector2(facing, 1f);
 		for (int i = 0; i < cells.Count; i++)
 		{
 			Node2D tile = new() { Position = cells[i] + new Vector2(Fx.Rand(-200f, -80f), Fx.Rand(-160f, 160f)) };
@@ -374,7 +372,7 @@ public static class Uniq
 		}
 		Fx.After(root, 0.35 + cells.Count * 0.05, "bulwark lock", () =>
 		{
-			Bang(front, wall + FxSpace.Vector(front, new Vector2(26f * facing, 0f)), Pal.Ice, 0.8f);
+			Bang(front, wall + new Vector2(26f, 0f), Pal.Ice, 0.8f);
 			Audio.Sfx.Play(Audio.Snd.StarSpend, 0.7f, pitch: 0.75f);
 			Fx.Animate(root, 0.45f, t => root.Modulate = new Color(1f + 0.6f * (1f - t), 1f + 0.6f * (1f - t), 1f + 0.6f * (1f - t), 1f - Ease.InCubic(t)));
 		});
@@ -499,7 +497,7 @@ public static class Uniq
 		{
 			float time = t * total;
 			float inn = Ease.OutBack(Mathf.Clamp(time / 0.18f, 0f, 1f));
-			root.GlobalPosition = at + new Vector2(0f, -40f * (1f - inn) + 4f * Mathf.Sin(time * 5f));
+			root.Position = at + new Vector2(0f, -40f * (1f - inn) + 4f * Mathf.Sin(time * 5f));
 			root.Scale = new Vector2(Mathf.Max(0.05f, Mathf.Abs(Mathf.Cos((1f - inn) * Mathf.Pi))), 1f);
 			root.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.08f, 0f, 1f) * (1f - Mathf.Clamp((time - 0.18f - hold) / 0.2f, 0f, 1f)));
 		});
@@ -509,7 +507,6 @@ public static class Uniq
 	/// <summary>P3R 技能名小横幅（左上角）：蓝色斜切条 + 白色技能名 + 小号英文，从左滑入、停留、滑出。</summary>
 	public static void SkillBanner(Control front, string name, string latin, float hold)
 	{
-		front = FxSpace.Screen(front);
 		Vector2 size = front.GetViewportRect().Size;
 		Vector2 home = new(size.X * 0.03f, size.Y * 0.13f);
 		Node2D root = Fx.Root(front, home, "P3SkillBanner");
@@ -538,10 +535,10 @@ public static class Uniq
 	/// 微光：掌心托起一颗光球，光球一明一暗地"呼吸"三下，每亮一次就放出一圈十字星芒；周围一颗接一颗亮起闪烁的小星，
 	/// 萤火般的光点向上飘；最后光球分成两道光尾，一道飞向抽牌堆、一道绕回来落进手牌区（抽牌、放回）。
 	/// </summary>
-	public static void Glimmer(Control back, Control front, Vector2 center, Vector2 above, float facing = 1f)
+	public static void Glimmer(Control back, Control front, Vector2 center, Vector2 above)
 	{
 		// v0.14.20（用户：微光的亮斑挡住人物）：光球放到头顶上方、人物身后的一层，光晕也缩小
-		Vector2 at = above + FxSpace.Vector(front, new Vector2(10f * facing, -30f));
+		Vector2 at = above + new Vector2(10f, -30f);
 		Node2D orb = Fx.Root(back, at, "P3GlimmerOrb");
 		Sprite2D halo = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = Vector2.One * 3.2f, Modulate = new Color(Pal.Ice, 0.7f) };
 		orb.AddChild(halo);
@@ -677,7 +674,7 @@ public static class Uniq
 		Node2D knight = Fx.Root(front, Vector2.Zero, "P3PlotKnight");
 		Fx.Poly(knight, new[] { new Vector2(-14f, 0f), new Vector2(14f, 0f), new Vector2(12f, -20f), new Vector2(16f, -44f), new Vector2(-2f, -60f), new Vector2(-16f, -40f), new Vector2(-6f, -32f), new Vector2(-12f, -16f) }, new Color(0.85f, 0.92f, 1f));
 		Fx.Line(knight, new[] { new Vector2(-14f, 0f), new Vector2(14f, 0f), new Vector2(12f, -20f), new Vector2(16f, -44f), new Vector2(-2f, -60f), new Vector2(-16f, -40f), new Vector2(-6f, -32f), new Vector2(-12f, -16f) }, Pal.Royal, 2f, closed: true, additive: false);
-		Vector2 Cell((int, int) c) => board.ToGlobal(new Vector2(c.Item1 * cell, c.Item2 * cell));
+		Vector2 Cell((int, int) c) => board.GlobalPosition + new Vector2(c.Item1 * cell, c.Item2 * cell * 0.38f);
 		Fx.Animate(board, 1.5f, t =>
 		{
 			float time = t * 1.5f;
@@ -737,10 +734,10 @@ public static class Uniq
 	}
 
 	/// <summary>新生之喜：头顶一颗光蛋裂开，涌出一大群小蓝蝶和金色光屑，像烟花一样散开。</summary>
-	public static void BundleOfJoy(Control back, Control front, Vector2 head, float facing = 1f)
+	public static void BundleOfJoy(Control back, Control front, Vector2 head)
 	{
 		// 光蛋放在头顶左上方的空处（和其他物件同一位置），不挡脸
-		Vector2 at = head + FxSpace.Vector(front, new Vector2(-200f * facing, -150f));
+		Vector2 at = head + new Vector2(-200f, -150f);
 		at.Y = Mathf.Max(at.Y, 160f);
 		at.X = Mathf.Max(at.X, 120f);
 		Node2D egg = Fx.Root(front, at, "P3JoyEgg");
@@ -770,9 +767,9 @@ public static class Uniq
 	}
 
 	/// <summary>光谱偏移：一道白光从左上射进头顶的三棱镜，从另一侧散成一扇柔和的光谱（青 → 蓝 → 紫 → 金）。</summary>
-	public static void SpectrumShift(Control back, Control front, Vector2 head, float facing = 1f)
+	public static void SpectrumShift(Control back, Control front, Vector2 head)
 	{
-		Vector2 at = head + FxSpace.Vector(front, new Vector2(60f * facing, -150f));
+		Vector2 at = head + new Vector2(60f, -150f);
 		Node2D root = Fx.Root(back, at, "P3Prism");
 		Vector2[] tri = { new(0f, -60f), new(52f, 30f), new(-52f, 30f) };
 		// 入射光：抗锯齿多边形（Line2D 的抗锯齿在游戏里不生效，斜线有锯齿）
@@ -833,9 +830,9 @@ public static class Uniq
 	}
 
 	/// <summary>类星体：头顶一个极亮的点，上下喷出两道细长的喷流，绕着一圈压扁的吸积盘旋转。</summary>
-	public static void Quasar(Control back, Control front, Vector2 head, float facing = 1f)
+	public static void Quasar(Control back, Control front, Vector2 head)
 	{
-		Vector2 at = head + FxSpace.Vector(front, new Vector2(-30f * facing, -160f));
+		Vector2 at = head + new Vector2(-30f, -160f);
 		Node2D root = Fx.Root(back, at, "P3Quasar");
 		root.Rotation = 0.35f;
 		Node2D disk = new() { Scale = new Vector2(1f, 0.25f) };
@@ -991,14 +988,14 @@ public static class Uniq
 	}
 
 	/// <summary>共鸣：他身前荡出一组声波弧线（音叉般一层层），扫过敌人时敌人身上震一下、泛起涟漪。</summary>
-	public static void Resonance(Control back, Control front, Vector2 center, Vector2[] targets, float facing = 1f)
+	public static void Resonance(Control back, Control front, Vector2 center, Vector2[] targets)
 	{
 		for (int i = 0; i < 5; i++)
 		{
 			float d = 0.09f * i;
 			Fx.After(front, d, "resonance wave", () =>
 			{
-				Node2D arc = Fx.Root(front, center + FxSpace.Vector(front, new Vector2(40f * facing, 0f)), "P3ResonanceArc");
+				Node2D arc = Fx.Root(front, center + new Vector2(40f, 0f), "P3ResonanceArc");
 				var pts = new Vector2[17];
 				for (int k = 0; k <= 16; k++)
 				{
@@ -1022,19 +1019,18 @@ public static class Uniq
 	}
 
 	/// <summary>冲锋！！：前方地面卷起一道冲击波向敌人推进，速度线从身后掠过，扬尘一路翻起。</summary>
-	public static void Charge(Control back, Control front, Vector2 feet, Vector2 target, float facing = 1f)
+	public static void Charge(Control back, Control front, Vector2 feet, Vector2 target)
 	{
 		Vector2 size = front.GetViewportRect().Size;
-		P3Fx.SpeedLines(front, feet + FxSpace.Vector(front, new Vector2(-60f * facing, -160f)), Pal.Ice, 18, 80f, 700f, 0.4f);
-		Node2D wave = Fx.Root(front, feet + FxSpace.Vector(front, new Vector2(60f * facing, 0f)), "P3ChargeWave");
+		P3Fx.SpeedLines(front, feet + new Vector2(-60f, -160f), Pal.Ice, 18, 80f, 700f, 0.4f);
+		Node2D wave = Fx.Root(front, feet + new Vector2(60f, 0f), "P3ChargeWave");
 		Polygon2D crest = Fx.Poly(wave, new[] { new Vector2(-30f, 0f), new Vector2(0f, -90f), new Vector2(40f, -40f), new Vector2(60f, 0f) }, new Color(Pal.Ice, 0.8f), additive: true);
-		float startX = feet.X + FxSpace.Vector(front, new Vector2(60f * facing, 0f)).X;
-		float endX = Mathf.Clamp(target.X + FxSpace.Vector(front, new Vector2(120f * facing, 0f)).X, 40f, size.X - 40f);
+		float endX = Mathf.Min(target.X + 120f, size.X - 40f);
 		Fx.Animate(wave, 0.5f, t =>
 		{
 			float e = Ease.OutCubic(t);
-			wave.GlobalPosition = new Vector2(Mathf.Lerp(startX, endX, e), feet.Y);
-			wave.Scale = new Vector2(facing * (1f + t), 1f - 0.5f * t);
+			wave.GlobalPosition = new Vector2(Mathf.Lerp(feet.X + 60f, endX, e), feet.Y);
+			wave.Scale = new Vector2(1f + t, 1f - 0.5f * t);
 			wave.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(t));
 		});
 		for (int i = 0; i < 6; i++)
@@ -1082,9 +1078,9 @@ public static class Uniq
 	/// 五颗各不相同的行星（带环的、带卫星的、冰蓝 / 金 / 紫）拖着轨迹沿轨道绕行，越转越慢，最后一颗接一颗滑进同一条斜线；
 	/// 对齐的一瞬，一道光线贯穿所有行星（"SYZYGY"），行星依次闪亮；随后能量沿这条线倾泻进他的胸口，星象仪收拢消失。
 	/// </summary>
-	public static void Alignment(Control back, Control front, Vector2 above, Vector2 chest, float facing = 1f)
+	public static void Alignment(Control back, Control front, Vector2 above, Vector2 chest)
 	{
-		Vector2 at = above + FxSpace.Vector(front, new Vector2(-40f * facing, -10f));
+		Vector2 at = above + new Vector2(-40f, -10f);
 		at.Y = Mathf.Max(at.Y, 190f);
 		const float tilt = 0.32f;                          // 轨道面倾角（压扁比）
 		Node2D root = Fx.Root(back, at, "P3Orrery");
@@ -1316,10 +1312,10 @@ public static class Uniq
 	/// 最亮的一道正好穿过一颗极小的淡蓝色光点；一个取景框从大到小收拢锁定它，旁边浮出 "PALE BLUE DOT" 和距离读数；
 	/// 远处星星一颗颗亮起。最后光带先退去，蓝点独自闪两下熄灭。
 	/// </summary>
-	public static void PaleBlueDot(Control back, Control front, Vector2 above, float facing = 1f)
+	public static void PaleBlueDot(Control back, Control front, Vector2 above)
 	{
 		Vector2 size = front.GetViewportRect().Size;
-		Vector2 dotAt = above + FxSpace.Vector(front, new Vector2(220f * facing, -30f));
+		Vector2 dotAt = above + new Vector2(220f, -30f);
 		dotAt.Y = Mathf.Max(dotAt.Y, 160f);
 		Node2D root = Fx.Root(back, Vector2.Zero, "P3PaleBlueDot");
 		ColorRect rays = new() { Position = -size, Size = size * 3f, MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Shaders.PaleRays } };
@@ -1392,11 +1388,10 @@ public static class Uniq
 	// ══════════════════ 防御系 ══════════════════
 
 	/// <summary>招架：身前两把光剑交叉成 X 格挡，"铛"地一声火花四溅，随后剑身化光散去。</summary>
-	public static void Parry(Control front, Vector2 center, float facing = 1f)
+	public static void Parry(Control front, Vector2 center)
 	{
-		Vector2 at = center + FxSpace.Vector(front, new Vector2(110f * facing, -20f));
+		Vector2 at = center + new Vector2(110f, -20f);
 		Node2D root = Fx.Root(front, at, "P3Parry");
-		root.Scale = new Vector2(facing, 1f);
 		Node2D a = Sword(root, 170f, Pal.Cyan);
 		Node2D b = Sword(root, 170f, Pal.Cyan);
 		Fx.Animate(root, 0.8f, t =>
@@ -1422,7 +1417,7 @@ public static class Uniq
 	}
 
 	/// <summary>中子护盾：一圈中子小球高速绕身旋转、越压越近，最后"咔"地压成一层贴身的六角装甲，闪一下。</summary>
-	public static void NeutronAegis(Control back, Control front, Vector2 center, float facing = 1f)
+	public static void NeutronAegis(Control back, Control front, Vector2 center)
 	{
 		Node2D root = Fx.Root(front, center, "P3Neutron");
 		var dots = new List<Node2D>();
@@ -1448,7 +1443,7 @@ public static class Uniq
 		Fx.After(root, 0.9, "neutron lock", () =>
 		{
 			root.QueueFree();
-			Extras.HexShield(front, center, 1.4f, false, 0.8f, facing);
+			Extras.HexShield(front, center, 1.4f, false, 0.8f);
 			Bang(front, center, Pal.Ice, 0.9f);
 			Shake(ShakeStrength.Medium);
 			Audio.Sfx.Play(Audio.Snd.StarSpend, 0.8f, pitch: 0.6f);
@@ -1456,11 +1451,10 @@ public static class Uniq
 	}
 
 	/// <summary>所向无敌（物理反射 Tetrakarn）：身前竖起一面由大块晶体拼成的护壁，晶面一道高光扫过，最后整面一亮。</summary>
-	public static void Tetrakarn(Control front, Vector2 center, float facing = 1f)
+	public static void Tetrakarn(Control front, Vector2 center)
 	{
-		Vector2 at = center + FxSpace.Vector(front, new Vector2(130f * facing, -10f));
+		Vector2 at = center + new Vector2(130f, -10f);
 		Node2D root = Fx.Root(front, at, "P3Tetrakarn");
-		root.Scale = new Vector2(facing, 1f);
 		var shards = new List<Polygon2D>();
 		Vector2[][] facets =
 		{
@@ -1493,9 +1487,9 @@ public static class Uniq
 	}
 
 	/// <summary>倒映（魔法反射 Makarakarn）：身前立起一面细长的镜子，镜中倒映出一道紫青色的光，镜面高光从下扫到上。</summary>
-	public static void Makarakarn(Control front, Vector2 center, float facing = 1f)
+	public static void Makarakarn(Control front, Vector2 center)
 	{
-		Vector2 at = center + FxSpace.Vector(front, new Vector2(130f * facing, -10f));
+		Vector2 at = center + new Vector2(130f, -10f);
 		Node2D root = Fx.Root(front, at, "P3Makarakarn");
 		Vector2[] frame = { new(-38f, -170f), new(38f, -170f), new(38f, 170f), new(-38f, 170f) };
 		Fx.Poly(root, frame, new Color(0.35f, 0.25f, 0.7f, 0.4f), additive: true);
@@ -1530,7 +1524,7 @@ public static class Uniq
 			{
 				float time = t * 1.3f;
 				float drop = Ease.InCubic(Mathf.Clamp(time / 0.2f, 0f, 1f));
-				root.GlobalPosition = ground + new Vector2(0f, -600f * (1f - drop));
+				root.Position = ground + new Vector2(0f, -600f * (1f - drop));
 				float lean = Ease.OutBack(Mathf.Clamp((time - 0.3f) / 0.2f, 0f, 1f));
 				root.Rotation = s * -0.28f * lean;
 				root.Modulate = new Color(1f, 1f, 1f, drop * (1f - Mathf.Clamp((time - 1.0f) / 0.3f, 0f, 1f)));
@@ -1695,9 +1689,9 @@ public static class Uniq
 		{
 			return;
 		}
-		float minX = targets.Min(t => P3Makoto.Core.Makoto.Feet(t).X), maxX = targets.Max(t => P3Makoto.Core.Makoto.Feet(t).X);
+		float minX = targets.Min(t => t.GetBottomOfHitbox().X), maxX = targets.Max(t => t.GetBottomOfHitbox().X);
 		float top = targets.Min(t => t.GetTopOfHitbox().Y);
-		float ground = targets.Average(t => P3Makoto.Core.Makoto.Feet(t).Y);
+		float ground = targets.Average(t => t.GetBottomOfHitbox().Y);
 		Slab sl = new()
 		{
 			Targets = targets,
@@ -1945,7 +1939,7 @@ public static class Uniq
 				beam.Scale = new Vector2(1f - 0.6f * u, 1f);
 			});
 			Fx.FreeAfter(beam, 0.3);
-			Motifs.GroundCrack(front, P3Makoto.Core.Makoto.Feet(t), 1.2f);
+			Motifs.GroundCrack(front, t.GetBottomOfHitbox(), 1.2f);
 			Squash(t);
 		}
 		if (GodotObject.IsInstanceValid(sl.Shadow))

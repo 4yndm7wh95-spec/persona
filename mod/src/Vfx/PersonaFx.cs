@@ -79,7 +79,7 @@ public static class PersonaFx
 		}
 		Vector2 feet = Makoto.Feet(caster);
 		Vector2 center = Makoto.Center(caster);
-		float height = Mathf.Max(260f, FxSpace.LocalVector(back, feet - center).Y * 2.1f) * 1.7f;   // Thanatos 显示高度：约结城理的 1.7 倍
+		float height = Mathf.Max(260f, (feet.Y - center.Y) * 2.1f) * 1.7f;   // Thanatos 显示高度：约结城理的 1.7 倍
 		float scale = height / FigureHeight;
 		Vector2 home = center + Makoto.Offset(caster, new Vector2(-height * 0.2f, -height * 0.18f));
 		Node2D root = Fx.Root(back, home, "P3Thanatos");
@@ -191,7 +191,7 @@ public static class PersonaFx
 		}
 		Vector2 feet = Makoto.Feet(caster);
 		Vector2 center = Makoto.Center(caster);
-		float height = Mathf.Max(260f, FxSpace.LocalVector(back, feet - center).Y * 2.1f) * (big ? 1.6f : 1.35f);
+		float height = Mathf.Max(260f, (feet.Y - center.Y) * 2.1f) * (big ? 1.6f : 1.35f);
 		Vector2 home = center + Makoto.Offset(caster, new Vector2(-height * 0.18f, -height * 0.16f));
 		Node2D root = Fx.Root(back, home, "P3PersonaCharge");
 		root.Scale = new Vector2(Makoto.Facing(caster), 1f) * (height / FigureHeight);
@@ -243,7 +243,7 @@ public static class PersonaFx
 		}
 		Vector2 feet = Makoto.Feet(caster);
 		Vector2 center = Makoto.Center(caster);
-		float height = Mathf.Max(260f, FxSpace.LocalVector(back, feet - center).Y * 2.1f) * 1.6f;
+		float height = Mathf.Max(260f, (feet.Y - center.Y) * 2.1f) * 1.6f;
 		Vector2 home = center + Makoto.Offset(caster, new Vector2(-height * 0.22f, -height * 0.2f));
 		Node2D root = Fx.Root(back, home, "P3PersonaApparition");
 		root.Scale = new Vector2(Makoto.Facing(caster), 1f) * (height / FigureHeight);

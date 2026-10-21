@@ -9,10 +9,10 @@ public static class Extras
 	/// 六边形蜂巢护盾（Tetrakarn 风格）：在角色前方的椭圆区域内，六边形从中心向外波浪式点亮，
 	/// 停留片刻后自外向内熄灭。reflect = true 时为 Makarakarn 的紫粉色。
 	/// </summary>
-	public static void HexShield(Control layer, Vector2 center, float scale = 1f, bool reflect = false, float hold = 0.45f, float facing = 1f)
+	public static void HexShield(Control layer, Vector2 center, float scale = 1f, bool reflect = false, float hold = 0.45f)
 	{
 		Color tint = reflect ? new Color("e07bff") : Pal.Cyan;
-		Node2D root = Fx.Root(layer, center + FxSpace.Vector(layer, new Vector2(95f * scale * facing, 0f)), "P3HexShield");
+		Node2D root = Fx.Root(layer, center + new Vector2(95f * scale, 0f), "P3HexShield");
 		float r = 24f * scale;
 		float w = Mathf.Sqrt(3f) * r;
 		float total = 0.35f + hold + 0.35f;
@@ -48,8 +48,8 @@ public static class Extras
 				});
 			}
 		}
-		P3Fx.Ripple(layer, center + FxSpace.Vector(layer, new Vector2(95f * scale * facing, 0f)), 420f * scale, 0.6f, 0.025f);
-		P3Fx.Flash(layer, center + FxSpace.Vector(layer, new Vector2(95f * scale * facing, 0f)), tint, 300f * scale, 0.25f);
+		P3Fx.Ripple(layer, center + new Vector2(95f * scale, 0f), 420f * scale, 0.6f, 0.025f);
+		P3Fx.Flash(layer, center + new Vector2(95f * scale, 0f), tint, 300f * scale, 0.25f);
 		Fx.FreeAfter(root, total + 0.1);
 	}
 
@@ -90,7 +90,7 @@ public static class Extras
 	public static void PalmAfterglow(Control layer, MegaCrit.Sts2.Core.Nodes.Combat.NCreature caster)
 	{
 		Vector2 feet = P3Makoto.Core.Makoto.Feet(caster), head = P3Makoto.Core.Makoto.Head(caster);
-		float h = Mathf.Max(FxSpace.LocalVector(layer, feet - head).Y, 120f);
+		float h = Mathf.Max(feet.Y - head.Y, 120f);
 		Vector2 from = feet + P3Makoto.Core.Makoto.Offset(caster, new Vector2(0.37f, -0.9f) * h);
 		Vector2 to = feet + P3Makoto.Core.Makoto.Offset(caster, new Vector2(0.23f, -0.6f) * h);
 		Vector2 ctrl = from + P3Makoto.Core.Makoto.Offset(caster, new Vector2(0.1f * h, 0.2f * h));
@@ -145,7 +145,7 @@ public static class Extras
 			float time = t * total;
 			float flip = Ease.OutExpo(Mathf.Min(1f, time / 0.35f));
 			card.Scale = new Vector2(Mathf.Cos((1f - flip) * Mathf.Pi * 0.5f), 1f) * Mathf.Lerp(0.8f, 1f, flip);
-			root.GlobalPosition = at + FxSpace.Vector(layer, new Vector2(0f, -40f * Ease.OutCubic(t)));
+			root.Position = new Vector2(0f, -40f * Ease.OutCubic(t));
 			glow.Modulate = new Color(tint, 0.35f + 0.25f * Mathf.Sin(time * 12f));
 		});
 		Fx.After(layer, total, "tarot shatter", () =>
@@ -235,7 +235,6 @@ public static class Extras
 	/// </summary>
 	public static void DarkHour(Control layer, float duration = 2.2f)
 	{
-		layer = FxSpace.Screen(layer);
 		Vector2 size = layer.GetViewportRect().Size;
 		// 放在人物身后的特效层（不用 TopLevel：TopLevel 会画到所有人物上面）。该层在可缩放 / 震屏的场景容器里，染色矩形放大到三倍屏幕保证盖满
 		Node2D root = Fx.Root(layer, Vector2.Zero, "P3DarkHour");
@@ -271,7 +270,6 @@ public static class Extras
 	/// </summary>
 	public static void SkewBand(Control layer, Caption? caption = null, float yRatio = 0.17f, float hold = 0.6f, Color? tint = null)
 	{
-		layer = FxSpace.Screen(layer);
 		Vector2 size = layer.GetViewportRect().Size;
 		float h = size.Y * 0.15f, lean = h * 0.6f;
 		float y = size.Y * yRatio, top = y - h / 2f, bottom = y + h / 2f;
@@ -475,14 +473,14 @@ public static class Extras
 			float x = Mathf.Lerp(-110f, 110f, n == 1 ? 0.5f : i / (float)(n - 1)) + Fx.Rand(-14f, 14f);
 			float delay = 0.06f * i + Fx.Rand(0f, 0.08f);
 			float size = Fx.Rand(26f, 40f) * (big ? 1.2f : 1f);
-			Node2D arrow = Fx.Root(front, feet + FxSpace.Vector(front, new Vector2(x, -20f)), "P3ChargeArrow");
+			Node2D arrow = Fx.Root(front, feet + new Vector2(x, -20f), "P3ChargeArrow");
 			Vector2[] chev = { new(0f, -size), new(size * 0.8f, -size * 0.1f), new(size * 0.8f, size * 0.35f), new(0f, -size * 0.45f), new(-size * 0.8f, size * 0.35f), new(-size * 0.8f, -size * 0.1f) };
 			Vector2[] core = { new(0f, -size * 0.78f), new(size * 0.5f, -size * 0.12f), new(size * 0.5f, size * 0.08f), new(0f, -size * 0.42f), new(-size * 0.5f, size * 0.08f), new(-size * 0.5f, -size * 0.12f) };
 			Fx.Poly(arrow, chev, new Color(red, 0.95f), additive: true);
 			Fx.Poly(arrow, core, new Color(1f, 0.9f, 0.88f), additive: true);
 			arrow.Modulate = new Color(1f, 1f, 1f, 0f);
 			Vector2 from = arrow.Position;
-			float rise = FxSpace.LocalVector(front, feet - head).Y + Fx.Rand(40f, 120f);
+			float rise = (feet.Y - head.Y) + Fx.Rand(40f, 120f);
 			Fx.Animate(arrow, 0.75f + delay, t =>
 			{
 				float time = t * (0.75f + delay) - delay;
@@ -517,7 +515,7 @@ public static class Extras
 			{
 				float time = t * 1.1f;
 				float inn = Ease.OutBack(Mathf.Clamp(time / 0.14f, 0f, 1f));
-				tag.GlobalPosition = home + new Vector2(-50f * (1f - inn), -14f * Ease.OutCubic(t));
+				tag.Position = home + new Vector2(-50f * (1f - inn), -14f * Ease.OutCubic(t));
 				tag.Modulate = new Color(1f, 1f, 1f, inn * (1f - Mathf.Clamp((time - 0.85f) / 0.25f, 0f, 1f)));
 				float sw = Mathf.Clamp((time - 0.16f) / 0.3f, 0f, 1f);
 				float x0 = Mathf.Lerp(-30f, 200f, Ease.InOutCubic(sw));
@@ -553,7 +551,7 @@ public static class Extras
 	/// <summary>锻造增益的细节层（v0.14.22）：起势收束、红色气焰、身后剑印、余烬。都在人物身后或很细，不挡人。</summary>
 	private static void ChargeDetails(MegaCrit.Sts2.Core.Nodes.Combat.NCreature caster, Control front, Control back, Vector2 feet, Vector2 head, Vector2 center, Color red, Color deep, bool big)
 	{
-		float bodyH = Mathf.Max(200f, FxSpace.LocalVector(back, feet - head).Y);
+		float bodyH = Mathf.Max(200f, feet.Y - head.Y);
 		// 1. 起势（0~0.2s）：12 道细红光从四周收向胸口（身后层）
 		for (int i = 0; i < 12; i++)
 		{
@@ -578,13 +576,13 @@ public static class Extras
 			x = Mathf.Sign(x) * Mathf.Pow(Mathf.Abs(x), 0.6f) * 95f;
 			Color c = Fx.Rng.Next(3) == 0 ? new Color(1f, 0.55f, 0.5f) : red;
 			Sprite2D w = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(c, 0f) };
-			Node2D wr = Fx.Root(back, feet + FxSpace.Vector(back, new Vector2(x, -10f)), "P3ChargeWisp");
+			Node2D wr = Fx.Root(back, feet + new Vector2(x, -10f), "P3ChargeWisp");
 			wr.AddChild(w);
 			float rise = bodyH * Fx.Rand(0.6f, 1.05f), life = Fx.Rand(0.4f, 0.6f), sx = Fx.Rand(0.5f, 0.9f);
 			Fx.Animate(wr, delay + life, t =>
 			{
 				float u = Mathf.Clamp((t * (delay + life) - delay) / life, 0f, 1f);
-				wr.GlobalPosition = feet + FxSpace.Vector(back, new Vector2(x * (1f - 0.25f * u), -10f - rise * Ease.OutCubic(u)));
+				wr.Position = feet + new Vector2(x * (1f - 0.25f * u), -10f - rise * Ease.OutCubic(u));
 				w.Scale = new Vector2(sx * (1f - 0.5f * u), 1.2f + 3.2f * Mathf.Sin(u * Mathf.Pi));
 				w.Modulate = new Color(c, u <= 0f ? 0f : 0.45f * Mathf.Sin(u * Mathf.Pi));
 			});
@@ -606,7 +604,7 @@ public static class Extras
 			float time = t * 1.25f;
 			float inn = Ease.OutCubic(Mathf.Clamp((time - 0.15f) / 0.25f, 0f, 1f));
 			float outk = Ease.InCubic(Mathf.Clamp((time - 0.9f) / 0.35f, 0f, 1f));
-			sig.GlobalPosition = home + FxSpace.Vector(back, new Vector2(0f, 40f * (1f - inn) - 20f * outk));
+			sig.Position = home + new Vector2(0f, 40f * (1f - inn) - 20f * outk);
 			sig.Scale = Vector2.One * bs * (0.9f + 0.1f * inn + 0.08f * outk);
 			sig.Modulate = new Color(1f, 1f, 1f, inn * (1f - outk));
 			// 亮光沿剑脊从剑尖扫到剑柄（0.38~0.62s，和标签落定差不多同时）

@@ -340,7 +340,7 @@ public static class Grand
 	/// <summary>P3R 的 -kaja / -nda：一串 V 形箭头光纹穿过身体上升（up）/ 下压，脚下光环 + 头旁 "ATTACK UP" 字样。</summary>
 	public static void StatBuff(Control layer, Vector2 center, Vector2 feet, Vector2 head, string label, Color tint, bool up, float s = 1f)
 	{
-		float height = Mathf.Max(260f, FxSpace.LocalVector(layer, feet - head).Y + 80f) * s;
+		float height = Mathf.Max(260f, feet.Y - head.Y + 80f) * s;
 		Node2D root = Fx.Root(layer, feet, "P3StatBuff");
 		Node2D ring = new() { Scale = new Vector2(1f, 0.3f) };
 		root.AddChild(ring);

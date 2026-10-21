@@ -188,7 +188,7 @@ public static class GreatSeal
 				{
 					continue;
 				}
-				Vector2 feet = P3Makoto.Core.Makoto.Feet(c);
+				Vector2 feet = c.GetBottomOfHitbox();
 				float h = Mathf.Max(200f, (feet.Y - c.VfxSpawnPosition.Y) * 2f);
 				Sprite2D back = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = new Vector2(h * 0.9f, h * 1.4f) / dotSize, Modulate = new Color(Moon, 0.22f) };
 				Sprite2D glow = new() { Texture = Fx.SoftDot, Material = Fx.Additive, Scale = new Vector2(h * 0.5f, h * 0.14f) / dotSize, Modulate = new Color(0.55f, 1f, 0.65f, 0.25f) };
@@ -277,7 +277,7 @@ public static class GreatSeal
 				{
 					continue;
 				}
-				Vector2 feet = P3Makoto.Core.Makoto.Feet(c);
+				Vector2 feet = c.GetBottomOfHitbox();
 				Vector2 toMoon = (moonAt - feet).Normalized();
 				back.Position = feet + new Vector2(toMoon.X * 30f, -h * 0.5f);
 				back.Modulate = new Color(Moon, 0.18f + 0.06f * br + 0.3f * bolt);
@@ -346,7 +346,7 @@ void fragment() {
 				continue;
 			}
 			c.Visuals.Modulate = new Color(0.8f, 0.93f, 0.84f);
-			Vector2 feet = P3Makoto.Core.Makoto.Feet(c);
+			Vector2 feet = c.GetBottomOfHitbox();
 			float h = Mathf.Max(200f, (feet.Y - c.VfxSpawnPosition.Y) * 2f);
 			// 月光背光：偏向月亮一侧的竖长柔光
 			Vector2 toMoon = (moonAt - feet).Normalized();
@@ -426,7 +426,7 @@ void fragment() {
 		{
 			if (GodotObject.IsInstanceValid(c))
 			{
-				sum += P3Makoto.Core.Makoto.Feet(c).Y;
+				sum += c.GetBottomOfHitbox().Y;
 				cnt++;
 			}
 		}

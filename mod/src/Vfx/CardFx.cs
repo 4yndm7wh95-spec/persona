@@ -161,7 +161,7 @@ public static class CardFx
 		}
 		if (x.HasFlag(Extra.ShieldSelf))
 		{
-			Fx.After(front, 0.2, "shield self", () => Extras.HexShield(front, Makoto.Center(caster), 1.1f, hold: 0.6f, facing: Makoto.Facing(caster)));
+			Fx.After(front, 0.2, "shield self", () => Extras.HexShield(front, Makoto.Center(caster), 1.1f, hold: 0.6f));
 		}
 		if (x.HasFlag(Extra.ForgeSelf))
 		{
@@ -188,7 +188,7 @@ public static class CardFx
 		{
 			foreach (NCreature t in targets)
 			{
-				Extras.BuffArrows(front, t.VfxSpawnPosition, P3Makoto.Core.Makoto.Feet(t), up: false);
+				Extras.BuffArrows(front, t.VfxSpawnPosition, t.GetBottomOfHitbox(), up: false);
 			}
 		}
 		if (x.HasFlag(Extra.BlackHoleAtTarget))
@@ -357,7 +357,7 @@ public static class CardFx
 			{
 				if (room.GetCreatureNode(c) is NCreature n)
 				{
-					Vector2 at = n.VfxSpawnPosition, feet = P3Makoto.Core.Makoto.Feet(n);
+					Vector2 at = n.VfxSpawnPosition, feet = n.GetBottomOfHitbox();
 					StarOrbit.Throw(thrower, at, () => Elements.Hit(Element.Star, front, at, feet, scale));
 				}
 			}
@@ -379,7 +379,7 @@ public static class CardFx
 					Audio.Sfx.Element(style.Hit, scale);
 					continue;
 				}
-				Elements.Hit(style.Hit, front, node.VfxSpawnPosition, P3Makoto.Core.Makoto.Feet(node), scale,
+				Elements.Hit(style.Hit, front, node.VfxSpawnPosition, node.GetBottomOfHitbox(), scale,
 					Makoto.Node(card.Owner) is NCreature attacker ? Makoto.Facing(attacker) : 1f);
 				if (CardStyles.Summons(card) && !c.IsPlayer)
 				{
@@ -399,7 +399,7 @@ public static class CardFx
 		string name = card.GetType().Name;
 		bool reflect = name == "Reflect";
 		bool big = name is "IAmInvincible" or "Bulwark";
-		Extras.HexShield(front, Makoto.Center(target), big ? 1.6f : 1.25f, reflect, big ? 0.7f : 0.5f, Makoto.Facing(target));
+		Extras.HexShield(front, target.VfxSpawnPosition, big ? 1.6f : 1.25f, reflect, big ? 0.7f : 0.5f);
 	}
 
 	public static void OnForge(NCreature caster)

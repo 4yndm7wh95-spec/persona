@@ -410,7 +410,7 @@ public static class Motifs
 			rays.Rotation = time * 1.4f;
 			float up = Ease.OutBack(Mathf.Clamp(time / 0.2f, 0f, 1f));
 			root.Scale = Vector2.One * Mathf.Max(0.05f, up);
-			root.GlobalPosition = sunAt + FxSpace.Vector(back, new Vector2(0f, 40f * (1f - Ease.OutCubic(Mathf.Clamp(time / 0.2f, 0f, 1f)))));
+			root.Position = new Vector2(0f, 40f * (1f - Ease.OutCubic(Mathf.Clamp(time / 0.2f, 0f, 1f))));
 			root.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(Mathf.Clamp((time - 0.5f) / 0.25f, 0f, 1f)));
 		});
 		Fx.FreeAfter(root, total + 0.05);
@@ -558,7 +558,7 @@ public static class Motifs
 		{
 			if (GodotObject.IsInstanceValid(n) && n.Entity.IsPlayer && P3Makoto.Core.Makoto.Is(n.Entity.Player))
 			{
-				ForgeSpark(front, P3Makoto.Core.Makoto.Center(n) + P3Makoto.Core.Makoto.Offset(n, new Vector2(100f, -20f)), 0.8f * s);
+				ForgeSpark(front, P3Makoto.Core.Makoto.Center(n) + new Vector2(100f, -20f), 0.8f * s);
 				return;
 			}
 		}

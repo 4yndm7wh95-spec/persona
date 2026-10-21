@@ -35,7 +35,7 @@ public static class Rares
 		}
 		Vector2 size = front.GetViewportRect().Size;
 		float gx = targets.Average(t => t.VfxSpawnPosition.X);
-		float gy = targets.Max(t => P3Makoto.Core.Makoto.Feet(t).Y);
+		float gy = targets.Max(t => t.GetBottomOfHitbox().Y);
 		Vector2 ground = new(gx, gy);
 		Vector2 start = new(Mathf.Min(gx + 700f, size.X + 250f), -260f);
 		// 天色先压暗一下，月亮出现在右上方
