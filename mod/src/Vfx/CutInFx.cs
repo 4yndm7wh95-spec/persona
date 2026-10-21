@@ -64,6 +64,8 @@ public static class CutInFx
 			onFire?.Invoke(0f);
 			return;
 		}
+		back = FxSpace.Screen(back);
+		front = FxSpace.Screen(front);
 		BeginOn(back, front, caster.GetInstanceId(), title, persona, onFire,
 			() => GodotObject.IsInstanceValid(caster) ? Makoto.Head(caster) : new Vector2(back.GetViewportRect().Size.X * 0.3f, back.GetViewportRect().Size.Y * 0.4f),
 			Fast ? 0.3 : 0.65);

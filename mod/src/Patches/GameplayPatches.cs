@@ -412,7 +412,7 @@ public static class BlockPopupPatch
 		{
 			if (target.IsPlayer && Makoto.Is(target.Player) && NCombatRoom.Instance?.GetCreatureNode(target) is NCreature node && Makoto.FxLayer() is Godot.Control front)
 			{
-				Popups.Block(front, Makoto.Center(node));
+				Popups.Block(front, Makoto.Center(node), facing: Makoto.Facing(node));
 				replaced = true;
 			}
 		});

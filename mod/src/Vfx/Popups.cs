@@ -221,7 +221,7 @@ public static class Popups
 			float slam = Ease.OutBack(Mathf.Clamp(time / 0.12f, 0f, 1f));
 			root.Scale = Vector2.One * Mathf.Lerp(1.8f, 1f, slam);
 			flash.Modulate = new Color(1f, 1f, 1f, Mathf.Max(0f, 1f - time / 0.2f));
-			root.Position = home + new Vector2(30f, -18f) * Mathf.Clamp((time - 0.12f) / 0.8f, 0f, 1f);
+			root.GlobalPosition = home + new Vector2(30f, -18f) * Mathf.Clamp((time - 0.12f) / 0.8f, 0f, 1f);
 			root.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.04f, 0f, 1f) * (1f - Ease.InCubic(Mathf.Clamp((time - 0.78f) / 0.22f, 0f, 1f))));
 		});
 		Fx.FreeAfter(root, total + 0.05f);
@@ -234,10 +234,10 @@ public static class Popups
 	/// · 冲击：半透明白色护盾泡猛地胀开（带几道弧形流光）→ 一圈细长的放射火花（白芯 → 黄 → 橙粉，越往外越细越暗）+ 中心黄光；
 	/// · 余韵：人物身后一团红橙色柔光慢慢褪去，地上几片青色碎片，几片黄绿色小纸屑飘落；字停留约 0.7s 缓慢漂移后淡出。
 	/// </summary>
-	public static void Block(Control layer, Vector2 center, float s = 1f)
+	public static void Block(Control layer, Vector2 center, float s = 1f, float facing = 1f)
 	{
-		Vector2 impact = center + new Vector2(50f, -10f) * s;              // 冲击点：身前（敌人在右边）
-		Vector2 home = center + new Vector2(62f, -62f) * s;                // 字：胸口偏上、稍微靠前
+		Vector2 impact = center + FxSpace.Vector(layer, new Vector2(50f * facing, -10f) * s);              // 冲击点：身前（敌人在右边）
+		Vector2 home = center + FxSpace.Vector(layer, new Vector2(62f * facing, -62f) * s);                // 字：胸口偏上、稍微靠前
 		// v0.14.62（玩家：格挡多段攻击时掉帧）：连续格挡（上一次还不到 0.7s）时
 		// · 字只留一个：上一个 BLOCK 立刻淡掉，新的照常弹出（P3R 里也只看到一个字）；
 		// · 冲击用轻量版：护盾泡 + 8 道火花（每道 2 段）+ 中心光，不再叠碎片、纸屑、身后柔光。
@@ -289,7 +289,7 @@ public static class Popups
 			float pop = Ease.OutBack(Mathf.Clamp(time / 0.1f, 0f, 1f));
 			float kick = time > 0.05f ? Mathf.Exp(-(time - 0.05f) * 18f) * 0.12f : 0f;   // 冲击那一下被顶得一颤
 			root.Scale = Vector2.One * (Mathf.Lerp(1.5f, 1f, pop) + kick);
-			root.Position = home + new Vector2(10f * Ease.OutCubic(Mathf.Clamp(time / total, 0f, 1f)), -16f * Ease.OutCubic(Mathf.Clamp((time - 0.1f) / 0.9f, 0f, 1f))) * s;
+			root.GlobalPosition = home + new Vector2(10f * Ease.OutCubic(Mathf.Clamp(time / total, 0f, 1f)), -16f * Ease.OutCubic(Mathf.Clamp((time - 0.1f) / 0.9f, 0f, 1f))) * s;
 			root.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.04f, 0f, 1f) * (1f - Ease.InCubic(Mathf.Clamp((time - 0.78f) / 0.22f, 0f, 1f))));
 		});
 		Fx.FreeAfter(root, total + 0.05);

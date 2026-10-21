@@ -42,7 +42,7 @@ public static class Lunar
 			return;
 		}
 		Vector2 at = target.VfxSpawnPosition;
-		Moon m = new() { Target = at, Feet = target.GetBottomOfHitbox(), Phase = 0.18f, Last = Time.GetTicksMsec() };
+		Moon m = new() { Target = at, Feet = P3Makoto.Core.Makoto.Feet(target), Phase = 0.18f, Last = Time.GetTicksMsec() };
 		m.Root = Fx.Root(back, MoonPos(at) + new Vector2(0f, 60f), "P3LunarMoon");
 		m.Quad = Fx.ShaderQuad(m.Root, Shaders.MoonPhase, 300f);
 		Fx.SetParam(m.Quad, "phase", m.Phase);

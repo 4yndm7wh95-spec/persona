@@ -161,21 +161,24 @@ public static class Makoto
 	public static float Facing(NCreature node) => node.Body.GlobalTransform.X.X < 0f ? -1f : 1f;
 
 	/// <summary>将朝右编写的身体相对偏移转到当前朝向；骨骼世界坐标不能再经过此方法。</summary>
-	public static Vector2 Offset(NCreature node, Vector2 offset) => new(offset.X * Facing(node), offset.Y);
+	public static Vector2 Offset(NCreature node, Vector2 offset) =>
+		Vfx.FxSpace.Vector(node, new Vector2(offset.X * Facing(node), offset.Y));
 
 	public static Vector2 Center(NCreature node) => Shrink(node, node.VfxSpawnPosition);
 
 	private static Vector2 Shrink(NCreature node, Vector2 p)
 	{
-		Vector2 feet = node.GetBottomOfHitbox();
+		Vector2 feet = Feet(node);
 		return feet + (p - feet) * BodyScale;
 	}
 
-	public static Vector2 Feet(NCreature node) => node.GetBottomOfHitbox();
+	public static Vector2 Feet(NCreature node) => node.Hitbox.GetGlobalTransform() * new Vector2(node.Hitbox.Size.X * 0.5f, node.Hitbox.Size.Y);
 
 	/// <summary>太阳穴附近：召唤器抵住的位置。等新骨骼完成后改为读取骨骼 "evoker_tip"。</summary>
 	public static Vector2 Head(NCreature node)
 	{
+		if (Vfx.WeaponFx.Bone(node, "head") is Vector2 head)
+			return head + Offset(node, new Vector2(0f, -25f));
 		Vector2 center = node.VfxSpawnPosition;
 		Vector2 intent = node.Visuals.IntentPosition.GlobalPosition;
 		return Shrink(node, center.Lerp(intent, 0.55f) + Offset(node, new Vector2(14f, 0f)));

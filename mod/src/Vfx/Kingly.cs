@@ -22,7 +22,7 @@ public static class Kingly
 	private static Vector2 Contact(NCreature n, float facing)
 	{
 		Vector2 c = n.VfxSpawnPosition;
-		float halfW = Mathf.Clamp((n.GetBottomOfHitbox().Y - c.Y) * 0.55f, 50f, 140f);
+		float halfW = Mathf.Clamp((P3Makoto.Core.Makoto.Feet(n).Y - c.Y) * 0.55f, 50f, 140f);
 		return c + new Vector2(-halfW * facing, -10f);
 	}
 
@@ -32,7 +32,7 @@ public static class Kingly
 		switch (card.GetType().Name)
 		{
 			case "KinglyPunch": Punch(front, Contact(node, facing), scale, facing); return true;
-			case "KinglyKick": Kick(front, Contact(node, facing), node.GetBottomOfHitbox(), scale, facing); return true;
+			case "KinglyKick": Kick(front, Contact(node, facing), P3Makoto.Core.Makoto.Feet(node), scale, facing); return true;
 			case "KnockoutBlow": Knockout(front, node, target, card, scale, facing); return true;
 			case "SolarStrike": SolarHit(front, node, scale); return true;
 		}
@@ -47,7 +47,7 @@ public static class Kingly
 		GpuParticles2D p = Fx.Sparks(e, ElementPal.FireMid, 36, 140f, 380f, 0.7f, gravity: 260f, scaleMin: 0.08f, scaleMax: 0.22f,
 			ramp: new[] { new Color(1f, 0.95f, 0.7f), ElementPal.FireMid, new Color(0.5f, 0.08f, 0.04f, 0f) });
 		Fx.FreeAfter(e, 0.9);
-		Node2D ring = Fx.Root(front, node.GetBottomOfHitbox(), "P3SolarRing");
+		Node2D ring = Fx.Root(front, P3Makoto.Core.Makoto.Feet(node), "P3SolarRing");
 		Fx.StrokeClosed(ring, Fx.Circle(120f * s, 40, 0.3f), new Color(ElementPal.FireMid, 0.8f), 3f * s);
 		Fx.Animate(ring, 0.4f, t =>
 		{

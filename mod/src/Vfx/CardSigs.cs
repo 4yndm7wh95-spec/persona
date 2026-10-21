@@ -17,7 +17,8 @@ public static class CardSigs
 	public sealed record Ctx(Control Front, Control Back, NCreature Caster, Vector2 Head, Vector2 Center, Vector2 Feet, List<NCreature> Targets)
 	{
 		public Vector2 Offset(Vector2 offset) => Core.Makoto.Offset(Caster, offset);
-		public Vector2 Above => Head + Offset(new Vector2(-10f, -170f));
+		public float Facing => Core.Makoto.Facing(Caster);
+		public Vector2 Above => new Vector2(Feet.X, Head.Y) + Offset(new Vector2(0f, -170f));
 		public Vector2[] TargetCenters => Targets.Count > 0
 			? Targets.Select(t => t.VfxSpawnPosition).ToArray()
 			: new[] { Front.GetViewportRect().Size * new Vector2(0.7f, 0.5f) };
@@ -46,8 +47,8 @@ public static class CardSigs
 	{
 		// ═════ 攻击：出牌瞬间的"起手" ═════
 		["WroughtInWar"] = c => { },                       // 锻造火花在真正锻造的那一刻（Motifs.ForgeAtMakoto，跟打铁声同步）
-		["BeatIntoShape"] = c => After(c, 0.12, () => Uniq.BeatIntoShape(c.Front, c.FirstTarget, c.Targets.Count > 0 ? c.Targets[0].GetBottomOfHitbox() : c.Feet)),
-		["HeirloomHammer"] = c => After(c, 0.1, () => Uniq.HeirloomHammer(c.Front, c.FirstTarget, c.Targets.Count > 0 ? c.Targets[0].GetBottomOfHitbox() : c.Feet)),
+		["BeatIntoShape"] = c => After(c, 0.12, () => Uniq.BeatIntoShape(c.Front, c.FirstTarget, c.Targets.Count > 0 ? P3Makoto.Core.Makoto.Feet(c.Targets[0]) : c.Feet)),
+		["HeirloomHammer"] = c => After(c, 0.1, () => Uniq.HeirloomHammer(c.Front, c.FirstTarget, c.Targets.Count > 0 ? P3Makoto.Core.Makoto.Feet(c.Targets[0]) : c.Feet)),
 		["KnockoutBlow"] = c => After(c, 0.16, () => Motifs.CutIn(c.Front, c.FirstTarget, "ONE MORE!", Pal.Royal)),
 		["KinglyKick"] = c => After(c, 0.12, () => Motifs.CutIn(c.Front, c.FirstTarget, "GOD'S HAND", Pal.Royal)),   // 踢的弧光在命中时（Kingly.Kick）
 		// v0.14.40：一块横跨所有敌人的符文石板在头顶现身、缓缓下压，伤害结算时砸下（CardFx.OnHit → Uniq.CrushUnderImpact）
@@ -59,7 +60,7 @@ public static class CardSigs
 		{
 			// 太阳在目标斜上方（高过头顶），画在身后层，光束射下来 —— 不盖住敌人
 			NCreature t = c.Targets.Count > 0 ? c.Targets[0] : c.Caster;
-			float h = Mathf.Max(120f, t.GetBottomOfHitbox().Y - t.VfxSpawnPosition.Y);
+			float h = Mathf.Max(120f, P3Makoto.Core.Makoto.Feet(t).Y - t.VfxSpawnPosition.Y);
 			Vector2 sun = c.FirstTarget + new Vector2(110f, -h * 1.25f - 110f);
 			sun.Y = Mathf.Max(sun.Y, 190f);
 			Motifs.SolarFlare(c.Back, c.Front, sun, c.FirstTarget, 0.9f);
@@ -88,10 +89,10 @@ public static class CardSigs
 			new[] { new Vector2(-150f, 60f), new Vector2(-120f, -90f), new Vector2(0f, -170f), new Vector2(120f, -90f), new Vector2(150f, 60f) }, Pal.Cyan, 0.9f),
 		["Glitterstream"] = c => { for (int i = 0; i < 6; i++) { P3Fx.Butterfly(c.Front, c.Feet + c.Offset(new Vector2(-200f + 70f * i, 0f)), c.Head + c.Offset(new Vector2(-120f + 50f * i, -100f)), 1.2f, 0.8f); } },
 		["GatherLight"] = c => { P3Fx.Gather(c.Back, c.Center, Pal.Ice, 520f, 0.4f); After(c, 0.35, () => P3Fx.Flash(c.Back, c.Center, Pal.Ice, 420f, 0.3f)); },
-		["Bulwark"] = c => Uniq.Bulwark(c.Front, c.Center),
+		["Bulwark"] = c => Uniq.Bulwark(c.Front, c.Center, c.Facing),
 		["ParticleWall"] = c => { Node2D p = Fx.Root(c.Front, c.Center + c.Offset(new Vector2(120f, 0f)), "P3ParticleWall"); Fx.Sparks(p, Pal.Cyan, 90, 60f, 260f, 0.8f, scaleMin: 0.1f, scaleMax: 0.3f); Fx.FreeAfter(p, 1.0); },
-		["IAmInvincible"] = c => Uniq.Tetrakarn(c.Front, c.Center),
-		["Reflect"] = c => Uniq.Makarakarn(c.Front, c.Center),
+		["IAmInvincible"] = c => Uniq.Tetrakarn(c.Front, c.Center, c.Facing),
+		["Reflect"] = c => Uniq.Makarakarn(c.Front, c.Center, c.Facing),
 		["CosmicIndifference"] = c => Motifs.DarkClock(c.Back, c.Above, 0.7f),
 		["ManifestAuthority"] = c => Uniq.ManifestAuthority(c.Back, c.Front, c.Feet),
 
@@ -103,13 +104,13 @@ public static class CardSigs
 		{
 			foreach (NCreature t in c.Targets)
 			{
-				Motifs.Seal(c.Front, t.VfxSpawnPosition, t.GetBottomOfHitbox(), ElementPal.Curse, up: false, 1.1f);
+				Motifs.Seal(c.Front, t.VfxSpawnPosition, P3Makoto.Core.Makoto.Feet(t), ElementPal.Curse, up: false, 1.1f);
 				Motifs.CutIn(c.Front, t.VfxSpawnPosition, "DEBILITATE", ElementPal.Curse, 70f);
 			}
 		}),
-		["Resonance"] = c => Uniq.Resonance(c.Back, c.Front, c.Center, c.TargetCenters),
-		["Conqueror"] = c => After(c, 0.1, () => Uniq.Conqueror(c.Back, c.Front, c.FirstTarget, c.Targets.Count > 0 ? c.Targets[0].GetBottomOfHitbox() : c.Feet)),
-		["Charge"] = c => Uniq.Charge(c.Back, c.Front, c.Feet, c.FirstTarget),
+		["Resonance"] = c => Uniq.Resonance(c.Back, c.Front, c.Center, c.TargetCenters, c.Facing),
+		["Conqueror"] = c => After(c, 0.1, () => Uniq.Conqueror(c.Back, c.Front, c.FirstTarget, c.Targets.Count > 0 ? P3Makoto.Core.Makoto.Feet(c.Targets[0]) : c.Feet)),
+		["Charge"] = c => Uniq.Charge(c.Back, c.Front, c.Feet, c.FirstTarget, c.Facing),
 		["Begone"] = c => Motifs.CutIn(c.Front, c.Center + c.Offset(new Vector2(220f, 0f)), "BEGONE!", Pal.Royal),
 		["Guards"] = c => Uniq.Guards(c.Back, c.Front, c.Head, c.Feet),
 
@@ -120,40 +121,40 @@ public static class CardSigs
 			c.Center + c.Offset(new Vector2(0f, -20f)), ElementPal.HolyGold, 0.75f)),
 		["HiddenCache"] = c => Tarot(c, "IX", "HERMIT", Pal.Royal),
 		["Glow"] = c => { P3Fx.Flash(c.Back, c.Center, Pal.Ice, 520f, 0.4f); P3Fx.ButterflyBurst(c.Front, c.Head, 7, 340f); },
-		["Alignment"] = c => Uniq.Alignment(c.Back, c.Front, c.Above, c.Center),
+		["Alignment"] = c => Uniq.Alignment(c.Back, c.Front, c.Above, c.Center, c.Facing),
 		["Convergence"] = c => { Motifs.DarkClock(c.Back, c.Above, 0.8f); P3Fx.Gather(c.Back, c.Center, Pal.DarkHour, 600f, 0.45f); },
 		["Prophesize"] = c => After(c, 0.15, () => ThemeFx.Compendium(c.Caster)),
 		["ForegoneConclusion"] = c => After(c, 0.15, () => ThemeFx.Contract(c.Caster)),
 		["DecisionsDecisions"] = c => After(c, 0.1, () => ThemeFx.ShuffleTime(c.Caster)),
-		["Glimmer"] = c => After(c, 0.12, () => Uniq.Glimmer(c.Back, c.Front, c.Center, c.Above)),
+		["Glimmer"] = c => After(c, 0.12, () => Uniq.Glimmer(c.Back, c.Front, c.Center, c.Above, c.Facing)),
 		["Plot"] = c => Uniq.Plot(c.Back, c.Front, c.Feet),
 		["Tutor"] = c => After(c, 0.15, () => Uniq.Tutor(c.Front, WeaponFx.Bone(c.Caster, "hand") ?? c.Center)),
-		["BundleOfJoy"] = c => Uniq.BundleOfJoy(c.Back, c.Front, c.Head),
-		["Quasar"] = c => Uniq.Quasar(c.Back, c.Front, c.Head),
+		["BundleOfJoy"] = c => Uniq.BundleOfJoy(c.Back, c.Front, c.Head, c.Facing),
+		["Quasar"] = c => Uniq.Quasar(c.Back, c.Front, c.Head, c.Facing),
 		["Largesse"] = c => Uniq.Largesse(c.Back, c.Front, c.Head, c.Feet),
 		["Constellation"] = c => Motifs.Constellation(c.Front, c.Above,
 			new[] { new Vector2(-140f, 40f), new Vector2(-40f, -60f), new Vector2(60f, -20f), new Vector2(150f, -90f), new Vector2(110f, 50f) }, Pal.Cyan),
 		["SpoilsOfBattle"] = c => { Motifs.ShuffleTime(c.Front, c.Center, 2, ElementPal.FireMid); },
 		["RefineBlade"] = c => { },
 		// v0.14.22 恢复锻打演出（用户：把之前的铸剑特效加回来）；锻造的增益推迟到新剑入手（1.78s）之后
-		["TheSmith"] = c => { Extras.DeferForge(1.85f); Uniq.TheSmith(c.Back, c.Front, c.Center); },
+		["TheSmith"] = c => { Extras.DeferForge(1.85f); Uniq.TheSmith(c.Back, c.Front, c.Center, c.Facing); },
 		["SummonForth"] = c => Uniq.SummonForth(c.Back, c.Front, c.Feet),
 		["BigBang"] = c => After(c, 0.3, () => Uniq.BigBang(c.Back, c.Front, c.Above + c.Offset(new Vector2(120f, 0f)))),
 
 		// ═════ 能力 ═════
 		["Tyranny"] = c => After(c, 0.1, () => Rares.Tyranny(c.Caster)),
 		["MonarchsGaze"] = c => After(c, 0.15, Rares.Gaze),
-		["Parry"] = c => After(c, 0.1, () => Uniq.Parry(c.Front, c.Center)),
-		["NeutronAegis"] = c => Uniq.NeutronAegis(c.Back, c.Front, c.Center),
-		["Arsenal"] = c => Uniq.Arsenal(c.Back, c.Front, c.Feet, c.Center),
-		["SwordSage"] = c => After(c, 0.2, () => Uniq.SwordSage(c.Back, c.Front, c.Center)),
+		["Parry"] = c => After(c, 0.1, () => Uniq.Parry(c.Front, c.Center, c.Facing)),
+		["NeutronAegis"] = c => Uniq.NeutronAegis(c.Back, c.Front, c.Center, c.Facing),
+		["Arsenal"] = c => Uniq.Arsenal(c.Back, c.Front, c.Feet, c.Center, c.Facing),
+		["SwordSage"] = c => After(c, 0.2, () => Uniq.SwordSage(c.Back, c.Front, c.Center, c.Facing)),
 		["HammerTime"] = c => Uniq.HammerTime(c.Back, c.Front, c.Center),
 		["SeekingEdge"] = c => After(c, 0.1, () => SeekFx.Play(c.Front, c.Caster, AllEnemies())),
 		["Furnace"] = c => After(c, 0.1, () => Rares.Furnace(c.Caster)),
 		["Orbit"] = c => Uniq.Orbit(c.Back, c.Front, c.Center),
-		["PaleBlueDot"] = c => Uniq.PaleBlueDot(c.Back, c.Front, c.Above),
+		["PaleBlueDot"] = c => Uniq.PaleBlueDot(c.Back, c.Front, c.Above, c.Facing),
 		["ChildOfTheStars"] = c => Uniq.ChildOfTheStars(c.Back, c.Front, c.Center),
-		["SpectrumShift"] = c => Uniq.SpectrumShift(c.Back, c.Front, c.Head),
+		["SpectrumShift"] = c => Uniq.SpectrumShift(c.Back, c.Front, c.Head, c.Facing),
 		["Royalties"] = c => { Tarot(c, "X", "FORTUNE", ElementPal.HolyGold); After(c, 0.3, () => Grand.CoinRain(c.Front, c.Center, c.Feet.Y, 34)); },
 		["PillarOfCreation"] = c => After(c, 0.1, () => ThemeFx.SummonGate(c.Caster)),
 		["Genesis"] = c => After(c, 0.55, () => Rares.Genesis(c.Caster)),
