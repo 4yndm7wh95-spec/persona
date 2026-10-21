@@ -30,6 +30,7 @@ public static class PileFx
 	private const string PortraitPath = "res://p3makoto/ui/pile_portrait.png";
 	private const string PortraitSpine = "res://p3makoto/pile/pile_skel_data.tres";
 	private const float HeaderH = 58f;
+	private const float CardScale = 1.10f;
 	public const float HeroShiftX = 0.22f;
 
 	/// <summary>v0.14.56：四个牌堆界面各有不同的版式和动画（用户：每个牌堆都要有不同的表现）。</summary>
@@ -43,7 +44,7 @@ public static class PileFx
 	{
 		public Kind Kind;
 		public int Cols = 5;
-		public float CardW = 160f, CellW = 178f, CellH = 252f;
+		public float CardW = 160f * CardScale, CellW = 160f * CardScale + 18f, CellH = 252f * CardScale;
 		public float GridX = 190f, GridTop = 262f, GridBottom = 1010f, Slant = 0.05f;
 		public bool RightSide;
 		public Vector2 Focus = new(700f, 560f);
@@ -56,8 +57,10 @@ public static class PileFx
 	{
 		Kind.Deck => new Layout
 		{
-			Kind = kind, CardW = 166f, CellW = 186f, GridX = 1920f - 70f - 5 * 186f, Slant = -0.05f, RightSide = true,
-			Focus = new Vector2(1260f, 560f), InfoX = 1520f, TitleX = 930f, Side = -1f, Iris = new Vector2(0.93f, 0.04f), Title = "DECK", Word = "DECK",
+			Kind = kind, CardW = 166f * CardScale, CellW = 166f * CardScale + 20f,
+			GridX = 1920f - 70f - 5 * (166f * CardScale + 20f), Slant = -0.05f, RightSide = true,
+			Focus = new Vector2(1260f, 560f), InfoX = 1520f, TitleX = 1920f - 60f - 5 * (166f * CardScale + 20f),
+			Side = -1f, Iris = new Vector2(0.93f, 0.04f), Title = "DECK", Word = "DECK",
 		},
 		Kind.Discard => new Layout
 		{
@@ -66,7 +69,8 @@ public static class PileFx
 		},
 		Kind.Exhaust => new Layout
 		{
-			Kind = kind, Slant = 0f, Iris = new Vector2(0.96f, 0.82f), Title = "EXHAUST PILE", Word = "EXHAUST",
+			Kind = kind, CellW = 160f * CardScale + 12f, Slant = 0f,
+			Iris = new Vector2(0.96f, 0.82f), Title = "EXHAUST PILE", Word = "EXHAUST",
 		},
 		_ => new Layout { Kind = Kind.Draw, Iris = new Vector2(0.04f, 0.95f), Title = "DRAW PILE", Word = "DRAW" },
 	};
@@ -76,7 +80,9 @@ public static class PileFx
 	/// </summary>
 	private static Layout ItemLayout() => new()
 	{
-		Kind = Kind.Discard, GridX = 120f, Side = -1f, Iris = new Vector2(0.96f, 0.95f), Title = "DISCARD PILE", Word = "DISCARD",
+		// Keep the right edge near its old position so the ITEM face stays clear.
+		Kind = Kind.Discard, GridX = 50f, CellW = 160f * CardScale + 16f, Side = -1f,
+		Iris = new Vector2(0.96f, 0.95f), Title = "DISCARD PILE", Word = "DISCARD",
 	};
 
 	// 原版 DT_CampParamItem / DT_CampParamCommon（30fps 帧）：白板 10 帧 CurveUp1；人物 ItemSilhouette 等 10 帧、20 帧 CurveUp2 移到 (-90, -110)（游戏里改成 0.05s 起步、0.7s CurveUp3，见入场处）；InDist -100
@@ -259,6 +265,10 @@ public static class PileFx
 		ColorRect bg = new() { Size = view, Material = water, MouseFilter = Control.MouseFilterEnum.Ignore };
 		root.AddChild(bg);
 		float diag = Mathf.Sqrt(view.X * view.X / (view.Y * view.Y) + 1f) + 0.1f;
+		// Start SKILL's closing iris at the visible corners, without an invisible
+		// overscan interval while its white panels have already begun fading.
+		float closeRadius = skill ? new Vector2(Mathf.Max(from.X, 1f - from.X) * view.X / view.Y,
+			Mathf.Max(from.Y, 1f - from.Y)).Length() + 0.01f : diag;
 		if (dive) water.SetShaderParameter("radius", diag);   // 入水转场自己负责露出（水花轮廓），不用圆孔
 		else Fx.Animate(bg, 0.55, t => water.SetShaderParameter("radius", diag * Ease.OutCubic(t)));
 		lap("water");
@@ -1036,14 +1046,14 @@ public static class PileFx
 				{
 					float ei = item ? Ease.InOutCubic(ex) : Ease.InCubic(ex);
 					// SKILL's white panels touch the viewport edges: sliding them exposes
-					// their rectangular bounds. Fade in place before closing the water iris.
+					// their rectangular bounds. Fade in place while the water iris closes.
 					right.Position = skill ? Vector2.Zero : new Vector2(820f * k * L.Side * ei, 0f);
-					float decorOut = skill ? Ease.InOutCubic(Mathf.Clamp(ex / 0.4f, 0f, 1f))
+					float decorOut = skill ? Ease.InOutCubic(ex)
 						: item ? Ease.InOutSine(Mathf.Clamp((ex - 0.1f) / 0.9f, 0f, 1f))
 						: Ease.InCubic(Mathf.Clamp((ex - 0.3f) / 0.7f, 0f, 1f));
 					right.Modulate = new Color(1f, 1f, 1f, 1f - decorOut);
-					float irisDelay = skill ? 0.45f : 0.15f;
-					water.SetShaderParameter("radius", diag * (1f - Ease.InOutCubic(Mathf.Clamp((ex - irisDelay) / (1f - irisDelay), 0f, 1f))));
+					float irisDelay = skill ? 0f : 0.15f;
+					water.SetShaderParameter("radius", closeRadius * (1f - Ease.InOutCubic(Mathf.Clamp((ex - irisDelay) / (1f - irisDelay), 0f, 1f))));
 					bubbles.Modulate = new Color(1f, 1f, 1f, 1f - ex);
 					if (screen.GetNodeOrNull<CanvasItem>("BackButton") is CanvasItem backBtn)
 					{

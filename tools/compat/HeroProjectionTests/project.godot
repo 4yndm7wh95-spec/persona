@@ -1,0 +1,8 @@
+config_version=5
+[application]
+config/name="Hero projection regression"
+[display]
+window/size/viewport_width=200
+window/size/viewport_height=120
+[rendering]
+renderer/rendering_method="mobile"

@@ -720,10 +720,22 @@ internal static class HeroStage
 		{
 			if (act != Act.Item || faceRig == null || camera == null || !Display.IsInsideTree()) return;
 			Skeleton3D s = faceRig.Skeleton;
+			Vector2 viewportSize = new(viewport.Size.X, viewport.Size.Y);
+			// Godot 4.5 Camera3D.UnprojectPosition omits KeepAspect for a frustum,
+			// although the renderer honors it. Build the same matrix as the renderer.
+			Projection projection = camera.Projection == Camera3D.ProjectionType.Frustum
+				? Projection.CreateFrustumAspect(camera.Size, viewportSize.X / viewportSize.Y,
+					camera.FrustumOffset, camera.Near, camera.Far, camera.KeepAspect == Camera3D.KeepAspectEnum.Width)
+				: camera.GetCameraProjection();
+			Transform3D toCamera = camera.GetCameraTransform().AffineInverse() * s.GlobalTransform;
 			Vector2 At(string bone)
 			{
 				int i = faceRig.Index(bone);
-				return i >= 0 ? camera.UnprojectPosition(s.GlobalTransform * s.GetBoneGlobalPose(i).Origin) : Vector2.Zero;
+				if (i < 0) return Vector2.Zero;
+				Vector3 p = toCamera * s.GetBoneGlobalPose(i).Origin;
+				Vector4 clip = projection * new Vector4(p.X, p.Y, p.Z, 1f);
+				if (Mathf.IsZeroApprox(clip.W)) return Vector2.Zero;
+				return new Vector2(clip.X / clip.W * 0.5f + 0.5f, -clip.Y / clip.W * 0.5f + 0.5f) * viewportSize;
 			}
 			Vector2 nose = At("Jnt_C_Nose_00"), eyes = At("Jnt_R_Eye_00") - At("Jnt_L_Eye_00");
 			if (eyes.LengthSquared() < 1f) { noseLine.Visible = noseUpper.Visible = false; return; }
