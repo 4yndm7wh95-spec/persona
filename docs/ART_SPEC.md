@@ -1848,3 +1848,7 @@ Grand.cs 里其余函数暂时保留不用。
 
 ### v0.14.105 修正螃蟹房适配未触发
 用户反馈上一包看不出变化，核对两套安装 DLL 哈希均与 7f6ac240 的构建一致。根因是 CrabRoom.Active 错将 NCombatRoom.Background 的运行时类型与 NKaiserCrabBossBackground 比较：前者始终是 NCombatBackground 容器，后者是 Node2D 子控制器，不可能匹配。改用实际背景场景资源 res://scenes/backgrounds/kaiser_crab_boss/kaiser_crab_boss_background.tscn 精确识别，启用之前已实现的朝向、人物锚点和屏幕适配。其他房间仍返回原路径；召唤器保留用户认可的此前 FxSpace.Screen 等价铺屏实现，仅在螃蟹房使用。不改特效形状、尺寸常数、动画和光影。39 项针对生产 CrabRoom 的离线替身检查通过，包含通用 NCombatBackground 容器、左右换向、房间切换、普通房间原值及铺屏层复用；不代表实机验收。Release 零警告零错误，两版本各 1203 引用兼容通过。
+
+
+### v0.15 用户确认版本
+用户确认螃蟹房修复版本 4a4d2e5d 应该无问题，命名为 0.15。仅将模组清单和运行时版本常量从 0.14.105 改为 0.15，保留已确认的所有特效、召唤铺屏和普通房间行为；资源包不变。
