@@ -94,5 +94,6 @@ public static class P3Settings
 	public static bool PileScreen => Current.PileScreen;
 	public static bool TipList => Current.TipList;
 	public static bool SettingsSkin => Current.SettingsSkin;
-	public static bool CardFrame => Current.CardFrame;
+	// 暂停整套卡图 / 卡框替换：兼容旧配置字段，但旧值不能重新启用。
+	public static bool CardFrame => false;
 }
