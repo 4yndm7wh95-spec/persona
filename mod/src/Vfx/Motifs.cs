@@ -13,9 +13,9 @@ public static class Motifs
 	// ═════════ 物理 ═════════
 
 	/// <summary>巨型新月斩痕（颜色可选），停留后碎成玻璃。</summary>
-	public static void Cleave(Control layer, Vector2 at, Color tint, float s = 1f, float angle = -0.55f)
+	public static void Cleave(Control layer, Vector2 at, Color tint, float s = 1f, float angle = -0.55f, float facing = 1f)
 	{
-		ArcSlash(layer, at, tint, 620f * s, 50f * s, 40f * s, angle, s);
+		ArcSlash(layer, at, tint, 620f * s, 50f * s, 40f * s, angle, s, facing: facing);
 		Fx.After(layer, 0.2, "cleave shatter", () => P3Fx.GlassShatter(layer, at, (int)(18 * s), 0.9f * s, tint));
 		Bold.Impact(layer, at, tint, 0.8f * s, ShakeStrength.Medium);
 	}
@@ -28,10 +28,11 @@ public static class Motifs
 	/// darkCore：塔纳托斯用的黑色刀身层。
 	/// </summary>
 	public static void ArcSlash(Control layer, Vector2 at, Color tint, float length, float bow, float thick, float angle, float s = 1f,
-		bool darkCore = false)
+		bool darkCore = false, float facing = 1f)
 	{
 		Node2D root = Fx.Root(layer, at, "P3ArcSlash");
-		root.Rotation = angle;
+		root.Rotation = angle * facing;
+		root.Scale = new Vector2(facing, 1f);
 		const int n = 32;
 		const float tIn = 0.07f, tFlash = 0.05f, tHold = 0.06f, tOut = 0.2f;
 		const float total = tIn + tFlash + tHold + tOut;
@@ -118,13 +119,14 @@ public static class Motifs
 	}
 
 	/// <summary>贯穿突刺：一道极细极亮的光枪从左侧刺穿目标，出口喷出光屑。</summary>
-	public static void Thrust(Control layer, Vector2 at, Color tint, float s = 1f)
+	public static void Thrust(Control layer, Vector2 at, Color tint, float s = 1f, float facing = 1f)
 	{
 		Node2D root = Fx.Root(layer, at, "P3Thrust");
+		root.Scale = new Vector2(facing, 1f);
 		float len = 900f * s;
 		Line2D glow = Fx.Line(root, new[] { new Vector2(-len * 0.6f, 0f), new Vector2(len * 0.4f, 0f) }, new Color(tint, 0.7f), 34f * s);
 		Line2D core = Fx.Line(root, new[] { new Vector2(-len * 0.6f, 0f), new Vector2(len * 0.4f, 0f) }, Pal.White, 7f * s);
-		root.Rotation = Fx.Rand(-0.12f, 0.08f);
+		root.Rotation = Fx.Rand(-0.12f, 0.08f) * facing;
 		Fx.Animate(root, 0.35f, t =>
 		{
 			float grow = Ease.OutExpo(Mathf.Clamp(t / 0.25f, 0f, 1f));
@@ -134,10 +136,10 @@ public static class Motifs
 		Line2D ring = Fx.Line(root, Fx.Circle(70f * s, 32, 2.4f), new Color(Pal.Ice, 0.9f), 4f, closed: true);
 		ring.Rotation = Mathf.Pi / 2f;
 		Fx.Animate(ring, 0.3f, t => ring.Scale = Vector2.One * (0.4f + 1.4f * Ease.OutExpo(t)));
-		Node2D exit = Fx.Root(layer, at + new Vector2(60f * s, 0f), "P3ThrustExit");
+		Node2D exit = Fx.Root(layer, at + new Vector2(60f * s * facing, 0f), "P3ThrustExit");
 		GpuParticles2D spray = Fx.Sparks(exit, tint, (int)(50 * s), 400f * s, 1100f * s, 0.4f, scaleMin: 0.12f, scaleMax: 0.35f);
 		ParticleProcessMaterial pm = (ParticleProcessMaterial)spray.ProcessMaterial;
-		pm.Direction = new Vector3(1f, 0f, 0f);
+		pm.Direction = new Vector3(facing, 0f, 0f);
 		pm.Spread = 22f;
 		Fx.FreeAfter(exit, 0.7);
 		Bold.Impact(layer, at, tint, 0.7f * s, ShakeStrength.Medium);

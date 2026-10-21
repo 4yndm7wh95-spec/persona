@@ -532,9 +532,9 @@ public static class Rares
 		{
 			return;
 		}
-		Vector2 at = Makoto.Head(caster) + new Vector2(-30f, -200f * s);
+		Vector2 at = Makoto.Head(caster) + Makoto.Offset(caster, new Vector2(-30f, -200f * s));
 		at.Y = Mathf.Max(at.Y, 200f * s);
-		Vector2 chest = Makoto.Center(caster) + new Vector2(0f, -20f);
+		Vector2 chest = Makoto.Center(caster) + Makoto.Offset(caster, new Vector2(0f, -20f));
 		Vector2 hand = WeaponFx.Bone(caster, "hand") ?? chest;
 		float D = duration;
 		float T(float f) => f * D;                                   // 时间点按总时长的比例给
@@ -767,7 +767,7 @@ public static class Rares
 
 	/// <summary>棺材的位置：人物左后方空地（和人物不重叠）；天鹅绒门在场时改到右侧。</summary>
 	private static Vector2 CoffinSpot(NCreature caster) =>
-		Makoto.Feet(caster) + new Vector2(ThemeFx.GateRoot != null ? 250f : -270f, 0f);
+		Makoto.Feet(caster) + Makoto.Offset(caster, new Vector2(ThemeFx.GateRoot != null ? 250f : -270f, 0f));
 
 	private static Texture2D? _tartarus;
 	private static Texture2D? Tartarus => _tartarus ??= ResourceLoader.Exists("res://p3makoto/fx/tartarus.png") ? ResourceLoader.Load<Texture2D>("res://p3makoto/fx/tartarus.png") : null;

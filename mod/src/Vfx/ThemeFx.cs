@@ -57,13 +57,13 @@ public static class ThemeFx
 	/// <summary>物件的标准位置：头顶左上方（命运之轮同一位置），不压到顶栏。</summary>
 	public static Vector2 Spot(NCreature caster, float minY = 150f)
 	{
-		Vector2 at = Makoto.Head(caster) + new Vector2(-235f, -125f);
+		Vector2 at = Makoto.Head(caster) + Makoto.Offset(caster, new Vector2(-235f, -125f));
 		at.Y = Mathf.Max(at.Y, minY);
 		at.X = Mathf.Max(at.X, 150f);
 		return at;
 	}
 
-	private static Vector2 Hand(NCreature caster) => WeaponFx.Bone(caster, "hand") ?? Makoto.Center(caster) + new Vector2(60f, -40f);
+	private static Vector2 Hand(NCreature caster) => WeaponFx.Bone(caster, "hand") ?? Makoto.Center(caster) + Makoto.Offset(caster, new Vector2(60f, -40f));
 
 	/// <summary>从 from 沿弧线飞到 to 的一小段光尾（物件飞入时用）。</summary>
 	private static void Trail(Control layer, Vector2 from, Vector2 ctrl, Vector2 to, float duration, Color tint)
@@ -106,6 +106,7 @@ public static class ThemeFx
 
 	private sealed class Gate
 	{
+		public NCreature Caster = null!;
 		public Node2D Root = null!;
 		public Node2D Body = null!;
 		public GateView View = null!;
@@ -144,10 +145,10 @@ public static class ThemeFx
 			Fx.Animate(_gate!.FrameFlash, 0.3f, t => _gate.FrameFlash.Modulate = new Color(1f, 1f, 1f, 0.6f * (1f - t)));
 			return;
 		}
-		Vector2 floor = Makoto.Feet(caster) + DoorOffset;
-		Gate g = new();
+		Vector2 floor = Makoto.Feet(caster) + Makoto.Offset(caster, DoorOffset);
+		Gate g = new() { Caster = caster };
 		g.Root = Fx.Root(back, floor, "P3VelvetGate");
-		g.Root.Scale = Vector2.One * DoorScale;
+		g.Root.Scale = new Vector2(Makoto.Facing(caster), 1f) * DoorScale;
 		g.View = new GateView(g.Root);
 		// 身后层里的顺序：影时间在场时插在天色上面、月亮下面；否则放最底下（其他身后特效都在门前面）
 		back.MoveChild(g.Root, FormFx.SkyIndex >= 0 ? FormFx.SkyIndex + 1 : 0);
@@ -191,7 +192,7 @@ public static class ThemeFx
 
 		// 1) 蓝蝶从右上飞来、落在门的位置，落点泛开波纹
 		Vector2 land = floor + new Vector2(0f, -12f);
-		P3Fx.Butterfly(front, land + new Vector2(320f, -300f), land, 0.32f, 0.9f);
+		P3Fx.Butterfly(front, land + Makoto.Offset(caster, new Vector2(320f, -300f)), land, 0.32f, 0.9f);
 		Fx.After(g.Root, 0.3, "gate land", () =>
 		{
 			P3Fx.Flash(back, land, Pal.Ice, 150f, 0.15f);
@@ -218,7 +219,7 @@ public static class ThemeFx
 		Fx.After(g.Root, 0.64, "gate lock", () =>
 		{
 			Fx.Animate(g.FrameFlash, 0.25f, t => g.FrameFlash.Modulate = new Color(1f, 1f, 1f, 0.7f * (1f - t)));
-			Echo(back, floor);
+			Echo(back, g.Root.GlobalPosition, Makoto.Facing(g.Caster));
 		});
 		// 常驻：门缝光呼吸、井道光带滑动；隔几秒从门缝飘出一只蓝蝶
 		Timer tick = new() { WaitTime = 1.0 / 30.0, Autostart = true };
@@ -231,7 +232,7 @@ public static class ThemeFx
 			if (!g.Busy && Makoto.FxLayer() is Control f)
 			{
 				Vector2 crack = g.Root.ToGlobal(GateView.Project(new Vector2(Opening.End.X, Opening.GetCenter().Y)));
-				P3Fx.Butterfly(f, crack, crack + new Vector2(Fx.Rand(-80f, 40f), Fx.Rand(-280f, -200f)), 1.6f, 0.7f);
+				P3Fx.Butterfly(f, crack, crack + Makoto.Offset(g.Caster, new Vector2(Fx.Rand(-80f, 40f), Fx.Rand(-280f, -200f))), 1.6f, 0.7f);
 			}
 		});
 	}
@@ -283,10 +284,10 @@ public static class ThemeFx
 		if (Makoto.FxLayer(back: true) is Control back && Makoto.FxLayer() is Control front)
 		{
 			Vector2 c = g.Root.ToGlobal(GateView.Project(Opening.GetCenter()));
-			Rays(back, c);
+			Rays(back, c, Makoto.Facing(g.Caster));
 			for (int i = 0; i < 2; i++)
 			{
-				P3Fx.Butterfly(front, c, c + new Vector2(Fx.Rand(80f, 380f), Fx.Rand(-360f, -160f)), 0.9f, 0.8f);
+				P3Fx.Butterfly(front, c, c + Makoto.Offset(g.Caster, new Vector2(Fx.Rand(80f, 380f), Fx.Rand(-360f, -160f))), 0.9f, 0.8f);
 			}
 		}
 	}
@@ -319,6 +320,11 @@ public static class ThemeFx
 
 	private static void Tick(Gate g, float dt)
 	{
+		if (GodotObject.IsInstanceValid(g.Caster))
+		{
+			g.Root.GlobalPosition = Makoto.Feet(g.Caster) + Makoto.Offset(g.Caster, DoorOffset);
+			g.Root.Scale = new Vector2(Makoto.Facing(g.Caster), 1f) * DoorScale;
+		}
 		g.Time += dt;
 		g.View.Tick(g.Time);
 		// 井道光带：一条条向下滑过（电梯在上升）
@@ -403,24 +409,25 @@ public static class ThemeFx
 	}
 
 	/// <summary>锁定：门框形状的光影以门底为中心放大、淡出。</summary>
-	private static void Echo(Control layer, Vector2 floor)
+	private static void Echo(Control layer, Vector2 floor, float facing)
 	{
 		Node2D root = Fx.Root(layer, floor, "P3GateEcho");
-		root.Scale = Vector2.One * DoorScale;
+		root.Scale = new Vector2(facing, 1f) * DoorScale;
 		GateView view = new(root, frameOnly: true);
 		Sprite(view.Content, "door_frame", new Vector2(-256f, -768f), centered: false);
 		Fx.Animate(root, 0.38f, t =>
 		{
-			root.Scale = Vector2.One * DoorScale * (1f + 0.1f * Ease.OutExpo(t));
+			root.Scale = new Vector2(facing, 1f) * DoorScale * (1f + 0.1f * Ease.OutExpo(t));
 			root.Modulate = new Color(Pal.Ice, 0.55f * (1f - t));
 		});
 		Fx.FreeAfter(root, 0.4);
 	}
 
 	/// <summary>开门瞬间：门口射出几道硬边光束（扇形），很快收掉。</summary>
-	private static void Rays(Control layer, Vector2 at)
+	private static void Rays(Control layer, Vector2 at, float facing)
 	{
 		Node2D root = Fx.Root(layer, at, "P3GateRays");
+		root.Scale = new Vector2(facing, 1f);
 		(float ang, float len, float w)[] rays = { (-1.1f, 520f, 0.05f), (-0.55f, 640f, 0.035f), (-0.15f, 700f, 0.05f), (0.3f, 600f, 0.03f), (0.8f, 480f, 0.045f) };
 		var polys = new List<Polygon2D>();
 		foreach (var _ in rays)
@@ -454,7 +461,7 @@ public static class ThemeFx
 		float w = tex.GetWidth(), h = tex.GetHeight();
 		Vector2 spot = Spot(caster, 170f);
 		Vector2 hand = Hand(caster);
-		Vector2 chest = Makoto.Center(caster) + new Vector2(0f, -20f);
+		Vector2 chest = Makoto.Center(caster) + Makoto.Offset(caster, new Vector2(0f, -20f));
 		Node2D root = Fx.Root(front, spot, "P3Contract");
 		root.Scale = Vector2.One * S;
 		root.Rotation = -0.06f;
@@ -746,7 +753,7 @@ public static class ThemeFx
 			return;
 		}
 		const float S = 0.57f;
-		Vector2 c = Makoto.Head(caster) + new Vector2(260f, 40f);
+		Vector2 c = Makoto.Head(caster) + Makoto.Offset(caster, new Vector2(260f, 40f));
 		Node2D root = Fx.Root(front, c, "P3ShuffleTime");
 		string[] minors = { "minor_sword", "minor_cup", "minor_wand", "minor_coin" };
 		var cards = new Sprite2D[4];

@@ -81,9 +81,9 @@ public static class PersonaFx
 		Vector2 center = Makoto.Center(caster);
 		float height = Mathf.Max(260f, (feet.Y - center.Y) * 2.1f) * 1.7f;   // Thanatos 显示高度：约结城理的 1.7 倍
 		float scale = height / FigureHeight;
-		Vector2 home = new(center.X - height * 0.2f, center.Y - height * 0.18f);
+		Vector2 home = center + Makoto.Offset(caster, new Vector2(-height * 0.2f, -height * 0.18f));
 		Node2D root = Fx.Root(back, home, "P3Thanatos");
-		root.Scale = Vector2.One * scale;
+		root.Scale = new Vector2(Makoto.Facing(caster), 1f) * scale;
 
 		Node2D? glow = Sprite(root, data, new Color(Pal.Cyan, 0.5f), additive: true);
 		if (glow != null)
@@ -113,8 +113,8 @@ public static class PersonaFx
 		float release = vorpal ? VorpalCharge : DamageDelay(vorpal) - elapsed;
 		float attackAt = Mathf.Max(release - SlashInAttack, 0.05f);
 		Vector2 strikeAt = target != null && GodotObject.IsInstanceValid(target)
-			? target.VfxSpawnPosition + new Vector2(-height * 0.42f, -height * 0.32f)
-			: home + new Vector2(height * 0.6f, 0f);
+			? target.VfxSpawnPosition + Makoto.Offset(caster, new Vector2(-height * 0.42f, -height * 0.32f))
+			: home + Makoto.Offset(caster, new Vector2(height * 0.6f, 0f));
 		Play(glow, attackAt, null);
 		if (vorpal)
 		{
@@ -136,7 +136,7 @@ public static class PersonaFx
 			Fx.FreeAfter(root, attackAt + 1.6f);   // 游戏时间：时停期间 Persona 也定格
 			return;
 		}
-		Play(body, attackAt, () => OnSlash(front, target, height));
+		Play(body, attackAt, () => OnSlash(front, target, height, Makoto.Facing(caster)));
 
 		// 冲刺：在 attack 开始时冲到敌人面前（0.16s），沿途速度线；斩完停留，dismiss 时往回退
 		Fx.After(root, attackAt, "thanatos dash", () =>
@@ -192,9 +192,9 @@ public static class PersonaFx
 		Vector2 feet = Makoto.Feet(caster);
 		Vector2 center = Makoto.Center(caster);
 		float height = Mathf.Max(260f, (feet.Y - center.Y) * 2.1f) * (big ? 1.6f : 1.35f);
-		Vector2 home = new(center.X - height * 0.18f, center.Y - height * 0.16f);
+		Vector2 home = center + Makoto.Offset(caster, new Vector2(-height * 0.18f, -height * 0.16f));
 		Node2D root = Fx.Root(back, home, "P3PersonaCharge");
-		root.Scale = Vector2.One * (height / FigureHeight);
+		root.Scale = new Vector2(Makoto.Facing(caster), 1f) * (height / FigureHeight);
 		// 本色（和召唤时一致：淡蓝白 + 青色光边），不染红 —— 红色只留给上升箭头
 		Color tint = new(0.8f, 0.88f, 1f, big ? 0.75f : 0.6f);
 		Node2D? glow = Sprite(root, data, new Color(Pal.Cyan, big ? 0.45f : 0.35f), additive: true);
@@ -244,9 +244,9 @@ public static class PersonaFx
 		Vector2 feet = Makoto.Feet(caster);
 		Vector2 center = Makoto.Center(caster);
 		float height = Mathf.Max(260f, (feet.Y - center.Y) * 2.1f) * 1.6f;
-		Vector2 home = new(center.X - height * 0.22f, center.Y - height * 0.2f);
+		Vector2 home = center + Makoto.Offset(caster, new Vector2(-height * 0.22f, -height * 0.2f));
 		Node2D root = Fx.Root(back, home, "P3PersonaApparition");
-		root.Scale = Vector2.One * (height / FigureHeight);
+		root.Scale = new Vector2(Makoto.Facing(caster), 1f) * (height / FigureHeight);
 		Node2D? glow = Sprite(root, data, new Color(tint, 0.5f), additive: true);
 		if (glow != null)
 		{
@@ -311,14 +311,14 @@ public static class PersonaFx
 	}
 
 	/// <summary>斩击命中帧。</summary>
-	private static void OnSlash(Control front, NCreature? target, float height)
+	private static void OnSlash(Control front, NCreature? target, float height, float facing)
 	{
 		Vector2 at = target != null && GodotObject.IsInstanceValid(target)
 			? target.VfxSpawnPosition
 			: front.GetViewportRect().Size * new Vector2(0.68f, 0.45f);
 		DarkHourFlash(front);
-		GiantSlash(front, at, -0.95f, height * 1.25f);
-		P3Fx.CrossSlash(front, at, Pal.Royal, 300f);
+		GiantSlash(front, at, -0.95f, height * 1.25f, facing);
+		P3Fx.CrossSlash(front, at, Pal.Royal, 300f, facing);
 		P3Fx.Shockwave(front, at, Pal.DarkHour, 820f, 0.55f);
 		P3Fx.SpeedLines(front, at, Pal.Ice, 22, 80f, 620f, 0.4f);
 		P3Fx.GlassShatter(front, at, 36, 1.3f, Pal.Ice);
@@ -340,9 +340,9 @@ public static class PersonaFx
 	}
 
 	/// <summary>巨大的新月斩痕：黑色刃身 + 青色刃边 + 白色刃芯，从一端"划开"，停留后碎成玻璃。</summary>
-	public static void GiantSlash(Control layer, Vector2 at, float angle, float length)
+	public static void GiantSlash(Control layer, Vector2 at, float angle, float length, float facing = 1f)
 	{
-		Motifs.ArcSlash(layer, at, Pal.Cyan, length, 60f, 46f, angle, length / 700f, darkCore: true);
+		Motifs.ArcSlash(layer, at, Pal.Cyan, length, 60f, 46f, angle, length / 700f, darkCore: true, facing: facing);
 		Fx.After(layer, 0.24, "giant slash shatter", () => P3Fx.GlassShatter(layer, at, 24, 1.1f, Pal.Cyan));
 	}
 }

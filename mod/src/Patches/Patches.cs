@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -25,8 +26,17 @@ public static class CardPlayedPatch
 			{
 				TargetingFx.EndPlayed();
 			}
-			CardFx.OnPlay(cardPlay);
 		});
+	}
+
+	// Hook 的前置阶段里，SurroundedPower 才会翻转人物。等它完成再创建演出，
+	// 避免打向另一侧的第一张牌仍按上一次朝向生成；仍早于卡牌 OnPlay。
+	public static void Postfix(CardPlay cardPlay, ref Task __result) => __result = AfterBeforeCardPlayed(__result, cardPlay);
+
+	private static async Task AfterBeforeCardPlayed(Task original, CardPlay cardPlay)
+	{
+		await original;
+		ModEntry.Safe("CardPlayed", () => CardFx.OnPlay(cardPlay));
 	}
 }
 

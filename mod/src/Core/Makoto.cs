@@ -157,6 +157,12 @@ public static class Makoto
 	/// <summary>战斗立绘的整体缩放（与 tools/rig/build_rig_v7.py 的 BODY_SCALE 一致）。判定框 / 特效生成点是原版场景里固定的，人物缩小后按脚底换算。</summary>
 	public const float BodyScale = 0.89f;
 
+	/// <summary>原版包围战翻转 Body；读取实际世界横轴，不缓存、不按敌人屏幕位置猜方向。</summary>
+	public static float Facing(NCreature node) => node.Body.GlobalTransform.X.X < 0f ? -1f : 1f;
+
+	/// <summary>将朝右编写的身体相对偏移转到当前朝向；骨骼世界坐标不能再经过此方法。</summary>
+	public static Vector2 Offset(NCreature node, Vector2 offset) => new(offset.X * Facing(node), offset.Y);
+
 	public static Vector2 Center(NCreature node) => Shrink(node, node.VfxSpawnPosition);
 
 	private static Vector2 Shrink(NCreature node, Vector2 p)
@@ -172,6 +178,6 @@ public static class Makoto
 	{
 		Vector2 center = node.VfxSpawnPosition;
 		Vector2 intent = node.Visuals.IntentPosition.GlobalPosition;
-		return Shrink(node, center.Lerp(intent, 0.55f) + new Vector2(14f, 0f));
+		return Shrink(node, center.Lerp(intent, 0.55f) + Offset(node, new Vector2(14f, 0f)));
 	}
 }

@@ -106,7 +106,7 @@ public static class CardFx
 				Fx.After(front, 0.2, "gesture tarot", () =>
 				{
 					Vector2 hand = WeaponFx.Bone(caster, "hand") ?? Makoto.Center(caster);
-					Extras.TarotFlip(front, hand + new Vector2(10f, -80f), play.Card.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Power ? Pal.DarkHour : Pal.Cyan, 0.3f);
+					Extras.TarotFlip(front, hand + Makoto.Offset(caster, new Vector2(10f, -80f)), play.Card.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Power ? Pal.DarkHour : Pal.Cyan, 0.3f);
 				});
 			}
 		}
@@ -141,7 +141,7 @@ public static class CardFx
 		}
 		if (x.HasFlag(Extra.Tarot))
 		{
-			Fx.After(front, 0.12, "skill tarot", () => Extras.TarotFlip(front, head + new Vector2(-30f, -150f), Pal.Cyan, 0.25f));
+			Fx.After(front, 0.12, "skill tarot", () => Extras.TarotFlip(front, head + Makoto.Offset(caster, new Vector2(-30f, -150f)), Pal.Cyan, 0.25f));
 		}
 		if (x.HasFlag(Extra.Butterflies))
 		{
@@ -157,7 +157,7 @@ public static class CardFx
 		}
 		if (x.HasFlag(Extra.MegidoAbove))
 		{
-			Fx.After(front, 0.15, "megido above", () => Elements.Megido(front, head + new Vector2(260f, -120f), 1.3f));
+			Fx.After(front, 0.15, "megido above", () => Elements.Megido(front, head + Makoto.Offset(caster, new Vector2(260f, -120f)), 1.3f));
 		}
 		if (x.HasFlag(Extra.ShieldSelf))
 		{
@@ -165,7 +165,7 @@ public static class CardFx
 		}
 		if (x.HasFlag(Extra.ForgeSelf))
 		{
-			Fx.After(front, 0.2, "forge self", () => Extras.ForgeBlade(front, Makoto.Center(caster) + new Vector2(120f, -40f)));
+			Fx.After(front, 0.2, "forge self", () => Extras.ForgeBlade(front, Makoto.Center(caster) + Makoto.Offset(caster, new Vector2(120f, -40f))));
 		}
 		if (x.HasFlag(Extra.StarsSelf))
 		{
@@ -227,7 +227,7 @@ public static class CardFx
 		(float power, Color tint) = PendingEvoker.Remove(caster.GetInstanceId(), out var p) ? p : (0.6f, Pal.Cyan);
 		// 扣扳机时显示的是手绘举枪手臂：枪口 / 握把取它自己的骨骼（muzzle / grip）
 		Vector2 muzzle = WeaponFx.Bone(caster, "muzzle") ?? WeaponFx.Bone(caster, "evoker_tip") ?? Makoto.Head(caster);
-		Vector2 grip = WeaponFx.Bone(caster, "grip") ?? WeaponFx.Bone(caster, "hand") ?? muzzle + Vector2.Right;
+		Vector2 grip = WeaponFx.Bone(caster, "grip") ?? WeaponFx.Bone(caster, "hand") ?? muzzle + Makoto.Offset(caster, Vector2.Right);
 		EvokerShot.Fire(front, muzzle, muzzle - grip, power, tint);
 		EvokerSound(power);
 		CutInFx.Fire(caster);                             // 有进行中的眼神切入：横幅碎裂、Persona 现身
@@ -379,7 +379,8 @@ public static class CardFx
 					Audio.Sfx.Element(style.Hit, scale);
 					continue;
 				}
-				Elements.Hit(style.Hit, front, node.VfxSpawnPosition, node.GetBottomOfHitbox(), scale);
+				Elements.Hit(style.Hit, front, node.VfxSpawnPosition, node.GetBottomOfHitbox(), scale,
+					Makoto.Node(card.Owner) is NCreature attacker ? Makoto.Facing(attacker) : 1f);
 				if (CardStyles.Summons(card) && !c.IsPlayer)
 				{
 					WeakPopup(card, node, front);
@@ -406,7 +407,7 @@ public static class CardFx
 		Control? front = Makoto.FxLayer();
 		if (front != null)
 		{
-			Extras.ForgeBlade(front, Makoto.Center(caster) + new Vector2(120f, -40f));
+			Extras.ForgeBlade(front, Makoto.Center(caster) + Makoto.Offset(caster, new Vector2(120f, -40f)));
 		}
 	}
 }

@@ -23,7 +23,7 @@ public static class ThroneSeal
 	private static readonly Dictionary<ulong, Seal> Seals = new();
 	private static readonly Color Gold = new(1f, 0.9f, 0.6f);
 
-	private static Vector2 Anchor(NCreature node) => Makoto.Head(node) + new Vector2(-28f, -36f);
+	private static Vector2 Anchor(NCreature node) => Makoto.Head(node) + Makoto.Offset(node, new Vector2(-28f, -36f));
 
 	private static readonly Dictionary<ulong, ulong> DeferUntil = new();
 

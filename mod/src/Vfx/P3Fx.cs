@@ -319,9 +319,10 @@ public static class P3Fx
 	}
 
 	/// <summary>攻击命中：斜十字斩，第二刀错后 70ms；命中点折射 + 碎光。</summary>
-	public static void CrossSlash(Control layer, Vector2 at, Color tint, float size = 210f)
+	public static void CrossSlash(Control layer, Vector2 at, Color tint, float size = 210f, float facing = 1f)
 	{
 		Node2D root = Fx.Root(layer, at, "P3CrossSlash");
+		root.Scale = new Vector2(facing, 1f);
 		for (int i = 0; i < 2; i++)
 		{
 			float ang = i == 0 ? -0.62f : 0.7f;
