@@ -161,7 +161,7 @@ public static class CardFx
 		}
 		if (x.HasFlag(Extra.ShieldSelf))
 		{
-			Fx.After(front, 0.2, "shield self", () => Extras.HexShield(front, Makoto.Center(caster), 1.1f, hold: 0.6f));
+			Fx.After(front, 0.2, "shield self", () => Extras.HexShield(front, Makoto.Center(caster), 1.1f, hold: 0.6f, facing: CrabRoom.Facing(caster)));
 		}
 		if (x.HasFlag(Extra.ForgeSelf))
 		{
@@ -399,7 +399,7 @@ public static class CardFx
 		string name = card.GetType().Name;
 		bool reflect = name == "Reflect";
 		bool big = name is "IAmInvincible" or "Bulwark";
-		Extras.HexShield(front, target.VfxSpawnPosition, big ? 1.6f : 1.25f, reflect, big ? 0.7f : 0.5f);
+		Extras.HexShield(front, CrabRoom.Active ? Makoto.Center(target) : target.VfxSpawnPosition, big ? 1.6f : 1.25f, reflect, big ? 0.7f : 0.5f, CrabRoom.Facing(target));
 	}
 
 	public static void OnForge(NCreature caster)

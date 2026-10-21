@@ -9,10 +9,10 @@ public static class Extras
 	/// 六边形蜂巢护盾（Tetrakarn 风格）：在角色前方的椭圆区域内，六边形从中心向外波浪式点亮，
 	/// 停留片刻后自外向内熄灭。reflect = true 时为 Makarakarn 的紫粉色。
 	/// </summary>
-	public static void HexShield(Control layer, Vector2 center, float scale = 1f, bool reflect = false, float hold = 0.45f)
+	public static void HexShield(Control layer, Vector2 center, float scale = 1f, bool reflect = false, float hold = 0.45f, float facing = 1f)
 	{
 		Color tint = reflect ? new Color("e07bff") : Pal.Cyan;
-		Node2D root = Fx.Root(layer, center + new Vector2(95f * scale, 0f), "P3HexShield");
+		Node2D root = Fx.Root(layer, center + CrabRoom.Offset(layer, new Vector2(95f * scale * facing, 0f)), "P3HexShield");
 		float r = 24f * scale;
 		float w = Mathf.Sqrt(3f) * r;
 		float total = 0.35f + hold + 0.35f;
@@ -48,8 +48,8 @@ public static class Extras
 				});
 			}
 		}
-		P3Fx.Ripple(layer, center + new Vector2(95f * scale, 0f), 420f * scale, 0.6f, 0.025f);
-		P3Fx.Flash(layer, center + new Vector2(95f * scale, 0f), tint, 300f * scale, 0.25f);
+		P3Fx.Ripple(layer, center + CrabRoom.Offset(layer, new Vector2(95f * scale * facing, 0f)), 420f * scale, 0.6f, 0.025f);
+		P3Fx.Flash(layer, center + CrabRoom.Offset(layer, new Vector2(95f * scale * facing, 0f)), tint, 300f * scale, 0.25f);
 		Fx.FreeAfter(root, total + 0.1);
 	}
 
@@ -235,6 +235,7 @@ public static class Extras
 	/// </summary>
 	public static void DarkHour(Control layer, float duration = 2.2f)
 	{
+		layer = CrabRoom.Screen(layer);
 		Vector2 size = layer.GetViewportRect().Size;
 		// 放在人物身后的特效层（不用 TopLevel：TopLevel 会画到所有人物上面）。该层在可缩放 / 震屏的场景容器里，染色矩形放大到三倍屏幕保证盖满
 		Node2D root = Fx.Root(layer, Vector2.Zero, "P3DarkHour");

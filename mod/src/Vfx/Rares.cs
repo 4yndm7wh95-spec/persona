@@ -798,6 +798,7 @@ public static class Rares
 		Color ink = new(0.01f, 0.06f, 0.03f);
 
 		Node2D root = Fx.Root(back, Vector2.Zero, "P3Tyranny");
+		CrabRoom.FillScreen(root); // Boss only: enlarge to the original full-screen composition; retain all lighting/order.
 		int idx = formSky ? FormFx.SkyIndex + 1 : 0;
 		if (ThemeFx.GateRoot is Node2D gate && gate.GetParent() == back)
 		{

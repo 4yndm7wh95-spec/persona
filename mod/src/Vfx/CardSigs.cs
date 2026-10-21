@@ -17,7 +17,10 @@ public static class CardSigs
 	public sealed record Ctx(Control Front, Control Back, NCreature Caster, Vector2 Head, Vector2 Center, Vector2 Feet, List<NCreature> Targets)
 	{
 		public Vector2 Offset(Vector2 offset) => Core.Makoto.Offset(Caster, offset);
-		public Vector2 Above => Head + Offset(new Vector2(-10f, -170f));
+		public float Facing => CrabRoom.Facing(Caster);
+		public Vector2 Above => CrabRoom.Active
+			? new Vector2(Feet.X, Head.Y) + Offset(new Vector2(0f, -170f))
+			: Head + Offset(new Vector2(-10f, -170f));
 		public Vector2[] TargetCenters => Targets.Count > 0
 			? Targets.Select(t => t.VfxSpawnPosition).ToArray()
 			: new[] { Front.GetViewportRect().Size * new Vector2(0.7f, 0.5f) };
@@ -88,10 +91,10 @@ public static class CardSigs
 			new[] { new Vector2(-150f, 60f), new Vector2(-120f, -90f), new Vector2(0f, -170f), new Vector2(120f, -90f), new Vector2(150f, 60f) }, Pal.Cyan, 0.9f),
 		["Glitterstream"] = c => { for (int i = 0; i < 6; i++) { P3Fx.Butterfly(c.Front, c.Feet + c.Offset(new Vector2(-200f + 70f * i, 0f)), c.Head + c.Offset(new Vector2(-120f + 50f * i, -100f)), 1.2f, 0.8f); } },
 		["GatherLight"] = c => { P3Fx.Gather(c.Back, c.Center, Pal.Ice, 520f, 0.4f); After(c, 0.35, () => P3Fx.Flash(c.Back, c.Center, Pal.Ice, 420f, 0.3f)); },
-		["Bulwark"] = c => Uniq.Bulwark(c.Front, c.Center),
+		["Bulwark"] = c => Uniq.Bulwark(c.Front, c.Center, c.Facing),
 		["ParticleWall"] = c => { Node2D p = Fx.Root(c.Front, c.Center + c.Offset(new Vector2(120f, 0f)), "P3ParticleWall"); Fx.Sparks(p, Pal.Cyan, 90, 60f, 260f, 0.8f, scaleMin: 0.1f, scaleMax: 0.3f); Fx.FreeAfter(p, 1.0); },
-		["IAmInvincible"] = c => Uniq.Tetrakarn(c.Front, c.Center),
-		["Reflect"] = c => Uniq.Makarakarn(c.Front, c.Center),
+		["IAmInvincible"] = c => Uniq.Tetrakarn(c.Front, c.Center, c.Facing),
+		["Reflect"] = c => Uniq.Makarakarn(c.Front, c.Center, c.Facing),
 		["CosmicIndifference"] = c => Motifs.DarkClock(c.Back, c.Above, 0.7f),
 		["ManifestAuthority"] = c => Uniq.ManifestAuthority(c.Back, c.Front, c.Feet),
 
@@ -109,7 +112,7 @@ public static class CardSigs
 		}),
 		["Resonance"] = c => Uniq.Resonance(c.Back, c.Front, c.Center, c.TargetCenters),
 		["Conqueror"] = c => After(c, 0.1, () => Uniq.Conqueror(c.Back, c.Front, c.FirstTarget, c.Targets.Count > 0 ? c.Targets[0].GetBottomOfHitbox() : c.Feet)),
-		["Charge"] = c => Uniq.Charge(c.Back, c.Front, c.Feet, c.FirstTarget),
+		["Charge"] = c => Uniq.Charge(c.Back, c.Front, c.Feet, c.FirstTarget, c.Facing),
 		["Begone"] = c => Motifs.CutIn(c.Front, c.Center + c.Offset(new Vector2(220f, 0f)), "BEGONE!", Pal.Royal),
 		["Guards"] = c => Uniq.Guards(c.Back, c.Front, c.Head, c.Feet),
 
@@ -143,10 +146,10 @@ public static class CardSigs
 		// ═════ 能力 ═════
 		["Tyranny"] = c => After(c, 0.1, () => Rares.Tyranny(c.Caster)),
 		["MonarchsGaze"] = c => After(c, 0.15, Rares.Gaze),
-		["Parry"] = c => After(c, 0.1, () => Uniq.Parry(c.Front, c.Center)),
-		["NeutronAegis"] = c => Uniq.NeutronAegis(c.Back, c.Front, c.Center),
+		["Parry"] = c => After(c, 0.1, () => Uniq.Parry(c.Front, c.Center, c.Facing)),
+		["NeutronAegis"] = c => Uniq.NeutronAegis(c.Back, c.Front, c.Center, c.Facing),
 		["Arsenal"] = c => Uniq.Arsenal(c.Back, c.Front, c.Feet, c.Center),
-		["SwordSage"] = c => After(c, 0.2, () => Uniq.SwordSage(c.Back, c.Front, c.Center)),
+		["SwordSage"] = c => After(c, 0.2, () => Uniq.SwordSage(c.Back, c.Front, c.Center, c.Facing)),
 		["HammerTime"] = c => Uniq.HammerTime(c.Back, c.Front, c.Center),
 		["SeekingEdge"] = c => After(c, 0.1, () => SeekFx.Play(c.Front, c.Caster, AllEnemies())),
 		["Furnace"] = c => After(c, 0.1, () => Rares.Furnace(c.Caster)),

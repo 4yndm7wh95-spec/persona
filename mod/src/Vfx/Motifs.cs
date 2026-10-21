@@ -558,7 +558,7 @@ public static class Motifs
 		{
 			if (GodotObject.IsInstanceValid(n) && n.Entity.IsPlayer && P3Makoto.Core.Makoto.Is(n.Entity.Player))
 			{
-				ForgeSpark(front, P3Makoto.Core.Makoto.Center(n) + new Vector2(100f, -20f), 0.8f * s);
+				ForgeSpark(front, P3Makoto.Core.Makoto.Center(n) + (CrabRoom.Active ? P3Makoto.Core.Makoto.Offset(n, new Vector2(100f, -20f)) : new Vector2(100f, -20f)), 0.8f * s);
 				return;
 			}
 		}
