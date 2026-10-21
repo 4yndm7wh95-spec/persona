@@ -1,0 +1,8 @@
+config_version=5
+[application]
+config/name="Pile clipping regression"
+[display]
+window/size/viewport_width=400
+window/size/viewport_height=400
+[rendering]
+renderer/rendering_method="mobile"

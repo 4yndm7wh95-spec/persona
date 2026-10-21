@@ -98,6 +98,7 @@ uniform vec3 c2 = vec3(0.80, 0.95, 1.0);
 uniform vec3 c3 = vec3(1.0);
 uniform vec3 shade = vec3(0.55, 0.85, 1.0);
 uniform vec3 light_dir = vec3(-0.4, 0.6, 0.7);   // 按页面换（v0.14.104 消耗堆 SKILL 页：光从下方，人物是倒挂的）
+uniform float item_face = 0.0;
 varying vec3 wn;
 void vertex() { wn = (MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz; }
 vec3 hero_linear(vec3 c) {
@@ -122,6 +123,11 @@ void fragment() {
 	vec3 dark_rim = OUTPUT_IS_SRGB ? vec3(0.20, 0.23, 0.27) : hero_linear(vec3(0.20, 0.23, 0.27));
 	c = mix(c, dark_rim, rim * (1.0 - ink) * 0.65);
 	ALBEDO = mix(c, vec3(0.80, 0.94, 1.0), rim * 0.6 * ink);
+	// Original face atlas: eyelash strokes are in the two upper outer UV islands.
+	// Tag those strokes for the ITEM compositor instead of darkening the whole face.
+	float lash_uv = step(0.075, UV.y) * step(UV.y, 0.30) * (1.0 - step(0.335, UV.x) * step(UV.x, 0.665));
+	float lash = lash_uv * (1.0 - smoothstep(0.08, 0.35, dot(OUTPUT_IS_SRGB ? hero_linear(t.rgb) : t.rgb, vec3(1.0 / 3.0))));
+	ALBEDO = mix(ALBEDO, vec3(1.0, 0.0, 1.0), lash * item_face);
 }
 ");
 
@@ -143,6 +149,9 @@ uniform float ramp_split = 0.8;
 uniform vec3 streak_col = vec3(0.055, 0.26, 0.48);
 uniform vec3 hair_col = vec3(0.040, 0.19, 0.43);
 uniform vec3 coat_col = vec3(0.020, 0.11, 0.31);
+uniform vec4 item_eyes = vec4(-2.0);
+uniform vec2 item_eye_axis = vec2(1.0, 0.0);
+uniform float item_eye_span = 1.0;
 varying vec4 hero_modulate;
 void vertex() { hero_modulate = COLOR; }
 void fragment() {
@@ -158,6 +167,21 @@ void fragment() {
 	tone = mix(tone, streak_col * (0.6 + 0.4 * lum), clamp((sat - 0.25) / 0.35, 0.0, 1.0));
 	float hair = clamp(c.r * 25.0, 0.0, 1.0) * step(0.5, s);
 	vec3 filled = mix(tone, mix(coat_col, hair_col, hair), s);
+	if (fill_on > 0.5) {
+		float lash = smoothstep(0.10, 0.70, min(c.r, c.b) - c.g);
+		vec2 pixels = vec2(textureSize(TEXTURE, 0));
+		vec2 a = (UV - item_eyes.xy) * pixels, b = (UV - item_eyes.zw) * pixels;
+		vec2 down = vec2(-item_eye_axis.y, item_eye_axis.x);
+		// Eye joints pivot behind the corneas: move the iris region toward the
+		// visible surface in the face's local axes, rather than screen coordinates.
+		vec2 pivot = item_eye_span * (item_eye_axis * 0.20 + down * 0.25);
+		a += pivot; b += pivot;
+		vec2 radii = max(vec2(1.0), item_eye_span * vec2(0.30, 0.25));
+		float eye = 1.0 - smoothstep(0.8, 1.0, min(length(vec2(dot(a, item_eye_axis), dot(a, down)) / radii), length(vec2(dot(b, item_eye_axis), dot(b, down)) / radii)));
+		float iris = eye * smoothstep(0.10, 0.25, sat) * (1.0 - step(0.5, s));
+		filled *= 1.0 + 0.05 * iris;
+		filled = mix(filled, vec3(0.003, 0.005, 0.009), lash);
+	}
 	rgb = mix(rgb, filled, fill_on);
 	alpha = mix(alpha, 1.0, fill_on);
 	float shown = max(entry_full, texture(entry_mask, SCREEN_UV).r);

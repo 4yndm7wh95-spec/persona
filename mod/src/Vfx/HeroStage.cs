@@ -440,7 +440,7 @@ internal static class HeroStage
 		private readonly List<Motion> skillMotions = new();
 		private readonly List<Node3D> heroScenes = new();
 		private readonly List<ShaderMaterial> rampMats = new();
-		private ShaderMaterial? gunMat, hairKeyMat;
+		private ShaderMaterial? gunMat, hairKeyMat, faceMat;
 		private readonly List<ShaderMaterial> outlineMats = new();
 		private Camera3D? camera;
 		private Rig? faceRig;
@@ -607,6 +607,7 @@ internal static class HeroStage
 				{
 					ShaderMaterial ramp = new() { Shader = Shaders.HeroRamp };
 					ramp.SetShaderParameter("tex", textures[tex]);
+					if (name == "MI_PC0051_F000_00_CaBaOp") faceMat = ramp;
 					rampMats.Add(ramp);
 					m = ramp;
 				}
@@ -653,6 +654,7 @@ internal static class HeroStage
 			}
 			if (camera != null) camera.Position = skill ? SkillCamPos : Vector3.Zero;
 			foreach (ShaderMaterial r in rampMats) r.SetShaderParameter("light_dir", skill ? SkillLight : DefaultLight);
+			faceMat?.SetShaderParameter("item_face", which == Act.Item ? 1f : 0f);
 			if (gunMat != null)
 			{
 				gunMat.SetShaderParameter("col", skill ? SkillGunCol : GunCol);
@@ -737,13 +739,21 @@ internal static class HeroStage
 				if (Mathf.IsZeroApprox(clip.W)) return Vector2.Zero;
 				return new Vector2(clip.X / clip.W * 0.5f + 0.5f, -clip.Y / clip.W * 0.5f + 0.5f) * viewportSize;
 			}
-			Vector2 nose = At("Jnt_C_Nose_00"), eyes = At("Jnt_R_Eye_00") - At("Jnt_L_Eye_00");
+			Vector2 nose = At("Jnt_C_Nose_00"), leftEye = At("Jnt_L_Eye_00"), rightEye = At("Jnt_R_Eye_00");
+			Vector2 eyes = rightEye - leftEye;
 			if (eyes.LengthSquared() < 1f) { noseLine.Visible = noseUpper.Visible = false; return; }
 			Vector2 across = eyes.Normalized();
 			if (across.X < 0f) across = -across;
 			Vector2 down = across.Orthogonal();
 			if (down.Y < 0f) down = -down;
 			float span = eyes.Length();
+			if (Display.Material is ShaderMaterial km)
+			{
+				km.SetShaderParameter("item_eyes", new Vector4(leftEye.X / viewportSize.X, leftEye.Y / viewportSize.Y,
+					rightEye.X / viewportSize.X, rightEye.Y / viewportSize.Y));
+				km.SetShaderParameter("item_eye_axis", across);
+				km.SetShaderParameter("item_eye_span", span);
+			}
 			Vector2 start = nose - across * span * 0.11f - down * span * 0.08f;
 			Vector2 px = Display.Size / new Vector2(viewport.Size.X, viewport.Size.Y);
 			// Match the user's trace: a short rising arc above a separate lower stroke.
