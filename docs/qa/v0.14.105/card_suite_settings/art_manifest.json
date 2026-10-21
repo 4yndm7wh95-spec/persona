@@ -1,0 +1,848 @@
+[
+  {
+    "id": "alignment",
+    "sha256": "7e9be6aaeff541c8762198bbdb274bf97c018deb4775c4e37e971abe3aba2ab0",
+    "path": "p3makoto/card_art_v4/alignment.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "arsenal",
+    "sha256": "1aee65cfbcaa9fb90a139eed7978070035acb9e468a8b7a096a8279d3ab05e8d",
+    "path": "p3makoto/card_art_v4/arsenal.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "astral_pulse",
+    "sha256": "46244e1b8c439ae04d220ff45b4a20e67c7feaae63701eb7f53a31269ae7cc7c",
+    "path": "p3makoto/card_art_v4/astral_pulse.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "beat_into_shape",
+    "sha256": "44be9d76d0b7aa378d6fdcdf03d2ea3cb76f4c4d117544aa1579e6b9ee300cf1",
+    "path": "p3makoto/card_art_v4/beat_into_shape.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "begone",
+    "sha256": "4a8a9dc400d8681bb6dfe892ba4a53f4c5c0b69e431b06df2d4e082d4895c94d",
+    "path": "p3makoto/card_art_v4/begone.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "big_bang",
+    "sha256": "8238f7155ca8efb1c1a8c5fabeefc579385b96dcd28e28a446119e647a7f3f7d",
+    "path": "p3makoto/card_art_v4/big_bang.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "black_hole",
+    "sha256": "569d5dfdb6dbcb095b02201b2998e3a296657ef5f0730b739ec17fd216860d85",
+    "path": "p3makoto/card_art_v4/black_hole.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "bombardment",
+    "sha256": "cc60c1adf3906e0993b33443523a2f6d82f448ab5b749e751ad1e8794587c2dd",
+    "path": "p3makoto/card_art_v4/bombardment.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "bulwark",
+    "sha256": "6a618d06ddd5685293c0120691a4e8b0fdf4e31b31e3cf2b819e5af00939aba9",
+    "path": "p3makoto/card_art_v4/bulwark.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "bundle_of_joy",
+    "sha256": "ad55ff71357d8267e16a94a35cc8dbbc1068fbab75fb52d234985cd475392427",
+    "path": "p3makoto/card_art_v4/bundle_of_joy.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "celestial_might",
+    "sha256": "4be1df62b731b1870992b069bdf105753d8b64d5aefe8d82d66901e750b04dda",
+    "path": "p3makoto/card_art_v4/celestial_might.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "charge",
+    "sha256": "a5a4f8b2bc8de63da98d76fb2ee3276371e019f8909d654a7364fd12f6668070",
+    "path": "p3makoto/card_art_v4/charge.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "child_of_the_stars",
+    "sha256": "e2184ab4e18f7bfddb06ae433da807928cf367dc1f69fd31f61284fffe163b22",
+    "path": "p3makoto/card_art_v4/child_of_the_stars.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "cloak_of_stars",
+    "sha256": "5a2226210705598f097a23d292439897c5b8bd02c90abfe1ac2742fcdcc87546",
+    "path": "p3makoto/card_art_v4/cloak_of_stars.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "collision_course",
+    "sha256": "3a09e841de1230064ae807d0e1c2576f96dbdcf57f4e00cfe471257e2e8625d6",
+    "path": "p3makoto/card_art_v4/collision_course.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "comet",
+    "sha256": "3ab6bf0977a450258f9e1dcfc138bd10631b73eb1739efd1a6c5f243cb316437",
+    "path": "p3makoto/card_art_v4/comet.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "conqueror",
+    "sha256": "f24caf768b1b56c79965da76f5cd3d55a2c83e185be230f04b98b54ed2854097",
+    "path": "p3makoto/card_art_v4/conqueror.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "constellation",
+    "sha256": "c01c2d9ae4079bf492deb68e6f706edf9706736594dace49fdd62633f435c9fd",
+    "path": "p3makoto/card_art_v4/constellation.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "convergence",
+    "sha256": "4a5061553d70db813eabc78fbfb1973cec1744a6d8cdb40a4cd0f436debdcc85",
+    "path": "p3makoto/card_art_v4/convergence.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "cosmic_indifference",
+    "sha256": "67f77060b7051f05649e4a38af756d6b270c17945722bdec4e3647d030bcf86f",
+    "path": "p3makoto/card_art_v4/cosmic_indifference.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "crash_landing",
+    "sha256": "9239549e3bb7bbb7344d0f40b2067a0a4bc255ed342c825f6d47e7caaa448029",
+    "path": "p3makoto/card_art_v4/crash_landing.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "crescent_spear",
+    "sha256": "92aef8ec8ad3dafc7926a72bda6264e1595db945990b97bfc1eadfa3aa7005c7",
+    "path": "p3makoto/card_art_v4/crescent_spear.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "crush_under",
+    "sha256": "8b96c5c1be77a056cb6970f68ff3e46c18548079c0a9282eb5b6913fdd0c9ad1",
+    "path": "p3makoto/card_art_v4/crush_under.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "decisions_decisions",
+    "sha256": "65d30cd2e5e95a810888ab543a93abeef3bf856762d499e9f62393eda4c55d84",
+    "path": "p3makoto/card_art_v4/decisions_decisions.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "defend_regent",
+    "sha256": "17f213a10d1faa3ffc0af0eef1b0f33c376dbc9d9dc7e1b03126b923907cee6a",
+    "path": "p3makoto/card_art_v4/defend_regent.png",
+    "size": [
+      1439,
+      1093
+    ]
+  },
+  {
+    "id": "devastate",
+    "sha256": "08478f702b79fb9dcca69696bfd6ecdfdac061604dade4ebdecc17c708d8af86",
+    "path": "p3makoto/card_art_v4/devastate.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "dying_star",
+    "sha256": "6f2d4c9e3230b5b67c3be67851e450c0053b34624899f2493a807ebc2a117f88",
+    "path": "p3makoto/card_art_v4/dying_star.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "falling_star",
+    "sha256": "73ed3718857a8efb0ee5b2dae40be2b43fd8d6b46484b580618771559ff3a920",
+    "path": "p3makoto/card_art_v4/falling_star.png",
+    "size": [
+      1438,
+      1093
+    ]
+  },
+  {
+    "id": "foregone_conclusion",
+    "sha256": "cbb21b43e6636f1f98c596ff2ca363d00aa694da5742a6ed6332f72b765b07d8",
+    "path": "p3makoto/card_art_v4/foregone_conclusion.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "furnace",
+    "sha256": "1c7169366c2e69d6cb1ddfa5fcb28ff555c005c64872797fd9e8b235fbb0870f",
+    "path": "p3makoto/card_art_v4/furnace.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "gamma_blast",
+    "sha256": "d5fb6afc53aba122545e501bca2aae8c4b08e16800acc55773892f2190107c9c",
+    "path": "p3makoto/card_art_v4/gamma_blast.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "gather_light",
+    "sha256": "a690f8f34806ee60dd79a7637147e7b17d6718c07fe3933f055ba71c896070f0",
+    "path": "p3makoto/card_art_v4/gather_light.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "genesis",
+    "sha256": "137cb63bcd915de6e2f2b7da695cc91da49e2aeccb469275cc5d231420558d04",
+    "path": "p3makoto/card_art_v4/genesis.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "glimmer",
+    "sha256": "32d13f51f1cc687c80f5af166cc4bb957a66fad340094801bec5c845b9fcb896",
+    "path": "p3makoto/card_art_v4/glimmer.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "glitterstream",
+    "sha256": "c57def3c1722e7719eb6715dadfdd83dcae0140a63a633c8c36cf8af7e99af48",
+    "path": "p3makoto/card_art_v4/glitterstream.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "glow",
+    "sha256": "df245fd75643154d04b7aa0a8434ecb2d77a462f9bb51d7d4445a0a7586b4b13",
+    "path": "p3makoto/card_art_v4/glow.png",
+    "size": [
+      1438,
+      1093
+    ]
+  },
+  {
+    "id": "guards",
+    "sha256": "5742578e2c717e382b2a9ecdc8b66689e15793ec5dc84aa09707095dc5f7d5dc",
+    "path": "p3makoto/card_art_v4/guards.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "guiding_star",
+    "sha256": "2312f44d0d175e3fcc6be7530eb119c6a6a22ac9b37b7c4d6c779ab9c7c54105",
+    "path": "p3makoto/card_art_v4/guiding_star.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "hammer_time",
+    "sha256": "d4705f932d549078f0dec29c66244daecd9ec813c40adafc32575747a9a5d114",
+    "path": "p3makoto/card_art_v4/hammer_time.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "heavenly_drill",
+    "sha256": "962fc5d4e6dd6d12f35161db7433c7364bc58fa15e9f5a62b51eff80b26a0f57",
+    "path": "p3makoto/card_art_v4/heavenly_drill.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "hegemony",
+    "sha256": "c94dd1e6aa3d33d82f4feac83421086d0f87ba88ded4e3cacee2ef105e608651",
+    "path": "p3makoto/card_art_v4/hegemony.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "heirloom_hammer",
+    "sha256": "f6f4cbd84ae0488b6b3b61b8b78d313eaa4d13a30b3e44e73efa7b36c13e770c",
+    "path": "p3makoto/card_art_v4/heirloom_hammer.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "hidden_cache",
+    "sha256": "cff563c9949252adf66a9275556429beb0f738e47bcde5b1e1552d69d00329ad",
+    "path": "p3makoto/card_art_v4/hidden_cache.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "i_am_invincible",
+    "sha256": "9cb40994fd76c85ff65b7c7fde6f01f948240afbbadf5aa45aa9a5b77501f684",
+    "path": "p3makoto/card_art_v4/i_am_invincible.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "kingly_kick",
+    "sha256": "e4ecc12ead2d6e2b7d2d478b37c035a26ee5bcb4369aa1b79e736a9156616053",
+    "path": "p3makoto/card_art_v4/kingly_kick.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "kingly_punch",
+    "sha256": "95f0c40ef2d0287f5aaea20ca62703d4586935722399acc4bdf5d9369589ccfc",
+    "path": "p3makoto/card_art_v4/kingly_punch.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "knockout_blow",
+    "sha256": "033b4f990a4fc8ae2bc9cb22d89c4ca43779123d6e5a11ba7f74e2f144a2711a",
+    "path": "p3makoto/card_art_v4/knockout_blow.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "know_thy_place",
+    "sha256": "feecdb1f8d97b832bfa0020af3fd5f1d8278ae94f825b55e574502e746d93590",
+    "path": "p3makoto/card_art_v4/know_thy_place.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "largesse",
+    "sha256": "787a5661354e9ba761c9c3da28aa01dce7e451c6e2efa1b011ef49907bbcbbc7",
+    "path": "p3makoto/card_art_v4/largesse.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "lunar_blast",
+    "sha256": "31e8c47789975c8b8785d22a3c0a58cfcd0a20d21112f0d5b21645ba53d6abd8",
+    "path": "p3makoto/card_art_v4/lunar_blast.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "make_it_so",
+    "sha256": "caf9183d6a34b8b8be93d8af68733d334b7649b256f3dda4ae7715b5954878cc",
+    "path": "p3makoto/card_art_v4/make_it_so.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "manifest_authority",
+    "sha256": "5799c7aa7167077b090a795a75185c2d16210559c16b274fc3d02a844e2def90",
+    "path": "p3makoto/card_art_v4/manifest_authority.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "meteor_shower",
+    "sha256": "facc7427bef86acc1173c4bbc1cb010b3812e3ddc13f00c495a9986944a20769",
+    "path": "p3makoto/card_art_v4/meteor_shower.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "monarchs_gaze",
+    "sha256": "291ba47899d33f14b0b21541db328efe44aa43de664ea1c593dad4aae8683fd8",
+    "path": "p3makoto/card_art_v4/monarchs_gaze.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "monologue",
+    "sha256": "249a1a9d4fe481dae910dbd693289f87c8837cb8592f0d3acab90d75cabf989e",
+    "path": "p3makoto/card_art_v4/monologue.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "neutron_aegis",
+    "sha256": "7383c18bc9ab6a83eaf2e417f4961bcb03091cec91f6d55e69de0cc9045b3d2f",
+    "path": "p3makoto/card_art_v4/neutron_aegis.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "orbit",
+    "sha256": "dcd3e41843fc41d9c515b6ffaca155748080657f5cb36c8a648c86c64165bd70",
+    "path": "p3makoto/card_art_v4/orbit.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "pale_blue_dot",
+    "sha256": "48cf143d2e89a6b4cfa18c090a591aead984e91d339664d39603b4479c91fc98",
+    "path": "p3makoto/card_art_v4/pale_blue_dot.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "parry",
+    "sha256": "aea215825c97d89123b078f2510663e7e2b047c85ee45f4efd668c4733dc4dbc",
+    "path": "p3makoto/card_art_v4/parry.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "particle_wall",
+    "sha256": "0b5cc92079fe4d7d41e91dd5f3063a0fd4665a17d8b1c3cbdf1b662bc661290d",
+    "path": "p3makoto/card_art_v4/particle_wall.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "patter",
+    "sha256": "2583660b90bae94e8f6d6e435ac87f0cba3f8f4bb232f71d6e6b734b1bd3eeec",
+    "path": "p3makoto/card_art_v4/patter.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "photon_cut",
+    "sha256": "5abd7e70a25a5e72824ac19e52e0386796a81d1ae7c5a45ce53567fdbb859555",
+    "path": "p3makoto/card_art_v4/photon_cut.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "pillar_of_creation",
+    "sha256": "d6fe3432e597fa818aa5c24e3253877ef583e337b67b4fc869a9d8e957146d6c",
+    "path": "p3makoto/card_art_v4/pillar_of_creation.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "plot",
+    "sha256": "560528d593abd2442e1ea9f9ebe4e181acfc48dd16b61a9f71a7b89f64c2f5da",
+    "path": "p3makoto/card_art_v4/plot.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "prophesize",
+    "sha256": "a1cc4db51c28c78f5df9ecd2b09355fc29e026b2614e7d0efc72a36cb8605aac",
+    "path": "p3makoto/card_art_v4/prophesize.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "quasar",
+    "sha256": "3a65788741d3c3308b4df4b0bed55efebbd30310b6e5f441aad9634b381c52cf",
+    "path": "p3makoto/card_art_v4/quasar.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "radiate",
+    "sha256": "a2e310af59ab344adab2830f43f991bf25cbb8b2bebb7ecdd2790d27cd95db8b",
+    "path": "p3makoto/card_art_v4/radiate.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "refine_blade",
+    "sha256": "bcca0f2b3c11627fa5d9f91157e41db6e2441debc6dd63bd4f94be349c4eba5b",
+    "path": "p3makoto/card_art_v4/refine_blade.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "reflect",
+    "sha256": "993d09da5942eb9cb821722381d4b914fefcbbaf3d43b9832c9bf24d0fd04c11",
+    "path": "p3makoto/card_art_v4/reflect.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "reserves",
+    "sha256": "90a26be7be0da5ccdd99d5847784914003110bba10fbadc72f85598190b78fee",
+    "path": "p3makoto/card_art_v4/reserves.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "resonance",
+    "sha256": "6c84cfc695fd6f08ed3145e74efd147605c7df0daa8f07b6cdcd1b0e8bd414fa",
+    "path": "p3makoto/card_art_v4/resonance.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "royal_corona",
+    "sha256": "770b00a194d5a3491bfe4a21709218920ae7b312f30ba27713d34bf461ef959d",
+    "path": "p3makoto/card_art_v4/royal_corona.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "royal_gamble",
+    "sha256": "c1e3547c1426a21494d460dd4a660d426ad683c7c807e5e7a19cb360361d0e2e",
+    "path": "p3makoto/card_art_v4/royal_gamble.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "royalties",
+    "sha256": "09531f28effaa029ce1fc491f5145b90725dd8e15edc55f864f84b075b3a8f39",
+    "path": "p3makoto/card_art_v4/royalties.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "seeking_edge",
+    "sha256": "ab06020ebc0c75bb6e56702930dfba12391a838ccf9644b4ec31015318131a9b",
+    "path": "p3makoto/card_art_v4/seeking_edge.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "seven_stars",
+    "sha256": "458e468a98e5f422247d17bf479b145614a79acf2712bafeb135c63fca6a45db",
+    "path": "p3makoto/card_art_v4/seven_stars.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "shining_strike",
+    "sha256": "05fb8e6f1d2ec93057d98ca6901cb45576a55bbc173c23ea76fb0e5ce3f13d69",
+    "path": "p3makoto/card_art_v4/shining_strike.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "solar_strike",
+    "sha256": "c033b2e205eaeb09061cc9727f8d938d51415e560893076c6cfe954614f2522d",
+    "path": "p3makoto/card_art_v4/solar_strike.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "sovereign_blade",
+    "sha256": "e94a9d10ed74cd12e57bdf3fe2d9bae539ea506e68181fe00ccec5b78397332f",
+    "path": "p3makoto/card_art_v4/sovereign_blade.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "spectrum_shift",
+    "sha256": "cf5bc8019d33ec4b33a86a1963cab059a06faf9a58199a3048e74d9becc576a0",
+    "path": "p3makoto/card_art_v4/spectrum_shift.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "spoils_of_battle",
+    "sha256": "4752fb5bbb9276083a2845c743df09f8b597b2d0afe5a70e6a16006143c60c9f",
+    "path": "p3makoto/card_art_v4/spoils_of_battle.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "stardust",
+    "sha256": "c3adeb52a924b44bb3f78cc6abfff0b2384e0e967a00390bb1450e6efa7a7ab7",
+    "path": "p3makoto/card_art_v4/stardust.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "strike_regent",
+    "sha256": "66a399918165de1d24fb2f0cce75a725c44057087e65a1eeaa53f7f3c03448c8",
+    "path": "p3makoto/card_art_v4/strike_regent.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "summon_forth",
+    "sha256": "0b72255f8b6dc807d35caa165bdad2967f5a168314bbf712940233fb0c6ad636",
+    "path": "p3makoto/card_art_v4/summon_forth.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "supermassive",
+    "sha256": "e94d913c86eb5908be54d78cd0db53fd5edd43a4c36bb381b419e12181a79854",
+    "path": "p3makoto/card_art_v4/supermassive.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "sword_sage",
+    "sha256": "79b8d0c9081ce215a48ed1be785c60aebce7a1f9633ac91e5ab67d30506d9590",
+    "path": "p3makoto/card_art_v4/sword_sage.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "terraforming",
+    "sha256": "54642fa7752d3e435305430ba154307a680e608a18a6d27bde2363e11b9cf632",
+    "path": "p3makoto/card_art_v4/terraforming.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "the_sealed_throne",
+    "sha256": "d7ddb2098fa0421e29944679be6cca1a17b6192558810735a22377e730019ffa",
+    "path": "p3makoto/card_art_v4/the_sealed_throne.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "the_smith",
+    "sha256": "1c70ec24850ad9db62f536abe30d05b008cff60b68334d4712c0220085fd017d",
+    "path": "p3makoto/card_art_v4/the_smith.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "tutor",
+    "sha256": "846f7236d99bac451d14725b45789177ffe29f687e2ffc01e7816452c6cfb169",
+    "path": "p3makoto/card_art_v4/tutor.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "tyranny",
+    "sha256": "dd745170ab40b4dc5a16d418a61ac08d00d724fc7a9e350cd8ff99cd4552dce6",
+    "path": "p3makoto/card_art_v4/tyranny.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "venerate",
+    "sha256": "52fae3928ce382500f6ee9e3d2a8b5cac977fe4d1a2e632b9fa3777da75ede73",
+    "path": "p3makoto/card_art_v4/venerate.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "void_form",
+    "sha256": "8c98b88ebfdf58673d6074820415d4abab5056433b6f5dcae69c9a1e89897084",
+    "path": "p3makoto/card_art_v4/void_form.png",
+    "size": [
+      1000,
+      760
+    ]
+  },
+  {
+    "id": "wrought_in_war",
+    "sha256": "ae0b8c17d65a8fcd5f1ad689d039a16bdf2d0b8449d9472e9c1b0dfcb1a36cbe",
+    "path": "p3makoto/card_art_v4/wrought_in_war.png",
+    "size": [
+      1000,
+      760
+    ]
+  }
+]

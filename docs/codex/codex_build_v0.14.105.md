@@ -42,7 +42,8 @@
 2. <repo>\musicbox：dotnet build -c Release -p:GameDir="<G111>"。
 3. <repo>\testmod：dotnet build -c Release -p:GameDir="<G111>"。
 
-【4. 打包 pck】（和以前一样）
+【4. 打包 pck】
+新增（2026-10-21）：复制已有 stage 后、创建 pck 前，运行 `python tools/pck/build_card_art_v4.py --stage <本次stage目录>`，从 art/cards/v4 的91张图和 retained 的3张图生成私有插画资源及无损导入文件；gather_light 自动取 art/cards/approved/gather_light/gather_light.png。必须看到94张像素校验通过。不要打包别的会话未提交的旧大剑卡面；不再依靠旧 cards 目录替换插画。
 1. 把 <repo>\mod\pck_stage 整个复制到 <repo>\mod\_build\stage_<时间戳>\（包括 .godot，可以用 robocopy /E）。
 2. 核对 p3makoto\ui\ 下有 system_portrait.png、system_portrait_q1.png、system_portrait_half.png、system_portrait_q3.png、system_portrait_closed.png 及各自的 .import，.godot\imported\ 下有五个对应的 .ctex；p3makoto\ui\dive\ 下有 14 张 dive_*.png 及各自的 .import，.godot\imported\ 下有 14 个 dive_*.ctex；p3makoto\sfx\ 下有 92 个 .ogg（新增 sys_dive.ogg、sys_blob.ogg）；p3makoto\pile_deck、pile_discard、pile_exhaust 下各有 *_skel_data.tres；p3makoto\pile\ 下有 pile_skel_data.tres、pile.atlas.import、pile.spine-json.import；p3makoto\rig\characters\ 下有 regent_skel_data.tres 和 regent.atlas.import；.godot\imported\ 下有两个文件名含 p3private 的 .spatlas。
    另外（v0.14.90 起）：p3makoto\hero3d\ 下有 4 个 .glb（SK_PC0051_C002 / F000 / H000、SK_Pp2001_000）、tex\ 下 8 张 png（含 T_UI_Camp_Caustics_00.png、commu_word.png、item_word.png；v0.14.103 的 item_waterlight.png 已删除，stage 里不应再有）、anim\ 下 43 个文件（v0.14.98 加了 CampTopStart / CampTopLoop；v0.14.101 加了 CampItemStart / CampItemLoop；v0.14.105 加了 CampSkillStart / CampSkillLoop，各 .json/.bin/.scale.bin），dive\ 下的文件以 <repo>\mod\pck_stage\p3makoto\hero3d\dive\ 实际内容为准（逐个核对复制完整），5 段 Card_ 动作各 .json/.bin），合计约 11MB；这些是运行时直接读的原始文件，**没有也不需要 .import**，原样打进 pck。
@@ -89,7 +90,7 @@
 1. 消耗堆（原版 SKILL 页）：人物外套 / 头发暗部（青色以外）是透明的，透出后面的水（落在白底上也是水色，不再是深蓝色块）；其余同 v0.14.104（V 字白底、白底上的轮廓灰影、人物一步到位、召唤器深灰两层）。
    弃牌堆（原版 ITEM 页）：牌在左边挡住人物大部分，露出脸和手；人物是原版那种低对比的蓝色单色（皮肤中蓝、阴影和线条深蓝、头发 / 外套按原版色），脸上能看到鼻梁线和下巴、耳朵的描线；屏幕左边、下边不再有人物被截断的断层。
 2. 选卡（默认「精简」）：点「将一张牌添加到你的牌组」后，三张牌一开始就是正面，从中间同时向左右展开（约 0.3 秒），马上能点；上方 SHUFFLE TIME 字图滑过、落位时有十字闪光。
-   设置 → P3MAKOTO 一栏新增「选卡节奏：精简 / 完整」，切到「完整」是原来的标题 → 洗牌 → 翻牌。
+   模组 → 选中 P3Makoto → 模组配置中的「选卡节奏：精简 / 完整」，切到「完整」是原来的标题 → 洗牌 → 翻牌。
 3. 抽牌堆、牌组不变。
 4. 日志开头 "[P3Makoto] init v0.14.105"。
 

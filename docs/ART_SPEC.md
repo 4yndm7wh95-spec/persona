@@ -1828,3 +1828,7 @@ Grand.cs 里其余函数暂时保留不用。
 ### v0.14.105 螃蟹战朝向与认可辉光插画
 按人物实际Body世界朝向同步召唤、斩击、突刺、拳踢、施法偏移和常驻门；出牌特效等待原版BeforeCardPlayed转身完成。仅接入用户认可gather_light插画，原版卡框/UI保持；其他v4候选仍不接入。192项离线检查、两版本各1225引用兼容通过。详见docs/qa/v0.14.105/facing_approved_card/README.md。
 
+
+
+### v0.14.105 整套新版插画与模组配置
+用户确认安装整套v4：91张新版加3张保留图，gather_light采用后续明确认可稿。94张插画经私有card_art_v4路径加载，卡框/字体/描述保持原版；新增CardArt独立开关，可即时恢复原图，旧CardFrame仍固定关闭。参考本机RegentFX的RitsuLib schema/程序集metadata协议接入“模组配置”，没有组件时可从P3Makoto模组详情打开同一配置；移除常规设置中的注入。沿用原配置文件。零警告构建、两版本各1244引用兼容、532项离线桩检查、原生Godot94图资源加载及哈希核对通过。门位置和螃蟹朝向修复保留。详见docs/qa/v0.14.105/card_suite_settings/README.md。

@@ -6,39 +6,16 @@ using P3Makoto.Core;
 
 namespace P3Makoto.Patches;
 
-/// <summary>
-/// v0.14.46：游戏「设置 → 常规」最下面加一栏 P3MAKOTO，每项演出「完整 / 关闭」（游戏的模组菜单只能启用 / 禁用，没有给 mod 的配置页）。
-/// 只用普通 Godot 控件，不复制带脚本的原版设置行（它们各自绑着原版的某个设置）。0.107.1 / 0.111 的设置界面结构相同（%GeneralSettings → Content）。
-/// </summary>
-[HarmonyPatch(typeof(NSettingsScreen), nameof(NSettingsScreen._Ready))]
+/// <summary>模组配置窗口的控件；不再注入游戏的常规设置。</summary>
 public static class P3SettingsSectionPatch
 {
 	private const string SectionName = "P3MakotoSettings";
-
 	private static readonly Color Navy = new(0.03f, 0.1f, 0.3f, 0.95f);
 	private static readonly Color Cyan = new(0.46f, 0.83f, 0.97f);
 
-	public static void Postfix(NSettingsScreen __instance)
-	{
-		ModEntry.Safe("settings section", () =>
-		{
-			if (__instance.GetNodeOrNull<NSettingsPanel>("%GeneralSettings") is not NSettingsPanel panel || panel.Content is not VBoxContainer content)
-			{
-				return;
-			}
-			if (content.GetNodeOrNull(SectionName) != null)
-			{
-				return;
-			}
-			Build(content);
-			// 面板高度按内容算（原版只在 _Ready / 显隐变化时算），加了行之后补算一次，滚动范围才包含新的这几行
-			AccessTools.Method(typeof(NSettingsPanel), "RefreshSize")?.Invoke(panel, null);
-		});
-	}
-
 	private static bool Zh => TranslationServer.GetLocale().StartsWith("zh");
 
-	private static void Build(VBoxContainer content)
+	public static void Build(VBoxContainer content)
 	{
 		// 字体 / 字号 / 颜色照抄原版"快速模式"那一行的标签，看起来是同一套设置
 		Font? font = null;
@@ -62,7 +39,7 @@ public static class P3SettingsSectionPatch
 		section.AddThemeConstantOverride("separation", 6);
 		content.AddChild(section);
 
-		Label header = new() { Text = Zh ? "P3MAKOTO · 结城理演出" : "P3MAKOTO · Makoto presentation" };
+		Label header = new() { Text = Zh ? "P3MAKOTO · 结城理模组配置" : "P3MAKOTO · Mod configuration" };
 		Style(header, font, size + 2, Cyan);
 		header.CustomMinimumSize = new Vector2(0f, rowH);
 		header.VerticalAlignment = VerticalAlignment.Center;
@@ -78,6 +55,12 @@ public static class P3SettingsSectionPatch
 		section.AddChild(hint);
 
 		P3Settings.Data d = P3Settings.Current;
+		Row(section, font, size, color, rowH, Zh ? "卡面插画（立即生效）" : "Card illustrations (applies immediately)", () => d.CardArt, v =>
+		{
+			d.CardArt = v;
+			Scenes.ApprovedCardArt.RefreshExisting();
+		}, on => on ? (Zh ? "新版插画" : "New artwork") : (Zh ? "原版插画" : "Vanilla"));
+		Row(section, font, size, color, rowH, Zh ? "抽牌堆按原版顺序显示" : "Vanilla draw pile order", () => d.DrawPileOrder, v => d.DrawPileOrder = v, on => on ? (Zh ? "开启" : "On") : (Zh ? "关闭" : "Off"));
 		Row(section, font, size, color, rowH, Zh ? "总攻击（精英 / Boss 战胜利）" : "All-Out Attack (elite / boss wins)", () => d.AllOut, v => d.AllOut = v);
 		Row(section, font, size, color, rowH, Zh ? "战斗胜利演出" : "Victory banner", () => d.Victory, v => d.Victory = v);
 		// One selector, keeping the existing saved flags compatible: Full -> Quick -> Off.
@@ -141,6 +124,7 @@ public static class P3SettingsSectionPatch
 
 	private static void Style(Label l, Font? font, int size, Color color)
 	{
+		font ??= Zh ? Vfx.Typo.CjkBold : Vfx.Typo.Barlow;
 		if (font != null)
 		{
 			l.AddThemeFontOverride("font", font);
@@ -166,3 +150,4 @@ public static class SettingsSkinPatch
 		})).CallDeferred();
 	}
 }
+
