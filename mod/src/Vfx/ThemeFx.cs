@@ -101,17 +101,14 @@ public static class ThemeFx
 	// 0.80：门洞 ≈ 455px，比结城理（≈428px）略高；门框总高 ≈ 614px、宽 ≈ 410px —— 1080p 下门顶离顶部状态栏还有一段、左边不贴屏幕边
 	// （0.64 时门洞比人矮；0.86 时门顶和左边都贴到了屏幕边缘）
 	private const float DoorScale = 0.80f * Makoto.BodyScale;   // 跟人物一起缩（v0.13.7）
-	// 将完整分层门作为一个竖直平面转向人物朝向。局部水平轴带地面纵深，竖轴仍竖直；
-	// 门板、格栅、指针、裁切与锁定回声共享变换，开关门不会退回正面或错层。
+	// 落点沿用用户认可的位置；可见门框直接使用认可图，门板在 GateView 中作铰链旋转。
 	private static readonly Vector2 DoorOffset = new(-185f, -70f);
-	private static Transform2D DoorTransform(Vector2 origin, float scale = 1f) => new(
-		new Vector2(0.82f, -0.12f) * DoorScale * scale,
-		new Vector2(0f, 0.95f) * DoorScale * scale, origin);
 
 	private sealed class Gate
 	{
 		public Node2D Root = null!;
 		public Node2D Body = null!;
+		public GateView View = null!;
 		public Sprite2D Leaf = null!;
 		public Sprite2D FrameFlash = null!;
 		public Node2D Interior = null!;
@@ -150,12 +147,13 @@ public static class ThemeFx
 		Vector2 floor = Makoto.Feet(caster) + DoorOffset;
 		Gate g = new();
 		g.Root = Fx.Root(back, floor, "P3VelvetGate");
-		g.Root.Transform = DoorTransform(g.Root.Position);
+		g.Root.Scale = Vector2.One * DoorScale;
+		g.View = new GateView(g.Root);
 		// 身后层里的顺序：影时间在场时插在天色上面、月亮下面；否则放最底下（其他身后特效都在门前面）
 		back.MoveChild(g.Root, FormFx.SkyIndex >= 0 ? FormFx.SkyIndex + 1 : 0);
 
 		// 水面之上才显示（门从地面下升起 / 沉下去）
-		Polygon2D ground = Clip(g.Root, new Rect2(-900f, -2400f, 1800f, 2400f));
+		Polygon2D ground = Clip(g.View.Content, new Rect2(-900f, -2400f, 1800f, 2400f));
 		g.Body = new Node2D();
 		ground.AddChild(g.Body);
 
@@ -205,11 +203,17 @@ public static class ThemeFx
 		});
 		// 2) 门从水下升起（过冲后落定），底部溅起水花；3) 锁定：门框闪白 + 门形回声
 		g.Body.Position = new Vector2(0f, 800f);
+		g.View.Rise(800f);
 		Fx.After(g.Root, 0.3, "gate rise", () =>
 		{
 			Splash(back, floor, 1f);
 			Audio.Sfx.Play(Audio.Snd.TarotReveal, 0.8f);
-			Fx.Animate(g.Body, 0.34f, t => g.Body.Position = new Vector2(0f, 800f * (1f - Ease.OutBack(t))));
+			Fx.Animate(g.Body, 0.34f, t =>
+			{
+				float y = 800f * (1f - Ease.OutBack(t));
+				g.Body.Position = new Vector2(0f, y);
+				g.View.Rise(y);
+			});
 		});
 		Fx.After(g.Root, 0.64, "gate lock", () =>
 		{
@@ -226,7 +230,7 @@ public static class ThemeFx
 		{
 			if (!g.Busy && Makoto.FxLayer() is Control f)
 			{
-				Vector2 crack = g.Root.ToGlobal(new Vector2(Opening.End.X, Opening.GetCenter().Y));
+				Vector2 crack = g.Root.ToGlobal(GateView.Project(new Vector2(Opening.End.X, Opening.GetCenter().Y)));
 				P3Fx.Butterfly(f, crack, crack + new Vector2(Fx.Rand(-80f, 40f), Fx.Rand(-280f, -200f)), 1.6f, 0.7f);
 			}
 		});
@@ -264,7 +268,7 @@ public static class ThemeFx
 		{
 			if (Makoto.FxLayer() is Control front)
 			{
-				Vector2 tip = g.Root.ToGlobal(Dial + Vector2.Up.Rotated(Mathf.DegToRad(74f)) * 61f);
+				Vector2 tip = g.Root.ToGlobal(GateView.Project(Dial + Vector2.Up.Rotated(Mathf.DegToRad(74f)) * 61f));
 				P3Fx.Flash(front, tip, Pal.White, 70f, 0.2f);
 			}
 			Audio.Sfx.Play(Audio.Snd.Weak, 0.45f, pitch: 1.3f);
@@ -278,7 +282,7 @@ public static class ThemeFx
 	{
 		if (Makoto.FxLayer(back: true) is Control back && Makoto.FxLayer() is Control front)
 		{
-			Vector2 c = g.Root.ToGlobal(Opening.GetCenter());
+			Vector2 c = g.Root.ToGlobal(GateView.Project(Opening.GetCenter()));
 			Rays(back, c);
 			for (int i = 0; i < 2; i++)
 			{
@@ -310,11 +314,13 @@ public static class ThemeFx
 		g.Leaf.Modulate = new Color(shade, shade, shade);
 		g.Interior.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(g.Open * 3f, 0f, 1f));
 		g.Needle.GetParent<Node2D>().Rotation = Mathf.DegToRad(-74f + 148f * g.NeedleT);
+		g.View.SetOpen(g.Open, g.NeedleT);
 	}
 
 	private static void Tick(Gate g, float dt)
 	{
 		g.Time += dt;
+		g.View.Tick(g.Time);
 		// 井道光带：一条条向下滑过（电梯在上升）
 		float h = Opening.Size.Y + 80f;
 		float[] phase = { 0f, 0.27f, 0.45f, 0.71f, 0.86f, 0.6f };
@@ -339,6 +345,8 @@ public static class ThemeFx
 		}
 		// 影时间在场时，门也被"照"成暗绿，和战场一致
 		g.Body.Modulate = g.Body.Modulate.Lerp(FormFx.WorldTint, 1f - Mathf.Exp(-6f * dt));
+		g.View.Tint(g.Body.Modulate);
+		g.View.Flash(g.FrameFlash.Modulate);
 	}
 
 	private static void WaterRing(Control layer, Vector2 at, float delay)
@@ -398,13 +406,13 @@ public static class ThemeFx
 	private static void Echo(Control layer, Vector2 floor)
 	{
 		Node2D root = Fx.Root(layer, floor, "P3GateEcho");
-		root.Transform = DoorTransform(root.Position);
-		Sprite2D e = Sprite(root, "door_frame", new Vector2(-256f, -768f), centered: false);
-		e.Material = Fx.Additive;
+		root.Scale = Vector2.One * DoorScale;
+		GateView view = new(root, frameOnly: true);
+		Sprite(view.Content, "door_frame", new Vector2(-256f, -768f), centered: false);
 		Fx.Animate(root, 0.38f, t =>
 		{
-			root.Transform = DoorTransform(root.Position, 1f + 0.1f * Ease.OutExpo(t));
-			e.Modulate = new Color(Pal.Ice, 0.55f * (1f - t));
+			root.Scale = Vector2.One * DoorScale * (1f + 0.1f * Ease.OutExpo(t));
+			root.Modulate = new Color(Pal.Ice, 0.55f * (1f - t));
 		});
 		Fx.FreeAfter(root, 0.4);
 	}
