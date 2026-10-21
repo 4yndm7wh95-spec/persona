@@ -36,16 +36,18 @@ public static class P3Settings
 		{
 			Data d = Current;
 			bool[] flags = { d.AllOut, d.Victory, d.ShuffleTime, d.ShuffleFull, d.CutIn, d.SelectSummon, d.Architect, d.PileScreen, d.TipList, d.CursorSkin };
-			bool all = true, any = false;
-			foreach (bool flag in flags) { all &= flag; any |= flag; }
-			return all ? 1 : any ? 2 : 0;
+			bool all = true;
+			foreach (bool flag in flags) all &= flag;
+			bool simple = d.AllOut && !d.Victory && d.ShuffleTime && !d.ShuffleFull && !d.CutIn && d.SelectSummon && !d.Architect && !d.PileScreen && d.TipList && d.CursorSkin;
+			return all ? 1 : simple ? 0 : 2;
 		}
 	}
 
 	public static void ApplyMode(bool enabled)
 	{
 		Data d = Current;
-		d.AllOut = d.Victory = d.ShuffleTime = d.ShuffleFull = d.CutIn = d.SelectSummon = d.Architect = d.PileScreen = d.TipList = d.CursorSkin = enabled;
+		d.AllOut = d.ShuffleTime = d.SelectSummon = d.TipList = d.CursorSkin = true;
+		d.Victory = d.ShuffleFull = d.CutIn = d.Architect = d.PileScreen = enabled;
 		Save();
 	}
 

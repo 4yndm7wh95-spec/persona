@@ -65,7 +65,7 @@ public static class P3SettingsSectionPatch
 		void Option(string text, Func<bool> get, Action<bool> set, Func<bool, string>? display = null) =>
 			Row(section, font, size, color, rowH, text, get, set, display, refreshers, RefreshAll);
 		Option( Zh ? "精英/首领战结算动画" : "Elite / boss victory animation", () => d.AllOut, v => d.AllOut = v);
-		Option( Zh ? "胜利提示" : "Victory message", () => d.Victory, v => d.Victory = v);
+		Option( Zh ? "胜利动画" : "Victory animation", () => d.Victory, v => d.Victory = v);
 		// One selector, keeping the existing saved flags compatible: Full -> Quick -> Off.
 		Option( Zh ? "选牌动画" : "Card reward animation", () => d.ShuffleTime, _ =>
 		{
@@ -100,7 +100,7 @@ public static class P3SettingsSectionPatch
 		for (int i = 0; i < 3; i++)
 		{
 			int mode = i;
-			Button button = new() { Text = Zh ? new[] { "极简", "完整", "自定义" }[i] : new[] { "Minimal", "Full", "Custom" }[i], CustomMinimumSize = new Vector2(160f, rowH), ToggleMode = true };
+			Button button = new() { Text = Zh ? new[] { "精简", "完整", "自定义" }[i] : new[] { "Simple", "Full", "Custom" }[i], CustomMinimumSize = new Vector2(160f, rowH), ToggleMode = true };
 			button.AddThemeFontOverride("font", font ?? (Zh ? Vfx.Typo.CjkBold : Vfx.Typo.Barlow));
 			button.AddThemeFontSizeOverride("font_size", size + 2);
 			void Refresh()
