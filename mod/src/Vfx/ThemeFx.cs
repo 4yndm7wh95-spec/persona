@@ -101,6 +101,12 @@ public static class ThemeFx
 	// 0.80：门洞 ≈ 455px，比结城理（≈428px）略高；门框总高 ≈ 614px、宽 ≈ 410px —— 1080p 下门顶离顶部状态栏还有一段、左边不贴屏幕边
 	// （0.64 时门洞比人矮；0.86 时门顶和左边都贴到了屏幕边缘）
 	private const float DoorScale = 0.80f * Makoto.BodyScale;   // 跟人物一起缩（v0.13.7）
+	// 将完整分层门作为一个竖直平面转向人物朝向。局部水平轴带地面纵深，竖轴仍竖直；
+	// 门板、格栅、指针、裁切与锁定回声共享变换，开关门不会退回正面或错层。
+	private static readonly Vector2 DoorOffset = new(-185f, -70f);
+	private static Transform2D DoorTransform(Vector2 origin, float scale = 1f) => new(
+		new Vector2(0.82f, -0.12f) * DoorScale * scale,
+		new Vector2(0f, 0.95f) * DoorScale * scale, origin);
 
 	private sealed class Gate
 	{
@@ -141,10 +147,10 @@ public static class ThemeFx
 			Fx.Animate(_gate!.FrameFlash, 0.3f, t => _gate.FrameFlash.Modulate = new Color(1f, 1f, 1f, 0.6f * (1f - t)));
 			return;
 		}
-		Vector2 floor = Makoto.Feet(caster) + new Vector2(-255f, 0f);      // 门的右边刚好在人物身后左侧，左边离屏幕边约 35px
+		Vector2 floor = Makoto.Feet(caster) + DoorOffset;
 		Gate g = new();
 		g.Root = Fx.Root(back, floor, "P3VelvetGate");
-		g.Root.Scale = Vector2.One * DoorScale;
+		g.Root.Transform = DoorTransform(g.Root.Position);
 		// 身后层里的顺序：影时间在场时插在天色上面、月亮下面；否则放最底下（其他身后特效都在门前面）
 		back.MoveChild(g.Root, FormFx.SkyIndex >= 0 ? FormFx.SkyIndex + 1 : 0);
 
@@ -392,12 +398,12 @@ public static class ThemeFx
 	private static void Echo(Control layer, Vector2 floor)
 	{
 		Node2D root = Fx.Root(layer, floor, "P3GateEcho");
-		root.Scale = Vector2.One * DoorScale;
+		root.Transform = DoorTransform(root.Position);
 		Sprite2D e = Sprite(root, "door_frame", new Vector2(-256f, -768f), centered: false);
 		e.Material = Fx.Additive;
 		Fx.Animate(root, 0.38f, t =>
 		{
-			root.Scale = Vector2.One * DoorScale * (1f + 0.1f * Ease.OutExpo(t));
+			root.Transform = DoorTransform(root.Position, 1f + 0.1f * Ease.OutExpo(t));
 			e.Modulate = new Color(Pal.Ice, 0.55f * (1f - t));
 		});
 		Fx.FreeAfter(root, 0.4);

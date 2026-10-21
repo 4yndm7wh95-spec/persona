@@ -92,7 +92,7 @@ public static class P3SettingsSectionPatch
 		Row(section, font, size, color, rowH, Zh ? "建筑师房间（关闭 = 全部原版）" : "Architect room (off = all vanilla)", () => d.Architect, v => d.Architect = v);
 		Row(section, font, size, color, rowH, Zh ? "牌堆 / 牌组界面（P3R 风格）" : "Pile / deck screens (P3R style)", () => d.PileScreen, v => d.PileScreen = v);
 		Row(section, font, size, color, rowH, Zh ? "状态说明列表（P3R 风格，可滚动）" : "Status tip list (P3R style, scrollable)", () => d.TipList, v => d.TipList = v);
-		Row(section, font, size, color, rowH, Zh ? "卡框（P3R 塔罗牌风格）" : "Card frames (P3R tarot style)", () => d.CardFrame, v => d.CardFrame = v);
+		Row(section, font, size, color, rowH, Zh ? "卡图与卡框替换（关闭 = 游戏原版）" : "Card art and frames (off = vanilla)", () => d.CardFrame, v => d.CardFrame = v);
 		Row(section, font, size, color, rowH, Zh ? "鼠标光标（立即生效）" : "Mouse cursor (applies immediately)", () => d.CursorSkin, v =>
 		{
 			d.CursorSkin = v;
