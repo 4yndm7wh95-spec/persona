@@ -22,7 +22,7 @@ public static class HudSkin
 	private static readonly Color Empty = new(0.12f, 0.2f, 0.47f, 1f);
 	private static readonly Color Red = new(0.886f, 0.125f, 0.227f, 1f);
 	private static Texture2D? _back;
-	private static Texture2D? Back => _back ??= ResourceLoader.Exists("res://p3makoto/fx/pile_card_back.png") ? ResourceLoader.Load<Texture2D>("res://p3makoto/fx/pile_card_back.png") : null;
+	private static Texture2D? Back => _back ??= ResourceLoader.Exists("res://images/packed/run_history/card_back.png") ? ResourceLoader.Load<Texture2D>("res://images/packed/run_history/card_back.png") : null;
 
 	/// <summary>每帧回调；节点没了就自己退订。出错一次就整套退回原版（不每帧重试每帧报错）。</summary>
 	private static void Drive(Node owner, Node2D deco, string what, Action<float> tick, Action restore)

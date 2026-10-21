@@ -1952,7 +1952,7 @@ public static class PileFx
 	}
 
 	// ── 真实翻转：离屏渲染这张牌（SubViewport，1.5 倍分辨率）作正面，P3R 塔罗牌背作背面，贴在一条按透视投影的竖条网格上 ──
-	private const string BackPath = "res://p3makoto/fx/pile_card_back.png";
+	private const string BackPath = "res://images/packed/run_history/card_back.png";
 	private const int FlipStrips = 14;
 	private const float FlipRes = 1.5f;
 	private const float FlipPadding = 48f;                 // 命中框不含费用圆标、标题飘带和阴影，四边留透明空间。

@@ -6,12 +6,24 @@ using P3Makoto.Core;
 
 namespace P3Makoto.Patches;
 
-/// <summary>模组配置窗口的控件；不再注入游戏的常规设置。</summary>
+/// <summary>游戏常规设置中的结城理选项；使用简短、直白的名称。</summary>
+[HarmonyPatch(typeof(NSettingsScreen), nameof(NSettingsScreen._Ready))]
 public static class P3SettingsSectionPatch
 {
 	private const string SectionName = "P3MakotoSettings";
 	private static readonly Color Navy = new(0.03f, 0.1f, 0.3f, 0.95f);
 	private static readonly Color Cyan = new(0.46f, 0.83f, 0.97f);
+
+	public static void Postfix(NSettingsScreen __instance)
+	{
+		ModEntry.Safe("settings section", () =>
+		{
+			if (__instance.GetNodeOrNull<NSettingsPanel>("%GeneralSettings") is not NSettingsPanel panel || panel.Content is not VBoxContainer content) return;
+			if (content.GetNodeOrNull(SectionName) != null) return;
+			Build(content);
+			AccessTools.Method(typeof(NSettingsPanel), "RefreshSize")?.Invoke(panel, null);
+		});
+	}
 
 	private static bool Zh => TranslationServer.GetLocale().StartsWith("zh");
 
@@ -39,7 +51,7 @@ public static class P3SettingsSectionPatch
 		section.AddThemeConstantOverride("separation", 6);
 		content.AddChild(section);
 
-		Label header = new() { Text = Zh ? "P3MAKOTO · 结城理模组配置" : "P3MAKOTO · Mod configuration" };
+		Label header = new() { Text = Zh ? "结城理" : "Makoto" };
 		Style(header, font, size + 2, Cyan);
 		header.CustomMinimumSize = new Vector2(0f, rowH);
 		header.VerticalAlignment = VerticalAlignment.Center;
@@ -47,41 +59,37 @@ public static class P3SettingsSectionPatch
 
 		Label hint = new()
 		{
-			Text = Zh ? "关闭 = 不播这段演出，直接走原版流程。快速模式为「极速」时全部视为关闭（牌堆界面除外）。建筑师房间在下次进房间时生效。"
-				: "Off = skip it and use the vanilla flow. Instant fast mode turns all of these off (except the pile screen). The Architect room applies on the next visit.",
+			Text = Zh ? "设置自动保存。极速模式会跳过战斗动画。建筑师房间下次进入生效。"
+				: "Changes save automatically. Instant mode skips combat animations. Architect changes apply on the next visit.",
 			AutowrapMode = TextServer.AutowrapMode.WordSmart,
 		};
 		Style(hint, font, Mathf.Max(16, size - 8), new Color(color, 0.65f));
 		section.AddChild(hint);
 
 		P3Settings.Data d = P3Settings.Current;
-		Row(section, font, size, color, rowH, Zh ? "卡面插画（立即生效）" : "Card illustrations (applies immediately)", () => d.CardArt, v =>
-		{
-			d.CardArt = v;
-			Scenes.ApprovedCardArt.RefreshExisting();
-		}, on => on ? (Zh ? "新版插画" : "New artwork") : (Zh ? "原版插画" : "Vanilla"));
-		Row(section, font, size, color, rowH, Zh ? "抽牌堆按原版顺序显示" : "Vanilla draw pile order", () => d.DrawPileOrder, v => d.DrawPileOrder = v, on => on ? (Zh ? "开启" : "On") : (Zh ? "关闭" : "Off"));
-		Row(section, font, size, color, rowH, Zh ? "总攻击（精英 / Boss 战胜利）" : "All-Out Attack (elite / boss wins)", () => d.AllOut, v => d.AllOut = v);
-		Row(section, font, size, color, rowH, Zh ? "战斗胜利演出" : "Victory banner", () => d.Victory, v => d.Victory = v);
+		Row(section, font, size, color, rowH, Zh ? "抽牌堆排序" : "Draw pile sorting", () => d.DrawPileOrder, v => d.DrawPileOrder = v, on => on ? (Zh ? "原版顺序" : "Original") : (Zh ? "按类型" : "By type"));
+		Row(section, font, size, color, rowH, Zh ? "精英/首领战结算动画" : "Elite / boss victory animation", () => d.AllOut, v => d.AllOut = v);
+		Row(section, font, size, color, rowH, Zh ? "胜利提示" : "Victory message", () => d.Victory, v => d.Victory = v);
 		// One selector, keeping the existing saved flags compatible: Full -> Quick -> Off.
-		Row(section, font, size, color, rowH, "SHUFFLE TIME", () => d.ShuffleTime, _ =>
+		Row(section, font, size, color, rowH, Zh ? "选牌动画" : "Card reward animation", () => d.ShuffleTime, _ =>
 		{
 			if (!d.ShuffleTime) { d.ShuffleTime = true; d.ShuffleFull = true; }
 			else if (d.ShuffleFull) d.ShuffleFull = false;
 			else d.ShuffleTime = false;
 		}, on => !on ? (Zh ? "关闭" : "Off") : d.ShuffleFull ? (Zh ? "完整" : "Full") : (Zh ? "精简" : "Quick"));
-		Row(section, font, size, color, rowH, Zh ? "Persona 召唤切入（眼神特写）" : "Persona summon cut-in", () => d.CutIn, v => d.CutIn = v);
-		Row(section, font, size, color, rowH, Zh ? "选人时的召唤演出" : "Character select summon", () => d.SelectSummon, v => d.SelectSummon = v);
-		Row(section, font, size, color, rowH, Zh ? "建筑师房间（关闭 = 全部原版）" : "Architect room (off = all vanilla)", () => d.Architect, v => d.Architect = v);
-		Row(section, font, size, color, rowH, Zh ? "牌堆 / 牌组界面（P3R 风格）" : "Pile / deck screens (P3R style)", () => d.PileScreen, v => d.PileScreen = v);
-		Row(section, font, size, color, rowH, Zh ? "状态说明列表（P3R 风格，可滚动）" : "Status tip list (P3R style, scrollable)", () => d.TipList, v => d.TipList = v);
-		Row(section, font, size, color, rowH, Zh ? "鼠标光标（立即生效）" : "Mouse cursor (applies immediately)", () => d.CursorSkin, v =>
+		Row(section, font, size, color, rowH, Zh ? "召唤时眼部特写" : "Summon eye close-up", () => d.CutIn, v => d.CutIn = v);
+		Row(section, font, size, color, rowH, Zh ? "选人动画" : "Character select animation", () => d.SelectSummon, v => d.SelectSummon = v);
+		Row(section, font, size, color, rowH, Zh ? "建筑师房间动画" : "Architect room animation", () => d.Architect, v => d.Architect = v);
+		Row(section, font, size, color, rowH, Zh ? "牌堆界面样式" : "Pile screen style", () => d.PileScreen, v => d.PileScreen = v, StyleName);
+		Row(section, font, size, color, rowH, Zh ? "状态说明样式" : "Status tooltip style", () => d.TipList, v => d.TipList = v, StyleName);
+		Row(section, font, size, color, rowH, Zh ? "鼠标样式" : "Cursor style", () => d.CursorSkin, v =>
 		{
 			d.CursorSkin = v;
 			CursorPatch.RefreshExisting();
-		}, on => on ? "P3R" : (Zh ? "游戏原版" : "Vanilla"));
-		if (Scenes.SettingsSkin.Enabled) Row(section, font, size, color, rowH, Zh ? "设置界面（P3R 主菜单风格，下次打开生效）" : "Settings screen (P3R menu style, next time it opens)", () => d.SettingsSkin, v => d.SettingsSkin = v);
+		}, on => on ? (Zh ? "P3风格" : "P3 style") : (Zh ? "原版" : "Original"));
 	}
+
+	private static string StyleName(bool on) => on ? (Zh ? "P3风格" : "P3 style") : (Zh ? "原版" : "Original");
 
 	private static void Row(VBoxContainer parent, Font? font, int size, Color color, float rowH, string text, Func<bool> get, Action<bool> set, Func<bool, string>? display = null)
 	{
@@ -99,7 +107,7 @@ public static class P3SettingsSectionPatch
 		{
 			bool on = get();
 			toggle.SetPressedNoSignal(on);
-			toggle.Text = display != null ? display(on) : (on ? (Zh ? "完整" : "Full") : (Zh ? "关闭" : "Off"));
+			toggle.Text = display != null ? display(on) : (on ? (Zh ? "开启" : "On") : (Zh ? "关闭" : "Off"));
 			Color bg = on ? Navy : new Color(0.12f, 0.12f, 0.14f, 0.9f);
 			Color border = on ? Cyan : new Color(0.5f, 0.5f, 0.55f);
 			toggle.AddThemeStyleboxOverride("normal", Box(bg, border));

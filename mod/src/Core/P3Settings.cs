@@ -9,7 +9,7 @@ namespace P3Makoto.Core;
 
 /// <summary>
 /// v0.14.46 演出开关（用户：有的玩家看腻了不想每次都看）：每项「完整 / 关闭」，关闭 = 不播这段演出、直接走原版流程。
-/// 模组配置里的 P3MAKOTO 页面读写这里；存在 user://p3makoto_settings.json（%APPDATA%\SlayTheSpire2\）。
+/// 游戏常规设置里的结城理选项读写这里；存在 user://p3makoto_settings.json（%APPDATA%\SlayTheSpire2\）。
 /// 游戏自带的快速模式开到「极速」时，这几项一律当作关闭。
 /// </summary>
 public static class P3Settings
@@ -27,8 +27,6 @@ public static class P3Settings
 		public bool TipList { get; set; } = true;         // v0.14.66 角色状态说明：P3R 滚动列表
 		public bool SettingsSkin { get; set; } = true;    // v0.14.67 设置界面（P3R 主菜单风格）
 		public bool CursorSkin { get; set; } = true;      // 鼠标光标：关闭恢复游戏原版，立即生效
-		public bool CardArt { get; set; } = true;         // 整套新版插画；关闭恢复原版插画，卡框始终原版
-		public bool CardFrame { get; set; } = false;      // 用户暂时恢复原版卡图和卡框；保留替换资源供后续调整
 		public bool DrawPileOrder { get; set; } = true;   // v0.14.98 抽牌堆按原版顺序排（SL 看抽牌顺序用）；false = 按类型分区
 	}
 
@@ -95,6 +93,4 @@ public static class P3Settings
 	public static bool PileScreen => Current.PileScreen;
 	public static bool TipList => Current.TipList;
 	public static bool SettingsSkin => Current.SettingsSkin;
-	// 暂停整套卡图 / 卡框替换：兼容旧配置字段，但旧值不能重新启用。
-	public static bool CardFrame => false;
 }
