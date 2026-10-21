@@ -803,13 +803,14 @@ public static class Rares
 		root.GlobalTransform = Transform2D.Identity;
 		Rect2 safe = new(new Vector2(W * 0.08f, H * 0.13f), new Vector2(W * 0.86f, H * 0.64f));
 		Rect2 design = new(new Vector2(-W * 0.08f, H * 0.04f), new Vector2(W * 1.2f, H));
-		float fit = Mathf.Min(safe.Size.X / design.Size.X, safe.Size.Y / design.Size.Y);
+		// Explicitly reduce the previous delivered size; camera cancellation alone did not make it smaller.
+		const float panelSize = 0.65f;
+		float fit = Mathf.Min(safe.Size.X / design.Size.X, safe.Size.Y / design.Size.Y) * panelSize;
 		Node2D panels = new()
 		{
 			Position = safe.GetCenter() - design.GetCenter() * fit,
 			Scale = Vector2.One * fit
 		};
-		root.AddChild(panels);
 		int idx = formSky ? FormFx.SkyIndex + 1 : 0;
 		if (ThemeFx.GateRoot is Node2D gate && gate.GetParent() == back)
 		{
@@ -820,6 +821,8 @@ public static class Rares
 		root.AddChild(dim);
 		ColorRect midnight = new() { Size = size * 3f, Position = -size, Color = new Color(Pal.DarkHour, 0f), MouseFilter = Control.MouseFilterEnum.Ignore, Material = Fx.Additive };
 		root.AddChild(midnight);
+		// Shade the combat background first, then draw the panels and their original glow on top.
+		root.AddChild(panels);
 
 		var updates = new List<Action<float>>();
 		// 一块斜切面板：错位深蓝底板 + 裁切框（内容放进返回的 content）+ 领头的绿色边线 + 下沿白线。dir = +1 从右切入，-1 从左切入。
