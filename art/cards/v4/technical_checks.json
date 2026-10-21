@@ -1,0 +1,16 @@
+{
+  "count": 91,
+  "dimensions": [
+    1000,
+    760
+  ],
+  "mode": "RGB",
+  "opaque": true,
+  "all_prompt_sources_exist": true,
+  "recovered_without_generation": 13,
+  "retained_hashes_unchanged": true,
+  "original_missing": [
+    "sovereign_blade"
+  ],
+  "new_art_not_user_approved": true
+}

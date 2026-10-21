@@ -1,0 +1,37 @@
+[
+  {
+    "name": "genesis",
+    "prompt": "Use case: precise-object-edit. Edit target image1 genesis card. Remove ALL head, face, hair, headphones, neck, shoulders and torso from upper-right. Replace their entire area by the same quiet desaturated violet geometric backdrop. Keep ONLY the one naturally colored bare hand with a short black uniform sleeve and white cuff entering from the right, index fingertip touching the large golden fourpoint star. Preserve hand pose, star size and location, gold/cream effect and violet palette. No other people or body parts. Crisp dark outlines, hard two-tone celshade, restrained background. Keep hand and star comfortably inside safe crop; one opaque horizontal 1000x760 fullbleed illustration without words frame watermark. The hand can enter from edge, but no arm connected to any visible body.",
+    "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-74a93df9-91b3-4e1c-bd0d-a0bee7c38080.png",
+    "selected": true,
+    "status": "awaiting_user_review"
+  },
+  {
+    "name": "gather_light",
+    "prompt": "Use case: precise-object-edit. Edit target image1 gather_light. Remove the entire person: no head, hair, face, headphones, neck, shoulders, torso, legs or body silhouette. Retain ONLY two anatomically clear natural skin hands with short black uniform sleeve ends and white shirt cuffs entering from right edge, fingertips meeting in the same prayerlike triangular pose. Preserve the large golden fourpoint diamond/star on left and its cream-and-gold planes. Fill removed person with quiet subdued violet backdrop continuous with left. Hands and golden star are the only subjects; no replacement figure or extra object. Hard-edged anime cel shading, clean dark outlines; background lowcontrast, gold concentrated focal. Opaque landscape1000x760 fullbleed no text cardframe watermark. Keep main star tips and hands inside x8-92%,y12-75% crop-safe region.",
+    "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-aa6ea654-47cc-42b9-967c-f593ab2b7242.png",
+    "selected": true,
+    "status": "awaiting_user_review"
+  },
+  {
+    "name": "heavenly_drill",
+    "prompt": "Use case: precise-object-edit. Image1 is edit target heavenly_drill. Image2 is exact Orpheus character identity reference. Image3 is original card for its warm gold/oxblood palette hierarchy. Replace the human Makoto in image1 completely with the mechanical Persona ORPHEUS from image2: artificial pale ivory mask-like face with black eye apertures, pale white metallic hair-like crest, ivory and black segmented mechanical torso and limbs, round antique gold joints, flowing dark red scarf and gold lyre mounted on back. NO human skin face, NO navy-haired boy, no black school uniform, no headphones. Exactly ONE Orpheus in same lunging stance with both articulated hands braced forward launching same golden cream spiral drill toward lower right. Preserve edit target warm gold effect and quiet rust/oxblood background, no blue bands. Clean dark outline, hard two-tone celshade; no bloom particles texture or fine noise. Persona face hands and main drill focal area crop-safe within x8-92%,y12-75%; distant legs may extend lower. Opaque1000x760 landscape fullbleed no words borders watermark.",
+    "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-1428f825-29f4-4a82-9762-50d3c182ee51.png",
+    "selected": true,
+    "status": "awaiting_user_review"
+  },
+  {
+    "name": "pillar_of_creation",
+    "prompt": "Use case: identity-preserve. Image1 pillar_of_creation is the EDIT TARGET. Image2 pile_base is the approved Makoto Yuki FACE IDENTITY guide; image3 deck_cand_c supports his face/hair identity only. Change only target face and closely surrounding fringe shape to accurately match approved Persona3Reload Makoto: slender oval teenage Japanese face, calm reserved blue-grey visible eye, long dark navy bangs cover other eye, fine small straight nose, short neutral mouth, natural warm light skin. Face should look like approved reference, avoid round childface, odd narrow jaw, distorted cheek, mismatched eyes or smile. Preserve existing head angle, pose, black school uniform, white shirt, red neck headphones/upperarm band, BOTH hands hugging same tall silver-mint glass obelisk, exact obelisk geometry, quiet muted violet background, and hard cel-shaded line style. Do not copy cold cyan skin lighting from identity refs. Keep face comfortably within crop-safe inner area and readable. No extra characters, objects, particles, lettering, cardframe, border, signature or watermark. One opaque horizontal1000x760 fullbleed illustration.",
+    "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-0cf73b05-fd81-4d79-8c98-a7085ef3009d.png",
+    "selected": false,
+    "status": "superseded_by_user_request"
+  },
+  {
+    "name": "pillar_of_creation",
+    "prompt": "Use case: stylized-concept. Create a replacement pillar_of_creation card illustration per newest instruction: NO PERSON ANYWHERE. Subject is a CLOSE-UP of the approved Persona3 Velvet Room door shown in reference1, with silver arched Art Deco frame, central clock-like semicircle crest, deep royal/cobalt blue padded diamond velvet panels, silver slender pointed geometric tracery and small silver central door handle. Keep recognizable identity and design of that exact door; reference2 supports frame details. Repaint it as clean Persona3Reload anime illustration with crisp dark contours and HARD two-tone cel shading, no photographic fabric texture or shiny 3D render. Landscape1000x760 opaque fullbleed. Strong close view: door fills central70% width, arch/clock face near x50% y23%, main central diamond silver emblem and handle around y50-60%, lower doorway continues beyond bottom edge. Show front or a very slight threequarter view, dignified still monumental presence, no opening scene. Quiet muted dark violet/charcoal surrounding negative space, cobalt/navy only on actual velvet door, ivory-silver highlights concentrated on central emblem/arch. No humans, face, hands, body, character shadow, reflections of people, obelisk, tower, generic fantasy palace, surrounding trees, ground scenery, flames, particles or repeated red/blue stripes. The upper arch and focal handle should be inside x8-92%,y12-75% crop safe. No writing, Roman numerals, digits or letters on the clock, no card border, watermark or signature.",
+    "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-8c69f800-8362-49ed-9b8e-6c4cbb5820bd.png",
+    "selected": true,
+    "status": "awaiting_user_review"
+  }
+]
