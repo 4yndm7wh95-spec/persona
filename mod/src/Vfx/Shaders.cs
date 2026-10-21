@@ -132,17 +132,17 @@ shader_type canvas_item;
 " + WarpGlsl + @"
 uniform sampler2D entry_mask : filter_linear, repeat_disable;
 uniform float entry_full = 1.0;
-// 弃牌堆 = 原版 ITEM 页（v0.14.105，对照用户截的原版特写）：整个人物是低对比的蓝色单色 —— 白皮肤 → 中蓝 (15, 66, 131)，
-// 阴影 / 描线往深海军蓝走（鼻梁、脸侧这种很淡的阴影线经过陡的亮度曲线也看得出来）；青发梢、眼睛也压进同一套蓝里，只略亮。
+// 弃牌堆 = 原版 ITEM 页：按原版填色继续压暗整套蓝色，皮肤为中蓝，
+// 阴影 / 描线往深海军蓝走；青发梢和眼睛也用压暗的蓝色，避免虹膜过亮。
 // 色键部分不透水，按原版上色：头发暗部 hair_col（Open 时头发色键改成 (0.02, 1, 0)，c.r 就是头发的标记）、外套 coat_col。
 uniform float fill_on = 0.0;
-uniform vec3 ramp_lo = vec3(0.015, 0.07, 0.33);
-uniform vec3 ramp_mid = vec3(0.035, 0.20, 0.47);
-uniform vec3 ramp_hi = vec3(0.075, 0.29, 0.56);
+uniform vec3 ramp_lo = vec3(0.010, 0.05, 0.25);
+uniform vec3 ramp_mid = vec3(0.025, 0.15, 0.37);
+uniform vec3 ramp_hi = vec3(0.050, 0.22, 0.43);
 uniform float ramp_split = 0.8;
-uniform vec3 streak_col = vec3(0.12, 0.50, 0.88);
-uniform vec3 hair_col = vec3(0.065, 0.27, 0.60);
-uniform vec3 coat_col = vec3(0.03, 0.16, 0.43);
+uniform vec3 streak_col = vec3(0.055, 0.26, 0.48);
+uniform vec3 hair_col = vec3(0.040, 0.19, 0.43);
+uniform vec3 coat_col = vec3(0.020, 0.11, 0.31);
 varying vec4 hero_modulate;
 void vertex() { hero_modulate = COLOR; }
 void fragment() {

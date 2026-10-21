@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Godot;
+using P3Makoto.Core;
 
 namespace P3Makoto.Vfx;
 
@@ -303,9 +304,11 @@ internal static class HeroStage
 	{
 		internal readonly Skeleton3D Skeleton;
 		internal readonly Dictionary<string, int> Bones = new(StringComparer.Ordinal);
+		internal readonly BoneScaleChannels ScaleChannels;
 		internal Rig(Skeleton3D skeleton)
 		{
 			Skeleton = skeleton;
+			ScaleChannels = new BoneScaleChannels(index => skeleton.SetBonePoseScale(index, Vector3.One));
 			for (int i = 0; i < skeleton.GetBoneCount(); i++) Bones.Add(skeleton.GetBoneName(i).ToString(), i);
 		}
 		internal int Index(string name) => Bones.TryGetValue(name, out int i) ? i : -1;
@@ -337,6 +340,9 @@ internal static class HeroStage
 		/// </summary>
 		internal void Pose(double time, Binding? from, double fromTime, float w)
 		{
+			// Sparse scale tracks omit unit values. Restore the previous clip's channels
+			// before switching; ITEM hides the gun which SKILL must show at full scale.
+			rig.ScaleChannels.Enter(this, scales);
 			(int a, int b, float t) = Frames(clip, time);
 			int fa = 0, fb = 0;
 			float ft = 0f;
@@ -437,6 +443,23 @@ internal static class HeroStage
 		private ShaderMaterial? gunMat, hairKeyMat;
 		private readonly List<ShaderMaterial> outlineMats = new();
 		private Camera3D? camera;
+		private Rig? faceRig;
+		private readonly Line2D noseLine = NoseStroke("P3ItemNoseLower");
+		private readonly Line2D noseUpper = NoseStroke("P3ItemNoseUpper");
+		private readonly Vector2[] nosePoints = new Vector2[17], noseUpperPoints = new Vector2[17];
+
+		private static Line2D NoseStroke(string name)
+		{
+			// Both ends taper to a point, as in the original ITEM facial ink.
+			var width = new Curve();
+			width.AddPoint(new Vector2(0f, 0f));
+			width.AddPoint(new Vector2(0.22f, 0.8f));
+			width.AddPoint(new Vector2(0.5f, 1f));
+			width.AddPoint(new Vector2(0.78f, 0.8f));
+			width.AddPoint(new Vector2(1f, 0f));
+			return new Line2D { Name = name, Antialiased = true, Width = 1.15f,
+				DefaultColor = new Color("071D43"), WidthCurve = width };
+		}
 		internal bool ItemReady => itemMotions.Count > 0;
 		internal bool SkillReady => skillMotions.Count > 0;
 		internal Vector2 Base;
@@ -477,6 +500,7 @@ internal static class HeroStage
 				else if (scene is Node3D h3) heroScenes.Add(h3);
 				int count = card ? cards.Count : heroes.Count;
 				Walk(scene, card);
+				if (model == "SK_PC0051_F000.glb" && heroes.Count > count) faceRig = heroes[count];
 				if ((card ? cards.Count : heroes.Count) == count)
 					throw new InvalidOperationException("hero skeleton missing: " + model);
 			}
@@ -649,6 +673,10 @@ internal static class HeroStage
 			blendFrom = -1;
 			releaseTime = baseAngle = extra = velocity = Target = 0;
 			seq[0].Pose(0);
+			if (noseLine.GetParent() == null) Display.AddChild(noseLine);
+			if (noseUpper.GetParent() == null) Display.AddChild(noseUpper);
+			noseLine.Visible = which == Act.Item;
+			noseUpper.Visible = which == Act.Item;
 			Display.Size = view;
 			// v0.14.105：ITEM / SKILL 页挪人物改成平移镜头的取景（视锥偏移），显示框始终铺满屏幕 —— 挪显示框会在屏幕边上露出一条没有人物的断层（用户截图）
 			Panned = which == Act.Item || which == Act.Skill;
@@ -665,6 +693,7 @@ internal static class HeroStage
 			}
 			owner = parent;
 			owner.AddChild(Display);
+			UpdateNoseLine();
 			owner.TreeExiting += Close;
 			Playing = true;
 			lastTick = Time.GetTicksUsec();
@@ -684,6 +713,46 @@ internal static class HeroStage
 			camera.Projection = Camera3D.ProjectionType.Frustum;
 			camera.Size = size;
 			camera.FrustumOffset = new Vector2(-px.X / w * size, px.Y / w * size);
+			UpdateNoseLine();
+		}
+
+		private void UpdateNoseLine()
+		{
+			if (act != Act.Item || faceRig == null || camera == null || !Display.IsInsideTree()) return;
+			Skeleton3D s = faceRig.Skeleton;
+			Vector2 At(string bone)
+			{
+				int i = faceRig.Index(bone);
+				return i >= 0 ? camera.UnprojectPosition(s.GlobalTransform * s.GetBoneGlobalPose(i).Origin) : Vector2.Zero;
+			}
+			Vector2 nose = At("Jnt_C_Nose_00"), eyes = At("Jnt_R_Eye_00") - At("Jnt_L_Eye_00");
+			if (eyes.LengthSquared() < 1f) { noseLine.Visible = noseUpper.Visible = false; return; }
+			Vector2 across = eyes.Normalized();
+			if (across.X < 0f) across = -across;
+			Vector2 down = across.Orthogonal();
+			if (down.Y < 0f) down = -down;
+			float span = eyes.Length();
+			Vector2 start = nose - across * span * 0.11f - down * span * 0.08f;
+			Vector2 px = Display.Size / new Vector2(viewport.Size.X, viewport.Size.Y);
+			// Match the user's trace: a short rising arc above a separate lower stroke.
+			// Use the projected eye axis so the ink follows the face and camera pan.
+			Vector2 lower1 = start + across * span * 0.035f + down * span * 0.07f;
+			Vector2 lower2 = start + across * span * 0.075f + down * span * 0.15f;
+			Vector2 lower3 = start + across * span * 0.10f + down * span * 0.22f;
+			Vector2 upper0 = start + across * span * 0.005f - down * span * 0.115f;
+			Vector2 upper1 = start + across * span * 0.055f - down * span * 0.135f;
+			Vector2 upper2 = start + across * span * 0.105f - down * span * 0.17f;
+			Vector2 upper3 = start + across * span * 0.145f - down * span * 0.22f;
+			for (int i = 0; i < nosePoints.Length; i++)
+			{
+				float t = i / (float)(nosePoints.Length - 1);
+				nosePoints[i] = start.BezierInterpolate(lower1, lower2, lower3, t) * px;
+				noseUpperPoints[i] = upper0.BezierInterpolate(upper1, upper2, upper3, t) * px;
+			}
+			noseLine.Points = nosePoints;
+			noseUpper.Points = noseUpperPoints;
+			noseLine.Width = noseUpper.Width = Mathf.Clamp(span * 0.014f, 1.35f, 1.8f) * px.Y;
+			noseLine.Visible = noseUpper.Visible = true;
 		}
 
 		internal TextureRect Shadow(Vector2 offset, float opacity, float soft)
@@ -788,6 +857,7 @@ internal static class HeroStage
 			{
 				seq[phase].Pose(time); // 主角与牌永远用同一段、同一秒数。
 			}
+			UpdateNoseLine();
 			if (!Released) return;
 			float dt = (float)Math.Clamp(elapsed - beforeRelease, 0, 1.0 / 30.0);
 			releaseTime += dt;

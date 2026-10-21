@@ -76,7 +76,7 @@ public static class PileFx
 	/// </summary>
 	private static Layout ItemLayout() => new()
 	{
-		Kind = Kind.Discard, GridX = 120f, Iris = new Vector2(0.96f, 0.95f), Title = "DISCARD PILE", Word = "DISCARD",
+		Kind = Kind.Discard, GridX = 120f, Side = -1f, Iris = new Vector2(0.96f, 0.95f), Title = "DISCARD PILE", Word = "DISCARD",
 	};
 
 	// 原版 DT_CampParamItem / DT_CampParamCommon（30fps 帧）：白板 10 帧 CurveUp1；人物 ItemSilhouette 等 10 帧、20 帧 CurveUp2 移到 (-90, -110)（游戏里改成 0.05s 起步、0.7s CurveUp3，见入场处）；InDist -100
@@ -1028,15 +1028,22 @@ public static class PileFx
 				float fe = Ease.InOutCubic(focusP);
 				Vector2 focusCenter = focusAt * k;
 				if (fx != null) Animate(fx, fe, focusP, focusOn, now, focusCenter, k);
-				// 退场（v0.14.55）：0.42s —— 卡牌按顺序往下沉、淡出；标题往左退；圆盘和立绘往右滑出；水下圆孔缩回牌堆按钮；最后才真正关掉界面
-				float ex = exiting ? Mathf.Clamp((now - exitT0) / ExitTime, 0f, 1f) : 0f;
+				// ITEM / SKILL use a slightly longer, continuous ease like the existing focus transition.
+				float exitSeconds = item || skill ? 0.54f : ExitTime;
+				float ex = exiting ? Mathf.Clamp((now - exitT0) / exitSeconds, 0f, 1f) : 0f;
 				butterfly.Update(now, dt);
 				if (exiting)
 				{
-					float ei = Ease.InCubic(ex);
-					right.Position = new Vector2(820f * k * L.Side * ei, 0f);
-					right.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(Mathf.Clamp((ex - 0.3f) / 0.7f, 0f, 1f)));
-					water.SetShaderParameter("radius", diag * (1f - Ease.InOutCubic(Mathf.Clamp((ex - 0.15f) / 0.85f, 0f, 1f))));
+					float ei = item ? Ease.InOutCubic(ex) : Ease.InCubic(ex);
+					// SKILL's white panels touch the viewport edges: sliding them exposes
+					// their rectangular bounds. Fade in place before closing the water iris.
+					right.Position = skill ? Vector2.Zero : new Vector2(820f * k * L.Side * ei, 0f);
+					float decorOut = skill ? Ease.InOutCubic(Mathf.Clamp(ex / 0.4f, 0f, 1f))
+						: item ? Ease.InOutSine(Mathf.Clamp((ex - 0.1f) / 0.9f, 0f, 1f))
+						: Ease.InCubic(Mathf.Clamp((ex - 0.3f) / 0.7f, 0f, 1f));
+					right.Modulate = new Color(1f, 1f, 1f, 1f - decorOut);
+					float irisDelay = skill ? 0.45f : 0.15f;
+					water.SetShaderParameter("radius", diag * (1f - Ease.InOutCubic(Mathf.Clamp((ex - irisDelay) / (1f - irisDelay), 0f, 1f))));
 					bubbles.Modulate = new Color(1f, 1f, 1f, 1f - ex);
 					if (screen.GetNodeOrNull<CanvasItem>("BackButton") is CanvasItem backBtn)
 					{
@@ -1635,18 +1642,13 @@ public static class PileFx
 		parent.AddChild(sb.Board);
 		float W = view.X, H = view.Y;
 		Vector2[] left = { new(0f, 0f), new(0.055f * W, 0f), new(0.746f * W, H), new(0f, H) };
-		List<Vector2> right = new();
-		Vector2 a = new(0.746f * W, H), c = new(0.90f * W, 0.66f * H), b = new(W, 0.42f * H);
-		for (int i = 0; i <= 24; i++)
-		{
-			float t = i / 24f;
-			right.Add((1 - t) * (1 - t) * a + 2 * (1 - t) * t * c + t * t * b);
-		}
-		right.Add(new Vector2(W, H));
+		// The right white panel has a straight water boundary; the distant jacket
+		// silhouette must not cut a second water shape or cast a shadow into it.
+		Vector2[] right = { new(0.746f * W, H), new(W, 0.42f * H), new(W, H) };
 		Polygon2D[] polys =
 		{
 			new() { Polygon = left, Color = Colors.White, ClipChildren = CanvasItem.ClipChildrenMode.AndDraw },
-			new() { Polygon = right.ToArray(), Color = Colors.White, ClipChildren = CanvasItem.ClipChildrenMode.AndDraw },
+			new() { Polygon = right, Color = Colors.White, ZIndex = 1 },
 		};
 		foreach (Polygon2D p in polys) sb.Board.AddChild(p);
 		if (!HeroStage.Open(parent, view, SkillHeroAt.X * u, HeroStage.Act.Skill))
@@ -1655,7 +1657,7 @@ public static class PileFx
 			return null;
 		}
 		HeroStage.Nudge(new Vector2(0f, SkillHeroAt.Y * u));   // 先落位，下面的换算和影子都按落位后的位置
-		foreach (Polygon2D p in polys)
+		foreach (Polygon2D p in polys.Take(1))
 		{
 			HeroStage.CutOut(p);   // v0.14.105 用户：外套 / 头发暗部是透明的，用水填（白底在人物剪影处挖空，透出底下的水），不要自己涂色
 			if (p.Material is ShaderMaterial m) sb.Tints.Add((m, (Vector2)m.GetShaderParameter("xo") - sb.Board.Position));
