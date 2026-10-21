@@ -43,7 +43,7 @@
 3. <repo>\testmod：dotnet build -c Release -p:GameDir="<G111>"。
 
 【4. 打包 pck】
-新增（2026-10-21）：卡面替换已撤回。复制stage后先运行 `python tools/pck/remove_card_skins.py --stage <本次stage目录>`，清除旧卡图/卡框/自定义卡背/专用字体及遗留导入文件；再用同一命令加 `--check` 确认没有残留。不要再运行旧版插画生成或复制流程，也不要重新打包 art/cards、art/card_frame 等美术源图。
+新增（2026-10-21）：卡面替换已撤回。复制stage后先运行 `python tools/pck/remove_card_skins.py --stage <本次stage目录>`，清除旧卡图/卡框/专用字体及遗留导入文件（保留p3makoto/fx/pile_card_back.png及导入产物，它是牌堆按钮装饰）；再用同一命令加 `--check` 确认没有残留。不要再运行旧版插画生成或复制流程，也不要重新打包 art/cards、art/card_frame 等美术源图。
 1. 把 <repo>\mod\pck_stage 整个复制到 <repo>\mod\_build\stage_<时间戳>\（包括 .godot，可以用 robocopy /E）。
 2. 核对 p3makoto\ui\ 下有 system_portrait.png、system_portrait_q1.png、system_portrait_half.png、system_portrait_q3.png、system_portrait_closed.png 及各自的 .import，.godot\imported\ 下有五个对应的 .ctex；p3makoto\ui\dive\ 下有 14 张 dive_*.png 及各自的 .import，.godot\imported\ 下有 14 个 dive_*.ctex；p3makoto\sfx\ 下有 92 个 .ogg（新增 sys_dive.ogg、sys_blob.ogg）；p3makoto\pile_deck、pile_discard、pile_exhaust 下各有 *_skel_data.tres；p3makoto\pile\ 下有 pile_skel_data.tres、pile.atlas.import、pile.spine-json.import；p3makoto\rig\characters\ 下有 regent_skel_data.tres 和 regent.atlas.import；.godot\imported\ 下有两个文件名含 p3private 的 .spatlas。
    另外（v0.14.90 起）：p3makoto\hero3d\ 下有 4 个 .glb（SK_PC0051_C002 / F000 / H000、SK_Pp2001_000）、tex\ 下 8 张 png（含 T_UI_Camp_Caustics_00.png、commu_word.png、item_word.png；v0.14.103 的 item_waterlight.png 已删除，stage 里不应再有）、anim\ 下 43 个文件（v0.14.98 加了 CampTopStart / CampTopLoop；v0.14.101 加了 CampItemStart / CampItemLoop；v0.14.105 加了 CampSkillStart / CampSkillLoop，各 .json/.bin/.scale.bin），dive\ 下的文件以 <repo>\mod\pck_stage\p3makoto\hero3d\dive\ 实际内容为准（逐个核对复制完整），5 段 Card_ 动作各 .json/.bin），合计约 11MB；这些是运行时直接读的原始文件，**没有也不需要 .import**，原样打进 pck。

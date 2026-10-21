@@ -10,8 +10,8 @@ import re
 from pathlib import Path
 
 PREFIXES = ('p3makoto/cards/', 'p3makoto/card_frame/', 'p3makoto/approved_cards/', 'p3makoto/card_art_v4/')
-EXACT = {'p3makoto/fx/pile_card_back.png', 'p3makoto/fx/pile_card_back.png.import',
-         'p3makoto/fonts/Cinzel-Bold.ttf', 'p3makoto/fonts/LXGWWenKai-Bold-CardTitles.ttf',
+# pile_card_back is a HUD button decoration, not a card-face replacement.
+EXACT = {'p3makoto/fonts/Cinzel-Bold.ttf', 'p3makoto/fonts/LXGWWenKai-Bold-CardTitles.ttf',
          'p3makoto/fonts/OFL-Cinzel.txt', 'p3makoto/fonts/OFL-LXGWWenKai.txt'}
 
 def retired_files(stage):
@@ -32,8 +32,6 @@ def retired_files(stage):
             continue
         name, digest = match.groups()
         candidates = [prefix + name for prefix in PREFIXES]
-        if name == 'pile_card_back.png':
-            candidates.append('p3makoto/fx/' + name)
         if any(hashlib.md5(('res://' + source).encode()).hexdigest() == digest for source in candidates):
             retired.add(rel)
     return sorted(retired)
@@ -47,7 +45,7 @@ if __name__ == '__main__':
     if args.check:
         if retired:
             raise SystemExit('Retired card resources remain: ' + json.dumps(retired))
-        print('PASS: no retired card art, frames, card backs, fonts or imports')
+        print('PASS: no retired card art, frames, dedicated fonts or imports')
     else:
         root = args.stage.resolve()
         for rel in retired:
