@@ -7,7 +7,10 @@ namespace P3Makoto.Vfx;
 /// <summary>All camera adaptation is confined to Kaiser Crab. Other rooms retain their original formulas.</summary>
 public static class CrabRoom
 {
-    public static bool Active => NCombatRoom.Instance?.Background?.GetType().Name == "NKaiserCrabBossBackground";
+    // Background is always the NCombatBackground wrapper. The crab controller is a child,
+    // so testing the wrapper's runtime type never enabled any of the boss-only fixes.
+    private const string BackgroundPath = "res://scenes/backgrounds/kaiser_crab_boss/kaiser_crab_boss_background.tscn";
+    public static bool Active => NCombatRoom.Instance?.Background?.SceneFilePath == BackgroundPath;
 
     public static float Facing(NCreature actor) => Active ? Core.Makoto.Facing(actor) : 1f;
     public static Vector2 Offset(CanvasItem frame, Vector2 local) => Active ? frame.GetGlobalTransform().BasisXform(local) : local;
