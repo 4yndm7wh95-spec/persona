@@ -3,17 +3,19 @@ using Godot;
 
 namespace P3Makoto.Vfx;
 
-/// <summary>使用用户认可的那张门的原始像素；门板按左铰链作三维旋转，再映射回同一相机。</summary>
+/// <summary>高清透明门素材；门板按左铰链作三维旋转，再映射回同一相机。</summary>
 internal sealed class GateView
 {
-	private const float Scale = 700f / 270f;
-	private static readonly Vector2 Origin = new(90f, 314f);
-	private static readonly Vector2[] LeafCorners = { new(68, 120), new(137, 124), new(136, 294), new(66, 307) };
-	private static readonly Vector2[] Outer = {
-		new(24,315), new(24,303), new(28,292), new(30,132), new(26,126), new(27,109),
-		new(36,107), new(43,90), new(58,76), new(76,64), new(94,59), new(99,44),
-		new(106,63), new(120,67), new(136,80), new(149,100), new(153,113), new(160,117),
-		new(156,126), new(153,140), new(153,272), new(158,284), new(158,296), new(136,301), new(63,313)
+	private const float Scale = 700f / 1577f;
+	private static readonly Vector2 DesignSize = new(936f,1680f);
+	private static readonly Vector2 Origin = new(470f, 1617f);
+	private static readonly Vector2[] LeafCorners = { new(345,451),new(699,487),new(700,1519),new(342,1572) };
+	private static readonly Vector2[] Canvas = {Vector2.Zero,new(936,0),DesignSize,new(0,1680)};
+	private static readonly Vector2[][] FrameParts = {
+		new[] {Vector2.Zero,new Vector2(936,0),new(936,487),LeafCorners[1],LeafCorners[0],new(0,451)},
+		new[] {new Vector2(0,451),LeafCorners[0],LeafCorners[3],new(0,1572)},
+		new[] {LeafCorners[1],new Vector2(936,487),new(936,1680),LeafCorners[2]},
+		new[] {new Vector2(0,1572),LeafCorners[3],LeafCorners[2],new(936,1680),new(0,1680)},
 	};
 	private static readonly double[] CameraMap = Homography(
 		new[] { Raw(new(-118,-587),0), Raw(new(118,-587),0), Raw(new(118,-18),0), Raw(new(-118,-18),0) }, LeafCorners);
@@ -43,7 +45,7 @@ internal sealed class GateView
 		root.AddChild(ground);
 		_model = new Node2D { Position = -Origin * Scale, Scale = Vector2.One * Scale };
 		ground.AddChild(_model);
-		Texture2D approved = ResourceLoader.Load<Texture2D>("res://p3makoto/fx/door_approved.png");
+		Texture2D approved = ResourceLoader.Load<Texture2D>("res://p3makoto/fx/door_approved_hd.png");
 		Texture2D grille = ResourceLoader.Load<Texture2D>("res://p3makoto/fx/door_grille.png");
 		_portal = new Node2D(); _model.AddChild(_portal);
 		Polygon2D dark = new() { Polygon=LeafCorners, Color=new Color(.02f,.05f,.20f) }; _portal.AddChild(dark);
@@ -51,23 +53,22 @@ internal sealed class GateView
 		_grille = Quad(_portal, grille, LeafCorners, new[] { Vector2.Zero, Vector2.Right, Vector2.One, Vector2.Down }, out _);
 		_grille.Modulate = new Color(.65f,.70f,.85f);
 		for (int i=0;i<4;i++) { _edges[i]=new Polygon2D { Color=new Color("4b5666") }; _model.AddChild(_edges[i]); }
-		Vector2[] uv = Array.ConvertAll(LeafCorners, p => new Vector2(p.X / approved.GetWidth(), p.Y / approved.GetHeight()));
+		Vector2[] uv = Array.ConvertAll(LeafCorners, p => p / DesignSize);
 		_leaf = Quad(_model, approved, LeafCorners, uv, out _leafMaterial);
 		_frame = new Node2D(); _model.AddChild(_frame);
-		Pixels(_frame, approved, new[] { new Vector2(27,109),new(36,107),new(43,90),new(58,76),new(76,64),new(94,59),new(99,44),new(106,63),new(120,67),new(136,80),new(149,100),new(153,113),new(160,117),new(156,126),new(137,124),new(68,120),new(57,129),new(29,131) });
-		Pixels(_frame, approved, new[] { new Vector2(27,109),new(60,113),new(68,120),new(66,307),new(63,313),new(24,315),new(24,303),new(28,292),new(30,132),new(26,126) });
-		Pixels(_frame, approved, new[] { new Vector2(137,124),new(156,126),new(153,140),new(153,272),new(158,284),new(158,296),new(136,301),new(136,294) });
-		Pixels(_frame, approved, new[] { new Vector2(66,307),new(136,294),new(136,301),new(63,313) });
-		_closed = Pixels(_model, approved, Outer);
-		_needle = new Line2D { Width=.7f, DefaultColor=new Color(.90f,.91f,.94f), Visible=false };
+		foreach(Vector2[] part in FrameParts) Pixels(_frame,approved,part);
+		// 高清独立素材自带透明轮廓，无需再从截图用粗多边形切边。
+		_closed = Pixels(_model, approved, Canvas);
+		_needle = new Line2D { Width=3f, DefaultColor=new Color(.90f,.91f,.94f), Visible=false };
 		_model.AddChild(_needle);
-		_flash = Pixels(_model, approved, Outer); _flash.Material = Fx.Additive; _flash.Modulate = new Color(1,1,1,0);
+		_flash = Pixels(_model, approved, Canvas); _flash.Material = Fx.Additive; _flash.Modulate = new Color(1,1,1,0);
 		SetOpen(0f, 0f);
 	}
 
 	private static Polygon2D Pixels(Node parent, Texture2D texture, Vector2[] points)
 	{
-		Polygon2D p = new() { Texture=texture, Polygon=points, UV=points };
+		Polygon2D p = new() { Texture=texture, Polygon=points,
+			UV=Array.ConvertAll(points,p=>p/DesignSize*texture.GetSize()) };
 		parent.AddChild(p); return p;
 	}
 
@@ -126,8 +127,8 @@ void fragment() {
 	public void SetOpen(float open,float needle)
 	{
 		_needle.Visible=needle>.01f && !_frameOnly;
-		Vector2 dial=new(102,92);
-		_needle.Points=new[] {dial,dial+Vector2.Up.Rotated(Mathf.DegToRad(-74+148*needle))*17f};
+		Vector2 dial=new(530,418);
+		_needle.Points=new[] {dial,dial+Vector2.Up.Rotated(Mathf.DegToRad(-74+148*needle))*92f};
 		if (Mathf.IsEqualApprox(open,_open)) return;
 		_open=open;
 		_closed.Visible=open<.001f && !_frameOnly;
@@ -153,8 +154,7 @@ void fragment() {
 		// 极窄的铰链掠过相机时隐藏一瞬，避免求解退化四边形。
 		if (Mathf.Abs(Mathf.Cos(.82030475f+angle))<.025f) { _leaf.Visible=false; return; }
 		_leaf.Polygon=front;
-		Texture2D t=_leaf.Texture;
-		Vector2[] uv=Array.ConvertAll(LeafCorners,p=>p/t.GetSize());
+		Vector2[] uv=Array.ConvertAll(LeafCorners,p=>p/DesignSize);
 		SetMap(_leafMaterial,front,uv);
 		_leafMaterial.SetShaderParameter("backside",Mathf.Cos(.82030475f+angle)<0f);
 	}
