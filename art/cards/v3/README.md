@@ -1282,3 +1282,50 @@ Edit this card illustration. Replace Makoto ENTIRELY with ONE recognizable Orphe
 ```text
 Generate ONE opaque full-bleed landscape game card, aspect1000:760. Clean Persona 3 Reload sharp anime two-tone cel shading, navy/cobalt/cyan/icewhite majority, large flat diagonal background blocks, crisp outlines, no text, UI, borders, gradients, bloom or particles. Reference1 original composition only; reference2 style only, never copy its subjects. Keep face and main effect within central safe region x8-92%,y12-75%. COMPLETE CONCEPT RESET: Persona3 Dark Hour void transformation. One recognizable Makoto Yuki upper-body three-quarter silhouette on left dissolving along right edge into ONE LARGE hollow cyan butterfly cutout/negative-space portal. His face has a calm narrow eye and long navy fringe hiding other eye; neck headphones and black uniform identifiable. Half his chest and right shoulder become flat transparent-looking cyan glass planes with a DARK EMPTY HOLE showing the background through, conveying missing physical form. One large tilted blue tarot-card-shaped doorway behind, containing a simple crescent moon cutout, no lettering. Dramatic navy negative space, icy cyan silhouettes, muted Dark Hour yellow-green single diagonal. NO star head, orbit ring, generic glowing muscular figure, extra person or monster. Make transformation a distinctly Persona3 blue-butterfly/Velvet Room motif, simple iconic shapes readable as thumbnail.
 ```
+
+
+### 用户反馈后五张重置
+
+用户要求：如此甚好动作改得流畅；环绕轨道、粒子墙、超质量体重置；流星雨按原图采用小人物大环境。每张一版，尚待用户复审。对照：preview/second_fixes.png，左原图/中旧版/右新版。
+
+#### make_it_so
+
+源文件：C:\Users\kkk\ChatGPT-Accounts\Account2\codex\generated_images\01a148fe-57b1-7a43-ae27-1d97f4a3942e\exec-9777c636-c5be-403f-8a90-fa6998fe18bf.png
+
+```text
+Generate ONE opaque full bleed game card. Landscape1000:760. Reference1 original composition reference ONLY, reference2 STYLE ONLY do not copy subjects. Persona3Reload crisp anime hard cel shading, big flat navy cobalt cyan white shapes, clean outlines, 2-3 broad diagonal blocks. No text UI watermark border, no tiny particles or glow. One Orpheus Persona on left: white gold mechanical body, red scarf, golden lyre. DYNAMIC natural musician motion, torso leaning forward from hips, shoulders tilted, right elbow loosely bent and hand sweeping outward right in a graceful arc as if playing lyre, left hand near lyre strings. Clearly flowing asymmetrical gesture, not stiff upright mannequin presenting palm. Head looking right. Five cyan butterfly spell bolts sweep right. One Persona only, no human. Crimson diagonal.
+```
+
+#### orbit
+
+源文件：C:\Users\kkk\ChatGPT-Accounts\Account2\codex\generated_images\01a148fe-57b1-7a43-ae27-1d97f4a3942e\exec-a0bdecbf-a472-48cb-b77e-2e4b45fee9b2.png
+
+```text
+Generate ONE opaque full bleed game card. Landscape1000:760. Reference1 original composition reference ONLY, reference2 STYLE ONLY do not copy subjects. Persona3Reload crisp anime hard cel shading, big flat navy cobalt cyan white shapes, clean outlines, 2-3 broad diagonal blocks. No text UI watermark border, no tiny particles or glow. COMPLETE redesign from scratch with Persona3 identity. Center a large blue Velvet Room tarot card tilted in space, blank blue back with bold crescent moon emblem; three small cards orbit it along ONE broad elliptical cyan water ring, a blue butterfly rides the ring. No rocks, no generic luminous star core, no copied original geometry. Keep original diagonal orbital sweep but unmistakable new blue tarot/butterfly concept. Dark Hour green diagonal stripe. No humans.
+```
+
+#### particle_wall
+
+源文件：C:\Users\kkk\ChatGPT-Accounts\Account2\codex\generated_images\01a148fe-57b1-7a43-ae27-1d97f4a3942e\exec-b0fa1d6d-fccf-45b1-add7-d27ddeabb4de.png
+
+```text
+Generate ONE opaque full bleed game card. Landscape1000:760. Reference1 original composition reference ONLY, reference2 STYLE ONLY do not copy subjects. Persona3Reload crisp anime hard cel shading, big flat navy cobalt cyan white shapes, clean outlines, 2-3 broad diagonal blocks. No text UI watermark border, no tiny particles or glow. COMPLETE redesign. A curved WALL OF SIX LARGE BLUE TAROT CARDS forms an overlapping magical defensive barrier, cards have simple crescent moon backs, NO lettering. Right foreground cyan impact wedge stops against cards; behind wall left ONE black fluid Shadow wearing a blue theatrical arcana mask, NOT plant, no eye flower, leaves or vines. Distinct Persona3 Velvet Room defense motif. Strong diagonal arrangement, cyan stripe. No humans, no original cubic cracked glass wall.
+```
+
+#### meteor_shower
+
+源文件：C:\Users\kkk\ChatGPT-Accounts\Account2\codex\generated_images\01a148fe-57b1-7a43-ae27-1d97f4a3942e\exec-ec74d47b-ff28-4a7b-b04e-e0a68779d7ca.png
+
+```text
+Generate ONE opaque full bleed game card. Portrait606:852. Reference1 original composition reference ONLY, reference2 STYLE ONLY do not copy subjects. Persona3Reload crisp anime hard cel shading, big flat navy cobalt cyan white shapes, clean outlines, 2-3 broad diagonal blocks. No text UI watermark border, no tiny particles or glow. Follow ORIGINAL Reference1 composition and SCALE closely. PORTRAIT606:852. Very SMALL distant full body Makoto at center x50% y46%, height ONLY20% canvas, arms loosely spread. Face tiny, blue fringe, black uniform red headphones. Vast falling cyan light pillars occupy upper60%; enormous dark angular rock slabs fill foreground lower45% and side edges, frame a small pale cyan impact clearing behind distant Makoto. Landscape scale dominates, no large foreground person, no low camera giant legs. Maintain original distant figure amid overwhelming meteor fall. One human only. Crimson diagonal.
+```
+
+#### supermassive
+
+源文件：C:\Users\kkk\ChatGPT-Accounts\Account2\codex\generated_images\01a148fe-57b1-7a43-ae27-1d97f4a3942e\exec-352e0a3d-0012-4f31-b4ba-7b6f4ee3899e.png
+
+```text
+Generate ONE opaque full bleed game card. Landscape1000:760. Reference1 original composition reference ONLY, reference2 STYLE ONLY do not copy subjects. Persona3Reload crisp anime hard cel shading, big flat navy cobalt cyan white shapes, clean outlines, 2-3 broad diagonal blocks. No text UI watermark border, no tiny particles or glow. Complete new Persona3 concept, NOT a recolored hand holding ring. A TINY distant silhouette of Tartarus tower is visibly bent toward a massive dark blue gravitational sphere floating at center-right. Its event horizon is ONE thick cyan elliptical water-glass ring with crescent-moon-shaped negative space; two large blue tarot cards arc inward from upper left, visibly stretched toward sphere. Broad graphic distortions of diagonal background blocks imply enormous mass. No hands fingers people rocks or orange ring. Strong single gravity focal point, unmistakable Persona3 tower/tarot motif. Dark Hour muted green diagonal.
+```
+
+光谱偏移双主体旧版找回：exec-3adf9ed4-078a-4f24-a6f5-61d6658bafa8.png，存为 cand/spectrum_shift_two_figures_recovered.png；仅供复审，未替换当前定稿。新流星雨尺寸606×852；人物已缩为远处小身影。新环绕轨道主体为塔罗牌而非原光球，新粒子墙改为塔罗屏障，新超质量体改为引力球吸引塔罗及塔尔塔罗斯。
