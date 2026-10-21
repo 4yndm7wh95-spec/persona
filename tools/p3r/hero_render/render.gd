@@ -106,6 +106,9 @@ func make_mat(n):
 		var m = StandardMaterial3D.new(); m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 		m.albedo_texture = ImageTexture.create_from_image(Image.load_from_file(cfg["textures_dir"] + "/T_PC0051_E000_00_Col.png")); m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
 		return m
+	if n == "MI_PC0051_OlOpCamp" and cfg.has("outline"):   # 原版描边（反向外壳）：cfg "outline": [颜色, 宽度 m]
+		var m = sm(OUTLINE); m.set_shader_parameter("col", Color(cfg["outline"][0])); m.set_shader_parameter("width", float(cfg["outline"][1]))
+		return m
 	return null
 
 func _initialize():
