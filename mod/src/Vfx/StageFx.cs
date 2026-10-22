@@ -328,7 +328,7 @@ public static class StageFx
 
 	// ───────────────────────── 卡牌奖励 ─────────────────────────
 	/// <summary>
-	/// 卡牌奖励（选牌）界面的背景：牌后面张开一个水之圆（两道圆弧缓慢转动）+ 一条斜切白色色块 + 左上红字标签 "SELECT ARCANA"；
+	/// 卡牌奖励（选牌）界面的背景：牌后面张开一个水之圆（两道圆弧缓慢转动）；
 	/// 每张牌落位时（原版 0.5s 滑入之后）依次闪一道白光十字星。随界面一起关闭（是界面的子节点）。
 	/// </summary>
 	public static void RewardBackdrop(Control screen, Vector2 rowCenter, Func<Vector2[]> cardCenters)
@@ -340,9 +340,6 @@ public static class StageFx
 		screen.AddChild(root);
 		screen.MoveChild(root, 0);
 		root.GlobalPosition = Vector2.Zero;
-		Node2D slab = new();
-		root.AddChild(slab);
-		P3Ui.Slab(slab, -200f, size.X + 200f, rowCenter.Y + size.Y * 0.16f, rowCenter.Y + size.Y * 0.24f, -60f, new Color(0.95f, 0.97f, 1f, 0.22f));
 		float discR = size.Y * 0.4f;
 		ColorRect disc = P3Ui.WaterDisc(root, rowCenter, discR);
 		Fx.SetParam(disc, "alpha", 0.55f);
@@ -356,7 +353,6 @@ public static class StageFx
 			float time = t * 120f;
 			float a = Ease.OutExpo(Seg(time, 0f, 0.4f));
 			Fx.SetParam(disc, "reveal", a);
-			slab.Position = new Vector2(-size.X * (1f - a), 0f);
 			arcs.Rotation = 0.25f * time;
 			arcs.Modulate = new Color(1f, 1f, 1f, a);
 		});
