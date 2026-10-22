@@ -1867,3 +1867,7 @@ Grand.cs 里其余函数暂时保留不用。
 
 ### v0.15 仅重新接入94张插画
 按用户最新指示重新安装此前整套新版插画，只写入NCard._portrait.Texture。采用8c377599安装时冻结并记录哈希的94张图（含认可gather_light），从独立快照复制；不覆盖另一会话未提交美术稿。新资源路径p3makoto/card_illustrations；只补Reload/UpdatePortrait之后的插图赋值。卡框、卡名、费用、描述、字体、材质、着色及布局保持原版；不恢复CardFrameSkin、字体替换或旧卡面配置。版本仍为0.15。
+
+
+### v0.15 精英房召唤横幅右侧露边
+用户0.111日志确认TERROR_EEL_ELITE/PHANTASMAL_GARDENERS_ELITE，普通房间正常。游戏PhantasmalGardenersElite.GetCameraScaling返回0.85，战斗容器缩小使原横幅右端落在屏幕内。仅眼神切入Begin检测精英房并使用既有屏幕包装层抵消镜头缩放；螃蟹原有适配保持，普通房间继续原实现，人物特效及战斗坐标不变。保留新版94张插画与原版卡框/文字/字体。日志另有既存Personas.Wings子节点排序错误，和本次横幅边缘原因不同，本轮未改。

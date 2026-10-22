@@ -23,9 +23,9 @@ public static class CrabRoom
         if (Active) root.GlobalTransform = Transform2D.Identity;
     }
 
-    public static Control Screen(Control layer)
+    public static Control Screen(Control layer, bool force = false)
     {
-        if (!Active || layer.Name == "P3CrabScreenLayer") return layer;
+        if ((!Active && !force) || layer.Name == "P3CrabScreenLayer") return layer;
         Node2D? carrier = layer.GetNodeOrNull<Node2D>("P3CrabScreenSpace");
         if (carrier == null)
         {
