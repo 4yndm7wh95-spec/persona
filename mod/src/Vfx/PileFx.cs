@@ -426,24 +426,15 @@ public static class PileFx
 		// the font directly so the count never overlaps the title on a cold open.
 		float titleWidth = font.GetStringSize(title, HorizontalAlignment.Left, -1f, (int)(92f * k)).X;
 		Label countL = Text(head, "0", font, (int)(112f * k), Cyan, new Vector2((tx + 26f) * k + titleWidth, 74f * k), (int)(5f * k), Ink);
-		// v0.14.100（用户：切换条已经起到说明作用，说明文字没用）：抽牌堆不画说明条，切换条放在说明条的位置
-		bool hasSwitch = kind == Kind.Draw;
-		if (!hasSwitch && !item)
+		bool orderMode = kind switch
 		{
-			Fx.Poly(head, new[] { new Vector2(tx - 2f, 200f) * k, new Vector2(tx + 502f, 200f) * k, new Vector2(tx + 494f, 228f) * k, new Vector2(tx - 10f, 228f) * k }, Navy);
-			Fx.Poly(head, new[] { new Vector2(tx - 2f, 200f) * k, new Vector2(tx + 12f, 200f) * k, new Vector2(tx + 4f, 228f) * k, new Vector2(tx - 10f, 228f) * k }, Cyan);
-		}
-		bool orderMode = kind == Kind.Draw && P3Settings.Current.DrawPileOrder;
-		string note = kind switch
-		{
-			Kind.Draw => "",
-			Kind.Discard when item => "",
-			Kind.Deck => Zh ? "整副牌组 · 按类型 → 费用排列" : "WHOLE DECK · SORTED BY TYPE → COST",
-			Kind.Exhaust => Zh ? "本场战斗中消耗的牌 · 最新在前" : "EXHAUSTED THIS COMBAT · MOST RECENT FIRST",
-			_ => Zh ? "按进入牌堆的先后排列 · 最新在前" : "MOST RECENT FIRST",
+			Kind.Draw => P3Settings.Current.DrawPileOrder,
+			Kind.Deck => P3Settings.Current.DeckPileOrder,
+			Kind.Discard => P3Settings.Current.DiscardPileOrder,
+			_ => P3Settings.Current.ExhaustPileOrder,
 		};
-		if (note.Length > 0) Text(head, note, Zh ? Typo.PileCjk : font, (int)(19f * k), new Color(0.8f, 0.93f, 1f), new Vector2((tx + 26f) * k, 202f * k), 0, Ink);
-		ModeSwitch modeSwitch = ModeSwitch.Build(head, new Vector2(tx - 10f, 200f) * k, k, font, orderMode, hasSwitch);
+		// ITEM's title sits at the bottom right. Keep the same switch just above that title.
+		ModeSwitch modeSwitch = ModeSwitch.Build(head, new Vector2(tx - 10f, item ? 28f : 200f) * k, k, font, orderMode, true);
 		if (!item) Fx.After(head, 0.16, "pile head in", () => Fx.Animate(head, 0.45, t => head.Position = new Vector2(headFrom * (1f - Ease.OutExpo(t)), 0f)));
 
 		// ── 网格 ──
@@ -629,23 +620,18 @@ public static class PileFx
 		List<(string En, string Zh, List<CardModel> Cards)> Groups(List<CardModel> all)
 		{
 			List<(string En, string Zh, List<CardModel> Cards)> groups = new();
-			if (kind == Kind.Draw && orderMode)
+			if (orderMode)
 			{
 				// 原版顺序：一整段，从左到右、从上往下（行宽按我们的版式，不照抄原版一行几张）
-				if (all.Count > 0) groups.Add(("DRAW ORDER", "", VanillaOrder(grid, pile)));   // v0.14.100：不加中文副标题（和 ×张数 叠在一起，也没用）
+				if (all.Count > 0) groups.Add((kind == Kind.Draw ? "DRAW ORDER" : kind == Kind.Deck ? "DECK ORDER" : kind == Kind.Discard ? "DISCARD ORDER" : "EXHAUST ORDER", "", VanillaOrder(grid, pile)));   // v0.14.100：不加中文副标题（和 ×张数 叠在一起，也没用）
 			}
-			else if (kind == Kind.Draw || kind == Kind.Deck)
+			else
 			{
 				foreach (IGrouping<int, CardModel> g in all.GroupBy(c => TypeOrder(c.Type)).OrderBy(g => g.Key))
 				{
 					List<CardModel> list = g.OrderBy(Cost).ThenBy(c => c.Title, StringComparer.Ordinal).ThenBy(c => c.IsUpgraded ? 1 : 0).ToList();
 					groups.Add((TypeEn(list[0].Type), TypeZh(list[0].Type), list));
 				}
-			}
-			else if (all.Count > 0)
-			{
-				all.Reverse();
-				groups.Add(("RECENT", "", all));   // 说明条已经写了"最新在前"
 			}
 			return groups;
 		}
@@ -690,15 +676,21 @@ public static class PileFx
 			return y;
 		}
 
-		// v0.14.98 抽牌堆：原版顺序 ⇄ 按类型。牌不重建，每张从旧位置沿弧线飞到新位置（按新顺序依次出发），段标题淡出 / 淡入，一道青色扫光掠过网格
+		// 四种牌堆共用：原版顺序 ⇄ 按类型。牌不重建，每张从旧位置沿弧线飞到新位置（按新顺序依次出发），段标题淡出 / 淡入，一道青色扫光掠过网格
 		void Switch(bool toOrder)
 		{
-			if (kind != Kind.Draw || orderMode == toOrder || exiting || focused != null)
+			if (orderMode == toOrder || exiting || focused != null)
 			{
 				return;
 			}
 			orderMode = toOrder;
-			P3Settings.Current.DrawPileOrder = toOrder;
+			switch (kind)
+			{
+				case Kind.Draw: P3Settings.Current.DrawPileOrder = toOrder; break;
+				case Kind.Deck: P3Settings.Current.DeckPileOrder = toOrder; break;
+				case Kind.Discard: P3Settings.Current.DiscardPileOrder = toOrder; break;
+				case Kind.Exhaust: P3Settings.Current.ExhaustPileOrder = toOrder; break;
+			}
 			P3Settings.Save();
 			float now = Now();
 			foreach (Section s in sections)
