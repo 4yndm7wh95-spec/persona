@@ -742,23 +742,28 @@ public static class PileFx
 			slot.AddChild(h);
 			card!.UpdateVisuals(pile.Type, CardPreviewMode.Normal);
 			h.SetIsPreviewingUpgrade(upgradeOn && it.Card.IsUpgradable);
+			PooledCardInput.Track(h);
 			it.Slot = slot;
 			it.Clip = clip;
 			it.Holder = h;
 			it.Born = Mathf.Max(Now(), nextBorn);
 			nextBorn = it.Born + 0.022f;
-			h.Hitbox.MouseEntered += () =>
+			bool OwnsHolder() => !exiting && GodotObject.IsInstanceValid(root) && root.IsInsideTree()
+				&& GodotObject.IsInstanceValid(h) && h.GetParent() == slot && it.Holder == h;
+			void Enter()
 			{
+				if (!OwnsHolder()) return;
 				if (hovered != it)
 				{
 					hovered = it;
 					Audio.Sfx.Clip("Sys_Cursor", 0.35f);
 					if (kind == Kind.Draw) HeroStage.Kick();
 				}
-			};
-			h.Hitbox.MouseExited += () => { if (hovered == it) hovered = null; };
-			h.Hitbox.GuiInput += ev => ModEntry.Safe("pile card input", () =>
+			}
+			void Leave() { if (hovered == it) hovered = null; }
+			void Input(InputEvent ev) => ModEntry.Safe("pile card input", () =>
 			{
+				if (!OwnsHolder()) return;
 				if (ev is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left or MouseButton.Right })
 				{
 					h.Hitbox.AcceptEvent();                 // 不传给底层（否则会当成拖动开始）
@@ -769,6 +774,17 @@ public static class PileFx
 					Wheel(ev);
 				}
 			});
+			void Detach()
+			{
+				h.Hitbox.MouseEntered -= Enter;
+				h.Hitbox.MouseExited -= Leave;
+				h.Hitbox.GuiInput -= Input;
+				h.TreeExiting -= Detach;
+			}
+			h.Hitbox.MouseEntered += Enter;
+			h.Hitbox.MouseExited += Leave;
+			h.Hitbox.GuiInput += Input;
+			h.TreeExiting += Detach;
 		}
 
 		// 左 / 右键点牌：这张飞到中间特写；再点它或点任意空白处：飞回原位

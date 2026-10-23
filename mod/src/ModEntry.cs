@@ -14,7 +14,7 @@ public static class ModEntry
 
 	public static void Init()
 	{
-		GD.Print($"{Tag} init v{Version}");
+		GD.Print($"{Tag} init v{Version} build 20261023-ui-fixes");
 		// v0.14.44（多版本兼容）：记下游戏版本，换版本出问题时日志里一眼能看到是哪个版本
 		Safe("game version", () => GD.Print($"{Tag} game version {P3Makoto.Core.Compat.GameVersion()}"));
 		// v0.14.59（玩家：iOS 移植版报 PlatformNotSupportedException）：iOS / 纯 AOT 平台不能在运行时生成代码，

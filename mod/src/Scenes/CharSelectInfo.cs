@@ -39,6 +39,7 @@ public static class CharSelectInfo
 	private sealed class Saved
 	{
 		public readonly List<(CanvasItem Item, Color Color, bool Self)> Hidden = new();
+		public Node2D Deco = null!;
 	}
 
 	private static readonly Dictionary<ulong, Saved> State = new();
@@ -75,61 +76,73 @@ public static class CharSelectInfo
 		{
 			return;
 		}
-		Saved saved = new();
-		State[panel.GetInstanceId()] = saved;
-
-		// 原版面板整块隐藏：底板（面板自身 + 非容器子节点）用 SelfModulate，内容容器用 Modulate（连同所有子节点）
-		saved.Hidden.Add((panel, panel.SelfModulate, true));
-		panel.SelfModulate = new Color(1f, 1f, 1f, 0f);
-		foreach (Node child in panel.GetChildren())
-		{
-			if (child is not CanvasItem ci || child.Name == DecoName)
-			{
-				continue;
-			}
-			if (child is Container)
-			{
-				saved.Hidden.Add((ci, ci.Modulate, false));
-				ci.Modulate = new Color(1f, 1f, 1f, 0f);
-			}
-			else
-			{
-				saved.Hidden.Add((ci, ci.SelfModulate, true));
-				ci.SelfModulate = new Color(1f, 1f, 1f, 0f);
-			}
-		}
-
-		// 内容：读原版的标签 / 数据
-		string hp = Traverse.Create(screen).Field("_hp").GetValue<Label>()?.Text ?? "";
-		string gold = Traverse.Create(screen).Field("_gold").GetValue<Label>()?.Text ?? "";
-		string relicTitle = Traverse.Create(screen).Field("_relicTitle").GetValue<RichTextLabel>()?.Text ?? "";
-		string relicDesc = Traverse.Create(screen).Field("_relicDescription").GetValue<RichTextLabel>()?.Text ?? "";
-		Texture2D? relicIcon = Traverse.Create(screen).Field("_relicIcon").GetValue<TextureRect>()?.Texture;
-
 		Node2D deco = new() { Name = DecoName, Visible = false };
-		panel.AddChild(deco);
-		// 等选中时的召唤切入（眼神横幅 0.7s 后碎裂）结束再入场，两者不同时出现
-		// v0.14.45：搭新面板出错时恢复原版面板（不能留下一块空白）
-		Fx.After(deco, Core.P3Settings.SelectSummon ? 0.85 : 0.1, "info panel", () =>
+		Saved saved = new() { Deco = deco };
+		State[panel.GetInstanceId()] = saved;
+		// SkinChanger 会先移除我们的节点，再停用整套 Harmony 补丁；恢复不能依赖下次 SelectCharacter。
+		// 绑定实际节点的生命周期，同一储君内换皮也会恢复，而且不会强制显示原版有意隐藏的图标。
+		deco.TreeExiting += () => Restore(panel, saved, removeDeco: false);
+		try
 		{
-			// 审查：快速切走再切回结城理时，上一次的计时器仍会触发 —— 它的面板已经不是当前这块了，什么都不做（否则会把新面板拆掉）
-			if (!GodotObject.IsInstanceValid(deco) || deco.GetParent() != panel || deco.IsQueuedForDeletion())
+			panel.AddChild(deco);
+
+			// 原版面板整块隐藏：底板（面板自身 + 非容器子节点）用 SelfModulate，内容容器用 Modulate（连同所有子节点）
+			saved.Hidden.Add((panel, panel.SelfModulate, true));
+			panel.SelfModulate = new Color(1f, 1f, 1f, 0f);
+			foreach (Node child in panel.GetChildren())
 			{
-				return;
-			}
-			try
-			{
-				Perf.Time("info panel build", () => Build(deco, hp, gold, Regex.Replace(relicTitle, @"\[[^\]]*\]", ""), relicDesc, relicIcon));
-			}
-			catch (System.Exception)
-			{
-				if (GodotObject.IsInstanceValid(panel))
+				if (child is not CanvasItem ci || child.Name == DecoName)
 				{
-					Restore(panel);
+					continue;
 				}
-				throw;
+				if (child is Container)
+				{
+					saved.Hidden.Add((ci, ci.Modulate, false));
+					ci.Modulate = new Color(1f, 1f, 1f, 0f);
+				}
+				else
+				{
+					saved.Hidden.Add((ci, ci.SelfModulate, true));
+					ci.SelfModulate = new Color(1f, 1f, 1f, 0f);
+				}
 			}
-		});
+
+			// 内容：读原版的标签 / 数据
+			string hp = Traverse.Create(screen).Field("_hp").GetValue<Label>()?.Text ?? "";
+			string gold = Traverse.Create(screen).Field("_gold").GetValue<Label>()?.Text ?? "";
+			string relicTitle = Traverse.Create(screen).Field("_relicTitle").GetValue<RichTextLabel>()?.Text ?? "";
+			string relicDesc = Traverse.Create(screen).Field("_relicDescription").GetValue<RichTextLabel>()?.Text ?? "";
+			Texture2D? relicIcon = Traverse.Create(screen).Field("_relicIcon").GetValue<TextureRect>()?.Texture;
+
+			// 等选中时的召唤切入（眼神横幅 0.7s 后碎裂）结束再入场，两者不同时出现
+			// v0.14.45：搭新面板出错时恢复原版面板（不能留下一块空白）
+			Fx.After(deco, Core.P3Settings.SelectSummon ? 0.85 : 0.1, "info panel", () =>
+			{
+				// 审查：快速切走再切回结城理时，上一次的计时器仍会触发 —— 它的面板已经不是当前这块了，什么都不做（否则会把新面板拆掉）
+				if (!GodotObject.IsInstanceValid(deco) || deco.GetParent() != panel || deco.IsQueuedForDeletion()
+					|| !State.TryGetValue(panel.GetInstanceId(), out Saved? current) || current != saved)
+				{
+					return;
+				}
+				try
+				{
+					Perf.Time("info panel build", () => Build(deco, hp, gold, Regex.Replace(relicTitle, @"\[[^\]]*\]", ""), relicDesc, relicIcon));
+				}
+				catch (System.Exception)
+				{
+					if (GodotObject.IsInstanceValid(panel))
+					{
+						Restore(panel, saved);
+					}
+					throw;
+				}
+			});
+		}
+		catch
+		{
+			Restore(panel, saved);
+			throw;
+		}
 	}
 
 	private static string ShortDesc()
@@ -146,22 +159,26 @@ public static class CharSelectInfo
 		return "A silent youth awakened in the Dark Hour.\nHis bonds call forth his Persona.";
 	}
 
-	private static void Restore(Control panel)
+	private static void Restore(Control panel, Saved? expected = null, bool removeDeco = true)
 	{
-		if (panel.GetNodeOrNull(DecoName) is Node old)
-		{
-			panel.RemoveChild(old);
-			old.QueueFree();
-		}
-		if (!State.Remove(panel.GetInstanceId(), out Saved? saved))
+		if (!GodotObject.IsInstanceValid(panel)
+			|| !State.TryGetValue(panel.GetInstanceId(), out Saved? saved)
+			|| (expected != null && saved != expected))
 		{
 			return;
 		}
+		// 先撤销所有权：RemoveChild 会同步触发 TreeExiting，旧节点也不能还原掉新面板的状态。
+		State.Remove(panel.GetInstanceId());
 		foreach ((CanvasItem item, Color c, bool self) in saved.Hidden)
 		{
 			if (!GodotObject.IsInstanceValid(item)) continue;
 			if (self) item.SelfModulate = c;
 			else item.Modulate = c;
+		}
+		if (removeDeco && GodotObject.IsInstanceValid(saved.Deco))
+		{
+			if (saved.Deco.GetParent() == panel) panel.RemoveChild(saved.Deco);
+			saved.Deco.QueueFree();
 		}
 	}
 
