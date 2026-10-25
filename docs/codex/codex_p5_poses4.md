@@ -12,6 +12,7 @@
 1. **不再参考 P5R 原版的姿势**。art/p5/ref/pose/ 下的原版渲染图全部停用，不要再作为生图输入，也不要再渲新的。
 2. 姿势由 Claude 规划：**先完整读 docs/p5/POSE_PLAN.md**（每张的设计），对照草图 art/p5/ref/plan/<姿势名>.png（红 = 右手右腿、离镜头近；蓝 = 左手左腿；头上短线 = 脸朝向；底部灰线 = 地面）。
 3. 每个姿势只出一张 _a。
+**小刀斩（用户 2026-10-25 重新定的动作）**：之前的 slash 作废（太规范，像军体拳；刀也不像原作）。按 docs/p5/POSE_PLAN.md「小刀斩」一节重画：从人物左前方 45°、腹部高度，往右前方 45° 斜向上挑一刀；腿脚是前后宽分腿站（文字里写清楚了）；**注意刀刃始终朝挥动方向（右上）、刀尖顺着前臂往外指**。草图 art/p5/ref/plan/knife_ready.png、slash_smear.png、slash.png、slash_follow.png。
 4. 这份覆盖 docs/codex/codex_p5_poses1c.md、codex_p5_poses2.md 第 1 节、codex_p5_poses3.md 里**关于姿势动作的描述**；那几份里的其他要求（面具单图、切入图、rest_sit、眨眼贴片、过渡帧做法、sequence_check）照旧。
 
 【作废】guard_a/b、summon_a/b、cast_a/b 不再修、不再提交。cast、cast_mid、cast_low、victory 不做。
@@ -29,7 +30,7 @@
 【顺序】（每组做完提交推送一次，只 add art/p5）
 1. idle_a 修眼睛 + 残点清理（如果 1e 里还没做完）。
 2. 关键姿势：guard → slash → gun → summon_grab → summon_rip → glove → down。
-3. 过渡帧：guard_mid；knife_ready、knife_windup、slash_smear、slash_follow；gun_raise、gun_recoil、gun_lower；summon_mid、summon_end；glove_mid；hurt_impact、hurt_recover；die_kneel、die_fall。
+3. 过渡帧：guard_mid；knife_ready、slash_smear、slash_follow（knife_windup 取消）；gun_raise、gun_recoil、gun_lower；summon_mid、summon_end；glove_mid；hurt_impact、hurt_recover；die_kneel、die_fall。
 4. 其他：relaxed、rest_sit、idle_blink_patch（照 codex_p5_poses3.md）；面具单图 mask_a 和切入图 cutin_grab_a、cutin_rip_a（照 codex_p5_poses2.md 第 2、3 节，扣 / 扯面具的是右手）。
 5. 拼 art/p5/poses/sequence_check.png（每个动作一行，按播放顺序，见 docs/p5/ART_SPEC.md 的「局内动画清单」），以及 art/p5/poses/plan_check.png（每张成图和对应草图左右并排）。
 
