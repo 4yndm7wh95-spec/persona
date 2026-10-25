@@ -1,6 +1,7 @@
 你在用户的 Windows 电脑上工作。任务：修好 P5R 原版模型的导出（之前 GFD Studio 导出的 GLB 人散成碎块），去掉 Joker 的面具，接上原版战斗动作，渲一批预览图给用户和 Claude 挑动作。不改 mod 代码，不生图，不启动游戏。
 
 **先读 docs/codex/README.md，按里面的长期规则和「和 Claude 同时改代码」的合并规则来。**
+**再读 research/p5r/README.md**：上一个 Codex 会话扒 P5R 资源时写的，里面有游戏位置、用过的工具（都在 C:\Users\kkk\sts2_tools\p5r_tools\）、本机资源库 C:\Users\kkk\sts2_tools\p5r_rip\ 的目录结构、按包内路径补解单个文件的命令。下文说的「本机资源库」「上一轮导出的动作」都以那份 README 和 research\p5r\local_only.csv 为准。
 
 【背景】
 - 下一个 mod：杀戮尖塔 2 的铁甲战士换成 P5R 的雨宫莲（怪盗服，**不戴面具**）。局内人物走「3D 渲 2D」：用原版模型 + 原版动作离线渲成 2D 帧，游戏里只放图片。
@@ -16,7 +17,7 @@
 6. 确认 tools\p5r\fix_gfd_glb.py 存在。稀疏检出缺目录时允许 git -c safe.directory=<repo> sparse-checkout add tools/p5r research/p5r（可加 -c core.longpaths=true）。不要 sparse-checkout disable / set。
 
 【2. 修 Joker 模型】
-用本机 Python（需要 numpy）在 <repo> 下执行，输出放 research\p5r\model\joker\fixed\：
+用本机 Python（需要 numpy；没有就 pip install --user numpy）在 <repo> 下执行，输出放 research\p5r\model\joker\fixed\：
 1. python tools\p5r\fix_gfd_glb.py research\p5r\model\joker\joker_thief.glb research\p5r\model\joker\fixed\joker_thief_nomask.glb --drop kamen
 2. python tools\p5r\fix_gfd_glb.py research\p5r\model\joker\joker_thief.glb research\p5r\model\joker\fixed\joker_thief.glb
 3. python tools\p5r\fix_gfd_glb.py research\p5r\model\joker\joker_student.glb research\p5r\model\joker\fixed\joker_student.glb
@@ -40,7 +41,7 @@
    成品放 research\p5r\model\arsene\fixed\，同样渲检查图。两条都不行就停在这里，报告卡在哪一步。
 
 【5. 接上战斗动作，渲动作总览】
-1. 动作来源：你上一轮导出在本机资源库的 Joker 战斗动作 GLB（joker_battle_anim_list.csv 里 original_name 以 BB0001_051.GAP 开头的那 64 段，按 CSV 的 file 列找文件）。这些动作 GLB 只带骨架和动画，骨骼名和模型一致：在 Blender 里把动作套到 joker_thief_nomask.glb 的骨架上播放（按骨骼名对应）。
+1. 动作来源：本机资源库里已经导出的 Joker 战斗动作 GLB（位置见 research\p5r\README.md 和 local_only.csv）（joker_battle_anim_list.csv 里 original_name 以 BB0001_051.GAP 开头的那 64 段，按 CSV 的 file 列找文件）。这些动作 GLB 只带骨架和动画，骨骼名和模型一致：在 Blender 里把动作套到 joker_thief_nomask.glb 的骨架上播放（按骨骼名对应）。
    - 动作文件也可能有同样的矩阵问题：先拿一段渲出来看，人物姿势明显扭曲 / 翻转就停下来报告（附截图），不要硬渲 64 段。
 2. 动作总览，放 research\p5r\model\joker\anim_preview\：
    - 每段动作一张横条图：均匀取 6 帧（含第一帧和最后一帧），每帧缩到 256×384 横排，条图左上角写「序号 + 原始名 + 帧数」；
