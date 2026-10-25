@@ -1,0 +1,227 @@
+[
+  {
+    "name": "idle_a",
+    "sha256": "ad24d3f0abe9f1283b493e18db4a365cb0bbaf9193c6d4db3c47e8074e32e366",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      254
+    ],
+    "core_margins_LTRB": [
+      81,
+      11,
+      67,
+      26
+    ],
+    "distant_nonzero_alpha_count": 169,
+    "distant_alpha_max": 1,
+    "matches_tool_original": true,
+    "below_y300_subject_pixels_differ_gt8_fraction": 0.3587
+  },
+  {
+    "name": "idle_b",
+    "sha256": "8161e3b0ce50a6184ad767f732350897e48f1fc3da6555e75b772d9e81cc57b6",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      254
+    ],
+    "core_margins_LTRB": [
+      83,
+      33,
+      64,
+      29
+    ],
+    "distant_nonzero_alpha_count": 156,
+    "distant_alpha_max": 1,
+    "matches_tool_original": true,
+    "below_y300_subject_pixels_differ_gt8_fraction": 0.2357
+  },
+  {
+    "name": "guard_a",
+    "sha256": "1d588e761fa8753a8b0c4ddc8c64363353ccff5d9a8281914dc852d290e0f3d0",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      254
+    ],
+    "core_margins_LTRB": [
+      45,
+      46,
+      21,
+      38
+    ],
+    "distant_nonzero_alpha_count": 1506,
+    "distant_alpha_max": 1,
+    "matches_tool_original": true,
+    "below_y300_subject_pixels_differ_gt8_fraction": 0.3376
+  },
+  {
+    "name": "guard_b",
+    "sha256": "5591d84c1c4612c03a03c886455fe5903f64593cc8e6f3680c1013914ec630c1",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      254
+    ],
+    "core_margins_LTRB": [
+      49,
+      14,
+      29,
+      118
+    ],
+    "distant_nonzero_alpha_count": 421,
+    "distant_alpha_max": 1,
+    "matches_tool_original": true,
+    "below_y300_subject_pixels_differ_gt8_fraction": 0.8276
+  },
+  {
+    "name": "summon_a",
+    "sha256": "4087f6cb6de8ee7ea12fa53e492337b395914a56b808741dee34b202f6516400",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      254
+    ],
+    "core_margins_LTRB": [
+      117,
+      26,
+      96,
+      34
+    ],
+    "distant_nonzero_alpha_count": 455,
+    "distant_alpha_max": 1,
+    "matches_tool_original": true,
+    "below_y300_subject_pixels_differ_gt8_fraction": 0.3592
+  },
+  {
+    "name": "summon_b",
+    "sha256": "d15681fe2dd7b71e9de3c0e1d62d06635aed4814ffb300438a562c1a990cc08a",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      254
+    ],
+    "core_margins_LTRB": [
+      103,
+      14,
+      84,
+      33
+    ],
+    "distant_nonzero_alpha_count": 373,
+    "distant_alpha_max": 1,
+    "matches_tool_original": true
+  },
+  {
+    "name": "cast_a",
+    "sha256": "277218e0137b381853fb0e62903a4812c5eb5d1ac86dbb510eb5e971b148f26e",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      254
+    ],
+    "core_margins_LTRB": [
+      29,
+      22,
+      24,
+      29
+    ],
+    "distant_nonzero_alpha_count": 1015,
+    "distant_alpha_max": 1,
+    "matches_tool_original": true
+  },
+  {
+    "name": "cast_b",
+    "sha256": "617bc7ca3def07fb58ce2b40520b55f559c39380f4f2b088331172cbaaa93d5b",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      254
+    ],
+    "core_margins_LTRB": [
+      28,
+      20,
+      28,
+      29
+    ],
+    "distant_nonzero_alpha_count": 1266,
+    "distant_alpha_max": 1,
+    "matches_tool_original": true
+  },
+  {
+    "name": "hurt_a",
+    "sha256": "ae94c55f1a3725afd7cca22a057292c580f4684a025087ff029c0a41d3b474c1",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      254
+    ],
+    "core_margins_LTRB": [
+      55,
+      114,
+      33,
+      78
+    ],
+    "distant_nonzero_alpha_count": 781,
+    "distant_alpha_max": 1,
+    "matches_tool_original": true
+  },
+  {
+    "name": "hurt_b",
+    "sha256": "4e53baa598ca1f0acc223ea78d6716100db32ac0281246117c31f2722137ccc5",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      254
+    ],
+    "core_margins_LTRB": [
+      49,
+      79,
+      22,
+      102
+    ],
+    "distant_nonzero_alpha_count": 623,
+    "distant_alpha_max": 1,
+    "matches_tool_original": true
+  }
+]
