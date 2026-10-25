@@ -12,7 +12,7 @@
 1. **不再参考 P5R 原版的姿势**。art/p5/ref/pose/ 下的原版渲染图全部停用，不要再作为生图输入，也不要再渲新的。
 2. 姿势由 Claude 规划：**先完整读 docs/p5/POSE_PLAN.md**（每张的设计），对照草图 art/p5/ref/plan/<姿势名>.png（红 = 右手右腿、离镜头近；蓝 = 左手左腿；头上短线 = 脸朝向；底部灰线 = 地面）。
 3. 每个姿势只出一张 _a。
-**小刀斩（用户 2026-10-25 重新定的动作）**：之前的 slash 作废（太规范，像军体拳；刀也不像原作）。按 docs/p5/POSE_PLAN.md「小刀斩」一节重画：从人物左前方 45°、腹部高度，往右前方 45° 斜向上挑一刀；腿脚是前后宽分腿站（文字里写清楚了）；**注意握法：拳头整个攥住刀柄，刀身从拇指那一侧伸出、和前臂垂直（是「握着」不是「拿着」）；刀刃朝挥动方向**。草图 art/p5/ref/plan/knife_ready.png、slash_smear.png、slash.png、slash_follow.png。
+**小刀斩（用户 2026-10-25 最终定的动作）**：之前所有 slash / knife_ready 成图都作废。**反手握刀**，从人物右前方 45°、腹部高度，往人物左前方 45° 斜向上撩；两脚距离约 1.2 个肩宽（不要大弓步）、上身微前倾不后仰、出刀手臂手肘微弯。详见 docs/p5/POSE_PLAN.md「小刀斩」一节；草图 art/p5/ref/plan/knife_ready.png、slash_smear.png、slash.png、slash_follow.png，节奏 slash_timing.gif。
 4. 这份覆盖 docs/codex/codex_p5_poses1c.md、codex_p5_poses2.md 第 1 节、codex_p5_poses3.md 里**关于姿势动作的描述**；那几份里的其他要求（面具单图、切入图、rest_sit、眨眼贴片、过渡帧做法、sequence_check）照旧。
 
 【作废】guard_a/b、summon_a/b、cast_a/b 不再修、不再提交。cast、cast_mid、cast_low、victory 不做。
