@@ -1,0 +1,32 @@
+{
+  "coordinate_origin": "top-left",
+  "units": "pixels",
+  "canvas": [
+    875,
+    1024
+  ],
+  "fps": 30,
+  "frame_count": 81,
+  "source_action": "BPS0201_000_main_0000",
+  "source_package": "BASE.CPK",
+  "method": "original PS0201 model + original rotations only; arsene_root rotation skipped",
+  "foot_anchor_semantics": "fixed ground reference (0,0,0) projected through action camera; not per-frame moving foot tracking",
+  "body_center_semantics": "fixed rest-space body center projected through action camera",
+  "anchors": {
+    "foot": [
+      633.951,
+      878.61
+    ],
+    "body_center": [
+      633.951,
+      444.13
+    ]
+  },
+  "crop_from_1536": [
+    167,
+    148,
+    1154,
+    1303
+  ],
+  "outline_px": 3
+}

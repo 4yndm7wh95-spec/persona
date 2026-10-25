@@ -1,0 +1,22 @@
+[
+  {
+    "source": "unpacked/SC/BATTLE/GUI/BTL_BTN.SPD_unpacked/sprites.json",
+    "metadata": "sprites\\BTL_BTN.SPD_unpacked__7880a39586\\sprites.json",
+    "copied_sprites": 167
+  },
+  {
+    "source": "unpacked/SC/BATTLE/GUI/CHALLENGE_BATTLE.SPD_unpacked/sprites.json",
+    "metadata": "sprites\\CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd\\sprites.json",
+    "copied_sprites": 135
+  },
+  {
+    "source": "unpacked/SC/BATTLE/GUI/DAMAGE_DATA.SPD_unpacked/sprites.json",
+    "metadata": "sprites\\DAMAGE_DATA.SPD_unpacked__a87542a9d6\\sprites.json",
+    "copied_sprites": 124
+  },
+  {
+    "source": "unpacked/SC/BATTLE/GUI/P5_BATTLE_PARTYPANEL.SPD_unpacked/sprites.json",
+    "metadata": "sprites\\P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3\\sprites.json",
+    "copied_sprites": 164
+  }
+]

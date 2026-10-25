@@ -1,0 +1,12 @@
+﻿file,source_package,source_path,texture_name,dds_byte_offset,width,height,alpha_min,identification
+PERSONA_B__000_bse_p_chain_blue.png,BASE.CPK,BATTLE/EVENT/BCD/0282/EPL/PERSONA_B.EPL,bse_p_chain_blue.dds,1293,32,256,0,source confirmed; purpose candidate only
+PERSONA_B__001_bse_p_chain_random_short2.png,BASE.CPK,BATTLE/EVENT/BCD/0282/EPL/PERSONA_B.EPL,bse_p_chain_random_short2.dds,12486,64,512,0,source confirmed; purpose candidate only
+PERSONA_A__000_bes_en_ent01add.png,BASE.CPK,BATTLE/EVENT/BCD/0282/EPL/PERSONA_A.EPL,bes_en_ent01add.dds,1861,128,128,255,source confirmed; purpose candidate only
+PERSONA_A__001_bes_en_ent01add.png,BASE.CPK,BATTLE/EVENT/BCD/0282/EPL/PERSONA_A.EPL,bes_en_ent01add.dds,12808,128,128,255,source confirmed; purpose candidate only
+PERSONA_A__002_bes_syo_sbk1-1.png,BASE.CPK,BATTLE/EVENT/BCD/0282/EPL/PERSONA_A.EPL,bes_syo_sbk1-1.dds,22669,32,32,255,source confirmed; purpose candidate only
+PERSONA_A__003_bes_syo_sbk1-2.png,BASE.CPK,BATTLE/EVENT/BCD/0282/EPL/PERSONA_A.EPL,bes_syo_sbk1-2.dds,23857,128,128,255,source confirmed; purpose candidate only
+PERSONA_A__004_bes_syo_fkomaB12kf2.png,BASE.CPK,BATTLE/EVENT/BCD/0282/EPL/PERSONA_A.EPL,bes_syo_fkomaB12kf2.dds,33325,512,512,0,source confirmed; purpose candidate only
+PERSONA_C__000_bes_kamen_EPD.png,BASE.CPK,BATTLE/EVENT/BCD/0282/EPL/PERSONA_C.EPL,bes_kamen_EPD.dds,906,64,64,0,source confirmed; purpose candidate only
+PERSONA_C__001_diff4.png,BASE.CPK,BATTLE/EVENT/BCD/0282/EPL/PERSONA_C.EPL,diff4.dds,3109,64,64,255,source confirmed; purpose candidate only
+PERSONA_D__000_bes_kamen_EPD.png,BASE.CPK,BATTLE/EVENT/BCD/0282/EPL/PERSONA_D.EPL,bes_kamen_EPD.dds,906,64,64,0,source confirmed; purpose candidate only
+PERSONA_D__001_diff4.png,BASE.CPK,BATTLE/EVENT/BCD/0282/EPL/PERSONA_D.EPL,diff4.dds,3109,64,64,255,source confirmed; purpose candidate only

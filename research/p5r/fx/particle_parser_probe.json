@@ -1,0 +1,1086 @@
+[
+  {
+    "source": "BATTLE/EFFECT/BES_GUN1.BED",
+    "status": "failed",
+    "error": "Expected input to be '16', but it was '2'"
+  },
+  {
+    "source": "BATTLE/EFFECT/BES_HIT_ZAN.BED",
+    "status": "failed",
+    "error": "Expected input to be '16', but it was '2'"
+  },
+  {
+    "source": "BATTLE/EFFECT/BES_CRITICALG.BED",
+    "status": "failed",
+    "error": "Expected input to be '16', but it was '2'"
+  },
+  {
+    "source": "BATTLE/EVENT/BCD/0282/EPL/PERSONA_A.EPL",
+    "status": "parsed",
+    "type_counts": {
+      "EPLFileInterface": 1,
+      "EPLFlags": 1,
+      "SceneGraphInterface": 1,
+      "list": 140,
+      "NodeInterface": 13,
+      "array": 95,
+      "EPLLeafInterface": 12,
+      "EPLLeafBinary": 12,
+      "EPLLeafFlags": 12,
+      "ObjectName": 24,
+      "EPLAnimationBinary": 1,
+      "EPLAnimationFlags": 1,
+      "AnimationBinary": 1,
+      "AnimationFlags": 1,
+      "AnimationControllerBinary": 12,
+      "SizedObjArray": 15,
+      "type": 4,
+      "function": 11,
+      "getset_descriptor": 8,
+      "AnimationTrackBinary": 35,
+      "KeyframeType17": 7,
+      "KeyframeType22": 1,
+      "EPLAnimationController": 13
+    },
+    "effect_structures": [
+      {
+        "path": "root",
+        "type": "EPLFileInterface",
+        "fields": [
+          "node",
+          "flags",
+          "_scenegraph",
+          "animation",
+          "unknown",
+          "version"
+        ]
+      },
+      {
+        "path": "root.flags",
+        "type": "EPLFlags",
+        "fields": []
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[0]",
+        "type": "EPLLeafInterface",
+        "fields": [
+          "node",
+          "binary"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[0].binary",
+        "type": "EPLLeafBinary",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x08",
+          "flags",
+          "name",
+          "type",
+          "unknown_0x1C",
+          "payload"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[0].binary.flags",
+        "type": "EPLLeafFlags",
+        "fields": []
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[1]",
+        "type": "EPLLeafInterface",
+        "fields": [
+          "node",
+          "binary"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[1].binary",
+        "type": "EPLLeafBinary",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x08",
+          "flags",
+          "name",
+          "type",
+          "unknown_0x1C",
+          "payload"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[1].binary.flags",
+        "type": "EPLLeafFlags",
+        "fields": []
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[2]",
+        "type": "EPLLeafInterface",
+        "fields": [
+          "node",
+          "binary"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[2].binary",
+        "type": "EPLLeafBinary",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x08",
+          "flags",
+          "name",
+          "type",
+          "unknown_0x1C",
+          "payload"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[2].binary.flags",
+        "type": "EPLLeafFlags",
+        "fields": []
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[3]",
+        "type": "EPLLeafInterface",
+        "fields": [
+          "node",
+          "binary"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[3].binary",
+        "type": "EPLLeafBinary",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x08",
+          "flags",
+          "name",
+          "type",
+          "unknown_0x1C",
+          "payload"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[3].binary.flags",
+        "type": "EPLLeafFlags",
+        "fields": []
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[4]",
+        "type": "EPLLeafInterface",
+        "fields": [
+          "node",
+          "binary"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[4].binary",
+        "type": "EPLLeafBinary",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x08",
+          "flags",
+          "name",
+          "type",
+          "unknown_0x1C",
+          "payload"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[4].binary.flags",
+        "type": "EPLLeafFlags",
+        "fields": []
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[5]",
+        "type": "EPLLeafInterface",
+        "fields": [
+          "node",
+          "binary"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[5].binary",
+        "type": "EPLLeafBinary",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x08",
+          "flags",
+          "name",
+          "type",
+          "unknown_0x1C",
+          "payload"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[5].binary.flags",
+        "type": "EPLLeafFlags",
+        "fields": []
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[6]",
+        "type": "EPLLeafInterface",
+        "fields": [
+          "node",
+          "binary"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[6].binary",
+        "type": "EPLLeafBinary",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x08",
+          "flags",
+          "name",
+          "type",
+          "unknown_0x1C",
+          "payload"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[6].binary.flags",
+        "type": "EPLLeafFlags",
+        "fields": []
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[7]",
+        "type": "EPLLeafInterface",
+        "fields": [
+          "node",
+          "binary"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[7].binary",
+        "type": "EPLLeafBinary",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x08",
+          "flags",
+          "name",
+          "type",
+          "unknown_0x1C",
+          "payload"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[7].binary.flags",
+        "type": "EPLLeafFlags",
+        "fields": []
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[8]",
+        "type": "EPLLeafInterface",
+        "fields": [
+          "node",
+          "binary"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[8].binary",
+        "type": "EPLLeafBinary",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x08",
+          "flags",
+          "name",
+          "type",
+          "unknown_0x1C",
+          "payload"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[8].binary.flags",
+        "type": "EPLLeafFlags",
+        "fields": []
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[9]",
+        "type": "EPLLeafInterface",
+        "fields": [
+          "node",
+          "binary"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[9].binary",
+        "type": "EPLLeafBinary",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x08",
+          "flags",
+          "name",
+          "type",
+          "unknown_0x1C",
+          "payload"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[9].binary.flags",
+        "type": "EPLLeafFlags",
+        "fields": []
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[10]",
+        "type": "EPLLeafInterface",
+        "fields": [
+          "node",
+          "binary"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[10].binary",
+        "type": "EPLLeafBinary",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x08",
+          "flags",
+          "name",
+          "type",
+          "unknown_0x1C",
+          "payload"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[10].binary.flags",
+        "type": "EPLLeafFlags",
+        "fields": []
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[11]",
+        "type": "EPLLeafInterface",
+        "fields": [
+          "node",
+          "binary"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[11].binary",
+        "type": "EPLLeafBinary",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x08",
+          "flags",
+          "name",
+          "type",
+          "unknown_0x1C",
+          "payload"
+        ]
+      },
+      {
+        "path": "root._scenegraph.epl_leaves[11].binary.flags",
+        "type": "EPLLeafFlags",
+        "fields": []
+      },
+      {
+        "path": "root.animation",
+        "type": "EPLAnimationBinary",
+        "fields": [
+          "flags",
+          "unknown_0x04",
+          "animation",
+          "epl_controllers"
+        ]
+      },
+      {
+        "path": "root.animation.flags",
+        "type": "EPLAnimationFlags",
+        "fields": []
+      },
+      {
+        "path": "root.animation.animation",
+        "type": "AnimationBinary",
+        "fields": [
+          "flags",
+          "duration",
+          "controller_count",
+          "track_count",
+          "anim_buffer_size",
+          "controllers",
+          "epls",
+          "lookat_animations",
+          "extra_track_data",
+          "bounding_box_max_dims",
+          "bounding_box_min_dims",
+          "speed",
+          "properties"
+        ]
+      },
+      {
+        "path": "root.animation.animation.flags",
+        "type": "AnimationFlags",
+        "fields": []
+      },
+      {
+        "path": "root.animation.animation.controllers[0]",
+        "type": "AnimationControllerBinary",
+        "fields": [
+          "type",
+          "target_id",
+          "target_name",
+          "tracks"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[0].tracks.data[0]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[0].tracks.data[1]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[0].tracks.data[2]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[1]",
+        "type": "AnimationControllerBinary",
+        "fields": [
+          "type",
+          "target_id",
+          "target_name",
+          "tracks"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[1].tracks.data[0]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[1].tracks.data[1]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[1].tracks.data[2]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[2]",
+        "type": "AnimationControllerBinary",
+        "fields": [
+          "type",
+          "target_id",
+          "target_name",
+          "tracks"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[2].tracks.data[0]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[2].tracks.data[1]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[2].tracks.data[2]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[3]",
+        "type": "AnimationControllerBinary",
+        "fields": [
+          "type",
+          "target_id",
+          "target_name",
+          "tracks"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[3].tracks.data[0]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[3].tracks.data[1]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[3].tracks.data[2]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[4]",
+        "type": "AnimationControllerBinary",
+        "fields": [
+          "type",
+          "target_id",
+          "target_name",
+          "tracks"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[4].tracks.data[0]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[4].tracks.data[1]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[4].tracks.data[2]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[5]",
+        "type": "AnimationControllerBinary",
+        "fields": [
+          "type",
+          "target_id",
+          "target_name",
+          "tracks"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[5].tracks.data[0]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[5].tracks.data[1]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[5].tracks.data[2]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[6]",
+        "type": "AnimationControllerBinary",
+        "fields": [
+          "type",
+          "target_id",
+          "target_name",
+          "tracks"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[6].tracks.data[0]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[6].tracks.data[1]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[6].tracks.data[2]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[7]",
+        "type": "AnimationControllerBinary",
+        "fields": [
+          "type",
+          "target_id",
+          "target_name",
+          "tracks"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[7].tracks.data[0]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[7].tracks.data[1]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[7].tracks.data[2]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[8]",
+        "type": "AnimationControllerBinary",
+        "fields": [
+          "type",
+          "target_id",
+          "target_name",
+          "tracks"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[8].tracks.data[0]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[8].tracks.data[1]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[8].tracks.data[2]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[9]",
+        "type": "AnimationControllerBinary",
+        "fields": [
+          "type",
+          "target_id",
+          "target_name",
+          "tracks"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[9].tracks.data[0]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[9].tracks.data[1]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[9].tracks.data[2]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[10]",
+        "type": "AnimationControllerBinary",
+        "fields": [
+          "type",
+          "target_id",
+          "target_name",
+          "tracks"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[10].tracks.data[0]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[10].tracks.data[1]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[10].tracks.data[2]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[11]",
+        "type": "AnimationControllerBinary",
+        "fields": [
+          "type",
+          "target_id",
+          "target_name",
+          "tracks"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[11].tracks.data[0]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.animation.controllers[11].tracks.data[1]",
+        "type": "AnimationTrackBinary",
+        "fields": [
+          "keyframe_type",
+          "keyframe_count",
+          "frames",
+          "values",
+          "base_position",
+          "base_scale"
+        ]
+      },
+      {
+        "path": "root.animation.epl_controllers.data[0]",
+        "type": "EPLAnimationController",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x04",
+          "controller_idx",
+          "unknown_0x0C"
+        ]
+      },
+      {
+        "path": "root.animation.epl_controllers.data[1]",
+        "type": "EPLAnimationController",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x04",
+          "controller_idx",
+          "unknown_0x0C"
+        ]
+      },
+      {
+        "path": "root.animation.epl_controllers.data[2]",
+        "type": "EPLAnimationController",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x04",
+          "controller_idx",
+          "unknown_0x0C"
+        ]
+      },
+      {
+        "path": "root.animation.epl_controllers.data[3]",
+        "type": "EPLAnimationController",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x04",
+          "controller_idx",
+          "unknown_0x0C"
+        ]
+      },
+      {
+        "path": "root.animation.epl_controllers.data[4]",
+        "type": "EPLAnimationController",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x04",
+          "controller_idx",
+          "unknown_0x0C"
+        ]
+      },
+      {
+        "path": "root.animation.epl_controllers.data[5]",
+        "type": "EPLAnimationController",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x04",
+          "controller_idx",
+          "unknown_0x0C"
+        ]
+      },
+      {
+        "path": "root.animation.epl_controllers.data[6]",
+        "type": "EPLAnimationController",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x04",
+          "controller_idx",
+          "unknown_0x0C"
+        ]
+      },
+      {
+        "path": "root.animation.epl_controllers.data[7]",
+        "type": "EPLAnimationController",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x04",
+          "controller_idx",
+          "unknown_0x0C"
+        ]
+      },
+      {
+        "path": "root.animation.epl_controllers.data[8]",
+        "type": "EPLAnimationController",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x04",
+          "controller_idx",
+          "unknown_0x0C"
+        ]
+      },
+      {
+        "path": "root.animation.epl_controllers.data[9]",
+        "type": "EPLAnimationController",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x04",
+          "controller_idx",
+          "unknown_0x0C"
+        ]
+      },
+      {
+        "path": "root.animation.epl_controllers.data[10]",
+        "type": "EPLAnimationController",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x04",
+          "controller_idx",
+          "unknown_0x0C"
+        ]
+      },
+      {
+        "path": "root.animation.epl_controllers.data[11]",
+        "type": "EPLAnimationController",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x04",
+          "controller_idx",
+          "unknown_0x0C"
+        ]
+      },
+      {
+        "path": "root.animation.epl_controllers.data[12]",
+        "type": "EPLAnimationController",
+        "fields": [
+          "unknown_0x00",
+          "unknown_0x04",
+          "controller_idx",
+          "unknown_0x0C"
+        ]
+      }
+    ]
+  }
+]

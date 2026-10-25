@@ -1,0 +1,591 @@
+﻿file,sprite_index,original_comment,x,y,width,height
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00000.png,0,さんかく,2,2,154,154
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00001.png,1,しかく,158,2,154,154
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00002.png,2,まる,314,2,154,154
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00003.png,3,ばつ,470,2,154,154
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00004.png,4,十字,1232,206,226,226
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00005.png,5,十字　NEXT,372,1230,370,150
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00006.png,6,R2,870,2,240,138
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00007.png,7,Ｌ2アナライズ,2,1382,292,150
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00008.png,8,L1,626,2,240,138
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00009.png,9,R1アシスト,2,1230,292,150
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00010.png,10,■ヘルプ,476,254,232,102
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00011.png,11,gun,528,354,416,194
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00012.png,12,command,2,344,522,192
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00013.png,13,guard,2,182,508,160
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00014.png,14,item,2,540,346,138
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00015.png,15,persona,512,182,594,156
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00016.png,16,attack,2,2,586,178
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00017.png,17,baton,590,2,778,160
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00019.png,19,ショットガン,578,606,204,408
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00020.png,20,マシンガン,260,714,120,450
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00021.png,21,パチンコ玉A,2,714,256,264
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00022.png,22,パチンコ玉B,2,980,256,264
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00023.png,23,ビーム銃カートリッジ,384,606,192,462
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00024.png,24,ハンドガン,786,606,120,306
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00026.png,26,rash,1472,44,30,30
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00027.png,27,fire,2,374,598,186
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00028.png,28,back,2,174,574,198
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00029.png,29,help,2,452,226,120
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00030.png,30,persona status,414,1382,444,150
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00031.png,31,まる（大）,2,576,142,134
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00032.png,32,ばつ（大）,146,576,142,134
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00034.png,34,batontouch,1466,36,30,30
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00035.png,35,analysis,2,564,690,156
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00036.png,36,tacics,714,2,626,180
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00037.png,37,escape,2,722,534,172
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00038.png,38,party,484,920,528,188
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00039.png,39,goodbye,578,186,4,2
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00040.png,40,shakedown,2,2,4,12
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00041.png,41,back,602,360,4,2
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00042.png,42,L1,1472,20,30,30
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00043.png,43,R1,1472,26,30,30
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00044.png,44,陰気,294,768,288,216
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00045.png,45,弱気,632,374,294,222
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00046.png,46,短気,354,374,276,228
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00047.png,47,陽気,2,770,290,236
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00048.png,48,MAX,810,278,108,78
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00049.png,49,HP,710,254,96,96
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00050.png,50,SP,290,606,90,90
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00051.png,51,rare,2,1248,394,182
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00052.png,52,ウィークつけるよ,1166,434,288,198
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00053.png,53,▲,230,452,120,118
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00054.png,54,■,354,254,120,118
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00055.png,55,,1480,36,30,30
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00056.png,56,スクロールバー,1460,98,64,526
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00057.png,57,残弾数土台,2,158,348,292
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00058.png,58,special,2,2,708,168
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00061.png,61,キラキラ,930,278,234,354
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00062.png,62,日本語コマンド　ガン,294,680,252,84
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00063.png,63,日本語コマンド　オーダー,1110,252,300,96
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00064.png,64,日本語コマンド　アイテム,1110,164,276,84
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00065.png,65,日本語コマンド　ガード,350,564,198,84
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00066.png,66,日本語コマンド　スキル,948,438,312,84
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00067.png,67,日本語コマンド　ソード,948,350,348,84
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00068.png,68,日本語コマンド　バトンタッチ,590,752,294,96
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00069.png,69,日本語コマンド　バック,1370,2,144,90
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00070.png,70,日本語コマンド　スペシャル,590,854,362,118
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00071.png,71,日本語コマンド　ショット,1262,438,252,96
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00072.png,72,日本語コマンド　アナライズ,2,680,288,84
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00073.png,73,日本語コマンド　エスケープ,552,564,372,90
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00074.png,74,日本語コマンド　タクティクス,548,656,330,90
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00075.png,75,日本語コマンド　パーティー,926,564,420,90
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00076.png,76,SHOT!,908,636,622,204
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00077.png,77,不明,942,1062,282,222
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00078.png,78,??,1226,1062,306,270
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00079.png,79,DROP ITEM,908,842,624,216
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00080.png,80,性格,398,1070,222,198
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00081.png,81,RUSH STOP,870,1346,662,186
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00082.png,82,START　ラッシュ,1016,968,348,150
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00083.png,83,X戻る,696,552,224,150
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00084.png,84,○決定,920,552,230,150
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00086.png,86,コマンドヘルプ　アイテムを使う,578,186,432,162
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00087.png,87,コマンドヘルプ　スキルを使う,1014,186,402,162
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00088.png,88,コマンドヘルプ　戦術を指示する,602,350,528,198
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00089.png,89,コマンドヘルプ　作戦を指示する,538,722,492,192
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00091.png,91,ペルソナチェンジ,354,158,392,94
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00092.png,92,L1,2,1434,150,84
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00093.png,93,R1,156,1434,150,84
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00095.png,95,グラデ,624,1016,234,234
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00097.png,97,仮面,2,898,476,282
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00098.png,98,仮面ぼかし,1034,764,330,198
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00099.png,99,キーヘルプ　対照選択,746,1230,368,150
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00100.png,100,グレネードランチャー,1160,352,204,408
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00101.png,101,weak黄色,474,1350,392,182
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00102.png,102,,1454,34,20,20
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00106.png,106,戦況確認　戦況文字,1606,2,440,368
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00107.png,107,戦況確認　確認文字,1456,748,588,372
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00108.png,108,戦況確認　戦況下地,1566,372,480,368
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00109.png,109,戦況確認　確認下地,1416,1122,628,412
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00110.png,110,L1 ペルソナステータス,884,1382,506,150
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00111.png,111,タッチバッド　合体技,600,990,20,20
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00112.png,112,ペルソナ所持中アイコン,1112,2,312,186
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00113.png,113,OPTION スキップ,484,1114,270,112
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00115.png,115,SHOWTIME S,2,2,216,372
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00116.png,116,SHOWTIME H,864,718,208,304
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00117.png,117,SHOWTIME O,2,758,156,242
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00118.png,118,SHOWTIME W,542,356,274,256
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00119.png,119,SHOWTIME T,734,2,294,352
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00120.png,120,SHOWTIME I,318,758,166,264
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00121.png,121,SHOWTIME M,1030,2,246,272
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00122.png,122,SHOWTIME E,1074,694,216,328
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00123.png,123,SHOWTIME 矢印,2,376,268,380
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00124.png,124,SHOWTIME ボタン,1094,276,394,272
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00125.png,125,SHOWTIME Sフチ,220,2,216,372
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00126.png,126,SHOWTIME Hフチ,654,718,208,304
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00127.png,127,SHOWTIME Oフチ,160,758,156,242
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00128.png,128,SHOWTIME Wフチ,818,356,274,256
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00129.png,129,SHOWTIME Tフチ,438,2,294,352
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00130.png,130,SHOWTIME Iフチ,486,758,166,264
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00131.png,131,SHOWTIME Mフチ,1278,2,246,272
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00132.png,132,SHOWTIME Eフチ,1292,694,216,328
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00133.png,133,SHOWTIME 矢印フチ,272,376,268,380
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00136.png,136,SHOWTIME エフェクト１,2,1024,248,248
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00137.png,137,SHOWTIME エフェクト2,252,1024,248,248
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00138.png,138,SHOWTIME エフェクト3,502,1024,248,248
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00139.png,139,SHOWTIME エフェクト4,752,1024,248,248
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00140.png,140,SHOWTIME エフェクト5,1002,1024,248,248
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00141.png,141,SHOWTIME エフェクト6,1252,1024,248,248
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00142.png,142,SHOWTIME エフェクト7,2,1274,248,248
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00143.png,143,SHOWTIME エフェクト8,252,1274,248,248
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00144.png,144,SHOWTIME エフェクト9,502,1274,248,248
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00149.png,149,スペシャルショット弾丸,1094,550,424,142
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00151.png,151,バトンタッチ,2,1008,520,204
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00152.png,152,バトンタッチ　RANK,1040,1184,228,76
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00153.png,153,バトンタッチ　★,240,1684,128,120
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00154.png,154,バトンタッチ　1,1270,988,264,272
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00155.png,155,バトンタッチ　2,1004,1262,264,272
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00156.png,156,バトンタッチ　3,1270,1262,264,272
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00157.png,157,バトンタッチ　MAX,2,1654,20,20
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00158.png,158,バトンタッチ　ドット,1032,278,38,38
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00159.png,159,スキルコスト0,2,1222,964,312
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00162.png,162,装弾数バステ　炎上,1286,1274,248,176
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00163.png,163,装弾数バステ　凍結,1286,1452,248,176
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00164.png,164,装弾数バステ　感電,1286,1630,248,176
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00165.png,165,装弾数バステ　目眩,1286,1808,248,176
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00166.png,166,装弾数バステ　混乱,1036,1808,248,176
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00167.png,167,装弾数バステ　恐怖,784,1274,248,176
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00168.png,168,装弾数バステ　忘却,1036,1274,248,176
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00169.png,169,,1036,1274,248,176
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00170.png,170,装弾数バステ　睡眠,1036,1452,248,176
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00171.png,171,装弾数バステ　激怒,784,1630,248,176
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00172.png,172,装弾数バステ　絶望,784,1452,248,176
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00173.png,173,装弾数バステ　洗脳,1036,1630,248,176
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00177.png,177,バステエフェ　炎上,370,1694,116,116
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00178.png,178,バステエフェ　凍結,488,1694,116,116
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00179.png,179,バステエフェ　感電,608,1694,116,116
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00180.png,180,バステエフェ　目眩,2,1812,116,116
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00181.png,181,バステエフェ　混乱,120,1812,116,116
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00182.png,182,バステエフェ　恐怖,238,1812,116,116
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00183.png,183,バステエフェ　忘却,358,1812,116,116
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00185.png,185,バステエフェ　睡眠,2,1930,116,116
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00186.png,186,バステエフェ　激怒,120,1930,116,116
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00187.png,187,バステエフェ　絶望,238,1930,116,116
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00188.png,188,バステエフェ　洗脳,356,1930,116,116
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00190.png,190,矢印１つ,586,974,180,164
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00191.png,191,矢印２つ,768,974,180,164
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00196.png,196,attack,948,656,586,178
+sprites/BTL_BTN.SPD_unpacked__7880a39586/00197.png,197,日本語コマンド　ソード,1186,836,348,86
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00000.png,0,num_0,2,2,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00001.png,1,num_1,312,2,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00002.png,2,num_2,622,2,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00003.png,3,num_3,932,2,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00004.png,4,num_4,1242,2,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00005.png,5,num_5,1552,2,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00006.png,6,num_6,1862,2,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00007.png,7,num_7,2172,2,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00008.png,8,num_8,2482,2,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00009.png,9,num_9,2792,2,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00010.png,10,numフチ_0,2,374,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00011.png,11,numフチ_1,312,374,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00012.png,12,numフチ_2,622,374,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00013.png,13,numフチ_3,932,374,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00014.png,14,numフチ_4,1242,374,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00015.png,15,numフチ_5,1552,374,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00016.png,16,numフチ_6,1862,374,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00017.png,17,numフチ_7,2172,374,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00018.png,18,numフチ_8,2482,374,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00019.png,19,numフチ_9,2792,374,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00020.png,20,numぼかし_0,2,746,308,404
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00021.png,21,numぼかし_1,312,746,308,404
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00022.png,22,numぼかし_2,622,746,308,404
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00023.png,23,numぼかし_3,932,746,308,404
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00024.png,24,numぼかし_4,1242,746,308,404
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00025.png,25,numぼかし_5,1552,746,308,404
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00026.png,26,numぼかし_6,1862,746,308,404
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00027.png,27,numぼかし_7,2172,746,308,404
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00028.png,28,numぼかし_8,2482,746,308,404
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00029.png,29,numぼかし_9,2792,746,308,404
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00030.png,30,num_コンマ,3102,2,164,212
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00031.png,31,numフチ_コンマ,3268,2,164,212
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00032.png,32,numぼかし_コンマ,3102,216,164,212
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00033.png,33,numフチ_マスク,0,0,1024,1024
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00034.png,34,num_けむり,0,0,1024,1024
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00035.png,35,ハイスコア,560,1492,338,62
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00036.png,36,ボーナス_下地,2,1216,1142,176
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00037.png,37,ボーナス_+,2,1394,54,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00038.png,38,ボーナス_×,58,1394,54,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00039.png,39,ボーナス_倍,730,1394,106,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00040.png,40,ボーナス_0,114,1394,54,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00041.png,41,ボーナス_1,170,1394,54,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00042.png,42,ボーナス_2,226,1394,54,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00043.png,43,ボーナス_3,282,1394,54,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00044.png,44,ボーナス_4,338,1394,54,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00045.png,45,ボーナス_5,394,1394,54,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00046.png,46,ボーナス_6,450,1394,54,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00047.png,47,ボーナス_7,506,1394,54,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00048.png,48,ボーナス_8,562,1394,54,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00049.png,49,ボーナス_9,618,1394,54,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00050.png,50,ボーナス_コンマ,674,1394,54,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00051.png,51,ボーナス_発光,1146,1216,176,176
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00052.png,52,加点下地,2,1822,658,222
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00053.png,53,宝箱大,3434,2,600,600
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00054.png,54,宝箱大　下地,3434,604,600,600
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00055.png,55,宝箱小,324,1492,234,234
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00056.png,56,宝箱よび,2890,1206,20,20
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00057.png,57,宝箱よび,2286,1206,20,20
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00058.png,58,numフチ2_0,662,1674,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00059.png,59,numフチ2_1,972,1674,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00060.png,60,numフチ2_2,1282,1674,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00061.png,61,numフチ2_3,1592,1674,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00062.png,62,numフチ2_4,1902,1674,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00063.png,63,numフチ2_5,1324,1302,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00064.png,64,numフチ2_6,1634,1302,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00065.png,65,numフチ2_7,1944,1302,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00066.png,66,numフチ2_8,3102,430,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00067.png,67,numフチ2_9,3102,802,308,370
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00068.png,68,numフチ2_コンマ,3268,216,164,212
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00069.png,69,切り裂き_光彩,2,1492,320,320
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00070.png,70,切り裂き_ライン,2212,1964,1428,80
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00071.png,71,numフチリザルト_0,2,2,2,2
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00072.png,72,numフチリザルト_1,2,2,2,2
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00073.png,73,numフチリザルト_2,2,2,2,2
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00074.png,74,numフチリザルト_3,2,2,2,2
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00075.png,75,numフチリザルト_4,2,2,2,2
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00076.png,76,numフチリザルト_5,2,2,2,2
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00077.png,77,numフチリザルト_6,2,2,2,2
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00078.png,78,numフチリザルト_7,2,2,2,2
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00079.png,79,numフチリザルト_8,2,2,2,2
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00080.png,80,numフチリザルト_9,2,2,2,2
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00081.png,81,numフチリザルト_コンマ,2,2,2,2
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00082.png,82,numリザルト_0,1324,1204,72,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00083.png,83,numリザルト_1,1398,1204,72,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00084.png,84,numリザルト_2,1472,1204,72,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00085.png,85,numリザルト_3,1546,1204,72,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00086.png,86,numリザルト_4,1620,1204,72,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00087.png,87,numリザルト_5,1694,1204,72,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00088.png,88,numリザルト_6,1768,1204,72,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00089.png,89,numリザルト_7,1842,1204,72,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00090.png,90,numリザルト_8,1916,1204,72,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00091.png,91,numリザルト_9,1990,1204,72,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00092.png,92,numリザルト_コンマ,2064,1204,72,96
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00093.png,93,モード表記_下地,2,2,20,20
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00094.png,94,モード表記_trial,236,1044,1928,500
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00095.png,95,モード表記_2 chain,236,542,1928,500
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00096.png,96,モード表記_3 technician,2166,1546,1928,500
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00097.png,97,モード表記_4 survival,236,1546,1928,500
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00098.png,98,モード表記_5 trickster,2166,1044,1928,500
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00099.png,99,モード表記_6 fullmoon,2166,542,1928,500
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00100.png,100,モード表記_7 foggy day,2166,40,1928,500
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00101.png,101,ニューレコード,1264,2,900,446
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00102.png,102,クリアアイコン,3342,1620,332,332
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00103.png,103,キーヘルプ_OK,3400,1380,402,212
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00104.png,104,背景ぼかし素材,0,0,1024,1024
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00108.png,108,リワード,900,1492,338,62
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00109.png,109,スコア用数字0,560,1556,60,88
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00110.png,110,スコア用数字1,622,1556,60,88
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00111.png,111,スコア用数字2,684,1556,60,88
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00112.png,112,スコア用数字3,746,1556,60,88
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00113.png,113,スコア用数字4,808,1556,60,88
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00114.png,114,スコア用数字5,870,1556,60,88
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00115.png,115,スコア用数字6,932,1556,60,88
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00116.png,116,スコア用数字7,994,1556,60,88
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00117.png,117,スコア用数字8,1056,1556,60,88
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00118.png,118,スコア用数字9,1118,1556,60,88
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00119.png,119,"スコア用数字,",1180,1556,60,88
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00122.png,122,宝箱1,2980,1620,360,340
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00123.png,123,宝箱2,2618,1620,360,340
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00124.png,124,宝箱3,2256,1620,360,340
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00127.png,127,ボーナス_下地,2256,1264,1142,176
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00128.png,128,ボーナス_下地,2256,1442,1142,176
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00130.png,130,条件スコア,3400,1206,392,172
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00133.png,133,難易度　lv,792,316,156,132
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00134.png,134,難易度　0,2,2,156,256
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00135.png,135,難易度　1,160,2,156,256
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00136.png,136,難易度　2,318,2,156,256
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00137.png,137,難易度　３,476,2,156,256
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00138.png,138,難易度　4,634,2,156,256
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00139.png,139,難易度　5,2,260,156,256
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00140.png,140,難易度　6,160,260,156,256
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00141.png,141,難易度　7,318,260,156,256
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00142.png,142,難易度　8,476,260,156,256
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00143.png,143,難易度　9,634,260,156,256
+sprites/CHALLENGE_BATTLE.SPD_unpacked__ad698dc8dd/00144.png,144,難易度　？？？,792,2,408,312
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00079.png,79,数字0,2,2,376,742
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00080.png,80,1,380,2,376,742
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00081.png,81,2,758,2,376,742
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00082.png,82,3,1136,2,376,742
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00083.png,83,4,1514,2,376,742
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00084.png,84,5,1892,2,376,742
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00085.png,85,6,2270,2,376,742
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00086.png,86,7,2648,2,376,742
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00087.png,87,8,2,746,376,742
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00088.png,88,9,380,746,376,742
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00089.png,89,ハート素材1,846,786,176,164
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00090.png,90,ハート素材2,1074,746,312,292
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00091.png,91,ハート素材3,1388,746,312,292
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00093.png,93,効果線,1746,1442,764,40
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00094.png,94,weak,758,1094,984,412
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00095.png,95,critical,162,1508,1550,432
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00096.png,96,ハート素材　銃１,1704,746,312,292
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00097.png,97,ハート素材　銃２,2018,746,312,292
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00100.png,100,数字小：黒0,2,1944,142,204
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00101.png,101,数字小：黒１,146,1944,142,204
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00102.png,102,数字小：黒２,290,1944,142,204
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00103.png,103,数字小：黒３,434,1944,142,204
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00104.png,104,数字小：黒４,578,1944,142,204
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00105.png,105,数字小：黒５,722,1944,142,204
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00106.png,106,数字小：黒６,866,1944,142,204
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00107.png,107,数字小：黒７,1010,1944,142,204
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00108.png,108,数字小：黒８,1154,1944,142,204
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00109.png,109,数字小：黒９,1298,1944,142,204
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00110.png,110,数字小：白0,2,2150,142,204
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00111.png,111,数字小：白１,146,2150,142,204
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00112.png,112,数字小：白２,290,2150,142,204
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00113.png,113,数字小：白３,434,2150,142,204
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00114.png,114,数字小：白４,578,2150,142,204
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00115.png,115,数字小：白５,722,2150,142,204
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00116.png,116,数字小：白６,866,2150,142,204
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00117.png,117,数字小：白７,1010,2150,142,204
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00118.png,118,数字小：白８,1154,2150,142,204
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00119.png,119,数字小：白９,1298,2150,142,204
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00120.png,120,スキル名土台,1286,2586,30,30
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00121.png,121,スキル名はがし1,1262,2586,30,30
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00122.png,122,スキル名はがし2,1280,2582,30,30
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00123.png,123,スキル名はがし3,1278,2586,30,30
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00124.png,124,スキル名はがし4,1272,2588,30,30
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00125.png,125,technical,1442,1946,1576,584
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00126.png,126,B,1880,1508,210,354
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00127.png,127,L,2094,1508,210,354
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00128.png,128,O,2306,1508,210,354
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00129.png,129,C,2520,1508,210,354
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00130.png,130,K,2732,1508,210,354
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00131.png,131,下部ヘルプ下地01,2,2994,3066,68
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00132.png,132,下部ヘルプ下地02,2,2918,792,70
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00133.png,133,下部ヘルプ端,1160,2354,280,154
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00134.png,134,下部ヘルプ端,1160,2354,280,154
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00135.png,135,change,2336,2672,730,318
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00136.png,136,empty,1920,2792,414,198
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00138.png,138,coment,2508,1250,306,198
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00139.png,139,coment,1610,2792,306,198
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00140.png,140,coment,1302,2792,306,198
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00144.png,144,LV,628,170,84,66
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00145.png,145,数字,2,60,72,102
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00146.png,146,数字,78,60,72,102
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00147.png,147,数字,152,60,72,102
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00148.png,148,数字,228,60,72,102
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00149.png,149,数字,302,60,72,102
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00150.png,150,数字,378,60,72,102
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00151.png,151,数字,452,60,72,102
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00152.png,152,数字,528,60,72,102
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00153.png,153,数字,602,60,72,102
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00154.png,154,数字,678,60,72,102
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00155.png,155,全書,628,242,120,130
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00156.png,156,weak,1244,272,344,228
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00157.png,157,攻撃,2,170,150,156
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00158.png,158,防御,156,170,150,156
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00159.png,159,速度,460,170,162,162
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00160.png,160,サードアイ,1748,2,296,268
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00161.png,161,派遣,752,2,422,282
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00163.png,163,総攻撃,2,2358,618,314
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00164.png,164,威嚇射撃,2,2676,618,212
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00165.png,165,包囲を解く,1572,1024,474,226
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00166.png,166,next,2334,746,338,198
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00167.png,167,push,1746,1040,614,370
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00168.png,168,メンバー全員,1338,2670,996,120
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00169.png,169,時間制限用コロン,2676,746,62,112
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00170.png,170,coment,992,2792,306,198
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00171.png,171,時間制限用コロン　白文字,2742,746,62,112
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00172.png,172,戦闘に戻る,624,2546,578,198
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00173.png,173,話をする,1366,712,678,308
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00174.png,174,ハート素材マスク用,2834,752,178,198
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00175.png,175,スキミング下地,2666,1050,300,198
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00176.png,176,スキミング文字,2364,1050,300,198
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00177.png,177,スキミンググラデ,2,2,748,46
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00179.png,179,話をする　小,624,2358,534,186
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00181.png,181,反射,308,170,150,156
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00182.png,182,クリティカル,2,328,420,200
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00183.png,183,？　カーソル用,1526,2,220,260
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00184.png,184,？　リスト用,1340,2,184,196
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00185.png,185,TECHNICAL リスト用,1590,272,456,216
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00186.png,186,TECHNICAL カーソル用（赤）,1608,490,440,220
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00187.png,187,TECHNICAL カーソル用（黄）,1162,502,440,180
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00188.png,188,カジャ（ンダ）　白,994,288,160,160
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00189.png,189,カジャ（ンダ）　黒,280,530,240,240
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00190.png,190,チャージ（コンセントレイト）　白,752,288,240,240
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00191.png,191,チャージ（コンセントレイト）　黒,2,530,276,276
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00192.png,192,technical：T,2,808,336,424
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00193.png,193,technical：E,606,1234,244,284
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00194.png,194,technical：C,2,1798,236,244
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00195.png,195,technical：H,502,1548,220,268
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00196.png,196,technical：N,522,542,224,264
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00197.png,197,technical：I,946,1548,112,268
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00198.png,198,technical：C2,2,1234,300,312
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00199.png,199,technical：A,2,1548,248,248
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00200.png,200,technical：L,670,808,240,372
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00201.png,201,technical：T　下地,336,808,336,424
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00202.png,202,technical：E　下地,852,1234,244,284
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00203.png,203,technical：C　下地,240,1798,236,244
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00204.png,204,technical：H　下地,724,1548,220,268
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00205.png,205,technical：N　下地,748,542,224,264
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00206.png,206,technical：I　下地,1060,1548,112,268
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00207.png,207,technical：C2　下地,304,1234,300,312
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00208.png,208,technical：A　下地,252,1548,248,248
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00209.png,209,technical：L　下地,912,808,240,372
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00214.png,214,バトンタッチ不可,1168,1024,400,366
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00215.png,215,バトンタッチ１回済み,1474,1392,248,240
+sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6/00216.png,216,バトンタッチ２回済み,1724,1252,322,360
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00000.png,0,主人公　黒下地,2,2,312,322
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00001.png,1,レイジ　黒下地,494,692,250,336
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00002.png,2,モルガナ　黒下地,2,656,244,294
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00003.png,3,アン　黒下地,1236,2,320,346
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00004.png,4,ユウゴ　黒下地,624,2,302,324
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00005.png,5,マコト　黒下地,998,704,274,324
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00006.png,6,ランコ　黒下地,930,2,302,378
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00007.png,7,アケチ　黒下地,318,2,302,324
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00008.png,8,プレート1,2,1194,414,282
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00009.png,9,プレート2,2,1478,372,252
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00010.png,10,プレート3,378,1478,336,126
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00011.png,11,HP,212,1734,72,78
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00012.png,12,SP,288,1734,72,78
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00013.png,13,/,660,1280,54,78
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00014.png,14,HPバー,414,1608,230,60
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00015.png,15,SPバー,452,1670,228,72
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00016.png,16,数字0,2,1844,102,108
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00017.png,17,数字1,108,1844,102,108
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00018.png,18,数字2,212,1844,102,108
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00019.png,19,数字3,318,1844,102,108
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00020.png,20,数字4,422,1844,102,108
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00021.png,21,数字5,528,1844,102,108
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00022.png,22,数字6,632,1844,102,108
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00023.png,23,数字7,738,1844,102,108
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00024.png,24,数字8,842,1844,102,108
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00025.png,25,数字9,948,1844,102,108
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00026.png,26,数字フチ0,2,1956,102,108
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00027.png,27,数字フチ1,108,1956,102,108
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00028.png,28,数字フチ2,212,1956,102,108
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00029.png,29,数字フチ3,318,1956,102,108
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00030.png,30,数字フチ4,422,1956,102,108
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00031.png,31,数字フチ5,528,1956,102,108
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00032.png,32,数字フチ6,632,1956,102,108
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00033.png,33,数字フチ7,738,1956,102,108
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00034.png,34,数字フチ8,842,1956,102,108
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00035.png,35,数字フチ9,948,1956,102,108
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00051.png,51,主人公（行動時）,1566,2,510,496
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00052.png,52,レイジ（行動時）,2078,2,550,478
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00053.png,53,モルガナ（行動時）,2202,482,368,508
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00054.png,54,アン（行動時）,2726,1032,342,498
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00055.png,55,ユウゴ（行動時）,2574,522,494,506
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00056.png,56,マコト（行動時）,2394,1032,330,392
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00057.png,57,ランコ（行動時）,1680,500,518,490
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00058.png,58,アケチ（行動時）,2630,2,438,516
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00059.png,59,バー,420,1422,234,26
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00060.png,60,主人公　バトル顔,1044,1032,152,246
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00061.png,61,レイジ　バトル顔,1356,1032,152,246
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00062.png,62,モルガナ　バトル顔,2,954,180,222
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00063.png,63,アン　バトル顔,732,1032,152,246
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00064.png,64,ユウゴ　バトル顔,420,1032,152,246
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00065.png,65,マコト　バトル顔,896,1280,178,270
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00066.png,66,ランコ　バトル顔,716,1280,178,246
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00067.png,67,アケチ　バトル顔,1256,1280,178,270
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00068.png,68,主人公 白下地,2,326,312,322
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00069.png,69,レイジ 白下地,746,692,250,336
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00070.png,70,モルガナ 白下地,248,656,244,294
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00071.png,71,アン 白下地,1236,350,320,346
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00072.png,72,ユウゴ 白下地,624,330,302,324
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00073.png,73,マコト 白下地,1274,704,274,324
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00074.png,74,ランコ 白下地,1668,992,302,378
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00075.png,75,アケチ 白下地,318,330,302,324
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00076.png,76,主人公　ダンジョン顔,1200,1032,152,246
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00077.png,77,レイジ　ダンジョン顔,1512,1032,152,246
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00078.png,78,モルガナ　ダンジョン顔,186,954,180,222
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00079.png,79,アン　ダンジョン顔,888,1032,152,246
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00080.png,80,ユウゴ　ダンジョン顔,576,1032,152,246
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00081.png,81,マコト　ダンジョン顔,1076,1280,178,270
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00082.png,82,ランコ　ダンジョン顔,716,1530,178,246
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00083.png,83,アケチ　ダンジョン顔,1436,1280,178,270
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00084.png,84,ダンジョンPPゲージ下地,2,1734,208,104
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00085.png,85,ダンジョンPPゲージ,510,1746,144,48
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00086.png,86,ダンジョンPPゲージ下地 白,420,1280,236,138
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00087.png,87,ダンジョンPPゲージ飾り黒,896,1554,336,134
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00088.png,88,ダンジョンPPゲージ飾り白,896,1692,336,134
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00089.png,89,注射器アイコンv,362,1746,144,78
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00090.png,90,PP変形アニメ01,2082,2400,294,312
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00091.png,91,PP変形アニメ02,1746,1904,626,244
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00092.png,92,PP変形アニメ03,1758,2720,698,348
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00093.png,93,PP変形アニメ04,1236,1554,350,270
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00094.png,94,PP変形アニメ05,2462,2534,606,534
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00095.png,95,PP変形アニメ02,1746,2150,626,244
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00096.png,96,PP変形アニメ03,1056,2720,698,348
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00097.png,97,炎上A,6,2070,132,162
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00098.png,98,炎上A_下地,6,2234,132,162
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00099.png,99,憤怒A,140,2070,150,150
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00100.png,100,憤怒A_下地,140,2222,150,150
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00101.png,101,嫉妬A,294,2070,174,144
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00102.png,102,嫉妬A_下地,294,2216,174,144
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00103.png,103,凍結A,470,2066,156,142
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00104.png,104,凍結A_下地,470,2210,156,142
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00105.png,105,忘却A,630,2070,152,150
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00106.png,106,忘却A_下地,630,2222,152,150
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00107.png,107,感電A,786,2070,192,152
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00108.png,108,感電A_下地,786,2226,192,152
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00109.png,109,眩暈A,980,2070,156,156
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00110.png,110,眩暈A_下地,980,2228,156,156
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00111.png,111,色欲A,6,2400,168,158
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00112.png,112,色欲A_下地,6,2562,168,158
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00113.png,113,ネズミA,176,2376,154,158
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00114.png,114,ネズミA_下地,176,2538,154,158
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00115.png,115,絶望A,332,2364,168,180
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00116.png,116,絶望A_下地,332,2546,168,180
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00117.png,117,激怒A,504,2376,168,174
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00118.png,118,激怒A_下地,504,2552,168,174
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00119.png,119,睡眠A,674,2394,180,164
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00120.png,120,睡眠A_下地,674,2562,180,164
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00121.png,121,混乱A,858,2394,194,162
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00122.png,122,混乱A_下地,858,2558,194,162
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00123.png,123,恐怖A,1056,2402,138,156
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00124.png,124,恐怖A_下地,1056,2562,138,156
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00125.png,125,空腹A,1196,2520,178,198
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00126.png,126,空腹A_下地,1376,2520,178,198
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00127.png,127,洗脳A,1556,2372,186,172
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00128.png,128,洗脳A_下地,1556,2546,186,172
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00129.png,129,炎上B,6,2724,104,132
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00130.png,130,炎上B_下地,6,2858,104,132
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00131.png,131,憤怒B,114,2724,110,114
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00132.png,132,憤怒B_下地,114,2840,110,114
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00133.png,133,嫉妬B,228,2730,128,116
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00134.png,134,嫉妬B_下地,228,2850,128,116
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00135.png,135,ネズミB,360,2730,132,122
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00136.png,136,ネズミB_下地,360,2856,132,122
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00137.png,137,凍結B,494,2730,132,116
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00138.png,138,凍結B_下地,494,2850,132,116
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00139.png,139,感電B,630,2730,140,126
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00140.png,140,感電B_下地,630,2858,140,126
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00141.png,141,眩暈B,774,2730,120,116
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00142.png,142,眩暈B_下地,774,2850,120,116
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00143.png,143,混乱B,896,2724,126,132
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00144.png,144,混乱B_下地,896,2858,126,132
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00145.png,145,絶望B,1206,1970,98,138
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00146.png,146,絶望B_下地,1206,2112,98,138
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00147.png,147,恐怖B,1196,2252,108,130
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00148.png,148,恐怖B_下地,1196,2384,108,130
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00149.png,149,激怒B,1308,2042,128,114
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00150.png,150,激怒B_下地,1308,2160,128,114
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00151.png,151,忘却B,1308,2276,110,118
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00152.png,152,忘却B_下地,1308,2396,110,118
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00153.png,153,空腹B,1440,2010,120,128
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00154.png,154,空腹B_下地,1440,2142,120,128
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00155.png,155,睡眠B,1422,2274,132,120
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00156.png,156,睡眠B_下地,1422,2396,132,120
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00157.png,157,洗脳B,1928,2504,126,106
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00158.png,158,洗脳B_下地,1928,2612,126,106
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00159.png,159,色欲B,1562,2142,130,110
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00160.png,160,色欲B_下地,1562,2256,130,110
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00161.png,161,塗りつぶしA,1746,2562,180,156
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00162.png,162,塗りつぶしA下地,1746,2402,180,156
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00163.png,163,塗りつぶしB,1164,1830,138,128
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00164.png,164,塗りつぶしB下地,1304,1830,138,128
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00168.png,168,派遣,2298,1500,422,282
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00169.png,169,回復,1052,1830,108,126
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00174.png,174,うずき　黒下地,2700,2158,316,372
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00175.png,175,うずき（行動時）,500,4,492,576
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00176.png,176,うずき　バトル顔,932,386,236,258
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00177.png,177,うずき 白下地,2380,2158,316,372
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00178.png,178,うずき　ダンジョン顔,4,582,236,258
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00179.png,179,黒明智　黒下地,2700,1782,316,372
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00180.png,180,黒明智（行動時）,4,4,492,576
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00181.png,181,黒明智　バトル顔,1976,994,196,292
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00182.png,182,黒明智 白下地,2380,1782,316,372
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00183.png,183,黒明智　ダンジョン顔,2176,994,196,292
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00185.png,185,主人公（行動時）ラスト,1618,1404,510,496
+sprites/P5_BATTLE_PARTYPANEL.SPD_unpacked__cdcd8a2aa3/00186.png,186,主人公　バトル顔ラスト,2130,1654,152,246
