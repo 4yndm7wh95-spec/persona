@@ -90,3 +90,22 @@ BES_CRITICALG.BED 没有 DDS 头，本轮未解出图，写在 critical/；这�
 BATTLE/GUI 全部125项已检查，72张有效纹理图已 PNG 化，保留alpha；53项没有嵌入DDS（几何/脚本/其他资源），详见 container_audit.csv，不冒充已PNG化。已有四份SPD原坐标与590张切图复制至 ui/battle_gui/sprites；找到技能名斜框（DAMAGE_DATA索引120及121–124）、数字79–88、WEAK94、CRITICAL95、TECHNICAL125和状态异常图标。1 MORE、MISS与增减益箭头未可靠定位。sprites.json与原注释索引均保留，未自行重绘。
 
 本轮只新增自己的 research/p5r/fx 与 research/p5r/ui/battle_gui。贴图/UI 提交号待提交后补记。音频尚未进入此提交。
+
+## 音频候选（本轮结果）
+
+贴图/UI 提交并推送：86a3de15。
+音频共43条候选，11类各3–5条，见 audio/candidates.csv 和 audio/listen.html：Eiha 3、Eigaon 3、Maeiha 3、Sukukaja 3、枪5、斩击命中3、挥空4、召唤4、Persona台词初筛5、Arsene台词初筛5、攻击短喊初筛5。
+
+枪、斩击、挥空和 persona_flame 的候选有原版流名支持；具体 Joker 手枪型号仍需试听。召唤另含 BASE.CPK:SOUND/MOTIONSE/EM0201.ACB 的3条低可信度候选，不声称已确认它们都是召唤。原始 C0001_051_B.DAT 无法由 vgmstream 作为音频读取，未猜测转换。
+技能音按贴图候选编号对应 SKILLSE 初筛；因技能名尚未解码，不能确认这些就是 Eiha/Eigaon/Maeiha/Sukukaja。BP01 仅使用日语原库，按流序号和时长筛选并去掉内容完全相同的副本；未试听转写，尚未确认「ペルソナ！」「アルセーヌ！」或攻击喊声。CSV低可信度和未试听字段明确标注，不把候选当成确认台词。
+
+已有OGG直接复用，避免再转码；新EM0201用vgmstream→WAV管道→libvorbis q4。43条均以FFprobe验证为Vorbis，记录实际OGG时长。
+
+## 补充验证与未定位项
+
+C/D位移比例检查见 arsene_diagnostics/translation_ratio_summary.json：两份动作各166个非零位移范数比，范围约1～171.8，中位约7.996，无统一倍数，因此D保持×1，成品选择C。
+对GFS/EPL粒子解析器做了实际探测：指定BED均报 Expected input to be '16', but it was '2'，未改解析器。PERSONA_A-D EPL可取得部分原始叶节点和轨道字段，另存 *_raw_tracks.json；未知payload和发射器语义仍读不出来，不称为可重播时间轴。
+
+尚未可靠定位：具体Eiha/Eigaon/Maeiha/Sukukaja的技能ID和对应贴图/音效；Joker手枪的角色引用确认；蓝焰最终着色/时间线；BES_CRITICALG贴图；1 MORE、MISS、增减益箭头；BP01目标台词。上述是“未确认/未解码”，不能证明原版没有。不据此启动生图；当前没有经证实必须生图的项目。
+
+输出范围核验：166张序列帧的文件数量、RGBA、非空alpha、1024高度、每段一致画布通过；素材新增总量约106MB，最大文件约2.46MB，低于300MB/20MB限制。本机库约12.3GB，低于15GiB。
