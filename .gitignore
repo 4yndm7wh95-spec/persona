@@ -12,3 +12,7 @@ tools/compat/ApiCheck/bin/
 tools/compat/ApiCheck/obj/
 tools/compat/ControllerTests/bin/
 tools/compat/ControllerTests/obj/
+tools/compat/HeroScaleTests/bin/
+tools/compat/HeroScaleTests/obj/
+tools/compat/HeroProjectionTests/.godot/
+tools/compat/PileClipTests/.godot/

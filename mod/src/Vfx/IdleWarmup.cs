@@ -19,7 +19,6 @@ internal static class IdleWarmup
 	private static readonly List<string> Jobs = new(new[]
 	{
 		// v0.14.89（实机日志：玩家很快开局，预热只跑了几项就进了战斗，第一次打开牌堆仍卡）：最常用、最重的排前面
-		"@card frame",   // v0.14.88：塔罗卡框 / 重绘卡图 / 卡名字体（打开牌堆第一次会卡一下）
 		"@hero3d",       // v0.14.90：原版 COMMU 模型 / 动作 / 材质，离屏渲染两帧。
 		"@pile shaders",
 		"res://p3makoto/pile/pile_skel_data.tres", "res://p3makoto/portrait/portrait_skel_data.tres",
@@ -133,8 +132,7 @@ internal static class IdleWarmup
 	private static bool Prefetched(string path)
 	{
 		if (path == "@hero3d") return HeroStage.PrefetchDone;
-		List<string> pre = path == "@card frame" ? P3Makoto.Scenes.CardFrameSkin.WarmPaths()
-			: path.EndsWith(".png", StringComparison.Ordinal) ? new List<string> { path }
+		List<string> pre = path.EndsWith(".png", StringComparison.Ordinal) ? new List<string> { path }
 			: new List<string>();
 		bool done = true;
 		foreach (string p in pre)
@@ -219,11 +217,6 @@ internal static class IdleWarmup
 			{
 				tiny.AddChild(new ColorRect { Size = new Vector2(1000f, 1000f), Material = new ShaderMaterial { Shader = sh }, MouseFilter = Control.MouseFilterEnum.Ignore });
 			}
-			return;
-		}
-		if (path == "@card frame")
-		{
-			P3Makoto.Scenes.CardFrameSkin.Warm(tiny);
 			return;
 		}
 		if (path == "@hero3d")

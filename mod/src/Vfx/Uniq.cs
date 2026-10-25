@@ -307,9 +307,10 @@ public static class Uniq
 	}
 
 	/// <summary>剑圣：三把剑的残影绕着人物旋转一圈（越转越快），最后合成一把，向前一指，剑尖一闪。</summary>
-	public static void SwordSage(Control back, Control front, Vector2 center)
+	public static void SwordSage(Control back, Control front, Vector2 center, float facing = 1f)
 	{
 		Node2D root = Fx.Root(front, center, "P3SwordSage");
+		if (CrabRoom.Active) root.Scale = new Vector2(facing, 1f);
 		var blades = new List<Node2D>();
 		for (int i = 0; i < 3; i++)
 		{
@@ -332,7 +333,7 @@ public static class Uniq
 		});
 		Fx.After(root, 1.0, "sage point", () =>
 		{
-			Vector2 tip = center + new Vector2(200f, -50f);
+			Vector2 tip = center + CrabRoom.Offset(front, new Vector2(200f * facing, -50f));
 			P3Fx.Flash(front, tip, Pal.White, 180f, 0.2f);
 			P3Fx.SpeedLines(front, tip, Pal.Ice, 12, 30f, 260f, 0.3f);
 			Audio.Sfx.Play(Audio.Snd.Weak, 0.6f, pitch: 1.2f);
@@ -341,9 +342,9 @@ public static class Uniq
 	}
 
 	/// <summary>铸墙：身前的火花聚拢成一块块六边形钢板，咔哒咔哒拼成一面墙，最后整面一亮。</summary>
-	public static void Bulwark(Control front, Vector2 center)
+	public static void Bulwark(Control front, Vector2 center, float facing = 1f)
 	{
-		Vector2 wall = center + new Vector2(130f, 0f);
+		Vector2 wall = center + CrabRoom.Offset(front, new Vector2(130f * facing, 0f));
 		var cells = new List<Vector2>();
 		for (int row = -2; row <= 2; row++)
 		{
@@ -353,6 +354,7 @@ public static class Uniq
 			}
 		}
 		Node2D root = Fx.Root(front, wall, "P3Bulwark");
+		if (CrabRoom.Active) root.Scale = new Vector2(facing, 1f);
 		for (int i = 0; i < cells.Count; i++)
 		{
 			Node2D tile = new() { Position = cells[i] + new Vector2(Fx.Rand(-200f, -80f), Fx.Rand(-160f, 160f)) };
@@ -372,7 +374,7 @@ public static class Uniq
 		}
 		Fx.After(root, 0.35 + cells.Count * 0.05, "bulwark lock", () =>
 		{
-			Bang(front, wall + new Vector2(26f, 0f), Pal.Ice, 0.8f);
+			Bang(front, wall + CrabRoom.Offset(front, new Vector2(26f * facing, 0f)), Pal.Ice, 0.8f);
 			Audio.Sfx.Play(Audio.Snd.StarSpend, 0.7f, pitch: 0.75f);
 			Fx.Animate(root, 0.45f, t => root.Modulate = new Color(1f + 0.6f * (1f - t), 1f + 0.6f * (1f - t), 1f + 0.6f * (1f - t), 1f - Ease.InCubic(t)));
 		});
@@ -1019,18 +1021,21 @@ public static class Uniq
 	}
 
 	/// <summary>冲锋！！：前方地面卷起一道冲击波向敌人推进，速度线从身后掠过，扬尘一路翻起。</summary>
-	public static void Charge(Control back, Control front, Vector2 feet, Vector2 target)
+	public static void Charge(Control back, Control front, Vector2 feet, Vector2 target, float facing = 1f)
 	{
 		Vector2 size = front.GetViewportRect().Size;
-		P3Fx.SpeedLines(front, feet + new Vector2(-60f, -160f), Pal.Ice, 18, 80f, 700f, 0.4f);
-		Node2D wave = Fx.Root(front, feet + new Vector2(60f, 0f), "P3ChargeWave");
+		P3Fx.SpeedLines(front, feet + CrabRoom.Offset(front, new Vector2(-60f * facing, -160f)), Pal.Ice, 18, 80f, 700f, 0.4f);
+		Node2D wave = Fx.Root(front, feet + CrabRoom.Offset(front, new Vector2(60f * facing, 0f)), "P3ChargeWave");
 		Polygon2D crest = Fx.Poly(wave, new[] { new Vector2(-30f, 0f), new Vector2(0f, -90f), new Vector2(40f, -40f), new Vector2(60f, 0f) }, new Color(Pal.Ice, 0.8f), additive: true);
-		float endX = Mathf.Min(target.X + 120f, size.X - 40f);
+		float startX = CrabRoom.Active ? feet.X + CrabRoom.Offset(front, new Vector2(60f * facing, 0f)).X : feet.X + 60f;
+		float endX = CrabRoom.Active
+			? Mathf.Clamp(target.X + CrabRoom.Offset(front, new Vector2(120f * facing, 0f)).X, 40f, size.X - 40f)
+			: Mathf.Min(target.X + 120f, size.X - 40f);
 		Fx.Animate(wave, 0.5f, t =>
 		{
 			float e = Ease.OutCubic(t);
-			wave.GlobalPosition = new Vector2(Mathf.Lerp(feet.X + 60f, endX, e), feet.Y);
-			wave.Scale = new Vector2(1f + t, 1f - 0.5f * t);
+			wave.GlobalPosition = new Vector2(Mathf.Lerp(startX, endX, e), feet.Y);
+			wave.Scale = new Vector2(facing * (1f + t), 1f - 0.5f * t);
 			wave.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(t));
 		});
 		for (int i = 0; i < 6; i++)
@@ -1388,10 +1393,11 @@ public static class Uniq
 	// ══════════════════ 防御系 ══════════════════
 
 	/// <summary>招架：身前两把光剑交叉成 X 格挡，"铛"地一声火花四溅，随后剑身化光散去。</summary>
-	public static void Parry(Control front, Vector2 center)
+	public static void Parry(Control front, Vector2 center, float facing = 1f)
 	{
-		Vector2 at = center + new Vector2(110f, -20f);
+		Vector2 at = center + CrabRoom.Offset(front, new Vector2(110f * facing, -20f));
 		Node2D root = Fx.Root(front, at, "P3Parry");
+		if (CrabRoom.Active) root.Scale = new Vector2(facing, 1f);
 		Node2D a = Sword(root, 170f, Pal.Cyan);
 		Node2D b = Sword(root, 170f, Pal.Cyan);
 		Fx.Animate(root, 0.8f, t =>
@@ -1417,7 +1423,7 @@ public static class Uniq
 	}
 
 	/// <summary>中子护盾：一圈中子小球高速绕身旋转、越压越近，最后"咔"地压成一层贴身的六角装甲，闪一下。</summary>
-	public static void NeutronAegis(Control back, Control front, Vector2 center)
+	public static void NeutronAegis(Control back, Control front, Vector2 center, float facing = 1f)
 	{
 		Node2D root = Fx.Root(front, center, "P3Neutron");
 		var dots = new List<Node2D>();
@@ -1443,7 +1449,7 @@ public static class Uniq
 		Fx.After(root, 0.9, "neutron lock", () =>
 		{
 			root.QueueFree();
-			Extras.HexShield(front, center, 1.4f, false, 0.8f);
+			Extras.HexShield(front, center, 1.4f, false, 0.8f, facing);
 			Bang(front, center, Pal.Ice, 0.9f);
 			Shake(ShakeStrength.Medium);
 			Audio.Sfx.Play(Audio.Snd.StarSpend, 0.8f, pitch: 0.6f);
@@ -1451,9 +1457,9 @@ public static class Uniq
 	}
 
 	/// <summary>所向无敌（物理反射 Tetrakarn）：身前竖起一面由大块晶体拼成的护壁，晶面一道高光扫过，最后整面一亮。</summary>
-	public static void Tetrakarn(Control front, Vector2 center)
+	public static void Tetrakarn(Control front, Vector2 center, float facing = 1f)
 	{
-		Vector2 at = center + new Vector2(130f, -10f);
+		Vector2 at = center + CrabRoom.Offset(front, new Vector2(130f * facing, -10f));
 		Node2D root = Fx.Root(front, at, "P3Tetrakarn");
 		var shards = new List<Polygon2D>();
 		Vector2[][] facets =
@@ -1474,7 +1480,7 @@ public static class Uniq
 		Fx.Animate(root, 1.2f, t =>
 		{
 			float time = t * 1.2f;
-			root.Scale = new Vector2(Ease.OutBack(Mathf.Clamp(time / 0.2f, 0f, 1f)), 1f);
+			root.Scale = new Vector2(facing * Ease.OutBack(Mathf.Clamp(time / 0.2f, 0f, 1f)), 1f);
 			for (int i = 0; i < shards.Count; i++)
 			{
 				float sweep = Mathf.Clamp(1f - Mathf.Abs(time - 0.35f - i * 0.05f) / 0.08f, 0f, 1f);
@@ -1487,9 +1493,9 @@ public static class Uniq
 	}
 
 	/// <summary>倒映（魔法反射 Makarakarn）：身前立起一面细长的镜子，镜中倒映出一道紫青色的光，镜面高光从下扫到上。</summary>
-	public static void Makarakarn(Control front, Vector2 center)
+	public static void Makarakarn(Control front, Vector2 center, float facing = 1f)
 	{
-		Vector2 at = center + new Vector2(130f, -10f);
+		Vector2 at = center + CrabRoom.Offset(front, new Vector2(130f * facing, -10f));
 		Node2D root = Fx.Root(front, at, "P3Makarakarn");
 		Vector2[] frame = { new(-38f, -170f), new(38f, -170f), new(38f, 170f), new(-38f, 170f) };
 		Fx.Poly(root, frame, new Color(0.35f, 0.25f, 0.7f, 0.4f), additive: true);

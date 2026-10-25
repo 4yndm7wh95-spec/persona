@@ -71,7 +71,7 @@ public static class SpineHooks
 				break;
 			case "weapon_slash":
 				WeaponFx.BladeGhosts(front, node, Pal.Cyan);
-				WeaponFx.StepDust(Makoto.FxLayer(back: true) ?? front, Makoto.Feet(node));
+				WeaponFx.StepDust(Makoto.FxLayer(back: true) ?? front, Makoto.Feet(node), Makoto.Facing(node));
 				break;
 			case "weapon_sheath":
 				if (h.SwordOut)

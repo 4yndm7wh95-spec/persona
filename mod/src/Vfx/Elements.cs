@@ -41,19 +41,19 @@ public static class ElementPal
 /// </summary>
 public static class Elements
 {
-	public static void Hit(Element e, Control layer, Vector2 center, Vector2 feet, float scale = 1f)
+	public static void Hit(Element e, Control layer, Vector2 center, Vector2 feet, float scale = 1f, float facing = 1f)
 	{
 		// v0.9：全部换成"大胆版"（Bold / Motifs）—— 尺寸大、层次多、自带确认感
 		Audio.Sfx.Element(e, scale);
 		switch (e)
 		{
-			case Element.Slash: Motifs.Cleave(layer, center, Pal.Cyan, 0.85f * scale, Fx.Rand(-0.75f, -0.4f)); break;
-			case Element.Royal: Motifs.Cleave(layer, center, Pal.Royal, 1.15f * scale, -0.6f); break;
-			case Element.Pierce: Motifs.Thrust(layer, center, Pal.Cyan, scale); break;
+			case Element.Slash: Motifs.Cleave(layer, center, Pal.Cyan, 0.85f * scale, Fx.Rand(-0.75f, -0.4f), facing); break;
+			case Element.Royal: Motifs.Cleave(layer, center, Pal.Royal, 1.15f * scale, -0.6f, facing); break;
+			case Element.Pierce: Motifs.Thrust(layer, center, Pal.Cyan, scale, facing); break;
 			case Element.Strike:
 				// v0.14.24（用户：星形爆闪挡人、空心描边又不好看 —— 直接用「打击」那张牌的命中特效）：同打击的斩痕；
 				// 声音仍是钝击（atk_hit_strike），重击（scale ≥ 0.9）保留地裂
-				Motifs.Cleave(layer, center, Pal.Cyan, 0.85f * scale, Fx.Rand(-0.75f, -0.4f));
+				Motifs.Cleave(layer, center, Pal.Cyan, 0.85f * scale, Fx.Rand(-0.75f, -0.4f), facing);
 				if (scale >= 0.9f)
 				{
 					Motifs.GroundCrack(layer, feet, scale);

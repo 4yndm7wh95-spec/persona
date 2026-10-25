@@ -319,9 +319,10 @@ public static class P3Fx
 	}
 
 	/// <summary>攻击命中：斜十字斩，第二刀错后 70ms；命中点折射 + 碎光。</summary>
-	public static void CrossSlash(Control layer, Vector2 at, Color tint, float size = 210f)
+	public static void CrossSlash(Control layer, Vector2 at, Color tint, float size = 210f, float facing = 1f)
 	{
 		Node2D root = Fx.Root(layer, at, "P3CrossSlash");
+		root.Scale = new Vector2(facing, 1f);
 		for (int i = 0; i < 2; i++)
 		{
 			float ang = i == 0 ? -0.62f : 0.7f;
@@ -371,8 +372,10 @@ public static class P3Fx
 	/// </summary>
 	public static void ArcanaDisc(Control backLayer, Vector2 feet, Vector2 head, string numeral)
 	{
-		float bodyH = Mathf.Max(200f, feet.Y - head.Y);
-		Vector2 c = head + new Vector2(-bodyH * 0.05f, bodyH * 0.3f);
+		float bodyH = Mathf.Max(200f, CrabRoom.Height(backLayer, feet.Y - head.Y));
+		Vector2 c = CrabRoom.Active
+			? new Vector2(feet.X, head.Y) + CrabRoom.Offset(backLayer, new Vector2(0f, bodyH * 0.3f))
+			: head + new Vector2(-bodyH * 0.05f, bodyH * 0.3f);
 		float r = bodyH * 0.72f;
 		Node2D root = Fx.Root(backLayer, c, "P3ArcanaDisc");
 		ColorRect disc = P3Ui.WaterDisc(root, Vector2.Zero, r);
@@ -416,7 +419,7 @@ public static class P3Fx
 		Shockwave(backLayer, feet, Pal.DarkHour, 760f, 0.8f, squashY: 0.3f);
 		Shockwave(backLayer, feet, Pal.DarkHour, 520f, 0.8f, squashY: 0.3f, delay: 0.12f);
 
-		Node2D root = LightPillar(backLayer, feet, Pal.DarkHour, 220f, (feet.Y - head.Y) * 2.2f, 1.1f);
+		Node2D root = LightPillar(backLayer, feet, Pal.DarkHour, 220f, CrabRoom.Height(backLayer, feet.Y - head.Y) * 2.2f, 1.1f);
 		GpuParticles2D motes = Fx.Sparks(root, Pal.DarkHour, 40, 60f, 200f, 1.0f, gravity: -300f, scaleMin: 0.15f, scaleMax: 0.4f);
 		((ParticleProcessMaterial)motes.ProcessMaterial).EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box;
 		((ParticleProcessMaterial)motes.ProcessMaterial).EmissionBoxExtents = new Vector3(90f, 8f, 0f);

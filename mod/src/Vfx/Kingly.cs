@@ -19,20 +19,21 @@ public static class Kingly
 	private static void Shake(ShakeStrength s) => MegaCrit.Sts2.Core.Nodes.NGame.Instance?.ScreenShake(s, ShakeDuration.Short);
 
 	/// <summary>冲击点：敌人身体朝向玩家的一侧（左缘），略高于中心。</summary>
-	private static Vector2 Contact(NCreature n)
+	private static Vector2 Contact(NCreature n, float facing)
 	{
 		Vector2 c = n.VfxSpawnPosition;
 		float halfW = Mathf.Clamp((n.GetBottomOfHitbox().Y - c.Y) * 0.55f, 50f, 140f);
-		return c + new Vector2(-halfW, -10f);
+		return c + new Vector2(-halfW * facing, -10f);
 	}
 
 	public static bool Hit(MegaCrit.Sts2.Core.Models.CardModel card, Control front, NCreature node, Creature target, float scale)
 	{
+		float facing = Makoto.Node(card.Owner) is NCreature caster ? Makoto.Facing(caster) : 1f;
 		switch (card.GetType().Name)
 		{
-			case "KinglyPunch": Punch(front, Contact(node), scale); return true;
-			case "KinglyKick": Kick(front, Contact(node), node.GetBottomOfHitbox(), scale); return true;
-			case "KnockoutBlow": Knockout(front, node, target, card, scale); return true;
+			case "KinglyPunch": Punch(front, Contact(node, facing), scale, facing); return true;
+			case "KinglyKick": Kick(front, Contact(node, facing), node.GetBottomOfHitbox(), scale, facing); return true;
+			case "KnockoutBlow": Knockout(front, node, target, card, scale, facing); return true;
 			case "SolarStrike": SolarHit(front, node, scale); return true;
 		}
 		return false;
@@ -57,13 +58,14 @@ public static class Kingly
 	}
 
 	// ───────── 王者之拳 ─────────
-	private static void Punch(Control front, Vector2 at, float s)
+	private static void Punch(Control front, Vector2 at, float s, float facing)
 	{
 		// 拳风：三道平行细线从左边射入（0.07s），尾部渐细
 		for (int i = 0; i < 3; i++)
 		{
 			float y = (i - 1) * 26f * s;
 			Node2D r = Fx.Root(front, at + new Vector2(0f, y), "P3PunchStreak");
+			r.Scale = new Vector2(facing, 1f);
 			Polygon2D streak = Fx.Stroke(r, new[] { new Vector2(-10f, 0f), new Vector2(-11f, 0f) }, new Color(i == 1 ? Pal.White : Pal.Ice, 0.9f), (i == 1 ? 7f : 4f) * s);
 			float len = (i == 1 ? 300f : 220f) * s;
 			Fx.Animate(r, 0.22f, t =>
@@ -92,14 +94,15 @@ public static class Kingly
 			{
 				float time = t * (0.3f + delay) - delay;
 				float u = Mathf.Clamp(time / 0.3f, 0f, 1f);
-				w.Position = new Vector2(70f * Ease.OutCubic(u) * s, 0f);
-				w.Scale = new Vector2(1f + 0.6f * u, 0.6f + 0.6f * Ease.OutExpo(u));
+				w.GlobalPosition = at + new Vector2(facing * 70f * Ease.OutCubic(u) * s, 0f);
+				w.Scale = new Vector2(facing * (1f + 0.6f * u), 0.6f + 0.6f * Ease.OutExpo(u));
 				w.Modulate = new Color(1f, 1f, 1f, time < 0f ? 0f : 1f - Ease.InCubic(u));
 			});
 			Fx.FreeAfter(w, 0.32 + delay);
 		}
 		// 火花向左反弹（后坐力），小而亮，不盖住敌人
 		Node2D sp = Fx.Root(front, at, "P3PunchSparks");
+		sp.Scale = new Vector2(facing, 1f);
 		for (int i = 0; i < 7; i++)
 		{
 			Node2D d = new();
@@ -120,15 +123,16 @@ public static class Kingly
 	}
 
 	// ───────── 王者之踢 ─────────
-	private static void Kick(Control front, Vector2 at, Vector2 feet, float s)
+	private static void Kick(Control front, Vector2 at, Vector2 feet, float s, float facing)
 	{
 		// 月牙弧：圆心在冲击点左下，弧从下往上扫过冲击点；主弧 + 两道滞后的残影
-		Vector2 pivot = at + new Vector2(-150f, 110f) * s;
+		Vector2 pivot = at + new Vector2(-150f * facing, 110f) * s;
 		float R = 200f * s;
 		for (int k = 0; k < 3; k++)
 		{
 			float lag = 0.035f * k;
 			Node2D root = Fx.Root(front, pivot, "P3KickArc");
+			root.Scale = new Vector2(facing, 1f);
 			Polygon2D arc = Fx.Poly(root, new Vector2[3], new Color(k == 0 ? Pal.White : Pal.Cyan, k == 0 ? 0.95f : 0.45f - 0.12f * k), additive: true);
 			Fx.Animate(root, 0.34f + lag, t =>
 			{
@@ -154,7 +158,7 @@ public static class Kingly
 		Fx.After(front, 0.1, "kick impact", () =>
 		{
 			Node2D ring = Fx.Root(front, at, "P3KickRing");
-			ring.Rotation = -0.7f;
+			ring.Rotation = -0.7f * facing;
 			Fx.StrokeClosed(ring, Fx.Circle(90f * s, 40, 0.35f), new Color(Pal.White, 0.9f), 5f * s);
 			Fx.StrokeClosed(ring, Fx.Circle(70f * s, 40, 0.35f), new Color(Pal.Cyan, 0.7f), 3f * s);
 			Fx.Animate(ring, 0.3f, t =>
@@ -168,7 +172,7 @@ public static class Kingly
 			Shake(ShakeStrength.Medium);
 		});
 		// 扬尘：脚下一道扁平的尘环 + 向两侧飞起的尘粒
-		Node2D dust = Fx.Root(front, feet + new Vector2(-40f * s, 0f), "P3KickDust");
+		Node2D dust = Fx.Root(front, feet + new Vector2(-40f * s * facing, 0f), "P3KickDust");
 		Fx.StrokeClosed(dust, Fx.Circle(110f * s, 36, 0.22f), new Color(0.75f, 0.85f, 1f, 0.5f), 3f * s);
 		Fx.Animate(dust, 0.45f, t =>
 		{
@@ -182,9 +186,9 @@ public static class Kingly
 	}
 
 	// ───────── 决胜一击 ─────────
-	private static void Knockout(Control front, NCreature node, Creature target, MegaCrit.Sts2.Core.Models.CardModel card, float s)
+	private static void Knockout(Control front, NCreature node, Creature target, MegaCrit.Sts2.Core.Models.CardModel card, float s, float facing)
 	{
-		Vector2 at = Contact(node);
+		Vector2 at = Contact(node, facing);
 		Vector2 size = front.GetViewportRect().Size;
 		// 定格横线：一道极细的白线横贯全屏（P3R 暴击定格），中间最亮
 		Node2D line = Fx.Root(front, new Vector2(0f, at.Y), "P3KOLine");

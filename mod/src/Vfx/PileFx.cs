@@ -30,6 +30,8 @@ public static class PileFx
 	private const string PortraitPath = "res://p3makoto/ui/pile_portrait.png";
 	private const string PortraitSpine = "res://p3makoto/pile/pile_skel_data.tres";
 	private const float HeaderH = 58f;
+	private const float CardScale = 1.10f;
+	private const float ItemHeaderScale = 0.9f;
 	public const float HeroShiftX = 0.22f;
 
 	/// <summary>v0.14.56：四个牌堆界面各有不同的版式和动画（用户：每个牌堆都要有不同的表现）。</summary>
@@ -43,7 +45,7 @@ public static class PileFx
 	{
 		public Kind Kind;
 		public int Cols = 5;
-		public float CardW = 160f, CellW = 178f, CellH = 252f;
+		public float CardW = 160f * CardScale, CellW = 160f * CardScale + 18f, CellH = 252f * CardScale;
 		public float GridX = 190f, GridTop = 262f, GridBottom = 1010f, Slant = 0.05f;
 		public bool RightSide;
 		public Vector2 Focus = new(700f, 560f);
@@ -56,8 +58,10 @@ public static class PileFx
 	{
 		Kind.Deck => new Layout
 		{
-			Kind = kind, CardW = 166f, CellW = 186f, GridX = 1920f - 70f - 5 * 186f, Slant = -0.05f, RightSide = true,
-			Focus = new Vector2(1260f, 560f), InfoX = 1520f, TitleX = 930f, Side = -1f, Iris = new Vector2(0.93f, 0.04f), Title = "DECK", Word = "DECK",
+			Kind = kind, CardW = 166f * CardScale, CellW = 166f * CardScale + 20f,
+			GridX = 1920f - 70f - 5 * (166f * CardScale + 20f), Slant = -0.05f, RightSide = true,
+			Focus = new Vector2(1260f, 560f), InfoX = 1520f, TitleX = 1920f - 60f - 5 * (166f * CardScale + 20f),
+			Side = -1f, Iris = new Vector2(0.93f, 0.04f), Title = "DECK", Word = "DECK",
 		},
 		Kind.Discard => new Layout
 		{
@@ -66,7 +70,8 @@ public static class PileFx
 		},
 		Kind.Exhaust => new Layout
 		{
-			Kind = kind, Slant = 0f, Iris = new Vector2(0.96f, 0.82f), Title = "EXHAUST PILE", Word = "EXHAUST",
+			Kind = kind, CellW = 160f * CardScale + 12f, Slant = 0f,
+			Iris = new Vector2(0.96f, 0.82f), Title = "EXHAUST PILE", Word = "EXHAUST",
 		},
 		_ => new Layout { Kind = Kind.Draw, Iris = new Vector2(0.04f, 0.95f), Title = "DRAW PILE", Word = "DRAW" },
 	};
@@ -76,7 +81,9 @@ public static class PileFx
 	/// </summary>
 	private static Layout ItemLayout() => new()
 	{
-		Kind = Kind.Discard, GridX = 120f, Iris = new Vector2(0.96f, 0.95f), Title = "DISCARD PILE", Word = "DISCARD",
+		// Keep the right edge near its old position so the ITEM face stays clear.
+		Kind = Kind.Discard, GridX = 50f, CellW = 160f * CardScale + 16f, Side = -1f,
+		Iris = new Vector2(0.96f, 0.95f), Title = "DISCARD PILE", Word = "DISCARD",
 	};
 
 	// 原版 DT_CampParamItem / DT_CampParamCommon（30fps 帧）：白板 10 帧 CurveUp1；人物 ItemSilhouette 等 10 帧、20 帧 CurveUp2 移到 (-90, -110)（游戏里改成 0.05s 起步、0.7s CurveUp3，见入场处）；InDist -100
@@ -105,6 +112,7 @@ public static class PileFx
 
 	private sealed class Item
 	{
+		public Control? Clip;
 		public Control? Slot;
 		public NGridCardHolder? Holder;
 		public CardModel Card = null!;
@@ -222,6 +230,8 @@ public static class PileFx
 		Font font = Typo.PileBarlow;
 		float t0 = Time.GetTicksMsec() / 1000f;
 		float Now() => Time.GetTicksMsec() / 1000f - t0;
+		bool exiting = false, finalized = false;
+		float exitT0 = 0f;
 
 		Control root = new() { Name = RootName, MouseFilter = Control.MouseFilterEnum.Stop };
 		root.SetAnchorsPreset(Control.LayoutPreset.FullRect);
@@ -259,6 +269,10 @@ public static class PileFx
 		ColorRect bg = new() { Size = view, Material = water, MouseFilter = Control.MouseFilterEnum.Ignore };
 		root.AddChild(bg);
 		float diag = Mathf.Sqrt(view.X * view.X / (view.Y * view.Y) + 1f) + 0.1f;
+		// Start SKILL's closing iris at the visible corners, without an invisible
+		// overscan interval while its white panels have already begun fading.
+		float closeRadius = skill ? new Vector2(Mathf.Max(from.X, 1f - from.X) * view.X / view.Y,
+			Mathf.Max(from.Y, 1f - from.Y)).Length() + 0.01f : diag;
 		if (dive) water.SetShaderParameter("radius", diag);   // 入水转场自己负责露出（水花轮廓），不用圆孔
 		else Fx.Animate(bg, 0.55, t => water.SetShaderParameter("radius", diag * Ease.OutCubic(t)));
 		lap("water");
@@ -268,6 +282,13 @@ public static class PileFx
 		// ── 装饰 + 立绘（每个界面不同），整组从一侧滑进来 ──
 		Node2D right = new() { Position = new Vector2(700f * k * L.Side, 0f), Modulate = new Color(1f, 1f, 1f, 0f) };
 		root.AddChild(right);
+		Vector2 itemHeaderAt = new(view.X - (960f * ItemHeaderScale + 24f) * k,
+			view.Y - (228f * ItemHeaderScale + 24f) * k);
+		Vector2 itemHeaderExitAt = Vector2.Zero;
+		float itemHeaderExitAlpha = 1f, decorExitAlpha = 1f;
+		Node2D? itemHeader = item ? new Node2D { Name = "ItemHeader", Scale = Vector2.One * ItemHeaderScale,
+			Position = itemHeaderAt + new Vector2(140f, 40f) * k, Modulate = new Color(1f, 1f, 1f, 0f) } : null;
+		if (itemHeader != null) root.AddChild(itemHeader);
 		PileButterfly butterfly;
 		switch (kind)
 		{
@@ -284,7 +305,7 @@ public static class PileFx
 				}
 				break;
 			case Kind.Discard:
-				if (item && ItemDecor(right, view, k))
+				if (item && HeroStage.Open(right, view, ItemShiftX * view.X / 1920f, HeroStage.Act.Item))
 				{
 					butterfly = new PileButterfly(right, Kind.Deck, k, 0f, DeckPorScale);   // 人物在左边，蓝蝶位置同牌组
 					lap("hero3d");
@@ -339,6 +360,7 @@ public static class PileFx
 				break;
 		}
 		lap("decor");
+		if (!item && itemHeader != null) { itemHeader.QueueFree(); itemHeader = null; }
 		butterfly.AttachForeground(right);                 // 装饰底板 → 后景蓝蝶 → 立绘 → 前景蓝蝶；卡牌仍在整组之上。
 		float decorMs = (Time.GetTicksUsec() - buildStart) / 1000f;
 		if (dive)
@@ -348,20 +370,28 @@ public static class PileFx
 		}
 		else if (item)
 		{
-			// ITEM 页：整组不滑入；随圆孔张开淡入，白板按原版参数从左滑进，人物按原版 ItemSilhouette 落位
+			// ITEM hero keeps its existing entrance; its text-only heading is a
+			// separate group anchored at bottom right.
 			right.Position = Vector2.Zero;
 			float u = view.X / 1920f;
-			Node2D board = right.GetNode<Node2D>("ItemBoard");
-			Fx.Animate(right, 0.3, t => right.Modulate = new Color(1f, 1f, 1f, Ease.OutCubic((float)t)));
-			Fx.After(right, 0.1, "item board in", () => Fx.Animate(board, 10.0 / 30.0, t =>
+			Fx.Animate(right, 0.3, t =>
 			{
-				float e = CurveUp(1, (float)t);
-				board.Position = new Vector2(-100f * k * (1f - e), 0f);
-				board.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((float)t * 1.6f, 0f, 1f));
+				if (!exiting) right.Modulate = new Color(1f, 1f, 1f, Ease.OutCubic((float)t));
+			});
+			Node2D header = itemHeader!;
+			Fx.After(header, 0.05, "item heading in", () => Fx.Animate(header, 0.48, t =>
+			{
+				if (exiting) return;
+				float e = Ease.OutCubic((float)t);
+				header.Position = itemHeaderAt + new Vector2(140f, 40f) * k * (1f - e);
+				header.Modulate = new Color(1f, 1f, 1f, e);
 			}));
 			// 人物落位：原版等 10 帧再动，那 10 帧在原版被切页遮罩盖着；这里圆孔一张开人物就看得见，停着不动再突然起步显得僵（v0.14.103 用户反馈）。
 			// 改成和淡入几乎同时起步（只让开打开牌堆那一两帧的卡顿，免得曲线开头被吞掉跳一下），一路减速到原版落点，时长 0.7s，CurveUp3 收尾更软
-			Fx.After(right, 0.05, "item silhouette", () => Fx.Animate(right, 0.7, t => HeroStage.Nudge(ItemSilhouette * u * CurveUp(3, (float)t))));
+			Fx.After(right, 0.05, "item silhouette", () => Fx.Animate(right, 0.7, t =>
+			{
+				if (!exiting) HeroStage.Nudge(ItemSilhouette * u * CurveUp(3, (float)t));
+			}));
 		}
 		else if (skill)
 		{
@@ -384,40 +414,42 @@ public static class PileFx
 
 		// ── 左上：牌堆名 + 张数 + 一行说明 ──
 		float headFrom = (L.RightSide ? 900f : -640f) * k;    // 标题从网格那一侧滑进来
-		Node2D head = new() { Position = new Vector2(headFrom, 0f) };
-		root.AddChild(head);
+		Node2D head = new() { Position = item ? Vector2.Zero : new Vector2(headFrom, 0f) };
+		if (item) itemHeader!.AddChild(head);
+		else root.AddChild(head);
 		string title = L.Title;
 		float tx = L.TitleX + (L.RightSide ? rx / k : 0f);
 		// 标题：Barlow 粗斜体，白字深蓝描边，右下错开一层宝蓝投影（P3R 菜单标题的叠影）
 		Text(head, title, font, (int)(92f * k), new Color(0.12f, 0.36f, 1f), new Vector2((tx + 8f) * k, 98f * k), (int)(5f * k), new Color(0.12f, 0.36f, 1f));
 		Label titleL = Text(head, title, font, (int)(92f * k), Colors.White, new Vector2(tx * k, 90f * k), (int)(5f * k), Ink);
-		Label countL = Text(head, "0", font, (int)(112f * k), Cyan, new Vector2((tx + 26f) * k + titleL.GetMinimumSize().X, 74f * k), (int)(5f * k), Ink);
-		// v0.14.100（用户：切换条已经起到说明作用，说明文字没用）：抽牌堆不画说明条，切换条放在说明条的位置
-		bool hasSwitch = kind == Kind.Draw;
-		if (!hasSwitch)
+		// Label minimum size can still be zero before its first layout; measure
+		// the font directly so the count never overlaps the title on a cold open.
+		float titleWidth = font.GetStringSize(title, HorizontalAlignment.Left, -1f, (int)(92f * k)).X;
+		Label countL = Text(head, "0", font, (int)(112f * k), Cyan, new Vector2((tx + 26f) * k + titleWidth, 74f * k), (int)(5f * k), Ink);
+		bool orderMode = kind switch
 		{
-			Fx.Poly(head, new[] { new Vector2(tx - 2f, 200f) * k, new Vector2(tx + 502f, 200f) * k, new Vector2(tx + 494f, 228f) * k, new Vector2(tx - 10f, 228f) * k }, Navy);
-			Fx.Poly(head, new[] { new Vector2(tx - 2f, 200f) * k, new Vector2(tx + 12f, 200f) * k, new Vector2(tx + 4f, 228f) * k, new Vector2(tx - 10f, 228f) * k }, Cyan);
-		}
-		bool orderMode = kind == Kind.Draw && P3Settings.Current.DrawPileOrder;
-		string note = kind switch
-		{
-			Kind.Draw => "",
-			Kind.Deck => Zh ? "整副牌组 · 按类型 → 费用排列" : "WHOLE DECK · SORTED BY TYPE → COST",
-			Kind.Exhaust => Zh ? "本场战斗中消耗的牌 · 最新在前" : "EXHAUSTED THIS COMBAT · MOST RECENT FIRST",
-			_ => Zh ? "按进入牌堆的先后排列 · 最新在前" : "MOST RECENT FIRST",
+			Kind.Draw => P3Settings.Current.DrawPileOrder,
+			Kind.Deck => P3Settings.Current.DeckPileOrder,
+			Kind.Discard => P3Settings.Current.DiscardPileOrder,
+			_ => P3Settings.Current.ExhaustPileOrder,
 		};
-		if (note.Length > 0) Text(head, note, Zh ? Typo.PileCjk : font, (int)(19f * k), new Color(0.8f, 0.93f, 1f), new Vector2((tx + 26f) * k, 202f * k), 0, Ink);
-		ModeSwitch modeSwitch = ModeSwitch.Build(head, new Vector2(tx - 10f, 200f) * k, k, font, orderMode, hasSwitch);
-		Fx.After(head, 0.16, "pile head in", () => Fx.Animate(head, 0.45, t => head.Position = new Vector2(headFrom * (1f - Ease.OutExpo(t)), 0f)));
+		// ITEM's title sits at the bottom right. Keep the same switch just above that title.
+		ModeSwitch modeSwitch = ModeSwitch.Build(head, new Vector2(tx - 10f, item ? 28f : 200f) * k, k, font, orderMode, true);
+		if (!item) Fx.After(head, 0.16, "pile head in", () => Fx.Animate(head, 0.45, t => head.Position = new Vector2(headFrom * (1f - Ease.OutExpo(t)), 0f)));
 
 		// ── 网格 ──
 		Control cards = new() { MouseFilter = Control.MouseFilterEnum.Ignore };
 		cards.SetAnchorsPreset(Control.LayoutPreset.FullRect);
 		root.AddChild(cards);
 		Node2D heads = new();
-		root.AddChild(heads);
-		root.MoveChild(heads, cards.GetIndex());              // 段标题在卡牌下面（放大的牌可以盖住标题）
+		Vector2 clipAt = new(0f, L.GridTop * k);
+		Vector2 clipSize = new(view.X, (L.GridBottom - L.GridTop) * k);
+		Control headClip = new() { Name = "PileHeadingClip", Position = clipAt, Size = clipSize,
+			ClipContents = true, MouseFilter = Control.MouseFilterEnum.Ignore };
+		root.AddChild(headClip);
+		headClip.AddChild(heads);
+		heads.Position = -clipAt;
+		root.MoveChild(headClip, cards.GetIndex());          // 分类标题与网格共用固定裁切边界。
 		Node2D? plate = null;                                // 真正悬停时才创建名牌。
 		Label empty = Text(root, "EMPTY", font, (int)(90f * k), new Color(1f, 1f, 1f, 0.45f), new Vector2(gx, L.GridTop + 60f) * k, 0, Ink);
 		empty.Visible = false;
@@ -445,8 +477,6 @@ public static class PileFx
 		float focusP = 0f;
 		bool focusOn = false;
 		float lastNow = 0f;
-		bool exiting = false, finalized = false;
-		float exitT0 = 0f;
 
 		List<Item> items = new();
 		// 牌组界面原版的「查看升级」勾选框：勾上时网格里能升级的牌都显示升级后的样子
@@ -548,9 +578,9 @@ public static class PileFx
 				{
 					it.Holder.QueueFreeSafely();
 				}
-				if (it.Slot != null && GodotObject.IsInstanceValid(it.Slot))
+				if (it.Clip != null && GodotObject.IsInstanceValid(it.Clip))
 				{
-					it.Slot.QueueFree();
+					it.Clip.QueueFree();
 				}
 			}
 			foreach (Section s in sections)
@@ -575,29 +605,33 @@ public static class PileFx
 			float y = Place(Groups(all), null);
 			contentH = y;
 			countL.Text = all.Count.ToString();
+			if (item && itemHeader != null)
+			{
+				float edge = countL.Position.X + font.GetStringSize(countL.Text, HorizontalAlignment.Left, -1f, (int)(112f * k)).X;
+				itemHeaderAt.X = view.X - 24f * k - edge * ItemHeaderScale;
+				float bottom = Mathf.Max(titleL.Position.Y + font.GetHeight((int)(92f * k)),
+					countL.Position.Y + font.GetHeight((int)(112f * k)));
+				itemHeaderAt.Y = view.Y - 24f * k - bottom * ItemHeaderScale;
+				if (Now() >= 0.53f && !exiting) itemHeader.Position = itemHeaderAt;
+			}
 			target = Mathf.Clamp(target, 0f, MaxScroll());
 		}
 
 		List<(string En, string Zh, List<CardModel> Cards)> Groups(List<CardModel> all)
 		{
 			List<(string En, string Zh, List<CardModel> Cards)> groups = new();
-			if (kind == Kind.Draw && orderMode)
+			if (orderMode)
 			{
 				// 原版顺序：一整段，从左到右、从上往下（行宽按我们的版式，不照抄原版一行几张）
-				if (all.Count > 0) groups.Add(("DRAW ORDER", "", VanillaOrder(grid, pile)));   // v0.14.100：不加中文副标题（和 ×张数 叠在一起，也没用）
+				if (all.Count > 0) groups.Add((kind == Kind.Draw ? "DRAW ORDER" : kind == Kind.Deck ? "DECK ORDER" : kind == Kind.Discard ? "DISCARD ORDER" : "EXHAUST ORDER", "", VanillaOrder(grid, pile)));   // v0.14.100：不加中文副标题（和 ×张数 叠在一起，也没用）
 			}
-			else if (kind == Kind.Draw || kind == Kind.Deck)
+			else
 			{
 				foreach (IGrouping<int, CardModel> g in all.GroupBy(c => TypeOrder(c.Type)).OrderBy(g => g.Key))
 				{
 					List<CardModel> list = g.OrderBy(Cost).ThenBy(c => c.Title, StringComparer.Ordinal).ThenBy(c => c.IsUpgraded ? 1 : 0).ToList();
 					groups.Add((TypeEn(list[0].Type), TypeZh(list[0].Type), list));
 				}
-			}
-			else if (all.Count > 0)
-			{
-				all.Reverse();
-				groups.Add(("RECENT", "", all));   // 说明条已经写了"最新在前"
 			}
 			return groups;
 		}
@@ -642,15 +676,21 @@ public static class PileFx
 			return y;
 		}
 
-		// v0.14.98 抽牌堆：原版顺序 ⇄ 按类型。牌不重建，每张从旧位置沿弧线飞到新位置（按新顺序依次出发），段标题淡出 / 淡入，一道青色扫光掠过网格
+		// 四种牌堆共用：原版顺序 ⇄ 按类型。牌不重建，每张从旧位置沿弧线飞到新位置（按新顺序依次出发），段标题淡出 / 淡入，一道青色扫光掠过网格
 		void Switch(bool toOrder)
 		{
-			if (kind != Kind.Draw || orderMode == toOrder || exiting || focused != null)
+			if (orderMode == toOrder || exiting || focused != null)
 			{
 				return;
 			}
 			orderMode = toOrder;
-			P3Settings.Current.DrawPileOrder = toOrder;
+			switch (kind)
+			{
+				case Kind.Draw: P3Settings.Current.DrawPileOrder = toOrder; break;
+				case Kind.Deck: P3Settings.Current.DeckPileOrder = toOrder; break;
+				case Kind.Discard: P3Settings.Current.DiscardPileOrder = toOrder; break;
+				case Kind.Exhaust: P3Settings.Current.ExhaustPileOrder = toOrder; break;
+			}
 			P3Settings.Save();
 			float now = Now();
 			foreach (Section s in sections)
@@ -694,27 +734,36 @@ public static class PileFx
 				return;
 			}
 			Control slot = new() { MouseFilter = Control.MouseFilterEnum.Ignore, Modulate = new Color(1f, 1f, 1f, 0f) };
-			cards.AddChild(slot);
+			Control clip = new() { Name = "PileCardClip", Position = clipAt, Size = clipSize,
+				ClipContents = true, MouseFilter = Control.MouseFilterEnum.Ignore };
+			cards.AddChild(clip);
+			clip.AddChild(slot);
 			h.Visible = true;
 			slot.AddChild(h);
 			card!.UpdateVisuals(pile.Type, CardPreviewMode.Normal);
 			h.SetIsPreviewingUpgrade(upgradeOn && it.Card.IsUpgradable);
+			PooledCardInput.Track(h);
 			it.Slot = slot;
+			it.Clip = clip;
 			it.Holder = h;
 			it.Born = Mathf.Max(Now(), nextBorn);
 			nextBorn = it.Born + 0.022f;
-			h.Hitbox.MouseEntered += () =>
+			bool OwnsHolder() => !exiting && GodotObject.IsInstanceValid(root) && root.IsInsideTree()
+				&& GodotObject.IsInstanceValid(h) && h.GetParent() == slot && it.Holder == h;
+			void Enter()
 			{
+				if (!OwnsHolder()) return;
 				if (hovered != it)
 				{
 					hovered = it;
 					Audio.Sfx.Clip("Sys_Cursor", 0.35f);
 					if (kind == Kind.Draw) HeroStage.Kick();
 				}
-			};
-			h.Hitbox.MouseExited += () => { if (hovered == it) hovered = null; };
-			h.Hitbox.GuiInput += ev => ModEntry.Safe("pile card input", () =>
+			}
+			void Leave() { if (hovered == it) hovered = null; }
+			void Input(InputEvent ev) => ModEntry.Safe("pile card input", () =>
 			{
+				if (!OwnsHolder()) return;
 				if (ev is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left or MouseButton.Right })
 				{
 					h.Hitbox.AcceptEvent();                 // 不传给底层（否则会当成拖动开始）
@@ -725,6 +774,17 @@ public static class PileFx
 					Wheel(ev);
 				}
 			});
+			void Detach()
+			{
+				h.Hitbox.MouseEntered -= Enter;
+				h.Hitbox.MouseExited -= Leave;
+				h.Hitbox.GuiInput -= Input;
+				h.TreeExiting -= Detach;
+			}
+			h.Hitbox.MouseEntered += Enter;
+			h.Hitbox.MouseExited += Leave;
+			h.Hitbox.GuiInput += Input;
+			h.TreeExiting += Detach;
 		}
 
 		// 左 / 右键点牌：这张飞到中间特写；再点它或点任意空白处：飞回原位
@@ -741,7 +801,7 @@ public static class PileFx
 				focusOn = true;
 				cards.MoveChild(fx!.Layer, cards.GetChildCount() - 1);
 				cards.MoveChild(catcher, cards.GetChildCount() - 1);
-				cards.MoveChild(it.Slot, cards.GetChildCount() - 1);
+				cards.MoveChild(it.Clip!, cards.GetChildCount() - 1);
 				cards.MoveChild(upBtn!.Root, cards.GetChildCount() - 1);     // 按钮在挡点击层上面才点得到
 				flip = MakeFlip(root, front, it.Card, pile.Type, it.Holder);
 				catcher.Visible = true;
@@ -1028,15 +1088,28 @@ public static class PileFx
 				float fe = Ease.InOutCubic(focusP);
 				Vector2 focusCenter = focusAt * k;
 				if (fx != null) Animate(fx, fe, focusP, focusOn, now, focusCenter, k);
-				// 退场（v0.14.55）：0.42s —— 卡牌按顺序往下沉、淡出；标题往左退；圆盘和立绘往右滑出；水下圆孔缩回牌堆按钮；最后才真正关掉界面
-				float ex = exiting ? Mathf.Clamp((now - exitT0) / ExitTime, 0f, 1f) : 0f;
+				// ITEM / SKILL use a slightly longer, continuous ease like the existing focus transition.
+				float exitSeconds = item || skill ? 0.54f : ExitTime;
+				float ex = exiting ? Mathf.Clamp((now - exitT0) / exitSeconds, 0f, 1f) : 0f;
 				butterfly.Update(now, dt);
 				if (exiting)
 				{
-					float ei = Ease.InCubic(ex);
-					right.Position = new Vector2(820f * k * L.Side * ei, 0f);
-					right.Modulate = new Color(1f, 1f, 1f, 1f - Ease.InCubic(Mathf.Clamp((ex - 0.3f) / 0.7f, 0f, 1f)));
-					water.SetShaderParameter("radius", diag * (1f - Ease.InOutCubic(Mathf.Clamp((ex - 0.15f) / 0.85f, 0f, 1f))));
+					float ei = item ? Ease.InOutCubic(ex) : Ease.InCubic(ex);
+					// SKILL's white panels touch the viewport edges: sliding them exposes
+					// their rectangular bounds. Fade in place while the water iris closes.
+					right.Position = skill ? Vector2.Zero : new Vector2(820f * k * L.Side * ei, 0f);
+					float decorOut = skill ? Ease.InOutCubic(ex)
+						: item ? Ease.InOutSine(Mathf.Clamp((ex - 0.1f) / 0.9f, 0f, 1f))
+						: Ease.InCubic(Mathf.Clamp((ex - 0.3f) / 0.7f, 0f, 1f));
+					right.Modulate = new Color(1f, 1f, 1f, decorExitAlpha * (1f - decorOut));
+					if (item && itemHeader != null)
+					{
+						float headerOut = Ease.InOutCubic(ex);
+						itemHeader.Position = itemHeaderExitAt + new Vector2(160f, 50f) * k * headerOut;
+						itemHeader.Modulate = new Color(1f, 1f, 1f, itemHeaderExitAlpha * (1f - headerOut));
+					}
+					float irisDelay = skill ? 0f : 0.15f;
+					water.SetShaderParameter("radius", closeRadius * (1f - Ease.InOutCubic(Mathf.Clamp((ex - irisDelay) / (1f - irisDelay), 0f, 1f))));
 					bubbles.Modulate = new Color(1f, 1f, 1f, 1f - ex);
 					if (screen.GetNodeOrNull<CanvasItem>("BackButton") is CanvasItem backBtn)
 					{
@@ -1083,23 +1156,12 @@ public static class PileFx
 					float sy = L.GridTop + at.Y - scroll;
 					return new Vector2(gx + at.X + (sy - L.GridTop) * L.Slant, sy) * k;
 				}
-				// v0.14.66（用户：稍微往下滚一点，上面那行牌就直接消失了）：按"露在网格外的比例"平滑淡出 ——
-				// 整张在网格里 = 不透明；越过边界 65% 的高度（中心已出界 15%）才完全透明，中间用 smoothstep。
-				// 区域最短 60px（段标题这种矮的也有足够的过渡）。
-				float Fade(float top, float bottom)
-				{
-					float zone = Mathf.Max((bottom - top) * 0.65f, 60f * k);
-					float a = Mathf.SmoothStep(0f, 1f, (top - (L.GridTop * k - zone)) / zone);
-					float b = Mathf.SmoothStep(0f, 1f, ((L.GridBottom * k + zone) - bottom) / zone);
-					return a * b;
-				}
-
 				foreach (Section s in sections)
 				{
 					Vector2 p = Screen(new Vector2(0f, s.Y + HeaderH * 0.5f));
 					float sIn = s.Born < 0f ? 1f : Ease.OutCubic(Mathf.Clamp((now - s.Born) / 0.3f, 0f, 1f));   // 切换后新标题从左滑入
 					s.Head.Position = p + new Vector2(-14f * k - 80f * k * (1f - sIn), 0f);
-					s.Head.Modulate = new Color(1f, 1f, 1f, Fade(p.Y - 20f * k, p.Y + 20f * k) * Mathf.Clamp((now - 0.2f) / 0.25f, 0f, 1f) * sIn * (1f - fe) * (1f - ex));
+					s.Head.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((now - 0.2f) / 0.25f, 0f, 1f) * sIn * (1f - fe) * (1f - ex));
 					s.Head.Position += new Vector2(-60f * k * fe, 0f);
 				}
 				for (int i = dying.Count - 1; i >= 0; i--)
@@ -1115,7 +1177,7 @@ public static class PileFx
 					}
 					Vector2 p = Screen(new Vector2(0f, s.Y + HeaderH * 0.5f));
 					s.Head.Position = p + new Vector2(-14f * k + 120f * k * Ease.InCubic(d), 0f);
-					s.Head.Modulate = new Color(1f, 1f, 1f, (1f - d) * Fade(p.Y - 20f * k, p.Y + 20f * k));
+					s.Head.Modulate = new Color(1f, 1f, 1f, 1f - d);
 				}
 				{
 					float se = Mathf.Clamp((now - sweepT0) / 0.6f, 0f, 1f);
@@ -1128,8 +1190,8 @@ public static class PileFx
 						sweep.Rotation = Mathf.Atan(L.Slant);
 					}
 				}
-				head.Modulate = new Color(1f, 1f, 1f, (1f - 0.85f * fe) * (1f - ex));
-				if (exiting)
+				head.Modulate = new Color(1f, 1f, 1f, (1f - 0.85f * fe) * (item ? 1f : 1f - ex));
+				if (exiting && !item)
 				{
 					head.Position = new Vector2((L.RightSide ? 320f : -260f) * k * Ease.InCubic(ex), 0f);
 				}
@@ -1153,7 +1215,6 @@ public static class PileFx
 					NGridCardHolder h = it.Holder;
 					Vector2 cs = h.Hitbox.Size.X > 1f ? h.Hitbox.Size : new Vector2(300f, 422f);
 					float baseScale = L.CardW * k / cs.X;
-					float half = cs.Y * baseScale * 0.5f;
 					// v0.14.98 切换排列模式：从旧位置沿弧线飞到新位置（先慢后快再慢），途中略放大、转一点
 					float move = 0f;
 					Vector2 at = it.At;
@@ -1166,7 +1227,6 @@ public static class PileFx
 						if (me >= 1f) it.MoveT0 = -1f;
 					}
 					Vector2 p = Screen(at) + new Vector2(0f, -42f * k * move);
-					float fade = Mathf.Max(Fade(p.Y - half, p.Y + half), move * 0.85f);
 					// 入场（每个界面不同）：抽牌堆从左下弹入；牌组一列列从右侧滑入；弃牌堆从上方飘落（左右摆着转）；消耗堆由光点聚拢显形（从大到小、淡入）
 					float born = Mathf.Clamp((now - it.Born) / (kind == Kind.Discard ? 0.6f : 0.38f), 0f, 1f);
 					float pop = Ease.OutBack(born);
@@ -1195,18 +1255,15 @@ public static class PileFx
 							break;
 					}
 					p += new Vector2(0f, -14f) * k * lift;
-					bool on = fade > 0.01f || it == hovered;
-					it.Slot.Visible = on;
-					if (!on)
-					{
-						continue;
-					}
+					it.Slot.Visible = true;
+					// The holder never leaves the tree. Only its fixed clipping wrapper is
+					// disabled while this card is enlarged for the full-screen close-up.
+					it.Clip!.ClipContents = it != focused;
 					float rot = Mathf.DegToRad(L.Slant < 0f ? 2f : L.Slant > 0f ? -2f : 0f) * (1f - lift) + enterRot;
 					// 原版悬停会把 holder 自己的 Scale 从 0.8 跳到 1.0；这里按它当前的 Scale 反算，让总缩放平滑
-					// 淡出中的牌稍微缩小一点（"退到远处"的虚化感），整张在网格里时不变
-					float want = baseScale * (0.85f + 0.15f * pop) * enterScale * (1f + 0.26f * lift) * (0.93f + 0.07f * Mathf.Max(fade, lift)) * (1f + 0.07f * move);
+					float want = baseScale * (0.85f + 0.15f * pop) * enterScale * (1f + 0.26f * lift) * (1f + 0.07f * move);
 					rot += Mathf.DegToRad(-4f) * move;
-					float alpha = Mathf.Clamp(born * (kind == Kind.Exhaust ? 1.4f : 3f), 0f, 1f) * (it == hovered ? 1f : fade);
+					float alpha = Mathf.Clamp(born * (kind == Kind.Exhaust ? 1.4f : 3f), 0f, 1f);
 					if (it == focused)
 					{
 						// 特写：沿上拱的弧线飞到中间、放大，途中绕竖轴真正翻一圈（带透视：正面 → 塔罗牌背 → 正面），落定后轻轻浮动。
@@ -1296,7 +1353,7 @@ public static class PileFx
 						}
 						alpha *= 1f - Ease.OutCubic(r);
 					}
-					it.Slot.Position = p;
+					it.Slot.Position = p - clipAt;
 					it.Slot.Rotation = rot;
 					float own = Mathf.Max(0.01f, h.Scale.X);
 					it.Slot.Scale = Vector2.One * (want / own);
@@ -1306,7 +1363,7 @@ public static class PileFx
 					it.Slot.Modulate = new Color((d * 0.9f + 0.1f) * cool, (d * 0.94f + 0.06f) * (cool + (1f - cool) * 0.4f), Mathf.Min(1f, d + 0.1f), alpha);
 				}
 				// 指到的那张移到最上层（绘制和鼠标判定都按节点顺序）
-				if (any && hovered?.Slot is Control top && top.GetParent() == cards && top.GetIndex() != cards.GetChildCount() - 1)
+				if (any && hovered?.Clip is Control top && top.GetParent() == cards && top.GetIndex() != cards.GetChildCount() - 1)
 				{
 					cards.MoveChild(top, cards.GetChildCount() - 1);
 				}
@@ -1318,7 +1375,7 @@ public static class PileFx
 					plate.Visible = true;
 					Vector2 cs = ph.Hitbox.Size.X > 1f ? ph.Hitbox.Size : new Vector2(300f, 422f);
 					float half = cs.Y * ps.Scale.Y * ph.Scale.Y * 0.5f;
-					plate.Position = ps.Position + new Vector2(-20f * k, half + 8f * k);
+						plate.Position = ps.Position + clipAt + new Vector2(-20f * k, half + 8f * k);
 					SetPileTitle((Label)plate.GetChild(plate.GetChildCount() - 1), hv.Card.Title);
 					float a = Ease.OutCubic(hv.Lift);
 					plate.Modulate = new Color(1f, 1f, 1f, a);
@@ -1338,6 +1395,12 @@ public static class PileFx
 			if (exiting)
 			{
 				return;
+			}
+			decorExitAlpha = right.Modulate.A;
+			if (itemHeader != null)
+			{
+				itemHeaderExitAt = itemHeader.Position;
+				itemHeaderExitAlpha = itemHeader.Modulate.A;
 			}
 			exiting = true;
 			exitT0 = Now();
@@ -1584,29 +1647,6 @@ public static class PileFx
 		return butterfly;
 	}
 
-	/// <summary>
-	/// v0.14.101 弃牌堆 = 原版营地 ITEM 页（预览 v3 用户认可，tools/p3r/item_preview.py）：左上白板 + 淡灰大字 ITEM（原版图集原样裁出），
-	/// 人物（原版 CampItemStart → Loop，填原版深海军蓝、不透水）压在白板上、整体左移给牌堆让位。打不开就返回 false，退回旧样式。
-	/// </summary>
-	private static bool ItemDecor(Node2D parent, Vector2 view, float k)
-	{
-		float u = view.X / 1920f;
-		Node2D board = new() { Name = "ItemBoard", Modulate = new Color(1f, 1f, 1f, 0f) };
-		parent.AddChild(board);
-		Fx.Poly(board, new[] { new Vector2(0f, 0f) * k, new Vector2(960f, 0f) * k, new Vector2(930f, 150f) * k, new Vector2(0f, 150f) * k }, Colors.White);
-		Fx.Poly(board, new[] { new Vector2(0f, 158f) * k, new Vector2(926f, 158f) * k, new Vector2(918f, 196f) * k, new Vector2(0f, 196f) * k }, new Color(18f / 255f, 70f / 255f, 190f / 255f, 200f / 255f));
-		if (HeroStage.Tex("item_word.png") is Texture2D word)
-		{
-			board.AddChild(new Sprite2D { Texture = word, Centered = false, Position = new Vector2(40f, -60f) * k, Scale = Vector2.One * 2f * k, Modulate = new Color(214f / 255f, 219f / 255f, 228f / 255f) });
-		}
-		if (HeroStage.Open(parent, view, ItemShiftX * u, HeroStage.Act.Item))
-		{
-			return true;
-		}
-		board.QueueFree();
-		return false;
-	}
-
 	// v0.14.104 消耗堆 = 原版 SKILL 页（tools/p3r/skill_pile_preview.py，用户认可的预览）：
 	// 人物放在原版 Silhouette 落点（离线渲染坐标 -225 + 10, -120 + 170）；白底左边一块斜边 + 右下一块弧边，两块之间的 V 字露出水；
 	// 人物透明的地方（外套 / 头发暗部）不管落在白底还是水上都透出水；白底上有人物完整轮廓的灰影（往左下错开，羽化），水上没有。
@@ -1635,18 +1675,13 @@ public static class PileFx
 		parent.AddChild(sb.Board);
 		float W = view.X, H = view.Y;
 		Vector2[] left = { new(0f, 0f), new(0.055f * W, 0f), new(0.746f * W, H), new(0f, H) };
-		List<Vector2> right = new();
-		Vector2 a = new(0.746f * W, H), c = new(0.90f * W, 0.66f * H), b = new(W, 0.42f * H);
-		for (int i = 0; i <= 24; i++)
-		{
-			float t = i / 24f;
-			right.Add((1 - t) * (1 - t) * a + 2 * (1 - t) * t * c + t * t * b);
-		}
-		right.Add(new Vector2(W, H));
+		// The right white panel has a straight water boundary; the distant jacket
+		// silhouette must not cut a second water shape or cast a shadow into it.
+		Vector2[] right = { new(0.746f * W, H), new(W, 0.42f * H), new(W, H) };
 		Polygon2D[] polys =
 		{
 			new() { Polygon = left, Color = Colors.White, ClipChildren = CanvasItem.ClipChildrenMode.AndDraw },
-			new() { Polygon = right.ToArray(), Color = Colors.White, ClipChildren = CanvasItem.ClipChildrenMode.AndDraw },
+			new() { Polygon = right, Color = Colors.White, ZIndex = 1 },
 		};
 		foreach (Polygon2D p in polys) sb.Board.AddChild(p);
 		if (!HeroStage.Open(parent, view, SkillHeroAt.X * u, HeroStage.Act.Skill))
@@ -1655,7 +1690,7 @@ public static class PileFx
 			return null;
 		}
 		HeroStage.Nudge(new Vector2(0f, SkillHeroAt.Y * u));   // 先落位，下面的换算和影子都按落位后的位置
-		foreach (Polygon2D p in polys)
+		foreach (Polygon2D p in polys.Take(1))
 		{
 			HeroStage.CutOut(p);   // v0.14.105 用户：外套 / 头发暗部是透明的，用水填（白底在人物剪影处挖空，透出底下的水），不要自己涂色
 			if (p.Material is ShaderMaterial m) sb.Tints.Add((m, (Vector2)m.GetShaderParameter("xo") - sb.Board.Position));

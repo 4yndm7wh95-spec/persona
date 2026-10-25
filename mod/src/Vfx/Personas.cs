@@ -226,11 +226,13 @@ public static class Personas
 		Vector2 center = Makoto.Center(caster);
 		float body = Mathf.Max(260f, (feet.Y - center.Y) * 2.1f);
 		float height = body * 1.6f;
-		Vector2 home = new(center.X - height * 0.26f, center.Y - height * 0.22f);
+		Vector2 home = center + Makoto.Offset(caster, new Vector2(-height * 0.26f, -height * 0.22f));
 
 		EqualizerBars(back, home + new Vector2(0f, height * 0.1f), height, 1.5f);
 
 		var (root, fig, glow, flash) = Figure(back, home, tex, height, Pal.Cyan);
+		float facing = Makoto.Facing(caster);
+		root.Scale = new Vector2(facing, 1f);
 		PartRig? rig = AttachRig(root, fig, orpheus: true);
 		// 两道残影（下落时拖在上方）
 		List<Sprite2D> trails = new();
@@ -256,18 +258,18 @@ public static class Personas
 			float d = Mathf.Clamp(time / drop, 0f, 1f);
 			float e = Ease.OutBack(d);
 			// 从上方翻滚着落下：竖琴那一侧（画面右）先入画
-			Vector2 fall = new(height * 0.08f * (1f - e), -height * 0.75f * (1f - e));
+			Vector2 fall = new(facing * height * 0.08f * (1f - e), -height * 0.75f * (1f - e));
 			float bob = time > drop ? 6f * Mathf.Sin((time - drop) * 3.2f) : 0f;
 			float rise = Ease.InCubic(Mathf.Clamp((time - 1.0f) / 0.5f, 0f, 1f));
 			root.Position = home + fall + new Vector2(0f, bob - height * 0.12f * rise);
-			root.Rotation = 0.55f * (1f - Ease.OutCubic(d));
+			root.Rotation = facing * 0.55f * (1f - Ease.OutCubic(d));
 			for (int i = 0; i < trails.Count; i++)
 			{
 				float lag = (i + 1) * 0.06f;
 				float dl = Mathf.Clamp((time - lag) / drop, 0f, 1f);
 				float el = Ease.OutBack(dl);
-				trails[i].Position = new Vector2(height * 0.08f * (1f - el), -height * 0.75f * (1f - el)) - (fall);
-				trails[i].Rotation = 0.55f * (1f - Ease.OutCubic(dl)) - root.Rotation;
+				trails[i].Position = new Vector2(height * 0.08f * (1f - el), -height * 0.75f * (1f - el)) - new Vector2(fall.X * facing, fall.Y);
+				trails[i].Rotation = 0.55f * (1f - Ease.OutCubic(dl)) - root.Rotation * facing;
 				trails[i].Modulate = new Color(0.5f, 0.9f, 1f, d < 1f ? 0.35f / (i + 1) : Mathf.Max(0f, 0.35f / (i + 1) * (1f - (time - drop) / 0.12f)));
 			}
 			// 落定白闪 → 消散时变成青白剪影
@@ -399,9 +401,11 @@ public static class Personas
 		Vector2 center = Makoto.Center(caster);
 		float body = Mathf.Max(260f, (feet.Y - center.Y) * 2.1f);
 		float height = body * 1.7f;
-		Vector2 home = new(center.X - height * 0.22f, center.Y - height * 0.25f);
+		Vector2 home = center + Makoto.Offset(caster, new Vector2(-height * 0.22f, -height * 0.25f));
 		P3Fx.LightPillar(back, new Vector2(home.X, feet.Y), Gold, height * 0.4f, height * 1.4f, 1.3f);
 		var (root, fig, glow, flash) = Figure(back, home, tex, height, Gold);
+		float facing = Makoto.Facing(caster);
+		root.Scale = new Vector2(facing, 1f);
 		Node2D wings = Wings(root, height, Gold);
 		PartRig? rig = AttachRig(root, fig);
 		Audio.Sfx.Clip("Snd_FX_Btl_Summon_00", 0.8f);
@@ -453,7 +457,7 @@ public static class Personas
 		Vector2 head = Makoto.Head(caster);
 		float body = Mathf.Max(260f, (feet.Y - center.Y) * 2.1f);
 		float height = body * 1.85f;
-		Vector2 home = new(center.X - height * 0.2f, center.Y - height * 0.3f);
+		Vector2 home = center + Makoto.Offset(caster, new Vector2(-height * 0.2f, -height * 0.3f));
 		Vector2 circleAt = home + new Vector2(0f, -height * 0.18f);
 		float R = height * 0.42f;
 
@@ -478,6 +482,8 @@ public static class Personas
 
 		// ── Messiah ──
 		var (root, fig, glow, flash) = Figure(back, home, tex, height, Gold);
+		float facing = Makoto.Facing(caster);
+		root.Scale = new Vector2(facing, 1f);
 		Node2D wings = Wings(root, height * 1.15f, Gold);
 		wings.Scale = Vector2.Zero;
 		PartRig? rig = AttachRig(root, fig);
@@ -514,7 +520,7 @@ public static class Personas
 			// 封印：法阵收缩 → 落进结城理脑后
 			float shrink = Ease.InCubic(Mathf.Clamp((time - sealAt + 0.25f) / 0.25f, 0f, 1f));
 			circle.Scale = Vector2.One * Mathf.Lerp(1f, 66f / R, shrink);   // 收到和常驻印记（ThroneSeal，半径 66）一样大，无缝交接
-			Vector2 sealTo = head + new Vector2(-28f, -36f);
+			Vector2 sealTo = head + Makoto.Offset(caster, new Vector2(-28f, -36f));
 			float fly = Ease.InCubic(Mathf.Clamp((time - sealAt + 0.1f) / 0.1f, 0f, 1f));
 			circle.GlobalPosition = circleAt.Lerp(sealTo, fly);
 			circle.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp((time - sealAt) / 0.08f, 0f, 1f));
@@ -551,7 +557,7 @@ public static class Personas
 			float time = t * total;
 			float rise = Rise(time);
 			root.GlobalPosition = PosAt(time);
-			root.Scale = new Vector2(1f - 0.15f * rise, 1f + 0.35f * rise);
+			root.Scale = new Vector2(facing * (1f - 0.15f * rise), 1f + 0.35f * rise);
 			float vis = Mathf.Clamp((time - 0.2f) / 0.15f, 0f, 1f);
 			float gone = Mathf.Clamp((time - exitAt - 0.55f) / 0.25f, 0f, 1f);
 			fig.Modulate = new Color(1f, 1f, 1f, vis * Mathf.Clamp((time - 0.35f) / 0.3f, 0f, 1f) * (1f - Mathf.Clamp((time - exitAt - 0.3f) / 0.35f, 0f, 1f)));
@@ -577,7 +583,7 @@ public static class Personas
 			{
 				float lagT = time - 0.05f * (i + 1);
 				ghosts[i].GlobalPosition = PosAt(lagT);
-				ghosts[i].Scale = fig.Scale * new Vector2(1f - 0.15f * Rise(lagT), 1f + 0.35f * Rise(lagT));
+				ghosts[i].Scale = fig.Scale * new Vector2(facing * (1f - 0.15f * Rise(lagT)), 1f + 0.35f * Rise(lagT));
 				float on = rise > 0.02f ? (0.45f - 0.12f * i) * (1f - gone) : 0f;
 				ghosts[i].Modulate = new Color(1f, 0.92f, 0.7f, on);
 			}

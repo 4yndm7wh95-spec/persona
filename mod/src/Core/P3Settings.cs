@@ -9,7 +9,7 @@ namespace P3Makoto.Core;
 
 /// <summary>
 /// v0.14.46 演出开关（用户：有的玩家看腻了不想每次都看）：每项「完整 / 关闭」，关闭 = 不播这段演出、直接走原版流程。
-/// 设置界面里的 P3MAKOTO 一栏（Patches/SettingsPatches.cs）读写这里；存在 user://p3makoto_settings.json（%APPDATA%\SlayTheSpire2\）。
+/// 游戏常规设置里的结城理选项读写这里；存在 user://p3makoto_settings.json（%APPDATA%\SlayTheSpire2\）。
 /// 游戏自带的快速模式开到「极速」时，这几项一律当作关闭。
 /// </summary>
 public static class P3Settings
@@ -27,8 +27,31 @@ public static class P3Settings
 		public bool TipList { get; set; } = true;         // v0.14.66 角色状态说明：P3R 滚动列表
 		public bool SettingsSkin { get; set; } = true;    // v0.14.67 设置界面（P3R 主菜单风格）
 		public bool CursorSkin { get; set; } = true;      // 鼠标光标：关闭恢复游戏原版，立即生效
-		public bool CardFrame { get; set; } = true;       // v0.14.81 储君卡牌的卡框（P3R 塔罗牌风格）
 		public bool DrawPileOrder { get; set; } = true;   // v0.14.98 抽牌堆按原版顺序排（SL 看抽牌顺序用）；false = 按类型分区
+		public bool DeckPileOrder { get; set; } = false;
+		public bool DiscardPileOrder { get; set; } = true;
+		public bool ExhaustPileOrder { get; set; } = true;
+	}
+
+	public static int Mode
+	{
+		get
+		{
+			Data d = Current;
+			bool[] flags = { d.AllOut, d.Victory, d.ShuffleTime, d.ShuffleFull, d.CutIn, d.SelectSummon, d.Architect, d.PileScreen, d.TipList, d.CursorSkin };
+			bool all = true;
+			foreach (bool flag in flags) all &= flag;
+			bool simple = d.AllOut && !d.Victory && d.ShuffleTime && !d.ShuffleFull && !d.CutIn && d.SelectSummon && !d.Architect && !d.PileScreen && d.TipList && d.CursorSkin;
+			return all ? 1 : simple ? 0 : 2;
+		}
+	}
+
+	public static void ApplyMode(bool enabled)
+	{
+		Data d = Current;
+		d.AllOut = d.ShuffleTime = d.SelectSummon = d.TipList = d.CursorSkin = true;
+		d.Victory = d.ShuffleFull = d.CutIn = d.Architect = d.PileScreen = enabled;
+		Save();
 	}
 
 	private static Data? _data;
@@ -94,5 +117,4 @@ public static class P3Settings
 	public static bool PileScreen => Current.PileScreen;
 	public static bool TipList => Current.TipList;
 	public static bool SettingsSkin => Current.SettingsSkin;
-	public static bool CardFrame => Current.CardFrame;
 }

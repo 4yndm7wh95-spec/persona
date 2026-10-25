@@ -222,13 +222,13 @@ public static class WeaponFx
 	}
 
 	/// <summary>踏步扬尘：斩下时脚前扬起一小团尘土（低饱和灰蓝，不抢主体）。</summary>
-	public static void StepDust(Control layer, Vector2 feet)
+	public static void StepDust(Control layer, Vector2 feet, float facing)
 	{
-		Node2D root = Fx.Root(layer, feet + new Vector2(60f, -4f), "P3StepDust");
+		Node2D root = Fx.Root(layer, feet + new Vector2(60f * facing, -4f), "P3StepDust");
 		GpuParticles2D dust = Fx.Sparks(root, new Color(0.65f, 0.7f, 0.8f, 0.45f), 18, 60f, 200f, 0.6f, gravity: 120f, scaleMin: 0.8f, scaleMax: 1.8f);
 		dust.Material = null;                         // 非加法：尘土是遮挡而不是发光
 		ParticleProcessMaterial pm = (ParticleProcessMaterial)dust.ProcessMaterial;
-		pm.Direction = new Vector3(0.6f, -1f, 0f);
+		pm.Direction = new Vector3(0.6f * facing, -1f, 0f);
 		pm.Spread = 50f;
 		pm.EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box;
 		pm.EmissionBoxExtents = new Vector3(50f, 4f, 0f);

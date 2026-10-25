@@ -16,7 +16,11 @@ public static class CardSigs
 {
 	public sealed record Ctx(Control Front, Control Back, NCreature Caster, Vector2 Head, Vector2 Center, Vector2 Feet, List<NCreature> Targets)
 	{
-		public Vector2 Above => Head + new Vector2(-10f, -170f);
+		public Vector2 Offset(Vector2 offset) => Core.Makoto.Offset(Caster, offset);
+		public float Facing => CrabRoom.Facing(Caster);
+		public Vector2 Above => CrabRoom.Active
+			? new Vector2(Feet.X, Head.Y) + Offset(new Vector2(0f, -170f))
+			: Head + Offset(new Vector2(-10f, -170f));
 		public Vector2[] TargetCenters => Targets.Count > 0
 			? Targets.Select(t => t.VfxSpawnPosition).ToArray()
 			: new[] { Front.GetViewportRect().Size * new Vector2(0.7f, 0.5f) };
@@ -33,7 +37,7 @@ public static class CardSigs
 	private static void Tarot(Ctx c, string numeral, string name, Color tint, double delay = 0.15) =>
 		After(c, delay, () =>
 		{
-			Vector2 at = c.Head + new Vector2(-230f, -60f);                    // 卡牌中心比头高 60px（人物缩到 0.92 后头变低，v0.13.7 上移）
+			Vector2 at = c.Head + c.Offset(new Vector2(-230f, -60f));                    // 卡牌中心比头高 60px（人物缩到 0.92 后头变低，v0.13.7 上移）
 			at.Y = Mathf.Max(at.Y, 225f);                     // 卡高约 270px：中心不高于 225，顶边不压到顶栏
 			at.X = Mathf.Max(at.X, 110f);
 			Motifs.BigTarot(c.Back, at, numeral, name, tint, s: 0.85f, fxLayer: c.Front);
@@ -73,8 +77,8 @@ public static class CardSigs
 		["Comet"] = c => Motifs.Comet(c.Front, c.FirstTarget, Pal.Cyan, 1.2f),
 		["CrashLanding"] = c => Rares.Moonfall(c.Targets),
 		["MeteorShower"] = c => Motifs.MeteorRain(c.Front, c.TargetCenters, 14, Pal.Cyan, 1.0f),
-		["SevenStars"] = c => Motifs.Constellation(c.Front, c.Above + new Vector2(260f, -20f), Motifs.BigDipper, Pal.Cyan, 1.1f),
-		["GuidingStar"] = c => Motifs.Constellation(c.Front, c.Above + new Vector2(120f, 0f),
+		["SevenStars"] = c => Motifs.Constellation(c.Front, c.Above + c.Offset(new Vector2(260f, -20f)), Motifs.BigDipper, Pal.Cyan, 1.1f),
+		["GuidingStar"] = c => Motifs.Constellation(c.Front, c.Above + c.Offset(new Vector2(120f, 0f)),
 			new[] { new Vector2(-120f, 30f), new Vector2(0f, -40f), new Vector2(120f, 20f) }, ElementPal.HolyGold),
 		["AstralPulse"] = c => { P3Fx.Shockwave(c.Front, c.Center, Pal.Cyan, 1400f, 0.7f); P3Fx.Ripple(c.Front, c.Center, 1400f, 0.9f, 0.04f); },
 				["CelestialMight"] = c => After(c, 0.1, () => Motifs.MultiCut(c.Front, c.FirstTarget, 5, Pal.Cyan, 1.0f)),
@@ -85,12 +89,12 @@ public static class CardSigs
 		// ═════ 技能：防御 ═════
 		["CloakOfStars"] = c => Motifs.Constellation(c.Front, c.Center,
 			new[] { new Vector2(-150f, 60f), new Vector2(-120f, -90f), new Vector2(0f, -170f), new Vector2(120f, -90f), new Vector2(150f, 60f) }, Pal.Cyan, 0.9f),
-		["Glitterstream"] = c => { for (int i = 0; i < 6; i++) { P3Fx.Butterfly(c.Front, c.Feet + new Vector2(-200f + 70f * i, 0f), c.Head + new Vector2(-120f + 50f * i, -100f), 1.2f, 0.8f); } },
+		["Glitterstream"] = c => { for (int i = 0; i < 6; i++) { P3Fx.Butterfly(c.Front, c.Feet + c.Offset(new Vector2(-200f + 70f * i, 0f)), c.Head + c.Offset(new Vector2(-120f + 50f * i, -100f)), 1.2f, 0.8f); } },
 		["GatherLight"] = c => { P3Fx.Gather(c.Back, c.Center, Pal.Ice, 520f, 0.4f); After(c, 0.35, () => P3Fx.Flash(c.Back, c.Center, Pal.Ice, 420f, 0.3f)); },
-		["Bulwark"] = c => Uniq.Bulwark(c.Front, c.Center),
-		["ParticleWall"] = c => { Node2D p = Fx.Root(c.Front, c.Center + new Vector2(120f, 0f), "P3ParticleWall"); Fx.Sparks(p, Pal.Cyan, 90, 60f, 260f, 0.8f, scaleMin: 0.1f, scaleMax: 0.3f); Fx.FreeAfter(p, 1.0); },
-		["IAmInvincible"] = c => Uniq.Tetrakarn(c.Front, c.Center),
-		["Reflect"] = c => Uniq.Makarakarn(c.Front, c.Center),
+		["Bulwark"] = c => Uniq.Bulwark(c.Front, c.Center, c.Facing),
+		["ParticleWall"] = c => { Node2D p = Fx.Root(c.Front, c.Center + c.Offset(new Vector2(120f, 0f)), "P3ParticleWall"); Fx.Sparks(p, Pal.Cyan, 90, 60f, 260f, 0.8f, scaleMin: 0.1f, scaleMax: 0.3f); Fx.FreeAfter(p, 1.0); },
+		["IAmInvincible"] = c => Uniq.Tetrakarn(c.Front, c.Center, c.Facing),
+		["Reflect"] = c => Uniq.Makarakarn(c.Front, c.Center, c.Facing),
 		["CosmicIndifference"] = c => Motifs.DarkClock(c.Back, c.Above, 0.7f),
 		["ManifestAuthority"] = c => Uniq.ManifestAuthority(c.Back, c.Front, c.Feet),
 
@@ -108,15 +112,15 @@ public static class CardSigs
 		}),
 		["Resonance"] = c => Uniq.Resonance(c.Back, c.Front, c.Center, c.TargetCenters),
 		["Conqueror"] = c => After(c, 0.1, () => Uniq.Conqueror(c.Back, c.Front, c.FirstTarget, c.Targets.Count > 0 ? c.Targets[0].GetBottomOfHitbox() : c.Feet)),
-		["Charge"] = c => Uniq.Charge(c.Back, c.Front, c.Feet, c.FirstTarget),
-		["Begone"] = c => Motifs.CutIn(c.Front, c.Center + new Vector2(220f, 0f), "BEGONE!", Pal.Royal),
+		["Charge"] = c => Uniq.Charge(c.Back, c.Front, c.Feet, c.FirstTarget, c.Facing),
+		["Begone"] = c => Motifs.CutIn(c.Front, c.Center + c.Offset(new Vector2(220f, 0f)), "BEGONE!", Pal.Royal),
 		["Guards"] = c => Uniq.Guards(c.Back, c.Front, c.Head, c.Feet),
 
 		// ═════ 技能：辉星 / 能量 / 抽牌（塔罗与星象）═════
 		["Venerate"] = c => Tarot(c, "XVII", "THE STAR", Pal.Cyan),
 		// 抬手（cast_light 的托掌在 ~0.15s 到位）时从掌心翻出塔罗牌
-		["RoyalGamble"] = c => After(c, 0.15, () => Grand.FortuneWheel(c.Back, c.Front, WeaponFx.Bone(c.Caster, "hand") ?? c.Center, c.Head + new Vector2(-235f, -125f),
-			c.Center + new Vector2(0f, -20f), ElementPal.HolyGold, 0.75f)),
+		["RoyalGamble"] = c => After(c, 0.15, () => Grand.FortuneWheel(c.Back, c.Front, WeaponFx.Bone(c.Caster, "hand") ?? c.Center, c.Head + c.Offset(new Vector2(-235f, -125f)),
+			c.Center + c.Offset(new Vector2(0f, -20f)), ElementPal.HolyGold, 0.75f)),
 		["HiddenCache"] = c => Tarot(c, "IX", "HERMIT", Pal.Royal),
 		["Glow"] = c => { P3Fx.Flash(c.Back, c.Center, Pal.Ice, 520f, 0.4f); P3Fx.ButterflyBurst(c.Front, c.Head, 7, 340f); },
 		["Alignment"] = c => Uniq.Alignment(c.Back, c.Front, c.Above, c.Center),
@@ -137,15 +141,15 @@ public static class CardSigs
 		// v0.14.22 恢复锻打演出（用户：把之前的铸剑特效加回来）；锻造的增益推迟到新剑入手（1.78s）之后
 		["TheSmith"] = c => { Extras.DeferForge(1.85f); Uniq.TheSmith(c.Back, c.Front, c.Center); },
 		["SummonForth"] = c => Uniq.SummonForth(c.Back, c.Front, c.Feet),
-		["BigBang"] = c => After(c, 0.3, () => Uniq.BigBang(c.Back, c.Front, c.Above + new Vector2(120f, 0f))),
+		["BigBang"] = c => After(c, 0.3, () => Uniq.BigBang(c.Back, c.Front, c.Above + c.Offset(new Vector2(120f, 0f)))),
 
 		// ═════ 能力 ═════
 		["Tyranny"] = c => After(c, 0.1, () => Rares.Tyranny(c.Caster)),
 		["MonarchsGaze"] = c => After(c, 0.15, Rares.Gaze),
-		["Parry"] = c => After(c, 0.1, () => Uniq.Parry(c.Front, c.Center)),
-		["NeutronAegis"] = c => Uniq.NeutronAegis(c.Back, c.Front, c.Center),
+		["Parry"] = c => After(c, 0.1, () => Uniq.Parry(c.Front, c.Center, c.Facing)),
+		["NeutronAegis"] = c => Uniq.NeutronAegis(c.Back, c.Front, c.Center, c.Facing),
 		["Arsenal"] = c => Uniq.Arsenal(c.Back, c.Front, c.Feet, c.Center),
-		["SwordSage"] = c => After(c, 0.2, () => Uniq.SwordSage(c.Back, c.Front, c.Center)),
+		["SwordSage"] = c => After(c, 0.2, () => Uniq.SwordSage(c.Back, c.Front, c.Center, c.Facing)),
 		["HammerTime"] = c => Uniq.HammerTime(c.Back, c.Front, c.Center),
 		["SeekingEdge"] = c => After(c, 0.1, () => SeekFx.Play(c.Front, c.Caster, AllEnemies())),
 		["Furnace"] = c => After(c, 0.1, () => Rares.Furnace(c.Caster)),

@@ -39,12 +39,12 @@ public static class SeekFx
 		Vector2 feet = Makoto.Feet(caster);
 		float body = Mathf.Max(260f, (feet.Y - center.Y) * 2.1f);
 		float L = body * 1.25f;                                       // 光剑全长
-		Vector2 hilt = center + new Vector2(-body * 0.12f, body * 0.05f);   // 剑柄底端（在结城理身后）
+		Vector2 hilt = center + Makoto.Offset(caster, new Vector2(-body * 0.12f, body * 0.05f));   // 剑柄底端（在结城理身后）
 		int n = Mathf.Max(1, targets.Length);
 		Vector2[] swordAt = new Vector2[n];
 		for (int g = 0; g < n; g++)
 		{
-			swordAt[g] = targets.Length > 0 ? targets[g] + new Vector2(0f, -175f) : center + new Vector2(300f, -200f);
+			swordAt[g] = targets.Length > 0 ? targets[g] + new Vector2(0f, -175f) : center + Makoto.Offset(caster, new Vector2(300f, -200f));
 		}
 
 		Node2D root = Fx.Root(front, Vector2.Zero, "P3SeekEdge");
@@ -118,7 +118,7 @@ public static class SeekFx
 			// 碎片均匀分布在一圈椭圆轨道上（每片自己的角度），从剑上的位置甩出去、绕着结城理转
 			float u = Mathf.Clamp((tt - burstAt) / (seekAt - burstAt), 0f, 1f);
 			float a = sh.Angle + 2.4f * Ease.InOutCubic(u);
-			Vector2 ringPos = center + new Vector2(Mathf.Cos(a), Mathf.Sin(a) * 0.6f) * (sh.Radius + 50f * Mathf.Sin(Mathf.Pi * u));
+			Vector2 ringPos = center + Makoto.Offset(caster, new Vector2(Mathf.Cos(a), Mathf.Sin(a) * 0.6f)) * (sh.Radius + 50f * Mathf.Sin(Mathf.Pi * u));
 			return sh.Blade.Lerp(ringPos, Ease.OutCubic(Mathf.Clamp(u * 1.6f, 0f, 1f)));
 		}
 		Vector2 PosAt(Shard sh, float tt)

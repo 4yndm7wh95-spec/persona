@@ -9,10 +9,10 @@ public static class Extras
 	/// 六边形蜂巢护盾（Tetrakarn 风格）：在角色前方的椭圆区域内，六边形从中心向外波浪式点亮，
 	/// 停留片刻后自外向内熄灭。reflect = true 时为 Makarakarn 的紫粉色。
 	/// </summary>
-	public static void HexShield(Control layer, Vector2 center, float scale = 1f, bool reflect = false, float hold = 0.45f)
+	public static void HexShield(Control layer, Vector2 center, float scale = 1f, bool reflect = false, float hold = 0.45f, float facing = 1f)
 	{
 		Color tint = reflect ? new Color("e07bff") : Pal.Cyan;
-		Node2D root = Fx.Root(layer, center + new Vector2(95f * scale, 0f), "P3HexShield");
+		Node2D root = Fx.Root(layer, center + CrabRoom.Offset(layer, new Vector2(95f * scale * facing, 0f)), "P3HexShield");
 		float r = 24f * scale;
 		float w = Mathf.Sqrt(3f) * r;
 		float total = 0.35f + hold + 0.35f;
@@ -48,8 +48,8 @@ public static class Extras
 				});
 			}
 		}
-		P3Fx.Ripple(layer, center + new Vector2(95f * scale, 0f), 420f * scale, 0.6f, 0.025f);
-		P3Fx.Flash(layer, center + new Vector2(95f * scale, 0f), tint, 300f * scale, 0.25f);
+		P3Fx.Ripple(layer, center + CrabRoom.Offset(layer, new Vector2(95f * scale * facing, 0f)), 420f * scale, 0.6f, 0.025f);
+		P3Fx.Flash(layer, center + CrabRoom.Offset(layer, new Vector2(95f * scale * facing, 0f)), tint, 300f * scale, 0.25f);
 		Fx.FreeAfter(root, total + 0.1);
 	}
 
@@ -91,9 +91,9 @@ public static class Extras
 	{
 		Vector2 feet = P3Makoto.Core.Makoto.Feet(caster), head = P3Makoto.Core.Makoto.Head(caster);
 		float h = Mathf.Max(feet.Y - head.Y, 120f);
-		Vector2 from = feet + new Vector2(0.37f, -0.9f) * h;
-		Vector2 to = feet + new Vector2(0.23f, -0.6f) * h;
-		Vector2 ctrl = from + new Vector2(0.1f * h, 0.2f * h);
+		Vector2 from = feet + P3Makoto.Core.Makoto.Offset(caster, new Vector2(0.37f, -0.9f) * h);
+		Vector2 to = feet + P3Makoto.Core.Makoto.Offset(caster, new Vector2(0.23f, -0.6f) * h);
+		Vector2 ctrl = from + P3Makoto.Core.Makoto.Offset(caster, new Vector2(0.1f * h, 0.2f * h));
 		Node2D root = Fx.Root(layer, from, "P3PalmAfterglow");
 		root.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(Pal.Cyan, 0.45f), Scale = Vector2.One * 1.6f });
 		root.AddChild(new Sprite2D { Texture = Fx.SoftDot, Material = Fx.Additive, Modulate = new Color(Pal.White, 0.6f), Scale = Vector2.One * 0.45f });
@@ -235,6 +235,7 @@ public static class Extras
 	/// </summary>
 	public static void DarkHour(Control layer, float duration = 2.2f)
 	{
+		layer = CrabRoom.Screen(layer);
 		Vector2 size = layer.GetViewportRect().Size;
 		// 放在人物身后的特效层（不用 TopLevel：TopLevel 会画到所有人物上面）。该层在可缩放 / 震屏的场景容器里，染色矩形放大到三倍屏幕保证盖满
 		Node2D root = Fx.Root(layer, Vector2.Zero, "P3DarkHour");
@@ -452,7 +453,7 @@ public static class Extras
 		Audio.Sfx.Clip("ShuffleTime_PowerUp", big ? 0.9f : 0.7f);
 		// v0.14.22（用户：锻造不召唤 Persona —— 只有召唤器动画时身后才能有 Persona；ATTACK+N 太简单，丰富细节）：
 		// 去掉 Thanatos 虚影，补上 起势收束 → 身周红色气焰 → 身后深红剑印 → 标签落定"铛"一声 + 火星 → 余烬 这几层
-		ChargeDetails(front, back, feet, head, center, red, deep, big);
+		ChargeDetails(caster, front, back, feet, head, center, red, deep, big);
 
 		// 脚下深红环（压扁）
 		Node2D ring = Fx.Root(back, feet, "P3ChargeRing");
@@ -497,7 +498,7 @@ public static class Extras
 		// 标签：黑色斜条 +「ATTACK UP」（深红斜体）+ 大号「+N」
 		Fx.After(front, 0.25, "charge tag", () =>
 		{
-			Vector2 home = head + new Vector2(120f, -40f);
+			Vector2 home = head + P3Makoto.Core.Makoto.Offset(caster, new Vector2(120f, -40f));
 			Node2D tag = Fx.Root(front, home, "P3ChargeTag");
 			tag.Rotation = -0.18f;
 			float sc = big ? 1.25f : 1f;
@@ -549,7 +550,7 @@ public static class Extras
 	}
 
 	/// <summary>锻造增益的细节层（v0.14.22）：起势收束、红色气焰、身后剑印、余烬。都在人物身后或很细，不挡人。</summary>
-	private static void ChargeDetails(Control front, Control back, Vector2 feet, Vector2 head, Vector2 center, Color red, Color deep, bool big)
+	private static void ChargeDetails(MegaCrit.Sts2.Core.Nodes.Combat.NCreature caster, Control front, Control back, Vector2 feet, Vector2 head, Vector2 center, Color red, Color deep, bool big)
 	{
 		float bodyH = Mathf.Max(200f, feet.Y - head.Y);
 		// 1. 起势（0~0.2s）：12 道细红光从四周收向胸口（身后层）
@@ -591,10 +592,10 @@ public static class Extras
 		// 3. 身后深红剑印（0.2~1.2s）：君王之刃的轮廓在背后竖起、一道亮光从剑尖扫到剑柄，随后化成火星散去
 		float bs = bodyH / 300f * (big ? 1.25f : 1.05f);
 		Vector2[] blade = { new(0f, -170f), new(14f, -120f), new(10f, 60f), new(26f, 70f), new(26f, 80f), new(6f, 82f), new(6f, 120f), new(-6f, 120f), new(-6f, 82f), new(-26f, 80f), new(-26f, 70f), new(-10f, 60f), new(-14f, -120f) };
-		Vector2 home = center + new Vector2(-bodyH * 0.12f, -bodyH * 0.18f);
+		Vector2 home = center + P3Makoto.Core.Makoto.Offset(caster, new Vector2(-bodyH * 0.12f, -bodyH * 0.18f));
 		Node2D sig = Fx.Root(back, home, "P3ChargeBlade");
 		sig.Scale = Vector2.One * bs;
-		sig.Rotation = -0.12f;
+		sig.Rotation = -0.12f * P3Makoto.Core.Makoto.Facing(caster);
 		Polygon2D fill = Fx.Poly(sig, blade, new Color(deep, 0.35f), additive: true);
 		Line2D edge = Fx.Line(sig, blade, new Color(red, 0.95f), 3f, closed: true);
 		Line2D sheen = Fx.Line(sig, new[] { Vector2.Zero, Vector2.Zero }, new Color(1f, 0.92f, 0.9f, 0.9f), 5f);

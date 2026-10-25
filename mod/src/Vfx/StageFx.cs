@@ -328,7 +328,7 @@ public static class StageFx
 
 	// ───────────────────────── 卡牌奖励 ─────────────────────────
 	/// <summary>
-	/// 卡牌奖励（选牌）界面的背景：牌后面张开一个水之圆（两道圆弧缓慢转动）+ 一条斜切白色色块 + 左上红字标签 "SELECT ARCANA"；
+	/// 卡牌奖励（选牌）界面的背景：牌后面张开一个水之圆（两道圆弧缓慢转动）；
 	/// 每张牌落位时（原版 0.5s 滑入之后）依次闪一道白光十字星。随界面一起关闭（是界面的子节点）。
 	/// </summary>
 	public static void RewardBackdrop(Control screen, Vector2 rowCenter, Func<Vector2[]> cardCenters)
@@ -340,9 +340,6 @@ public static class StageFx
 		screen.AddChild(root);
 		screen.MoveChild(root, 0);
 		root.GlobalPosition = Vector2.Zero;
-		Node2D slab = new();
-		root.AddChild(slab);
-		P3Ui.Slab(slab, -200f, size.X + 200f, rowCenter.Y + size.Y * 0.16f, rowCenter.Y + size.Y * 0.24f, -60f, new Color(0.95f, 0.97f, 1f, 0.22f));
 		float discR = size.Y * 0.4f;
 		ColorRect disc = P3Ui.WaterDisc(root, rowCenter, discR);
 		Fx.SetParam(disc, "alpha", 0.55f);
@@ -356,7 +353,6 @@ public static class StageFx
 			float time = t * 120f;
 			float a = Ease.OutExpo(Seg(time, 0f, 0.4f));
 			Fx.SetParam(disc, "reveal", a);
-			slab.Position = new Vector2(-size.X * (1f - a), 0f);
 			arcs.Rotation = 0.25f * time;
 			arcs.Modulate = new Color(1f, 1f, 1f, a);
 		});
@@ -388,6 +384,41 @@ public static class StageFx
 	private static NGridCardHolder[] RewardHolders(Control row) => row.GetChildren()
 		.OfType<NGridCardHolder>().Where(h => !h.IsQueuedForDeletion()).ToArray();
 
+	private static int NextDealToken(Control screen, string key)
+	{
+		int value = (screen.HasMeta(key) ? screen.GetMeta(key).AsInt32() : 0) + 1;
+		screen.SetMeta(key, value);
+		return value;
+	}
+
+	// 只恢复显示，不接管 SetClickable：原版开屏保护、遗物限制等仍由游戏决定。
+	private static void RepairRewardCards(Control row, NGridCardHolder[] holders, bool force = false)
+	{
+		int recovered = 0;
+		Vector2 origin = Vector2.Left * (holders.Length - 1) * ShuffleLayout.Spacing * 0.5f;
+		for (int i = 0; i < holders.Length; i++)
+		{
+			NGridCardHolder h = holders[i];
+			if (!StillInRow(h, row)) continue;
+			if (!force && h.Visible && Mathf.Abs(h.Scale.X) >= h.SmallScale.X * 0.5f && h.Modulate.A >= 0.95f) continue;
+			h.Position = origin + Vector2.Right * ShuffleLayout.Spacing * i;
+			h.Visible = true;
+			h.Scale = h.SmallScale;
+			h.Rotation = 0f;
+			h.Modulate = Colors.White;
+			recovered++;
+		}
+		if (recovered > 0) GD.Print($"{ModEntry.Tag} reward visibility recovered: cards={recovered}, fallback={force}");
+	}
+
+	public static void RestoreRewardCards(Control screen, Control row)
+	{
+		NextDealToken(screen, "p3_deal");
+		NextDealToken(screen, "p3_deal_run");
+		screen.GetNodeOrNull("P3ShuffleDeck")?.QueueFree();
+		RepairRewardCards(row, RewardHolders(row), force: true);
+	}
+
 	/// <summary>first = 这次打开选牌界面的第一次（先播独立的 SHUFFLE TIME 标题动画再发牌）；重抽时直接发牌。</summary>
 	public static void ShuffleIntro(Control screen, Control row, bool first = true)
 	{
@@ -396,7 +427,20 @@ public static class StageFx
 		{
 			return;
 		}
-		if (!P3Settings.ShuffleFull)
+		foreach (NGridCardHolder h in holders) PooledCardInput.Track(h);
+		// 两种模式共用取消序号；完整动画中途切成精简时，旧的延迟发牌也必须作废。
+		int token = NextDealToken(screen, "p3_deal");
+		NextDealToken(screen, "p3_deal_run");
+		bool full = P3Settings.ShuffleFull;
+		double deadline = full ? (first ? TitleIntroLen : 0f) + Mathf.Max(3f, ShuffleLayout.FlipAt(holders.Length) + 0.6f) : 0.8;
+		// 在任何隐藏/演出开始前挂好兜底；缩成细线或透明的牌同样需要恢复，不能只判断 Visible。
+		Fx.After(screen, deadline, "shuffle visibility recovery", () =>
+		{
+			if (screen.GetMeta("p3_deal").AsInt32() != token) return;
+			RepairRewardCards(row, holders);
+			screen.GetNodeOrNull("P3ShuffleDeck")?.QueueFree();
+		});
+		if (!full)
 		{
 			QuickDeal(screen, row, holders, first);
 			return;
@@ -407,8 +451,6 @@ public static class StageFx
 		}
 		screen.GetNodeOrNull("P3ShuffleDeck")?.QueueFree();
 		// 每次进来都换一个序号：标题动画还没播完就重抽时，旧的"延迟发牌"作废，不会发两次牌
-		int token = (screen.HasMeta("p3_deal") ? screen.GetMeta("p3_deal").AsInt32() : 0) + 1;
-		screen.SetMeta("p3_deal", token);
 		if (first)
 		{
 			TitleIntro(screen);
@@ -420,18 +462,6 @@ public static class StageFx
 				}
 			});
 		}
-		// 兜底（v0.14.45：重抽也有 —— 以前只有首次打开才有，重抽时 Deal 出错牌就一直藏着、点不了）：无论如何最晚这时把牌显示出来
-		Fx.After(screen, (first ? TitleIntroLen : 0f) + 3.0, "shuffle failsafe 2", () =>
-		{
-			if (!GodotObject.IsInstanceValid(screen) || screen.GetMeta("p3_deal").AsInt32() != token)
-			{
-				return;
-			}
-			foreach (Control h in holders)
-			{
-				if (StillInRow(h, row)) h.Visible = true;
-			}
-		});
 		if (!first)
 		{
 			Deal(screen, row, holders);
@@ -703,15 +733,8 @@ public static class StageFx
 			{
 				return;
 			}
-			for (int i = 0; i < n; i++)
-			{
-				Control h = holders[i];
-				if (StillInRow(h, row) && !h.Visible)
-				{
-					h.Visible = true;
-					h.Scale = baseScales[i];
-				}
-			}
+			RepairRewardCards(row, holders);
+			if (GodotObject.IsInstanceValid(deck)) deck.QueueFree();
 		});
 	}
 
@@ -860,13 +883,17 @@ public static class StageFx
 		Fx.FreeAfter(root, 0.47);
 		if (picked.GetParent() is Control row)
 		{
+			int run = screen.HasMeta("p3_deal_run") ? screen.GetMeta("p3_deal_run").AsInt32() : 0;
+			int intro = screen.HasMeta("p3_deal") ? screen.GetMeta("p3_deal").AsInt32() : 0;
 			foreach (Control other in RewardHolders(row))
 			{
 				if (other == picked) continue;
 				Vector2 p0 = other.Position;
 				Fx.Animate(screen, 0.3f, t =>
 				{
-					if (!StillInRow(other, row)) return;
+					if (!StillInRow(other, row)
+						|| screen.GetMeta("p3_deal_run").AsInt32() != run
+						|| screen.GetMeta("p3_deal").AsInt32() != intro) return;
 					other.Position = p0 + new Vector2(0f, 40f * Ease.InCubic(t));
 					other.Modulate = new Color(1f - 0.5f * t, 1f - 0.5f * t, 1f - 0.4f * t, 1f - 0.6f * t);
 				});

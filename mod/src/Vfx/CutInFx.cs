@@ -64,6 +64,12 @@ public static class CutInFx
 			onFire?.Invoke(0f);
 			return;
 		}
+		// Elite and boss encounters can zoom the battle container out (e.g. 85% / 90%).
+		// Keep this screen-wide composition outside that zoom; actor effects keep their room space.
+		bool screenSpace = MegaCrit.Sts2.Core.Combat.CombatManager.Instance.DebugOnlyGetState()?.Encounter?.RoomType
+			is MegaCrit.Sts2.Core.Rooms.RoomType.Elite or MegaCrit.Sts2.Core.Rooms.RoomType.Boss;
+		back = CrabRoom.Screen(back, force: screenSpace);
+		front = CrabRoom.Screen(front, force: screenSpace);
 		BeginOn(back, front, caster.GetInstanceId(), title, persona, onFire,
 			() => GodotObject.IsInstanceValid(caster) ? Makoto.Head(caster) : new Vector2(back.GetViewportRect().Size.X * 0.3f, back.GetViewportRect().Size.Y * 0.4f),
 			Fast ? 0.3 : 0.65);

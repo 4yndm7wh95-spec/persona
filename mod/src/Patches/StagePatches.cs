@@ -140,6 +140,7 @@ public static class RewardBackdropPatch
 	{
 		ModEntry.Safe("reward backdrop", () =>
 		{
+			if (RewardDiagnostics.Active) RewardDiagnostics.Write($"card options refreshed: shuffle={P3Settings.ShuffleTime}, full={P3Settings.ShuffleFull}");
 			if (!P3Settings.ShuffleTime || !Stage.MakotoRun || Traverse.Create(__instance).Field("_cardRow").GetValue() is not Control row)
 			{
 				return;
@@ -150,7 +151,16 @@ public static class RewardBackdropPatch
 				vanillaTween.Kill();
 			}
 			bool first = __instance.GetNodeOrNull("P3RewardBackdrop") == null;
-			StageFx.ShuffleIntro(__instance, row, first);
+			try
+			{
+				StageFx.ShuffleIntro(__instance, row, first);
+			}
+			catch
+			{
+				// 原版补间已被接管；搭建失败时立即恢复明牌，不能留下透明/细线状态。
+				StageFx.RestoreRewardCards(__instance, row);
+				throw;
+			}
 			if (!first)
 			{
 				return;
