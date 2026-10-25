@@ -118,7 +118,7 @@ idle_loop、low_health_loop、relaxed_loop、attack、cast（技能 / 能力牌�
 
 | 动画 | 播放顺序 | 用途 |
 |---|---|---|
-| idle_loop | idle（+ idle_blink_patch 眨眼）| 战斗待机 |
+| idle_loop | idle（+ idle_blink_patch 眨眼）；**一段时间（约 8 秒）没有任何操作** → idle → glove_mid → glove（扯两下）→ glove_mid → idle，然后回到普通待机 | 战斗待机（用户 2026-10-25：除了眨眼，闲置时扯一扯手套）|
 | low_health_loop | idle（同战斗待机）| 残血不单独做 |
 | relaxed_loop | relaxed（母版站姿）| 只在商店 / 商人事件用 |
 | 休息处（单独骨骼）| rest_sit | 篝火旁坐着、拿着 LeBlanc 的咖啡杯 |
@@ -126,7 +126,7 @@ idle_loop、low_health_loop、relaxed_loop、attack、cast（技能 / 能力牌�
 | shiv | idle → gun_raise → gun ⇄ gun_recoil（每发一次）→ gun_lower → idle | 小刀牌 = 开枪 |
 | cast（亚森）| idle → summon_mid → summon_grab（面具浮现）→ summon_rip（撕下）→ cast_mid → cast → cast_low → idle | 召唤亚森的牌（大伤害 / AOE / 大毒牌） |
 | cast（防御）| idle → guard_mid → guard → guard_mid → idle | 加格挡的技能 |
-| cast（增益）| idle → glove → idle | 能力牌 / 增益（整理手套） |
+| cast（增益）| idle → glove_mid → glove → glove_mid → idle | 能力牌 / 增益（扯手套：右前臂向前弯，左手扯右手手套） |
 | hurt | hurt_impact → hurt → hurt_recover → idle | 受击 |
 | die | hurt_impact → hurt → die_kneel → die_fall → down | 死亡 |
 | （胜利）| victory | 原版没有胜利动画接口，留给结算界面 / 立绘用 |

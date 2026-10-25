@@ -28,7 +28,8 @@
 | cast_mid_a.png | summon_rip（定稿版）| 撕下面具后手臂从甩开的位置收回、开始伸向前方（summon_rip 和 cast 之间） |
 | cast_low_a.png | cast（定稿版）| 指令后手臂放下一半（cast 和 idle 之间） |
 | guard_mid_a.png | idle | 抬臂：右前臂抬到一半、正要横到身前（idle 和 guard 之间） |
-| glove_a/b.png | idle | 整理手套（P5 招牌动作，用于加增益 / 能力牌）：站直，右手捏住左手红手套的手腕处往上一拉，左手手指张开，头微低但**眼睛从刘海下斜看向右方的敌人**，嘴角带笑 |
+| glove_a/b.png | idle | **扯手套**（P5 招牌动作，待机时没人操作一段时间后自动做一次，也用于增益 / 能力牌）：站直，**右前臂向前弯起、抬到胸前**（手肘弯、右手手背朝上、手指放松），**左手捏住右手红手套的手腕处往里扯一扯**；头微低但**眼睛仍看向右方的敌人**，嘴角带笑。参考 art/p5/ref/pose/victory_ref.png（原版 #57 第 5 格，两手在胸前）的手的位置 |
+| glove_mid_a.png | idle | 扯手套的过渡：右前臂抬到一半、左手正伸过去（idle 和 glove 之间；收手时倒着用） |
 | hurt_impact_a.png | idle | 受击的第一帧：身体刚被打中、上身猛地一缩，双手本能地往身前收，眼睛眯起（idle 和 hurt 之间，比 hurt 的后仰小） |
 | hurt_recover_a.png | hurt（定稿版）| 受击后站稳：上身回到接近直立，手放下一半，表情皱眉（hurt 和 idle 之间） |
 | die_kneel_a.png | hurt（定稿版）| 倒下第一步：单膝跪地，一只手撑地，头低下 |
