@@ -1,0 +1,8 @@
+purpose,status,evidence
+Eiha / Eigaon / Maeiha,unconfirmed,NAME.TBL not reliably decoded; curse_candidates are visual candidates only
+Sukukaja,unconfirmed,sukukaja_candidates are up-light/arrow-shaped candidates only
+Joker gun,likely BES_GUN1; unconfirmed character linkage,all BES_GUN1-10 textures exported; shared textures cannot alone prove identity
+Slash,source confirmed,BES_HIT_ZAN.BED
+Blunt hit,source confirmed,BES_HIT_DA.BED
+Summon blue flame,source confirmed purpose candidate,0282/PERSONA_A-D event contains mask/flame textures; actual blue tint/timeline not decoded
+Critical,not decoded,no embedded DDS in BES_CRITICALG.BED

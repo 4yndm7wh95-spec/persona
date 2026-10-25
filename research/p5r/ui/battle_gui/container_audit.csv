@@ -1,0 +1,126 @@
+﻿source_package,source_path,embedded_DDS_count,status
+BASE.CPK,BATTLE/GUI/BATONTOUCH.PLG,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/BATTLE_ACTIVE_PP.PLG,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/BATTLE_NEXT.PLG,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/BTL_CMAND_BASE_ON.PLG,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/BTL_ITEM_CURSOR.PLG,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/BTL_PERSONA_CURSOR.PLG,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/BTL_WINDOW.PLG,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/CHALLENGE_FINISH_CAM.BCD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/CURSOR_TAC.PLG,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/EMPTY.PLG,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/ENV_SP_ATTACK_01_09.ENV,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/ENV_SP_ATTACK_01_10.ENV,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/ENV_SP_ATTACK_02_03.ENV,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/ENV_SP_ATTACK_02_05.ENV,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/ENV_SP_ATTACK_02_06.ENV,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/ENV_SP_ATTACK_03_04.ENV,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/ENV_SP_ATTACK_03_07.ENV,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/ENV_SP_ATTACK_04_05.ENV,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/ENV_SP_ATTACK_06_07.ENV,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/HELP.PLG,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/ITEM_HELP.PLG,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/NAME_BASE.PLG,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/NAME_BASE_02.PLG,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/PERSONACANGE.PLG,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/P_NAME.PLG,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRESAGE.BCD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_01.BCD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_02.BCD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_03.BCD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_04.BCD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_05.BCD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_06.BCD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_07.BCD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_09.BCD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_10.BCD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/BKSK_ATTACK_SWITCH_BOSS.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/BATTLE_CUT_EFFECT_BREAK.GFS,1,DDS converted
+BASE.CPK,BATTLE/GUI/BE0653_BLAST_END.EPL,6,DDS converted
+BASE.CPK,BATTLE/GUI/BE0CMN_CUT_EFFECT_CLD.GMD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/BE0CMN_CUT_EFFECT_SMK.GMD,1,DDS converted
+BASE.CPK,BATTLE/GUI/BES_CHALLEGE_ROUND_02.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/BES_CHALLEGE_ROUND_03.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/BES_CHALLEGE_ROUND_FINISH.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/BES_CHALLENGE_RESULT.EPL,2,DDS converted
+BASE.CPK,BATTLE/GUI/BES_RE_CLOTH_LOOP.GMD,1,DDS converted
+BASE.CPK,BATTLE/GUI/BES_UI_BATON.EPL,1,DDS converted
+BASE.CPK,BATTLE/GUI/BES_UI_E_ADVANTAGE.EPL,1,DDS converted
+BASE.CPK,BATTLE/GUI/BES_UI_RANDAM.EPL,1,DDS converted
+BASE.CPK,BATTLE/GUI/BKSK_P_BC0000.DDS,1,DDS converted
+BASE.CPK,BATTLE/GUI/BKSK_P_BC0001.DDS,1,DDS converted
+BASE.CPK,BATTLE/GUI/BKSK_P_BC0002.DDS,1,DDS converted
+BASE.CPK,BATTLE/GUI/BKSK_P_BC0003.DDS,1,DDS converted
+BASE.CPK,BATTLE/GUI/BKSK_P_BC0004.DDS,1,DDS converted
+BASE.CPK,BATTLE/GUI/BKSK_P_BC0005.DDS,1,DDS converted
+BASE.CPK,BATTLE/GUI/BKSK_P_BC0006.DDS,1,DDS converted
+BASE.CPK,BATTLE/GUI/BKSK_P_BC0007.DDS,1,DDS converted
+BASE.CPK,BATTLE/GUI/BKSK_P_BC0008.DDS,1,DDS converted
+BASE.CPK,BATTLE/GUI/BKSK_P_BC0009.DDS,1,DDS converted
+BASE.CPK,BATTLE/GUI/BKSK_P_BC0009_01.DDS,1,DDS converted
+BASE.CPK,BATTLE/GUI/BKSK_P_BC0010.DDS,1,DDS converted
+BASE.CPK,BATTLE/GUI/BLACK_JMP_BKSK_TRANSPARENCY.DDS,1,DDS converted
+BASE.CPK,BATTLE/GUI/BLOCKNOISE_TS.GMD,1,DDS converted
+BASE.CPK,BATTLE/GUI/BTL_AKUMAKAIWA_BACK.GMD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/BTL_AKUMAKAIWA_FRONT.GMD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/BTL_CHAIN.GMD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/BTL_E_WIPE.GMD,1,DDS converted
+BASE.CPK,BATTLE/GUI/BTL_E_WIPE_LOOP.GMD,1,DDS converted
+BASE.CPK,BATTLE/GUI/BTL_GUN.GMD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/BTL_GUN_BACK.GMD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/BTL_HELP_ITEM.GMD,1,DDS converted
+BASE.CPK,BATTLE/GUI/BTL_HELP_PERSONA.GMD,1,DDS converted
+BASE.CPK,BATTLE/GUI/BTL_ITEM.GMD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/BTL_MENU_CMND_BACK.GMD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/BTL_PERSONA.GMD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/BTL_PERSONA_BAR.GMD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/BTL_PERSONA_TITLE.GMD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/BTL_RUSH_WIPE.GFS,1,DDS converted
+BASE.CPK,BATTLE/GUI/BUTTONPUSHATTACK.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/ONEMORE_C_BOARD.GMD,1,DDS converted
+BASE.CPK,BATTLE/GUI/ONEMORE_C_WORD.GMD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/RSLT_WIPE_SMK.GMD,1,DDS converted
+BASE.CPK,BATTLE/GUI/SPATTACK_ELLIPSE.GFS,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SPATTACK_SHOWTIME.GMD,1,DDS converted
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_01.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_02.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_03.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_04.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_05.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_06.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_07.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_09.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_10.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_BACK.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_END.EPL,1,DDS converted
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_FRONT.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_M_BACK.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_PRSG_UI_FRONT.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_SHOWTINE_SMK.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+BASE.CPK,BATTLE/GUI/SP_ATTACK_WIPE_CLOSE.EPL,3,DDS converted
+BASE.CPK,BATTLE/GUI/SP_ATTACK_WIPE_CLOSE.GMD,3,DDS converted
+BASE.CPK,BATTLE/GUI/SP_ATTACK_WIPE_CLOSE_RSLT.GFS,1,DDS converted
+BASE.CPK,BATTLE/GUI/UIENEMY_EFFECT.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+SC.CPK,BATTLE/GUI/BATTLE_RUSHSTOP.PLG,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+SC.CPK,BATTLE/GUI/BATU.PLG,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+SC.CPK,BATTLE/GUI/BTL_PARTY.PLG,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+SC.CPK,BATTLE/GUI/PERSONA_STOCKFUL.PLG,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+SC.CPK,BATTLE/GUI/SEIKAKU.PLG,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+SC.CPK,BATTLE/GUI/SHOWTIME.PLG,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+SC.CPK,BATTLE/GUI/WINDOW_SET.PLG,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+SC.CPK,BATTLE/GUI/BES_UI_HOLDUP.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+SC.CPK,BATTLE/GUI/BES_UI_PINCH.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+SC.CPK,BATTLE/GUI/BES_UI_P_ADVANTAGE.EPL,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+SC.CPK,BATTLE/GUI/BTL_BTN.SPD,4,DDS converted
+SC.CPK,BATTLE/GUI/BTL_COMMAND.GMD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+SC.CPK,BATTLE/GUI/BTL_GUN_FRONT.GMD,3,DDS converted
+SC.CPK,BATTLE/GUI/BTL_MENU_CMND_FRONT.GMD,7,DDS converted
+SC.CPK,BATTLE/GUI/BTL_MISS.GMD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+SC.CPK,BATTLE/GUI/BTL_RESIST.GMD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+SC.CPK,BATTLE/GUI/BTL_TACTICS.GMD,0,"no DDS signature; geometry/script or unsupported resource, not claimed PNG conversion"
+SC.CPK,BATTLE/GUI/BTL_Y_N_WIN.GMD,2,DDS converted
+SC.CPK,BATTLE/GUI/BUTTONPUSH.EPL,2,DDS converted
+SC.CPK,BATTLE/GUI/CHALLENGE_BATTLE.SPD,5,DDS converted
+SC.CPK,BATTLE/GUI/DAMAGE_DATA.SPD,3,DDS converted
+SC.CPK,BATTLE/GUI/P5_BATTLE_PARTYPANEL.SPD,2,DDS converted

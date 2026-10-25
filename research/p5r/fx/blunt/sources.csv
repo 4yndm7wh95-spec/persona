@@ -1,0 +1,4 @@
+﻿file,source_package,source_path,texture_name,dds_byte_offset,width,height,alpha_min,identification
+BES_HIT_DA__000_be0cmn_rayline_bld.png,BASE.CPK,BATTLE/EFFECT/BES_HIT_DA.BED,be0cmn_rayline_bld.dds,24678,128,256,0,source named by task
+BES_HIT_DA__001_be0cmn_glow_slim.png,BASE.CPK,BATTLE/EFFECT/BES_HIT_DA.BED,be0cmn_glow_slim.dds,178535,128,128,0,source named by task
+BES_HIT_DA__002_be0cmn_thdr_tip_s_y.png,BASE.CPK,BATTLE/EFFECT/BES_HIT_DA.BED,be0cmn_thdr_tip_s_y.dds,195503,64,64,0,source named by task

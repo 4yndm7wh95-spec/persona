@@ -1,0 +1,52 @@
+[
+  {
+    "action": "BPS0201_000_main_0000",
+    "D_center": "Bip01",
+    "model_translation": [
+      1.5166314e-07,
+      5.692716,
+      171.2115
+    ],
+    "animation_first_translation": [
+      0.0,
+      0.0,
+      0.9970703125
+    ],
+    "D_multiplier": 1,
+    "multiplier_reason": "No demonstrated uniform unit scale; preserve original values, same conservative method as Joker round3",
+    "root_rotation_handling": "skip rotation channels named arsene_root/root; keep model rest matrix",
+    "variants": {
+      "C": {
+        "channels": 170
+      },
+      "D": {
+        "channels": 171
+      }
+    }
+  },
+  {
+    "action": "GT0201_main_0000",
+    "D_center": "Bip01",
+    "model_translation": [
+      1.5166314e-07,
+      5.692716,
+      171.2115
+    ],
+    "animation_first_translation": [
+      0.0,
+      0.0,
+      0.99755859375
+    ],
+    "D_multiplier": 1,
+    "multiplier_reason": "No demonstrated uniform unit scale; preserve original values, same conservative method as Joker round3",
+    "root_rotation_handling": "skip rotation channels named arsene_root/root; keep model rest matrix",
+    "variants": {
+      "C": {
+        "channels": 170
+      },
+      "D": {
+        "channels": 171
+      }
+    }
+  }
+]
