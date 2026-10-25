@@ -162,3 +162,6 @@ guard_a/b 身体整个朝左转、只有头扭向右 → 作废。重画：身�
 
 ## 召唤后不再指向（用户 2026-10-25）
 撕完面具 Persona 就去攻击（原作如此），不要 cast 指向这一步。cast_a/b、cast_mid、cast_low 作废。召唤序列：summon_mid → summon_grab → summon_rip（停住，亚森攻击）→ summon_end（收手）→ idle。
+
+## 姿势由 Claude 规划，不再参考原版（用户 2026-10-25）
+原版姿势参考 art/p5/ref/pose/* 停用。逐张设计见 docs/p5/POSE_PLAN.md，草图 art/p5/ref/plan/（tools/p5/pose_plan.py）。Codex 总清单 docs/codex/codex_p5_poses4.md。victory 不做（用 glove）。
