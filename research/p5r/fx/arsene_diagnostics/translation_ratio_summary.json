@@ -1,0 +1,18 @@
+[
+  {
+    "action": "BPS0201_000_main_0000",
+    "nonzero_ratio_count": 166,
+    "model_to_animation_translation_norm_ratio_min": 0.9999981073626333,
+    "median": 7.995607926607365,
+    "max": 171.80946219115876,
+    "conclusion": "No single common multiplier established; D retained x1, C selected by visual verification"
+  },
+  {
+    "action": "GT0201_main_0000",
+    "nonzero_ratio_count": 166,
+    "model_to_animation_translation_norm_ratio_min": 0.9999981073626333,
+    "median": 7.995607926607365,
+    "max": 171.72536553810386,
+    "conclusion": "No single common multiplier established; D retained x1, C selected by visual verification"
+  }
+]

@@ -1,0 +1,2390 @@
+{
+  "source_package": "BASE.CPK",
+  "source_path": "BATTLE/EVENT/BCD/0282/EPL/PERSONA_A.EPL",
+  "status": "partial_raw_fields_only",
+  "semantic_emitter_parameters": "读不出来；仅保存解析器原始节点/轨道字段，不解释unknown/payload，不当作已恢复可重播时间轴",
+  "animation": {
+    "original_parser_type": "EPLAnimationBinary",
+    "flags": {
+      "original_parser_type": "EPLAnimationFlags"
+    },
+    "unknown_0x04": 30.0,
+    "animation": {
+      "original_parser_type": "AnimationBinary",
+      "flags": {
+        "original_parser_type": "AnimationFlags"
+      },
+      "duration": 2.0,
+      "controller_count": 12,
+      "track_count": 0,
+      "anim_buffer_size": 0,
+      "controllers": [
+        {
+          "original_parser_type": "AnimationControllerBinary",
+          "type": 1,
+          "target_id": 147442224,
+          "target_name": {
+            "original_parser_type": "ObjectName",
+            "string": {
+              "uninterpreted_bytes": 0
+            },
+            "string_hash": null
+          },
+          "tracks": {
+            "original_parser_type": "SizedObjArray",
+            "count": 3,
+            "data": [
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 17,
+                "keyframe_count": 1,
+                "frames": [
+                  0.0
+                ],
+                "values": [
+                  {
+                    "original_parser_type": "KeyframeType17",
+                    "position": [
+                      0.0,
+                      -4.631768703460693,
+                      0.0
+                    ],
+                    "rotation": [
+                      0.0,
+                      0.0,
+                      0.0,
+                      1.0
+                    ],
+                    "scale": [
+                      1.0,
+                      1.0,
+                      1.0
+                    ],
+                    "unknown": 1
+                  }
+                ],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 18,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 19,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "original_parser_type": "AnimationControllerBinary",
+          "type": 1,
+          "target_id": 147442768,
+          "target_name": {
+            "original_parser_type": "ObjectName",
+            "string": {
+              "uninterpreted_bytes": 0
+            },
+            "string_hash": null
+          },
+          "tracks": {
+            "original_parser_type": "SizedObjArray",
+            "count": 3,
+            "data": [
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 17,
+                "keyframe_count": 1,
+                "frames": [
+                  0.0
+                ],
+                "values": [
+                  {
+                    "original_parser_type": "KeyframeType17",
+                    "position": [
+                      0.0,
+                      15.994355201721191,
+                      0.0
+                    ],
+                    "rotation": [
+                      0.0,
+                      0.0,
+                      0.0,
+                      1.0
+                    ],
+                    "scale": [
+                      1.5,
+                      1.5,
+                      1.5
+                    ],
+                    "unknown": 1
+                  }
+                ],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 18,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 19,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "original_parser_type": "AnimationControllerBinary",
+          "type": 1,
+          "target_id": 147443312,
+          "target_name": {
+            "original_parser_type": "ObjectName",
+            "string": {
+              "uninterpreted_bytes": 0
+            },
+            "string_hash": null
+          },
+          "tracks": {
+            "original_parser_type": "SizedObjArray",
+            "count": 3,
+            "data": [
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 17,
+                "keyframe_count": 1,
+                "frames": [
+                  0.0
+                ],
+                "values": [
+                  {
+                    "original_parser_type": "KeyframeType17",
+                    "position": [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    "rotation": [
+                      0.0,
+                      0.0,
+                      0.0,
+                      1.0
+                    ],
+                    "scale": [
+                      0.75,
+                      0.75,
+                      0.75
+                    ],
+                    "unknown": 1
+                  }
+                ],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 18,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 19,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "original_parser_type": "AnimationControllerBinary",
+          "type": 1,
+          "target_id": 147443856,
+          "target_name": {
+            "original_parser_type": "ObjectName",
+            "string": {
+              "uninterpreted_bytes": 0
+            },
+            "string_hash": null
+          },
+          "tracks": {
+            "original_parser_type": "SizedObjArray",
+            "count": 3,
+            "data": [
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 17,
+                "keyframe_count": 1,
+                "frames": [
+                  0.0
+                ],
+                "values": [
+                  {
+                    "original_parser_type": "KeyframeType17",
+                    "position": [
+                      0.0,
+                      -9.33325481414795,
+                      0.0
+                    ],
+                    "rotation": [
+                      0.0,
+                      0.0,
+                      0.0,
+                      1.0
+                    ],
+                    "scale": [
+                      1.0,
+                      1.0,
+                      1.0
+                    ],
+                    "unknown": 1
+                  }
+                ],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 18,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 19,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "original_parser_type": "AnimationControllerBinary",
+          "type": 1,
+          "target_id": 147444400,
+          "target_name": {
+            "original_parser_type": "ObjectName",
+            "string": {
+              "uninterpreted_bytes": 0
+            },
+            "string_hash": null
+          },
+          "tracks": {
+            "original_parser_type": "SizedObjArray",
+            "count": 3,
+            "data": [
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 17,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 18,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 19,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "original_parser_type": "AnimationControllerBinary",
+          "type": 1,
+          "target_id": 147444944,
+          "target_name": {
+            "original_parser_type": "ObjectName",
+            "string": {
+              "uninterpreted_bytes": 0
+            },
+            "string_hash": null
+          },
+          "tracks": {
+            "original_parser_type": "SizedObjArray",
+            "count": 3,
+            "data": [
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 17,
+                "keyframe_count": 1,
+                "frames": [
+                  0.0
+                ],
+                "values": [
+                  {
+                    "original_parser_type": "KeyframeType17",
+                    "position": [
+                      0.0,
+                      -5.3331451416015625,
+                      0.0
+                    ],
+                    "rotation": [
+                      0.0,
+                      0.0,
+                      0.0,
+                      1.0
+                    ],
+                    "scale": [
+                      1.0,
+                      1.0,
+                      1.0
+                    ],
+                    "unknown": 1
+                  }
+                ],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 18,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 19,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "original_parser_type": "AnimationControllerBinary",
+          "type": 1,
+          "target_id": 147445488,
+          "target_name": {
+            "original_parser_type": "ObjectName",
+            "string": {
+              "uninterpreted_bytes": 0
+            },
+            "string_hash": null
+          },
+          "tracks": {
+            "original_parser_type": "SizedObjArray",
+            "count": 3,
+            "data": [
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 17,
+                "keyframe_count": 1,
+                "frames": [
+                  0.0
+                ],
+                "values": [
+                  {
+                    "original_parser_type": "KeyframeType17",
+                    "position": [
+                      0.0,
+                      44.106666564941406,
+                      0.0
+                    ],
+                    "rotation": [
+                      0.0,
+                      0.0,
+                      0.0,
+                      1.0
+                    ],
+                    "scale": [
+                      1.0,
+                      1.0,
+                      1.0
+                    ],
+                    "unknown": 1
+                  }
+                ],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 18,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 19,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "original_parser_type": "AnimationControllerBinary",
+          "type": 1,
+          "target_id": 147446032,
+          "target_name": {
+            "original_parser_type": "ObjectName",
+            "string": {
+              "uninterpreted_bytes": 0
+            },
+            "string_hash": null
+          },
+          "tracks": {
+            "original_parser_type": "SizedObjArray",
+            "count": 3,
+            "data": [
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 17,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 18,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 19,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "original_parser_type": "AnimationControllerBinary",
+          "type": 1,
+          "target_id": 147446576,
+          "target_name": {
+            "original_parser_type": "ObjectName",
+            "string": {
+              "uninterpreted_bytes": 0
+            },
+            "string_hash": null
+          },
+          "tracks": {
+            "original_parser_type": "SizedObjArray",
+            "count": 3,
+            "data": [
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 17,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 18,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 19,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "original_parser_type": "AnimationControllerBinary",
+          "type": 1,
+          "target_id": 147447120,
+          "target_name": {
+            "original_parser_type": "ObjectName",
+            "string": {
+              "uninterpreted_bytes": 0
+            },
+            "string_hash": null
+          },
+          "tracks": {
+            "original_parser_type": "SizedObjArray",
+            "count": 3,
+            "data": [
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 17,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 18,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 19,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "original_parser_type": "AnimationControllerBinary",
+          "type": 1,
+          "target_id": 147447664,
+          "target_name": {
+            "original_parser_type": "ObjectName",
+            "string": {
+              "uninterpreted_bytes": 0
+            },
+            "string_hash": null
+          },
+          "tracks": {
+            "original_parser_type": "SizedObjArray",
+            "count": 3,
+            "data": [
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 17,
+                "keyframe_count": 1,
+                "frames": [
+                  0.0
+                ],
+                "values": [
+                  {
+                    "original_parser_type": "KeyframeType17",
+                    "position": [
+                      0.0,
+                      0.0,
+                      40.65523147583008
+                    ],
+                    "rotation": [
+                      0.0,
+                      0.0,
+                      0.0,
+                      1.0
+                    ],
+                    "scale": [
+                      1.0,
+                      1.0,
+                      1.0
+                    ],
+                    "unknown": 1
+                  }
+                ],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 18,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 19,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "original_parser_type": "AnimationControllerBinary",
+          "type": 1,
+          "target_id": 147448208,
+          "target_name": {
+            "original_parser_type": "ObjectName",
+            "string": {
+              "uninterpreted_bytes": 0
+            },
+            "string_hash": null
+          },
+          "tracks": {
+            "original_parser_type": "SizedObjArray",
+            "count": 2,
+            "data": [
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 17,
+                "keyframe_count": 0,
+                "frames": [],
+                "values": [],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "original_parser_type": "AnimationTrackBinary",
+                "keyframe_type": 22,
+                "keyframe_count": 1,
+                "frames": [
+                  0.0
+                ],
+                "values": [
+                  {
+                    "original_parser_type": "KeyframeType22",
+                    "unknown_0x00": 0,
+                    "unknown_0x04": 3,
+                    "unknown_0x08": 0,
+                    "unknown_0x0A": 0.0,
+                    "unknown_0x0E": 1.0,
+                    "unknown_0x12": 1.0,
+                    "unknown_0x16": 0,
+                    "unknown_0x1A": 0,
+                    "unknown_0x1C": 0.0,
+                    "unknown_0x20": 1.0,
+                    "unknown_0x24": 1.0,
+                    "unknown_0x28": 0
+                  }
+                ],
+                "base_position": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "base_scale": [
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "epls": {
+        "original_parser_type": "SizedObjArray",
+        "count": 0,
+        "data": []
+      },
+      "lookat_animations": null,
+      "extra_track_data": null,
+      "bounding_box_max_dims": null,
+      "bounding_box_min_dims": null,
+      "speed": null,
+      "properties": {
+        "original_parser_type": "SizedObjArray",
+        "count": 0,
+        "data": []
+      }
+    },
+    "epl_controllers": {
+      "original_parser_type": "SizedObjArray",
+      "count": 13,
+      "data": [
+        {
+          "original_parser_type": "EPLAnimationController",
+          "unknown_0x00": 0.0,
+          "unknown_0x04": 1.9666666984558105,
+          "controller_idx": -1,
+          "unknown_0x0C": 0
+        },
+        {
+          "original_parser_type": "EPLAnimationController",
+          "unknown_0x00": 0.0,
+          "unknown_0x04": 1.9666666984558105,
+          "controller_idx": 0,
+          "unknown_0x0C": 12
+        },
+        {
+          "original_parser_type": "EPLAnimationController",
+          "unknown_0x00": 0.0,
+          "unknown_0x04": 1.9666666984558105,
+          "controller_idx": 1,
+          "unknown_0x0C": 11
+        },
+        {
+          "original_parser_type": "EPLAnimationController",
+          "unknown_0x00": 0.0,
+          "unknown_0x04": 1.9666666984558105,
+          "controller_idx": 2,
+          "unknown_0x0C": 8
+        },
+        {
+          "original_parser_type": "EPLAnimationController",
+          "unknown_0x00": 0.0,
+          "unknown_0x04": 1.9666666984558105,
+          "controller_idx": 3,
+          "unknown_0x0C": 10
+        },
+        {
+          "original_parser_type": "EPLAnimationController",
+          "unknown_0x00": 0.0,
+          "unknown_0x04": 1.9666666984558105,
+          "controller_idx": 4,
+          "unknown_0x0C": 6
+        },
+        {
+          "original_parser_type": "EPLAnimationController",
+          "unknown_0x00": 0.0,
+          "unknown_0x04": 1.9666666984558105,
+          "controller_idx": 5,
+          "unknown_0x0C": 9
+        },
+        {
+          "original_parser_type": "EPLAnimationController",
+          "unknown_0x00": 0.0,
+          "unknown_0x04": 1.9666666984558105,
+          "controller_idx": 6,
+          "unknown_0x0C": 7
+        },
+        {
+          "original_parser_type": "EPLAnimationController",
+          "unknown_0x00": 0.0,
+          "unknown_0x04": 1.9666666984558105,
+          "controller_idx": 7,
+          "unknown_0x0C": 5
+        },
+        {
+          "original_parser_type": "EPLAnimationController",
+          "unknown_0x00": 0.0,
+          "unknown_0x04": 1.9666666984558105,
+          "controller_idx": 8,
+          "unknown_0x0C": 1
+        },
+        {
+          "original_parser_type": "EPLAnimationController",
+          "unknown_0x00": 0.0,
+          "unknown_0x04": 1.9666666984558105,
+          "controller_idx": 9,
+          "unknown_0x0C": 4
+        },
+        {
+          "original_parser_type": "EPLAnimationController",
+          "unknown_0x00": 0.0,
+          "unknown_0x04": 1.9666666984558105,
+          "controller_idx": 10,
+          "unknown_0x0C": 3
+        },
+        {
+          "original_parser_type": "EPLAnimationController",
+          "unknown_0x00": 0.0,
+          "unknown_0x04": 1.9666666984558105,
+          "controller_idx": 11,
+          "unknown_0x0C": 2
+        }
+      ]
+    }
+  },
+  "leaves": [
+    {
+      "original_parser_type": "EPLLeafInterface",
+      "node": 1,
+      "binary": {
+        "original_parser_type": "EPLLeafBinary",
+        "unknown_0x00": null,
+        "unknown_0x08": null,
+        "flags": {
+          "original_parser_type": "EPLLeafFlags"
+        },
+        "name": {
+          "original_parser_type": "ObjectName",
+          "string": {
+            "uninterpreted_bytes": 5
+          },
+          "string_hash": 2438039321
+        },
+        "type": 0,
+        "unknown_0x1C": 1,
+        "payload": null
+      }
+    },
+    {
+      "original_parser_type": "EPLLeafInterface",
+      "node": 2,
+      "binary": {
+        "original_parser_type": "EPLLeafBinary",
+        "unknown_0x00": null,
+        "unknown_0x08": null,
+        "flags": {
+          "original_parser_type": "EPLLeafFlags"
+        },
+        "name": {
+          "original_parser_type": "ObjectName",
+          "string": {
+            "uninterpreted_bytes": 7
+          },
+          "string_hash": 3542894963
+        },
+        "type": 15,
+        "unknown_0x1C": 1,
+        "payload": {
+          "original_parser_type": "EPLLeafLight",
+          "type": 1,
+          "unknown_0x04": 0,
+          "unknown_0x08": 1.0,
+          "unknown_0x0C": 1.0,
+          "light_params": {
+            "original_parser_type": "EplLightMeshData"
+          },
+          "has_embedded_file": 1,
+          "embedded_file": {
+            "original_parser_type": "EPLEmbeddedFile",
+            "name": {
+              "original_parser_type": "ObjectName",
+              "string": {
+                "uninterpreted_bytes": 19
+              },
+              "string_hash": 3928770885
+            },
+            "embed_type": 2,
+            "unknown_0x06": null,
+            "filetype": 2,
+            "payload_size": 1466,
+            "payload": {
+              "uninterpreted_bytes": 1466
+            }
+          }
+        }
+      }
+    },
+    {
+      "original_parser_type": "EPLLeafInterface",
+      "node": 3,
+      "binary": {
+        "original_parser_type": "EPLLeafBinary",
+        "unknown_0x00": null,
+        "unknown_0x08": null,
+        "flags": {
+          "original_parser_type": "EPLLeafFlags"
+        },
+        "name": {
+          "original_parser_type": "ObjectName",
+          "string": {
+            "uninterpreted_bytes": 8
+          },
+          "string_hash": 2960931752
+        },
+        "type": 10,
+        "unknown_0x1C": 3,
+        "payload": {
+          "original_parser_type": "EPLLeafObjectParticles",
+          "type": 3,
+          "unknown_0x04": 0,
+          "unknown_0x08": 9,
+          "unknown_0x0C": 1.1168430601880095e-33,
+          "unknown_0x10": 9.668959403841238e-44,
+          "unknown_0x14": 9.741642548202297e-29,
+          "unknown_0x1C": null,
+          "unknown_0x20": null,
+          "particle_emitter": {
+            "original_parser_type": "ParticleEmitter",
+            "unknown_0x00": 0,
+            "unknown_0x04": 2.799999952316284,
+            "unknown_0x08": 19771022,
+            "unknown_0x0C": 0.0,
+            "unknown_0x10": [
+              0.009999999776482582,
+              0.04999999701976776
+            ],
+            "unknown_0x18": null,
+            "unknown_0x20": null,
+            "unknown_0x28": 1.0,
+            "unknown_0x2C": 0,
+            "unknown_0x30": [
+              0.0,
+              1.0
+            ],
+            "unknown_0x38": {
+              "original_parser_type": "EPLLeafCommonData2",
+              "type": 2,
+              "payload": [
+                900923391,
+                865729023,
+                784004863,
+                11137791
+              ],
+              "unknown_0x14": [
+                0.3333333432674408,
+                0.3333333432674408,
+                0.6666666865348816,
+                0.6666666865348816
+              ],
+              "unknown_0x24": {
+                "uninterpreted_bytes": 46
+              },
+              "unknown_0x52": 0
+            },
+            "unknown_0x3C": 0.0,
+            "unknown_0x40": {
+              "original_parser_type": "EPLLeafCommonData2",
+              "type": 3,
+              "payload": [
+                0.20000000298023224,
+                0.4000000059604645,
+                0.2666666805744171,
+                0.4000000059604645,
+                0.3333333432674408,
+                0.4000000059604645,
+                0.4000000059604645,
+                0.4000000059604645
+              ],
+              "unknown_0x14": [
+                0.3333333432674408,
+                0.3333333432674408,
+                0.6666666865348816,
+                0.6666666865348816
+              ],
+              "unknown_0x24": {
+                "uninterpreted_bytes": 46
+              },
+              "unknown_0x52": 0
+            },
+            "unknown_0x44": 1.0,
+            "unknown_0x48": 1.0,
+            "unknown_0x50": null,
+            "unknown_0x54": {
+              "original_parser_type": "EPLLeafCommonData",
+              "type": null,
+              "payload": null,
+              "unknown_0x14": null,
+              "unknown_0x24": null
+            },
+            "unknown_0x58": [
+              14.600000381469727,
+              0.0
+            ],
+            "unknown_0x5C": [
+              0.0,
+              0.0
+            ],
+            "unknown_0x60": 0.07000000029802322,
+            "unknown_0x64": 0,
+            "unknown_0x68": 0,
+            "unknown_0x6C": 0.0,
+            "unknown_0x70": 0.25,
+            "unknown_0x74": 2.1599998474121094,
+            "payload": {
+              "original_parser_type": "EPLSpiralEffectParams",
+              "unknown_0x00": 200.0,
+              "unknown_0x04": [
+                75.0,
+                98.0999984741211
+              ],
+              "unknown_0x0C": [
+                141.0,
+                40.79999923706055
+              ],
+              "unknown_0x14": [
+                0.009999999776482582,
+                0.1899999976158142
+              ],
+              "unknown_0x1C": 0.14000000059604645,
+              "unknown_0x20": [
+                13.100000381469727,
+                9.300000190734863
+              ],
+              "unknown_0x28": [
+                -96.3499984741211,
+                31.979999542236328
+              ]
+            }
+          },
+          "embedded_file": {
+            "original_parser_type": "EPLEmbeddedFile",
+            "name": {
+              "original_parser_type": "ObjectName",
+              "string": {
+                "uninterpreted_bytes": 24
+              },
+              "string_hash": 3542296843
+            },
+            "embed_type": 2,
+            "unknown_0x06": null,
+            "filetype": 5,
+            "payload_size": 92348,
+            "payload": {
+              "uninterpreted_bytes": 92348
+            }
+          }
+        }
+      }
+    },
+    {
+      "original_parser_type": "EPLLeafInterface",
+      "node": 4,
+      "binary": {
+        "original_parser_type": "EPLLeafBinary",
+        "unknown_0x00": null,
+        "unknown_0x08": null,
+        "flags": {
+          "original_parser_type": "EPLLeafFlags"
+        },
+        "name": {
+          "original_parser_type": "ObjectName",
+          "string": {
+            "uninterpreted_bytes": 8
+          },
+          "string_hash": 2960931752
+        },
+        "type": 6,
+        "unknown_0x1C": 1,
+        "payload": {
+          "original_parser_type": "EPLLeafWindPolygon",
+          "type": 1,
+          "unknown_0x04": 1.8216880036222622e-44,
+          "unknown_0x08": 2.0,
+          "unknown_0x0C": 4.90454462513686e-44,
+          "unknown_0x10": 1.0,
+          "unknown_0x14": 1,
+          "unknown_0x18": 8,
+          "unknown_0x1C": 74565,
+          "unknown_0x20": {
+            "original_parser_type": "EPLLeafCommonData2",
+            "type": 2,
+            "payload": [
+              2421503,
+              195756031,
+              534372351,
+              1436344319
+            ],
+            "unknown_0x14": [
+              0.09938840568065643,
+              0.5214067697525024,
+              0.6666666865348816,
+              0.6666666865348816
+            ],
+            "unknown_0x24": {
+              "uninterpreted_bytes": 46
+            },
+            "unknown_0x52": 0
+          },
+          "unknown_0x24": [
+            0.009999999776482582,
+            0.4599999785423279
+          ],
+          "unknown_0x2C": [
+            14.9399995803833,
+            1.909999966621399
+          ],
+          "unknown_0x34": [
+            4.150000095367432,
+            0.0
+          ],
+          "unknown_0x3C": [
+            0.0,
+            0.9707074165344238
+          ],
+          "unknown_0x44": 1.0,
+          "unknown_0x48": 1.0999999046325684,
+          "unknown_0x4C": 0.6000000834465027,
+          "polygon": {
+            "original_parser_type": "EPLWindPolygonSpiral",
+            "unknown_0x00": {
+              "original_parser_type": "EPLLeafCommonData",
+              "type": 3,
+              "payload": [
+                74.80000305175781,
+                40.79999923706055,
+                129.6999969482422,
+                86.9000015258789
+              ],
+              "unknown_0x14": [
+                0.3333333432674408,
+                0.3333333432674408,
+                0.6666666865348816,
+                0.6666666865348816
+              ],
+              "unknown_0x24": {
+                "uninterpreted_bytes": 46
+              }
+            },
+            "unknown_0x04": {
+              "original_parser_type": "EPLLeafCommonData",
+              "type": 3,
+              "payload": [
+                0.0,
+                0.0,
+                289.20001220703125,
+                465.1000061035156
+              ],
+              "unknown_0x14": [
+                0.2574257254600525,
+                0.13531368970870972,
+                0.5627073049545288,
+                0.4587457776069641
+              ],
+              "unknown_0x24": {
+                "uninterpreted_bytes": 46
+              }
+            },
+            "unknown_0x08": {
+              "original_parser_type": "EPLLeafCommonData",
+              "type": 3,
+              "payload": [
+                16.0,
+                14.800000190734863,
+                121.80000305175781,
+                27.5
+              ],
+              "unknown_0x14": [
+                0.3333333432674408,
+                0.3333333432674408,
+                0.6666666865348816,
+                0.6666666865348816
+              ],
+              "unknown_0x24": {
+                "uninterpreted_bytes": 46
+              }
+            },
+            "unknown_0x0C": [
+              -0.15200001001358032,
+              0.2840000092983246
+            ],
+            "unknown_0x14": [
+              0.17000000178813934,
+              0.29999998211860657
+            ],
+            "unknown_0x1C": [
+              0.0,
+              0.2800000011920929
+            ],
+            "unknown_0x24": 0.0,
+            "unknown_0x28": 2,
+            "unknown_0x2C": [
+              0.14646470546722412,
+              0.8686864972114563
+            ]
+          },
+          "embedded_file": {
+            "original_parser_type": "EPLEmbeddedFile",
+            "name": {
+              "original_parser_type": "ObjectName",
+              "string": {
+                "uninterpreted_bytes": 25
+              },
+              "string_hash": 1487873689
+            },
+            "embed_type": 2,
+            "unknown_0x06": null,
+            "filetype": 4,
+            "payload_size": 131273,
+            "payload": {
+              "uninterpreted_bytes": 131273
+            }
+          }
+        }
+      }
+    },
+    {
+      "original_parser_type": "EPLLeafInterface",
+      "node": 5,
+      "binary": {
+        "original_parser_type": "EPLLeafBinary",
+        "unknown_0x00": null,
+        "unknown_0x08": null,
+        "flags": {
+          "original_parser_type": "EPLLeafFlags"
+        },
+        "name": {
+          "original_parser_type": "ObjectName",
+          "string": {
+            "uninterpreted_bytes": 5
+          },
+          "string_hash": 2438039321
+        },
+        "type": 0,
+        "unknown_0x1C": 1,
+        "payload": null
+      }
+    },
+    {
+      "original_parser_type": "EPLLeafInterface",
+      "node": 6,
+      "binary": {
+        "original_parser_type": "EPLLeafBinary",
+        "unknown_0x00": null,
+        "unknown_0x08": null,
+        "flags": {
+          "original_parser_type": "EPLLeafFlags"
+        },
+        "name": {
+          "original_parser_type": "ObjectName",
+          "string": {
+            "uninterpreted_bytes": 9
+          },
+          "string_hash": 2644201780
+        },
+        "type": 1,
+        "unknown_0x1C": 3,
+        "payload": {
+          "original_parser_type": "EPLLeafParticle",
+          "type": 3,
+          "unknown_0x04": 1,
+          "particle_emitter": {
+            "original_parser_type": "ParticleEmitter",
+            "unknown_0x00": 5,
+            "unknown_0x04": 0.6000000238418579,
+            "unknown_0x08": 247097083,
+            "unknown_0x0C": 0.0,
+            "unknown_0x10": [
+              0.11999999731779099,
+              0.019999999552965164
+            ],
+            "unknown_0x18": null,
+            "unknown_0x20": null,
+            "unknown_0x28": 1.0,
+            "unknown_0x2C": 2,
+            "unknown_0x30": [
+              0.017676768824458122,
+              0.8409094214439392
+            ],
+            "unknown_0x38": {
+              "original_parser_type": "EPLLeafCommonData2",
+              "type": 2,
+              "payload": [
+                2728703,
+                457834495,
+                254541823,
+                458555391
+              ],
+              "unknown_0x14": [
+                0.3333333432674408,
+                0.3333333432674408,
+                0.6666666865348816,
+                0.6666666865348816
+              ],
+              "unknown_0x24": {
+                "uninterpreted_bytes": 46
+              },
+              "unknown_0x52": 0
+            },
+            "unknown_0x3C": 0.0,
+            "unknown_0x40": {
+              "original_parser_type": "EPLLeafCommonData2",
+              "type": 3,
+              "payload": [
+                3.299999952316284,
+                6.800000190734863,
+                25.399999618530273,
+                33.70000076293945,
+                26.30000114440918,
+                39.400001525878906,
+                17.200000762939453,
+                30.5
+              ],
+              "unknown_0x14": [
+                0.3333333432674408,
+                0.3333333432674408,
+                0.6666666865348816,
+                0.6666666865348816
+              ],
+              "unknown_0x24": {
+                "uninterpreted_bytes": 46
+              },
+              "unknown_0x52": 0
+            },
+            "unknown_0x44": 1.0,
+            "unknown_0x48": 1.0,
+            "unknown_0x50": null,
+            "unknown_0x54": {
+              "original_parser_type": "EPLLeafCommonData",
+              "type": null,
+              "payload": null,
+              "unknown_0x14": null,
+              "unknown_0x24": null
+            },
+            "unknown_0x58": [
+              0.0,
+              360.0
+            ],
+            "unknown_0x5C": [
+              0.5,
+              0.10000000149011612
+            ],
+            "unknown_0x60": 0.0,
+            "unknown_0x64": 0,
+            "unknown_0x68": 0,
+            "unknown_0x6C": 0.0,
+            "unknown_0x70": 1.0,
+            "unknown_0x74": 1.0,
+            "payload": {
+              "original_parser_type": "EPLSpiralEffectParams",
+              "unknown_0x00": 0.0,
+              "unknown_0x04": [
+                12.5,
+                27.600000381469727
+              ],
+              "unknown_0x0C": [
+                55.400001525878906,
+                56.400001525878906
+              ],
+              "unknown_0x14": [
+                0.20999999344348907,
+                0.3199999928474426
+              ],
+              "unknown_0x1C": 0.5199999809265137,
+              "unknown_0x20": [
+                59.10000228881836,
+                146.3000030517578
+              ],
+              "unknown_0x28": [
+                48.87999725341797,
+                118.69999694824219
+              ]
+            }
+          },
+          "embedded_file": {
+            "original_parser_type": "EPLEmbeddedFile",
+            "name": {
+              "original_parser_type": "ObjectName",
+              "string": {
+                "uninterpreted_bytes": 9
+              },
+              "string_hash": 1956277943
+            },
+            "embed_type": 1,
+            "unknown_0x06": null,
+            "filetype": null,
+            "payload_size": null,
+            "payload": null
+          }
+        }
+      }
+    },
+    {
+      "original_parser_type": "EPLLeafInterface",
+      "node": 7,
+      "binary": {
+        "original_parser_type": "EPLLeafBinary",
+        "unknown_0x00": null,
+        "unknown_0x08": null,
+        "flags": {
+          "original_parser_type": "EPLLeafFlags"
+        },
+        "name": {
+          "original_parser_type": "ObjectName",
+          "string": {
+            "uninterpreted_bytes": 8
+          },
+          "string_hash": 2960931752
+        },
+        "type": 1,
+        "unknown_0x1C": 3,
+        "payload": {
+          "original_parser_type": "EPLLeafParticle",
+          "type": 3,
+          "unknown_0x04": 1,
+          "particle_emitter": {
+            "original_parser_type": "ParticleEmitter",
+            "unknown_0x00": 5,
+            "unknown_0x04": 1.0,
+            "unknown_0x08": 247097083,
+            "unknown_0x0C": 0.0,
+            "unknown_0x10": [
+              0.03999999910593033,
+              0.25
+            ],
+            "unknown_0x18": null,
+            "unknown_0x20": null,
+            "unknown_0x28": 1.0,
+            "unknown_0x2C": 1,
+            "unknown_0x30": [
+              0.07575742155313492,
+              0.7373734712600708
+            ],
+            "unknown_0x38": {
+              "original_parser_type": "EPLLeafCommonData2",
+              "type": 2,
+              "payload": [
+                320749055,
+                6401279,
+                861951,
+                255
+              ],
+              "unknown_0x14": [
+                0.3333333432674408,
+                0.3333333432674408,
+                0.6666666865348816,
+                0.6666666865348816
+              ],
+              "unknown_0x24": {
+                "uninterpreted_bytes": 46
+              },
+              "unknown_0x52": 0
+            },
+            "unknown_0x3C": 1.0,
+            "unknown_0x40": {
+              "original_parser_type": "EPLLeafCommonData2",
+              "type": 3,
+              "payload": [
+                18.80000114440918,
+                3.4000000953674316,
+                71.46666717529297,
+                26.899999618530273,
+                124.13333892822266,
+                50.400001525878906,
+                176.8000030517578,
+                73.9000015258789
+              ],
+              "unknown_0x14": [
+                0.3333333432674408,
+                0.3333333432674408,
+                0.6666666865348816,
+                0.6666666865348816
+              ],
+              "unknown_0x24": {
+                "uninterpreted_bytes": 46
+              },
+              "unknown_0x52": 0
+            },
+            "unknown_0x44": 1.0,
+            "unknown_0x48": 1.0,
+            "unknown_0x50": null,
+            "unknown_0x54": {
+              "original_parser_type": "EPLLeafCommonData",
+              "type": null,
+              "payload": null,
+              "unknown_0x14": null,
+              "unknown_0x24": null
+            },
+            "unknown_0x58": [
+              -17.399999618530273,
+              19.600000381469727
+            ],
+            "unknown_0x5C": [
+              0.0,
+              0.0
+            ],
+            "unknown_0x60": 0.0,
+            "unknown_0x64": 0,
+            "unknown_0x68": 0,
+            "unknown_0x6C": 0.0,
+            "unknown_0x70": 0.8199999928474426,
+            "unknown_0x74": 0.2500002384185791,
+            "payload": {
+              "original_parser_type": "EPLSpiralEffectParams",
+              "unknown_0x00": 20.0,
+              "unknown_0x04": [
+                8.199999809265137,
+                0.0
+              ],
+              "unknown_0x0C": [
+                0.0,
+                0.0
+              ],
+              "unknown_0x14": [
+                0.20999999344348907,
+                0.3199999928474426
+              ],
+              "unknown_0x1C": 0.5199999809265137,
+              "unknown_0x20": [
+                59.10000228881836,
+                68.5999984741211
+              ],
+              "unknown_0x28": [
+                -261.7099914550781,
+                150.70999145507812
+              ]
+            }
+          },
+          "embedded_file": {
+            "original_parser_type": "EPLEmbeddedFile",
+            "name": {
+              "original_parser_type": "ObjectName",
+              "string": {
+                "uninterpreted_bytes": 33
+              },
+              "string_hash": 2893769140
+            },
+            "embed_type": 2,
+            "unknown_0x06": null,
+            "filetype": 6,
+            "payload_size": 9812,
+            "payload": {
+              "uninterpreted_bytes": 9812
+            }
+          }
+        }
+      }
+    },
+    {
+      "original_parser_type": "EPLLeafInterface",
+      "node": 8,
+      "binary": {
+        "original_parser_type": "EPLLeafBinary",
+        "unknown_0x00": null,
+        "unknown_0x08": null,
+        "flags": {
+          "original_parser_type": "EPLLeafFlags"
+        },
+        "name": {
+          "original_parser_type": "ObjectName",
+          "string": {
+            "uninterpreted_bytes": 5
+          },
+          "string_hash": 2438039321
+        },
+        "type": 0,
+        "unknown_0x1C": 1,
+        "payload": null
+      }
+    },
+    {
+      "original_parser_type": "EPLLeafInterface",
+      "node": 9,
+      "binary": {
+        "original_parser_type": "EPLLeafBinary",
+        "unknown_0x00": null,
+        "unknown_0x08": null,
+        "flags": {
+          "original_parser_type": "EPLLeafFlags"
+        },
+        "name": {
+          "original_parser_type": "ObjectName",
+          "string": {
+            "uninterpreted_bytes": 9
+          },
+          "string_hash": 4007845012
+        },
+        "type": 10,
+        "unknown_0x1C": 3,
+        "payload": {
+          "original_parser_type": "EPLLeafObjectParticles",
+          "type": 3,
+          "unknown_0x04": 2,
+          "unknown_0x08": 10,
+          "unknown_0x0C": 90.0,
+          "unknown_0x10": 0.0,
+          "unknown_0x14": 9.741642548202297e-29,
+          "unknown_0x1C": null,
+          "unknown_0x20": null,
+          "particle_emitter": {
+            "original_parser_type": "ParticleEmitter",
+            "unknown_0x00": 1,
+            "unknown_0x04": 3.0,
+            "unknown_0x08": 1475189747,
+            "unknown_0x0C": 0.0,
+            "unknown_0x10": [
+              0.029999999329447746,
+              0.07999999821186066
+            ],
+            "unknown_0x18": null,
+            "unknown_0x20": null,
+            "unknown_0x28": 1.0,
+            "unknown_0x2C": 0,
+            "unknown_0x30": [
+              0.0,
+              0.9621201753616333
+            ],
+            "unknown_0x38": {
+              "original_parser_type": "EPLLeafCommonData2",
+              "type": 2,
+              "payload": [
+                6014207,
+                563412991,
+                1945108479,
+                4294967295
+              ],
+              "unknown_0x14": [
+                0.3333333432674408,
+                0.3333333432674408,
+                0.6666666865348816,
+                0.6666666865348816
+              ],
+              "unknown_0x24": {
+                "uninterpreted_bytes": 46
+              },
+              "unknown_0x52": 0
+            },
+            "unknown_0x3C": 1.0,
+            "unknown_0x40": {
+              "original_parser_type": "EPLLeafCommonData2",
+              "type": 3,
+              "payload": [
+                0.5,
+                0.5,
+                0.5,
+                0.6000000238418579,
+                0.5,
+                0.699999988079071,
+                0.5,
+                0.699999988079071
+              ],
+              "unknown_0x14": [
+                0.3333333432674408,
+                0.3333333432674408,
+                0.6666666865348816,
+                0.6666666865348816
+              ],
+              "unknown_0x24": {
+                "uninterpreted_bytes": 46
+              },
+              "unknown_0x52": 0
+            },
+            "unknown_0x44": 1.0,
+            "unknown_0x48": 1.0,
+            "unknown_0x50": null,
+            "unknown_0x54": {
+              "original_parser_type": "EPLLeafCommonData",
+              "type": null,
+              "payload": null,
+              "unknown_0x14": null,
+              "unknown_0x24": null
+            },
+            "unknown_0x58": [
+              0.0,
+              360.0
+            ],
+            "unknown_0x5C": [
+              0.0,
+              0.0
+            ],
+            "unknown_0x60": 0.0010000000474974513,
+            "unknown_0x64": 0,
+            "unknown_0x68": 0,
+            "unknown_0x6C": 0.0,
+            "unknown_0x70": 1.0,
+            "unknown_0x74": 0.5,
+            "payload": {
+              "original_parser_type": "EPLSpiralEffectParams",
+              "unknown_0x00": 120.0,
+              "unknown_0x04": [
+                0.0,
+                0.0
+              ],
+              "unknown_0x0C": [
+                0.0,
+                0.0
+              ],
+              "unknown_0x14": [
+                2.5,
+                1.0
+              ],
+              "unknown_0x1C": 0.0,
+              "unknown_0x20": [
+                17.899999618530273,
+                2.1000001430511475
+              ],
+              "unknown_0x28": [
+                -60.0,
+                55.0
+              ]
+            }
+          },
+          "embedded_file": {
+            "original_parser_type": "EPLEmbeddedFile",
+            "name": {
+              "original_parser_type": "ObjectName",
+              "string": {
+                "uninterpreted_bytes": 19
+              },
+              "string_hash": 464676049
+            },
+            "embed_type": 2,
+            "unknown_0x06": null,
+            "filetype": 3,
+            "payload_size": 9725,
+            "payload": {
+              "uninterpreted_bytes": 9725
+            }
+          }
+        }
+      }
+    },
+    {
+      "original_parser_type": "EPLLeafInterface",
+      "node": 10,
+      "binary": {
+        "original_parser_type": "EPLLeafBinary",
+        "unknown_0x00": null,
+        "unknown_0x08": null,
+        "flags": {
+          "original_parser_type": "EPLLeafFlags"
+        },
+        "name": {
+          "original_parser_type": "ObjectName",
+          "string": {
+            "uninterpreted_bytes": 9
+          },
+          "string_hash": 4007845012
+        },
+        "type": 10,
+        "unknown_0x1C": 3,
+        "payload": {
+          "original_parser_type": "EPLLeafObjectParticles",
+          "type": 3,
+          "unknown_0x04": 0,
+          "unknown_0x08": 5,
+          "unknown_0x0C": 90.0,
+          "unknown_0x10": 9.668959403841238e-44,
+          "unknown_0x14": 9.741642548202297e-29,
+          "unknown_0x1C": null,
+          "unknown_0x20": null,
+          "particle_emitter": {
+            "original_parser_type": "ParticleEmitter",
+            "unknown_0x00": 1,
+            "unknown_0x04": 1.0,
+            "unknown_0x08": 676684897,
+            "unknown_0x0C": 0.0,
+            "unknown_0x10": [
+              0.08999999612569809,
+              0.0
+            ],
+            "unknown_0x18": null,
+            "unknown_0x20": null,
+            "unknown_0x28": 1.0,
+            "unknown_0x2C": 0,
+            "unknown_0x30": [
+              0.0,
+              0.9823225736618042
+            ],
+            "unknown_0x38": {
+              "original_parser_type": "EPLLeafCommonData2",
+              "type": 2,
+              "payload": [
+                255,
+                7659775,
+                13695743,
+                1896191
+              ],
+              "unknown_0x14": [
+                0.3333333432674408,
+                0.3333333432674408,
+                0.6666666865348816,
+                0.6666666865348816
+              ],
+              "unknown_0x24": {
+                "uninterpreted_bytes": 46
+              },
+              "unknown_0x52": 0
+            },
+            "unknown_0x3C": 0.4899999797344208,
+            "unknown_0x40": {
+              "original_parser_type": "EPLLeafCommonData2",
+              "type": 3,
+              "payload": [
+                0.5,
+                0.5,
+                0.4333333373069763,
+                0.4333333373069763,
+                0.36666667461395264,
+                0.36666667461395264,
+                0.30000001192092896,
+                0.30000001192092896
+              ],
+              "unknown_0x14": [
+                0.3333333432674408,
+                0.3333333432674408,
+                0.6666666865348816,
+                0.6666666865348816
+              ],
+              "unknown_0x24": {
+                "uninterpreted_bytes": 46
+              },
+              "unknown_0x52": 0
+            },
+            "unknown_0x44": 1.0,
+            "unknown_0x48": 1.0,
+            "unknown_0x50": null,
+            "unknown_0x54": {
+              "original_parser_type": "EPLLeafCommonData",
+              "type": null,
+              "payload": null,
+              "unknown_0x14": null,
+              "unknown_0x24": null
+            },
+            "unknown_0x58": [
+              0.0,
+              360.0
+            ],
+            "unknown_0x5C": [
+              0.0,
+              0.0
+            ],
+            "unknown_0x60": 0.0010000000474974513,
+            "unknown_0x64": 0,
+            "unknown_0x68": 0,
+            "unknown_0x6C": 0.0,
+            "unknown_0x70": 1.0,
+            "unknown_0x74": 0.7100000977516174,
+            "payload": {
+              "original_parser_type": "EPLSpiralEffectParams",
+              "unknown_0x00": 31.25,
+              "unknown_0x04": [
+                0.0,
+                0.0
+              ],
+              "unknown_0x0C": [
+                0.0,
+                0.0
+              ],
+              "unknown_0x14": [
+                2.5,
+                1.0
+              ],
+              "unknown_0x1C": 0.0,
+              "unknown_0x20": [
+                17.899999618530273,
+                27.600000381469727
+              ],
+              "unknown_0x28": [
+                -247.01998901367188,
+                242.01998901367188
+              ]
+            }
+          },
+          "embedded_file": {
+            "original_parser_type": "EPLEmbeddedFile",
+            "name": {
+              "original_parser_type": "ObjectName",
+              "string": {
+                "uninterpreted_bytes": 21
+              },
+              "string_hash": 852527266
+            },
+            "embed_type": 2,
+            "unknown_0x06": null,
+            "filetype": 3,
+            "payload_size": 754,
+            "payload": {
+              "uninterpreted_bytes": 754
+            }
+          }
+        }
+      }
+    },
+    {
+      "original_parser_type": "EPLLeafInterface",
+      "node": 11,
+      "binary": {
+        "original_parser_type": "EPLLeafBinary",
+        "unknown_0x00": null,
+        "unknown_0x08": null,
+        "flags": {
+          "original_parser_type": "EPLLeafFlags"
+        },
+        "name": {
+          "original_parser_type": "ObjectName",
+          "string": {
+            "uninterpreted_bytes": 5
+          },
+          "string_hash": 2438039321
+        },
+        "type": 0,
+        "unknown_0x1C": 1,
+        "payload": null
+      }
+    },
+    {
+      "original_parser_type": "EPLLeafInterface",
+      "node": 12,
+      "binary": {
+        "original_parser_type": "EPLLeafBinary",
+        "unknown_0x00": null,
+        "unknown_0x08": null,
+        "flags": {
+          "original_parser_type": "EPLLeafFlags"
+        },
+        "name": {
+          "original_parser_type": "ObjectName",
+          "string": {
+            "uninterpreted_bytes": 7
+          },
+          "string_hash": 4244365272
+        },
+        "type": 10,
+        "unknown_0x1C": 5,
+        "payload": {
+          "original_parser_type": "EPLLeafObjectParticles",
+          "type": 5,
+          "unknown_0x04": 0,
+          "unknown_0x08": 9,
+          "unknown_0x0C": 90.0,
+          "unknown_0x10": 0.0,
+          "unknown_0x14": 0.0,
+          "unknown_0x1C": null,
+          "unknown_0x20": null,
+          "particle_emitter": {
+            "original_parser_type": "ParticleEmitter",
+            "unknown_0x00": 1,
+            "unknown_0x04": 1.5,
+            "unknown_0x08": 19771022,
+            "unknown_0x0C": 0.0,
+            "unknown_0x10": [
+              0.019999999552965164,
+              0.07999999821186066
+            ],
+            "unknown_0x18": null,
+            "unknown_0x20": null,
+            "unknown_0x28": 1.0,
+            "unknown_0x2C": 0,
+            "unknown_0x30": [
+              0.0,
+              1.0
+            ],
+            "unknown_0x38": {
+              "original_parser_type": "EPLLeafCommonData2",
+              "type": 2,
+              "payload": [
+                3906303,
+                255066111,
+                11594495,
+                4294967295
+              ],
+              "unknown_0x14": [
+                0.07798164337873459,
+                0.44342514872550964,
+                0.6620795130729675,
+                0.7951070070266724
+              ],
+              "unknown_0x24": {
+                "uninterpreted_bytes": 46
+              },
+              "unknown_0x52": 0
+            },
+            "unknown_0x3C": 0.0,
+            "unknown_0x40": {
+              "original_parser_type": "EPLLeafCommonData2",
+              "type": 3,
+              "payload": [
+                0.0,
+                0.0,
+                0.06666667014360428,
+                0.06666667014360428,
+                0.13333334028720856,
+                0.13333334028720856,
+                0.10000000149011612,
+                0.10000000149011612
+              ],
+              "unknown_0x14": [
+                0.24917498230934143,
+                0.7326734066009521,
+                0.6666666865348816,
+                0.6666666865348816
+              ],
+              "unknown_0x24": {
+                "uninterpreted_bytes": 46
+              },
+              "unknown_0x52": 0
+            },
+            "unknown_0x44": 1.0,
+            "unknown_0x48": 1.0,
+            "unknown_0x50": null,
+            "unknown_0x54": {
+              "original_parser_type": "EPLLeafCommonData",
+              "type": null,
+              "payload": null,
+              "unknown_0x14": null,
+              "unknown_0x24": null
+            },
+            "unknown_0x58": [
+              -284.3999938964844,
+              644.4000244140625
+            ],
+            "unknown_0x5C": [
+              0.029999999329447746,
+              1.5199999809265137
+            ],
+            "unknown_0x60": -1.1899999380111694,
+            "unknown_0x64": 2,
+            "unknown_0x68": 0,
+            "unknown_0x6C": 0.0,
+            "unknown_0x70": 1.0,
+            "unknown_0x74": 0.699999988079071,
+            "payload": {
+              "original_parser_type": "EPLCircleEffectParams",
+              "unknown_0x00": [
+                0.0,
+                0.0
+              ],
+              "unknown_0x08": [
+                -45.29999923706055,
+                55.0
+              ],
+              "unknown_0x10": 10.0,
+              "unknown_0x14": [
+                0.47999998927116394,
+                0.0
+              ],
+              "unknown_0x1C": 0.0,
+              "unknown_0x20": [
+                -0.03999999910593033,
+                0.0
+              ],
+              "unknown_0x28": [
+                4.799999713897705,
+                9.139999389648438
+              ]
+            }
+          },
+          "embedded_file": {
+            "original_parser_type": "EPLEmbeddedFile",
+            "name": {
+              "original_parser_type": "ObjectName",
+              "string": {
+                "uninterpreted_bytes": 19
+              },
+              "string_hash": 4077366930
+            },
+            "embed_type": 2,
+            "unknown_0x06": null,
+            "filetype": 3,
+            "payload_size": 9725,
+            "payload": {
+              "uninterpreted_bytes": 9725
+            }
+          }
+        }
+      }
+    }
+  ]
+}
