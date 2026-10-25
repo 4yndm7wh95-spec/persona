@@ -90,6 +90,25 @@ for n in nodes:
         del n['mesh']
         n.pop('skin', None)
 print('dropped', dropped)
+# --flip-v：UV 的 v 翻转（v → 1 - v）。GFD Studio 导出的 UV 和导出的 PNG 上下颠倒（裤子膝盖取到贴图上的肤色条、脸下半部取到头发的黑色）
+if '--flip-v' in sys.argv:
+    uvdone = set()
+    for m in j['meshes']:
+        for p in m['primitives']:
+            for k, ai in p['attributes'].items():
+                if not k.startswith('TEXCOORD_') or ai in uvdone:
+                    continue
+                uvdone.add(ai)
+                a = j['accessors'][ai]
+                v = j['bufferViews'][a['bufferView']]
+                assert a['componentType'] == 5126 and a['type'] == 'VEC2' and v.get('byteStride', 8) == 8
+                off = v.get('byteOffset', 0) + a.get('byteOffset', 0)
+                uv = np.frombuffer(bytes(data[off:off + a['count'] * 8]), np.float32).reshape(-1, 2).copy()
+                uv[:, 1] = 1.0 - uv[:, 1]
+                data[off:off + a['count'] * 8] = uv.tobytes()
+                if 'min' in a and 'max' in a:
+                    a['min'], a['max'] = [a['min'][0], 1.0 - a['max'][1]], [a['max'][0], 1.0 - a['min'][1]]
+    print('flipped v on', len(uvdone), 'uv accessors')
 js = json.dumps(j, separators=(',', ':')).encode()
 js += b' ' * ((4 - len(js) % 4) % 4)
 data += b'\0' * ((4 - len(data) % 4) % 4)
