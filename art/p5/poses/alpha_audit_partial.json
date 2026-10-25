@@ -1,0 +1,122 @@
+[
+  {
+    "file": "idle_a.png",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      254
+    ],
+    "core_margins_LTRB": [
+      84,
+      14,
+      70,
+      27
+    ],
+    "nonzero_pixels_beyond16px_core": 750,
+    "distant_alpha_max": 1
+  },
+  {
+    "file": "idle_b.png",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      254
+    ],
+    "core_margins_LTRB": [
+      83,
+      33,
+      64,
+      30
+    ],
+    "nonzero_pixels_beyond16px_core": 712,
+    "distant_alpha_max": 1
+  },
+  {
+    "file": "kick_a.png",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      254
+    ],
+    "core_margins_LTRB": [
+      16,
+      118,
+      12,
+      326
+    ],
+    "nonzero_pixels_beyond16px_core": 1571,
+    "distant_alpha_max": 1
+  },
+  {
+    "file": "guard_a.png",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      254
+    ],
+    "core_margins_LTRB": [
+      46,
+      51,
+      22,
+      38
+    ],
+    "nonzero_pixels_beyond16px_core": 4917,
+    "distant_alpha_max": 2
+  },
+  {
+    "file": "guard_b.png",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      254
+    ],
+    "core_margins_LTRB": [
+      49,
+      77,
+      30,
+      54
+    ],
+    "nonzero_pixels_beyond16px_core": 1154,
+    "distant_alpha_max": 1
+  },
+  {
+    "file": "summon_a.png",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      254
+    ],
+    "core_margins_LTRB": [
+      119,
+      32,
+      98,
+      35
+    ],
+    "nonzero_pixels_beyond16px_core": 376,
+    "distant_alpha_max": 1
+  }
+]

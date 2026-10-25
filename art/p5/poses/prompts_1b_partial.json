@@ -1,0 +1,51 @@
+{
+  "mode": "built-in image_gen edit; transparent_background=true",
+  "images": [
+    {
+      "filename": "idle_a.png",
+      "prompt": "Precise image edit. Image1 is the approved Joker master, edit that character into the new pose, keep identity/face, wavy black hair, grey eyes, tall slim proportions and ALL costume: long split BLACK coat/high standing collar, grey waistcoat gold buttons, white pocket square, red gloves, black pants, brown ankleboots. Same official P5R angular black ink blocks/cel-shading, no 3D look. Image2 is only a limb/leg position guide, IGNORE its face, hunched posture and shading. NONNEGOTIABLE: head turned 3/4 toward image RIGHT, eyes/pupils looking image RIGHT at enemy, NEVER at viewer. BOTH visible pupils have crisp white catchlights, bangs must not hide eyes. Sharp confident faintly provocative expression. Straight upper back, head up/chin level, no hunch except hurt/down. 1024x1536 portrait, true transparent RGBA PNG, alpha exactly ZERO outside silhouette, no haze/glow/shadow/ground/background/text/lines/effects/watermarks. Natural human anatomy and five fingers each hand. Full body, coat tails and hands and boots entirely inside with MINIMUM60px clear margins all sides; standing head-to-boots90%height, soles60px from bottom. No mask, no weapons. COMBAT IDLE: legs apart and knees slightly bent as ref, BOTH arms relaxed slightly away from torso, hands down at sides with relaxed fingers; NO hands in pockets. Torso upright/straight, head up, face and both lit eyes looking to enemy on right. Confident subtle smile.",
+      "input": [
+        "art/p5/master/joker_master_a.png",
+        "art/p5/ref/pose/idle_ref.png"
+      ]
+    },
+    {
+      "filename": "idle_b.png",
+      "prompt": "Edit this A into variant B, keep exact character identity, hair design, clothes, proportions, palette and ink/cel-shaded style. Only refine pose angle slightly and fix gaze: face turned more toward image RIGHT, both eyes look RIGHT at enemy rather than camera, both pupils clearly exposed through bangs with crisp WHITE catchlights. Spine straight, chin level/head up except hurt/down. Preserve correct anatomy, normal fingers. 1024x1536 true transparent RGBA, alpha0 outside silhouette, no glow/haze/shadow/background/text/effects. Entire figure and clothes with at least60px empty margin every side; scale to fit rather than clip. Idle: slightly more bent knees, upper torso upright. Do not look at viewer. Adjust ONLY bangs over the far eye enough to see its pupil/highlight, retain haircut. Shift both pupils to right corner of eye. Reduce overall scale slightly to allow60px head and boot margins.",
+      "input": [
+        "art/p5/poses/idle_a.png"
+      ]
+    },
+    {
+      "filename": "kick_a.png",
+      "prompt": "Precise image edit. Image1 is the approved Joker master, edit that character into the new pose, keep identity/face, wavy black hair, grey eyes, tall slim proportions and ALL costume: long split BLACK coat/high standing collar, grey waistcoat gold buttons, white pocket square, red gloves, black pants, brown ankleboots. Same official P5R angular black ink blocks/cel-shading, no 3D look. Image2 is only a limb/leg position guide, IGNORE its face, hunched posture and shading. NONNEGOTIABLE: head turned 3/4 toward image RIGHT, eyes/pupils looking image RIGHT at enemy, NEVER at viewer. BOTH visible pupils have crisp white catchlights, bangs must not hide eyes. Sharp confident faintly provocative expression. Straight upper back, head up/chin level, no hunch except hurt/down. 1024x1536 portrait, true transparent RGBA PNG, alpha exactly ZERO outside silhouette, no haze/glow/shadow/ground/background/text/lines/effects/watermarks. Natural human anatomy and five fingers each hand. Full body, coat tails and hands and boots entirely inside with MINIMUM60px clear margins all sides; standing head-to-boots90%height, soles60px from bottom. No mask, no weapons. AIRBORNE TWISTING KICK: copy reference lifted bent leg and torsional balance; one leg raised high/kicking toward right, other leg bent underneath; coat tails flare. Spine held straight, head up watching enemy right, two eyes with white glints. Entire airborne body inside canvas.Face only30degrees right (not profile) so BOTH eyes remain clearly visible; pupils shifted right, white glints. Keep rightward kick fully visible, no hunched back.",
+      "input": [
+        "art/p5/master/joker_master_a.png",
+        "art/p5/ref/pose/kick_ref.png"
+      ]
+    },
+    {
+      "filename": "guard_a.png",
+      "prompt": "Precise image edit. Image1 is the approved Joker master, edit that character into the new pose, keep identity/face, wavy black hair, grey eyes, tall slim proportions and ALL costume: long split BLACK coat/high standing collar, grey waistcoat gold buttons, white pocket square, red gloves, black pants, brown ankleboots. Same official P5R angular black ink blocks/cel-shading, no 3D look. Image2 is only a limb/leg position guide, IGNORE its face, hunched posture and shading. NONNEGOTIABLE: head turned 3/4 toward image RIGHT, eyes/pupils looking image RIGHT at enemy, NEVER at viewer. BOTH visible pupils have crisp white catchlights, bangs must not hide eyes. Sharp confident faintly provocative expression. Straight upper back, head up/chin level, no hunch except hurt/down. 1024x1536 portrait, true transparent RGBA PNG, alpha exactly ZERO outside silhouette, no haze/glow/shadow/ground/background/text/lines/effects/watermarks. Natural human anatomy and five fingers each hand. Full body, coat tails and hands and boots entirely inside with MINIMUM60px clear margins all sides; standing head-to-boots90%height, soles60px from bottom. No mask, no weapons. GUARD: legs wide and slightly bent as reference, one forearm crosses in front of upper chest blocking, other arm lower at side. Upper back straight, head level lifted, both lit eyes looking right at enemy. Empty hands.Face30degrees right with BOTH eyes clear of bangs, pupils at image-right sides, white glints. Forearm below eyes, do not obscure face.",
+      "input": [
+        "art/p5/master/joker_master_a.png",
+        "art/p5/ref/pose/guard_ref.png"
+      ]
+    },
+    {
+      "filename": "guard_b.png",
+      "prompt": "Edit this A into variant B, keep exact character identity, hair design, clothes, proportions, palette and ink/cel-shaded style. Only refine pose angle slightly and fix gaze: face turned more toward image RIGHT, both eyes look RIGHT at enemy rather than camera, both pupils clearly exposed through bangs with crisp WHITE catchlights. Spine straight, chin level/head up except hurt/down. Preserve correct anatomy, normal fingers. 1024x1536 true transparent RGBA, alpha0 outside silhouette, no glow/haze/shadow/background/text/effects. Entire figure and clothes with at least60px empty margin every side; scale to fit rather than clip. Keep forearm cross guard, lower the blocking forearm a few degrees, rotate eyes RIGHT (far away enemy, not viewer) with sharp pupils/glints and reveal far pupil below bangs. Scale down figure10% to leave60px margin on left right top bottom. Keep back straight.",
+      "input": [
+        "art/p5/poses/guard_a.png"
+      ]
+    },
+    {
+      "filename": "summon_a.png",
+      "prompt": "Precise image edit. Image1 is the approved Joker master, edit that character into the new pose, keep identity/face, wavy black hair, grey eyes, tall slim proportions and ALL costume: long split BLACK coat/high standing collar, grey waistcoat gold buttons, white pocket square, red gloves, black pants, brown ankleboots. Same official P5R angular black ink blocks/cel-shading, no 3D look. Image2 is only a limb/leg position guide, IGNORE its face, hunched posture and shading. NONNEGOTIABLE: head turned 3/4 toward image RIGHT, eyes/pupils looking image RIGHT at enemy, NEVER at viewer. BOTH visible pupils have crisp white catchlights, bangs must not hide eyes. Sharp confident faintly provocative expression. Straight upper back, head up/chin level, no hunch except hurt/down. 1024x1536 portrait, true transparent RGBA PNG, alpha exactly ZERO outside silhouette, no haze/glow/shadow/ground/background/text/lines/effects/watermarks. Natural human anatomy and five fingers each hand. Full body, coat tails and hands and boots entirely inside with MINIMUM60px clear margins all sides; standing head-to-boots90%height, soles60px from bottom. No mask, no weapons. SUMMON PREPARATION: one open red-gloved hand raised to side of face/temple near eye, five fingers spread as if grasping mask but NO MASK, palm at side leaving BOTH eyes/pupils/highlights visible; other arm down. Upright torso/head level, sharp gaze right. No flames.Use anatomical right hand by temple. Face30degrees right, both eyes visible between parted fingers and bangs, irises shifted right with strong white catchlights. Do not cover either pupil.",
+      "input": [
+        "art/p5/master/joker_master_a.png",
+        "art/p5/ref/pose/summon_ref.png"
+      ]
+    }
+  ]
+}
