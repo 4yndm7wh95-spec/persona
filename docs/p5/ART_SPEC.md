@@ -122,7 +122,7 @@ idle_loop、low_health_loop、relaxed_loop、attack、cast（技能 / 能力牌�
 | low_health_loop | idle（同战斗待机）| 残血不单独做 |
 | relaxed_loop | relaxed（母版站姿）| 只在商店 / 商人事件用 |
 | 休息处（单独骨骼）| rest_sit | 篝火旁坐着、拿着 LeBlanc 的咖啡杯 |
-| attack | idle → knife_ready → slash → slash_follow → idle | 打击 / 匕首类攻击（小刀斩） |
+| attack | idle → knife_ready → knife_windup → slash_smear → slash → slash_follow → idle | 打击 / 匕首类攻击（小刀斩）。用户：局内动作要多几帧，攻击是 6 张 |
 | shiv | idle → gun_raise → gun ⇄ gun_recoil（每发一次）→ gun_lower → idle | 小刀牌 = 开枪 |
 | cast（亚森）| idle → summon_mid → summon_grab（面具浮现）→ summon_rip（撕下）→ cast_mid → cast → cast_low → idle | 召唤亚森的牌（大伤害 / AOE / 大毒牌） |
 | cast（防御）| idle → guard_mid → guard → guard_mid → idle | 加格挡的技能 |
@@ -150,3 +150,6 @@ cast 是同一个动画状态，代码按打出的牌换成上面三种之一（
 - **头发**：发梢分几束各自摆动，相位错开；脸不变形。
 - **高领**：领尖跟着呼吸轻轻抖。
 做法同 P3Makoto rig v7（规则网格 + 区域权重；黑大衣和黑裤子颜色相同，大衣下摆 / 手的区域手工圈），但幅度和骨骼数都加大。先出预览 GIF 给用户看，再进游戏。
+
+## 防御重画（用户 2026-10-25）
+guard_a/b 身体整个朝左转、只有头扭向右 → 作废。重画：身体和头一起 3/4 朝右，右前臂横挡向画面右方（敌人那边）。不再用原版 #10 的参考（朝向不对）。见 docs/codex/codex_p5_poses3.md 开头。
