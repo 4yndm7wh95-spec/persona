@@ -1,16 +1,31 @@
 {
   "standard_face_candidate": 2,
-  "pending_user_approval": "guard_a",
+  "pending_user_approval": null,
   "approved": [
-    "idle_a",
-    "idle_b"
+    "idle_a"
   ],
-  "next_after_approval": "summon_a",
+  "next_after_approval": "down_a",
   "remaining_order": [
-    "summon_a",
-    "cast_a"
+    "down_a",
+    "victory_a",
+    "slash_a",
+    "gun_a",
+    "summon_grab_a",
+    "summon_rip_a",
+    "mask_a",
+    "cutin_grab_a",
+    "cutin_rip_a"
   ],
-  "transparency_cleanup": "wait until all eight approved",
-  "commit_push": "wait until all eight approved and cleanup complete",
-  "version_policy": "one version per pose; existing b files retained but not processed"
+  "transparency_cleanup": "done for active idle_a and hurt_a; invalid and b files unchanged",
+  "commit_push": "this group ready",
+  "version_policy": "only a; b untouched",
+  "invalidated": [
+    "guard_a",
+    "guard_b",
+    "summon_a",
+    "summon_b",
+    "cast_a",
+    "cast_b"
+  ],
+  "guard_redraw": "poses3; use confirmed idle, body and head together facing right, right forearm blocking right"
 }

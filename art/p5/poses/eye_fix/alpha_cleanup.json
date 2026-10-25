@@ -1,0 +1,20 @@
+[
+  {
+    "file": "idle_a.png",
+    "cleared_pixels": 169,
+    "alpha_core_threshold": 128,
+    "expansion_px": 16,
+    "max_alpha_allowed_to_clear": 2,
+    "RGB_different_pixels": 0,
+    "outside_cleanup_mask_different_pixels": 0
+  },
+  {
+    "file": "hurt_a.png",
+    "cleared_pixels": 781,
+    "alpha_core_threshold": 128,
+    "expansion_px": 16,
+    "max_alpha_allowed_to_clear": 2,
+    "RGB_different_pixels": 0,
+    "outside_cleanup_mask_different_pixels": 0
+  }
+]
