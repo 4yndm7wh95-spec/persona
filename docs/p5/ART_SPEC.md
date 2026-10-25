@@ -133,3 +133,9 @@ idle_loop、low_health_loop、relaxed_loop、attack、cast（技能 / 能力牌�
 
 cast 是同一个动画状态，代码按打出的牌换成上面三种之一（同 P3Makoto 的 cast / cast_light / attack_sovereign 按牌切换）。
 素材：已定 / 进行中 docs/codex/codex_p5_poses1e.md（眼睛修复、down、victory、slash、gun、撕面具那套）；剩下的过渡帧和补充姿势 docs/codex/codex_p5_poses3.md。
+
+## 总攻击（用户 2026-10-25：能不能直接抄原版）
+
+- 收尾立绘已经有：research/p5r/ui/battle/BASE__BKSK_P_BC0001__*.png（Joker 红底扯手套那张，原版总攻击收尾用的）。
+- 其余（收尾大字、红黑碎片、烟尘、动画时间轴、音效语音）：docs/codex/codex_p5r_allout.md 去原版里找、导出；找不到时间轴就用用户的录屏逐帧对照。
+- 烟尘乱打那一段原版是 3D 场景特效，搬不过来，用 2D 重做（剪影 + 烟团 + 打击闪光）。
