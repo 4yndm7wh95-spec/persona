@@ -35,7 +35,7 @@
 | gun_raise_a.png | idle | 拔枪：右手把枪从腰侧拔出、手臂抬到一半（45°），眼睛已经盯着敌人（idle 和 gun 之间） |
 | gun_recoil_a.png | gun（定稿版）| 开枪后坐：持枪手腕上扬约 15°、肩膀微微后震，其他同 gun（和 gun 来回切就是连射） |
 | gun_lower_a.png | gun（定稿版）| 收枪：持枪手臂放下一半、枪口朝地（gun 和 idle 之间） |
-| summon_mid_a.png | idle | 抬手：右手从身侧抬到胸口高度、正要伸向脸（idle 和 summon_grab 之间） |
+| summon_mid_a.png | idle | 抬手：**右手**从身侧抬到胸口高度、正要伸向脸（idle 和 summon_grab 之间） |
 | cast_mid_a.png | summon_rip（定稿版）| 撕下面具后手臂从甩开的位置收回、开始伸向前方（summon_rip 和 cast 之间） |
 | cast_low_a.png | cast（定稿版）| 指令后手臂放下一半（cast 和 idle 之间） |
 | guard_mid_a.png | idle | 抬臂：右前臂抬到一半、正要横到身前（idle 和 guard 之间） |
