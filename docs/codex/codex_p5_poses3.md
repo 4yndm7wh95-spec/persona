@@ -36,7 +36,7 @@
 | gun_recoil_a.png | gun（定稿版）| 开枪后坐：持枪手腕上扬约 15°、肩膀微微后震，其他同 gun（和 gun 来回切就是连射） |
 | gun_lower_a.png | gun（定稿版）| 收枪：持枪手臂放下一半、枪口朝地（gun 和 idle 之间） |
 | summon_mid_a.png | idle | 抬手：**右手**从身侧抬到胸口高度、正要伸向脸（idle 和 summon_grab 之间） |
-| cast_mid_a.png | summon_rip（定稿版）| 撕下面具后手臂从甩开的位置收回、开始伸向前方（summon_rip 和 cast 之间） |
+| cast_mid_a.png | summon_rip（定稿版）| 撕下面具后：**右手**（撕面具那只）从甩开的位置放下到腰侧、面具已经不在手里；**左手**（离镜头远的那只）开始抬起、伸向画面右方一半（summon_rip 和 cast 之间；cast 是左手指向敌人） |
 | cast_low_a.png | cast（定稿版）| 指令后手臂放下一半（cast 和 idle 之间） |
 | guard_mid_a.png | idle | 抬臂：右前臂抬到一半、正要横到身前（idle 和 guard 之间） |
 | glove_a/b.png | idle | **扯手套**（P5 招牌动作，待机时没人操作一段时间后自动做一次，也用于增益 / 能力牌）：站直，**右前臂向前弯起、抬到胸前**（手肘弯、右手手背朝上、手指放松），**左手捏住右手红手套的手腕处往里扯一扯**；头微低但**眼睛仍看向右方的敌人**，嘴角带笑。参考 art/p5/ref/pose/victory_ref.png（原版 #57 第 5 格，两手在胸前）的手的位置 |
