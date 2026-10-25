@@ -1,0 +1,16 @@
+{
+  "standard_face_candidate": 2,
+  "pending_user_approval": "guard_a",
+  "approved": [
+    "idle_a",
+    "idle_b"
+  ],
+  "next_after_approval": "summon_a",
+  "remaining_order": [
+    "summon_a",
+    "cast_a"
+  ],
+  "transparency_cleanup": "wait until all eight approved",
+  "commit_push": "wait until all eight approved and cleanup complete",
+  "version_policy": "one version per pose; existing b files retained but not processed"
+}

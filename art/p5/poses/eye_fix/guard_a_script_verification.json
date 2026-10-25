@@ -1,0 +1,24 @@
+{
+  "name": "guard_a",
+  "method": "script iris translation",
+  "near_iris_shift_xy_native_px": [
+    -1,
+    0
+  ],
+  "near_eye_opening_estimated_x": [
+    583,
+    607
+  ],
+  "iris_center_estimated_before_x": 598,
+  "iris_center_estimated_after_x": 597,
+  "iris_center_fraction_after_estimate": 0.583,
+  "far_eye": "partially occluded; unchanged",
+  "outside_mask_different_pixels": 0,
+  "alpha_different_pixels": 0,
+  "body_y_ge300_different_pixels": 0,
+  "changed_pixels": 122,
+  "before_sha256": "94501e7172543a9fb0d8c56e92f005705dcf76e980b5c6831819d877d6b35e1d",
+  "after_sha256": "8c8d7cc667f3b0442caf716d2d477e8fc0f3627d3d9f6509dfe5a594b1af0c32",
+  "visual_approval": "pending user confirmation",
+  "transparency_cleanup": "not yet; after all eight approvals"
+}

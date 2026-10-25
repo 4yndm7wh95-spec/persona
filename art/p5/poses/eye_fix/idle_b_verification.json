@@ -1,0 +1,86 @@
+{
+  "name": "idle_b",
+  "mask_config_full_image": {
+    "eyes": [
+      [
+        566,
+        142,
+        598,
+        160
+      ],
+      [
+        612,
+        156,
+        628,
+        172
+      ]
+    ],
+    "jaw": [
+      [
+        525,
+        182
+      ],
+      [
+        557,
+        210
+      ],
+      [
+        580,
+        224
+      ],
+      [
+        592,
+        225
+      ],
+      [
+        602,
+        215
+      ],
+      [
+        608,
+        201
+      ]
+    ],
+    "jaw_width": 14,
+    "protect": [
+      [
+        575,
+        190,
+        621,
+        207
+      ],
+      [
+        613,
+        166,
+        633,
+        189
+      ]
+    ]
+  },
+  "feather_gaussian_radius_px": 6,
+  "outside_mask_different_pixels": 0,
+  "inside_mask_different_pixels": 5233,
+  "crop": {
+    "head_search_roi": [
+      440,
+      20,
+      675,
+      230
+    ],
+    "alpha_core_bbox": [
+      440,
+      33,
+      664,
+      230
+    ],
+    "crop_square": [
+      400,
+      -20,
+      704,
+      284
+    ],
+    "original_side": 304,
+    "scale_to_1024": 3.3684210526315788,
+    "original_sha256": "8161e3b0ce50a6184ad767f732350897e48f1fc3da6555e75b772d9e81cc57b6"
+  }
+}

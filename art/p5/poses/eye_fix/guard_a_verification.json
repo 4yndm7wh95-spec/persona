@@ -1,0 +1,80 @@
+{
+  "name": "guard_a",
+  "mask_config_full_image": {
+    "eyes": [
+      [
+        579,
+        182,
+        611,
+        202
+      ]
+    ],
+    "jaw": [
+      [
+        548,
+        225
+      ],
+      [
+        581,
+        251
+      ],
+      [
+        606,
+        266
+      ],
+      [
+        619,
+        270
+      ],
+      [
+        629,
+        262
+      ],
+      [
+        635,
+        243
+      ]
+    ],
+    "jaw_width": 14,
+    "protect": [
+      [
+        590,
+        233,
+        642,
+        250
+      ],
+      [
+        628,
+        211,
+        650,
+        233
+      ]
+    ]
+  },
+  "feather_gaussian_radius_px": 6,
+  "outside_mask_different_pixels": 0,
+  "inside_mask_different_pixels": 4171,
+  "crop": {
+    "head_search_roi": [
+      450,
+      35,
+      700,
+      275
+    ],
+    "alpha_core_bbox": [
+      450,
+      46,
+      700,
+      275
+    ],
+    "crop_square": [
+      410,
+      -4,
+      740,
+      326
+    ],
+    "original_side": 330,
+    "scale_to_1024": 3.103030303030303,
+    "original_sha256": "1d588e761fa8753a8b0c4ddc8c64363353ccff5d9a8281914dc852d290e0f3d0"
+  }
+}

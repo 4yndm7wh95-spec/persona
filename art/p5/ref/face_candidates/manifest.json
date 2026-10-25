@@ -1,0 +1,74 @@
+[
+  {
+    "number": 1,
+    "name": "01_idle_a_round",
+    "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-574253ca-a86b-47c4-a747-2811552d57ff.png",
+    "label": "idle_a / eyes + round chin",
+    "file": "01_idle_a_round.png",
+    "sha256": "42b0602148c77cd83f92a4df0d56b6c1bd0d09940fe5418db9c33699f5fbdd1f",
+    "original_dimensions": [
+      1254,
+      1254
+    ]
+  },
+  {
+    "number": 2,
+    "name": "02_idle_b_round",
+    "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-5196df95-1d84-41ce-8d07-8d1bb2946534.png",
+    "label": "idle_b / eyes + round chin",
+    "file": "02_idle_b_round.png",
+    "sha256": "60279aea2956a87186b5ef731726049a5e0fc4afc5532b75a340fd94fe0fbf29",
+    "original_dimensions": [
+      1254,
+      1254
+    ]
+  },
+  {
+    "number": 3,
+    "name": "03_guard_a_round",
+    "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-e4530af0-16c9-41ce-865a-79147ffc8c27.png",
+    "label": "guard_a / eyes + round chin",
+    "file": "03_guard_a_round.png",
+    "sha256": "cdff6903890709374c36b0f3770da51637dc84d5ee98282441861598ef373758",
+    "original_dimensions": [
+      1254,
+      1254
+    ]
+  },
+  {
+    "number": 4,
+    "name": "04_guard_b_round",
+    "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-e7225cbe-765f-434f-a692-b83ff8e5e4c5.png",
+    "label": "guard_b / eyes + round chin",
+    "file": "04_guard_b_round.png",
+    "sha256": "5e5b12c081620c62ba2133f9d854894f1ba52d67ccb0abbf1e45fcb9aba7f20e",
+    "original_dimensions": [
+      1254,
+      1254
+    ]
+  },
+  {
+    "number": 5,
+    "name": "05_idle_a_eyes_only",
+    "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-5e460675-f7e5-496f-acc1-c97e6aeabecc.png",
+    "label": "idle_a / earlier eyes only",
+    "file": "05_idle_a_eyes_only.png",
+    "sha256": "8f70a5538ff87ecbde184059bab40ce436f2d429ff114a4bac90dd02468c2876",
+    "original_dimensions": [
+      1254,
+      1254
+    ]
+  },
+  {
+    "number": 6,
+    "name": "06_idle_a_original_head",
+    "source": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/eye_fix/idle_a_head_src.png",
+    "label": "idle_a / original head crop",
+    "file": "06_idle_a_original_head.png",
+    "sha256": "9b960448215e462bdb7ede5be151200d3eb2396de887584ac27b3c1712a91856",
+    "original_dimensions": [
+      1024,
+      1024
+    ]
+  }
+]

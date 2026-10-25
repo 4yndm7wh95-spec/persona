@@ -1,0 +1,24 @@
+{
+  "name": "idle_b",
+  "method": "script iris translation",
+  "near_iris_shift_xy_native_px": [
+    -1,
+    0
+  ],
+  "near_eye_opening_estimated_x": [
+    569,
+    591
+  ],
+  "iris_center_estimated_before_x": 583,
+  "iris_center_estimated_after_x": 582,
+  "iris_center_fraction_after_estimate": 0.591,
+  "far_eye": "partially occluded; unchanged",
+  "outside_mask_different_pixels": 0,
+  "alpha_different_pixels": 0,
+  "body_y_ge300_different_pixels": 0,
+  "changed_pixels": 91,
+  "before_sha256": "cbd851dd05269fe3ccb3c3b899fb96f9f22bc4f7fe5005a1eec084d570722192",
+  "after_sha256": "ba05daf1fa50022b4e66829796ba47cd5a419056a835b0e123b91495e57b1d50",
+  "visual_approval": "pending user confirmation",
+  "transparency_cleanup": "not yet; after all eight approvals"
+}
