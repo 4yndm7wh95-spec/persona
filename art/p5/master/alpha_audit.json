@@ -1,0 +1,77 @@
+[
+  {
+    "filename": "style_A_p5r_official_1.png",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "sha256": "493591d4531fe3d022492bac9f0314053296fd1885fc6ee6fbac29a7a4dc5465",
+    "alpha_min": 0,
+    "alpha_max": 254,
+    "core_bbox_alpha_ge128": [
+      145,
+      13,
+      845,
+      1515
+    ],
+    "core_margins_LTRB": [
+      145,
+      13,
+      179,
+      21
+    ],
+    "distant_nonzero_alpha_pixels": 981,
+    "distant_alpha_max": 1
+  },
+  {
+    "filename": "joker_master_a.png",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "sha256": "c711f65ca215e6fe9f96527f7ba4b444f158a551fb071674f38a6a6fdc1eaf8a",
+    "alpha_min": 0,
+    "alpha_max": 254,
+    "core_bbox_alpha_ge128": [
+      144,
+      12,
+      868,
+      1517
+    ],
+    "core_margins_LTRB": [
+      144,
+      12,
+      156,
+      19
+    ],
+    "distant_nonzero_alpha_pixels": 72,
+    "distant_alpha_max": 1
+  },
+  {
+    "filename": "joker_master_b.png",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "sha256": "9afd9d8d437a296f76300c0a1a5466cdb8decf78f4e63dd9811864902c9b8ebb",
+    "alpha_min": 0,
+    "alpha_max": 254,
+    "core_bbox_alpha_ge128": [
+      143,
+      11,
+      871,
+      1517
+    ],
+    "core_margins_LTRB": [
+      143,
+      11,
+      153,
+      19
+    ],
+    "distant_nonzero_alpha_pixels": 120,
+    "distant_alpha_max": 1
+  }
+]
