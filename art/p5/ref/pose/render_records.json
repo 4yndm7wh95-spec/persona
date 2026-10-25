@@ -1,0 +1,282 @@
+[
+  {
+    "number": 1,
+    "file": "BB0001_051_main_0000.glb",
+    "frames": [
+      {
+        "sample": 0,
+        "time_seconds": 0.0,
+        "frame_at_30fps": 0.0,
+        "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\art\\p5\\ref\\pose\\idle_ref.png",
+        "bbox_min": [
+          -62.231693267822266,
+          -56.27973556518555,
+          -9.835692405700684
+        ],
+        "bbox_max": [
+          88.13990783691406,
+          83.85981750488281,
+          180.9994659423828
+        ],
+        "camera_location": [
+          -512.6884155273438,
+          -643.2630615234375,
+          85.58184814453125
+        ],
+        "camera_ortho_scale": 212.039065890842
+      }
+    ]
+  },
+  {
+    "number": 11,
+    "file": "BB0001_051_main_0010.glb",
+    "frames": [
+      {
+        "sample": 3,
+        "time_seconds": 0.6,
+        "frame_at_30fps": 18.0,
+        "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\art\\p5\\ref\\pose\\slash_ref.png",
+        "bbox_min": [
+          -75.4605484008789,
+          -93.14353942871094,
+          -10.077835083007812
+        ],
+        "bbox_max": [
+          114.83556365966797,
+          129.7657928466797,
+          183.9441375732422
+        ],
+        "camera_location": [
+          -639.0359497070312,
+          -805.0931396484375,
+          86.93310546875
+        ],
+        "camera_ortho_scale": 334.67737833658856
+      }
+    ]
+  },
+  {
+    "number": 8,
+    "file": "BB0001_051_main_0007.glb",
+    "frames": [
+      {
+        "sample": 2,
+        "time_seconds": 0.6666668,
+        "frame_at_30fps": 20.000004,
+        "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\art\\p5\\ref\\pose\\kick_ref.png",
+        "bbox_min": [
+          -126.10125732421875,
+          -110.05957794189453,
+          -15.94166374206543
+        ],
+        "bbox_max": [
+          96.6064224243164,
+          97.9023208618164,
+          167.26144409179688
+        ],
+        "camera_location": [
+          -681.0635986328125,
+          -838.9739990234375,
+          75.66010284423828
+        ],
+        "camera_ortho_scale": 274.55039978027344
+      }
+    ]
+  },
+  {
+    "number": 52,
+    "file": "BB0001_051_main_0054.glb",
+    "frames": [
+      {
+        "sample": 2,
+        "time_seconds": 0.2666668,
+        "frame_at_30fps": 8.000003999999999,
+        "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\art\\p5\\ref\\pose\\gun_ref.png",
+        "bbox_min": [
+          -73.0145034790039,
+          -83.02954864501953,
+          -11.461067199707031
+        ],
+        "bbox_max": [
+          50.62278747558594,
+          48.07157516479492,
+          181.91259765625
+        ],
+        "camera_location": [
+          -508.8292236328125,
+          -634.8710327148438,
+          85.2257308959961
+        ],
+        "camera_ortho_scale": 214.85962761773004
+      }
+    ]
+  },
+  {
+    "number": 10,
+    "file": "BB0001_051_main_0009.glb",
+    "frames": [
+      {
+        "sample": 2,
+        "time_seconds": 0.5333332000000001,
+        "frame_at_30fps": 15.999996000000001,
+        "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\art\\p5\\ref\\pose\\guard_ref.png",
+        "bbox_min": [
+          -80.53971099853516,
+          -54.85462951660156,
+          15.684345245361328
+        ],
+        "bbox_max": [
+          75.81463623046875,
+          93.18206024169922,
+          181.46875
+        ],
+        "camera_location": [
+          -511.6380920410156,
+          -617.4306640625,
+          98.57650756835938
+        ],
+        "camera_ortho_scale": 239.6298853556315
+      }
+    ]
+  },
+  {
+    "number": 50,
+    "file": "BB0001_051_main_0052.glb",
+    "frames": [
+      {
+        "sample": 2,
+        "time_seconds": 0.8533332,
+        "frame_at_30fps": 25.599996,
+        "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\art\\p5\\ref\\pose\\summon_ref.png",
+        "bbox_min": [
+          -38.17863845825195,
+          -44.3588981628418,
+          -1.3764160871505737
+        ],
+        "bbox_max": [
+          43.6268310546875,
+          51.03770446777344,
+          182.04327392578125
+        ],
+        "camera_location": [
+          -413.96142578125,
+          -517.5175170898438,
+          90.33355712890625
+        ],
+        "camera_ortho_scale": 204.53302383422852
+      }
+    ]
+  },
+  {
+    "number": 58,
+    "file": "BB0001_051_main_0060.glb",
+    "frames": [
+      {
+        "sample": 5,
+        "time_seconds": 1.666667,
+        "frame_at_30fps": 50.000009999999996,
+        "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\art\\p5\\ref\\pose\\cast_ref.png",
+        "bbox_min": [
+          -72.62394714355469,
+          -62.344242095947266,
+          -4.8591227531433105
+        ],
+        "bbox_max": [
+          80.69161987304688,
+          59.1184196472168,
+          183.7671356201172
+        ],
+        "camera_location": [
+          -505.2123107910156,
+          -638.17919921875,
+          89.45417785644531
+        ],
+        "camera_ortho_scale": 231.574223836263
+      }
+    ]
+  },
+  {
+    "number": 4,
+    "file": "BB0001_051_main_0003.glb",
+    "frames": [
+      {
+        "sample": 2,
+        "time_seconds": 0.4,
+        "frame_at_30fps": 12.0,
+        "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\art\\p5\\ref\\pose\\hurt_ref.png",
+        "bbox_min": [
+          -81.26940155029297,
+          -88.75769805908203,
+          17.96807098388672
+        ],
+        "bbox_max": [
+          97.94954681396484,
+          91.42134857177734,
+          180.99215698242188
+        ],
+        "camera_location": [
+          -558.9628295898438,
+          -704.796875,
+          99.4800796508789
+        ],
+        "camera_ortho_scale": 218.6490249633789
+      }
+    ]
+  },
+  {
+    "number": 55,
+    "file": "BB0001_051_main_0057.glb",
+    "frames": [
+      {
+        "sample": 5,
+        "time_seconds": 1.0,
+        "frame_at_30fps": 30.0,
+        "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\art\\p5\\ref\\pose\\down_ref.png",
+        "bbox_min": [
+          -109.64974212646484,
+          -58.195457458496094,
+          34.50099182128906
+        ],
+        "bbox_max": [
+          86.26317596435547,
+          57.05044174194336,
+          175.16539001464844
+        ],
+        "camera_location": [
+          -515.9263916015625,
+          -624.123779296875,
+          104.83316040039062
+        ],
+        "camera_ortho_scale": 322.1523666381836
+      }
+    ]
+  },
+  {
+    "number": 57,
+    "file": "BB0001_051_main_0059.glb",
+    "frames": [
+      {
+        "sample": 4,
+        "time_seconds": 1.8666664000000002,
+        "frame_at_30fps": 55.999992000000006,
+        "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\art\\p5\\ref\\pose\\victory_ref.png",
+        "bbox_min": [
+          -44.45802307128906,
+          -36.663658142089844,
+          -2.498500347137451
+        ],
+        "bbox_max": [
+          50.35980987548828,
+          48.437538146972656,
+          181.56263732910156
+        ],
+        "camera_location": [
+          -416.57281494140625,
+          -518.5175170898438,
+          89.53204345703125
+        ],
+        "camera_ortho_scale": 204.51237148708768
+      }
+    ]
+  }
+]

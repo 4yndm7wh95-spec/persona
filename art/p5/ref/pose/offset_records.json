@@ -1,0 +1,152 @@
+[
+  {
+    "number": 11,
+    "file": "BB0001_051_main_0010.glb",
+    "frames": [
+      {
+        "sample": 3,
+        "time_seconds": 0.5,
+        "frame_at_30fps": 15.0,
+        "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\art\\p5\\ref\\pose\\slash_-0.1.png",
+        "bbox_min": [
+          -95.04685974121094,
+          -96.97401428222656,
+          0.6222095489501953
+        ],
+        "bbox_max": [
+          114.77973937988281,
+          125.3622817993164,
+          206.72235107421875
+        ],
+        "camera_location": [
+          -677.27001953125,
+          -852.5865478515625,
+          103.67250061035156
+        ],
+        "camera_ortho_scale": 322.35252380371094
+      },
+      {
+        "sample": 3,
+        "time_seconds": 0.7,
+        "frame_at_30fps": 21.0,
+        "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\art\\p5\\ref\\pose\\slash_+0.1.png",
+        "bbox_min": [
+          -73.13864135742188,
+          -72.5373306274414,
+          -16.775699615478516
+        ],
+        "bbox_max": [
+          105.52490234375,
+          87.31222534179688,
+          178.36215209960938
+        ],
+        "camera_location": [
+          -563.1123046875,
+          -716.7444458007812,
+          80.79341125488281
+        ],
+        "camera_ortho_scale": 261.51105244954425
+      }
+    ]
+  },
+  {
+    "number": 8,
+    "file": "BB0001_051_main_0007.glb",
+    "frames": [
+      {
+        "sample": 2,
+        "time_seconds": 0.5666668,
+        "frame_at_30fps": 17.000004,
+        "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\art\\p5\\ref\\pose\\kick_-0.1.png",
+        "bbox_min": [
+          -91.25775909423828,
+          -81.06734466552734,
+          -18.890663146972656
+        ],
+        "bbox_max": [
+          97.65742492675781,
+          93.34385681152344,
+          172.63377380371094
+        ],
+        "camera_location": [
+          -597.647705078125,
+          -744.92138671875,
+          76.87173461914062
+        ],
+        "camera_ortho_scale": 267.6961263020833
+      },
+      {
+        "sample": 2,
+        "time_seconds": 0.7666668,
+        "frame_at_30fps": 23.000004,
+        "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\art\\p5\\ref\\pose\\kick_+0.1.png",
+        "bbox_min": [
+          -97.578125,
+          -138.2610321044922,
+          -18.46796989440918
+        ],
+        "bbox_max": [
+          123.84347534179688,
+          118.50460815429688,
+          204.6126708984375
+        ],
+        "camera_location": [
+          -747.4805908203125,
+          -960.6447143554688,
+          93.07230377197266
+        ],
+        "camera_ortho_scale": 403.84367624918616
+      }
+    ]
+  },
+  {
+    "number": 4,
+    "file": "BB0001_051_main_0003.glb",
+    "frames": [
+      {
+        "sample": 2,
+        "time_seconds": 0.30000000000000004,
+        "frame_at_30fps": 9.000000000000002,
+        "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\art\\p5\\ref\\pose\\hurt_-0.1.png",
+        "bbox_min": [
+          -95.23065185546875,
+          -98.11092376708984,
+          11.490839004516602
+        ],
+        "bbox_max": [
+          98.68330383300781,
+          91.4241714477539,
+          183.3348388671875
+        ],
+        "camera_location": [
+          -599.9004516601562,
+          -755.3765869140625,
+          97.41279602050781
+        ],
+        "camera_ortho_scale": 259.4511032104492
+      },
+      {
+        "sample": 2,
+        "time_seconds": 0.5,
+        "frame_at_30fps": 15.0,
+        "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\art\\p5\\ref\\pose\\hurt_+0.1.png",
+        "bbox_min": [
+          -74.032958984375,
+          -71.67833709716797,
+          7.954784393310547
+        ],
+        "bbox_max": [
+          84.72130584716797,
+          85.96111297607422,
+          182.05221557617188
+        ],
+        "camera_location": [
+          -526.63330078125,
+          -656.3856201171875,
+          95.00367736816406
+        ],
+        "camera_ortho_scale": 193.44158596462674
+      }
+    ]
+  }
+]
