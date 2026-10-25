@@ -110,13 +110,16 @@ kick 生成出来是腾空飞踢，用户觉得太怪，**不用踢**。art/p5/p
 
 游戏代码（CharacterModel.GenerateAnimator + Silent.AnimationStates）要求的 Spine 动画只有：
 idle_loop、low_health_loop、relaxed_loop、attack、cast（技能 / 能力牌共用）、hurt、die、**shiv**（静默猎手独有，打出小刀牌时触发）。
+另外**休息处是单独的一套骨骼**（坐在篝火旁，同 P3Makoto 的 restsite），不走这套动画。
+用户 2026-10-25：**残血不用做**（low_health_loop 直接用 idle）；休息处不是站姿（是坐姿，见下）。
 每张姿势图在动画里的用途（关键图 + 过渡帧，过渡帧每张约 0.1s；做法同 P3Makoto：整图切换 + Spine 网格微动 + 代码特效）：
 
 | 动画 | 播放顺序 | 用途 |
 |---|---|---|
 | idle_loop | idle（+ idle_blink_patch 眨眼）| 战斗待机 |
-| low_health_loop | idle_low | 残血待机 |
-| relaxed_loop | relaxed | 休息处 / 商店 |
+| low_health_loop | idle（同战斗待机）| 残血不单独做 |
+| relaxed_loop | relaxed（母版站姿）| 只在商店 / 商人事件用 |
+| 休息处（单独骨骼）| rest_sit | 篝火旁坐着、拿着 LeBlanc 的咖啡杯 |
 | attack | idle → knife_ready → slash → slash_follow → idle | 打击 / 匕首类攻击（小刀斩） |
 | shiv | idle → gun_raise → gun ⇄ gun_recoil（每发一次）→ gun_lower → idle | 小刀牌 = 开枪 |
 | cast（亚森）| idle → summon_mid → summon_grab（面具浮现）→ summon_rip（撕下）→ cast_mid → cast → cast_low → idle | 召唤亚森的牌（大伤害 / AOE / 大毒牌） |
