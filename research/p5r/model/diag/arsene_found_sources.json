@@ -1,0 +1,42 @@
+[
+  {
+    "package_path": "MODEL/CHARACTER/PERSONA/0200/PS0200.GMD",
+    "textures": "ps_arsene_t03.dds;ps_arsene_t01_sp.dds;ps_arsene_t01_shadow.dds;ps_arsene_t02.dds;ps_arsene_eye_aura.dds;ps_arsene_eye_uvscrl.dds",
+    "glb": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\arsene_search_round3\\PS0200.glb",
+    "fixed_glb": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\arsene_search_round3\\PS0200_fixed.glb",
+    "front": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\round3_work\\found_PS0200_front.png",
+    "threequarter": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\round3_work\\found_PS0200_threequarter.png"
+  },
+  {
+    "package_path": "MODEL/CHARACTER/PERSONA/0201/PS0201.GMD",
+    "textures": "ps_arsene_t02.dds;ps_arsene_t01_sp.dds;ps_arsene_t01_shadow.dds;ps_arsene_eye_aura.dds;ps_arsene_eye_uvscrl.dds",
+    "glb": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\arsene_search_round3\\PS0201.glb",
+    "fixed_glb": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\arsene_search_round3\\PS0201_fixed.glb",
+    "front": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\round3_work\\found_PS0201_front.png",
+    "threequarter": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\round3_work\\found_PS0201_threequarter.png"
+  },
+  {
+    "package_path": "MODEL/CHARACTER/PERSONA/0201/PSZ0201.GMD",
+    "textures": "ps_arsene_t01.dds;ps_arsene_t01_sp.dds;ps_arsene_t01_shadow.dds;ps_arsene_eye_aura.dds;ps_arsene_eye_uvscrl.dds",
+    "glb": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\arsene_search_round3\\PSZ0201.glb",
+    "fixed_glb": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\arsene_search_round3\\PSZ0201_fixed.glb",
+    "front": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\round3_work\\found_PSZ0201_front.png",
+    "threequarter": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\round3_work\\found_PSZ0201_threequarter.png"
+  },
+  {
+    "package_path": "MODEL/CHARACTER/PERSONA/0363/PS0363.GMD",
+    "textures": "ps_arsene_modern_t02.dds;ps_arsene_modern_t01_sp.dds;ps_arsene_modern_t01_sh.dds;ps_arsene_modern_t01_ref.dds",
+    "glb": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\arsene_search_round3\\PS0363.glb",
+    "fixed_glb": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\arsene_search_round3\\PS0363_fixed.glb",
+    "front": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\round3_work\\found_PS0363_front.png",
+    "threequarter": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\round3_work\\found_PS0363_threequarter.png"
+  },
+  {
+    "package_path": "MODEL/CHARACTER/PERSONA/0363/PSZ0363.GMD",
+    "textures": "ps_arsene_modern_t01.dds;ps_arsene_modern_t01_sp.dds;ps_arsene_modern_t01_sh.dds;ps_arsene_modern_t01_ref.dds",
+    "glb": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\arsene_search_round3\\PSZ0363.glb",
+    "fixed_glb": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\arsene_search_round3\\PSZ0363_fixed.glb",
+    "front": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\round3_work\\found_PSZ0363_front.png",
+    "threequarter": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\round3_work\\found_PSZ0363_threequarter.png"
+  }
+]

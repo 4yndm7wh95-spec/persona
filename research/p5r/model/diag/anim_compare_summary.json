@@ -1,0 +1,3942 @@
+{
+  "source_model": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\joker\\fixed2\\joker_thief_nomask.glb",
+  "source_animation": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\joker\\joker_thief_animations\\BB0001_051_main_0000.glb",
+  "model_mesh_count": 24,
+  "animation_mesh_count": 0,
+  "model_node_count": 376,
+  "animation_node_count": 352,
+  "model_scene_roots_and_first_three_descendant_levels": [
+    {
+      "depth_from_scene_root": 0,
+      "nodes": [
+        {
+          "index": 0,
+          "name": "RootNode",
+          "children": [
+            "root"
+          ]
+        }
+      ]
+    },
+    {
+      "depth_from_scene_root": 1,
+      "nodes": [
+        {
+          "index": 1,
+          "name": "root",
+          "children": [
+            "c0001_hand_081",
+            "c0001_body_081",
+            "h_C_US3",
+            "c0001_face051",
+            "h_collision",
+            "Blur_body___kai051",
+            "Blur_hair___sei01",
+            "Blur_face___sei01",
+            "rot"
+          ]
+        }
+      ]
+    },
+    {
+      "depth_from_scene_root": 2,
+      "nodes": [
+        {
+          "index": 2,
+          "name": "c0001_hand_081",
+          "children": [
+            "c0001_hand_081_gfdMesh_0_mesh"
+          ]
+        },
+        {
+          "index": 3,
+          "name": "c0001_body_081",
+          "children": [
+            "c0001_body_081_gfdMesh_0_mesh",
+            "c0001_body_081_gfdMesh_1_mesh",
+            "c0001_body_081_gfdMesh_2_mesh",
+            "c0001_body_081_gfdMesh_3_mesh",
+            "c0001_body_081_gfdMesh_4_mesh"
+          ]
+        },
+        {
+          "index": 4,
+          "name": "h_C_US3",
+          "children": []
+        },
+        {
+          "index": 5,
+          "name": "c0001_face051",
+          "children": [
+            "c0001_face051_gfdMesh_0_mesh",
+            "c0001_face051_gfdMesh_1_mesh",
+            "c0001_face051_gfdMesh_2_mesh",
+            "c0001_face051_gfdMesh_3_mesh"
+          ]
+        },
+        {
+          "index": 6,
+          "name": "h_collision",
+          "children": []
+        },
+        {
+          "index": 7,
+          "name": "Blur_body___kai051",
+          "children": [
+            "Blur_body___kai051_gfdMesh_0_mesh",
+            "Blur_body___kai051_gfdMesh_1_mesh"
+          ]
+        },
+        {
+          "index": 8,
+          "name": "Blur_hair___sei01",
+          "children": [
+            "Blur_hair___sei01_gfdMesh_0_mesh"
+          ]
+        },
+        {
+          "index": 9,
+          "name": "Blur_face___sei01",
+          "children": [
+            "Blur_face___sei01_gfdMesh_0_mesh"
+          ]
+        },
+        {
+          "index": 10,
+          "name": "rot",
+          "children": [
+            "h_B_MZ1",
+            "Bip01"
+          ]
+        }
+      ]
+    },
+    {
+      "depth_from_scene_root": 3,
+      "nodes": [
+        {
+          "index": 352,
+          "name": "c0001_hand_081_gfdMesh_0_mesh",
+          "children": []
+        },
+        {
+          "index": 353,
+          "name": "c0001_body_081_gfdMesh_0_mesh",
+          "children": []
+        },
+        {
+          "index": 354,
+          "name": "c0001_body_081_gfdMesh_1_mesh",
+          "children": []
+        },
+        {
+          "index": 355,
+          "name": "c0001_body_081_gfdMesh_2_mesh",
+          "children": []
+        },
+        {
+          "index": 356,
+          "name": "c0001_body_081_gfdMesh_3_mesh",
+          "children": []
+        },
+        {
+          "index": 357,
+          "name": "c0001_body_081_gfdMesh_4_mesh",
+          "children": []
+        },
+        {
+          "index": 358,
+          "name": "c0001_face051_gfdMesh_0_mesh",
+          "children": []
+        },
+        {
+          "index": 359,
+          "name": "c0001_face051_gfdMesh_1_mesh",
+          "children": []
+        },
+        {
+          "index": 360,
+          "name": "c0001_face051_gfdMesh_2_mesh",
+          "children": []
+        },
+        {
+          "index": 361,
+          "name": "c0001_face051_gfdMesh_3_mesh",
+          "children": []
+        },
+        {
+          "index": 362,
+          "name": "Blur_body___kai051_gfdMesh_0_mesh",
+          "children": []
+        },
+        {
+          "index": 363,
+          "name": "Blur_body___kai051_gfdMesh_1_mesh",
+          "children": []
+        },
+        {
+          "index": 364,
+          "name": "Blur_hair___sei01_gfdMesh_0_mesh",
+          "children": []
+        },
+        {
+          "index": 365,
+          "name": "Blur_face___sei01_gfdMesh_0_mesh",
+          "children": []
+        },
+        {
+          "index": 11,
+          "name": "h_B_MZ1",
+          "children": []
+        },
+        {
+          "index": 12,
+          "name": "Bip01",
+          "children": [
+            "h_C_FS1",
+            "Bip01___Pelvis",
+            "Bip01___Footsteps"
+          ]
+        }
+      ]
+    }
+  ],
+  "animation_scene_roots_and_first_three_descendant_levels": [
+    {
+      "depth_from_scene_root": 0,
+      "nodes": [
+        {
+          "index": 0,
+          "name": "RootNode",
+          "children": [
+            "root"
+          ]
+        }
+      ]
+    },
+    {
+      "depth_from_scene_root": 1,
+      "nodes": [
+        {
+          "index": 1,
+          "name": "root",
+          "children": [
+            "c0001_hand_081",
+            "c0001_body_081",
+            "h_C_US3",
+            "c0001_face051",
+            "h_collision",
+            "Blur_body___kai051",
+            "Blur_hair___sei01",
+            "Blur_face___sei01",
+            "rot"
+          ]
+        }
+      ]
+    },
+    {
+      "depth_from_scene_root": 2,
+      "nodes": [
+        {
+          "index": 2,
+          "name": "c0001_hand_081",
+          "children": []
+        },
+        {
+          "index": 3,
+          "name": "c0001_body_081",
+          "children": []
+        },
+        {
+          "index": 4,
+          "name": "h_C_US3",
+          "children": []
+        },
+        {
+          "index": 5,
+          "name": "c0001_face051",
+          "children": []
+        },
+        {
+          "index": 6,
+          "name": "h_collision",
+          "children": []
+        },
+        {
+          "index": 7,
+          "name": "Blur_body___kai051",
+          "children": []
+        },
+        {
+          "index": 8,
+          "name": "Blur_hair___sei01",
+          "children": []
+        },
+        {
+          "index": 9,
+          "name": "Blur_face___sei01",
+          "children": []
+        },
+        {
+          "index": 10,
+          "name": "rot",
+          "children": [
+            "h_B_MZ1",
+            "Bip01"
+          ]
+        }
+      ]
+    },
+    {
+      "depth_from_scene_root": 3,
+      "nodes": [
+        {
+          "index": 11,
+          "name": "h_B_MZ1",
+          "children": []
+        },
+        {
+          "index": 12,
+          "name": "Bip01",
+          "children": [
+            "h_C_FS1",
+            "Bip01___Pelvis",
+            "Bip01___Footsteps"
+          ]
+        }
+      ]
+    }
+  ],
+  "same_first_three_levels": false,
+  "shared_node_parent_differences": [],
+  "model_only_nodes": [
+    "Blur_body___kai051_gfdMesh_0_mesh",
+    "Blur_body___kai051_gfdMesh_1_mesh",
+    "Blur_face___sei01_gfdMesh_0_mesh",
+    "Blur_hair___sei01_gfdMesh_0_mesh",
+    "b___l___hiji01_gfdMesh_0_mesh",
+    "b___r___hiji01_gfdMesh_0_mesh",
+    "c0001_body_081_gfdMesh_0_mesh",
+    "c0001_body_081_gfdMesh_1_mesh",
+    "c0001_body_081_gfdMesh_2_mesh",
+    "c0001_body_081_gfdMesh_3_mesh",
+    "c0001_body_081_gfdMesh_4_mesh",
+    "c0001_face051_gfdMesh_0_mesh",
+    "c0001_face051_gfdMesh_1_mesh",
+    "c0001_face051_gfdMesh_2_mesh",
+    "c0001_face051_gfdMesh_3_mesh",
+    "c0001_hair_081_gfdMesh_0_mesh",
+    "c0001_hand_081_gfdMesh_0_mesh",
+    "eye___l_01b01_gfdMesh_0_mesh",
+    "eye___r_01b01_gfdMesh_0_mesh",
+    "highlight___l_01b_gfdMesh_0_mesh",
+    "highlight___r_01b_gfdMesh_0_mesh",
+    "kamen051_gfdMesh_0_mesh",
+    "kamen051_in_gfdMesh_0_mesh",
+    "tan01_gfdMesh_0_mesh"
+  ],
+  "animation_only_nodes": [],
+  "translation_ratios": [
+    {
+      "name": "Bip01",
+      "ratio": 63.390256493939795,
+      "model_translation": [
+        0.0,
+        2.611246,
+        94.80555
+      ],
+      "animation_translation": [
+        0.990234375,
+        -0.509765625,
+        0.9990234375
+      ]
+    },
+    {
+      "name": "b___r___s___seifuk01",
+      "ratio": 11.957068699832647,
+      "model_translation": [
+        9.563477,
+        -0.19417143,
+        -14.126287
+      ],
+      "animation_translation": [
+        0.99951171875,
+        -0.194091796875,
+        0.99951171875
+      ]
+    },
+    {
+      "name": "b___r___suso01",
+      "ratio": 4.338740385980791,
+      "model_translation": [
+        6.5080643,
+        1.3087521,
+        0.60057473
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        0.60009765625
+      ]
+    },
+    {
+      "name": "b___r___s___seifuk02",
+      "ratio": 19.027318682950757,
+      "model_translation": [
+        19.018028,
+        -1.9073486e-06,
+        -2.3841858e-07
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___b___seifuk01",
+      "ratio": 9.334020194857738,
+      "model_translation": [
+        9.563492,
+        -10.698673,
+        -7.429309
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.99951171875,
+        0.99951171875
+      ]
+    },
+    {
+      "name": "b___r___b___seifuk02",
+      "ratio": 19.027334690769298,
+      "model_translation": [
+        19.018044,
+        3.8146973e-06,
+        -8.583069e-06
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___b___seifuk01",
+      "ratio": 9.332495024603983,
+      "model_translation": [
+        9.563446,
+        -10.698637,
+        7.4294004
+      ],
+      "animation_translation": [
+        0.99951171875,
+        1.0,
+        0.99951171875
+      ]
+    },
+    {
+      "name": "b___l___b___seifuk02",
+      "ratio": 19.027326686858938,
+      "model_translation": [
+        19.018036,
+        1.9073486e-06,
+        -9.536743e-07
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___f___seifuk01",
+      "ratio": 9.293331749568928,
+      "model_translation": [
+        9.563461,
+        10.542084,
+        -7.499984
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.99951171875,
+        0.99951171875
+      ]
+    },
+    {
+      "name": "b___r___f___seifuk02",
+      "ratio": 19.0273266868593,
+      "model_translation": [
+        19.018036,
+        4.2915344e-06,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___f___seifuk01",
+      "ratio": 9.293351645434724,
+      "model_translation": [
+        9.563454,
+        10.542122,
+        7.5000134
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.99951171875,
+        0.99951171875
+      ]
+    },
+    {
+      "name": "b___l___f___seifuk02",
+      "ratio": 19.027326686858842,
+      "model_translation": [
+        19.018036,
+        0.0,
+        -9.536743e-07
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___s___seifuk01",
+      "ratio": 11.957084827609266,
+      "model_translation": [
+        9.563431,
+        -0.1940937,
+        14.126347
+      ],
+      "animation_translation": [
+        0.99951171875,
+        -0.194091796875,
+        0.99951171875
+      ]
+    },
+    {
+      "name": "b___l___suso01",
+      "ratio": 4.338202771426572,
+      "model_translation": [
+        6.5080714,
+        1.30871,
+        -0.60060954
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        -0.6005859375
+      ]
+    },
+    {
+      "name": "b___l___s___seifuk02",
+      "ratio": 19.027326686858842,
+      "model_translation": [
+        19.018036,
+        0.0,
+        -9.536743e-07
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___Pelvis_hojo01",
+      "ratio": 6.444338155646837,
+      "model_translation": [
+        -0.7993927,
+        0.5503974,
+        8.927321
+      ],
+      "animation_translation": [
+        -0.79931640625,
+        0.55029296875,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r___Pelvis_hojo01",
+      "ratio": 6.44412604528255,
+      "model_translation": [
+        -0.7993393,
+        0.5503483,
+        -8.9270315
+      ],
+      "animation_translation": [
+        -0.79931640625,
+        0.55029296875,
+        1.0
+      ]
+    },
+    {
+      "name": "Bip01___Spine",
+      "ratio": 8.744182004349918,
+      "model_translation": [
+        8.740471,
+        -0.011384249,
+        1.2137069e-05
+      ],
+      "animation_translation": [
+        0.99951171875,
+        -0.01137542724609375,
+        -7.009506225585938e-05
+      ]
+    },
+    {
+      "name": "Bip01___R___ThighTwist",
+      "ratio": 8.118553125974588,
+      "model_translation": [
+        -8.738106,
+        0.20347881,
+        -8.446414
+      ],
+      "animation_translation": [
+        0.98974609375,
+        -0.5126953125,
+        0.99951171875
+      ]
+    },
+    {
+      "name": "Bip01___R___ThighTwist1",
+      "ratio": 21.09840595603325,
+      "model_translation": [
+        21.088104,
+        4.7683716e-07,
+        9.536743e-07
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___L___ThighTwist",
+      "ratio": 8.362485120023754,
+      "model_translation": [
+        -8.738106,
+        0.20343208,
+        8.446414
+      ],
+      "animation_translation": [
+        0.99951171875,
+        -0.384033203125,
+        0.98291015625
+      ]
+    },
+    {
+      "name": "Bip01___L___ThighTwist1",
+      "ratio": 21.098405956033243,
+      "model_translation": [
+        21.088104,
+        0.0,
+        -9.536743e-07
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___R___Thigh",
+      "ratio": 8.118553125974588,
+      "model_translation": [
+        -8.738106,
+        0.20347881,
+        -8.446414
+      ],
+      "animation_translation": [
+        0.98974609375,
+        -0.5126953125,
+        0.99951171875
+      ]
+    },
+    {
+      "name": "b___r___hiza01",
+      "ratio": 36.32046370534141,
+      "model_translation": [
+        41.919098,
+        -0.5571165,
+        -0.15310287
+      ],
+      "animation_translation": [
+        0.99951171875,
+        -0.556640625,
+        -0.153076171875
+      ]
+    },
+    {
+      "name": "b___r___Thigh_hojo01",
+      "ratio": 4.390591715740345,
+      "model_translation": [
+        -1.2329483,
+        6.5368867,
+        3.6852188
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "Bip01___R___Calf",
+      "ratio": 42.19680390815828,
+      "model_translation": [
+        42.1762,
+        0.0,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___Blur_asi01",
+      "ratio": 1.349492651130327,
+      "model_translation": [
+        1.54175,
+        -1.1581197,
+        0.3042183
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        0.30419921875
+      ]
+    },
+    {
+      "name": "Bip01___R___Foot",
+      "ratio": 42.65674248754276,
+      "model_translation": [
+        42.635914,
+        4.7683716e-07,
+        9.536743e-07
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___Blur_asi03",
+      "ratio": 3.731160282332362,
+      "model_translation": [
+        4.342778,
+        -0.56091547,
+        0.26080513
+      ],
+      "animation_translation": [
+        1.0,
+        -0.560546875,
+        0.2607421875
+      ]
+    },
+    {
+      "name": "Bip01___R___Toe0",
+      "ratio": 10.000205316665836,
+      "model_translation": [
+        10.344868,
+        9.638168,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        1.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___R___Toe0Nub",
+      "ratio": 1.0000003507724875,
+      "model_translation": [
+        7.796687,
+        -1.4901161e-08,
+        0.0
+      ],
+      "animation_translation": [
+        7.796684265136719,
+        -4.76837158203125e-07,
+        -3.814697265625e-06
+      ]
+    },
+    {
+      "name": "Bip01___R___Toe0Nub___dum",
+      "ratio": 7.700447684220811,
+      "model_translation": [
+        7.6966877,
+        -1.4901161e-08,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___L___Thigh",
+      "ratio": 8.362485120023754,
+      "model_translation": [
+        -8.738106,
+        0.20343208,
+        8.446414
+      ],
+      "animation_translation": [
+        0.99951171875,
+        -0.384033203125,
+        0.98291015625
+      ]
+    },
+    {
+      "name": "b___l___hiza01",
+      "ratio": 36.303951288803695,
+      "model_translation": [
+        41.919067,
+        -0.5570936,
+        0.15699768
+      ],
+      "animation_translation": [
+        0.99951171875,
+        -0.556640625,
+        0.156982421875
+      ]
+    },
+    {
+      "name": "b___l___Thigh_hojo01",
+      "ratio": 4.390735958821946,
+      "model_translation": [
+        -1.2329216,
+        6.53692,
+        -3.6856842
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "Bip01___L___Calf",
+      "ratio": 42.196803908158294,
+      "model_translation": [
+        42.1762,
+        0.0,
+        9.536743e-07
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___Blur_asi01",
+      "ratio": 1.3491635813916265,
+      "model_translation": [
+        1.5418739,
+        -1.1580937,
+        -0.30865914
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        -0.30859375
+      ]
+    },
+    {
+      "name": "Bip01___L___Foot",
+      "ratio": 42.65674248754279,
+      "model_translation": [
+        42.635914,
+        9.536743e-07,
+        -1.9073486e-06
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___Blur_asi03",
+      "ratio": 3.7309125884961714,
+      "model_translation": [
+        4.3424854,
+        -0.5608902,
+        -0.26083374
+      ],
+      "animation_translation": [
+        1.0,
+        -0.560546875,
+        -0.2607421875
+      ]
+    },
+    {
+      "name": "Bip01___L___Toe0",
+      "ratio": 10.002647711017595,
+      "model_translation": [
+        10.344866,
+        9.638169,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.99951171875,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___L___Toe0Nub",
+      "ratio": 0.999999944398291,
+      "model_translation": [
+        7.7966886,
+        -9.3877316e-07,
+        0.0
+      ],
+      "animation_translation": [
+        7.796689033508301,
+        -9.5367431640625e-07,
+        -3.814697265625e-06
+      ]
+    },
+    {
+      "name": "Bip01___L___Toe0Nub___dum",
+      "ratio": 7.700447984367367,
+      "model_translation": [
+        7.696688,
+        0.0,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___Spine1",
+      "ratio": 14.30441289363308,
+      "model_translation": [
+        14.305435,
+        -0.01203537,
+        -3.3383913e-08
+      ],
+      "animation_translation": [
+        1.0,
+        -0.0119781494140625,
+        -0.00038051605224609375
+      ]
+    },
+    {
+      "name": "b___l___fs_jacket01",
+      "ratio": 8.248474848015904,
+      "model_translation": [
+        3.646885,
+        -2.7980027,
+        13.524681
+      ],
+      "animation_translation": [
+        1.0,
+        0.99951171875,
+        1.0
+      ]
+    },
+    {
+      "name": "b___l___fs_jacket02",
+      "ratio": 8.816087730338111,
+      "model_translation": [
+        8.811783,
+        3.8146973e-06,
+        -1.9073486e-06
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___fs_jacket03",
+      "ratio": 10.060477342452732,
+      "model_translation": [
+        10.055565,
+        1.9073486e-06,
+        1.9073486e-06
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___fs_jacket04b",
+      "ratio": 15.229139103080783,
+      "model_translation": [
+        15.221703,
+        1.9073486e-06,
+        -9.536743e-06
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___fs_jacket05b",
+      "ratio": 18.29008900004637,
+      "model_translation": [
+        18.290089,
+        -3.8146973e-06,
+        4.1007996e-05
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___fs_jacket06b",
+      "ratio": 17.288554677090115,
+      "model_translation": [
+        17.280113,
+        -7.6293945e-06,
+        -4.7683716e-07
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___fs_jacket06c",
+      "ratio": 21.99273000001191,
+      "model_translation": [
+        21.99273,
+        2.2888184e-05,
+        0.0
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___f_jacket01",
+      "ratio": 6.868067779296724,
+      "model_translation": [
+        3.6256886,
+        9.968365,
+        4.040245
+      ],
+      "animation_translation": [
+        1.0,
+        0.98095703125,
+        0.876953125
+      ]
+    },
+    {
+      "name": "b___l___f_jacket02",
+      "ratio": 8.816087730337285,
+      "model_translation": [
+        8.811783,
+        1.9073486e-06,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___f_jacket03",
+      "ratio": 10.060469338544436,
+      "model_translation": [
+        10.055557,
+        -9.536743e-07,
+        1.9073486e-06
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___f_jacket04b",
+      "ratio": 15.229131099172058,
+      "model_translation": [
+        15.221695,
+        -1.9073486e-06,
+        -8.583069e-06
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___f_jacket05b",
+      "ratio": 16.998657000006208,
+      "model_translation": [
+        16.998657,
+        -5.722046e-06,
+        1.335144e-05
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___f_jacket06b",
+      "ratio": 18.542791097217894,
+      "model_translation": [
+        18.533737,
+        -9.536743e-06,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___f_jacket06c",
+      "ratio": 23.178947000000196,
+      "model_translation": [
+        23.178947,
+        2.861023e-06,
+        9.536743e-07
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___f_jacket01",
+      "ratio": 6.642946230409959,
+      "model_translation": [
+        3.6256638,
+        9.967927,
+        -4.0399623
+      ],
+      "animation_translation": [
+        1.0,
+        0.99560546875,
+        0.96337890625
+      ]
+    },
+    {
+      "name": "b___r___f_jacket02",
+      "ratio": 8.811783000000206,
+      "model_translation": [
+        8.811783,
+        1.9073486e-06,
+        0.0
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___f_jacket03",
+      "ratio": 10.055557000000181,
+      "model_translation": [
+        10.055557,
+        -1.9073486e-06,
+        0.0
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___f_jacket04b",
+      "ratio": 15.2291160918439,
+      "model_translation": [
+        15.22168,
+        2.861023e-06,
+        7.6293945e-06
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___f_jacket05b",
+      "ratio": 17.006992195418647,
+      "model_translation": [
+        16.998688,
+        -1.9073486e-05,
+        -9.536743e-07
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___f_jacket06b",
+      "ratio": 18.533947000001668,
+      "model_translation": [
+        18.533947,
+        7.6293945e-06,
+        1.9073486e-06
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___f_jacket06c",
+      "ratio": 23.17895900000706,
+      "model_translation": [
+        23.178959,
+        -5.722046e-06,
+        1.7166138e-05
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___fs_jacket01",
+      "ratio": 8.251163717103017,
+      "model_translation": [
+        3.646881,
+        -2.7979653,
+        -13.524694
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.99951171875,
+        0.99951171875
+      ]
+    },
+    {
+      "name": "b___r___fs_jacket02",
+      "ratio": 8.816094733771019,
+      "model_translation": [
+        8.81179,
+        -1.335144e-05,
+        -8.583069e-06
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___fs_jacket03",
+      "ratio": 10.060462335128193,
+      "model_translation": [
+        10.05555,
+        3.8146973e-06,
+        7.6293945e-06
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___fs_jacket04b",
+      "ratio": 15.229123095263269,
+      "model_translation": [
+        15.221687,
+        0.0,
+        7.6293945e-06
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___fs_jacket05b",
+      "ratio": 18.29903107377166,
+      "model_translation": [
+        18.290096,
+        7.6293945e-06,
+        1.1444092e-05
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___fs_jacket06b",
+      "ratio": 17.28952815241988,
+      "model_translation": [
+        17.281086,
+        7.6293945e-06,
+        9.536743e-07
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___fs_jacket06c",
+      "ratio": 21.992748000034616,
+      "model_translation": [
+        21.992748,
+        -3.0517578e-05,
+        -2.4318695e-05
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___b_jacket01",
+      "ratio": 8.08877423573209,
+      "model_translation": [
+        3.6605704,
+        -11.03197,
+        -7.8095474
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.99951171875,
+        0.99951171875
+      ]
+    },
+    {
+      "name": "b___r___b_jacket02",
+      "ratio": 8.816077725452708,
+      "model_translation": [
+        8.811773,
+        -3.8146973e-06,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___b_jacket03",
+      "ratio": 10.060479343430131,
+      "model_translation": [
+        10.055567,
+        -3.8146973e-06,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___b_jacket04b",
+      "ratio": 15.229128097703956,
+      "model_translation": [
+        15.221692,
+        0.0,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___b_jacket05b",
+      "ratio": 16.73940553786031,
+      "model_translation": [
+        16.731232,
+        0.0,
+        9.536743e-07
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___b_jacket06b",
+      "ratio": 18.469128128974653,
+      "model_translation": [
+        18.46011,
+        7.6293945e-06,
+        -1.1920929e-05
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___b_jacket06c",
+      "ratio": 23.49151800000531,
+      "model_translation": [
+        23.491518,
+        -7.6293945e-06,
+        1.3828278e-05
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___b_jacket01",
+      "ratio": 8.087460783749501,
+      "model_translation": [
+        3.6605606,
+        -11.031998,
+        7.809524
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.99951171875,
+        1.0
+      ]
+    },
+    {
+      "name": "b___l___b_jacket02",
+      "ratio": 8.816087730338111,
+      "model_translation": [
+        8.811783,
+        3.8146973e-06,
+        -1.9073486e-06
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___b_jacket03",
+      "ratio": 10.060469338544257,
+      "model_translation": [
+        10.055557,
+        0.0,
+        9.536743e-07
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___b_jacket04b",
+      "ratio": 15.229123095264377,
+      "model_translation": [
+        15.221687,
+        -9.536743e-06,
+        9.536743e-07
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___b_jacket05b",
+      "ratio": 16.737977840767787,
+      "model_translation": [
+        16.729805,
+        1.1444092e-05,
+        -2.670288e-05
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___b_jacket06b",
+      "ratio": 18.468394770884622,
+      "model_translation": [
+        18.459377,
+        -3.8146973e-06,
+        -4.7683716e-07
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___b_jacket06c",
+      "ratio": 23.49153500000124,
+      "model_translation": [
+        23.491535,
+        7.6293945e-06,
+        0.0
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___Spine2",
+      "ratio": 15.126213233580277,
+      "model_translation": [
+        15.119949,
+        -0.013228655,
+        -3.6691063e-08
+      ],
+      "animation_translation": [
+        0.99951171875,
+        -0.012176513671875,
+        0.0008549690246582031
+      ]
+    },
+    {
+      "name": "h_M_HL3",
+      "ratio": 1.000000233751473,
+      "model_translation": [
+        12.496933,
+        -3.6823766,
+        12.999995
+      ],
+      "animation_translation": [
+        12.496925354003906,
+        -3.6823768615722656,
+        12.999996185302734
+      ]
+    },
+    {
+      "name": "b___b___Blur_sena01",
+      "ratio": 16.0012606738268,
+      "model_translation": [
+        21.350586,
+        -7.4988775,
+        -1.04904175e-05
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___Neck",
+      "ratio": 10.748939739358535,
+      "model_translation": [
+        14.775833,
+        -3.539631,
+        -3.826438e-06
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.99951171875,
+        -0.0019197463989257812
+      ]
+    },
+    {
+      "name": "Bip01___R___Clavicle",
+      "ratio": 2.391658751957727,
+      "model_translation": [
+        -3.332672,
+        1.1368065,
+        -1.6537229
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.80419921875,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r___Blur_kata01",
+      "ratio": 4.899411274742165,
+      "model_translation": [
+        4.5281677,
+        0.4319377,
+        -5.6387024
+      ],
+      "animation_translation": [
+        1.0,
+        0.431884765625,
+        1.0
+      ]
+    },
+    {
+      "name": "Bip01___R___UpperArm",
+      "ratio": 11.793015308255995,
+      "model_translation": [
+        11.787257,
+        4.7683716e-07,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___hiji01",
+      "ratio": 25.628189810175847,
+      "model_translation": [
+        25.90608,
+        0.051252365,
+        0.14216614
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.051239013671875,
+        0.14208984375
+      ]
+    },
+    {
+      "name": "b___r___hsode01",
+      "ratio": 1.0000074885178052,
+      "model_translation": [
+        0.56263447,
+        0.26584768,
+        -0.039794922
+      ],
+      "animation_translation": [
+        0.5626296997070312,
+        0.26584625244140625,
+        -0.039798736572265625
+      ]
+    },
+    {
+      "name": "b___r___hsode02",
+      "ratio": 0.9999995786699508,
+      "model_translation": [
+        17.428757,
+        0.0,
+        0.0
+      ],
+      "animation_translation": [
+        17.42876434326172,
+        -3.814697265625e-06,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___UpperArm_hojo01",
+      "ratio": 1.6413313866290893,
+      "model_translation": [
+        1.646883,
+        0.08657026,
+        -0.05734253
+      ],
+      "animation_translation": [
+        1.0,
+        0.0865478515625,
+        -0.057342529296875
+      ]
+    },
+    {
+      "name": "Bip01___R___ForeTwist",
+      "ratio": 26.30148352125061,
+      "model_translation": [
+        26.288641,
+        0.0,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___R___ForeTwist1",
+      "ratio": 12.739792,
+      "model_translation": [
+        12.739792,
+        0.0,
+        0.0
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___R___Forearm",
+      "ratio": 26.30148352125061,
+      "model_translation": [
+        26.288641,
+        0.0,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___Blur_ude01",
+      "ratio": 3.9434987578158602,
+      "model_translation": [
+        4.6050224,
+        0.55760765,
+        -0.27989197
+      ],
+      "animation_translation": [
+        1.0,
+        0.55712890625,
+        -0.27978515625
+      ]
+    },
+    {
+      "name": "b___r___sode01",
+      "ratio": 1.0000015624608107,
+      "model_translation": [
+        2.5789757,
+        0.2700076,
+        0.13430786
+      ],
+      "animation_translation": [
+        2.5789718627929688,
+        0.2700071334838867,
+        0.13430404663085938
+      ]
+    },
+    {
+      "name": "b___r___sode02",
+      "ratio": 1.0000000121385477,
+      "model_translation": [
+        25.663956,
+        0.0,
+        -4.7683716e-07
+      ],
+      "animation_translation": [
+        25.663955688476562,
+        -3.814697265625e-06,
+        -4.76837158203125e-07
+      ]
+    },
+    {
+      "name": "Bip01___R___Hand",
+      "ratio": 25.492031280898875,
+      "model_translation": [
+        25.479584,
+        0.0,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___Blur_te01",
+      "ratio": 1.0002426282425576,
+      "model_translation": [
+        0.30376244,
+        -0.30509353,
+        -0.57139254
+      ],
+      "animation_translation": [
+        0.3037109375,
+        -0.304931640625,
+        -0.5712890625
+      ]
+    },
+    {
+      "name": "h___r___hand_hojyo01",
+      "ratio": 1.0000000205520179,
+      "model_translation": [
+        6.403885,
+        -0.17788696,
+        -3.8618865
+      ],
+      "animation_translation": [
+        6.4038848876953125,
+        -0.17787933349609375,
+        -3.861886739730835
+      ]
+    },
+    {
+      "name": "h_Motion_hand_R",
+      "ratio": 5.182413677887779,
+      "model_translation": [
+        7.131897,
+        1.7091522,
+        0.052170277
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        0.052154541015625
+      ]
+    },
+    {
+      "name": "Bip01___R___Finger4",
+      "ratio": 6.059892275356808,
+      "model_translation": [
+        8.138191,
+        -0.22224426,
+        -2.9842753
+      ],
+      "animation_translation": [
+        0.99951171875,
+        -0.22216796875,
+        0.99951171875
+      ]
+    },
+    {
+      "name": "h___r___hand_hojyo02",
+      "ratio": 1.0000011877522719,
+      "model_translation": [
+        0.96139526,
+        0.09413147,
+        -0.8884678
+      ],
+      "animation_translation": [
+        0.961395263671875,
+        0.09411430358886719,
+        -0.8884673118591309
+      ]
+    },
+    {
+      "name": "Bip01___R___Finger41",
+      "ratio": 3.1640663542745484,
+      "model_translation": [
+        3.1625214,
+        0.0,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___R___Finger42",
+      "ratio": 1.7223834075908604,
+      "model_translation": [
+        1.7215424,
+        1.5258789e-05,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___R___Finger4Nub",
+      "ratio": 1.7713394000002567,
+      "model_translation": [
+        1.7713394,
+        0.0,
+        -9.536743e-07
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___R___Finger3",
+      "ratio": 5.783550427707858,
+      "model_translation": [
+        8.345734,
+        -0.37130737,
+        -1.2848325
+      ],
+      "animation_translation": [
+        0.99951171875,
+        -0.37109375,
+        0.99951171875
+      ]
+    },
+    {
+      "name": "Bip01___R___Finger31",
+      "ratio": 3.46151379241657,
+      "model_translation": [
+        3.4598236,
+        -3.0517578e-05,
+        1.9073486e-06
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___R___Finger32",
+      "ratio": 2.264289209966005,
+      "model_translation": [
+        2.2631836,
+        0.0,
+        -9.536743e-07
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___R___Finger3Nub",
+      "ratio": 2.595596300044851,
+      "model_translation": [
+        2.5955963,
+        1.5258789e-05,
+        0.0
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___R___Finger2",
+      "ratio": 6.1443801375388425,
+      "model_translation": [
+        8.334854,
+        -0.32044983,
+        0.87261057
+      ],
+      "animation_translation": [
+        0.99951171875,
+        -0.3203125,
+        0.87255859375
+      ]
+    },
+    {
+      "name": "Bip01___R___Finger21",
+      "ratio": 3.7692202395701027,
+      "model_translation": [
+        3.7673798,
+        0.0,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___R___Finger22",
+      "ratio": 2.4748946446978386,
+      "model_translation": [
+        2.4736862,
+        -1.5258789e-05,
+        4.7683716e-07
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___R___Finger2Nub",
+      "ratio": 2.78096,
+      "model_translation": [
+        2.78096,
+        0.0,
+        0.0
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___R___Finger1",
+      "ratio": 5.970357192852837,
+      "model_translation": [
+        7.985153,
+        -0.111572266,
+        2.808796
+      ],
+      "animation_translation": [
+        0.99951171875,
+        -0.111572265625,
+        0.99951171875
+      ]
+    },
+    {
+      "name": "Bip01___R___Finger11",
+      "ratio": 3.6739893401074744,
+      "model_translation": [
+        3.6721954,
+        0.0,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___R___Finger12",
+      "ratio": 2.338521356130923,
+      "model_translation": [
+        2.3373795,
+        0.0,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___R___Finger1Nub",
+      "ratio": 2.640884400044082,
+      "model_translation": [
+        2.6408844,
+        1.5258789e-05,
+        0.0
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___R___Finger0",
+      "ratio": 1.202630024645873,
+      "model_translation": [
+        0.80849457,
+        1.4698639,
+        0.9742079
+      ],
+      "animation_translation": [
+        0.80810546875,
+        1.0,
+        0.97412109375
+      ]
+    },
+    {
+      "name": "Bip01___R___Finger01",
+      "ratio": 6.427513000000284,
+      "model_translation": [
+        6.427513,
+        -1.9073486e-06,
+        0.0
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___R___Finger02",
+      "ratio": 2.424577075573408,
+      "model_translation": [
+        2.4233932,
+        9.536743e-07,
+        -1.5258789e-05
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___R___Finger0Nub",
+      "ratio": 0.9999955410189587,
+      "model_translation": [
+        2.5585976,
+        0.0,
+        0.0
+      ],
+      "animation_translation": [
+        2.5586090087890625,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___R___Finger0Nub___dum",
+      "ratio": 2.4586105,
+      "model_translation": [
+        2.4586105,
+        0.0,
+        0.0
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___L___Clavicle",
+      "ratio": 2.3454623500067537,
+      "model_translation": [
+        -3.332672,
+        1.1368027,
+        1.6537174
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.87109375,
+        0.99658203125
+      ]
+    },
+    {
+      "name": "b___l___Blur_kata01",
+      "ratio": 4.89941705907841,
+      "model_translation": [
+        4.5281754,
+        0.4319195,
+        5.6387086
+      ],
+      "animation_translation": [
+        1.0,
+        0.431884765625,
+        1.0
+      ]
+    },
+    {
+      "name": "Bip01___L___UpperArm",
+      "ratio": 11.793013307278956,
+      "model_translation": [
+        11.787255,
+        4.7683716e-07,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___hiji01",
+      "ratio": 25.628316795273776,
+      "model_translation": [
+        25.90609,
+        0.051145554,
+        -0.14212036
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0511474609375,
+        -0.14208984375
+      ]
+    },
+    {
+      "name": "b___l___hsode01",
+      "ratio": 0.9999989213790986,
+      "model_translation": [
+        0.5626373,
+        0.2658043,
+        0.039886475
+      ],
+      "animation_translation": [
+        0.5626373291015625,
+        0.26580810546875,
+        0.0398712158203125
+      ]
+    },
+    {
+      "name": "b___l___UpperArm_hojo01",
+      "ratio": 1.6413359588156815,
+      "model_translation": [
+        1.6468849,
+        0.08652592,
+        0.057403564
+      ],
+      "animation_translation": [
+        1.0,
+        0.08648681640625,
+        0.057403564453125
+      ]
+    },
+    {
+      "name": "Bip01___L___ForeTwist",
+      "ratio": 26.30148552222765,
+      "model_translation": [
+        26.288643,
+        0.0,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___L___ForeTwist1",
+      "ratio": 12.739796000000009,
+      "model_translation": [
+        12.739796,
+        -4.7683716e-07,
+        0.0
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___L___Forearm",
+      "ratio": 26.30148552222765,
+      "model_translation": [
+        26.288643,
+        0.0,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___Blur_ude01",
+      "ratio": 3.943886021410841,
+      "model_translation": [
+        4.605509,
+        0.55741024,
+        0.27985618
+      ],
+      "animation_translation": [
+        1.0,
+        0.55712890625,
+        0.27978515625
+      ]
+    },
+    {
+      "name": "b___l___sode01",
+      "ratio": 2.486158110249298,
+      "model_translation": [
+        2.5789604,
+        0.27020454,
+        -0.13424683
+      ],
+      "animation_translation": [
+        1.0,
+        0.269775390625,
+        -0.1341552734375
+      ]
+    },
+    {
+      "name": "b___l___sode02",
+      "ratio": 0.9999999976980357,
+      "model_translation": [
+        25.663948,
+        1.5258789e-05,
+        0.0
+      ],
+      "animation_translation": [
+        25.66394805908203,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___L___Hand",
+      "ratio": 25.492038284323105,
+      "model_translation": [
+        25.479591,
+        9.536743e-07,
+        1.5258789e-05
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___Blur_te01",
+      "ratio": 1.0005456409910856,
+      "model_translation": [
+        0.30376816,
+        -0.30504906,
+        0.5711961
+      ],
+      "animation_translation": [
+        0.3037109375,
+        -0.304931640625,
+        0.57080078125
+      ]
+    },
+    {
+      "name": "h___l___hand_hojyo01",
+      "ratio": 5.2479882251662655,
+      "model_translation": [
+        6.4038773,
+        -0.17788696,
+        3.8616948
+      ],
+      "animation_translation": [
+        1.0,
+        -0.1778564453125,
+        1.0
+      ]
+    },
+    {
+      "name": "h_Motion_hand_L",
+      "ratio": 5.182379055099416,
+      "model_translation": [
+        7.1319046,
+        1.7091522,
+        -0.052460194
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        -0.052459716796875
+      ]
+    },
+    {
+      "name": "Bip01___L___Finger4",
+      "ratio": 6.059892058879455,
+      "model_translation": [
+        8.138191,
+        -0.22224426,
+        2.9842744
+      ],
+      "animation_translation": [
+        0.99951171875,
+        -0.22216796875,
+        0.99951171875
+      ]
+    },
+    {
+      "name": "h___l___hand_hojyo02",
+      "ratio": 1.0002999041948542,
+      "model_translation": [
+        0.96138763,
+        0.09413147,
+        0.8882761
+      ],
+      "animation_translation": [
+        0.9609375,
+        0.0941162109375,
+        0.88818359375
+      ]
+    },
+    {
+      "name": "Bip01___L___Finger41",
+      "ratio": 3.162529000000144,
+      "model_translation": [
+        3.162529,
+        0.0,
+        9.536743e-07
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___L___Finger42",
+      "ratio": 1.7223834075911246,
+      "model_translation": [
+        1.7215424,
+        1.5258789e-05,
+        9.536743e-07
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___L___Finger4Nub",
+      "ratio": 1.7713394000657217,
+      "model_translation": [
+        1.7713394,
+        -1.5258789e-05,
+        0.0
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___L___Finger3",
+      "ratio": 5.783550427707858,
+      "model_translation": [
+        8.345734,
+        -0.37130737,
+        1.2848325
+      ],
+      "animation_translation": [
+        0.99951171875,
+        -0.37109375,
+        0.99951171875
+      ]
+    },
+    {
+      "name": "Bip01___L___Finger31",
+      "ratio": 3.4615061886024328,
+      "model_translation": [
+        3.459816,
+        -1.5258789e-05,
+        -9.536743e-07
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___L___Finger32",
+      "ratio": 2.2642892100174685,
+      "model_translation": [
+        2.2631836,
+        1.5258789e-05,
+        9.536743e-07
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___L___Finger3Nub",
+      "ratio": 2.5956040000448506,
+      "model_translation": [
+        2.595604,
+        1.5258789e-05,
+        0.0
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___L___Finger2",
+      "ratio": 6.142765282764718,
+      "model_translation": [
+        8.3348465,
+        -0.32044983,
+        -0.87261057
+      ],
+      "animation_translation": [
+        1.0,
+        -0.3203125,
+        -0.87255859375
+      ]
+    },
+    {
+      "name": "Bip01___L___Finger21",
+      "ratio": 3.7673874000000303,
+      "model_translation": [
+        3.7673874,
+        0.0,
+        -4.7683716e-07
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___L___Finger22",
+      "ratio": 2.474894644650892,
+      "model_translation": [
+        2.4736862,
+        0.0,
+        -9.536743e-07
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___L___Finger2Nub",
+      "ratio": 2.7809600000419024,
+      "model_translation": [
+        2.78096,
+        1.5258789e-05,
+        -4.7683716e-07
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___L___Finger1",
+      "ratio": 5.970357075852611,
+      "model_translation": [
+        7.985153,
+        -0.111572266,
+        -2.8087955
+      ],
+      "animation_translation": [
+        0.99951171875,
+        -0.111572265625,
+        0.99951171875
+      ]
+    },
+    {
+      "name": "Bip01___L___Finger11",
+      "ratio": 3.6739817363947243,
+      "model_translation": [
+        3.6721878,
+        0.0,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___L___Finger12",
+      "ratio": 2.3385213561807534,
+      "model_translation": [
+        2.3373795,
+        1.5258789e-05,
+        0.0
+      ],
+      "animation_translation": [
+        0.99951171875,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___L___Finger1Nub",
+      "ratio": 2.6408768,
+      "model_translation": [
+        2.6408768,
+        0.0,
+        0.0
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___L___Finger0",
+      "ratio": 1.2028576903748973,
+      "model_translation": [
+        0.8085022,
+        1.4698639,
+        -0.9742079
+      ],
+      "animation_translation": [
+        0.80810546875,
+        0.99951171875,
+        -0.97412109375
+      ]
+    },
+    {
+      "name": "Bip01___L___Finger01",
+      "ratio": 6.4275055,
+      "model_translation": [
+        6.4275055,
+        0.0,
+        0.0
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___L___Finger02",
+      "ratio": 2.4234009000482253,
+      "model_translation": [
+        2.4234009,
+        9.536743e-07,
+        1.5258789e-05
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___L___Finger0Nub",
+      "ratio": 0.9999955180689345,
+      "model_translation": [
+        2.5586128,
+        -1.9073486e-06,
+        3.0517578e-05
+      ],
+      "animation_translation": [
+        2.558624267578125,
+        -9.5367431640625e-07,
+        3.0517578125e-05
+      ]
+    },
+    {
+      "name": "Bip01___L___Finger0Nub___dum",
+      "ratio": 2.45861050004735,
+      "model_translation": [
+        2.4586105,
+        0.0,
+        -1.5258789e-05
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___Head",
+      "ratio": 6.607688198756882,
+      "model_translation": [
+        8.357803,
+        -0.7843323,
+        -1.7542334e-07
+      ],
+      "animation_translation": [
+        0.99951171875,
+        -0.7841796875,
+        0.0
+      ]
+    },
+    {
+      "name": "b___s___Blur_face01",
+      "ratio": 4.630927287650517,
+      "model_translation": [
+        -0.44723603,
+        5.0528092,
+        0.0
+      ],
+      "animation_translation": [
+        -0.447021484375,
+        1.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___s___Blur_head01",
+      "ratio": 2.8342568067744125,
+      "model_translation": [
+        2.4716933,
+        -3.1554327,
+        0.0
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        0.0
+      ]
+    },
+    {
+      "name": "root___head",
+      "ratio": 2.2855649742710207,
+      "model_translation": [
+        3.0091858,
+        1.1800065,
+        6.103515e-05
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        6.103515625e-05
+      ]
+    },
+    {
+      "name": "b___r_hair07",
+      "ratio": 4.704153544196548,
+      "model_translation": [
+        2.9738398,
+        3.2628784,
+        -6.8481445
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r_hair08",
+      "ratio": 0.9999982852260465,
+      "model_translation": [
+        8.965042,
+        9.536743e-07,
+        1.5258789e-05
+      ],
+      "animation_translation": [
+        8.965057373046875,
+        9.5367431640625e-07,
+        1.52587890625e-05
+      ]
+    },
+    {
+      "name": "b___l_hair07",
+      "ratio": 4.559476788557783,
+      "model_translation": [
+        2.973878,
+        3.2628784,
+        6.547989
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___l_hair08",
+      "ratio": 0.999999999454578,
+      "model_translation": [
+        8.9535675,
+        -5.722046e-06,
+        0.0
+      ],
+      "animation_translation": [
+        8.953567504882812,
+        -6.67572021484375e-06,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r_hair05",
+      "ratio": 9.085119614325155,
+      "model_translation": [
+        -4.345637,
+        13.484283,
+        -6.848923
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r_hair06",
+      "ratio": 0.999999111646703,
+      "model_translation": [
+        8.595932,
+        0.0,
+        -1.5258789e-05
+      ],
+      "animation_translation": [
+        8.595939636230469,
+        3.814697265625e-06,
+        -1.52587890625e-05
+      ]
+    },
+    {
+      "name": "b___r_hair03",
+      "ratio": 9.19572110075835,
+      "model_translation": [
+        3.0836926,
+        14.1961975,
+        -6.530136
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r_hair04",
+      "ratio": 0.999999111646703,
+      "model_translation": [
+        8.595932,
+        0.0,
+        -1.5258789e-05
+      ],
+      "animation_translation": [
+        8.595939636230469,
+        3.814697265625e-06,
+        -1.52587890625e-05
+      ]
+    },
+    {
+      "name": "b___r_hair01",
+      "ratio": 8.251778703346158,
+      "model_translation": [
+        -2.9900734,
+        12.183502,
+        -6.84816
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r_hair02",
+      "ratio": 0.999999958388883,
+      "model_translation": [
+        8.965057,
+        0.0,
+        1.5735626e-05
+      ],
+      "animation_translation": [
+        8.965057373046875,
+        0.0,
+        1.52587890625e-05
+      ]
+    },
+    {
+      "name": "b___l_hair01",
+      "ratio": 8.170145110143102,
+      "model_translation": [
+        -2.9900331,
+        12.183487,
+        6.547989
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___l_hair02",
+      "ratio": 1.0000000263948168,
+      "model_translation": [
+        8.953583,
+        -7.6293945e-06,
+        9.536743e-07
+      ],
+      "animation_translation": [
+        8.953582763671875,
+        -7.62939453125e-06,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l_hair03",
+      "ratio": 8.848023491961072,
+      "model_translation": [
+        3.085546,
+        13.651175,
+        6.243988
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___l_hair04",
+      "ratio": 0.9999973747789338,
+      "model_translation": [
+        8.595795,
+        -7.6293945e-06,
+        -3.8146973e-06
+      ],
+      "animation_translation": [
+        8.595817565917969,
+        -1.1444091796875e-05,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l_hair05",
+      "ratio": 9.341307131997288,
+      "model_translation": [
+        -4.7907615,
+        14.036102,
+        6.466568
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___l_hair06",
+      "ratio": 0.9999999994546518,
+      "model_translation": [
+        8.9535675,
+        -7.6293945e-06,
+        0.0
+      ],
+      "animation_translation": [
+        8.953567504882812,
+        -7.62939453125e-06,
+        0.0
+      ]
+    },
+    {
+      "name": "b___b_hair01",
+      "ratio": 12.471832389671494,
+      "model_translation": [
+        7.695867,
+        15.871628,
+        0.016433714
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        0.0164337158203125
+      ]
+    },
+    {
+      "name": "b___b_hair02",
+      "ratio": 0.9999992941300913,
+      "model_translation": [
+        10.787735,
+        7.6293945e-06,
+        -1.5260652e-05
+      ],
+      "animation_translation": [
+        10.787742614746094,
+        0.0,
+        -1.4901161193847656e-05
+      ]
+    },
+    {
+      "name": "b___f_hair07",
+      "ratio": 0.9999999390188957,
+      "model_translation": [
+        1.2928472,
+        17.44844,
+        1.5901947
+      ],
+      "animation_translation": [
+        1.2928543090820312,
+        17.448440551757812,
+        1.5901947021484375
+      ]
+    },
+    {
+      "name": "b___f_hair08",
+      "ratio": 0.9999999793281094,
+      "model_translation": [
+        8.951927,
+        -1.8119812e-05,
+        0.0
+      ],
+      "animation_translation": [
+        8.951927185058594,
+        -1.52587890625e-05,
+        0.0
+      ]
+    },
+    {
+      "name": "b___f_hair05",
+      "ratio": 0.9999999926764934,
+      "model_translation": [
+        -2.8309932,
+        16.976654,
+        -0.02674866
+      ],
+      "animation_translation": [
+        -2.83099365234375,
+        16.976654052734375,
+        -0.0267484188079834
+      ]
+    },
+    {
+      "name": "b___f_hair06",
+      "ratio": 0.9999999793262935,
+      "model_translation": [
+        8.951927,
+        -1.8119812e-05,
+        0.0
+      ],
+      "animation_translation": [
+        8.951927185058594,
+        -2.288818359375e-05,
+        0.0
+      ]
+    },
+    {
+      "name": "b___f_hair03",
+      "ratio": 10.988916366054998,
+      "model_translation": [
+        -6.5138874,
+        15.089432,
+        -0.48890686
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        -0.48876953125
+      ]
+    },
+    {
+      "name": "b___f_hair04",
+      "ratio": 0.9999999793285804,
+      "model_translation": [
+        8.951927,
+        -1.5258789e-05,
+        1.5258789e-05
+      ],
+      "animation_translation": [
+        8.951927185058594,
+        -1.71661376953125e-05,
+        0.0
+      ]
+    },
+    {
+      "name": "b___b_hair03",
+      "ratio": 3.8561015647756074,
+      "model_translation": [
+        5.3086686,
+        1.2493286,
+        0.016433716
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        0.0164337158203125
+      ]
+    },
+    {
+      "name": "b___b_hair04",
+      "ratio": 1.0000006845957368,
+      "model_translation": [
+        10.78775,
+        0.0,
+        -1.5258789e-05
+      ],
+      "animation_translation": [
+        10.787742614746094,
+        -1.52587890625e-05,
+        -1.5616416931152344e-05
+      ]
+    },
+    {
+      "name": "root_megane",
+      "ratio": 6.710104763054721,
+      "model_translation": [
+        -5.298096e-05,
+        -8.5425205,
+        4.1323547
+      ],
+      "animation_translation": [
+        0.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r___s_mouse03b",
+      "ratio": 4.281978224260449,
+      "model_translation": [
+        -1.673091,
+        -6.688421,
+        -2.73346
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r___s_mouse03a",
+      "ratio": 4.164556539278662,
+      "model_translation": [
+        -1.673091,
+        -6.688421,
+        -2.120468
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___l___s_mouse03b",
+      "ratio": 4.282000273257581,
+      "model_translation": [
+        1.672946,
+        -6.688433,
+        -2.733623
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___l___s_mouse03a",
+      "ratio": 4.164549281386843,
+      "model_translation": [
+        1.672947,
+        -6.688433,
+        -2.120501
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r___siwa_mouse",
+      "ratio": 4.331880892860435,
+      "model_translation": [
+        -1.6795379,
+        -6.9029016,
+        -2.413437
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___l___siwa_mouse",
+      "ratio": 4.331860219169351,
+      "model_translation": [
+        1.6793532,
+        -6.902913,
+        -2.4134216
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___u___tooth01",
+      "ratio": 4.0029863259351455,
+      "model_translation": [
+        -8.821488e-05,
+        -5.3216577,
+        -1.9307404
+      ],
+      "animation_translation": [
+        -8.821487426757812e-05,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r___eye00",
+      "ratio": 4.103988897099017,
+      "model_translation": [
+        -3.06523,
+        -4.530806,
+        4.5392
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r___eye01",
+      "ratio": 0.9999978229150442,
+      "model_translation": [
+        2.6229725,
+        -1.5258789e-05,
+        1.5735626e-05
+      ],
+      "animation_translation": [
+        2.6229782104492188,
+        -1.52587890625e-05,
+        1.52587890625e-05
+      ]
+    },
+    {
+      "name": "b___l___eye00",
+      "ratio": 4.103945826123252,
+      "model_translation": [
+        3.0650692,
+        -4.5308285,
+        4.5391693
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___l___eye01",
+      "ratio": 2.622972000002478,
+      "model_translation": [
+        2.622972,
+        2e-06,
+        3e-06
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___r___s_mouse03",
+      "ratio": 4.219438961248245,
+      "model_translation": [
+        -1.779537,
+        -6.688421,
+        -2.347183
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___l___s_mouse03",
+      "ratio": 4.219417165980194,
+      "model_translation": [
+        1.779354,
+        -6.688433,
+        -2.34717
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___l___s_mouse01",
+      "ratio": 4.111788767283083,
+      "model_translation": [
+        1.299908,
+        -6.688431,
+        -2.072571
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r___s_mouse01",
+      "ratio": 4.111809679880543,
+      "model_translation": [
+        -1.300091,
+        -6.688434,
+        -2.072571
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r___futae01",
+      "ratio": 4.789157726681767,
+      "model_translation": [
+        -2.974369,
+        -5.874861,
+        5.044525
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r___eye_d01",
+      "ratio": 4.080452403550249,
+      "model_translation": [
+        -2.567654,
+        -5.63194,
+        3.411551
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r___eye_d03",
+      "ratio": 4.641387693816127,
+      "model_translation": [
+        -5.136051,
+        -5.075037,
+        3.531485
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        0.99951171875
+      ]
+    },
+    {
+      "name": "b___r___eye_d02",
+      "ratio": 4.2159433024441455,
+      "model_translation": [
+        -3.810881,
+        -5.406827,
+        3.090079
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        0.99951171875
+      ]
+    },
+    {
+      "name": "b___r___eyelidthe00",
+      "ratio": 5.143386773068922,
+      "model_translation": [
+        -4.000086,
+        -6.374133,
+        4.767916
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r___eyelidthe_u01",
+      "ratio": 1.2225680670725925,
+      "model_translation": [
+        -0.647997,
+        1.341301,
+        -0.442763
+      ],
+      "animation_translation": [
+        -0.64794921875,
+        1.0,
+        -0.442626953125
+      ]
+    },
+    {
+      "name": "b___r___eyelidthe_u03",
+      "ratio": 1.249070113998816,
+      "model_translation": [
+        -1.081115,
+        -1.396981,
+        0.004869
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        0.0048675537109375
+      ]
+    },
+    {
+      "name": "b___r___eyelidthe_u02",
+      "ratio": 1.0004986238424318,
+      "model_translation": [
+        -0.604796,
+        -2e-06,
+        0.118455
+      ],
+      "animation_translation": [
+        -0.6044921875,
+        0.0,
+        0.118408203125
+      ]
+    },
+    {
+      "name": "b___r___mayug03",
+      "ratio": 5.74998496102816,
+      "model_translation": [
+        -4.640729,
+        -6.670303,
+        5.75827
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r___mayug02",
+      "ratio": 5.3324614685634,
+      "model_translation": [
+        -3.082626,
+        -6.670308,
+        5.59552
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r___mayug01",
+      "ratio": 5.149064837466832,
+      "model_translation": [
+        -1.737192,
+        -7.257408,
+        4.883728
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r___siwa01",
+      "ratio": 3.5418539458794744,
+      "model_translation": [
+        -2.473381,
+        -4.815691,
+        2.885428
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r___mikensiwa01",
+      "ratio": 3.973956015859344,
+      "model_translation": [
+        -1.039889,
+        -4.815697,
+        4.806732
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___f___tan01",
+      "ratio": 2.6857229190642706,
+      "model_translation": [
+        -7.8e-05,
+        -3.121777,
+        -2.163498
+      ],
+      "animation_translation": [
+        -7.796287536621094e-05,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___f___tan02",
+      "ratio": 2.108676,
+      "model_translation": [
+        2.108676,
+        0.0,
+        0.0
+      ],
+      "animation_translation": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___l___eyelidthe00",
+      "ratio": 5.143359517352221,
+      "model_translation": [
+        3.999912,
+        -6.374162,
+        4.767935
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___l___eyelidthe_u01",
+      "ratio": 1.2225707502377683,
+      "model_translation": [
+        -0.647997,
+        -1.3413,
+        -0.442778
+      ],
+      "animation_translation": [
+        -0.64794921875,
+        1.0,
+        -0.442626953125
+      ]
+    },
+    {
+      "name": "b___l___eyelidthe_u03",
+      "ratio": 1.2490706903231548,
+      "model_translation": [
+        -1.081115,
+        1.396982,
+        0.004854
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        0.004852294921875
+      ]
+    },
+    {
+      "name": "b___l___eyelidthe_u02",
+      "ratio": 1.0004852086695641,
+      "model_translation": [
+        -0.604796,
+        2e-06,
+        0.118412
+      ],
+      "animation_translation": [
+        -0.6044921875,
+        0.0,
+        0.118408203125
+      ]
+    },
+    {
+      "name": "b___l___mikensiwa01",
+      "ratio": 3.9739490611070583,
+      "model_translation": [
+        1.039726,
+        -4.815703,
+        4.806744
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___l___siwa01",
+      "ratio": 3.541830265345965,
+      "model_translation": [
+        2.473217,
+        -4.815708,
+        2.885453
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___l___futae01",
+      "ratio": 4.7891329342979185,
+      "model_translation": [
+        2.974199,
+        -5.874883,
+        5.044529
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___l___mayug02",
+      "ratio": 5.3324468718341365,
+      "model_translation": [
+        3.08245,
+        -6.67033,
+        5.595549
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___l___eye_d01",
+      "ratio": 4.081096128198775,
+      "model_translation": [
+        2.567484,
+        -5.631958,
+        3.411576
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        0.99951171875
+      ]
+    },
+    {
+      "name": "b___l___eye_d03",
+      "ratio": 4.64134602751955,
+      "model_translation": [
+        5.135886,
+        -5.075073,
+        3.531509
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        0.99951171875
+      ]
+    },
+    {
+      "name": "b___l___hana01",
+      "ratio": 7.804325678815983,
+      "model_translation": [
+        -9.4e-05,
+        -7.806077,
+        -0.021371
+      ],
+      "animation_translation": [
+        -9.399652481079102e-05,
+        1.0,
+        -0.0213623046875
+      ]
+    },
+    {
+      "name": "b___r___hoho01",
+      "ratio": 3.7917081008919538,
+      "model_translation": [
+        -3.541945,
+        -5.406828,
+        1.16275
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___l___eye_d02",
+      "ratio": 4.21590274694489,
+      "model_translation": [
+        3.810713,
+        -5.406854,
+        3.090073
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        0.99951171875
+      ]
+    },
+    {
+      "name": "b___l___hoho01",
+      "ratio": 3.7638623140879726,
+      "model_translation": [
+        3.541775,
+        -5.348259,
+        1.162727
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___ago01",
+      "ratio": 2.15673353138704,
+      "model_translation": [
+        -7.5e-05,
+        -2.339489,
+        -1.956985
+      ],
+      "animation_translation": [
+        -7.49826431274414e-05,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___d___tooth",
+      "ratio": 3.0116694844174416,
+      "model_translation": [
+        3.0148659,
+        -0.0488739,
+        -8.8123124e-07
+      ],
+      "animation_translation": [
+        1.0,
+        -0.048858642578125,
+        0.0
+      ]
+    },
+    {
+      "name": "b___s___d_mouse01",
+      "ratio": 3.9058414307826093,
+      "model_translation": [
+        4.489765,
+        -0.586459,
+        0.0
+      ],
+      "animation_translation": [
+        1.0,
+        -0.58642578125,
+        0.0
+      ]
+    },
+    {
+      "name": "b___s___u_mouse",
+      "ratio": 5.118369295417065,
+      "model_translation": [
+        -9.2e-05,
+        -7.028268,
+        -1.731721
+      ],
+      "animation_translation": [
+        -9.196996688842773e-05,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___l___mayug03",
+      "ratio": 5.7499559187338125,
+      "model_translation": [
+        4.640555,
+        -6.670336,
+        5.758285
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___l___mayug01",
+      "ratio": 5.149057342672411,
+      "model_translation": [
+        1.737012,
+        -7.257421,
+        4.883749
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r___s_mouse02",
+      "ratio": 4.22407487692757,
+      "model_translation": [
+        -1.33,
+        -6.688434,
+        -2.650354
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___l___s_mouse02",
+      "ratio": 4.224073083611796,
+      "model_translation": [
+        1.329998,
+        -6.688431,
+        -2.650354
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r___K_eri01",
+      "ratio": 3.8792930905125833,
+      "model_translation": [
+        1.4627686,
+        1.5683594,
+        -6.3676763
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___l___K_eri01",
+      "ratio": 3.773622612063081,
+      "model_translation": [
+        1.463028,
+        1.5702763,
+        6.1736913
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___b___K_eri01",
+      "ratio": 4.311897065593688,
+      "model_translation": [
+        3.1830444,
+        -5.2012634,
+        0.0
+      ],
+      "animation_translation": [
+        1.0,
+        1.0,
+        0.0
+      ]
+    },
+    {
+      "name": "b___eri01",
+      "ratio": 0.9999997312641048,
+      "model_translation": [
+        1.3822937,
+        -0.13554764,
+        3.0517578e-05
+      ],
+      "animation_translation": [
+        1.382293701171875,
+        -0.13555145263671875,
+        3.0517578125e-05
+      ]
+    },
+    {
+      "name": "b___l___eri01",
+      "ratio": 3.651581656006464,
+      "model_translation": [
+        -0.8214569,
+        4.758415,
+        3.5135193
+      ],
+      "animation_translation": [
+        -0.8212890625,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___r___eri01",
+      "ratio": 3.651600176044271,
+      "model_translation": [
+        -0.8214569,
+        4.7584076,
+        -3.5135808
+      ],
+      "animation_translation": [
+        -0.8212890625,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "b___eri02",
+      "ratio": 0.9999992500622559,
+      "model_translation": [
+        9.968918,
+        -3.8146973e-06,
+        3.4050026e-07
+      ],
+      "animation_translation": [
+        9.968925476074219,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Bip01___Footsteps",
+      "ratio": 61.16249455836446,
+      "model_translation": [
+        4.7683716e-07,
+        5.006459e-07,
+        -95.02894
+      ],
+      "animation_translation": [
+        0.98291015625,
+        -0.67578125,
+        0.99560546875
+      ]
+    }
+  ],
+  "translation_channel_count": 264,
+  "rotation_channel_count": 264,
+  "scale_channel_count": 137
+}

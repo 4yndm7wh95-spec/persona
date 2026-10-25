@@ -1,0 +1,69 @@
+{
+  "gmd_count": 453,
+  "epl_count": 1,
+  "rows": 454,
+  "parse_failed": [],
+  "keywords": [
+    "arsene",
+    "arsenu",
+    "arsen",
+    "ars_",
+    "0001"
+  ],
+  "hits": [
+    {
+      "cpk": "BASE.CPK",
+      "package_path": "MODEL/CHARACTER/PERSONA/0200/PS0200.GMD",
+      "id": "0200",
+      "texture_names": "ps_arsene_t03.dds;ps_arsene_t01_sp.dds;ps_arsene_t01_shadow.dds;ps_arsene_t02.dds;ps_arsene_eye_aura.dds;ps_arsene_eye_uvscrl.dds",
+      "parse_status": "ok",
+      "error": "",
+      "keyword_hits": "arsene;arsen"
+    },
+    {
+      "cpk": "BASE.CPK",
+      "package_path": "MODEL/CHARACTER/PERSONA/0201/PS0201.GMD",
+      "id": "0201",
+      "texture_names": "ps_arsene_t02.dds;ps_arsene_t01_sp.dds;ps_arsene_t01_shadow.dds;ps_arsene_eye_aura.dds;ps_arsene_eye_uvscrl.dds",
+      "parse_status": "ok",
+      "error": "",
+      "keyword_hits": "arsene;arsen"
+    },
+    {
+      "cpk": "BASE.CPK",
+      "package_path": "MODEL/CHARACTER/PERSONA/0201/PSZ0201.GMD",
+      "id": "0201",
+      "texture_names": "ps_arsene_t01.dds;ps_arsene_t01_sp.dds;ps_arsene_t01_shadow.dds;ps_arsene_eye_aura.dds;ps_arsene_eye_uvscrl.dds",
+      "parse_status": "ok",
+      "error": "",
+      "keyword_hits": "arsene;arsen"
+    },
+    {
+      "cpk": "BASE.CPK",
+      "package_path": "MODEL/CHARACTER/PERSONA/0363/PS0363.GMD",
+      "id": "0363",
+      "texture_names": "ps_arsene_modern_t02.dds;ps_arsene_modern_t01_sp.dds;ps_arsene_modern_t01_sh.dds;ps_arsene_modern_t01_ref.dds",
+      "parse_status": "ok",
+      "error": "",
+      "keyword_hits": "arsene;arsen"
+    },
+    {
+      "cpk": "BASE.CPK",
+      "package_path": "MODEL/CHARACTER/PERSONA/0363/PSZ0363.GMD",
+      "id": "0363",
+      "texture_names": "ps_arsene_modern_t01.dds;ps_arsene_modern_t01_sp.dds;ps_arsene_modern_t01_sh.dds;ps_arsene_modern_t01_ref.dds",
+      "parse_status": "ok",
+      "error": "",
+      "keyword_hits": "arsene;arsen"
+    }
+  ],
+  "epl_result": {
+    "cpk": "BASE.CPK",
+    "package_path": "BATTLE/EVENT/BCD/0282/EPL/ARSENE.EPL",
+    "id": "",
+    "texture_names": "",
+    "parse_status": "parsed_no_texture_interface_exposed",
+    "error": "",
+    "keyword_hits": ""
+  }
+}

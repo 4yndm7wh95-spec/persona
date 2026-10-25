@@ -1,0 +1,30 @@
+{
+  "translation_node_for_D": "Bip01",
+  "translation_node_path": "RootNode/root/rot/Bip01 (parent of Bip01___Pelvis)",
+  "translation_multiplier": 1.0,
+  "scale_reason": "No common fixed multiplier across nonzero model/action translations; leave D translation unchanged",
+  "ratio_count": 257,
+  "ratio_min": 0.9999955180689345,
+  "ratio_median": 4.704153544196548,
+  "ratio_max": 63.390256493939795,
+  "variants": {
+    "A": {
+      "channels": 665,
+      "rotation": 264,
+      "translation": 264,
+      "scale": 137
+    },
+    "C": {
+      "channels": 264,
+      "rotation": 264,
+      "translation": 0,
+      "scale": 0
+    },
+    "D": {
+      "channels": 265,
+      "rotation": 264,
+      "translation": 1,
+      "scale": 0
+    }
+  }
+}
