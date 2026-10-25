@@ -67,21 +67,14 @@
 
 kick 生成出来是腾空飞踢，用户觉得太怪，**不用踢**。art/p5/poses 里不要 kick；铁甲战士的重击类牌由亚森出手，或之后补一个小刀突刺姿势。
 
-## 视线规则（用户 2026-10-25，第二次修订）
+## 视线规则（用户 2026-10-25，第二次修订；第三次更正参考图）
 
-- 不要看屏幕，也不要纯侧脸（反例 art/p5/ref/gaze_too_far.png）。**以结城理 mod 局内待机为准**（art/p5/ref/gaze_ok_makoto_idle.png）：头 3/4 侧向右、转开镜头约 30~45°，两只眼睛都看得到，瞳孔偏右眼角，看向右方与人同高的敌人。
-- Codex：docs/codex/codex_p5_poses1d.md（重做已出的 idle / guard / summon 的头和眼，删掉 kick_a）。
+- 不要看屏幕，也不要纯侧脸（反例 art/p5/ref/gaze_too_far.png）。头 3/4 侧向右、转开镜头约 30~45°，两只眼睛都看得到，瞳孔偏右眼角，看向右方与人同高的敌人。
+- 头部角度参考：**art/p5/ref/gaze_angle_joker_3d.png**（Joker 原版模型 3/4 侧的头，只看角度）。
+- 更正：上一版给了结城理的头当参考图，Codex 把结城理的头直接换到了 Joker 身上，姿势也照抄了结城理 mod。已删掉那张参考图（gaze_ok_makoto_idle.png）。
 
-## 借鉴 P3Makoto（用户：两个 mod 逻辑几乎完全一样）
+## 借鉴 P3Makoto 的是什么（用户：思路一样，但不是什么都一样）
 
-局内人物的姿势清单、过渡帧、接入方式都照 P3Makoto 的成品来（art/v12/transparent/ + docs/ART_SPEC.md 阶段 12 之后的记录）。对应关系（之后逐批做）：
-| P3Makoto | Joker |
-|---|---|
-| idle / idle_blink | idle / idle_blink |
-| focus_low / focus_mid（举召唤器）| summon_grab 及过渡（手抬到脸、面具浮现）|
-| awaken_peak | summon_rip（撕面具的顶点）|
-| cast + cast_mid / low / lower / drop / settle | cast + 同样的过渡 |
-| hurt + hurt_impact / hurt_recover | 同 |
-| die_kneel / die_fall / die_down(_wide) | 同 |
-| sword_ready / raise / windup / slash / smear / recover / rest | 小刀的同一套 |
-| volley_raise / swing / throw / settle | 开枪的一套（举枪 / 连射 / 收枪）|
+- **借鉴的是做法**（给 Claude 自己用，Codex 不需要看 P3Makoto 的任何图）：关键姿势整图切换 + 少量过渡帧 + Spine 网格微动（呼吸、发梢、衣摆、眨眼）+ 代码特效；一个动作两三张关键图、过渡帧每张约 0.1 秒。
+- **不借鉴的**：人物、脸、头、发型、服装、姿势内容。Joker 的每个姿势按 Joker 自己的设计（本文件上面的清单）和 P5R 原版动作参考来画，**不要参考、不要打开 P3Makoto（结城理）的任何图片**。
+- 过渡帧的数量、命名等之后由 Claude 按 Joker 自己的动作单独写，不套结城理的清单。
