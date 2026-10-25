@@ -1,4 +1,6 @@
 你在用户的 Windows 电脑上工作。这是第一批姿势图的最后两张：slash（小刀斩）和 gun（开枪）。**等 docs/codex/codex_p5_poses1b.md 做完、提交推送之后再做。**
+
+**用户 2026-10-25 新规则（覆盖本文件里所有「出 _a / _b 两张」的要求）：每个姿势只出一张，文件名用 _a（例如 slash_a.png），不再出 _b；之后用户看图提意见，在这一张上改。已经有 _a、_b 两张的姿势，以 _a 为准，_b 不再修。**
 先读 docs/codex/codex_p5_poses1.md（统一要求）和 docs/codex/codex_p5_poses1b.md（三条新的通用要求：视线朝画面右方的敌人、瞳孔有高光、不驼背），全部照用。
 找仓库、拉取、提交推送、「绝对不要做」清单都和 docs/codex/codex_p5r_model_fix.md 一样；art/cards 下另一个会话的已修改文件原样保留，不提交、不 stash、不还原。
 
