@@ -25,7 +25,7 @@ namespace P3MusicBox;
 public static class MusicBox
 {
 	public const string Tag = "[P3MusicBox]";
-	public const string Version = "1.1.3";
+	public const string Version = "1.1.4";
 
 	// 配色（和 P3Makoto 一致的 P3R 蓝）
 	private static readonly Color Navy = new(0.02f, 0.06f, 0.22f, 0.94f);
@@ -117,10 +117,10 @@ public static class MusicBox
 	private static void ScanMusic()
 	{
 		Songs.Clear();
-		string dir = Path.Combine(_modDir, "music");
-		if (!Directory.Exists(dir))
+		string dir = FindMusicDir();
+		if (dir.Length == 0)
 		{
-			GD.Print($"{Tag} no music folder: {dir}");
+			GD.Print($"{Tag} no music folder (looked in {Path.Combine(_modDir, "music")}, the mod folder and its parent)");
 			return;
 		}
 		// v1.1.0：歌单改名 playlist.txt（内容还是 JSON）—— 游戏会把 mod 文件夹里所有 .json 都当成 mod 清单读，playlist.json 每次启动都报一条红字错误。
@@ -133,28 +133,38 @@ public static class MusicBox
 		}
 		if (File.Exists(list))
 		{
-			using JsonDocument doc = JsonDocument.Parse(File.ReadAllText(list));
-			foreach (JsonElement e in doc.RootElement.EnumerateArray())
+			// v1.1.4（玩家：歌一首都不显示）：歌单写坏了（记事本另存成 ANSI、少个逗号）以前会让整个初始化中断；现在只跳过歌单，照样按文件名列歌
+			try
 			{
-				string file = e.TryGetProperty("file", out JsonElement f) ? f.GetString() ?? "" : "";
-				if (file.Length == 0 || !File.Exists(Path.Combine(dir, file)))
+				using JsonDocument doc = JsonDocument.Parse(File.ReadAllText(list));
+				foreach (JsonElement e in doc.RootElement.EnumerateArray())
 				{
-					continue;
+					string file = e.TryGetProperty("file", out JsonElement f) ? f.GetString() ?? "" : "";
+					if (file.Length == 0 || !File.Exists(Path.Combine(dir, file)))
+					{
+						continue;
+					}
+					string? lrc = e.TryGetProperty("lrc", out JsonElement l) ? l.GetString() : null;
+					Songs.Add(new Song
+					{
+						File = Path.Combine(dir, file),
+						Title = e.TryGetProperty("title", out JsonElement t) ? t.GetString() ?? Path.GetFileNameWithoutExtension(file) : Path.GetFileNameWithoutExtension(file),
+						Artist = e.TryGetProperty("artist", out JsonElement a) ? a.GetString() ?? "" : "",
+						Lrc = !string.IsNullOrEmpty(lrc) && File.Exists(Path.Combine(dir, lrc)) ? Path.Combine(dir, lrc) : null,
+					});
 				}
-				string? lrc = e.TryGetProperty("lrc", out JsonElement l) ? l.GetString() : null;
-				Songs.Add(new Song
-				{
-					File = Path.Combine(dir, file),
-					Title = e.TryGetProperty("title", out JsonElement t) ? t.GetString() ?? Path.GetFileNameWithoutExtension(file) : Path.GetFileNameWithoutExtension(file),
-					Artist = e.TryGetProperty("artist", out JsonElement a) ? a.GetString() ?? "" : "",
-					Lrc = !string.IsNullOrEmpty(lrc) && File.Exists(Path.Combine(dir, lrc)) ? Path.Combine(dir, lrc) : null,
-				});
+			}
+			catch (Exception e)
+			{
+				Songs.Clear();
+				GD.PrintErr($"{Tag} playlist ignored ({list}): {e.Message}");
 			}
 		}
 		// v1.1.3（玩家：自己往 music 里加了 mp3 却不显示）：以前有歌单时只认歌单里的歌；现在歌单里的在前（按歌单顺序），
 		// 文件夹里没写进歌单的 .ogg / .mp3 按文件名接在后面（有同名 .lrc 就带歌词）。
+		// v1.1.4：子文件夹里的歌也算（解压时多套了一层 music\music\、或者按专辑分了文件夹）。
 		HashSet<string> listed = new(Songs.Select(x => Path.GetFullPath(x.File)), StringComparer.OrdinalIgnoreCase);
-		foreach (string f in Directory.GetFiles(dir).Where(f => f.EndsWith(".ogg", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase)).OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
+		foreach (string f in AudioFiles(dir, SearchOption.AllDirectories).OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
 		{
 			if (listed.Contains(Path.GetFullPath(f)))
 			{
@@ -165,6 +175,31 @@ public static class MusicBox
 		}
 		_index = Math.Clamp(_prefs.Last, 0, Math.Max(0, Songs.Count - 1));
 		GD.Print($"{Tag} {Songs.Count} songs in {dir}");
+	}
+
+	private static IEnumerable<string> AudioFiles(string dir, SearchOption option) =>
+		Directory.EnumerateFiles(dir, "*", option).Where(f => f.EndsWith(".ogg", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase));
+
+	/// <summary>
+	/// v1.1.4：找歌的位置。按顺序：本 mod 文件夹的 music\（含子文件夹）；mod 文件夹本身（歌直接放在 dll 旁边）；
+	/// 上一层的 music\（解压后多了一层 mods\P3MusicBox\P3MusicBox\，music 留在外层）。都没有歌就返回 music\（存在的话）或空。
+	/// </summary>
+	private static string FindMusicDir()
+	{
+		string main = Path.Combine(_modDir, "music");
+		string parent = Path.GetDirectoryName(_modDir) ?? "";
+		foreach ((string d, SearchOption o) in new[] { (main, SearchOption.AllDirectories), (_modDir, SearchOption.TopDirectoryOnly), (Path.Combine(parent, "music"), SearchOption.AllDirectories) })
+		{
+			if (d.Length > 0 && Directory.Exists(d) && AudioFiles(d, o).Any())
+			{
+				if (d != main)
+				{
+					GD.Print($"{Tag} songs found outside {main}: using {d}");
+				}
+				return d;
+			}
+		}
+		return Directory.Exists(main) ? main : "";
 	}
 
 	private static AudioStream? LoadStream(Song s)

@@ -30,6 +30,8 @@ P3Makoto 的扩展 mod，也可以单独使用。纯界面 + 本地播放，不�
         01_xxx.ogg / .mp3
         01_xxx.lrc         （可选，和歌曲同名，UTF-8）
 ```
+1.1.4 起：music\ 的子文件夹里的歌也会列出来；music\ 里没有歌时，也会找 mod 文件夹本身（歌直接放在 dll 旁边）和上一层的 music\（解压时多套了一层文件夹的情况）；歌单写坏了只跳过歌单，照样按文件名列歌。日志里 `[P3MusicBox] N songs in <路径>` 一行会写实际用的文件夹和歌数。
+
 `playlist.txt` 格式（JSON）：`[{"file": "01_xxx.ogg", "lrc": "01_xxx.lrc", "title": "歌名", "artist": "歌手"}, …]`
 
 1.1.0 起歌单文件叫 `playlist.txt`：游戏会把 mod 文件夹里所有 `.json` 都当成 mod 清单去读，`playlist.json` 每次启动都会报一条红字错误（不影响使用）。旧的 `playlist.json` 仍然认，改个名就不报错了。
