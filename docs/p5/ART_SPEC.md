@@ -124,7 +124,7 @@ idle_loop、low_health_loop、relaxed_loop、attack、cast（技能 / 能力牌�
 | 休息处（单独骨骼）| rest_sit | 篝火旁坐着、拿着 LeBlanc 的咖啡杯 |
 | attack | idle → knife_ready → knife_windup → slash_smear → slash → slash_follow → idle | 打击 / 匕首类攻击（小刀斩）。用户：局内动作要多几帧，攻击是 6 张 |
 | shiv | idle → gun_raise → gun ⇄ gun_recoil（每发一次）→ gun_lower → idle | 小刀牌 = 开枪 |
-| cast（亚森）| idle → summon_mid → summon_grab（面具浮现）→ summon_rip（撕下）→ cast_mid → cast → cast_low → idle | 召唤亚森的牌（大伤害 / AOE / 大毒牌） |
+| cast（亚森）| idle → summon_mid → summon_grab（面具浮现）→ summon_rip（撕下，停住，亚森在这时出手攻击）→ summon_end → idle | 召唤亚森的牌（大伤害 / AOE / 大毒牌） |
 | cast（防御）| idle → guard_mid → guard → guard_mid → idle | 加格挡的技能 |
 | cast（增益）| idle → glove_mid → glove → glove_mid → idle | 能力牌 / 增益（扯手套：右前臂向前弯，左手扯右手手套） |
 | hurt | hurt_impact → hurt → hurt_recover → idle | 受击 |
@@ -160,5 +160,5 @@ guard_a/b 身体整个朝左转、只有头扭向右 → 作废。重画：身�
 ## 召唤用右手（用户 2026-10-25）
 第一批 summon_a/b 是左手抬到脸侧 → 作废。召唤序列全部右手：summon_mid → summon_grab（右手扣面具）→ summon_rip（右手撕下）。
 
-## cast 用左手指（2026-10-25）
-cast_a 是离镜头远的左手平伸指向右方敌人，保留（轮廓清楚、不挡身体）。召唤序列：右手撕面具 → cast_mid 右手放下、左手抬起 → cast 左手指向。
+## 召唤后不再指向（用户 2026-10-25）
+撕完面具 Persona 就去攻击（原作如此），不要 cast 指向这一步。cast_a/b、cast_mid、cast_low 作废。召唤序列：summon_mid → summon_grab → summon_rip（停住，亚森攻击）→ summon_end（收手）→ idle。
