@@ -1,0 +1,950 @@
+[
+  {
+    "filename": "style_A_p5r_official_1.png",
+    "mode": "RGBA",
+    "size": [
+      1024,
+      1536
+    ],
+    "alpha_range": [
+      0,
+      254
+    ],
+    "nonzero_alpha_bbox": [
+      25,
+      8,
+      984,
+      1521
+    ],
+    "alpha_ge128_bbox": [
+      145,
+      13,
+      845,
+      1515
+    ],
+    "margins_nonzero_alpha_LTRB": [
+      25,
+      8,
+      40,
+      15
+    ],
+    "nonzero_alpha_in_outer60px": 9653,
+    "known_background_pixel_samples": [
+      {
+        "xy": [
+          200,
+          500
+        ],
+        "rgba": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "xy": [
+          900,
+          800
+        ],
+        "rgba": [
+          21,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "xy": [
+          150,
+          850
+        ],
+        "rgba": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "xy": [
+          900,
+          650
+        ],
+        "rgba": [
+          12,
+          7,
+          7,
+          0
+        ]
+      },
+      {
+        "xy": [
+          100,
+          100
+        ],
+        "rgba": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "xy": [
+          0,
+          0
+        ],
+        "rgba": [
+          1,
+          1,
+          1,
+          0
+        ]
+      }
+    ],
+    "original_sha256": "493591d4531fe3d022492bac9f0314053296fd1885fc6ee6fbac29a7a4dc5465",
+    "nonzero_alpha_more_than16px_from_alpha_ge128_core": 981,
+    "distant_alpha_max": 1,
+    "distant_nonzero_alpha_examples": [
+      {
+        "xy": [
+          399,
+          16
+        ],
+        "rgba": [
+          2,
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "xy": [
+          293,
+          251
+        ],
+        "rgba": [
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "xy": [
+          249,
+          757
+        ],
+        "rgba": [
+          2,
+          1,
+          2,
+          1
+        ]
+      },
+      {
+        "xy": [
+          559,
+          1503
+        ],
+        "rgba": [
+          5,
+          1,
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  {
+    "filename": "style_A_p5r_official_2.png",
+    "mode": "RGBA",
+    "size": [
+      1024,
+      1536
+    ],
+    "alpha_range": [
+      0,
+      254
+    ],
+    "nonzero_alpha_bbox": [
+      56,
+      35,
+      970,
+      1536
+    ],
+    "alpha_ge128_bbox": [
+      198,
+      103,
+      824,
+      1449
+    ],
+    "margins_nonzero_alpha_LTRB": [
+      56,
+      35,
+      54,
+      0
+    ],
+    "nonzero_alpha_in_outer60px": 135,
+    "known_background_pixel_samples": [
+      {
+        "xy": [
+          200,
+          500
+        ],
+        "rgba": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "xy": [
+          900,
+          800
+        ],
+        "rgba": [
+          10,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "xy": [
+          150,
+          850
+        ],
+        "rgba": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "xy": [
+          900,
+          650
+        ],
+        "rgba": [
+          3,
+          1,
+          0,
+          0
+        ]
+      },
+      {
+        "xy": [
+          100,
+          100
+        ],
+        "rgba": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "xy": [
+          0,
+          0
+        ],
+        "rgba": [
+          1,
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "original_sha256": "cc3986bb821c8bd45e8f4f253720cd7e4bf297c72e1a627389dece42adc709c5",
+    "nonzero_alpha_more_than16px_from_alpha_ge128_core": 470,
+    "distant_alpha_max": 1,
+    "distant_nonzero_alpha_examples": [
+      {
+        "xy": [
+          283,
+          35
+        ],
+        "rgba": [
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "xy": [
+          195,
+          936
+        ],
+        "rgba": [
+          1,
+          1,
+          2,
+          1
+        ]
+      },
+      {
+        "xy": [
+          611,
+          1465
+        ],
+        "rgba": [
+          6,
+          1,
+          0,
+          1
+        ]
+      },
+      {
+        "xy": [
+          689,
+          1535
+        ],
+        "rgba": [
+          2,
+          1,
+          1,
+          1
+        ]
+      }
+    ]
+  },
+  {
+    "filename": "style_B_anime_1.png",
+    "mode": "RGBA",
+    "size": [
+      1024,
+      1536
+    ],
+    "alpha_range": [
+      0,
+      254
+    ],
+    "nonzero_alpha_bbox": [
+      55,
+      39,
+      1010,
+      1520
+    ],
+    "alpha_ge128_bbox": [
+      146,
+      44,
+      868,
+      1508
+    ],
+    "margins_nonzero_alpha_LTRB": [
+      55,
+      39,
+      14,
+      16
+    ],
+    "nonzero_alpha_in_outer60px": 4550,
+    "known_background_pixel_samples": [
+      {
+        "xy": [
+          200,
+          500
+        ],
+        "rgba": [
+          4,
+          5,
+          6,
+          0
+        ]
+      },
+      {
+        "xy": [
+          900,
+          800
+        ],
+        "rgba": [
+          27,
+          3,
+          3,
+          0
+        ]
+      },
+      {
+        "xy": [
+          150,
+          850
+        ],
+        "rgba": [
+          0,
+          0,
+          1,
+          0
+        ]
+      },
+      {
+        "xy": [
+          900,
+          650
+        ],
+        "rgba": [
+          8,
+          5,
+          4,
+          0
+        ]
+      },
+      {
+        "xy": [
+          100,
+          100
+        ],
+        "rgba": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "xy": [
+          0,
+          0
+        ],
+        "rgba": [
+          1,
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "original_sha256": "174639c3b97c07d7a6a67da60fdb21d30157cd235b802358e8ce5b9ed9a2c9d6",
+    "nonzero_alpha_more_than16px_from_alpha_ge128_core": 544,
+    "distant_alpha_max": 1,
+    "distant_nonzero_alpha_examples": [
+      {
+        "xy": [
+          319,
+          89
+        ],
+        "rgba": [
+          1,
+          1,
+          2,
+          1
+        ]
+      },
+      {
+        "xy": [
+          833,
+          181
+        ],
+        "rgba": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "xy": [
+          993,
+          1151
+        ],
+        "rgba": [
+          5,
+          4,
+          6,
+          1
+        ]
+      },
+      {
+        "xy": [
+          576,
+          1511
+        ],
+        "rgba": [
+          5,
+          1,
+          1,
+          1
+        ]
+      }
+    ]
+  },
+  {
+    "filename": "style_B_anime_2.png",
+    "mode": "RGBA",
+    "size": [
+      1024,
+      1536
+    ],
+    "alpha_range": [
+      0,
+      254
+    ],
+    "nonzero_alpha_bbox": [
+      0,
+      0,
+      938,
+      1536
+    ],
+    "alpha_ge128_bbox": [
+      156,
+      23,
+      852,
+      1512
+    ],
+    "margins_nonzero_alpha_LTRB": [
+      0,
+      0,
+      86,
+      0
+    ],
+    "nonzero_alpha_in_outer60px": 7714,
+    "known_background_pixel_samples": [
+      {
+        "xy": [
+          200,
+          500
+        ],
+        "rgba": [
+          1,
+          1,
+          1,
+          0
+        ]
+      },
+      {
+        "xy": [
+          900,
+          800
+        ],
+        "rgba": [
+          22,
+          2,
+          3,
+          0
+        ]
+      },
+      {
+        "xy": [
+          150,
+          850
+        ],
+        "rgba": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "xy": [
+          900,
+          650
+        ],
+        "rgba": [
+          7,
+          2,
+          2,
+          0
+        ]
+      },
+      {
+        "xy": [
+          100,
+          100
+        ],
+        "rgba": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "xy": [
+          0,
+          0
+        ],
+        "rgba": [
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "original_sha256": "521c3cf8139c159e657e7a37deb0d87a9e15114a58d48dbd305f9dd496cd84d8",
+    "nonzero_alpha_more_than16px_from_alpha_ge128_core": 155,
+    "distant_alpha_max": 1,
+    "distant_nonzero_alpha_examples": [
+      {
+        "xy": [
+          0,
+          0
+        ],
+        "rgba": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "xy": [
+          145,
+          647
+        ],
+        "rgba": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "xy": [
+          228,
+          1385
+        ],
+        "rgba": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "xy": [
+          601,
+          1535
+        ],
+        "rgba": [
+          6,
+          1,
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  {
+    "filename": "style_C_sts2_blend_1.png",
+    "mode": "RGBA",
+    "size": [
+      1024,
+      1536
+    ],
+    "alpha_range": [
+      0,
+      254
+    ],
+    "nonzero_alpha_bbox": [
+      0,
+      0,
+      980,
+      1520
+    ],
+    "alpha_ge128_bbox": [
+      83,
+      21,
+      938,
+      1516
+    ],
+    "margins_nonzero_alpha_LTRB": [
+      0,
+      0,
+      44,
+      16
+    ],
+    "nonzero_alpha_in_outer60px": 11084,
+    "known_background_pixel_samples": [
+      {
+        "xy": [
+          200,
+          500
+        ],
+        "rgba": [
+          4,
+          4,
+          4,
+          0
+        ]
+      },
+      {
+        "xy": [
+          900,
+          800
+        ],
+        "rgba": [
+          31,
+          4,
+          4,
+          0
+        ]
+      },
+      {
+        "xy": [
+          150,
+          850
+        ],
+        "rgba": [
+          9,
+          8,
+          7,
+          0
+        ]
+      },
+      {
+        "xy": [
+          900,
+          650
+        ],
+        "rgba": [
+          9,
+          6,
+          5,
+          0
+        ]
+      },
+      {
+        "xy": [
+          100,
+          100
+        ],
+        "rgba": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "xy": [
+          0,
+          0
+        ],
+        "rgba": [
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "original_sha256": "e18aa8524d5d5f28041faa8b4ec29577569b05d6161afe26d534ed644eb36e6b",
+    "nonzero_alpha_more_than16px_from_alpha_ge128_core": 1851,
+    "distant_alpha_max": 1,
+    "distant_nonzero_alpha_examples": [
+      {
+        "xy": [
+          0,
+          0
+        ],
+        "rgba": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "xy": [
+          549,
+          1321
+        ],
+        "rgba": [
+          3,
+          4,
+          5,
+          1
+        ]
+      },
+      {
+        "xy": [
+          544,
+          1345
+        ],
+        "rgba": [
+          2,
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "xy": [
+          923,
+          1487
+        ],
+        "rgba": [
+          3,
+          1,
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  {
+    "filename": "style_C_sts2_blend_2.png",
+    "mode": "RGBA",
+    "size": [
+      1024,
+      1536
+    ],
+    "alpha_range": [
+      0,
+      254
+    ],
+    "nonzero_alpha_bbox": [
+      25,
+      30,
+      915,
+      1536
+    ],
+    "alpha_ge128_bbox": [
+      115,
+      34,
+      912,
+      1498
+    ],
+    "margins_nonzero_alpha_LTRB": [
+      25,
+      30,
+      109,
+      0
+    ],
+    "nonzero_alpha_in_outer60px": 5361,
+    "known_background_pixel_samples": [
+      {
+        "xy": [
+          200,
+          500
+        ],
+        "rgba": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "xy": [
+          900,
+          800
+        ],
+        "rgba": [
+          3,
+          2,
+          3,
+          0
+        ]
+      },
+      {
+        "xy": [
+          150,
+          850
+        ],
+        "rgba": [
+          4,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "xy": [
+          900,
+          650
+        ],
+        "rgba": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "xy": [
+          100,
+          100
+        ],
+        "rgba": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "xy": [
+          0,
+          0
+        ],
+        "rgba": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "original_sha256": "7d083aa545a0681039932e12ae4326aa5b0842130b25e37900269d62e07d7795",
+    "nonzero_alpha_more_than16px_from_alpha_ge128_core": 409,
+    "distant_alpha_max": 1,
+    "distant_nonzero_alpha_examples": [
+      {
+        "xy": [
+          247,
+          455
+        ],
+        "rgba": [
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "xy": [
+          144,
+          888
+        ],
+        "rgba": [
+          1,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "xy": [
+          569,
+          1489
+        ],
+        "rgba": [
+          4,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "xy": [
+          604,
+          1535
+        ],
+        "rgba": [
+          1,
+          1,
+          0,
+          1
+        ]
+      }
+    ]
+  }
+]
