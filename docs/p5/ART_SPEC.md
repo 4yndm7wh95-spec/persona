@@ -105,3 +105,26 @@ kick 生成出来是腾空飞踢，用户觉得太怪，**不用踢**。art/p5/p
 - 每回合结算：黑红火焰在敌人身上爆一下 + 一个 P5 风格的伤害数字，层数越多火越大；
 - 大毒牌（致命毒药、催化剂、毒雾这类）= 召唤亚森放咒怨技能（单体 Eiha、全体 Maeiha、加倍 = Eigaon 级的大爆发）；
 - 状态图标换成 P5 状态异常风格的红黑小图标。
+
+## 局内动画清单（静默猎手的动画接口，2026-10-25）
+
+游戏代码（CharacterModel.GenerateAnimator + Silent.AnimationStates）要求的 Spine 动画只有：
+idle_loop、low_health_loop、relaxed_loop、attack、cast（技能 / 能力牌共用）、hurt、die、**shiv**（静默猎手独有，打出小刀牌时触发）。
+每张姿势图在动画里的用途（关键图 + 过渡帧，过渡帧每张约 0.1s；做法同 P3Makoto：整图切换 + Spine 网格微动 + 代码特效）：
+
+| 动画 | 播放顺序 | 用途 |
+|---|---|---|
+| idle_loop | idle（+ idle_blink_patch 眨眼）| 战斗待机 |
+| low_health_loop | idle_low | 残血待机 |
+| relaxed_loop | relaxed | 休息处 / 商店 |
+| attack | idle → knife_ready → slash → slash_follow → idle | 打击 / 匕首类攻击（小刀斩） |
+| shiv | idle → gun_raise → gun ⇄ gun_recoil（每发一次）→ gun_lower → idle | 小刀牌 = 开枪 |
+| cast（亚森）| idle → summon_mid → summon_grab（面具浮现）→ summon_rip（撕下）→ cast_mid → cast → cast_low → idle | 召唤亚森的牌（大伤害 / AOE / 大毒牌） |
+| cast（防御）| idle → guard_mid → guard → guard_mid → idle | 加格挡的技能 |
+| cast（增益）| idle → glove → idle | 能力牌 / 增益（整理手套） |
+| hurt | hurt_impact → hurt → hurt_recover → idle | 受击 |
+| die | hurt_impact → hurt → die_kneel → die_fall → down | 死亡 |
+| （胜利）| victory | 原版没有胜利动画接口，留给结算界面 / 立绘用 |
+
+cast 是同一个动画状态，代码按打出的牌换成上面三种之一（同 P3Makoto 的 cast / cast_light / attack_sovereign 按牌切换）。
+素材：已定 / 进行中 docs/codex/codex_p5_poses1e.md（眼睛修复、down、victory、slash、gun、撕面具那套）；剩下的过渡帧和补充姿势 docs/codex/codex_p5_poses3.md。
