@@ -1,0 +1,40 @@
+{
+  "source": "unpacked/BASE/CALENDAR/P5_FIELD_CALLICON.SPD_unpacked/sprites.json",
+  "texture_records": [
+    {
+      "name": "p5_field_callic.dds",
+      "texture_id": 1
+    }
+  ],
+  "sprites": [
+    {
+      "index": 0,
+      "list_index": 1,
+      "texture_index": 1,
+      "x": 2,
+      "y": 2,
+      "width": 158,
+      "height": 140,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "ゲージ土台",
+      "png": "00000.png",
+      "sheet_png": "ui/calendar/BASE__p5_field_callic__57f0ae1bd8.png"
+    },
+    {
+      "index": 1,
+      "list_index": 2,
+      "texture_index": 1,
+      "x": 2,
+      "y": 144,
+      "width": 106,
+      "height": 86,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "ゲージ土台",
+      "png": "00001.png",
+      "sheet_png": "ui/calendar/BASE__p5_field_callic__57f0ae1bd8.png"
+    }
+  ],
+  "original_sprite_count": 2
+}

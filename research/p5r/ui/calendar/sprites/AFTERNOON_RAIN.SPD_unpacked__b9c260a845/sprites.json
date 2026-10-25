@@ -1,0 +1,26 @@
+{
+  "source": "unpacked/BASE/CALENDAR/AFTERNOON_RAIN.SPD_unpacked/sprites.json",
+  "texture_records": [
+    {
+      "name": "afternoon_rain.dds",
+      "texture_id": 1
+    }
+  ],
+  "sprites": [
+    {
+      "index": 0,
+      "list_index": 1,
+      "texture_index": 1,
+      "x": 2,
+      "y": 2,
+      "width": 3840,
+      "height": 2160,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "背景_昼（雨）",
+      "png": "00000.png",
+      "sheet_png": "ui/calendar/BASE__afternoon_rain__f42fba9faf.png"
+    }
+  ],
+  "original_sprite_count": 1
+}

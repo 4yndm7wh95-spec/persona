@@ -1,0 +1,68 @@
+{
+  "source": "unpacked/SC/COMBINE/CMBFILE.PAK_unpacked/spd/p5_velvet_06.spd_unpacked/sprites.json",
+  "texture_records": [
+    {
+      "name": "p5_velvet_06_01.dds",
+      "texture_id": 1
+    }
+  ],
+  "sprites": [
+    {
+      "index": 0,
+      "list_index": 1,
+      "texture_index": 1,
+      "x": 1562,
+      "y": 182,
+      "width": 1506,
+      "height": 526,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "一体目の～",
+      "png": "00000.png",
+      "sheet_png": "ui/velvet/SC__p5_velvet_06_01__9c320042a5.png"
+    },
+    {
+      "index": 1,
+      "list_index": 4,
+      "texture_index": 1,
+      "x": 1238,
+      "y": 2,
+      "width": 724,
+      "height": 190,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "persona①",
+      "png": "00001.png",
+      "sheet_png": "ui/velvet/SC__p5_velvet_06_01__9c320042a5.png"
+    },
+    {
+      "index": 2,
+      "list_index": 5,
+      "texture_index": 1,
+      "x": 2,
+      "y": 288,
+      "width": 1554,
+      "height": 456,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "ギロチン合体",
+      "png": "00002.png",
+      "sheet_png": "ui/velvet/SC__p5_velvet_06_01__9c320042a5.png"
+    },
+    {
+      "index": 3,
+      "list_index": 14,
+      "texture_index": 1,
+      "x": 2,
+      "y": 2,
+      "width": 1234,
+      "height": 282,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "→result",
+      "png": "00003.png",
+      "sheet_png": "ui/velvet/SC__p5_velvet_06_01__9c320042a5.png"
+    }
+  ],
+  "original_sprite_count": 4
+}

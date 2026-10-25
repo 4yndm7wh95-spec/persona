@@ -1,0 +1,72 @@
+{
+  "source": "unpacked/SC/CAMP/P5_POINTUP.SPD_unpacked/sprites.json",
+  "texture_records": [
+    {
+      "name": "p5_pointup_PS4.dds",
+      "texture_id": 1
+    },
+    {
+      "name": "p5_rankmax.dds",
+      "texture_id": 2
+    }
+  ],
+  "sprites": [
+    {
+      "index": 0,
+      "list_index": 1,
+      "texture_index": 1,
+      "x": 2,
+      "y": 2,
+      "width": 1530,
+      "height": 510,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "pointup_文字",
+      "png": "00000.png",
+      "sheet_png": "ui/camp/SC__p5_pointup_PS4__e72643c25c.png"
+    },
+    {
+      "index": 1,
+      "list_index": 2,
+      "texture_index": 1,
+      "x": 2,
+      "y": 516,
+      "width": 1530,
+      "height": 510,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "pointup_フチ",
+      "png": "00001.png",
+      "sheet_png": "ui/camp/SC__p5_pointup_PS4__e72643c25c.png"
+    },
+    {
+      "index": 2,
+      "list_index": 3,
+      "texture_index": 2,
+      "x": 2,
+      "y": 2,
+      "width": 1530,
+      "height": 630,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "rankmax文字",
+      "png": "00002.png",
+      "sheet_png": "ui/camp/SC__p5_rankmax__c4d8079e49.png"
+    },
+    {
+      "index": 3,
+      "list_index": 4,
+      "texture_index": 2,
+      "x": 2,
+      "y": 636,
+      "width": 1530,
+      "height": 630,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "rankmax下地",
+      "png": "00003.png",
+      "sheet_png": "ui/camp/SC__p5_rankmax__c4d8079e49.png"
+    }
+  ],
+  "original_sprite_count": 4
+}

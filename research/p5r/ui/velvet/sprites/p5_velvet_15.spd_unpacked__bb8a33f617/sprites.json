@@ -1,0 +1,96 @@
+{
+  "source": "unpacked/SC/COMBINE/CMBFILE.PAK_unpacked/spd/p5_velvet_15.spd_unpacked/sprites.json",
+  "texture_records": [
+    {
+      "name": "p5_velvet_15.dds",
+      "texture_id": 1
+    }
+  ],
+  "sprites": [
+    {
+      "index": 0,
+      "list_index": 1,
+      "texture_index": 1,
+      "x": 2320,
+      "y": 582,
+      "width": 768,
+      "height": 768,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "スキル変化：エフェクト1",
+      "png": "00000.png",
+      "sheet_png": "ui/velvet/SC__p5_velvet_15__d41d4c566b.png"
+    },
+    {
+      "index": 1,
+      "list_index": 2,
+      "texture_index": 1,
+      "x": 2320,
+      "y": 1354,
+      "width": 768,
+      "height": 792,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "スキル変化：エフェクト2",
+      "png": "00001.png",
+      "sheet_png": "ui/velvet/SC__p5_velvet_15__d41d4c566b.png"
+    },
+    {
+      "index": 2,
+      "list_index": 3,
+      "texture_index": 1,
+      "x": 2320,
+      "y": 2146,
+      "width": 968,
+      "height": 968,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "スキル変化：エフェクト3",
+      "png": "00002.png",
+      "sheet_png": "ui/velvet/SC__p5_velvet_15__d41d4c566b.png"
+    },
+    {
+      "index": 3,
+      "list_index": 4,
+      "texture_index": 1,
+      "x": 2,
+      "y": 2,
+      "width": 2040,
+      "height": 2040,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "スキル変化：エフェクト4",
+      "png": "00003.png",
+      "sheet_png": "ui/velvet/SC__p5_velvet_15__d41d4c566b.png"
+    },
+    {
+      "index": 4,
+      "list_index": 5,
+      "texture_index": 1,
+      "x": 2,
+      "y": 2044,
+      "width": 2316,
+      "height": 2040,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "スキル変化：エフェクト5",
+      "png": "00004.png",
+      "sheet_png": "ui/velvet/SC__p5_velvet_15__d41d4c566b.png"
+    },
+    {
+      "index": 5,
+      "list_index": 6,
+      "texture_index": 1,
+      "x": 2320,
+      "y": 3116,
+      "width": 968,
+      "height": 968,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "スキル変化：エフェクト6",
+      "png": "00005.png",
+      "sheet_png": "ui/velvet/SC__p5_velvet_15__d41d4c566b.png"
+    }
+  ],
+  "original_sprite_count": 6
+}

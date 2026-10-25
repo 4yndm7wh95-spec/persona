@@ -1,0 +1,40 @@
+{
+  "source": "unpacked/SC/CAMP/P5_CAMP_DOUBT_BROKEN.SPD_unpacked/sprites.json",
+  "texture_records": [
+    {
+      "name": "p5_camp_doubt_b.dds",
+      "texture_id": 1
+    }
+  ],
+  "sprites": [
+    {
+      "index": 0,
+      "list_index": 1,
+      "texture_index": 1,
+      "x": 2,
+      "y": 2,
+      "width": 1944,
+      "height": 802,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "BROKEN",
+      "png": "00000.png",
+      "sheet_png": "ui/camp/SC__p5_camp_doubt_b__7c60798c58.png"
+    },
+    {
+      "index": 1,
+      "list_index": 2,
+      "texture_index": 1,
+      "x": 2,
+      "y": 806,
+      "width": 1368,
+      "height": 586,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "DOUBT",
+      "png": "00001.png",
+      "sheet_png": "ui/camp/SC__p5_camp_doubt_b__7c60798c58.png"
+    }
+  ],
+  "original_sprite_count": 2
+}

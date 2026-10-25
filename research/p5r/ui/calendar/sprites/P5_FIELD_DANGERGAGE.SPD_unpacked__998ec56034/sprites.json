@@ -1,0 +1,138 @@
+{
+  "source": "unpacked/BASE/CALENDAR/P5_FIELD_DANGERGAGE.SPD_unpacked/sprites.json",
+  "texture_records": [
+    {
+      "name": "p5_field_danger.dds",
+      "texture_id": 1
+    }
+  ],
+  "sprites": [
+    {
+      "index": 0,
+      "list_index": 1,
+      "texture_index": 1,
+      "x": 2,
+      "y": 2,
+      "width": 466,
+      "height": 384,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "ゲージ土台",
+      "png": "00000.png",
+      "sheet_png": "ui/calendar/BASE__p5_field_danger__0491ba3a7a.png"
+    },
+    {
+      "index": 1,
+      "list_index": 2,
+      "texture_index": 1,
+      "x": 470,
+      "y": 98,
+      "width": 228,
+      "height": 224,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "ゲージ土台２",
+      "png": "00001.png",
+      "sheet_png": "ui/calendar/BASE__p5_field_danger__0491ba3a7a.png"
+    },
+    {
+      "index": 2,
+      "list_index": 3,
+      "texture_index": 1,
+      "x": 470,
+      "y": 2,
+      "width": 228,
+      "height": 94,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "DANGER",
+      "png": "00002.png",
+      "sheet_png": "ui/calendar/BASE__p5_field_danger__0491ba3a7a.png"
+    },
+    {
+      "index": 3,
+      "list_index": 4,
+      "texture_index": 1,
+      "x": 884,
+      "y": 2,
+      "width": 138,
+      "height": 104,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "ゲージ１",
+      "png": "00003.png",
+      "sheet_png": "ui/calendar/BASE__p5_field_danger__0491ba3a7a.png"
+    },
+    {
+      "index": 4,
+      "list_index": 5,
+      "texture_index": 1,
+      "x": 884,
+      "y": 108,
+      "width": 138,
+      "height": 148,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "ゲージ2",
+      "png": "00004.png",
+      "sheet_png": "ui/calendar/BASE__p5_field_danger__0491ba3a7a.png"
+    },
+    {
+      "index": 5,
+      "list_index": 6,
+      "texture_index": 1,
+      "x": 884,
+      "y": 258,
+      "width": 138,
+      "height": 104,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "ゲージ3",
+      "png": "00005.png",
+      "sheet_png": "ui/calendar/BASE__p5_field_danger__0491ba3a7a.png"
+    },
+    {
+      "index": 6,
+      "list_index": 7,
+      "texture_index": 1,
+      "x": 744,
+      "y": 258,
+      "width": 138,
+      "height": 104,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "ゲージ4",
+      "png": "00006.png",
+      "sheet_png": "ui/calendar/BASE__p5_field_danger__0491ba3a7a.png"
+    },
+    {
+      "index": 7,
+      "list_index": 8,
+      "texture_index": 1,
+      "x": 744,
+      "y": 108,
+      "width": 138,
+      "height": 148,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "ゲージ5",
+      "png": "00007.png",
+      "sheet_png": "ui/calendar/BASE__p5_field_danger__0491ba3a7a.png"
+    },
+    {
+      "index": 8,
+      "list_index": 9,
+      "texture_index": 1,
+      "x": 744,
+      "y": 2,
+      "width": 138,
+      "height": 104,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "ゲージ6",
+      "png": "00008.png",
+      "sheet_png": "ui/calendar/BASE__p5_field_danger__0491ba3a7a.png"
+    }
+  ],
+  "original_sprite_count": 9
+}

@@ -1,0 +1,40 @@
+{
+  "source": "unpacked/SC/CAMP/P5_RANKUP.SPD_unpacked/sprites.json",
+  "texture_records": [
+    {
+      "name": "p5_rankup.dds",
+      "texture_id": 1
+    }
+  ],
+  "sprites": [
+    {
+      "index": 0,
+      "list_index": 1,
+      "texture_index": 1,
+      "x": 2,
+      "y": 2,
+      "width": 1530,
+      "height": 510,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "rankup_文字",
+      "png": "00000.png",
+      "sheet_png": "ui/camp/SC__p5_rankup__e0160ddf52.png"
+    },
+    {
+      "index": 1,
+      "list_index": 2,
+      "texture_index": 1,
+      "x": 2,
+      "y": 516,
+      "width": 1530,
+      "height": 510,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "rankup_フチ",
+      "png": "00001.png",
+      "sheet_png": "ui/camp/SC__p5_rankup__e0160ddf52.png"
+    }
+  ],
+  "original_sprite_count": 2
+}

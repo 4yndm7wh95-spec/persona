@@ -1,0 +1,44 @@
+{
+  "source": "unpacked/BASE/CALENDAR/NIGHT_METEOR_SHOWER.SPD_unpacked/sprites.json",
+  "texture_records": [
+    {
+      "name": "night_meteor_01.dds",
+      "texture_id": 1
+    },
+    {
+      "name": "night_meteor_02.dds",
+      "texture_id": 2
+    }
+  ],
+  "sprites": [
+    {
+      "index": 0,
+      "list_index": 1,
+      "texture_index": 1,
+      "x": 2,
+      "y": 2,
+      "width": 3840,
+      "height": 2160,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "背景_夜（流星群）",
+      "png": "00000.png",
+      "sheet_png": "ui/calendar/BASE__night_meteor_01__97806b44b6.png"
+    },
+    {
+      "index": 1,
+      "list_index": 2,
+      "texture_index": 2,
+      "x": 2,
+      "y": 2,
+      "width": 3840,
+      "height": 1080,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "背景_夜（流星群） 空",
+      "png": "00001.png",
+      "sheet_png": "ui/calendar/BASE__night_meteor_02__5d39728bbc.png"
+    }
+  ],
+  "original_sprite_count": 2
+}

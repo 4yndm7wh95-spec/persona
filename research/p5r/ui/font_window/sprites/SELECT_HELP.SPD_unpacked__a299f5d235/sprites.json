@@ -1,0 +1,54 @@
+{
+  "source": "unpacked/SC/FONT/SELECT/SELECT_HELP.SPD_unpacked/sprites.json",
+  "texture_records": [
+    {
+      "name": "p5_d_assist.dds",
+      "texture_id": 1
+    }
+  ],
+  "sprites": [
+    {
+      "index": 0,
+      "list_index": 1,
+      "texture_index": 1,
+      "x": 182,
+      "y": 0,
+      "width": 840,
+      "height": 126,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "回復しようか",
+      "png": "00000.png",
+      "sheet_png": "ui/font_window/SC__p5_d_assist__9fdf73fd31.png"
+    },
+    {
+      "index": 1,
+      "list_index": 2,
+      "texture_index": 1,
+      "x": 182,
+      "y": 128,
+      "width": 840,
+      "height": 126,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "これを使おうか",
+      "png": "00001.png",
+      "sheet_png": "ui/font_window/SC__p5_d_assist__9fdf73fd31.png"
+    },
+    {
+      "index": 14,
+      "list_index": 15,
+      "texture_index": 1,
+      "x": 2,
+      "y": 2,
+      "width": 152,
+      "height": 136,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "ひかり",
+      "png": "00014.png",
+      "sheet_png": "ui/font_window/SC__p5_d_assist__9fdf73fd31.png"
+    }
+  ],
+  "original_sprite_count": 15
+}

@@ -1,0 +1,26 @@
+{
+  "source": "unpacked/BASE/CALENDAR/HIGAWARI_02.SPD_unpacked/sprites.json",
+  "texture_records": [
+    {
+      "name": "night_02.dds",
+      "texture_id": 1
+    }
+  ],
+  "sprites": [
+    {
+      "index": 0,
+      "list_index": 46,
+      "texture_index": 1,
+      "x": 2,
+      "y": 2,
+      "width": 3840,
+      "height": 2160,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "背景_夜(グレースケール)",
+      "png": "00000.png",
+      "sheet_png": "ui/calendar/BASE__night_02__cb61dfa645.png"
+    }
+  ],
+  "original_sprite_count": 1
+}

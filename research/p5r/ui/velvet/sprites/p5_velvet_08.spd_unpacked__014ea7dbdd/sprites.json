@@ -1,0 +1,26 @@
+{
+  "source": "unpacked/SC/COMBINE/CMBFILE.PAK_unpacked/spd/p5_velvet_08.spd_unpacked/sprites.json",
+  "texture_records": [
+    {
+      "name": "p5_velvet_08.dds",
+      "texture_id": 1
+    }
+  ],
+  "sprites": [
+    {
+      "index": 0,
+      "list_index": 1,
+      "texture_index": 1,
+      "x": 2,
+      "y": 2,
+      "width": 1180,
+      "height": 484,
+      "screen_x": 0,
+      "screen_y": 0,
+      "comment": "集団ギロチン",
+      "png": "00000.png",
+      "sheet_png": "ui/velvet/SC__p5_velvet_08__54797b8250.png"
+    }
+  ],
+  "original_sprite_count": 1
+}
