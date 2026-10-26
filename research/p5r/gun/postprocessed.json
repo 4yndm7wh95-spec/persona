@@ -1,0 +1,7 @@
+{
+  "horizontal_mirror_applied": true,
+  "gif_width": 320,
+  "frame_step": 2,
+  "fps_reference": 30,
+  "note": "GIF uses neutral grey background for visibility; full PNG frames true transparent; terminal sample at exact duration omitted from GIF to preserve original timing."
+}
