@@ -1,24 +1,24 @@
 {
   "standard_face_candidate": 2,
-  "pending_user_approval": null,
-  "approved": [
-    "idle_a"
+  "pending_user_approval": [
+    "knife_ready_a",
+    "slash_a2"
   ],
-  "next_after_approval": "down_a",
+  "approved": [
+    "idle_a",
+    "guard_a2"
+  ],
+  "next_after_approval": "continue current pose plan; no new pose until review",
   "remaining_order": [
-    "down_a",
-    "victory_a",
-    "slash_a",
     "gun_a",
     "summon_grab_a",
     "summon_rip_a",
-    "mask_a",
-    "cutin_grab_a",
-    "cutin_rip_a"
+    "glove_a",
+    "down_a"
   ],
   "transparency_cleanup": "done for active idle_a and hurt_a; invalid and b files unchanged",
-  "commit_push": "this group ready",
-  "version_policy": "only a; b untouched",
+  "commit_push": "用户要求推送当前生成图；提交不代表用户验收通过",
+  "version_policy": "one a version only",
   "invalidated": [
     "guard_a",
     "guard_b",
@@ -27,5 +27,11 @@
     "cast_a",
     "cast_b"
   ],
-  "guard_redraw": "poses3; use confirmed idle, body and head together facing right, right forearm blocking right"
+  "guard_redraw": "poses3; use confirmed idle, body and head together facing right, right forearm blocking right",
+  "task": "docs/codex/codex_p5_poses4.md",
+  "deprecated_pose_references": "art/p5/ref/pose/*; unused",
+  "guard_approved_path": "art/p5/poses/guard_a2.png",
+  "attack_plan_baseline": "68cef3d7",
+  "visual_review": "生成后直接展示，由用户验收；Codex不再做视觉review",
+  "slash_a": "保留为slash_a2的输入版本；身体及刀方向基本认可，握拳需修订"
 }

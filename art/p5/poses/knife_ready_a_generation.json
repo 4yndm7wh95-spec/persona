@@ -1,0 +1,22 @@
+{
+  "name": "knife_ready_a",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-a3b32530-69a5-4a8f-8d00-56d27779a37d.png",
+  "prompt": "Edit IMAGE1 approved Joker idle, SAME character/body proportions/head scale/costume/official P5R black ink/cel shading. IMAGE2 is exact standard FACE/eye design and soft rounded jaw: same black wavy hair, grey irises55-60%slight-right with WHITE highlights, sclera both sides, no profile/camera gaze. IMAGE3 is current joint-layout sketch only; red=RIGHT/near arm/leg, blue=LEFT/far, grey=knife; ignore all sketch colors/labels/lines. MANDATORY NEW STANCE: feet only about1.2 shoulder-width apart, compact natural fore-aft stance, NOT wide split, NOT giant lunge. Both soles planted, knees relaxed/slightly bent. Keep SAME FOOT CONTACT POSITIONS in both attack frames, rearRIGHT foot screenLEFT and frontLEFT foot screenRIGHT. Upper torso ALWAYS subtly leans FORWARD toward enemy screenRIGHT, head ahead of hips, straight spine, NEVER leaning backwards. LEFT HAND in EVERY frame hangs NATURALLY AT SIDE, elbow slightly bent, fingers loose gently curved together. NO outstretched aiming left hand, NO spread five fingers, NO exaggerated thrown-back left arm. REVERSE/ICE-PICK GRIP ONLY: RIGHT FULL CLOSED FIST firmly wraps BLACK knife handle; SILVER20cm single-edge blade exits LITTLE-FINGER/PINKY SIDE of fist (opposite thumb), trails BACK toward ELBOW along outside of forearm on a diagonal, cutting edge OUTWARD away from forearm. Not thumb-side forward grip, not pointing knife forward, not pinching handle. Same long black splitcoat/highcollar, greywaistcoat goldbuttons, whitepocketsquare, redgloves, blackpants,brownboots. 1024x1536 portrait TRUE transparent RGBA, alpha0 outside silhouette, full figure including boots/hair/blade with40pxmargins, head same size as idle and soles aroundy1470. No mask, blood, extra weapons, text, watermark, ground, shadow, glow, haze, motionblur, slasharcs or effects. ONE image. SPECIFIC KNIFE_READY/WINDUP: compact stance, weight on REAR RIGHT LEG, hips sit slightly back, upper chest rotates OPEN toward CAMERA/character's RIGHT, right shoulder pulled BACK, torso still leans subtly FORWARD not backward. Head slightly lowered watches screenRIGHT enemy. RIGHT elbow tucked at side, RIGHT fist at belt height in front abdomen on near-camera RIGHT-front45degree side. Reverse-gripped knife blade hangs DOWN and slightly BACK toward screenLEFT from pinky side, visibly alongside forearm outer edge, point southwest. LEFT arm relaxed down at waist/side, elbow gently bent, fingers softly CURLED together; not reaching out. Character poised to sweep reverse knife from near/right LOW across front toward far/left HIGH; no strike yet. Scale stance width to1.2shoulderwidth; do NOT reproduce old splits-like wide lunge. Take exact joint relation fromimage3 while retaining idle proportions. Keep knife entirely visible, relaxed natural human joints.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/idle_a.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/ref/face_standard.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/ref/plan/knife_ready.png"
+  ],
+  "cleanup_pixels": 214,
+  "size": [
+    1024,
+    1536
+  ],
+  "mode": "RGBA",
+  "alpha_range": [
+    0,
+    254
+  ],
+  "sha256": "fb215dd13e80957fa88651554eaa55a72889afa230f7b4bf08c9fb782c4eb4e6",
+  "review": "待用户确认；未宣称姿势、眼神或背景完全通过验收"
+}

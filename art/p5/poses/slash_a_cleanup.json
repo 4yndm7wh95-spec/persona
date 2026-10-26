@@ -1,0 +1,5 @@
+{
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-5f2082ab-d52a-4bc6-914c-e44ea2aa2a74.png",
+  "cleanup_pixels": 707,
+  "rule": "alpha1/2 outside alpha>=128 core expanded16px; alpha only"
+}

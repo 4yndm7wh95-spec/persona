@@ -1,0 +1,16 @@
+{
+  "accepted_file": "art/p5/poses/guard_a2.png",
+  "original_guard_a_preserved": true,
+  "pose_review": "No obvious stance/arm/foot changes in first generation; user accepted output",
+  "generation_attempts": 1,
+  "alpha_cleanup_count": 1337,
+  "RGB_changes_from_tool_output": 0,
+  "outside_cleanup_mask_changes": 0,
+  "dimensions": [
+    1024,
+    1536
+  ],
+  "sha256_after_cleanup": "b567a017be2616ae119459b5016e99e243d51b0fdd425cd98d87a982f117943f",
+  "user_approval": "诶 这张可以了",
+  "next_pose": "slash_a; small chest-height horizontal cut, half-step, no overhead swing"
+}

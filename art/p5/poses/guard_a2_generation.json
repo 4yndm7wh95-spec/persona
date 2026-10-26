@@ -1,0 +1,11 @@
+{
+  "mode": "built-in image_gen edit; whole full-body regenerate",
+  "prompt": "Regenerate the entire full-body illustration using IMAGE1 guard_a as an EXACT pose, clothing, proportion and composition guide, and IMAGE2 face_standard as the EXACT facial/eye drawing reference. Output guard_a2, a single complete character on TRUE transparent RGBA,1024x1536. POSE MUST BE IDENTICAL TO IMAGE1: body AND head together3/4 facing screen RIGHT; anatomical RIGHT forearm upright/vertical in front of face, right fist above eye level; left fist at waist; legs separated, weight on back leg. Copy all shoulder/elbow/wrist/knee/boot positions, head size, coat silhouette and stance. Do not mirror, rotate body left, change guard gesture, shift feet or change framing. Maintain black long split coat/high collar, grey waistcoat goldbuttons, white pocket square, red gloves, black trousers,brown boots, official P5R angular ink/cel shading. Change FACE/eye design to faithfully match IMAGE2: same eye shape,size,relative placement and drawing style. Near anatomical RIGHT eye on screen LEFT is the larger eye, centered toward front of face; far LEFT eye on screen RIGHT is smaller, very close to nose bridge and partly hidden by bangs. Both eyes on the SAME slanted eye-line with roughly ONE EYE WIDTH gap; no wide-spaced eyes, no tiny eye pasted in wrong place. Grey irises centered just slightly right (55-60%eye width), white sclera visible on BOTH sides, crisp white highlights; both eyes look naturally forward along face toward right enemy, not camera or sideways glance. Face proportions and soft jaw/rounded chin match standard, no pointed cone chin. Keep black wavy hair and same person. No mask,weapons,text,watermark,background,ground,shadow,haze,halo,glow or effects. Transparent pixels outside silhouette alpha0. Full body entirely visible with same margins as image1.",
+  "inputs": [
+    "art/p5/poses/guard_a.png",
+    "art/p5/ref/face_standard.png"
+  ],
+  "original_tool_output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-c61042c9-a085-47a9-8da6-5f5ceae5fc72.png",
+  "attempts": 1,
+  "user_accepted": true
+}
