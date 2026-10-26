@@ -66,17 +66,25 @@
  "gun_a2": {
   "scale": 1.0,
   "offset": [
-   85,
+   -55,
    24
   ],
-  "anchor_foot": "mid"
+  "anchor_foot": "rear"
  },
  "gun_raise_a2": {
   "scale": 1.0,
   "offset": [
-   86,
+   -53,
    22
   ],
-  "anchor_foot": "mid"
+  "anchor_foot": "rear"
+ },
+ "gun_recoil_a4": {
+  "scale": 1.0,
+  "offset": [
+   -52,
+   22
+  ],
+  "anchor_foot": "rear"
  }
 }
