@@ -61,7 +61,7 @@ def main():
         big = im.resize((round(W * s), round(H * s)), Image.LANCZOS)
         ox, oy = round(tx - fx * s), round(ty - fy * s)
         bottom = np.nonzero(np.array(big)[..., 3].max(1) > 20)[0].max()
-        oy = min(oy, H - 4 - bottom)  # never push the lower foot off the canvas
+        oy = int(min(oy, H - 4 - bottom))  # never push the lower foot off the canvas
         res = Image.new('RGBA', (W, H), (0, 0, 0, 0))
         res.alpha_composite(big, (max(0, ox), max(0, oy)), (max(0, -ox), max(0, -oy)))
         res.save(OUT / f'{n}.png')
