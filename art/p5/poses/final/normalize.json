@@ -1,0 +1,42 @@
+{
+ "idle_a3": {
+  "scale": 1.0,
+  "offset": [
+   0,
+   0
+  ],
+  "anchor_foot": "rear"
+ },
+ "guard_a2": {
+  "scale": 0.95,
+  "offset": [
+   -4,
+   109
+  ],
+  "anchor_foot": "front"
+ },
+ "knife_ready_a": {
+  "scale": 0.96,
+  "offset": [
+   16,
+   84
+  ],
+  "anchor_foot": "rear"
+ },
+ "slash_a3": {
+  "scale": 0.96,
+  "offset": [
+   44,
+   120
+  ],
+  "anchor_foot": "mid"
+ },
+ "slash_follow_a": {
+  "scale": 0.96,
+  "offset": [
+   43,
+   120
+  ],
+  "anchor_foot": "mid"
+ }
+}
