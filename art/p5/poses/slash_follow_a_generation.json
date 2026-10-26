@@ -1,0 +1,17 @@
+{
+  "name": "slash_follow_a",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-cc80b2e8-ba7e-4571-9243-0866bc99abbe.png",
+  "prompt": "Use case: identity-preserve. ONE fullbody fictional Persona5-style game character motion-pose illustration. IMAGE1 approved fullbody is exact character/body/face/costume/scale/leg and foot placement reference. IMAGE2 supplies approved RIGHT red glove reverse-grip of small silver single-edge knife: fist tightly wraps handle, thumb covers pommel, blade exits pinky end and points down with clear gap from sleeve. Use only its fist/knife relationship, NOT its cuff button. Keep image1 plain wide black coat cuff, grey goldbutton waistcoat, black pants, brown boots, face and grey eyes/highlights looking screenRIGHT naturally, rounded jaw, black wavy hair. Preserve image1 fullbody positioning and both planted feet EXACTLY. P5R official ink/cel shading. 1024x1536 RGBA true transparent backdrop, no ground/shadow/halo/haze/text/other figures, no blood. SPECIFIC SETTLING/FOLLOW-THROUGH FRAME: right arm RELAXES DOWN from raised position to CHEST HEIGHT in front-right of torso, elbow naturally bent and away from ribs, fist in front of chest toward screenRIGHT, no raised overhead hand remains. Correct compact reverse-grip fist as image2, wrist straight, silver blade emerges pinky side approximately VERTICALLY DOWN, visible transparent space between knife and sleeve. Upper torso rotates just slightly farther through the previous motion, right shoulder forward, slight forward lean, no hunch or backward tilt. Both legs/knees/boots/foot contacts EXACTLY SAME as image1, no step or changed stance. Left hand naturally hanging at side relaxed. Coat tails settling while retaining original long coat silhouette. Clear sharp single arm and knife, NO motion blur/ghosts/trails/effects in this frame. Same face/hair/eyes as image1.",
+  "original_size": [
+    1024,
+    1536
+  ],
+  "cleanup_pixels": 208,
+  "attempts": 1,
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/slash_a3.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/ref/grip_reverse.png"
+  ],
+  "status": "待用户验收；未做视觉review",
+  "mode": "built-in image_gen"
+}
