@@ -23,7 +23,8 @@ REF = 'idle_a3'
 POSES = {'idle_a3': (1.0, 'rear'), 'guard_a2': (1.0, 'front'), 'knife_ready_a': (0.96, 'rear'),
          'slash_a3': (0.96, 'mid'), 'slash_follow_a': (0.96, 'mid'),
          'slash_mid_a': (0.96, 'mid'), 'slash_smear_a3': (0.96, 'mid'), 'guard_mid_a': (1.0, 'front'),
-         'gun_a2': (1.0, 'rear')}
+         'gun_a2': (1.0, 'rear'), 'gun_raise_a': (1.0, 'rear'),
+         'gun_recoil_a': (1.0, 'rear'), 'gun_lower_a': (1.0, 'rear')}
 
 
 def load(n):

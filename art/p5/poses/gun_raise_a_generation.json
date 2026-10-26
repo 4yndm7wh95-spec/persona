@@ -1,0 +1,20 @@
+{
+  "name": "gun_raise_a",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-233fca71-20f3-4b63-b202-5fb8e9460d1c.png",
+  "prompt": "Use case: style-transfer / identity-preserve. IMAGE1 is EDIT TARGET, exact original 3D JOINT-LAYOUT/POSE template at user-approved50%camera. IMAGE2 approved gun_a2 supplies illustrated CHARACTER, FACE/HEAD SIZE, BODY PROPORTIONS, COSTUME and P5R boldink/cel STYLE and black PROP PISTOL design. IMAGE3 idle_a3 same character proportions/costume, IMAGE4 exact face/eyes. Repaint IMAGE1 pose into IMAGE2 illustration style. Preserve image1 torso/shoulder/head angles, right elbow bend, wrist angle, pistol orientation/height, feet positions/toes-out. Do NOT copy image2's horizontally extended arm pose. Only one rightarm with ONE black prop pistol, indexfinger STRAIGHT along OUTSIDE triggerguard, not on trigger. Left arm naturally at thigh with loose hand. Do not mirror outfit details from3D template, use approvedimage2 correct clothing side. Blackwavyhair softjaw, greyeyes withglints and sclera bothsides naturallyright; greywaistcoat goldbuttons/chains whitepocketsquare, blacklongsplitcoat wideplaincuffs no cuffbuttons, redgloves blackpants brownboots. Wholebody/head scale EXACTLY image2/3; may uniformly enlarge/reframe pose to fillcanvas but do not change joints. 1024x1536 portrait TRUE transparent RGBA alpha0 outsidefigure/prop; allhair/coat/boots/prop withinframe, soles near1500. No otherfigures/target/blood/background/ground/shadow/halo/haze/muzzleflash/particles/trails/motionblur/text/effects. ONE fullbody game character pose illustration. SPECIFIC TRANSITION A: preserve IMAGE1 arm HALF RAISED, rightupperarm slopes down slightly from shoulder to elbow; elbow noticeably BENT; forearm slants UP-RIGHT, fist about facelevel in front/right, prop pistol points diagonally UP-RIGHT about50-60degrees. This is midway from handpassingface toward horizontallyextended pose, not overhead endpoint. Torso partlyturned, shouldersrelaxed, headturnsRIGHT and slightlydown as1. Heelsclose/toesout exactly1, legs relaxednotrigid. Coat gentlyfalling as1.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/research/p5r/gun/pick/key_gun_raise.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/gun_a2.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/idle_a3.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/ref/face_standard.png"
+  ],
+  "attempts": 1,
+  "original_size": [
+    1024,
+    1536
+  ],
+  "cleanup_pixels": 284,
+  "mode": "built-in image_gen",
+  "status": "gun_a2已通过；本组三张待用户验收，未做视觉review",
+  "camera_percent": 50
+}

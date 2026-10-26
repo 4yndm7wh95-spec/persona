@@ -1,7 +1,9 @@
 {
   "standard_face_candidate": 2,
   "pending_user_approval": [
-    "gun_a2"
+    "gun_raise_a",
+    "gun_recoil_a",
+    "gun_lower_a"
   ],
   "approved": [
     "idle_a",
@@ -9,7 +11,8 @@
     "knife_ready_a",
     "slash_a3",
     "idle_a3",
-    "guard_mid_a"
+    "guard_mid_a",
+    "gun_a2"
   ],
   "next_after_approval": "continue current pose plan; no new pose until review",
   "remaining_order": [
@@ -49,9 +52,6 @@
   "new_pose_base": "art/p5/poses/idle_a3.png",
   "smear_workflow": "Codex只提供干净slash_mid_a；残影由Claude脚本生成",
   "selected_gun_camera_percent": 50,
-  "gun_next_after_approval": [
-    "gun_raise_a",
-    "gun_recoil_a",
-    "gun_lower_a"
-  ]
+  "gun_next_after_approval": "四帧齐备，待用户验收",
+  "gun_base": "gun_a2"
 }
