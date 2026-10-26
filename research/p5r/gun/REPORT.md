@@ -43,3 +43,8 @@
 - gun_lower_a：透明残点清理111像素。
 
 原图1024×1536 RGBA，清理仍仅清零主体外扩16px之外的alpha1/2。沿用gun_a2的1.0倍率和后脚锚定生成final版本；只运行本组三张，不改已有定稿final图。各帧有参考/立绘对比图，另有三张同缩放并排图。按用户长期授权直接提交推送并核对origin；本组三张待用户验收。art/cards和其他会话文件原样保留，不暂存、不提交。
+
+
+## 最新状态：用户叫停
+
+当前问题及全部图片状态见REPORT_paused_current_problems.md。本次后坐重试生成错误双枪，失败样本见rejected/gun_recoil_a2_double_gun.png。已停止，未继续收枪或其他生图。

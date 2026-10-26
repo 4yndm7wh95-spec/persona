@@ -53,7 +53,10 @@
   "new_pose_base": "art/p5/poses/idle_a3.png",
   "smear_workflow": "Codex只提供干净slash_mid_a；残影由Claude脚本生成",
   "selected_gun_camera_percent": 50,
-  "gun_next_after_approval": "四帧齐备，待用户验收",
+  "gun_next_after_approval": "等待用户新指令，不自动续做",
   "gun_base": "gun_a2",
-  "blocked": "gun_recoil_a2: imagegen violence safety rejection; gun_lower_a2 not started"
+  "blocked": "后坐重试工具返回双枪错误；用户要求停止并推送报告",
+  "status": "paused_by_user",
+  "gun_group_status": "gun_a2通过；raise_a2待审；recoil_a2失败作废；lower_a2未开始",
+  "gun_rejected_sample": "research/p5r/gun/rejected/gun_recoil_a2_double_gun.png"
 }
