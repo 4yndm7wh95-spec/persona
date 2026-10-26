@@ -1,0 +1,21 @@
+{
+  "name": "slash_smear_a2",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-3ae493bb-1f4f-4b21-998f-de65e26ff0fc.png",
+  "prompt": "ONE fullbody Persona5-style fictional game character motion-pose illustration. IMAGE1 low-hand pose and IMAGE2 raised-hand pose are endpoints: draw ONE INTERMEDIATE POSE HALFWAY BETWEEN THEM, not either endpoint. IMAGE5 is current approved base character/body proportions. IMAGE4 precise approved face/eyes. IMAGE3 ONLY approved red-gloved right fist and small prop knife grip, not its cuff button. Exactly TWO arms total: ONE RIGHT ARM with ONE RIGHT HAND and ONE KNIFE; ONE relaxed LEFT arm/hand hanging at side. Right fist is CHEST HEIGHT DIRECTLY IN FRONT of chest, elbow WELL AWAY FROM BODY, forearm reaching forward about one forearm length; right arm moving diagonally upward, not overhead yet. Torso halfway between open-camera posture1 and closed posture2, slight forward lean. LEGS and BOTH FEET exact IMAGE2 placement, same character/head scale as approved set. Right full fist holds black handle enclosed in palm, thumb covers pommel, silver blade emerges PINKY END DOWNWARD with clear space from sleeve as3. Wrist straight. Behind this ONE clearly drawn sharp arm and knife: ONE CONTINUOUS SEMITRANSPARENT WHITE-GREY CURVED MOTION TRAIL like abstract tapered speed lines, sweeping diagonally from front-right abdomen via chest toward upper-right-of-head. TRAIL HAS NO HAND SHAPES, NO FINGERS, NO KNIFE SHAPES, NO duplicate sleeves or arm silhouettes. No separate ghost limbs or repeated objects. Only one physically clear hand/knife at middle of arc. Coat tails lifted by turn. Same black longcoat wide plain cuffs, grey waistcoat goldbuttons, redgloves blackpants brownboots, P5R official ink/cel shading, face turned3/4right naturally highlightedgrey eyes, soft jaw.1024x1536 TRUE transparent RGBA alpha0 outside figure and intentional translucent speed trail. No background/ground/shadow/glow/haze/text/other figures/blood.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/knife_ready_a.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/slash_a3.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/ref/grip_reverse.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/ref/face_standard.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/idle_a3.png"
+  ],
+  "original_size": [
+    1024,
+    1536
+  ],
+  "cleanup_pixels": 734,
+  "attempts": 1,
+  "baseline": "5d46fa0e",
+  "mode": "built-in image_gen",
+  "status": "待用户验收；未做视觉review"
+}

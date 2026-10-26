@@ -1,0 +1,19 @@
+{
+  "name": "guard_mid_a",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-517bcd78-69fe-4cac-b694-1b46285c3bdf.png",
+  "prompt": "Use case: identity-preserve. Edit IMAGE1 approved Joker fullbody idle into an EARLY HALFWAY DEFENSIVE TRANSITION pose. IMAGE1 is BASE: retain character identity/headsize/body proportions/costume/face/scale/feet. IMAGE2 is final forearm-up pose, use ONLY as endpoint reference, do NOT fully reach it. IMAGE3 exact standard face and eyes. Right near-side forearm is LIFTED HALFWAY from down-at-side to vertical in front of face: elbow bent at side, fist at CHEST HEIGHT well BELOW chin, forearm tilts upward forward toward screenRIGHT, just beginning to turn vertical. Right red-gloved fist CLOSED, handback toward screenRIGHT, empty hand NO WEAPON. Left hand begins curling toward a loose fist near WAIST SIDE. Body AND head3/4towardRIGHT, torso straight subtlyforward, knees begin bending. Weight JUST STARTING TO SHIFT to REAR RIGHT leg, hips subtlyback, not yet full final crouch; feet stay as image1 planted, frontleft leg screenRIGHT, rearRIGHT screenLEFT. Same black long splitcoat highcollar/plain wide cuffs, greywaistcoat goldbuttons, whitepocketsquare, redgloves blackpants brownboots. Face soft rounded jaw, blackwavyhair, exact grey eye shape/size image3, irises centeredslightlyright sclera bothsides whiteglints, gaze naturallyforwardRIGHT. Calm alert expression. One rightarm and one leftarm, no ghosts/effects. P5R official boldink/celshading. Fullbody1024x1536 true transparent RGBA, soles near1500, allhair/boots/coat insideframe; no background/ground/shadow/halo/haze/text/otherfigures. Keep image1 overall body proportions, not only head size.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/idle_a3.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/guard_a2.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/ref/face_standard.png"
+  ],
+  "original_size": [
+    1024,
+    1536
+  ],
+  "cleanup_pixels": 402,
+  "attempts": 1,
+  "baseline": "5d46fa0e",
+  "mode": "built-in image_gen",
+  "status": "待用户验收；未做视觉review"
+}
