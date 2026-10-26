@@ -8,10 +8,10 @@
   "anchor_foot": "rear"
  },
  "guard_a2": {
-  "scale": 0.98,
+  "scale": 1.0,
   "offset": [
-   -30,
-   50
+   -48,
+   19
   ],
   "anchor_foot": "front"
  },
