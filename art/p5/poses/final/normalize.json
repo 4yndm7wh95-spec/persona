@@ -39,14 +39,6 @@
   ],
   "anchor_foot": "mid"
  },
- "guard_mid_a": {
-  "scale": 1.0,
-  "offset": [
-   64,
-   10
-  ],
-  "anchor_foot": "rear"
- },
  "slash_mid_a": {
   "scale": 0.96,
   "offset": [
@@ -54,5 +46,21 @@
    118
   ],
   "anchor_foot": "mid"
+ },
+ "slash_smear_a3": {
+  "scale": 0.96,
+  "offset": [
+   39,
+   118
+  ],
+  "anchor_foot": "mid"
+ },
+ "guard_mid_a": {
+  "scale": 1.0,
+  "offset": [
+   64,
+   10
+  ],
+  "anchor_foot": "rear"
  }
 }
