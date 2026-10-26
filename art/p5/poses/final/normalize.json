@@ -79,11 +79,11 @@
   ],
   "anchor_foot": "rear"
  },
- "gun_recoil_a4": {
+ "gun_recoil_a6": {
   "scale": 1.0,
   "offset": [
-   -52,
-   22
+   -66,
+   4
   ],
   "anchor_foot": "rear"
  }
