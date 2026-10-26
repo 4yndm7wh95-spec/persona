@@ -122,7 +122,7 @@ idle_loop、low_health_loop、relaxed_loop、attack、cast（技能 / 能力牌�
 | low_health_loop | idle（同战斗待机）| 残血不单独做 |
 | relaxed_loop | relaxed（母版站姿）| 只在商店 / 商人事件用 |
 | 休息处（单独骨骼）| rest_sit | 篝火旁坐着、拿着 LeBlanc 的咖啡杯 |
-| attack | idle_a3 → knife_ready_a → slash_a3 → slash_follow_a → idle_a3（反手，右前下 → 左前上斜撩；刀光由代码画，不用残影帧）| 打击 / 匕首类攻击（小刀斩） |
+| attack | idle_a3 → knife_ready_a → slash_smear（一张残影帧，一只手 + 一道弧形模糊）→ slash_a3 → slash_follow_a → idle_a3（反手，右前下 → 左前上斜撩；代码再叠刀光）| 打击 / 匕首类攻击（小刀斩） |
 | shiv | idle → gun_raise → gun ⇄ gun_recoil（每发一次）→ gun_lower → idle | 小刀牌 = 开枪 |
 | cast（亚森）| idle → summon_mid → summon_grab（面具浮现）→ summon_rip（撕下，停住，亚森在这时出手攻击）→ summon_end → idle | 召唤亚森的牌（大伤害 / AOE / 大毒牌） |
 | cast（防御）| idle → guard_mid → guard → guard_mid → idle | 加格挡的技能 |
