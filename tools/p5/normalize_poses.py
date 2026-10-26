@@ -19,12 +19,12 @@ REF = 'idle_a3'
 PAD = 64  # final canvas is 64 px wider on each side, so flared coats never get cut off
 # name -> (scale, foot that stays planted relative to idle: 'rear' = image-left, 'front' = image-right,
 # 'mid' = midpoint between the feet, for poses that step both feet).
-# Scales are set by hand from head width (hair, measured on crops) and boot size against idle_a3;
+# Scales are set by hand from head size and body length (chin to sole, for standing frames) against idle_a3;
 # automatic head measurement is unreliable because raised black sleeves touch the hair.
 POSES = {'idle_a3': (1.0, 'rear'), 'guard_a2': (1.0, 'front'), 'knife_ready_a': (0.96, 'rear'),
          'slash_a3': (0.96, 'mid'), 'slash_follow_a': (0.96, 'mid'),
          'slash_mid_a': (0.96, 'mid'), 'slash_smear_a3': (0.96, 'mid'), 'guard_mid_a': (1.0, 'front'),
-         'gun_a2': (1.0, 'rear'), 'gun_raise_a2': (1.0, 'rear'), 'gun_recoil_a6': (1.0, 'rear')}
+         'gun_a2': (1.03, 'rear'), 'gun_raise_a2': (1.03, 'rear'), 'gun_recoil_a6': (1.045, 'rear')}
 
 
 def load(n):
