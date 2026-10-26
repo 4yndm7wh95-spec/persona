@@ -1,0 +1,5 @@
+# slash_a3 重绘记录
+
+用户已通过grip_reverse。第2步按多边形外扩20px，仅清零旧右手和整刀区域alpha，其他像素不变；掩膜记录见slash_a_nohand_mask.json。第3步只输入slash_a_nohand、grip_reverse、idle_a、face_standard，没有输入slash_a或slash_a2原图。整图生成一次成功；要求大衣袖口沿用无手图，不取参考手的扣子。
+
+生成后直接给用户看，未做视觉review。按既定规则清理透明残点461像素。完整提示词见slash_a3_generation.json。原slash_a及slash_a2保留；当前a3待用户验收，尚未提交推送。art/cards原样保留。

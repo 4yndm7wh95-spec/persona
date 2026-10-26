@@ -1,0 +1,66 @@
+{
+  "source": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\art\\p5\\poses\\slash_a.png",
+  "polygon": [
+    [
+      856,
+      194
+    ],
+    [
+      867,
+      161
+    ],
+    [
+      881,
+      127
+    ],
+    [
+      908,
+      122
+    ],
+    [
+      939,
+      126
+    ],
+    [
+      956,
+      138
+    ],
+    [
+      949,
+      173
+    ],
+    [
+      951,
+      199
+    ],
+    [
+      953,
+      229
+    ],
+    [
+      973,
+      338
+    ],
+    [
+      962,
+      344
+    ],
+    [
+      931,
+      270
+    ],
+    [
+      914,
+      210
+    ],
+    [
+      890,
+      215
+    ]
+  ],
+  "expansion_px": 20,
+  "operation": "alpha=0 only; RGB and outside pixels unchanged",
+  "changed_alpha_pixels": 11353,
+  "outside_identical": true,
+  "source_sha256": "b3810ed88529c7d2fb96b861798fa04e70620b029f18b3b4990a849355ec1ed8"
+}
