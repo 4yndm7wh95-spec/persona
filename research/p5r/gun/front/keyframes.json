@@ -1,0 +1,30 @@
+[
+  {
+    "name": "key_gun_raise",
+    "clip": 51,
+    "main": 53,
+    "frame": 10,
+    "seconds": 0.3333333333333333
+  },
+  {
+    "name": "key_gun",
+    "clip": 52,
+    "main": 54,
+    "frame": 0,
+    "seconds": 0.0
+  },
+  {
+    "name": "key_gun_recoil",
+    "clip": 53,
+    "main": 55,
+    "frame": 4,
+    "seconds": 0.13333333333333333
+  },
+  {
+    "name": "key_gun_lower",
+    "clip": 54,
+    "main": 56,
+    "frame": 4,
+    "seconds": 0.13333333333333333
+  }
+]
