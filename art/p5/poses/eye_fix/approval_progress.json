@@ -1,9 +1,7 @@
 {
   "standard_face_candidate": 2,
   "pending_user_approval": [
-    "gun_raise_a",
-    "gun_recoil_a",
-    "gun_lower_a"
+    "gun_raise_a2"
   ],
   "approved": [
     "idle_a",
@@ -35,7 +33,10 @@
     "slash_smear_a",
     "idle_a",
     "idle_a2",
-    "slash_smear_a2"
+    "slash_smear_a2",
+    "gun_raise_a",
+    "gun_recoil_a",
+    "gun_lower_a"
   ],
   "guard_redraw": "poses3; use confirmed idle, body and head together facing right, right forearm blocking right",
   "task": "docs/codex/codex_p5_poses4.md",
@@ -53,5 +54,6 @@
   "smear_workflow": "Codex只提供干净slash_mid_a；残影由Claude脚本生成",
   "selected_gun_camera_percent": 50,
   "gun_next_after_approval": "四帧齐备，待用户验收",
-  "gun_base": "gun_a2"
+  "gun_base": "gun_a2",
+  "blocked": "gun_recoil_a2: imagegen violence safety rejection; gun_lower_a2 not started"
 }
