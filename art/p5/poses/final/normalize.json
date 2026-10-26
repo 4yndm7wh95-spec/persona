@@ -66,33 +66,25 @@
  "gun_a2": {
   "scale": 1.0,
   "offset": [
-   -55,
+   85,
    24
   ],
-  "anchor_foot": "rear"
+  "anchor_foot": "mid"
  },
- "gun_raise_a": {
+ "gun_raise_a2": {
   "scale": 1.0,
   "offset": [
-   -47,
-   1
+   86,
+   22
   ],
-  "anchor_foot": "rear"
+  "anchor_foot": "mid"
  },
- "gun_recoil_a": {
+ "gun_recoil_a3": {
   "scale": 1.0,
   "offset": [
-   -93,
-   18
+   85,
+   24
   ],
-  "anchor_foot": "rear"
- },
- "gun_lower_a": {
-  "scale": 1.0,
-  "offset": [
-   -150,
-   6
-  ],
-  "anchor_foot": "rear"
+  "anchor_foot": "mid"
  }
 }
