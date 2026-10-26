@@ -1,0 +1,394 @@
+{
+  "camera_location": [
+    909.5668334960938,
+    423.4912414550781,
+    -5.387542724609375
+  ],
+  "camera_rotation": [
+    1.5707963705062866,
+    -4.487446858547628e-08,
+    2.0188241004943848
+  ],
+  "ortho_scale": 290.64661372791636,
+  "camera_direction": [
+    0.9013032363068559,
+    0.4331887304891343,
+    0
+  ],
+  "selected_percent": 50,
+  "azimuth_degrees": 25.670095872954956,
+  "output_horizontal_mirror": true,
+  "weapon": "MODEL/WEAPON/GUN0001.GMD",
+  "attachment": "h_Motion_hand_R",
+  "mount_local_adjustment": "identity in Blender imported gun coordinates; native GMD Y-up is imported as Z-up",
+  "clips": [
+    {
+      "number": 51,
+      "original_name": "BB0001_051.GAP#main[53]",
+      "variant": "D",
+      "frames": [
+        {
+          "frame": 0,
+          "time_seconds": 0.0,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\51_frames\\frame_000.png",
+          "hand_world": [
+            -2.0823330879211426,
+            34.645179748535156,
+            -12.833513259887695
+          ]
+        },
+        {
+          "frame": 2,
+          "time_seconds": 0.06666666666666667,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\51_frames\\frame_002.png",
+          "hand_world": [
+            -21.367168426513672,
+            23.018815994262695,
+            -9.864234924316406
+          ]
+        },
+        {
+          "frame": 4,
+          "time_seconds": 0.13333333333333333,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\51_frames\\frame_004.png",
+          "hand_world": [
+            -33.1827392578125,
+            -22.763832092285156,
+            30.99867057800293
+          ]
+        },
+        {
+          "frame": 6,
+          "time_seconds": 0.2,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\51_frames\\frame_006.png",
+          "hand_world": [
+            -19.105955123901367,
+            -36.908607482910156,
+            58.00079345703125
+          ]
+        },
+        {
+          "frame": 8,
+          "time_seconds": 0.26666666666666666,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\51_frames\\frame_008.png",
+          "hand_world": [
+            -12.220548629760742,
+            -51.71923828125,
+            63.81544876098633
+          ]
+        },
+        {
+          "frame": 10,
+          "time_seconds": 0.3333333333333333,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\51_frames\\frame_010.png",
+          "hand_world": [
+            -5.53941535949707,
+            -64.3493423461914,
+            62.10446548461914
+          ]
+        },
+        {
+          "frame": 12,
+          "time_seconds": 0.4,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\51_frames\\frame_012.png",
+          "hand_world": [
+            -10.243382453918457,
+            -76.37004852294922,
+            50.21830368041992
+          ]
+        },
+        {
+          "frame": 14,
+          "time_seconds": 0.4666666666666667,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\51_frames\\frame_014.png",
+          "hand_world": [
+            -10.243382453918457,
+            -76.37004852294922,
+            50.21830368041992
+          ]
+        }
+      ]
+    },
+    {
+      "number": 52,
+      "original_name": "BB0001_051.GAP#main[54]",
+      "variant": "D",
+      "frames": [
+        {
+          "frame": 0,
+          "time_seconds": 0.0,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\52_frames\\frame_000.png",
+          "hand_world": [
+            -8.541722297668457,
+            -75.74285125732422,
+            50.23295211791992
+          ]
+        },
+        {
+          "frame": 2,
+          "time_seconds": 0.06666666666666667,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\52_frames\\frame_002.png",
+          "hand_world": [
+            -8.458826065063477,
+            -75.41354370117188,
+            50.50466537475586
+          ]
+        },
+        {
+          "frame": 4,
+          "time_seconds": 0.13333333333333333,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\52_frames\\frame_004.png",
+          "hand_world": [
+            -8.550311088562012,
+            -74.88468170166016,
+            51.00916290283203
+          ]
+        },
+        {
+          "frame": 6,
+          "time_seconds": 0.2,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\52_frames\\frame_006.png",
+          "hand_world": [
+            -8.476454734802246,
+            -74.52713775634766,
+            51.253562927246094
+          ]
+        },
+        {
+          "frame": 8,
+          "time_seconds": 0.26666666666666666,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\52_frames\\frame_008.png",
+          "hand_world": [
+            -8.679488182067871,
+            -74.5889892578125,
+            51.18510437011719
+          ]
+        },
+        {
+          "frame": 10,
+          "time_seconds": 0.3333333333333333,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\52_frames\\frame_010.png",
+          "hand_world": [
+            -8.66527271270752,
+            -74.61929321289062,
+            51.422969818115234
+          ]
+        },
+        {
+          "frame": 12,
+          "time_seconds": 0.4,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\52_frames\\frame_012.png",
+          "hand_world": [
+            -8.654162406921387,
+            -75.09188842773438,
+            51.079185485839844
+          ]
+        },
+        {
+          "frame": 14,
+          "time_seconds": 0.4666666666666667,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\52_frames\\frame_014.png",
+          "hand_world": [
+            -8.526238441467285,
+            -75.5371322631836,
+            50.522247314453125
+          ]
+        },
+        {
+          "frame": 16,
+          "time_seconds": 0.5333333333333333,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\52_frames\\frame_016.png",
+          "hand_world": [
+            -8.541722297668457,
+            -75.74285125732422,
+            50.23295211791992
+          ]
+        },
+        {
+          "frame": 18,
+          "time_seconds": 0.6,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\52_frames\\frame_018.png",
+          "hand_world": [
+            -8.541722297668457,
+            -75.74285125732422,
+            50.23295211791992
+          ]
+        },
+        {
+          "frame": 20,
+          "time_seconds": 0.6666666666666666,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\52_frames\\frame_020.png",
+          "hand_world": [
+            -8.541722297668457,
+            -75.74285125732422,
+            50.23295211791992
+          ]
+        }
+      ]
+    },
+    {
+      "number": 53,
+      "original_name": "BB0001_051.GAP#main[55]",
+      "variant": "D",
+      "frames": [
+        {
+          "frame": 0,
+          "time_seconds": 0.0,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\53_frames\\frame_000.png",
+          "hand_world": [
+            -8.812230110168457,
+            -76.26360321044922,
+            50.23295211791992
+          ]
+        },
+        {
+          "frame": 2,
+          "time_seconds": 0.06666666666666667,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\53_frames\\frame_002.png",
+          "hand_world": [
+            -13.84709358215332,
+            -58.571441650390625,
+            71.60253143310547
+          ]
+        },
+        {
+          "frame": 4,
+          "time_seconds": 0.13333333333333333,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\53_frames\\frame_004.png",
+          "hand_world": [
+            -13.485376358032227,
+            -46.82659149169922,
+            79.10237121582031
+          ]
+        },
+        {
+          "frame": 6,
+          "time_seconds": 0.2,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\53_frames\\frame_006.png",
+          "hand_world": [
+            -12.62185287475586,
+            -56.30281066894531,
+            74.97380828857422
+          ]
+        },
+        {
+          "frame": 8,
+          "time_seconds": 0.26666666666666666,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\53_frames\\frame_008.png",
+          "hand_world": [
+            -11.591023445129395,
+            -67.1914291381836,
+            66.46607208251953
+          ]
+        },
+        {
+          "frame": 10,
+          "time_seconds": 0.3333333333333333,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\53_frames\\frame_010.png",
+          "hand_world": [
+            -9.362421989440918,
+            -75.44249725341797,
+            53.043975830078125
+          ]
+        },
+        {
+          "frame": 12,
+          "time_seconds": 0.4,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\53_frames\\frame_012.png",
+          "hand_world": [
+            -8.812230110168457,
+            -76.26360321044922,
+            50.23295211791992
+          ]
+        }
+      ]
+    },
+    {
+      "number": 54,
+      "original_name": "BB0001_051.GAP#main[56]",
+      "variant": "D",
+      "frames": [
+        {
+          "frame": 0,
+          "time_seconds": 0.0,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\54_frames\\frame_000.png",
+          "hand_world": [
+            -10.439671516418457,
+            -76.36052703857422,
+            50.22709274291992
+          ]
+        },
+        {
+          "frame": 2,
+          "time_seconds": 0.06666666666666667,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\54_frames\\frame_002.png",
+          "hand_world": [
+            -1.5237250328063965,
+            -67.1588363647461,
+            57.4151725769043
+          ]
+        },
+        {
+          "frame": 4,
+          "time_seconds": 0.13333333333333333,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\54_frames\\frame_004.png",
+          "hand_world": [
+            -7.738451957702637,
+            -48.23944091796875,
+            65.33563232421875
+          ]
+        },
+        {
+          "frame": 6,
+          "time_seconds": 0.2,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\54_frames\\frame_006.png",
+          "hand_world": [
+            -20.202985763549805,
+            -31.42650604248047,
+            63.05304718017578
+          ]
+        },
+        {
+          "frame": 8,
+          "time_seconds": 0.26666666666666666,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\54_frames\\frame_008.png",
+          "hand_world": [
+            -34.512054443359375,
+            -21.892011642456055,
+            31.63863182067871
+          ]
+        },
+        {
+          "frame": 10,
+          "time_seconds": 0.3333333333333333,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\54_frames\\frame_010.png",
+          "hand_world": [
+            -21.12405014038086,
+            22.974048614501953,
+            -9.874844551086426
+          ]
+        },
+        {
+          "frame": 12,
+          "time_seconds": 0.4,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\54_frames\\frame_012.png",
+          "hand_world": [
+            -1.969784140586853,
+            34.644676208496094,
+            -12.825212478637695
+          ]
+        },
+        {
+          "frame": 14,
+          "time_seconds": 0.4666666666666667,
+          "path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\research\\p5r\\gun\\pick\\54_frames\\frame_014.png",
+          "hand_world": [
+            -1.969784140586853,
+            34.644676208496094,
+            -12.825212478637695
+          ]
+        }
+      ]
+    }
+  ]
+}
