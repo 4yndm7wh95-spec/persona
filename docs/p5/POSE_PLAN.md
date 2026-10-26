@@ -20,6 +20,10 @@ idle_a 和后来所有姿势比例不一样：头小约 20%，肩膀更窄、躯
 ## 一致性规则（用户 2026-10-26 着重要求）
 见 docs/codex/README.md 最后一节：过渡帧以定稿图为底图编辑；出图后跑 tools/p5/pose_consistency.py（头的大小差 >5% 判 FAIL，重画）；通过后进 normalize_poses.py。开枪那组 raise / recoil / lower 第一次各自以 3D 关键帧为底图重绘，结果 recoil 小一号、lower 大一号，就是没遵守这条。
 
+## 动画不能跳（用户 2026-10-26）
+相邻帧变化要小，跳就补过渡帧。用 tools/p5/sequence_check.py 量（轮廓重合 < 0.62 或脸移动 > 90px = JUMP），规则见 docs/codex/README.md 最后一节。
+2026-10-26 检查结果：防御全程没有 JUMP；开枪 idle↔gun_draw 有 JUMP（前脚一下收了 283px）；小刀斩 idle→knife_ready、slash_follow→idle 有 JUMP（收回待机时脸移动 222px）。
+
 ## 定稿记录（用户 2026-10-26）
 - 待机 = **idle_a3**（整张重画、比例和攻击 / 防御一致）。idle_a / idle_a2 不再用。
 - 防御 = guard_a2。
