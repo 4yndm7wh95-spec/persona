@@ -1,7 +1,7 @@
 {
   "standard_face_candidate": 2,
   "pending_user_approval": [
-    "gun_recoil_a5"
+    "gun_recoil_a6"
   ],
   "approved": [
     "idle_a",
@@ -37,7 +37,8 @@
     "gun_raise_a",
     "gun_recoil_a",
     "gun_lower_a",
-    "gun_recoil_a3"
+    "gun_recoil_a3",
+    "gun_recoil_a5"
   ],
   "guard_redraw": "poses3; use confirmed idle, body and head together facing right, right forearm blocking right",
   "task": "docs/codex/codex_p5_poses4.md",
@@ -54,11 +55,11 @@
   "new_pose_base": "art/p5/poses/idle_a3.png",
   "smear_workflow": "Codex只提供干净slash_mid_a；残影由Claude脚本生成",
   "selected_gun_camera_percent": 50,
-  "gun_next_after_approval": "等待用户新指令，不自动续做",
+  "gun_next_after_approval": "等待gun_recoil_a6用户确认",
   "gun_base": "gun_a2",
-  "status": "paused_by_user",
+  "status": "awaiting_user_review",
   "gun_group_status": "gun_a2通过；raise_a2待审；recoil_a2失败作废；lower_a2未开始",
   "gun_rejected_sample": "research/p5r/gun/rejected/gun_recoil_a2_double_gun.png",
-  "gun_recoil_latest": "gun_recoil_a5：一次生成，用户叫停并要求推送，待验收",
+  "gun_recoil_latest": "gun_recoil_a6：以pick/key_gun_recoil为底图，脚本ok，待用户验收",
   "gun_recoil_normalization_pending": "归一化遇到未覆盖情况：按现有1.0/mid对齐得到offset=[86,22]，会把右侧甩起衣摆移出1024画布，实测裁掉10288个alpha>128像素。因此该裁切产物仅留work诊断，不放入final、不登记a4，未擅自缩放或挪脚凑数。a3已由用户作废，其归一化登记移除，旧文件留历史；本次仅提交完整a4原图和报告，final接入待解决脚位锚定/画布边界。"
 }
