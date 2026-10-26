@@ -62,5 +62,13 @@
    6
   ],
   "anchor_foot": "front"
+ },
+ "gun_a2": {
+  "scale": 1.0,
+  "offset": [
+   -55,
+   24
+  ],
+  "anchor_foot": "rear"
  }
 }
