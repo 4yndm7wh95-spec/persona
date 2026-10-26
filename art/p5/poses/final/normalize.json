@@ -63,6 +63,14 @@
   ],
   "anchor_foot": "front"
  },
+ "gun_draw_a": {
+  "scale": 1.0,
+  "offset": [
+   -46,
+   5
+  ],
+  "anchor_foot": "rear"
+ },
  "gun_a2": {
   "scale": 1.03,
   "offset": [
