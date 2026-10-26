@@ -2,7 +2,7 @@
  "idle_a3": {
   "scale": 1.0,
   "offset": [
-   0,
+   64,
    0
   ],
   "anchor_foot": "rear"
@@ -10,7 +10,7 @@
  "guard_a2": {
   "scale": 1.0,
   "offset": [
-   -48,
+   16,
    19
   ],
   "anchor_foot": "front"
@@ -18,7 +18,7 @@
  "knife_ready_a": {
   "scale": 0.96,
   "offset": [
-   16,
+   80,
    84
   ],
   "anchor_foot": "rear"
@@ -26,7 +26,7 @@
  "slash_a3": {
   "scale": 0.96,
   "offset": [
-   44,
+   108,
    120
   ],
   "anchor_foot": "mid"
@@ -34,7 +34,7 @@
  "slash_follow_a": {
   "scale": 0.96,
   "offset": [
-   43,
+   107,
    120
   ],
   "anchor_foot": "mid"
@@ -42,7 +42,7 @@
  "slash_mid_a": {
   "scale": 0.96,
   "offset": [
-   39,
+   103,
    118
   ],
   "anchor_foot": "mid"
@@ -50,7 +50,7 @@
  "slash_smear_a3": {
   "scale": 0.96,
   "offset": [
-   39,
+   103,
    118
   ],
   "anchor_foot": "mid"
@@ -58,7 +58,7 @@
  "guard_mid_a": {
   "scale": 1.0,
   "offset": [
-   -34,
+   30,
    6
   ],
   "anchor_foot": "front"
@@ -66,7 +66,7 @@
  "gun_a2": {
   "scale": 1.0,
   "offset": [
-   -55,
+   9,
    24
   ],
   "anchor_foot": "rear"
@@ -74,7 +74,7 @@
  "gun_raise_a2": {
   "scale": 1.0,
   "offset": [
-   -53,
+   11,
    22
   ],
   "anchor_foot": "rear"
@@ -82,7 +82,7 @@
  "gun_recoil_a6": {
   "scale": 1.0,
   "offset": [
-   -66,
+   -2,
    4
   ],
   "anchor_foot": "rear"
