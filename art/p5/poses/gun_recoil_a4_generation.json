@@ -1,0 +1,35 @@
+{
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-5a120800-ecdc-4af3-80be-dd9791d88b7a.png",
+  "prompt": "游戏角色立绘，动态姿势：举起右臂、身体轻微后仰、大衣飘起。Precisely EDIT attached gun_a2 base, same1024x1536 canvas, NO global resizing, no reframing. SOURCE HEAD dimensions are LOCKED: hairtop-tochin height219pixels, keep fullhead scale1.00 (within2%), headtop aboutsource35px and chin about254px; don't move wholehead down to make room for prop. Face/eye/hairidentity exactly source. Head may tilt back subtly at neck but MUST keep219px apparent height and face size. LEGS AND BOOTS LOCKED IN ORIGINAL PIXEL POSITIONS: imageleft/rear boot colorcluster centerx365.8, bottomy1496; imageright/front boot centerx603.1, bottomy1471. Copy all original hip/leg/boot shapes and footangles unchanged, do notspreadstance or alterknees. LEFT arm and EMPTY glove at imageLEFT thigh LOCKED exactlysource, no prop there. MOVE ONLY ORIGINAL prop-holding RIGHT ARM on IMAGERIGHT UP, not otherarm. Erase ORIGINAL horizontallyextended arm/hand/prop silhouette as it moves; ONE rightarm, ONE black prop pistol total, no old pistol remains. Rightelbow bends softly; rightfist near upperheadlevel, pistol barrelUP fitting upperrightcanvas; indexfinger straight OUTSIDE triggerguard. Rightshoulder presses BACK by5-10px, chest/upperback leansBACK only slightly from samehips so body has momentum, weightsettlesonto existing rearfoot with feetunchanged. Head tiny backwardtilt only, NO headshrink. Big movement comes from shoulder/chest twist and COAT TAILS billowing backward/outward toward screenRIGHT, hairtips flicking back while HEAD SIZE stayslocked. Keep sourceleftemptyhand down. Sameblackcoat wideplaincuffs, greywaistcoat goldbuttons/chains whitepocketsquare redgloves blackpants brownboots, officialP5R boldink/celshading. SINGLE prop held only in liftedright hand. True transparentRGBA alpha0 outsidefigure/prop; no additionalobjects, extraarms/hands, secondprop, flashes, particles, trails, blur, text, shadows, halo/haze, background, ground, blood or targets.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/gun_a2.png"
+  ],
+  "mode": "built-in image_gen",
+  "attempts": 2,
+  "status": "一致性脚本ok；单枪检查ok；待用户视觉验收",
+  "baseline": "7f784c65",
+  "single_pistol_check": "本次仅右手一把枪、左手为空",
+  "retry_reason": "第1次一致性检查FAIL: head x0.941",
+  "original_size": [
+    1024,
+    1536
+  ],
+  "cleanup_pixels": 893,
+  "consistency_output": "gun_recoil_a4      head x0.986  boot height x1.033  boot width x1.000  feet moved [3, 1] px  ok\nsheet: art\\p5\\poses\\check_gun_recoil_a4.png | overall: ok\n",
+  "consistency_passed": true,
+  "attempt_history": [
+    {
+      "attempt": 1,
+      "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-8482f366-b4f8-4128-8e56-a6dfbabe6bca.png",
+      "consistency_output": "gun_recoil_a4      head x0.941  boot height x1.015  boot width x1.012  feet moved [9, 46] px  FAIL\nsheet: art\\p5\\poses\\check_gun_recoil_a4.png | overall: FAIL\n",
+      "status": "比例FAIL后从gun_a2重画，无手工缩放"
+    },
+    {
+      "attempt": 2,
+      "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-5a120800-ecdc-4af3-80be-dd9791d88b7a.png",
+      "consistency_output": "gun_recoil_a4      head x0.986  boot height x1.033  boot width x1.000  feet moved [3, 1] px  ok\nsheet: art\\p5\\poses\\check_gun_recoil_a4.png | overall: ok\n",
+      "status": "比例检查ok，待用户验收"
+    }
+  ],
+  "normalization_status": "归一化遇到未覆盖情况：按现有1.0/mid对齐得到offset=[86,22]，会把右侧甩起衣摆移出1024画布，实测裁掉10288个alpha>128像素。因此该裁切产物仅留work诊断，不放入final、不登记a4，未擅自缩放或挪脚凑数。a3已由用户作废，其归一化登记移除，旧文件留历史；本次仅提交完整a4原图和报告，final接入待解决脚位锚定/画布边界。"
+}

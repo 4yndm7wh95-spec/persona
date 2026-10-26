@@ -78,13 +78,5 @@
    22
   ],
   "anchor_foot": "mid"
- },
- "gun_recoil_a3": {
-  "scale": 1.0,
-  "offset": [
-   85,
-   24
-  ],
-  "anchor_foot": "mid"
  }
 }

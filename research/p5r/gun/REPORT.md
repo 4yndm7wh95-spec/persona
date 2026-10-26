@@ -48,3 +48,8 @@
 ## 最新状态：用户叫停
 
 当前问题及全部图片状态见REPORT_paused_current_problems.md。本次后坐重试生成错误双枪，失败样本见rejected/gun_recoil_a2_double_gun.png。已停止，未继续收枪或其他生图。
+
+
+## gun_recoil_a4最新进展
+
+用户授权重启后坐返工。已从gun_a2整图编辑，第二次通过一致性脚本（head x0.986，脚位差[3,1]px），右手单枪、左手为空。详见REPORT_gun_recoil_a4.md，待用户视觉验收；此前叫停/失败样本记录为历史。
