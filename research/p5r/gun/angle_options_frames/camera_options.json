@@ -1,0 +1,118 @@
+{
+  "clip": 52,
+  "original_name": "BB0001_051.GAP#main[54]",
+  "frame": 0,
+  "fps_reference": 30,
+  "variant": "D",
+  "weapon": "MODEL/WEAPON/GUN0001.GMD",
+  "mount": "h_Motion_hand_R",
+  "target": [
+    -14.598752975463867,
+    -21.233911514282227,
+    -9.005592346191406
+  ],
+  "camera_distance": 822.1533879753674,
+  "ortho_scale": 243.32043040882456,
+  "elevation_degrees": 0,
+  "azimuth_definition": "atan2(worldY,worldX), before common output horizontal mirror",
+  "horizontal_mirror": true,
+  "interpolation": "linear azimuth / orbit around world Z",
+  "options": [
+    {
+      "percent": 0,
+      "azimuth_degrees": 51.34019174590991,
+      "rotation_from_original_degrees": 0.0,
+      "camera_location": [
+        498.99639892578125,
+        620.7600708007812,
+        -9.005592346191406
+      ],
+      "camera_rotation": [
+        1.5707964897155762,
+        6.76727509585362e-08,
+        2.4668519496917725
+      ],
+      "file": "angle_000.png"
+    },
+    {
+      "percent": 20,
+      "azimuth_degrees": 41.07215339672793,
+      "rotation_from_original_degrees": -10.26803834918198,
+      "camera_location": [
+        605.2085571289062,
+        518.92822265625,
+        -9.005592346191406
+      ],
+      "camera_rotation": [
+        1.570796251296997,
+        -0.0,
+        2.2876408100128174
+      ],
+      "file": "angle_020.png"
+    },
+    {
+      "percent": 35,
+      "azimuth_degrees": 33.371124634841436,
+      "rotation_from_original_degrees": -17.96906711106847,
+      "camera_location": [
+        672.0022583007812,
+        430.99969482421875,
+        -9.005592346191406
+      ],
+      "camera_rotation": [
+        1.5707963705062866,
+        3.710430718228963e-08,
+        2.1532323360443115
+      ],
+      "file": "angle_035.png"
+    },
+    {
+      "percent": 50,
+      "azimuth_degrees": 25.670095872954956,
+      "rotation_from_original_degrees": -25.670095872954953,
+      "camera_location": [
+        726.4107666015625,
+        334.9136657714844,
+        -9.005592346191406
+      ],
+      "camera_rotation": [
+        1.5707964897155762,
+        4.487446858547628e-08,
+        2.0188241004943848
+      ],
+      "file": "angle_050.png"
+    },
+    {
+      "percent": 65,
+      "azimuth_degrees": 17.96906711106847,
+      "rotation_from_original_degrees": -33.371124634841436,
+      "camera_location": [
+        767.45263671875,
+        232.40325927734375,
+        -9.005592346191406
+      ],
+      "camera_rotation": [
+        1.5707963705062866,
+        -6.81816558767423e-08,
+        1.8844157457351685
+      ],
+      "file": "angle_065.png"
+    },
+    {
+      "percent": 100,
+      "azimuth_degrees": 6.3611093629270335e-15,
+      "rotation_from_original_degrees": -51.340191745909905,
+      "camera_location": [
+        807.5546264648438,
+        -21.233911514282227,
+        -9.005592346191406
+      ],
+      "camera_rotation": [
+        1.5707963705062866,
+        -0.0,
+        1.5707963705062866
+      ],
+      "file": "angle_100.png"
+    }
+  ]
+}
