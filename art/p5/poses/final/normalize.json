@@ -58,9 +58,9 @@
  "guard_mid_a": {
   "scale": 1.0,
   "offset": [
-   64,
-   10
+   -34,
+   6
   ],
-  "anchor_foot": "rear"
+  "anchor_foot": "front"
  }
 }
