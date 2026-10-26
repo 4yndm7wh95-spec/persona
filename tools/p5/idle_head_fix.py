@@ -15,14 +15,6 @@ im = Image.open(src).convert('RGBA')
 W, H = im.size
 
 
-def scale_about(layer, s, px, py):
-    big = layer.resize((round(W * s), round(H * s)), Image.LANCZOS)
-    res = Image.new('RGBA', (W, H), (0, 0, 0, 0))
-    res.alpha_composite(big, (round(px - px * s), round(py - py * s)) if px - px * s >= 0 else (0, 0),
-                        (0, 0) if px - px * s >= 0 else (round(px * s - px), round(py * s - py)))
-    return res
-
-
 def paste_scaled(layer, s, px, py):
     big = layer.resize((round(W * s), round(H * s)), Image.LANCZOS)
     res = Image.new('RGBA', (W, H), (0, 0, 0, 0))
