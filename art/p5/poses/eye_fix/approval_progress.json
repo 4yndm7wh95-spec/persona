@@ -1,8 +1,7 @@
 {
   "standard_face_candidate": 2,
   "pending_user_approval": [
-    "slash_smear_a2",
-    "guard_mid_a"
+    "slash_mid_a"
   ],
   "approved": [
     "idle_a",
@@ -31,7 +30,8 @@
     "cast_b",
     "slash_smear_a",
     "idle_a",
-    "idle_a2"
+    "idle_a2",
+    "slash_smear_a2"
   ],
   "guard_redraw": "poses3; use confirmed idle, body and head together facing right, right forearm blocking right",
   "task": "docs/codex/codex_p5_poses4.md",
@@ -45,5 +45,6 @@
     "slash_a3"
   ],
   "publish_policy": "每次生成并完成文件保存及透明残点清理后直接提交推送，不再等用户要求推送；视觉验收由用户负责",
-  "new_pose_base": "art/p5/poses/idle_a3.png"
+  "new_pose_base": "art/p5/poses/idle_a3.png",
+  "smear_workflow": "Codex只提供干净slash_mid_a；残影由Claude脚本生成"
 }
