@@ -12,6 +12,8 @@ Body length (chin to sole) more than 2.5% off is marked (check): fine for crouch
 standing frames it means the body is drawn smaller - normalize_poses.py scales it to match.
 FAIL when the head is off by more than 5% - redraw that frame from the base image, do not rescale
 it by hand. Small leftover scale / foot offsets are fixed afterwards by normalize_poses.py.
+If a hand covers the face (the chin can't be found), pass --occluded <name> for that frame: it is then
+compared by overall standing height instead (only valid when both frames stand upright).
 """
 import sys
 from pathlib import Path
@@ -68,8 +70,22 @@ def body_length(a):
     return np.nonzero(al.max(1) > 128)[0].max() - chin
 
 
+def standing_height(a):
+    al = a[..., 3]
+    ys = np.nonzero(al.max(1) > 128)[0]
+    return ys.max() - ys.min()
+
+
 def main():
     names = sys.argv[1:]
+    # --occluded <name>: a hand covers that face (e.g. the summon mask pose), so the chin can't be found.
+    # For those frames the head / body checks are replaced by the overall standing height (hair top to
+    # sole), which only makes sense when both frames stand upright.
+    occluded = set()
+    while '--occluded' in names:
+        i = names.index('--occluded')
+        occluded.add(names[i + 1])
+        del names[i:i + 2]
     ims = [Image.open(P / f'{n}.png').convert('RGBA') for n in names]
     arrs = [np.array(im).astype(int) for im in ims]
     base_b, base_f, base_h, base_l = boot_dims(arrs[0]), boots(arrs[0]), head_height(arrs[0]), body_length(arrs[0])
@@ -78,6 +94,13 @@ def main():
         bd, f = boot_dims(a), boots(a)
         hr = np.mean([x[0] / y[0] for x, y in zip(bd, base_b)])
         wr = np.mean([x[1] / y[1] for x, y in zip(bd, base_b)])
+        if n in occluded:
+            sh = standing_height(a) / standing_height(arrs[0])
+            moves = [int(np.hypot(x[0] - y[0], x[1] - y[1])) for x, y in zip(f, base_f)]
+            bad = abs(sh - 1) > HEAD_TOL
+            ok &= not bad
+            print(f"{n:18s} (face covered) standing height x{sh:.3f}  boot height x{hr:.3f}  boot width x{wr:.3f}  feet moved {moves} px  {'FAIL' if bad else 'ok'}")
+            continue
         hh = head_height(a) / base_h
         bl = body_length(a) / base_l
         moves = [int(np.hypot(x[0] - y[0], x[1] - y[1])) for x, y in zip(f, base_f)]
