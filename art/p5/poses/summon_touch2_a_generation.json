@@ -1,0 +1,23 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-6e8b0bde-5a08-421f-8015-5901ead0faa9.png",
+  "prompt": "Small precise pose edit of this approved full-body Persona 5 Joker summon_hold_a sprite. Keep exact head dimensions, face, torso position, coat style, LEFT arm down and FRONT boot placement. Only make this a near-contact transition and move the REAR foot slightly outward.\nThe picture-right FRONT brown boot stays centered at x650, sole1495. Picture-left REAR brown boot should be centered at x420, sole1520, NOT at250 or300. Foot gap only230px, a fairly narrow standing stance. Rear boot is about ONE boot length farther left than its base position, not a wide step. Keep both knees straight, same boot size; adjust rear shin naturally. Do not widen the front boot or move the front foot right.\nRIGHT hand is very close to face, fingers partly across cheek but not fully pressed as in base, palm a little forward, elbow a little below base. This is just before full face contact. LEFT hand relaxed DOWN at thigh and empty. Head eyes forward screen RIGHT, same head/hair225px and slim proportions, no squat. Preserve black coat, gray gold-chained waistcoat, red gloves, black trousers, brown boots and sharp P5 ink/cel style. Full-body1024x1536 transparent RGBA, soles near1500, all fingers/coat/feet inside. No mask, objects, effects, flames, blood, glow, text, wind lines or shadows.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_hold_a.png"
+  ],
+  "base": "idle_a3",
+  "tool": "built-in image_gen",
+  "occluded": true,
+  "cleanup_alpha_pixels": 195,
+  "transparent_pixels": 1021507,
+  "consistency_output": "summon_touch2_a    (face covered) standing height x0.992  boot height x0.967  boot width x0.984  feet moved [83, 178] px  ok\nsheet: art\\p5\\poses\\check_summon_touch2_a.png | overall: ok\n",
+  "normalization": {
+    "scale": 1.0,
+    "offset": [
+      242,
+      -15
+    ],
+    "anchor_foot": "front"
+  },
+  "normalization_cropped_alpha_over128_pixels": 2627
+}

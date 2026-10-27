@@ -1,0 +1,30 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-927ef6fd-781b-48da-b5f9-a6e354555ed4.png",
+  "prompt": "Edit image 1 summon_lift1_a (full-body Persona 5 Joker game sprite) into a fine intermediate frame before image 2 summon_lift2_a. Image 1 is the edit base, image 2 only a later endpoint. Move RIGHT hand a little higher from chest to just BELOW COLLAR height, clear of neck/face/chin, elbow halfway bent; leave entire face, jaw and neck visibly unobscured. LEFT hand stays down empty. Upright body slightly turns halfway toward image2; upper body/head move about30px toward picture RIGHT, not a new camera.\nKeep correct full head size about225px hair-top-to-chin, not200px; hair top around10 and rounded chin around235, the same approved idle proportions. Do NOT shrink the head to fit pose. Same face, highlighted eyes looking screen RIGHT, shoulder width, torso/leg lengths, coat and boots.\nFront boot should lie halfway between image1 and image2's raw front boot positions: picture-right brown boot center about785 rather than828; rear boot brown center about340. Both boots same sizes, upright knees. This modest front-foot shift in the raw canvas is needed for intermediate projection; no squat. Full-body1024x1536 genuine transparent RGBA, soles near1500. Black coat, gray waistcoat gold chains, red gloves, brown boots, sharp ink/cel style unchanged. No mask, effects, flames, blood, glow, wind lines, text, shadows or props.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_lift1_a.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_lift2_a.png"
+  ],
+  "base": "idle_a3",
+  "tool": "built-in image_gen",
+  "replace_existing": true,
+  "attempt": 2,
+  "cleanup_alpha_pixels": 608,
+  "transparent_pixels": 972380,
+  "consistency_output": "summon_lift_mid_a  head x0.982  body x1.000  boot height x0.994  boot width x1.010  feet moved [58, 4] px  ok\nsheet: art\\p5\\poses\\check_summon_lift_mid_a.png | overall: ok\n",
+  "previous_attempt": {
+    "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-cd2263b2-820c-4632-86a2-2b9e48450556.png",
+    "prompt": "Edit image 1 idle_a3, approved Persona 5 Joker full-body game sprite, into a fine hand-lifting in-between frame. Image 1 is the edit base, exact identity/head size/body proportions/ink-cel style. Image 2 summon_lift2_a only shows the later hand-near-face endpoint. This new pose is midway from a hand at CHEST to a hand beside CHEEK: RIGHT hand at NECK/CHIN HEIGHT but at least a fist in front of the neck, fingers loose, face and chin fully unobscured. Right elbow naturally bent midway. LEFT hand empty hanging at thigh. Torso subtly turns toward screen RIGHT, upright, no squat. Head and gaze forward screen RIGHT.\nModerately wide stance: FRONT brown boot picture-right around x785, REAR brown boot picture-left around x340 on1024-wide canvas, gap roughly445px, knees nearly straight. Do not close feet. Same boot size/torso length and head225px as idle. Shoulder width unchanged. Black long coat, gray gold-chained waistcoat, red gloves, black trousers, brown boots. Coat settles mostly downward. Full body1024x1536 genuinely transparent RGBA, soles near1500; no mask, prop, flame, effects, blood, glow, text, wind lines or ground shadow. All fingers/feet/coat inside.",
+    "consistency_output": "summon_lift_mid_a  head x0.889  body x1.019  boot height x1.000  boot width x1.028  feet moved [1, 3] px  FAIL\nsheet: art\\p5\\poses\\check_summon_lift_mid_a.png | overall: FAIL\n"
+  },
+  "normalization": {
+    "scale": 1.0,
+    "offset": [
+      67,
+      -3
+    ],
+    "anchor_foot": "front"
+  },
+  "normalization_cropped_alpha_over128_pixels": 0
+}

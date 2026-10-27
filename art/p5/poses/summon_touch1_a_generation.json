@@ -1,0 +1,23 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-d958776f-d911-42a9-9ad8-73ef8dcb5c21.png",
+  "prompt": "Small edit of this approved Persona 5 Joker full-body summon_hold_a sprite. Keep the exact body/head size/face, upper-body position and pose, coat, front boot, left arm hanging down, ink/cel style. This is a near-face preparation frame with a LESS CLOSED STANCE.\nMost important change is the REAR FOOT: keep the picture-right FRONT brown boot centered at x650, sole around1495, as in the base. Move the picture-left REAR brown boot OUT to the LEFT, brown-leather center x320, sole around1520. Thus foot gap is about330 pixels, distinctly wider than the base's135px gap. Change rear leg naturally to connect, knees nearly straight. Do not move the front boot rightward, do not close feet, do not change boot size. This wider rear-foot placement is the main difference.\nRIGHT red-gloved hand hovers just IN FRONT OF the face rather than being fully pressed onto it, fingers reaching toward cheek, a small visible gap, right elbow slightly lower than base. LEFT hand stays down empty by thigh, not raised. Head and eyes face screen RIGHT. Preserve original head dimensions about225px hair-to-chin and torso/leg scale; no crouch. Coat drape stays very close to original. Black coat, gray gold chains waistcoat, red gloves, brown boots. No mask, props, flames, effects, blood, wind lines, glow, text or ground shadow. Transparent RGBA1024x1536 full body, all fingers/coat/boots inside, soles near1500.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_hold_a.png"
+  ],
+  "base": "idle_a3",
+  "tool": "built-in image_gen",
+  "occluded": true,
+  "cleanup_alpha_pixels": 310,
+  "transparent_pixels": 1010665,
+  "consistency_output": "summon_touch1_a    (face covered) standing height x0.994  boot height x0.945  boot width x1.037  feet moved [65, 158] px  ok\nsheet: art\\p5\\poses\\check_summon_touch1_a.png | overall: ok\n",
+  "normalization": {
+    "scale": 1.0,
+    "offset": [
+      222,
+      -10
+    ],
+    "anchor_foot": "front"
+  },
+  "normalization_cropped_alpha_over128_pixels": 1267
+}

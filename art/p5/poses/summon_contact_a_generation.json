@@ -1,0 +1,23 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-7c6688b0-64c5-4a5f-b6a6-a80792a295a8.png",
+  "prompt": "Precise minimal FOOT edit of approved Persona 5 Joker full-body summon_hold_a. Keep the ENTIRE upper body, face-covering right hand, elbow, head, coat, LEFT hanging hand and FRONT boot exactly as base. ONLY move the picture-left REAR brown boot 60pixels LEFT, from center515 to455, same sole height1520 and same boot size. Front brown boot stays at x650/sole1495. Narrow standing gap around195px instead of135px. Adjust only rear leg naturally, knees straight, no squat. Do not change torso/face/hand gesture. Same225px head and full-body scale, black coat, gray/gold-chain waistcoat, red gloves, brown boots, crisp ink/cel style.1024x1536 genuinely transparent RGBA, all coat/feet/fingers inside. No mask, props, effects, flames, blood, glow, wind lines, text or ground shadow.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_hold_a.png"
+  ],
+  "base": "idle_a3",
+  "tool": "built-in image_gen",
+  "occluded": true,
+  "cleanup_alpha_pixels": 291,
+  "transparent_pixels": 1026137,
+  "consistency_output": "summon_contact_a   (face covered) standing height x0.999  boot height x0.967  boot width x0.924  feet moved [51, 177] px  ok\nsheet: art\\p5\\poses\\check_summon_contact_a.png | overall: ok\n",
+  "normalization": {
+    "scale": 1.0,
+    "offset": [
+      240,
+      -15
+    ],
+    "anchor_foot": "front"
+  },
+  "normalization_cropped_alpha_over128_pixels": 2330
+}

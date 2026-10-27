@@ -174,5 +174,101 @@
    4
   ],
   "anchor_foot": "front"
+ },
+ "summon_lift1_a": {
+  "scale": 1.0,
+  "offset": [
+   65,
+   -3
+  ],
+  "anchor_foot": "front"
+ },
+ "summon_lift2_a": {
+  "scale": 1.0,
+  "offset": [
+   154,
+   -6
+  ],
+  "anchor_foot": "front"
+ },
+ "summon_fling_a": {
+  "scale": 1.0,
+  "offset": [
+   53,
+   9
+  ],
+  "anchor_foot": "front"
+ },
+ "summon_settle_a": {
+  "scale": 1.0,
+  "offset": [
+   88,
+   5
+  ],
+  "anchor_foot": "front"
+ },
+ "summon_lift_mid_a": {
+  "scale": 1.0,
+  "offset": [
+   67,
+   -3
+  ],
+  "anchor_foot": "front"
+ },
+ "summon_touch1_a": {
+  "scale": 1.0,
+  "offset": [
+   222,
+   -10
+  ],
+  "anchor_foot": "front"
+ },
+ "summon_touch2_a": {
+  "scale": 1.0,
+  "offset": [
+   242,
+   -15
+  ],
+  "anchor_foot": "front"
+ },
+ "summon_fling1_a": {
+  "scale": 1.0,
+  "offset": [
+   224,
+   -15
+  ],
+  "anchor_foot": "front"
+ },
+ "summon_fling2_a": {
+  "scale": 1.0,
+  "offset": [
+   79,
+   -3
+  ],
+  "anchor_foot": "front"
+ },
+ "summon_lift_bridge_a": {
+  "scale": 1.0,
+  "offset": [
+   106,
+   -5
+  ],
+  "anchor_foot": "front"
+ },
+ "summon_touch_mid_a": {
+  "scale": 1.0,
+  "offset": [
+   242,
+   -15
+  ],
+  "anchor_foot": "front"
+ },
+ "summon_contact_a": {
+  "scale": 1.0,
+  "offset": [
+   240,
+   -15
+  ],
+  "anchor_foot": "front"
  }
 }

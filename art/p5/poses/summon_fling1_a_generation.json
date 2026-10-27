@@ -1,0 +1,22 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-af66c869-d619-4cad-9e44-9962c2867a73.png",
+  "prompt": "Small edit of approved Persona 5 Joker full-body summon_rip_a2 sprite. Keep same head225px, face/body scale, torso, LEFT arm down, clothing and crisp ink/cel style. This is an EARLY continuation of the right arm moving outward, NOT the fully flared release.\nKeep picture-right FRONT brown boot centered at x657/sole1493. Move picture-left REAR boot outward to x430/sole1520, about90px farther LEFT than base. Foot gap about225px, fairly narrow, no wide stance. Preserve both boot sizes, straighten relaxed knees naturally, no squat.\nRIGHT hand moves just a little farther toward picture LEFT and up, elbow only slightly opens, hand still near shoulder/head height, fingers starting to uncurl but not fully spread. The arm movement is ONE THIRD toward the extended release, not a straight long arm. LEFT hand empty hanging by thigh. Head eyes forward screen RIGHT, same face/head dimensions. Coat hem only STARTS lifting back slightly, mostly original drape; hair only a little movement. Body upright and unchanged in scale. Black coat, gray waistcoat/gold chains, red gloves, brown boots. Full-body1024x1536 true transparent RGBA, soles near1500, all body/coat/fingers inside. No mask, prop, flame, effects, wind lines, blood, glow, text or ground shadow.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_rip_a2.png"
+  ],
+  "base": "idle_a3",
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 178,
+  "transparent_pixels": 1006958,
+  "consistency_output": "summon_fling1_a    head x0.991  body x0.995  boot height x0.954  boot width x0.926  feet moved [83, 160] px  ok\nsheet: art\\p5\\poses\\check_summon_fling1_a.png | overall: ok\n",
+  "normalization": {
+    "scale": 1.0,
+    "offset": [
+      224,
+      -15
+    ],
+    "anchor_foot": "front"
+  },
+  "normalization_cropped_alpha_over128_pixels": 1943
+}

@@ -1,0 +1,100 @@
+{
+  "status": "incomplete_sequence_checks; user requested less repeated generation and pushing current work",
+  "full_order": [
+    "idle_a3",
+    "summon_lift1_a",
+    "summon_lift_mid_a",
+    "summon_lift_bridge_a",
+    "summon_lift2_a",
+    "summon_touch1_a",
+    "summon_touch_mid_a",
+    "summon_contact_a",
+    "summon_touch2_a",
+    "summon_hold_a",
+    "summon_rip_a2",
+    "summon_fling1_a",
+    "summon_fling2_a",
+    "summon_fling_a",
+    "summon_release_a",
+    "summon_settle_a",
+    "idle_a3"
+  ],
+  "normal_return_order": [
+    "summon_hold_a",
+    "summon_touch2_a",
+    "summon_contact_a",
+    "summon_touch_mid_a",
+    "summon_touch1_a",
+    "summon_lift2_a",
+    "summon_lift_bridge_a",
+    "summon_lift_mid_a",
+    "summon_lift1_a",
+    "idle_a3"
+  ],
+  "full_jump_count": 3,
+  "normal_return_jump_count": 1,
+  "new_frames": [
+    "summon_lift1_a",
+    "summon_lift2_a",
+    "summon_fling_a",
+    "summon_settle_a",
+    "summon_lift_mid_a",
+    "summon_touch1_a",
+    "summon_touch2_a",
+    "summon_fling1_a",
+    "summon_fling2_a",
+    "summon_lift_bridge_a",
+    "summon_touch_mid_a",
+    "summon_contact_a"
+  ],
+  "normalization_crop_checks": [
+    {
+      "name": "summon_lift1_a",
+      "cropped_alpha_over128_pixels": 0
+    },
+    {
+      "name": "summon_lift2_a",
+      "cropped_alpha_over128_pixels": 0
+    },
+    {
+      "name": "summon_fling_a",
+      "cropped_alpha_over128_pixels": 0
+    },
+    {
+      "name": "summon_settle_a",
+      "cropped_alpha_over128_pixels": 0
+    },
+    {
+      "name": "summon_lift_mid_a",
+      "cropped_alpha_over128_pixels": 0
+    },
+    {
+      "name": "summon_touch1_a",
+      "cropped_alpha_over128_pixels": 1267
+    },
+    {
+      "name": "summon_touch2_a",
+      "cropped_alpha_over128_pixels": 2627
+    },
+    {
+      "name": "summon_fling1_a",
+      "cropped_alpha_over128_pixels": 1943
+    },
+    {
+      "name": "summon_fling2_a",
+      "cropped_alpha_over128_pixels": 0
+    },
+    {
+      "name": "summon_lift_bridge_a",
+      "cropped_alpha_over128_pixels": 0
+    },
+    {
+      "name": "summon_touch_mid_a",
+      "cropped_alpha_over128_pixels": 2758
+    },
+    {
+      "name": "summon_contact_a",
+      "cropped_alpha_over128_pixels": 2330
+    }
+  ]
+}

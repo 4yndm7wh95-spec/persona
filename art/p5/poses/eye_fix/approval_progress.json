@@ -1,7 +1,18 @@
 {
   "standard_face_candidate": 2,
   "pending_user_approval": [
-    "summon_release_a"
+    "summon_lift1_a",
+    "summon_lift2_a",
+    "summon_fling_a",
+    "summon_settle_a",
+    "summon_lift_mid_a",
+    "summon_touch1_a",
+    "summon_touch2_a",
+    "summon_fling1_a",
+    "summon_fling2_a",
+    "summon_lift_bridge_a",
+    "summon_touch_mid_a",
+    "summon_contact_a"
   ],
   "approved": [
     "idle_a",
@@ -24,7 +35,8 @@
     "knife_return_a",
     "slash_recover_a",
     "summon_hold_a",
-    "summon_rip_a2"
+    "summon_rip_a2",
+    "summon_release_a"
   ],
   "next_after_approval": "用户确认summon_release_a后再处理召唤整段过渡与连续性检查",
   "remaining_order": [
@@ -72,7 +84,7 @@
   "selected_gun_camera_percent": 50,
   "gun_next_after_approval": "等待gun_draw_a2及追加过渡帧用户确认",
   "gun_base": "gun_a2",
-  "status": "awaiting_summon_release_a_approval",
+  "status": "summon_transitions_current_pushed_with_remaining_jumps",
   "gun_group_status": "gun_a2通过；raise_a2待审；recoil_a2失败作废；lower_a2未开始",
   "gun_rejected_sample": "research/p5r/gun/rejected/gun_recoil_a2_double_gun.png",
   "gun_recoil_latest": "gun_recoil_a6：用户已通过",
@@ -120,5 +132,11 @@
   "summon_hold_status": "用户已通过；--occluded复查standing height x0.999 ok",
   "summon_rip_status": "summon_rip_a2用户已通过；旧a作废",
   "summon_mask_policy": "所有立绘不画面具；游戏特效用蓝焰勾轮廓",
-  "summon_release_status": "第二次生成比例ok：head x0.978/body x0.984；1.0/front归一化无裁切，待用户验收"
+  "summon_release_status": "第二次生成比例ok：head x0.978/body x0.984；1.0/front归一化无裁切，待用户验收",
+  "summon_sequence_status": {
+    "full_jumps": 3,
+    "normal_return_jumps": 1,
+    "report": "research/p5r/summon/REPORT_summon_transitions_current.md",
+    "note": "用户要求不要重复生成那么多，停止追加并推当前成果；未全部完成"
+  }
 }

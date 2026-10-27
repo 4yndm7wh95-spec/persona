@@ -1,0 +1,23 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-1ae757aa-1a47-4319-ba3c-8073ed463158.png",
+  "prompt": "Edit image 1 summon_release_a, approved full-body Persona 5 Joker illustration, into a HALF-WAY settling-back transition toward idle image 2. Image 1 is the EDIT BASE for EXACT head size, face, clothing and slim proportions, polished ink/cel shading. Image 2 idle_a3 is only the return endpoint.\nLower the extended RIGHT arm halfway toward the hanging idle arm: right hand around LOWER CHEST/upper-waist height outside the body on picture LEFT, elbow relaxed and partially bent, fingers loose and relaxed. Do NOT leave this arm raised at shoulder height. LEFT hand remains empty hanging beside thigh. Torso turns halfway back toward idle's open three-quarter front orientation, spine upright, head eyes facing forward screen RIGHT, chin no longer tilted up. Keep natural irises with highlights and rounded chin.\nCoat tails settle halfway DOWN from image 1's lifted/flared shape toward idle's hanging drape, some remaining motion but no extreme flare. Hair settles halfway. Move the rear foot halfway outward toward idle's wider stance while front foot stays planted after front-foot alignment; each boot position halfway between the two endpoint foot positions. Moderate standing stance, knees almost straight, no crouch and no very wide stance. Preserve original boot sizes, head-to-chin225px, shoulder width, torso/leg length, body scale.\nSame black coat, gray gold-chained waistcoat, red gloves, black trousers, brown boots. Full-body 1024x1536 truly transparent RGBA canvas, soles near y1500, all fingers/coat/feet contained. No mask, props, flames, wind lines, effects, blood, glow, trails, ground shadow or text.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_release_a.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/idle_a3.png"
+  ],
+  "base": "idle_a3",
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 116,
+  "transparent_pixels": 978880,
+  "consistency_output": "summon_settle_a    head x0.987  body x0.988  boot height x1.016  boot width x0.995  feet moved [83, 24] px  ok\nsheet: art\\p5\\poses\\check_summon_settle_a.png | overall: ok\n",
+  "normalization": {
+    "scale": 1.0,
+    "offset": [
+      88,
+      5
+    ],
+    "anchor_foot": "front"
+  },
+  "normalization_cropped_alpha_over128_pixels": 0
+}

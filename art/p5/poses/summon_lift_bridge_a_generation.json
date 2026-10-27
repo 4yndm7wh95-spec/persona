@@ -1,0 +1,23 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-fc43e2d3-1548-43cf-a6db-41de6b353beb.png",
+  "prompt": "Precise SMALL FOOT-POSITION edit of this Persona 5 Joker full-body sprite. Preserve the ENTIRE UPPER BODY, right hand hovering beside face, head, face, shoulder width, coat, LEFT hanging hand and both arms exactly where they are. Do not redraw the hand gesture or shift the torso/head. Only slightly adjust the two boot/leg positions for an in-between projection.\nMove the picture-right FRONT brown boot 45 pixels to the RIGHT: its leather center from about740 to about785. Move the picture-left REAR brown boot 30px RIGHT: from about310 to about340. Keep boot height/size and sole heights unchanged. Legs naturally follow these small moves, knees straight, no squat. Do not change the body scale or make the stance narrow/closed. New brown boot gap around445px. All other character details stay as base, same225px head and full-body size. Black coat, gray waistcoat gold chains, red gloves, brown boots, crisp P5 ink/cel style.1024x1536 genuinely transparent RGBA. No mask, prop, flames, effects, blood, glow, wind lines, text or ground shadow.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_lift2_a.png"
+  ],
+  "base": "idle_a3",
+  "tool": "built-in image_gen",
+  "occluded": true,
+  "cleanup_alpha_pixels": 94,
+  "transparent_pixels": 1016248,
+  "consistency_output": "summon_lift_bridge_a (face covered) standing height x0.995  boot height x0.945  boot width x0.968  feet moved [74, 42] px  ok\nsheet: art\\p5\\poses\\check_summon_lift_bridge_a.png | overall: ok\n",
+  "normalization": {
+    "scale": 1.0,
+    "offset": [
+      106,
+      -5
+    ],
+    "anchor_foot": "front"
+  },
+  "normalization_cropped_alpha_over128_pixels": 0
+}

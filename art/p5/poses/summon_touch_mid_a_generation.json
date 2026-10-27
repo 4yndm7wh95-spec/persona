@@ -1,0 +1,23 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-88410bee-d621-42d3-abb7-10ddf341acb1.png",
+  "prompt": "Precise small edit of this full-body Persona 5 Joker sprite. Preserve the entire UPPER BODY, head, face, hand-near-face gesture, coat, left arm hanging down and picture-right FRONT boot EXACTLY. Only move the picture-left REAR boot 75pixels to the LEFT from its current position (center about395 to320), same sole height and boot size. Naturally adjust only the rear leg to connect, knees almost straight, upright body. Front boot remains centered x650, sole1495, do not move it. New foot gap about330px, still moderate standing, not wide squat. Everything above the hips stays as base. Same head225px, slim proportions and sharp ink/cel style. Black coat, gray/gold-chain waistcoat, red gloves, black trousers, brown boots. Truly transparent RGBA1024x1536 full body, all coat/feet/fingers inside. No mask, objects, effects, flames, blood, glow, wind lines, text or ground shadow.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_touch2_a.png"
+  ],
+  "base": "idle_a3",
+  "tool": "built-in image_gen",
+  "occluded": true,
+  "cleanup_alpha_pixels": 339,
+  "transparent_pixels": 1016999,
+  "consistency_output": "summon_touch_mid_a (face covered) standing height x0.989  boot height x0.970  boot width x1.097  feet moved [25, 178] px  ok\nsheet: art\\p5\\poses\\check_summon_touch_mid_a.png | overall: ok\n",
+  "normalization": {
+    "scale": 1.0,
+    "offset": [
+      242,
+      -15
+    ],
+    "anchor_foot": "front"
+  },
+  "normalization_cropped_alpha_over128_pixels": 2758
+}

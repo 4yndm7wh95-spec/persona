@@ -1,0 +1,23 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-2ab3db29-5243-4c56-bf67-9e9231f507ac.png",
+  "prompt": "Small pose edit of image 1, approved Persona 5 Joker full-body idle illustration. Image 1 idle_a3 is the EDIT BASE for identity, EXACT head size, face, body scale, clothing, detailed ink lines and cel shading. Image 2 summon_hold_a is only the later endpoint.\nMake an EARLY lifting-hand transition about ONE THIRD from idle toward image 2. Raise only the RIGHT red-gloved hand to CHEST height, fingers loosely bent, starting toward the face but still far BELOW it. Right elbow bends naturally; LEFT empty hand starts and remains hanging beside the thigh. Body begins turning slightly toward the narrower screen-right three-quarter stance of image 2, staying upright. Move the picture-left REAR foot inward toward the picture-right planted FRONT foot by one third of the total gathering movement; not all the way closed. Keep a moderately wide intermediate stance. Reference brown boot centers approximately rear x440 and front x828 on the 1024 canvas, keep brown boot sizes unchanged. Rear leg naturally follows, both knees nearly straight. No squat or large step.\nHead and eyes face forward screen RIGHT. Keep exactly the idle head's hair-to-chin size (about225px), shoulder width, torso length, leg thickness and overall height. Same black coat, gray waistcoat/gold chains, red gloves, black trousers, brown boots. Coat drape only beginning to change. No mask, props, flames, effects, blood, glow, trails, ground shadow or text. Full-body genuine transparent RGBA 1024x1536, soles near y1500, all fingers, coat and feet inside.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/idle_a3.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_hold_a.png"
+  ],
+  "base": "idle_a3",
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 291,
+  "transparent_pixels": 959099,
+  "consistency_output": "summon_lift1_a     head x1.009  body x0.996  boot height x0.994  boot width x0.993  feet moved [46, 3] px  ok\nsheet: art\\p5\\poses\\check_summon_lift1_a.png | overall: ok\n",
+  "normalization": {
+    "scale": 1.0,
+    "offset": [
+      65,
+      -3
+    ],
+    "anchor_foot": "front"
+  },
+  "normalization_cropped_alpha_over128_pixels": 0
+}
