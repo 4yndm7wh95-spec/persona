@@ -1,0 +1,13 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-9f2c48b8-68f1-4913-ba5c-fd76c48f1644.png",
+  "prompt": "Edit the FIRST image to create summon_down25_c, one Persona 5 style full-body game character sprite exactly halfway between the two supplied poses. Second image is only the next-pose positioning reference. True transparent RGBA background 1024x1536. Preserve first image's head size, face, eyes with highlights looking screen-right, shoulder width, anatomy proportions, costume and sharp illustrated style. Move head and entire upper torso naturally to the midpoint between their positions in first and second images, keeping head size unchanged. Both red-gloved hands naturally hang at sides. Rear foot (screen-left boot) must be halfway between the two reference boot positions; smoothly interpolate pelvis and leg stance as well. Front foot planted. Torso orientation halfway toward the second image's relaxed three-quarter front-facing-right idle orientation. Coat hem falls back halfway from first to second, with only mild lingering sway. Upright, balanced character; same black longcoat, gold chains over gray waistcoat, black trousers, red gloves and brown boots. No mask, no effects, no background or text. Keep full figure and boots within canvas. One image only.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_down2_c.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_down3_c.png"
+  ],
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 291,
+  "generation_count": 1,
+  "review": "No visual review, no regeneration; sequence check only after completing batch"
+}
