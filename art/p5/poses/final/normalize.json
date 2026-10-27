@@ -470,5 +470,13 @@
    134
   ],
   "anchor_foot": "front"
+ },
+ "die_kneel_a2": {
+  "scale": 1.0,
+  "offset": [
+   218,
+   134
+  ],
+  "anchor_foot": "front"
  }
 }

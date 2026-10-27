@@ -28,7 +28,7 @@
     "hurt_flinch_a",
     "hurt_recover_b1",
     "hurt_recover_b2",
-    "die_kneel_a"
+    "die_kneel_a2"
   ],
   "approved": [
     "idle_a",
@@ -54,7 +54,7 @@
     "summon_rip_a2",
     "summon_release_a"
   ],
-  "next_after_approval": "等待用户看过die_kneel_a后再做倒下和躺地，不自动重画",
+  "next_after_approval": "等待用户与Claude判断die_kneel_a2，不自动重画或追加帧",
   "remaining_order": [
     "gun_a",
     "summon_grab_a",
@@ -104,7 +104,7 @@
   "selected_gun_camera_percent": 50,
   "gun_next_after_approval": "等待gun_draw_a2及追加过渡帧用户确认",
   "gun_base": "gun_a2",
-  "status": "awaiting_die_kneel_a_user_review",
+  "status": "awaiting_die_kneel_a2_user_review",
   "gun_group_status": "gun_a2通过；raise_a2待审；recoil_a2失败作废；lower_a2未开始",
   "gun_rejected_sample": "research/p5r/gun/rejected/gun_recoil_a2_double_gun.png",
   "gun_recoil_latest": "gun_recoil_a6：用户已通过",
@@ -248,13 +248,13 @@
     "status": "等待用户验收，不自动重画"
   },
   "die_status": {
-    "new_frame": "die_kneel_a",
+    "approved_base": "die_kneel_a",
+    "new_frame": "die_kneel_a2",
     "generation_calls": 1,
     "normalization_runs": 1,
     "pose_check_runs": 1,
-    "sequence_check_runs": 1,
-    "pose_output": "die_kneel_a        head x0.338  body x0.594 (check)  boot height x0.809  boot width x1.404  feet moved [162, 53] px  FAIL\nsheet: art\\p5\\poses\\check_die_kneel_a.png | overall: FAIL\n",
-    "sequence_error": "Traceback (most recent call last):\n  File \"C:\\Users\\kkk\\Documents\\Codex\\2026-10-24\\docs-codex-codex-p5r-rip-md\\work\\check_die_kneel_a.py\", line 9, in <module>\n    with contextlib.redirect_stdout(s):runpy.run_path(str(r/'tools/p5'/script),run_name='__main__')\n                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<frozen runpy>\", line 287, in run_path\n  File \"<frozen runpy>\", line 98, in _run_module_code\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\tools\\p5\\sequence_check.py\", line 74, in <module>\n    main()\n  File \"C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\tools\\p5\\sequence_check.py\", line 54, in main\n    fm = float(np.hypot(*(face(b) - face(a))))\n                          ^^^^^^^\n  File \"C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\tools\\p5\\sequence_check.py\", line 34, in face\n    i = int(np.argmax(ndimage.sum(skin, lab, range(1, k + 1)))) + 1\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\kkk\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py\", line 1341, in argmax\n    return _wrapfunc(a, 'argmax', axis=axis, out=out, **kwds)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\kkk\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py\", line 57, in _wrapfunc\n    return bound(*args, **kwds)\n           ^^^^^^^^^^^^^^^^^^^^\nValueError: attempt to get argmax of an empty sequence\n",
-    "status": "等待用户验收；序列检查报错，无结论"
+    "sequence_check_runs": 0,
+    "pose_output": "die_kneel_a2       head x0.284  body x0.606 (check)  boot height x0.762  boot width x0.948  feet moved [164, 53] px  FAIL\nsheet: art\\p5\\poses\\check_die_kneel_a2.png | overall: FAIL\n",
+    "status": "等待用户验收，不自动重画"
   }
 }
