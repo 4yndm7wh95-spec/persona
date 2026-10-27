@@ -1,7 +1,7 @@
 {
   "standard_face_candidate": 2,
   "pending_user_approval": [
-    "summon_hold_a"
+    "summon_rip_a"
   ],
   "approved": [
     "idle_a",
@@ -22,9 +22,10 @@
     "slash_smear_a3",
     "slash_follow_a",
     "knife_return_a",
-    "slash_recover_a"
+    "slash_recover_a",
+    "summon_hold_a"
   ],
-  "next_after_approval": "第一张确认且检查问题明确后再做summon_rip；再确认才做直立summon_release",
+  "next_after_approval": "等待用户恢复指示，先处理rip检查；用户通过rip后才画直立release",
   "remaining_order": [
     "gun_a",
     "summon_grab_a",
@@ -69,7 +70,7 @@
   "selected_gun_camera_percent": 50,
   "gun_next_after_approval": "等待gun_draw_a2及追加过渡帧用户确认",
   "gun_base": "gun_a2",
-  "status": "summon_hold_measurement_failed_awaiting_user",
+  "status": "user_paused_after_summon_rip_generation",
   "gun_group_status": "gun_a2通过；raise_a2待审；recoil_a2失败作废；lower_a2未开始",
   "gun_rejected_sample": "research/p5r/gun/rejected/gun_recoil_a2_double_gun.png",
   "gun_recoil_latest": "gun_recoil_a6：用户已通过",
@@ -114,5 +115,7 @@
     321.85609585103083
   ],
   "summon_selected_azimuth_degrees": 321.85609585103083,
-  "summon_hold_status": "生成两次，当前head x0.760 FAIL；扶脸遮挡测量疑问，未归一化，等待用户处理"
+  "summon_hold_status": "用户已通过；--occluded复查standing height x0.999 ok",
+  "summon_rip_status": "仅生成一次；常规检查head x0.880 FAIL；用户要求暂停并推送，未重画/未归一化",
+  "summon_mask_policy": "所有立绘不画面具；游戏特效用蓝焰勾轮廓"
 }
