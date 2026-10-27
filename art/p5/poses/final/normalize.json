@@ -374,5 +374,13 @@
    44
   ],
   "anchor_foot": "front"
+ },
+ "glove_a": {
+  "scale": 1.0,
+  "offset": [
+   256,
+   95
+  ],
+  "anchor_foot": "rear"
  }
 }
