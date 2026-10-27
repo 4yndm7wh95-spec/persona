@@ -1,0 +1,32 @@
+h_C_US2
+	gfdHelperID = 2
+h_B_KA1
+	gfdHelperID = 502
+h_C_US1
+	gfdHelperID = 1
+h_B_BD1
+	gfdHelperID = 501
+h_M_HL1
+	gfdHelperID = 151
+h_M_HL2
+	gfdHelperID = 152
+h_M_HR1
+	gfdHelperID = 101
+h_M_HR2
+	gfdHelperID = 102
+h_C_BS1
+	gfdHelperID = 11
+h_M_HR3
+	gfdHelperID = 103
+h_M_BC1
+	gfdHelperID = 301
+h_B_CT1
+	gfdHelperID = 521
+h_C_FS1
+	gfdHelperID = 21
+h_B_MZ1
+	gfdHelperID = 511
+Scene ready: 22 meshes, 16 materials
+Textures ready; writing managed GLB2
+{"source":"C:\\Users\\kkk\\sts2_tools\\p5r_rip\\MODEL\\CHARACTER\\0009\\C0009_051_00.GMD","output":"C:\\Users\\kkk\\sts2_tools\\p5r_rip\\model\\morgana_ref\\morgana.glb","meshes":22,"materials":16,"bones":287,"version":17846528}
+

@@ -1,0 +1,717 @@
+[
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_001_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t01_hair01b_sh_low.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t001_body01.dds",
+      "c0009_t001_body01_sh.dds"
+    ],
+    "meshes": 21
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_002_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t01_body01.dds",
+      "c0009_t01_body01_shadow.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t01_hair01b_s_low.dds",
+      "c0009_t01_hair01b_sh_low.dds",
+      "c0009_t01_face01c_low.dds"
+    ],
+    "meshes": 21
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_004_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t01_hair01b_s_low.dds",
+      "c0009_t01_hair01b_sh_low.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_003_body01.dds",
+      "c0009_003_body01_shadow.dds",
+      "c0009_003_body01_s.dds"
+    ],
+    "meshes": 20
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_005_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t005_body01.dds",
+      "c0009_t005_body01_sh.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t01_hair01b_s_low.dds",
+      "c0009_t01_hair01b_sh_low.dds"
+    ],
+    "meshes": 22
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_006_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t01_hair01b_s_low.dds",
+      "c0009_t01_hair01b_sh_low.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t006_body01.dds",
+      "c0009_t006_body01_sh.dds"
+    ],
+    "meshes": 21
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_048_00.GMD",
+    "textures": [
+      "cha_titleui_5r_01.dds",
+      "cha_titleui_5r_02.dds"
+    ],
+    "meshes": 19
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_051_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t051_kamen_low.dds",
+      "c0009_t051_kamen_s_low.dds",
+      "c0009_t051_kamen_sh_low.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t01_hair01b_sh_low.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t051_body01.dds",
+      "c0009_t051_body01_s.dds",
+      "c0009_t051_body01_shadow.dds"
+    ],
+    "meshes": 22
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_052_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c2002_t01_kamen_low.dds",
+      "c2002_t01_kamen_s_low.dds",
+      "c2002_t01_kamen_sh.dds",
+      "c2002_t01_kamen_lenz.dds",
+      "c0009_t01_hair01b_low_52.dds",
+      "c0009_t01_hair01b_s_low.dds",
+      "c0009_t01_hair01b_sh_low.dds",
+      "c2002_t01_body01.dds",
+      "c2002_t01_body01_s_low.dds",
+      "c2002_t01_body01_sh_low.dds",
+      "c2002_t01_face01c.dds",
+      "ee132_smk_base.dds",
+      "be0cmn_up_red_nml.dds",
+      "c2002_aura_smk.dds",
+      "c2002_up_red_nml.dds"
+    ],
+    "meshes": 34
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_061_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t01_hair01b_s_low.dds",
+      "c0009_t01_hair01b_sh_low.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t61_body_c.dds",
+      "c0009_t61_body_sh.dds"
+    ],
+    "meshes": 18
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_071_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t01_hair01b_s_low.dds",
+      "c0009_t01_hair01b_sh_low.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t071_body01.dds",
+      "c0009_t071_body01_shadow.dds",
+      "c0009_t071_hand01_low.dds",
+      "c0009_t071_hand01_sh_low.dds"
+    ],
+    "meshes": 16
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_072_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_003_body01.dds",
+      "c0009_003_body01_shadow.dds",
+      "c0009_003_body01_s.dds",
+      "c0009_mega072.dds",
+      "c0009_mega072_shadow.dds",
+      "c0009_t072_lens.dds",
+      "c0009_t072_face_s4.dds",
+      "c0009_t072_lens2.dds",
+      "c0009_t072_hair01_c.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t072_hair01_sh.dds"
+    ],
+    "meshes": 23
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_073_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t001_body01.dds",
+      "c0009_t001_body01_sh.dds",
+      "c0009_mega072.dds",
+      "c0009_mega072_shadow.dds",
+      "c0009_t072_lens.dds",
+      "c0009_t072_face_s4.dds",
+      "c0009_t072_lens2.dds",
+      "c0009_t072_hair01_c.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t072_hair01_sh.dds"
+    ],
+    "meshes": 24
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_074_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t01_body01.dds",
+      "c0009_t01_body01_shadow.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_mega072.dds",
+      "c0009_mega072_shadow.dds",
+      "c0009_t072_lens.dds",
+      "c0009_t072_face_s4.dds",
+      "c0009_t072_lens2.dds",
+      "c0009_t072_hair01_c.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t072_hair01_sh.dds"
+    ],
+    "meshes": 24
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_099_00.GMD",
+    "textures": [
+      "0099_mouse_akechi_t01.dds",
+      "0099_mouse_t01_sh.dds",
+      "c0009_099_kamen.dds",
+      "c0009_099_kamen_sh.dds",
+      "c0009_099_kamen_sp.dds"
+    ],
+    "meshes": 7
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_102_00.GMD",
+    "textures": [
+      "c0009_t01_face01b.dds",
+      "c0009_t01_face01_s.dds",
+      "c0009_t01_face01b_shadow.dds",
+      "c0009_t051_kamen.dds",
+      "c0009_t051_kamen_s.dds",
+      "c0009_t051_kamen_shadow.dds",
+      "c0005_t01_kamen_aeve_blue.dds",
+      "c0009_t01_hair01b.dds",
+      "c0009_t051_body01.dds",
+      "c0009_t051_body01_shadow.dds",
+      "c0009_t051_body01_s.dds",
+      "c0009_t01_hair01c.dds",
+      "c0009_t01_hair01c_s.dds",
+      "c0009_t01_hair01b_shadow.dds"
+    ],
+    "meshes": 34
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_103_00.GMD",
+    "textures": [
+      "c0009_t01_body103.dds"
+    ],
+    "meshes": 2
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_104_00.GMD",
+    "textures": [
+      "c0009_t01_face01b.dds",
+      "c0009_t01_face01_s.dds",
+      "c0009_t01_face01b_shadow.dds",
+      "c0009_t051_kamen.dds",
+      "c0009_t051_kamen_s.dds",
+      "c0009_t051_kamen_shadow.dds",
+      "c0009_t01_kamen_aeve_red.dds",
+      "c0009_t01_hair01b.dds",
+      "c0009_t051_body01.dds",
+      "c0009_t051_body01_shadow.dds",
+      "c0009_t051_body01_s.dds",
+      "c0009_t01_hair01c.dds",
+      "c0009_t01_hair01c_s.dds",
+      "c0009_t01_hair01b_shadow.dds",
+      "c0009_t01_face422.dds",
+      "c0009_t01_face422_shadow.dds"
+    ],
+    "meshes": 33
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_105_00.GMD",
+    "textures": [
+      "c0009_t01_face01d.dds",
+      "c0009_t01_face01_s.dds",
+      "c0009_t01_face01b_shadow.dds",
+      "c2002_t01_kamen.dds",
+      "c2002_t01_kamen_s.dds",
+      "c2002_t01_kamen_sh.dds",
+      "c2002_t01_kamen_lenz.dds",
+      "c0009_t01_hair01b.dds",
+      "c0009_t01_hair01b_s.dds",
+      "c0009_t01_hair01b_shadow.dds",
+      "c0009_t01_face01b.dds",
+      "c2002_t01_body01.dds",
+      "c2002_t01_body01_s.dds",
+      "c2002_t01_body01_sh.dds"
+    ],
+    "meshes": 28
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_106_00.GMD",
+    "textures": [
+      "c0009_t01_face01d.dds",
+      "c0009_t01_face01_s.dds",
+      "c0009_t01_face01b_shadow.dds",
+      "c2002_t01_kamen.dds",
+      "c2002_t01_kamen_s.dds",
+      "c2002_t01_kamen_sh.dds",
+      "c2002_t01_kamen_lenz.dds",
+      "c0009_t01_hair01b.dds",
+      "c0009_t01_hair01b_s.dds",
+      "c0009_t01_hair01b_shadow.dds",
+      "c0009_t01_face01b.dds",
+      "c2002_t01_body01.dds",
+      "c2002_t01_body01_s.dds",
+      "c2002_t01_body01_sh.dds"
+    ],
+    "meshes": 28
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_151_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t001_body01.dds",
+      "c0009_t001_body01_sh.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t01_hair01b_sh_low.dds"
+    ],
+    "meshes": 26
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_152_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t01_hair01b_sh_low.dds",
+      "c0009_t01_body01.dds",
+      "c0009_t01_body01_shadow.dds"
+    ],
+    "meshes": 27
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_153_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_003_body01.dds",
+      "c0009_003_body01_shadow.dds",
+      "c0009_003_body01_s.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t01_hair01b_sh_low.dds"
+    ],
+    "meshes": 23
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_154_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_003_body01.dds",
+      "c0009_003_body01_shadow.dds",
+      "c0009_003_body01_s.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t01_hair01b_sh_low.dds"
+    ],
+    "meshes": 23
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_155_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t01_hair01b_sh_low.dds",
+      "c0009_t61_body_c.dds",
+      "c0009_t61_body_sh.dds"
+    ],
+    "meshes": 31
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_158_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t158_body01.dds",
+      "c0009_t158_body01_sh.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t01_hair01b_sh_low.dds",
+      "c0009_p3_gunholder_low.dds",
+      "c0009_p3_gunholder_sh_low.dds",
+      "p3_syoukanki_low.dds",
+      "p3_syoukanki_sp_low.dds"
+    ],
+    "meshes": 34
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_159_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_megane159.dds",
+      "c0009_mega01_shadow.dds",
+      "c0009_t01_lens.dds",
+      "c0009_t01_lens_sp.dds",
+      "c0009_t01_lens2.dds",
+      "c0009_t159_body01.dds",
+      "c0009_t159_body01_sh.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t01_hair01b_sh_low.dds"
+    ],
+    "meshes": 35
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_160_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t160_body01.dds",
+      "c0009_t160_body01_sh.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t01_hair01b_sh_low.dds"
+    ],
+    "meshes": 31
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_161_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t161_body01.dds",
+      "c0009_t161_body01_sh.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t01_hair01b_sh_low.dds"
+    ],
+    "meshes": 32
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_162_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t01_hair01b_sh_low.dds",
+      "c0009_t162_body01.dds",
+      "c0009_t162_body01_sh.dds"
+    ],
+    "meshes": 22
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_163_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t163_body01.dds",
+      "c0009_t163_body01_sh.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t01_hair01b_sh_low.dds"
+    ],
+    "meshes": 31
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_164_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t01_hair01b_sh_low.dds",
+      "c0009_t164m_body01.dds",
+      "c0009_t164m_body01_sh.dds"
+    ],
+    "meshes": 32
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_165_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t165_x_hair01.dds",
+      "c0009_t165_x_hair01_sh.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t165_x_body01.dds",
+      "c0009_t165_x_body01_sh.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t01_hair01b_s_low.dds"
+    ],
+    "meshes": 32
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_166_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t166_hair01.dds",
+      "c0009_t166_hair01_sh.dds",
+      "c0009_t166_body01.dds",
+      "c0009_t166_body01_sh.dds",
+      "c0009_t166_body01_sp.dds",
+      "c0009_t166_hair01_sp.dds"
+    ],
+    "meshes": 32
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_167_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0001_t167_mask.dds",
+      "c0001_t167_mask_sp.dds",
+      "c0001_t01_face_s2.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t01_hair01b_sh_low.dds",
+      "c0009_t167_body01.dds",
+      "c0009_t167_body01_sh.dds",
+      "c0009_t167_body01_sp.dds"
+    ],
+    "meshes": 35
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_168_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t01_hair01b_sh_low.dds",
+      "c0009_t165_body01.dds",
+      "c0009_t165_body01_sh.dds",
+      "c0009_t165_body01_sp.dds"
+    ],
+    "meshes": 35
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_170_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t170_body02_c.dds",
+      "c0009_t170_body02_s.dds",
+      "c0009_t170_body02_sh.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t170_body01_c.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t01_hair01b_sh_low.dds",
+      "c0009_t170_body01_s.dds",
+      "c0009_t170_body01_sh.dds"
+    ],
+    "meshes": 24
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_171_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c2002_t01_kamen_low.dds",
+      "c2002_t01_kamen_s_low.dds",
+      "c2002_t01_kamen_sh.dds",
+      "c2002_t01_kamen_lenz.dds",
+      "c0009_t01_hair01b_low_52.dds",
+      "c0009_t01_hair01b_s_low.dds",
+      "c0009_t01_hair01b_sh_low.dds",
+      "c2002_t01_body01.dds",
+      "c2002_t01_body01_s_low.dds",
+      "c2002_t01_body01_sh_low.dds",
+      "c2002_t01_face01c.dds",
+      "ee132_smk_base.dds",
+      "be0cmn_up_red_nml.dds",
+      "c2002_aura_smk.dds",
+      "c2002_up_red_nml.dds"
+    ],
+    "meshes": 32
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_177_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c2002_t01_kamen_low.dds",
+      "c2002_t01_kamen_s_low.dds",
+      "c2002_t01_kamen_sh.dds",
+      "c2002_t01_kamen_lenz.dds",
+      "c0009_t01_hair01b_low_52.dds",
+      "c0009_t01_hair01b_s_low.dds",
+      "c0009_t01_hair01b_sh_low.dds",
+      "c2002_t01_body01.dds",
+      "c2002_t01_body01_s_low.dds",
+      "c2002_t01_body01_sh_low.dds",
+      "c2002_t01_face01c.dds",
+      "ee132_smk_base.dds",
+      "be0cmn_up_red_nml.dds",
+      "c2002_aura_smk.dds",
+      "c2002_up_red_nml.dds"
+    ],
+    "meshes": 32
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_172_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t01_hair01b_sh_low.dds",
+      "c0009_t172_body01.dds",
+      "c0009_t172_body01_sh.dds",
+      "c0009_t172_hat01.dds",
+      "c0009_t172_hat01_sh.dds"
+    ],
+    "meshes": 20
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_173_00.GMD",
+    "textures": [
+      "c0009_t173_body01_c.dds",
+      "c0009_t173_body01_sp.dds",
+      "c0009_t173_body01_sh.dds",
+      "c0009_t173_body01_re.dds",
+      "c0009_t173_head01_c.dds",
+      "c0009_t173_head01_sp.dds",
+      "c0009_t173_head01_sh.dds"
+    ],
+    "meshes": 14
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_174_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t174_body01_c.dds",
+      "c0009_t174_body01_sh.dds",
+      "c0009_t174_head01_c.dds",
+      "c0009_t174_body01_sp.dds",
+      "c0009_t174_head01_sp.dds",
+      "c0009_t174_head01_sh.dds"
+    ],
+    "meshes": 13
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_175_00.GMD",
+    "textures": [
+      "c0009_t01_face01b_low.dds",
+      "c0009_t01_face01_s_low.dds",
+      "c0009_t01_face01b_sh_low.dds",
+      "c0009_t01_face01c_low.dds",
+      "c0009_t01_hair01b_low.dds",
+      "c0009_t072_hair01_s.dds",
+      "c0009_t01_hair01b_sh_low.dds",
+      "c0009_t174_body01_c.dds",
+      "c0009_t174_body01_sh.dds",
+      "c0009_t174_body01_sp.dds"
+    ],
+    "meshes": 23
+  },
+  {
+    "path": "MODEL/CHARACTER/0009/C0009_176_00.GMD",
+    "textures": [
+      "c0009_t175_body01.dds",
+      "c0009_t175_body01_sp.dds",
+      "c0009_t175_body01_sh.dds"
+    ],
+    "meshes": 6
+  }
+]
