@@ -14,9 +14,10 @@
     "summon_open2_b",
     "summon_release_b",
     "summon_settle_b",
-    "summon_down1_b",
     "summon_down2_c",
-    "summon_down3_c"
+    "summon_down3_c",
+    "summon_down1_c",
+    "summon_down25_c"
   ],
   "approved": [
     "idle_a",
@@ -42,7 +43,7 @@
     "summon_rip_a2",
     "summon_release_a"
   ],
-  "next_after_approval": "等待用户与Claude判断down2_c/down3_c，不自动重画或追加帧",
+  "next_after_approval": "等待用户与Claude判断down1_c/down25_c；不自动重画或追加帧",
   "remaining_order": [
     "gun_a",
     "summon_grab_a",
@@ -92,7 +93,7 @@
   "selected_gun_camera_percent": 50,
   "gun_next_after_approval": "等待gun_draw_a2及追加过渡帧用户确认",
   "gun_base": "gun_a2",
-  "status": "awaiting_summon_down_c_user_claude_review",
+  "status": "awaiting_summon_down_c2_user_claude_review",
   "gun_group_status": "gun_a2通过；raise_a2待审；recoil_a2失败作废；lower_a2未开始",
   "gun_rejected_sample": "research/p5r/gun/rejected/gun_recoil_a2_double_gun.png",
   "gun_recoil_latest": "gun_recoil_a6：用户已通过",
@@ -170,21 +171,22 @@
     "script_output": "   summon_hold_a -> summon_rip_a2    overlap 0.89  face moved    35  feet moved [2, 0]  ok\n   summon_rip_a2 -> summon_open1_b   overlap 0.86  face moved     1  feet moved [1, 0]  ok\n  summon_open1_b -> summon_open2_b   overlap 0.75  face moved     1  feet moved [68, 0]  ok\n  summon_open2_b -> summon_release_b overlap 0.69  face moved    30  feet moved [67, 0]  ok\nsummon_release_b -> summon_settle_b  overlap 0.69  face moved    10  feet moved [92, 0]  ok\n summon_settle_b -> idle_a3          overlap 0.35  face moved   221  feet moved [351, 0]  JUMP - add a frame\n1 jump(s); overlays: art\\p5\\poses\\seq_summon_hold_a_idle_a3.png\n"
   },
   "summon_return_status": {
-    "status": "等待用户和Claude验收，不自动重画",
+    "status": "等待用户和Claude判断；不自动重画",
     "order": [
       "summon_settle_b",
-      "summon_down1_b",
+      "summon_down1_c",
       "summon_down2_c",
+      "summon_down25_c",
       "summon_down3_c",
       "idle_a3"
     ],
     "generation_calls_per_frame": 1,
+    "normalization_runs": 1,
     "sequence_check_runs": 1,
-    "jump_count": 2,
-    "output": " summon_settle_b -> summon_down1_b   overlap 0.77  face moved     7  feet moved [140, 0]  JUMP - add a frame\n  summon_down1_b -> summon_down2_c   overlap 0.49  face moved   131  feet moved [122, 1]  JUMP - add a frame\n  summon_down2_c -> summon_down3_c   overlap 0.67  face moved    87  feet moved [20, 0]  ok\n  summon_down3_c -> idle_a3          overlap 0.90  face moved     0  feet moved [103, 0]  ok\n2 jump(s); overlays: art\\p5\\poses\\seq_summon_settle_b_idle_a3.png\n",
+    "jump_count": 1,
+    "output": " summon_settle_b -> summon_down1_c   overlap 0.48  face moved   145  feet moved [223, 0]  JUMP - add a frame\n  summon_down1_c -> summon_down2_c   overlap 0.84  face moved    21  feet moved [47, 0]  ok\n  summon_down2_c -> summon_down25_c  overlap 0.85  face moved    41  feet moved [17, 0]  ok\n summon_down25_c -> summon_down3_c   overlap 0.72  face moved    61  feet moved [4, 0]  ok\n  summon_down3_c -> idle_a3          overlap 0.85  face moved    27  feet moved [96, 0]  ok\n1 jump(s); overlays: art\\p5\\poses\\seq_summon_settle_b_idle_a3.png\n",
     "supersedes": [
-      "summon_down2_b",
-      "summon_down3_b"
+      "summon_down1_b"
     ]
   }
 }

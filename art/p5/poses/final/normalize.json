@@ -342,5 +342,21 @@
    66
   ],
   "anchor_foot": "front"
+ },
+ "summon_down1_c": {
+  "scale": 1.0,
+  "offset": [
+   352,
+   82
+  ],
+  "anchor_foot": "front"
+ },
+ "summon_down25_c": {
+  "scale": 1.0,
+  "offset": [
+   320,
+   86
+  ],
+  "anchor_foot": "front"
  }
 }
