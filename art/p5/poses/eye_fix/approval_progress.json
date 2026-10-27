@@ -1,7 +1,7 @@
 {
   "standard_face_candidate": 2,
   "pending_user_approval": [
-    "summon_rip_a"
+    "summon_rip_a2"
   ],
   "approved": [
     "idle_a",
@@ -25,7 +25,7 @@
     "slash_recover_a",
     "summon_hold_a"
   ],
-  "next_after_approval": "等待用户恢复指示，先处理rip检查；用户通过rip后才画直立release",
+  "next_after_approval": "用户确认rip_a2及遮挡底图检查处理后，再画直立summon_release",
   "remaining_order": [
     "gun_a",
     "summon_grab_a",
@@ -51,7 +51,8 @@
     "gun_recoil_a",
     "gun_lower_a",
     "gun_recoil_a3",
-    "gun_recoil_a5"
+    "gun_recoil_a5",
+    "summon_rip_a"
   ],
   "guard_redraw": "poses3; use confirmed idle, body and head together facing right, right forearm blocking right",
   "task": "docs/codex/codex_p5_poses4.md",
@@ -70,7 +71,7 @@
   "selected_gun_camera_percent": 50,
   "gun_next_after_approval": "等待gun_draw_a2及追加过渡帧用户确认",
   "gun_base": "gun_a2",
-  "status": "user_paused_after_summon_rip_generation",
+  "status": "awaiting_summon_rip_a2_approval_with_covered_baseline_check_issue",
   "gun_group_status": "gun_a2通过；raise_a2待审；recoil_a2失败作废；lower_a2未开始",
   "gun_rejected_sample": "research/p5r/gun/rejected/gun_recoil_a2_double_gun.png",
   "gun_recoil_latest": "gun_recoil_a6：用户已通过",
@@ -116,6 +117,6 @@
   ],
   "summon_selected_azimuth_degrees": 321.85609585103083,
   "summon_hold_status": "用户已通过；--occluded复查standing height x0.999 ok",
-  "summon_rip_status": "仅生成一次；常规检查head x0.880 FAIL；用户要求暂停并推送，未重画/未归一化",
+  "summon_rip_status": "旧summon_rip_a用户作废；a2以hold编辑，左手垂下；指定hold基准FAIL，附idle补充检查；未归一化，待用户确认",
   "summon_mask_policy": "所有立绘不画面具；游戏特效用蓝焰勾轮廓"
 }
