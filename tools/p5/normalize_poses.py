@@ -16,7 +16,8 @@ ROOT = Path(__file__).resolve().parents[2]
 P = ROOT / 'art/p5/poses'
 OUT = P / 'final'
 REF = 'idle_a3'
-PAD = 64  # final canvas is 64 px wider on each side, so flared coats never get cut off
+PAD = 256  # final canvas is 256 px wider on each side, so flared coats / raised arms never get cut off
+TOP = 96  # and 96 px taller at the top
 # name -> (scale, foot that stays planted relative to idle: 'rear' = image-left, 'front' = image-right,
 # 'mid' = midpoint between the feet, for poses that step both feet).
 # Scales are set by hand from head size and body length (chin to sole, for standing frames) against idle_a3;
@@ -73,7 +74,8 @@ def main():
         bottom = np.nonzero(np.array(big)[..., 3].max(1) > 20)[0].max()
         oy = int(min(oy, H - 4 - bottom))  # never push the lower foot off the canvas
         ox += PAD
-        res = Image.new('RGBA', (W + 2 * PAD, H), (0, 0, 0, 0))
+        oy += TOP
+        res = Image.new('RGBA', (W + 2 * PAD, H + TOP), (0, 0, 0, 0))
         res.alpha_composite(big, (max(0, ox), max(0, oy)), (max(0, -ox), max(0, -oy)))
         res.save(OUT / f'{n}.png')
         log[n] = {'scale': round(s, 4), 'offset': [ox, oy], 'anchor_foot': anchor}

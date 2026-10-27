@@ -5,7 +5,7 @@ small. This measures each step of a sequence (images from art/p5/poses/final/) a
 that need another in-between frame:
     python tools/p5/sequence_check.py idle_a3 gun_draw_a gun_raise_a2 gun_a2
 Per step it prints: silhouette overlap (IoU of the alpha masks; 1.0 = identical outline), how far
-the face moved and how far each foot moved, in pixels on the 1152x1536 final canvas.
+the face moved and how far each foot moved, in pixels on the 1536x1632 final canvas.
 A step JUMPS when overlap < MIN_IOU, the face moves more than MAX_FACE px or a foot moves more than
 MAX_FOOT px; add a frame there.
 It also writes art/p5/poses/seq_<first>_<last>.png: each step as a red (from) / blue (to) overlay.
