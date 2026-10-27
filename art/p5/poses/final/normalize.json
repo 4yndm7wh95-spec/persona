@@ -479,6 +479,14 @@
   ],
   "anchor_foot": "front"
  },
+ "relaxed_a": {
+  "scale": 1.0,
+  "offset": [
+   203,
+   98
+  ],
+  "anchor_foot": "rear"
+ },
  "die_fall_a": {
   "scale": 1.0,
   "offset": [
