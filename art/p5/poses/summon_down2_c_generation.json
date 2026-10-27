@@ -1,0 +1,14 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-d38f4315-95bc-423d-9b45-712ab23be068.png",
+  "prompt": "Edit the FIRST image, a Persona 5 style game character full-body sprite, to create summon_down2_c. The second image is the previous transition pose and the third is the idle destination, only for position/orientation reference. Exactly one character, true transparent background, RGBA, 1024x1536. Preserve the first image's face identity, eye design with highlights looking screen-right, head size, shoulder width, body proportions, costume and drawing style. Both red-gloved hands remain naturally hanging at the sides as in the first image. Crucial change: move the ENTIRE upper body including chest, shoulders, neck and head toward the rear foot, to screen LEFT, rather than only lowering the arms. Put the head about halfway between the second reference's head position and the third reference's head position (approximately 80-90 pixels screen-left of its first-image position); do not shrink the head. Shift the pelvis naturally so weight is centered between the feet. Move the rear foot (screen-left boot) about 100 pixels farther screen-left from its first-image position, adjusting the leg naturally; keep the other foot planted. Turn the chest toward the third image's three-quarter front-facing-right orientation, close to idle. Upright relaxed body. Preserve all costume details, gray waistcoat gold chains, black longcoat, red gloves, brown boots. Coat settling gently. No mask, no effects, no background, no text. Full body and both boots inside canvas.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_down2_b.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_down1_b.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/idle_a3.png"
+  ],
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 268,
+  "generation_count": 1,
+  "review": "No visual review, no regeneration; sequence check only after completing batch"
+}
