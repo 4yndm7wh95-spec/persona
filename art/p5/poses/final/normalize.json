@@ -151,6 +151,22 @@
   ],
   "anchor_foot": "rear"
  },
+ "summon_hold_a": {
+  "scale": 1.0,
+  "offset": [
+   243,
+   -15
+  ],
+  "anchor_foot": "front"
+ },
+ "summon_rip_a2": {
+  "scale": 1.0,
+  "offset": [
+   235,
+   -14
+  ],
+  "anchor_foot": "front"
+ },
  "summon_release_a": {
   "scale": 1.0,
   "offset": [
