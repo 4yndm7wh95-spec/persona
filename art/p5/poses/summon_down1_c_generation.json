@@ -1,0 +1,13 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-840f3a7d-0cdc-44a9-8a31-2ac36cb8cdc6.png",
+  "prompt": "Edit the FIRST image to create one full-body Persona 5 style game character transition sprite, summon_down1_c. The SECOND image is a destination pose reference only. True transparent RGBA background, 1024x1536. Preserve first image's head size, face identity, eye design with highlights looking screen right, shoulder width, body proportions and costume. Lower the character's right red-gloved hand (screen-left arm) to waist level, other hand naturally down. Crucially translate the ENTIRE upper body and head toward the rear foot (toward screen LEFT), one third of the way from first image's head position to second image's head position, staying closer to the first image: head approximately 40 pixels screen-left of first image, not merely moving feet. Chest, shoulders, waist and head shift together naturally, without shrinking or stretching. Set rear foot (screen-left boot) halfway between its positions in the two references, keeping the other foot planted. Turn torso one-third back toward the relaxed three-quarter front-facing-right idle orientation. Upright body, weight naturally centered; coat beginning to fall. Preserve all costume details, black longcoat, gray gold-chain waistcoat, black trousers, red gloves and brown boots. Full figure inside canvas, no mask, no effects, no text or background. Exactly one sprite.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_settle_b.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_down2_c.png"
+  ],
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 370,
+  "generation_count": 1,
+  "review": "No visual review, no regeneration; sequence check only after completing batch"
+}
