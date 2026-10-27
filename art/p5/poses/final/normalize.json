@@ -168,10 +168,10 @@
   "anchor_foot": "front"
  },
  "summon_release_a": {
-  "scale": 1.015,
+  "scale": 1.035,
   "offset": [
-   235,
-   78
+   218,
+   48
   ],
   "anchor_foot": "front"
  },
@@ -200,10 +200,10 @@
   "anchor_foot": "front"
  },
  "summon_settle_a": {
-  "scale": 1.015,
+  "scale": 1.035,
   "offset": [
-   268,
-   79
+   252,
+   49
   ],
   "anchor_foot": "front"
  },
