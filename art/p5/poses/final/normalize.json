@@ -302,5 +302,29 @@
    32
   ],
   "anchor_foot": "front"
+ },
+ "summon_down1_b": {
+  "scale": 1.0,
+  "offset": [
+   389,
+   79
+  ],
+  "anchor_foot": "front"
+ },
+ "summon_down2_b": {
+  "scale": 1.0,
+  "offset": [
+   366,
+   81
+  ],
+  "anchor_foot": "front"
+ },
+ "summon_down3_b": {
+  "scale": 1.0,
+  "offset": [
+   266,
+   96
+  ],
+  "anchor_foot": "front"
  }
 }
