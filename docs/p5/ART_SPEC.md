@@ -118,17 +118,17 @@ idle_loop、low_health_loop、relaxed_loop、attack、cast（技能 / 能力牌�
 
 | 动画 | 播放顺序 | 用途 |
 |---|---|---|
-| idle_loop | idle（+ idle_blink_patch 眨眼）；**一段时间（约 8 秒）没有任何操作** → idle → glove_mid → glove（扯两下）→ glove_mid → idle，然后回到普通待机 | 战斗待机（用户 2026-10-25：除了眨眼，闲置时扯一扯手套）|
+| idle_loop | idle_a3（+ idle_blink_patch 眨眼）；**一段时间（约 8 秒）没有任何操作** → 播一次扯手套（同 cast（增益），只扯一下），然后回到普通待机 | 战斗待机（用户 2026-10-25：除了眨眼，闲置时扯一扯手套）|
 | low_health_loop | idle（同战斗待机）| 残血不单独做 |
 | relaxed_loop | relaxed（母版站姿）| 只在商店 / 商人事件用 |
 | 休息处（单独骨骼）| rest_sit | 篝火旁坐着、拿着 LeBlanc 的咖啡杯 |
 | attack | idle_a3 → knife_draw_a → knife_set_a → knife_ready_a → slash_smear_a3 → slash_a3 → slash_follow_a → knife_return_a → slash_recover_a → idle_a3（出刀即攻击：取刀到出刀约 0.16 秒不停顿；斩停 0.22 秒）| 打击 / 匕首类攻击 |
 | shiv（小刀牌）| 选中牌：idle_a3 → gun_step_a → gun_draw_a2 → gun_lift_mid_a → gun_lift_near_a → gun_raise_a2 → gun_a2（保持）；打出：gun_recoil_a6 → gun_a2 → 倒序收枪回 idle_a3；取消：直接倒序收枪 | 小刀牌 = 开枪，一张一枪 |
-| cast（亚森）| idle → summon_mid → summon_grab（面具浮现）→ summon_rip（撕下，停住，亚森在这时出手攻击）→ summon_end → idle | 召唤亚森的牌（大伤害 / AOE / 大毒牌） |
-| cast（防御）| idle → guard_mid → guard → guard_mid → idle | 加格挡的技能 |
-| cast（增益）| idle → glove_mid → glove → glove_mid → idle | 能力牌 / 增益（扯手套：右前臂向前弯，左手扯右手手套） |
-| hurt | hurt_impact → hurt → hurt_recover → idle | 受击 |
-| die | hurt_impact → hurt → die_kneel → die_fall → down | 死亡 |
+| cast（亚森）| 普通：idle_a3 → summon_lift1_a → summon_lift2_a → summon_touch_mid_a → summon_touch2_a（各 0.08s）→ summon_hold_a（蓝焰面具，亚森出手）→ 原路收回 → idle_a3；大招：… → summon_hold_a → summon_rip_a2 → summon_open1_b → summon_open2_b → summon_release_b（停，亚森出手）→ summon_settle_b → summon_down1_e → summon_down05_c → summon_down25_c → idle_a3 | 召唤亚森的牌（大伤害 / AOE / 大毒牌） |
+| cast（防御）| idle_a3 → guard_mid_a → guard_a2 → guard_mid_a → idle_a3 | 加格挡的技能 |
+| cast（增益）| idle_a3 → glove_mid_a 0.09s → glove_reach_a 0.12s → glove_a 0.16s → glove_b 0.3s → glove_flex_a 0.45s → 淡入 idle_a3 | 能力牌 / 增益（扯手套：抬左手，右手扯左手手套，只扯一下，扯完握拳） |
+| hurt | idle_a3 → hurt_flinch_a 0.05s → hurt_a4 0.25s → hurt_recover_b1 0.1s → hurt_recover_b2 0.1s → 淡入 idle_a3 | 受击 |
+| die | hurt_flinch_a → hurt_a4 → die_kneel → die_fall → down（待画）| 死亡 |
 | （胜利）| victory | 原版没有胜利动画接口，留给结算界面 / 立绘用 |
 
 cast 是同一个动画状态，代码按打出的牌换成上面三种之一（同 P3Makoto 的 cast / cast_light / attack_sovereign 按牌切换）。

@@ -34,6 +34,11 @@ idle_a 和后来所有姿势比例不一样：头小约 20%，肩膀更窄、躯
 - 抬起被扯手套的是左手（远侧），右手去扯；用户认可，不改。
 - glove_b 抬起的手原图画大了约 15%，用 tools/p5/hand_shrink.py 缩到 0.85。以后每张新帧也要看手的大小，比例检查只量头和身体。
 
+## 受击播放顺序（用户 2026-10-27 定稿）
+- idle_a3 → hurt_flinch_a 0.05s → hurt_a4 0.25s → hurt_recover_b1 0.1s → hurt_recover_b2 0.1s → 淡入 idle_a3。被打中那一下是突然的（idle→flinch 的 JUMP 是故意的）。
+- hurt_a2 方向反了（探头、手往身后甩，像往前冲），hurt_a3 后仰太夸张，都不用；hurt_a4 = hurt_a2 微调（头在腰上方、手臂往两侧平张）。
+- hurt_a4 的头原图小 8%、三张过渡帧的头大 5~6%，都用 tools/p5/hand_shrink.py 以脖子为中心缩放修正。
+
 ## 定稿记录（用户 2026-10-26）
 - 待机 = **idle_a3**（整张重画、比例和攻击 / 防御一致）。idle_a / idle_a2 不再用。
 - 防御 = guard_a2。
