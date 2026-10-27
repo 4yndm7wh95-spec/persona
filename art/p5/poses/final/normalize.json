@@ -398,5 +398,21 @@
    95
   ],
   "anchor_foot": "rear"
+ },
+ "glove_reach_a": {
+  "scale": 1.0,
+  "offset": [
+   255,
+   95
+  ],
+  "anchor_foot": "rear"
+ },
+ "glove_flex_a": {
+  "scale": 1.0,
+  "offset": [
+   255,
+   95
+  ],
+  "anchor_foot": "rear"
  }
 }

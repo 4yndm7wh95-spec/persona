@@ -21,7 +21,9 @@
     "summon_down05_c",
     "glove_a",
     "glove_mid_a",
-    "glove_b"
+    "glove_b",
+    "glove_reach_a",
+    "glove_flex_a"
   ],
   "approved": [
     "idle_a",
@@ -47,7 +49,7 @@
     "summon_rip_a2",
     "summon_release_a"
   ],
-  "next_after_approval": "等用户与Claude判断扯手套补帧，不自动重画或追加帧",
+  "next_after_approval": "等待用户与Claude判断接近腕口和松手试戴帧，不自动重画或追加帧",
   "remaining_order": [
     "gun_a",
     "summon_grab_a",
@@ -97,7 +99,7 @@
   "selected_gun_camera_percent": 50,
   "gun_next_after_approval": "等待gun_draw_a2及追加过渡帧用户确认",
   "gun_base": "gun_a2",
-  "status": "awaiting_glove_frames_user_claude_review",
+  "status": "awaiting_glove_reach_flex_user_claude_review",
   "gun_group_status": "gun_a2通过；raise_a2待审；recoil_a2失败作废；lower_a2未开始",
   "gun_rejected_sample": "research/p5r/gun/rejected/gun_recoil_a2_double_gun.png",
   "gun_recoil_latest": "gun_recoil_a6：用户已通过",
@@ -191,18 +193,27 @@
     "output": " summon_settle_b -> summon_down05_c  overlap 0.53  face moved   118  feet moved [245, 0]  JUMP - add a frame\n summon_down05_c -> summon_down1_c   overlap 0.82  face moved    47  feet moved [10, 0]  ok\n  summon_down1_c -> summon_down25_c  overlap 0.79  face moved    33  feet moved [30, 0]  ok\n summon_down25_c -> summon_down3_c   overlap 0.75  face moved    50  feet moved [13, 0]  ok\n  summon_down3_c -> idle_a3          overlap 0.88  face moved    14  feet moved [100, 0]  ok\n1 jump(s); overlays: art\\p5\\poses\\seq_summon_settle_b_idle_a3.png\n"
   },
   "glove_status": {
-    "approved_direction": "左手抬起、右手扯左手套",
-    "new_frames": [
+    "order": [
+      "idle_a3",
       "glove_mid_a",
-      "glove_b"
+      "glove_reach_a",
+      "glove_a",
+      "glove_b",
+      "glove_flex_a",
+      "glove_mid_a",
+      "idle_a3"
+    ],
+    "new_frames": [
+      "glove_reach_a",
+      "glove_flex_a"
     ],
     "generation_calls_per_frame": 1,
     "normalization_runs": 1,
     "pose_check_runs": 1,
     "sequence_check_runs": 1,
     "outputs": {
-      "pose_consistency.py": "glove_mid_a        head x0.978  body x1.003  boot height x1.006  boot width x1.026  feet moved [2, 2] px  ok\nglove_b            head x1.000  body x1.001  boot height x1.006  boot width x1.037  feet moved [1, 2] px  ok\nsheet: art\\p5\\poses\\check_glove_mid_a.png | overall: ok\n",
-      "sequence_check.py": "         idle_a3 -> glove_mid_a      overlap 0.85  face moved     3  feet moved [0, 1]  ok\n     glove_mid_a -> glove_a          overlap 0.94  face moved     1  feet moved [0, 0]  ok\n         glove_a -> glove_b          overlap 0.97  face moved     1  feet moved [0, 0]  ok\n         glove_b -> glove_a          overlap 0.97  face moved     1  feet moved [0, 0]  ok\n0 jump(s); overlays: art\\p5\\poses\\seq_idle_a3_glove_a.png\n"
+      "pose_consistency.py": "glove_reach_a      head x0.991  body x1.001  boot height x1.000  boot width x1.005  feet moved [1, 2] px  ok\nglove_flex_a       head x1.004  body x1.000  boot height x1.019  boot width x1.042  feet moved [1, 2] px  ok\nsheet: art\\p5\\poses\\check_glove_reach_a.png | overall: ok\n",
+      "sequence_check.py": "         idle_a3 -> glove_mid_a      overlap 0.85  face moved     3  feet moved [0, 1]  ok\n     glove_mid_a -> glove_reach_a    overlap 0.94  face moved     2  feet moved [0, 0]  ok\n   glove_reach_a -> glove_a          overlap 0.99  face moved     2  feet moved [0, 0]  ok\n         glove_a -> glove_b          overlap 0.98  face moved     1  feet moved [0, 0]  ok\n         glove_b -> glove_flex_a     overlap 0.97  face moved     1  feet moved [0, 0]  ok\n    glove_flex_a -> glove_mid_a      overlap 0.94  face moved     2  feet moved [0, 0]  ok\n     glove_mid_a -> idle_a3          overlap 0.85  face moved     3  feet moved [0, 1]  ok\n0 jump(s); overlays: art\\p5\\poses\\seq_idle_a3_idle_a3.png\n"
     },
     "status": "等待用户验收，不自动重画"
   }
