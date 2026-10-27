@@ -1,0 +1,14 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-fef73d40-08e6-46d0-b638-fd9368c2bd6b.png",
+  "prompt": "Create a small intermediate-frame EDIT of image 1, Persona 5 Joker full-body game-character illustration. Image 1 is the approved later pose and the EDIT BASE for exact head size, face, costume, proportions and line art. Image 2 is the preceding pose. This frame must be HALFWAY between these two poses, not a copy of either. RIGHT arm is midway rising from waist to face: right red-gloved hand at UPPER CHEST height in front of torso, holding the SAME SINGLE black prop pistol now tilted diagonally upward, right index finger straight outside trigger guard. Hand has not reached face height. Left hand EMPTY, loosely by thigh, between its endpoint positions. Body turns halfway between endpoints, head looks screen RIGHT, eyes forward with highlights, no hunching. Head position between the two endpoint positions after rear-foot alignment, but head dimensions identical to image 1.\nCritical foot placement: keep picture-left REAR boot at image 1 position, brown-leather center x≈364 and sole y≈1498. Widen picture-right FRONT boot outward to x≈692 (brown-leather center), sole y≈1480 on 1024x1536 canvas; front leg naturally connects to this position. This creates an intermediate stance between wide image 2 and narrow image 1, not closed feet. Same brown boot dimensions, do not shrink or enlarge character. Coat drape midway between both images. Preserve face, black coat, gray waistcoat gold chains, red gloves, brown boots, original cel-shaded ink style. Full body 1024x1536 genuine transparent RGBA background. Exactly ONE prop pistol in right hand, left hand empty, two hands total. No blood, glow, trails, effects, text or ground shadow.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/gun_raise_a2.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/gun_draw_a2.png"
+  ],
+  "base": "gun_raise_a2",
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 552,
+  "transparent_pixels": 981534,
+  "consistency_output": "gun_lift_mid_a     head x0.995  body x1.016  boot height x0.986  boot width x1.060  feet moved [34, 201] px  ok\nsheet: art\\p5\\poses\\check_gun_lift_mid_a.png | overall: ok\n"
+}
