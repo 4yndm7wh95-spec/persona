@@ -1,0 +1,14 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-8d1983ea-a0c1-4bed-acdf-75e65d28929b.png",
+  "prompt": "Edit FIRST image, idle_a3, into relaxed_a, Persona5 style game character shop relaxed standing sprite. FIRST image controls exact head size, hand size, anatomy proportions, costume, scale and drawing style. SECOND image is POSE ONLY: do NOT copy its smaller head or slim proportions. THIRD is approved face identity reference. Stand upright relaxed, weight on one leg; stance slightly narrower than first image, REAR boot screen-left stays exactly fixed, front boot screen-right moves inward a little. Anatomical LEFT hand (screen-right) in longcoat pocket. RIGHT hand hangs naturally at side, fingers relaxed, same palm size/finger length as first image. Shoulders relaxed, head tilted just slightly, eyes with highlights look screen RIGHT, small calm confident smile. Head must remain first image size, not smaller, no long thin torso. Preserve black longcoat gray gold-chain waistcoat red gloves black trousers brown boots. Full body entirely inside1024x1536 portrait canvas, soles near same y1500 baseline. No effects, no background, no text. True transparent RGBA background. One sprite.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/idle_a3.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/master/joker_master_a.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/ref/face_standard.png"
+  ],
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 35,
+  "generation_count": 1,
+  "review": "No visual review, no regeneration; sequence check only after completing batch"
+}
