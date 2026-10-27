@@ -1,0 +1,38 @@
+[
+  {
+    "name": "key_mask_hold.png",
+    "clip": 15,
+    "main_index": 14,
+    "frame": 0,
+    "time_seconds": 0.0,
+    "reason": "手扶脸侧，保持段的稳定起始帧",
+    "status": "camera review pending"
+  },
+  {
+    "name": "key_rip_mid.png",
+    "clip": 16,
+    "main_index": 15,
+    "frame": 2,
+    "time_seconds": 0.06666666666666667,
+    "reason": "右手上举到头顶附近",
+    "status": "camera review pending"
+  },
+  {
+    "name": "key_rip_open.png",
+    "clip": 16,
+    "main_index": 15,
+    "frame": 14,
+    "time_seconds": 0.4666666666666667,
+    "reason": "每2帧采样中最接近段末的展臂帧",
+    "status": "camera review pending"
+  },
+  {
+    "name": "key_stance.png",
+    "clip": 17,
+    "main_index": 16,
+    "frame": 0,
+    "time_seconds": 0.0,
+    "reason": "张开架势保持段起始帧",
+    "status": "camera review pending"
+  }
+]

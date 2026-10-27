@@ -1,15 +1,6 @@
 {
   "standard_face_candidate": 2,
-  "pending_user_approval": [
-    "gun_step_a",
-    "knife_draw_a",
-    "slash_recover_a",
-    "knife_set_a",
-    "knife_return_a",
-    "gun_draw_a2",
-    "gun_lift_mid_a",
-    "gun_lift_near_a"
-  ],
+  "pending_user_approval": [],
   "approved": [
     "idle_a",
     "guard_a2",
@@ -18,9 +9,20 @@
     "idle_a3",
     "guard_mid_a",
     "gun_a2",
-    "gun_recoil_a6"
+    "gun_recoil_a6",
+    "gun_draw_a2",
+    "gun_step_a",
+    "gun_lift_mid_a",
+    "gun_lift_near_a",
+    "gun_raise_a2",
+    "knife_draw_a",
+    "knife_set_a",
+    "slash_smear_a3",
+    "slash_follow_a",
+    "knife_return_a",
+    "slash_recover_a"
   ],
-  "next_after_approval": "continue current pose plan; no new pose until review",
+  "next_after_approval": "用户确认召唤参考机位后再画召唤立绘",
   "remaining_order": [
     "gun_a",
     "summon_grab_a",
@@ -65,7 +67,7 @@
   "selected_gun_camera_percent": 50,
   "gun_next_after_approval": "等待gun_draw_a2及追加过渡帧用户确认",
   "gun_base": "gun_a2",
-  "status": "awaiting_user_review",
+  "status": "summon_reference_camera_review_pending",
   "gun_group_status": "gun_a2通过；raise_a2待审；recoil_a2失败作废；lower_a2未开始",
   "gun_rejected_sample": "research/p5r/gun/rejected/gun_recoil_a2_double_gun.png",
   "gun_recoil_latest": "gun_recoil_a6：用户已通过",
@@ -100,5 +102,6 @@
     "gun_step_a",
     "idle_a3"
   ],
-  "gun_sequence_check": "0 jumps; overlap>=0.62, face<=90px, foot<=120px"
+  "gun_sequence_check": "0 jumps; overlap>=0.62, face<=90px, foot<=120px",
+  "summon_reference_status": "15/16/17 D方案、同gun/pick的50%固定相机，已渲30帧，背面视角与衣摆出框待确认；不继续生图"
 }

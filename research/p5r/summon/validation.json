@@ -1,0 +1,22 @@
+{
+  "same_camera_as_gun_pick": true,
+  "transparent_PNGs": 30,
+  "clips": [
+    {
+      "clip": 15,
+      "pngs": 11,
+      "gif_ms": 670
+    },
+    {
+      "clip": 16,
+      "pngs": 8,
+      "gif_ms": 500
+    },
+    {
+      "clip": 17,
+      "pngs": 11,
+      "gif_ms": 670
+    }
+  ],
+  "visual_status": "camera review pending; rear view and coat clipping documented"
+}
