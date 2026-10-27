@@ -29,6 +29,11 @@ idle_a 和后来所有姿势比例不一样：头小约 20%，肩膀更窄、躯
 - 大招：summon_hold_a → summon_rip_a2 → summon_open1_b → summon_open2_b → summon_release_b（停，亚森出手）→ summon_settle_b → summon_down1_e → summon_down05_c → summon_down25_c → idle_a3
 - summon_down1_e 是脚本做的（tools/p5/lean_shift.py：down1_b 上身往后脚倾 55px，脚不动），因为生图两次都画不出「只移一半」。
 
+## 扯手套播放顺序（用户 2026-10-27 定稿）
+- idle_a3 → glove_mid_a 0.09s → glove_reach_a 0.12s → glove_a 0.16s → glove_b 0.3s（扯一下，只扯一次）→ glove_flex_a 0.2s（松手握拳，别停太久）→ 淡入 idle_a3（淡入 0.12s，不再经过 glove_mid_a：它的右手在胸前，会多一个来回）。
+- 抬起被扯手套的是左手（远侧），右手去扯；用户认可，不改。
+- glove_b 抬起的手原图画大了约 15%，用 tools/p5/hand_shrink.py 缩到 0.85。以后每张新帧也要看手的大小，比例检查只量头和身体。
+
 ## 定稿记录（用户 2026-10-26）
 - 待机 = **idle_a3**（整张重画、比例和攻击 / 防御一致）。idle_a / idle_a2 不再用。
 - 防御 = guard_a2。
