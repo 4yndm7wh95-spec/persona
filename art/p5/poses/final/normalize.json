@@ -438,5 +438,29 @@
    111
   ],
   "anchor_foot": "rear"
+ },
+ "hurt_flinch_a": {
+  "scale": 1.0,
+  "offset": [
+   253,
+   116
+  ],
+  "anchor_foot": "rear"
+ },
+ "hurt_recover_b1": {
+  "scale": 1.0,
+  "offset": [
+   266,
+   112
+  ],
+  "anchor_foot": "rear"
+ },
+ "hurt_recover_b2": {
+  "scale": 1.0,
+  "offset": [
+   262,
+   112
+  ],
+  "anchor_foot": "rear"
  }
 }
