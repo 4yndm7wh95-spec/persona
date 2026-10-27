@@ -1,0 +1,13 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-aeefc32c-911d-49a5-843e-e2c54207bb9e.png",
+  "prompt": "Edit FIRST image to create hurt_recover_a, one Persona 5 style full-body game character illustration halfway through regaining upright posture. SECOND image is approved face identity reference only, not head scale. Preserve first image's head size, body proportions, shoulder width, costume and EXACT locations of BOTH boots; feet do not move or narrow. Bring upper body halfway back upright so only a very slight backward lean remains. Head returns level and chin lowers; eyebrows still furrowed, eyes open and refocus toward screen RIGHT with highlights. Face remains turned screen-right. Bring BOTH arms halfway back toward sides of body: hands still slightly away from torso, elbows mildly bent, fingers relaxed rather than tense spread. HANDS MUST stay same size as first image, same palm size and finger lengths, no enlargement. Coat hem falls halfway back toward resting position. Retain black longcoat, gray waistcoat gold chains, red gloves, black trousers brown boots and exact crisp cel-shaded art style. Full body inside canvas. No effects, no wounds, no blood, no text or background. True transparent RGBA background, exactly 1024x1536. One sprite.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/hurt_a2.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/ref/face_standard.png"
+  ],
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 513,
+  "generation_count": 1,
+  "review": "No visual review, no regeneration; sequence check only after completing batch"
+}
