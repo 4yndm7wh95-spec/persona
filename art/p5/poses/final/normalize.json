@@ -328,18 +328,18 @@
   "anchor_foot": "front"
  },
  "summon_down2_c": {
-  "scale": 1.0,
+  "scale": 1.015,
   "offset": [
-   394,
-   81
+   384,
+   59
   ],
   "anchor_foot": "front"
  },
  "summon_down3_c": {
-  "scale": 1.0,
+  "scale": 1.02,
   "offset": [
-   255,
-   96
+   239,
+   66
   ],
   "anchor_foot": "front"
  }
