@@ -28,7 +28,8 @@
     "hurt_flinch_a",
     "hurt_recover_b1",
     "hurt_recover_b2",
-    "die_kneel_a2"
+    "die_fall_a",
+    "die_down_a"
   ],
   "approved": [
     "idle_a",
@@ -54,7 +55,7 @@
     "summon_rip_a2",
     "summon_release_a"
   ],
-  "next_after_approval": "等待用户与Claude判断die_kneel_a2，不自动重画或追加帧",
+  "next_after_approval": "等待用户与Claude判断die_fall_a和die_down_a，再做过渡帧；不自动重画",
   "remaining_order": [
     "gun_a",
     "summon_grab_a",
@@ -104,7 +105,7 @@
   "selected_gun_camera_percent": 50,
   "gun_next_after_approval": "等待gun_draw_a2及追加过渡帧用户确认",
   "gun_base": "gun_a2",
-  "status": "awaiting_die_kneel_a2_user_review",
+  "status": "awaiting_die_fall_down_user_review",
   "gun_group_status": "gun_a2通过；raise_a2待审；recoil_a2失败作废；lower_a2未开始",
   "gun_rejected_sample": "research/p5r/gun/rejected/gun_recoil_a2_double_gun.png",
   "gun_recoil_latest": "gun_recoil_a6：用户已通过",
@@ -248,13 +249,16 @@
     "status": "等待用户验收，不自动重画"
   },
   "die_status": {
-    "approved_base": "die_kneel_a",
-    "new_frame": "die_kneel_a2",
-    "generation_calls": 1,
+    "approved_base": "die_kneel_a2",
+    "new_frames": [
+      "die_fall_a",
+      "die_down_a"
+    ],
+    "generation_calls_per_frame": 1,
     "normalization_runs": 1,
     "pose_check_runs": 1,
     "sequence_check_runs": 0,
-    "pose_output": "die_kneel_a2       head x0.284  body x0.606 (check)  boot height x0.762  boot width x0.948  feet moved [164, 53] px  FAIL\nsheet: art\\p5\\poses\\check_die_kneel_a2.png | overall: FAIL\n",
-    "status": "等待用户验收，不自动重画"
+    "pose_output": "Traceback (most recent call last):\n  File \"C:\\Users\\kkk\\Documents\\Codex\\2026-10-24\\docs-codex-codex-p5r-rip-md\\work\\check_die_fall_down.py\", line 9, in <module>\n    with contextlib.redirect_stdout(s):runpy.run_path(str(r/'tools/p5/pose_consistency.py'),run_name='__main__')\n                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<frozen runpy>\", line 287, in run_path\n  File \"<frozen runpy>\", line 98, in _run_module_code\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\tools\\p5\\pose_consistency.py\", line 127, in <module>\n    main()\n  File \"C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\tools\\p5\\pose_consistency.py\", line 104, in main\n    hh = head_height(a) / base_h\n         ^^^^^^^^^^^^^^\n  File \"C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\tools\\p5\\pose_consistency.py\", line 54, in head_height\n    i = int(np.argmax(ndimage.sum(skin, lab, range(1, k + 1)))) + 1\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\kkk\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py\", line 1341, in argmax\n    return _wrapfunc(a, 'argmax', axis=axis, out=out, **kwds)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\kkk\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py\", line 57, in _wrapfunc\n    return bound(*args, **kwds)\n           ^^^^^^^^^^^^^^^^^^^^\nValueError: attempt to get argmax of an empty sequence\n",
+    "status": "等待用户看过关键帧后再画过渡帧"
   }
 }

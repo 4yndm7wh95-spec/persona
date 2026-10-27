@@ -478,5 +478,21 @@
    134
   ],
   "anchor_foot": "front"
+ },
+ "die_fall_a": {
+  "scale": 1.0,
+  "offset": [
+   412,
+   177
+  ],
+  "anchor_foot": "front"
+ },
+ "die_down_a": {
+  "scale": 1.0,
+  "offset": [
+   332,
+   240
+  ],
+  "anchor_foot": "front"
  }
 }
