@@ -1,0 +1,13 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-e00debf5-842c-4619-b3a7-2c5caa81b88b.png",
+  "prompt": "Edit the FIRST image into summon_down05_c, one full-body Persona 5 style game character illustration transition sprite. SECOND image is a next-pose reference only. Pose must be EXACTLY HALFWAY between these two poses, not all the way to the second. Lower right hand (screen-left arm) halfway from its first-image position toward second-image position. Move ENTIRE upper body and head halfway toward rear foot, to screen LEFT: head halfway between reference head positions. Preserve first image head size, face and proportions without shrinking or stretching, same eye drawing and highlighted eyes looking screen right. Rear foot (screen-left brown boot) halfway between reference rear-foot positions; other boot stays planted, legs adapt naturally. Chest orientation halfway between references. Coat hem falls halfway back from the first image's billowing position toward the second. Body upright and balanced. Preserve first image identity, shoulder width, proportions, black longcoat, gray waistcoat with gold chains, red gloves, black trousers and brown boots, same crisp illustration style. True transparent RGBA background, exactly 1024x1536, whole figure and boots inside canvas. No mask, no effects, no background, no text. Exactly one character.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_settle_b.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_down1_c.png"
+  ],
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 214,
+  "generation_count": 1,
+  "review": "No visual review, no regeneration; sequence check only after completing batch"
+}
