@@ -19,7 +19,10 @@ REF = 'idle_a3'
 PAD = 256  # final canvas is 256 px wider on each side, so flared coats / raised arms never get cut off
 TOP = 96  # and 96 px taller at the top
 # name -> (scale, foot that stays planted relative to idle: 'rear' = image-left, 'front' = image-right,
-# 'mid' = midpoint between the feet, for poses that step both feet).
+# 'mid' = midpoint between the feet, for poses that step both feet; 'ground' = lying frames: the lowest
+# pixel goes on idle's sole line and the figure is centred on idle's feet. A lying frame is drawn on a
+# 1536x1024 landscape canvas (a stretched-out body doesn't fit 1024 wide) and is placed into the same
+# 1536x1632 final canvas as the others).
 # Scales are set by hand from head size and body length (chin to sole, for standing frames) against idle_a3;
 # automatic head measurement is unreliable because raised black sleeves touch the hair.
 POSES = {'idle_a3': (1.0, 'rear'), 'guard_a2': (1.0, 'front'), 'knife_ready_a': (0.96, 'rear'),
@@ -74,6 +77,19 @@ def main():
         s, anchor = spec[0], spec[1]
         nudge = spec[2] if len(spec) > 2 else 0  # extra x shift (px) to smooth a sequence that slides sideways
         im = load(n)
+        W, H = im.size
+        big = im.resize((round(W * s), round(H * s)), Image.LANCZOS)
+        if anchor == 'ground':
+            al = np.array(big)[..., 3] > 20
+            ys, xs = np.nonzero(al)
+            sole = max(ref_feet[0][1], ref_feet[1][1]) + 6  # idle's lowest pixel
+            cx = (ref_feet[0][0] + ref_feet[1][0]) / 2
+            ox, oy = round(PAD + cx - (xs.min() + xs.max()) / 2), round(TOP + sole - ys.max())
+            res = Image.new('RGBA', (1024 + 2 * PAD, 1536 + TOP), (0, 0, 0, 0))
+            res.alpha_composite(big, (max(0, ox), max(0, oy)), (max(0, -ox), max(0, -oy)))
+            res.save(OUT / f'{n}.png')
+            log[n] = {'scale': round(s, 4), 'offset': [ox, oy], 'anchor_foot': anchor}
+            continue
         feet = boots(np.array(im).astype(int))
         if anchor == 'mid':
             fx, fy = (feet[0][0] + feet[1][0]) / 2, feet[0][1]
@@ -82,8 +98,6 @@ def main():
             fi = 0 if anchor == 'rear' else 1
             fx, fy = feet[fi]
             tx, ty = ref_feet[fi]
-        W, H = im.size
-        big = im.resize((round(W * s), round(H * s)), Image.LANCZOS)
         ox, oy = round(tx - fx * s) + nudge, round(ty - fy * s)
         bottom = np.nonzero(np.array(big)[..., 3].max(1) > 20)[0].max()
         oy = int(min(oy, H - 4 - bottom))  # never push the lower foot off the canvas
