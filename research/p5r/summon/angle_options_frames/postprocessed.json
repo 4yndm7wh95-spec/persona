@@ -1,0 +1,56 @@
+{
+  "horizontal_mirror_applied": true,
+  "same_display_scale": 0.25,
+  "checks": [
+    {
+      "file": "angle_-30.png",
+      "four_edges_alpha_max": 0,
+      "alpha_bbox": [
+        599,
+        298,
+        1170,
+        1236
+      ]
+    },
+    {
+      "file": "angle_-15.png",
+      "four_edges_alpha_max": 0,
+      "alpha_bbox": [
+        613,
+        299,
+        1179,
+        1236
+      ]
+    },
+    {
+      "file": "angle_+00.png",
+      "four_edges_alpha_max": 0,
+      "alpha_bbox": [
+        607,
+        299,
+        1168,
+        1236
+      ]
+    },
+    {
+      "file": "angle_+15.png",
+      "four_edges_alpha_max": 0,
+      "alpha_bbox": [
+        601,
+        298,
+        1138,
+        1236
+      ]
+    },
+    {
+      "file": "angle_+30.png",
+      "four_edges_alpha_max": 0,
+      "alpha_bbox": [
+        601,
+        299,
+        1129,
+        1236
+      ]
+    }
+  ]
+}
