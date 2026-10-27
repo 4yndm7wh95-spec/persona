@@ -1,0 +1,13 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-00804823-0ce9-4c2b-93b3-d7a24aa07956.png",
+  "prompt": "Precise edit of this APPROVED full-body Persona 5 Joker summon_rip_a2 sprite. Maintain the SAME face, exact head dimensions, shoulder width, chest/waist size, leg length, boots, original body scale and framing. Do not lengthen torso or shrink head.\nRIGHT arm is TWO THIRDS through an outward-upward fling toward picture LEFT, elbow opened more than base but not fully straight, fingers opening. LEFT hand remains down, empty, relaxed at thigh. Coat tails lifted HALFWAY behind him by an upward draft, represented only by clothing folds, no drawn effects. Head and eyes screen RIGHT, original expression and rounded chin. Upright torso, nearly straight knees.\nREAR FOOT movement is ONLY A SMALL HALF-STEP: picture-left rear brown boot center from base520 to470 (50pixels LEFT), same sole height1520. Front boot unchanged at x657/sole1493. Boot gap about185px, close stance. No wide stance, no large backward step; rear boot must stay within100px of base position. Preserve both boot sizes and leg lengths.\nSame sharp P5 ink/cel style, black long coat, gray gold-chain waistcoat, red gloves, black trousers, brown boots.1024x1536 genuine transparent RGBA, original full-body scale, all extended fingers/coat/feet inside. No mask, objects, flame, wind lines, effects, blood, glow, text, ground shadow or backdrop.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_rip_a2.png"
+  ],
+  "base": "summon_rip_a2",
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 397,
+  "transparent_pixels": 964964,
+  "consistency_output": "summon_open2_b     head x0.991  body x0.992  boot height x1.014  boot width x1.005  feet moved [66, 0] px  ok\nsheet: art\\p5\\poses\\check_summon_open2_b.png | overall: ok\n"
+}
