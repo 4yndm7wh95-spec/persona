@@ -1,0 +1,16 @@
+{
+  "status": "等待用户和Claude验收，不自动重画",
+  "order": [
+    "summon_settle_b",
+    "summon_down05_c",
+    "summon_down1_c",
+    "summon_down25_c",
+    "summon_down3_c",
+    "idle_a3"
+  ],
+  "generation_calls": 1,
+  "normalization_runs": 1,
+  "sequence_check_runs": 1,
+  "jump_count": 1,
+  "output": " summon_settle_b -> summon_down05_c  overlap 0.53  face moved   118  feet moved [245, 0]  JUMP - add a frame\n summon_down05_c -> summon_down1_c   overlap 0.82  face moved    47  feet moved [10, 0]  ok\n  summon_down1_c -> summon_down25_c  overlap 0.79  face moved    33  feet moved [30, 0]  ok\n summon_down25_c -> summon_down3_c   overlap 0.75  face moved    50  feet moved [13, 0]  ok\n  summon_down3_c -> idle_a3          overlap 0.88  face moved    14  feet moved [100, 0]  ok\n1 jump(s); overlays: art\\p5\\poses\\seq_summon_settle_b_idle_a3.png\n"
+}

@@ -358,5 +358,13 @@
    62
   ],
   "anchor_foot": "front"
+ },
+ "summon_down05_c": {
+  "scale": 1.0,
+  "offset": [
+   346,
+   83
+  ],
+  "anchor_foot": "front"
  }
 }
