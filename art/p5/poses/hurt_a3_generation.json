@@ -1,0 +1,13 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-656bc0d7-02a6-4a3d-987f-28f8f7f9a112.png",
+  "prompt": "Edit FIRST image into hurt_a3, one Persona 5 style full-body game character illustration reacting to a chest impact from offscreen RIGHT. SECOND image is approved face identity reference only, not scale. Character faces screen RIGHT but is pushed BACKWARD toward screen LEFT. Critical silhouette: waist stays central/slightly forward to RIGHT, chest recoils LEFT, shoulders pulled BACK LEFT, head must be clearly LEFT of waist. Upper body arches backward LEFT about 15 degrees, head thrown backward with raised chin, furrowed brow, squinting eyes and clenched teeth; face still broadly screen RIGHT. Do not thrust head forward, do not hunch forward, do not shrug shoulders. Both ARMS remain IN FRONT of the recoiling torso due to inertia: extend toward screen RIGHT and spread one upward and one downward, elbows slightly bent, fingers open. Hands must be to the RIGHT/front of chest rather than flung behind it to left. Hand size/palm width/finger length exactly like first image, no enlargement. Waist and knees push slightly RIGHT making a backward-curved body arc; BOTH BOOTS stay EXACTLY at first image positions and wide stance, no stepping or narrowing. Coat hem lags toward screen RIGHT/front as body retreats LEFT. Preserve FIRST image head size, body proportions, shoulder width, black longcoat gray gold-chain waistcoat red gloves black trousers brown boots and crisp cel-shaded style. No effects, no wounds, no blood, no other character. True transparent RGBA background 1024x1536, full figure and boots inside canvas. Exactly one sprite.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/idle_a3.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/ref/face_standard.png"
+  ],
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 1338,
+  "generation_count": 1,
+  "review": "No visual review, no regeneration; sequence check only after completing batch"
+}
