@@ -1,0 +1,12 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-33021672-45c9-4ac0-8723-b96c697cdb64.png",
+  "prompt": "Edit supplied kneeling Persona 5 style game character sprite into die_down_a, fully collapsed lying on anatomical RIGHT SIDE on ground after falling FORWARD toward screen RIGHT, not backward. HEAD on screen RIGHT, BOOTS on screen LEFT, whole body horizontal across LOWER portion of 1024x1536 canvas. Face turned toward viewer, eyes CLOSED, limp restful expression. Both legs slightly bent and stacked together to fit body within width. Right arm under torso or extended forward on ground; left red-gloved hand resting on ground in front of torso. Longcoat spreads over body and ground. Preserve EXACT supplied image head size, hand sizes and anatomical body proportions and costume, no larger or smaller head/hands. Maintain same ground baseline near bottom as supplied kneeling frame. Use foreshortened curled side-lying pose, not scaled-down body, to fit ENTIRE character inside1024 width with a small clear transparent margin on both left and right, no cropping of head hair boots fingers or coat. Large transparent empty space above lower-lying figure. Same black longcoat gray gold-chain waistcoat red gloves black trousers brown boots, crisp cel-shaded game character illustration. No effects, no wounds, no blood, no text, no ground plane/background. True transparent RGBA1024x1536. One sprite.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/die_kneel_a2.png"
+  ],
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 210,
+  "generation_count": 1,
+  "review": "No visual review, no regeneration; sequence check only after completing batch"
+}
