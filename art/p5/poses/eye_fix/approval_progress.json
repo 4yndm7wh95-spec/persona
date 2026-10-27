@@ -1,7 +1,7 @@
 {
   "standard_face_candidate": 2,
   "pending_user_approval": [
-    "summon_rip_a2"
+    "summon_release_a"
   ],
   "approved": [
     "idle_a",
@@ -23,9 +23,10 @@
     "slash_follow_a",
     "knife_return_a",
     "slash_recover_a",
-    "summon_hold_a"
+    "summon_hold_a",
+    "summon_rip_a2"
   ],
-  "next_after_approval": "用户确认rip_a2及遮挡底图检查处理后，再画直立summon_release",
+  "next_after_approval": "用户确认summon_release_a后再处理召唤整段过渡与连续性检查",
   "remaining_order": [
     "gun_a",
     "summon_grab_a",
@@ -71,7 +72,7 @@
   "selected_gun_camera_percent": 50,
   "gun_next_after_approval": "等待gun_draw_a2及追加过渡帧用户确认",
   "gun_base": "gun_a2",
-  "status": "awaiting_summon_rip_a2_approval_with_covered_baseline_check_issue",
+  "status": "awaiting_summon_release_a_approval",
   "gun_group_status": "gun_a2通过；raise_a2待审；recoil_a2失败作废；lower_a2未开始",
   "gun_rejected_sample": "research/p5r/gun/rejected/gun_recoil_a2_double_gun.png",
   "gun_recoil_latest": "gun_recoil_a6：用户已通过",
@@ -117,6 +118,7 @@
   ],
   "summon_selected_azimuth_degrees": 321.85609585103083,
   "summon_hold_status": "用户已通过；--occluded复查standing height x0.999 ok",
-  "summon_rip_status": "旧summon_rip_a用户作废；a2以hold编辑，左手垂下；指定hold基准FAIL，附idle补充检查；未归一化，待用户确认",
-  "summon_mask_policy": "所有立绘不画面具；游戏特效用蓝焰勾轮廓"
+  "summon_rip_status": "summon_rip_a2用户已通过；旧a作废",
+  "summon_mask_policy": "所有立绘不画面具；游戏特效用蓝焰勾轮廓",
+  "summon_release_status": "第二次生成比例ok：head x0.978/body x0.984；1.0/front归一化无裁切，待用户验收"
 }

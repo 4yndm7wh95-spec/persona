@@ -150,5 +150,13 @@
    21
   ],
   "anchor_foot": "rear"
+ },
+ "summon_release_a": {
+  "scale": 1.0,
+  "offset": [
+   55,
+   4
+  ],
+  "anchor_foot": "front"
  }
 }
