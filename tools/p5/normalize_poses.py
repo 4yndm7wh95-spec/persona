@@ -24,7 +24,9 @@ PAD = 64  # final canvas is 64 px wider on each side, so flared coats never get 
 POSES = {'idle_a3': (1.0, 'rear'), 'guard_a2': (1.0, 'front'), 'knife_ready_a': (0.96, 'rear'),
          'slash_a3': (0.96, 'mid'), 'slash_follow_a': (0.96, 'mid'),
          'slash_mid_a': (0.96, 'mid'), 'slash_smear_a3': (0.96, 'mid'), 'guard_mid_a': (1.0, 'front'),
-         'gun_draw_a': (1.0, 'rear'), 'gun_a2': (1.03, 'rear'), 'gun_raise_a2': (1.03, 'rear'), 'gun_recoil_a6': (1.045, 'rear')}
+         'gun_draw_a': (1.0, 'rear'), 'gun_a2': (1.03, 'rear'), 'gun_raise_a2': (1.03, 'rear'), 'gun_recoil_a6': (1.045, 'rear'),
+         'gun_step_a': (1.0, 'rear'), 'knife_draw_a': (1.0, 'rear'), 'slash_recover_a': (1.0, 'mid'),
+         'knife_set_a': (1.0, 'rear'), 'knife_return_a': (1.0, 'mid')}
 
 
 def load(n):

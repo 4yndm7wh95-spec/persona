@@ -1,7 +1,12 @@
 {
   "standard_face_candidate": 2,
   "pending_user_approval": [
-    "gun_draw_a"
+    "gun_draw_a",
+    "gun_step_a",
+    "knife_draw_a",
+    "slash_recover_a",
+    "knife_set_a",
+    "knife_return_a"
   ],
   "approved": [
     "idle_a",
@@ -63,5 +68,17 @@
   "gun_rejected_sample": "research/p5r/gun/rejected/gun_recoil_a2_double_gun.png",
   "gun_recoil_latest": "gun_recoil_a6：用户已通过",
   "gun_recoil_normalization_pending": "归一化遇到未覆盖情况：按现有1.0/mid对齐得到offset=[86,22]，会把右侧甩起衣摆移出1024画布，实测裁掉10288个alpha>128像素。因此该裁切产物仅留work诊断，不放入final、不登记a4，未擅自缩放或挪脚凑数。a3已由用户作废，其归一化登记移除，旧文件留历史；本次仅提交完整a4原图和报告，final接入待解决脚位锚定/画布边界。",
-  "gun_draw_latest": "gun_draw_a：idle_a3为底图，比例检查通过，待用户验收"
+  "gun_draw_latest": "gun_draw_a：idle_a3为底图，比例检查通过，待用户验收",
+  "sequence_check_status": {
+    "gun": "0 jumps",
+    "knife": "0 jumps; --allow slash_smear_a3",
+    "added": [
+      "gun_step_a",
+      "knife_draw_a",
+      "slash_recover_a",
+      "knife_set_a",
+      "knife_return_a"
+    ],
+    "report": "research/p5r/gun/REPORT_sequence_transitions.md"
+  }
 }

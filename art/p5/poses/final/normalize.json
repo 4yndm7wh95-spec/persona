@@ -94,5 +94,45 @@
    -64
   ],
   "anchor_foot": "rear"
+ },
+ "gun_step_a": {
+  "scale": 1.0,
+  "offset": [
+   15,
+   5
+  ],
+  "anchor_foot": "rear"
+ },
+ "knife_draw_a": {
+  "scale": 1.0,
+  "offset": [
+   79,
+   18
+  ],
+  "anchor_foot": "rear"
+ },
+ "slash_recover_a": {
+  "scale": 1.0,
+  "offset": [
+   54,
+   32
+  ],
+  "anchor_foot": "mid"
+ },
+ "knife_set_a": {
+  "scale": 1.0,
+  "offset": [
+   74,
+   20
+  ],
+  "anchor_foot": "rear"
+ },
+ "knife_return_a": {
+  "scale": 1.0,
+  "offset": [
+   70,
+   79
+  ],
+  "anchor_foot": "mid"
  }
 }

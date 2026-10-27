@@ -1,0 +1,14 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-dc1f2b25-b6b8-4997-bb75-4b98ba8de687.png",
+  "prompt": "Edit image 1, a full-body Persona 5 Joker game character illustration, into a relaxed return-to-idle intermediate pose. Image 1 is the EDIT TARGET and controls exact head size, face, hair, costume, body proportions and detailed cel-shaded ink drawing style. Image 2 idle_a3 is only the endpoint. Pose halfway between image 1 and image 2: torso turns halfway back toward the open three-quarter front idle orientation, knees extend halfway to standing, weight settles halfway back, feet move halfway toward the idle foot positions. Lower the RIGHT hand from chest height down to his right waist, elbow naturally bent downward; stow the small prop knife at his waist so its blade is no longer exposed, right hand still near the waist at the end of this in-between pose. Left hand stays empty, relaxed beside the left thigh. Coat tails settle halfway from their flared image 1 position to the idle drape. Do not copy the high raised hand of image 1. Head stays facing screen RIGHT, eyes look forward with highlights, natural iris placement, gentle rounded chin. Keep EXACT head dimensions from image 1, same shoulder width, limb thickness, costume, black coat, gray waistcoat gold chains, red gloves and brown boots. Full body visible on 1024x1536 truly transparent RGBA canvas, soles near y1500. No motion blur, trails, special effects, glow, ground shadow, blood, text or added objects. Exactly two hands.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/slash_follow_a.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/idle_a3.png"
+  ],
+  "base": "slash_follow_a",
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 98,
+  "transparent_pixels": 1017352,
+  "consistency_output": "slash_recover_a    head x0.996  body x1.090 (check)  boot height x1.071  boot width x1.035  feet moved [124, 62] px  ok\nsheet: art\\p5\\poses\\check_slash_recover_a.png | overall: ok\n"
+}
