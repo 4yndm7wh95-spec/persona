@@ -494,5 +494,21 @@
    240
   ],
   "anchor_foot": "front"
+ },
+ "die_down_b": {
+  "scale": 1.0,
+  "offset": [
+   51,
+   682
+  ],
+  "anchor_foot": "ground"
+ },
+ "die_buckle_a": {
+  "scale": 1.0,
+  "offset": [
+   284,
+   167
+  ],
+  "anchor_foot": "rear"
  }
 }
