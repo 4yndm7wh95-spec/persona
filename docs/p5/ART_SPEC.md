@@ -128,7 +128,7 @@ idle_loop、low_health_loop、relaxed_loop、attack、cast（技能 / 能力牌�
 | cast（防御）| idle_a3 → guard_mid_a → guard_a2 → guard_mid_a → idle_a3 | 加格挡的技能 |
 | cast（增益）| idle_a3 → glove_mid_a 0.09s → glove_reach_a 0.12s → glove_a 0.16s → glove_b 0.3s → glove_flex_a 0.45s → 淡入 idle_a3 | 能力牌 / 增益（扯手套：抬左手，右手扯左手手套，只扯一下，扯完握拳） |
 | hurt | idle_a3 → hurt_flinch_a 0.05s → hurt_a4 0.25s → hurt_recover_b1 0.1s → hurt_recover_b2 0.1s → 淡入 idle_a3 | 受击 |
-| die | hurt_flinch_a → hurt_a4 → die_kneel → die_fall → down（待画）| 死亡 |
+| die | （从当前姿势淡入，不再从待机播受击）die_buckle_a 0.12s → die_kneel_a2 0.6s → die_fall_a 0.15s → die_down_b（停住）| 死亡 |
 | （胜利）| victory | 原版没有胜利动画接口，留给结算界面 / 立绘用 |
 
 cast 是同一个动画状态，代码按打出的牌换成上面三种之一（同 P3Makoto 的 cast / cast_light / attack_sovereign 按牌切换）。

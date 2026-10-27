@@ -39,6 +39,12 @@ idle_a 和后来所有姿势比例不一样：头小约 20%，肩膀更窄、躯
 - hurt_a2 方向反了（探头、手往身后甩，像往前冲），hurt_a3 后仰太夸张，都不用；hurt_a4 = hurt_a2 微调（头在腰上方、手臂往两侧平张）。
 - hurt_a4 的头原图小 8%、三张过渡帧的头大 5~6%，都用 tools/p5/hand_shrink.py 以脖子为中心缩放修正。
 
+## 倒地播放顺序（用户 2026-10-27 定稿）
+- die_buckle_a 0.12s → die_kneel_a2 0.6s → die_fall_a 0.15s → die_down_b（停住）。死亡前游戏已经播过受击，所以不再从待机 → 受击开始，直接从当前姿势淡入 die_buckle_a。
+- 往前、往敌人那边侧身栽倒（跪姿上身前垮，往后仰倒不顺）。die_kneel_a 右小腿伸太远，用 a2。
+- die_down_a 蜷成一团显小，不用；die_down_b 是横版 1536×1024 伸展躺地，normalize_poses 用 'ground' 对齐（最低点对齐待机鞋底，太宽时自动挪回画布内）。
+- die_buckle_a 头原图大 12%，用 hand_shrink.py 缩回。
+
 ## 定稿记录（用户 2026-10-26）
 - 待机 = **idle_a3**（整张重画、比例和攻击 / 防御一致）。idle_a / idle_a2 不再用。
 - 防御 = guard_a2。
