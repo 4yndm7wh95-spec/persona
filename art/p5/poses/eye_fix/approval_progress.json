@@ -1,6 +1,8 @@
 {
   "standard_face_candidate": 2,
-  "pending_user_approval": [],
+  "pending_user_approval": [
+    "summon_hold_a"
+  ],
   "approved": [
     "idle_a",
     "guard_a2",
@@ -22,7 +24,7 @@
     "knife_return_a",
     "slash_recover_a"
   ],
-  "next_after_approval": "用户确认四张关键帧后再画召唤立绘",
+  "next_after_approval": "第一张确认且检查问题明确后再做summon_rip；再确认才做直立summon_release",
   "remaining_order": [
     "gun_a",
     "summon_grab_a",
@@ -67,7 +69,7 @@
   "selected_gun_camera_percent": 50,
   "gun_next_after_approval": "等待gun_draw_a2及追加过渡帧用户确认",
   "gun_base": "gun_a2",
-  "status": "awaiting_summon_adjusted_keyframe_confirmation",
+  "status": "summon_hold_measurement_failed_awaiting_user",
   "gun_group_status": "gun_a2通过；raise_a2待审；recoil_a2失败作废；lower_a2未开始",
   "gun_rejected_sample": "research/p5r/gun/rejected/gun_recoil_a2_double_gun.png",
   "gun_recoil_latest": "gun_recoil_a6：用户已通过",
@@ -103,7 +105,7 @@
     "idle_a3"
   ],
   "gun_sequence_check": "0 jumps; overlap>=0.62, face<=90px, foot<=120px",
-  "summon_reference_status": "前两张321.86度不变，后两张往人物右侧转15度至351.86度，待确认；完整段动画仍321.86度，未生图",
+  "summon_reference_status": "用户不要半蹲，key_rip_open和key_stance停用；仅用key_mask_hold/key_rip_mid，release自设计直立",
   "summon_angle_candidates": [
     261.85609585103083,
     276.85609585103083,
@@ -111,5 +113,6 @@
     306.85609585103083,
     321.85609585103083
   ],
-  "summon_selected_azimuth_degrees": 321.85609585103083
+  "summon_selected_azimuth_degrees": 321.85609585103083,
+  "summon_hold_status": "生成两次，当前head x0.760 FAIL；扶脸遮挡测量疑问，未归一化，等待用户处理"
 }
