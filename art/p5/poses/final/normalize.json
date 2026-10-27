@@ -288,18 +288,18 @@
   "anchor_foot": "front"
  },
  "summon_release_b": {
-  "scale": 1.0,
+  "scale": 1.045,
   "offset": [
-   407,
-   81
+   376,
+   14
   ],
   "anchor_foot": "front"
  },
  "summon_settle_b": {
-  "scale": 1.0,
+  "scale": 1.033,
   "offset": [
-   396,
-   81
+   373,
+   32
   ],
   "anchor_foot": "front"
  }
