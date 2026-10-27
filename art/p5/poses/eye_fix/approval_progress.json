@@ -103,7 +103,7 @@
     "idle_a3"
   ],
   "gun_sequence_check": "0 jumps; overlap>=0.62, face<=90px, foot<=120px",
-  "summon_reference_status": "前两张321.86度不变，后两张往人物右侧转15度至336.86度，待确认；完整段动画仍321.86度，未生图",
+  "summon_reference_status": "前两张321.86度不变，后两张往人物右侧转15度至351.86度，待确认；完整段动画仍321.86度，未生图",
   "summon_angle_candidates": [
     261.85609585103083,
     276.85609585103083,

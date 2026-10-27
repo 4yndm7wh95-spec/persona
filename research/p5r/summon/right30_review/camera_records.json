@@ -1,0 +1,62 @@
+[
+  {
+    "name": "key_rip_open.png",
+    "clip": 16,
+    "frame": 14,
+    "previous_azimuth_degrees": 336.85609585103083,
+    "delta_degrees": 15,
+    "total_delta_from_selected_degrees": 30,
+    "azimuth_degrees": 351.85609585103083,
+    "camera_location": [
+      1257.5966796875,
+      -152.71646118164062,
+      -6.851146697998047
+    ],
+    "camera_rotation": [
+      1.5707963705062866,
+      -0.0,
+      1.4286586046218872
+    ],
+    "ortho_scale": 285.3317083314408,
+    "camera_target": [
+      14.617176055908203,
+      25.157569885253906,
+      -6.851146697998047
+    ],
+    "resolution": [
+      1536,
+      1536
+    ],
+    "horizontal_mirror": true
+  },
+  {
+    "name": "key_stance.png",
+    "clip": 17,
+    "frame": 0,
+    "previous_azimuth_degrees": 336.85609585103083,
+    "delta_degrees": 15,
+    "total_delta_from_selected_degrees": 30,
+    "azimuth_degrees": 351.85609585103083,
+    "camera_location": [
+      1257.5966796875,
+      -152.71646118164062,
+      -6.851146697998047
+    ],
+    "camera_rotation": [
+      1.5707963705062866,
+      -0.0,
+      1.4286586046218872
+    ],
+    "ortho_scale": 285.3317083314408,
+    "camera_target": [
+      14.617176055908203,
+      25.157569885253906,
+      -6.851146697998047
+    ],
+    "resolution": [
+      1536,
+      1536
+    ],
+    "horizontal_mirror": true
+  }
+]

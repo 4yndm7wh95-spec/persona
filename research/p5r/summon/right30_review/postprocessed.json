@@ -1,0 +1,30 @@
+{
+  "horizontal_mirror_applied": true,
+  "first_two_files_unchanged_sha256": {
+    "key_mask_hold.png": "719629c57e4f0e7f88062c18c9b25d4d581611809fbc73359e9c758bd4253340",
+    "key_rip_mid.png": "7e2896bc797ffab0e8d80d38f2a87fdf4a6013b5f94e890f2dcf3427d783bfe5"
+  },
+  "last_two_checks": [
+    {
+      "file": "key_rip_open.png",
+      "four_edges_alpha_max": 0,
+      "alpha_bbox": [
+        379,
+        298,
+        1180,
+        1123
+      ]
+    },
+    {
+      "file": "key_stance.png",
+      "four_edges_alpha_max": 0,
+      "alpha_bbox": [
+        378,
+        296,
+        1178,
+        1122
+      ]
+    }
+  ],
+  "full_animation_renders_unchanged": true
+}
