@@ -170,7 +170,7 @@
  "summon_release_a": {
   "scale": 1.035,
   "offset": [
-   218,
+   263,
    48
   ],
   "anchor_foot": "front"
@@ -194,7 +194,7 @@
  "summon_fling_a": {
   "scale": 1.015,
   "offset": [
-   233,
+   278,
    83
   ],
   "anchor_foot": "front"
@@ -202,7 +202,7 @@
  "summon_settle_a": {
   "scale": 1.035,
   "offset": [
-   252,
+   274,
    49
   ],
   "anchor_foot": "front"
@@ -234,7 +234,7 @@
  "summon_fling1_a": {
   "scale": 1.015,
   "offset": [
-   406,
+   421,
    59
   ],
   "anchor_foot": "front"
@@ -242,7 +242,7 @@
  "summon_fling2_a": {
   "scale": 1.015,
   "offset": [
-   259,
+   304,
    71
   ],
   "anchor_foot": "front"

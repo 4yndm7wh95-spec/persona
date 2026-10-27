@@ -28,10 +28,10 @@ POSES = {'idle_a3': (1.0, 'rear'), 'guard_a2': (1.0, 'front'), 'knife_ready_a': 
          'gun_draw_a2': (1.0, 'rear'), 'gun_a2': (1.03, 'rear'), 'gun_raise_a2': (1.03, 'rear'), 'gun_recoil_a6': (1.045, 'rear'),
          'gun_step_a': (1.0, 'rear'), 'knife_draw_a': (1.0, 'rear'), 'slash_recover_a': (1.0, 'mid'),
          'knife_set_a': (1.0, 'rear'), 'knife_return_a': (1.0, 'mid'), 'gun_lift_mid_a': (1.0, 'rear'),
-         'gun_lift_near_a': (1.0, 'rear'), 'summon_hold_a': (1.0, 'front'), 'summon_rip_a2': (1.0, 'front'), 'summon_release_a': (1.035, 'front'),
-         'summon_lift1_a': (1.0, 'front'), 'summon_lift2_a': (1.0, 'front'), 'summon_fling_a': (1.015, 'front'), 'summon_settle_a': (1.035, 'front'),
+         'gun_lift_near_a': (1.0, 'rear'), 'summon_hold_a': (1.0, 'front'), 'summon_rip_a2': (1.0, 'front'), 'summon_release_a': (1.035, 'front', 45),
+         'summon_lift1_a': (1.0, 'front'), 'summon_lift2_a': (1.0, 'front'), 'summon_fling_a': (1.015, 'front', 45), 'summon_settle_a': (1.035, 'front', 22),
          'summon_lift_mid_a': (1.0, 'front'), 'summon_touch1_a': (1.0, 'front'), 'summon_touch2_a': (1.0, 'front'),
-         'summon_fling1_a': (1.015, 'front'), 'summon_fling2_a': (1.015, 'front'),
+         'summon_fling1_a': (1.015, 'front', 15), 'summon_fling2_a': (1.015, 'front', 45),
          'summon_lift_bridge_a': (1.0, 'front'), 'summon_touch_mid_a': (1.0, 'front'), 'summon_contact_a': (1.0, 'front')}
 
 
@@ -58,7 +58,9 @@ def main():
     OUT.mkdir(exist_ok=True)
     ref_feet = boots(np.array(load(REF)).astype(int))
     log = {}
-    for n, (s, anchor) in POSES.items():
+    for n, spec in POSES.items():
+        s, anchor = spec[0], spec[1]
+        nudge = spec[2] if len(spec) > 2 else 0  # extra x shift (px) to smooth a sequence that slides sideways
         im = load(n)
         feet = boots(np.array(im).astype(int))
         if anchor == 'mid':
@@ -70,7 +72,7 @@ def main():
             tx, ty = ref_feet[fi]
         W, H = im.size
         big = im.resize((round(W * s), round(H * s)), Image.LANCZOS)
-        ox, oy = round(tx - fx * s), round(ty - fy * s)
+        ox, oy = round(tx - fx * s) + nudge, round(ty - fy * s)
         bottom = np.nonzero(np.array(big)[..., 3].max(1) > 20)[0].max()
         oy = int(min(oy, H - 4 - bottom))  # never push the lower foot off the canvas
         ox += PAD
