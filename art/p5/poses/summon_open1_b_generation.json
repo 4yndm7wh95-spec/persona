@@ -1,0 +1,13 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-6e2b2119-4750-4537-a194-d2ac5d8a3851.png",
+  "prompt": "Precise small edit of this APPROVED full-body Persona 5 Joker game-character sprite summon_rip_a2. Preserve the original head size, exact face, hair mass, shoulder width, torso length, leg length and slim proportions. Preserve the same camera, character scale and placement. Do not redesign, lengthen the body or shrink the head.\nMake the FIRST THIRD of the right arm's outward-upward fling: the already raised RIGHT hand moves slightly farther toward picture LEFT and upward, elbow opens only one third toward extension, fingers beginning to open. Exactly one raised right arm. LEFT hand stays naturally hanging empty at the thigh exactly as base. Coat hem just STARTS lifting behind him, most drape unchanged. Body upright, head/eyes screen RIGHT, same eye highlights and rounded chin.\nFEET ALMOST DO NOT MOVE: keep both boots in the exact base positions, picture-left rear brown boot center x520/sole1520 and picture-right front brown boot x657/sole1493. Same knee angles, leg lengths and boot size. Feet remain close, no big backward step, no wide stance, no crouch. Keep all hip-to-feet pixels as close to base as possible.\nSame black coat, gray gold-chained waistcoat, red gloves, black trousers, brown boots and crisp P5 ink/cel style. NO MASK or object in hand, no flames, blood, effects, wind lines, glow, text, ground shadow or background. True transparent RGBA1024x1536, all fingers/hair/coat/boots entirely inside, original full-body framing and head225px preserved.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_rip_a2.png"
+  ],
+  "base": "summon_rip_a2",
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 449,
+  "transparent_pixels": 986326,
+  "consistency_output": "summon_open1_b     head x0.991  body x1.001  boot height x1.004  boot width x0.998  feet moved [1, 0] px  ok\nsheet: art\\p5\\poses\\check_summon_open1_b.png | overall: ok\n"
+}
