@@ -5,8 +5,9 @@
     "main_index": 14,
     "frame": 0,
     "time_seconds": 0.0,
-    "reason": "手扶脸侧，保持段的稳定起始帧",
-    "status": "camera review pending"
+    "reason": "保持段手扶脸侧的稳定起始帧",
+    "selected_camera_degrees": 321.85609585103083,
+    "status": "awaiting user keyframe confirmation"
   },
   {
     "name": "key_rip_mid.png",
@@ -14,8 +15,9 @@
     "main_index": 15,
     "frame": 2,
     "time_seconds": 0.06666666666666667,
-    "reason": "右手上举到头顶附近",
-    "status": "camera review pending"
+    "reason": "手刚离开脸侧并上举至头顶附近",
+    "selected_camera_degrees": 321.85609585103083,
+    "status": "awaiting user keyframe confirmation"
   },
   {
     "name": "key_rip_open.png",
@@ -23,8 +25,9 @@
     "main_index": 15,
     "frame": 14,
     "time_seconds": 0.4666666666666667,
-    "reason": "每2帧采样中最接近段末的展臂帧",
-    "status": "camera review pending"
+    "reason": "段末展臂及衣摆甩开，每2帧采样的最后一帧",
+    "selected_camera_degrees": 321.85609585103083,
+    "status": "awaiting user keyframe confirmation"
   },
   {
     "name": "key_stance.png",
@@ -32,7 +35,8 @@
     "main_index": 16,
     "frame": 0,
     "time_seconds": 0.0,
-    "reason": "张开架势保持段起始帧",
-    "status": "camera review pending"
+    "reason": "保持架势起始帧",
+    "selected_camera_degrees": 321.85609585103083,
+    "status": "awaiting user keyframe confirmation"
   }
 ]

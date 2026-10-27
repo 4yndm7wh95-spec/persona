@@ -1,22 +1,29 @@
 {
-  "same_camera_as_gun_pick": true,
-  "transparent_PNGs": 30,
+  "selected_camera_degrees": 321.85609585103083,
+  "camera_matches_selected_angle_option": true,
+  "fixed_camera_all_clips": true,
+  "PNG_size": [
+    1536,
+    1536
+  ],
+  "transparent_PNG_count": 30,
+  "all_four_edges_alpha_zero": true,
   "clips": [
     {
       "clip": 15,
-      "pngs": 11,
-      "gif_ms": 670
+      "PNG_count": 11,
+      "GIF_ms": 670
     },
     {
       "clip": 16,
-      "pngs": 8,
-      "gif_ms": 500
+      "PNG_count": 8,
+      "GIF_ms": 500
     },
     {
       "clip": 17,
-      "pngs": 11,
-      "gif_ms": 670
+      "PNG_count": 11,
+      "GIF_ms": 670
     }
   ],
-  "visual_status": "camera review pending; rear view and coat clipping documented"
+  "status": "awaiting user keyframe confirmation"
 }

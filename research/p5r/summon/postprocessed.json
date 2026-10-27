@@ -1,9 +1,16 @@
 {
   "horizontal_mirror_applied": true,
-  "gif_width": 320,
+  "resolution": [
+    1536,
+    1536
+  ],
+  "gif_size": [
+    384,
+    384
+  ],
+  "selected_azimuth_degrees": 321.85609585103083,
   "frame_step": 2,
   "fps_reference": 30,
-  "note": "PNG frames true transparent. GIF previews neutral grey, same as gun/pick. GIF centisecond rounding; no artificial slowdown. Terminal sample at exact clip duration omitted from GIF.",
   "clips": [
     {
       "number": 15,
@@ -199,19 +206,7 @@
           }
         }
       ],
-      "gif_duration_ms": 670,
-      "gif_frame_durations_ms": [
-        70,
-        60,
-        70,
-        70,
-        60,
-        70,
-        70,
-        60,
-        70,
-        70
-      ]
+      "gif_duration_ms": 670
     },
     {
       "number": 16,
@@ -356,17 +351,7 @@
           }
         }
       ],
-      "gif_duration_ms": 500,
-      "gif_frame_durations_ms": [
-        70,
-        60,
-        70,
-        70,
-        60,
-        70,
-        70,
-        30
-      ]
+      "gif_duration_ms": 500
     },
     {
       "number": 17,
@@ -562,531 +547,310 @@
           }
         }
       ],
-      "gif_duration_ms": 670,
-      "gif_frame_durations_ms": [
-        70,
-        60,
-        70,
-        70,
-        60,
-        70,
-        70,
-        60,
-        70,
-        70
-      ]
+      "gif_duration_ms": 670
     }
   ],
   "image_stats": [
     {
       "path": "research/p5r/summon/15_frames/frame_000.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        13,
-        316,
-        633,
-        1234
+        601,
+        299,
+        1129,
+        1236
       ]
     },
     {
       "path": "research/p5r/summon/15_frames/frame_002.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        21,
-        315,
-        628,
-        1234
+        601,
+        299,
+        1123,
+        1236
       ]
     },
     {
       "path": "research/p5r/summon/15_frames/frame_004.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        26,
-        316,
-        598,
-        1234
+        616,
+        298,
+        1095,
+        1236
       ]
     },
     {
       "path": "research/p5r/summon/15_frames/frame_006.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        29,
-        315,
-        559,
-        1234
+        638,
+        298,
+        1069,
+        1236
       ]
     },
     {
       "path": "research/p5r/summon/15_frames/frame_008.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        31,
-        316,
-        564,
-        1234
+        656,
+        298,
+        1084,
+        1236
       ]
     },
     {
       "path": "research/p5r/summon/15_frames/frame_010.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        27,
-        315,
-        583,
-        1234
+        656,
+        298,
+        1101,
+        1236
       ]
     },
     {
       "path": "research/p5r/summon/15_frames/frame_012.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        16,
-        316,
-        600,
-        1234
+        638,
+        298,
+        1113,
+        1236
       ]
     },
     {
       "path": "research/p5r/summon/15_frames/frame_014.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        9,
-        315,
         615,
-        1234
+        299,
+        1123,
+        1236
       ]
     },
     {
       "path": "research/p5r/summon/15_frames/frame_016.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        13,
-        316,
-        632,
-        1234
+        600,
+        299,
+        1129,
+        1236
       ]
     },
     {
       "path": "research/p5r/summon/15_frames/frame_018.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        13,
-        316,
-        632,
-        1234
+        600,
+        299,
+        1129,
+        1236
       ]
     },
     {
       "path": "research/p5r/summon/15_frames/frame_020.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        13,
-        316,
-        632,
-        1234
+        600,
+        299,
+        1129,
+        1236
       ]
     },
     {
       "path": "research/p5r/summon/16_frames/frame_000.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        20,
-        316,
-        639,
-        1234
+        607,
+        298,
+        1134,
+        1236
       ]
     },
     {
       "path": "research/p5r/summon/16_frames/frame_002.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        160,
-        307,
-        603,
-        1232
+        606,
+        290,
+        1028,
+        1234
       ]
     },
     {
       "path": "research/p5r/summon/16_frames/frame_004.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        113,
-        317,
-        760,
+        603,
+        298,
+        1228,
         1123
       ]
     },
     {
       "path": "research/p5r/summon/16_frames/frame_006.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        0,
-        319,
-        770,
-        1111
+        433,
+        300,
+        1148,
+        1110
       ]
     },
     {
       "path": "research/p5r/summon/16_frames/frame_008.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        0,
-        317,
-        876,
+        461,
+        298,
+        1143,
         1112
       ]
     },
     {
       "path": "research/p5r/summon/16_frames/frame_010.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        0,
-        317,
-        861,
+        459,
+        297,
+        1137,
         1119
       ]
     },
     {
       "path": "research/p5r/summon/16_frames/frame_012.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        0,
-        317,
-        760,
+        412,
+        298,
+        1135,
         1123
       ]
     },
     {
       "path": "research/p5r/summon/16_frames/frame_014.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        0,
-        317,
-        760,
+        412,
+        298,
+        1135,
         1123
       ]
     },
     {
       "path": "research/p5r/summon/17_frames/frame_000.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        0,
-        316,
-        762,
+        408,
+        296,
+        1129,
         1122
       ]
     },
     {
       "path": "research/p5r/summon/17_frames/frame_002.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        2,
-        316,
-        762,
-        1122
+        509,
+        296,
+        1129,
+        1121
       ]
     },
     {
       "path": "research/p5r/summon/17_frames/frame_004.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        0,
-        316,
-        763,
+        573,
+        296,
+        1129,
         1121
       ]
     },
     {
       "path": "research/p5r/summon/17_frames/frame_006.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        0,
-        316,
-        763,
+        461,
+        296,
+        1129,
         1120
       ]
     },
     {
       "path": "research/p5r/summon/17_frames/frame_008.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        0,
-        315,
-        763,
+        406,
+        297,
+        1129,
         1120
       ]
     },
     {
       "path": "research/p5r/summon/17_frames/frame_010.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        0,
-        315,
-        763,
+        505,
+        296,
+        1129,
         1120
       ]
     },
     {
       "path": "research/p5r/summon/17_frames/frame_012.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        0,
-        316,
-        763,
+        565,
+        296,
+        1129,
         1121
       ]
     },
     {
       "path": "research/p5r/summon/17_frames/frame_014.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        0,
-        316,
-        762,
-        1122
+        506,
+        296,
+        1129,
+        1121
       ]
     },
     {
       "path": "research/p5r/summon/17_frames/frame_016.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        0,
-        316,
-        762,
+        408,
+        296,
+        1129,
         1122
       ]
     },
     {
       "path": "research/p5r/summon/17_frames/frame_018.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        0,
-        316,
-        762,
+        408,
+        296,
+        1129,
         1122
       ]
     },
     {
       "path": "research/p5r/summon/17_frames/frame_020.png",
-      "size": [
-        1024,
-        1536
-      ],
-      "alpha_range": [
-        0,
-        255
-      ],
+      "four_edges_alpha_max": 0,
       "alpha_bbox": [
-        0,
-        316,
-        762,
+        408,
+        296,
+        1129,
         1122
       ]
     }
-  ]
+  ],
+  "all_four_edges_alpha_zero": true
 }
