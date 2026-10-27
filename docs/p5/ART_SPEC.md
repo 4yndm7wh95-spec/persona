@@ -122,8 +122,8 @@ idle_loop、low_health_loop、relaxed_loop、attack、cast（技能 / 能力牌�
 | low_health_loop | idle（同战斗待机）| 残血不单独做 |
 | relaxed_loop | relaxed（母版站姿）| 只在商店 / 商人事件用 |
 | 休息处（单独骨骼）| rest_sit | 篝火旁坐着、拿着 LeBlanc 的咖啡杯 |
-| attack | idle_a3 → knife_ready_a → slash_smear（一张残影帧，一只手 + 一道弧形模糊）→ slash_a3 → slash_follow_a → idle_a3（反手，右前下 → 左前上斜撩；代码再叠刀光）| 打击 / 匕首类攻击（小刀斩） |
-| shiv（小刀牌）| 选中牌：idle_a3 → gun_raise_a2 → gun_a2（选目标期间保持）；打出：gun_recoil_a3 → gun_a2 → gun_raise_a2（当收枪）→ idle_a3（一张一枪）；取消：gun_a2 → gun_raise_a2 → idle_a3 | 小刀牌 = 开枪 |
+| attack | idle_a3 → knife_draw_a → knife_set_a → knife_ready_a → slash_smear_a3 → slash_a3 → slash_follow_a → knife_return_a → slash_recover_a → idle_a3（出刀即攻击：取刀到出刀约 0.16 秒不停顿；斩停 0.22 秒）| 打击 / 匕首类攻击 |
+| shiv（小刀牌）| 选中牌：idle_a3 → gun_step_a → gun_draw_a2 → gun_lift_mid_a → gun_lift_near_a → gun_raise_a2 → gun_a2（保持）；打出：gun_recoil_a6 → gun_a2 → 倒序收枪回 idle_a3；取消：直接倒序收枪 | 小刀牌 = 开枪，一张一枪 |
 | cast（亚森）| idle → summon_mid → summon_grab（面具浮现）→ summon_rip（撕下，停住，亚森在这时出手攻击）→ summon_end → idle | 召唤亚森的牌（大伤害 / AOE / 大毒牌） |
 | cast（防御）| idle → guard_mid → guard → guard_mid → idle | 加格挡的技能 |
 | cast（增益）| idle → glove_mid → glove → glove_mid → idle | 能力牌 / 增益（扯手套：右前臂向前弯，左手扯右手手套） |
