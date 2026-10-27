@@ -1,0 +1,13 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-8f2eeddb-e4ff-4f13-ae39-567179eaa573.png",
+  "prompt": "Precise edit of this APPROVED full-body Persona 5 Joker summon_rip_a2 sprite. Preserve EXACT original head size, face, hair mass, shoulder width, torso/chest length, waist size, leg length and body proportions. Same camera and original full-body framing; do NOT lengthen the body or shrink the head.\nMake the full outward-upward release: RIGHT arm extends completely diagonally toward picture LEFT and up, fingers spread OPEN, hand empty, elbow soft but arm stretched. Only right arm raised; LEFT hand naturally hangs down empty by thigh. Coat hem is swept upward and BACK behind him by an upward draft, large fluttering tails but no drawn effects; hair tips lift a little. Body stays UPRIGHT, no crouch and no backward fall. Head tilts up only a little, visible eyes still look forward screen RIGHT with highlights, not up at sky; rounded chin.\nREAR FOOT moves back no more than a SMALL HALF STEP: from base brown-boot center520 to about420 (100pixels toward picture LEFT), sole near1520. Front boot remains centered x657/sole1493, unchanged. Boot gap about237px, still a fairly close natural stance, NOT the wide idle stance. Same boots and leg lengths. Do not make a big backward stride; maximum100px from base rear foot.\nSame black long coat, gray gold-chain waistcoat, red gloves, black trousers, brown boots, sharp P5 ink/cel shading.1024x1536 truly transparent RGBA. All extended fingers, hair, coat and boots inside original canvas with margin, no character shrinking to fit. No mask, objects, flame, wind lines, effects, blood, glow, text, ground shadow or background.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_rip_a2.png"
+  ],
+  "base": "summon_rip_a2",
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 415,
+  "transparent_pixels": 922812,
+  "consistency_output": "summon_release_b   head x0.951  body x0.964 (check)  boot height x1.024  boot width x0.996  feet moved [114, 20] px  ok\nsheet: art\\p5\\poses\\check_summon_release_b.png | overall: ok\n"
+}
