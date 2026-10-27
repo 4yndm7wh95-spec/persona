@@ -1,0 +1,14 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-9705af10-6b59-4990-aff9-fe6bf14ab654.png",
+  "prompt": "Small edit of image1 summon_release_b, a full-body Persona 5 Joker game-character sprite, into a HALF-WAY settling pose. Image1 is the EDIT BASE. Image2 summon_rip_a2 is ONLY the original face/head-size/body-proportion reference, never copy its raised arm pose.\nLower RIGHT arm halfway from the extended upward-outward position toward hanging idle: right hand around lower chest/waist height outside body on picture LEFT, elbow relaxed and partly bent, fingers relaxed. LEFT empty hand hangs down unchanged at thigh. Coat falls halfway from lifted flare toward resting drape, with some trailing folds. Body turns halfway back toward an open three-quarter front screen-right idle orientation, stays upright, knees nearly straight. Head/eyes face forward screen RIGHT with original highlighted eyes and rounded chin.\nKeep the original rip head size, shoulder width, torso length, leg length and slim proportions fixed; do not elongate body or shrink head. Keep FEET at release_b's close stance; no extra backward step, rear foot stays within100px of rip reference x520 (not farther left than about420). Front boot stays near x657. Same boot size and sole height near1500, no wide stance and no squat.\nSame black high-collared long coat, gray gold-chained waistcoat, red gloves, black trousers, brown boots and sharp P5 ink/cel shading. Full body1024x1536 genuinely transparent RGBA, all hands/coat/feet contained. No mask, props, flame, wind lines, blood, effects, glow, text, ground shadow or backdrop.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_release_b.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/summon_rip_a2.png"
+  ],
+  "base": "summon_rip_a2",
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 663,
+  "transparent_pixels": 990143,
+  "consistency_output": "summon_settle_b    head x0.969  body x0.967 (check)  boot height x1.068  boot width x1.037  feet moved [30, 30] px  ok\nsheet: art\\p5\\poses\\check_summon_settle_b.png | overall: ok\n"
+}
