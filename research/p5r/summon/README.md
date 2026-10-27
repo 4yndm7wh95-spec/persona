@@ -1,7 +1,7 @@
 # 当前召唤参考
 
-用户已选321.86°，实际321.85609585103083°。当前15/16/17帧、联系表、GIF与四张key均为此机位，1536×1536透明原图，三段相机固定。
+用户选择321.86°后，已重渲15/16/17三段并挑关键帧。当前逐帧PNG、联系表、GIF仍为该统一机位。
 
-看`key_contact_sheet.png`及`REPORT_summon_selected.md`。目前等待用户确认关键帧，未开始召唤立绘生图。
+最新反馈：后两张向人物右侧转一些。本轮仅将key_rip_open和key_stance相机转至336.86°，前两张仍321.86°，新key_contact_sheet.png和right15_review/comparison.png待用户确认。详见REPORT_summon_right15.md及key_selection.json。
 
-旧`REPORT_summon_refs.md`仅记录前版背面/裁切问题；`REPORT_summon_angle_options.md`及`angle_options.png`保留角度选择过程。
+未开始召唤立绘生图。旧报告保留过程记录，以最新报告为准。

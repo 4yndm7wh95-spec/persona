@@ -1,0 +1,72 @@
+[
+  {
+    "name": "key_rip_open.png",
+    "clip": 16,
+    "frame": 14,
+    "previous_azimuth_degrees": 321.85609585103083,
+    "delta_degrees": 15,
+    "azimuth_degrees": 336.85609585103083,
+    "camera_location": [
+      1169.2060546875,
+      -468.36236572265625,
+      -6.851146697998047
+    ],
+    "camera_rotation": [
+      1.5707963705062866,
+      -4.643650086677553e-08,
+      1.1668590307235718
+    ],
+    "character_right_axis_world": [
+      -0.19114822149276733,
+      0.9815612435340881,
+      0.0
+    ],
+    "selection_rule": "choose orbit sign that moves camera toward anatomical right shoulder side",
+    "ortho_scale": 285.3317083314408,
+    "camera_target": [
+      14.617176055908203,
+      25.157569885253906,
+      -6.851146697998047
+    ],
+    "resolution": [
+      1536,
+      1536
+    ],
+    "horizontal_mirror": true
+  },
+  {
+    "name": "key_stance.png",
+    "clip": 17,
+    "frame": 0,
+    "previous_azimuth_degrees": 321.85609585103083,
+    "delta_degrees": 15,
+    "azimuth_degrees": 336.85609585103083,
+    "camera_location": [
+      1169.2060546875,
+      -468.36236572265625,
+      -6.851146697998047
+    ],
+    "camera_rotation": [
+      1.5707963705062866,
+      -4.643650086677553e-08,
+      1.1668590307235718
+    ],
+    "character_right_axis_world": [
+      -0.19114820659160614,
+      0.9815612435340881,
+      0.0
+    ],
+    "selection_rule": "choose orbit sign that moves camera toward anatomical right shoulder side",
+    "ortho_scale": 285.3317083314408,
+    "camera_target": [
+      14.617176055908203,
+      25.157569885253906,
+      -6.851146697998047
+    ],
+    "resolution": [
+      1536,
+      1536
+    ],
+    "horizontal_mirror": true
+  }
+]

@@ -67,7 +67,7 @@
   "selected_gun_camera_percent": 50,
   "gun_next_after_approval": "等待gun_draw_a2及追加过渡帧用户确认",
   "gun_base": "gun_a2",
-  "status": "awaiting_summon_keyframe_confirmation",
+  "status": "awaiting_summon_adjusted_keyframe_confirmation",
   "gun_group_status": "gun_a2通过；raise_a2待审；recoil_a2失败作废；lower_a2未开始",
   "gun_rejected_sample": "research/p5r/gun/rejected/gun_recoil_a2_double_gun.png",
   "gun_recoil_latest": "gun_recoil_a6：用户已通过",
@@ -103,7 +103,7 @@
     "idle_a3"
   ],
   "gun_sequence_check": "0 jumps; overlap>=0.62, face<=90px, foot<=120px",
-  "summon_reference_status": "321.86度已获用户选定；15/16/17共30透明帧重渲完成、四边alpha=0；等待四张关键帧确认，未生图",
+  "summon_reference_status": "前两张321.86度不变，后两张往人物右侧转15度至336.86度，待确认；完整段动画仍321.86度，未生图",
   "summon_angle_candidates": [
     261.85609585103083,
     276.85609585103083,

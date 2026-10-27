@@ -26,8 +26,9 @@
     "frame": 14,
     "time_seconds": 0.4666666666666667,
     "reason": "段末展臂及衣摆甩开，每2帧采样的最后一帧",
-    "selected_camera_degrees": 321.85609585103083,
-    "status": "awaiting user keyframe confirmation"
+    "selected_camera_degrees": 336.85609585103083,
+    "status": "awaiting user adjusted angle confirmation",
+    "source": "right15_review/key_rip_open.png"
   },
   {
     "name": "key_stance.png",
@@ -36,7 +37,8 @@
     "frame": 0,
     "time_seconds": 0.0,
     "reason": "保持架势起始帧",
-    "selected_camera_degrees": 321.85609585103083,
-    "status": "awaiting user keyframe confirmation"
+    "selected_camera_degrees": 336.85609585103083,
+    "status": "awaiting user adjusted angle confirmation",
+    "source": "right15_review/key_stance.png"
   }
 ]
