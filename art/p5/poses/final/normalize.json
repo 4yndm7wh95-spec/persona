@@ -168,10 +168,10 @@
   "anchor_foot": "front"
  },
  "summon_release_a": {
-  "scale": 1.0,
+  "scale": 1.015,
   "offset": [
-   247,
-   100
+   235,
+   78
   ],
   "anchor_foot": "front"
  },
@@ -192,18 +192,18 @@
   "anchor_foot": "front"
  },
  "summon_fling_a": {
-  "scale": 1.0,
+  "scale": 1.015,
   "offset": [
-   245,
-   105
+   233,
+   83
   ],
   "anchor_foot": "front"
  },
  "summon_settle_a": {
-  "scale": 1.0,
+  "scale": 1.015,
   "offset": [
-   280,
-   101
+   268,
+   79
   ],
   "anchor_foot": "front"
  },
@@ -232,18 +232,18 @@
   "anchor_foot": "front"
  },
  "summon_fling1_a": {
-  "scale": 1.0,
+  "scale": 1.015,
   "offset": [
-   416,
-   81
+   406,
+   59
   ],
   "anchor_foot": "front"
  },
  "summon_fling2_a": {
-  "scale": 1.0,
+  "scale": 1.015,
   "offset": [
-   271,
-   93
+   259,
+   71
   ],
   "anchor_foot": "front"
  },
