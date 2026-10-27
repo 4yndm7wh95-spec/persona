@@ -498,7 +498,7 @@
  "die_down_b": {
   "scale": 1.0,
   "offset": [
-   51,
+   5,
    682
   ],
   "anchor_foot": "ground"

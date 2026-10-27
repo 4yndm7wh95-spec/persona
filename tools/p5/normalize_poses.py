@@ -86,6 +86,8 @@ def main():
             sole = max(ref_feet[0][1], ref_feet[1][1]) + 6  # idle's lowest pixel
             cx = (ref_feet[0][0] + ref_feet[1][0]) / 2
             ox, oy = round(PAD + cx - (xs.min() + xs.max()) / 2), round(TOP + sole - ys.max())
+            # a stretched-out body can be nearly as wide as the canvas: slide it back inside
+            ox = int(min(max(ox, 4 - xs.min()), 1024 + 2 * PAD - 4 - xs.max()))
             res = Image.new('RGBA', (1024 + 2 * PAD, 1536 + TOP), (0, 0, 0, 0))
             res.alpha_composite(big, (max(0, ox), max(0, oy)), (max(0, -ox), max(0, -oy)))
             res.save(OUT / f'{n}.png')
