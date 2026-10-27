@@ -304,18 +304,18 @@
   "anchor_foot": "front"
  },
  "summon_down1_b": {
-  "scale": 1.0,
+  "scale": 1.03,
   "offset": [
-   389,
-   79
+   368,
+   34
   ],
   "anchor_foot": "front"
  },
  "summon_down2_b": {
-  "scale": 1.0,
+  "scale": 1.03,
   "offset": [
-   366,
-   81
+   344,
+   36
   ],
   "anchor_foot": "front"
  },
