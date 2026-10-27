@@ -232,10 +232,10 @@
   "anchor_foot": "front"
  },
  "summon_fling1_a": {
-  "scale": 1.015,
+  "scale": 1.0,
   "offset": [
-   421,
-   59
+   416,
+   81
   ],
   "anchor_foot": "front"
  },
