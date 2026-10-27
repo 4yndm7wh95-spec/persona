@@ -24,6 +24,11 @@ idle_a 和后来所有姿势比例不一样：头小约 20%，肩膀更窄、躯
 相邻帧变化要小，跳就补过渡帧。用 tools/p5/sequence_check.py 量（轮廓重合 < 0.62 或脸移动 > 90px = JUMP），规则见 docs/codex/README.md 最后一节。
 2026-10-26 检查结果：防御全程没有 JUMP；开枪 idle↔gun_draw 有 JUMP（前脚一下收了 283px）；小刀斩 idle→knife_ready、slash_follow→idle 有 JUMP（收回待机时脸移动 222px）。
 
+## 召唤播放顺序（用户 2026-10-27 认可的方向）
+- 抬手：idle_a3 → summon_lift1_a → summon_lift2_a → summon_touch_mid_a → summon_touch2_a → summon_hold_a（普通召唤原路收回）
+- 大招：summon_hold_a → summon_rip_a2 → summon_open1_b → summon_open2_b → summon_release_b（停，亚森出手）→ summon_settle_b → summon_down1_e → summon_down05_c → summon_down25_c → idle_a3
+- summon_down1_e 是脚本做的（tools/p5/lean_shift.py：down1_b 上身往后脚倾 55px，脚不动），因为生图两次都画不出「只移一半」。
+
 ## 定稿记录（用户 2026-10-26）
 - 待机 = **idle_a3**（整张重画、比例和攻击 / 防御一致）。idle_a / idle_a2 不再用。
 - 防御 = guard_a2。
