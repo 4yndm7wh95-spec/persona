@@ -23,7 +23,8 @@
     "glove_mid_a",
     "glove_b",
     "glove_reach_a",
-    "glove_flex_a"
+    "glove_flex_a",
+    "hurt_a2"
   ],
   "approved": [
     "idle_a",
@@ -49,7 +50,7 @@
     "summon_rip_a2",
     "summon_release_a"
   ],
-  "next_after_approval": "等待用户与Claude判断接近腕口和松手试戴帧，不自动重画或追加帧",
+  "next_after_approval": "等待用户确认hurt_a2后再做受击过渡帧，不自动重画",
   "remaining_order": [
     "gun_a",
     "summon_grab_a",
@@ -99,7 +100,7 @@
   "selected_gun_camera_percent": 50,
   "gun_next_after_approval": "等待gun_draw_a2及追加过渡帧用户确认",
   "gun_base": "gun_a2",
-  "status": "awaiting_glove_reach_flex_user_claude_review",
+  "status": "awaiting_hurt_a2_user_review",
   "gun_group_status": "gun_a2通过；raise_a2待审；recoil_a2失败作废；lower_a2未开始",
   "gun_rejected_sample": "research/p5r/gun/rejected/gun_recoil_a2_double_gun.png",
   "gun_recoil_latest": "gun_recoil_a6：用户已通过",
@@ -216,5 +217,17 @@
       "sequence_check.py": "         idle_a3 -> glove_mid_a      overlap 0.85  face moved     3  feet moved [0, 1]  ok\n     glove_mid_a -> glove_reach_a    overlap 0.94  face moved     2  feet moved [0, 0]  ok\n   glove_reach_a -> glove_a          overlap 0.99  face moved     2  feet moved [0, 0]  ok\n         glove_a -> glove_b          overlap 0.98  face moved     1  feet moved [0, 0]  ok\n         glove_b -> glove_flex_a     overlap 0.97  face moved     1  feet moved [0, 0]  ok\n    glove_flex_a -> glove_mid_a      overlap 0.94  face moved     2  feet moved [0, 0]  ok\n     glove_mid_a -> idle_a3          overlap 0.85  face moved     3  feet moved [0, 1]  ok\n0 jump(s); overlays: art\\p5\\poses\\seq_idle_a3_idle_a3.png\n"
     },
     "status": "等待用户验收，不自动重画"
+  },
+  "hurt_status": {
+    "new_frame": "hurt_a2",
+    "generation_calls": 1,
+    "normalization_runs": 1,
+    "pose_check_runs": 1,
+    "sequence_check_runs": 1,
+    "outputs": {
+      "pose_consistency.py": "hurt_a2            head x0.960  body x0.983  boot height x1.036  boot width x1.031  feet moved [18, 30] px  ok\nsheet: art\\p5\\poses\\check_hurt_a2.png | overall: ok\n",
+      "sequence_check.py": "         idle_a3 -> hurt_a2          overlap 0.62  face moved    37  feet moved [0, 40]  ok\n0 jump(s); overlays: art\\p5\\poses\\seq_idle_a3_hurt_a2.png\n"
+    },
+    "status": "等待用户看过关键帧，再做过渡帧"
   }
 }

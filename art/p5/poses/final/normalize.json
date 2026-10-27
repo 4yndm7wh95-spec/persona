@@ -414,5 +414,13 @@
    95
   ],
   "anchor_foot": "rear"
+ },
+ "hurt_a2": {
+  "scale": 1.0,
+  "offset": [
+   268,
+   110
+  ],
+  "anchor_foot": "rear"
  }
 }
