@@ -32,7 +32,9 @@ POSES = {'idle_a3': (1.0, 'rear'), 'guard_a2': (1.0, 'front'), 'knife_ready_a': 
          'summon_lift1_a': (1.0, 'front'), 'summon_lift2_a': (1.0, 'front'), 'summon_fling_a': (1.015, 'front', 45), 'summon_settle_a': (1.035, 'front', 22),
          'summon_lift_mid_a': (1.0, 'front'), 'summon_touch1_a': (1.0, 'front'), 'summon_touch2_a': (1.0, 'front'),
          'summon_fling1_a': (1.0, 'front'), 'summon_fling2_a': (1.015, 'front', 45),
-         'summon_lift_bridge_a': (1.0, 'front'), 'summon_touch_mid_a': (1.0, 'front'), 'summon_contact_a': (1.0, 'front')}
+         'summon_lift_bridge_a': (1.0, 'front'), 'summon_touch_mid_a': (1.0, 'front'), 'summon_contact_a': (1.0, 'front'),
+         'summon_open1_b': (1.0, 'front'), 'summon_open2_b': (1.0, 'front'),
+         'summon_release_b': (1.0, 'front'), 'summon_settle_b': (1.0, 'front')}
 
 
 def load(n):

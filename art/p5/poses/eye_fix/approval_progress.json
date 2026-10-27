@@ -3,16 +3,17 @@
   "pending_user_approval": [
     "summon_lift1_a",
     "summon_lift2_a",
-    "summon_fling_a",
-    "summon_settle_a",
     "summon_lift_mid_a",
     "summon_touch1_a",
     "summon_touch2_a",
     "summon_fling1_a",
-    "summon_fling2_a",
     "summon_lift_bridge_a",
     "summon_touch_mid_a",
-    "summon_contact_a"
+    "summon_contact_a",
+    "summon_open1_b",
+    "summon_open2_b",
+    "summon_release_b",
+    "summon_settle_b"
   ],
   "approved": [
     "idle_a",
@@ -65,7 +66,11 @@
     "gun_lower_a",
     "gun_recoil_a3",
     "gun_recoil_a5",
-    "summon_rip_a"
+    "summon_rip_a",
+    "summon_fling2_a",
+    "summon_fling_a",
+    "summon_release_a",
+    "summon_settle_a"
   ],
   "guard_redraw": "poses3; use confirmed idle, body and head together facing right, right forearm blocking right",
   "task": "docs/codex/codex_p5_poses4.md",
@@ -78,13 +83,13 @@
     "knife_ready_a",
     "slash_a3"
   ],
-  "publish_policy": "每次生成并完成文件保存及透明残点清理后直接提交推送，不再等用户要求推送；视觉验收由用户负责",
+  "publish_policy": "每张只生成一次，记录脚本输出后直接推送；不审图、不自动重画或加帧，决定交给用户和Claude",
   "new_pose_base": "art/p5/poses/idle_a3.png",
   "smear_workflow": "Codex只提供干净slash_mid_a；残影由Claude脚本生成",
   "selected_gun_camera_percent": 50,
   "gun_next_after_approval": "等待gun_draw_a2及追加过渡帧用户确认",
   "gun_base": "gun_a2",
-  "status": "summon_transitions_current_pushed_with_remaining_jumps",
+  "status": "awaiting_summon_b_user_claude_review",
   "gun_group_status": "gun_a2通过；raise_a2待审；recoil_a2失败作废；lower_a2未开始",
   "gun_rejected_sample": "research/p5r/gun/rejected/gun_recoil_a2_double_gun.png",
   "gun_recoil_latest": "gun_recoil_a6：用户已通过",
@@ -138,5 +143,27 @@
     "normal_return_jumps": 1,
     "report": "research/p5r/summon/REPORT_summon_transitions_current.md",
     "note": "用户要求不要重复生成那么多，停止追加并推当前成果；未全部完成"
+  },
+  "summon_b_status": {
+    "status": "awaiting user/Claude review; no automatic regeneration",
+    "order": [
+      "summon_hold_a",
+      "summon_rip_a2",
+      "summon_open1_b",
+      "summon_open2_b",
+      "summon_release_b",
+      "summon_settle_b",
+      "idle_a3"
+    ],
+    "generation_calls_per_frame": 1,
+    "sequence_jumps": 1,
+    "body_out_of_range": [
+      "summon_release_b",
+      "summon_settle_b"
+    ],
+    "rear_foot_over_target": [
+      "summon_release_b"
+    ],
+    "script_output": "   summon_hold_a -> summon_rip_a2    overlap 0.89  face moved    35  feet moved [2, 0]  ok\n   summon_rip_a2 -> summon_open1_b   overlap 0.86  face moved     1  feet moved [1, 0]  ok\n  summon_open1_b -> summon_open2_b   overlap 0.75  face moved     1  feet moved [68, 0]  ok\n  summon_open2_b -> summon_release_b overlap 0.69  face moved    30  feet moved [67, 0]  ok\nsummon_release_b -> summon_settle_b  overlap 0.69  face moved    10  feet moved [92, 0]  ok\n summon_settle_b -> idle_a3          overlap 0.35  face moved   221  feet moved [351, 0]  JUMP - add a frame\n1 jump(s); overlays: art\\p5\\poses\\seq_summon_hold_a_idle_a3.png\n"
   }
 }

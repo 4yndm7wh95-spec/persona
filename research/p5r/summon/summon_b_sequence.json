@@ -1,0 +1,22 @@
+{
+  "status": "awaiting user/Claude review; no automatic regeneration",
+  "order": [
+    "summon_hold_a",
+    "summon_rip_a2",
+    "summon_open1_b",
+    "summon_open2_b",
+    "summon_release_b",
+    "summon_settle_b",
+    "idle_a3"
+  ],
+  "generation_calls_per_frame": 1,
+  "sequence_jumps": 1,
+  "body_out_of_range": [
+    "summon_release_b",
+    "summon_settle_b"
+  ],
+  "rear_foot_over_target": [
+    "summon_release_b"
+  ],
+  "script_output": "   summon_hold_a -> summon_rip_a2    overlap 0.89  face moved    35  feet moved [2, 0]  ok\n   summon_rip_a2 -> summon_open1_b   overlap 0.86  face moved     1  feet moved [1, 0]  ok\n  summon_open1_b -> summon_open2_b   overlap 0.75  face moved     1  feet moved [68, 0]  ok\n  summon_open2_b -> summon_release_b overlap 0.69  face moved    30  feet moved [67, 0]  ok\nsummon_release_b -> summon_settle_b  overlap 0.69  face moved    10  feet moved [92, 0]  ok\n summon_settle_b -> idle_a3          overlap 0.35  face moved   221  feet moved [351, 0]  JUMP - add a frame\n1 jump(s); overlays: art\\p5\\poses\\seq_summon_hold_a_idle_a3.png\n"
+}

@@ -270,5 +270,37 @@
    81
   ],
   "anchor_foot": "front"
+ },
+ "summon_open1_b": {
+  "scale": 1.0,
+  "offset": [
+   427,
+   82
+  ],
+  "anchor_foot": "front"
+ },
+ "summon_open2_b": {
+  "scale": 1.0,
+  "offset": [
+   426,
+   82
+  ],
+  "anchor_foot": "front"
+ },
+ "summon_release_b": {
+  "scale": 1.0,
+  "offset": [
+   407,
+   81
+  ],
+  "anchor_foot": "front"
+ },
+ "summon_settle_b": {
+  "scale": 1.0,
+  "offset": [
+   396,
+   81
+  ],
+  "anchor_foot": "front"
  }
 }
