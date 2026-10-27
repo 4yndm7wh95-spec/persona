@@ -288,10 +288,10 @@
   "anchor_foot": "front"
  },
  "summon_release_b": {
-  "scale": 1.045,
+  "scale": 1.03,
   "offset": [
-   376,
-   14
+   386,
+   36
   ],
   "anchor_foot": "front"
  },
