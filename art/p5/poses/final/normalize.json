@@ -462,5 +462,13 @@
    112
   ],
   "anchor_foot": "rear"
+ },
+ "die_kneel_a": {
+  "scale": 1.0,
+  "offset": [
+   218,
+   134
+  ],
+  "anchor_foot": "front"
  }
 }
