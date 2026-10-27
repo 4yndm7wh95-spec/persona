@@ -26,6 +26,7 @@
 2. **新动作的第一张关键帧**，以 art/p5/poses/idle_a3.png 为人物 / 比例输入。
 3. **出图后、给用户看之前**，跑一致性检查：
    `python tools/p5/pose_consistency.py <底图名> <新图1> [<新图2> ...]`（文件名不带 .png，都在 art/p5/poses/）
+   **底图的脸被手挡住时（比如 summon_hold_a），头的检查会算错：这种情况下用 idle_a3 当第一个参数来比**，被比的新图脸也被挡住就加 --occluded <新图>。
    它会出一张并排对比图 check_<新图1>.png 并给每张打分；**有 FAIL（头的大小差超过 5%）就用底图重画那一张，不要手工缩放凑数**，最多重画 2 次，还不行再报告。报告里贴上检查输出。对比图不用提交（看完删掉）。
 4. 通过后在 tools/p5/normalize_poses.py 的 POSES 表里加上新图（比例 1.0、对齐方式按动作选 rear / front / mid），跑一次，游戏用 art/p5/poses/final/ 下的版本。
 
