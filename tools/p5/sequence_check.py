@@ -6,7 +6,8 @@ that need another in-between frame:
     python tools/p5/sequence_check.py idle_a3 gun_draw_a gun_raise_a2 gun_a2
 Per step it prints: silhouette overlap (IoU of the alpha masks; 1.0 = identical outline), how far
 the face moved and how far each foot moved, in pixels on the 1152x1536 final canvas.
-A step JUMPS when overlap < MIN_IOU or the face moves more than MAX_FACE px; add a frame there.
+A step JUMPS when overlap < MIN_IOU, the face moves more than MAX_FACE px or a foot moves more than
+MAX_FOOT px; add a frame there.
 It also writes art/p5/poses/seq_<first>_<last>.png: each step as a red (from) / blue (to) overlay.
 Smear / impact frames are meant to be sudden; pass --allow name to skip the steps touching them.
 """
@@ -22,6 +23,7 @@ from normalize_poses import boots  # noqa: E402
 F = Path(__file__).resolve().parents[2] / 'art/p5/poses/final'
 MIN_IOU = 0.62
 MAX_FACE = 90
+MAX_FOOT = 120  # a planted foot sliding further than this in one frame reads as a skate / jump
 
 
 def face(a):
@@ -52,7 +54,7 @@ def main():
         fm = float(np.hypot(*(face(b) - face(a))))
         feet = [int(np.hypot(p[0] - q[0], p[1] - q[1])) for p, q in zip(boots(a), boots(b))]
         skip = args[i] in allow or args[i + 1] in allow
-        jump = (iou < MIN_IOU or fm > MAX_FACE) and not skip
+        jump = (iou < MIN_IOU or fm > MAX_FACE or max(feet) > MAX_FOOT) and not skip
         jumps += jump
         tag = 'JUMP - add a frame' if jump else ('(allowed)' if skip else 'ok')
         print(f'{args[i]:>16s} -> {args[i + 1]:<16s} overlap {iou:.2f}  face moved {fm:5.0f}  feet moved {feet}  {tag}')
