@@ -1,0 +1,20 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-9f862608-e446-42a4-a26c-83f1a8a63be5.png",
+  "prompt": "Game sprite prop asset: draw ONLY ONE standalone black prop handgun matching precisely the handgun design, black/gray colors, bold ink outline thickness and P5R cel-shaded rendering in the supplied character reference. No character, hands or gloves. Pure SIDE PROFILE, muzzle to SCREEN RIGHT, barrel perfectly horizontal. Entire handgun visible: barrel, slide, trigger guard, trigger and grip. The opening inside trigger guard must be a genuine transparent hole showing the background alpha. Center the handgun on a 1024x1024 genuine transparent RGBA canvas, total handgun length approximately 70 percent of canvas width. Sharp readable game illustration, not photorealistic. Nothing else: no glow, effects, shadow, background, surface, text, bullets or decorations. True alpha0 outside the handgun and through the trigger-guard opening.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/gun_aim_b.png"
+  ],
+  "tool": "built-in image_gen",
+  "source_size": [
+    1254,
+    1254
+  ],
+  "cleanup_alpha_pixels": 139,
+  "generation_count": 1,
+  "review": "No visual review or regeneration",
+  "output_size": [
+    1024,
+    1024
+  ]
+}
