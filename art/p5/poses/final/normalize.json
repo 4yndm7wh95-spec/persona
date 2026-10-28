@@ -694,5 +694,21 @@
    95
   ],
   "anchor_foot": "rear"
+ },
+ "gun_spin_e": {
+  "scale": 1.0,
+  "offset": [
+   343,
+   99
+  ],
+  "anchor_foot": "rear"
+ },
+ "pocket_in_e": {
+  "scale": 1.0,
+  "offset": [
+   256,
+   96
+  ],
+  "anchor_foot": "rear"
  }
 }
