@@ -31,3 +31,7 @@
     knife_spin_e -> idle_a3          overlap 0.80  face moved    56  feet moved [0, 18]  ok
 1 jump(s); overlays: art\p5\poses\seq_idle_a3_idle_a3.png
 ```
+
+## 用户再次授权生成独立刀具（2026-10-28）
+
+用户要求再试一次并注明虚拟游戏道具用途。本次内置 image_gen 单次生成成功，保存为 knife_b.png，RGBA1024×1024；原始尺寸[1254, 1254]，保存时仅调整画布交付尺寸、清理极低 alpha 残点227像素。不登记、不归一化，未自行审图重画。完整提示词和输入见 knife_b_generation.json，原拒绝记录保留在 previous_attempt 字段。
