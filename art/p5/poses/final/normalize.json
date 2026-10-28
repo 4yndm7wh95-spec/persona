@@ -654,5 +654,21 @@
    96
   ],
   "anchor_foot": "rear"
+ },
+ "gun_flick_c": {
+  "scale": 1.0,
+  "offset": [
+   314,
+   98
+  ],
+  "anchor_foot": "rear"
+ },
+ "gun_twirl_out_c": {
+  "scale": 1.0,
+  "offset": [
+   326,
+   97
+  ],
+  "anchor_foot": "rear"
  }
 }
