@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using Godot;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Vfx.Utilities;
@@ -8,7 +10,7 @@ namespace P5Joker;
 /// 「1 MORE」眼神特写（用户 2026-10-28：原版打中弱点时那张撕纸露出 Joker 眼睛的切入，很帅）。
 /// 贴图是 P5R 原版的战斗切入 BATTLE/CUTIN/BCT_P_BC0001（research/p5r/art/portrait 导出，3840x1536 透明底的眼睛特写）。
 /// 画面中线一道横向撕开的口子：暗灰的底上，撕口上下是白色毛边、两头露出红色碎纸，口子里是 Joker 的眼睛（慢慢横移）；
-/// 0.1 秒撕开 → 停 hold 秒（眼睛慢慢横移）→ 合上。
+/// 从左往右撕开 → 停 hold 秒（眼睛慢慢横移）→ 从左往右收掉（左进右出）。
 /// 用在（用户 2026-10-28：这个帅，多用一些；召唤人格面具时当背景，不碎）：完整版召唤亚森（Persona.Summon，在人物身后撑满召唤全程）、
 /// 大招攻击（暗杀、猎杀、掠夺者）出牌时。打中易伤的敌人只弹原版 WEAK 字样。
 /// </summary>
@@ -47,8 +49,9 @@ public static class Eyes
 		});
 	}
 
-	/// <summary>眼神特写。shatterAt 不为空：0.42 秒时以这个点（Joker 的脸）为中心碎成玻璃（召唤亚森），否则停一下合上。</summary>
-	public static void Show(Control layer, bool big = false, Vector2? shatterAt = null, float hold = 0.62f)
+	/// <summary>眼神特写：撕口从左往右撕开（前沿是锯齿形的毛边，沿途甩出白色碎纸），停 hold 秒（眼睛慢慢横移），
+	/// 再从左往右收掉（尾沿追着前沿往右走，画面被往右拽出去）—— 原版就是左进右出，不是整张图平移。</summary>
+	public static void Show(Control layer, bool big = false, float hold = 0.62f)
 	{
 		if (Fx.Tex("eyes") is not Texture2D tex)
 		{
@@ -56,76 +59,111 @@ public static class Eyes
 		}
 		Vector2 screen = Fx.Screen(layer);
 		float w = screen.X * 1.15f, h = screen.Y * (big ? 0.34f : 0.3f);
-		Node2D root = Fx.Root(layer, new Vector2(screen.X * 0.5f, screen.Y * 0.4f), "P5Eyes", hold + 0.5);
+		Node2D root = Fx.Root(layer, new Vector2(screen.X * 0.5f, screen.Y * 0.4f), "P5Eyes", hold + 0.6);
 		root.Rotation = -0.06f;
 
-		// 暗灰底：比撕口高一倍的一条，带一点斜线纹
-		Polygon2D bg = Fx.Poly(root, Rect(w, h * 1.9f), Dark);
-		for (int i = 0; i < 26; i++)
-		{
-			float x = -w / 2f + w * i / 26f;
-			Fx.Poly(bg, new[] { new Vector2(x, -h * 0.95f), new Vector2(x + 8f, -h * 0.95f), new Vector2(x + 8f + h * 0.6f, h * 0.95f), new Vector2(x + h * 0.6f, h * 0.95f) },
-				new Color(1f, 1f, 1f, 0.04f));
-		}
-		// 撕口：白色毛边（大一圈的锯齿形）→ 两头的红碎纸 → 眼睛（锯齿形里贴原版切入图）
-		Vector2[] torn = Torn(w, h, 22f);
+		Vector2[] bgShape = Torn(w * 1.02f, h * 1.9f, 12f);
 		Vector2[] edge = Torn(w * 1.01f, h * 1.18f, 30f);
-		Polygon2D paper = Fx.Poly(root, edge, Paper);
-		foreach (float side in new[] { -1f, 1f })
-		{
-			Fx.Poly(root, new[] { new Vector2(side * w * 0.36f, -h * 0.55f), new Vector2(side * w * 0.5f, -h * 0.4f), new Vector2(side * w * 0.5f, h * 0.2f),
-				new Vector2(side * w * 0.42f, h * 0.45f), new Vector2(side * w * 0.33f, h * 0.1f) }, Red);
-		}
-		Vector2 ts = tex.GetSize();
-		float regionH = ts.X * h / w;                                   // 保持比例：撕口里显示贴图里眼睛那一条
-		float eyeY = ts.Y * 0.55f;
-		Polygon2D face = new() { Texture = tex, Polygon = torn };
+		Vector2[] torn = Torn(w, h, 22f);
+		Polygon2D bg = Fx.Poly(root, new Vector2[3], Dark);
+		Polygon2D paper = Fx.Poly(root, new Vector2[3], Paper);
+		Polygon2D redL = Fx.Poly(root, new Vector2[3], Red), redR = Fx.Poly(root, new Vector2[3], Red);
+		Vector2[] redShapeL = { new(-w * 0.5f, -h * 0.42f), new(-w * 0.36f, -h * 0.56f), new(-w * 0.33f, h * 0.08f), new(-w * 0.42f, h * 0.46f), new(-w * 0.5f, h * 0.2f) };
+		Vector2[] redShapeR = redShapeL.Select(p => new Vector2(-p.X, -p.Y * 0.8f)).ToArray();
+		Polygon2D face = new() { Texture = tex };
 		root.AddChild(face);
-		Vector2[] Uv(float pan)
-		{
-			Vector2[] uv = new Vector2[torn.Length];
-			for (int i = 0; i < torn.Length; i++)
-			{
-				uv[i] = new Vector2((torn[i].X / w + 0.5f) * ts.X * 0.92f + ts.X * 0.04f + pan, eyeY + torn[i].Y / h * regionH);
-			}
-			return uv;
-		}
-		// 动画：0.1 秒从中线撕开（纵向放大），慢慢横移，0.75 秒后合上
-		bool shatter = shatterAt.HasValue;
-		float pan = 0f;
-		float total = shatter ? 0.42f : 0.1f + hold + 0.18f;
+		Vector2 ts = tex.GetSize();
+		float regionH = ts.X * h / w, eyeY = ts.Y * 0.55f;
+		float[] zig = Enumerable.Range(0, 7).Select(_ => Fx.Rand(-1f, 1f)).ToArray();
+
+		const float enter = 0.16f, leave = 0.2f;
+		float total = enter + hold + leave;
+		float lastLead = -w / 2f;
 		Fx.Animate(root, 0, total, t =>
 		{
 			float time = total * t;
-			pan = -60f + 120f * time / total;
-			float open = Fx.OutCubic(Mathf.Clamp(time / 0.1f, 0f, 1f)) * (1f - Fx.InCubic(Mathf.Clamp((time - total + 0.18f) / 0.18f, 0f, 1f)));
-			root.Scale = new Vector2(1f + 0.05f * (1f - open), Mathf.Max(0.02f, open));
-			face.UV = Uv(pan);
-			bg.Modulate = new Color(1, 1, 1, Mathf.Min(1f, open * 1.5f));
-			paper.Modulate = new Color(1, 1, 1, open);
-		});
-		Fx.Shake(ShakeStrength.Weak);
-		if (!shatter)
-		{
-			return;
-		}
-		Fx.After(root, 0.42, () =>
-		{
-			// 撕口连同里面的眼睛碎成玻璃：碎片贴图 = 当时撕口里显示的那一块
-			Vector2[] rect = Rect(w, h);
-			Vector2 Map(Vector2 p) => new((p.X / w + 0.5f) * ts.X * 0.92f + ts.X * 0.04f + pan, eyeY + p.Y / h * regionH);
-			Vector2 impact = root.ToLocal(shatterAt!.Value);
-			impact = new Vector2(Mathf.Clamp(impact.X, -w * 0.4f, w * 0.4f), Mathf.Clamp(impact.Y, -h * 0.3f, h * 0.3f));
-			bg.Visible = paper.Visible = face.Visible = false;
-			foreach (Node c in root.GetChildren())
+			float xb = -w / 2f + w * Fx.OutCubic(Mathf.Clamp(time / enter, 0f, 1f));
+			float xa = -w / 2f + w * Fx.InCubic(Mathf.Clamp((time - enter - hold) / leave, 0f, 1f));
+			float pull = 260f * Fx.InCubic(Mathf.Clamp((time - enter - hold) / leave, 0f, 1f));       // 收的时候画面被往右拽
+			float pan = 50f - 100f * time / total - pull * 3f;
+			bg.Polygon = Slice(bgShape, xa - 30f, xb + 30f, zig, 26f);
+			paper.Polygon = Slice(edge, xa - 12f, xb + 12f, zig, 30f);
+			Vector2[] hole = Slice(torn, xa, xb, zig, 22f);
+			face.Polygon = hole;
+			face.UV = hole.Select(p => new Vector2((p.X / w + 0.5f) * ts.X * 0.92f + ts.X * 0.04f - pan, eyeY + p.Y / h * regionH)).ToArray();
+			redL.Polygon = Slice(redShapeL, xa, xb, zig, 0f);
+			redR.Polygon = Slice(redShapeR, xa, xb, zig, 0f);
+			// 撕开时前沿、收掉时尾沿甩出白色碎纸
+			float lead = time < enter ? xb : time > enter + hold ? xa : float.NaN;
+			if (!float.IsNaN(lead) && Mathf.Abs(lead - lastLead) > w * 0.06f)
 			{
-				if (c is Polygon2D p && p != bg && p != paper && p != face)
+				lastLead = lead;
+				Scrap(root, new Vector2(lead, Fx.Rand(-h * 0.6f, h * 0.6f)), time < enter ? 1f : 1f);
+			}
+		});
+		Fx.Shake(big ? ShakeStrength.Medium : ShakeStrength.Weak);
+	}
+
+	/// <summary>一片白色碎纸：从撕口的边往外（右上 / 右下）翻着飞出去。</summary>
+	private static void Scrap(Node2D root, Vector2 at, float dir)
+	{
+		float s = Fx.Rand(14f, 30f);
+		Polygon2D p = Fx.Poly(root, new[] { new Vector2(-s, -s * 0.4f), new Vector2(s * 0.8f, -s * 0.6f), new Vector2(s, s * 0.3f), new Vector2(-s * 0.3f, s * 0.6f) },
+			Fx.Rng.Next(4) == 0 ? Red : Paper);
+		p.Position = at;
+		Vector2 v = new(dir * Fx.Rand(120f, 260f), Mathf.Sign(at.Y) * Fx.Rand(80f, 200f));
+		float spin = Fx.Rand(-10f, 10f);
+		Fx.Animate(p, 0, 0.45, t =>
+		{
+			p.Position = at + v * Fx.OutCubic(t);
+			p.Rotation = spin * t;
+			p.Modulate = new Color(1, 1, 1, 1f - Fx.InCubic(t));
+		});
+	}
+
+	/// <summary>把「上沿左→右 + 下沿右→左」排列的撕口形状裁到 x∈[xa, xb]，两个切口画成锯齿竖边（zig 是固定的起伏，不会闪）。</summary>
+	private static Vector2[] Slice(Vector2[] shape, float xa, float xb, float[] zig, float jag)
+	{
+		if (xb - xa < 2f)
+		{
+			return new[] { Vector2.Zero, Vector2.Zero, Vector2.Zero };
+		}
+		int n = shape.Length / 2;
+		Vector2[] top = shape.Take(n).ToArray(), bottom = shape.Skip(n).Reverse().ToArray();
+		float YAt(Vector2[] line, float x)
+		{
+			for (int i = 0; i < line.Length - 1; i++)
+			{
+				if (x >= line[i].X && x <= line[i + 1].X)
 				{
-					p.Visible = false;                                   // 两头的红碎纸
+					return Mathf.Lerp(line[i].Y, line[i + 1].Y, (x - line[i].X) / Mathf.Max(0.001f, line[i + 1].X - line[i].X));
 				}
 			}
-			Persona.Shatter(root, tex, rect, Map, Vector2.Zero, impact, big ? 22 : 16);
-		});
+			return x < line[0].X ? line[0].Y : line[^1].Y;
+		}
+		float lo = Mathf.Max(xa, top[0].X), hi = Mathf.Min(xb, top[^1].X);
+		if (hi - lo < 2f)
+		{
+			return new[] { Vector2.Zero, Vector2.Zero, Vector2.Zero };
+		}
+		List<Vector2> pts = new() { new Vector2(lo, YAt(top, lo)) };
+		pts.AddRange(top.Where(p => p.X > lo && p.X < hi));
+		pts.Add(new Vector2(hi, YAt(top, hi)));
+		float yt = YAt(top, hi), yb = YAt(bottom, hi);
+		for (int k = 1; k < zig.Length; k++)
+		{
+			pts.Add(new Vector2(hi + zig[k] * jag, Mathf.Lerp(yt, yb, (float)k / zig.Length)));
+		}
+		pts.Add(new Vector2(hi, yb));
+		pts.AddRange(bottom.Where(p => p.X > lo && p.X < hi).Reverse());
+		pts.Add(new Vector2(lo, YAt(bottom, lo)));
+		yt = YAt(top, lo);
+		yb = YAt(bottom, lo);
+		for (int k = zig.Length - 1; k >= 1; k--)
+		{
+			pts.Add(new Vector2(lo - zig[k] * jag, Mathf.Lerp(yt, yb, (float)k / zig.Length)));
+		}
+		return pts.ToArray();
 	}
 
 	private static Vector2[] Rect(float w, float h) =>
