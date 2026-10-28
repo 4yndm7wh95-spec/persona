@@ -718,5 +718,13 @@
    99
   ],
   "anchor_foot": "rear"
+ },
+ "gun_arm_mid_h": {
+  "scale": 1.0,
+  "offset": [
+   342,
+   99
+  ],
+  "anchor_foot": "rear"
  }
 }

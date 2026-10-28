@@ -34,6 +34,7 @@ POSES = {'idle_a3': (1.0, 'rear'), 'guard_a2': (1.0, 'front'), 'knife_ready_a': 
          'gun_flick_c': (1.0, 'rear'), 'gun_twirl_out_c': (1.0, 'rear'),
          'gun_flick_d': (1.0, 'rear'), 'gun_twirl_out_d': (1.0, 'rear'), 'pocket_in_d': (1.0, 'rear'),
          'gun_spin_e': (1.0, 'rear'), 'pocket_in_e': (1.0, 'rear'), 'gun_spin_f': (1.0, 'rear'),
+         'gun_arm_mid_h': (1.0, 'rear'),
          'gun_twirl_in_b': (1.0, 'rear'), 'gun_twirl_mid_b': (1.0, 'rear'), 'gun_aim_b': (1.0, 'rear'),
          'gun_recoil_b': (1.0, 'rear'), 'gun_raise_b': (1.0, 'rear'), 'gun_twirl_out_b': (1.0, 'rear'),
          'knife_set_a': (1.0, 'rear'), 'knife_return_a': (1.0, 'mid'), 'gun_lift_mid_a': (1.0, 'rear'),
