@@ -10,8 +10,8 @@ namespace P5Joker;
 /// <summary>
 /// 召唤亚森（docs/p5/FX_PLAN.md 第 3 节；用户 2026-10-28：用人格面具的时候要华丽、有冲击力，像结城理那个碎玻璃）。
 /// 完整版 Summon（大招）：
-///  1. 背景压暗成红黑，画面上方斜插进 P5 的红色切入横幅（网点 + 白斜线 + Joker 侧脸，art/p5/fx/gen/cutin_band.png），左上角弹出技能名斜框；
-///  2. 0.42 秒：横幅以 Joker 的脸为中心炸成十几块红玻璃（碎片就是横幅贴图的切块），翻转着飞向镜头，白闪 + 震屏；
+///  1. 背景压暗成红黑，人物身后撕开原版的眼神特写（Eyes.cs，P5R 的 BCT_P_BC0001），左上角弹出技能名斜框；
+///  2. 0.42 秒（亚森现身）：白闪 + 震屏；眼神特写在人物身后一直撑到召唤结束再合上（用户 2026-10-28：当背景，不碎）；
 ///  3. 同时 Joker 脸上燃起蓝焰面具（原版 PERSONA_C/D 的火焰形，青蓝加色），亚森在他身后从蓝焰里现身（原版模型渲的待机序列帧），
 ///     onSkill 回调放技能（咒怨火、增益光柱等），亚森停留约 1.1 秒后化成蓝焰散去。
 /// 简化版 Quick（小技能）：只有蓝焰面具一闪 + 技能名斜框 + 半透明的亚森在身后一晃。
@@ -45,7 +45,7 @@ public static class Persona
 		});
 
 		SkillTag(front, skill, 1.6);
-		Eyes.Show(back, big, shatterAt: face);                    // 原版撕纸眼神特写，0.42 秒碎成玻璃
+		Eyes.Show(back, big, hold: big ? 1.2f : 0.95f);            // 原版撕纸眼神特写当背景，召唤全程撑着，不碎
 		Fx.After(back, 0.42, () =>
 		{
 			Fx.Shake(big ? ShakeStrength.Strong : ShakeStrength.Medium);

@@ -8,9 +8,9 @@ namespace P5Joker;
 /// 「1 MORE」眼神特写（用户 2026-10-28：原版打中弱点时那张撕纸露出 Joker 眼睛的切入，很帅）。
 /// 贴图是 P5R 原版的战斗切入 BATTLE/CUTIN/BCT_P_BC0001（research/p5r/art/portrait 导出，3840x1536 透明底的眼睛特写）。
 /// 画面中线一道横向撕开的口子：暗灰的底上，撕口上下是白色毛边、两头露出红色碎纸，口子里是 Joker 的眼睛（慢慢横移）；
-/// 0.1 秒撕开 → 停一下 → 合上（或在召唤亚森时碎成玻璃）。
-/// 用在（用户 2026-10-28：这个帅，多用一些，放到大招和人格面具召唤上）：完整版召唤亚森（Persona.Summon，撕开后碎成玻璃）、
-/// 大招攻击（暗杀、猎杀、谋杀、华丽谢幕、掠夺者）出牌时。打中易伤的敌人只弹原版 WEAK 字样。
+/// 0.1 秒撕开 → 停 hold 秒（眼睛慢慢横移）→ 合上。
+/// 用在（用户 2026-10-28：这个帅，多用一些；召唤人格面具时当背景，不碎）：完整版召唤亚森（Persona.Summon，在人物身后撑满召唤全程）、
+/// 大招攻击（暗杀、猎杀、掠夺者）出牌时。打中易伤的敌人只弹原版 WEAK 字样。
 /// </summary>
 public static class Eyes
 {
@@ -48,7 +48,7 @@ public static class Eyes
 	}
 
 	/// <summary>眼神特写。shatterAt 不为空：0.42 秒时以这个点（Joker 的脸）为中心碎成玻璃（召唤亚森），否则停一下合上。</summary>
-	public static void Show(Control layer, bool big = false, Vector2? shatterAt = null)
+	public static void Show(Control layer, bool big = false, Vector2? shatterAt = null, float hold = 0.62f)
 	{
 		if (Fx.Tex("eyes") is not Texture2D tex)
 		{
@@ -56,7 +56,7 @@ public static class Eyes
 		}
 		Vector2 screen = Fx.Screen(layer);
 		float w = screen.X * 1.15f, h = screen.Y * (big ? 0.34f : 0.3f);
-		Node2D root = Fx.Root(layer, new Vector2(screen.X * 0.5f, screen.Y * 0.4f), "P5Eyes", 1.4);
+		Node2D root = Fx.Root(layer, new Vector2(screen.X * 0.5f, screen.Y * 0.4f), "P5Eyes", hold + 0.5);
 		root.Rotation = -0.06f;
 
 		// 暗灰底：比撕口高一倍的一条，带一点斜线纹
@@ -93,11 +93,12 @@ public static class Eyes
 		// 动画：0.1 秒从中线撕开（纵向放大），慢慢横移，0.75 秒后合上
 		bool shatter = shatterAt.HasValue;
 		float pan = 0f;
-		Fx.Animate(root, 0, shatter ? 0.42 : 0.9, t =>
+		float total = shatter ? 0.42f : 0.1f + hold + 0.18f;
+		Fx.Animate(root, 0, total, t =>
 		{
-			float time = (shatter ? 0.42f : 0.9f) * t;
-			pan = -60f + 120f * time / 0.9f;
-			float open = Fx.OutCubic(Mathf.Clamp(time / 0.1f, 0f, 1f)) * (1f - Fx.InCubic(Mathf.Clamp((time - 0.72f) / 0.18f, 0f, 1f)));
+			float time = total * t;
+			pan = -60f + 120f * time / total;
+			float open = Fx.OutCubic(Mathf.Clamp(time / 0.1f, 0f, 1f)) * (1f - Fx.InCubic(Mathf.Clamp((time - total + 0.18f) / 0.18f, 0f, 1f)));
 			root.Scale = new Vector2(1f + 0.05f * (1f - open), Mathf.Max(0.02f, open));
 			face.UV = Uv(pan);
 			bg.Modulate = new Color(1, 1, 1, Mathf.Min(1f, open * 1.5f));
