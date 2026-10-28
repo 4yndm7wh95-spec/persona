@@ -20,10 +20,17 @@ public static class Fx
 	public static CanvasItemMaterial Additive => _additive ??= new CanvasItemMaterial { BlendMode = CanvasItemMaterial.BlendModeEnum.Add };
 
 	/// <summary>P5R 原版特效贴图（tools/p5/stage_p5.py 打进 pck 的 res://p5joker/fx/）。</summary>
+	private static readonly System.Collections.Generic.Dictionary<string, Texture2D?> Cache = new();
+
 	public static Texture2D? Tex(string name)
 	{
-		string path = $"res://p5joker/fx/{name}.png";
-		return ResourceLoader.Exists(path) ? ResourceLoader.Load<Texture2D>(path) : null;
+		if (!Cache.TryGetValue(name, out Texture2D? tex))
+		{
+			string path = $"res://p5joker/fx/{name}.png";
+			tex = ResourceLoader.Exists(path) ? ResourceLoader.Load<Texture2D>(path) : null;
+			Cache[name] = tex;
+		}
+		return tex;
 	}
 
 	public static Node2D Root(Control layer, Vector2 globalPos, string name, double life)
@@ -49,11 +56,31 @@ public static class Fx
 	/// <summary>delay 秒后用 0→1 的进度驱动动画（step 每帧调用）。</summary>
 	public static void Animate(Node owner, double delay, double seconds, Action<float> step)
 	{
-		step(0f);
 		Tween tween = owner.CreateTween();
 		if (delay > 0)
 		{
+			// 等待期间藏起来（否则贴图会先在默认位置闪一下），开始时再显示
+			bool shown = owner is CanvasItem ci0 && ci0.Visible;
+			if (owner is CanvasItem hide)
+			{
+				hide.Visible = false;
+			}
 			tween.TweenInterval(delay);
+			tween.TweenCallback(Callable.From(() =>
+			{
+				if (GodotObject.IsInstanceValid(owner))
+				{
+					if (shown && owner is CanvasItem show)
+					{
+						show.Visible = true;
+					}
+					step(0f);
+				}
+			}));
+		}
+		else
+		{
+			step(0f);
 		}
 		tween.TweenMethod(Callable.From<float>(t =>
 		{
@@ -114,4 +141,47 @@ public static class Fx
 	}
 
 	public static void Shake(ShakeStrength s) => NGame.Instance?.ScreenShake(s, ShakeDuration.Short);
+
+	/// <summary>delay 秒后执行（节点没了就不执行）。</summary>
+	public static void After(Node anchor, double delay, Action action)
+	{
+		if (delay <= 0)
+		{
+			ModEntry.Safe("fx", action);
+			return;
+		}
+		anchor.GetTree()?.CreateTimer(delay).Connect("timeout", Callable.From(() =>
+		{
+			if (GodotObject.IsInstanceValid(anchor))
+			{
+				ModEntry.Safe("fx", action);
+			}
+		}));
+	}
+
+	public static Vector2 Screen(Node any) => any.GetViewport()?.GetVisibleRect().Size ?? new Vector2(1920f, 1080f);
+
+	/// <summary>白字黑描边的文字（P5 的字都是硬边粗体）。</summary>
+	public static Label Text(Node parent, string text, int size, Color color, Color outline, int outlineSize = 8)
+	{
+		Label l = new()
+		{
+			Text = text,
+			LabelSettings = new LabelSettings { FontSize = size, FontColor = color, OutlineColor = outline, OutlineSize = outlineSize },
+			MouseFilter = Control.MouseFilterEnum.Ignore
+		};
+		parent.AddChild(l);
+		return l;
+	}
+
+	/// <summary>平行四边形（P5 的斜切色块）：左下角在原点，宽 w、高 h，顶边往右错开 skew。</summary>
+	public static Vector2[] Slant(float w, float h, float skew) =>
+		new[] { new Vector2(0f, 0f), new Vector2(w, 0f), new Vector2(w + skew, -h), new Vector2(skew, -h) };
+
+	public static Vector2[] Arrow(float w, float h) =>
+		new[] { new Vector2(0f, -h), new Vector2(w, -h * 0.35f), new Vector2(w * 0.4f, -h * 0.35f), new Vector2(w * 0.4f, h * 0.5f),
+			new Vector2(-w * 0.4f, h * 0.5f), new Vector2(-w * 0.4f, -h * 0.35f), new Vector2(-w, -h * 0.35f) };
+
+	/// <summary>贴图集里第 i 帧（cols 列、每帧 w x h）。</summary>
+	public static Rect2 Frame(int i, int cols, float w, float h) => new(i % cols * w, i / cols * h, w, h);
 }

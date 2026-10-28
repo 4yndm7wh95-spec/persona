@@ -69,6 +69,13 @@ ANIMS = {
     "aim_out": [("gun_a2", .01)] + [(n, .04) for n in GUN_UP[::-1]] + [("idle_a3", .1, .07)],
     "shiv_from_aim": [("gun_a2", .18), ("gun_recoil_a6", .07, 0), ("gun_a2", .14)]
                      + [(n, .035) for n in GUN_UP[::-1]] + [("idle_a3", .12, .07)],
+    # cast variants picked per card by p5mod/src (Aim.Rename): guard (block cards), glove tug (card tricks /
+    # buffs), the big summon (mask ripped off) for the large Persona cards
+    "cast_guard": [("idle_a3", .02), ("guard_mid_a", .06), ("guard_a2", .45), ("guard_mid_a", .08), ("idle_a3", .12, .07)],
+    "cast_glove": [("idle_a3", .02)] + GLOVE,
+    "cast_big": [("idle_a3", .02)] + [(n, .07) for n in SUMMON_UP] + [("summon_hold_a", .35), ("summon_rip_a2", .12),
+                 ("summon_open1_b", .07), ("summon_open2_b", .07), ("summon_release_b", .8), ("summon_settle_b", .1),
+                 ("summon_down1_e", .1), ("summon_down05_c", .1), ("summon_down25_c", .1), ("idle_a3", .15, .08)],
     "cast": [("idle_a3", .02)] + [(n, .08) for n in SUMMON_UP] + [("summon_hold_a", .9)]
             + [(n, .08) for n in SUMMON_UP[::-1]] + [("idle_a3", .15, .08)],
     "hurt": [("hurt_flinch_a", .05, 0), ("hurt_a4", .25), ("hurt_recover_b1", .1), ("hurt_recover_b2", .1),

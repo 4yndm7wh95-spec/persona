@@ -25,6 +25,9 @@ public static class Aim
 	private static readonly HashSet<string> Raised = new() { "aim_in", "aim_loop", "shiv", "shiv_from_aim" };
 	private static readonly HashSet<string> Slashing = new() { "attack", "attack_chain" };
 
+	/// <summary>出牌时（CardPlayedPatch）记下的施法动作：游戏随后要播 cast 时换成对应版本。</summary>
+	public static readonly Dictionary<ulong, Cast> PendingCast = new();
+
 	/// <summary>这个动画状态是不是本地 Joker 的（换动画的入口所有生物都会经过）。</summary>
 	private static NCreature? Owner(MegaAnimationState state)
 	{
@@ -49,6 +52,15 @@ public static class Aim
 		if (Owner(state) is not NCreature node || node.Visuals.SpineBody is not MegaSprite body)
 		{
 			return null;
+		}
+		if (requested == "cast")
+		{
+			if (!PendingCast.Remove(node.GetInstanceId(), out Cast kind))
+			{
+				return null;
+			}
+			string? name = kind switch { Cast.Big => "cast_big", Cast.Guard => "cast_guard", Cast.Glove => "cast_glove", _ => null };
+			return name != null && body.HasAnimation(name) ? name : null;
 		}
 		string? current = Current(state);
 		if (requested == "shiv" && current != null && Raised.Contains(current) && body.HasAnimation("shiv_from_aim"))
@@ -135,7 +147,7 @@ public static class AnimRenamePatch
 {
 	public static void Prefix(MegaAnimationState __instance, ref string animationName)
 	{
-		if (animationName is not ("shiv" or "attack"))
+		if (animationName is not ("shiv" or "attack" or "cast"))
 		{
 			return;
 		}

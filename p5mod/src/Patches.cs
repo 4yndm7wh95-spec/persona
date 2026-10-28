@@ -6,6 +6,8 @@ using System.Reflection;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
+using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
@@ -61,19 +63,12 @@ public static class DamagePatch
 			{
 				return;
 			}
-			bool gun = Joker.IsShot(cardSource);
+			bool gun = Joker.IsShot(cardSource) || CardFx.For(cardSource)?.Shot != null;
 			foreach (NCreature n in nodes)
 			{
 				Damage.Mark(n, gun);
 			}
-			if (gun)
-			{
-				Gunshot.Play(joker, nodes);
-			}
-			else if (cardSource.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Attack)
-			{
-				Slash.Play(joker, nodes);
-			}
+			CardFx.OnHit(cardSource, joker, nodes);
 		});
 	}
 }
@@ -108,5 +103,45 @@ public static class DamageNumberPatch
 		{
 			__result = null;                                   // 调用方拿到 null 就不显示原版数字
 		}
+	}
+}
+
+/// <summary>出牌那一刻（结算之前）：记下这张牌要的施法动作，放出牌演出（召唤亚森、预告信、装填……）。</summary>
+[HarmonyPatch(typeof(Hook), nameof(Hook.BeforeCardPlayed))]
+public static class CardPlayedPatch
+{
+	public static void Prefix(CardPlay cardPlay)
+	{
+		ModEntry.Safe("CardPlayed", () =>
+		{
+			if (!Joker.OwnsCard(cardPlay.Card) || Joker.Node(cardPlay.Card.Owner) is not NCreature node)
+			{
+				return;
+			}
+			Aim.PendingCast[node.GetInstanceId()] = CardFx.CastFor(cardPlay.Card);
+			CardFx.OnPlay(cardPlay.Card, cardPlay.Target);
+		});
+	}
+}
+
+/// <summary>获得格挡（所有 GainBlock 重载都汇到带 cardPlay 的那个）。</summary>
+[HarmonyPatch]
+public static class GainBlockPatch
+{
+	public static IEnumerable<MethodBase> TargetMethods() =>
+		typeof(CreatureCmd).GetMethods(BindingFlags.Public | BindingFlags.Static)
+			.Where(m => m.Name == "GainBlock" && m.GetParameters().Any(p => p.Name == "cardPlay") && m.GetParameters().Any(p => p.Name == "creature"))
+			.OrderByDescending(m => m.GetParameters().Length).Take(1);
+
+	public static void Prefix(Creature creature, decimal amount, CardPlay? cardPlay)
+	{
+		ModEntry.Safe("GainBlock", () =>
+		{
+			if (amount > 0m && cardPlay != null && Joker.OwnsCard(cardPlay.Card) && NCombatRoom.Instance?.GetCreatureNode(creature) is NCreature node
+				&& creature.Player is { } p && Joker.Is(p))
+			{
+				CardFx.OnBlock(cardPlay.Card, node);
+			}
+		});
 	}
 }

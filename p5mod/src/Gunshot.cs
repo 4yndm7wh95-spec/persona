@@ -12,11 +12,23 @@ namespace P5Joker;
 /// 用户 2026-10-28：特效不能挡住敌人 —— 命中火光缩小、只闪 0.1 秒，打在身体朝枪口那一侧的边上；火星往外溅。
 /// 伤害结算那一刻（出牌后 0.2 秒）Joker 的动画正好在开火帧上。
 /// </summary>
+/// <summary>枪的几种打法。</summary>
+public enum Shot
+{
+	Single,     // 一发（小刀牌）
+	Rapid,      // 连射（串刺、匕首雨）：火光和命中都小一号，不震屏
+	Pellet,     // 霰弹（飞镖）：一枪三条弹道散开
+	Ricochet    // 跳弹：弹道从上一个被打中的位置弹过去
+}
+
 public static class Gunshot
 {
+	private static Vector2? _lastHit;
+	private static ulong _lastHitAt;
+
 	private static readonly Color Red = new(0.95f, 0.08f, 0.1f), Hot = new(1f, 0.93f, 0.7f);
 
-	public static void Play(NCreature joker, List<NCreature> targets)
+	public static void Play(NCreature joker, List<NCreature> targets, Shot shot = Shot.Single)
 	{
 		Control? layer = Joker.FxLayer();
 		if (layer == null)
@@ -25,20 +37,35 @@ public static class Gunshot
 		}
 		float face = Joker.Facing(joker);
 		Vector2 muzzle = Joker.Muzzle(joker);
-		Flash(layer, muzzle, face);
+		float k = shot == Shot.Rapid ? 0.7f : 1f;
+		bool bounce = shot == Shot.Ricochet && _lastHit.HasValue && Time.GetTicksMsec() - _lastHitAt < 700;
+		if (!bounce)
+		{
+			Flash(layer, muzzle, face, k);
+		}
 		foreach (NCreature t in targets)
 		{
-			Vector2 hit = t.VfxSpawnPosition + new Vector2(-face * Fx.Rand(40f, 70f), Fx.Rand(-30f, 20f));   // 身体朝枪口一侧的边
-			Tracer(layer, muzzle, hit);
-			Impact(layer, hit, face);
+			int rays = shot == Shot.Pellet ? 3 : 1;
+			for (int r = 0; r < rays; r++)
+			{
+				Vector2 hit = t.VfxSpawnPosition + new Vector2(-face * Fx.Rand(40f, 70f), Fx.Rand(-30f, 20f) + (rays > 1 ? (r - 1) * 55f : 0f));   // 身体朝枪口一侧的边
+				Vector2 from = bounce ? _lastHit!.Value : muzzle;
+				Tracer(layer, from, hit, k);
+				Impact(layer, hit, face, k * (rays > 1 ? 0.7f : 1f));
+				_lastHit = hit;
+				_lastHitAt = Time.GetTicksMsec();
+			}
 		}
-		Fx.Shake(ShakeStrength.Weak);
+		if (shot != Shot.Rapid)
+		{
+			Fx.Shake(ShakeStrength.Weak);
+		}
 	}
 
-	private static void Flash(Control layer, Vector2 at, float face)
+	private static void Flash(Control layer, Vector2 at, float face, float k)
 	{
 		Node2D root = Fx.Root(layer, at, "P5Muzzle", 0.4);
-		root.Scale = new Vector2(face, 1f);
+		root.Scale = new Vector2(face, 1f) * k;
 		if (Fx.Tex("firetip") is Texture2D fire)
 		{
 			// 贴图是竖的、火舌朝上：转 90° 朝右，原点挪到火舌根部
@@ -68,7 +95,7 @@ public static class Gunshot
 		});
 	}
 
-	private static void Tracer(Control layer, Vector2 from, Vector2 to)
+	private static void Tracer(Control layer, Vector2 from, Vector2 to, float k)
 	{
 		Node2D root = Fx.Root(layer, from, "P5Tracer", 0.2);
 		from = root.ToLocal(from);
@@ -82,15 +109,15 @@ public static class Gunshot
 			// 弹道从枪口一侧先收：起点沿线往目标走
 			Vector2 start = from.Lerp(to, Fx.OutCubic(t));
 			glow.Points = core.Points = new[] { start, to };
-			core.Width = 3f * (1f - t);
-			glow.Width = 9f * (1f - t);
+			core.Width = 3f * k * (1f - t);
+			glow.Width = 9f * k * (1f - t);
 		});
 	}
 
-	private static void Impact(Control layer, Vector2 at, float face)
+	private static void Impact(Control layer, Vector2 at, float face, float k)
 	{
 		Node2D root = Fx.Root(layer, at, "P5GunHit", 0.6);
-		root.Scale = new Vector2(face, 1f);
+		root.Scale = new Vector2(face, 1f) * k;
 		if (Fx.Tex("gun_hit") is Texture2D sheet)
 		{
 			// 原版命中火光：2x2 四帧，每帧 0.035 秒
