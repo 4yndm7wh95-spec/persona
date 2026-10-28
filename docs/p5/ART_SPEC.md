@@ -120,8 +120,8 @@ idle_loop、low_health_loop、relaxed_loop、attack、cast（技能 / 能力牌�
 |---|---|---|
 | idle_loop | idle_a3（+ idle_blink_patch 眨眼）；**一段时间（约 8 秒）没有任何操作** → 播一次扯手套（同 cast（增益），只扯一下），然后回到普通待机 | 战斗待机（用户 2026-10-25：除了眨眼，闲置时扯一扯手套）|
 | low_health_loop | idle（同战斗待机）| 残血不单独做 |
-| relaxed_loop | relaxed（母版站姿）| 只在商店 / 商人事件用 |
-| 休息处（单独骨骼）| rest_sit | 篝火旁坐着、拿着 LeBlanc 的咖啡杯 |
+| relaxed_loop | relaxed_a | 只在商店 / 商人事件用 |
+| 休息处（单独骨骼）| rest_sit_d_A + 两人眨眼贴片（rest_sit_d_A_blink_joker/_mona_patch）| 篝火旁圆木上坐着、拿着 LeBlanc 的咖啡杯，摩尔加纳扶着他的肩 |
 | attack | idle_a3 → knife_draw_a → knife_set_a → knife_ready_a → slash_smear_a3 → slash_a3 → slash_follow_a → knife_return_a → slash_recover_a → idle_a3（出刀即攻击：取刀到出刀约 0.16 秒不停顿；斩停 0.22 秒）| 打击 / 匕首类攻击 |
 | shiv（小刀牌）| 选中牌：idle_a3 → gun_step_a → gun_draw_a2 → gun_lift_mid_a → gun_lift_near_a → gun_raise_a2 → gun_a2（保持）；打出：gun_recoil_a6 → gun_a2 → 倒序收枪回 idle_a3；取消：直接倒序收枪 | 小刀牌 = 开枪，一张一枪 |
 | cast（亚森）| 普通：idle_a3 → summon_lift1_a → summon_lift2_a → summon_touch_mid_a → summon_touch2_a（各 0.08s）→ summon_hold_a（蓝焰面具，亚森出手）→ 原路收回 → idle_a3；大招：… → summon_hold_a → summon_rip_a2 → summon_open1_b → summon_open2_b → summon_release_b（停，亚森出手）→ summon_settle_b → summon_down1_e → summon_down05_c → summon_down25_c → idle_a3 | 召唤亚森的牌（大伤害 / AOE / 大毒牌） |

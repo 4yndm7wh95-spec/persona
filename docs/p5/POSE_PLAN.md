@@ -45,6 +45,11 @@ idle_a 和后来所有姿势比例不一样：头小约 20%，肩膀更窄、躯
 - die_down_a 蜷成一团显小，不用；die_down_b 是横版 1536×1024 伸展躺地，normalize_poses 用 'ground' 对齐（最低点对齐待机鞋底，太宽时自动挪回画布内）。
 - die_buckle_a 头原图大 12%，用 hand_shrink.py 缩回。
 
+## 商店 / 休息处 / 眨眼（用户 2026-10-28 定稿）
+- 商店：relaxed_a（左手插兜，比例同 idle_a3）。
+- 休息处：rest_sit_d_A（横版 1536×1024；坐在原版篝火旁的圆木上，画面不画座位；摩尔加纳照官方怪盗形象 art/p5/ref/morgana_ref.png，扶着 Joker 肩看咖啡杯）。游戏里加微动：大衣下摆、呼吸、摩尔加纳尾巴和耳朵、杯子热气（特效）。
+- 眨眼：生成的闭眼整图会发糊带光晕，只取眼睛贴回底图（tools/p5/blink_patch.py）。idle_blink_a / idle_blink_patch；休息处 rest_sit_d_A_blink_joker / _blink_mona（+ _patch），两人错开眨。
+
 ## 定稿记录（用户 2026-10-26）
 - 待机 = **idle_a3**（整张重画、比例和攻击 / 防御一致）。idle_a / idle_a2 不再用。
 - 防御 = guard_a2。
