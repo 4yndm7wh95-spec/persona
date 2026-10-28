@@ -726,5 +726,13 @@
    99
   ],
   "anchor_foot": "rear"
+ },
+ "knife_spin_e": {
+  "scale": 1.0,
+  "offset": [
+   265,
+   117
+  ],
+  "anchor_foot": "rear"
  }
 }
