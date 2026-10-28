@@ -1,0 +1,22 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "name": "calling_card",
+  "size": [
+    220,
+    320
+  ],
+  "opaque": false,
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-564c1825-19d7-4e0d-8f3b-543afd7c18ac.png",
+  "prompt": "Game UI asset: one refined Persona 5 Phantom Thieves calling card, portrait 220x320 pixels, genuine transparent background outside card. Use supplied card as composition reference, improve graphic craft and detail without adding extra text.\nA vivid P5 red rectangular paper card with strong black border and subtly clipped corners. At top the Phantom Thieves emblem: a black tall top hat above a stylized mischievous smiling face, sharp black-and-white graphic insignia. Below it three centered rows of bold cut-out ransom-note collage typography spelling EXACTLY:\nTAKE\nYOUR\nHEART\nEach individual letter printed on its own irregular black or white newspaper-paper cutout, alternating black letters on white and white letters on black; carefully balanced playful rotations, highly legible, no spelling errors, no extra words. Red, black and white graphic palette. Crisp polished game UI illustration, elegant paper collage edges, flat front view with no perspective, card fully inside frame. No hands, no table, no background, no cast shadow, no glow, no watermark. True alpha transparent surrounding margin. Exact 220 wide by 320 tall canvas.",
+  "refs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/fx/gen/calling_card.png"
+  ],
+  "source_size": [
+    1040,
+    1513
+  ],
+  "generation_count": 1,
+  "visual_review": false,
+  "tool": "built-in image_gen",
+  "output_mode": "RGBA"
+}
