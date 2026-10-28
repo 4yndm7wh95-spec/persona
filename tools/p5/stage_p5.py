@@ -19,6 +19,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools/pck"))
 from spine_stage import stage_spine  # noqa: E402
+from godot_tex import write_texture  # noqa: E402
+from PIL import Image  # noqa: E402
+
+FX = ROOT / "research/p5r/fx"
+# P5R original effect textures used by p5mod/src (Fx.Tex): published name -> exported texture
+FX_TEX = {"glow": "slash/BES_HIT_ZAN__001_be0cmn_glow_slim.png",
+          "firetip": "gun/BES_GUN1__000_be0224firetip.png",
+          "gun_hit": "gun/BES_GUN1__002_gun_hit_light_anim.png"}
 
 RIG = ROOT / "art/p5/rig"
 STAGE = ROOT / "p5mod/pck_stage"
@@ -60,6 +68,8 @@ atlas_res = ExtResource("1_atlas")
 skeleton_file_res = ExtResource("2_skel")
 default_mix = 0.1
 """)
+    for name, src in FX_TEX.items():
+        write_texture(STAGE, f"p5joker/fx/{name}.png", Image.open(FX / src))
     files = sorted(p.relative_to(STAGE).as_posix() for p in STAGE.rglob("*") if p.is_file())
     print(len(files), "files staged in", STAGE.relative_to(ROOT))
     for f in files:
