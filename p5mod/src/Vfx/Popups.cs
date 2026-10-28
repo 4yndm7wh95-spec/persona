@@ -7,9 +7,8 @@ namespace P5Joker;
 /// P5R 风格的战斗弹字：伤害数字、BLOCK。结构照搬 P3 mod 的 Popups（mod/src/Vfx/Popups.cs）：
 /// 猛砸入场 → 落地压扁回弹 + 抖动 → 停留微漂 → 干脆地出场；多段伤害落在目标周围几个固定槽位上。
 /// 样式用 P5R 原版 DAMAGE_DATA.SPD 的切图：
-///   伤害 —— 白色漫画对话泡（ハート素材，尾巴指向敌人）+ 红色错位阴影（枪击是黑色），
-///          上面一个个盖上白描边黑字，沿右上斜线排开、每个字歪一点（P5 的剪报拼贴感）；
-///   BLOCK —— 五张白底黑字的字母卡片，一张接一张拍在一条红色斜条上，只在 Joker 被完全格挡时出现，小小一个。
+///   伤害 —— 白描边黑字一个个盖上去，带红色错位阴影（枪击是黑色），沿右上斜线排开、每个字歪一点（不要心形对话泡，用户 2026-10-28）；
+///   BLOCK —— 五张白底黑字的字母卡片排在一条线上，一张接一张拍在红色斜条上，只在 Joker 被完全格挡时出现，小小一个。
 /// </summary>
 public static class Popups
 {
@@ -18,17 +17,17 @@ public static class Popups
 
 	private static readonly Dictionary<ulong, (ulong Time, int Count)> Stack = new();
 	// 槽位只往上 / 往右排（往左下就压到敌人身上了）
-	private static readonly Vector2[] Slots = { new(0f, 0f), new(105f, 55f), new(-50f, -90f), new(155f, -40f), new(50f, -160f), new(205f, 75f) };
+	private static readonly Vector2[] Slots = { new(0f, 0f), new(145f, 75f), new(-70f, -125f), new(215f, -55f), new(70f, -220f), new(285f, 105f) };
 
-	/// <summary>伤害数字。at = 目标的 VfxSpawnPosition；字高随伤害增大：&lt;10 → 100，≥30 → 136。</summary>
+	/// <summary>伤害数字。at = 目标的 VfxSpawnPosition；字高随伤害增大：&lt;10 → 130，≥30 → 170。</summary>
 	public static void Damage(Control layer, ulong targetId, Vector2 at, int amount, bool gun)
 	{
 		ulong now = Stage.NowMs();
 		int k = Stack.TryGetValue(targetId, out var st) && now - st.Time < 600 ? st.Count + 1 : 0;
 		Stack[targetId] = (now, k);
-		Vector2 home = at + new Vector2(125f, -215f) + Slots[k % Slots.Length];       // 敌人头顶偏右：别挡住敌人
+		Vector2 home = at + new Vector2(110f, -200f) + Slots[k % Slots.Length];       // 敌人头顶偏右：别挡住敌人
 		string label = amount.ToString();
-		float h = amount >= 30 ? 136f : amount >= 10 ? 116f : 100f;
+		float h = amount >= 30 ? 170f : amount >= 10 ? 150f : 130f;
 		const float total = 1.0f;
 		Node2D root = Fx.Root(layer, home, "P5DamageNum", total + 0.05);
 
@@ -44,56 +43,31 @@ public static class Popups
 			digits.Add((new Node2D(), pos, rot, sc));
 		}
 
-		// 对话泡：红色阴影 → 白泡 → 白闪（落地那一下盖一层，迅速褪掉）
-		Texture2D? bubbleTex = Fx.Tex("dmg_splash");
-		Node2D bubble = new();
-		root.AddChild(bubble);
-		// 泡的主体（不算尾巴）在贴图里约 200x140、中心 (181,100)：高度按字高的 0.8 倍，宽度盖住整串数字；数字上下会探出泡外
-		float groupW = step * (label.Length - 1) + h * 0.45f;
-		float bsy = h * 0.8f / 140f, bsx = Mathf.Max(bsy, (groupW + h * 0.35f) / 200f);
-		float bubbleRot = Fx.Rand(-0.12f, 0.08f);
-		Sprite2D? flash = null;
-		if (bubbleTex != null)
+		// 每个数字：错位阴影（红，枪击是黑）→ 字 → 白闪（落地那一下盖一层，迅速褪掉）
+		var flashes = new List<Sprite2D>();
+		for (int i = 0; i < digits.Count; i++)
 		{
-			Sprite2D shadow = Fx.Sprite(bubble, bubbleTex, additive: false);
-			shadow.Modulate = gun ? Ink : Red;                    // 枪击：黑色阴影（原版带裂纹的黑泡上数字看不清，不用）
-			shadow.Position = new Vector2(9f, 8f) / bsy;
-			Fx.Sprite(bubble, bubbleTex, additive: false);
-			flash = Fx.Sprite(bubble, bubbleTex, additive: true);
-			foreach (Node c in bubble.GetChildren())
+			root.AddChild(digits[i].Node);
+			if (Fx.Tex("dmg_" + label[i]) is not Texture2D tex)
 			{
-				((Sprite2D)c).Offset = new Vector2(156f - 181f, 146f - 100f);
+				continue;
 			}
-		}
-		bubble.Position = new Vector2(-h * 0.06f, h * 0.05f);
-
-		foreach (var d in digits)
-		{
-			root.AddChild(d.Node);
-			if (Fx.Tex("dmg_" + label[digits.IndexOf(d)]) is Texture2D tex)
-			{
-				Sprite2D s = Fx.Sprite(d.Node, tex, additive: false);
-				s.Scale = Vector2.One * (h / 371f);
-			}
+			float ks = h / 371f;
+			Sprite2D shadow = Fx.Sprite(digits[i].Node, tex, additive: false);
+			shadow.Scale = Vector2.One * ks;
+			shadow.Position = new Vector2(7f, 6f);
+			shadow.Modulate = gun ? Ink : Red;
+			Fx.Sprite(digits[i].Node, tex, additive: false).Scale = Vector2.One * ks;
+			Sprite2D flash = Fx.Sprite(digits[i].Node, tex, additive: true);
+			flash.Scale = Vector2.One * ks;
+			flashes.Add(flash);
 		}
 
 		float tilt = Fx.Rand(-0.08f, 0.0f);
 		Fx.Animate(root, 0, total, t =>
 		{
 			float time = t * total;
-			// 泡：0.07s 从 1.9 倍砸下来并转正
-			float slam = Mathf.Clamp(time / 0.07f, 0f, 1f);
-			float land = Mathf.Clamp((time - 0.07f) / 0.16f, 0f, 1f);
-			float squash = land <= 0f ? 0f : Mathf.Exp(-6f * land) * Mathf.Cos(land * 14f);
-			float bs = Mathf.Lerp(1.6f, 1f, Fx.InCubic(slam));
-			bubble.Scale = new Vector2(bsx * bs * (1f + 0.22f * squash), bsy * bs * (1f - 0.2f * squash));
-			bubble.Rotation = bubbleRot + 0.45f * (1f - Fx.OutCubic(slam));
-			bubble.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(time / 0.03f, 0f, 1f));
-			if (flash != null)
-			{
-				flash.Modulate = new Color(1f, 1f, 1f, slam < 1f ? 0f : Mathf.Clamp(1f - (time - 0.07f) / 0.12f, 0f, 1f));
-			}
-			// 数字：一个接一个盖上去（每个晚 0.035s），2.2 倍 → 1，落地压扁回弹
+			// 数字：一个接一个盖上去（每个晚 0.035s），1.5 倍 → 1，落地压扁回弹
 			for (int i = 0; i < digits.Count; i++)
 			{
 				var d = digits[i];
@@ -101,12 +75,16 @@ public static class Popups
 				float u = Mathf.Clamp((time - t0) / 0.07f, 0f, 1f);
 				float v = Mathf.Clamp((time - t0 - 0.07f) / 0.18f, 0f, 1f);
 				float sq = v <= 0f ? 0f : Mathf.Exp(-6f * v) * Mathf.Cos(v * 15f);
-				float s = d.Scale * Mathf.Lerp(2.2f, 1f, Fx.InCubic(u));
+				float s = d.Scale * Mathf.Lerp(1.5f, 1f, Fx.InCubic(u));
 				d.Node.Visible = time >= t0;
 				d.Node.Scale = new Vector2(s * (1f + 0.25f * sq), s * (1f - 0.22f * sq));
 				d.Node.Rotation = d.Rot - 0.35f * (1f - Fx.OutCubic(u)) * (i % 2 == 0 ? 1f : -1f);
 				Vector2 jitter = v > 0f && v < 0.6f ? new Vector2(Fx.Rand(-1f, 1f), Fx.Rand(-1f, 1f)) * 5f * (1f - v / 0.6f) : Vector2.Zero;
 				d.Node.Position = d.Pos + jitter;
+				if (i < flashes.Count)
+				{
+					flashes[i].Modulate = new Color(1f, 1f, 1f, u < 1f ? 0f : Mathf.Clamp(1f - v / 0.5f, 0f, 1f));
+				}
 			}
 			// 整体：停留时往右上漂一点；最后 0.16s 先一挺、再横向拉长纵向压扁甩出去
 			float exit = Mathf.Clamp((time - 0.8f) / 0.16f, 0f, 1f);
@@ -137,7 +115,7 @@ public static class Popups
 			Fx.Animate(old, 0, 0.08, t => old.Modulate = new Color(1f, 1f, 1f, old.Modulate.A * (1f - t)));
 			Fx.FreeAfter(old, 0.1);
 		}
-		_lastWord = BlockWord(layer, chest + new Vector2(115f * facing, -118f));      // 肩膀外侧偏上：不挡脸
+		_lastWord = BlockWord(layer, chest + new Vector2(120f * facing, -70f));       // 胸口偏上、身前（同 P3），不挡脸也不盖住胸口
 		Vector2 impact = chest + new Vector2(70f * facing, 10f);
 		Fx.After(layer, 0.05, () => BlockImpact(layer, impact, facing, chain));
 	}
@@ -152,12 +130,11 @@ public static class Popups
 		string[] names = { "block_b", "block_l", "block_o", "block_c", "block_k" };
 		float x0 = -step * (names.Length - 1) / 2f;
 
-		// 红色斜条：比卡片矮，右端多伸出一截，卡片上下都露在条外面
+		// 红色斜条：和卡片同一条中线，左右各多出一点，比卡片矮（卡片上下都露在条外面）
 		Node2D bar = new();
 		root.AddChild(bar);
-		float barW = step * names.Length + 26f, barH = cardH * 0.46f;
-		Fx.Poly(bar, Fx.Slant(barW, barH, 8f), Ink).Position = new Vector2(-barW / 2f + 4f, barH / 2f + 12f);
-		Fx.Poly(bar, Fx.Slant(barW, barH, 8f), Red).Position = new Vector2(-barW / 2f, barH / 2f + 8f);
+		float barW = step * names.Length + 14f, barH = cardH * 0.5f;
+		Fx.Poly(bar, Fx.Slant(barW, barH, 10f), Red).Position = new Vector2(-barW / 2f - 5f, barH / 2f);
 
 		var cards = new List<(Node2D Node, Vector2 Pos, float Rot, float Scale)>();
 		for (int i = 0; i < names.Length; i++)
@@ -168,14 +145,14 @@ public static class Popups
 			{
 				Fx.Sprite(n, tex, additive: false).Scale = Vector2.One * scale;
 			}
-			cards.Add((n, new Vector2(x0 + step * i, (i % 2 == 0 ? -3f : 3f) + Fx.Rand(-2f, 2f)),
-				(i % 2 == 0 ? -0.09f : 0.08f) + Fx.Rand(-0.04f, 0.04f), Fx.Rand(0.92f, 1.06f)));
+			cards.Add((n, new Vector2(x0 + step * i, 0f), i % 2 == 0 ? -0.05f : 0.05f, 1f));      // 排齐：同一基线、同样大小，只交替微歪
 		}
 
 		Fx.Animate(root, 0, total, t =>
 		{
 			float time = t * total;
-			float barIn = Fx.OutCubic(Mathf.Clamp(time / 0.08f, 0f, 1f));
+			// 条跟着卡片一起往右长：K 落下时刚好长满（不会先空出一大截）
+			float barIn = Fx.OutCubic(Mathf.Clamp(time / (0.02f + 0.03f * (cards.Count - 1) + 0.06f), 0f, 1f));
 			bar.Scale = new Vector2(barIn, 1f);
 			bar.Position = new Vector2(-barW * 0.5f * (1f - barIn), 0f);
 			for (int i = 0; i < cards.Count; i++)
@@ -188,7 +165,7 @@ public static class Popups
 				float s = c.Scale * Mathf.Lerp(1.5f, 1f, Fx.InCubic(u));
 				c.Node.Visible = time >= t0;
 				c.Node.Scale = new Vector2(s * (1f + 0.2f * sq), s * (1f - 0.18f * sq));
-				c.Node.Rotation = c.Rot + 0.4f * (1f - Fx.OutCubic(u)) * (i % 2 == 0 ? -1f : 1f);
+				c.Node.Rotation = c.Rot + 0.25f * (1f - Fx.OutCubic(u)) * (i % 2 == 0 ? -1f : 1f);
 				c.Node.Position = c.Pos;
 			}
 			// 冲击那一下被顶得一颤，然后慢慢往右上漂；最后 0.2s 压扁淡出

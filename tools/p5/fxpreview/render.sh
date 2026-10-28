@@ -6,7 +6,7 @@ cd "$(dirname "$0")"
 S=${1:?scenario}; SEC=${2:-4}
 : "${GODOT:?set GODOT to the Godot 4.5.1 mono binary}"
 python3 prepare.py >/dev/null
-dotnet build -nologo -v q FxPreview.csproj >/dev/null
+dotnet build -nologo -v q FxPreview.csproj | grep -E " error " && { echo "build failed"; exit 1; } || true
 [ -d .godot ] || xvfb-run -a "$GODOT" --headless --path . --import >/dev/null 2>&1 || true
 rm -rf "out/$S"; mkdir -p "out/$S"
 xvfb-run -a -s "-screen 0 1920x1080x24" "$GODOT" --path . --rendering-driver opengl3 \

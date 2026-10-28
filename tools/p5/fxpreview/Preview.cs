@@ -4,7 +4,7 @@ using Godot;
 using P5Joker;
 
 /// <summary>
-/// 假的战斗场景（1920x1080，和游戏里一样大）：左边 Joker（待机帧，按游戏里的大小），右边一个敌人剪影，
+/// 假的战斗场景（1920x1080，和游戏里一样大）：左边 Joker（真的骨骼动画，SpinePlayer 读 art/p5/rig/joker.*，按游戏里的大小），右边一个敌人剪影，
 /// 前景一层 Control 当 Stage.Front。按 --scenario=<名字> 在固定时间点放特效，render.sh 用 --write-movie 录下来。
 /// </summary>
 public partial class Preview : Node2D
@@ -23,35 +23,76 @@ public partial class Preview : Node2D
 	private float _shakeLeft;
 	private double _clock;
 
+	private SpinePlayer? _joker;
+	private readonly Dictionary<Vector2, Node2D> _enemies = new();
+
+	// 游戏里的时序：打击 attack 动画开始后 0.15s 结算伤害（静默猎手 AttackAnimDelay），开枪 shiv 0.2s 后
 	private static readonly Dictionary<string, Action<Preview>> Scenarios = new()
 	{
 		["damage"] = p =>
 		{
-			p.At(0.3, () => Popups.Damage(p._front, 1, Enemy, 7, false));
-			p.At(1.4, () => Popups.Damage(p._front, 1, Enemy, 24, false));
-			p.At(2.5, () => Popups.Damage(p._front, 2, Enemy2, 13, true));
-			p.At(3.4, () => Popups.Damage(p._front, 1, Enemy, 158, false));
+			p.Strike(0.3, Enemy, 7);
+			p.Strike(1.5, Enemy, 24);
+			p.Shot(2.6, Enemy2, 13);
+			p.Strike(3.6, Enemy, 158);
 		},
 		["multihit"] = p =>
 		{
+			p.At(0.3, () => p._joker?.Play("attack"));
 			for (int i = 0; i < 4; i++)
 			{
-				p.At(0.3 + 0.18 * i, () => Popups.Damage(p._front, 1, Enemy, 4, false));
+				p.Hit(0.45 + 0.18 * i, Enemy, 4, false);
 			}
 			for (int i = 0; i < 3; i++)
 			{
-				p.At(1.8 + 0.22 * i, () => Popups.Damage(p._front, 1, Enemy, 9, true));
+				p.Shot(1.9 + 0.45 * i, Enemy, 9);
 			}
 		},
 		["block"] = p =>
 		{
-			p.At(0.3, () => Popups.Block(p._front, Chest));
+			p.EnemyAttack(0.3, Enemy);
+			p.At(0.42, () => Popups.Block(p._front, Chest));
 			for (int i = 0; i < 3; i++)
 			{
-				p.At(1.7 + 0.25 * i, () => Popups.Block(p._front, Chest));
+				p.EnemyAttack(1.8 + 0.3 * i, Enemy);
+				p.At(1.92 + 0.3 * i, () => Popups.Block(p._front, Chest));
 			}
 		},
 	};
+
+	private void Strike(double t, Vector2 enemy, int amount)
+	{
+		At(t, () => _joker?.Play("attack"));
+		Hit(t + 0.15, enemy, amount, false);
+	}
+
+	private void Shot(double t, Vector2 enemy, int amount)
+	{
+		At(t, () => _joker?.Play("shiv"));
+		Hit(t + 0.2, enemy, amount, true);
+	}
+
+	private void Hit(double t, Vector2 enemy, int amount, bool gun) => At(t, () =>
+	{
+		Popups.Damage(_front, enemy == Enemy ? 1ul : 2ul, enemy, amount, gun);
+		if (_enemies.TryGetValue(enemy, out Node2D? n))
+		{
+			Tween tw = n.CreateTween();
+			tw.TweenProperty(n, "position", enemy + new Vector2(28f, 0f), 0.04);
+			tw.TweenProperty(n, "position", enemy, 0.25).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
+		}
+	});
+
+	/// <summary>敌人往左扑一下（0.12s 到最远），扑到的那一刻被 Joker 挡住。</summary>
+	private void EnemyAttack(double t, Vector2 enemy) => At(t, () =>
+	{
+		if (_enemies.TryGetValue(enemy, out Node2D? n))
+		{
+			Tween tw = n.CreateTween();
+			tw.TweenProperty(n, "position", enemy + new Vector2(-260f, 10f), 0.12).SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.In);
+			tw.TweenProperty(n, "position", enemy, 0.35).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
+		}
+	});
 
 	public override void _Ready()
 	{
@@ -134,13 +175,11 @@ public partial class Preview : Node2D
 
 	private void BuildActors()
 	{
-		Texture2D? joker = Stage.LoadTexture("_joker");
-		if (joker != null)
-		{
-			Sprite2D s = new() { Texture = joker, Centered = false, Scale = Vector2.One * 0.87f * 0.29f };
-			s.Position = Pose(0f, 0f);
-			_world.AddChild(s);
-		}
+		string rig = ProjectSettings.GlobalizePath("res://") + "../../../art/p5/rig/joker";
+		_joker = SpinePlayer.Load(rig + ".spine-json", rig + ".atlas", rig + ".png");
+		_joker.Position = JokerFeet;
+		_joker.Scale = new Vector2(0.29f, -0.29f);
+		_world.AddChild(_joker);
 		Enemy1(Enemy, 1f);
 		Enemy1(Enemy2, 0.75f);
 	}
@@ -150,6 +189,7 @@ public partial class Preview : Node2D
 	{
 		Node2D n = new() { Position = center };
 		_world.AddChild(n);
+		_enemies[center] = n;
 		var pts = new Vector2[28];
 		for (int i = 0; i < pts.Length; i++)
 		{
