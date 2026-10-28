@@ -1,0 +1,24 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "name": "cutin_band",
+  "size": [
+    1600,
+    420
+  ],
+  "opaque": true,
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-510c1aa5-90f2-4046-af1d-70b49b07dbb2.png",
+  "prompt": "Game UI asset: ONE opaque horizontal Persona 5 style skill cut-in banner, exact 1600x420 canvas. Image 1 is composition reference only; image 2 controls Joker's approved facial identity and eyes; image 3 controls his messy black hairstyle. Fill the whole rectangular canvas, no transparency.\nBackground solid vivid P5 red #E60012. On left black halftone dots densely packed at left edge and progressively sparse toward the right. Two or three sharp white hard-edged diagonal streaks. On right, a dramatic CLOSE-UP OF JOKER'S EYES and upper face, unmasked, face turned three-quarter toward screen right, sharp focused eyes looking right with highlights, black hair from reference, high-contrast face with hard black graphic shadows. Make the eye close-up dominate right portion, not a full bust portrait. Thin black rule along entire top edge and bottom edge. Crisp flat graphic P5 game UI, clean red/black/white palette, no text, no letters, no watermark, no soft glow. Exact panoramic layout 1600 pixels wide by 420 pixels tall.",
+  "refs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/fx/gen/cutin_band.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/ref/face_standard.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/idle_a3.png"
+  ],
+  "source_size": [
+    1983,
+    793
+  ],
+  "generation_count": 1,
+  "visual_review": false,
+  "tool": "built-in image_gen",
+  "output_mode": "RGB"
+}
