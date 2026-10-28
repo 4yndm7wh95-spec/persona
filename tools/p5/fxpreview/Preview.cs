@@ -54,10 +54,12 @@ public partial class Preview : Node2D
 		{
 			p.At(0.3, () => { p._joker?.Play("aim_in"); p._joker?.Queue("aim_loop", true); });
 			p.At(1.3, () => p._joker?.Play("shiv_from_aim"));
+			p.At(1.48, () => HitFx.Muzzle(p._front, Muzzle));
 			p.Hit(1.5, Enemy, 6, true);
 			p.Shot(2.5, Enemy, 6);
 			p.At(3.6, () => { p._joker?.Play("aim_in"); p._joker?.Queue("aim_loop", true); });
-			p.At(3.67, () => p._joker?.PlayFrom("shiv", p._joker.Time));
+			float skip = 0f;
+			p.At(3.67, () => { skip = p._joker!.Time; p._joker.PlayFrom("shiv", skip); p.At(0.18 - skip, () => HitFx.Muzzle(p._front, Muzzle)); });
 			p.Hit(3.87, Enemy, 6, true);
 		},
 		["block"] = p =>
@@ -72,20 +74,33 @@ public partial class Preview : Node2D
 		},
 	};
 
+	// 和 p5mod/src/JokerFx.cs 一样的点和时刻
 	private void Strike(double t, Vector2 enemy, int amount)
 	{
 		At(t, () => _joker?.Play("attack"));
+		At(t + 0.09, () => HitFx.Swing(_front, Pose(930f, 640f), Pose(532f, 860f), Pose(1376f, 450f)));
 		Hit(t + 0.15, enemy, amount, false);
 	}
 
 	private void Shot(double t, Vector2 enemy, int amount)
 	{
 		At(t, () => _joker?.Play("shiv"));
+		At(t + 0.18, () => HitFx.Muzzle(_front, Muzzle));
 		Hit(t + 0.2, enemy, amount, true);
 	}
 
+	public static Vector2 Muzzle => Pose(1347f, 306f);
+
 	private void Hit(double t, Vector2 enemy, int amount, bool gun) => At(t, () =>
 	{
+		if (gun)
+		{
+			HitFx.Shot(_front, Muzzle, enemy);
+		}
+		else
+		{
+			HitFx.Slash(_front, enemy);
+		}
 		Popups.Damage(_front, enemy == Enemy ? 1ul : 2ul, enemy, amount, gun);
 		if (_enemies.TryGetValue(enemy, out Node2D? n))
 		{

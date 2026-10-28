@@ -34,6 +34,7 @@ K = 0.87           # skeleton units per final-canvas pixel. 0.6 matched the Sile
 TEX = 0.42         # stored texture size per final-canvas pixel (sharp up to ~4K)
 ORIGIN = (815, 1622)   # final-canvas pixel that is the skeleton root: between idle_a3's feet, on the ground
 FADE = 0.05
+GHOST_IOU = 0.9
 PAGE = 4096
 
 # ── animations (ART_SPEC.md, user-approved timings) ──
@@ -171,11 +172,29 @@ BLINKS = {"idle_loop": [2.6, 6.1, 6.35], "low_health_loop": [2.4]}   # blink sta
 BLINK_LEN = 0.12
 
 
+_MASKS = {}
+
+
+def silhouette_iou(a, b):
+    """overlap of two poses' silhouettes (final canvas, 1/8 size)."""
+    for n in (a, b):
+        if n not in _MASKS:
+            im = Image.open(FINAL / f"{n}.png").getchannel("A")
+            _MASKS[n] = np.array(im.resize((im.width // 8, im.height // 8))) > 40
+    ma, mb = _MASKS[a], _MASKS[b]
+    return (ma & mb).sum() / max(1, (ma | mb).sum())
+
+
 def frames(anim):
-    """[(pose, start, dur, fade)]; fade defaults to FADE except on the first frame."""
+    """[(pose, start, dur, fade)]. A crossfade shows both pictures at once, so (user 2026-10-28: "two frames at
+    once") it is only kept between near-identical poses (silhouette overlap >= GHOST_IOU), capped at 0.03 s;
+    anything else is a hard cut."""
     out, t = [], 0.0
     for i, f in enumerate(ANIMS[anim]):
         fade = f[2] if len(f) > 2 else (0.0 if i == 0 else FADE)
+        if i > 0 and fade > 0:
+            prev = ANIMS[anim][i - 1][0]
+            fade = 0.0 if prev != f[0] and silhouette_iou(prev, f[0]) < GHOST_IOU else min(fade, 0.03)
         out.append((f[0], t, f[1], fade))
         t += f[1]
     return out

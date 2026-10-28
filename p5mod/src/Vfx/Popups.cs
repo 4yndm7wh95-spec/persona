@@ -17,17 +17,17 @@ public static class Popups
 
 	private static readonly Dictionary<ulong, (ulong Time, int Count)> Stack = new();
 	// 槽位只往上 / 往右排（往左下就压到敌人身上了）
-	private static readonly Vector2[] Slots = { new(0f, 0f), new(145f, 75f), new(-70f, -125f), new(215f, -55f), new(70f, -220f), new(285f, 105f) };
+	private static readonly Vector2[] Slots = { new(0f, 0f), new(100f, 50f), new(-50f, -85f), new(150f, -40f), new(50f, -150f), new(195f, 70f) };
 
-	/// <summary>伤害数字。at = 目标的 VfxSpawnPosition；字高随伤害增大：&lt;10 → 130，≥30 → 170。</summary>
+	/// <summary>伤害数字。at = 目标的 VfxSpawnPosition；字高随伤害增大：&lt;10 → 88，≥30 → 112。</summary>
 	public static void Damage(Control layer, ulong targetId, Vector2 at, int amount, bool gun)
 	{
 		ulong now = Stage.NowMs();
 		int k = Stack.TryGetValue(targetId, out var st) && now - st.Time < 600 ? st.Count + 1 : 0;
 		Stack[targetId] = (now, k);
-		Vector2 home = at + new Vector2(110f, -200f) + Slots[k % Slots.Length];       // 敌人头顶偏右：别挡住敌人
+		Vector2 home = at + new Vector2(90f, -170f) + Slots[k % Slots.Length];       // 敌人头顶偏右：别挡住敌人
 		string label = amount.ToString();
-		float h = amount >= 30 ? 170f : amount >= 10 ? 150f : 130f;
+		float h = amount >= 30 ? 112f : amount >= 10 ? 100f : 88f;            // 用户 2026-10-28：实机里太大，缩到约 2/3
 		const float total = 1.0f;
 		Node2D root = Fx.Root(layer, home, "P5DamageNum", total + 0.05);
 

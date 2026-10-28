@@ -29,23 +29,24 @@ public static class Aim
 	/// <summary>换动画之后要跳到的时间（AnimRenamePatch 的 Postfix 用）。</summary>
 	public static readonly Dictionary<ulong, float> SkipTo = new();
 
-	/// <summary>SetAnimation 之后：这个 Joker 有待跳的时间就跳过去，并且不做交叉淡化（同一套画面接着播）。</summary>
-	public static void ApplySkip(MegaAnimationState state)
+	/// <summary>SetAnimation 之后：这个 Joker 有待跳的时间就跳过去，并且不做交叉淡化（同一套画面接着播）。返回跳过的秒数。</summary>
+	public static float ApplySkip(NCreature node, MegaAnimationState state)
 	{
-		if (Owner(state) is not NCreature node || !SkipTo.Remove(node.GetInstanceId(), out float t))
+		if (!SkipTo.Remove(node.GetInstanceId(), out float t))
 		{
-			return;
+			return 0f;
 		}
 		using MegaTrackEntry? entry = state.GetCurrent(0);
 		entry?.SetTrackTime(t);
 		entry?.SetMixDuration(0f);
+		return t;
 	}
 
 	/// <summary>出牌时（CardPlayedPatch）记下的施法动作：游戏随后要播 cast 时换成对应版本。</summary>
 	public static readonly Dictionary<ulong, Cast> PendingCast = new();
 
 	/// <summary>这个动画状态是不是本地 Joker 的（换动画的入口所有生物都会经过）。</summary>
-	private static NCreature? Owner(MegaAnimationState state)
+	internal static NCreature? Owner(MegaAnimationState state)
 	{
 		NCombatRoom? room = NCombatRoom.Instance;
 		if (room == null || state.BoundObject is not GodotObject native)
@@ -189,10 +190,19 @@ public static class AnimRenamePatch
 
 	public static void Postfix(MegaAnimationState __instance, string animationName)
 	{
-		if (animationName == "shiv")
+		if (animationName is not ("shiv" or "shiv_from_aim" or "attack" or "attack_chain"))
 		{
-			ModEntry.Safe("AnimSkip", () => Aim.ApplySkip(__instance));
+			return;
 		}
+		ModEntry.Safe("AnimFx", () =>
+		{
+			if (Aim.Owner(__instance) is not NCreature node)
+			{
+				return;
+			}
+			float skipped = animationName == "shiv" ? Aim.ApplySkip(node, __instance) : 0f;
+			JokerFx.OnAnim(node, animationName, skipped);
+		});
 	}
 }
 

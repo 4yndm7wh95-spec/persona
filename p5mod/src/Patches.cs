@@ -16,28 +16,27 @@ using MegaCrit.Sts2.Core.Nodes.Vfx;
 
 namespace P5Joker;
 
-/// <summary>
-/// Joker 的小刀牌 = 开枪：关掉原版的飞刀（NShivThrowVfx）。别的攻击牌暂时保留原版命中特效，
-/// 等我们自己的命中特效逐张做好、预览过关再换（特效重做中，2026-10-28）。原版命中音效保留。
-/// </summary>
+/// <summary>Joker 的攻击牌：关掉原版命中特效（刀光、飞刀），换成 HitFx（JokerFx.OnHit）；原版命中音效保留。</summary>
 [HarmonyPatch(typeof(AttackCommand), nameof(AttackCommand.Execute))]
 public static class AttackHitVfxPatch
 {
+	private static readonly PropertyInfo HitVfx = AccessTools.Property(typeof(AttackCommand), "HitVfx");
 	private static readonly FieldInfo CustomHitNodes = AccessTools.Field(typeof(AttackCommand), "_customHitVfxNodes");
 
 	public static void Prefix(AttackCommand __instance)
 	{
 		ModEntry.Safe("AttackHitVfx", () =>
 		{
-			if (__instance.ModelSource is CardModel card && Joker.OwnsCard(card) && Joker.IsShot(card))
+			if (__instance.ModelSource is CardModel card && Joker.OwnsCard(card))
 			{
-				(CustomHitNodes.GetValue(__instance) as IList)?.Clear();
+				HitVfx.SetValue(__instance, null);
+				(CustomHitNodes.GetValue(__instance) as IList)?.Clear();     // 小刀牌原版的飞刀（NShivThrowVfx）
 			}
 		});
 	}
 }
 
-/// <summary>每一击伤害（所有 Damage 重载最终汇到参数最多的那个）：记下 Joker 打中了谁、是不是枪击（伤害数字据此换成 P5 样式）。</summary>
+/// <summary>每一击伤害（所有 Damage 重载最终汇到参数最多的那个）：放命中特效，记下 Joker 打中了谁、是不是枪击（伤害数字据此换成 P5 样式）。</summary>
 [HarmonyPatch]
 public static class DamagePatch
 {
@@ -50,9 +49,21 @@ public static class DamagePatch
 	{
 		ModEntry.Safe("Damage", () =>
 		{
-			if (targets != null && cardSource != null && Joker.OwnsCard(cardSource))
+			if (targets == null || cardSource == null || !Joker.OwnsCard(cardSource))
 			{
-				Hits.Mark(targets, Joker.IsShot(cardSource));
+				return;
+			}
+			bool gun = Joker.IsShot(cardSource);
+			Hits.Mark(targets, gun);
+			if (Joker.Node(cardSource.Owner) is NCreature joker && NCombatRoom.Instance is NCombatRoom room)
+			{
+				foreach (Creature c in targets)
+				{
+					if (!c.IsPlayer && room.GetCreatureNode(c) is NCreature n)
+					{
+						JokerFx.OnHit(joker, n, gun);
+					}
+				}
 			}
 		});
 	}
