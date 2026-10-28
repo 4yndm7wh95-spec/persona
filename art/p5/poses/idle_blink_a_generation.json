@@ -1,0 +1,12 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-46aa2ddc-1f10-4c3e-82cc-08ef0ed8266f.png",
+  "prompt": "Minimal image edit, idle_blink_a. Return supplied full-body sprite at EXACT1024x1536 RGBA with identical transparency. Change ONLY visible EYES to naturally CLOSED for a blink: upper eyelids lowered, thin eyelash lines curve downward, relaxed closed eyes. ALL OTHER PIXELS MUST REMAIN EXACTLY UNCHANGED: every pixel of hair, eyebrows, face shape, chin, mouth, ears, head position, costume, highlights, fingers, arms, boots, entire body pose and background alpha. Do not redraw or restyle the character, do not change expression other than eyelids, do not move/rescale anything. Keep full image, not an eye crop. Transparent background preserved. No text or effects.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/idle_a3.png"
+  ],
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 208973,
+  "generation_count": 1,
+  "review": "No visual review, no regeneration; sequence check only after completing batch"
+}
