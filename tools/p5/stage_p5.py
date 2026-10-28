@@ -1,0 +1,70 @@
+"""Stage the P5Joker mod's PCK directory (p5mod/pck_stage) from the built rigs in art/p5/rig/.
+
+Replaces the Silent's three Spine resources in place, keeping the vanilla uids
+(research/silent_assets/README.md) so the vanilla scenes load ours:
+  animations/characters/silent/   combat (silent_skel_data.tres -> silent.spine-json + silent.atlas/png)
+  animations/merchant/silent/     shop: silent_merchant_skel_data.tres points at the combat skeleton + atlas
+                                  (the vanilla one points at silent.skel by uid, which would bring the Silent back)
+  animations/rest_site/silent/    rest site (restsite_silent.*)
+Run after tools/p5/build_rig_p5.py and tools/p5/build_restsite_p5.py:
+    python tools/p5/stage_p5.py
+Pack locally with GDRE: gdre_tools --headless --pck-create=<copy of p5mod/pck_stage> --output=P5Joker.pck
+--pck-version=3 --pck-engine-version=4.5.1
+"""
+import shutil
+import sys
+import tempfile
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "tools/pck"))
+from spine_stage import stage_spine  # noqa: E402
+
+RIG = ROOT / "art/p5/rig"
+STAGE = ROOT / "p5mod/pck_stage"
+
+
+def renamed(src_base, dst_base, tmp):
+    """copy <src_base>.{spine-json,atlas,png} to tmp as <dst_base>.*, fixing the atlas page name."""
+    shutil.copy(RIG / f"{src_base}.spine-json", tmp / f"{dst_base}.spine-json")
+    shutil.copy(RIG / f"{src_base}.png", tmp / f"{dst_base}.png")
+    lines = (RIG / f"{src_base}.atlas").read_text().split("\n")
+    lines[0] = f"{dst_base}.png"
+    (tmp / f"{dst_base}.atlas").write_text("\n".join(lines))
+
+
+def main():
+    if STAGE.exists():
+        shutil.rmtree(STAGE)
+    STAGE.mkdir(parents=True)
+    with tempfile.TemporaryDirectory() as t:
+        tmp = Path(t)
+        renamed("joker", "silent", tmp)
+        stage_spine(STAGE, "animations/characters/silent", "silent", tmp, "silent_skel_data",
+                    atlas_uid="dq7y3dlq1mmdq", png_uid="bvmfj1e5yasw2", skel_data_uid="bqlhf04mk2866", default_mix=0.05,
+                    mixes=[("idle_loop", "hurt", 0.02), ("hurt", "die", 0.1), ("cast", "idle_loop", 0.08)])
+        shutil.copy(RIG / "restsite_silent.spine-json", tmp / "restsite_silent.spine-json")
+        shutil.copy(RIG / "restsite_silent.png", tmp / "restsite_silent.png")
+        shutil.copy(RIG / "restsite_silent.atlas", tmp / "restsite_silent.atlas")
+        stage_spine(STAGE, "animations/rest_site/silent", "restsite_silent", tmp, "rest_site_silent_skel_data",
+                    atlas_uid="chhushd3ctbab", png_uid="b6n6lfy1rklgq", skel_data_uid="cusnivp587wn0", default_mix=0.2)
+    shop = STAGE / "animations/merchant/silent"
+    shop.mkdir(parents=True)
+    (shop / "silent_merchant_skel_data.tres").write_text("""[gd_resource type="SpineSkeletonDataResource" load_steps=3 format=3 uid="uid://d4li4q7d3n0nb"]
+
+[ext_resource type="SpineAtlasResource" path="res://animations/characters/silent/silent.atlas" id="1_atlas"]
+[ext_resource type="SpineSkeletonFileResource" path="res://animations/characters/silent/silent.spine-json" id="2_skel"]
+
+[resource]
+atlas_res = ExtResource("1_atlas")
+skeleton_file_res = ExtResource("2_skel")
+default_mix = 0.1
+""")
+    files = sorted(p.relative_to(STAGE).as_posix() for p in STAGE.rglob("*") if p.is_file())
+    print(len(files), "files staged in", STAGE.relative_to(ROOT))
+    for f in files:
+        print(" ", f)
+
+
+if __name__ == "__main__":
+    main()

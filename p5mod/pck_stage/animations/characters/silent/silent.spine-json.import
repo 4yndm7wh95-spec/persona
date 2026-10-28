@@ -1,0 +1,13 @@
+[remap]
+
+importer="spine.json"
+type="SpineSkeletonFileResource"
+path="res://.godot/imported/silent.spine-json-d5ef0a7d64eebb4ccb1bb24af3132cea.spjson"
+
+[deps]
+
+source_file="res://animations/characters/silent/silent.spine-json"
+dest_files=["res://.godot/imported/silent.spine-json-d5ef0a7d64eebb4ccb1bb24af3132cea.spjson"]
+
+[params]
+

@@ -1,0 +1,9 @@
+restsite_silent.png
+size:1174,945
+filter:Linear,Linear
+rest
+bounds:0,0,1174,817
+blink_joker
+bounds:0,819,94,54
+blink_mona
+bounds:96,819,190,126

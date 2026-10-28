@@ -1,0 +1,25 @@
+[gd_resource type="SpineSkeletonDataResource" load_steps=6 format=3 uid="uid://bqlhf04mk2866"]
+
+[ext_resource type="SpineAtlasResource" path="res://animations/characters/silent/silent.atlas" id="1_atlas"]
+[ext_resource type="SpineSkeletonFileResource" path="res://animations/characters/silent/silent.spine-json" id="2_skel"]
+
+[sub_resource type="SpineAnimationMix" id="mix0"]
+from = "idle_loop"
+to = "hurt"
+mix = 0.02
+
+[sub_resource type="SpineAnimationMix" id="mix1"]
+from = "hurt"
+to = "die"
+mix = 0.1
+
+[sub_resource type="SpineAnimationMix" id="mix2"]
+from = "cast"
+to = "idle_loop"
+mix = 0.08
+
+[resource]
+atlas_res = ExtResource("1_atlas")
+skeleton_file_res = ExtResource("2_skel")
+default_mix = 0.05
+animation_mixes = [SubResource("mix0"), SubResource("mix1"), SubResource("mix2")]
