@@ -6,47 +6,67 @@ areas copied in (feathered ellipses, skin tone matched to idle). Writes the full
 art/p5/poses/idle_blink_a.png (the raw generation is kept as idle_blink_a_raw.png) and the small
 patch art/p5/poses/idle_blink_patch.png + .json (its position on idle_a3) for the rig.
     python tools/p5/blink_patch.py
+The rest-site picture has two blinkers (Joker, Morgana), each from its own generated closed-eye frame:
+    python tools/p5/blink_patch.py rest
 """
 import json
+import sys
 from pathlib import Path
 import numpy as np
 from PIL import Image, ImageFilter
 
 P = Path(__file__).resolve().parents[2] / 'art/p5/poses'
-# (cx, cy, rx, ry) on the 1024x1536 source canvas: near (visible) eye, far eye beside the hair
-EYES = [(577, 135, 34, 20), (614, 146, 13, 11)]
+# name -> (base, generated closed-eye frame, eye ellipses (cx, cy, rx, ry) on the base canvas[, match skin])
+# Morgana has no skin round the eyes (black head), so his tone is not matched; the generated frame also left
+# faint grey rings where his open eyes were, so inside his eye areas every dark pixel is set to the head black.
+JOBS = {
+    'idle_blink_a': ('idle_a3', 'idle_blink_a_raw', [(577, 135, 34, 20), (614, 146, 13, 11)]),
+    'rest_sit_d_A_blink_joker': ('rest_sit_d_A', 'rest_sit_d_A_blink_joker_raw', [(774, 171, 34, 19), (828, 189, 13, 12)]),
+    'rest_sit_d_A_blink_mona': ('rest_sit_d_A', 'rest_sit_d_A_blink_mona_raw', [(385, 273, 58, 58), (500, 240, 46, 48)], False),
+}
 FEATHER = 4
 
 
-def main():
-    raw = P / 'idle_blink_a_raw.png'
+def blink(name, base, raw, eyes, match=True):
+    raw = P / f'{raw}.png'
     if not raw.exists():
-        (P / 'idle_blink_a.png').rename(raw)
-    idle = np.array(Image.open(P / 'idle_a3.png').convert('RGBA')).astype(float)
+        (P / f'{name}.png').rename(raw)
+    idle = np.array(Image.open(P / f'{base}.png').convert('RGBA')).astype(float)
     gen = np.array(Image.open(raw).convert('RGBA')).astype(float)
     m = Image.new('L', (idle.shape[1], idle.shape[0]), 0)
     from PIL import ImageDraw
     d = ImageDraw.Draw(m)
-    for cx, cy, rx, ry in EYES:
+    for cx, cy, rx, ry in eyes:
         d.ellipse([cx - rx, cy - ry, cx + rx, cy + ry], fill=255)
     m = np.array(m.filter(ImageFilter.GaussianBlur(FEATHER))).astype(float) / 255
     # match the generated skin tone to idle in a ring around the eyes
     ring = (m > 0.02) & (m < 0.6)
     skin = ring & (idle[..., 0] > 200) & (idle[..., 1] > 160)
-    gain = idle[skin][:, :3].mean(0) / np.maximum(gen[skin][:, :3].mean(0), 1)
+    gain = idle[skin][:, :3].mean(0) / np.maximum(gen[skin][:, :3].mean(0), 1) if match and skin.sum() > 50 else np.ones(3)
     gen[..., :3] = np.clip(gen[..., :3] * gain, 0, 255)
+    if not match:
+        inside = (m > 0.05) & (gen[..., :3].mean(2) < 150)
+        head = (m == 0) & (idle[..., :3].mean(2) < 60) & (idle[..., 3] > 200)
+        ys, xs = np.nonzero(m > 0.05)
+        near = np.zeros_like(head)
+        near[ys.min() - 40:ys.max() + 40, xs.min() - 40:xs.max() + 40] = True
+        gen[inside, :3] = np.median(idle[head & near][:, :3], 0)
     out = idle.copy()
     out[..., :3] = idle[..., :3] * (1 - m[..., None]) + gen[..., :3] * m[..., None]
-    Image.fromarray(out.astype(np.uint8)).save(P / 'idle_blink_a.png')
+    Image.fromarray(out.astype(np.uint8)).save(P / f'{name}.png')
     ys, xs = np.nonzero(m > 0.01)
     x0, x1, y0, y1 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
     patch = out[y0:y1, x0:x1].copy()
     patch[..., 3] = np.minimum(patch[..., 3], m[y0:y1, x0:x1] * 255)
-    Image.fromarray(patch.astype(np.uint8)).save(P / 'idle_blink_patch.png')
-    (P / 'idle_blink_patch.json').write_text(json.dumps({'base': 'idle_a3', 'x': int(x0), 'y': int(y0),
-                                                         'w': int(x1 - x0), 'h': int(y1 - y0)}, indent=1))
-    print('patch', x0, y0, x1 - x0, y1 - y0, 'skin gain', gain.round(3))
+    pname = 'idle_blink_patch' if name == 'idle_blink_a' else name + '_patch'
+    Image.fromarray(patch.astype(np.uint8)).save(P / f'{pname}.png')
+    (P / f'{pname}.json').write_text(json.dumps({'base': base, 'x': int(x0), 'y': int(y0),
+                                                 'w': int(x1 - x0), 'h': int(y1 - y0)}, indent=1))
+    print(name, 'patch', x0, y0, x1 - x0, y1 - y0, 'skin gain', gain.round(3))
 
 
 if __name__ == '__main__':
-    main()
+    rest = len(sys.argv) > 1 and sys.argv[1] == 'rest'
+    for n, job in JOBS.items():
+        if n.startswith('rest_') == rest:
+            blink(n, *job)
