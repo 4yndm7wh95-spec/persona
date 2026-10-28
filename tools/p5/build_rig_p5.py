@@ -171,8 +171,8 @@ GUN_PROP = {"aim_in": [SPIN_IN], "shiv": [SPIN_IN, SPIN_OUT], "shiv_from_aim": [
 # after the strike). art/p5/props/knife_c.png is drawn in code (tools/p5/draw_knife.py), pivot at the middle of
 # the grip; knife_spin_e is the empty hand at the hip (Codex). Rotation 0 = pointing right; knife_ready_b holds it
 # pointing down-left (~150 deg on screen = -150 here)
-KNIFE = POSES.parent / "props/knife_c.png"
-KNIFE_PIVOT, KNIFE_TIP = (40, 23), (219, 23)       # art/p5/props/knife_c.json
+KNIFE = POSES.parent / "props/knife_d.png"      # the generated knife, re-proportioned (tools/p5/fit_knife.py)
+KNIFE_PIVOT, KNIFE_TIP = (47, 26), (308, 26)       # art/p5/props/knife_d.json
 KNIFE_HAND = (712, 688)                     # palm of the empty hand in knife_spin_e (final canvas)
 KSPIN_IN = [("@knife_spin_e", 0, *KNIFE_HAND, 200, 1, 0, 0), ("@knife_spin_e", .02, *KNIFE_HAND, 80, 1, 1, .6),
             ("@knife_spin_e", .045, *KNIFE_HAND, -40, 1, 1, .6), ("@knife_spin_e", .065, *KNIFE_HAND, -120, 1, 1, .3),
