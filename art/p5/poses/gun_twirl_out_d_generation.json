@@ -1,0 +1,14 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-57c9b1a8-fb8a-4b85-a422-66d6c217d94b.png",
+  "prompt": "Game character sprite image edit. IMAGE1 idle_a3 is EDIT TARGET: keep EXACT head size, face, body proportions, broad chest, shoulder width, legs, boots, coat tails and both FOOT POSITIONS. Do not turn body sideways, narrow torso, or change stance. IMAGE2 is arm placement reference ONLY, not body/foot reference. IMAGE3 is approved face identity. ACTIVE ARM ON SCREEN RIGHT (same as gun_aim_b holding hand); SCREEN LEFT hand is the pocket hand. Small hands and normal finger lengths matching idle, never enlarged.\nNo handgun or other object in either hand. One person, P5R cel shading, bold black ink matching idle. Entire figure and hands inside true transparent RGBA 1024x1536, soles y~1500, alpha0 outside. No effects, trails, motion blur, speed lines, ground, shadow, background or text.\nFrame gun_twirl_out_d: SCREEN RIGHT hand outside screen-right shoulder at about shoulder height, forearm slanting upward, elbow outward, loosely reference IMAGE2 arm placement. SCREEN LEFT hand stays inserted into TROUSER pocket exactly IMAGE2.\nCRITICAL HAND ORIENTATION: STRAIGHT INDEX finger aims DIRECTLY OUT OF THE SCREEN AT THE VIEWER, perpendicular to canvas. Strong foreshortening, only a SHORT ROUND fingertip end facing the viewer, not an elongated finger pointing within the screen plane. Back of hand outward, other three fingers loosely bent, thumb relaxed. Fingertip fully exposed with clear empty space around it, not blocked by sleeve or other fingers, for later animation attachment. Normal small hand size, no oversized fist. Head turns slightly toward front with a cool stylish finishing smile. EMPTY hand, no prop.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/idle_a3.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/gun_twirl_out_c.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/ref/face_standard.png"
+  ],
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 1516,
+  "generation_count": 1,
+  "review": "No visual review, no regeneration; sequence check only after completing batch"
+}
