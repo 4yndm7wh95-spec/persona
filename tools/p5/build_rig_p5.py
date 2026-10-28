@@ -426,9 +426,11 @@ def build():
                 if name == "shiv":                # ... and bring it back for the spin away after the shot
                     tl_tip.insert(3, {"time": keys[len(SPIN_IN)][0], "name": "finger_tip"})
             for slot, att_name, col in (("gun", "pistol", 5), ("gun_smear", "gun_smear", 6)):
-                slots[slot] = {"attachment": [{"time": 0, "name": None}, {"time": first, "name": att_name},
-                                              {"time": last, "name": None}],
-                               "rgba": [{"time": k[0], "color": hexa(k[col])} for k in keys]}
+                shown = [{"time": 0, "name": None}, {"time": first, "name": att_name}, {"time": last, "name": None}]
+                if name == "shiv":                # the drawn gun takes over from the catch to the spin away: the
+                    shown[2:2] = [{"time": keys[len(SPIN_IN) - 1][0], "name": None},       # loose one must not
+                                  {"time": keys[len(SPIN_IN)][0], "name": att_name}]       # hang in the air
+                slots[slot] = {"attachment": shown, "rgba": [{"time": k[0], "color": hexa(k[col])} for k in keys]}
             tl["gun"] = {"translate": [{"time": k[0], "x": round((k[1] - ORIGIN[0]) * K, 2), "y": round((ORIGIN[1] - k[2]) * K, 2)}
                                        for k in keys],
                          "rotate": [{"time": k[0], "value": k[3]} for k in keys],
