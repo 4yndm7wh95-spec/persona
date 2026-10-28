@@ -518,5 +518,13 @@
    167
   ],
   "anchor_foot": "rear"
+ },
+ "idle_blink_a": {
+  "scale": 1.0,
+  "offset": [
+   256,
+   93
+  ],
+  "anchor_foot": "rear"
  }
 }
