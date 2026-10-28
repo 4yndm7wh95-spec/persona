@@ -54,8 +54,10 @@ ANIMS = {
     "attack": [("idle_a3", .01), ("knife_draw_a", .03, .02), ("knife_set_a", .02, .02), ("knife_ready_b", .08, .02),
                ("slash_a10", .16, 0), ("slash_follow_a", .06), ("knife_return_a", .06),
                ("slash_recover_a", .08), ("idle_a3", .1, .06)],
-    "shiv": [("idle_a3", .02)] + [(n, .05) for n in GUN_UP] + [("gun_a2", .12), ("gun_recoil_a6", .07, 0),
-             ("gun_a2", .2)] + [(n, .05) for n in GUN_UP[::-1]] + [("idle_a3", .15, .08)],
+    # the Shiv card deals its damage 0.2 s after the anim starts (Shiv.cs WithAttackerAnim("Shiv", 0.2f)):
+    # draw and aim in 0.17 s, fire at 0.18 s (user 2026-10-28: the first version fired at 0.39 s, after the hit)
+    "shiv": [("idle_a3", .01)] + [(n, .028, .02) for n in GUN_UP] + [("gun_a2", .03), ("gun_recoil_a6", .07, 0),
+             ("gun_a2", .14)] + [(n, .035) for n in GUN_UP[::-1]] + [("idle_a3", .12, .07)],
     "cast": [("idle_a3", .02)] + [(n, .08) for n in SUMMON_UP] + [("summon_hold_a", .9)]
             + [(n, .08) for n in SUMMON_UP[::-1]] + [("idle_a3", .15, .08)],
     "hurt": [("hurt_flinch_a", .05, 0), ("hurt_a4", .25), ("hurt_recover_b1", .1), ("hurt_recover_b2", .1),
