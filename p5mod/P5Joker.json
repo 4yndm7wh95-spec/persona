@@ -3,7 +3,7 @@
   "name": "P5 Joker（静默猎手换皮）",
   "author": "brooks",
   "description": "将静默猎手替换为 Persona 5 主角 Joker（雨宫莲）。第一版：战斗、商店、休息处的人物动作。纯视觉，不改玩法。",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "has_pck": true,
   "has_dll": false,
   "affects_gameplay": false

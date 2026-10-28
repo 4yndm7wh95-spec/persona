@@ -29,7 +29,8 @@ from mesh_rig import MeshRig  # noqa: E402
 FINAL = ROOT / "art/p5/poses/final"
 POSES = ROOT / "art/p5/poses"
 OUT = ROOT / "art/p5/rig"
-K = 0.6            # skeleton units per final-canvas pixel: Joker (~1450 px) ~ 870 units, the Silent's Bounds ~ 840
+K = 0.87           # skeleton units per final-canvas pixel. 0.6 matched the Silent's size but read small next to the
+                   # approved P3 Makoto in game (2026-10-28: ~260 vs ~380 px tall at 1080p), so x1.45
 TEX = 0.42         # stored texture size per final-canvas pixel (sharp up to ~4K)
 ORIGIN = (815, 1622)   # final-canvas pixel that is the skeleton root: between idle_a3's feet, on the ground
 FADE = 0.05
@@ -265,7 +266,7 @@ def build():
         anims[name] = {"slots": slots, "bones": tl}
 
     data = {
-        "skeleton": {"spine": "4.2.43", "x": -480, "y": -60, "width": 960, "height": 1000, "fps": 30, "images": "./images/"},
+        "skeleton": {"spine": "4.2.43", "x": -700, "y": -90, "width": 1400, "height": 1450, "fps": 30, "images": "./images/"},
         "bones": bones,
         "slots": [{"name": "shadow", "bone": "root", "attachment": "shadow"},
                   {"name": "pose", "bone": "body", "attachment": "idle_a3"},
