@@ -9,6 +9,7 @@ namespace P5Joker;
 /// 小刀牌 = 开枪（docs/p5/FX_PLAN.md 第 2 节）：用 P5R 原版 BES_GUN1 的贴图。
 /// 枪口火光（firetip 火舌 + 柔光 + 四角白星，3 帧闪完）→ 一条很细的白色弹道瞬间连到目标 →
 /// 目标身上原版的命中火光序列（gun_hit_light_anim，2x2 四帧）+ 红色火星。
+/// 用户 2026-10-28：特效不能挡住敌人 —— 命中火光缩小、只闪 0.1 秒，打在身体朝枪口那一侧的边上；火星往外溅。
 /// 伤害结算那一刻（出牌后 0.2 秒）Joker 的动画正好在开火帧上。
 /// </summary>
 public static class Gunshot
@@ -27,7 +28,7 @@ public static class Gunshot
 		Flash(layer, muzzle, face);
 		foreach (NCreature t in targets)
 		{
-			Vector2 hit = t.VfxSpawnPosition + new Vector2(Fx.Rand(-18f, 18f), Fx.Rand(-24f, 24f));
+			Vector2 hit = t.VfxSpawnPosition + new Vector2(-face * Fx.Rand(40f, 70f), Fx.Rand(-30f, 20f));   // 身体朝枪口一侧的边
 			Tracer(layer, muzzle, hit);
 			Impact(layer, hit, face);
 		}
@@ -97,11 +98,11 @@ public static class Gunshot
 			s.RegionEnabled = true;
 			float w = sheet.GetWidth() / 2f, h = sheet.GetHeight() / 2f;
 			s.Rotation = Fx.Rand(-0.4f, 0.4f);
-			Fx.Animate(s, 0, 0.14, t =>
+			Fx.Animate(s, 0, 0.1, t =>
 			{
 				int f = Mathf.Min(3, (int)(t * 4f));
 				s.RegionRect = new Rect2(f % 2 * w, f / 2 * h, w, h);
-				s.Scale = Vector2.One * (1.3f + 0.4f * t);
+				s.Scale = Vector2.One * (0.75f + 0.25f * t);
 				s.Modulate = new Color(1f, 0.95f, 0.85f, f < 3 ? 1f : 1f - (t * 4f - 3f));
 			});
 		}

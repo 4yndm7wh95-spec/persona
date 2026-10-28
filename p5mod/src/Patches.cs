@@ -61,7 +61,12 @@ public static class DamagePatch
 			{
 				return;
 			}
-			if (Joker.IsShot(cardSource))
+			bool gun = Joker.IsShot(cardSource);
+			foreach (NCreature n in nodes)
+			{
+				Damage.Mark(n, gun);
+			}
+			if (gun)
 			{
 				Gunshot.Play(joker, nodes);
 			}
@@ -70,5 +75,38 @@ public static class DamagePatch
 				Slash.Play(joker, nodes);
 			}
 		});
+	}
+}
+
+/// <summary>伤害数字：Joker 打中的敌人，原版数字换成 P5R 样式（Damage.Show）。</summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Vfx.NDamageNumVfx), nameof(MegaCrit.Sts2.Core.Nodes.Vfx.NDamageNumVfx.Create),
+	typeof(Creature), typeof(MegaCrit.Sts2.Core.Entities.Creatures.DamageResult))]
+public static class DamageNumberPatch
+{
+	public static void Postfix(Creature target, MegaCrit.Sts2.Core.Entities.Creatures.DamageResult result,
+		ref MegaCrit.Sts2.Core.Nodes.Vfx.NDamageNumVfx? __result)
+	{
+		MegaCrit.Sts2.Core.Nodes.Vfx.NDamageNumVfx? original = __result;
+		bool replaced = false;
+		ModEntry.Safe("DamageNumber", () =>
+		{
+			if (original == null || target.IsPlayer || NCombatRoom.Instance?.GetCreatureNode(target) is not NCreature node
+				|| Joker.FxLayer() is not Godot.Control layer || !Damage.TakeMark(node, out bool gun))
+			{
+				return;
+			}
+			int amount = result.UnblockedDamage + result.OverkillDamage;
+			if (amount <= 0)
+			{
+				return;                                        // 全被格挡：保留原版的显示
+			}
+			Damage.Show(layer, node.VfxSpawnPosition, amount, gun);
+			original.QueueFree();
+			replaced = true;
+		});
+		if (replaced)
+		{
+			__result = null;                                   // 调用方拿到 null 就不显示原版数字
+		}
 	}
 }

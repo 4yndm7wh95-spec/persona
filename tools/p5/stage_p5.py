@@ -27,6 +27,10 @@ FX = ROOT / "research/p5r/fx"
 FX_TEX = {"glow": "slash/BES_HIT_ZAN__001_be0cmn_glow_slim.png",
           "firetip": "gun/BES_GUN1__000_be0224firetip.png",
           "gun_hit": "gun/BES_GUN1__002_gun_hit_light_anim.png"}
+# P5R damage numbers / slash lines (research/p5r/ui/battle_gui DAMAGE_DATA.SPD sprites): name -> (sprite index, scale)
+DMG = ROOT / "research/p5r/ui/battle_gui/sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6"
+DMG_TEX = {**{f"dmg_{d}": (79 + d, 0.5) for d in range(10)},
+           "dmg_splash": (90, 1.0), "dmg_splash_gun": (96, 1.0), "speed_line": (93, 1.0)}
 
 RIG = ROOT / "art/p5/rig"
 STAGE = ROOT / "p5mod/pck_stage"
@@ -70,6 +74,9 @@ default_mix = 0.1
 """)
     for name, src in FX_TEX.items():
         write_texture(STAGE, f"p5joker/fx/{name}.png", Image.open(FX / src))
+    for name, (idx, k) in DMG_TEX.items():
+        im = Image.open(DMG / f"{idx:05d}.png").convert("RGBA")
+        write_texture(STAGE, f"p5joker/fx/{name}.png", im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS))
     files = sorted(p.relative_to(STAGE).as_posix() for p in STAGE.rglob("*") if p.is_file())
     print(len(files), "files staged in", STAGE.relative_to(ROOT))
     for f in files:

@@ -58,6 +58,17 @@ ANIMS = {
     # draw and aim in 0.17 s, fire at 0.18 s (user 2026-10-28: the first version fired at 0.39 s, after the hit)
     "shiv": [("idle_a3", .01)] + [(n, .028, .02) for n in GUN_UP] + [("gun_a2", .03), ("gun_recoil_a6", .07, 0),
              ("gun_a2", .14)] + [(n, .035) for n in GUN_UP[::-1]] + [("idle_a3", .12, .07)],
+    # attack_chain: an attack played while the previous strike is still recovering (user 2026-10-28: fast play
+    # restarted from the draw and visibly broke) - re-cock straight from the knife in hand, cut still at 0.14 s
+    "attack_chain": [("knife_return_a", .03), ("knife_ready_b", .11, .03), ("slash_a10", .16, 0), ("slash_follow_a", .06),
+                     ("knife_return_a", .06), ("slash_recover_a", .08), ("idle_a3", .1, .06)],
+    # aim: picking up a Shiv card raises the gun and holds it (p5mod/src/Aim.cs); playing it fires from the
+    # aim (shiv_from_aim, shot at 0.18 s like "shiv"); dropping the card lowers it (aim_out)
+    "aim_in": [("idle_a3", .01)] + [(n, .045, .03) for n in GUN_UP] + [("gun_a2", .05)],
+    "aim_loop": [("gun_a2", 4.0)],
+    "aim_out": [("gun_a2", .01)] + [(n, .04) for n in GUN_UP[::-1]] + [("idle_a3", .1, .07)],
+    "shiv_from_aim": [("gun_a2", .18), ("gun_recoil_a6", .07, 0), ("gun_a2", .14)]
+                     + [(n, .035) for n in GUN_UP[::-1]] + [("idle_a3", .12, .07)],
     "cast": [("idle_a3", .02)] + [(n, .08) for n in SUMMON_UP] + [("summon_hold_a", .9)]
             + [(n, .08) for n in SUMMON_UP[::-1]] + [("idle_a3", .15, .08)],
     "hurt": [("hurt_flinch_a", .05, 0), ("hurt_a4", .25), ("hurt_recover_b1", .1), ("hurt_recover_b2", .1),
@@ -77,6 +88,13 @@ IMPACT = {
     "shiv": [("@gun_recoil_a6", 0, 0, 0, 1, 1, 0), ("@gun_recoil_a6", .02, -30, 0, .985, 1.01, 2.5),
              ("@gun_recoil_a6", .04, -21, 0, .99, 1.005, 2), ("@gun_recoil_a6", .06, -27, 0, .99, 1.005, 2),
              ("@gun_recoil_a6", .12, -12, 0, 1, 1, .8), ("@gun_recoil_a6", .26, 0, 0, 1, 1, 0)],
+    "attack_chain": [(0, 30, 0, 1, 1, 0), (.07, -10, 0, 1.01, .985, 1), (.12, -24, -4, 1.025, .965, 2),
+                     (.14, 95, 0, .97, 1.035, -3), (.16, 112, 0, 1.035, .965, -2.2), (.18, 120, 0, 1.03, .97, -2.2),
+                     (.20, 104, 0, 1.03, .97, -2), (.22, 116, 0, 1.025, .975, -2), (.24, 107, 0, 1.02, .98, -1.8),
+                     (.27, 111, 0, 1.015, .985, -1.6), (.40, 72, 0, 1.0, 1.0, -.6), (.56, 4, 0, 1, 1, 0), (.60, 0, 0, 1, 1, 0)],
+    "shiv_from_aim": [("@gun_recoil_a6", 0, 0, 0, 1, 1, 0), ("@gun_recoil_a6", .02, -30, 0, .985, 1.01, 2.5),
+                      ("@gun_recoil_a6", .04, -21, 0, .99, 1.005, 2), ("@gun_recoil_a6", .06, -27, 0, .99, 1.005, 2),
+                      ("@gun_recoil_a6", .12, -12, 0, 1, 1, .8), ("@gun_recoil_a6", .26, 0, 0, 1, 1, 0)],
     "hurt": [(0, 0, 0, 1, 1, 0), (.03, -55, 0, .975, 1.01, 3), (.06, -64, 0, .975, 1.01, 3.2), (.09, -54, 0, .98, 1.01, 3),
              (.12, -60, 0, .985, 1.005, 2.8), (.28, -34, 0, 1, 1, 1.5), (.48, -6, 0, 1, 1, .2), (.62, 0, 0, 1, 1, 0)],
 }
