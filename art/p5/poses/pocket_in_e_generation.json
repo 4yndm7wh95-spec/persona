@@ -1,0 +1,14 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-fa2a72ec-d089-41a1-a45a-36b10a6f496a.png",
+  "prompt": "Game character sprite edit. IMAGE1 idle_a3 is EDIT TARGET: keep head size, face, hair, chest/shoulder width, body proportions, torso direction, legs, boots, coat tails and both foot positions EXACTLY. IMAGE2 gun_aim_b is reference ONLY for screen-left TROUSER-pocket hand's final insertion and side; do NOT copy its extended arm/body stance. IMAGE3 face standard.\nFrame pocket_in_e: SCREEN LEFT hand is halfway inserting into TROUSER pocket UNDERNEATH the OPEN coat. All FOUR fingers are already inside the pocket ALL THE WAY TO THEIR ROOTS: NO finger or fingertip may show outside the pocket. Only the UPPER PART of the red-gloved BACK OF HAND, the WRIST and THUMB remain visible. It is a halfway insertion, not full palm insertion. Hand position halfway between idle's dangling hand and IMAGE2 pocket hand. Clearly a trouser pocket, NOT coat pocket. Keep small original hand size, normal finger lengths.\nSCREEN RIGHT hand remains EMPTY naturally hanging at side exactly as idle_a3, no raised arm. Everything else identical IMAGE1. No gun or object anywhere. P5R cel-shading, thick black ink same style as idle. True transparent RGBA1024x1536, alpha0 outside, soles y~1500, full person inside frame. No effects, glow, trails, speed lines, blur, ground, shadows, background or text.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/idle_a3.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/gun_aim_b.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/ref/face_standard.png"
+  ],
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 271,
+  "generation_count": 1,
+  "review": "No visual review, no regeneration; sequence check only after completing batch"
+}
