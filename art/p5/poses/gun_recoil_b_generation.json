@@ -1,0 +1,15 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-751c9cd6-2404-485b-86bb-840a40558e35.png",
+  "prompt": "Game character sprite image edit. IMAGE1 idle_a3 is the edit target: preserve exactly its head/body proportions, face, chest width, shoulder width, waist, legs, boots, coat skirt and tails, both foot positions and toe angles. Only arms/hands/prop and subtle head direction may change. Do NOT turn torso sideways, narrow chest or shoulders, or bring feet together. IMAGE4 gun_step_b is ONLY the approved LEFT HAND trouser-pocket reference: same side, same wrist position and relaxed elbow. Left palm inside TROUSER pocket underneath open coat, only wrist and small red-gloved back of hand showing. Never use coat pocket. IMAGE3 face_standard controls face. Black prop handgun same size as previous poses; hands and fingers same size as idle.\nP5R cel shading with bold black ink matching idle. One person, exactly two arms and ONE handgun. Whole figure and handgun fit inside portrait 1024x1536, soles around y1500. True transparent RGBA, alpha0 outside subject. NO flashes, flames, speed lines, trails, motion blur, effects, ground, shadows, background or text.\nIMAGE2 old pose is ONLY right arm and prop reference, ignore its skinny torso and narrow stance. Frame gun_recoil_b dynamic character gesture: RIGHT forearm flicked UP, black prop handgun muzzle points upper SCREEN RIGHT at approximately 45 degrees, NOT vertically skyward. Shoulder and torso lean back only very slightly; coat tails may lift just a little from idle shape. Both feet remain exactly idle. Head still looks screen right, no looking at sky. LEFT hand remains in LEFT trouser pocket same side and method as IMAGE4. Right hand holds one black prop, index finger straight OUTSIDE trigger guard, not pressing trigger. No effects.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/idle_a3.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/gun_recoil_a6.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/ref/face_standard.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/gun_step_b.png"
+  ],
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 260,
+  "generation_count": 1,
+  "review": "No visual review, no regeneration; sequence check only after completing batch"
+}
