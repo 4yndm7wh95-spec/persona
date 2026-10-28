@@ -40,7 +40,11 @@ PAGE = 4096
 GLOVE = [("glove_mid_a", .09), ("glove_reach_a", .12), ("glove_a", .16), ("glove_b", .3), ("glove_flex_a", .45),
          ("idle_a3", .3, .12)]
 SUMMON_UP = ["summon_lift1_a", "summon_lift2_a", "summon_touch_mid_a", "summon_touch2_a"]
-GUN_UP = ["gun_step_a", "gun_draw_a2", "gun_lift_mid_a", "gun_lift_near_a", "gun_raise_a2"]
+GUN_DRAW = ["gun_step_a", "gun_draw_a2", "gun_lift_mid_a"]          # hip -> across the chest -> (gun_a2) aimed
+# fire (recoil kicks the arm up) -> keep going up into the gun-by-the-face beat -> straight down and away
+# (short or no crossfades: these poses differ a lot - coat, stance - and a long fade shows two Jokers at once)
+GUN_SHOT = [("gun_recoil_a6", .07, 0), ("gun_raise_a2", .16, 0), ("gun_lift_near_a", .045, .015),
+            ("gun_lift_mid_a", .045, .015), ("idle_a3", .1, .03)]
 IDLE_LOOP = 11.0   # 8 s idle (+ blinks), then the glove tug, ending back on idle_a3
 ANIMS = {
     "idle_loop": [("idle_a3", 8.6)] + GLOVE + [("idle_a3", IDLE_LOOP - 8.6 - sum(f[1] for f in GLOVE))],
@@ -54,21 +58,22 @@ ANIMS = {
     "attack": [("idle_a3", .01), ("knife_draw_a", .03, .02), ("knife_set_a", .02, .02), ("knife_ready_b", .08, .02),
                ("slash_a10", .16, 0), ("slash_follow_a", .06), ("knife_return_a", .06),
                ("slash_recover_a", .08), ("idle_a3", .1, .06)],
-    # the Shiv card deals its damage 0.2 s after the anim starts (Shiv.cs WithAttackerAnim("Shiv", 0.2f)):
-    # draw and aim in 0.17 s, fire at 0.18 s (user 2026-10-28: the first version fired at 0.39 s, after the hit)
-    "shiv": [("idle_a3", .01)] + [(n, .028, .02) for n in GUN_UP] + [("gun_a2", .03), ("gun_recoil_a6", .07, 0),
-             ("gun_a2", .14)] + [(n, .035) for n in GUN_UP[::-1]] + [("idle_a3", .12, .07)],
+    # the Shiv card deals its damage 0.2 s after the anim starts (Shiv.cs WithAttackerAnim("Shiv", 0.2f)): fire at 0.18 s.
+    # 2026-10-28 (user: drawing / holstering felt draggy and stiff): the old version went up past the face on the draw,
+    # snapped level after the recoil and went back up past the face to holster (up-down-up-down). Now the draw goes
+    # straight from the hip to the aim (GUN_DRAW), the recoil kick carries on up into the gun-by-the-face pose
+    # (gun_raise_a2, a short beat) and the holster only goes down (GUN_HOLSTER)
+    "shiv": [("idle_a3", .01)] + [(n, .035, .02) for n in GUN_DRAW] + [("gun_a2", .065, .02)] + GUN_SHOT,
     # attack_chain: an attack played while the previous strike is still recovering (user 2026-10-28: fast play
     # restarted from the draw and visibly broke) - re-cock straight from the knife in hand, cut still at 0.14 s
     "attack_chain": [("knife_return_a", .03), ("knife_ready_b", .11, .03), ("slash_a10", .16, 0), ("slash_follow_a", .06),
                      ("knife_return_a", .06), ("slash_recover_a", .08), ("idle_a3", .1, .06)],
     # aim: picking up a Shiv card raises the gun and holds it (p5mod/src/Aim.cs); playing it fires from the
     # aim (shiv_from_aim, shot at 0.18 s like "shiv"); dropping the card lowers it (aim_out)
-    "aim_in": [("idle_a3", .01)] + [(n, .045, .03) for n in GUN_UP] + [("gun_a2", .05)],
+    "aim_in": [("idle_a3", .01)] + [(n, .05, .03) for n in GUN_DRAW] + [("gun_a2", .05, .03)],
     "aim_loop": [("gun_a2", 4.0)],
-    "aim_out": [("gun_a2", .01)] + [(n, .04) for n in GUN_UP[::-1]] + [("idle_a3", .1, .07)],
-    "shiv_from_aim": [("gun_a2", .18), ("gun_recoil_a6", .07, 0), ("gun_a2", .14)]
-                     + [(n, .035) for n in GUN_UP[::-1]] + [("idle_a3", .12, .07)],
+    "aim_out": [("gun_a2", .01), ("gun_lift_mid_a", .05, .03), ("gun_draw_a2", .05, .03), ("idle_a3", .1, .06)],
+    "shiv_from_aim": [("gun_a2", .18)] + GUN_SHOT,
     # cast variants picked per card by p5mod/src (Aim.Rename): guard (block cards), glove tug (card tricks /
     # buffs), the big summon (mask ripped off) for the large Persona cards
     "cast_guard": [("idle_a3", .02), ("guard_mid_a", .06), ("guard_a2", .45), ("guard_mid_a", .08), ("idle_a3", .12, .07)],

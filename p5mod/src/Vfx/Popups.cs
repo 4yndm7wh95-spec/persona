@@ -103,7 +103,7 @@ public static class Popups
 
 	/// <summary>
 	/// 「BLOCK」：Joker 的格挡完全挡住一次攻击时（原版 NDamageBlockedVfx 那一刻）。chest = Joker 胸口，facing = 朝向（敌人在哪边）。
-	/// 和 P3 一样：字在胸口偏上、稍微靠前，冲击点在身前；连续格挡时旧字立刻淡掉，冲击用轻量版。
+	/// 字压在腰前（两手之间），冲击点在身前；连续格挡时旧字立刻淡掉，冲击用轻量版。
 	/// </summary>
 	public static void Block(Control layer, Vector2 chest, float facing = 1f)
 	{
@@ -115,8 +115,8 @@ public static class Popups
 			Fx.Animate(old, 0, 0.08, t => old.Modulate = new Color(1f, 1f, 1f, old.Modulate.A * (1f - t)));
 			Fx.FreeAfter(old, 0.1);
 		}
-		_lastWord = BlockWord(layer, chest + new Vector2(120f * facing, -70f));       // 胸口偏上、身前（同 P3），不挡脸也不盖住胸口
-		Vector2 impact = chest + new Vector2(70f * facing, 10f);
+		_lastWord = BlockWord(layer, chest + new Vector2(60f * facing, 60f));         // 腰前、两手之间那一块（用户 2026-10-28 圈的位置）
+		Vector2 impact = chest + new Vector2(95f * facing, 20f);
 		Fx.After(layer, 0.05, () => BlockImpact(layer, impact, facing, chain));
 	}
 

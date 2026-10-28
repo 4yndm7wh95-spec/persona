@@ -48,6 +48,14 @@ public partial class Preview : Node2D
 				p.Shot(1.9 + 0.45 * i, Enemy, 9);
 			}
 		},
+		// 开枪动作：选中小刀牌举枪瞄准 → 打出去 → 收枪；再来一张直接开枪（没先瞄准）
+		["gun"] = p =>
+		{
+			p.At(0.3, () => { p._joker?.Play("aim_in"); p._joker?.Queue("aim_loop", true); });
+			p.At(1.3, () => p._joker?.Play("shiv_from_aim"));
+			p.Hit(1.5, Enemy, 6, true);
+			p.Shot(2.6, Enemy, 6);
+		},
 		["block"] = p =>
 		{
 			p.EnemyAttack(0.3, Enemy);
