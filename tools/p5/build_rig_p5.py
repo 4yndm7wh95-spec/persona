@@ -51,7 +51,8 @@ SUMMON_UP = ["summon_lift1_a", "summon_lift2_a", "summon_touch_mid_a", "summon_t
 # spins on the relaxed index finger (gun_spin_g = Codex's gun_spin_f with the finger joint bent so it reads,
 # tools/p5/bend_finger.py), then is caught in gun_aim_b's grip; pocket_in_e eases the left hand in and out
 GUN_IN = [("idle_a3", .01), ("pocket_in_e", .04, .02), ("gun_spin_g", .07, .02), ("gun_aim_b", .06, 0)]
-GUN_OUT = [("gun_spin_g", .16, 0), ("pocket_in_e", .05, .02), ("idle_a3", .1, .04)]
+# (user: the hand left the pocket too fast - pocket_in_e and the fade into idle are held longer)
+GUN_OUT = [("gun_spin_g", .3, 0), ("pocket_in_e", .1, .04), ("idle_a3", .14, .08)]
 GUN_SHOT = [("gun_recoil_b", .2, 0)] + GUN_OUT
 IDLE_LOOP = 11.0   # 8 s idle (+ blinks), then the glove tug, ending back on idle_a3
 ANIMS = {
@@ -128,11 +129,20 @@ PISTOL_GUARD = (518.6, 501.8)      # trigger-guard hole on pistol_b.png: the spi
 PISTOL_MUZZLE = (984, 300)
 PISTOL_K = 134 / 940               # pistol_b pixels -> final canvas (the gun in gun_aim_b is ~134 px long)
 SPIN, AIM_GUARD = (1285, 344), (1275, 340)      # the spinning finger (measured on the final) / aim_b's trigger guard
-SPIN_IN = [("@gun_spin_g", 0, *SPIN, 470, .3, 0, 0), ("@gun_spin_g", .025, *SPIN, 260, 1, 1, .9),
-           ("@gun_spin_g", .05, *SPIN, 90, 1, 1, .6), ("@gun_aim_b", 0, *AIM_GUARD, 0, 1, 1, 0)]
-SPIN_OUT = [("@@gun_spin_g", 0, *SPIN, 60, 1, 1, 0), ("@@gun_spin_g", .03, *SPIN, -70, 1, 1, .9),
-            ("@@gun_spin_g", .07, *SPIN, -260, 1, 1, .8), ("@@gun_spin_g", .11, *SPIN, -430, .7, 1, .5),
-            ("@@gun_spin_g", .15, *SPIN, -530, .05, 0, 0)]
+# (user: the gun floated - it spun >100 deg a frame and hid the finger. The way in only turns ~half a turn, slowing
+# into the catch; the way out has time, so it turns 1.8 turns over 0.3 s, easing out; and the fingertip is drawn over
+# the gun (FINGER_TIP) so the finger visibly goes through the trigger guard)
+# (user: some spin frames had a tiny / washed-out gun - it no longer scales in from 0.4 or out to 0.05: it stays a
+# touch bigger than in the hand while spinning and only pops in / fades out over the first / last frame; the trail
+# is a thin half-transparent line so the gun reads)
+SPIN_IN = [("@gun_spin_g", 0, *SPIN, 230, 1.1, 0, 0), ("@gun_spin_g", .015, *SPIN, 160, 1.1, 1, .5),
+           ("@gun_spin_g", .035, *SPIN, 80, 1.1, 1, .45), ("@gun_spin_g", .06, *SPIN, 15, 1.05, 1, .15),
+           ("@gun_aim_b", 0, *AIM_GUARD, 0, 1, 1, 0)]
+SPIN_OUT = [("@@gun_spin_g", 0, *SPIN, 60, 1.05, 1, 0), ("@@gun_spin_g", .04, *SPIN, -60, 1.1, 1, .45),
+            ("@@gun_spin_g", .09, *SPIN, -220, 1.1, 1, .5), ("@@gun_spin_g", .15, *SPIN, -390, 1.1, 1, .45),
+            ("@@gun_spin_g", .21, *SPIN, -530, 1.1, 1, .35), ("@@gun_spin_g", .26, *SPIN, -620, 1.1, 1, .2),
+            ("@@gun_spin_g", .29, *SPIN, -660, 1.1, 0, 0)]
+FINGER_TIP = ("gun_spin_g", (1279, 316, 1322, 370))   # the index finger from the trigger guard to the tip (final canvas)
 GUN_PROP = {"aim_in": SPIN_IN, "shiv": SPIN_IN + SPIN_OUT, "shiv_from_aim": SPIN_OUT, "aim_out": SPIN_OUT}
 
 # soft-mesh pictures: bone -> (parent, pivot on the final canvas, influence polys / circles, feather)
@@ -217,13 +227,24 @@ def gun_textures():
     for k in range(n):
         u = k / n
         a = a0 - math.radians(150) * u
-        w = 2 * (11 * (1 - u) ** 1.3 + 1.5)
+        w = 2 * (5 * (1 - u) ** 1.3 + 1.2)
         x, y = 2 * (o + r * math.cos(a)), 2 * (o + r * math.sin(a))
         d.ellipse([x - w, y - w, x + w, y + w], fill=(255, 255, 255, round(255 * (1 - u) ** 0.9)))
     trail = big.resize((size, size), Image.LANCZOS)
     smear = {"tex": trail, "att": {"x": 0, "y": 0, "scaleX": round(K / TEX, 4), "scaleY": round(K / TEX, 4),
                                    "width": size, "height": size}}
     return pistol, smear
+
+
+def finger_tip():
+    """the spinning finger's tip as its own picture, drawn over the gun; feathered on the knuckle side."""
+    name, box = FINGER_TIP
+    im = Image.open(FINAL / f"{name}.png").convert("RGBA").crop(box)
+    a = np.array(im).astype(float)
+    ramp = np.clip((np.arange(a.shape[1]) - 1) / 4.0, 0, 1)          # 4 px soft start where it enters the guard
+    a[..., 3] *= ramp[None, :]
+    im = Image.fromarray(a.astype(np.uint8))
+    return im.resize((max(1, round(im.width * TEX)), max(1, round(im.height * TEX))), Image.LANCZOS), box
 
 
 def region(box, tex):
@@ -344,6 +365,9 @@ def build():
     hx, hy = heads["idle_a3"]
     att["blink"] = {"idle_blink": dict(r, x=round(r["x"] - hx, 2), y=round(r["y"] - hy, 2))}   # on the idle head bone
     pistol, smear = gun_textures()
+    ft, fbox = finger_tip()
+    tex["finger_tip"] = ft
+    att["finger_tip"] = {"finger_tip": region(fbox, ft)}
     tex["pistol"], tex["gun_smear"] = pistol["tex"], smear["tex"]
     att["gun"] = {"pistol": pistol["att"]}
     att["gun_smear"] = {"gun_smear": smear["att"]}
@@ -394,6 +418,13 @@ def build():
             keys = [(round((last_at[k[0][2:]] if k[0].startswith("@@") else first_at[k[0][1:]]) + k[1], 4), *k[2:])
                     for k in GUN_PROP[name]]
             first, last = keys[0][0], keys[-1][0]
+            slots["finger_tip"] = {"attachment": [{"time": 0, "name": None}, {"time": first, "name": "finger_tip"},
+                                                  {"time": last, "name": None}]}
+            if name in ("aim_in", "shiv"):        # the catch: hide the tip while gun_aim_b (finger round the trigger) shows
+                tl_tip = slots["finger_tip"]["attachment"]
+                tl_tip.insert(2, {"time": keys[len(SPIN_IN) - 1][0], "name": None})
+                if name == "shiv":                # ... and bring it back for the spin away after the shot
+                    tl_tip.insert(3, {"time": keys[len(SPIN_IN)][0], "name": "finger_tip"})
             for slot, att_name, col in (("gun", "pistol", 5), ("gun_smear", "gun_smear", 6)):
                 slots[slot] = {"attachment": [{"time": 0, "name": None}, {"time": first, "name": att_name},
                                               {"time": last, "name": None}],
@@ -412,6 +443,7 @@ def build():
                   {"name": "fade", "bone": "body"},
                   {"name": "gun_smear", "bone": "gun"},
                   {"name": "gun", "bone": "gun"},
+                  {"name": "finger_tip", "bone": "body"},
                   {"name": "blink", "bone": "i_head"}],
         "skins": [{"name": "default", "attachments": att}],
         "animations": anims,
