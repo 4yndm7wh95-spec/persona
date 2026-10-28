@@ -590,5 +590,69 @@
    216
   ],
   "anchor_foot": "mid"
+ },
+ "gun_step_b": {
+  "scale": 1.0,
+  "offset": [
+   251,
+   94
+  ],
+  "anchor_foot": "rear"
+ },
+ "gun_draw_b": {
+  "scale": 1.0,
+  "offset": [
+   256,
+   96
+  ],
+  "anchor_foot": "rear"
+ },
+ "gun_twirl_in_b": {
+  "scale": 1.0,
+  "offset": [
+   254,
+   95
+  ],
+  "anchor_foot": "rear"
+ },
+ "gun_twirl_mid_b": {
+  "scale": 1.0,
+  "offset": [
+   256,
+   95
+  ],
+  "anchor_foot": "rear"
+ },
+ "gun_aim_b": {
+  "scale": 1.0,
+  "offset": [
+   343,
+   99
+  ],
+  "anchor_foot": "rear"
+ },
+ "gun_recoil_b": {
+  "scale": 1.0,
+  "offset": [
+   255,
+   94
+  ],
+  "anchor_foot": "rear"
+ },
+ "gun_raise_b": {
+  "scale": 1.0,
+  "offset": [
+   255,
+   94
+  ],
+  "anchor_foot": "rear"
+ },
+ "gun_twirl_out_b": {
+  "scale": 1.0,
+  "offset": [
+   255,
+   96
+  ],
+  "anchor_foot": "rear"
  }
 }
