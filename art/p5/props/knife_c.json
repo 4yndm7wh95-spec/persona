@@ -1,11 +1,12 @@
 {
  "pivot": [
-  53,
-  30
+  40,
+  23
  ],
  "tip": [
-  306,
-  31
+  219,
+  23
  ],
+ "blade_angle_in_pose": 144.4,
  "note": "final-canvas px"
 }
