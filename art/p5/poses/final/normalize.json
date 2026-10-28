@@ -566,5 +566,13 @@
    216
   ],
   "anchor_foot": "mid"
+ },
+ "slash_a8": {
+  "scale": 0.96,
+  "offset": [
+   300,
+   215
+  ],
+  "anchor_foot": "mid"
  }
 }
