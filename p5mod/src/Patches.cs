@@ -69,6 +69,14 @@ public static class DamagePatch
 				Damage.Mark(n, gun);
 			}
 			CardFx.OnHit(cardSource, joker, nodes);
+			// 打中易伤的敌人 = P5 的打中弱点：WEAK + 眼神特写
+			foreach (Creature c in targets)
+			{
+				if (!c.IsPlayer && c.HasPower<MegaCrit.Sts2.Core.Models.Powers.VulnerablePower>() && room.GetCreatureNode(c) is NCreature n)
+				{
+					Eyes.OnWeakHit(n);
+				}
+			}
 		});
 	}
 }
