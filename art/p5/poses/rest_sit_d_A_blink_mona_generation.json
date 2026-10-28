@@ -1,0 +1,16 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-e858088b-8170-476c-8d7f-b8ebd5a876e3.png",
+  "prompt": "Minimal image edit: rest_sit_d_A_blink_mona. Return entire supplied LANDSCAPE1536x1024 RGBA composition. Change ONLY MORGANA TWO BIG EYES (black/white mascot at left) into CLOSED eyes using official Morgana blink drawing: replace blue eyes at their original locations with TWO downward-curving arc lines; each closed eyelid arc spans same full width and follows same footprint as original big eye outline, not tiny human eyelids, no remaining blue iris or pupil. Keep mascot head shape, muzzle, smile, ears, scarf and everything else unchanged. JOKER human on right must keep original OPEN eyes, head face clothes pose hands coffee cup boots same. Preserve all positions composition sizes and transparency. No crop, rescale, restyle or unrelated redraw; no effects. Full image1536x1024, true transparent background. One image.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/rest_sit_d_A.png"
+  ],
+  "tool": "built-in image_gen",
+  "canvas": [
+    1536,
+    1024
+  ],
+  "cleanup_alpha_pixels": 228,
+  "generation_count": 1,
+  "review": "No visual review, no regeneration; sequence check only after completing batch"
+}
