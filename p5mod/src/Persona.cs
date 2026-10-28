@@ -45,7 +45,7 @@ public static class Persona
 		});
 
 		SkillTag(front, skill, 1.6);
-		Band(back, screen, face, big);
+		Eyes.Show(back, big, shatterAt: face);                    // 原版撕纸眼神特写，0.42 秒碎成玻璃
 		Fx.After(back, 0.42, () =>
 		{
 			Fx.Shake(big ? ShakeStrength.Strong : ShakeStrength.Medium);
@@ -68,6 +68,7 @@ public static class Persona
 		Vector2 face = Joker.PosePoint(joker, new Vector2(805f, 215f));
 		float side = Joker.Facing(joker);
 		SkillTag(front, skill, 1.1);
+		Band(back, Fx.Screen(back), face, big: false, shatter: false);   // 小技能：红色切入横幅一扫而过
 		Fx.After(back, 0.2, () =>
 		{
 			MaskFlame(front, face, side, 0.55);
@@ -104,8 +105,8 @@ public static class Persona
 		Fx.Animate(f, 0, seconds, t => f.Color = new Color(1f, 1f, 1f, 0.75f * (1f - t)));
 	}
 
-	/// <summary>切入横幅：从左边斜着插进来，0.42 秒时以 Joker 的脸为中心炸碎。</summary>
-	private static void Band(Control layer, Vector2 screen, Vector2 face, bool big)
+	/// <summary>红色切入横幅（Codex 画的 cutin_band）：从左边斜着插进来；shatter 时 0.42 秒以 Joker 的脸为中心炸碎，否则停一下往右扫出去。</summary>
+	public static void Band(Control layer, Vector2 screen, Vector2 face, bool big, bool shatter = true)
 	{
 		if (Fx.Tex("cutin_band") is not Texture2D tex)
 		{
@@ -116,7 +117,10 @@ public static class Persona
 		root.Rotation = -0.1f;
 		Vector2 tsize = tex.GetSize();
 		Vector2 half = new(bw / 2f, bh / 2f);
-		Vector2 Uv(Vector2 p) => new((p.X + half.X) / bw * tsize.X, (p.Y + half.Y) / bh * tsize.Y);
+		// 不拉伸贴图（用户 2026-10-28：看着扁）：横幅比贴图更扁，就按横幅的比例从贴图里裁一条（以眼睛那一行为中心）
+		float regionH = Mathf.Min(tsize.Y, tsize.X * bh / bw), regionW = regionH * bw / bh;
+		float y0 = Mathf.Clamp(tsize.Y * 0.47f - regionH / 2f, 0f, tsize.Y - regionH), x0 = tsize.X - regionW;
+		Vector2 Uv(Vector2 p) => new(x0 + (p.X + half.X) / bw * regionW, y0 + (p.Y + half.Y) / bh * regionH);
 		Vector2[] quad = { -half, new(half.X, -half.Y), half, new(-half.X, half.Y) };
 		Polygon2D band = new() { Texture = tex, Polygon = quad, UV = quad.Select(Uv).ToArray() };
 		root.AddChild(band);
@@ -124,13 +128,19 @@ public static class Persona
 		Line2D edgeBottom = new() { Points = new[] { quad[3], quad[2] }, Width = 10f, DefaultColor = Colors.White };
 		root.AddChild(edgeTop);
 		root.AddChild(edgeBottom);
-		// 滑入 0.13 秒，之后慢慢往右平移
-		Fx.Animate(band, 0, 0.42, t =>
+		// 滑入 0.13 秒，之后慢慢往右平移；不碎的话 0.55 秒后往右扫出去
+		float life = shatter ? 0.42f : 0.75f;
+		Fx.Animate(band, 0, life, t =>
 		{
-			float time = 0.42f * t;
-			float x = -screen.X * 1.2f * (1f - Fx.OutCubic(Mathf.Clamp(time / 0.13f, 0f, 1f))) + 30f * time;
+			float time = life * t;
+			float x = -screen.X * 1.2f * (1f - Fx.OutCubic(Mathf.Clamp(time / 0.13f, 0f, 1f))) + 30f * time
+				+ screen.X * 1.3f * Fx.InCubic(Mathf.Clamp((time - 0.55f) / 0.2f, 0f, 1f));
 			band.Position = edgeTop.Position = edgeBottom.Position = new Vector2(x, 0f);
 		});
+		if (!shatter)
+		{
+			return;
+		}
 		Fx.After(root, 0.42, () =>
 		{
 			Vector2 impact = root.ToLocal(face);
@@ -142,7 +152,7 @@ public static class Persona
 
 	/// <summary>横幅碎成玻璃：以冲击点为中心，边上取一圈点，相邻两点和冲击点组成三角（再对半切一次），
 	/// 每块带着自己那一片贴图往外飞、翻转、放大（冲向镜头），白色描边。</summary>
-	private static void Shatter(Node2D root, Texture2D tex, Vector2[] quad, Func<Vector2, Vector2> uv, Vector2 offset, Vector2 impact, int n)
+	public static void Shatter(Node2D root, Texture2D tex, Vector2[] quad, Func<Vector2, Vector2> uv, Vector2 offset, Vector2 impact, int n)
 	{
 		List<Vector2> ring = new();
 		for (int e = 0; e < 4; e++)

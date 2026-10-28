@@ -8,28 +8,25 @@ namespace P5Joker;
 /// 「1 MORE」眼神特写（用户 2026-10-28：原版打中弱点时那张撕纸露出 Joker 眼睛的切入，很帅）。
 /// 贴图是 P5R 原版的战斗切入 BATTLE/CUTIN/BCT_P_BC0001（research/p5r/art/portrait 导出，3840x1536 透明底的眼睛特写）。
 /// 画面中线一道横向撕开的口子：暗灰的底上，撕口上下是白色毛边、两头露出红色碎纸，口子里是 Joker 的眼睛（慢慢横移）；
-/// 0.1 秒撕开 → 停 0.5 秒 → 合上。STS 里没有「弱点」，对应成「打中易伤的敌人」，旁边弹原版 WEAK 字样；眼神特写 8 秒内最多一次。
+/// 0.1 秒撕开 → 停一下 → 合上（或在召唤亚森时碎成玻璃）。
+/// 用在（用户 2026-10-28：这个帅，多用一些，放到大招和人格面具召唤上）：完整版召唤亚森（Persona.Summon，撕开后碎成玻璃）、
+/// 大招攻击（暗杀、猎杀、谋杀、华丽谢幕、掠夺者）出牌时。打中易伤的敌人只弹原版 WEAK 字样。
 /// </summary>
 public static class Eyes
 {
 	private static readonly Color Paper = new(0.97f, 0.96f, 0.93f), Dark = new(0.13f, 0.13f, 0.15f), Red = new(0.9f, 0.05f, 0.1f);
 	private static ulong _last;
 
-	/// <summary>打中易伤的敌人：WEAK 字样（每次），眼神特写（8 秒内一次）。</summary>
+	/// <summary>打中易伤的敌人：头顶弹原版 WEAK 字样（同一个敌人 0.5 秒内只弹一次，多段攻击不刷屏）。</summary>
 	public static void OnWeakHit(NCreature target)
 	{
 		Control? front = Joker.FxLayer();
-		if (front == null)
-		{
-			return;
-		}
-		Weak(front, target.VfxSpawnPosition + new Vector2(0f, -(target.Hitbox?.Size.Y ?? 240f) * 0.6f));
-		if (Time.GetTicksMsec() - _last < 8000)
+		if (front == null || Time.GetTicksMsec() - _last < 500)
 		{
 			return;
 		}
 		_last = Time.GetTicksMsec();
-		Show(front);
+		Weak(front, target.VfxSpawnPosition + new Vector2(0f, -(target.Hitbox?.Size.Y ?? 240f) * 0.6f));
 	}
 
 	private static void Weak(Control layer, Vector2 at)
@@ -50,15 +47,16 @@ public static class Eyes
 		});
 	}
 
-	public static void Show(Control layer)
+	/// <summary>眼神特写。shatterAt 不为空：0.42 秒时以这个点（Joker 的脸）为中心碎成玻璃（召唤亚森），否则停一下合上。</summary>
+	public static void Show(Control layer, bool big = false, Vector2? shatterAt = null)
 	{
 		if (Fx.Tex("eyes") is not Texture2D tex)
 		{
 			return;
 		}
 		Vector2 screen = Fx.Screen(layer);
-		float w = screen.X * 1.15f, h = screen.Y * 0.3f;
-		Node2D root = Fx.Root(layer, new Vector2(screen.X * 0.5f, screen.Y * 0.42f), "P5Eyes", 0.95);
+		float w = screen.X * 1.15f, h = screen.Y * (big ? 0.34f : 0.3f);
+		Node2D root = Fx.Root(layer, new Vector2(screen.X * 0.5f, screen.Y * 0.4f), "P5Eyes", 1.4);
 		root.Rotation = -0.06f;
 
 		// 暗灰底：比撕口高一倍的一条，带一点斜线纹
@@ -93,16 +91,40 @@ public static class Eyes
 			return uv;
 		}
 		// 动画：0.1 秒从中线撕开（纵向放大），慢慢横移，0.75 秒后合上
-		Fx.Animate(root, 0, 0.9, t =>
+		bool shatter = shatterAt.HasValue;
+		float pan = 0f;
+		Fx.Animate(root, 0, shatter ? 0.42 : 0.9, t =>
 		{
-			float time = 0.9f * t;
+			float time = (shatter ? 0.42f : 0.9f) * t;
+			pan = -60f + 120f * time / 0.9f;
 			float open = Fx.OutCubic(Mathf.Clamp(time / 0.1f, 0f, 1f)) * (1f - Fx.InCubic(Mathf.Clamp((time - 0.72f) / 0.18f, 0f, 1f)));
 			root.Scale = new Vector2(1f + 0.05f * (1f - open), Mathf.Max(0.02f, open));
-			face.UV = Uv(-60f + 120f * t);
+			face.UV = Uv(pan);
 			bg.Modulate = new Color(1, 1, 1, Mathf.Min(1f, open * 1.5f));
 			paper.Modulate = new Color(1, 1, 1, open);
 		});
 		Fx.Shake(ShakeStrength.Weak);
+		if (!shatter)
+		{
+			return;
+		}
+		Fx.After(root, 0.42, () =>
+		{
+			// 撕口连同里面的眼睛碎成玻璃：碎片贴图 = 当时撕口里显示的那一块
+			Vector2[] rect = Rect(w, h);
+			Vector2 Map(Vector2 p) => new((p.X / w + 0.5f) * ts.X * 0.92f + ts.X * 0.04f + pan, eyeY + p.Y / h * regionH);
+			Vector2 impact = root.ToLocal(shatterAt!.Value);
+			impact = new Vector2(Mathf.Clamp(impact.X, -w * 0.4f, w * 0.4f), Mathf.Clamp(impact.Y, -h * 0.3f, h * 0.3f));
+			bg.Visible = paper.Visible = face.Visible = false;
+			foreach (Node c in root.GetChildren())
+			{
+				if (c is Polygon2D p && p != bg && p != paper && p != face)
+				{
+					p.Visible = false;                                   // 两头的红碎纸
+				}
+			}
+			Persona.Shatter(root, tex, rect, Map, Vector2.Zero, impact, big ? 22 : 16);
+		});
 	}
 
 	private static Vector2[] Rect(float w, float h) =>

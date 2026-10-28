@@ -68,6 +68,7 @@ public static class CardFx
 		["PreciseCut"] = new(Blade.Thrust, Size: 0.9f, Play: c => Tricks.Reticle(c.One)),
 		["Predator"] = new(Blade.Cross, Size: 1.2f, Play: c =>
 		{
+			EyesCut(c);
 			Tricks.Reticle(c.One, weak: true);
 			Tricks.CallingCards(c.Joker, 1, c.One.VfxSpawnPosition);
 		}),
@@ -84,11 +85,13 @@ public static class CardFx
 		["LeadingStrike"] = new(Blade.Cut, Play: c => Fx.After(c.Joker, 0.3, () => Tricks.Reload(c.Joker, 1))),
 		["Assassinate"] = new(Blade.Heavy, Size: 1.3f, Play: c =>
 		{
+			EyesCut(c);
 			Tricks.CallingCards(c.Joker, 1, c.One.VfxSpawnPosition);
 			Tricks.Reticle(c.One, weak: true, delay: 0.05f);
 		}),
 		["TheHunt"] = new(Blade.Heavy, Size: 1.2f, Play: c =>
 		{
+			EyesCut(c);
 			Tricks.Shadow(c.Joker, 0.7);
 			Tricks.Reticle(c.One);
 		}),
@@ -309,6 +312,15 @@ public static class CardFx
 			Spells.Kaja(c.Joker, new Color(0.5f, 0.6f, 1f));
 		}, big: true)),
 	};
+
+	/// <summary>大招攻击出牌时的撕纸眼神特写（不碎；召唤亚森的牌由 Persona.Summon 自己带、而且会碎成玻璃）。</summary>
+	private static void EyesCut(CardCtx c)
+	{
+		if (Joker.FxLayer(back: true) is Control back)
+		{
+			Eyes.Show(back);
+		}
+	}
 
 	public static int Count => Table.Count;
 
