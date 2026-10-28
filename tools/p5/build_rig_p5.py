@@ -50,9 +50,11 @@ SUMMON_UP = ["summon_lift1_a", "summon_lift2_a", "summon_touch_mid_a", "summon_t
 # 5th round (user's own hand photo, art/p5/ref/spin_hand_ref.jpg): the arm stays out at the firing reach and the gun
 # spins on the relaxed index finger (gun_spin_g = Codex's gun_spin_f with the finger joint bent so it reads,
 # tools/p5/bend_finger.py), then is caught in gun_aim_b's grip; pocket_in_e eases the left hand in and out
-GUN_IN = [("idle_a3", .01), ("pocket_in_e", .04, .02), ("gun_spin_g", .07, .02), ("gun_aim_b", .06, 0)]
+# gun_arm_mid_h (arm half raised) between the hanging arm and the spin, both ways (user: the arm jumped up / dropped)
+GUN_IN = [("idle_a3", .01), ("pocket_in_e", .03, .015), ("gun_arm_mid_h", .03, .015), ("gun_spin_g", .05, .015),
+          ("gun_aim_b", .06, 0)]
 # (user: the hand left the pocket too fast - pocket_in_e and the fade into idle are held longer)
-GUN_OUT = [("gun_spin_g", .3, 0), ("pocket_in_e", .1, .04), ("idle_a3", .14, .08)]
+GUN_OUT = [("gun_spin_g", .3, 0), ("gun_arm_mid_h", .1, .02), ("pocket_in_e", .1, .04), ("idle_a3", .14, .08)]
 GUN_SHOT = [("gun_recoil_b", .2, 0)] + GUN_OUT
 IDLE_LOOP = 11.0   # 8 s idle (+ blinks), then the glove tug, ending back on idle_a3
 ANIMS = {
@@ -135,8 +137,8 @@ SPIN, AIM_GUARD = (1285, 344), (1275, 340)      # the spinning finger (measured 
 # (user: some spin frames had a tiny / washed-out gun - it no longer scales in from 0.4 or out to 0.05: it stays a
 # touch bigger than in the hand while spinning and only pops in / fades out over the first / last frame; the trail
 # is a thin half-transparent line so the gun reads)
-SPIN_IN = [("@gun_spin_g", 0, *SPIN, 230, 1.1, 0, 0), ("@gun_spin_g", .015, *SPIN, 160, 1.1, 1, .5),
-           ("@gun_spin_g", .035, *SPIN, 80, 1.1, 1, .45), ("@gun_spin_g", .06, *SPIN, 15, 1.05, 1, .15),
+SPIN_IN = [("@gun_spin_g", 0, *SPIN, 230, 1.1, 0, 0), ("@gun_spin_g", .012, *SPIN, 160, 1.1, 1, .5),
+           ("@gun_spin_g", .028, *SPIN, 80, 1.1, 1, .45), ("@gun_spin_g", .042, *SPIN, 15, 1.05, 1, .15),
            ("@gun_aim_b", 0, *AIM_GUARD, 0, 1, 1, 0)]
 SPIN_OUT = [("@@gun_spin_g", 0, *SPIN, 60, 1.05, 1, 0), ("@@gun_spin_g", .04, *SPIN, -60, 1.1, 1, .45),
             ("@@gun_spin_g", .09, *SPIN, -220, 1.1, 1, .5), ("@@gun_spin_g", .15, *SPIN, -390, 1.1, 1, .45),
