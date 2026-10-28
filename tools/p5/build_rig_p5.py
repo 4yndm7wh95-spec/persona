@@ -57,6 +57,8 @@ GUN_IN = [("idle_a3", .01), ("pocket_in_e", .03, .015), ("gun_arm_mid_h", .03, .
 # (user: the hand left the pocket too fast - pocket_in_e and the fade into idle are held longer)
 GUN_OUT = [("gun_spin_g", .3, 0), ("gun_arm_mid_h", .1, .02), ("pocket_in_e", .1, .04), ("idle_a3", .14, .08)]
 GUN_SHOT = [("gun_recoil_b", .2, 0)] + GUN_OUT
+KNIFE_IN = [("idle_a3", .01), ("knife_spin_e", .08, 0), ("knife_ready_b", .05, 0)]
+KNIFE_OUT = [("knife_spin_e", .26, 0), ("idle_a3", .12, .05)]
 IDLE_LOOP = 11.0   # 8 s idle (+ blinks), then the glove tug, ending back on idle_a3
 ANIMS = {
     "idle_loop": [("idle_a3", 8.6)] + GLOVE + [("idle_a3", IDLE_LOOP - 8.6 - sum(f[1] for f in GLOVE))],
@@ -67,9 +69,15 @@ ANIMS = {
     # 2026-10-28: the left hand no longer hangs idle - it comes up to the chest on the wind-up (knife_ready_b)
     # and is pulled back behind the waist on the cut (slash_a10); the cut is a snap (no smear: the blade trail
     # will be a code effect), the hit-stop below sells it
-    "attack": [("idle_a3", .01), ("knife_draw_a", .03, .02), ("knife_set_a", .02, .02), ("knife_ready_b", .08, .02),
-               ("slash_a10", .16, 0), ("slash_follow_a", .06), ("knife_return_a", .06),
-               ("slash_recover_a", .08), ("idle_a3", .1, .06)],
+    # 2026-10-28: the knife is spun at the hip on the draw (KNIFE_PROP; cut still at 0.14 s) and again after the strike
+    "attack": KNIFE_IN + [("slash_a10", .16, 0), ("slash_follow_a", .06), ("knife_return_a", .06)] + KNIFE_OUT,
+    # picking up an attack card: spin the knife out and hold it ready (like aim_in for the gun); knife_in is exactly
+    # the first 0.14 s of attack, so a card played mid-spin carries on from the same point (p5mod/src/Aim.cs)
+    "knife_in": KNIFE_IN,
+    "knife_loop": [("knife_ready_b", 4.8)],
+    "knife_out": [("knife_ready_b", .01)] + KNIFE_OUT,
+    "attack_from_ready": [("knife_ready_b", .14), ("slash_a10", .16, 0), ("slash_follow_a", .06), ("knife_return_a", .06)]
+                         + KNIFE_OUT,
     # the Shiv card deals its damage 0.2 s after the anim starts (Shiv.cs WithAttackerAnim("Shiv", 0.2f)): fire at 0.18 s
     "shiv": GUN_IN + GUN_SHOT,
     # attack_chain: an attack played while the previous strike is still recovering (user 2026-10-28: fast play
@@ -108,6 +116,13 @@ IMPACT = {
     # holding the aim: a slow breath on the whole body (the aim frame has no soft mesh)
     "aim_loop": [(0, 0, 0, 1, 1, 0), (1.2, 0, 2, .997, 1.006, -.15), (2.4, 0, 0, 1, 1, 0), (3.6, 0, 2, .997, 1.006, -.15),
                  (4.8, 0, 0, 1, 1, 0)],
+    "knife_loop": [(0, 0, 0, 1, 1, 0), (1.2, 0, 2, .997, 1.006, -.15), (2.4, 0, 0, 1, 1, 0), (3.6, 0, 2, .997, 1.006, -.15),
+                   (4.8, 0, 0, 1, 1, 0)],
+    # from the held guard: a short wind-up into the same cut as "attack"
+    "attack_from_ready": [(0, 0, 0, 1, 1, 0), (.08, -10, 0, 1.01, .985, 1), (.12, -24, -4, 1.025, .965, 2),
+                          (.14, 95, 0, .97, 1.035, -3), (.16, 112, 0, 1.035, .965, -2.2), (.18, 120, 0, 1.03, .97, -2.2),
+                          (.20, 104, 0, 1.03, .97, -2), (.22, 116, 0, 1.025, .975, -2), (.24, 107, 0, 1.02, .98, -1.8),
+                          (.27, 111, 0, 1.015, .985, -1.6), (.40, 72, 0, 1.0, 1.0, -.6), (.56, 4, 0, 1, 1, 0), (.62, 0, 0, 1, 1, 0)],
     "shiv": [("@gun_recoil_b", 0, 0, 0, 1, 1, 0), ("@gun_recoil_b", .02, -30, 0, .985, 1.01, 2.5),
              ("@gun_recoil_b", .04, -21, 0, .99, 1.005, 2), ("@gun_recoil_b", .06, -27, 0, .99, 1.005, 2),
              ("@gun_recoil_b", .12, -12, 0, 1, 1, .8), ("@gun_recoil_b", .26, 0, 0, 1, 1, 0)],
@@ -146,7 +161,25 @@ SPIN_OUT = [("@@gun_spin_g", 0, *SPIN, 60, 1.05, 1, 0), ("@@gun_spin_g", .04, *S
             ("@@gun_spin_g", .21, *SPIN, -530, 1.1, 1, .35), ("@@gun_spin_g", .26, *SPIN, -620, 1.1, 1, .2),
             ("@@gun_spin_g", .29, *SPIN, -660, 1.1, 0, 0)]
 FINGER_TIP = ("gun_spin_g", (1279, 316, 1322, 370))   # the index finger from the trigger guard to the tip (final canvas)
-GUN_PROP = {"aim_in": SPIN_IN, "shiv": SPIN_IN + SPIN_OUT, "shiv_from_aim": SPIN_OUT, "aim_out": SPIN_OUT}
+# each animation lists the prop's spin segments; the loose prop (and its trail / the fingertip) is only shown
+# within a segment - between them the prop drawn in the pose picture takes over
+GUN_PROP = {"aim_in": [SPIN_IN], "shiv": [SPIN_IN, SPIN_OUT], "shiv_from_aim": [SPIN_OUT], "aim_out": [SPIN_OUT]}
+
+# the knife (user 2026-10-28: spin it the same way - on the draw at the hip, then cut upwards; and again at the hip
+# after the strike). art/p5/props/knife_c.png is drawn in code (tools/p5/draw_knife.py), pivot at the middle of
+# the grip; knife_spin_e is the empty hand at the hip (Codex). Rotation 0 = pointing right; knife_ready_b holds it
+# pointing down-left (~150 deg on screen = -150 here)
+KNIFE = POSES.parent / "props/knife_c.png"
+KNIFE_PIVOT, KNIFE_TIP = (53, 30), (306, 31)
+KNIFE_HAND = (712, 688)                     # palm of the empty hand in knife_spin_e (final canvas)
+KSPIN_IN = [("@knife_spin_e", 0, *KNIFE_HAND, 200, 1, 0, 0), ("@knife_spin_e", .02, *KNIFE_HAND, 80, 1, 1, .6),
+            ("@knife_spin_e", .045, *KNIFE_HAND, -40, 1, 1, .6), ("@knife_spin_e", .065, *KNIFE_HAND, -120, 1, 1, .3),
+            ("@knife_ready_b", 0, 720, 725, -150, 1, 1, 0)]
+KSPIN_OUT = [("@@knife_spin_e", 0, *KNIFE_HAND, -90, 1, 1, 0), ("@@knife_spin_e", .04, *KNIFE_HAND, -210, 1, 1, .6),
+             ("@@knife_spin_e", .09, *KNIFE_HAND, -370, 1, 1, .6), ("@@knife_spin_e", .15, *KNIFE_HAND, -510, 1, 1, .4),
+             ("@@knife_spin_e", .2, *KNIFE_HAND, -600, 1, 1, .2), ("@@knife_spin_e", .24, *KNIFE_HAND, -640, 1, 0, 0)]
+KNIFE_PROP = {"attack": [KSPIN_IN, KSPIN_OUT], "knife_in": [KSPIN_IN], "knife_out": [KSPIN_OUT],
+              "attack_from_ready": [KSPIN_OUT]}
 
 # soft-mesh pictures: bone -> (parent, pivot on the final canvas, influence polys / circles, feather)
 MESHES = {
@@ -223,6 +256,34 @@ def shadow():
     im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     ImageDraw.Draw(im).ellipse([20, 15, w - 20, h - 15], fill=(0, 0, 0, 110))
     return im.filter(ImageFilter.GaussianBlur(12))
+
+
+def trail(radius, a0):
+    """white spin trail: a crescent on a circle of `radius` (texture px) behind angle a0, 150 deg long, thinning."""
+    size = int(2 * radius + 30)
+    o = size / 2
+    big = Image.new("RGBA", (size * 2, size * 2), (0, 0, 0, 0))
+    d = ImageDraw.Draw(big)
+    n = 90
+    for k in range(n):
+        u = k / n
+        a = a0 - math.radians(150) * u
+        w = 2 * (5 * (1 - u) ** 1.3 + 1.2)
+        x, y = 2 * (o + radius * math.cos(a)), 2 * (o + radius * math.sin(a))
+        d.ellipse([x - w, y - w, x + w, y + w], fill=(255, 255, 255, round(255 * (1 - u) ** 0.9)))
+    return big.resize((size, size), Image.LANCZOS)
+
+
+def knife_textures():
+    im = Image.open(KNIFE).convert("RGBA")
+    c = im.resize((round(im.width * TEX), round(im.height * TEX)), Image.LANCZOS)
+    cx, cy = im.width / 2, im.height / 2
+    knife = {"tex": c, "att": {"x": round((cx - KNIFE_PIVOT[0]) * K, 2), "y": round((KNIFE_PIVOT[1] - cy) * K, 2),
+                               "scaleX": round(K / TEX, 4), "scaleY": round(K / TEX, 4), "width": c.width, "height": c.height}}
+    t = trail((KNIFE_TIP[0] - KNIFE_PIVOT[0]) * TEX, 0.0)
+    smear = {"tex": t, "att": {"x": 0, "y": 0, "scaleX": round(K / TEX, 4), "scaleY": round(K / TEX, 4),
+                               "width": t.width, "height": t.height}}
+    return knife, smear
 
 
 def gun_textures():
@@ -363,6 +424,32 @@ def bake_motion(pre, length):
     return tl
 
 
+def prop_timelines(fr, segments, slot_defs):
+    """slot + bone timelines for a loose prop: keys are (time, x, y, rotation, scale, prop alpha, trail alpha) with
+    "@pose" / "@@pose" times (that pose's first / last start); each segment shows the prop from its first to its
+    last key."""
+    first_at, last_at = {}, {}
+    for p, t0, dur, fade in fr:
+        first_at.setdefault(p, t0)
+        last_at[p] = t0
+    segs = [[(round((last_at[k[0][2:]] if k[0].startswith("@@") else first_at[k[0][1:]]) + k[1], 4), *k[2:]) for k in seg]
+            for seg in segments]
+    keys = [k for seg in segs for k in seg]
+    slots = {}
+    for slot, att_name, col in slot_defs:
+        shown = [{"time": 0, "name": None}]
+        for seg in segs:
+            shown += [{"time": seg[0][0], "name": att_name}, {"time": seg[-1][0], "name": None}]
+        slots[slot] = {"attachment": shown}
+        if col is not None:
+            slots[slot]["rgba"] = [{"time": k[0], "color": hexa(k[col])} for k in keys]
+    bone = {"translate": [{"time": k[0], "x": round((k[1] - ORIGIN[0]) * K, 2), "y": round((ORIGIN[1] - k[2]) * K, 2)}
+                          for k in keys],
+            "rotate": [{"time": k[0], "value": k[3]} for k in keys],
+            "scale": [{"time": k[0], "x": k[4], "y": k[4]} for k in keys]}
+    return slots, bone
+
+
 def build():
     used = sorted({f[0] for a in ANIMS.values() for f in a})
     tex, att = {}, {"pose": {}, "fade": {}}
@@ -390,6 +477,10 @@ def build():
     tex["finger_tip"] = ft
     att["finger_tip"] = {"finger_tip": region(fbox, ft)}
     tex["pistol"], tex["gun_smear"] = pistol["tex"], smear["tex"]
+    knife, ksmear = knife_textures()
+    tex["knife"], tex["knife_smear"] = knife["tex"], ksmear["tex"]
+    att["knife"] = {"knife": knife["att"]}
+    att["knife_smear"] = {"knife_smear": ksmear["att"]}
     att["gun"] = {"pistol": pistol["att"]}
     att["gun_smear"] = {"gun_smear": smear["att"]}
     sh = shadow()
@@ -431,42 +522,25 @@ def build():
             tl["body"] = {"translate": [{"time": round(k[0], 4), "x": k[1], "y": k[2]} for k in keys],
                           "scale": [{"time": round(k[0], 4), "x": k[3], "y": k[4]} for k in keys],
                           "rotate": [{"time": round(k[0], 4), "value": k[5]} for k in keys]}
-        if name in GUN_PROP:
-            first_at, last_at = {}, {}
-            for p, t0, dur, fade in fr:
-                first_at.setdefault(p, t0)
-                last_at[p] = t0
-            keys = [(round((last_at[k[0][2:]] if k[0].startswith("@@") else first_at[k[0][1:]]) + k[1], 4), *k[2:])
-                    for k in GUN_PROP[name]]
-            first, last = keys[0][0], keys[-1][0]
-            slots["finger_tip"] = {"attachment": [{"time": 0, "name": None}, {"time": first, "name": "finger_tip"},
-                                                  {"time": last, "name": None}]}
-            if name in ("aim_in", "shiv"):        # the catch: hide the tip while gun_aim_b (finger round the trigger) shows
-                tl_tip = slots["finger_tip"]["attachment"]
-                tl_tip.insert(2, {"time": keys[len(SPIN_IN) - 1][0], "name": None})
-                if name == "shiv":                # ... and bring it back for the spin away after the shot
-                    tl_tip.insert(3, {"time": keys[len(SPIN_IN)][0], "name": "finger_tip"})
-            for slot, att_name, col in (("gun", "pistol", 5), ("gun_smear", "gun_smear", 6)):
-                shown = [{"time": 0, "name": None}, {"time": first, "name": att_name}, {"time": last, "name": None}]
-                if name == "shiv":                # the drawn gun takes over from the catch to the spin away: the
-                    shown[2:2] = [{"time": keys[len(SPIN_IN) - 1][0], "name": None},       # loose one must not
-                                  {"time": keys[len(SPIN_IN)][0], "name": att_name}]       # hang in the air
-                slots[slot] = {"attachment": shown, "rgba": [{"time": k[0], "color": hexa(k[col])} for k in keys]}
-            tl["gun"] = {"translate": [{"time": k[0], "x": round((k[1] - ORIGIN[0]) * K, 2), "y": round((ORIGIN[1] - k[2]) * K, 2)}
-                                       for k in keys],
-                         "rotate": [{"time": k[0], "value": k[3]} for k in keys],
-                         "scale": [{"time": k[0], "x": k[4], "y": k[4]} for k in keys]}
+        for prop, bone, extra in ((GUN_PROP, "gun", (("gun", "pistol", 5), ("gun_smear", "gun_smear", 6), ("finger_tip", "finger_tip", None))),
+                                  (KNIFE_PROP, "knife", (("knife", "knife", 5), ("knife_smear", "knife_smear", 6)))):
+            if name in prop:
+                slots_, bone_tl = prop_timelines(fr, prop[name], extra)
+                slots.update(slots_)
+                tl[bone] = bone_tl
         anims[name] = {"slots": slots, "bones": tl}
 
     data = {
         "skeleton": {"spine": "4.2.43", "x": -700, "y": -90, "width": 1400, "height": 1450, "fps": 30, "images": "./images/"},
-        "bones": bones + [{"name": "gun", "parent": "body"}],
+        "bones": bones + [{"name": "gun", "parent": "body"}, {"name": "knife", "parent": "body"}],
         "slots": [{"name": "shadow", "bone": "root", "attachment": "shadow"},
                   {"name": "pose", "bone": "body", "attachment": "idle_a3"},
                   {"name": "fade", "bone": "body"},
                   {"name": "gun_smear", "bone": "gun"},
                   {"name": "gun", "bone": "gun"},
                   {"name": "finger_tip", "bone": "body"},
+                  {"name": "knife_smear", "bone": "knife"},
+                  {"name": "knife", "bone": "knife"},
                   {"name": "blink", "bone": "i_head"}],
         "skins": [{"name": "default", "attachments": att}],
         "animations": anims,

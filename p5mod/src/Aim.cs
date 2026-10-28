@@ -17,6 +17,8 @@ namespace P5Joker;
 /// 骨骼动画的接续（用户 2026-10-28）：
 ///  · 拿起小刀牌就转枪出枪瞄准（aim_in → aim_loop），打出去直接开火（shiv 换成 shiv_from_aim；转枪还没转完就打出，
 ///    换成 shiv 从同一时刻接着播），放回去转枪收走（aim_out）；
+///  · 拿起打击类攻击牌就在腰侧转刀起手（knife_in → knife_loop），打出去直接上撩（attack 换成 attack_from_ready；
+///    转刀还没转完就打出，换回 attack 从同一时刻接着播），放回去转刀收起（knife_out）；
 ///  · 连续出攻击牌时，上一刀还在收势就接下一刀（attack 换成 attack_chain，从手里握着刀直接再蓄力），不再从拔刀重播；
 ///    连续开枪同理（shiv 换成 shiv_from_aim）。
 /// 只动 Joker 的骨骼（原版静默猎手被我们的骨骼替换了，这些动画名只在 art/p5/rig/joker.spine-json 里有）。
@@ -24,7 +26,8 @@ namespace P5Joker;
 public static class Aim
 {
 	private static readonly HashSet<string> Raised = new() { "aim_in", "aim_loop", "shiv", "shiv_from_aim" };
-	private static readonly HashSet<string> Slashing = new() { "attack", "attack_chain" };
+	private static readonly HashSet<string> Slashing = new() { "attack", "attack_chain", "attack_from_ready" };
+	private static readonly HashSet<string> Readied = new() { "knife_in", "knife_loop" };
 
 	/// <summary>换动画之后要跳到的时间（AnimRenamePatch 的 Postfix 用）。</summary>
 	public static readonly Dictionary<ulong, float> SkipTo = new();
@@ -95,6 +98,20 @@ public static class Aim
 		{
 			return "shiv_from_aim";
 		}
+		if (requested == "attack" && current == "knife_in")
+		{
+			// 转刀还没转完就打出去了：knife_in 就是 attack 的前 0.14 秒，换回 attack 并从同一时刻接着播
+			using MegaTrackEntry? entry = state.GetCurrent(0);
+			if (entry != null)
+			{
+				SkipTo[node.GetInstanceId()] = entry.GetTrackTime();
+			}
+			return "attack";
+		}
+		if (requested == "attack" && current == "knife_loop" && body.HasAnimation("attack_from_ready"))
+		{
+			return "attack_from_ready";
+		}
 		if (requested == "attack" && current != null && Slashing.Contains(current) && body.HasAnimation("attack_chain"))
 		{
 			return "attack_chain";
@@ -104,8 +121,16 @@ public static class Aim
 
 	public static void Raise(CardModel card)
 	{
-		if (!Joker.OwnsCard(card) || !Joker.IsShot(card) || !LocalContext.IsMe(card.Owner))
+		if (!Joker.OwnsCard(card) || !LocalContext.IsMe(card.Owner))
 		{
+			return;
+		}
+		if (!Joker.IsShot(card))
+		{
+			if (card.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Attack)
+			{
+				Ready(card);
+			}
 			return;
 		}
 		NCreature? node = Joker.Node(card.Owner);
@@ -123,23 +148,46 @@ public static class Aim
 			}
 			return;
 		}
-		if (current is not ("idle_loop" or "low_health_loop"))
+		if (current is not ("idle_loop" or "low_health_loop" or "aim_out" or "knife_out"))
 		{
-			return;                                               // 正在出别的牌 / 受击：不打断
+			return;                                               // 正在出别的牌 / 受击：不打断（刚收起的可以直接换成举枪）
 		}
 		state.SetAnimation("aim_in", false, 0);
 		state.AddAnimation("aim_loop", 0f, true, 0);
 	}
 
+	/// <summary>拿起打击类的攻击牌：腰侧转刀起手、摆好准备姿势停着（knife_in → knife_loop），打出去直接上撩。</summary>
+	private static void Ready(CardModel card)
+	{
+		NCreature? node = Joker.Node(card.Owner);
+		MegaSprite? body = node?.Visuals?.SpineBody;
+		if (body == null || !body.HasAnimation("knife_loop") || body.TryGetAnimationState() is not MegaAnimationState state)
+		{
+			return;
+		}
+		if (Current(state) is not ("idle_loop" or "low_health_loop" or "aim_out" or "knife_out"))
+		{
+			return;                                               // 正在出别的牌 / 受击 / 已经起手：不打断（刚收起的可以直接换）
+		}
+		state.SetAnimation("knife_in", false, 0);
+		state.AddAnimation("knife_loop", 0f, true, 0);
+	}
+
 	public static void Lower(NCreature? node)
 	{
 		MegaSprite? body = node?.Visuals?.SpineBody;
-		if (body == null || body.TryGetAnimationState() is not MegaAnimationState state || Current(state) is not ("aim_in" or "aim_loop"))
+		if (body == null || body.TryGetAnimationState() is not MegaAnimationState state)
+		{
+			return;
+		}
+		string? current = Current(state);
+		string? putAway = current is "aim_in" or "aim_loop" ? "aim_out" : current is "knife_in" or "knife_loop" ? "knife_out" : null;
+		if (putAway == null || !body.HasAnimation(putAway))
 		{
 			return;
 		}
 		bool low = node!.Entity.GetHpPercentRemaining() <= 0.25 && body.HasAnimation("low_health_loop");
-		state.SetAnimation("aim_out", false, 0);
+		state.SetAnimation(putAway, false, 0);
 		state.AddAnimation(low ? "low_health_loop" : "idle_loop", 0f, true, 0);
 	}
 
@@ -190,7 +238,7 @@ public static class AnimRenamePatch
 
 	public static void Postfix(MegaAnimationState __instance, string animationName)
 	{
-		if (animationName is not ("shiv" or "shiv_from_aim" or "attack" or "attack_chain"))
+		if (animationName is not ("shiv" or "shiv_from_aim" or "attack" or "attack_chain" or "attack_from_ready"))
 		{
 			return;
 		}
@@ -200,7 +248,7 @@ public static class AnimRenamePatch
 			{
 				return;
 			}
-			float skipped = animationName == "shiv" ? Aim.ApplySkip(node, __instance) : 0f;
+			float skipped = animationName is "shiv" or "attack" ? Aim.ApplySkip(node, __instance) : 0f;
 			JokerFx.OnAnim(node, animationName, skipped);
 		});
 	}

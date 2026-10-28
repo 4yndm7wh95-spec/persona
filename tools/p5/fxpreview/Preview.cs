@@ -62,6 +62,20 @@ public partial class Preview : Node2D
 			p.At(3.67, () => { skip = p._joker!.Time; p._joker.PlayFrom("shiv", skip); p.At(0.18 - skip, () => HitFx.Muzzle(p._front, Muzzle)); });
 			p.Hit(3.87, Enemy, 6, true);
 		},
+		// 打击转刀：直接打一刀；选中打击牌转刀起手停住 → 打出；转刀转到一半就打出（接着转完再砍）
+		["knife"] = p =>
+		{
+			p.Strike(0.3, Enemy, 7);
+			p.At(1.6, () => { p._joker?.Play("knife_in"); p._joker?.Queue("knife_loop", true); });
+			p.At(2.6, () => p._joker?.Play("attack_from_ready"));
+			p.At(2.73, () => HitFx.Swing(p._front, Pose(760f, 260f), Pose(600f, 850f), Pose(1376f, 450f)));
+			p.Hit(2.75, Enemy, 12, false);
+			p.At(3.8, () => { p._joker?.Play("knife_in"); p._joker?.Queue("knife_loop", true); });
+			float skip = 0f;
+			p.At(3.85, () => { skip = p._joker!.Time; p._joker.PlayFrom("attack", skip);
+				p.At(Math.Max(0, 0.13 - skip), () => HitFx.Swing(p._front, Pose(760f, 260f), Pose(600f, 850f), Pose(1376f, 450f))); });
+			p.Hit(4.0, Enemy, 9, false);
+		},
 		["block"] = p =>
 		{
 			p.EnemyAttack(0.3, Enemy);
@@ -78,7 +92,7 @@ public partial class Preview : Node2D
 	private void Strike(double t, Vector2 enemy, int amount)
 	{
 		At(t, () => _joker?.Play("attack"));
-		At(t + 0.09, () => HitFx.Swing(_front, Pose(930f, 640f), Pose(532f, 860f), Pose(1376f, 450f)));
+		At(t + 0.13, () => HitFx.Swing(_front, Pose(760f, 260f), Pose(600f, 850f), Pose(1376f, 450f)));
 		Hit(t + 0.15, enemy, amount, false);
 	}
 

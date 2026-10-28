@@ -27,11 +27,11 @@ public static class HitFx
 		const float total = 0.2f;
 		Fx.Animate(root, 0, total, t =>
 		{
-			// 刀光头部飞快扫到终点（前 35%），尾巴随后追上收掉
-			float head = Fx.OutCubic(Mathf.Clamp(t / 0.35f, 0f, 1f));
+			// 刀光头部飞快扫到终点（前 20%），尾巴随后追上收掉
+			float head = Fx.OutCubic(Mathf.Clamp(t / 0.2f, 0f, 1f));
 			float tail = Fx.InCubic(Mathf.Clamp((t - 0.1f) / 0.9f, 0f, 1f));
-			red.Polygon = Band(r + 5f, a0, sweep, tail, head, 34f);
-			white.Polygon = Band(r, a0, sweep, tail, head, 26f);
+			red.Polygon = Band(r + 3f, a0, sweep, tail, head, 19f);
+			white.Polygon = Band(r, a0, sweep, tail, head, 14f);
 			root.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp((t - 0.7f) / 0.3f, 0f, 1f));
 		});
 	}
