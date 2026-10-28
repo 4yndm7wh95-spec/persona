@@ -1,0 +1,14 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-edd86829-5d7d-49f7-bbc6-71a5bebb8aac.png",
+  "prompt": "Game character sprite image edit. IMAGE1 idle_a3 is EDIT TARGET: keep EXACT head size, face, body proportions, broad chest, shoulder width, legs, boots, coat tails and both FOOT POSITIONS. Do not turn body sideways, narrow torso, or change stance. IMAGE2 is arm placement reference ONLY, not body/foot reference. IMAGE3 is approved face identity. ACTIVE ARM ON SCREEN RIGHT (same as gun_aim_b holding hand); SCREEN LEFT hand is the pocket hand. Small hands and normal finger lengths matching idle, never enlarged.\nNo handgun or other object in either hand. One person, P5R cel shading, bold black ink matching idle. Entire figure and hands inside true transparent RGBA 1024x1536, soles y~1500, alpha0 outside. No effects, trails, motion blur, speed lines, ground, shadow, background or text.\nFrame pocket_in_d: halfway between idle and putting SCREEN LEFT hand in trouser pocket. SCREEN LEFT hand beside left hip, wrist slightly bent, ONLY FINGERTIPS have just slid into TROUSER pocket opening, most of the red-gloved PALM is STILL OUTSIDE visible. Match which side and which trouser pocket from IMAGE2, but don't insert whole palm yet. Coat open, hand goes into TROUSERS not coat pocket. SCREEN RIGHT hand is EMPTY, naturally hanging beside body like idle_a3, only a little farther forward preparing to lift; do NOT copy extended arm or prop from IMAGE2. Other body, coat tails, face and feet EXACTLY IMAGE1. Normal small hands, no large fingers. No gun anywhere.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/idle_a3.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/gun_aim_b.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/ref/face_standard.png"
+  ],
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 355,
+  "generation_count": 1,
+  "review": "No visual review, no regeneration; sequence check only after completing batch"
+}
