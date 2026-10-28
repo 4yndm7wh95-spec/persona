@@ -48,8 +48,11 @@ ANIMS = {
     "relaxed_loop": [("relaxed_a", 6.0)],
     # the game deals the damage AttackAnimDelay (0.15 s for the Silent) after the attack starts: the cut lands at
     # 0.14 s and the whole strike is ~0.6 s (user 2026-10-28: the first, ~0.85 s version lagged behind the damage)
-    "attack": [("idle_a3", .01), ("knife_draw_a", .03, .02), ("knife_set_a", .02, .02), ("knife_ready_a", .06, .02),
-               ("slash_smear_a3", .02, 0), ("slash_a3", .16, 0), ("slash_follow_a", .06), ("knife_return_a", .06),
+    # 2026-10-28: the left hand no longer hangs idle - it comes up to the chest on the wind-up (knife_ready_b)
+    # and is pulled back behind the waist on the cut (slash_a10); the cut is a snap (no smear: the blade trail
+    # will be a code effect), the hit-stop below sells it
+    "attack": [("idle_a3", .01), ("knife_draw_a", .03, .02), ("knife_set_a", .02, .02), ("knife_ready_b", .08, .02),
+               ("slash_a10", .16, 0), ("slash_follow_a", .06), ("knife_return_a", .06),
                ("slash_recover_a", .08), ("idle_a3", .1, .06)],
     "shiv": [("idle_a3", .02)] + [(n, .05) for n in GUN_UP] + [("gun_a2", .12), ("gun_recoil_a6", .07, 0),
              ("gun_a2", .2)] + [(n, .05) for n in GUN_UP[::-1]] + [("idle_a3", .15, .08)],
