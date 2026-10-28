@@ -31,7 +31,10 @@
     "die_fall_a",
     "die_down_a",
     "die_down_b",
-    "die_buckle_a"
+    "die_buckle_a",
+    "slash_mid_b",
+    "slash_a5",
+    "slash_follow_c"
   ],
   "approved": [
     "idle_a",
@@ -107,7 +110,7 @@
   "selected_gun_camera_percent": 50,
   "gun_next_after_approval": "等待gun_draw_a2及追加过渡帧用户确认",
   "gun_base": "gun_a2",
-  "status": "awaiting_die_down_buckle_user_review",
+  "status": "awaiting_knife_left_c_user_review",
   "gun_group_status": "gun_a2通过；raise_a2待审；recoil_a2失败作废；lower_a2未开始",
   "gun_rejected_sample": "research/p5r/gun/rejected/gun_recoil_a2_double_gun.png",
   "gun_recoil_latest": "gun_recoil_a6：用户已通过",
@@ -261,5 +264,30 @@
     "sequence_check_runs": 0,
     "pose_output": "die_buckle_a       head x1.124  body x0.655 (check)  boot height x1.071  boot width x1.049  feet moved [76, 62] px  FAIL\nsheet: art\\p5\\poses\\check_die_buckle_a.png | overall: FAIL\n",
     "status": "等待用户验收，不自动重画；die_slump_a暂不做"
+  },
+  "knife_left_status": {
+    "approved": "knife_ready_b",
+    "invalidated_keep_files": [
+      "slash_smear_b"
+    ],
+    "new_frames": [
+      "slash_mid_b",
+      "slash_a5",
+      "slash_follow_c"
+    ],
+    "generation_calls_per_new_frame": 1,
+    "normalization_runs": 1,
+    "sequence_check_runs": 1,
+    "order": [
+      "knife_draw_a",
+      "knife_set_a",
+      "knife_ready_b",
+      "slash_mid_b",
+      "slash_a5",
+      "slash_follow_c",
+      "knife_return_a"
+    ],
+    "output": "    knife_draw_a -> knife_set_a      overlap 0.90  face moved    24  feet moved [0, 13]  ok\n     knife_set_a -> knife_ready_b    overlap 0.67  face moved    73  feet moved [1, 53]  ok\n   knife_ready_b -> slash_mid_b      overlap 0.55  face moved    84  feet moved [45, 99]  JUMP - add a frame\n     slash_mid_b -> slash_a5         overlap 0.71  face moved    33  feet moved [6, 6]  ok\n        slash_a5 -> slash_follow_c   overlap 0.84  face moved     2  feet moved [0, 2]  ok\n  slash_follow_c -> knife_return_a   overlap 0.68  face moved    89  feet moved [23, 25]  ok\n1 jump(s); overlays: art\\p5\\poses\\seq_knife_draw_a_knife_return_a.png\n",
+    "status": "等待用户判断，不自动重画"
   }
 }

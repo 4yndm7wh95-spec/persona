@@ -526,5 +526,37 @@
    96
   ],
   "anchor_foot": "rear"
+ },
+ "knife_ready_b": {
+  "scale": 0.96,
+  "offset": [
+   272,
+   180
+  ],
+  "anchor_foot": "rear"
+ },
+ "slash_mid_b": {
+  "scale": 0.96,
+  "offset": [
+   295,
+   214
+  ],
+  "anchor_foot": "mid"
+ },
+ "slash_a5": {
+  "scale": 0.96,
+  "offset": [
+   300,
+   215
+  ],
+  "anchor_foot": "mid"
+ },
+ "slash_follow_c": {
+  "scale": 0.96,
+  "offset": [
+   299,
+   216
+  ],
+  "anchor_foot": "mid"
  }
 }
