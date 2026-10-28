@@ -1,0 +1,14 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-1ff4e63a-c507-44ec-9a35-035640894699.png",
+  "prompt": "Use case: identity-preserve image edit. Create one 1024x1536 game character pose sprite with genuine transparent alpha.\nImage 1 slash_a3 is the edit target. Keep its head, face, body, legs, feet, coat tails, standing location and body proportions exactly as in image 1. NO lunge, NO additional forward lean. Image 2 is the approved face reference. Image 3 is only a reference for the direction of the LEFT rear arm, using HALF its extension; do not copy its torso lean, legs, head position or deep lunge.\n\nChange ONLY the two arms, with at most a very tiny torso twist toward camera to reveal rear hand:\n- His RIGHT near red-gloved hand holds the same small reverse-grip prop knife. From its original position in image 1 extend it a little farther toward SCREEN RIGHT. The arm is a little more extended, the hand stays at exactly its existing height. Preserve reverse grip, hand size, knife size and blade direction.\n- His LEFT far arm opens backward toward SCREEN LEFT but with only half the amplitude in image 3. Elbow slightly bent. Hand approximately at WAIST HEIGHT, palm and five spread fingers emerge just behind the waist on screen left. Black coat sleeve and red glove same design and size as original. Upper torso may twist only slightly toward camera for visibility; preserve overall upright body pose of image 1.\nEverything else including both legs, both boots and their positions, face, head size, coat tails and framing must remain as image 1. Crisp P5 game character inked/cel shaded illustration. No blade light, no motion trail, no glow, no effects, no ground, no shadows, no text. Full figure on true transparent background, portrait 1024x1536.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/slash_a3.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/ref/face_standard.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/slash_lunge_a.png"
+  ],
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 2737,
+  "generation_count": 1,
+  "review": "No visual review, no regeneration; sequence check only after completing batch"
+}

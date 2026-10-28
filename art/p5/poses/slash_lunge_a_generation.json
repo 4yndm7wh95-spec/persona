@@ -1,0 +1,14 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-4470d501-7114-415b-af9f-32b14958c8ab.png",
+  "prompt": "Edit image 1 into ONE full-body game character pose sprite, 1024x1536, genuine transparent background. Image 1 is the edit target and controls Joker's identity, black coat, red gloves, body proportions, head size, hand size and small prop knife size. Image 2 is the approved face identity/style reference. Image 3 is ONLY a skeletal pose reference: translate its diagonal stretched-arm lunge to Joker, do not copy its green costume or character.\n\nPose: screen-right front leg bent in a forward lunge, screen-left rear leg extended straight backward. Torso leans toward screen right and twists a little toward the camera so the chest is more visible. His near RIGHT arm holding the existing small reverse-grip knife extends straight forward and upward toward screen right, hand at shoulder height or slightly higher. Keep the correct reverse-grip closed fist and same small knife, blade emerging from little-finger end, separated from sleeve. His far LEFT shoulder pulls backward and LEFT arm extends backward/downward toward LOWER SCREEN LEFT; the open left red-gloved hand with five spread fingers must be visibly emerging behind the body at lower left. The two arms form one clear diagonal from lower left to upper right, like the third reference. This deliberate rear-arm visibility is essential. Coat tails sweep back toward screen left. Head and eyes look screen right; keep approved face shape, eye rendering and small highlights, same head size as image 1. Keep hands and knife same size as image 1, no enlargement.\nP5-style clean inked cel-shaded game character illustration, consistent with image 1. Whole character fits within canvas. No text, no target, no blood, no glow, no blade light, no motion trails, no afterimages, no effects, no ground or shadow. True alpha background. Produce only one image.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/slash_a3.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/ref/face_standard.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/ref/silent_strike_ref.png"
+  ],
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 2102,
+  "generation_count": 1,
+  "review": "No visual review, no regeneration; sequence check only after completing batch"
+}
