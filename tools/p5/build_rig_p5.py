@@ -45,8 +45,10 @@ SUMMON_UP = ["summon_lift1_a", "summon_lift2_a", "summon_touch_mid_a", "summon_t
 # (gun_recoil_b, held as a beat), spins on the finger again and vanishes (gun_twirl_out_c). The left hand stays in
 # the pocket throughout. aim_in is exactly the first 0.18 s of shiv, so a Shiv played mid-twirl carries on from
 # the same point (p5mod/src/Aim.cs)
-GUN_IN = [("idle_a3", .01), ("gun_flick_c", .11, .02), ("gun_aim_b", .06, 0)]
-GUN_OUT = [("gun_twirl_out_c", .16, 0), ("idle_a3", .12, .05)]
+# 4th round: the finger the gun spins on points at the camera (gun_flick_d / gun_twirl_out_d), so the in-plane spin
+# around the fingertip is physically right; pocket_in_d eases the left hand into / out of the pocket
+GUN_IN = [("idle_a3", .01), ("pocket_in_d", .04, .02), ("gun_flick_d", .07, .02), ("gun_aim_b", .06, 0)]
+GUN_OUT = [("gun_twirl_out_d", .16, 0), ("pocket_in_d", .05, .02), ("idle_a3", .1, .04)]
 GUN_SHOT = [("gun_recoil_b", .2, 0)] + GUN_OUT
 IDLE_LOOP = 11.0   # 8 s idle (+ blinks), then the glove tug, ending back on idle_a3
 ANIMS = {
@@ -121,13 +123,12 @@ PISTOL = POSES / "pistol_b.png"
 PISTOL_GUARD = (518.6, 501.8)      # trigger-guard hole on pistol_b.png: the spin pivot (on the finger)
 PISTOL_MUZZLE = (984, 300)
 PISTOL_K = 134 / 940               # pistol_b pixels -> final canvas (the gun in gun_aim_b is ~134 px long)
-FLICK, TWIRL_OUT, AIM_GUARD = (1287, 393), (1285, 255), (1275, 340)
-SPIN_IN = [("@gun_flick_c", 0, *FLICK, 470, .3, 0, 0), ("@gun_flick_c", .03, *FLICK, 250, 1, 1, .9),
-           ("@gun_flick_c", .06, *FLICK, 90, 1, 1, .7), ("@gun_flick_c", .09, *FLICK, 15, 1, 1, .2),
-           ("@gun_aim_b", 0, *AIM_GUARD, 0, 1, 1, 0)]
-SPIN_OUT = [("@gun_twirl_out_c", 0, *TWIRL_OUT, 70, 1, 1, 0), ("@gun_twirl_out_c", .03, *TWIRL_OUT, -60, 1, 1, .9),
-            ("@gun_twirl_out_c", .07, *TWIRL_OUT, -250, 1, 1, .8), ("@gun_twirl_out_c", .11, *TWIRL_OUT, -420, .7, 1, .5),
-            ("@gun_twirl_out_c", .15, *TWIRL_OUT, -520, .05, 0, 0)]
+FLICK, TWIRL_OUT, AIM_GUARD = (1056, 402), (1030, 324), (1275, 340)      # fingertip centres (measured on the finals)
+SPIN_IN = [("@gun_flick_d", 0, *FLICK, 470, .3, 0, 0), ("@gun_flick_d", .025, *FLICK, 260, 1, 1, .9),
+           ("@gun_flick_d", .05, *FLICK, 90, 1, 1, .6), ("@gun_aim_b", 0, *AIM_GUARD, 0, 1, 1, 0)]
+SPIN_OUT = [("@gun_twirl_out_d", 0, *TWIRL_OUT, 70, 1, 1, 0), ("@gun_twirl_out_d", .03, *TWIRL_OUT, -60, 1, 1, .9),
+            ("@gun_twirl_out_d", .07, *TWIRL_OUT, -250, 1, 1, .8), ("@gun_twirl_out_d", .11, *TWIRL_OUT, -420, .7, 1, .5),
+            ("@gun_twirl_out_d", .15, *TWIRL_OUT, -520, .05, 0, 0)]
 GUN_PROP = {"aim_in": SPIN_IN, "shiv": SPIN_IN + SPIN_OUT, "shiv_from_aim": SPIN_OUT, "aim_out": SPIN_OUT}
 
 # soft-mesh pictures: bone -> (parent, pivot on the final canvas, influence polys / circles, feather)
