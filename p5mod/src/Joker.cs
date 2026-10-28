@@ -33,6 +33,9 @@ public static class Joker
 		return body != null && GodotObject.IsInstanceValid(body) ? body.ToGlobal(local) : node.GlobalPosition + local * 0.29f;
 	}
 
+	/// <summary>胸口（待机帧 idle_a3 上的像素），BLOCK 等贴身弹字的基准点。</summary>
+	public static Vector2 Chest(NCreature node) => PosePoint(node, new Vector2(820f, 600f));
+
 	/// <summary>举枪瞄准（gun_a2）时的枪口。</summary>
 	public static Vector2 Muzzle(NCreature node) => PosePoint(node, new Vector2(1224f, 326f));
 

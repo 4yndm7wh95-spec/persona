@@ -1,0 +1,10 @@
+<Project Sdk="Godot.NET.Sdk/4.5.1">
+  <!-- 特效预览：直接编译 p5mod/src/Vfx（不引用游戏程序集），在假战斗场景里放特效，录成 GIF。用法见 render.sh -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../../p5mod/src/Vfx/**/*.cs" />
+  </ItemGroup>
+</Project>

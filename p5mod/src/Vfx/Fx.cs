@@ -1,13 +1,12 @@
 using System;
 using Godot;
-using MegaCrit.Sts2.Core.Nodes;
-using MegaCrit.Sts2.Core.Nodes.Vfx.Utilities;
 
 namespace P5Joker;
 
 /// <summary>
 /// 特效基础工具。只用引擎自带的节点（Node2D / Polygon2D / Line2D / Sprite2D），动画全靠 Tween：
 /// mod 程序集是运行时加载的，自定义 Node 子类可能收不到 _Process 回调（同 P3Makoto 的约定）。
+/// Vfx 目录下的代码不引用游戏程序集（只用 Godot），这样 tools/p5/fxpreview 能在云端直接跑出预览；游戏相关的东西都经过 Stage。
 /// </summary>
 public static class Fx
 {
@@ -26,8 +25,7 @@ public static class Fx
 	{
 		if (!Cache.TryGetValue(name, out Texture2D? tex))
 		{
-			string path = $"res://p5joker/fx/{name}.png";
-			tex = ResourceLoader.Exists(path) ? ResourceLoader.Load<Texture2D>(path) : null;
+			tex = Stage.LoadTexture(name);
 			Cache[name] = tex;
 		}
 		return tex;
@@ -140,21 +138,21 @@ public static class Fx
 		return pts;
 	}
 
-	public static void Shake(ShakeStrength s) => NGame.Instance?.ScreenShake(s, ShakeDuration.Short);
+	public static void Shake(int strength) => Stage.Shake?.Invoke(strength);
 
 	/// <summary>delay 秒后执行（节点没了就不执行）。</summary>
 	public static void After(Node anchor, double delay, Action action)
 	{
 		if (delay <= 0)
 		{
-			ModEntry.Safe("fx", action);
+			Stage.Safe("fx", action);
 			return;
 		}
 		anchor.GetTree()?.CreateTimer(delay).Connect("timeout", Callable.From(() =>
 		{
 			if (GodotObject.IsInstanceValid(anchor))
 			{
-				ModEntry.Safe("fx", action);
+				Stage.Safe("fx", action);
 			}
 		}));
 	}

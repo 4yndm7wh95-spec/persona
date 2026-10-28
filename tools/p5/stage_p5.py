@@ -60,6 +60,27 @@ def renamed(src_base, dst_base, tmp):
     (tmp / f"{dst_base}.atlas").write_text("\n".join(lines))
 
 
+def fx_textures():
+    """(name, image) for every res://p5joker/fx/<name>.png; also used by tools/p5/fxpreview/prepare.py."""
+    for name, src in FX_TEX.items():
+        yield name, Image.open(FX / src).convert("RGBA")
+    for name, (idx, k) in DMG_TEX.items():
+        im = Image.open(DMG / f"{idx:05d}.png").convert("RGBA")
+        yield name, im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
+    for name in GEN_TEX:
+        drawn = GEN_CODEX / f"{name}.png"                 # Codex's drawn version wins over the scripted one (user 2026-10-28)
+        yield name, Image.open(drawn if drawn.exists() else GEN / f"{name}.png").convert("RGBA")
+    # Codex delivered the band squashed from 1983x793 to 1600x420 (README_codex.md); undo the squash until the raw
+    # image is in the repo (art/p5/fx/gen_codex/cutin_band_raw.png wins when present)
+    raw = GEN_CODEX / "cutin_band_raw.png"
+    band = Image.open(raw if raw.exists() else GEN_CODEX / "cutin_band.png").convert("RGBA")
+    if not raw.exists():
+        band = band.resize((1983, 793), Image.LANCZOS)
+    yield "cutin_band", band
+    eyes = Image.open(EYES).convert("RGBA")
+    yield "eyes", eyes.resize((eyes.width // 2, eyes.height // 2), Image.LANCZOS)
+
+
 def main():
     if STAGE.exists():
         shutil.rmtree(STAGE)
@@ -87,23 +108,8 @@ atlas_res = ExtResource("1_atlas")
 skeleton_file_res = ExtResource("2_skel")
 default_mix = 0.1
 """)
-    for name, src in FX_TEX.items():
-        write_texture(STAGE, f"p5joker/fx/{name}.png", Image.open(FX / src))
-    for name, (idx, k) in DMG_TEX.items():
-        im = Image.open(DMG / f"{idx:05d}.png").convert("RGBA")
-        write_texture(STAGE, f"p5joker/fx/{name}.png", im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS))
-    for name in GEN_TEX:
-        drawn = GEN_CODEX / f"{name}.png"                 # Codex's drawn version wins over the scripted one (user 2026-10-28)
-        write_texture(STAGE, f"p5joker/fx/{name}.png", Image.open(drawn if drawn.exists() else GEN / f"{name}.png").convert("RGBA"))
-    # Codex delivered the band squashed from 1983x793 to 1600x420 (README_codex.md); undo the squash until the raw
-    # image is in the repo (art/p5/fx/gen_codex/cutin_band_raw.png wins when present)
-    raw = GEN_CODEX / "cutin_band_raw.png"
-    band = Image.open(raw if raw.exists() else GEN_CODEX / "cutin_band.png").convert("RGBA")
-    if not raw.exists():
-        band = band.resize((1983, 793), Image.LANCZOS)
-    write_texture(STAGE, "p5joker/fx/cutin_band.png", band)
-    eyes = Image.open(EYES).convert("RGBA")
-    write_texture(STAGE, "p5joker/fx/eyes.png", eyes.resize((eyes.width // 2, eyes.height // 2), Image.LANCZOS))
+    for name, im in fx_textures():
+        write_texture(STAGE, f"p5joker/fx/{name}.png", im)
     files = sorted(p.relative_to(STAGE).as_posix() for p in STAGE.rglob("*") if p.is_file())
     print(len(files), "files staged in", STAGE.relative_to(ROOT))
     for f in files:
