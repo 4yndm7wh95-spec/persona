@@ -1,0 +1,18 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-dbdf69df-13a1-4be2-a3ed-9508955445f6.png",
+  "prompt": "Edit FIRST reference Joker head/upper body into rest_sit_d_A, Persona5 style game character illustration. LANDSCAPE1536x1024 true transparent RGBA. FIRST image controls exact head size (hair-top to chin about225px), face angle and torso anatomy, hands and costume. SECOND is approved face identity; THIRD is strict official MORGANA design reference (ignore its MONA text). Joker head angle and face exactly like first, three-quarter screen RIGHT, eyes looking screen RIGHT at offscreen fire, tiny relaxed smile. NO MASK anywhere on head/face. Black phantom-thief longcoat, gray waistcoat gold chains red gloves brown boots as idle. Seated on an INVISIBLE LOW support: pelvis and backs of thighs on a horizontal seating line about375px above shoe sole line; NOT sitting on ground. Do NOT draw seat, crate, log, ground or shadows. Both shoe soles on SAME horizontal ground line y944 (80px above bottom). LEFT leg bent knee up, left boot on ground, LEFT elbow casually rests on left knee. RIGHT leg extends forward with mild knee bend. RIGHT hand elegantly holds plain white cafe coffee cup by rim with fingertips at chest height. Straight relaxed back, confident languid thief posture, coat tails drape from seating line to sides. MORGANA stands behind Joker on viewer LEFT on SAME y944 ground line, one white paw resting on Joker LEFT shoulder, head leaning curiously toward cup. Strictly copy official reference proportions, large round head to small biped body, black ears/head, white muzzle, BLUE eyes, YELLOW neckerchief, dark utility belt/pouches, white paws/feet and curved black tail with pale tip. Not realistic cat, not generic invented cartoon. Size plausible to reference character, roughly reaches seated Joker shoulder, no invisible pedestal. Fully include characters, boots, hair, tail and coat, at least80px transparent margins ALL edges. No seat, box, log, fire, ground, shadow, text, diamond, logo or effects. Same crisp illustrated style, one composition.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/idle_a3.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/ref/face_standard.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/ref/morgana_ref.png"
+  ],
+  "tool": "built-in image_gen",
+  "canvas": [
+    1536,
+    1024
+  ],
+  "cleanup_alpha_pixels": 885,
+  "generation_count": 1,
+  "review": "No visual review, no regeneration; sequence check only after completing batch"
+}
