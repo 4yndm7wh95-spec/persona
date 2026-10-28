@@ -13,7 +13,7 @@ for f in frames:
         im = im.crop(crop)
     ims.append(im)
 w, h = ims[0].size
-k = min(1.0, 640 / w)
+k = 640 / w
 w2, h2 = int(w * k), int(h * k)
 cols = min(4, len(ims))
 sheet = Image.new("RGB", (cols * w2, ((len(ims) + cols - 1) // cols) * h2), "black")

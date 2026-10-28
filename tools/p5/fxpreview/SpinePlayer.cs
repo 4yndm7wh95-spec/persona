@@ -206,6 +206,17 @@ public partial class SpinePlayer : Node2D
 		_queue.Clear();
 	}
 
+	/// <summary>当前动画（游戏里 GetCurrentAnimationName）和它播到第几秒（GetTrackTime）。</summary>
+	public string Current => _current;
+	public float Time => _time;
+
+	/// <summary>换成 anim 并从 time 秒处接着播（游戏里 SetTrackTime）。</summary>
+	public void PlayFrom(string anim, float time)
+	{
+		Play(anim);
+		_time = time;
+	}
+
 	public void Queue(string anim, bool loop = false) => _queue.Enqueue((anim, loop));
 
 	public override void _Process(double delta)

@@ -15,7 +15,8 @@ namespace P5Joker;
 
 /// <summary>
 /// 骨骼动画的接续（用户 2026-10-28）：
-///  · 拿起小刀牌就举枪瞄准（aim_in → aim_loop），打出去直接开火（shiv 换成 shiv_from_aim），放回去收枪（aim_out）；
+///  · 拿起小刀牌就转枪出枪瞄准（aim_in → aim_loop），打出去直接开火（shiv 换成 shiv_from_aim；转枪还没转完就打出，
+///    换成 shiv 从同一时刻接着播），放回去转枪收走（aim_out）；
 ///  · 连续出攻击牌时，上一刀还在收势就接下一刀（attack 换成 attack_chain，从手里握着刀直接再蓄力），不再从拔刀重播；
 ///    连续开枪同理（shiv 换成 shiv_from_aim）。
 /// 只动 Joker 的骨骼（原版静默猎手被我们的骨骼替换了，这些动画名只在 art/p5/rig/joker.spine-json 里有）。
@@ -24,6 +25,21 @@ public static class Aim
 {
 	private static readonly HashSet<string> Raised = new() { "aim_in", "aim_loop", "shiv", "shiv_from_aim" };
 	private static readonly HashSet<string> Slashing = new() { "attack", "attack_chain" };
+
+	/// <summary>换动画之后要跳到的时间（AnimRenamePatch 的 Postfix 用）。</summary>
+	public static readonly Dictionary<ulong, float> SkipTo = new();
+
+	/// <summary>SetAnimation 之后：这个 Joker 有待跳的时间就跳过去，并且不做交叉淡化（同一套画面接着播）。</summary>
+	public static void ApplySkip(MegaAnimationState state)
+	{
+		if (Owner(state) is not NCreature node || !SkipTo.Remove(node.GetInstanceId(), out float t))
+		{
+			return;
+		}
+		using MegaTrackEntry? entry = state.GetCurrent(0);
+		entry?.SetTrackTime(t);
+		entry?.SetMixDuration(0f);
+	}
 
 	/// <summary>出牌时（CardPlayedPatch）记下的施法动作：游戏随后要播 cast 时换成对应版本。</summary>
 	public static readonly Dictionary<ulong, Cast> PendingCast = new();
@@ -63,6 +79,17 @@ public static class Aim
 			return name != null && body.HasAnimation(name) ? name : null;
 		}
 		string? current = Current(state);
+		if (requested == "shiv" && current == "aim_in")
+		{
+			// 转枪还没转完就打出去了：aim_in 就是 shiv 的前 0.18 秒（tools/p5/build_rig_p5.py GUN_IN），
+			// 换成 shiv 并从同一时刻接着播 —— 转枪转完、接住、开火，不从头重来也不硬切
+			using MegaTrackEntry? entry = state.GetCurrent(0);
+			if (entry != null)
+			{
+				SkipTo[node.GetInstanceId()] = entry.GetTrackTime();
+			}
+			return "shiv";
+		}
 		if (requested == "shiv" && current != null && Raised.Contains(current) && body.HasAnimation("shiv_from_aim"))
 		{
 			return "shiv_from_aim";
@@ -157,6 +184,14 @@ public static class AnimRenamePatch
 		if (replacement != null)
 		{
 			animationName = replacement;
+		}
+	}
+
+	public static void Postfix(MegaAnimationState __instance, string animationName)
+	{
+		if (animationName == "shiv")
+		{
+			ModEntry.Safe("AnimSkip", () => Aim.ApplySkip(__instance));
 		}
 	}
 }

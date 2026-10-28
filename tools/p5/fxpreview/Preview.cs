@@ -49,12 +49,16 @@ public partial class Preview : Node2D
 			}
 		},
 		// 开枪动作：选中小刀牌举枪瞄准 → 打出去 → 收枪；再来一张直接开枪（没先瞄准）
+		// 开枪：选中小刀牌（转枪出枪、瞄准）→ 打出去 → 转枪收走；直接开一枪；转枪转到一半就打出（接着转完开火，p5mod/src/Aim.cs）
 		["gun"] = p =>
 		{
 			p.At(0.3, () => { p._joker?.Play("aim_in"); p._joker?.Queue("aim_loop", true); });
 			p.At(1.3, () => p._joker?.Play("shiv_from_aim"));
 			p.Hit(1.5, Enemy, 6, true);
-			p.Shot(2.6, Enemy, 6);
+			p.Shot(2.5, Enemy, 6);
+			p.At(3.6, () => { p._joker?.Play("aim_in"); p._joker?.Queue("aim_loop", true); });
+			p.At(3.67, () => p._joker?.PlayFrom("shiv", p._joker.Time));
+			p.Hit(3.87, Enemy, 6, true);
 		},
 		["block"] = p =>
 		{

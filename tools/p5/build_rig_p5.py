@@ -40,11 +40,14 @@ PAGE = 4096
 GLOVE = [("glove_mid_a", .09), ("glove_reach_a", .12), ("glove_a", .16), ("glove_b", .3), ("glove_flex_a", .45),
          ("idle_a3", .3, .12)]
 SUMMON_UP = ["summon_lift1_a", "summon_lift2_a", "summon_touch_mid_a", "summon_touch2_a"]
-GUN_DRAW = ["gun_step_a", "gun_draw_a2", "gun_lift_mid_a"]          # hip -> across the chest -> (gun_a2) aimed
-# fire (recoil kicks the arm up) -> keep going up into the gun-by-the-face beat -> straight down and away
-# (short or no crossfades: these poses differ a lot - coat, stance - and a long fade shows two Jokers at once)
-GUN_SHOT = [("gun_recoil_a6", .07, 0), ("gun_raise_a2", .16, 0), ("gun_lift_near_a", .045, .015),
-            ("gun_lift_mid_a", .045, .015), ("idle_a3", .1, .03)]
+# gun (user 2026-10-28, 3rd round): the gun appears out of thin air spinning on the index finger (gun_flick_c, empty
+# hand + the separate pistol on the `gun` bone, GUN_PROP below), is caught aimed (gun_aim_b), kicks up on the shot
+# (gun_recoil_b, held as a beat), spins on the finger again and vanishes (gun_twirl_out_c). The left hand stays in
+# the pocket throughout. aim_in is exactly the first 0.18 s of shiv, so a Shiv played mid-twirl carries on from
+# the same point (p5mod/src/Aim.cs)
+GUN_IN = [("idle_a3", .01), ("gun_flick_c", .11, .02), ("gun_aim_b", .06, 0)]
+GUN_OUT = [("gun_twirl_out_c", .16, 0), ("idle_a3", .12, .05)]
+GUN_SHOT = [("gun_recoil_b", .2, 0)] + GUN_OUT
 IDLE_LOOP = 11.0   # 8 s idle (+ blinks), then the glove tug, ending back on idle_a3
 ANIMS = {
     "idle_loop": [("idle_a3", 8.6)] + GLOVE + [("idle_a3", IDLE_LOOP - 8.6 - sum(f[1] for f in GLOVE))],
@@ -58,22 +61,18 @@ ANIMS = {
     "attack": [("idle_a3", .01), ("knife_draw_a", .03, .02), ("knife_set_a", .02, .02), ("knife_ready_b", .08, .02),
                ("slash_a10", .16, 0), ("slash_follow_a", .06), ("knife_return_a", .06),
                ("slash_recover_a", .08), ("idle_a3", .1, .06)],
-    # the Shiv card deals its damage 0.2 s after the anim starts (Shiv.cs WithAttackerAnim("Shiv", 0.2f)): fire at 0.18 s.
-    # 2026-10-28 (user: drawing / holstering felt draggy and stiff): the old version went up past the face on the draw,
-    # snapped level after the recoil and went back up past the face to holster (up-down-up-down). Now the draw goes
-    # straight from the hip to the aim (GUN_DRAW), the recoil kick carries on up into the gun-by-the-face pose
-    # (gun_raise_a2, a short beat) and the holster only goes down (GUN_HOLSTER)
-    "shiv": [("idle_a3", .01)] + [(n, .035, .02) for n in GUN_DRAW] + [("gun_a2", .065, .02)] + GUN_SHOT,
+    # the Shiv card deals its damage 0.2 s after the anim starts (Shiv.cs WithAttackerAnim("Shiv", 0.2f)): fire at 0.18 s
+    "shiv": GUN_IN + GUN_SHOT,
     # attack_chain: an attack played while the previous strike is still recovering (user 2026-10-28: fast play
     # restarted from the draw and visibly broke) - re-cock straight from the knife in hand, cut still at 0.14 s
     "attack_chain": [("knife_return_a", .03), ("knife_ready_b", .11, .03), ("slash_a10", .16, 0), ("slash_follow_a", .06),
                      ("knife_return_a", .06), ("slash_recover_a", .08), ("idle_a3", .1, .06)],
     # aim: picking up a Shiv card raises the gun and holds it (p5mod/src/Aim.cs); playing it fires from the
     # aim (shiv_from_aim, shot at 0.18 s like "shiv"); dropping the card lowers it (aim_out)
-    "aim_in": [("idle_a3", .01)] + [(n, .05, .03) for n in GUN_DRAW] + [("gun_a2", .05, .03)],
-    "aim_loop": [("gun_a2", 4.0)],
-    "aim_out": [("gun_a2", .01), ("gun_lift_mid_a", .05, .03), ("gun_draw_a2", .05, .03), ("idle_a3", .1, .06)],
-    "shiv_from_aim": [("gun_a2", .18)] + GUN_SHOT,
+    "aim_in": GUN_IN,
+    "aim_loop": [("gun_aim_b", 4.8)],
+    "aim_out": [("gun_aim_b", .01)] + GUN_OUT,
+    "shiv_from_aim": [("gun_aim_b", .18)] + GUN_SHOT,
     # cast variants picked per card by p5mod/src (Aim.Rename): guard (block cards), glove tug (card tricks /
     # buffs), the big summon (mask ripped off) for the large Persona cards
     "cast_guard": [("idle_a3", .02), ("guard_mid_a", .06), ("guard_a2", .45), ("guard_mid_a", .08), ("idle_a3", .12, .07)],
@@ -97,19 +96,39 @@ IMPACT = {
                (.14, 95, 0, .97, 1.035, -3), (.16, 112, 0, 1.035, .965, -2.2), (.18, 120, 0, 1.03, .97, -2.2),
                (.20, 104, 0, 1.03, .97, -2), (.22, 116, 0, 1.025, .975, -2), (.24, 107, 0, 1.02, .98, -1.8),
                (.27, 111, 0, 1.015, .985, -1.6), (.40, 72, 0, 1.0, 1.0, -.6), (.56, 4, 0, 1, 1, 0), (.62, 0, 0, 1, 1, 0)],
-    "shiv": [("@gun_recoil_a6", 0, 0, 0, 1, 1, 0), ("@gun_recoil_a6", .02, -30, 0, .985, 1.01, 2.5),
-             ("@gun_recoil_a6", .04, -21, 0, .99, 1.005, 2), ("@gun_recoil_a6", .06, -27, 0, .99, 1.005, 2),
-             ("@gun_recoil_a6", .12, -12, 0, 1, 1, .8), ("@gun_recoil_a6", .26, 0, 0, 1, 1, 0)],
+    # holding the aim: a slow breath on the whole body (the aim frame has no soft mesh)
+    "aim_loop": [(0, 0, 0, 1, 1, 0), (1.2, 0, 2, .997, 1.006, -.15), (2.4, 0, 0, 1, 1, 0), (3.6, 0, 2, .997, 1.006, -.15),
+                 (4.8, 0, 0, 1, 1, 0)],
+    "shiv": [("@gun_recoil_b", 0, 0, 0, 1, 1, 0), ("@gun_recoil_b", .02, -30, 0, .985, 1.01, 2.5),
+             ("@gun_recoil_b", .04, -21, 0, .99, 1.005, 2), ("@gun_recoil_b", .06, -27, 0, .99, 1.005, 2),
+             ("@gun_recoil_b", .12, -12, 0, 1, 1, .8), ("@gun_recoil_b", .26, 0, 0, 1, 1, 0)],
     "attack_chain": [(0, 30, 0, 1, 1, 0), (.07, -10, 0, 1.01, .985, 1), (.12, -24, -4, 1.025, .965, 2),
                      (.14, 95, 0, .97, 1.035, -3), (.16, 112, 0, 1.035, .965, -2.2), (.18, 120, 0, 1.03, .97, -2.2),
                      (.20, 104, 0, 1.03, .97, -2), (.22, 116, 0, 1.025, .975, -2), (.24, 107, 0, 1.02, .98, -1.8),
                      (.27, 111, 0, 1.015, .985, -1.6), (.40, 72, 0, 1.0, 1.0, -.6), (.56, 4, 0, 1, 1, 0), (.60, 0, 0, 1, 1, 0)],
-    "shiv_from_aim": [("@gun_recoil_a6", 0, 0, 0, 1, 1, 0), ("@gun_recoil_a6", .02, -30, 0, .985, 1.01, 2.5),
-                      ("@gun_recoil_a6", .04, -21, 0, .99, 1.005, 2), ("@gun_recoil_a6", .06, -27, 0, .99, 1.005, 2),
-                      ("@gun_recoil_a6", .12, -12, 0, 1, 1, .8), ("@gun_recoil_a6", .26, 0, 0, 1, 1, 0)],
+    "shiv_from_aim": [("@gun_recoil_b", 0, 0, 0, 1, 1, 0), ("@gun_recoil_b", .02, -30, 0, .985, 1.01, 2.5),
+                      ("@gun_recoil_b", .04, -21, 0, .99, 1.005, 2), ("@gun_recoil_b", .06, -27, 0, .99, 1.005, 2),
+                      ("@gun_recoil_b", .12, -12, 0, 1, 1, .8), ("@gun_recoil_b", .26, 0, 0, 1, 1, 0)],
     "hurt": [(0, 0, 0, 1, 1, 0), (.03, -55, 0, .975, 1.01, 3), (.06, -64, 0, .975, 1.01, 3.2), (.09, -54, 0, .98, 1.01, 3),
              (.12, -60, 0, .985, 1.005, 2.8), (.28, -34, 0, 1, 1, 1.5), (.48, -6, 0, 1, 1, .2), (.62, 0, 0, 1, 1, 0)],
 }
+
+# the separate pistol (art/p5/poses/pistol_b.png) on the `gun` bone: keys are (time, x, y, rotation, scale, gun alpha,
+# spin-trail alpha) with x, y on the final canvas (the finger joint it spins on) and rotation in degrees (0 = aimed
+# right, Spine's counter-clockwise positive; it spins clockwise, so the rotation counts down). "@pose" times are
+# relative to that pose's start. The gun is only shown between the first and the last key.
+PISTOL = POSES / "pistol_b.png"
+PISTOL_GUARD = (518.6, 501.8)      # trigger-guard hole on pistol_b.png: the spin pivot (on the finger)
+PISTOL_MUZZLE = (984, 300)
+PISTOL_K = 134 / 940               # pistol_b pixels -> final canvas (the gun in gun_aim_b is ~134 px long)
+FLICK, TWIRL_OUT, AIM_GUARD = (1287, 393), (1285, 255), (1275, 340)
+SPIN_IN = [("@gun_flick_c", 0, *FLICK, 470, .3, 0, 0), ("@gun_flick_c", .03, *FLICK, 250, 1, 1, .9),
+           ("@gun_flick_c", .06, *FLICK, 90, 1, 1, .7), ("@gun_flick_c", .09, *FLICK, 15, 1, 1, .2),
+           ("@gun_aim_b", 0, *AIM_GUARD, 0, 1, 1, 0)]
+SPIN_OUT = [("@gun_twirl_out_c", 0, *TWIRL_OUT, 70, 1, 1, 0), ("@gun_twirl_out_c", .03, *TWIRL_OUT, -60, 1, 1, .9),
+            ("@gun_twirl_out_c", .07, *TWIRL_OUT, -250, 1, 1, .8), ("@gun_twirl_out_c", .11, *TWIRL_OUT, -420, .7, 1, .5),
+            ("@gun_twirl_out_c", .15, *TWIRL_OUT, -520, .05, 0, 0)]
+GUN_PROP = {"aim_in": SPIN_IN, "shiv": SPIN_IN + SPIN_OUT, "shiv_from_aim": SPIN_OUT, "aim_out": SPIN_OUT}
 
 # soft-mesh pictures: bone -> (parent, pivot on the final canvas, influence polys / circles, feather)
 MESHES = {
@@ -168,6 +187,38 @@ def shadow():
     im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     ImageDraw.Draw(im).ellipse([20, 15, w - 20, h - 15], fill=(0, 0, 0, 110))
     return im.filter(ImageFilter.GaussianBlur(12))
+
+
+def gun_textures():
+    """the pistol (pivot on its trigger guard) and a white spin trail behind its muzzle, stored at TEX like the poses
+    (a bigger texture shrunk on screen sparkles while it spins)."""
+    scale = TEX * PISTOL_K
+    im = Image.open(PISTOL).convert("RGBA")
+    box = im.getchannel("A").point(lambda v: 255 if v > 3 else 0).getbbox()
+    c = im.crop(box)
+    c = c.resize((round(c.width * scale), round(c.height * scale)), Image.LANCZOS)
+    cx, cy = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
+    pistol = {"tex": c, "att": {"x": round((cx - PISTOL_GUARD[0]) * PISTOL_K * K, 2), "y": round((PISTOL_GUARD[1] - cy) * PISTOL_K * K, 2),
+                                "scaleX": round(K / TEX, 4), "scaleY": round(K / TEX, 4), "width": c.width, "height": c.height}}
+    # trail: a crescent on the muzzle's circle, thickest at the muzzle, fading and thinning over 150 degrees behind it
+    # (the gun spins clockwise on screen, so "behind" is counter-clockwise: above the muzzle when aimed)
+    dx, dy = (PISTOL_MUZZLE[0] - PISTOL_GUARD[0]) * scale, (PISTOL_MUZZLE[1] - PISTOL_GUARD[1]) * scale
+    r, a0 = math.hypot(dx, dy), math.atan2(dy, dx)
+    size = int(2 * r + 30)
+    o = size / 2
+    big = Image.new("RGBA", (size * 2, size * 2), (0, 0, 0, 0))
+    d = ImageDraw.Draw(big)
+    n = 90
+    for k in range(n):
+        u = k / n
+        a = a0 - math.radians(150) * u
+        w = 2 * (11 * (1 - u) ** 1.3 + 1.5)
+        x, y = 2 * (o + r * math.cos(a)), 2 * (o + r * math.sin(a))
+        d.ellipse([x - w, y - w, x + w, y + w], fill=(255, 255, 255, round(255 * (1 - u) ** 0.9)))
+    trail = big.resize((size, size), Image.LANCZOS)
+    smear = {"tex": trail, "att": {"x": 0, "y": 0, "scaleX": round(K / TEX, 4), "scaleY": round(K / TEX, 4),
+                                   "width": size, "height": size}}
+    return pistol, smear
 
 
 def region(box, tex):
@@ -287,6 +338,10 @@ def build():
     r = region(bbox, bt)
     hx, hy = heads["idle_a3"]
     att["blink"] = {"idle_blink": dict(r, x=round(r["x"] - hx, 2), y=round(r["y"] - hy, 2))}   # on the idle head bone
+    pistol, smear = gun_textures()
+    tex["pistol"], tex["gun_smear"] = pistol["tex"], smear["tex"]
+    att["gun"] = {"pistol": pistol["att"]}
+    att["gun_smear"] = {"gun_smear": smear["att"]}
     sh = shadow()
     tex["shadow"] = sh
     att["shadow"] = {"shadow": {"x": 0, "y": 0, "width": sh.width, "height": sh.height}}
@@ -326,14 +381,30 @@ def build():
             tl["body"] = {"translate": [{"time": round(k[0], 4), "x": k[1], "y": k[2]} for k in keys],
                           "scale": [{"time": round(k[0], 4), "x": k[3], "y": k[4]} for k in keys],
                           "rotate": [{"time": round(k[0], 4), "value": k[5]} for k in keys]}
+        if name in GUN_PROP:
+            starts = {}
+            for p, t0, dur, fade in fr:
+                starts.setdefault(p, t0)
+            keys = [(round(starts[k[0][1:]] + k[1], 4), *k[2:]) for k in GUN_PROP[name]]
+            first, last = keys[0][0], keys[-1][0]
+            for slot, att_name, col in (("gun", "pistol", 5), ("gun_smear", "gun_smear", 6)):
+                slots[slot] = {"attachment": [{"time": 0, "name": None}, {"time": first, "name": att_name},
+                                              {"time": last, "name": None}],
+                               "rgba": [{"time": k[0], "color": hexa(k[col])} for k in keys]}
+            tl["gun"] = {"translate": [{"time": k[0], "x": round((k[1] - ORIGIN[0]) * K, 2), "y": round((ORIGIN[1] - k[2]) * K, 2)}
+                                       for k in keys],
+                         "rotate": [{"time": k[0], "value": k[3]} for k in keys],
+                         "scale": [{"time": k[0], "x": k[4], "y": k[4]} for k in keys]}
         anims[name] = {"slots": slots, "bones": tl}
 
     data = {
         "skeleton": {"spine": "4.2.43", "x": -700, "y": -90, "width": 1400, "height": 1450, "fps": 30, "images": "./images/"},
-        "bones": bones,
+        "bones": bones + [{"name": "gun", "parent": "body"}],
         "slots": [{"name": "shadow", "bone": "root", "attachment": "shadow"},
                   {"name": "pose", "bone": "body", "attachment": "idle_a3"},
                   {"name": "fade", "bone": "body"},
+                  {"name": "gun_smear", "bone": "gun"},
+                  {"name": "gun", "bone": "gun"},
                   {"name": "blink", "bone": "i_head"}],
         "skins": [{"name": "default", "attachments": att}],
         "animations": anims,
