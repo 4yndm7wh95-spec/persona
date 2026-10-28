@@ -59,6 +59,10 @@ GUN_OUT = [("gun_spin_g", .3, 0), ("gun_arm_mid_h", .1, .02), ("pocket_in_e", .1
 GUN_SHOT = [("gun_recoil_b", .2, 0)] + GUN_OUT
 KNIFE_IN = [("idle_a3", .01), ("knife_spin_e", .08, 0), ("knife_ready_b", .05, 0)]
 KNIFE_OUT = [("knife_spin_e", .26, 0), ("idle_a3", .12, .05)]
+# the cut, a beat, then (user 2026-10-28) the knife spins once in the raised fist (knife_top_f, tools/p5/knife_top.py)
+# before the follow-through brings it down
+KNIFE_CUT = [("slash_a10", .12, 0), ("knife_top_f", .2, 0), ("slash_follow_a", .06), ("knife_return_a", .06),
+             ("slash_recover_a", .08), ("idle_a3", .1, .06)]
 IDLE_LOOP = 11.0   # 8 s idle (+ blinks), then the glove tug, ending back on idle_a3
 ANIMS = {
     "idle_loop": [("idle_a3", 8.6)] + GLOVE + [("idle_a3", IDLE_LOOP - 8.6 - sum(f[1] for f in GLOVE))],
@@ -70,20 +74,18 @@ ANIMS = {
     # and is pulled back behind the waist on the cut (slash_a10); the cut is a snap (no smear: the blade trail
     # will be a code effect), the hit-stop below sells it
     # 2026-10-28: the knife is spun at the hip on the draw (KNIFE_PROP; cut still at 0.14 s) and again after the strike
-    "attack": KNIFE_IN + [("slash_a10", .16, 0), ("slash_follow_a", .06), ("knife_return_a", .06)] + KNIFE_OUT,
+    "attack": KNIFE_IN + KNIFE_CUT,
     # picking up an attack card: spin the knife out and hold it ready (like aim_in for the gun); knife_in is exactly
     # the first 0.14 s of attack, so a card played mid-spin carries on from the same point (p5mod/src/Aim.cs)
     "knife_in": KNIFE_IN,
     "knife_loop": [("knife_ready_b", 4.8)],
     "knife_out": [("knife_ready_b", .01)] + KNIFE_OUT,
-    "attack_from_ready": [("knife_ready_b", .14), ("slash_a10", .16, 0), ("slash_follow_a", .06), ("knife_return_a", .06)]
-                         + KNIFE_OUT,
+    "attack_from_ready": [("knife_ready_b", .14)] + KNIFE_CUT,
     # the Shiv card deals its damage 0.2 s after the anim starts (Shiv.cs WithAttackerAnim("Shiv", 0.2f)): fire at 0.18 s
     "shiv": GUN_IN + GUN_SHOT,
     # attack_chain: an attack played while the previous strike is still recovering (user 2026-10-28: fast play
     # restarted from the draw and visibly broke) - re-cock straight from the knife in hand, cut still at 0.14 s
-    "attack_chain": [("knife_return_a", .03), ("knife_ready_b", .11, .03), ("slash_a10", .16, 0), ("slash_follow_a", .06),
-                     ("knife_return_a", .06), ("slash_recover_a", .08), ("idle_a3", .1, .06)],
+    "attack_chain": [("knife_return_a", .03), ("knife_ready_b", .11, .03)] + KNIFE_CUT,
     # aim: picking up a Shiv card raises the gun and holds it (p5mod/src/Aim.cs); playing it fires from the
     # aim (shiv_from_aim, shot at 0.18 s like "shiv"); dropping the card lowers it (aim_out)
     "aim_in": GUN_IN,
@@ -178,8 +180,14 @@ KSPIN_IN = [("@knife_spin_e", 0, *KNIFE_HAND, 200, 1, 0, 0), ("@knife_spin_e", .
 KSPIN_OUT = [("@@knife_spin_e", 0, *KNIFE_HAND, -90, 1, 1, 0), ("@@knife_spin_e", .04, *KNIFE_HAND, -210, 1, 1, .6),
              ("@@knife_spin_e", .09, *KNIFE_HAND, -370, 1, 1, .6), ("@@knife_spin_e", .15, *KNIFE_HAND, -510, 1, 1, .4),
              ("@@knife_spin_e", .2, *KNIFE_HAND, -600, 1, 1, .2), ("@@knife_spin_e", .24, *KNIFE_HAND, -640, 1, 0, 0)]
-KNIFE_PROP = {"attack": [KSPIN_IN, KSPIN_OUT], "knife_in": [KSPIN_IN], "knife_out": [KSPIN_OUT],
-              "attack_from_ready": [KSPIN_OUT]}
+KNIFE_PROP = {"attack": [KSPIN_IN], "knife_in": [KSPIN_IN], "knife_out": [KSPIN_OUT]}
+# the spin in the raised fist: pivot on the grip inside the fist; drawn behind the body (knife_back) so the fingers
+# and the sleeve cover it as it turns; one full turn back to the blade-down angle of slash_a10
+KNIFE_TOP = (1240, 368)
+KSPIN_TOP = [("@knife_top_f", 0, *KNIFE_TOP, -72, 1, 1, 0), ("@knife_top_f", .05, *KNIFE_TOP, -170, 1, 1, .6),
+             ("@knife_top_f", .1, *KNIFE_TOP, -290, 1, 1, .6), ("@knife_top_f", .15, *KNIFE_TOP, -390, 1, 1, .4),
+             ("@knife_top_f", .2, *KNIFE_TOP, -432, 1, 1, 0)]
+KNIFE_TOP_PROP = {"attack": [KSPIN_TOP], "attack_from_ready": [KSPIN_TOP], "attack_chain": [KSPIN_TOP]}
 
 # soft-mesh pictures: bone -> (parent, pivot on the final canvas, influence polys / circles, feather)
 MESHES = {
@@ -479,8 +487,8 @@ def build():
     tex["pistol"], tex["gun_smear"] = pistol["tex"], smear["tex"]
     knife, ksmear = knife_textures()
     tex["knife"], tex["knife_smear"] = knife["tex"], ksmear["tex"]
-    att["knife"] = {"knife": knife["att"]}
-    att["knife_smear"] = {"knife_smear": ksmear["att"]}
+    att["knife"] = att["knife_back"] = {"knife": knife["att"]}
+    att["knife_smear"] = att["knife_back_smear"] = {"knife_smear": ksmear["att"]}
     att["gun"] = {"pistol": pistol["att"]}
     att["gun_smear"] = {"gun_smear": smear["att"]}
     sh = shadow()
@@ -523,7 +531,8 @@ def build():
                           "scale": [{"time": round(k[0], 4), "x": k[3], "y": k[4]} for k in keys],
                           "rotate": [{"time": round(k[0], 4), "value": k[5]} for k in keys]}
         for prop, bone, extra in ((GUN_PROP, "gun", (("gun", "pistol", 5), ("gun_smear", "gun_smear", 6), ("finger_tip", "finger_tip", None))),
-                                  (KNIFE_PROP, "knife", (("knife", "knife", 5), ("knife_smear", "knife_smear", 6)))):
+                                  (KNIFE_PROP, "knife", (("knife", "knife", 5), ("knife_smear", "knife_smear", 6))),
+                                  (KNIFE_TOP_PROP, "knife_top", (("knife_back", "knife", 5), ("knife_back_smear", "knife_smear", 6)))):
             if name in prop:
                 slots_, bone_tl = prop_timelines(fr, prop[name], extra)
                 slots.update(slots_)
@@ -532,8 +541,11 @@ def build():
 
     data = {
         "skeleton": {"spine": "4.2.43", "x": -700, "y": -90, "width": 1400, "height": 1450, "fps": 30, "images": "./images/"},
-        "bones": bones + [{"name": "gun", "parent": "body"}, {"name": "knife", "parent": "body"}],
+        "bones": bones + [{"name": "gun", "parent": "body"}, {"name": "knife", "parent": "body"},
+                          {"name": "knife_top", "parent": "body"}],
         "slots": [{"name": "shadow", "bone": "root", "attachment": "shadow"},
+                  {"name": "knife_back_smear", "bone": "knife_top"},
+                  {"name": "knife_back", "bone": "knife_top"},
                   {"name": "pose", "bone": "body", "attachment": "idle_a3"},
                   {"name": "fade", "bone": "body"},
                   {"name": "gun_smear", "bone": "gun"},
