@@ -47,8 +47,11 @@ SUMMON_UP = ["summon_lift1_a", "summon_lift2_a", "summon_touch_mid_a", "summon_t
 # the same point (p5mod/src/Aim.cs)
 # 4th round: the finger the gun spins on points at the camera (gun_flick_d / gun_twirl_out_d), so the in-plane spin
 # around the fingertip is physically right; pocket_in_d eases the left hand into / out of the pocket
-GUN_IN = [("idle_a3", .01), ("pocket_in_d", .04, .02), ("gun_flick_d", .07, .02), ("gun_aim_b", .06, 0)]
-GUN_OUT = [("gun_twirl_out_d", .16, 0), ("pocket_in_d", .05, .02), ("idle_a3", .1, .04)]
+# 5th round (user's own hand photo, art/p5/ref/spin_hand_ref.jpg): the arm stays out at the firing reach and the gun
+# spins on the relaxed index finger (gun_spin_g = Codex's gun_spin_f with the finger joint bent so it reads,
+# tools/p5/bend_finger.py), then is caught in gun_aim_b's grip; pocket_in_e eases the left hand in and out
+GUN_IN = [("idle_a3", .01), ("pocket_in_e", .04, .02), ("gun_spin_g", .07, .02), ("gun_aim_b", .06, 0)]
+GUN_OUT = [("gun_spin_g", .16, 0), ("pocket_in_e", .05, .02), ("idle_a3", .1, .04)]
 GUN_SHOT = [("gun_recoil_b", .2, 0)] + GUN_OUT
 IDLE_LOOP = 11.0   # 8 s idle (+ blinks), then the glove tug, ending back on idle_a3
 ANIMS = {
@@ -118,17 +121,18 @@ IMPACT = {
 # the separate pistol (art/p5/poses/pistol_b.png) on the `gun` bone: keys are (time, x, y, rotation, scale, gun alpha,
 # spin-trail alpha) with x, y on the final canvas (the finger joint it spins on) and rotation in degrees (0 = aimed
 # right, Spine's counter-clockwise positive; it spins clockwise, so the rotation counts down). "@pose" times are
-# relative to that pose's start. The gun is only shown between the first and the last key.
+# relative to that pose's start ("@@pose": its last start, for a pose used twice). The gun is only shown between the
+# first and the last key.
 PISTOL = POSES / "pistol_b.png"
 PISTOL_GUARD = (518.6, 501.8)      # trigger-guard hole on pistol_b.png: the spin pivot (on the finger)
 PISTOL_MUZZLE = (984, 300)
 PISTOL_K = 134 / 940               # pistol_b pixels -> final canvas (the gun in gun_aim_b is ~134 px long)
-FLICK, TWIRL_OUT, AIM_GUARD = (1056, 402), (1030, 324), (1275, 340)      # fingertip centres (measured on the finals)
-SPIN_IN = [("@gun_flick_d", 0, *FLICK, 470, .3, 0, 0), ("@gun_flick_d", .025, *FLICK, 260, 1, 1, .9),
-           ("@gun_flick_d", .05, *FLICK, 90, 1, 1, .6), ("@gun_aim_b", 0, *AIM_GUARD, 0, 1, 1, 0)]
-SPIN_OUT = [("@gun_twirl_out_d", 0, *TWIRL_OUT, 70, 1, 1, 0), ("@gun_twirl_out_d", .03, *TWIRL_OUT, -60, 1, 1, .9),
-            ("@gun_twirl_out_d", .07, *TWIRL_OUT, -250, 1, 1, .8), ("@gun_twirl_out_d", .11, *TWIRL_OUT, -420, .7, 1, .5),
-            ("@gun_twirl_out_d", .15, *TWIRL_OUT, -520, .05, 0, 0)]
+SPIN, AIM_GUARD = (1285, 344), (1275, 340)      # the spinning finger (measured on the final) / aim_b's trigger guard
+SPIN_IN = [("@gun_spin_g", 0, *SPIN, 470, .3, 0, 0), ("@gun_spin_g", .025, *SPIN, 260, 1, 1, .9),
+           ("@gun_spin_g", .05, *SPIN, 90, 1, 1, .6), ("@gun_aim_b", 0, *AIM_GUARD, 0, 1, 1, 0)]
+SPIN_OUT = [("@@gun_spin_g", 0, *SPIN, 60, 1, 1, 0), ("@@gun_spin_g", .03, *SPIN, -70, 1, 1, .9),
+            ("@@gun_spin_g", .07, *SPIN, -260, 1, 1, .8), ("@@gun_spin_g", .11, *SPIN, -430, .7, 1, .5),
+            ("@@gun_spin_g", .15, *SPIN, -530, .05, 0, 0)]
 GUN_PROP = {"aim_in": SPIN_IN, "shiv": SPIN_IN + SPIN_OUT, "shiv_from_aim": SPIN_OUT, "aim_out": SPIN_OUT}
 
 # soft-mesh pictures: bone -> (parent, pivot on the final canvas, influence polys / circles, feather)
@@ -383,10 +387,12 @@ def build():
                           "scale": [{"time": round(k[0], 4), "x": k[3], "y": k[4]} for k in keys],
                           "rotate": [{"time": round(k[0], 4), "value": k[5]} for k in keys]}
         if name in GUN_PROP:
-            starts = {}
+            first_at, last_at = {}, {}
             for p, t0, dur, fade in fr:
-                starts.setdefault(p, t0)
-            keys = [(round(starts[k[0][1:]] + k[1], 4), *k[2:]) for k in GUN_PROP[name]]
+                first_at.setdefault(p, t0)
+                last_at[p] = t0
+            keys = [(round((last_at[k[0][2:]] if k[0].startswith("@@") else first_at[k[0][1:]]) + k[1], 4), *k[2:])
+                    for k in GUN_PROP[name]]
             first, last = keys[0][0], keys[-1][0]
             for slot, att_name, col in (("gun", "pistol", 5), ("gun_smear", "gun_smear", 6)):
                 slots[slot] = {"attachment": [{"time": 0, "name": None}, {"time": first, "name": att_name},
