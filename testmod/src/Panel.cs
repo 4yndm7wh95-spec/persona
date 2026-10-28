@@ -17,7 +17,7 @@ namespace P3TestMod;
 /// <summary>
 /// 测试面板（F8 开关，或点左上角的"测试"按钮）：
 /// · 卡牌按原版卡面显示（原版牌组 / 图鉴用的同一个卡牌格子 NGridCardHolder），点一下加入手牌；
-/// · 筛选：储君 / 无色 / 全部，按名称搜索；每页 12 张，卡与卡之间留足空隙；
+/// · 筛选：本角色（当前玩家所选角色的卡池，不在战斗中时等于全部）/ 无色 / 全部，按名称搜索；每页 12 张，卡与卡之间留足空隙；
 /// · 按钮：击杀木桩（看胜利特效）、让我受击（看受击动画）、清空手牌、消耗手牌（也可以按 F7，面板关着也行）、不死开关、打开日志文件夹。
 /// · v1.2：左上角常驻「换成木桩」「+3 能量」「+3 辉星」；会改游戏状态的按钮全部走联机同步的控制台命令（Runtime → Net.Send）。
 /// </summary>
@@ -36,7 +36,7 @@ public static class Panel
 	private static GridContainer? _grid;
 	private static Label? _status, _pageLabel;
 	private static LineEdit? _search;
-	private static string _filter = "regent";
+	private static string _filter = "mine";
 	private static int _page;
 	private static List<CardModel> _cards = new();
 
@@ -135,8 +135,8 @@ public static class Panel
 		HBoxContainer top = new();
 		top.AddThemeConstantOverride("separation", 10);
 		col.AddChild(top);
-		top.AddChild(new Label { Text = "P3 测试面板", CustomMinimumSize = new Vector2(150f, 0f) });
-		foreach ((string label, string key) in new[] { ("储君", "regent"), ("无色", "colorless"), ("全部", "all") })
+		top.AddChild(new Label { Text = "测试面板", CustomMinimumSize = new Vector2(150f, 0f) });
+		foreach ((string label, string key) in new[] { ("本角色", "mine"), ("无色", "colorless"), ("全部", "all") })
 		{
 			Button b = new() { Text = label, FocusMode = Control.FocusModeEnum.None };
 			b.Pressed += () => { _filter = key; _page = 0; Refresh(); };
@@ -208,12 +208,13 @@ public static class Panel
 	private static IEnumerable<CardModel> Filtered()
 	{
 		string q = _search?.Text?.Trim() ?? "";
+		string want = _filter == "mine" ? Runtime.Me?.Character.CardPool.Title.ToLowerInvariant() ?? "all" : _filter;
 		foreach (CardModel c in ModelDb.AllCards)
 		{
 			if (!c.ShouldShowInCardLibrary) continue;
 			string pool = c.Pool.Title.ToLowerInvariant();
 			if (pool == "test") continue;                                          // 原版测试用卡池
-			if (_filter != "all" && pool != _filter) continue;
+			if (want != "all" && pool != want) continue;
 			if (q.Length > 0)
 			{
 				string title = c.TitleLocString.GetRawText();

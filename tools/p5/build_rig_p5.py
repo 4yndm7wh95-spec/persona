@@ -46,9 +46,11 @@ ANIMS = {
     "idle_loop": [("idle_a3", 8.6)] + GLOVE + [("idle_a3", IDLE_LOOP - 8.6 - sum(f[1] for f in GLOVE))],
     "low_health_loop": [("idle_a3", 6.0)],
     "relaxed_loop": [("relaxed_a", 6.0)],
-    "attack": [("idle_a3", .02), ("knife_draw_a", .05), ("knife_set_a", .05), ("knife_ready_a", .06),
-               ("slash_smear_a3", .04, 0), ("slash_a3", .22, 0), ("slash_follow_a", .08), ("knife_return_a", .08),
-               ("slash_recover_a", .1), ("idle_a3", .15, .08)],
+    # the game deals the damage AttackAnimDelay (0.15 s for the Silent) after the attack starts: the cut lands at
+    # 0.10 s and the whole strike is ~0.55 s (user 2026-10-28: the first, ~0.85 s version lagged behind the damage)
+    "attack": [("idle_a3", .01), ("knife_draw_a", .03, .02), ("knife_set_a", .02, .02), ("knife_ready_a", .02, .02),
+               ("slash_smear_a3", .03, 0), ("slash_a3", .14, 0), ("slash_follow_a", .06), ("knife_return_a", .06),
+               ("slash_recover_a", .07), ("idle_a3", .1, .06)],
     "shiv": [("idle_a3", .02)] + [(n, .05) for n in GUN_UP] + [("gun_a2", .12), ("gun_recoil_a6", .07, 0),
              ("gun_a2", .2)] + [(n, .05) for n in GUN_UP[::-1]] + [("idle_a3", .15, .08)],
     "cast": [("idle_a3", .02)] + [(n, .08) for n in SUMMON_UP] + [("summon_hold_a", .9)]
