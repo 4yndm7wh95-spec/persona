@@ -710,5 +710,13 @@
    96
   ],
   "anchor_foot": "rear"
+ },
+ "gun_spin_f": {
+  "scale": 1.0,
+  "offset": [
+   343,
+   99
+  ],
+  "anchor_foot": "rear"
  }
 }
