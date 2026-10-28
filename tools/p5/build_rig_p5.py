@@ -47,10 +47,10 @@ ANIMS = {
     "low_health_loop": [("idle_a3", 6.0)],
     "relaxed_loop": [("relaxed_a", 6.0)],
     # the game deals the damage AttackAnimDelay (0.15 s for the Silent) after the attack starts: the cut lands at
-    # 0.10 s and the whole strike is ~0.55 s (user 2026-10-28: the first, ~0.85 s version lagged behind the damage)
-    "attack": [("idle_a3", .01), ("knife_draw_a", .03, .02), ("knife_set_a", .02, .02), ("knife_ready_a", .02, .02),
-               ("slash_smear_a3", .03, 0), ("slash_a3", .14, 0), ("slash_follow_a", .06), ("knife_return_a", .06),
-               ("slash_recover_a", .07), ("idle_a3", .1, .06)],
+    # 0.14 s and the whole strike is ~0.6 s (user 2026-10-28: the first, ~0.85 s version lagged behind the damage)
+    "attack": [("idle_a3", .01), ("knife_draw_a", .03, .02), ("knife_set_a", .02, .02), ("knife_ready_a", .06, .02),
+               ("slash_smear_a3", .02, 0), ("slash_a3", .16, 0), ("slash_follow_a", .06), ("knife_return_a", .06),
+               ("slash_recover_a", .08), ("idle_a3", .1, .06)],
     "shiv": [("idle_a3", .02)] + [(n, .05) for n in GUN_UP] + [("gun_a2", .12), ("gun_recoil_a6", .07, 0),
              ("gun_a2", .2)] + [(n, .05) for n in GUN_UP[::-1]] + [("idle_a3", .15, .08)],
     "cast": [("idle_a3", .02)] + [(n, .08) for n in SUMMON_UP] + [("summon_hold_a", .9)]
@@ -60,6 +60,22 @@ ANIMS = {
     "die": [("die_buckle_a", .12, .06), ("die_kneel_a2", .6), ("die_fall_a", .15), ("die_down_b", 1.0)],
 }
 LOOPS = {"idle_loop", "low_health_loop", "relaxed_loop"}
+# Impact on the `body` bone (pivot at the feet; user 2026-10-28: the strike felt weak, no impact). Keys are
+# (time, dx, dy, scaleX, scaleY, rotation): anticipation (pull back and crouch), a snap forward with a stretch,
+# a squash and a short shaking hit-stop on the cut, then an eased recovery. The gun kicks back on the recoil
+# frame; a hit knocks him back. "@pose" times are relative to that pose's start in the animation.
+IMPACT = {
+    "attack": [(0, 0, 0, 1, 1, 0), (.06, -10, 0, 1.01, .985, 1), (.12, -24, -4, 1.025, .965, 2),
+               (.14, 95, 0, .97, 1.035, -3), (.16, 112, 0, 1.035, .965, -2.2), (.18, 120, 0, 1.03, .97, -2.2),
+               (.20, 104, 0, 1.03, .97, -2), (.22, 116, 0, 1.025, .975, -2), (.24, 107, 0, 1.02, .98, -1.8),
+               (.27, 111, 0, 1.015, .985, -1.6), (.40, 72, 0, 1.0, 1.0, -.6), (.56, 4, 0, 1, 1, 0), (.62, 0, 0, 1, 1, 0)],
+    "shiv": [("@gun_recoil_a6", 0, 0, 0, 1, 1, 0), ("@gun_recoil_a6", .02, -30, 0, .985, 1.01, 2.5),
+             ("@gun_recoil_a6", .04, -21, 0, .99, 1.005, 2), ("@gun_recoil_a6", .06, -27, 0, .99, 1.005, 2),
+             ("@gun_recoil_a6", .12, -12, 0, 1, 1, .8), ("@gun_recoil_a6", .26, 0, 0, 1, 1, 0)],
+    "hurt": [(0, 0, 0, 1, 1, 0), (.03, -55, 0, .975, 1.01, 3), (.06, -64, 0, .975, 1.01, 3.2), (.09, -54, 0, .98, 1.01, 3),
+             (.12, -60, 0, .985, 1.005, 2.8), (.28, -34, 0, 1, 1, 1.5), (.48, -6, 0, 1, 1, .2), (.62, 0, 0, 1, 1, 0)],
+}
+
 # soft-mesh pictures: bone -> (parent, pivot on the final canvas, influence polys / circles, feather)
 MESHES = {
     "idle_a3": {
@@ -165,12 +181,12 @@ def soft_mesh(pose, bone_index):
     bones = []
     for b in setup["bones"][1:]:
         nb = dict(b, name=pre + b["name"])
-        nb["parent"] = b["parent"] if b["parent"] == "root" else pre + b["parent"]
+        nb["parent"] = "body" if b["parent"] == "root" else pre + b["parent"]     # follow the impact moves
         bones.append(nb)
     for k, b in enumerate(bones):
         bone_index[b["name"]] = len(bone_index)
     local = {n: k for k, (n, _, _) in enumerate(rig.bones)}       # mesh_rig's own indices -> ours
-    remap = {k: (0 if n == "root" else bone_index[pre + n]) for n, k in local.items()}
+    remap = {k: (bone_index["body"] if n == "root" else bone_index[pre + n]) for n, k in local.items()}
     mesh = setup["skins"][0]["attachments"][pose][pose]
     v, out, i = mesh["vertices"], [], 0
     while i < len(v):
@@ -265,6 +281,16 @@ def build():
             for pose, pre in MESH_PREFIX.items():
                 if any(f[0] == pose for f in fr):
                     tl.update(bake_motion(pre, end))
+        if name in IMPACT:
+            starts = {}
+            for p, t0, dur, fade in fr:
+                starts.setdefault(p, t0)
+            keys = [((starts[k[0][1:]] + k[1]), *k[2:]) if isinstance(k[0], str) else k for k in IMPACT[name]]
+            if keys[0][0] > 0:
+                keys = [(0, 0, 0, 1, 1, 0)] + keys
+            tl["body"] = {"translate": [{"time": round(k[0], 4), "x": k[1], "y": k[2]} for k in keys],
+                          "scale": [{"time": round(k[0], 4), "x": k[3], "y": k[4]} for k in keys],
+                          "rotate": [{"time": round(k[0], 4), "value": k[5]} for k in keys]}
         anims[name] = {"slots": slots, "bones": tl}
 
     data = {
