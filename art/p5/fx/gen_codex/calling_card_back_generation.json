@@ -1,0 +1,51 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-3eadcdde-b1df-47e7-8bd5-8cf18e3c33bd.png",
+  "prompt": "Game UI sprite: create the REVERSE SIDE of the supplied Persona 5-style calling card, to pair with its front in a fictional game's rotating/flipping card effect. The reference is FRONT design/shape/style ONLY. Back must have NO TAKE YOUR HEART lettering and no readable text.\nSame portrait220:320 aspect ratio, identical card size, position, clipped/softened corners and silhouette as reference, transparent surrounding margin. Flat front-on orthographic card, no perspective or thickness. Coherent red/black/white flat graphic palette, bold black ink outlines, crisp paper-cut collage styling matching front. Center a large Phantom-Thieves-style tall top hat and mischievous skull/smiling face emblem or closely related abstract heraldic crest, designed as a balanced card-back motif. Around it use red radiating diagonal stripes and black/red halftone dots. Outer perimeter a thick RED frame with a second THIN inner frame, graphic black field behind emblem, restrained white accents. Strong clear shapes readable at220x320. One whole card only, no text, no decorative readable words, no props, no surface, no shadow, no glow.\nGenuine transparent RGBA outside card, no white background, no checkerboard printed in the art. Portrait card back matching supplied front silhouette exactly; generate a high-resolution original suitable for final220x320 sprite.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/fx/gen_codex/calling_card.png"
+  ],
+  "tool": "built-in image_gen",
+  "transparent_background": true,
+  "generation_count": 1,
+  "visual_review": false,
+  "regenerated": false,
+  "raw_size": [
+    1040,
+    1512
+  ],
+  "raw_sha256": "94702f5291aa5c264342f4cf74c9acd8b38b625d18f49e9e1c0187a2281e3c26",
+  "output_size": [
+    220,
+    320
+  ],
+  "mode": "RGBA",
+  "raw_card_bbox": [
+    82,
+    85,
+    961,
+    1427
+  ],
+  "front_card_bbox": [
+    13,
+    14,
+    207,
+    306
+  ],
+  "processing": "Map raw RGB card bounds to front card bounds; use exact original front alpha for final contour; zero RGB outside alpha.",
+  "checks": {
+    "corner_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "alpha_identical_to_front": true,
+    "alpha_different_pixel_count": 0,
+    "contour_edge_difference_px": 0
+  },
+  "outputs": [
+    "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\art\\p5\\fx\\gen_codex\\calling_card_back.png",
+    "C:\\Users\\kkk\\Documents\\Codex\\2026-10-12\\claude-git-c-users-kkk-videos\\work\\persona-ref-upload\\art\\p5\\fx\\gen_codex\\calling_card_back_raw.png"
+  ]
+}
