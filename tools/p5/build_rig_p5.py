@@ -58,8 +58,10 @@ GUN_IN = [("idle_a3", .01), ("pocket_in_e", .03, .015), ("gun_arm_mid_h", .03, .
 # (user: the hand left the pocket too fast - pocket_in_e and the fade into idle are held longer)
 GUN_OUT = [("gun_spin_g", .3, 0), ("gun_arm_mid_h", .1, .02), ("pocket_in_e", .1, .04), ("idle_a3", .14, .08)]
 GUN_SHOT = [("gun_recoil_b", .2, 0)] + GUN_OUT
-KNIFE_IN = [("idle_a3", .01), ("knife_spin_g", .08, 0), ("knife_ready_b", .05, 0)]
-KNIFE_OUT = [("knife_spin_g", .26, 0), ("idle_a3", .12, .05)]
+# knife_lower_h (user 2026-10-29: the raised hand dropped in one frame on a cancel): the free hand half way between
+# the chest and the side; the knife hand is the same as knife_spin_g, so the spin carries on across both
+KNIFE_IN = [("idle_a3", .01), ("knife_spin_g", .05, 0), ("knife_lower_h", .03, 0), ("knife_ready_b", .05, 0)]
+KNIFE_OUT = [("knife_lower_h", .08, 0), ("knife_spin_g", .2, 0), ("idle_a3", .12, .05)]
 # the cut, a beat, then (user 2026-10-28) the knife spins once in the raised, relaxed open hand (knife_top_g, Codex)
 # before the follow-through brings it down
 KNIFE_CUT = [("slash_a10", .12, 0), ("knife_top_g", .2, 0), ("slash_follow_a", .06), ("knife_return_a", .06),
@@ -179,9 +181,9 @@ KNIFE_HAND = (752, 735)                     # on the index finger of knife_spin_
 KSPIN_IN = [("@knife_spin_g", 0, *KNIFE_HAND, 200, 1, 0, 0), ("@knife_spin_g", .02, *KNIFE_HAND, 80, 1, 1, .6),
             ("@knife_spin_g", .045, *KNIFE_HAND, -40, 1, 1, .6), ("@knife_spin_g", .065, *KNIFE_HAND, -120, 1, 1, .3),
             ("@knife_ready_b", 0, 720, 725, -150, 1, 1, 0)]
-KSPIN_OUT = [("@@knife_spin_g", 0, *KNIFE_HAND, -90, 1, 1, 0), ("@@knife_spin_g", .04, *KNIFE_HAND, -210, 1, 1, .6),
-             ("@@knife_spin_g", .09, *KNIFE_HAND, -370, 1, 1, .6), ("@@knife_spin_g", .15, *KNIFE_HAND, -510, 1, 1, .4),
-             ("@@knife_spin_g", .2, *KNIFE_HAND, -600, 1, 1, .2), ("@@knife_spin_g", .24, *KNIFE_HAND, -640, 1, 0, 0)]
+KSPIN_OUT = [("@knife_lower_h", 0, *KNIFE_HAND, -90, 1, 1, 0), ("@knife_lower_h", .04, *KNIFE_HAND, -210, 1, 1, .6),
+             ("@knife_lower_h", .09, *KNIFE_HAND, -370, 1, 1, .6), ("@knife_lower_h", .15, *KNIFE_HAND, -510, 1, 1, .4),
+             ("@knife_lower_h", .2, *KNIFE_HAND, -600, 1, 1, .2), ("@knife_lower_h", .24, *KNIFE_HAND, -640, 1, 0, 0)]
 KNIFE_PROP = {"attack": [KSPIN_IN], "knife_in": [KSPIN_IN], "knife_out": [KSPIN_OUT]}
 # the spin in the raised hand: pivot on the index finger; one full turn back to the blade-down angle of slash_a10.
 # Layering (user 2026-10-29): the knife goes over the body and sleeve but under the spinning hand - the hand's

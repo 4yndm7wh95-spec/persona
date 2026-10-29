@@ -86,6 +86,12 @@ public partial class Preview : Node2D
 			p.At(3.2, () => p._joker?.Play("cast_guard"));
 			p.At(3.45, () => CardFx.Guard(p._front, Chest));
 		},
+		// 选中打击牌（转刀起手停住）→ 取消（放下手、转刀收起）
+		["knifecancel"] = p =>
+		{
+			p.At(0.3, () => { p._joker?.Play("knife_in"); p._joker?.Queue("knife_loop", true); });
+			p.At(1.3, () => p._joker?.Play("knife_out"));
+		},
 		["block"] = p =>
 		{
 			p.EnemyAttack(0.3, Enemy);
