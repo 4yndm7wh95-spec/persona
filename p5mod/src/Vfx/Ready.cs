@@ -142,23 +142,9 @@ public sealed class ReadyFx
 		_wall = new PersonaMask(_backLayer, _frontLayer, _pose(MaskEyes), body * 0.42f, _facing, 0.08f * _facing);
 		// 身体轮廓上也冒一圈蓝焰（用户 2026-10-29）
 		_aura = new BodyAura();
-		// 指缝里漏出来的蓝焰：同样的细丝火，小而亮，贴着手的外沿
-		HandFire(hand + new Vector2(20f * _facing, -14f), 46f, 92f);
-		HandFire(hand + new Vector2(-6f * _facing, -30f), 38f, 74f);
+		// 手上只留一点蓝光（指缝里的两小簇火像两块贴图，用户 2026-10-29 嫌难看，删了；火交给面具和轮廓）
 		Sprite2D halo = Glow.SoftSprite(_root, hand + new Vector2(10f * _facing, -18f), PersonaMask.Hi, 1.5f);
 		Pulse(halo, 0.3f, 0.6f, 0.4);
-	}
-
-	private void HandFire(Vector2 foot, float w, float h)
-	{
-		ColorRect r = Flame.Rect(_root, foot, w, h);
-		Flame.Palette(r, PersonaMask.Dark, PersonaMask.Mid, PersonaMask.Hi, PersonaMask.Hot);
-		Flame.Set(r, "body", 0.35f);
-		Flame.Set(r, "base_w", 0.32f);
-		Flame.Set(r, "top_w", 0.04f);
-		Flame.Set(r, "speed", 1.6f);
-		Flame.Set(r, "rise", 0f);
-		Fx.Animate(r, 0, 0.25, t => Flame.Set(r, "rise", Ease5.OutBack(t) * 0.95f));
 	}
 
 	// ───────────────────────── 半举的拳：红光在拳头上蓄着，前面一道光弧慢慢成形 ─────────────────────────
