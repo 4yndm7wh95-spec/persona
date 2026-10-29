@@ -3,7 +3,7 @@
   "name": "P5 Joker（静默猎手换皮）",
   "author": "brooks",
   "description": "将静默猎手替换为 Persona 5 主角 Joker（雨宫莲）：战斗、商店、休息处的人物动作；拿起每张牌时的架势和特效（手扣面具的蓝焰、举枪瞄准线、锁定准星等）；打击、射击、防御光盾、虚弱锁环、咒怨等 P5R 风格特效和伤害数字。纯视觉，不改玩法。",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "has_pck": true,
   "has_dll": true,
   "affects_gameplay": false

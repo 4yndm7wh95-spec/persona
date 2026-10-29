@@ -1,10 +1,10 @@
 # P5Joker（静默猎手换皮）
 
-## 0.5.7：眼神特写复用 P5R 原版数据
+## 0.5.8：眼神特写复用 P5R 原版数据
 
 召唤时的眼神特写改为播放原版 `BCT_P_SUMMON.GMD` + `BCT_P_SUMMON_BT.GMD` 转出的几何、UV 和材质关键帧，使用现有 Joker `eyes.png`。原版裂缝、白边、红纸收拢、碎片、双感叹号及其破碎均随源数据播放，替换 0.5.6 的程序近似。转换数据嵌入 DLL，贴图和既有召唤触发点继续复用。
 
-预览：[GIF](../docs/p5/preview/eye_cutin_native.gif)。来源、复现方式和验证范围见 [转换工具说明](../tools/p5/native_cutin/README.md) 与 [报告](../docs/codex/reports/p5_native_eye_cutin_0.5.7.md)。
+预览：[GIF](../docs/p5/preview/eye_cutin_native.gif)。来源、复现方式和验证范围见 [转换工具说明](../tools/p5/native_cutin/README.md) 与 [报告](../docs/codex/reports/p5_native_eye_cutin_0.5.8.md)。
 
 PCK（骨骼动画 + 特效贴图）+ DLL（特效代码，p5mod/src）：战斗、商店、休息处的静默猎手换成 Joker；0.2.0 起有第一批出牌特效（小刀斩、开枪）。
 

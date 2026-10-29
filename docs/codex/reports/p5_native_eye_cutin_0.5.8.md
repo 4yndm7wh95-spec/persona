@@ -1,4 +1,4 @@
-# P5Joker 0.5.7：原版眼神特写复用
+# P5Joker 0.5.8：原版眼神特写复用
 
 ## 结果
 
@@ -24,19 +24,30 @@
 ## 验证
 
 - 转换器 Release 编译通过，0 warning、0 error；重新从两个 GMD 生成最终 JSON。
-- mod Release 编译通过，0 warning、0 error；版本常量和清单均为 0.5.7。
+- mod Release 编译通过，0 warning、0 error；版本常量和清单均为 0.5.8。
 - 对编译后的 DLL 检查：嵌入资源可实际反序列化，51 个网格完整；面部显隐的边界、连续白闪的峰值及结束时全部透明通过。
 - Godot 4.5.1、Compatibility/OpenGL、RTX 4060：读取同一最终 JSON，以 ArrayMesh 播放并输出 90 帧、60fps 预览；无引擎错误。该预览使用独立 GDScript 驱动，与 mod C# 一样使用网格和关键帧数据。
 - GIF：`docs/p5/preview/eye_cutin_native.gif`；定格：`docs/p5/preview/eye_cutin_native.png`。旧预览保留便于比较。
 - `git diff --check` 通过。
 
-没有启动 P5R 或杀戮尖塔 2，没有安装覆盖游戏目录。独立 Godot 预览没有加载游戏及 C# 模组，因此战斗中的层级、召唤配合和完整 C# 运行仍待用户实机验收，不能据此承诺逐帧完全一致。
+没有启动 P5R 或杀戮尖塔 2。用户随后要求先套进 mod 试用，已备份并安装，见下文。独立 Godot 预览没有加载游戏及 C# 模组，因此战斗中的层级、召唤配合和完整 C# 运行仍待用户实机验收，不能据此承诺逐帧完全一致。
 
 ## 测试包
 
-- ZIP：`C:/Users/kkk/sts2_tools/p5_build/P5Joker_0.5.7_native_20261029_082835.zip`，30029184 字节。
-- 解压目录：`C:/Users/kkk/sts2_tools/p5_build/P5Joker_0.5.7_native_20261029_082835/`。
+- ZIP：`C:/Users/kkk/sts2_tools/p5_build/P5Joker_0.5.8_native_20261029_083449.zip`，30029194 字节。
+- 解压目录：`C:/Users/kkk/sts2_tools/p5_build/P5Joker_0.5.8_native_20261029_083449/`。
 - DLL：319488 字节；清单：541 字节；PCK：31737924 字节。
 - PCK 是从当前 `p5mod/pck_stage` 的新副本，用 GDRE 的 PCK v3、Godot 4.5.1 参数重新打包。
-- DLL SHA-256：`dd7d50d52ff455381a3002e50617a4ea87a0287ddebab751b183027a10342777`。
+- DLL SHA-256：`903a77729295f9c8d05483f3d03baeb38fc4da05782cba5ee0cd2a88e7981413`。
 - PCK SHA-256：`a4ea6dd3fd9158e7bec07bf9e642383fea0d0f6982b178e4676366a100eb2036`。
+
+
+## 并发与安装结果
+
+远端新增 b8aac55，同样修改眼神特写并使用版本 0.5.7。为保留双方成果，原版数据复用实现放在独立分支 codex/p5r-native-eye-cutin-20261029，并递增至 0.5.8；没有覆盖远端原分支的改动。
+
+用户要求先套进 mod 试用后，检查杀戮尖塔 2 进程无输出；备份现有 0.5.5 至：C:\Users\kkk\sts2_tools\backup\P5Joker_before_native_20261029_083449
+
+已将 DLL、清单和 PCK 安装到：C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\P5Joker
+
+安装后的 DLL SHA-256 与最终 0.5.8 构建相同：903a77729295f9c8d05483f3d03baeb38fc4da05782cba5ee0cd2a88e7981413。未启动游戏，等待用户实机体验。
