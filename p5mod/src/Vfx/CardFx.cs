@@ -361,14 +361,13 @@ public static class CardFx
 	/// <summary>
 	/// 咒（原本给毒牌的特效，用户：改成亚森那种咒属性，不一定体现毒；不要粉）：P5R Eiha 式的黑红咒焰。
 	/// 预备 —— 敌人脚下一滩黑色咒印张开，边上一圈暗红光；中心一颗黑球慢慢胀大（暗红描边、里面隐约的红光）；
-	/// 爆发 —— 一圈 P5R 原版的红黑咒焰（curse_fire 贴图）从咒印里蹿起来、摇曳着往上卷，黑球往里一缩再炸开：
+	/// 爆发 —— 一圈黑底红边的咒焰从咒印里蹿起来（着色器实时生成，噪声翻卷往上流），黑球往里一缩再炸开、中间三根高火冲上去：
 	///         暗红闪光 + 折射波 + 黑色碎片 + 红色火星往上冒；
 	/// 余韵 —— 咒焰越烧越细、淡掉，咒印收拢。at = 敌人的 VfxSpawnPosition。
 	/// </summary>
 	public static void Curse(Control layer, Vector2 at)
 	{
 		Vector2 ground = at + new Vector2(0f, 95f);
-		Texture2D? flameTex = Fx.Tex("curse_fire");
 
 		// 咒印：黑色扁椭圆 + 暗红光环
 		Node2D seal = Fx.Root(layer, ground, "P5CurseSeal", 1.3);
@@ -405,21 +404,24 @@ public static class CardFx
 			core.Modulate = new Color(Pal5.Bright, 0.4f + 0.5f * Mathf.Abs(Mathf.Sin(time * 18f)));
 		});
 
-		// 咒焰：沿咒印一圈的十几簇原版咒焰，从地下蹿起来摇曳上卷
-		if (flameTex != null)
+		// 咒焰（着色器实时生成，Glow.CurseFire）：先在咒印边上蹿起几根矮的，黑球炸开时中间三根高的冲上去
+		Node2D glowRoot = Fx.Root(layer, ground, "P5CurseGlow", 1.3);
+		Sprite2D under = new() { Texture = Glow.Soft, Material = Fx.Additive, Modulate = new Color(Pal5.Crimson, 0f), Position = new Vector2(0f, -120f) };
+		glowRoot.AddChild(under);
+		Fx.Animate(glowRoot, 0, 1.2, t =>
 		{
-			for (int i = 0; i < 10; i++)
-			{
-				float a = Mathf.Tau * i / 10 + Fx.Rand(-0.15f, 0.15f);
-				Vector2 p = ground + new Vector2(Mathf.Cos(a) * 110f, Mathf.Sin(a) * 24f);
-				bool back = Mathf.Sin(a) < 0f;
-				Flame(layer, flameTex, p, Fx.Rand(1.1f, 2.0f) * (back ? 0.85f : 1f), 0.1f + Fx.Rand(0f, 0.12f), Fx.Rand(-0.25f, 0.25f));
-			}
-			for (int i = 0; i < 5; i++)
-			{
-				Flame(layer, flameTex, ground + new Vector2(Fx.Rand(-50f, 50f), Fx.Rand(-8f, 8f)), Fx.Rand(2.0f, 2.8f), 0.46f + Fx.Rand(0f, 0.06f), Fx.Rand(-0.15f, 0.15f));
-			}
+			float k = Ease5.Seg(t, 0.05f, 0.3f) * (1f - Ease5.Seg(t, 0.7f, 0.3f));
+			under.Scale = new Vector2(9f, 11f) * (0.6f + 0.4f * k);
+			under.Modulate = new Color(Pal5.Crimson, 0.55f * k);
+		});
+		for (int i = 0; i < 4; i++)
+		{
+			float x = (i % 2 == 0 ? -1f : 1f) * (i < 2 ? 95f : 60f) + Fx.Rand(-8f, 8f);
+			Glow.CurseFire(layer, ground + new Vector2(x, Fx.Rand(-6f, 8f)), 120f, Fx.Rand(160f, 220f), 0.08f + 0.03f * i, 0.95f, 0.85f);
 		}
+		Glow.CurseFire(layer, ground + new Vector2(-38f, 4f), 170f, 320f, 0.44f, 0.8f);
+		Glow.CurseFire(layer, ground + new Vector2(40f, 2f), 170f, 300f, 0.47f, 0.8f);
+		Glow.CurseFire(layer, ground + new Vector2(0f, 6f), 230f, 420f, 0.46f, 0.85f);
 
 		Fx.After(layer, 0.48, () =>
 		{
@@ -429,26 +431,6 @@ public static class CardFx
 			Glow.Sparks(layer, at, 30, 90f, 360f, 0.9f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, -180f, 0.12f, 0.36f, Vector2.Up, 80f);
 			DarkShards(layer, at, 12);
 			Fx.Shake(2);
-		});
-	}
-
-	/// <summary>一簇原版咒焰贴图：脚在 p，从 0 蹿高到 scale、左右摇曳、越烧越细，最后缩回淡掉。</summary>
-	private static void Flame(Control layer, Texture2D tex, Vector2 p, float scale, float delay, float lean)
-	{
-		Node2D root = Fx.Root(layer, p, "P5CurseFlame", delay + 0.9);
-		Sprite2D f = new() { Texture = tex, Offset = new Vector2(0f, -tex.GetHeight() / 2f + 6f), FlipH = Fx.Rng.Next(2) == 0 };
-		root.AddChild(f);
-		root.Visible = false;
-		float phase = Fx.Rand(0f, Mathf.Tau), life = Fx.Rand(0.6f, 0.8f);
-		Fx.Animate(root, delay, life, t =>
-		{
-			root.Visible = true;
-			float up = Ease5.OutBack(Ease5.Seg(t, 0f, 0.25f)), down = Fx.InCubic(Ease5.Seg(t, 0.55f, 0.45f));
-			float sy = scale * up * (1f - 0.7f * down) * (1f + 0.12f * Mathf.Sin(t * 30f + phase));
-			float sx = scale * 0.8f * (1f - 0.5f * down) * (1f + 0.1f * Mathf.Sin(t * 23f + phase * 2f));
-			f.Scale = new Vector2(sx, Mathf.Max(sy, 0.01f));
-			root.Rotation = lean + 0.12f * Mathf.Sin(t * 12f + phase);
-			root.Modulate = new Color(1f, 1f, 1f, 1f - down);
 		});
 	}
 

@@ -92,6 +92,77 @@ void fragment() {
 	COLOR = vec4(col, clamp(k * 3.0, 0.0, 1.0) * clamp(alpha * 4.0, 0.0, 1.0));
 }" };
 
+	private static Shader? _curseFire;
+
+	/// <summary>
+	/// 咒焰（实时生成）：两层分形噪声互相扭曲、随时间往上流动，裁出一根往上收窄的火柱；
+	/// 火的身体是近黑的暗红，边缘一圈亮红描边（P5 的"黑底红边"），里面有往上窜的红色纹路，顶端被噪声撕碎。
+	/// height 0~1：火柱长到多高；alpha：整体；seed：每根火不一样；sway：左右摆。
+	/// </summary>
+	public static Shader CurseFireShader => _curseFire ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform float height = 1.0;
+uniform float alpha = 1.0;
+uniform float seed = 0.0;
+uniform float width = 1.0;
+float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float noise(vec2 p) {
+	vec2 i = floor(p), f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+}
+float fbm(vec2 p) {
+	float v = 0.0, a = 0.5;
+	for (int i = 0; i < 5; i++) { v += a * noise(p); p *= 2.03; a *= 0.5; }
+	return v;
+}
+void fragment() {
+	float y = 1.0 - UV.y;                                   // 0 = 底
+	float t = TIME * 1.9 + seed * 17.0;
+	vec2 q = vec2(UV.x * 3.2 + seed, y * 2.4 - t);
+	float warp = fbm(q * 1.4 + vec2(0.0, -t * 0.4));
+	float n = fbm(q + warp * 1.6);
+	float yy = clamp(y / max(height, 0.01), 0.0, 1.0);
+	float w = mix(0.34, 0.03, pow(yy, 0.7)) * width;
+	float dx = abs(UV.x - 0.5 + (n - 0.5) * 0.6 * y + sin(t * 1.3 + y * 5.0) * 0.04 * y);
+	float d = w - dx + (n - 0.5) * 0.38 * (0.4 + yy);
+	// 往上飘走的火舌：沿高度往上流的噪声在火身上掏出缺口，上半截一块块断开
+	float gaps = smoothstep(0.55, 0.85, noise(vec2(UV.x * 7.0 + seed * 3.0, y * 4.0 - t * 1.7)));
+	d -= gaps * 0.2 * smoothstep(0.25, 0.9, yy);
+	d *= smoothstep(height, height - 0.3, y) * smoothstep(0.0, 0.05, y);
+	float body = smoothstep(0.0, 0.012, d);
+	float rim = body - smoothstep(0.016, 0.05, d);
+	// 往上窜的亮纹（竖向拉长的噪声）
+	float veins = smoothstep(0.55, 0.8, fbm(vec2(UV.x * 5.0, y * 1.6 - t * 1.4) + warp)) * (1.0 - rim);
+	vec3 dark = vec3(0.09, 0.0, 0.03);
+	vec3 red = vec3(1.0, 0.07, 0.11);
+	vec3 col = mix(dark, red, rim) + red * 0.9 * veins * body;
+	col += vec3(1.0, 0.8, 0.75) * smoothstep(0.8, 1.0, rim) * 0.45;
+	float a = body * mix(0.72, 1.0, max(rim, veins));        // 火身半透，边和亮纹不透
+	COLOR = vec4(col, a * alpha);
+}" };
+
+	/// <summary>一根咒焰：脚在 foot，宽 w、最高 h；delay 后 0.15s 蹿到顶、摇着烧 life 秒、再往下缩掉。</summary>
+	public static void CurseFire(Control layer, Vector2 foot, float w, float h, float delay, float life, float widthK = 1f)
+	{
+		Node2D root = Fx.Root(layer, foot, "P5CurseFire", delay + life + 0.1);
+		ColorRect r = new()
+		{
+			Size = new Vector2(w, h), Position = new Vector2(-w / 2f, -h), MouseFilter = Control.MouseFilterEnum.Ignore,
+			Material = new ShaderMaterial { Shader = CurseFireShader },
+		};
+		root.AddChild(r);
+		Set(r, "seed", Fx.Rand(0f, 10f));
+		Set(r, "width", widthK);
+		Set(r, "height", 0f);
+		Fx.Animate(root, delay, life, t =>
+		{
+			float up = Ease5.OutBack(Ease5.Seg(t, 0f, 0.22f)), down = Fx.InCubic(Ease5.Seg(t, 0.6f, 0.4f));
+			Set(r, "height", Mathf.Clamp(up * (1f - 0.85f * down), 0f, 1.05f));
+			Set(r, "alpha", 1f - Ease5.Seg(t, 0.85f, 0.15f));
+		});
+	}
+
 	private static ColorRect Quad(Node parent, Shader shader, float size, float squashY = 1f)
 	{
 		ColorRect rect = new()
