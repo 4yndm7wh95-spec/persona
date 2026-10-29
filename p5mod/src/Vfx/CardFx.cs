@@ -354,71 +354,124 @@ public static class CardFx
 		});
 	}
 
-	// ───────────────────────── 毒：暗红诅咒旋涡 ─────────────────────────
+	// ───────────────────────── 咒（Eiha）：黑红咒焰 ─────────────────────────
+
+	private static readonly Color Black = new(0.03f, 0.0f, 0.02f);
 
 	/// <summary>
-	/// 毒（剧毒、毒刃、弹跳药瓶……敌人身上）：暗红偏紫的诅咒旋涡。
-	/// 六道暗紫红的光丝从外面旋着往中心收（像被吸进去），中心一点暗红核越来越亮 → "噗"地炸开：
-	/// 暗色闪光 + 折射波 + 紫红光粒往上冒，几颗暗红"泡"慢慢上浮破掉。at = 敌人的 VfxSpawnPosition。
+	/// 咒（原本给毒牌的特效，用户：改成亚森那种咒属性，不一定体现毒；不要粉）：P5R Eiha 式的黑红咒焰。
+	/// 预备 —— 敌人脚下一滩黑色咒印张开，边上一圈暗红光；中心一颗黑球慢慢胀大（暗红描边、里面隐约的红光）；
+	/// 爆发 —— 一圈 P5R 原版的红黑咒焰（curse_fire 贴图）从咒印里蹿起来、摇曳着往上卷，黑球往里一缩再炸开：
+	///         暗红闪光 + 折射波 + 黑色碎片 + 红色火星往上冒；
+	/// 余韵 —— 咒焰越烧越细、淡掉，咒印收拢。at = 敌人的 VfxSpawnPosition。
 	/// </summary>
 	public static void Curse(Control layer, Vector2 at)
 	{
-		Color violet = new("a01cff"), plum = new("6a0a52");
-		Node2D root = Fx.Root(layer, at, "P5Curse", 0.6);
-		var strands = new List<(Polygon2D G, Polygon2D C, float A0)>();
-		for (int i = 0; i < 6; i++)
+		Vector2 ground = at + new Vector2(0f, 95f);
+		Texture2D? flameTex = Fx.Tex("curse_fire");
+
+		// 咒印：黑色扁椭圆 + 暗红光环
+		Node2D seal = Fx.Root(layer, ground, "P5CurseSeal", 1.3);
+		Polygon2D pool = Fx.Poly(seal, Ellipse(130f, 30f, 40), new Color(Black, 0.85f));
+		Line2D rim = new() { Points = Ellipse(130f, 30f, 40), Closed = true, Width = 4f, DefaultColor = Pal5.Crimson, Material = Fx.Additive, Antialiased = true };
+		seal.AddChild(rim);
+		Line2D rim2 = new() { Points = Ellipse(100f, 22f, 40), Closed = true, Width = 2f, DefaultColor = new Color(Pal5.Bright, 0.6f), Material = Fx.Additive, Antialiased = true };
+		seal.AddChild(rim2);
+		Fx.Animate(seal, 0, 1.2, t =>
 		{
-			strands.Add((Glow.TaperPoly(root, new Color(i % 2 == 0 ? violet : Pal5.Crimson, 0.75f)), Glow.TaperPoly(root, new Color(1f, 0.75f, 0.9f)),
-				Mathf.Tau * i / 6f));
-		}
-		Sprite2D core = new() { Texture = Glow.Soft, Material = Fx.Additive, Modulate = new Color(plum, 0f) };
-		root.AddChild(core);
-		const float spin = 0.34f;
-		Fx.Animate(root, 0, spin, t =>
-		{
-			foreach (var (g, c, a0) in strands)
-			{
-				// 一段螺旋：外端在半径 150、角度 a0；内端跟着 t 往中心收，整段边收边转
-				float rOut = Mathf.Lerp(150f, 30f, Fx.InCubic(t)), rIn = Mathf.Lerp(90f, 4f, Ease5.OutQuint(t));
-				float a = a0 + t * 3.2f;
-				Vector2 p0 = Vector2.Right.Rotated(a) * rOut, p1 = Vector2.Right.Rotated(a + 1.1f) * rIn;
-				g.Polygon = Glow.TaperPts(p0, p1, 12f * (1f - 0.5f * t));
-				c.Polygon = Glow.TaperPts(p0, p1, 3f);
-			}
-			core.Scale = Vector2.One * (1f + 3f * t);
-			core.Modulate = new Color(new Color("ff2a8a"), 0.9f * t);
+			float time = t * 1.2f;
+			float o = Ease5.OutExpo(Ease5.Seg(time, 0f, 0.18f)) * (1f - Fx.InCubic(Ease5.Seg(time, 0.95f, 0.25f)));
+			seal.Scale = Vector2.One * Mathf.Max(o, 0.01f);
+			rim2.Scale = new Vector2(1f + 0.06f * Mathf.Sin(time * 9f), 1f);
+			rim.Modulate = new Color(1f, 1f, 1f, 0.7f + 0.3f * Mathf.Sin(time * 25f));
 		});
-		Fx.After(layer, spin, () =>
+
+		// 黑球：中心慢慢胀大，0.42s 往里一缩，0.48s 炸开
+		Node2D orb = Fx.Root(layer, at, "P5CurseOrb", 0.55);
+		Sprite2D inner = new() { Texture = Glow.Soft, Material = Fx.Additive, Modulate = new Color(Pal5.Crimson, 0.8f) };
+		orb.AddChild(inner);
+		Polygon2D body = Fx.Poly(orb, Fx.Circle(40f, 32), new Color(Black, 0.92f));
+		Line2D edge = new() { Points = Fx.Circle(40f, 32), Closed = true, Width = 3f, DefaultColor = Pal5.Bright, Material = Fx.Additive, Antialiased = true };
+		orb.AddChild(edge);
+		Sprite2D core = new() { Texture = Glow.Soft, Material = Fx.Additive, Modulate = new Color(Pal5.Bright, 0.7f), Scale = Vector2.One * 1.2f };
+		orb.AddChild(core);
+		Fx.Animate(orb, 0, 0.5, t =>
 		{
-			Glow.Flash(layer, at, new Color(0.75f, 0.1f, 0.5f), 300f, 0.25f);
-			Glow.Ripple(layer, at, 380f, 0.5f, 0.035f);
-			Glow.Shockwave(layer, at, new Color(0.6f, 0.05f, 0.7f), 300f, 0.45f, 0.8f);
-			Glow.Sparks(layer, at, 30, 80f, 320f, 0.9f, new[] { new Color(1f, 0.6f, 0.9f), violet, plum }, -160f, 0.12f, 0.4f, Vector2.Up, 70f);
-			Fx.Shake(1);
+			float time = t * 0.5f;
+			float grow = Ease5.OutQuint(Ease5.Seg(time, 0.05f, 0.35f)), pinch = Fx.InCubic(Ease5.Seg(time, 0.4f, 0.08f));
+			float k = Mathf.Max(0.01f, grow * (1f - 0.75f * pinch));
+			orb.Scale = Vector2.One * k;
+			inner.Scale = Vector2.One * (5f + Mathf.Sin(time * 30f));
+			core.Modulate = new Color(Pal5.Bright, 0.4f + 0.5f * Mathf.Abs(Mathf.Sin(time * 18f)));
+		});
+
+		// 咒焰：沿咒印一圈的十几簇原版咒焰，从地下蹿起来摇曳上卷
+		if (flameTex != null)
+		{
+			for (int i = 0; i < 10; i++)
+			{
+				float a = Mathf.Tau * i / 10 + Fx.Rand(-0.15f, 0.15f);
+				Vector2 p = ground + new Vector2(Mathf.Cos(a) * 110f, Mathf.Sin(a) * 24f);
+				bool back = Mathf.Sin(a) < 0f;
+				Flame(layer, flameTex, p, Fx.Rand(1.1f, 2.0f) * (back ? 0.85f : 1f), 0.1f + Fx.Rand(0f, 0.12f), Fx.Rand(-0.25f, 0.25f));
+			}
 			for (int i = 0; i < 5; i++)
 			{
-				Bubble(layer, at + new Vector2(Fx.Rand(-60f, 60f), Fx.Rand(-20f, 40f)), Fx.Rand(0f, 0.3f), violet);
+				Flame(layer, flameTex, ground + new Vector2(Fx.Rand(-50f, 50f), Fx.Rand(-8f, 8f)), Fx.Rand(2.0f, 2.8f), 0.46f + Fx.Rand(0f, 0.06f), Fx.Rand(-0.15f, 0.15f));
 			}
+		}
+
+		Fx.After(layer, 0.48, () =>
+		{
+			Glow.Flash(layer, at, new Color(0.9f, 0.05f, 0.08f), 360f, 0.3f);
+			Glow.Ripple(layer, at, 420f, 0.55f, 0.04f);
+			Glow.Shockwave(layer, at, new Color(0.75f, 0.02f, 0.05f), 340f, 0.45f, 0.8f);
+			Glow.Sparks(layer, at, 30, 90f, 360f, 0.9f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, -180f, 0.12f, 0.36f, Vector2.Up, 80f);
+			DarkShards(layer, at, 12);
+			Fx.Shake(2);
 		});
 	}
 
-	/// <summary>一个发光的泡：上浮、胀大、最后"啵"地一闪消失。</summary>
-	private static void Bubble(Control layer, Vector2 at, float delay, Color tint)
+	/// <summary>一簇原版咒焰贴图：脚在 p，从 0 蹿高到 scale、左右摇曳、越烧越细，最后缩回淡掉。</summary>
+	private static void Flame(Control layer, Texture2D tex, Vector2 p, float scale, float delay, float lean)
 	{
-		Node2D root = Fx.Root(layer, at, "P5Bubble", delay + 0.9);
-		float r = Fx.Rand(7f, 13f);
-		Line2D ring = new() { Points = Fx.Circle(r, 20), Closed = true, Width = 2.2f, DefaultColor = new Color(tint, 0.9f), Material = Fx.Additive, Antialiased = true };
-		Polygon2D fill = Fx.Poly(root, Fx.Circle(r, 20), new Color(tint, 0.18f), additive: true);
-		root.AddChild(ring);
+		Node2D root = Fx.Root(layer, p, "P5CurseFlame", delay + 0.9);
+		Sprite2D f = new() { Texture = tex, Offset = new Vector2(0f, -tex.GetHeight() / 2f + 6f), FlipH = Fx.Rng.Next(2) == 0 };
+		root.AddChild(f);
 		root.Visible = false;
-		float rise = Fx.Rand(70f, 130f), sway = Fx.Rand(4f, 8f);
-		Fx.Animate(root, delay, 0.8, t =>
+		float phase = Fx.Rand(0f, Mathf.Tau), life = Fx.Rand(0.6f, 0.8f);
+		Fx.Animate(root, delay, life, t =>
 		{
 			root.Visible = true;
-			root.GlobalPosition = at + new Vector2(8f * Mathf.Sin(t * sway), -rise * Fx.OutCubic(t));
-			float pop = Ease5.Seg(t, 0.85f, 0.15f);
-			root.Scale = Vector2.One * (0.4f + 0.8f * t + 0.6f * pop);
-			root.Modulate = new Color(1f, 1f, 1f, (1f - pop) * Mathf.Min(1f, t * 6f));
+			float up = Ease5.OutBack(Ease5.Seg(t, 0f, 0.25f)), down = Fx.InCubic(Ease5.Seg(t, 0.55f, 0.45f));
+			float sy = scale * up * (1f - 0.7f * down) * (1f + 0.12f * Mathf.Sin(t * 30f + phase));
+			float sx = scale * 0.8f * (1f - 0.5f * down) * (1f + 0.1f * Mathf.Sin(t * 23f + phase * 2f));
+			f.Scale = new Vector2(sx, Mathf.Max(sy, 0.01f));
+			root.Rotation = lean + 0.12f * Mathf.Sin(t * 12f + phase);
+			root.Modulate = new Color(1f, 1f, 1f, 1f - down);
 		});
+	}
+
+	/// <summary>黑色碎片（不发光，带一道暗红边），往外崩开落下。</summary>
+	private static void DarkShards(Control layer, Vector2 at, int count)
+	{
+		for (int i = 0; i < count; i++)
+		{
+			Node2D sh = Fx.Root(layer, at, "P5DarkShard", 0.8);
+			float len = Fx.Rand(10f, 22f), wid = len * 0.45f;
+			Vector2[] shape = { new(-len * 0.5f, 0f), new(0f, -wid * 0.5f), new(len * 0.5f, 0f), new(0f, wid * 0.5f) };
+			Fx.Poly(sh, shape, Black);
+			Line2D e = new() { Points = shape, Closed = true, Width = 1.6f, DefaultColor = Pal5.Bright, Material = Fx.Additive, Antialiased = true };
+			sh.AddChild(e);
+			Vector2 dir = Vector2.Up.Rotated(Fx.Rand(-1.6f, 1.6f));
+			float speed = Fx.Rand(250f, 600f), spin = Fx.Rand(-12f, 12f);
+			Fx.Animate(sh, 0, 0.7, t =>
+			{
+				float s = t * 0.7f, travel = speed * (1f - Mathf.Exp(-4.5f * s)) / 4.5f;
+				sh.GlobalPosition = at + dir * travel + new Vector2(0f, 300f * s * s);
+				sh.Rotation = spin * s;
+				sh.Modulate = new Color(1f, 1f, 1f, 1f - Fx.InCubic(t));
+			});
+		}
 	}
 }
