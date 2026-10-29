@@ -25,19 +25,18 @@ public sealed class ReadyFx
 	public static readonly Vector2 GuardFist = new(1015f, 430f);                                   // guard_mid_a
 	public static readonly Vector2 GloveCuff = new(1010f, 410f), GlovePinch = new(950f, 465f);     // glove_reach_a
 	public static readonly Vector2 KnifeHilt = new(790f, 760f), KnifeTip = new(600f, 890f);        // knife_ready_b
-	public static readonly Vector2 GunMuzzle = new(1347f, 306f);                                   // gun_aim_b
+	public static readonly Vector2 GunMuzzle = new(1347f, 306f), GunGrip = new(1275f, 345f);      // gun_aim_b
 	public static readonly Vector2 Feet = new(815f, 1622f), Chest = new(820f, 600f);
 
 	/// <summary>Persona 的蓝焰（P5 召唤时面具上烧起来的那种）。</summary>
 	public static readonly Color BlueHot = new("e8fbff"), Blue = new("39b6ff"), BlueDeep = new("0b2a9e");
 
 	private readonly Node2D _root, _back;
+	private readonly Control _frontLayer, _backLayer;
+	private PersonaMask? _wall;
 	private readonly Stance _stance;
 	private readonly Func<Vector2, Vector2> _pose;
 	private readonly float _facing;
-	private Line2D? _laser, _laserGlow;
-	private Node2D? _laserDot;
-	private Vector2 _muzzle;
 	private bool _ended;
 
 	public Stance Stance => _stance;
@@ -45,6 +44,8 @@ public sealed class ReadyFx
 	private ReadyFx(Control front, Control back, Stance stance, Func<Vector2, Vector2> pose, float facing)
 	{
 		_stance = stance;
+		_frontLayer = front;
+		_backLayer = back;
 		_pose = pose;
 		_facing = facing;
 		_root = new Node2D { Name = "P5Ready" };
@@ -93,6 +94,7 @@ public sealed class ReadyFx
 			return;
 		}
 		_ended = true;
+		_wall?.End(played);
 		foreach (Node2D n in new[] { _root, _back })
 		{
 			if (!GodotObject.IsInstanceValid(n))
@@ -120,110 +122,31 @@ public sealed class ReadyFx
 		}
 	}
 
-	/// <summary>瞄着谁（悬停的敌人；null = 没瞄）：枪的瞄准线跟过去。</summary>
-	public void Aim(Vector2? target)
-	{
-		if (_laser == null || _laserGlow == null || _laserDot == null || !GodotObject.IsInstanceValid(_laser))
-		{
-			return;
-		}
-		Vector2 end = target ?? _muzzle + new Vector2(1500f * _facing, 0f);
-		_laser.Points = new[] { _muzzle, end };
-		_laserGlow.Points = new[] { _muzzle, end };
-		_laserDot.Position = end;
-		_laserDot.Visible = target != null;
-	}
-
 	// ───────────────────────── 手扣面具：蓝焰从指缝里漏出来 ─────────────────────────
 
 	private void BuildMask()
 	{
-		Vector2 hand = _pose(MaskHand), face = _pose(MaskFace);
-		// 身后：沿着身体两侧往上蹿的几道暗蓝灵焰（Persona 的气要冒出来了），在人物后面，不挡脸
-		Vector2 chest = _pose(Chest);
-		SpiritFire(_back, chest + new Vector2(0f, 150f), 190f, 330f, 0.4f);
-		SpiritFire(_back, chest + new Vector2(-28f * _facing, 60f), 120f, 220f, 0.45f);
-		SpiritFire(_back, face + new Vector2(6f * _facing, 40f), 120f, 180f, 0.55f);
-		// 指缝里漏出来的蓝焰：贴着手的外沿（指尖、手背），小而亮
-		SpiritFire(_root, hand + new Vector2(22f * _facing, -20f), 34f, 70f, 0.85f);
-		SpiritFire(_root, hand + new Vector2(-4f * _facing, -34f), 28f, 58f, 0.7f);
-		Sprite2D halo = Glow.SoftSprite(_root, hand + new Vector2(10f * _facing, -18f), Blue, 1.4f);
-		Pulse(halo, 0.3f, 0.65f, 0.4);
-		// 一直往上飘的蓝色火星
-		Embers(_root, face, new[] { BlueHot, Blue, BlueDeep }, 14, 30f, 0.9f, 60f, 140f);
+		Vector2 hand = _pose(MaskHand), face = _pose(MaskFace), feet = _pose(Feet);
+		// 头部周围一张面具形状的蓝焰（在人物后面），比头宽得多、两边尖角往上翘
+		float body = (feet - face).Length();
+		_wall = new PersonaMask(_backLayer, _frontLayer, face + new Vector2(4f * _facing, 4f), body * 0.42f, _facing);
+		// 指缝里漏出来的蓝焰：同样的细丝火，小而亮，贴着手的外沿
+		HandFire(hand + new Vector2(20f * _facing, -14f), 46f, 92f);
+		HandFire(hand + new Vector2(-6f * _facing, -30f), 38f, 74f);
+		Sprite2D halo = Glow.SoftSprite(_root, hand + new Vector2(10f * _facing, -18f), PersonaMask.Hi, 1.5f);
+		Pulse(halo, 0.3f, 0.6f, 0.4);
 	}
 
-	private static Shader? _spiritFire;
-
-	/// <summary>
-	/// 灵火（Persona 的蓝焰）：两层分形噪声互相扭曲往上流，裁出一簇往上收窄、顶端撕碎的火苗；
-	/// 加法混合：外圈主色、里面一道白热的芯。height 0~1 火苗长多高。
-	/// </summary>
-	public static Shader SpiritFireShader => _spiritFire ??= new Shader { Code = @"
-shader_type canvas_item;
-render_mode blend_add;
-uniform vec4 edge : source_color = vec4(0.22, 0.71, 1.0, 1.0);
-uniform vec4 deep : source_color = vec4(0.04, 0.16, 0.62, 1.0);
-uniform vec4 core : source_color = vec4(0.91, 0.98, 1.0, 1.0);
-uniform float height = 1.0;
-uniform float alpha = 1.0;
-uniform float seed = 0.0;
-uniform float speed = 1.0;
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-float noise(vec2 p) {
-	vec2 i = floor(p), f = fract(p);
-	f = f * f * (3.0 - 2.0 * f);
-	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
-}
-float fbm(vec2 p) {
-	float v = 0.0, a = 0.5;
-	for (int i = 0; i < 5; i++) { v += a * noise(p); p *= 2.03; a *= 0.5; }
-	return v;
-}
-void fragment() {
-	float y = 1.0 - UV.y;
-	float t = TIME * 2.4 * speed + seed * 17.0;
-	vec2 q = vec2(UV.x * 3.0 + seed, y * 2.6 - t);
-	float warp = fbm(q * 1.3 + vec2(0.0, -t * 0.5));
-	float n = fbm(q + warp * 1.7);
-	float yy = clamp(y / max(height, 0.01), 0.0, 1.0);
-	float w = mix(0.3, 0.02, pow(yy, 0.75));
-	float dx = abs(UV.x - 0.5 + (n - 0.5) * 0.55 * y + sin(t * 1.1 + y * 6.0) * 0.05 * y);
-	float d = w - dx + (n - 0.5) * 0.34 * (0.4 + yy);
-	float gaps = smoothstep(0.55, 0.85, noise(vec2(UV.x * 7.0 + seed * 3.0, y * 4.5 - t * 1.6)));
-	d -= gaps * 0.22 * smoothstep(0.2, 0.85, yy);
-	d *= smoothstep(height, height - 0.35, y) * smoothstep(0.0, 0.12, y);
-	float body = smoothstep(0.0, 0.05, d);
-	float inner = smoothstep(0.06, 0.16, d);
-	float hot = smoothstep(0.14, 0.24, d);
-	vec3 col = deep.rgb * body + edge.rgb * inner * 0.9 + core.rgb * hot * 0.9;
-	COLOR = vec4(col * alpha, 1.0);
-}" };
-
-	/// <summary>一簇灵火：底在 foot，宽 w 高 h；先 0.25s 蹿起来，之后一直烧（高度随时间轻轻起伏）。</summary>
-	private static void SpiritFire(Node parent, Vector2 foot, float w, float h, float strength)
+	private void HandFire(Vector2 foot, float w, float h)
 	{
-		ColorRect r = FireRect(parent, foot, w, h, Fx.Rand(0f, 10f));
-		Set(r, "alpha", strength);
-		float phase = Fx.Rand(0f, Mathf.Tau);
-		Tween tw = r.CreateTween();
-		tw.TweenMethod(Callable.From<float>(t => Set(r, "height", Ease5.OutBack(t) * 0.92f)), 0f, 1f, 0.25);
-		Tween loop = r.CreateTween().SetLoops();
-		loop.TweenMethod(Callable.From<float>(t => Set(r, "height", 0.82f + 0.14f * Mathf.Sin(t * Mathf.Tau + phase))), 0f, 1f,
-			Fx.Rand(0.7f, 1.1f));
-	}
-
-	public static ColorRect FireRect(Node parent, Vector2 foot, float w, float h, float seed)
-	{
-		ColorRect r = new()
-		{
-			Size = new Vector2(w, h), Position = foot - new Vector2(w / 2f, h), MouseFilter = Control.MouseFilterEnum.Ignore,
-			Material = new ShaderMaterial { Shader = SpiritFireShader },
-		};
-		parent.AddChild(r);
-		Set(r, "seed", seed);
-		Set(r, "height", 0f);
-		return r;
+		ColorRect r = Flame.Rect(_root, foot, w, h);
+		Flame.Palette(r, PersonaMask.Dark, PersonaMask.Mid, PersonaMask.Hi, PersonaMask.Hot);
+		Flame.Set(r, "body", 0.35f);
+		Flame.Set(r, "base_w", 0.32f);
+		Flame.Set(r, "top_w", 0.04f);
+		Flame.Set(r, "speed", 1.6f);
+		Flame.Set(r, "rise", 0f);
+		Fx.Animate(r, 0, 0.25, t => Flame.Set(r, "rise", Ease5.OutBack(t) * 0.95f));
 	}
 
 	// ───────────────────────── 半举的拳：红光在拳头上蓄着，前面一道光弧慢慢成形 ─────────────────────────
@@ -326,35 +249,27 @@ void fragment() {
 		}), 0f, 1f, 1.3);
 	}
 
-	// ───────────────────────── 举枪：一道红色瞄准线，瞄住敌人时末端一个准星点 ─────────────────────────
+	// ───────────────────────── 举枪：枪口一点红光，隔一会儿一道光沿枪身划到枪口 ─────────────────────────
 
 	private void BuildGun()
 	{
-		_muzzle = _pose(GunMuzzle);
-		_laserGlow = new Line2D { DefaultColor = new Color(Pal5.Bright, 0.25f), Width = 7f, Material = Fx.Additive, Antialiased = true };
-		_laser = new Line2D { DefaultColor = new Color(1f, 0.35f, 0.4f, 0.85f), Width = 1.6f, Material = Fx.Additive, Antialiased = true };
-		_root.AddChild(_laserGlow);
-		_root.AddChild(_laser);
-		_laserDot = new Node2D();
-		_root.AddChild(_laserDot);
-		Sprite2D dotGlow = Glow.SoftSprite(_laserDot, Vector2.Zero, Pal5.Bright, 1.2f);
-		Glow.SoftSprite(_laserDot, Vector2.Zero, Pal5.Hot, 0.35f);
-		Pulse(dotGlow, 0.5f, 1f, 0.25);
-		Sprite2D flare = Glow.SoftSprite(_root, _muzzle, Pal5.Bright, 0.7f);
-		Pulse(flare, 0.4f, 0.9f, 0.3);
-		// 瞄准线从枪口往前一下子打出去
-		Tween tw = _laser.CreateTween();
-		tw.TweenMethod(Callable.From<float>(t =>
+		Vector2 muzzle = _pose(GunMuzzle), grip = _pose(GunGrip);
+		Sprite2D flare = Glow.SoftSprite(_root, muzzle, Pal5.Bright, 0.9f);
+		Pulse(flare, 0.4f, 0.9f, 0.35);
+		Glow.SoftSprite(_root, muzzle, Pal5.Hot, 0.22f);
+		Node2D glint = new();
+		_root.AddChild(glint);
+		Fx.Poly(glint, Glow.Star4(12f, 0.16f), Pal5.Hot, additive: true);
+		Glow.SoftSprite(glint, Vector2.Zero, Pal5.Bright, 0.8f);
+		Tween loop = glint.CreateTween().SetLoops();
+		loop.TweenMethod(Callable.From<float>(t =>
 		{
-			if (_laserDot != null && !_laserDot.Visible)
-			{
-				Vector2 end = _muzzle + new Vector2(1500f * _facing * Ease5.OutExpo(t), 0f);
-				_laser.Points = _laserGlow.Points = new[] { _muzzle, end };
-			}
-		}), 0f, 1f, 0.3).SetDelay(0.1);
-		Aim(null);
-		Tween flicker = _laserGlow.CreateTween().SetLoops();
-		flicker.TweenMethod(Callable.From<float>(t => _laserGlow.Modulate = new Color(1f, 1f, 1f, 0.7f + 0.3f * Mathf.Sin(t * Mathf.Tau))), 0f, 1f, 0.18);
+			float k = Mathf.Clamp(t / 0.3f, 0f, 1f);
+			glint.Position = grip.Lerp(muzzle, Fx.OutCubic(k));
+			glint.Scale = Vector2.One * Mathf.Sin(k * Mathf.Pi);
+			glint.Rotation = t * 3f;
+			glint.Visible = t < 0.3f;
+		}), 0f, 1f, 1.2);
 	}
 
 	// ───────────────────────── 共用 ─────────────────────────

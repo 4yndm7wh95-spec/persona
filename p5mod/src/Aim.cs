@@ -236,7 +236,7 @@ public static class Aim
 		Unlock();
 	}
 
-	/// <summary>选目标时指到一个生物：敌人身上出锁定准星，枪的瞄准线跟过去。</summary>
+	/// <summary>选目标时指到一个生物：敌人身上出锁定准星。</summary>
 	public static void Hover(NCreature creature)
 	{
 		if (_fx == null || creature.Entity == null || creature.Entity.IsPlayer || Joker.FxLayer() is not Control layer)
@@ -252,14 +252,9 @@ public static class Aim
 		float size = Mathf.Clamp((at - creature.GetTopOfHitbox()).Length() * 2.4f, 160f, 340f);
 		_lock = LockOn.Start(layer, at, size);
 		_lockId = creature.GetInstanceId();
-		_fx.Aim(at);
 	}
 
-	public static void Unhover()
-	{
-		Unlock();
-		_fx?.Aim(null);
-	}
+	public static void Unhover() => Unlock();
 
 	private static void Unlock()
 	{

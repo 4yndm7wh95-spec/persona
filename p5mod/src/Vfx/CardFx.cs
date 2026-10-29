@@ -1,3 +1,4 @@
+using System;
 using Godot;
 
 namespace P5Joker;
@@ -9,9 +10,6 @@ namespace P5Joker;
 /// </summary>
 public static class CardFx
 {
-	/// <summary>咒怨的颜色：近黑的紫 + 亮紫红的边（P5 的 Eiha）。</summary>
-	public static readonly Color CurseRim = new("d43bff"), CurseDark = new("12001c"), CurseHot = new("ffd6ff");
-
 	// ───────────────────────── 防御：前臂一竖，身前张开一面弧形光盾 ─────────────────────────
 
 	private static Shader? _barrier;
@@ -175,52 +173,218 @@ void fragment() {
 		});
 	}
 
-	// ───────────────────────── 致命毒药：Persona 的咒怨（Eiha）从敌人脚下烧起来 ─────────────────────────
+	// ───────────────────────── 致命毒药：亚森的咒怨（Eiha，P5 原作的黑红） ─────────────────────────
+
+	private static Shader? _sigil, _haze;
 
 	/// <summary>
-	/// 咒怨：Joker 手扣面具那一刻面具上蓝焰一爆（mask），敌人脚下张开一圈紫色的咒印（压扁的光环 + 往里收的光点），
-	/// 一根黑紫色的咒焰柱从脚下蹿起把敌人吞掉、旁边几簇小火错开冒，紫红火星往上飞，空间扭一下。~1.3s。
+	/// 咒印（地上的法阵，压扁了贴地）：三圈细环，外两圈之间一圈刻度，中圈一圈断续的"符文"短划，里面一个五角星；spin 转、open 张开。加法。
 	/// </summary>
-	public static void Eiha(Control layer, Vector2 mask, Vector2 center, Vector2 top, float delay = 0.12f)
+	private static Shader Sigil => _sigil ??= new Shader { Code = @"
+shader_type canvas_item;
+render_mode blend_add;
+uniform vec4 tint : source_color = vec4(1.0, 0.1, 0.18, 1.0);
+uniform vec4 hot : source_color = vec4(1.0, 0.85, 0.8, 1.0);
+uniform float open = 1.0;
+uniform float spin = 0.0;
+uniform float alpha = 1.0;
+float seg(vec2 p, vec2 a, vec2 b) { vec2 pa = p - a, ba = b - a; float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0); return length(pa - ba * h); }
+float ring(float r, float R, float w) { return exp(-pow((r - R) / w, 2.0)); }
+void fragment() {
+	vec2 p = UV * 2.0 - 1.0;
+	float r = length(p) / max(open, 0.001);
+	float a = atan(p.y, p.x);
+	float v = ring(r, 0.93, 0.014) + ring(r, 0.8, 0.009) * 0.8 + ring(r, 0.42, 0.01) * 0.7;
+	float band = step(0.8, r) * step(r, 0.93);
+	float ticks = band * pow(abs(sin((a + spin) * 36.0)), 40.0);
+	float runes = ring(r, 0.62, 0.025) * step(0.25, sin((a - spin * 1.5) * 9.0)) * step(0.0, sin((a - spin * 1.5) * 27.0 + 1.0));
+	float star = 0.0;
+	for (int i = 0; i < 5; i++) {
+		float t0 = spin + 6.2832 * float(i) / 5.0, t1 = spin + 6.2832 * float(i + 2) / 5.0;
+		star += exp(-pow(seg(p / max(open, 0.001), 0.8 * vec2(cos(t0), sin(t0)), 0.8 * vec2(cos(t1), sin(t1))) / 0.012, 2.0));
+	}
+	float m = v + ticks * 0.9 + runes * 0.75 + star * 0.6;
+	vec3 col = tint.rgb * m + hot.rgb * (ring(r, 0.93, 0.005) + ring(r, 0.8, 0.004)) * 0.8;
+	COLOR = vec4(col, clamp(m, 0.0, 1.0) * alpha * smoothstep(1.05, 0.95, r));
+}" };
+
+	/// <summary>热浪：把后面的画面按往上流的噪声轻轻扭动，边缘柔和淡出。</summary>
+	private static Shader Haze => _haze ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
+uniform float strength = 0.006;
+uniform float alpha = 1.0;
+float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float noise(vec2 p) {
+	vec2 i = floor(p), f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+}
+void fragment() {
+	vec2 q = UV * vec2(6.0, 10.0) + vec2(0.0, TIME * 3.0);
+	vec2 off = vec2(noise(q) - 0.5, noise(q + 7.3) - 0.5) * strength * alpha;
+	vec2 c = UV * 2.0 - 1.0;
+	float m = smoothstep(1.0, 0.4, length(c));
+	COLOR = vec4(texture(screen_tex, SCREEN_UV + off * m).rgb, m * alpha);
+}" };
+
+	/// <summary>
+	/// 咒怨（Eiha，P5 原作的黑红）：
+	/// ① 蓄（0～0.3s）：面具上蓝焰一爆（Persona 出手）；敌人脚下张开一圈红色咒印（刻度环、符文、五角星，慢慢转），四周八道红光沿地面往中心收；
+	/// ② 爆（0.3s）：一根黑底绯红火丝的咒焰柱从脚下蹿起吞掉敌人（细丝火，Flame.Column），四根小火柱错开冒，红光闪、扁的冲击环、空间一扭、震屏；
+	/// ③ 烧（0.3～1.1s）：火星打着旋往上飘，火上方黑烟翻滚，热浪扭动后面的画面，敌人被染成暗红；
+	/// ④ 收（1.1s）：火往中心一缩，红环往里收，一点热白闪掉，留余烟。
+	/// tint：给敌人上色（游戏里改敌人节点的 Modulate，结束时调用方传入的会被设回白色）。
+	/// </summary>
+	public static void Eiha(Control layer, Vector2 mask, Vector2 center, Vector2 top, Action<Color>? tint = null)
 	{
-		Glow.Flash(layer, mask, ReadyFx.BlueHot, 120f, 0.12f);
-		Glow.Flash(layer, mask, ReadyFx.Blue, 300f, 0.35f);
-		Glow.Sparks(layer, mask, 18, 120f, 380f, 0.5f, new[] { ReadyFx.BlueHot, ReadyFx.Blue, ReadyFx.BlueDeep }, -120f, 0.1f, 0.3f,
-			Vector2.Up, 120f);
+		Glow.Flash(layer, mask, ReadyFx.BlueHot, 110f, 0.12f);
+		Glow.Sparks(layer, mask, 14, 120f, 360f, 0.45f, new[] { ReadyFx.BlueHot, ReadyFx.Blue, ReadyFx.BlueDeep }, -120f, 0.1f, 0.28f, Vector2.Up, 120f);
 		float h = Mathf.Max(80f, (center - top).Length());
 		Vector2 feet = center + new Vector2(0f, h * 0.95f);
-		Fx.After(layer, delay, () =>
+
+		// ① 咒印 + 往中心收的红光
+		Node2D sigil = Fx.Root(layer, feet, "P5EihaSigil", 1.6);
+		float sw = h * 3.4f;
+		ColorRect ring = new()
 		{
-			// 咒印：脚下一圈压扁的紫光环张开、慢慢转暗；四周的紫光点往中间收
-			Node2D sigil = Fx.Root(layer, feet, "P5EihaSigil", 1.5);
-			for (int i = 0; i < 2; i++)
-			{
-				ColorRect ring = Glow.RingRect(sigil, h * (3.2f - i * 0.9f), 0.24f);
-				Glow.SetParam(ring, "tint", i == 0 ? CurseRim : CurseHot);
-				Glow.SetParam(ring, "width", 0.018f);
-				Fx.Animate(ring, i * 0.05, 1.3, t =>
-				{
-					Glow.SetParam(ring, "radius", Mathf.Lerp(0.1f, 0.85f, Ease5.OutExpo(Ease5.Seg(t, 0f, 0.25f))));
-					Glow.SetParam(ring, "alpha", 0.9f * (1f - Fx.InCubic(Ease5.Seg(t, 0.5f, 0.5f))));
-				});
-			}
-			Glow.Gather(layer, feet, CurseRim, h * 2.2f, 0.16f, 0.24f);
-			// 主火柱 + 错开的小火
-			Fx.After(layer, 0.14, () =>
-			{
-				// 火身很透（看得见被烧的敌人），烧得快；后面一团紫光托着
-				Glow.Flash(layer, center, CurseRim, h * 3.6f, 0.9f);
-				Glow.CurseFire(layer, feet + new Vector2(0f, 6f), h * 1.7f, h * 3.4f, 0f, 1.05f, 1f, CurseRim, CurseDark, 1.7f, 0.28f);
-				for (int i = 0; i < 4; i++)
-				{
-					float x = (i % 2 == 0 ? -1f : 1f) * h * Fx.Rand(0.45f, 0.85f);
-					Glow.CurseFire(layer, feet + new Vector2(x, 4f), h * 0.8f, h * Fx.Rand(1.3f, 1.9f), 0.05f + i * 0.07f, 0.8f, 1f, CurseRim, CurseDark,
-						1.9f, 0.25f);
-				}
-				Glow.Ripple(layer, center, h * 3.2f, 0.6f, 0.025f);
-				Glow.Sparks(layer, feet, 40, 120f, 480f, 1.0f, new[] { CurseHot, CurseRim, CurseDark }, -260f, 0.1f, 0.35f, Vector2.Up, 35f);
-				Fx.Shake(2);
-			});
+			Size = new Vector2(sw, sw), Position = new Vector2(-sw / 2f, -sw / 2f), PivotOffset = new Vector2(sw / 2f, sw / 2f),
+			Scale = new Vector2(1f, 0.28f), MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Sigil },
+		};
+		sigil.AddChild(ring);
+		void SetS(string n, Variant v) => ((ShaderMaterial)ring.Material).SetShaderParameter(n, v);
+		SetS("open", 0f);
+		Fx.Animate(ring, 0.04, 1.4, t =>
+		{
+			SetS("open", Ease5.OutExpo(Ease5.Seg(t, 0f, 0.2f)) * (1f - 0.6f * Fx.InCubic(Ease5.Seg(t, 0.82f, 0.18f))));
+			SetS("spin", t * 1.6f);
+			float flare = Mathf.Exp(-Mathf.Pow((t - 0.19f) / 0.04f, 2f));                // 爆的那一刻亮一下
+			SetS("alpha", (0.85f + 1.2f * flare) * (1f - Ease5.Seg(t, 0.85f, 0.15f)));
 		});
+		for (int i = 0; i < 8; i++)
+		{
+			float ang = Mathf.Tau * i / 8f + Fx.Rand(-0.2f, 0.2f);
+			Vector2 dir = new(Mathf.Cos(ang), Mathf.Sin(ang) * 0.28f);
+			Node2D streak = new();
+			sigil.AddChild(streak);
+			Polygon2D glow = Glow.TaperPoly(streak, new Color(Pal5.Bright, 0.9f));
+			Polygon2D core = Glow.TaperPoly(streak, Pal5.Hot);
+			float r0 = sw * 0.55f;
+			streak.Visible = false;
+			Fx.Animate(streak, 0.05 + i * 0.012, 0.24, t =>
+			{
+				streak.Visible = true;
+				float head = Fx.InCubic(t), tail = Fx.InCubic(Mathf.Max(0f, t - 0.25f) / 0.75f);
+				Vector2 p0 = dir * r0 * (1f - tail), p1 = dir * r0 * (1f - head);
+				glow.Polygon = Glow.TaperPts(p0, p1, 9f);
+				core.Polygon = Glow.TaperPts(p0, p1, 3f);
+			});
+		}
+
+		// ② 爆
+		Fx.After(layer, 0.3, () =>
+		{
+			Flame.Column(layer, feet + new Vector2(0f, 8f), h * 1.9f, h * 3.3f, 0f, 0.95f, 1.4f);
+			for (int i = 0; i < 4; i++)
+			{
+				float x = (i % 2 == 0 ? -1f : 1f) * h * (0.55f + 0.25f * (i / 2));
+				Flame.Column(layer, feet + new Vector2(x, 6f), h * 0.9f, h * Fx.Rand(1.4f, 2.0f), 0.04f + i * 0.06f, 0.75f, 1.7f);
+			}
+			Glow.Flash(layer, center, Pal5.Hot, h * 1.4f, 0.14f);
+			Glow.Flash(layer, center, Pal5.Bright, h * 3.4f, 0.45f);
+			Glow.Shockwave(layer, feet, Pal5.Bright, h * 4f, 0.55f, 0.26f);
+			Glow.Ripple(layer, center, h * 3.6f, 0.6f, 0.03f);
+			Fx.Shake(2);
+			// 火星：打着旋往上飘
+			Embers(layer, feet, h, 46, 1.1f);
+			// 黑烟：火上方翻滚（普通混合，压暗后面，衬出火）
+			Smoke(layer, center + new Vector2(0f, -h * 1.1f), h);
+			// 热浪
+			Node2D haze = Fx.Root(layer, center + new Vector2(0f, -h * 0.4f), "P5EihaHaze", 1.0);
+			float hw = h * 2.4f, hh = h * 3.6f;
+			ColorRect hz = new()
+			{
+				Size = new Vector2(hw, hh), Position = new Vector2(-hw / 2f, -hh / 2f), MouseFilter = Control.MouseFilterEnum.Ignore,
+				Material = new ShaderMaterial { Shader = Haze },
+			};
+			haze.AddChild(hz);
+			Fx.Animate(hz, 0, 0.9, t => ((ShaderMaterial)hz.Material).SetShaderParameter("alpha", Mathf.Sin(Mathf.Min(1f, t * 1.2f) * Mathf.Pi)));
+			// 敌人被烧成暗红
+			if (tint != null)
+			{
+				Fx.Animate(sigil, 0, 0.9, t =>
+				{
+					float k = Mathf.Min(1f, t * 6f) * (1f - Fx.InCubic(Ease5.Seg(t, 0.6f, 0.4f)));
+					tint(new Color(1f, 1f, 1f).Lerp(new Color(0.55f, 0.16f, 0.22f), k));
+				});
+				Fx.After(layer, 0.95, () => tint(Colors.White));
+			}
+		});
+
+		// ④ 收
+		Fx.After(layer, 1.12, () =>
+		{
+			Glow.Gather(layer, feet, Pal5.Bright, h * 3f, 0.16f, 0.28f);
+			Glow.Flash(layer, feet + new Vector2(0f, -h * 0.6f), Pal5.Hot, h * 0.9f, 0.2f, 0.14f);
+		});
+	}
+
+	/// <summary>打着旋往上飘的火星（GPU 粒子，湍流）。</summary>
+	private static void Embers(Control layer, Vector2 feet, float h, int amount, float life)
+	{
+		Node2D root = Fx.Root(layer, feet, "P5Embers", life + 0.5);
+		Gradient g = new()
+		{
+			Offsets = new[] { 0f, 0.3f, 0.75f, 1f },
+			Colors = new[] { Flame.CurseHot, Flame.CurseHi, Flame.CurseMid, new Color(Flame.CurseMid, 0f) },
+		};
+		ParticleProcessMaterial pm = new()
+		{
+			Direction = new Vector3(0f, -1f, 0f), Spread = 28f, InitialVelocityMin = h * 1.2f, InitialVelocityMax = h * 3.2f,
+			Gravity = new Vector3(0f, -h * 0.4f, 0f), DampingMin = 1.5f, DampingMax = 3f, ScaleMin = 0.08f, ScaleMax = 0.3f,
+			EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box, EmissionBoxExtents = new Vector3(h * 0.7f, 6f, 0f),
+			TurbulenceEnabled = true, TurbulenceNoiseStrength = 6f, TurbulenceNoiseScale = 3f, TurbulenceInfluenceMin = 0.08f, TurbulenceInfluenceMax = 0.2f,
+			ColorRamp = new GradientTexture1D { Gradient = g },
+		};
+		GpuParticles2D p = new()
+		{
+			Amount = amount, Lifetime = life, OneShot = true, Explosiveness = 0.55f, ProcessMaterial = pm, Texture = Glow.Soft,
+			Material = Fx.Additive, LocalCoords = false, Emitting = true,
+		};
+		root.AddChild(p);
+	}
+
+	/// <summary>翻滚的黑烟（普通混合的暗色柔团，慢慢往上飘、胀大、淡掉）。</summary>
+	private static void Smoke(Control layer, Vector2 at, float h)
+	{
+		Node2D root = Fx.Root(layer, at, "P5Smoke", 2.0);
+		Gradient g = new()
+		{
+			Offsets = new[] { 0f, 0.25f, 1f },
+			Colors = new[] { new Color(0.06f, 0f, 0.02f, 0f), new Color(0.06f, 0f, 0.02f, 0.55f), new Color(0.03f, 0f, 0.01f, 0f) },
+		};
+		ParticleProcessMaterial pm = new()
+		{
+			Direction = new Vector3(0f, -1f, 0f), Spread = 35f, InitialVelocityMin = h * 0.3f, InitialVelocityMax = h * 0.8f,
+			Gravity = Vector3.Zero, DampingMin = 0.5f, DampingMax = 1f, ScaleMin = h / 32f * 0.6f, ScaleMax = h / 32f * 1.1f,
+			EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box, EmissionBoxExtents = new Vector3(h * 0.5f, h * 0.4f, 0f),
+			AngleMin = 0f, AngleMax = 360f,
+			ScaleCurve = new CurveTexture { Curve = Grow() },
+			ColorRamp = new GradientTexture1D { Gradient = g },
+		};
+		GpuParticles2D p = new()
+		{
+			Amount = 16, Lifetime = 1.4, OneShot = true, Explosiveness = 0.7f, ProcessMaterial = pm, Texture = Glow.Soft,
+			LocalCoords = false, Emitting = true,
+		};
+		root.AddChild(p);
+	}
+
+	private static Curve Grow()
+	{
+		Curve c = new();
+		c.AddPoint(new Vector2(0f, 0.5f));
+		c.AddPoint(new Vector2(1f, 1.4f));
+		return c;
 	}
 }

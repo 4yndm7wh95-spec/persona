@@ -99,7 +99,9 @@ public static class JokerFx
 				CardFx.Weaken(layer, t.VfxSpawnPosition, t.GetTopOfHitbox(), 0.12f);
 				break;
 			case "DeadlyPoison" when t != null:
-				CardFx.Eiha(layer, Joker.PosePoint(joker, ReadyFx.MaskFace), t.VfxSpawnPosition, t.GetTopOfHitbox());
+				CanvasItem? body = t.Visuals;
+				CardFx.Eiha(layer, Joker.PosePoint(joker, ReadyFx.MaskFace), t.VfxSpawnPosition, t.GetTopOfHitbox(),
+					body == null ? null : c => { if (GodotObject.IsInstanceValid(body)) { body.Modulate = c; } });
 				break;
 		}
 	}
