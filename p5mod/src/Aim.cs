@@ -191,6 +191,42 @@ public static class Aim
 	private static bool Idle(string? current) =>
 		current is "idle_loop" or "low_health_loop" or "aim_out" or "knife_out" or "mask_out" or "guard_out" or "glove_out";
 
+	/// <summary>Joker 自己开始施法的时刻（毫秒）：之后 1.5 秒内游戏再要播 cast 就不重播（AnimRenamePatch 吞掉）。</summary>
+	private static readonly Dictionary<ulong, ulong> SelfCast = new();
+
+	/// <summary>
+	/// 出技能 / 能力牌（CardPlayedPatch）：Joker 自己施法 —— 摆着架势就从架势接（*_from_*），站着就播对应的 cast。
+	/// 原版很多牌（防御等）根本不触发 Cast 动画，不这样做人会一直停在架势上。返回是否播了。
+	/// </summary>
+	public static bool PlayCast(NCreature node, CardModel card)
+	{
+		Stance stance = StanceFor(card);
+		MegaSprite? body = node.Visuals?.SpineBody;
+		if (stance is Stance.Knife or Stance.Gun || body == null || body.TryGetAnimationState() is not MegaAnimationState state)
+		{
+			return false;
+		}
+		string pre = Prefix(stance);
+		string? current = Current(state);
+		string? name = current == pre + "_in" || current == pre + "_loop"
+			? stance switch { Stance.Guard => "cast_guard_from_ready", Stance.Glove => "cast_glove_from_ready", _ => "cast_from_mask" }
+			: Idle(current) ? stance switch { Stance.Guard => "cast_guard", Stance.Glove => "cast_glove", _ => "cast" } : null;
+		if (name == null || !body.HasAnimation(name))
+		{
+			return false;
+		}
+		bool low = node.Entity.GetHpPercentRemaining() <= 0.25 && body.HasAnimation("low_health_loop");
+		PendingCast.Remove(node.GetInstanceId());
+		state.SetAnimation(name, false, 0);
+		state.AddAnimation(low ? "low_health_loop" : "idle_loop", 0f, true, 0);
+		SelfCast[node.GetInstanceId()] = Time.GetTicksMsec() + 1500;
+		return true;
+	}
+
+	/// <summary>游戏要播 cast，但 Joker 刚自己施过法：不重播。</summary>
+	public static bool SwallowCast(MegaAnimationState state) =>
+		Owner(state) is NCreature node && SelfCast.TryGetValue(node.GetInstanceId(), out ulong until) && Time.GetTicksMsec() < until;
+
 	/// <summary>打出去了：架势特效一闪收掉（出牌特效接上）。</summary>
 	public static void Played()
 	{
@@ -292,11 +328,20 @@ public static class Aim
 [HarmonyPatch(typeof(MegaAnimationState), nameof(MegaAnimationState.SetAnimation))]
 public static class AnimRenamePatch
 {
-	public static void Prefix(MegaAnimationState __instance, ref string animationName)
+	public static bool Prefix(MegaAnimationState __instance, ref string animationName)
 	{
 		if (animationName is not ("shiv" or "attack" or "cast"))
 		{
-			return;
+			return true;
+		}
+		if (animationName == "cast")
+		{
+			bool swallow = false;
+			ModEntry.Safe("AnimSwallow", () => swallow = Aim.SwallowCast(__instance));
+			if (swallow)
+			{
+				return false;
+			}
 		}
 		string requested = animationName;
 		string? replacement = null;
@@ -305,6 +350,7 @@ public static class AnimRenamePatch
 		{
 			animationName = replacement;
 		}
+		return true;
 	}
 
 	public static void Postfix(MegaAnimationState __instance, string animationName)

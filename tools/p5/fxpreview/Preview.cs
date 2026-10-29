@@ -77,6 +77,18 @@ public partial class Preview : Node2D
 				p.At(Math.Max(0, 0.13 - skip), () => HitFx.Swing(p._front, Pose(760f, 260f), Pose(600f, 850f), Pose(1376f, 450f))); });
 			p.Hit(4.0, Enemy, 9, false);
 		},
+		// 第一批出牌特效（拿起 → 打出）：防御（光盾）→ 中和（斩 + 虚弱锁环）→ 致命毒药（咒怨）
+		["cards"] = p =>
+		{
+			p.Ready(0.2, Stance.Guard, "guard", "cast_guard_from_ready", play: true);
+			p.At(1.83, () => CardFx.Guard(p._front, Pose(885f, 310f), Pose(1060f, 470f), 1280f * 0.87f * 0.29f));
+			p.Ready(3.0, Stance.Knife, "knife", "attack_from_ready", play: true, lockOn: Enemy);
+			p.At(3.0 + 1.6 + 0.13, () => HitFx.Swing(p._front, Pose(760f, 260f), Pose(600f, 850f), Pose(1376f, 450f)));
+			p.Hit(3.0 + 1.6 + 0.15, Enemy, 4, false);
+			p.At(3.0 + 1.6, () => CardFx.Weaken(p._front, Enemy, Enemy + new Vector2(0f, -170f), 0.12f));
+			p.Ready(6.4, Stance.Mask, "mask", "cast_from_mask", play: true, lockOn: Enemy2);
+			p.At(6.4 + 1.6, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy2, Enemy2 + new Vector2(0f, -128f)));
+		},
 		// 刀扇：一发子弹弹过所有敌人（近 → 远）
 		["ricochet"] = p =>
 		{

@@ -106,6 +106,10 @@ uniform float height = 1.0;
 uniform float alpha = 1.0;
 uniform float seed = 0.0;
 uniform float width = 1.0;
+uniform vec4 dark_color : source_color = vec4(0.09, 0.0, 0.03, 1.0);
+uniform vec4 rim_color : source_color = vec4(1.0, 0.07, 0.11, 1.0);
+uniform float speed = 1.0;
+uniform float body_alpha = 0.5;
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
@@ -119,7 +123,7 @@ float fbm(vec2 p) {
 }
 void fragment() {
 	float y = 1.0 - UV.y;                                   // 0 = 底
-	float t = TIME * 1.9 + seed * 17.0;
+	float t = TIME * 1.9 * speed + seed * 17.0;
 	vec2 q = vec2(UV.x * 3.2 + seed, y * 2.4 - t);
 	float warp = fbm(q * 1.4 + vec2(0.0, -t * 0.4));
 	float n = fbm(q + warp * 1.6);
@@ -135,16 +139,17 @@ void fragment() {
 	float rim = body - smoothstep(0.016, 0.05, d);
 	// 往上窜的亮纹（竖向拉长的噪声）
 	float veins = smoothstep(0.55, 0.8, fbm(vec2(UV.x * 5.0, y * 1.6 - t * 1.4) + warp)) * (1.0 - rim);
-	vec3 dark = vec3(0.09, 0.0, 0.03);
-	vec3 red = vec3(1.0, 0.07, 0.11);
+	vec3 dark = dark_color.rgb;
+	vec3 red = rim_color.rgb;
 	vec3 col = mix(dark, red, rim) + red * 0.9 * veins * body;
 	col += vec3(1.0, 0.8, 0.75) * smoothstep(0.8, 1.0, rim) * 0.45;
-	float a = body * mix(0.5, 1.0, max(rim, veins));         // 火身半透（透得出后面的敌人），边和亮纹不透
+	float a = body * mix(body_alpha, 1.0, max(rim, veins));         // 火身半透（透得出后面的敌人），边和亮纹不透
 	COLOR = vec4(col, a * alpha);
 }" };
 
 	/// <summary>一根咒焰：脚在 foot，宽 w、最高 h；delay 后 0.15s 蹿到顶、摇着烧 life 秒、再往下缩掉。</summary>
-	public static void CurseFire(Control layer, Vector2 foot, float w, float h, float delay, float life, float widthK = 1f)
+	public static void CurseFire(Control layer, Vector2 foot, float w, float h, float delay, float life, float widthK = 1f,
+		Color? rim = null, Color? dark = null, float speed = 1f, float bodyAlpha = 0.5f)
 	{
 		Node2D root = Fx.Root(layer, foot, "P5CurseFire", delay + life + 0.1);
 		ColorRect r = new()
@@ -156,6 +161,16 @@ void fragment() {
 		Set(r, "seed", Fx.Rand(0f, 10f));
 		Set(r, "width", widthK);
 		Set(r, "height", 0f);
+		Set(r, "speed", speed);
+		Set(r, "body_alpha", bodyAlpha);
+		if (rim is Color rc)
+		{
+			Set(r, "rim_color", rc);
+		}
+		if (dark is Color dc)
+		{
+			Set(r, "dark_color", dc);
+		}
 		Fx.Animate(root, delay, life, t =>
 		{
 			float up = Ease5.OutBack(Ease5.Seg(t, 0f, 0.22f)), down = Fx.InCubic(Ease5.Seg(t, 0.6f, 0.4f));

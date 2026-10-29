@@ -87,5 +87,34 @@ public static class JokerFx
 	public static void OnPlay(CardModel card, NCreature joker, Creature? target)
 	{
 		LastPlayMs = Time.GetTicksMsec();
+		if (Joker.FxLayer() is not Control layer || NCombatRoom.Instance is not NCombatRoom room)
+		{
+			return;
+		}
+		NCreature? t = target != null && !target.IsPlayer ? room.GetCreatureNode(target) : null;
+		switch (card.GetType().Name)
+		{
+			case "Neutralize" when t != null:
+				// 刀落下（attack_from_ready 0.14s、伤害 0.15s）之后锁环收紧
+				CardFx.Weaken(layer, t.VfxSpawnPosition, t.GetTopOfHitbox(), 0.12f);
+				break;
+			case "DeadlyPoison" when t != null:
+				CardFx.Eiha(layer, Joker.PosePoint(joker, ReadyFx.MaskFace), t.VfxSpawnPosition, t.GetTopOfHitbox());
+				break;
+		}
+	}
+
+	// cast_guard 的定格帧 guard_a2：竖起的拳头、身前盾的中心和上下端（姿势图像素）
+	private static readonly Vector2 GuardFist = new(885f, 310f), ShieldMid = new(1060f, 470f), ShieldTop = new(1060f, -170f), ShieldBottom = new(1060f, 1110f);
+
+	/// <summary>用牌获得格挡（GainBlockPatch）：身前张开光盾。</summary>
+	public static void OnBlock(NCreature joker)
+	{
+		if (Joker.FxLayer() is not Control layer)
+		{
+			return;
+		}
+		float h = (Joker.PosePoint(joker, ShieldBottom) - Joker.PosePoint(joker, ShieldTop)).Length();
+		Fx.After(layer, 0.03, () => CardFx.Guard(layer, Joker.PosePoint(joker, GuardFist), Joker.PosePoint(joker, ShieldMid), h, Joker.Facing(joker)));
 	}
 }

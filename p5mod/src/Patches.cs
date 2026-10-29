@@ -236,7 +236,60 @@ public static class BlockSparkPatch
 	}
 }
 
-/// <summary>出牌那一刻（结算之前）：记下这张牌要的施法动作（Aim 改动画名时用）。</summary>
+/// <summary>Joker 用牌获得格挡（所有 GainBlock 重载都汇到带 cardPlay 的那个）：身前张开光盾（JokerFx.OnBlock）。</summary>
+[HarmonyPatch]
+public static class GainBlockPatch
+{
+	public static IEnumerable<MethodBase> TargetMethods() =>
+		typeof(CreatureCmd).GetMethods(BindingFlags.Public | BindingFlags.Static)
+			.Where(m => m.Name == "GainBlock" && m.GetParameters().Any(p => p.Name == "cardPlay") && m.GetParameters().Any(p => p.Name == "creature"))
+			.OrderByDescending(m => m.GetParameters().Length).Take(1);
+
+	public static void Prefix(Creature creature, decimal amount, CardPlay? cardPlay)
+	{
+		ModEntry.Safe("GainBlock", () =>
+		{
+			if (amount > 0m && cardPlay != null && Joker.OwnsCard(cardPlay.Card) && creature.Player is { } p && Joker.Is(p)
+				&& NCombatRoom.Instance?.GetCreatureNode(creature) is NCreature node)
+			{
+				JokerFx.OnBlock(node);
+			}
+		});
+	}
+}
+
+/// <summary>原版致命毒药等出牌时在敌人身上放的毒雾（NPoisonImpactVfx）：Joker 出的牌不要，换成咒怨（CardFx.Eiha）。</summary>
+[HarmonyPatch(typeof(NPoisonImpactVfx), nameof(NPoisonImpactVfx.Create), typeof(Creature))]
+public static class PoisonImpactPatch
+{
+	public static bool Prefix(ref NPoisonImpactVfx? __result)
+	{
+		if (Godot.Time.GetTicksMsec() - JokerFx.LastPlayMs < 250)
+		{
+			__result = null;
+			return false;
+		}
+		return true;
+	}
+}
+
+/// <summary>
+/// Joker 的刀砍下去和伤害同时到：原版中和等牌在普通速度下把出刀到结算拉长到 0.35s，Joker 的 attack 0.14s 就出刀了，
+/// 命中特效和数字晚一截 —— Joker 的牌一律按静默猎手的 AttackAnimDelay（0.15s）结算。只改等待时间，不改结果。
+/// </summary>
+[HarmonyPatch(typeof(AttackCommand), nameof(AttackCommand.WithAttackerAnim))]
+public static class AttackDelayPatch
+{
+	public static void Prefix(AttackCommand __instance, string? animName, ref float delay)
+	{
+		if (animName == "Attack" && delay > 0.15f && __instance.ModelSource is CardModel card && Joker.OwnsCard(card))
+		{
+			delay = 0.15f;
+		}
+	}
+}
+
+/// <summary>出牌那一刻（结算之前）：技能 / 能力牌 Joker 自己施法（Aim.PlayCast），放出牌特效；记下施法动作（Aim 改动画名时用）。</summary>
 [HarmonyPatch(typeof(Hook), nameof(Hook.BeforeCardPlayed))]
 public static class CardPlayedPatch
 {
@@ -247,6 +300,10 @@ public static class CardPlayedPatch
 			if (Joker.OwnsCard(cardPlay.Card) && Joker.Node(cardPlay.Card.Owner) is NCreature node)
 			{
 				Aim.PendingCast[node.GetInstanceId()] = Casts.For(cardPlay.Card);
+				if (cardPlay.Card.Type != CardType.Attack)
+				{
+					Aim.PlayCast(node, cardPlay.Card);
+				}
 				JokerFx.OnPlay(cardPlay.Card, node, cardPlay.Target);
 			}
 		});
