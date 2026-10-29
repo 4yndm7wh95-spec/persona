@@ -1,0 +1,14 @@
+{
+  "repo": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-2f0a1ef0-b708-4c0c-a07d-1747bc3dfff0.png",
+  "prompt": "Virtual game character sprite edit. IMAGE1 knife_spin_g is EDIT TARGET: keep its head, face, body, legs, boots, coat, both foot positions, and SCREEN LEFT waist-side half-open hand EXACTLY. IMAGE2 knife_ready_b is ONLY reference for SCREEN RIGHT hand's raised chest-level starting position; ignore its held prop and other body details. IMAGE3 approved face identity.\nChange ONLY SCREEN RIGHT arm: hand exactly halfway between IMAGE2 chest-level raised hand and IMAGE1 hand hanging beside body. Hand at WAIST HEIGHT in FRONT OF BODY, elbow bent, relaxed hand with naturally slightly curved fingers as if lowering. Same small hand size and normal finger length as original/idle proportions. Keep same black sleeve and wide cuff design; no clenched fist or spread fingers. SCREEN LEFT half-open waist-side hand must stay unchanged. Head/body/legs/feet remain IMAGE1.\nNo knife or object in either hand. One full person inside1024x1536 true transparent RGBA, soles around1500, alpha0 outside figure. P5R cel shading and bold black ink same as original. No effects, glow, trails, ground, shadows, background or text.",
+  "inputs": [
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/knife_spin_g.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/poses/knife_ready_b.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/p5/ref/face_standard.png"
+  ],
+  "tool": "built-in image_gen",
+  "cleanup_alpha_pixels": 332,
+  "generation_count": 1,
+  "review": "No visual review, no regeneration; sequence check only after completing batch"
+}
