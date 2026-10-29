@@ -93,6 +93,26 @@ public partial class Preview : Node2D
 		// 只看蓝焰墙本身（放大，对照用户的参考图调细节）
 		["eiha"] = p => p.At(0.3, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy, Enemy + new Vector2(0f, -170f), c => p._enemies[Enemy].Modulate = c)),
 		["cutin"] = p => p.At(0.3, () => CutIn.Eyes(p._back)),
+		["eiha"] = p => p.At(0.3, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy, Enemy + new Vector2(0f, -170f), c => p._enemies[Enemy].Modulate = c)),
+		["cutin"] = p => p.At(0.3, () => CutIn.Eyes(p._back)),
+		["cutindbg"] = p =>
+		{
+			p.At(0.3, () => CutIn.Eyes(p._back));
+			p.At(0.6, () =>
+			{
+				foreach (Node n in p._back.GetChildren())
+				{
+					if (n.Name.ToString().StartsWith("P5CutIn"))
+					{
+						int i = 0;
+						foreach (Node c in n.GetChildren())
+						{
+							GD.Print($"[DBG] child {i++} {c.GetType().Name} vis={(c as CanvasItem)?.Visible} pos={(c as Node2D)?.Position} scale={(c as Node2D)?.Scale} kids={c.GetChildCount()} mod={(c as CanvasItem)?.Modulate}");
+						}
+					}
+				}
+			});
+		},
 		["wall"] = p =>
 		{
 			PersonaMask? w = null;
