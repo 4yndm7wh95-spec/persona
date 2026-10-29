@@ -39,7 +39,15 @@ public static class JokerFx
 				break;
 			case "shiv":
 			case "shiv_from_aim":
-				Fx.After(layer, Mathf.Max(0f, 0.18f - skipped), () => HitFx.Muzzle(layer, Joker.Muzzle(node), Joker.Facing(node)));
+				Fx.After(layer, Mathf.Max(0f, 0.18f - skipped), () =>
+				{
+					HitFx.Muzzle(layer, Joker.Muzzle(node), Joker.Facing(node));
+					if (node.Entity?.Player is { } p && MegaCrit.Sts2.Core.Context.LocalContext.IsMe(p) && AmmoPatch.Local is AmmoView ammo
+						&& GodotObject.IsInstanceValid(ammo.Root))
+					{
+						ammo.Fire();                              // 弹巢跟着开枪转一格
+					}
+				});
 				break;
 		}
 	}
@@ -90,6 +98,45 @@ public static class JokerFx
 		OwnSlashUntil[t.GetInstanceId()] = Time.GetTicksMsec() + (ulong)((cut + 0.4f) * 1000f);
 		CardFx.Neutralize(layer, t.GetTopOfHitbox(), t.VfxSpawnPosition, Joker.Facing(joker), cut);
 		return true;
+	}
+
+	/// <summary>爆发：复制 Joker 的骨骼节点放到本体后面，同一个动作同一时刻，交给 SkillFx.Burst 变成剪影分身。</summary>
+	private static void BurstClone(Control layer, NCreature joker)
+	{
+		if (joker.Visuals?.Body is not Node2D body || body.GetParent() is not Node parent || joker.Visuals.SpineBody?.TryGetAnimationState() is not MegaAnimationState src)
+		{
+			return;
+		}
+		if (body.Duplicate() is not Node2D clone)
+		{
+			return;
+		}
+		parent.AddChild(clone);
+		parent.MoveChild(clone, body.GetIndex());
+		clone.Position = body.Position;
+		var sprite = new MegaSprite(clone);
+		if (sprite.TryGetAnimationState() is MegaAnimationState st)
+		{
+			string? anim = null;
+			float time = 0f;
+			try
+			{
+				anim = src.GetCurrentAnimationName(0);
+				using MegaTrackEntry? e = src.GetCurrent(0);
+				time = e?.GetTrackTime() ?? 0f;
+			}
+			catch (Exception)
+			{
+			}
+			if (anim != null && sprite.HasAnimation(anim))
+			{
+				st.SetAnimation(anim, false, 0);
+				using MegaTrackEntry? ce = st.GetCurrent(0);
+				ce?.SetTrackTime(time);
+				ce?.SetMixDuration(0f);
+			}
+		}
+		SkillFx.Burst(layer, clone, m => sprite.SetNormalMaterial(m), Joker.Chest(joker), Joker.Facing(joker));
 	}
 
 	/// <summary>小刀打全体（刀扇）：按离 Joker 由近到远排，一发子弹依次弹过去。</summary>
@@ -156,6 +203,18 @@ public static class JokerFx
 		else if (ShivMakers.TryGetValue(name, out int shivs))
 		{
 			Fx.After(layer, 0.05, () => CardFx.Shivs(layer, Joker.Chest(joker), Joker.PosePoint(joker, GlovePx), shivs, Joker.Facing(joker)));
+		}
+		else if (name == "Adrenaline" && Joker.FxLayer(back: true) is Control adBack)
+		{
+			SkillFx.Adrenaline(layer, adBack, Joker.PosePoint(joker, new Vector2(815f, 1622f)), Joker.Chest(joker), Joker.Facing(joker));
+		}
+		else if (name == "BulletTime" && Joker.FxLayer(back: true) is Control btBack)
+		{
+			SkillFx.BulletTime(layer, btBack, Joker.Chest(joker), Joker.Facing(joker));
+		}
+		else if (name == "Burst")
+		{
+			Fx.After(layer, 0.06, () => BurstClone(layer, joker));
 		}
 		else if (card.Type == CardType.Power && Joker.FxLayer(back: true) is Control back)
 		{

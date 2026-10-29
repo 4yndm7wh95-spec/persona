@@ -76,6 +76,9 @@ public static class AmmoPatch
 	private static readonly FieldInfo PlayerField = AccessTools.Field(typeof(NEnergyCounter), "_player");
 	private static readonly Dictionary<ulong, AmmoView> Views = new();
 
+	/// <summary>本地 Joker 的弹巢（开火时 JokerFx 让它转一格）。</summary>
+	public static AmmoView? Local;
+
 	public static void Postfix(NEnergyCounter __instance, double delta)
 	{
 		ModEntry.Safe("Ammo", () =>
@@ -90,8 +93,12 @@ public static class AmmoPatch
 				view = new AmmoView(__instance);
 				Views[id] = view;
 			}
+			if (MegaCrit.Sts2.Core.Context.LocalContext.IsMe(player))
+			{
+				Local = view;
+			}
 			// 能量球右上方
-			view.Root.Position = __instance.Size / 2f + new Godot.Vector2(62f, -118f);
+			view.Root.Position = __instance.Size / 2f + new Godot.Vector2(110f, -70f);
 			int shivs = player.PlayerCombatState?.Hand.Cards.Count(Joker.IsShot) ?? 0;
 			view.Set(shivs);
 			view.Tick((float)delta);
