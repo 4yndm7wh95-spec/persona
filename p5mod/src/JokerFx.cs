@@ -1,6 +1,13 @@
 using Godot;
 using MegaCrit.Sts2.Core.Bindings.MegaSpine;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using MegaCrit.Sts2.Core.Nodes.Rooms;
 
 namespace P5Joker;
 
@@ -51,6 +58,43 @@ public static class JokerFx
 		else
 		{
 			HitFx.Slash(layer, target.VfxSpawnPosition, Joker.Facing(joker));
+		}
+	}
+
+	// 牌名 → 出牌特效（docs/p5/FX_PLAN.md）；能力牌默认是增益，防御类的格挡特效在 GainBlockPatch 里放
+	private static readonly HashSet<string> Debuffs = new() { "Neutralize", "LegSweep", "PiercingWail", "Malaise", "SuckerPunch", "Expose", "Tracking" };
+	private static readonly HashSet<string> Poisons = new() { "DeadlyPoison", "PoisonedStab", "BouncingFlask", "Catalyst", "Envenom", "Outbreak",
+		"Concoct", "CorpseExplosion", "Bane" };
+
+	/// <summary>出牌那一刻（CardPlayedPatch）：按牌型放特效。target = 选中的目标（群体牌为 null → 所有敌人）。</summary>
+	public static void OnPlay(CardModel card, NCreature joker, Creature? target)
+	{
+		if (Joker.FxLayer() is not Control layer || NCombatRoom.Instance is not NCombatRoom room)
+		{
+			return;
+		}
+		string name = card.GetType().Name;
+		List<NCreature> enemies = target != null && !target.IsPlayer && room.GetCreatureNode(target) is NCreature t
+			? new List<NCreature> { t }
+			: (card.CombatState?.HittableEnemies ?? Array.Empty<Creature>()).Select(room.GetCreatureNode).OfType<NCreature>().ToList();
+		if (Debuffs.Contains(name))
+		{
+			// 有伤害的（中和 / 偷袭）等斩击打中再锁定：稍晚一点
+			foreach (NCreature e in enemies)
+			{
+				Fx.After(layer, card.Type == CardType.Attack ? 0.2 : 0.05, () => CardFx.Debuff(layer, e.VfxSpawnPosition));
+			}
+		}
+		else if (Poisons.Contains(name))
+		{
+			foreach (NCreature e in enemies)
+			{
+				Fx.After(layer, card.Type == CardType.Attack ? 0.2 : 0.08, () => CardFx.Curse(layer, e.VfxSpawnPosition));
+			}
+		}
+		else if (card.Type == CardType.Power && Joker.FxLayer(back: true) is Control back)
+		{
+			Fx.After(layer, 0.1, () => CardFx.Buff(layer, back, Joker.PosePoint(joker, new Vector2(815f, 1622f)), Joker.PosePoint(joker, new Vector2(815f, 120f))));
 		}
 	}
 }

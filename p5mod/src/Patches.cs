@@ -55,7 +55,6 @@ public static class DamagePatch
 			}
 			bool gun = Joker.IsShot(cardSource);
 			Hits.Mark(targets, gun);
-			bool card = cardSource.GetType().Name == "Neutralize";              // 施加虚弱：钉一张预告信
 			if (Joker.Node(cardSource.Owner) is NCreature joker && NCombatRoom.Instance is NCombatRoom room)
 			{
 				foreach (Creature c in targets)
@@ -63,10 +62,6 @@ public static class DamagePatch
 					if (!c.IsPlayer && room.GetCreatureNode(c) is NCreature n)
 					{
 						JokerFx.OnHit(joker, n, gun);
-						if (card && Joker.FxLayer() is Godot.Control layer)
-						{
-							CardFx.CallingCard(layer, n.VfxSpawnPosition);
-						}
 					}
 				}
 			}
@@ -219,6 +214,7 @@ public static class CardPlayedPatch
 			if (Joker.OwnsCard(cardPlay.Card) && Joker.Node(cardPlay.Card.Owner) is NCreature node)
 			{
 				Aim.PendingCast[node.GetInstanceId()] = Casts.For(cardPlay.Card);
+				JokerFx.OnPlay(cardPlay.Card, node, cardPlay.Target);
 			}
 		});
 	}

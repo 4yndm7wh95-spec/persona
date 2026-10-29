@@ -76,15 +76,18 @@ public partial class Preview : Node2D
 				p.At(Math.Max(0, 0.13 - skip), () => HitFx.Swing(p._front, Pose(760f, 260f), Pose(600f, 850f), Pose(1376f, 450f))); });
 			p.Hit(4.0, Enemy, 9, false);
 		},
-		// 第一批牌特效：防御（举盾面板）×2、中和（打击 + 预告信）
+		// 牌特效：防御（光盾阵）→ 中和（打击 + 减益）→ 能力牌（增益）→ 毒（诅咒旋涡）→ 预告信
 		["cards"] = p =>
 		{
 			p.At(0.3, () => p._joker?.Play("cast_guard"));
 			p.At(0.55, () => CardFx.Guard(p._front, Chest));
-			p.Strike(1.6, Enemy, 3);
-			p.At(1.75, () => CardFx.CallingCard(p._front, Enemy));
-			p.At(3.2, () => p._joker?.Play("cast_guard"));
-			p.At(3.45, () => CardFx.Guard(p._front, Chest));
+			p.Strike(1.8, Enemy, 3);
+			p.At(1.95, () => CardFx.Debuff(p._front, Enemy));
+			p.At(3.1, () => p._joker?.Play("cast_glove"));
+			p.At(3.3, () => CardFx.Buff(p._front, p._back, JokerFeet, Pose(815f, 120f)));
+			p.At(4.6, () => p._joker?.Play("cast_glove"));
+			p.At(4.8, () => CardFx.Curse(p._front, Enemy2));
+			p.At(6.0, () => CardFx.CallingCard(p._front, Enemy));
 		},
 		// 选中打击牌（转刀起手停住）→ 取消（放下手、转刀收起）
 		["knifecancel"] = p =>

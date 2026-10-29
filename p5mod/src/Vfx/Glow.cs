@@ -142,10 +142,10 @@ void fragment() {
 	}
 
 	/// <summary>往里收的蓄力环（预备段）。</summary>
-	public static void Gather(Control layer, Vector2 at, Color tint, float size = 300f, float duration = 0.14f)
+	public static void Gather(Control layer, Vector2 at, Color tint, float size = 300f, float duration = 0.14f, float squashY = 1f)
 	{
 		Node2D root = Fx.Root(layer, at, "P5Gather", duration + 0.05);
-		ColorRect q = Quad(root, Ring, size);
+		ColorRect q = Quad(root, Ring, size, squashY);
 		Set(q, "tint", tint);
 		Fx.Animate(q, 0, duration, t =>
 		{
