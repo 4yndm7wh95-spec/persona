@@ -97,9 +97,10 @@ ANIMS = {
     # buffs), the big summon (mask ripped off) for the large Persona cards
     "cast_guard": [("idle_a3", .02), ("guard_mid_a", .06), ("guard_a2", .45), ("guard_mid_a", .08), ("idle_a3", .12, .07)],
     "cast_glove": [("idle_a3", .02)] + GLOVE,
-    "cast_big": [("idle_a3", .02)] + [(n, .07) for n in SUMMON_UP] + [("summon_hold_a", .35), ("summon_rip_a2", .12),
-                 ("summon_open1_b", .07), ("summon_open2_b", .07), ("summon_release_b", .8), ("summon_settle_b", .1),
-                 ("summon_down1_e", .1), ("summon_down05_c", .1), ("summon_down25_c", .1), ("idle_a3", .15, .08)],
+    # 2026-10-29 (user: the big summon dragged): ~2.3 s -> ~1.3 s; the release pose (arm flung out) still holds longest
+    "cast_big": [("idle_a3", .02)] + [(n, .045) for n in SUMMON_UP] + [("summon_hold_a", .14), ("summon_rip_a2", .08),
+                 ("summon_open1_b", .045), ("summon_open2_b", .045), ("summon_release_b", .42), ("summon_settle_b", .07),
+                 ("summon_down1_e", .065), ("summon_down05_c", .065), ("summon_down25_c", .065), ("idle_a3", .12, .06)],
     "cast": [("idle_a3", .02)] + [(n, .08) for n in SUMMON_UP] + [("summon_hold_a", .9)]
             + [(n, .08) for n in SUMMON_UP[::-1]] + [("idle_a3", .15, .08)],
     "hurt": [("hurt_flinch_a", .05, 0), ("hurt_a4", .25), ("hurt_recover_b1", .1), ("hurt_recover_b2", .1),
