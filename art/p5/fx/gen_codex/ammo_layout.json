@@ -1,0 +1,78 @@
+{
+  "canvas": [
+    512,
+    512
+  ],
+  "origin": "top-left",
+  "axis": "x-right,y-down",
+  "cylinder_center_px": [
+    256,
+    256
+  ],
+  "outer_diameter_px": 440,
+  "requested_radius_ratio": 0.55,
+  "measurement": "dark connected chamber interior in local62px-radius ROI, centroid and distance-transform inradius",
+  "chambers": [
+    {
+      "index": 0,
+      "center_px": [
+        255.61,
+        129.32
+      ],
+      "chamber_diameter_px": 89.2,
+      "dark_area_px": 7899
+    },
+    {
+      "index": 1,
+      "center_px": [
+        370.99,
+        188.08
+      ],
+      "chamber_diameter_px": 87.73,
+      "dark_area_px": 7646
+    },
+    {
+      "index": 2,
+      "center_px": [
+        371.52,
+        317.46
+      ],
+      "chamber_diameter_px": 86.53,
+      "dark_area_px": 7511
+    },
+    {
+      "index": 3,
+      "center_px": [
+        254.53,
+        378.65
+      ],
+      "chamber_diameter_px": 86.83,
+      "dark_area_px": 7668
+    },
+    {
+      "index": 4,
+      "center_px": [
+        139.49,
+        317.68
+      ],
+      "chamber_diameter_px": 87.68,
+      "dark_area_px": 7498
+    },
+    {
+      "index": 5,
+      "center_px": [
+        138.5,
+        188.07
+      ],
+      "chamber_diameter_px": 89.11,
+      "dark_area_px": 7763
+    }
+  ],
+  "median_chamber_diameter_px": 87.71,
+  "overlay_sprite_size_px": [
+    128,
+    128
+  ],
+  "visible_round_diameter_px": 82,
+  "sprite_draw_rule": "Place128x128 sprite at native size centered at chamber coordinate; its visible82px disk fits the measured chamber."
+}

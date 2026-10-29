@@ -1,0 +1,176 @@
+{
+  "tool": "built-in image_gen",
+  "generation_count_per_asset": 1,
+  "visual_regeneration": false,
+  "assets": {
+    "ammo_cylinder": {
+      "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-39cc2d75-e646-4fd4-9ac8-9ab66a617b32.png",
+      "prompt": "Virtual game UI asset, Persona 5 Royal style: a SINGLE revolver CYLINDER viewed precisely FRONT-ON along its central axis, showing the chamber-opening face. No gun body, only the round metal cylinder. Exactly SIX EMPTY round dark chamber holes arranged as a regular hexagon, one at TOP (12 o'clock), then every60 degrees clockwise. Chamber center distance from image center =0.55 times cylinder outer radius. Each chamber clear round rim and dark empty center. Central axle/hub, sculpted fluted outer rim. Dark steel metal, crisp silver cel-shaded highlights, P5 red accents and red outlines, bold BLACK comic ink, flat high-contrast red/black/white palette. Precisely circular, centered, rotational geometry, no perspective tilt. 512x512 true transparent RGBA canvas, cylinder outer diameter about440px, margin36px. Exactly six empty chambers, NO ammunition inside. No letters, numbers, fire, effects, shadow, ground, background or other objects. Transparent outside silhouette, not a checkerboard drawing.",
+      "inputs": [],
+      "raw_size": [
+        1254,
+        1254
+      ],
+      "source_bbox": [
+        57,
+        30,
+        1197,
+        1224
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "generation_count": 1,
+      "alpha_cleanup": 111597
+    },
+    "ammo_round": {
+      "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-116e321b-f929-4b0f-b116-25a493cfc5c0.png",
+      "prompt": "Virtual game UI icon matching Persona5 Royal comic metal style. ONE loaded cartridge seen from DIRECTLY BEHIND, ONLY its circular BRASS CASE BASE visible, centered circular primer in center. A round brass disk with concentric machined rings, subtle polished golden metal cel-shaded highlights, crisp thick black comic ink, small P5 RED accent marks on rim. Perfect FRONT-ON circular base, no bullet side profile, no cartridge length, no projectile tip. Bright intact clean flat primer. No lettering, numbers or stamping. 128x128 genuine transparent RGBA canvas with clear transparent margin, circular base outer diameter about108px. Designed to overlay inside one empty chamber of a revolver-cylinder game UI. No gun, hand, flames, effects, shadows, background or extra objects. Single round sprite only, alpha0 outside circle.",
+      "inputs": [],
+      "raw_size": [
+        1254,
+        1254
+      ],
+      "source_bbox": [
+        79,
+        77,
+        1176,
+        1172
+      ],
+      "size": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "generation_count": 1,
+      "alpha_cleanup": 6950,
+      "visible_diameter_px": 82,
+      "fit_processing": "Fit visible icon to measured minimum chamber inradius minus4px, preserve128px transparent canvas."
+    },
+    "ammo_spent": {
+      "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-c7476b0e-5553-45d8-b93c-218b9f2fd0a7.png",
+      "prompt": "Virtual game UI icon variant of supplied brass cartridge base. Draw ONE SPENT CASE BASE seen directly from behind, same circular outline, brass outer rim, proportions, red accents, P5R cel-shaded metal highlights and thick black comic ink. Center PRIMER must have a clear small circular DENT and dark soot/blackening, showing a used casing. Keep brass rim mostly golden with restrained dark scorching close to primer. Pure front-on flat circular base only, no side length, no bullet tip. 128x128 genuine transparent RGBA with clear transparent margin, base about108px diameter. No letters, numbers, stamping, flames, smoke, effects, shadows, background or other objects. Single icon designed to occupy same game UI chamber as loaded base reference.",
+      "inputs": [
+        "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-116e321b-f929-4b0f-b116-25a493cfc5c0.png"
+      ],
+      "raw_size": [
+        1254,
+        1254
+      ],
+      "source_bbox": [
+        75,
+        73,
+        1178,
+        1175
+      ],
+      "size": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "generation_count": 1,
+      "alpha_cleanup": 6984,
+      "visible_diameter_px": 82,
+      "fit_processing": "Fit visible icon to measured minimum chamber inradius minus4px, preserve128px transparent canvas."
+    }
+  },
+  "checks": "Each target checked RGBA, requested dimensions, four transparent corners; composite ammo_check overlays alternating loaded/spent at measured chambers.",
+  "layout": {
+    "canvas": [
+      512,
+      512
+    ],
+    "origin": "top-left",
+    "axis": "x-right,y-down",
+    "cylinder_center_px": [
+      256,
+      256
+    ],
+    "outer_diameter_px": 440,
+    "requested_radius_ratio": 0.55,
+    "measurement": "dark connected chamber interior in local62px-radius ROI, centroid and distance-transform inradius",
+    "chambers": [
+      {
+        "index": 0,
+        "center_px": [
+          255.61,
+          129.32
+        ],
+        "chamber_diameter_px": 89.2,
+        "dark_area_px": 7899
+      },
+      {
+        "index": 1,
+        "center_px": [
+          370.99,
+          188.08
+        ],
+        "chamber_diameter_px": 87.73,
+        "dark_area_px": 7646
+      },
+      {
+        "index": 2,
+        "center_px": [
+          371.52,
+          317.46
+        ],
+        "chamber_diameter_px": 86.53,
+        "dark_area_px": 7511
+      },
+      {
+        "index": 3,
+        "center_px": [
+          254.53,
+          378.65
+        ],
+        "chamber_diameter_px": 86.83,
+        "dark_area_px": 7668
+      },
+      {
+        "index": 4,
+        "center_px": [
+          139.49,
+          317.68
+        ],
+        "chamber_diameter_px": 87.68,
+        "dark_area_px": 7498
+      },
+      {
+        "index": 5,
+        "center_px": [
+          138.5,
+          188.07
+        ],
+        "chamber_diameter_px": 89.11,
+        "dark_area_px": 7763
+      }
+    ],
+    "median_chamber_diameter_px": 87.71,
+    "overlay_sprite_size_px": [
+      128,
+      128
+    ],
+    "visible_round_diameter_px": 82,
+    "sprite_draw_rule": "Place128x128 sprite at native size centered at chamber coordinate; its visible82px disk fits the measured chamber."
+  }
+}
