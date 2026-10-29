@@ -22,16 +22,17 @@ public static class HitFx
 		float r = (from.DistanceTo(center) + to.DistanceTo(center)) / 2f;
 		float a0 = (from - center).Angle(), sweep = Wrap((to - center).Angle() - a0);
 		Node2D root = Fx.Root(layer, center, "P5Swing", 0.25);
-		Polygon2D red = Fx.Poly(root, new Vector2[3], Popups.Red);
-		Polygon2D white = Fx.Poly(root, new Vector2[3], Colors.White);
+		// 发光的刀光（加法）：红晕在外、白芯在里
+		Polygon2D red = Fx.Poly(root, new Vector2[3], new Color(Pal5.Bright, 0.9f), additive: true);
+		Polygon2D white = Fx.Poly(root, new Vector2[3], Pal5.Hot, additive: true);
 		const float total = 0.2f;
 		Fx.Animate(root, 0, total, t =>
 		{
 			// 刀光头部飞快扫到终点（前 20%），尾巴随后追上收掉
 			float head = Fx.OutCubic(Mathf.Clamp(t / 0.2f, 0f, 1f));
 			float tail = Fx.InCubic(Mathf.Clamp((t - 0.1f) / 0.9f, 0f, 1f));
-			red.Polygon = Band(r + 3f, a0, sweep, tail, head, 19f);
-			white.Polygon = Band(r, a0, sweep, tail, head, 14f);
+			red.Polygon = Band(r + 6f, a0, sweep, tail, head, 26f);
+			white.Polygon = Band(r, a0, sweep, tail, head, 9f);
 			root.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp((t - 0.7f) / 0.3f, 0f, 1f));
 		});
 	}
@@ -57,25 +58,25 @@ public static class HitFx
 		return pts;
 	}
 
-	/// <summary>命中斩痕：在 at 处一道斜向上（和上撩方向一致）的细长白痕 + 红色错位重影，facing = 刀从哪边来。</summary>
+	/// <summary>
+	/// 打击命中（2026-10-29 用发光积木重做，Glow.cs）：
+	/// 爆发 —— 径向白闪 + 屏幕折射波，一道沿上撩方向的长光刃划过，60ms 后第二道短光刃交叉；
+	/// 余韵 —— 扁的红色光环往外扩、几十颗红色火花往刀的去向喷、几片带棱光的碎片、两颗星光；轻震屏。
+	/// </summary>
 	public static void Slash(Control layer, Vector2 at, float facing = 1f)
 	{
-		Node2D root = Fx.Root(layer, at, "P5Slash", 0.35);
-		root.Rotation = -0.45f * facing;
-		Polygon2D red = Fx.Poly(root, new Vector2[3], Popups.Red);
-		Polygon2D white = Fx.Poly(root, new Vector2[3], Colors.White);
-		red.Position = new Vector2(6f, 7f);
-		Polygon2D flash = Fx.Poly(root, Fx.Circle(34f, 24), new Color(1f, 1f, 1f, 0.9f), additive: true);
-		Fx.Animate(root, 0, 0.18, t =>
-		{
-			float len = 130f * Mathf.Lerp(0.55f, 1f, Fx.OutCubic(Mathf.Clamp(t / 0.25f, 0f, 1f)));
-			float w = 9f * (1f - Fx.InCubic(t));
-			white.Polygon = Streak(len, w);
-			red.Polygon = Streak(len * 0.92f, w * 1.1f);
-			flash.Scale = Vector2.One * (0.6f + 0.6f * t);
-			flash.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp(t / 0.45f, 0f, 1f));
-		});
-		Shards(layer, at, facing, 4, 70f, 115f);
+		float up = -0.55f;                                           // 上撩：从左下到右上
+		float a1 = facing > 0f ? up : Mathf.Pi - up;
+		Glow.Flash(layer, at, new Color(1f, 0.55f, 0.5f), 260f, 0.2f);
+		Glow.Ripple(layer, at, 440f, 0.5f, 0.03f);
+		Glow.Blade(layer, at, a1, 300f, 34f, 0.34f);
+		Glow.Blade(layer, at + new Vector2(10f * facing, 6f), a1 + 1.35f * facing, 190f, 22f, 0.3f, 0.06f);
+		Glow.Shockwave(layer, at, new Color(0.9f, 0.05f, 0.08f), 300f, 0.42f, 0.5f, 0.03f);
+		Glow.Sparks(layer, at, 34, 260f, 720f, 0.5f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 260f, 0.12f, 0.4f,
+			new Vector2(facing, -0.6f).Normalized(), 70f);
+		Glow.Shards(layer, at, 7, 0.9f, new Vector2(facing, -0.3f).Normalized(), 1.0f);
+		Glow.Glint(layer, at + new Vector2(70f * facing, -60f), 0.9f, 0.06f);
+		Glow.Glint(layer, at + new Vector2(-40f * facing, 50f), 0.6f, 0.12f);
 		Fx.Shake(2);
 	}
 
