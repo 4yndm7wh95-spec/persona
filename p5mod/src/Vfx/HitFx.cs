@@ -67,17 +67,25 @@ public static class HitFx
 	{
 		float up = -0.55f;                                           // 上撩：从左下到右上
 		float a1 = facing > 0f ? up : Mathf.Pi - up;
-		Glow.Flash(layer, at, new Color(1f, 0.55f, 0.5f), 260f, 0.2f);
-		Glow.Ripple(layer, at, 440f, 0.5f, 0.03f);
 		Glow.Blade(layer, at, a1, 300f, 34f, 0.34f);
 		Glow.Blade(layer, at + new Vector2(10f * facing, 6f), a1 + 1.35f * facing, 190f, 22f, 0.3f, 0.06f);
-		Glow.Shockwave(layer, at, new Color(0.9f, 0.05f, 0.08f), 300f, 0.42f, 0.5f, 0.03f);
-		Glow.Sparks(layer, at, 34, 260f, 720f, 0.5f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 260f, 0.12f, 0.4f,
-			new Vector2(facing, -0.6f).Normalized(), 70f);
-		Glow.Shards(layer, at, 7, 0.9f, new Vector2(facing, -0.3f).Normalized(), 1.0f);
-		Glow.Glint(layer, at + new Vector2(70f * facing, -60f), 0.9f, 0.06f);
-		Glow.Glint(layer, at + new Vector2(-40f * facing, 50f), 0.6f, 0.12f);
-		Fx.Shake(2);
+		Impact(layer, at, new Vector2(facing, -0.6f).Normalized(), facing);
+	}
+
+	/// <summary>斩击打到身上的那一下（不含光刃）：白闪 + 折射波 + 扁红环 + 顺刀路喷的火花 + 碎片 + 星光 + 震屏。dir = 刀的去向。</summary>
+	public static void Impact(Control layer, Vector2 at, Vector2 dir, float facing, float delay = 0f)
+	{
+		Fx.After(layer, delay, () =>
+		{
+			Glow.Flash(layer, at, new Color(1f, 0.55f, 0.5f), 260f, 0.2f);
+			Glow.Ripple(layer, at, 440f, 0.5f, 0.03f);
+			Glow.Shockwave(layer, at, new Color(0.9f, 0.05f, 0.08f), 300f, 0.42f, 0.5f, 0.03f);
+			Glow.Sparks(layer, at, 34, 260f, 720f, 0.5f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 260f, 0.12f, 0.4f, dir, 70f);
+			Glow.Shards(layer, at, 7, 0.9f, (dir + new Vector2(0f, 0.3f)).Normalized(), 1.0f);
+			Glow.Glint(layer, at + new Vector2(70f * facing, -60f), 0.9f, 0.06f);
+			Glow.Glint(layer, at + new Vector2(-40f * facing, 50f), 0.6f, 0.12f);
+			Fx.Shake(2);
+		});
 	}
 
 	/// <summary>

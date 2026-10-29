@@ -87,7 +87,13 @@ public partial class Preview : Node2D
 			p.At(3.3, () => CardFx.Buff(p._front, p._back, JokerFeet, Pose(815f, 120f)));
 			p.At(4.6, () => p._joker?.Play("cast_glove"));
 			p.At(4.8, () => CardFx.Curse(p._front, Enemy2));
-			p.At(6.0, () => CardFx.CallingCard(p._front, Enemy));
+		},
+		["curse"] = p => p.At(0.3, () => CardFx.Curse(p._front, Enemy)),
+		// 中和（和游戏里一样的时刻，普通速度：原版 0.35s + 多蓄 0.6s）：握刀停住 → 头顶预告函旋出 → 一刀劈下（卡片和敌人同一刀）→ 两半烧尽
+		["neutralize"] = p =>
+		{
+			p.Neutralize(0.3, Enemy, 0.35f + 0.6f);
+			p.Neutralize(2.6, Enemy2, 0.35f + 0.6f, true);
 		},
 		// 选中打击牌（转刀起手停住）→ 取消（放下手、转刀收起）
 		["knifecancel"] = p =>
@@ -115,6 +121,15 @@ public partial class Preview : Node2D
 		Hit(t + 0.15, enemy, amount, false);
 	}
 
+	private void Neutralize(double t, Vector2 enemy, float cut, bool fromIdle = false)
+	{
+		At(t, () => { _joker?.Play(fromIdle ? "knife_in" : "knife_loop"); if (fromIdle) { _joker?.Queue("knife_loop", true); } });
+		float k = enemy == Enemy ? 1f : 0.75f;
+		At(t, () => CardFx.Neutralize(_front, enemy + new Vector2(0f, -170f * k), enemy, 1f, cut));
+		At(t + cut - 0.14, () => _joker?.Play("attack_from_ready"));
+		Hit(t + cut, enemy, 3, false, fx: false);
+	}
+
 	private void Shot(double t, Vector2 enemy, int amount)
 	{
 		At(t, () => _joker?.Play("shiv"));
@@ -124,9 +139,12 @@ public partial class Preview : Node2D
 
 	public static Vector2 Muzzle => Pose(1347f, 306f);
 
-	private void Hit(double t, Vector2 enemy, int amount, bool gun) => At(t, () =>
+	private void Hit(double t, Vector2 enemy, int amount, bool gun, bool fx = true) => At(t, () =>
 	{
-		if (gun)
+		if (!fx)
+		{
+		}
+		else if (gun)
 		{
 			HitFx.Shot(_front, Muzzle, enemy);
 		}

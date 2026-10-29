@@ -61,6 +61,20 @@ def renamed(src_base, dst_base, tmp):
     (tmp / f"{dst_base}.atlas").write_text("\n".join(lines))
 
 
+def placeholder_back():
+    from PIL import ImageDraw
+    front = Image.open(GEN_CODEX / "calling_card.png").convert("RGBA")
+    w, h = front.size
+    im = Image.new("RGBA", (w, h), (12, 4, 8, 255))
+    d = ImageDraw.Draw(im)
+    for x in range(-h, w, 26):
+        d.line([(x, h), (x + h, 0)], fill=(90, 6, 16, 255), width=7)
+    d.rectangle([5, 5, w - 6, h - 6], outline=(229, 25, 28, 255), width=6)
+    d.rectangle([16, 16, w - 17, h - 17], outline=(229, 25, 28, 255), width=2)
+    im.putalpha(front.getchannel("A"))
+    return im
+
+
 def fx_textures():
     """(name, image) for every res://p5joker/fx/<name>.png; also used by tools/p5/fxpreview/prepare.py."""
     for name, src in FX_TEX.items():
@@ -71,6 +85,10 @@ def fx_textures():
     for name in GEN_TEX:
         drawn = GEN_CODEX / f"{name}.png"                 # Codex's drawn version wins over the scripted one (user 2026-10-28)
         yield name, Image.open(drawn if drawn.exists() else GEN / f"{name}.png").convert("RGBA")
+    # calling card back: Codex draws calling_card_back.png; until then a placeholder (black card, red border + stripes, card's
+    # own silhouette) so CardFx.Neutralize can flip front/back
+    back = GEN_CODEX / "calling_card_back.png"
+    yield "calling_card_back", Image.open(back).convert("RGBA") if back.exists() else placeholder_back()
     # Codex delivered the band squashed from 1983x793 to 1600x420 (README_codex.md); undo the squash until the raw
     # image is in the repo (art/p5/fx/gen_codex/cutin_band_raw.png wins when present)
     raw = GEN_CODEX / "cutin_band_raw.png"

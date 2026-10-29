@@ -45,6 +45,12 @@ public static class Aim
 		return t;
 	}
 
+	/// <summary>中和（JokerFx.NeutralizeStart）：游戏要播 attack 时先握刀停住，出牌后这么多秒刀落下（attack_from_ready 第 0.14 秒出刀）。</summary>
+	public static readonly Dictionary<ulong, float> HoldCut = new();
+
+	/// <summary>中和换来的 knife_in：Postfix 里接上 knife_loop（游戏只会在 attack 后面排 idle）。</summary>
+	public static readonly HashSet<ulong> Holding = new();
+
 	/// <summary>出牌时（CardPlayedPatch）记下的施法动作：游戏随后要播 cast 时换成对应版本。</summary>
 	public static readonly Dictionary<ulong, Cast> PendingCast = new();
 
@@ -83,6 +89,33 @@ public static class Aim
 			return name != null && body.HasAnimation(name) ? name : null;
 		}
 		string? current = Current(state);
+		if (requested == "attack" && HoldCut.Remove(node.GetInstanceId(), out float cut) && body.HasAnimation("attack_from_ready"))
+		{
+			// 中和：先握刀停着（还在转刀就接着转完），等头顶的预告函转出来，到点一刀劈下
+			if (Joker.FxLayer() is Control layer)
+			{
+				Fx.After(layer, Mathf.Max(0f, cut - 0.14f), () =>
+				{
+					bool low = node.Entity.GetHpPercentRemaining() <= 0.25 && body.HasAnimation("low_health_loop");
+					state.SetAnimation("attack_from_ready", false, 0);
+					state.AddAnimation(low ? "low_health_loop" : "idle_loop", 0f, true, 0);
+				});
+			}
+			if (current != "knife_loop")
+			{
+				Holding.Add(node.GetInstanceId());
+			}
+			if (current == "knife_in")
+			{
+				using MegaTrackEntry? entry = state.GetCurrent(0);
+				if (entry != null)
+				{
+					SkipTo[node.GetInstanceId()] = entry.GetTrackTime();
+				}
+				return "knife_in";
+			}
+			return current == "knife_loop" ? "knife_loop" : "knife_in";
+		}
 		if (requested == "shiv" && current == "aim_in")
 		{
 			// 转枪还没转完就打出去了：aim_in 就是 shiv 的前 0.18 秒（tools/p5/build_rig_p5.py GUN_IN），
@@ -238,6 +271,19 @@ public static class AnimRenamePatch
 
 	public static void Postfix(MegaAnimationState __instance, string animationName)
 	{
+		if (animationName == "knife_in")
+		{
+			// 中和换来的握刀：接着转完刀、停在准备姿势
+			ModEntry.Safe("AnimHold", () =>
+			{
+				if (Aim.Owner(__instance) is NCreature node && Aim.SkipTo.ContainsKey(node.GetInstanceId()) | Aim.Holding.Remove(node.GetInstanceId()))
+				{
+					Aim.ApplySkip(node, __instance);
+					__instance.AddAnimation("knife_loop", 0f, true, 0);
+				}
+			});
+			return;
+		}
 		if (animationName is not ("shiv" or "shiv_from_aim" or "attack" or "attack_chain" or "attack_from_ready"))
 		{
 			return;

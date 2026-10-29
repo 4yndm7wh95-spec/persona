@@ -138,7 +138,7 @@ void fragment() {
 	vec3 red = vec3(1.0, 0.07, 0.11);
 	vec3 col = mix(dark, red, rim) + red * 0.9 * veins * body;
 	col += vec3(1.0, 0.8, 0.75) * smoothstep(0.8, 1.0, rim) * 0.45;
-	float a = body * mix(0.72, 1.0, max(rim, veins));        // 火身半透，边和亮纹不透
+	float a = body * mix(0.5, 1.0, max(rim, veins));         // 火身半透（透得出后面的敌人），边和亮纹不透
 	COLOR = vec4(col, a * alpha);
 }" };
 

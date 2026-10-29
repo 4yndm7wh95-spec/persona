@@ -51,6 +51,10 @@ public static class JokerFx
 		{
 			return;
 		}
+		if (OwnSlashUntil.TryGetValue(target.GetInstanceId(), out ulong until) && Time.GetTicksMsec() < until)
+		{
+			return;                                               // 中和：这一刀的命中特效 CardFx.Neutralize 自己放（和斩预告函是同一刀）
+		}
 		if (gun)
 		{
 			HitFx.Shot(layer, Joker.Muzzle(joker), target.VfxSpawnPosition, Joker.Facing(joker));
@@ -61,14 +65,42 @@ public static class JokerFx
 		}
 	}
 
+	/// <summary>中和比原版多蓄这么久：Joker 握刀停住、头顶预告函转出来，再一刀劈下（伤害一起推迟）。</summary>
+	public const float NeutralizeLead = 0.6f;
+
+	/// <summary>这些敌人的命中特效由出牌特效自己放（到这个时刻为止，毫秒）。</summary>
+	private static readonly Dictionary<ulong, ulong> OwnSlashUntil = new();
+
+	/// <summary>最近一次 Joker 出牌的时刻（毫秒）：原版跟着出牌放的细斩特效（NThinSliceVfx）据此关掉。</summary>
+	public static ulong LastPlayMs;
+
+	/// <summary>
+	/// 中和的攻击指令定下出刀延迟时（NeutralizeLeadPatch）：delay = 原版从播动画到结算伤害的等待。
+	/// 是 Joker 的中和就：让 Joker 握刀停住、到点再出刀（Aim.HoldCut），头顶预告函转出、到点被这一刀斩开；返回 true 表示伤害要多等 NeutralizeLead。
+	/// </summary>
+	public static bool NeutralizeStart(CardModel? card, Creature? target, float delay)
+	{
+		if (card is not MegaCrit.Sts2.Core.Models.Cards.Neutralize || !Joker.OwnsCard(card) || target == null || Joker.FxLayer() is not Control layer
+			|| Joker.Node(card.Owner) is not NCreature joker || NCombatRoom.Instance?.GetCreatureNode(target) is not NCreature t)
+		{
+			return false;
+		}
+		float cut = delay + NeutralizeLead;
+		Aim.HoldCut[joker.GetInstanceId()] = cut;
+		OwnSlashUntil[t.GetInstanceId()] = Time.GetTicksMsec() + (ulong)((cut + 0.4f) * 1000f);
+		CardFx.Neutralize(layer, t.GetTopOfHitbox(), t.VfxSpawnPosition, Joker.Facing(joker), cut);
+		return true;
+	}
+
 	// 牌名 → 出牌特效（docs/p5/FX_PLAN.md）；能力牌默认是增益，防御类的格挡特效在 GainBlockPatch 里放
-	private static readonly HashSet<string> Debuffs = new() { "Neutralize", "LegSweep", "PiercingWail", "Malaise", "SuckerPunch", "Expose", "Tracking" };
+	private static readonly HashSet<string> Debuffs = new() { "LegSweep", "PiercingWail", "Malaise", "SuckerPunch", "Expose", "Tracking" };
 	private static readonly HashSet<string> Poisons = new() { "DeadlyPoison", "PoisonedStab", "BouncingFlask", "Catalyst", "Envenom", "Outbreak",
 		"Concoct", "CorpseExplosion", "Bane" };
 
 	/// <summary>出牌那一刻（CardPlayedPatch）：按牌型放特效。target = 选中的目标（群体牌为 null → 所有敌人）。</summary>
 	public static void OnPlay(CardModel card, NCreature joker, Creature? target)
 	{
+		LastPlayMs = Time.GetTicksMsec();
 		if (Joker.FxLayer() is not Control layer || NCombatRoom.Instance is not NCombatRoom room)
 		{
 			return;
@@ -79,7 +111,7 @@ public static class JokerFx
 			: (card.CombatState?.HittableEnemies ?? Array.Empty<Creature>()).Select(room.GetCreatureNode).OfType<NCreature>().ToList();
 		if (Debuffs.Contains(name))
 		{
-			// 有伤害的（中和 / 偷袭）等斩击打中再锁定：稍晚一点
+			// 有伤害的（偷袭）等斩击打中再锁定：稍晚一点
 			foreach (NCreature e in enemies)
 			{
 				Fx.After(layer, card.Type == CardType.Attack ? 0.2 : 0.05, () => CardFx.Debuff(layer, e.VfxSpawnPosition));
