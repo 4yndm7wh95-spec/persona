@@ -203,14 +203,16 @@ void fragment() {
 		Color[] ramp, float gravity = 0f, float scaleMin = 0.15f, float scaleMax = 0.45f, Vector2? dir = null, float spread = 180f)
 	{
 		Node2D root = Fx.Root(layer, at, "P5Sparks", lifetime + 0.3);
-		var g = new Gradient();
-		g.RemovePoint(1);
-		g.RemovePoint(0);
+		var offsets = new float[ramp.Length + 1];
+		var colors = new Color[ramp.Length + 1];
 		for (int i = 0; i < ramp.Length; i++)
 		{
-			g.AddPoint(ramp.Length == 1 ? 0f : 0.85f * i / (ramp.Length - 1), ramp[i]);
+			offsets[i] = ramp.Length == 1 ? 0f : 0.85f * i / (ramp.Length - 1);
+			colors[i] = ramp[i];
 		}
-		g.AddPoint(1f, new Color(ramp[^1], 0f));
+		offsets[^1] = 1f;
+		colors[^1] = new Color(ramp[^1], 0f);                    // 最后自动淡出
+		var g = new Gradient { Offsets = offsets, Colors = colors };
 		Vector2 d = dir ?? Vector2.Up;
 		ParticleProcessMaterial pm = new()
 		{

@@ -80,91 +80,59 @@ public static class HitFx
 		Fx.Shake(2);
 	}
 
-	/// <summary>两头尖、中间宽 w 的长条（总长 2·len，沿 x 轴）。</summary>
-	private static Vector2[] Streak(float len, float w) =>
-		new[] { new Vector2(-len, 0f), new Vector2(-len * 0.3f, -w), new Vector2(len * 0.4f, -w * 0.8f), new Vector2(len, 0f),
-			new Vector2(len * 0.4f, w * 0.8f), new Vector2(-len * 0.3f, w) };
-
-	/// <summary>几片小三角碎片（白 / 红交替）往 facing 一侧崩开。</summary>
-	private static void Shards(Control layer, Vector2 at, float facing, int count, float d0, float d1)
-	{
-		for (int i = 0; i < count; i++)
-		{
-			Node2D shard = Fx.Root(layer, at, "P5Shard", 0.35);
-			float sz = Fx.Rand(6f, 11f);
-			Fx.Poly(shard, new[] { new Vector2(-sz, -sz * 0.4f), new Vector2(sz, 0f), new Vector2(-sz * 0.5f, sz * 0.6f) },
-				i % 2 == 0 ? Colors.White : Popups.Red);
-			Vector2 dir = new Vector2(facing, 0f).Rotated(Fx.Rand(-1.2f, 1.2f));
-			float dist = Fx.Rand(d0, d1), spin = Fx.Rand(-10f, 10f);
-			Fx.Animate(shard, 0, 0.3, t =>
-			{
-				shard.GlobalPosition = at + dir * dist * Fx.OutCubic(t) + new Vector2(0f, 50f * t * t);
-				shard.Rotation = spin * t;
-				shard.Modulate = new Color(1f, 1f, 1f, 1f - Fx.InCubic(t));
-			});
-		}
-	}
-
-	/// <summary>枪焰：枪口 muzzle 处，枪管朝 facing 方向。</summary>
+	/// <summary>
+	/// 开火（发光积木）：枪口一团白热闪光 + 红晕；向前一束锥形的短光刺（主刺 + 两根斜的细刺）；
+	/// 一小圈光环；火花往前喷。muzzle = 枪口，facing = 朝向。
+	/// </summary>
 	public static void Muzzle(Control layer, Vector2 muzzle, float facing = 1f)
 	{
-		Node2D root = Fx.Root(layer, muzzle, "P5Muzzle", 0.12);
+		Glow.Flash(layer, muzzle, new Color(1f, 0.75f, 0.6f), 150f, 0.12f);
+		Glow.Flash(layer, muzzle + new Vector2(30f * facing, 0f), new Color(1f, 0.1f, 0.12f), 220f, 0.16f);
+		Node2D root = Fx.Root(layer, muzzle, "P5Muzzle", 0.2);
 		root.Scale = new Vector2(facing, 1f);
-		Polygon2D ring = Fx.Poly(root, Fx.Circle(18f, 24), new Color(Popups.Red, 0.85f));
-		Polygon2D along = Fx.Poly(root, new[] { new Vector2(-6f, 0f), new Vector2(20f, -11f), new Vector2(78f, 0f), new Vector2(20f, 11f) }, Colors.White);
-		Polygon2D cross = Fx.Poly(root, new[] { new Vector2(8f, -30f), new Vector2(14f, 0f), new Vector2(8f, 30f), new Vector2(2f, 0f) }, Colors.White);
-		Polygon2D core = Fx.Poly(root, Fx.Circle(11f, 16), new Color(1f, 0.92f, 0.55f), additive: true);
-		core.Position = along.Position + new Vector2(10f, 0f);
-		Fx.Animate(root, 0, 0.09, t =>
+		var spikes = new (float Ang, float Len, float W)[] { (0f, 120f, 26f), (-0.42f, 60f, 12f), (0.42f, 60f, 12f), (Mathf.Pi, 26f, 10f) };
+		var polys = new System.Collections.Generic.List<(Polygon2D G, Polygon2D C, float Ang, float Len, float W)>();
+		foreach (var (ang, len, w) in spikes)
 		{
-			float s = 1f + 0.35f * t;
-			along.Scale = new Vector2(s, 1f - 0.7f * t);
-			cross.Scale = new Vector2(1f, 1f - t);
-			ring.Scale = Vector2.One * (1f + 1.3f * Fx.OutCubic(t));
-			ring.Modulate = new Color(1f, 1f, 1f, 1f - t);
-			core.Modulate = new Color(1f, 1f, 1f, 1f - t);
-			along.Modulate = cross.Modulate = new Color(1f, 1f, 1f, 1f - Fx.InCubic(t));
-		});
-		for (int i = 0; i < 3; i++)
-		{
-			Node2D puff = Fx.Root(layer, muzzle + new Vector2(8f * facing, 0f), "P5Smoke", 0.6);
-			Polygon2D c = Fx.Poly(puff, Fx.Circle(Fx.Rand(7f, 12f), 14), new Color(0.75f, 0.75f, 0.78f, 0.35f));
-			Vector2 drift = new(Fx.Rand(10f, 30f) * facing, Fx.Rand(-45f, -25f));
-			float d = 0.03f * i;
-			Fx.Animate(puff, d, 0.5, t =>
-			{
-				puff.GlobalPosition = muzzle + new Vector2(8f * facing, 0f) + drift * Fx.OutCubic(t);
-				puff.Scale = Vector2.One * (1f + 1.2f * t);
-				c.Modulate = new Color(1f, 1f, 1f, 1f - t);
-			});
+			polys.Add((Glow.TaperPoly(root, new Color(Pal5.Bright, 0.95f)), Glow.TaperPoly(root, Pal5.Hot), ang, len, w));
 		}
+		Fx.Animate(root, 0, 0.1, t =>
+		{
+			float k = Ease5.OutExpo(Mathf.Min(1f, t * 4f)), fade = 1f - Fx.InCubic(t);
+			foreach (var (g, c, ang, len, w) in polys)
+			{
+				Vector2 d = Vector2.Right.Rotated(ang);
+				g.Polygon = Glow.TaperPts(d * 4f, d * len * k, w * fade);
+				c.Polygon = Glow.TaperPts(d * 4f, d * len * 0.8f * k, w * 0.35f * fade);
+			}
+		});
+		Glow.Shockwave(layer, muzzle + new Vector2(22f * facing, 0f), new Color(1f, 0.1f, 0.14f), 100f, 0.14f, 1.25f);
+		Glow.Sparks(layer, muzzle, 14, 300f, 700f, 0.3f, new[] { Pal5.Hot, Pal5.Gold, Pal5.Bright }, 0f, 0.08f, 0.22f,
+			new Vector2(facing, 0f), 22f);
+		Fx.Shake(1);
 	}
 
-	/// <summary>弹道 + 命中：一道细白线从枪口打到 hit，命中处小白闪 + 扩散红环 + 碎片。</summary>
+	/// <summary>
+	/// 弹道 + 命中：一道极细的白热光从枪口射到 hit（尾巴马上追上），命中处白闪 + 小折射波 + 红色光环 + 一圈短速度线 + 火花 + 星光。
+	/// </summary>
 	public static void Shot(Control layer, Vector2 muzzle, Vector2 hit, float facing = 1f)
 	{
-		Node2D tracer = Fx.Root(layer, Vector2.Zero, "P5Tracer", 0.12);
-		Line2D line = new() { Points = new[] { muzzle, hit }, Width = 4f, DefaultColor = Colors.White, Antialiased = true };
-		tracer.AddChild(line);
-		tracer.GlobalPosition = Vector2.Zero;
-		Fx.Animate(tracer, 0, 0.09, t =>
+		Node2D tr = Fx.Root(layer, Vector2.Zero, "P5Tracer", 0.15);
+		tr.GlobalPosition = Vector2.Zero;
+		Polygon2D glow = Glow.TaperPoly(tr, new Color(Pal5.Bright, 0.8f)), core = Glow.TaperPoly(tr, Pal5.Hot);
+		Fx.Animate(tr, 0, 0.1, t =>
 		{
-			line.Points = new[] { muzzle.Lerp(hit, Fx.OutCubic(t)), hit };        // 尾巴追向命中点
-			line.Width = 4f * (1f - t) + 1f;
+			Vector2 a = muzzle.Lerp(hit, Fx.InCubic(t)), b = muzzle.Lerp(hit, Ease5.OutExpo(Mathf.Min(1f, t * 3f)));
+			glow.Polygon = Glow.TaperPts(a, b, 10f * (1f - t) + 2f);
+			core.Polygon = Glow.TaperPts(a, b, 3f * (1f - t) + 1f);
 		});
-		Node2D root = Fx.Root(layer, hit, "P5ShotHit", 0.3);
-		Line2D ring = new() { Points = Fx.Circle(20f, 28), Closed = true, Width = 5f, DefaultColor = Popups.Red, Antialiased = true };
-		root.AddChild(ring);
-		Polygon2D flash = Fx.Poly(root, Fx.Circle(24f, 20), new Color(1f, 1f, 1f, 0.95f), additive: true);
-		Fx.Animate(root, 0, 0.22, t =>
-		{
-			ring.Scale = Vector2.One * (1f + 2.2f * Fx.OutCubic(t));
-			ring.Width = 5f * (1f - t) + 1f;
-			ring.Modulate = new Color(1f, 1f, 1f, 1f - t);
-			flash.Scale = Vector2.One * (0.8f + 0.5f * t);
-			flash.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp(t / 0.4f, 0f, 1f));
-		});
-		Shards(layer, hit, facing, 3, 45f, 80f);
+		Glow.Flash(layer, hit, new Color(1f, 0.6f, 0.55f), 200f, 0.16f, 0.04f);
+		Glow.Ripple(layer, hit, 300f, 0.4f, 0.025f, 1f, 0.04f);
+		Glow.Shockwave(layer, hit, new Color(0.95f, 0.06f, 0.1f), 240f, 0.36f, 1f, 0.04f);
+		Glow.SpeedLines(layer, hit, Pal5.Bright, 10, 30f, 150f, 0.24f, 0.04f);
+		Glow.Sparks(layer, hit, 22, 200f, 560f, 0.42f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 220f, 0.1f, 0.32f,
+			new Vector2(facing, -0.3f).Normalized(), 75f);
+		Glow.Glint(layer, hit + new Vector2(40f * facing, -40f), 0.7f, 0.08f);
 		Fx.Shake(1);
 	}
 }

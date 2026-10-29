@@ -13,96 +13,87 @@ public static class CardFx
 	private static readonly Color Red = Popups.Red, Ink = Popups.Ink;
 
 	/// <summary>
-	/// 防御（Joker 获得格挡时）：亚森的黑羽护身。身前一团红光一闪，十几片红边黑羽从 Joker 身后呼地卷到身前，
-	/// 一片接一片排成一道弧形羽盾；一道红白流光沿着羽盾的边扫过去，边上亮起几颗星光；停一拍后羽毛散开、
-	/// 打着旋飘落，带起红色火星。羽盾在 Joker 身前，不挡人也不挡敌人。chest = 胸口，facing = 敌人方向。
+	/// 防御（Joker 获得格挡时），发光积木版：
+	/// 预备 —— 身前一圈红光往里收（0.12s）；
+	/// 爆发 —— 一道往敌人方向鼓起的弧形能量屏障从中间向上下"唰"地张开：白热的亮边 + 红晕 + 半透明的红色光面，
+	///         同时一圈折射波、扁的光环；
+	/// 停留 —— 一道亮光沿屏障边从上扫到下，几颗星光，光面微微闪烁；
+	/// 余韵 —— 屏障从两头往中间收拢成一点，炸成一蓬红色火花。chest = 胸口，facing = 敌人方向。
 	/// </summary>
 	public static void Guard(Control layer, Vector2 chest, float facing = 1f)
 	{
-		Vector2 center = chest + new Vector2(70f * facing, 10f);
-		const float R = 112f, A0 = -1.2f, A1 = 1.0f;            // 弧：以朝敌人方向为 0，往上 69°、往下 57°（下面别压到腿）
-		const int N = 15;
-		Node2D root = Fx.Root(layer, center, "P5Guard", 1.4);
+		const float R = 170f, A = 0.78f;                          // 弧半径、上下张角
+		Vector2 center = chest + new Vector2(-35f * facing, 25f);
+		Vector2 front = center + new Vector2(R * facing, 0f);
+		Glow.Gather(layer, front, Pal5.Bright, 260f, 0.12f);
+
+		Node2D root = Fx.Root(layer, center, "P5Guard", 1.0);
 		root.Scale = new Vector2(facing, 1f);
+		Polygon2D fill = Fx.Poly(root, new Vector2[3], new Color(Pal5.Crimson, 0.16f), additive: true);
+		Polygon2D glow = Fx.Poly(root, new Vector2[3], new Color(Pal5.Bright, 0.85f), additive: true);
+		Polygon2D core = Fx.Poly(root, new Vector2[3], Pal5.Hot, additive: true);
+		Polygon2D sweep = Fx.Poly(root, new Vector2[3], Pal5.Hot, additive: true);
+		root.Visible = false;
 
-		// 背后的红光：开头一闪，羽盾成形时铺在羽毛后面
-		Sprite2D? halo = null, core = null;
-		if (Fx.Tex("glow") is Texture2D glow)
-		{
-			halo = Fx.Sprite(root, glow);
-			halo.Position = new Vector2(R * 0.75f, 0f);
-			halo.Scale = new Vector2(2.2f, 4.2f);
-			core = Fx.Sprite(root, glow);
-			core.Position = new Vector2(10f, -10f);
-		}
-
-		// 羽毛
-		var feathers = new List<(Node2D N, Vector2 From, Vector2 Home, float Rot, float Delay)>();
-		for (int i = 0; i < N; i++)
-		{
-			float u = (float)i / (N - 1);
-			float a = Mathf.Lerp(A0, A1, u);
-			Vector2 home = Vector2.Right.Rotated(a) * R;
-			Node2D f = Feather(root, Fx.Rand(70f, 86f) * (1f - 0.25f * Mathf.Abs(u - 0.5f) * 2f), Fx.Rand(12f, 15f));
-			// 从身后（左侧）卷过来：起点在 Joker 背后绕一个弧
-			Vector2 from = new Vector2(-70f + Fx.Rand(-20f, 20f), Mathf.Lerp(-110f, 110f, u) + Fx.Rand(-20f, 20f));
-			float rot = a + 0.35f;                                   // 羽尖朝外、略微顺着弧倾斜
-			float delay = 0.015f * Mathf.Abs(i - (N - 1) / 2f) + Fx.Rand(0f, 0.012f);    // 从中间往两头展开
-			feathers.Add((f, from, home, rot, delay));
-		}
-
-		// 沿弧扫过的流光
-		var arc = new Vector2[32];
-		for (int i = 0; i < arc.Length; i++)
-		{
-			arc[i] = Vector2.Right.Rotated(Mathf.Lerp(A0, A1, (float)i / (arc.Length - 1))) * (R + 36f);
-		}
-		Line2D rim = new() { Width = 7f, DefaultColor = new Color(1f, 0.35f, 0.35f), Material = Fx.Additive, Antialiased = true,
-			BeginCapMode = Line2D.LineCapMode.Round, EndCapMode = Line2D.LineCapMode.Round };
-		root.AddChild(rim);
-		Line2D rimCore = new() { Width = 2.5f, DefaultColor = Colors.White, Material = Fx.Additive, Antialiased = true };
-		root.AddChild(rimCore);
-
-		const float total = 0.7f;
+		const float open0 = 0.12f, total = 0.72f;
 		Fx.Animate(root, 0, total, t =>
 		{
 			float time = t * total;
-			if (core != null && halo != null)
-			{
-				float c = Mathf.Clamp(time / 0.12f, 0f, 1f);
-				core.Scale = Vector2.One * (0.8f + 2.2f * Fx.OutCubic(c));
-				core.Modulate = new Color(1f, 0.25f, 0.2f, 0.9f * (1f - c));
-				float h = Mathf.Clamp((time - 0.08f) / 0.2f, 0f, 1f), hx = Mathf.Clamp((time - 0.5f) / 0.2f, 0f, 1f);
-				halo.Modulate = new Color(0.9f, 0.08f, 0.1f, 0.55f * Fx.OutCubic(h) * (1f - hx));
-			}
-			foreach (var (f, from, home, rot, delay) in feathers)
-			{
-				float u = Mathf.Clamp((time - delay) / 0.14f, 0f, 1f);
-				float e = Fx.OutCubic(u);
-				f.Visible = time >= delay && time < 0.56f;
-				// 沿着往外鼓的弧线飞到位（二次贝塞尔，控制点在下方 / 上方外侧）
-				Vector2 ctrl = new Vector2(R * 0.9f, home.Y * 1.6f);
-				f.Position = from * (1f - e) * (1f - e) + ctrl * 2f * e * (1f - e) + home * e * e;
-				f.Rotation = Mathf.Lerp(rot + 2.4f, rot, e) + 0.05f * Mathf.Sin(time * 30f + delay * 50f) * e;
-				f.Scale = Vector2.One * Mathf.Lerp(0.4f, 1f, e);
-			}
-			// 流光：0.22~0.42s 从上到下扫过羽盾外沿
-			float sw = Mathf.Clamp((time - 0.22f) / 0.2f, 0f, 1f);
-			int head = Mathf.Clamp((int)(Fx.OutCubic(sw) * arc.Length), 0, arc.Length);
-			int tail = Mathf.Clamp((int)(Fx.InCubic(sw) * arc.Length), 0, arc.Length);
-			var seg = head - tail >= 2 ? arc[tail..head] : System.Array.Empty<Vector2>();
-			rim.Points = seg;
-			rimCore.Points = seg;
+			root.Visible = time >= open0;
+			float open = Ease5.OutExpo(Ease5.Seg(time, open0, 0.14f));
+			float close = Fx.InCubic(Ease5.Seg(time, 0.56f, 0.14f));
+			float half = A * open * (1f - close);
+			float flick = 1f + 0.08f * Mathf.Sin(time * 55f);
+			fill.Polygon = Crescent(R - 2f, R - 34f, -half, half);
+			glow.Polygon = Crescent(R + 9f, R - 13f, -half, half);
+			core.Polygon = Crescent(R + 2.5f, R - 3.5f, -half, half);
+			fill.Modulate = new Color(1f, 1f, 1f, flick);
+			// 扫光：0.3~0.5s 一小段亮弧从上往下走
+			float sw = Ease5.Seg(time, 0.3f, 0.2f);
+			sweep.Visible = sw > 0f && sw < 1f;
+			float a = Mathf.Lerp(-half, half, Fx.OutCubic(sw));
+			sweep.Polygon = Crescent(R + 5f, R - 5f, a - 0.2f, a + 0.2f);
 		});
-		// 星光：流光经过时边上亮起
-		for (int i = 0; i < 4; i++)
+		Fx.After(root, open0, () =>
 		{
-			float a = Mathf.Lerp(A0 + 0.2f, A1 - 0.2f, i / 3f);
-			Vector2 p = center + new Vector2(facing, 1f) * (Vector2.Right.Rotated(a) * (R + 36f));
-			Fx.After(root, 0.24 + 0.045 * i, () => Sparkle(layer, p, Fx.Rand(0.45f, 0.7f)));
+			Glow.Ripple(layer, front, 260f, 0.45f, 0.03f, 1.5f);
+			Glow.Shockwave(layer, front, new Color(0.95f, 0.06f, 0.1f), 200f, 0.36f, 1.5f);
+			Glow.Flash(layer, front, new Color(1f, 0.5f, 0.45f), 220f, 0.18f);
+			Fx.Shake(1);
+		});
+		for (int i = 0; i < 3; i++)
+		{
+			float a = Mathf.Lerp(-A * 0.75f, A * 0.75f, i / 2f);
+			Vector2 p = center + new Vector2(Mathf.Cos(a) * facing, Mathf.Sin(a)) * R;
+			Glow.Glint(layer, p, 0.8f, 0.32f + 0.06f * i);
 		}
-		Fx.After(root, 0.56, () => Scatter(layer, center, facing, R, A0, A1, N));
-		Fx.After(root, 0.1, () => Fx.Shake(1));
+		Fx.After(root, 0.68, () =>
+		{
+			Glow.Flash(layer, front, new Color(1f, 0.55f, 0.5f), 160f, 0.16f);
+			Glow.Sparks(layer, front, 26, 120f, 420f, 0.55f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 160f, 0.1f, 0.32f,
+				new Vector2(facing, -0.2f).Normalized(), 110f);
+		});
+	}
+
+	/// <summary>弧形光带：内外半径 rIn / rOut，角度 a0 到 a1（以 +x 为 0），两头收尖。</summary>
+	private static Vector2[] Crescent(float rOut, float rIn, float a0, float a1)
+	{
+		const int n = 22;
+		if (a1 - a0 < 0.005f)
+		{
+			return new[] { Vector2.Zero, new Vector2(0.1f, 0f), new Vector2(0f, 0.1f) };
+		}
+		var pts = new Vector2[n * 2];
+		for (int i = 0; i < n; i++)
+		{
+			float u = (float)i / (n - 1), a = Mathf.Lerp(a0, a1, u);
+			float k = Mathf.Max(0.06f, Mathf.Sqrt(Mathf.Max(0f, Mathf.Sin(u * Mathf.Pi))));   // sin(π) 会是很小的负数 → NaN  // 两头收尖（不收到 0：重复点会让三角剖分失败）
+			float mid = (rOut + rIn) / 2f, hw = (rOut - rIn) / 2f * k;
+			Vector2 d = Vector2.Right.Rotated(a);
+			pts[i] = d * (mid + hw);
+			pts[n * 2 - 1 - i] = d * (mid - hw);
+		}
+		return pts;
 	}
 
 	/// <summary>
