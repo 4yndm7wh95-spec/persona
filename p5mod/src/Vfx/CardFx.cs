@@ -334,6 +334,20 @@ void fragment() {
 		});
 	}
 
+	/// <summary>一块热浪（扭动后面的画面），中心在 center（parent 的本地坐标），一直扭到被释放；alpha 参数控制强弱。</summary>
+	public static ColorRect HazeRect(Node parent, Vector2 center, float w, float h, float strength = 0.006f)
+	{
+		ColorRect hz = new()
+		{
+			Size = new Vector2(w, h), Position = center - new Vector2(w / 2f, h / 2f), MouseFilter = Control.MouseFilterEnum.Ignore,
+			Material = new ShaderMaterial { Shader = Haze },
+		};
+		parent.AddChild(hz);
+		Fx.Clock(hz);
+		((ShaderMaterial)hz.Material).SetShaderParameter("strength", strength);
+		return hz;
+	}
+
 	/// <summary>打着旋往上飘的火星（GPU 粒子，湍流）。</summary>
 	private static void Embers(Control layer, Vector2 feet, float h, int amount, float life)
 	{

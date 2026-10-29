@@ -160,6 +160,8 @@ uniform float ky = 2.2;
 uniform float cy = 0.66;
 uniform float ignite = 1.0;
 uniform float flame = 1.0;
+uniform float window = 1.0;
+uniform float outline = 1.0;
 uniform float alpha = 1.0;
 uniform float glow = 1.0;
 uniform float seed = 0.0;
@@ -213,7 +215,7 @@ void fragment() {
 	float sd0 = maskSdf(pw);
 	float onMask = smoothstep(0.03, -0.03, sd0);
 	float fire = 0.0;
-	float len = 0.95 * flame;
+	float len = 1.35 * flame;
 	// 采样够密、每段的边够软，相邻两段互相重叠，火舌上不出台阶
 	for (int i = 1; i < 25; i++) {
 		float k = float(i) / 24.0;
@@ -222,9 +224,11 @@ void fragment() {
 		float src = smoothstep(0.06, -0.04, d);
 		float colN = fbm(vec2((p.x - drift) * 7.0 + seed, p.y * 1.1 - t * 3.0));
 		float reach = smoothstep(0.2 + k * 0.55, 0.4 + k * 0.55, colN);
-		fire = max(fire, src * reach * (1.0 - k * 0.55));
+		// 上半截的火舌一块块断开、往上飘走
+		float gap = smoothstep(0.52, 0.8, noise(vec2((p.x - drift) * 6.0 + seed * 2.0, p.y * 2.6 - t * 3.6)));
+		fire = max(fire, src * reach * (1.0 - k * 0.55) * (1.0 - gap * smoothstep(0.35, 0.8, k) * 0.95));
 	}
-	fire = max(fire, onMask * 0.32);                         // 面具本体淡一些，主要看亮边和火舌（用户：稍微挡人物）
+	fire = max(fire, onMask * 0.32 * outline);                         // 面具本体淡一些，主要看亮边和火舌（用户：稍微挡人物）
 	// 细丝
 	vec2 w = vec2(fbm(vec2(p.x * 2.0, p.y * 1.2 - t * 0.5)), fbm(vec2(p.x * 2.0 + 5.0, p.y * 1.2 - t * 0.5)));
 	float sA = ridge(vec2(p.x * 4.0 + w.y * 1.5, p.y * 1.2 - t * 1.6));
@@ -233,28 +237,49 @@ void fragment() {
 	float e = (vol * 0.5 + pow(sA, 2.2) * 0.75 + pow(sB, 3.5) * 0.7) * fire;
 	// 面具轮廓本身一道白热的边
 	float rim = exp(-pow(sd0 / 0.03, 2.0));
-	e += rim * 0.75 * (0.6 + 0.6 * sA);
+	e += rim * 0.75 * (0.6 + 0.6 * sA) * outline;
 	e *= reveal;
 	float shape = fire * reveal;
 	vec3 col = c_dark.rgb;
 	col = mix(col, c_mid.rgb, smoothstep(0.12, 0.5, e));
 	col = mix(col, c_hi.rgb, smoothstep(0.45, 0.9, e));
 	col = mix(col, c_hot.rgb, smoothstep(0.9, 1.3, e));
-	float a = clamp(shape * (0.35 + 0.65 * smoothstep(0.1, 0.5, e)) + rim * reveal * 0.6, 0.0, 1.0);
+	float a = clamp(shape * (0.35 + 0.65 * smoothstep(0.1, 0.5, e)) + rim * reveal * 0.6 * outline, 0.0, 1.0);
 	// 正对脸的中间开一扇「窗」：越靠近面具中心越透，脸和头发从火里透出来
 	float win = smoothstep(0.62, 0.12, length(p * vec2(1.0, 1.35)));
-	a *= 1.0 - 0.6 * win;
+	a *= 1.0 - 0.6 * win * window;
 	COLOR = vec4(col * glow, a * alpha);
 }" };
 
 	private readonly Control _layer, _back;
-	private readonly Node2D _root, _halo;
-	private readonly ColorRect _fire;
-	private readonly GpuParticles2D _embers;
-	private readonly float _half;
+	private readonly Node2D _root, _halo, _rear;
+	private readonly ColorRect _fire, _fireRear, _haze;
+	private readonly GpuParticles2D[] _particles;
+	private readonly float _half, _w, _h;
 	private bool _ended;
 
-	private void Set(string n, Variant v) => ((ShaderMaterial)_fire.Material).SetShaderParameter(n, v);
+	private static void Set(ColorRect r, string n, Variant v) => ((ShaderMaterial)r.Material).SetShaderParameter(n, v);
+
+	private ColorRect Layer(Node2D parent, float w, float h, float facing, float cy)
+	{
+		ColorRect r = new()
+		{
+			Size = new Vector2(w, h), Position = new Vector2(-w / 2f, -h * cy), PivotOffset = new Vector2(w / 2f, h * cy),
+			Scale = new Vector2(facing, 1f), MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Shader },
+		};
+		parent.AddChild(r);
+		Fx.Clock(r);
+		Set(r, "kx", 2.8f);
+		Set(r, "ky", 2.2f);
+		Set(r, "cy", cy);
+		Set(r, "seed", Fx.Rand(0f, 10f));
+		Set(r, "ignite", 0f);
+		Set(r, "c_dark", Dark);
+		Set(r, "c_mid", Mid);
+		Set(r, "c_hi", Hi);
+		Set(r, "c_hot", Hot);
+		return r;
+	}
 
 	/// <param name="center">面具中心（屏幕，约在 Joker 眼睛的高度）</param>
 	/// <param name="halfWidth">面具半宽（屏幕像素）</param>
@@ -264,40 +289,125 @@ void fragment() {
 		_layer = front;
 		_back = back;
 		_half = halfWidth;
-		const float kx = 2.8f, ky = 2.2f, cy = 0.66f;
-		float w = halfWidth * kx, h = halfWidth * ky;
-		// 面具戴在脸上（人物前面）；托底的蓝光在人物后面
-		_root = Fx.Root(front, center, "P5PersonaMask", 600);
+		const float cy = 0.66f;
+		float w = halfWidth * 2.8f, h = halfWidth * 2.2f;
+		_w = w;
+		_h = h;
+		// 托底的蓝光 + 后面一层更大、更暗、烧得更慢的蓝焰（衬出纵深，在人物后面）
 		_halo = Fx.Root(back, center, "P5PersonaMaskHalo", 600);
-		Sprite2D halo = Glow.SoftSprite(_halo, new Vector2(0f, -halfWidth * 0.15f), new Color(Mid, 0.35f), 1f);
-		halo.Scale = new Vector2(w / 32f * 0.75f, h / 32f * 0.6f);
-		_fire = new ColorRect
-		{
-			Size = new Vector2(w, h), Position = new Vector2(-w / 2f, -h * cy), PivotOffset = new Vector2(w / 2f, h * cy),
-			Scale = new Vector2(facing, 1f), MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Shader },
-		};
-		_root.AddChild(_fire);
+		Sprite2D halo = Glow.SoftSprite(_halo, new Vector2(0f, -halfWidth * 0.2f), new Color(Mid, 0.4f), 1f);
+		halo.Scale = new Vector2(w / 32f * 0.85f, h / 32f * 0.75f);
+		_rear = Fx.Root(back, center, "P5PersonaMaskRear", 600);
+		_rear.Rotation = roll;
+		_fireRear = Layer(_rear, w * 1.3f, h * 1.3f, facing, cy);
+		Set(_fireRear, "glow", 0.7f);
+		Set(_fireRear, "alpha", 0.75f);
+		Set(_fireRear, "window", 0f);
+		Set(_fireRear, "outline", 0f);                           // 后面那层只要火舌，不画面具本身（不然是一圈重影）
+		// 面具戴在脸上（人物前面）
+		_root = Fx.Root(front, center, "P5PersonaMask", 600);
 		_root.Rotation = roll;
-		Fx.Clock(_fire);
-		Set("kx", kx);
-		Set("ky", ky);
-		Set("cy", cy);
-		Set("seed", Fx.Rand(0f, 10f));
-		Set("ignite", 0f);
-		Set("c_dark", Dark);
-		Set("c_mid", Mid);
-		Set("c_hi", Hi);
-		Set("c_hot", Hot);
-		// 从中间往两边点燃，火舌随后长出来
-		Fx.Animate(_fire, 0.05, 0.35, t =>
+		_fire = Layer(_root, w, h, facing, cy);
+		// 面具上方的热浪
+		_haze = CardFx.HazeRect(_root, new Vector2(0f, -h * 0.45f), w * 0.9f, h * 0.7f, 0.004f);
+		// 从中间往两边点燃，火舌随后长出来；烧满的那一刻整体亮一下、往外一胀
+		foreach (ColorRect r in new[] { _fire, _fireRear })
 		{
-			Set("ignite", Fx.OutCubic(t));
-			Set("flame", 0.3f + 0.7f * Ease5.OutBack(t));
-		});
-		_embers = ReadyFx.Embers(back, center + new Vector2(0f, -halfWidth * 0.2f), new[] { Hot, Hi, Mid }, 22, halfWidth * 0.8f, 1.0f, 70f, 190f, 35f);
+			ColorRect f = r;
+			float baseGlow = f == _fire ? 1f : 0.7f;
+			Fx.Animate(f, f == _fire ? 0.05 : 0.1, 0.4, t =>
+			{
+				Set(f, "ignite", Fx.OutCubic(Mathf.Min(1f, t * 1.15f)));
+				Set(f, "flame", 0.3f + 0.7f * Ease5.OutBack(t));
+				float flare = Mathf.Exp(-Mathf.Pow((t - 0.9f) / 0.1f, 2f));
+				Set(f, "glow", baseGlow * (1f + 0.7f * flare));
+				f.Scale = new Vector2(Mathf.Sign(f.Scale.X), 1f) * (1f + 0.07f * flare);
+			});
+			// 之后火势随呼吸起伏
+			float ph = Fx.Rand(0f, 1f);
+			Tween breathe = f.CreateTween().SetLoops();
+			breathe.TweenInterval(0.5);
+			breathe.TweenMethod(Callable.From<float>(t =>
+			{
+				if (!_ended)
+				{
+					Set(f, "glow", baseGlow * (1f + 0.12f * Mathf.Sin((t + ph) * Mathf.Tau)));
+					Set(f, "flame", 1f + 0.12f * Mathf.Sin((t * 2f + ph) * Mathf.Tau));
+				}
+			}), 0f, 1f, 1.4);
+		}
+		// 余烬：往上飘的火星（后）、绕着面具打旋的细火星（前）、慢慢飘的大块柔光余烬（后）
+		Vector2 top = center + new Vector2(0f, -halfWidth * 0.25f);
+		_particles = new[]
+		{
+			Drift(back, top, new Vector2(halfWidth * 0.9f, halfWidth * 0.3f), 40, 1.1f, 90f, 230f, 0.08f, 0.26f, 0.15f, new[] { Hot, Hi, Mid }),
+			Drift(front, center, new Vector2(halfWidth * 1.05f, halfWidth * 0.45f), 28, 1.5f, 15f, 70f, 0.05f, 0.14f, 0.6f, new[] { Hot, Hi }),
+			Drift(back, top, new Vector2(halfWidth * 1.1f, halfWidth * 0.4f), 6, 2.2f, 20f, 60f, 0.5f, 0.95f, 0.3f,
+				new[] { new Color(Hi, 0.55f), new Color(Mid, 0.4f) }),
+		};
+		// 面具亮边上隔一会儿闪一点星光
+		Tween glints = _root.CreateTween().SetLoops();
+		glints.TweenInterval(0.45);
+		glints.TweenCallback(Callable.From(() =>
+		{
+			if (!_ended)
+			{
+				float side = Fx.Rng.NextDouble() < 0.5 ? -1f : 1f;
+				Star(_root, new Vector2(side * halfWidth * Fx.Rand(0.35f, 0.95f), -halfWidth * Fx.Rand(0.05f, 0.4f)), Fx.Rand(0.7f, 1.2f));
+			}
+		}));
 	}
 
-	/// <summary>打出：一亮、往外一胀、火舌窜高，蓝色火星炸开、空间扭一下，0.4s 散掉。放回：往中间缩掉。</summary>
+	/// <summary>一直飘的粒子（湍流，柔光贴图，加法）。extents = 发射区域半宽高；turb = 湍流的影响（0 = 直线，越大越乱）。</summary>
+	private static GpuParticles2D Drift(Node parent, Vector2 at, Vector2 extents, int rate, float life, float vMin, float vMax,
+		float sMin, float sMax, float turb, Color[] ramp)
+	{
+		var offsets = new float[ramp.Length + 2];
+		var colors = new Color[ramp.Length + 2];
+		offsets[0] = 0f;
+		colors[0] = new Color(ramp[0], 0f);
+		for (int i = 0; i < ramp.Length; i++)
+		{
+			offsets[i + 1] = 0.15f + 0.65f * i / Mathf.Max(1, ramp.Length - 1);
+			colors[i + 1] = ramp[i];
+		}
+		offsets[^1] = 1f;
+		colors[^1] = new Color(ramp[^1], 0f);
+		ParticleProcessMaterial pm = new()
+		{
+			Direction = new Vector3(0f, -1f, 0f), Spread = 40f, InitialVelocityMin = vMin, InitialVelocityMax = vMax,
+			Gravity = new Vector3(0f, -20f, 0f), DampingMin = 0.5f, DampingMax = 1.5f, ScaleMin = sMin, ScaleMax = sMax,
+			EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box, EmissionBoxExtents = new Vector3(extents.X, extents.Y, 0f),
+			TurbulenceEnabled = turb > 0f, TurbulenceNoiseStrength = 4f, TurbulenceNoiseScale = 2.5f, TurbulenceNoiseSpeed = new Vector3(0.3f, 0.3f, 0f),
+			TurbulenceInfluenceMin = turb * 0.5f, TurbulenceInfluenceMax = turb,
+			ColorRamp = new GradientTexture1D { Gradient = new Gradient { Offsets = offsets, Colors = colors } },
+		};
+		GpuParticles2D p = new()
+		{
+			Amount = Mathf.Max(2, (int)(rate * life)), Lifetime = life, ProcessMaterial = pm, Texture = Glow.Soft, Material = Fx.Additive,
+			LocalCoords = false, Emitting = true, Position = at,
+		};
+		parent.AddChild(p);
+		return p;
+	}
+
+	/// <summary>蓝色四角星光，一闪即逝。</summary>
+	private static void Star(Node2D parent, Vector2 at, float size)
+	{
+		Node2D n = new() { Position = at };
+		parent.AddChild(n);
+		Sprite2D halo = Glow.SoftSprite(n, Vector2.Zero, Hi, 1.6f * size);
+		Polygon2D star = Fx.Poly(n, Glow.Star4(20f * size, 0.14f), Hot, additive: true);
+		Fx.Animate(n, 0, 0.3, t =>
+		{
+			float k = Mathf.Sin(Mathf.Min(t * 1.5f, 1f) * Mathf.Pi);
+			n.Scale = Vector2.One * k;
+			star.Rotation = t * 0.8f;
+		});
+		Fx.FreeAfter(n, 0.35);
+	}
+
+	/// <summary>打出：一亮、往外一胀、火舌窜高，蓝色火星炸开，0.4s 散掉。放回：往中间缩掉。</summary>
 	public void End(bool played)
 	{
 		if (_ended || !GodotObject.IsInstanceValid(_root))
@@ -305,34 +415,49 @@ void fragment() {
 			return;
 		}
 		_ended = true;
-		_embers.Emitting = false;
-		Fx.FreeAfter(_embers, 1.2);
+		foreach (GpuParticles2D p in _particles)
+		{
+			if (GodotObject.IsInstanceValid(p))
+			{
+				p.Emitting = false;
+				Fx.FreeAfter(p, 2.4);
+			}
+		}
 		Vector2 at = _root.GlobalPosition;
 		if (played)
 		{
-			Glow.Flash(_back, at, Hi, _half * 2.6f, 0.4f);
-			Glow.Sparks(_layer, at, 40, 200f, 680f, 0.65f, new[] { Hot, Hi, Mid }, -120f, 0.1f, 0.35f);
+			Glow.Flash(_back, at, Hi, _half * 3.2f, 0.45f);
+			Glow.Sparks(_layer, at, 60, 220f, 820f, 0.75f, new[] { Hot, Hi, Mid }, -120f, 0.1f, 0.4f);
+			Glow.Sparks(_back, at, 30, 80f, 300f, 1.1f, new[] { Hi, Mid }, -200f, 0.3f, 0.6f);
 			Fx.Shake(1);
 		}
-		float dur = played ? 0.4f : 0.3f;
-		Fx.Animate(_fire, 0, dur, t =>
+		float dur = played ? 0.45f : 0.3f;
+		foreach (ColorRect r in new[] { _fire, _fireRear })
 		{
-			if (played)
+			ColorRect f = r;
+			float a0 = f == _fire ? 1f : 0.75f;
+			Fx.Animate(f, 0, dur, t =>
 			{
-				_fire.Scale = new Vector2(Mathf.Sign(_fire.Scale.X), 1f) * (1f + 0.3f * Ease5.OutExpo(t));
-				Set("flame", 1f + 0.8f * Ease5.OutExpo(t));
-				Set("glow", 1f + 0.8f * (1f - t));
-				Set("alpha", 1f - Fx.InCubic(t));
-			}
-			else
-			{
-				Set("ignite", 1f - Fx.OutCubic(t));
-				Set("alpha", 1f - t);
-			}
-		});
+				if (played)
+				{
+					f.Scale = new Vector2(Mathf.Sign(f.Scale.X), 1f) * (1f + 0.35f * Ease5.OutExpo(t));
+					Set(f, "flame", 1f + 0.9f * Ease5.OutExpo(t));
+					Set(f, "glow", 1f + 0.9f * (1f - t));
+					Set(f, "alpha", a0 * (1f - Fx.InCubic(t)));
+				}
+				else
+				{
+					Set(f, "ignite", 1f - Fx.OutCubic(t));
+					Set(f, "alpha", a0 * (1f - t));
+				}
+			});
+		}
+		Set(_haze, "alpha", 0f);
 		Tween fade = _halo.CreateTween();
 		fade.TweenProperty(_halo, "modulate:a", 0f, dur);
-		Fx.FreeAfter(_root, dur + 0.1);
-		Fx.FreeAfter(_halo, dur + 0.1);
+		foreach (Node2D n in new[] { _root, _halo, _rear })
+		{
+			Fx.FreeAfter(n, dur + 0.1);
+		}
 	}
 }

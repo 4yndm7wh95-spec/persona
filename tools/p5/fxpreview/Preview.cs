@@ -87,10 +87,12 @@ public partial class Preview : Node2D
 			p.Hit(3.0 + 1.6 + 0.15, Enemy, 4, false);
 			p.At(3.0 + 1.6, () => CardFx.Weaken(p._front, Enemy, Enemy + new Vector2(0f, -170f), 0.12f));
 			p.Ready(6.4, Stance.Mask, "mask", "cast_from_mask", play: true, lockOn: Enemy2);
+			p.At(6.4 + 1.64, () => CutIn.Eyes(p._back));
 			p.At(6.4 + 1.6, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy2, Enemy2 + new Vector2(0f, -128f), c => p._enemies[Enemy2].Modulate = c));
 		},
 		// 只看蓝焰墙本身（放大，对照用户的参考图调细节）
 		["eiha"] = p => p.At(0.3, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy, Enemy + new Vector2(0f, -170f), c => p._enemies[Enemy].Modulate = c)),
+		["cutin"] = p => p.At(0.3, () => CutIn.Eyes(p._back)),
 		["wall"] = p =>
 		{
 			PersonaMask? w = null;

@@ -224,6 +224,10 @@ public static class Aim
 		{
 			Fx.After(layer, 0.04, () => Release(held));             // 手扣紧面具（summon_hold_a）的那一下炸开
 		}
+		if (stance == Stance.Mask && Joker.FxLayer(back: true) is Control back)
+		{
+			Fx.After(back, 0.04, () => CutIn.Eyes(back));            // Persona 召唤：眼神特写（背景层，用户 2026-10-29）
+		}
 		return true;
 	}
 
