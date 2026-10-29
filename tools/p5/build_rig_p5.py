@@ -19,6 +19,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+from scipy import ndimage
 from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -57,11 +58,11 @@ GUN_IN = [("idle_a3", .01), ("pocket_in_e", .03, .015), ("gun_arm_mid_h", .03, .
 # (user: the hand left the pocket too fast - pocket_in_e and the fade into idle are held longer)
 GUN_OUT = [("gun_spin_g", .3, 0), ("gun_arm_mid_h", .1, .02), ("pocket_in_e", .1, .04), ("idle_a3", .14, .08)]
 GUN_SHOT = [("gun_recoil_b", .2, 0)] + GUN_OUT
-KNIFE_IN = [("idle_a3", .01), ("knife_spin_e", .08, 0), ("knife_ready_b", .05, 0)]
-KNIFE_OUT = [("knife_spin_e", .26, 0), ("idle_a3", .12, .05)]
-# the cut, a beat, then (user 2026-10-28) the knife spins once in the raised fist (knife_top_f, tools/p5/knife_top.py)
+KNIFE_IN = [("idle_a3", .01), ("knife_spin_g", .08, 0), ("knife_ready_b", .05, 0)]
+KNIFE_OUT = [("knife_spin_g", .26, 0), ("idle_a3", .12, .05)]
+# the cut, a beat, then (user 2026-10-28) the knife spins once in the raised, relaxed open hand (knife_top_g, Codex)
 # before the follow-through brings it down
-KNIFE_CUT = [("slash_a10", .12, 0), ("knife_top_f", .2, 0), ("slash_follow_a", .06), ("knife_return_a", .06),
+KNIFE_CUT = [("slash_a10", .12, 0), ("knife_top_g", .2, 0), ("slash_follow_a", .06), ("knife_return_a", .06),
              ("slash_recover_a", .08), ("idle_a3", .1, .06)]
 IDLE_LOOP = 11.0   # 8 s idle (+ blinks), then the glove tug, ending back on idle_a3
 ANIMS = {
@@ -169,25 +170,27 @@ GUN_PROP = {"aim_in": [SPIN_IN], "shiv": [SPIN_IN, SPIN_OUT], "shiv_from_aim": [
 
 # the knife (user 2026-10-28: spin it the same way - on the draw at the hip, then cut upwards; and again at the hip
 # after the strike). art/p5/props/knife_c.png is drawn in code (tools/p5/draw_knife.py), pivot at the middle of
-# the grip; knife_spin_e is the empty hand at the hip (Codex). Rotation 0 = pointing right; knife_ready_b holds it
+# the grip; knife_spin_g is the relaxed open hand at the hip (Codex). Rotation 0 = pointing right; knife_ready_b holds it
 # pointing down-left (~150 deg on screen = -150 here)
 KNIFE = POSES.parent / "props/knife_d.png"      # the generated knife, re-proportioned (tools/p5/fit_knife.py)
 KNIFE_PIVOT, KNIFE_TIP = (47, 26), (308, 26)       # art/p5/props/knife_d.json
-KNIFE_HAND = (712, 688)                     # palm of the empty hand in knife_spin_e (final canvas)
-KSPIN_IN = [("@knife_spin_e", 0, *KNIFE_HAND, 200, 1, 0, 0), ("@knife_spin_e", .02, *KNIFE_HAND, 80, 1, 1, .6),
-            ("@knife_spin_e", .045, *KNIFE_HAND, -40, 1, 1, .6), ("@knife_spin_e", .065, *KNIFE_HAND, -120, 1, 1, .3),
+KNIFE_HAND = (752, 735)                     # on the index finger of knife_spin_g (final canvas)
+KSPIN_IN = [("@knife_spin_g", 0, *KNIFE_HAND, 200, 1, 0, 0), ("@knife_spin_g", .02, *KNIFE_HAND, 80, 1, 1, .6),
+            ("@knife_spin_g", .045, *KNIFE_HAND, -40, 1, 1, .6), ("@knife_spin_g", .065, *KNIFE_HAND, -120, 1, 1, .3),
             ("@knife_ready_b", 0, 720, 725, -150, 1, 1, 0)]
-KSPIN_OUT = [("@@knife_spin_e", 0, *KNIFE_HAND, -90, 1, 1, 0), ("@@knife_spin_e", .04, *KNIFE_HAND, -210, 1, 1, .6),
-             ("@@knife_spin_e", .09, *KNIFE_HAND, -370, 1, 1, .6), ("@@knife_spin_e", .15, *KNIFE_HAND, -510, 1, 1, .4),
-             ("@@knife_spin_e", .2, *KNIFE_HAND, -600, 1, 1, .2), ("@@knife_spin_e", .24, *KNIFE_HAND, -640, 1, 0, 0)]
+KSPIN_OUT = [("@@knife_spin_g", 0, *KNIFE_HAND, -90, 1, 1, 0), ("@@knife_spin_g", .04, *KNIFE_HAND, -210, 1, 1, .6),
+             ("@@knife_spin_g", .09, *KNIFE_HAND, -370, 1, 1, .6), ("@@knife_spin_g", .15, *KNIFE_HAND, -510, 1, 1, .4),
+             ("@@knife_spin_g", .2, *KNIFE_HAND, -600, 1, 1, .2), ("@@knife_spin_g", .24, *KNIFE_HAND, -640, 1, 0, 0)]
 KNIFE_PROP = {"attack": [KSPIN_IN], "knife_in": [KSPIN_IN], "knife_out": [KSPIN_OUT]}
-# the spin in the raised fist: pivot on the grip inside the fist; drawn behind the body (knife_back) so the fingers
-# and the sleeve cover it as it turns; one full turn back to the blade-down angle of slash_a10
-KNIFE_TOP = (1240, 368)
-KSPIN_TOP = [("@knife_top_f", 0, *KNIFE_TOP, -72, 1, 1, 0), ("@knife_top_f", .05, *KNIFE_TOP, -170, 1, 1, .6),
-             ("@knife_top_f", .1, *KNIFE_TOP, -290, 1, 1, .6), ("@knife_top_f", .15, *KNIFE_TOP, -390, 1, 1, .4),
-             ("@knife_top_f", .2, *KNIFE_TOP, -432, 1, 1, 0)]
+# the spin in the raised hand: pivot on the index finger; one full turn back to the blade-down angle of slash_a10.
+# Layering (user 2026-10-29): the knife goes over the body and sleeve but under the spinning hand - the hand's
+# glove (KNIFE_HANDS, cut from the pose) is drawn again on top, so the grip sits between the fingers
+KNIFE_TOP = (1238, 352)                     # on the index finger of knife_top_g
+KSPIN_TOP = [("@knife_top_g", 0, *KNIFE_TOP, -72, 1, 1, 0), ("@knife_top_g", .05, *KNIFE_TOP, -170, 1, 1, .6),
+             ("@knife_top_g", .1, *KNIFE_TOP, -290, 1, 1, .6), ("@knife_top_g", .15, *KNIFE_TOP, -390, 1, 1, .4),
+             ("@knife_top_g", .2, *KNIFE_TOP, -432, 1, 1, 0)]
 KNIFE_TOP_PROP = {"attack": [KSPIN_TOP], "attack_from_ready": [KSPIN_TOP], "attack_chain": [KSPIN_TOP]}
+KNIFE_HANDS = {"knife_hand_hip": ("knife_spin_g", (680, 640, 790, 790)), "knife_hand_top": ("knife_top_g", (1150, 300, 1275, 430))}
 
 # soft-mesh pictures: bone -> (parent, pivot on the final canvas, influence polys / circles, feather)
 MESHES = {
@@ -333,6 +336,21 @@ def finger_tip():
     a = np.array(im).astype(float)
     ramp = np.clip((np.arange(a.shape[1]) - 1) / 4.0, 0, 1)          # 4 px soft start where it enters the guard
     a[..., 3] *= ramp[None, :]
+    im = Image.fromarray(a.astype(np.uint8))
+    return im.resize((max(1, round(im.width * TEX)), max(1, round(im.height * TEX))), Image.LANCZOS), box
+
+
+def glove_overlay(pose, box):
+    """the spinning hand's glove (red + its ink outline) cut from the pose, to draw again over the spinning prop."""
+    im = Image.open(FINAL / f"{pose}.png").convert("RGBA").crop(box)
+    a = np.array(im).astype(float)
+    red = (a[..., 0] > 150) & (a[..., 1] < 90) & (a[..., 3] > 8)
+    lab, n = ndimage.label(red)
+    if n:
+        red = lab == np.bincount(lab[lab > 0]).argmax()
+    keep = ndimage.binary_dilation(red, iterations=3)
+    soft = ndimage.gaussian_filter(keep.astype(float), 0.7)
+    a[..., 3] *= np.clip(soft * 1.6, 0, 1)
     im = Image.fromarray(a.astype(np.uint8))
     return im.resize((max(1, round(im.width * TEX)), max(1, round(im.height * TEX))), Image.LANCZOS), box
 
@@ -483,6 +501,10 @@ def build():
     pistol, smear = gun_textures()
     ft, fbox = finger_tip()
     tex["finger_tip"] = ft
+    for slot, (pose, box) in KNIFE_HANDS.items():
+        gt, gbox = glove_overlay(pose, box)
+        tex[slot] = gt
+        att[slot] = {slot: region(gbox, gt)}
     att["finger_tip"] = {"finger_tip": region(fbox, ft)}
     tex["pistol"], tex["gun_smear"] = pistol["tex"], smear["tex"]
     knife, ksmear = knife_textures()
@@ -531,8 +553,10 @@ def build():
                           "scale": [{"time": round(k[0], 4), "x": k[3], "y": k[4]} for k in keys],
                           "rotate": [{"time": round(k[0], 4), "value": k[5]} for k in keys]}
         for prop, bone, extra in ((GUN_PROP, "gun", (("gun", "pistol", 5), ("gun_smear", "gun_smear", 6), ("finger_tip", "finger_tip", None))),
-                                  (KNIFE_PROP, "knife", (("knife", "knife", 5), ("knife_smear", "knife_smear", 6))),
-                                  (KNIFE_TOP_PROP, "knife_top", (("knife_back", "knife", 5), ("knife_back_smear", "knife_smear", 6)))):
+                                  (KNIFE_PROP, "knife", (("knife", "knife", 5), ("knife_smear", "knife_smear", 6),
+                                                         ("knife_hand_hip", "knife_hand_hip", None))),
+                                  (KNIFE_TOP_PROP, "knife_top", (("knife_back", "knife", 5), ("knife_back_smear", "knife_smear", 6),
+                                                                 ("knife_hand_top", "knife_hand_top", None)))):
             if name in prop:
                 slots_, bone_tl = prop_timelines(fr, prop[name], extra)
                 slots.update(slots_)
@@ -544,8 +568,6 @@ def build():
         "bones": bones + [{"name": "gun", "parent": "body"}, {"name": "knife", "parent": "body"},
                           {"name": "knife_top", "parent": "body"}],
         "slots": [{"name": "shadow", "bone": "root", "attachment": "shadow"},
-                  {"name": "knife_back_smear", "bone": "knife_top"},
-                  {"name": "knife_back", "bone": "knife_top"},
                   {"name": "pose", "bone": "body", "attachment": "idle_a3"},
                   {"name": "fade", "bone": "body"},
                   {"name": "gun_smear", "bone": "gun"},
@@ -553,6 +575,10 @@ def build():
                   {"name": "finger_tip", "bone": "body"},
                   {"name": "knife_smear", "bone": "knife"},
                   {"name": "knife", "bone": "knife"},
+                  {"name": "knife_hand_hip", "bone": "body"},
+                  {"name": "knife_back_smear", "bone": "knife_top"},
+                  {"name": "knife_back", "bone": "knife_top"},
+                  {"name": "knife_hand_top", "bone": "body"},
                   {"name": "blink", "bone": "i_head"}],
         "skins": [{"name": "default", "attachments": att}],
         "animations": anims,
