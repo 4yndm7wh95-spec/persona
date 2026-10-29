@@ -149,3 +149,7 @@ P5R 的视觉语言：红 / 黑 / 白三色、斜切的锯齿形块、网点（h
 - 花活（Tricks.cs）：原版 BLOCK 字母格挡、残影、装填子弹、预告信、子弹时间、准星 + WEAK、烟幕、锁链、大衣翻卷、阴影。
 - 命中（Slash.cs / Gunshot.cs）：刀 8 种（斩、交叉、重斩、刺、连斩、扫腿、拳脚、回响长斩），枪 4 种（单发、连射、霰弹、跳弹）。
 - 施法动作按牌切换：格挡牌 cast_guard、花活 / 能力 cast_glove、大召唤 cast_big（撕面具）。
+
+## 0.5.7：眼神特写使用原版网格和关键帧
+
+替换 0.5.6 的程序近似：已从 P5R 的 BCT_P_SUMMON.GMD + BCT_P_SUMMON_BT.GMD 转出原版裂缝、纸边、红纸、碎片、双感叹号和显隐时间，绑定现有 Joker eyes 贴图。转换数据嵌入 DLL，沿用现有召唤触发。预览 docs/p5/preview/eye_cutin_native.gif；来源、复现与离线验证范围见 docs/codex/reports/p5_native_eye_cutin_0.5.7.md。版本 0.5.7；测试包已生成，尚未安装和实机验收。

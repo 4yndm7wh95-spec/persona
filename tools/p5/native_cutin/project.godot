@@ -1,0 +1,10 @@
+config_version=5
+[application]
+config/name="Joker native cut-in verification"
+[display]
+window/size/viewport_width=1280
+window/size/viewport_height=720
+[rendering]
+renderer/rendering_method="gl_compatibility"
+textures/default_filters/use_nearest_mipmap_filter=false
+environment/defaults/default_clear_color=Color(0.125,0.145,0.20,1)
