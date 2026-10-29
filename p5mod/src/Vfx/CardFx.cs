@@ -237,12 +237,14 @@ void fragment() {
 	/// ④ 收（1.1s）：火往中心一缩，红环往里收，一点热白闪掉，留余烟。
 	/// tint：给敌人上色（游戏里改敌人节点的 Modulate，结束时调用方传入的会被设回白色）。
 	/// </summary>
+	/// <summary>咒焰柱蹿起的时刻（出牌后几秒）：游戏在施法后 0.25s 加上中毒、跳数字，火要和它一起到。</summary>
+	public const float Burst = 0.2f;
+
 	public static void Eiha(Control layer, Vector2 mask, Vector2 center, Vector2 top, Action<Color>? tint = null)
 	{
-		Glow.Flash(layer, mask, ReadyFx.BlueHot, 110f, 0.12f);
-		Glow.Sparks(layer, mask, 14, 120f, 360f, 0.45f, new[] { ReadyFx.BlueHot, ReadyFx.Blue, ReadyFx.BlueDeep }, -120f, 0.1f, 0.28f, Vector2.Up, 120f);
 		float h = Mathf.Max(80f, (center - top).Length());
 		Vector2 feet = center + new Vector2(0f, h * 0.95f);
+
 
 		// ① 咒印 + 往中心收的红光
 		Node2D sigil = Fx.Root(layer, feet, "P5EihaSigil", 1.6);
@@ -255,11 +257,11 @@ void fragment() {
 		sigil.AddChild(ring);
 		void SetS(string n, Variant v) => ((ShaderMaterial)ring.Material).SetShaderParameter(n, v);
 		SetS("open", 0f);
-		Fx.Animate(ring, 0.04, 1.4, t =>
+		Fx.Animate(ring, 0, 1.3, t =>
 		{
-			SetS("open", Ease5.OutExpo(Ease5.Seg(t, 0f, 0.2f)) * (1f - 0.6f * Fx.InCubic(Ease5.Seg(t, 0.82f, 0.18f))));
+			SetS("open", Ease5.OutExpo(Ease5.Seg(t, 0f, 0.14f)) * (1f - 0.6f * Fx.InCubic(Ease5.Seg(t, 0.82f, 0.18f))));
 			SetS("spin", t * 1.6f);
-			float flare = Mathf.Exp(-Mathf.Pow((t - 0.19f) / 0.04f, 2f));                // 爆的那一刻亮一下
+			float flare = Mathf.Exp(-Mathf.Pow((t - 0.154f) / 0.035f, 2f));              // 爆的那一刻（0.2s）亮一下
 			SetS("alpha", (0.85f + 1.2f * flare) * (1f - Ease5.Seg(t, 0.85f, 0.15f)));
 		});
 		for (int i = 0; i < 8; i++)
@@ -272,7 +274,7 @@ void fragment() {
 			Polygon2D core = Glow.TaperPoly(streak, Pal5.Hot);
 			float r0 = sw * 0.55f;
 			streak.Visible = false;
-			Fx.Animate(streak, 0.05 + i * 0.012, 0.24, t =>
+			Fx.Animate(streak, 0.02 + i * 0.008, 0.17, t =>
 			{
 				streak.Visible = true;
 				float head = Fx.InCubic(t), tail = Fx.InCubic(Mathf.Max(0f, t - 0.25f) / 0.75f);
@@ -282,8 +284,8 @@ void fragment() {
 			});
 		}
 
-		// ② 爆
-		Fx.After(layer, 0.3, () =>
+		// ② 爆：0.2s，和游戏加上中毒（施法后 0.25s）几乎同时
+		Fx.After(layer, Burst, () =>
 		{
 			Flame.Column(layer, feet + new Vector2(0f, 8f), h * 1.9f, h * 3.3f, 0f, 0.95f, 1.4f);
 			for (int i = 0; i < 4; i++)
@@ -293,8 +295,9 @@ void fragment() {
 			}
 			Glow.Flash(layer, center, Pal5.Hot, h * 1.4f, 0.14f);
 			Glow.Flash(layer, center, Pal5.Bright, h * 3.4f, 0.45f);
+			// 冲击只贴着地面走（用户：悬在半空的那一圈波纹看着不同步、也不贴地）
 			Glow.Shockwave(layer, feet, Pal5.Bright, h * 4f, 0.55f, 0.26f);
-			Glow.Ripple(layer, center, h * 3.6f, 0.6f, 0.03f);
+			Glow.Ripple(layer, feet, h * 3.6f, 0.5f, 0.02f, 0.3f);
 			Fx.Shake(2);
 			// 火星：打着旋往上飘
 			Embers(layer, feet, h, 46, 1.1f);
@@ -324,7 +327,7 @@ void fragment() {
 		});
 
 		// ④ 收
-		Fx.After(layer, 1.12, () =>
+		Fx.After(layer, Burst + 0.82, () =>
 		{
 			Glow.Gather(layer, feet, Pal5.Bright, h * 3f, 0.16f, 0.28f);
 			Glow.Flash(layer, feet + new Vector2(0f, -h * 0.6f), Pal5.Hot, h * 0.9f, 0.2f, 0.14f);

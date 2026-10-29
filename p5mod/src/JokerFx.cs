@@ -71,6 +71,13 @@ public static class JokerFx
 	/// <summary>最近一次 Joker 出牌的时刻（毫秒）：原版跟着出牌放的细斩特效（NThinSliceVfx）据此关掉。</summary>
 	public static ulong LastPlayMs;
 
+	/// <summary>弹射：敌人节点 → (记下的时刻, 伤害数字要晚几秒)。</summary>
+	private static readonly Dictionary<ulong, (ulong At, float Delay)> NumberDelay = new();
+
+	/// <summary>这个敌人的伤害数字要晚几秒（刀扇弹射时，等子弹弹到它）。</summary>
+	public static float DamageNumberDelay(NCreature target) =>
+		NumberDelay.TryGetValue(target.GetInstanceId(), out var d) && Time.GetTicksMsec() - d.At < 1000 ? d.Delay : 0f;
+
 	/// <summary>小刀打全体（刀扇）：按离 Joker 由近到远排，一发子弹依次弹过去。</summary>
 	public static void OnRicochet(NCreature joker, List<NCreature> targets)
 	{
@@ -79,8 +86,13 @@ public static class JokerFx
 			return;
 		}
 		Vector2 from = joker.GlobalPosition;
-		HitFx.Ricochet(layer, Joker.Muzzle(joker), targets.Select(t => t.VfxSpawnPosition).OrderBy(p => p.DistanceSquaredTo(from)).ToList(),
-			Joker.Facing(joker));
+		List<NCreature> order = targets.OrderBy(t => t.VfxSpawnPosition.DistanceSquaredTo(from)).ToList();
+		ulong now = Time.GetTicksMsec();
+		for (int i = 0; i < order.Count; i++)
+		{
+			NumberDelay[order[i].GetInstanceId()] = (now, HitFx.RicochetArrival(i));   // 伤害数字等子弹弹到它再跳
+		}
+		HitFx.Ricochet(layer, Joker.Muzzle(joker), order.Select(t => t.VfxSpawnPosition).ToList(), Joker.Facing(joker));
 	}
 
 	/// <summary>出牌那一刻（CardPlayedPatch）：按牌放出牌特效。target = 选中的目标（群体牌为 null）。</summary>

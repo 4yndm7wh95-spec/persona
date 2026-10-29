@@ -224,7 +224,7 @@ void fragment() {
 		float reach = smoothstep(0.2 + k * 0.55, 0.4 + k * 0.55, colN);
 		fire = max(fire, src * reach * (1.0 - k * 0.55));
 	}
-	fire = max(fire, onMask * 0.55);
+	fire = max(fire, onMask * 0.32);                         // 面具本体淡一些，主要看亮边和火舌（用户：稍微挡人物）
 	// 细丝
 	vec2 w = vec2(fbm(vec2(p.x * 2.0, p.y * 1.2 - t * 0.5)), fbm(vec2(p.x * 2.0 + 5.0, p.y * 1.2 - t * 0.5)));
 	float sA = ridge(vec2(p.x * 4.0 + w.y * 1.5, p.y * 1.2 - t * 1.6));
@@ -240,7 +240,10 @@ void fragment() {
 	col = mix(col, c_mid.rgb, smoothstep(0.12, 0.5, e));
 	col = mix(col, c_hi.rgb, smoothstep(0.45, 0.9, e));
 	col = mix(col, c_hot.rgb, smoothstep(0.9, 1.3, e));
-	float a = clamp(shape * (0.55 + 0.45 * smoothstep(0.1, 0.5, e)) + rim * reveal * 0.6, 0.0, 1.0);
+	float a = clamp(shape * (0.35 + 0.65 * smoothstep(0.1, 0.5, e)) + rim * reveal * 0.6, 0.0, 1.0);
+	// 正对脸的中间开一扇「窗」：越靠近面具中心越透，脸和头发从火里透出来
+	float win = smoothstep(0.62, 0.12, length(p * vec2(1.0, 1.35)));
+	a *= 1.0 - 0.6 * win;
 	COLOR = vec4(col * glow, a * alpha);
 }" };
 
@@ -308,7 +311,6 @@ void fragment() {
 		if (played)
 		{
 			Glow.Flash(_back, at, Hi, _half * 2.6f, 0.4f);
-			Glow.Ripple(_layer, at, _half * 3f, 0.5f, 0.025f, 0.7f);
 			Glow.Sparks(_layer, at, 40, 200f, 680f, 0.65f, new[] { Hot, Hi, Mid }, -120f, 0.1f, 0.35f);
 			Fx.Shake(1);
 		}

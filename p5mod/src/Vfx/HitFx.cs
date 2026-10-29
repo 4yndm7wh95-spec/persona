@@ -149,6 +149,12 @@ public static class HitFx
 	/// （用户：要直勾勾的弹，不要弯的）
 	/// 每段 0.07 秒，快但看得出在弹；每个弹点一个小闪光 + 火花 + 星光，最后一个命中稍大。hits 按距离 Joker 由近到远排好。
 	/// </summary>
+	/// <summary>弹射每一跳飞多久（用户 2026-10-29：0.07s 太快看不清）。</summary>
+	public const float RicochetSeg = 0.2f;
+
+	/// <summary>第 i 个被弹到的敌人在开火后多久被打中（伤害数字等到这一刻再跳）。</summary>
+	public static float RicochetArrival(int i) => i == 0 ? 0f : 0.04f + RicochetSeg * i;
+
 	public static void Ricochet(Control layer, Vector2 muzzle, IReadOnlyList<Vector2> hits, float facing = 1f)
 	{
 		if (hits.Count == 0)
@@ -156,7 +162,7 @@ public static class HitFx
 			return;
 		}
 		Shot(layer, muzzle, hits[0], facing);
-		const float seg = 0.07f;
+		const float seg = RicochetSeg;
 		for (int i = 1; i < hits.Count; i++)
 		{
 			Vector2 a = hits[i - 1], b = hits[i];
@@ -196,7 +202,7 @@ public static class HitFx
 	/// <summary>折线弹道：头沿 a → k → b 两段直线飞快走完（seg 秒），尾巴随后收掉；折点是硬角。</summary>
 	private static void KinkTracer(Control layer, Vector2 a, Vector2 k, Vector2 b, float seg)
 	{
-		Node2D tr = Fx.Root(layer, Vector2.Zero, "P5Ricochet", seg + 0.2);
+		Node2D tr = Fx.Root(layer, Vector2.Zero, "P5Ricochet", seg + 0.35);
 		tr.GlobalPosition = Vector2.Zero;
 		Polygon2D glowA = Glow.TaperPoly(tr, new Color(Pal5.Bright, 0.85f)), coreA = Glow.TaperPoly(tr, Pal5.Hot);
 		Polygon2D glowB = Glow.TaperPoly(tr, new Color(Pal5.Bright, 0.85f)), coreB = Glow.TaperPoly(tr, Pal5.Hot);
@@ -206,11 +212,20 @@ public static class HitFx
 			float d = u * total;
 			return d <= la ? a.Lerp(k, d / la) : k.Lerp(b, (d - la) / (total - la));
 		}
-		float life = seg + 0.1f;
+		// 子弹头：一颗白热的亮点（带红晕和星光），拖尾在后面慢慢收
+		Node2D bullet = new();
+		tr.AddChild(bullet);
+		Glow.SoftSprite(bullet, Vector2.Zero, Pal5.Bright, 1.4f);
+		Glow.SoftSprite(bullet, Vector2.Zero, Pal5.Hot, 0.45f);
+		Polygon2D star = Fx.Poly(bullet, Glow.Star4(14f, 0.18f), Pal5.Hot, additive: true);
+		float life = seg + 0.25f;
 		Fx.Animate(tr, 0, life, t =>
 		{
 			float s = t * life;
-			float head = Mathf.Min(1f, s / seg), tail = Fx.InCubic(Mathf.Clamp((s - seg * 0.3f) / (life - seg * 0.3f), 0f, 1f));
+			float head = Mathf.Min(1f, s / seg), tail = Fx.InCubic(Mathf.Clamp((s - seg * 0.45f) / (life - seg * 0.45f), 0f, 1f));
+			bullet.Visible = s < seg;
+			bullet.Position = At(head);
+			star.Rotation = s * 18f;
 			float w = 1f - tail, split = la / total;
 			// 两段各画一条直的锥形光：尾巴那段在后、头那段在前，折角处是尖角
 			bool aOn = tail < split && head > tail, bOn = head > split;

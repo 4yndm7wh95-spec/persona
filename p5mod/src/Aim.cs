@@ -220,6 +220,10 @@ public static class Aim
 		state.SetAnimation(name, false, 0);
 		state.AddAnimation(low ? "low_health_loop" : "idle_loop", 0f, true, 0);
 		SelfCast[node.GetInstanceId()] = Time.GetTicksMsec() + 1500;
+		if (_held is ReadyFx held && Joker.FxLayer() is Control layer)
+		{
+			Fx.After(layer, 0.04, () => Release(held));             // 手扣紧面具（summon_hold_a）的那一下炸开
+		}
 		return true;
 	}
 
@@ -230,10 +234,34 @@ public static class Aim
 	/// <summary>打出去了：架势特效一闪收掉（出牌特效接上）。</summary>
 	public static void Played()
 	{
+		Unlock();
+		if (_fx is { Stance: Stance.Mask } held)
+		{
+			// 面具等 Joker 真正扣面具施法（PlayCast）那一刻才炸开 —— 出牌队列可能还要等一会儿；万一没等到，0.8s 后自己炸
+			_held = held;
+			_fx = null;
+			_fxCard = null;
+			if (Joker.FxLayer() is Control layer)
+			{
+				Fx.After(layer, 0.8, () => Release(held));
+			}
+			return;
+		}
 		_fx?.End(true);
 		_fx = null;
 		_fxCard = null;
-		Unlock();
+	}
+
+	/// <summary>打出去、等着施法的面具。</summary>
+	private static ReadyFx? _held;
+
+	private static void Release(ReadyFx fx)
+	{
+		fx.End(true);
+		if (_held == fx)
+		{
+			_held = null;
+		}
 	}
 
 	/// <summary>选目标时指到一个生物：敌人身上出锁定准星。</summary>

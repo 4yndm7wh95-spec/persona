@@ -180,7 +180,15 @@ public static class DamageNumberPatch
 			{
 				return;
 			}
-			Popups.Damage(layer, node.GetInstanceId(), node.VfxSpawnPosition, amount, gun);
+			float wait = JokerFx.DamageNumberDelay(node);
+			if (wait > 0f)
+			{
+				Fx.After(layer, wait, () => Popups.Damage(layer, node.GetInstanceId(), node.VfxSpawnPosition, amount, gun));
+			}
+			else
+			{
+				Popups.Damage(layer, node.GetInstanceId(), node.VfxSpawnPosition, amount, gun);
+			}
 			original.QueueFree();
 			replaced = true;
 		});
