@@ -181,6 +181,19 @@ void fragment() {
 
 	private static void Set(ColorRect r, string name, Variant v) => ((ShaderMaterial)r.Material).SetShaderParameter(name, v);
 
+	public static void SetParam(ColorRect r, string name, Variant v) => Set(r, name, v);
+
+	/// <summary>一圈细光环（着色器，参数 tint / radius / width / alpha 由调用方驱动），中心在 parent 原点。</summary>
+	public static ColorRect RingRect(Node parent, float size, float squashY = 1f) => Quad(parent, Ring, size, squashY);
+
+	/// <summary>一团柔光（加法），scale 1 = 32px。</summary>
+	public static Sprite2D SoftSprite(Node parent, Vector2 at, Color tint, float scale)
+	{
+		Sprite2D s = new() { Texture = Soft, Material = Fx.Additive, Position = at, Scale = Vector2.One * scale, Modulate = tint };
+		parent.AddChild(s);
+		return s;
+	}
+
 	// ───────────────────────── 积木 ─────────────────────────
 
 	/// <summary>径向闪光：一下亮到顶、0.5 倍胀到 1.25 倍、淡掉。</summary>

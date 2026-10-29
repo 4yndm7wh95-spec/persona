@@ -19,6 +19,9 @@ namespace P5Joker;
 ///    换成 shiv 从同一时刻接着播），放回去转枪收走（aim_out）；
 ///  · 拿起打击类攻击牌就在腰侧转刀起手（knife_in → knife_loop），打出去直接上撩（attack 换成 attack_from_ready；
 ///    转刀还没转完就打出，换回 attack 从同一时刻接着播），放回去转刀收起（knife_out）；
+///  · 技能 / 能力 / 格挡牌（用户 2026-10-29：每张牌拿起来都要有架势和特效）：手扣面具（mask_*，蓝焰从指缝漏出）、
+///    拳头半举（guard_*）、伸手去扯手套（glove_*），打出去从架势直接接施法（cast_from_mask / cast_guard_from_ready /
+///    cast_glove_from_ready），放回去收手（*_out）；架势上的特效见 Vfx/Ready.cs，指到敌人时的锁定准星见 LockOn；
 ///  · 连续出攻击牌时，上一刀还在收势就接下一刀（attack 换成 attack_chain，从手里握着刀直接再蓄力），不再从拔刀重播；
 ///    连续开枪同理（shiv 换成 shiv_from_aim）。
 /// 只动 Joker 的骨骼（原版静默猎手被我们的骨骼替换了，这些动画名只在 art/p5/rig/joker.spine-json 里有）。
@@ -27,7 +30,6 @@ public static class Aim
 {
 	private static readonly HashSet<string> Raised = new() { "aim_in", "aim_loop", "shiv", "shiv_from_aim" };
 	private static readonly HashSet<string> Slashing = new() { "attack", "attack_chain", "attack_from_ready" };
-	private static readonly HashSet<string> Readied = new() { "knife_in", "knife_loop" };
 
 	/// <summary>换动画之后要跳到的时间（AnimRenamePatch 的 Postfix 用）。</summary>
 	public static readonly Dictionary<ulong, float> SkipTo = new();
@@ -44,12 +46,6 @@ public static class Aim
 		entry?.SetMixDuration(0f);
 		return t;
 	}
-
-	/// <summary>中和（JokerFx.NeutralizeStart）：游戏要播 attack 时先握刀停住，出牌后这么多秒刀落下（attack_from_ready 第 0.14 秒出刀）。</summary>
-	public static readonly Dictionary<ulong, float> HoldCut = new();
-
-	/// <summary>中和换来的 knife_in：Postfix 里接上 knife_loop（游戏只会在 attack 后面排 idle）。</summary>
-	public static readonly HashSet<ulong> Holding = new();
 
 	/// <summary>出牌时（CardPlayedPatch）记下的施法动作：游戏随后要播 cast 时换成对应版本。</summary>
 	public static readonly Dictionary<ulong, Cast> PendingCast = new();
@@ -86,37 +82,17 @@ public static class Aim
 				return null;
 			}
 			// 撕面具甩手那版（cast_big）不用了（用户 2026-10-29：只留简单的召唤 cast）
-			string? name = kind switch { Cast.Guard => "cast_guard", Cast.Glove => "cast_glove", _ => null };
+			// 正摆着这张牌的架势：从架势直接接施法
+			string? held = Current(state);
+			string? name = kind switch
+			{
+				Cast.Guard => held is "guard_in" or "guard_loop" ? "cast_guard_from_ready" : "cast_guard",
+				Cast.Glove => held is "glove_in" or "glove_loop" ? "cast_glove_from_ready" : "cast_glove",
+				_ => held is "mask_in" or "mask_loop" ? "cast_from_mask" : null,
+			};
 			return name != null && body.HasAnimation(name) ? name : null;
 		}
 		string? current = Current(state);
-		if (requested == "attack" && HoldCut.Remove(node.GetInstanceId(), out float cut) && body.HasAnimation("attack_from_ready"))
-		{
-			// 中和：先握刀停着（还在转刀就接着转完），等头顶的预告函转出来，到点一刀劈下
-			if (Joker.FxLayer() is Control layer)
-			{
-				Fx.After(layer, Mathf.Max(0f, cut - 0.14f), () =>
-				{
-					bool low = node.Entity.GetHpPercentRemaining() <= 0.25 && body.HasAnimation("low_health_loop");
-					state.SetAnimation("attack_from_ready", false, 0);
-					state.AddAnimation(low ? "low_health_loop" : "idle_loop", 0f, true, 0);
-				});
-			}
-			if (current != "knife_loop")
-			{
-				Holding.Add(node.GetInstanceId());
-			}
-			if (current == "knife_in")
-			{
-				using MegaTrackEntry? entry = state.GetCurrent(0);
-				if (entry != null)
-				{
-					SkipTo[node.GetInstanceId()] = entry.GetTrackTime();
-				}
-				return "knife_in";
-			}
-			return current == "knife_loop" ? "knife_loop" : "knife_in";
-		}
 		if (requested == "shiv" && current == "aim_in")
 		{
 			// 转枪还没转完就打出去了：aim_in 就是 shiv 的前 0.18 秒（tools/p5/build_rig_p5.py GUN_IN），
@@ -153,58 +129,107 @@ public static class Aim
 		return null;
 	}
 
+	/// <summary>拿起的这张牌要摆哪种架势。</summary>
+	public static Stance StanceFor(CardModel card) =>
+		Joker.IsShot(card) ? Stance.Gun
+		: card.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Attack ? Stance.Knife
+		: Casts.For(card) switch { Cast.Guard => Stance.Guard, Cast.Glove => Stance.Glove, _ => Stance.Mask };
+
+	private static string Prefix(Stance s) => s switch
+	{
+		Stance.Gun => "aim", Stance.Knife => "knife", Stance.Guard => "guard", Stance.Glove => "glove", _ => "mask",
+	};
+
+	/// <summary>本地 Joker 正摆着的架势特效（一次只有一张牌在手上）。</summary>
+	private static ReadyFx? _fx;
+	private static CardModel? _fxCard;
+	private static LockOn? _lock;
+	private static ulong _lockId;
+
+	/// <summary>拿起一张牌（单体牌开始选目标 / 群体牌拖进出牌区）：摆架势、放架势特效。</summary>
 	public static void Raise(CardModel card)
 	{
 		if (!Joker.OwnsCard(card) || !LocalContext.IsMe(card.Owner))
 		{
 			return;
 		}
-		if (!Joker.IsShot(card))
-		{
-			if (card.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Attack)
-			{
-				Ready(card);
-			}
-			return;
-		}
 		NCreature? node = Joker.Node(card.Owner);
 		MegaSprite? body = node?.Visuals?.SpineBody;
-		if (body == null || !body.HasAnimation("aim_loop") || body.TryGetAnimationState() is not MegaAnimationState state)
+		if (node == null || body == null || body.TryGetAnimationState() is not MegaAnimationState state)
 		{
 			return;
 		}
+		Stance stance = StanceFor(card);
+		string pre = Prefix(stance);
 		string? current = Current(state);
-		if (current != null && Raised.Contains(current))
+		if (stance == Stance.Gun && current is "shiv" or "shiv_from_aim")
 		{
-			if (current is "shiv" or "shiv_from_aim")
+			state.SetAnimation("aim_loop", true, 0);              // 上一枪还没收完：直接回到瞄准
+		}
+		else if (current != pre + "_in" && current != pre + "_loop")
+		{
+			if (!Idle(current) || !body.HasAnimation(pre + "_loop"))
 			{
-				state.SetAnimation("aim_loop", true, 0);          // 上一枪还没收完：直接回到瞄准
+				return;                                           // 正在出别的牌 / 受击：不打断（刚收起的可以直接换）
 			}
+			state.SetAnimation(pre + "_in", false, 0);
+			state.AddAnimation(pre + "_loop", 0f, true, 0);
+		}
+		if (_fx != null && _fxCard == card && _fx.Stance == stance)
+		{
 			return;
 		}
-		if (current is not ("idle_loop" or "low_health_loop" or "aim_out" or "knife_out"))
+		_fx?.End(false);
+		_fx = null;
+		if (Joker.FxLayer() is Control front && Joker.FxLayer(back: true) is Control back)
 		{
-			return;                                               // 正在出别的牌 / 受击：不打断（刚收起的可以直接换成举枪）
+			_fx = ReadyFx.Start(front, back, stance, v => Joker.PosePoint(node, v), Joker.Facing(node));
+			_fxCard = card;
 		}
-		state.SetAnimation("aim_in", false, 0);
-		state.AddAnimation("aim_loop", 0f, true, 0);
 	}
 
-	/// <summary>拿起打击类的攻击牌：腰侧转刀起手、摆好准备姿势停着（knife_in → knife_loop），打出去直接上撩。</summary>
-	private static void Ready(CardModel card)
+	private static bool Idle(string? current) =>
+		current is "idle_loop" or "low_health_loop" or "aim_out" or "knife_out" or "mask_out" or "guard_out" or "glove_out";
+
+	/// <summary>打出去了：架势特效一闪收掉（出牌特效接上）。</summary>
+	public static void Played()
 	{
-		NCreature? node = Joker.Node(card.Owner);
-		MegaSprite? body = node?.Visuals?.SpineBody;
-		if (body == null || !body.HasAnimation("knife_loop") || body.TryGetAnimationState() is not MegaAnimationState state)
+		_fx?.End(true);
+		_fx = null;
+		_fxCard = null;
+		Unlock();
+	}
+
+	/// <summary>选目标时指到一个生物：敌人身上出锁定准星，枪的瞄准线跟过去。</summary>
+	public static void Hover(NCreature creature)
+	{
+		if (_fx == null || creature.Entity == null || creature.Entity.IsPlayer || Joker.FxLayer() is not Control layer)
 		{
 			return;
 		}
-		if (Current(state) is not ("idle_loop" or "low_health_loop" or "aim_out" or "knife_out"))
+		if (_lock != null && _lockId == creature.GetInstanceId())
 		{
-			return;                                               // 正在出别的牌 / 受击 / 已经起手：不打断（刚收起的可以直接换）
+			return;
 		}
-		state.SetAnimation("knife_in", false, 0);
-		state.AddAnimation("knife_loop", 0f, true, 0);
+		Unlock();
+		Vector2 at = creature.VfxSpawnPosition;
+		float size = Mathf.Clamp((at - creature.GetTopOfHitbox()).Length() * 2.4f, 160f, 340f);
+		_lock = LockOn.Start(layer, at, size);
+		_lockId = creature.GetInstanceId();
+		_fx.Aim(at);
+	}
+
+	public static void Unhover()
+	{
+		Unlock();
+		_fx?.Aim(null);
+	}
+
+	private static void Unlock()
+	{
+		_lock?.Release();
+		_lock = null;
+		_lockId = 0;
 	}
 
 	public static void Lower(NCreature? node)
@@ -215,7 +240,15 @@ public static class Aim
 			return;
 		}
 		string? current = Current(state);
-		string? putAway = current is "aim_in" or "aim_loop" ? "aim_out" : current is "knife_in" or "knife_loop" ? "knife_out" : null;
+		string? putAway = current switch
+		{
+			"aim_in" or "aim_loop" => "aim_out",
+			"knife_in" or "knife_loop" => "knife_out",
+			"mask_in" or "mask_loop" => "mask_out",
+			"guard_in" or "guard_loop" => "guard_out",
+			"glove_in" or "glove_loop" => "glove_out",
+			_ => null,
+		};
 		if (putAway == null || !body.HasAnimation(putAway))
 		{
 			return;
@@ -227,6 +260,10 @@ public static class Aim
 
 	public static void LowerLocal()
 	{
+		_fx?.End(false);
+		_fx = null;
+		_fxCard = null;
+		Unlock();
 		NCombatRoom? room = NCombatRoom.Instance;
 		if (room == null)
 		{
@@ -272,19 +309,6 @@ public static class AnimRenamePatch
 
 	public static void Postfix(MegaAnimationState __instance, string animationName)
 	{
-		if (animationName == "knife_in")
-		{
-			// 中和换来的握刀：接着转完刀、停在准备姿势
-			ModEntry.Safe("AnimHold", () =>
-			{
-				if (Aim.Owner(__instance) is NCreature node && Aim.SkipTo.ContainsKey(node.GetInstanceId()) | Aim.Holding.Remove(node.GetInstanceId()))
-				{
-					Aim.ApplySkip(node, __instance);
-					__instance.AddAnimation("knife_loop", 0f, true, 0);
-				}
-			});
-			return;
-		}
 		if (animationName is not ("shiv" or "shiv_from_aim" or "attack" or "attack_chain" or "attack_from_ready"))
 		{
 			return;
@@ -301,7 +325,7 @@ public static class AnimRenamePatch
 	}
 }
 
-/// <summary>单体牌开始选目标（拿起小刀牌）：举枪。</summary>
+/// <summary>单体牌开始选目标：摆架势（Aim.Raise）。</summary>
 [HarmonyPatch]
 public static class StartTargetingPatch
 {
@@ -321,7 +345,7 @@ public static class StartTargetingPatch
 	}
 }
 
-/// <summary>群体牌（刀扇下的小刀）拖进出牌区：举枪。</summary>
+/// <summary>不选目标的牌（群体 / 自己）拖进出牌区：摆架势。</summary>
 [HarmonyPatch(typeof(NCardPlay), "ShowMultiCreatureTargetingVisuals")]
 public static class MultiTargetingPatch
 {
@@ -337,17 +361,46 @@ public static class MultiTargetingPatch
 	}
 }
 
-/// <summary>出牌流程收尾：取消（isFinished = false）就收枪；打出则交给 shiv_from_aim 接着开火。</summary>
+/// <summary>出牌流程收尾：取消（isFinished = false）就收起架势；打出则架势特效一闪收掉，动作交给 *_from_* 接着出招。</summary>
 [HarmonyPatch(typeof(NCardPlay), "Cleanup")]
 public static class CardPlayCleanupPatch
 {
+	/// <summary>Cleanup 里也会调 HideTargetingVisuals，那次不算"拖出了出牌区"。</summary>
+	public static bool Inside;
+
 	public static void Prefix(bool isFinished)
 	{
-		if (!isFinished)
+		Inside = true;
+		ModEntry.Safe("CardPlayCleanup", isFinished ? Aim.Played : Aim.LowerLocal);
+	}
+
+	public static void Postfix() => Inside = false;
+}
+
+/// <summary>群体牌拖回出牌区下面（原版藏起目标框）：收起架势；再拖上去 MultiTargetingPatch 又会摆起来。</summary>
+[HarmonyPatch(typeof(NCardPlay), "HideTargetingVisuals")]
+public static class HideTargetingPatch
+{
+	public static void Postfix()
+	{
+		if (!CardPlayCleanupPatch.Inside)
 		{
-			ModEntry.Safe("CardPlayCleanup", Aim.LowerLocal);
+			ModEntry.Safe("HideTargeting", Aim.LowerLocal);
 		}
 	}
+}
+
+/// <summary>选目标时指到 / 移开一个生物：锁定准星（Aim.Hover）。</summary>
+[HarmonyPatch(typeof(NCardPlay), "OnCreatureHover")]
+public static class CreatureHoverPatch
+{
+	public static void Postfix(NCreature creature) => ModEntry.Safe("CreatureHover", () => Aim.Hover(creature));
+}
+
+[HarmonyPatch(typeof(NCardPlay), "OnCreatureUnhover")]
+public static class CreatureUnhoverPatch
+{
+	public static void Postfix() => ModEntry.Safe("CreatureUnhover", Aim.Unhover);
 }
 
 [HarmonyPatch(typeof(NTargetManager), "FinishTargeting")]

@@ -77,26 +77,6 @@ public partial class Preview : Node2D
 				p.At(Math.Max(0, 0.13 - skip), () => HitFx.Swing(p._front, Pose(760f, 260f), Pose(600f, 850f), Pose(1376f, 450f))); });
 			p.Hit(4.0, Enemy, 9, false);
 		},
-		// 牌特效：防御（光盾阵）→ 中和（打击 + 减益）→ 能力牌（增益）→ 毒（诅咒旋涡）→ 预告信
-		["cards"] = p =>
-		{
-			p.At(0.3, () => p._joker?.Play("cast_guard"));
-			p.At(0.55, () => CardFx.Guard(p._front, Chest));
-			p.Strike(1.8, Enemy, 3);
-			p.At(1.95, () => CardFx.Debuff(p._front, Enemy));
-			p.At(3.1, () => p._joker?.Play("cast_glove"));
-			p.At(3.3, () => CardFx.Buff(p._front, p._back, JokerFeet, Pose(815f, 120f)));
-			p.At(4.6, () => p._joker?.Play("cast_glove"));
-			p.At(4.8, () => CardFx.Curse(p._front, Enemy2));
-		},
-		// 抽牌（卡片飞进手套）→ 生成小刀（光刃阵）
-		["cards2"] = p =>
-		{
-			p.At(0.3, () => p._joker?.Play("cast_glove"));
-			p.At(0.38, () => CardFx.Draw(p._front, Pose(989f, 400f), 3));
-			p.At(1.6, () => p._joker?.Play("cast_glove"));
-			p.At(1.65, () => CardFx.Shivs(p._front, Chest, Pose(989f, 400f), 3));
-		},
 		// 刀扇：一发子弹弹过所有敌人（近 → 远）
 		["ricochet"] = p =>
 		{
@@ -121,22 +101,22 @@ public partial class Preview : Node2D
 			p.At(3.3, () => view?.Fire());
 			p.At(4.0, () => view?.Set(0));
 		},
-		// 肾上腺素（眼神切入 → 热浪 + 地裂）→ 子弹时间（时停）→ 爆发（剪影分身）
-		["skills"] = p =>
+		// 预备出牌（拖着牌选目标）：每种架势摆好、特效循环一会儿，再打出 / 放回（p5mod/src/Aim.cs、Vfx/Ready.cs）
+		["ready"] = p =>
 		{
-			p.At(0.3, () => p._joker?.Play("cast_glove"));
-			p.At(0.3, () => SkillFx.Adrenaline(p._front, p._back, JokerFeet, Chest));
-			p.At(2.0, () => p._joker?.Play("cast_glove"));
-			p.At(2.05, () => SkillFx.BulletTime(p._front, p._back, Chest));
-			p.At(4.0, () => p._joker?.Play("cast_glove"));
-			p.At(4.05, () => p.Clone(c => SkillFx.Burst(p._front, c, m => c.Material = m, Chest)));
+			p.Ready(0.2, Stance.Mask, "mask", "cast_from_mask", play: true, lockOn: Enemy);
+			p.Ready(2.4, Stance.Guard, "guard", "cast_guard_from_ready", play: true);
+			p.Ready(4.4, Stance.Glove, "glove", "cast_glove_from_ready", play: true);
 		},
-		["curse"] = p => p.At(0.3, () => CardFx.Curse(p._front, Enemy)),
-		// 中和（和游戏里一样的时刻，普通速度：原版 0.35s + 多蓄 0.3s）：握刀停住 → 头顶预告函旋出 → 一刀劈下（卡片和敌人同一刀）→ 两半烧尽
-		["neutralize"] = p =>
+		["ready2"] = p =>
 		{
-			p.Neutralize(0.3, Enemy, 0.35f + 0.3f);
-			p.Neutralize(2.0, Enemy2, 0.15f + 0.3f, true);
+			p.Ready(0.2, Stance.Knife, "knife", "attack_from_ready", play: true, lockOn: Enemy);
+			p.At(0.2 + 1.6 + 0.13, () => HitFx.Swing(p._front, Pose(760f, 260f), Pose(600f, 850f), Pose(1376f, 450f)));
+			p.Hit(0.2 + 1.6 + 0.15, Enemy, 6, false);
+			p.Ready(2.8, Stance.Gun, "aim", "shiv_from_aim", play: true, lockOn: Enemy2);
+			p.At(2.8 + 1.6 + 0.18, () => HitFx.Muzzle(p._front, Muzzle));
+			p.Hit(2.8 + 1.6 + 0.2, Enemy2, 6, true);
+			p.Ready(5.3, Stance.Mask, "mask", "", play: false);
 		},
 		// 选中打击牌（转刀起手停住）→ 取消（放下手、转刀收起）
 		["knifecancel"] = p =>
@@ -164,13 +144,27 @@ public partial class Preview : Node2D
 		Hit(t + 0.15, enemy, amount, false);
 	}
 
-	private void Neutralize(double t, Vector2 enemy, float cut, bool fromIdle = false)
+	/// <summary>拿起一张牌：摆架势（anim_in → anim_loop）、特效循环 1.6s（0.5s 起指到 lockOn 那个敌人）→ 打出（playAnim）/ 放回（anim_out）。</summary>
+	private void Ready(double t, Stance stance, string anim, string playAnim, bool play, Vector2? lockOn = null)
 	{
-		At(t, () => { _joker?.Play(fromIdle ? "knife_in" : "knife_loop"); if (fromIdle) { _joker?.Queue("knife_loop", true); } });
-		float k = enemy == Enemy ? 1f : 0.75f;
-		At(t, () => CardFx.Neutralize(_front, enemy + new Vector2(0f, -170f * k), enemy, 1f, cut));
-		At(t + cut - 0.14, () => _joker?.Play("attack_from_ready"));
-		Hit(t + cut, enemy, 3, false, fx: false);
+		ReadyFx? fx = null;
+		LockOn? lk = null;
+		At(t, () =>
+		{
+			_joker?.Play(anim + "_in");
+			_joker?.Queue(anim + "_loop", true);
+			fx = ReadyFx.Start(_front, _back, stance, v => Pose(v.X, v.Y));
+		});
+		if (lockOn is Vector2 e)
+		{
+			At(t + 0.5, () => { lk = LockOn.Start(_front, e, e == Enemy ? 230f : 180f); fx?.Aim(e); });
+		}
+		At(t + 1.6, () =>
+		{
+			lk?.Release();
+			fx?.End(play);
+			_joker?.Play(play ? playAnim : anim + "_out");
+		});
 	}
 
 	private void Shot(double t, Vector2 enemy, int amount)

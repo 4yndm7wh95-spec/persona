@@ -36,24 +36,6 @@ public static class AttackHitVfxPatch
 	}
 }
 
-/// <summary>中和：多蓄 JokerFx.NeutralizeLead 秒再结算伤害（握刀 → 头顶预告函转出 → 一刀劈下，预告函和敌人同一刀）。</summary>
-[HarmonyPatch(typeof(AttackCommand), nameof(AttackCommand.WithAttackerAnim))]
-public static class NeutralizeLeadPatch
-{
-	private static readonly FieldInfo Target = AccessTools.Field(typeof(AttackCommand), "_singleTarget");
-
-	public static void Prefix(AttackCommand __instance, ref float delay)
-	{
-		float d = delay;
-		bool lead = false;
-		ModEntry.Safe("NeutralizeLead", () => lead = JokerFx.NeutralizeStart(__instance.ModelSource as CardModel, Target.GetValue(__instance) as Creature, d));
-		if (lead)
-		{
-			delay += JokerFx.NeutralizeLead;
-		}
-	}
-}
-
 /// <summary>原版中和出牌时在敌人身上放的细斩（NThinSliceVfx）：Joker 出的牌不要，刀光由 HitFx / CardFx 放。</summary>
 [HarmonyPatch(typeof(NThinSliceVfx), nameof(NThinSliceVfx.Create))]
 public static class ThinSlicePatch
@@ -251,28 +233,6 @@ public static class BlockSparkPatch
 			return false;
 		}
 		return true;
-	}
-}
-
-/// <summary>Joker 用牌获得格挡（所有 GainBlock 重载都汇到带 cardPlay 的那个）：身前撕开一面红光盾（CardFx.Guard）。</summary>
-[HarmonyPatch]
-public static class GainBlockPatch
-{
-	public static IEnumerable<MethodBase> TargetMethods() =>
-		typeof(CreatureCmd).GetMethods(BindingFlags.Public | BindingFlags.Static)
-			.Where(m => m.Name == "GainBlock" && m.GetParameters().Any(p => p.Name == "cardPlay") && m.GetParameters().Any(p => p.Name == "creature"))
-			.OrderByDescending(m => m.GetParameters().Length).Take(1);
-
-	public static void Prefix(Creature creature, decimal amount, CardPlay? cardPlay)
-	{
-		ModEntry.Safe("GainBlock", () =>
-		{
-			if (amount > 0m && cardPlay != null && Joker.OwnsCard(cardPlay.Card) && creature.Player is { } p && Joker.Is(p)
-				&& NCombatRoom.Instance?.GetCreatureNode(creature) is NCreature node && Joker.FxLayer() is Godot.Control layer)
-			{
-				CardFx.Guard(layer, Joker.Chest(node), Joker.Facing(node));
-			}
-		});
 	}
 }
 
