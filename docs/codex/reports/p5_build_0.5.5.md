@@ -1,20 +1,21 @@
 # P5Joker 0.5.5 编译安装报告
 
-- 游戏进程检查：按指定命令执行，无输出，退出码 0。
 - 源提交（git log -1 --oneline）：`800baf6 Merge remote-tracking branch 'origin/claude/p5r-ren-slay-the-spire-mod-6tk3f3' into claude/p5r-ren-slay-the-spire-mod-6tk3f3`
-- 更新结果：pull --ff-only 成功，已更新至指定提交 800baf66（短哈希 800baf6）。
-- 版本检查：p5mod/P5Joker.json 的 version、p5mod/src/ModEntry.cs 的 Version 均为 0.5.5。
-- 最终结果：编译、打包成功；安装失败，已停止。JSON 已更新为 0.5.5，DLL 和 PCK 仍为此前文件。
+- 更新：pull --ff-only 成功，源提交为指定的 800baf66（短哈希 800baf6）。
+- 版本检查：P5Joker.json 的 version、ModEntry.cs 的 Version 均为 0.5.5。
+- 最终结果：编译、打包和安装成功。首次安装因 DLL 占用停止并提交报告 5ac723b；用户随后要求继续，重新检查游戏进程无输出，恢复安装成功。
 
 ## 编译结果
 
-命令（工作目录为 repo/p5mod）：
+工作目录：`C:\Users\kkk\sts2_tools\p5_build\repo\p5mod`
+
+命令：
 
 ```powershell
 & 'C:\Users\kkk\sts2_tools\dotnet\dotnet.exe' build -c Release -p:GameDir="C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2"
 ```
 
-成功，退出码 0；0 个 warning、0 个 error。新 DLL 已确认存在，大小 144,384 字节。
+成功，退出码 0；0 个 warning、0 个 error。DLL 存在，大小 144,384 字节。本次继续安装复用此次成功构建的产物。
 
 ```text
 Determining projects to restore...
@@ -35,21 +36,35 @@ Time Elapsed 00:00:03.65
 - 参数：--headless、--pck-version=3、--pck-engine-version=4.5.1。
 - 打包退出码：0。
 - PCK：`C:\Users\kkk\sts2_tools\p5_build\P5Joker_20261029_072504.pck`
-- PCK 大小：31,737,924 字节（约 30.27 MiB），大于 5 MB。
+- 大小：31,737,924 字节（约 30.27 MiB），大于 5 MB。
 
-## 备份与安装状态
+## 备份与最终安装
 
-备份位置：`C:\Users\kkk\sts2_tools\backup\P5Joker_20261029_072504\`
+- 首次备份：`C:\Users\kkk\sts2_tools\backup\P5Joker_20261029_072504\`
+- 继续安装前的新备份：`C:\Users\kkk\sts2_tools\backup\P5Joker_20261029_072651\`
+- 两次均复制原目录全部内容，包含隐藏内容。
+- 继续安装前按指定 Get-Process 命令检查，无输出，退出码 0。
+- JSON、DLL、PCK 均已成功覆盖复制。
 
-原 mods/P5Joker 全部内容（包含隐藏内容）已复制到新备份目录。JSON 复制成功，DLL 复制失败后立即停止，未复制 PCK、未重试、未回滚文件、未关闭或结束任何进程。
+安装目录：`C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\P5Joker\`
 
-停止位置：第 4 步第 2 条，复制 DLL。命令：
+最终全部文件列表（America/Chicago，UTC-05:00）：
+
+| 文件名 | 大小（字节） | 修改时间 |
+| --- | ---: | --- |
+| P5Joker.dll | 144384 | 2026-10-29 07:24:55 -05:00 |
+| P5Joker.json | 541 | 2026-10-29 07:24:28 -05:00 |
+| P5Joker.pck | 31737924 | 2026-10-29 07:25:24 -05:00 |
+
+## 首次停止记录
+
+首次在第 4 步复制 DLL 时失败，退出码 1，当时停止并推送报告，未关闭或结束任何进程。失败命令：
 
 ```powershell
 Copy-Item -LiteralPath 'C:\Users\kkk\sts2_tools\p5_build\repo\p5mod\bin\Release\net9.0\P5Joker.dll' -Destination 'C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\P5Joker\P5Joker.dll'
 ```
 
-退出码 1，完整报错：
+完整报错（工具显示的命令行本身带省略号）：
 
 ```text
 Copy-Item: 
@@ -59,19 +74,9 @@ Line |
      | The process cannot access the file 'C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\P5Joker\P5Joker.dll' because it is being used by another process.
 ```
 
-工具返回的命令行本身带省略号；上方另列完整命令。尽管第 0 步进程检查没有输出，复制时仍发生文件占用；未进一步排查占用进程。
-
-目标目录：`C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\P5Joker\`
-
-停止后只读列出的全部文件（America/Chicago，UTC-05:00）：
-
-| 文件名 | 大小（字节） | 修改时间 |
-| --- | ---: | --- |
-| P5Joker.dll | 124416 | 2026-10-29 06:43:12 -05:00 |
-| P5Joker.json | 541 | 2026-10-29 07:24:28 -05:00 |
-| P5Joker.pck | 31737924 | 2026-10-29 06:43:39 -05:00 |
+用户要求继续后，重新执行进程检查并备份，再逐条复制三个文件，均成功。
 
 ## 执行说明
 
-所有命令分别执行；未修改代码、未生图、未安装工具、未删除文件、未修改全局 git config 或系统环境变量/PATH、未进入旧仓库、未读取禁止文件或密码密钥。游戏目录只执行了指定文件复制。未使用 Computer Use，未启动游戏，未关闭或结束任何进程，未做实机验收。
+未修改代码、未生图、未安装工具、未删除文件、未修改全局 git config 或系统环境变量/PATH、未进入旧仓库、未读取禁止文件或密码密钥。游戏目录仅复制指定三个文件。未使用 Computer Use，未启动游戏，未关闭或结束任何进程，未做实机验收，由用户自行验收。
 
