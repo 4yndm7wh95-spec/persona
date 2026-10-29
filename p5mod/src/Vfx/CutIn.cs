@@ -20,71 +20,87 @@ public static class CutIn
 shader_type canvas_item;
 uniform sampler2D eyes : filter_linear;
 uniform float aspect = 0.32;       // 矩形高 / 半宽
-uniform float poke = 0.0;          // 入①：左边戳进来的撕口划到哪（1 = 到画面中间）
-uniform float open = 0.0;          // 入②：从中间往两边鼓开（0~1，可以过冲）
+uniform float poke = 0.0;          // 入①：左边戳进来的一笔划到哪（1 = 到中间偏右）
+uniform float wing = 0.0;          // 入②：这一笔往右延伸到出画
+uniform float open = 0.0;          // 入②：中间偏右先垂出一个鼓包，再撑成整条斜带（0~1，可过冲）
 uniform float img = 0.0;           // 口子里从白到特写
 uniform float zoom = 1.0;
-uniform float close = 0.0;         // 出：口子从左往右合上（左端往右收）+ 压扁
-uniform float red = 0.0;           // 出：收过的地方留下的红色撕痕
+uniform float slide = 0.0;         // 出：白纸 + 特写沿斜带方向往右上滑走（半宽为 1）
+uniform float slide_red = 0.0;     // 出：下层红纸慢半拍跟着滑
+uniform float thin = 0.0;          // 出：整条变细
+uniform float brk = 0.0;           // 出：白纸边裂成几条
+uniform float red = 0.0;           // 红纸层显出来
 uniform float alpha = 1.0;
 uniform float seed = 0.0;
-uniform vec4 crop = vec4(0.18, 0.36, 0.86, 0.74);   // 特写取图范围 x0 y0 x1 y1
+uniform float ext = 1.3;
+uniform vec4 crop = vec4(0.18, 0.36, 0.86, 0.74);
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
 	f = f * f * (3.0 - 2.0 * f);
 	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
 }
-float jag(float x, float s) { return noise(vec2(x * 22.0, s)) * 0.6 + noise(vec2(x * 75.0, s + 3.0)) * 0.4; }
-void fragment() {
-	float x = (UV.x - 0.5) * 2.0;
-	float y = (UV.y - 0.5) * 2.0 * aspect;
-	// ① 撕口：从左边缘戳进来，左粗右尖、边上撕成一缕缕的纤维
-	float tip = -1.08 + 1.1 * poke;
-	float u = clamp((x + 1.08) / max(tip + 1.08, 0.001), 0.0, 1.0);
-	float yc = 0.012 * sin(x * 6.0 + seed);
-	float th = (0.01 + 0.06 * pow(1.0 - u, 0.8)) * (0.35 + 1.2 * noise(vec2(x * 7.0, seed + 21.0))) * (0.7 + 0.6 * jag(x, seed + 23.0));
-	float fibre = step(0.6, noise(vec2(x * 5.0, y * 140.0 + seed)));
-	float stab = step(x, tip) * smoothstep(th, th * 0.7, abs(y - yc)) * (1.0 - fibre * step(th * 0.55, abs(y - yc)));
-	stab *= 1.0 - smoothstep(0.6, 1.0, open);
-	// ② 口子：从中间往两边鼓开，两头尖、中间宽；出的时候左端往右收、整体压扁
-	float e = 0.1 + 1.0 * clamp(open, 0.0, 1.2);
-	float lens = pow(max(1.0 - (x / e) * (x / e), 0.0), 0.7);
-	float left = -1.15 + 2.3 * close;
-	float A = 0.15 * min(open, 1.1) * (1.0 - 0.7 * close) * step(left, x);
-	// 不规整：上下边各自有大块的鼓包和凹口（低频噪声大幅度），再叠锯齿；上下不对称
-	float top = A * lens * (0.45 + 1.0 * noise(vec2(x * 3.2, seed + 50.0))) * (0.8 + 0.4 * jag(x, seed)) + 0.005 * jag(x, seed + 8.0);
-	float bot = A * lens * (0.35 + 0.9 * noise(vec2(x * 2.6, seed + 60.0))) * (0.8 + 0.4 * jag(x, seed + 5.0)) + 0.005 * jag(x, seed + 2.0);
+float jag(float x, float s) { return noise(vec2(x * 40.0, s)) * 0.6 + noise(vec2(x * 110.0, s + 3.0)) * 0.4; }
+
+// 口子的轮廓（原版的大致形状）：x 半宽坐标，返回 (纸, 口子里面)
+vec2 shape(float x, float y, float grow) {
+	float o = clamp(open, 0.0, 1.15);
+	float cx = mix(0.25, 0.1, smoothstep(0.0, 1.0, o));
+	float e = mix(0.1, 1.45, smoothstep(0.0, 1.0, o));
+	float dx = (x - cx) / e;
+	float lens = pow(max(1.0 - dx * dx, 0.0), 0.6);
+	lens *= mix(1.0, smoothstep(-1.1, -0.45, x) * 0.85 + 0.15, step(0.6, o));      // 左端收尖
+	float A = 0.15 * o * (1.0 - 0.75 * thin);
+	float droop = 0.03 * (1.0 - smoothstep(0.2, 0.8, o));                          // 鼓包偏下
+	float wave = 0.1 * (noise(vec2(x * 3.0, seed + 50.0)) - 0.5);
+	float top = A * lens * (1.0 + wave) + 0.004 * jag(x, seed) - droop;
+	float bot = A * lens * (1.0 - wave * 0.7) + 0.004 * jag(x, seed + 5.0) + droop;
 	float has = step(0.003, A * lens);
-	float inside = has * (y < 0.0 ? step(-top, y) : step(y, bot));
-	float bw = 0.016 + 0.024 * jag(x, seed + 17.0);
-	// 纸边伸出去的细长尖刺（随机几根，三角形），上下都有
-	float cell = floor(x * 13.0), fx = fract(x * 13.0 + 0.3 * noise(vec2(x * 4.0, seed)));
-	float tooth = step(0.62, hash(vec2(cell, seed))) * pow(max(1.0 - abs(fx - 0.5) * 2.0, 0.0), 2.5);
-	float toothB = step(0.68, hash(vec2(cell, seed + 9.0))) * pow(max(1.0 - abs(fx - 0.5) * 2.0, 0.0), 2.5);
-	float reachT = top + bw + tooth * 0.11 * min(open, 1.0) * lens;
-	float reachB = bot + bw + toothB * 0.09 * min(open, 1.0) * lens;
-	float paper = has * (y < 0.0 ? step(-reachT, y) : step(y, reachB));
-	// 边外飘着的小碎纸
-	float edgeD = y < 0.0 ? -y - reachT : y - reachB;
-	paper = max(paper, has * step(0.8, noise(vec2(x * 26.0, y * 55.0) + seed + 70.0)) * step(0.01, edgeD) * step(edgeD, 0.06 * min(open, 1.0)));
-	float ink = step(0.88, noise(vec2(x * 110.0, y * 150.0) + seed)) * (paper - inside);
+	float inside = has * step(-top, y) * step(y, bot);
+	float bw = 0.012 + 0.012 * jag(x, seed + 17.0) + grow;
+	float paper = has * step(-top - bw, y) * step(y, bot + bw);
+	// 边外几条和边平行的碎纸条（断断续续）
+	float dT = -y - (top + bw), dB = y - (bot + bw);
+	float sl = step(0.012, dT) * step(dT, 0.019) * step(0.58, noise(vec2(x * 6.0, seed + 70.0)))
+		+ step(0.014, dB) * step(dB, 0.02) * step(0.62, noise(vec2(x * 6.0, seed + 80.0)));
+	paper = max(paper, has * sl * step(0.3, o));
+	return vec2(paper, inside);
+}
+
+void fragment() {
+	float x0 = -1.0 + UV.x * (2.0 + 2.0 * ext);                  // 矩形往右多伸出一截，滑出去时不会被矩形边裁断
+	float y = (UV.y - 0.5) * 2.0 * aspect;
+	// ① 入场的一笔：左边粗、往右收尖，偶尔一个缺口；撑开后淡掉
+	float tip = -1.08 + 1.0 * poke + 1.3 * wing;
+	float u = clamp((x0 + 1.08) / max(tip + 1.08, 0.001), 0.0, 1.0);
+	float th = (0.004 + 0.03 * pow(1.0 - u, 0.9)) * (1.0 - 0.6 * step(0.82, noise(vec2(x0 * 9.0, seed + 21.0))));
+	float yc = 0.006 * sin(x0 * 5.0 + seed);
+	float stroke = step(x0, tip) * step(-1.1, x0) * step(abs(y - yc) + 0.003 * jag(x0, seed + 4.0), th);
+	stroke *= 1.0 - smoothstep(0.5, 0.9, open);
+
+	// ② 白纸 + 特写（上层）：出的时候沿斜带方向往右上滑
+	float x = x0 - slide;
+	vec2 w = shape(x, y, 0.0);
+	// 出：白纸边裂成几条平行碎条（只裂纸边，不裂特写）
+	float border = w.x * (1.0 - w.y);
+	border *= mix(1.0, step(brk * 0.85, noise(vec2(x * 1.3 + seed, y * 60.0))), step(0.001, brk));
 	vec3 col = vec3(1.0);
-	if (inside > 0.5) {
+	if (w.y > 0.5) {
 		float tu = mix(crop.x, crop.z, (x / zoom + 1.0) * 0.5);
 		float tv = mix(crop.y, crop.w, 0.5 + y / zoom / (2.0 * 0.15));
 		vec4 t = texture(eyes, vec2(tu, tv));
 		col = mix(vec3(1.0), mix(vec3(1.0), t.rgb, t.a), img);
 	}
-	col = mix(col, vec3(0.0), ink);
-	float a = max(paper, stab);
-	// 出：收过的地方（左端后面）一缕缕红色撕痕
-	float behind = step(left - 0.75, x) * step(x, left + 0.02);
-	float rw = 0.012 + 0.04 * jag(x, seed + 30.0) * (1.0 - (left - x) / 0.75);
-	float r = behind * step(abs(y - 0.015 - 0.02 * noise(vec2(x * 2.0, seed))), rw) * step(0.5, noise(vec2(x * 2.5, y * 220.0 + seed))) * red;
-	col = mix(col, vec3(0.9, 0.04, 0.08), r * (1.0 - paper));
-	a = max(a, r);
-	COLOR = vec4(col, a * alpha);
+	float top_a = max(max(border, w.y), stroke);
+
+	// ③ 红纸（下层）：同一个轮廓、往左下错开一点、稍大一圈，慢半拍跟着滑
+	vec2 r = shape(x0 - slide_red + 0.025, y - 0.018, 0.003);
+	float red_a = r.x * red;
+	vec3 red_col = vec3(0.86, 0.04, 0.08);
+
+	vec3 outc = mix(red_col, col, top_a);
+	float a = max(top_a, red_a);
+	COLOR = vec4(outc, a * alpha);
 }" };
 
 	/// <summary>
@@ -98,15 +114,15 @@ void fragment() {
 			return;
 		}
 		float w = screen.X * 1.05f, aspect = 0.34f, h = w / 2f * aspect * 2f;
-		// 按屏幕坐标摆：屏幕上 (0.5, 0.36) 处、斜 -10°
+		// 按屏幕坐标摆：屏幕上 (0.52, 0.42) 处、左低右高斜 -15°（原版的斜度）
 		Transform2D canvas = layer.GetGlobalTransformWithCanvas() * layer.GetGlobalTransform().AffineInverse();
 		Node2D root = new() { Name = "P5CutIn" };
 		layer.AddChild(root);
-		root.GlobalTransform = canvas.AffineInverse() * new Transform2D(-0.17f, new Vector2(screen.X * 0.5f, screen.Y * 0.36f));
+		root.GlobalTransform = canvas.AffineInverse() * new Transform2D(-0.27f, new Vector2(screen.X * 0.52f, screen.Y * 0.42f));
 		Fx.FreeAfter(root, tearAt + 0.5);
 		ColorRect rect = new()
 		{
-			Size = new Vector2(w, h), Position = new Vector2(-w / 2f, -h / 2f), MouseFilter = Control.MouseFilterEnum.Ignore,
+			Size = new Vector2(w * 2.3f, h), Position = new Vector2(-w / 2f, -h / 2f), MouseFilter = Control.MouseFilterEnum.Ignore,
 			Material = new ShaderMaterial { Shader = Slit },
 		};
 		root.AddChild(rect);
@@ -118,18 +134,24 @@ void fragment() {
 		Fx.Animate(root, 0, total, t =>
 		{
 			float s = t * total;
-			m.SetShaderParameter("poke", Ease5.OutQuint(Ease5.Seg(s, 0f, 0.08f)));
+			m.SetShaderParameter("poke", Ease5.OutQuint(Ease5.Seg(s, 0f, 0.07f)));
+			m.SetShaderParameter("wing", Ease5.OutQuint(Ease5.Seg(s, 0.07f, 0.04f)));
 			m.SetShaderParameter("open", Ease5.OutBack(Ease5.Seg(s, 0.07f, 0.1f)));
-			m.SetShaderParameter("img", Ease5.Seg(s, 0.13f, 0.04f));
+			m.SetShaderParameter("img", Ease5.Seg(s, 0.14f, 0.03f));
 			m.SetShaderParameter("zoom", 1f + 0.06f * Mathf.Min(s, tearAt));
-			m.SetShaderParameter("close", Ease5.OutQuint(Ease5.Seg(s, tearAt, 0.2f)));
-			m.SetShaderParameter("red", Ease5.Seg(s, tearAt, 0.05f) * (1f - Ease5.Seg(s, tearAt + 0.14f, 0.12f)));
-			m.SetShaderParameter("alpha", 1f - Ease5.Seg(s, tearAt + 0.2f, 0.08f));
+			// 出（原版约 10 帧 @60）：白纸 + 特写先往右上挪、左下露出红纸 → 越滑越快、变细、纸边裂开，红纸慢半拍跟着 → 一起出画
+			float k = Ease5.Seg(s, tearAt, 0.22f), kr = Ease5.Seg(s, tearAt + 0.035f, 0.22f);
+			m.SetShaderParameter("slide", 2.4f * Mathf.Pow(k, 2.2f));
+			m.SetShaderParameter("slide_red", 2.4f * Mathf.Pow(kr, 2.2f));
+			m.SetShaderParameter("red", Ease5.Seg(s, tearAt, 0.02f));
+			m.SetShaderParameter("thin", Ease5.Seg(s, tearAt + 0.02f, 0.14f));
+			m.SetShaderParameter("brk", Ease5.Seg(s, tearAt + 0.04f, 0.12f));
+			m.SetShaderParameter("alpha", 1f - Ease5.Seg(s, tearAt + 0.24f, 0.05f));
 		});
 		Fx.After(root, tearAt, () =>
 		{
 			// 右边崩出的白纸片（带黑边）
-			for (int i = 0; i < 16; i++)
+			for (int i = 0; i < 6; i++)
 			{
 				Vector2[] shape = Shard(Fx.Rand(18f, 60f));
 				Polygon2D bit = new() { Color = new Color(1f, 1f, 1f), Polygon = shape };
@@ -138,10 +160,10 @@ void fragment() {
 				piece.AddChild(bit);
 				piece.AddChild(edge);
 				root.AddChild(piece);
-				Vector2 from = new(Fx.Rand(0.3f, 0.5f) * w, Fx.Rand(-0.5f, 0.5f) * h * 0.3f);
+				Vector2 from = new(Fx.Rand(0.4f, 0.5f) * w, Fx.Rand(-0.4f, 0.2f) * h * 0.3f);
 				Vector2 vel = new(Fx.Rand(600f, 1500f), Fx.Rand(-500f, 400f));
 				float spin = Fx.Rand(-9f, 9f);
-				Fx.Animate(piece, 0.08, 0.36, t =>
+				Fx.Animate(piece, 0.1, 0.3, t =>
 				{
 					float s = t * 0.36f;
 					piece.Position = from + vel * s;
