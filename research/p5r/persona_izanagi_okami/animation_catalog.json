@@ -1,0 +1,382 @@
+[
+  {
+    "file": "BPS0360_000_main_0000.glb",
+    "source": "model/CHARACTER/PERSONA/0360/BPS0360_000.GAP",
+    "original_name": "BPS0360_000.GAP#main[0]",
+    "duration_seconds": 2.3333333,
+    "native_duration_seconds": 2.3333333,
+    "native_fps": null,
+    "sampled_frames_at_30fps": 71,
+    "channels": 230,
+    "unsupported_non_node_controllers": 0,
+    "unmapped_node_controllers": 0,
+    "status": "exported",
+    "frames": [
+      0,
+      6,
+      13,
+      19,
+      25,
+      32,
+      38,
+      45,
+      51,
+      57,
+      64,
+      70
+    ],
+    "camera_location": [
+      -1938.727783203125,
+      -2311.787841796875,
+      118.70345306396484
+    ],
+    "camera_rotation": [
+      1.5707961320877075,
+      3.852841601315049e-09,
+      -0.6747409701347351
+    ],
+    "ortho_scale": 343.1956787109375
+  },
+  {
+    "file": "BPS0360_000_main_0005.glb",
+    "source": "model/CHARACTER/PERSONA/0360/BPS0360_000.GAP",
+    "original_name": "BPS0360_000.GAP#main[5]",
+    "duration_seconds": 3.1333334,
+    "native_duration_seconds": 3.1333334,
+    "native_fps": null,
+    "sampled_frames_at_30fps": 95,
+    "channels": 259,
+    "unsupported_non_node_controllers": 0,
+    "unmapped_node_controllers": 0,
+    "status": "exported",
+    "frames": [
+      0,
+      9,
+      17,
+      26,
+      34,
+      43,
+      51,
+      60,
+      68,
+      77,
+      85,
+      94
+    ],
+    "camera_location": [
+      -1852.798828125,
+      -2382.97119140625,
+      152.91383361816406
+    ],
+    "camera_rotation": [
+      1.5707961320877075,
+      3.852841601315049e-09,
+      -0.6747409701347351
+    ],
+    "ortho_scale": 690.1473999023438
+  },
+  {
+    "file": "BPS0360_000_main_0006.glb",
+    "source": "model/CHARACTER/PERSONA/0360/BPS0360_000.GAP",
+    "original_name": "BPS0360_000.GAP#main[6]",
+    "duration_seconds": 1.6666666,
+    "native_duration_seconds": 1.6666666,
+    "native_fps": null,
+    "sampled_frames_at_30fps": 51,
+    "channels": 255,
+    "unsupported_non_node_controllers": 0,
+    "unmapped_node_controllers": 0,
+    "status": "exported",
+    "frames": [
+      0,
+      5,
+      9,
+      14,
+      18,
+      23,
+      27,
+      32,
+      36,
+      41,
+      45,
+      50
+    ],
+    "camera_location": [
+      -1901.9720458984375,
+      -2322.58642578125,
+      197.61264038085938
+    ],
+    "camera_rotation": [
+      1.5707961320877075,
+      3.852841601315049e-09,
+      -0.6747409701347351
+    ],
+    "ortho_scale": 479.5316467285156
+  },
+  {
+    "file": "BPS0360_000_main_0007.glb",
+    "source": "model/CHARACTER/PERSONA/0360/BPS0360_000.GAP",
+    "original_name": "BPS0360_000.GAP#main[7]",
+    "duration_seconds": 1.3333334,
+    "native_duration_seconds": 1.3333334,
+    "native_fps": null,
+    "sampled_frames_at_30fps": 41,
+    "channels": 291,
+    "unsupported_non_node_controllers": 0,
+    "unmapped_node_controllers": 0,
+    "status": "exported",
+    "frames": [
+      0,
+      4,
+      7,
+      11,
+      15,
+      18,
+      22,
+      25,
+      29,
+      33,
+      36,
+      40
+    ],
+    "camera_location": [
+      -1874.8426513671875,
+      -2300.93701171875,
+      199.39236450195312
+    ],
+    "camera_rotation": [
+      1.5707961320877075,
+      3.852841601315049e-09,
+      -0.6747409701347351
+    ],
+    "ortho_scale": 472.2033386230469
+  },
+  {
+    "file": "BPS0360_000_main_0008.glb",
+    "source": "model/CHARACTER/PERSONA/0360/BPS0360_000.GAP",
+    "original_name": "BPS0360_000.GAP#main[8]",
+    "duration_seconds": 0.73333335,
+    "native_duration_seconds": 0.73333335,
+    "native_fps": null,
+    "sampled_frames_at_30fps": 23,
+    "channels": 291,
+    "unsupported_non_node_controllers": 0,
+    "unmapped_node_controllers": 0,
+    "status": "exported",
+    "frames": [
+      0,
+      2,
+      4,
+      6,
+      8,
+      10,
+      12,
+      14,
+      16,
+      18,
+      20,
+      22
+    ],
+    "camera_location": [
+      -1873.9384765625,
+      -2275.279541015625,
+      198.09999084472656
+    ],
+    "camera_rotation": [
+      1.5707961320877075,
+      3.852841601315049e-09,
+      -0.6747409701347351
+    ],
+    "ortho_scale": 469.36016845703125
+  },
+  {
+    "file": "BPS0360_000_main_0009.glb",
+    "source": "model/CHARACTER/PERSONA/0360/BPS0360_000.GAP",
+    "original_name": "BPS0360_000.GAP#main[9]",
+    "duration_seconds": 1,
+    "native_duration_seconds": 1,
+    "native_fps": null,
+    "sampled_frames_at_30fps": 31,
+    "channels": 291,
+    "unsupported_non_node_controllers": 0,
+    "unmapped_node_controllers": 0,
+    "status": "exported",
+    "frames": [
+      0,
+      3,
+      5,
+      8,
+      11,
+      14,
+      16,
+      19,
+      22,
+      25,
+      27,
+      30
+    ],
+    "camera_location": [
+      -1876.6278076171875,
+      -2272.87255859375,
+      196.82077026367188
+    ],
+    "camera_rotation": [
+      1.5707961320877075,
+      3.852841601315049e-09,
+      -0.6747409701347351
+    ],
+    "ortho_scale": 466.0372619628906
+  },
+  {
+    "file": "BPS0360_000_main_0010.glb",
+    "source": "model/CHARACTER/PERSONA/0360/BPS0360_000.GAP",
+    "original_name": "BPS0360_000.GAP#main[10]",
+    "duration_seconds": 0.73333335,
+    "native_duration_seconds": 0.73333335,
+    "native_fps": null,
+    "sampled_frames_at_30fps": 23,
+    "channels": 291,
+    "unsupported_non_node_controllers": 0,
+    "unmapped_node_controllers": 0,
+    "status": "exported",
+    "frames": [
+      0,
+      2,
+      4,
+      6,
+      8,
+      10,
+      12,
+      14,
+      16,
+      18,
+      20,
+      22
+    ],
+    "camera_location": [
+      -1929.6705322265625,
+      -2341.85546875,
+      194.36273193359375
+    ],
+    "camera_rotation": [
+      1.5707961320877075,
+      3.852841601315049e-09,
+      -0.6747409701347351
+    ],
+    "ortho_scale": 472.6173095703125
+  },
+  {
+    "file": "GT0360_main_0000.glb",
+    "source": "model/CHARACTER/PERSONA/0360/GT0360.GAP",
+    "original_name": "GT0360.GAP#main[0]",
+    "duration_seconds": 2.3333333,
+    "native_duration_seconds": 2.3333333,
+    "native_fps": null,
+    "sampled_frames_at_30fps": 71,
+    "channels": 230,
+    "unsupported_non_node_controllers": 0,
+    "unmapped_node_controllers": 0,
+    "status": "exported",
+    "frames": [
+      0,
+      6,
+      13,
+      19,
+      25,
+      32,
+      38,
+      45,
+      51,
+      57,
+      64,
+      70
+    ],
+    "camera_location": [
+      -1938.727783203125,
+      -2311.787841796875,
+      118.70345306396484
+    ],
+    "camera_rotation": [
+      1.5707961320877075,
+      3.852841601315049e-09,
+      -0.6747409701347351
+    ],
+    "ortho_scale": 343.1956787109375
+  },
+  {
+    "file": "GT0360_main_0001.glb",
+    "source": "model/CHARACTER/PERSONA/0360/GT0360.GAP",
+    "original_name": "GT0360.GAP#main[1]",
+    "duration_seconds": 2.3333333,
+    "native_duration_seconds": 2.3333333,
+    "native_fps": null,
+    "sampled_frames_at_30fps": 71,
+    "channels": 234,
+    "unsupported_non_node_controllers": 0,
+    "unmapped_node_controllers": 0,
+    "status": "exported",
+    "frames": [
+      0,
+      6,
+      13,
+      19,
+      25,
+      32,
+      38,
+      45,
+      51,
+      57,
+      64,
+      70
+    ],
+    "camera_location": [
+      -1880.619873046875,
+      -2363.244140625,
+      152.50576782226562
+    ],
+    "camera_rotation": [
+      1.5707961320877075,
+      3.852841601315049e-09,
+      -0.6747409701347351
+    ],
+    "ortho_scale": 280.873046875
+  },
+  {
+    "file": "GT0360_main_0002.glb",
+    "source": "model/CHARACTER/PERSONA/0360/GT0360.GAP",
+    "original_name": "GT0360.GAP#main[2]",
+    "duration_seconds": 2.3333333,
+    "native_duration_seconds": 2.3333333,
+    "native_fps": null,
+    "sampled_frames_at_30fps": 71,
+    "channels": 230,
+    "unsupported_non_node_controllers": 0,
+    "unmapped_node_controllers": 0,
+    "status": "exported",
+    "frames": [
+      0,
+      6,
+      13,
+      19,
+      25,
+      32,
+      38,
+      45,
+      51,
+      57,
+      64,
+      70
+    ],
+    "camera_location": [
+      -1938.727783203125,
+      -2311.787841796875,
+      118.70345306396484
+    ],
+    "camera_rotation": [
+      1.5707961320877075,
+      3.852841601315049e-09,
+      -0.6747409701347351
+    ],
+    "ortho_scale": 343.1956787109375
+  }
+]
