@@ -55,6 +55,7 @@ public static class DamagePatch
 			}
 			bool gun = Joker.IsShot(cardSource);
 			Hits.Mark(targets, gun);
+			bool card = cardSource.GetType().Name == "Neutralize";              // 施加虚弱：钉一张预告信
 			if (Joker.Node(cardSource.Owner) is NCreature joker && NCombatRoom.Instance is NCombatRoom room)
 			{
 				foreach (Creature c in targets)
@@ -62,6 +63,10 @@ public static class DamagePatch
 					if (!c.IsPlayer && room.GetCreatureNode(c) is NCreature n)
 					{
 						JokerFx.OnHit(joker, n, gun);
+						if (card && Joker.FxLayer() is Godot.Control layer)
+						{
+							CardFx.CallingCard(layer, n.VfxSpawnPosition);
+						}
 					}
 				}
 			}
@@ -178,6 +183,28 @@ public static class BlockSparkPatch
 			return false;
 		}
 		return true;
+	}
+}
+
+/// <summary>Joker 用牌获得格挡（所有 GainBlock 重载都汇到带 cardPlay 的那个）：身前撕开一面红光盾（CardFx.Guard）。</summary>
+[HarmonyPatch]
+public static class GainBlockPatch
+{
+	public static IEnumerable<MethodBase> TargetMethods() =>
+		typeof(CreatureCmd).GetMethods(BindingFlags.Public | BindingFlags.Static)
+			.Where(m => m.Name == "GainBlock" && m.GetParameters().Any(p => p.Name == "cardPlay") && m.GetParameters().Any(p => p.Name == "creature"))
+			.OrderByDescending(m => m.GetParameters().Length).Take(1);
+
+	public static void Prefix(Creature creature, decimal amount, CardPlay? cardPlay)
+	{
+		ModEntry.Safe("GainBlock", () =>
+		{
+			if (amount > 0m && cardPlay != null && Joker.OwnsCard(cardPlay.Card) && creature.Player is { } p && Joker.Is(p)
+				&& NCombatRoom.Instance?.GetCreatureNode(creature) is NCreature node && Joker.FxLayer() is Godot.Control layer)
+			{
+				CardFx.Guard(layer, Joker.Chest(node), Joker.Facing(node));
+			}
+		});
 	}
 }
 

@@ -76,6 +76,16 @@ public partial class Preview : Node2D
 				p.At(Math.Max(0, 0.13 - skip), () => HitFx.Swing(p._front, Pose(760f, 260f), Pose(600f, 850f), Pose(1376f, 450f))); });
 			p.Hit(4.0, Enemy, 9, false);
 		},
+		// 第一批牌特效：防御（举盾面板）×2、中和（打击 + 预告信）
+		["cards"] = p =>
+		{
+			p.At(0.3, () => p._joker?.Play("cast_guard"));
+			p.At(0.55, () => CardFx.Guard(p._front, Chest));
+			p.Strike(1.6, Enemy, 3);
+			p.At(1.75, () => CardFx.CallingCard(p._front, Enemy));
+			p.At(3.2, () => p._joker?.Play("cast_guard"));
+			p.At(3.45, () => CardFx.Guard(p._front, Chest));
+		},
 		["block"] = p =>
 		{
 			p.EnemyAttack(0.3, Enemy);
