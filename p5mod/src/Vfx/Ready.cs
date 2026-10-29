@@ -95,6 +95,14 @@ public sealed class ReadyFx
 		}
 		_ended = true;
 		_wall?.End(played);
+		// 火焰着色器自己写颜色，不吃节点的 modulate：它们的透明度要单独淡掉（用户 2026-10-29：收手后火还留在半空）
+		foreach (Node2D n in new[] { _root, _back })
+		{
+			if (GodotObject.IsInstanceValid(n))
+			{
+				FadeShaders(n, played ? 0.2f : 0.25f);
+			}
+		}
 		foreach (Node2D n in new[] { _root, _back })
 		{
 			if (!GodotObject.IsInstanceValid(n))
@@ -129,7 +137,7 @@ public sealed class ReadyFx
 		Vector2 hand = _pose(MaskHand), face = _pose(MaskFace), feet = _pose(Feet);
 		// 脸上戴着一张面具形状的蓝焰（人物前面，中心在鼻梁、眼睛那一行），两边尖角往上翘
 		float body = (feet - face).Length();
-		_wall = new PersonaMask(_backLayer, _frontLayer, _pose(MaskEyes), body * 0.42f, _facing);
+		_wall = new PersonaMask(_backLayer, _frontLayer, _pose(MaskEyes), body * 0.42f, _facing, 0.08f * _facing);
 		// 指缝里漏出来的蓝焰：同样的细丝火，小而亮，贴着手的外沿
 		HandFire(hand + new Vector2(20f * _facing, -14f), 46f, 92f);
 		HandFire(hand + new Vector2(-6f * _facing, -30f), 38f, 74f);
@@ -273,6 +281,21 @@ public sealed class ReadyFx
 	}
 
 	// ───────────────────────── 共用 ─────────────────────────
+
+	/// <summary>节点下所有带着色器的 ColorRect：把着色器的 alpha 在 seconds 内淡到 0。</summary>
+	private static void FadeShaders(Node node, float seconds)
+	{
+		foreach (Node c in node.GetChildren())
+		{
+			if (c is ColorRect { Material: ShaderMaterial mat } r)
+			{
+				float from = mat.GetShaderParameter("alpha").VariantType == Variant.Type.Float ? (float)mat.GetShaderParameter("alpha") : 1f;
+				Tween tw = r.CreateTween();
+				tw.TweenMethod(Callable.From<float>(a => mat.SetShaderParameter("alpha", a)), from, 0f, seconds);
+			}
+			FadeShaders(c, seconds);
+		}
+	}
 
 	/// <summary>明暗起伏（一直循环）。</summary>
 	private static void Pulse(CanvasItem item, float lo, float hi, double period)

@@ -110,7 +110,8 @@ uniform vec4 dark_color : source_color = vec4(0.09, 0.0, 0.03, 1.0);
 uniform vec4 rim_color : source_color = vec4(1.0, 0.07, 0.11, 1.0);
 uniform float speed = 1.0;
 uniform float body_alpha = 0.5;
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+uniform float clock = 0.0;
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
 	f = f * f * (3.0 - 2.0 * f);
@@ -123,7 +124,7 @@ float fbm(vec2 p) {
 }
 void fragment() {
 	float y = 1.0 - UV.y;                                   // 0 = 底
-	float t = TIME * 1.9 * speed + seed * 17.0;
+	float t = clock * 1.9 * speed + seed * 17.0;
 	vec2 q = vec2(UV.x * 3.2 + seed, y * 2.4 - t);
 	float warp = fbm(q * 1.4 + vec2(0.0, -t * 0.4));
 	float n = fbm(q + warp * 1.6);
@@ -158,6 +159,7 @@ void fragment() {
 			Material = new ShaderMaterial { Shader = CurseFireShader },
 		};
 		root.AddChild(r);
+		Fx.Clock(r);
 		Set(r, "seed", Fx.Rand(0f, 10f));
 		Set(r, "width", widthK);
 		Set(r, "height", 0f);

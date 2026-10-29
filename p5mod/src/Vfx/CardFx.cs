@@ -27,7 +27,7 @@ uniform float grow = 1.0;
 uniform float scan = -2.0;
 uniform float dissolve = 0.0;
 uniform float alpha = 1.0;
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
 	f = f * f * (3.0 - 2.0 * f);
@@ -213,15 +213,16 @@ void fragment() {
 shader_type canvas_item;
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
 uniform float strength = 0.006;
+uniform float clock = 0.0;
 uniform float alpha = 1.0;
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
 	f = f * f * (3.0 - 2.0 * f);
 	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
 }
 void fragment() {
-	vec2 q = UV * vec2(6.0, 10.0) + vec2(0.0, TIME * 3.0);
+	vec2 q = UV * vec2(6.0, 10.0) + vec2(0.0, clock * 3.0);
 	vec2 off = vec2(noise(q) - 0.5, noise(q + 7.3) - 0.5) * strength * alpha;
 	vec2 c = UV * 2.0 - 1.0;
 	float m = smoothstep(1.0, 0.4, length(c));
@@ -308,6 +309,7 @@ void fragment() {
 				Material = new ShaderMaterial { Shader = Haze },
 			};
 			haze.AddChild(hz);
+			Fx.Clock(hz);
 			Fx.Animate(hz, 0, 0.9, t => ((ShaderMaterial)hz.Material).SetShaderParameter("alpha", Mathf.Sin(Mathf.Min(1f, t * 1.2f) * Mathf.Pi)));
 			// 敌人被烧成暗红
 			if (tint != null)

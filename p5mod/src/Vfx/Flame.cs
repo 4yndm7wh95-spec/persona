@@ -28,7 +28,8 @@ uniform float base_w = 0.42;
 uniform float top_w = 0.1;
 uniform float glow = 1.0;
 uniform float base_fade = 0.08;
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+uniform float clock = 0.0;
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
 	f = f * f * (3.0 - 2.0 * f);
@@ -47,7 +48,7 @@ float ridge(vec2 p) {
 void fragment() {
 	vec2 uv = UV;
 	float y = 1.0 - uv.y;
-	float t = TIME * speed + seed * 13.0;
+	float t = clock * speed + seed * 13.0;
 	// 两层扭曲：大尺度的摆动 + 往上流的卷曲
 	vec2 w = vec2(fbm(vec2(uv.x * 2.2 + seed, y * 1.1 - t * 0.3)), fbm(vec2(uv.x * 2.2 + 5.2, y * 1.1 - t * 0.3 + 3.0)));
 	vec2 w2 = vec2(fbm(vec2(uv.x * 5.0 + w.x * 2.0, y * 2.5 - t * 0.9)), fbm(vec2(uv.x * 5.0 + 2.7, y * 2.5 - t * 0.9 + w.y * 2.0)));
@@ -89,6 +90,7 @@ void fragment() {
 		};
 		parent.AddChild(r);
 		Set(r, "seed", Fx.Rand(0f, 10f));
+		Fx.Clock(r);
 		return r;
 	}
 
@@ -161,7 +163,9 @@ uniform float flame = 1.0;
 uniform float alpha = 1.0;
 uniform float glow = 1.0;
 uniform float seed = 0.0;
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+uniform float clock = 0.0;
+uniform float yaw = 0.75;
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
 	f = f * f * (3.0 - 2.0 * f);
@@ -187,7 +191,7 @@ float smin(float a, float b, float k) { float h = clamp(0.5 + 0.5 * (b - a) / k,
 // Joker 的面具：<0 在面具上
 float maskSdf(vec2 p) {
 	vec2 q = vec2(abs(p.x), p.y);
-	float body = ell(q, vec2(0.46, 0.02), vec2(0.56, 0.3), 0.2);
+	float body = ell(q, vec2(0.46, 0.03), vec2(0.56, 0.26), 0.2);
 	float tip = ell(q, vec2(0.9, 0.3), vec2(0.38, 0.06), 0.72);
 	float bridge = ell(q, vec2(0.0, 0.0), vec2(0.2, 0.13), 0.0);
 	float d = smin(smin(body, tip, 0.08), bridge, 0.1);
@@ -195,8 +199,12 @@ float maskSdf(vec2 p) {
 	return max(d, -hole);
 }
 void fragment() {
-	float t = TIME + seed * 11.0;
-	vec2 p = vec2((UV.x - 0.5) * kx, (cy - UV.y) * ky);
+	float t = clock + seed * 11.0;
+	vec2 sp = vec2((UV.x - 0.5) * kx, (cy - UV.y) * ky);
+	// 面具贴在 3/4 侧的脸上：绕竖轴转 yaw（透视：远的那一半，也就是 +x，变窄变小）。屏幕点反推回面具平面上的点
+	float f = 3.5, cs = cos(yaw), sn = sin(yaw);
+	float mx = sp.x * f / max(f * cs - sp.x * sn, 0.2);
+	vec2 p = vec2(mx, sp.y * (f + mx * sn * 0.5) / f);          // 竖向只给一半的透视，近的那半边不显胖
 	// 轮廓不规整：整体被慢慢流动的噪声扭一下
 	vec2 wob = vec2(fbm(p * 1.6 + vec2(seed, -t * 0.4)), fbm(p * 1.6 + vec2(4.3, -t * 0.4 + 2.0))) - 0.5;
 	vec2 pw = p + wob * 0.14;
@@ -247,7 +255,8 @@ void fragment() {
 
 	/// <param name="center">面具中心（屏幕，约在 Joker 眼睛的高度）</param>
 	/// <param name="halfWidth">面具半宽（屏幕像素）</param>
-	public PersonaMask(Control back, Control front, Vector2 center, float halfWidth, float facing = 1f)
+	/// <param name="roll">跟着头的倾斜转一点（弧度）</param>
+	public PersonaMask(Control back, Control front, Vector2 center, float halfWidth, float facing = 1f, float roll = 0f)
 	{
 		_layer = front;
 		_back = back;
@@ -265,6 +274,8 @@ void fragment() {
 			Scale = new Vector2(facing, 1f), MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Shader },
 		};
 		_root.AddChild(_fire);
+		_root.Rotation = roll;
+		Fx.Clock(_fire);
 		Set("kx", kx);
 		Set("ky", ky);
 		Set("cy", cy);
