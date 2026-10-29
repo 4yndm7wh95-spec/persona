@@ -1,107 +1,182 @@
+using System.Collections.Generic;
 using Godot;
 
 namespace P5Joker;
 
 /// <summary>
-/// 小刀弹药（用户 2026-10-29：P5R 有子弹数，杀戮尖塔没有）：能量球旁边一个左轮弹巢，手牌里有几张小刀牌就亮几发。
-/// 着色器实时画（不贴图）：深色转轮 + 红色描边 + 六个弹膛，装弹的弹膛是白热的弹头 + 红晕，空的是黑洞。
-/// 多一张：转轮转一格、新装的那发一闪；少一张（打出）：那发"弹出"一亮再熄、转轮倒转一格。超过 6 张时旁边显示 ×N。
-/// Set(count) 只记目标，Tick(delta) 每帧推进动画（游戏里由 NEnergyCounter._Process 驱动，预览里由预览驱动）。
+/// 小刀弹药（用户 2026-10-29）：能量球旁边一个左轮弹巢，手牌里有几张小刀牌就装几发，最多 6 发（6 张以上照样显示 6 发）。
+/// 素材是 Codex 画的 ammo_cylinder（转轮，正上方一个弹膛、每 60° 一个）/ ammo_round（装好的子弹）/ ammo_spent（打过的弹壳）；
+/// 素材没到之前用简单图形代替。
+/// 开枪（Fire，Joker 开火那一刻调用）：正上方那发一闪变成弹壳，转轮"咔"地转一格，弹壳淡掉；手里小刀还多于 6 张时，空出的弹膛马上补一发。
+/// 拿到小刀：空弹膛一发发"啪"地塞进去。少了但没开枪（弃掉 / 消耗）：0.4s 后照样退掉。
+/// Set(count) 只记目标，Tick(delta) 每帧推进（游戏里由 NEnergyCounter._Process 驱动，预览里由预览驱动）。
 /// </summary>
 public sealed class AmmoView
 {
-	private static Shader? _shader;
+	public const int Chambers = 6;
 
-	private static Shader Cylinder => _shader ??= new Shader { Code = @"
-shader_type canvas_item;
-uniform float loaded = 0.0;      // 亮着的弹膛数（0~6，可以是小数：正在装 / 退）
-uniform float spin = 0.0;        // 转轮角度
-uniform float flash = 0.0;       // 刚装 / 刚退的那一发闪光
-uniform float flash_slot = 0.0;
-uniform float dim = 1.0;         // 0 发时整体压暗
+	public readonly Node2D Root;
+	private readonly Node2D _wheel;
+	private readonly Sprite2D?[] _round = new Sprite2D?[Chambers];
+	private readonly Node2D[] _slot = new Node2D[Chambers];
+	private readonly Sprite2D _glow;
+	private readonly bool[] _loaded = new bool[Chambers];
+	private readonly float[] _pop = new float[Chambers];
+	private readonly Texture2D? _roundTex, _spentTex;
+	private readonly float _size;
+	private int _top;                 // 现在转到正上方的是第几个弹膛
+	private float _spin, _spinTarget, _flash, _pendingTimer;
+	private int _target, _pendingFires;
+	private readonly List<(Sprite2D S, float T)> _casings = new();
 
-float ring(float d, float r, float w) { return smoothstep(w, 0.0, abs(d - r)); }
-void fragment() {
-	vec2 p = UV * 2.0 - 1.0;
-	float d = length(p);
-	float a = atan(p.y, p.x) - spin;
-	// 转轮本体
-	float body = smoothstep(0.93, 0.90, d);
-	vec3 col = mix(vec3(0.11, 0.02, 0.04), vec3(0.03, 0.0, 0.01), d);
-	float alpha = body;
-	// 弹膛
-	float shown = 0.0, glow = 0.0, hole = 0.0, rimc = 0.0;
-	for (int i = 0; i < 6; i++) {
-		float ang = spin - TAU * 0.25 + float(i) * TAU / 6.0;
-		vec2 c = 0.55 * vec2(cos(ang), sin(ang));
-		float dc = length(p - c);
-		float on = clamp(loaded - float(i), 0.0, 1.0);
-		float f = flash * (1.0 - step(0.5, abs(float(i) - flash_slot)));
-		hole += smoothstep(0.2, 0.17, dc);
-		rimc += ring(dc, 0.2, 0.025);
-		shown += on * smoothstep(0.15, 0.11, dc);                  // 弹头
-		shown += on * ring(dc, 0.07, 0.03) * 0.6;                  // 底火
-		glow += (on * 0.6 + f * 1.5) * smoothstep(0.32, 0.0, dc);
-	}
-	col = mix(col, vec3(0.0), clamp(hole, 0.0, 1.0));
-	col += vec3(1.0, 0.1, 0.12) * clamp(rimc, 0.0, 1.0) * 0.8;
-	col = mix(col, vec3(1.0, 0.93, 0.85), clamp(shown, 0.0, 1.0));
-	col += vec3(1.0, 0.08, 0.12) * glow * 0.9;
-	// 外圈红描边 + 中心轴
-	float rim = ring(d, 0.91, 0.035);
-	col = mix(col, vec3(1.0, 0.08, 0.14), rim);
-	col = mix(col, vec3(0.9, 0.85, 0.8), smoothstep(0.1, 0.07, d));
-	alpha = max(alpha, rim) + glow * 0.4 * (1.0 - body);
-	COLOR = vec4(col * mix(0.45, 1.0, dim), clamp(alpha, 0.0, 1.0) * mix(0.55, 1.0, dim));
-}" };
-
-	public readonly Control Root;
-	private readonly ColorRect _rect;
-	private readonly Label _more;
-	private int _target, _shownCount;
-	private float _loaded, _spin, _spinTarget, _flash, _flashSlot, _dim = 1f;
-
-	public AmmoView(Node parent, float size = 96f)
+	public AmmoView(Node parent, float size = 104f)
 	{
-		Root = new Control { Name = "P5Ammo", MouseFilter = Control.MouseFilterEnum.Ignore, Size = new Vector2(size, size) };
+		_size = size;
+		Root = new Node2D { Name = "P5Ammo" };
 		parent.AddChild(Root);
-		_rect = new ColorRect
+		_glow = new Sprite2D { Texture = Glow.Soft, Material = Fx.Additive, Modulate = new Color(Pal5.Bright, 0f), Scale = Vector2.One * size / 64f * 1.6f };
+		Root.AddChild(_glow);
+		_wheel = new Node2D();
+		Root.AddChild(_wheel);
+		if (Fx.Tex("ammo_cylinder") is Texture2D cyl)
 		{
-			Size = new Vector2(size, size), MouseFilter = Control.MouseFilterEnum.Ignore,
-			Material = new ShaderMaterial { Shader = Cylinder },
-		};
-		Root.AddChild(_rect);
-		_more = Fx.Text(Root, "", 30, Pal5.Hot, new Color(0f, 0f, 0f), 8);
-		_more.Position = new Vector2(size * 0.78f, size * 0.62f);
-		_more.Rotation = -0.15f;
+			_wheel.AddChild(new Sprite2D { Texture = cyl, Scale = Vector2.One * size / cyl.GetWidth() });
+		}
+		else
+		{
+			// 素材没到：深色圆盘 + 红边 + 六个黑洞
+			_wheel.AddChild(new Polygon2D { Polygon = Fx.Circle(size * 0.47f, 40), Color = new Color(0.1f, 0.02f, 0.04f) });
+			_wheel.AddChild(new Line2D { Points = Fx.Circle(size * 0.47f, 40), Closed = true, Width = 3f, DefaultColor = Pal5.Crimson, Antialiased = true });
+		}
+		_roundTex = Fx.Tex("ammo_round");
+		_spentTex = Fx.Tex("ammo_spent");
+		float r = size * 0.5f * 0.55f, chamber = size * 0.2f;
+		for (int i = 0; i < Chambers; i++)
+		{
+			_slot[i] = new Node2D { Position = Vector2.Up.Rotated(Mathf.Tau * i / Chambers) * r };
+			_wheel.AddChild(_slot[i]);
+			if (_roundTex == null)
+			{
+				_slot[i].AddChild(new Polygon2D { Polygon = Fx.Circle(chamber * 0.5f, 16), Color = new Color(0f, 0f, 0f) });
+			}
+			Sprite2D round = new()
+			{
+				Texture = _roundTex ?? Glow.Soft,
+				Scale = Vector2.One * chamber / (_roundTex?.GetWidth() ?? 40f),
+				Modulate = _roundTex == null ? new Color(1f, 0.85f, 0.6f) : Colors.White,
+				Visible = false,
+			};
+			_slot[i].AddChild(round);
+			_round[i] = round;
+		}
 	}
 
-	public void Set(int count) => _target = Mathf.Max(0, count);
+	public void Set(int count) => _target = Mathf.Clamp(count, 0, Chambers);
+
+	/// <summary>Joker 开火那一刻：正上方那发打掉、转一格。</summary>
+	public void Fire()
+	{
+		if (_pendingFires > 0)
+		{
+			_pendingFires--;
+			_pendingTimer = _pendingFires > 0 ? _pendingTimer : 0f;
+		}
+		Shoot();
+	}
+
+	private int Loaded()
+	{
+		int n = 0;
+		foreach (bool b in _loaded)
+		{
+			n += b ? 1 : 0;
+		}
+		return n;
+	}
+
+	private void Shoot()
+	{
+		int top = _top;
+		if (_loaded[top])
+		{
+			_loaded[top] = false;
+			_round[top]!.Visible = false;
+			// 弹壳：在原地一闪、留一下、淡掉
+			Sprite2D casing = new()
+			{
+				Texture = _spentTex ?? Glow.Soft, Scale = _round[top]!.Scale, Modulate = new Color(1.6f, 1.4f, 1.3f, 1f),
+			};
+			_slot[top].AddChild(casing);
+			_casings.Add((casing, 0f));
+		}
+		_flash = 1f;
+		_top = (_top + 1) % Chambers;          // 转一格：下一发转到正上方
+		_spinTarget -= Mathf.Tau / Chambers;
+	}
 
 	public void Tick(float delta)
 	{
-		if (_target != _shownCount)
+		int loaded = Loaded();
+		if (_target > loaded)
 		{
-			// 一发一发地装 / 退：每发转一格、闪一下
-			int step = _target > _shownCount ? 1 : -1;
-			_shownCount += step;
-			_spinTarget += step * Mathf.Tau / 6f;
-			_flash = 1f;
-			_flashSlot = Mathf.Clamp(step > 0 ? _shownCount - 1 : _shownCount, 0, 5);
+			// 装弹：从正上方开始顺着往后找空弹膛，一帧塞一发
+			for (int k = 0; k < Chambers; k++)
+			{
+				int i = (_top + k) % Chambers;
+				if (!_loaded[i])
+				{
+					_loaded[i] = true;
+					_round[i]!.Visible = true;
+					_pop[i] = 1f;
+					break;
+				}
+			}
 		}
-		float k = 1f - Mathf.Exp(-delta * 18f);
-		_loaded = Mathf.Lerp(_loaded, Mathf.Min(_shownCount, 6), k);
-		_spin = Mathf.Lerp(_spin, _spinTarget, 1f - Mathf.Exp(-delta * 14f));
-		_flash = Mathf.Max(0f, _flash - delta * 4f);
-		_dim = Mathf.Lerp(_dim, _shownCount > 0 ? 1f : 0f, k);
-		var m = (ShaderMaterial)_rect.Material;
-		m.SetShaderParameter("loaded", _loaded);
-		m.SetShaderParameter("spin", _spin);
-		m.SetShaderParameter("flash", _flash);
-		m.SetShaderParameter("flash_slot", _flashSlot);
-		m.SetShaderParameter("dim", _dim);
-		_more.Text = _shownCount > 6 ? $"×{_shownCount}" : "";
-		Root.Scale = Vector2.One * (1f + 0.08f * _flash);
-		Root.PivotOffset = Root.Size / 2f;
+		else if (_target < loaded)
+		{
+			// 少了：先等开火（Fire）来打掉；0.4s 没开火（弃掉 / 消耗）就自己退
+			if (_pendingFires < loaded - _target && _pendingTimer <= 0f)
+			{
+				_pendingFires = loaded - _target;
+				_pendingTimer = 0.4f;
+			}
+			_pendingTimer -= delta;
+			if (_pendingTimer <= 0f)
+			{
+				// 等了 0.4s 没开火：剩下的每 0.06s 退一发
+				_pendingFires = Mathf.Max(0, _pendingFires - 1);
+				Shoot();
+				_pendingTimer = _pendingFires > 0 ? 0.06f : 0f;
+			}
+		}
+		_spin = Mathf.Lerp(_spin, _spinTarget, 1f - Mathf.Exp(-delta * 22f));
+		_wheel.Rotation = _spin;
+		_flash = Mathf.Max(0f, _flash - delta * 5f);
+		_glow.Modulate = new Color(Pal5.Bright, 0.15f + 0.6f * _flash);
+		Root.Scale = Vector2.One * (1f + 0.07f * _flash);
+		for (int i = 0; i < Chambers; i++)
+		{
+			_pop[i] = Mathf.Max(0f, _pop[i] - delta * 6f);
+			float baseScale = _size * 0.2f / (_roundTex?.GetWidth() ?? 40f);
+			_round[i]!.Scale = Vector2.One * baseScale * (1f + 0.5f * _pop[i]);
+			_round[i]!.Modulate = _roundTex == null ? new Color(1f, 0.85f, 0.6f) : new Color(1f + _pop[i], 1f + _pop[i], 1f + _pop[i]);
+		}
+		for (int c = _casings.Count - 1; c >= 0; c--)
+		{
+			var (s, t) = _casings[c];
+			t += delta;
+			s.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp((t - 0.25f) / 0.3f, 0f, 1f));
+			if (t > 0.6f)
+			{
+				s.QueueFree();
+				_casings.RemoveAt(c);
+			}
+			else
+			{
+				_casings[c] = (s, t);
+			}
+		}
+		Root.Visible = true;
+		Root.Modulate = new Color(1f, 1f, 1f, loaded > 0 || _casings.Count > 0 ? 1f : 0.55f);
 	}
 }

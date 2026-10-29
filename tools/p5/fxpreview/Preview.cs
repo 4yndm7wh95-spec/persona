@@ -107,23 +107,25 @@ public partial class Preview : Node2D
 			p.At(1.68, () => HitFx.Muzzle(p._front, Muzzle));
 			p.At(1.7, () => HitFx.Ricochet(p._front, Muzzle, new[] { Enemy2, Enemy, Enemy3 }));
 		},
-		// 小刀弹药：装 3 → 打 1 → 装到 8（显示 ×8）→ 全部打完
+		// 小刀弹药：装 3 → 开一枪 → 装到 8（只显示 6）→ 开两枪（还剩 6：打掉一发转一格、马上补上）→ 全部弃掉
 		["ammo"] = p =>
 		{
 			AmmoView? view = null;
-			int n = 0;
-			p.At(0.1, () => { view = new AmmoView(p._front, 192f); view.Root.Position = new Vector2(860f, 420f); });
+			p.At(0.1, () => { view = new AmmoView(p._front, 220f); view.Root.Position = new Vector2(960f, 520f); });
 			p.Every(() => view?.Tick(1f / 30f));
-			foreach (var (t, c) in new[] { (0.4, 3), (1.3, 2), (1.9, 8), (3.0, 0) })
-			{
-				p.At(t, () => { n = c; view?.Set(n); });
-			}
+			p.At(0.4, () => view?.Set(3));
+			p.At(1.2, () => view?.Set(2));
+			p.At(1.38, () => view?.Fire());
+			p.At(2.0, () => view?.Set(8));
+			p.At(2.8, () => view?.Fire());
+			p.At(3.3, () => view?.Fire());
+			p.At(4.0, () => view?.Set(0));
 		},
 		// 肾上腺素（眼神切入 → 热浪 + 地裂）→ 子弹时间（时停）→ 爆发（剪影分身）
 		["skills"] = p =>
 		{
 			p.At(0.3, () => p._joker?.Play("cast_glove"));
-			p.At(0.3, () => SkillFx.Adrenaline(p._front, JokerFeet, Chest));
+			p.At(0.3, () => SkillFx.Adrenaline(p._front, p._back, JokerFeet, Chest));
 			p.At(2.0, () => p._joker?.Play("cast_glove"));
 			p.At(2.05, () => SkillFx.BulletTime(p._front, p._back, Chest));
 			p.At(4.0, () => p._joker?.Play("cast_glove"));

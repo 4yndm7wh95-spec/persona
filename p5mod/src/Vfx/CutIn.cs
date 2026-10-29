@@ -1,171 +1,150 @@
 using System;
-using System.Collections.Generic;
 using Godot;
 
 namespace P5Joker;
 
 /// <summary>
-/// 眼神切入（照着 P5R 原版：一条斜着的撕纸条从左边"刷"地扫进来，里面是 Joker 眼睛的特写，上下是撕开的白纸边 + 黑描边，
-/// 后面垫一条红色撕纸带；停一下，然后整条从中间"撕碎"，几块碎片带着红纸屑往右飞散）。
-/// 素材是原版切入图（BATTLE/CUTIN/BCT_P_BC0001，fx 名 eyes）；撕边、扫入、白色前沿都是着色器实时算的。
-/// 放在单独的 CanvasLayer 上，按屏幕坐标摆，不受战斗镜头缩放影响。onTear 在撕碎那一刻调用（接后续特效）。
+/// 眼神切入（逐帧照着 P5R 原版，用户 2026-10-29 的参考视频）：
+///  入 —— 一道极细的锯齿白色裂缝从左往右划过画面（4 帧），裂缝中间像眼睛一样"鼓开"成一个两头尖、中间宽的斜口子，
+///        口子里先是一团白，随即显出 Joker 眼睛的特写；口子边缘是撕开的白纸边，纸边上有黑色墨点；
+///  停 —— 特写在口子里慢慢推近；
+///  出 —— 口子被压扁成一条细线、往右扯走，左边拖出一道红色撕痕，右边崩出白色纸片。
+/// 整个口子是一个着色器实时算的（裂缝、鼓开、纸边、墨点、红痕），素材只有原版切入图（BCT_P_BC0001，fx 名 eyes）。
+/// 用户：切入不能盖住局内人物 —— 放在人物身后那层（back），按屏幕坐标摆。
 /// </summary>
 public static class CutIn
 {
-	private static Shader? _strip;
+	private static Shader? _slit;
 
-	/// <summary>撕纸条：UV 是切入图的贴图坐标；纸条只取 y0~y1 这一横条，上下边用噪声撕开，外面一圈白纸边 + 细黑边。</summary>
-	private static Shader Strip => _strip ??= new Shader { Code = @"
+	private static Shader Slit => _slit ??= new Shader { Code = @"
 shader_type canvas_item;
-uniform float reveal = 1.0;
-uniform float y0 = 0.36;
-uniform float y1 = 0.74;
-uniform float seed = 0.0;
+uniform sampler2D eyes : filter_linear;
+uniform float aspect = 0.32;       // 矩形高 / 半宽
+uniform float line = 0.0;          // 裂缝从左往右划到哪（0~1）
+uniform float open = 0.0;          // 口子张开（0~1，可以过冲）
+uniform float img = 0.0;           // 口子里从白到特写
+uniform float zoom = 1.0;
+uniform float shift = 0.0;         // 出：往右扯
+uniform float red = 0.0;           // 出：左边红痕
 uniform float alpha = 1.0;
+uniform float seed = 0.0;
+uniform vec4 crop = vec4(0.18, 0.36, 0.86, 0.74);   // 特写取图范围 x0 y0 x1 y1
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
 	f = f * f * (3.0 - 2.0 * f);
 	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
 }
+float jag(float x, float s) { return noise(vec2(x * 22.0, s)) * 0.6 + noise(vec2(x * 75.0, s + 3.0)) * 0.4; }
 void fragment() {
-	vec4 tex = texture(TEXTURE, UV);
-	float v = (UV.y - y0) / (y1 - y0);
-	float top = 0.12 + 0.07 * noise(vec2(UV.x * 26.0, seed)) + 0.035 * noise(vec2(UV.x * 95.0, seed + 4.0));
-	float bot = 0.88 - 0.07 * noise(vec2(UV.x * 23.0, seed + 9.0)) - 0.035 * noise(vec2(UV.x * 88.0, seed + 2.0));
-	float aa = 0.006;
-	float inside = smoothstep(top - aa, top + aa, v) * smoothstep(bot + aa, bot - aa, v);
-	float pt = top - 0.05 - 0.03 * noise(vec2(UV.x * 140.0, seed + 7.0));
-	float pb = bot + 0.05 + 0.03 * noise(vec2(UV.x * 130.0, seed + 5.0));
-	float paper = smoothstep(pt - aa, pt + aa, v) * smoothstep(pb + aa, pb - aa, v);
-	float ink = smoothstep(pt - 0.02 - aa, pt - 0.02 + aa, v) * smoothstep(pb + 0.02 + aa, pb + 0.02 - aa, v);
-	vec3 col = mix(vec3(0.0), vec3(1.0), paper);
-	col = mix(col, tex.rgb, inside * tex.a + inside * (1.0 - tex.a));
-	col = mix(col, vec3(1.0), inside * (1.0 - tex.a));
-	// 从左往右扫进来：前沿是参差的，带一道白光
-	float front = mix(0.1, 0.92, reveal) * 1.2 - 0.1 + (noise(vec2(v * 9.0, seed + 1.0)) - 0.5) * 0.08;
-	float shown = smoothstep(front + 0.004, front - 0.004, UV.x);
-	col = mix(col, vec3(1.0), smoothstep(front - 0.05, front, UV.x) * shown);
-	COLOR = vec4(col, ink * shown * alpha);
+	float x = (UV.x - 0.5) * 2.0 - shift;
+	float y = (UV.y - 0.5) * 2.0 * aspect;
+	float lens = pow(max(1.0 - x * x, 0.0), 0.75);
+	float A = 0.15 * open;
+	// 上下边各自撕开（锯齿 + 小缺口）
+	float top = A * lens * (0.82 + 0.36 * jag(x, seed)) + 0.006 * jag(x, seed + 8.0);
+	float bot = A * lens * (0.82 + 0.36 * jag(x, seed + 5.0)) + 0.006 * jag(x, seed + 2.0);
+	// 裂缝：还没张开时的一道细锯齿白线
+	float crack = (0.004 + 0.007 * jag(x, seed + 11.0)) * step(x, line * 2.3 - 1.15) * step(-1.0, x) * step(x, 1.0);
+	float inside = y < 0.0 ? step(-top, y) : step(y, bot);
+	float bw = 0.018 + 0.022 * jag(x, seed + 17.0);
+	float paper = y < 0.0 ? step(-top - bw, y) : step(y, bot + bw);
+	paper = max(paper * step(0.002, A * lens), step(abs(y), crack));
+	// 纸边上的黑墨点
+	float ink = step(0.87, noise(vec2(x * 110.0, y * 150.0) + seed)) * (paper - inside);
+	vec3 col = vec3(1.0);
+	if (inside > 0.5 && A * lens > 0.002) {
+		float u = mix(crop.x, crop.z, ((x + shift * 0.0) / zoom + 1.0) * 0.5);
+		float v = mix(crop.y, crop.w, 0.5 + y / zoom / (2.0 * 0.15));
+		vec4 t = texture(eyes, vec2(u, v));
+		col = mix(vec3(1.0), mix(vec3(1.0), t.rgb, t.a), img);
+	}
+	col = mix(col, vec3(0.0), ink);
+	float a = paper;
+	// 出：左边一道红色撕痕（横向的拉丝）
+	float rx = clamp(-x - 0.05, 0.0, 1.0);
+	float streak = step(0.42, noise(vec2(x * 3.0, y * 90.0 + seed))) * step(abs(y - 0.02), 0.09 * rx + 0.006) * step(x, -0.05) * step(-1.2, x);
+	float r = streak * red;
+	col = mix(col, vec3(0.9, 0.04, 0.08), r * (1.0 - paper));
+	a = max(a, r);
+	COLOR = vec4(col, a * alpha);
 }" };
 
 	/// <summary>
-	/// 播放眼神切入。screen = 屏幕大小；整段约 0.8s：0~0.15 扫入，停到 tearAt，然后撕碎飞散 0.3s。
+	/// 播放眼神切入。layer = 人物身后那层（Control），screen = 屏幕大小。0~0.2 入，停到 tearAt，tearAt 起 0.22s 出；onTear 在出的那一刻调用。
 	/// </summary>
-	public static void Eyes(Node parent, Vector2 screen, float tearAt = 0.5f, Action? onTear = null)
+	public static void Eyes(Control layer, Vector2 screen, float tearAt = 0.5f, Action? onTear = null)
 	{
 		if (Fx.Tex("eyes") is not Texture2D tex)
 		{
 			onTear?.Invoke();
 			return;
 		}
-		CanvasLayer cl = new() { Layer = 5, Name = "P5CutIn" };
-		parent.AddChild(cl);
-		Fx.FreeAfter(cl, tearAt + 0.6);
-		Node2D root = new() { Position = new Vector2(screen.X * 0.5f, screen.Y * 0.28f), Rotation = -0.12f };
-		cl.AddChild(root);
-		// 只取眼睛那一块：横向 0.18~0.86（两边是白底），纵向 0.36~0.74
-		const float y0 = 0.36f, y1 = 0.74f, x0 = 0.18f, x1 = 0.86f;
-		Vector2 ts = tex.GetSize();
-		float w = screen.X * 0.95f, h = w * (y1 - y0) * ts.Y / ((x1 - x0) * ts.X);
-		float seed = Fx.Rand(0f, 50f);
-
-		// 后面的红色撕纸带：略低、略斜，先于纸条扫进来
-		Polygon2D red = new() { Color = Pal5.Crimson, Polygon = Torn(w * 1.05f, h * 0.55f, 40, 0.18f), Position = new Vector2(-30f, h * 0.38f), Rotation = 0.05f };
-		root.AddChild(red);
-
-		// 纸条：竖着切成 6 块（边是锯齿），撕碎时各自飞走
-		var mat = new ShaderMaterial { Shader = Strip };
-		mat.SetShaderParameter("y0", y0);
-		mat.SetShaderParameter("y1", y1);
-		mat.SetShaderParameter("seed", seed);
-		const int n = 6;
-		var cuts = new List<float[]>();
-		for (int i = 0; i <= n; i++)
+		float w = screen.X * 1.05f, aspect = 0.34f, h = w / 2f * aspect * 2f;
+		// 按屏幕坐标摆：屏幕上 (0.5, 0.36) 处、斜 -10°
+		Transform2D canvas = layer.GetGlobalTransformWithCanvas() * layer.GetGlobalTransform().AffineInverse();
+		Node2D root = new() { Name = "P5CutIn" };
+		layer.AddChild(root);
+		root.GlobalTransform = canvas.AffineInverse() * new Transform2D(-0.17f, new Vector2(screen.X * 0.5f, screen.Y * 0.36f));
+		Fx.FreeAfter(root, tearAt + 0.5);
+		ColorRect rect = new()
 		{
-			var c = new float[6];
-			for (int j = 0; j < c.Length; j++)
-			{
-				c[j] = i == 0 ? -0.02f : i == n ? 1.02f : (float)i / n + Fx.Rand(-0.035f, 0.035f);
-			}
-			cuts.Add(c);
-		}
-		var pieces = new List<Polygon2D>();
-		for (int i = 0; i < n; i++)
+			Size = new Vector2(w, h), Position = new Vector2(-w / 2f, -h / 2f), MouseFilter = Control.MouseFilterEnum.Ignore,
+			Material = new ShaderMaterial { Shader = Slit },
+		};
+		root.AddChild(rect);
+		var m = (ShaderMaterial)rect.Material;
+		m.SetShaderParameter("eyes", tex);
+		m.SetShaderParameter("aspect", aspect);
+		m.SetShaderParameter("seed", Fx.Rand(0f, 40f));
+		float total = tearAt + 0.4f;
+		Fx.Animate(root, 0, total, t =>
 		{
-			var pts = new List<Vector2>();
-			var uvs = new List<Vector2>();
-			void Add(float u, float v)
-			{
-				pts.Add(new Vector2((u - 0.5f) * w, (v - 0.5f) * h));
-				uvs.Add(new Vector2((x0 + Mathf.Clamp(u, 0f, 1f) * (x1 - x0)) * ts.X, (y0 + v * (y1 - y0)) * ts.Y));
-			}
-			float[] l = cuts[i], r = cuts[i + 1];
-			for (int j = 0; j < l.Length; j++)
-			{
-				Add(l[j], (float)j / (l.Length - 1));
-			}
-			for (int j = r.Length - 1; j >= 0; j--)
-			{
-				Add(r[j], (float)j / (r.Length - 1));
-			}
-			Polygon2D piece = new() { Texture = tex, Polygon = pts.ToArray(), UV = uvs.ToArray(), Material = mat };
-			root.AddChild(piece);
-			pieces.Add(piece);
-		}
-
-		Fx.Animate(root, 0, tearAt + 0.4, t =>
-		{
-			float s = t * (tearAt + 0.4f);
-			mat.SetShaderParameter("reveal", Ease5.OutQuint(Ease5.Seg(s, 0.03f, 0.14f)));
-			red.Scale = new Vector2(Ease5.OutExpo(Ease5.Seg(s, 0f, 0.12f)), 1f);
-			// 停着的时候往右慢慢推、微微放大
-			float hold = Mathf.Min(s, tearAt);
-			root.Position = new Vector2(screen.X * 0.5f + 40f * hold, screen.Y * 0.28f);
-			root.Scale = Vector2.One * (1f + 0.04f * hold);
-			float k = Ease5.Seg(s, tearAt, 0.3f);
-			for (int i = 0; i < pieces.Count; i++)
-			{
-				float dir = i % 2 == 0 ? -1f : 1f, sp = 0.6f + 0.15f * i;
-				pieces[i].Position = new Vector2(1300f * sp * Ease5.OutQuint(k), dir * 160f * Ease5.OutQuint(k));
-				pieces[i].Rotation = dir * 0.5f * sp * k;
-				pieces[i].Scale = Vector2.One * (1f - 0.25f * k);
-			}
-			red.Modulate = new Color(1f, 1f, 1f, 1f - Ease5.Seg(s, tearAt, 0.04f));
-			mat.SetShaderParameter("alpha", 1f - Fx.InCubic(k));
+			float s = t * total;
+			m.SetShaderParameter("line", Ease5.OutQuint(Ease5.Seg(s, 0f, 0.07f)));
+			float open = Ease5.OutBack(Ease5.Seg(s, 0.06f, 0.11f));
+			float close = Ease5.OutQuint(Ease5.Seg(s, tearAt, 0.16f));
+			m.SetShaderParameter("open", open * (1f - 0.88f * close));
+			m.SetShaderParameter("img", Ease5.Seg(s, 0.12f, 0.06f));
+			m.SetShaderParameter("zoom", 1f + 0.06f * Mathf.Min(s, tearAt));
+			m.SetShaderParameter("shift", 0.9f * Fx.InCubic(Ease5.Seg(s, tearAt + 0.06f, 0.24f)));
+			m.SetShaderParameter("red", Ease5.Seg(s, tearAt, 0.06f) * (1f - Ease5.Seg(s, tearAt + 0.16f, 0.14f)));
+			m.SetShaderParameter("alpha", 1f - Ease5.Seg(s, tearAt + 0.22f, 0.1f));
 		});
-
 		Fx.After(root, tearAt, () =>
 		{
-			// 撕碎：红纸屑往右下飞 + 一道白光横扫
-			for (int i = 0; i < 24; i++)
+			// 右边崩出的白纸片（带黑边）
+			for (int i = 0; i < 16; i++)
 			{
-				Polygon2D bit = new() { Color = i % 3 == 0 ? Pal5.Hot : Pal5.Crimson, Polygon = Torn(Fx.Rand(30f, 90f), Fx.Rand(12f, 30f), 6, 0.35f) };
-				root.AddChild(bit);
-				Vector2 from = new(Fx.Rand(-w * 0.45f, w * 0.45f), Fx.Rand(-h * 0.2f, h * 0.6f));
-				Vector2 vel = new(Fx.Rand(700f, 1600f), Fx.Rand(-300f, 400f));
-				float spin = Fx.Rand(-10f, 10f);
-				Fx.Animate(bit, 0, 0.4, t =>
+				Vector2[] shape = Shard(Fx.Rand(18f, 60f));
+				Polygon2D bit = new() { Color = new Color(1f, 1f, 1f), Polygon = shape };
+				Line2D edge = new() { Points = shape, Closed = true, Width = 2f, DefaultColor = new Color(0f, 0f, 0f) };
+				Node2D piece = new();
+				piece.AddChild(bit);
+				piece.AddChild(edge);
+				root.AddChild(piece);
+				Vector2 from = new(Fx.Rand(0.1f, 0.5f) * w, Fx.Rand(-0.6f, 0.6f) * h * 0.4f);
+				Vector2 vel = new(Fx.Rand(600f, 1500f), Fx.Rand(-500f, 400f));
+				float spin = Fx.Rand(-9f, 9f);
+				Fx.Animate(piece, 0.04, 0.36, t =>
 				{
-					float s = t * 0.4f;
-					bit.Position = from + vel * s + new Vector2(0f, 600f * s * s);
-					bit.Rotation = spin * s;
-					bit.Modulate = new Color(1f, 1f, 1f, 1f - Fx.InCubic(t));
+					float s = t * 0.36f;
+					piece.Position = from + vel * s;
+					piece.Rotation = spin * s;
+					piece.Modulate = new Color(1f, 1f, 1f, 1f - Fx.InCubic(t));
 				});
 			}
 			onTear?.Invoke();
 		});
 	}
 
-	/// <summary>撕边的长条：宽 w、高 h，上下边各 n 段锯齿，jag = 锯齿深度（占高度比例）。</summary>
-	private static Vector2[] Torn(float w, float h, int n, float jag)
+	private static Vector2[] Shard(float r)
 	{
-		var pts = new Vector2[n * 2 + 2];
-		for (int i = 0; i <= n; i++)
+		int n = 4 + Fx.Rng.Next(3);
+		var pts = new Vector2[n];
+		for (int i = 0; i < n; i++)
 		{
-			float x = -w / 2f + w * i / n;
-			pts[i] = new Vector2(x, -h / 2f + Fx.Rand(0f, jag) * h);
-			pts[n * 2 + 1 - i] = new Vector2(x + Fx.Rand(-w / n * 0.3f, w / n * 0.3f), h / 2f - Fx.Rand(0f, jag) * h);
+			pts[i] = Vector2.Right.Rotated(Mathf.Tau * i / n + Fx.Rand(-0.4f, 0.4f)) * r * Fx.Rand(0.4f, 1f) * new Vector2(1.6f, 0.7f);
 		}
 		return pts;
 	}

@@ -16,9 +16,9 @@ public static class SkillFx
 {
 	// ───────────────────────── 肾上腺素 ─────────────────────────
 
-	public static void Adrenaline(Control layer, Vector2 feet, Vector2 chest, float facing = 1f)
+	public static void Adrenaline(Control layer, Control back, Vector2 feet, Vector2 chest, float facing = 1f)
 	{
-		CutIn.Eyes(layer, Fx.Screen(layer), 0.42f, () =>
+		CutIn.Eyes(back, Fx.Screen(layer), 0.5f, () =>
 		{
 			Glow.Flash(layer, chest, new Color(1f, 0.5f, 0.45f), 360f, 0.2f);
 			Glow.Ripple(layer, chest, 760f, 0.6f, 0.05f);
@@ -277,7 +277,7 @@ void fragment() {
 	/// <summary>剪影：纯黑填充 + 外面一圈红描边（采样邻域 alpha）；flash 白闪，cut 0~1 从下往上被横向速度线切走。</summary>
 	public static Shader SilhouetteShader => _silhouette ??= new Shader { Code = @"
 shader_type canvas_item;
-uniform float rim_px = 14.0;
+uniform float rim_px = 9.0;
 uniform float alpha = 1.0;
 uniform float flash = 0.0;
 uniform float cut = 0.0;
@@ -312,7 +312,7 @@ void fragment() {
 		{
 			float s = t * life;
 			float step = Ease5.OutExpo(Ease5.Seg(s, 0f, 0.2f));
-			clone.Position = home + new Vector2(-70f * facing * step, -8f * step);
+			clone.Position = home + new Vector2(-16f * facing * step, -4f * step);       // 用户：只露一点红边，贴着本体
 			mat.SetShaderParameter("flash", 1f - Ease5.Seg(s, 0f, 0.16f));
 			mat.SetShaderParameter("cut", Ease5.Seg(s, 0.95f, 0.25f));
 			mat.SetShaderParameter("alpha", Mathf.Min(1f, s * 12f));
@@ -320,15 +320,15 @@ void fragment() {
 		Fx.FreeAfter(clone, life + 0.05);
 		Glow.Flash(layer, chest, new Color(1f, 0.55f, 0.5f), 300f, 0.16f);
 		Glow.Ripple(layer, chest, 520f, 0.45f, 0.035f);
-		Glow.SpeedLines(layer, chest + new Vector2(-70f * facing, 0f), Pal5.Bright, 14, 90f, 300f, 0.3f);
+		Glow.SpeedLines(layer, chest, Pal5.Bright, 10, 80f, 220f, 0.26f);
 		Fx.After(layer, 0.95, () =>
 		{
 			// 扯走：横向的红白速度线往身后抽
-			Node2D root = Fx.Root(layer, chest + new Vector2(-70f * facing, 0f), "P5BurstPull", 0.5);
-			for (int i = 0; i < 9; i++)
+			Node2D root = Fx.Root(layer, chest + new Vector2(-20f * facing, 0f), "P5BurstPull", 0.5);
+			for (int i = 0; i < 6; i++)
 			{
 				Polygon2D line = Glow.TaperPoly(root, i % 3 == 0 ? Pal5.Hot : Pal5.Bright);
-				float y = Fx.Rand(-220f, 260f), len = Fx.Rand(160f, 360f), lag = Fx.Rand(0f, 0.08f), w = Fx.Rand(3f, 6f);
+				float y = Fx.Rand(-220f, 260f), len = Fx.Rand(110f, 240f), lag = Fx.Rand(0f, 0.08f), w = Fx.Rand(3f, 6f);
 				line.Visible = false;
 				Fx.Animate(line, lag, 0.28, t =>
 				{

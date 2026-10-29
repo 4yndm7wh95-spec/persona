@@ -85,6 +85,10 @@ def fx_textures():
     for name in GEN_TEX:
         drawn = GEN_CODEX / f"{name}.png"                 # Codex's drawn version wins over the scripted one (user 2026-10-28)
         yield name, Image.open(drawn if drawn.exists() else GEN / f"{name}.png").convert("RGBA")
+    # shiv ammo cylinder UI (Codex): optional until drawn
+    for name in ("ammo_cylinder", "ammo_round", "ammo_spent"):
+        if (GEN_CODEX / f"{name}.png").exists():
+            yield name, Image.open(GEN_CODEX / f"{name}.png").convert("RGBA")
     # calling card back: Codex draws calling_card_back.png; until then a placeholder (black card, red border + stripes, card's
     # own silhouette) so CardFx.Neutralize can flip front/back
     back = GEN_CODEX / "calling_card_back.png"

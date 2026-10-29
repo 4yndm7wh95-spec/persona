@@ -39,7 +39,15 @@ public static class JokerFx
 				break;
 			case "shiv":
 			case "shiv_from_aim":
-				Fx.After(layer, Mathf.Max(0f, 0.18f - skipped), () => HitFx.Muzzle(layer, Joker.Muzzle(node), Joker.Facing(node)));
+				Fx.After(layer, Mathf.Max(0f, 0.18f - skipped), () =>
+				{
+					HitFx.Muzzle(layer, Joker.Muzzle(node), Joker.Facing(node));
+					if (node.Entity?.Player is { } p && MegaCrit.Sts2.Core.Context.LocalContext.IsMe(p) && AmmoPatch.Local is AmmoView ammo
+						&& GodotObject.IsInstanceValid(ammo.Root))
+					{
+						ammo.Fire();                              // 弹巢跟着开枪转一格
+					}
+				});
 				break;
 		}
 	}
@@ -196,9 +204,9 @@ public static class JokerFx
 		{
 			Fx.After(layer, 0.05, () => CardFx.Shivs(layer, Joker.Chest(joker), Joker.PosePoint(joker, GlovePx), shivs, Joker.Facing(joker)));
 		}
-		else if (name == "Adrenaline")
+		else if (name == "Adrenaline" && Joker.FxLayer(back: true) is Control adBack)
 		{
-			SkillFx.Adrenaline(layer, Joker.PosePoint(joker, new Vector2(815f, 1622f)), Joker.Chest(joker), Joker.Facing(joker));
+			SkillFx.Adrenaline(layer, adBack, Joker.PosePoint(joker, new Vector2(815f, 1622f)), Joker.Chest(joker), Joker.Facing(joker));
 		}
 		else if (name == "BulletTime" && Joker.FxLayer(back: true) is Control btBack)
 		{
