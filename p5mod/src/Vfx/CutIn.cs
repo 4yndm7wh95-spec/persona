@@ -19,7 +19,7 @@ namespace P5Joker;
 public static class CutIn
 {
 	// 时间轴（秒）
-	private const float TCrack = 0.10f, TOpen = 0.145f, TBang = 0.2f, THold = 0.52f, TExit = 0.25f, TEnd = THold + TExit + 0.08f;
+	private const float TCrack = 0.10f, TOpen = 0.145f, TBang = 0.24f, THold = 0.553f, TExit = 0.25f, TEnd = THold + TExit + 0.08f;
 
 	private static readonly Color White = new("fbfbfa"), Ink = new("060608"), Red = new("e3121c"), Slate = new("b9cbe0");
 
@@ -42,6 +42,7 @@ uniform float bulge = 0.0;      // 刚撕开时口子中间偏右鼓出来
 uniform float blank = 0.0;      // 1 = 口子里是白纸（还没换成图）
 uniform float closeL = -1.0;    // 合上时：左端合拢到哪（u）
 uniform float red = 0.0;        // 下沿红纸露出多少
+uniform float streak = 0.0;     // 切出的最后一拍：带子合成一道粗的白色撕纸斜条（原版 1.167s）
 uniform vec2 shift = vec2(0.0); // 合上时整条往右上挪（u, v）
 uniform float seed = 0.0;
 uniform float alpha = 1.0;
@@ -76,6 +77,18 @@ float botBase(float u) {
 	if (u < 0.75) return mix(0.67, 0.61, (u - 0.62) / 0.13);
 	return 0.61 - 0.2 * (u - 0.75);
 }
+// 撕开那一帧（原版 0.583s，量出来的）：一道约 0.03 屏高的细白条，中心线从左 0.64 斜升到右 0.33，
+// 只在 u 0.4～0.72 之间下沿垂下一个圆肚子（u 0.6 处垂到 0.6）
+float blankC(float u) {
+	if (u < 0.1) return mix(0.636, 0.644, u / 0.1);
+	if (u < 0.2) return mix(0.644, 0.61, (u - 0.1) / 0.1);
+	if (u < 0.3) return mix(0.61, 0.558, (u - 0.2) / 0.1);
+	if (u < 0.4) return mix(0.558, 0.478, (u - 0.3) / 0.1);
+	if (u < 0.5) return mix(0.478, 0.44, (u - 0.4) / 0.1);
+	if (u < 0.8) return mix(0.44, 0.415, (u - 0.5) / 0.3);
+	if (u < 0.9) return mix(0.415, 0.393, (u - 0.8) / 0.1);
+	return mix(0.393, 0.33, (u - 0.9) / 0.1);
+}
 const vec4 PAPER = vec4(0.985, 0.985, 0.98, 1.0);
 const vec4 INK = vec4(0.024, 0.024, 0.03, 1.0);
 void fragment() {
@@ -95,11 +108,21 @@ void fragment() {
 	// 白纸条（偶尔翻出一大片）、窄而时有时无的黑边、偶尔分叉出去的第二股白条（两头尖，中间夹黑缝）
 	float wT = 0.015 + pow(ln(u * 23.0 + 3.0), 3.0) * 0.03, wB = 0.016 + pow(ln(u * 21.0 + 41.0), 3.0) * 0.032;
 	float kT = 0.003 + pow(ln(u * 15.0 + 7.0), 5.0) * 0.03, kB = 0.004 + pow(ln(u * 13.0 + 29.0), 5.0) * 0.025;
-	float s = clamp(o * 1.5, 0.0, 1.0) * shut;
+	float s = max(clamp(o * 1.5, 0.0, 1.0), step(0.5, red)) * shut;     // 切出时白纸边不跟着变细
+	s *= 1.0 + streak * 1.6;                                            // 最后一拍：只剩白纸，加粗成一道撕纸斜条
 	wT *= s; wB *= s; kT *= s; kB *= s;
 	top -= steps(u, 3.0) * s; bot += steps(u, 9.0) * s;
 	vec4 col = vec4(0.0);
-	if (h > 0.0005) {
+	if (blank > 0.5) {
+		float c = blankC(u) + (ln(u * 30.0 + 3.0) - 0.5) * 0.008;
+		float th = 0.013 + pow(ln(u * 19.0 + 7.0), 3.0) * 0.012;
+		float k = clamp((u - 0.4) / 0.32, 0.0, 1.0);
+		float belly = 0.21 * pow(sin(k * 3.14159), 0.6) * smoothstep(0.0, 0.12, k);   // 圆肚子：两边陡、底是圆的
+		float t0 = c - th - 0.02 * belly / 0.21, b0 = c + th + belly + (ln(u * 44.0 + 13.0) - 0.5) * 0.01;
+		if (v > t0 && v < b0) { col = PAPER; }
+		else if (v > t0 - 0.004 && v < b0 + 0.004) { col = INK; }
+	}
+	else if (h > 0.0005) {
 		if (v > top && v < bot) {
 			if (blank > 0.5) {
 				col = PAPER;
@@ -128,10 +151,10 @@ void fragment() {
 		float hr = half_ * o * b * smoothstep(closeL - 0.05, closeL + 0.3, u);
 		float rTop = mid + hr - 0.006;
 		// 一大块粗楔形红纸贴着带子左下（合拢处最粗），往左只伸出一小截、撕成一根根尖条
-		float reach = smoothstep(closeL - 0.16, closeL + 0.02, u) * smoothstep(0.85, 0.5, u);
+		float reach = smoothstep(closeL - 0.12, closeL + 0.02, u) * smoothstep(0.85, 0.45, u);
 		float strand = mix(0.25, 1.0, pow(ln(u * 46.0 + 5.0), 1.5));
-		float wedge = 0.03 + 0.05 * exp(-pow((u - closeL - 0.12) / 0.14, 2.0));
-		float rTh = red * (wedge + pow(ln(u * 11.0 + 61.0), 2.0) * 0.02) * reach * mix(strand, 1.0, smoothstep(closeL - 0.02, closeL + 0.1, u));
+		float wedge = 0.018 + 0.03 * exp(-pow((u - closeL - 0.1) / 0.14, 2.0));
+		float rTh = red * (wedge + pow(ln(u * 11.0 + 61.0), 3.0) * 0.012) * reach * mix(strand, 1.0, smoothstep(closeL - 0.02, closeL + 0.1, u));
 		if (v > rTop && v < rTop + rTh) { col = vec4(0.89, 0.07, 0.11, 1.0); }
 		else if (rTh > 0.002 && v > rTop - 0.003 && v < rTop + rTh + 0.004) { col = INK; }
 	}
@@ -171,10 +194,14 @@ void fragment() {
 		root.AddChild(shards);
 		List<Node2D> bits = Shards(shards, screen);
 
-		Node2D plate = Plate(root, P);
-		Node2D bang = Bang(root, P, out Node2D cracks);
-		Node2D slab = Slab(root, P);
-		plate.Visible = bang.Visible = slab.Visible = shards.Visible = false;
+		// 右边一整团（黑底、碎裂层、「!!」）一起动：切出时先原地碎裂，再往右上角收成一道斜条
+		Node2D right = new();
+		root.AddChild(right);
+		Node2D plate = Plate(right, P);
+		Node2D shatter = Shatter(right, P, out Node2D whites);
+		Node2D bang = Bang(right, P, out Node2D cracks, out List<Node2D> bars);
+		Node2D scrap = FinalScrap(root, P);
+		plate.Visible = bang.Visible = shatter.Visible = scrap.Visible = shards.Visible = false;
 
 		Fx.Animate(root, 0, TEnd, t =>
 		{
@@ -183,10 +210,12 @@ void fragment() {
 			m.SetShaderParameter("crack", s < TCrack ? (s < 0.035f ? 0.33f * s / 0.035f : Mathf.Lerp(0.33f, 0.42f, Mathf.Min(1f, (s - 0.035f) / 0.03f))) : 0f);
 			float open = s < TCrack ? 0f : s < TOpen ? 0.42f : 1f;
 			m.SetShaderParameter("bulge", s < TOpen ? 0.45f : 0f);
-			m.SetShaderParameter("blank", s < TOpen ? 1f : 0f);
-			plate.Visible = s >= TOpen && s < THold + 0.09f;
+			m.SetShaderParameter("blank", s >= TCrack && s < TOpen ? 1f : 0f);
+			plate.Visible = s >= TOpen;
+			right.Visible = true;
+			band.Visible = true;
 			shards.Visible = s >= TOpen;
-			bang.Visible = s >= TBang && s < THold + 0.1f;
+			bang.Visible = s >= TBang;
 			float pop = Mathf.Clamp((s - TBang) / 0.07f, 0f, 1f);
 			float sc = Mathf.Lerp(1.12f, 1f, Fx.OutCubic(pop));
 			Vector2 pivot = P(0.82f, 0.38f);
@@ -201,25 +230,40 @@ void fragment() {
 			float e = Mathf.Clamp((s - THold) / TExit, 0f, 1f);
 			if (e > 0f)
 			{
-				open = Mathf.Pow(1f - e, 1.3f);
-				m.SetShaderParameter("closeL", Mathf.Lerp(-0.25f, 1.1f, Fx.InCubic(e) * 0.6f + e * 0.4f));
-				m.SetShaderParameter("shift", new Vector2(0.1f, -0.07f) * Fx.InCubic(e));
-				m.SetShaderParameter("red", Mathf.Min(1f, e * 5f) * (1.4f - 0.6f * e));
-				shards.Position = P(0.08f, -0.06f) * Fx.InCubic(e);
-				shards.Modulate = new Color(1f, 1f, 1f, 1f - e);
-				// 「!!」先抖、出裂纹，往右上被扯走
-				float k1 = Mathf.Clamp(e / 0.4f, 0f, 1f);
+				// 量自原版（e = 切出进度；1.033s≈.19、1.067≈.32、1.100≈.45、1.133≈.59、1.167≈.72、1.200≈.85）：
+				// 带子 .19→.85 张开、.32→.7、.45→.5、.59→.45；.72 合成一道粗的白色撕纸斜条（红纸在下）；.85 只剩右上角红白碎纸
+				open = e < 0.59f ? Mathf.Lerp(1f, 0.45f, Mathf.SmoothStep(0f, 1f, e / 0.59f)) : Mathf.Lerp(0.45f, 0.04f, Mathf.Clamp((e - 0.59f) / 0.13f, 0f, 1f));
+				float closeL = e < 0.59f ? Mathf.Lerp(-0.1f, 0.12f, e / 0.59f) : Mathf.Lerp(0.12f, 0.38f, Mathf.Clamp((e - 0.59f) / 0.13f, 0f, 1f));
+				float late = Mathf.Clamp((e - 0.59f) / 0.13f, 0f, 1f);
+				m.SetShaderParameter("closeL", closeL);
+				m.SetShaderParameter("streak", late);
+				m.SetShaderParameter("shift", new Vector2(0.05f, -0.06f) * late);
+				m.SetShaderParameter("red", 1f);
+				band.Visible = e < 0.79f;
+				shards.Position = P(0.03f, -0.02f) * e + P(0.06f, -0.05f) * late;
+				shards.Modulate = new Color(1f, 1f, 1f, 1f - Fx.InCubic(e));
+				// 「!!」：.19 还在（裂纹出来），.32 劈开、各块错开，.42 就没了
 				cracks.Visible = true;
-				bang.Rotation = 0.05f * k1;
-				bang.Position = pivot * (1f - sc) + P(0.04f, -0.05f) * Fx.InCubic(k1) + new Vector2(Fx.Rand(-4f, 4f), Fx.Rand(-4f, 4f)) * (1f - k1);
-				bang.Modulate = new Color(1f, 1f, 1f, 1f - k1);
-				// 再变成一块细长的白纸板（黑裂纹、下面一条红），往右上角缩，最后剩一小块红白碎纸
-				slab.Visible = e > 0.22f && e < 1f;
-				float k2 = Fx.InCubic(Mathf.Clamp((e - 0.22f) / 0.78f, 0f, 1f));
-				float ss = Mathf.Lerp(1f, 0.28f, k2);
-				Vector2 corner = P(1.0f, 0.06f);
-				slab.Scale = Vector2.One * ss;
-				slab.Position = corner * (1f - ss) + P(0.02f, -0.02f) * k2;
+				float brk = Mathf.Clamp((e - 0.15f) / 0.27f, 0f, 1f);
+				for (int i = 0; i < bars.Count; i++)
+				{
+					Vector2 dir = new Vector2(Mathf.Cos(i * 2.3f), Mathf.Sin(i * 2.3f));
+					bars[i].Position = dir * P(0f, 0.03f).Y * brk + new Vector2(Fx.Rand(-3f, 3f), Fx.Rand(-3f, 3f));
+				}
+				bang.Modulate = Colors.White;                          // 不做半透明（叠在黑底上会发灰）：碎开、错开，然后直接没了
+				bang.Visible = brk < 0.8f;
+				// 黑底：白色锯齿轮廓和裂纹 .2 起亮出，.59 前原地微微往右上挪；.59～.72 收成一道斜条（压扁、转到裂口的斜度、往右上角靠）
+				shatter.Visible = true;
+				whites.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((e - 0.12f) * 8f, 0f, 1f));
+				float k = Mathf.SmoothStep(0f, 1f, late);
+				Vector2 corner = P(0.99f, 0.16f);
+				float sx = Mathf.Lerp(1f, 0.75f, k), sy = Mathf.Lerp(1f, 0.22f, k);
+				right.Rotation = -0.42f * k;
+				right.Scale = new Vector2(sx, sy);
+				right.Position = corner - (corner * new Vector2(sx, sy)).Rotated(right.Rotation) + P(0.015f, -0.02f) * Mathf.Min(1f, e / 0.59f);
+				right.Visible = e < 0.79f;
+				scrap.Visible = e >= 0.79f && e < 1f;
+				scrap.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp((e - 0.93f) / 0.07f, 0f, 1f));
 			}
 			m.SetShaderParameter("open", open);
 			// 碎片停住时轻轻飘
@@ -322,23 +366,37 @@ void fragment() {
 	}
 
 	/// <summary>「!!」：两根上宽下窄的斜条 + 两个方点，白底粗黑描边（坐标量自原版定格帧）。cracks：切出时出现的黑裂纹。</summary>
-	private static Node2D Bang(Node parent, System.Func<float, float, Vector2> P, out Node2D cracks)
+	private static Node2D Bang(Node parent, System.Func<float, float, Vector2> P, out Node2D cracks, out List<Node2D> bars)
 	{
 		Node2D n = new();
 		parent.AddChild(n);
 		float ink = P(0f, 0.018f).Y;
-		Outlined(n, new[] { P(0.806f, -0.02f), P(0.889f, 0.042f), P(0.797f, 0.407f), P(0.755f, 0.402f) }, White, ink);
-		Outlined(n, new[] { P(0.743f, 0.447f), P(0.799f, 0.452f), P(0.768f, 0.526f), P(0.737f, 0.498f) }, White, ink);
-		Outlined(n, new[] { P(0.936f, 0.209f), P(1.01f, 0.25f), P(0.841f, 0.585f), P(0.807f, 0.537f) }, White, ink);
-		Outlined(n, new[] { P(0.783f, 0.579f), P(0.828f, 0.619f), P(0.804f, 0.715f), P(0.761f, 0.622f) }, White, ink);
+		bars = new List<Node2D>();
+		foreach (Vector2[] bar in new[]
+		{
+			new[] { P(0.806f, -0.02f), P(0.889f, 0.042f), P(0.797f, 0.407f), P(0.755f, 0.402f) },
+			new[] { P(0.743f, 0.447f), P(0.799f, 0.452f), P(0.768f, 0.526f), P(0.737f, 0.498f) },
+			new[] { P(0.936f, 0.209f), P(1.01f, 0.25f), P(0.841f, 0.585f), P(0.807f, 0.537f) },
+			new[] { P(0.783f, 0.579f), P(0.828f, 0.619f), P(0.804f, 0.715f), P(0.761f, 0.622f) },
+		})
+		{
+			Node2D b = new();
+			n.AddChild(b);
+			Outlined(b, bar, White, ink);
+			bars.Add(b);
+		}
+		// 碎裂时劈开「!!」的粗黑锯齿裂纹（横着、斜着把竖条劈成几段）
 		cracks = new Node2D();
 		n.AddChild(cracks);
-		float w = P(0f, 0.007f).Y;
+		float w = P(0f, 0.016f).Y;
 		foreach (Vector2[] c in new[]
 		{
-			new[] { P(0.79f, 0.05f), P(0.81f, 0.13f), P(0.79f, 0.2f), P(0.8f, 0.3f) },
-			new[] { P(0.95f, 0.25f), P(0.9f, 0.33f), P(0.92f, 0.38f), P(0.86f, 0.48f) },
-			new[] { P(0.77f, 0.47f), P(0.78f, 0.5f) },
+			new[] { P(0.76f, 0.12f), P(0.79f, 0.1f), P(0.8f, 0.15f), P(0.84f, 0.12f), P(0.87f, 0.16f) },
+			new[] { P(0.75f, 0.28f), P(0.78f, 0.31f), P(0.8f, 0.26f), P(0.83f, 0.3f) },
+			new[] { P(0.86f, 0.33f), P(0.9f, 0.37f), P(0.93f, 0.33f), P(0.97f, 0.38f) },
+			new[] { P(0.82f, 0.48f), P(0.85f, 0.45f), P(0.87f, 0.5f), P(0.9f, 0.47f) },
+			new[] { P(0.77f, 0.64f), P(0.8f, 0.68f), P(0.83f, 0.64f) },
+			new[] { P(0.95f, 0.22f), P(0.93f, 0.27f), P(0.97f, 0.29f), P(1.0f, 0.26f) },
 		})
 		{
 			cracks.AddChild(new Line2D { Points = c, Width = w, DefaultColor = Ink, JointMode = Line2D.LineJointMode.Sharp });
@@ -346,28 +404,81 @@ void fragment() {
 		return n;
 	}
 
+	/// <summary>一道白色闪电状锯齿裂纹（原版切出时黑底上那种：折线、尖角、粗细不一，带几根短分叉）。</summary>
+	private static void Bolt(Node parent, Vector2 a, Vector2 b, float w, int segs)
+	{
+		Vector2 d = b - a, n = d.Orthogonal().Normalized();
+		var pts = new Vector2[segs + 1];
+		for (int i = 0; i <= segs; i++)
+		{
+			float k = (float)i / segs;
+			pts[i] = a + d * k + n * (i == 0 || i == segs ? 0f : Fx.Rand(-1f, 1f) * d.Length() * 0.12f);
+		}
+		parent.AddChild(new Line2D { Points = pts, Width = w, DefaultColor = White, JointMode = Line2D.LineJointMode.Sharp,
+			WidthCurve = Glow.Taper });
+		for (int i = 1; i < segs; i++)
+		{
+			if (Fx.Rng.NextDouble() < 0.45)
+			{
+				Vector2 tip = pts[i] + (n * Fx.Rand(-1f, 1f) + d.Normalized() * Fx.Rand(-0.3f, 0.6f)).Normalized() * d.Length() * Fx.Rand(0.08f, 0.18f);
+				parent.AddChild(new Line2D { Points = new[] { pts[i], tip }, Width = w * 0.7f, DefaultColor = White, WidthCurve = Glow.Taper });
+			}
+		}
+	}
+
 	/// <summary>
-	/// 合上时「!!」碎成的那块白纸板（原版 1.167s 那一帧）：从中间往右上角伸的一块细长撕纸，几道黑裂纹，下面一条红；
-	/// 缩到右上角就是最后那一小块红白碎纸。
+	/// 切出时被撕碎的右侧黑底：黑底轮廓同 Plate，上面几道白色闪电裂纹，边上一圈白色碎片（三角 / 细长条，尖头朝外）。
+	/// whites：裂纹和碎片（切出的第一拍才亮出来）。
 	/// </summary>
-	private static Node2D Slab(Node parent, System.Func<float, float, Vector2> P)
+	private static Node2D Shatter(Node parent, System.Func<float, float, Vector2> P, out Node2D whites)
 	{
 		Node2D n = new();
 		parent.AddChild(n);
-		Vector2[] body = { P(0.52f, 0.36f), P(0.6f, 0.27f), P(0.7f, 0.22f), P(0.78f, 0.12f), P(0.86f, 0.1f), P(0.93f, 0.04f),
-			P(1.01f, 0.02f), P(1.01f, 0.3f), P(0.95f, 0.28f), P(0.9f, 0.36f), P(0.84f, 0.3f), P(0.75f, 0.36f), P(0.68f, 0.33f), P(0.6f, 0.4f) };
-		Outlined(n, body, White, P(0f, 0.01f).Y);
-		Outlined(n, new[] { P(0.5f, 0.4f), P(0.62f, 0.36f), P(0.75f, 0.38f), P(0.7f, 0.43f), P(0.56f, 0.44f) }, Red, P(0f, 0.006f).Y);
-		float w = P(0f, 0.008f).Y;
-		foreach (Vector2[] c in new[]
+		Fx.Poly(n, new[] { P(0.8f, -0.02f), P(1.02f, -0.02f), P(1.02f, 0.63f), P(0.88f, 0.6f), P(0.82f, 0.74f), P(0.735f, 0.63f),
+			P(0.725f, 0.44f), P(0.745f, 0.39f) }, Ink);
+		Fx.Poly(n, new[] { P(0.968f, 0.424f), P(1.01f, 0.356f), P(1.01f, 0.455f) }, Red);
+		whites = new Node2D();
+		n.AddChild(whites);
+		float w = P(0f, 0.026f).Y;
+		// 黑底左边缘一圈白色锯齿轮廓（原版 1.100s）
+		Vector2[] rim = { P(0.8f, -0.02f), P(0.745f, 0.39f), P(0.725f, 0.44f), P(0.735f, 0.63f), P(0.82f, 0.74f), P(0.88f, 0.6f) };
+		for (int i = 0; i + 1 < rim.Length; i++)
 		{
-			new[] { P(0.66f, 0.26f), P(0.7f, 0.3f), P(0.68f, 0.35f) },
-			new[] { P(0.82f, 0.13f), P(0.84f, 0.2f), P(0.81f, 0.27f), P(0.85f, 0.31f) },
-			new[] { P(0.92f, 0.06f), P(0.9f, 0.14f), P(0.94f, 0.2f), P(0.92f, 0.28f) },
-		})
-		{
-			n.AddChild(new Line2D { Points = c, Width = w, DefaultColor = Ink, JointMode = Line2D.LineJointMode.Sharp });
+			Bolt(whites, rim[i], rim[i + 1], w * 0.9f, 5);
 		}
+		Bolt(whites, P(0.83f, -0.01f), P(0.79f, 0.42f), w, 6);
+		Bolt(whites, P(0.93f, 0.05f), P(0.85f, 0.56f), w * 1.2f, 7);
+		Bolt(whites, P(1.0f, 0.2f), P(0.9f, 0.6f), w, 5);
+		Bolt(whites, P(0.76f, 0.45f), P(0.84f, 0.7f), w * 0.8f, 4);
+		Bolt(whites, P(0.86f, 0.3f), P(1.0f, 0.38f), w * 0.8f, 4);
+		// 边上崩出的白碎片
+		(float U, float V, float A)[] bits =
+		{
+			(0.73f, 0.5f, 2.6f), (0.75f, 0.38f, 2.2f), (0.79f, 0.68f, 2.4f), (0.84f, 0.71f, -1.4f), (0.9f, 0.62f, -1.2f),
+			(0.97f, 0.6f, -0.9f), (0.79f, 0.05f, 2.0f), (0.88f, 0.0f, -2.6f), (0.74f, 0.58f, 2.9f),
+		};
+		foreach (var (u, v, a) in bits)
+		{
+			float len = P(0f, Fx.Rand(0.04f, 0.09f)).Y, wid = len * Fx.Rand(0.25f, 0.45f);
+			Node2D b = new() { Position = P(u, v), Rotation = a };
+			whites.AddChild(b);
+			Fx.Poly(b, new[] { new Vector2(len, 0f), new Vector2(-len * 0.2f, -wid * 0.5f), new Vector2(-len * 0.35f, wid * 0.1f),
+				new Vector2(-len * 0.1f, wid * 0.5f) }, White);
+		}
+		return n;
+	}
+
+	/// <summary>最后留在右上角的一小撮红白碎纸（原版 1.200s，u .79～.99，v .19～.35）。</summary>
+	private static Node2D FinalScrap(Node parent, System.Func<float, float, Vector2> P)
+	{
+		Node2D n = new();
+		parent.AddChild(n);
+		Outlined(n, new[] { P(0.8f, 0.34f), P(0.86f, 0.29f), P(0.9f, 0.27f), P(0.96f, 0.21f), P(1.0f, 0.19f), P(0.99f, 0.24f),
+			P(0.94f, 0.28f), P(0.91f, 0.33f), P(0.86f, 0.32f) }, Red, P(0f, 0.004f).Y);
+		Fx.Poly(n, new[] { P(0.79f, 0.345f), P(0.84f, 0.315f), P(0.83f, 0.335f) }, White);
+		Fx.Poly(n, new[] { P(0.88f, 0.27f), P(0.93f, 0.235f), P(0.91f, 0.26f) }, White);
+		Fx.Poly(n, new[] { P(0.95f, 0.27f), P(1.0f, 0.255f), P(0.97f, 0.285f) }, White);
+		Fx.Poly(n, new[] { P(0.83f, 0.3f), P(0.87f, 0.275f), P(0.855f, 0.295f) }, Red);
 		return n;
 	}
 }
