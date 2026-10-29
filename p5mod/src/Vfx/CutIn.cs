@@ -20,12 +20,12 @@ public static class CutIn
 shader_type canvas_item;
 uniform sampler2D eyes : filter_linear;
 uniform float aspect = 0.32;       // 矩形高 / 半宽
-uniform float line = 0.0;          // 裂缝从左往右划到哪（0~1）
-uniform float open = 0.0;          // 口子张开（0~1，可以过冲）
+uniform float poke = 0.0;          // 入①：左边戳进来的撕口划到哪（1 = 到画面中间）
+uniform float open = 0.0;          // 入②：从中间往两边鼓开（0~1，可以过冲）
 uniform float img = 0.0;           // 口子里从白到特写
 uniform float zoom = 1.0;
-uniform float shift = 0.0;         // 出：往右扯
-uniform float red = 0.0;           // 出：左边红痕
+uniform float close = 0.0;         // 出：口子从左往右合上（左端往右收）+ 压扁
+uniform float red = 0.0;           // 出：收过的地方留下的红色撕痕
 uniform float alpha = 1.0;
 uniform float seed = 0.0;
 uniform vec4 crop = vec4(0.18, 0.36, 0.86, 0.74);   // 特写取图范围 x0 y0 x1 y1
@@ -37,34 +37,51 @@ float noise(vec2 p) {
 }
 float jag(float x, float s) { return noise(vec2(x * 22.0, s)) * 0.6 + noise(vec2(x * 75.0, s + 3.0)) * 0.4; }
 void fragment() {
-	float x = (UV.x - 0.5) * 2.0 - shift;
+	float x = (UV.x - 0.5) * 2.0;
 	float y = (UV.y - 0.5) * 2.0 * aspect;
-	float lens = pow(max(1.0 - x * x, 0.0), 0.75);
-	float A = 0.15 * open;
-	// 上下边各自撕开（锯齿 + 小缺口）
-	float top = A * lens * (0.82 + 0.36 * jag(x, seed)) + 0.006 * jag(x, seed + 8.0);
-	float bot = A * lens * (0.82 + 0.36 * jag(x, seed + 5.0)) + 0.006 * jag(x, seed + 2.0);
-	// 裂缝：还没张开时的一道细锯齿白线
-	float crack = (0.004 + 0.007 * jag(x, seed + 11.0)) * step(x, line * 2.3 - 1.15) * step(-1.0, x) * step(x, 1.0);
-	float inside = y < 0.0 ? step(-top, y) : step(y, bot);
-	float bw = 0.018 + 0.022 * jag(x, seed + 17.0);
-	float paper = y < 0.0 ? step(-top - bw, y) : step(y, bot + bw);
-	paper = max(paper * step(0.002, A * lens), step(abs(y), crack));
-	// 纸边上的黑墨点
-	float ink = step(0.87, noise(vec2(x * 110.0, y * 150.0) + seed)) * (paper - inside);
+	// ① 撕口：从左边缘戳进来，左粗右尖、边上撕成一缕缕的纤维
+	float tip = -1.08 + 1.1 * poke;
+	float u = clamp((x + 1.08) / max(tip + 1.08, 0.001), 0.0, 1.0);
+	float yc = 0.012 * sin(x * 6.0 + seed);
+	float th = (0.01 + 0.06 * pow(1.0 - u, 0.8)) * (0.35 + 1.2 * noise(vec2(x * 7.0, seed + 21.0))) * (0.7 + 0.6 * jag(x, seed + 23.0));
+	float fibre = step(0.6, noise(vec2(x * 5.0, y * 140.0 + seed)));
+	float stab = step(x, tip) * smoothstep(th, th * 0.7, abs(y - yc)) * (1.0 - fibre * step(th * 0.55, abs(y - yc)));
+	stab *= 1.0 - smoothstep(0.6, 1.0, open);
+	// ② 口子：从中间往两边鼓开，两头尖、中间宽；出的时候左端往右收、整体压扁
+	float e = 0.1 + 1.0 * clamp(open, 0.0, 1.2);
+	float lens = pow(max(1.0 - (x / e) * (x / e), 0.0), 0.7);
+	float left = -1.15 + 2.3 * close;
+	float A = 0.15 * min(open, 1.1) * (1.0 - 0.7 * close) * step(left, x);
+	// 不规整：上下边各自有大块的鼓包和凹口（低频噪声大幅度），再叠锯齿；上下不对称
+	float top = A * lens * (0.45 + 1.0 * noise(vec2(x * 3.2, seed + 50.0))) * (0.8 + 0.4 * jag(x, seed)) + 0.005 * jag(x, seed + 8.0);
+	float bot = A * lens * (0.35 + 0.9 * noise(vec2(x * 2.6, seed + 60.0))) * (0.8 + 0.4 * jag(x, seed + 5.0)) + 0.005 * jag(x, seed + 2.0);
+	float has = step(0.003, A * lens);
+	float inside = has * (y < 0.0 ? step(-top, y) : step(y, bot));
+	float bw = 0.016 + 0.024 * jag(x, seed + 17.0);
+	// 纸边伸出去的细长尖刺（随机几根，三角形），上下都有
+	float cell = floor(x * 13.0), fx = fract(x * 13.0 + 0.3 * noise(vec2(x * 4.0, seed)));
+	float tooth = step(0.62, hash(vec2(cell, seed))) * pow(max(1.0 - abs(fx - 0.5) * 2.0, 0.0), 2.5);
+	float toothB = step(0.68, hash(vec2(cell, seed + 9.0))) * pow(max(1.0 - abs(fx - 0.5) * 2.0, 0.0), 2.5);
+	float reachT = top + bw + tooth * 0.11 * min(open, 1.0) * lens;
+	float reachB = bot + bw + toothB * 0.09 * min(open, 1.0) * lens;
+	float paper = has * (y < 0.0 ? step(-reachT, y) : step(y, reachB));
+	// 边外飘着的小碎纸
+	float edgeD = y < 0.0 ? -y - reachT : y - reachB;
+	paper = max(paper, has * step(0.8, noise(vec2(x * 26.0, y * 55.0) + seed + 70.0)) * step(0.01, edgeD) * step(edgeD, 0.06 * min(open, 1.0)));
+	float ink = step(0.88, noise(vec2(x * 110.0, y * 150.0) + seed)) * (paper - inside);
 	vec3 col = vec3(1.0);
-	if (inside > 0.5 && A * lens > 0.002) {
-		float u = mix(crop.x, crop.z, ((x + shift * 0.0) / zoom + 1.0) * 0.5);
-		float v = mix(crop.y, crop.w, 0.5 + y / zoom / (2.0 * 0.15));
-		vec4 t = texture(eyes, vec2(u, v));
+	if (inside > 0.5) {
+		float tu = mix(crop.x, crop.z, (x / zoom + 1.0) * 0.5);
+		float tv = mix(crop.y, crop.w, 0.5 + y / zoom / (2.0 * 0.15));
+		vec4 t = texture(eyes, vec2(tu, tv));
 		col = mix(vec3(1.0), mix(vec3(1.0), t.rgb, t.a), img);
 	}
 	col = mix(col, vec3(0.0), ink);
-	float a = paper;
-	// 出：左边一道红色撕痕（横向的拉丝）
-	float rx = clamp(-x - 0.05, 0.0, 1.0);
-	float streak = step(0.42, noise(vec2(x * 3.0, y * 90.0 + seed))) * step(abs(y - 0.02), 0.09 * rx + 0.006) * step(x, -0.05) * step(-1.2, x);
-	float r = streak * red;
+	float a = max(paper, stab);
+	// 出：收过的地方（左端后面）一缕缕红色撕痕
+	float behind = step(left - 0.75, x) * step(x, left + 0.02);
+	float rw = 0.012 + 0.04 * jag(x, seed + 30.0) * (1.0 - (left - x) / 0.75);
+	float r = behind * step(abs(y - 0.015 - 0.02 * noise(vec2(x * 2.0, seed))), rw) * step(0.5, noise(vec2(x * 2.5, y * 220.0 + seed))) * red;
 	col = mix(col, vec3(0.9, 0.04, 0.08), r * (1.0 - paper));
 	a = max(a, r);
 	COLOR = vec4(col, a * alpha);
@@ -101,15 +118,13 @@ void fragment() {
 		Fx.Animate(root, 0, total, t =>
 		{
 			float s = t * total;
-			m.SetShaderParameter("line", Ease5.OutQuint(Ease5.Seg(s, 0f, 0.07f)));
-			float open = Ease5.OutBack(Ease5.Seg(s, 0.06f, 0.11f));
-			float close = Ease5.OutQuint(Ease5.Seg(s, tearAt, 0.16f));
-			m.SetShaderParameter("open", open * (1f - 0.88f * close));
-			m.SetShaderParameter("img", Ease5.Seg(s, 0.12f, 0.06f));
+			m.SetShaderParameter("poke", Ease5.OutQuint(Ease5.Seg(s, 0f, 0.08f)));
+			m.SetShaderParameter("open", Ease5.OutBack(Ease5.Seg(s, 0.07f, 0.1f)));
+			m.SetShaderParameter("img", Ease5.Seg(s, 0.13f, 0.04f));
 			m.SetShaderParameter("zoom", 1f + 0.06f * Mathf.Min(s, tearAt));
-			m.SetShaderParameter("shift", 0.9f * Fx.InCubic(Ease5.Seg(s, tearAt + 0.06f, 0.24f)));
-			m.SetShaderParameter("red", Ease5.Seg(s, tearAt, 0.06f) * (1f - Ease5.Seg(s, tearAt + 0.16f, 0.14f)));
-			m.SetShaderParameter("alpha", 1f - Ease5.Seg(s, tearAt + 0.22f, 0.1f));
+			m.SetShaderParameter("close", Ease5.OutQuint(Ease5.Seg(s, tearAt, 0.2f)));
+			m.SetShaderParameter("red", Ease5.Seg(s, tearAt, 0.05f) * (1f - Ease5.Seg(s, tearAt + 0.14f, 0.12f)));
+			m.SetShaderParameter("alpha", 1f - Ease5.Seg(s, tearAt + 0.2f, 0.08f));
 		});
 		Fx.After(root, tearAt, () =>
 		{
@@ -123,10 +138,10 @@ void fragment() {
 				piece.AddChild(bit);
 				piece.AddChild(edge);
 				root.AddChild(piece);
-				Vector2 from = new(Fx.Rand(0.1f, 0.5f) * w, Fx.Rand(-0.6f, 0.6f) * h * 0.4f);
+				Vector2 from = new(Fx.Rand(0.3f, 0.5f) * w, Fx.Rand(-0.5f, 0.5f) * h * 0.3f);
 				Vector2 vel = new(Fx.Rand(600f, 1500f), Fx.Rand(-500f, 400f));
 				float spin = Fx.Rand(-9f, 9f);
-				Fx.Animate(piece, 0.04, 0.36, t =>
+				Fx.Animate(piece, 0.08, 0.36, t =>
 				{
 					float s = t * 0.36f;
 					piece.Position = from + vel * s;
