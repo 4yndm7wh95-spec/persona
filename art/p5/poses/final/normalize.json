@@ -750,5 +750,13 @@
    216
   ],
   "anchor_foot": "mid"
+ },
+ "knife_lower_h": {
+  "scale": 1.0,
+  "offset": [
+   265,
+   117
+  ],
+  "anchor_foot": "rear"
  }
 }
