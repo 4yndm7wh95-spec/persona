@@ -85,7 +85,8 @@ public static class Aim
 			{
 				return null;
 			}
-			string? name = kind switch { Cast.Big => "cast_big", Cast.Guard => "cast_guard", Cast.Glove => "cast_glove", _ => null };
+			// 撕面具甩手那版（cast_big）不用了（用户 2026-10-29：只留简单的召唤 cast）
+			string? name = kind switch { Cast.Guard => "cast_guard", Cast.Glove => "cast_glove", _ => null };
 			return name != null && body.HasAnimation(name) ? name : null;
 		}
 		string? current = Current(state);

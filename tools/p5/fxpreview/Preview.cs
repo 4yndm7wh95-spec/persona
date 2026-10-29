@@ -119,6 +119,16 @@ public partial class Preview : Node2D
 				p.At(t, () => { n = c; view?.Set(n); });
 			}
 		},
+		// 肾上腺素（眼神切入 → 热浪 + 地裂）→ 子弹时间（时停）→ 爆发（剪影分身）
+		["skills"] = p =>
+		{
+			p.At(0.3, () => p._joker?.Play("cast_glove"));
+			p.At(0.3, () => SkillFx.Adrenaline(p._front, JokerFeet, Chest));
+			p.At(2.0, () => p._joker?.Play("cast_glove"));
+			p.At(2.05, () => SkillFx.BulletTime(p._front, p._back, Chest));
+			p.At(4.0, () => p._joker?.Play("cast_glove"));
+			p.At(4.05, () => p.Clone(c => SkillFx.Burst(p._front, c, m => c.Material = m, Chest)));
+		},
 		["curse"] = p => p.At(0.3, () => CardFx.Curse(p._front, Enemy)),
 		// 中和（和游戏里一样的时刻，普通速度：原版 0.35s + 多蓄 0.3s）：握刀停住 → 头顶预告函旋出 → 一刀劈下（卡片和敌人同一刀）→ 两半烧尽
 		["neutralize"] = p =>
@@ -289,6 +299,19 @@ public partial class Preview : Node2D
 			VertexColors = new[] { new Color("3a3528"), new Color("3a3528"), new Color("1d1a14"), new Color("1d1a14") },
 		};
 		_world.AddChild(floor);
+	}
+
+	/// <summary>Joker 的副本（爆发的剪影分身）：放在本体后面、同一个动作同一时刻。</summary>
+	private void Clone(Action<Node2D> use)
+	{
+		string rig = ProjectSettings.GlobalizePath("res://") + "../../../art/p5/rig/joker";
+		SpinePlayer c = SpinePlayer.Load(rig + ".spine-json", rig + ".atlas", rig + ".png");
+		c.Position = JokerFeet;
+		c.Scale = new Vector2(0.29f, -0.29f);
+		_world.AddChild(c);
+		_world.MoveChild(c, _joker!.GetIndex());
+		c.PlayFrom(_joker.Current, _joker.Time);
+		use(c);
 	}
 
 	private void BuildActors()
