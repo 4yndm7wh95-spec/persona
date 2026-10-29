@@ -12,6 +12,7 @@ public partial class Preview : Node2D
 	// 游戏里的大致站位：Joker 脚底、敌人中心（VfxSpawnPosition）
 	public static readonly Vector2 JokerFeet = new(430f, 830f);
 	public static readonly Vector2 Enemy = new(1420f, 600f);
+	public static readonly Vector2 Enemy3 = new(1700f, 620f);
 	public static readonly Vector2 Enemy2 = new(1150f, 640f);
 	// 姿势图像素 → 屏幕：ORIGIN (815,1622)，K 0.87 × Visuals 缩放 0.29（tools/p5/build_rig_p5.py、p5mod/src/Joker.cs）
 	public static Vector2 Pose(float x, float y) => JokerFeet + new Vector2(x - 815f, y - 1622f) * 0.87f * 0.29f;
@@ -88,15 +89,35 @@ public partial class Preview : Node2D
 			p.At(4.6, () => p._joker?.Play("cast_glove"));
 			p.At(4.8, () => CardFx.Curse(p._front, Enemy2));
 		},
-		// 新一批：抽牌（卡片飞进手套）→ 生成小刀（光刃阵）→ 能量（觉醒星爆）
+		// 抽牌（卡片飞进手套）→ 生成小刀（光刃阵）
 		["cards2"] = p =>
 		{
 			p.At(0.3, () => p._joker?.Play("cast_glove"));
 			p.At(0.38, () => CardFx.Draw(p._front, Pose(989f, 400f), 3));
 			p.At(1.6, () => p._joker?.Play("cast_glove"));
 			p.At(1.65, () => CardFx.Shivs(p._front, Chest, Pose(989f, 400f), 3));
-			p.At(3.0, () => p._joker?.Play("cast_big"));
-			p.At(3.05, () => CardFx.Surge(p._front, p._back, JokerFeet, Chest, Pose(815f, 120f)));
+		},
+		// 刀扇：一发子弹弹过所有敌人（近 → 远）
+		["ricochet"] = p =>
+		{
+			p.At(0.3, () => p._joker?.Play("shiv"));
+			p.At(0.48, () => HitFx.Muzzle(p._front, Muzzle));
+			p.At(0.5, () => HitFx.Ricochet(p._front, Muzzle, new[] { Enemy2, Enemy, Enemy3 }));
+			p.At(1.5, () => p._joker?.Play("shiv"));
+			p.At(1.68, () => HitFx.Muzzle(p._front, Muzzle));
+			p.At(1.7, () => HitFx.Ricochet(p._front, Muzzle, new[] { Enemy2, Enemy, Enemy3 }));
+		},
+		// 小刀弹药：装 3 → 打 1 → 装到 8（显示 ×8）→ 全部打完
+		["ammo"] = p =>
+		{
+			AmmoView? view = null;
+			int n = 0;
+			p.At(0.1, () => { view = new AmmoView(p._front, 192f); view.Root.Position = new Vector2(860f, 420f); });
+			p.Every(() => view?.Tick(1f / 30f));
+			foreach (var (t, c) in new[] { (0.4, 3), (1.3, 2), (1.9, 8), (3.0, 0) })
+			{
+				p.At(t, () => { n = c; view?.Set(n); });
+			}
 		},
 		["curse"] = p => p.At(0.3, () => CardFx.Curse(p._front, Enemy)),
 		// 中和（和游戏里一样的时刻，普通速度：原版 0.35s + 多蓄 0.3s）：握刀停住 → 头顶预告函旋出 → 一刀劈下（卡片和敌人同一刀）→ 两半烧尽
@@ -219,9 +240,18 @@ public partial class Preview : Node2D
 		run(this);
 	}
 
+	private readonly List<Action> _every = new();
+
+	/// <summary>每帧都调用（弹药 UI 这类需要逐帧推进的）。</summary>
+	public void Every(Action action) => _every.Add(action);
+
 	public override void _Process(double delta)
 	{
 		_clock += delta;
+		foreach (Action a in _every)
+		{
+			Stage.Safe("every", a);
+		}
 		if (_shakeLeft > 0f)
 		{
 			_shakeLeft -= (float)delta;
@@ -270,6 +300,7 @@ public partial class Preview : Node2D
 		_world.AddChild(_joker);
 		Enemy1(Enemy, 1f);
 		Enemy1(Enemy2, 0.75f);
+		Enemy1(Enemy3, 0.8f);
 	}
 
 	/// <summary>敌人剪影：一个深紫色的大块头（大小接近第一幕的普通怪），中心就是 VfxSpawnPosition。</summary>

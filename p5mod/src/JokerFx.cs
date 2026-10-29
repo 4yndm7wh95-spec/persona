@@ -92,6 +92,18 @@ public static class JokerFx
 		return true;
 	}
 
+	/// <summary>小刀打全体（刀扇）：按离 Joker 由近到远排，一发子弹依次弹过去。</summary>
+	public static void OnRicochet(NCreature joker, List<NCreature> targets)
+	{
+		if (Joker.FxLayer() is not Control layer)
+		{
+			return;
+		}
+		Vector2 from = joker.GlobalPosition;
+		HitFx.Ricochet(layer, Joker.Muzzle(joker), targets.Select(t => t.VfxSpawnPosition).OrderBy(p => p.DistanceSquaredTo(from)).ToList(),
+			Joker.Facing(joker));
+	}
+
 	// 牌名 → 出牌特效（docs/p5/FX_PLAN.md）；能力牌默认是增益，防御类的格挡特效在 GainBlockPatch 里放
 	private static readonly HashSet<string> Debuffs = new() { "LegSweep", "PiercingWail", "Malaise", "SuckerPunch", "Expose", "Tracking" };
 	private static readonly HashSet<string> Poisons = new() { "DeadlyPoison", "PoisonedStab", "BouncingFlask", "Catalyst", "Envenom", "Outbreak",
@@ -106,7 +118,6 @@ public static class JokerFx
 	{
 		["BladeDance"] = 3, ["CloakAndDagger"] = 1, ["HiddenDaggers"] = 2, ["UpMySleeve"] = 3, ["StormOfSteel"] = 4,
 	};
-	private static readonly HashSet<string> Surges = new() { "Adrenaline", "BulletTime", "Burst" };
 
 	// 姿势图 cast_glove 举起的手套
 	private static readonly Vector2 GlovePx = new(989f, 400f);
@@ -145,11 +156,6 @@ public static class JokerFx
 		else if (ShivMakers.TryGetValue(name, out int shivs))
 		{
 			Fx.After(layer, 0.05, () => CardFx.Shivs(layer, Joker.Chest(joker), Joker.PosePoint(joker, GlovePx), shivs, Joker.Facing(joker)));
-		}
-		else if (Surges.Contains(name) && Joker.FxLayer(back: true) is Control surgeBack)
-		{
-			Fx.After(layer, 0.05, () => CardFx.Surge(layer, surgeBack, Joker.PosePoint(joker, new Vector2(815f, 1622f)), Joker.Chest(joker),
-				Joker.PosePoint(joker, new Vector2(815f, 120f))));
 		}
 		else if (card.Type == CardType.Power && Joker.FxLayer(back: true) is Control back)
 		{

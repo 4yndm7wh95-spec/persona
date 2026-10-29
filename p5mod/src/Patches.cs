@@ -69,6 +69,36 @@ public static class ThinSlicePatch
 	}
 }
 
+/// <summary>小刀弹药（Vfx/Ammo.cs）：Joker 的能量球每帧更新旁边的左轮弹巢 = 手牌里的小刀牌张数。</summary>
+[HarmonyPatch(typeof(NEnergyCounter), nameof(NEnergyCounter._Process))]
+public static class AmmoPatch
+{
+	private static readonly FieldInfo PlayerField = AccessTools.Field(typeof(NEnergyCounter), "_player");
+	private static readonly Dictionary<ulong, AmmoView> Views = new();
+
+	public static void Postfix(NEnergyCounter __instance, double delta)
+	{
+		ModEntry.Safe("Ammo", () =>
+		{
+			if (PlayerField.GetValue(__instance) is not MegaCrit.Sts2.Core.Entities.Players.Player player || !Joker.Is(player))
+			{
+				return;
+			}
+			ulong id = __instance.GetInstanceId();
+			if (!Views.TryGetValue(id, out AmmoView? view) || !Godot.GodotObject.IsInstanceValid(view.Root))
+			{
+				view = new AmmoView(__instance);
+				Views[id] = view;
+			}
+			// 能量球右上方
+			view.Root.Position = __instance.Size / 2f + new Godot.Vector2(62f, -118f);
+			int shivs = player.PlayerCombatState?.Hand.Cards.Count(Joker.IsShot) ?? 0;
+			view.Set(shivs);
+			view.Tick((float)delta);
+		});
+	}
+}
+
 /// <summary>每一击伤害（所有 Damage 重载最终汇到参数最多的那个）：放命中特效，记下 Joker 打中了谁、是不是枪击（伤害数字据此换成 P5 样式）。</summary>
 [HarmonyPatch]
 public static class DamagePatch
@@ -90,12 +120,15 @@ public static class DamagePatch
 			Hits.Mark(targets, gun);
 			if (Joker.Node(cardSource.Owner) is NCreature joker && NCombatRoom.Instance is NCombatRoom room)
 			{
-				foreach (Creature c in targets)
+				List<NCreature> hit = targets.Where(c => !c.IsPlayer).Select(room.GetCreatureNode).OfType<NCreature>().ToList();
+				if (gun && hit.Count > 1)
 				{
-					if (!c.IsPlayer && room.GetCreatureNode(c) is NCreature n)
-					{
-						JokerFx.OnHit(joker, n, gun);
-					}
+					JokerFx.OnRicochet(joker, hit);                // 刀扇：一发子弹弹过所有敌人
+					return;
+				}
+				foreach (NCreature n in hit)
+				{
+					JokerFx.OnHit(joker, n, gun);
 				}
 			}
 		});

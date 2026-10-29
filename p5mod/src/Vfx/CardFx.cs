@@ -656,25 +656,10 @@ void fragment() {
 			{
 				pts.Add(Bez(Mathf.Lerp(tail, u, j / 8f)));
 			}
-			trailGlow.Polygon = Ribbon(pts, 16f);
-			trailCore.Polygon = Ribbon(pts, 5f);
+			trailGlow.Polygon = Glow.Ribbon(pts, 16f);
+			trailCore.Polygon = Glow.Ribbon(pts, 5f);
 		});
 		Fx.Animate(trailRoot, delay + dur, 0.2, t => trailRoot.Modulate = new Color(1f, 1f, 1f, 1f - t));
-	}
-
-	/// <summary>沿折线的带子：尾巴是尖、头部最宽 w。</summary>
-	private static Vector2[] Ribbon(List<Vector2> pts, float w)
-	{
-		int n = pts.Count;
-		var outPts = new Vector2[n * 2];
-		for (int i = 0; i < n; i++)
-		{
-			Vector2 d = (pts[Mathf.Min(i + 1, n - 1)] - pts[Mathf.Max(i - 1, 0)]).Normalized();
-			Vector2 nn = new Vector2(-d.Y, d.X) * w * 0.5f * Mathf.Pow((float)i / (n - 1), 1.3f);
-			outPts[i] = pts[i] + nn;
-			outPts[n * 2 - 1 - i] = pts[i] - nn;
-		}
-		return outPts;
 	}
 
 	// ───────────────────────── 生成小刀：光刃阵 ─────────────────────────
@@ -747,49 +732,5 @@ void fragment() {
 			Glow.Sparks(layer, hand, 6, 100f, 320f, 0.3f, new[] { Pal5.Hot, Pal5.Bright }, 240f, 0.08f, 0.2f);
 			Glow.Glint(layer, hand, 0.6f);
 		});
-	}
-
-	// ───────────────────────── 能量：觉醒星爆 ─────────────────────────
-
-	/// <summary>
-	/// 能量 / 爆发（肾上腺素、子弹时间、爆发）：Joker 身后"砰"地炸开一个黑底红边的 P5 星爆（尖角放射形，两层错开转），
-	/// 一圈红白速度线往外喷，脚下扁光环 + 折射，面具位置一颗星光，红金火花往上冒。back = 人物身后那层，feet / chest / head 为身上的点。
-	/// 只在 Joker 身上，不碰敌人。
-	/// </summary>
-	public static void Surge(Control layer, Control back, Vector2 feet, Vector2 chest, Vector2 head)
-	{
-		Glow.Gather(layer, chest, Pal5.Bright, 300f, 0.12f);
-		Fx.After(layer, 0.12, () =>
-		{
-			Glow.Flash(layer, chest, new Color(1f, 0.5f, 0.45f), 380f, 0.22f);
-			Glow.SpeedLines(back, chest, Pal5.Bright, 20, 140f, 420f, 0.34f);
-			Glow.Shockwave(layer, feet, new Color(0.95f, 0.06f, 0.1f), 460f, 0.5f, 0.28f);
-			Glow.Ripple(layer, chest, 520f, 0.5f, 0.03f);
-			Glow.Glint(layer, head + new Vector2(14f, 40f), 1.1f, 0.05f);
-			Glow.Sparks(layer, feet, 30, 120f, 420f, 0.8f, new[] { Pal5.Hot, Pal5.Gold, Pal5.Bright, Pal5.Deep }, -200f, 0.1f, 0.32f, Vector2.Up, 50f);
-			Fx.Shake(1);
-		});
-		for (int layerI = 0; layerI < 2; layerI++)
-		{
-			bool outer = layerI == 0;
-			Node2D root = Fx.Root(back, chest, "P5Surge", 0.8);
-			Vector2[] star = Fx.Burst(outer ? 230f : 165f, outer ? 140f : 100f, outer ? 14 : 11, 0.3f);
-			// 外层：半透的黑底（压暗身后、衬出人物）；内层：加法的红光面，不是实心贴片
-			Polygon2D fill = Fx.Poly(root, star, outer ? new Color(Black, 0.45f) : new Color(Pal5.Bright, 0.28f), additive: !outer);
-			Line2D rim = new() { Points = star, Closed = true, Width = outer ? 5f : 3f, DefaultColor = outer ? Pal5.Bright : Pal5.Hot, Material = Fx.Additive,
-				Antialiased = true, JointMode = Line2D.LineJointMode.Sharp };
-			root.AddChild(rim);
-			root.Visible = false;
-			float spin = outer ? 0.5f : -0.8f;
-			Fx.Animate(root, 0.12 + (outer ? 0 : 0.04), 0.6, t =>
-			{
-				root.Visible = true;
-				float pop = Ease5.OutBack(Ease5.Seg(t, 0f, 0.25f));
-				root.Scale = Vector2.One * Mathf.Max(0.01f, pop * (1f + 0.25f * t));
-				root.Rotation = spin * t;
-				rim.Width = (outer ? 5f : 3f) * (1f - 0.6f * t);
-				root.Modulate = new Color(1f, 1f, 1f, 1f - Fx.InCubic(Ease5.Seg(t, 0.35f, 0.65f)));
-			});
-		}
 	}
 }

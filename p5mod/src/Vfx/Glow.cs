@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Godot;
 
 namespace P5Joker;
@@ -358,6 +359,21 @@ void fragment() {
 		}
 		Vector2 n = new Vector2(-d.Y, d.X).Normalized() * w / 2f, m = p0 + d * 0.35f;
 		return new[] { p0, m + n, p1, m - n };
+	}
+
+	/// <summary>沿折线的带子：尾巴是尖、头部最宽 w。</summary>
+	public static Vector2[] Ribbon(List<Vector2> pts, float w)
+	{
+		int n = pts.Count;
+		var outPts = new Vector2[n * 2];
+		for (int i = 0; i < n; i++)
+		{
+			Vector2 d = (pts[Mathf.Min(i + 1, n - 1)] - pts[Mathf.Max(i - 1, 0)]).Normalized();
+			Vector2 nn = new Vector2(-d.Y, d.X) * w * 0.5f * Mathf.Pow((float)i / (n - 1), 1.3f);
+			outPts[i] = pts[i] + nn;
+			outPts[n * 2 - 1 - i] = pts[i] - nn;
+		}
+		return outPts;
 	}
 
 	public static Polygon2D TaperPoly(Node parent, Color color) => Fx.Poly(parent, new[] { Vector2.Zero, Vector2.Right, Vector2.Down }, color, additive: true);

@@ -143,4 +143,91 @@ public static class HitFx
 		Glow.Glint(layer, hit + new Vector2(40f * facing, -40f), 0.7f, 0.08f);
 		Fx.Shake(1);
 	}
+
+	/// <summary>
+	/// 刀扇（小刀打全体）：一发子弹先打最近的敌人，命中后直线弹起、在空中折点"叮"地硬折一下，再直线打到下一个、再下一个……
+	/// （用户：要直勾勾的弹，不要弯的）
+	/// 每段 0.07 秒，快但看得出在弹；每个弹点一个小闪光 + 火花 + 星光，最后一个命中稍大。hits 按距离 Joker 由近到远排好。
+	/// </summary>
+	public static void Ricochet(Control layer, Vector2 muzzle, IReadOnlyList<Vector2> hits, float facing = 1f)
+	{
+		if (hits.Count == 0)
+		{
+			return;
+		}
+		Shot(layer, muzzle, hits[0], facing);
+		const float seg = 0.07f;
+		for (int i = 1; i < hits.Count; i++)
+		{
+			Vector2 a = hits[i - 1], b = hits[i];
+			// 空中的折点：两个敌人之间偏上（高低交替，免得几段叠在一起），弹道是两段直线
+			Vector2 ctrl = (a + b) / 2f + new Vector2(Fx.Rand(-20f, 20f), -110f - 40f * (i % 2));
+			float delay = 0.04f + seg * (i - 1);
+			bool last = i == hits.Count - 1;
+			Fx.After(layer, delay, () =>
+			{
+				// 弹点："叮"一下的星光和往弹出方向喷的火花
+				Glow.Glint(layer, a + new Vector2(0f, -10f), 0.7f);
+				Glow.Sparks(layer, a, 8, 200f, 520f, 0.25f, new[] { Pal5.Hot, Pal5.Gold, Pal5.Bright }, 300f, 0.08f, 0.2f, (ctrl - a).Normalized(), 30f);
+				KinkTracer(layer, a, ctrl, b, seg);
+			});
+			Fx.After(layer, delay + seg * 0.45f, () =>
+			{
+				// 折点：硬折的那一下
+				Glow.Glint(layer, ctrl, 0.55f);
+				Glow.Flash(layer, ctrl, new Color(1f, 0.7f, 0.6f), 90f, 0.1f);
+				Glow.Sparks(layer, ctrl, 6, 200f, 480f, 0.2f, new[] { Pal5.Hot, Pal5.Gold }, 300f, 0.06f, 0.16f, (ctrl - a).Normalized(), 35f);
+			});
+			Fx.After(layer, delay + seg, () =>
+			{
+				Glow.Flash(layer, b, new Color(1f, 0.6f, 0.55f), last ? 200f : 150f, 0.14f);
+				Glow.Shockwave(layer, b, new Color(0.95f, 0.06f, 0.1f), last ? 220f : 160f, 0.3f);
+				Glow.Sparks(layer, b, last ? 18 : 12, 200f, 520f, 0.35f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 220f, 0.1f, 0.3f,
+					(b - ctrl).Normalized(), 70f);
+				if (last)
+				{
+					Glow.Ripple(layer, b, 280f, 0.36f, 0.025f);
+					Fx.Shake(1);
+				}
+			});
+		}
+	}
+
+	/// <summary>折线弹道：头沿 a → k → b 两段直线飞快走完（seg 秒），尾巴随后收掉；折点是硬角。</summary>
+	private static void KinkTracer(Control layer, Vector2 a, Vector2 k, Vector2 b, float seg)
+	{
+		Node2D tr = Fx.Root(layer, Vector2.Zero, "P5Ricochet", seg + 0.2);
+		tr.GlobalPosition = Vector2.Zero;
+		Polygon2D glowA = Glow.TaperPoly(tr, new Color(Pal5.Bright, 0.85f)), coreA = Glow.TaperPoly(tr, Pal5.Hot);
+		Polygon2D glowB = Glow.TaperPoly(tr, new Color(Pal5.Bright, 0.85f)), coreB = Glow.TaperPoly(tr, Pal5.Hot);
+		float la = a.DistanceTo(k), total = la + k.DistanceTo(b);
+		Vector2 At(float u)
+		{
+			float d = u * total;
+			return d <= la ? a.Lerp(k, d / la) : k.Lerp(b, (d - la) / (total - la));
+		}
+		float life = seg + 0.1f;
+		Fx.Animate(tr, 0, life, t =>
+		{
+			float s = t * life;
+			float head = Mathf.Min(1f, s / seg), tail = Fx.InCubic(Mathf.Clamp((s - seg * 0.3f) / (life - seg * 0.3f), 0f, 1f));
+			float w = 1f - tail, split = la / total;
+			// 两段各画一条直的锥形光：尾巴那段在后、头那段在前，折角处是尖角
+			bool aOn = tail < split && head > tail, bOn = head > split;
+			glowA.Visible = coreA.Visible = aOn;
+			glowB.Visible = coreB.Visible = bOn;
+			if (aOn)
+			{
+				Vector2 p0 = At(tail), p1 = At(Mathf.Min(head, split));
+				glowA.Polygon = Glow.TaperPts(p0, p1, 10f * w + 2f);
+				coreA.Polygon = Glow.TaperPts(p0, p1, 3.5f * w + 1f);
+			}
+			if (bOn)
+			{
+				Vector2 p0 = At(Mathf.Max(tail, split)), p1 = At(head);
+				glowB.Polygon = Glow.TaperPts(p0, p1, 10f * w + 2f);
+				coreB.Polygon = Glow.TaperPts(p0, p1, 3.5f * w + 1f);
+			}
+		});
+	}
 }
