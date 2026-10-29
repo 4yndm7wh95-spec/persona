@@ -250,6 +250,19 @@ public partial class Preview : Node2D
 		Stage.Report = (where, e) => GD.PrintErr($"[P5Joker] {where}: {e}");
 		Stage.NowMs = () => (ulong)(_clock * 1000.0);
 		Stage.Shake = s => { _shake = s; _shakeLeft = 0.25f; };
+		BodyAura.CloneBody = () =>
+		{
+			(Node2D, Action<Material>)? made = null;
+			Clone(c =>
+			{
+				if (c is SpinePlayer sp)
+				{
+					sp.Queue("mask_loop", true);
+				}
+				made = (c, m => c.Material = m);
+			});
+			return made;
+		};
 
 		_world = new Node2D();
 		AddChild(_world);
