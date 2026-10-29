@@ -270,6 +270,9 @@ public static class Aim
 		if (stance == Stance.Mask && Joker.FxLayer(back: true) is Control back)
 		{
 			Fx.After(back, 0.04, () => CutIn.Eyes(back));            // Persona 召唤：眼神特写（背景层，用户 2026-10-29）
+			if (Joker.FxLayer() is Control front)
+				Fx.After(front, 0.04, () => PhantomFx.Summon(front, back,
+					Joker.PosePoint(node, ReadyFx.MaskFace), Joker.PosePoint(node, ReadyFx.Feet), Joker.Facing(node)));
 		}
 		return true;
 	}

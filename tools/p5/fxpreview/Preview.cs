@@ -30,6 +30,23 @@ public partial class Preview : Node2D
 	// 游戏里的时序：打击 attack 动画开始后 0.15s 结算伤害（静默猎手 AttackAnimDelay），开枪 shiv 0.2s 后
 	private static readonly Dictionary<string, Action<Preview>> Scenarios = new()
 	{
+		["phantom_summon"] = p =>
+		{
+			p.Ready(0.25, Stance.Mask, "mask", "cast_from_mask", play: true);
+			p.At(1.89, () =>
+			{
+				CutIn.Eyes(p._back);
+				PhantomFx.Summon(p._front, p._back, Pose(1010, 215), JokerFeet);
+			});
+			p.At(1.85, () => CardFx.Eiha(p._front, Pose(1010, 215), Enemy,
+				Enemy + new Vector2(0, -170), c => p._enemies[Enemy].Modulate = c));
+		},
+		["phantom_direct"] = p => p.At(0.45, () =>
+		{
+			p._joker?.Play("cast");
+			CutIn.Eyes(p._back);
+			PhantomFx.Summon(p._front, p._back, Pose(1010, 215), JokerFeet);
+		}),
 		["damage"] = p =>
 		{
 			p.Strike(0.3, Enemy, 7);
@@ -91,8 +108,6 @@ public partial class Preview : Node2D
 			p.At(6.4 + 1.6, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy2, Enemy2 + new Vector2(0f, -128f), c => p._enemies[Enemy2].Modulate = c));
 		},
 		// 只看蓝焰墙本身（放大，对照用户的参考图调细节）
-		["eiha"] = p => p.At(0.3, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy, Enemy + new Vector2(0f, -170f), c => p._enemies[Enemy].Modulate = c)),
-		["cutin"] = p => p.At(0.3, () => CutIn.Eyes(p._back)),
 		["eiha"] = p => p.At(0.3, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy, Enemy + new Vector2(0f, -170f), c => p._enemies[Enemy].Modulate = c)),
 		["cutin"] = p => p.At(0.3, () => CutIn.Eyes(p._back)),
 		["cutindbg"] = p =>
@@ -187,7 +202,7 @@ public partial class Preview : Node2D
 	}
 
 	/// <summary>拿起一张牌：摆架势（anim_in → anim_loop）、特效循环 1.6s（0.5s 起指到 lockOn 那个敌人）→ 打出（playAnim）/ 放回（anim_out）。</summary>
-	private void Ready(double t, Stance stance, string anim, string playAnim, bool play, Vector2? lockOn = null)
+	private new void Ready(double t, Stance stance, string anim, string playAnim, bool play, Vector2? lockOn = null)
 	{
 		ReadyFx? fx = null;
 		LockOn? lk = null;
@@ -265,10 +280,13 @@ public partial class Preview : Node2D
 		Stage.LoadTexture = name =>
 		{
 			string path = $"{texDir}/{name}.png";
+			if (!FileAccess.FileExists(path))
+				path = ProjectSettings.GlobalizePath($"res://../../../p5mod/pck_stage/p5joker/fx/{name}.png");
 			return FileAccess.FileExists(path) ? ImageTexture.CreateFromImage(Image.LoadFromFile(path)) : null;
 		};
 		Stage.Report = (where, e) => GD.PrintErr($"[P5Joker] {where}: {e}");
 		Stage.NowMs = () => (ulong)(_clock * 1000.0);
+		GD.Seed(52029);
 		Stage.Shake = s => { _shake = s; _shakeLeft = 0.25f; };
 		BodyAura.CloneBody = () =>
 		{
@@ -355,7 +373,7 @@ public partial class Preview : Node2D
 	/// <summary>Joker 的副本（爆发的剪影分身）：放在本体后面、同一个动作同一时刻。</summary>
 	private void Clone(Action<Node2D> use)
 	{
-		string rig = ProjectSettings.GlobalizePath("res://") + "../../../art/p5/rig/joker";
+		string rig = RigPath();
 		SpinePlayer c = SpinePlayer.Load(rig + ".spine-json", rig + ".atlas", rig + ".png");
 		c.Position = JokerFeet;
 		c.Scale = new Vector2(0.29f, -0.29f);
@@ -367,7 +385,7 @@ public partial class Preview : Node2D
 
 	private void BuildActors()
 	{
-		string rig = ProjectSettings.GlobalizePath("res://") + "../../../art/p5/rig/joker";
+		string rig = RigPath();
 		_joker = SpinePlayer.Load(rig + ".spine-json", rig + ".atlas", rig + ".png");
 		_joker.Position = JokerFeet;
 		_joker.Scale = new Vector2(0.29f, -0.29f);
@@ -375,6 +393,13 @@ public partial class Preview : Node2D
 		Enemy1(Enemy, 1f);
 		Enemy1(Enemy2, 0.75f);
 		Enemy1(Enemy3, 0.8f);
+	}
+
+	private static string RigPath()
+	{
+		string rig = ProjectSettings.GlobalizePath("res://../../../art/p5/rig/joker");
+		return FileAccess.FileExists(rig + ".png") ? rig
+			: ProjectSettings.GlobalizePath("res://../../../p5mod/pck_stage/animations/characters/silent/silent");
 	}
 
 	/// <summary>敌人剪影：一个深紫色的大块头（大小接近第一幕的普通怪），中心就是 VfxSpawnPosition。</summary>

@@ -1,0 +1,9 @@
+config_version=5
+[application]
+config/name="Joker shader summon studies"
+[display]
+window/size/viewport_width=1280
+window/size/viewport_height=720
+[rendering]
+renderer/rendering_method="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.08,0.09,0.12,1)

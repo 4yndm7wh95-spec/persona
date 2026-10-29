@@ -97,8 +97,13 @@ void fragment() { COLOR = vec4(texture(TEXTURE, UV).rgb, 1.0); }
 		float seconds = clip.Duration / clip.Speed;
 		Vector2 screen = Fx.Screen(back);
 		Node2D root = Fx.Root(back, Vector2.Zero, "P5CutIn", seconds + 0.1);
-		root.GlobalPosition = Vector2.Zero;
-		root.Scale = new Vector2(screen.X / clip.Canvas[0], screen.Y / clip.Canvas[1]);
+		// Keep the native proportions, with room around the insert at every aspect ratio.
+		float scale = Mathf.Min(screen.X / clip.Canvas[0], screen.Y / clip.Canvas[1]) * 0.72f;
+		root.TopLevel = true;
+		root.GlobalPosition = (screen - new Vector2(clip.Canvas[0], clip.Canvas[1]) * scale) * 0.5f;
+		root.Scale = Vector2.One * scale;
+		PhantomFx.Focus(back, 0.92f);
+		back.MoveChild(root, back.GetChildCount() - 1);
 		MeshInstance2D[] nodes = new MeshInstance2D[parts.Length];
 		// Exported meshes are sorted by original world Z, including outlines.
 		for (int i = 0; i < parts.Length; i++)
