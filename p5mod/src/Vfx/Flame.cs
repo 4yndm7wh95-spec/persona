@@ -133,7 +133,7 @@ void fragment() {
 
 /// <summary>
 /// Persona 的蓝焰面具（用户 2026-10-29：火不接地，沿着面具轮廓烧，轮廓不用太规整）：
-/// 拿着技能牌、手扣面具时，Joker 头部周围浮起一张宽宽的、两边尖角往上翘的面具形状的蓝焰（在人物后面，脸和手不被挡），
+/// 拿着技能牌、手扣面具时，Joker 脸上戴着一张宽宽的、两边尖角往上翘的面具形状的蓝焰（用户：要真的在脸上，不是背景；大小不变），
 /// 火丝从面具的边沿往上舔，两个眼洞是空的。从中间往两边点燃，一直烧；打出时一亮、往外一胀炸开，放回时往中间缩掉。
 /// </summary>
 public sealed class PersonaMask
@@ -237,7 +237,7 @@ void fragment() {
 }" };
 
 	private readonly Control _layer, _back;
-	private readonly Node2D _root;
+	private readonly Node2D _root, _halo;
 	private readonly ColorRect _fire;
 	private readonly GpuParticles2D _embers;
 	private readonly float _half;
@@ -254,8 +254,10 @@ void fragment() {
 		_half = halfWidth;
 		const float kx = 2.8f, ky = 2.2f, cy = 0.66f;
 		float w = halfWidth * kx, h = halfWidth * ky;
-		_root = Fx.Root(back, center, "P5PersonaMask", 600);
-		Sprite2D halo = Glow.SoftSprite(_root, new Vector2(0f, -halfWidth * 0.15f), new Color(Mid, 0.35f), 1f);
+		// 面具戴在脸上（人物前面）；托底的蓝光在人物后面
+		_root = Fx.Root(front, center, "P5PersonaMask", 600);
+		_halo = Fx.Root(back, center, "P5PersonaMaskHalo", 600);
+		Sprite2D halo = Glow.SoftSprite(_halo, new Vector2(0f, -halfWidth * 0.15f), new Color(Mid, 0.35f), 1f);
 		halo.Scale = new Vector2(w / 32f * 0.75f, h / 32f * 0.6f);
 		_fire = new ColorRect
 		{
@@ -315,6 +317,9 @@ void fragment() {
 				Set("alpha", 1f - t);
 			}
 		});
+		Tween fade = _halo.CreateTween();
+		fade.TweenProperty(_halo, "modulate:a", 0f, dur);
 		Fx.FreeAfter(_root, dur + 0.1);
+		Fx.FreeAfter(_halo, dur + 0.1);
 	}
 }

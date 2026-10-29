@@ -21,7 +21,7 @@ public enum Stance
 public sealed class ReadyFx
 {
 	// 姿势图上的点（各架势的定格帧）
-	public static readonly Vector2 MaskHand = new(1000f, 285f), MaskFace = new(1010f, 215f);   // summon_touch2_a
+	public static readonly Vector2 MaskHand = new(1000f, 285f), MaskFace = new(1010f, 215f), MaskEyes = new(1025f, 215f);   // summon_touch2_a
 	public static readonly Vector2 GuardFist = new(1015f, 430f);                                   // guard_mid_a
 	public static readonly Vector2 GloveCuff = new(1010f, 410f), GlovePinch = new(950f, 465f);     // glove_reach_a
 	public static readonly Vector2 KnifeHilt = new(790f, 760f), KnifeTip = new(600f, 890f);        // knife_ready_b
@@ -127,9 +127,9 @@ public sealed class ReadyFx
 	private void BuildMask()
 	{
 		Vector2 hand = _pose(MaskHand), face = _pose(MaskFace), feet = _pose(Feet);
-		// 头部周围一张面具形状的蓝焰（在人物后面），比头宽得多、两边尖角往上翘
+		// 脸上戴着一张面具形状的蓝焰（人物前面，中心在鼻梁、眼睛那一行），两边尖角往上翘
 		float body = (feet - face).Length();
-		_wall = new PersonaMask(_backLayer, _frontLayer, face + new Vector2(4f * _facing, 4f), body * 0.42f, _facing);
+		_wall = new PersonaMask(_backLayer, _frontLayer, _pose(MaskEyes), body * 0.42f, _facing);
 		// 指缝里漏出来的蓝焰：同样的细丝火，小而亮，贴着手的外沿
 		HandFire(hand + new Vector2(20f * _facing, -14f), 46f, 92f);
 		HandFire(hand + new Vector2(-6f * _facing, -30f), 38f, 74f);
