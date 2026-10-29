@@ -88,12 +88,22 @@ public partial class Preview : Node2D
 			p.At(4.6, () => p._joker?.Play("cast_glove"));
 			p.At(4.8, () => CardFx.Curse(p._front, Enemy2));
 		},
+		// 新一批：抽牌（卡片飞进手套）→ 生成小刀（光刃阵）→ 能量（觉醒星爆）
+		["cards2"] = p =>
+		{
+			p.At(0.3, () => p._joker?.Play("cast_glove"));
+			p.At(0.38, () => CardFx.Draw(p._front, Pose(989f, 400f), 3));
+			p.At(1.6, () => p._joker?.Play("cast_glove"));
+			p.At(1.65, () => CardFx.Shivs(p._front, Chest, Pose(989f, 400f), 3));
+			p.At(3.0, () => p._joker?.Play("cast_big"));
+			p.At(3.05, () => CardFx.Surge(p._front, p._back, JokerFeet, Chest, Pose(815f, 120f)));
+		},
 		["curse"] = p => p.At(0.3, () => CardFx.Curse(p._front, Enemy)),
-		// 中和（和游戏里一样的时刻，普通速度：原版 0.35s + 多蓄 0.6s）：握刀停住 → 头顶预告函旋出 → 一刀劈下（卡片和敌人同一刀）→ 两半烧尽
+		// 中和（和游戏里一样的时刻，普通速度：原版 0.35s + 多蓄 0.3s）：握刀停住 → 头顶预告函旋出 → 一刀劈下（卡片和敌人同一刀）→ 两半烧尽
 		["neutralize"] = p =>
 		{
-			p.Neutralize(0.3, Enemy, 0.35f + 0.6f);
-			p.Neutralize(2.6, Enemy2, 0.35f + 0.6f, true);
+			p.Neutralize(0.3, Enemy, 0.35f + 0.3f);
+			p.Neutralize(2.0, Enemy2, 0.15f + 0.3f, true);
 		},
 		// 选中打击牌（转刀起手停住）→ 取消（放下手、转刀收起）
 		["knifecancel"] = p =>

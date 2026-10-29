@@ -66,7 +66,7 @@ public static class JokerFx
 	}
 
 	/// <summary>中和比原版多蓄这么久：Joker 握刀停住、头顶预告函转出来，再一刀劈下（伤害一起推迟）。</summary>
-	public const float NeutralizeLead = 0.6f;
+	public const float NeutralizeLead = 0.3f;     // 用户：0.6s 拖节奏，转快点、看得出在转就行
 
 	/// <summary>这些敌人的命中特效由出牌特效自己放（到这个时刻为止，毫秒）。</summary>
 	private static readonly Dictionary<ulong, ulong> OwnSlashUntil = new();
@@ -97,6 +97,20 @@ public static class JokerFx
 	private static readonly HashSet<string> Poisons = new() { "DeadlyPoison", "PoisonedStab", "BouncingFlask", "Catalyst", "Envenom", "Outbreak",
 		"Concoct", "CorpseExplosion", "Bane" };
 
+	// 抽牌 / 生成小刀：张数；能量类
+	private static readonly Dictionary<string, int> Draws = new()
+	{
+		["Acrobatics"] = 3, ["Backflip"] = 2, ["Prepared"] = 1, ["Expertise"] = 3, ["EscapePlan"] = 1, ["CalculatedGamble"] = 4,
+	};
+	private static readonly Dictionary<string, int> ShivMakers = new()
+	{
+		["BladeDance"] = 3, ["CloakAndDagger"] = 1, ["HiddenDaggers"] = 2, ["UpMySleeve"] = 3, ["StormOfSteel"] = 4,
+	};
+	private static readonly HashSet<string> Surges = new() { "Adrenaline", "BulletTime", "Burst" };
+
+	// 姿势图 cast_glove 举起的手套
+	private static readonly Vector2 GlovePx = new(989f, 400f);
+
 	/// <summary>出牌那一刻（CardPlayedPatch）：按牌型放特效。target = 选中的目标（群体牌为 null → 所有敌人）。</summary>
 	public static void OnPlay(CardModel card, NCreature joker, Creature? target)
 	{
@@ -123,6 +137,19 @@ public static class JokerFx
 			{
 				Fx.After(layer, card.Type == CardType.Attack ? 0.2 : 0.08, () => CardFx.Curse(layer, e.VfxSpawnPosition));
 			}
+		}
+		else if (Draws.TryGetValue(name, out int draws))
+		{
+			Fx.After(layer, 0.08, () => CardFx.Draw(layer, Joker.PosePoint(joker, GlovePx), draws, Joker.Facing(joker)));
+		}
+		else if (ShivMakers.TryGetValue(name, out int shivs))
+		{
+			Fx.After(layer, 0.05, () => CardFx.Shivs(layer, Joker.Chest(joker), Joker.PosePoint(joker, GlovePx), shivs, Joker.Facing(joker)));
+		}
+		else if (Surges.Contains(name) && Joker.FxLayer(back: true) is Control surgeBack)
+		{
+			Fx.After(layer, 0.05, () => CardFx.Surge(layer, surgeBack, Joker.PosePoint(joker, new Vector2(815f, 1622f)), Joker.Chest(joker),
+				Joker.PosePoint(joker, new Vector2(815f, 120f))));
 		}
 		else if (card.Type == CardType.Power && Joker.FxLayer(back: true) is Control back)
 		{
