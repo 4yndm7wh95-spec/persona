@@ -186,12 +186,12 @@ KNIFE_PROP = {"attack": [KSPIN_IN], "knife_in": [KSPIN_IN], "knife_out": [KSPIN_
 # Layering (user 2026-10-29): the knife goes over the body and sleeve but under the spinning hand - the hand's
 # glove (KNIFE_HANDS, cut from the pose) is drawn again on top, so the grip sits between the fingers
 KNIFE_TOP = (1238, 352)                     # on the index finger of knife_top_g
-# (user 2026-10-29: the knife grew at the top) the knife drawn in slash_a10 points down towards the camera and shows
-# only ~97 px of blade against the prop's 205: the top spin runs at about half size so the swap is seamless
-KTOP_K = 0.5
-KSPIN_TOP = [("@knife_top_g", 0, *KNIFE_TOP, -72, KTOP_K, 1, 0), ("@knife_top_g", .05, *KNIFE_TOP, -170, KTOP_K, 1, .6),
-             ("@knife_top_g", .1, *KNIFE_TOP, -290, KTOP_K, 1, .6), ("@knife_top_g", .15, *KNIFE_TOP, -390, KTOP_K, 1, .4),
-             ("@knife_top_g", .2, *KNIFE_TOP, -432, KTOP_K, 1, 0)]
+# (user 2026-10-29: the knife grew at the top / then looked too small) the knife drawn in slash_a10 points down towards
+# the camera (~97 px of blade against the prop's 205): the spin starts at that size and the knife "turns out" of the
+# foreshortening as it spins (0.8 while flat in the screen), easing back for the follow-through
+KSPIN_TOP = [("@knife_top_g", 0, *KNIFE_TOP, -72, .5, 1, 0), ("@knife_top_g", .05, *KNIFE_TOP, -170, .75, 1, .6),
+             ("@knife_top_g", .1, *KNIFE_TOP, -290, .82, 1, .6), ("@knife_top_g", .15, *KNIFE_TOP, -390, .75, 1, .4),
+             ("@knife_top_g", .2, *KNIFE_TOP, -432, .62, 1, 0)]
 KNIFE_TOP_PROP = {"attack": [KSPIN_TOP], "attack_from_ready": [KSPIN_TOP], "attack_chain": [KSPIN_TOP]}
 KNIFE_HANDS = {"knife_hand_hip": ("knife_spin_g", (680, 640, 790, 790)), "knife_hand_top": ("knife_top_g", (1150, 300, 1275, 430))}
 
