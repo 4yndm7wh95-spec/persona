@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System;
 using System.IO;
 using System.Text.Json;
 using Godot;
@@ -95,6 +95,9 @@ void fragment() { COLOR = vec4(texture(TEXTURE, UV).rgb, 1.0); }
 	/// 舞台、特写、亚森离场、咒焰收掉都对齐这几刻。
 	/// </summary>
 	public const float ImpactAt = 0.2f, SplitAt = 0.91f, ClawTime = 0.07f, ShatterAt = SplitAt + 0.067f, ShatterTime = 0.42f;
+
+	/// <summary>碎片从裂开到淡完多久（结城理 mod 的 1.35s 节奏，这里稍短一点不拖）。</summary>
+	public const float ShatterLife = 0.8f;
 
 	/// <summary>
 	/// 碎纸（舞台和特写共用，2026-11-01：用户嫌「一刀劈成两半滑走」不对）：三道爪痕把画面切成四条，每条再按 4 个点的
@@ -201,7 +204,7 @@ void fragment() {
 		Clip clip = _clip!;
 		Prepared[] parts = _parts!;
 		Vector2 screen = Fx.Screen(back);
-		float life = ShatterAt + ShatterTime + 0.05f;
+		float life = SplitAt + ShatterLife + 0.1f;
 		// 离屏画面：和屏幕一样大，透明底
 		SubViewport view = new()
 		{
@@ -243,7 +246,8 @@ void fragment() {
 		m.SetShaderParameter("tex", view.GetTexture());
 		Sprite2D sprite = new() { Texture = view.GetTexture(), Centered = false, Material = m };
 		shown.AddChild(sprite);
-		bool hit = false;
+		bool hit = false, shattered = false;
+		Rect2 bandRect = new(root.Position, new Vector2(clip.Canvas[0], clip.Canvas[1]) * scale);
 		Fx.Animate(shown, 0, life, progress =>
 		{
 			float s = progress * life;
@@ -266,9 +270,157 @@ void fragment() {
 			{
 				hit = true;
 			}
-			// 碎开
-			m.SetShaderParameter("shat", s < ShatterAt ? -1f : s - ShatterAt);
-			m.SetShaderParameter("alpha", 1f - Mathf.Clamp((s - ShatterAt - ShatterTime * 0.7f) / (ShatterTime * 0.3f), 0f, 1f));
+			// 碎开（用户 2026-11-01：复用结城理 mod 的玻璃碎裂）：爪痕划完先裂纹定格 0.05s，然后横幅换成一块块碎片炸开
+			if (!shattered && s >= SplitAt)
+			{
+				shattered = true;
+				Shatter(back, view.GetTexture(), screen, bandRect, () => sprite.Visible = false);
+			}
+		});
+	}
+
+	// ───────────── 玻璃碎裂（移植自结城理 mod 的 mod/src/Vfx/CutInFx.cs Shatter，配色换成红白） ─────────────
+
+	private static Shader? _shardShader, _maskShader;
+
+	/// <summary>碎片：横幅贴图的切块（UV 对应），glint 一闪的白光（只在有图的地方）。</summary>
+	private static Shader ShardShader => _shardShader ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform float glint = 0.0;
+uniform float phase = 0.0;
+void fragment() {
+	vec4 c = texture(TEXTURE, UV);
+	// 玻璃：一道斜的高光随碎片转动扫过、整体偏冷一点、稍透
+	float sheen = exp(-pow((UV.x + UV.y * 0.55 - phase) / 0.025, 2.0)) * 0.9 + exp(-pow((UV.x + UV.y * 0.55 - phase - 0.06) / 0.008, 2.0)) * 0.6;
+	c.rgb = mix(c.rgb, c.rgb * vec3(0.92, 0.96, 1.05), 0.4) + vec3(1.0, 0.95, 0.95) * (glint + sheen) * c.a;
+	c.a *= 0.92;
+	COLOR = c * COLOR;
+}" };
+
+	/// <summary>碎片的玻璃亮边：只画在横幅有图的地方（按碎片原来的位置读离屏画面的不透明度）。</summary>
+	private static Shader? _rimShader;
+
+	private static Shader RimShader => _rimShader ??= new Shader { Code = @"
+shader_type canvas_item;
+render_mode blend_add;
+uniform sampler2D mask : filter_linear;
+uniform vec2 origin = vec2(0.0);
+uniform vec2 res = vec2(1920.0, 1080.0);
+varying vec2 buv;
+void vertex() { buv = (VERTEX + origin) / res; }
+void fragment() { COLOR = vec4(COLOR.rgb, COLOR.a * step(0.5, texture(mask, buv).a)); }
+" };
+
+	/// <summary>裂纹线：只画在横幅有图的地方（读离屏画面的不透明度）。</summary>
+	private static Shader MaskShader => _maskShader ??= new Shader { Code = @"
+shader_type canvas_item;
+render_mode blend_add;
+uniform sampler2D mask : filter_linear;
+void fragment() { COLOR = vec4(COLOR.rgb, COLOR.a * step(0.5, texture(mask, SCREEN_UV).a)); }
+" };
+
+	private static float Hash(int k, float a, float b)
+	{
+		float v = Mathf.Sin(k * 12.9898f) * 43758.5453f;
+		return a + (b - a) * (v - Mathf.Floor(v));
+	}
+
+	/// <summary>横幅从冲击点放射状裂开，0.05s 裂纹定格（白裂纹 + 白闪），然后碎成大块玻璃炸开、迅速减速、慢慢转着漂、一部分飞向镜头放大、淡出。</summary>
+	private static void Shatter(Control back, Texture2D tex, Vector2 screen, Rect2 band, System.Action hideBand)
+	{
+		Vector2 hit = band.Position + band.Size * new Vector2(0.42f, 0.52f);
+		Vector2[] rect = { band.Position, band.Position + new Vector2(band.Size.X, 0f), band.End, band.Position + new Vector2(0f, band.Size.Y) };
+		float reach = screen.Length();
+		float[] rings = { 0f, 70f, 160f, 290f, 460f, 700f, 1000f, 1400f, reach + 200f };
+		const int slices = 16;
+		float a0 = Fx.Rand(0f, Mathf.Tau);
+		var jitterA = new float[slices];
+		for (int j = 0; j < slices; j++) jitterA[j] = a0 + Mathf.Tau * j / slices + Fx.Rand(-0.12f, 0.12f);
+		Vector2 P(int ring, int slice)
+		{
+			float a = jitterA[(slice % slices + slices) % slices] + (ring % 2) * 0.09f;
+			float r = rings[ring] * (ring == 0 ? 0f : Hash(ring * 131 + slice, 0.85f, 1.15f));
+			return hit + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r;
+		}
+		var pieces = new List<Vector2[]>();
+		for (int r = 0; r < rings.Length - 1; r++)
+		{
+			for (int j = 0; j < slices; j++)
+			{
+				Vector2[] cell = r == 0 ? new[] { hit, P(1, j), P(1, j + 1) } : new[] { P(r, j), P(r + 1, j), P(r + 1, j + 1), P(r, j + 1) };
+				foreach (Vector2[] piece in Geometry2D.IntersectPolygons(cell, rect))
+				{
+					pieces.Add(piece);
+				}
+			}
+		}
+		Node2D root = Fx.Root(back, Vector2.Zero, "P5CutInShatter", ShatterLife + 0.2);
+		root.GlobalPosition = Vector2.Zero;
+		back.MoveChild(root, back.GetChildCount() - 1);
+		// 裂纹定格：白裂纹（只在横幅上）
+		Node2D cracks = new();
+		root.AddChild(cracks);
+		ShaderMaterial mask = new() { Shader = MaskShader };
+		mask.SetShaderParameter("mask", tex);
+		foreach (Vector2[] piece in pieces)
+		{
+			var pts = new Vector2[piece.Length + 1];
+			piece.CopyTo(pts, 0);
+			pts[^1] = piece[0];
+			cracks.AddChild(new Line2D { Points = pts, Width = 3f, DefaultColor = new Color(1f, 0.96f, 0.94f), Material = mask, JointMode = Line2D.LineJointMode.Sharp });
+		}
+		Fx.Animate(cracks, 0, 0.16, t => cracks.Modulate = new Color(1f, 1f, 1f, 1f - Fx.InCubic(t)));
+		const float total = ShatterLife, tau = 0.2f;
+		Fx.After(back, 0.05, () =>
+		{
+			hideBand();
+			Glow.Flash(back, hit, Pal5.Hot, screen.X * 0.35f, 0.18f);
+			foreach (Vector2[] piece in pieces)
+			{
+				Vector2 c = Vector2.Zero;
+				foreach (Vector2 v in piece) c += v;
+				c /= piece.Length;
+				var local = new Vector2[piece.Length];
+				for (int i = 0; i < piece.Length; i++) local[i] = piece[i] - c;
+				Node2D shard = new() { Position = c };
+				root.AddChild(shard);
+				ShaderMaterial sm = new() { Shader = ShardShader };
+				shard.AddChild(new Polygon2D { Polygon = local, UV = piece, Texture = tex, TextureFilter = CanvasItem.TextureFilterEnum.Linear, Material = sm });
+				// 玻璃亮边：外面一道白、里面一道细红（加法，只在有图的地方）
+				var loop = new Vector2[local.Length + 1];
+				local.CopyTo(loop, 0);
+				loop[^1] = local[0];
+				ShaderMaterial rm = new() { Shader = RimShader };
+				rm.SetShaderParameter("mask", tex);
+				rm.SetShaderParameter("origin", c);
+				rm.SetShaderParameter("res", screen);
+				Line2D rim = new() { Points = loop, Width = 3f, DefaultColor = new Color(1f, 0.92f, 0.92f, 0.9f), Material = rm, JointMode = Line2D.LineJointMode.Sharp };
+				shard.AddChild(rim);
+				float ph0 = Fx.Rand(-0.3f, 0.6f);
+				Vector2 dir = (c - hit).Normalized();
+				float dist = (c - hit).Length();
+				Vector2 vel = dir * (1500f + dist * 2.4f) * Fx.Rand(0.75f, 1.25f) + new Vector2(0f, Fx.Rand(-500f, 150f));
+				float spin = Fx.Rand(-9f, 9f);
+				float grow = Fx.Rand(0f, 1f) < 0.4f ? Fx.Rand(0.3f, 0.9f) : Fx.Rand(-0.3f, 0.1f);   // 一部分飞向镜头（放大）
+				float delay = dist / 7000f;
+				Vector2 p0 = c;
+				Fx.Animate(shard, 0, total, t =>
+				{
+					float tt = t * total - delay;
+					if (tt < 0f) return;
+					float burst = tau * (1f - Mathf.Exp(-tt / tau));                 // 爆发后迅速减速
+					shard.Position = p0 + vel * burst + vel * 0.06f * tt + new Vector2(0f, 90f * tt * tt);
+					shard.Rotation = spin * burst + spin * 0.12f * tt;
+					shard.Scale = Vector2.One * (1f + grow * Fx.OutCubic(Mathf.Clamp(tt / 0.9f, 0f, 1f)));
+					float flick = Mathf.Pow(Mathf.Abs(Mathf.Sin(shard.Rotation * 2f + spin)), 6f);   // 转到某个角度反光一闪
+					sm.SetShaderParameter("glint", Mathf.Clamp(1f - tt / 0.15f, 0f, 1f) * 0.7f + 0.45f * flick);
+					sm.SetShaderParameter("phase", ph0 + shard.Rotation * 0.35f);
+					rim.Modulate = new Color(1f, 1f, 1f, 0.55f + 0.45f * flick);
+					float k = Mathf.Clamp((tt - 0.25f) / 0.4f, 0f, 1f);
+					shard.Modulate = new Color(1f, 1f, 1f, 1f - k * k * (3f - 2f * k));
+				});
+			}
+			Glow.Sparks(back, hit, 30, 300f, 1100f, 0.6f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 300f, 0.1f, 0.35f);
 		});
 	}
 }

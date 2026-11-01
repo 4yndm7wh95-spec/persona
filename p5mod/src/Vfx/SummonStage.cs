@@ -12,7 +12,7 @@ namespace P5Joker;
 /// </summary>
 public static class SummonStage
 {
-	public const float Length = CutIn.ShatterAt + CutIn.ShatterTime + 0.05f;
+	public const float Length = CutIn.SplitAt + 0.25f;
 
 	/// <summary>这一次召唤的碎法（舞台和眼神特写共用）。</summary>
 	public static float TearSeed;
@@ -154,12 +154,12 @@ void fragment() {
 			// 爪痕：SplitAt 前 ClawTime 秒起笔，缓出（快下笔、收笔慢一点）；碎开后 0.08s 淡掉
 			float c = Mathf.Clamp((s - (CutIn.SplitAt - CutIn.ClawTime)) / CutIn.ClawTime, 0f, 1f);
 			cm.SetShaderParameter("cut", 1f - Mathf.Pow(1f - c, 3f));
-			cm.SetShaderParameter("fade", 1f - Mathf.Clamp((s - CutIn.ShatterAt) / 0.08f, 0f, 1f));
-			float shat = s - CutIn.ShatterAt;
-			m.SetShaderParameter("shat", shat < 0f ? -1f : shat);
-			m.SetShaderParameter("amount", 1f - Mathf.Clamp((shat - CutIn.ShatterTime * 0.75f) / (CutIn.ShatterTime * 0.25f), 0f, 1f));
+			cm.SetShaderParameter("fade", 1f - Mathf.Clamp((s - CutIn.SplitAt - 0.05f) / 0.08f, 0f, 1f));
+			// 背景：横幅碎开（裂纹定格 0.05s 之后）那一下白闪着退掉，0.12s 缓出
+			float gone = Mathf.Clamp((s - CutIn.SplitAt - 0.05f) / 0.12f, 0f, 1f);
+			m.SetShaderParameter("amount", 1f - (1f - Mathf.Pow(1f - gone, 3f)));
 			// 白闪：纸条拍进来那一下（弱）、爪痕划完那一下
-			float fl = 0.12f * Mathf.Exp(-s / 0.05f) + (s >= CutIn.SplitAt ? 0.22f * Mathf.Exp(-(s - CutIn.SplitAt) / 0.035f) : 0f);
+			float fl = 0.12f * Mathf.Exp(-s / 0.05f) + (s >= CutIn.SplitAt + 0.05f ? 0.35f * Mathf.Exp(-(s - CutIn.SplitAt - 0.05f) / 0.05f) : 0f);
 			m.SetShaderParameter("flash", fl);
 			if (!clawed && s >= CutIn.SplitAt)
 			{
