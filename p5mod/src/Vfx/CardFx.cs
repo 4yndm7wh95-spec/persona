@@ -14,23 +14,23 @@ public static class CardFx
 	// ───────────────────────── 防御：前臂一竖，身前「唰唰」叠起一面斜切面板墙 ─────────────────────────
 
 	/// <summary>
-	/// 防御（格挡）。2026-11-01 用户：盾牌 / 玻璃板都太怪，不一定要做成盾 → 不画「物件」，只画「架开」这个动作：
-	/// 前臂竖起那一刻（cast_guard 的 guard_a2），拳头上针状闪光 + 一圈红网点；前臂前面一道竖着的墨笔弧往敌人那边拱出去
-	/// （Brush.Slash，从下往上刷），紧跟一道细的；顺着架开的方向甩出玻璃碎条和速度线。~0.5s。fist = 拳头，shield = 前臂前方的中心。
+	/// 防御（格挡）。2026-11-01 用户：不要盾牌 / 墨水，纯特效 → 和打击同一套冲击语言（Cut.cs），只画「架住」这一下：
+	/// 前臂竖起那一刻（cast_guard 的 guard_a2），前臂前面一块竖长的冲击帧（2 帧红黑剪影）、一道竖着的剃刀线 + 画面沿它切开、
+	/// 空间往敌人那边一扭（压扁的折射波）、斜切碎片往敌人那边弹开、拳头上针状闪光。~0.4s。fist = 拳头，shield = 前臂前方的中心。
 	/// </summary>
 	public static void Guard(Control layer, Vector2 fist, Vector2 shield, float height, float facing = 1f)
 	{
 		float h = height;
 		Vector2 dir = new(facing, 0f);
-		Ink.Needles(layer, fist, 8, h * 0.4f, 10f, 0.16f);
-		Ink.Halftone(layer, fist, h * 0.45f, 0.32f, 0.02f, null, 1f, 10f);
-		Vector2 arc = new(Mathf.Lerp(fist.X, shield.X, 0.6f) + h * 0.05f * facing, shield.Y - h * 0.05f);
-		float ang = -Mathf.Pi / 2f;                                  // 从下往上刷
-		bool flip = dir.Dot(Vector2.Up.Rotated(ang)) < 0f;            // 往敌人那边拱
-		Brush.Slash(layer, arc, ang, h * 0.95f, 40f, 0.4f, 0f, flip, 0.34f);
-		Brush.Slash(layer, arc + dir * h * 0.09f, ang, h * 0.7f, 18f, 0.34f, 0.04f, flip, 0.4f);
-		Ink.Streaks(layer, arc + dir * h * 0.1f, 9, h * 0.1f, h * 0.7f, 0.2f, 0.03f, 4f, dir, 0.6f);
-		Ink.Shards(layer, arc + dir * h * 0.12f, 12, 38f, dir, 0.75f, 950f, 0.45f, 0.03f);
+		Vector2 at = new(Mathf.Lerp(fist.X, shield.X, 0.55f), shield.Y - h * 0.05f);
+		float up = -Mathf.Pi / 2f + 0.12f * facing;
+		Cut.Split(layer, at - Vector2.Right.Rotated(up) * h * 0.5f, at + Vector2.Right.Rotated(up) * h * 0.5f, 12f, 80f);
+		Cut.ImpactFrame(layer, at, h * 0.16f, 0.08f, 0f, up, 3f);
+		Cut.Razor(layer, at, up, h * 1.0f, 8f, 0.24f);
+		Glow.Ripple(layer, at + dir * h * 0.08f, h * 0.9f, 0.4f, 0.03f, 1.8f, 0.03f);
+		Ink.Needles(layer, fist, 6, h * 0.3f, 8f, 0.14f);
+		Cut.Slivers(layer, at + dir * 20f, 12, 40f, dir, 0.8f, 1500f, 0.4f, 0.02f);
+		Ink.Streaks(layer, at, 10, h * 0.12f, h * 0.6f, 0.18f, 0.02f, 3f, dir, 0.7f);
 		Fx.Shake(1);
 	}
 

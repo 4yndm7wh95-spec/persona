@@ -23,11 +23,23 @@ public static class HitFx
 	/// </summary>
 	public static void Swing(Control layer, Vector2 center, Vector2 from, Vector2 to)
 	{
-		// 2026-11-01：刀光改成一笔墨笔（Brush.Slash），沿弦挥过去、往外拱（拱的方向背离圆心）
-		Vector2 mid = (from + to) / 2f;
-		float ang = (to - from).Angle();
-		bool flip = (mid - center).Dot(Vector2.Up.Rotated(ang)) < 0f;
-		Brush.Slash(layer, mid, ang, from.DistanceTo(to) * 1.12f, 30f, 0.24f, 0f, flip, 0.32f);
+		// 刀光：沿刀尖真实轨迹扫过的一道剃刀月牙 —— 白芯（普通混合、硬边）+ 薄红光晕（加法），没有黑描边；外侧一道细的速度弧
+		float r = (from.DistanceTo(center) + to.DistanceTo(center)) / 2f;
+		float a0 = (from - center).Angle(), sweep = Wrap((to - center).Angle() - a0);
+		Node2D root = Fx.Root(layer, center, "P5Swing", 0.3);
+		Polygon2D halo = Fx.Poly(root, new Vector2[3], new Color(Pal5.Bright, 0.8f), additive: true);
+		Polygon2D white = Fx.Poly(root, new Vector2[3], Ink.White);
+		Polygon2D line = Fx.Poly(root, new Vector2[3], new Color(1f, 0.96f, 0.95f, 0.9f));
+		const float total = 0.2f;
+		Fx.Animate(root, 0, total, t =>
+		{
+			float head = Ease5.OutExpo(Mathf.Clamp(t / 0.25f, 0f, 1f));
+			float tail = Fx.InCubic(Mathf.Clamp((t - 0.1f) / 0.9f, 0f, 1f));
+			halo.Polygon = Band(r + 10f, a0, sweep, tail, head, 34f);
+			white.Polygon = Band(r + 2f, a0, sweep, tail, head, 13f);
+			float head2 = Ease5.OutExpo(Mathf.Clamp((t - 0.05f) / 0.3f, 0f, 1f));
+			line.Polygon = Band(r + 36f, a0, sweep, Mathf.Max(tail, Fx.InCubic(Mathf.Clamp((t - 0.05f) / 0.6f, 0f, 1f))), head2 * 0.9f, 3f);
+		});
 	}
 
 	/// <summary>弧形带：沿圆弧从 tail 到 head（0~1 的扫过比例），头部最厚 width，往尾巴收成尖。</summary>
@@ -60,23 +72,26 @@ public static class HitFx
 	{
 		float up = -0.55f;                                           // 上撩：从左下到右上
 		float a1 = facing > 0f ? up : Mathf.Pi - up;
-		Impact(layer, at, new Vector2(facing, -0.6f).Normalized(), facing);      // 爆点在下面，斩线画在最上面（斩线是主角）
-		// 实时墨笔斩痕：一道长的上撩、60ms 后一道短的交叉（Brush.Slash）
-		Brush.Slash(layer, at, a1, 560f, 44f, 0.42f, 0f, facing < 0f);
-		Brush.Slash(layer, at + new Vector2(10f * facing, 6f), a1 + 1.35f * facing, 360f, 28f, 0.36f, 0.06f, facing > 0f);
+		Vector2 d1 = Vector2.Right.Rotated(a1);
+		// 冲击帧（3 帧红黑剪影）+ 剃刀斩线 + 画面沿斩线切开；60ms 后第二刀交叉（小一号）
+		Cut.Split(layer, at - d1 * 300f, at + d1 * 300f, 16f, 110f);       // 切开先建：读到的是没压色的画面
+		Cut.ImpactFrame(layer, at, 150f, 0.1f, 0f, a1, 2.4f);
+		Cut.Razor(layer, at, a1, 620f, 8f, 0.22f);
+		float a2 = a1 + 1.35f * facing;
+		Vector2 d2 = Vector2.Right.Rotated(a2);
+		Cut.Razor(layer, at + new Vector2(10f * facing, 6f), a2, 380f, 6f, 0.2f, 0.06f);
+		Cut.Split(layer, at - d2 * 180f, at + d2 * 180f, 10f, 70f, 0.08f, 0.18f);
+		Impact(layer, at, new Vector2(facing, -0.6f).Normalized(), facing);
 	}
 
-	/// <summary>斩击打到身上的那一下（不含斩线）：爆点 + 网点环 + 速度线 + 碎片 + 星光 + 轻震。dir = 刀的去向。</summary>
+	/// <summary>斩击打到身上的那一下（不含斩线）：沿刀路冲出去的斜切碎片 + 细速度线 + 轻震。dir = 刀的去向。</summary>
 	public static void Impact(Control layer, Vector2 at, Vector2 dir, float facing, float delay = 0f)
 	{
 		Fx.After(layer, delay, () =>
 		{
-			Brush.Splat(layer, at, dir.Angle(), 230f, 0.5f, 0.01f);
-			Brush.Drops(layer, at, dir, 14, 0.7f, 1300f, 9f, 0.45f, 0.01f);
-			Ink.Needles(layer, at, 6, 200f, 10f, 0.14f);
-			Ink.Halftone(layer, at, 240f, 0.3f, 0.02f, null, 1f, 10f);
-			Ink.Streaks(layer, at, 12, 110f, 320f, 0.2f, 0.01f, 4f);
-			Ink.Shards(layer, at, 10, 40f, dir, 0.8f, 900f, 0.45f);
+			Cut.Slivers(layer, at, 14, 46f, dir, 0.55f, 1700f, 0.42f, 0.02f);
+			Cut.Slivers(layer, at, 6, 30f, -dir, 0.5f, 900f, 0.32f, 0.02f);
+			Ink.Streaks(layer, at, 10, 120f, 380f, 0.18f, 0.02f, 3f, dir, 0.5f);
 			Fx.Shake(1);
 		});
 	}
@@ -140,13 +155,13 @@ public static class HitFx
 			core.Polygon = Glow.TaperPts(a, b, 5f * (1f - t) + 1f);
 		});
 		Vector2 dir = new Vector2(facing, -0.3f).Normalized();
-		Ink.Needles(layer, hit, 6, 170f, 9f, 0.14f, 0.02f);
-		Brush.Splat(layer, hit, dir.Angle(), 160f, 0.45f, 0.02f);
-		Brush.Drops(layer, hit, dir, 10, 0.6f, 1100f, 7f, 0.4f, 0.02f);
-		Ink.GunHit(layer, hit, 230f, 0.02f);
-		Ink.Halftone(layer, hit, 220f, 0.32f, 0.04f);
-		Ink.Streaks(layer, hit, 12, 60f, 230f, 0.2f, 0.03f, 6f);
-		Ink.Shards(layer, hit, 7, 32f, dir, 1.0f, 800f, 0.4f, 0.02f);
+		// 命中：小一号的冲击帧（2 帧）+ 放射裂纹 + 针状闪光 + 往弹道方向冲出去的碎片
+		Cut.ImpactFrame(layer, hit, 120f, 0.07f, 0.02f, (hit - muzzle).Angle(), 1.6f);
+		Cut.Cracks(layer, hit, 7, 120f, 0.3f, 0.02f);
+		Ink.Needles(layer, hit, 6, 160f, 8f, 0.14f, 0.02f);
+		Vector2 fly = (hit - muzzle).Normalized();
+		Cut.Slivers(layer, hit, 10, 34f, fly, 0.7f, 1400f, 0.38f, 0.02f);
+		Ink.Streaks(layer, hit, 8, 70f, 240f, 0.16f, 0.03f, 3f);
 		Fx.Shake(1);
 	}
 
@@ -192,9 +207,9 @@ public static class HitFx
 			});
 			Fx.After(layer, delay + seg, () =>
 			{
-				Ink.Needles(layer, b, 6, last ? 170f : 130f, 9f, 0.14f);         // 弹到的每个敌人：和开枪命中同一套
-				Ink.GunHit(layer, b, last ? 220f : 170f);
-				Ink.Halftone(layer, b, last ? 210f : 160f, 0.3f, 0.02f);
+				Cut.ImpactFrame(layer, b, last ? 110f : 85f, 0.06f, 0f, (b - ctrl).Angle(), 1.6f);             // 弹到的每个敌人：和开枪命中同一套
+				Cut.Cracks(layer, b, 6, last ? 110f : 80f, 0.26f);
+				Ink.Needles(layer, b, 6, last ? 160f : 120f, 8f, 0.14f);
 				Glow.Sparks(layer, b, last ? 18 : 12, 200f, 520f, 0.35f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 220f, 0.1f, 0.3f,
 					(b - ctrl).Normalized(), 70f);
 				if (last)
