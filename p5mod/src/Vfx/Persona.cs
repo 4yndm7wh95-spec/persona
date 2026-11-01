@@ -131,6 +131,13 @@ void fragment() {
 
 	public static void Izanagi(Control back, Vector2 feet, float height, float facing = 1f) => Show(IzanagiSpec, back, feet, height, facing);
 
+	/// <summary>人格面具的胸口在屏幕上哪（出手那一拍的水波纹从这里扩出去）。参数和 Show 一样。</summary>
+	public static Vector2 ChestOf(Spec spec, Vector2 feet, float height, float facing = 1f)
+	{
+		float k = height / spec.BodyPx;
+		return feet + new Vector2(-0.48f * height * facing, -0.3f * height) + new Vector2(0f, -(spec.Foot.Y - spec.Body.Y) * k);
+	}
+
 	public static void Show(Spec spec, Control back, Vector2 feet, float height, float facing = 1f)
 	{
 		if (Fx.Tex(spec.Tex) is not Texture2D atlas)
@@ -165,7 +172,7 @@ void fragment() {
 		if (spec.Tex == "arsene_cast")
 		{
 			Sfx.PlayHit(Sfx.Wing, 0.55f, 0.06f);
-			Sfx.PlayHit(Sfx.Wing, 0.8f, Mathf.Max(0f, AttackAt - 0.12f));
+			Sfx.PlayHit(Sfx.Wing, 0.55f, Mathf.Max(0f, AttackAt - 0.14f));
 		}
 		else
 		{

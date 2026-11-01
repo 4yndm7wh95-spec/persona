@@ -280,7 +280,9 @@ public static class Aim
 				{
 					// 高潮合成一拍：眼神特写在人格面具出手那一刻碎开（裂纹定格 0.05s 在前）
 					CutIn.SplitAt = spec.AttackAt - 0.05f;
-					Fx.After(back, spec.AttackAt, () => SummonStage.Beat(Joker.FxLayer() ?? back, head));
+					Vector2 chest = Persona.ChestOf(spec, Joker.PosePoint(node, ReadyFx.Feet),
+						(Joker.PosePoint(node, ReadyFx.Feet) - Joker.PosePoint(node, new Vector2(815f, 120f))).Length() * 1.35f, Joker.Facing(node));
+					Fx.After(back, spec.AttackAt, () => SummonStage.Beat(Joker.FxLayer() ?? back, chest));
 					// Persona 召唤：背景变成红黑网点的舞台、集中线（SummonStage），原版眼神特写在上面撕开（都在背景层，用户 2026-10-29）
 					if (Joker.FxLayer() is Control fr)
 					{

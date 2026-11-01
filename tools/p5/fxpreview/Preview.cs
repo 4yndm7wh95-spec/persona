@@ -41,7 +41,7 @@ public partial class Preview : Node2D
 				CutIn.Eyes(p._back);
 				Persona.Arsene(p._back, JokerFeet, (JokerFeet - Pose(815f, 120f)).Length() * 1.35f);
 			});
-			p.At(1.89 + Persona.ArseneSpec.AttackAt, () => SummonStage.Beat(p._front, Pose(1010, 215)));
+			p.At(1.89 + Persona.ArseneSpec.AttackAt, () => SummonStage.Beat(p._front, Persona.ChestOf(Persona.ArseneSpec, JokerFeet, (JokerFeet - Pose(815f, 120f)).Length() * 1.35f)));
 			p.At(1.85 + (0.04 + Persona.AttackAt) - CardFx.Burst, () => CardFx.Eiha(p._front, Pose(1010, 215), Enemy,
 				Enemy + new Vector2(0, -170), c => p._enemies[Enemy].Modulate = c));
 		},
@@ -109,7 +109,7 @@ public partial class Preview : Node2D
 		["outbreak"] = p =>
 		{
 			p.Ready(0.25, Stance.Mask, "mask", "cast_from_mask", play: true);
-			p.At(1.85 + 0.04 + Persona.IzanagiSpec.AttackAt, () => SummonStage.Beat(p._front, Pose(1010, 215)));
+			p.At(1.85 + 0.04 + Persona.IzanagiSpec.AttackAt, () => SummonStage.Beat(p._front, Persona.ChestOf(Persona.IzanagiSpec, JokerFeet, (JokerFeet - Pose(815f, 120f)).Length() * 1.35f)));
 			p.At(1.85 + 0.04, () =>
 			{
 				CutIn.SplitAt = Persona.IzanagiSpec.AttackAt - 0.05f;

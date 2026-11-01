@@ -220,7 +220,7 @@ void fragment() {
 
 
 		// 咒怨之手：咒印张开时钻出来，咒焰喷发那一刻拍下去，之后被火烧掉
-		CurseHands(layer, feet, center, h, 0.08f, Burst, Burst + 0.22f);
+		CurseHands(layer, feet, center, h, 0.08f, Burst, Burst + 0.22f, false, true);   // 完整咒怨跟召唤一起出：冲击声并进召唤那一拍
 
 		// ① 咒印 + 往中心收的红光
 		Node2D sigil = Fx.Root(layer, feet, "P5EihaSigil", 1.6);
@@ -261,7 +261,7 @@ void fragment() {
 		}
 
 		// ② 爆：0.2s，和游戏加上中毒（施法后 0.25s）几乎同时
-		Sfx.Play(Sfx.Curse, 0.9f, Burst - 0.05f);
+		Sfx.Play(Sfx.Curse, 0.45f, Burst + 0.25f);                    // 余韵层：咒焰烧起来（召唤那一拍之后，压低）
 		Fx.After(layer, Burst, () =>
 		{
 			Flame.Column(layer, feet + new Vector2(0f, 8f), h * 1.9f, h * 3.3f, 0f, Collapse - Burst + 0.2f, 1.4f);
@@ -413,7 +413,7 @@ void fragment() {
 	///  · 缩（burnAt 起 0.3s）：握成拳、回正、往地里缩回去，地面一点尘。
 	/// 三只手：左右各一（前排），左后方一只更大的（画在前排后面，压暗一点）。few = 群攻，手小一点。
 	/// </summary>
-	public static void CurseHands(Control layer, Vector2 feet, Vector2 center, float h, float emergeAt, float hitAt, float burnAt, bool few = false)
+	public static void CurseHands(Control layer, Vector2 feet, Vector2 center, float h, float emergeAt, float hitAt, float burnAt, bool few = false, bool quiet = false)
 	{
 		if (Fx.Tex(Poses[0]) is not Texture2D t0)
 		{
@@ -452,7 +452,7 @@ void fragment() {
 			float toward = mirror ? -1f : 1f;                              // 往敌人那边转的方向
 			float e0 = emergeAt + lag;
 			// 地面裂开（第一只手一声）
-			if (lag <= 0f) Sfx.Play(Sfx.Crack, 0.35f);
+			if (lag <= 0f) Sfx.Play(Sfx.Crack, quiet ? 0.2f : 0.35f);
 			Fx.After(layer, e0, () =>
 			{
 				Glow.Flash(L, ground, Pal5.Bright, height * 0.5f, 0.2f);
@@ -526,8 +526,11 @@ void fragment() {
 			});
 		}
 		// 声音：砸下去的重击 + 低频（冲击层）；缩回去时一声低沉的挥动（余韵）
-		Sfx.PlayHit(Sfx.Slam, 1f, hitAt);
-		Sfx.Play(Sfx.SubBoom, 0.75f, hitAt);
+		if (!quiet)
+		{
+			Sfx.PlayHit(Sfx.Slam, 1f, hitAt);
+			Sfx.Play(Sfx.SubBoom, 0.75f, hitAt);
+		}
 		Sfx.Play(Sfx.SwishLow, 0.3f, burnAt);
 		// 命中：三只手拍在敌人身上的那一下
 		Fx.After(layer, hitAt, () =>

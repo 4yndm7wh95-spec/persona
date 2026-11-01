@@ -37,13 +37,13 @@ public static class Myriad
 			Vector2 feet = c + new Vector2(0f, h * 0.95f);
 			min = min.Min(top);
 			max = max.Max(feet);
-			CardFx.CurseHands(layer, feet, c, h, 0.45f, hit, hit + 0.25f, enemies.Count > 1);
+			CardFx.CurseHands(layer, feet, c, h, 0.45f, hit, hit + 0.25f, enemies.Count > 1, true);
 		}
 		Replica(layer, weaponAt, weaponLen, 0.15f, spin0, spin1, hit, exitAt, 0.35f, facing);
 		Fx.After(layer, hit, () =>
 		{
 			Fx.Shake(1);
-			Sfx.Play(Sfx.Curse, 1f);
+			Sfx.Play(Sfx.Curse, 0.45f, 0.25f);                          // 余韵层：咒焰烧起来（主冲击声在召唤那一拍）
 			Vector2 mid = (min + max) / 2f;
 			float radius = Mathf.Max((max - min).X * 0.5f + hMax * 0.6f, hMax * 1.3f);
 			for (int i = 0; i < enemies.Count; i++)

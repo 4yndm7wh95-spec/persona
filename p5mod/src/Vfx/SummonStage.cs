@@ -94,22 +94,26 @@ void fragment() {
 
 	/// <summary>
 	/// 召唤高潮那一拍（2026-11-01，学结城理 mod 召唤器扣扳机：所有东西压在同一帧）：人格面具出手 = 眼神特写碎开 = 伤害结算。
-	/// 顿帧 90ms、强震屏、舞台白闪；从 Joker 面具扩出大水波纹（召唤器枪口那一圈）+ 两圈光环；
+	/// 顿帧 90ms、强震屏、舞台白闪；从人格面具胸口扩出大水波纹（召唤器枪口那一圈）；
 	/// 声音：暴击 + 合成低频重击（玻璃碎裂由 CutIn.Shatter 放）。front = 前景层，mask = 面具位置。
 	/// </summary>
-	public static void Beat(Control front, Vector2 mask)
+	public static void Beat(Control front, Vector2 persona)
 	{
 		HitStop.Request(0.09);
 		Fx.Shake(3);
 		Vector2 screen = Fx.Screen(front);
 		// （全屏红黑剪影试过：舞台本身就是红黑的，再压一次人物剪影就糊成一片红点 —— 去掉，白闪在舞台着色器里）
-		Glow.Ripple(front, mask, screen.X * 0.6f, 0.65f, 0.045f);
-		Glow.Shockwave(front, mask, Pal5.Hot, screen.X * 0.35f, 0.4f);
-		Glow.Shockwave(front, mask, Pal5.Bright, screen.X * 0.55f, 0.55f, 1f, 0.05f);
-		Glow.Flash(front, mask, Pal5.Hot, 260f, 0.16f);
-		Sfx.Play(Sfx.Critical, 0.95f);
-		Sfx.Play(Sfx.SubBoom, 1.1f);
+		// 水波纹从人格面具出手的地方扩出去（用户 2026-11-01：面具上出水波纹怪；只给 Persona，放大、更明显）
+		Glow.Ripple(front, persona, screen.X * 1.1f, 0.75f, 0.07f);
+		Glow.Ripple(front, persona, screen.X * 0.6f, 0.5f, 0.05f, 1f, 0.06f);
+		// 这一拍只放一组主声音：暴击 + 低频（玻璃在 CutIn.Shatter）；手砸、咒怨这一拍都不另外响（用户：后半段太杂）
+		Sfx.Play(Sfx.Critical, 0.9f);
+		Sfx.Play(Sfx.SubBoom, 1f);
+		Quiet = Stage.NowMs() + 400;
 	}
+
+	/// <summary>到这个时刻（毫秒）为止是召唤高潮那一拍：其他特效的冲击声别再叠（CardFx.CurseHands 等看它）。</summary>
+	public static ulong Quiet;
 
 	/// <summary>放一次召唤舞台。back = 背景特效层；front = 最前面一层；head = Joker 头部（屏幕坐标），集中线的中心。</summary>
 	public static void Play(Control back, Control front, Vector2 head)
