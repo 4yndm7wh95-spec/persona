@@ -13,6 +13,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
+using MegaCrit.Sts2.Core.ValueProps;
 
 namespace P5Joker;
 
@@ -337,6 +338,40 @@ public static class CardPlayedPatch
 					Aim.PlayCast(node, cardPlay.Card);
 				}
 				JokerFx.OnPlay(cardPlay.Card, node, cardPlay.Target);
+			}
+		});
+	}
+}
+
+/// <summary>
+/// 毒伤每结算一轮（PoisonPower.Trigger 里 CreatureCmd.Damage(目标, 层数, 无视格挡 | 不受力量, null, null)；触媒让它多结算几轮）：
+/// 毒性爆发结算期间给 Myriad 按轮次出特效。挂在 Damage 最底层的重载上（其他重载都转到这里）；只看、不改。
+/// </summary>
+[HarmonyPatch]
+public static class PoisonTickPatch
+{
+	public static MethodBase TargetMethod() => typeof(CreatureCmd).GetMethods(BindingFlags.Public | BindingFlags.Static).First(m =>
+		m.Name == nameof(CreatureCmd.Damage) && m.GetParameters() is { Length: 7 } p && p[1].ParameterType == typeof(IEnumerable<Creature>)
+		&& p[2].ParameterType == typeof(decimal));
+
+	public static void Prefix(IEnumerable<Creature>? targets, ValueProp props, Creature? dealer, CardModel? cardSource)
+	{
+		if (targets == null || dealer != null || cardSource != null || props != (ValueProp.Unblockable | ValueProp.Unpowered))
+		{
+			return;
+		}
+		ModEntry.Safe("PoisonTick", () =>
+		{
+			if (Joker.FxLayer() is not Godot.Control layer || NCombatRoom.Instance is not NCombatRoom room)
+			{
+				return;
+			}
+			foreach (Creature c in targets)
+			{
+				if (!c.IsPlayer && c.GetPower<MegaCrit.Sts2.Core.Models.Powers.PoisonPower>() != null && room.GetCreatureNode(c) is NCreature n)
+				{
+					Myriad.OnPoisonTick(layer, n.GetInstanceId(), n.VfxSpawnPosition, n.GetTopOfHitbox());
+				}
 			}
 		});
 	}

@@ -75,6 +75,56 @@ public static class Myriad
 		});
 	}
 
+	// ───────────── 中毒多结算几轮（触媒）─────────────
+
+	/// <summary>毒性爆发正在结算：到这个时刻（毫秒）为止，每个敌人（节点 id）已经结算过几轮毒伤。</summary>
+	private static ulong _armedUntil;
+	private static readonly Dictionary<ulong, int> Ticks = new();
+
+	/// <summary>毒性爆发出牌时调用：接下来几秒里的毒伤按轮次出特效（PoisonTickPatch → OnPoisonTick）。</summary>
+	public static void Arm(float seconds)
+	{
+		Ticks.Clear();
+		_armedUntil = Stage.NowMs() + (ulong)(seconds * 1000f);
+	}
+
+	/// <summary>
+	/// 游戏结算了一轮毒伤（PoisonPower.Trigger 里每一轮一次；触媒让它多结算几轮）。毒性爆发结算期间：每个敌人的第一轮由主爆发演出，
+	/// 之后每多一轮在这个敌人身上补一下毒火脉冲（Pulse），和伤害数字同一刻。
+	/// </summary>
+	public static void OnPoisonTick(Control layer, ulong id, Vector2 center, Vector2 top)
+	{
+		if (Stage.NowMs() > _armedUntil)
+		{
+			return;
+		}
+		Ticks.TryGetValue(id, out int n);
+		Ticks[id] = n + 1;
+		if (n >= 1)
+		{
+			Pulse(layer, center, top, n);
+		}
+	}
+
+	/// <summary>多结算的一轮：咒焰从脚下一窜、白紫一闪、两根光柱、一圈贴地的紫环、几颗火星。n = 第几轮（越往后越亮一点）。</summary>
+	public static void Pulse(Control layer, Vector2 center, Vector2 top, int n)
+	{
+		float h = Mathf.Max(80f, (center - top).Length());
+		Vector2 feet = center + new Vector2(0f, h * 0.95f);
+		float k = 1f + 0.12f * Mathf.Min(n, 4);
+		Flame.Column(layer, feet + new Vector2(0f, 8f), h * 1.3f * k, h * 2.4f * k, 0f, 0.42f, 1.6f);
+		Glow.Flash(layer, center, new Color(1f, 0.95f, 1f), h * 1.1f * k, 0.12f);
+		Glow.Flash(layer, center, new Color(0.7f, 0.35f, 1f), h * 2.2f * k, 0.3f);
+		Glow.Shockwave(layer, feet, new Color(0.7f, 0.35f, 1f), h * 2.6f * k, 0.35f, 0.26f);
+		for (int i = 0; i < 2; i++)
+		{
+			float x = center.X + (i == 0 ? -1f : 1f) * h * Fx.Rand(0.35f, 0.7f);
+			Color col = BeamCols[(n + i * 2) % BeamCols.Length];
+			Fx.After(layer, i * 0.04f, () => Beam(layer, x, feet.Y, Fx.Rand(60f, 100f), h * Fx.Rand(2.2f, 3f), col, 0.4f, false));
+		}
+		CardFx.Embers(layer, feet, h, 10, 0.6f);
+	}
+
 	// ───────────── 兵器复制体 ─────────────
 
 	private static Shader? _disc, _ghost;
@@ -228,10 +278,11 @@ void fragment() {
 	COLOR = vec4(col * (i + lead * body * 2.0 * edge), 1.0);
 }" };
 
-	/// <summary>敌人一带窜起的黄 / 青 / 紫光柱：错开出现、粗细高低不一；每根冲上去时底部一圈地面光晕 + 一道横向光、沿柱子往上飘的光点。</summary>
+	private static readonly Color[] BeamCols = { new(1f, 0.82f, 0.25f), new(0.3f, 0.88f, 1f), new(1f, 0.9f, 0.45f), new(0.62f, 0.45f, 1f), new(0.4f, 0.95f, 1f) };
+
+	/// <summary>敌人一带窜起的黄 / 青 / 紫光柱：错开出现、粗细高低不一。</summary>
 	private static void Pillars(Control layer, Vector2 left, Vector2 right, float height)
 	{
-		Color[] cols = { new(1f, 0.82f, 0.25f), new(0.3f, 0.88f, 1f), new(1f, 0.9f, 0.45f), new(0.62f, 0.45f, 1f), new(0.4f, 0.95f, 1f) };
 		const int n = 7;
 		for (int i = 0; i < n; i++)
 		{
@@ -239,45 +290,47 @@ void fragment() {
 			bool big = i % 3 == 1;
 			float w = big ? Fx.Rand(150f, 200f) : Fx.Rand(70f, 110f);
 			float hgt = height * (big ? Fx.Rand(1.0f, 1.25f) : Fx.Rand(0.55f, 0.95f));
-			Color col = cols[(i * 2) % cols.Length];
+			Color col = BeamCols[(i * 2) % BeamCols.Length];
 			float delay = i * 0.04f + Fx.Rand(0f, 0.06f);
-			float life = big ? 0.6f : 0.45f;
-			Fx.After(layer, delay, () =>
-			{
-				Node2D root = Fx.Root(layer, new Vector2(x, left.Y), "P5MyriadPillar", life + 0.1);
-				ColorRect beam = new()
-				{
-					Size = new Vector2(w, hgt), Position = new Vector2(-w / 2f, -hgt), MouseFilter = Control.MouseFilterEnum.Ignore,
-					Material = new ShaderMaterial { Shader = BeamShader },
-				};
-				root.AddChild(beam);
-				ShaderMaterial m = (ShaderMaterial)beam.Material;
-				m.SetShaderParameter("tint", col);
-				m.SetShaderParameter("seed", Fx.Rand(0f, 50f));
-				m.SetShaderParameter("aspect", hgt / w);
-				Fx.Clock(beam);
-				Fx.Animate(root, 0, life, t =>
-				{
-					float s = t * life;
-					m.SetShaderParameter("reach", Ease5.OutExpo(Mathf.Min(1f, s / 0.12f)));
-					m.SetShaderParameter("thin", 1f - 0.75f * Fx.InCubic(Ease5.Seg(t, 0.45f, 0.55f)));
-					m.SetShaderParameter("fade", Ease5.Seg(t, 0.55f, 0.45f));
-				});
-				// 底部：一圈压扁的地面光晕 + 一道横向的光
-				Glow.Flash(layer, new Vector2(x, left.Y), col, w * 2.4f, 0.3f);
-				Glow.Shockwave(layer, new Vector2(x, left.Y), col, w * 3f, 0.35f, 0.22f);
-				Node2D flare = Fx.Root(layer, new Vector2(x, left.Y - 4f), "P5MyriadFlare", 0.3);
-				Polygon2D line = Glow.TaperPoly(flare, new Color(col, 0.9f));
-				Fx.Animate(flare, 0, 0.25, t =>
-				{
-					float lw = w * 2.2f * Ease5.OutExpo(Mathf.Min(1f, t * 3f));
-					line.Polygon = Glow.TaperPts(new Vector2(-lw, 0f), new Vector2(lw, 0f), 6f * (1f - t));
-				});
-				// 沿柱子往上飘的光点
-				Glow.Sparks(layer, new Vector2(x, left.Y - hgt * 0.15f), big ? 18 : 10, 260f, 700f, 0.5f,
-					new[] { new Color(1f, 1f, 0.95f), col, new Color(col, 0f) }, -500f, 0.08f, 0.22f, Vector2.Up, 12f);
-			});
+			Fx.After(layer, delay, () => Beam(layer, x, left.Y, w, hgt, col, big ? 0.6f : 0.45f, big));
 		}
+	}
+
+	/// <summary>一根光柱（BeamShader）+ 底部地面光晕、压扁的光环、横向闪光、沿柱子往上飘的光点。</summary>
+	private static void Beam(Control layer, float x, float groundY, float w, float hgt, Color col, float life, bool big)
+	{
+		Node2D root = Fx.Root(layer, new Vector2(x, groundY), "P5MyriadPillar", life + 0.1);
+		ColorRect beam = new()
+		{
+			Size = new Vector2(w, hgt), Position = new Vector2(-w / 2f, -hgt), MouseFilter = Control.MouseFilterEnum.Ignore,
+			Material = new ShaderMaterial { Shader = BeamShader },
+		};
+		root.AddChild(beam);
+		ShaderMaterial m = (ShaderMaterial)beam.Material;
+		m.SetShaderParameter("tint", col);
+		m.SetShaderParameter("seed", Fx.Rand(0f, 50f));
+		m.SetShaderParameter("aspect", hgt / w);
+		Fx.Clock(beam);
+		Fx.Animate(root, 0, life, t =>
+		{
+			float s = t * life;
+			m.SetShaderParameter("reach", Ease5.OutExpo(Mathf.Min(1f, s / 0.12f)));
+			m.SetShaderParameter("thin", 1f - 0.75f * Fx.InCubic(Ease5.Seg(t, 0.45f, 0.55f)));
+			m.SetShaderParameter("fade", Ease5.Seg(t, 0.55f, 0.45f));
+		});
+		// 底部：一圈压扁的地面光晕 + 一道横向的光
+		Glow.Flash(layer, new Vector2(x, groundY), col, w * 2.4f, 0.3f);
+		Glow.Shockwave(layer, new Vector2(x, groundY), col, w * 3f, 0.35f, 0.22f);
+		Node2D flare = Fx.Root(layer, new Vector2(x, groundY - 4f), "P5MyriadFlare", 0.3);
+		Polygon2D line = Glow.TaperPoly(flare, new Color(col, 0.9f));
+		Fx.Animate(flare, 0, 0.25, t =>
+		{
+			float lw = w * 2.2f * Ease5.OutExpo(Mathf.Min(1f, t * 3f));
+			line.Polygon = Glow.TaperPts(new Vector2(-lw, 0f), new Vector2(lw, 0f), 6f * (1f - t));
+		});
+		// 沿柱子往上飘的光点
+		Glow.Sparks(layer, new Vector2(x, groundY - hgt * 0.15f), big ? 18 : 10, 260f, 700f, 0.5f,
+			new[] { new Color(1f, 1f, 0.95f), col, new Color(col, 0f) }, -500f, 0.08f, 0.22f, Vector2.Up, 12f);
 	}
 
 	// ───────────── 光膜 ─────────────

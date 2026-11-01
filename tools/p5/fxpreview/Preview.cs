@@ -120,6 +120,28 @@ public partial class Preview : Node2D
 				(JokerFeet - Pose(815f, 120f)).Length() * 1.5f, 0.04f + Persona.IzanagiSpec.ExitAt, 1f,
 				new Action<Color>?[] { c => p._enemies[Enemy].Modulate = c, c => p._enemies[Enemy2].Modulate = c, c => p._enemies[Enemy3].Modulate = c }));
 		},
+		// 毒性爆发 + 触媒 3 层：每个敌人毒伤结算 4 轮（游戏里一个敌人结算完再下一个），第 1 轮由主爆发演出，之后每轮补一下脉冲
+		["outbreak4"] = p =>
+		{
+			Scenarios["outbreak"](p);
+			float hit = 1.85f + 0.04f + Persona.IzanagiSpec.AttackAt;
+			var es = new[] { (Enemy, Enemy + new Vector2(0, -170)), (Enemy2, Enemy2 + new Vector2(0, -128)), (Enemy3, Enemy3 + new Vector2(0, -128)) };
+			int k = 0;
+			p.At(1.85, () => Myriad.Arm(8f));
+			for (int j = 0; j < es.Length; j++)
+			{
+				var (c, top) = es[j];
+				ulong id = (ulong)(100 + j);
+				for (int i = 0; i < 4; i++, k++)
+				{
+					p.At(hit + 0.15 + 0.2 * k, () =>
+					{
+						Myriad.OnPoisonTick(p._front, id, c, top);
+						Popups.Damage(p._front, id, c, 9, false);
+					});
+				}
+			}
+		},
 		// 致命毒药（普通白卡，Tiers.Common）：选中 → 打出，不召唤，精简咒怨
 		["poison"] = p =>
 		{

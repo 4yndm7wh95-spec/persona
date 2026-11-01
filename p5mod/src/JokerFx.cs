@@ -128,6 +128,7 @@ public static class JokerFx
 				Vector2 jf = Joker.PosePoint(joker, ReadyFx.Feet);
 				float tall = (jf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length();
 				float face = Joker.Facing(joker);
+				Myriad.Arm((Tiers.For(card) == Tier.Rare ? Aim.HitFor(card) : 0.3f) + 6f);       // 之后几秒的毒伤按轮次出特效（触媒）
 				Myriad.Outbreak(layer, list, Tiers.For(card) == Tier.Rare ? Aim.HitFor(card) : 0.3f, jf + new Vector2(tall * 0.9f * face, -tall * 0.85f),
 					tall * 1.5f, 0.04f + Persona.IzanagiSpec.ExitAt, face, tints);
 				break;
