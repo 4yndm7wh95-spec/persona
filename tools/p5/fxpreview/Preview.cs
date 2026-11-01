@@ -146,6 +146,27 @@ public partial class Preview : Node2D
 				}
 			}
 		},
+		// 人格面具之手（罕见单体毒牌）：召唤亚森 → 伸手攥住 → 模拟触媒结算 3 轮毒伤，每轮再捏一下 → 松开缩回
+		["grip"] = p =>
+		{
+			Persona.Spec spec = Persona.ArseneSpec with { Linger = 1.6f };
+			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
+			p.Ready(0.25, Stance.Mask, "mask", "cast_from_mask", play: true, lockOn: Enemy);
+			p.At(1.89, () =>
+			{
+				CutIn.SplitAt = spec.AttackAt - 0.05f;
+				SummonStage.Play(p._back, p._front, Pose(1010, 215));
+				CutIn.Eyes(p._back);
+				Persona.Show(spec, p._back, JokerFeet, tall);
+			});
+			p.At(1.89 + spec.AttackAt, () => SummonStage.Beat(p._front, Persona.ChestOf(spec, JokerFeet, tall)));
+			p.At(1.85, () => Grip.Play(p._front, 1ul, Persona.ChestOf(spec, JokerFeet, tall) + new Vector2(0.3f * tall, 0f), Enemy, 170f,
+				0.04f + spec.AttackAt, 1f, c => p._enemies[Enemy].Modulate = c));
+			for (int i = 0; i < 3; i++)
+			{
+				p.At(1.89 + spec.AttackAt + 0.35 + 0.3 * i, () => { Grip.OnTick(1ul); Popups.Damage(p._front, 1ul, Enemy, 9, false); });
+			}
+		},
 		// 致命毒药（普通白卡，Tiers.Common）：选中 → 打出，不召唤，精简咒怨
 		["poison"] = p =>
 		{

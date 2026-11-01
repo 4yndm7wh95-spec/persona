@@ -133,6 +133,19 @@ public static class JokerFx
 					tall * 1.2f, 0.04f + Persona.IzanagiSpec.ExitAt, face, tints);
 				break;
 			}
+			case var n when Aim.Grips(n) && t != null && Tiers.For(card) >= Tier.Uncommon:
+			{
+				// 亚森伸手攥住中毒的怪，毒结算完才松开（Grip）；攥住 = 召唤高潮那一拍
+				Persona.Spec spec = Aim.PersonaFor(card);
+				Vector2 jf = Joker.PosePoint(joker, ReadyFx.Feet);
+				float height = (jf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length() * 1.35f;
+				float face = Joker.Facing(joker);
+				Vector2 from = Persona.ChestOf(spec, jf, height, face) + new Vector2(0.3f * height * face, 0f);
+				CanvasItem? body = t.Visuals;
+				Grip.Play(layer, t.GetInstanceId(), from, t.VfxSpawnPosition, Mathf.Max(80f, (t.VfxSpawnPosition - t.GetTopOfHitbox()).Length()),
+					Aim.HitFor(card), face, body == null ? null : c => { if (GodotObject.IsInstanceValid(body)) { body.Modulate = c; } });
+				break;
+			}
 			case "DeadlyPoison" when t != null:
 			{
 				// 普通白卡（Tiers.Common）：不召唤，精简的咒怨（手 + 一根咒焰），和游戏加中毒（施法后 ~0.25s）同一刻；

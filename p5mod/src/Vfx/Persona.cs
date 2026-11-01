@@ -21,8 +21,10 @@ public static class Persona
 	{
 		public float AttackAt => (AttackFrame - First) / Fps;
 
-		/// <summary>出手后再停 0.35s 才被蓝焰吞掉离场（高潮那一拍他要在场）。</summary>
-		public float ExitAt => AttackAt + 0.35f;
+		/// <summary>出手后再停多久才被蓝焰吞掉离场（高潮那一拍他要在场；伸手抓人时要等手收回来）。</summary>
+		public float Linger { get; init; } = 0.35f;
+
+		public float ExitAt => AttackAt + Linger;
 
 		public int FrameAt(float s) => Mathf.Clamp(First + (int)(s * Fps), First, Last);
 	}

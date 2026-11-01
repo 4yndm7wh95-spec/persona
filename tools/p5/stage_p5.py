@@ -175,7 +175,7 @@ def fx_textures():
     # persona grip hand (Codex, art/p5/fx/gen_codex/grip_hand): aligned on the solid black hand body (its wrist end and
     # vertical centre), smoke kept; output 900x600 (PersonaGrip swaps the frames)
     gh = GEN_CODEX / "grip_hand"
-    for pose in ("reach", "close", "hold", "squeeze", "release"):
+    for pose in ("reach", "close", "hold", "squeeze", "release", "fist", "fist_tight"):
         src = gh / f"grip_{pose}.png"
         if src.exists():
             yield f"grip_{pose}", normalise_grip(Image.open(src).convert("RGBA"))

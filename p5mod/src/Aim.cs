@@ -301,7 +301,15 @@ public static class Aim
 	public const float SummonHit = 0.04f + Persona.AttackAt;
 
 	/// <summary>这张牌召唤哪个人格面具：毒性爆发 = 伊邪那岐大神（万物真言），其他 = 亚森。</summary>
-	public static Persona.Spec PersonaFor(CardModel card) => card.GetType().Name == "Outbreak" ? Persona.IzanagiSpec : Persona.ArseneSpec;
+	public static Persona.Spec PersonaFor(CardModel card) => card.GetType().Name switch
+	{
+		"Outbreak" => Persona.IzanagiSpec,
+		var n when Grips(n) => Persona.ArseneSpec with { Linger = 1.1f },   // 伸手抓人：等手收回来再走
+		_ => Persona.ArseneSpec,
+	};
+
+	/// <summary>召唤人格面具、单体上毒的牌：亚森伸手攥住中毒的怪（Grip）。</summary>
+	public static bool Grips(string cardName) => cardName is "BubbleBubble";
 
 	/// <summary>这张牌召唤时人格面具出手的时刻（施法后几秒）：出牌特效对齐到这一刻。</summary>
 	public static float HitFor(CardModel card) => 0.04f + PersonaFor(card).AttackAt;
