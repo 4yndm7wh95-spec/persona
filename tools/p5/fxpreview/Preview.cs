@@ -37,8 +37,8 @@ public partial class Preview : Node2D
 			p.At(1.89, () =>
 			{
 				SummonStage.Play(p._back, p._front, Pose(1010, 215));
-				Persona.Arsene(p._back, JokerFeet, (JokerFeet - Pose(815f, 120f)).Length() * 1.35f);
 				CutIn.Eyes(p._back);
+				Persona.Arsene(p._back, JokerFeet, (JokerFeet - Pose(815f, 120f)).Length() * 1.35f);
 			});
 			p.At(1.85 + (0.04 + Persona.AttackAt) - CardFx.Burst, () => CardFx.Eiha(p._front, Pose(1010, 215), Enemy,
 				Enemy + new Vector2(0, -170), c => p._enemies[Enemy].Modulate = c));

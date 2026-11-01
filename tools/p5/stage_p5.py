@@ -103,6 +103,12 @@ def fx_textures():
     eyes = Image.open(EYES).convert("RGBA")
     yield "eyes", eyes.resize((eyes.width // 2, eyes.height // 2), Image.LANCZOS)
     yield "arsene_cast", arsene_atlas()
+    # curse hands for Eiha (Codex, art/p5/fx/gen_codex/curse_hands, 1024x1536) at half size
+    for name in ("hand_reach", "hand_slam", "hand_claw", "hand_grab"):
+        src = GEN_CODEX / "curse_hands" / f"{name}.png"
+        if src.exists():
+            im = Image.open(src).convert("RGBA")
+            yield name, im.resize((im.width // 2, im.height // 2), Image.LANCZOS)
 
 
 # Arsene's cast action rendered from the original P5R model (art/p5/fx/arsene/cast, 49 frames of 1490x1024,
