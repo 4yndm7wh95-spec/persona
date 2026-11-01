@@ -37,6 +37,7 @@ public partial class Preview : Node2D
 			p.At(1.89, () =>
 			{
 				SummonStage.Play(p._back, p._front, Pose(1010, 215));
+				Persona.Arsene(p._back, JokerFeet, (JokerFeet - Pose(815f, 120f)).Length() * 1.6f);
 				CutIn.Eyes(p._back);
 			});
 			p.At(1.85, () => CardFx.Eiha(p._front, Pose(1010, 215), Enemy,

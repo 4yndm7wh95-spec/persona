@@ -102,6 +102,24 @@ def fx_textures():
     yield "cutin_band", band
     eyes = Image.open(EYES).convert("RGBA")
     yield "eyes", eyes.resize((eyes.width // 2, eyes.height // 2), Image.LANCZOS)
+    yield "arsene_cast", arsene_atlas()
+
+
+# Arsene's cast action rendered from the original P5R model (art/p5/fx/arsene/cast, 49 frames of 1490x1024,
+# sources.json): packed 7 per row at ARSENE_K of the size for the summon (p5mod/src/Vfx/Persona.cs)
+ARSENE = ROOT / "art/p5/fx/arsene"
+ARSENE_K, ARSENE_COLS = 0.45, 7
+
+
+def arsene_atlas():
+    frames = sorted((ARSENE / "cast").glob("*.png"))
+    w, h = round(1490 * ARSENE_K), round(1024 * ARSENE_K)
+    rows = (len(frames) + ARSENE_COLS - 1) // ARSENE_COLS
+    atlas = Image.new("RGBA", (w * ARSENE_COLS, h * rows), (0, 0, 0, 0))
+    for i, f in enumerate(frames):
+        im = Image.open(f).convert("RGBA").resize((w, h), Image.LANCZOS)
+        atlas.paste(im, (i % ARSENE_COLS * w, i // ARSENE_COLS * h))
+    return atlas
 
 
 def main():
