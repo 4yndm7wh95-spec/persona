@@ -370,7 +370,9 @@ public static class PoisonTickPatch
 			{
 				if (!c.IsPlayer && c.GetPower<MegaCrit.Sts2.Core.Models.Powers.PoisonPower>() != null && room.GetCreatureNode(c) is NCreature n)
 				{
-					Myriad.OnPoisonTick(layer, n.GetInstanceId(), n.VfxSpawnPosition, n.GetTopOfHitbox());
+					Godot.CanvasItem? v = n.Visuals;
+					Myriad.OnPoisonTick(layer, n.GetInstanceId(), n.VfxSpawnPosition, n.GetTopOfHitbox(),
+						v == null ? null : col => { if (Godot.GodotObject.IsInstanceValid(v)) { v.Modulate = col; } });
 				}
 			}
 		});

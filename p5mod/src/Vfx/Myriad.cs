@@ -69,7 +69,7 @@ public static class Myriad
 					Fx.After(layer, 0.85, () => tint(Colors.White));
 				}
 			}
-			Pillars(layer, new Vector2(min.X - hMax * 0.6f, max.Y), new Vector2(max.X + hMax * 0.6f, max.Y), hMax * 3.6f);
+			Pillars(Stage.Back ?? layer, new Vector2(min.X - hMax * 0.6f, max.Y), new Vector2(max.X + hMax * 0.6f, max.Y), hMax * 3.6f);
 			Dome(layer, mid, radius);
 			CardFx.Smoke(layer, mid + new Vector2(0f, -hMax * 0.9f), hMax);
 		});
@@ -92,7 +92,7 @@ public static class Myriad
 	/// 游戏结算了一轮毒伤（PoisonPower.Trigger 里每一轮一次；触媒让它多结算几轮）。毒性爆发结算期间：每个敌人的第一轮由主爆发演出，
 	/// 之后每多一轮在这个敌人身上补一下毒火脉冲（Pulse），和伤害数字同一刻。
 	/// </summary>
-	public static void OnPoisonTick(Control layer, ulong id, Vector2 center, Vector2 top)
+	public static void OnPoisonTick(Control layer, ulong id, Vector2 center, Vector2 top, Action<Color>? tint = null)
 	{
 		if (Stage.NowMs() > _armedUntil)
 		{
@@ -102,27 +102,35 @@ public static class Myriad
 		Ticks[id] = n + 1;
 		if (n >= 1)
 		{
-			Pulse(layer, center, top, n);
+			Pulse(layer, center, top, n, tint);
 		}
 	}
 
 	/// <summary>多结算的一轮：咒焰从脚下一窜、白紫一闪、两根光柱、一圈贴地的紫环、几颗火星。n = 第几轮（越往后越亮一点）。</summary>
-	public static void Pulse(Control layer, Vector2 center, Vector2 top, int n)
+	public static void Pulse(Control layer, Vector2 center, Vector2 top, int n, Action<Color>? tint = null)
 	{
+		if (tint != null)
+		{
+			// 敌人本身闪一下紫红（反馈在敌人身上，不靠盖住他的特效）
+			Fx.Animate(layer, 0, 0.3, t => tint(Colors.White.Lerp(new Color(0.75f, 0.3f, 0.85f), 1f - Fx.OutCubic(t))));
+			Fx.After(layer, 0.32, () => tint(Colors.White));
+		}
 		float h = Mathf.Max(80f, (center - top).Length());
 		Vector2 feet = center + new Vector2(0f, h * 0.95f);
 		float k = 1f + 0.12f * Mathf.Min(n, 4);
-		Flame.Column(layer, feet + new Vector2(0f, 8f), h * 1.3f * k, h * 2.4f * k, 0f, 0.42f, 1.6f);
-		Glow.Flash(layer, center, new Color(1f, 0.95f, 1f), h * 1.1f * k, 0.12f);
-		Glow.Flash(layer, center, new Color(0.7f, 0.35f, 1f), h * 2.2f * k, 0.3f);
-		Glow.Shockwave(layer, feet, new Color(0.7f, 0.35f, 1f), h * 2.6f * k, 0.35f, 0.26f);
+		// 用户 2026-11-01：别挡住敌人 —— 咒焰、光柱、地面环都在人物后面的背景层（敌人画在它们前面），光柱让到身体两侧；
+		// 前景只留一下很小、很快的白紫闪和几颗火星
+		Control back = Stage.Back ?? layer;
+		Flame.Column(back, feet + new Vector2(0f, 8f), h * 1.5f * k, h * 2.5f * k, 0f, 0.42f, 1.6f);
+		Glow.Shockwave(back, feet, new Color(0.7f, 0.35f, 1f), h * 2.6f * k, 0.35f, 0.26f);
 		for (int i = 0; i < 2; i++)
 		{
-			float x = center.X + (i == 0 ? -1f : 1f) * h * Fx.Rand(0.35f, 0.7f);
+			float x = center.X + (i == 0 ? -1f : 1f) * h * Fx.Rand(0.75f, 1.0f);
 			Color col = BeamCols[(n + i * 2) % BeamCols.Length];
-			Fx.After(layer, i * 0.04f, () => Beam(layer, x, feet.Y, Fx.Rand(60f, 100f), h * Fx.Rand(2.2f, 3f), col, 0.4f, false));
+			Fx.After(layer, i * 0.04f, () => Beam(back, x, feet.Y, Fx.Rand(60f, 100f), h * Fx.Rand(2.2f, 3f), col, 0.4f, false));
 		}
-		CardFx.Embers(layer, feet, h, 10, 0.6f);
+		Glow.Flash(layer, center, new Color(0.85f, 0.6f, 1f), h * 0.9f * k, 0.1f);
+		CardFx.Embers(layer, feet, h, 8, 0.5f);
 	}
 
 	// ───────────── 兵器复制体 ─────────────

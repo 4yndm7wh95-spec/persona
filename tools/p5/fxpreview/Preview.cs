@@ -136,7 +136,7 @@ public partial class Preview : Node2D
 				{
 					p.At(hit + 0.15 + 0.2 * k, () =>
 					{
-						Myriad.OnPoisonTick(p._front, id, c, top);
+						Myriad.OnPoisonTick(p._front, id, c, top, col => p._enemies[c].Modulate = col);
 						Popups.Damage(p._front, id, c, 9, false);
 					});
 				}
