@@ -211,10 +211,10 @@ void fragment() {
 				node.Visible = alpha > 0.0001f;
 				node.Modulate = new Color(1f, 1f, 1f, alpha);
 			}
-			// 砸进来：图出现时 1.25 倍猛缩回原大，两帧黑白反相，震屏
-			float k = Mathf.Clamp((s - ImpactAt) / 0.09f, 0f, 1f);
-			m.SetShaderParameter("zoom", s < ImpactAt ? 1f : Mathf.Lerp(1.25f, 1f, Fx.OutCubic(k)));
-			m.SetShaderParameter("invert", s >= ImpactAt && s < ImpactAt + 0.05f ? 1f : 0f);
+			// 图出现时轻轻推一下（1.08 → 1，0.16s 缓出），不做黑白反相（用户 2026-11-01：入场太生硬）
+			float k = Mathf.Clamp((s - ImpactAt) / 0.16f, 0f, 1f);
+			m.SetShaderParameter("zoom", s < ImpactAt ? 1f : Mathf.Lerp(1.08f, 1f, Fx.OutCubic(k)));
+			m.SetShaderParameter("invert", 0f);
 			if (!hit && s >= ImpactAt)
 			{
 				hit = true;

@@ -5,7 +5,7 @@ namespace P5Joker;
 /// <summary>
 /// Persona 召唤的「舞台」（2026-11-01：P5 的冲击力来自整屏的平面语言，而不是贴在人身边的光）。
 /// 一块全屏着色器放在背景特效层（人物、敌人后面），读后面的画面：
-/// · 入场：白闪、震屏，背景一下变成红黑高反差 + 红色网点（亮度分三档：黑 / 深红 / 红网点，高光偏粉白），
+/// · 入场：从 Joker 头部往外锯齿圆形扩散（0.36s，前沿一圈亮红），背景变成红黑高反差 + 红色网点（亮度分三档：黑 / 深红 / 红网点，高光偏粉白），
 ///   从 Joker 头部放射漫画集中线（每两帧换一次），四周压暗。人物和敌人在前面不受影响，像剪影一样跳出来；原版眼神特写在这块舞台上撕开。
 /// · 退场：一道撕纸的锯齿斜线从左下扫到右上，扫过的地方恢复原画面，撕口是白纸边 + 黑描边，正好接上眼神特写合拢的那一拍。
 /// 全部实时渲染，不用贴图、不画几何。
@@ -56,6 +56,7 @@ uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
 uniform vec2 res = vec2(1920.0, 1080.0);
 uniform vec2 focus = vec2(0.25, 0.45);
 uniform float amount = 0.0;
+uniform float reveal = 2.0;     // 舞台从 Joker 头部往外扩散到多远（按屏幕高度算）
 uniform float flash = 0.0;
 uniform float clock = 0.0;" + CutIn.TearGlsl + @"
 uniform float seed = 0.0;
@@ -105,7 +106,15 @@ void fragment() {
 		if (uL.y < lL + tearPaper(uL.x + 7.0)) col = vec3(0.985);
 		else if (uL.y < lL + tearPaper(uL.x + 7.0) + 0.004 * step(0.0005, split)) col = vec3(0.02);
 	}
-	col = mix(src, col, amount);
+	// 入场：从头部往外的锯齿圆形扩散，前沿一圈亮红
+	vec2 dd = (UV - focus) * vec2(res.x / res.y, 1.0);
+	float ang = atan(dd.y, dd.x);
+	float edgeR = reveal + (ln(ang * 9.0 + 3.0) - 0.5) * 0.12 + (ln(ang * 31.0 + 7.0) - 0.5) * 0.04;
+	float dr = length(dd) - edgeR;
+	float inside = step(dr, 0.0);
+	float rim = smoothstep(0.035, 0.0, abs(dr)) * step(reveal, 1.9);
+	col = mix(src, col, amount * inside);
+	col = mix(col, vec3(1.0, 0.18, 0.2), rim * 0.85 * amount);
 	col = mix(col, vec3(1.0), flash);
 	COLOR = vec4(col, 1.0);
 }" };
@@ -159,11 +168,12 @@ void fragment() {
 				sparked++;
 			}
 			float e = Mathf.Clamp((s - CutIn.SplitAt) / CutIn.SplitTime, 0f, 1f);
-			m.SetShaderParameter("amount", Mathf.Min(1f, s / 0.04f) * (1f - Mathf.Clamp((e - 0.75f) / 0.25f, 0f, 1f)));
+			m.SetShaderParameter("amount", 1f - Mathf.Clamp((e - 0.75f) / 0.25f, 0f, 1f));
+			m.SetShaderParameter("reveal", s < 0.36f ? Mathf.Lerp(0.03f, 1.9f, Mathf.SmoothStep(0f, 1f, s / 0.36f)) : 2f);
 			m.SetShaderParameter("split", SplitCurve(e));
 			// 白闪：施法那一下、图砸进来那一下、劈开那一下
-			float fl = 0.45f * Mathf.Exp(-s / 0.04f)
-				+ (s >= CutIn.ImpactAt ? 0.22f * Mathf.Exp(-(s - CutIn.ImpactAt) / 0.035f) : 0f)
+			float fl = 0.2f * Mathf.Exp(-s / 0.05f)
+				+ (s >= CutIn.ImpactAt ? 0.08f * Mathf.Exp(-(s - CutIn.ImpactAt) / 0.035f) : 0f)
 				+ (e > 0f ? 0.18f * Mathf.Exp(-(s - CutIn.SplitAt) / 0.04f) : 0f);
 			m.SetShaderParameter("flash", fl);
 			if (!torn && e > 0f)
