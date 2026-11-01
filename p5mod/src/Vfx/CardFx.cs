@@ -423,9 +423,11 @@ void fragment() {
 		// (层, 离脚底的横向偏移 × h, 高 × h, 掌心朝左（镜像）, 压暗, 拍下去转多少, 错开)
 		(Control L, float X, float Height, bool Mirror, float Dim, float Slap, float Lag)[] spec =
 		{
-			(layer, -1.5f, 2.3f, false, 0.35f, 0.5f, 0.08f),            // 先建：画在两只前排手后面
-			(layer, -0.95f, 1.8f, false, 0f, 0.42f, 0f),
-			(layer, 0.95f, 1.8f, true, 0f, 0.42f, 0.04f),
+			// 拍下去转的角度要让指尖真的落在敌人身上（用户 2026-11-01：像捏了一把，要砸上去）
+			// 手臂够长、从上方把掌心砸到敌人身上（拍击手型本身手腕折了 60°，再转太多会平趴在地上）
+			(layer, -1.35f, 2.9f, false, 0.35f, 0.62f, 0.08f),          // 先建：画在两只前排手后面
+			(layer, -0.85f, 2.3f, false, 0f, 0.52f, 0f),
+			(layer, 0.85f, 2.3f, true, 0f, 0.52f, 0.04f),
 		};
 		float grow = Mathf.Clamp((hitAt - emergeAt) * 0.75f, 0.12f, 0.3f);
 		const float retract = 0.3f;
@@ -473,20 +475,51 @@ void fragment() {
 				float rise = Fx.OutCubic(g) * (1f - Fx.InCubic(back01));
 				m.SetShaderParameter("rise", rise);
 				sp.Position = new Vector2(0f, (1f - rise) * height);
-				// 转：长的时候轻轻扭 → 蓄势往后仰 → 拍下去扑向敌人（过冲、弹回）→ 缩的时候回正
+				// 转：长的时候轻轻扭 → 蓄力：往后仰到底、手臂拉长 → 最后 0.07s 猛地砸下去（指尖落在敌人身上）→
+				// 撞上：压扁、微微弹起再落回 → 缩的时候回正
+				const float strikeT = 0.07f;
 				float wob = 0.12f * Mathf.Sin(g * Mathf.Pi * 2.2f) * (1f - g * 0.6f);
-				float wind = Mathf.Clamp((s - e0 - grow) / Mathf.Max(0.01f, hitAt - 0.05f - e0 - grow), 0f, 1f);
-				float lean = -0.22f * Fx.OutCubic(wind);
-				float strike = Mathf.Clamp((s - (hitAt - 0.05f)) / 0.05f, 0f, 1f);
-				float settle = Mathf.Clamp((s - hitAt) / 0.18f, 0f, 1f);
-				float slap = Fx.InCubic(strike) * (1f + 0.18f * Mathf.Sin(settle * Mathf.Pi));
-				float ang = s < hitAt - 0.05f ? wob + lean : Mathf.Lerp(lean, slapAng, slap);
+				float wind = Mathf.Clamp((s - e0 - grow) / Mathf.Max(0.01f, hitAt - strikeT - e0 - grow), 0f, 1f);
+				float lean = -0.5f * Fx.OutCubic(wind);
+				float stretch = 0.15f * Fx.OutCubic(wind);
+				float strike = Mathf.Clamp((s - (hitAt - strikeT)) / strikeT, 0f, 1f);
+				float after = Mathf.Max(0f, s - hitAt);
+				float ang, sx = 1f, sy = 1f + stretch;
+				if (s < hitAt - strikeT)
+				{
+					ang = wob + lean;
+				}
+				else if (s < hitAt)
+				{
+					float e = strike * strike * strike;                        // 越砸越快
+					ang = Mathf.Lerp(lean, slapAng * 1.06f, e);
+					sy = 1f + stretch * (1f - e) + 0.12f * e;
+				}
+				else
+				{
+					// 撞上：0.08s 压扁，之后弹起一点再慢慢落回
+					float squash = Mathf.Exp(-after / 0.06f);
+					ang = slapAng * (1.06f - 0.1f * Mathf.Sin(Mathf.Min(1f, after / 0.25f) * Mathf.Pi) * (1f - squash));
+					sy = 1f - 0.16f * squash;
+					sx = 1f + 0.1f * squash;
+					if (s < burnAt) ang += 0.015f * Mathf.Sin(s * 45f);
+				}
 				ang *= 1f - Fx.OutCubic(back01);
-				if (s >= hitAt && s < burnAt) ang += 0.02f * Mathf.Sin(s * 40f) * (1f - settle);
 				root.Rotation = ang * toward;
-				root.Scale = new Vector2(1f, 1f + 0.1f * Mathf.Sin(settle * Mathf.Pi) * (s >= hitAt ? 1f : 0f));
-				m.SetShaderParameter("hot", s >= hitAt ? Mathf.Exp(-(s - hitAt) / 0.08f) : 0f);
+				root.Scale = new Vector2(sx, Mathf.Lerp(sy, 1f, back01));
+				m.SetShaderParameter("hot", s >= hitAt ? 0.55f * Mathf.Exp(-(s - hitAt) / 0.05f) : 0f);   // 一闪就回黑，剪影要看得清
 				m.SetShaderParameter("burn", 0f);
+			});
+			// 落点：这只手的指尖砸在哪（地面支点 + 转过去的手臂），炸一下
+			float reachLen = height * 0.82f;
+			Vector2 tip = ground + new Vector2(0f, -reachLen).Rotated(slapAng * 1.06f * toward);
+			Fx.After(layer, hitAt, () =>
+			{
+				Glow.Flash(L, tip, Pal5.Hot, h * 0.7f, 0.1f);
+				Glow.Flash(L, tip, Pal5.Bright, h * 1.4f, 0.24f);
+				Glow.Shockwave(L, tip, Pal5.Bright, h * 1.5f, 0.3f, 0.6f);
+				Glow.Sparks(L, tip, 14, 300f, 900f, 0.4f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 900f, 0.08f, 0.24f,
+					new Vector2(-toward, -0.6f).Normalized(), 55f);
 			});
 		}
 		// 命中：三只手拍在敌人身上的那一下
@@ -496,7 +529,9 @@ void fragment() {
 			Glow.Flash(layer, center, Pal5.Bright, h * 2.2f, 0.28f);
 			Glow.Shockwave(layer, center, Pal5.Hot, h * 2.4f, 0.36f);
 			Glow.SpeedLines(layer, center, Pal5.Bright, 14, h * 0.4f, h * 2f, 0.3f);
-			Fx.Shake(1);
+			Glow.Ripple(layer, center, h * 3f, 0.4f, 0.03f);
+			HitStop.Request(0.06);                                       // 砸上去那一下顿一顿
+			Fx.Shake(2);
 		});
 	}
 

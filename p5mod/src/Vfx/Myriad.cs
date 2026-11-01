@@ -69,7 +69,7 @@ public static class Myriad
 					Fx.After(layer, 0.85, () => tint(Colors.White));
 				}
 			}
-			Pillars(Stage.Back ?? layer, new Vector2(min.X - hMax * 0.6f, max.Y), new Vector2(max.X + hMax * 0.6f, max.Y), hMax * 3.6f);
+			// 光柱：用户 2026-11-01 去掉
 			Dome(layer, mid, radius);
 			CardFx.Smoke(layer, mid + new Vector2(0f, -hMax * 0.9f), hMax);
 		});
@@ -123,12 +123,6 @@ public static class Myriad
 		Control back = Stage.Back ?? layer;
 		Flame.Column(back, feet + new Vector2(0f, 8f), h * 1.5f * k, h * 2.5f * k, 0f, 0.42f, 1.6f);
 		Glow.Shockwave(back, feet, new Color(0.7f, 0.35f, 1f), h * 2.6f * k, 0.35f, 0.26f);
-		for (int i = 0; i < 2; i++)
-		{
-			float x = center.X + (i == 0 ? -1f : 1f) * h * Fx.Rand(0.75f, 1.0f);
-			Color col = BeamCols[(n + i * 2) % BeamCols.Length];
-			Fx.After(layer, i * 0.04f, () => Beam(back, x, feet.Y, Fx.Rand(60f, 100f), h * Fx.Rand(2.2f, 3f), col, 0.4f, false));
-		}
 		Glow.Flash(layer, center, new Color(0.85f, 0.6f, 1f), h * 0.9f * k, 0.1f);
 		CardFx.Embers(layer, feet, h, 8, 0.5f);
 	}
