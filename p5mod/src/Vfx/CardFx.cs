@@ -531,7 +531,6 @@ void fragment() {
 			Sfx.PlayHit(Sfx.Slam, 1f, hitAt);
 			Sfx.Play(Sfx.SubBoom, 0.75f, hitAt);
 		}
-		Sfx.Play(Sfx.SwishLow, 0.3f, burnAt);
 		// 命中：三只手拍在敌人身上的那一下
 		Fx.After(layer, hitAt, () =>
 		{

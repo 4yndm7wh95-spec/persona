@@ -290,6 +290,10 @@ public static class Aim
 					}
 					CutIn.Eyes(back);
 				}
+				if (tier != Tier.Rare)
+				{
+					Sfx.Play(Sfx.PersonaFlame, 0.8f);                   // 没有舞台：人格面具现身的蓝焰声自己放（稀有由 SummonStage 放）
+				}
 				// 人格面具（稀有：在眼神特写上面；罕见：单独现身）
 				Persona.Show(spec, back, feet, tall * 1.35f, Joker.Facing(node));
 			});

@@ -170,19 +170,7 @@ void fragment() {
 		m.SetShaderParameter("c_hot", PersonaMask.Hot);
 		Fx.Clock(sprite);
 		m.SetShaderParameter("px", new Vector2(1f / size.X, 1f / size.Y));
-		// 声音：亚森出场 / 出手前各扇一下翅膀；伊邪那岐大神转杖时三声由低到高的挥动（出手那一拍的冲击声在 SummonStage.Beat）
-		if (spec.Tex == "arsene_cast")
-		{
-			Sfx.PlayHit(Sfx.Wing, 0.55f, 0.06f);
-			Sfx.PlayHit(Sfx.Wing, 0.55f, Mathf.Max(0f, AttackAt - 0.14f));
-		}
-		else
-		{
-			float s0 = (15 - spec.First) / 30f, s1 = (31 - spec.First) / 30f;
-			Sfx.Play(Sfx.SwishLow, 0.45f, s0);
-			Sfx.Play(Sfx.Swish, 0.55f, Mathf.Lerp(s0, s1, 0.45f));
-			Sfx.Play(Sfx.SwishHeavy, 0.7f, Mathf.Lerp(s0, s1, 0.85f));
-		}
+		// 声音：翅膀（像直升机）和挥动（像鞭子）都去掉了（用户 2026-11-01）；现身的蓝焰声由 SummonStage / Aim 放
 		// 出场：身后蓝焰一炸
 		Vector2 chest = anchor + new Vector2(0f, -(Foot.Y - Body.Y) * k);
 		Glow.Flash(back, chest, PersonaMask.Hi, height * 1.2f, 0.4f);

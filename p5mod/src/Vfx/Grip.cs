@@ -236,8 +236,6 @@ void fragment() {
 			Glow.Flash(layer, from, new Color(0.7f, 0.03f, 0.08f), h * 1.2f, 0.25f);
 			Glow.Sparks(layer, from, 14, 200f, 600f, 0.4f, new[] { new Color(0.9f, 0.1f, 0.14f), new Color(0.3f, 0f, 0.04f) }, -100f, 0.12f, 0.35f, dir, 30f);
 		});
-		Sfx.Play(Sfx.SwishLow, 0.35f, charge);                       // 蓄力：低沉的一收
-		Sfx.Play(Sfx.SwishHeavy, 0.6f, Mathf.Max(0f, launch));
 
 		float releaseAt = -1f;
 		bool released = false, gripped = false;
@@ -300,8 +298,9 @@ void fragment() {
 				{
 					HitStop.Request(0.07);
 					Fx.Shake(2);
-					Sfx.PlayHit(Sfx.Slam, 0.9f, 0f);
-					Sfx.Play(Sfx.SubBoom, 0.8f);
+					// 和召唤高潮同一套冲击声（之前用的 punch_taiman 是 P5 单挑拳击的音，和别处不搭，用户嫌怪）
+					Sfx.Play(Sfx.Critical, 0.75f);
+					Sfx.Play(Sfx.SubBoom, 0.85f);
 				}
 				Glow.Flash(layer, fistAt, Pal5.Hot, h * 1.0f, 0.12f);
 				Glow.Flash(layer, fistAt, Pal5.Bright, h * 2.0f, 0.28f);
@@ -322,7 +321,6 @@ void fragment() {
 					releaseAt = s;
 					Active.Remove(targetId);
 					tint?.Invoke(Colors.White);
-					Sfx.Play(Sfx.SwishLow, 0.35f);
 				}
 			}
 			if (released)
