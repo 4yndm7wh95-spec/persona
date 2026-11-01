@@ -19,7 +19,10 @@ public static class Persona
 
 	/// <summary>动作播到第几帧：出手前加速（24 帧 / 0.4s），之后按 30fps 收尾。</summary>
 	private static int FrameAt(float s) =>
-		Mathf.Min(Frames - 1, s < AttackAt ? (int)(s / AttackAt * 24f) : 24 + (int)((s - AttackAt) * Fps));
+		Mathf.Min(Frames - 1, s < AttackAt ? (int)(s / AttackAt * 24f) : 24 + (int)((s - AttackAt) / (ExitAt - AttackAt) * (Frames - 24)));
+
+	/// <summary>亚森开始被蓝火吞掉离场的时刻（他出现后几秒）：和眼神特写、背景被劈开、咒焰收掉是同一刻。</summary>
+	public const float ExitAt = CutIn.SplitAt;
 	private const float FrameW = 671f, FrameH = 461f, Fps = 30f;
 	// 图集一帧里的脚 / 身体中心（sources.json 的 cast 锚点 × 0.45）
 	private static readonly Vector2 Foot = new(350.8f, 412.3f), Body = new(350.8f, 273.4f);
@@ -101,8 +104,8 @@ void fragment() {
 		float k = height / body;
 		// 悬在 Joker 身后上方、离他一段距离（用户 2026-11-01：离得太近）：往左后方让开、脚大约在 Joker 腰的高度（用户：太高、再往左）
 		Vector2 anchor = feet + new Vector2(-0.32f * height * facing, -0.3f * height);
-		const float exit = 0.4f;
-		float life = AttackAt + (Frames - 24) / Fps + exit;
+		const float exit = 0.35f;
+		float life = ExitAt + exit;
 		Node2D root = Fx.Root(back, anchor, "P5Arsene", life + 0.1);
 		Sprite2D sprite = new()
 		{
