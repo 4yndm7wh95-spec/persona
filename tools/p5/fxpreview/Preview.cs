@@ -171,7 +171,12 @@ public partial class Preview : Node2D
 		["poison"] = p =>
 		{
 			p.Ready(0.2, Stance.Mask, "mask", "cast_from_mask", play: true, lockOn: Enemy);
-			p.At(1.8, () => CardFx.CurseLight(p._front, Enemy, Enemy + new Vector2(0, -170), c => p._enemies[Enemy].Modulate = c));
+			// 普通毒牌：亚森 + 手捏，不出舞台 / 眼神特写（用户 2026-11-01）
+			Persona.Spec spec = Persona.ArseneSpec with { Linger = 1.1f };
+			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
+			p.At(1.89, () => Persona.Show(spec, p._back, JokerFeet, tall));
+			p.At(1.85, () => Grip.Play(p._front, 1ul, Persona.ChestOf(spec, JokerFeet, tall) + new Vector2(0.22f * tall, -0.12f * tall), Enemy, 170f,
+				0.04f + spec.AttackAt, 1f, c => p._enemies[Enemy].Modulate = c, ownImpact: true));
 		},
 		// 防御（设计说明 docs/p5/FX_DESIGN_HITS.md 方案 A：菱形光格）：选中防御牌 → 打出，再来一次
 		["guard"] = p =>

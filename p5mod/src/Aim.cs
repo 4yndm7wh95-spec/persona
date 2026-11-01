@@ -266,7 +266,7 @@ public static class Aim
 			Fx.After(layer, 0.04, () => Release(held));             // 手扣紧面具（summon_hold_a）的那一下炸开
 		}
 		Tier tier = Tiers.For(card);
-		if (stance == Stance.Mask && tier >= Tier.Uncommon && Joker.FxLayer(back: true) is Control back)
+		if (stance == Stance.Mask && (tier >= Tier.Uncommon || Grips(card.GetType().Name)) && Joker.FxLayer(back: true) is Control back)
 		{
 			// 按稀有度分级（Tiers）：稀有 = 完整召唤；罕见 = 只有亚森短暂现身；普通 / 基础不召唤
 			Persona.Spec spec = PersonaFor(card);
@@ -309,7 +309,7 @@ public static class Aim
 	};
 
 	/// <summary>召唤人格面具、单体上毒的牌：亚森伸手攥住中毒的怪（Grip）。</summary>
-	public static bool Grips(string cardName) => cardName is "BubbleBubble";
+	public static bool Grips(string cardName) => cardName is "BubbleBubble" or "DeadlyPoison" or "Snakebite";   // 用户 2026-11-01：只要用毒就亚森 + 手捏
 
 	/// <summary>这张牌召唤时人格面具出手的时刻（施法后几秒）：出牌特效对齐到这一刻。</summary>
 	public static float HitFor(CardModel card) => 0.04f + PersonaFor(card).AttackAt;

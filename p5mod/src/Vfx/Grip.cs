@@ -127,7 +127,7 @@ void fragment() {
 	/// <param name="center">怪的中心</param>
 	/// <param name="h">怪中心到头顶的距离</param>
 	/// <param name="attack">攥住的那一刻（从现在起几秒，= 召唤高潮那一拍）</param>
-	public static void Play(Control layer, ulong targetId, Vector2 from, Vector2 center, float h, float attack, float facing, Action<Color>? tint = null)
+	public static void Play(Control layer, ulong targetId, Vector2 from, Vector2 center, float h, float attack, float facing, Action<Color>? tint = null, bool ownImpact = false)
 	{
 		if (Fx.Tex(Frames[0]) is not Texture2D t0)
 		{
@@ -296,6 +296,13 @@ void fragment() {
 			{
 				gripped = true;
 				live.LastTickMs = Stage.NowMs();
+				if (ownImpact)
+				{
+					HitStop.Request(0.07);
+					Fx.Shake(2);
+					Sfx.PlayHit(Sfx.Slam, 0.9f, 0f);
+					Sfx.Play(Sfx.SubBoom, 0.8f);
+				}
 				Glow.Flash(layer, fistAt, Pal5.Hot, h * 1.0f, 0.12f);
 				Glow.Flash(layer, fistAt, Pal5.Bright, h * 2.0f, 0.28f);
 				Glow.Shockwave(layer, fistAt, Pal5.Bright, h * 2.4f, 0.35f);

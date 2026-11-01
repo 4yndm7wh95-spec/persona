@@ -133,7 +133,7 @@ public static class JokerFx
 					tall * 1.2f, 0.04f + Persona.IzanagiSpec.ExitAt, face, tints);
 				break;
 			}
-			case var n when Aim.Grips(n) && t != null && Tiers.For(card) >= Tier.Uncommon:
+			case var n when Aim.Grips(n) && t != null:
 			{
 				// 亚森伸手攥住中毒的怪，毒结算完才松开（Grip）；攥住 = 召唤高潮那一拍
 				Persona.Spec spec = Aim.PersonaFor(card);
@@ -143,7 +143,8 @@ public static class JokerFx
 				Vector2 from = Persona.ChestOf(spec, jf, height, face) + new Vector2(0.22f * height * face, -0.12f * height);   // 亚森前伸的手
 				CanvasItem? body = t.Visuals;
 				Grip.Play(layer, t.GetInstanceId(), from, t.VfxSpawnPosition, Mathf.Max(80f, (t.VfxSpawnPosition - t.GetTopOfHitbox()).Length()),
-					Aim.HitFor(card), face, body == null ? null : c => { if (GodotObject.IsInstanceValid(body)) { body.Modulate = c; } });
+					Aim.HitFor(card), face, body == null ? null : c => { if (GodotObject.IsInstanceValid(body)) { body.Modulate = c; } },
+					ownImpact: Tiers.For(card) < Tier.Rare);                   // 非稀有没有召唤高潮那一拍：攥住的冲击声 / 顿帧自己放
 				break;
 			}
 			case "DeadlyPoison" when t != null:
