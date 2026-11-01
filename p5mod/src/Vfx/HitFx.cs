@@ -7,8 +7,8 @@ namespace P5Joker;
 /// <summary>
 /// 打击 / 开枪的代码特效。2026-11-01 用户：之前的太朴素 → 全部换成 P5 的平面漫画语言（Ink.cs：硬边、黑描边、红白黑、爆点、网点、碎片），
 /// 都很短、很干脆：
-///  · Swing —— 挥刀那一下沿刀尖的真实轨迹扫出一道黑描边的白色月牙（内侧红线、两道速度弧）；
-///  · Slash —— 命中：两道交叉斩线 + 锯齿爆点 + 网点环 + 速度线 + 平面碎片 + 原版星光；
+///  · Swing / Slash —— 打击（2026-11-01 设计说明 docs/p5/FX_DESIGN_HITS.md，Blade.cs）：三层月牙刀光，入 / 满 / 停 / 出四段，
+///    命中顿帧 50ms + 第二刀交叉 + 细红冲击环 + 空间扭曲 + 余韵速度线；
 ///  · Muzzle —— 开火：拉长的锯齿枪焰 + 原版枪焰 + 黑红环 + 弹壳 + 平面烟；
 ///  · Shot —— 黑描边弹道，命中处原版枪击爆点序列帧 + 爆点 + 网点 + 碎片。
 /// 只用全局坐标，游戏里由 JokerFx 按姿势图换算好位置传进来，预览工具直接传。
@@ -23,23 +23,13 @@ public static class HitFx
 	/// </summary>
 	public static void Swing(Control layer, Vector2 center, Vector2 from, Vector2 to)
 	{
-		// 刀光：沿刀尖真实轨迹扫过的一道剃刀月牙 —— 白芯（普通混合、硬边）+ 薄红光晕（加法），没有黑描边；外侧一道细的速度弧
+		// 刀光（Blade.Arc）：沿刀尖真实轨迹的弦画月牙，往背离圆心的方向拱；比命中斩痕窄、快，不炸光点
+		Vector2 mid = (from + to) / 2f;
+		float ang = (to - from).Angle(), chord = from.DistanceTo(to);
 		float r = (from.DistanceTo(center) + to.DistanceTo(center)) / 2f;
-		float a0 = (from - center).Angle(), sweep = Wrap((to - center).Angle() - a0);
-		Node2D root = Fx.Root(layer, center, "P5Swing", 0.3);
-		Polygon2D halo = Fx.Poly(root, new Vector2[3], new Color(Pal5.Bright, 0.8f), additive: true);
-		Polygon2D white = Fx.Poly(root, new Vector2[3], Ink.White);
-		Polygon2D line = Fx.Poly(root, new Vector2[3], new Color(1f, 0.96f, 0.95f, 0.9f));
-		const float total = 0.2f;
-		Fx.Animate(root, 0, total, t =>
-		{
-			float head = Ease5.OutExpo(Mathf.Clamp(t / 0.25f, 0f, 1f));
-			float tail = Fx.InCubic(Mathf.Clamp((t - 0.1f) / 0.9f, 0f, 1f));
-			halo.Polygon = Band(r + 10f, a0, sweep, tail, head, 34f);
-			white.Polygon = Band(r + 2f, a0, sweep, tail, head, 13f);
-			float head2 = Ease5.OutExpo(Mathf.Clamp((t - 0.05f) / 0.3f, 0f, 1f));
-			line.Polygon = Band(r + 36f, a0, sweep, Mathf.Max(tail, Fx.InCubic(Mathf.Clamp((t - 0.05f) / 0.6f, 0f, 1f))), head2 * 0.9f, 3f);
-		});
+		float bow = r - Mathf.Sqrt(Mathf.Max(0f, r * r - chord * chord / 4f));
+		bool flip = (mid - center).Dot(Vector2.Up.Rotated(ang)) < 0f;
+		Blade.Arc(layer, mid, ang, chord * 1.08f, Mathf.Clamp(bow, 20f, 160f), 46f, flip, 0.05f, 0.03f, 0.03f, 0.13f, false);
 	}
 
 	/// <summary>弧形带：沿圆弧从 tail 到 head（0~1 的扫过比例），头部最厚 width，往尾巴收成尖。</summary>
@@ -70,30 +60,21 @@ public static class HitFx
 	/// </summary>
 	public static void Slash(Control layer, Vector2 at, float facing = 1f)
 	{
-		float up = -0.55f;                                           // 上撩：从左下到右上
-		float a1 = facing > 0f ? up : Mathf.Pi - up;
-		Vector2 d1 = Vector2.Right.Rotated(a1);
-		// 冲击帧（3 帧红黑剪影）+ 剃刀斩线 + 画面沿斩线切开；60ms 后第二刀交叉（小一号）
-		Cut.Split(layer, at - d1 * 300f, at + d1 * 300f, 16f, 110f);       // 切开先建：读到的是没压色的画面
-		Cut.ImpactFrame(layer, at, 150f, 0.1f, 0f, a1, 2.4f);
-		Cut.Razor(layer, at, a1, 620f, 8f, 0.22f);
+		// 命中 0ms：顿帧 50ms + 轻震；一道斜向斩痕（三层月牙，入 / 满 / 停 / 出）+ 小白闪 + 细红冲击环 + 轻微空间扭曲
+		HitStop.Request(0.05);
+		Fx.Shake(1);
+		float a1 = facing > 0f ? -0.55f : Mathf.Pi + 0.55f;
+		// 月牙往外拱 60px：弦往拱的反方向挪，让弧线正好穿过命中点
+		Vector2 down = Vector2.Down.Rotated(a1) * (facing < 0f ? -1f : 1f);
+		Blade.Arc(layer, at + down * 52f, a1, 640f, 60f, 64f, facing < 0f);
+		Blade.Ring(layer, at, 24f, 140f, 6f, 0.22f, 0f, 0.5f);
+		Glow.Ripple(layer, at, 380f, 0.4f, 0.022f);
+		// +60ms：第二道短斩痕交叉成 X
 		float a2 = a1 + 1.35f * facing;
-		Vector2 d2 = Vector2.Right.Rotated(a2);
-		Cut.Razor(layer, at + new Vector2(10f * facing, 6f), a2, 380f, 6f, 0.2f, 0.06f);
-		Cut.Split(layer, at - d2 * 180f, at + d2 * 180f, 10f, 70f, 0.08f, 0.18f);
-		Impact(layer, at, new Vector2(facing, -0.6f).Normalized(), facing);
-	}
-
-	/// <summary>斩击打到身上的那一下（不含斩线）：沿刀路冲出去的斜切碎片 + 细速度线 + 轻震。dir = 刀的去向。</summary>
-	public static void Impact(Control layer, Vector2 at, Vector2 dir, float facing, float delay = 0f)
-	{
-		Fx.After(layer, delay, () =>
-		{
-			Cut.Slivers(layer, at, 14, 46f, dir, 0.55f, 1700f, 0.42f, 0.02f);
-			Cut.Slivers(layer, at, 6, 30f, -dir, 0.5f, 900f, 0.32f, 0.02f);
-			Ink.Streaks(layer, at, 10, 120f, 380f, 0.18f, 0.02f, 3f, dir, 0.5f);
-			Fx.Shake(1);
-		});
+		Vector2 down2 = Vector2.Down.Rotated(a2) * (facing < 0f ? -1f : 1f);
+		Blade.Arc(layer, at + new Vector2(8f * facing, 4f) + down2 * 30f, a2, 400f, 34f, 42f, facing < 0f, 0.05f, 0.04f, 0.04f, 0.14f, true, 0.06f);
+		// +150ms：余韵，沿刀路的细速度线
+		Glow.SpeedLines(layer, at, Pal5.Bright, 10, 90f, 340f, 0.26f, 0.15f);
 	}
 
 	/// <summary>

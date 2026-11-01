@@ -103,6 +103,17 @@ public partial class Preview : Node2D
 			p.At(6.4 + 1.64, () => { SummonStage.Play(p._back, p._front, Pose(1010, 215)); CutIn.Eyes(p._back); });
 			p.At(6.4 + 1.6, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy2, Enemy2 + new Vector2(0f, -128f), c => p._enemies[Enemy2].Modulate = c));
 		},
+		// 打击（设计说明 docs/p5/FX_DESIGN_HITS.md）：直接砍一刀 → 选中转刀 + 锁定再砍 → 连砍三下（只有第一下顿帧）
+		["strike"] = p =>
+		{
+			p.Strike(0.3, Enemy, 7);
+			p.Ready(1.4, Stance.Knife, "knife", "attack_from_ready", play: true, lockOn: Enemy);
+			p.At(1.4 + 1.6 + 0.13, () => HitFx.Swing(p._front, Pose(760f, 260f), Pose(600f, 850f), Pose(1376f, 450f)));
+			p.Hit(1.4 + 1.6 + 0.15, Enemy, 12, false);
+			p.Strike(4.2, Enemy2, 5);
+			p.Strike(4.75, Enemy2, 5);
+			p.Strike(5.3, Enemy2, 5);
+		},
 		// 2026-11-01 P5 平面风重做：打击（选中转刀 + 锁定 → 砍）、开枪（瞄准 + 锁定 → 开火）、防御
 		["hits"] = p =>
 		{
@@ -295,6 +306,7 @@ public partial class Preview : Node2D
 		};
 		Stage.Report = (where, e) => GD.PrintErr($"[P5Joker] {where}: {e}");
 		Stage.NowMs = () => (ulong)(_clock * 1000.0);
+		HitStop.RealSeconds = () => _frames / 30.0;                 // 顿帧按录像帧数计时（不受时间流速影响）
 		GD.Seed(52029);
 		Stage.Shake = s => { _shake = s; _shakeLeft = 0.25f; };
 		BodyAura.CloneBody = parent =>
@@ -329,9 +341,12 @@ public partial class Preview : Node2D
 	/// <summary>每帧都调用（弹药 UI 这类需要逐帧推进的）。</summary>
 	public void Every(Action action) => _every.Add(action);
 
+	private long _frames;
+
 	public override void _Process(double delta)
 	{
 		_clock += delta;
+		_frames++;
 		foreach (Action a in _every)
 		{
 			Stage.Safe("every", a);
