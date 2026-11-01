@@ -105,6 +105,7 @@ public partial class Preview : Node2D
 		},
 		// 只看蓝焰墙本身（放大，对照用户的参考图调细节）
 		["eiha"] = p => p.At(0.3, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy, Enemy + new Vector2(0f, -170f), c => p._enemies[Enemy].Modulate = c)),
+		["arsene"] = p => p.At(0.1, () => Persona.Arsene(p._back, JokerFeet, (JokerFeet - Pose(815f, 120f)).Length() * 1.35f)),
 		["cutin"] = p => p.At(0.3, () => CutIn.Eyes(p._back)),
 		["cutindbg"] = p =>
 		{

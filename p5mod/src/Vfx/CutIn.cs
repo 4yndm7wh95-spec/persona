@@ -91,7 +91,7 @@ void fragment() { COLOR = vec4(texture(TEXTURE, UV).rgb, 1.0); }
 	// 原版时间（实际秒数，速度 2.5）：0～.2 裂缝；.2 图出现；停到 .587；之后原版是慢慢合拢——这里不用，换成劈开。
 
 	/// <summary>图出现（冲击帧）/ 劈开的时刻（秒）；SummonStage 用同一刻、同一条撕口。</summary>
-	public const float ImpactAt = 0.2f, SplitAt = 0.587f, SplitTime = 0.16f;
+	public const float ImpactAt = 0.2f, SplitAt = 0.29f, SplitTime = 0.11f;     // 用户 2026-11-01：不要拖节奏
 
 	/// <summary>
 	/// 劈开用的撕口和两半的位移（两个着色器共用）：一条顺着带子斜度的锯齿线穿过画面中间，

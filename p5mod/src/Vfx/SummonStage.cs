@@ -169,7 +169,7 @@ void fragment() {
 			}
 			float e = Mathf.Clamp((s - CutIn.SplitAt) / CutIn.SplitTime, 0f, 1f);
 			m.SetShaderParameter("amount", 1f - Mathf.Clamp((e - 0.75f) / 0.25f, 0f, 1f));
-			m.SetShaderParameter("reveal", s < 0.36f ? Mathf.Lerp(0.03f, 1.9f, Mathf.SmoothStep(0f, 1f, s / 0.36f)) : 2f);
+			m.SetShaderParameter("reveal", s < 0.2f ? Mathf.Lerp(0.03f, 1.9f, Mathf.SmoothStep(0f, 1f, s / 0.2f)) : 2f);
 			m.SetShaderParameter("split", SplitCurve(e));
 			// 白闪：施法那一下、图砸进来那一下、劈开那一下
 			float fl = 0.2f * Mathf.Exp(-s / 0.05f)

@@ -15,7 +15,11 @@ public static class Persona
 	private const int Cols = 7, Frames = 49;
 
 	/// <summary>亚森出手（第 24 帧，双翼展开）在他出现后几秒：敌人身上的特效和伤害都对齐到这一刻。</summary>
-	public const float AttackAt = 24f / Fps;
+	public const float AttackAt = 0.4f;                     // 前 24 帧加速到 0.4s 播完（用户 2026-11-01：不要拖节奏）
+
+	/// <summary>动作播到第几帧：出手前加速（24 帧 / 0.4s），之后按 30fps 收尾。</summary>
+	private static int FrameAt(float s) =>
+		Mathf.Min(Frames - 1, s < AttackAt ? (int)(s / AttackAt * 24f) : 24 + (int)((s - AttackAt) * Fps));
 	private const float FrameW = 671f, FrameH = 461f, Fps = 30f;
 	// 图集一帧里的脚 / 身体中心（sources.json 的 cast 锚点 × 0.45）
 	private static readonly Vector2 Foot = new(350.8f, 412.3f), Body = new(350.8f, 273.4f);
@@ -30,7 +34,14 @@ uniform float flip = 0.0;
 uniform float fade = 1.0;      // 1 = 退场：从下往上消失（往上升腾化成火）
 uniform sampler2D atlas_tex : filter_linear;
 uniform vec2 px = vec2(0.0002);
-uniform vec4 region = vec4(0.0, 0.0, 1.0, 1.0);   // 这一帧在图集里的 UV 范围
+uniform vec4 region = vec4(0.0, 0.0, 1.0, 1.0);
+uniform float flame = 0.0;     // 沿剪影长出来的蓝焰强弱
+uniform float flen = 60.0;     // 火舌多长（图集像素）
+uniform float clock = 0.0;
+uniform vec4 c_dark : source_color = vec4(0.03, 0.06, 0.25, 1.0);
+uniform vec4 c_mid : source_color = vec4(0.11, 0.35, 1.0, 1.0);
+uniform vec4 c_hi : source_color = vec4(0.31, 0.78, 1.0, 1.0);
+uniform vec4 c_hot : source_color = vec4(0.92, 0.99, 1.0, 1.0);   // 这一帧在图集里的 UV 范围
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
@@ -45,33 +56,37 @@ void fragment() {
 	float n = fbm(vec2(lv.x * 6.0, lv.y * 9.0)) * 0.35;
 	float t = burn * 1.4 - 0.2;
 	float d = t - (h + n);                                           // > 0：已经烧出来
-	float edge = smoothstep(0.045, 0.0, abs(d)) * step(-0.045, d);
+	float edge = smoothstep(0.045, 0.0, abs(d)) * step(-0.045, d) * (1.0 - flip);   // 离场不画烧边（会在翅膀上糊成一大片）
 	vec3 blue = vec3(0.25, 0.65, 1.0), hot = vec3(0.9, 0.98, 1.0);
-	vec3 col = mix(c.rgb, blue, glow * 0.25 + smoothstep(0.06, 0.0, d) * 0.5);   // 只在烧的边附近染蓝
+	vec3 col = mix(c.rgb, blue, glow * 0.25 + smoothstep(0.06, 0.0, d) * 0.5 * (1.0 - flip));   // 只在烧的边附近染蓝
 	col = mix(col, mix(blue, hot, smoothstep(0.04, 0.0, abs(d))), edge);
 	float a = c.a * (step(0.0, d) + edge * 0.9);
-	COLOR = vec4(col, clamp(a, 0.0, 1.0) * fade);
-}" };
-
-	/// <summary>一根蓝焰火柱（细丝火，PersonaMask 的配色）：0.12s 蹿到顶、烧一会儿、往下缩掉。</summary>
-	private static void Pillar(Control back, Vector2 foot, float w, float h)
-	{
-		Node2D root = Fx.Root(back, foot, "P5ArsenePillar", 1.0);
-		back.MoveChild(root, Mathf.Max(0, back.GetChildCount() - 2));       // 在亚森后面
-		ColorRect r = Flame.Rect(root, Vector2.Zero, w, h);
-		Flame.Palette(r, PersonaMask.Dark, PersonaMask.Mid, PersonaMask.Hi, PersonaMask.Hot);
-		Flame.Set(r, "body", 0.55f);
-		Flame.Set(r, "base_w", 0.28f);
-		Flame.Set(r, "top_w", 0.05f);
-		Flame.Set(r, "speed", 1.8f);
-		Flame.Set(r, "rise", 0f);
-		Fx.Animate(root, 0, 0.9, t =>
-		{
-			float up = Ease5.OutBack(Ease5.Seg(t, 0f, 0.14f)), down = Fx.InCubic(Ease5.Seg(t, 0.45f, 0.55f));
-			Flame.Set(r, "rise", Mathf.Clamp(up * (1f - down), 0f, 1.1f));
-			Flame.Set(r, "alpha", 1f - down);
-		});
+	// 沿他这一帧的剪影往外、往上长出蓝色火舌（只长在身体外面，所以在他身后、不盖住他；用户 2026-11-01：火不要是贴在他上面的一块）
+	vec4 fireCol = vec4(0.0);
+	if ((c.a < 0.04 || a < 0.5) && flame > 0.0) {                 // 身体外面、以及身体已经被烧掉 / 还没烧出来的地方都长火（不然是一个人形的洞）
+		vec2 lo = region.xy, hi2 = region.xy + region.zw;
+		float fire = 0.0;
+		for (int i = 1; i < 21; i++) {
+			float k = float(i) / 20.0;
+			float drift = (noise(vec2(lv.x * 18.0, lv.y * 14.0 + clock * 2.2)) - 0.5) * 18.0 * k;
+			vec2 q = clamp(UV + vec2(drift * px.x, flen * k * px.y), lo, hi2);
+			float s = smoothstep(0.02, 0.35, texture(atlas_tex, q).a);
+			float colN = fbm(vec2((lv.x - drift * px.x / region.z) * 16.0, lv.y * 5.0 + clock * 2.6));
+			float reach = smoothstep(0.2 + k * 0.5, 0.42 + k * 0.5, colN);
+			fire = max(fire, s * reach * (1.0 - k * 0.5));
+		}
+		float e = pow(fbm(vec2(lv.x * 22.0, lv.y * 6.0 + clock * 3.2)), 1.4) * 1.7;
+		vec3 fc = c_dark.rgb;
+		fc = mix(fc, c_mid.rgb, smoothstep(0.12, 0.5, e));
+		fc = mix(fc, c_hi.rgb, smoothstep(0.45, 0.9, e));
+		fc = mix(fc, c_hot.rgb, smoothstep(0.9, 1.3, e));
+		fireCol = vec4(fc, clamp(fire * flame * smoothstep(0.18, 0.6, e), 0.0, 1.0));   // 只要火丝的亮部：深色底会叠成一块人形暗影
 	}
+	float ba = clamp(a, 0.0, 1.0);
+	float outA = max(ba, fireCol.a) * fade;
+	if (outA < 0.004) { discard; }
+	COLOR = vec4(mix(fireCol.rgb, col, ba), outA);
+}" };
 
 	/// <param name="back">背景特效层</param>
 	/// <param name="feet">Joker 脚底（屏幕）</param>
@@ -86,7 +101,8 @@ void fragment() {
 		float k = height / body;
 		// 悬在 Joker 身后上方、离他一段距离（用户 2026-11-01：离得太近）：往左后方让开、脚大约在 Joker 腰的高度（用户：太高、再往左）
 		Vector2 anchor = feet + new Vector2(-0.32f * height * facing, -0.3f * height);
-		float life = Frames / Fps + 0.35f;
+		const float exit = 0.4f;
+		float life = AttackAt + (Frames - 24) / Fps + exit;
 		Node2D root = Fx.Root(back, anchor, "P5Arsene", life + 0.1);
 		Sprite2D sprite = new()
 		{
@@ -98,13 +114,17 @@ void fragment() {
 		Vector2 size = atlas.GetSize();
 		m.SetShaderParameter("burn", 0f);
 		m.SetShaderParameter("atlas_tex", atlas);
+		m.SetShaderParameter("c_dark", PersonaMask.Dark);
+		m.SetShaderParameter("c_mid", PersonaMask.Mid);
+		m.SetShaderParameter("c_hi", PersonaMask.Hi);
+		m.SetShaderParameter("c_hot", PersonaMask.Hot);
+		Fx.Clock(sprite);
 		m.SetShaderParameter("px", new Vector2(1f / size.X, 1f / size.Y));
 		// 出场：身后蓝焰一炸
 		Vector2 chest = anchor + new Vector2(0f, -(Foot.Y - Body.Y) * k);
 		Glow.Flash(back, chest, PersonaMask.Hi, height * 1.2f, 0.4f);
 		Glow.Sparks(back, chest, 50, 120f, 520f, 0.9f, new[] { PersonaMask.Hot, PersonaMask.Hi, PersonaMask.Mid }, -260f, 0.12f, 0.45f);
-		// 出场修饰（用户 2026-11-01）：脚下蹿起一根蓝焰火柱（在亚森后面），一圈压扁的蓝色冲击环
-		Pillar(back, anchor + new Vector2(0f, height * 0.12f), height * 0.75f, height * 1.25f);
+		// 出场修饰：一圈压扁的蓝色冲击环（火在着色器里沿他的剪影长出来）
 		Glow.Shockwave(back, anchor, PersonaMask.Hi, height * 2.2f, 0.55f, 0.35f);
 		// 出手：眼神特写劈开之后（第 24 帧，双翼展开）胸口炸开红白光、两圈冲击环、放射速度线（背景层不用折射：会变成暗圆盘）
 		Fx.After(back, AttackAt, () =>
@@ -120,7 +140,7 @@ void fragment() {
 		Fx.Animate(root, 0, life, t =>
 		{
 			float s = t * life;
-			int f = Mathf.Min(Frames - 1, (int)(s * Fps));
+			int f = FrameAt(s);
 			if (f != last)
 			{
 				last = f;
@@ -128,14 +148,19 @@ void fragment() {
 				sprite.RegionRect = r;
 				m.SetShaderParameter("region", new Vector4(r.Position.X / size.X, r.Position.Y / size.Y, r.Size.X / size.X, r.Size.Y / size.Y));
 			}
-			// 0～.28s 烧出来；最后 .35s 从下往上化掉
-			float inK = Mathf.Clamp(s / 0.28f, 0f, 1f), outK = Mathf.Clamp((s - (life - 0.35f)) / 0.35f, 0f, 1f);
+			// 0～.18s 被蓝焰烧出来；最后 exit 秒被蓝焰从下往上吞掉
+			float inK = Mathf.Clamp((s - 0.04f) / 0.18f, 0f, 1f), outK = Mathf.Clamp((s - (life - exit)) / exit, 0f, 1f);
 			m.SetShaderParameter("burn", outK > 0f ? 1f - outK : Fx.OutCubic(inK));
 			m.SetShaderParameter("flip", outK > 0f ? 1f : 0f);
 			m.SetShaderParameter("fade", 1f - outK * 0.7f);
 			m.SetShaderParameter("glow", (1f - inK) * 0.8f + outK * 0.8f);
+			// 火：出场又长又旺（先烧出他的轮廓），显形后退成一圈淡淡的余焰；离场重新变长变旺把他吞掉
+			float pre = 1f - Mathf.Clamp((s - 0.18f) / 0.25f, 0f, 1f);
+			m.SetShaderParameter("flame", Mathf.Min(1f, s / 0.05f) * (0.35f + 0.65f * Mathf.Max(pre, outK)) * (1f - Mathf.Clamp((outK - 0.75f) / 0.25f, 0f, 1f)));
+			m.SetShaderParameter("flen", 45f + 85f * Mathf.Max(pre, outK));
 		});
-		Fx.After(back, life - 0.35f, () =>
-			Glow.Sparks(back, chest, 40, 80f, 300f, 1.0f, new[] { PersonaMask.Hot, PersonaMask.Hi, PersonaMask.Mid }, -320f, 0.1f, 0.4f, Vector2.Up, 60f));
+		// 出场：一团蓝焰从脚下蹿起把他整个裹住，火往上退的同时把他烧出来；离场：蓝焰从脚下往上吞掉他，火舌窜走、散成火星
+		Fx.After(back, life - exit * 0.5f, () =>
+			Glow.Sparks(back, chest, 60, 120f, 420f, 1.1f, new[] { PersonaMask.Hot, PersonaMask.Hi, PersonaMask.Mid }, -380f, 0.1f, 0.42f, Vector2.Up, 50f));
 	}
 }
