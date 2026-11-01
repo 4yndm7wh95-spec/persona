@@ -29,6 +29,9 @@ uniform vec2 px = vec2(0.002, 0.002);
 uniform float rim = 5.0;
 uniform float len = 46.0;
 uniform float alpha = 0.0;
+uniform float climb = 1.0;      // 点火：火从脚下往上爬（0 = 还没烧，1 = 烧到头顶）
+uniform vec2 feet = vec2(0.5, 0.95);   // 脚底（UV）：脚下一圈底座火
+uniform float base_w = 0.12;    // 底座火半宽（UV）
 uniform float clock = 0.0;
 uniform float seed = 0.0;
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
@@ -64,14 +67,28 @@ void fragment() {
 	for (int i = 1; i < 13; i++) {
 		float k = float(i) / 12.0;
 		float drift = (noise(vec2(sp.x * 0.05 + seed, sp.y * 0.04 + t * 2.2)) - 0.5) * 14.0 * k;
+		// 往正下 + 斜下两侧找身体：竖直的外套边也会沿着身体往上舔（用户 2026-11-01：只有头上有火，头大身小）
 		float s = sil(UV + vec2(drift, len * k) * px);
+		s = max(s, 0.85 * sil(UV + vec2(drift + len * k * 0.55, len * k * 0.7) * px));
+		s = max(s, 0.85 * sil(UV + vec2(drift - len * k * 0.55, len * k * 0.7) * px));
 		float colN = fbm(vec2((sp.x - drift) * 0.06 + seed, sp.y * 0.02 + t * 2.4));
-		float reach = smoothstep(0.38 + k * 0.4, 0.52 + k * 0.4, colN);
+		float reach = smoothstep(0.3 + k * 0.36, 0.44 + k * 0.36, colN);
 		float gap = smoothstep(0.55, 0.8, noise(vec2(sp.x * 0.07 + seed * 3.0, sp.y * 0.05 + t * 3.4)));
 		fire = max(fire, s * reach * smoothstep(0.0, 0.18, k) * (1.0 - k * 0.45) * (1.0 - gap * smoothstep(0.3, 0.8, k)));
 	}
 	// 不画贴身的一圈（用户 2026-11-01：太像描边），只要往上窜的火舌
+	// 脚下的底座火：贴地一圈低矮的火往上冒，把人「托」起来（重心往下移）
+	float gx = abs(UV.x - feet.x) / base_w;
+	float gy = (feet.y - UV.y) / (len * 1.3 * px.y);
+	if (gx < 1.0 && gy > -0.04 && gy < 1.0) {
+		float colG = fbm(vec2(sp.x * 0.05 + seed * 2.0, sp.y * 0.03 + t * 2.6));
+		float hG = (1.0 - gx * gx) * (0.45 + 0.55 * colG);
+		fire = max(fire, smoothstep(hG, hG - 0.25, gy) * smoothstep(-0.04, 0.05, gy) * 0.9);
+	}
 	fire *= 1.0 - body;                                     // 只在身体外面
+	// 点火：从脚往上爬
+	float up = (feet.y - UV.y) / max(feet.y, 0.01);
+	fire *= smoothstep(climb * 1.15, climb * 1.15 - 0.15, up);
 	// 火丝
 	vec2 w = vec2(noise(sp * 0.02 + vec2(0.0, t * 0.8)), noise(sp * 0.02 + vec2(5.2, t * 0.8)));
 	float n = ridge(vec2(sp.x * 0.07 + w.x * 1.5, sp.y * 0.022 + t * 1.9));
@@ -91,7 +108,7 @@ void fragment() {
 
 	/// <param name="back">人物后面的特效层</param>
 	/// <param name="region">要罩住的区域（全局坐标：人物 + 四周留给火的边）</param>
-	public BodyAura(Control back, Rect2 region)
+	public BodyAura(Control back, Rect2 region, Vector2? feetGlobal = null, float baseHalfWidth = 0f)
 	{
 		if (CloneBody == null)
 		{
@@ -123,6 +140,12 @@ void fragment() {
 		_mat.SetShaderParameter("c_hot", PersonaMask.Hot);
 		_mat.SetShaderParameter("seed", Fx.Rand(0f, 20f));
 		_mat.SetShaderParameter("alpha", 0f);
+		if (feetGlobal is Vector2 fg)
+		{
+			_mat.SetShaderParameter("feet", (fg - region.Position) / region.Size);
+			_mat.SetShaderParameter("base_w", baseHalfWidth / region.Size.X);
+		}
+		_mat.SetShaderParameter("climb", 0f);
 		ShaderMaterial m = _mat;
 		// 自己的时钟（不用 TIME，见 Fx.Clock）
 		Tween clock = sprite.CreateTween().SetLoops();
@@ -130,7 +153,11 @@ void fragment() {
 		// 架势摆好之后烧起来，之后随呼吸起伏
 		Tween fade = sprite.CreateTween();
 		fade.TweenInterval(0.15);
-		fade.TweenMethod(Callable.From<float>(v => m.SetShaderParameter("alpha", v)), 0f, 1f, 0.3);
+		fade.TweenMethod(Callable.From<float>(v =>
+		{
+			m.SetShaderParameter("alpha", Mathf.Min(1f, v * 2f));
+			m.SetShaderParameter("climb", Fx.OutCubic(v));                // 0.3s 从脚烧到头顶
+		}), 0f, 1f, 0.3);
 		Tween breathe = sprite.CreateTween().SetLoops();
 		breathe.TweenInterval(0.5);
 		breathe.TweenMethod(Callable.From<float>(v =>
