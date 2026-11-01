@@ -86,7 +86,7 @@ void fragment() {
 		vec3 g = mix(c.rgb, vec3(lum), 0.15);
 		g = clamp((g - 0.5) * 1.12 + 0.5, 0.0, 1.0);
 		vec2 lo0 = region.xy, hi0 = region.xy + region.zw;
-		float nb = texture(atlas_tex, clamp(UV + vec2(3.0 * px.x, -3.0 * px.y), lo0, hi0)).a;
+		float nb = texture(atlas_tex, clamp(UV + vec2(6.0 * px.x, -6.0 * px.y), lo0, hi0)).a;   // 红色轮廓光 6px（用户：再厚 200%）
 		g = mix(g, vec3(1.0, 0.12, 0.16), c.a * (1.0 - nb) * 0.7 * stage);
 		c.rgb = mix(c.rgb, g, stage);
 	}
