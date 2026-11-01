@@ -76,8 +76,13 @@ public static class HitFx
 		float up = -0.55f;                                           // 上撩：从左下到右上
 		float a1 = facing > 0f ? up : Mathf.Pi - up;
 		Impact(layer, at, new Vector2(facing, -0.6f).Normalized(), facing);      // 爆点在下面，斩线画在最上面（斩线是主角）
-		Ink.Slash(layer, at, a1, 520f, 34f, 0.3f);
-		Ink.Slash(layer, at + new Vector2(10f * facing, 6f), a1 + 1.35f * facing, 320f, 22f, 0.26f, 0.06f);
+		// Codex 画的笔触斩痕（有就叠上去）；代码斩线细而锐，在最上面
+		if (Ink.Pick("ink_slash", 4) is string brush)
+		{
+			Ink.Brush(layer, at, brush, a1, 560f, 0.42f, 0f, facing < 0f);
+		}
+		Ink.Slash(layer, at, a1, 560f, 16f, 0.26f);
+		Ink.Slash(layer, at + new Vector2(10f * facing, 6f), a1 + 1.35f * facing, 340f, 11f, 0.24f, 0.06f);
 	}
 
 	/// <summary>斩击打到身上的那一下（不含斩线）：爆点 + 网点环 + 速度线 + 碎片 + 星光 + 轻震。dir = 刀的去向。</summary>
@@ -85,12 +90,14 @@ public static class HitFx
 	{
 		Fx.After(layer, delay, () =>
 		{
-			Ink.Burst(layer, at, 82f, 12, 0.22f);
-			Ink.Halftone(layer, at, 300f, 0.36f, 0.02f);
-			Ink.Streaks(layer, at, 16, 90f, 330f, 0.24f, 0.01f);
-			Ink.Shards(layer, at, 12, 34f, dir, 0.9f, 820f, 0.55f);
-			Ink.Twinkle(layer, at + new Vector2(95f * facing, -80f), 90f, 0.05f);
-			Ink.Twinkle(layer, at + new Vector2(-60f * facing, 70f), 60f, 0.11f);
+			if (Ink.Pick("ink_splat", 3) is string splat)
+			{
+				Ink.Brush(layer, at + dir * 40f, splat, dir.Angle(), 380f, 0.5f, 0.01f);
+			}
+			Ink.Needles(layer, at, 7, 230f, 12f, 0.16f);
+			Ink.Halftone(layer, at, 240f, 0.3f, 0.02f, null, 1f, 10f);
+			Ink.Streaks(layer, at, 12, 110f, 320f, 0.2f, 0.01f, 4f);
+			Ink.Shards(layer, at, 10, 40f, dir, 0.8f, 900f, 0.45f);
 			Fx.Shake(1);
 		});
 	}
@@ -102,7 +109,7 @@ public static class HitFx
 	public static void Muzzle(Control layer, Vector2 muzzle, float facing = 1f)
 	{
 		float ang = facing > 0f ? 0f : Mathf.Pi;
-		Ink.Burst(layer, muzzle + new Vector2(26f * facing, 0f), 58f, 9, 0.13f, 0f, 1.9f, ang, Ink.Gold);
+		Ink.Needles(layer, muzzle + new Vector2(14f * facing, 0f), 5, 150f, 11f, 0.1f, 0f, new Vector2(facing, 0f), 0.4f, Ink.Gold);
 		Ink.Streaks(layer, muzzle + new Vector2(20f * facing, 0f), 7, 30f, 210f, 0.14f, 0f, 6f, new Vector2(facing, 0f), 0.35f);
 		Node2D root = Fx.Root(layer, muzzle, "P5Muzzle", 0.6);
 		if (Fx.Tex("firetip") is Texture2D tip)
@@ -135,18 +142,6 @@ public static class HitFx
 			shell.Rotation = -18f * facing * s;
 			shell.Modulate = new Color(1f, 1f, 1f, 1f - Ease5.Seg(t, 0.8f, 0.2f));
 		});
-		// 平面烟
-		Node2D puff = new() { Position = new Vector2(34f * facing, -6f) };
-		root.AddChild(puff);
-		if (Ink.Sprite(puff, "smoke_puff", new Color(0.55f, 0.52f, 0.54f), 2f) is Sprite2D smoke)
-		{
-			Fx.Animate(puff, 0.03, 0.5, t =>
-			{
-				puff.Position = new Vector2((34f + 40f * t) * facing, -6f - 60f * Ease5.OutQuint(t));
-				smoke.Scale = Vector2.One * (0.5f + 0.7f * Ease5.OutQuint(t));
-				Ink.Set(smoke, "cut", Mathf.Lerp(0.35f, 1.05f, Fx.InCubic(t)));
-			});
-		}
 		Fx.Shake(1);
 	}
 
@@ -166,12 +161,11 @@ public static class HitFx
 			core.Polygon = Glow.TaperPts(a, b, 5f * (1f - t) + 1f);
 		});
 		Vector2 dir = new Vector2(facing, -0.3f).Normalized();
-		Ink.Burst(layer, hit, 70f, 10, 0.22f, 0.02f);
+		Ink.Needles(layer, hit, 6, 170f, 9f, 0.14f, 0.02f);
 		Ink.GunHit(layer, hit, 230f, 0.02f);
 		Ink.Halftone(layer, hit, 220f, 0.32f, 0.04f);
 		Ink.Streaks(layer, hit, 12, 60f, 230f, 0.2f, 0.03f, 6f);
-		Ink.Shards(layer, hit, 8, 26f, dir, 1.0f, 700f, 0.45f, 0.02f);
-		Ink.Twinkle(layer, hit + new Vector2(60f * facing, -55f), 70f, 0.06f);
+		Ink.Shards(layer, hit, 7, 32f, dir, 1.0f, 800f, 0.4f, 0.02f);
 		Fx.Shake(1);
 	}
 
@@ -217,7 +211,7 @@ public static class HitFx
 			});
 			Fx.After(layer, delay + seg, () =>
 			{
-				Ink.Burst(layer, b, last ? 70f : 55f, 10, 0.2f);                // 弹到的每个敌人：和开枪命中同一套平面爆点
+				Ink.Needles(layer, b, 6, last ? 170f : 130f, 9f, 0.14f);         // 弹到的每个敌人：和开枪命中同一套
 				Ink.GunHit(layer, b, last ? 220f : 170f);
 				Ink.Halftone(layer, b, last ? 210f : 160f, 0.3f, 0.02f);
 				Glow.Sparks(layer, b, last ? 18 : 12, 200f, 520f, 0.35f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 220f, 0.1f, 0.3f,

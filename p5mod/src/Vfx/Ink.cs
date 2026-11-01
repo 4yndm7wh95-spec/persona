@@ -46,6 +46,102 @@ public static class Ink
 		});
 	}
 
+	// ───────────── 针状闪光（替代卡通爆点）─────────────
+
+	/// <summary>
+	/// 命中闪光（2026-11-01 用户：太卡通 → 不用胖锯齿星）：几根又细又长的尖刺从命中点猛地刺出去（白芯、红边，没有黑描边），
+	/// 0.04s 刺到最长，随后变细收掉。dir / spread：只往一边刺（枪口）。
+	/// </summary>
+	public static void Needles(Control layer, Vector2 at, int count, float len, float width, float life = 0.14f, float delay = 0f,
+		Vector2? dir = null, float spread = Mathf.Pi, Color? edge = null)
+	{
+		Fx.After(layer, delay, () =>
+		{
+			Node2D root = Fx.Root(layer, at, "P5InkNeedles", life + 0.05);
+			var list = new List<(Polygon2D R, Polygon2D W, Vector2 D, float L, float Wd)>();
+			float baseAng = (dir ?? Vector2.Right).Angle(), a0 = Fx.Rand(0f, Mathf.Tau);
+			for (int i = 0; i < count; i++)
+			{
+				float a = dir == null ? a0 + Mathf.Tau * (i + Fx.Rand(-0.25f, 0.25f)) / count : baseAng + Fx.Rand(-spread, spread);
+				float l = len * (i % 2 == 0 ? Fx.Rand(0.85f, 1.1f) : Fx.Rand(0.4f, 0.65f));
+				list.Add((Fx.Poly(root, new Vector2[3], edge ?? Red), Fx.Poly(root, new Vector2[3], White), Vector2.Right.Rotated(a), l,
+					width * Fx.Rand(0.7f, 1.1f)));
+			}
+			Fx.Animate(root, 0, life, t =>
+			{
+				float s = t * life;
+				float k = Ease5.OutExpo(Mathf.Min(1f, s / 0.04f));
+				float thin = 1f - Fx.InCubic(Ease5.Seg(t, 0.25f, 0.75f));
+				foreach (var (r, w, d, l, wd) in list)
+				{
+					Vector2 tip = d * l * k * (1f + 0.15f * t), back = -d * wd * 1.5f;
+					r.Polygon = thin < 0.02f ? new Vector2[3] : Glow.TaperPts(back, tip, wd * thin);
+					w.Polygon = thin < 0.02f ? new Vector2[3] : Glow.TaperPts(back * 0.5f, tip * 0.88f, wd * 0.45f * thin);
+				}
+			});
+		});
+	}
+
+	// ───────────── Codex 画的笔触贴图（有就用，没有就跳过）─────────────
+
+	private static Shader? _brush;
+
+	/// <summary>笔触贴图沿 x 方向「刷」出来（reveal 0→1），再从起笔那头往后褪掉（wipe 0→1）；硬边。</summary>
+	private static Shader BrushShader => _brush ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform float reveal = 1.0;
+uniform float wipe = 0.0;
+uniform float alpha = 1.0;
+void fragment() {
+	vec4 c = texture(TEXTURE, UV);
+	float edge = UV.x + (c.a - 0.5) * 0.06;
+	float on = step(edge, reveal) * step(wipe, edge);
+	COLOR = vec4(c.rgb, c.a * on * alpha * COLOR.a);
+}" };
+
+	/// <summary>
+	/// 一张 Codex 画的笔触 / 墨迹（art/p5/fx/gen_codex/ink：ink_slash_*、ink_splat_*），ang 方向、长 size 像素，
+	/// 0.05s 刷出来、停一下、0.2s 从起笔那头褪掉。贴图不在就什么也不做（返回 false）。
+	/// </summary>
+	public static bool Brush(Control layer, Vector2 at, string name, float ang, float size, float life = 0.4f, float delay = 0f, bool flipY = false)
+	{
+		if (Fx.Tex(name) is not Texture2D t)
+		{
+			return false;
+		}
+		Fx.After(layer, delay, () =>
+		{
+			Node2D root = Fx.Root(layer, at, "P5InkBrush", life + 0.05);
+			root.Rotation = ang;
+			ShaderMaterial m = new() { Shader = BrushShader };
+			Sprite2D sp = new() { Texture = t, Material = m, TextureFilter = CanvasItem.TextureFilterEnum.Linear };
+			float k = size / t.GetWidth();
+			sp.Scale = new Vector2(k, flipY ? -k : k);
+			root.AddChild(sp);
+			Fx.Animate(root, 0, life, tt =>
+			{
+				float s = tt * life;
+				m.SetShaderParameter("reveal", Ease5.OutExpo(Mathf.Min(1f, s / 0.05f)) * 1.05f);
+				m.SetShaderParameter("wipe", Fx.InCubic(Ease5.Seg(tt, 0.45f, 0.55f)) * 1.05f);
+			});
+		});
+		return true;
+	}
+
+	/// <summary>同一组贴图里随机挑一张（ink_slash_1..n），一张都没有就返回 null。</summary>
+	public static string? Pick(string prefix, int n)
+	{
+		var have = new List<string>();
+		for (int i = 1; i <= n; i++)
+		{
+			if (Fx.Tex($"{prefix}_{i}") != null)
+			{
+				have.Add($"{prefix}_{i}");
+			}
+		}
+		return have.Count == 0 ? null : have[Fx.Rng.Next(have.Count)];
+	}
+
 	/// <summary>多边形往外放大 k 倍再外扩 pad 像素（描边层）。</summary>
 	public static Vector2[] Scale(Vector2[] pts, float k, float pad)
 	{
@@ -169,16 +265,16 @@ void fragment() {
 		Fx.After(layer, delay, () =>
 		{
 			Node2D root = Fx.Root(layer, at, "P5InkShards", life + 0.05);
-			colors ??= new[] { Red, White, Red, Black };
+			colors ??= new[] { White, Red, White, Black };
 			var list = new List<(Node2D N, Vector2 V, float W)>();
 			float baseAng = dir.Angle();
 			for (int i = 0; i < count; i++)
 			{
 				float s = size * Fx.Rand(0.45f, 1.1f);
-				Vector2[] tri = { new(s, 0f), new(-s * 0.4f, -s * Fx.Rand(0.25f, 0.5f)), new(-s * 0.55f, s * Fx.Rand(0.15f, 0.4f)) };
+				// 细长的玻璃碎条（2026-11-01：不要黑描边的胖三角，太卡通）
+				Vector2[] tri = { new(s, 0f), new(-s * 0.5f, -s * Fx.Rand(0.08f, 0.18f)), new(-s * 0.6f, s * Fx.Rand(0.05f, 0.14f)) };
 				Node2D n = new() { Rotation = Fx.Rand(0f, Mathf.Tau) };
 				root.AddChild(n);
-				Fx.Poly(n, Scale(tri, 1f, 4f), Black);
 				Fx.Poly(n, tri, colors[i % colors.Length]);
 				float a = baseAng + Fx.Rand(-spread, spread);
 				list.Add((n, Vector2.Right.Rotated(a) * speed * Fx.Rand(0.4f, 1f), Fx.Rand(-14f, 14f)));
@@ -307,8 +403,8 @@ void fragment() {
 			Node2D root = Fx.Root(layer, at, "P5InkGunHit", 0.3);
 			root.Rotation = Fx.Rand(0f, Mathf.Tau);
 			float k = size / 128f;
-			Sprite2D? red = Sprite(root, "gun_hit", Red, 2.5f, Fx.Frame(0, 2, 128f, 128f));
-			Sprite2D? white = Sprite(root, "gun_hit", White, 2.5f, Fx.Frame(0, 2, 128f, 128f));
+			Sprite2D? red = Sprite(root, "gun_hit", Red, 0f, Fx.Frame(0, 2, 128f, 128f));
+			Sprite2D? white = Sprite(root, "gun_hit", White, 1.2f, Fx.Frame(0, 2, 128f, 128f));
 			if (red == null || white == null)
 			{
 				return;

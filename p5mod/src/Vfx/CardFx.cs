@@ -11,138 +11,95 @@ namespace P5Joker;
 /// </summary>
 public static class CardFx
 {
-	// ───────────────────────── 防御：前臂一竖，身前「咔」地合上一面 P5 平面盾 ─────────────────────────
-
-	/// <summary>盾形（原点在中心，高 h）：上沿中间一个 V 形缺口，下面收成尖。</summary>
-	private static Vector2[] ShieldShape(float h)
-	{
-		float w = h * 0.66f;
-		return new[]
-		{
-			new Vector2(-w * 0.5f, -h * 0.5f), new Vector2(-w * 0.13f, -h * 0.5f), new Vector2(0f, -h * 0.4f), new Vector2(w * 0.13f, -h * 0.5f),
-			new Vector2(w * 0.5f, -h * 0.5f), new Vector2(w * 0.5f, h * 0.02f), new Vector2(w * 0.3f, h * 0.3f), new Vector2(0f, h * 0.5f),
-			new Vector2(-w * 0.3f, h * 0.3f), new Vector2(-w * 0.5f, h * 0.02f),
-		};
-	}
-
-	/// <summary>只留 x 在 side 那一边的部分（左半 side=-1 / 右半 side=1），沿 x=0 切开。</summary>
-	private static Vector2[] Half(Vector2[] pts, float side)
-	{
-		var o = new List<Vector2>();
-		for (int i = 0; i < pts.Length; i++)
-		{
-			Vector2 p = pts[i], q = pts[(i + 1) % pts.Length];
-			bool pin = p.X * side >= 0f, qin = q.X * side >= 0f;
-			if (pin)
-			{
-				o.Add(p);
-			}
-			if (pin != qin)
-			{
-				float t = p.X / (p.X - q.X);
-				o.Add(p.Lerp(q, t));
-			}
-		}
-		return o.ToArray();
-	}
+	// ───────────────────────── 防御：前臂一竖，身前「唰唰」叠起一面斜切面板墙 ─────────────────────────
 
 	/// <summary>
-	/// 防御（格挡，2026-11-01 重做成 P5 平面风）：前臂竖起那一刻（cast_guard 的 guard_a2），拳头上一个小锯齿爆点；
-	/// 身前一面平面盾（黑描边 → 白边 → 红面 → 黑底上原版的怪盗面具）左右两半从两边「咔」地拍合（过冲），
-	/// 合上那一下白边闪一圈、红网点往外扩、速度线；盾上方原版的「GUARD」字（红色错位影）弹出来；
-	/// 停一会儿，盾裂成两半往两边掉、碎成平面碎片。fist = 拳头，shield = 盾的中心。~1s。
+	/// 防御（格挡）。2026-11-01 用户：平面盾徽太卡通、违和 → 改成 P5 菜单 / 召唤舞台的语言：
+	/// 前臂竖起那一刻（cast_guard 的 guard_a2），拳头上几根细针闪；身前 4 块斜切的宽面板（细红线、迎敌那侧一道白边）
+	/// 从前面一块块「唰」地拍回到位、叠成一面半透明的暗红玻璃墙（每块错开 0.025s，缓出，落定时整块白一下）；红网点在墙后一扩；
+	/// 停一会儿，面板像玻璃一样裂开：每块沿斜线断成两截往外飞、转着缩没，带出一些玻璃碎条。fist = 拳头，shield = 墙的中心。~1s。
 	/// </summary>
 	public static void Guard(Control layer, Vector2 fist, Vector2 shield, float height, float facing = 1f)
 	{
-		Ink.Burst(layer, fist, 60f, 9, 0.2f);
-		float h = height * 0.78f;
-		shield += new Vector2(h * 0.18f * facing, 0f);                // 往敌人那边挪一点，少挡 Joker
-		Node2D root = Fx.Root(layer, shield, "P5Guard", 1.15);
-		// 合上那一下的白色光边（在盾后面，往外扩一圈）
-		Polygon2D flash = Fx.Poly(root, Ink.Scale(ShieldShape(h), 1f, 24f), Ink.White);
-		flash.Visible = false;
-		root.Skew = -0.12f * facing;
-		root.Scale = new Vector2(0.86f, 1f);                       // 侧着一点：盾朝敌人那边
-		Vector2[] shape = ShieldShape(h);
-		var layers = new (float K, float Pad, Color C)[] { (1f, 14f, Ink.Black), (1f, 0f, Ink.White), (0.86f, 0f, Ink.Red), (0.6f, 0f, Ink.Black) };
-		var halves = new Node2D[2];
-		for (int side = 0; side < 2; side++)
+		Ink.Needles(layer, fist, 6, 120f, 8f, 0.14f);
+		float h = height * 0.95f;
+		shield += new Vector2(h * 0.12f * facing, 0f);
+		Ink.Halftone(layer, shield, h * 0.75f, 0.42f, 0.14f, null, 1f, 11f);
+		Node2D root = Fx.Root(layer, shield, "P5Guard", 1.1);
+		root.Scale = new Vector2(facing, 1f);
+		const int n = 4;
+		float pw = h * 0.2f, skew = h * 0.22f, gap = pw * 0.62f;
+		var panels = new List<(Node2D Top, Node2D Bot, float Delay, float X, float Len)>();
+		for (int i = 0; i < n; i++)
 		{
-			float sg = side == 0 ? -1f : 1f;
-			Node2D half = new();
-			root.AddChild(half);
-			halves[side] = half;
-			foreach (var (k, pad, c) in layers)
+			float len = h * (0.62f + 0.38f * Mathf.Sin((i + 0.5f) / n * Mathf.Pi)) * Fx.Rand(0.92f, 1.04f);
+			float x = (i - (n - 1) / 2f) * gap;
+			float cut = Fx.Rand(-0.12f, 0.12f) * len;              // 碎开时断在哪
+			// 一块面板：斜切的平行四边形，上下两截（碎开时分开）
+			Vector2[] Piece(float y0, float y1, float w) => new[]
 			{
-				Fx.Poly(half, Half(Ink.Scale(shape, k, pad), sg), c);
+				new Vector2(-w / 2f + skew * (0.5f - (y0 + len / 2f) / len), y0), new Vector2(w / 2f + skew * (0.5f - (y0 + len / 2f) / len), y0 + w * 0.35f),
+				new Vector2(w / 2f + skew * (0.5f - (y1 + len / 2f) / len), y1), new Vector2(-w / 2f + skew * (0.5f - (y1 + len / 2f) / len), y1 - w * 0.35f),
+			};
+			Node2D Half(float y0, float y1)
+			{
+				Node2D hn = new();
+				root.AddChild(hn);
+				// 深红黑的「玻璃」面板：半透明暗面 + 一条细红线 + 迎敌那侧的白边；落定时整块白一下（flash）
+				Fx.Poly(hn, Piece(y0, y1, pw + 6f), new Color(0.02f, 0f, 0.01f, 0.9f));
+				Fx.Poly(hn, Piece(y0, y1, pw), new Color(0.2f, 0.01f, 0.04f, 0.78f));
+				Polygon2D stripe = Fx.Poly(hn, Piece(y0, y1, pw * 0.06f), Ink.Red);
+				stripe.Position = new Vector2(-pw * 0.22f, 0f);
+				Polygon2D lip = Fx.Poly(hn, Piece(y0, y1, pw * 0.05f), Ink.White);
+				lip.Position = new Vector2(pw * 0.47f, 0f);
+				Polygon2D fl = Fx.Poly(hn, Piece(y0, y1, pw + 6f), new Color(1f, 0.97f, 0.95f, 0f));
+				fl.Name = "flash";
+				return hn;
 			}
+			panels.Add((Half(-len / 2f, cut), Half(cut, len / 2f), 0.025f * i, x, len));
 		}
-		// 面具：原版的怪盗面具贴在黑底上（跟着右半一起来，合上时正好居中）
-		Node2D maskHolder = new() { Position = new Vector2(0f, -h * 0.03f) };
-		halves[1].AddChild(maskHolder);
-		if (Ink.Sprite(maskHolder, "ui_mask", Colors.White, 2f) is Sprite2D mask)
-		{
-			mask.Scale = Vector2.One * (h * 0.36f / 476f);
-		}
-		Node2D word = new() { Position = new Vector2(0f, -h * 0.8f), Rotation = -0.14f, Visible = false };
-		root.AddChild(word);
-		Sprite2D? wordRed = Ink.Sprite(word, "ui_guard", Ink.Red, 4f);
-		Sprite2D? wordWhite = Ink.Sprite(word, "ui_guard", Ink.White, 4f);
-		if (wordRed != null)
-		{
-			wordRed.Position = new Vector2(8f, 7f);
-		}
-		float wk = h * 0.7f / 540f;
-		bool closed = false, broke = false;
-		const float life = 1.05f, shut = 0.12f, breakAt = 0.72f;
+		bool settled = false, broke = false;
+		const float life = 1.0f, slide = 0.11f, breakAt = 0.66f;
 		Fx.Animate(root, 0, life, t =>
 		{
 			float s = t * life;
-			float close = Ease5.OutBack(Mathf.Min(1f, s / shut));
-			for (int side = 0; side < 2; side++)
+			for (int i = 0; i < panels.Count; i++)
 			{
-				float sg = side == 0 ? -1f : 1f;
+				var (top, bot, d, x, len) = panels[i];
+				float k = Ease5.OutQuint(Mathf.Clamp((s - d) / slide, 0f, 1f));
 				if (s < breakAt)
 				{
-					halves[side].Position = new Vector2(sg * h * 0.9f * (1f - close), 0f);
-					halves[side].Rotation = sg * 0.35f * (1f - close);
-					halves[side].Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, s / 0.04f));
+					Vector2 p = new(Mathf.Lerp(x + h * 0.35f, x, k), 0f);          // 从前面（敌人那边）往回拍到位
+					top.Position = bot.Position = p;
+					top.Modulate = bot.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, k * 3f));
+					float f = Mathf.Clamp((s - d - slide * 0.7f) / 0.12f, 0f, 1f);
+					float fa = f > 0f ? 0.85f * (1f - f) : 0f;
+					((Polygon2D)top.GetNode("flash")).Color = ((Polygon2D)bot.GetNode("flash")).Color = new Color(1f, 0.97f, 0.95f, fa);
 				}
 				else
 				{
-					// 裂开：两半往两边倒、往下掉、转开，缩没
-					float b = (s - breakAt) / (life - breakAt);
-					halves[side].Position = new Vector2(sg * (18f + 160f * b), 380f * b * b);
-					halves[side].Rotation = sg * 0.7f * b;
-					halves[side].Scale = Vector2.One * (1f - Fx.InCubic(b));
+					float b = (s - breakAt) / (life - breakAt), e = Ease5.OutQuint(b);
+					float side = i % 2 == 0 ? 1f : -1f;
+					top.Position = new Vector2(x + side * 60f * e + 40f * e, -90f * e - len * 0.05f * e);
+					bot.Position = new Vector2(x - side * 50f * e + 60f * e, 140f * e + 260f * b * b);
+					top.Rotation = side * 0.5f * e;
+					bot.Rotation = -side * 0.4f * e;
+					float shrink = 1f - Fx.InCubic(b);
+					top.Scale = bot.Scale = Vector2.One * shrink;
 				}
 			}
-			if (!closed && s >= shut * 0.8f)
+			float done = 0.025f * (n - 1) + slide * 0.8f;
+			if (!settled && s >= done)
 			{
-				closed = true;
-				flash.Visible = true;
-				word.Visible = true;
-				Ink.Halftone(layer, shield, h * 0.95f, 0.4f);
-				Ink.Streaks(layer, shield, 14, h * 0.4f, h * 1.05f, 0.24f);
-				Ink.Twinkle(layer, shield + new Vector2(h * 0.3f * facing, -h * 0.42f), 80f, 0.03f);
-				layer.MoveChild(root, layer.GetChildCount() - 1);        // 网点 / 速度线在盾后面
+				settled = true;
+				Ink.Streaks(layer, shield, 12, h * 0.35f, h * 0.9f, 0.22f, 0f, 4f);
 				Fx.Shake(1);
-			}
-			float fl = Ease5.Seg(s, shut * 0.8f, 0.1f);
-			flash.Modulate = new Color(1f, 1f, 1f, 1f - fl);
-			flash.Scale = Vector2.One * (1f + 0.22f * fl);
-			if (wordWhite != null && wordRed != null)
-			{
-				float wp = Ease5.Seg(s, shut * 0.8f, 0.14f), wout = Ease5.Seg(s, breakAt - 0.08f, 0.14f);
-				float sc = wk * Mathf.Lerp(1.7f, 1f, Ease5.OutBack(wp)) * (1f - Fx.InCubic(wout));
-				wordWhite.Scale = wordRed.Scale = Vector2.One * sc;
-				word.Position = new Vector2(-40f * wout * facing, -h * 0.8f - 30f * wout);
 			}
 			if (!broke && s >= breakAt)
 			{
 				broke = true;
-				Ink.Shards(layer, shield, 14, 30f, new Vector2(0f, -1f), Mathf.Pi, 640f, 0.6f, 0f,
-					new[] { Ink.Red, Ink.White, Ink.Black, Ink.Red });
+				Ink.Shards(layer, shield, 16, 46f, new Vector2(facing, -0.2f), Mathf.Pi, 760f, 0.5f, 0f,
+					new[] { Ink.White, Ink.Red, Ink.White, new Color(0.15f, 0.02f, 0.05f) });
 			}
 		});
 	}

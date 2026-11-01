@@ -132,6 +132,13 @@ def fx_textures():
         im = Image.open(tail).convert("RGBA")
         yield "cutin_tail_left", im
         yield "cutin_tail_right", Image.open(right).convert("RGBA") if right.exists() else im.rotate(180)
+    # hit / guard ink art (Codex, art/p5/fx/gen_codex/ink): brush slashes, ink splatters, guard glass barrier. Optional:
+    # p5mod/src/Vfx/Ink.cs uses each one only if it is in the pck. Long side capped at 1024.
+    for src in sorted((GEN_CODEX / "ink").glob("*.png")) if (GEN_CODEX / "ink").exists() else []:
+        if src.stem.startswith(("ink_slash_", "ink_splat_", "guard_")):
+            im = Image.open(src).convert("RGBA")
+            k = min(1.0, 1024 / max(im.size))
+            yield src.stem, im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS) if k < 1 else im
     # curse hands for Eiha (Codex, art/p5/fx/gen_codex/curse_hands, 1024x1536) at half size
     for name in ("hand_reach", "hand_slam", "hand_claw", "hand_grab"):
         src = GEN_CODEX / "curse_hands" / f"{name}.png"
