@@ -292,6 +292,7 @@ void fragment() {
 		}
 
 		// ② 爆：0.2s，和游戏加上中毒（施法后 0.25s）几乎同时
+		Sfx.Play(Sfx.Curse, 0.9f, Burst - 0.05f);
 		Fx.After(layer, Burst, () =>
 		{
 			Flame.Column(layer, feet + new Vector2(0f, 8f), h * 1.9f, h * 3.3f, 0f, Collapse - Burst + 0.2f, 1.4f);

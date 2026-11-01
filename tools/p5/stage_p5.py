@@ -75,6 +75,17 @@ def placeholder_back():
     return im
 
 
+# P5R sound effects (research/p5r/audio): published name -> file (names in p5mod/src/Vfx/Sfx.cs)
+P5SFX = ROOT / "research/p5r/audio/sfx"
+SFX = {
+    "battle_onemore": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0012.ogg",      # weakness / 1 MORE eye cut-in
+    "cutin": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0178.ogg",
+    "persona_flame": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0044.ogg",
+    "skill_ankoku": P5SFX / "BASE_SOUND_SKILLSE_FLOATING_F_ANKOKU__.ACB_0000.ogg",
+    "glass_burst": ROOT / "art/sfx_p3r/ShuffleTime_ArcanaBurst.ogg",  # P3R glass burst (the shatter is the P3 mod's)
+}
+
+
 def fx_textures():
     """(name, image) for every res://p5joker/fx/<name>.png; also used by tools/p5/fxpreview/prepare.py."""
     for name, src in FX_TEX.items():
@@ -157,6 +168,10 @@ default_mix = 0.1
 """)
     for name, im in fx_textures():
         write_texture(STAGE, f"p5joker/fx/{name}.png", im)
+    # sounds: raw .ogg (p5mod/src/Vfx/Sfx.cs decodes the bytes itself, no import needed)
+    (STAGE / "p5joker/sfx").mkdir(parents=True, exist_ok=True)
+    for name, src in SFX.items():
+        shutil.copy(src, STAGE / f"p5joker/sfx/{name}.ogg")
     files = sorted(p.relative_to(STAGE).as_posix() for p in STAGE.rglob("*") if p.is_file())
     print(len(files), "files staged in", STAGE.relative_to(ROOT))
     for f in files:

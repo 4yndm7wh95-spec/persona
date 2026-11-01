@@ -269,6 +269,7 @@ void fragment() {
 			if (!hit && s >= ImpactAt)
 			{
 				hit = true;
+				Sfx.Play(Sfx.OneMore, 1.1f);                         // 原版弱点眼神特写的音
 			}
 			// 碎开（用户 2026-11-01：复用结城理 mod 的玻璃碎裂，不要爪痕）：先裂纹定格 0.05s，然后横幅换成一块块碎片炸开；亚森离场、咒焰收掉、背景退掉都在碎开这一刻
 			if (!shattered && s >= SplitAt)
@@ -374,6 +375,7 @@ void fragment() { COLOR = vec4(COLOR.rgb, COLOR.a * step(0.5, texture(mask, SCRE
 		Fx.After(back, 0.05, () =>
 		{
 			hideBand();
+			Sfx.Play(Sfx.Glass, 1f);
 			Glow.Flash(back, hit, Pal5.Hot, screen.X * 0.35f, 0.18f);
 			foreach (Vector2[] piece in pieces)
 			{
