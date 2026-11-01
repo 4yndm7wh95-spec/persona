@@ -91,3 +91,44 @@
 
 只在指定副本和分支 `claude/p5r-ren-slay-the-spire-mod-6tk3f3` 操作。本次提交仅含本目录五张原图和 README。未改代码、编译、启动游戏、使用 Computer Use、安装软件或修改系统环境/全局 Git 配置。未进入旧仓库，未访问 P3Makoto 图片、obs.json 或密码/密钥；其他会话文件保持原样。
 
+
+## 补充：实心攥紧拳头两帧
+
+本轮使用内置 imagegen，两张各生成一次，无重试、无拒绝。原始 PNG 直接复制保存，未缩放、未裁剪、未处理像素。只读取尺寸和像素格式元数据；其余检查均为目视，不做像素测量。
+
+### grip_fist.png
+
+#### 完整提示词
+
+虚拟游戏 Persona 5 风格人格面具之手素材。输入图1 grip_hold.png 是编辑底图，只借用同一只手的大小、左侧居中的手腕位置、黑红烟丝和画风；不要保留原图张开的C形手指。输入图2 grip_reach.png 是同一只手的造型参考。保持纯黑手、硬边平面漫画风，正红 #e3121c 的细锐高光沿指节和手指边缘，少量暗红，粗黑描边，尖爪手指在握拳后藏进掌心。横幅约1.3:1，建议1448×1086。手从左伸来、朝右，手腕在画面左侧中间，往左化成几缕黑红烟丝并渐渐透明消失；与grip_hold同一解剖大小及手腕锚点。只画一只手；真透明PNG RGBA，手和烟以外alpha=0；不要白底、灰底、绿幕、背景、阴影、地面、火焰、被抓物、血、骨头、伤口、文字或其他东西。
+文件 grip_fist.png：将张开的手彻底改成紧紧攥住的实心拳头。五指全部卷进掌心，指尖完全看不见或只露一点点，四个指节在拳头前面排成一排突起，拇指压在食指上。拳头朝右，指节朝右前方，手背的筋和红色高光明显，非常用力，像将拳心里的东西狠狠捏碎，但不画任何物体。关键：实心、完全闭合的紧拳，拳心绝不留圆孔或空隙，不是握球、不是C形爪子，不要张开任何一根手指。A completely CLOSED SOLID clenched fist, all four fingertips buried in the palm, thumb locked over the index finger, knuckles pointing RIGHT. NO hollow center, NO spherical grip, NO open claw. Preserve wrist and smoky left end; change only hand pose.
+
+#### 实际尺寸与检查
+
+- 实际尺寸：1448×1086，横幅 PNG，读取格式 Format32bppArgb（带 alpha）。
+- 输入：grip_hold.png（编辑底图）、grip_reach.png（同一只手的造型参考）。
+- 透明背景：以 transparent_background=true 生成，目视未见独立白底、灰底或场景；未逐像素核验轮廓外 alpha。
+- 手腕及烟：手腕从画面左侧中间向右伸，左端保留黑红烟丝和碎片，位置与旧帧大致接近，烟到拳头的过渡仍较长。
+- 方向：拳头、前方指节朝右。
+- 是否为实心拳头：是。四指卷入掌心，拇指压在上方，未见握球式中心空洞或C形大开口，只有少量尖爪形轮廓露出。
+- 与 grip_hold 大小比较：手腕粗细、画风和整体尺度大致同类；闭拳后手指轮廓明显收拢，外接范围比旧空心抓握小，未做精确等比例或锚点对齐。
+
+### grip_fist_tight.png
+
+#### 完整提示词
+
+虚拟游戏 Persona 5 风格人格面具之手素材。输入图1 grip_fist.png 是编辑底图，必须保持同一个完全闭合的实心拳头、同样横向朝右、同样大小与手腕位置。输入图2 grip_hold.png、输入图3 grip_reach.png 仅辅助参考同一只手的黑红画风、解剖大小和左侧烟状手腕，不要复制它们张开的手指或C形抓握。纯黑手、硬边平面漫画风，正红 #e3121c 细锐高光、少量暗红、粗黑描边。横幅约1.3:1，建议1448×1086；手从左伸来，拳头和突起指节朝右前方，手腕位于画面左侧中间，向左化为黑红烟丝并逐渐透明消失。只画一只手；真透明PNG RGBA，手和烟以外alpha=0，不要白底、灰底、绿幕、背景、阴影、地面、火焰、任何被抓物、血、骨头、伤口、文字或其他东西。
+文件 grip_fist_tight.png：与输入图1完全一样的实心紧拳，但更用力地一捏。拳头略微缩小、向内收紧，四根手指全部紧紧卷入掌心，指尖藏住，拇指仍压在食指上；四个指节更尖更突出，手背筋更明显，红色硬边高光更亮更多，但不要柔光或光晕。手腕处烟丝被这股力向左后方甩得更多；手腕锚点不移动。不是握球，不留拳心空隙，不张开手指。Same completely CLOSED SOLID fist as image 1, only slightly tighter and more compact. Knuckles still RIGHT. NO hollow center, NO open claw, NO visible ball.
+
+#### 实际尺寸与检查
+
+- 实际尺寸：1447×1087，横幅 PNG，读取格式 Format32bppArgb（带 alpha）。
+- 输入：grip_fist.png（编辑底图）、grip_hold.png 和 grip_reach.png（原手的画风、大小与手腕参考）。
+- 透明背景：以 transparent_background=true 生成，目视未见独立白底、灰底或场景；未逐像素核验轮廓外 alpha。
+- 手腕及烟：手腕仍在画面左侧中间，左端烟丝向后飘散得更多；与 fist 大致同位置，没有脚本校正。
+- 方向：拳头和指节仍朝右。
+- 是否为实心拳头：是。保持闭合紧拳，没有握球式空洞；拳头略收紧，红色高光和手背筋更明显，烟丝范围更大。
+- 与 grip_hold 大小比较：手腕和整体尺度大致同类，拳头比张开的 hold 更紧凑；与 fist 接近但不是逐像素一致，画布尺寸也有轻微差异，未处理原图。
+
+本轮仅追加这两张原图和本节说明，原有五张图及此前 README 内容保留。未改代码、编译、启动游戏或使用 Computer Use；其他会话文件未动。
+
