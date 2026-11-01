@@ -172,6 +172,13 @@ def fx_textures():
         src = v2 / f"hand_{pose}.png"
         if src.exists():
             yield f"chand_{pose}", normalise_hand(Image.open(src).convert("RGBA"))
+    # persona grip hand (Codex, art/p5/fx/gen_codex/grip_hand): aligned on the solid black hand body (its wrist end and
+    # vertical centre), smoke kept; output 900x600 (PersonaGrip swaps the frames)
+    gh = GEN_CODEX / "grip_hand"
+    for pose in ("reach", "close", "hold", "squeeze", "release"):
+        src = gh / f"grip_{pose}.png"
+        if src.exists():
+            yield f"grip_{pose}", normalise_grip(Image.open(src).convert("RGBA"))
     # curse hands for Eiha (Codex, art/p5/fx/gen_codex/curse_hands, 1024x1536) at half size
     for name in ("hand_reach", "hand_slam", "hand_claw", "hand_grab"):
         src = GEN_CODEX / "curse_hands" / f"{name}.png"
@@ -184,6 +191,25 @@ def fx_textures():
 # sources.json): packed 7 per row at ARSENE_K of the size for the summon (p5mod/src/Vfx/Persona.cs)
 ARSENE = ROOT / "art/p5/fx/arsene"
 ARSENE_K, ARSENE_COLS = 0.45, 7
+
+
+def normalise_grip(im):
+    """wrist end of the opaque black hand body -> x = 360 px, its vertical centre -> y = 50 %; canvas 1800x1200 so fingertips fit"""
+    W, H = 1800, 1200
+    px = im.load()
+    cols = {}
+    ys = []
+    for y in range(0, im.height, 3):
+        for x in range(0, im.width, 3):
+            r, g, b, a = px[x, y]
+            if a > 230 and r + g + b < 60:
+                cols[x] = cols.get(x, 0) + 1
+                ys.append(y)
+    left = min(x for x, n in cols.items() if n >= 12)
+    cy = sorted(ys)[len(ys) // 2]
+    out = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    out.alpha_composite(im, (round(360 - left), round(H * 0.5 - cy)))
+    return out.resize((W // 2, H // 2), Image.LANCZOS)
 
 
 def normalise_hand(im):
