@@ -2,4 +2,3 @@
   <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
   <ItemGroup><Reference Include="GFDLibrary"><HintPath>C:/Users/kkk/sts2_tools/p5r_tools/GFDStudio.0.10.3/GFDLibrary.dll</HintPath></Reference></ItemGroup>
 </Project>
-
