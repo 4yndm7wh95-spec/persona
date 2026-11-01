@@ -88,6 +88,24 @@ SFX = {
     "persona_flame": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0044.ogg",
     "skill_ankoku": P5SFX / "BASE_SOUND_SKILLSE_FLOATING_F_ANKOKU__.ACB_0000.ogg",
     "glass_burst": ROOT / "art/sfx_p3r/ShuffleTime_ArcanaBurst.ogg",  # P3R glass burst (the shatter is the P3 mod's)
+    # 2026-11-01 layered SFX (p5mod/src/Vfx/Sfx.cs): SYSTEM.ACB cues by original stream name
+    "cutin_select": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0179.ogg",
+    "cursor": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0177.ogg",
+    "battle_gun_draw": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0007.ogg",
+    "swish_02": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0145.ogg",
+    "swish_04": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0149.ogg",
+    "swish_05": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0151.ogg",
+    "damage_enemy": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0022.ogg",
+    "battle_all_out_atk": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0024.ogg",
+    "gun_03": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0033.ogg",
+    "gun_00": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0030.ogg",
+    "encount_parry": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0132.ogg",
+    "damage_critical": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0021.ogg",
+    "wing_large": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0064.ogg",
+    "punch_taiman": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0046.ogg",
+    "crash_object": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0176.ogg",
+    "continuas_damage": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0020.ogg",
+    "sub_boom": ROOT / "art/sfx_p5/sub_boom.ogg",                      # synthesized sub hit (ffmpeg aevalsrc)
 }
 
 

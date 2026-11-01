@@ -36,10 +36,12 @@ public partial class Preview : Node2D
 			p.Ready(0.25, Stance.Mask, "mask", "cast_from_mask", play: true, lockOn: Enemy);
 			p.At(1.89, () =>
 			{
+				CutIn.SplitAt = Persona.ArseneSpec.AttackAt - 0.05f;          // 高潮合成一拍（同 Aim.PlayCast）
 				SummonStage.Play(p._back, p._front, Pose(1010, 215));
 				CutIn.Eyes(p._back);
 				Persona.Arsene(p._back, JokerFeet, (JokerFeet - Pose(815f, 120f)).Length() * 1.35f);
 			});
+			p.At(1.89 + Persona.ArseneSpec.AttackAt, () => SummonStage.Beat(p._front, Pose(1010, 215)));
 			p.At(1.85 + (0.04 + Persona.AttackAt) - CardFx.Burst, () => CardFx.Eiha(p._front, Pose(1010, 215), Enemy,
 				Enemy + new Vector2(0, -170), c => p._enemies[Enemy].Modulate = c));
 		},
@@ -107,8 +109,10 @@ public partial class Preview : Node2D
 		["outbreak"] = p =>
 		{
 			p.Ready(0.25, Stance.Mask, "mask", "cast_from_mask", play: true);
+			p.At(1.85 + 0.04 + Persona.IzanagiSpec.AttackAt, () => SummonStage.Beat(p._front, Pose(1010, 215)));
 			p.At(1.85 + 0.04, () =>
 			{
+				CutIn.SplitAt = Persona.IzanagiSpec.AttackAt - 0.05f;
 				SummonStage.Play(p._back, p._front, Pose(1010, 215));
 				CutIn.Eyes(p._back);
 				Persona.Izanagi(p._back, JokerFeet, (JokerFeet - Pose(815f, 120f)).Length() * 1.35f);
@@ -359,7 +363,10 @@ public partial class Preview : Node2D
 		};
 		Stage.Report = (where, e) => GD.PrintErr($"[P5Joker] {where}: {e}");
 		Stage.NowMs = () => (ulong)(_clock * 1000.0);
-		HitStop.RealSeconds = () => _frames / 30.0;                 // 顿帧按录像帧数计时（不受时间流速影响）
+		HitStop.RealSeconds = () => _frames / 30.0;
+		string sfxLog = ProjectSettings.GlobalizePath("res://") + $"out/{scenario}/sfx.txt";
+		System.IO.File.WriteAllText(sfxLog, "");
+		Sfx.Recorder = (name, vol) => System.IO.File.AppendAllText(sfxLog, $"{_frames / 30.0:0.000} {name} {vol:0.00}\n");                 // 顿帧按录像帧数计时（不受时间流速影响）
 		GD.Seed(52029);
 		Stage.Shake = s => { _shake = s; _shakeLeft = 0.25f; };
 		BodyAura.CloneBody = parent =>

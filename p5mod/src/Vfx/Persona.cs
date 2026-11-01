@@ -17,32 +17,34 @@ public static class Persona
 	/// 一帧里身体（头顶到脚）多高、只播哪一段帧（原速 30fps）、哪一帧出手、离场时刻。
 	/// </summary>
 	public sealed record Spec(string Tex, int Cols, float FrameW, float FrameH, Vector2 Foot, Vector2 Body, float BodyPx, int First, int Last,
-		int AttackFrame, float ExitAt)
+		int AttackFrame)
 	{
 		public float AttackAt => (AttackFrame - First) / Fps;
+
+		/// <summary>出手后再停 0.35s 才被蓝焰吞掉离场（高潮那一拍他要在场）。</summary>
+		public float ExitAt => AttackAt + 0.35f;
 
 		public int FrameAt(float s) => Mathf.Clamp(First + (int)(s * Fps), First, Last);
 	}
 
 	/// <summary>
-	/// 亚森：施法动作 BPS0201_000_main_0005 只播第 12～40 帧原速（用户 2026-11-01：不要加速他的动作，选一段更合适的短动作）——
-	/// 从侧身转过来 → 双翼完全展开、手往前一伸（第 24 帧，出手）→ 收翼，≈0.93s，正好盖住眼神特写；播完停在最后一帧。
+	/// 亚森：施法动作 BPS0201_000_main_0005 只播第 5～40 帧原速（用户 2026-11-01：不要加速他的动作）——
+	/// 从侧身转过来 → 双翼完全展开、手往前一伸（第 24 帧，出手 = 0.63s，召唤高潮那一拍）→ 收翼；播完停在最后一帧。
 	/// </summary>
-	public static readonly Spec ArseneSpec = new("arsene_cast", 7, 671f, 461f, new(350.8f, 412.3f), new(350.8f, 273.4f), 315f, 12, 40, 24,
-		CutIn.SplitAt + 0.05f);
+	public static readonly Spec ArseneSpec = new("arsene_cast", 7, 671f, 461f, new(350.8f, 412.3f), new(350.8f, 273.4f), 315f, 5, 40, 24);
 
 	/// <summary>
 	/// 伊邪那岐大神（毒性爆发，用户 2026-11-01）：转杖动作 BPS0360_000_main_0006（art/p5/fx/izanagi_okami/spin，51 帧 824x1024，× 0.45）
 	/// 播第 7～40 帧原速：举杖 → 第 15～31 帧横着转一圈 → 第 33 帧竖回来（出手：转完发动），停在竖持。头顶到脚约 612px × 0.45。
 	/// </summary>
 	public static readonly Spec IzanagiSpec = new("izanagi_spin", 7, 371f, 461f, new(366.553f * 0.45f, 972.14f * 0.45f),
-		new(366.553f * 0.45f, 697.025f * 0.45f), 275f, 7, 40, 33, (33 - 7) / 30f + 0.3f);
+		new(366.553f * 0.45f, 697.025f * 0.45f), 275f, 7, 40, 33);
 
 	/// <summary>亚森出手在他出现后几秒（兼容旧代码）。</summary>
-	public const float AttackAt = (24 - 12) / Fps;
+	public const float AttackAt = (24 - 5) / Fps;
 
 	/// <summary>亚森开始被蓝火吞掉离场的时刻（兼容旧代码）。</summary>
-	public const float ExitAt = CutIn.SplitAt + 0.05f;
+	public const float ExitAt = AttackAt + 0.35f;
 	private const float Fps = 30f;
 
 	private static Shader? _shader;
@@ -159,6 +161,19 @@ void fragment() {
 		m.SetShaderParameter("c_hot", PersonaMask.Hot);
 		Fx.Clock(sprite);
 		m.SetShaderParameter("px", new Vector2(1f / size.X, 1f / size.Y));
+		// 声音：亚森出场 / 出手前各扇一下翅膀；伊邪那岐大神转杖时三声由低到高的挥动（出手那一拍的冲击声在 SummonStage.Beat）
+		if (spec.Tex == "arsene_cast")
+		{
+			Sfx.PlayHit(Sfx.Wing, 0.55f, 0.06f);
+			Sfx.PlayHit(Sfx.Wing, 0.8f, Mathf.Max(0f, AttackAt - 0.12f));
+		}
+		else
+		{
+			float s0 = (15 - spec.First) / 30f, s1 = (31 - spec.First) / 30f;
+			Sfx.Play(Sfx.SwishLow, 0.45f, s0);
+			Sfx.Play(Sfx.Swish, 0.55f, Mathf.Lerp(s0, s1, 0.45f));
+			Sfx.Play(Sfx.SwishHeavy, 0.7f, Mathf.Lerp(s0, s1, 0.85f));
+		}
 		// 出场：身后蓝焰一炸
 		Vector2 chest = anchor + new Vector2(0f, -(Foot.Y - Body.Y) * k);
 		Glow.Flash(back, chest, PersonaMask.Hi, height * 1.2f, 0.4f);

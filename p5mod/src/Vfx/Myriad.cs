@@ -109,6 +109,7 @@ public static class Myriad
 	/// <summary>多结算的一轮：咒焰从脚下一窜、白紫一闪、两根光柱、一圈贴地的紫环、几颗火星。n = 第几轮（越往后越亮一点）。</summary>
 	public static void Pulse(Control layer, Vector2 center, Vector2 top, int n, Action<Color>? tint = null)
 	{
+		Sfx.Play(Sfx.PoisonTick, 0.7f);
 		if (tint != null)
 		{
 			// 敌人本身闪一下紫红（反馈在敌人身上，不靠盖住他的特效）

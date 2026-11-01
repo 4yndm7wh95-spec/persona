@@ -23,6 +23,7 @@ public static class HitFx
 	/// </summary>
 	public static void Swing(Control layer, Vector2 center, Vector2 from, Vector2 to)
 	{
+		Sfx.Play(Sfx.Swish, 0.6f);                                   // 预备层：挥刀风声
 		// 刀光（Blade.Arc）：沿刀尖真实轨迹的弦画月牙，往背离圆心的方向拱；比命中斩痕窄、快，不炸光点
 		Vector2 mid = (from + to) / 2f;
 		float ang = (to - from).Angle(), chord = from.DistanceTo(to);
@@ -63,6 +64,10 @@ public static class HitFx
 		// 命中 0ms：顿帧 50ms + 轻震；一道斜向斩痕（三层月牙，入 / 满 / 停 / 出）+ 小白闪 + 细红冲击环 + 轻微空间扭曲
 		HitStop.Request(0.05);
 		Fx.Shake(1);
+		// 冲击层：打中 + 总攻击斩击（亮）+ 低频（沉）
+		Sfx.Play(Sfx.Hit, 0.9f);
+		Sfx.Play(Sfx.AllOut, 0.55f);
+		Sfx.Play(Sfx.SubBoom, 0.45f);
 		float a1 = facing > 0f ? -0.55f : Mathf.Pi + 0.55f;
 		// 月牙往外拱 60px：弦往拱的反方向挪，让弧线正好穿过命中点
 		Vector2 down = Vector2.Down.Rotated(a1) * (facing < 0f ? -1f : 1f);
@@ -84,6 +89,7 @@ public static class HitFx
 	/// </summary>
 	public static void Muzzle(Control layer, Vector2 muzzle, float facing = 1f)
 	{
+		Sfx.Play(Sfx.Gun, 0.85f);
 		Node2D root = Fx.Root(layer, muzzle, "P5Muzzle", 0.6);
 		Node2D flash = new() { Scale = new Vector2(facing, 1f) };
 		root.AddChild(flash);
@@ -147,6 +153,8 @@ public static class HitFx
 	{
 		Tracer(layer, muzzle, hit);
 		HitStop.Request(0.03);
+		Sfx.Play(Sfx.Hit, 0.55f);
+		Sfx.Play(Sfx.SubBoom, 0.3f);
 		GunImpact(layer, hit, (hit - muzzle).Normalized(), 1f);
 	}
 
@@ -220,6 +228,7 @@ public static class HitFx
 				Glow.Glint(layer, a + new Vector2(0f, -10f), 0.7f);
 				Glow.Sparks(layer, a, 8, 200f, 520f, 0.25f, new[] { Pal5.Hot, Pal5.Gold, Pal5.Bright }, 300f, 0.08f, 0.2f, (ctrl - a).Normalized(), 30f);
 				KinkTracer(layer, a, ctrl, b, seg);
+				Sfx.Play(Sfx.Ricochet, 0.45f);                       // 跳弹
 			});
 			Fx.After(layer, delay + seg * 0.45f, () =>
 			{

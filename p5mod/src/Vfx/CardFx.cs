@@ -21,6 +21,7 @@ public static class CardFx
 	/// </summary>
 	public static void Guard(Control layer, Vector2 fist, Vector2 shield, float height, float facing = 1f)
 	{
+		Sfx.Play(Sfx.Parry, 0.85f);
 		float ry = height * 0.6f, rx = ry * 0.4f;
 		Vector2 at = new(shield.X + rx * 0.55f * facing, shield.Y);   // 整片在前臂前面，不盖住 Joker
 		float r = height * 0.1f, w = r * 0.6f;                      // 菱形：半高 r、半宽 w
@@ -210,7 +211,7 @@ void fragment() {
 	public const float Burst = 0.2f;
 
 	/// <summary>咒焰往中间一收的时刻（Eiha 开始后几秒）：和眼神特写被劈开、亚森离场同一刻。</summary>
-	public const float Collapse = Burst + (CutIn.SplitAt + 0.05f + 0.04f - 0.44f);
+	public static float Collapse => Burst + 0.55f;
 
 	public static void Eiha(Control layer, Vector2 mask, Vector2 center, Vector2 top, Action<Color>? tint = null)
 	{
@@ -450,7 +451,8 @@ void fragment() {
 			m.SetShaderParameter("dim", dim);
 			float toward = mirror ? -1f : 1f;                              // 往敌人那边转的方向
 			float e0 = emergeAt + lag;
-			// 地面裂开
+			// 地面裂开（第一只手一声）
+			if (lag <= 0f) Sfx.Play(Sfx.Crack, 0.35f);
 			Fx.After(layer, e0, () =>
 			{
 				Glow.Flash(L, ground, Pal5.Bright, height * 0.5f, 0.2f);
@@ -523,6 +525,10 @@ void fragment() {
 					new Vector2(-toward, -0.6f).Normalized(), 55f);
 			});
 		}
+		// 声音：砸下去的重击 + 低频（冲击层）；缩回去时一声低沉的挥动（余韵）
+		Sfx.PlayHit(Sfx.Slam, 1f, hitAt);
+		Sfx.Play(Sfx.SubBoom, 0.75f, hitAt);
+		Sfx.Play(Sfx.SwishLow, 0.3f, burnAt);
 		// 命中：三只手拍在敌人身上的那一下
 		Fx.After(layer, hitAt, () =>
 		{

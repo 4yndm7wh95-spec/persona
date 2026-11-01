@@ -66,6 +66,14 @@ public sealed class ReadyFx
 	public static ReadyFx Start(Control front, Control back, Stance stance, Func<Vector2, Vector2> pose, float facing = 1f)
 	{
 		ReadyFx fx = new(front, back, stance, pose, facing);
+		// 预备层音效（很轻）：拿起牌一声切入提示；掏枪 / 转刀 / 面具点火各一声
+		Sfx.Play(Sfx.Select, 0.35f);
+		switch (stance)
+		{
+			case Stance.Gun: Sfx.Play(Sfx.GunDraw, 0.5f, 0.05f); break;
+			case Stance.Knife: Sfx.Play(Sfx.Swish, 0.35f, 0.08f); break;
+			case Stance.Mask: Sfx.Play(Sfx.PersonaFlame, 0.3f, 0.05f); break;
+		}
 		switch (stance)
 		{
 			case Stance.Mask:
@@ -377,6 +385,7 @@ public sealed class LockOn
 		_root = new Node2D { Name = "P5LockOn", Position = at };
 		layer.AddChild(_root);
 		_root.GlobalPosition = at;
+		Sfx.Play(Sfx.Cursor, 0.45f);                                  // 选中敌人：很轻的一下
 		float r = size * 0.42f;
 		// 外圈：四段红色粗弧（黑描边），慢转
 		Node2D outer = new();

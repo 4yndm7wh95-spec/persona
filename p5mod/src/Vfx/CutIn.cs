@@ -94,7 +94,15 @@ void fragment() { COLOR = vec4(texture(TEXTURE, UV).rgb, 1.0); }
 	/// 图出现 / 爪痕劈下（SplitAt 前 ClawTime 秒划过，SplitAt 划完）/ 顿帧之后碎开（ShatterAt）/ 碎片飞完（ShatterTime）。
 	/// 舞台、特写、亚森离场、咒焰收掉都对齐这几刻。
 	/// </summary>
-	public const float ImpactAt = 0.2f, SplitAt = 0.91f, ClawTime = 0.07f, ShatterAt = SplitAt + 0.067f, ShatterTime = 0.42f;
+	public const float ImpactAt = 0.2f, ClawTime = 0.07f, ShatterTime = 0.42f;
+
+	/// <summary>
+	/// 横幅裂开的时刻（裂纹定格 0.05s 后碎开）。2026-11-01 用户同意「高潮被拆散了」：每次召唤前由 Aim 设成
+	/// 人格面具出手时刻 - 0.05 —— 人格面具出手、眼神特写碎开、伤害结算落在同一拍。
+	/// </summary>
+	public static float SplitAt = 0.91f;
+
+	public static float ShatterAt => SplitAt + 0.067f;
 
 	/// <summary>碎片从裂开到淡完多久（结城理 mod 的 1.35s 节奏，这里稍短一点不拖）。</summary>
 	public const float ShatterLife = 0.8f;

@@ -11,7 +11,7 @@ namespace P5Joker;
 /// </summary>
 public static class SummonStage
 {
-	public const float Length = CutIn.SplitAt + 0.25f;
+	public static float Length => CutIn.SplitAt + 0.25f;
 
 	/// <summary>这一次召唤的碎法（舞台和眼神特写共用）。</summary>
 	public static float TearSeed;
@@ -92,6 +92,25 @@ void fragment() {
 	COLOR = vec4(col, 1.0);
 }" };
 
+	/// <summary>
+	/// 召唤高潮那一拍（2026-11-01，学结城理 mod 召唤器扣扳机：所有东西压在同一帧）：人格面具出手 = 眼神特写碎开 = 伤害结算。
+	/// 顿帧 90ms、强震屏、舞台白闪；从 Joker 面具扩出大水波纹（召唤器枪口那一圈）+ 两圈光环；
+	/// 声音：暴击 + 合成低频重击（玻璃碎裂由 CutIn.Shatter 放）。front = 前景层，mask = 面具位置。
+	/// </summary>
+	public static void Beat(Control front, Vector2 mask)
+	{
+		HitStop.Request(0.09);
+		Fx.Shake(3);
+		Vector2 screen = Fx.Screen(front);
+		// （全屏红黑剪影试过：舞台本身就是红黑的，再压一次人物剪影就糊成一片红点 —— 去掉，白闪在舞台着色器里）
+		Glow.Ripple(front, mask, screen.X * 0.6f, 0.65f, 0.045f);
+		Glow.Shockwave(front, mask, Pal5.Hot, screen.X * 0.35f, 0.4f);
+		Glow.Shockwave(front, mask, Pal5.Bright, screen.X * 0.55f, 0.55f, 1f, 0.05f);
+		Glow.Flash(front, mask, Pal5.Hot, 260f, 0.16f);
+		Sfx.Play(Sfx.Critical, 0.95f);
+		Sfx.Play(Sfx.SubBoom, 1.1f);
+	}
+
 	/// <summary>放一次召唤舞台。back = 背景特效层；front = 最前面一层；head = Joker 头部（屏幕坐标），集中线的中心。</summary>
 	public static void Play(Control back, Control front, Vector2 head)
 	{
@@ -120,7 +139,7 @@ void fragment() {
 			float gone = Mathf.Clamp((s - CutIn.SplitAt - 0.05f) / 0.12f, 0f, 1f);
 			m.SetShaderParameter("amount", 1f - (1f - Mathf.Pow(1f - gone, 3f)));
 			// 白闪：纸条拍进来那一下（弱）、爪痕划完那一下
-			float fl = 0.12f * Mathf.Exp(-s / 0.05f) + (s >= CutIn.SplitAt + 0.05f ? 0.35f * Mathf.Exp(-(s - CutIn.SplitAt - 0.05f) / 0.05f) : 0f);
+			float fl = 0.12f * Mathf.Exp(-s / 0.05f) + (s >= CutIn.SplitAt + 0.05f ? 0.6f * Mathf.Exp(-(s - CutIn.SplitAt - 0.05f) / 0.06f) : 0f);
 			m.SetShaderParameter("flash", fl);
 			if (!broke && s >= CutIn.SplitAt + 0.05f)
 			{
