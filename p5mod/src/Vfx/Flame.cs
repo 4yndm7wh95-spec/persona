@@ -108,6 +108,33 @@ void fragment() {
 	public static readonly Color CurseDark = new("070002"), CurseMid = new("5c000e"), CurseHi = new("e3122b"), CurseHot = new("ff9a86");
 
 	/// <summary>
+	/// 包住一个怪的咒焰（用户 2026-11-01：火不合身、和场景融合差、大小不对）：按怪的受击框宽 w、高 h 排火 ——
+	/// 背后（背景层，怪画在它前面）5 股火苗沿身体排开，中间高、两边低，像沿着身形往上烧，顶端比头再高一点；
+	/// 前面 3 股矮火只舔到下半身（不挡脸）；脚下一团贴地的暗红辉光 + 一圈压扁的环。delay 后蹿起、烧 life 秒、收掉。
+	/// </summary>
+	public static void Wrap(Control front, Control? back, Vector2 feet, float w, float h, float delay, float life)
+	{
+		Control bk = back ?? front;
+		for (int i = 0; i < 5; i++)
+		{
+			float u = (i - 2) / 2f;                                     // -1..1
+			float prof = Mathf.Sqrt(Mathf.Max(0f, 1f - u * u * 0.8f));
+			Column(bk, feet + new Vector2(u * w * 0.42f, 6f), w * 0.5f, h * (0.75f + 0.5f * prof) * Fx.Rand(0.92f, 1.08f),
+				delay + Mathf.Abs(u) * 0.04f, life, 1.4f);
+		}
+		for (int i = 0; i < 3; i++)
+		{
+			float u = (i - 1) * 0.7f;
+			Column(front, feet + new Vector2(u * w * 0.4f, 10f), w * 0.36f, h * Fx.Rand(0.38f, 0.5f), delay + 0.03f + i * 0.02f, life * 0.85f, 1.7f);
+		}
+		Fx.After(front, delay, () =>
+		{
+			Glow.Flash(bk, feet + new Vector2(0f, -h * 0.05f), new Color(0.75f, 0.03f, 0.08f), w * 2.2f, life * 0.8f);
+			Glow.Shockwave(bk, feet, CurseHi, w * 2.6f, 0.4f, 0.25f);
+		});
+	}
+
+	/// <summary>
 	/// 一根咒焰柱：脚在 foot，宽 w 高 h；delay 后 0.12s 蹿到顶（过冲）、烧 life 秒，最后往中间一缩收掉。
 	/// </summary>
 	public static ColorRect Column(Control layer, Vector2 foot, float w, float h, float delay, float life, float speed = 1.3f)

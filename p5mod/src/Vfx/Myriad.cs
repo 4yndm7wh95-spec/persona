@@ -57,7 +57,7 @@ public static class Myriad
 				Glow.Glint(layer, c + new Vector2(0f, -h * 0.2f), 2.2f);
 				Glow.SpeedLines(layer, c, new Color(0.85f, 0.7f, 1f), 14, h * 0.3f, h * 1.8f, 0.3f);
 				// 咒焰（毒火）
-				Flame.Column(layer, feet + new Vector2(0f, 8f), h * 1.7f, h * 3f, 0.1f, 0.75f, 1.4f);
+				Flame.Wrap(layer, Stage.Back, feet, h * 1.3f, h * 2.4f, 0.1f, 0.75f);
 				CardFx.Embers(layer, feet, h, 26, 1f);
 				if (tints != null && i < tints.Count && tints[i] is Action<Color> tint)
 				{
@@ -121,7 +121,7 @@ public static class Myriad
 		// 用户 2026-11-01：别挡住敌人 —— 咒焰、光柱、地面环都在人物后面的背景层（敌人画在它们前面），光柱让到身体两侧；
 		// 前景只留一下很小、很快的白紫闪和几颗火星
 		Control back = Stage.Back ?? layer;
-		Flame.Column(back, feet + new Vector2(0f, 8f), h * 1.5f * k, h * 2.5f * k, 0f, 0.42f, 1.6f);
+		Flame.Wrap(back, back, feet, h * 1.2f * k, h * 2.2f * k, 0f, 0.42f);
 		Glow.Shockwave(back, feet, new Color(0.7f, 0.35f, 1f), h * 2.6f * k, 0.35f, 0.26f);
 		Glow.Flash(layer, center, new Color(0.85f, 0.6f, 1f), h * 0.9f * k, 0.1f);
 		CardFx.Embers(layer, feet, h, 8, 0.5f);

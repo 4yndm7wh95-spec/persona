@@ -146,7 +146,7 @@ public static class JokerFx
 				}
 				else
 				{
-					CardFx.CurseLight(layer, t.VfxSpawnPosition, t.GetTopOfHitbox(), tint);
+					CardFx.CurseLight(layer, t.VfxSpawnPosition, t.GetTopOfHitbox(), tint, t.Hitbox.GetGlobalRect().Size.X);
 				}
 				break;
 			}

@@ -313,15 +313,16 @@ void fragment() {
 	/// 精简咒怨（普通白卡，Tiers.Common，用户 2026-11-01：致命毒药是很普通的白卡，不需要完整演出）：
 	/// 地里钻出手（Burst 那一刻拍下去、随后烧掉）+ 一根咒焰柱 + 一点火星和红光，敌人染一下暗红。≈0.6s，不出咒印 / 黑烟 / 热浪 / 小火柱。
 	/// </summary>
-	public static void CurseLight(Control layer, Vector2 center, Vector2 top, Action<Color>? tint = null)
+	public static void CurseLight(Control layer, Vector2 center, Vector2 top, Action<Color>? tint = null, float bodyW = 0f)
 	{
 		float h = Mathf.Max(80f, (center - top).Length());
+		float bw = bodyW > 0f ? bodyW : h * 1.3f;
 		Vector2 feet = center + new Vector2(0f, h * 0.95f);
 		CurseHands(layer, feet, center, h, 0.0f, Burst, Burst + 0.16f);
 		Sfx.Play(Sfx.Curse, 0.7f, Burst - 0.05f);
 		Fx.After(layer, Burst, () =>
 		{
-			Flame.Column(layer, feet + new Vector2(0f, 8f), h * 1.5f, h * 2.6f, 0f, 0.42f, 1.4f);
+			Flame.Wrap(layer, Stage.Back, feet, bw, h * 2.3f, 0f, 0.45f);
 			Glow.Flash(layer, center, Pal5.Bright, h * 2.2f, 0.3f);
 			Glow.Shockwave(layer, feet, Pal5.Bright, h * 2.8f, 0.4f, 0.26f);
 			Embers(layer, feet, h, 16, 0.7f);
