@@ -124,7 +124,12 @@ public static class JokerFx
 						tints.Add(v == null ? null : col => { if (GodotObject.IsInstanceValid(v)) { v.Modulate = col; } });
 					}
 				}
-				Myriad.Outbreak(layer, list, Tiers.For(card) == Tier.Rare ? Aim.HitFor(card) : 0.3f, tints);
+				// 权杖：一支，在 Joker 身前（和召唤里的人格面具同一套尺寸参考）
+				Vector2 jf = Joker.PosePoint(joker, ReadyFx.Feet);
+				float tall = (jf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length();
+				float face = Joker.Facing(joker);
+				Myriad.Outbreak(layer, list, Tiers.For(card) == Tier.Rare ? Aim.HitFor(card) : 0.3f, jf + new Vector2(tall * 0.9f * face, -tall * 0.55f),
+					tall * 1.5f, 0.04f + Persona.IzanagiSpec.ExitAt, face, tints);
 				break;
 			}
 			case "DeadlyPoison" when t != null:

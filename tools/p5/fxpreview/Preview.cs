@@ -116,6 +116,8 @@ public partial class Preview : Node2D
 			p.At(1.85, () => Myriad.Outbreak(p._front,
 				new[] { (Enemy, Enemy + new Vector2(0, -170)), (Enemy2, Enemy2 + new Vector2(0, -128)), (Enemy3, Enemy3 + new Vector2(0, -128)) },
 				0.04f + Persona.IzanagiSpec.AttackAt,
+				JokerFeet + new Vector2((JokerFeet - Pose(815f, 120f)).Length() * 0.9f, -(JokerFeet - Pose(815f, 120f)).Length() * 0.55f),
+				(JokerFeet - Pose(815f, 120f)).Length() * 1.5f, 0.04f + Persona.IzanagiSpec.ExitAt, 1f,
 				new Action<Color>?[] { c => p._enemies[Enemy].Modulate = c, c => p._enemies[Enemy2].Modulate = c, c => p._enemies[Enemy3].Modulate = c }));
 		},
 		// 致命毒药（普通白卡，Tiers.Common）：选中 → 打出，不召唤，精简咒怨

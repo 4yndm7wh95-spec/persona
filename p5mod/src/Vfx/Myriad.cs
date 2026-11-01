@@ -16,7 +16,11 @@ namespace P5Joker;
 /// </summary>
 public static class Myriad
 {
-	public static void Outbreak(Control layer, IReadOnlyList<(Vector2 Center, Vector2 Top)> enemies, float hit, IReadOnlyList<Action<Color>?>? tints = null)
+	/// <param name="weaponAt">权杖（圆环中心）在哪：Joker 身前（用户 2026-11-01：一支就够，在莲的前方）</param>
+	/// <param name="weaponLen">权杖多长（屏幕像素）</param>
+	/// <param name="exitAt">人格面具开始离场的时刻（出牌后几秒）：权杖和他一起消失</param>
+	public static void Outbreak(Control layer, IReadOnlyList<(Vector2 Center, Vector2 Top)> enemies, float hit, Vector2 weaponAt, float weaponLen,
+		float exitAt, float facing = 1f, IReadOnlyList<Action<Color>?>? tints = null)
 	{
 		if (enemies.Count == 0)
 		{
@@ -33,9 +37,9 @@ public static class Myriad
 			Vector2 feet = c + new Vector2(0f, h * 0.95f);
 			min = min.Min(top);
 			max = max.Max(feet);
-			Replica(layer, c, h, 0.15f, spin0, spin1, hit);
 			CardFx.CurseHands(layer, feet, c, h, 0.45f, hit, hit + 0.25f, enemies.Count > 1);
 		}
+		Replica(layer, weaponAt, weaponLen, 0.15f, spin0, spin1, hit, exitAt, 0.35f, facing);
 		Fx.After(layer, hit, () =>
 		{
 			Fx.Shake(1);
@@ -92,7 +96,7 @@ void fragment() {
 	float r = length(p);
 	float a = atan(p.y, p.x);
 	float d = mod(ang - a + 31.4159, 3.14159);                     // 刃尖后面多远（两端对称，周期 π）
-	float trail = exp(-d * 1.6);
+	float trail = exp(-d * 1.6) * smoothstep(0.0, 0.1, d) + exp(-d * 1.6) * 0.25;   // 刃尖处不要一条生硬的直边
 	float band = smoothstep(1.0, 0.9, r) * smoothstep(0.08, 0.3, r);
 	float streak = vnoise(vec2(r * 22.0, d * 2.0));
 	float disc = band * (0.25 + 0.75 * trail) * (0.45 + 0.55 * streak) * speed * 1.8;
@@ -112,16 +116,17 @@ void fragment() {
 	COLOR = vec4(col, c.a * alpha);
 }" };
 
-	private static void Replica(Control layer, Vector2 c, float h, float appear, float spin0, float spin1, float hit)
+	private static void Replica(Control layer, Vector2 c, float len, float appear, float spin0, float spin1, float hit, float exitAt, float exitDur,
+		float facing)
 	{
 		if (Fx.Tex("izanagi_weapon") is not Texture2D tex)
 		{
 			return;
 		}
-		float len = h * 3.6f, k = len / tex.GetHeight();
+		float k = len / tex.GetHeight();
 		Vector2 ring = new(219.735f / 2f, 951.511f / 2f);              // weapon.json 的圆环中心（贴图是一半大小）
 		float reach = Mathf.Max(ring.Y, tex.GetHeight() - ring.Y) * k;
-		float life = hit + 0.35f;
+		float life = exitAt + exitDur + 0.05f;
 		Node2D root = Fx.Root(layer, c, "P5MyriadWeapon", life);
 		// 光盘（在兵器后面）
 		float ds = reach * 2.1f;
@@ -142,7 +147,7 @@ void fragment() {
 		pivot.AddChild(aura);
 		pivot.AddChild(body);
 		root.Visible = false;
-		bool broke = false;
+		bool pulsed = false;
 		Fx.Animate(root, 0, life, t =>
 		{
 			float s = t * life;
@@ -153,21 +158,22 @@ void fragment() {
 			float u = Mathf.Clamp((s - spin0) / (spin1 - spin0), 0f, 1f);
 			float e = u < 0.5f ? 4f * u * u * u : 1f - Mathf.Pow(-2f * u + 2f, 3f) / 2f;
 			float theta = Mathf.Tau * e;
-			pivot.Rotation = theta;
+			pivot.Rotation = theta * facing;
 			float du = (spin1 - spin0) > 0f ? Mathf.Abs(u > 0f && u < 1f ? (u < 0.5f ? 12f * u * u : 3f * Mathf.Pow(-2f * u + 2f, 2f)) : 0f) / 3f : 0f;
 			float spinning = u > 0f && u < 1f ? 1f : 0f;
 			dm.SetShaderParameter("speed", Mathf.Clamp(0.35f * spinning + du, 0f, 1f) * inK);
-			dm.SetShaderParameter("ang", theta - Mathf.Pi / 2f);
-			float white = (1f - inK) * 0.9f + (s >= hit ? 1f : 0f);
-			gm.SetShaderParameter("whiten", Mathf.Clamp(white, 0f, 1f));
-			float outK = Mathf.Clamp((s - hit) / 0.25f, 0f, 1f);
-			gm.SetShaderParameter("alpha", Mathf.Min(1f, inK * 1.5f) * 0.92f * (1f - outK));
-			aura.Modulate = new Color(0.3f, 0.6f, 1f, 0.5f * Mathf.Min(1f, inK * 1.5f) * (1f - outK));
-			pivot.Scale *= 1f + 0.15f * outK;
-			if (!broke && s >= hit)
+			dm.SetShaderParameter("ang", facing > 0f ? theta - Mathf.Pi / 2f : -theta - Mathf.Pi / 2f);
+			// 出手那一下白一闪；之后跟人格面具一起离场：往白里洗、往上飘一点、淡掉
+			float pulse = s >= hit ? Mathf.Exp(-(s - hit) / 0.08f) : 0f;
+			float outK = Mathf.Clamp((s - exitAt) / exitDur, 0f, 1f);
+			gm.SetShaderParameter("whiten", Mathf.Clamp((1f - inK) * 0.9f + pulse + outK * 0.6f, 0f, 1f));
+			gm.SetShaderParameter("alpha", Mathf.Min(1f, inK * 1.5f) * 0.95f * (1f - Fx.InCubic(outK)));
+			aura.Modulate = new Color(0.3f, 0.6f, 1f, (0.5f + 0.5f * pulse) * Mathf.Min(1f, inK * 1.5f) * (1f - outK));
+			pivot.Position = new Vector2(0f, -len * 0.08f * Fx.OutCubic(outK));
+			if (!pulsed && s >= hit)
 			{
-				broke = true;
-				Glow.Shards(layer, c, 12, 1.1f, null, Mathf.Pi);
+				pulsed = true;
+				Glow.Flash(layer, c, new Color(0.75f, 0.88f, 1f), len * 0.8f, 0.25f);
 			}
 		});
 	}
