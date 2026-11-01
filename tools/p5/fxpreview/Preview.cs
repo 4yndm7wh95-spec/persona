@@ -103,6 +103,12 @@ public partial class Preview : Node2D
 			p.At(6.4 + 1.64, () => { SummonStage.Play(p._back, p._front, Pose(1010, 215)); CutIn.Eyes(p._back); });
 			p.At(6.4 + 1.6, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy2, Enemy2 + new Vector2(0f, -128f), c => p._enemies[Enemy2].Modulate = c));
 		},
+		// 致命毒药（普通白卡，Tiers.Common）：选中 → 打出，不召唤，精简咒怨
+		["poison"] = p =>
+		{
+			p.Ready(0.2, Stance.Mask, "mask", "cast_from_mask", play: true, lockOn: Enemy);
+			p.At(1.8, () => CardFx.CurseLight(p._front, Enemy, Enemy + new Vector2(0, -170), c => p._enemies[Enemy].Modulate = c));
+		},
 		// 防御（设计说明 docs/p5/FX_DESIGN_HITS.md 方案 A：菱形光格）：选中防御牌 → 打出，再来一次
 		["guard"] = p =>
 		{

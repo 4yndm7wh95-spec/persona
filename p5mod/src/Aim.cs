@@ -265,22 +265,26 @@ public static class Aim
 		{
 			Fx.After(layer, 0.04, () => Release(held));             // 手扣紧面具（summon_hold_a）的那一下炸开
 		}
-		if (stance == Stance.Mask && Joker.FxLayer(back: true) is Control back)
+		Tier tier = Tiers.For(card);
+		if (stance == Stance.Mask && tier >= Tier.Uncommon && Joker.FxLayer(back: true) is Control back)
 		{
+			// 按稀有度分级（Tiers）：稀有 = 完整召唤；罕见 = 只有亚森短暂现身；普通 / 基础不召唤
 			Summoning[node.GetInstanceId()] = Time.GetTicksMsec() + 1000;
-			// Persona 召唤：背景变成红黑网点的舞台、集中线（SummonStage），原版眼神特写在上面撕开（都在背景层，用户 2026-10-29）
 			Vector2 head = Joker.PosePoint(node, ReadyFx.MaskFace);
 			Fx.After(back, 0.04, () =>
 			{
-				if (Joker.FxLayer() is Control fr)
-				{
-					SummonStage.Play(back, fr, head);
-				}
-				// 亚森在舞台前、眼神特写后（特写被劈开时露出来），比 Joker 高大一半多
 				Vector2 feet = Joker.PosePoint(node, ReadyFx.Feet);
 				float tall = (feet - Joker.PosePoint(node, new Vector2(815f, 120f))).Length();
-				CutIn.Eyes(back);
-				// 亚森在眼神特写上面（特写要撑到他出手之后，不能挡住他）
+				if (tier == Tier.Rare)
+				{
+					// Persona 召唤：背景变成红黑网点的舞台、集中线（SummonStage），原版眼神特写在上面撕开（都在背景层，用户 2026-10-29）
+					if (Joker.FxLayer() is Control fr)
+					{
+						SummonStage.Play(back, fr, head);
+					}
+					CutIn.Eyes(back);
+				}
+				// 亚森（稀有：在眼神特写上面；罕见：单独现身）
 				Persona.Arsene(back, feet, tall * 1.35f, Joker.Facing(node));
 			});
 		}
