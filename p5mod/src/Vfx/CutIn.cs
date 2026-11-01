@@ -215,9 +215,10 @@ void fragment() {
 		Fx.FreeAfter(view, life + 0.1);
 		Node2D root = new();
 		view.AddChild(root);
-		// 铺满整个屏幕（用户 2026-11-01：缩到 72% 左右两头空着很怪；原版这条带子本来就是横贯全屏的）
-		float scale = Mathf.Max(screen.X / clip.Canvas[0], screen.Y / clip.Canvas[1]);
-		root.Position = (screen - new Vector2(clip.Canvas[0], clip.Canvas[1]) * scale) * 0.5f;
+		// 原版带子缩到 82%、往上挪一点（用户 2026-11-01：铺满太大、缩小两头又空）；两头接上 Codex 画的撕纸延伸段，把带子接到屏幕边缘
+		float scale = Mathf.Max(screen.X / clip.Canvas[0], screen.Y / clip.Canvas[1]) * 0.82f;
+		root.Position = (screen - new Vector2(clip.Canvas[0], clip.Canvas[1]) * scale) * 0.5f + new Vector2(0f, -screen.Y * 0.06f);
+		Node2D[] tails = Tails(root, clip.Canvas[0]);
 		root.Scale = Vector2.One * scale;
 		MeshInstance2D?[] nodes = new MeshInstance2D?[parts.Length];
 		for (int i = 0; i < parts.Length; i++)
@@ -248,7 +249,7 @@ void fragment() {
 		Sprite2D sprite = new() { Texture = view.GetTexture(), Centered = false, Material = m };
 		shown.AddChild(sprite);
 		bool hit = false, shattered = false;
-		Rect2 bandRect = new(root.Position, new Vector2(clip.Canvas[0], clip.Canvas[1]) * scale);
+		Rect2 bandRect = new(new Vector2(0f, root.Position.Y), new Vector2(screen.X, clip.Canvas[1] * scale));     // 连两头的延伸段一起碎
 		Fx.Animate(shown, 0, life, progress =>
 		{
 			float s = progress * life;
@@ -265,6 +266,13 @@ void fragment() {
 				node.Modulate = new Color(1f, 1f, 1f, alpha);
 			}
 			// 图出现时轻轻推一下（1.08 → 1，0.16s 缓出），不做黑白反相（用户 2026-11-01：入场太生硬）
+			// 延伸段：图出现前一点开始，从带子两端往屏幕边缘「撕」出去（0.12s 缓出）
+			float ext = Fx.OutCubic(Mathf.Clamp((s - ImpactAt + 0.04f) / 0.12f, 0f, 1f));
+			foreach (Node2D tl in tails)
+			{
+				tl.Visible = ext > 0f;
+				tl.Scale = new Vector2((float)tl.GetMeta("k") * ext, (float)tl.GetMeta("k"));
+			}
 			float k = Mathf.Clamp((s - ImpactAt) / 0.16f, 0f, 1f);
 			m.SetShaderParameter("zoom", s < ImpactAt ? 1f : Mathf.Lerp(1.08f, 1f, Fx.OutCubic(k)));
 			if (!hit && s >= ImpactAt)
@@ -279,6 +287,33 @@ void fragment() {
 				Shatter(back, view.GetTexture(), screen, bandRect, () => sprite.Visible = false);
 			}
 		});
+	}
+
+	/// <summary>
+	/// 带子两头的撕纸延伸段（Codex 画的 cutin_tail_left / right，原版画布坐标）：左尾的右边缘接在原版带子左端
+	/// （原版带子在 x=0 处占 y 400～575），右尾的左边缘接在右端（x=1280 处带身约 y 100～440）。原点放在接口处，横向缩放就是「撕出去」。
+	/// </summary>
+	private static Node2D[] Tails(Node2D root, float canvasW)
+	{
+		var list = new List<Node2D>();
+		// 贴图里拼接边上带身的范围（左尾：x=右边缘，y 121～529；右尾转了 180°：x=0，y 358～766），贴图 1774×887
+		void Add(string name, float joinX, float y0, float y1, float texY0, float texY1, bool left)
+		{
+			if (Fx.Tex(name) is not Texture2D t)
+			{
+				return;
+			}
+			float k = (y1 - y0) / (texY1 - texY0);
+			Node2D n = new() { Position = new Vector2(joinX, y0 - texY0 * k), Visible = false };
+			n.SetMeta("k", k);
+			n.AddChild(new Sprite2D { Texture = t, Centered = false, Offset = new Vector2(left ? -t.GetWidth() + 6f : -6f, 0f) });
+			root.AddChild(n);
+			root.MoveChild(n, 0);                                   // 在原版带子后面（接口处被原版的撕纸边盖住）
+			list.Add(n);
+		}
+		Add("cutin_tail_left", 8f, 400f, 575f, 121f, 529f, true);
+		Add("cutin_tail_right", canvasW - 8f, 100f, 440f, 358f, 766f, false);
+		return list.ToArray();
 	}
 
 	// ───────────── 玻璃碎裂（移植自结城理 mod 的 mod/src/Vfx/CutInFx.cs Shatter，配色换成红白） ─────────────
