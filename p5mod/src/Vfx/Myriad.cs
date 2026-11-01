@@ -180,29 +180,102 @@ void fragment() {
 
 	// ───────────── 光柱 ─────────────
 
-	/// <summary>敌人一带随机窜起的黄 / 青细光柱（加法），从地面往上 0.08s 窜满，0.3s 变细淡掉，错开出现。</summary>
+	private static Shader? _beam;
+
+	/// <summary>
+	/// 一根光柱（加法）：横向 —— 白热的细芯 + 彩色光身 + 柔和的外晕；纵向 —— 底部贴地处更亮更宽，往上逐渐收、顶端被噪声打散；
+	/// 表面有往上流的能量纹（竖条噪声随 clock 往上滚）和轻微闪烁。reach 0→1 从地面往上冲（前沿一颗亮头），thin 1→0 收细，fade 消散。
+	/// </summary>
+	private static Shader BeamShader => _beam ??= new Shader { Code = @"
+shader_type canvas_item;
+render_mode blend_add;
+uniform vec4 tint : source_color = vec4(1.0, 0.85, 0.3, 1.0);
+uniform float reach = 1.0;
+uniform float thin = 1.0;
+uniform float fade = 0.0;
+uniform float clock = 0.0;
+uniform float seed = 0.0;
+uniform float aspect = 12.0;    // 高 / 宽
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+float vnoise(vec2 p) {
+	vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash(i + seed), hash(i + vec2(1.0, 0.0) + seed), f.x), mix(hash(i + vec2(0.0, 1.0) + seed), hash(i + vec2(1.0, 1.0) + seed), f.x), f.y);
+}
+void fragment() {
+	float x = (UV.x - 0.5) * 2.0;           // -1..1
+	float y = 1.0 - UV.y;                    // 0 = 地面，1 = 顶
+	float w = thin * mix(1.0, 0.55, y);      // 往上收
+	float ax = abs(x) / max(w, 0.001);
+	float core = exp(-pow(ax / 0.1, 2.0));
+	float body = exp(-pow(ax / 0.32, 2.0));
+	float halo = exp(-pow(ax / 0.6, 2.0)) * 0.4;
+	float edge = smoothstep(1.0, 0.7, abs(x));                       // 矩形两边不要硬切
+	// 往上流的能量纹（竖条）
+	float flow = vnoise(vec2(x * 7.0, y * aspect * 0.35 - clock * 9.0)) * 0.6 + vnoise(vec2(x * 16.0, y * aspect * 0.9 - clock * 14.0)) * 0.4;
+	float streak = mix(0.35, 1.6, flow);
+	// 冲上去：只到 reach，前沿一颗亮头
+	float top = reach;
+	float lead = exp(-pow((y - top) / 0.035, 2.0)) * step(0.02, reach) * (1.0 - fade);
+	float on = smoothstep(top, top - 0.06, y);
+	// 顶端被噪声打散、整体消散时从上往下 / 噪声蚀掉
+	float breakup = smoothstep(0.65, 1.0, y) * vnoise(vec2(x * 5.0, y * 8.0 - clock * 4.0));
+	float keep = smoothstep(fade * 1.2, fade * 1.2 + 0.2, vnoise(vec2(x * 3.0 + 7.0, y * 6.0)) * 0.8 + (1.0 - y) * 0.4) ;
+	// 底部更亮
+	float base = 1.0 + 1.2 * exp(-y / 0.06);
+	float flick = 0.85 + 0.15 * vnoise(vec2(clock * 20.0, seed));
+	float i = (core * 1.6 + body * streak * 1.1 + halo) * on * base * flick * (1.0 - breakup * 0.8) * keep * edge;
+	vec3 col = mix(tint.rgb, vec3(1.0, 0.98, 0.95), clamp(core * 0.9 + lead, 0.0, 1.0));
+	COLOR = vec4(col * (i + lead * body * 2.0 * edge), 1.0);
+}" };
+
+	/// <summary>敌人一带窜起的黄 / 青 / 紫光柱：错开出现、粗细高低不一；每根冲上去时底部一圈地面光晕 + 一道横向光、沿柱子往上飘的光点。</summary>
 	private static void Pillars(Control layer, Vector2 left, Vector2 right, float height)
 	{
-		Color[] cols = { new(1f, 0.85f, 0.25f, 0.9f), new(0.3f, 0.9f, 1f, 0.9f), new(1f, 0.92f, 0.5f, 0.9f), new(0.55f, 0.8f, 1f, 0.9f) };
-		const int n = 6;
+		Color[] cols = { new(1f, 0.82f, 0.25f), new(0.3f, 0.88f, 1f), new(1f, 0.9f, 0.45f), new(0.62f, 0.45f, 1f), new(0.4f, 0.95f, 1f) };
+		const int n = 7;
 		for (int i = 0; i < n; i++)
 		{
-			float x = Mathf.Lerp(left.X, right.X, (i + Fx.Rand(0.05f, 0.95f)) / n);
-			float w = Fx.Rand(5f, 18f), hgt = height * Fx.Rand(0.45f, 1.15f);
-			Color col = cols[(i * 3) % cols.Length];
-			float delay = i * 0.045f + Fx.Rand(0f, 0.08f);
+			float x = Mathf.Lerp(left.X, right.X, (i + Fx.Rand(0.1f, 0.9f)) / n);
+			bool big = i % 3 == 1;
+			float w = big ? Fx.Rand(150f, 200f) : Fx.Rand(70f, 110f);
+			float hgt = height * (big ? Fx.Rand(1.0f, 1.25f) : Fx.Rand(0.55f, 0.95f));
+			Color col = cols[(i * 2) % cols.Length];
+			float delay = i * 0.04f + Fx.Rand(0f, 0.06f);
+			float life = big ? 0.6f : 0.45f;
 			Fx.After(layer, delay, () =>
 			{
-				Node2D root = Fx.Root(layer, new Vector2(x, left.Y), "P5MyriadPillar", 0.45);
-				Polygon2D glow = Fx.Poly(root, new Vector2[4], new Color(col, col.A * 0.4f), additive: true);
-				Polygon2D core = Fx.Poly(root, new Vector2[4], col, additive: true);
-				Fx.Animate(root, 0, 0.4, t =>
+				Node2D root = Fx.Root(layer, new Vector2(x, left.Y), "P5MyriadPillar", life + 0.1);
+				ColorRect beam = new()
 				{
-					float up = Ease5.OutExpo(Mathf.Min(1f, t / 0.2f)) * hgt;
-					float ww = w * (1f - Fx.InCubic(Ease5.Seg(t, 0.25f, 0.75f)));
-					glow.Polygon = new[] { new Vector2(-ww * 1.8f, 0f), new Vector2(ww * 1.8f, 0f), new Vector2(ww * 1.2f, -up), new Vector2(-ww * 1.2f, -up) };
-					core.Polygon = new[] { new Vector2(-ww * 0.5f, 0f), new Vector2(ww * 0.5f, 0f), new Vector2(ww * 0.3f, -up), new Vector2(-ww * 0.3f, -up) };
+					Size = new Vector2(w, hgt), Position = new Vector2(-w / 2f, -hgt), MouseFilter = Control.MouseFilterEnum.Ignore,
+					Material = new ShaderMaterial { Shader = BeamShader },
+				};
+				root.AddChild(beam);
+				ShaderMaterial m = (ShaderMaterial)beam.Material;
+				m.SetShaderParameter("tint", col);
+				m.SetShaderParameter("seed", Fx.Rand(0f, 50f));
+				m.SetShaderParameter("aspect", hgt / w);
+				Fx.Clock(beam);
+				Fx.Animate(root, 0, life, t =>
+				{
+					float s = t * life;
+					m.SetShaderParameter("reach", Ease5.OutExpo(Mathf.Min(1f, s / 0.12f)));
+					m.SetShaderParameter("thin", 1f - 0.75f * Fx.InCubic(Ease5.Seg(t, 0.45f, 0.55f)));
+					m.SetShaderParameter("fade", Ease5.Seg(t, 0.55f, 0.45f));
 				});
+				// 底部：一圈压扁的地面光晕 + 一道横向的光
+				Glow.Flash(layer, new Vector2(x, left.Y), col, w * 2.4f, 0.3f);
+				Glow.Shockwave(layer, new Vector2(x, left.Y), col, w * 3f, 0.35f, 0.22f);
+				Node2D flare = Fx.Root(layer, new Vector2(x, left.Y - 4f), "P5MyriadFlare", 0.3);
+				Polygon2D line = Glow.TaperPoly(flare, new Color(col, 0.9f));
+				Fx.Animate(flare, 0, 0.25, t =>
+				{
+					float lw = w * 2.2f * Ease5.OutExpo(Mathf.Min(1f, t * 3f));
+					line.Polygon = Glow.TaperPts(new Vector2(-lw, 0f), new Vector2(lw, 0f), 6f * (1f - t));
+				});
+				// 沿柱子往上飘的光点
+				Glow.Sparks(layer, new Vector2(x, left.Y - hgt * 0.15f), big ? 18 : 10, 260f, 700f, 0.5f,
+					new[] { new Color(1f, 1f, 0.95f), col, new Color(col, 0f) }, -500f, 0.08f, 0.22f, Vector2.Up, 12f);
 			});
 		}
 	}
