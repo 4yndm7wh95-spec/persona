@@ -75,20 +75,15 @@ void fragment() {
 	vec2 lv = (UV - region.xy) / max(region.zw, vec2(0.0001));      // 这一帧里的 0～1
 	vec4 c = texture(atlas_tex, UV);                                 // 原版三渲二（漫画化试过不合适，用户 2026-11-01）
 	// 轻轻融进红色舞台（用户 2026-11-01：三渲二还是有点违和，稍微掩饰、不要用力过度）：
-	// 去一点饱和、加一点对比（压掉 3D 渲染的软渐变）；暗部往舞台的深红偏；暗部叠一层很淡的红网点（屏幕坐标，和背后的舞台同一种网点）；
-	// 迎光一侧（右上）的边缘一道细红轮廓光。
+	// 去一点饱和、加一点对比（压掉 3D 渲染的软渐变）；迎光一侧（右上）的边缘一道细红轮廓光。
+	// （暗部偏深红 + 红网点试过：他大部分是黑的，整个人被染红了 —— 用户 2026-11-01，去掉）
 	{
 		float lum = dot(c.rgb, vec3(0.299, 0.587, 0.114));
 		vec3 g = mix(c.rgb, vec3(lum), 0.15);
 		g = clamp((g - 0.5) * 1.12 + 0.5, 0.0, 1.0);
-		g = mix(g, vec3(0.28, 0.02, 0.05), smoothstep(0.35, 0.0, lum) * 0.35 * stage);
-		vec2 sp = FRAGCOORD.xy;
-		vec2 cc = fract(vec2(sp.x + sp.y, sp.y - sp.x) * 0.7071 / 6.0) - 0.5;
-		float dots = 1.0 - smoothstep(0.2, 0.28, length(cc));
-		g = mix(g, vec3(0.9, 0.05, 0.09), dots * smoothstep(0.3, 0.05, lum) * 0.22 * stage);
 		vec2 lo0 = region.xy, hi0 = region.xy + region.zw;
-		float nb = texture(atlas_tex, clamp(UV + vec2(4.0 * px.x, -4.0 * px.y), lo0, hi0)).a;
-		g = mix(g, vec3(1.0, 0.12, 0.16), c.a * (1.0 - nb) * 0.75 * stage);
+		float nb = texture(atlas_tex, clamp(UV + vec2(3.0 * px.x, -3.0 * px.y), lo0, hi0)).a;
+		g = mix(g, vec3(1.0, 0.12, 0.16), c.a * (1.0 - nb) * 0.7 * stage);
 		c.rgb = mix(c.rgb, g, stage);
 	}
 	float h = mix(1.0 - lv.y, lv.y, flip);                           // 出场 0 = 底；退场 0 = 顶
