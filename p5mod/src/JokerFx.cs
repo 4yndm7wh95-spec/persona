@@ -112,25 +112,22 @@ public static class JokerFx
 				break;
 			case "Outbreak":
 			{
-				// 稀有：伊邪那岐大神的万物真言 + 咒怨毒火（Myriad.Outbreak），全体敌人；对齐他转完杖出手（Aim.HitFor，游戏结算也推到这一刻）
-				var list = new List<(Vector2, Vector2)>();
-				var tints = new List<Action<Color>?>();
+				// 稀有：完整召唤亚森（用户 2026-11-01：大神先搁置、万物真言移除）。过渡版：亚森给每个敌人各派一只手攥住，毒结算完才松开；
+				// 「从画面深处伸出来的手」（Codex depth_hand）到了以后换成金卡专属版本
+				Persona.Spec spec = Aim.PersonaFor(card);
+				Vector2 jf = Joker.PosePoint(joker, ReadyFx.Feet);
+				float height = (jf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length() * 1.35f;
+				float face = Joker.Facing(joker);
+				Vector2 from = Persona.ChestOf(spec, jf, height, face) + new Vector2(0.22f * height * face, -0.12f * height);
 				foreach (Creature c in card.CombatState?.HittableEnemies ?? (IEnumerable<Creature>)Array.Empty<Creature>())
 				{
 					if (room.GetCreatureNode(c) is NCreature n)
 					{
-						list.Add((n.VfxSpawnPosition, n.GetTopOfHitbox()));
 						CanvasItem? v = n.Visuals;
-						tints.Add(v == null ? null : col => { if (GodotObject.IsInstanceValid(v)) { v.Modulate = col; } });
+						Grip.Play(layer, n.GetInstanceId(), from, n.VfxSpawnPosition, Mathf.Max(80f, (n.VfxSpawnPosition - n.GetTopOfHitbox()).Length()) * 0.85f,
+							Aim.HitFor(card), face, v == null ? null : col => { if (GodotObject.IsInstanceValid(v)) { v.Modulate = col; } });
 					}
 				}
-				// 权杖：一支，在 Joker 身前（和召唤里的人格面具同一套尺寸参考）
-				Vector2 jf = Joker.PosePoint(joker, ReadyFx.Feet);
-				float tall = (jf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length();
-				float face = Joker.Facing(joker);
-				Myriad.Arm((Tiers.For(card) == Tier.Rare ? Aim.HitFor(card) : 0.3f) + 6f);       // 之后几秒的毒伤按轮次出特效（触媒）
-				Myriad.Outbreak(layer, list, Tiers.For(card) == Tier.Rare ? Aim.HitFor(card) : 0.3f, jf + new Vector2(tall * 0.9f * face, -tall * 0.75f),
-					tall * 1.2f, 0.04f + Persona.IzanagiSpec.ExitAt, face, tints);
 				break;
 			}
 			case var n when Aim.Grips(n) && t != null:

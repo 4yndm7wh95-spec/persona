@@ -108,44 +108,26 @@ public partial class Preview : Node2D
 		// 毒性爆发（稀有）：完整召唤 + 伊邪那岐大神转杖 + 万物真言 + 咒怨毒火，打全体
 		["outbreak"] = p =>
 		{
+			Persona.Spec spec = Persona.ArseneSpec with { Linger = 1.3f };
+			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
 			p.Ready(0.25, Stance.Mask, "mask", "cast_from_mask", play: true);
-			p.At(1.85 + 0.04 + Persona.IzanagiSpec.AttackAt, () => SummonStage.Beat(p._front, Persona.ChestOf(Persona.IzanagiSpec, JokerFeet, (JokerFeet - Pose(815f, 120f)).Length() * 1.35f)));
-			p.At(1.85 + 0.04, () =>
+			p.At(1.89, () =>
 			{
-				CutIn.SplitAt = Persona.IzanagiSpec.AttackAt - 0.05f;
+				CutIn.SplitAt = spec.AttackAt - 0.05f;
 				SummonStage.Play(p._back, p._front, Pose(1010, 215));
 				CutIn.Eyes(p._back);
-				Persona.Izanagi(p._back, JokerFeet, (JokerFeet - Pose(815f, 120f)).Length() * 1.35f);
+				Persona.Show(spec, p._back, JokerFeet, tall);
 			});
-			p.At(1.85, () => Myriad.Outbreak(p._front,
-				new[] { (Enemy, Enemy + new Vector2(0, -170)), (Enemy2, Enemy2 + new Vector2(0, -128)), (Enemy3, Enemy3 + new Vector2(0, -128)) },
-				0.04f + Persona.IzanagiSpec.AttackAt,
-				JokerFeet + new Vector2((JokerFeet - Pose(815f, 120f)).Length() * 0.9f, -(JokerFeet - Pose(815f, 120f)).Length() * 0.75f),
-				(JokerFeet - Pose(815f, 120f)).Length() * 1.2f, 0.04f + Persona.IzanagiSpec.ExitAt, 1f,
-				new Action<Color>?[] { c => p._enemies[Enemy].Modulate = c, c => p._enemies[Enemy2].Modulate = c, c => p._enemies[Enemy3].Modulate = c }));
-		},
-		// 毒性爆发 + 触媒 3 层：每个敌人毒伤结算 4 轮（游戏里一个敌人结算完再下一个），第 1 轮由主爆发演出，之后每轮补一下脉冲
-		["outbreak4"] = p =>
-		{
-			Scenarios["outbreak"](p);
-			float hit = 1.85f + 0.04f + Persona.IzanagiSpec.AttackAt;
-			var es = new[] { (Enemy, Enemy + new Vector2(0, -170)), (Enemy2, Enemy2 + new Vector2(0, -128)), (Enemy3, Enemy3 + new Vector2(0, -128)) };
-			int k = 0;
-			p.At(1.85, () => Myriad.Arm(8f));
-			for (int j = 0; j < es.Length; j++)
+			p.At(1.89 + spec.AttackAt, () => SummonStage.Beat(p._front, Persona.ChestOf(spec, JokerFeet, tall)));
+			var es = new[] { (Enemy, 170f, 1ul), (Enemy2, 128f, 2ul), (Enemy3, 128f, 3ul) };
+			foreach (var (e, hh, id) in es)
 			{
-				var (c, top) = es[j];
-				ulong id = (ulong)(100 + j);
-				for (int i = 0; i < 4; i++, k++)
-				{
-					p.At(hit + 0.15 + 0.2 * k, () =>
-					{
-						Myriad.OnPoisonTick(p._front, id, c, top, col => p._enemies[c].Modulate = col);
-						Popups.Damage(p._front, id, c, 9, false);
-					});
-				}
+				p.At(1.85, () => Grip.Play(p._front, id, Persona.ChestOf(spec, JokerFeet, tall) + new Vector2(0.22f * tall, -0.12f * tall), e, hh * 0.85f,
+					0.04f + spec.AttackAt, 1f, c => p._enemies[e].Modulate = c));
+				p.At(1.89 + spec.AttackAt + 0.3, () => { Grip.OnTick(id); Popups.Damage(p._front, id, e, 9, false); });
 			}
 		},
+
 		// 人格面具之手（罕见单体毒牌）：召唤亚森 → 伸手攥住 → 模拟触媒结算 3 轮毒伤，每轮再捏一下 → 松开缩回
 		["grip"] = p =>
 		{

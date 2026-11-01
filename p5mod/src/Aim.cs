@@ -307,7 +307,7 @@ public static class Aim
 	/// <summary>这张牌召唤哪个人格面具：毒性爆发 = 伊邪那岐大神（万物真言），其他 = 亚森。</summary>
 	public static Persona.Spec PersonaFor(CardModel card) => card.GetType().Name switch
 	{
-		"Outbreak" => Persona.IzanagiSpec,
+		"Outbreak" => Persona.ArseneSpec with { Linger = 1.3f },   // 伊邪那岐大神先搁置（用户 2026-11-01）
 		var n when Grips(n) => Persona.ArseneSpec with { Linger = 1.1f },   // 伸手抓人：等手收回来再走
 		_ => Persona.ArseneSpec,
 	};
