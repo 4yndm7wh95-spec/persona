@@ -140,7 +140,7 @@ public static class JokerFx
 				Vector2 jf = Joker.PosePoint(joker, ReadyFx.Feet);
 				float height = (jf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length() * 1.35f;
 				float face = Joker.Facing(joker);
-				Vector2 from = Persona.ChestOf(spec, jf, height, face) + new Vector2(0.3f * height * face, 0f);
+				Vector2 from = Persona.ChestOf(spec, jf, height, face) + new Vector2(0.22f * height * face, -0.12f * height);   // 亚森前伸的手
 				CanvasItem? body = t.Visuals;
 				Grip.Play(layer, t.GetInstanceId(), from, t.VfxSpawnPosition, Mathf.Max(80f, (t.VfxSpawnPosition - t.GetTopOfHitbox()).Length()),
 					Aim.HitFor(card), face, body == null ? null : c => { if (GodotObject.IsInstanceValid(body)) { body.Modulate = c; } });

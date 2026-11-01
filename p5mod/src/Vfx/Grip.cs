@@ -28,20 +28,40 @@ shader_type canvas_item;
 uniform float dissolve = 0.0;   // 0 = 完整，1 = 全散成雾
 uniform float hot = 0.0;
 uniform float seed = 0.0;
+uniform float clock = 0.0;
+uniform vec2 px = vec2(0.0011, 0.0016);
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float vnoise(vec2 p) {
 	vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);
 	return mix(mix(hash(i + seed), hash(i + vec2(1.0, 0.0) + seed), f.x), mix(hash(i + vec2(0.0, 1.0) + seed), hash(i + vec2(1.0, 1.0) + seed), f.x), f.y);
 }
 void fragment() {
-	vec4 c = texture(TEXTURE, UV);
+	// 手腕那端的烟真的在飘：越往左越被噪声往左上方推（用户：别像贴图）
+	float smoke = smoothstep(0.32, 0.08, UV.x);
+	vec2 flow = vec2(vnoise(UV * 9.0 + vec2(clock * 2.2, 0.0)) - 0.5, vnoise(UV * 9.0 + vec2(3.1, clock * 2.0)) - 0.5);
+	vec2 uv = UV + flow * 0.045 * smoke + vec2(0.012, 0.006) * smoke * sin(clock * 6.0 + UV.y * 20.0);
+	vec4 c = texture(TEXTURE, uv);
+	// 手上的红色高光像血管一样脉动：一道亮带从手腕往指尖流
+	float red = step(0.35, c.r) * step(c.g, 0.25);
+	float wave = 0.5 + 0.5 * sin((UV.x * 9.0 - clock * 7.0) + vnoise(UV * 12.0) * 3.0);
+	c.rgb = mix(c.rgb, vec3(1.0, 0.35, 0.3), red * wave * 0.45);
+	// 外面一圈暗红的气（剪影外扩，被噪声搅动）
+	float o = 0.0;
+	for (int i = 0; i < 8; i++) {
+		float an = 6.2832 * float(i) / 8.0;
+		o = max(o, texture(TEXTURE, uv + vec2(cos(an), sin(an)) * px * 22.0).a);
+	}
+	float auraN = vnoise(UV * 18.0 + vec2(-clock * 3.0, clock)) ;
+	float aura = o * (1.0 - c.a) * (0.35 + 0.65 * smoothstep(0.3, 0.7, auraN)) * 0.8;
 	// 从手腕那端（左）先散：噪声 + 横向偏置
 	float n = vnoise(UV * vec2(14.0, 10.0)) * 0.6 + vnoise(UV * 40.0) * 0.4;
 	float th = dissolve * 1.25 - (UV.x - 0.2) * 0.35;
 	float keep = smoothstep(th - 0.06, th + 0.06, n);
 	vec3 col = mix(c.rgb, vec3(1.0, 0.1, 0.14), hot * step(0.3, c.r));
 	col += vec3(0.9, 0.05, 0.1) * smoothstep(th + 0.1, th, n) * step(0.01, dissolve) * 0.8;   // 散开的边缘发红
-	COLOR = vec4(col, c.a * keep);
+	float a = c.a * keep;
+	col = mix(vec3(0.55, 0.02, 0.06), col, a / max(a + aura * keep, 0.001));
+	COLOR = vec4(col, max(a, aura * keep * (1.0 - dissolve)));
 }" };
 
 	/// <summary>
@@ -115,7 +135,7 @@ void fragment() {
 		}
 		Texture2D[] tex = new Texture2D[Frames.Length];
 		for (int i = 0; i < Frames.Length; i++) tex[i] = Fx.Tex(Frames[i]) ?? t0;
-		float k = h * 1.0f / 240f;                                       // 实心拳约 240px 高 → 和怪差不多大
+		float k = h * 0.85f / 240f;                                      // 实心拳约 240px 高（用户：小一点）
 		Vector2 fistAt = center + new Vector2(-0.25f * h * facing, -0.05f * h);   // 拳头压在怪靠近 Joker 那半边，不压到后面的怪
 		Vector2 wristAt = fistAt - new Vector2((FistCenter.X - Wrist.X) * k * facing, 0f);
 		Vector2 dir = (wristAt - from).Normalized();
@@ -151,6 +171,24 @@ void fragment() {
 			TextureFilter = CanvasItem.TextureFilterEnum.Linear,
 		};
 		handN.AddChild(hand);
+		Fx.Clock(hand);
+		hm.SetShaderParameter("px", new Vector2(1f / t0.GetWidth(), 1f / t0.GetHeight()));
+		// 手腕一路掉火星（跟着手走：粒子放在手节点下，但是世界坐标发射）
+		Node2D emb = new() { Position = new Vector2((Wrist.X + 60f - Wrist.X) * k * facing, 0f) };
+		handN.AddChild(emb);
+		GpuParticles2D embers = new()
+		{
+			Amount = 26, Lifetime = 0.6, Explosiveness = 0f, Texture = Glow.Soft, Material = Fx.Additive, LocalCoords = false, Emitting = false,
+			ProcessMaterial = new ParticleProcessMaterial
+			{
+				Direction = new Vector3(-facing, -0.6f, 0f), Spread = 35f, InitialVelocityMin = 40f, InitialVelocityMax = 140f,
+				Gravity = new Vector3(0f, -60f, 0f), ScaleMin = 0.05f, ScaleMax = 0.16f, DampingMin = 1f, DampingMax = 2f,
+				EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Sphere, EmissionSphereRadius = 30f * k * 4f,
+				ColorRamp = new GradientTexture1D { Gradient = new Gradient { Offsets = new[] { 0f, 0.4f, 1f },
+					Colors = new[] { new Color(1f, 0.5f, 0.4f), new Color(0.9f, 0.05f, 0.1f), new Color(0.3f, 0f, 0.04f, 0f) } } },
+			},
+		};
+		emb.AddChild(embers);
 
 		Live live = new() { LastTickMs = 0 };
 		Active[targetId] = live;
@@ -162,13 +200,43 @@ void fragment() {
 			Sfx.Play(Sfx.PoisonTick, 0.7f, 0.1f);
 		};
 
-		// 出手：亚森手边一团雾 + 一声重挥（雾射过去）
+		// 派出（用户：要更有从亚森那里派出的感觉）：出手前 0.22s 亚森手边的雾往里一收、凝成一只半透明的小雾手（往后一缩蓄力），
+		// 发射那一下往前一弹、后坐一团雾和一圈短环，雾手直接化进拖尾里射出去
 		float launch = attack - 0.16f;
+		float charge = Mathf.Max(0f, launch - 0.22f);
+		Fx.After(layer, charge, () =>
+		{
+			Glow.Gather(layer, from, new Color(0.85f, 0.05f, 0.1f), h * 1.4f, 0.2f);
+			Glow.Sparks(layer, from + dir * h * 0.5f, 12, 120f, 300f, 0.25f, new[] { new Color(0.9f, 0.1f, 0.14f), new Color(0.3f, 0f, 0.04f) }, 0f, 0.08f, 0.2f, -dir, 30f);
+			if (Fx.Tex("grip_close") is Texture2D gc)
+			{
+				Node2D ghostN = Fx.Root(layer, from, "P5GripGhost", 0.3);
+				ShaderMaterial gm = new() { Shader = HandShader };
+				gm.SetShaderParameter("seed", Fx.Rand(0f, 40f));
+				Sprite2D ghost = new() { Texture = gc, Centered = false, Offset = -Wrist, Scale = new Vector2(k * 0.55f * facing, k * 0.55f), Material = gm,
+					Modulate = new Color(1f, 0.6f, 0.6f, 0.7f) };
+				ghostN.AddChild(ghost);
+				ghostN.Rotation = (wristAt - from).Angle() * (facing > 0f ? 1f : 1f) - (facing > 0f ? 0f : Mathf.Pi);
+				Fx.Clock(ghost);
+				Fx.Animate(ghostN, 0, 0.24, u =>
+				{
+					// 凝出来（散 → 实）、往后缩蓄力，最后 0.04s 往前一弹
+					gm.SetShaderParameter("dissolve", 1f - Fx.OutCubic(Mathf.Min(1f, u / 0.6f)));
+					float pull = u < 0.82f ? Fx.OutCubic(u / 0.82f) : 1f - Ease5.OutExpo((u - 0.82f) / 0.18f) * 2.5f;
+					ghostN.GlobalPosition = from - dir * h * 0.25f * pull;
+					ghostN.Scale = Vector2.One * (1f + 0.15f * Mathf.Max(0f, -pull));
+				});
+			}
+		});
 		Fx.After(layer, Mathf.Max(0f, launch), () =>
 		{
+			Glow.Shockwave(layer, from, new Color(0.9f, 0.05f, 0.1f), h * 1.6f, 0.3f, 0.5f);
+			Glow.Ripple(layer, from, h * 2f, 0.3f, 0.025f);
+			Fx.Shake(1);
 			Glow.Flash(layer, from, new Color(0.7f, 0.03f, 0.08f), h * 1.2f, 0.25f);
 			Glow.Sparks(layer, from, 14, 200f, 600f, 0.4f, new[] { new Color(0.9f, 0.1f, 0.14f), new Color(0.3f, 0f, 0.04f) }, -100f, 0.12f, 0.35f, dir, 30f);
 		});
+		Sfx.Play(Sfx.SwishLow, 0.35f, charge);                       // 蓄力：低沉的一收
 		Sfx.Play(Sfx.SwishHeavy, 0.6f, Mathf.Max(0f, launch));
 
 		float releaseAt = -1f;
@@ -190,6 +258,7 @@ void fragment() {
 			// 手：在雾头到达时凝出来，张开 → 收拢 → 抓 → 攥成实心拳（attack）
 			float appear = launch + travel * 0.75f;
 			handN.Visible = s >= appear && !(released && s > releaseAt + back);
+			embers.Emitting = s >= appear && !released;
 			int f = s < attack - 0.05f ? Reach : s < attack - 0.025f ? Close : s < attack ? Hold : Fist;
 			float pulse = -1f;
 			if (tickT >= 0f && s - tickT < 0.26f)
@@ -218,7 +287,9 @@ void fragment() {
 			float squash = s >= attack ? Mathf.Exp(-(s - attack) / 0.07f) : 0f;
 			if (tickT >= 0f && s - tickT >= 0.1f) squash = Mathf.Max(squash, 0.7f * Mathf.Exp(-(s - tickT - 0.1f) / 0.07f));
 			float shake = gripped && !released ? Mathf.Sin(s * 70f) * 1.5f * (0.4f + squash) : 0f;
-			handN.Position = pos + new Vector2(shake, shake * 0.4f);
+			float sway = gripped && !released ? Mathf.Sin(s * 4f) * 0.03f : 0f;
+			handN.Position = pos + new Vector2(shake, shake * 0.4f + Mathf.Sin(s * 3.2f) * 4f);
+			handN.Rotation = sway * facing;
 			handN.Scale = new Vector2(1f + 0.06f * squash, 1f - 0.1f * squash) * Mathf.Lerp(1.25f, 1f, Ease5.OutExpo(inK));
 			hm.SetShaderParameter("hot", 0.6f * squash);
 			if (!gripped && s >= attack)

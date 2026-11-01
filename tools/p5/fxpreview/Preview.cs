@@ -160,7 +160,7 @@ public partial class Preview : Node2D
 				Persona.Show(spec, p._back, JokerFeet, tall);
 			});
 			p.At(1.89 + spec.AttackAt, () => SummonStage.Beat(p._front, Persona.ChestOf(spec, JokerFeet, tall)));
-			p.At(1.85, () => Grip.Play(p._front, 1ul, Persona.ChestOf(spec, JokerFeet, tall) + new Vector2(0.3f * tall, 0f), Enemy, 170f,
+			p.At(1.85, () => Grip.Play(p._front, 1ul, Persona.ChestOf(spec, JokerFeet, tall) + new Vector2(0.22f * tall, -0.12f * tall), Enemy, 170f,
 				0.04f + spec.AttackAt, 1f, c => p._enemies[Enemy].Modulate = c));
 			for (int i = 0; i < 3; i++)
 			{
