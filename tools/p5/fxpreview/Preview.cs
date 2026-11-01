@@ -283,6 +283,15 @@ public partial class Preview : Node2D
 		Stage.NowMs = () => (ulong)(_clock * 1000.0);
 		GD.Seed(52029);
 		Stage.Shake = s => { _shake = s; _shakeLeft = 0.25f; };
+		BodyAura.CloneBody = parent =>
+		{
+			string rig = ProjectSettings.GlobalizePath("res://") + "../../../art/p5/rig/joker";
+			SpinePlayer c = SpinePlayer.Load(rig + ".spine-json", rig + ".atlas", rig + ".png");
+			parent.AddChild(c);
+			c.PlayFrom(_joker!.Current, _joker.Time);
+			c.Queue("mask_loop", true);
+			return (c, _joker.GlobalTransform);
+		};
 
 		_world = new Node2D();
 		AddChild(_world);

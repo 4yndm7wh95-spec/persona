@@ -298,7 +298,6 @@ void fragment() {
 			// 冲击只贴着地面走（用户：悬在半空的那一圈波纹看着不同步、也不贴地）
 			Glow.Shockwave(layer, feet, Pal5.Bright, h * 4f, 0.55f, 0.26f);
 			Glow.Ripple(layer, feet, h * 3.6f, 0.5f, 0.02f, 0.3f);
-			Fx.Shake(2);
 			// 火星：打着旋往上飘
 			Embers(layer, feet, h, 46, 1.1f);
 			// 黑烟：火上方翻滚（普通混合，压暗后面，衬出火）

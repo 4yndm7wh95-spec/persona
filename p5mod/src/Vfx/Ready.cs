@@ -34,6 +34,7 @@ public sealed class ReadyFx
 	private readonly Node2D _root, _back;
 	private readonly Control _frontLayer, _backLayer;
 	private PersonaMask? _wall;
+	private BodyAura? _aura;
 	private readonly Stance _stance;
 	private readonly Func<Vector2, Vector2> _pose;
 	private readonly float _facing;
@@ -95,6 +96,7 @@ public sealed class ReadyFx
 		}
 		_ended = true;
 		_wall?.End(played);
+		_aura?.End(played);
 		// 火焰着色器自己写颜色，不吃节点的 modulate：它们的透明度要单独淡掉（用户 2026-10-29：收手后火还留在半空）
 		foreach (Node2D n in new[] { _root, _back })
 		{
@@ -138,6 +140,9 @@ public sealed class ReadyFx
 		// 脸上戴着一张面具形状的蓝焰（人物前面，中心在鼻梁、眼睛那一行），两边尖角往上翘
 		float body = (feet - face).Length();
 		_wall = new PersonaMask(_backLayer, _frontLayer, _pose(MaskEyes), body * 0.42f, _facing, 0.08f * _facing);
+		// 身体轮廓上烧一圈贴身的蓝焰（剪影外面才有火，不会有幻影；用户 2026-11-01：轮廓火要保留）
+		Vector2 a0 = _pose(new Vector2(150f, -250f)), a1 = _pose(new Vector2(1500f, 1700f));
+		_aura = new BodyAura(_backLayer, new Rect2(new Vector2(Mathf.Min(a0.X, a1.X), Mathf.Min(a0.Y, a1.Y)), (a1 - a0).Abs()));
 		// 手上只留一点蓝光（指缝里的两小簇火像两块贴图，用户 2026-10-29 嫌难看，删了；火交给面具和轮廓）
 		Sprite2D halo = Glow.SoftSprite(_root, hand + new Vector2(10f * _facing, -18f), PersonaMask.Hi, 1.5f);
 		Pulse(halo, 0.3f, 0.6f, 0.4);

@@ -218,7 +218,6 @@ void fragment() {
 			if (!hit && s >= ImpactAt)
 			{
 				hit = true;
-				Fx.Shake(3);
 			}
 			// 劈开
 			float e = Mathf.Clamp((s - SplitAt) / SplitTime, 0f, 1f);

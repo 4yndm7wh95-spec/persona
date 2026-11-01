@@ -183,9 +183,50 @@ public static class Aim
 		_fx = null;
 		if (Joker.FxLayer() is Control front && Joker.FxLayer(back: true) is Control back)
 		{
+			BodyAura.CloneBody = parent => CloneBody(node, parent, "mask_loop");
 			_fx = ReadyFx.Start(front, back, stance, v => Joker.PosePoint(node, v), Joker.Facing(node));
 			_fxCard = card;
 		}
+	}
+
+	/// <summary>
+	/// 在 target 下面复制一份 Joker 的骨骼，同一个动作、同一时刻，之后接着播 then；返回复制品和本体此刻的全局变换
+	/// （轮廓蓝焰 BodyAura 把它画进离屏画面取剪影）。
+	/// </summary>
+	private static (Node2D, Transform2D)? CloneBody(NCreature joker, Node target, string then)
+	{
+		if (joker.Visuals?.Body is not Node2D body || joker.Visuals.SpineBody?.TryGetAnimationState() is not MegaAnimationState src
+			|| body.Duplicate() is not Node2D clone)
+		{
+			return null;
+		}
+		target.AddChild(clone);
+		var sprite = new MegaSprite(clone);
+		if (sprite.TryGetAnimationState() is MegaAnimationState st)
+		{
+			string? anim = Current(src);
+			float time = 0f;
+			try
+			{
+				using MegaTrackEntry? e = src.GetCurrent(0);
+				time = e?.GetTrackTime() ?? 0f;
+			}
+			catch (System.Exception)
+			{
+			}
+			if (anim != null && sprite.HasAnimation(anim))
+			{
+				st.SetAnimation(anim, anim == then, 0);
+				using MegaTrackEntry? ce = st.GetCurrent(0);
+				ce?.SetTrackTime(time);
+				ce?.SetMixDuration(0f);
+				if (anim != then && sprite.HasAnimation(then))
+				{
+					st.AddAnimation(then, 0f, true, 0);
+				}
+			}
+		}
+		return (clone, body.GlobalTransform);
 	}
 
 	private static bool Idle(string? current) =>

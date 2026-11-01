@@ -78,7 +78,7 @@ vec3 stage(vec2 suv, vec2 uv) {
 	vec2 d = (uv - focus) * vec2(res.x / res.y, 1.0);
 	float r = length(d);
 	float a = (atan(d.y, d.x) + 3.14159) / 6.28318;
-	float step2 = floor(clock * 15.0);
+	float step2 = floor(clock * 7.5);
 	float slot = floor(a * 220.0);
 	float pick = hash(vec2(slot, step2 + seed));
 	float wid = 0.25 + 0.5 * hash(vec2(slot + 7.0, step2));
@@ -129,7 +129,6 @@ void fragment() {
 		TearSeed = Fx.Rand(0f, 100f);
 		m.SetShaderParameter("tseed", TearSeed);
 		Fx.Clock(rect);
-		Fx.Shake(3);
 		// 那一刀（最前面一层）
 		Node2D slashRoot = Fx.Root(front, Vector2.Zero, "P5SummonSlash", Length + 0.1);
 		slashRoot.GlobalPosition = Vector2.Zero;
@@ -163,14 +162,14 @@ void fragment() {
 			m.SetShaderParameter("amount", Mathf.Min(1f, s / 0.04f) * (1f - Mathf.Clamp((e - 0.75f) / 0.25f, 0f, 1f)));
 			m.SetShaderParameter("split", SplitCurve(e));
 			// 白闪：施法那一下、图砸进来那一下、劈开那一下
-			float fl = 0.95f * Mathf.Exp(-s / 0.045f)
-				+ (s >= CutIn.ImpactAt ? 0.5f * Mathf.Exp(-(s - CutIn.ImpactAt) / 0.04f) : 0f)
-				+ (e > 0f ? 0.35f * Mathf.Exp(-(s - CutIn.SplitAt) / 0.05f) : 0f);
+			float fl = 0.45f * Mathf.Exp(-s / 0.04f)
+				+ (s >= CutIn.ImpactAt ? 0.22f * Mathf.Exp(-(s - CutIn.ImpactAt) / 0.035f) : 0f)
+				+ (e > 0f ? 0.18f * Mathf.Exp(-(s - CutIn.SplitAt) / 0.04f) : 0f);
 			m.SetShaderParameter("flash", fl);
 			if (!torn && e > 0f)
 			{
 				torn = true;
-				Fx.Shake(3);
+				Fx.Shake(2);                                       // 整段召唤只在劈开这一下轻震一次（用户 2026-11-01：太晃、会晕）
 			}
 		});
 	}

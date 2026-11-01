@@ -430,7 +430,7 @@ void fragment() {
 			Glow.Flash(_back, at, Hi, _half * 3.2f, 0.45f);
 			Glow.Sparks(_layer, at, 60, 220f, 820f, 0.75f, new[] { Hot, Hi, Mid }, -120f, 0.1f, 0.4f);
 			Glow.Sparks(_back, at, 30, 80f, 300f, 1.1f, new[] { Hi, Mid }, -200f, 0.3f, 0.6f);
-			Fx.Shake(1);
+			
 		}
 		float dur = played ? 0.45f : 0.3f;
 		foreach (ColorRect r in new[] { _fire, _fireRear })
