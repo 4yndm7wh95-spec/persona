@@ -362,8 +362,10 @@ public sealed class ReadyFx
 }
 
 /// <summary>
-/// 锁定（拖着单体牌、指到一个敌人时）：P5 式的红色准星 —— 两圈细光环反向慢转，四个尖角从外面"咔"地收到敌人身上，中间一点热白。
-/// 指到别的敌人 / 松开就 Release()。
+/// 锁定（拖着单体牌、指到一个敌人时）。2026-11-01 用户：太朴素 → P5 平面风：
+/// · 原版 P5R 的箭头光标（BTL_BTN 矢印，白芯黑边）从右上方飞进来指着敌人、带一张红色错位影，沿指向一下下戳；
+/// · 准星：四段黑描边的红色粗弧慢转，里面一圈白色细弧反着转；四个黑红三角从外面「咔」地收进来（过冲），之后轻轻呼吸；
+/// · 一进来红网点往外扩一圈。全部硬边，不发光。指到别的敌人 / 松开就 Release()。
 /// </summary>
 public sealed class LockOn
 {
@@ -375,47 +377,80 @@ public sealed class LockOn
 		_root = new Node2D { Name = "P5LockOn", Position = at };
 		layer.AddChild(_root);
 		_root.GlobalPosition = at;
-		for (int i = 0; i < 2; i++)
-		{
-			ColorRect ring = Glow.RingRect(_root, size * (i == 0 ? 1.15f : 0.9f), 1f);
-			Glow.SetParam(ring, "tint", i == 0 ? Pal5.Bright : Pal5.Hot);
-			Glow.SetParam(ring, "width", 0.012f);
-			Glow.SetParam(ring, "alpha", 0f);
-			int dir = i == 0 ? 1 : -1;
-			Tween tw = ring.CreateTween();
-			tw.TweenMethod(Callable.From<float>(t =>
-			{
-				Glow.SetParam(ring, "radius", Mathf.Lerp(0.98f, 0.8f, Ease5.OutExpo(t)));
-				Glow.SetParam(ring, "alpha", (i == 0 ? 0.8f : 0.5f) * t);
-			}), 0f, 1f, 0.22);
-			Tween spin = ring.CreateTween().SetLoops();
-			spin.TweenProperty(ring, "rotation", dir * Mathf.Tau, 6.0).AsRelative();
-		}
-		// 四个尖角（往里指的三角），收拢时带一点过冲
+		float r = size * 0.42f;
+		// 外圈：四段红色粗弧（黑描边），慢转
+		Node2D outer = new();
+		_root.AddChild(outer);
 		for (int i = 0; i < 4; i++)
 		{
-			Node2D arm = new() { Rotation = Mathf.Pi / 4f + i * Mathf.Pi / 2f };
+			float a0 = i * Mathf.Pi / 2f + 0.22f, sweep = Mathf.Pi / 2f - 0.44f;
+			Fx.Poly(outer, Ink.Arc(r, 16f, a0 - 0.03f, sweep + 0.06f), Ink.Black);
+			Fx.Poly(outer, Ink.Arc(r, 7f, a0, sweep), Ink.Red);
+		}
+		// 内圈：八段白色细弧（黑描边），反着转
+		Node2D inner = new();
+		_root.AddChild(inner);
+		for (int i = 0; i < 8; i++)
+		{
+			float a0 = i * Mathf.Tau / 8f, sweep = Mathf.Tau / 8f * 0.55f;
+			Fx.Poly(inner, Ink.Arc(r * 0.8f, 8f, a0 - 0.02f, sweep + 0.04f, 8), Ink.Black);
+			Fx.Poly(inner, Ink.Arc(r * 0.8f, 3f, a0, sweep, 8), Ink.White);
+		}
+		Tween spinO = outer.CreateTween().SetLoops();
+		spinO.TweenProperty(outer, "rotation", Mathf.Tau, 7.0).AsRelative();
+		Tween spinI = inner.CreateTween().SetLoops();
+		spinI.TweenProperty(inner, "rotation", -Mathf.Tau, 5.0).AsRelative();
+		Fx.Animate(_root, 0, 0.18, t =>
+		{
+			float k = Ease5.OutBack(t);
+			outer.Scale = Vector2.One * Mathf.Lerp(1.6f, 1f, k);
+			inner.Scale = Vector2.One * Mathf.Lerp(0.4f, 1f, k);
+			outer.Modulate = inner.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, t * 3f));
+		});
+		// 四个三角：从外面收进来，指着中心
+		for (int i = 0; i < 4; i++)
+		{
+			Node2D arm = new() { Rotation = i * Mathf.Pi / 2f };
 			_root.AddChild(arm);
-			Polygon2D tri = Fx.Poly(arm, new[] { new Vector2(0f, -9f), new Vector2(26f, 0f), new Vector2(0f, 9f) }, Pal5.Bright, additive: true);
-			Polygon2D hot = Fx.Poly(arm, new[] { new Vector2(4f, -3.5f), new Vector2(20f, 0f), new Vector2(4f, 3.5f) }, Pal5.Hot, additive: true);
-			float r0 = size * 0.95f, r1 = size * 0.5f;
+			Node2D tri = new();
+			arm.AddChild(tri);
+			Vector2[] shape = { new(-24f, -13f), new(4f, 0f), new(-24f, 13f) };
+			Fx.Poly(tri, Ink.Scale(shape, 1f, 5f), Ink.Black);
+			Fx.Poly(tri, shape, Ink.Red);
+			float r0 = r * 2.1f, r1 = r * 1.18f;
 			Tween tw = arm.CreateTween();
 			tw.TweenMethod(Callable.From<float>(t =>
 			{
-				float r = Mathf.Lerp(r0, r1, Ease5.OutBack(t));
-				tri.Position = hot.Position = new Vector2(-r - 26f, 0f);
+				tri.Position = new Vector2(-Mathf.Lerp(r0, r1, Ease5.OutBack(t)), 0f);
 				arm.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, t * 3f));
-			}), 0f, 1f, 0.24);
+			}), 0f, 1f, 0.22);
 			Tween breathe = arm.CreateTween().SetLoops();
-			breathe.TweenInterval(0.24);
-			breathe.TweenMethod(Callable.From<float>(t => tri.Position = hot.Position = new Vector2(-r1 - 26f - 6f * Mathf.Sin(t * Mathf.Tau), 0f)), 0f, 1f, 0.7);
+			breathe.TweenInterval(0.22);
+			breathe.TweenMethod(Callable.From<float>(t => tri.Position = new Vector2(-r1 - 7f * Mathf.Sin(t * Mathf.Tau), 0f)), 0f, 1f, 0.8);
 		}
-		Sprite2D center = Glow.SoftSprite(_root, Vector2.Zero, Pal5.Bright, 0.5f);
-		Glow.SoftSprite(_root, Vector2.Zero, Pal5.Hot, 0.18f);
-		Tween pop = center.CreateTween().SetLoops();
-		pop.TweenProperty(center, "scale", Vector2.One * 0.7f, 0.35);
-		pop.TweenProperty(center, "scale", Vector2.One * 0.45f, 0.35);
-		Glow.Flash(layer, at, Pal5.Bright, size * 0.9f, 0.18f);
+		// 原版箭头：在右上方，指向敌人（贴图里箭头朝右上，转 180° 朝左下）
+		Node2D arrow = new() { Rotation = Mathf.Pi + 0.1f };
+		_root.AddChild(arrow);
+		Vector2 home = new Vector2(r * 1.25f, -r * 1.4f);
+		Vector2 axis = (-home).Normalized();
+		Sprite2D? red = Ink.Sprite(arrow, "ui_arrow", Ink.Red, 0f);
+		Sprite2D? white = Ink.Sprite(arrow, "ui_arrow", Colors.White, 0f);
+		float ak = Mathf.Clamp(size / 230f, 0.75f, 1.3f) * 1.05f;
+		if (red != null && white != null)
+		{
+			red.Position = new Vector2(-9f, -9f);                    // 转了 180°：错位影落在右下
+			red.Scale = white.Scale = Vector2.One * ak;
+		}
+		Tween fly = arrow.CreateTween();
+		fly.TweenMethod(Callable.From<float>(t =>
+		{
+			arrow.Position = home - axis * 260f * (1f - Ease5.OutBack(t));
+			arrow.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, t * 4f));
+		}), 0f, 1f, 0.22);
+		Tween poke = arrow.CreateTween().SetLoops();
+		poke.TweenInterval(0.22);
+		poke.TweenMethod(Callable.From<float>(t => arrow.Position = home + axis * 14f * Mathf.Pow(Mathf.Sin(t * Mathf.Pi), 2f)), 0f, 1f, 0.55);
+		Ink.Halftone(layer, at, r * 1.7f, 0.32f, 0f, null, 1f, 12f);
 	}
 
 	public static LockOn Start(Control layer, Vector2 at, float size = 230f) => new(layer, at, size);
@@ -428,8 +463,8 @@ public sealed class LockOn
 		}
 		_done = true;
 		Tween tw = _root.CreateTween();
-		tw.TweenProperty(_root, "modulate:a", 0f, 0.15);
-		tw.Parallel().TweenProperty(_root, "scale", Vector2.One * 1.15f, 0.15);
+		tw.TweenProperty(_root, "modulate:a", 0f, 0.12);
+		tw.Parallel().TweenProperty(_root, "scale", Vector2.One * 0.85f, 0.12);
 		Fx.FreeAfter(_root, 0.2);
 	}
 }

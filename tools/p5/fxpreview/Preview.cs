@@ -103,6 +103,18 @@ public partial class Preview : Node2D
 			p.At(6.4 + 1.64, () => { SummonStage.Play(p._back, p._front, Pose(1010, 215)); CutIn.Eyes(p._back); });
 			p.At(6.4 + 1.6, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy2, Enemy2 + new Vector2(0f, -128f), c => p._enemies[Enemy2].Modulate = c));
 		},
+		// 2026-11-01 P5 平面风重做：打击（选中转刀 + 锁定 → 砍）、开枪（瞄准 + 锁定 → 开火）、防御
+		["hits"] = p =>
+		{
+			p.Ready(0.2, Stance.Knife, "knife", "attack_from_ready", play: true, lockOn: Enemy);
+			p.At(0.2 + 1.6 + 0.13, () => HitFx.Swing(p._front, Pose(760f, 260f), Pose(600f, 850f), Pose(1376f, 450f)));
+			p.Hit(0.2 + 1.6 + 0.15, Enemy, 6, false);
+			p.Ready(2.6, Stance.Gun, "aim", "shiv_from_aim", play: true, lockOn: Enemy2);
+			p.At(2.6 + 1.6 + 0.18, () => HitFx.Muzzle(p._front, Muzzle));
+			p.Hit(2.6 + 1.6 + 0.2, Enemy2, 6, true);
+			p.Ready(5.0, Stance.Guard, "guard", "cast_guard_from_ready", play: true);
+			p.At(5.0 + 1.63, () => CardFx.Guard(p._front, Pose(885f, 310f), Pose(1060f, 470f), 1280f * 0.87f * 0.29f));
+		},
 		// 只看蓝焰墙本身（放大，对照用户的参考图调细节）
 		["eiha"] = p => p.At(0.3, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy, Enemy + new Vector2(0f, -170f), c => p._enemies[Enemy].Modulate = c)),
 		["arsene"] = p => p.At(0.1, () => Persona.Arsene(p._back, JokerFeet, (JokerFeet - Pose(815f, 120f)).Length() * 1.35f)),

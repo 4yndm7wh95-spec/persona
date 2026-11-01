@@ -5,35 +5,43 @@ using Godot;
 namespace P5Joker;
 
 /// <summary>
-/// 打击 / 开枪的代码特效（用户 2026-10-28：加一些特效，掩盖帧动画的不足）。都很短、很干脆，不挡敌人：
-///  · Swing —— 挥刀那一下沿刀尖的真实轨迹扫出一道白色刀光弧（红边），补上准备帧和挥出帧之间缺的动作；
-///  · Slash —— 命中：敌人身上一道细长白色斜斩痕 + 红色错位重影 + 小白闪 + 几片碎片；
-///  · Muzzle —— 开火：枪口白色十字枪焰 + 红环 + 一小股烟；
-///  · Shot —— 一道细白弹道线打到敌人，命中处小白闪 + 扩散红环 + 碎片。
+/// 打击 / 开枪的代码特效。2026-11-01 用户：之前的太朴素 → 全部换成 P5 的平面漫画语言（Ink.cs：硬边、黑描边、红白黑、爆点、网点、碎片），
+/// 都很短、很干脆：
+///  · Swing —— 挥刀那一下沿刀尖的真实轨迹扫出一道黑描边的白色月牙（内侧红线、两道速度弧）；
+///  · Slash —— 命中：两道交叉斩线 + 锯齿爆点 + 网点环 + 速度线 + 平面碎片 + 原版星光；
+///  · Muzzle —— 开火：拉长的锯齿枪焰 + 原版枪焰 + 黑红环 + 弹壳 + 平面烟；
+///  · Shot —— 黑描边弹道，命中处原版枪击爆点序列帧 + 爆点 + 网点 + 碎片。
 /// 只用全局坐标，游戏里由 JokerFx 按姿势图换算好位置传进来，预览工具直接传。
 /// </summary>
 public static class HitFx
 {
 	private static float Wrap(float a) => Mathf.PosMod(a + Mathf.Pi, Mathf.Tau) - Mathf.Pi;
 
-	/// <summary>刀光：以 center 为圆心，从刀尖起点 from 扫到终点 to（走较短的那一侧），0.2 秒。</summary>
+	/// <summary>
+	/// 刀光（2026-11-01 重做成 P5 平面风）：以 center 为圆心从 from 扫到 to 的硬边月牙 —— 黑描边、白刃、内侧一道红；
+	/// 外侧和内侧各跟一道细的黑色速度弧。头 0.06s 扫到底（缓出），尾巴随后追上收掉，0.2s。
+	/// </summary>
 	public static void Swing(Control layer, Vector2 center, Vector2 from, Vector2 to)
 	{
 		float r = (from.DistanceTo(center) + to.DistanceTo(center)) / 2f;
 		float a0 = (from - center).Angle(), sweep = Wrap((to - center).Angle() - a0);
-		Node2D root = Fx.Root(layer, center, "P5Swing", 0.25);
-		// 发光的刀光（加法）：红晕在外、白芯在里
-		Polygon2D red = Fx.Poly(root, new Vector2[3], new Color(Pal5.Bright, 0.9f), additive: true);
-		Polygon2D white = Fx.Poly(root, new Vector2[3], Pal5.Hot, additive: true);
-		const float total = 0.2f;
+		Node2D root = Fx.Root(layer, center, "P5Swing", 0.3);
+		Polygon2D lineOut = Fx.Poly(root, new Vector2[3], Ink.Black), lineIn = Fx.Poly(root, new Vector2[3], Ink.Black);
+		Polygon2D black = Fx.Poly(root, new Vector2[3], Ink.Black);
+		Polygon2D white = Fx.Poly(root, new Vector2[3], Ink.White);
+		Polygon2D red = Fx.Poly(root, new Vector2[3], Ink.Red);
+		const float total = 0.22f;
 		Fx.Animate(root, 0, total, t =>
 		{
-			// 刀光头部飞快扫到终点（前 20%），尾巴随后追上收掉
-			float head = Fx.OutCubic(Mathf.Clamp(t / 0.2f, 0f, 1f));
-			float tail = Fx.InCubic(Mathf.Clamp((t - 0.1f) / 0.9f, 0f, 1f));
-			red.Polygon = Band(r + 6f, a0, sweep, tail, head, 26f);
-			white.Polygon = Band(r, a0, sweep, tail, head, 9f);
-			root.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp((t - 0.7f) / 0.3f, 0f, 1f));
+			float head = Ease5.OutExpo(Mathf.Clamp(t / 0.28f, 0f, 1f));
+			float tail = Fx.InCubic(Mathf.Clamp((t - 0.12f) / 0.88f, 0f, 1f));
+			black.Polygon = Band(r + 8f, a0, sweep, tail, head, 40f);
+			white.Polygon = Band(r + 2f, a0, sweep, tail, head, 26f);
+			red.Polygon = Band(r - 16f, a0, sweep, tail, head, 8f);
+			float lag = Fx.InCubic(Mathf.Clamp((t - 0.05f) / 0.6f, 0f, 1f));
+			float head2 = Ease5.OutExpo(Mathf.Clamp((t - 0.04f) / 0.3f, 0f, 1f));
+			lineOut.Polygon = Band(r + 38f, a0, sweep, Mathf.Max(lag, tail), head2 * 0.92f, 6f);
+			lineIn.Polygon = Band(r - 46f, a0, sweep, Mathf.Max(lag, tail), head2 * 0.8f, 5f);
 		});
 	}
 
@@ -59,88 +67,111 @@ public static class HitFx
 	}
 
 	/// <summary>
-	/// 打击命中（2026-10-29 用发光积木重做，Glow.cs）：
-	/// 爆发 —— 径向白闪 + 屏幕折射波，一道沿上撩方向的长光刃划过，60ms 后第二道短光刃交叉；
-	/// 余韵 —— 扁的红色光环往外扩、几十颗红色火花往刀的去向喷、几片带棱光的碎片、两颗星光；轻震屏。
+	/// 打击命中（2026-11-01 重做成 P5 平面风）：
+	/// 一道长斩线沿上撩方向划过（黑描边 + 白芯 + 错开的红线），60ms 后第二道短斩线交叉；
+	/// 斩点炸开红白黑锯齿爆点、一圈红网点往外扩、黑白速度线、平面三角碎片顺刀路喷出去、两颗原版星光；轻震一下。
 	/// </summary>
 	public static void Slash(Control layer, Vector2 at, float facing = 1f)
 	{
 		float up = -0.55f;                                           // 上撩：从左下到右上
 		float a1 = facing > 0f ? up : Mathf.Pi - up;
-		Glow.Blade(layer, at, a1, 300f, 34f, 0.34f);
-		Glow.Blade(layer, at + new Vector2(10f * facing, 6f), a1 + 1.35f * facing, 190f, 22f, 0.3f, 0.06f);
-		Impact(layer, at, new Vector2(facing, -0.6f).Normalized(), facing);
+		Impact(layer, at, new Vector2(facing, -0.6f).Normalized(), facing);      // 爆点在下面，斩线画在最上面（斩线是主角）
+		Ink.Slash(layer, at, a1, 520f, 34f, 0.3f);
+		Ink.Slash(layer, at + new Vector2(10f * facing, 6f), a1 + 1.35f * facing, 320f, 22f, 0.26f, 0.06f);
 	}
 
-	/// <summary>斩击打到身上的那一下（不含光刃）：白闪 + 折射波 + 扁红环 + 顺刀路喷的火花 + 碎片 + 星光 + 震屏。dir = 刀的去向。</summary>
+	/// <summary>斩击打到身上的那一下（不含斩线）：爆点 + 网点环 + 速度线 + 碎片 + 星光 + 轻震。dir = 刀的去向。</summary>
 	public static void Impact(Control layer, Vector2 at, Vector2 dir, float facing, float delay = 0f)
 	{
 		Fx.After(layer, delay, () =>
 		{
-			Glow.Flash(layer, at, new Color(1f, 0.55f, 0.5f), 260f, 0.2f);
-			Glow.Ripple(layer, at, 440f, 0.5f, 0.03f);
-			Glow.Shockwave(layer, at, new Color(0.9f, 0.05f, 0.08f), 300f, 0.42f, 0.5f, 0.03f);
-			Glow.Sparks(layer, at, 34, 260f, 720f, 0.5f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 260f, 0.12f, 0.4f, dir, 70f);
-			Glow.Shards(layer, at, 7, 0.9f, (dir + new Vector2(0f, 0.3f)).Normalized(), 1.0f);
-			Glow.Glint(layer, at + new Vector2(70f * facing, -60f), 0.9f, 0.06f);
-			Glow.Glint(layer, at + new Vector2(-40f * facing, 50f), 0.6f, 0.12f);
-			Fx.Shake(2);
+			Ink.Burst(layer, at, 82f, 12, 0.22f);
+			Ink.Halftone(layer, at, 300f, 0.36f, 0.02f);
+			Ink.Streaks(layer, at, 16, 90f, 330f, 0.24f, 0.01f);
+			Ink.Shards(layer, at, 12, 34f, dir, 0.9f, 820f, 0.55f);
+			Ink.Twinkle(layer, at + new Vector2(95f * facing, -80f), 90f, 0.05f);
+			Ink.Twinkle(layer, at + new Vector2(-60f * facing, 70f), 60f, 0.11f);
+			Fx.Shake(1);
 		});
 	}
 
 	/// <summary>
-	/// 开火（发光积木）：枪口一团白热闪光 + 红晕；向前一束锥形的短光刺（主刺 + 两根斜的细刺）；
-	/// 一小圈光环；火花往前喷。muzzle = 枪口，facing = 朝向。
+	/// 开火（P5 平面风）：枪口一个往前拉长的红白黑锯齿焰 + 原版枪焰（firetip）往前喷 + 一圈细黑红环；
+	/// 弹壳往后上方弹出去、转着掉；一小团平面灰烟往上飘、从细处蚀掉。muzzle = 枪口，facing = 朝向。
 	/// </summary>
 	public static void Muzzle(Control layer, Vector2 muzzle, float facing = 1f)
 	{
-		Glow.Flash(layer, muzzle, new Color(1f, 0.75f, 0.6f), 150f, 0.12f);
-		Glow.Flash(layer, muzzle + new Vector2(30f * facing, 0f), new Color(1f, 0.1f, 0.12f), 220f, 0.16f);
-		Node2D root = Fx.Root(layer, muzzle, "P5Muzzle", 0.2);
-		root.Scale = new Vector2(facing, 1f);
-		var spikes = new (float Ang, float Len, float W)[] { (0f, 120f, 26f), (-0.42f, 60f, 12f), (0.42f, 60f, 12f), (Mathf.Pi, 26f, 10f) };
-		var polys = new System.Collections.Generic.List<(Polygon2D G, Polygon2D C, float Ang, float Len, float W)>();
-		foreach (var (ang, len, w) in spikes)
+		float ang = facing > 0f ? 0f : Mathf.Pi;
+		Ink.Burst(layer, muzzle + new Vector2(26f * facing, 0f), 58f, 9, 0.13f, 0f, 1.9f, ang, Ink.Gold);
+		Ink.Streaks(layer, muzzle + new Vector2(20f * facing, 0f), 7, 30f, 210f, 0.14f, 0f, 6f, new Vector2(facing, 0f), 0.35f);
+		Node2D root = Fx.Root(layer, muzzle, "P5Muzzle", 0.6);
+		if (Fx.Tex("firetip") is Texture2D tip)
 		{
-			polys.Add((Glow.TaperPoly(root, new Color(Pal5.Bright, 0.95f)), Glow.TaperPoly(root, Pal5.Hot), ang, len, w));
+			Sprite2D jet = Fx.Sprite(root, tip);
+			jet.Rotation = facing > 0f ? -Mathf.Pi / 2f : Mathf.Pi / 2f;
+			jet.Offset = new Vector2(0f, -100f);
+			Fx.Animate(jet, 0, 0.1, t => jet.Scale = new Vector2(1.6f * (1f - t), 1.5f + 0.8f * t));
 		}
-		Fx.Animate(root, 0, 0.1, t =>
+		// 黑红细环
+		Polygon2D ringB = Fx.Poly(root, new Vector2[3], Ink.Black), ringR = Fx.Poly(root, new Vector2[3], Ink.Red);
+		ringB.Position = ringR.Position = new Vector2(30f * facing, 0f);
+		ringB.Scale = ringR.Scale = new Vector2(0.45f, 1f);
+		Fx.Animate(ringB, 0, 0.16, t =>
 		{
-			float k = Ease5.OutExpo(Mathf.Min(1f, t * 4f)), fade = 1f - Fx.InCubic(t);
-			foreach (var (g, c, ang, len, w) in polys)
-			{
-				Vector2 d = Vector2.Right.Rotated(ang);
-				g.Polygon = Glow.TaperPts(d * 4f, d * len * k, w * fade);
-				c.Polygon = Glow.TaperPts(d * 4f, d * len * 0.8f * k, w * 0.35f * fade);
-			}
+			float r = 20f + 70f * Ease5.OutExpo(t), w = 9f * (1f - t);
+			ringB.Polygon = w < 0.3f ? new Vector2[3] : Ink.Arc(r, w + 5f, 0f, Mathf.Tau, 28);
+			ringR.Polygon = w < 0.3f ? new Vector2[3] : Ink.Arc(r, w, 0f, Mathf.Tau, 28);
 		});
-		Glow.Shockwave(layer, muzzle + new Vector2(22f * facing, 0f), new Color(1f, 0.1f, 0.14f), 100f, 0.14f, 1.25f);
-		Glow.Sparks(layer, muzzle, 14, 300f, 700f, 0.3f, new[] { Pal5.Hot, Pal5.Gold, Pal5.Bright }, 0f, 0.08f, 0.22f,
-			new Vector2(facing, 0f), 22f);
+		// 弹壳
+		Node2D shell = new() { Position = new Vector2(-30f * facing, -8f) };
+		root.AddChild(shell);
+		Fx.Poly(shell, new[] { new Vector2(-10f, -6f), new Vector2(10f, -6f), new Vector2(10f, 6f), new Vector2(-10f, 6f) }, Ink.Black);
+		Fx.Poly(shell, new[] { new Vector2(-7f, -3f), new Vector2(7f, -3f), new Vector2(7f, 3f), new Vector2(-7f, 3f) }, Ink.Gold);
+		Vector2 v = new(-220f * facing, -420f);
+		Fx.Animate(shell, 0, 0.55, t =>
+		{
+			float s = t * 0.55f;
+			shell.Position = new Vector2(-30f * facing, -8f) + v * s + new Vector2(0f, 1500f * s * s);
+			shell.Rotation = -18f * facing * s;
+			shell.Modulate = new Color(1f, 1f, 1f, 1f - Ease5.Seg(t, 0.8f, 0.2f));
+		});
+		// 平面烟
+		Node2D puff = new() { Position = new Vector2(34f * facing, -6f) };
+		root.AddChild(puff);
+		if (Ink.Sprite(puff, "smoke_puff", new Color(0.55f, 0.52f, 0.54f), 2f) is Sprite2D smoke)
+		{
+			Fx.Animate(puff, 0.03, 0.5, t =>
+			{
+				puff.Position = new Vector2((34f + 40f * t) * facing, -6f - 60f * Ease5.OutQuint(t));
+				smoke.Scale = Vector2.One * (0.5f + 0.7f * Ease5.OutQuint(t));
+				Ink.Set(smoke, "cut", Mathf.Lerp(0.35f, 1.05f, Fx.InCubic(t)));
+			});
+		}
 		Fx.Shake(1);
 	}
 
 	/// <summary>
-	/// 弹道 + 命中：一道极细的白热光从枪口射到 hit（尾巴马上追上），命中处白闪 + 小折射波 + 红色光环 + 一圈短速度线 + 火花 + 星光。
+	/// 弹道 + 命中（P5 平面风）：一道黑描边的细白弹道射到 hit（尾巴马上追上），命中处原版枪击爆点序列帧 + 小锯齿爆点 + 红网点环
+	/// + 速度线 + 碎片 + 星光。
 	/// </summary>
 	public static void Shot(Control layer, Vector2 muzzle, Vector2 hit, float facing = 1f)
 	{
 		Node2D tr = Fx.Root(layer, Vector2.Zero, "P5Tracer", 0.15);
 		tr.GlobalPosition = Vector2.Zero;
-		Polygon2D glow = Glow.TaperPoly(tr, new Color(Pal5.Bright, 0.8f)), core = Glow.TaperPoly(tr, Pal5.Hot);
-		Fx.Animate(tr, 0, 0.1, t =>
+		Polygon2D black = Fx.Poly(tr, new Vector2[3], Ink.Black), core = Fx.Poly(tr, new Vector2[3], Ink.White);
+		Fx.Animate(tr, 0, 0.09, t =>
 		{
 			Vector2 a = muzzle.Lerp(hit, Fx.InCubic(t)), b = muzzle.Lerp(hit, Ease5.OutExpo(Mathf.Min(1f, t * 3f)));
-			glow.Polygon = Glow.TaperPts(a, b, 10f * (1f - t) + 2f);
-			core.Polygon = Glow.TaperPts(a, b, 3f * (1f - t) + 1f);
+			black.Polygon = Glow.TaperPts(a, b, 12f * (1f - t) + 3f);
+			core.Polygon = Glow.TaperPts(a, b, 5f * (1f - t) + 1f);
 		});
-		Glow.Flash(layer, hit, new Color(1f, 0.6f, 0.55f), 200f, 0.16f, 0.04f);
-		Glow.Ripple(layer, hit, 300f, 0.4f, 0.025f, 1f, 0.04f);
-		Glow.Shockwave(layer, hit, new Color(0.95f, 0.06f, 0.1f), 240f, 0.36f, 1f, 0.04f);
-		Glow.SpeedLines(layer, hit, Pal5.Bright, 10, 30f, 150f, 0.24f, 0.04f);
-		Glow.Sparks(layer, hit, 22, 200f, 560f, 0.42f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 220f, 0.1f, 0.32f,
-			new Vector2(facing, -0.3f).Normalized(), 75f);
-		Glow.Glint(layer, hit + new Vector2(40f * facing, -40f), 0.7f, 0.08f);
+		Vector2 dir = new Vector2(facing, -0.3f).Normalized();
+		Ink.Burst(layer, hit, 70f, 10, 0.22f, 0.02f);
+		Ink.GunHit(layer, hit, 230f, 0.02f);
+		Ink.Halftone(layer, hit, 220f, 0.32f, 0.04f);
+		Ink.Streaks(layer, hit, 12, 60f, 230f, 0.2f, 0.03f, 6f);
+		Ink.Shards(layer, hit, 8, 26f, dir, 1.0f, 700f, 0.45f, 0.02f);
+		Ink.Twinkle(layer, hit + new Vector2(60f * facing, -55f), 70f, 0.06f);
 		Fx.Shake(1);
 	}
 
@@ -186,8 +217,9 @@ public static class HitFx
 			});
 			Fx.After(layer, delay + seg, () =>
 			{
-				Glow.Flash(layer, b, new Color(1f, 0.6f, 0.55f), last ? 200f : 150f, 0.14f);
-				Glow.Shockwave(layer, b, new Color(0.95f, 0.06f, 0.1f), last ? 220f : 160f, 0.3f);
+				Ink.Burst(layer, b, last ? 70f : 55f, 10, 0.2f);                // 弹到的每个敌人：和开枪命中同一套平面爆点
+				Ink.GunHit(layer, b, last ? 220f : 170f);
+				Ink.Halftone(layer, b, last ? 210f : 160f, 0.3f, 0.02f);
 				Glow.Sparks(layer, b, last ? 18 : 12, 200f, 520f, 0.35f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 220f, 0.1f, 0.3f,
 					(b - ctrl).Normalized(), 70f);
 				if (last)

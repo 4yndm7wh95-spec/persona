@@ -5,100 +5,144 @@ using Godot;
 namespace P5Joker;
 
 /// <summary>
-/// 出牌特效（2026-10-29 重做，docs/p5/FX_PLAN.md：主体是光、粒子、空间扭曲，实时渲染）。
+/// 出牌特效（2026-10-29 重做，docs/p5/FX_PLAN.md：主体是光、粒子、空间扭曲，实时渲染；2026-11-01 防御改成 P5 平面风，Ink.cs）。
 /// 第一批：防御（Guard）、中和的虚弱（Weaken）、致命毒药（Eiha：亚森的咒怨）。
 /// 点由调用方换算好传进来（屏幕全局坐标）；facing = 1 朝右（敌人那边）。
 /// </summary>
 public static class CardFx
 {
-	// ───────────────────────── 防御：前臂一竖，身前张开一面弧形光盾 ─────────────────────────
+	// ───────────────────────── 防御：前臂一竖，身前「咔」地合上一面 P5 平面盾 ─────────────────────────
 
-	private static Shader? _barrier;
+	/// <summary>盾形（原点在中心，高 h）：上沿中间一个 V 形缺口，下面收成尖。</summary>
+	private static Vector2[] ShieldShape(float h)
+	{
+		float w = h * 0.66f;
+		return new[]
+		{
+			new Vector2(-w * 0.5f, -h * 0.5f), new Vector2(-w * 0.13f, -h * 0.5f), new Vector2(0f, -h * 0.4f), new Vector2(w * 0.13f, -h * 0.5f),
+			new Vector2(w * 0.5f, -h * 0.5f), new Vector2(w * 0.5f, h * 0.02f), new Vector2(w * 0.3f, h * 0.3f), new Vector2(0f, h * 0.5f),
+			new Vector2(-w * 0.3f, h * 0.3f), new Vector2(-w * 0.5f, h * 0.02f),
+		};
+	}
 
-	/// <summary>
-	/// 光盾：侧面看过去的一面弧形盾（往敌人那边鼓），前沿一道白热的亮边；盾面是红色的漫画网点（越靠前沿点越大越密），
-	/// 一道光从上往下扫过；dissolve 0→1 时按噪声一块块碎掉。grow：从中间往上下张开。
-	/// </summary>
-	private static Shader Barrier => _barrier ??= new Shader { Code = @"
-shader_type canvas_item;
-render_mode blend_add;
-uniform vec4 tint : source_color = vec4(1.0, 0.08, 0.15, 1.0);
-uniform vec4 hot : source_color = vec4(1.0, 0.95, 0.94, 1.0);
-uniform float grow = 1.0;
-uniform float scan = -2.0;
-uniform float dissolve = 0.0;
-uniform float alpha = 1.0;
-float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
-float noise(vec2 p) {
-	vec2 i = floor(p), f = fract(p);
-	f = f * f * (3.0 - 2.0 * f);
-	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
-}
-void fragment() {
-	vec2 p = UV * 2.0 - 1.0;
-	float ay = abs(p.y);
-	float open = smoothstep(grow + 0.02, grow - 0.08, ay);
-	float xf = 0.62 - 0.85 * p.y * p.y;
-	float th = mix(0.75, 0.16, ay * ay);
-	float d = xf - p.x;
-	float inside = step(0.0, d) * smoothstep(th, th * 0.35, d);
-	float rim = exp(-pow(d / 0.045, 2.0)) * smoothstep(-0.12, 0.0, d);
-	vec2 g = vec2(p.x * 7.0, p.y * 15.0);
-	g.x += step(1.0, mod(floor(g.y), 2.0)) * 0.5;
-	vec2 cell = fract(g) - 0.5;
-	float k = clamp(d / th, 0.0, 1.0);
-	float r = mix(0.4, 0.06, k);
-	float dots = smoothstep(r, r - 0.1, length(cell));
-	float fill = inside * (0.12 + 0.6 * dots * (1.0 - k * 0.6));
-	float stripe = exp(-pow((p.y - scan) / 0.07, 2.0)) * (inside + rim) * 1.3;
-	float taper = smoothstep(1.0, 0.8, ay);
-	float keep = smoothstep(dissolve - 0.05, dissolve + 0.05, noise(UV * vec2(9.0, 22.0)) * 0.95 + 0.04);
-	vec3 col = tint.rgb * (fill + rim * 0.7) + hot.rgb * (rim * 0.85 + stripe);
-	COLOR = vec4(col, open * taper * keep * alpha);
-}" };
+	/// <summary>只留 x 在 side 那一边的部分（左半 side=-1 / 右半 side=1），沿 x=0 切开。</summary>
+	private static Vector2[] Half(Vector2[] pts, float side)
+	{
+		var o = new List<Vector2>();
+		for (int i = 0; i < pts.Length; i++)
+		{
+			Vector2 p = pts[i], q = pts[(i + 1) % pts.Length];
+			bool pin = p.X * side >= 0f, qin = q.X * side >= 0f;
+			if (pin)
+			{
+				o.Add(p);
+			}
+			if (pin != qin)
+			{
+				float t = p.X / (p.X - q.X);
+				o.Add(p.Lerp(q, t));
+			}
+		}
+		return o.ToArray();
+	}
 
 	/// <summary>
-	/// 防御（格挡）：前臂竖起那一刻（cast_guard 的 guard_a2），拳头上白闪 + 红光爆开、空间一扭，身前"唰"地张开一面弧形光盾，
-	/// 一道光从上扫到下，停一下，盾碎成光片散掉。fist = 拳头，shield = 盾的中心。~0.9s。
+	/// 防御（格挡，2026-11-01 重做成 P5 平面风）：前臂竖起那一刻（cast_guard 的 guard_a2），拳头上一个小锯齿爆点；
+	/// 身前一面平面盾（黑描边 → 白边 → 红面 → 黑底上原版的怪盗面具）左右两半从两边「咔」地拍合（过冲），
+	/// 合上那一下白边闪一圈、红网点往外扩、速度线；盾上方原版的「GUARD」字（红色错位影）弹出来；
+	/// 停一会儿，盾裂成两半往两边掉、碎成平面碎片。fist = 拳头，shield = 盾的中心。~1s。
 	/// </summary>
 	public static void Guard(Control layer, Vector2 fist, Vector2 shield, float height, float facing = 1f)
 	{
-		Glow.Flash(layer, fist, Pal5.Hot, 150f, 0.14f);
-		Glow.Flash(layer, fist, Pal5.Bright, 340f, 0.3f);
-		Glow.Ripple(layer, shield, height * 1.3f, 0.5f, 0.022f, 1.6f);
-		Glow.Sparks(layer, fist, 26, 160f, 520f, 0.5f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 300f, 0.1f, 0.3f,
-			new Vector2(facing, -0.3f), 70f);
-		Fx.Shake(1);
-
-		float w = height * 0.5f;
-		Node2D root = Fx.Root(layer, shield, "P5Guard", 1.1);
-		ColorRect r = new()
+		Ink.Burst(layer, fist, 60f, 9, 0.2f);
+		float h = height * 0.78f;
+		shield += new Vector2(h * 0.18f * facing, 0f);                // 往敌人那边挪一点，少挡 Joker
+		Node2D root = Fx.Root(layer, shield, "P5Guard", 1.15);
+		// 合上那一下的白色光边（在盾后面，往外扩一圈）
+		Polygon2D flash = Fx.Poly(root, Ink.Scale(ShieldShape(h), 1f, 24f), Ink.White);
+		flash.Visible = false;
+		root.Skew = -0.12f * facing;
+		root.Scale = new Vector2(0.86f, 1f);                       // 侧着一点：盾朝敌人那边
+		Vector2[] shape = ShieldShape(h);
+		var layers = new (float K, float Pad, Color C)[] { (1f, 14f, Ink.Black), (1f, 0f, Ink.White), (0.86f, 0f, Ink.Red), (0.6f, 0f, Ink.Black) };
+		var halves = new Node2D[2];
+		for (int side = 0; side < 2; side++)
 		{
-			Size = new Vector2(w, height), Position = new Vector2(-w / 2f, -height / 2f), PivotOffset = new Vector2(w / 2f, height / 2f),
-			Scale = new Vector2(facing, 1f), MouseFilter = Control.MouseFilterEnum.Ignore,
-			Material = new ShaderMaterial { Shader = Barrier },
-		};
-		root.AddChild(r);
-		void Set(string n, Variant v) => ((ShaderMaterial)r.Material).SetShaderParameter(n, v);
-		Set("grow", 0f);
-		bool shattered = false;
-		Fx.Animate(root, 0, 0.9, t =>
-		{
-			Set("grow", Ease5.OutBack(Ease5.Seg(t, 0f, 0.14f)) * 1.0f);
-			Set("scan", Mathf.Lerp(-1.2f, 1.2f, Fx.OutCubic(Ease5.Seg(t, 0.12f, 0.4f))));
-			Set("dissolve", Fx.InCubic(Ease5.Seg(t, 0.62f, 0.38f)));
-			// 刚张开时亮一下、往前顶一点（过冲）
-			float pop = 1f - Ease5.Seg(t, 0f, 0.2f);
-			Set("alpha", 1f + 0.8f * pop);
-			root.Position = shield + new Vector2(facing * 14f * Mathf.Sin(Ease5.Seg(t, 0f, 0.22f) * Mathf.Pi), 0f);
-			if (!shattered && t >= 0.64f)
+			float sg = side == 0 ? -1f : 1f;
+			Node2D half = new();
+			root.AddChild(half);
+			halves[side] = half;
+			foreach (var (k, pad, c) in layers)
 			{
-				shattered = true;
-				Glow.Shards(layer, shield + new Vector2(facing * w * 0.2f, 0f), 10, 0.7f, new Vector2(facing, 0f), 1.2f);
-				for (int i = 0; i < 3; i++)
+				Fx.Poly(half, Half(Ink.Scale(shape, k, pad), sg), c);
+			}
+		}
+		// 面具：原版的怪盗面具贴在黑底上（跟着右半一起来，合上时正好居中）
+		Node2D maskHolder = new() { Position = new Vector2(0f, -h * 0.03f) };
+		halves[1].AddChild(maskHolder);
+		if (Ink.Sprite(maskHolder, "ui_mask", Colors.White, 2f) is Sprite2D mask)
+		{
+			mask.Scale = Vector2.One * (h * 0.36f / 476f);
+		}
+		Node2D word = new() { Position = new Vector2(0f, -h * 0.8f), Rotation = -0.14f, Visible = false };
+		root.AddChild(word);
+		Sprite2D? wordRed = Ink.Sprite(word, "ui_guard", Ink.Red, 4f);
+		Sprite2D? wordWhite = Ink.Sprite(word, "ui_guard", Ink.White, 4f);
+		if (wordRed != null)
+		{
+			wordRed.Position = new Vector2(8f, 7f);
+		}
+		float wk = h * 0.7f / 540f;
+		bool closed = false, broke = false;
+		const float life = 1.05f, shut = 0.12f, breakAt = 0.72f;
+		Fx.Animate(root, 0, life, t =>
+		{
+			float s = t * life;
+			float close = Ease5.OutBack(Mathf.Min(1f, s / shut));
+			for (int side = 0; side < 2; side++)
+			{
+				float sg = side == 0 ? -1f : 1f;
+				if (s < breakAt)
 				{
-					Glow.Glint(layer, shield + new Vector2(facing * w * 0.28f, height * Fx.Rand(-0.35f, 0.35f)), Fx.Rand(0.7f, 1.1f), i * 0.05f);
+					halves[side].Position = new Vector2(sg * h * 0.9f * (1f - close), 0f);
+					halves[side].Rotation = sg * 0.35f * (1f - close);
+					halves[side].Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, s / 0.04f));
 				}
+				else
+				{
+					// 裂开：两半往两边倒、往下掉、转开，缩没
+					float b = (s - breakAt) / (life - breakAt);
+					halves[side].Position = new Vector2(sg * (18f + 160f * b), 380f * b * b);
+					halves[side].Rotation = sg * 0.7f * b;
+					halves[side].Scale = Vector2.One * (1f - Fx.InCubic(b));
+				}
+			}
+			if (!closed && s >= shut * 0.8f)
+			{
+				closed = true;
+				flash.Visible = true;
+				word.Visible = true;
+				Ink.Halftone(layer, shield, h * 0.95f, 0.4f);
+				Ink.Streaks(layer, shield, 14, h * 0.4f, h * 1.05f, 0.24f);
+				Ink.Twinkle(layer, shield + new Vector2(h * 0.3f * facing, -h * 0.42f), 80f, 0.03f);
+				layer.MoveChild(root, layer.GetChildCount() - 1);        // 网点 / 速度线在盾后面
+				Fx.Shake(1);
+			}
+			float fl = Ease5.Seg(s, shut * 0.8f, 0.1f);
+			flash.Modulate = new Color(1f, 1f, 1f, 1f - fl);
+			flash.Scale = Vector2.One * (1f + 0.22f * fl);
+			if (wordWhite != null && wordRed != null)
+			{
+				float wp = Ease5.Seg(s, shut * 0.8f, 0.14f), wout = Ease5.Seg(s, breakAt - 0.08f, 0.14f);
+				float sc = wk * Mathf.Lerp(1.7f, 1f, Ease5.OutBack(wp)) * (1f - Fx.InCubic(wout));
+				wordWhite.Scale = wordRed.Scale = Vector2.One * sc;
+				word.Position = new Vector2(-40f * wout * facing, -h * 0.8f - 30f * wout);
+			}
+			if (!broke && s >= breakAt)
+			{
+				broke = true;
+				Ink.Shards(layer, shield, 14, 30f, new Vector2(0f, -1f), Mathf.Pi, 640f, 0.6f, 0f,
+					new[] { Ink.Red, Ink.White, Ink.Black, Ink.Red });
 			}
 		});
 	}
