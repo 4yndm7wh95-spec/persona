@@ -308,6 +308,7 @@ void fragment() {
 		_root = Fx.Root(front, center, "P5PersonaMask", 600);
 		_root.Rotation = roll;
 		_fire = Layer(_root, w, h, facing, cy);
+		Set(_fire, "outline", 0f);                               // 不画勾勒面具的亮边（用户 2026-11-01：只要火烧出大概的面具形状）
 		// 面具上方的热浪
 		_haze = CardFx.HazeRect(_root, new Vector2(0f, -h * 0.45f), w * 0.9f, h * 0.7f, 0.004f);
 		// 从中间往两边点燃，火舌随后长出来；烧满的那一刻整体亮一下、往外一胀

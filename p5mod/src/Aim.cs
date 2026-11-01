@@ -269,10 +269,13 @@ public static class Aim
 		}
 		if (stance == Stance.Mask && Joker.FxLayer(back: true) is Control back)
 		{
-			Fx.After(back, 0.04, () => CutIn.Eyes(back));            // Persona 召唤：眼神特写（背景层，用户 2026-10-29）
-			if (Joker.FxLayer() is Control front)
-				Fx.After(front, 0.04, () => PhantomFx.Summon(front, back,
-					Joker.PosePoint(node, ReadyFx.MaskFace), Joker.PosePoint(node, ReadyFx.Feet), Joker.Facing(node)));
+			// Persona 召唤：背景变成红黑网点的舞台、集中线（SummonStage），原版眼神特写在上面撕开（都在背景层，用户 2026-10-29）
+			Vector2 head = Joker.PosePoint(node, ReadyFx.MaskFace);
+			Fx.After(back, 0.04, () =>
+			{
+				SummonStage.Play(back, head);
+				CutIn.Eyes(back);
+			});
 		}
 		return true;
 	}

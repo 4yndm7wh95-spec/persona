@@ -30,23 +30,18 @@ public partial class Preview : Node2D
 	// 游戏里的时序：打击 attack 动画开始后 0.15s 结算伤害（静默猎手 AttackAnimDelay），开枪 shiv 0.2s 后
 	private static readonly Dictionary<string, Action<Preview>> Scenarios = new()
 	{
-		["phantom_summon"] = p =>
+		// 召唤：拿起技能牌 → 打出 → 舞台 + 原版眼神特写 → 咒怨
+		["summon"] = p =>
 		{
-			p.Ready(0.25, Stance.Mask, "mask", "cast_from_mask", play: true);
+			p.Ready(0.25, Stance.Mask, "mask", "cast_from_mask", play: true, lockOn: Enemy);
 			p.At(1.89, () =>
 			{
+				SummonStage.Play(p._back, Pose(1010, 215));
 				CutIn.Eyes(p._back);
-				PhantomFx.Summon(p._front, p._back, Pose(1010, 215), JokerFeet);
 			});
 			p.At(1.85, () => CardFx.Eiha(p._front, Pose(1010, 215), Enemy,
 				Enemy + new Vector2(0, -170), c => p._enemies[Enemy].Modulate = c));
 		},
-		["phantom_direct"] = p => p.At(0.45, () =>
-		{
-			p._joker?.Play("cast");
-			CutIn.Eyes(p._back);
-			PhantomFx.Summon(p._front, p._back, Pose(1010, 215), JokerFeet);
-		}),
 		["damage"] = p =>
 		{
 			p.Strike(0.3, Enemy, 7);
@@ -104,7 +99,7 @@ public partial class Preview : Node2D
 			p.Hit(3.0 + 1.6 + 0.15, Enemy, 4, false);
 			p.At(3.0 + 1.6, () => CardFx.Weaken(p._front, Enemy, Enemy + new Vector2(0f, -170f), 0.12f));
 			p.Ready(6.4, Stance.Mask, "mask", "cast_from_mask", play: true, lockOn: Enemy2);
-			p.At(6.4 + 1.64, () => CutIn.Eyes(p._back));
+			p.At(6.4 + 1.64, () => { SummonStage.Play(p._back, Pose(1010, 215)); CutIn.Eyes(p._back); });
 			p.At(6.4 + 1.6, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy2, Enemy2 + new Vector2(0f, -128f), c => p._enemies[Enemy2].Modulate = c));
 		},
 		// 只看蓝焰墙本身（放大，对照用户的参考图调细节）
