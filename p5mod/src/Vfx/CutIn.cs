@@ -215,7 +215,8 @@ void fragment() {
 		Fx.FreeAfter(view, life + 0.1);
 		Node2D root = new();
 		view.AddChild(root);
-		float scale = Mathf.Min(screen.X / clip.Canvas[0], screen.Y / clip.Canvas[1]) * 0.72f;
+		// 铺满整个屏幕（用户 2026-11-01：缩到 72% 左右两头空着很怪；原版这条带子本来就是横贯全屏的）
+		float scale = Mathf.Max(screen.X / clip.Canvas[0], screen.Y / clip.Canvas[1]);
 		root.Position = (screen - new Vector2(clip.Canvas[0], clip.Canvas[1]) * scale) * 0.5f;
 		root.Scale = Vector2.One * scale;
 		MeshInstance2D?[] nodes = new MeshInstance2D?[parts.Length];
