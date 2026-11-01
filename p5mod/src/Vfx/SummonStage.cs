@@ -21,7 +21,34 @@ public static class SummonStage
 	/// <summary>劈开的两半飞多远（0～1 → 位移倍数）：猛地裂开，然后加速飞出画面。</summary>
 	public static float SplitCurve(float e) => e <= 0f ? 0f : 0.04f * Fx.OutCubic(Mathf.Min(1f, e / 0.25f)) + 1.3f * Fx.InCubic(e);
 
-	private static Shader? _shader;
+	private static Shader? _shader, _slash;
+
+	/// <summary>
+	/// 劈开前的那一刀（最前面一层，加法）：一道白热刀光沿撕口从左往右扫过整个屏幕（头部最亮、尾巴渐暗），外圈红光；
+	/// 扫完整条爆亮，之后在裂缝里留一点红热余光慢慢退掉。cut：刀头扫到哪（u）；burst：爆亮；after：余光。
+	/// </summary>
+	private static Shader Slash => _slash ??= new Shader { Code = @"
+shader_type canvas_item;
+render_mode blend_add;
+uniform vec2 res = vec2(1920.0, 1080.0);
+uniform float cut = -1.0;
+uniform float burst = 0.0;
+uniform float after = 0.0;
+" + CutIn.TearGlsl + @"
+void fragment() {
+	float l = tearLine(UV.x);
+	float d = abs(UV.y - l) * res.y;                  // 离撕口多少像素
+	float behind = cut - UV.x;                        // 刀头后面多远（u）
+	float on = step(0.0, behind) * step(-0.5, cut);
+	float tail = exp(-max(behind, 0.0) * 4.0);
+	float head = exp(-pow(behind / 0.03, 2.0));
+	float core = smoothstep(4.0 + 6.0 * head, 0.0, d);
+	float glow = exp(-d / (14.0 + 30.0 * head));
+	float k = on * (tail * 0.55 + head * 1.2) + burst;
+	vec3 col = vec3(1.0, 0.97, 0.94) * core * k * 1.4 + vec3(1.0, 0.1, 0.12) * glow * k;
+	col += vec3(1.0, 0.25, 0.15) * exp(-d / 26.0) * after * 0.7;
+	COLOR = vec4(col, 1.0);
+}" };
 
 	private static Shader Shader => _shader ??= new Shader { Code = @"
 shader_type canvas_item;
@@ -83,8 +110,11 @@ void fragment() {
 	COLOR = vec4(col, 1.0);
 }" };
 
+	/// <summary>撕口大致的高度（不含锯齿，和 CutIn.TearGlsl 的 tearLine 一样的斜线）。</summary>
+	private static float TearY(float u) => 0.5f - (u - 0.5f) * 0.3f;
+
 	/// <summary>放一次召唤舞台。back = 背景特效层；head = Joker 头部（屏幕坐标），集中线的中心。</summary>
-	public static void Play(Control back, Vector2 head)
+	public static void Play(Control back, Control front, Vector2 head)
 	{
 		Vector2 screen = Fx.Screen(back);
 		Node2D root = Fx.Root(back, Vector2.Zero, "P5SummonStage", Length + 0.1);
@@ -100,10 +130,35 @@ void fragment() {
 		m.SetShaderParameter("tseed", TearSeed);
 		Fx.Clock(rect);
 		Fx.Shake(3);
+		// 那一刀（最前面一层）
+		Node2D slashRoot = Fx.Root(front, Vector2.Zero, "P5SummonSlash", Length + 0.1);
+		slashRoot.GlobalPosition = Vector2.Zero;
+		ColorRect slash = new() { Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Slash } };
+		slashRoot.AddChild(slash);
+		ShaderMaterial sm = (ShaderMaterial)slash.Material;
+		sm.SetShaderParameter("res", screen);
+		sm.SetShaderParameter("tseed", TearSeed);
+		const float slashTime = 0.07f;
+		int sparked = 0;
 		bool torn = false;
 		Fx.Animate(root, 0, Length, t =>
 		{
 			float s = t * Length;
+			// 刀光：SplitAt 前 slashTime 秒从左扫到右；扫完爆亮；裂开后余光退掉
+			float c = (s - (CutIn.SplitAt - slashTime)) / slashTime;
+			sm.SetShaderParameter("cut", c < 0f ? -1f : Mathf.Lerp(-0.05f, 1.25f, Mathf.Min(1f, c)));
+			float since = s - CutIn.SplitAt;
+			sm.SetShaderParameter("burst", since < 0f ? 0f : 1.6f * Mathf.Exp(-since / 0.035f));
+			sm.SetShaderParameter("after", since < 0f ? 0f : Mathf.Exp(-since / 0.12f));
+			// 刀头走过的地方崩火星
+			while (c > 0f && sparked < 6 && Mathf.Min(1f, c) * 1.25f - 0.05f > sparked / 6f + 0.08f)
+			{
+				float u = sparked / 6f + 0.08f;
+				Vector2 at = new(u * screen.X, TearY(u) * screen.Y);
+				Glow.Sparks(front, at, 14, 250f, 900f, 0.4f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 500f, 0.08f, 0.24f,
+					new Vector2(0.4f, -1f), 70f);
+				sparked++;
+			}
 			float e = Mathf.Clamp((s - CutIn.SplitAt) / CutIn.SplitTime, 0f, 1f);
 			m.SetShaderParameter("amount", Mathf.Min(1f, s / 0.04f) * (1f - Mathf.Clamp((e - 0.75f) / 0.25f, 0f, 1f)));
 			m.SetShaderParameter("split", SplitCurve(e));

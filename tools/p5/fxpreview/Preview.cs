@@ -36,7 +36,7 @@ public partial class Preview : Node2D
 			p.Ready(0.25, Stance.Mask, "mask", "cast_from_mask", play: true, lockOn: Enemy);
 			p.At(1.89, () =>
 			{
-				SummonStage.Play(p._back, Pose(1010, 215));
+				SummonStage.Play(p._back, p._front, Pose(1010, 215));
 				CutIn.Eyes(p._back);
 			});
 			p.At(1.85, () => CardFx.Eiha(p._front, Pose(1010, 215), Enemy,
@@ -99,7 +99,7 @@ public partial class Preview : Node2D
 			p.Hit(3.0 + 1.6 + 0.15, Enemy, 4, false);
 			p.At(3.0 + 1.6, () => CardFx.Weaken(p._front, Enemy, Enemy + new Vector2(0f, -170f), 0.12f));
 			p.Ready(6.4, Stance.Mask, "mask", "cast_from_mask", play: true, lockOn: Enemy2);
-			p.At(6.4 + 1.64, () => { SummonStage.Play(p._back, Pose(1010, 215)); CutIn.Eyes(p._back); });
+			p.At(6.4 + 1.64, () => { SummonStage.Play(p._back, p._front, Pose(1010, 215)); CutIn.Eyes(p._back); });
 			p.At(6.4 + 1.6, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy2, Enemy2 + new Vector2(0f, -128f), c => p._enemies[Enemy2].Modulate = c));
 		},
 		// 只看蓝焰墙本身（放大，对照用户的参考图调细节）
@@ -283,19 +283,6 @@ public partial class Preview : Node2D
 		Stage.NowMs = () => (ulong)(_clock * 1000.0);
 		GD.Seed(52029);
 		Stage.Shake = s => { _shake = s; _shakeLeft = 0.25f; };
-		BodyAura.CloneBody = () =>
-		{
-			(Node2D, Action<Material>)? made = null;
-			Clone(c =>
-			{
-				if (c is SpinePlayer sp)
-				{
-					sp.Queue("mask_loop", true);
-				}
-				made = (c, m => c.Material = m);
-			});
-			return made;
-		};
 
 		_world = new Node2D();
 		AddChild(_world);
