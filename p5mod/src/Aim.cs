@@ -278,7 +278,7 @@ public static class Aim
 				// 亚森在舞台前、眼神特写后（特写被劈开时露出来），比 Joker 高大一半多
 				Vector2 feet = Joker.PosePoint(node, ReadyFx.Feet);
 				float tall = (feet - Joker.PosePoint(node, new Vector2(815f, 120f))).Length();
-				Persona.Arsene(back, feet, tall * 1.6f, Joker.Facing(node));
+				Persona.Arsene(back, feet, tall * 1.35f, Joker.Facing(node));
 				CutIn.Eyes(back);
 			});
 		}
