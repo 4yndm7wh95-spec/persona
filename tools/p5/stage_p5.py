@@ -137,6 +137,8 @@ def fx_textures():
     for src in sorted((GEN_CODEX / "ink").glob("*.png")) if (GEN_CODEX / "ink").exists() else []:
         if src.stem.startswith(("ink_slash_", "ink_splat_", "guard_")):
             im = Image.open(src).convert("RGBA")
+            a = im.getchannel("A").point(lambda v: 0 if v < 20 else v)     # Codex can't clean stray specks (no python there)
+            im.putalpha(a)
             k = min(1.0, 1024 / max(im.size))
             yield src.stem, im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS) if k < 1 else im
     # curse hands for Eiha (Codex, art/p5/fx/gen_codex/curse_hands, 1024x1536) at half size
