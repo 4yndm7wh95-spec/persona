@@ -6,8 +6,7 @@ namespace P5Joker;
 /// Persona 召唤的「舞台」（P5 的冲击力来自整屏的平面语言，而不是贴在人身边的光）。全屏着色器放在背景特效层（人物、敌人后面），读后面的画面：
 /// · 入场（2026-11-01 重做）：5 条斜切的红色纸条左右交替「啪啪」拍进来（每条 0.035s 错开，0.1s 滑到位、缓出），
 ///   前沿是白纸边 + 黑描边；铺满后背景是红黑高反差 + 红网点 + 从 Joker 头部放射的集中线。原版眼神特写在上面撕开。
-/// · 爪痕：三道平行的漫画刀痕（黑芯、白锐边、两头尖）从右上往左下一笔划过整个画面（最前面一层，盖过人物），划完顿两帧。
-/// · 退场：舞台和眼神特写沿爪痕和裂缝碎成十几块纸片往外抛、打转、翻面（背面白纸）、往下掉（CutIn.ShatterGlsl），露出后面的战斗画面。
+/// · 退场：眼神特写像玻璃一样碎掉（CutIn.Shatter），背景同时白闪着退掉。
 /// 全部实时渲染，不用贴图。
 /// </summary>
 public static class SummonStage
@@ -17,34 +16,7 @@ public static class SummonStage
 	/// <summary>这一次召唤的碎法（舞台和眼神特写共用）。</summary>
 	public static float TearSeed;
 
-	private static Shader? _shader, _claw;
-
-	/// <summary>三道爪痕（最前面一层，普通混合）。cut 0～1：刀头划到哪；fade：碎开后淡掉。</summary>
-	private static Shader Claw => _claw ??= new Shader { Code = @"
-shader_type canvas_item;
-uniform float cut = 0.0;
-uniform float fade = 1.0;
-" + CutIn.ShatterGlsl + @"
-void fragment() {
-	float asp = sres.x / sres.y;
-	vec2 q = vec2(UV.x * asp, UV.y);
-	vec4 col = vec4(0.0);
-	for (int i = 0; i < 3; i++) {
-		vec2 c = clawC(asp) + clawN() * clawOff(i) + clawDir() * (float(i) - 1.0) * 0.06;    // 三道错开一点，中间那道最长
-		float len = 1.25 - abs(float(i) - 1.0) * 0.3;
-		float a = dot(q - c, clawDir()) / len + 0.5;                                          // 0 = 右上起笔，1 = 左下收笔
-		c += clawN() * 0.05 * sin(clamp(a, 0.0, 1.0) * 3.14159);                             // 略带弧度，像爪子划过
-		float head = cut * 1.15 - abs(float(i) - 1.0) * 0.06;                               // 中间那道先下
-		if (a < 0.0 || a > head || a > 1.0) continue;
-		float b = abs(dot(q - c, clawN())) * sres.y;                                        // 离中线多少像素
-		float w = 30.0 * pow(sin(clamp(a, 0.0, 1.0) * 3.14159), 0.6) * (0.75 + 0.25 * step(0.5, 1.0 - abs(float(i) - 1.0)));
-		float tip = smoothstep(head, head - 0.05, a);                                       // 刀头那一截更细更亮
-		if (b < w * 0.55 * tip + 1.0) col = vec4(0.02, 0.0, 0.01, 1.0);                       // 黑芯
-		else if (b < w * tip + 5.0) col = vec4(1.0, 0.98, 0.95, 1.0);                         // 白锐边
-		else if (b < w * tip + 10.0) col = max(col, vec4(0.9, 0.05, 0.1, 0.85));             // 外面一道细红
-	}
-	COLOR = vec4(col.rgb, col.a * fade);
-}" };
+	private static Shader? _shader;
 
 	private static Shader Shader => _shader ??= new Shader { Code = @"
 shader_type canvas_item;
@@ -120,7 +92,7 @@ void fragment() {
 	COLOR = vec4(col, 1.0);
 }" };
 
-	/// <summary>放一次召唤舞台。back = 背景特效层；front = 最前面一层（爪痕）；head = Joker 头部（屏幕坐标），集中线的中心。</summary>
+	/// <summary>放一次召唤舞台。back = 背景特效层；front = 最前面一层；head = Joker 头部（屏幕坐标），集中线的中心。</summary>
 	public static void Play(Control back, Control front, Vector2 head)
 	{
 		Vector2 screen = Fx.Screen(back);
@@ -137,34 +109,21 @@ void fragment() {
 		m.SetShaderParameter("seed", Fx.Rand(0f, 100f));
 		m.SetShaderParameter("tseed", TearSeed);
 		Fx.Clock(rect);
-		// 爪痕（最前面一层）
-		Node2D clawRoot = Fx.Root(front, Vector2.Zero, "P5SummonClaw", Length + 0.1);
-		clawRoot.GlobalPosition = Vector2.Zero;
-		ColorRect claw = new() { Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Claw } };
-		clawRoot.AddChild(claw);
-		ShaderMaterial cm = (ShaderMaterial)claw.Material;
-		cm.SetShaderParameter("sres", screen);
-		cm.SetShaderParameter("tseed", TearSeed);
-		cm.SetShaderParameter("cut", 0f);
-		bool clawed = false;
+		bool broke = false;
 		Fx.Animate(root, 0, Length, t =>
 		{
 			float s = t * Length;
 			m.SetShaderParameter("intro", s);
-			// 爪痕：SplitAt 前 ClawTime 秒起笔，缓出（快下笔、收笔慢一点）；碎开后 0.08s 淡掉
-			float c = Mathf.Clamp((s - (CutIn.SplitAt - CutIn.ClawTime)) / CutIn.ClawTime, 0f, 1f);
-			cm.SetShaderParameter("cut", 1f - Mathf.Pow(1f - c, 3f));
-			cm.SetShaderParameter("fade", 1f - Mathf.Clamp((s - CutIn.SplitAt - 0.05f) / 0.08f, 0f, 1f));
 			// 背景：横幅碎开（裂纹定格 0.05s 之后）那一下白闪着退掉，0.12s 缓出
 			float gone = Mathf.Clamp((s - CutIn.SplitAt - 0.05f) / 0.12f, 0f, 1f);
 			m.SetShaderParameter("amount", 1f - (1f - Mathf.Pow(1f - gone, 3f)));
 			// 白闪：纸条拍进来那一下（弱）、爪痕划完那一下
 			float fl = 0.12f * Mathf.Exp(-s / 0.05f) + (s >= CutIn.SplitAt + 0.05f ? 0.35f * Mathf.Exp(-(s - CutIn.SplitAt - 0.05f) / 0.05f) : 0f);
 			m.SetShaderParameter("flash", fl);
-			if (!clawed && s >= CutIn.SplitAt)
+			if (!broke && s >= CutIn.SplitAt + 0.05f)
 			{
-				clawed = true;
-				Fx.Shake(2);                                       // 整段召唤只在爪痕劈下这一下轻震一次
+				broke = true;
+				Fx.Shake(2);                                       // 整段召唤只在玻璃碎开这一下轻震一次
 			}
 		});
 	}

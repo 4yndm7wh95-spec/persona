@@ -23,7 +23,7 @@ public static class Persona
 			: 24 + (int)((1f - Mathf.Pow(1f - (s - AttackAt) / (ExitAt - AttackAt), 2f)) * (Frames - 24)));
 
 	/// <summary>亚森开始被蓝火吞掉离场的时刻（他出现后几秒）：和眼神特写、背景被劈开、咒焰收掉是同一刻。</summary>
-	public const float ExitAt = CutIn.SplitAt;
+	public const float ExitAt = CutIn.SplitAt + 0.05f;
 	private const float FrameW = 671f, FrameH = 461f, Fps = 30f;
 	// 图集一帧里的脚 / 身体中心（sources.json 的 cast 锚点 × 0.45）
 	private static readonly Vector2 Foot = new(350.8f, 412.3f), Body = new(350.8f, 273.4f);

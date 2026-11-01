@@ -242,7 +242,7 @@ void fragment() {
 	public const float Burst = 0.2f;
 
 	/// <summary>咒焰往中间一收的时刻（Eiha 开始后几秒）：和眼神特写被劈开、亚森离场同一刻。</summary>
-	public const float Collapse = Burst + (CutIn.SplitAt + 0.04f - 0.44f);
+	public const float Collapse = Burst + (CutIn.SplitAt + 0.05f + 0.04f - 0.44f);
 
 	public static void Eiha(Control layer, Vector2 mask, Vector2 center, Vector2 top, Action<Color>? tint = null)
 	{
