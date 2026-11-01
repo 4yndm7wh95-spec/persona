@@ -111,11 +111,22 @@ public static class JokerFx
 				CardFx.Weaken(layer, t.VfxSpawnPosition, t.GetTopOfHitbox(), 0.12f);
 				break;
 			case "DeadlyPoison" when t != null:
-				// 咒焰在亚森出手那一刻喷发（和游戏加中毒同一刻，TriggerAnimDelayPatch）
+			{
+				// 普通白卡（Tiers.Common）：不召唤，精简的咒怨（手 + 一根咒焰），和游戏加中毒（施法后 ~0.25s）同一刻；
+				// 万一被当成稀有召唤（改过稀有度的 mod），走完整版，对齐亚森出手（TriggerAnimDelayPatch）
 				CanvasItem? body = t.Visuals;
-				Fx.After(layer, Aim.SummonHit - CardFx.Burst, () => CardFx.Eiha(layer, Joker.PosePoint(joker, ReadyFx.MaskFace), t.VfxSpawnPosition,
-					t.GetTopOfHitbox(), body == null ? null : c => { if (GodotObject.IsInstanceValid(body)) { body.Modulate = c; } }));
+				Action<Color>? tint = body == null ? null : c => { if (GodotObject.IsInstanceValid(body)) { body.Modulate = c; } };
+				if (Tiers.For(card) >= Tier.Uncommon)
+				{
+					Fx.After(layer, Aim.SummonHit - CardFx.Burst, () => CardFx.Eiha(layer, Joker.PosePoint(joker, ReadyFx.MaskFace), t.VfxSpawnPosition,
+						t.GetTopOfHitbox(), tint));
+				}
+				else
+				{
+					CardFx.CurseLight(layer, t.VfxSpawnPosition, t.GetTopOfHitbox(), tint);
+				}
 				break;
+			}
 		}
 	}
 
