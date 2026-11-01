@@ -19,7 +19,8 @@ public static class Persona
 
 	/// <summary>动作播到第几帧：出手前加速（24 帧 / 0.4s），之后按 30fps 收尾。</summary>
 	private static int FrameAt(float s) =>
-		Mathf.Min(Frames - 1, s < AttackAt ? (int)(s / AttackAt * 24f) : 24 + (int)((s - AttackAt) / (ExitAt - AttackAt) * (Frames - 24)));
+		Mathf.Min(Frames - 1, s < AttackAt ? (int)(Mathf.SmoothStep(0f, 1f, s / AttackAt) * 24f)        // 起势慢、出手快、收势慢（不是匀速）
+			: 24 + (int)((1f - Mathf.Pow(1f - (s - AttackAt) / (ExitAt - AttackAt), 2f)) * (Frames - 24)));
 
 	/// <summary>亚森开始被蓝火吞掉离场的时刻（他出现后几秒）：和眼神特写、背景被劈开、咒焰收掉是同一刻。</summary>
 	public const float ExitAt = CutIn.SplitAt;

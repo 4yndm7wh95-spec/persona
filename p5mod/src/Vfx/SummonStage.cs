@@ -3,51 +3,47 @@ using Godot;
 namespace P5Joker;
 
 /// <summary>
-/// Persona 召唤的「舞台」（2026-11-01：P5 的冲击力来自整屏的平面语言，而不是贴在人身边的光）。
-/// 一块全屏着色器放在背景特效层（人物、敌人后面），读后面的画面：
-/// · 入场：从 Joker 头部往外锯齿圆形扩散（0.36s，前沿一圈亮红），背景变成红黑高反差 + 红色网点（亮度分三档：黑 / 深红 / 红网点，高光偏粉白），
-///   从 Joker 头部放射漫画集中线（每两帧换一次），四周压暗。人物和敌人在前面不受影响，像剪影一样跳出来；原版眼神特写在这块舞台上撕开。
-/// · 退场：一道撕纸的锯齿斜线从左下扫到右上，扫过的地方恢复原画面，撕口是白纸边 + 黑描边，正好接上眼神特写合拢的那一拍。
-/// 全部实时渲染，不用贴图、不画几何。
+/// Persona 召唤的「舞台」（P5 的冲击力来自整屏的平面语言，而不是贴在人身边的光）。全屏着色器放在背景特效层（人物、敌人后面），读后面的画面：
+/// · 入场（2026-11-01 重做）：5 条斜切的红色纸条左右交替「啪啪」拍进来（每条 0.035s 错开，0.1s 滑到位、缓出），
+///   前沿是白纸边 + 黑描边；铺满后背景是红黑高反差 + 红网点 + 从 Joker 头部放射的集中线。原版眼神特写在上面撕开。
+/// · 爪痕：三道平行的漫画刀痕（黑芯、白锐边、两头尖）从右上往左下一笔划过整个画面（最前面一层，盖过人物），划完顿两帧。
+/// · 退场：舞台和眼神特写沿爪痕和裂缝碎成十几块纸片往外抛、打转、翻面（背面白纸）、往下掉（CutIn.ShatterGlsl），露出后面的战斗画面。
+/// 全部实时渲染，不用贴图。
 /// </summary>
 public static class SummonStage
 {
-	/// <summary>舞台持续多久：和眼神特写一起在 CutIn.SplitAt 被同一条撕口劈开。</summary>
-	public const float Length = CutIn.SplitAt + CutIn.SplitTime + 0.04f;
+	public const float Length = CutIn.ShatterAt + CutIn.ShatterTime + 0.05f;
 
-	/// <summary>这一次召唤的撕口（舞台和眼神特写共用同一条）。</summary>
+	/// <summary>这一次召唤的碎法（舞台和眼神特写共用）。</summary>
 	public static float TearSeed;
 
-	/// <summary>劈开的两半飞多远（0～1 → 位移倍数）：猛地裂开，然后加速飞出画面。</summary>
-	public static float SplitCurve(float e) => e <= 0f ? 0f : 0.04f * Fx.OutCubic(Mathf.Min(1f, e / 0.25f)) + 1.3f * Fx.InCubic(e);
+	private static Shader? _shader, _claw;
 
-	private static Shader? _shader, _slash;
-
-	/// <summary>
-	/// 劈开前的那一刀（最前面一层，加法）：一道白热刀光沿撕口从左往右扫过整个屏幕（头部最亮、尾巴渐暗），外圈红光；
-	/// 扫完整条爆亮，之后在裂缝里留一点红热余光慢慢退掉。cut：刀头扫到哪（u）；burst：爆亮；after：余光。
-	/// </summary>
-	private static Shader Slash => _slash ??= new Shader { Code = @"
+	/// <summary>三道爪痕（最前面一层，普通混合）。cut 0～1：刀头划到哪；fade：碎开后淡掉。</summary>
+	private static Shader Claw => _claw ??= new Shader { Code = @"
 shader_type canvas_item;
-render_mode blend_add;
-uniform vec2 res = vec2(1920.0, 1080.0);
-uniform float cut = -1.0;
-uniform float burst = 0.0;
-uniform float after = 0.0;
-" + CutIn.TearGlsl + @"
+uniform float cut = 0.0;
+uniform float fade = 1.0;
+" + CutIn.ShatterGlsl + @"
 void fragment() {
-	float l = tearLine(UV.x);
-	float d = abs(UV.y - l) * res.y;                  // 离撕口多少像素
-	float behind = cut - UV.x;                        // 刀头后面多远（u）
-	float on = step(0.0, behind) * step(-0.5, cut);
-	float tail = exp(-max(behind, 0.0) * 4.0);
-	float head = exp(-pow(behind / 0.03, 2.0));
-	float core = smoothstep(4.0 + 6.0 * head, 0.0, d);
-	float glow = exp(-d / (14.0 + 30.0 * head));
-	float k = on * (tail * 0.55 + head * 1.2) + burst;
-	vec3 col = vec3(1.0, 0.97, 0.94) * core * k * 1.4 + vec3(1.0, 0.1, 0.12) * glow * k;
-	col += vec3(1.0, 0.25, 0.15) * exp(-d / 26.0) * after * 0.7;
-	COLOR = vec4(col, 1.0);
+	float asp = sres.x / sres.y;
+	vec2 q = vec2(UV.x * asp, UV.y);
+	vec4 col = vec4(0.0);
+	for (int i = 0; i < 3; i++) {
+		vec2 c = clawC(asp) + clawN() * clawOff(i) + clawDir() * (float(i) - 1.0) * 0.06;    // 三道错开一点，中间那道最长
+		float len = 1.25 - abs(float(i) - 1.0) * 0.3;
+		float a = dot(q - c, clawDir()) / len + 0.5;                                          // 0 = 右上起笔，1 = 左下收笔
+		c += clawN() * 0.05 * sin(clamp(a, 0.0, 1.0) * 3.14159);                             // 略带弧度，像爪子划过
+		float head = cut * 1.15 - abs(float(i) - 1.0) * 0.06;                               // 中间那道先下
+		if (a < 0.0 || a > head || a > 1.0) continue;
+		float b = abs(dot(q - c, clawN())) * sres.y;                                        // 离中线多少像素
+		float w = 30.0 * pow(sin(clamp(a, 0.0, 1.0) * 3.14159), 0.6) * (0.75 + 0.25 * step(0.5, 1.0 - abs(float(i) - 1.0)));
+		float tip = smoothstep(head, head - 0.05, a);                                       // 刀头那一截更细更亮
+		if (b < w * 0.55 * tip + 1.0) col = vec4(0.02, 0.0, 0.01, 1.0);                       // 黑芯
+		else if (b < w * tip + 5.0) col = vec4(1.0, 0.98, 0.95, 1.0);                         // 白锐边
+		else if (b < w * tip + 10.0) col = max(col, vec4(0.9, 0.05, 0.1, 0.85));             // 外面一道细红
+	}
+	COLOR = vec4(col.rgb, col.a * fade);
 }" };
 
 	private static Shader Shader => _shader ??= new Shader { Code = @"
@@ -55,11 +51,12 @@ shader_type canvas_item;
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
 uniform vec2 res = vec2(1920.0, 1080.0);
 uniform vec2 focus = vec2(0.25, 0.45);
-uniform float amount = 0.0;
-uniform float reveal = 2.0;     // 舞台从 Joker 头部往外扩散到多远（按屏幕高度算）
+uniform float intro = 1.0;      // 入场后几秒（纸条一条条拍进来）
+uniform float amount = 1.0;
 uniform float flash = 0.0;
-uniform float clock = 0.0;" + CutIn.TearGlsl + @"
+uniform float clock = 0.0;
 uniform float seed = 0.0;
+" + CutIn.ShatterGlsl + @"
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float h1(float x) { return hash(vec2(x, seed)); }
 float ln(float x) { float i = floor(x); return mix(h1(i), h1(i + 1.0), fract(x)); }
@@ -90,42 +87,44 @@ vec3 stage(vec2 suv, vec2 uv) {
 	st *= 1.0 - 0.55 * smoothstep(0.55, 1.15, r);
 	return st;
 }
+// 入场纸条：这一点盖上了吗（1 盖上，0.5 = 前沿白纸边，0.25 = 前沿黑描边，0 = 还没盖）
+float slat(vec2 uv) {
+	float asp = res.x / res.y;
+	vec2 q = vec2((uv.x - 0.5) * asp, uv.y - 0.5);
+	vec2 dir = normalize(vec2(1.0, -0.28)), n = vec2(-dir.y, dir.x);
+	float a = dot(q, dir), b = dot(q, n);
+	float i = clamp(floor((b + 0.66) / 0.264), 0.0, 4.0);
+	float p = clamp((intro - i * 0.035) / 0.1, 0.0, 1.0);
+	p = 1.0 - pow(1.0 - p, 4.0);                                     // 缓出：猛地滑进来、最后轻轻停住
+	float jag = (ln(b * 40.0 + i * 7.0) - 0.5) * 0.05 + pow(ln(b * 9.0 + i * 3.0), 5.0) * 0.06;
+	float edge = mod(i, 2.0) < 0.5 ? mix(-1.25, 1.25, p) + jag - a : a - (mix(1.25, -1.25, p) - jag);
+	if (p >= 1.0 || edge > 0.016) return edge > 0.0 ? 1.0 : 0.0;
+	return edge > 0.006 ? 0.5 : edge > 0.0 ? 0.25 : 0.0;
+}
 void fragment() {
 	vec3 src = texture(screen_tex, SCREEN_UV).rgb;
 	vec3 col = src;
-	// 劈开：上半往右上、下半往左下飞，中间露出原画面；撕口白纸边 + 黑描边（和眼神特写同一条线）
-	vec2 off = tearOff();
-	vec2 uU = UV - off, uL = UV + off;
-	float lU = tearLine(uU.x), lL = tearLine(uL.x);
-	if (uU.y < lU) {
-		col = stage(SCREEN_UV - off, uU);
-		if (uU.y > lU - tearPaper(uU.x)) col = vec3(0.985);
-		else if (uU.y > lU - tearPaper(uU.x) - 0.004 * step(0.0005, split)) col = vec3(0.02);
-	} else if (uL.y > lL) {
-		col = stage(SCREEN_UV + off, uL);
-		if (uL.y < lL + tearPaper(uL.x + 7.0)) col = vec3(0.985);
-		else if (uL.y < lL + tearPaper(uL.x + 7.0) + 0.004 * step(0.0005, split)) col = vec3(0.02);
+	vec2 s0; float back, edge;
+	if (shat < 0.0) {
+		float sl = slat(UV);
+		if (sl > 0.9) col = stage(SCREEN_UV, UV);
+		else if (sl > 0.4) col = vec3(0.985);
+		else if (sl > 0.1) col = vec3(0.02);
+	} else if (shatterSample(UV, s0, back, edge)) {
+		col = back > 0.5 ? vec3(0.82, 0.8, 0.78) : stage(s0, s0);
+		if (edge < 0.004) col = vec3(0.985);
+		else if (edge < 0.007) col = vec3(0.02);
 	}
-	// 入场：从头部往外的锯齿圆形扩散，前沿一圈亮红
-	vec2 dd = (UV - focus) * vec2(res.x / res.y, 1.0);
-	float ang = atan(dd.y, dd.x);
-	float edgeR = reveal + (ln(ang * 9.0 + 3.0) - 0.5) * 0.12 + (ln(ang * 31.0 + 7.0) - 0.5) * 0.04;
-	float dr = length(dd) - edgeR;
-	float inside = step(dr, 0.0);
-	float rim = smoothstep(0.035, 0.0, abs(dr)) * step(reveal, 1.9);
-	col = mix(src, col, amount * inside);
-	col = mix(col, vec3(1.0, 0.18, 0.2), rim * 0.85 * amount);
+	col = mix(src, col, amount);
 	col = mix(col, vec3(1.0), flash);
 	COLOR = vec4(col, 1.0);
 }" };
 
-	/// <summary>撕口大致的高度（不含锯齿，和 CutIn.TearGlsl 的 tearLine 一样的斜线）。</summary>
-	private static float TearY(float u) => 0.5f - (u - 0.5f) * 0.3f;
-
-	/// <summary>放一次召唤舞台。back = 背景特效层；head = Joker 头部（屏幕坐标），集中线的中心。</summary>
+	/// <summary>放一次召唤舞台。back = 背景特效层；front = 最前面一层（爪痕）；head = Joker 头部（屏幕坐标），集中线的中心。</summary>
 	public static void Play(Control back, Control front, Vector2 head)
 	{
 		Vector2 screen = Fx.Screen(back);
+		TearSeed = Fx.Rand(0f, 100f);
 		Node2D root = Fx.Root(back, Vector2.Zero, "P5SummonStage", Length + 0.1);
 		root.GlobalPosition = Vector2.Zero;
 		back.MoveChild(root, back.GetChildCount() - 1);
@@ -133,53 +132,39 @@ void fragment() {
 		root.AddChild(rect);
 		ShaderMaterial m = (ShaderMaterial)rect.Material;
 		m.SetShaderParameter("res", screen);
+		m.SetShaderParameter("sres", screen);
 		m.SetShaderParameter("focus", head / screen);
 		m.SetShaderParameter("seed", Fx.Rand(0f, 100f));
-		TearSeed = Fx.Rand(0f, 100f);
 		m.SetShaderParameter("tseed", TearSeed);
 		Fx.Clock(rect);
-		// 那一刀（最前面一层）
-		Node2D slashRoot = Fx.Root(front, Vector2.Zero, "P5SummonSlash", Length + 0.1);
-		slashRoot.GlobalPosition = Vector2.Zero;
-		ColorRect slash = new() { Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Slash } };
-		slashRoot.AddChild(slash);
-		ShaderMaterial sm = (ShaderMaterial)slash.Material;
-		sm.SetShaderParameter("res", screen);
-		sm.SetShaderParameter("tseed", TearSeed);
-		const float slashTime = 0.07f;
-		int sparked = 0;
-		bool torn = false;
+		// 爪痕（最前面一层）
+		Node2D clawRoot = Fx.Root(front, Vector2.Zero, "P5SummonClaw", Length + 0.1);
+		clawRoot.GlobalPosition = Vector2.Zero;
+		ColorRect claw = new() { Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Claw } };
+		clawRoot.AddChild(claw);
+		ShaderMaterial cm = (ShaderMaterial)claw.Material;
+		cm.SetShaderParameter("sres", screen);
+		cm.SetShaderParameter("tseed", TearSeed);
+		cm.SetShaderParameter("cut", 0f);
+		bool clawed = false;
 		Fx.Animate(root, 0, Length, t =>
 		{
 			float s = t * Length;
-			// 刀光：SplitAt 前 slashTime 秒从左扫到右；扫完爆亮；裂开后余光退掉
-			float c = (s - (CutIn.SplitAt - slashTime)) / slashTime;
-			sm.SetShaderParameter("cut", c < 0f ? -1f : Mathf.Lerp(-0.05f, 1.25f, Mathf.Min(1f, c)));
-			float since = s - CutIn.SplitAt;
-			sm.SetShaderParameter("burst", since < 0f ? 0f : 1.6f * Mathf.Exp(-since / 0.035f));
-			sm.SetShaderParameter("after", since < 0f ? 0f : Mathf.Exp(-since / 0.12f));
-			// 刀头走过的地方崩火星
-			while (c > 0f && sparked < 6 && Mathf.Min(1f, c) * 1.25f - 0.05f > sparked / 6f + 0.08f)
-			{
-				float u = sparked / 6f + 0.08f;
-				Vector2 at = new(u * screen.X, TearY(u) * screen.Y);
-				Glow.Sparks(front, at, 14, 250f, 900f, 0.4f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 500f, 0.08f, 0.24f,
-					new Vector2(0.4f, -1f), 70f);
-				sparked++;
-			}
-			float e = Mathf.Clamp((s - CutIn.SplitAt) / CutIn.SplitTime, 0f, 1f);
-			m.SetShaderParameter("amount", 1f - Mathf.Clamp((e - 0.75f) / 0.25f, 0f, 1f));
-			m.SetShaderParameter("reveal", s < 0.2f ? Mathf.Lerp(0.03f, 1.9f, Mathf.SmoothStep(0f, 1f, s / 0.2f)) : 2f);
-			m.SetShaderParameter("split", SplitCurve(e));
-			// 白闪：施法那一下、图砸进来那一下、劈开那一下
-			float fl = 0.2f * Mathf.Exp(-s / 0.05f)
-				+ (s >= CutIn.ImpactAt ? 0.08f * Mathf.Exp(-(s - CutIn.ImpactAt) / 0.035f) : 0f)
-				+ (e > 0f ? 0.18f * Mathf.Exp(-(s - CutIn.SplitAt) / 0.04f) : 0f);
+			m.SetShaderParameter("intro", s);
+			// 爪痕：SplitAt 前 ClawTime 秒起笔，缓出（快下笔、收笔慢一点）；碎开后 0.08s 淡掉
+			float c = Mathf.Clamp((s - (CutIn.SplitAt - CutIn.ClawTime)) / CutIn.ClawTime, 0f, 1f);
+			cm.SetShaderParameter("cut", 1f - Mathf.Pow(1f - c, 3f));
+			cm.SetShaderParameter("fade", 1f - Mathf.Clamp((s - CutIn.ShatterAt) / 0.08f, 0f, 1f));
+			float shat = s - CutIn.ShatterAt;
+			m.SetShaderParameter("shat", shat < 0f ? -1f : shat);
+			m.SetShaderParameter("amount", 1f - Mathf.Clamp((shat - CutIn.ShatterTime * 0.75f) / (CutIn.ShatterTime * 0.25f), 0f, 1f));
+			// 白闪：纸条拍进来那一下（弱）、爪痕划完那一下
+			float fl = 0.12f * Mathf.Exp(-s / 0.05f) + (s >= CutIn.SplitAt ? 0.22f * Mathf.Exp(-(s - CutIn.SplitAt) / 0.035f) : 0f);
 			m.SetShaderParameter("flash", fl);
-			if (!torn && e > 0f)
+			if (!clawed && s >= CutIn.SplitAt)
 			{
-				torn = true;
-				Fx.Shake(2);                                       // 整段召唤只在劈开这一下轻震一次（用户 2026-11-01：太晃、会晕）
+				clawed = true;
+				Fx.Shake(2);                                       // 整段召唤只在爪痕劈下这一下轻震一次
 			}
 		});
 	}
