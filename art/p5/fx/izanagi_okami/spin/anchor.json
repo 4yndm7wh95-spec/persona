@@ -1,0 +1,38 @@
+{
+  "coordinate_origin": "top-left",
+  "units": "pixels",
+  "canvas": [
+    824,
+    1024
+  ],
+  "fps": 30,
+  "frame_count": 51,
+  "source_action": "BPS0360_000_main_0006",
+  "source_package": "BASE.CPK",
+  "method": "original PS0360 model + original rotations only; izanagi_root rotation skipped",
+  "foot_anchor_semantics": "fixed ground reference (0,0,0) projected through action camera; not per-frame moving foot tracking",
+  "body_center_semantics": "fixed rest-space body center projected through action camera",
+  "anchors": {
+    "foot": [
+      366.553,
+      972.14
+    ],
+    "body_center": [
+      366.553,
+      697.025
+    ]
+  },
+  "crop_from_1536": [
+    291,
+    63,
+    1434,
+    1484
+  ],
+  "crop": [
+    291,
+    63,
+    1434,
+    1484
+  ],
+  "outline_px": 3
+}
