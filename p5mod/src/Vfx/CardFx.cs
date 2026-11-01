@@ -381,9 +381,10 @@ void fragment() {
 		// (贴图, 离脚底的横向偏移 × h, 高度 × h, 镜像, 压暗, 朝敌人倾斜的角度)
 		(string Tex, float X, float Height, bool Mirror, float Dim, float Lean)[] reach =
 		{
-			("hand_claw", -1.05f, 1.75f, false, 0f, 0.35f),
+			// 用户 2026-11-01：手心要朝着敌人 —— 只用看得到掌心的两张（reach 张开、grab 半握），不用露手背 / 指节的 claw、slam
+			("hand_grab", -1.05f, 1.75f, false, 0f, 0.35f),
 			("hand_reach", 0.95f, 1.9f, true, 0f, -0.3f),
-			("hand_grab", -0.25f, 1.5f, false, 0.6f, 0.08f),
+			("hand_reach", -0.25f, 1.4f, false, 0.6f, 0.08f),
 		};
 		List<(Hand Hand, float Lean, float Lag)> hands = new();
 		for (int i = 0; i < reach.Length; i++)
@@ -394,7 +395,7 @@ void fragment() {
 				hands.Add((hand, lean, i * 0.03f));
 			}
 		}
-		Hand? slam = MakeHand(layer, "hand_slam", feet + new Vector2(1.35f * h, 6f), 2.5f * h, true, 0f);
+		Hand? slam = MakeHand(layer, "hand_reach", feet + new Vector2(1.35f * h, 6f), 2.5f * h, true, 0f);   // 张开的掌心拍下去（不是手背）
 		// 钻出来：地面一闪、碎片往上崩
 		Fx.After(layer, emergeAt, () =>
 		{
