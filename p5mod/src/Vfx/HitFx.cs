@@ -74,7 +74,7 @@ public static class HitFx
 		Vector2 down2 = Vector2.Down.Rotated(a2) * (facing < 0f ? -1f : 1f);
 		Blade.Arc(layer, at + new Vector2(8f * facing, 4f) + down2 * 30f, a2, 400f, 34f, 42f, facing < 0f, 0.05f, 0.04f, 0.04f, 0.14f, true, 0.06f);
 		// +150ms：余韵，沿刀路的细速度线
-		Glow.SpeedLines(layer, at, Pal5.Bright, 10, 90f, 340f, 0.26f, 0.15f);
+		Ink.Streaks(layer, at, 10, 100f, 360f, 0.24f, 0.15f, 4f);                // 余韵：实色的红 / 白 / 黑细速度线（不发粉）
 	}
 
 	/// <summary>

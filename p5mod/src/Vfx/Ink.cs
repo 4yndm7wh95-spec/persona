@@ -306,7 +306,7 @@ void fragment() {
 			for (int i = 0; i < count; i++)
 			{
 				float a = dir == null ? Mathf.Tau * (i + Fx.Rand(-0.3f, 0.3f)) / count : baseAng + Fx.Rand(-spread, spread);
-				Polygon2D p = Fx.Poly(root, new Vector2[3], i % 3 == 0 ? White : Black);
+				Polygon2D p = Fx.Poly(root, new Vector2[3], i % 3 == 0 ? White : i % 3 == 1 ? Red : Black);
 				lines.Add((p, Vector2.Right.Rotated(a), Fx.Rand(0.6f, 1f), width * Fx.Rand(0.6f, 1.2f)));
 			}
 			Fx.Animate(root, 0, life, t =>

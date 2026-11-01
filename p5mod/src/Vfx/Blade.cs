@@ -4,7 +4,7 @@ namespace P5Joker;
 
 /// <summary>
 /// P5 的刀光（2026-11-01 设计说明 docs/p5/FX_DESIGN_HITS.md：做法照结城理 mod 的 Motifs.ArcSlash，材质换成 P5）。
-/// 一道窄长的月牙，三层：外层薄红辉光（加法）+ 中层实色绯红带 + 白芯（普通混合，硬）；头端一颗细长的十字闪带着运动方向。
+/// 一道窄长的月牙：外层红辉光（加法）+ 深红底 + 实色正红带 + 白芯（普通混合，硬）；头端一颗细长的十字闪带着运动方向。
 /// 时间轴四段：
 ///  入  tIn   —— 从一端「划」到另一端（OutExpo），头端十字闪领着走；
 ///  满  tFlash —— 整条闪白、往外鼓一下（白芯变粗、辉光提亮）；
@@ -24,8 +24,9 @@ public static class Blade
 			root.Rotation = angle;
 			root.Scale = new Vector2(1f, flip ? -1f : 1f);
 			const int n = 32;
-			Polygon2D glow = Fx.Poly(root, new Vector2[3], new Color(0.95f, 0.04f, 0.08f, 0.6f), additive: true);
-			Polygon2D band = Fx.Poly(root, new Vector2[3], new Color(0.9f, 0.05f, 0.09f));            // 实色绯红（不叠加，不会发粉）
+			Polygon2D glow = Fx.Poly(root, new Vector2[3], new Color(1f, 0f, 0.04f, 0.75f), additive: true);
+			Polygon2D shade = Fx.Poly(root, new Vector2[3], new Color(0.32f, 0f, 0.03f, 0.9f));      // 深红底：压住背景，红才「实」
+			Polygon2D band = Fx.Poly(root, new Vector2[3], new Color(1f, 0.02f, 0.07f));            // 实色绯红（不叠加，不会发粉）
 			Polygon2D core = Fx.Poly(root, new Vector2[3], new Color(1f, 0.97f, 0.96f));
 			// 头：细长的十字闪（前后长、上下短）+ 一小团红辉光
 			Node2D head = new();
@@ -64,9 +65,10 @@ public static class Blade
 				float swell = 1f + 0.2f * pulse + 0.08f * outU;
 				float thin = 1f - 0.6f * outU;
 				glow.Polygon = Crescent(a, b, thick * 1.0f, swell * thin);
-				band.Polygon = Crescent(a, b, thick * 0.42f, swell * thin);
-				core.Polygon = Crescent(a, b, thick * 0.17f, (1f + 0.9f * pulse) * thin);
-				float lift = 1f + 1.2f * pulse;
+				shade.Polygon = Crescent(a, b, thick * 0.72f, swell * thin);
+				band.Polygon = Crescent(a, b, thick * 0.58f, swell * thin);
+				core.Polygon = Crescent(a, b, thick * 0.14f, (1f + 0.9f * pulse) * thin);
+				float lift = 1f + 0.8f * pulse;
 				glow.Modulate = new Color(lift, lift, lift, 1f);
 				band.Modulate = new Color(1f + 0.25f * pulse, 1f + 0.25f * pulse, 1f + 0.25f * pulse, 1f);
 				head.Position = Point(Mathf.Min(b, 1f), -thick * 0.15f);
@@ -101,7 +103,7 @@ public static class Blade
 		{
 			Node2D root = Fx.Root(layer, at, "P5Ring", life + 0.05);
 			root.Scale = new Vector2(1f, squash);
-			Line2D ring = new() { Points = Fx.Circle(1f, 48), Closed = true, DefaultColor = new Color(1f, 0.2f, 0.24f), Material = Fx.Additive };
+			Line2D ring = new() { Points = Fx.Circle(1f, 48), Closed = true, DefaultColor = new Color(1f, 0.02f, 0.07f) };
 			Line2D hot = new() { Points = Fx.Circle(1f, 48), Closed = true, DefaultColor = new Color(1f, 0.95f, 0.94f) };
 			root.AddChild(ring);
 			root.AddChild(hot);
@@ -110,7 +112,7 @@ public static class Blade
 				float r = Mathf.Lerp(r0, r1, Ease5.OutExpo(t));
 				float w = width * (1f - Fx.OutCubic(t));
 				ring.Scale = hot.Scale = Vector2.One * r;
-				ring.Width = w * 2.4f / r;
+				ring.Width = w * 1.6f / r;
 				hot.Width = w * 0.6f / r;
 			});
 		});
