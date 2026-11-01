@@ -297,6 +297,25 @@ public static class AttackDelayPatch
 	}
 }
 
+/// <summary>
+/// Persona 召唤：牌在施法（TriggerAnim "Cast"）之后才结算（加中毒、扣血），把这段等待推到亚森出手的那一刻（Aim.SummonHit），
+/// 亚森出手、敌人身上炸开、数字跳出来是同一刻（用户 2026-11-01）。只改等待时间，不改结果。
+/// </summary>
+[HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.TriggerAnim))]
+public static class TriggerAnimDelayPatch
+{
+	public static void Prefix(Creature creature, string triggerName, ref float waitTime)
+	{
+		bool summon = false;
+		ModEntry.Safe("TriggerAnimDelay", () => summon = triggerName == "Cast" && creature.IsPlayer && Joker.Is(creature.Player)
+			&& NCombatRoom.Instance?.GetCreatureNode(creature) is NCreature node && Aim.TakeSummon(node));
+		if (summon)
+		{
+			waitTime = Godot.Mathf.Max(waitTime, Aim.SummonHit);
+		}
+	}
+}
+
 /// <summary>出牌那一刻（结算之前）：技能 / 能力牌 Joker 自己施法（Aim.PlayCast），放出牌特效；记下施法动作（Aim 改动画名时用）。</summary>
 [HarmonyPatch(typeof(Hook), nameof(Hook.BeforeCardPlayed))]
 public static class CardPlayedPatch

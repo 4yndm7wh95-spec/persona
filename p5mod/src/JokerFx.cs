@@ -111,9 +111,10 @@ public static class JokerFx
 				CardFx.Weaken(layer, t.VfxSpawnPosition, t.GetTopOfHitbox(), 0.12f);
 				break;
 			case "DeadlyPoison" when t != null:
+				// 咒焰在亚森出手那一刻喷发（和游戏加中毒同一刻，TriggerAnimDelayPatch）
 				CanvasItem? body = t.Visuals;
-				CardFx.Eiha(layer, Joker.PosePoint(joker, ReadyFx.MaskFace), t.VfxSpawnPosition, t.GetTopOfHitbox(),
-					body == null ? null : c => { if (GodotObject.IsInstanceValid(body)) { body.Modulate = c; } });
+				Fx.After(layer, Aim.SummonHit - CardFx.Burst, () => CardFx.Eiha(layer, Joker.PosePoint(joker, ReadyFx.MaskFace), t.VfxSpawnPosition,
+					t.GetTopOfHitbox(), body == null ? null : c => { if (GodotObject.IsInstanceValid(body)) { body.Modulate = c; } }));
 				break;
 		}
 	}

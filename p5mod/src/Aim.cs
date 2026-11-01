@@ -267,6 +267,7 @@ public static class Aim
 		}
 		if (stance == Stance.Mask && Joker.FxLayer(back: true) is Control back)
 		{
+			Summoning[node.GetInstanceId()] = Time.GetTicksMsec() + 1000;
 			// Persona 召唤：背景变成红黑网点的舞台、集中线（SummonStage），原版眼神特写在上面撕开（都在背景层，用户 2026-10-29）
 			Vector2 head = Joker.PosePoint(node, ReadyFx.MaskFace);
 			Fx.After(back, 0.04, () =>
@@ -284,6 +285,16 @@ public static class Aim
 		}
 		return true;
 	}
+
+	/// <summary>召唤时亚森出手的时刻（施法后几秒）：游戏结算这张牌（中毒、伤害）的等待被推到这一刻（TriggerAnimDelayPatch），出牌特效也对齐到这一刻。</summary>
+	public const float SummonHit = 0.04f + Persona.AttackAt;
+
+	/// <summary>正在召唤的 Joker（到这个时刻为止，毫秒）。</summary>
+	private static readonly Dictionary<ulong, ulong> Summoning = new();
+
+	/// <summary>这个 Joker 这次施法是 Persona 召唤吗（TriggerAnimDelayPatch 用，用一次就清掉）。</summary>
+	public static bool TakeSummon(NCreature node) =>
+		Summoning.Remove(node.GetInstanceId(), out ulong until) && Time.GetTicksMsec() < until;
 
 	/// <summary>游戏要播 cast，但 Joker 刚自己施过法：不重播。</summary>
 	public static bool SwallowCast(MegaAnimationState state) =>

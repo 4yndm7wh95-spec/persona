@@ -13,6 +13,9 @@ namespace P5Joker;
 public static class Persona
 {
 	private const int Cols = 7, Frames = 49;
+
+	/// <summary>亚森出手（第 24 帧，双翼展开）在他出现后几秒：敌人身上的特效和伤害都对齐到这一刻。</summary>
+	public const float AttackAt = 24f / Fps;
 	private const float FrameW = 671f, FrameH = 461f, Fps = 30f;
 	// 图集一帧里的脚 / 身体中心（sources.json 的 cast 锚点 × 0.45）
 	private static readonly Vector2 Foot = new(350.8f, 412.3f), Body = new(350.8f, 273.4f);
@@ -35,40 +38,9 @@ float noise(vec2 p) {
 	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
 }
 float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { v += a * noise(p); p *= 2.03; a *= 0.5; } return v; }
-float body(vec2 uv) { return step(0.5, texture(atlas_tex, uv).a); }
-// 漫画化（用户 2026-11-01：3D 渲染的亚森和手绘的 Joker、平面的舞台违和）：明暗压成三档（黑 / 暗 / 亮）、暗部叠网点，
-// 外面一道粗黑描边、再一圈闪烁的蓝焰亮边；整体压暗一点、加一层淡蓝雾，显得在 Joker 身后远处
-vec4 toon(vec2 uv, vec2 fc) {
-	vec4 c = texture(atlas_tex, uv);
-	float inside = step(0.5, c.a);
-	float near = 0.0, far = 0.0;
-	for (int i = 0; i < 12; i++) {
-		float an = 6.2832 * float(i) / 12.0;
-		vec2 d = vec2(cos(an), sin(an)) * px;
-		near = max(near, body(uv + d * 2.2));
-		far = max(far, body(uv + d * 3.8));
-	}
-	if (inside < 0.5) {
-		if (near > 0.5) return vec4(0.02, 0.01, 0.03, 1.0);
-		float fl = noise(fc * 0.08);
-		return vec4(vec3(0.3, 0.72, 1.0), far * smoothstep(0.35, 0.6, fl));   // 断断续续的细蓝边
-	}
-	float l = dot(c.rgb, vec3(0.299, 0.587, 0.114));
-	vec3 sat = clamp(mix(vec3(l), c.rgb, 1.6), 0.0, 1.0);
-	vec3 dark = vec3(0.04, 0.01, 0.035), mid = clamp(sat * 1.0, 0.0, 1.0), lit = clamp(sat * 1.7 + 0.05, 0.0, 1.0);
-	vec3 col = mix(dark, mid, smoothstep(0.04, 0.07, l));
-	col = mix(col, lit, smoothstep(0.17, 0.2, l));
-	// 暗档叠 45° 网点
-	vec2 rp = vec2(fc.x + fc.y, fc.y - fc.x) * 0.7071;
-	float dots = smoothstep(0.3, 0.2, length(fract(rp / 5.0) - 0.5));
-	float midBand = smoothstep(0.04, 0.07, l) * (1.0 - smoothstep(0.17, 0.2, l));
-	col = mix(col, dark, dots * midBand * 0.45);
-	col = mix(col, vec3(0.08, 0.12, 0.3), 0.08);
-	return vec4(col, 1.0);
-}
 void fragment() {
 	vec2 lv = (UV - region.xy) / max(region.zw, vec2(0.0001));      // 这一帧里的 0～1
-	vec4 c = toon(UV, FRAGCOORD.xy);
+	vec4 c = texture(atlas_tex, UV);                                 // 原版三渲二（漫画化试过不合适，用户 2026-11-01）
 	float h = mix(1.0 - lv.y, lv.y, flip);                           // 出场 0 = 底；退场 0 = 顶
 	float n = fbm(vec2(lv.x * 6.0, lv.y * 9.0)) * 0.35;
 	float t = burn * 1.4 - 0.2;
@@ -135,7 +107,7 @@ void fragment() {
 		Pillar(back, anchor + new Vector2(0f, height * 0.12f), height * 0.75f, height * 1.25f);
 		Glow.Shockwave(back, anchor, PersonaMask.Hi, height * 2.2f, 0.55f, 0.35f);
 		// 出手：眼神特写劈开之后（第 24 帧，双翼展开）胸口炸开红白光、两圈冲击环、放射速度线（背景层不用折射：会变成暗圆盘）
-		Fx.After(back, 24f / Fps, () =>
+		Fx.After(back, AttackAt, () =>
 		{
 			Glow.Flash(back, chest, Pal5.Hot, height * 0.3f, 0.12f);
 			Glow.Flash(back, chest, Pal5.Bright, height * 0.7f, 0.3f);
