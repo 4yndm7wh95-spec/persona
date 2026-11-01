@@ -12,24 +12,38 @@ namespace P5Joker;
 /// </summary>
 public static class Persona
 {
-	private const int Cols = 7, Frames = 49;
+	/// <summary>
+	/// 一个人格面具的序列帧（tools/p5/stage_p5.py 打成图集）：图集名、每行几帧、每帧尺寸、一帧里的脚 / 身体中心（锚点 × 0.45）、
+	/// 一帧里身体（头顶到脚）多高、只播哪一段帧（原速 30fps）、哪一帧出手、离场时刻。
+	/// </summary>
+	public sealed record Spec(string Tex, int Cols, float FrameW, float FrameH, Vector2 Foot, Vector2 Body, float BodyPx, int First, int Last,
+		int AttackFrame, float ExitAt)
+	{
+		public float AttackAt => (AttackFrame - First) / Fps;
 
-	/// <summary>亚森出手（第 24 帧，双翼展开）在他出现后几秒：敌人身上的特效和伤害都对齐到这一刻。</summary>
-	public const float AttackAt = (24 - FirstFrame) / Fps;   // = 0.4s
+		public int FrameAt(float s) => Mathf.Clamp(First + (int)(s * Fps), First, Last);
+	}
 
 	/// <summary>
-	/// 只播施法动作里的一段（用户 2026-11-01：不要加速他的动作，选一段更合适的短动作）：第 12～40 帧原速（30fps）——
-	/// 从侧身转过来 → 双翼完全展开、手往前一伸（第 24 帧，出手）→ 收翼，28 帧 ≈ 0.93s，正好盖住眼神特写；播完停在最后一帧。
+	/// 亚森：施法动作 BPS0201_000_main_0005 只播第 12～40 帧原速（用户 2026-11-01：不要加速他的动作，选一段更合适的短动作）——
+	/// 从侧身转过来 → 双翼完全展开、手往前一伸（第 24 帧，出手）→ 收翼，≈0.93s，正好盖住眼神特写；播完停在最后一帧。
 	/// </summary>
-	private const int FirstFrame = 12, LastFrame = 40;
+	public static readonly Spec ArseneSpec = new("arsene_cast", 7, 671f, 461f, new(350.8f, 412.3f), new(350.8f, 273.4f), 315f, 12, 40, 24,
+		CutIn.SplitAt + 0.05f);
 
-	private static int FrameAt(float s) => Mathf.Clamp(FirstFrame + (int)(s * Fps), FirstFrame, LastFrame);
+	/// <summary>
+	/// 伊邪那岐大神（毒性爆发，用户 2026-11-01）：转杖动作 BPS0360_000_main_0006（art/p5/fx/izanagi_okami/spin，51 帧 824x1024，× 0.45）
+	/// 播第 7～40 帧原速：举杖 → 第 15～31 帧横着转一圈 → 第 33 帧竖回来（出手：转完发动），停在竖持。头顶到脚约 612px × 0.45。
+	/// </summary>
+	public static readonly Spec IzanagiSpec = new("izanagi_spin", 7, 371f, 461f, new(366.553f * 0.45f, 972.14f * 0.45f),
+		new(366.553f * 0.45f, 697.025f * 0.45f), 275f, 7, 40, 33, (33 - 7) / 30f + 0.3f);
 
-	/// <summary>亚森开始被蓝火吞掉离场的时刻（他出现后几秒）：和眼神特写、背景被劈开、咒焰收掉是同一刻。</summary>
+	/// <summary>亚森出手在他出现后几秒（兼容旧代码）。</summary>
+	public const float AttackAt = (24 - 12) / Fps;
+
+	/// <summary>亚森开始被蓝火吞掉离场的时刻（兼容旧代码）。</summary>
 	public const float ExitAt = CutIn.SplitAt + 0.05f;
-	private const float FrameW = 671f, FrameH = 461f, Fps = 30f;
-	// 图集一帧里的脚 / 身体中心（sources.json 的 cast 锚点 × 0.45）
-	private static readonly Vector2 Foot = new(350.8f, 412.3f), Body = new(350.8f, 273.4f);
+	private const float Fps = 30f;
 
 	private static Shader? _shader;
 
@@ -116,19 +130,24 @@ void fragment() {
 	/// <param name="back">背景特效层</param>
 	/// <param name="feet">Joker 脚底（屏幕）</param>
 	/// <param name="height">亚森身体（帽顶到脚）在屏幕上多高</param>
-	public static void Arsene(Control back, Vector2 feet, float height, float facing = 1f)
+	public static void Arsene(Control back, Vector2 feet, float height, float facing = 1f) => Show(ArseneSpec, back, feet, height, facing);
+
+	public static void Izanagi(Control back, Vector2 feet, float height, float facing = 1f) => Show(IzanagiSpec, back, feet, height, facing);
+
+	public static void Show(Spec spec, Control back, Vector2 feet, float height, float facing = 1f)
 	{
-		if (Fx.Tex("arsene_cast") is not Texture2D atlas)
+		if (Fx.Tex(spec.Tex) is not Texture2D atlas)
 		{
 			return;
 		}
-		const float body = 315f;                                          // 一帧里帽顶到最低处约 315px
-		float k = height / body;
+		float k = height / spec.BodyPx;
+		Vector2 Foot = spec.Foot, Body = spec.Body;
+		float AttackAt = spec.AttackAt, ExitAt = spec.ExitAt;
 		// 悬在 Joker 身后上方、离他一段距离（用户 2026-11-01：离得太近）：往左后方让开、脚大约在 Joker 腰的高度（用户：太高、再往左）
 		Vector2 anchor = feet + new Vector2(-0.48f * height * facing, -0.3f * height);   // 再往后（2026-11-01）
 		const float exit = 0.35f;
 		float life = ExitAt + exit;
-		Node2D root = Fx.Root(back, anchor, "P5Arsene", life + 0.1);
+		Node2D root = Fx.Root(back, anchor, "P5Persona", life + 0.1);
 		Sprite2D sprite = new()
 		{
 			Texture = atlas, RegionEnabled = true, Centered = false, Material = new ShaderMaterial { Shader = Shader },
@@ -165,11 +184,11 @@ void fragment() {
 		Fx.Animate(root, 0, life, t =>
 		{
 			float s = t * life;
-			int f = FrameAt(s);
+			int f = spec.FrameAt(s);
 			if (f != last)
 			{
 				last = f;
-				Rect2 r = new(f % Cols * FrameW, f / Cols * FrameH, FrameW, FrameH);
+				Rect2 r = new(f % spec.Cols * spec.FrameW, f / spec.Cols * spec.FrameH, spec.FrameW, spec.FrameH);
 				sprite.RegionRect = r;
 				m.SetShaderParameter("region", new Vector4(r.Position.X / size.X, r.Position.Y / size.Y, r.Size.X / size.X, r.Size.Y / size.Y));
 			}

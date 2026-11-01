@@ -124,6 +124,11 @@ def fx_textures():
     eyes = Image.open(EYES).convert("RGBA")
     yield "eyes", eyes.resize((eyes.width // 2, eyes.height // 2), Image.LANCZOS)
     yield "arsene_cast", arsene_atlas()
+    # Izanagi-no-Okami (Codex render of BPS0360_000_main_0006, art/p5/fx/izanagi_okami): spin action atlas + weapon alone
+    if (IZANAGI / "spin").exists():
+        yield "izanagi_spin", izanagi_atlas()
+        w = Image.open(IZANAGI / "weapon.png").convert("RGBA")
+        yield "izanagi_weapon", w.resize((w.width // 2, w.height // 2), Image.LANCZOS)
     # eye cut-in band tails (Codex, art/p5/fx/gen_codex/cutin_tails): only the left one was drawn - the right one is the left
     # rotated 180 deg (band entering from the left edge, rising to the right). Kept at full size (they are scaled in CutIn.cs)
     tail = GEN_CODEX / "cutin_tails" / "cutin_tail_left.png"
@@ -153,6 +158,21 @@ def fx_textures():
 # sources.json): packed 7 per row at ARSENE_K of the size for the summon (p5mod/src/Vfx/Persona.cs)
 ARSENE = ROOT / "art/p5/fx/arsene"
 ARSENE_K, ARSENE_COLS = 0.45, 7
+
+
+IZANAGI = ROOT / "art/p5/fx/izanagi_okami"
+IZANAGI_K, IZANAGI_COLS = 0.45, 7
+
+
+def izanagi_atlas():
+    """all 51 spin frames (824x1024) at IZANAGI_K, 7 per row (p5mod/src/Vfx/Persona.cs Izanagi spec)."""
+    frames = sorted((IZANAGI / "spin").glob("[0-9]*.png"))
+    w, h = round(824 * IZANAGI_K), round(1024 * IZANAGI_K)
+    rows = (len(frames) + IZANAGI_COLS - 1) // IZANAGI_COLS
+    atlas = Image.new("RGBA", (w * IZANAGI_COLS, h * rows), (0, 0, 0, 0))
+    for i, f in enumerate(frames):
+        atlas.paste(Image.open(f).convert("RGBA").resize((w, h), Image.LANCZOS), (i % IZANAGI_COLS * w, i // IZANAGI_COLS * h))
+    return atlas
 
 
 def arsene_atlas():

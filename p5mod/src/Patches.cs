@@ -306,12 +306,17 @@ public static class TriggerAnimDelayPatch
 {
 	public static void Prefix(Creature creature, string triggerName, ref float waitTime)
 	{
-		bool summon = false;
-		ModEntry.Safe("TriggerAnimDelay", () => summon = triggerName == "Cast" && creature.IsPlayer && Joker.Is(creature.Player)
-			&& NCombatRoom.Instance?.GetCreatureNode(creature) is NCreature node && Aim.TakeSummon(node));
-		if (summon)
+		float hit = 0f;
+		ModEntry.Safe("TriggerAnimDelay", () =>
 		{
-			waitTime = Godot.Mathf.Max(waitTime, Aim.SummonHit);
+			if (triggerName == "Cast" && creature.IsPlayer && Joker.Is(creature.Player) && NCombatRoom.Instance?.GetCreatureNode(creature) is NCreature node)
+			{
+				hit = Aim.TakeSummon(node);
+			}
+		});
+		if (hit > 0f)
+		{
+			waitTime = Godot.Mathf.Max(waitTime, hit);
 		}
 	}
 }

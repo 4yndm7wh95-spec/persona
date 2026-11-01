@@ -269,7 +269,8 @@ public static class Aim
 		if (stance == Stance.Mask && tier >= Tier.Uncommon && Joker.FxLayer(back: true) is Control back)
 		{
 			// 按稀有度分级（Tiers）：稀有 = 完整召唤；罕见 = 只有亚森短暂现身；普通 / 基础不召唤
-			Summoning[node.GetInstanceId()] = Time.GetTicksMsec() + 1000;
+			Persona.Spec spec = PersonaFor(card);
+			Summoning[node.GetInstanceId()] = (Time.GetTicksMsec() + 1500, 0.04f + spec.AttackAt);
 			Vector2 head = Joker.PosePoint(node, ReadyFx.MaskFace);
 			Fx.After(back, 0.04, () =>
 			{
@@ -284,8 +285,8 @@ public static class Aim
 					}
 					CutIn.Eyes(back);
 				}
-				// 亚森（稀有：在眼神特写上面；罕见：单独现身）
-				Persona.Arsene(back, feet, tall * 1.35f, Joker.Facing(node));
+				// 人格面具（稀有：在眼神特写上面；罕见：单独现身）
+				Persona.Show(spec, back, feet, tall * 1.35f, Joker.Facing(node));
 			});
 		}
 		return true;
@@ -294,12 +295,18 @@ public static class Aim
 	/// <summary>召唤时亚森出手的时刻（施法后几秒）：游戏结算这张牌（中毒、伤害）的等待被推到这一刻（TriggerAnimDelayPatch），出牌特效也对齐到这一刻。</summary>
 	public const float SummonHit = 0.04f + Persona.AttackAt;
 
-	/// <summary>正在召唤的 Joker（到这个时刻为止，毫秒）。</summary>
-	private static readonly Dictionary<ulong, ulong> Summoning = new();
+	/// <summary>这张牌召唤哪个人格面具：毒性爆发 = 伊邪那岐大神（万物真言），其他 = 亚森。</summary>
+	public static Persona.Spec PersonaFor(CardModel card) => card.GetType().Name == "Outbreak" ? Persona.IzanagiSpec : Persona.ArseneSpec;
 
-	/// <summary>这个 Joker 这次施法是 Persona 召唤吗（TriggerAnimDelayPatch 用，用一次就清掉）。</summary>
-	public static bool TakeSummon(NCreature node) =>
-		Summoning.Remove(node.GetInstanceId(), out ulong until) && Time.GetTicksMsec() < until;
+	/// <summary>这张牌召唤时人格面具出手的时刻（施法后几秒）：出牌特效对齐到这一刻。</summary>
+	public static float HitFor(CardModel card) => 0.04f + PersonaFor(card).AttackAt;
+
+	/// <summary>正在召唤的 Joker：(到这个时刻为止的毫秒, 结算要推迟到施法后几秒)。</summary>
+	private static readonly Dictionary<ulong, (ulong Until, float Hit)> Summoning = new();
+
+	/// <summary>这个 Joker 这次施法是 Persona 召唤吗：是就返回结算要推迟到几秒（TriggerAnimDelayPatch 用，用一次就清掉），不是返回 0。</summary>
+	public static float TakeSummon(NCreature node) =>
+		Summoning.Remove(node.GetInstanceId(), out var s) && Time.GetTicksMsec() < s.Until ? s.Hit : 0f;
 
 	/// <summary>游戏要播 cast，但 Joker 刚自己施过法：不重播。</summary>
 	public static bool SwallowCast(MegaAnimationState state) =>

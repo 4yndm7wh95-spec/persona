@@ -103,6 +103,21 @@ public partial class Preview : Node2D
 			p.At(6.4 + 1.64, () => { SummonStage.Play(p._back, p._front, Pose(1010, 215)); CutIn.Eyes(p._back); });
 			p.At(6.4 + 1.6, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy2, Enemy2 + new Vector2(0f, -128f), c => p._enemies[Enemy2].Modulate = c));
 		},
+		// 毒性爆发（稀有）：完整召唤 + 伊邪那岐大神转杖 + 万物真言 + 咒怨毒火，打全体
+		["outbreak"] = p =>
+		{
+			p.Ready(0.25, Stance.Mask, "mask", "cast_from_mask", play: true);
+			p.At(1.85 + 0.04, () =>
+			{
+				SummonStage.Play(p._back, p._front, Pose(1010, 215));
+				CutIn.Eyes(p._back);
+				Persona.Izanagi(p._back, JokerFeet, (JokerFeet - Pose(815f, 120f)).Length() * 1.35f);
+			});
+			p.At(1.85, () => Myriad.Outbreak(p._front,
+				new[] { (Enemy, Enemy + new Vector2(0, -170)), (Enemy2, Enemy2 + new Vector2(0, -128)), (Enemy3, Enemy3 + new Vector2(0, -128)) },
+				0.04f + Persona.IzanagiSpec.AttackAt,
+				new Action<Color>?[] { c => p._enemies[Enemy].Modulate = c, c => p._enemies[Enemy2].Modulate = c, c => p._enemies[Enemy3].Modulate = c }));
+		},
 		// 致命毒药（普通白卡，Tiers.Common）：选中 → 打出，不召唤，精简咒怨
 		["poison"] = p =>
 		{

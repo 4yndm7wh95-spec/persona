@@ -404,7 +404,7 @@ void fragment() {
 	/// 命中那一刻（hitAt，和咒焰喷发、伤害同一刻）拍击手猛地砸向敌人、伸着的手一起往敌人身上抓，红光过曝、爆点、碎片；
 	/// 停一拍后从指尖往下被咒焰烧掉。h = 敌人中心到头顶的距离。
 	/// </summary>
-	public static void CurseHands(Control layer, Vector2 feet, Vector2 center, float h, float emergeAt, float hitAt, float burnAt)
+	public static void CurseHands(Control layer, Vector2 feet, Vector2 center, float h, float emergeAt, float hitAt, float burnAt, bool few = false)
 	{
 		// (贴图, 离脚底的横向偏移 × h, 高度 × h, 镜像, 压暗, 朝敌人倾斜的角度)
 		(string Tex, float X, float Height, bool Mirror, float Dim, float Lean)[] reach =
@@ -415,7 +415,8 @@ void fragment() {
 			("hand_reach", -0.25f, 1.4f, false, 0.6f, 0.08f),
 		};
 		List<(Hand Hand, float Lean, float Lag)> hands = new();
-		for (int i = 0; i < reach.Length; i++)
+		int n = few ? 2 : reach.Length;                                  // few：群攻时每个敌人只两只（左右各一），不拍大手
+		for (int i = 0; i < n; i++)
 		{
 			var (tex, x, hh, mirror, dim, lean) = reach[i];
 			if (MakeHand(layer, tex, feet + new Vector2(x * h, 6f), hh * h, mirror, dim) is Hand hand)
@@ -423,7 +424,7 @@ void fragment() {
 				hands.Add((hand, lean, i * 0.03f));
 			}
 		}
-		Hand? slam = MakeHand(layer, "hand_reach", feet + new Vector2(1.35f * h, 6f), 2.5f * h, true, 0f);   // 张开的掌心拍下去（不是手背）
+		Hand? slam = few ? null : MakeHand(layer, "hand_reach", feet + new Vector2(1.35f * h, 6f), 2.5f * h, true, 0f);   // 张开的掌心拍下去（不是手背）
 		// 钻出来：地面一闪、碎片往上崩
 		Fx.After(layer, emergeAt, () =>
 		{
@@ -507,7 +508,7 @@ void fragment() {
 	}
 
 	/// <summary>打着旋往上飘的火星（GPU 粒子，湍流）。</summary>
-	private static void Embers(Control layer, Vector2 feet, float h, int amount, float life)
+	internal static void Embers(Control layer, Vector2 feet, float h, int amount, float life)
 	{
 		Node2D root = Fx.Root(layer, feet, "P5Embers", life + 0.5);
 		Gradient g = new()
@@ -532,7 +533,7 @@ void fragment() {
 	}
 
 	/// <summary>翻滚的黑烟（普通混合的暗色柔团，慢慢往上飘、胀大、淡掉）。</summary>
-	private static void Smoke(Control layer, Vector2 at, float h)
+	internal static void Smoke(Control layer, Vector2 at, float h)
 	{
 		Node2D root = Fx.Root(layer, at, "P5Smoke", 2.0);
 		Gradient g = new()

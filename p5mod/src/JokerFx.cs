@@ -110,6 +110,23 @@ public static class JokerFx
 				// 刀落下（attack_from_ready 0.14s、伤害 0.15s）之后锁环收紧
 				CardFx.Weaken(layer, t.VfxSpawnPosition, t.GetTopOfHitbox(), 0.12f);
 				break;
+			case "Outbreak":
+			{
+				// 稀有：伊邪那岐大神的万物真言 + 咒怨毒火（Myriad.Outbreak），全体敌人；对齐他转完杖出手（Aim.HitFor，游戏结算也推到这一刻）
+				var list = new List<(Vector2, Vector2)>();
+				var tints = new List<Action<Color>?>();
+				foreach (Creature c in card.CombatState?.HittableEnemies ?? (IEnumerable<Creature>)Array.Empty<Creature>())
+				{
+					if (room.GetCreatureNode(c) is NCreature n)
+					{
+						list.Add((n.VfxSpawnPosition, n.GetTopOfHitbox()));
+						CanvasItem? v = n.Visuals;
+						tints.Add(v == null ? null : col => { if (GodotObject.IsInstanceValid(v)) { v.Modulate = col; } });
+					}
+				}
+				Myriad.Outbreak(layer, list, Tiers.For(card) == Tier.Rare ? Aim.HitFor(card) : 0.3f, tints);
+				break;
+			}
 			case "DeadlyPoison" when t != null:
 			{
 				// 普通白卡（Tiers.Common）：不召唤，精简的咒怨（手 + 一根咒焰），和游戏加中毒（施法后 ~0.25s）同一刻；
