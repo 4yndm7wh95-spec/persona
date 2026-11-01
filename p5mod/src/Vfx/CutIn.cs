@@ -239,6 +239,10 @@ void fragment() {
 			root.AddChild(node);
 			nodes[i] = node;
 		}
+		foreach (Node2D tl in tails)
+		{
+			root.MoveChild(tl, root.GetChildCount() - 1);          // 延伸段在原版网格上面：盖住带子两端的竖直切边
+		}
 		// 显示：一张铺满屏幕的图，用 BandShader
 		Node2D shown = Fx.Root(back, Vector2.Zero, "P5CutIn", life);
 		back.MoveChild(shown, back.GetChildCount() - 1);
@@ -289,15 +293,35 @@ void fragment() {
 		});
 	}
 
+	private static Shader? _tailShader;
+
+	/// <summary>延伸段：接口那一头（fade 那一截）是一道锯齿状的硬撕边（不是柔边渐变，P5 都是硬边），盖住原版带子的竖直切边。</summary>
+	private static Shader TailShader => _tailShader ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform float join = 1.0;     // 接口在贴图的哪一边（1 = 右边，0 = 左边）
+uniform float fade = 0.1;     // 渐变多宽（贴图宽度的比例）
+uniform float seed = 0.0;
+float h(float x) { vec2 p = fract(vec2(x, seed) * vec2(0.1031, 0.1030)); p += dot(p, p.yx + 33.33); return fract((p.x + p.y) * p.x); }
+float vn(float x) { float i = floor(x); float f = fract(x); return mix(h(i), h(i + 1.0), f * f * (3.0 - 2.0 * f)); }
+void fragment() {
+	vec4 c = texture(TEXTURE, UV);
+	float d = abs(UV.x - join);
+	// 接口不是一道柔边渐变（糊），而是一道撕开的硬边：沿 y 方向锯齿起伏
+	float y = UV.y * 60.0;
+	float edge = fade * (0.2 + 0.55 * vn(y) + 0.25 * vn(y * 4.3 + 11.0));
+	COLOR = vec4(c.rgb, c.a * step(edge, d));
+}" };
+
 	/// <summary>
-	/// 带子两头的撕纸延伸段（Codex 画的 cutin_tail_left / right，原版画布坐标）：左尾的右边缘接在原版带子左端
-	/// （原版带子在 x=0 处占 y 400～575），右尾的左边缘接在右端（x=1280 处带身约 y 100～440）。原点放在接口处，横向缩放就是「撕出去」。
+	/// 带子两头的撕纸延伸段（Codex 画的 cutin_tail_left / right，原版画布坐标）。原版带子两端是一道竖直的切边（用户：很明显的分割），
+	/// 所以延伸段盖在原版带子上面、往里伸进去一截（overlap，原版画布单位：左 90，右端挨着「!!」只伸 30），接口那一截渐变透明：原版的竖直切边被盖住，两段融在一起。
+	/// 左尾：贴图右边缘带身 y 121～529，对齐原版 x=0 处带身 y 400～575；右尾：贴图左边缘带身 y 511～814，对齐 x=1280 处 y 100～440。
+	/// 原点放在接口处，横向缩放就是「撕出去」。
 	/// </summary>
 	private static Node2D[] Tails(Node2D root, float canvasW)
 	{
 		var list = new List<Node2D>();
-		// 贴图里拼接边上带身的范围（左尾：x=右边缘，y 121～529；右尾转了 180°：x=0，y 358～766），贴图 1774×887
-		void Add(string name, float joinX, float y0, float y1, float texY0, float texY1, bool left)
+		void Add(string name, float joinX, float y0, float y1, float texY0, float texY1, bool left, float overlap)
 		{
 			if (Fx.Tex(name) is not Texture2D t)
 			{
@@ -306,13 +330,17 @@ void fragment() {
 			float k = (y1 - y0) / (texY1 - texY0);
 			Node2D n = new() { Position = new Vector2(joinX, y0 - texY0 * k), Visible = false };
 			n.SetMeta("k", k);
-			n.AddChild(new Sprite2D { Texture = t, Centered = false, Offset = new Vector2(left ? -t.GetWidth() + 6f : -6f, 0f) });
-			root.AddChild(n);
-			root.MoveChild(n, 0);                                   // 在原版带子后面（接口处被原版的撕纸边盖住）
+			ShaderMaterial m = new() { Shader = TailShader };
+			m.SetShaderParameter("join", left ? 1f : 0f);
+			m.SetShaderParameter("fade", overlap * 0.9f / k / t.GetWidth());
+			m.SetShaderParameter("seed", Fx.Rand(0f, 100f));
+			float shift = overlap / k;
+			n.AddChild(new Sprite2D { Texture = t, Centered = false, Material = m, Offset = new Vector2(left ? -t.GetWidth() + shift : -shift, 0f) });
+			root.AddChild(n);                                       // 在原版带子上面（盖住它两端的竖直切边）
 			list.Add(n);
 		}
-		Add("cutin_tail_left", 8f, 400f, 575f, 121f, 529f, true);
-		Add("cutin_tail_right", canvasW - 8f, 100f, 440f, 358f, 766f, false);
+		Add("cutin_tail_left", 0f, 400f, 575f, 121f, 529f, true, 90f);
+		Add("cutin_tail_right", canvasW, 100f, 440f, 511f, 814f, false, 30f);   // 右端紧挨着「!!」，只盖一小截
 		return list.ToArray();
 	}
 

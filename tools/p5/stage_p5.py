@@ -117,10 +117,11 @@ def fx_textures():
     # eye cut-in band tails (Codex, art/p5/fx/gen_codex/cutin_tails): only the left one was drawn - the right one is the left
     # rotated 180 deg (band entering from the left edge, rising to the right). Kept at full size (they are scaled in CutIn.cs)
     tail = GEN_CODEX / "cutin_tails" / "cutin_tail_left.png"
+    right = GEN_CODEX / "cutin_tails" / "cutin_tail_right.png"
     if tail.exists():
         im = Image.open(tail).convert("RGBA")
         yield "cutin_tail_left", im
-        yield "cutin_tail_right", im.rotate(180)
+        yield "cutin_tail_right", Image.open(right).convert("RGBA") if right.exists() else im.rotate(180)
     # curse hands for Eiha (Codex, art/p5/fx/gen_codex/curse_hands, 1024x1536) at half size
     for name in ("hand_reach", "hand_slam", "hand_claw", "hand_grab"):
         src = GEN_CODEX / "curse_hands" / f"{name}.png"
