@@ -399,96 +399,103 @@ void fragment() {
 		return new Hand { Root = root, Sprite = sp, Mat = m, H = height };
 	}
 
+	private static readonly string[] Poses = { "chand_bud", "chand_unfurl", "chand_open", "chand_slap", "chand_clench" };
+
 	/// <summary>
-	/// 咒怨之手：咒印张开后（emergeAt）地面裂开，三只手从敌人脚下周围钻出来往上伸，一只拍击手在敌人右后方高高举起；
-	/// 命中那一刻（hitAt，和咒焰喷发、伤害同一刻）拍击手猛地砸向敌人、伸着的手一起往敌人身上抓，红光过曝、爆点、碎片；
-	/// 停一拍后从指尖往下被咒焰烧掉。h = 敌人中心到头顶的距离。
+	/// 咒怨之手（用户 2026-11-01：三只手完整地从地里长出来、伤害打出时同时拍向目标、结束时钻回去；注意每个阶段的手型）。
+	/// 贴图是 Codex 画的同一只手的五个姿势（curse_hands_v2，打包时对齐了手腕，逐帧切换），掌心朝右（敌人那边），右边的手镜像：
+	///  · 长（emergeAt 起）：地面一裂，手从地里往上钻 —— 花苞（指头蜷着）→ 舒展 → 张开；边长边轻轻扭；
+	///  · 蓄（到 hitAt 前）：张开的手往后仰，越仰越多；
+	///  · 拍（hitAt）：前 0.05s 换成拍击手型、手腕一折猛地扑向敌人，撞上过冲一点、弹回；红光过曝；
+	///  · 停（到 burnAt）：拍着不动，轻轻颤；
+	///  · 缩（burnAt 起 0.3s）：握成拳、回正、往地里缩回去，地面一点尘。
+	/// 三只手：左右各一（前排），左后方一只更大的（画在前排后面，压暗一点）。few = 群攻，手小一点。
 	/// </summary>
 	public static void CurseHands(Control layer, Vector2 feet, Vector2 center, float h, float emergeAt, float hitAt, float burnAt, bool few = false)
 	{
-		// (贴图, 离脚底的横向偏移 × h, 高度 × h, 镜像, 压暗, 朝敌人倾斜的角度)
-		(string Tex, float X, float Height, bool Mirror, float Dim, float Lean)[] reach =
+		if (Fx.Tex(Poses[0]) is not Texture2D t0)
 		{
-			// 用户 2026-11-01：手心要朝着敌人 —— 只用看得到掌心的两张（reach 张开、grab 半握），不用露手背 / 指节的 claw、slam
-			("hand_grab", -1.05f, 1.75f, false, 0f, 0.35f),
-			("hand_reach", 0.95f, 1.9f, true, 0f, -0.3f),
-			("hand_reach", -0.25f, 1.4f, false, 0.6f, 0.08f),
+			return;
+		}
+		Texture2D?[] tex = new Texture2D?[Poses.Length];
+		for (int i = 0; i < Poses.Length; i++) tex[i] = Fx.Tex(Poses[i]) ?? t0;
+		float k0 = few ? 0.8f : 1f;
+		// (层, 离脚底的横向偏移 × h, 高 × h, 掌心朝左（镜像）, 压暗, 拍下去转多少, 错开)
+		(Control L, float X, float Height, bool Mirror, float Dim, float Slap, float Lag)[] spec =
+		{
+			(layer, -1.5f, 2.3f, false, 0.35f, 0.5f, 0.08f),            // 先建：画在两只前排手后面
+			(layer, -0.95f, 1.8f, false, 0f, 0.42f, 0f),
+			(layer, 0.95f, 1.8f, true, 0f, 0.42f, 0.04f),
 		};
-		List<(Hand Hand, float Lean, float Lag)> hands = new();
-		int n = few ? 2 : reach.Length;                                  // few：群攻时每个敌人只两只（左右各一），不拍大手
-		for (int i = 0; i < n; i++)
+		float grow = Mathf.Clamp((hitAt - emergeAt) * 0.75f, 0.12f, 0.3f);
+		const float retract = 0.3f;
+		float total = burnAt + retract + 0.05f;
+		foreach (var (L, x, hh, mirror, dim, slapAng, lag) in spec)
 		{
-			var (tex, x, hh, mirror, dim, lean) = reach[i];
-			if (MakeHand(layer, tex, feet + new Vector2(x * h, 6f), hh * h, mirror, dim) is Hand hand)
+			Vector2 ground = feet + new Vector2(x * h * k0, 6f);
+			float height = hh * h * k0;
+			Node2D root = Fx.Root(L, ground, "P5CurseHand", total + 0.1);
+			float k = height / t0.GetHeight();
+			ShaderMaterial m = new() { Shader = HandShader };
+			Sprite2D sp = new()
 			{
-				hands.Add((hand, lean, i * 0.03f));
-			}
-		}
-		Hand? slam = few ? null : MakeHand(layer, "hand_reach", feet + new Vector2(1.35f * h, 6f), 2.5f * h, true, 0f);   // 张开的掌心拍下去（不是手背）
-		// 钻出来：地面一闪、碎片往上崩
-		Fx.After(layer, emergeAt, () =>
-		{
-			foreach (var (hand, _, lag) in hands)
+				Texture = tex[0], Centered = false, Offset = new Vector2(-t0.GetWidth() / 2f, -t0.GetHeight()),
+				Scale = new Vector2(mirror ? -k : k, k), Material = m,
+			};
+			root.AddChild(sp);
+			m.SetShaderParameter("rise", 0f);
+			m.SetShaderParameter("dim", dim);
+			float toward = mirror ? -1f : 1f;                              // 往敌人那边转的方向
+			float e0 = emergeAt + lag;
+			// 地面裂开
+			Fx.After(layer, e0, () =>
 			{
-				Vector2 g = hand.Root.GlobalPosition;
-				Fx.After(layer, lag, () =>
+				Glow.Flash(L, ground, Pal5.Bright, height * 0.5f, 0.2f);
+				Glow.Shockwave(L, ground, Pal5.Bright, height * 0.8f, 0.3f, 0.25f);
+				Glow.Sparks(L, ground, 10, 160f, 480f, 0.4f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 700f, 0.08f, 0.2f, Vector2.Up, 40f);
+			});
+			Fx.After(layer, burnAt + retract * 0.8f, () =>
+				Glow.Sparks(L, ground, 8, 80f, 260f, 0.35f, new[] { Pal5.Bright, Pal5.Deep }, 500f, 0.06f, 0.16f, Vector2.Up, 50f));
+			int last = -1;
+			Fx.Animate(root, 0, total, t =>
+			{
+				float s = t * total;
+				float g = Mathf.Clamp((s - e0) / grow, 0f, 1f);
+				float back01 = Mathf.Clamp((s - burnAt) / retract, 0f, 1f);
+				// 手型
+				int f = s < hitAt - 0.05f ? (g < 0.4f ? 0 : g < 0.75f ? 1 : 2) : s < burnAt ? 3 : 4;
+				if (f != last)
 				{
-					Glow.Flash(layer, g, Pal5.Bright, h * 0.9f, 0.2f);
-					Glow.Shockwave(layer, g, Pal5.Bright, h * 1.3f, 0.35f, 0.25f);
-					Glow.Sparks(layer, g, 12, 160f, 520f, 0.45f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 600f, 0.08f, 0.22f, Vector2.Up, 40f);
-				});
-			}
-			if (slam != null)
-			{
-				Glow.Flash(layer, slam.Root.GlobalPosition, Pal5.Bright, h * 1.1f, 0.22f);
-			}
-		});
-		float total = burnAt + 0.45f;
-		foreach (var (hand, lean, lag) in hands)
-		{
-			Hand hd = hand;
-			float ln = lean;
-			Fx.Animate(hd.Root, 0, total, t =>
-			{
-				float s = t * total;
-				float up = Ease5.OutBack(Mathf.Clamp((s - emergeAt - lag) / 0.12f, 0f, 1f));
-				hd.Mat.SetShaderParameter("rise", Mathf.Clamp(up, 0f, 1f));
-				hd.Sprite.Position = new Vector2(0f, (1f - Mathf.Clamp(up, 0f, 1f)) * hd.H);     // 从地面往上推出来（地面以下的部分丢掉）
-				// 命中：猛地往上一伸、朝敌人一倾；之后慢慢回一点
-				float hit = Mathf.Clamp((s - hitAt) / 0.06f, 0f, 1f), relax = Mathf.Clamp((s - hitAt - 0.06f) / 0.3f, 0f, 1f);
-				float push = Fx.OutCubic(hit) * (1f - 0.4f * relax);
-				hd.Root.Rotation = ln * (0.25f + 0.75f * push);
-				hd.Root.Scale = new Vector2(1f, 1f + 0.12f * push * (1f - relax) + 0.04f * Mathf.Sin(s * 9f) * (1f - hit));
-				hd.Mat.SetShaderParameter("hot", Mathf.Exp(-Mathf.Max(0f, s - hitAt) / 0.08f) * (s >= hitAt ? 1f : 0f));
-				hd.Mat.SetShaderParameter("burn", Mathf.Clamp((s - burnAt) / 0.4f, 0f, 1f));
+					last = f;
+					sp.Texture = tex[f];
+				}
+				// 长出来 / 缩回去：地面以下的部分丢掉
+				float rise = Fx.OutCubic(g) * (1f - Fx.InCubic(back01));
+				m.SetShaderParameter("rise", rise);
+				sp.Position = new Vector2(0f, (1f - rise) * height);
+				// 转：长的时候轻轻扭 → 蓄势往后仰 → 拍下去扑向敌人（过冲、弹回）→ 缩的时候回正
+				float wob = 0.12f * Mathf.Sin(g * Mathf.Pi * 2.2f) * (1f - g * 0.6f);
+				float wind = Mathf.Clamp((s - e0 - grow) / Mathf.Max(0.01f, hitAt - 0.05f - e0 - grow), 0f, 1f);
+				float lean = -0.22f * Fx.OutCubic(wind);
+				float strike = Mathf.Clamp((s - (hitAt - 0.05f)) / 0.05f, 0f, 1f);
+				float settle = Mathf.Clamp((s - hitAt) / 0.18f, 0f, 1f);
+				float slap = Fx.InCubic(strike) * (1f + 0.18f * Mathf.Sin(settle * Mathf.Pi));
+				float ang = s < hitAt - 0.05f ? wob + lean : Mathf.Lerp(lean, slapAng, slap);
+				ang *= 1f - Fx.OutCubic(back01);
+				if (s >= hitAt && s < burnAt) ang += 0.02f * Mathf.Sin(s * 40f) * (1f - settle);
+				root.Rotation = ang * toward;
+				root.Scale = new Vector2(1f, 1f + 0.1f * Mathf.Sin(settle * Mathf.Pi) * (s >= hitAt ? 1f : 0f));
+				m.SetShaderParameter("hot", s >= hitAt ? Mathf.Exp(-(s - hitAt) / 0.08f) : 0f);
+				m.SetShaderParameter("burn", 0f);
 			});
 		}
-		if (slam != null)
-		{
-			Fx.Animate(slam.Root, 0, total, t =>
-			{
-				float s = t * total;
-				float up = Ease5.OutBack(Mathf.Clamp((s - emergeAt) / 0.1f, 0f, 1f));
-				slam.Mat.SetShaderParameter("rise", Mathf.Clamp(up, 0f, 1f));
-				slam.Sprite.Position = new Vector2(0f, (1f - Mathf.Clamp(up, 0f, 1f)) * slam.H);
-				// 举起时往后仰蓄力，命中那一刻猛地拍下去（朝左转），撞上之后弹一下
-				float wind = Mathf.Clamp((s - emergeAt) / (hitAt - emergeAt - 0.05f), 0f, 1f);
-				float down = Mathf.Clamp((s - (hitAt - 0.05f)) / 0.05f, 0f, 1f);
-				float bounce = Mathf.Clamp((s - hitAt) / 0.2f, 0f, 1f);
-				slam.Root.Rotation = Mathf.Lerp(0.25f * Fx.OutCubic(wind), -0.95f, Fx.InCubic(down)) + 0.08f * Mathf.Sin(bounce * Mathf.Pi);
-				slam.Mat.SetShaderParameter("hot", s >= hitAt ? Mathf.Exp(-(s - hitAt) / 0.1f) : 0f);
-				slam.Mat.SetShaderParameter("burn", Mathf.Clamp((s - burnAt + 0.05f) / 0.4f, 0f, 1f));
-			});
-		}
-		// 命中爆点：拍击手砸中敌人的地方
+		// 命中：三只手拍在敌人身上的那一下
 		Fx.After(layer, hitAt, () =>
 		{
-			Vector2 at = center + new Vector2(h * 0.25f, -h * 0.2f);
-			Glow.Flash(layer, at, Pal5.Hot, h * 1.2f, 0.12f);
-			Glow.Flash(layer, at, Pal5.Bright, h * 2.6f, 0.3f);
-			Glow.Shockwave(layer, at, Pal5.Hot, h * 2.6f, 0.4f);
-			Glow.SpeedLines(layer, at, Pal5.Bright, 16, h * 0.4f, h * 2.2f, 0.32f);
-			Glow.Shards(layer, at, 14, 1.1f, new Vector2(-1f, 0.4f), 1.2f);
+			Glow.Flash(layer, center, Pal5.Hot, h * 1.1f, 0.12f);
+			Glow.Flash(layer, center, Pal5.Bright, h * 2.2f, 0.28f);
+			Glow.Shockwave(layer, center, Pal5.Hot, h * 2.4f, 0.36f);
+			Glow.SpeedLines(layer, center, Pal5.Bright, 14, h * 0.4f, h * 2f, 0.3f);
 			Fx.Shake(1);
 		});
 	}

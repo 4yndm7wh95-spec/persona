@@ -146,6 +146,14 @@ def fx_textures():
             im.putalpha(a)
             k = min(1.0, 1024 / max(im.size))
             yield src.stem, im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS) if k < 1 else im
+    # staged curse hand poses (Codex, art/p5/fx/gen_codex/curse_hands_v2): normalised so all five share the wrist position and
+    # forearm width (frames are swapped in CardFx.CurseHands): forearm band at the bottom centred, 22 % of the width, bottom on the
+    # canvas edge; empty top cropped; output 512x438
+    v2 = GEN_CODEX / "curse_hands_v2"
+    for pose in ("bud", "unfurl", "open", "slap", "clench"):
+        src = v2 / f"hand_{pose}.png"
+        if src.exists():
+            yield f"chand_{pose}", normalise_hand(Image.open(src).convert("RGBA"))
     # curse hands for Eiha (Codex, art/p5/fx/gen_codex/curse_hands, 1024x1536) at half size
     for name in ("hand_reach", "hand_slam", "hand_claw", "hand_grab"):
         src = GEN_CODEX / "curse_hands" / f"{name}.png"
@@ -158,6 +166,24 @@ def fx_textures():
 # sources.json): packed 7 per row at ARSENE_K of the size for the summon (p5mod/src/Vfx/Persona.cs)
 ARSENE = ROOT / "art/p5/fx/arsene"
 ARSENE_K, ARSENE_COLS = 0.45, 7
+
+
+def normalise_hand(im):
+    a = im.getchannel("A")
+    W, H = 1024, 1536
+    xs = []
+    for y in range(im.height - 60, im.height - 8, 4):
+        row = [x for x in range(0, im.width, 2) if a.getpixel((x, y)) > 128]
+        if row:
+            xs.append((row[0], row[-1]))
+    l = sum(x[0] for x in xs) / len(xs)
+    r = sum(x[1] for x in xs) / len(xs)
+    k = 0.22 * W / max(1.0, r - l)
+    bottom = a.getbbox()[3]
+    sc = im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
+    out = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    out.alpha_composite(sc, (round(W / 2 - (l + r) / 2 * k), round(H - bottom * k) + 6))
+    return out.crop((0, 660, W, H)).resize((W // 2, (H - 660) // 2), Image.LANCZOS)
 
 
 IZANAGI = ROOT / "art/p5/fx/izanagi_okami"
