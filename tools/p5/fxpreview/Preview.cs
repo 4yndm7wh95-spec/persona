@@ -103,6 +103,14 @@ public partial class Preview : Node2D
 			p.At(6.4 + 1.64, () => { SummonStage.Play(p._back, p._front, Pose(1010, 215)); CutIn.Eyes(p._back); });
 			p.At(6.4 + 1.6, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy2, Enemy2 + new Vector2(0f, -128f), c => p._enemies[Enemy2].Modulate = c));
 		},
+		// 防御（设计说明 docs/p5/FX_DESIGN_HITS.md 方案 A：菱形光格）：选中防御牌 → 打出，再来一次
+		["guard"] = p =>
+		{
+			p.Ready(0.2, Stance.Guard, "guard", "cast_guard_from_ready", play: true);
+			p.At(0.2 + 1.63, () => CardFx.Guard(p._front, Pose(885f, 310f), Pose(1060f, 470f), 1280f * 0.87f * 0.29f));
+			p.Ready(3.0, Stance.Guard, "guard", "cast_guard_from_ready", play: true);
+			p.At(3.0 + 1.63, () => CardFx.Guard(p._front, Pose(885f, 310f), Pose(1060f, 470f), 1280f * 0.87f * 0.29f));
+		},
 		// 打击（设计说明 docs/p5/FX_DESIGN_HITS.md）：直接砍一刀 → 选中转刀 + 锁定再砍 → 连砍三下（只有第一下顿帧）
 		["strike"] = p =>
 		{

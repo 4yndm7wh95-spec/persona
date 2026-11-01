@@ -14,24 +14,61 @@ public static class CardFx
 	// ───────────────────────── 防御：前臂一竖，身前「唰唰」叠起一面斜切面板墙 ─────────────────────────
 
 	/// <summary>
-	/// 防御（格挡）。2026-11-01 用户：不要盾牌 / 墨水，纯特效 → 和打击同一套冲击语言（Cut.cs），只画「架住」这一下：
-	/// 前臂竖起那一刻（cast_guard 的 guard_a2），前臂前面一块竖长的冲击帧（2 帧红黑剪影）、一道竖着的剃刀线 + 画面沿它切开、
-	/// 空间往敌人那边一扭（压扁的折射波）、斜切碎片往敌人那边弹开、拳头上针状闪光。~0.4s。fist = 拳头，shield = 前臂前方的中心。
+	/// 防御（格挡）：菱形光格（设计说明 docs/p5/FX_DESIGN_HITS.md 方案 A，做法照结城理 mod 的 Extras.HexShield，换成 P5 的斜切几何）。
+	/// 前臂竖起那一刻（cast_guard 的 guard_a2），身前一片竖长椭圆区域里，细线勾出的红白菱形格子从前臂的高度往外波浪式点亮
+	/// （每格 OutBack 弹出、出现时闪白），整片往敌人那侧斜一点、两边往后收（像弧面的正投影）；停一会儿，再从外往里一格格熄灭。
+	/// 点亮时一圈空间扭曲往外推。是光，不是物件。fist = 拳头，shield = 光格的中心，height = 光格高度参考。~0.95s。
 	/// </summary>
 	public static void Guard(Control layer, Vector2 fist, Vector2 shield, float height, float facing = 1f)
 	{
-		float h = height;
-		Vector2 dir = new(facing, 0f);
-		Vector2 at = new(Mathf.Lerp(fist.X, shield.X, 0.55f), shield.Y - h * 0.05f);
-		float up = -Mathf.Pi / 2f + 0.12f * facing;
-		Cut.Split(layer, at - Vector2.Right.Rotated(up) * h * 0.5f, at + Vector2.Right.Rotated(up) * h * 0.5f, 12f, 80f);
-		Cut.ImpactFrame(layer, at, h * 0.16f, 0.08f, 0f, up, 3f);
-		Cut.Razor(layer, at, up, h * 1.0f, 8f, 0.24f);
-		Glow.Ripple(layer, at + dir * h * 0.08f, h * 0.9f, 0.4f, 0.03f, 1.8f, 0.03f);
-		Ink.Needles(layer, fist, 6, h * 0.3f, 8f, 0.14f);
-		Cut.Slivers(layer, at + dir * 20f, 12, 40f, dir, 0.8f, 1500f, 0.4f, 0.02f);
-		Ink.Streaks(layer, at, 10, h * 0.12f, h * 0.6f, 0.18f, 0.02f, 3f, dir, 0.7f);
-		Fx.Shake(1);
+		float ry = height * 0.6f, rx = ry * 0.4f;
+		Vector2 at = new(shield.X + rx * 0.55f * facing, shield.Y);   // 整片在前臂前面，不盖住 Joker
+		float r = height * 0.1f, w = r * 0.6f;                      // 菱形：半高 r、半宽 w
+		const float tOn = 0.24f, hold = 0.4f, tOff = 0.3f;
+		float total = tOn + hold + tOff;
+		Node2D root = Fx.Root(layer, at, "P5Guard", total + 0.15);
+		Vector2 origin = new(0f, (fist.Y - at.Y) * 0.6f);             // 从前臂的高度开始点亮
+		Vector2[] diamond = { new(0f, -r), new(w, 0f), new(0f, r), new(-w, 0f) };
+		Vector2[] inner = { new(0f, -r * 0.5f), new(w * 0.5f, 0f), new(0f, r * 0.5f), new(-w * 0.5f, 0f) };
+		for (int q = -6; q <= 6; q++)
+		{
+			for (int row = -12; row <= 12; row++)
+			{
+				Vector2 p = new(q * w * 2f + (row % 2 != 0 ? w : 0f), row * r);
+				float ex = p.X / rx, ey = p.Y / ry;
+				float d = ex * ex + ey * ey;
+				if (d > 1f)
+				{
+					continue;
+				}
+				// 弧面投影：越往上下两端越往中间收；整片往敌人那侧斜
+				Vector2 pos = new((p.X * (1f - 0.22f * ey * ey) + p.Y * 0.16f) * facing, p.Y);
+				Node2D cell = new() { Position = pos, Scale = Vector2.Zero };
+				root.AddChild(cell);
+				float edge = Mathf.Sqrt(d);
+				Fx.Poly(cell, diamond, new Color(0.85f, 0.02f, 0.07f, 0.3f + 0.35f * (1f - d)));                 // 实色红面（不发粉）
+				Fx.Poly(cell, diamond, new Color(1f, 0f, 0.05f, 0.25f * (1f - d)), additive: true);                // 中间更亮
+				cell.AddChild(new Line2D { Points = diamond, Closed = true, Width = 2.2f, DefaultColor = new Color(1f, 0.97f, 0.96f), JointMode = Line2D.LineJointMode.Sharp });
+				if (Fx.Rng.NextDouble() < 0.22)
+				{
+					Fx.Poly(cell, inner, new Color(1f, 0.97f, 0.96f));                                              // 少数格子里一颗白色实心小菱形（层次）
+				}
+				float dist = (pos - origin).Length() / (ry * 1.6f);
+				float on = tOn * Mathf.Clamp(dist, 0f, 1f);
+				float off = tOn + hold + tOff * 0.7f * (1f - edge);
+				Fx.Animate(cell, 0, total, t =>
+				{
+					float time = t * total;
+					float appear = Ease5.OutBack(Mathf.Clamp((time - on) / 0.14f, 0f, 1f));
+					float vanish = Fx.InCubic(Mathf.Clamp((time - off) / 0.16f, 0f, 1f));
+					cell.Scale = Vector2.One * appear * (1f - vanish * 0.6f);
+					float flash = Mathf.Max(0f, 1f - Mathf.Abs(time - on - 0.06f) * 12f);
+					cell.Modulate = new Color(1f + 1.5f * flash, 1f + 1.5f * flash, 1f + 1.5f * flash, 1f - vanish);
+				});
+			}
+		}
+		Glow.Ripple(layer, at + origin, height * 1.1f, 0.5f, 0.025f, 1.6f);
+		Glow.Flash(layer, at + origin, new Color(1f, 0.1f, 0.14f), height * 0.5f, 0.2f);
 	}
 
 	// ───────────────────────── 中和（虚弱）：一道红光锁环把敌人"箍"住、往下压 ─────────────────────────

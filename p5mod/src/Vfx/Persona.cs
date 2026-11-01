@@ -15,12 +15,15 @@ public static class Persona
 	private const int Cols = 7, Frames = 49;
 
 	/// <summary>亚森出手（第 24 帧，双翼展开）在他出现后几秒：敌人身上的特效和伤害都对齐到这一刻。</summary>
-	public const float AttackAt = 0.4f;                     // 前 24 帧加速到 0.4s 播完（用户 2026-11-01：不要拖节奏）
+	public const float AttackAt = (24 - FirstFrame) / Fps;   // = 0.4s
 
-	/// <summary>动作播到第几帧：出手前加速（24 帧 / 0.4s），之后按 30fps 收尾。</summary>
-	private static int FrameAt(float s) =>
-		Mathf.Min(Frames - 1, s < AttackAt ? (int)(Mathf.SmoothStep(0f, 1f, s / AttackAt) * 24f)        // 起势慢、出手快、收势慢（不是匀速）
-			: 24 + (int)((1f - Mathf.Pow(1f - (s - AttackAt) / (ExitAt - AttackAt), 2f)) * (Frames - 24)));
+	/// <summary>
+	/// 只播施法动作里的一段（用户 2026-11-01：不要加速他的动作，选一段更合适的短动作）：第 12～40 帧原速（30fps）——
+	/// 从侧身转过来 → 双翼完全展开、手往前一伸（第 24 帧，出手）→ 收翼，28 帧 ≈ 0.93s，正好盖住眼神特写；播完停在最后一帧。
+	/// </summary>
+	private const int FirstFrame = 12, LastFrame = 40;
+
+	private static int FrameAt(float s) => Mathf.Clamp(FirstFrame + (int)(s * Fps), FirstFrame, LastFrame);
 
 	/// <summary>亚森开始被蓝火吞掉离场的时刻（他出现后几秒）：和眼神特写、背景被劈开、咒焰收掉是同一刻。</summary>
 	public const float ExitAt = CutIn.SplitAt + 0.05f;
@@ -42,6 +45,7 @@ uniform vec4 region = vec4(0.0, 0.0, 1.0, 1.0);
 uniform float flame = 0.0;     // 沿剪影长出来的蓝焰强弱
 uniform float flen = 60.0;     // 火舌多长（图集像素）
 uniform float clock = 0.0;
+uniform float stage = 1.0;     // 融进舞台的调色强度（0 = 原样）
 uniform vec4 c_dark : source_color = vec4(0.03, 0.06, 0.25, 1.0);
 uniform vec4 c_mid : source_color = vec4(0.11, 0.35, 1.0, 1.0);
 uniform vec4 c_hi : source_color = vec4(0.31, 0.78, 1.0, 1.0);
@@ -56,6 +60,23 @@ float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { v += a
 void fragment() {
 	vec2 lv = (UV - region.xy) / max(region.zw, vec2(0.0001));      // 这一帧里的 0～1
 	vec4 c = texture(atlas_tex, UV);                                 // 原版三渲二（漫画化试过不合适，用户 2026-11-01）
+	// 轻轻融进红色舞台（用户 2026-11-01：三渲二还是有点违和，稍微掩饰、不要用力过度）：
+	// 去一点饱和、加一点对比（压掉 3D 渲染的软渐变）；暗部往舞台的深红偏；暗部叠一层很淡的红网点（屏幕坐标，和背后的舞台同一种网点）；
+	// 迎光一侧（右上）的边缘一道细红轮廓光。
+	{
+		float lum = dot(c.rgb, vec3(0.299, 0.587, 0.114));
+		vec3 g = mix(c.rgb, vec3(lum), 0.15);
+		g = clamp((g - 0.5) * 1.12 + 0.5, 0.0, 1.0);
+		g = mix(g, vec3(0.28, 0.02, 0.05), smoothstep(0.35, 0.0, lum) * 0.35 * stage);
+		vec2 sp = FRAGCOORD.xy;
+		vec2 cc = fract(vec2(sp.x + sp.y, sp.y - sp.x) * 0.7071 / 6.0) - 0.5;
+		float dots = 1.0 - smoothstep(0.2, 0.28, length(cc));
+		g = mix(g, vec3(0.9, 0.05, 0.09), dots * smoothstep(0.3, 0.05, lum) * 0.22 * stage);
+		vec2 lo0 = region.xy, hi0 = region.xy + region.zw;
+		float nb = texture(atlas_tex, clamp(UV + vec2(4.0 * px.x, -4.0 * px.y), lo0, hi0)).a;
+		g = mix(g, vec3(1.0, 0.12, 0.16), c.a * (1.0 - nb) * 0.75 * stage);
+		c.rgb = mix(c.rgb, g, stage);
+	}
 	float h = mix(1.0 - lv.y, lv.y, flip);                           // 出场 0 = 底；退场 0 = 顶
 	float n = fbm(vec2(lv.x * 6.0, lv.y * 9.0)) * 0.35;
 	float t = burn * 1.4 - 0.2;
@@ -104,7 +125,7 @@ void fragment() {
 		const float body = 315f;                                          // 一帧里帽顶到最低处约 315px
 		float k = height / body;
 		// 悬在 Joker 身后上方、离他一段距离（用户 2026-11-01：离得太近）：往左后方让开、脚大约在 Joker 腰的高度（用户：太高、再往左）
-		Vector2 anchor = feet + new Vector2(-0.32f * height * facing, -0.3f * height);
+		Vector2 anchor = feet + new Vector2(-0.48f * height * facing, -0.3f * height);   // 再往后（2026-11-01）
 		const float exit = 0.35f;
 		float life = ExitAt + exit;
 		Node2D root = Fx.Root(back, anchor, "P5Arsene", life + 0.1);
