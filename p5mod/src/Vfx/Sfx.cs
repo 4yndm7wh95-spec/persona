@@ -37,7 +37,8 @@ public static class Sfx
 		Slam = "punch_taiman",          // 重拳砸中（#46：咒怨之手砸下去）
 		Crack = "crash_object",         // 东西碎开（#176：手从地里钻出来）
 		PoisonTick = "continuas_damage",// 持续伤害（#20：每轮毒伤）
-		SubBoom = "sub_boom";           // 合成的低频重击（art/sfx_p5/sub_boom.ogg：P5 原声缺低频，垫在冲击层底下）
+		SubBoom = "sub_boom",           // 合成的低频重击（art/sfx_p5/sub_boom.ogg：P5 原声缺低频，垫在冲击层底下）
+		Crush = "crush";                // 合成的「捏碎」：几下密集的碎裂咔嚓 + 一记闷响（art/sfx_p5/crush.ogg，手捏爆用）           // 合成的低频重击（art/sfx_p5/sub_boom.ogg：P5 原声缺低频，垫在冲击层底下）
 
 	/// <summary>
 	/// 起音提前量（秒）：有的音效开头有一小段空白 / 渐起，主冲击在文件里第几秒（ffmpeg 量的首个过 30% 峰值的点）。

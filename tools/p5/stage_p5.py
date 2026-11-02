@@ -105,7 +105,8 @@ SFX = {
     "punch_taiman": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0046.ogg",
     "crash_object": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0176.ogg",
     "continuas_damage": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0020.ogg",
-    "sub_boom": ROOT / "art/sfx_p5/sub_boom.ogg",                      # synthesized sub hit (ffmpeg aevalsrc)
+    "sub_boom": ROOT / "art/sfx_p5/sub_boom.ogg",
+    "crush": ROOT / "art/sfx_p5/crush.ogg",                          # synthesized crunch for the hand crush                      # synthesized sub hit (ffmpeg aevalsrc)
 }
 
 

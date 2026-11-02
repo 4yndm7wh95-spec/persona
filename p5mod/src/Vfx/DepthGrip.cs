@@ -337,8 +337,8 @@ void fragment() {
 		// 拍 2（人格面具出手）：捏爆自己带顿帧 + 震屏 + 干净的冲击声
 		HitStop.Request(0.08);
 		Fx.Shake(2);
-		Sfx.Play(Sfx.Hit, 0.8f);
-		Sfx.Play(Sfx.SubBoom, 0.9f);
+		Sfx.Play(Sfx.Crush, 1.1f);
+		Sfx.Play(Sfx.Crack, 0.4f);
 		foreach (Hand hd in hands)
 		{
 			Vector2 c = hd.Center;

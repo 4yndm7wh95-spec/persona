@@ -301,8 +301,9 @@ void fragment() {
 					Fx.Shake(2);
 					// 和召唤高潮同一套冲击声（之前用的 punch_taiman 是 P5 单挑拳击的音，和别处不搭，用户嫌怪）
 					// 常听的牌：短而干净（damage_critical 拖 2 秒、层次杂，听多了晕 —— 用户 2026-11-02）
-					Sfx.Play(Sfx.Hit, 0.7f);
-					Sfx.Play(Sfx.SubBoom, 0.7f);
+					// 捏爆的声音（用户 2026-11-02：普通打击的音效不像捏爆）：碎裂咔嚓 + 闷响，底下垫一点东西碎开的声音
+					Sfx.Play(Sfx.Crush, 1f);
+					Sfx.Play(Sfx.Crack, 0.35f);
 				}
 				Glow.Flash(layer, fistAt, Pal5.Hot, h * 1.0f, 0.12f);
 				Glow.Flash(layer, fistAt, Pal5.Bright, h * 2.0f, 0.28f);
