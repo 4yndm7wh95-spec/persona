@@ -1,24 +1,24 @@
-# 亚森草图（待用户确认）
+# 亚森草图：官方形象校正版（待确认）
 
-## 方法与状态
+此前两版被用户否定，已保留v1和v2文件。本次是第3次生成：重新查看P5R官网的官方立绘，直接附给内置imagegen作为主要设计和姿势参考，不使用此前生成图作为输入。
 
-- 内置imagegen生图；不是原版模型三渲二。原版 art/p5/fx/arsene/arsene_still.png 只核对官方设计，Joker final/idle_a3.png 只参考二维画风。
-- 共生成2次。第1张被用户指出身体过于修长、姿势怪，保留在 arsene_draft_v1_raw.png，附完整生成记录，不作为定稿。
-- 第2张按用户反馈重做：缩短腿和躯干、加宽肩胸，双腿不交叉，直立稳定悬浮，一只手自然前伸、另一只手放松，双翼展开。
-- arsene_draft.png 为当前提交的待确认草图，尚未通过，不拆分身体/翅膀/手臂/燕尾/锁链。任务要求到这里停下来等用户确认；八岐大蛇和其他组留待后续。
-- 生成原图另存 arsene_draft_raw.png，完整提示词、参考路径和检查数值见 arsene_draft_generation.json。
+官方来源：https://p5r.jp/character/hero/
 
-## 当前草图完整提示词
+原图URL：https://p5r.jp/resources/img/character/hero/persona_aa0c6566c4bd27dd93fc4f7a5444bc7b.png
+
+官方参考保存为arsene_official_reference.png，仅作设计参考。重点纠正：黑色羽翼而不是红色内翼；原版红色腿部尖角和刀刃鞋跟；黑色贴身躯干、白色领巾、原版头帽轮廓；去掉此前臆造的长燕尾与多余锁链。姿势贴近官方立绘，不继续自行编排怪异悬浮动作。
+
+当前arsene_draft.png仍待用户确认，尚未拆层。原始输出为arsene_draft_raw.png。
+
+## 完整提示词
 
 ```text
-Use case: stylized-concept. Asset type: transparent 2D Arsene character draft for a Persona 5 Joker mod, revised after user feedback. Image 1 is the original Arsene model render, design reference only. Image 2 is the approved Joker illustration, reference ONLY for bold clean ink and cel-shaded 2D drawing style, do not draw Joker. Draw official Persona 5 Arsene with his red fitted tailcoat, black top hat, red-and-black beaked demonic mask head, white cravat, black waistcoat, gold buttons and hanging chains, red high-heeled boots, two huge black feathered wings with dark crimson inner feathers. USER CORRECTION: avoid an overly long thin stretched body and awkward contorted posture. Make the torso and legs appreciably more compact, chest and shoulders wider, limbs clearly jointed and believable, head about one seventh to one eighth of the complete body height including hat, not a tiny head on extremely long legs. Elegant athletic proportions, not skinny stilt legs, not giant hands. New pose: a calm, balanced upright hovering spellcaster, three-quarter FRONT toward screen right, torso upright and untwisted, shoulders level, hips aligned under ribcage. Two legs hang naturally beneath the hips, knees slightly bent, separated so neither leg crosses or wraps around the other, both boots visible. One arm extends toward screen right at lower-chest height with a gentle elbow bend and a relaxed open casting hand (fingers naturally curved, not a huge claw lunging into the lens); other arm hangs slightly outward, elbow softly bent and hand relaxed. Both wings open in a balanced, broad shallow V behind him, full feather silhouettes comfortably INSIDE the canvas, no wingtip cutoff. Tailcoat tails hang and sweep gently behind, chains follow gravity. Draw a polished OFFICIAL P5-like HAND-DRAWN CEL illustration with crisp bold black outlines, flat crimson/black/white colors and hard graphic shadows, matching Image 2. NO 3D rendering, no photoreal textures or glossy plastic, no extreme fisheye/foreshortening. Portrait canvas 1536 by 2048. Leave a clear transparent margin on every side, keep the entire hat, both wings, boots, chains and coat visible. Genuine transparent RGBA PNG, alpha 0 outside the single character. No backdrop, ground, cast shadow, VFX, glow, particles, text, sheets or extra characters.
+Create a faithful 2D game character illustration of Arsene from Persona 5 using the ATTACHED OFFICIAL ART as the sole primary character design and pose reference. This is a correction of inaccurate earlier drawings; do not invent or simplify the costume. Study and match the official silhouette, head and body proportions, facial structure, thin elongated tilted black top hat, angular red face and long lateral head projections, high red collar, white layered lace cravat, red fitted jacket sleeves, black close-fitting central torso and short black hip garment, small gold trim/chains exactly as seen. CRITICAL legs: reproduce the official sculptural red pointed thigh structures and narrow red lower legs with dramatic curved metallic KNIFE-BLADE HEELS extending downward behind the feet; these are NOT ordinary tall fashion boots. CRITICAL wings: two huge organic BLACK feathered wings, charcoal gray and subdued brown/purple feather shading as in the reference, ragged naturally layered feather silhouette. NO broad crimson/red wing lining. NO invented long red coat tails or extra draped chains. Match the attached official pose closely: upright airborne stance, head subtly bowed, one arm extended outward/up with elegantly curved black claw fingers, other arm lowered relaxed, two legs naturally separated with one knee slightly bent, no crossed legs and no twisting contortion. Keep the reference's theatrical but balanced character proportions, do not stretch or bulk up the anatomy independently. Full body including blade heels and both wings visible, arrange wider wings within portrait 1536x2048 canvas with clear transparent margin on all four sides. Clean official P5 hand-drawn cel-shaded aesthetic, precise dark contours and graphic red/black/white shapes, not 3D rendering, no photoreal texture. The reference website's gold silhouette outline, decorative border/background and any backdrop artifacts MUST NOT appear. Genuine transparent RGBA PNG, alpha zero outside character, no ground, shadows cast on background, effects, text, other characters or props. This is a design-faithful approval draft.
 ```
 
-## 检查
+## 检查与处理
 
-- 原图1086×1448；交付1536×2048 RGBA（尺寸归一化，未声称原生2048细节）。
-- alpha范围(0, 255)；四角alpha=[0, 0, 0, 0]；非零alpha边界=(19, 90, 1518, 1987)；上/下/左/右画布边最大alpha=[0, 0, 0, 0]。
-- 清掉alpha<=2残点与全透明像素RGB，保留原始alpha边缘，没有白/绿底抠图。
-- check_arsene.png 为深灰底，check_arsene_checker.png 为棋盘格底。
-- 结构、比例、姿势和设计是否合意交用户确认，未据自检重画。
-- 不改mod代码、不启动游戏，不拆层。
+- 原始尺寸[1086, 1448]，交付1536×2048 RGBA；只归一尺寸、清alpha<=2残点及全透明像素RGB，没有局部结构修图。
+- 四角alpha：[0, 0, 0, 0]；上/下/左/右边缘最大alpha：[4, 0, 4, 4]。边缘仍有极低alpha像素，照实记录，不自动重画。
+- 深灰检查：check_arsene.png；棋盘格检查：check_arsene_checker.png。
+- 本轮按用户要求重画1次，总计3次，未自行追加生成。外形、姿态、比例由用户验收。
