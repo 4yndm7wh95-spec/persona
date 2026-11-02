@@ -1,0 +1,36 @@
+{
+  "group": "mask",
+  "name": "flame_tongue_06",
+  "w": 256,
+  "h": 512,
+  "prompt": "Use case: stylized-concept. A standalone 2D game VFX sprite for a Persona 5 Joker mod: bold hand-painted anime/comic shapes, clean controlled ink accents, high contrast, no 3D or photorealism. GENUINE TRANSPARENT RGBA PNG: alpha zero outside the actual sprite; never paint a dark backdrop, colored haze, vignette, checkerboard or ground. Soft glow must taper to transparent at the outer edge. Keep the whole sprite inside the canvas with transparent margin, no clipping. No text, watermark, characters or additional objects. One isolated cyan-blue flame tongue, a curved flame swept strongly right, broad base tapered pointed tip, white hot center blue rim, softly translucent outer edge. No mask or other flames. Canvas 256x512 pixels.",
+  "output_path": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-262d265c-4b39-4c43-9267-0d0afa602f4d.png",
+  "raw_size": [
+    887,
+    1774
+  ],
+  "method": "imagegen",
+  "generation_count": 1,
+  "redraw_count": 0,
+  "delivery_size": [
+    256,
+    512
+  ],
+  "reference_images": [],
+  "processing": "保留raw；交付尺寸归一化，alpha<=2残点及全透明RGB清零；未抠底。",
+  "checks": {
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "corner_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "alpha_zero_pixels": 83954,
+    "soft_alpha_pixels": 46136
+  }
+}
