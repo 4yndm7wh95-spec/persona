@@ -6,6 +6,8 @@ cd "$(dirname "$0")"
 S=${1:?scenario}; SEC=${2:-4}
 : "${GODOT:?set GODOT to the Godot 4.5.1 mono binary}"
 python3 prepare.py >/dev/null
+# 原版特效（res://scenes/vfx/... 等）：research/sts2_vfx 的拷贝，游戏里这些路径在游戏 PCK 里
+for d in scenes shaders materials images animations; do [ -d "$d" ] || cp -r ../../../research/sts2_vfx/recovered/$d $d; done
 dotnet build -nologo -v q FxPreview.csproj | grep -E " error " && { echo "build failed"; exit 1; } || true
 [ -d .godot ] || xvfb-run -a "$GODOT" --headless --path . --import >/dev/null 2>&1 || true
 rm -rf "out/$S"; mkdir -p "out/$S"

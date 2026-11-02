@@ -3,3 +3,8 @@
 bin/
 obj/
 out/
+scenes
+shaders
+materials
+images
+animations

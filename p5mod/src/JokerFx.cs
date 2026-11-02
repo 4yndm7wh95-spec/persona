@@ -34,8 +34,9 @@ public static class JokerFx
 			case "attack":
 			case "attack_chain":
 			case "attack_from_ready":
-				Fx.After(layer, Mathf.Max(0f, 0.13f - skipped), () => HitFx.Swing(layer, Joker.PosePoint(node, SwingCenter), Joker.PosePoint(node, SwingFrom),
-					Joker.PosePoint(node, SwingTo)));
+				// 第四版：手绘刀光扫过（Vfx/KnifeFx.cs）
+				Fx.After(layer, Mathf.Max(0f, 0.13f - skipped), () => KnifeFx.Swing(layer, Joker.PosePoint(node, SwingFrom),
+					Joker.PosePoint(node, SwingTo), Joker.Facing(node)));
 				break;
 			case "shiv":
 			case "shiv_from_aim":
@@ -69,7 +70,9 @@ public static class JokerFx
 		}
 		else
 		{
-			HitFx.Slash(layer, target.VfxSpawnPosition, Joker.Facing(joker));
+			// 第四版刀命中：大招类攻击牌（HitWeights 定的重档）用重斩
+			bool heavy = target.Entity != null && Hits.FloorOf(target.Entity).Floor == Weight.Heavy;
+			KnifeFx.Hit(layer, target.VfxSpawnPosition, Joker.Facing(joker), heavy);
 		}
 	}
 

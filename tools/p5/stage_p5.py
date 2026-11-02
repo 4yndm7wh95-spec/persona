@@ -75,6 +75,12 @@ def placeholder_back():
     return im
 
 
+V4 = ROOT / "art/p5/fx/v4"
+V4_TEX = [("slash", n, 0.5) for n in ("slash_thin", "slash_heavy", "slash_cross", "slash_tear", "slash_thrust", "slash_flurry")] + \
+    [("burst", f"burst_0{i}", 0.5) for i in (1, 2, 3)] + \
+    [("muzzle", f"muzzle_side_0{i}", 0.5) for i in (1, 2, 3)] + [("muzzle", "muzzle_front", 0.5)]
+
+
 def fx_textures():
     """(name, image) for every res://p5joker/fx/<name>.png; also used by tools/p5/fxpreview/prepare.py."""
     for name, src in FX_TEX.items():
@@ -100,6 +106,12 @@ def fx_textures():
     if not raw.exists():
         band = band.resize((1983, 793), Image.LANCZOS)
     yield "cutin_band", band
+    # FX v4 (Codex, art/p5/fx/v4): painted slashes / bursts / muzzle flashes used as shader material (LUT + sweep + erosion)
+    for group, name, k in V4_TEX:
+        f = V4 / group / f"{name}.png"
+        if f.exists():
+            im = Image.open(f).convert("RGBA")
+            yield name, im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS) if k != 1 else im
     eyes = Image.open(EYES).convert("RGBA")
     yield "eyes", eyes.resize((eyes.width // 2, eyes.height // 2), Image.LANCZOS)
 

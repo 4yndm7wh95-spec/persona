@@ -144,6 +144,44 @@ public partial class Preview : Node2D
 			p.At(0.3, () => { p._joker?.Play("knife_in"); p._joker?.Queue("knife_loop", true); });
 			p.At(1.3, () => p._joker?.Play("knife_out"));
 		},
+		// 原版组件逐个看（换 P5 LUT）
+		["vanilla_test"] = p =>
+		{
+			string[] all = { Vanilla.HitFlare, Vanilla.BigSlashCore, Vanilla.BigSlashSmoke, Vanilla.Specks, Vanilla.Streaks, Vanilla.SlashCore,
+				Vanilla.CleanFlare, Vanilla.BluntCore, Vanilla.RoundSmoke, Vanilla.DaggerImpact };
+			for (int i = 0; i < all.Length; i++)
+			{
+				string path = all[i];
+				Vector2 at = new(200f + (i % 5) * 380f, 300f + (i / 5) * 420f);
+				p.At(0.3, () => Vanilla.Burst(p._front, path, at, 0f, 1f, Lut5.Blood));
+				p.At(1.3, () => Vanilla.Burst(p._front, path, at, 0f, 1f, Lut5.Blood));
+			}
+		},
+		["hit_parts"] = p =>
+		{
+			float rot = -0.55f;
+			p.At(0.3, () => Paint.Pop(p._front, "burst_01", new Vector2(300f, 400f), 0f, 0.46f, null, 0.04f, 0.16f, 1.4f));
+			p.At(0.3, () => Paint.Sweep(p._front, "slash_thin", new Vector2(750f, 400f), rot, new Vector2(0.46f, 0.345f), Lut5.Blood, 0.05f, 0.05f, 0.24f, 40f));
+			p.At(0.3, () => Vanilla.Burst(p._front, Vanilla.BigSlashCore, new Vector2(1150f, 400f), rot + Mathf.Pi * 0.5f, 0.9f, Lut5.Blood));
+			p.At(0.3, () => Vanilla.Burst(p._front, Vanilla.BigSlashSmoke, new Vector2(1550f, 400f), rot, 0.85f, Lut5.Smoke));
+			p.At(0.3, () => Vanilla.Burst(p._front, Vanilla.Specks, new Vector2(750f, 800f), rot, 1f, Lut5.Blood, amount: 22));
+			p.At(0.3, () => Vanilla.Burst(p._front, Vanilla.Streaks, new Vector2(1150f, 800f), 0f, 0.95f, Lut5.Blood));
+		},
+		["smoke_test"] = p =>
+		{
+			p.At(0.3, () => Vanilla.Burst(p._front, Vanilla.BigSlashSmoke, new Vector2(500f, 500f), -0.55f, 0.85f, Lut5.Smoke));
+			p.At(0.3, () => Vanilla.Burst(p._front, Vanilla.BigSlashSmoke, new Vector2(1000f, 500f), 0f, 1f, Lut5.Smoke));
+			p.At(0.3, () => Vanilla.Burst(p._front, Vanilla.BigSlashSmoke, new Vector2(1500f, 500f), -0.55f, 0.85f, Lut5.Blood));
+			p.At(0.3, () => Paint.Sweep(p._front, "slash_thin", new Vector2(1000f, 850f), -0.55f, new Vector2(0.46f, 0.35f), Lut5.Blood));
+		},
+		// 第四版刀组：手绘刀光（扫出 → 溶解）+ 原版命中粒子换 P5 配色 + 漫画爆框；普通一刀 → 再一刀 → 重斩 → 打死
+		["knife_v4"] = p =>
+		{
+			p.StrikeV4(0.3, Enemy, 7, Weight.Medium, false);
+			p.StrikeV4(1.4, Enemy, 8, Weight.Medium, false);
+			p.StrikeV4(2.6, Enemy, 24, Weight.Heavy, true);
+			p.StrikeV4(4.0, Enemy2, 30, Weight.Kill, true, dies: true);
+		},
 		// 打击确认感（Vfx/Impact.cs）的分档，开枪（只有小刀牌开枪；投掷匕首等是打击动作）：一张小刀（轻）→ 三张小刀连着打（每张轻）→ 刀扇一发弹过三个敌人（群攻轻，整组只顿一次）
 		// → 一枪打出 14 点（升到中）→ 一枪打死一个（击杀）
 		["confirm_gun"] = p =>
@@ -195,6 +233,23 @@ public partial class Preview : Node2D
 		At(t, () => _joker?.Play("attack"));
 		At(t + 0.13, () => HitFx.Swing(_front, Pose(760f, 260f), Pose(600f, 850f), Pose(1376f, 450f)));
 		Hit(t + 0.15, enemy, amount, false);
+	}
+
+	private void StrikeV4(double t, Vector2 enemy, int amount, Weight w, bool heavy, bool dies = false)
+	{
+		At(t, () => _joker?.Play("attack"));
+		At(t + 0.13, () => KnifeFx.Swing(_front, Pose(600f, 850f), Pose(1376f, 450f)));
+		At(t + 0.15, () =>
+		{
+			KnifeFx.Hit(_front, enemy, 1f, heavy);
+			Popups.Damage(_front, (ulong)(enemy.X * 10f + (float)t), enemy, amount, false);
+			_enemies.TryGetValue(enemy, out Node2D? n);
+			Impact.Confirm(_front, n, enemy, new Vector2(1f, 0.12f), w);
+			if (dies && n != null)
+			{
+				n.CreateTween().TweenProperty(n, "modulate:a", 0f, 0.6).SetDelay(0.35);
+			}
+		});
 	}
 
 	private void ShotC(double t, Vector2 enemy, int amount, Weight w, bool dies = false)
