@@ -106,7 +106,7 @@
 - **消失**：按噪声从边缘烧掉 / 碎掉（erosion），不是整体淡出。
 - **颜色**：全部由 LUT 决定，所以第一批蓝焰太艳不用重画，换一张偏青白、饱和度低的渐变表即可。
 - **真正的逐帧动画**（烟、爆炸、闪电、火团）优先用原版的 flipbook 序列帧（research/sts2_vfx），换 LUT 变成 P5 配色。
-- **Persona** 用 tools/rig/mesh_rig.py 在定稿图上直接做加权网格骨骼（翅膀扇动、身体浮动、手臂动作；大幅移动的部件 cut() 切出来、切口扩散填补），不拆层；加上着色器的轮廓发光 / 溶解登场。
+- **Persona**：Codex 第三批最终交付了分层图（art/p5/fx/v4/{arsene,satanael}/layers/ + layers.json 关节点；图层独立生成后手工对位，和全图不是逐像素一致，但叠起来自洽、转动不露洞，用户 2026-11-02 认可）。游戏里按图层做 2D 骨骼（翅膀绕肩扇、身体浮、手臂 / 枪后坐），登场 / 退场用蓝焰溶解（Lut5.Persona）。
 
 ## 刀组样板（2026-11-02，p5mod/src/Vfx/KnifeFx.cs，预览 docs/p5/preview_knife_v4.gif）
 - 出刀：Codex 的 slash_thin 沿 Joker 的手扫出 → 溶解。
