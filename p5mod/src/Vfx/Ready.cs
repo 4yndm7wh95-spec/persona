@@ -71,9 +71,8 @@ public sealed class ReadyFx
 		{
 			case Stance.Gun: Sfx.Play(Sfx.GunDraw, 0.5f, 0.05f); break;
 			case Stance.Knife:
-				// 转刀（用户：原来只有一声风声，像空转）：转的时候一声低沉的挥动垫底，0.1s 刀落回手里握住时一记金属「锵」
+				// 转刀（用户：原来那声风声像空转；换成低沉的挥动。试过刀落回手里加一记金属声，用户说不需要）
 				Sfx.Play(Sfx.SwishLow, 0.45f, 0.02f);
-				Sfx.PlayHit(Sfx.KnifeRing, 0.5f, 0.1f);
 				break;
 			case Stance.Mask: Sfx.Play(Sfx.PersonaFlame, 0.3f, 0.05f); break;
 		}

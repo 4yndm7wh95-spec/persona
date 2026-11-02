@@ -11,9 +11,10 @@ public partial class Preview : Node2D
 {
 	// 游戏里的大致站位：Joker 脚底、敌人中心（VfxSpawnPosition）
 	public static readonly Vector2 JokerFeet = new(430f, 830f);
-	public static readonly Vector2 Enemy = new(1420f, 600f);
-	public static readonly Vector2 Enemy3 = new(1700f, 620f);
-	public static readonly Vector2 Enemy2 = new(1150f, 640f);
+	// 命中点 = 原版怪物身体中心（research/sts2_preview_scene 的 chomper / inklet，脚底在 y 830）
+	public static readonly Vector2 Enemy = new(1420f, 715f);
+	public static readonly Vector2 Enemy3 = new(1720f, 725f);
+	public static readonly Vector2 Enemy2 = new(1140f, 700f);
 	// 姿势图像素 → 屏幕：ORIGIN (815,1622)，K 0.87 × Visuals 缩放 0.29（tools/p5/build_rig_p5.py、p5mod/src/Joker.cs）
 	public static Vector2 Pose(float x, float y) => JokerFeet + new Vector2(x - 815f, y - 1622f) * 0.87f * 0.29f;
 	public static Vector2 Chest => Pose(820f, 600f);
@@ -278,6 +279,8 @@ public partial class Preview : Node2D
 			}
 		},
 		// 只放出刀动作、不放特效（量刀尖轨迹用）
+		// 原版怪物（research/sts2_preview_scene，tools/spine/skel_reader.py 转成 JSON）在预览里显示对不对
+		["monsters"] = p => { },
 		["attack_pose"] = p => p.At(0.3, () => p._joker?.Play("attack")),
 		// 出刀刀光单独看（和动作对齐）
 		["swing"] = p =>
@@ -594,6 +597,23 @@ public partial class Preview : Node2D
 	/// <summary>暗色的室内背景 + 地面，颜色接近杀戮尖塔 2 第一幕的战斗场景，只为看清特效和人的关系。</summary>
 	private void BuildBackdrop()
 	{
+		// 原版战斗背景（overgrowth，research/sts2_preview_scene）：有就用真的，没有退回纯色
+		const string bg = "res://scenes/backgrounds/overgrowth/overgrowth_background.tscn";
+		if (ResourceLoader.Exists(bg) && ResourceLoader.Load<PackedScene>(bg)?.Instantiate() is Control real)
+		{
+			_world.AddChild(real);
+			real.Position = new Vector2(960f, 540f);                // 各层以原点为中心（2764×1296），游戏里背景居中
+			// 游戏里由 NCombatBackground 脚本给每层挑一个变体填进去；预览里固定用 a（前景层会挡住人物，不放）
+			for (int i = 0; i <= 4; i++)
+			{
+				string layer = $"res://scenes/backgrounds/overgrowth/layers/overgrowth_bg_0{i}_a.tscn";
+				if (real.GetNodeOrNull<Control>($"Layer_0{i}") is Control holder && ResourceLoader.Exists(layer))
+				{
+					holder.AddChild(ResourceLoader.Load<PackedScene>(layer).Instantiate());
+				}
+			}
+			return;
+		}
 		Polygon2D sky = new()
 		{
 			Polygon = new[] { new Vector2(0f, 0f), new Vector2(1920f, 0f), new Vector2(1920f, 1080f), new Vector2(0f, 1080f) },
@@ -641,8 +661,26 @@ public partial class Preview : Node2D
 	}
 
 	/// <summary>敌人剪影：一个深紫色的大块头（大小接近第一幕的普通怪），中心就是 VfxSpawnPosition。</summary>
+	// 原版怪物代替紫色圆团：(json 名, 缩放)；脚底放在地面，命中点（VfxSpawnPosition）还是 center
+	private static readonly Dictionary<Vector2, (string Name, float Scale)> Monsters = new()
+	{
+		[Enemy] = ("chomper", 0.55f), [Enemy2] = ("inklet", 0.62f), [Enemy3] = ("chomper", 0.48f),
+	};
+
 	private void Enemy1(Vector2 center, float k)
 	{
+		string monDir = ProjectSettings.GlobalizePath("res://.mon");
+		string src = ProjectSettings.GlobalizePath("res://") + "../../../research/sts2_preview_scene/recovered/animations/monsters";
+		if (Monsters.TryGetValue(center, out var mon) && FileAccess.FileExists($"{monDir}/{mon.Name}.json"))
+		{
+			SpinePlayer m = SpinePlayer.Load($"{monDir}/{mon.Name}.json", $"{src}/{mon.Name}/{mon.Name}.atlas", $"{src}/{mon.Name}/{mon.Name}.png");
+			m.Position = new Vector2(center.X, 830f);
+			m.Scale = new Vector2(-mon.Scale, -mon.Scale);           // 朝左（面向 Joker），Spine 的 y 朝上
+			_world.AddChild(m);
+			m.Play("idle_loop", true);
+			_enemies[center] = m;
+			return;
+		}
 		Node2D n = new() { Position = center };
 		_world.AddChild(n);
 		_enemies[center] = n;

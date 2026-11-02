@@ -23,6 +23,12 @@ public partial class SpinePlayer : Node2D
 	{
 		public bool Mesh;
 		public Rect2 Region;
+		public bool Rotated;
+
+		/// <summary>切片里的相对坐标（u 向右、v 向下，没转之前）→ 图集像素。转过 90° 的切片在图集里占 高×宽。</summary>
+		public Vector2 Px(float u, float v) => Rotated
+			? new Vector2(Region.Position.X + (1f - v) * Region.Size.Y, Region.Position.Y + u * Region.Size.X)
+			: new Vector2(Region.Position.X + u * Region.Size.X, Region.Position.Y + v * Region.Size.Y);
 		// 区域图
 		public float X, Y, Rot, Sx = 1f, Sy = 1f, W, H;
 		// 网格：每个顶点若干 (骨骼, x, y, 权重)
@@ -62,6 +68,7 @@ public partial class SpinePlayer : Node2D
 		SpinePlayer p = new();
 		p._tex = ImageTexture.CreateFromImage(Image.LoadFromFile(pngPath));
 		var regions = new Dictionary<string, Rect2>();
+		var rotated = new HashSet<string>();
 		string? name = null;
 		foreach (string raw in System.IO.File.ReadAllLines(atlasPath).Skip(1))
 		{
@@ -70,6 +77,10 @@ public partial class SpinePlayer : Node2D
 			{
 				float[] v = line[7..].Split(',').Select(float.Parse).ToArray();
 				regions[name] = new Rect2(v[0], v[1], v[2], v[3]);
+			}
+			else if (line.StartsWith("rotate:") && name != null && line != "rotate:false" && line != "rotate:0")
+			{
+				rotated.Add(name);                                  // 原版怪物的图集：切片转 90° 存放（bounds 是没转之前的宽高）
 			}
 			else if (line.Length > 0 && !line.Contains(':'))
 			{
@@ -107,7 +118,8 @@ public partial class SpinePlayer : Node2D
 			{
 				var a = av.AsGodotDictionary();
 				string key = (string)attName;
-				Attachment at = new() { Region = regions.GetValueOrDefault(key) };
+				string rkey = a.ContainsKey("path") ? (string)a["path"] : key;
+				Attachment at = new() { Region = regions.GetValueOrDefault(rkey), Rotated = rotated.Contains(rkey) };
 				if (a.ContainsKey("type") && (string)a["type"] == "mesh")
 				{
 					at.Mesh = true;
@@ -115,12 +127,22 @@ public partial class SpinePlayer : Node2D
 					at.Uvs = new Vector2[uvs.Length / 2];
 					for (int i = 0; i < at.Uvs.Length; i++)
 					{
-						at.Uvs[i] = new Vector2(at.Region.Position.X + uvs[i * 2] * at.Region.Size.X, at.Region.Position.Y + uvs[i * 2 + 1] * at.Region.Size.Y);
+						at.Uvs[i] = at.Px(uvs[i * 2], uvs[i * 2 + 1]);
 					}
 					at.Tris = a["triangles"].AsInt32Array();
 					float[] v = a["vertices"].AsFloat32Array();
 					var verts = new List<(int, Vector2, float)[]>();
-					for (int i = 0; i < v.Length;)
+					bool weighted = v.Length != uvs.Length && !(a.ContainsKey("weighted") && !(bool)a["weighted"]);
+					if (!weighted)
+					{
+						// 不带权重的网格（原版怪物有）：顶点就在插槽骨骼的局部坐标里
+						int sb = p._slots.Find(x => x.Name == (string)slotName)?.Bone ?? 0;
+						for (int i = 0; i + 1 < v.Length; i += 2)
+						{
+							verts.Add(new[] { (sb, new Vector2(v[i], v[i + 1]), 1f) });
+						}
+					}
+					for (int i = 0; weighted && i < v.Length;)
 					{
 						int n = (int)v[i++];
 						var w = new (int, Vector2, float)[n];
@@ -309,8 +331,7 @@ public partial class SpinePlayer : Node2D
 			Transform2D m = bone * new Transform2D(Mathf.DegToRad(at.Rot), new Vector2(at.Sx, at.Sy), 0f, new Vector2(at.X, at.Y));
 			float hw = at.W / 2f, hh = at.H / 2f;
 			pts = new[] { m * new Vector2(-hw, hh), m * new Vector2(hw, hh), m * new Vector2(hw, -hh), m * new Vector2(-hw, -hh) };
-			Rect2 rg = at.Region;
-			uvs = new[] { rg.Position, rg.Position + new Vector2(rg.Size.X, 0f), rg.End, rg.Position + new Vector2(0f, rg.Size.Y) };
+			uvs = new[] { at.Px(0f, 0f), at.Px(1f, 0f), at.Px(1f, 1f), at.Px(0f, 1f) };
 			idx = new[] { 0, 1, 2, 0, 2, 3 };
 		}
 		Vector2 texSize = _tex.GetSize();
