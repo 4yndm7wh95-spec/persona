@@ -24,6 +24,8 @@ public static class ModEntry
 			3 => ShakeStrength.Medium,
 			_ => ShakeStrength.Strong,
 		}, ShakeDuration.Short);
+		Stage.ShakeDir = (s, deg) => NGame.Instance?.ScreenShake(Strength(s), ShakeDuration.Short, deg);
+		Stage.HitStop = s => NGame.Instance?.DoHitStop(Strength(s), s >= 3 ? ShakeDuration.Normal : ShakeDuration.Short);
 		// 逐个补丁类应用：一个失败（别的游戏版本里目标被改名）不影响其他
 		Harmony harmony = new("brooks.p5joker");
 		int ok = 0, failed = 0;
@@ -46,6 +48,14 @@ public static class ModEntry
 		}
 		GD.Print($"{Tag} harmony patches applied: {ok} ok, {failed} failed");
 	}
+
+	private static ShakeStrength Strength(int s) => s switch
+	{
+		<= 1 => ShakeStrength.VeryWeak,
+		2 => ShakeStrength.Weak,
+		3 => ShakeStrength.Medium,
+		_ => ShakeStrength.Strong,
+	};
 
 	/// <summary>特效出错只记日志，绝不打断游戏流程。</summary>
 	public static void Safe(string where, Action action) => Stage.Safe(where, action);

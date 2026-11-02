@@ -22,6 +22,7 @@ public static class AttackHitVfxPatch
 {
 	private static readonly PropertyInfo HitVfx = AccessTools.Property(typeof(AttackCommand), "HitVfx");
 	private static readonly FieldInfo CustomHitNodes = AccessTools.Field(typeof(AttackCommand), "_customHitVfxNodes");
+	private static readonly FieldInfo HitCount = AccessTools.Field(typeof(AttackCommand), "_hitCount");
 
 	public static void Prefix(AttackCommand __instance)
 	{
@@ -29,6 +30,7 @@ public static class AttackHitVfxPatch
 		{
 			if (__instance.ModelSource is CardModel card && Joker.OwnsCard(card))
 			{
+				HitWeights.BeginAttack(card, HitCount.GetValue(__instance) is int n ? n : 1);
 				HitVfx.SetValue(__instance, null);
 				(CustomHitNodes.GetValue(__instance) as IList)?.Clear();     // 小刀牌原版的飞刀（NShivThrowVfx）
 			}
@@ -124,7 +126,8 @@ public static class DamagePatch
 				return;
 			}
 			bool gun = Joker.IsShot(cardSource);
-			Hits.Mark(targets, gun);
+			(Weight floor, bool calm) = HitWeights.NextHit(cardSource, gun);
+			Hits.Mark(targets, gun, floor, calm);
 			if (Joker.Node(cardSource.Owner) is NCreature joker && NCombatRoom.Instance is NCombatRoom room)
 			{
 				List<NCreature> hit = targets.Where(c => !c.IsPlayer).Select(room.GetCreatureNode).OfType<NCreature>().ToList();
@@ -145,9 +148,9 @@ public static class DamagePatch
 /// <summary>Joker 最近 1.5 秒内打中的目标（多段 / 延迟结算都在窗口内）。</summary>
 public static class Hits
 {
-	private static readonly Dictionary<Creature, (ulong Time, bool Gun)> Marked = new();
+	private static readonly Dictionary<Creature, (ulong Time, bool Gun, Weight Floor, bool Calm)> Marked = new();
 
-	public static void Mark(IEnumerable<Creature> targets, bool gun)
+	public static void Mark(IEnumerable<Creature> targets, bool gun, Weight floor = Weight.Medium, bool calm = false)
 	{
 		ulong now = Godot.Time.GetTicksMsec();
 		if (Marked.Count > 32)
@@ -161,7 +164,7 @@ public static class Hits
 		{
 			if (!c.IsPlayer)
 			{
-				Marked[c] = (now, gun);
+				Marked[c] = (now, gun, floor, calm);
 			}
 		}
 	}
@@ -176,6 +179,10 @@ public static class Hits
 		gun = m.Gun;
 		return true;
 	}
+
+	/// <summary>这一下的底档（HitWeights 按牌定的）和是不是多段攻击的前几下。</summary>
+	public static (Weight Floor, bool Calm) FloorOf(Creature target) =>
+		Marked.TryGetValue(target, out var m) ? (m.Floor, m.Calm) : (Weight.Medium, false);
 }
 
 /// <summary>伤害数字：Joker 打中的敌人，原版数字换成 P5R 样式（Popups.Damage）。全被格挡（0 点）时保留原版。</summary>
@@ -199,6 +206,11 @@ public static class DamageNumberPatch
 				return;
 			}
 			Popups.Damage(layer, node.GetInstanceId(), node.VfxSpawnPosition, amount, gun);
+			// 打击确认感：顿帧 + 定向震屏 + 受击白闪 / 击退 + 重击 / 击杀的全屏冲击帧（Vfx/Impact.cs）
+			(Weight floor, bool calm) = Hits.FloorOf(target);
+			bool finale = result.WasTargetKilled && target.CombatState?.Enemies.All(e => e.IsDead) == true;
+			Impact.Confirm(layer, node.Visuals, node.VfxSpawnPosition, new Godot.Vector2(1f, 0.12f),
+				Impact.Grade(floor, result.UnblockedDamage, target.CurrentHp + result.UnblockedDamage, result.WasTargetKilled, finale, calm));
 			original.QueueFree();
 			replaced = true;
 		});
