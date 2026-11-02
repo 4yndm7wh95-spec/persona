@@ -144,6 +144,14 @@ public partial class Preview : Node2D
 			p.At(0.3, () => { p._joker?.Play("knife_in"); p._joker?.Queue("knife_loop", true); });
 			p.At(1.3, () => p._joker?.Play("knife_out"));
 		},
+		// 打击确认感（Vfx/Impact.cs）：轻 → 中 → 重 → 击杀，顿帧期间冲击帧照样按真实时间闪
+		["confirm"] = p =>
+		{
+			p.StrikeC(0.3, Enemy, 6, Weight.Light);
+			p.StrikeC(1.3, Enemy, 18, Weight.Medium);
+			p.StrikeC(2.4, Enemy, 40, Weight.Heavy);
+			p.StrikeC(3.7, Enemy2, 99, Weight.Kill);
+		},
 		["block"] = p =>
 		{
 			p.EnemyAttack(0.3, Enemy);
@@ -162,6 +170,23 @@ public partial class Preview : Node2D
 		At(t, () => _joker?.Play("attack"));
 		At(t + 0.13, () => HitFx.Swing(_front, Pose(760f, 260f), Pose(600f, 850f), Pose(1376f, 450f)));
 		Hit(t + 0.15, enemy, amount, false);
+	}
+
+	private void StrikeC(double t, Vector2 enemy, int amount, Weight w)
+	{
+		At(t, () => _joker?.Play("attack"));
+		At(t + 0.13, () => HitFx.Swing(_front, Pose(760f, 260f), Pose(600f, 850f), Pose(1376f, 450f)));
+		At(t + 0.15, () =>
+		{
+			HitFx.Slash(_front, enemy);
+			Popups.Damage(_front, enemy == Enemy ? 1ul : 2ul, enemy, amount, false);
+			_enemies.TryGetValue(enemy, out Node2D? n);
+			Impact.Confirm(_front, n, enemy, new Vector2(1f, 0.12f), w);
+			if (w == Weight.Kill && n != null)
+			{
+				n.CreateTween().TweenProperty(n, "modulate:a", 0f, 0.6).SetDelay(0.35);
+			}
+		});
 	}
 
 	private void Neutralize(double t, Vector2 enemy, float cut, bool fromIdle = false)
@@ -233,7 +258,9 @@ public partial class Preview : Node2D
 		};
 		Stage.Report = (where, e) => GD.PrintErr($"[P5Joker] {where}: {e}");
 		Stage.NowMs = () => (ulong)(_clock * 1000.0);
-		Stage.Shake = s => { _shake = s; _shakeLeft = 0.25f; };
+		Stage.Shake = s => { _shake = s; _shakeLeft = 0.25f; _shakeDir = null; };
+		Stage.ShakeDir = (s, deg) => { _shake = s; _shakeLeft = 0.25f; _shakeDir = Vector2.FromAngle(Mathf.DegToRad(deg)); };
+		Stage.HitStop = s => { _stopLen = s >= 3 ? 0.3f : 0.15f; _stopT = 0f; _stopPow = s switch { <= 1 => 1.5f, 2 => 2f, 3 => 3f, _ => 4f }; };
 
 		_world = new Node2D();
 		AddChild(_world);
@@ -257,9 +284,17 @@ public partial class Preview : Node2D
 	/// <summary>每帧都调用（弹药 UI 这类需要逐帧推进的）。</summary>
 	public void Every(Action action) => _every.Add(action);
 
+	private Vector2? _shakeDir;
+	private float _stopT = 1f, _stopLen = 0.15f, _stopPow = 2f;
+
 	public override void _Process(double delta)
 	{
 		_clock += delta;
+		if (_stopT < _stopLen)
+		{
+			_stopT += 1f / 30f;                                       // 录像固定 30fps：真实时间一帧
+			Engine.TimeScale = _stopT >= _stopLen ? 1.0 : 0.1 + 0.9 * Mathf.Pow(_stopT / _stopLen, _stopPow);
+		}
 		foreach (Action a in _every)
 		{
 			Stage.Safe("every", a);
@@ -268,7 +303,9 @@ public partial class Preview : Node2D
 		{
 			_shakeLeft -= (float)delta;
 			float a = _shake * 4f * Mathf.Max(_shakeLeft / 0.25f, 0f);
-			_world.Position = new Vector2((float)GD.RandRange(-a, a), (float)GD.RandRange(-a, a));
+			_world.Position = _shakeDir is Vector2 d
+				? d * a * 2.2f * Mathf.Cos(_shakeLeft * 60f) + new Vector2((float)GD.RandRange(-a, a), (float)GD.RandRange(-a, a)) * 0.3f
+				: new Vector2((float)GD.RandRange(-a, a), (float)GD.RandRange(-a, a));
 		}
 		else
 		{

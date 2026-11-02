@@ -15,6 +15,12 @@ public static class Stage
 	/// <summary>震屏：1 很弱、2 弱、3 中、4 强。</summary>
 	public static Action<int>? Shake;
 
+	/// <summary>定向震屏：强度 1～4，角度（度，0 = 向右）。没填就退回 Shake。</summary>
+	public static Action<int, float>? ShakeDir;
+
+	/// <summary>顿帧：1 很轻 ～ 4 很重（游戏里是原版 NGame.DoHitStop）。</summary>
+	public static Action<int>? HitStop;
+
 	/// <summary>现在是第几毫秒（判断连击 / 连续格挡用）。预览录像时比真实时间慢，所以预览换成自己的录像时钟。</summary>
 	public static Func<ulong> NowMs = () => Time.GetTicksMsec();
 

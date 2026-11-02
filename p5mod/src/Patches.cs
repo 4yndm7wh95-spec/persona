@@ -199,6 +199,9 @@ public static class DamageNumberPatch
 				return;
 			}
 			Popups.Damage(layer, node.GetInstanceId(), node.VfxSpawnPosition, amount, gun);
+			// 打击确认感：顿帧 + 定向震屏 + 受击白闪 / 击退 + 重击 / 击杀的全屏冲击帧（Vfx/Impact.cs）
+			Impact.Confirm(layer, node.Visuals, node.VfxSpawnPosition, new Godot.Vector2(1f, 0.12f),
+				Impact.Of(result.UnblockedDamage, target.MaxHp, result.WasTargetKilled));
 			original.QueueFree();
 			replaced = true;
 		});
