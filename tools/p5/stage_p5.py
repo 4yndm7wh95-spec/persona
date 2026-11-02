@@ -97,7 +97,7 @@ SFX = {
     "swish_05": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0151.ogg",
     "damage_enemy": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0022.ogg",
     "battle_all_out_atk": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0024.ogg",
-    "gun_03": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0033.ogg",
+    "gun_02": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0032.ogg",
     "gun_00": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0030.ogg",
     "encount_parry": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0132.ogg",
     "damage_critical": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0021.ogg",
@@ -188,7 +188,7 @@ def fx_textures():
             continue
         im = Image.open(src).convert("RGBA").resize((627, 627), Image.LANCZOS)
         yield f"depth_{pose}", im
-        if pose.startswith("grip"):
+        if pose.startswith("grip") or pose == "close":
             a = im.getchannel("A")
             cut, feather = int(627 * DEPTH_CUT), 14
             ramp = Image.linear_gradient("L").rotate(90).resize((627, 627))   # left 255 -> right 0

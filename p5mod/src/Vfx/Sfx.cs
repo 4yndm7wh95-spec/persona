@@ -29,7 +29,7 @@ public static class Sfx
 		SwishLow = "swish_04",          // 低沉的挥动（#149，缩回 / 转杖）
 		Hit = "damage_enemy",           // 打中敌人（#22）
 		AllOut = "battle_all_out_atk",  // 总攻击斩击（#24，第一刀叠上去）
-		Gun = "gun_03",                 // 枪声（#33）
+		Gun = "gun_02",                 // 枪声（#32：单发手枪；#33 是 10 连发的机关枪，用户 2026-11-02 指出）
 		Ricochet = "gun_00",            // 跳弹（#30 gun_00 / talk_ricochet）
 		Parry = "encount_parry",        // 格挡（#132）
 		Critical = "damage_critical",   // 暴击（#21：召唤高潮那一拍）

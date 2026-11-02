@@ -67,7 +67,6 @@ public sealed class ReadyFx
 	{
 		ReadyFx fx = new(front, back, stance, pose, facing);
 		// 预备层音效（很轻）：拿起牌一声切入提示；掏枪 / 转刀 / 面具点火各一声
-		Sfx.Play(Sfx.Select, 0.35f);
 		switch (stance)
 		{
 			case Stance.Gun: Sfx.Play(Sfx.GunDraw, 0.5f, 0.05f); break;

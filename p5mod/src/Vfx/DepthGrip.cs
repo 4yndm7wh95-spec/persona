@@ -14,7 +14,7 @@ namespace P5Joker;
 public static class DepthGrip
 {
 	/// <summary>攥住之后多久捏爆（= 游戏结算推后多少，Aim 用）。</summary>
-	public const float CrushDelay = 0.25f;
+	public const float CrushDelay = 0.42f;   // 前半段：手伸到敌人身上虚握着；玻璃碎开那一下才狠狠捏爆
 
 	private const float Img = 627f;
 	// depth_hand_v2：握住的地方（四指扣住的中心）、远处的手腕（画面上方，烟往上后方散）
@@ -171,6 +171,7 @@ void fragment() {
 		Texture2D tClose = Fx.Tex("depth_close") ?? tOpen;
 		Texture2D tGripB = Fx.Tex("depth_grip_back") ?? tOpen, tGripF = Fx.Tex("depth_grip_front") ?? tOpen;
 		Texture2D tTightB = Fx.Tex("depth_grip_tight_back") ?? tGripB, tTightF = Fx.Tex("depth_grip_tight_front") ?? tGripF;
+		Texture2D tCloseB = Fx.Tex("depth_close_back") ?? tGripB, tCloseF = Fx.Tex("depth_close_front") ?? tGripF;
 		Ids.Clear();
 		Live live = new();
 		_live = live;
@@ -195,10 +196,11 @@ void fragment() {
 			Ids.Add(id);
 			// 手的大小 / 位置按敌人的宽度定（用户 2026-11-02：手像直接穿透了敌人）：四指从指尖（贴图 x≈0.04）到切开处（DEPTH_CUT 0.66）
 			// 横跨整个敌人，切开处（手掌开始的地方）落在敌人身体右侧边缘外一点 —— 手掌露在敌人身后的边上，手指绕过敌人正面
-			float halfW = Mathf.Max(h * 0.6f, bodyW * 0.5f);
-			float k = halfW * 2.15f / ((0.66f - 0.04f) * Img);
+			// 正好握住敌人（用户 2026-11-02：手太大）：手指横跨敌人宽度、四指那几排的高度约等于敌人身高，两者取小
+			float halfW = Mathf.Clamp(bodyW * 0.5f, h * 0.45f, h * 1.1f);
+			float k = Mathf.Min(halfW * 1.75f / ((0.66f - 0.04f) * Img), h * 1.5f / (0.57f * Img));
 			Hand hd = new() { Center = c, H = h, K = k, Tint = tint };
-			hd.Grip = c + new Vector2(halfW * 1.05f, 0f) - (new Vector2(0.66f * Img, Hold.Y) - new Vector2(Img / 2f, Img / 2f)) * k;
+			hd.Grip = c + new Vector2(halfW * 0.85f, 0f) - (new Vector2(0.66f * Img, Hold.Y) - new Vector2(Img / 2f, Img / 2f)) * k;
 			hd.Deep = c + new Vector2(h * 0.15f, -h * 1.3f);                        // 敌人身后上方的深处（手从上后方扑下来）
 			hd.Branch = MakeStrand(rootB, 0.12f, 0.5f, h * 0.8f, Fx.Rand(0.12f, 0.24f) * (hands.Count % 2 == 0 ? 1f : -1f));
 			Sprite2D Make(Node2D parent, Texture2D t, out Node2D node, out ShaderMaterial m)
@@ -305,9 +307,10 @@ void fragment() {
 				float bright = Mathf.Lerp(0.25f, 1f, d);
 				bool gripped = s >= attack && !released;
 				hd.FrontN.Visible = gripped;
-				hd.Back.Texture = gripped ? (tight ? tTightB : tGripB) : s < attack - 0.05f ? tOpen : s < attack ? tClose : tOpen;
-				hd.Front.Texture = tight ? tTightF : tGripF;
-				float sq = gripped ? 1f - 0.06f * squeeze - 0.04f * Mathf.Exp(-(s - attack) / 0.07f) : 1f;
+				// 握住前张开扑来；握住后先虚握（半弯的手指贴在敌人身上）；捏爆那一下狠狠攥紧，之后一直攥着
+				hd.Back.Texture = gripped ? (tight ? tTightB : tCloseB) : tOpen;
+				hd.Front.Texture = tight ? tTightF : tCloseF;
+				float sq = gripped ? 1f - 0.16f * squeeze - 0.03f * Mathf.Exp(-(s - attack) / 0.07f) : 1f;   // 捏爆那一下明显往里一缩
 				float shake = gripped ? Mathf.Sin(s * 70f) * 1.6f * (0.3f + squeeze) : 0f;
 				hd.BackN.GlobalPosition = hd.FrontN.GlobalPosition = pos + new Vector2(shake, shake * 0.4f);
 				hd.BackN.Scale = hd.FrontN.Scale = new Vector2(scale * sq, scale * (2f - sq));
@@ -332,7 +335,6 @@ void fragment() {
 	private static void Crush(Control front, Control back, List<Hand> hands)
 	{
 		// 顿帧 / 震屏 / 暴击 + 低频由召唤高潮那一拍（SummonStage.Beat，和捏爆同一帧、眼神特写同时碎开）统一放，这里不重复
-		Sfx.Play(Sfx.PoisonTick, 0.9f);
 		foreach (Hand hd in hands)
 		{
 			Vector2 c = hd.Center;
