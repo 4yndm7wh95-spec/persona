@@ -144,7 +144,26 @@ public partial class Preview : Node2D
 			p.At(0.3, () => { p._joker?.Play("knife_in"); p._joker?.Queue("knife_loop", true); });
 			p.At(1.3, () => p._joker?.Play("knife_out"));
 		},
-		// 打击确认感（Vfx/Impact.cs）的分档：连斩（前几下轻、最后一下中）→ 普通一刀（中）→ 大招（重）→ 1 秒内第二次重击（不再红黑帧）
+		// 打击确认感（Vfx/Impact.cs）的分档，开枪（小刀牌）：投掷匕首一枪（轻）→ 三张小刀连着打（每张轻）→ 刀扇一发弹过三个敌人（群攻轻，整组只顿一次）
+		// → 一枪打出 14 点（升到中）→ 一枪打死一个（击杀）
+		["confirm_gun"] = p =>
+		{
+			p.ShotC(0.3, Enemy, 4, Weight.Light);
+			for (int i = 0; i < 3; i++)
+			{
+				p.ShotC(1.3 + 0.5 * i, Enemy, 4, Weight.Light);
+			}
+			p.At(3.3, () => p._joker?.Play("shiv"));
+			p.At(3.48, () => HitFx.Muzzle(p._front, Muzzle));
+			p.At(3.5, () => HitFx.Ricochet(p._front, Muzzle, new[] { Enemy2, Enemy, Enemy3 }));
+			foreach ((Vector2 e, double dt) in new[] { (Enemy2, 0.05), (Enemy, 0.1), (Enemy3, 0.15) })
+			{
+				p.HitC(3.5 + dt, e, 4, Weight.Light, false, gun: true);
+			}
+			p.ShotC(4.6, Enemy, 14, Impact.Grade(Weight.Light, 14, 40, false, false));
+			p.ShotC(5.7, Enemy3, 9, Impact.Grade(Weight.Light, 9, 9, true, false), dies: true);
+		},
+		// 打击确认感的分档，刀：连斩（前几下轻、最后一下中）→ 普通一刀（中）→ 大招（重）→ 1 秒内第二次重击（不再红黑帧）
 		// → 打死一个（击杀）→ 打死最后一个（战斗结束）
 		["confirm"] = p =>
 		{
@@ -178,7 +197,15 @@ public partial class Preview : Node2D
 		Hit(t + 0.15, enemy, amount, false);
 	}
 
-	private void HitC(double t, Vector2 enemy, int amount, Weight w, bool swing, bool dies = false)
+	private void ShotC(double t, Vector2 enemy, int amount, Weight w, bool dies = false)
+	{
+		At(t - 0.2, () => _joker?.Play("shiv"));
+		At(t - 0.02, () => HitFx.Muzzle(_front, Muzzle));
+		At(t, () => HitFx.Shot(_front, Muzzle, enemy));
+		HitC(t, enemy, amount, w, false, dies, gun: true);
+	}
+
+	private void HitC(double t, Vector2 enemy, int amount, Weight w, bool swing, bool dies = false, bool gun = false)
 	{
 		if (swing)
 		{
@@ -187,10 +214,13 @@ public partial class Preview : Node2D
 		}
 		At(t, () =>
 		{
-			HitFx.Slash(_front, enemy);
-			Popups.Damage(_front, (ulong)(enemy.X * 10f + (float)t), enemy, amount, false);
+			if (!gun)
+			{
+				HitFx.Slash(_front, enemy);
+			}
+			Popups.Damage(_front, (ulong)(enemy.X * 10f + (float)t), enemy, amount, gun);
 			_enemies.TryGetValue(enemy, out Node2D? n);
-			Impact.Confirm(_front, n, enemy, new Vector2(1f, 0.12f), w);
+			Impact.Confirm(_front, n, enemy, gun ? (enemy - Muzzle) : new Vector2(1f, 0.12f), w);
 			if (dies && n != null)
 			{
 				n.CreateTween().TweenProperty(n, "modulate:a", 0f, 0.6).SetDelay(0.35);
