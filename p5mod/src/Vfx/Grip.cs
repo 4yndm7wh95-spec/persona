@@ -29,6 +29,7 @@ uniform float dissolve = 0.0;   // 0 = 完整，1 = 全散成雾
 uniform float hot = 0.0;
 uniform float seed = 0.0;
 uniform float clock = 0.0;
+uniform float aura_k = 1.0;   // 外圈暗红气（拆层的前半只手不画，不然切口处一道暗红竖线）
 uniform vec2 px = vec2(0.0011, 0.0016);
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float vnoise(vec2 p) {
@@ -52,7 +53,7 @@ void fragment() {
 		o = max(o, texture(TEXTURE, uv + vec2(cos(an), sin(an)) * px * 22.0).a);
 	}
 	float auraN = vnoise(UV * 18.0 + vec2(-clock * 3.0, clock)) ;
-	float aura = o * (1.0 - c.a) * (0.35 + 0.65 * smoothstep(0.3, 0.7, auraN)) * 0.8;
+	float aura = o * (1.0 - c.a) * (0.35 + 0.65 * smoothstep(0.3, 0.7, auraN)) * 0.8 * aura_k;
 	// 从手腕那端（左）先散：噪声 + 横向偏置
 	float n = vnoise(UV * vec2(14.0, 10.0)) * 0.6 + vnoise(UV * 40.0) * 0.4;
 	float th = dissolve * 1.25 - (UV.x - 0.2) * 0.35;

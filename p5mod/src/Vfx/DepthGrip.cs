@@ -127,7 +127,7 @@ void fragment() {
 	/// <param name="from">亚森伸出手的地方</param>
 	/// <param name="enemies">(节点 id, 中心, 中心到头顶的距离, 上色)</param>
 	/// <param name="attack">攥住的时刻（= 召唤高潮那一拍），捏爆在 attack + CrushDelay</param>
-	public static void Play(Control front, Control back, Vector2 from, IReadOnlyList<(ulong Id, Vector2 Center, float H, Action<Color>? Tint)> enemies,
+	public static void Play(Control front, Control back, Vector2 from, IReadOnlyList<(ulong Id, Vector2 Center, float H, float W, Action<Color>? Tint)> enemies,
 		float attack)
 	{
 		if (Fx.Tex("depth_open") is not Texture2D tOpen || enemies.Count == 0)
@@ -156,12 +156,15 @@ void fragment() {
 		Place(trunk, from, deepPt);
 
 		var hands = new List<Hand>();
-		foreach (var (id, c, h, tint) in enemies)
+		foreach (var (id, c, h, bodyW, tint) in enemies)
 		{
 			Ids.Add(id);
-			float k = h * 2.3f / Img;
+			// 手的大小 / 位置按敌人的宽度定（用户 2026-11-02：手像直接穿透了敌人）：四指从指尖（贴图 x≈0.04）到切开处（DEPTH_CUT 0.66）
+			// 横跨整个敌人，切开处（手掌开始的地方）落在敌人身体右侧边缘外一点 —— 手掌露在敌人身后的边上，手指绕过敌人正面
+			float halfW = Mathf.Max(h * 0.6f, bodyW * 0.5f);
+			float k = halfW * 2.15f / ((0.66f - 0.04f) * Img);
 			Hand hd = new() { Center = c, H = h, K = k, Tint = tint };
-			hd.Grip = c - (Hold - new Vector2(Img / 2f, Img / 2f)) * k;            // 让「握住的地方」落在敌人中心
+			hd.Grip = c + new Vector2(halfW * 1.05f, 0f) - (new Vector2(0.66f * Img, Hold.Y) - new Vector2(Img / 2f, Img / 2f)) * k;
 			hd.Deep = c + new Vector2(h * 0.15f, -h * 1.3f);                        // 敌人身后上方的深处（手从上后方扑下来）
 			hd.Branch = MakeStrand(rootB, 0.12f, 0.5f, h * 0.8f);
 			Sprite2D Make(Node2D parent, Texture2D t, out Node2D node, out ShaderMaterial m)
@@ -178,6 +181,7 @@ void fragment() {
 			}
 			hd.Back = Make(rootB, tOpen, out hd.BackN, out hd.BackM);
 			hd.Front = Make(rootF, tGripF, out hd.FrontN, out hd.FrontM);
+			hd.FrontM.SetShaderParameter("aura_k", 0f);
 			// 指缝里渗出的紫黑毒光（握住到捏爆之间越来越亮）
 			hd.Glow = Glow.SoftSprite(rootF, c, new Color(0.62f, 0.2f, 1f), 0.1f);
 			hd.Glow.Modulate = new Color(0.62f, 0.2f, 1f, 0f);
@@ -292,9 +296,7 @@ void fragment() {
 	/// <summary>捏爆：所有手同一帧 —— 紫黑毒光炸开、墨点甩出去、咒焰贴身烧起来、敌人一闪；顿帧 + 低频。</summary>
 	private static void Crush(Control front, Control back, List<Hand> hands)
 	{
-		HitStop.Request(0.08);
-		Fx.Shake(2);
-		Sfx.Play(Sfx.SubBoom, 1f);
+		// 顿帧 / 震屏 / 暴击 + 低频由召唤高潮那一拍（SummonStage.Beat，和捏爆同一帧、眼神特写同时碎开）统一放，这里不重复
 		Sfx.Play(Sfx.PoisonTick, 0.9f);
 		foreach (Hand hd in hands)
 		{

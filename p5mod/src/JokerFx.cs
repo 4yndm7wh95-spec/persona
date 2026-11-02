@@ -118,13 +118,13 @@ public static class JokerFx
 				float height = (jf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length() * 1.35f;
 				float face = Joker.Facing(joker);
 				Vector2 from = Persona.ChestOf(spec, jf, height, face) + new Vector2(0.22f * height * face, -0.12f * height);
-				var list = new List<(ulong, Vector2, float, Action<Color>?)>();
+				var list = new List<(ulong, Vector2, float, float, Action<Color>?)>();
 				foreach (Creature c in card.CombatState?.HittableEnemies ?? (IEnumerable<Creature>)Array.Empty<Creature>())
 				{
 					if (room.GetCreatureNode(c) is NCreature n)
 					{
 						CanvasItem? v = n.Visuals;
-						list.Add((n.GetInstanceId(), n.VfxSpawnPosition, Mathf.Max(80f, (n.VfxSpawnPosition - n.GetTopOfHitbox()).Length()),
+						list.Add((n.GetInstanceId(), n.VfxSpawnPosition, Mathf.Max(80f, (n.VfxSpawnPosition - n.GetTopOfHitbox()).Length()), n.Hitbox.GetGlobalRect().Size.X,
 							v == null ? null : col => { if (GodotObject.IsInstanceValid(v)) { v.Modulate = col; } }));
 					}
 				}

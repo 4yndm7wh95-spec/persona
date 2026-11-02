@@ -114,19 +114,19 @@ public partial class Preview : Node2D
 			p.Ready(0.25, Stance.Mask, "mask", "cast_from_mask", play: true);
 			p.At(1.89, () =>
 			{
-				CutIn.SplitAt = spec.AttackAt - 0.05f;
+				CutIn.SplitAt = spec.AttackAt + DepthGrip.CrushDelay - 0.05f;
 				SummonStage.Play(p._back, p._front, Pose(1010, 215));
 				CutIn.Eyes(p._back);
 				Persona.Show(spec, p._back, JokerFeet, tall);
 			});
-			p.At(1.89 + spec.AttackAt, () => SummonStage.Beat(p._front, Persona.ChestOf(spec, JokerFeet, tall), p._back));
-			var es = new[] { (Enemy, 170f, 1ul), (Enemy2, 128f, 2ul), (Enemy3, 128f, 3ul) };
+			p.At(1.89 + spec.AttackAt + DepthGrip.CrushDelay, () => SummonStage.Beat(p._front, Persona.ChestOf(spec, JokerFeet, tall), p._back));
+			var es = new[] { (Enemy, 170f, 1ul, 270f), (Enemy2, 128f, 2ul, 202f), (Enemy3, 128f, 3ul, 216f) };
 			p.At(1.85, () => DepthGrip.Play(p._front, p._back, Persona.ChestOf(spec, JokerFeet, tall) + new Vector2(0.22f * tall, -0.12f * tall),
-				Array.ConvertAll(es, e => (e.Item3, e.Item1, e.Item2, (Action<Color>?)(c => p._enemies[e.Item1].Modulate = c))), 0.04f + spec.AttackAt));
+				Array.ConvertAll(es, e => (e.Item3, e.Item1, e.Item2, e.Item4, (Action<Color>?)(c => p._enemies[e.Item1].Modulate = c))), 0.04f + spec.AttackAt));
 			double hit = 1.89 + spec.AttackAt + DepthGrip.CrushDelay;
 			for (int r = 0; r < 3; r++)
 			{
-				foreach (var (e, hh, id) in es)
+				foreach (var (e, hh, id, _) in es)
 				{
 					int rr = r;
 					p.At(hit + 0.3 * rr + 0.02 * id, () => { DepthGrip.OnTick(id); Popups.Damage(p._front, id, e, 9 - rr, false); });
