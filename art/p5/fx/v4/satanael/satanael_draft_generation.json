@@ -1,0 +1,26 @@
+{
+  "group": "satanael",
+  "name": "satanael_draft",
+  "w": 2560,
+  "h": 1536,
+  "prompt": "Draw Satanael, Joker's ultimate Persona from Persona 5, as a colossal WAIST-UP 2D game character sprite, landscape 2560x1536, transparent RGBA. Image 1 is original PS0170 model, use only official design: dark armored body, intricate gold armor ornament, imposing horned head silhouette, huge dark bat-like layered wings with gold structural accents. Do not copy the stiff bind pose or 3D texture rendering. Image 2 Joker defines clean black outlines and flat hard cel-shading, not photoreal or painterly. Low-angle nearly frontal camera to emphasize enormous scale, head/horns fully visible, luminous eyes with NO external halo. One hand braces the gigantic ornate long-barreled Sinful Shell handgun, pointing toward screen RIGHT, full gun visible, dramatic broad silhouette. Body from waist upward only; dark wings spread broadly behind, grouped readable shapes, not shredded detail. Clean layer-friendly separated arm/gun/wings, minimal overlap, retain P5 Satanael design, not generic devil or Arsene. No background, smoke, haze, glow surrounding body, muzzle flash, firing effects, ground, shadow, text or other characters. Entire silhouette fits with transparent margin. Match the same bold 2D cel style as the approved Joker sprite. Genuine alpha zero outside character.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-9fb73989-a2ab-4b21-afd1-821f0aff66bb.png",
+  "raw_size": [
+    1619,
+    971
+  ],
+  "method": "imagegen",
+  "generation_count": 1,
+  "redraw_count": 0,
+  "status": "pending_approval_not_layered",
+  "processing": "尺寸归一、alpha<=2和透明RGB清零；未局部修图",
+  "corner_alpha": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "reference_images": [
+    "C:\\Users\\kkk\\sts2_tools\\tmp\\sts2_vfx_20261102\\satanael_ref.png"
+  ]
+}
