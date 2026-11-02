@@ -1,0 +1,48 @@
+{
+  "group": "satanael",
+  "name": "layers/wings_right.png",
+  "canvas": [
+    3200,
+    1700
+  ],
+  "bbox": [
+    1500,
+    70,
+    3190,
+    1700
+  ],
+  "prompt": "Precise game puppet LAYER EXTRACTION EDIT of the attached master image. ONLY ALL the black-and-gold bat wing segments on SCREEN RIGHT as a single layer, roots complete where hidden behind body/arms/gun. Remove body, head, horns, arms, gun and left-side wings. Preserve the master's exact design, pose, proportions, ink outlines, cel colors and spatial placement. The removed objects become truly transparent; do NOT replace them with black paint. Complete the occluded portions of this layer only so it can rotate without holes. Output the SAME full canvas as the master, keep this part at its original position and scale, DO NOT recenter, zoom or crop it; lots of transparent empty canvas is intentional. Canvas 3200x1700 RGBA, alpha0 outside this one extracted layer. No background, haze, glow, text, other parts, labels, sheet layout or redesign.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-2f14e923-e05c-4d40-a704-22daf449e260.png",
+  "raw_size": [
+    1721,
+    914
+  ],
+  "generation_count": 1,
+  "processing": "尺寸归一化；alpha<=2及全透明RGB清零；独立编辑生成可能有局部位置/比例变化，供后续调整。",
+  "alpha_bbox": [
+    1736,
+    85,
+    3182,
+    1659
+  ],
+  "registration": {
+    "source_alpha20_bbox": [
+      934,
+      48,
+      1709,
+      891
+    ],
+    "uniform_scale": 1.933570581257414,
+    "pasted_xy": [
+      1595,
+      70
+    ],
+    "desired_bbox": [
+      1500,
+      70,
+      3190,
+      1700
+    ],
+    "method": "manual target-region fit preserving aspect ratio; approximate, not exact pixel registration"
+  }
+}
