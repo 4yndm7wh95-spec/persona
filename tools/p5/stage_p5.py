@@ -104,6 +104,7 @@ SFX = {
     "damage_enemy": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0022.ogg",
     "battle_all_out_atk": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0024.ogg",
     "gun_02": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0032.ogg",
+    "gun_07": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0037.ogg",                # the shot (user 2026-11-02: gun_02 read as a strike sound)
     "gun_00": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0030.ogg",
     "encount_parry": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0132.ogg",
     "damage_critical": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0021.ogg",
