@@ -9,3 +9,4 @@ materials
 images
 animations
 *.cs.uid
+.mon/
