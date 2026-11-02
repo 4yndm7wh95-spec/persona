@@ -97,18 +97,20 @@ void fragment() {
 	/// 顿帧 90ms、强震屏、舞台白闪；从人格面具胸口扩出大水波纹（召唤器枪口那一圈）；
 	/// 声音：暴击 + 合成低频重击（玻璃碎裂由 CutIn.Shatter 放）。front = 前景层，mask = 面具位置。
 	/// </summary>
-	public static void Beat(Control front, Vector2 persona, Control? back = null)
+	/// <summary>拍 1「召唤」在舞台开始后几秒：眼神特写撕开（ImpactAt 0.2）之后停 0.32s。</summary>
+	public const float EvokeAt = 0.52f;
+
+	/// <summary>
+	/// 拍 1「召唤」（标杆 1，2026-11-02）：照结城理 mod 召唤器扣扳机原样移植 —— 顿帧 90ms、强震屏、从 Joker 的面具朝人格面具
+	/// 一道贯穿光 + 出口玻璃龟裂 + 锥形玻璃 + 出口环 + 大折射波 + 蓝焰升腾 + 黑羽（Evoke.cs）；眼神特写同时碎开（CutIn.Shatter）。
+	/// 声音：暴击 + 低频（玻璃声在 CutIn.Shatter）。mask = Joker 的面具，persona = 人格面具胸口（光射向哪）。
+	/// </summary>
+	public static void Beat(Control front, Vector2 mask, Control? back = null, float facing = 1f, Vector2? persona = null)
 	{
 		HitStop.Request(0.09);
 		Fx.Shake(3);
-		Vector2 screen = Fx.Screen(front);
-		// （全屏红黑剪影试过：舞台本身就是红黑的，再压一次人物剪影就糊成一片红点 —— 去掉，白闪在舞台着色器里）
-		// 水波纹从人格面具出手的地方扩出去（用户 2026-11-01：面具上出水波纹怪；只给 Persona，放大、更明显）
-		// 水波纹画在人物后面那层：前景层读屏幕会拿到旧画面，把同一帧里刚出现的前景特效（手指等）盖掉
-		Control rl = back ?? front;
-		Glow.Ripple(rl, persona, screen.X * 1.1f, 0.75f, 0.07f);
-		Glow.Ripple(rl, persona, screen.X * 0.6f, 0.5f, 0.05f, 1f, 0.06f);
-		// 这一拍只放一组主声音：暴击 + 低频（玻璃在 CutIn.Shatter）；手砸、咒怨这一拍都不另外响（用户：后半段太杂）
+		Vector2 dir = persona is Vector2 p ? p - mask : new Vector2(-facing, -0.3f);
+		Evoke.Fire(front, back ?? front, mask, dir, 1f);
 		Sfx.Play(Sfx.Critical, 0.9f);
 		Sfx.Play(Sfx.SubBoom, 1f);
 		Quiet = Stage.NowMs() + 400;

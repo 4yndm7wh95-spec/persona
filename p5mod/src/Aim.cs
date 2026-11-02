@@ -268,38 +268,40 @@ public static class Aim
 		Tier tier = Tiers.For(card);
 		if (stance == Stance.Mask && (tier >= Tier.Uncommon || Grips(card.GetType().Name)) && Joker.FxLayer(back: true) is Control back)
 		{
-			// 按稀有度分级（Tiers）：稀有 = 完整召唤；罕见 = 只有亚森短暂现身；普通 / 基础不召唤
+			// 按稀有度分级（Tiers）：稀有 = 完整召唤；罕见 = 只有人格面具现身；普通毒牌 = 亚森伸手
+			// 标杆 1（2026-11-02，照结城理 mod 召唤器 → 君王之剑的两拍结构）：
+			//   拍 1「召唤」：眼神特写撕开后停一下（EvokeAt），从 Joker 的面具朝人格面具喷出一道贯穿光 + 锥形玻璃 + 蓝焰（Evoke），
+			//                眼神特写同时碎开，人格面具从这团蓝焰里现身；
+			//   拍 2「出手」：人格面具出手 = 伤害 / 上毒结算（各张牌自己的命中特效带顿帧和冲击声）。
 			Persona.Spec spec = PersonaFor(card);
-			// 毒性爆发：攥住（高潮那一拍）之后再停 CrushDelay 才捏爆 = 游戏结算的那一刻
-			float extra = 0f;   // 毒性爆发：手提前 CrushDelay 握住，捏爆 = 人格面具出手那一拍（不再往后拖，用户 2026-11-02：这段停留变长了）
-			Summoning[node.GetInstanceId()] = (Time.GetTicksMsec() + 1800, 0.04f + spec.AttackAt + extra);
+			float evoke = tier == Tier.Rare ? SummonStage.EvokeAt : 0f;
+			Summoning[node.GetInstanceId()] = (Time.GetTicksMsec() + 2000, 0.04f + evoke + spec.AttackAt);
 			Vector2 head = Joker.PosePoint(node, ReadyFx.MaskFace);
 			Fx.After(back, 0.04, () =>
 			{
 				Vector2 feet = Joker.PosePoint(node, ReadyFx.Feet);
 				float tall = (feet - Joker.PosePoint(node, new Vector2(815f, 120f))).Length();
+				float face = Joker.Facing(node);
 				if (tier == Tier.Rare)
 				{
-					// 高潮合成一拍：眼神特写在人格面具出手那一刻碎开（裂纹定格 0.05s 在前）
-					// 高潮那一拍：一般是人格面具出手；毒性爆发是手捏爆的那一刻（用户 2026-11-02：玻璃碎掉要和捏爆同步）
-					float beat = spec.AttackAt + extra;
-					CutIn.SplitAt = beat - 0.05f;
-					Vector2 chest = Persona.ChestOf(spec, Joker.PosePoint(node, ReadyFx.Feet),
-						(Joker.PosePoint(node, ReadyFx.Feet) - Joker.PosePoint(node, new Vector2(815f, 120f))).Length() * 1.35f, Joker.Facing(node));
-					Fx.After(back, beat, () => SummonStage.Beat(Joker.FxLayer() ?? back, chest, back));
-					// Persona 召唤：背景变成红黑网点的舞台、集中线（SummonStage），原版眼神特写在上面撕开（都在背景层，用户 2026-10-29）
+					CutIn.SplitAt = evoke - 0.05f;                      // 裂纹定格 0.05s，拍 1 碎开
 					if (Joker.FxLayer() is Control fr)
 					{
 						SummonStage.Play(back, fr, head);
 					}
 					CutIn.Eyes(back);
+					Vector2 chest = Persona.ChestOf(spec, feet, tall * 1.35f, face);
+					Fx.After(back, evoke, () =>
+					{
+						SummonStage.Beat(Joker.FxLayer() ?? back, head, back, face, chest);
+						Persona.Show(spec, back, feet, tall * 1.35f, face);
+					});
 				}
-				if (tier != Tier.Rare)
+				else
 				{
-					Sfx.Play(Sfx.PersonaFlame, 0.8f);                   // 没有舞台：人格面具现身的蓝焰声自己放（稀有由 SummonStage 放）
+					Sfx.Play(Sfx.PersonaFlame, 0.8f);                   // 没有舞台：人格面具现身的蓝焰声自己放
+					Persona.Show(spec, back, feet, tall * 1.35f, face);
 				}
-				// 人格面具（稀有：在眼神特写上面；罕见：单独现身）
-				Persona.Show(spec, back, feet, tall * 1.35f, Joker.Facing(node));
 			});
 		}
 		return true;
@@ -311,7 +313,7 @@ public static class Aim
 	/// <summary>这张牌召唤哪个人格面具：毒性爆发 = 伊邪那岐大神（万物真言），其他 = 亚森。</summary>
 	public static Persona.Spec PersonaFor(CardModel card) => card.GetType().Name switch
 	{
-		"Outbreak" => Persona.ArseneSpec with { Linger = 1.8f },   // 伊邪那岐大神先搁置（用户 2026-11-01）；等深处的手缩回去再走
+		"Outbreak" => Persona.ArseneSpec with { First = 10, Linger = 1.8f },   // 多 0.1s 起势：手要在他现身之后才伸出去   // 伊邪那岐大神先搁置（用户 2026-11-01）；等深处的手缩回去再走
 		var n when Grips(n) => Persona.ArseneSpec with { Linger = 1.1f },   // 伸手抓人：等手收回来再走
 		_ => Persona.ArseneSpec,
 	};
@@ -320,7 +322,7 @@ public static class Aim
 	public static bool Grips(string cardName) => cardName is "BubbleBubble" or "DeadlyPoison" or "Snakebite";   // 用户 2026-11-01：只要用毒就亚森 + 手捏
 
 	/// <summary>这张牌召唤时人格面具出手的时刻（施法后几秒）：出牌特效对齐到这一刻。</summary>
-	public static float HitFor(CardModel card) => 0.04f + PersonaFor(card).AttackAt;
+	public static float HitFor(CardModel card) => 0.04f + (Tiers.For(card) == Tier.Rare ? SummonStage.EvokeAt : 0f) + PersonaFor(card).AttackAt;
 
 	/// <summary>正在召唤的 Joker：(到这个时刻为止的毫秒, 结算要推迟到施法后几秒)。</summary>
 	private static readonly Dictionary<ulong, (ulong Until, float Hit)> Summoning = new();

@@ -142,7 +142,7 @@ public static class JokerFx
 				CanvasItem? body = t.Visuals;
 				Grip.Play(layer, t.GetInstanceId(), from, t.VfxSpawnPosition, Mathf.Max(80f, (t.VfxSpawnPosition - t.GetTopOfHitbox()).Length()),
 					Aim.HitFor(card), face, body == null ? null : c => { if (GodotObject.IsInstanceValid(body)) { body.Modulate = c; } },
-					ownImpact: Tiers.For(card) < Tier.Rare);                   // 非稀有没有召唤高潮那一拍：攥住的冲击声 / 顿帧自己放
+					ownImpact: true);                                          // 拍 2：攥住自己带冲击声 / 顿帧
 				break;
 			}
 			case "DeadlyPoison" when t != null:

@@ -14,7 +14,7 @@ namespace P5Joker;
 public static class DepthGrip
 {
 	/// <summary>攥住之后多久捏爆（= 游戏结算推后多少，Aim 用）。</summary>
-	public const float CrushDelay = 0.42f;   // 前半段：手伸到敌人身上虚握着；玻璃碎开那一下才狠狠捏爆
+	public const float CrushDelay = 0.2f;    // 前半段：手伸到敌人身上虚握着；玻璃碎开那一下才狠狠捏爆
 
 	private const float Img = 627f;
 	// depth_hand_v2：握住的地方（四指扣住的中心）、远处的手腕（画面上方，烟往上后方散）
@@ -334,7 +334,11 @@ void fragment() {
 	/// <summary>捏爆：所有手同一帧 —— 紫黑毒光炸开、墨点甩出去、咒焰贴身烧起来、敌人一闪；顿帧 + 低频。</summary>
 	private static void Crush(Control front, Control back, List<Hand> hands)
 	{
-		// 顿帧 / 震屏 / 暴击 + 低频由召唤高潮那一拍（SummonStage.Beat，和捏爆同一帧、眼神特写同时碎开）统一放，这里不重复
+		// 拍 2（人格面具出手）：捏爆自己带顿帧 + 震屏 + 干净的冲击声
+		HitStop.Request(0.08);
+		Fx.Shake(2);
+		Sfx.Play(Sfx.Hit, 0.8f);
+		Sfx.Play(Sfx.SubBoom, 0.9f);
 		foreach (Hand hd in hands)
 		{
 			Vector2 c = hd.Center;

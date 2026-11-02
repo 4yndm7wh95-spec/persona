@@ -33,7 +33,7 @@ public static class Persona
 	/// 亚森：施法动作 BPS0201_000_main_0005 只播第 5～40 帧原速（用户 2026-11-01：不要加速他的动作）——
 	/// 从侧身转过来 → 双翼完全展开、手往前一伸（第 24 帧，出手 = 0.63s，召唤高潮那一拍）→ 收翼；播完停在最后一帧。
 	/// </summary>
-	public static readonly Spec ArseneSpec = new("arsene_cast", 7, 671f, 461f, new(350.8f, 412.3f), new(350.8f, 273.4f), 315f, 5, 40, 24);
+	public static readonly Spec ArseneSpec = new("arsene_cast", 7, 671f, 461f, new(350.8f, 412.3f), new(350.8f, 273.4f), 315f, 13, 40, 24);   // 从蓝焰里现身后 0.37s 出手（拍 2）
 
 	/// <summary>
 	/// 伊邪那岐大神（毒性爆发，用户 2026-11-01）：转杖动作 BPS0360_000_main_0006（art/p5/fx/izanagi_okami/spin，51 帧 824x1024，× 0.45）
@@ -43,7 +43,7 @@ public static class Persona
 		new(366.553f * 0.45f, 697.025f * 0.45f), 275f, 7, 40, 33);
 
 	/// <summary>亚森出手在他出现后几秒（兼容旧代码）。</summary>
-	public const float AttackAt = (24 - 5) / Fps;
+	public const float AttackAt = (24 - 13) / Fps;
 
 	/// <summary>亚森开始被蓝火吞掉离场的时刻（兼容旧代码）。</summary>
 	public const float ExitAt = AttackAt + 0.35f;
@@ -177,16 +177,7 @@ void fragment() {
 		Glow.Sparks(back, chest, 50, 120f, 520f, 0.9f, new[] { PersonaMask.Hot, PersonaMask.Hi, PersonaMask.Mid }, -260f, 0.12f, 0.45f);
 		// 出场修饰：一圈压扁的蓝色冲击环（火在着色器里沿他的剪影长出来）
 		Glow.Shockwave(back, anchor, PersonaMask.Hi, height * 2.2f, 0.55f, 0.35f);
-		// 出手：眼神特写劈开之后（第 24 帧，双翼展开）胸口炸开红白光、两圈冲击环、放射速度线（背景层不用折射：会变成暗圆盘）
-		Fx.After(back, AttackAt, () =>
-		{
-			Glow.Flash(back, chest, Pal5.Hot, height * 0.3f, 0.12f);
-			Glow.Flash(back, chest, Pal5.Bright, height * 0.7f, 0.3f);
-			Glow.Shockwave(back, chest, Pal5.Hot, height * 1.8f, 0.45f);
-			Glow.Shockwave(back, chest, Pal5.Bright, height * 2.6f, 0.6f, 1f, 0.06f);
-			Glow.SpeedLines(back, chest, Pal5.Bright, 18, height * 0.25f, height * 1.3f, 0.4f);
-			Glow.Sparks(back, chest, 40, 300f, 900f, 0.5f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 200f, 0.1f, 0.3f);
-		});
+		// 出手那一下不再在胸口炸光环（拍 2 的冲击由各张牌的命中特效负责，胸口的光环和它抢，画面太杂）
 		int last = -1;
 		Fx.Animate(root, 0, life, t =>
 		{

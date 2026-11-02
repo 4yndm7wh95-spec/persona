@@ -33,18 +33,15 @@ public partial class Preview : Node2D
 		// 召唤：拿起技能牌 → 打出 → 舞台 + 原版眼神特写 → 咒怨
 		["summon"] = p =>
 		{
+			// 稀有召唤（标杆 1：两拍）：拿起技能牌 → 打出 → 舞台 + 眼神特写 → 拍 1 召唤（面具喷光、特写碎开、亚森现身）→ 拍 2 亚森出手（单体抓握）
+			Persona.Spec spec = Persona.ArseneSpec with { Linger = 1.1f };
 			p.Ready(0.25, Stance.Mask, "mask", "cast_from_mask", play: true, lockOn: Enemy);
-			p.At(1.89, () =>
-			{
-				CutIn.SplitAt = Persona.ArseneSpec.AttackAt - 0.05f;          // 高潮合成一拍（同 Aim.PlayCast）
-				SummonStage.Play(p._back, p._front, Pose(1010, 215));
-				CutIn.Eyes(p._back);
-				Persona.Arsene(p._back, JokerFeet, (JokerFeet - Pose(815f, 120f)).Length() * 1.35f);
-			});
-			p.At(1.89 + Persona.ArseneSpec.AttackAt, () => SummonStage.Beat(p._front, Persona.ChestOf(Persona.ArseneSpec, JokerFeet, (JokerFeet - Pose(815f, 120f)).Length() * 1.35f), p._back));
-			p.At(1.85 + (0.04 + Persona.AttackAt) - CardFx.Burst, () => CardFx.Eiha(p._front, Pose(1010, 215), Enemy,
-				Enemy + new Vector2(0, -170), c => p._enemies[Enemy].Modulate = c));
+			p.RareSummon(1.85, spec);
+			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
+			p.At(1.85, () => Grip.Play(p._front, 1ul, Persona.ChestOf(spec, JokerFeet, tall) + new Vector2(0.22f * tall, -0.12f * tall), Enemy, 170f,
+				0.04f + SummonStage.EvokeAt + spec.AttackAt, 1f, c => p._enemies[Enemy].Modulate = c, ownImpact: true));
 		},
+
 		["damage"] = p =>
 		{
 			p.Strike(0.3, Enemy, 7);
@@ -108,31 +105,25 @@ public partial class Preview : Node2D
 		// 毒性爆发（稀有）：完整召唤 + 伊邪那岐大神转杖 + 万物真言 + 咒怨毒火，打全体
 		["outbreak"] = p =>
 		{
-			// 毒性爆发（金卡）：完整召唤亚森 → 雾沉进深处 → 每个敌人身后扑出一只手攥住 → 停一拍捏爆（= 结算 + 第一轮毒伤）→ 触媒再 2 轮 → 缩回深处
-			Persona.Spec spec = Persona.ArseneSpec with { Linger = 1.8f };
+			// 毒性爆发（金卡，两拍）：拍 1 召唤亚森 → 手从深处伸到敌人身上虚握 → 拍 2 亚森出手 = 所有手捏爆（= 结算 + 第一轮毒伤）→ 触媒再 2 轮
+			Persona.Spec spec = Persona.ArseneSpec with { First = 10, Linger = 1.8f };
 			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
 			p.Ready(0.25, Stance.Mask, "mask", "cast_from_mask", play: true);
-			p.At(1.89, () =>
-			{
-				CutIn.SplitAt = spec.AttackAt - 0.05f;
-				SummonStage.Play(p._back, p._front, Pose(1010, 215));
-				CutIn.Eyes(p._back);
-				Persona.Show(spec, p._back, JokerFeet, tall);
-			});
-			p.At(1.89 + spec.AttackAt, () => SummonStage.Beat(p._front, Persona.ChestOf(spec, JokerFeet, tall), p._back));
+			p.RareSummon(1.85, spec);
+			float hit = 0.04f + SummonStage.EvokeAt + spec.AttackAt;
 			var es = new[] { (Enemy, 170f, 1ul, 270f), (Enemy2, 128f, 2ul, 202f), (Enemy3, 128f, 3ul, 216f) };
 			p.At(1.85, () => DepthGrip.Play(p._front, p._back, Persona.ChestOf(spec, JokerFeet, tall) + new Vector2(0.22f * tall, -0.12f * tall),
-				Array.ConvertAll(es, e => (e.Item3, e.Item1, e.Item2, e.Item4, (Action<Color>?)(c => p._enemies[e.Item1].Modulate = c))), 0.04f + spec.AttackAt - DepthGrip.CrushDelay));
-			double hit = 1.89 + spec.AttackAt;
+				Array.ConvertAll(es, e => (e.Item3, e.Item1, e.Item2, e.Item4, (Action<Color>?)(c => p._enemies[e.Item1].Modulate = c))), hit - DepthGrip.CrushDelay));
 			for (int r = 0; r < 3; r++)
 			{
 				foreach (var (e, hh, id, _) in es)
 				{
 					int rr = r;
-					p.At(hit + 0.3 * rr + 0.02 * id, () => { DepthGrip.OnTick(id); Popups.Damage(p._front, id, e, 9 - rr, false); });
+					p.At(1.85 + hit + 0.3 * rr + 0.02 * id, () => { DepthGrip.OnTick(id); Popups.Damage(p._front, id, e, 9 - rr, false); });
 				}
 			}
 		},
+
 
 
 		// 人格面具之手（罕见单体毒牌）：召唤亚森 → 伸手攥住 → 模拟触媒结算 3 轮毒伤，每轮再捏一下 → 松开缩回
@@ -284,6 +275,23 @@ public partial class Preview : Node2D
 			}
 		},
 	};
+
+	/// <summary>稀有召唤（同 Aim.PlayCast 的稀有分支）：t 时打出，0.04s 后舞台 + 眼神特写，EvokeAt 拍 1（面具喷光、特写碎开、人格面具现身）。</summary>
+	public void RareSummon(double t, Persona.Spec spec)
+	{
+		float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
+		At(t + 0.04, () =>
+		{
+			CutIn.SplitAt = SummonStage.EvokeAt - 0.05f;
+			SummonStage.Play(_back, _front, Pose(1010, 215));
+			CutIn.Eyes(_back);
+		});
+		At(t + 0.04 + SummonStage.EvokeAt, () =>
+		{
+			SummonStage.Beat(_front, Pose(1010, 215), _back, 1f, Persona.ChestOf(spec, JokerFeet, tall));
+			Persona.Show(spec, _back, JokerFeet, tall);
+		});
+	}
 
 	// 和 p5mod/src/JokerFx.cs 一样的点和时刻
 	private void Strike(double t, Vector2 enemy, int amount)
