@@ -13,6 +13,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
+using MegaCrit.Sts2.Core.ValueProps;
 
 namespace P5Joker;
 
@@ -35,24 +36,6 @@ public static class AttackHitVfxPatch
 				(CustomHitNodes.GetValue(__instance) as IList)?.Clear();     // 小刀牌原版的飞刀（NShivThrowVfx）
 			}
 		});
-	}
-}
-
-/// <summary>中和：多蓄 JokerFx.NeutralizeLead 秒再结算伤害（握刀 → 头顶预告函转出 → 一刀劈下，预告函和敌人同一刀）。</summary>
-[HarmonyPatch(typeof(AttackCommand), nameof(AttackCommand.WithAttackerAnim))]
-public static class NeutralizeLeadPatch
-{
-	private static readonly FieldInfo Target = AccessTools.Field(typeof(AttackCommand), "_singleTarget");
-
-	public static void Prefix(AttackCommand __instance, ref float delay)
-	{
-		float d = delay;
-		bool lead = false;
-		ModEntry.Safe("NeutralizeLead", () => lead = JokerFx.NeutralizeStart(__instance.ModelSource as CardModel, Target.GetValue(__instance) as Creature, d));
-		if (lead)
-		{
-			delay += JokerFx.NeutralizeLead;
-		}
 	}
 }
 
@@ -205,7 +188,15 @@ public static class DamageNumberPatch
 			{
 				return;
 			}
-			Popups.Damage(layer, node.GetInstanceId(), node.VfxSpawnPosition, amount, gun);
+			float wait = JokerFx.DamageNumberDelay(node);
+			if (wait > 0f)
+			{
+				Fx.After(layer, wait, () => Popups.Damage(layer, node.GetInstanceId(), node.VfxSpawnPosition, amount, gun));
+			}
+			else
+			{
+				Popups.Damage(layer, node.GetInstanceId(), node.VfxSpawnPosition, amount, gun);
+			}
 			// 打击确认感：顿帧 + 定向震屏 + 受击白闪 / 击退 + 重击 / 击杀的全屏冲击帧（Vfx/Impact.cs）
 			(Weight floor, bool calm) = Hits.FloorOf(target);
 			bool finale = result.WasTargetKilled && target.CombatState?.Enemies.All(e => e.IsDead) == true;
@@ -266,7 +257,7 @@ public static class BlockSparkPatch
 	}
 }
 
-/// <summary>Joker 用牌获得格挡（所有 GainBlock 重载都汇到带 cardPlay 的那个）：身前撕开一面红光盾（CardFx.Guard）。</summary>
+/// <summary>Joker 用牌获得格挡（所有 GainBlock 重载都汇到带 cardPlay 的那个）：身前张开光盾（JokerFx.OnBlock）。</summary>
 [HarmonyPatch]
 public static class GainBlockPatch
 {
@@ -280,15 +271,70 @@ public static class GainBlockPatch
 		ModEntry.Safe("GainBlock", () =>
 		{
 			if (amount > 0m && cardPlay != null && Joker.OwnsCard(cardPlay.Card) && creature.Player is { } p && Joker.Is(p)
-				&& NCombatRoom.Instance?.GetCreatureNode(creature) is NCreature node && Joker.FxLayer() is Godot.Control layer)
+				&& NCombatRoom.Instance?.GetCreatureNode(creature) is NCreature node)
 			{
-				CardFx.Guard(layer, Joker.Chest(node), Joker.Facing(node));
+				JokerFx.OnBlock(node);
 			}
 		});
 	}
 }
 
-/// <summary>出牌那一刻（结算之前）：记下这张牌要的施法动作（Aim 改动画名时用）。</summary>
+/// <summary>原版致命毒药等出牌时在敌人身上放的毒雾（NPoisonImpactVfx）：Joker 出的牌不要，换成咒怨（CardFx.Eiha）。</summary>
+[HarmonyPatch(typeof(NPoisonImpactVfx), nameof(NPoisonImpactVfx.Create), typeof(Creature))]
+public static class PoisonImpactPatch
+{
+	public static bool Prefix(ref NPoisonImpactVfx? __result)
+	{
+		if (Godot.Time.GetTicksMsec() - JokerFx.LastPlayMs < 250)
+		{
+			__result = null;
+			return false;
+		}
+		return true;
+	}
+}
+
+/// <summary>
+/// Joker 的刀砍下去和伤害同时到：原版中和等牌在普通速度下把出刀到结算拉长到 0.35s，Joker 的 attack 0.14s 就出刀了，
+/// 命中特效和数字晚一截 —— Joker 的牌一律按静默猎手的 AttackAnimDelay（0.15s）结算。只改等待时间，不改结果。
+/// </summary>
+[HarmonyPatch(typeof(AttackCommand), nameof(AttackCommand.WithAttackerAnim))]
+public static class AttackDelayPatch
+{
+	public static void Prefix(AttackCommand __instance, string? animName, ref float delay)
+	{
+		if (animName == "Attack" && delay > 0.15f && __instance.ModelSource is CardModel card && Joker.OwnsCard(card))
+		{
+			delay = 0.15f;
+		}
+	}
+}
+
+/// <summary>
+/// Persona 召唤：牌在施法（TriggerAnim "Cast"）之后才结算（加中毒、扣血），把这段等待推到亚森出手的那一刻（Aim.SummonHit），
+/// 亚森出手、敌人身上炸开、数字跳出来是同一刻（用户 2026-11-01）。只改等待时间，不改结果。
+/// </summary>
+[HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.TriggerAnim))]
+public static class TriggerAnimDelayPatch
+{
+	public static void Prefix(Creature creature, string triggerName, ref float waitTime)
+	{
+		float hit = 0f;
+		ModEntry.Safe("TriggerAnimDelay", () =>
+		{
+			if (triggerName == "Cast" && creature.IsPlayer && Joker.Is(creature.Player) && NCombatRoom.Instance?.GetCreatureNode(creature) is NCreature node)
+			{
+				hit = Aim.TakeSummon(node);
+			}
+		});
+		if (hit > 0f)
+		{
+			waitTime = Godot.Mathf.Max(waitTime, hit);
+		}
+	}
+}
+
+/// <summary>出牌那一刻（结算之前）：技能 / 能力牌 Joker 自己施法（Aim.PlayCast），放出牌特效；记下施法动作（Aim 改动画名时用）。</summary>
 [HarmonyPatch(typeof(Hook), nameof(Hook.BeforeCardPlayed))]
 public static class CardPlayedPatch
 {
@@ -299,7 +345,49 @@ public static class CardPlayedPatch
 			if (Joker.OwnsCard(cardPlay.Card) && Joker.Node(cardPlay.Card.Owner) is NCreature node)
 			{
 				Aim.PendingCast[node.GetInstanceId()] = Casts.For(cardPlay.Card);
+				if (cardPlay.Card.Type != CardType.Attack)
+				{
+					Aim.PlayCast(node, cardPlay.Card);
+				}
 				JokerFx.OnPlay(cardPlay.Card, node, cardPlay.Target);
+			}
+		});
+	}
+}
+
+/// <summary>
+/// 毒伤每结算一轮（PoisonPower.Trigger 里 CreatureCmd.Damage(目标, 层数, 无视格挡 | 不受力量, null, null)；触媒让它多结算几轮）：
+/// 毒性爆发结算期间给 Myriad 按轮次出特效。挂在 Damage 最底层的重载上（其他重载都转到这里）；只看、不改。
+/// </summary>
+[HarmonyPatch]
+public static class PoisonTickPatch
+{
+	public static MethodBase TargetMethod() => typeof(CreatureCmd).GetMethods(BindingFlags.Public | BindingFlags.Static).First(m =>
+		m.Name == nameof(CreatureCmd.Damage) && m.GetParameters() is { Length: 7 } p && p[1].ParameterType == typeof(IEnumerable<Creature>)
+		&& p[2].ParameterType == typeof(decimal));
+
+	public static void Prefix(IEnumerable<Creature>? targets, ValueProp props, Creature? dealer, CardModel? cardSource)
+	{
+		if (targets == null || dealer != null || cardSource != null || props != (ValueProp.Unblockable | ValueProp.Unpowered))
+		{
+			return;
+		}
+		ModEntry.Safe("PoisonTick", () =>
+		{
+			if (Joker.FxLayer() is not Godot.Control layer || NCombatRoom.Instance is not NCombatRoom room)
+			{
+				return;
+			}
+			foreach (Creature c in targets)
+			{
+				if (!c.IsPlayer && c.GetPower<MegaCrit.Sts2.Core.Models.Powers.PoisonPower>() != null && room.GetCreatureNode(c) is NCreature n)
+				{
+					Grip.OnTick(n.GetInstanceId());                   // 正被人格面具之手攥着：再捏一下
+					DepthGrip.OnTick(n.GetInstanceId());              // 毒性爆发：第一轮捏爆、之后再捏
+					Godot.CanvasItem? v = n.Visuals;
+					Myriad.OnPoisonTick(layer, n.GetInstanceId(), n.VfxSpawnPosition, n.GetTopOfHitbox(),
+						v == null ? null : col => { if (Godot.GodotObject.IsInstanceValid(v)) { v.Modulate = col; } });
+				}
 			}
 		});
 	}

@@ -30,6 +30,18 @@ public partial class Preview : Node2D
 	// 游戏里的时序：打击 attack 动画开始后 0.15s 结算伤害（静默猎手 AttackAnimDelay），开枪 shiv 0.2s 后
 	private static readonly Dictionary<string, Action<Preview>> Scenarios = new()
 	{
+		// 召唤：拿起技能牌 → 打出 → 舞台 + 原版眼神特写 → 咒怨
+		["summon"] = p =>
+		{
+			// 稀有召唤（标杆 1：两拍）：拿起技能牌 → 打出 → 舞台 + 眼神特写 → 拍 1 召唤（面具喷光、特写碎开、亚森现身）→ 拍 2 亚森出手（单体抓握）
+			Persona.Spec spec = Persona.ArseneSpec with { Linger = 1.1f };
+			p.Ready(0.25, Stance.Mask, "mask", "cast_from_mask", play: true, lockOn: Enemy);
+			p.RareSummon(1.85, spec);
+			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
+			p.At(1.85, () => Grip.Play(p._front, 1ul, Persona.ChestOf(spec, JokerFeet, tall) + new Vector2(0.22f * tall, -0.12f * tall), Enemy, 170f,
+				0.04f + SummonStage.EvokeAt + spec.AttackAt, 1f, c => p._enemies[Enemy].Modulate = c, ownImpact: true));
+		},
+
 		["damage"] = p =>
 		{
 			p.Strike(0.3, Enemy, 7);
@@ -77,25 +89,133 @@ public partial class Preview : Node2D
 				p.At(Math.Max(0, 0.13 - skip), () => HitFx.Swing(p._front, Pose(760f, 260f), Pose(600f, 850f), Pose(1376f, 450f))); });
 			p.Hit(4.0, Enemy, 9, false);
 		},
-		// 牌特效：防御（光盾阵）→ 中和（打击 + 减益）→ 能力牌（增益）→ 毒（诅咒旋涡）→ 预告信
+		// 第一批出牌特效（拿起 → 打出）：防御（光盾）→ 中和（斩 + 虚弱锁环）→ 致命毒药（咒怨）
 		["cards"] = p =>
 		{
-			p.At(0.3, () => p._joker?.Play("cast_guard"));
-			p.At(0.55, () => CardFx.Guard(p._front, Chest));
-			p.Strike(1.8, Enemy, 3);
-			p.At(1.95, () => CardFx.Debuff(p._front, Enemy));
-			p.At(3.1, () => p._joker?.Play("cast_glove"));
-			p.At(3.3, () => CardFx.Buff(p._front, p._back, JokerFeet, Pose(815f, 120f)));
-			p.At(4.6, () => p._joker?.Play("cast_glove"));
-			p.At(4.8, () => CardFx.Curse(p._front, Enemy2));
+			p.Ready(0.2, Stance.Guard, "guard", "cast_guard_from_ready", play: true);
+			p.At(1.83, () => CardFx.Guard(p._front, Pose(885f, 310f), Pose(1060f, 470f), 1280f * 0.87f * 0.29f));
+			p.Ready(3.0, Stance.Knife, "knife", "attack_from_ready", play: true, lockOn: Enemy);
+			p.At(3.0 + 1.6 + 0.13, () => HitFx.Swing(p._front, Pose(760f, 260f), Pose(600f, 850f), Pose(1376f, 450f)));
+			p.Hit(3.0 + 1.6 + 0.15, Enemy, 4, false);
+			p.At(3.0 + 1.6, () => CardFx.Weaken(p._front, Enemy, Enemy + new Vector2(0f, -170f), 0.12f));
+			p.Ready(6.4, Stance.Mask, "mask", "cast_from_mask", play: true, lockOn: Enemy2);
+			p.At(6.4 + 1.64, () => { SummonStage.Play(p._back, p._front, Pose(1010, 215)); CutIn.Eyes(p._back); });
+			p.At(6.4 + 1.6, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy2, Enemy2 + new Vector2(0f, -128f), c => p._enemies[Enemy2].Modulate = c));
 		},
-		// 抽牌（卡片飞进手套）→ 生成小刀（光刃阵）
-		["cards2"] = p =>
+		// 毒性爆发（稀有）：完整召唤 + 伊邪那岐大神转杖 + 万物真言 + 咒怨毒火，打全体
+		["outbreak"] = p =>
 		{
-			p.At(0.3, () => p._joker?.Play("cast_glove"));
-			p.At(0.38, () => CardFx.Draw(p._front, Pose(989f, 400f), 3));
-			p.At(1.6, () => p._joker?.Play("cast_glove"));
-			p.At(1.65, () => CardFx.Shivs(p._front, Chest, Pose(989f, 400f), 3));
+			// 毒性爆发（金卡，两拍）：拍 1 召唤亚森 → 手从深处伸到敌人身上虚握 → 拍 2 亚森出手 = 所有手捏爆（= 结算 + 第一轮毒伤）→ 触媒再 2 轮
+			Persona.Spec spec = Persona.ArseneSpec with { First = 10, Linger = 1.8f };
+			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
+			p.Ready(0.25, Stance.Mask, "mask", "cast_from_mask", play: true);
+			p.RareSummon(1.85, spec);
+			float hit = 0.04f + SummonStage.EvokeAt + spec.AttackAt;
+			var es = new[] { (Enemy, 170f, 1ul, 270f), (Enemy2, 128f, 2ul, 202f), (Enemy3, 128f, 3ul, 216f) };
+			p.At(1.85, () => DepthGrip.Play(p._front, p._back, Persona.ChestOf(spec, JokerFeet, tall) + new Vector2(0.22f * tall, -0.12f * tall),
+				Array.ConvertAll(es, e => (e.Item3, e.Item1, e.Item2, e.Item4, (Action<Color>?)(c => p._enemies[e.Item1].Modulate = c))), hit - DepthGrip.CrushDelay));
+			for (int r = 0; r < 3; r++)
+			{
+				foreach (var (e, hh, id, _) in es)
+				{
+					int rr = r;
+					p.At(1.85 + hit + 0.3 * rr + 0.02 * id, () => { DepthGrip.OnTick(id); Popups.Damage(p._front, id, e, 9 - rr, false); });
+				}
+			}
+		},
+
+
+
+		// 人格面具之手（罕见单体毒牌）：召唤亚森 → 伸手攥住 → 模拟触媒结算 3 轮毒伤，每轮再捏一下 → 松开缩回
+		["grip"] = p =>
+		{
+			Persona.Spec spec = Persona.ArseneSpec with { Linger = 1.6f };
+			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
+			p.Ready(0.25, Stance.Mask, "mask", "cast_from_mask", play: true, lockOn: Enemy);
+			p.At(1.89, () =>
+			{
+				CutIn.SplitAt = spec.AttackAt - 0.05f;
+				SummonStage.Play(p._back, p._front, Pose(1010, 215));
+				CutIn.Eyes(p._back);
+				Persona.Show(spec, p._back, JokerFeet, tall);
+			});
+			p.At(1.89 + spec.AttackAt, () => SummonStage.Beat(p._front, Persona.ChestOf(spec, JokerFeet, tall), p._back));
+			p.At(1.85, () => Grip.Play(p._front, 1ul, Persona.ChestOf(spec, JokerFeet, tall) + new Vector2(0.22f * tall, -0.12f * tall), Enemy, 170f,
+				0.04f + spec.AttackAt, 1f, c => p._enemies[Enemy].Modulate = c));
+			for (int i = 0; i < 3; i++)
+			{
+				p.At(1.89 + spec.AttackAt + 0.35 + 0.3 * i, () => { Grip.OnTick(1ul); Popups.Damage(p._front, 1ul, Enemy, 9, false); });
+			}
+		},
+		// 致命毒药（普通白卡，Tiers.Common）：选中 → 打出，不召唤，精简咒怨
+		["poison"] = p =>
+		{
+			p.Ready(0.2, Stance.Mask, "mask", "cast_from_mask", play: true, lockOn: Enemy);
+			// 普通毒牌：亚森 + 手捏，不出舞台 / 眼神特写（用户 2026-11-01）
+			Persona.Spec spec = Persona.ArseneSpec with { Linger = 1.1f };
+			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
+			p.At(1.89, () => { Sfx.Play(Sfx.PersonaFlame, 0.8f); Persona.Show(spec, p._back, JokerFeet, tall); });   // 同 Aim：没有舞台时自己放蓝焰声
+			p.At(1.85, () => Grip.Play(p._front, 1ul, Persona.ChestOf(spec, JokerFeet, tall) + new Vector2(0.22f * tall, -0.12f * tall), Enemy, 170f,
+				0.04f + spec.AttackAt, 1f, c => p._enemies[Enemy].Modulate = c, ownImpact: true));
+		},
+		// 防御（设计说明 docs/p5/FX_DESIGN_HITS.md 方案 A：菱形光格）：选中防御牌 → 打出，再来一次
+		["guard"] = p =>
+		{
+			p.Ready(0.2, Stance.Guard, "guard", "cast_guard_from_ready", play: true);
+			p.At(0.2 + 1.63, () => CardFx.Guard(p._front, Pose(885f, 310f), Pose(1060f, 470f), 1280f * 0.87f * 0.29f));
+			p.Ready(3.0, Stance.Guard, "guard", "cast_guard_from_ready", play: true);
+			p.At(3.0 + 1.63, () => CardFx.Guard(p._front, Pose(885f, 310f), Pose(1060f, 470f), 1280f * 0.87f * 0.29f));
+		},
+		// 打击（设计说明 docs/p5/FX_DESIGN_HITS.md）：直接砍一刀 → 选中转刀 + 锁定再砍 → 连砍三下（只有第一下顿帧）
+		["strike"] = p =>
+		{
+			p.Strike(0.3, Enemy, 7);
+			p.Ready(1.4, Stance.Knife, "knife", "attack_from_ready", play: true, lockOn: Enemy);
+			p.At(1.4 + 1.6 + 0.13, () => HitFx.Swing(p._front, Pose(760f, 260f), Pose(600f, 850f), Pose(1376f, 450f)));
+			p.Hit(1.4 + 1.6 + 0.15, Enemy, 12, false);
+			p.Strike(4.2, Enemy2, 5);
+			p.Strike(4.75, Enemy2, 5);
+			p.Strike(5.3, Enemy2, 5);
+		},
+		// 2026-11-01 P5 平面风重做：打击（选中转刀 + 锁定 → 砍）、开枪（瞄准 + 锁定 → 开火）、防御
+		["hits"] = p =>
+		{
+			p.Ready(0.2, Stance.Knife, "knife", "attack_from_ready", play: true, lockOn: Enemy);
+			p.At(0.2 + 1.6 + 0.13, () => HitFx.Swing(p._front, Pose(760f, 260f), Pose(600f, 850f), Pose(1376f, 450f)));
+			p.Hit(0.2 + 1.6 + 0.15, Enemy, 6, false);
+			p.Ready(2.6, Stance.Gun, "aim", "shiv_from_aim", play: true, lockOn: Enemy2);
+			p.At(2.6 + 1.6 + 0.18, () => HitFx.Muzzle(p._front, Muzzle));
+			p.Hit(2.6 + 1.6 + 0.2, Enemy2, 6, true);
+			p.Ready(5.0, Stance.Guard, "guard", "cast_guard_from_ready", play: true);
+			p.At(5.0 + 1.63, () => CardFx.Guard(p._front, Pose(885f, 310f), Pose(1060f, 470f), 1280f * 0.87f * 0.29f));
+		},
+		// 只看蓝焰墙本身（放大，对照用户的参考图调细节）
+		["eiha"] = p => p.At(0.3, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy, Enemy + new Vector2(0f, -170f), c => p._enemies[Enemy].Modulate = c)),
+		["arsene"] = p => p.At(0.1, () => Persona.Arsene(p._back, JokerFeet, (JokerFeet - Pose(815f, 120f)).Length() * 1.35f)),
+		["cutin"] = p => p.At(0.3, () => CutIn.Eyes(p._back)),
+		["cutindbg"] = p =>
+		{
+			p.At(0.3, () => CutIn.Eyes(p._back));
+			p.At(0.6, () =>
+			{
+				foreach (Node n in p._back.GetChildren())
+				{
+					if (n.Name.ToString().StartsWith("P5CutIn"))
+					{
+						int i = 0;
+						foreach (Node c in n.GetChildren())
+						{
+							GD.Print($"[DBG] child {i++} {c.GetType().Name} vis={(c as CanvasItem)?.Visible} pos={(c as Node2D)?.Position} scale={(c as Node2D)?.Scale} kids={c.GetChildCount()} mod={(c as CanvasItem)?.Modulate}");
+						}
+					}
+				}
+			});
+		},
+		["wall"] = p =>
+		{
+			PersonaMask? w = null;
+			p.At(0.1, () => w = new PersonaMask(p._back, p._front, new Vector2(960f, 600f), 360f));
+			p.At(3.2, () => w?.End(true));
 		},
 		// 刀扇：一发子弹弹过所有敌人（近 → 远）
 		["ricochet"] = p =>
@@ -121,22 +241,22 @@ public partial class Preview : Node2D
 			p.At(3.3, () => view?.Fire());
 			p.At(4.0, () => view?.Set(0));
 		},
-		// 肾上腺素（眼神切入 → 热浪 + 地裂）→ 子弹时间（时停）→ 爆发（剪影分身）
-		["skills"] = p =>
+		// 预备出牌（拖着牌选目标）：每种架势摆好、特效循环一会儿，再打出 / 放回（p5mod/src/Aim.cs、Vfx/Ready.cs）
+		["ready"] = p =>
 		{
-			p.At(0.3, () => p._joker?.Play("cast_glove"));
-			p.At(0.3, () => SkillFx.Adrenaline(p._front, p._back, JokerFeet, Chest));
-			p.At(2.0, () => p._joker?.Play("cast_glove"));
-			p.At(2.05, () => SkillFx.BulletTime(p._front, p._back, Chest));
-			p.At(4.0, () => p._joker?.Play("cast_glove"));
-			p.At(4.05, () => p.Clone(c => SkillFx.Burst(p._front, c, m => c.Material = m, Chest)));
+			p.Ready(0.2, Stance.Mask, "mask", "cast_from_mask", play: true, lockOn: Enemy);
+			p.Ready(2.4, Stance.Guard, "guard", "cast_guard_from_ready", play: true);
+			p.Ready(4.4, Stance.Glove, "glove", "cast_glove_from_ready", play: true);
 		},
-		["curse"] = p => p.At(0.3, () => CardFx.Curse(p._front, Enemy)),
-		// 中和（和游戏里一样的时刻，普通速度：原版 0.35s + 多蓄 0.3s）：握刀停住 → 头顶预告函旋出 → 一刀劈下（卡片和敌人同一刀）→ 两半烧尽
-		["neutralize"] = p =>
+		["ready2"] = p =>
 		{
-			p.Neutralize(0.3, Enemy, 0.35f + 0.3f);
-			p.Neutralize(2.0, Enemy2, 0.15f + 0.3f, true);
+			p.Ready(0.2, Stance.Knife, "knife", "attack_from_ready", play: true, lockOn: Enemy);
+			p.At(0.2 + 1.6 + 0.13, () => HitFx.Swing(p._front, Pose(760f, 260f), Pose(600f, 850f), Pose(1376f, 450f)));
+			p.Hit(0.2 + 1.6 + 0.15, Enemy, 6, false);
+			p.Ready(2.8, Stance.Gun, "aim", "shiv_from_aim", play: true, lockOn: Enemy2);
+			p.At(2.8 + 1.6 + 0.18, () => HitFx.Muzzle(p._front, Muzzle));
+			p.Hit(2.8 + 1.6 + 0.2, Enemy2, 6, true);
+			p.Ready(5.3, Stance.Mask, "mask", "", play: false);
 		},
 		// 选中打击牌（转刀起手停住）→ 取消（放下手、转刀收起）
 		["knifecancel"] = p =>
@@ -227,6 +347,23 @@ public partial class Preview : Node2D
 		},
 	};
 
+	/// <summary>稀有召唤（同 Aim.PlayCast 的稀有分支）：t 时打出，0.04s 后舞台 + 眼神特写，EvokeAt 拍 1（面具喷光、特写碎开、人格面具现身）。</summary>
+	public void RareSummon(double t, Persona.Spec spec)
+	{
+		float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
+		At(t + 0.04, () =>
+		{
+			CutIn.SplitAt = SummonStage.EvokeAt - 0.05f;
+			SummonStage.Play(_back, _front, Pose(1010, 215));
+			CutIn.Eyes(_back);
+		});
+		At(t + 0.04 + SummonStage.EvokeAt, () =>
+		{
+			SummonStage.Beat(_front, Pose(1010, 215), _back, 1f, Persona.ChestOf(spec, JokerFeet, tall));
+			Persona.Show(spec, _back, JokerFeet, tall);
+		});
+	}
+
 	// 和 p5mod/src/JokerFx.cs 一样的点和时刻
 	private void Strike(double t, Vector2 enemy, int amount)
 	{
@@ -283,13 +420,27 @@ public partial class Preview : Node2D
 		});
 	}
 
-	private void Neutralize(double t, Vector2 enemy, float cut, bool fromIdle = false)
+	/// <summary>拿起一张牌：摆架势（anim_in → anim_loop）、特效循环 1.6s（0.5s 起指到 lockOn 那个敌人）→ 打出（playAnim）/ 放回（anim_out）。</summary>
+	private new void Ready(double t, Stance stance, string anim, string playAnim, bool play, Vector2? lockOn = null)
 	{
-		At(t, () => { _joker?.Play(fromIdle ? "knife_in" : "knife_loop"); if (fromIdle) { _joker?.Queue("knife_loop", true); } });
-		float k = enemy == Enemy ? 1f : 0.75f;
-		At(t, () => CardFx.Neutralize(_front, enemy + new Vector2(0f, -170f * k), enemy, 1f, cut));
-		At(t + cut - 0.14, () => _joker?.Play("attack_from_ready"));
-		Hit(t + cut, enemy, 3, false, fx: false);
+		ReadyFx? fx = null;
+		LockOn? lk = null;
+		At(t, () =>
+		{
+			_joker?.Play(anim + "_in");
+			_joker?.Queue(anim + "_loop", true);
+			fx = ReadyFx.Start(_front, _back, stance, v => Pose(v.X, v.Y));
+		});
+		if (lockOn is Vector2 e)
+		{
+			At(t + 0.5, () => { lk = LockOn.Start(_front, e, e == Enemy ? 230f : 180f); });
+		}
+		At(t + 1.6, () =>
+		{
+			lk?.Release();
+			fx?.End(play);
+			_joker?.Play(play ? playAnim : anim + "_out");
+		});
 	}
 
 	private void Shot(double t, Vector2 enemy, int amount)
@@ -348,13 +499,28 @@ public partial class Preview : Node2D
 		Stage.LoadTexture = name =>
 		{
 			string path = $"{texDir}/{name}.png";
+			if (!FileAccess.FileExists(path))
+				path = ProjectSettings.GlobalizePath($"res://../../../p5mod/pck_stage/p5joker/fx/{name}.png");
 			return FileAccess.FileExists(path) ? ImageTexture.CreateFromImage(Image.LoadFromFile(path)) : null;
 		};
 		Stage.Report = (where, e) => GD.PrintErr($"[P5Joker] {where}: {e}");
 		Stage.NowMs = () => (ulong)(_clock * 1000.0);
+		HitStop.RealSeconds = () => _frames / 30.0;
+		string sfxLog = ProjectSettings.GlobalizePath("res://") + $"out/{scenario}/sfx.txt";
+		System.IO.File.WriteAllText(sfxLog, "");
+		Sfx.Recorder = (name, vol) => System.IO.File.AppendAllText(sfxLog, $"{_frames / 30.0:0.000} {name} {vol:0.00}\n");                 // 顿帧按录像帧数计时（不受时间流速影响）
+		GD.Seed(52029);
 		Stage.Shake = s => { _shake = s; _shakeLeft = 0.25f; _shakeDir = null; };
+		BodyAura.CloneBody = parent =>
+		{
+			string rig = ProjectSettings.GlobalizePath("res://") + "../../../art/p5/rig/joker";
+			SpinePlayer c = SpinePlayer.Load(rig + ".spine-json", rig + ".atlas", rig + ".png");
+			parent.AddChild(c);
+			c.PlayFrom(_joker!.Current, _joker.Time);
+			c.Queue("mask_loop", true);
+			return (c, _joker.GlobalTransform);
+		};
 		Stage.ShakeDir = (s, deg) => { _shake = s; _shakeLeft = 0.25f; _shakeDir = Vector2.FromAngle(Mathf.DegToRad(deg)); };
-		Stage.HitStop = s => { _stopLen = s >= 3 ? 0.3f : 0.15f; _stopT = 0f; _stopPow = s switch { <= 1 => 1.5f, 2 => 2f, 3 => 3f, _ => 4f }; };
 
 		_world = new Node2D();
 		AddChild(_world);
@@ -379,16 +545,12 @@ public partial class Preview : Node2D
 	public void Every(Action action) => _every.Add(action);
 
 	private Vector2? _shakeDir;
-	private float _stopT = 1f, _stopLen = 0.15f, _stopPow = 2f;
+	private long _frames;
 
 	public override void _Process(double delta)
 	{
 		_clock += delta;
-		if (_stopT < _stopLen)
-		{
-			_stopT += 1f / 30f;                                       // 录像固定 30fps：真实时间一帧
-			Engine.TimeScale = _stopT >= _stopLen ? 1.0 : 0.1 + 0.9 * Mathf.Pow(_stopT / _stopLen, _stopPow);
-		}
+		_frames++;
 		foreach (Action a in _every)
 		{
 			Stage.Safe("every", a);
@@ -437,7 +599,7 @@ public partial class Preview : Node2D
 	/// <summary>Joker 的副本（爆发的剪影分身）：放在本体后面、同一个动作同一时刻。</summary>
 	private void Clone(Action<Node2D> use)
 	{
-		string rig = ProjectSettings.GlobalizePath("res://") + "../../../art/p5/rig/joker";
+		string rig = RigPath();
 		SpinePlayer c = SpinePlayer.Load(rig + ".spine-json", rig + ".atlas", rig + ".png");
 		c.Position = JokerFeet;
 		c.Scale = new Vector2(0.29f, -0.29f);
@@ -449,7 +611,7 @@ public partial class Preview : Node2D
 
 	private void BuildActors()
 	{
-		string rig = ProjectSettings.GlobalizePath("res://") + "../../../art/p5/rig/joker";
+		string rig = RigPath();
 		_joker = SpinePlayer.Load(rig + ".spine-json", rig + ".atlas", rig + ".png");
 		_joker.Position = JokerFeet;
 		_joker.Scale = new Vector2(0.29f, -0.29f);
@@ -457,6 +619,13 @@ public partial class Preview : Node2D
 		Enemy1(Enemy, 1f);
 		Enemy1(Enemy2, 0.75f);
 		Enemy1(Enemy3, 0.8f);
+	}
+
+	private static string RigPath()
+	{
+		string rig = ProjectSettings.GlobalizePath("res://../../../art/p5/rig/joker");
+		return FileAccess.FileExists(rig + ".png") ? rig
+			: ProjectSettings.GlobalizePath("res://../../../p5mod/pck_stage/animations/characters/silent/silent");
 	}
 
 	/// <summary>敌人剪影：一个深紫色的大块头（大小接近第一幕的普通怪），中心就是 VfxSpawnPosition。</summary>

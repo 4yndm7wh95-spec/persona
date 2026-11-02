@@ -3,8 +3,8 @@ using Godot;
 namespace P5Joker;
 
 /// <summary>
-/// 第四版刀组特效（打击动作）：Codex 手绘刀光（Paint：扫出 → 溶解）+ 原版命中粒子换 P5 LUT（Vanilla）+ P5 漫画爆框。
-/// 不画任何几何形状。打击确认感（顿帧、震屏、冲击帧）在 Impact 里，由伤害结算触发。
+/// 第四版刀组特效（打击动作）：Codex 手绘刀光（Paint：扫出 → 溶解）+ 原版命中粒子换 P5 LUT（Vanilla）+ 着色器白闪 / 空间扭曲。
+/// 不画任何几何形状；按 docs/p5/FX_RULES.md 不用卡通爆炸星。打击确认感（顿帧、震屏、冲击帧）在 Impact 里，由伤害结算触发。
 /// </summary>
 public static class KnifeFx
 {
@@ -25,8 +25,13 @@ public static class KnifeFx
 	public static void Hit(Control layer, Vector2 at, float facing = 1f, bool heavy = false)
 	{
 		float rot = -0.55f * facing + Fx.Rand(-0.12f, 0.12f);
-		// P5 漫画爆框垫在最后面，一闪就碎掉
-		Paint.Pop(layer, heavy ? "burst_02" : "burst_01", at, Fx.Rand(-0.3f, 0.3f), heavy ? 0.62f : 0.46f, null, 0.04f, 0.16f, 1.4f);
+		// 冲击层音效（同 HitFx.Slash：打中 + 总攻击斩击 + 低频）
+		Sfx.Play(Sfx.Hit, 0.9f);
+		Sfx.Play(Sfx.AllOut, heavy ? 0.75f : 0.55f);
+		Sfx.Play(Sfx.SubBoom, heavy ? 0.6f : 0.45f);
+		// 命中点一下白闪（着色器径向光）+ 空间扭曲
+		Glow.Flash(layer, at, new Color(1f, 0.6f, 0.55f), heavy ? 340f : 240f, 0.16f);
+		Glow.Ripple(layer, at, heavy ? 520f : 380f, 0.45f, heavy ? 0.035f : 0.025f);
 		// 主刀光：斜着划过敌人
 		float w = heavy ? 0.62f : 0.46f;
 		Paint.Sweep(layer, heavy ? "slash_heavy" : "slash_thin", at, rot, new Vector2(w * facing, w * 0.75f), Lut5.Blood,

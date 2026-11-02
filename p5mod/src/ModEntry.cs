@@ -11,7 +11,7 @@ namespace P5Joker;
 public static class ModEntry
 {
 	public const string Tag = "[P5Joker]";
-	public const string Version = "0.4.2";
+	public const string Version = "0.8.0";
 
 	public static void Init()
 	{
@@ -25,7 +25,6 @@ public static class ModEntry
 			_ => ShakeStrength.Strong,
 		}, ShakeDuration.Short);
 		Stage.ShakeDir = (s, deg) => NGame.Instance?.ScreenShake(Strength(s), ShakeDuration.Short, deg);
-		Stage.HitStop = s => NGame.Instance?.DoHitStop(Strength(s), s >= 3 ? ShakeDuration.Normal : ShakeDuration.Short);
 		// 逐个补丁类应用：一个失败（别的游戏版本里目标被改名）不影响其他
 		Harmony harmony = new("brooks.p5joker");
 		int ok = 0, failed = 0;

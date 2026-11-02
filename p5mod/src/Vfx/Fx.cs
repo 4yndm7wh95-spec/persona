@@ -140,6 +140,20 @@ public static class Fx
 
 	public static void Shake(int strength) => Stage.Shake?.Invoke(strength);
 
+	/// <summary>
+	/// 给着色器一个从 0 开始走的时钟（uniform clock）。不用内置的 TIME：游戏开久了 TIME 很大，噪声的精度在显卡上崩成一块块的马赛克
+	/// （用户 2026-10-29 实机截图）。10 分钟绕回 0 一次，特效都活不了那么久。
+	/// </summary>
+	public static void Clock(CanvasItem item)
+	{
+		if (item.Material is not ShaderMaterial mat)
+		{
+			return;
+		}
+		Tween loop = item.CreateTween().SetLoops();
+		loop.TweenMethod(Callable.From<float>(v => mat.SetShaderParameter("clock", v)), 0f, 600f, 600.0);
+	}
+
 	/// <summary>delay 秒后执行（节点没了就不执行）。</summary>
 	public static void After(Node anchor, double delay, Action action)
 	{

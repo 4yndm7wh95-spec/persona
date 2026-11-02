@@ -6,5 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../../../p5mod/src/Vfx/**/*.cs" />
+    <EmbeddedResource Include="../../../p5mod/data/eye_cutin.json" LogicalName="P5Joker.EyeCutIn.json" />
   </ItemGroup>
 </Project>

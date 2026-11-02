@@ -14,7 +14,7 @@ public enum Weight
 
 /// <summary>
 /// 打击确认感（第四版，用户 2026-11-02：要有视觉冲击力、有确认感；但太频繁会花眼、看腻）。不画任何形状，全是引擎 / 着色器实时处理：
-/// · 顿帧：原版 NGame.DoHitStop（Stage.HitStop），全场时间骤停后缓回；
+/// · 顿帧：HitStop.Request（时间流速压到 0.08，按档位停 40～110ms；0.35 秒内不重复）；
 /// · 定向震屏：沿攻击方向推一下（Stage.ShakeDir），比随机抖更像"打进去"；
 /// · 受击白闪 + 击退：目标本体 HDR 提亮，转红，再回原色；身体被打得往后一顿再弹回（击杀不做，交给死亡动画）；
 /// · 全屏冲击帧（Heavy / Kill / Finale）：把画面瞬间变成 P5 式红 / 黑 / 白三色漫画帧（亮部白、中间调红带网点、暗部黑），
@@ -121,7 +121,7 @@ public static class Impact
 		}
 		if (stop)
 		{
-			Stage.HitStop?.Invoke(s.Stop);
+			HitStop.Request(s.Stop switch { <= 1 => 0.04, 2 => 0.06, 3 => 0.08, _ => 0.11 });
 		}
 		if (Stage.ShakeDir != null)
 		{
@@ -234,6 +234,10 @@ void fragment() {
 			Size = screen,
 			Name = "P5ImpactFrame",
 		};
+		// 先强制重新抓一次屏幕：同一帧里前面已经有读屏幕的着色器（Glow.Ripple 的空间扭曲）时，Godot 会复用那份更早的画面，
+		// 这块全屏不透明的矩形就会把之后画的刀光、粒子、伤害数字盖掉
+		BackBufferCopy copy = new() { CopyMode = BackBufferCopy.CopyModeEnum.Viewport, Name = "P5ImpactCopy" };
+		layer.AddChild(copy);
 		layer.AddChild(rect);
 		rect.GlobalPosition = Vector2.Zero;
 		mat.SetShaderParameter("center", new Vector2(at.X / screen.X, at.Y / screen.Y));
@@ -261,6 +265,6 @@ void fragment() {
 			float k = 1f - t;
 			Set(s.Ink * Mathf.Max(0f, 1f - t * 4f), s.Chroma * k * k, s.Radial * k * k, 0f);
 		}), 0f, 1f, s.Life);
-		tw.TweenCallback(Callable.From(rect.QueueFree));
+		tw.TweenCallback(Callable.From(() => { rect.QueueFree(); copy.QueueFree(); }));
 	}
 }

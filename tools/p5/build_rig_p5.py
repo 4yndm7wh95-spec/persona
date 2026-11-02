@@ -95,6 +95,25 @@ ANIMS = {
     "aim_loop": [("gun_aim_b", 4.8)],
     "aim_out": [("gun_aim_b", .01)] + GUN_OUT,
     "shiv_from_aim": [("gun_aim_b", .18)] + GUN_SHOT,
+    # holding a skill / power / block card while choosing where to play it (user 2026-10-29: every card should have a
+    # ready stance, not only the knife and the gun; p5mod/src/Aim.cs). Built from the existing cast pictures:
+    #  mask  - hand raised to the mask (summon_touch2_a), blue fire leaks between the fingers (code effect); playing it
+    #          squeezes the mask (summon_hold_a) and lowers the hand
+    #  guard - fist half raised (guard_mid_a); playing it snaps into the full guard
+    #  glove - right hand reaching for the left glove (glove_reach_a); playing it pulls the glove
+    "mask_in": [("idle_a3", .02)] + [(n, .06) for n in SUMMON_UP],
+    "mask_loop": [("summon_touch2_a", 4.8)],
+    "mask_out": [("summon_touch2_a", .01)] + [(n, .06) for n in SUMMON_UP[-2::-1]] + [("idle_a3", .14, .08)],
+    "cast_from_mask": [("summon_touch2_a", .02), ("summon_hold_a", .45)] + [(n, .07) for n in SUMMON_UP[::-1]]
+                      + [("idle_a3", .15, .08)],
+    "guard_in": [("idle_a3", .02), ("guard_mid_a", .08)],
+    "guard_loop": [("guard_mid_a", 4.8)],
+    "guard_out": [("guard_mid_a", .01), ("idle_a3", .14, .08)],
+    "cast_guard_from_ready": [("guard_mid_a", .02), ("guard_a2", .45, .03), ("guard_mid_a", .08), ("idle_a3", .12, .07)],
+    "glove_in": [("idle_a3", .02), ("glove_mid_a", .08), ("glove_reach_a", .08)],
+    "glove_loop": [("glove_reach_a", 4.8)],
+    "glove_out": [("glove_reach_a", .01), ("glove_mid_a", .08), ("idle_a3", .14, .08)],
+    "cast_glove_from_ready": [("glove_reach_a", .02)] + GLOVE[2:],
     # cast variants picked per card by p5mod/src (Aim.Rename): guard (block cards), glove tug (card tricks /
     # buffs), the big summon (mask ripped off) for the large Persona cards
     "cast_guard": [("idle_a3", .02), ("guard_mid_a", .06), ("guard_a2", .45), ("guard_mid_a", .08), ("idle_a3", .12, .07)],
@@ -123,6 +142,12 @@ IMPACT = {
     "aim_loop": [(0, 0, 0, 1, 1, 0), (1.2, 0, 2, .997, 1.006, -.15), (2.4, 0, 0, 1, 1, 0), (3.6, 0, 2, .997, 1.006, -.15),
                  (4.8, 0, 0, 1, 1, 0)],
     "knife_loop": [(0, 0, 0, 1, 1, 0), (1.2, 0, 2, .997, 1.006, -.15), (2.4, 0, 0, 1, 1, 0), (3.6, 0, 2, .997, 1.006, -.15),
+                   (4.8, 0, 0, 1, 1, 0)],
+    "mask_loop": [(0, 0, 0, 1, 1, 0), (1.2, 0, 2, .997, 1.006, -.15), (2.4, 0, 0, 1, 1, 0), (3.6, 0, 2, .997, 1.006, -.15),
+                   (4.8, 0, 0, 1, 1, 0)],
+    "guard_loop": [(0, 0, 0, 1, 1, 0), (1.2, 0, 2, .997, 1.006, -.15), (2.4, 0, 0, 1, 1, 0), (3.6, 0, 2, .997, 1.006, -.15),
+                   (4.8, 0, 0, 1, 1, 0)],
+    "glove_loop": [(0, 0, 0, 1, 1, 0), (1.2, 0, 2, .997, 1.006, -.15), (2.4, 0, 0, 1, 1, 0), (3.6, 0, 2, .997, 1.006, -.15),
                    (4.8, 0, 0, 1, 1, 0)],
     # from the held guard: a short wind-up into the same cut as "attack"
     "attack_from_ready": [(0, 0, 0, 1, 1, 0), (.08, -10, 0, 1.01, .985, 1), (.12, -24, -4, 1.025, .965, 2),
