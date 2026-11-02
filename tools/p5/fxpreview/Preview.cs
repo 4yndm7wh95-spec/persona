@@ -144,13 +144,19 @@ public partial class Preview : Node2D
 			p.At(0.3, () => { p._joker?.Play("knife_in"); p._joker?.Queue("knife_loop", true); });
 			p.At(1.3, () => p._joker?.Play("knife_out"));
 		},
-		// 打击确认感（Vfx/Impact.cs）：轻 → 中 → 重 → 击杀，顿帧期间冲击帧照样按真实时间闪
+		// 打击确认感（Vfx/Impact.cs）的分档：连斩（前几下轻、最后一下中）→ 普通一刀（中）→ 大招（重）→ 1 秒内第二次重击（不再红黑帧）
+		// → 打死一个（击杀）→ 打死最后一个（战斗结束）
 		["confirm"] = p =>
 		{
-			p.StrikeC(0.3, Enemy, 6, Weight.Light);
-			p.StrikeC(1.3, Enemy, 18, Weight.Medium);
-			p.StrikeC(2.4, Enemy, 40, Weight.Heavy);
-			p.StrikeC(3.7, Enemy2, 99, Weight.Kill);
+			for (int i = 0; i < 4; i++)
+			{
+				p.HitC(0.3 + 0.16 * i, Enemy, 4, Impact.Grade(i < 3 ? Weight.Light : Weight.Medium, 4, 60, false, false, i < 3), i == 0);
+			}
+			p.HitC(1.5, Enemy, 7, Impact.Grade(Weight.Medium, 7, 50, false, false), true);
+			p.HitC(2.5, Enemy, 18, Impact.Grade(Weight.Heavy, 18, 40, false, false), true);
+			p.HitC(3.1, Enemy, 27, Impact.Grade(Weight.Medium, 27, 30, false, false), true);
+			p.HitC(4.1, Enemy3, 20, Impact.Grade(Weight.Medium, 20, 20, true, false), true, dies: true);
+			p.HitC(5.2, Enemy2, 40, Impact.Grade(Weight.Heavy, 40, 30, true, true), true, dies: true);
 		},
 		["block"] = p =>
 		{
@@ -172,17 +178,20 @@ public partial class Preview : Node2D
 		Hit(t + 0.15, enemy, amount, false);
 	}
 
-	private void StrikeC(double t, Vector2 enemy, int amount, Weight w)
+	private void HitC(double t, Vector2 enemy, int amount, Weight w, bool swing, bool dies = false)
 	{
-		At(t, () => _joker?.Play("attack"));
-		At(t + 0.13, () => HitFx.Swing(_front, Pose(760f, 260f), Pose(600f, 850f), Pose(1376f, 450f)));
-		At(t + 0.15, () =>
+		if (swing)
+		{
+			At(t - 0.15, () => _joker?.Play("attack"));
+			At(t - 0.02, () => HitFx.Swing(_front, Pose(760f, 260f), Pose(600f, 850f), Pose(1376f, 450f)));
+		}
+		At(t, () =>
 		{
 			HitFx.Slash(_front, enemy);
-			Popups.Damage(_front, enemy == Enemy ? 1ul : 2ul, enemy, amount, false);
+			Popups.Damage(_front, (ulong)(enemy.X * 10f + (float)t), enemy, amount, false);
 			_enemies.TryGetValue(enemy, out Node2D? n);
 			Impact.Confirm(_front, n, enemy, new Vector2(1f, 0.12f), w);
-			if (w == Weight.Kill && n != null)
+			if (dies && n != null)
 			{
 				n.CreateTween().TweenProperty(n, "modulate:a", 0f, 0.6).SetDelay(0.35);
 			}
