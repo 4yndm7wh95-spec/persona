@@ -1,0 +1,316 @@
+using System;
+using System.Collections.Generic;
+using Godot;
+
+namespace P5Joker;
+
+/// <summary>
+/// 毒性爆发（金卡专属，用户 2026-11-01）：亚森的雾沉进画面深处，从每个敌人身后的深处扑出一只手，侧握（手心朝左）一把攥住敌人，
+/// 停一拍后所有手同时「捏爆」（= 牌的结算：上毒 + 立刻触发中毒，游戏结算推到这一刻，Aim.PlayCast），触媒多结算的每一轮再一起捏一下，
+/// 结算完松开、缩回深处。手是 Codex 画的 depth_hand（stage_p5.py 把握住的两帧切成「手掌在敌人后面 / 手指在敌人前面」两层）。
+/// 深度全靠动画：从敌人身后一个又小、又暗的点 0.13s 放大变亮扑出来（在敌人后面的图层），握住那一刻手指换到敌人前面的图层；
+/// 雾丝越往深处越细越暗。
+/// </summary>
+public static class DepthGrip
+{
+	/// <summary>攥住之后多久捏爆（= 游戏结算推后多少，Aim 用）。</summary>
+	public const float CrushDelay = 0.32f;
+
+	private const float Img = 627f;
+	private static readonly Vector2 Hold = new(0.35f * Img, 0.5f * Img), WristPt = new(0.86f * Img, 0.5f * Img);
+
+	private static Shader? _strand;
+
+	/// <summary>雾丝：a（UV.x=0）宽 w0、b 宽 w1；越细的地方越暗（远）；head 从 a 往 b 显示到哪；pulse 一团光。</summary>
+	private static Shader StrandShader => _strand ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform float head = 1.0;
+uniform float alpha = 0.5;
+uniform float w0 = 0.8;
+uniform float w1 = 0.2;
+uniform float pulse = -1.0;
+uniform float clock = 0.0;
+uniform float seed = 0.0;
+uniform float aspect = 8.0;
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+float vnoise(vec2 p) {
+	vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash(i + seed), hash(i + vec2(1.0, 0.0) + seed), f.x), mix(hash(i + vec2(0.0, 1.0) + seed), hash(i + vec2(1.0, 1.0) + seed), f.x), f.y);
+}
+float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { v += a * vnoise(p); p = p * 2.03 + 1.7; a *= 0.5; } return v; }
+void fragment() {
+	float x = UV.x;
+	float y = (UV.y - 0.5) * 2.0;
+	vec2 q = vec2(x * aspect, y);
+	float w = mix(w0, w1, x);
+	float wob = (fbm(vec2(x * aspect * 0.4 - clock * 1.5, 3.0)) - 0.5) * 0.6 * w;
+	float d = abs(y - wob) / max(w, 0.01);
+	float body = smoothstep(1.0, 0.15, d + (fbm(q * vec2(0.9, 2.5) - vec2(clock * 3.0, 0.0)) - 0.5) * 0.9);
+	float wisp = smoothstep(0.6, 0.8, fbm(q * vec2(1.6, 4.0) - vec2(clock * 4.5, 0.0))) * body;
+	float far = 1.0 - clamp(w / max(max(w0, w1), 0.01), 0.0, 1.0);   // 细 = 远：更暗更淡
+	float on = smoothstep(head, head - 0.04, x) * smoothstep(0.0, 0.04, x) * smoothstep(1.0, 0.97, x);
+	float p = pulse >= 0.0 ? exp(-pow((x - pulse) / 0.05, 2.0)) * smoothstep(1.0, 0.3, d) : 0.0;
+	vec3 col = mix(vec3(0.18, 0.0, 0.05), vec3(0.85, 0.07, 0.14), wisp) * (1.0 - 0.55 * far);
+	col = mix(col, vec3(0.85, 0.45, 1.0), p);
+	float a = (body * 0.5 + wisp * 0.7) * alpha * (1.0 - 0.5 * far) + p * 0.9;
+	COLOR = vec4(col, clamp(a, 0.0, 1.0) * on);
+}" };
+
+	private sealed class Strand
+	{
+		public ColorRect Rect = null!;
+		public ShaderMaterial Mat = null!;
+		public Node2D Node = null!;
+	}
+
+	private static Strand MakeStrand(Node2D parent, float w0, float w1, float px)
+	{
+		Node2D n = new();
+		parent.AddChild(n);
+		ColorRect r = new() { MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = StrandShader } };
+		n.AddChild(r);
+		ShaderMaterial m = (ShaderMaterial)r.Material;
+		m.SetShaderParameter("w0", w0);
+		m.SetShaderParameter("w1", w1);
+		m.SetShaderParameter("seed", Fx.Rand(0f, 40f));
+		m.SetShaderParameter("head", 0f);
+		r.Size = new Vector2(10f, px);
+		r.Position = new Vector2(0f, -px / 2f);
+		Fx.Clock(r);
+		return new Strand { Rect = r, Mat = m, Node = n };
+	}
+
+	private static void Place(Strand s, Vector2 a, Vector2 b)
+	{
+		float len = Mathf.Max(1f, a.DistanceTo(b));
+		s.Node.GlobalPosition = a;
+		s.Node.Rotation = (b - a).Angle();
+		s.Rect.Size = new Vector2(len, s.Rect.Size.Y);
+		s.Mat.SetShaderParameter("aspect", len / s.Rect.Size.Y);
+	}
+
+	private sealed class Hand
+	{
+		public Vector2 Center, Grip, Deep;
+		public float H, K;
+		public Node2D BackN = null!, FrontN = null!;
+		public Sprite2D Back = null!, Front = null!;
+		public ShaderMaterial BackM = null!, FrontM = null!;
+		public Strand Branch = null!;
+		public Sprite2D Glow = null!;
+		public Action<Color>? Tint;
+	}
+
+	private sealed class Live
+	{
+		public ulong LastTick;
+		public int Ticks;
+		public float CrushAt = -1f, SqueezeAt = -1f;
+	}
+
+	private static Live? _live;
+	private static readonly HashSet<ulong> Ids = new();
+
+	/// <summary>游戏结算了一轮毒伤（PoisonTickPatch）：毒性爆发攥着时，第一轮 = 捏爆，之后每轮再捏一下。</summary>
+	public static void OnTick(ulong targetId)
+	{
+		if (_live != null && Ids.Contains(targetId))
+		{
+			_live.LastTick = Stage.NowMs();
+			_live.Ticks++;
+		}
+	}
+
+	/// <param name="front">人物前面的特效层</param>
+	/// <param name="back">人物后面的特效层（握住前的手、手掌、雾丝）</param>
+	/// <param name="from">亚森伸出手的地方</param>
+	/// <param name="enemies">(节点 id, 中心, 中心到头顶的距离, 上色)</param>
+	/// <param name="attack">攥住的时刻（= 召唤高潮那一拍），捏爆在 attack + CrushDelay</param>
+	public static void Play(Control front, Control back, Vector2 from, IReadOnlyList<(ulong Id, Vector2 Center, float H, Action<Color>? Tint)> enemies,
+		float attack)
+	{
+		if (Fx.Tex("depth_open") is not Texture2D tOpen || enemies.Count == 0)
+		{
+			return;
+		}
+		Texture2D tClose = Fx.Tex("depth_close") ?? tOpen;
+		Texture2D tGripB = Fx.Tex("depth_grip_back") ?? tOpen, tGripF = Fx.Tex("depth_grip_front") ?? tOpen;
+		Texture2D tTightB = Fx.Tex("depth_grip_tight_back") ?? tGripB, tTightF = Fx.Tex("depth_grip_tight_front") ?? tGripF;
+		Ids.Clear();
+		Live live = new();
+		_live = live;
+		const float maxHold = 3.6f, back0 = 0.25f;
+		float life = attack + maxHold + 1f;
+		Node2D rootB = Fx.Root(back, Vector2.Zero, "P5DepthGripBack", life);
+		Node2D rootF = Fx.Root(front, Vector2.Zero, "P5DepthGripFront", life);
+		rootB.GlobalPosition = rootF.GlobalPosition = Vector2.Zero;
+
+		// 深处的汇合点：亚森和敌人之间、往上 —— 亚森的雾先沉到这里，再分到每只手
+		Vector2 sum = Vector2.Zero;
+		float hMax = 80f;
+		foreach (var e in enemies) { sum += e.Center; hMax = Mathf.Max(hMax, e.H); }
+		Vector2 groupC = sum / enemies.Count;
+		Vector2 deepPt = from.Lerp(groupC, 0.55f) + new Vector2(0f, -hMax * 1.4f);
+		Strand trunk = MakeStrand(rootB, 0.85f, 0.18f, hMax * 1.0f);
+		Place(trunk, from, deepPt);
+
+		var hands = new List<Hand>();
+		foreach (var (id, c, h, tint) in enemies)
+		{
+			Ids.Add(id);
+			float k = h * 1.9f / Img;
+			Hand hd = new() { Center = c, H = h, K = k, Tint = tint };
+			hd.Grip = c - (Hold - new Vector2(Img / 2f, Img / 2f)) * k;            // 让「握住的地方」落在敌人中心
+			hd.Deep = c + new Vector2(h * 0.55f, -h * 0.9f);                        // 敌人身后上方的深处
+			hd.Branch = MakeStrand(rootB, 0.12f, 0.5f, h * 0.8f);
+			Sprite2D Make(Node2D parent, Texture2D t, out Node2D node, out ShaderMaterial m)
+			{
+				node = new Node2D { Visible = false };
+				parent.AddChild(node);
+				m = new ShaderMaterial { Shader = Grip.HandShader };
+				m.SetShaderParameter("seed", Fx.Rand(0f, 40f));
+				m.SetShaderParameter("px", new Vector2(1f / Img, 1f / Img));
+				Sprite2D sp = new() { Texture = t, Scale = Vector2.One * k, Material = m, TextureFilter = CanvasItem.TextureFilterEnum.Linear };
+				node.AddChild(sp);
+				Fx.Clock(sp);
+				return sp;
+			}
+			hd.Back = Make(rootB, tOpen, out hd.BackN, out hd.BackM);
+			hd.Front = Make(rootF, tGripF, out hd.FrontN, out hd.FrontM);
+			// 指缝里渗出的紫黑毒光（握住到捏爆之间越来越亮）
+			hd.Glow = Glow.SoftSprite(rootF, c, new Color(0.62f, 0.2f, 1f), 0.1f);
+			hd.Glow.Modulate = new Color(0.62f, 0.2f, 1f, 0f);
+			hands.Add(hd);
+		}
+
+		float launch = attack - 0.2f, travelTrunk = 0.07f, emerge = 0.13f;
+		// 亚森手边：雾一收再射进深处
+		Fx.After(front, Mathf.Max(0f, launch - 0.18f), () =>
+			Glow.Gather(back, from, new Color(0.85f, 0.05f, 0.1f), hMax * 1.6f, 0.18f));
+		Fx.After(front, Mathf.Max(0f, launch), () =>
+		{
+			Glow.Shockwave(back, from, new Color(0.9f, 0.05f, 0.1f), hMax * 1.8f, 0.3f, 0.5f);
+			Glow.Ripple(back, from, hMax * 2.4f, 0.3f, 0.03f);
+		});
+		// 每只手扑出来那一下：深处一圈扭曲 + 速度线（在敌人后面）
+		foreach (Hand hd in hands)
+		{
+			Hand h0 = hd;
+			Fx.After(front, Mathf.Max(0f, launch + travelTrunk), () =>
+			{
+				Glow.Ripple(back, h0.Deep, h0.H * 2.2f, 0.3f, 0.035f);
+				Glow.SpeedLines(back, h0.Grip, new Color(0.85f, 0.1f, 0.16f), 14, h0.H * 0.5f, h0.H * 2.2f, 0.25f);
+			});
+		}
+
+		bool crushed = false, released = false;
+		float releaseAt = -1f, lastSqueeze = -1f;
+		int seenTicks = 0;
+		Fx.Animate(rootB, 0, life, t =>
+		{
+			float s = t * life;
+			float sl = s - launch;
+			// 主干雾丝：射进深处；之后变淡留着；松开后缩回
+			float trunkHead = sl < 0f ? 0f : Ease5.OutExpo(Mathf.Min(1f, sl / travelTrunk)) * 1.03f;
+			float relK = released ? Mathf.Clamp((s - releaseAt) / (back0 + 0.15f), 0f, 1f) : 0f;
+			trunk.Mat.SetShaderParameter("head", trunkHead * (1f - Fx.InCubic(relK)));
+			trunk.Mat.SetShaderParameter("alpha", sl < travelTrunk ? 0.9f : 0.5f);
+
+			// 捏爆：第一轮毒伤（或到点兜底）
+			if (!crushed && s >= attack && (live.Ticks > 0 || s >= attack + CrushDelay + 0.2f))
+			{
+				crushed = true;
+				seenTicks = Math.Max(live.Ticks, 1);
+				live.CrushAt = s;
+				lastSqueeze = s;
+				Crush(front, back, hands);
+			}
+			else if (crushed && !released && live.Ticks > seenTicks)
+			{
+				seenTicks = live.Ticks;
+				lastSqueeze = s;
+				Sfx.Play(Sfx.PoisonTick, 0.7f);
+				foreach (Hand hd in hands)
+				{
+					Glow.Flash(front, hd.Center, new Color(0.65f, 0.25f, 1f), hd.H * 1.4f, 0.22f);
+					hd.Tint?.Invoke(new Color(0.75f, 0.3f, 0.9f));
+				}
+			}
+			if (crushed && !released)
+			{
+				bool quiet = Stage.NowMs() - live.LastTick > 400;
+				if ((s >= live.CrushAt + 0.35f && quiet) || s >= attack + maxHold)
+				{
+					released = true;
+					releaseAt = s;
+					_live = null;
+					foreach (Hand hd in hands) hd.Tint?.Invoke(Colors.White);
+				}
+			}
+
+			float squeeze = lastSqueeze >= 0f ? Mathf.Exp(-(s - lastSqueeze) / 0.08f) : 0f;
+			bool tight = lastSqueeze >= 0f && s - lastSqueeze < 0.12f;
+			foreach (Hand hd in hands)
+			{
+				Place(hd.Branch, deepPt, hd.BackN.GlobalPosition + (WristPt - new Vector2(Img / 2f, Img / 2f)) * hd.K * hd.BackN.Scale.X);
+				float e = Mathf.Clamp((sl - travelTrunk) / emerge, 0f, 1f);                     // 扑出来的进度
+				hd.Branch.Mat.SetShaderParameter("head", (sl < travelTrunk ? 0f : Ease5.OutExpo(Mathf.Min(1f, (sl - travelTrunk) / 0.05f)) * 1.03f) * (1f - Fx.InCubic(relK)));
+				hd.Branch.Mat.SetShaderParameter("alpha", 0.55f);
+				bool shown = sl >= travelTrunk && !(released && relK >= 1f);
+				hd.BackN.Visible = shown;
+				// 深度：从深处的小暗点放大变亮扑到位（缓出）；松开后反过来缩回深处
+				float d = released ? 1f - Fx.InCubic(Mathf.Clamp((s - releaseAt) / back0, 0f, 1f)) : Ease5.OutQuint(e);
+				float scale = Mathf.Lerp(0.14f, 1f, d);
+				Vector2 pos = hd.Deep.Lerp(hd.Grip, d);
+				float bright = Mathf.Lerp(0.25f, 1f, d);
+				bool gripped = s >= attack && !released;
+				hd.FrontN.Visible = gripped;
+				hd.Back.Texture = gripped ? (tight ? tTightB : tGripB) : s < attack - 0.05f ? tOpen : s < attack ? tClose : tOpen;
+				hd.Front.Texture = tight ? tTightF : tGripF;
+				float sq = gripped ? 1f - 0.06f * squeeze - 0.04f * Mathf.Exp(-(s - attack) / 0.07f) : 1f;
+				float shake = gripped ? Mathf.Sin(s * 70f) * 1.6f * (0.3f + squeeze) : 0f;
+				hd.BackN.GlobalPosition = hd.FrontN.GlobalPosition = pos + new Vector2(shake, shake * 0.4f);
+				hd.BackN.Scale = hd.FrontN.Scale = new Vector2(scale * sq, scale * (2f - sq));
+				hd.BackN.Modulate = new Color(bright, bright, bright, Mathf.Min(1f, d * 3f));
+				hd.BackM.SetShaderParameter("dissolve", released ? Mathf.Clamp((s - releaseAt) / back0, 0f, 1f) * 0.6f : (1f - Mathf.Min(1f, e * 2.5f)) * 0.5f);
+				float hot = gripped ? 0.5f * Mathf.Max(squeeze, Mathf.Exp(-(s - attack) / 0.06f)) : 0f;
+				hd.BackM.SetShaderParameter("hot", hot);
+				hd.FrontM.SetShaderParameter("hot", hot);
+				// 毒光：握住后在指缝里越来越亮，捏爆时炸掉，之后随每次捏一闪
+				float g = gripped ? (crushed ? 0.5f * squeeze : Mathf.Clamp((s - attack) / CrushDelay, 0f, 1f)) : 0f;
+				hd.Glow.Modulate = new Color(0.62f, 0.2f, 1f, 0.9f * g);
+				hd.Glow.Scale = Vector2.One * hd.H / 60f * (0.6f + 0.6f * g);
+			}
+			if (released && relK >= 1f)
+			{
+				rootB.Visible = rootF.Visible = false;
+			}
+		});
+	}
+
+	/// <summary>捏爆：所有手同一帧 —— 紫黑毒光炸开、墨点甩出去、咒焰贴身烧起来、敌人一闪；顿帧 + 低频。</summary>
+	private static void Crush(Control front, Control back, List<Hand> hands)
+	{
+		HitStop.Request(0.08);
+		Fx.Shake(2);
+		Sfx.Play(Sfx.SubBoom, 1f);
+		Sfx.Play(Sfx.PoisonTick, 0.9f);
+		foreach (Hand hd in hands)
+		{
+			Vector2 c = hd.Center;
+			Glow.Flash(front, c, new Color(1f, 0.92f, 1f), hd.H * 1.2f, 0.1f);
+			Glow.Flash(front, c, new Color(0.6f, 0.15f, 0.95f), hd.H * 2.8f, 0.35f);
+			Glow.Shockwave(front, c, new Color(0.7f, 0.25f, 1f), hd.H * 3f, 0.4f);
+			Brush.Drops(front, c, Vector2.Up, 18, Mathf.Pi, hd.H * 7f, hd.H * 0.07f, 0.5f);
+			Glow.Sparks(front, c, 24, hd.H * 2f, hd.H * 6f, 0.5f, new[] { new Color(1f, 0.85f, 1f), new Color(0.65f, 0.25f, 1f), new Color(0.2f, 0f, 0.3f) },
+				hd.H * 2f, 0.08f, 0.25f);
+			Flame.Wrap(front, back, c + new Vector2(0f, hd.H * 0.95f), hd.H * 1.3f, hd.H * 2.3f, 0.02f, 0.6f);
+			hd.Tint?.Invoke(new Color(0.55f, 0.18f, 0.7f));
+			Action<Color>? tint = hd.Tint;
+			if (tint != null)
+			{
+				Fx.Animate(front, 0.05, 0.4, u => tint(new Color(0.55f, 0.18f, 0.7f).Lerp(new Color(0.85f, 0.7f, 0.9f), u)));
+			}
+		}
+	}
+}

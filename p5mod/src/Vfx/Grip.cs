@@ -23,7 +23,7 @@ public static class Grip
 	private static Shader? _hand, _mist;
 
 	/// <summary>手：dissolve 0→1 从噪声里凝出来 / 散掉，hot 攥住那一下红光过曝。</summary>
-	private static Shader HandShader => _hand ??= new Shader { Code = @"
+	internal static Shader HandShader => _hand ??= new Shader { Code = @"
 shader_type canvas_item;
 uniform float dissolve = 0.0;   // 0 = 完整，1 = 全散成雾
 uniform float hot = 0.0;

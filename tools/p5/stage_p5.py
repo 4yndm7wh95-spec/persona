@@ -179,6 +179,28 @@ def fx_textures():
         src = gh / f"grip_{pose}.png"
         if src.exists():
             yield f"grip_{pose}", normalise_grip(Image.open(src).convert("RGBA"))
+    # depth hand for Outbreak (Codex, art/p5/fx/gen_codex/depth_hand, palm facing left): half size; the grip frames are also split
+    # into a back layer (palm + wrist, drawn behind the enemy) and a front layer (curled fingers, drawn in front) - p5mod/src/Vfx/DepthGrip.cs
+    dh = GEN_CODEX / "depth_hand"
+    for pose in ("open", "close", "grip", "grip_tight"):
+        src = dh / f"depth_{pose}.png"
+        if not src.exists():
+            continue
+        im = Image.open(src).convert("RGBA").resize((627, 627), Image.LANCZOS)
+        yield f"depth_{pose}", im
+        if pose.startswith("grip"):
+            a = im.getchannel("A")
+            cut, feather = int(627 * DEPTH_CUT), 14
+            ramp = Image.linear_gradient("L").rotate(90).resize((627, 627))   # left 255 -> right 0
+            front_mask = Image.new("L", (627, 627), 0)
+            for x in range(627):
+                v = 255 if x < cut - feather else 0 if x > cut + feather else int(255 * (cut + feather - x) / (2 * feather))
+                front_mask.paste(v, (x, 0, x + 1, 627))
+            from PIL import ImageChops
+            f = im.copy(); f.putalpha(ImageChops.multiply(a, front_mask))
+            b = im.copy(); b.putalpha(ImageChops.multiply(a, ImageChops.invert(front_mask)))
+            yield f"depth_{pose}_front", f
+            yield f"depth_{pose}_back", b
     # curse hands for Eiha (Codex, art/p5/fx/gen_codex/curse_hands, 1024x1536) at half size
     for name in ("hand_reach", "hand_slam", "hand_claw", "hand_grab"):
         src = GEN_CODEX / "curse_hands" / f"{name}.png"
@@ -228,6 +250,9 @@ def normalise_hand(im):
     out = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     out.alpha_composite(sc, (round(W / 2 - (l + r) / 2 * k), round(H - bottom * k) + 6))
     return out.crop((0, 660, W, H)).resize((W // 2, (H - 660) // 2), Image.LANCZOS)
+
+
+DEPTH_CUT = 0.6   # x (fraction) where the depth hand's curled fingers end and the palm begins
 
 
 IZANAGI = ROOT / "art/p5/fx/izanagi_okami"

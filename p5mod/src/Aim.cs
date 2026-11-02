@@ -270,7 +270,9 @@ public static class Aim
 		{
 			// 按稀有度分级（Tiers）：稀有 = 完整召唤；罕见 = 只有亚森短暂现身；普通 / 基础不召唤
 			Persona.Spec spec = PersonaFor(card);
-			Summoning[node.GetInstanceId()] = (Time.GetTicksMsec() + 1500, 0.04f + spec.AttackAt);
+			// 毒性爆发：攥住（高潮那一拍）之后再停 CrushDelay 才捏爆 = 游戏结算的那一刻
+			float extra = card.GetType().Name == "Outbreak" ? DepthGrip.CrushDelay : 0f;
+			Summoning[node.GetInstanceId()] = (Time.GetTicksMsec() + 1800, 0.04f + spec.AttackAt + extra);
 			Vector2 head = Joker.PosePoint(node, ReadyFx.MaskFace);
 			Fx.After(back, 0.04, () =>
 			{
@@ -282,7 +284,7 @@ public static class Aim
 					CutIn.SplitAt = spec.AttackAt - 0.05f;
 					Vector2 chest = Persona.ChestOf(spec, Joker.PosePoint(node, ReadyFx.Feet),
 						(Joker.PosePoint(node, ReadyFx.Feet) - Joker.PosePoint(node, new Vector2(815f, 120f))).Length() * 1.35f, Joker.Facing(node));
-					Fx.After(back, spec.AttackAt, () => SummonStage.Beat(Joker.FxLayer() ?? back, chest));
+					Fx.After(back, spec.AttackAt, () => SummonStage.Beat(Joker.FxLayer() ?? back, chest, back));
 					// Persona 召唤：背景变成红黑网点的舞台、集中线（SummonStage），原版眼神特写在上面撕开（都在背景层，用户 2026-10-29）
 					if (Joker.FxLayer() is Control fr)
 					{
@@ -307,7 +309,7 @@ public static class Aim
 	/// <summary>这张牌召唤哪个人格面具：毒性爆发 = 伊邪那岐大神（万物真言），其他 = 亚森。</summary>
 	public static Persona.Spec PersonaFor(CardModel card) => card.GetType().Name switch
 	{
-		"Outbreak" => Persona.ArseneSpec with { Linger = 1.3f },   // 伊邪那岐大神先搁置（用户 2026-11-01）
+		"Outbreak" => Persona.ArseneSpec with { Linger = 1.8f },   // 伊邪那岐大神先搁置（用户 2026-11-01）；等深处的手缩回去再走
 		var n when Grips(n) => Persona.ArseneSpec with { Linger = 1.1f },   // 伸手抓人：等手收回来再走
 		_ => Persona.ArseneSpec,
 	};

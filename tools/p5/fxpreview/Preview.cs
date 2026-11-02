@@ -41,7 +41,7 @@ public partial class Preview : Node2D
 				CutIn.Eyes(p._back);
 				Persona.Arsene(p._back, JokerFeet, (JokerFeet - Pose(815f, 120f)).Length() * 1.35f);
 			});
-			p.At(1.89 + Persona.ArseneSpec.AttackAt, () => SummonStage.Beat(p._front, Persona.ChestOf(Persona.ArseneSpec, JokerFeet, (JokerFeet - Pose(815f, 120f)).Length() * 1.35f)));
+			p.At(1.89 + Persona.ArseneSpec.AttackAt, () => SummonStage.Beat(p._front, Persona.ChestOf(Persona.ArseneSpec, JokerFeet, (JokerFeet - Pose(815f, 120f)).Length() * 1.35f), p._back));
 			p.At(1.85 + (0.04 + Persona.AttackAt) - CardFx.Burst, () => CardFx.Eiha(p._front, Pose(1010, 215), Enemy,
 				Enemy + new Vector2(0, -170), c => p._enemies[Enemy].Modulate = c));
 		},
@@ -108,7 +108,8 @@ public partial class Preview : Node2D
 		// 毒性爆发（稀有）：完整召唤 + 伊邪那岐大神转杖 + 万物真言 + 咒怨毒火，打全体
 		["outbreak"] = p =>
 		{
-			Persona.Spec spec = Persona.ArseneSpec with { Linger = 1.3f };
+			// 毒性爆发（金卡）：完整召唤亚森 → 雾沉进深处 → 每个敌人身后扑出一只手攥住 → 停一拍捏爆（= 结算 + 第一轮毒伤）→ 触媒再 2 轮 → 缩回深处
+			Persona.Spec spec = Persona.ArseneSpec with { Linger = 1.8f };
 			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
 			p.Ready(0.25, Stance.Mask, "mask", "cast_from_mask", play: true);
 			p.At(1.89, () =>
@@ -118,15 +119,21 @@ public partial class Preview : Node2D
 				CutIn.Eyes(p._back);
 				Persona.Show(spec, p._back, JokerFeet, tall);
 			});
-			p.At(1.89 + spec.AttackAt, () => SummonStage.Beat(p._front, Persona.ChestOf(spec, JokerFeet, tall)));
+			p.At(1.89 + spec.AttackAt, () => SummonStage.Beat(p._front, Persona.ChestOf(spec, JokerFeet, tall), p._back));
 			var es = new[] { (Enemy, 170f, 1ul), (Enemy2, 128f, 2ul), (Enemy3, 128f, 3ul) };
-			foreach (var (e, hh, id) in es)
+			p.At(1.85, () => DepthGrip.Play(p._front, p._back, Persona.ChestOf(spec, JokerFeet, tall) + new Vector2(0.22f * tall, -0.12f * tall),
+				Array.ConvertAll(es, e => (e.Item3, e.Item1, e.Item2, (Action<Color>?)(c => p._enemies[e.Item1].Modulate = c))), 0.04f + spec.AttackAt));
+			double hit = 1.89 + spec.AttackAt + DepthGrip.CrushDelay;
+			for (int r = 0; r < 3; r++)
 			{
-				p.At(1.85, () => Grip.Play(p._front, id, Persona.ChestOf(spec, JokerFeet, tall) + new Vector2(0.22f * tall, -0.12f * tall), e, hh * 0.85f,
-					0.04f + spec.AttackAt, 1f, c => p._enemies[e].Modulate = c));
-				p.At(1.89 + spec.AttackAt + 0.3, () => { Grip.OnTick(id); Popups.Damage(p._front, id, e, 9, false); });
+				foreach (var (e, hh, id) in es)
+				{
+					int rr = r;
+					p.At(hit + 0.3 * rr + 0.02 * id, () => { DepthGrip.OnTick(id); Popups.Damage(p._front, id, e, 9 - rr, false); });
+				}
 			}
 		},
+
 
 		// 人格面具之手（罕见单体毒牌）：召唤亚森 → 伸手攥住 → 模拟触媒结算 3 轮毒伤，每轮再捏一下 → 松开缩回
 		["grip"] = p =>
@@ -141,7 +148,7 @@ public partial class Preview : Node2D
 				CutIn.Eyes(p._back);
 				Persona.Show(spec, p._back, JokerFeet, tall);
 			});
-			p.At(1.89 + spec.AttackAt, () => SummonStage.Beat(p._front, Persona.ChestOf(spec, JokerFeet, tall)));
+			p.At(1.89 + spec.AttackAt, () => SummonStage.Beat(p._front, Persona.ChestOf(spec, JokerFeet, tall), p._back));
 			p.At(1.85, () => Grip.Play(p._front, 1ul, Persona.ChestOf(spec, JokerFeet, tall) + new Vector2(0.22f * tall, -0.12f * tall), Enemy, 170f,
 				0.04f + spec.AttackAt, 1f, c => p._enemies[Enemy].Modulate = c));
 			for (int i = 0; i < 3; i++)

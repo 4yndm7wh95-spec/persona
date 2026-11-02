@@ -112,22 +112,23 @@ public static class JokerFx
 				break;
 			case "Outbreak":
 			{
-				// 稀有：完整召唤亚森（用户 2026-11-01：大神先搁置、万物真言移除）。过渡版：亚森给每个敌人各派一只手攥住，毒结算完才松开；
-				// 「从画面深处伸出来的手」（Codex depth_hand）到了以后换成金卡专属版本
+				// 稀有（金卡专属）：亚森的雾沉进深处，每个敌人身后的深处扑出一只手攥住，停一拍捏爆（DepthGrip）
 				Persona.Spec spec = Aim.PersonaFor(card);
 				Vector2 jf = Joker.PosePoint(joker, ReadyFx.Feet);
 				float height = (jf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length() * 1.35f;
 				float face = Joker.Facing(joker);
 				Vector2 from = Persona.ChestOf(spec, jf, height, face) + new Vector2(0.22f * height * face, -0.12f * height);
+				var list = new List<(ulong, Vector2, float, Action<Color>?)>();
 				foreach (Creature c in card.CombatState?.HittableEnemies ?? (IEnumerable<Creature>)Array.Empty<Creature>())
 				{
 					if (room.GetCreatureNode(c) is NCreature n)
 					{
 						CanvasItem? v = n.Visuals;
-						Grip.Play(layer, n.GetInstanceId(), from, n.VfxSpawnPosition, Mathf.Max(80f, (n.VfxSpawnPosition - n.GetTopOfHitbox()).Length()) * 0.85f,
-							Aim.HitFor(card), face, v == null ? null : col => { if (GodotObject.IsInstanceValid(v)) { v.Modulate = col; } });
+						list.Add((n.GetInstanceId(), n.VfxSpawnPosition, Mathf.Max(80f, (n.VfxSpawnPosition - n.GetTopOfHitbox()).Length()),
+							v == null ? null : col => { if (GodotObject.IsInstanceValid(v)) { v.Modulate = col; } }));
 					}
 				}
+				DepthGrip.Play(layer, Joker.FxLayer(back: true) ?? layer, from, list, Aim.HitFor(card));
 				break;
 			}
 			case var n when Aim.Grips(n) && t != null:
