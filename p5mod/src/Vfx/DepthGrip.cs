@@ -14,7 +14,7 @@ namespace P5Joker;
 public static class DepthGrip
 {
 	/// <summary>攥住之后多久捏爆（= 游戏结算推后多少，Aim 用）。</summary>
-	public const float CrushDelay = 0.32f;
+	public const float CrushDelay = 0.25f;
 
 	private const float Img = 627f;
 	// depth_hand_v2：握住的地方（四指扣住的中心）、远处的手腕（画面上方，烟往上后方散）
@@ -33,6 +33,8 @@ uniform float pulse = -1.0;
 uniform float clock = 0.0;
 uniform float seed = 0.0;
 uniform float aspect = 8.0;
+uniform float gx0 = 0.0;        // 这一段在整条雾丝上从哪到哪（雾丝是一串小段拼成的弯曲带子）
+uniform float gx1 = 1.0;
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float vnoise(vec2 p) {
 	vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);
@@ -40,7 +42,7 @@ float vnoise(vec2 p) {
 }
 float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { v += a * vnoise(p); p = p * 2.03 + 1.7; a *= 0.5; } return v; }
 void fragment() {
-	float x = UV.x;
+	float x = mix(gx0, gx1, UV.x);
 	float y = (UV.y - 0.5) * 2.0;
 	vec2 q = vec2(x * aspect, y);
 	float w = mix(w0, w1, x);
@@ -57,37 +59,69 @@ void fragment() {
 	COLOR = vec4(col, clamp(a, 0.0, 1.0) * on);
 }" };
 
+	/// <summary>
+	/// 雾丝（用户 2026-11-02：亚森到手的连接太直勾勾）：沿一条二次贝塞尔曲线排的一串小段，曲线的拱度随时间轻轻飘，
+	/// 每段用同一个着色器、按在整条线上的位置取宽度 / 噪声 / 显示进度，所以拼起来是一条连续弯曲的雾带。
+	/// </summary>
 	private sealed class Strand
 	{
-		public ColorRect Rect = null!;
-		public ShaderMaterial Mat = null!;
-		public Node2D Node = null!;
+		public readonly List<(ColorRect R, ShaderMaterial M, Node2D N)> Segs = new();
+		public float Px, Bend, Seed;
+
+		public void Set(string name, Variant v)
+		{
+			foreach (var (_, m, _) in Segs) m.SetShaderParameter(name, v);
+		}
 	}
 
-	private static Strand MakeStrand(Node2D parent, float w0, float w1, float px)
+	private const int SegCount = 12;
+
+	private static Strand MakeStrand(Node2D parent, float w0, float w1, float px, float bend)
 	{
-		Node2D n = new();
-		parent.AddChild(n);
-		ColorRect r = new() { MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = StrandShader } };
-		n.AddChild(r);
-		ShaderMaterial m = (ShaderMaterial)r.Material;
-		m.SetShaderParameter("w0", w0);
-		m.SetShaderParameter("w1", w1);
-		m.SetShaderParameter("seed", Fx.Rand(0f, 40f));
-		m.SetShaderParameter("head", 0f);
-		r.Size = new Vector2(10f, px);
-		r.Position = new Vector2(0f, -px / 2f);
-		Fx.Clock(r);
-		return new Strand { Rect = r, Mat = m, Node = n };
+		Strand st = new() { Px = px, Bend = bend, Seed = Fx.Rand(0f, 40f) };
+		for (int i = 0; i < SegCount; i++)
+		{
+			Node2D n = new();
+			parent.AddChild(n);
+			ColorRect r = new() { MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = StrandShader } };
+			n.AddChild(r);
+			ShaderMaterial m = (ShaderMaterial)r.Material;
+			m.SetShaderParameter("w0", w0);
+			m.SetShaderParameter("w1", w1);
+			m.SetShaderParameter("seed", st.Seed);
+			m.SetShaderParameter("head", 0f);
+			m.SetShaderParameter("gx0", (float)i / SegCount);
+			m.SetShaderParameter("gx1", (float)(i + 1) / SegCount);
+			r.Size = new Vector2(10f, px);
+			r.Position = new Vector2(0f, -px / 2f);
+			Fx.Clock(r);
+			st.Segs.Add((r, m, n));
+		}
+		return st;
 	}
 
-	private static void Place(Strand s, Vector2 a, Vector2 b)
+	/// <summary>把雾丝摆成 a → b 的一条弧（拱向 bend 那一侧，拱度随 time 轻轻飘动）。</summary>
+	private static void Place(Strand s, Vector2 a, Vector2 b, float time)
 	{
 		float len = Mathf.Max(1f, a.DistanceTo(b));
-		s.Node.GlobalPosition = a;
-		s.Node.Rotation = (b - a).Angle();
-		s.Rect.Size = new Vector2(len, s.Rect.Size.Y);
-		s.Mat.SetShaderParameter("aspect", len / s.Rect.Size.Y);
+		Vector2 dir = (b - a) / len, nrm = new(-dir.Y, dir.X);
+		float sway = 1f + 0.18f * Mathf.Sin(time * 2.3f + s.Seed) + 0.08f * Mathf.Sin(time * 5.1f + s.Seed * 2f);
+		Vector2 ctrl = (a + b) / 2f + nrm * len * s.Bend * sway + dir * len * 0.08f * Mathf.Sin(time * 1.7f + s.Seed);
+		Vector2 P(float t) => a * (1 - t) * (1 - t) + ctrl * 2 * t * (1 - t) + b * t * t;
+		float total = 0f;
+		var pts = new Vector2[SegCount + 1];
+		for (int i = 0; i <= SegCount; i++) pts[i] = P((float)i / SegCount);
+		for (int i = 0; i < SegCount; i++) total += pts[i].DistanceTo(pts[i + 1]);
+		for (int i = 0; i < SegCount; i++)
+		{
+			var (r, m, n) = s.Segs[i];
+			Vector2 p0 = pts[i], p1 = pts[i + 1];
+			float l = p0.DistanceTo(p1) + 2f;                              // 每段多出 2px 盖住接缝
+			n.GlobalPosition = p0;
+			n.Rotation = (p1 - p0).Angle();
+			r.Size = new Vector2(l, s.Px);
+			m.SetShaderParameter("aspect", total / s.Px);
+		}
 	}
 
 	private sealed class Hand
@@ -152,8 +186,8 @@ void fragment() {
 		foreach (var e in enemies) { sum += e.Center; hMax = Mathf.Max(hMax, e.H); }
 		Vector2 groupC = sum / enemies.Count;
 		Vector2 deepPt = from.Lerp(groupC, 0.55f) + new Vector2(0f, -hMax * 1.4f);
-		Strand trunk = MakeStrand(rootB, 0.85f, 0.18f, hMax * 1.0f);
-		Place(trunk, from, deepPt);
+		Strand trunk = MakeStrand(rootB, 0.85f, 0.18f, hMax * 1.0f, -0.22f);           // 往上拱、绕一点弯沉进深处
+		Place(trunk, from, deepPt, 0f);
 
 		var hands = new List<Hand>();
 		foreach (var (id, c, h, bodyW, tint) in enemies)
@@ -166,7 +200,7 @@ void fragment() {
 			Hand hd = new() { Center = c, H = h, K = k, Tint = tint };
 			hd.Grip = c + new Vector2(halfW * 1.05f, 0f) - (new Vector2(0.66f * Img, Hold.Y) - new Vector2(Img / 2f, Img / 2f)) * k;
 			hd.Deep = c + new Vector2(h * 0.15f, -h * 1.3f);                        // 敌人身后上方的深处（手从上后方扑下来）
-			hd.Branch = MakeStrand(rootB, 0.12f, 0.5f, h * 0.8f);
+			hd.Branch = MakeStrand(rootB, 0.12f, 0.5f, h * 0.8f, Fx.Rand(0.12f, 0.24f) * (hands.Count % 2 == 0 ? 1f : -1f));
 			Sprite2D Make(Node2D parent, Texture2D t, out Node2D node, out ShaderMaterial m)
 			{
 				node = new Node2D { Visible = false };
@@ -218,8 +252,9 @@ void fragment() {
 			// 主干雾丝：射进深处；之后变淡留着；松开后缩回
 			float trunkHead = sl < 0f ? 0f : Ease5.OutExpo(Mathf.Min(1f, sl / travelTrunk)) * 1.03f;
 			float relK = released ? Mathf.Clamp((s - releaseAt) / (back0 + 0.15f), 0f, 1f) : 0f;
-			trunk.Mat.SetShaderParameter("head", trunkHead * (1f - Fx.InCubic(relK)));
-			trunk.Mat.SetShaderParameter("alpha", sl < travelTrunk ? 0.9f : 0.5f);
+			Place(trunk, from, deepPt, s);
+			trunk.Set("head", trunkHead * (1f - Fx.InCubic(relK)));
+			trunk.Set("alpha", sl < travelTrunk ? 0.9f : 0.5f);
 
 			// 捏爆：第一轮毒伤（或到点兜底）
 			if (!crushed && s >= attack && (live.Ticks > 0 || s >= attack + CrushDelay + 0.2f))
@@ -257,10 +292,10 @@ void fragment() {
 			bool tight = crushed;                                   // 用户 2026-11-02：握紧了就一直握紧（不是每轮毒伤捏一下）
 			foreach (Hand hd in hands)
 			{
-				Place(hd.Branch, deepPt, hd.BackN.GlobalPosition + (WristPt - new Vector2(Img / 2f, Img / 2f)) * hd.K * hd.BackN.Scale.X);
+				Place(hd.Branch, deepPt, hd.BackN.GlobalPosition + (WristPt - new Vector2(Img / 2f, Img / 2f)) * hd.K * hd.BackN.Scale.X, s);
 				float e = Mathf.Clamp((sl - travelTrunk) / emerge, 0f, 1f);                     // 扑出来的进度
-				hd.Branch.Mat.SetShaderParameter("head", (sl < travelTrunk ? 0f : Ease5.OutExpo(Mathf.Min(1f, (sl - travelTrunk) / 0.05f)) * 1.03f) * (1f - Fx.InCubic(relK)));
-				hd.Branch.Mat.SetShaderParameter("alpha", 0.55f);
+				hd.Branch.Set("head", (sl < travelTrunk ? 0f : Ease5.OutExpo(Mathf.Min(1f, (sl - travelTrunk) / 0.05f)) * 1.03f) * (1f - Fx.InCubic(relK)));
+				hd.Branch.Set("alpha", 0.55f);
 				bool shown = sl >= travelTrunk && !(released && relK >= 1f);
 				hd.BackN.Visible = shown;
 				// 深度：从深处的小暗点放大变亮扑到位（缓出）；松开后反过来缩回深处

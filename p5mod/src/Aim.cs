@@ -271,7 +271,7 @@ public static class Aim
 			// 按稀有度分级（Tiers）：稀有 = 完整召唤；罕见 = 只有亚森短暂现身；普通 / 基础不召唤
 			Persona.Spec spec = PersonaFor(card);
 			// 毒性爆发：攥住（高潮那一拍）之后再停 CrushDelay 才捏爆 = 游戏结算的那一刻
-			float extra = card.GetType().Name == "Outbreak" ? DepthGrip.CrushDelay : 0f;
+			float extra = 0f;   // 毒性爆发：手提前 CrushDelay 握住，捏爆 = 人格面具出手那一拍（不再往后拖，用户 2026-11-02：这段停留变长了）
 			Summoning[node.GetInstanceId()] = (Time.GetTicksMsec() + 1800, 0.04f + spec.AttackAt + extra);
 			Vector2 head = Joker.PosePoint(node, ReadyFx.MaskFace);
 			Fx.After(back, 0.04, () =>

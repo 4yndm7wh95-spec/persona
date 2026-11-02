@@ -128,7 +128,7 @@ public static class JokerFx
 							v == null ? null : col => { if (GodotObject.IsInstanceValid(v)) { v.Modulate = col; } }));
 					}
 				}
-				DepthGrip.Play(layer, Joker.FxLayer(back: true) ?? layer, from, list, Aim.HitFor(card));
+				DepthGrip.Play(layer, Joker.FxLayer(back: true) ?? layer, from, list, Aim.HitFor(card) - DepthGrip.CrushDelay);
 				break;
 			}
 			case var n when Aim.Grips(n) && t != null:
