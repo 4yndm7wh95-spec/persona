@@ -41,7 +41,7 @@ public static class JokerFx
 			case "shiv_from_aim":
 				Fx.After(layer, Mathf.Max(0f, 0.18f - skipped), () =>
 				{
-					HitFx.Muzzle(layer, Joker.Muzzle(node), Joker.Facing(node));
+					GunFx.Muzzle(layer, Joker.Muzzle(node), new Vector2(Joker.Facing(node), 0.06f), Joker.Facing(node));   // 第四版枪口（Vfx/GunFx.cs）
 					if (node.Entity?.Player is { } p && MegaCrit.Sts2.Core.Context.LocalContext.IsMe(p) && AmmoPatch.Local is AmmoView ammo
 						&& GodotObject.IsInstanceValid(ammo.Root))
 					{
@@ -61,7 +61,7 @@ public static class JokerFx
 		}
 		if (gun)
 		{
-			HitFx.Shot(layer, Joker.Muzzle(joker), target.VfxSpawnPosition, Joker.Facing(joker));
+			GunFx.Shot(layer, Joker.Muzzle(joker), target.VfxSpawnPosition);                                       // 第四版弹道 + 命中
 		}
 		else
 		{

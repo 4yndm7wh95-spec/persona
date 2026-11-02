@@ -83,10 +83,13 @@ public static class Sfx
 		return s;
 	}
 
+	/// <summary>预热（Vfx/Warmup.cs）期间静音：特效照常跑一遍，但不出声。只拦当场播放的（预热不排延迟的声音）。</summary>
+	public static bool Muted;
+
 	/// <summary>播放；同一音效 45ms 内不重复叠加。volume 0～1.4。</summary>
 	public static void Play(string name, float volume = 1f, float delay = 0f) => Stage.Safe("sfx " + name, () =>
 	{
-		if (Engine.GetMainLoop() is not SceneTree tree)
+		if (Muted || Engine.GetMainLoop() is not SceneTree tree)
 		{
 			return;
 		}

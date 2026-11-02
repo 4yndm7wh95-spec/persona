@@ -29,12 +29,31 @@ public static class Warmup
 		layer.AddChild(hidden);
 		hidden.GlobalPosition = Vector2.Zero;
 		Vector2 c = Fx.Screen(layer) * 0.5f;
+		Sfx.Muted = true;                                             // 特效里自带的音效（枪声、命中声）预热时不要响
+		try
+		{
+			WarmAll(hidden, c);
+		}
+		finally
+		{
+			Sfx.Muted = false;
+		}
+		Fx.FreeAfter(hidden, 1.5);
+	}
+
+	private static void WarmAll(Control hidden, Vector2 c)
+	{
 
 		foreach (string path in new[] { Vanilla.BigSlashSmoke, Vanilla.Specks, Vanilla.Streaks })
 		{
 			Stage.Safe("warmup " + path, () => Vanilla.Burst(hidden, path, c, 0f, 1f, Lut5.Blood));
 		}
 		Stage.Safe("warmup smoke lut", () => Vanilla.Burst(hidden, Vanilla.BigSlashSmoke, c, 0f, 1f, Lut5.Smoke));
+		Stage.Safe("warmup gun", () =>
+		{
+			GunFx.Muzzle(hidden, c, Vector2.Right);
+			GunFx.Shot(hidden, c, c + new Vector2(300f, 0f));
+		});
 		foreach (string tex in new[] { "slash_thin", "slash_heavy" })
 		{
 			Stage.Safe("warmup " + tex, () => Paint.Sweep(hidden, tex, c, 0f, Vector2.One * 0.3f, Lut5.Blood, 0.05f, 0.05f, 0.2f));
@@ -45,6 +64,5 @@ public static class Warmup
 			Glow.Ripple(hidden, c, 8f, 0.1f, 0f);
 		});
 		Stage.Safe("warmup impact", () => Impact.Warm(hidden));
-		Fx.FreeAfter(hidden, 1.5);
 	}
 }

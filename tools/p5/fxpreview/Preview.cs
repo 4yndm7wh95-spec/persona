@@ -279,6 +279,19 @@ public partial class Preview : Node2D
 			}
 		},
 		// 只放出刀动作、不放特效（量刀尖轨迹用）
+		// 第四版枪组：一张小刀 → 三张小刀连打 → 刀扇（0.7.27 的弹射保留）→ 一枪打死
+		["gun_v4"] = p =>
+		{
+			p.ShotV4(0.3, Enemy, 4, Weight.Light);
+			for (int i = 0; i < 3; i++)
+			{
+				p.ShotV4(1.3 + 0.55 * i, Enemy2, 4, Weight.Light);
+			}
+			p.At(3.4, () => p._joker?.Play("shiv"));
+			p.At(3.58, () => GunFx.Muzzle(p._front, Muzzle, new Vector2(1f, 0.06f)));
+			p.At(3.6, () => HitFx.Ricochet(p._front, Muzzle, new[] { Enemy2, Enemy, Enemy3 }));
+			p.ShotV4(4.7, Enemy3, 9, Impact.Grade(Weight.Light, 9, 9, true, false), dies: true);
+		},
 		// 原版怪物（research/sts2_preview_scene，tools/spine/skel_reader.py 转成 JSON）在预览里显示对不对
 		["monsters"] = p => { },
 		["attack_pose"] = p => p.At(0.3, () => p._joker?.Play("attack")),
@@ -397,6 +410,23 @@ public partial class Preview : Node2D
 			Popups.Damage(_front, (ulong)(enemy.X * 10f + (float)t), enemy, amount, false);
 			_enemies.TryGetValue(enemy, out Node2D? n);
 			Impact.Confirm(_front, n, enemy, new Vector2(1f, 0.12f), w);
+			if (dies && n != null)
+			{
+				n.CreateTween().TweenProperty(n, "modulate:a", 0f, 0.6).SetDelay(0.35);
+			}
+		});
+	}
+
+	private void ShotV4(double t, Vector2 enemy, int amount, Weight w, bool dies = false)
+	{
+		At(t - 0.2, () => _joker?.Play("shiv"));
+		At(t - 0.02, () => GunFx.Muzzle(_front, Muzzle, new Vector2(1f, 0.06f)));
+		At(t, () =>
+		{
+			GunFx.Shot(_front, Muzzle, enemy);
+			Popups.Damage(_front, (ulong)(enemy.X * 10f + (float)t), enemy, amount, true);
+			_enemies.TryGetValue(enemy, out Node2D? n);
+			Impact.Confirm(_front, n, enemy, enemy - Muzzle, w);
 			if (dies && n != null)
 			{
 				n.CreateTween().TweenProperty(n, "modulate:a", 0f, 0.6).SetDelay(0.35);

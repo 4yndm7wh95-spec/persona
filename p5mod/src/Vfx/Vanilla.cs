@@ -43,6 +43,10 @@ public static class Lut5
 	public static GradientTexture1D Persona => Make("persona",
 		(0f, new Color("06222e")), (0.35f, new Color("1f6f8c")), (0.65f, new Color("66c6d8")), (1f, new Color("eefbff")));
 
+	/// <summary>枪口火焰 / 枪击火花：暗红 → 绯红 → 粉白 → 白（Codex 的橙黄火焰换成 P5 红白）。</summary>
+	public static GradientTexture1D Muzzle => Make("muzzle",
+		(0f, new Color("1a0204")), (0.3f, new Color("7a0a12")), (0.55f, new Color("e5191c")), (0.8f, new Color("ff8a70")), (1f, new Color("fffaf6")));
+
 	/// <summary>金：暴击 / 撒旦耶尔。</summary>
 	public static GradientTexture1D Gold => Make("gold",
 		(0f, new Color("2a1400")), (0.4f, new Color("a8640c")), (0.75f, new Color("ffcf5a")), (1f, new Color("fffbe8")));

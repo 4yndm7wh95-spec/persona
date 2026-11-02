@@ -83,7 +83,7 @@ def placeholder_back():
 V4 = ROOT / "art/p5/fx/v4"
 V4_TEX = [("slash", n, 0.5) for n in ("slash_thin", "slash_heavy", "slash_cross", "slash_tear", "slash_thrust", "slash_flurry")] + \
     [("burst", f"burst_0{i}", 0.5) for i in (1, 2, 3)] + \
-    [("muzzle", f"muzzle_side_0{i}", 0.5) for i in (1, 2, 3)] + [("muzzle", "muzzle_front", 0.5)]
+    [("muzzle", f"muzzle_side_0{i}", 0.5) for i in (1, 2, 3)] + [("muzzle", "muzzle_front", 0.5), ("muzzle", "shell", 1)]
 
 # P5R sound effects (research/p5r/audio): published name -> file (names in p5mod/src/Vfx/Sfx.cs)
 P5SFX = ROOT / "research/p5r/audio/sfx"
