@@ -144,7 +144,7 @@ public partial class Preview : Node2D
 			p.At(0.3, () => { p._joker?.Play("knife_in"); p._joker?.Queue("knife_loop", true); });
 			p.At(1.3, () => p._joker?.Play("knife_out"));
 		},
-		// 打击确认感（Vfx/Impact.cs）的分档，开枪（小刀牌）：投掷匕首一枪（轻）→ 三张小刀连着打（每张轻）→ 刀扇一发弹过三个敌人（群攻轻，整组只顿一次）
+		// 打击确认感（Vfx/Impact.cs）的分档，开枪（只有小刀牌开枪；投掷匕首等是打击动作）：一张小刀（轻）→ 三张小刀连着打（每张轻）→ 刀扇一发弹过三个敌人（群攻轻，整组只顿一次）
 		// → 一枪打出 14 点（升到中）→ 一枪打死一个（击杀）
 		["confirm_gun"] = p =>
 		{
