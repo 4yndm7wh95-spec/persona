@@ -1,0 +1,34 @@
+{
+  "method": "imagegen",
+  "tool": "image_gen.imagegen",
+  "prompt": "Use case: stylized-concept. Asset type: transparent 2D game VFX sprite for a Persona 5 inspired calling card burning away. Create a single irregular rectangular loop of charred paper edge with glowing orange-red embers, centered on a 512 by 512 square canvas. The loop surrounds a large entirely transparent empty center (about 65 percent of canvas width and height). Burnt black and deep crimson paper rim, tiny glowing orange ember chips attached to and near the rim, bright warm cores with soft translucent flame edges. Clean hand-painted cel-shaded comic art with controlled ink contours, high contrast, matching Persona 5 official 2D visual language. No intact paper sheet in the center, no card text, no characters, no mask, no scenery, no cast shadow, no opaque backdrop. Genuine transparent PNG RGBA, alpha exactly zero outside the paper/flame/embers and throughout the central hole. Keep all outer embers inside canvas with transparent margin. One asset only.",
+  "reference_images": [],
+  "raw_output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-37a3b165-b6f3-4260-8b1d-f3339cfd3e03.png",
+  "raw_size": [
+    1254,
+    1254
+  ],
+  "delivery_size": [
+    512,
+    512
+  ],
+  "transparent_background": true,
+  "generation_count": 1,
+  "redraw_count": 0,
+  "processing": "保留原始大图；交付版缩至512x512，alpha<=2清零，alpha=0的RGB清零；未抠底。",
+  "checks": {
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "corner_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "center_alpha": 0,
+    "soft_alpha_pixels": 55799
+  }
+}
