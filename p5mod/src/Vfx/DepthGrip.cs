@@ -6,7 +6,7 @@ namespace P5Joker;
 
 /// <summary>
 /// 毒性爆发（金卡专属，用户 2026-11-01）：亚森的雾沉进画面深处，从每个敌人身后的深处扑出一只手，侧握（手心朝左）一把攥住敌人，
-/// 停一拍后所有手同时「捏爆」（= 牌的结算：上毒 + 立刻触发中毒，游戏结算推到这一刻，Aim.PlayCast），触媒多结算的每一轮再一起捏一下，
+/// 停一拍后所有手同时「捏爆」（= 牌的结算：上毒 + 立刻触发中毒，游戏结算推到这一刻，Aim.PlayCast），之后一直死死握紧（触媒多结算的每一轮只让敌人闪一下），
 /// 结算完松开、缩回深处。手是 Codex 画的 depth_hand（stage_p5.py 把握住的两帧切成「手掌在敌人后面 / 手指在敌人前面」两层）。
 /// 深度全靠动画：从敌人身后一个又小、又暗的点 0.13s 放大变亮扑出来（在敌人后面的图层），握住那一刻手指换到敌人前面的图层；
 /// 雾丝越往深处越细越暗。
@@ -249,8 +249,8 @@ void fragment() {
 				}
 			}
 
-			float squeeze = lastSqueeze >= 0f ? Mathf.Exp(-(s - lastSqueeze) / 0.08f) : 0f;
-			bool tight = lastSqueeze >= 0f && s - lastSqueeze < 0.12f;
+			float squeeze = crushed && live.CrushAt >= 0f ? Mathf.Exp(-(s - live.CrushAt) / 0.08f) : 0f;   // 只有捏爆那一下
+			bool tight = crushed;                                   // 用户 2026-11-02：握紧了就一直握紧（不是每轮毒伤捏一下）
 			foreach (Hand hd in hands)
 			{
 				Place(hd.Branch, deepPt, hd.BackN.GlobalPosition + (WristPt - new Vector2(Img / 2f, Img / 2f)) * hd.K * hd.BackN.Scale.X);
@@ -278,7 +278,7 @@ void fragment() {
 				hd.BackM.SetShaderParameter("hot", hot);
 				hd.FrontM.SetShaderParameter("hot", hot);
 				// 毒光：握住后在指缝里越来越亮，捏爆时炸掉，之后随每次捏一闪
-				float g = gripped ? (crushed ? 0.5f * squeeze : Mathf.Clamp((s - attack) / CrushDelay, 0f, 1f)) : 0f;
+				float g = gripped ? (crushed ? 0.35f + 0.5f * squeeze : Mathf.Clamp((s - attack) / CrushDelay, 0f, 1f)) : 0f;
 				hd.Glow.Modulate = new Color(0.62f, 0.2f, 1f, 0.9f * g);
 				hd.Glow.Scale = Vector2.One * hd.H / 60f * (0.6f + 0.6f * g);
 			}

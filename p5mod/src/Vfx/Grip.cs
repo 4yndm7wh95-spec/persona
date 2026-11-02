@@ -9,7 +9,7 @@ namespace P5Joker;
 /// 毒没结算完就一直捏着，结算完才回去。手是 Codex 画的同一只手的 7 个姿势（grip_hand，打包时对齐了手腕），从左往右伸，朝左的话镜像。
 /// 距离的处理：手不整段飞过去 —— 亚森手边冒一团黑红雾，0.08s 一道雾的拖尾「唰」地射到怪身前，手从雾里凝出来扑上去，最后一刻攥成实心拳
 /// （= 召唤高潮那一拍）。手和亚森之间只有一缕模模糊糊的雾丝（实时渲染、半透明、被噪声搅动、往前流），看得出联系但不像手臂。
-/// 每结算一轮毒伤：一团微光顺着雾丝流到手上，手更用力地一捏（fist_tight）、怪闪一下。最后一轮之后 0.4s（至少攥住 0.45s）松开，
+/// 攥住之后一直死死握紧（fist_tight）；每结算一轮毒伤：一团微光顺着雾丝流到手上、怪闪一下。最后一轮之后 0.4s（至少攥住 0.45s）松开，
 /// 化成雾顺着雾丝缩回亚森。
 /// </summary>
 public static class Grip
@@ -257,13 +257,13 @@ void fragment() {
 			float appear = launch + travel * 0.75f;
 			handN.Visible = s >= appear && !(released && s > releaseAt + back);
 			embers.Emitting = s >= appear && !released;
-			int f = s < attack - 0.05f ? Reach : s < attack - 0.025f ? Close : s < attack ? Hold : Fist;
+			int f = s < attack - 0.05f ? Reach : s < attack - 0.025f ? Close : s < attack ? Hold : s < attack + 0.08f ? Fist : Tight;   // 攥住后一直死死握紧
 			float pulse = -1f;
 			if (tickT >= 0f && s - tickT < 0.26f)
 			{
 				float u = (s - tickT) / 0.1f;                              // 光团 0.1s 顺着雾丝流过去，然后手一捏
 				pulse = u < 1f ? u : -1f;
-				if (s - tickT >= 0.1f && s - tickT < 0.22f) f = Tight;
+				// 握紧了就一直握紧（用户 2026-11-02）：每轮毒伤不再换帧捏一下，只让怪闪一下
 				if (s - tickT >= 0.1f && s - tickT < 0.11f && tint != null)
 				{
 					tint(new Color(0.75f, 0.3f, 0.85f));
@@ -283,7 +283,7 @@ void fragment() {
 				pos = wristAt.Lerp(from, Fx.InCubic(Mathf.Clamp((s - releaseAt) / back, 0f, 1f)) * 0.6f);
 			}
 			float squash = s >= attack ? Mathf.Exp(-(s - attack) / 0.07f) : 0f;
-			if (tickT >= 0f && s - tickT >= 0.1f) squash = Mathf.Max(squash, 0.7f * Mathf.Exp(-(s - tickT - 0.1f) / 0.07f));
+
 			float shake = gripped && !released ? Mathf.Sin(s * 70f) * 1.5f * (0.4f + squash) : 0f;
 			float sway = gripped && !released ? Mathf.Sin(s * 4f) * 0.03f : 0f;
 			handN.Position = pos + new Vector2(shake, shake * 0.4f + Mathf.Sin(s * 3.2f) * 4f);
