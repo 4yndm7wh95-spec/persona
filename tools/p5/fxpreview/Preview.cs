@@ -277,6 +277,18 @@ public partial class Preview : Node2D
 				p.At(1.3, () => Vanilla.Burst(p._front, path, at, 0f, 1f, Lut5.Blood));
 			}
 		},
+		// 只放出刀动作、不放特效（量刀尖轨迹用）
+		["attack_pose"] = p => p.At(0.3, () => p._joker?.Play("attack")),
+		// 出刀刀光单独看（和动作对齐）
+		["swing"] = p =>
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				double t = 0.3 + i * 1.0;
+				p.At(t, () => p._joker?.Play("attack"));
+				p.At(t + 0.13, () => KnifeFx.Swing(p._front, Pose(600f, 850f), Pose(1376f, 450f)));
+			}
+		},
 		["hit_parts"] = p =>
 		{
 			float rot = -0.55f;

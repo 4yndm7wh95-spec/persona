@@ -8,15 +8,38 @@ namespace P5Joker;
 /// </summary>
 public static class KnifeFx
 {
-	/// <summary>Joker 出刀那一下的刀光（跟着手的轨迹扫过去，from → to 是刀尖的起止点）。</summary>
+	// slash_thin 贴图（1024×512 打包后）上起笔 / 收尾两个尖的位置（相对贴图中心）：起笔在左上，往下兜出弧底，再往右上收尖
+	private static readonly Vector2 ThinTipA = new(40f - 512f, 104f - 256f), ThinTipB = new(1006f - 512f, 327f - 256f);
+
+	/// <summary>
+	/// 把一张刀光贴图摆到一段刀路上：贴图的起笔尖对 from、收尾尖对 to（只旋转 + 等比缩放，不翻转，弧底自然落在刀路下方 = 上撩），
+	/// 两头各往外延 extend 倍，整体往前（facing 方向）挪 forward 像素。返回 (中心, 旋转, 缩放)。
+	/// </summary>
+	public static (Vector2 Center, float Rot, Vector2 Scale) Fit(Vector2 from, Vector2 to, Vector2 tipA, Vector2 tipB, float facing,
+		float extend = 1.35f, float forward = 40f, float squash = 0.8f)
+	{
+		Vector2 mid = (from + to) * 0.5f + new Vector2(forward * facing, 0f);
+		Vector2 half = (to - from) * 0.5f * extend;
+		Vector2 a = mid - half, b = mid + half;
+		if (facing < 0f)
+		{
+			(a, b) = (new Vector2(2f * mid.X - a.X, a.Y), new Vector2(2f * mid.X - b.X, b.Y));
+		}
+		Vector2 tex = tipB - tipA, scr = (b - a) * new Vector2(facing, 1f);
+		float k = scr.Length() / tex.Length();
+		float rot = scr.Angle() - tex.Angle();
+		// 贴图中心相对两个尖中点的偏移，转到屏幕上
+		Vector2 off = (-(tipA + tipB) * 0.5f) * new Vector2(k, k * squash);
+		Vector2 center = mid + off.Rotated(rot) * new Vector2(facing, 1f);
+		return (center, rot * facing, new Vector2(k * facing, k * squash));
+	}
+
+	/// <summary>Joker 出刀那一下的刀光：刀尖从腰前（from）撩到右上方（to），刀光取后半段，扫在身体前方、手的外侧。</summary>
 	public static void Swing(Control layer, Vector2 from, Vector2 to, float facing = 1f)
 	{
-		Vector2 d = to - from;
-		float len = d.Length();
-		// slash_thin 的贴图：弧线从左上起笔、往右下收尖，向下鼓 → 上撩要上下翻一下，沿起止点方向摆
-		float rot = d.Angle();
-		Vector2 scale = new Vector2(len / 820f * 1.25f, -0.55f * facing);
-		Paint.Sweep(layer, "slash_thin", from.Lerp(to, 0.5f), rot, scale, Lut5.Blood, 0.07f, 0.03f, 0.2f, 18f);
+		// 只画刀路的后半段（前半段在身前、贴着身体，画出来像贴在人身上），往敌人方向推一点，收尾顺势甩出去
+		(Vector2 c, float rot, Vector2 scale) = Fit(from.Lerp(to, 0.38f), to, ThinTipA, ThinTipB, facing, 1.75f, 85f, 0.75f);
+		Paint.Sweep(layer, "slash_thin", c, rot, scale, Lut5.Blood, 0.07f, 0.03f, 0.2f, 14f);
 	}
 
 	/// <summary>
