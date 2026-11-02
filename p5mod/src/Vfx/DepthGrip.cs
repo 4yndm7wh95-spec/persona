@@ -17,7 +17,8 @@ public static class DepthGrip
 	public const float CrushDelay = 0.32f;
 
 	private const float Img = 627f;
-	private static readonly Vector2 Hold = new(0.35f * Img, 0.5f * Img), WristPt = new(0.86f * Img, 0.5f * Img);
+	// depth_hand_v2：握住的地方（四指扣住的中心）、远处的手腕（画面上方，烟往上后方散）
+	private static readonly Vector2 Hold = new(0.45f * Img, 0.6f * Img), WristPt = new(0.5f * Img, 0.2f * Img);
 
 	private static Shader? _strand;
 
@@ -158,10 +159,10 @@ void fragment() {
 		foreach (var (id, c, h, tint) in enemies)
 		{
 			Ids.Add(id);
-			float k = h * 1.9f / Img;
+			float k = h * 2.3f / Img;
 			Hand hd = new() { Center = c, H = h, K = k, Tint = tint };
 			hd.Grip = c - (Hold - new Vector2(Img / 2f, Img / 2f)) * k;            // 让「握住的地方」落在敌人中心
-			hd.Deep = c + new Vector2(h * 0.55f, -h * 0.9f);                        // 敌人身后上方的深处
+			hd.Deep = c + new Vector2(h * 0.15f, -h * 1.3f);                        // 敌人身后上方的深处（手从上后方扑下来）
 			hd.Branch = MakeStrand(rootB, 0.12f, 0.5f, h * 0.8f);
 			Sprite2D Make(Node2D parent, Texture2D t, out Node2D node, out ShaderMaterial m)
 			{
@@ -309,7 +310,9 @@ void fragment() {
 			Action<Color>? tint = hd.Tint;
 			if (tint != null)
 			{
-				Fx.Animate(front, 0.05, 0.4, u => tint(new Color(0.55f, 0.18f, 0.7f).Lerp(new Color(0.85f, 0.7f, 0.9f), u)));
+				// 动画的拥有者不能是图层本身：Fx.Animate 在延迟期间会把拥有者藏起来（之前整层前景特效闪没了两帧）
+				Node2D holder = Fx.Root(front, Vector2.Zero, "P5CrushTint", 0.5);
+				Fx.Animate(holder, 0.05, 0.4, u => tint(new Color(0.55f, 0.18f, 0.7f).Lerp(new Color(0.85f, 0.7f, 0.9f), u)));
 			}
 		}
 	}

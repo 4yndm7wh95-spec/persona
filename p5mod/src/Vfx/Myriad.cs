@@ -61,7 +61,7 @@ public static class Myriad
 				CardFx.Embers(layer, feet, h, 26, 1f);
 				if (tints != null && i < tints.Count && tints[i] is Action<Color> tint)
 				{
-					Fx.Animate(layer, 0.1, 0.7, t =>
+					Fx.Animate(Fx.Root(layer, Vector2.Zero, "P5MyriadTint", 0.9), 0.1, 0.7, t =>
 					{
 						float k = Mathf.Min(1f, t * 6f) * (1f - Fx.InCubic(Ease5.Seg(t, 0.55f, 0.45f)));
 						tint(Colors.White.Lerp(new Color(0.55f, 0.16f, 0.3f), k));
