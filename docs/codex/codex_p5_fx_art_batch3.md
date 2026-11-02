@@ -1,3 +1,6 @@
+> **已取消（Claude 2026-11-02）**：imagegen 做不到"原像素不动"的扩图（见 art/p5/fx/v4/arsene/REPORT_batch3_blocker.md）。
+> 改由 Claude 用 tools/rig/mesh_rig.py 直接在定稿图上做加权网格骨骼（P3 的死神就是这么做的），不需要拆层；裁到边的翼尖在游戏里做边缘羽化。不要再执行这份任务。
+
 你在用户的 Windows 电脑上工作。任务：把**已确认**的两张 Persona 草图拆成游戏里做 2D 骨骼动画用的分层图。不改 mod 代码，不编译，不启动游戏。
 
 **先读 docs/codex/README.md**。找仓库、git 参数、重试、「绝对不要做」清单照 docs/codex/codex_p5r_model_fix.md 执行，**分支是 claude/cool-pascal-mil5i8**。
