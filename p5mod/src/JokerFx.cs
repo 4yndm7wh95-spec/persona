@@ -115,54 +115,17 @@ public static class JokerFx
 				break;
 			case "Outbreak":
 			{
-				// 稀有（金卡专属）：亚森的雾沉进深处，每个敌人身后的深处扑出一只手攥住，停一拍捏爆（DepthGrip）
-				Persona.Spec spec = Aim.PersonaFor(card);
-				Vector2 jf = Joker.PosePoint(joker, ReadyFx.Feet);
-				float height = (jf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length() * 1.35f;
-				float face = Joker.Facing(joker);
-				Vector2 from = Persona.ChestOf(spec, jf, height, face) + new Vector2(0.22f * height * face, -0.12f * height);
-				var list = new List<(ulong, Vector2, float, float, Action<Color>?)>();
-				foreach (Creature c in card.CombatState?.HittableEnemies ?? (IEnumerable<Creature>)Array.Empty<Creature>())
-				{
-					if (room.GetCreatureNode(c) is NCreature n)
-					{
-						CanvasItem? v = n.Visuals;
-						list.Add((n.GetInstanceId(), n.VfxSpawnPosition, Mathf.Max(80f, (n.VfxSpawnPosition - n.GetTopOfHitbox()).Length()), n.Hitbox.GetGlobalRect().Size.X,
-							v == null ? null : col => { if (GodotObject.IsInstanceValid(v)) { v.Modulate = col; } }));
-					}
-				}
-				DepthGrip.Play(layer, Joker.FxLayer(back: true) ?? layer, from, list, Aim.HitFor(card) - DepthGrip.CrushDelay);
+				// 第四版：0.7 的深处之手（DepthGrip）停用（用户 2026-11-02：0.7 只保留刀扇弹射）；施毒特效走 PoisonApplyPatch → PoisonFx，毒性爆发的专属演出另做
 				break;
 			}
 			case var n when Aim.Grips(n) && t != null:
 			{
-				// 亚森伸手攥住中毒的怪，毒结算完才松开（Grip）；攥住 = 召唤高潮那一拍
-				Persona.Spec spec = Aim.PersonaFor(card);
-				Vector2 jf = Joker.PosePoint(joker, ReadyFx.Feet);
-				float height = (jf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length() * 1.35f;
-				float face = Joker.Facing(joker);
-				Vector2 from = Persona.ChestOf(spec, jf, height, face) + new Vector2(0.22f * height * face, -0.12f * height);   // 亚森前伸的手
-				CanvasItem? body = t.Visuals;
-				Grip.Play(layer, t.GetInstanceId(), from, t.VfxSpawnPosition, Mathf.Max(80f, (t.VfxSpawnPosition - t.GetTopOfHitbox()).Length()),
-					Aim.HitFor(card), face, body == null ? null : c => { if (GodotObject.IsInstanceValid(body)) { body.Modulate = c; } },
-					ownImpact: true);                                          // 拍 2：攥住自己带冲击声 / 顿帧
+				// 第四版：0.7 的亚森之手（Grip）停用；施毒特效走 PoisonApplyPatch → PoisonFx
 				break;
 			}
 			case "DeadlyPoison" when t != null:
 			{
-				// 普通白卡（Tiers.Common）：不召唤，精简的咒怨（手 + 一根咒焰），和游戏加中毒（施法后 ~0.25s）同一刻；
-				// 万一被当成稀有召唤（改过稀有度的 mod），走完整版，对齐亚森出手（TriggerAnimDelayPatch）
-				CanvasItem? body = t.Visuals;
-				Action<Color>? tint = body == null ? null : c => { if (GodotObject.IsInstanceValid(body)) { body.Modulate = c; } };
-				if (Tiers.For(card) >= Tier.Uncommon)
-				{
-					Fx.After(layer, Aim.SummonHit - CardFx.Burst, () => CardFx.Eiha(layer, Joker.PosePoint(joker, ReadyFx.MaskFace), t.VfxSpawnPosition,
-						t.GetTopOfHitbox(), tint));
-				}
-				else
-				{
-					CardFx.CurseLight(layer, t.VfxSpawnPosition, t.GetTopOfHitbox(), tint, t.Hitbox.GetGlobalRect().Size.X);
-				}
+				// 第四版：0.7 的精简咒怨（CardFx.CurseLight / Eiha）停用；施毒特效走 PoisonApplyPatch → PoisonFx
 				break;
 			}
 		}

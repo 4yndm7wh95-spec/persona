@@ -47,6 +47,21 @@ public static class Lut5
 	public static GradientTexture1D Muzzle => Make("muzzle",
 		(0f, new Color("1a0204")), (0.3f, new Color("7a0a12")), (0.55f, new Color("e5191c")), (0.8f, new Color("ff8a70")), (1f, new Color("fffaf6")));
 
+	/// <summary>咒怨（Eiha，P5 原作黑红）：纯黑 → 暗红 → 带一点紫的绯红 → 红 → 淡粉白的火芯。</summary>
+	public static GradientTexture1D Curse => Make("curse",
+		(0f, new Color("000000")), (0.28f, new Color("1e0208")), (0.5f, new Color("5a0a26")), (0.72f, new Color("c8122a")), (0.9f, new Color("ff5a52")), (1f, new Color("ffd2c8")));
+
+	/// <summary>
+	/// 咒怨「反向」LUT，给原版火焰序列帧用：火芯（亮）→ 近黑，边缘（暗）→ 亮红。原版火焰配正向 LUT 像平涂卡通火（奶油色芯），
+	/// 反过来就是 P5 咒怨那种黑色火焰带红边。
+	/// </summary>
+	public static GradientTexture1D CurseInk => Make("curse_ink",
+		(0f, new Color("ff4a3a")), (0.3f, new Color("d0102a")), (0.6f, new Color("4a0418")), (1f, new Color("0a0004")));
+
+	/// <summary>咒火的光晕层：只有暗红到绯红，不出亮色（亮芯会变成奶油色的卡通火），配半透明用。</summary>
+	public static GradientTexture1D CurseAura => Make("curse_aura",
+		(0f, new Color("2a000c")), (0.5f, new Color("7a0820")), (1f, new Color("d8162c")));
+
 	/// <summary>金：暴击 / 撒旦耶尔。</summary>
 	public static GradientTexture1D Gold => Make("gold",
 		(0f, new Color("2a1400")), (0.4f, new Color("a8640c")), (0.75f, new Color("ffcf5a")), (1f, new Color("fffbe8")));
@@ -70,6 +85,15 @@ public static class Vanilla
 	public const string BluntCore = "res://scenes/vfx/common/vfx_common_blunt_impact_core.tscn";
 	public const string RoundSmoke = "res://scenes/vfx/common/vfx_common_round_smoke_flipbook.tscn";
 	public const string DaggerImpact = "res://scenes/vfx/dagger/vfx_dagger_impact_core.tscn";
+	public const string FireCenter = "res://scenes/vfx/fire_impact/vfx_fire_burst_center_flipbook.tscn";
+	public const string FireLeft = "res://scenes/vfx/fire_impact/vfx_fire_burst_left_flipbook.tscn";
+	public const string FireRight = "res://scenes/vfx/fire_impact/vfx_fire_burst_right_flipbook.tscn";
+	public const string Fire1 = "res://scenes/vfx/fire_impact/vfx_fire_flipbook_1.tscn";
+	public const string Fire2 = "res://scenes/vfx/fire_impact/vfx_fire_flipbook_2.tscn";
+	public const string Fire3 = "res://scenes/vfx/fire_impact/vfx_fire_flipbook_3.tscn";
+	public const string Embers = "res://scenes/vfx/fire_impact/vfx_fire_embers_straight.tscn";
+	public const string SmokeFlip = "res://scenes/vfx/common/vfx_smoke_flipbook.tscn";
+	public const string PoisonSkull = "res://scenes/vfx/poison/vfx_poison_skull.tscn";
 
 	private static readonly Dictionary<string, PackedScene?> Scenes = new();
 

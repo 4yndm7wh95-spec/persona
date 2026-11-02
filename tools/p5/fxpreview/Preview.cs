@@ -265,6 +265,39 @@ public partial class Preview : Node2D
 			p.At(0.3, () => { p._joker?.Play("knife_in"); p._joker?.Queue("knife_loop", true); });
 			p.At(1.3, () => p._joker?.Play("knife_out"));
 		},
+		// 第四版毒组：致命毒药（5 层）→ 弹跳药瓶（3 跳随机）→ 一次加 9 层 → 回合开始三个敌人各结算一轮毒伤
+		["poison_v4"] = p =>
+		{
+			p.At(0.2, () => p._joker?.Play("cast"));
+			p.Poison(0.55, Enemy, 5);
+			p.At(1.6, () => p._joker?.Play("cast"));
+			p.Poison(1.9, Enemy2, 3);
+			p.Poison(2.12, Enemy3, 3);
+			p.Poison(2.34, Enemy, 3);
+			p.At(3.2, () => p._joker?.Play("cast"));
+			p.Poison(3.5, Enemy3, 9);
+			foreach ((Vector2 e, double dt) in new[] { (Enemy2, 0.0), (Enemy, 0.35), (Enemy3, 0.7) })
+			{
+				p.At(4.8 + dt, () =>
+				{
+					p._enemies.TryGetValue(e, out Node2D? n);
+					PoisonFx.Tick(p._front, e, e - new Vector2(0f, 120f), 230f, n);
+					Popups.Damage(p._front, (ulong)(e.X * 7f + (float)dt), e, 5, false);
+				});
+			}
+		},
+		// 原版火焰 / 毒 / 烟换咒怨 LUT 逐个看
+		["curse_test"] = p =>
+		{
+			string[] all = { Vanilla.FireCenter, Vanilla.FireLeft, Vanilla.FireRight, Vanilla.Fire1, Vanilla.Fire2, Vanilla.Fire3, Vanilla.Embers,
+				Vanilla.SmokeFlip, Vanilla.PoisonSkull, Vanilla.RoundSmoke };
+			for (int i = 0; i < all.Length; i++)
+			{
+				string path = all[i];
+				Vector2 at = new(200f + (i % 5) * 380f, 400f + (i / 5) * 420f);
+				p.At(0.3, () => Vanilla.Burst(p._front, path, at, 0f, 1f, path == Vanilla.SmokeFlip || path == Vanilla.RoundSmoke ? Lut5.Smoke : Lut5.Curse));
+			}
+		},
 		// 原版组件逐个看（换 P5 LUT）
 		["vanilla_test"] = p =>
 		{
@@ -416,6 +449,12 @@ public partial class Preview : Node2D
 			}
 		});
 	}
+
+	private void Poison(double t, Vector2 enemy, int amount) => At(t, () =>
+	{
+		_enemies.TryGetValue(enemy, out Node2D? n);
+		PoisonFx.Apply(_front, enemy, enemy - new Vector2(0f, 120f), 230f, n, amount);
+	});
 
 	private void ShotV4(double t, Vector2 enemy, int amount, Weight w, bool dies = false)
 	{

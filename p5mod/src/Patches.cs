@@ -361,6 +361,27 @@ public static class CardPlayedPatch
 }
 
 /// <summary>
+/// 施毒（第四版，Vfx/PoisonFx.cs）：游戏给敌人加中毒 / 叠毒时都会弹一下状态图标（NCreature.OnPowerIncreased → NPowerAppliedVfx.Create），
+/// 挂在这里就和游戏加毒同一刻，所有来源（致命毒药、带毒刺击、弹跳药瓶每一跳、涂毒、腐蚀波、毒雾、迷雾……）一起覆盖。只给 Joker 施的毒放。
+/// </summary>
+[HarmonyPatch(typeof(NPowerAppliedVfx), nameof(NPowerAppliedVfx.Create))]
+public static class PoisonApplyPatch
+{
+	public static void Postfix(PowerModel power, int amount)
+	{
+		ModEntry.Safe("PoisonApply", () =>
+		{
+			if (power is not MegaCrit.Sts2.Core.Models.Powers.PoisonPower || power.Owner.IsPlayer || power.Applier?.Player is not { } p || !Joker.Is(p)
+				|| Joker.FxLayer() is not Godot.Control layer || NCombatRoom.Instance?.GetCreatureNode(power.Owner) is not NCreature n)
+			{
+				return;
+			}
+			PoisonFx.Apply(layer, n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, n.Visuals, amount);
+		});
+	}
+}
+
+/// <summary>
 /// 毒伤每结算一轮（PoisonPower.Trigger 里 CreatureCmd.Damage(目标, 层数, 无视格挡 | 不受力量, null, null)；触媒让它多结算几轮）：
 /// 毒性爆发结算期间给 Myriad 按轮次出特效。挂在 Damage 最底层的重载上（其他重载都转到这里）；只看、不改。
 /// </summary>
@@ -392,6 +413,11 @@ public static class PoisonTickPatch
 					Godot.CanvasItem? v = n.Visuals;
 					Myriad.OnPoisonTick(layer, n.GetInstanceId(), n.VfxSpawnPosition, n.GetTopOfHitbox(),
 						v == null ? null : col => { if (Godot.GodotObject.IsInstanceValid(v)) { v.Modulate = col; } });
+					// 第四版每轮毒伤（Vfx/PoisonFx.cs）：只给 Joker 施的毒放
+					if (c.GetPower<MegaCrit.Sts2.Core.Models.Powers.PoisonPower>()?.Applier?.Player is { } owner && Joker.Is(owner))
+					{
+						PoisonFx.Tick(layer, n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, n.Visuals);
+					}
 				}
 			}
 		});

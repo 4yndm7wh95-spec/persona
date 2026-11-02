@@ -151,7 +151,7 @@ public static class Impact
 
 	private static void FlashBody(Node2D body, float peak)
 	{
-		Color baseColor = body.Modulate;
+		Color baseColor = BodyTint.RestOf(body);                     // 和中毒染色共用「原色」，同时改也不会卡在半路
 		Tween tw = body.CreateTween().SetIgnoreTimeScale(true);
 		body.Modulate = new Color(peak, peak, peak, baseColor.A);
 		tw.TweenProperty(body, "modulate", new Color(1.9f, 0.55f, 0.6f, baseColor.A), 0.06);

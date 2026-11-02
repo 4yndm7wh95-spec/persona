@@ -54,6 +54,11 @@ public static class Warmup
 			GunFx.Muzzle(hidden, c, Vector2.Right);
 			GunFx.Shot(hidden, c, c + new Vector2(300f, 0f));
 		});
+		Stage.Safe("warmup poison", () =>
+		{
+			PoisonFx.Apply(hidden, c, c - new Vector2(0f, 120f), 200f, null, 9);
+			PoisonFx.Tick(hidden, c, c - new Vector2(0f, 120f), 200f, null);
+		});
 		foreach (string tex in new[] { "slash_thin", "slash_heavy" })
 		{
 			Stage.Safe("warmup " + tex, () => Paint.Sweep(hidden, tex, c, 0f, Vector2.One * 0.3f, Lut5.Blood, 0.05f, 0.05f, 0.2f));
