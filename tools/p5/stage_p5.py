@@ -83,7 +83,8 @@ def placeholder_back():
 V4 = ROOT / "art/p5/fx/v4"
 V4_TEX = [("slash", n, 0.5) for n in ("slash_thin", "slash_heavy", "slash_cross", "slash_tear", "slash_thrust", "slash_flurry")] + \
     [("burst", f"burst_0{i}", 0.5) for i in (1, 2, 3)] + \
-    [("muzzle", f"muzzle_side_0{i}", 0.5) for i in (1, 2, 3)] + [("muzzle", "muzzle_front", 0.5), ("muzzle", "shell", 1)]
+    [("muzzle", f"muzzle_side_0{i}", 0.5) for i in (1, 2, 3)] + [("muzzle", "muzzle_front", 0.5), ("muzzle", "shell", 1)] + \
+    [("arsene/layers", n, 0.35) for n in ("wing_back", "wing_front", "arm_back", "body", "arm_reach", "eyes_glow")]
 
 # P5R sound effects (research/p5r/audio): published name -> file (names in p5mod/src/Vfx/Sfx.cs)
 P5SFX = ROOT / "research/p5r/audio/sfx"
@@ -152,7 +153,8 @@ def fx_textures():
         f = V4 / group / f"{name}.png"
         if f.exists():
             im = Image.open(f).convert("RGBA")
-            yield name, im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS) if k != 1 else im
+            out = f"arsene_{name}" if group.startswith("arsene") else name   # Arsene layers: res://p5joker/fx/arsene_<layer>.png
+            yield out, im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS) if k != 1 else im
     eyes = Image.open(EYES).convert("RGBA")
     yield "eyes", eyes.resize((eyes.width // 2, eyes.height // 2), Image.LANCZOS)
     yield "arsene_cast", arsene_atlas()

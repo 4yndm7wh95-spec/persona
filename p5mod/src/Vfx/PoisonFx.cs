@@ -62,27 +62,67 @@ public static class PoisonFx
 		Vanilla.Burst(layer, scene, at + new Vector2(Fx.Rand(-30f, 30f) * scale, 6f), 0f, scale * 0.7f, Lut5.CurseInk, delay: delay + 0.07f);
 	}
 
-	/// <summary>施毒。at = 目标中心，top = 头顶，width = 目标宽度，amount = 这次加的层数（多就更旺一点）。</summary>
+	/// <summary>
+	/// 施毒。亚森刚出过手（ArseneFx.TryClaw）：咒怨从他的爪尖甩出去——一道黑红的咒怨光束 0.08s 扫到敌人，沿路拖着怨灵——再在敌人身上炸开；
+	/// 没有召唤（带毒刺击、涂毒、毒雾……）就只有落点，轻一些。
+	/// at = 目标中心，top = 头顶，width = 目标宽度，amount = 这次加的层数（多就更旺）。
+	/// </summary>
 	public static void Apply(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount)
+	{
+		if (ArseneFx.TryClaw(out Vector2 claw))
+		{
+			Vector2 d = at - claw;
+			float len = d.Length();
+			if (len > 40f)
+			{
+				// slash_thrust（打包后 1024×512）：宽的起爆在爪尖、细线伸向敌人；比枪的弹道粗、用咒怨 LUT
+				float sx = len / 940f;
+				Vector2 center = claw + d * 0.5f + d.Normalized() * (512f - 530f) * sx;
+				Paint.Sweep(layer, "slash_thrust", center, d.Angle(), new Vector2(sx, 0.42f), Lut5.Curse, 0.08f, 0.04f, 0.22f, 0f, 0f, 1.4f);
+				for (int i = 1; i <= 3; i++)
+				{
+					Vector2 p = claw + d * (0.25f * i);
+					Paint.Rise(layer, "curse_soul", p, 70f, 0.4f, Lut5.Curse, 0.5f, 0.03f * i);
+				}
+			}
+			Fx.After(layer, 0.08, () => Impact(layer, at, top, width, body, amount, d, true));
+			return;
+		}
+		Impact(layer, at, top, width, body, amount, new Vector2(1f, 0.1f), false);
+	}
+
+	/// <summary>咒怨打中：顿帧 + 沿来向的震屏 + 一下红白闪 + 空间扭曲 + 黑红咒火从脚下冲起 + 怨灵飘散 + 目标被染暗。</summary>
+	private static void Impact(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount, Vector2 dir, bool persona)
 	{
 		float h = Mathf.Max(80f, (at - top).Length());
 		Vector2 foot = at + new Vector2(0f, h * 0.75f);
 		float k = Mathf.Clamp(width / 240f, 0.55f, 1.3f);
 		bool big = amount >= 6;
-		Sfx.Play(Sfx.Curse, big ? 0.6f : 0.45f);
-		CurseFlame(layer, Vanilla.FireCenter, foot, (big ? 0.95f : 0.8f) * k);
-		if (big)
+		Sfx.Play(Sfx.Slam, persona ? 0.55f : 0.35f);
+		Sfx.Play(Sfx.SubBoom, persona ? 0.5f : 0.3f);
+		HitStop.Request(persona ? (big ? 0.08 : 0.06) : 0.035);
+		if (Stage.ShakeDir != null)
 		{
-			CurseFlame(layer, Vanilla.FireLeft, foot + new Vector2(-0.3f * width, 0f), 0.7f * k, 0.06f);
-			CurseFlame(layer, Vanilla.FireRight, foot + new Vector2(0.3f * width, 0f), 0.7f * k, 0.1f);
+			Stage.ShakeDir(persona ? (big ? 3 : 2) : 1, Mathf.RadToDeg(dir.Angle()));
 		}
-		Vanilla.Burst(layer, Vanilla.Embers, foot, 0f, 1.0f * k, Lut5.Curse);
-		Paint.Rise(layer, "curse_soul", at + new Vector2(Fx.Rand(-0.25f, 0.25f) * width, 0.1f * h), 170f * k, 0.9f * k, Lut5.Curse, 0.8f, 0.08f);
-		if (big)
+		Glow.Flash(layer, at, new Color(1f, 0.35f, 0.4f), width * (persona ? 1.5f : 1.1f), 0.18f);
+		Glow.Ripple(layer, at, width * 2f, 0.4f, persona ? 0.03f : 0.015f);
+		float f = persona ? 1.1f : 0.8f;
+		CurseFlame(layer, Vanilla.FireCenter, foot, (big ? 1.05f : 0.9f) * k * f);
+		if (big || persona)
 		{
-			Paint.Rise(layer, "curse_ghost", at + new Vector2(Fx.Rand(-0.2f, 0.2f) * width, 0f), 230f * k, 0.7f * k, Lut5.Curse, 0.95f, 0.16f);
+			CurseFlame(layer, Vanilla.FireLeft, foot + new Vector2(-0.3f * width, 0f), 0.7f * k * f, 0.05f);
+			CurseFlame(layer, Vanilla.FireRight, foot + new Vector2(0.3f * width, 0f), 0.7f * k * f, 0.09f);
 		}
-		BodyTint.Pulse(body, new Color(0.82f, 0.58f, 0.64f), 0.12, 0.4);
+		Vanilla.Burst(layer, Vanilla.Embers, foot, 0f, 1.1f * k, Lut5.Curse);
+		Vanilla.Burst(layer, Vanilla.Specks, at, dir.Angle(), 0.9f, Lut5.Curse, amount: 18);
+		Paint.Rise(layer, "curse_soul", at + new Vector2(Fx.Rand(-0.25f, 0.25f) * width, 0.1f * h), 190f * k, 0.95f * k, Lut5.Curse, 0.8f, 0.06f);
+		if (big || persona)
+		{
+			Paint.Rise(layer, "curse_ghost", at + new Vector2(Fx.Rand(-0.2f, 0.2f) * width, 0f), 240f * k, 0.72f * k, Lut5.Curse, 0.95f, 0.12f);
+		}
+		BodyTint.Pulse(body, new Color(1.8f, 0.7f, 0.75f), 0.03, 0.08);              // 打中一下提亮（受击闪）
+		Fx.After(layer, 0.12, () => BodyTint.Pulse(body, new Color(0.72f, 0.45f, 0.52f), 0.18, 0.45));
 	}
 
 	/// <summary>每轮毒伤（回合开始，敌人越多越频繁）：一小团咒火 + 一缕怨灵 + 身体暗一下。</summary>

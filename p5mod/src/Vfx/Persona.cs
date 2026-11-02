@@ -142,6 +142,12 @@ void fragment() {
 
 	public static void Show(Spec spec, Control back, Vector2 feet, float height, float facing = 1f)
 	{
+		// 第四版：亚森换成 Codex 分层图的实时 2D 骨骼（Vfx/ArseneFx.cs），时机照旧（出手 = 游戏结算被推迟到的那一刻）
+		if (spec.Tex == ArseneSpec.Tex && Fx.Tex("arsene_body") != null)
+		{
+			ArseneFx.Show(back, feet, height, facing, spec.AttackAt, spec.ExitAt);
+			return;
+		}
 		if (Fx.Tex(spec.Tex) is not Texture2D atlas)
 		{
 			return;

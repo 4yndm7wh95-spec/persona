@@ -265,6 +265,30 @@ public partial class Preview : Node2D
 			p.At(0.3, () => { p._joker?.Play("knife_in"); p._joker?.Queue("knife_loop", true); });
 			p.At(1.3, () => p._joker?.Play("knife_out"));
 		},
+		// 第四版毒组 + 新亚森：致命毒药（亚森现身 → 出手把咒怨甩过去 → 炸开）→ 弹跳药瓶（亚森出手，三跳）→ 带毒刺击（不召唤，只有落点）→ 一轮毒伤
+		["arsene_poison"] = p =>
+		{
+			float height = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
+			float atk = Persona.ArseneSpec.AttackAt;
+			p.At(0.3, () => p._joker?.Play("cast"));
+			p.At(0.34, () => ArseneFx.Show(p._back, JokerFeet, height, 1f, atk, atk + 1.1f));
+			p.Poison(0.34 + atk, Enemy, 5);
+			p.At(2.4, () => p._joker?.Play("cast"));
+			p.At(2.44, () => ArseneFx.Show(p._back, JokerFeet, height, 1f, atk, atk + 1.3f));
+			p.Poison(2.44 + atk, Enemy2, 3);
+			p.Poison(2.44 + atk + 0.2, Enemy3, 3);
+			p.Poison(2.44 + atk + 0.4, Enemy, 3);
+			p.StrikeV4(4.6, Enemy2, 6, Weight.Medium, false);
+			p.Poison(4.78, Enemy2, 3);
+			foreach ((Vector2 e, double dt) in new[] { (Enemy2, 0.0), (Enemy, 0.3), (Enemy3, 0.6) })
+			{
+				p.At(5.9 + dt, () =>
+				{
+					p._enemies.TryGetValue(e, out Node2D? n);
+					PoisonFx.Tick(p._front, e, e - new Vector2(0f, 120f), 230f, n);
+				});
+			}
+		},
 		// 第四版毒组：致命毒药（5 层）→ 弹跳药瓶（3 跳随机）→ 一次加 9 层 → 回合开始三个敌人各结算一轮毒伤
 		["poison_v4"] = p =>
 		{
