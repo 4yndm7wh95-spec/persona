@@ -81,6 +81,11 @@ public static class AmmoPatch
 			if (MegaCrit.Sts2.Core.Context.LocalContext.IsMe(player))
 			{
 				Local = view;
+				// 每场战斗预热一次第四版特效（首次打出不卡，Vfx/Warmup.cs）
+				if (Joker.FxLayer() is Godot.Control fx && NCombatRoom.Instance is NCombatRoom room)
+				{
+					Warmup.Run(fx, room.GetInstanceId());
+				}
 			}
 			// 能量球右上方
 			view.Root.Position = __instance.Size / 2f + new Godot.Vector2(110f, -70f);

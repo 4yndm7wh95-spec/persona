@@ -34,9 +34,9 @@ public static class Impact
 	{
 		Weight.Light => new Spec(1, 1, 2.0f, 12f, 0f, 0f, 4f, 0.08f, 0.12f),
 		Weight.Medium => new Spec(2, 2, 2.6f, 26f, 0f, 0f, 8f, 0.22f, 0.2f),
-		Weight.Heavy => new Spec(3, 3, 3.0f, 42f, 1f, 0.06f, 14f, 0.55f, 0.32f),
-		Weight.Kill => new Spec(3, 3, 0f, 0f, 1f, 0.06f, 14f, 0.6f, 0.36f),
-		_ => new Spec(4, 4, 0f, 0f, 1f, 0.18f, 22f, 0.9f, 0.6f),
+		Weight.Heavy => new Spec(3, 3, 3.0f, 42f, 1f, 0.15f, 14f, 0.55f, 0.5f),
+		Weight.Kill => new Spec(3, 3, 0f, 0f, 1f, 0.15f, 14f, 0.6f, 0.5f),
+		_ => new Spec(4, 4, 0f, 0f, 1f, 0.28f, 22f, 0.9f, 0.75f),
 	};
 
 	/// <summary>
@@ -219,6 +219,18 @@ void fragment() {
 	COLOR = vec4(col + flash, 1.0);
 }" };
 
+	/// <summary>预热（Warmup）：全屏帧的着色器先在一个看不见的层里画两帧，编译掉。</summary>
+	public static void Warm(Control hidden)
+	{
+		ColorRect rect = new() { Material = new ShaderMaterial { Shader = FrameShader }, MouseFilter = Control.MouseFilterEnum.Ignore, Size = Fx.Screen(hidden) };
+		BackBufferCopy copy = new() { CopyMode = BackBufferCopy.CopyModeEnum.Viewport };
+		hidden.AddChild(copy);
+		hidden.AddChild(rect);
+		rect.GlobalPosition = Vector2.Zero;
+		Fx.FreeAfter(rect, 0.2);
+		Fx.FreeAfter(copy, 0.2);
+	}
+
 	private static void ScreenFrame(Control layer, Vector2 at, Vector2 dir, Spec s)
 	{
 		if (s.Chroma <= 0f && s.Ink <= 0f)
@@ -263,7 +275,8 @@ void fragment() {
 		tw.TweenMethod(Callable.From<float>(t =>
 		{
 			float k = 1f - t;
-			Set(s.Ink * Mathf.Max(0f, 1f - t * 4f), s.Chroma * k * k, s.Radial * k * k, 0f);
+			// 红黑帧停够之后慢慢褪（用户：谋杀的红屏只有一瞬间、很不明显）
+			Set(s.Ink * (1f - Mathf.SmoothStep(0f, 0.6f, t)), s.Chroma * k * k, s.Radial * k * k, 0f);
 		}), 0f, 1f, s.Life);
 		tw.TweenCallback(Callable.From(() => { rect.QueueFree(); copy.QueueFree(); }));
 	}

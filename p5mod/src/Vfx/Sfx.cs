@@ -27,6 +27,7 @@ public static class Sfx
 		Swish = "swish_02",             // 挥刀风声（#145）
 		SwishHeavy = "swish_05",        // 重挥（#151）
 		SwishLow = "swish_04",          // 低沉的挥动（#149，缩回 / 转杖）
+		KnifeRing = "sword_sheath",     // 收刀入鞘的金属「锵」（#48）：转刀落回手里握住的那一下（用户 2026-11-02：转刀声像空转、没分量）
 		Hit = "damage_enemy",           // 打中敌人（#22）
 		AllOut = "battle_all_out_atk",  // 总攻击斩击（#24，第一刀叠上去）
 		Gun = "gun_02",                 // 枪声（#32：单发手枪；#33 是 10 连发的机关枪，用户 2026-11-02 指出）
@@ -47,7 +48,7 @@ public static class Sfx
 	private static readonly Dictionary<string, float> Lead = new()
 	{
 		[Parry] = 0.068f, [Slam] = 0.1f, [PoisonTick] = 0.078f, [CutIn] = 0.083f, [PersonaFlame] = 0.13f, [Wing] = 0.023f,
-		[Crack] = 0.019f, [SwishHeavy] = 0.005f,
+		[Crack] = 0.019f, [SwishHeavy] = 0.005f, [KnifeRing] = 0.048f,
 	};
 
 	/// <summary>在 delay 秒后的那一帧「打中」：按起音提前量提前开始播。</summary>

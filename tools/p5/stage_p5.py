@@ -100,6 +100,7 @@ SFX = {
     "swish_02": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0145.ogg",
     "swish_04": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0149.ogg",
     "swish_05": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0151.ogg",
+    "sword_sheath": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0048.ogg",          # knife spin: the catch (user 2026-11-02)
     "damage_enemy": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0022.ogg",
     "battle_all_out_atk": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0024.ogg",
     "gun_02": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0032.ogg",
