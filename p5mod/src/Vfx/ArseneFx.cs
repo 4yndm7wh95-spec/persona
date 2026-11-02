@@ -109,12 +109,17 @@ void fragment() {
 		body.MoveChild(wingF, 1);
 		body.MoveChild(armB, 2);
 
-		Glow.Flash(back, toeScreen + new Vector2(0f, -0.45f * height), new Color(0.3f, 0.8f, 1f), height * 0.9f, 0.5f);
+		// 现身：身后一团青光 + 一股暗红咒烟炸开
+		Glow.Flash(back, toeScreen + new Vector2(0f, -0.45f * height), new Color(0.3f, 0.8f, 1f), height * 1.1f, 0.55f);
+		Vanilla.Burst(back, Vanilla.BigSlashSmoke, toeScreen + new Vector2(0f, -0.5f * height), 0f, height / 260f, Lut5.Smoke);
 
 		const float appear = 0.26f, outT = 0.38f;
 		float total = exitAt + outT;
 		float windUp = Mathf.Max(appear, attackAt - 0.14f);
 		bool struck = false;
+		// 动作幅度按屏幕像素算再换成局部单位（用户：出手时整个人看上去一点也没动 → 全身扑出去、蓄力要看得见）
+		float px = 1f / k;
+		Node2D? ghost = null;
 		Fx.Animate(root, 0, total, t =>
 		{
 			float time = t * total;
@@ -122,42 +127,66 @@ void fragment() {
 			float rev = time < appear ? Ease5.OutQuint(time / appear) : time > exitAt ? 1f - Mathf.Clamp((time - exitAt) / outT, 0f, 1f) : 1f;
 			mat.SetShaderParameter("reveal", rev);
 			mat.SetShaderParameter("top_down", time > exitAt ? 1f : 0f);
-			// 待机：起伏、轻扇；现身时从低处浮上来、两翼从收拢张开
-			float bob = Mathf.Sin(time * 3.2f) * 6f / k;
-			float rise = (1f - Ease5.OutQuint(Mathf.Min(1f, time / 0.45f))) * 40f / k;
-			float open = 1f - Ease5.OutQuint(Mathf.Min(1f, time / 0.4f));
-			float flap = Mathf.Sin(time * 4.1f) * 0.035f;
-			// 出手：蓄（手臂回收、后仰）→ 探出（OutExpo）→ 慢慢回到待机
-			float lean = 0f, reach = 0f, beat = 0f;
+			// 现身：从下方 90px 升上来、整体 0.88 → 1、两翼从收拢猛地张开（带一点过冲）
+			float inU = Mathf.Min(1f, time / 0.42f);
+			Vector2 pos = new(0f, (1f - Ease5.OutQuint(inU)) * 90f * px);
+			float scale = Mathf.Lerp(0.88f, 1f, Ease5.OutBack(inU));
+			float open = 1f - Ease5.OutBack(Mathf.Min(1f, time / 0.38f));
+			// 待机：起伏、两翼慢扇
+			pos.Y += Mathf.Sin(time * 3.2f) * 7f * px;
+			float flap = Mathf.Sin(time * 4.1f) * 0.05f;
+			float lean = 0f, reach = 0f, beat = 0f, wingKick = 0f, stretch = 0f;
 			if (time >= windUp && time < attackAt)
 			{
-				float u = (time - windUp) / Mathf.Max(0.01f, attackAt - windUp);
-				reach = 0.22f * Ease5.OutQuint(u);
-				lean = -0.04f * u;
+				// 蓄：整个人往后收、往上提，手臂拉满，两翼高高扬起
+				float u = Ease5.OutQuint((time - windUp) / Mathf.Max(0.01f, attackAt - windUp));
+				pos += new Vector2(-45f, -28f) * px * u;
+				lean = -0.14f * u;
+				reach = 0.5f * u;
+				wingKick = -0.3f * u;
+				scale *= 1f + 0.04f * u;
 			}
 			else if (time >= attackAt)
 			{
+				// 扑：朝敌人方向猛扑出去（OutExpo 0.08s）、前倾、拉伸、手臂甩出、两翼往前一振；再 0.45s 慢慢退回待机
 				float u = time - attackAt;
-				float hit = Ease5.OutExpo(Mathf.Min(1f, u / 0.07f));
-				float back2 = Mathf.Clamp((u - 0.18f) / 0.4f, 0f, 1f);
-				reach = Mathf.Lerp(0.22f, -0.26f, hit) * (1f - back2);
-				lean = Mathf.Lerp(-0.04f, 0.08f, hit) * (1f - back2);
-				beat = Mathf.Max(0f, 1f - u / 0.16f);
+				float hit = Ease5.OutExpo(Mathf.Min(1f, u / 0.08f));
+				float rec = Ease5.OutQuint(Mathf.Clamp((u - 0.14f) / 0.45f, 0f, 1f));
+				float w = 1f - rec;
+				pos += Vector2.Zero.Lerp(new Vector2(95f, 14f), hit) * px * w + new Vector2(-45f, -28f) * px * (1f - hit);
+				lean = Mathf.Lerp(-0.14f, 0.2f, hit) * w;
+				reach = Mathf.Lerp(0.5f, -0.6f, hit) * w;
+				wingKick = Mathf.Lerp(-0.3f, 0.32f, hit) * w;
+				stretch = hit * w;
+				scale *= 1f + 0.08f * hit * w;
+				beat = Mathf.Max(0f, 1f - u / 0.18f);
 				if (!struck)
 				{
 					struck = true;
-					_claw = armR.GetGlobalTransform() * (ClawTip - Parts[4].Pivot);
+					// 原地留一道红色残影（蓄满那一刻的姿势），读起来是「扑出去」
+					ghost = (Node2D)root.Duplicate();
+					back.AddChild(ghost);
+					ghost.GlobalTransform = root.GlobalTransform;
+					ghost.Modulate = new Color(1f, 0.25f, 0.3f, 0.55f);
+					ghost.CreateTween().TweenProperty(ghost, "modulate:a", 0f, 0.3);
+					Fx.FreeAfter(ghost, 0.35);
+					Sfx.Play(Sfx.Curse, 0.45f);
+					Sfx.Play(Sfx.SubBoom, 0.4f);
+				}
+				if (u < 0.3f)
+				{
+					_claw = armR.GetGlobalTransform() * (ClawTip - Parts[4].Pivot);   // 咒怨从扑出去的爪尖甩出
 					_clawAt = Stage.NowMs();
-					Sfx.Play(Sfx.Curse, 0.4f);
 				}
 			}
-			body.Position = Parts[3].Pivot + new Vector2(0f, bob + rise);
+			body.Position = Parts[3].Pivot + pos;
 			body.Rotation = lean;
+			body.Scale = new Vector2(scale * (1f + 0.1f * stretch), scale * (1f - 0.05f * stretch));
 			armR.Rotation = reach;
-			armB.Rotation = -reach * 0.3f + Mathf.Sin(time * 2.6f) * 0.03f;
-			wingB.Rotation = -0.3f * open + flap - beat * 0.12f;
-			wingF.Rotation = 0.3f * open - flap + beat * 0.16f;
-			mat.SetShaderParameter("flash", beat * beat * 0.4f);       // 出手一闪（平方衰减：顿帧拖慢时不会一直发灰）
+			armB.Rotation = -reach * 0.35f + Mathf.Sin(time * 2.6f) * 0.04f;
+			wingB.Rotation = -0.6f * open + flap + wingKick;
+			wingF.Rotation = 0.6f * open - flap - wingKick * 1.2f;
+			mat.SetShaderParameter("flash", beat * beat * 0.45f);       // 出手一闪（平方衰减：顿帧拖慢时不会一直发灰）
 			eyes.Modulate = new Color(1f + beat * 3f, 1f + beat * 1.5f, 1f + beat * 1.5f, 1f);
 		});
 		Fx.FreeAfter(root, total + 0.05);
