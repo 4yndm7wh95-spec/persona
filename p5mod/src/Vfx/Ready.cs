@@ -149,7 +149,7 @@ public sealed class ReadyFx
 		Vector2 hand = _pose(MaskHand), face = _pose(MaskFace), feet = _pose(Feet);
 		// 脸上戴着一张面具形状的蓝焰（人物前面，中心在鼻梁、眼睛那一行），两边尖角往上翘
 		float body = (feet - face).Length();
-		_wall = new PersonaMask(_backLayer, _frontLayer, _pose(MaskEyes), body * 0.3f, _facing, 0.08f * _facing);   // 收一点（用户：头大身小）
+		_wall = new PersonaMask(_backLayer, _frontLayer, _pose(MaskEyes), body * 0.24f, _facing, 0.08f * _facing);   // 收一点（用户：头大身小）
 		// 身体轮廓上烧一圈贴身的蓝焰（剪影外面才有火，不会有幻影；用户 2026-11-01：轮廓火要保留）
 		Vector2 a0 = _pose(new Vector2(150f, -250f)), a1 = _pose(new Vector2(1500f, 1700f));
 		_aura = new BodyAura(_backLayer, new Rect2(new Vector2(Mathf.Min(a0.X, a1.X), Mathf.Min(a0.Y, a1.Y)), (a1 - a0).Abs()), feet, body * 0.32f);

@@ -242,7 +242,7 @@ void fragment() {
 	float sd0 = maskSdf(pw);
 	float onMask = smoothstep(0.03, -0.03, sd0);
 	float fire = 0.0;
-	float len = 1.35 * flame;
+	float len = 0.7 * flame;                                            // 用户 2026-11-03：头上那团太大太密 → 火舌短一半
 	// 采样够密、每段的边够软，相邻两段互相重叠，火舌上不出台阶
 	for (int i = 1; i < 25; i++) {
 		float k = float(i) / 24.0;
@@ -267,14 +267,14 @@ void fragment() {
 	e += rim * 0.75 * (0.6 + 0.6 * sA) * outline;
 	e *= reveal;
 	float shape = fire * reveal;
-	vec3 col = c_dark.rgb;
-	col = mix(col, c_mid.rgb, smoothstep(0.12, 0.5, e));
-	col = mix(col, c_hi.rgb, smoothstep(0.45, 0.9, e));
-	col = mix(col, c_hot.rgb, smoothstep(0.9, 1.3, e));
-	float a = clamp(shape * (0.35 + 0.65 * smoothstep(0.1, 0.5, e)) + rim * reveal * 0.6 * outline, 0.0, 1.0);
+	// 用户 2026-11-03：重制成和亚森现身蓝焰同一套（P5 动画觉醒那段）——外形一刀切的硬边、四档硬边分层，不再是柔和渐变的半透明火
+	float fa = shape * (0.45 + 0.55 * smoothstep(0.1, 0.5, e)) + rim * reveal * 0.6 * outline;
+	vec3 col = e > 1.0 ? vec3(0.94, 0.98, 1.0) : e > 0.62 ? vec3(0.4, 0.8, 1.0) : e > 0.3 ? vec3(0.1, 0.38, 0.92) : vec3(0.03, 0.09, 0.32);
+	float a = smoothstep(0.2, 0.24, fa);
 	// 正对脸的中间开一扇「窗」：越靠近面具中心越透，脸和头发从火里透出来
-	float win = smoothstep(0.62, 0.12, length(p * vec2(1.0, 1.35)));
-	a *= 1.0 - 0.6 * win * window;
+	// 用户 2026-11-03：火焰不要太挡脸 → 窗开大一点、中间完全透明
+	float win = smoothstep(0.78, 0.38, length(p * vec2(1.0, 1.35)));
+	a *= 1.0 - win * window;
 	COLOR = vec4(col * glow, a * alpha);
 }" };
 

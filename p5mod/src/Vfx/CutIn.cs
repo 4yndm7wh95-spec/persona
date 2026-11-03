@@ -35,6 +35,9 @@ public static class CutIn
 	private static Prepared[]? _parts;
 	private static ShaderMaterial? _opaqueEyes;
 
+	/// <summary>预热：眼神特写的网格数据先解析好。</summary>
+	public static void Preload() => Load();
+
 	private static void Load()
 	{
 		if (_parts != null) return;

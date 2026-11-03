@@ -93,12 +93,13 @@ void fragment() {
 	vec2 w = vec2(noise(sp * 0.02 + vec2(0.0, t * 0.8)), noise(sp * 0.02 + vec2(5.2, t * 0.8)));
 	float n = ridge(vec2(sp.x * 0.07 + w.x * 1.5, sp.y * 0.022 + t * 1.9));
 	float e = pow(n, 2.0) * 1.3;
-	// 和面具火（PersonaMask）同一套配色、普通混合：深蓝底 → 蓝 → 青 → 白热
-	vec3 col = c_dark.rgb;
-	col = mix(col, c_mid.rgb, smoothstep(0.12, 0.5, e));
-	col = mix(col, c_hi.rgb, smoothstep(0.45, 0.9, e));
-	col = mix(col, c_hot.rgb, smoothstep(0.9, 1.3, e));
-	COLOR = vec4(col, clamp(fire * (0.35 + 0.65 * smoothstep(0.1, 0.5, e)), 0.0, 1.0) * alpha);
+	// 用户 2026-11-03：重制成和亚森现身蓝焰同一套（P5 动画觉醒那段）——外形一刀切的硬边、四档硬边分层
+	// （深海军蓝 → 饱和蓝 → 青 → 白芯），不再是柔和渐变的半透明火
+	float f = fire * (0.45 + 0.55 * smoothstep(0.1, 0.5, e));
+	float heat = f * (0.55 + 0.6 * e);
+	float a = smoothstep(0.16, 0.19, f);
+	vec3 col = heat > 0.78 ? vec3(0.94, 0.98, 1.0) : heat > 0.55 ? vec3(0.4, 0.8, 1.0) : heat > 0.32 ? vec3(0.1, 0.38, 0.92) : vec3(0.03, 0.09, 0.32);
+	COLOR = vec4(col, a * alpha);
 }" };
 
 	private readonly Node2D? _root;

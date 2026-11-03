@@ -496,6 +496,7 @@ public partial class Preview : Node2D
 			p.ShotV4(4.7, Enemy3, 9, Impact.Grade(Weight.Light, 9, 9, true, false), dies: true);
 		},
 		// 原版怪物（research/sts2_preview_scene，tools/spine/skel_reader.py 转成 JSON）在预览里显示对不对
+		["warmup"] = p => p.At(0.1, () => Warmup.Run(p._front, 1ul)),
 		["monsters"] = p => { },
 		["attack_pose"] = p => p.At(0.3, () => p._joker?.Play("attack")),
 		// 出刀刀光单独看（和动作对齐）

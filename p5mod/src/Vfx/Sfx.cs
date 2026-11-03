@@ -93,6 +93,28 @@ public static class Sfx
 		return s;
 	}
 
+	/// <summary>
+	/// 预热：把 res://p5joker/sfx/ 里所有音效都读进来解码好（用户 2026-11-03：第一次打出打击都会卡一下——
+	/// 预热时音效被静音、一次都没加载过，第一次播放才现读现解码）。每帧解几个，不在一帧里全做完。
+	/// </summary>
+	public static void PreloadAll(Node anchor)
+	{
+		var names = new System.Collections.Generic.List<string>();
+		foreach (string f in DirAccess.GetFilesAt(Dir))
+		{
+			string n = f.Replace(".import", "").Replace(".remap", "");
+			if (n.EndsWith(".ogg") && !names.Contains(n[..^4]))
+			{
+				names.Add(n[..^4]);
+			}
+		}
+		for (int i = 0; i < names.Count; i++)
+		{
+			string n = names[i];
+			Fx.After(anchor, 0.05 + 0.03 * (i / 3), () => Load(n));
+		}
+	}
+
 	/// <summary>预热（Vfx/Warmup.cs）期间静音：特效照常跑一遍，但不出声。只拦当场播放的（预热不排延迟的声音）。</summary>
 	public static bool Muted;
 

@@ -21,6 +21,22 @@ public static class Fx
 	/// <summary>P5R 原版特效贴图（tools/p5/stage_p5.py 打进 pck 的 res://p5joker/fx/）。</summary>
 	private static readonly System.Collections.Generic.Dictionary<string, Texture2D?> Cache = new();
 
+	/// <summary>
+	/// 预热：res://p5joker/fx/ 里所有贴图在后台线程开始加载（亚森的分层大图、眼神特写贴图……第一次用到才同步加载会卡一帧）。
+	/// 之后 Tex() 走 ResourceLoader.Load 会直接拿到加载好的那份。
+	/// </summary>
+	public static void PreloadAll()
+	{
+		foreach (string f in DirAccess.GetFilesAt("res://p5joker/fx"))
+		{
+			string n = f.Replace(".import", "").Replace(".remap", "");
+			if (n.EndsWith(".png"))
+			{
+				ResourceLoader.LoadThreadedRequest("res://p5joker/fx/" + n);
+			}
+		}
+	}
+
 	public static Texture2D? Tex(string name)
 	{
 		if (!Cache.TryGetValue(name, out Texture2D? tex))

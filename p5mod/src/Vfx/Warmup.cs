@@ -29,6 +29,9 @@ public static class Warmup
 		layer.AddChild(hidden);
 		hidden.GlobalPosition = Vector2.Zero;
 		Vector2 c = Fx.Screen(layer) * 0.5f;
+		Stage.Safe("warmup textures", Fx.PreloadAll);
+		Stage.Safe("warmup sfx", () => Sfx.PreloadAll(layer));
+		Stage.Safe("warmup cutin", CutIn.Preload);
 		Sfx.Muted = true;                                             // 特效里自带的音效（枪声、命中声）预热时不要响
 		try
 		{
@@ -70,11 +73,34 @@ public static class Warmup
 		});
 		Stage.Safe("warmup impact", () => Impact.Warm(hidden));
 		Stage.Safe("warmup blue flame", () => BlueFlame.Tongue(hidden, c, 0.5f, 0.2f));
-		Stage.Safe("warmup crush hand", () =>
+		// 所有着色器（mod 里每个 static Shader 属性：巨手、亚森、眼神特写、舞台、刀光……）各画一个 4×4 的小方块编译掉
+		foreach (System.Type type in typeof(Warmup).Assembly.GetTypes())
 		{
-			// 毒性爆发的巨手是光线步进的大着色器：先在看不见的层里画几帧编译掉，免得第一次出牌卡一下
-			CrushHand h = new(hidden, c, new Vector2(8f, 8f));
-			Fx.FreeAfter(h.Rect, 0.2);
-		});
+			foreach (System.Reflection.PropertyInfo prop in type.GetProperties(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic))
+			{
+				if (prop.PropertyType != typeof(Shader) || prop.GetIndexParameters().Length > 0)
+				{
+					continue;
+				}
+				Stage.Safe("warmup shader " + type.Name + "." + prop.Name, () =>
+				{
+					if (prop.GetValue(null) is not Shader sh || sh.GetMode() != Shader.Mode.CanvasItem)
+					{
+						return;
+					}
+					ColorRect r = new() { Material = new ShaderMaterial { Shader = sh }, Size = new Vector2(4f, 4f), MouseFilter = Control.MouseFilterEnum.Ignore };
+					hidden.AddChild(r);
+					r.GlobalPosition = c;
+				});
+			}
+		}
+		// 原版特效场景：每个都放一次（粒子材质第一次用也要编译）
+		foreach (System.Reflection.FieldInfo fi in typeof(Vanilla).GetFields(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public))
+		{
+			if (fi.IsLiteral && fi.GetRawConstantValue() is string path)
+			{
+				Stage.Safe("warmup " + path, () => Vanilla.Burst(hidden, path, c, 0f, 0.3f, Lut5.Curse));
+			}
+		}
 	}
 }
