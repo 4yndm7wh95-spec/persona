@@ -18,7 +18,10 @@ public enum Tier
 
 public static class Tiers
 {
-	public static Tier For(CardModel card) => card.Rarity switch
+	/// <summary>稀有但演出要朴素的牌：按罕见处理（亚森直接现身出手，不出红色舞台 / 眼神特写）。用户 2026-11-03：腐蚀波不需要眼神特写和背景变化。</summary>
+	private static readonly System.Collections.Generic.HashSet<string> PlainRare = new() { "CorrosiveWave" };
+
+	public static Tier For(CardModel card) => PlainRare.Contains(card.GetType().Name) ? Tier.Uncommon : card.Rarity switch
 	{
 		CardRarity.Basic => Tier.Basic,
 		CardRarity.Uncommon => Tier.Uncommon,

@@ -81,6 +81,17 @@ public static class AmmoPatch
 			if (MegaCrit.Sts2.Core.Context.LocalContext.IsMe(player))
 			{
 				Local = view;
+				// 腐蚀波生效中：Joker 脚下咒怨一直翻腾（Vfx/CorrosiveFx.cs）
+				if (player.Creature.GetPower<MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower>() != null && Joker.FxLayer() is Godot.Control cl
+					&& Joker.Node(player) is NCreature jn)
+				{
+					CorrosiveFx.Aura(cl, Joker.PosePoint(jn, ReadyFx.Feet));
+				}
+				// 每场战斗预热一次第四版特效（首次打出不卡，Vfx/Warmup.cs）
+				if (Joker.FxLayer() is Godot.Control fx && NCombatRoom.Instance is NCombatRoom room)
+				{
+					Warmup.Run(fx, room.GetInstanceId());
+				}
 			}
 			// 能量球右上方
 			view.Root.Position = __instance.Size / 2f + new Godot.Vector2(110f, -70f);
@@ -356,6 +367,69 @@ public static class CardPlayedPatch
 }
 
 /// <summary>
+/// 施毒（第四版，Vfx/PoisonFx.cs）：游戏给敌人加中毒 / 叠毒时都会弹一下状态图标（NCreature.OnPowerIncreased → NPowerAppliedVfx.Create），
+/// 挂在这里就和游戏加毒同一刻，所有来源（致命毒药、带毒刺击、弹跳药瓶每一跳、涂毒、腐蚀波、毒雾、迷雾……）一起覆盖。只给 Joker 施的毒放。
+/// </summary>
+[HarmonyPatch(typeof(NPowerAppliedVfx), nameof(NPowerAppliedVfx.Create))]
+public static class PoisonApplyPatch
+{
+	public static void Postfix(PowerModel power, int amount)
+	{
+		ModEntry.Safe("PoisonApply", () =>
+		{
+			if (power is not MegaCrit.Sts2.Core.Models.Powers.PoisonPower || power.Owner.IsPlayer || power.Applier?.Player is not { } p || !Joker.Is(p)
+				|| Joker.FxLayer() is not Godot.Control layer || NCombatRoom.Instance?.GetCreatureNode(power.Owner) is not NCreature n)
+			{
+				return;
+			}
+			PoisonFx.Apply(layer, n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, n.Visuals, amount);
+		});
+	}
+}
+
+/// <summary>
+/// 腐蚀波：每抽到一张牌（CorrosiveWavePower.AfterCardDrawn，原版在这里给全体上毒、在每个敌人身上放绿色毒气）——
+/// 在原版上毒之前排一道贴地的咒火浪（Vfx/CorrosiveFx.cs）；这段时间的上毒不放普通施毒落点，原版的绿色毒气藏掉。只给 Joker 的腐蚀波。
+/// </summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower), nameof(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower.AfterCardDrawn))]
+public static class CorrosiveDrawPatch
+{
+	public static void Prefix(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower __instance, CardModel card)
+	{
+		ModEntry.Safe("CorrosiveDraw", () =>
+		{
+			if (card.Owner?.Creature != __instance.Owner || __instance.Owner.Player is not { } p || !Joker.Is(p)
+				|| Joker.FxLayer() is not Godot.Control layer || NCombatRoom.Instance is not NCombatRoom room || Joker.Node(p) is not NCreature joker)
+			{
+				return;
+			}
+			var targets = new List<CorrosiveFx.Target>();
+			foreach (Creature c in __instance.CombatState.HittableEnemies)
+			{
+				if (room.GetCreatureNode(c) is NCreature n)
+				{
+					targets.Add(new CorrosiveFx.Target(n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, n.Visuals));
+				}
+			}
+			CorrosiveFx.OnDraw(layer, Joker.PosePoint(joker, ReadyFx.Feet), Joker.Facing(joker), targets);
+		});
+	}
+}
+
+/// <summary>原版腐蚀波每次抽牌在敌人身上放的绿色毒气：Joker 的腐蚀波正由咒火浪表现时藏掉。</summary>
+[HarmonyPatch(typeof(NGaseousImpactVfx), nameof(NGaseousImpactVfx.Create), typeof(Godot.Vector2), typeof(Godot.Color))]   // 原版腐蚀波用的是这个重载
+public static class CorrosiveGasPatch
+{
+	public static void Postfix(NGaseousImpactVfx? __result)
+	{
+		if (__result != null && CorrosiveFx.Suppressing)
+		{
+			__result.Visible = false;
+		}
+	}
+}
+
+/// <summary>
 /// 毒伤每结算一轮（PoisonPower.Trigger 里 CreatureCmd.Damage(目标, 层数, 无视格挡 | 不受力量, null, null)；触媒让它多结算几轮）：
 /// 毒性爆发结算期间给 Myriad 按轮次出特效。挂在 Damage 最底层的重载上（其他重载都转到这里）；只看、不改。
 /// </summary>
@@ -387,6 +461,11 @@ public static class PoisonTickPatch
 					Godot.CanvasItem? v = n.Visuals;
 					Myriad.OnPoisonTick(layer, n.GetInstanceId(), n.VfxSpawnPosition, n.GetTopOfHitbox(),
 						v == null ? null : col => { if (Godot.GodotObject.IsInstanceValid(v)) { v.Modulate = col; } });
+					// 第四版每轮毒伤（Vfx/PoisonFx.cs）：只给 Joker 施的毒放
+					if (c.GetPower<MegaCrit.Sts2.Core.Models.Powers.PoisonPower>()?.Applier?.Player is { } owner && Joker.Is(owner))
+					{
+						PoisonFx.Tick(layer, n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, n.Visuals);
+					}
 				}
 			}
 		});

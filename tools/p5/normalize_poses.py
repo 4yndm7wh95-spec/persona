@@ -8,9 +8,14 @@ Usage: python tools/p5/normalize_poses.py
 """
 import json
 import numpy as np
+import sys
 from pathlib import Path
 from PIL import Image
-from scipy import ndimage
+try:
+    from scipy import ndimage
+except ImportError:  # Codex 那边没有 scipy：用纯 numpy 版（tools/p5/_ndimage.py）
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import _ndimage as ndimage
 
 ROOT = Path(__file__).resolve().parents[2]
 P = ROOT / 'art/p5/poses'

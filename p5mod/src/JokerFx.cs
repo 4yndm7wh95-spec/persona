@@ -41,7 +41,7 @@ public static class JokerFx
 			case "shiv_from_aim":
 				Fx.After(layer, Mathf.Max(0f, 0.18f - skipped), () =>
 				{
-					HitFx.Muzzle(layer, Joker.Muzzle(node), Joker.Facing(node));
+					GunFx.Muzzle(layer, Joker.Muzzle(node), new Vector2(Joker.Facing(node), 0.06f), Joker.Facing(node));   // 第四版枪口（Vfx/GunFx.cs）
 					if (node.Entity?.Player is { } p && MegaCrit.Sts2.Core.Context.LocalContext.IsMe(p) && AmmoPatch.Local is AmmoView ammo
 						&& GodotObject.IsInstanceValid(ammo.Root))
 					{
@@ -61,7 +61,7 @@ public static class JokerFx
 		}
 		if (gun)
 		{
-			HitFx.Shot(layer, Joker.Muzzle(joker), target.VfxSpawnPosition, Joker.Facing(joker));
+			GunFx.Shot(layer, Joker.Muzzle(joker), target.VfxSpawnPosition);                                       // 第四版弹道 + 命中
 		}
 		else
 		{
@@ -115,54 +115,30 @@ public static class JokerFx
 				break;
 			case "Outbreak":
 			{
-				// 稀有（金卡专属）：亚森的雾沉进深处，每个敌人身后的深处扑出一只手攥住，停一拍捏爆（DepthGrip）
-				Persona.Spec spec = Aim.PersonaFor(card);
-				Vector2 jf = Joker.PosePoint(joker, ReadyFx.Feet);
-				float height = (jf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length() * 1.35f;
+				// 第四版：稀有召唤（眼神特写 + 舞台 + 新亚森，Aim）→ 亚森出手，咒怨光束扇形射向每个敌人（PoisonApplyPatch）
+				// → 牌效果「立即触发中毒」时所有敌人的咒火一起引爆（PoisonFx.Blast）。0.7 的深处之手（DepthGrip）停用。
+				PoisonFx.BeginOutbreak(Aim.HitFor(card) + 1.5f);
+				break;
+			}
+			case "CorrosiveWave":
+			{
+				// 第四版：亚森直接现身（按罕见召唤，Tiers.PlainRare）→ 亚森出手时把咒怨砸进 Joker 身前的地面（CorrosiveFx.Plunge）；
+				// 之后这回合每抽一张牌，咒火浪贴地涌向敌人（CorrosiveDrawPatch → CorrosiveFx.OnDraw），脚下咒怨一直翻腾（AmmoPatch → Aura）
+				Vector2 feet = Joker.PosePoint(joker, ReadyFx.Feet);
 				float face = Joker.Facing(joker);
-				Vector2 from = Persona.ChestOf(spec, jf, height, face) + new Vector2(0.22f * height * face, -0.12f * height);
-				var list = new List<(ulong, Vector2, float, float, Action<Color>?)>();
-				foreach (Creature c in card.CombatState?.HittableEnemies ?? (IEnumerable<Creature>)Array.Empty<Creature>())
-				{
-					if (room.GetCreatureNode(c) is NCreature n)
-					{
-						CanvasItem? v = n.Visuals;
-						list.Add((n.GetInstanceId(), n.VfxSpawnPosition, Mathf.Max(80f, (n.VfxSpawnPosition - n.GetTopOfHitbox()).Length()), n.Hitbox.GetGlobalRect().Size.X,
-							v == null ? null : col => { if (GodotObject.IsInstanceValid(v)) { v.Modulate = col; } }));
-					}
-				}
-				DepthGrip.Play(layer, Joker.FxLayer(back: true) ?? layer, from, list, Aim.HitFor(card) - DepthGrip.CrushDelay);
+				Vector2 ground = feet + new Vector2(130f * face, 0f);
+				Fx.After(layer, Aim.HitFor(card) + 0.01f, () =>
+					CorrosiveFx.Plunge(layer, ArseneFx.TryClaw(out Vector2 claw) ? claw : ground + new Vector2(-200f * face, -420f), ground));
 				break;
 			}
 			case var n when Aim.Grips(n) && t != null:
 			{
-				// 亚森伸手攥住中毒的怪，毒结算完才松开（Grip）；攥住 = 召唤高潮那一拍
-				Persona.Spec spec = Aim.PersonaFor(card);
-				Vector2 jf = Joker.PosePoint(joker, ReadyFx.Feet);
-				float height = (jf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length() * 1.35f;
-				float face = Joker.Facing(joker);
-				Vector2 from = Persona.ChestOf(spec, jf, height, face) + new Vector2(0.22f * height * face, -0.12f * height);   // 亚森前伸的手
-				CanvasItem? body = t.Visuals;
-				Grip.Play(layer, t.GetInstanceId(), from, t.VfxSpawnPosition, Mathf.Max(80f, (t.VfxSpawnPosition - t.GetTopOfHitbox()).Length()),
-					Aim.HitFor(card), face, body == null ? null : c => { if (GodotObject.IsInstanceValid(body)) { body.Modulate = c; } },
-					ownImpact: true);                                          // 拍 2：攥住自己带冲击声 / 顿帧
+				// 第四版：0.7 的亚森之手（Grip）停用；施毒特效走 PoisonApplyPatch → PoisonFx
 				break;
 			}
 			case "DeadlyPoison" when t != null:
 			{
-				// 普通白卡（Tiers.Common）：不召唤，精简的咒怨（手 + 一根咒焰），和游戏加中毒（施法后 ~0.25s）同一刻；
-				// 万一被当成稀有召唤（改过稀有度的 mod），走完整版，对齐亚森出手（TriggerAnimDelayPatch）
-				CanvasItem? body = t.Visuals;
-				Action<Color>? tint = body == null ? null : c => { if (GodotObject.IsInstanceValid(body)) { body.Modulate = c; } };
-				if (Tiers.For(card) >= Tier.Uncommon)
-				{
-					Fx.After(layer, Aim.SummonHit - CardFx.Burst, () => CardFx.Eiha(layer, Joker.PosePoint(joker, ReadyFx.MaskFace), t.VfxSpawnPosition,
-						t.GetTopOfHitbox(), tint));
-				}
-				else
-				{
-					CardFx.CurseLight(layer, t.VfxSpawnPosition, t.GetTopOfHitbox(), tint, t.Hitbox.GetGlobalRect().Size.X);
-				}
+				// 第四版：0.7 的精简咒怨（CardFx.CurseLight / Eiha）停用；施毒特效走 PoisonApplyPatch → PoisonFx
 				break;
 			}
 		}

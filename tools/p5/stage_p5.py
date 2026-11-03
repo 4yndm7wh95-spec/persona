@@ -83,7 +83,8 @@ def placeholder_back():
 V4 = ROOT / "art/p5/fx/v4"
 V4_TEX = [("slash", n, 0.5) for n in ("slash_thin", "slash_heavy", "slash_cross", "slash_tear", "slash_thrust", "slash_flurry")] + \
     [("burst", f"burst_0{i}", 0.5) for i in (1, 2, 3)] + \
-    [("muzzle", f"muzzle_side_0{i}", 0.5) for i in (1, 2, 3)] + [("muzzle", "muzzle_front", 0.5)]
+    [("muzzle", f"muzzle_side_0{i}", 0.5) for i in (1, 2, 3)] + [("muzzle", "muzzle_front", 0.5), ("muzzle", "shell", 1)] + \
+    [("arsene/layers_v7", n, 0.35) for n in ("wing_back", "wing_front", "arm_back", "body", "arm_reach", "eyes_glow")]   # Arsene v7 (user 2026-11-03)
 
 # P5R sound effects (research/p5r/audio): published name -> file (names in p5mod/src/Vfx/Sfx.cs)
 P5SFX = ROOT / "research/p5r/audio/sfx"
@@ -100,9 +101,11 @@ SFX = {
     "swish_02": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0145.ogg",
     "swish_04": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0149.ogg",
     "swish_05": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0151.ogg",
+    "sword_sheath": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0048.ogg",          # knife spin: the catch (user 2026-11-02)
     "damage_enemy": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0022.ogg",
     "battle_all_out_atk": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0024.ogg",
     "gun_02": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0032.ogg",
+    "gun_07": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0037.ogg",                # the shot (user 2026-11-02: gun_02 read as a strike sound)
     "gun_00": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0030.ogg",
     "encount_parry": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0132.ogg",
     "damage_critical": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0021.ogg",
@@ -111,6 +114,10 @@ SFX = {
     "crash_object": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0176.ogg",
     "continuas_damage": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0020.ogg",
     "sub_boom": ROOT / "art/sfx_p5/sub_boom.ogg",
+    "shatter_big": ROOT / "art/sfx_p5/shatter_big.ogg",                # eye cut-in shatter (user 2026-11-03)
+    "curse_soft": ROOT / "art/sfx_p5/curse_soft.ogg",
+    "p3_evoker_shatter": ROOT / "art/sfx_p5/p3_evoker_shatter.ogg",    # eye cut-in shatter = the P3 mod evoker shot (user 2026-11-03)
+    "curse_blast": ROOT / "art/sfx_p5/curse_blast.ogg",                # Outbreak blast (user: critical was too loud / harsh)                  # corrosive wave / poison tick (user: harsh)
     "crush": ROOT / "art/sfx_p5/crush.ogg",                          # synthesized crunch for the hand crush                      # synthesized sub hit (ffmpeg aevalsrc)
 }
 
@@ -150,7 +157,12 @@ def fx_textures():
         f = V4 / group / f"{name}.png"
         if f.exists():
             im = Image.open(f).convert("RGBA")
-            yield name, im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS) if k != 1 else im
+            out = f"arsene_{name}" if group.startswith("arsene") else name   # Arsene layers: res://p5joker/fx/arsene_<layer>.png
+            yield out, im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS) if k != 1 else im
+    # P5R summon blue flame tongues (BE_SYOLOOP, 6x2 flipbook): Persona appear / linger / dismiss (p5mod/src/Vfx/BlueFlame.cs)
+    flame = ROOT / "research/p5r/ghost_blueflame/textures_png/bes_syo_fkomaB12kf2.dds.png"
+    if flame.exists():
+        yield "persona_flame_strip", Image.open(flame).convert("RGBA")
     eyes = Image.open(EYES).convert("RGBA")
     yield "eyes", eyes.resize((eyes.width // 2, eyes.height // 2), Image.LANCZOS)
     yield "arsene_cast", arsene_atlas()

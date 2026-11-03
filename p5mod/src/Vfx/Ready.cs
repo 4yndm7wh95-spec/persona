@@ -70,7 +70,10 @@ public sealed class ReadyFx
 		switch (stance)
 		{
 			case Stance.Gun: Sfx.Play(Sfx.GunDraw, 0.5f, 0.05f); break;
-			case Stance.Knife: Sfx.Play(Sfx.Swish, 0.35f, 0.08f); break;
+			case Stance.Knife:
+				// 转刀（用户：原来那声风声像空转；换成低沉的挥动。试过刀落回手里加一记金属声，用户说不需要）
+				Sfx.Play(Sfx.SwishLow, 0.45f, 0.02f);
+				break;
 			case Stance.Mask: Sfx.Play(Sfx.PersonaFlame, 0.3f, 0.05f); break;
 		}
 		switch (stance)

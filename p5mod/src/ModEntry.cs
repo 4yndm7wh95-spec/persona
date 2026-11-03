@@ -11,7 +11,7 @@ namespace P5Joker;
 public static class ModEntry
 {
 	public const string Tag = "[P5Joker]";
-	public const string Version = "0.8.0";
+	public const string Version = "0.9.3";
 
 	public static void Init()
 	{
@@ -24,6 +24,7 @@ public static class ModEntry
 			3 => ShakeStrength.Medium,
 			_ => ShakeStrength.Strong,
 		}, ShakeDuration.Short);
+		Stage.PlayEvent = (e, v) => MegaCrit.Sts2.Core.Commands.SfxCmd.Play(e, v);
 		Stage.ShakeDir = (s, deg) => NGame.Instance?.ScreenShake(Strength(s), ShakeDuration.Short, deg);
 		// 逐个补丁类应用：一个失败（别的游戏版本里目标被改名）不影响其他
 		Harmony harmony = new("brooks.p5joker");

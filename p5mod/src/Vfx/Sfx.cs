@@ -27,9 +27,19 @@ public static class Sfx
 		Swish = "swish_02",             // 挥刀风声（#145）
 		SwishHeavy = "swish_05",        // 重挥（#151）
 		SwishLow = "swish_04",          // 低沉的挥动（#149，缩回 / 转杖）
+		Shatter = "shatter_big",        // 眼神特写碎开（用户 2026-11-03：原来的 ArcanaBurst 起音 42ms、不明显、没有一下碎掉的震撼）：
+		                                //  P3R 剧情玻璃爆裂（起音 2ms）+ 镜子碎片哗啦（Mirror_Break_01）+ 低频，合成 art/sfx_p5/shatter_big.ogg
+		EvokerShatter = "p3_evoker_shatter", // 眼神特写碎开（用户 2026-11-03：「直接用 P3R 之前那个」= P3 mod 召唤器那一枪：闷枪声 + 心灵碎裂玻璃 + 涌起的风 + 垫音；
+		                                     //  原来是代码实时合成的，tools 里离线渲成 art/sfx_p5/p3_evoker_shatter.ogg）
+		CurseBlast = "curse_blast",     // 毒爆引爆（用户：原来的暴击音太吵太刺耳——damage_critical 2.1s、能量中心 5kHz）：
+		                                //  暗黑技能音 + 重拳都滤掉高频 + 低频，art/sfx_p5/curse_blast.ogg
+		CurseSoft = "curse_soft",       // 柔和的咒怨闷响（暗黑系技能音滤掉 1.6kHz 以上 + 低频，art/sfx_p5/curse_soft.ogg）：
+		                                //  腐蚀波 / 每回合毒伤用（用户：腐蚀波刺耳——continuas_damage 能量中心 7kHz，连抽时一堆叠在一起）
+		KnifeRing = "sword_sheath",     // 收刀入鞘的金属「锵」（#48）：转刀落回手里握住的那一下（用户 2026-11-02：转刀声像空转、没分量）
 		Hit = "damage_enemy",           // 打中敌人（#22）
 		AllOut = "battle_all_out_atk",  // 总攻击斩击（#24，第一刀叠上去）
-		Gun = "gun_02",                 // 枪声（#32：单发手枪；#33 是 10 连发的机关枪，用户 2026-11-02 指出）
+		Gun = "gun_07",                 // 枪声（#37：起音 0.2ms、带 0.5s 回响的干脆手枪声。原来的 #32 gun_02 起音慢、尾音短，
+		                                //  被命中声一盖听起来像打击声——用户 2026-11-02 指出；#33 是 10 连发的机关枪）
 		Ricochet = "gun_00",            // 跳弹（#30 gun_00 / talk_ricochet）
 		Parry = "encount_parry",        // 格挡（#132）
 		Critical = "damage_critical",   // 暴击（#21：召唤高潮那一拍）
@@ -47,7 +57,7 @@ public static class Sfx
 	private static readonly Dictionary<string, float> Lead = new()
 	{
 		[Parry] = 0.068f, [Slam] = 0.1f, [PoisonTick] = 0.078f, [CutIn] = 0.083f, [PersonaFlame] = 0.13f, [Wing] = 0.023f,
-		[Crack] = 0.019f, [SwishHeavy] = 0.005f,
+		[Crack] = 0.019f, [SwishHeavy] = 0.005f, [KnifeRing] = 0.048f,
 	};
 
 	/// <summary>在 delay 秒后的那一帧「打中」：按起音提前量提前开始播。</summary>
@@ -82,10 +92,13 @@ public static class Sfx
 		return s;
 	}
 
+	/// <summary>预热（Vfx/Warmup.cs）期间静音：特效照常跑一遍，但不出声。只拦当场播放的（预热不排延迟的声音）。</summary>
+	public static bool Muted;
+
 	/// <summary>播放；同一音效 45ms 内不重复叠加。volume 0～1.4。</summary>
 	public static void Play(string name, float volume = 1f, float delay = 0f) => Stage.Safe("sfx " + name, () =>
 	{
-		if (Engine.GetMainLoop() is not SceneTree tree)
+		if (Muted || Engine.GetMainLoop() is not SceneTree tree)
 		{
 			return;
 		}

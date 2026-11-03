@@ -11,9 +11,10 @@ public partial class Preview : Node2D
 {
 	// 游戏里的大致站位：Joker 脚底、敌人中心（VfxSpawnPosition）
 	public static readonly Vector2 JokerFeet = new(430f, 830f);
-	public static readonly Vector2 Enemy = new(1420f, 600f);
-	public static readonly Vector2 Enemy3 = new(1700f, 620f);
-	public static readonly Vector2 Enemy2 = new(1150f, 640f);
+	// 命中点 = 原版怪物身体中心（research/sts2_preview_scene 的 chomper / inklet，脚底在 y 830）
+	public static readonly Vector2 Enemy = new(1420f, 715f);
+	public static readonly Vector2 Enemy3 = new(1720f, 725f);
+	public static readonly Vector2 Enemy2 = new(1140f, 700f);
 	// 姿势图像素 → 屏幕：ORIGIN (815,1622)，K 0.87 × Visuals 缩放 0.29（tools/p5/build_rig_p5.py、p5mod/src/Joker.cs）
 	public static Vector2 Pose(float x, float y) => JokerFeet + new Vector2(x - 815f, y - 1622f) * 0.87f * 0.29f;
 	public static Vector2 Chest => Pose(820f, 600f);
@@ -101,6 +102,37 @@ public partial class Preview : Node2D
 			p.Ready(6.4, Stance.Mask, "mask", "cast_from_mask", play: true, lockOn: Enemy2);
 			p.At(6.4 + 1.64, () => { SummonStage.Play(p._back, p._front, Pose(1010, 215)); CutIn.Eyes(p._back); });
 			p.At(6.4 + 1.6, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy2, Enemy2 + new Vector2(0f, -128f), c => p._enemies[Enemy2].Modulate = c));
+		},
+		// 腐蚀波（稀有，但按罕见召唤）：亚森现身 → 亚森把咒怨砸进 Joker 身前的地面 → 脚下咒怨翻腾 → 抽一张、再抽一张、连抽三张：咒火浪贴地涌向敌人
+		["corrosive_v4"] = p =>
+		{
+			// 用户 2026-11-03：腐蚀波朴素一些，不要眼神特写和舞台 → 按罕见召唤（Tiers.PlainRare）：亚森直接现身出手
+			Persona.Spec spec = Persona.ArseneSpec;
+			float hit = 0.04f + spec.AttackAt;
+			bool active = false;
+			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
+			p.At(0.3, () => p._joker?.Play("cast"));
+			p.At(0.34, () => { Sfx.Play(Sfx.PersonaFlame, 0.8f); Persona.Show(spec, p._back, JokerFeet, tall); });
+			Vector2 ground = JokerFeet + new Vector2(130f, 0f);
+			p.At(0.3 + hit + 0.01, () =>
+			{
+				CorrosiveFx.Plunge(p._front, ArseneFx.TryClaw(out Vector2 claw) ? claw : ground + new Vector2(-200f, -420f), ground);
+				active = true;
+			});
+			p.Every(() => { if (active) { CorrosiveFx.Aura(p._front, JokerFeet); } });
+			var targets = new List<CorrosiveFx.Target>();
+			p.At(0.1, () =>
+			{
+				foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 })
+				{
+					p._enemies.TryGetValue(e, out Node2D? n);
+					targets.Add(new CorrosiveFx.Target(e, e - new Vector2(0f, 120f), 230f, n));
+				}
+			});
+			foreach (double t in new[] { 2.6, 3.4, 4.3, 4.32, 4.34 })
+			{
+				p.At(t, () => CorrosiveFx.OnDraw(p._front, JokerFeet, 1f, targets));
+			}
 		},
 		// 毒性爆发（稀有）：完整召唤 + 伊邪那岐大神转杖 + 万物真言 + 咒怨毒火，打全体
 		["outbreak"] = p =>
@@ -264,6 +296,113 @@ public partial class Preview : Node2D
 			p.At(0.3, () => { p._joker?.Play("knife_in"); p._joker?.Queue("knife_loop", true); });
 			p.At(1.3, () => p._joker?.Play("knife_out"));
 		},
+		// 腐蚀波（稀有，但按罕见召唤）：亚森现身 → 亚森把咒怨砸进 Joker 身前的地面 → 脚下咒怨翻腾 → 抽一张、再抽一张、连抽三张：咒火浪贴地涌向敌人
+		["corrosive_v4"] = p =>
+		{
+			// 用户 2026-11-03：腐蚀波朴素一些，不要眼神特写和舞台 → 按罕见召唤（Tiers.PlainRare）：亚森直接现身出手
+			Persona.Spec spec = Persona.ArseneSpec;
+			float hit = 0.04f + spec.AttackAt;
+			bool active = false;
+			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
+			p.At(0.3, () => p._joker?.Play("cast"));
+			p.At(0.34, () => { Sfx.Play(Sfx.PersonaFlame, 0.8f); Persona.Show(spec, p._back, JokerFeet, tall); });
+			Vector2 ground = JokerFeet + new Vector2(130f, 0f);
+			p.At(0.3 + hit + 0.01, () =>
+			{
+				CorrosiveFx.Plunge(p._front, ArseneFx.TryClaw(out Vector2 claw) ? claw : ground + new Vector2(-200f, -420f), ground);
+				active = true;
+			});
+			p.Every(() => { if (active) { CorrosiveFx.Aura(p._front, JokerFeet); } });
+			var targets = new List<CorrosiveFx.Target>();
+			p.At(0.1, () =>
+			{
+				foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 })
+				{
+					p._enemies.TryGetValue(e, out Node2D? n);
+					targets.Add(new CorrosiveFx.Target(e, e - new Vector2(0f, 120f), 230f, n));
+				}
+			});
+			foreach (double t in new[] { 2.6, 3.4, 4.3, 4.32, 4.34 })
+			{
+				p.At(t, () => CorrosiveFx.OnDraw(p._front, JokerFeet, 1f, targets));
+			}
+		},
+		// 毒性爆发（稀有）：眼神特写 + 舞台 + 新亚森 → 出手，咒怨光束扇形射向三个敌人（各 9 层）→ 立即触发中毒：全场咒火一起引爆
+		["outbreak_v4"] = p =>
+		{
+			Persona.Spec spec = Persona.ArseneSpec with { First = 10, Linger = 1.8f };   // 同 Aim.PersonaFor("Outbreak")
+			float hit = 0.04f + SummonStage.EvokeAt + spec.AttackAt;                    // 同 Aim.HitFor
+			p.At(0.3, () => { p._joker?.Play("cast_big"); PoisonFx.BeginOutbreak(hit + 1.5f); });
+			p.RareSummon(0.3, spec);
+			p.Poison(0.3 + hit, Enemy2, 9);
+			p.Poison(0.3 + hit + 0.01, Enemy, 9);
+			p.Poison(0.3 + hit + 0.02, Enemy3, 9);
+			foreach ((Vector2 e, double dt) in new[] { (Enemy2, 0.04), (Enemy, 0.05), (Enemy3, 0.06) })
+			{
+				p.At(0.3 + hit + dt, () =>
+				{
+					p._enemies.TryGetValue(e, out Node2D? n);
+					PoisonFx.Tick(p._front, e, e - new Vector2(0f, 120f), 230f, n);
+				});
+			}
+		},
+		// 第四版毒组 + 新亚森：致命毒药（亚森现身 → 出手把咒怨甩过去 → 炸开）→ 弹跳药瓶（亚森出手，三跳）→ 带毒刺击（不召唤，只有落点）→ 一轮毒伤
+		["arsene_poison"] = p =>
+		{
+			float height = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
+			float atk = Persona.ArseneSpec.AttackAt;
+			p.At(0.3, () => p._joker?.Play("cast"));
+			p.At(0.34, () => ArseneFx.Show(p._back, JokerFeet, height, 1f, atk, atk + 1.1f));
+			p.Poison(0.34 + atk, Enemy, 5);
+			p.At(2.4, () => p._joker?.Play("cast"));
+			p.At(2.44, () => ArseneFx.Show(p._back, JokerFeet, height, 1f, atk, atk + 1.3f));
+			p.Poison(2.44 + atk, Enemy2, 3);
+			p.Poison(2.44 + atk + 0.2, Enemy3, 3);
+			p.Poison(2.44 + atk + 0.4, Enemy, 3);
+			p.StrikeV4(4.6, Enemy2, 6, Weight.Medium, false);
+			p.Poison(4.78, Enemy2, 3);
+			foreach ((Vector2 e, double dt) in new[] { (Enemy2, 0.0), (Enemy, 0.3), (Enemy3, 0.6) })
+			{
+				p.At(5.9 + dt, () =>
+				{
+					p._enemies.TryGetValue(e, out Node2D? n);
+					PoisonFx.Tick(p._front, e, e - new Vector2(0f, 120f), 230f, n);
+				});
+			}
+		},
+		// 第四版毒组：致命毒药（5 层）→ 弹跳药瓶（3 跳随机）→ 一次加 9 层 → 回合开始三个敌人各结算一轮毒伤
+		["poison_v4"] = p =>
+		{
+			p.At(0.2, () => p._joker?.Play("cast"));
+			p.Poison(0.55, Enemy, 5);
+			p.At(1.6, () => p._joker?.Play("cast"));
+			p.Poison(1.9, Enemy2, 3);
+			p.Poison(2.12, Enemy3, 3);
+			p.Poison(2.34, Enemy, 3);
+			p.At(3.2, () => p._joker?.Play("cast"));
+			p.Poison(3.5, Enemy3, 9);
+			foreach ((Vector2 e, double dt) in new[] { (Enemy2, 0.0), (Enemy, 0.35), (Enemy3, 0.7) })
+			{
+				p.At(4.8 + dt, () =>
+				{
+					p._enemies.TryGetValue(e, out Node2D? n);
+					PoisonFx.Tick(p._front, e, e - new Vector2(0f, 120f), 230f, n);
+					Popups.Damage(p._front, (ulong)(e.X * 7f + (float)dt), e, 5, false);
+				});
+			}
+		},
+		// 原版火焰 / 毒 / 烟换咒怨 LUT 逐个看
+		["curse_test"] = p =>
+		{
+			string[] all = { Vanilla.FireCenter, Vanilla.FireLeft, Vanilla.FireRight, Vanilla.Fire1, Vanilla.Fire2, Vanilla.Fire3, Vanilla.Embers,
+				Vanilla.SmokeFlip, Vanilla.PoisonSkull, Vanilla.RoundSmoke };
+			for (int i = 0; i < all.Length; i++)
+			{
+				string path = all[i];
+				Vector2 at = new(200f + (i % 5) * 380f, 400f + (i / 5) * 420f);
+				p.At(0.3, () => Vanilla.Burst(p._front, path, at, 0f, 1f, path == Vanilla.SmokeFlip || path == Vanilla.RoundSmoke ? Lut5.Smoke : Lut5.Curse));
+			}
+		},
 		// 原版组件逐个看（换 P5 LUT）
 		["vanilla_test"] = p =>
 		{
@@ -278,6 +417,21 @@ public partial class Preview : Node2D
 			}
 		},
 		// 只放出刀动作、不放特效（量刀尖轨迹用）
+		// 第四版枪组：一张小刀 → 三张小刀连打 → 刀扇（0.7.27 的弹射保留）→ 一枪打死
+		["gun_v4"] = p =>
+		{
+			p.ShotV4(0.3, Enemy, 4, Weight.Light);
+			for (int i = 0; i < 3; i++)
+			{
+				p.ShotV4(1.3 + 0.55 * i, Enemy2, 4, Weight.Light);
+			}
+			p.At(3.4, () => p._joker?.Play("shiv"));
+			p.At(3.58, () => GunFx.Muzzle(p._front, Muzzle, new Vector2(1f, 0.06f)));
+			p.At(3.6, () => HitFx.Ricochet(p._front, Muzzle, new[] { Enemy2, Enemy, Enemy3 }));
+			p.ShotV4(4.7, Enemy3, 9, Impact.Grade(Weight.Light, 9, 9, true, false), dies: true);
+		},
+		// 原版怪物（research/sts2_preview_scene，tools/spine/skel_reader.py 转成 JSON）在预览里显示对不对
+		["monsters"] = p => { },
 		["attack_pose"] = p => p.At(0.3, () => p._joker?.Play("attack")),
 		// 出刀刀光单独看（和动作对齐）
 		["swing"] = p =>
@@ -394,6 +548,29 @@ public partial class Preview : Node2D
 			Popups.Damage(_front, (ulong)(enemy.X * 10f + (float)t), enemy, amount, false);
 			_enemies.TryGetValue(enemy, out Node2D? n);
 			Impact.Confirm(_front, n, enemy, new Vector2(1f, 0.12f), w);
+			if (dies && n != null)
+			{
+				n.CreateTween().TweenProperty(n, "modulate:a", 0f, 0.6).SetDelay(0.35);
+			}
+		});
+	}
+
+	private void Poison(double t, Vector2 enemy, int amount) => At(t, () =>
+	{
+		_enemies.TryGetValue(enemy, out Node2D? n);
+		PoisonFx.Apply(_front, enemy, enemy - new Vector2(0f, 120f), 230f, n, amount);
+	});
+
+	private void ShotV4(double t, Vector2 enemy, int amount, Weight w, bool dies = false)
+	{
+		At(t - 0.2, () => _joker?.Play("shiv"));
+		At(t - 0.02, () => GunFx.Muzzle(_front, Muzzle, new Vector2(1f, 0.06f)));
+		At(t, () =>
+		{
+			GunFx.Shot(_front, Muzzle, enemy);
+			Popups.Damage(_front, (ulong)(enemy.X * 10f + (float)t), enemy, amount, true);
+			_enemies.TryGetValue(enemy, out Node2D? n);
+			Impact.Confirm(_front, n, enemy, enemy - Muzzle, w);
 			if (dies && n != null)
 			{
 				n.CreateTween().TweenProperty(n, "modulate:a", 0f, 0.6).SetDelay(0.35);
@@ -594,6 +771,23 @@ public partial class Preview : Node2D
 	/// <summary>暗色的室内背景 + 地面，颜色接近杀戮尖塔 2 第一幕的战斗场景，只为看清特效和人的关系。</summary>
 	private void BuildBackdrop()
 	{
+		// 原版战斗背景（overgrowth，research/sts2_preview_scene）：有就用真的，没有退回纯色
+		const string bg = "res://scenes/backgrounds/overgrowth/overgrowth_background.tscn";
+		if (ResourceLoader.Exists(bg) && ResourceLoader.Load<PackedScene>(bg)?.Instantiate() is Control real)
+		{
+			_world.AddChild(real);
+			real.Position = new Vector2(960f, 540f);                // 各层以原点为中心（2764×1296），游戏里背景居中
+			// 游戏里由 NCombatBackground 脚本给每层挑一个变体填进去；预览里固定用 a（前景层会挡住人物，不放）
+			for (int i = 0; i <= 4; i++)
+			{
+				string layer = $"res://scenes/backgrounds/overgrowth/layers/overgrowth_bg_0{i}_a.tscn";
+				if (real.GetNodeOrNull<Control>($"Layer_0{i}") is Control holder && ResourceLoader.Exists(layer))
+				{
+					holder.AddChild(ResourceLoader.Load<PackedScene>(layer).Instantiate());
+				}
+			}
+			return;
+		}
 		Polygon2D sky = new()
 		{
 			Polygon = new[] { new Vector2(0f, 0f), new Vector2(1920f, 0f), new Vector2(1920f, 1080f), new Vector2(0f, 1080f) },
@@ -641,8 +835,26 @@ public partial class Preview : Node2D
 	}
 
 	/// <summary>敌人剪影：一个深紫色的大块头（大小接近第一幕的普通怪），中心就是 VfxSpawnPosition。</summary>
+	// 原版怪物代替紫色圆团：(json 名, 缩放)；脚底放在地面，命中点（VfxSpawnPosition）还是 center
+	private static readonly Dictionary<Vector2, (string Name, float Scale)> Monsters = new()
+	{
+		[Enemy] = ("chomper", 0.55f), [Enemy2] = ("inklet", 0.62f), [Enemy3] = ("chomper", 0.48f),
+	};
+
 	private void Enemy1(Vector2 center, float k)
 	{
+		string monDir = ProjectSettings.GlobalizePath("res://.mon");
+		string src = ProjectSettings.GlobalizePath("res://") + "../../../research/sts2_preview_scene/recovered/animations/monsters";
+		if (Monsters.TryGetValue(center, out var mon) && FileAccess.FileExists($"{monDir}/{mon.Name}.json"))
+		{
+			SpinePlayer m = SpinePlayer.Load($"{monDir}/{mon.Name}.json", $"{src}/{mon.Name}/{mon.Name}.atlas", $"{src}/{mon.Name}/{mon.Name}.png");
+			m.Position = new Vector2(center.X, 830f);
+			m.Scale = new Vector2(-mon.Scale, -mon.Scale);           // 朝左（面向 Joker），Spine 的 y 朝上
+			_world.AddChild(m);
+			m.Play("idle_loop", true);
+			_enemies[center] = m;
+			return;
+		}
 		Node2D n = new() { Position = center };
 		_world.AddChild(n);
 		_enemies[center] = n;

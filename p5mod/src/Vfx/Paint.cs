@@ -134,6 +134,42 @@ void fragment() {
 		return s;
 	}
 
+	/// <summary>
+	/// 飘起来的一张（怨灵、魂火）：从 at 往上飘 rise 像素（OutCubic），一路带噪声扭曲（像火 / 烟里的东西），前 15% 淡入、后 60% 从边缘烧散。
+	/// </summary>
+	public static Stroke? Rise(Control layer, string tex, Vector2 at, float rise, float scale, Texture2D? lut, float life = 0.7f, float delay = 0f)
+	{
+		Stroke? s = Make(layer, tex, at, Fx.Rand(-0.12f, 0.12f), Vector2.One * scale, lut, 0.45f, 1.1f);
+		if (s == null)
+		{
+			return null;
+		}
+		s.Set("wobble", 0.035f);
+		s.Set("glow", 1.15f);
+		s.Root.Visible = delay <= 0f;
+		s.Root.Modulate = new Color(1f, 1f, 1f, 0f);
+		float total = delay + life;
+		float sway = Fx.Rand(-24f, 24f);
+		Fx.Animate(s.Root, 0, total, t =>
+		{
+			float time = t * total - delay;
+			if (time < 0f)
+			{
+				return;
+			}
+			s.Root.Visible = true;
+			float u = time / life;
+			s.Root.GlobalPosition = at + new Vector2(sway * u, -rise * (1f - Mathf.Pow(1f - u, 3f)));
+			s.Root.Scale = Vector2.One * scale * (0.85f + 0.3f * u);
+			s.Root.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, u / 0.15f));
+			s.Set("scroll", u * 1.6f);
+			float e = Mathf.Clamp((u - 0.4f) / 0.6f, 0f, 1f);
+			s.Set("erode", e <= 0f ? 0f : Mathf.Lerp(0.05f, 1.15f, e));
+		});
+		Fx.FreeAfter(s.Root, total + 0.05);
+		return s;
+	}
+
 	/// <summary>弹出来的一张（漫画爆框、枪口火焰）：2 帧内从 pop 倍缩到 1，停 hold，溶解掉。</summary>
 	public static Stroke? Pop(Control layer, string tex, Vector2 at, float rot, float scale, Texture2D? lut, float hold = 0.05f,
 		float erodeTime = 0.18f, float pop = 1.35f, float delay = 0f, float glow = 1f)
