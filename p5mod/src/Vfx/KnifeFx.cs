@@ -49,8 +49,8 @@ public static class KnifeFx
 	{
 		float rot = -0.55f * facing + Fx.Rand(-0.12f, 0.12f);
 		// 冲击层音效（同 HitFx.Slash：打中 + 总攻击斩击 + 低频）
-		Sfx.Play(Sfx.Hit, 0.9f);
-		Sfx.Play(Sfx.AllOut, heavy ? 0.75f : 0.55f);
+		Sfx.Play(Sfx.Hit, 0.6f);                                      // 用户 2026-11-03：命中声太吵 → 两层都压低
+		Sfx.Play(Sfx.AllOut, heavy ? 0.45f : 0.32f);
 		Sfx.Play(Sfx.SubBoom, heavy ? 0.6f : 0.45f);
 		// 命中点一下白闪（着色器径向光）+ 空间扭曲
 		Glow.Flash(layer, at, new Color(1f, 0.6f, 0.55f), heavy ? 340f : 240f, 0.16f);

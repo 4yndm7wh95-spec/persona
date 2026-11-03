@@ -65,8 +65,8 @@ public static class HitFx
 		HitStop.Request(0.05);
 		Fx.Shake(1);
 		// 冲击层：打中 + 总攻击斩击（亮）+ 低频（沉）
-		Sfx.Play(Sfx.Hit, 0.9f);
-		Sfx.Play(Sfx.AllOut, 0.55f);
+		Sfx.Play(Sfx.Hit, 0.6f);                                      // 用户 2026-11-03：命中声太吵 → 两层都压低
+		Sfx.Play(Sfx.AllOut, 0.32f);
 		Sfx.Play(Sfx.SubBoom, 0.45f);
 		float a1 = facing > 0f ? -0.55f : Mathf.Pi + 0.55f;
 		// 月牙往外拱 60px：弦往拱的反方向挪，让弧线正好穿过命中点
