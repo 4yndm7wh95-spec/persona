@@ -774,5 +774,29 @@
    99
   ],
   "anchor_foot": "rear"
+ },
+ "summon_bridge1_a": {
+  "scale": 1.0,
+  "offset": [
+   461,
+   79
+  ],
+  "anchor_foot": "front"
+ },
+ "summon_bridge2_a": {
+  "scale": 1.0,
+  "offset": [
+   293,
+   99
+  ],
+  "anchor_foot": "rear"
+ },
+ "summon_bridge3_a": {
+  "scale": 1.0,
+  "offset": [
+   418,
+   80
+  ],
+  "anchor_foot": "front"
  }
 }

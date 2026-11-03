@@ -1,0 +1,19 @@
+{
+  "name": "summon_bridge2_a",
+  "prompt": "Edit IMAGE1 approved Joker command-middle sprite into a SLIGHTLY EARLIER transitional pose. IMAGE2 is previous bridge frame for motion reference ONLY. Keep IMAGE1's head size, shoulder/chest width, height, costume and cel style. Right hand EMPTY, move it inward and upward from IMAGE1's low forward position: hand in front of the RIGHT side of chest, between chin height and low-outstretched endpoint, elbow more bent, fingers loose, hand back outward, not palm-up offering. Left hand almost in trouser pocket: fingers inside, about half palm still outside at hip underneath coat cuff. Feet stance midway between IMAGE2 and IMAGE1: slightly narrower than IMAGE1, rear/image-left boot around x270, front/image-right boot around x730, sole y1500. Knees relaxed, body orientation and head position slightly before IMAGE1. Same hand sizes, face identity, eye highlights, rounded chin. Minimal coat movement. Single full-body character within 1024x1536, genuine transparent RGBA alpha zero outside silhouette, NO ambient source haze/halo, ground, shadow, mask, weapon, effect, background or text. Preserve original style and proportions; only necessary arm/stance transition changes.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-d2789268-7908-4c1f-98b7-3dc09e0ed406.png",
+  "inputs": [
+    "summon_command_mid_a.png",
+    "summon_bridge1_a.png"
+  ],
+  "raw_size": [
+    1024,
+    1536
+  ],
+  "delivery_size": [
+    1024,
+    1536
+  ],
+  "generation_count": 1,
+  "redraw_count": 0
+}
