@@ -66,6 +66,10 @@ public static class Lut5
 	public static GradientTexture1D SummonFlame => Make("summon_flame",
 		(0f, new Color("0a1a3a")), (0.3f, new Color("1d5fd0")), (0.55f, new Color("3fa6ff")), (0.8f, new Color("a8e4ff")), (1f, new Color("f2fbff")));
 
+	/// <summary>Persona 身上的蓝焰（用户 2026-11-03：太艳）：深蓝 → 灰调钢蓝 → 淡青，芯不到纯白，饱和度压低。</summary>
+	public static GradientTexture1D PersonaAura => Make("persona_aura",
+		(0f, new Color("050c18")), (0.35f, new Color("173761")), (0.65f, new Color("3f73a6")), (0.88f, new Color("93bad8")), (1f, new Color("c9dceb")));
+
 	/// <summary>金：暴击 / 撒旦耶尔。</summary>
 	public static GradientTexture1D Gold => Make("gold",
 		(0f, new Color("2a1400")), (0.4f, new Color("a8640c")), (0.75f, new Color("ffcf5a")), (1f, new Color("fffbe8")));
