@@ -70,5 +70,11 @@ public static class Warmup
 		});
 		Stage.Safe("warmup impact", () => Impact.Warm(hidden));
 		Stage.Safe("warmup blue flame", () => BlueFlame.Tongue(hidden, c, 0.5f, 0.2f));
+		Stage.Safe("warmup crush hand", () =>
+		{
+			// 毒性爆发的巨手是光线步进的大着色器：先在看不见的层里画几帧编译掉，免得第一次出牌卡一下
+			CrushHand h = new(hidden, c, new Vector2(8f, 8f));
+			Fx.FreeAfter(h.Rect, 0.2);
+		});
 	}
 }
