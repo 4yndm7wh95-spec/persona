@@ -142,7 +142,7 @@ void fragment() {
 		{
 			Sfx.Play(Sfx.PersonaFlame, 0.9f);                   // 面具蓝焰一炸
 		}
-		// 纸条拍进来的切入声去掉：眼神特写出现只用一个 battle_cutin（CutIn.Eyes，用户 2026-11-03）
+		Sfx.Play(Sfx.CutIn, 0.8f, 0.03f);                       // 纸条拍进来
 		bool broke = false;
 		Fx.Animate(root, 0, Length, t =>
 		{

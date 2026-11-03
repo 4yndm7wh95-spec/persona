@@ -167,6 +167,14 @@ void fragment() {
 			body.AddChild(n);
 			n.Position = p;
 		}
+		// 伸手攥拳（毒性爆发）：胸前那只手臂换成伸直张爪的那张（Codex 2026-11-03，layers_v7/arm_reach_extend，同画布同肩点），攥拳时换成拳头那张
+		Sprite2D? armSprite = armR.GetChildCount() > 0 ? armR.GetChild(0) as Sprite2D : null;
+		Texture2D? fistTex = clench != null ? Fx.Tex("arsene_arm_reach_fist") : null;
+		bool fistShown = false;
+		if (clench != null && armSprite != null && Fx.Tex("arsene_arm_reach_extend") is Texture2D extendTex)
+		{
+			armSprite.Texture = extendTex;
+		}
 		// 叠放顺序（layers_v7 的 z_index）：两只翅膀在身体后面，叉腰的手、胸前的手、眼睛在身体前面
 		body.MoveChild(wingB, 0);
 		body.MoveChild(wingF, 1);
@@ -216,20 +224,23 @@ void fragment() {
 			float lean = 0f, reach = 0f, beat = 0f, wingKick = 0f, stretch = 0f;
 			if (clench is (float fistAt, float crushAt))
 			{
-				// 伸手攥拳：现身的同时手臂伸向前方（身体只往前探一点）；attackAt 手臂一送 = 巨手冲出来
+				// 伸手攥拳：现身的同时把伸直张爪的手臂抬起来指向前方（身体不动）。
+				// 用户 2026-11-03：前倾只要一次 → 巨手冲出来时不再往前送，唯一一次往前顶留给捏碎
 				float rch = Ease5.OutQuint(Mathf.Clamp((time - 0.04f) / Mathf.Max(0.05f, attackAt - 0.04f), 0f, 1f));
-				float send = time >= attackAt ? Ease5.OutExpo(Mathf.Min(1f, (time - attackAt) / 0.08f)) * (1f - Ease5.OutQuint(Mathf.Clamp((time - attackAt - 0.1f) / 0.3f, 0f, 1f))) : 0f;
-				pos += new Vector2(14f * rch + 22f * send, 0f) * px;
-				lean = 0.05f * rch + 0.06f * send;
-				reach = -0.45f * rch - 0.2f * send;
+				reach = 0.45f * (1f - rch);
 				// 攥紧：手臂往回收一点、整个人绷住，越攥越抖
 				if (time >= fistAt && time < crushAt)
 				{
 					float g = Mathf.Clamp((time - fistAt) / Mathf.Max(0.05f, crushAt - fistAt), 0f, 1f);
 					float tight = Ease5.OutQuint(Mathf.Min(1f, (time - fistAt) / 0.08f));
+					if (!fistShown && armSprite != null && fistTex != null)
+					{
+						fistShown = true;
+						armSprite.Texture = fistTex;                     // 跟巨手同一刻攥拳
+					}
 					float amp = (2f + 6f * g * g) * px;
-					pos += new Vector2(-10f * tight * px + Mathf.Sin(time * 83f) * amp, Mathf.Cos(time * 67f) * amp * 0.6f);
-					reach += 0.12f * tight + Mathf.Sin(time * 71f) * 0.03f * g;
+					pos += new Vector2(Mathf.Sin(time * 83f) * amp, Mathf.Cos(time * 67f) * amp * 0.6f);
+					reach += Mathf.Sin(time * 71f) * 0.025f * g;
 					scale *= 1f - 0.02f * tight;
 					wingKick = -0.12f * tight;
 				}
@@ -241,7 +252,7 @@ void fragment() {
 					float w = 1f - Ease5.OutQuint(Mathf.Clamp((u - 0.12f) / 0.45f, 0f, 1f));
 					pos += new Vector2(40f, 6f) * px * hit * w;
 					lean += 0.12f * hit * w;
-					reach += -0.25f * hit * w;
+					reach += -0.08f * hit * w;
 					wingKick = 0.28f * hit * w;
 					stretch = 0.7f * hit * w;
 					beat = Mathf.Max(0f, 1f - u / 0.18f);

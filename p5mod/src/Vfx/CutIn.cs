@@ -315,7 +315,7 @@ void fragment() {
 			if (!hit && s >= ImpactAt)
 			{
 				hit = true;
-				Sfx.Play(Sfx.EyeCutIn, 1.0f);                        // 用户 2026-11-03：换成 P5R 的 battle_cutin（原来是弱点 WEAK 的音 + 舞台的纸条声，两层）
+				Sfx.Play(Sfx.OneMore, 1.1f);                         // 原版弱点眼神特写的音（用户 2026-11-03 试过 battle_cutin，又换回来）
 			}
 			// 碎开（用户 2026-11-01：复用结城理 mod 的玻璃碎裂，不要爪痕）：先裂纹定格 0.05s，然后横幅换成一块块碎片炸开；亚森离场、咒焰收掉、背景退掉都在碎开这一刻
 			if (!shattered && s >= SplitAt)
