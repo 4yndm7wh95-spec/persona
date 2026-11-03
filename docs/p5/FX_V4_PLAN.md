@@ -136,6 +136,8 @@
 - 眼神特写碎开那一下不明显、没有一下碎掉的震撼：原来的 ArcanaBurst 起音 42ms → art/sfx_p5/shatter_big.ogg
   （P3R 剧情玻璃爆裂起音 2ms + 镜子碎片哗啦 Mirror_Break_01 + 低频，起音 <1ms）。
 - 腐蚀波不要眼神特写和背景变化，朴素一些 → Tiers.PlainRare：按罕见召唤（亚森直接现身出手）。
+- 指挥 v2 用户仍说怪（手腕耷拉像招手、手举到头高、后仰、头大 8.9%）→ v3 改用局内已定稿的举枪瞄准帧 gun_aim_b 当底图，只把枪换成张开的手
+  （docs/codex/codex_p5_joker_command_v3.md）；收手直接走举枪的收回帧。
 - Joker 指挥动作第一版太僵（像军姿）→ 重画任务 docs/codex/codex_p5_joker_command_v2.md（随手一挥的「去吧」：肘微弯、手腕手指放松、重心前移、大衣甩开）。
   姿势检查脚本加了纯 numpy 的 scipy 替代（tools/p5/_ndimage.py），Codex 那边不用装 scipy。
 
