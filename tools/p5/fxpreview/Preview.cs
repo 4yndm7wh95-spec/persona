@@ -352,8 +352,8 @@ public partial class Preview : Node2D
 		// 毒性爆发巨手版（同 p5mod/src/Aim.cs OutbreakHand）：眼神特写 → 亚森现身 → 亚森出手 = 巨手从横幅冲出来 → 张开 → 攥拳（敌人被标记）→ 颤抖 → 捏碎 = 横幅碎开 = 全体引爆
 		["outbreak_hand"] = p =>
 		{
-			Persona.Spec spec = Persona.ArseneSpec with { Linger = CrushHand.CrushAfter + 0.5f };   // 同 Aim.PersonaFor("Outbreak")
-			float emerge = SummonStage.EvokeAt + spec.AttackAt;
+			Persona.Spec spec = Persona.ArseneSpec with { First = 18, Linger = CrushHand.CrushAfter + 0.5f };   // 同 Aim.PersonaFor("Outbreak")
+			float emerge = 0.3f + spec.AttackAt;                                                  // 同 Aim.OutbreakEmerge
 			float hit = 0.04f + emerge + CrushHand.CrushAfter;                                    // 同 Aim.HitFor
 			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
 			Vector2[] es = { Enemy2, Enemy, Enemy3 };
@@ -374,9 +374,9 @@ public partial class Preview : Node2D
 					PoisonFx.Squeeze(p._front, targets);
 				});
 			});
-			p.At(0.34 + SummonStage.EvokeAt, () =>
+			p.At(0.34 + 0.3, () =>
 			{
-				SummonStage.Beat(p._front, Pose(1010, 215), p._back, 1f, Persona.ChestOf(spec, JokerFeet, tall));
+				Sfx.Play(Sfx.PersonaFlame, 0.8f);
 				Persona.Show(spec, p._back, JokerFeet, tall);
 			});
 			for (int i = 0; i < es.Length; i++)

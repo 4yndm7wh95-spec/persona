@@ -165,7 +165,7 @@ void fragment() {
 				ao *= clamp(0.4 + map(pw + n * 0.15 * hs) / (0.15 * hs) * 0.6, 0.0, 1.0);
 				float key = smoothstep(0.05, 0.75, dot(n, normalize(vec3(-0.45, 0.75, -0.5))));
 				float fres = 1.0 - abs(dot(n, rd));
-				vec3 light = vec3(0.13, 0.01, 0.022) * key * (0.6 + 0.4 * nz) + vec3(1.0, 0.3, 0.26) * smoothstep(0.62, 0.88, fres) * 0.85;   // 舞台是红黑的：主体压黑，轮廓光更亮更暖，才从背景里跳出来
+				vec3 light = vec3(0.13, 0.01, 0.022) * key * (0.6 + 0.4 * nz) + vec3(1.0, 0.34, 0.28) * smoothstep(0.6, 0.86, fres) * 1.2;   // 舞台是红黑的：主体压黑，轮廓光更亮更暖，才从背景里跳出来
 				light *= ao * mix(1.0, 0.75, smoothstep(band_z - 2.5, band_z - 0.4, pw.z));
 				col += T * light * 0.9;
 				T *= 1.0 - 0.6 * dens;
@@ -187,7 +187,7 @@ void fragment() {
 				vec3 smoke = vec3(0.004, 0.0, 0.002);
 				// 发光按「视线在发光层里走了多远」累积（不乘不透明度）：正面只穿过一层 → 暗，擦边穿过好几层 → 亮
 				float a = 1.0 - exp(-dens * dt / hs * 130.0);
-				col += T * (a * smoke + emit * dens * dt / hs * 13.0);
+				col += T * (a * smoke + emit * dens * dt / hs * 17.0);      // 用户 2026-11-03：手再看清一点 → 薄处透光加一档
 				T *= 1.0 - a;
 			}
 			t += stepv;
@@ -209,7 +209,7 @@ void fragment() {
 		float fh = clamp(lift / (sz * 0.58), 0.0, 1.0);
 		float fa = cover * smoothstep(0.15, 0.55, tn2 * 0.6 + (1.0 - fh) * 0.7) * (0.5 + 0.5 * (1.0 - fh));
 		vec3 fc = texture(lut, vec2(clamp(0.92 - fh * 0.75 + (tn2 - 0.5) * 0.2, 0.0, 1.0), 0.5)).rgb;
-		acc.rgb += (1.0 - acc.a) * fc * fa * 0.95;
+		acc.rgb += (1.0 - acc.a) * fc * fa * 1.15;
 		acc.a += (1.0 - acc.a) * fa * 0.95;
 	}
 	// 背光：手后面一圈暗红辉光，把手从横幅上托出来
@@ -255,7 +255,7 @@ void fragment() {
 	// 用户 2026-11-03：亚森还是要出来 → 亚森照常召唤现身，他往前出手的那一下（emergeAt）巨手从横幅里冲出来（这只手就是他的咒怨）。
 	// 下面的时刻都从手冲出来那一刻算；CrushAfter = 冲出来到捏碎 = 眼神特写碎开 = 游戏结算毒伤 = 所有敌人咒火引爆。
 
-	public const float ArriveAfter = 0.18f, GrabAfter = 0.28f, FistAfter = 0.44f, CrushAfter = 0.8f, FadeTime = 0.45f;
+	public const float ArriveAfter = 0.14f, GrabAfter = 0.2f, FistAfter = 0.34f, CrushAfter = 0.62f, FadeTime = 0.45f;   // 用户 2026-11-03：太拖沓 → 压紧
 	private const float Focal = 1.25f;
 
 	/// <summary>手的一个姿态（着色器参数）。</summary>

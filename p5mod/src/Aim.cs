@@ -321,7 +321,7 @@ public static class Aim
 
 	public static Persona.Spec PersonaFor(string cardName) => cardName switch
 	{
-		"Outbreak" => Persona.ArseneSpec with { Linger = CrushHand.CrushAfter + 0.5f },   // 巨手版：亚森出手 = 手冲出来，捏碎后再停 0.5s 退场
+		"Outbreak" => Persona.ArseneSpec with { First = 18, Linger = CrushHand.CrushAfter + 0.5f },   // 巨手版：一现身就出手（0.25s）= 手冲出来，捏碎后再停 0.5s 退场
 		var n when Grips(n) => Persona.ArseneSpec with { Linger = 1.1f },   // 伸手抓人：等手收回来再走
 		_ => Persona.ArseneSpec,
 	};
@@ -334,8 +334,14 @@ public static class Aim
 		? 0.04f + OutbreakEmerge + CrushHand.CrushAfter               // 巨手版：结算 = 捏碎那一刻
 		: 0.04f + (Tiers.For(card) == Tier.Rare ? SummonStage.EvokeAt : 0f) + PersonaFor(card).AttackAt;
 
-	/// <summary>毒性爆发：巨手从横幅里冲出来的时刻（眼神特写开始后几秒）= 亚森现身后往前出手的那一下。</summary>
-	private static float OutbreakEmerge => SummonStage.EvokeAt + PersonaFor("Outbreak").AttackAt;
+	/// <summary>
+	/// 毒性爆发：亚森现身的时刻（眼神特写开始后几秒）和巨手冲出来的时刻（= 亚森出手）。
+	/// 用户 2026-11-03：原来是两个高潮（召唤那一拍 + 捏碎）太拖沓 → 只留一个高潮：亚森不走召唤那一拍（顿帧、震屏、面具喷光），
+	/// 横幅一出来就伴着蓝焰声现身，一现身就出手捏碎。
+	/// </summary>
+	private const float OutbreakShow = 0.3f;
+
+	private static float OutbreakEmerge => OutbreakShow + PersonaFor("Outbreak").AttackAt;
 
 	/// <summary>
 	/// 毒性爆发（用户 2026-11-03 创意）：舞台 + 眼神特写 → 亚森照常召唤现身（拍 1，但眼神特写不碎）→ 亚森往前出手，横幅里冲出一只咒烟巨手（CrushHand）
@@ -356,10 +362,9 @@ public static class Aim
 				SummonStage.Play(back, fr, head);
 			}
 			CutIn.Eyes(back);
-			Vector2 chest = Persona.ChestOf(spec, feet, tall * 1.35f, face);
-			Fx.After(back, SummonStage.EvokeAt, () =>
+			Fx.After(back, OutbreakShow, () =>
 			{
-				SummonStage.Beat(Joker.FxLayer() ?? back, head, back, face, chest);
+				Sfx.Play(Sfx.PersonaFlame, 0.8f);
 				Persona.Show(spec, back, feet, tall * 1.35f, face);
 			});
 			CrushHand.Outbreak(back, OutbreakEmerge, onFist: () =>
