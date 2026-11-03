@@ -126,7 +126,7 @@ void fragment() {
 	vec3 rd = normalize(vec3(uv, focal));
 	float hs = hand_size;
 	float m;
-	float t = enter(rd, 0.09 * hs, m);
+	float t = enter(rd, 0.3 * hs, m);
 	vec3 col = vec3(0.0);
 	float T = 1.0;                                            // 透过率（从前往后累积）
 	if (t > 0.0) {
@@ -135,12 +135,22 @@ void fragment() {
 		float dt = 0.022 * hs;
 		bool shaded = false;
 		t += fract(sin(dot(UV * 1000.0, vec2(12.9898, 78.233)) + clock) * 43758.5453) * dt;     // 起点抖一下：不然固定步长切出一圈圈木纹
-		for (int i = 0; i < 40; i++) {
+		for (int i = 0; i < 64; i++) {
 			vec3 pw = rd * t;
 			if (pw.z > band_z || T < 0.02) break;
 			vec3 lp = to_local(pw);
 			float s = map(pw) / hs;
-			if (s > 0.12) { t += (s - 0.08) * hs; continue; }
+			if (s > 0.32) { t += (s - 0.28) * hs; continue; }
+			float stepv = s > 0.06 ? 0.045 * hs : dt;                  // 手外面的烟丝走大步，进到手里走小步
+			// 手四周的咒烟丝：离手 0.3 以内，被往上飘的噪声撕成一缕一缕（手不再「形单影只」）
+			float wn = fbm(lp * vec3(2.4, 1.3, 2.4) + vec3(0.0, -clock * 1.3, clock * 0.2));
+			float aura = smoothstep(0.3, 0.02, s) * smoothstep(0.5, 0.72, wn) * step(0.0, s) * smoothstep(0.0, 0.5, lp.y);   // 手腕以下不出烟（不然像一摊血）
+			if (aura > 0.001) {
+				// 以暗烟为主（一缕缕黑烟），只在烟丝最浓的地方带一点暗红
+				float aa = 1.0 - exp(-aura * stepv / hs * 9.0);
+				col += T * (aa * vec3(0.025, 0.0, 0.008) + vec3(0.5, 0.025, 0.055) * aura * smoothstep(0.62, 0.8, wn) * stepv / hs * 1.2);
+				T *= 1.0 - aa;
+			}
 			vec3 fp = lp * 5.0 + vec3(0.0, -clock * 1.4, clock * 0.3);
 			float nz = fbm(fp);
 			float sd = s + (nz - 0.5) * 0.12;
@@ -155,7 +165,7 @@ void fragment() {
 				float key = smoothstep(0.05, 0.75, dot(n, normalize(vec3(-0.45, 0.75, -0.5))));
 				float fres = 1.0 - abs(dot(n, rd));
 				vec3 light = vec3(0.26, 0.022, 0.042) * key * (0.6 + 0.4 * nz) + vec3(0.9, 0.07, 0.1) * smoothstep(0.6, 0.9, fres) * 0.5;
-				light *= ao * mix(1.0, 0.3, smoothstep(band_z - 2.5, band_z - 0.4, pw.z));
+				light *= ao * mix(1.0, 0.75, smoothstep(band_z - 2.5, band_z - 0.4, pw.z));
 				col += T * light * 0.9;
 				T *= 1.0 - 0.6 * dens;
 			}
@@ -171,7 +181,7 @@ void fragment() {
 				// 攥紧：拳心里有一团红光，从指缝往外透
 				emit += vec3(1.0, 0.3, 0.22) * grip * exp(-length(lp - vec3(0.0, 0.75, -0.3)) * 3.5) * 2.5;
 				// 越靠近横幅（越深）越暗，穿出的地方烧红
-				emit *= mix(1.0, 0.35, smoothstep(band_z - 2.5, band_z - 0.4, pw.z));
+				emit *= mix(1.0, 0.75, smoothstep(band_z - 2.5, band_z - 0.4, pw.z));
 				emit += vec3(1.0, 0.2, 0.15) * smoothstep(band_z - 0.3, band_z, pw.z) * 3.0;
 				vec3 smoke = vec3(0.012, 0.0, 0.004);
 				// 发光按「视线在发光层里走了多远」累积（不乘不透明度）：正面只穿过一层 → 暗，擦边穿过好几层 → 亮
@@ -179,18 +189,32 @@ void fragment() {
 				col += T * (a * smoke + emit * dens * dt / hs * 13.0);
 				T *= 1.0 - a;
 			}
-			t += dt;
+			t += stepv;
 		}
 	}
-	float handA = 1.0 - T;
-	// 剪影外的咒火：贴着剪影的一圈，被往上卷的噪声撕成火舌
+	vec4 acc = vec4(col, 1.0 - T);                            // 预乘颜色，下面一层层垫在手后面
+	float sz = hs * focal / max(hand_pos.z, 0.5);              // 手的 1 个单位在屏幕上多大（uv 单位）
+	float mu = m * focal;                                      // 离剪影多远（uv 单位）
 	float sn = texture(noise, UV * vec2(2.5, 1.6) + vec2(0.0, clock * 0.3)).r;
-	float tn = texture(noise, vec2(UV.x * 7.0 + (sn - 0.5) * 0.4, UV.y * 1.4 + clock * 1.5)).r;
-	float tn2 = texture(noise, vec2(UV.x * 15.0 + 0.3, UV.y * 2.5 + clock * 2.3)).r;
-	float halo = 1.0 - smoothstep(0.0, 0.045, m);
-	float heat = halo * (0.55 + 0.9 * tn) + (tn2 - 0.5) * 0.3 - 0.3;
-	float flame = smoothstep(0.05, 0.45, heat) * T;
-	vec3 fc = texture(lut, vec2(clamp(0.25 + heat * 0.7, 0.0, 1.0), 0.5)).rgb;
+	float tn = texture(noise, vec2(UV.x * 9.0 + (sn - 0.5) * 0.5, UV.y * 0.7 + clock * 1.3)).r;
+	float tn2 = texture(noise, vec2(UV.x * 14.0 + 0.3, UV.y * 2.2 + clock * 2.4)).r;
+	// 往上窜的咒火：这个像素往下 lift 的地方是不是手 → 火舌从轮廓往上烧（lift 随噪声起伏 = 一条条火舌，近景也看得见）
+	if (mu < sz * 0.8 && acc.a < 0.98) {
+		float lift = sz * (0.03 + 0.55 * tn * tn);
+		vec2 uv2 = uv - vec2((tn2 - 0.5) * 0.6 * lift, lift);
+		float m2;
+		float t2 = enter(normalize(vec3(uv2, focal)), 0.002, m2);
+		float cover = t2 > 0.0 ? 1.0 : 1.0 - smoothstep(0.0, sz * 0.04, m2 * focal);
+		float fh = clamp(lift / (sz * 0.58), 0.0, 1.0);
+		float fa = cover * smoothstep(0.15, 0.55, tn2 * 0.6 + (1.0 - fh) * 0.7) * (0.5 + 0.5 * (1.0 - fh));
+		vec3 fc = texture(lut, vec2(clamp(0.92 - fh * 0.75 + (tn2 - 0.5) * 0.2, 0.0, 1.0), 0.5)).rgb;
+		acc.rgb += (1.0 - acc.a) * fc * fa * 0.95;
+		acc.a += (1.0 - acc.a) * fa * 0.95;
+	}
+	// 背光：手后面一圈暗红辉光，把手从横幅上托出来
+	float glow = exp(-mu / (sz * 0.1)) * 0.26 * (0.8 + 0.4 * sn);
+	acc.rgb += (1.0 - acc.a) * vec3(0.75, 0.04, 0.07) * glow;
+	acc.a += (1.0 - acc.a) * glow;
 	// 横幅上手臂穿出来的那一圈：红色的裂口 + 往外的裂纹
 	vec3 q = rd * (band_z / rd.z);
 	float da = arm(q) / band_z;
@@ -198,10 +222,11 @@ void fragment() {
 	vec2 rel = q.xy - (hand_pos.xy + (elbow.xy - hand_pos.xy) * (band_z - hand_pos.z) / (elbow.z - hand_pos.z));
 	float cr = texture(noise, vec2(atan(rel.y, rel.x) * 1.3, 0.37)).r;
 	float cracks = (1.0 - smoothstep(0.0, 0.03, abs(fract(cr * 7.0) - 0.5))) * exp(-max(da, 0.0) * 16.0) * step(0.0, da);
-	float pa = clamp(ring * 0.9 + cracks * 0.7, 0.0, 1.0) * T;
-	vec3 rgb = col + fc * flame * 0.9 + vec3(1.0, 0.2, 0.16) * (0.6 + 0.6 * ring) * pa;
-	float a = clamp(handA + flame * 0.9 + pa, 0.0, 1.0);
-	rgb = mix(rgb, vec3(1.0, 0.85, 0.8) * a, flash * 0.7);
+	float pa = clamp(ring * 0.9 + cracks * 0.7, 0.0, 1.0);
+	acc.rgb += (1.0 - acc.a) * vec3(1.0, 0.2, 0.16) * (0.6 + 0.6 * ring) * pa;
+	acc.a += (1.0 - acc.a) * pa;
+	float a = clamp(acc.a, 0.0, 1.0);
+	vec3 rgb = mix(acc.rgb, vec3(1.0, 0.85, 0.8) * a, flash * 0.7);
 	COLOR = vec4(rgb / max(a, 0.001), a * alpha);
 }" };
 

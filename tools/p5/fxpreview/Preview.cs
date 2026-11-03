@@ -241,7 +241,7 @@ public partial class Preview : Node2D
 				CrushHand h = new(p._front, new Vector2(960f * (i % 2), 540f * (i / 2)), new Vector2(960f, 540f));
 				h.Set("hand_pos", st[i].pos); h.Set("tilt", st[i].tilt); h.Set("roll", st[i].roll); h.Set("curl", st[i].curl);
 				h.Set("thumb", st[i].thumb); h.Set("spread", st[i].spread); h.Set("grip", st[i].grip);
-				h.Set("elbow", st[i].pos + new Vector3(-0.5f, -1.3f, 6f));
+				h.Set("elbow", st[i].pos + new Vector3(-0.3f, -0.6f, 6f));
 				ColorRect bg = new() { Color = new Color(0.55f, 0.52f, 0.5f), Size = new Vector2(960f, 300f), Position = new Vector2(960f * (i % 2), 540f * (i / 2) + 110f) };
 				p._front.AddChild(bg); p._front.MoveChild(bg, h.Rect.GetIndex());          // 假的横幅：看手从横幅里穿出来
 			}
