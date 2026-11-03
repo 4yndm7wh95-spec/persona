@@ -758,5 +758,21 @@
    117
   ],
   "anchor_foot": "rear"
+ },
+ "summon_command_a": {
+  "scale": 1.0,
+  "offset": [
+   343,
+   99
+  ],
+  "anchor_foot": "rear"
+ },
+ "summon_command_mid_a": {
+  "scale": 1.0,
+  "offset": [
+   342,
+   99
+  ],
+  "anchor_foot": "rear"
  }
 }
