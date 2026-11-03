@@ -113,7 +113,7 @@ void fragment() {
 		Evoke.Fire(front, back ?? front, mask, dir, 1f);
 		// 碎玻璃这一拍（用户 2026-11-03：暴击音在后面毒爆里又出现，像是同一下）：不用暴击音，换成游戏自带的玻璃音效
 		// （缺陷者玻璃球，P3 mod 召唤器碎玻璃用的就是它）叠在 CutIn 的玻璃碎裂上；暴击音只留给毒爆等收尾的大拍
-		Stage.PlayEvent?.Invoke("event:/sfx/characters/defect/defect_glass_channel", 1f);
+		// 玻璃声在 CutIn 的碎裂里（P3 召唤器那一枪），这里不再叠游戏自带的玻璃音，免得糊成一团
 		Sfx.Play(Sfx.SubBoom, 1f);
 		Quiet = Stage.NowMs() + 400;
 	}

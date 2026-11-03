@@ -447,7 +447,7 @@ void fragment() { COLOR = vec4(COLOR.rgb, COLOR.a * step(0.5, texture(mask, SCRE
 		Fx.After(back, 0.05, () =>
 		{
 			hideBand();
-			Sfx.Play(Sfx.Shatter, 1.1f);                             // 「啪」地碎开（用户 2026-11-03：原来那声不明显、没有震撼感）
+			Sfx.Play(Sfx.EvokerShatter, 1.1f);                       // P3 mod 召唤器那一枪的碎裂声（用户 2026-11-03）                             // 「啪」地碎开（用户 2026-11-03：原来那声不明显、没有震撼感）
 			Glow.Flash(back, hit, Pal5.Hot, screen.X * 0.35f, 0.18f);
 			foreach (Vector2[] piece in pieces)
 			{

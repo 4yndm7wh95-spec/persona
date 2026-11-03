@@ -152,8 +152,8 @@ public static class PoisonFx
 		ulong now = Stage.NowMs();
 		if (now - _lastBlast > 150)
 		{
-			Sfx.Play(Sfx.Critical, 0.8f);
-			Sfx.Play(Sfx.SubBoom, 0.8f);
+			Sfx.Play(Sfx.CurseBlast, 0.75f);                         // 原来的暴击音太吵太刺耳（用户 2026-11-03）：换成滤掉高频的低沉爆响
+			Sfx.Play(Sfx.SubBoom, 0.5f);
 			global::P5Joker.Impact.Confirm(layer, null, at, Vector2.Up, Weight.Finale);
 		}
 		_lastBlast = now;

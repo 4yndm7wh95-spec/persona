@@ -115,7 +115,9 @@ SFX = {
     "continuas_damage": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0020.ogg",
     "sub_boom": ROOT / "art/sfx_p5/sub_boom.ogg",
     "shatter_big": ROOT / "art/sfx_p5/shatter_big.ogg",                # eye cut-in shatter (user 2026-11-03)
-    "curse_soft": ROOT / "art/sfx_p5/curse_soft.ogg",                  # corrosive wave / poison tick (user: harsh)
+    "curse_soft": ROOT / "art/sfx_p5/curse_soft.ogg",
+    "p3_evoker_shatter": ROOT / "art/sfx_p5/p3_evoker_shatter.ogg",    # eye cut-in shatter = the P3 mod evoker shot (user 2026-11-03)
+    "curse_blast": ROOT / "art/sfx_p5/curse_blast.ogg",                # Outbreak blast (user: critical was too loud / harsh)                  # corrosive wave / poison tick (user: harsh)
     "crush": ROOT / "art/sfx_p5/crush.ogg",                          # synthesized crunch for the hand crush                      # synthesized sub hit (ffmpeg aevalsrc)
 }
 

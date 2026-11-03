@@ -29,6 +29,10 @@ public static class Sfx
 		SwishLow = "swish_04",          // 低沉的挥动（#149，缩回 / 转杖）
 		Shatter = "shatter_big",        // 眼神特写碎开（用户 2026-11-03：原来的 ArcanaBurst 起音 42ms、不明显、没有一下碎掉的震撼）：
 		                                //  P3R 剧情玻璃爆裂（起音 2ms）+ 镜子碎片哗啦（Mirror_Break_01）+ 低频，合成 art/sfx_p5/shatter_big.ogg
+		EvokerShatter = "p3_evoker_shatter", // 眼神特写碎开（用户 2026-11-03：「直接用 P3R 之前那个」= P3 mod 召唤器那一枪：闷枪声 + 心灵碎裂玻璃 + 涌起的风 + 垫音；
+		                                     //  原来是代码实时合成的，tools 里离线渲成 art/sfx_p5/p3_evoker_shatter.ogg）
+		CurseBlast = "curse_blast",     // 毒爆引爆（用户：原来的暴击音太吵太刺耳——damage_critical 2.1s、能量中心 5kHz）：
+		                                //  暗黑技能音 + 重拳都滤掉高频 + 低频，art/sfx_p5/curse_blast.ogg
 		CurseSoft = "curse_soft",       // 柔和的咒怨闷响（暗黑系技能音滤掉 1.6kHz 以上 + 低频，art/sfx_p5/curse_soft.ogg）：
 		                                //  腐蚀波 / 每回合毒伤用（用户：腐蚀波刺耳——continuas_damage 能量中心 7kHz，连抽时一堆叠在一起）
 		KnifeRing = "sword_sheath",     // 收刀入鞘的金属「锵」（#48）：转刀落回手里握住的那一下（用户 2026-11-02：转刀声像空转、没分量）
