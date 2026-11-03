@@ -68,8 +68,11 @@ KNIFE_CUT = [("slash_a10", .12, 0), ("knife_top_g", .2, 0), ("slash_follow_a", .
              ("slash_recover_a", .08), ("idle_a3", .1, .06)]
 # the command (user 2026-11-03): command frames are gun_aim_b / gun_arm_mid_h with the gun swapped for an open hand and
 # the left hand pocketed, so the way back is the gun's holster path (arm down -> hand to the pocket -> idle)
-COMMAND = [("summon_command_mid_a", .04, .02), ("summon_command_a", .55), ("summon_command_mid_a", .07),
-           ("pocket_in_e", .1, .04), ("idle_a3", .14, .08)]
+# 2026-11-03 bridge frames (Codex; user: hand-on-mask -> command jumped): hand leaves the mask -> chest -> thrust. The way
+# in skips summon_command_mid_a (its arm hangs low-forward: the hand would dip and come back up); it is only used going back
+BRIDGE = [("summon_bridge1_a", .035, .015), ("summon_bridge3_a", .035, .015), ("summon_bridge2_a", .04, .03)]
+COMMAND = BRIDGE + [("summon_command_a", .55, .02), ("summon_command_mid_a", .07),
+                    ("pocket_in_e", .1, .04), ("idle_a3", .14, .08)]
 IDLE_LOOP = 11.0   # 8 s idle (+ blinks), then the glove tug, ending back on idle_a3
 ANIMS = {
     "idle_loop": [("idle_a3", 8.6)] + GLOVE + [("idle_a3", IDLE_LOOP - 8.6 - sum(f[1] for f in GLOVE))],
@@ -125,10 +128,10 @@ ANIMS = {
     # 2026-11-03 (user): no more flinging the arm back after the rip - hold the rip through the eye cut-in shatter (0.56 s),
     # then the command (right arm thrust at the enemy, palm down; Arsene attacks at ~0.93 s while it is held)
     "cast_big": [("idle_a3", .02)] + [(n, .045) for n in SUMMON_UP] + [("summon_hold_a", .14), ("summon_rip_a2", .24)]
-                + [("summon_command_mid_a", .05, .03), ("summon_command_a", .62)] + COMMAND[2:],
+                + BRIDGE + [("summon_command_a", .52, .02)] + COMMAND[len(BRIDGE) + 1:],
     # 2026-11-03 (user): after the hand on the mask, Joker thrusts his right arm at the enemy, palm down, left hand in the
     # pocket - directing the Persona (Arsene attacks at ~0.41 s, inside the held command pose)
-    "cast": [("idle_a3", .02)] + [(n, .06) for n in SUMMON_UP] + [("summon_hold_a", .08)] + COMMAND,
+    "cast": [("idle_a3", .02)] + [(n, .05) for n in SUMMON_UP] + [("summon_hold_a", .07)] + COMMAND,
     "hurt": [("hurt_flinch_a", .05, 0), ("hurt_a4", .25), ("hurt_recover_b1", .1), ("hurt_recover_b2", .1),
              ("idle_a3", .2, .12)],
     "die": [("die_buckle_a", .12, .06), ("die_kneel_a2", .6), ("die_fall_a", .15), ("die_down_b", 1.0)],
