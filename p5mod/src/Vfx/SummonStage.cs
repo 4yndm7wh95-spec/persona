@@ -122,7 +122,7 @@ void fragment() {
 	public static ulong Quiet;
 
 	/// <summary>放一次召唤舞台。back = 背景特效层；front = 最前面一层；head = Joker 头部（屏幕坐标），集中线的中心。</summary>
-	public static void Play(Control back, Control front, Vector2 head)
+	public static void Play(Control back, Control front, Vector2 head, bool maskFlame = true)
 	{
 		Vector2 screen = Fx.Screen(back);
 		TearSeed = Fx.Rand(0f, 100f);
@@ -138,8 +138,11 @@ void fragment() {
 		m.SetShaderParameter("seed", Fx.Rand(0f, 100f));
 		m.SetShaderParameter("tseed", TearSeed);
 		Fx.Clock(rect);
-		Sfx.Play(Sfx.PersonaFlame, 0.9f);                       // 面具蓝焰一炸
-		Sfx.Play(Sfx.CutIn, 0.8f, 0.03f);                       // 纸条拍进来
+		if (maskFlame)
+		{
+			Sfx.Play(Sfx.PersonaFlame, 0.9f);                   // 面具蓝焰一炸
+		}
+		// 纸条拍进来的切入声去掉：眼神特写出现只用一个 battle_cutin（CutIn.Eyes，用户 2026-11-03）
 		bool broke = false;
 		Fx.Animate(root, 0, Length, t =>
 		{

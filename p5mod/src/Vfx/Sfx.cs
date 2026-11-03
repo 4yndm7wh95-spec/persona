@@ -18,6 +18,7 @@ public static class Sfx
 	public const string
 		OneMore = "battle_onemore",     // 弱点 / 1 MORE 眼神特写的「WEAK」音（SOUND_J SYSTEM.ACB #12）
 		CutIn = "cutin",                // 切入（#178）
+		EyeCutIn = "battle_cutin",      // 眼神特写出现（用户 2026-11-03 指定；P5R SYSTEM.AWB 第 18 个流，research/p5r/audio/eye_cutin）
 		PersonaFlame = "persona_flame", // Persona 蓝焰（#44）
 		Curse = "skill_ankoku",         // 暗黑系技能音（SKILLSE/FLOATING/F_ANKOKU，咒怨候选）
 		Glass = "glass_burst",          // 玻璃碎裂（P3R ShuffleTime_ArcanaBurst，碎法移植自结城理 mod）

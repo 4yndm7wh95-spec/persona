@@ -359,12 +359,13 @@ public static class Aim
 			CutIn.SplitAt = OutbreakEmerge + CrushHand.CrushAfter;      // 横幅碎开 = 捏碎
 			if (Joker.FxLayer() is Control fr)
 			{
-				SummonStage.Play(back, fr, head);
+				SummonStage.Play(back, fr, head, maskFlame: false);     // 用户 2026-11-03：亚森出现只响一声蓝焰（原来舞台一声 + 现身一声）
 			}
 			CutIn.Eyes(back);
 			Fx.After(back, OutbreakShow, () =>
 			{
-				Sfx.Play(Sfx.PersonaFlame, 0.8f);
+				Sfx.Play(Sfx.PersonaFlame, 0.5f);                       // 和退场同一个声、同样的音量
+				ArseneFx.NextClench = (spec.AttackAt + CrushHand.FistAfter, spec.AttackAt + CrushHand.CrushAfter);   // 不扑：伸手攥拳，跟巨手同步
 				Persona.Show(spec, back, feet, tall * 1.35f, face);
 			});
 			CrushHand.Outbreak(back, OutbreakEmerge, onFist: () =>

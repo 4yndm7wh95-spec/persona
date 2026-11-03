@@ -127,7 +127,8 @@ ANIMS = {
     # 2026-10-29 (user: the big summon dragged): ~2.3 s -> ~1.3 s; the release pose (arm flung out) still holds longest
     # 2026-11-03 (user): no more flinging the arm back after the rip - hold the rip through the eye cut-in shatter (0.56 s),
     # then the command (right arm thrust at the enemy, palm down; Arsene attacks at ~0.93 s while it is held)
-    "cast_big": [("idle_a3", .02)] + [(n, .045) for n in SUMMON_UP] + [("summon_hold_a", .14), ("summon_rip_a2", .24)]
+    # 2026-11-03 (user): the mask rip (summon_rip_a2) is a retired pose - hold the mask, then straight into the command
+    "cast_big": [("idle_a3", .02)] + [(n, .045) for n in SUMMON_UP] + [("summon_hold_a", .14)]
                 + BRIDGE + [("summon_command_a", .52, .02)] + COMMAND[len(BRIDGE) + 1:],
     # 2026-11-03 (user): after the hand on the mask, Joker thrusts his right arm at the enemy, palm down, left hand in the
     # pocket - directing the Persona (Arsene attacks at ~0.41 s, inside the held command pose)

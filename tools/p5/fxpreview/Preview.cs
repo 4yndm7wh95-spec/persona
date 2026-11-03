@@ -361,7 +361,7 @@ public partial class Preview : Node2D
 			p.At(0.34, () =>
 			{
 				CutIn.SplitAt = emerge + CrushHand.CrushAfter;
-				SummonStage.Play(p._back, p._front, Pose(1010, 215));
+				SummonStage.Play(p._back, p._front, Pose(1010, 215), maskFlame: false);
 				CutIn.Eyes(p._back);
 				CrushHand.Outbreak(p._back, emerge, onFist: () =>
 				{
@@ -376,7 +376,8 @@ public partial class Preview : Node2D
 			});
 			p.At(0.34 + 0.3, () =>
 			{
-				Sfx.Play(Sfx.PersonaFlame, 0.8f);
+				Sfx.Play(Sfx.PersonaFlame, 0.5f);
+				ArseneFx.NextClench = (spec.AttackAt + CrushHand.FistAfter, spec.AttackAt + CrushHand.CrushAfter);   // 同 Aim.OutbreakHand
 				Persona.Show(spec, p._back, JokerFeet, tall);
 			});
 			for (int i = 0; i < es.Length; i++)

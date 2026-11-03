@@ -108,8 +108,16 @@ void fragment() {
 	/// <summary>
 	/// feet = Joker 脚底，height = 亚森身高（屏幕像素），attackAt / exitAt = 现身后几秒出手 / 退场（Persona.Spec）。
 	/// </summary>
+	/// <summary>
+	/// 下一次现身改用「伸手攥拳」（毒性爆发巨手版，用户 2026-11-03）：不扑出去，现身时就把手臂伸向前方、身体基本不动；
+	/// attackAt 手臂往前一送（巨手冲出来）→ fistAt 跟巨手一起攥紧、越攥越抖 → crushAt 往前一顶（捏碎）。时刻都从现身算。用一次就清掉。
+	/// </summary>
+	public static (float FistAt, float CrushAt)? NextClench;
+
 	public static void Show(Control back, Vector2 feet, float height, float facing, float attackAt, float exitAt)
 	{
+		(float FistAt, float CrushAt)? clench = NextClench;
+		NextClench = null;
 		float k = height / (BodyToe - BodyTop);                // 全图像素 → 屏幕
 		// 飘在 Joker 左后方、离开一段距离，脚尖大约在 Joker 腰的高度（沿用用户对 0.7 版亚森站位的意见：别太近、别太高、再往左）
 		Vector2 toeScreen = feet + new Vector2(-0.62f * height * facing, -0.3f * height);   // v7 两翼垂着、扑出去时别压到 Joker 身上
@@ -206,7 +214,45 @@ void fragment() {
 			pos.Y += Mathf.Sin(time * 3.2f) * 7f * px;
 			float flap = Mathf.Sin(time * 4.1f) * 0.05f;
 			float lean = 0f, reach = 0f, beat = 0f, wingKick = 0f, stretch = 0f;
-			if (time >= windUp && time < attackAt)
+			if (clench is (float fistAt, float crushAt))
+			{
+				// 伸手攥拳：现身的同时手臂伸向前方（身体只往前探一点）；attackAt 手臂一送 = 巨手冲出来
+				float rch = Ease5.OutQuint(Mathf.Clamp((time - 0.04f) / Mathf.Max(0.05f, attackAt - 0.04f), 0f, 1f));
+				float send = time >= attackAt ? Ease5.OutExpo(Mathf.Min(1f, (time - attackAt) / 0.08f)) * (1f - Ease5.OutQuint(Mathf.Clamp((time - attackAt - 0.1f) / 0.3f, 0f, 1f))) : 0f;
+				pos += new Vector2(14f * rch + 22f * send, 0f) * px;
+				lean = 0.05f * rch + 0.06f * send;
+				reach = -0.45f * rch - 0.2f * send;
+				// 攥紧：手臂往回收一点、整个人绷住，越攥越抖
+				if (time >= fistAt && time < crushAt)
+				{
+					float g = Mathf.Clamp((time - fistAt) / Mathf.Max(0.05f, crushAt - fistAt), 0f, 1f);
+					float tight = Ease5.OutQuint(Mathf.Min(1f, (time - fistAt) / 0.08f));
+					float amp = (2f + 6f * g * g) * px;
+					pos += new Vector2(-10f * tight * px + Mathf.Sin(time * 83f) * amp, Mathf.Cos(time * 67f) * amp * 0.6f);
+					reach += 0.12f * tight + Mathf.Sin(time * 71f) * 0.03f * g;
+					scale *= 1f - 0.02f * tight;
+					wingKick = -0.12f * tight;
+				}
+				// 捏碎：往前一顶，再慢慢松开回到待机
+				if (time >= crushAt)
+				{
+					float u = time - crushAt;
+					float hit = Ease5.OutExpo(Mathf.Min(1f, u / 0.07f));
+					float w = 1f - Ease5.OutQuint(Mathf.Clamp((u - 0.12f) / 0.45f, 0f, 1f));
+					pos += new Vector2(40f, 6f) * px * hit * w;
+					lean += 0.12f * hit * w;
+					reach += -0.25f * hit * w;
+					wingKick = 0.28f * hit * w;
+					stretch = 0.7f * hit * w;
+					beat = Mathf.Max(0f, 1f - u / 0.18f);
+				}
+				if (time >= attackAt && time < crushAt + 0.3f)
+				{
+					_claw = display.GlobalPosition + armR.GetGlobalTransform() * (ClawTip - Parts[4].Pivot);
+					_clawAt = Stage.NowMs();
+				}
+			}
+			else if (time >= windUp && time < attackAt)
 			{
 				// 蓄：整个人往后收、往上提，手臂拉满，两翼高高扬起
 				float u = Ease5.OutQuint((time - windUp) / Mathf.Max(0.01f, attackAt - windUp));

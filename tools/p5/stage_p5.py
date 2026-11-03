@@ -118,6 +118,7 @@ SFX = {
     "curse_soft": ROOT / "art/sfx_p5/curse_soft.ogg",
     "p3_evoker_shatter": ROOT / "art/sfx_p5/p3_evoker_shatter.ogg",    # eye cut-in shatter = the P3 mod evoker shot (user 2026-11-03)
     "curse_blast": ROOT / "art/sfx_p5/curse_blast.ogg",                # Outbreak blast (user: critical was too loud / harsh)                  # corrosive wave / poison tick (user: harsh)
+    "battle_cutin": ROOT / "art/sfx_p5/battle_cutin.ogg",              # eye cut-in appears (user 2026-11-03; P5R SYSTEM.AWB #18, research/p5r/audio/eye_cutin)
     "crush": ROOT / "art/sfx_p5/crush.ogg",                          # synthesized crunch for the hand crush                      # synthesized sub hit (ffmpeg aevalsrc)
 }
 
