@@ -1,0 +1,28 @@
+{
+  "name": "crush_open",
+  "prompt": "Game VFX sprite, Persona5 flat cel-shaded black curse hand. IMAGE1 is user's OPEN HAND photograph: use ONLY its exact frontal PALM-FACING-CAMERA gesture and finger arrangement, NOT photo texture. IMAGE2 is ONLY material/style: pure black hand with dark crimson/sharp red highlights, tendon crease shapes, very thick crisp black ink, pointed claw fingertips, NOT its sideways camera or ambient red halo. ONE giant hand coming from deep background toward viewer: palm faces camera squarely, FIVE fingers spread upward, thumb on IMAGE RIGHT as in photo, strong foreshortening (large near fingers/palm, small distant wrist receding downward). Full hand visible with margins. 1536x1792 transparent canvas. Fixed placement for four-frame animation: wrist center x768 y1390, wrist lower smoke base around x768 y1640, palm center x768 y1000, fingertips near y180, hand width about1100. Draw only a short narrowing lower forearm that dissolves into a few black/dark-red curse smoke ribbons at lower center; smoke is NOT a surrounding glow cloud. Solid opaque black palm, hard cel-shaded red accent/vein planes; no realistic skin, no3D. No object in hand, no eyes banner, no blood, wound, bones, text, ground, shadow, background or HALO. TRUE RGBA alpha ZERO outside hand and discrete smoke shapes, no ambient red soft light. Single hand only. Keep orientation and wrist/scale suitable to edit same hand gradually closing in next frames.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-2506dfc3-f500-4cf9-b573-f52a2363e374.png",
+  "references": [
+    "art/p5/fx/v4/crush_hand/ref_user_open.jpg",
+    "art/p5/fx/v4/crush_hand/ref_style_curse_hand.png"
+  ],
+  "raw_size": [
+    948,
+    1659
+  ],
+  "delivery_size": [
+    1536,
+    1792
+  ],
+  "mode": "RGBA",
+  "generation_count": 1,
+  "redraw_count": 0,
+  "postprocess": "whole-canvas sizing to 1536x1792 if needed; alpha<=2 cleared; no per-hand bounding-box enlargement",
+  "corner_alpha": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "transparent_pixels": 1806640
+}
