@@ -13,14 +13,18 @@ v1 像军姿，v2（art/p5/poses/summon_command_a.png）用户说「姿势还是
 对照图：art/p5/poses/ref_command_v3.png（左 gun_aim_b、中 gun_recoil_b、右被否的 v2）。
 
 【要画的】（覆盖 art/p5/poses/ 下同名文件；旧版在 git 历史里）
-1. **summon_command_a**：以 **gun_aim_b**（final 版）为底图做**局部编辑**，只改右手：去掉手枪，换成**张开的红手套手**——
+1. **summon_command_a**：以 **gun_aim_b**（final 版）为底图做**局部编辑**，改右手（去掉手枪，换成**张开的红手套手**——
    五指张开、略微弯曲，掌心朝前偏下（对着敌人方向「去吧」），手腕和前臂延长线自然、不耷拉不上翘；手的大小和左手 / idle_a3 的手一致。
-   身体、头、左手插兜、腿、脚、大衣**完全不动**（蒙版只盖右手和手枪那一块）。
+   ）和左手（见下面「左手插兜」）；身体、头、腿、脚、大衣**完全不动**（蒙版只盖右手 + 手枪、左手这两块）。
 2. **summon_command_mid_a**：以 **gun_arm_mid_h**（final 版，掏枪途中那帧）为底图做同样的局部编辑：去掉枪，右手空手、手指松开。
    用作「扶面具 → 指挥」中间的过渡；如果 gun_arm_mid_h 的手本来就没拿枪，原样复制一份改名即可，并在报告里说明。
+**左手插兜（用户 2026-11-03 补充：不然左手看着怪）**：gun_aim_b 里左手只是半搭在胯边、红手套露出一大截，看着像悬着。
+两张都把**左手改成明确插进裤兜**：手掌和手指全进兜里，只露出手腕和袖口，袖口压着兜口，肘部自然往后弯、手臂贴着身侧。
+这一块和右手一样只用局部蒙版改，其他地方不动。
 3. 不需要收手帧：指挥完直接走举枪动作原有的收回帧（gun_arm_mid_h → pocket_in_e → idle_a3），Claude 那边接。
 
 【检查】
+- 扶面具那帧（summon_hold_a）左手是垂着的，到 summon_command_mid_a 已经插兜：这一步 sequence_check 可以 --allow（挥臂 + 插兜是一下完成的爆发动作）。
 - pose_consistency.py gun_aim_b summon_command_a、pose_consistency.py gun_arm_mid_h summon_command_mid_a：因为是局部编辑，头 / 身体 / 靴子应该几乎 1.0，有 FAIL 就说明蒙版外被改了，重画（最多 2 次）。
 - 两张加进 normalize_poses.py 的 POSES 表（比例、对齐方式抄 gun_aim_b / gun_arm_mid_h 那两行），跑一次。
 - sequence_check.py summon_hold_a summon_command_mid_a summon_command_a（挥臂这步可以 --allow）。
