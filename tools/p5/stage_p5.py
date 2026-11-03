@@ -157,6 +157,10 @@ def fx_textures():
             im = Image.open(f).convert("RGBA")
             out = f"arsene_{name}" if group.startswith("arsene") else name   # Arsene layers: res://p5joker/fx/arsene_<layer>.png
             yield out, im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS) if k != 1 else im
+    # P5R summon blue flame tongues (BE_SYOLOOP, 6x2 flipbook): Persona appear / linger / dismiss (p5mod/src/Vfx/BlueFlame.cs)
+    flame = ROOT / "research/p5r/ghost_blueflame/textures_png/bes_syo_fkomaB12kf2.dds.png"
+    if flame.exists():
+        yield "persona_flame_strip", Image.open(flame).convert("RGBA")
     eyes = Image.open(EYES).convert("RGBA")
     yield "eyes", eyes.resize((eyes.width // 2, eyes.height // 2), Image.LANCZOS)
     yield "arsene_cast", arsene_atlas()

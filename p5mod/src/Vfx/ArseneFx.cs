@@ -113,6 +113,20 @@ void fragment() {
 		Glow.Flash(back, toeScreen + new Vector2(0f, -0.45f * height), new Color(0.3f, 0.8f, 1f), height * 1.1f, 0.55f);
 		Vanilla.Burst(back, Vanilla.BigSlashSmoke, toeScreen + new Vector2(0f, -0.5f * height), 0f, height / 260f, Lut5.Smoke);
 
+		// P5R 召唤蓝焰（BlueFlame）：人物范围（全图 x 150～1300、帽顶～脚尖）换到屏幕
+		Vector2 flameCenter = root.GlobalPosition + new Vector2(725f * k * facing, 1290f * k);
+		Vector2 flameSize = new Vector2(1150f, BodyToe - BodyTop) * k;
+		float flameScale = height / 800f;
+		// 现身：从下往上被蓝焰包住（P5R 召唤那种一大团），脚下几缕大火舌往上冲成火柱
+		BlueFlame.Engulf(back, flameCenter, flameSize, 36, 0.45f, flameScale * 1.1f, true);
+		for (int i = 0; i < 6; i++)
+		{
+			BlueFlame.Tongue(back, flameCenter + new Vector2(Fx.Rand(-0.3f, 0.3f) * flameSize.X, 0.42f * flameSize.Y), flameScale * Fx.Rand(1.6f, 2.1f),
+				Fx.Rand(0.5f, 0.65f), 160f * flameScale, i * 0.04f);
+		}
+		float nextLick = 0.5f;
+		bool burned = false;
+
 		const float appear = 0.26f, outT = 0.38f;
 		float total = exitAt + outT;
 		float windUp = Mathf.Max(appear, attackAt - 0.14f);
@@ -123,6 +137,19 @@ void fragment() {
 		Fx.Animate(root, 0, total, t =>
 		{
 			float time = t * total;
+			// 在场：轮廓下半截零星舔着蓝焰火舌；退场：一大团蓝焰把他烧散
+			if (time >= nextLick && time < exitAt)
+			{
+				nextLick = time + Fx.Rand(0.08f, 0.14f);
+				Vector2 lick = flameCenter + new Vector2(Fx.Rand(-0.42f, 0.42f) * flameSize.X, Fx.Rand(0.05f, 0.5f) * flameSize.Y);
+				BlueFlame.Tongue(back, lick, flameScale * Fx.Rand(0.55f, 0.8f), 0.45f, 50f * flameScale, 0f, 0.6f);
+			}
+			if (!burned && time >= exitAt)
+			{
+				burned = true;
+				BlueFlame.Engulf(back, flameCenter, flameSize, 32, 0.35f, flameScale * 1.1f, false);
+				Sfx.Play(Sfx.PersonaFlame, 0.5f);
+			}
 			// 现身 / 退场
 			float rev = time < appear ? Ease5.OutQuint(time / appear) : time > exitAt ? 1f - Mathf.Clamp((time - exitAt) / outT, 0f, 1f) : 1f;
 			mat.SetShaderParameter("reveal", rev);

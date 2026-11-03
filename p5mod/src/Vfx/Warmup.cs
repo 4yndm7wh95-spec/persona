@@ -69,5 +69,6 @@ public static class Warmup
 			Glow.Ripple(hidden, c, 8f, 0.1f, 0f);
 		});
 		Stage.Safe("warmup impact", () => Impact.Warm(hidden));
+		Stage.Safe("warmup blue flame", () => BlueFlame.Tongue(hidden, c, 0.5f, 0.2f));
 	}
 }

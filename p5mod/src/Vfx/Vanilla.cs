@@ -62,6 +62,10 @@ public static class Lut5
 	public static GradientTexture1D CurseAura => Make("curse_aura",
 		(0f, new Color("2a000c")), (0.5f, new Color("7a0820")), (1f, new Color("d8162c")));
 
+	/// <summary>P5R 召唤蓝焰：深蓝 → 天蓝 → 淡青 → 青白的芯（比生图的电光蓝柔和，用户嫌那个太艳）。</summary>
+	public static GradientTexture1D SummonFlame => Make("summon_flame",
+		(0f, new Color("0a1a3a")), (0.3f, new Color("1d5fd0")), (0.55f, new Color("3fa6ff")), (0.8f, new Color("a8e4ff")), (1f, new Color("f2fbff")));
+
 	/// <summary>金：暴击 / 撒旦耶尔。</summary>
 	public static GradientTexture1D Gold => Make("gold",
 		(0f, new Color("2a1400")), (0.4f, new Color("a8640c")), (0.75f, new Color("ffcf5a")), (1f, new Color("fffbe8")));
