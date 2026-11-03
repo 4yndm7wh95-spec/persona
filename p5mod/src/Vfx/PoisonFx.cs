@@ -72,6 +72,12 @@ public static class PoisonFx
 
 	private static void Apply(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount, bool retry)
 	{
+		// 弹跳烧瓶：咒怨火球落到这个敌人身上（SnakeFx.Throw 飞过来，落地 = 这一刻）
+		if (SnakeFx.FlaskActive)
+		{
+			SnakeFx.Land(layer, at, top, width, body);
+			return;
+		}
 		// 毒性爆发（巨手版）：结算推到了捏碎那一刻，标记早在攥住横幅时做过（Squeeze）→ 这里只让毒伤立刻引爆
 		if (InOutbreak && HandMode)
 		{
@@ -112,7 +118,7 @@ public static class PoisonFx
 				Fx.After(layer, 0.08, () => Mark(layer, at, top, width, body));
 				return;
 			}
-			Fx.After(layer, 0.08, () => Impact(layer, at, top, width, body, amount, d, true));
+			Fx.After(layer, 0.08, () => { SnakeFx.Snap(); Impact(layer, at, top, width, body, amount, d, true); });   // 蛇咬：蛇口和咒怨打中同一帧合上
 			return;
 		}
 		if (InOutbreak)
@@ -121,6 +127,38 @@ public static class PoisonFx
 			return;
 		}
 		Impact(layer, at, top, width, body, amount, new Vector2(1f, 0.1f), false);
+	}
+
+	/// <summary>弹跳烧瓶的一次落地：一团咒火炸开（中等）；最后一跳更大（两侧各一团、顿帧更长、震屏更重、一圈空间扭曲）。</summary>
+	public static void FlaskBurst(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, bool last)
+	{
+		float h = Mathf.Max(80f, (at - top).Length());
+		Vector2 foot = at + new Vector2(0f, h * 0.75f);
+		float k = Mathf.Clamp(width / 240f, 0.55f, 1.3f);
+		Sfx.Play(Sfx.CurseSoft, last ? 0.6f : 0.45f);
+		Sfx.Play(Sfx.SubBoom, last ? 0.5f : 0.3f);
+		if (last)
+		{
+			Sfx.Play(Sfx.Slam, 0.45f);
+		}
+		HitStop.Request(last ? 0.07 : 0.035);
+		Stage.ShakeDir?.Invoke(last ? 3 : 1, 90f);
+		Glow.Flash(layer, at, new Color(1f, 0.3f, 0.35f), width * (last ? 1.6f : 1.1f), 0.2f);
+		if (last)
+		{
+			Glow.Ripple(layer, at, width * 2.2f, 0.45f, 0.03f);
+		}
+		CurseFlame(layer, Vanilla.FireCenter, foot, (last ? 1.15f : 0.75f) * k);
+		if (last)
+		{
+			CurseFlame(layer, Vanilla.FireLeft, foot + new Vector2(-0.3f * width, 0f), 0.75f * k, 0.05f);
+			CurseFlame(layer, Vanilla.FireRight, foot + new Vector2(0.3f * width, 0f), 0.75f * k, 0.08f);
+		}
+		Vanilla.Burst(layer, Vanilla.Embers, foot, 0f, (last ? 1.2f : 0.8f) * k, Lut5.Curse);
+		Vanilla.Burst(layer, Vanilla.Specks, at, -Mathf.Pi / 2f, 0.9f, Lut5.Curse, amount: last ? 22 : 12);
+		Paint.Rise(layer, "curse_soul", at + new Vector2(Fx.Rand(-0.2f, 0.2f) * width, 0f), (last ? 200f : 130f) * k, (last ? 0.95f : 0.7f) * k, Lut5.Curse, 0.7f, 0.04f);
+		BodyTint.Pulse(body, new Color(1.8f, 0.7f, 0.75f), 0.03, 0.08);
+		Fx.After(layer, 0.12, () => BodyTint.Pulse(body, new Color(0.72f, 0.45f, 0.52f), 0.18, 0.45));
 	}
 
 	/// <summary>咒怨打中：顿帧 + 沿来向的震屏 + 一下红白闪 + 空间扭曲 + 黑红咒火从脚下冲起 + 怨灵飘散 + 目标被染暗。</summary>

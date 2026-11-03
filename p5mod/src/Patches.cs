@@ -432,7 +432,7 @@ public static class CorrosiveGasPatch
 {
 	public static void Postfix(NGaseousImpactVfx? __result)
 	{
-		if (__result != null && CorrosiveFx.Suppressing)
+		if (__result != null && (CorrosiveFx.Suppressing || SnakeFx.FlaskActive))
 		{
 			__result.Visible = false;
 		}
@@ -479,5 +479,60 @@ public static class PoisonTickPatch
 				}
 			}
 		});
+	}
+}
+
+/// <summary>
+/// 弹跳烧瓶（Joker）：原版扔出的绿色毒药瓶藏掉，换成咒怨火球沿同一条线飞（SnakeFx.Throw）。
+/// 原版给的终点是敌人碰撞框底边，火球落到敌人身体中心（VfxSpawnPosition），按底边找最近的那个敌人。
+/// </summary>
+[HarmonyPatch(typeof(NItemThrowVfx), nameof(NItemThrowVfx.Create))]
+public static class FlaskThrowPatch
+{
+	public static void Postfix(NItemThrowVfx? __result, Godot.Vector2 sourcePosition, Godot.Vector2 targetPosition)
+	{
+		if (__result == null || !SnakeFx.FlaskActive)
+		{
+			return;
+		}
+		ModEntry.Safe("FlaskThrow", () =>
+		{
+			__result.Visible = false;
+			if (Joker.FxLayer() is not Godot.Control layer || NCombatRoom.Instance is not NCombatRoom room)
+			{
+				return;
+			}
+			Godot.Vector2 to = targetPosition;
+			float best = float.MaxValue;
+			foreach (NCreature n in room.CreatureNodes)
+			{
+				float d = n.GetBottomOfHitbox().DistanceSquaredTo(targetPosition);
+				if (n.Entity != null && !n.Entity.IsPlayer && d < best)
+				{
+					best = d;
+					to = n.VfxSpawnPosition;
+				}
+			}
+			SnakeFx.Throw(layer, sourcePosition, to);
+		});
+	}
+}
+
+/// <summary>弹跳烧瓶（Joker）：原版落地的绿色水花、液体罩子藏掉（毒气在 CorrosiveGasPatch 里一起藏）。</summary>
+[HarmonyPatch]
+public static class FlaskSplashPatch
+{
+	public static IEnumerable<MethodBase> TargetMethods()
+	{
+		yield return AccessTools.Method(typeof(NSplashVfx), nameof(NSplashVfx.Create));
+		yield return AccessTools.Method(typeof(NLiquidOverlayVfx), nameof(NLiquidOverlayVfx.Create));
+	}
+
+	public static void Postfix(object? __result)
+	{
+		if (__result is Godot.CanvasItem c && SnakeFx.FlaskActive)
+		{
+			c.Visible = false;
+		}
 	}
 }

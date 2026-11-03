@@ -84,6 +84,7 @@ V4 = ROOT / "art/p5/fx/v4"
 V4_TEX = [("slash", n, 0.5) for n in ("slash_thin", "slash_heavy", "slash_cross", "slash_tear", "slash_thrust", "slash_flurry")] + \
     [("burst", f"burst_0{i}", 0.5) for i in (1, 2, 3)] + \
     [("muzzle", f"muzzle_side_0{i}", 0.5) for i in (1, 2, 3)] + [("muzzle", "muzzle_front", 0.5), ("muzzle", "shell", 1)] + \
+    [("bite", "bite_top", 1), ("bite", "bite_bottom", 1)] + \
     [("arsene/layers_v7", n, 0.35) for n in ("wing_back", "wing_front", "arm_back", "body", "arm_reach", "arm_reach_extend", "arm_reach_fist", "eyes_glow")]   # Arsene v7 (user 2026-11-03)
 
 # P5R sound effects (research/p5r/audio): published name -> file (names in p5mod/src/Vfx/Sfx.cs)
@@ -105,6 +106,7 @@ SFX = {
     "damage_enemy": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0022.ogg",
     "battle_all_out_atk": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0024.ogg",
     "gun_02": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0032.ogg",
+    "gun_10": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0038.ogg",                # the shot (user 2026-11-03: gun_07 sounded like a laser; picked D)
     "gun_07": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0037.ogg",                # the shot (user 2026-11-02: gun_02 read as a strike sound)
     "gun_00": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0030.ogg",
     "encount_parry": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0132.ogg",

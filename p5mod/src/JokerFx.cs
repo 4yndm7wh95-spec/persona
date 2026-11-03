@@ -131,6 +131,18 @@ public static class JokerFx
 					CorrosiveFx.Plunge(layer, ArseneFx.TryClaw(out Vector2 claw) ? claw : ground + new Vector2(-200f * face, -420f), ground));
 				break;
 			}
+			case "Snakebite" when t != null:
+			{
+				// 蛇咬：光束打到敌人的同一刻（结算 HitFor + 光束飞 0.08s）蛇口咬合；提前 0.17s 张开蓄力
+				float close = Aim.HitFor(card) + 0.08f;
+				Vector2 at = t.VfxSpawnPosition;
+				float w = t.Hitbox.GetGlobalRect().Size.X;
+				Fx.After(layer, close - 0.25f, () => SnakeFx.Bite(layer, at, w, 0.25f));
+				break;
+			}
+			case "BouncingFlask":
+				SnakeFx.BeginFlask(card.DynamicVars.Repeat.IntValue);
+				break;
 			case var n when Aim.Grips(n) && t != null:
 			{
 				// 第四版：0.7 的亚森之手（Grip）停用；施毒特效走 PoisonApplyPatch → PoisonFx
