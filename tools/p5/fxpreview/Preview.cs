@@ -225,6 +225,23 @@ public partial class Preview : Node2D
 		["eiha"] = p => p.At(0.3, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy, Enemy + new Vector2(0f, -170f), c => p._enemies[Enemy].Modulate = c)),
 		["arsene"] = p => p.At(0.1, () => Persona.Arsene(p._back, JokerFeet, (JokerFeet - Pose(815f, 120f)).Length() * 1.35f)),
 		["cutin"] = p => p.At(0.3, () => CutIn.Eyes(p._back)),
+		// 毒性爆发的特效巨手（CrushHand）：五个弯曲程度并排（静帧看形状）
+		["handsheet"] = p => p.At(0.1, () =>
+		{
+			float[] curls = { 0f, 0.35f, 0.62f, 0.8f, 1f };
+			float[] thumbs = { 0f, 0.3f, 0.55f, 0.75f, 1f };
+			for (int i = 0; i < 5; i++)
+			{
+				CrushHand h = new(p._front, new Vector2(200f + 380f * i, 560f), 520f);
+				h.Set("curl", curls[i]); h.Set("thumb", thumbs[i]); h.Set("spread", i == 0 ? 1.15f : 0.9f); h.Set("grip", i >= 3 ? 0.6f : 0f);
+			}
+		}),
+		// 巨手单独放一遍（眼神特写垫底）：伸出 → 抓住 → 攥紧颤抖 → 捏碎
+		["hand"] = p =>
+		{
+			p.At(0.2, () => CutIn.Eyes(p._back));
+			p.At(0.5, () => CrushHand.Play(p._front, new Vector2(960f, 470f), 820f, 1.2f, () => Fx.Shake(6)));
+		},
 		["cutindbg"] = p =>
 		{
 			p.At(0.3, () => CutIn.Eyes(p._back));
