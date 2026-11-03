@@ -18,6 +18,9 @@ public static class Stage
 	/// <summary>定向震屏：强度 1～4，角度（度，0 = 向右）。没填就退回 Shake。</summary>
 	public static Action<int, float>? ShakeDir;
 
+	/// <summary>播放游戏自带的 FMOD 音效（event:/sfx/...，游戏里是 SfxCmd.Play；预览工具里没有，不出声）。</summary>
+	public static Action<string, float>? PlayEvent;
+
 	/// <summary>现在是第几毫秒（判断连击 / 连续格挡用）。预览录像时比真实时间慢，所以预览换成自己的录像时钟。</summary>
 	public static Func<ulong> NowMs = () => Time.GetTicksMsec();
 
