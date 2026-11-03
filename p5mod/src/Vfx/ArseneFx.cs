@@ -54,6 +54,7 @@ uniform float flash = 0.0;
 uniform float fire = 1.0;
 uniform float flame_px = 120.0;
 uniform vec2 body_y = vec2(0.15, 0.95);
+uniform float aura = 0.0;   // 蓝焰开关（用户 2026-11-03：先去掉，最终版亚森定了再说）
 void fragment() {
 	vec4 c = texture(TEXTURE, UV);
 	vec2 ps = TEXTURE_PIXEL_SIZE;
@@ -84,7 +85,7 @@ void fragment() {
 	// 颜色：根部（贴着轮廓）青白 → 天蓝 → 外缘深蓝，越往外越透明
 	float heat = mix(clamp(v * 1.35, 0.0, 0.92), 0.3 + 0.4 * n1, body_fire);
 	vec3 fc = texture(lut, vec2(heat, 0.5)).rgb;
-	flame *= 0.82;                                                // 火是半透明的，透出后面的背景
+	flame *= 0.82 * aura;                                         // 火是半透明的，透出后面的背景；aura = 0 关掉
 	vec3 pc = mix(c.rgb, vec3(1.0, 0.96, 0.96), flash);
 	float pa = c.a * vis;
 	vec3 rgb = mix(fc, pc, pa) + vec3(0.45, 0.65, 0.85) * edge * 1.1;
