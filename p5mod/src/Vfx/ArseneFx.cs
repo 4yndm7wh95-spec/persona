@@ -16,23 +16,24 @@ namespace P5Joker;
 public static class ArseneFx
 {
 	private const float Pack = 0.35f;                       // 分层图打包时的缩放（tools/p5/stage_p5.py）
-	private const float BodyTop = 331f, BodyToe = 2249f;    // 全图坐标：帽顶、脚尖
-	private static readonly Vector2 ToeAt = new(600f, 2249f);
+	// 第 7 版（art/p5/fx/v4/arsene/layers_v7/layers.json，用户 2026-11-03 通过的修脸版拆层）全图坐标：帽顶、脚尖
+	private const float BodyTop = 70f, BodyToe = 2185f;
+	private static readonly Vector2 ToeAt = new(955f, 2185f);
 
 	private record struct Part(string Tex, Vector2 Pivot);
 
 	// 从后往前（layers.json 的 z_index）
 	private static readonly Part[] Parts =
 	{
-		new("arsene_wing_back", new(740f, 940f)),
-		new("arsene_wing_front", new(800f, 880f)),
-		new("arsene_arm_back", new(560f, 1000f)),
-		new("arsene_body", new(680f, 1080f)),
-		new("arsene_arm_reach", new(820f, 860f)),
-		new("arsene_eyes_glow", new(650f, 780f)),
+		new("arsene_wing_back", new(1060f, 790f)),
+		new("arsene_wing_front", new(1370f, 745f)),
+		new("arsene_arm_back", new(1090f, 665f)),           // 叉腰那只
+		new("arsene_body", new(1260f, 1130f)),
+		new("arsene_arm_reach", new(1380f, 665f)),          // 抬在胸前那只：出手时朝敌人探出去
+		new("arsene_eyes_glow", new(1255f, 508f)),
 	};
 
-	private static readonly Vector2 ClawTip = new(1210f, 760f);
+	private static readonly Vector2 ClawTip = new(1250f, 610f);
 
 	private static Shader? _shader;
 
@@ -111,10 +112,10 @@ void fragment() {
 	{
 		float k = height / (BodyToe - BodyTop);                // 全图像素 → 屏幕
 		// 飘在 Joker 左后方、离开一段距离，脚尖大约在 Joker 腰的高度（沿用用户对 0.7 版亚森站位的意见：别太近、别太高、再往左）
-		Vector2 toeScreen = feet + new Vector2(-0.48f * height * facing, -0.3f * height);
+		Vector2 toeScreen = feet + new Vector2(-0.62f * height * facing, -0.3f * height);   // v7 两翼垂着、扑出去时别压到 Joker 身上
 		// 整个亚森画进一张离屏画面（SubViewport），蓝焰在合成后的剪影上烧（见 PersonaShader）。
-		// 画面范围（全图坐标）：x -420～2580、y -900～2400，四周留出扑出去和火苗往上窜的余量（小了火会被切成一条直边）
-		const float vx0 = -420f, vy0 = -900f, vw = 3000f, vh = 3300f;
+		// 画面范围（全图坐标）：x -300～2350、y -500～2400，四周留出扑出去的余量
+		const float vx0 = -300f, vy0 = -500f, vw = 2650f, vh = 2900f;
 		Vector2 vpSize = new Vector2(vw, vh) * k;
 		SubViewport vp = new()
 		{
@@ -158,10 +159,9 @@ void fragment() {
 			body.AddChild(n);
 			n.Position = p;
 		}
-		// 保持叠放顺序：翅膀在身体后面，前伸的手臂、眼睛在前面
+		// 叠放顺序（layers_v7 的 z_index）：两只翅膀在身体后面，叉腰的手、胸前的手、眼睛在身体前面
 		body.MoveChild(wingB, 0);
 		body.MoveChild(wingF, 1);
-		body.MoveChild(armB, 2);
 
 		// 现身：身后一团青光 + 一股暗红咒烟炸开
 		Glow.Flash(back, toeScreen + new Vector2(0f, -0.45f * height), new Color(0.3f, 0.8f, 1f), height * 1.1f, 0.55f);
@@ -223,7 +223,7 @@ void fragment() {
 				float hit = Ease5.OutExpo(Mathf.Min(1f, u / 0.08f));
 				float rec = Ease5.OutQuint(Mathf.Clamp((u - 0.14f) / 0.45f, 0f, 1f));
 				float w = 1f - rec;
-				pos += Vector2.Zero.Lerp(new Vector2(95f, 14f), hit) * px * w + new Vector2(-45f, -28f) * px * (1f - hit);
+				pos += Vector2.Zero.Lerp(new Vector2(70f, 10f), hit) * px * w + new Vector2(-45f, -28f) * px * (1f - hit);
 				lean = Mathf.Lerp(-0.14f, 0.2f, hit) * w;
 				reach = Mathf.Lerp(0.5f, -0.6f, hit) * w;
 				wingKick = Mathf.Lerp(-0.3f, 0.32f, hit) * w;
@@ -261,7 +261,7 @@ void fragment() {
 			armB.Rotation = -reach * 0.35f + Mathf.Sin(time * 2.6f) * 0.04f;
 			wingB.Rotation = -0.6f * open + flap + wingKick;
 			wingF.Rotation = 0.6f * open - flap - wingKick * 1.2f;
-			mat.SetShaderParameter("flash", beat * beat * 0.45f);
+			mat.SetShaderParameter("flash", beat * beat * 0.3f);
 			mat.SetShaderParameter("fire", fire + beat * 0.35f);       // 出手一闪（平方衰减：顿帧拖慢时不会一直发灰）
 			eyes.Modulate = new Color(1f + beat * 3f, 1f + beat * 1.5f, 1f + beat * 1.5f, 1f);
 		});

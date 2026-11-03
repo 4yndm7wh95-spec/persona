@@ -66,6 +66,10 @@ KNIFE_OUT = [("knife_lower_h", .08, 0), ("knife_spin_g", .2, 0), ("idle_a3", .12
 # before the follow-through brings it down
 KNIFE_CUT = [("slash_a10", .12, 0), ("knife_top_g", .2, 0), ("slash_follow_a", .06), ("knife_return_a", .06),
              ("slash_recover_a", .08), ("idle_a3", .1, .06)]
+# the command (user 2026-11-03): command frames are gun_aim_b / gun_arm_mid_h with the gun swapped for an open hand and
+# the left hand pocketed, so the way back is the gun's holster path (arm down -> hand to the pocket -> idle)
+COMMAND = [("summon_command_mid_a", .04, .02), ("summon_command_a", .55), ("summon_command_mid_a", .07),
+           ("pocket_in_e", .1, .04), ("idle_a3", .14, .08)]
 IDLE_LOOP = 11.0   # 8 s idle (+ blinks), then the glove tug, ending back on idle_a3
 ANIMS = {
     "idle_loop": [("idle_a3", 8.6)] + GLOVE + [("idle_a3", IDLE_LOOP - 8.6 - sum(f[1] for f in GLOVE))],
@@ -104,8 +108,7 @@ ANIMS = {
     "mask_in": [("idle_a3", .02)] + [(n, .06) for n in SUMMON_UP],
     "mask_loop": [("summon_touch2_a", 4.8)],
     "mask_out": [("summon_touch2_a", .01)] + [(n, .06) for n in SUMMON_UP[-2::-1]] + [("idle_a3", .14, .08)],
-    "cast_from_mask": [("summon_touch2_a", .02), ("summon_hold_a", .45)] + [(n, .07) for n in SUMMON_UP[::-1]]
-                      + [("idle_a3", .15, .08)],
+    "cast_from_mask": [("summon_touch2_a", .02), ("summon_hold_a", .1)] + COMMAND,
     "guard_in": [("idle_a3", .02), ("guard_mid_a", .08)],
     "guard_loop": [("guard_mid_a", 4.8)],
     "guard_out": [("guard_mid_a", .01), ("idle_a3", .14, .08)],
@@ -119,11 +122,13 @@ ANIMS = {
     "cast_guard": [("idle_a3", .02), ("guard_mid_a", .06), ("guard_a2", .45), ("guard_mid_a", .08), ("idle_a3", .12, .07)],
     "cast_glove": [("idle_a3", .02)] + GLOVE,
     # 2026-10-29 (user: the big summon dragged): ~2.3 s -> ~1.3 s; the release pose (arm flung out) still holds longest
-    "cast_big": [("idle_a3", .02)] + [(n, .045) for n in SUMMON_UP] + [("summon_hold_a", .14), ("summon_rip_a2", .08),
-                 ("summon_open1_b", .045), ("summon_open2_b", .045), ("summon_release_b", .42), ("summon_settle_b", .07),
-                 ("summon_down1_e", .065), ("summon_down05_c", .065), ("summon_down25_c", .065), ("idle_a3", .12, .06)],
-    "cast": [("idle_a3", .02)] + [(n, .08) for n in SUMMON_UP] + [("summon_hold_a", .9)]
-            + [(n, .08) for n in SUMMON_UP[::-1]] + [("idle_a3", .15, .08)],
+    # 2026-11-03 (user): no more flinging the arm back after the rip - hold the rip through the eye cut-in shatter (0.56 s),
+    # then the command (right arm thrust at the enemy, palm down; Arsene attacks at ~0.93 s while it is held)
+    "cast_big": [("idle_a3", .02)] + [(n, .045) for n in SUMMON_UP] + [("summon_hold_a", .14), ("summon_rip_a2", .24)]
+                + [("summon_command_mid_a", .05, .03), ("summon_command_a", .62)] + COMMAND[2:],
+    # 2026-11-03 (user): after the hand on the mask, Joker thrusts his right arm at the enemy, palm down, left hand in the
+    # pocket - directing the Persona (Arsene attacks at ~0.41 s, inside the held command pose)
+    "cast": [("idle_a3", .02)] + [(n, .06) for n in SUMMON_UP] + [("summon_hold_a", .08)] + COMMAND,
     "hurt": [("hurt_flinch_a", .05, 0), ("hurt_a4", .25), ("hurt_recover_b1", .1), ("hurt_recover_b2", .1),
              ("idle_a3", .2, .12)],
     "die": [("die_buckle_a", .12, .06), ("die_kneel_a2", .6), ("die_fall_a", .15), ("die_down_b", 1.0)],
