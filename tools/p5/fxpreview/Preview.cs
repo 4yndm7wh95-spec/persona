@@ -103,14 +103,16 @@ public partial class Preview : Node2D
 			p.At(6.4 + 1.64, () => { SummonStage.Play(p._back, p._front, Pose(1010, 215)); CutIn.Eyes(p._back); });
 			p.At(6.4 + 1.6, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy2, Enemy2 + new Vector2(0f, -128f), c => p._enemies[Enemy2].Modulate = c));
 		},
-		// 腐蚀波（稀有）：眼神特写 + 亚森 → 亚森把咒怨砸进 Joker 身前的地面 → 脚下咒怨翻腾 → 抽一张、再抽一张、连抽三张：咒火浪贴地涌向敌人
+		// 腐蚀波（稀有，但按罕见召唤）：亚森现身 → 亚森把咒怨砸进 Joker 身前的地面 → 脚下咒怨翻腾 → 抽一张、再抽一张、连抽三张：咒火浪贴地涌向敌人
 		["corrosive_v4"] = p =>
 		{
+			// 用户 2026-11-03：腐蚀波朴素一些，不要眼神特写和舞台 → 按罕见召唤（Tiers.PlainRare）：亚森直接现身出手
 			Persona.Spec spec = Persona.ArseneSpec;
-			float hit = 0.04f + SummonStage.EvokeAt + spec.AttackAt;
+			float hit = 0.04f + spec.AttackAt;
 			bool active = false;
-			p.At(0.3, () => p._joker?.Play("cast_big"));
-			p.RareSummon(0.3, spec);
+			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
+			p.At(0.3, () => p._joker?.Play("cast"));
+			p.At(0.34, () => { Sfx.Play(Sfx.PersonaFlame, 0.8f); Persona.Show(spec, p._back, JokerFeet, tall); });
 			Vector2 ground = JokerFeet + new Vector2(130f, 0f);
 			p.At(0.3 + hit + 0.01, () =>
 			{
@@ -294,14 +296,16 @@ public partial class Preview : Node2D
 			p.At(0.3, () => { p._joker?.Play("knife_in"); p._joker?.Queue("knife_loop", true); });
 			p.At(1.3, () => p._joker?.Play("knife_out"));
 		},
-		// 腐蚀波（稀有）：眼神特写 + 亚森 → 亚森把咒怨砸进 Joker 身前的地面 → 脚下咒怨翻腾 → 抽一张、再抽一张、连抽三张：咒火浪贴地涌向敌人
+		// 腐蚀波（稀有，但按罕见召唤）：亚森现身 → 亚森把咒怨砸进 Joker 身前的地面 → 脚下咒怨翻腾 → 抽一张、再抽一张、连抽三张：咒火浪贴地涌向敌人
 		["corrosive_v4"] = p =>
 		{
+			// 用户 2026-11-03：腐蚀波朴素一些，不要眼神特写和舞台 → 按罕见召唤（Tiers.PlainRare）：亚森直接现身出手
 			Persona.Spec spec = Persona.ArseneSpec;
-			float hit = 0.04f + SummonStage.EvokeAt + spec.AttackAt;
+			float hit = 0.04f + spec.AttackAt;
 			bool active = false;
-			p.At(0.3, () => p._joker?.Play("cast_big"));
-			p.RareSummon(0.3, spec);
+			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
+			p.At(0.3, () => p._joker?.Play("cast"));
+			p.At(0.34, () => { Sfx.Play(Sfx.PersonaFlame, 0.8f); Persona.Show(spec, p._back, JokerFeet, tall); });
 			Vector2 ground = JokerFeet + new Vector2(130f, 0f);
 			p.At(0.3 + hit + 0.01, () =>
 			{

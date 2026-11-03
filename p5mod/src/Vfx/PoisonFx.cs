@@ -157,7 +157,7 @@ public static class PoisonFx
 			global::P5Joker.Impact.Confirm(layer, null, at, Vector2.Up, Weight.Finale);
 		}
 		_lastBlast = now;
-		Sfx.Play(Sfx.PoisonTick, 0.7f);
+		Sfx.Play(Sfx.CurseSoft, 0.6f);
 		Glow.Flash(layer, at, new Color(1f, 0.3f, 0.35f), width * 2.2f, 0.3f);
 		Glow.Ripple(layer, at, width * 3f, 0.55f, 0.04f);
 		CurseFlame(layer, Vanilla.FireCenter, foot, 1.45f * k);
@@ -190,7 +190,7 @@ public static class PoisonFx
 		}
 		float h = Mathf.Max(80f, (at - top).Length());
 		float k = Mathf.Clamp(width / 240f, 0.55f, 1.3f);
-		Sfx.Play(Sfx.PoisonTick, 0.5f);
+		Sfx.Play(Sfx.CurseSoft, 0.45f);                              // 柔和的咒怨闷响（原来的 continuas_damage 太尖，用户嫌腐蚀波刺耳，毒伤也一起换）
 		CurseFlame(layer, Vanilla.FireCenter, at + new Vector2(0f, h * 0.6f), 0.55f * k);
 		Paint.Rise(layer, "curse_soul", at + new Vector2(Fx.Rand(-0.2f, 0.2f) * width, 0f), 120f * k, 0.7f * k, Lut5.Curse, 0.65f, 0.05f);
 		BodyTint.Pulse(body, new Color(0.85f, 0.62f, 0.68f), 0.06, 0.3);

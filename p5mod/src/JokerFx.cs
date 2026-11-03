@@ -122,7 +122,7 @@ public static class JokerFx
 			}
 			case "CorrosiveWave":
 			{
-				// 第四版：稀有召唤（眼神特写 + 亚森）→ 亚森出手时把咒怨砸进 Joker 身前的地面（CorrosiveFx.Plunge）；
+				// 第四版：亚森直接现身（按罕见召唤，Tiers.PlainRare）→ 亚森出手时把咒怨砸进 Joker 身前的地面（CorrosiveFx.Plunge）；
 				// 之后这回合每抽一张牌，咒火浪贴地涌向敌人（CorrosiveDrawPatch → CorrosiveFx.OnDraw），脚下咒怨一直翻腾（AmmoPatch → Aura）
 				Vector2 feet = Joker.PosePoint(joker, ReadyFx.Feet);
 				float face = Joker.Facing(joker);

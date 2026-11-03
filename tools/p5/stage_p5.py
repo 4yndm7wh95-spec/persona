@@ -114,6 +114,8 @@ SFX = {
     "crash_object": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0176.ogg",
     "continuas_damage": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0020.ogg",
     "sub_boom": ROOT / "art/sfx_p5/sub_boom.ogg",
+    "shatter_big": ROOT / "art/sfx_p5/shatter_big.ogg",                # eye cut-in shatter (user 2026-11-03)
+    "curse_soft": ROOT / "art/sfx_p5/curse_soft.ogg",                  # corrosive wave / poison tick (user: harsh)
     "crush": ROOT / "art/sfx_p5/crush.ogg",                          # synthesized crunch for the hand crush                      # synthesized sub hit (ffmpeg aevalsrc)
 }
 

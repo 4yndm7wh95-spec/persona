@@ -27,6 +27,10 @@ public static class Sfx
 		Swish = "swish_02",             // 挥刀风声（#145）
 		SwishHeavy = "swish_05",        // 重挥（#151）
 		SwishLow = "swish_04",          // 低沉的挥动（#149，缩回 / 转杖）
+		Shatter = "shatter_big",        // 眼神特写碎开（用户 2026-11-03：原来的 ArcanaBurst 起音 42ms、不明显、没有一下碎掉的震撼）：
+		                                //  P3R 剧情玻璃爆裂（起音 2ms）+ 镜子碎片哗啦（Mirror_Break_01）+ 低频，合成 art/sfx_p5/shatter_big.ogg
+		CurseSoft = "curse_soft",       // 柔和的咒怨闷响（暗黑系技能音滤掉 1.6kHz 以上 + 低频，art/sfx_p5/curse_soft.ogg）：
+		                                //  腐蚀波 / 每回合毒伤用（用户：腐蚀波刺耳——continuas_damage 能量中心 7kHz，连抽时一堆叠在一起）
 		KnifeRing = "sword_sheath",     // 收刀入鞘的金属「锵」（#48）：转刀落回手里握住的那一下（用户 2026-11-02：转刀声像空转、没分量）
 		Hit = "damage_enemy",           // 打中敌人（#22）
 		AllOut = "battle_all_out_atk",  // 总攻击斩击（#24，第一刀叠上去）

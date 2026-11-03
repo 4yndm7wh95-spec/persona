@@ -6,7 +6,7 @@ namespace P5Joker;
 /// <summary>
 /// 腐蚀波（稀有，毒流重点牌，用户 2026-11-03：关键在「开了之后每次抽牌都会挂毒」）。
 /// 创意：亚森把咒怨种进 Joker 脚下，之后每抽一张牌，咒怨就贴着地面朝敌人涌过去。
-/// · 打出（Plunge）：稀有召唤（眼神特写 + 亚森）→ 亚森出手时把咒怨砸进 Joker 身前的地面：咒怨光束从爪尖砸到地上，顿帧、震屏，黑红咒火在地上炸开；
+/// · 打出（Plunge）：亚森直接现身（稀有牌但按罕见召唤，不出舞台 / 眼神特写，用户 2026-11-03 要朴素一些）→ 亚森出手时把咒怨砸进 Joker 身前的地面：咒怨光束从爪尖砸到地上，顿帧、震屏，黑红咒火在地上炸开；
 /// · 持续（Aura，这回合一直在，回合结束原版移除效果时消失）：Joker 脚下一滩咒怨翻腾，冒暗红烟和火星；
 /// · 每抽一张牌（Wave，CorrosiveDrawPatch）：脚下咒怨一亮，一道低矮的黑红咒火浪贴着地面飞快涌向敌人，浪头经过每个敌人时咒火从脚下舔上来、身体暗一下
 ///   ——这就是这次上毒（这段时间里 PoisonFx.Apply 让给这里，不放普通施毒的大落点）；连抽时一道接一道，间隔 0.12s，很轻、不顿帧。
@@ -94,7 +94,9 @@ public static class CorrosiveFx
 			return;
 		}
 		// 脚下咒怨一亮
+		// 声音（用户：腐蚀波刺耳）：每道浪只有一声低沉的挥动 + 低频，碰到第一个敌人时一声柔和的咒怨闷响；不再每个敌人放一次尖的毒伤声
 		Sfx.Play(Sfx.SwishLow, first ? 0.5f : 0.35f);
+		Sfx.Play(Sfx.SubBoom, first ? 0.35f : 0.22f);
 		Glow.Flash(layer, feet + new Vector2(0f, -15f), new Color(1f, 0.15f, 0.2f), first ? 320f : 240f, 0.25f);
 		Vanilla.Burst(layer, Vanilla.FireCenter, feet + new Vector2(40f * facing, 0f), 0f, first ? 0.6f : 0.45f, Lut5.CurseInk);
 		// 浪：从 Joker 身前到最远的敌人后面一点，每 95px 一簇贴地的黑红咒火 + 一点红光，按浪头速度错开
@@ -137,9 +139,13 @@ public static class CorrosiveFx
 			float k = Mathf.Clamp(t.Width / 240f, 0.55f, 1.3f);
 			float delay = Mathf.Max(0f, (t.At.X - feet.X) * facing) / Speed;
 			bool firstHit = first && ReferenceEquals(t.Body, targets[0].Body);
+			bool lead = ReferenceEquals(t.Body, targets[0].Body);
 			Fx.After(layer, delay, () =>
 			{
-				Sfx.Play(Sfx.PoisonTick, first ? 0.55f : 0.38f);
+				if (lead)
+				{
+					Sfx.Play(Sfx.CurseSoft, first ? 0.6f : 0.42f);
+				}
 				if (firstHit)
 				{
 					HitStop.Request(0.03);                               // 每批连抽只有第一道浪的第一下有一点顿挫

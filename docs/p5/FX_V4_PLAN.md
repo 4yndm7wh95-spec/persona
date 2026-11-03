@@ -125,6 +125,15 @@
   后面一排贴地黑红咒火浪滚过去，浪头到每个敌人时咒火从脚下窜起、怨灵飘起、身体暗一下 = 这次上毒；这段时间普通施毒落点让位，原版绿色毒气藏掉。
   连抽一道接一道（间隔 0.12s）；每批第一道浪的第一下有 30ms 顿挫 + 轻震，其余不顿帧。
 
+## 用户 2026-11-03（看腐蚀波 / 毒爆预览，0.8.9）
+- 腐蚀波太刺耳：每道浪对每个敌人都放 continuas_damage（能量中心 7kHz），连抽叠一堆 → 每道浪只放低沉挥动 + 低频，第一个敌人处一声 curse_soft
+  （暗黑系技能音滤掉 1.6kHz 以上 + 低频，art/sfx_p5/curse_soft.ogg）；每回合毒伤、毒爆引爆也换成 curse_soft。
+- 眼神特写碎开那一下不明显、没有一下碎掉的震撼：原来的 ArcanaBurst 起音 42ms → art/sfx_p5/shatter_big.ogg
+  （P3R 剧情玻璃爆裂起音 2ms + 镜子碎片哗啦 Mirror_Break_01 + 低频，起音 <1ms）。
+- 腐蚀波不要眼神特写和背景变化，朴素一些 → Tiers.PlainRare：按罕见召唤（亚森直接现身出手）。
+- Joker 指挥动作第一版太僵（像军姿）→ 重画任务 docs/codex/codex_p5_joker_command_v2.md（随手一挥的「去吧」：肘微弯、手腕手指放松、重心前移、大衣甩开）。
+  姿势检查脚本加了纯 numpy 的 scipy 替代（tools/p5/_ndimage.py），Codex 那边不用装 scipy。
+
 ## 用户 2026-11-03（看毒性爆发预览）
 - 碎玻璃那一拍的暴击音在后面毒爆里又出现，像同一下 → 碎玻璃改用游戏自带的玻璃音效（defect_glass_channel，P3 召唤器用的那个，Stage.PlayEvent → SfxCmd），暴击音只留给毒爆。
 - Joker 召唤动作不要后半段往后甩手 → 扶面具后右臂平伸指向敌人（指挥 Persona），Codex 画 summon_command_mid_a / summon_command_a / summon_command_lower_a（docs/codex/codex_p5_joker_command.md），到了再改 build_rig_p5.py 的 cast / cast_big / cast_from_mask。
