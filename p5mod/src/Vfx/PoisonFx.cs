@@ -69,6 +69,10 @@ public static class PoisonFx
 	/// </summary>
 	public static void Apply(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount)
 	{
+		if (CorrosiveFx.Suppressing && !ArseneFx.TryClaw(out _))
+		{
+			return;                                                   // 腐蚀波：抽牌带来的上毒由贴地的咒火浪表现（CorrosiveFx.Wave）
+		}
 		if (ArseneFx.TryClaw(out Vector2 claw))
 		{
 			Vector2 d = at - claw;

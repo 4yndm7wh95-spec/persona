@@ -11,7 +11,7 @@ namespace P5Joker;
 public static class ModEntry
 {
 	public const string Tag = "[P5Joker]";
-	public const string Version = "0.8.7";
+	public const string Version = "0.8.8";
 
 	public static void Init()
 	{

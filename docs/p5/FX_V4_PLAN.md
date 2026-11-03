@@ -117,6 +117,14 @@
 → 牌效果「立即触发中毒」：等光束都落地，所有敌人的咒火一起冲天而起，第一下压全屏红黑冲击帧（Impact「战斗结束」档）+ 最重顿帧 + 暴击音；
 冲击帧褪掉后还有第二波火柱和大怨灵（第一版冲击帧一褪火就没了）。
 
+## 腐蚀波（2026-11-03，Vfx/CorrosiveFx.cs，预览 docs/p5/preview_corrosive_v4.mp4）
+用户：关键在「开了之后每次抽牌都会挂毒」。创意：亚森把咒怨种进 Joker 脚下，之后每抽一张牌，咒怨就贴着地面朝敌人涌过去。
+- 打出（稀有召唤：眼神特写 + 亚森）：亚森出手把咒怨光束砸进 Joker 身前地面，顿帧、震屏，黑红咒火在地上炸开。
+- 持续：腐蚀波生效期间 Joker 脚下咒怨翻腾（AmmoPatch 每帧 → Aura，约 0.32s 一股暗红烟 / 火星 / 小咒火）。
+- 每抽一张牌（CorrosiveDrawPatch，挂在原版 CorrosiveWavePower.AfterCardDrawn）：地面被撕开一道裂缝（slash_tear）跟着浪头飞速撕到敌人脚下，
+  后面一排贴地黑红咒火浪滚过去，浪头到每个敌人时咒火从脚下窜起、怨灵飘起、身体暗一下 = 这次上毒；这段时间普通施毒落点让位，原版绿色毒气藏掉。
+  连抽一道接一道（间隔 0.12s）；每批第一道浪的第一下有 30ms 顿挫 + 轻震，其余不顿帧。
+
 ## 用户 2026-11-03（看毒性爆发预览）
 - 碎玻璃那一拍的暴击音在后面毒爆里又出现，像同一下 → 碎玻璃改用游戏自带的玻璃音效（defect_glass_channel，P3 召唤器用的那个，Stage.PlayEvent → SfxCmd），暴击音只留给毒爆。
 - Joker 召唤动作不要后半段往后甩手 → 扶面具后右臂平伸指向敌人（指挥 Persona），Codex 画 summon_command_mid_a / summon_command_a / summon_command_lower_a（docs/codex/codex_p5_joker_command.md），到了再改 build_rig_p5.py 的 cast / cast_big / cast_from_mask。

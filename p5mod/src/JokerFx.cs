@@ -120,6 +120,17 @@ public static class JokerFx
 				PoisonFx.BeginOutbreak(Aim.HitFor(card) + 1.5f);
 				break;
 			}
+			case "CorrosiveWave":
+			{
+				// 第四版：稀有召唤（眼神特写 + 亚森）→ 亚森出手时把咒怨砸进 Joker 身前的地面（CorrosiveFx.Plunge）；
+				// 之后这回合每抽一张牌，咒火浪贴地涌向敌人（CorrosiveDrawPatch → CorrosiveFx.OnDraw），脚下咒怨一直翻腾（AmmoPatch → Aura）
+				Vector2 feet = Joker.PosePoint(joker, ReadyFx.Feet);
+				float face = Joker.Facing(joker);
+				Vector2 ground = feet + new Vector2(130f * face, 0f);
+				Fx.After(layer, Aim.HitFor(card) + 0.01f, () =>
+					CorrosiveFx.Plunge(layer, ArseneFx.TryClaw(out Vector2 claw) ? claw : ground + new Vector2(-200f * face, -420f), ground));
+				break;
+			}
 			case var n when Aim.Grips(n) && t != null:
 			{
 				// 第四版：0.7 的亚森之手（Grip）停用；施毒特效走 PoisonApplyPatch → PoisonFx

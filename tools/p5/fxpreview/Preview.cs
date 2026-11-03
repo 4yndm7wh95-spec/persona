@@ -103,6 +103,35 @@ public partial class Preview : Node2D
 			p.At(6.4 + 1.64, () => { SummonStage.Play(p._back, p._front, Pose(1010, 215)); CutIn.Eyes(p._back); });
 			p.At(6.4 + 1.6, () => CardFx.Eiha(p._front, Pose(1010f, 215f), Enemy2, Enemy2 + new Vector2(0f, -128f), c => p._enemies[Enemy2].Modulate = c));
 		},
+		// 腐蚀波（稀有）：眼神特写 + 亚森 → 亚森把咒怨砸进 Joker 身前的地面 → 脚下咒怨翻腾 → 抽一张、再抽一张、连抽三张：咒火浪贴地涌向敌人
+		["corrosive_v4"] = p =>
+		{
+			Persona.Spec spec = Persona.ArseneSpec;
+			float hit = 0.04f + SummonStage.EvokeAt + spec.AttackAt;
+			bool active = false;
+			p.At(0.3, () => p._joker?.Play("cast_big"));
+			p.RareSummon(0.3, spec);
+			Vector2 ground = JokerFeet + new Vector2(130f, 0f);
+			p.At(0.3 + hit + 0.01, () =>
+			{
+				CorrosiveFx.Plunge(p._front, ArseneFx.TryClaw(out Vector2 claw) ? claw : ground + new Vector2(-200f, -420f), ground);
+				active = true;
+			});
+			p.Every(() => { if (active) { CorrosiveFx.Aura(p._front, JokerFeet); } });
+			var targets = new List<CorrosiveFx.Target>();
+			p.At(0.1, () =>
+			{
+				foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 })
+				{
+					p._enemies.TryGetValue(e, out Node2D? n);
+					targets.Add(new CorrosiveFx.Target(e, e - new Vector2(0f, 120f), 230f, n));
+				}
+			});
+			foreach (double t in new[] { 2.6, 3.4, 4.3, 4.32, 4.34 })
+			{
+				p.At(t, () => CorrosiveFx.OnDraw(p._front, JokerFeet, 1f, targets));
+			}
+		},
 		// 毒性爆发（稀有）：完整召唤 + 伊邪那岐大神转杖 + 万物真言 + 咒怨毒火，打全体
 		["outbreak"] = p =>
 		{
@@ -264,6 +293,35 @@ public partial class Preview : Node2D
 		{
 			p.At(0.3, () => { p._joker?.Play("knife_in"); p._joker?.Queue("knife_loop", true); });
 			p.At(1.3, () => p._joker?.Play("knife_out"));
+		},
+		// 腐蚀波（稀有）：眼神特写 + 亚森 → 亚森把咒怨砸进 Joker 身前的地面 → 脚下咒怨翻腾 → 抽一张、再抽一张、连抽三张：咒火浪贴地涌向敌人
+		["corrosive_v4"] = p =>
+		{
+			Persona.Spec spec = Persona.ArseneSpec;
+			float hit = 0.04f + SummonStage.EvokeAt + spec.AttackAt;
+			bool active = false;
+			p.At(0.3, () => p._joker?.Play("cast_big"));
+			p.RareSummon(0.3, spec);
+			Vector2 ground = JokerFeet + new Vector2(130f, 0f);
+			p.At(0.3 + hit + 0.01, () =>
+			{
+				CorrosiveFx.Plunge(p._front, ArseneFx.TryClaw(out Vector2 claw) ? claw : ground + new Vector2(-200f, -420f), ground);
+				active = true;
+			});
+			p.Every(() => { if (active) { CorrosiveFx.Aura(p._front, JokerFeet); } });
+			var targets = new List<CorrosiveFx.Target>();
+			p.At(0.1, () =>
+			{
+				foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 })
+				{
+					p._enemies.TryGetValue(e, out Node2D? n);
+					targets.Add(new CorrosiveFx.Target(e, e - new Vector2(0f, 120f), 230f, n));
+				}
+			});
+			foreach (double t in new[] { 2.6, 3.4, 4.3, 4.32, 4.34 })
+			{
+				p.At(t, () => CorrosiveFx.OnDraw(p._front, JokerFeet, 1f, targets));
+			}
 		},
 		// 毒性爆发（稀有）：眼神特写 + 舞台 + 新亚森 → 出手，咒怨光束扇形射向三个敌人（各 9 层）→ 立即触发中毒：全场咒火一起引爆
 		["outbreak_v4"] = p =>

@@ -81,6 +81,12 @@ public static class AmmoPatch
 			if (MegaCrit.Sts2.Core.Context.LocalContext.IsMe(player))
 			{
 				Local = view;
+				// 腐蚀波生效中：Joker 脚下咒怨一直翻腾（Vfx/CorrosiveFx.cs）
+				if (player.Creature.GetPower<MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower>() != null && Joker.FxLayer() is Godot.Control cl
+					&& Joker.Node(player) is NCreature jn)
+				{
+					CorrosiveFx.Aura(cl, Joker.PosePoint(jn, ReadyFx.Feet));
+				}
 				// 每场战斗预热一次第四版特效（首次打出不卡，Vfx/Warmup.cs）
 				if (Joker.FxLayer() is Godot.Control fx && NCombatRoom.Instance is NCombatRoom room)
 				{
@@ -378,6 +384,48 @@ public static class PoisonApplyPatch
 			}
 			PoisonFx.Apply(layer, n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, n.Visuals, amount);
 		});
+	}
+}
+
+/// <summary>
+/// 腐蚀波：每抽到一张牌（CorrosiveWavePower.AfterCardDrawn，原版在这里给全体上毒、在每个敌人身上放绿色毒气）——
+/// 在原版上毒之前排一道贴地的咒火浪（Vfx/CorrosiveFx.cs）；这段时间的上毒不放普通施毒落点，原版的绿色毒气藏掉。只给 Joker 的腐蚀波。
+/// </summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower), nameof(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower.AfterCardDrawn))]
+public static class CorrosiveDrawPatch
+{
+	public static void Prefix(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower __instance, CardModel card)
+	{
+		ModEntry.Safe("CorrosiveDraw", () =>
+		{
+			if (card.Owner?.Creature != __instance.Owner || __instance.Owner.Player is not { } p || !Joker.Is(p)
+				|| Joker.FxLayer() is not Godot.Control layer || NCombatRoom.Instance is not NCombatRoom room || Joker.Node(p) is not NCreature joker)
+			{
+				return;
+			}
+			var targets = new List<CorrosiveFx.Target>();
+			foreach (Creature c in __instance.CombatState.HittableEnemies)
+			{
+				if (room.GetCreatureNode(c) is NCreature n)
+				{
+					targets.Add(new CorrosiveFx.Target(n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, n.Visuals));
+				}
+			}
+			CorrosiveFx.OnDraw(layer, Joker.PosePoint(joker, ReadyFx.Feet), Joker.Facing(joker), targets);
+		});
+	}
+}
+
+/// <summary>原版腐蚀波每次抽牌在敌人身上放的绿色毒气：Joker 的腐蚀波正由咒火浪表现时藏掉。</summary>
+[HarmonyPatch(typeof(NGaseousImpactVfx), nameof(NGaseousImpactVfx.Create), typeof(Godot.Vector2), typeof(Godot.Color))]   // 原版腐蚀波用的是这个重载
+public static class CorrosiveGasPatch
+{
+	public static void Postfix(NGaseousImpactVfx? __result)
+	{
+		if (__result != null && CorrosiveFx.Suppressing)
+		{
+			__result.Visible = false;
+		}
 	}
 }
 
