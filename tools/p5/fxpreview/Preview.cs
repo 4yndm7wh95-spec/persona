@@ -496,16 +496,6 @@ public partial class Preview : Node2D
 			p.ShotV4(4.7, Enemy3, 9, Impact.Grade(Weight.Light, 9, 9, true, false), dies: true);
 		},
 		// 原版怪物（research/sts2_preview_scene，tools/spine/skel_reader.py 转成 JSON）在预览里显示对不对
-		// 蛇咬（同 JokerFx.OnPlay）：亚森现身出手 → 咒怨光束打到敌人的同一刻，蛇口上下咬合
-		["snakebite"] = p =>
-		{
-			Persona.Spec spec = Persona.ArseneSpec with { Linger = 1.1f };
-			float hit = 0.04f + spec.AttackAt;
-			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
-			p.At(0.3, () => { p._joker?.Play("cast"); Sfx.Play(Sfx.PersonaFlame, 0.8f); Persona.Show(spec, p._back, JokerFeet, tall); });
-			p.At(0.3 + hit + 0.08 - 0.25, () => SnakeFx.Bite(p._front, Enemy, 230f, 0.25f));
-			p.Poison(0.3 + hit, Enemy, 5);
-		},
 		// 弹跳烧瓶（同原版 BouncingFlask 的节奏：每跳扔出后 0.5s 落地上毒）：咒怨火球从亚森爪尖出手，三跳，最后一跳最大
 		["flask"] = p =>
 		{

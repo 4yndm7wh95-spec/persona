@@ -118,7 +118,7 @@ public static class PoisonFx
 				Fx.After(layer, 0.08, () => Mark(layer, at, top, width, body));
 				return;
 			}
-			Fx.After(layer, 0.08, () => { SnakeFx.Snap(); Impact(layer, at, top, width, body, amount, d, true); });   // 蛇咬：蛇口和咒怨打中同一帧合上
+			Fx.After(layer, 0.08, () => Impact(layer, at, top, width, body, amount, d, true));
 			return;
 		}
 		if (InOutbreak)
@@ -139,7 +139,7 @@ public static class PoisonFx
 		Sfx.Play(Sfx.SubBoom, last ? 0.5f : 0.3f);
 		if (last)
 		{
-			Sfx.Play(Sfx.Slam, 0.45f);
+			Sfx.Play(Sfx.CurseBlast, 0.45f);                          // 最后一跳：咒怨引爆声（不用重拳声，像打击）
 		}
 		HitStop.Request(last ? 0.07 : 0.035);
 		Stage.ShakeDir?.Invoke(last ? 3 : 1, 90f);
@@ -168,7 +168,7 @@ public static class PoisonFx
 		Vector2 foot = at + new Vector2(0f, h * 0.75f);
 		float k = Mathf.Clamp(width / 240f, 0.55f, 1.3f);
 		bool big = amount >= 6;
-		Sfx.Play(Sfx.Slam, persona ? 0.55f : 0.35f);
+		Sfx.Play(Sfx.CurseSoft, persona ? 0.55f : 0.4f);              // 用户 2026-11-03：重拳声像打击，不符合咒怨 → 咒怨闷响
 		Sfx.Play(Sfx.SubBoom, persona ? 0.5f : 0.3f);
 		HitStop.Request(persona ? (big ? 0.08 : 0.06) : 0.035);
 		if (Stage.ShakeDir != null)
