@@ -91,7 +91,7 @@ void fragment() {
 	// 盖在头、手臂、翅膀、腿上；aura 越大火斑越多（现身时多，很快退掉露出人物；退场反过来）
 	float bn = texture(noise, vec2(UV.x * 7.0 + (n1 - 0.5) * 0.3, UV.y * 2.2 + clock * 2.2)).r;
 	float bn2 = texture(noise, vec2(UV.x * 15.0 + 0.5, UV.y * 4.5 + clock * 3.1)).r;
-	float pv = bn * 0.8 + bn2 * 0.35 - mix(1.05, 0.55, aura);
+	float pv = bn * 0.8 + bn2 * 0.35 - mix(1.05, 0.8, aura);          // 用户 2026-11-03：火斑太多太密 → 最多盖住约两成
 	float patch = c.a * vis * smoothstep(0.0, 0.015, pv) * step(0.001, aura);
 	// 颜色：P5 动画的四档硬边分层——贴着轮廓白芯 → 青 → 饱和蓝 → 外缘深海军蓝，档与档之间没有渐变
 	float heat = mix(clamp(v * 1.35, 0.0, 1.0), 0.3 + 0.5 * n1, body_fire);
