@@ -1,0 +1,19 @@
+{
+  "name": "summon_command_a",
+  "prompt": "IMAGE1 is the exact edit base, previous halfway command frame. IMAGE2 is only Joker face standard. Create the next full-body game sprite: extend the SAME right arm from the bent position ALL THE WAY outward toward IMAGE RIGHT, straight at shoulder height, decisive elegant 'go forth' command gesture. Red-gloved open hand, fingers together, palm facing forward and slightly down. Keep left arm hanging exactly unchanged. Torso leans very slightly right, chin subtly lifted, eyes focused image right. Coat hem lifted just a little behind by arm motion. Preserve identical head size, shoulder width, body proportions, legs and both boots positions, toes, outfit details and image placement. Same Persona 5 clean outlined 2D cel shading. No mask, weapon, lettering, ground, shadow, glow, mist or background. One person only. Full body entirely inside 1024x1536, boots baseline identical. Genuine transparent RGBA with alpha zero outside actual character; do not reproduce ambient haze from source.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-19ef8f52-f933-4f40-bdcb-b532c0b01a02.png",
+  "inputs": [
+    "summon_command_mid_a.png (first attempt, later rejected)",
+    "face_standard.png"
+  ],
+  "raw_size": [
+    1024,
+    1536
+  ],
+  "delivery_size": [
+    1024,
+    1536
+  ],
+  "generation_count": 1,
+  "redraw_count": 0
+}
