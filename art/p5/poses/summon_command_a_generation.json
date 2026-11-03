@@ -1,24 +1,18 @@
 {
-  "prompt": "Create ONE edited full-body game sprite of Joker, Persona 5 cel shaded illustration. IMAGE1 summon_hold is character/outfit/head scale base, IMAGE2 idle is body proportion and separated feet reference, IMAGE3 exact face identity. Show the END of a relaxed, casual outward 'go on' wave after taking his right hand away from his face. The same right arm that covered his face now sweeps diagonally FORWARD AND UP toward image RIGHT, hand a little above shoulder level, elbow visibly SOFTLY BENT, wrist loose and slightly drooping, back of hand faces up/out, fingers naturally separated and gently CURVED. An effortless stylish flick, subtly dismissive confidence. NOT a salute, NOT straight military horizontal arm, NOT fingers pressed together, NOT palm-up cupping or offering an object. Relaxed shoulders, directing shoulder advances a little; torso naturally rotates toward image right, weight over forward foot, front knee lightly bent. Both feet apart and staggered as a small half-step, not boots together. Preserve IMAGE1 head size, torso width, leg lengths, exact costume details and original style; only pose changes needed for this wave. Left arm stays naturally down. Head slightly lifted with face looking right and a faint knowing smile, face exactly IMAGE3; irises with highlights, rounded chin. Coat tails swing gently back/out. One character only, complete hair, hand, coat and boots within frame with margin. 1024x1536 vertical full body, boots near y1500. TRUE transparent RGBA, alpha ZERO outside clean character contour. NO ambient halos or source-image haze, NO lighting blobs behind head/hands, no mask, weapons, effects, lines, shadow, floor, background or text. Same crisp clean P5 2D ink and cel shading.",
-  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-9dfe8d7e-b760-4efd-95cd-6a68e50732f1.png",
-  "inputs": [
-    "summon_hold_a.png",
-    "idle_a3.png",
-    "face_standard.png"
-  ],
-  "generation_count": 1,
-  "status": "v2 keyframe awaiting user approval; middle and lower not made",
-  "raw_size": [
+  "right_output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-579d16c9-132b-4fa1-a43a-a75da33f4175.png",
+  "pocket_output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-92856964-7267-4c88-8acf-899e9d7dba33.png",
+  "right_prompt": "Precise local edit of attached existing Joker GAME SPRITE, same 1536x1632 transparent canvas and exactly same framing. Keep ALL pixels and positions unchanged except TWO small hand regions. 1) IMAGE-RIGHT outstretched red-gloved hand: REMOVE the entire prop pistol, replace gripping fingers with an EMPTY OPEN red glove, five fingers naturally spread and slightly curved; palm faces forward-right and a little down, wrist aligned naturally straight with forearm, neither drooping nor cocked up. Same hand size, wrist location, cuff, arm angle and arm extension as source. 2) IMAGE-LEFT hand at hip: make unmistakably tucked INSIDE TROUSER pocket, fingers and palm fully concealed behind pocket opening, only wrist and cuff visible, cuff resting over pocket lip; same arm elbow position and black coat around it. Do not add a pocket to coat. Preserve source's head, face, hair, expression, torso, legs, boots, coat tails and every outline outside these two hand regions EXACTLY. Same clean 2D Persona5 cel shading. No other changes, no new pose, no zoom or recenter, no mask, weapon, text, glow, effects or background. Genuine transparent RGBA, original transparent canvas.",
+  "pocket_prompt": "Precise tiny local edit of this cropped game character hip. The left hand is inserted fully into the TROUSERS pocket underneath the open black coat. In this source crop there is a bright red wedge of glove just below the large black cuff. Hide the glove palm and all fingers INSIDE the trousers pocket: reduce that red wedge to only a very narrow red wrist strip immediately touching the cuff edge, and fill its lower visible part with the natural dark trouser pocket opening/black fabric. Cuff rests over the pocket lip. Keep the EXACT existing cuff silhouette, sleeve folds, coat lapel, silver button, crop framing, scale, all other pixels and transparency unchanged. Do not invent fingers or a new hand or move the sleeve. Same flat Persona 5 clean black ink and gray cel shading. Transparent RGBA. Exact same 225x200 crop composition. This is ONLY a clothing/hand concealment correction; not a new full character.",
+  "outside_masks_changed_pixels": 0,
+  "size": [
     1024,
     1536
   ],
-  "alpha_check": {
-    "transparent_pixels": 999423,
-    "corner_alpha": [
-      0,
-      0,
-      0,
-      0
-    ]
-  }
+  "source_final_offset": [
+    343,
+    99
+  ],
+  "source_final": "gun_aim_b",
+  "right_hand": "edited open hand",
+  "method": "imagegen followed by local masked composite; inverse source normalize offset, no body rescale"
 }
