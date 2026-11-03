@@ -1,19 +1,24 @@
 {
-  "name": "summon_command_a",
-  "prompt": "IMAGE1 is the exact edit base, previous halfway command frame. IMAGE2 is only Joker face standard. Create the next full-body game sprite: extend the SAME right arm from the bent position ALL THE WAY outward toward IMAGE RIGHT, straight at shoulder height, decisive elegant 'go forth' command gesture. Red-gloved open hand, fingers together, palm facing forward and slightly down. Keep left arm hanging exactly unchanged. Torso leans very slightly right, chin subtly lifted, eyes focused image right. Coat hem lifted just a little behind by arm motion. Preserve identical head size, shoulder width, body proportions, legs and both boots positions, toes, outfit details and image placement. Same Persona 5 clean outlined 2D cel shading. No mask, weapon, lettering, ground, shadow, glow, mist or background. One person only. Full body entirely inside 1024x1536, boots baseline identical. Genuine transparent RGBA with alpha zero outside actual character; do not reproduce ambient haze from source.",
-  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-19ef8f52-f933-4f40-bdcb-b532c0b01a02.png",
+  "prompt": "Create ONE edited full-body game sprite of Joker, Persona 5 cel shaded illustration. IMAGE1 summon_hold is character/outfit/head scale base, IMAGE2 idle is body proportion and separated feet reference, IMAGE3 exact face identity. Show the END of a relaxed, casual outward 'go on' wave after taking his right hand away from his face. The same right arm that covered his face now sweeps diagonally FORWARD AND UP toward image RIGHT, hand a little above shoulder level, elbow visibly SOFTLY BENT, wrist loose and slightly drooping, back of hand faces up/out, fingers naturally separated and gently CURVED. An effortless stylish flick, subtly dismissive confidence. NOT a salute, NOT straight military horizontal arm, NOT fingers pressed together, NOT palm-up cupping or offering an object. Relaxed shoulders, directing shoulder advances a little; torso naturally rotates toward image right, weight over forward foot, front knee lightly bent. Both feet apart and staggered as a small half-step, not boots together. Preserve IMAGE1 head size, torso width, leg lengths, exact costume details and original style; only pose changes needed for this wave. Left arm stays naturally down. Head slightly lifted with face looking right and a faint knowing smile, face exactly IMAGE3; irises with highlights, rounded chin. Coat tails swing gently back/out. One character only, complete hair, hand, coat and boots within frame with margin. 1024x1536 vertical full body, boots near y1500. TRUE transparent RGBA, alpha ZERO outside clean character contour. NO ambient halos or source-image haze, NO lighting blobs behind head/hands, no mask, weapons, effects, lines, shadow, floor, background or text. Same crisp clean P5 2D ink and cel shading.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-9dfe8d7e-b760-4efd-95cd-6a68e50732f1.png",
   "inputs": [
-    "summon_command_mid_a.png (first attempt, later rejected)",
+    "summon_hold_a.png",
+    "idle_a3.png",
     "face_standard.png"
   ],
+  "generation_count": 1,
+  "status": "v2 keyframe awaiting user approval; middle and lower not made",
   "raw_size": [
     1024,
     1536
   ],
-  "delivery_size": [
-    1024,
-    1536
-  ],
-  "generation_count": 1,
-  "redraw_count": 0
+  "alpha_check": {
+    "transparent_pixels": 999423,
+    "corner_alpha": [
+      0,
+      0,
+      0,
+      0
+    ]
+  }
 }
