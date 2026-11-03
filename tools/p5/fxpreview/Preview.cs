@@ -343,6 +343,7 @@ public partial class Preview : Node2D
 				{
 					p._enemies.TryGetValue(e, out Node2D? n);
 					PoisonFx.Tick(p._front, e, e - new Vector2(0f, 120f), 230f, n);
+					Fx.After(p._front, PoisonFx.BlastWait(), () => Popups.Damage(p._front, (ulong)e.X, e, 9, false));   // 同 DamageNumberPatch
 				});
 			}
 		},

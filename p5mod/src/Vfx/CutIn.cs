@@ -105,7 +105,7 @@ void fragment() { COLOR = vec4(texture(TEXTURE, UV).rgb, 1.0); }
 	public static float ShatterAt => SplitAt + 0.067f;
 
 	/// <summary>碎片从裂开到淡完多久（结城理 mod 的 1.35s 节奏，这里稍短一点不拖）。</summary>
-	public const float ShatterLife = 0.8f;
+	public const float ShatterLife = 0.5f;                     // 用户 2026-11-03：碎片飘太久压到后面的出手 / 引爆，太花
 
 	/// <summary>
 	/// 碎纸（舞台和特写共用，2026-11-01：用户嫌「一刀劈成两半滑走」不对）：三道爪痕把画面切成四条，每条再按 4 个点的

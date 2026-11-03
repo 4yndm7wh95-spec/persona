@@ -21,18 +21,17 @@ public static class Evoke
 		Vector2 exit = muzzle + dir * 105f * power;
 		Beam(front, muzzle, dir, power);
 		CrackPane(front, exit, dir, power);
-		ConeShatter(front, exit, dir, (int)(55 * power), power);
+		ConeShatter(front, exit, dir, (int)(25 * power), power);   // 55 → 25（用户 2026-11-03：太花）
 		Mist(front, exit, dir, power);
-		GpuParticles2D jet = Glow.Sparks(front, exit, 60, 400f * power, 1100f * power, 0.45f, new[] { White, Red, new Color(0.4f, 0f, 0.05f) }, 0f,
+		GpuParticles2D jet = Glow.Sparks(front, exit, 30, 400f * power, 1100f * power, 0.45f, new[] { White, Red, new Color(0.4f, 0f, 0.05f) }, 0f,
 			0.4f * 0.35f, 1.1f * 0.35f, dir, 22f);
 		ExitRing(front, exit, dir, power);
 		Glow.Ripple(back, exit, 560f * power, 0.6f, 0.04f);
 		Glow.Flash(front, exit, Ice, 300f * power, 0.2f);
-		Glow.SpeedLines(front, exit, Red, 10, 40f, 300f * power, 0.3f);
 		Fx.After(front, 0.05, () =>
 		{
 			SpiritFlare(front, exit + new Vector2(0f, 40f), 360f * power, 0.9f);
-			Feathers(front, exit, (int)(7 * power), 240f * power);
+			Feathers(front, exit, (int)(4 * power), 240f * power);
 		});
 	}
 

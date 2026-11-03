@@ -67,8 +67,17 @@ public static class PoisonFx
 	/// 没有召唤（带毒刺击、涂毒、毒雾……）就只有落点，轻一些。
 	/// at = 目标中心，top = 头顶，width = 目标宽度，amount = 这次加的层数（多就更旺）。
 	/// </summary>
-	public static void Apply(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount)
+	public static void Apply(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount) =>
+		Apply(layer, at, top, width, body, amount, true);
+
+	private static void Apply(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount, bool retry)
 	{
+		// 游戏上毒和亚森出手常在同一帧：上毒先执行时爪尖还没记下 → 有召唤的场合（毒性爆发）等一帧再判断，免得走成没召唤的普通落点
+		if (retry && InOutbreak && !ArseneFx.TryClaw(out _))
+		{
+			Fx.After(layer, 0.05, () => Apply(layer, at, top, width, body, amount, false));
+			return;
+		}
 		if (CorrosiveFx.Suppressing && !ArseneFx.TryClaw(out _))
 		{
 			return;                                                   // 腐蚀波：抽牌带来的上毒由贴地的咒火浪表现（CorrosiveFx.Wave）
@@ -90,7 +99,18 @@ public static class PoisonFx
 				}
 			}
 			_beamLand = Stage.NowMs() + 80;
+			// 毒性爆发：光束命中只留「标记」，不炸（用户 2026-11-03：太花、几个高潮挤在一起）——唯一的高潮留给引爆
+			if (InOutbreak)
+			{
+				Fx.After(layer, 0.08, () => Mark(layer, at, top, width, body));
+				return;
+			}
 			Fx.After(layer, 0.08, () => Impact(layer, at, top, width, body, amount, d, true));
+			return;
+		}
+		if (InOutbreak)
+		{
+			Mark(layer, at, top, width, body);
 			return;
 		}
 		Impact(layer, at, top, width, body, amount, new Vector2(1f, 0.1f), false);
@@ -141,9 +161,33 @@ public static class PoisonFx
 	/// </summary>
 	public static void BeginOutbreak(float seconds) => _outbreakUntil = Stage.NowMs() + (ulong)(seconds * 1000f);
 
-	private static bool InOutbreak => Stage.NowMs() < _outbreakUntil;
+	public static bool InOutbreak => Stage.NowMs() < _outbreakUntil;
 
-	/// <summary>引爆：三团大咒火 + 一团晚一拍的大火柱 + 大怨灵 + 火星；同一批里第一下带全屏冲击帧（Impact 的「战斗结束」档）。</summary>
+	/// <summary>毒性爆发期间：离引爆还有几秒（毒伤的伤害数字推迟到这一刻再跳，DamageNumberPatch）。</summary>
+	public static double BlastWait()
+	{
+		ulong now = Stage.NowMs();
+		return _beamLand + 380 > now ? (_beamLand + 380 - now) / 1000.0 : 0.0;
+	}
+
+	/// <summary>
+	/// 毒性爆发的标记（光束命中时）：敌人身上一团暗暗燃着的小咒火 + 一点红光，身体暗下去；没有顿帧、没有震屏、声音很轻。
+	/// 引爆前全场都被标上，停 ~0.3s 让人看清，再一起炸。
+	/// </summary>
+	private static void Mark(Control layer, Vector2 at, Vector2 top, float width, Node2D? body)
+	{
+		float h = Mathf.Max(80f, (at - top).Length());
+		float k = Mathf.Clamp(width / 240f, 0.55f, 1.3f);
+		Sfx.Play(Sfx.CurseSoft, 0.3f);
+		Glow.Flash(layer, at, new Color(0.9f, 0.08f, 0.15f), width * 0.9f, 0.45f);
+		Vanilla.Burst(layer, Vanilla.FireCenter, at + new Vector2(0f, h * 0.35f), 0f, 0.5f * k, Lut5.CurseInk);
+		BodyTint.Pulse(body, new Color(0.62f, 0.4f, 0.48f), 0.45, 0.3);
+	}
+
+	/// <summary>
+	/// 引爆（毒性爆发唯一的高潮）：所有标记同时炸开——一次顿帧 + 震屏 + 红黑帧（重档，0.15s）；每个敌人一根大咒火柱 + 两边各一团 + 一只怨灵，
+	/// 之后只留烟和火星慢慢散（不再有第二波，原来的第二波让画面一直很满）。同一批里只有第一下带全屏效果和音效。
+	/// </summary>
 	private static void Blast(Control layer, Vector2 at, Vector2 top, float width, Node2D? body)
 	{
 		float h = Mathf.Max(80f, (at - top).Length());
@@ -152,27 +196,19 @@ public static class PoisonFx
 		ulong now = Stage.NowMs();
 		if (now - _lastBlast > 150)
 		{
-			Sfx.Play(Sfx.CurseBlast, 0.75f);                         // 原来的暴击音太吵太刺耳（用户 2026-11-03）：换成滤掉高频的低沉爆响
+			Sfx.Play(Sfx.CurseBlast, 0.75f);
 			Sfx.Play(Sfx.SubBoom, 0.5f);
-			global::P5Joker.Impact.Confirm(layer, null, at, Vector2.Up, Weight.Finale);
+			global::P5Joker.Impact.Confirm(layer, null, at, Vector2.Up, Weight.Heavy);
 		}
 		_lastBlast = now;
-		Sfx.Play(Sfx.CurseSoft, 0.6f);
-		Glow.Flash(layer, at, new Color(1f, 0.3f, 0.35f), width * 2.2f, 0.3f);
-		Glow.Ripple(layer, at, width * 3f, 0.55f, 0.04f);
+		Glow.Flash(layer, at, new Color(1f, 0.3f, 0.35f), width * 1.8f, 0.25f);
+		Glow.Ripple(layer, at, width * 2.4f, 0.5f, 0.03f);
 		CurseFlame(layer, Vanilla.FireCenter, foot, 1.45f * k);
-		CurseFlame(layer, Vanilla.FireLeft, foot + new Vector2(-0.35f * width, 0f), 1.1f * k, 0.04f);
-		CurseFlame(layer, Vanilla.FireRight, foot + new Vector2(0.35f * width, 0f), 1.1f * k, 0.07f);
-		CurseFlame(layer, Vanilla.FireCenter, foot + new Vector2(0f, -0.35f * h), 1.2f * k, 0.16f);
-		// 第二波：红黑冲击帧（停 0.28s）褪掉之后火还在烧（第一版预览里冲击帧一褪火就没了，最旺的样子全被盖住）
-		CurseFlame(layer, Vanilla.FireCenter, foot, 1.3f * k, 0.32f);
-		CurseFlame(layer, Vanilla.FireLeft, foot + new Vector2(-0.3f * width, 0f), 1.0f * k, 0.4f);
-		CurseFlame(layer, Vanilla.FireRight, foot + new Vector2(0.3f * width, 0f), 1.0f * k, 0.48f);
-		Vanilla.Burst(layer, Vanilla.Embers, foot, 0f, 1.4f * k, Lut5.Curse, delay: 0.35f);
-		Vanilla.Burst(layer, Vanilla.Embers, foot, 0f, 1.6f * k, Lut5.Curse);
-		Vanilla.Burst(layer, Vanilla.Specks, at, -Mathf.Pi / 2f, 1.3f, Lut5.Curse, amount: 30);
-		Paint.Rise(layer, "curse_ghost", at + new Vector2(Fx.Rand(-0.15f, 0.15f) * width, 0f), 300f * k, 1.0f * k, Lut5.Curse, 1.1f, 0.05f);
-		Paint.Rise(layer, "curse_soul", at + new Vector2(Fx.Rand(-0.3f, 0.3f) * width, 0.2f * h), 220f * k, 1.0f * k, Lut5.Curse, 0.9f, 0.12f);
+		CurseFlame(layer, Vanilla.FireLeft, foot + new Vector2(-0.32f * width, 0f), 0.9f * k, 0.05f);
+		CurseFlame(layer, Vanilla.FireRight, foot + new Vector2(0.32f * width, 0f), 0.9f * k, 0.08f);
+		Vanilla.Burst(layer, Vanilla.Embers, foot, 0f, 1.3f * k, Lut5.Curse, delay: 0.1f);
+		Vanilla.Burst(layer, Vanilla.BigSlashSmoke, foot + new Vector2(0f, -0.3f * h), -Mathf.Pi / 2f, 1.1f * k, Lut5.Smoke, delay: 0.15f);
+		Paint.Rise(layer, "curse_ghost", at + new Vector2(Fx.Rand(-0.15f, 0.15f) * width, 0f), 260f * k, 0.9f * k, Lut5.Curse, 1.0f, 0.08f);
 		BodyTint.Pulse(body, new Color(2f, 0.7f, 0.75f), 0.04, 0.1);
 		Fx.After(layer, 0.14, () => BodyTint.Pulse(body, new Color(0.6f, 0.35f, 0.42f), 0.35, 0.6));
 	}
@@ -184,7 +220,8 @@ public static class PoisonFx
 		{
 			// 毒性爆发的「立即触发中毒」：等咒怨光束落地再一起引爆
 			ulong now = Stage.NowMs();
-			double wait = _beamLand + 110 > now ? (_beamLand + 110 - now) / 1000.0 : 0.0;
+			// 标记之后停 0.3s 再一起引爆（三拍分开：召唤 → 标记 → 引爆）
+			double wait = _beamLand + 380 > now ? (_beamLand + 380 - now) / 1000.0 : 0.0;
 			Fx.After(layer, wait, () => Blast(layer, at, top, width, body));
 			return;
 		}

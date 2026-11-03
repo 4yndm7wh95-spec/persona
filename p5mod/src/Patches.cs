@@ -189,6 +189,16 @@ public static class DamageNumberPatch
 		bool replaced = false;
 		ModEntry.Safe("DamageNumber", () =>
 		{
+			// 毒性爆发「立即触发中毒」的伤害数字：推迟到引爆那一刻再跳（PoisonFx 把引爆画面推迟了 ~0.3s，不然数字先于爆炸出现）
+			if (original != null && !target.IsPlayer && PoisonFx.InOutbreak && result.UnblockedDamage > 0
+				&& NCombatRoom.Instance?.GetCreatureNode(target) is NCreature pn && Joker.FxLayer() is Godot.Control pl)
+			{
+				int dmg = result.UnblockedDamage;
+				Fx.After(pl, PoisonFx.BlastWait(), () => Popups.Damage(pl, pn.GetInstanceId(), pn.VfxSpawnPosition, dmg, false));
+				original.QueueFree();
+				replaced = true;
+				return;
+			}
 			if (original == null || target.IsPlayer || !Hits.Recent(target, out bool gun)
 				|| NCombatRoom.Instance?.GetCreatureNode(target) is not NCreature node || Joker.FxLayer() is not Godot.Control layer)
 			{
