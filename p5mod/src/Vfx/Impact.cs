@@ -34,8 +34,8 @@ public static class Impact
 	{
 		Weight.Light => new Spec(1, 1, 2.0f, 12f, 0f, 0f, 4f, 0.08f, 0.12f),
 		Weight.Medium => new Spec(2, 2, 2.6f, 26f, 0f, 0f, 8f, 0.22f, 0.2f),
-		Weight.Heavy => new Spec(3, 3, 3.0f, 42f, 1f, 0.15f, 14f, 0.55f, 0.5f),
-		Weight.Kill => new Spec(3, 3, 0f, 0f, 1f, 0.15f, 14f, 0.6f, 0.5f),
+		Weight.Heavy => new Spec(3, 3, 3.0f, 42f, 1f, 0.07f, 14f, 0.55f, 0.5f),
+		Weight.Kill => new Spec(3, 3, 0f, 0f, 1f, 0.07f, 14f, 0.6f, 0.5f),
 		_ => new Spec(4, 4, 0f, 0f, 1f, 0.28f, 22f, 0.9f, 0.75f),
 	};
 
@@ -214,8 +214,10 @@ void fragment() {
 	vec2 g = FRAGCOORD.xy * mat2(vec2(0.7071, -0.7071), vec2(0.7071, 0.7071)) / 9.0;
 	float dotr = length(fract(g) - 0.5);
 	float dots = step(dotr, mix(0.12, 0.62, smoothstep(0.13, 0.5, lum)));
-	vec3 inkCol = lum > 0.55 ? vec3(1.0, 0.97, 0.95) : lum > 0.13 ? mix(red * 0.62, red, dots) : vec3(0.02, 0.0, 0.01);
-	col = mix(col, inkCol, ink);
+	// 用户 2026-11-03：原来的全屏红黑白三色帧是光污染 → 改成温和的「压暗 + 偏红」：画面整体暗下去、往红色偏，命中点附近一点红光，
+	// 不再有大面积的白、网点和纯红；冲击感交给色散 + 径向模糊 + 顿帧
+	vec3 graded = col * vec3(0.62, 0.24, 0.28) + red * 0.18 * near;
+	col = mix(col, graded, ink);
 	COLOR = vec4(col + flash, 1.0);
 }" };
 
@@ -264,7 +266,7 @@ void fragment() {
 		}
 
 		// 第 1 帧：白闪；然后三色帧停 InkHold；然后色散 + 径向模糊在 Life 内衰减
-		Set(s.Ink, s.Chroma, s.Radial, s.Ink > 0f ? 0.3f : 0f);
+		Set(s.Ink, s.Chroma, s.Radial, s.Ink > 0f ? 0.06f : 0f);
 		Tween tw = rect.CreateTween().SetIgnoreTimeScale(true);
 		tw.TweenInterval(1.0 / 30.0);
 		tw.TweenCallback(Callable.From(() => Set(s.Ink, s.Chroma, s.Radial, 0f)));

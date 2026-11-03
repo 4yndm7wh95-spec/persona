@@ -349,6 +349,48 @@ public partial class Preview : Node2D
 			}
 		},
 		// 毒性爆发（稀有）：眼神特写 + 舞台 + 新亚森 → 出手，咒怨光束扇形射向三个敌人（各 9 层）→ 立即触发中毒：全场咒火一起引爆
+		// 毒性爆发巨手版（同 p5mod/src/Aim.cs OutbreakHand）：眼神特写 → 亚森现身 → 亚森出手 = 巨手从横幅冲出来 → 张开 → 攥拳（敌人被标记）→ 颤抖 → 捏碎 = 横幅碎开 = 全体引爆
+		["outbreak_hand"] = p =>
+		{
+			Persona.Spec spec = Persona.ArseneSpec with { Linger = CrushHand.CrushAfter + 0.5f };   // 同 Aim.PersonaFor("Outbreak")
+			float emerge = SummonStage.EvokeAt + spec.AttackAt;
+			float hit = 0.04f + emerge + CrushHand.CrushAfter;                                    // 同 Aim.HitFor
+			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
+			Vector2[] es = { Enemy2, Enemy, Enemy3 };
+			p.At(0.3, () => { p._joker?.Play("cast_big"); PoisonFx.BeginOutbreak(hit + 1.5f); });
+			p.At(0.34, () =>
+			{
+				CutIn.SplitAt = emerge + CrushHand.CrushAfter;
+				SummonStage.Play(p._back, p._front, Pose(1010, 215));
+				CutIn.Eyes(p._back);
+				CrushHand.Outbreak(p._back, emerge, onFist: () =>
+				{
+					var targets = new List<PoisonFx.Target>();
+					foreach (Vector2 e in es)
+					{
+						p._enemies.TryGetValue(e, out Node2D? n);
+						targets.Add(new PoisonFx.Target(e, e - new Vector2(0f, 120f), 230f, n));
+					}
+					PoisonFx.Squeeze(p._front, targets);
+				});
+			});
+			p.At(0.34 + SummonStage.EvokeAt, () =>
+			{
+				SummonStage.Beat(p._front, Pose(1010, 215), p._back, 1f, Persona.ChestOf(spec, JokerFeet, tall));
+				Persona.Show(spec, p._back, JokerFeet, tall);
+			});
+			for (int i = 0; i < es.Length; i++)
+			{
+				Vector2 e = es[i];
+				p.Poison(0.3 + hit + 0.01 * i, e, 9);
+				p.At(0.3 + hit + 0.04 + 0.01 * i, () =>
+				{
+					p._enemies.TryGetValue(e, out Node2D? n);
+					PoisonFx.Tick(p._front, e, e - new Vector2(0f, 120f), 230f, n);
+					Fx.After(p._front, PoisonFx.BlastWait(), () => Popups.Damage(p._front, (ulong)e.X, e, 9, false));   // 同 DamageNumberPatch
+				});
+			}
+		},
 		["outbreak_v4"] = p =>
 		{
 			Persona.Spec spec = Persona.ArseneSpec with { First = 10, Linger = 1.8f };   // 同 Aim.PersonaFor("Outbreak")

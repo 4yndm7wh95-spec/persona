@@ -28,6 +28,7 @@ uniform float spread = 1.0;
 uniform float thumb = 0.0;      // 0 张开 → 1 横压在四指前面
 uniform float grip = 0.0;       // 指缝透出的红光
 uniform float flash = 0.0;
+uniform float dissolve = 0.0;   // 捏碎之后：手散成一团团咒烟
 uniform float alpha = 1.0;
 uniform float aspect = 1.7778;
 uniform float focal = 1.25;
@@ -153,7 +154,7 @@ void fragment() {
 			}
 			vec3 fp = lp * 5.0 + vec3(0.0, -clock * 1.4, clock * 0.3);
 			float nz = fbm(fp);
-			float sd = s + (nz - 0.5) * 0.12;
+			float sd = s + (nz - 0.5) * 0.12 + dissolve * (0.22 + (nz - 0.5) * 0.7);
 			float dens = smoothstep(0.035, -0.045, sd);
 			// 第一次进到烟里：按手本身的形状打一次光（柔和的主光从左上照下来 + 轮廓光 + 指缝压暗）→ 指节、拇指、拳面的结构读得出来；
 			// 不做高光（用户：高光很怪、像橡胶手），边缘仍然是烟
@@ -164,7 +165,7 @@ void fragment() {
 				ao *= clamp(0.4 + map(pw + n * 0.15 * hs) / (0.15 * hs) * 0.6, 0.0, 1.0);
 				float key = smoothstep(0.05, 0.75, dot(n, normalize(vec3(-0.45, 0.75, -0.5))));
 				float fres = 1.0 - abs(dot(n, rd));
-				vec3 light = vec3(0.26, 0.022, 0.042) * key * (0.6 + 0.4 * nz) + vec3(0.9, 0.07, 0.1) * smoothstep(0.6, 0.9, fres) * 0.5;
+				vec3 light = vec3(0.13, 0.01, 0.022) * key * (0.6 + 0.4 * nz) + vec3(1.0, 0.3, 0.26) * smoothstep(0.62, 0.88, fres) * 0.85;   // 舞台是红黑的：主体压黑，轮廓光更亮更暖，才从背景里跳出来
 				light *= ao * mix(1.0, 0.75, smoothstep(band_z - 2.5, band_z - 0.4, pw.z));
 				col += T * light * 0.9;
 				T *= 1.0 - 0.6 * dens;
@@ -174,7 +175,7 @@ void fragment() {
 				// 只有最外面一层薄壳发光：正对镜头时视线只穿过薄薄一层（暗），擦着边走时穿过很长一段（亮）→ 每条轮廓、每根叠着的手指都自己勾出红边
 				float shellGlow = exp(-inner * 75.0);
 				float flick = fbm(lp * 4.0 + vec3(0.0, -clock * 2.2, 0.0));
-				vec3 emit = mix(vec3(0.45, 0.015, 0.045), vec3(1.0, 0.15, 0.11), smoothstep(0.5, 0.8, flick)) * shellGlow * 0.5;
+				vec3 emit = mix(vec3(0.5, 0.03, 0.05), vec3(1.0, 0.32, 0.24), smoothstep(0.5, 0.8, flick)) * shellGlow * 0.5;
 				// 表面的咒纹：细细的暗红纹路顺着手流动
 				float vn = fbm(lp * 2.6 + vec3(0.0, -clock * 0.35, 0.0));
 				emit += vec3(0.7, 0.03, 0.07) * (1.0 - smoothstep(0.0, 0.035, abs(vn - 0.5))) * exp(-inner * 28.0) * 0.6;
@@ -183,7 +184,7 @@ void fragment() {
 				// 越靠近横幅（越深）越暗，穿出的地方烧红
 				emit *= mix(1.0, 0.75, smoothstep(band_z - 2.5, band_z - 0.4, pw.z));
 				emit += vec3(1.0, 0.2, 0.15) * smoothstep(band_z - 0.3, band_z, pw.z) * 3.0;
-				vec3 smoke = vec3(0.012, 0.0, 0.004);
+				vec3 smoke = vec3(0.004, 0.0, 0.002);
 				// 发光按「视线在发光层里走了多远」累积（不乘不透明度）：正面只穿过一层 → 暗，擦边穿过好几层 → 亮
 				float a = 1.0 - exp(-dens * dt / hs * 130.0);
 				col += T * (a * smoke + emit * dens * dt / hs * 13.0);
@@ -226,7 +227,7 @@ void fragment() {
 	acc.rgb += (1.0 - acc.a) * vec3(1.0, 0.2, 0.16) * (0.6 + 0.6 * ring) * pa;
 	acc.a += (1.0 - acc.a) * pa;
 	float a = clamp(acc.a, 0.0, 1.0);
-	vec3 rgb = mix(acc.rgb, vec3(1.0, 0.85, 0.8) * a, flash * 0.7);
+	vec3 rgb = acc.rgb + vec3(0.9, 0.12, 0.1) * flash * acc.a * 0.6;      // 捏碎：烧红一下（不提白：白闪打在半透明的烟上会变成一团灰雾）
 	COLOR = vec4(rgb / max(a, 0.001), a * alpha);
 }" };
 
@@ -249,4 +250,166 @@ void fragment() {
 	public void Set(string key, float v) => _mat.SetShaderParameter(key, v);
 
 	public void Set(string key, Vector3 v) => _mat.SetShaderParameter(key, v);
+
+	// ───────────────────────── 毒性爆发：巨手捏碎眼神特写 ─────────────────────────
+	// 用户 2026-11-03：亚森还是要出来 → 亚森照常召唤现身，他往前出手的那一下（emergeAt）巨手从横幅里冲出来（这只手就是他的咒怨）。
+	// 下面的时刻都从手冲出来那一刻算；CrushAfter = 冲出来到捏碎 = 眼神特写碎开 = 游戏结算毒伤 = 所有敌人咒火引爆。
+
+	public const float ArriveAfter = 0.18f, GrabAfter = 0.28f, FistAfter = 0.44f, CrushAfter = 0.8f, FadeTime = 0.45f;
+	private const float Focal = 1.25f;
+
+	/// <summary>手的一个姿态（着色器参数）。</summary>
+	private readonly record struct Pose(Vector3 Pos, float Tilt, float Roll, float Curl, float Thumb, float Spread);
+
+	// 对照用户拍的照片：张开 = 掌心正对镜头、手指张开、拇指往右下伸；攥拳 = 手腕往前扣，拳面朝镜头，拇指从右下横压过来
+	private static readonly Pose Deep = new(new Vector3(0f, 0.15f, 4.95f), -0.15f, 0.1f, 0.2f, 0.1f, 1.0f);
+	private static readonly Pose Open = new(new Vector3(0.05f, -0.37f, 1.6f),     // 巨大：手指从横幅上沿伸出来、手腕从下沿露出来
+		 -0.15f, 0.1f, 0f, 0f, 1.4f);
+	private static readonly Pose Fist = new(new Vector3(0.05f, 0.03f, 2.2f), -1.1f, 0.3f, 1f, 1f, 0.9f);
+
+	private static Pose Lerp(Pose a, Pose b, float k) => new(a.Pos.Lerp(b.Pos, k), Mathf.Lerp(a.Tilt, b.Tilt, k), Mathf.Lerp(a.Roll, b.Roll, k),
+		Mathf.Lerp(a.Curl, b.Curl, k), Mathf.Lerp(a.Thumb, b.Thumb, k), Mathf.Lerp(a.Spread, b.Spread, k));
+
+	private void Apply(Pose p)
+	{
+		Set("hand_pos", p.Pos);
+		Set("tilt", p.Tilt);
+		Set("roll", p.Roll);
+		Set("curl", p.Curl);
+		Set("thumb", p.Thumb);
+		Set("spread", p.Spread);
+		Set("elbow", p.Pos + new Vector3(-0.3f, -0.6f, 6f));     // 手臂笔直伸进画面（藏在手后面），从横幅后面穿出来
+	}
+
+	/// <summary>手的局部坐标点 → 屏幕像素（和着色器的 to_local 互逆，用来找拳心在屏幕上的位置）。</summary>
+	private Vector2 ToScreen(Pose p, Vector3 local)
+	{
+		Vector3 v = local;
+		float c = Mathf.Cos(p.Tilt), s = Mathf.Sin(p.Tilt);
+		v = new Vector3(v.X, c * v.Y - s * v.Z, s * v.Y + c * v.Z);
+		c = Mathf.Cos(p.Roll); s = Mathf.Sin(p.Roll);
+		v = new Vector3(c * v.X - s * v.Y, s * v.X + c * v.Y, v.Z);
+		Vector3 w = p.Pos + v;
+		Vector2 size = Rect.Size;
+		Vector2 uv = new(w.X / w.Z * Focal, w.Y / w.Z * Focal);
+		return Rect.GlobalPosition + new Vector2((uv.X / (size.X / size.Y) + 1f) * 0.5f * size.X, (1f - uv.Y) * 0.5f * size.Y);
+	}
+
+	/// <summary>
+	/// 毒性爆发的巨手（和 CutIn.Eyes 同一刻开始，放在背景层、眼神特写上面、人物后面）：
+	/// 从横幅深处穿出来 → 冲到眼前张开（照片里那个姿势，停一下）→ 手腕往前扣成拳、把横幅攥住（横幅往拳心皱进去）→ 越攥越抖、指缝漏红光 →
+	/// CrushAt 捏碎（横幅碎开由 CutIn 自己在 SplitAt 做，Aim 把 SplitAt 设成 CrushAt）→ 拳头往前一顶、散成咒烟。
+	/// onFist：攥住横幅那一刻（敌人身上被标记）；onCrush：捏碎那一刻。
+	/// </summary>
+	public static CrushHand Outbreak(Control back, float emergeAt, System.Action? onFist = null, System.Action? onCrush = null)
+	{
+		Vector2 screen = Fx.Screen(back);
+		CrushHand h = new(back, Vector2.Zero, screen);
+		// 层次（用户 2026-11-03：手在眼神横幅下面才有捏爆的感觉）：手从横幅后面伸上来攥住它——横幅中间挡着手，
+		// 上下露出手指和手腕；横幅往拳心皱进去，捏碎、碎片飞开才露出后面的拳头。亚森之后才现身，自然盖在最上面
+		foreach (Node c in back.GetChildren())
+		{
+			if (c.Name.ToString().StartsWith("P5CutIn"))
+			{
+				back.MoveChild(h.Rect, c.GetIndex());
+				break;
+			}
+		}
+		h.Set("band_z", 50f);                                         // 手整个在横幅后面：不用再切掉「穿出横幅」的那段
+		float EmergeAt = emergeAt, ArriveAt = emergeAt + ArriveAfter, GrabAt = emergeAt + GrabAfter, FistAt = emergeAt + FistAfter, CrushAt = emergeAt + CrushAfter;
+		float life = CrushAt + FadeTime;
+		bool emerged = false, fisted = false, crushed = false;
+		CutIn.Pinch = 0f;
+		h.Set("alpha", 0f);
+		Fx.Animate(h.Rect, 0, life, t =>
+		{
+			float s = t * life;
+			Pose pose;
+			float grip = 0f, flash = 0f, dissolve = 0f, alpha = 1f, pinch = 0f;
+			Vector2 shake = Vector2.Zero;
+			if (s < EmergeAt)
+			{
+				pose = Deep;
+				alpha = 0f;
+			}
+			else if (s < ArriveAt)
+			{
+				// 冲出来：先快后慢，冲过头一点再回来（OutBack）
+				float k = (s - EmergeAt) / (ArriveAt - EmergeAt);
+				float e = 1f + 2.2f * Mathf.Pow(k - 1f, 3f) + 1.2f * Mathf.Pow(k - 1f, 2f);
+				pose = Lerp(Deep, Open, e);
+				alpha = Mathf.Clamp(k / 0.25f, 0f, 1f);
+				if (!emerged)
+				{
+					emerged = true;
+					Sfx.Play(Sfx.Crack, 0.5f);                         // 从横幅里破出来
+					Sfx.Play(Sfx.Curse, 0.45f);
+				}
+			}
+			else if (s < GrabAt)
+			{
+				// 张开停一下：手指微微往里扣，像要抓过来
+				float k = (s - ArriveAt) / (GrabAt - ArriveAt);
+				pose = Lerp(Open, Open with { Pos = Open.Pos + new Vector3(0f, 0f, -0.08f), Curl = 0.1f, Spread = 1.45f }, k);
+			}
+			else if (s < FistAt)
+			{
+				float k = (s - GrabAt) / (FistAt - GrabAt);
+				float e = k < 0.5f ? 4f * k * k * k : 1f - Mathf.Pow(-2f * k + 2f, 3f) / 2f;     // 先蓄后猛
+				Pose from = Open with { Pos = Open.Pos + new Vector3(0f, 0f, -0.08f), Curl = 0.1f, Spread = 1.45f };
+				pose = Lerp(from, Fist, e);
+				grip = 0.3f * e;
+				pinch = 0.45f * e;
+			}
+			else if (s < CrushAt)
+			{
+				// 攥紧：越攥越抖，往前压一点，指缝的红光越来越亮
+				float k = (s - FistAt) / (CrushAt - FistAt);
+				pose = Fist with { Pos = Fist.Pos + new Vector3(0f, 0f, -0.1f * k) };
+				grip = Mathf.Lerp(0.3f, 1f, k);
+				pinch = Mathf.Lerp(0.45f, 0.75f, k);
+				float amp = (0.004f + 0.014f * k * k);
+				shake = new Vector2(Mathf.Sin(s * 83f), Mathf.Cos(s * 67f)) * amp * screen.Y;
+				if (!fisted)
+				{
+					fisted = true;
+					Sfx.Play(Sfx.Slam, 0.35f);
+					Sfx.Play(Sfx.SubBoom, 0.3f);
+					onFist?.Invoke();
+				}
+			}
+			else
+			{
+				// 捏碎：拳头往前一顶（0.06s），同时散成咒烟
+				float k = (s - CrushAt) / FadeTime;
+				float push = Fx.OutCubic(Mathf.Clamp((s - CrushAt) / 0.06f, 0f, 1f));
+				pose = Fist with { Pos = Fist.Pos + new Vector3(0f, 0f, -0.1f - 0.35f * push) };
+				grip = Mathf.Max(0f, 1.4f - k * 3f);
+				flash = Mathf.Max(0f, 1f - k * 6f);
+				dissolve = Fx.OutCubic(k);
+				alpha = 1f - Fx.InCubic(k);
+				if (!crushed)
+				{
+					crushed = true;
+					CutIn.Pinch = 0f;
+					Sfx.Play(Sfx.Crush, 0.6f);
+					onCrush?.Invoke();
+				}
+			}
+			h.Apply(pose);
+			h.Rect.GlobalPosition = shake;
+			h.Set("grip", grip);
+			h.Set("flash", flash);
+			h.Set("dissolve", dissolve);
+			h.Set("alpha", alpha);
+			if (s >= GrabAt && s < CrushAt)
+			{
+				CutIn.Pinch = pinch;
+				CutIn.PinchAt = h.ToScreen(pose, new Vector3(0f, 0.85f, -0.35f));
+				CutIn.ShatterFrom = CutIn.PinchAt;
+			}
+		});
+		Fx.FreeAfter(h.Rect, life + 0.05);
+		return h;
+	}
 }

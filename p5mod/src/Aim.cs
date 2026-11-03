@@ -5,6 +5,7 @@ using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using MegaCrit.Sts2.Core.Context;
+using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Cards;
 using MegaCrit.Sts2.Core.Nodes.Combat;
@@ -275,7 +276,12 @@ public static class Aim
 			//   拍 2「出手」：人格面具出手 = 伤害 / 上毒结算（各张牌自己的命中特效带顿帧和冲击声）。
 			Persona.Spec spec = PersonaFor(card);
 			float evoke = tier == Tier.Rare ? SummonStage.EvokeAt : 0f;
-			Summoning[node.GetInstanceId()] = (Time.GetTicksMsec() + 2000, 0.04f + evoke + spec.AttackAt);
+			Summoning[node.GetInstanceId()] = (Time.GetTicksMsec() + 2000, HitFor(card));
+			if (card.GetType().Name == "Outbreak")
+			{
+				OutbreakHand(node, back);
+				return true;
+			}
 			Vector2 head = Joker.PosePoint(node, ReadyFx.MaskFace);
 			Fx.After(back, 0.04, () =>
 			{
@@ -311,9 +317,11 @@ public static class Aim
 	public const float SummonHit = 0.04f + Persona.AttackAt;
 
 	/// <summary>这张牌召唤哪个人格面具：毒性爆发 = 伊邪那岐大神（万物真言），其他 = 亚森。</summary>
-	public static Persona.Spec PersonaFor(CardModel card) => card.GetType().Name switch
+	public static Persona.Spec PersonaFor(CardModel card) => PersonaFor(card.GetType().Name);
+
+	public static Persona.Spec PersonaFor(string cardName) => cardName switch
 	{
-		"Outbreak" => Persona.ArseneSpec with { First = 10, Linger = 1.8f },   // 多 0.1s 起势：手要在他现身之后才伸出去   // 伊邪那岐大神先搁置（用户 2026-11-01）；等深处的手缩回去再走
+		"Outbreak" => Persona.ArseneSpec with { Linger = CrushHand.CrushAfter + 0.5f },   // 巨手版：亚森出手 = 手冲出来，捏碎后再停 0.5s 退场
 		var n when Grips(n) => Persona.ArseneSpec with { Linger = 1.1f },   // 伸手抓人：等手收回来再走
 		_ => Persona.ArseneSpec,
 	};
@@ -322,7 +330,56 @@ public static class Aim
 	public static bool Grips(string cardName) => cardName is "BubbleBubble" or "DeadlyPoison" or "Snakebite";   // 用户 2026-11-01：只要用毒就亚森 + 手捏
 
 	/// <summary>这张牌召唤时人格面具出手的时刻（施法后几秒）：出牌特效对齐到这一刻。</summary>
-	public static float HitFor(CardModel card) => 0.04f + (Tiers.For(card) == Tier.Rare ? SummonStage.EvokeAt : 0f) + PersonaFor(card).AttackAt;
+	public static float HitFor(CardModel card) => card.GetType().Name == "Outbreak"
+		? 0.04f + OutbreakEmerge + CrushHand.CrushAfter               // 巨手版：结算 = 捏碎那一刻
+		: 0.04f + (Tiers.For(card) == Tier.Rare ? SummonStage.EvokeAt : 0f) + PersonaFor(card).AttackAt;
+
+	/// <summary>毒性爆发：巨手从横幅里冲出来的时刻（眼神特写开始后几秒）= 亚森现身后往前出手的那一下。</summary>
+	private static float OutbreakEmerge => SummonStage.EvokeAt + PersonaFor("Outbreak").AttackAt;
+
+	/// <summary>
+	/// 毒性爆发（用户 2026-11-03 创意）：舞台 + 眼神特写 → 亚森照常召唤现身（拍 1，但眼神特写不碎）→ 亚森往前出手，横幅里冲出一只咒烟巨手（CrushHand）
+	/// → 攥住横幅（所有敌人被标记）→ 捏碎 = 横幅碎开 = 游戏结算毒伤 = 所有敌人咒火一起引爆（PoisonFx.Blast）→ 亚森退场。没有光束。
+	/// </summary>
+	private static void OutbreakHand(NCreature node, Control back)
+	{
+		Vector2 head = Joker.PosePoint(node, ReadyFx.MaskFace);
+		Persona.Spec spec = PersonaFor("Outbreak");
+		Fx.After(back, 0.04, () =>
+		{
+			Vector2 feet = Joker.PosePoint(node, ReadyFx.Feet);
+			float tall = (feet - Joker.PosePoint(node, new Vector2(815f, 120f))).Length();
+			float face = Joker.Facing(node);
+			CutIn.SplitAt = OutbreakEmerge + CrushHand.CrushAfter;      // 横幅碎开 = 捏碎
+			if (Joker.FxLayer() is Control fr)
+			{
+				SummonStage.Play(back, fr, head);
+			}
+			CutIn.Eyes(back);
+			Vector2 chest = Persona.ChestOf(spec, feet, tall * 1.35f, face);
+			Fx.After(back, SummonStage.EvokeAt, () =>
+			{
+				SummonStage.Beat(Joker.FxLayer() ?? back, head, back, face, chest);
+				Persona.Show(spec, back, feet, tall * 1.35f, face);
+			});
+			CrushHand.Outbreak(back, OutbreakEmerge, onFist: () =>
+			{
+				if (Joker.FxLayer() is not Control layer || NCombatRoom.Instance is not NCombatRoom room || node.Entity?.CombatState is not { } cs)
+				{
+					return;
+				}
+				var targets = new List<PoisonFx.Target>();
+				foreach (Creature c in cs.HittableEnemies)
+				{
+					if (room.GetCreatureNode(c) is NCreature n)
+					{
+						targets.Add(new PoisonFx.Target(n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, n.Visuals));
+					}
+				}
+				PoisonFx.Squeeze(layer, targets);
+			});
+		});
+	}
 
 	/// <summary>正在召唤的 Joker：(到这个时刻为止的毫秒, 结算要推迟到施法后几秒)。</summary>
 	private static readonly Dictionary<ulong, (ulong Until, float Hit)> Summoning = new();

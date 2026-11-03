@@ -189,9 +189,21 @@ shader_type canvas_item;
 uniform sampler2D tex : filter_linear;
 uniform float zoom = 1.0;
 uniform float alpha = 1.0;
+uniform vec2 pinch_at = vec2(0.5);
+uniform float pinch = 0.0;
 " + ShatterGlsl + @"
 void fragment() {
 	vec2 uv = (UV - 0.5) / zoom + 0.5;
+	// 被巨手攥住（毒性爆发，CrushHand）：横幅往拳心皱进去——拳心附近取更远处的画面（往里收），一圈圈褶子压暗
+	float fold = 0.0;
+	if (pinch > 0.0) {
+		vec2 d = (uv - pinch_at) * vec2(sres.x / sres.y, 1.0);
+		float r = length(d);
+		float ang = atan(d.y, d.x);
+		float f = pinch * exp(-r * r / 0.14) * (1.0 + 0.3 * sin(ang * 7.0 + r * 22.0));
+		uv = pinch_at + (uv - pinch_at) * (1.0 + f * 1.5);
+		fold = pinch * exp(-r * r / 0.1) * (0.5 + 0.5 * sin(ang * 7.0 + r * 22.0));
+	}
 	vec2 src; float back, edge;
 	vec4 c = vec4(0.0);
 	if (shatterSample(uv, src, back, edge)) {
@@ -202,13 +214,24 @@ void fragment() {
 			else if (edge < 0.007) c = vec4(0.02, 0.02, 0.03, 1.0);
 		}
 	}
+	c.rgb *= 1.0 - fold * 0.45;
 	COLOR = vec4(c.rgb, c.a * alpha);
 }" };
+
+	/// <summary>毒性爆发的巨手攥住横幅：皱进去多少（0 = 不皱）、拳心在屏幕上的位置（像素）。CrushHand 每帧写，Eyes 每帧读。</summary>
+	public static float Pinch;
+	public static Vector2 PinchAt;
+
+	/// <summary>碎开的中心（null = 横幅默认位置）。毒性爆发设成拳心。</summary>
+	public static Vector2? ShatterFrom;
+
 	/// <summary>放一次眼神特写（背景层，人物、敌人在前面）。原版网格画进离屏画面，再用 BandShader 显示。</summary>
 	public static void Eyes(Control back)
 	{
 		if (Fx.Tex("eyes") is not Texture2D tex) return;
 		Load();
+		Pinch = 0f;
+		ShatterFrom = null;
 		Clip clip = _clip!;
 		Prepared[] parts = _parts!;
 		Vector2 screen = Fx.Screen(back);
@@ -287,6 +310,8 @@ void fragment() {
 			}
 			float k = Mathf.Clamp((s - ImpactAt) / 0.16f, 0f, 1f);
 			m.SetShaderParameter("zoom", s < ImpactAt ? 1f : Mathf.Lerp(1.08f, 1f, Fx.OutCubic(k)));
+			m.SetShaderParameter("pinch", Pinch);
+			m.SetShaderParameter("pinch_at", PinchAt / screen);
 			if (!hit && s >= ImpactAt)
 			{
 				hit = true;
@@ -401,7 +426,7 @@ void fragment() { COLOR = vec4(COLOR.rgb, COLOR.a * step(0.5, texture(mask, SCRE
 	/// <summary>横幅从冲击点放射状裂开，0.05s 裂纹定格（白裂纹 + 白闪），然后碎成大块玻璃炸开、迅速减速、慢慢转着漂、一部分飞向镜头放大、淡出。</summary>
 	private static void Shatter(Control back, Texture2D tex, Vector2 screen, Rect2 band, System.Action hideBand)
 	{
-		Vector2 hit = band.Position + band.Size * new Vector2(0.42f, 0.52f);
+		Vector2 hit = ShatterFrom ?? band.Position + band.Size * new Vector2(0.42f, 0.52f);      // 毒性爆发：从拳心碎开
 		Vector2[] rect = { band.Position, band.Position + new Vector2(band.Size.X, 0f), band.End, band.Position + new Vector2(0f, band.Size.Y) };
 		float reach = screen.Length();
 		float[] rings = { 0f, 70f, 160f, 290f, 460f, 700f, 1000f, 1400f, reach + 200f };

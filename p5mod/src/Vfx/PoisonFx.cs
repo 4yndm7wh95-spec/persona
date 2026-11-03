@@ -72,6 +72,13 @@ public static class PoisonFx
 
 	private static void Apply(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount, bool retry)
 	{
+		// 毒性爆发（巨手版）：结算推到了捏碎那一刻，标记早在攥住横幅时做过（Squeeze）→ 这里只让毒伤立刻引爆
+		if (InOutbreak && HandMode)
+		{
+			ulong nowMs = Stage.NowMs();
+			_beamLand = nowMs > 380 ? nowMs - 380 : 0;
+			return;
+		}
 		// 游戏上毒和亚森出手常在同一帧：上毒先执行时爪尖还没记下 → 有召唤的场合（毒性爆发）等一帧再判断，免得走成没召唤的普通落点
 		if (retry && InOutbreak && !ArseneFx.TryClaw(out _))
 		{
@@ -159,7 +166,30 @@ public static class PoisonFx
 	/// 而是等亚森甩出去的咒怨光束都落地之后，所有敌人身上的咒火同时冲天而起（Blast），第一下压全屏红黑冲击帧 + 最重的顿帧。
 	/// 前面的眼神特写、舞台、亚森现身走 Aim 的稀有召唤流程。
 	/// </summary>
-	public static void BeginOutbreak(float seconds) => _outbreakUntil = Stage.NowMs() + (ulong)(seconds * 1000f);
+	public static void BeginOutbreak(float seconds, bool hand = true)
+	{
+		_outbreakUntil = Stage.NowMs() + (ulong)(seconds * 1000f);
+		HandMode = hand;
+		ulong now = Stage.NowMs();
+		_beamLand = now > 380 ? now - 380 : 0;
+	}
+
+	/// <summary>
+	/// 毒性爆发走巨手版（用户 2026-11-03 创意，CrushHand）：眼神特写里伸出一只咒烟巨手，攥住横幅、捏碎 = 引爆。
+	/// 没有亚森现身和光束；攥住横幅那一刻所有敌人被标记（Squeeze），捏碎那一刻游戏结算毒伤、所有敌人一起引爆（Blast）。
+	/// </summary>
+	public static bool HandMode;
+
+	public readonly record struct Target(Vector2 At, Vector2 Top, float Width, Node2D? Body);
+
+	/// <summary>巨手攥住横幅：所有敌人身上一团暗燃的咒火（被攥住了），停到捏碎那一刻一起炸。</summary>
+	public static void Squeeze(Control layer, IEnumerable<Target> targets)
+	{
+		foreach (Target t in targets)
+		{
+			Mark(layer, t.At, t.Top, t.Width, t.Body);
+		}
+	}
 
 	public static bool InOutbreak => Stage.NowMs() < _outbreakUntil;
 
