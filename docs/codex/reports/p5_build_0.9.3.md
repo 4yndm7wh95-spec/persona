@@ -1,32 +1,62 @@
 # P5Joker 0.9.3 编译安装报告
 
-- git log -1 --oneline：`30f20330 art: Joker summon bridge frames (hand on mask -> command)`
+- git log -1 --oneline：`0f5bd48a Merge branch 'claude/cool-pascal-mil5i8' of https://github.com/4yndm7wh95-spec/persona into claude/cool-pascal-mil5i8`
 - 分支：claude/cool-pascal-mil5i8。
-- 工作目录：`C:\Users\kkk\sts2_tools\tmp\sts2_vfx_20261102\repo`，沿用用户此前授权。
+- 实际仓库：`C:\Users\kkk\sts2_tools\tmp\sts2_vfx_20261102\repo`（沿用用户授权）。
 - 游戏进程检查：无输出。
-- 初始工作区：干净。
-- 编译：未执行；warning 条数：未统计。
-- PCK 大小：未打包，未统计。
-- 备份位置：无（未安装）。
-- 安装文件列表：未执行安装，未列出；游戏文件未改动。
+- 版本：P5Joker.json 的 version、ModEntry.cs 的 Version 均为 0.9.3。
+- 最终结果：编译、打包、备份和安装成功。
 
-## 停止原因
+## 更新问题处理
 
-第 2 步版本确认不满足要求。指定 fetch 成功，checkout 成功，merge --ff-only origin/claude/cool-pascal-mil5i8 返回 Already up to date.，但两个版本字段仍为 0.8.0，非 0.9.3。依据文档“不是就停下来报告”的要求停止，未自行改版本或代码。
+此前 origin 引用过旧，且 pull 合并缺少提交者身份。用户授权解决后，使用单次命令身份完成 pull --no-rebase --no-edit，合并成功、无冲突；随后通过显式 refspec 刷新 origin/claude/cool-pascal-mil5i8 至 7540b4b2。未修改任何全局或系统配置。保留此前本地报告提交 0d8fc1c4。
 
-检查命令：
+## 编译结果
+
+在实际仓库 p5mod 目录运行：
 
 ```powershell
-Select-String -LiteralPath 'p5mod\P5Joker.json','p5mod\src\ModEntry.cs' -Pattern '"version"|Version\s*='
+& 'C:\Users\kkk\sts2_tools\dotnet\dotnet.exe' build -c Release
 ```
 
-完整输出：
+成功，退出码 0，0 个 warning、0 个 error。DLL 存在，大小 559,104 字节。
 
 ```text
-p5mod\P5Joker.json:6:  "version": "0.8.0",
-p5mod\src\ModEntry.cs:14: public const string Version = "0.8.0";
+Determining projects to restore...
+  All projects are up-to-date for restore.
+  P5Joker -> C:\Users\kkk\sts2_tools\tmp\sts2_vfx_20261102\repo\p5mod\bin\Release\net9.0\P5Joker.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.35
 ```
 
-已执行命令均无报错。远端 FETCH_HEAD 中能读取 0.9.3 说明，但当前 origin 引用和工作区未带来对应版本；未进一步调整引用或继续构建。
+## PCK 与备份
 
-未修改代码、未生图、未安装工具、未删除文件、未改全局 git config 或系统环境变量/PATH，未进入禁止的旧仓库，未读取密码、密钥或禁止文件。未使用 Computer Use，未启动游戏，未结束进程，未做实机验收。
+- stage：`C:\Users\kkk\sts2_tools\tmp\p5_stage_0.9.3`，确认不存在后新建，复制全部资源（含隐藏内容）。
+- 工具：`C:\Users\kkk\sts2_tools\gdre\gdre_tools.exe`
+- 参数：--headless、--pck-version=3、--pck-engine-version=4.5.1；退出码 0。
+- PCK：`C:\Users\kkk\sts2_tools\tmp\P5Joker_0.9.3.pck`
+- PCK 大小：56,989,764 字节，大于 5 MB。
+- 原安装完整备份：`C:\Users\kkk\sts2_tools\backup\P5Joker_20261103_052007\`
+
+## 安装文件
+
+三个文件均已覆盖复制至：
+
+`C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2\mods\P5Joker\`
+
+全部文件列表（America/Chicago，UTC-06:00）：
+
+| 文件名 | 大小（字节） | 修改时间 |
+| --- | ---: | --- |
+| P5Joker.dll | 559104 | 2026-11-03 05:19:25 -06:00 |
+| P5Joker.json | 541 | 2026-11-03 05:18:52 -06:00 |
+| P5Joker.pck | 56989764 | 2026-11-03 05:19:58 -06:00 |
+
+## 执行说明
+
+本次恢复执行无命令错误。未修改代码或特效、未生图、未安装工具、未删除文件、未修改全局 git config、系统环境变量或 PATH，未进入禁止的旧仓库，未读取密码、密钥或禁止文件。命令逐条执行，游戏目录仅复制指定三个文件。未使用 Computer Use，未启动游戏，未结束进程，未做实机验收，由用户自行验收。
+
