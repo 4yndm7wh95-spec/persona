@@ -55,7 +55,7 @@ uniform float flash = 0.0;
 uniform float fire = 1.0;
 uniform float flame_px = 120.0;
 uniform vec2 body_y = vec2(0.15, 0.95);
-uniform float aura = 0.0;   // 蓝焰开关（用户 2026-11-03：先去掉，最终版亚森定了再说）
+uniform float aura = 0.0;   // 蓝焰强度：只在现身 / 退场时烧（用户 2026-11-03：照 P5 动画觉醒那段的蓝焰），待机时 0
 void fragment() {
 	vec4 c = texture(TEXTURE, UV);
 	vec2 ps = TEXTURE_PIXEL_SIZE;
@@ -79,20 +79,84 @@ void fragment() {
 		dist = min(dist, mix(1.0, f, step(0.4, texture(TEXTURE, UV + o).a)));
 	}
 	// 火舌：横向很密、纵向拉长、往上滚的噪声，减去距离——越往外越要噪声够高才有火，于是边缘碎成一缕缕长短不一的火舌
-	float tn = texture(noise, vec2(UV.x * 9.0 + (n1 - 0.5) * 0.25, UV.y * 1.4 + clock * 1.9)).r;
-	float v = clamp(tn * 1.35 + 0.2 - dist * 1.45 + (n2 - 0.5) * 0.25, 0.0, 1.0);
+	// 火舌：P5 动画觉醒那段的蓝焰是又长又尖的叶形火舌、往上猛甩 → 噪声横向更密、纵向拉得更长、滚得更快
+	float tn = texture(noise, vec2(UV.x * 6.5 + (n1 - 0.5) * 0.4, UV.y * 0.8 + clock * 2.4)).r;
+	// aura 不改透明度、改火舌长短（硬边的火一半透明就发灰）：aura 小 → 要求的噪声更高 → 火舌缩短、收进轮廓
+	float v = clamp(tn * 1.6 + 0.15 - dist * 1.9 + (n2 - 0.5) * 0.3 - (1.0 - aura) * 0.9, 0.0, 1.0);
 	float body_fire = c.a * (1.0 - vis) * smoothstep(0.25, 0.75, n2 + (n1 - 0.5) * 0.6);   // 显形之前 / 烧掉时：剪影里面是翻滚的蓝火（不是一整块）
-	float flame = max(smoothstep(0.03, 0.3, v) * min(fire, 1.0), body_fire * smoothstep(0.15, 0.6, n1 + n2 * 0.6)) * (1.0 - c.a * vis);
-	// 颜色：根部（贴着轮廓）青白 → 天蓝 → 外缘深蓝，越往外越透明
-	float heat = mix(clamp(v * 1.35, 0.0, 0.92), 0.3 + 0.4 * n1, body_fire);
-	vec3 fc = texture(lut, vec2(heat, 0.5)).rgb;
-	flame *= 0.82 * aura;                                         // 火是半透明的，透出后面的背景；aura = 0 关掉
+	// 硬边：火的外形是一刀切的（赛璐璐），不是柔边半透明
+	float flame = max(smoothstep(0.06, 0.09, v), body_fire * smoothstep(0.34, 0.38, n1 + n2 * 0.6 - (1.0 - aura) * 0.8)) * (1.0 - c.a * vis);
+	flame *= smoothstep(0.0, 0.06, UV.y);                         // 离屏画面上沿：火舌尖收掉，别被切平
+	// 身上的火斑（用户 2026-11-03：火不用大，但各部位都要有、分布均匀）：剪影里面被往上滚的噪声切成一片片尖叶形的火，
+	// 盖在头、手臂、翅膀、腿上；aura 越大火斑越多（现身时多，很快退掉露出人物；退场反过来）
+	float bn = texture(noise, vec2(UV.x * 7.0 + (n1 - 0.5) * 0.3, UV.y * 2.2 + clock * 2.2)).r;
+	float bn2 = texture(noise, vec2(UV.x * 15.0 + 0.5, UV.y * 4.5 + clock * 3.1)).r;
+	float pv = bn * 0.8 + bn2 * 0.35 - mix(1.05, 0.55, aura);
+	float patch = c.a * vis * smoothstep(0.0, 0.015, pv) * step(0.001, aura);
+	// 颜色：P5 动画的四档硬边分层——贴着轮廓白芯 → 青 → 饱和蓝 → 外缘深海军蓝，档与档之间没有渐变
+	float heat = mix(clamp(v * 1.35, 0.0, 1.0), 0.3 + 0.5 * n1, body_fire);
+	vec3 fc = heat > 0.8 ? vec3(0.93, 0.98, 1.0) : heat > 0.56 ? vec3(0.4, 0.8, 1.0) : heat > 0.3 ? vec3(0.1, 0.38, 0.92) : vec3(0.03, 0.09, 0.32);
+	flame *= step(0.001, aura);                                   // aura = 0 关掉（待机不烧）
 	vec3 pc = mix(c.rgb, vec3(1.0, 0.96, 0.96), flash);
 	float pa = c.a * vis;
+	vec3 pcol = pv > 0.2 ? vec3(0.94, 0.98, 1.0) : pv > 0.1 ? vec3(0.4, 0.8, 1.0) : pv > 0.04 ? vec3(0.1, 0.38, 0.92) : vec3(0.03, 0.09, 0.32);
+	pc = mix(pc, pcol, patch);
 	vec3 rgb = mix(fc, pc, pa) + vec3(0.45, 0.65, 0.85) * edge * 1.1;
 	// 注意：COLOR 的输入已经乘过贴图透明度，剪影外是 0——不能再乘，不然剪影外的火全没了
 	COLOR = vec4(rgb, clamp(max(pa, flame) + edge, 0.0, 1.0));
 }" };
+
+	private static Shader? _flameShader;
+
+	/// <summary>
+	/// 亚森现身 / 退场的一团蓝焰（用户 2026-11-03：照 P5 动画觉醒那段；不要大面积、不要贴着轮廓烧；原版序列帧套蓝色像贴纸）。
+	/// 一根独立的火柱：下宽上尖的形状被往上滚的噪声撕成一条条尖叶形的火舌；四档硬边分层（深海军蓝 → 饱和蓝 → 青 → 白芯），
+	/// 越往里越亮。life 0→1：0～0.22 猛地烧起来、窜高，0.5 之后从下往上烧散、整体缩回去。
+	/// </summary>
+	private static Shader FlameShader => _flameShader ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform sampler2D noise : repeat_enable, filter_linear;
+uniform float clock = 0.0;
+uniform float life = 0.0;
+uniform float seed = 0.0;
+void fragment() {
+	float x = UV.x * 2.0 - 1.0;
+	float y = 1.0 - UV.y;
+	float grow = smoothstep(0.0, 0.22, life);
+	float fade = smoothstep(0.5, 1.0, life);
+	float hgt = mix(0.25, 1.0, grow) * (1.0 - 0.45 * fade);
+	float n1 = texture(noise, vec2(x * 0.9 + seed, y * 0.7 - clock * 1.6)).r;
+	float n2 = texture(noise, vec2(x * 2.6 + seed * 1.7, y * 0.55 - clock * 2.8)).r;
+	float n3 = texture(noise, vec2(x * 6.0 - seed, y * 1.4 - clock * 3.6)).r;
+	// 越往上左右摆得越厉害；火柱宽度从底到顶收尖
+	float xw = x + (n1 - 0.5) * 0.6 * y;
+	float yy = clamp(y / max(hgt, 0.01), 0.0, 1.2);
+	float wid = 0.62 * pow(max(1.0 - yy, 0.0), 0.75) * mix(0.6, 1.0, grow);
+	// 火舌：纵向拉长的噪声把边缘切成尖叶形（越往上越碎）
+	float v = wid - abs(xw) + (n2 - 0.5) * (0.25 + 0.55 * yy) + (n3 - 0.5) * 0.12;
+	// 底部收边（圆一点），烧散时从下往上被吃掉
+	v -= smoothstep(0.12, 0.0, y) * 0.25;
+	v -= fade * 0.45 + smoothstep(fade * 1.2 - 0.25, fade * 1.2, y) * 0.0;
+	v -= max(0.0, fade * 1.3 - y) * 0.8;
+	float a = smoothstep(0.0, 0.012, v);
+	vec3 col = v > 0.34 ? vec3(0.94, 0.98, 1.0) : v > 0.2 ? vec3(0.4, 0.8, 1.0) : v > 0.08 ? vec3(0.1, 0.38, 0.92) : vec3(0.03, 0.09, 0.32);
+	COLOR = vec4(col, a);
+}" };
+
+	/// <summary>放一团蓝焰火柱：toe = 亚森脚尖（屏幕），height = 亚森身高，front = 盖在亚森前面（现身 / 退场时人从火里显出 / 被火吞掉）。</summary>
+	private static void SummonFlame(Control back, Vector2 toe, float height, float life = 0.55f)
+	{
+		Vector2 size = new(height * 0.75f, height * 1.05f);
+		ShaderMaterial m = new() { Shader = FlameShader };
+		m.SetShaderParameter("noise", Paint.Noise);
+		m.SetShaderParameter("seed", Fx.Rand(0f, 10f));
+		ColorRect r = new() { Material = m, Size = size, MouseFilter = Control.MouseFilterEnum.Ignore, Name = "P5ArseneFlame" };
+		back.AddChild(r);
+		r.GlobalPosition = toe + new Vector2(-size.X * 0.5f, -size.Y + 0.05f * height);
+		Fx.Clock(r);
+		Fx.Animate(r, 0, life, k => m.SetShaderParameter("life", k));
+		Fx.FreeAfter(r, life + 0.05);
+	}
 
 	/// <summary>现在在场的亚森：出手那一刻的爪尖（全局坐标）和时刻（毫秒）。</summary>
 	private static Vector2 _claw;
@@ -123,7 +187,7 @@ void fragment() {
 		Vector2 toeScreen = feet + new Vector2(-0.62f * height * facing, -0.3f * height);   // v7 两翼垂着、扑出去时别压到 Joker 身上
 		// 整个亚森画进一张离屏画面（SubViewport），蓝焰在合成后的剪影上烧（见 PersonaShader）。
 		// 画面范围（全图坐标）：x -300～2350、y -500～2400，四周留出扑出去的余量
-		const float vx0 = -300f, vy0 = -500f, vw = 2650f, vh = 2900f;
+		const float vx0 = -300f, vy0 = -900f, vw = 2650f, vh = 3300f;   // 上面多留 400：现身 / 退场的火舌
 		Vector2 vpSize = new Vector2(vw, vh) * k;
 		SubViewport vp = new()
 		{
@@ -179,9 +243,8 @@ void fragment() {
 		body.MoveChild(wingB, 0);
 		body.MoveChild(wingF, 1);
 
-		// 现身：身后一团青光 + 一股暗红咒烟炸开
-		Glow.Flash(back, toeScreen + new Vector2(0f, -0.45f * height), new Color(0.3f, 0.8f, 1f), height * 1.1f, 0.55f);
-		Vanilla.Burst(back, Vanilla.BigSlashSmoke, toeScreen + new Vector2(0f, -0.5f * height), 0f, height / 260f, Lut5.Smoke);
+		// 现身：一团蓝焰（SummonFlame）轰地烧起来，亚森从火里显形；身后一团青光
+		Glow.Flash(back, toeScreen + new Vector2(0f, -0.45f * height), new Color(0.3f, 0.8f, 1f), height * 0.8f, 0.4f);
 
 		bool burned = false;
 
@@ -319,7 +382,18 @@ void fragment() {
 			wingB.Rotation = -0.6f * open + flap + wingKick;
 			wingF.Rotation = 0.6f * open - flap - wingKick * 1.2f;
 			mat.SetShaderParameter("flash", beat * beat * 0.3f);
-			mat.SetShaderParameter("fire", fire + beat * 0.35f);       // 出手一闪（平方衰减：顿帧拖慢时不会一直发灰）
+			// 现身 / 退场的蓝焰（P5 动画觉醒那段）：现身时整团火把剪影吞没、火舌拉到很长，0.25s 起退开露出人物，0.55s 收完；
+			// 退场时火重新窜起来把人烧掉。待机不烧（用户之前嫌待机的火艳、散）
+			float burst = time < 0.55f ? 1f - Mathf.SmoothStep(0.22f, 0.55f, time) : 0f;
+			float fireLen = 0.35f + 0.25f * burst;           // 用户：不要大面积 → 轮廓上只冒短火舌
+			if (time > exitAt)
+			{
+				float e = Mathf.Clamp((time - exitAt) / outT, 0f, 1f);
+				burst = Mathf.Max(burst, Mathf.Min(1f, e * 4f) * (1f - e * e));
+				fireLen = 0.35f + 0.25f * Mathf.Min(1f, e * 3f);
+			}
+			mat.SetShaderParameter("aura", burst);
+			mat.SetShaderParameter("fire", fireLen + beat * 0.35f);       // 出手一闪（平方衰减：顿帧拖慢时不会一直发灰）
 			eyes.Modulate = new Color(1f + beat * 3f, 1f + beat * 1.5f, 1f + beat * 1.5f, 1f);
 		});
 		Fx.FreeAfter(display, total + 0.05);

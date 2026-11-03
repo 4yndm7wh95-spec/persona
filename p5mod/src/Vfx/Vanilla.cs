@@ -11,7 +11,9 @@ public static class Lut5
 {
 	private static readonly Dictionary<string, GradientTexture1D> Cache = new();
 
-	private static GradientTexture1D Make(string key, params (float At, Color C)[] stops)
+	private static GradientTexture1D Make(string key, params (float At, Color C)[] stops) => Make(key, false, stops);
+
+	private static GradientTexture1D Make(string key, bool hard, params (float At, Color C)[] stops)
 	{
 		if (Cache.TryGetValue(key, out GradientTexture1D? t))
 		{
@@ -26,6 +28,10 @@ public static class Lut5
 			colors[i] = stops[i].C;
 		}
 		Gradient g = new() { Offsets = offsets, Colors = colors };
+		if (hard)
+		{
+			g.InterpolationMode = Gradient.InterpolationModeEnum.Constant;   // 档与档之间没有渐变（赛璐璐分层）
+		}
 		t = new GradientTexture1D { Gradient = g, Width = 256 };
 		Cache[key] = t;
 		return t;
@@ -69,6 +75,13 @@ public static class Lut5
 	/// <summary>Persona 身上的蓝焰（用户 2026-11-03：太艳）：深蓝 → 灰调钢蓝 → 淡青，芯不到纯白，饱和度压低。</summary>
 	public static GradientTexture1D PersonaAura => Make("persona_aura",
 		(0f, new Color("050c18")), (0.35f, new Color("173761")), (0.65f, new Color("3f73a6")), (0.88f, new Color("93bad8")), (1f, new Color("c9dceb")));
+
+	/// <summary>
+	/// 亚森现身 / 退场的蓝焰（用户 2026-11-03 给的 P5 动画觉醒片段）：四档硬边分层——深海军蓝 → 饱和蓝 → 青 → 白芯，
+	/// 套在原版手绘火焰序列帧上（火的形状精细自然，颜色是 P5 的赛璐璐分层）。
+	/// </summary>
+	public static GradientTexture1D PersonaCel => Make("persona_cel", true,
+		(0f, new Color("08184f")), (0.3f, new Color("1a5fe8")), (0.58f, new Color("66c8ff")), (0.82f, new Color("eef8ff")));
 
 	/// <summary>金：暴击 / 撒旦耶尔。</summary>
 	public static GradientTexture1D Gold => Make("gold",
