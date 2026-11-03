@@ -1,0 +1,30 @@
+{
+  "name": "arm_back",
+  "prompt": "Produce ONLY the image-left bent arm and black clawed hand resting across Arsene's waist, isolated as a complete 2D puppet sprite from the attached approved master. EXACT same red tailored sleeve, gold cuff buttons, black long glove, same elbow bend and same hand pose at waist with fingers curved downward. Include the entire rounded shoulder joint under the red shoulder cap, upper arm, elbow, forearm, cuff and ALL hand/fingers, fill any hidden elbow/shoulder part for rotation. No torso, vest, chains, head, hat, legs, wings, other arm or background. Same 2D Persona 5 flat cel shading and ink lines, not realistic. Preserve original arm pose, no extending arm. Transparent RGBA with alpha zero outside arm. Use same 2048x2304 canvas and original arm position, size, shoulder and fingertips coordinates.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-e6201d19-113f-4aca-970f-49b7d778348b.png",
+  "master": "../arsene_draft_v7_facefix.png",
+  "canvas": [
+    2048,
+    2304
+  ],
+  "source_alpha_bbox": [
+    112,
+    104,
+    1016,
+    1122
+  ],
+  "registered_bbox": [
+    920,
+    600,
+    1335,
+    1040
+  ],
+  "pivot": [
+    1090,
+    665
+  ],
+  "mirrored_for_shoulder_direction": false,
+  "registration": "manual bounding-box fit; independent generation, not pixel-exact decomposition",
+  "generation_count": 1,
+  "redraw_count": 0
+}

@@ -1,0 +1,30 @@
+{
+  "name": "wing_back",
+  "prompt": "Extract and COMPLETE ONLY the large drooping feathered wing on IMAGE LEFT from this approved Arsene illustration, as one isolated 2D puppet layer. Same exact black-violet feather design, red inner feathers, thick clean outlines, hard cel shading; same pose and silhouette from its curved upper crest down to the long tapering lower feathers. Reconstruct its short hidden shoulder/root section behind the torso, with enough overlapping feathers for ±12 degree rotation. Remove EVERYTHING else: no body, head, hat, arm, hand, legs, opposite wing, glow or text. One wing only, genuine transparent RGBA background, no shadow/haze. Keep the wing at its original position and size on the same 2048x2304 full canvas with wide transparent space on the right. Do not spread the wing horizontally or redesign feathers.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-04955088-f311-4299-88c5-67cc4d885cba.png",
+  "master": "../arsene_draft_v7_facefix.png",
+  "canvas": [
+    2048,
+    2304
+  ],
+  "source_alpha_bbox": [
+    39,
+    243,
+    721,
+    1810
+  ],
+  "registered_bbox": [
+    260,
+    460,
+    1120,
+    2200
+  ],
+  "pivot": [
+    1060,
+    790
+  ],
+  "mirrored_for_shoulder_direction": false,
+  "registration": "manual bounding-box fit; independent generation, not pixel-exact decomposition",
+  "generation_count": 1,
+  "redraw_count": 0
+}

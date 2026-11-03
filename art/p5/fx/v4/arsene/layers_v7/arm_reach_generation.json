@@ -1,0 +1,30 @@
+{
+  "name": "arm_reach",
+  "prompt": "Extract ONLY Arsene's IMAGE-RIGHT arm bent upward with its long black clawed hand at the WHITE CRAVAT/CHEST from this approved master, as a complete isolated 2D puppet layer. Keep exactly its current gesture: red sleeve elbow bends low on image right, forearm rises toward chest, black gloved hand comes inward across cravat, elegant sharp curved fingers. Include FULL hidden rounded shoulder joint, upper arm, elbow, forearm, red cuff with gold buttons and entire black hand/fingertips; fill occluded underside so it can rotate Â±10 degrees and later reach forward. Do NOT include the white cravat, torso, chains, face, hat, legs, other arm, wings or other objects. Only ONE complete bent arm. Exact same red/black cel shaded design, proportions and original pose; not a new straight outstretched arm. True transparent RGBA background with no haze/shadow/text. Same 2048x2304 full canvas and original arm location and scale.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-cef6f8f9-c1d0-43a2-9876-759ab6518855.png",
+  "master": "../arsene_draft_v7_facefix.png",
+  "canvas": [
+    2048,
+    2304
+  ],
+  "source_alpha_bbox": [
+    78,
+    570,
+    769,
+    1399
+  ],
+  "registered_bbox": [
+    1240,
+    600,
+    1510,
+    900
+  ],
+  "pivot": [
+    1380,
+    665
+  ],
+  "mirrored_for_shoulder_direction": true,
+  "registration": "Generated complete arm retained in raw; visible glove/sleeve taken from approved master with masked joint fill from generated layer, to retain the original chest pose.",
+  "generation_count": 1,
+  "redraw_count": 0
+}
