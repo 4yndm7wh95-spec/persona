@@ -1,0 +1,19 @@
+{
+  "name": "summon_command_mid_a",
+  "prompt": "Edit IMAGE1 as a full-body Persona 5 Joker game sprite. IMAGE2 is only the face identity standard. Summon command halfway frame: move ONLY the red-gloved right arm currently covering his face: hand leaves face and swings halfway outward toward image RIGHT, elbow still bent, forearm pointing forward-right, open relaxed palm. Left arm stays hanging unchanged. Preserve identical head size, hair, face identity, torso, shoulders, leg lengths, BOTH feet positions and toe angles, coat shape, canvas framing and boots baseline. Reveal face behind departing hand, eyes look image right, irises centered slightly right with highlights, rounded Joker chin per IMAGE2. No mask, weapon, effects, smoke, glow, ground, shadow, lettering or background. Crisp black outlines, same cel shading as IMAGE1. One character, two arms. Exact 1024x1536 full-body composition, genuine transparent RGBA alpha zero outside silhouette; eliminate the source's ambient haze, not a black background.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-276bfb80-9c74-468f-ba33-1666c760b931.png",
+  "inputs": [
+    "summon_hold_a.png",
+    "face_standard.png"
+  ],
+  "raw_size": [
+    1024,
+    1536
+  ],
+  "delivery_size": [
+    1024,
+    1536
+  ],
+  "generation_count": 1,
+  "redraw_count": 0
+}
