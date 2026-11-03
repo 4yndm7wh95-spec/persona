@@ -265,6 +265,25 @@ public partial class Preview : Node2D
 			p.At(0.3, () => { p._joker?.Play("knife_in"); p._joker?.Queue("knife_loop", true); });
 			p.At(1.3, () => p._joker?.Play("knife_out"));
 		},
+		// 毒性爆发（稀有）：眼神特写 + 舞台 + 新亚森 → 出手，咒怨光束扇形射向三个敌人（各 9 层）→ 立即触发中毒：全场咒火一起引爆
+		["outbreak_v4"] = p =>
+		{
+			Persona.Spec spec = Persona.ArseneSpec with { First = 10, Linger = 1.8f };   // 同 Aim.PersonaFor("Outbreak")
+			float hit = 0.04f + SummonStage.EvokeAt + spec.AttackAt;                    // 同 Aim.HitFor
+			p.At(0.3, () => { p._joker?.Play("cast_big"); PoisonFx.BeginOutbreak(hit + 1.5f); });
+			p.RareSummon(0.3, spec);
+			p.Poison(0.3 + hit, Enemy2, 9);
+			p.Poison(0.3 + hit + 0.01, Enemy, 9);
+			p.Poison(0.3 + hit + 0.02, Enemy3, 9);
+			foreach ((Vector2 e, double dt) in new[] { (Enemy2, 0.04), (Enemy, 0.05), (Enemy3, 0.06) })
+			{
+				p.At(0.3 + hit + dt, () =>
+				{
+					p._enemies.TryGetValue(e, out Node2D? n);
+					PoisonFx.Tick(p._front, e, e - new Vector2(0f, 120f), 230f, n);
+				});
+			}
+		},
 		// 第四版毒组 + 新亚森：致命毒药（亚森现身 → 出手把咒怨甩过去 → 炸开）→ 弹跳药瓶（亚森出手，三跳）→ 带毒刺击（不召唤，只有落点）→ 一轮毒伤
 		["arsene_poison"] = p =>
 		{

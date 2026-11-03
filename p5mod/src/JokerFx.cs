@@ -115,7 +115,9 @@ public static class JokerFx
 				break;
 			case "Outbreak":
 			{
-				// 第四版：0.7 的深处之手（DepthGrip）停用（用户 2026-11-02：0.7 只保留刀扇弹射）；施毒特效走 PoisonApplyPatch → PoisonFx，毒性爆发的专属演出另做
+				// 第四版：稀有召唤（眼神特写 + 舞台 + 新亚森，Aim）→ 亚森出手，咒怨光束扇形射向每个敌人（PoisonApplyPatch）
+				// → 牌效果「立即触发中毒」时所有敌人的咒火一起引爆（PoisonFx.Blast）。0.7 的深处之手（DepthGrip）停用。
+				PoisonFx.BeginOutbreak(Aim.HitFor(card) + 1.5f);
 				break;
 			}
 			case var n when Aim.Grips(n) && t != null:

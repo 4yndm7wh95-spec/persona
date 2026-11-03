@@ -85,6 +85,7 @@ public static class PoisonFx
 					Paint.Rise(layer, "curse_soul", p, 70f, 0.4f, Lut5.Curse, 0.5f, 0.03f * i);
 				}
 			}
+			_beamLand = Stage.NowMs() + 80;
 			Fx.After(layer, 0.08, () => Impact(layer, at, top, width, body, amount, d, true));
 			return;
 		}
@@ -125,9 +126,64 @@ public static class PoisonFx
 		Fx.After(layer, 0.12, () => BodyTint.Pulse(body, new Color(0.72f, 0.45f, 0.52f), 0.18, 0.45));
 	}
 
+	// ───────────────────────── 毒性爆发（稀有）─────────────────────────
+
+	private static ulong _outbreakUntil, _beamLand, _lastBlast;
+
+	/// <summary>
+	/// 毒性爆发出牌时（JokerFx.OnPlay）：接下来 seconds 秒里的毒伤结算（牌效果里的「立即触发中毒」）不走普通的一小团，
+	/// 而是等亚森甩出去的咒怨光束都落地之后，所有敌人身上的咒火同时冲天而起（Blast），第一下压全屏红黑冲击帧 + 最重的顿帧。
+	/// 前面的眼神特写、舞台、亚森现身走 Aim 的稀有召唤流程。
+	/// </summary>
+	public static void BeginOutbreak(float seconds) => _outbreakUntil = Stage.NowMs() + (ulong)(seconds * 1000f);
+
+	private static bool InOutbreak => Stage.NowMs() < _outbreakUntil;
+
+	/// <summary>引爆：三团大咒火 + 一团晚一拍的大火柱 + 大怨灵 + 火星；同一批里第一下带全屏冲击帧（Impact 的「战斗结束」档）。</summary>
+	private static void Blast(Control layer, Vector2 at, Vector2 top, float width, Node2D? body)
+	{
+		float h = Mathf.Max(80f, (at - top).Length());
+		Vector2 foot = at + new Vector2(0f, h * 0.75f);
+		float k = Mathf.Clamp(width / 240f, 0.55f, 1.3f);
+		ulong now = Stage.NowMs();
+		if (now - _lastBlast > 150)
+		{
+			Sfx.Play(Sfx.Critical, 0.8f);
+			Sfx.Play(Sfx.SubBoom, 0.8f);
+			global::P5Joker.Impact.Confirm(layer, null, at, Vector2.Up, Weight.Finale);
+		}
+		_lastBlast = now;
+		Sfx.Play(Sfx.PoisonTick, 0.7f);
+		Glow.Flash(layer, at, new Color(1f, 0.3f, 0.35f), width * 2.2f, 0.3f);
+		Glow.Ripple(layer, at, width * 3f, 0.55f, 0.04f);
+		CurseFlame(layer, Vanilla.FireCenter, foot, 1.45f * k);
+		CurseFlame(layer, Vanilla.FireLeft, foot + new Vector2(-0.35f * width, 0f), 1.1f * k, 0.04f);
+		CurseFlame(layer, Vanilla.FireRight, foot + new Vector2(0.35f * width, 0f), 1.1f * k, 0.07f);
+		CurseFlame(layer, Vanilla.FireCenter, foot + new Vector2(0f, -0.35f * h), 1.2f * k, 0.16f);
+		// 第二波：红黑冲击帧（停 0.28s）褪掉之后火还在烧（第一版预览里冲击帧一褪火就没了，最旺的样子全被盖住）
+		CurseFlame(layer, Vanilla.FireCenter, foot, 1.3f * k, 0.32f);
+		CurseFlame(layer, Vanilla.FireLeft, foot + new Vector2(-0.3f * width, 0f), 1.0f * k, 0.4f);
+		CurseFlame(layer, Vanilla.FireRight, foot + new Vector2(0.3f * width, 0f), 1.0f * k, 0.48f);
+		Vanilla.Burst(layer, Vanilla.Embers, foot, 0f, 1.4f * k, Lut5.Curse, delay: 0.35f);
+		Vanilla.Burst(layer, Vanilla.Embers, foot, 0f, 1.6f * k, Lut5.Curse);
+		Vanilla.Burst(layer, Vanilla.Specks, at, -Mathf.Pi / 2f, 1.3f, Lut5.Curse, amount: 30);
+		Paint.Rise(layer, "curse_ghost", at + new Vector2(Fx.Rand(-0.15f, 0.15f) * width, 0f), 300f * k, 1.0f * k, Lut5.Curse, 1.1f, 0.05f);
+		Paint.Rise(layer, "curse_soul", at + new Vector2(Fx.Rand(-0.3f, 0.3f) * width, 0.2f * h), 220f * k, 1.0f * k, Lut5.Curse, 0.9f, 0.12f);
+		BodyTint.Pulse(body, new Color(2f, 0.7f, 0.75f), 0.04, 0.1);
+		Fx.After(layer, 0.14, () => BodyTint.Pulse(body, new Color(0.6f, 0.35f, 0.42f), 0.35, 0.6));
+	}
+
 	/// <summary>每轮毒伤（回合开始，敌人越多越频繁）：一小团咒火 + 一缕怨灵 + 身体暗一下。</summary>
 	public static void Tick(Control layer, Vector2 at, Vector2 top, float width, Node2D? body)
 	{
+		if (InOutbreak)
+		{
+			// 毒性爆发的「立即触发中毒」：等咒怨光束落地再一起引爆
+			ulong now = Stage.NowMs();
+			double wait = _beamLand + 110 > now ? (_beamLand + 110 - now) / 1000.0 : 0.0;
+			Fx.After(layer, wait, () => Blast(layer, at, top, width, body));
+			return;
+		}
 		float h = Mathf.Max(80f, (at - top).Length());
 		float k = Mathf.Clamp(width / 240f, 0.55f, 1.3f);
 		Sfx.Play(Sfx.PoisonTick, 0.5f);
