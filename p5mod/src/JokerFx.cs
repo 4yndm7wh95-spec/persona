@@ -175,6 +175,7 @@ public static class JokerFx
 			return;
 		}
 		float h = (Joker.PosePoint(joker, ShieldBottom) - Joker.PosePoint(joker, ShieldTop)).Length();
-		Fx.After(layer, 0.03, () => CardFx.Guard(layer, Joker.PosePoint(joker, GuardFist), Joker.PosePoint(joker, ShieldMid), h, Joker.Facing(joker)));   // 碎玻璃墙（Codex 素材，GuardFx）
+		// 用户 2026-11-04：碎玻璃墙塑料感太强，要「用特效直接做」→ 重做之前只留动作和原版格挡音
+		_ = h;
 	}
 }
