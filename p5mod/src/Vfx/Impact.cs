@@ -32,11 +32,12 @@ public static class Impact
 
 	private static Spec For(Weight w) => w switch
 	{
-		Weight.Light => new Spec(1, 1, 2.0f, 12f, 0f, 0f, 4f, 0.08f, 0.12f),
-		Weight.Medium => new Spec(2, 2, 2.6f, 26f, 0f, 0f, 8f, 0.22f, 0.2f),
-		Weight.Heavy => new Spec(3, 3, 3.0f, 42f, 1f, 0.07f, 14f, 0.55f, 0.5f),
-		Weight.Kill => new Spec(3, 3, 0f, 0f, 1f, 0.07f, 14f, 0.6f, 0.5f),
-		_ => new Spec(4, 4, 0f, 0f, 1f, 0.28f, 22f, 0.9f, 0.75f),
+		// 用户 2026-11-04：每次打击都晃、全屏扭一下，闪眼睛、头晕 → 轻 / 中不再有全屏色散和径向模糊，轻击不震屏；重 / 击杀 / 结束的全屏效果减半
+		Weight.Light => new Spec(1, 0, 2.0f, 12f, 0f, 0f, 0f, 0f, 0.12f),
+		Weight.Medium => new Spec(2, 1, 2.6f, 26f, 0f, 0f, 0f, 0f, 0.2f),
+		Weight.Heavy => new Spec(3, 2, 3.0f, 42f, 1f, 0.07f, 6f, 0.25f, 0.4f),
+		Weight.Kill => new Spec(3, 2, 0f, 0f, 1f, 0.07f, 6f, 0.28f, 0.4f),
+		_ => new Spec(4, 3, 0f, 0f, 1f, 0.28f, 10f, 0.45f, 0.6f),
 	};
 
 	/// <summary>

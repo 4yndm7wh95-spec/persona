@@ -459,7 +459,7 @@ void fragment() {
 			Glow.Sparks(_back, at, 30, 80f, 300f, 1.1f, new[] { Hi, Mid }, -200f, 0.3f, 0.6f);
 			
 		}
-		float dur = played ? 0.45f : 0.3f;
+		float dur = played ? 0.16f : 0.3f;                              // 用户 2026-11-04：火停在原地 → 扣面具那一下就炸完，赶在 Joker 转成指挥姿势之前收掉
 		foreach (ColorRect r in new[] { _fire, _fireRear })
 		{
 			ColorRect f = r;

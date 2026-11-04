@@ -24,6 +24,7 @@ public static class AttackHitVfxPatch
 	private static readonly PropertyInfo HitVfx = AccessTools.Property(typeof(AttackCommand), "HitVfx");
 	private static readonly FieldInfo CustomHitNodes = AccessTools.Field(typeof(AttackCommand), "_customHitVfxNodes");
 	private static readonly FieldInfo HitCount = AccessTools.Field(typeof(AttackCommand), "_hitCount");
+	private static readonly FieldInfo CustomAttackerNodes = AccessTools.Field(typeof(AttackCommand), "_customAttackerVfxNodes");
 
 	public static void Prefix(AttackCommand __instance)
 	{
@@ -34,6 +35,11 @@ public static class AttackHitVfxPatch
 				HitWeights.BeginAttack(card, HitCount.GetValue(__instance) is int n ? n : 1);
 				HitVfx.SetValue(__instance, null);
 				(CustomHitNodes.GetValue(__instance) as IList)?.Clear();     // 小刀牌原版的飞刀（NShivThrowVfx）
+				if (card.GetType().Name == "DaggerThrow")
+				{
+					// 投掷匕首：原版和匕首雨共用一片飞刀（NDaggerSprayFlurryVfx）→ 关掉，用打击动作 + 刀的命中（用户 2026-11-04）
+					(CustomAttackerNodes.GetValue(__instance) as IList)?.Clear();
+				}
 			}
 		});
 	}

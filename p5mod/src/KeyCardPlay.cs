@@ -19,7 +19,10 @@ namespace P5Joker;
 [HarmonyPatch(typeof(NCard), nameof(NCard.AnimCardToPlayPile))]
 public static class KeyCardPlayPatch
 {
-	public static void Postfix(NCard __instance) => ModEntry.Safe("KeyCardPlay", () =>
+	public static void Postfix(NCard __instance) => ModEntry.Safe("KeyCardPlay", () => Fly(__instance));
+
+	/// <summary>牌节点改成直接飞进弃牌堆（不是 Joker 的关键牌就什么也不做）。</summary>
+	public static void Fly(NCard __instance)
 	{
 		if (__instance.Model is not CardModel card || card.Owner is not { } p || !Joker.Is(p) || !LocalContext.IsMe(p)
 			|| NCombatRoom.Instance == null || !IsKey(card))
@@ -45,7 +48,24 @@ public static class KeyCardPlayPatch
 		tw.TweenProperty(__instance, "scale", Vector2.One * 0.2f, fly).SetEase(Tween.EaseType.In).SetTrans(Tween.TransitionType.Quad);
 		tw.TweenProperty(__instance, "rotation", __instance.Rotation + 0.35f, fly).SetEase(Tween.EaseType.In).SetTrans(Tween.TransitionType.Quad);
 		tw.TweenProperty(__instance, "modulate:a", 0f, 0.12).SetDelay(fly - 0.1);
-	});
+	}
+
+	/// <summary>
+	/// 手动出牌（用户 2026-11-04：毒爆还是会跳到屏幕中间）：本地玩家手动打出时不走 AnimCardToPlayPile，
+	/// 而是 CardPileCmd.AddDuringManualCardPlay 自己建一个飞到中央的补间（同步部分在第一个 await 之前就建好了）→ 挂在它后面换掉。
+	/// 能力牌原版要等这个补间播完（AwaitFinished），换掉会卡住结算，所以能力牌不动。
+	/// </summary>
+	[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Commands.CardPileCmd), nameof(MegaCrit.Sts2.Core.Commands.CardPileCmd.AddDuringManualCardPlay))]
+	public static class ManualPlayPatch
+	{
+		public static void Postfix(CardModel card) => ModEntry.Safe("KeyCardManualPlay", () =>
+		{
+			if (card.Type != CardType.Power && NCard.FindOnTable(card) is NCard node)
+			{
+				Fly(node);
+			}
+		});
+	}
 
 	/// <summary>要看动画的关键牌：会召唤人格面具（罕见及以上）或亚森伸手抓人的毒牌。</summary>
 	private static bool IsKey(CardModel card) => Tiers.For(card) >= Tier.Uncommon || Aim.Grips(card.GetType().Name);
