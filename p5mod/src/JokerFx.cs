@@ -148,30 +148,6 @@ public static class JokerFx
 				ShivFx.FanOfKnives(layer, Joker.PosePoint(joker, ReadyFx.GunGrip), enemies);
 				break;
 			}
-			case "BulletTime":
-				ShivFx.BulletTime(layer, Joker.PosePoint(joker, ReadyFx.Chest));
-				break;
-			case "Afterimage" when Joker.FxLayer(back: true) is Control back:
-			{
-				NCreature jn = joker;
-				float face = Joker.Facing(joker);
-				Fx.After(layer, 0.2, () => ShivFx.Afterimage(back, parent => Aim.CloneJoker(jn, parent), face));
-				break;
-			}
-			case "WellLaidPlans":
-			{
-				Vector2 hand = Joker.PosePoint(joker, ReadyFx.GloveCuff);
-				Fx.After(layer, 0.2, () => ShivFx.CallingCard(layer, hand));
-				break;
-			}
-			case "Shadowmeld" when Joker.FxLayer(back: true) is Control back:
-			{
-				Vector2 feet = Joker.PosePoint(joker, ReadyFx.Feet);
-				float tall = (feet - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length();
-				Node2D? bodyNode = joker.Visuals;
-				Fx.After(layer, 0.18, () => ShivFx.Shadowmeld(back, feet, tall, bodyNode));
-				break;
-			}
 			case "BouncingFlask":
 				SnakeFx.BeginFlask(card.DynamicVars.Repeat.IntValue);
 				break;
