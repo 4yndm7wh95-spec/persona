@@ -4,69 +4,71 @@ using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Cards;
-using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Nodes.Vfx;
 
 namespace P5Joker;
 
 /// <summary>
-/// 关键牌出牌不在屏幕中央停（用户 2026-11-03：原版出牌后牌先在屏幕中央挡一下，召唤这些带动画的牌要看动画）。
-/// 原版：出牌时 NCard.AnimCardToPlayPile 把牌移到屏幕中央（出牌堆），等整张牌结算完，CardPileCmd 再让它飞进弃牌堆。
+/// 关键牌出牌时别挡住动画（用户 2026-11-03 / 11-04）。原版：打出的牌先飞到屏幕中央（出牌堆），整张牌结算完再飞进弃牌堆；
 /// 我们的召唤把结算推迟到人格面具出手 / 捏碎那一刻，牌就在屏幕中央挡了一两秒。
-/// 这里：Joker 的关键牌（罕见及以上会召唤人格面具的牌、伸手抓人的毒牌）移到中央那一下，改成直接缩小飞向弃牌堆
-/// （会消耗的飞向消耗堆、能力牌原地收掉）并淡出；之后游戏真正把牌放进弃牌堆时它已经是透明的，不会再飞一次。
+/// 第一版让牌直接飞进弃牌堆，结果蛇咬这类牌的动画特效全没了（用户 11-04 报的 bug）→ 现在照原版逻辑走，只改透明度：
+/// 飞到中央时牌明显变透明（不挡动画），飞进弃牌堆时再逐渐恢复不透明。原版的补间一个都不动，只在牌节点上另加一个透明度补间。
 /// 牌节点用的是对象池，放回池里时 Modulate 会被原版重置，不影响下次。
 /// </summary>
-[HarmonyPatch(typeof(NCard), nameof(NCard.AnimCardToPlayPile))]
-public static class KeyCardPlayPatch
+public static class KeyCardPlay
 {
-	public static void Postfix(NCard __instance) => ModEntry.Safe("KeyCardPlay", () => Fly(__instance));
+	/// <summary>到中央时的透明度。</summary>
+	private const float CenterAlpha = 0.3f;
 
-	/// <summary>牌节点改成直接飞进弃牌堆（不是 Joker 的关键牌就什么也不做）。</summary>
-	public static void Fly(NCard __instance)
+	/// <summary>Joker 的关键牌飞向屏幕中央：同时淡到 CenterAlpha。</summary>
+	public static void Fade(NCard node)
 	{
-		if (__instance.Model is not CardModel card || card.Owner is not { } p || !Joker.Is(p) || !LocalContext.IsMe(p)
-			|| NCombatRoom.Instance == null || !IsKey(card))
+		if (node.Model is not CardModel card || card.Owner is not { } p || !Joker.Is(p) || !LocalContext.IsMe(p) || !IsKey(card))
 		{
 			return;
 		}
-		PileType dest = card.Type == CardType.Power ? PileType.None
-			: card.Keywords.Contains(CardKeyword.Exhaust) ? PileType.Exhaust : PileType.Discard;
-		__instance.PlayPileTween?.Kill();
-		Tween tw = __instance.CreateTween().SetParallel();
-		__instance.PlayPileTween = tw;
-		if (dest == PileType.None)
-		{
-			// 能力牌：原地稍微放大一点、淡掉（原版能力牌也没有飞进牌堆）
-			tw.TweenProperty(__instance, "scale", __instance.Scale * 1.08f, 0.25).SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Cubic);
-			tw.TweenProperty(__instance, "modulate:a", 0f, 0.25).SetEase(Tween.EaseType.In).SetTrans(Tween.TransitionType.Cubic);
-			return;
-		}
-		// 飞进牌堆：先往上一挑、再加速扎进去，边飞边缩小、转一点、快到时淡掉（和原版进弃牌堆的感觉一样，但不在中央停）
-		Vector2 target = dest.GetTargetPosition(__instance) - __instance.Size * 0.5f * 0.2f;
-		const double fly = 0.38;
-		tw.TweenProperty(__instance, "global_position", target, fly).SetEase(Tween.EaseType.In).SetTrans(Tween.TransitionType.Cubic);
-		tw.TweenProperty(__instance, "scale", Vector2.One * 0.2f, fly).SetEase(Tween.EaseType.In).SetTrans(Tween.TransitionType.Quad);
-		tw.TweenProperty(__instance, "rotation", __instance.Rotation + 0.35f, fly).SetEase(Tween.EaseType.In).SetTrans(Tween.TransitionType.Quad);
-		tw.TweenProperty(__instance, "modulate:a", 0f, 0.12).SetDelay(fly - 0.1);
+		node.CreateTween().TweenProperty(node, "modulate:a", CenterAlpha, 0.22).SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Cubic);
 	}
 
-	/// <summary>
-	/// 手动出牌（用户 2026-11-04：毒爆还是会跳到屏幕中间）：本地玩家手动打出时不走 AnimCardToPlayPile，
-	/// 而是 CardPileCmd.AddDuringManualCardPlay 自己建一个飞到中央的补间（同步部分在第一个 await 之前就建好了）→ 挂在它后面换掉。
-	/// 能力牌原版要等这个补间播完（AwaitFinished），换掉会卡住结算，所以能力牌不动。
-	/// </summary>
-	[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Commands.CardPileCmd), nameof(MegaCrit.Sts2.Core.Commands.CardPileCmd.AddDuringManualCardPlay))]
-	public static class ManualPlayPatch
+	/// <summary>牌飞向弃牌堆 / 消耗堆（NCardFlyVfx）：之前被淡掉的牌逐渐恢复不透明。</summary>
+	public static void Restore(NCard node)
 	{
-		public static void Postfix(CardModel card) => ModEntry.Safe("KeyCardManualPlay", () =>
+		if (node.Modulate.A < 0.99f)
 		{
-			if (card.Type != CardType.Power && NCard.FindOnTable(card) is NCard node)
-			{
-				Fly(node);
-			}
-		});
+			node.CreateTween().TweenProperty(node, "modulate:a", 1f, 0.45).SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Cubic);
+		}
 	}
 
 	/// <summary>要看动画的关键牌：会召唤人格面具（罕见及以上）或亚森伸手抓人的毒牌。</summary>
 	private static bool IsKey(CardModel card) => Tiers.For(card) >= Tier.Uncommon || Aim.Grips(card.GetType().Name);
+}
+
+/// <summary>远程 / 选择后重新回到出牌堆的牌（NCard.AnimCardToPlayPile）：淡到透明。</summary>
+[HarmonyPatch(typeof(NCard), nameof(NCard.AnimCardToPlayPile))]
+public static class KeyCardAnimToPlayPatch
+{
+	public static void Postfix(NCard __instance) => ModEntry.Safe("KeyCardAnimToPlay", () => KeyCardPlay.Fade(__instance));
+}
+
+/// <summary>
+/// 本地玩家手动出牌：不走 AnimCardToPlayPile，而是 CardPileCmd.AddDuringManualCardPlay 自己建飞到中央的补间
+/// （同步部分在第一个 await 之前就建好了）→ 挂在它后面加一个透明度补间。
+/// </summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Commands.CardPileCmd), nameof(MegaCrit.Sts2.Core.Commands.CardPileCmd.AddDuringManualCardPlay))]
+public static class KeyCardManualPlayPatch
+{
+	public static void Postfix(CardModel card) => ModEntry.Safe("KeyCardManualPlay", () =>
+	{
+		if (NCard.FindOnTable(card) is NCard node)
+		{
+			KeyCardPlay.Fade(node);
+		}
+	});
+}
+
+/// <summary>牌飞进牌堆（结算完以后）：淡掉的关键牌逐渐恢复不透明。</summary>
+[HarmonyPatch(typeof(NCardFlyVfx), nameof(NCardFlyVfx.Create), typeof(NCard), typeof(PileType), typeof(bool), typeof(string))]
+public static class KeyCardFlyRestorePatch
+{
+	public static void Postfix(NCard card) => ModEntry.Safe("KeyCardFlyRestore", () => KeyCardPlay.Restore(card));
 }
