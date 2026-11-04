@@ -1,0 +1,40 @@
+{
+  "name": "glass_glints",
+  "prompt": "Production GLASS GLINTS game VFX atlas: EXACTLY FOUR distinct small white glass flashes in a SINGLE HORIZONTAL ROW, invisible 4x1 grid. Final1024x256, four256x256 cells. Each flash centered in its cell with generous empty transparent margin. Cell1 sharp asymmetrical four-point cross star, cell2 elegant thin long diagonal specular streak with tiny cross center, cell3 narrow vertical fourpoint star, cell4 slender horizontal light streak with small diamond center. Bright near-white core and very restrained scarlet-red #E5191C edge glint. Exquisitely crisp fine rays with soft semitransparent taper at tips, no thick outline, no cartoon fill. TRUE transparent RGBA, alpha absolutely ZERO in empty areas outside four glints. No gray/white background, checkerboard, ambient haze, red glow cloud, noise, texture fill, shadows, grid lines, labels, text, glass objects or extra sparkles. Only four separated elegant light glints, none crossing cell edges.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-cb6ec2cc-4a31-45ea-9f85-0f0f7b956a83.png",
+  "raw_size": [
+    2172,
+    724
+  ],
+  "delivery_size": [
+    1024,
+    256
+  ],
+  "generation_count": 1,
+  "redraw_count": 0,
+  "checks": {
+    "grid": [
+      4,
+      1
+    ],
+    "cell_size": [
+      256,
+      256
+    ],
+    "min_cell_margin": 16,
+    "postprocess": "each generated glint alpha component fitted independently without shape stretching; no hand-drawn replacement",
+    "size": [
+      1024,
+      256
+    ],
+    "mode": "RGBA",
+    "corners_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "transparent_rgb_zero": true,
+    "file_bytes": 44220
+  }
+}
