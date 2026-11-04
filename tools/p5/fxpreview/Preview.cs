@@ -520,6 +520,21 @@ public partial class Preview : Node2D
 			var es = new List<ShivFx.Target> { new(Enemy2, 180f), new(Enemy, 230f), new(Enemy3, 180f) };
 			p.At(1.2, () => { p._joker?.Play("aim_out"); ShivFx.FanOfKnives(p._front, Pose(1275f, 345f), es); });
 		},
+		// 小刀流第二批（同 JokerFx.OnPlay）：子弹时间（转枪 + 慢波纹 + 四周压暗）→ 残影 → 精心策划（预告信）→ 隐形（暗烟 + 变暗）
+		["batch2"] = p =>
+		{
+			p.At(0.3, () => { p._joker?.Play("aim_in"); p._joker?.Queue("aim_out", false); ShivFx.BulletTime(p._front, Chest); });
+			p.At(1.7, () => p._joker?.Play("cast_glove"));
+			p.At(1.9, () => ShivFx.Afterimage(p._back, parent => BodyAura.CloneBody!(parent), 1f));
+			p.At(3.0, () => p._joker?.Play("cast_glove"));
+			p.At(3.2, () => ShivFx.CallingCard(p._front, Pose(1010f, 410f)));
+			p.At(4.3, () => p._joker?.Play("cast_glove"));
+			p.At(4.48, () =>
+			{
+				float tall = (JokerFeet - Pose(815f, 120f)).Length();
+				ShivFx.Shadowmeld(p._back, JokerFeet, tall, p._joker);
+			});
+		},
 		["warmup"] = p => p.At(0.1, () => Warmup.Run(p._front, 1ul)),
 		["monsters"] = p => { },
 		["attack_pose"] = p => p.At(0.3, () => p._joker?.Play("attack")),

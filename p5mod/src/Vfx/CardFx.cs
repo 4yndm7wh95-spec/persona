@@ -21,7 +21,7 @@ public static class CardFx
 	/// </summary>
 	public static void Guard(Control layer, Vector2 fist, Vector2 shield, float height, float facing = 1f)
 	{
-		Sfx.Play(Sfx.Parry, 0.85f);
+		// 用户 2026-11-04：防御音效用原版尖塔的（CreatureCmd.GainBlock 里的 block_gain 本来就在响）→ 不再叠 P5 的格挡音
 		float ry = height * 0.6f, rx = ry * 0.4f;
 		Vector2 at = new(shield.X + rx * 0.55f * facing, shield.Y);   // 整片在前臂前面，不盖住 Joker
 		float r = height * 0.1f, w = r * 0.6f;                      // 菱形：半高 r、半宽 w

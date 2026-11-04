@@ -132,7 +132,7 @@ public static class Aim
 
 	/// <summary>拿起的这张牌要摆哪种架势。</summary>
 	public static Stance StanceFor(CardModel card) =>
-		Joker.IsShot(card) || card.GetType().Name == "FanOfKnives" ? Stance.Gun                // 刀扇：选中掏枪，打出转枪收起（用户 2026-11-04）
+		Joker.IsShot(card) || card.GetType().Name is "FanOfKnives" or "BulletTime" or "KnifeTrap" ? Stance.Gun   // 拿枪不开枪的牌：选中掏枪（用户 2026-11-04）
 		: card.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Attack ? Stance.Knife
 		: Casts.For(card) switch { Cast.Guard => Stance.Guard, Cast.Glove => Stance.Glove, _ => Stance.Mask };
 
@@ -291,7 +291,7 @@ public static class Aim
 		MegaSprite? body = node.Visuals?.SpineBody;
 		if (stance == Stance.Gun && !Joker.IsShot(card) && body?.TryGetAnimationState() is MegaAnimationState gs)
 		{
-			return PlayTwirl(node, body, gs);
+			return card.GetType().Name == "KnifeTrap" ? HoldAim(node, body, gs) : PlayTwirl(node, body, gs);
 		}
 		if (stance is Stance.Knife or Stance.Gun || body == null || body.TryGetAnimationState() is not MegaAnimationState state)
 		{
@@ -475,6 +475,28 @@ public static class Aim
 		SelfCast[node.GetInstanceId()] = Time.GetTicksMsec() + 1500;
 		return true;
 	}
+
+	/// <summary>刀刃陷阱：举着枪就别收（接下来自动打出的小刀一发发开枪），站着就先掏枪瞄准。</summary>
+	private static bool HoldAim(NCreature node, MegaSprite body, MegaAnimationState state)
+	{
+		string? current = Current(state);
+		PendingCast.Remove(node.GetInstanceId());
+		SelfCast[node.GetInstanceId()] = Time.GetTicksMsec() + 1500;
+		if (current is "aim_in" or "aim_loop")
+		{
+			return true;
+		}
+		if (!Idle(current) || !body.HasAnimation("aim_in"))
+		{
+			return false;
+		}
+		state.SetAnimation("aim_in", false, 0);
+		state.AddAnimation("aim_loop", 0f, true, 0);
+		return true;
+	}
+
+	/// <summary>复制一份 Joker（同一帧的姿势），给残影这类特效用。</summary>
+	public static (Node2D, Transform2D)? CloneJoker(NCreature joker, Node target) => CloneBody(joker, target, "idle_loop");
 
 	/// <summary>打出去了：架势特效一闪收掉（出牌特效接上）。</summary>
 	public static void Played()
