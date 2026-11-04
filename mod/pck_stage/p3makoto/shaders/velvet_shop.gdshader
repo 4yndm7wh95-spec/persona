@@ -3,8 +3,36 @@ shader_type canvas_item;
 uniform float hover_glow : hint_range(0.0, 1.0) = 0.0;
 uniform float scene_time = 0.0;
 
+uniform sampler2D blink_half : filter_linear;
+uniform sampler2D blink_closed : filter_linear;
+uniform float blink_amount = 0.0;
+uniform float left_sway = 0.0;
+uniform float right_sway = 0.0;
+
+vec2 sway_lantern(vec2 pixel, vec2 pivot, float angle) {
+    float mask = smoothstep(-65.0, -52.0, pixel.x - pivot.x)
+        * (1.0 - smoothstep(52.0, 65.0, pixel.x - pivot.x))
+        * smoothstep(-20.0, 0.0, pixel.y - pivot.y)
+        * (1.0 - smoothstep(265.0, 285.0, pixel.y - pivot.y));
+    float a = -angle * mask;
+    vec2 d = pixel - pivot;
+    return pivot + vec2(cos(a)*d.x - sin(a)*d.y, sin(a)*d.x + cos(a)*d.y);
+}
+
 void fragment() {
-	vec4 base = texture(TEXTURE, UV);
+	vec2 pixel = UV * vec2(1672.0, 941.0);
+    vec2 source = sway_lantern(pixel, vec2(192.0,75.0), left_sway);
+    source = sway_lantern(source, vec2(1474.0,75.0), right_sway);
+    vec4 base = texture(TEXTURE, source / vec2(1672.0,941.0));
+    // Small eye-only patches: never replace the whole head or background.
+    vec2 eye_uv = (pixel - vec2(788.0,365.0)) / vec2(97.0,50.0);
+    float eye_mask = max(1.0-smoothstep(0.82,1.0,length((pixel-vec2(813.0,386.0))/vec2(20.0,15.0))),
+                        1.0-smoothstep(0.82,1.0,length((pixel-vec2(860.0,386.0))/vec2(20.0,15.0))));
+    vec3 half_eye = texture(blink_half, clamp(eye_uv,vec2(0.0),vec2(1.0))).rgb;
+    vec3 shut_eye = texture(blink_closed, clamp(eye_uv,vec2(0.0),vec2(1.0))).rgb;
+    vec3 blink_color = blink_amount < 0.5 ? mix(base.rgb,half_eye,blink_amount*2.0)
+        : mix(half_eye,shut_eye,(blink_amount-0.5)*2.0);
+    base.rgb = mix(base.rgb,blink_color,eye_mask);
 	float t = scene_time > 0.0 ? scene_time : TIME;
 	vec3 color = base.rgb;
 

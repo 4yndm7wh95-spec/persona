@@ -53,6 +53,7 @@ public static class VelvetShopPatch
 		// Pointer and controller focus share the same subtle light cue. No overlay
 		// intercepts input; Inventory and ProceedButton keep their original order.
 		Vfx.VelvetShopOutline.Attach(background, merchant, material);
+		Vfx.VelvetShopLife.Attach(background, material);
 		GD.Print($"{ModEntry.Tag} velvet shop installed: native merchant interaction, all room player visuals hidden");
 	}
 }
