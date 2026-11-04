@@ -513,12 +513,12 @@ public partial class Preview : Node2D
 				p.Poison(t0 + 0.5, b0, 3);
 			}
 		},
-		// 刀扇（同 JokerFx.OnPlay）：扯手套 → 扇形刀光盖住所有敌人 → 敌人依次亮锁定框
+		// 刀扇（同 Aim.PlayTwirl + JokerFx.OnPlay）：选中掏枪瞄准 → 打出转枪收起，指尖红光环，枪停下所有敌人闪锁定框
 		["fan"] = p =>
 		{
-			p.At(0.3, () => p._joker?.Play("cast_glove"));
+			p.At(0.2, () => { p._joker?.Play("aim_in"); p._joker?.Queue("aim_loop", true); });
 			var es = new List<ShivFx.Target> { new(Enemy2, 180f), new(Enemy, 230f), new(Enemy3, 180f) };
-			p.At(0.5, () => ShivFx.FanOfKnives(p._front, Pose(950f, 465f), es));
+			p.At(1.2, () => { p._joker?.Play("aim_out"); ShivFx.FanOfKnives(p._front, Pose(1275f, 345f), es); });
 		},
 		["warmup"] = p => p.At(0.1, () => Warmup.Run(p._front, 1ul)),
 		["monsters"] = p => { },

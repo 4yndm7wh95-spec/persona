@@ -131,6 +131,23 @@ public static class JokerFx
 					CorrosiveFx.Plunge(layer, ArseneFx.TryClaw(out Vector2 claw) ? claw : ground + new Vector2(-200f * face, -420f), ground));
 				break;
 			}
+			case "FanOfKnives":
+			{
+				// 刀扇：转一下枪（Aim.PlayTwirl 播 aim_out），指尖一圈红光环，枪停下所有敌人闪锁定框
+				var enemies = new List<ShivFx.Target>();
+				if (joker.Entity?.CombatState is { } cs)
+				{
+					foreach (Creature c in cs.HittableEnemies)
+					{
+						if (room.GetCreatureNode(c) is NCreature n)
+						{
+							enemies.Add(new ShivFx.Target(n.VfxSpawnPosition, Mathf.Clamp((n.VfxSpawnPosition - n.GetTopOfHitbox()).Length() * 2.4f, 160f, 340f)));
+						}
+					}
+				}
+				ShivFx.FanOfKnives(layer, Joker.PosePoint(joker, ReadyFx.GunGrip), enemies);
+				break;
+			}
 			case "BouncingFlask":
 				SnakeFx.BeginFlask(card.DynamicVars.Repeat.IntValue);
 				break;

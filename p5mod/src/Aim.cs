@@ -132,7 +132,7 @@ public static class Aim
 
 	/// <summary>拿起的这张牌要摆哪种架势。</summary>
 	public static Stance StanceFor(CardModel card) =>
-		Joker.IsShot(card) ? Stance.Gun
+		Joker.IsShot(card) || card.GetType().Name == "FanOfKnives" ? Stance.Gun                // 刀扇：选中掏枪，打出转枪收起（用户 2026-11-04）
 		: card.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Attack ? Stance.Knife
 		: Casts.For(card) switch { Cast.Guard => Stance.Guard, Cast.Glove => Stance.Glove, _ => Stance.Mask };
 
@@ -289,6 +289,10 @@ public static class Aim
 	{
 		Stance stance = StanceFor(card);
 		MegaSprite? body = node.Visuals?.SpineBody;
+		if (stance == Stance.Gun && !Joker.IsShot(card) && body?.TryGetAnimationState() is MegaAnimationState gs)
+		{
+			return PlayTwirl(node, body, gs);
+		}
 		if (stance is Stance.Knife or Stance.Gun || body == null || body.TryGetAnimationState() is not MegaAnimationState state)
 		{
 			return false;
@@ -443,6 +447,34 @@ public static class Aim
 	/// <summary>游戏要播 cast，但 Joker 刚自己施过法：不重播。</summary>
 	public static bool SwallowCast(MegaAnimationState state) =>
 		Owner(state) is NCreature node && SelfCast.TryGetValue(node.GetInstanceId(), out ulong until) && Time.GetTicksMsec() < until;
+
+	/// <summary>
+	/// 刀扇这类「拿枪但不开枪」的牌：举着枪就直接转枪收起（aim_out），站着就先转出来再收（aim_in → aim_out）；
+	/// 转枪的特效在 JokerFx.OnPlay（ShivFx.FanOfKnives）。
+	/// </summary>
+	private static bool PlayTwirl(NCreature node, MegaSprite body, MegaAnimationState state)
+	{
+		string? current = Current(state);
+		bool held = current is "aim_in" or "aim_loop";
+		if ((!held && !Idle(current)) || !body.HasAnimation("aim_out"))
+		{
+			return false;
+		}
+		bool low = node.Entity.GetHpPercentRemaining() <= 0.25 && body.HasAnimation("low_health_loop");
+		PendingCast.Remove(node.GetInstanceId());
+		if (held)
+		{
+			state.SetAnimation("aim_out", false, 0);
+		}
+		else
+		{
+			state.SetAnimation("aim_in", false, 0);
+			state.AddAnimation("aim_out", 0f, false, 0);
+		}
+		state.AddAnimation(low ? "low_health_loop" : "idle_loop", 0f, true, 0);
+		SelfCast[node.GetInstanceId()] = Time.GetTicksMsec() + 1500;
+		return true;
+	}
 
 	/// <summary>打出去了：架势特效一闪收掉（出牌特效接上）。</summary>
 	public static void Played()
