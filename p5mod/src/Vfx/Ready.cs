@@ -98,6 +98,9 @@ public sealed class ReadyFx
 	}
 
 	/// <summary>打出去了（played = true：亮一下立刻收，出牌特效接上）/ 放回去了（慢慢熄灭）。</summary>
+	/// <summary>已经收掉了。</summary>
+	public bool Ended => _ended;
+
 	public void End(bool played)
 	{
 		if (_ended)

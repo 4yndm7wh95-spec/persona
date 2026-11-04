@@ -187,7 +187,52 @@ public static class Aim
 			BodyAura.CloneBody = parent => CloneBody(node, parent, "mask_loop");
 			_fx = ReadyFx.Start(front, back, stance, v => Joker.PosePoint(node, v), Joker.Facing(node));
 			_fxCard = card;
+			if (stance == Stance.Mask)
+			{
+				WatchMask(_fx, state, front);
+			}
 		}
+	}
+
+	/// <summary>
+	/// 面具火跟着 Joker 的动作走（用户 2026-11-04：火停在原地、没跟上）：我们的 Joker 是整张姿势图切换的，没有能读位置的头骨骼，
+	/// 面具火是按扶面具那张姿势图的脸算的位置 → 只在他真的摆着扶面具姿势时才留着火：每一帧看当前动作，
+	/// 还是 mask_in / mask_loop、或者施法刚开始手还扣在面具上（头 0.12s）就留着，一离开立刻炸开收掉。
+	/// </summary>
+	private static void WatchMask(ReadyFx fx, MegaAnimationState state, Control anchor)
+	{
+		Fx.Animate(anchor, 0, 30.0, _ =>
+		{
+			if (fx.Ended)
+			{
+				return;
+			}
+			string? cur = Current(state);
+			float time = 0f;
+			try
+			{
+				using MegaTrackEntry? e = state.GetCurrent(0);
+				time = e?.GetTrackTime() ?? 0f;
+			}
+			catch (System.Exception)
+			{
+			}
+			bool casting = cur is "cast_from_mask" or "cast" or "cast_big";
+			if (cur is "mask_in" or "mask_loop" || (casting && time < 0.12f))
+			{
+				return;
+			}
+			fx.End(casting);
+			if (_held == fx)
+			{
+				_held = null;
+			}
+			if (_fx == fx)
+			{
+				_fx = null;
+				_fxCard = null;
+			}
+		});
 	}
 
 	/// <summary>
