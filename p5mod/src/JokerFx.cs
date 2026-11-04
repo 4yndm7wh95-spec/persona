@@ -175,6 +175,7 @@ public static class JokerFx
 			return;
 		}
 		float h = (Joker.PosePoint(joker, ShieldBottom) - Joker.PosePoint(joker, ShieldTop)).Length();
-		Fx.After(layer, 0.03, () => CardFx.Guard(layer, Joker.PosePoint(joker, GuardFist), Joker.PosePoint(joker, ShieldMid), h, Joker.Facing(joker)));
+		// 用户 2026-11-04：碎玻璃墙（程序切的平面碎片）太粗糙 → 等 Codex 画的碎玻璃素材（docs/codex/codex_p5_guard_glass.md）再做；这段时间只留动作和原版格挡音
+		_ = h;
 	}
 }
