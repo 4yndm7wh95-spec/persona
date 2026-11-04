@@ -52,10 +52,7 @@ public static class VelvetShopPatch
 
 		// Pointer and controller focus share the same subtle light cue. No overlay
 		// intercepts input; Inventory and ProceedButton keep their original order.
-		merchant.MouseEntered += () => material.SetShaderParameter("hover_glow", 1f);
-		merchant.MouseExited += () => material.SetShaderParameter("hover_glow", 0f);
-		merchant.FocusEntered += () => material.SetShaderParameter("hover_glow", 1f);
-		merchant.FocusExited += () => material.SetShaderParameter("hover_glow", 0f);
+		Vfx.VelvetShopOutline.Attach(background, merchant, material);
 		GD.Print($"{ModEntry.Tag} velvet shop installed: native merchant interaction, all room player visuals hidden");
 	}
 }

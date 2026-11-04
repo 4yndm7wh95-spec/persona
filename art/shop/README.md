@@ -5,3 +5,5 @@
 背景为不透明 RGBA；运行时 `velvet_shop.gdshader` 叠加轻微动态蓝光束、地面薄雾、微尘及悬停冷光。资源导入使用 `tools/pck/godot_tex.py` 的 `write_texture`，输出到 `mod/pck_stage/p3makoto/shop/velvet_room.png`。
 
 交互区域按图像比例设定为 x=38%–62%、y=28%–65%，保留原商人按钮及其原生交互逻辑。
+
+2026-11-04 / 0.15.05：通过 imagegen 编辑一次，保留房间与桌椅布局，修改伊戈尔低头姿态与上抬眼神。选中白边由 `VelvetShopOutline.cs` 的可见轮廓路径绘制，桌面处不闭合。
