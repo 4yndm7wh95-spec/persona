@@ -161,4 +161,88 @@ void fragment() {
 		}
 		Fx.FreeAfter(copy, life + 0.05);
 	}
+
+	// ───────────────────────── 能量旋涡（用户 2026-11-04：玻璃塑料感太强，「用特效直接做」）─────────────────────────
+
+	private static Shader? _vortex;
+
+	/// <summary>
+	/// 黑红能量旋涡：全是烟、火、光，没有实体的表面和边界。极坐标下的噪声被旋转拉成一圈圈往里卷的流纹（旋涡），
+	/// 密度由一个往敌人那边鼓起的椭圆决定、边缘被噪声撕成一缕缕；越薄的地方越亮（烟的边缘透出红光），浓的地方是黑红色。
+	/// grow：卷起来；burst：往外一冲、散成烟。
+	/// </summary>
+	private static Shader VortexShader => _vortex ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform sampler2D noise : repeat_enable, filter_linear;
+uniform sampler2D lut : repeat_disable, filter_linear;
+uniform float clock = 0.0;
+uniform float grow = 0.0;
+uniform float burst = 0.0;
+uniform float facing = 1.0;
+uniform float aspect = 0.8;
+void fragment() {
+	vec2 p = (UV - 0.5) * vec2(aspect, 1.0) * 2.0;
+	p.x *= facing;
+	// 旋涡中心略偏 Joker 那边，往敌人那侧鼓
+	vec2 c = vec2(-0.12, 0.0);
+	vec2 q = p - c;
+	float scale = mix(0.35, 1.0, grow) * (1.0 + 0.45 * burst);
+	q /= scale;
+	float r = length(q / vec2(0.62, 0.95));
+	float th = atan(q.y, q.x);
+	float spin = clock * 2.6;
+	// 流纹：极坐标下的噪声，角度随时间转、越往里转得越快（往里卷）
+	float swirl = th / 6.2832 + spin * 0.18 + (1.0 - r) * 0.55;
+	float s1 = texture(noise, vec2(swirl * 3.0, r * 1.6 - clock * 0.35)).r;
+	float s2 = texture(noise, vec2(swirl * 7.0 + 0.3, r * 3.4 - clock * 0.7)).r;
+	float s3 = texture(noise, vec2(swirl * 15.0 - 0.6, r * 6.0 - clock * 1.1)).r;
+	float flow = s1 * 0.55 + s2 * 0.3 + s3 * 0.15;
+	// 密度：中间空、能量集中在一圈环带上；三条旋臂顺着螺线往里卷；边缘被流纹撕成一缕缕
+	float ring = smoothstep(0.18, 0.5, r) * (1.0 - smoothstep(0.72, 1.05, r - max(q.x, 0.0) * 0.15));
+	float arms = 0.5 + 0.5 * sin(th * 3.0 - r * 7.0 + spin * 2.2 + s1 * 2.0);
+	float dens = ring * (arms * 0.75 + flow * 0.65) - 0.62 - burst * 0.6;
+	dens += (s2 - 0.5) * 0.3;
+	float a = smoothstep(0.0, 0.18, dens);
+	// 颜色：越薄越亮（边缘透出红光），浓的地方黑红
+	float thin = 1.0 - smoothstep(0.02, 0.28, dens);
+	float heat = clamp(0.4 + thin * 0.6 + (s3 - 0.5) * 0.3, 0.0, 1.0);
+	vec3 col = texture(lut, vec2(heat, 0.5)).rgb;
+	// 中心深处一点暗红的芯在转
+	col += vec3(0.5, 0.02, 0.06) * (1.0 - smoothstep(0.0, 0.45, r)) * s1 * 0.5;
+	COLOR = vec4(col, a * (1.0 - burst * burst) * smoothstep(0.0, 0.25, grow));
+}" };
+
+	/// <summary>放一团能量旋涡。fist = 抬起的前臂，at = 旋涡中心，height = 高度，facing = Joker 朝向。约 0.9s。</summary>
+	public static void Vortex(Control layer, Vector2 fist, Vector2 at, float height, float facing = 1f)
+	{
+		Vector2 size = new(height * 0.85f, height * 1.1f);
+		ShaderMaterial m = new() { Shader = VortexShader };
+		m.SetShaderParameter("noise", Paint.Noise);
+		m.SetShaderParameter("lut", Lut5.Curse);
+		m.SetShaderParameter("facing", facing);
+		m.SetShaderParameter("aspect", size.X / size.Y);
+		ColorRect r = new() { Material = m, Size = size, MouseFilter = Control.MouseFilterEnum.Ignore, Name = "P5GuardVortex" };
+		layer.AddChild(r);
+		r.GlobalPosition = at - size * 0.5f;
+		Fx.Clock(r);
+		const float tIn = 0.16f, hold = 0.4f, tOut = 0.32f;
+		float life = tIn + hold + tOut;
+		Fx.Animate(r, 0, life, t =>
+		{
+			float s = t * life;
+			m.SetShaderParameter("grow", Ease5.OutBack(Mathf.Min(1f, s / tIn)));
+			m.SetShaderParameter("burst", Mathf.Clamp((s - tIn - hold) / tOut, 0f, 1f));
+		});
+		Fx.FreeAfter(r, life + 0.05);
+		// 卷起来那一下：一团暗红的光；四周不断甩出火星
+		Glow.Flash(layer, at, new Color(1f, 0.15f, 0.2f), height * 0.6f, 0.25f);
+		Vanilla.Burst(layer, Vanilla.Embers, at + new Vector2(0f, height * 0.35f), 0f, height / 520f, Lut5.Curse);
+		Vanilla.Burst(layer, Vanilla.Embers, at, 0f, height / 600f, Lut5.Curse, delay: 0.2f);
+		// 散开：往外一冲（空间扭曲）+ 火星
+		Fx.After(layer, tIn + hold, () =>
+		{
+			Glow.Ripple(layer, at, height * 1.2f, 0.35f, 0.025f, 1.3f);
+			Vanilla.Burst(layer, Vanilla.Embers, at, 0f, height / 480f, Lut5.Curse);
+		});
+	}
 }
