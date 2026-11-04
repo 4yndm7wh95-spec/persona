@@ -1,0 +1,13 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+C:\Users\kkk\sts2_tools\tmp\p5_combat_fixes_20261104\worktree\p5mod\src\Vfx\Ready.cs(37,20): warning CS0649: Field 'ReadyFx._aura' is never assigned to, and will always have its default value null [C:\Users\kkk\sts2_tools\tmp\p5_combat_fixes_20261104\worktree\p5mod\P5Joker.csproj]
+  P5Joker -> C:\Users\kkk\sts2_tools\tmp\p5_combat_fixes_20261104\worktree\p5mod\bin\Release\net9.0\P5Joker.dll
+  Verify -> C:\Users\kkk\sts2_tools\tmp\p5_combat_fixes_20261104\worktree\tools\p5\verify_combat_patches\bin\Release\net9.0\Verify.dll
+
+Build succeeded.
+
+C:\Users\kkk\sts2_tools\tmp\p5_combat_fixes_20261104\worktree\p5mod\src\Vfx\Ready.cs(37,20): warning CS0649: Field 'ReadyFx._aura' is never assigned to, and will always have its default value null [C:\Users\kkk\sts2_tools\tmp\p5_combat_fixes_20261104\worktree\p5mod\P5Joker.csproj]
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.72

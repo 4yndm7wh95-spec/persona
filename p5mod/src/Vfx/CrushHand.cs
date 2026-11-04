@@ -32,6 +32,8 @@ uniform float dissolve = 0.0;   // 捏碎之后：手散成一团团咒烟
 uniform float alpha = 1.0;
 uniform float aspect = 1.7778;
 uniform float focal = 1.25;
+uniform float hand_pass = 0.0; // 0 whole, 1 behind paper, 2 fingers in front
+uniform float front_mix = 0.0;
 uniform vec3 elbow = vec3(-2.2, 0.3, 8.0);       // 前臂另一头（世界坐标，在横幅后面）：手臂从横幅里穿出来
 uniform float band_z = 5.0;                      // 眼神横幅所在的深度：比它远的部分不画，穿出的地方一圈红色裂口
 
@@ -78,6 +80,17 @@ float hand(vec3 p) {
 	vec3 tt = mix(tb + vec3(0.6, -0.02, -0.28), tb + vec3(-0.4, 0.46, -0.62), thumb);
 	d = smin(d, smin(sd_capsule(p, tb, tj, 0.14), sd_capsule(p, tj, tt, 0.115), 0.025), 0.08);
 	return d;
+}
+float front_parts(vec3 p) {
+	float sp = spread * (1.0 - 0.75 * curl);
+	float d = finger(p, vec3(-0.33, 0.96, 0.0), 0.24 * sp, 0.86, 0.1);
+	d = min(d, finger(p, vec3(-0.11, 1.0, 0.0), 0.08 * sp, 1.0, 0.108));
+	d = min(d, finger(p, vec3(0.12, 0.99, 0.0), -0.07 * sp, 0.94, 0.104));
+	d = min(d, finger(p, vec3(0.33, 0.93, 0.0), -0.24 * sp, 0.72, 0.09));
+	vec3 tb = vec3(0.32, 0.14, -0.05);
+	vec3 tj = mix(tb + vec3(0.3, 0.0, -0.14), tb + vec3(0.08, 0.3, -0.42), thumb);
+	vec3 tt = mix(tb + vec3(0.6, -0.02, -0.28), tb + vec3(-0.4, 0.46, -0.62), thumb);
+	return min(d, sd_capsule(p, tj, tt, 0.115));
 }
 vec3 to_local(vec3 pw) {
 	vec3 p = (pw - hand_pos) / hand_size;
@@ -129,6 +142,7 @@ void fragment() {
 	float m;
 	float t = enter(rd, 0.3 * hs, m);
 	vec3 col = vec3(0.0);
+	float front = 0.0;
 	float T = 1.0;                                            // 透过率（从前往后累积）
 	if (t > 0.0) {
 		// 手形的咒烟：沿视线一步步走进去。密度 = 手的距离场被 3D 噪声撕毛（边缘往上飘）；
@@ -160,6 +174,7 @@ void fragment() {
 			// 不做高光（用户：高光很怪、像橡胶手），边缘仍然是烟
 			if (!shaded && dens > 0.25) {
 				shaded = true;
+				front = (1.0 - step(0.04, front_parts(lp))) * step(0.05, front_mix);
 				vec3 n = normal_at(pw, 0.004 * t);
 				float ao = clamp(map(pw + n * 0.06 * hs) / (0.06 * hs), 0.0, 1.0);
 				ao *= clamp(0.4 + map(pw + n * 0.15 * hs) / (0.15 * hs) * 0.6, 0.0, 1.0);
@@ -228,7 +243,8 @@ void fragment() {
 	acc.a += (1.0 - acc.a) * pa;
 	float a = clamp(acc.a, 0.0, 1.0);
 	vec3 rgb = acc.rgb + vec3(0.9, 0.12, 0.1) * flash * acc.a * 0.6;      // 捏碎：烧红一下（不提白：白闪打在半透明的烟上会变成一团灰雾）
-	COLOR = vec4(rgb / max(a, 0.001), a * alpha);
+	float keep = hand_pass < 0.5 ? 1.0 : hand_pass < 1.5 ? 1.0 - front : front;
+	COLOR = vec4(rgb / max(a, 0.001), a * alpha * keep);
 }" };
 
 	public ColorRect Rect { get; }
@@ -244,7 +260,7 @@ void fragment() {
 		Rect = new ColorRect { Material = _mat, Size = size, MouseFilter = Control.MouseFilterEnum.Ignore, Name = "P5CrushHand" };
 		layer.AddChild(Rect);
 		Rect.GlobalPosition = pos;
-		Fx.Clock(Rect);
+
 	}
 
 	public void Set(string key, float v) => _mat.SetShaderParameter(key, v);
@@ -292,7 +308,7 @@ void fragment() {
 		Vector3 w = p.Pos + v;
 		Vector2 size = Rect.Size;
 		Vector2 uv = new(w.X / w.Z * Focal, w.Y / w.Z * Focal);
-		return Rect.GlobalPosition + new Vector2((uv.X / (size.X / size.Y) + 1f) * 0.5f * size.X, (1f - uv.Y) * 0.5f * size.Y);
+		return Rect.Position + new Vector2((uv.X / (size.X / size.Y) + 1f) * 0.5f * size.X, (1f - uv.Y) * 0.5f * size.Y);
 	}
 
 	/// <summary>
@@ -301,29 +317,40 @@ void fragment() {
 	/// CrushAt 捏碎（横幅碎开由 CutIn 自己在 SplitAt 做，Aim 把 SplitAt 设成 CrushAt）→ 拳头往前一顶、散成咒烟。
 	/// onFist：攥住横幅那一刻（敌人身上被标记）；onCrush：捏碎那一刻。
 	/// </summary>
-	public static CrushHand Outbreak(Control back, float emergeAt, System.Action? onFist = null, System.Action? onCrush = null)
+	public static CrushHand Outbreak(Control back, float emergeAt, System.Action? onFist = null, System.Action? onCrush = null, CutInPlayback? playback = null)
 	{
 		Vector2 screen = Fx.Screen(back);
-		CrushHand h = new(back, Vector2.Zero, screen);
-		// 层次（用户 2026-11-03：手在眼神横幅下面才有捏爆的感觉）：手从横幅后面伸上来攥住它——横幅中间挡着手，
-		// 上下露出手指和手腕；横幅往拳心皱进去，捏碎、碎片飞开才露出后面的拳头。亚森之后才现身，自然盖在最上面
-		foreach (Node c in back.GetChildren())
+		playback ??= new CutInPlayback(emergeAt + CrushAfter, crush: true);
+		Node2D screenRoot = Fx.ScreenRoot(back, "P5CrushHandLayers");
+		Control paperBack = new(), fingersFront = new();
+		screenRoot.AddChild(paperBack);
+		// Separate sibling root above this clip's paper, still below the combat characters.
+		Node2D frontRoot = Fx.ScreenRoot(back, "P5CrushFingers");
+		frontRoot.AddChild(fingersFront);
+		CrushHand h = new(paperBack, Vector2.Zero, screen);
+		CrushHand frontHand = new(fingersFront, Vector2.Zero, screen);
+		h.Set("hand_pass", 1f);
+		frontHand.Set("hand_pass", 2f);
+		// Palm/arm behind the paper; only the visible finger/thumb surfaces in front.
+		// Binary complementary masks preserve the original hand's alpha without doubled smoke.
+		for (int i = back.GetChildCount() - 1; i >= 0; i--)
 		{
-			if (c.Name.ToString().StartsWith("P5CutIn"))
+			Node c = back.GetChild(i);
+			if (c.Name.ToString().StartsWith("P5CutIn") && !c.Name.ToString().StartsWith("P5CutInShatter"))
 			{
-				back.MoveChild(h.Rect, c.GetIndex());
+				back.MoveChild(screenRoot, c.GetIndex());
 				break;
 			}
 		}
-		h.Set("band_z", 50f);                                         // 手整个在横幅后面：不用再切掉「穿出横幅」的那段
+		h.Set("band_z", 50f);
+		frontHand.Set("band_z", 50f);
 		float EmergeAt = emergeAt, ArriveAt = emergeAt + ArriveAfter, GrabAt = emergeAt + GrabAfter, FistAt = emergeAt + FistAfter, CrushAt = emergeAt + CrushAfter;
 		float life = CrushAt + FadeTime;
 		bool emerged = false, fisted = false, crushed = false;
-		CutIn.Pinch = 0f;
+		playback.Pinch = 0f;
 		h.Set("alpha", 0f);
-		Fx.Animate(h.Rect, 0, life, t =>
+		Fx.Play(screenRoot, playback, life, s =>
 		{
-			float s = t * life;
 			Pose pose;
 			float grip = 0f, flash = 0f, dissolve = 0f, alpha = 1f, pinch = 0f;
 			Vector2 shake = Vector2.Zero;
@@ -391,25 +418,36 @@ void fragment() {
 				if (!crushed)
 				{
 					crushed = true;
-					CutIn.Pinch = 0f;
+					playback.Pinch = 0f;
 					Sfx.Play(Sfx.Crush, 0.6f);
 					onCrush?.Invoke();
 				}
 			}
+			float frontMix = Mathf.SmoothStep(0f, 1f, Mathf.Clamp((s - GrabAt) / (FistAt - GrabAt), 0f, 1f));
+			h.Set("front_mix", frontMix);
+			frontHand.Set("front_mix", frontMix);
 			h.Apply(pose);
-			h.Rect.GlobalPosition = shake;
+			h.Rect.Position = shake;
+			frontHand.Rect.Position = shake;
+			frontHand.Apply(pose);
+			h.Set("clock", s);
+			frontHand.Set("clock", s);
 			h.Set("grip", grip);
+			frontHand.Set("grip", grip);
 			h.Set("flash", flash);
+			frontHand.Set("flash", flash);
 			h.Set("dissolve", dissolve);
+			frontHand.Set("dissolve", dissolve);
 			h.Set("alpha", alpha);
+			frontHand.Set("alpha", alpha);
 			if (s >= GrabAt && s < CrushAt)
 			{
-				CutIn.Pinch = pinch;
-				CutIn.PinchAt = h.ToScreen(pose, new Vector3(0f, 0.85f, -0.35f));
-				CutIn.ShatterFrom = CutIn.PinchAt;
+				playback.Pinch = pinch;
+				playback.PinchAt = h.ToScreen(pose, new Vector3(0f, 0.85f, -0.35f));
+				playback.ShatterFrom = playback.PinchAt;
 			}
 		});
-		Fx.FreeAfter(h.Rect, life + 0.05);
+		screenRoot.TreeExiting += () => { if (GodotObject.IsInstanceValid(frontRoot)) frontRoot.QueueFree(); };
 		return h;
 	}
 }

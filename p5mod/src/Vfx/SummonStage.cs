@@ -122,21 +122,23 @@ void fragment() {
 	public static ulong Quiet;
 
 	/// <summary>放一次召唤舞台。back = 背景特效层；front = 最前面一层；head = Joker 头部（屏幕坐标），集中线的中心。</summary>
-	public static void Play(Control back, Control front, Vector2 head, bool maskFlame = true)
+	public static void Play(Control back, Control front, Vector2 head, bool maskFlame = true, CutInPlayback? playback = null)
 	{
+		playback ??= new CutInPlayback(CutIn.SplitAt);
+		float split = playback.SplitAt, length = split + 0.25f;
+		float crackDelay = playback.Crush ? 0f : 0.05f;
 		Vector2 screen = Fx.Screen(back);
-		TearSeed = Fx.Rand(0f, 100f);
-		Node2D root = Fx.Root(back, Vector2.Zero, "P5SummonStage", Length + 0.1);
-		root.GlobalPosition = Vector2.Zero;
+		TearSeed = playback.Seed;
+		Node2D root = Fx.ScreenRoot(back, "P5SummonStage");
 		back.MoveChild(root, back.GetChildCount() - 1);
 		ColorRect rect = new() { Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Shader } };
 		root.AddChild(rect);
 		ShaderMaterial m = (ShaderMaterial)rect.Material;
 		m.SetShaderParameter("res", screen);
 		m.SetShaderParameter("sres", screen);
-		m.SetShaderParameter("focus", head / screen);
+		m.SetShaderParameter("focus", Fx.ScreenPoint(back, head) / screen);
 		m.SetShaderParameter("seed", Fx.Rand(0f, 100f));
-		m.SetShaderParameter("tseed", TearSeed);
+		m.SetShaderParameter("tseed", playback.Seed);
 		Fx.Clock(rect);
 		if (maskFlame)
 		{
@@ -144,17 +146,16 @@ void fragment() {
 		}
 		Sfx.Play(Sfx.CutIn, 0.8f, 0.03f);                       // 纸条拍进来
 		bool broke = false;
-		Fx.Animate(root, 0, Length, t =>
+		Fx.Play(root, playback, length, s =>
 		{
-			float s = t * Length;
 			m.SetShaderParameter("intro", s);
 			// 背景：横幅碎开（裂纹定格 0.05s 之后）那一下白闪着退掉，0.12s 缓出
-			float gone = Mathf.Clamp((s - CutIn.SplitAt - 0.05f) / 0.12f, 0f, 1f);
+			float gone = Mathf.Clamp((s - split - crackDelay) / 0.12f, 0f, 1f);
 			m.SetShaderParameter("amount", 1f - (1f - Mathf.Pow(1f - gone, 3f)));
 			// 白闪：纸条拍进来那一下（弱）、爪痕划完那一下
-			float fl = 0.12f * Mathf.Exp(-s / 0.05f) + (s >= CutIn.SplitAt + 0.05f ? 0.6f * Mathf.Exp(-(s - CutIn.SplitAt - 0.05f) / 0.06f) : 0f);
+			float fl = 0.12f * Mathf.Exp(-s / 0.05f) + (s >= split + crackDelay ? 0.6f * Mathf.Exp(-(s - split - crackDelay) / 0.06f) : 0f);
 			m.SetShaderParameter("flash", fl);
-			if (!broke && s >= CutIn.SplitAt + 0.05f)
+			if (!broke && s >= split + crackDelay)
 			{
 				broke = true;
 				Fx.Shake(2);                                       // 整段召唤只在玻璃碎开这一下轻震一次

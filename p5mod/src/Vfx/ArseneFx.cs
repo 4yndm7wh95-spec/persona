@@ -183,7 +183,8 @@ void fragment() {
 	/// </summary>
 	public static (float FistAt, float CrushAt)? NextClench;
 
-	public static void Show(Control back, Vector2 feet, float height, float facing, float attackAt, float exitAt)
+	public static void Show(Control back, Vector2 feet, float height, float facing, float attackAt, float exitAt,
+		CutInPlayback? playback = null, float clockOffset = 0f)
 	{
 		(float FistAt, float CrushAt)? clench = NextClench;
 		NextClench = null;
@@ -262,9 +263,8 @@ void fragment() {
 		float px = 1f / k;
 		Node2D? ghost = null;
 		_ = ghost;
-		Fx.Animate(display, 0, total, t =>
+		void Render(float time)
 		{
-			float time = t * total;
 			// 蓝焰：现身时整个剪影先是一团大火（fire 1.5），火褪成贴身的一圈（0.62，慢慢跳动）；出手一下火一窜；退场又烧旺、把人烧掉
 			if (!burned && time >= exitAt)
 			{
@@ -401,8 +401,18 @@ void fragment() {
 			mat.SetShaderParameter("aura", burst);
 			mat.SetShaderParameter("fire", fireLen + beat * 0.35f);       // 出手一闪（平方衰减：顿帧拖慢时不会一直发灰）
 			eyes.Modulate = new Color(1f + beat * 3f, 1f + beat * 1.5f, 1f + beat * 1.5f, 1f);
-		});
-		Fx.FreeAfter(display, total + 0.05);
-		Fx.FreeAfter(vp, total + 0.1);
+		}
+		if (playback != null)
+		{
+			// The actor, hand and paper share the hold before poison application finishes.
+			Fx.Play(display, playback, clockOffset + total, s => Render(Mathf.Max(0f, s - clockOffset)));
+			display.TreeExiting += () => { if (GodotObject.IsInstanceValid(vp)) vp.QueueFree(); };
+		}
+		else
+		{
+			Fx.Animate(display, 0, total, t => Render(t * total));
+			Fx.FreeAfter(display, total + 0.05);
+			Fx.FreeAfter(vp, total + 0.1);
+		}
 	}
 }

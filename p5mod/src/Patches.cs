@@ -195,12 +195,20 @@ public static class DamageNumberPatch
 		bool replaced = false;
 		ModEntry.Safe("DamageNumber", () =>
 		{
-			// 毒性爆发「立即触发中毒」的伤害数字：推迟到引爆那一刻再跳（PoisonFx 把引爆画面推迟了 ~0.3s，不然数字先于爆炸出现）
-			if (original != null && !target.IsPlayer && PoisonFx.InOutbreak && result.UnblockedDamage > 0
+			// Every real Joker-owned poison tick, including every Accelerant repeat, owns its number.
+			if (original != null && !target.IsPlayer && PoisonDamage.Current.Value is { } poison
+				&& ReferenceEquals(poison.Owner, target)
+				&& poison.Applier?.Player is { } owner && Joker.Is(owner)
 				&& NCombatRoom.Instance?.GetCreatureNode(target) is NCreature pn && Joker.FxLayer() is Godot.Control pl)
 			{
-				int dmg = result.UnblockedDamage;
-				Fx.After(pl, PoisonFx.BlastWait(), () => Popups.Damage(pl, pn.GetInstanceId(), pn.VfxSpawnPosition, dmg, false));
+				int damage = result.UnblockedDamage + (target.Monster is MegaCrit.Sts2.Core.Models.Monsters.Osty ? 0 : result.OverkillDamage);
+				if (damage <= 0) return;
+				Popups.Damage(pl, pn.GetInstanceId(), pn.VfxSpawnPosition, damage, false);
+				PoisonFx.Tick(pl, pn.VfxSpawnPosition, pn.GetTopOfHitbox(), pn.Hitbox.GetGlobalRect().Size.X, pn.Visuals,
+					outbreak: OutbreakPlayback.Current.Value != null);
+				Grip.OnTick(pn.GetInstanceId());
+				DepthGrip.OnTick(pn.GetInstanceId());
+				Myriad.OnPoisonTick(pl, pn.GetInstanceId(), pn.VfxSpawnPosition, pn.GetTopOfHitbox(), null);
 				original.QueueFree();
 				replaced = true;
 				return;
@@ -352,8 +360,10 @@ public static class TriggerAnimDelayPatch
 			if (triggerName == "Cast" && creature.IsPlayer && Joker.Is(creature.Player) && NCombatRoom.Instance?.GetCreatureNode(creature) is NCreature node)
 			{
 				hit = Aim.TakeSummon(node);
+				if (OutbreakPlayback.Current.Value != null) hit = 0f;
 			}
 		});
+		if (OutbreakPlayback.Current.Value != null && triggerName == "Cast") waitTime = 0f;
 		if (hit > 0f)
 		{
 			waitTime = Godot.Mathf.Max(waitTime, hit);
@@ -371,10 +381,11 @@ public static class CardPlayedPatch
 		{
 			if (Joker.OwnsCard(cardPlay.Card) && Joker.Node(cardPlay.Card.Owner) is NCreature node)
 			{
+				OutbreakPlayback? playback = OutbreakPlayback.Prepare(cardPlay);
 				Aim.PendingCast[node.GetInstanceId()] = Casts.For(cardPlay.Card);
 				if (cardPlay.Card.Type != CardType.Attack)
 				{
-					Aim.PlayCast(node, cardPlay.Card);
+					Aim.PlayCast(node, cardPlay.Card, playback);
 				}
 				JokerFx.OnPlay(cardPlay.Card, node, cardPlay.Target);
 			}
@@ -398,7 +409,7 @@ public static class PoisonApplyPatch
 			{
 				return;
 			}
-			PoisonFx.Apply(layer, n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, n.Visuals, amount);
+			PoisonFx.Apply(layer, n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, n.Visuals, amount, outbreak: OutbreakPlayback.Current.Value != null);
 		});
 	}
 }
@@ -442,49 +453,6 @@ public static class CorrosiveGasPatch
 		{
 			__result.Visible = false;
 		}
-	}
-}
-
-/// <summary>
-/// 毒伤每结算一轮（PoisonPower.Trigger 里 CreatureCmd.Damage(目标, 层数, 无视格挡 | 不受力量, null, null)；触媒让它多结算几轮）：
-/// 毒性爆发结算期间给 Myriad 按轮次出特效。挂在 Damage 最底层的重载上（其他重载都转到这里）；只看、不改。
-/// </summary>
-[HarmonyPatch]
-public static class PoisonTickPatch
-{
-	public static MethodBase TargetMethod() => typeof(CreatureCmd).GetMethods(BindingFlags.Public | BindingFlags.Static).First(m =>
-		m.Name == nameof(CreatureCmd.Damage) && m.GetParameters() is { Length: 7 } p && p[1].ParameterType == typeof(IEnumerable<Creature>)
-		&& p[2].ParameterType == typeof(decimal));
-
-	public static void Prefix(IEnumerable<Creature>? targets, ValueProp props, Creature? dealer, CardModel? cardSource)
-	{
-		if (targets == null || dealer != null || cardSource != null || props != (ValueProp.Unblockable | ValueProp.Unpowered))
-		{
-			return;
-		}
-		ModEntry.Safe("PoisonTick", () =>
-		{
-			if (Joker.FxLayer() is not Godot.Control layer || NCombatRoom.Instance is not NCombatRoom room)
-			{
-				return;
-			}
-			foreach (Creature c in targets)
-			{
-				if (!c.IsPlayer && c.GetPower<MegaCrit.Sts2.Core.Models.Powers.PoisonPower>() != null && room.GetCreatureNode(c) is NCreature n)
-				{
-					Grip.OnTick(n.GetInstanceId());                   // 正被人格面具之手攥着：再捏一下
-					DepthGrip.OnTick(n.GetInstanceId());              // 毒性爆发：第一轮捏爆、之后再捏
-					Godot.CanvasItem? v = n.Visuals;
-					Myriad.OnPoisonTick(layer, n.GetInstanceId(), n.VfxSpawnPosition, n.GetTopOfHitbox(),
-						v == null ? null : col => { if (Godot.GodotObject.IsInstanceValid(v)) { v.Modulate = col; } });
-					// 第四版每轮毒伤（Vfx/PoisonFx.cs）：只给 Joker 施的毒放
-					if (c.GetPower<MegaCrit.Sts2.Core.Models.Powers.PoisonPower>()?.Applier?.Player is { } owner && Joker.Is(owner))
-					{
-						PoisonFx.Tick(layer, n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, n.Visuals);
-					}
-				}
-			}
-		});
 	}
 }
 

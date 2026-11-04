@@ -229,16 +229,15 @@ void fragment() {
 	public static Vector2? ShatterFrom;
 
 	/// <summary>放一次眼神特写（背景层，人物、敌人在前面）。原版网格画进离屏画面，再用 BandShader 显示。</summary>
-	public static void Eyes(Control back)
+	public static void Eyes(Control back, CutInPlayback? playback = null)
 	{
 		if (Fx.Tex("eyes") is not Texture2D tex) return;
 		Load();
-		Pinch = 0f;
-		ShatterFrom = null;
+		playback ??= new CutInPlayback(SplitAt);
 		Clip clip = _clip!;
 		Prepared[] parts = _parts!;
 		Vector2 screen = Fx.Screen(back);
-		float life = SplitAt + ShatterLife + 0.1f;
+		float life = playback.SplitAt + ShatterLife + 0.1f;
 		// 离屏画面：和屏幕一样大，透明底
 		SubViewport view = new()
 		{
@@ -246,7 +245,7 @@ void fragment() {
 			RenderTargetUpdateMode = SubViewport.UpdateMode.Always,
 		};
 		back.AddChild(view);
-		Fx.FreeAfter(view, life + 0.1);
+
 		Node2D root = new();
 		view.AddChild(root);
 		// 原版带子缩到 82%、往上挪一点（用户 2026-11-01：铺满太大、缩小两头又空）；两头接上 Codex 画的撕纸延伸段，把带子接到屏幕边缘
@@ -278,19 +277,19 @@ void fragment() {
 			root.MoveChild(tl, root.GetChildCount() - 1);          // 延伸段在原版网格上面：盖住带子两端的竖直切边
 		}
 		// 显示：一张铺满屏幕的图，用 BandShader
-		Node2D shown = Fx.Root(back, Vector2.Zero, "P5CutIn", life);
+		Node2D shown = Fx.ScreenRoot(back, "P5CutIn");
+		shown.TreeExiting += () => { if (GodotObject.IsInstanceValid(view)) view.QueueFree(); };
 		back.MoveChild(shown, back.GetChildCount() - 1);
 		ShaderMaterial m = new() { Shader = BandShader };
-		m.SetShaderParameter("tseed", SummonStage.TearSeed);
+		m.SetShaderParameter("tseed", playback.Seed);
 		m.SetShaderParameter("sres", screen);
 		m.SetShaderParameter("tex", view.GetTexture());
 		Sprite2D sprite = new() { Texture = view.GetTexture(), Centered = false, Material = m };
 		shown.AddChild(sprite);
 		bool hit = false, shattered = false;
 		Rect2 bandRect = new(new Vector2(0f, root.Position.Y), new Vector2(screen.X, clip.Canvas[1] * scale));     // 连两头的延伸段一起碎
-		Fx.Animate(shown, 0, life, progress =>
+		Fx.Play(shown, playback, life, s =>
 		{
-			float s = progress * life;
 			// 原版动画只放到停住那一帧（不放原版的合拢）
 			float time = Mathf.Min(s * clip.Speed, 1.45f);
 			for (int i = 0; i < parts.Length; i++)
@@ -313,18 +312,18 @@ void fragment() {
 			}
 			float k = Mathf.Clamp((s - ImpactAt) / 0.16f, 0f, 1f);
 			m.SetShaderParameter("zoom", s < ImpactAt ? 1f : Mathf.Lerp(1.08f, 1f, Fx.OutCubic(k)));
-			m.SetShaderParameter("pinch", Pinch);
-			m.SetShaderParameter("pinch_at", PinchAt / screen);
+			m.SetShaderParameter("pinch", playback.Pinch);
+			m.SetShaderParameter("pinch_at", playback.PinchAt / screen);
 			if (!hit && s >= ImpactAt)
 			{
 				hit = true;
 				Sfx.Play(Sfx.OneMore, 1.1f);                         // 原版弱点眼神特写的音（用户 2026-11-03 试过 battle_cutin，又换回来）
 			}
 			// 碎开（用户 2026-11-01：复用结城理 mod 的玻璃碎裂，不要爪痕）：先裂纹定格 0.05s，然后横幅换成一块块碎片炸开；亚森离场、咒焰收掉、背景退掉都在碎开这一刻
-			if (!shattered && s >= SplitAt)
+			if (!shattered && s >= playback.SplitAt)
 			{
 				shattered = true;
-				Shatter(back, view.GetTexture(), screen, bandRect, () => sprite.Visible = false);
+				Shatter(back, view.GetTexture(), screen, bandRect, () => sprite.Visible = false, playback.ShatterFrom, playback.Crush ? 0f : 0.05f);
 			}
 		});
 	}
@@ -427,9 +426,9 @@ void fragment() { COLOR = vec4(COLOR.rgb, COLOR.a * step(0.5, texture(mask, SCRE
 	}
 
 	/// <summary>横幅从冲击点放射状裂开，0.05s 裂纹定格（白裂纹 + 白闪），然后碎成大块玻璃炸开、迅速减速、慢慢转着漂、一部分飞向镜头放大、淡出。</summary>
-	private static void Shatter(Control back, Texture2D tex, Vector2 screen, Rect2 band, System.Action hideBand)
+	private static void Shatter(Control back, Texture2D tex, Vector2 screen, Rect2 band, System.Action hideBand, Vector2? shatterFrom, float crackDelay)
 	{
-		Vector2 hit = ShatterFrom ?? band.Position + band.Size * new Vector2(0.42f, 0.52f);      // 毒性爆发：从拳心碎开
+		Vector2 hit = shatterFrom ?? band.Position + band.Size * new Vector2(0.42f, 0.52f);      // 毒性爆发：从拳心碎开
 		Vector2[] rect = { band.Position, band.Position + new Vector2(band.Size.X, 0f), band.End, band.Position + new Vector2(0f, band.Size.Y) };
 		float reach = screen.Length();
 		float[] rings = { 0f, 70f, 160f, 290f, 460f, 700f, 1000f, 1400f, reach + 200f };
@@ -455,8 +454,8 @@ void fragment() { COLOR = vec4(COLOR.rgb, COLOR.a * step(0.5, texture(mask, SCRE
 				}
 			}
 		}
-		Node2D root = Fx.Root(back, Vector2.Zero, "P5CutInShatter", ShatterLife + 0.2);
-		root.GlobalPosition = Vector2.Zero;
+		Node2D root = Fx.ScreenRoot(back, "P5CutInShatter");
+		Fx.FreeAfter(root, ShatterLife + 0.2);
 		back.MoveChild(root, back.GetChildCount() - 1);
 		// 裂纹定格：白裂纹（只在横幅上）
 		Node2D cracks = new();
@@ -472,11 +471,13 @@ void fragment() { COLOR = vec4(COLOR.rgb, COLOR.a * step(0.5, texture(mask, SCRE
 		}
 		Fx.Animate(cracks, 0, 0.16, t => cracks.Modulate = new Color(1f, 1f, 1f, 1f - Fx.InCubic(t)));
 		const float total = ShatterLife, tau = 0.2f;
-		Fx.After(back, 0.05, () =>
+		Fx.After(root, crackDelay, () =>
 		{
 			hideBand();
 			Sfx.Play(Sfx.EvokerShatter, 1.1f);                       // P3 mod 召唤器那一枪的碎裂声（用户 2026-11-03）                             // 「啪」地碎开（用户 2026-11-03：原来那声不明显、没有震撼感）
-			Glow.Flash(back, hit, Pal5.Hot, screen.X * 0.35f, 0.18f);
+			Control light = new();
+			root.AddChild(light);
+			Glow.Flash(light, root.ToGlobal(hit), Pal5.Hot, screen.X * 0.35f, 0.18f);
 			foreach (Vector2[] piece in pieces)
 			{
 				Vector2 c = Vector2.Zero;
@@ -522,7 +523,7 @@ void fragment() { COLOR = vec4(COLOR.rgb, COLOR.a * step(0.5, texture(mask, SCRE
 					shard.Modulate = new Color(1f, 1f, 1f, 1f - k * k * (3f - 2f * k));
 				});
 			}
-			Glow.Sparks(back, hit, 30, 300f, 1100f, 0.6f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 300f, 0.1f, 0.35f);
+			Glow.Sparks(light, root.ToGlobal(hit), 30, 300f, 1100f, 0.6f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 300f, 0.1f, 0.35f);
 		});
 	}
 }

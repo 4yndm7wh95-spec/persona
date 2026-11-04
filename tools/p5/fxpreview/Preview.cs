@@ -360,9 +360,10 @@ public partial class Preview : Node2D
 			p.At(0.3, () => { p._joker?.Play("cast_big"); PoisonFx.BeginOutbreak(hit + 1.5f); });
 			p.At(0.34, () =>
 			{
-				CutIn.SplitAt = emerge + CrushHand.CrushAfter;
-				SummonStage.Play(p._back, p._front, Pose(1010, 215), maskFlame: false);
-				CutIn.Eyes(p._back);
+				CutInPlayback clip = new(emerge + CrushHand.CrushAfter, crush: true);
+				clip.Start();
+				SummonStage.Play(p._back, p._front, Pose(1010, 215), maskFlame: false, playback: clip);
+				CutIn.Eyes(p._back, clip);
 				CrushHand.Outbreak(p._back, emerge, onFist: () =>
 				{
 					var targets = new List<PoisonFx.Target>();
@@ -372,25 +373,23 @@ public partial class Preview : Node2D
 						targets.Add(new PoisonFx.Target(e, e - new Vector2(0f, 120f), 230f, n));
 					}
 					PoisonFx.Squeeze(p._front, targets);
-				});
-			});
-			p.At(0.34 + 0.3, () =>
-			{
-				Sfx.Play(Sfx.PersonaFlame, 0.5f);
-				ArseneFx.NextClench = (spec.AttackAt + CrushHand.FistAfter, spec.AttackAt + CrushHand.CrushAfter);   // 同 Aim.OutbreakHand
-				Persona.Show(spec, p._back, JokerFeet, tall);
-			});
-			for (int i = 0; i < es.Length; i++)
-			{
-				Vector2 e = es[i];
-				p.Poison(0.3 + hit + 0.01 * i, e, 9);
-				p.At(0.3 + hit + 0.04 + 0.01 * i, () =>
+				}, onCrush: () =>
 				{
-					p._enemies.TryGetValue(e, out Node2D? n);
-					PoisonFx.Tick(p._front, e, e - new Vector2(0f, 120f), 230f, n);
-					Fx.After(p._front, PoisonFx.BlastWait(), () => Popups.Damage(p._front, (ulong)e.X, e, 9, false));   // 同 DamageNumberPatch
+					CrushWave.Play(p._back, clip.ShatterFrom ?? Fx.Screen(p._back) * 0.5f);
+					foreach (Vector2 e in es)
+					{
+						p._enemies.TryGetValue(e, out Node2D? n);
+						PoisonFx.Tick(p._front, e, e - new Vector2(0f, 120f), 230f, n, outbreak: true);
+						Popups.Damage(p._front, (ulong)e.X, e, 9, false);
+					}
+				}, playback: clip);
+				Fx.After(p._back, 0.3, () =>
+				{
+					Sfx.Play(Sfx.PersonaFlame, 0.5f);
+					ArseneFx.NextClench = (spec.AttackAt + CrushHand.FistAfter, spec.AttackAt + CrushHand.CrushAfter);
+					Persona.Show(spec, p._back, JokerFeet, tall, playback: clip, clockOffset: 0.3f);
 				});
-			}
+			});
 		},
 		["outbreak_v4"] = p =>
 		{

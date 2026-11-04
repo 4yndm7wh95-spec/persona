@@ -69,7 +69,7 @@ public sealed class ReadyFx
 		// 预备层音效（很轻）：拿起牌一声切入提示；掏枪 / 转刀 / 面具点火各一声
 		switch (stance)
 		{
-			case Stance.Gun: Sfx.Play(Sfx.GunDraw, 0.5f, 0.05f); break;
+			case Stance.Gun: break; // Selected Shiv: silent; shot sound still plays on use.
 			case Stance.Knife:
 				// 转刀（用户：原来那声风声像空转；换成低沉的挥动。试过刀落回手里加一记金属声，用户说不需要）
 				Sfx.Play(Sfx.SwishLow, 0.45f, 0.02f);
@@ -383,12 +383,12 @@ public sealed class LockOn
 	private readonly Node2D _root;
 	private bool _done;
 
-	private LockOn(Control layer, Vector2 at, float size)
+	private LockOn(Control layer, Vector2 at, float size, bool sound)
 	{
 		_root = new Node2D { Name = "P5LockOn", Position = at };
 		layer.AddChild(_root);
 		_root.GlobalPosition = at;
-		Sfx.Play(Sfx.Cursor, 0.45f);                                  // 选中敌人：很轻的一下
+		if (sound) Sfx.Play(Sfx.Cursor, 0.45f); // Selecting a Shiv is silent, including target hover.
 		float r = size * 0.42f;
 		// 外圈：四段红色粗弧（黑描边），慢转
 		Node2D outer = new();
@@ -465,7 +465,7 @@ public sealed class LockOn
 		Ink.Halftone(layer, at, r * 1.7f, 0.32f, 0f, null, 1f, 12f);
 	}
 
-	public static LockOn Start(Control layer, Vector2 at, float size = 230f) => new(layer, at, size);
+	public static LockOn Start(Control layer, Vector2 at, float size = 230f, bool sound = true) => new(layer, at, size, sound);
 
 	public void Release()
 	{

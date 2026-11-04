@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup>
+  <TargetFramework>net9.0</TargetFramework><OutputType>Exe</OutputType>
+  <ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
+  <GameDir Condition="'$(GameDir)' == ''">C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2</GameDir>
+  <GameData>$(GameDir)\data_sts2_windows_x86_64</GameData>
+ </PropertyGroup>
+ <ItemGroup>
+  <ProjectReference Include="../../../p5mod/P5Joker.csproj" />
+  <Reference Include="0Harmony"><HintPath>$(GameData)/0Harmony.dll</HintPath></Reference>
+  <Reference Include="sts2"><HintPath>$(GameData)/sts2.dll</HintPath></Reference>
+  <Reference Include="GodotSharp"><HintPath>$(GameData)/GodotSharp.dll</HintPath></Reference>
+ </ItemGroup>
+</Project>

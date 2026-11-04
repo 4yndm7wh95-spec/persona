@@ -189,6 +189,34 @@ public static class Fx
 
 	public static Vector2 Screen(Node any) => any.GetViewport()?.GetVisibleRect().Size ?? new Vector2(1920f, 1080f);
 
+	/// <summary>Keep room-layer draw order, cancel both room transforms and Camera2D zoom/pan.</summary>
+	public static Node2D ScreenRoot(Control layer, string name)
+	{
+		Node2D root = new() { Name = name, TopLevel = true };
+		layer.AddChild(root);
+		void Place() { if (GodotObject.IsInstanceValid(layer)) root.GlobalTransform = layer.GetCanvasTransform().AffineInverse(); }
+		Place();
+		SceneTree tree = root.GetTree();
+		tree.ProcessFrame += Place;
+		root.TreeExiting += () => tree.ProcessFrame -= Place;
+		return root;
+	}
+
+	public static Vector2 ScreenPoint(Control layer, Vector2 world) => layer.GetCanvasTransform() * world;
+
+	/// <summary>All parts sample the same per-play clock, including an optional wait before crushing.</summary>
+	public static void Play(Node owner, CutInPlayback clip, float life, Action<float> step)
+	{
+		step(clip.Time);
+		Tween tween = owner.CreateTween();
+		tween.TweenMethod(Callable.From<float>(_ =>
+		{
+			float s = clip.Time;
+			step(Mathf.Min(s, life));
+			if (s >= life) owner.QueueFree();
+		}), 0f, 1f, 600.0);
+	}
+
 	/// <summary>白字黑描边的文字（P5 的字都是硬边粗体）。</summary>
 	public static Label Text(Node parent, string text, int size, Color color, Color outline, int outlineSize = 8)
 	{

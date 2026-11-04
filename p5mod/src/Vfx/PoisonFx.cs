@@ -67,10 +67,10 @@ public static class PoisonFx
 	/// 没有召唤（带毒刺击、涂毒、毒雾……）就只有落点，轻一些。
 	/// at = 目标中心，top = 头顶，width = 目标宽度，amount = 这次加的层数（多就更旺）。
 	/// </summary>
-	public static void Apply(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount) =>
-		Apply(layer, at, top, width, body, amount, 6);
+	public static void Apply(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount, bool? outbreak = null) =>
+		Apply(layer, at, top, width, body, amount, 6, outbreak ?? InOutbreak);
 
-	private static void Apply(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount, int retry)
+	private static void Apply(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount, int retry, bool outbreak)
 	{
 		// 弹跳烧瓶：咒怨火球落到这个敌人身上（SnakeFx.Throw 飞过来，落地 = 这一刻）
 		if (SnakeFx.FlaskActive)
@@ -79,7 +79,7 @@ public static class PoisonFx
 			return;
 		}
 		// 毒性爆发（巨手版）：结算推到了捏碎那一刻，标记早在攥住横幅时做过（Squeeze）→ 这里只让毒伤立刻引爆
-		if (InOutbreak && HandMode)
+		if (outbreak && HandMode)
 		{
 			ulong nowMs = Stage.NowMs();
 			_beamLand = nowMs > 380 ? nowMs - 380 : 0;
@@ -89,7 +89,7 @@ public static class PoisonFx
 		// 免得走成没召唤的普通落点（用户 2026-11-04：从亚森到敌人那一条有时有有时没有）
 		if (retry > 0 && !ArseneFx.TryClaw(out _) && ArseneFx.AttackPending)
 		{
-			Fx.After(layer, 0.05, () => Apply(layer, at, top, width, body, amount, retry - 1));
+			Fx.After(layer, 0.05, () => Apply(layer, at, top, width, body, amount, retry - 1, outbreak));
 			return;
 		}
 		if (CorrosiveFx.Suppressing && !ArseneFx.TryClaw(out _))
@@ -114,7 +114,7 @@ public static class PoisonFx
 			}
 			_beamLand = Stage.NowMs() + 80;
 			// 毒性爆发：光束命中只留「标记」，不炸（用户 2026-11-03：太花、几个高潮挤在一起）——唯一的高潮留给引爆
-			if (InOutbreak)
+			if (outbreak)
 			{
 				Fx.After(layer, 0.08, () => Mark(layer, at, top, width, body));
 				return;
@@ -122,7 +122,7 @@ public static class PoisonFx
 			Fx.After(layer, 0.08, () => Impact(layer, at, top, width, body, amount, d, true));
 			return;
 		}
-		if (InOutbreak)
+		if (outbreak)
 		{
 			Mark(layer, at, top, width, body);
 			return;
@@ -283,15 +283,12 @@ public static class PoisonFx
 	}
 
 	/// <summary>每轮毒伤（回合开始，敌人越多越频繁）：一小团咒火 + 一缕怨灵 + 身体暗一下。</summary>
-	public static void Tick(Control layer, Vector2 at, Vector2 top, float width, Node2D? body)
+	public static void Tick(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, bool? outbreak = null)
 	{
-		if (InOutbreak)
+		if (outbreak ?? InOutbreak)
 		{
-			// 毒性爆发的「立即触发中毒」：等咒怨光束落地再一起引爆
-			ulong now = Stage.NowMs();
-			// 标记之后停 0.3s 再一起引爆（三拍分开：召唤 → 标记 → 引爆）
-			double wait = _beamLand + 380 > now ? (_beamLand + 380 - now) / 1000.0 : 0.0;
-			Fx.After(layer, wait, () => Blast(layer, at, top, width, body));
+			// The gameplay gate already releases on the actual crush. Never add a beam-land delay.
+			Blast(layer, at, top, width, body);
 			return;
 		}
 		float h = Mathf.Max(80f, (at - top).Length());

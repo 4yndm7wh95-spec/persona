@@ -285,7 +285,7 @@ public static class Aim
 	/// 出技能 / 能力牌（CardPlayedPatch）：Joker 自己施法 —— 摆着架势就从架势接（*_from_*），站着就播对应的 cast。
 	/// 原版很多牌（防御等）根本不触发 Cast 动画，不这样做人会一直停在架势上。返回是否播了。
 	/// </summary>
-	public static bool PlayCast(NCreature node, CardModel card)
+	public static bool PlayCast(NCreature node, CardModel card, OutbreakPlayback? playback = null)
 	{
 		Stance stance = StanceFor(card);
 		MegaSprite? body = node.Visuals?.SpineBody;
@@ -301,7 +301,7 @@ public static class Aim
 		string? current = Current(state);
 		string? name = current == pre + "_in" || current == pre + "_loop"
 			? stance switch { Stance.Guard => "cast_guard_from_ready", Stance.Glove => "cast_glove_from_ready", _ => "cast_from_mask" }
-			: Idle(current) ? stance switch { Stance.Guard => "cast_guard", Stance.Glove => "cast_glove", _ => "cast" } : null;
+			: stance switch { Stance.Guard => "cast_guard", Stance.Glove => "cast_glove", _ => "cast" };
 		if (name == null || !body.HasAnimation(name))
 		{
 			return false;
@@ -325,10 +325,10 @@ public static class Aim
 			//   拍 2「出手」：人格面具出手 = 伤害 / 上毒结算（各张牌自己的命中特效带顿帧和冲击声）。
 			Persona.Spec spec = PersonaFor(card);
 			float evoke = tier == Tier.Rare ? SummonStage.EvokeAt : 0f;
-			Summoning[node.GetInstanceId()] = (Time.GetTicksMsec() + 2000, HitFor(card));
+			Summoning[node.GetInstanceId()] = Time.GetTicksMsec() + (ulong)(HitFor(card) * 1000f);
 			if (card.GetType().Name == "Outbreak")
 			{
-				OutbreakHand(node, back);
+				OutbreakHand(node, back, playback);
 				return true;
 			}
 			Vector2 head = Joker.PosePoint(node, ReadyFx.MaskFace);
@@ -339,12 +339,12 @@ public static class Aim
 				float face = Joker.Facing(node);
 				if (tier == Tier.Rare)
 				{
-					CutIn.SplitAt = evoke - 0.05f;                      // 裂纹定格 0.05s，拍 1 碎开
+					CutInPlayback clip = new(evoke - 0.05f);                      // 裂纹定格 0.05s，拍 1 碎开
 					if (Joker.FxLayer() is Control fr)
 					{
-						SummonStage.Play(back, fr, head);
+						SummonStage.Play(back, fr, head, playback: clip);
 					}
-					CutIn.Eyes(back);
+					CutIn.Eyes(back, clip);
 					Vector2 chest = Persona.ChestOf(spec, feet, tall * 1.35f, face);
 					Fx.After(back, evoke, () =>
 					{
@@ -397,7 +397,7 @@ public static class Aim
 	/// 毒性爆发（用户 2026-11-03 创意）：舞台 + 眼神特写 → 亚森照常召唤现身（拍 1，但眼神特写不碎）→ 亚森往前出手，横幅里冲出一只咒烟巨手（CrushHand）
 	/// → 攥住横幅（所有敌人被标记）→ 捏碎 = 横幅碎开 = 游戏结算毒伤 = 所有敌人咒火一起引爆（PoisonFx.Blast）→ 亚森退场。没有光束。
 	/// </summary>
-	private static void OutbreakHand(NCreature node, Control back)
+	private static void OutbreakHand(NCreature node, Control back, OutbreakPlayback? play)
 	{
 		Vector2 head = Joker.PosePoint(node, ReadyFx.MaskFace);
 		Persona.Spec spec = PersonaFor("Outbreak");
@@ -406,19 +406,20 @@ public static class Aim
 			Vector2 feet = Joker.PosePoint(node, ReadyFx.Feet);
 			float tall = (feet - Joker.PosePoint(node, new Vector2(815f, 120f))).Length();
 			float face = Joker.Facing(node);
-			CutIn.SplitAt = OutbreakEmerge + CrushHand.CrushAfter;      // 横幅碎开 = 捏碎
+			CutInPlayback clip = play?.Clip ?? new CutInPlayback(OutbreakEmerge + CrushHand.CrushAfter, crush: true);
+			clip.Start();      // 横幅碎开 = 捏碎
 			if (Joker.FxLayer() is Control fr)
 			{
-				SummonStage.Play(back, fr, head, maskFlame: false);     // 用户 2026-11-03：亚森出现只响一声蓝焰（原来舞台一声 + 现身一声）
+				SummonStage.Play(back, fr, head, maskFlame: false, playback: clip);     // 用户 2026-11-03：亚森出现只响一声蓝焰（原来舞台一声 + 现身一声）
 			}
-			CutIn.Eyes(back);
+			CutIn.Eyes(back, clip);
 			Fx.After(back, OutbreakShow, () =>
 			{
 				Sfx.Play(Sfx.PersonaFlame, 0.5f);                       // 和退场同一个声、同样的音量
 				ArseneFx.NextClench = (spec.AttackAt + CrushHand.FistAfter, spec.AttackAt + CrushHand.CrushAfter);   // 不扑：伸手攥拳，跟巨手同步
-				Persona.Show(spec, back, feet, tall * 1.35f, face);
+				Persona.Show(spec, back, feet, tall * 1.35f, face, playback: clip, clockOffset: OutbreakShow);
 			});
-			CrushHand.Outbreak(back, OutbreakEmerge, onFist: () =>
+			CrushHand hand = CrushHand.Outbreak(back, OutbreakEmerge, onFist: () =>
 			{
 				if (Joker.FxLayer() is not Control layer || NCombatRoom.Instance is not NCombatRoom room || node.Entity?.CombatState is not { } cs)
 				{
@@ -433,16 +434,24 @@ public static class Aim
 					}
 				}
 				PoisonFx.Squeeze(layer, targets);
-			});
+			}, onCrush: () =>
+			{
+				CrushWave.Play(back, clip.ShatterFrom ?? Fx.Screen(back) * 0.5f);
+				play?.Crush();
+			}, playback: clip);
+			play?.Started(hand.Rect);
 		});
 	}
 
 	/// <summary>正在召唤的 Joker：(到这个时刻为止的毫秒, 结算要推迟到施法后几秒)。</summary>
-	private static readonly Dictionary<ulong, (ulong Until, float Hit)> Summoning = new();
+	private static readonly Dictionary<ulong, ulong> Summoning = new();
 
 	/// <summary>这个 Joker 这次施法是 Persona 召唤吗：是就返回结算要推迟到几秒（TriggerAnimDelayPatch 用，用一次就清掉），不是返回 0。</summary>
-	public static float TakeSummon(NCreature node) =>
-		Summoning.Remove(node.GetInstanceId(), out var s) && Time.GetTicksMsec() < s.Until ? s.Hit : 0f;
+	public static float TakeSummon(NCreature node)
+	{
+		ulong now = Time.GetTicksMsec();
+		return Summoning.Remove(node.GetInstanceId(), out ulong due) && now < due ? (due - now) / 1000f : 0f;
+	}
 
 	/// <summary>游戏要播 cast，但 Joker 刚自己施过法：不重播。</summary>
 	public static bool SwallowCast(MegaAnimationState state) =>
@@ -545,7 +554,7 @@ public static class Aim
 		Unlock();
 		Vector2 at = creature.VfxSpawnPosition;
 		float size = Mathf.Clamp((at - creature.GetTopOfHitbox()).Length() * 2.4f, 160f, 340f);
-		_lock = LockOn.Start(layer, at, size);
+		_lock = LockOn.Start(layer, at, size, sound: _fx.Stance != Stance.Gun);
 		_lockId = creature.GetInstanceId();
 	}
 
