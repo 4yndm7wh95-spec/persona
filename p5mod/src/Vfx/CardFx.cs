@@ -19,58 +19,8 @@ public static class CardFx
 	/// （每格 OutBack 弹出、出现时闪白），整片往敌人那侧斜一点、两边往后收（像弧面的正投影）；停一会儿，再从外往里一格格熄灭。
 	/// 点亮时一圈空间扭曲往外推。是光，不是物件。fist = 拳头，shield = 光格的中心，height = 光格高度参考。~0.95s。
 	/// </summary>
-	public static void Guard(Control layer, Vector2 fist, Vector2 shield, float height, float facing = 1f)
-	{
-		// 用户 2026-11-04：防御音效用原版尖塔的（CreatureCmd.GainBlock 里的 block_gain 本来就在响）→ 不再叠 P5 的格挡音
-		float ry = height * 0.6f, rx = ry * 0.4f;
-		Vector2 at = new(shield.X + rx * 0.55f * facing, shield.Y);   // 整片在前臂前面，不盖住 Joker
-		float r = height * 0.1f, w = r * 0.6f;                      // 菱形：半高 r、半宽 w
-		const float tOn = 0.24f, hold = 0.4f, tOff = 0.3f;
-		float total = tOn + hold + tOff;
-		Node2D root = Fx.Root(layer, at, "P5Guard", total + 0.15);
-		Vector2 origin = new(0f, (fist.Y - at.Y) * 0.6f);             // 从前臂的高度开始点亮
-		Vector2[] diamond = { new(0f, -r), new(w, 0f), new(0f, r), new(-w, 0f) };
-		Vector2[] inner = { new(0f, -r * 0.5f), new(w * 0.5f, 0f), new(0f, r * 0.5f), new(-w * 0.5f, 0f) };
-		for (int q = -6; q <= 6; q++)
-		{
-			for (int row = -12; row <= 12; row++)
-			{
-				Vector2 p = new(q * w * 2f + (row % 2 != 0 ? w : 0f), row * r);
-				float ex = p.X / rx, ey = p.Y / ry;
-				float d = ex * ex + ey * ey;
-				if (d > 1f)
-				{
-					continue;
-				}
-				// 弧面投影：越往上下两端越往中间收；整片往敌人那侧斜
-				Vector2 pos = new((p.X * (1f - 0.22f * ey * ey) + p.Y * 0.16f) * facing, p.Y);
-				Node2D cell = new() { Position = pos, Scale = Vector2.Zero };
-				root.AddChild(cell);
-				float edge = Mathf.Sqrt(d);
-				Fx.Poly(cell, diamond, new Color(0.85f, 0.02f, 0.07f, 0.3f + 0.35f * (1f - d)));                 // 实色红面（不发粉）
-				Fx.Poly(cell, diamond, new Color(1f, 0f, 0.05f, 0.25f * (1f - d)), additive: true);                // 中间更亮
-				cell.AddChild(new Line2D { Points = diamond, Closed = true, Width = 2.2f, DefaultColor = new Color(1f, 0.97f, 0.96f), JointMode = Line2D.LineJointMode.Sharp });
-				if (Fx.Rng.NextDouble() < 0.22)
-				{
-					Fx.Poly(cell, inner, new Color(1f, 0.97f, 0.96f));                                              // 少数格子里一颗白色实心小菱形（层次）
-				}
-				float dist = (pos - origin).Length() / (ry * 1.6f);
-				float on = tOn * Mathf.Clamp(dist, 0f, 1f);
-				float off = tOn + hold + tOff * 0.7f * (1f - edge);
-				Fx.Animate(cell, 0, total, t =>
-				{
-					float time = t * total;
-					float appear = Ease5.OutBack(Mathf.Clamp((time - on) / 0.14f, 0f, 1f));
-					float vanish = Fx.InCubic(Mathf.Clamp((time - off) / 0.16f, 0f, 1f));
-					cell.Scale = Vector2.One * appear * (1f - vanish * 0.6f);
-					float flash = Mathf.Max(0f, 1f - Mathf.Abs(time - on - 0.06f) * 12f);
-					cell.Modulate = new Color(1f + 1.5f * flash, 1f + 1.5f * flash, 1f + 1.5f * flash, 1f - vanish);
-				});
-			}
-		}
-		Glow.Ripple(layer, at + origin, height * 1.1f, 0.5f, 0.025f, 1.6f);
-		Glow.Flash(layer, at + origin, new Color(1f, 0.1f, 0.14f), height * 0.5f, 0.2f);
-	}
+	public static void Guard(Control layer, Vector2 fist, Vector2 shield, float height, float facing = 1f) =>
+		GuardFx.Shield(layer, fist, shield + new Vector2(height * 0.12f * facing, 0f), height * 0.72f, facing);   // 2026-11-04 重做：碎玻璃墙（Vfx/GuardFx.cs）
 
 	// ───────────────────────── 中和（虚弱）：一道红光锁环把敌人"箍"住、往下压 ─────────────────────────
 
