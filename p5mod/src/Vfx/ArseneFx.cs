@@ -166,8 +166,13 @@ void fragment() {
 	public static bool TryClaw(out Vector2 claw)
 	{
 		claw = _claw;
-		return _clawAt != 0 && Stage.NowMs() - _clawAt < 600;
+		return _clawAt != 0 && Stage.NowMs() - _clawAt < 900;
 	}
+
+	/// <summary>亚森已经现身、还没出手（到这个时刻为止）：这段时间里的上毒要等他出手、从爪尖甩出去（PoisonFx.Apply）。</summary>
+	private static ulong _attackPendingUntil;
+
+	public static bool AttackPending => Stage.NowMs() < _attackPendingUntil;
 
 	/// <summary>
 	/// feet = Joker 脚底，height = 亚森身高（屏幕像素），attackAt / exitAt = 现身后几秒出手 / 退场（Persona.Spec）。
@@ -182,6 +187,7 @@ void fragment() {
 	{
 		(float FistAt, float CrushAt)? clench = NextClench;
 		NextClench = null;
+		_attackPendingUntil = Stage.NowMs() + (ulong)((attackAt + 0.3f) * 1000f);
 		float k = height / (BodyToe - BodyTop);                // 全图像素 → 屏幕
 		// 飘在 Joker 左后方、离开一段距离，脚尖大约在 Joker 腰的高度（沿用用户对 0.7 版亚森站位的意见：别太近、别太高、再往左）
 		Vector2 toeScreen = feet + new Vector2(-0.62f * height * facing, -0.3f * height);   // v7 两翼垂着、扑出去时别压到 Joker 身上

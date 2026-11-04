@@ -68,9 +68,9 @@ public static class PoisonFx
 	/// at = 目标中心，top = 头顶，width = 目标宽度，amount = 这次加的层数（多就更旺）。
 	/// </summary>
 	public static void Apply(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount) =>
-		Apply(layer, at, top, width, body, amount, true);
+		Apply(layer, at, top, width, body, amount, 6);
 
-	private static void Apply(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount, bool retry)
+	private static void Apply(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount, int retry)
 	{
 		// 弹跳烧瓶：咒怨火球落到这个敌人身上（SnakeFx.Throw 飞过来，落地 = 这一刻）
 		if (SnakeFx.FlaskActive)
@@ -85,10 +85,11 @@ public static class PoisonFx
 			_beamLand = nowMs > 380 ? nowMs - 380 : 0;
 			return;
 		}
-		// 游戏上毒和亚森出手常在同一帧：上毒先执行时爪尖还没记下 → 有召唤的场合（毒性爆发）等一帧再判断，免得走成没召唤的普通落点
-		if (retry && InOutbreak && !ArseneFx.TryClaw(out _))
+		// 游戏上毒和亚森出手对在同一时刻，谁先执行不一定：上毒先执行时爪尖还没记下 → 亚森已现身、还没出手就等他出手（每次 0.05s，最多 6 次），
+		// 免得走成没召唤的普通落点（用户 2026-11-04：从亚森到敌人那一条有时有有时没有）
+		if (retry > 0 && !ArseneFx.TryClaw(out _) && ArseneFx.AttackPending)
 		{
-			Fx.After(layer, 0.05, () => Apply(layer, at, top, width, body, amount, false));
+			Fx.After(layer, 0.05, () => Apply(layer, at, top, width, body, amount, retry - 1));
 			return;
 		}
 		if (CorrosiveFx.Suppressing && !ArseneFx.TryClaw(out _))
