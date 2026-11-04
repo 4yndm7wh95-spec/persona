@@ -22,21 +22,24 @@ uniform float burst = 0.0;      // 0 → 1：炸开
 uniform float facing = 1.0;
 uniform float aspect = 0.75;
 uniform float seed = 0.0;
-const int N = 18;
+const int N = 40;
 float h1(float n) { return fract(sin(n * 127.1 + seed * 13.7) * 43758.5453); }
-vec2 seedOf(int i) { float f = float(i); return vec2((h1(f * 3.1 + 1.0) - 0.5) * 0.95, (h1(f * 5.7 + 2.0) - 0.5) * 1.75); }
+vec2 seedOf(int i) { float f = float(i); return vec2((h1(f * 3.1 + 1.0) - 0.5) * 1.3, (h1(f * 5.7 + 2.0) - 0.5) * 1.9); }
 int cellOf(vec2 s, out float gap) {
 	float d1 = 1e9, d2 = 1e9; int best = 0;
 	for (int c = 0; c < N; c++) { float d = length(s - seedOf(c)); if (d < d1) { d2 = d1; d1 = d; best = c; } else if (d < d2) { d2 = d; } }
 	gap = (d2 - d1) * 0.5;
 	return best;
 }
-// 墙的外形：竖长、略往敌人那边鼓，边缘按角度起伏（不规整的碎边）
-bool inWall(vec2 s) {
-	float a = atan(s.y, s.x);
-	float wob = 1.0 + 0.07 * sin(a * 7.0 + seed) + 0.05 * sin(a * 13.0 - seed * 2.0);
-	return length(s / vec2(0.5, 0.92)) < wob;
+// 墙的外形不用一个椭圆去裁（用户 2026-11-04：边界感太明显）：由碎片自己决定——
+// 每片按它的中心离墙心多远决定留不留（越外越容易缺），外轮廓就是参差不齐的碎片边；再限制在一个很宽的范围里
+float cellKeep(int i) {
+	// 种子撒得比墙大一圈：外圈的种子都不留（空白碎片），留下来的碎片就被它们切出折线边，外轮廓全是碎片自己的边
+	vec2 sd = seedOf(i) / vec2(0.36, 0.62);
+	float r = length(sd);
+	return step(r, 0.85 + 0.4 * h1(float(i) * 12.9));
 }
+bool inWall(vec2 s) { return true; }
 void fragment() {
 	vec2 q = (UV - 0.5) * vec2(aspect, 1.0) * 2.0;
 	q.x *= facing;
@@ -59,7 +62,7 @@ void fragment() {
 		float cs = cos(-rot), sn = sin(-rot);
 		vec2 s = piv + vec2(cs * l.x - sn * l.y, sn * l.x + cs * l.y);
 		float gap;
-		if (cellOf(s, gap) == i && inWall(s)) { hit = i; edge = gap; fade = 1.0 - bt * bt; rotHit = rot; }
+		if (cellOf(s, gap) == i && inWall(s) && cellKeep(i) > 0.5) { hit = i; edge = gap; fade = (1.0 - bt * bt) * (1.0 - 0.55 * smoothstep(0.45, 0.95, length(piv / vec2(0.36, 0.62)))); rotHit = rot; }
 	}
 	if (hit < 0) { COLOR = vec4(0.0); }
 	else {
@@ -87,7 +90,7 @@ void fragment() {
 	/// <summary>放一面碎玻璃墙。fist = 抬起的前臂，shield = 墙的中心，height = 墙高，facing = Joker 朝向。约 0.9s。</summary>
 	public static void Shield(Control layer, Vector2 fist, Vector2 shield, float height, float facing = 1f)
 	{
-		Vector2 size = new(height * 0.82f, height * 1.15f);
+		Vector2 size = new(height * 1.5f, height * 1.85f);         // 画布比墙大一圈：飞进飞出不被边缘切掉
 		ShaderMaterial m = new() { Shader = GlassShader };
 		m.SetShaderParameter("facing", facing);
 		m.SetShaderParameter("aspect", size.X / size.Y);

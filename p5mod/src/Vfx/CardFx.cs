@@ -20,7 +20,7 @@ public static class CardFx
 	/// 点亮时一圈空间扭曲往外推。是光，不是物件。fist = 拳头，shield = 光格的中心，height = 光格高度参考。~0.95s。
 	/// </summary>
 	public static void Guard(Control layer, Vector2 fist, Vector2 shield, float height, float facing = 1f) =>
-		GuardFx.Shield(layer, fist, shield + new Vector2(height * 0.12f * facing, 0f), height * 0.72f, facing);   // 2026-11-04 重做：碎玻璃墙（Vfx/GuardFx.cs）
+		GuardFx.Shield(layer, fist, shield + new Vector2(height * 0.34f * facing, height * 0.08f), height * 1.2f, facing);   // 2026-11-04 重做：碎玻璃墙（Vfx/GuardFx.cs）
 
 	// ───────────────────────── 中和（虚弱）：一道红光锁环把敌人"箍"住、往下压 ─────────────────────────
 
