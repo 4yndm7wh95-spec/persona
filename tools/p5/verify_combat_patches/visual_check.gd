@@ -123,9 +123,8 @@ func run():
 	room.scale = Vector2(0.7,0.7)
 	view.add_child(room)
 	screen_root = Node2D.new()
-	screen_root.top_level = true
 	room.add_child(screen_root)
-	screen_root.global_transform = room.get_canvas_transform().affine_inverse()
+	screen_root.transform = room.get_global_transform_with_canvas().affine_inverse()
 	rear = make_hand(screen_root,1.0)
 	make_paper(screen_root)
 	front = make_hand(screen_root,2.0)
@@ -134,7 +133,7 @@ func run():
 		await save_frame("grip_" + str(roundi(pose*100)))
 	# Same viewport-space coverage despite both a transformed room parent and Camera2D-equivalent canvas zoom.
 	view.canvas_transform = Transform2D(0,Vector2(0.55,0.55),0,Vector2(120,75))
-	screen_root.global_transform = room.get_canvas_transform().affine_inverse()
+	screen_root.transform = room.get_global_transform_with_canvas().affine_inverse()
 	var result := screen_root.get_global_transform_with_canvas()
 	assert((result * Vector2.ZERO).distance_to(Vector2.ZERO)<0.001)
 	assert((result * screen).distance_to(screen)<0.001)

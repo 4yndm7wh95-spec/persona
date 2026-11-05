@@ -192,9 +192,11 @@ public static class Fx
 	/// <summary>Keep room-layer draw order, cancel both room transforms and Camera2D zoom/pan.</summary>
 	public static Node2D ScreenRoot(Control layer, string name)
 	{
-		Node2D root = new() { Name = name, TopLevel = true };
+		// Stay in this container's draw list. TopLevel also detaches draw order:
+		// the stage's screen-reading shader would then sample actors and the HUD.
+		Node2D root = new() { Name = name };
 		layer.AddChild(root);
-		void Place() { if (GodotObject.IsInstanceValid(layer)) root.GlobalTransform = layer.GetCanvasTransform().AffineInverse(); }
+		void Place() { if (GodotObject.IsInstanceValid(layer)) root.Transform = layer.GetGlobalTransformWithCanvas().AffineInverse(); }
 		Place();
 		SceneTree tree = root.GetTree();
 		tree.ProcessFrame += Place;

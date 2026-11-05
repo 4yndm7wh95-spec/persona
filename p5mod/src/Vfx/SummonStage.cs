@@ -131,6 +131,9 @@ void fragment() {
 		TearSeed = playback.Seed;
 		Node2D root = Fx.ScreenRoot(back, "P5SummonStage");
 		back.MoveChild(root, back.GetChildCount() - 1);
+		// Snapshot the room *here*: an earlier screen-reading effect may have cached
+		// a clear/black buffer before the room background was drawn this frame.
+		root.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
 		ColorRect rect = new() { Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Shader } };
 		root.AddChild(rect);
 		ShaderMaterial m = (ShaderMaterial)rect.Material;

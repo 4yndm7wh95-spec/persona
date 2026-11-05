@@ -278,6 +278,7 @@ void fragment() {
 		}
 		// 显示：一张铺满屏幕的图，用 BandShader
 		Node2D shown = Fx.ScreenRoot(back, "P5CutIn");
+		playback.PaperRoot = shown;
 		shown.TreeExiting += () => { if (GodotObject.IsInstanceValid(view)) view.QueueFree(); };
 		back.MoveChild(shown, back.GetChildCount() - 1);
 		ShaderMaterial m = new() { Shader = BandShader };

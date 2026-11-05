@@ -13,6 +13,7 @@ public sealed class CutInPlayback
 	public float Pinch;
 	public Vector2 PinchAt;
 	public Vector2? ShatterFrom;
+	internal Node2D? PaperRoot; // The actual sibling for this play, including overlapping summons.
 	private ulong _last;
 	private float _time;
 	private bool _started;

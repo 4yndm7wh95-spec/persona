@@ -333,15 +333,8 @@ void fragment() {
 		frontHand.Set("hand_pass", 2f);
 		// Palm/arm behind the paper; only the visible finger/thumb surfaces in front.
 		// Binary complementary masks preserve the original hand's alpha without doubled smoke.
-		for (int i = back.GetChildCount() - 1; i >= 0; i--)
-		{
-			Node c = back.GetChild(i);
-			if (c.Name.ToString().StartsWith("P5CutIn") && !c.Name.ToString().StartsWith("P5CutInShatter"))
-			{
-				back.MoveChild(screenRoot, c.GetIndex());
-				break;
-			}
-		}
+		if (playback.PaperRoot is { } paper && GodotObject.IsInstanceValid(paper) && paper.GetParent() == back)
+			back.MoveChild(screenRoot, paper.GetIndex());
 		h.Set("band_z", 50f);
 		frontHand.Set("band_z", 50f);
 		float EmergeAt = emergeAt, ArriveAt = emergeAt + ArriveAfter, GrabAt = emergeAt + GrabAfter, FistAt = emergeAt + FistAfter, CrushAt = emergeAt + CrushAfter;
