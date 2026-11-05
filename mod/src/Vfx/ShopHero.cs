@@ -25,7 +25,7 @@ internal static partial class HeroStage
             }
             Node3D world = new();
             viewport.AddChild(world);
-            camera = new Camera3D { KeepAspect = Camera3D.KeepAspectEnum.Width, Fov = 37.35f, Current = true,
+            camera = new Camera3D { KeepAspect = Camera3D.KeepAspectEnum.Width, Fov = 41f, Current = true,
                 Position = new Vector3(0.17f, 0.015f, 0.18f) };
             world.AddChild(camera);
             foreach (string model in Models[..3])
@@ -33,7 +33,10 @@ internal static partial class HeroStage
                 using GltfDocument doc = new(); using GltfState state = new();
                 if (doc.AppendFromBuffer(Read(model), Path, state) != Error.Ok || doc.GenerateScene(state) is not Node3D scene)
                     throw new InvalidOperationException(model);
-                world.AddChild(scene); Walk(scene, false);
+                world.AddChild(scene);
+                int firstRig = heroes.Count;
+                Walk(scene, false);
+                if (model == "SK_PC0051_F000.glb" && heroes.Count > firstRig) faceRig = heroes[firstRig];
                 scene.Position = new Vector3(.22110437f, .00706703f, .02424381f);
                 scene.RotationDegrees = new Vector3(-1f,-6.872659f,0);
             }
@@ -45,6 +48,26 @@ internal static partial class HeroStage
             noseLine.Hide(); noseUpper.Hide(); Display.AddChild(noseLine); Display.AddChild(noseUpper);
             Display.Size = view; Display.Texture = viewport.GetTexture();
             tree.Root.AddChild(viewport); owner = host; host.AddChild(Display);
+            seq[1].Pose(0);
+            int nose = faceRig?.Index("Jnt_C_Nose_00") ?? -1;
+            if (faceRig != null && nose >= 0)
+            {
+                var skel = faceRig.Skeleton;
+                Vector3 point = camera.ToLocal(skel.ToGlobal(skel.GetBoneGlobalPose(nose).Origin));
+                var proj = camera.GetCameraProjection();
+                float halfWidth = -point.Z / proj.X.X;
+                float halfHeight = -point.Z / proj.Y.Y;
+                camera.Position += new Vector3(point.X - .36f * halfWidth, point.Y + .66f * halfHeight, 0);
+            }
+            using var word = new Image();
+            if (word.LoadPngFromBuffer(FileAccess.GetFileAsBytes("res://p3makoto/shop/equip_word.png")) != Error.Ok)
+                throw new InvalidOperationException("equip_word.png");
+            var paper = new ShaderMaterial { Shader = Shaders.ShopPaper };
+            paper.SetShaderParameter("model_tex", Display.Texture);
+            paper.SetShaderParameter("equip_tex", ImageTexture.CreateFromImage(word));
+            var plate = new ColorRect { Material = paper, ShowBehindParent = true, MouseFilter = Control.MouseFilterEnum.Ignore };
+            Display.AddChild(plate);
+            plate.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
             seq[0].Pose(0); Playing = true; ticking = true; lastTick = Time.GetTicksUsec();
             tree.ProcessFrame += Tick; viewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Always;
         }

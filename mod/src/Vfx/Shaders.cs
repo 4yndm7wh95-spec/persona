@@ -238,6 +238,7 @@ shader_type canvas_item;
 uniform sampler2D mask_tex : filter_linear;   // 入水：水花轮廓里先露出水下（v0.14.95）
 uniform sampler2D mask_next : filter_linear;
 uniform float mask_mix = 0.0;
+uniform bool shop_opaque = false;
 uniform float reveal = 1.0;                   // 1 = 全屏水下
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
 uniform sampler2D caustics : repeat_enable, filter_linear;
@@ -251,7 +252,7 @@ float curve(float x, vec4 xs, vec4 ys) {
 }
 void fragment() {
 	vec2 wuv = warp_uv(SCREEN_UV);
-	vec3 src = texture(screen_tex, wuv).rgb;
+	vec3 src = shop_opaque ? vec3(0.40) : texture(screen_tex, wuv).rgb;
 	float l = dot(pow(src, vec3(2.2)), vec3(0.2126, 0.7152, 0.0722));
 	l = clamp((l - 0.5) * 1.2 + 0.5, 0.0, 1.0);
 	vec3 c = vec3(curve(l, vec4(0.0, 0.1, 0.9, 1.0), vec4(0.0, 0.1, 0.6, 0.8)),
@@ -276,7 +277,28 @@ void fragment() {
 	COLOR = vec4(c + vec3(0.7, 0.95, 1.0) * rim * 0.9, max(inside, rim * 0.9) * shown);
 }
 ");
-	private static Shader? _ring;
+	private static Shader? _shopPaper;
+    internal static Shader ShopPaper => _shopPaper ??= Make(@"
+shader_type canvas_item;
+" + WarpGlsl + @"
+uniform sampler2D model_tex : filter_linear, repeat_disable;
+uniform sampler2D equip_tex : filter_linear, repeat_disable;
+varying float opacity;
+void vertex() { opacity = COLOR.a; }
+void fragment() {
+    vec2 pos = warp_uv(UV);
+    float paper = step(.225, pos.x + .56 * pos.y) * step(pos.x - .68 * pos.y, .64)
+        * step(.055, pos.x + .53 * (1.0 - pos.y));
+    vec2 word = (pos - vec2(.052,.69)) / vec2(.60,.315);
+    float ink = texture(equip_tex, word).a * step(0.0, min(word.x,word.y)) * step(max(word.x,word.y),1.0);
+    float silhouette = texture(model_tex,pos).a;
+    float shadow = texture(model_tex,pos - vec2(.012,.009)).a;
+    vec3 color = mix(vec3(.985),vec3(.68,.69,.72),ink);
+    color = mix(color,vec3(.55,.58,.66),shadow * .65);
+    COLOR = vec4(color,paper * (1.0 - silhouette) * opacity);
+}
+");
+    private static Shader? _ring;
 
 	/// <summary>冲击波圆环：radius 0~1，width 环宽，alpha 整体透明度。</summary>
 	public static Shader Ring => _ring ??= Make(@"

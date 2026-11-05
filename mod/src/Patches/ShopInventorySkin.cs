@@ -25,6 +25,8 @@ internal static class ShopInventorySkin
             layer.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
             try { layer.Setup(inv,back); }
             catch { layer.Name="FailedShopWater"; layer.QueueFree(); throw; }
+            if (inv.GetNodeOrNull<CanvasItem>("MerchantHandContainer") is {} hand)
+                hand.Modulate = Colors.Transparent;
             rug.SelfModulate = Colors.Transparent; // only the rug's draw call; children keep their native transforms
         }
         layer.Enter();
@@ -49,6 +51,7 @@ internal partial class ShopWater : Control
         inventory = inv;
         var idle=Png("shop/back_idle.png"); var focus=Png("shop/back_focus.png");
         water = new ShaderMaterial { Shader=Shaders.CommuBg };
+        water.SetShaderParameter("shop_opaque", true);
         using var black = Image.CreateEmpty(1,1,false,Image.Format.Rgba8); black.Fill(Colors.Black);
         var emptyMask = ImageTexture.CreateFromImage(black); water.SetShaderParameter("mask_tex",emptyMask); water.SetShaderParameter("mask_next",emptyMask);
         water.SetShaderParameter("caustics",Png("hero3d/tex/T_UI_Camp_Caustics_00.png"));
@@ -75,11 +78,20 @@ internal partial class ShopWater : Control
         float aspect=Size.X/Math.Max(Size.Y,1);
         water.SetShaderParameter("center",center); water.SetShaderParameter("aspect",aspect);
         float end=new Vector2(Math.Max(center.X,1-center.X)*aspect,Math.Max(center.Y,1-center.Y)).Length()+.03f;
-        water.SetShaderParameter("radius",0f); hero.Modulate=Colors.Transparent;
-        tween=CreateTween().SetParallel();
-        tween.TweenMethod(Callable.From<float>(v=>water.SetShaderParameter("radius",v)),0f,end,.4).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
-        tween.TweenProperty(hero,"modulate:a",1f,.22).SetDelay(.18);
+        const float seed = .012f;
+        water.SetShaderParameter("radius",seed); hero.Modulate=Colors.Transparent;
         dispose=HeroStage.ShowShopHero(hero,Size);
+        // Start only after the seed has actually been presented, even on a cold model load.
+        var opening = tween = CreateTween().SetParallel();
+        opening.Pause();
+        RenderingServer.FramePostDraw += Begin;
+        void Begin()
+        {
+            RenderingServer.FramePostDraw -= Begin;
+            if (GodotObject.IsInstanceValid(this) && IsInsideTree() && opening == tween && opening.IsValid()) opening.Play();
+        }
+        tween.TweenMethod(Callable.From<float>(v=>water.SetShaderParameter("radius",v)),seed,end,.55).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
+        tween.TweenProperty(hero,"modulate:a",1f,.22).SetDelay(.32);
     }
     private void Leave()
     {
