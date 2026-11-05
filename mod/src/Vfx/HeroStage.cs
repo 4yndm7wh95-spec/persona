@@ -8,7 +8,7 @@ using P3Makoto.Core;
 namespace P3Makoto.Vfx;
 
 /// <summary>缓存的原版 COMMU 舞台；运行时直接读 GLB / PNG / 动作，不依赖导入文件。</summary>
-internal static class HeroStage
+internal static partial class HeroStage
 {
 	public const float BaseSpinDegPerSec = 36f;
 	public const float KickDeg = 120f;
@@ -40,7 +40,7 @@ internal static class HeroStage
 	private static readonly Color ItemHairKey = new(0.02f, 1f, 0f);
 
 	/// <summary>舞台演哪一页：COMMU（抽牌堆：拿牌 → 松手，牌浮空自转）；Top（营地主菜单：倒入水 → 水下待机，牌组牌堆，不显示牌）；Item（弃牌堆：ITEM 页伸手，人物填深海军蓝）。</summary>
-	internal enum Act { Commu, Top, Item, Skill }
+	internal enum Act { Commu, Top, Item, Skill, Equip }
 
 	/// <summary>
 	/// SKILL 页的镜头 / 光 / 召唤器，与 tools/p3r/skill_pile_preview.py 用的离线渲染（tools/p3r/hero_render/render.gd）一致：
@@ -412,7 +412,7 @@ internal static class HeroStage
 		}
 	}
 
-	private sealed class Stage
+	private sealed partial class Stage
 	{
 		private readonly SceneTree tree;
 		private readonly SubViewport viewport = new()
@@ -866,7 +866,7 @@ internal static class HeroStage
 				if ((act == Act.Commu || act == Act.Item || act == Act.Skill) && phase == 0) { blendFrom = 0; blendTime = 0; }
 				phase++;
 			}
-			if (phase == last) time %= seq[last].Hero.Duration;
+			if (act == Act.Equip && phase == last && time >= seq[last].Hero.Duration) { time -= seq[last].Hero.Duration; phase = 1; } else if (phase == last) time %= seq[last].Hero.Duration;
 			if (blendFrom >= 0)
 			{
 				blendTime += elapsed;

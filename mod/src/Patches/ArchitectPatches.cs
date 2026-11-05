@@ -226,9 +226,13 @@ public static class ProgressSaveGuardPatch
 }
 
 /// <summary>结局排查（v0.14.30）：记录 RunManager.WinRun 被调用（之后游戏应结束本局并打开结算画面）。</summary>
-[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Runs.RunManager), nameof(MegaCrit.Sts2.Core.Runs.RunManager.WinRun))]
+[HarmonyPatch]
 public static class ArchitectWinRunLogPatch
 {
+    public static System.Collections.Generic.IEnumerable<System.Reflection.MethodBase> TargetMethods()
+    {
+        if (AccessTools.Method(typeof(MegaCrit.Sts2.Core.Runs.RunManager), "WinRun") is {} method) yield return method;
+    }
 	public static void Prefix() => GD.Print($"{ModEntry.Tag} RunManager.WinRun called");
 }
 
