@@ -49,9 +49,17 @@ internal partial class ShopWater : Control
     private CanvasLayer? warmCanvas;
     private bool prewarming;
     private const float WaterDur=.70f;
-    private const float PaperStart=.10f, PaperDur=.72f, PaperFrom=-.24f, PaperFade=.16f;
-    private const float WordStart=.20f, WordDur=.66f, WordFrom=.10f, WordFade=.16f;
-    private const float HeroStart=.30f, HeroDur=.78f, HeroFrom=.16f, HeroFade=.20f;
+    private const float PaperStart=.10f, PaperDur=1.10f, PaperFade=.12f;
+    private const float WordStart=.30f, WordDur=.90f, WordFade=.12f;
+    private const float HeroStart=.38f, HeroDur=1.22f, HeroFade=.14f;
+    private const float EntryVisibleFrac=.25f, SheetBottom=1.02f;
+    // Offline bounds: original EQUIP alpha and the union of equipment poses
+    // at 0/.3/.5/.7/.9/1.1/1.3/1.5s, using the current shop camera.
+    private const float WordContentTop=.69f, WordContentBottom=1.005f, HeroContentLeft=.35208333f;
+    private static readonly float PaperFrom=-(SheetBottom-EntryVisibleFrac+.01f);
+    private static readonly float WordFrom=Math.Clamp((1f-WordContentTop)-EntryVisibleFrac*(Math.Min(WordContentBottom,1f)-WordContentTop),.12f,.32f);
+    // Use the proposal's distance cap; extend duration to keep the peak near 950px/s.
+    private static readonly float HeroFrom=Math.Clamp((1f-EntryVisibleFrac)*(1f-HeroContentLeft),.26f,.42f);
     private static readonly float OpenEnd=Math.Max(WaterDur,Math.Max(PaperStart+PaperDur,Math.Max(WordStart+WordDur,HeroStart+HeroDur)));
     private NMerchantInventory inventory = null!;
     private SceneTree tree = null!;
@@ -109,7 +117,11 @@ internal partial class ShopWater : Control
     private void EnsureStage()
     {
         if(dispose==null)
+        {
             dispose=HeroStage.ShowShopHero(hero,Size,out paper,out portrait,out setActive);
+            paper.SetShaderParameter("sheet_bottom",SheetBottom);
+            ApplyOpening(0f);
+        }
     }
     internal void Enter()
     {
@@ -185,7 +197,7 @@ internal partial class ShopWater : Control
     }
     private void ApplyOpening(float time)
     {
-        Vector2 first=new(.30f,.30f), second=new(.40f,1f);
+        Vector2 first=new(.36f,.44f), second=new(.60f,1f);
         float w=Progress(time,0f,WaterDur);
         water.SetShaderParameter("radius",Mathf.Lerp(.012f,endRadius,1f-Mathf.Pow(1f-w,3f)));
         paper.SetShaderParameter("paper_y",PaperFrom*(1f-CutEase(Progress(time,PaperStart,PaperDur),first,second)));
