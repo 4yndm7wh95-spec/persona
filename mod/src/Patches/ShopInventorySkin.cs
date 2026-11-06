@@ -79,11 +79,11 @@ internal partial class ShopWater : Control
         water.SetShaderParameter("center",center); water.SetShaderParameter("aspect",aspect);
         float end=new Vector2(Math.Max(center.X,1-center.X)*aspect,Math.Max(center.Y,1-center.Y)).Length()+.03f;
         const float seed = .012f;
-        water.SetShaderParameter("radius",seed); hero.Modulate=Colors.Transparent;
-        dispose=HeroStage.ShowShopHero(hero,Size);
+        water.SetShaderParameter("radius",seed); hero.Modulate=Colors.White;
         // Start only after the seed has actually been presented, even on a cold model load.
         var opening = tween = CreateTween().SetParallel();
         opening.Pause();
+        dispose=HeroStage.ShowShopHero(hero,Size,opening);
         RenderingServer.FramePostDraw += Begin;
         void Begin()
         {
@@ -91,7 +91,6 @@ internal partial class ShopWater : Control
             if (GodotObject.IsInstanceValid(this) && IsInsideTree() && opening == tween && opening.IsValid()) opening.Play();
         }
         tween.TweenMethod(Callable.From<float>(v=>water.SetShaderParameter("radius",v)),seed,end,.55).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
-        tween.TweenProperty(hero,"modulate:a",1f,.22).SetDelay(.32);
     }
     private void Leave()
     {

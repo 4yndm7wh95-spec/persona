@@ -5,17 +5,17 @@ namespace P3Makoto.Vfx;
 internal static partial class HeroStage
 {
     // A private viewport per merchant room lets the pile menu keep its own active stage.
-    internal static Action ShowShopHero(Node2D host, Vector2 size)
+    internal static Action ShowShopHero(Node2D host, Vector2 size, Tween opening)
     {
         Stage stage = new(host.GetTree());
-        try { stage.LoadShop(host, size); }
+        try { stage.LoadShop(host, size, opening); }
         catch { stage.Dispose(); throw; }
         return stage.Dispose;
     }
 
     private sealed partial class Stage
     {
-        internal void LoadShop(Node2D host, Vector2 view)
+        internal void LoadShop(Node2D host, Vector2 view, Tween opening)
         {
             foreach (string file in Images[..3])
             {
@@ -25,8 +25,8 @@ internal static partial class HeroStage
             }
             Node3D world = new();
             viewport.AddChild(world);
-            camera = new Camera3D { KeepAspect = Camera3D.KeepAspectEnum.Width, Fov = 41f, Current = true,
-                Position = new Vector3(0.17f, 0.015f, 0.18f) };
+            camera = new Camera3D { KeepAspect = Camera3D.KeepAspectEnum.Width, Fov = 43f, Current = true,
+                Position = new Vector3(0.17f, 0.015f, 0.18f), RotationDegrees = new Vector3(0, 0, -8f) };
             world.AddChild(camera);
             foreach (string model in Models[..3])
             {
@@ -44,7 +44,9 @@ internal static partial class HeroStage
             foreach (string clip in new[]{"Campequip","CampequipLoop","CampequipUni01","CampequipLoop","CampequipUni02"})
                 motions.Add(clip == "CampequipLoop" && motions.Count > 2 ? motions[1] : new Motion(clip,new Clip(clip,true),null,heroes,cards));
             seq = motions; act = Act.Equip; Resize(view);
-            Display.Material = new ShaderMaterial {Shader = Shaders.HeroKeyOut};
+            var portrait = new ShaderMaterial {Shader = Shaders.HeroKeyOut};
+            portrait.SetShaderParameter("shop_slide_x", .65f);
+            Display.Material = portrait;
             noseLine.Hide(); noseUpper.Hide(); Display.AddChild(noseLine); Display.AddChild(noseUpper);
             Display.Size = view; Display.Texture = viewport.GetTexture();
             tree.Root.AddChild(viewport); owner = host; host.AddChild(Display);
@@ -57,17 +59,31 @@ internal static partial class HeroStage
                 var proj = camera.GetCameraProjection();
                 float halfWidth = -point.Z / proj.X.X;
                 float halfHeight = -point.Z / proj.Y.Y;
-                camera.Position += new Vector3(point.X - .36f * halfWidth, point.Y + .66f * halfHeight, 0);
+                // Keep the face in the user's marked area while bringing the outer leg into frame.
+                camera.Position += camera.Basis * new Vector3(point.X - .42f * halfWidth, point.Y + .68f * halfHeight, 0);
             }
             using var word = new Image();
             if (word.LoadPngFromBuffer(FileAccess.GetFileAsBytes("res://p3makoto/shop/equip_word.png")) != Error.Ok)
                 throw new InvalidOperationException("equip_word.png");
             var paper = new ShaderMaterial { Shader = Shaders.ShopPaper };
             paper.SetShaderParameter("model_tex", Display.Texture);
+            paper.SetShaderParameter("paper_y", -1.1f);
+            paper.SetShaderParameter("word_y", .4f);
+            paper.SetShaderParameter("hero_x", .65f);
             paper.SetShaderParameter("equip_tex", ImageTexture.CreateFromImage(word));
             var plate = new ColorRect { Material = paper, ShowBehindParent = true, MouseFilter = Control.MouseFilterEnum.Ignore };
             Display.AddChild(plate);
             plate.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+            opening.TweenProperty(paper, "shader_parameter/paper_y", 0f, .48).SetDelay(.32)
+                .SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
+            opening.TweenProperty(paper, "shader_parameter/word_y", 0f, .5).SetDelay(.43)
+                .SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
+            opening.TweenMethod(Callable.From<float>(x =>
+            {
+                portrait.SetShaderParameter("shop_slide_x", x);
+                paper.SetShaderParameter("hero_x", x);
+            }), .65f, 0f, .55).SetDelay(.54)
+                .SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
             seq[0].Pose(0); Playing = true; ticking = true; lastTick = Time.GetTicksUsec();
             tree.ProcessFrame += Tick; viewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Always;
         }
