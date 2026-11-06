@@ -49,9 +49,10 @@ internal partial class ShopWater : Control
     private CanvasLayer? warmCanvas;
     private bool prewarming;
     private const float WaterDur=.70f;
-    private const float PaperStart=.06f, PaperDur=.96f, PaperFade=.06f;
-    private const float WordStart=.18f, WordDur=.64f, WordFade=.07f;
-    private const float HeroStart=.26f, HeroDur=.80f, HeroFade=.08f;
+    // Overlap the entrances, then settle paper / word / portrait 80 ms apart.
+    private const float PaperStart=.06f, PaperDur=.64f, PaperFade=.06f;
+    private const float WordStart=.16f, WordDur=.62f, WordFade=.07f;
+    private const float HeroStart=.26f, HeroDur=.60f, HeroFade=.08f;
     private const float EntryVisibleFrac=.25f;
     // Offline bounds: original EQUIP alpha and the union of equipment poses
     // at 0/.3/.5/.7/.9/1.1/1.3/1.5s, using the current shop camera.
@@ -203,7 +204,7 @@ internal partial class ShopWater : Control
     }
     private void ApplyOpening(float time)
     {
-        Vector2 first=new(.22f,.34f), second=new(.50f,1f);
+        Vector2 first=new(.35f,0f), second=new(.65f,1f);
         float w=Progress(time,0f,WaterDur);
         water.SetShaderParameter("radius",Mathf.Lerp(.012f,endRadius,1f-Mathf.Pow(1f-w,3f)));
         paper.SetShaderParameter("paper_y",PaperFrom*(1f-CutEase(Progress(time,PaperStart,PaperDur),first,second)));
