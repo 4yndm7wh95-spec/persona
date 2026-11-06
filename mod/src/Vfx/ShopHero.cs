@@ -74,16 +74,16 @@ internal static partial class HeroStage
             var plate = new ColorRect { Material = paper, ShowBehindParent = true, MouseFilter = Control.MouseFilterEnum.Ignore };
             Display.AddChild(plate);
             plate.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-            opening.TweenProperty(paper, "shader_parameter/paper_y", 0f, .48).SetDelay(.32)
-                .SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
-            opening.TweenProperty(paper, "shader_parameter/word_y", 0f, .5).SetDelay(.43)
-                .SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
+            opening.TweenProperty(paper, "shader_parameter/paper_y", 0f, .78).SetDelay(.28)
+                .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+            opening.TweenProperty(paper, "shader_parameter/word_y", 0f, .82).SetDelay(.44)
+                .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
             opening.TweenMethod(Callable.From<float>(x =>
             {
                 portrait.SetShaderParameter("shop_slide_x", x);
                 paper.SetShaderParameter("hero_x", x);
-            }), .65f, 0f, .55).SetDelay(.54)
-                .SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
+            }), .65f, 0f, .9).SetDelay(.60)
+                .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
             seq[0].Pose(0); Playing = true; ticking = true; lastTick = Time.GetTicksUsec();
             tree.ProcessFrame += Tick; viewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Always;
         }

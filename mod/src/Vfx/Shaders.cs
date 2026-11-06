@@ -298,7 +298,7 @@ void fragment() {
     vec2 pos = warp_uv(UV);
     vec2 sheet = pos - vec2(0.0, paper_y);
     float paper = step(.225, sheet.x + .56 * sheet.y) * step(sheet.x - .68 * sheet.y, .64)
-        * step(.055, sheet.x + .53 * (1.0 - sheet.y)) * in_frame(sheet);
+        * in_frame(sheet);
     vec2 word = (pos - vec2(.052,.69 + word_y)) / vec2(.60,.315);
     float ink = texture(equip_tex, word).a * in_frame(word);
     vec2 hero = pos - vec2(hero_x,0.0);
