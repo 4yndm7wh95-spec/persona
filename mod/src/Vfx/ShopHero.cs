@@ -9,13 +9,23 @@ internal static partial class HeroStage
     {
         Stage stage = new(host.GetTree());
         try { stage.LoadShop(host, size, out paper, out portrait); }
-        catch { stage.Dispose(); throw; }
+        catch { stage.DisposeShop(); throw; }
         setActive=stage.SetShopActive;
-        return stage.Dispose;
+        return stage.DisposeShop;
     }
 
     private sealed partial class Stage
     {
+        private void StopShop() => SetShopActive(false);
+        internal void DisposeShop()
+        {
+            StopShop();
+            if(owner!=null && GodotObject.IsInstanceValid(owner)) owner.TreeExiting-=StopShop;
+            owner=null;
+            // TreeExiting may run while the parent is removing children.
+            Display.QueueFree();
+            viewport.QueueFree();
+        }
         internal void SetShopActive(bool active)
         {
             if (ticking) tree.ProcessFrame-=Tick;
@@ -64,7 +74,7 @@ internal static partial class HeroStage
             noseLine.Hide(); noseUpper.Hide(); Display.AddChild(noseLine); Display.AddChild(noseUpper);
             Display.Size = view; Display.Texture = viewport.GetTexture();
             tree.Root.AddChild(viewport); owner = host; host.AddChild(Display);
-            owner.TreeExiting += Close;
+            owner.TreeExiting += StopShop;
             seq[1].Pose(0);
             int nose = faceRig?.Index("Jnt_C_Nose_00") ?? -1;
             if (faceRig != null && nose >= 0)

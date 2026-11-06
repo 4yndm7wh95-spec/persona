@@ -57,7 +57,7 @@ internal partial class ShopWater : Control
     private ulong lastTick;
     private float elapsed, endRadius;
     private int warmFrames;
-    private bool warming, ticking;
+    private bool ticking;
     private static Texture2D Png(string path)
     {
         using var im = new Image();
@@ -102,8 +102,8 @@ internal partial class ShopWater : Control
         portrait.SetShaderParameter("shop_alpha",1f);
         warmCanvas.AddChild(new ColorRect {Material=paper,Size=Size,MouseFilter=MouseFilterEnum.Ignore});
         warmCanvas.AddChild(new TextureRect {Texture=display.Texture,Material=portrait,Size=Size,ExpandMode=TextureRect.ExpandModeEnum.IgnoreSize,MouseFilter=MouseFilterEnum.Ignore});
-        warmFrames=0; warming=true; prewarming=true;
-        RenderingServer.FramePostDraw+=WarmDrawn;
+        warmFrames=0; prewarming=true;
+        StartTick();
     }
     private void EnsureStage()
     {
@@ -126,45 +126,40 @@ internal partial class ShopWater : Control
         setActive?.Invoke(true);
         elapsed=0f;
         ApplyOpening(0f);
-        // Render the hidden stage before starting; cap the first step after a cold load.
-        warmFrames=0;
-        warming=true;
-        RenderingServer.FramePostDraw+=WarmDrawn;
+        // Preloaded stages are already rendered. Never gate opening on a render callback.
+        StartTick();
+        GD.Print($"{ModEntry.Tag} shop opening started; size={Size}");
     }
-    private void WarmDrawn()
+    private void StartTick()
     {
-        if (++warmFrames<2) return;
-        RenderingServer.FramePostDraw-=WarmDrawn;
-        warming=false;
-        if(prewarming)
-        {
-            prewarming=false;
-            warmCanvas?.QueueFree(); warmCanvas=null;
-            ApplyOpening(0f);
-            setActive?.Invoke(false);
-            return;
-        }
         lastTick=Time.GetTicksUsec();
+        if(ticking) return;
         ticking=true;
-        // This plain .NET mod has no generated Godot virtual dispatch for _Process.
         tree.ProcessFrame+=Tick;
     }
     private void StopOpening()
     {
         if (ticking) tree.ProcessFrame-=Tick;
         ticking=false;
-        if (warming) RenderingServer.FramePostDraw-=WarmDrawn;
-        warming=false;
         prewarming=false;
         warmCanvas?.QueueFree(); warmCanvas=null;
     }
     private void Tick()
     {
+        if(prewarming)
+        {
+            if(++warmFrames<3) return;
+            StopOpening();
+            ApplyOpening(0f);
+            setActive?.Invoke(false);
+            GD.Print($"{ModEntry.Tag} shop preload ready");
+            return;
+        }
         ulong now=Time.GetTicksUsec();
         elapsed+=Math.Min((now-lastTick)/1000000f,1f/30f);
         lastTick=now;
         ApplyOpening(elapsed);
-        if (elapsed>=OpenEnd) { ApplyOpening(OpenEnd); StopOpening(); }
+        if (elapsed>=OpenEnd) { ApplyOpening(OpenEnd); StopOpening(); GD.Print($"{ModEntry.Tag} shop opening completed"); }
     }
     private static float Progress(float time,float start,float duration) => Mathf.Clamp((time-start)/duration,0f,1f);
 
