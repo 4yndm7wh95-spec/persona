@@ -49,16 +49,19 @@ internal partial class ShopWater : Control
     private CanvasLayer? warmCanvas;
     private bool prewarming;
     private const float WaterDur=.70f;
-    private const float PaperStart=.10f, PaperDur=1.10f, PaperFade=.12f;
-    private const float WordStart=.30f, WordDur=.90f, WordFade=.12f;
-    private const float HeroStart=.38f, HeroDur=1.22f, HeroFade=.14f;
-    private const float EntryVisibleFrac=.25f, SheetBottom=1.02f;
+    private const float PaperStart=.06f, PaperDur=.96f, PaperFade=.06f;
+    private const float WordStart=.18f, WordDur=.64f, WordFade=.07f;
+    private const float HeroStart=.26f, HeroDur=.80f, HeroFade=.08f;
+    private const float EntryVisibleFrac=.25f;
     // Offline bounds: original EQUIP alpha and the union of equipment poses
     // at 0/.3/.5/.7/.9/1.1/1.3/1.5s, using the current shop camera.
     private const float WordContentTop=.69f, WordContentBottom=1.005f, HeroContentLeft=.35208333f;
-    private static readonly float PaperFrom=-(SheetBottom-EntryVisibleFrac+.01f);
+    // The complete slanted sheet has its bottom corner at y=1.9234.
+    // Start with only that corner in view (~11% of the final visible area),
+    // rather than cutting the sheet horizontally to shorten its travel.
+    private const float PaperFrom=-1.53f;
     private static readonly float WordFrom=Math.Clamp((1f-WordContentTop)-EntryVisibleFrac*(Math.Min(WordContentBottom,1f)-WordContentTop),.12f,.32f);
-    // Use the proposal's distance cap; extend duration to keep the peak near 950px/s.
+    // Keep the measured offscreen start; only the entrance timing changes.
     private static readonly float HeroFrom=Math.Clamp((1f-EntryVisibleFrac)*(1f-HeroContentLeft),.26f,.42f);
     private static readonly float OpenEnd=Math.Max(WaterDur,Math.Max(PaperStart+PaperDur,Math.Max(WordStart+WordDur,HeroStart+HeroDur)));
     private NMerchantInventory inventory = null!;
@@ -119,7 +122,6 @@ internal partial class ShopWater : Control
         if(dispose==null)
         {
             dispose=HeroStage.ShowShopHero(hero,Size,out paper,out portrait,out setActive);
-            paper.SetShaderParameter("sheet_bottom",SheetBottom);
             ApplyOpening(0f);
         }
     }
@@ -169,14 +171,18 @@ internal partial class ShopWater : Control
             return;
         }
         ulong now=Time.GetTicksUsec();
-        elapsed+=Math.Min((now-lastTick)/1000000f,1f/30f);
+        float delta=(now-lastTick)/1000000f;
         lastTick=now;
+        // Do not discard long frames: a 20 FPS opening must not run at 2/3 speed.
+        // Paused/unfocused time is excluded, rather than capped on every frame.
+        if (tree.Paused || !DisplayServer.WindowIsFocused()) return;
+        elapsed+=delta;
         ApplyOpening(elapsed);
         if (elapsed>=OpenEnd) { ApplyOpening(OpenEnd); StopOpening(); GD.Print($"{ModEntry.Tag} shop opening completed"); }
     }
     private static float Progress(float time,float start,float duration) => Mathf.Clamp((time-start)/duration,0f,1f);
 
-    // Solve Bezier X for elapsed time, then read Y for displacement. Both curves end at zero velocity.
+    // Solve Bezier X for elapsed time, then read Y for displacement; end at zero velocity.
     private static float CutEase(float progress,Vector2 first,Vector2 second)
     {
         if (progress<=0f || progress>=1f) return progress;
@@ -197,7 +203,7 @@ internal partial class ShopWater : Control
     }
     private void ApplyOpening(float time)
     {
-        Vector2 first=new(.36f,.44f), second=new(.60f,1f);
+        Vector2 first=new(.22f,.34f), second=new(.50f,1f);
         float w=Progress(time,0f,WaterDur);
         water.SetShaderParameter("radius",Mathf.Lerp(.012f,endRadius,1f-Mathf.Pow(1f-w,3f)));
         paper.SetShaderParameter("paper_y",PaperFrom*(1f-CutEase(Progress(time,PaperStart,PaperDur),first,second)));

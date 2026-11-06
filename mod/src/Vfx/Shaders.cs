@@ -287,7 +287,6 @@ shader_type canvas_item;
 " + WarpGlsl + @"
 uniform sampler2D model_tex : filter_linear, repeat_disable;
 uniform sampler2D equip_tex : filter_linear, repeat_disable;
-uniform float sheet_bottom = 1.02;
 uniform float paper_y = 0.0;
 uniform float paper_alpha = 1.0;
 uniform float word_y = 0.0;
@@ -300,15 +299,13 @@ float in_frame(vec2 p) {
     return step(0.0, min(p.x,p.y)) * step(max(p.x,p.y),1.0);
 }
 float sheet_coverage(vec2 p) {
-    // Preserve the final diagonals; the offscreen bottom travels with the sheet
-    // so moving it upward actually takes most of its content out of the canvas.
+    // Complete the two existing diagonals with parallel opposite edges.
+    // Both far edges stay outside the final canvas (max visible values: 1.335/1.32).
+    // Never clip against screen Y: that makes a full-width horizontal entrance band.
     vec2 edges = vec2(p.x + .56 * p.y - .225, .64 - p.x + .68 * p.y);
-    vec2 inside = min(edges, vec2(1.75) - edges);
+    vec2 inside = min(edges, vec2(1.40) - edges);
     float aa = max(max(fwidth(edges.x), fwidth(edges.y)), .000001);
-    float cov_edges = clamp(.5 + min(inside.x, inside.y) / aa, 0.0, 1.0);
-    float aa_y = max(fwidth(p.y), .000001);
-    float cov_bottom = clamp(.5 + (sheet_bottom - p.y) / aa_y, 0.0, 1.0);
-    return min(cov_edges, cov_bottom);
+    return clamp(.5 + min(inside.x, inside.y) / aa, 0.0, 1.0);
 }
 float model_alpha(vec2 uv) {
     return texture(model_tex,clamp(uv,vec2(0.0),vec2(1.0))).a * in_frame(uv);
