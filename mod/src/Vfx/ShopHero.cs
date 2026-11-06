@@ -5,17 +5,17 @@ namespace P3Makoto.Vfx;
 internal static partial class HeroStage
 {
     // A private viewport per merchant room lets the pile menu keep its own active stage.
-    internal static Action ShowShopHero(Node2D host, Vector2 size, Tween opening)
+    internal static Action ShowShopHero(Node2D host, Vector2 size, out ShaderMaterial paper, out ShaderMaterial portrait)
     {
         Stage stage = new(host.GetTree());
-        try { stage.LoadShop(host, size, opening); }
+        try { stage.LoadShop(host, size, out paper, out portrait); }
         catch { stage.Dispose(); throw; }
         return stage.Dispose;
     }
 
     private sealed partial class Stage
     {
-        internal void LoadShop(Node2D host, Vector2 view, Tween opening)
+        internal void LoadShop(Node2D host, Vector2 view, out ShaderMaterial paper, out ShaderMaterial portrait)
         {
             foreach (string file in Images[..3])
             {
@@ -44,8 +44,9 @@ internal static partial class HeroStage
             foreach (string clip in new[]{"Campequip","CampequipLoop","CampequipUni01","CampequipLoop","CampequipUni02"})
                 motions.Add(clip == "CampequipLoop" && motions.Count > 2 ? motions[1] : new Motion(clip,new Clip(clip,true),null,heroes,cards));
             seq = motions; act = Act.Equip; Resize(view);
-            var portrait = new ShaderMaterial {Shader = Shaders.HeroKeyOut};
-            portrait.SetShaderParameter("shop_slide_x", .65f);
+            portrait = new ShaderMaterial {Shader = Shaders.HeroKeyOut};
+            portrait.SetShaderParameter("shop_slide_x", .22f);
+            portrait.SetShaderParameter("shop_alpha", 0f);
             Display.Material = portrait;
             noseLine.Hide(); noseUpper.Hide(); Display.AddChild(noseLine); Display.AddChild(noseUpper);
             Display.Size = view; Display.Texture = viewport.GetTexture();
@@ -65,25 +66,18 @@ internal static partial class HeroStage
             using var word = new Image();
             if (word.LoadPngFromBuffer(FileAccess.GetFileAsBytes("res://p3makoto/shop/equip_word.png")) != Error.Ok)
                 throw new InvalidOperationException("equip_word.png");
-            var paper = new ShaderMaterial { Shader = Shaders.ShopPaper };
+            paper = new ShaderMaterial { Shader = Shaders.ShopPaper };
             paper.SetShaderParameter("model_tex", Display.Texture);
-            paper.SetShaderParameter("paper_y", -1.1f);
-            paper.SetShaderParameter("word_y", .4f);
-            paper.SetShaderParameter("hero_x", .65f);
+            paper.SetShaderParameter("paper_y", -.30f);
+            paper.SetShaderParameter("paper_alpha", 0f);
+            paper.SetShaderParameter("word_y", .13f);
+            paper.SetShaderParameter("word_alpha", 0f);
+            paper.SetShaderParameter("hero_x", .22f);
+            paper.SetShaderParameter("hero_alpha", 0f);
             paper.SetShaderParameter("equip_tex", ImageTexture.CreateFromImage(word));
             var plate = new ColorRect { Material = paper, ShowBehindParent = true, MouseFilter = Control.MouseFilterEnum.Ignore };
             Display.AddChild(plate);
             plate.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-            opening.TweenProperty(paper, "shader_parameter/paper_y", 0f, .78).SetDelay(.28)
-                .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-            opening.TweenProperty(paper, "shader_parameter/word_y", 0f, .82).SetDelay(.44)
-                .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-            opening.TweenMethod(Callable.From<float>(x =>
-            {
-                portrait.SetShaderParameter("shop_slide_x", x);
-                paper.SetShaderParameter("hero_x", x);
-            }), .65f, 0f, .9).SetDelay(.60)
-                .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
             seq[0].Pose(0); Playing = true; ticking = true; lastTick = Time.GetTicksUsec();
             tree.ProcessFrame += Tick; viewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Always;
         }
