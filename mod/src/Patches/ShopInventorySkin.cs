@@ -11,10 +11,11 @@ internal static class ShopInventorySkin
 {
     internal static void Postfix(NMerchantInventory __instance) => ModEntry.Safe("shop inventory", () =>
     {
-        Prepare(__instance)?.Enter();
+        GetOrCreateLayer(__instance)?.Enter();
     });
 
-    internal static ShopWater? Prepare(NMerchantInventory inv)
+    // Prepare is a reserved Harmony lifecycle method name inside a patch class.
+    internal static ShopWater? GetOrCreateLayer(NMerchantInventory inv)
     {
         if (inv.GetParent()?.GetNodeOrNull("P3VelvetShop") == null) return null;
         var layer = inv.GetNodeOrNull<ShopWater>("P3ShopWater");

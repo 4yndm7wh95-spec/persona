@@ -62,7 +62,7 @@ public static class VelvetShopPatch
             if(inventory==null)
                 foreach(var child in room.GetChildren())
                     if(child is MegaCrit.Sts2.Core.Nodes.Screens.Shops.NMerchantInventory found) {inventory=found;break;}
-            if(inventory!=null) ShopInventorySkin.Prepare(inventory)?.Preload();
+            if(inventory!=null) ShopInventorySkin.GetOrCreateLayer(inventory)?.Preload();
         })).CallDeferred();
 		GD.Print($"{ModEntry.Tag} velvet shop installed: native merchant interaction, all room player visuals hidden");
 	}

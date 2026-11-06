@@ -1936,3 +1936,7 @@ Grand.cs 里其余函数暂时保留不用。
 
 ### 0.15.16 · 商店预热与入场更新分离
 针对 0.15.15 商品页背景再次停在初始隐藏状态，取消预热/入场共用的 FramePostDraw 回调与等待状态，统一用显式 ProcessFrame 驱动；预热绘制三帧后暂停人物，正式打开取消预热并立即启动入场时钟，保留提前加载缓存与 0.15.15 的舒缓时间轴。增加预热完成、入场开始和入场完成日志，便于确认实际运行路径。修复玩家日志中离开房间时同步 Free 节点引起的 busy-parent 错误：商店舞台退出只停止更新并 QueueFree，不再在 TreeExiting 中移除子节点；牌堆舞台的释放路径不变。
+
+### 0.15.17 · 修复商店补丁注册失败的确切原因
+玩家 0.15.16 日志确认：`patch ShopInventorySkin failed: ... Prepare(...) has wrong return type (should be assignable to System.Boolean)`，补丁统计为 76 成功、1 失败，只有预热完成而没有入场开始记录。0.15.15 引入的普通辅助函数 Prepare 与 Harmony 保留的补丁生命周期方法同名，整个 Open 后置补丁因此未注册；之前 0.15.16 调整渲染回调没有解决该根因。本次将函数改名为 GetOrCreateLayer，同步预加载调用，保留当前预热、缓动、构图及退出清理。
+离线验证使用本机 .NET 9 与实际游戏 0Harmony/sts2 程序集执行 CreateClassProcessor(...).Patch()：ShopInventorySkin 与 VelvetShopPatch 各注册 1 个目标成功；未调用游戏方法、未启动游戏。该检查覆盖此前单纯编译无法发现的 Harmony 保留方法名冲突。
