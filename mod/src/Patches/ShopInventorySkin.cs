@@ -41,9 +41,11 @@ internal partial class ShopWater : Control
     private Tween? tween;
     private Action? dispose;
     private NMerchantInventory inventory = null!;
+    private SceneTree tree = null!;
+    private ulong lastTick;
     private float elapsed, endRadius;
     private int warmFrames;
-    private bool warming;
+    private bool warming, ticking;
     private static Texture2D Png(string path)
     {
         using var im = new Image();
@@ -53,8 +55,8 @@ internal partial class ShopWater : Control
     internal void Setup(NMerchantInventory inv, Control back)
     {
         inventory = inv;
-        ProcessMode = ProcessModeEnum.Always;
-        SetProcess(false);
+        tree = GetTree();
+        TreeExiting += Cleanup;
         var idle=Png("shop/back_idle.png"); var focus=Png("shop/back_focus.png");
         water = new ShaderMaterial { Shader=Shaders.CommuBg };
         water.SetShaderParameter("shop_opaque", true);
@@ -99,19 +101,25 @@ internal partial class ShopWater : Control
         if (++warmFrames<2) return;
         RenderingServer.FramePostDraw-=WarmDrawn;
         warming=false;
-        SetProcess(true);
+        lastTick=Time.GetTicksUsec();
+        ticking=true;
+        // This plain .NET mod has no generated Godot virtual dispatch for _Process.
+        tree.ProcessFrame+=Tick;
     }
     private void StopOpening()
     {
-        SetProcess(false);
+        if (ticking) tree.ProcessFrame-=Tick;
+        ticking=false;
         if (warming) RenderingServer.FramePostDraw-=WarmDrawn;
         warming=false;
     }
-    public override void _Process(double delta)
+    private void Tick()
     {
-        elapsed+=Math.Min((float)delta,1f/30f);
+        ulong now=Time.GetTicksUsec();
+        elapsed+=Math.Min((now-lastTick)/1000000f,1f/30f);
+        lastTick=now;
         ApplyOpening(elapsed);
-        if (elapsed>=1f) SetProcess(false);
+        if (elapsed>=1f) StopOpening();
     }
     private static float Progress(float time,float start,float duration) => Mathf.Clamp((time-start)/duration,0f,1f);
 
@@ -154,6 +162,13 @@ internal partial class ShopWater : Control
         tween.TweenProperty(hero,"modulate:a",0f,.3);
         tween.Chain().TweenCallback(Callable.From(()=>{Hide();dispose?.Invoke();dispose=null;water.SetShaderParameter("reveal",1f);}));
     }
-    public override void _ExitTree(){StopOpening();if(GodotObject.IsInstanceValid(inventory)) inventory.InventoryClosed-=Leave;dispose?.Invoke();dispose=null;}
+    private void Cleanup()
+    {
+        StopOpening();
+        tween?.Kill();
+        if (GodotObject.IsInstanceValid(inventory)) inventory.InventoryClosed-=Leave;
+        dispose?.Invoke();
+        dispose=null;
+    }
 }
 

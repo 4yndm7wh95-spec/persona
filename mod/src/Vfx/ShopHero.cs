@@ -51,6 +51,7 @@ internal static partial class HeroStage
             noseLine.Hide(); noseUpper.Hide(); Display.AddChild(noseLine); Display.AddChild(noseUpper);
             Display.Size = view; Display.Texture = viewport.GetTexture();
             tree.Root.AddChild(viewport); owner = host; host.AddChild(Display);
+            owner.TreeExiting += Close;
             seq[1].Pose(0);
             int nose = faceRig?.Index("Jnt_C_Nose_00") ?? -1;
             if (faceRig != null && nose >= 0)
