@@ -287,9 +287,6 @@ shader_type canvas_item;
 " + WarpGlsl + @"
 uniform sampler2D model_tex : filter_linear, repeat_disable;
 uniform sampler2D equip_tex : filter_linear, repeat_disable;
-uniform vec2 ref_size = vec2(1920.0, 1080.0);
-// Existing sheet bounds, with a 24-reference-pixel water margin on each side.
-uniform vec4 paper_rect = vec4(24.0, 24.0, 1872.0, 1032.0);
 uniform float paper_y = 0.0;
 uniform float paper_alpha = 1.0;
 uniform float word_y = 0.0;
@@ -301,24 +298,24 @@ void vertex() { opacity = COLOR.a; }
 float in_frame(vec2 p) {
     return step(0.0, min(p.x,p.y)) * step(max(p.x,p.y),1.0);
 }
-float rectangle(vec2 p, vec4 rect, float aa) {
-    vec2 outside = max(rect.xy - p, p - rect.xy - rect.zw);
-    return clamp(0.5 - max(outside.x, outside.y) / aa, 0.0, 1.0);
+float sheet_coverage(vec2 p) {
+    // Keep the original diagonals. Complete the far corners beyond the canvas,
+    // including the .30H entrance travel, instead of adding an inset screen border.
+    vec2 edges = vec2(p.x + .56 * p.y - .225, .64 - p.x + .68 * p.y);
+    vec2 inside = min(edges, vec2(1.75) - edges);
+    float aa = max(max(fwidth(edges.x), fwidth(edges.y)), .000001);
+    return clamp(.5 + min(inside.x, inside.y) / aa, 0.0, 1.0);
 }
 float model_alpha(vec2 uv) {
     return texture(model_tex,clamp(uv,vec2(0.0),vec2(1.0))).a * in_frame(uv);
 }
 void fragment() {
     vec2 pos = warp_uv(UV);
-    vec2 pixels = pos * ref_size;
-    float aa = max(max(fwidth(pixels.x),fwidth(pixels.y)),0.0001);
-    vec4 moving = paper_rect;
-    moving.y += paper_y * ref_size.y;
-    float coverage = rectangle(pixels,moving,aa);
+    float coverage = sheet_coverage(pos - vec2(0.0, paper_y));
     float paper = coverage * paper_alpha;
     vec2 word = (pos - vec2(.052,.69 + word_y)) / vec2(.60,.315);
     float ink = texture(equip_tex,clamp(word,vec2(0.0),vec2(1.0))).a * in_frame(word);
-    ink *= min(coverage,rectangle(pixels,paper_rect,aa)) * word_alpha;
+    ink *= min(coverage,sheet_coverage(pos)) * word_alpha;
     vec2 hero = pos - vec2(hero_x,0.0);
     float silhouette = model_alpha(hero) * hero_alpha;
     float shadow = model_alpha(hero - vec2(.012,.009)) * hero_alpha;
