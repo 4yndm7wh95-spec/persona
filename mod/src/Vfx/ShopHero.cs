@@ -5,16 +5,29 @@ namespace P3Makoto.Vfx;
 internal static partial class HeroStage
 {
     // A private viewport per merchant room lets the pile menu keep its own active stage.
-    internal static Action ShowShopHero(Node2D host, Vector2 size, out ShaderMaterial paper, out ShaderMaterial portrait)
+    internal static Action ShowShopHero(Node2D host, Vector2 size, out ShaderMaterial paper, out ShaderMaterial portrait, out Action<bool> setActive)
     {
         Stage stage = new(host.GetTree());
         try { stage.LoadShop(host, size, out paper, out portrait); }
         catch { stage.Dispose(); throw; }
+        setActive=stage.SetShopActive;
         return stage.Dispose;
     }
 
     private sealed partial class Stage
     {
+        internal void SetShopActive(bool active)
+        {
+            if (ticking) tree.ProcessFrame-=Tick;
+            ticking=false; Playing=active;
+            if(active)
+            {
+                phase=0; time=0; blendFrom=-1;
+                seq[0].Pose(0); lastTick=Time.GetTicksUsec();
+                tree.ProcessFrame+=Tick; ticking=true;
+            }
+            viewport.RenderTargetUpdateMode=active ? SubViewport.UpdateMode.Always : SubViewport.UpdateMode.Disabled;
+        }
         internal void LoadShop(Node2D host, Vector2 view, out ShaderMaterial paper, out ShaderMaterial portrait)
         {
             foreach (string file in Images[..3])

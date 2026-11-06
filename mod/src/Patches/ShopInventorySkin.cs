@@ -11,14 +11,18 @@ internal static class ShopInventorySkin
 {
     internal static void Postfix(NMerchantInventory __instance) => ModEntry.Safe("shop inventory", () =>
     {
-        var inv = __instance;
-        if (inv.GetParent()?.GetNodeOrNull("P3VelvetShop") == null) return;
+        Prepare(__instance)?.Enter();
+    });
+
+    internal static ShopWater? Prepare(NMerchantInventory inv)
+    {
+        if (inv.GetParent()?.GetNodeOrNull("P3VelvetShop") == null) return null;
         var layer = inv.GetNodeOrNull<ShopWater>("P3ShopWater");
         if (layer == null)
         {
             var rug = inv.GetNodeOrNull<TextureRect>("SlotsContainer");
             var back = inv.GetNodeOrNull<Control>("BackButton");
-            if (rug == null || back == null) return;
+            if (rug == null || back == null) return null;
             layer = new ShopWater {Name="P3ShopWater", MouseFilter=Control.MouseFilterEnum.Ignore};
             inv.AddChild(layer);
             inv.MoveChild(layer,rug.GetIndex());
@@ -29,8 +33,8 @@ internal static class ShopInventorySkin
                 hand.Modulate = Colors.Transparent;
             rug.SelfModulate = Colors.Transparent; // only the rug's draw call; children keep their native transforms
         }
-        layer.Enter();
-    });
+        return layer;
+    }
 }
 
 internal partial class ShopWater : Control
@@ -40,6 +44,14 @@ internal partial class ShopWater : Control
     private Node2D hero = null!;
     private Tween? tween;
     private Action? dispose;
+    private Action<bool>? setActive;
+    private CanvasLayer? warmCanvas;
+    private bool prewarming;
+    private const float WaterDur=.70f;
+    private const float PaperStart=.10f, PaperDur=.72f, PaperFrom=-.24f, PaperFade=.16f;
+    private const float WordStart=.20f, WordDur=.66f, WordFrom=.10f, WordFade=.16f;
+    private const float HeroStart=.30f, HeroDur=.78f, HeroFrom=.16f, HeroFade=.20f;
+    private static readonly float OpenEnd=Math.Max(WaterDur,Math.Max(PaperStart+PaperDur,Math.Max(WordStart+WordDur,HeroStart+HeroDur)));
     private NMerchantInventory inventory = null!;
     private SceneTree tree = null!;
     private ulong lastTick;
@@ -75,11 +87,33 @@ internal partial class ShopWater : Control
         back.MouseEntered+=()=>{hover=true; Refresh();}; back.MouseExited+=()=>{hover=false; Refresh();};
         back.FocusEntered+=()=>{selected=true; Refresh();}; back.FocusExited+=()=>{selected=false; Refresh();};
         inv.InventoryClosed+=Leave;
+        Hide();
+    }
+    internal void Preload()
+    {
+        if (dispose != null) return;
+        EnsureStage();
+        // Draw the actual materials behind the opaque room, not through a hidden parent.
+        warmCanvas=new CanvasLayer {Layer=-100};
+        tree.Root.AddChild(warmCanvas);
+        warmCanvas.AddChild(new ColorRect {Material=water,Size=Size,MouseFilter=MouseFilterEnum.Ignore});
+        var display=hero.GetChild<TextureRect>(0);
+        paper.SetShaderParameter("paper_alpha",1f);
+        portrait.SetShaderParameter("shop_alpha",1f);
+        warmCanvas.AddChild(new ColorRect {Material=paper,Size=Size,MouseFilter=MouseFilterEnum.Ignore});
+        warmCanvas.AddChild(new TextureRect {Texture=display.Texture,Material=portrait,Size=Size,ExpandMode=TextureRect.ExpandModeEnum.IgnoreSize,MouseFilter=MouseFilterEnum.Ignore});
+        warmFrames=0; warming=true; prewarming=true;
+        RenderingServer.FramePostDraw+=WarmDrawn;
+    }
+    private void EnsureStage()
+    {
+        if(dispose==null)
+            dispose=HeroStage.ShowShopHero(hero,Size,out paper,out portrait,out setActive);
     }
     internal void Enter()
     {
         StopOpening();
-        tween?.Kill(); water.SetShaderParameter("reveal",1f); Show(); dispose?.Invoke(); dispose=null;
+        tween?.Kill(); water.SetShaderParameter("reveal",1f); Show();
         // The merchant button encloses Igor's visible torso in normalized room coordinates.
         Vector2 center=new(.5f,.465f);
         if(inventory.GetParent() is MegaCrit.Sts2.Core.Nodes.Rooms.NMerchantRoom room)
@@ -88,7 +122,8 @@ internal partial class ShopWater : Control
         water.SetShaderParameter("center",center); water.SetShaderParameter("aspect",aspect);
         endRadius=new Vector2(Math.Max(center.X,1-center.X)*aspect,Math.Max(center.Y,1-center.Y)).Length()+.03f;
         hero.Modulate=Colors.White;
-        dispose=HeroStage.ShowShopHero(hero,Size,out paper,out portrait);
+        EnsureStage();
+        setActive?.Invoke(true);
         elapsed=0f;
         ApplyOpening(0f);
         // Render the hidden stage before starting; cap the first step after a cold load.
@@ -101,6 +136,14 @@ internal partial class ShopWater : Control
         if (++warmFrames<2) return;
         RenderingServer.FramePostDraw-=WarmDrawn;
         warming=false;
+        if(prewarming)
+        {
+            prewarming=false;
+            warmCanvas?.QueueFree(); warmCanvas=null;
+            ApplyOpening(0f);
+            setActive?.Invoke(false);
+            return;
+        }
         lastTick=Time.GetTicksUsec();
         ticking=true;
         // This plain .NET mod has no generated Godot virtual dispatch for _Process.
@@ -112,6 +155,8 @@ internal partial class ShopWater : Control
         ticking=false;
         if (warming) RenderingServer.FramePostDraw-=WarmDrawn;
         warming=false;
+        prewarming=false;
+        warmCanvas?.QueueFree(); warmCanvas=null;
     }
     private void Tick()
     {
@@ -119,7 +164,7 @@ internal partial class ShopWater : Control
         elapsed+=Math.Min((now-lastTick)/1000000f,1f/30f);
         lastTick=now;
         ApplyOpening(elapsed);
-        if (elapsed>=1f) StopOpening();
+        if (elapsed>=OpenEnd) { ApplyOpening(OpenEnd); StopOpening(); }
     }
     private static float Progress(float time,float start,float duration) => Mathf.Clamp((time-start)/duration,0f,1f);
 
@@ -137,18 +182,22 @@ internal partial class ShopWater : Control
         }
         return Vector2.Zero.BezierInterpolate(first,second,Vector2.One,(low+high)*.5f).Y;
     }
+    private static float Fade(float time,float start,float duration)
+    {
+        float p=Progress(time,start,duration);
+        return 1f-(1f-p)*(1f-p);
+    }
     private void ApplyOpening(float time)
     {
-        Vector2 first=new(.20f,.60f), second=new(.18f,1f);
-        float waterProgress=Progress(time,0f,.55f);
-        water.SetShaderParameter("radius",Mathf.Lerp(.012f,endRadius,1f-Mathf.Pow(1f-waterProgress,3f)));
-        paper.SetShaderParameter("paper_y",-.30f*(1f-CutEase(Progress(time,.30f,.44f),first,second)));
-        paper.SetShaderParameter("paper_alpha",Progress(time,.30f,.07f));
-        // EQUIP reaches the bottom margin, so use the proposal's later word start.
-        paper.SetShaderParameter("word_y",.13f*(1f-CutEase(Progress(time,.44f,.40f),new Vector2(.22f,.70f),new Vector2(.20f,1f))));
-        paper.SetShaderParameter("word_alpha",Progress(time,.44f,.06f));
-        float x=.22f*(1f-CutEase(Progress(time,.50f,.50f),first,second));
-        float alpha=Progress(time,.50f,.08f);
+        Vector2 first=new(.30f,.30f), second=new(.40f,1f);
+        float w=Progress(time,0f,WaterDur);
+        water.SetShaderParameter("radius",Mathf.Lerp(.012f,endRadius,1f-Mathf.Pow(1f-w,3f)));
+        paper.SetShaderParameter("paper_y",PaperFrom*(1f-CutEase(Progress(time,PaperStart,PaperDur),first,second)));
+        paper.SetShaderParameter("paper_alpha",Fade(time,PaperStart,PaperFade));
+        paper.SetShaderParameter("word_y",WordFrom*(1f-CutEase(Progress(time,WordStart,WordDur),first,second)));
+        paper.SetShaderParameter("word_alpha",Fade(time,WordStart,WordFade));
+        float x=HeroFrom*(1f-CutEase(Progress(time,HeroStart,HeroDur),first,second));
+        float alpha=Fade(time,HeroStart,HeroFade);
         paper.SetShaderParameter("hero_x",x);
         paper.SetShaderParameter("hero_alpha",alpha);
         portrait.SetShaderParameter("shop_slide_x",x);
@@ -160,7 +209,7 @@ internal partial class ShopWater : Control
         tween?.Kill(); tween=CreateTween().SetParallel();
         tween.TweenMethod(Callable.From<float>(v=>water.SetShaderParameter("reveal",v)),1f,0f,.35);
         tween.TweenProperty(hero,"modulate:a",0f,.3);
-        tween.Chain().TweenCallback(Callable.From(()=>{Hide();dispose?.Invoke();dispose=null;water.SetShaderParameter("reveal",1f);}));
+        tween.Chain().TweenCallback(Callable.From(()=>{Hide();setActive?.Invoke(false);water.SetShaderParameter("reveal",1f);}));
     }
     private void Cleanup()
     {

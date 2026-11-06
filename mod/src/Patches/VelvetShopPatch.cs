@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
@@ -54,6 +55,15 @@ public static class VelvetShopPatch
 		// intercepts input; Inventory and ProceedButton keep their original order.
 		Vfx.VelvetShopOutline.Attach(background, merchant, material);
 		Vfx.VelvetShopLife.Attach(background, material);
+        Callable.From(()=>ModEntry.Safe("shop preload",()=>
+        {
+            if(!GodotObject.IsInstanceValid(room) || !room.IsInsideTree()) return;
+            var inventory=room.GetNodeOrNull<MegaCrit.Sts2.Core.Nodes.Screens.Shops.NMerchantInventory>("Inventory");
+            if(inventory==null)
+                foreach(var child in room.GetChildren())
+                    if(child is MegaCrit.Sts2.Core.Nodes.Screens.Shops.NMerchantInventory found) {inventory=found;break;}
+            if(inventory!=null) ShopInventorySkin.Prepare(inventory)?.Preload();
+        })).CallDeferred();
 		GD.Print($"{ModEntry.Tag} velvet shop installed: native merchant interaction, all room player visuals hidden");
 	}
 }
