@@ -1,0 +1,20 @@
+Godot Engine v4.5.1.stable.official.f62fdbde1 - https://godotengine.org
+D3D12 12_0 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 4060 Laptop GPU
+
+{"case":"empty","cpu_ms_median":0.0109999999403954,"frame_ms_median":0.174,"frame_ms_p95":0.453,"gpu_ms_median":0.046000000089407,"gpu_ms_p95":0.0480000004172325}
+{"case":"actual_tail_k0.0_2pass","cpu_ms_median":0.0410000011324883,"frame_ms_median":14.549,"frame_ms_p95":15.067,"gpu_ms_median":14.3500003814697,"gpu_ms_p95":14.7329998016357}
+{"case":"actual_tail_k0.1_2pass","cpu_ms_median":0.0399999991059303,"frame_ms_median":21.032,"frame_ms_p95":21.469,"gpu_ms_median":20.7849998474121,"gpu_ms_p95":21.3349990844727}
+{"case":"actual_tail_k0.25_2pass","cpu_ms_median":0.0410000011324883,"frame_ms_median":22.247,"frame_ms_p95":22.82,"gpu_ms_median":22.0060005187988,"gpu_ms_p95":22.5990009307861}
+{"case":"actual_tail_k0.5_2pass","cpu_ms_median":0.0410000011324883,"frame_ms_median":23.248,"frame_ms_p95":24.11,"gpu_ms_median":22.9759998321533,"gpu_ms_p95":23.826000213623}
+{"case":"actual_tail_k0.75_2pass","cpu_ms_median":0.0430000014603138,"frame_ms_median":22.912,"frame_ms_p95":23.532,"gpu_ms_median":22.632999420166,"gpu_ms_p95":23.2840003967285}
+{"case":"actual_tail_k0.95_2pass","cpu_ms_median":0.0399999991059303,"frame_ms_median":23.088,"frame_ms_p95":23.798,"gpu_ms_median":22.8579998016357,"gpu_ms_p95":23.4260005950928}
+{"case":"forward_position_no_dissolve_2pass","cpu_ms_median":0.0390000008046627,"frame_ms_median":19.444,"frame_ms_p95":19.901,"gpu_ms_median":19.2450008392334,"gpu_ms_p95":19.6630001068115}
+{"case":"actual_tail_k0.0_1pass","cpu_ms_median":0.0350000001490116,"frame_ms_median":7.261,"frame_ms_p95":7.725,"gpu_ms_median":7.12099981307983,"gpu_ms_p95":7.52699995040894}
+{"case":"actual_tail_k0.1_1pass","cpu_ms_median":0.0399999991059303,"frame_ms_median":10.608,"frame_ms_p95":10.958,"gpu_ms_median":10.4079999923706,"gpu_ms_p95":10.7480001449585}
+{"case":"actual_tail_k0.25_1pass","cpu_ms_median":0.0379999987781048,"frame_ms_median":11.244,"frame_ms_p95":11.936,"gpu_ms_median":11.0319995880127,"gpu_ms_p95":11.5799999237061}
+{"case":"actual_tail_k0.5_1pass","cpu_ms_median":0.0439999997615814,"frame_ms_median":11.541,"frame_ms_p95":11.898,"gpu_ms_median":11.2880001068115,"gpu_ms_p95":11.6389999389648}
+{"case":"actual_tail_k0.75_1pass","cpu_ms_median":0.0419999994337559,"frame_ms_median":11.643,"frame_ms_p95":11.846,"gpu_ms_median":11.3690004348755,"gpu_ms_p95":11.6549997329712}
+{"case":"actual_tail_k0.95_1pass","cpu_ms_median":0.0419999994337559,"frame_ms_median":11.516,"frame_ms_p95":11.976,"gpu_ms_median":11.3299999237061,"gpu_ms_p95":11.6719999313354}
+{"case":"forward_position_no_dissolve_1pass","cpu_ms_median":0.0410000011324883,"frame_ms_median":9.735,"frame_ms_p95":10.149,"gpu_ms_median":9.4069995880127,"gpu_ms_p95":9.93000030517578}
+{"case":"five_rings_only","cpu_ms_median":0.0140000004321337,"frame_ms_median":0.213,"frame_ms_p95":0.291,"gpu_ms_median":0.164000004529953,"gpu_ms_p95":0.164000004529953}
+{"case":"stage_only","cpu_ms_median":0.017000000923872,"frame_ms_median":0.254,"frame_ms_p95":0.345,"gpu_ms_median":0.207000002264977,"gpu_ms_p95":0.208000004291534}
