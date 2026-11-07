@@ -1,0 +1,50 @@
+[
+  {
+    "pose": "0.0",
+    "cache": "full",
+    "rgb_mae": 0.09674897119341563,
+    "rgb_p99": 1.0,
+    "alpha_max": 0.0,
+    "pixels_over_20_percent": 0.04359567901234568
+  },
+  {
+    "pose": "0.0",
+    "cache": "720",
+    "rgb_mae": 0.25424350565843623,
+    "rgb_p99": 4.0,
+    "alpha_max": 0.0,
+    "pixels_over_20_percent": 0.30594135802469136
+  },
+  {
+    "pose": "0.45",
+    "cache": "full",
+    "rgb_mae": 0.062042341820987654,
+    "rgb_p99": 1.0,
+    "alpha_max": 0.0,
+    "pixels_over_20_percent": 0.0
+  },
+  {
+    "pose": "0.45",
+    "cache": "720",
+    "rgb_mae": 0.4673363554526749,
+    "rgb_p99": 9.0,
+    "alpha_max": 0.0,
+    "pixels_over_20_percent": 0.9199942129629629
+  },
+  {
+    "pose": "1.0",
+    "cache": "full",
+    "rgb_mae": 0.05270640432098765,
+    "rgb_p99": 1.0,
+    "alpha_max": 0.0,
+    "pixels_over_20_percent": 0.10368441358024692
+  },
+  {
+    "pose": "1.0",
+    "cache": "720",
+    "rgb_mae": 0.49156458976337447,
+    "rgb_p99": 6.0,
+    "alpha_max": 0.0,
+    "pixels_over_20_percent": 0.7220775462962963
+  }
+]

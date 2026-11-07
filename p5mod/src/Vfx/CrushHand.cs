@@ -12,6 +12,13 @@ namespace P5Joker;
 public sealed class CrushHand
 {
 	private static Shader? _shader;
+	private static Shader? _packed;
+	// Store premultiplied color and surface membership once in an HDR offscreen
+	// target. blend_disabled is required: alpha carries data, not transparency.
+	private static Shader PackedShader => _packed ??= new Shader { Code = HandShader.Code
+		.Replace("shader_type canvas_item;", "shader_type canvas_item;\nrender_mode blend_disabled, unshaded;")
+		.Replace("COLOR = vec4(rgb / max(a, 0.001), a * alpha * keep);",
+			"COLOR = vec4(rgb * alpha, (front > 0.5 ? 0.51 : 0.0) + 0.49 * a * alpha);") };
 
 	private static Shader HandShader => _shader ??= new Shader { Code = @"
 shader_type canvas_item;
@@ -136,6 +143,7 @@ float enter(vec3 rd, float shell, out float m) {
 }
 
 void fragment() {
+	if (alpha <= 0.0) { discard; }
 	vec2 uv = (UV * 2.0 - 1.0) * vec2(aspect, -1.0);
 	vec3 rd = normalize(vec3(uv, focal));
 	float hs = hand_size;
@@ -251,9 +259,9 @@ void fragment() {
 	private readonly ShaderMaterial _mat;
 
 	/// <summary>铺满 rect 的一块画布（镜头视野按 rect 的宽高比）。</summary>
-	public CrushHand(Control layer, Vector2 pos, Vector2 size)
+	public CrushHand(Control layer, Vector2 pos, Vector2 size, bool packed = false)
 	{
-		_mat = new ShaderMaterial { Shader = HandShader };
+		_mat = new ShaderMaterial { Shader = packed ? PackedShader : HandShader };
 		_mat.SetShaderParameter("noise", Paint.Noise);
 		_mat.SetShaderParameter("lut", Lut5.Curse);
 		_mat.SetShaderParameter("aspect", size.X / size.Y);
@@ -327,16 +335,13 @@ void fragment() {
 		// Separate sibling root above this clip's paper, still below the combat characters.
 		Node2D frontRoot = Fx.ScreenRoot(back, "P5CrushFingers");
 		frontRoot.AddChild(fingersFront);
-		CrushHand h = new(paperBack, Vector2.Zero, screen);
-		CrushHand frontHand = new(fingersFront, Vector2.Zero, screen);
-		h.Set("hand_pass", 1f);
-		frontHand.Set("hand_pass", 2f);
+		CrushHandFrame frame = new(screenRoot, paperBack, fingersFront, screen);
+		CrushHand h = frame.Hand;
 		// Palm/arm behind the paper; only the visible finger/thumb surfaces in front.
 		// Binary complementary masks preserve the original hand's alpha without doubled smoke.
 		if (playback.PaperRoot is { } paper && GodotObject.IsInstanceValid(paper) && paper.GetParent() == back)
 			back.MoveChild(screenRoot, paper.GetIndex());
 		h.Set("band_z", 50f);
-		frontHand.Set("band_z", 50f);
 		float EmergeAt = emergeAt, ArriveAt = emergeAt + ArriveAfter, GrabAt = emergeAt + GrabAfter, FistAt = emergeAt + FistAfter, CrushAt = emergeAt + CrushAfter;
 		float life = CrushAt + FadeTime;
 		bool emerged = false, fisted = false, crushed = false;
@@ -418,21 +423,14 @@ void fragment() {
 			}
 			float frontMix = Mathf.SmoothStep(0f, 1f, Mathf.Clamp((s - GrabAt) / (FistAt - GrabAt), 0f, 1f));
 			h.Set("front_mix", frontMix);
-			frontHand.Set("front_mix", frontMix);
 			h.Apply(pose);
 			h.Rect.Position = shake;
-			frontHand.Rect.Position = shake;
-			frontHand.Apply(pose);
 			h.Set("clock", s);
-			frontHand.Set("clock", s);
 			h.Set("grip", grip);
-			frontHand.Set("grip", grip);
 			h.Set("flash", flash);
-			frontHand.Set("flash", flash);
 			h.Set("dissolve", dissolve);
-			frontHand.Set("dissolve", dissolve);
 			h.Set("alpha", alpha);
-			frontHand.Set("alpha", alpha);
+			frame.SetVisible(alpha > 0f);
 			if (s >= GrabAt && s < CrushAt)
 			{
 				playback.Pinch = pinch;
