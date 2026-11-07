@@ -1,4 +1,5 @@
 using System;
+using MegaCrit.Sts2.Core.Commands;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Nodes.Screens.Shops;
@@ -9,6 +10,13 @@ namespace P3Makoto.Patches;
 [HarmonyPatch(typeof(NMerchantInventory), nameof(NMerchantInventory.Open))]
 internal static class ShopInventorySkin
 {
+    [ThreadStatic] internal static int OpeningVelvet;
+    internal static void Prefix(NMerchantInventory __instance, out bool __state)
+    {
+        __state=__instance.GetParent()?.GetNodeOrNull("P3VelvetShop")!=null;
+        if(__state) OpeningVelvet++;
+    }
+    internal static void Finalizer(bool __state) { if(__state) OpeningVelvet--; }
     internal static void Postfix(NMerchantInventory __instance) => ModEntry.Safe("shop inventory", () =>
     {
         GetOrCreateLayer(__instance)?.Enter();
@@ -48,23 +56,7 @@ internal partial class ShopWater : Control
     private Action<bool>? setActive;
     private CanvasLayer? warmCanvas;
     private bool prewarming;
-    private const float WaterDur=.70f;
-    // Overlap the entrances, then settle paper / word / portrait 80 ms apart.
-    private const float PaperStart=.06f, PaperDur=.64f, PaperFade=.06f;
-    private const float WordStart=.16f, WordDur=.62f, WordFade=.07f;
-    private const float HeroStart=.26f, HeroDur=.60f, HeroFade=.08f;
-    private const float EntryVisibleFrac=.25f;
-    // Offline bounds: original EQUIP alpha and the union of equipment poses
-    // at 0/.3/.5/.7/.9/1.1/1.3/1.5s, using the current shop camera.
-    private const float WordContentTop=.69f, WordContentBottom=1.005f, HeroContentLeft=.35208333f;
-    // The complete slanted sheet has its bottom corner at y=1.9234.
-    // Start with only that corner in view (~11% of the final visible area),
-    // rather than cutting the sheet horizontally to shorten its travel.
-    private const float PaperFrom=-1.53f;
-    private static readonly float WordFrom=Math.Clamp((1f-WordContentTop)-EntryVisibleFrac*(Math.Min(WordContentBottom,1f)-WordContentTop),.12f,.32f);
-    // Keep the measured offscreen start; only the entrance timing changes.
-    private static readonly float HeroFrom=Math.Clamp((1f-EntryVisibleFrac)*(1f-HeroContentLeft),.26f,.42f);
-    private static readonly float OpenEnd=Math.Max(WaterDur,Math.Max(PaperStart+PaperDur,Math.Max(WordStart+WordDur,HeroStart+HeroDur)));
+    private const float OpenEnd=.28f;
     private NMerchantInventory inventory = null!;
     private SceneTree tree = null!;
     private ulong lastTick;
@@ -140,6 +132,10 @@ internal partial class ShopWater : Control
         hero.Modulate=Colors.White;
         EnsureStage();
         setActive?.Invoke(true);
+        // Finish only the native visual slide; retain Open's transactions and input setup.
+        if(AccessTools.Field(typeof(NMerchantInventory), "_inventoryTween").GetValue(inventory) is Tween nativeTween) nativeTween.Kill();
+        if(inventory.GetNodeOrNull<Control>("SlotsContainer") is {} slots) slots.Position=new Vector2(slots.Position.X,80f);
+        if(AccessTools.Field(typeof(NMerchantInventory), "_backstop").GetValue(inventory) is CanvasItem backstop) backstop.Modulate=new Color(1,1,1,.8f);
         elapsed=0f;
         ApplyOpening(0f);
         // Preloaded stages are already rendered. Never gate opening on a render callback.
@@ -181,46 +177,25 @@ internal partial class ShopWater : Control
         ApplyOpening(elapsed);
         if (elapsed>=OpenEnd) { ApplyOpening(OpenEnd); StopOpening(); GD.Print($"{ModEntry.Tag} shop opening completed"); }
     }
-    private static float Progress(float time,float start,float duration) => Mathf.Clamp((time-start)/duration,0f,1f);
-
-    // Solve Bezier X for elapsed time, then read Y for displacement; end at zero velocity.
-    private static float CutEase(float progress,Vector2 first,Vector2 second)
-    {
-        if (progress<=0f || progress>=1f) return progress;
-        float low=0f, high=1f;
-        for (int i=0;i<18;i++)
-        {
-            float middle=(low+high)*.5f;
-            Vector2 point=Vector2.Zero.BezierInterpolate(first,second,Vector2.One,middle);
-            if (point.X<progress) low=middle;
-            else high=middle;
-        }
-        return Vector2.Zero.BezierInterpolate(first,second,Vector2.One,(low+high)*.5f).Y;
-    }
-    private static float Fade(float time,float start,float duration)
-    {
-        float p=Progress(time,start,duration);
-        return 1f-(1f-p)*(1f-p);
-    }
     private void ApplyOpening(float time)
     {
-        Vector2 first=new(.35f,0f), second=new(.65f,1f);
-        float w=Progress(time,0f,WaterDur);
-        water.SetShaderParameter("radius",Mathf.Lerp(.012f,endRadius,1f-Mathf.Pow(1f-w,3f)));
-        paper.SetShaderParameter("paper_y",PaperFrom*(1f-CutEase(Progress(time,PaperStart,PaperDur),first,second)));
-        paper.SetShaderParameter("paper_alpha",Fade(time,PaperStart,PaperFade));
-        paper.SetShaderParameter("word_y",WordFrom*(1f-CutEase(Progress(time,WordStart,WordDur),first,second)));
-        paper.SetShaderParameter("word_alpha",Fade(time,WordStart,WordFade));
-        float x=HeroFrom*(1f-CutEase(Progress(time,HeroStart,HeroDur),first,second));
-        float alpha=Fade(time,HeroStart,HeroFade);
-        paper.SetShaderParameter("hero_x",x);
-        paper.SetShaderParameter("hero_alpha",alpha);
-        portrait.SetShaderParameter("shop_slide_x",x);
-        portrait.SetShaderParameter("shop_alpha",alpha);
+        water.SetShaderParameter("radius",endRadius);
+        paper.SetShaderParameter("paper_y",0f);
+        paper.SetShaderParameter("word_y",0f);
+        paper.SetShaderParameter("hero_x",0f);
+        paper.SetShaderParameter("paper_alpha",1f);
+        paper.SetShaderParameter("word_alpha",1f);
+        paper.SetShaderParameter("hero_alpha",1f);
+        portrait.SetShaderParameter("shop_slide_x",0f);
+        portrait.SetShaderParameter("shop_alpha",1f);
+        float p=Mathf.Clamp(time/OpenEnd,0f,1f);
+        // Fade the complete inventory, including goods and the return button, together.
+        inventory.Modulate=new Color(1,1,1,p*p*(3f-2f*p));
     }
     private void Leave()
     {
         StopOpening();
+        inventory.Modulate=Colors.White;
         tween?.Kill(); tween=CreateTween().SetParallel();
         tween.TweenMethod(Callable.From<float>(v=>water.SetShaderParameter("reveal",v)),1f,0f,.35);
         tween.TweenProperty(hero,"modulate:a",0f,.3);
@@ -236,3 +211,9 @@ internal partial class ShopWater : Control
     }
 }
 
+
+[HarmonyPatch(typeof(SfxCmd), nameof(SfxCmd.Play), new Type[]{typeof(string),typeof(float)})]
+internal static class VelvetShopWelcomeSound
+{
+    internal static bool Prefix(string sfx) => ShopInventorySkin.OpeningVelvet==0 || sfx!="event:/sfx/npcs/merchant/merchant_welcome";
+}
