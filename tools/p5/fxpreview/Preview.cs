@@ -624,6 +624,18 @@ public partial class Preview : Node2D
 			p.Ready(2.8, Stance.Guard, "guard", "cast_guard_from_ready", play: true);
 			p.At(2.8 + 1.63, () => HexGuard.Play(p._front, Chest, tall, 1f, 12, Pose(885f, 310f)));
 		},
+		// 华丽收场 = 大罪穿甲弹（用户 2026-11-08）：场景 + 子弹预览，撒旦耶尔第 2 版立绘还没到，枪口先放在 Joker 身后上方
+		["sinful_shell"] = p =>
+		{
+			p.At(0.3, () => SinfulShell.Play(p._back, p._front, new SinfulShell.Setup
+			{
+				JokerFeet = JokerFeet, JokerHead = Pose(1010f, 215f), JokerMuzzle = Muzzle, PersonaMuzzle = new Vector2(760f, 470f), FloorY = 830f,
+				Enemies = new List<Vector2> { Enemy2, Enemy, Enemy3 },
+				OnJokerAim = () => { p._joker?.Play("aim_in"); p._joker?.Queue("aim_loop", true); },
+				OnJokerShoot = () => { p._joker?.Play("shiv_from_aim"); p.At(0.18, () => HitFx.Muzzle(p._front, Muzzle)); },
+				OnPierce = i => Popups.Damage(p._front, (ulong)(i + 1), new[] { Enemy2, Enemy, Enemy3 }[i], 50, true),
+			}));
+		},
 		["block"] = p =>
 		{
 			p.EnemyAttack(0.3, Enemy);
