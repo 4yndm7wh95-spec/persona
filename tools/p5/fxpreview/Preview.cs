@@ -631,7 +631,7 @@ public partial class Preview : Node2D
 			p.Ready(0.0, Stance.Mask, "mask", "cast_sinful_from_mask", play: true);
 			p.At(1.6, () => SinfulShell.Play(p._back, p._front, new SinfulShell.Setup
 			{
-				JokerFeet = JokerFeet, JokerHead = Pose(1010f, 215f), JokerMask = Pose(1010f, 215f), JokerMuzzle = Muzzle, PersonaMuzzle = new Vector2(720f, 380f), FloorY = 830f,
+				JokerFeet = JokerFeet, JokerHead = Pose(1010f, 215f), JokerMask = Pose(1025f, 215f), JokerMaskHalf = (JokerFeet - Pose(1010f, 215f)).Length() * 0.24f, JokerMuzzle = Muzzle, PersonaMuzzle = new Vector2(720f, 380f), FloorY = 830f,
 				Enemies = new List<Vector2> { Enemy2, Enemy, Enemy3 },
 				OnJokerShoot = () => p._joker?.Play("shiv_from_aim"),
 				OnPierce = i => Popups.Damage(p._front, (ulong)(i + 1), new[] { Enemy2, Enemy, Enemy3 }[i], 50, true),

@@ -1,3 +1,5 @@
+> **已作废（用户 2026-11-08 叫停）：改按 docs/codex/codex_p5_satanael_v8.md 做。**
+
 你在用户的 Windows 电脑上工作。任务：**撒旦耶尔第 7 版**——换视角重画（远处的巨人，正面朝镜头，往前景开枪）。不改 mod 代码，不编译，不启动游戏，不用 Computer Use。
 
 **先读 docs/codex/README.md**（生图一律真透明底）。找仓库、git 参数、重试、「绝对不要做」清单照 docs/codex/codex_p5r_model_fix.md 执行，**分支是 claude/epic-archimedes-m9an69**

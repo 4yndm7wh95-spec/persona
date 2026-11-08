@@ -143,8 +143,10 @@ ANIMS = {
     # the cast starts; the tremble and the final squeeze are code, Aim.GripTremble), then lets go and lowers like mask_out.
     # Sinful Shell: squeeze the mask -> hand down off the mask in one arc -> straight into the gun draw and spin -> caught aimed
     # (squeeze .02 + .16, arc down .15, spin SINFUL_SPIN, catch at ~0.93 s; then holds the aim until shiv_from_aim fires)
-    "cast_sinful_from_mask": [("summon_touch2_a", .02), (GRIP, .16, .03), ("summon_touch_mid_a", .05, .03), ("summon_lift2_a", .04, .02),
-                              ("gun_arm_mid_h", .06, .02), ("gun_spin_g", .6, .015), ("gun_aim_b", 2.0, 0)],   # .6 = SINFUL_SPIN
+    # (user: a frame glitched - the mask hand jumped from the face straight into the pocket; it now comes down the chest
+    # (summon_lift2/lift1) and slides into the pocket (pocket_in_e) while the other hand rises for the draw)
+    "cast_sinful_from_mask": [("summon_touch2_a", .02), (GRIP, .14, .03), ("summon_lift2_a", .04, .025), ("summon_lift1_a", .05, .025),
+                              ("pocket_in_e", .06, .03), ("gun_arm_mid_h", .05, .02), ("gun_spin_g", .58, .015), ("gun_aim_b", 2.0, 0)],   # .58 = SINFUL_SPIN
     "cast_outbreak_from_mask": [("summon_touch2_a", .02), (GRIP, OUTBREAK_GRIP_END - .02, .03)] + OUTBREAK_LET_GO,
     "cast_outbreak": [("idle_a3", .02)] + [(n, .045) for n in SUMMON_UP]
                      + [(GRIP, OUTBREAK_GRIP_END - .02 - .045 * len(SUMMON_UP), .03)] + OUTBREAK_LET_GO,
@@ -221,7 +223,7 @@ FINGER_TIP = ("gun_spin_g", (1279, 316, 1322, 370))   # the index finger from th
 # Grand Finale / Sinful Shell (user 2026-11-08): one continuous move - the hand squeezes the mask (blue flame shoots to the sky),
 # comes down off the mask in one arc and flicks straight out into the gun draw (no stop at idle); the gun spins ~1.6 turns on the
 # finger, slowing, and is caught aimed at SINFUL_CATCH - the same moment Satanael catches his (p5mod SinfulShell.CatchAt)
-SINFUL_SPIN = .6
+SINFUL_SPIN = .58
 SPIN_SINFUL = [("@gun_spin_g", 0, *SPIN, 580, 1.1, 0, 0), ("@gun_spin_g", .02, *SPIN, 540, 1.1, 1, .5),
                ("@gun_spin_g", .12, *SPIN, 360, 1.1, 1, .5), ("@gun_spin_g", .24, *SPIN, 210, 1.1, 1, .45),
                ("@gun_spin_g", .36, *SPIN, 100, 1.1, 1, .35), ("@gun_spin_g", .47, *SPIN, 35, 1.08, 1, .2),
