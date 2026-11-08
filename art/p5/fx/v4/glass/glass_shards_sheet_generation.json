@@ -1,0 +1,369 @@
+{
+  "name": "glass_shards_sheet",
+  "prompt": "Production game VFX sprite atlas of exquisite shattered GLASS for Persona5-inspired mirror-shatter guard effect. EXACT 2048x2048 canvas, rigid invisible 4 by 4 grid, sixteen 512x512 cells. EXACTLY ONE unique isolated glass shard centered inside EACH cell, 16 shards total; at least 64px EMPTY TRANSPARENT margin on all four sides within every cell, no shard crosses its cell. Different sharp irregular silhouettes: triangles, long slivers, broad angular trapezoids, notched polygons, chipped kite shapes; varying proportions and rotation. Precise elegant detailed glass, NOT flat polygon icons, NO cartoon fill, NO black outline. Each shard has a narrow luminous beveled edge showing real thickness, tiny edge chips, fine diagonal reflected light streaks and subtle refractive striations across interior. Cool clear/white translucent glass body with genuine alpha 0.25-0.6; bright white bevels and glints may near opaque. Very restrained Persona5 scarlet #E5191C accent along a few edge/reflection streaks, NOT solid red glass. Hard crystalline facets with fine reflected detail, not rough stone. TRUE transparent RGBA background alpha ZERO outside shards, NOT opaque gray/white glass-shaped silhouettes, NO checkerboard or background drawn, no cast shadows, no floor, no ambient fog/glow outside shard, no grid lines, labels, text or frame. Strict evenly spaced atlas, no extra specks outside cells, each cell a different still object not animation.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-a9537dd5-bef9-4fd8-881a-a78d08a16044.png",
+  "raw_size": [
+    1254,
+    1254
+  ],
+  "delivery_size": [
+    2048,
+    2048
+  ],
+  "generation_count": 1,
+  "redraw_count": 0,
+  "checks": {
+    "cells": [
+      {
+        "row": 0,
+        "col": 0,
+        "cell": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          89,
+          107,
+          425,
+          422
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 0,
+        "col": 1,
+        "cell": [
+          512,
+          0,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          126,
+          105,
+          410,
+          433
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 0,
+        "col": 2,
+        "cell": [
+          1024,
+          0,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          99,
+          125,
+          411,
+          430
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 0,
+        "col": 3,
+        "cell": [
+          1536,
+          0,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          160,
+          78,
+          373,
+          460
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 1,
+        "col": 0,
+        "cell": [
+          0,
+          512,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          89,
+          119,
+          428,
+          423
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 1,
+        "col": 1,
+        "cell": [
+          512,
+          512,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          86,
+          126,
+          432,
+          365
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 1,
+        "col": 2,
+        "cell": [
+          1024,
+          512,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          168,
+          73,
+          344,
+          458
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 1,
+        "col": 3,
+        "cell": [
+          1536,
+          512,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          89,
+          141,
+          429,
+          374
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 2,
+        "col": 0,
+        "cell": [
+          0,
+          1024,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          133,
+          112,
+          379,
+          421
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 2,
+        "col": 1,
+        "cell": [
+          512,
+          1024,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          82,
+          127,
+          429,
+          377
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 2,
+        "col": 2,
+        "cell": [
+          1024,
+          1024,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          85,
+          101,
+          419,
+          422
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 2,
+        "col": 3,
+        "cell": [
+          1536,
+          1024,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          88,
+          113,
+          405,
+          416
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 3,
+        "col": 0,
+        "cell": [
+          0,
+          1536,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          87,
+          150,
+          430,
+          348
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 3,
+        "col": 1,
+        "cell": [
+          512,
+          1536,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          174,
+          86,
+          347,
+          426
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 3,
+        "col": 2,
+        "cell": [
+          1024,
+          1536,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          87,
+          109,
+          432,
+          388
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "cell": [
+          1536,
+          1536,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          145,
+          91,
+          370,
+          406
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      }
+    ],
+    "postprocess": "per-cell largest alpha>80 component, enclosed glass interior filled, outside alpha noise removed; body alpha mapped64..153, bright bevel/reflections235;32px safety inset plus source margins",
+    "size": [
+      2048,
+      2048
+    ],
+    "mode": "RGBA",
+    "corners_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "transparent_rgb_zero": true,
+    "file_bytes": 1468480
+  }
+}

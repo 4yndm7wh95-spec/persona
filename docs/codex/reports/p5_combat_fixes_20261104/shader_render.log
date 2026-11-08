@@ -1,0 +1,9 @@
+Godot Engine v4.5.1.stable.official.f62fdbde1 - https://godotengine.org
+OpenGL API 3.3.0 NVIDIA 616.92 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 4060 Laptop GPU
+
+PASS rendered grip_0 (960, 540)
+PASS rendered grip_45 (960, 540)
+PASS rendered grip_100 (960, 540)
+PASS viewport transform cancels room scale/translation and canvas zoom/pan
+PASS rendered grip_boss_zoom (960, 540)
+PASS rendered crush_wave (960, 540)

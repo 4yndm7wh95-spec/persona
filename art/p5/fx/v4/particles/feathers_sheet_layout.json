@@ -1,0 +1,185 @@
+{
+  "cell_size": [
+    512,
+    512
+  ],
+  "cells": [
+    {
+      "row": 0,
+      "column": 0,
+      "bbox_alpha20": [
+        113,
+        55,
+        445,
+        512
+      ],
+      "margin_under_24px": true
+    },
+    {
+      "row": 0,
+      "column": 1,
+      "bbox_alpha20": [
+        158,
+        23,
+        512,
+        512
+      ],
+      "margin_under_24px": true
+    },
+    {
+      "row": 0,
+      "column": 2,
+      "bbox_alpha20": [
+        0,
+        87,
+        490,
+        443
+      ],
+      "margin_under_24px": true
+    },
+    {
+      "row": 0,
+      "column": 3,
+      "bbox_alpha20": [
+        77,
+        63,
+        441,
+        475
+      ],
+      "margin_under_24px": false
+    },
+    {
+      "row": 1,
+      "column": 0,
+      "bbox_alpha20": [
+        68,
+        0,
+        512,
+        412
+      ],
+      "margin_under_24px": true
+    },
+    {
+      "row": 1,
+      "column": 1,
+      "bbox_alpha20": [
+        0,
+        0,
+        496,
+        470
+      ],
+      "margin_under_24px": true
+    },
+    {
+      "row": 1,
+      "column": 2,
+      "bbox_alpha20": [
+        40,
+        34,
+        462,
+        452
+      ],
+      "margin_under_24px": false
+    },
+    {
+      "row": 1,
+      "column": 3,
+      "bbox_alpha20": [
+        129,
+        32,
+        424,
+        512
+      ],
+      "margin_under_24px": true
+    },
+    {
+      "row": 2,
+      "column": 0,
+      "bbox_alpha20": [
+        102,
+        8,
+        512,
+        482
+      ],
+      "margin_under_24px": true
+    },
+    {
+      "row": 2,
+      "column": 1,
+      "bbox_alpha20": [
+        0,
+        97,
+        481,
+        512
+      ],
+      "margin_under_24px": true
+    },
+    {
+      "row": 2,
+      "column": 2,
+      "bbox_alpha20": [
+        18,
+        42,
+        512,
+        449
+      ],
+      "margin_under_24px": true
+    },
+    {
+      "row": 2,
+      "column": 3,
+      "bbox_alpha20": [
+        0,
+        0,
+        489,
+        512
+      ],
+      "margin_under_24px": true
+    },
+    {
+      "row": 3,
+      "column": 0,
+      "bbox_alpha20": [
+        57,
+        36,
+        469,
+        470
+      ],
+      "margin_under_24px": false
+    },
+    {
+      "row": 3,
+      "column": 1,
+      "bbox_alpha20": [
+        142,
+        0,
+        451,
+        466
+      ],
+      "margin_under_24px": true
+    },
+    {
+      "row": 3,
+      "column": 2,
+      "bbox_alpha20": [
+        16,
+        91,
+        512,
+        349
+      ],
+      "margin_under_24px": true
+    },
+    {
+      "row": 3,
+      "column": 3,
+      "bbox_alpha20": [
+        0,
+        0,
+        442,
+        456
+      ],
+      "margin_under_24px": true
+    }
+  ],
+  "note": "只检查512网格内的alpha边界，不自动移动或裁切每个物体；低边距交Claude验收。"
+}

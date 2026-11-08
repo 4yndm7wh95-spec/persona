@@ -1,736 +1,569 @@
 using System.Collections.Generic;
+using System;
 using Godot;
 
 namespace P5Joker;
 
 /// <summary>
-/// 牌的特效（2026-10-29 第三版，用发光积木 Glow.cs）：主体是光，P5 的味道靠锐利的形状和干脆的节奏。
-/// 每个都按"预备 → 爆发 → 余韵"编排，元素错开几十毫秒，运动 OutExpo，见 docs/p5/FX_PLAN.md。
+/// 出牌特效（2026-10-29 重做，docs/p5/FX_PLAN.md：主体是光、粒子、空间扭曲，实时渲染；2026-11-01 防御改成 P5 平面风，Ink.cs）。
+/// 第一批：防御（Guard）、中和的虚弱（Weaken）、致命毒药（Eiha：亚森的咒怨）。
+/// 点由调用方换算好传进来（屏幕全局坐标）；facing = 1 朝右（敌人那边）。
 /// </summary>
 public static class CardFx
 {
-	// ───────────────────────── 防御：六边形光盾阵 ─────────────────────────
+	// ───────────────────────── 防御：前臂一竖，身前「唰唰」叠起一面斜切面板墙 ─────────────────────────
 
 	/// <summary>
-	/// 防御（Joker 获得格挡时）：
-	/// 预备 —— 身前一圈红光往里收；
-	/// 构建 —— 一面由十几块六边形光板拼成的竖直盾，从中心一块往外一圈圈"点亮"：每块先白闪、OutBack 弹出，
-	///         然后变成半透明红光面 + 白热亮边；外面一圈红晕轮廓；同时折射波 + 光环；
-	/// 停留 —— 一道斜的亮光从上往下扫过盾面（经过的光板一亮），边角星光，背后几颗慢慢上浮的光粒；
-	/// 碎裂 —— 光板从外往里一块块碎掉，发光碎片往前飞散，中心一团闪光。
-	/// chest = 胸口，facing = 敌人方向。
+	/// 防御（格挡）：菱形光格（设计说明 docs/p5/FX_DESIGN_HITS.md 方案 A，做法照结城理 mod 的 Extras.HexShield，换成 P5 的斜切几何）。
+	/// 前臂竖起那一刻（cast_guard 的 guard_a2），身前一片竖长椭圆区域里，细线勾出的红白菱形格子从前臂的高度往外波浪式点亮
+	/// （每格 OutBack 弹出、出现时闪白），整片往敌人那侧斜一点、两边往后收（像弧面的正投影）；停一会儿，再从外往里一格格熄灭。
+	/// 点亮时一圈空间扭曲往外推。是光，不是物件。fist = 拳头，shield = 光格的中心，height = 光格高度参考。~0.95s。
 	/// </summary>
-	public static void Guard(Control layer, Vector2 chest, float facing = 1f)
-	{
-		const float R = 25f;                                    // 六边形外接圆半径
-		Vector2 center = chest + new Vector2(150f * facing, 30f);
-		Glow.Gather(layer, center, Pal5.Bright, 300f, 0.12f);
+	public static void Guard(Control layer, Vector2 fist, Vector2 shield, float height, float facing = 1f) =>
+		GuardFx.Vortex(layer, fist, shield + new Vector2(height * 0.22f * facing, height * 0.08f), height * 1.0f, facing);   // 2026-11-04 重做：碎玻璃墙（Vfx/GuardFx.cs）
 
-		// 蜂窝格子：竖直的盾形（椭圆里的格子），尖顶六边形，列间距 √3R、行间距 1.5R
-		var cells = new List<Vector2>();
-		float w = Mathf.Sqrt(3f) * R;
-		for (int row = -4; row <= 4; row++)
+	// ───────────────────────── 中和（虚弱）：一道红光锁环把敌人"箍"住、往下压 ─────────────────────────
+
+	/// <summary>
+	/// 虚弱：斩击落下后，一圈红光环从外面猛地收紧箍在敌人身上（白闪），三道"V"形光从头顶一道道砸下来，
+	/// 红色的光尘往下沉，脚下压出一圈扁平的暗红波。center / top = 敌人中心 / 头顶。~1s。
+	/// </summary>
+	public static void Weaken(Control layer, Vector2 center, Vector2 top, float delay = 0f)
+	{
+		float h = Mathf.Max(80f, (center - top).Length());
+		Vector2 waist = center + new Vector2(0f, h * 0.1f), feet = center + new Vector2(0f, h * 0.95f);
+		Fx.After(layer, delay, () =>
 		{
-			for (int col = -2; col <= 2; col++)
+			// 锁环：两圈压扁的光环从 1.8 倍收到 1 倍，过冲，然后慢慢转、变暗
+			Node2D root = Fx.Root(layer, waist, "P5Weaken", 1.3);
+			for (int i = 0; i < 2; i++)
 			{
-				Vector2 p = new(col * w + (row % 2 != 0 ? w / 2f : 0f), row * 1.5f * R);
-				if (p.X * p.X / (70f * 70f) + p.Y * p.Y / (150f * 150f) <= 1f)
+				ColorRect ring = Glow.RingRect(root, h * 2.6f, 0.26f);
+				Glow.SetParam(ring, "tint", i == 0 ? Pal5.Bright : Pal5.Hot);
+				Glow.SetParam(ring, "width", i == 0 ? 0.022f : 0.01f);
+				Glow.SetParam(ring, "radius", 0.9f);
+				float lag = i * 0.04f;
+				Fx.Animate(ring, lag, 1.1, t =>
 				{
-					cells.Add(p);
-				}
+					float k = Ease5.OutBack(Ease5.Seg(t, 0f, 0.2f));
+					Glow.SetParam(ring, "radius", Mathf.Lerp(0.95f, 0.55f, k));
+					Glow.SetParam(ring, "alpha", (i == 0 ? 1f : 0.8f) * (1f - Fx.InCubic(Ease5.Seg(t, 0.55f, 0.45f))));
+				});
 			}
-		}
-
-		Node2D root = Fx.Root(layer, center, "P5Guard", 1.2);
-		root.Scale = new Vector2(facing * 0.82f, 1f);           // 横向压一点：盾面略微侧对着敌人
-		root.Skew = -0.12f * facing;
-		// 盾后面一层红色柔光，给光板一个"发光体"的底
-		Sprite2D bloom = new() { Texture = Glow.Soft, Material = Fx.Additive, Scale = Vector2.Zero, Modulate = new Color(Pal5.Bright, 0.6f) };
-		root.AddChild(bloom);
-		var panels = new List<(Node2D N, Polygon2D Fill, Line2D Rim, Polygon2D Flash, float Delay, Vector2 P)>();
-		Vector2[] hex = Hex(R - 2.5f);
-		foreach (Vector2 p in cells)
-		{
-			Node2D n = new() { Position = p, Scale = Vector2.Zero };
-			root.AddChild(n);
-			Polygon2D fill = Fx.Poly(n, hex, new Color(Pal5.Bright, 0.34f), additive: true);
-			Line2D rim = new() { Points = hex, Closed = true, Width = 2.6f, DefaultColor = Pal5.Hot, Material = Fx.Additive, Antialiased = true };
-			n.AddChild(rim);
-			Polygon2D flash = Fx.Poly(n, hex, Pal5.Hot, additive: true);
-			float delay = 0.12f + p.Length() / 150f * 0.12f + Fx.Rand(0f, 0.015f);
-			panels.Add((n, fill, rim, flash, delay, p));
-		}
-		// 外框：一圈粗一点的红晕描边（勾出盾的轮廓）
-		Line2D outline = new() { Points = Ellipse(92f, 172f, 48), Closed = true, Width = 8f, DefaultColor = new Color(Pal5.Bright, 0.55f),
-			Material = Fx.Additive, Antialiased = true };
-		root.AddChild(outline);
-		outline.Scale = Vector2.Zero;
-
-		const float total = 0.9f, breakAt = 0.62f;
-		Fx.Animate(root, 0, total, t =>
-		{
-			float time = t * total;
-			// 扫光位置：0.34~0.56s 一条斜线从上往下
-			float sw = Ease5.Seg(time, 0.34f, 0.22f), sweepY = Mathf.Lerp(-190f, 190f, Fx.OutCubic(sw));
-			foreach (var (n, fill, rim, flash, delay, p) in panels)
+			Fx.After(layer, 0.18, () =>
 			{
-				float u = Ease5.Seg(time, delay, 0.12f);
-				float brk = Ease5.Seg(time, breakAt + (1f - p.Length() / 160f) * 0.06f, 0.05f);   // 外圈先碎
-				n.Visible = u > 0f && brk < 1f;
-				n.Scale = Vector2.One * Ease5.OutBack(u) * (1f - 0.3f * brk);
-				flash.Modulate = new Color(1f, 1f, 1f, 1f - Ease5.Seg(time, delay, 0.1f));
-				float lit = sw > 0f && sw < 1f ? Mathf.Exp(-Mathf.Pow((p.Y + p.X * 0.6f - sweepY) / 28f, 2f)) : 0f;
-				fill.Modulate = new Color(1f + lit * 2f, 1f + lit, 1f + lit, 1f + lit * 2f);
-				rim.Modulate = new Color(1f, 1f, 1f, 0.75f + 0.25f * Mathf.Sin(time * 40f + p.Y * 0.05f) + lit);
+				Glow.Flash(layer, waist, Pal5.Hot, h * 1.2f, 0.16f);
+				Glow.Flash(layer, waist, Pal5.Bright, h * 2.4f, 0.35f);
+				Fx.Shake(1);
+			});
+			// 三道 V 从头顶一道道往下砸（越往下越大），落到腰上消失
+			for (int i = 0; i < 3; i++)
+			{
+				Chevron(layer, top + new Vector2(0f, -h * 0.5f), waist, h * (0.55f + 0.18f * i), 0.22f + i * 0.11f);
 			}
-			float o = Ease5.OutExpo(Ease5.Seg(time, 0.12f, 0.2f)) * (1f - Ease5.Seg(time, breakAt, 0.08f));
-			outline.Scale = Vector2.One * Mathf.Max(o, 0.01f);
-			bloom.Scale = new Vector2(7f, 12f) * o;
-			outline.Modulate = new Color(1f, 1f, 1f, o * (0.7f + 0.3f * Mathf.Sin(time * 30f)));
-		});
-		Fx.After(root, 0.12, () =>
-		{
-			Glow.Ripple(layer, center, 360f, 0.5f, 0.03f, 1.6f);
-			Glow.Shockwave(layer, center, new Color(0.95f, 0.06f, 0.1f), 260f, 0.4f, 1.7f);
-			Fx.Shake(1);
-		});
-		Glow.Sparks(layer, center, 10, 15f, 50f, 0.8f, new[] { Pal5.Hot, Pal5.Bright }, -50f, 0.12f, 0.3f, Vector2.Up, 60f);
-		Glow.Glint(layer, center + new Vector2(55f * facing, -125f), 0.9f, 0.3f);
-		Glow.Glint(layer, center + new Vector2(-45f * facing, 110f), 0.7f, 0.42f);
-		Glow.Glint(layer, center + new Vector2(70f * facing, 40f), 0.6f, 0.5f);
-		Fx.After(root, breakAt, () =>
-		{
-			Glow.Flash(layer, center, new Color(1f, 0.55f, 0.5f), 260f, 0.2f);
-			Glow.Shards(layer, center, 16, 1.0f, new Vector2(facing, -0.15f).Normalized(), 1.2f);
-			Glow.Sparks(layer, center, 30, 150f, 520f, 0.55f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 180f, 0.1f, 0.3f,
-				new Vector2(facing, -0.1f).Normalized(), 100f);
+			// 往下沉的光尘 + 脚下一圈扁的暗红波
+			Fx.After(layer, 0.3, () =>
+			{
+				Glow.Sparks(layer, waist, 30, 40f, 160f, 0.9f, new[] { Pal5.Bright, Pal5.Crimson, Pal5.Deep }, 420f, 0.1f, 0.3f,
+					Vector2.Down, 80f);
+				Glow.Shockwave(layer, feet, Pal5.Bright, h * 3.2f, 0.6f, 0.22f);
+				Glow.Ripple(layer, feet, h * 2.6f, 0.5f, 0.018f, 0.3f);
+			});
 		});
 	}
 
-	private static Vector2[] Ellipse(float rx, float ry, int n)
+	/// <summary>一道往下指的发光"V"：从 from 砸到 to，越来越快，到了亮一下消失。</summary>
+	private static void Chevron(Control layer, Vector2 from, Vector2 to, float width, float delay)
 	{
-		var pts = new Vector2[n];
-		for (int i = 0; i < n; i++)
+		Node2D root = Fx.Root(layer, from, "P5Chevron", delay + 0.4);
+		float w = width / 2f, hh = width * 0.32f, th = width * 0.09f;
+		Vector2[] shape = { new(-w, -hh), new(0f, hh - th * 2f), new(w, -hh), new(w, -hh + th), new(0f, hh), new(-w, -hh + th) };
+		Polygon2D glow = Fx.Poly(root, shape, new Color(Pal5.Bright, 0.85f), additive: true);
+		Polygon2D core = Fx.Poly(root, shape, Pal5.Hot, additive: true);
+		core.Scale = new Vector2(0.94f, 0.5f);
+		glow.Scale = new Vector2(1.08f, 1.2f);
+		root.Visible = false;
+		Fx.Animate(root, delay, 0.3, t =>
 		{
-			float a = Mathf.Tau * i / n;
-			pts[i] = new Vector2(Mathf.Cos(a) * rx, Mathf.Sin(a) * ry);
-		}
-		return pts;
+			root.Visible = true;
+			float k = Fx.InCubic(Mathf.Min(1f, t / 0.75f));
+			root.GlobalPosition = from.Lerp(to, k);
+			root.Modulate = new Color(1f, 1f, 1f, t < 0.75f ? Mathf.Min(1f, t * 6f) : 1f - (t - 0.75f) / 0.25f);
+			root.Scale = new Vector2(1f + 0.3f * Ease5.Seg(t, 0.75f, 0.25f), 1f);
+		});
 	}
 
-	/// <summary>尖顶六边形。</summary>
-	private static Vector2[] Hex(float r)
-	{
-		var pts = new Vector2[6];
-		for (int i = 0; i < 6; i++)
-		{
-			pts[i] = Vector2.Up.Rotated(Mathf.Tau * i / 6) * r;
-		}
-		return pts;
-	}
+	// ───────────────────────── 致命毒药：亚森的咒怨（Eiha，P5 原作的黑红） ─────────────────────────
 
-	// ───────────────────────── 中和：预告函旋出 → 一刀斜斩 → 燃尽 ─────────────────────────
-
-	private static Shader? _cardBurn;
+	private static Shader? _sigil, _haze;
 
 	/// <summary>
-	/// 被斩开的半张预告函（Polygon2D 贴图）：从切口往外烧——离切口 burn 以内的部分被噪声啃掉，
-	/// 烧到的边沿是一圈白热→红的火口，火口前面一段先焦黑。cut_p / cut_n：切线上一点和法线（UV，按宽高比校正）。
+	/// 咒印（地上的法阵，压扁了贴地）：三圈细环，外两圈之间一圈刻度，中圈一圈断续的"符文"短划，里面一个五角星；spin 转、open 张开。加法。
 	/// </summary>
-	private static Shader CardBurn => _cardBurn ??= new Shader { Code = @"
+	private static Shader Sigil => _sigil ??= new Shader { Code = @"
 shader_type canvas_item;
-uniform float burn = 0.0;
-uniform vec2 cut_p = vec2(0.5);
-uniform vec2 cut_n = vec2(0.0, 1.0);
-uniform float aspect = 0.6875;
-uniform float seed = 0.0;
+render_mode blend_add;
+uniform vec4 tint : source_color = vec4(1.0, 0.1, 0.18, 1.0);
+uniform vec4 hot : source_color = vec4(1.0, 0.85, 0.8, 1.0);
+uniform float open = 1.0;
+uniform float spin = 0.0;
 uniform float alpha = 1.0;
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float seg(vec2 p, vec2 a, vec2 b) { vec2 pa = p - a, ba = b - a; float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0); return length(pa - ba * h); }
+float ring(float r, float R, float w) { return exp(-pow((r - R) / w, 2.0)); }
+void fragment() {
+	vec2 p = UV * 2.0 - 1.0;
+	float r = length(p) / max(open, 0.001);
+	float a = atan(p.y, p.x);
+	float v = ring(r, 0.93, 0.014) + ring(r, 0.8, 0.009) * 0.8 + ring(r, 0.42, 0.01) * 0.7;
+	float band = step(0.8, r) * step(r, 0.93);
+	float ticks = band * pow(abs(sin((a + spin) * 36.0)), 40.0);
+	float runes = ring(r, 0.62, 0.025) * step(0.25, sin((a - spin * 1.5) * 9.0)) * step(0.0, sin((a - spin * 1.5) * 27.0 + 1.0));
+	float star = 0.0;
+	for (int i = 0; i < 5; i++) {
+		float t0 = spin + 6.2832 * float(i) / 5.0, t1 = spin + 6.2832 * float(i + 2) / 5.0;
+		star += exp(-pow(seg(p / max(open, 0.001), 0.8 * vec2(cos(t0), sin(t0)), 0.8 * vec2(cos(t1), sin(t1))) / 0.012, 2.0));
+	}
+	float m = v + ticks * 0.9 + runes * 0.75 + star * 0.6;
+	vec3 col = tint.rgb * m + hot.rgb * (ring(r, 0.93, 0.005) + ring(r, 0.8, 0.004)) * 0.8;
+	COLOR = vec4(col, clamp(m, 0.0, 1.0) * alpha * smoothstep(1.05, 0.95, r));
+}" };
+
+	/// <summary>热浪：把后面的画面按往上流的噪声轻轻扭动，边缘柔和淡出。</summary>
+	private static Shader Haze => _haze ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
+uniform float strength = 0.006;
+uniform float clock = 0.0;
+uniform float alpha = 1.0;
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
 	f = f * f * (3.0 - 2.0 * f);
 	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
 }
-float fbm(vec2 p) {
-	float v = 0.0, a = 0.5;
-	for (int i = 0; i < 4; i++) { v += a * noise(p); p *= 2.1; a *= 0.5; }
-	return v;
-}
 void fragment() {
-	vec4 tex = texture(TEXTURE, UV);
-	float d = abs(dot((UV - cut_p) * vec2(aspect, 1.0), cut_n));
-	float n = fbm(UV * vec2(9.0 * aspect, 9.0) + seed);
-	float front = burn - d - (n - 0.5) * 0.3;
-	float gone = smoothstep(0.0, 0.01, front);
-	float ember = smoothstep(-0.05, 0.0, front) * (1.0 - gone);
-	float scorch = smoothstep(-0.14, -0.02, front);
-	vec3 col = tex.rgb * (1.0 - 0.8 * scorch);
-	col = mix(col, vec3(1.0, 0.1, 0.08), ember * 0.85);
-	col += vec3(1.0, 0.85, 0.6) * pow(ember, 4.0);
-	COLOR = vec4(col, tex.a * (1.0 - gone) * alpha);
+	vec2 q = UV * vec2(6.0, 10.0) + vec2(0.0, clock * 3.0);
+	vec2 off = vec2(noise(q) - 0.5, noise(q + 7.3) - 0.5) * strength * alpha;
+	vec2 c = UV * 2.0 - 1.0;
+	float m = smoothstep(1.0, 0.4, length(c));
+	COLOR = vec4(texture(screen_tex, SCREEN_UV + off * m).rgb, m * alpha);
 }" };
 
 	/// <summary>
-	/// 中和（用户 2026-10-29 的设计）：敌人头顶，一张预告函从一个光点里转着旋出来（正反面交替翻，越转越慢、越转越大，
-	/// 侧面对着镜头那一瞬间是一道白光），停在正面一亮；接着一刀斜斩下来——白闪、屏幕折射、火花顺着刀路喷，
-	/// 预告函沿刀痕裂成两半：先卡顿一下，两半顺着切口错开、往两边飘，从切口开始烧：焦黑 → 火口 → 被啃掉，
-	/// 一路掉火星和灰烬，慢慢烧没（消逝，不是直接消失）。head = 敌人头顶（GetTopOfHitbox），卡片悬在头顶上不挡身体。
-	/// 斩预告函的就是砍敌人的那一刀（用户：不该分开）：一道长光刃从卡片上方一路劈到敌人身上，命中特效打在刀路穿过身体的地方；
-	/// cutAt = 出牌后多久出刀（= 伤害结算的时刻，JokerFx.NeutralizeStart 把伤害推迟到这里），body = 敌人的 VfxSpawnPosition。
+	/// 咒怨（Eiha，P5 原作的黑红）：
+	/// ① 蓄（0～0.3s）：面具上蓝焰一爆（Persona 出手）；敌人脚下张开一圈红色咒印（刻度环、符文、五角星，慢慢转），四周八道红光沿地面往中心收；
+	/// ② 爆（0.3s）：一根黑底绯红火丝的咒焰柱从脚下蹿起吞掉敌人（细丝火，Flame.Column），四根小火柱错开冒，红光闪、扁的冲击环、空间一扭、震屏；
+	/// ③ 烧（0.3～1.1s）：火星打着旋往上飘，火上方黑烟翻滚，热浪扭动后面的画面，敌人被染成暗红；
+	/// ④ 收（1.1s）：火往中心一缩，红环往里收，一点热白闪掉，留余烟。
+	/// tint：给敌人上色（游戏里改敌人节点的 Modulate，结束时调用方传入的会被设回白色）。
 	/// </summary>
-	public static void Neutralize(Control layer, Vector2 head, Vector2 body, float facing, float cutAt)
+	/// <summary>咒焰柱蹿起的时刻（出牌后几秒）：游戏在施法后 0.25s 加上中毒、跳数字，火要和它一起到。</summary>
+	public const float Burst = 0.2f;
+
+	/// <summary>咒焰往中间一收的时刻（Eiha 开始后几秒）：和眼神特写被劈开、亚森离场同一刻。</summary>
+	public static float Collapse => Burst + 0.55f;
+
+	public static void Eiha(Control layer, Vector2 mask, Vector2 center, Vector2 top, Action<Color>? tint = null)
 	{
-		if (Fx.Tex("calling_card") is not Texture2D front)
+		float h = Mathf.Max(80f, (center - top).Length());
+		Vector2 feet = center + new Vector2(0f, h * 0.95f);
+
+
+		// 咒怨之手：咒印张开时钻出来，咒焰喷发那一刻拍下去，之后被火烧掉
+		CurseHands(layer, feet, center, h, 0.08f, Burst, Burst + 0.22f, false, true);   // 完整咒怨跟召唤一起出：冲击声并进召唤那一拍
+
+		// ① 咒印 + 往中心收的红光
+		Node2D sigil = Fx.Root(layer, feet, "P5EihaSigil", 1.6);
+		float sw = h * 3.4f;
+		ColorRect ring = new()
+		{
+			Size = new Vector2(sw, sw), Position = new Vector2(-sw / 2f, -sw / 2f), PivotOffset = new Vector2(sw / 2f, sw / 2f),
+			Scale = new Vector2(1f, 0.28f), MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Sigil },
+		};
+		sigil.AddChild(ring);
+		void SetS(string n, Variant v) => ((ShaderMaterial)ring.Material).SetShaderParameter(n, v);
+		SetS("open", 0f);
+		Fx.Animate(ring, 0, 1.3, t =>
+		{
+			SetS("open", Ease5.OutExpo(Ease5.Seg(t, 0f, 0.14f)) * (1f - 0.6f * Fx.InCubic(Ease5.Seg(t, 0.82f, 0.18f))));
+			SetS("spin", t * 1.6f);
+			float flare = Mathf.Exp(-Mathf.Pow((t - 0.154f) / 0.035f, 2f));              // 爆的那一刻（0.2s）亮一下
+			SetS("alpha", (0.85f + 1.2f * flare) * (1f - Ease5.Seg(t, 0.85f, 0.15f)));
+		});
+		for (int i = 0; i < 8; i++)
+		{
+			float ang = Mathf.Tau * i / 8f + Fx.Rand(-0.2f, 0.2f);
+			Vector2 dir = new(Mathf.Cos(ang), Mathf.Sin(ang) * 0.28f);
+			Node2D streak = new();
+			sigil.AddChild(streak);
+			Polygon2D glow = Glow.TaperPoly(streak, new Color(Pal5.Bright, 0.9f));
+			Polygon2D core = Glow.TaperPoly(streak, Pal5.Hot);
+			float r0 = sw * 0.55f;
+			streak.Visible = false;
+			Fx.Animate(streak, 0.02 + i * 0.008, 0.17, t =>
+			{
+				streak.Visible = true;
+				float head = Fx.InCubic(t), tail = Fx.InCubic(Mathf.Max(0f, t - 0.25f) / 0.75f);
+				Vector2 p0 = dir * r0 * (1f - tail), p1 = dir * r0 * (1f - head);
+				glow.Polygon = Glow.TaperPts(p0, p1, 9f);
+				core.Polygon = Glow.TaperPts(p0, p1, 3f);
+			});
+		}
+
+		// ② 爆：0.2s，和游戏加上中毒（施法后 0.25s）几乎同时
+		Sfx.Play(Sfx.Curse, 0.45f, Burst + 0.25f);                    // 余韵层：咒焰烧起来（召唤那一拍之后，压低）
+		Fx.After(layer, Burst, () =>
+		{
+			Flame.Column(layer, feet + new Vector2(0f, 8f), h * 1.9f, h * 3.3f, 0f, Collapse - Burst + 0.2f, 1.4f);
+			for (int i = 0; i < 4; i++)
+			{
+				float x = (i % 2 == 0 ? -1f : 1f) * h * (0.55f + 0.25f * (i / 2));
+				Flame.Column(layer, feet + new Vector2(x, 6f), h * 0.9f, h * Fx.Rand(1.4f, 2.0f), 0.04f + i * 0.06f, 0.75f, 1.7f);
+			}
+			Glow.Flash(layer, center, Pal5.Hot, h * 1.4f, 0.14f);
+			Glow.Flash(layer, center, Pal5.Bright, h * 3.4f, 0.45f);
+			// 冲击只贴着地面走（用户：悬在半空的那一圈波纹看着不同步、也不贴地）
+			Glow.Shockwave(layer, feet, Pal5.Bright, h * 4f, 0.55f, 0.26f);
+			Glow.Ripple(layer, feet, h * 3.6f, 0.5f, 0.02f, 0.3f);
+			// 火星：打着旋往上飘
+			Embers(layer, feet, h, 46, 1.1f);
+			// 黑烟：火上方翻滚（普通混合，压暗后面，衬出火）
+			Smoke(layer, center + new Vector2(0f, -h * 1.1f), h);
+			// 热浪
+			Node2D haze = Fx.Root(layer, center + new Vector2(0f, -h * 0.4f), "P5EihaHaze", 1.0);
+			float hw = h * 2.4f, hh = h * 3.6f;
+			ColorRect hz = new()
+			{
+				Size = new Vector2(hw, hh), Position = new Vector2(-hw / 2f, -hh / 2f), MouseFilter = Control.MouseFilterEnum.Ignore,
+				Material = new ShaderMaterial { Shader = Haze },
+			};
+			haze.AddChild(hz);
+			Fx.Clock(hz);
+			Fx.Animate(hz, 0, 0.9, t => ((ShaderMaterial)hz.Material).SetShaderParameter("alpha", Mathf.Sin(Mathf.Min(1f, t * 1.2f) * Mathf.Pi)));
+			// 敌人被烧成暗红
+			if (tint != null)
+			{
+				Fx.Animate(sigil, 0, 0.9, t =>
+				{
+					float k = Mathf.Min(1f, t * 6f) * (1f - Fx.InCubic(Ease5.Seg(t, 0.6f, 0.4f)));
+					tint(new Color(1f, 1f, 1f).Lerp(new Color(0.55f, 0.16f, 0.22f), k));
+				});
+				Fx.After(layer, 0.95, () => tint(Colors.White));
+			}
+		});
+
+		// ④ 收
+		Fx.After(layer, Collapse, () =>
+		{
+			Glow.Gather(layer, feet, Pal5.Bright, h * 3f, 0.16f, 0.28f);
+			Glow.Flash(layer, feet + new Vector2(0f, -h * 0.6f), Pal5.Hot, h * 0.9f, 0.2f, 0.14f);
+		});
+	}
+
+	/// <summary>
+	/// 精简咒怨（普通白卡，Tiers.Common，用户 2026-11-01：致命毒药是很普通的白卡，不需要完整演出）：
+	/// 地里钻出手（Burst 那一刻拍下去、随后烧掉）+ 一根咒焰柱 + 一点火星和红光，敌人染一下暗红。≈0.6s，不出咒印 / 黑烟 / 热浪 / 小火柱。
+	/// </summary>
+	public static void CurseLight(Control layer, Vector2 center, Vector2 top, Action<Color>? tint = null, float bodyW = 0f)
+	{
+		float h = Mathf.Max(80f, (center - top).Length());
+		float bw = bodyW > 0f ? bodyW : h * 1.3f;
+		Vector2 feet = center + new Vector2(0f, h * 0.95f);
+		CurseHands(layer, feet, center, h, 0.0f, Burst, Burst + 0.16f);
+		Sfx.Play(Sfx.Curse, 0.7f, Burst - 0.05f);
+		Fx.After(layer, Burst, () =>
+		{
+			Flame.Wrap(layer, Stage.Back, feet, bw, h * 2.3f, 0f, 0.45f);
+			Glow.Flash(layer, center, Pal5.Bright, h * 2.2f, 0.3f);
+			Glow.Shockwave(layer, feet, Pal5.Bright, h * 2.8f, 0.4f, 0.26f);
+			Embers(layer, feet, h, 16, 0.7f);
+			if (tint != null)
+			{
+				Fx.Animate(layer, 0, 0.5, t =>
+				{
+					float k = Mathf.Min(1f, t * 6f) * (1f - Fx.InCubic(Ease5.Seg(t, 0.5f, 0.5f)));
+					tint(new Color(1f, 1f, 1f).Lerp(new Color(0.6f, 0.18f, 0.24f), k));
+				});
+				Fx.After(layer, 0.55, () => tint(Colors.White));
+			}
+		});
+	}
+
+	// ───────────────────────── 咒怨之手（用户 2026-11-01：咒怨的主题上多一些东西——地里钻出手来拍怪，和伤害、火往上钻同步） ─────────────────────────
+
+	private static Shader? _hand;
+
+	/// <summary>
+	/// 一只手（Codex 画的 P5 风格黑红手，wrist 在图底边）：rise 0～1 从地里钻出来的比例（地面以下的部分丢掉），
+	/// hot 命中时红色高光过曝，burn 0～1 从指尖往下烧掉（烧的边是亮红 → 橙白），dim 后排压暗。
+	/// </summary>
+	private static Shader HandShader => _hand ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform float rise = 1.0;
+uniform float hot = 0.0;
+uniform float burn = 0.0;
+uniform float dim = 0.0;
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+float noise(vec2 p) {
+	vec2 i = floor(p), f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+}
+void fragment() {
+	if (UV.y > rise) { discard; }
+	vec4 c = texture(TEXTURE, UV);
+	float red = clamp(c.r - max(c.g, c.b) * 1.2, 0.0, 1.0);          // 红色高光的地方
+	vec3 col = c.rgb + vec3(1.0, 0.35, 0.3) * red * hot * 1.4 + vec3(0.25, 0.0, 0.02) * hot * (1.0 - red);
+	col *= 1.0 - dim * 0.45;
+	float n = noise(UV * vec2(14.0, 20.0)) * 0.25 + noise(UV * vec2(40.0, 55.0)) * 0.08;
+	float d = (UV.y + n) - (burn * 1.4 - 0.15);                      // < 0：已经烧掉（从上往下）
+	if (burn > 0.0 && d < 0.0) { discard; }
+	float edge = burn > 0.0 ? smoothstep(0.07, 0.0, d) : 0.0;
+	col = mix(col, mix(vec3(1.0, 0.15, 0.1), vec3(1.0, 0.85, 0.6), smoothstep(0.03, 0.0, d)), edge * step(0.02, c.a));
+	COLOR = vec4(col, c.a);
+}" };
+
+	private sealed class Hand
+	{
+		public Node2D Root = null!;
+		public Sprite2D Sprite = null!;
+		public ShaderMaterial Mat = null!;
+		public float H;
+	}
+
+	private static Hand? MakeHand(Control layer, string tex, Vector2 ground, float height, bool mirror, float dim)
+	{
+		if (Fx.Tex(tex) is not Texture2D t)
+		{
+			return null;
+		}
+		Node2D root = Fx.Root(layer, ground, "P5CurseHand", 2.0);
+		float k = height / t.GetHeight();
+		Sprite2D sp = new()
+		{
+			Texture = t, Centered = false, Offset = new Vector2(-t.GetWidth() / 2f, -t.GetHeight()),
+			Scale = new Vector2(mirror ? -k : k, k), Material = new ShaderMaterial { Shader = HandShader },
+		};
+		root.AddChild(sp);
+		ShaderMaterial m = (ShaderMaterial)sp.Material;
+		m.SetShaderParameter("rise", 0f);
+		m.SetShaderParameter("dim", dim);
+		return new Hand { Root = root, Sprite = sp, Mat = m, H = height };
+	}
+
+	private static readonly string[] Poses = { "chand_bud", "chand_unfurl", "chand_open", "chand_slap", "chand_clench" };
+
+	/// <summary>
+	/// 咒怨之手（用户 2026-11-01：三只手完整地从地里长出来、伤害打出时同时拍向目标、结束时钻回去；注意每个阶段的手型）。
+	/// 贴图是 Codex 画的同一只手的五个姿势（curse_hands_v2，打包时对齐了手腕，逐帧切换），掌心朝右（敌人那边），右边的手镜像：
+	///  · 长（emergeAt 起）：地面一裂，手从地里往上钻 —— 花苞（指头蜷着）→ 舒展 → 张开；边长边轻轻扭；
+	///  · 蓄（到 hitAt 前）：张开的手往后仰，越仰越多；
+	///  · 拍（hitAt）：前 0.05s 换成拍击手型、手腕一折猛地扑向敌人，撞上过冲一点、弹回；红光过曝；
+	///  · 停（到 burnAt）：拍着不动，轻轻颤；
+	///  · 缩（burnAt 起 0.3s）：握成拳、回正、往地里缩回去，地面一点尘。
+	/// 三只手：左右各一（前排），左后方一只更大的（画在前排后面，压暗一点）。few = 群攻，手小一点。
+	/// </summary>
+	public static void CurseHands(Control layer, Vector2 feet, Vector2 center, float h, float emergeAt, float hitAt, float burnAt, bool few = false, bool quiet = false)
+	{
+		if (Fx.Tex(Poses[0]) is not Texture2D t0)
 		{
 			return;
 		}
-		Texture2D back = Fx.Tex("calling_card_back") ?? front;
-		Vector2 size = front.GetSize();
-		float k = 170f / size.Y;
-		Vector2 home = head + new Vector2(-40f * facing, -100f);               // 稍微偏后：一刀斜劈下来正好穿过敌人身体
-		float slashT = cutAt, spinT = Mathf.Clamp(cutAt - 0.1f, 0.25f, 0.45f);
-
-		// ── 旋出 ──
-		Glow.Gather(layer, head + new Vector2(0f, -30f), Pal5.Bright, 220f, 0.16f);
-		Node2D root = Fx.Root(layer, home, "P5Neutralize", slashT + 0.05);
-		root.Rotation = -0.06f * facing;
-		Sprite2D halo = new() { Texture = Glow.Soft, Material = Fx.Additive, Modulate = new Color(Pal5.Bright, 0f) };
-		root.AddChild(halo);
-		Sprite2D card = Fx.Sprite(root, front, additive: false);
-		Sprite2D shine = Fx.Sprite(root, front, additive: true);
-		Polygon2D edge = Glow.TaperPoly(root, Pal5.Hot);
-		Fx.Animate(root, 0, slashT, t =>
+		Texture2D?[] tex = new Texture2D?[Poses.Length];
+		for (int i = 0; i < Poses.Length; i++) tex[i] = Fx.Tex(Poses[i]) ?? t0;
+		float k0 = few ? 0.8f : 1f;
+		// (层, 离脚底的横向偏移 × h, 高 × h, 掌心朝左（镜像）, 压暗, 拍下去转多少, 错开)
+		(Control L, float X, float Height, bool Mirror, float Dim, float Slap, float Lag)[] spec =
 		{
-			float time = t * slashT;
-			float u = Ease5.Seg(time, 0f, spinT);
-			float spin = Mathf.Tau * 2f * Fx.OutCubic(u);                 // 转两圈，越转越慢，停在正面
-			float c = Mathf.Cos(spin);
-			float grow = Ease5.OutBack(u);
-			Texture2D face = c >= 0f ? front : back;
-			card.Texture = face;
-			shine.Texture = face;
-			card.Scale = new Vector2(k * Mathf.Max(Mathf.Abs(c), 0.03f), k) * grow;
-			shine.Scale = card.Scale;
-			// 侧面那一瞬间：一道竖直白光；停稳时整张一亮再退
-			float side = Mathf.Pow(1f - Mathf.Abs(c), 6f) * (1f - u * 0.5f);
-			edge.Polygon = Glow.TaperPts(new Vector2(0f, -100f * grow), new Vector2(0f, 100f * grow), 12f * side + 0.1f);
-			edge.Visible = side > 0.02f;
-			float settle = Ease5.Seg(time, spinT - 0.04f, 0.04f) * (1f - Ease5.Seg(time, spinT, 0.12f));
-			shine.Modulate = new Color(1f, 1f, 1f, 0.15f + 0.7f * settle + 0.5f * Ease5.Seg(time, slashT - 0.05f, 0.05f));
-			halo.Scale = new Vector2(3.2f, 4.6f) * grow;
-			halo.Modulate = new Color(Pal5.Bright, (0.45f + 0.15f * Mathf.Sin(time * 20f)) * Mathf.Min(1f, u * 3f));
-			root.GlobalPosition = head.Lerp(home, Ease5.OutQuint(u)) + new Vector2(0f, -4f * Mathf.Sin(time * 6f));
-			root.Rotation = (-0.06f + 0.25f * (1f - Ease5.OutQuint(u))) * facing;
-		});
-		Glow.Sparks(layer, head + new Vector2(0f, -40f), 16, 120f, 340f, 0.5f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 120f, 0.1f, 0.3f, Vector2.Up, 70f);
-		Fx.After(layer, spinT - 0.03, () =>
-		{
-			Glow.Shockwave(layer, home, new Color(0.95f, 0.06f, 0.1f), 260f, 0.36f);
-			Glow.Glint(layer, home + new Vector2(-52f, -78f), 0.8f);
-			Glow.Glint(layer, home + new Vector2(54f, 74f), 0.6f, 0.05f);
-		});
-
-		// ── 斩 ──
-		float rot = -0.06f * facing;
-		Vector2 dir = new Vector2(facing * 0.42f, 1f).Normalized();               // 从上往下斜斩
-		Vector2 gdir = dir.Rotated(rot), n = new Vector2(-dir.Y, dir.X);
-		// 刀路：卡片上方 170px 起，一路劈到敌人身体下半截；穿过身体中心高度的那一点就是命中点
-		float reach = (body.Y + 80f - home.Y) / gdir.Y;
-		Vector2 hit = home + gdir * ((body.Y - home.Y) / gdir.Y);
-		Fx.After(layer, slashT, () =>
-		{
-			float ang = gdir.Angle();
-			Vector2 mid = home + gdir * (reach - 170f) / 2f;
-			Glow.Blade(layer, mid, ang, reach + 170f, 40f, 0.32f);
-			Glow.Blade(layer, mid + gdir.Orthogonal() * 5f, ang, (reach + 170f) * 0.8f, 12f, 0.26f, 0.02f, Pal5.Hot);
-			Glow.Flash(layer, home, new Color(1f, 0.6f, 0.55f), 260f, 0.18f);
-			Glow.Sparks(layer, home, 14, 200f, 500f, 0.4f, new[] { Pal5.Hot, Pal5.Gold, Pal5.Bright }, 200f, 0.1f, 0.28f, -gdir, 20f);
-			Glow.Shards(layer, home, 5, 0.6f, gdir, 0.9f);
-			HitFx.Impact(layer, hit, gdir, facing, 0.04f);
-			for (int side = -1; side <= 1; side += 2)
-			{
-				Half(layer, front, k, home, rot, dir, n * side, side);
-			}
-			// 斩痕：刀过后切口上留一道细细的白热光，慢慢淡掉
-			Node2D scar = Fx.Root(layer, home, "P5Scar", 0.4);
-			Polygon2D line = Glow.TaperPoly(scar, Pal5.Hot);
-			Polygon2D glow = Glow.TaperPoly(scar, new Color(Pal5.Bright, 0.8f));
-			Fx.Animate(scar, 0, 0.32, t =>
-			{
-				float w = 1f - Fx.OutCubic(t);
-				Vector2 a0 = -gdir * 150f, a1 = gdir * 150f;
-				glow.Polygon = Glow.TaperPts(a0, a1, 14f * w);
-				line.Polygon = Glow.TaperPts(a0 * 0.9f, a1 * 0.9f, 4f * w);
-			});
-		});
-	}
-
-	/// <summary>被斩开的半张：side 一侧的多边形（按切线裁卡片矩形），顿一下 → 顺切口滑开 → 往外飘 + 转 → 从切口烧尽，沿途掉火星。</summary>
-	private static void Half(Control layer, Texture2D tex, float k, Vector2 at, float rot, Vector2 dir, Vector2 n, int side)
-	{
-		Vector2 size = tex.GetSize(), c = size / 2f;
-		var uv = ClipHalf(size, c, n);
-		var local = new Vector2[uv.Length];
-		for (int i = 0; i < uv.Length; i++)
-		{
-			local[i] = (uv[i] - c) * k;
-		}
-		const float life = 1.15f;
-		Node2D root = Fx.Root(layer, at, "P5CardHalf", life + 0.1);
-		root.Rotation = rot;
-		Polygon2D poly = new() { Polygon = local, UV = uv, Texture = tex, Material = new ShaderMaterial { Shader = CardBurn } };
-		root.AddChild(poly);
-		var mat = (ShaderMaterial)poly.Material;
-		mat.SetShaderParameter("cut_n", n);                                       // UV × (宽高比, 1) 就是按卡高归一的像素空间，法线不用换
-		mat.SetShaderParameter("aspect", size.X / size.Y);
-		mat.SetShaderParameter("seed", Fx.Rand(0f, 20f));
-		Vector2 gn = n.Rotated(rot), gd = dir.Rotated(rot);
-		float slide = side > 0 ? 34f : -22f, spin = 0.3f * side, fall = side > 0 ? 50f : 14f;
-		Fx.Animate(root, 0, life, t =>
-		{
-			float s = t * life;
-			float slip = Ease5.OutQuint(Ease5.Seg(s, 0.08f, 0.3f));                   // 先顿 80ms，再顺着切口错开
-			float drift = Ease5.OutQuint(Ease5.Seg(s, 0.12f, 0.95f));
-			root.GlobalPosition = at + gd * slide * slip + gn * 64f * drift + new Vector2(0f, fall * s * s);
-			root.Rotation = rot + spin * drift;
-			mat.SetShaderParameter("burn", Burn(s));
-			mat.SetShaderParameter("alpha", 1f - Ease5.Seg(s, 1.0f, 0.14f));
-		});
-		// 火星和灰烬：沿着往外推进的火口掉
-		for (int i = 0; i < 10; i++)
-		{
-			float s = 0.16f + 0.085f * i;
-			Fx.After(root, s, () =>
-			{
-				float burn = Burn(s);
-				Vector2 p = c + dir * Fx.Rand(-0.45f, 0.45f) * size.Y * 0.6f + n * burn * size.Y;
-				if (p.X < 0f || p.X > size.X || p.Y < 0f || p.Y > size.Y)
-				{
-					p = new Vector2(Mathf.Clamp(p.X, 0f, size.X), Mathf.Clamp(p.Y, 0f, size.Y));
-				}
-				Vector2 g = root.GlobalTransform * ((p - c) * k);
-				Glow.Sparks(layer, g, 5, 30f, 120f, 0.7f, new[] { Pal5.Hot, Pal5.Gold, Pal5.Bright, Pal5.Deep }, -140f, 0.08f, 0.22f, Vector2.Up, 60f);
-				Glow.Sparks(layer, g, 3, 20f, 70f, 0.9f, new[] { Pal5.Deep, Black }, -90f, 0.12f, 0.28f, Vector2.Up, 50f);
-			});
-		}
-	}
-
-	/// <summary>火口离切口多远（卡高的倍数）：切口先只是一条火线，0.2s 后越烧越快。</summary>
-	private static float Burn(float s) => Mathf.Lerp(0.012f, 0.85f, Mathf.Pow(Ease5.Seg(s, 0.1f, 0.9f), 1.5f));
-
-	/// <summary>卡片矩形（0,0)-size 里，切线（过 c、法线 n）n 那一侧的多边形。</summary>
-	private static Vector2[] ClipHalf(Vector2 size, Vector2 c, Vector2 n)
-	{
-		Vector2[] rect = { Vector2.Zero, new(size.X, 0f), size, new(0f, size.Y) };
-		var outPts = new List<Vector2>();
-		for (int i = 0; i < 4; i++)
-		{
-			Vector2 a = rect[i], b = rect[(i + 1) % 4];
-			float da = (a - c).Dot(n), db = (b - c).Dot(n);
-			if (da >= 0f)
-			{
-				outPts.Add(a);
-			}
-			if (da * db < 0f)
-			{
-				outPts.Add(a.Lerp(b, da / (da - db)));
-			}
-		}
-		return outPts.ToArray();
-	}
-
-	/// <summary>锁定准星：四个发光的角括号从大到小转着收拢，中间一圈蓄力环。</summary>
-	private static void Lock(Control layer, Vector2 at)
-	{
-		Glow.Gather(layer, at, Pal5.Bright, 300f, 0.2f);
-		Node2D root = Fx.Root(layer, at, "P5Lock", 0.5);
-		var brackets = new List<Line2D>();
-		for (int i = 0; i < 4; i++)
-		{
-			Line2D l = new() { Points = new[] { new Vector2(0f, 18f), Vector2.Zero, new Vector2(18f, 0f) }, Width = 4f,
-				DefaultColor = i % 2 == 0 ? Pal5.Hot : Pal5.Bright, Material = Fx.Additive, Antialiased = true,
-				JointMode = Line2D.LineJointMode.Sharp };
-			root.AddChild(l);
-			brackets.Add(l);
-		}
-		Fx.Animate(root, 0, 0.45, t =>
-		{
-			float time = t * 0.45f;
-			float c = Ease5.OutExpo(Ease5.Seg(time, 0f, 0.2f));
-			float d = Mathf.Lerp(150f, 62f, c);
-			root.Rotation = Mathf.Lerp(-1.2f, 0f, c);
-			for (int i = 0; i < 4; i++)
-			{
-				// 四个角：左上 / 右上 / 右下 / 左下，括号的开口朝里
-				brackets[i].Position = Vector2.Right.Rotated(Mathf.Pi * 1.25f + Mathf.Pi / 2f * i) * d;
-				brackets[i].Rotation = Mathf.Pi / 2f * i;
-			}
-			root.Modulate = new Color(1f, 1f, 1f, 1f - Ease5.Seg(time, 0.24f, 0.2f));
-		});
-	}
-
-	// ───────────────────────── 减益：锁定 + 下箭头 ─────────────────────────
-
-	/// <summary>
-	/// 减益（中和、扫腿、刺耳尖啸……施加虚弱 / 易伤）：P5R 的"↓"。
-	/// 锁定 —— 四个发光角括号转着收拢到敌人身上；
-	/// 压下 —— 锁定那一刻白闪，三层发光的红色"V"字箭头从敌人头顶一层接一层往下砸（越往下越大、越淡），
-	///         脚下一圈暗红光波压扁扩散，红色光粒往下坠。at = 敌人的 VfxSpawnPosition。
-	/// </summary>
-	public static void Debuff(Control layer, Vector2 at)
-	{
-		Lock(layer, at);
-		const float lockT = 0.2f;
-		Fx.After(layer, lockT, () =>
-		{
-			Glow.Flash(layer, at, new Color(1f, 0.5f, 0.45f), 240f, 0.18f);
-			Fx.Shake(1);
-		});
-		for (int i = 0; i < 3; i++)
-		{
-			float d = lockT + 0.07f * i;
-			Chevron(layer, at + new Vector2(0f, -110f + 10f * i), at + new Vector2(0f, 20f + 30f * i), 70f + 18f * i, false, d);
-		}
-		Fx.After(layer, lockT + 0.2, () =>
-		{
-			Glow.Shockwave(layer, at + new Vector2(0f, 110f), new Color(0.65f, 0.02f, 0.06f), 360f, 0.55f, 0.3f);
-			Glow.Sparks(layer, at, 20, 40f, 140f, 0.8f, new[] { Pal5.Bright, Pal5.Deep }, 300f, 0.12f, 0.3f, Vector2.Down, 60f);
-		});
-	}
-
-	/// <summary>
-	/// 一个发光的"V"字箭头（down = true 朝下的"V"、false 朝上的"Λ"……这里 up 参数为 true 时箭头朝上）：
-	/// 从 from 飞到 to，过程中先弹出（OutBack）再淡掉。w = 箭头宽度。
-	/// </summary>
-	private static void Chevron(Control layer, Vector2 from, Vector2 to, float w, bool up, float delay)
-	{
-		Node2D root = Fx.Root(layer, from, "P5Chevron", delay + 0.6);
-		float s = up ? -1f : 1f;                     // 朝下的 V：尖在下面
-		Vector2[] shape =
-		{
-			new(-w / 2f, -w * 0.32f * s), new(0f, w * 0.18f * s), new(w / 2f, -w * 0.32f * s),
-			new(w / 2f, -w * 0.08f * s), new(0f, w * 0.42f * s), new(-w / 2f, -w * 0.08f * s),
+			// 拍下去转的角度要让指尖真的落在敌人身上（用户 2026-11-01：像捏了一把，要砸上去）
+			// 手臂够长、从上方把掌心砸到敌人身上（拍击手型本身手腕折了 60°，再转太多会平趴在地上）
+			(layer, -1.35f, 2.9f, false, 0.35f, 0.62f, 0.08f),          // 先建：画在两只前排手后面
+			(layer, -0.85f, 2.3f, false, 0f, 0.52f, 0f),
+			(layer, 0.85f, 2.3f, true, 0f, 0.52f, 0.04f),
 		};
-		Polygon2D glow = Fx.Poly(root, Grow(shape, 1.35f), new Color(Pal5.Bright, 0.7f), additive: true);
-		Polygon2D core = Fx.Poly(root, shape, Pal5.Hot, additive: true);
-		Polygon2D red = Fx.Poly(root, Grow(shape, 0.7f), new Color(Pal5.Crimson, 0.9f), additive: true);
-		root.Visible = false;
-		Fx.Animate(root, delay, 0.5, t =>
+		float grow = Mathf.Clamp((hitAt - emergeAt) * 0.75f, 0.12f, 0.3f);
+		const float retract = 0.3f;
+		float total = burnAt + retract + 0.05f;
+		foreach (var (L, x, hh, mirror, dim, slapAng, lag) in spec)
 		{
-			root.Visible = true;
-			float m = Ease5.OutExpo(Mathf.Min(1f, t * 2.2f));
-			root.GlobalPosition = from.Lerp(to, m);
-			root.Scale = Vector2.One * Ease5.OutBack(Mathf.Min(1f, t * 3f));
-			float a = 1f - Fx.InCubic(Ease5.Seg(t, 0.4f, 0.6f));
-			root.Modulate = new Color(1f, 1f, 1f, a);
-			core.Modulate = new Color(1f, 1f, 1f, 1f - Ease5.Seg(t, 0.1f, 0.4f) * 0.6f);
-		});
-	}
-
-	/// <summary>多边形绕中心缩放（做光晕层）。</summary>
-	private static Vector2[] Grow(Vector2[] pts, float k)
-	{
-		Vector2 c = Vector2.Zero;
-		foreach (Vector2 p in pts)
-		{
-			c += p;
+			Vector2 ground = feet + new Vector2(x * h * k0, 6f);
+			float height = hh * h * k0;
+			Node2D root = Fx.Root(L, ground, "P5CurseHand", total + 0.1);
+			float k = height / t0.GetHeight();
+			ShaderMaterial m = new() { Shader = HandShader };
+			Sprite2D sp = new()
+			{
+				Texture = tex[0], Centered = false, Offset = new Vector2(-t0.GetWidth() / 2f, -t0.GetHeight()),
+				Scale = new Vector2(mirror ? -k : k, k), Material = m,
+			};
+			root.AddChild(sp);
+			m.SetShaderParameter("rise", 0f);
+			m.SetShaderParameter("dim", dim);
+			float toward = mirror ? -1f : 1f;                              // 往敌人那边转的方向
+			float e0 = emergeAt + lag;
+			// 地面裂开（第一只手一声）
+			if (lag <= 0f) Sfx.Play(Sfx.Crack, quiet ? 0.2f : 0.35f);
+			Fx.After(layer, e0, () =>
+			{
+				Glow.Flash(L, ground, Pal5.Bright, height * 0.5f, 0.2f);
+				Glow.Shockwave(L, ground, Pal5.Bright, height * 0.8f, 0.3f, 0.25f);
+				Glow.Sparks(L, ground, 10, 160f, 480f, 0.4f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 700f, 0.08f, 0.2f, Vector2.Up, 40f);
+			});
+			Fx.After(layer, burnAt + retract * 0.8f, () =>
+				Glow.Sparks(L, ground, 8, 80f, 260f, 0.35f, new[] { Pal5.Bright, Pal5.Deep }, 500f, 0.06f, 0.16f, Vector2.Up, 50f));
+			int last = -1;
+			Fx.Animate(root, 0, total, t =>
+			{
+				float s = t * total;
+				float g = Mathf.Clamp((s - e0) / grow, 0f, 1f);
+				float back01 = Mathf.Clamp((s - burnAt) / retract, 0f, 1f);
+				// 手型
+				int f = s < hitAt - 0.05f ? (g < 0.4f ? 0 : g < 0.75f ? 1 : 2) : s < burnAt ? 3 : 4;
+				if (f != last)
+				{
+					last = f;
+					sp.Texture = tex[f];
+				}
+				// 长出来 / 缩回去：地面以下的部分丢掉
+				float rise = Fx.OutCubic(g) * (1f - Fx.InCubic(back01));
+				m.SetShaderParameter("rise", rise);
+				sp.Position = new Vector2(0f, (1f - rise) * height);
+				// 转：长的时候轻轻扭 → 蓄力：往后仰到底、手臂拉长 → 最后 0.07s 猛地砸下去（指尖落在敌人身上）→
+				// 撞上：压扁、微微弹起再落回 → 缩的时候回正
+				const float strikeT = 0.07f;
+				float wob = 0.12f * Mathf.Sin(g * Mathf.Pi * 2.2f) * (1f - g * 0.6f);
+				float wind = Mathf.Clamp((s - e0 - grow) / Mathf.Max(0.01f, hitAt - strikeT - e0 - grow), 0f, 1f);
+				float lean = -0.5f * Fx.OutCubic(wind);
+				float stretch = 0.15f * Fx.OutCubic(wind);
+				float strike = Mathf.Clamp((s - (hitAt - strikeT)) / strikeT, 0f, 1f);
+				float after = Mathf.Max(0f, s - hitAt);
+				float ang, sx = 1f, sy = 1f + stretch;
+				if (s < hitAt - strikeT)
+				{
+					ang = wob + lean;
+				}
+				else if (s < hitAt)
+				{
+					float e = strike * strike * strike;                        // 越砸越快
+					ang = Mathf.Lerp(lean, slapAng * 1.06f, e);
+					sy = 1f + stretch * (1f - e) + 0.12f * e;
+				}
+				else
+				{
+					// 撞上：0.08s 压扁，之后弹起一点再慢慢落回
+					float squash = Mathf.Exp(-after / 0.06f);
+					ang = slapAng * (1.06f - 0.1f * Mathf.Sin(Mathf.Min(1f, after / 0.25f) * Mathf.Pi) * (1f - squash));
+					sy = 1f - 0.16f * squash;
+					sx = 1f + 0.1f * squash;
+					if (s < burnAt) ang += 0.015f * Mathf.Sin(s * 45f);
+				}
+				ang *= 1f - Fx.OutCubic(back01);
+				root.Rotation = ang * toward;
+				root.Scale = new Vector2(sx, Mathf.Lerp(sy, 1f, back01));
+				m.SetShaderParameter("hot", s >= hitAt ? 0.55f * Mathf.Exp(-(s - hitAt) / 0.05f) : 0f);   // 一闪就回黑，剪影要看得清
+				m.SetShaderParameter("burn", 0f);
+			});
+			// 落点：这只手的指尖砸在哪（地面支点 + 转过去的手臂），炸一下
+			float reachLen = height * 0.82f;
+			Vector2 tip = ground + new Vector2(0f, -reachLen).Rotated(slapAng * 1.06f * toward);
+			Fx.After(layer, hitAt, () =>
+			{
+				Glow.Flash(L, tip, Pal5.Hot, h * 0.7f, 0.1f);
+				Glow.Flash(L, tip, Pal5.Bright, h * 1.4f, 0.24f);
+				Glow.Shockwave(L, tip, Pal5.Bright, h * 1.5f, 0.3f, 0.6f);
+				Glow.Sparks(L, tip, 14, 300f, 900f, 0.4f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 900f, 0.08f, 0.24f,
+					new Vector2(-toward, -0.6f).Normalized(), 55f);
+			});
 		}
-		c /= pts.Length;
-		var o = new Vector2[pts.Length];
-		for (int i = 0; i < pts.Length; i++)
+		// 声音：砸下去的重击 + 低频（冲击层）；缩回去时一声低沉的挥动（余韵）
+		if (!quiet)
 		{
-			o[i] = c + (pts[i] - c) * k;
+			Sfx.PlayHit(Sfx.Slam, 1f, hitAt);
+			Sfx.Play(Sfx.SubBoom, 0.75f, hitAt);
 		}
-		return o;
-	}
-
-	// ───────────────────────── 增益：上箭头 + 光柱 ─────────────────────────
-
-	/// <summary>
-	/// 增益（能力牌）：P5R 的"↑"。脚下一圈红光收拢 → 扁的光环扩散 + 一道从脚下升起的红色光柱（白芯），
-	/// 一串发光的"Λ"箭头从脚往头一个接一个窜上去，光粒上浮，头顶星光。feet / head = Joker 的脚底 / 头顶；
-	/// 光柱画在人物后面（back 层），不盖住人。
-	/// </summary>
-	public static void Buff(Control layer, Control back, Vector2 feet, Vector2 head)
-	{
-		Glow.Gather(layer, feet, Pal5.Bright, 320f, 0.12f, 0.3f);
-		Fx.After(layer, 0.12, () =>
+		// 命中：三只手拍在敌人身上的那一下
+		Fx.After(layer, hitAt, () =>
 		{
-			Glow.Shockwave(layer, feet, new Color(0.95f, 0.06f, 0.1f), 420f, 0.55f, 0.28f);
-			Glow.Ripple(layer, feet, 360f, 0.5f, 0.025f, 0.35f);
-			Pillar(back, feet, head);
-			Fx.Shake(1);
-		});
-		float h = feet.Y - head.Y;
-		for (int i = 0; i < 4; i++)
-		{
-			float x = (i % 2 == 0 ? -1f : 1f) * (30f + 25f * (i / 2));
-			Vector2 from = feet + new Vector2(x, -h * 0.15f), to = feet + new Vector2(x, -h * (0.75f + 0.12f * (i % 2)));
-			Chevron(layer, from, to, 46f, true, 0.16f + 0.06f * i);
-		}
-		Glow.Sparks(layer, feet + new Vector2(0f, -20f), 26, 60f, 260f, 0.9f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, -140f, 0.1f, 0.3f,
-			Vector2.Up, 25f);
-		Glow.Glint(layer, head + new Vector2(30f, -10f), 0.9f, 0.4f);
-	}
-
-	/// <summary>竖直光柱：一根柔光贴图拉成细长条，0.1s 窜到头顶、停一下、从下往上收掉。</summary>
-	private static void Pillar(Control layer, Vector2 feet, Vector2 head)
-	{
-		float h = feet.Y - head.Y + 80f;
-		Node2D root = Fx.Root(layer, feet, "P5Pillar", 0.8);
-		Sprite2D glow = new() { Texture = Glow.Soft, Material = Fx.Additive, Centered = true, Modulate = new Color(Pal5.Bright, 0.75f) };
-		Sprite2D core = new() { Texture = Glow.Soft, Material = Fx.Additive, Centered = true, Modulate = Pal5.Hot };
-		root.AddChild(glow);
-		root.AddChild(core);
-		Fx.Animate(root, 0, 0.7, t =>
-		{
-			float up = Ease5.OutExpo(Mathf.Min(1f, t * 5f)), off = Fx.InCubic(Ease5.Seg(t, 0.45f, 0.55f));
-			float len = h * up * (1f - off);
-			glow.Scale = new Vector2(5.5f * (1f - 0.5f * t), len / 32f * 1.2f);
-			core.Scale = new Vector2(1.2f * (1f - 0.6f * t), len / 32f);
-			glow.Position = core.Position = new Vector2(0f, -h * up + len / 2f);
-		});
-	}
-
-	// ───────────────────────── 咒（Eiha）：黑红咒焰 ─────────────────────────
-
-	private static readonly Color Black = new(0.03f, 0.0f, 0.02f);
-
-	/// <summary>
-	/// 咒（原本给毒牌的特效，用户：改成亚森那种咒属性，不一定体现毒；不要粉）：P5R Eiha 式的黑红咒焰。
-	/// 预备 —— 敌人脚下一滩黑色咒印张开，边上一圈暗红光；中心一颗黑球慢慢胀大（暗红描边、里面隐约的红光）；
-	/// 爆发 —— 一圈黑底红边的咒焰从咒印里蹿起来（着色器实时生成，噪声翻卷往上流），黑球往里一缩再炸开、中间三根高火冲上去：
-	///         暗红闪光 + 折射波 + 黑色碎片 + 红色火星往上冒；
-	/// 余韵 —— 咒焰越烧越细、淡掉，咒印收拢。at = 敌人的 VfxSpawnPosition。
-	/// </summary>
-	public static void Curse(Control layer, Vector2 at)
-	{
-		Vector2 ground = at + new Vector2(0f, 95f);
-
-		// 咒印：黑色扁椭圆 + 暗红光环
-		Node2D seal = Fx.Root(layer, ground, "P5CurseSeal", 1.3);
-		Polygon2D pool = Fx.Poly(seal, Ellipse(130f, 30f, 40), new Color(Black, 0.85f));
-		Line2D rim = new() { Points = Ellipse(130f, 30f, 40), Closed = true, Width = 4f, DefaultColor = Pal5.Crimson, Material = Fx.Additive, Antialiased = true };
-		seal.AddChild(rim);
-		Line2D rim2 = new() { Points = Ellipse(100f, 22f, 40), Closed = true, Width = 2f, DefaultColor = new Color(Pal5.Bright, 0.6f), Material = Fx.Additive, Antialiased = true };
-		seal.AddChild(rim2);
-		Fx.Animate(seal, 0, 1.2, t =>
-		{
-			float time = t * 1.2f;
-			float o = Ease5.OutExpo(Ease5.Seg(time, 0f, 0.18f)) * (1f - Fx.InCubic(Ease5.Seg(time, 0.95f, 0.25f)));
-			seal.Scale = Vector2.One * Mathf.Max(o, 0.01f);
-			rim2.Scale = new Vector2(1f + 0.06f * Mathf.Sin(time * 9f), 1f);
-			rim.Modulate = new Color(1f, 1f, 1f, 0.7f + 0.3f * Mathf.Sin(time * 25f));
-		});
-
-		// 黑球：中心慢慢胀大，0.42s 往里一缩，0.48s 炸开
-		Node2D orb = Fx.Root(layer, at, "P5CurseOrb", 0.55);
-		Sprite2D inner = new() { Texture = Glow.Soft, Material = Fx.Additive, Modulate = new Color(Pal5.Crimson, 0.8f) };
-		orb.AddChild(inner);
-		Polygon2D body = Fx.Poly(orb, Fx.Circle(40f, 32), new Color(Black, 0.92f));
-		Line2D edge = new() { Points = Fx.Circle(40f, 32), Closed = true, Width = 3f, DefaultColor = Pal5.Bright, Material = Fx.Additive, Antialiased = true };
-		orb.AddChild(edge);
-		Sprite2D core = new() { Texture = Glow.Soft, Material = Fx.Additive, Modulate = new Color(Pal5.Bright, 0.7f), Scale = Vector2.One * 1.2f };
-		orb.AddChild(core);
-		Fx.Animate(orb, 0, 0.5, t =>
-		{
-			float time = t * 0.5f;
-			float grow = Ease5.OutQuint(Ease5.Seg(time, 0.05f, 0.35f)), pinch = Fx.InCubic(Ease5.Seg(time, 0.4f, 0.08f));
-			float k = Mathf.Max(0.01f, grow * (1f - 0.75f * pinch));
-			orb.Scale = Vector2.One * k;
-			inner.Scale = Vector2.One * (5f + Mathf.Sin(time * 30f));
-			core.Modulate = new Color(Pal5.Bright, 0.4f + 0.5f * Mathf.Abs(Mathf.Sin(time * 18f)));
-		});
-
-		// 咒焰（着色器实时生成，Glow.CurseFire）：先在咒印边上蹿起几根矮的，黑球炸开时中间三根高的冲上去
-		Node2D glowRoot = Fx.Root(layer, ground, "P5CurseGlow", 1.3);
-		Sprite2D under = new() { Texture = Glow.Soft, Material = Fx.Additive, Modulate = new Color(Pal5.Crimson, 0f), Position = new Vector2(0f, -120f) };
-		glowRoot.AddChild(under);
-		Fx.Animate(glowRoot, 0, 1.2, t =>
-		{
-			float k = Ease5.Seg(t, 0.05f, 0.3f) * (1f - Ease5.Seg(t, 0.7f, 0.3f));
-			under.Scale = new Vector2(9f, 11f) * (0.6f + 0.4f * k);
-			under.Modulate = new Color(Pal5.Crimson, 0.3f * k);
-		});
-		for (int i = 0; i < 4; i++)
-		{
-			float x = (i % 2 == 0 ? -1f : 1f) * (i < 2 ? 105f : 70f) + Fx.Rand(-8f, 8f);
-			Glow.CurseFire(layer, ground + new Vector2(x, Fx.Rand(-6f, 8f)), 120f, Fx.Rand(160f, 220f), 0.08f + 0.03f * i, 0.95f, 0.85f);
-		}
-		// 高火放在两侧，中间留空：不把敌人整个挡住（用户 2026-10-29）
-		Glow.CurseFire(layer, ground + new Vector2(-118f, 4f), 170f, 340f, 0.44f, 0.8f);
-		Glow.CurseFire(layer, ground + new Vector2(122f, 2f), 170f, 310f, 0.47f, 0.8f);
-
-		Fx.After(layer, 0.48, () =>
-		{
-			Glow.Flash(layer, at, new Color(0.9f, 0.05f, 0.08f), 360f, 0.3f);
-			Glow.Ripple(layer, at, 420f, 0.55f, 0.04f);
-			Glow.Shockwave(layer, at, new Color(0.75f, 0.02f, 0.05f), 340f, 0.45f, 0.8f);
-			Glow.Sparks(layer, at, 30, 90f, 360f, 0.9f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, -180f, 0.12f, 0.36f, Vector2.Up, 80f);
-			DarkShards(layer, at, 12);
+			Glow.Flash(layer, center, Pal5.Hot, h * 1.1f, 0.12f);
+			Glow.Flash(layer, center, Pal5.Bright, h * 2.2f, 0.28f);
+			Glow.Shockwave(layer, center, Pal5.Hot, h * 2.4f, 0.36f);
+			Glow.SpeedLines(layer, center, Pal5.Bright, 14, h * 0.4f, h * 2f, 0.3f);
+			Glow.Ripple(layer, center, h * 3f, 0.4f, 0.03f);
+			HitStop.Request(0.06);                                       // 砸上去那一下顿一顿
 			Fx.Shake(2);
 		});
 	}
 
-	/// <summary>黑色碎片（不发光，带一道暗红边），往外崩开落下。</summary>
-	private static void DarkShards(Control layer, Vector2 at, int count)
+	/// <summary>一块热浪（扭动后面的画面），中心在 center（parent 的本地坐标），一直扭到被释放；alpha 参数控制强弱。</summary>
+	public static ColorRect HazeRect(Node parent, Vector2 center, float w, float h, float strength = 0.006f)
 	{
-		for (int i = 0; i < count; i++)
+		ColorRect hz = new()
 		{
-			Node2D sh = Fx.Root(layer, at, "P5DarkShard", 0.8);
-			float len = Fx.Rand(10f, 22f), wid = len * 0.45f;
-			Vector2[] shape = { new(-len * 0.5f, 0f), new(0f, -wid * 0.5f), new(len * 0.5f, 0f), new(0f, wid * 0.5f) };
-			Fx.Poly(sh, shape, Black);
-			Line2D e = new() { Points = shape, Closed = true, Width = 1.6f, DefaultColor = Pal5.Bright, Material = Fx.Additive, Antialiased = true };
-			sh.AddChild(e);
-			Vector2 dir = Vector2.Up.Rotated(Fx.Rand(-1.6f, 1.6f));
-			float speed = Fx.Rand(250f, 600f), spin = Fx.Rand(-12f, 12f);
-			Fx.Animate(sh, 0, 0.7, t =>
-			{
-				float s = t * 0.7f, travel = speed * (1f - Mathf.Exp(-4.5f * s)) / 4.5f;
-				sh.GlobalPosition = at + dir * travel + new Vector2(0f, 300f * s * s);
-				sh.Rotation = spin * s;
-				sh.Modulate = new Color(1f, 1f, 1f, 1f - Fx.InCubic(t));
-			});
-		}
+			Size = new Vector2(w, h), Position = center - new Vector2(w / 2f, h / 2f), MouseFilter = Control.MouseFilterEnum.Ignore,
+			Material = new ShaderMaterial { Shader = Haze },
+		};
+		parent.AddChild(hz);
+		Fx.Clock(hz);
+		((ShaderMaterial)hz.Material).SetShaderParameter("strength", strength);
+		return hz;
 	}
 
-	// ───────────────────────── 抽牌：卡片划着光轨飞进手里 ─────────────────────────
-
-	/// <summary>
-	/// 抽牌（杂技、后空翻、预备……）：身后上方一张接一张黑底红边的卡片翻着跟头、拖着红白光轨划弧线飞进举起的手套里，
-	/// 每接住一张手里"啪"地一亮（星光 + 小闪 + 几颗火花），最后一张接住时手边一圈光环。hand = 手套（姿势图 cast_glove 的 989,400）。
-	/// </summary>
-	public static void Draw(Control layer, Vector2 hand, int count, float facing = 1f)
+	/// <summary>打着旋往上飘的火星（GPU 粒子，湍流）。</summary>
+	internal static void Embers(Control layer, Vector2 feet, float h, int amount, float life)
 	{
-		count = Mathf.Clamp(count, 1, 5);
-		for (int i = 0; i < count; i++)
+		Node2D root = Fx.Root(layer, feet, "P5Embers", life + 0.5);
+		Gradient g = new()
 		{
-			float delay = 0.07f * i;
-			Vector2 from = hand + new Vector2((-240f - 70f * i) * facing, -230f + 60f * i + Fx.Rand(-20f, 20f));
-			Vector2 ctrl = hand + new Vector2((-60f - 40f * i) * facing, -360f + 40f * i);
-			FlyCard(layer, from, ctrl, hand, delay, 0.3f, facing);
-			bool last = i == count - 1;
-			Fx.After(layer, delay + 0.3f, () =>
-			{
-				Glow.Glint(layer, hand + new Vector2(Fx.Rand(-10f, 10f), Fx.Rand(-12f, 6f)), last ? 1f : 0.65f);
-				Glow.Flash(layer, hand, new Color(1f, 0.55f, 0.5f), last ? 200f : 120f, 0.14f);
-				Glow.Sparks(layer, hand, 8, 120f, 360f, 0.35f, new[] { Pal5.Hot, Pal5.Bright }, 260f, 0.08f, 0.22f,
-					new Vector2(facing, -0.4f).Normalized(), 60f);
-				if (last)
-				{
-					Glow.Shockwave(layer, hand, new Color(0.95f, 0.06f, 0.1f), 220f, 0.35f);
-				}
-			});
-		}
+			Offsets = new[] { 0f, 0.3f, 0.75f, 1f },
+			Colors = new[] { Flame.CurseHot, Flame.CurseHi, Flame.CurseMid, new Color(Flame.CurseMid, 0f) },
+		};
+		ParticleProcessMaterial pm = new()
+		{
+			Direction = new Vector3(0f, -1f, 0f), Spread = 28f, InitialVelocityMin = h * 1.2f, InitialVelocityMax = h * 3.2f,
+			Gravity = new Vector3(0f, -h * 0.4f, 0f), DampingMin = 1.5f, DampingMax = 3f, ScaleMin = 0.08f, ScaleMax = 0.3f,
+			EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box, EmissionBoxExtents = new Vector3(h * 0.7f, 6f, 0f),
+			TurbulenceEnabled = true, TurbulenceNoiseStrength = 6f, TurbulenceNoiseScale = 3f, TurbulenceInfluenceMin = 0.08f, TurbulenceInfluenceMax = 0.2f,
+			ColorRamp = new GradientTexture1D { Gradient = g },
+		};
+		GpuParticles2D p = new()
+		{
+			Amount = amount, Lifetime = life, OneShot = true, Explosiveness = 0.55f, ProcessMaterial = pm, Texture = Glow.Soft,
+			Material = Fx.Additive, LocalCoords = false, Emitting = true,
+		};
+		root.AddChild(p);
 	}
 
-	/// <summary>一张飞行的卡片：沿二次贝塞尔从 from 经 ctrl 到 to，翻着跟头、越飞越小，身后一条红白光轨。</summary>
-	private static void FlyCard(Control layer, Vector2 from, Vector2 ctrl, Vector2 to, float delay, float dur, float facing)
+	/// <summary>翻滚的黑烟（普通混合的暗色柔团，慢慢往上飘、胀大、淡掉）。</summary>
+	internal static void Smoke(Control layer, Vector2 at, float h)
 	{
-		Node2D trailRoot = Fx.Root(layer, Vector2.Zero, "P5CardTrail", delay + dur + 0.3);
-		trailRoot.GlobalPosition = Vector2.Zero;
-		Polygon2D trailGlow = Glow.TaperPoly(trailRoot, new Color(Pal5.Bright, 0.75f));
-		Polygon2D trailCore = Glow.TaperPoly(trailRoot, Pal5.Hot);
-		Node2D card = Fx.Root(layer, from, "P5FlyCard", delay + dur + 0.05);
-		Vector2[] rect = { new(-22f, -32f), new(22f, -32f), new(22f, 32f), new(-22f, 32f) };
-		Fx.Poly(card, rect, new Color(Black, 0.95f));
-		Fx.Poly(card, new Vector2[] { new(-22f, 4f), new(22f, -14f), new(22f, -4f), new(-22f, 14f) }, Pal5.Crimson);
-		Line2D rim = new() { Points = rect, Closed = true, Width = 3f, DefaultColor = Pal5.Hot, Material = Fx.Additive, Antialiased = true };
-		card.AddChild(rim);
-		Sprite2D halo = new() { Texture = Glow.Soft, Material = Fx.Additive, Modulate = new Color(Pal5.Bright, 0.5f), Scale = new Vector2(1.6f, 2f) };
-		card.AddChild(halo);
-		card.Visible = trailRoot.Visible = false;
-		Vector2 Bez(float u) => from.Lerp(ctrl, u).Lerp(ctrl.Lerp(to, u), u);
-		Fx.Animate(card, delay, dur, t =>
+		Node2D root = Fx.Root(layer, at, "P5Smoke", 2.0);
+		Gradient g = new()
 		{
-			card.Visible = trailRoot.Visible = true;
-			float u = Fx.InCubic(t) * 0.35f + t * 0.65f;                         // 越飞越快
-			card.GlobalPosition = Bez(u);
-			card.Rotation = -facing * Mathf.Tau * 1.5f * u;
-			card.Scale = new Vector2(Mathf.Cos(u * Mathf.Pi * 3f), 1f) * Mathf.Lerp(1.15f, 0.45f, u);
-			card.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, t * 6f));
-			float tail = Mathf.Max(0f, u - 0.35f);
-			var pts = new List<Vector2>();
-			for (int j = 0; j <= 8; j++)
-			{
-				pts.Add(Bez(Mathf.Lerp(tail, u, j / 8f)));
-			}
-			trailGlow.Polygon = Glow.Ribbon(pts, 16f);
-			trailCore.Polygon = Glow.Ribbon(pts, 5f);
-		});
-		Fx.Animate(trailRoot, delay + dur, 0.2, t => trailRoot.Modulate = new Color(1f, 1f, 1f, 1f - t));
+			Offsets = new[] { 0f, 0.25f, 1f },
+			Colors = new[] { new Color(0.06f, 0f, 0.02f, 0f), new Color(0.06f, 0f, 0.02f, 0.55f), new Color(0.03f, 0f, 0.01f, 0f) },
+		};
+		ParticleProcessMaterial pm = new()
+		{
+			Direction = new Vector3(0f, -1f, 0f), Spread = 35f, InitialVelocityMin = h * 0.3f, InitialVelocityMax = h * 0.8f,
+			Gravity = Vector3.Zero, DampingMin = 0.5f, DampingMax = 1f, ScaleMin = h / 32f * 0.6f, ScaleMax = h / 32f * 1.1f,
+			EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box, EmissionBoxExtents = new Vector3(h * 0.5f, h * 0.4f, 0f),
+			AngleMin = 0f, AngleMax = 360f,
+			ScaleCurve = new CurveTexture { Curve = Grow() },
+			ColorRamp = new GradientTexture1D { Gradient = g },
+		};
+		GpuParticles2D p = new()
+		{
+			Amount = 16, Lifetime = 1.4, OneShot = true, Explosiveness = 0.7f, ProcessMaterial = pm, Texture = Glow.Soft,
+			LocalCoords = false, Emitting = true,
+		};
+		root.AddChild(p);
 	}
 
-	// ───────────────────────── 生成小刀：光刃阵 ─────────────────────────
-
-	/// <summary>
-	/// 生成小刀（刀刃之舞、斗篷与匕首、暗藏匕首……）：Joker 身后上方张开一道扇形，一把把发光的红色小刀从一道竖直光缝里"抽"出来，
-	/// 刀尖齐刷刷转向敌人那边、一亮，然后一把接一把甩进手套里（拖着光轨），每把接住一下火花。center = 胸口，hand = 手套。
-	/// </summary>
-	public static void Shivs(Control layer, Vector2 center, Vector2 hand, int count, float facing = 1f)
+	private static Curve Grow()
 	{
-		count = Mathf.Clamp(count, 1, 6);
-		for (int i = 0; i < count; i++)
-		{
-			float a = Mathf.Lerp(-2.5f, -0.65f, count == 1 ? 0.5f : (float)i / (count - 1));
-			if (facing < 0f)
-			{
-				a = -Mathf.Pi - a;
-			}
-			Vector2 home = center + Vector2.Right.Rotated(a) * new Vector2(190f, 170f) + new Vector2(-40f * facing, -40f);
-			float appear = 0.05f * i, launch = 0.42f + 0.05f * i;
-			Blade(layer, home, hand, appear, launch, facing);
-		}
-		Glow.Gather(layer, center + new Vector2(-40f * facing, -120f), Pal5.Bright, 360f, 0.16f);
-		Fx.After(layer, 0.36, () => Glow.Ripple(layer, center + new Vector2(-40f * facing, -120f), 380f, 0.4f, 0.02f));
-	}
-
-	/// <summary>一把光刃小刀：光缝里抽出 → 刀尖转向前方、一亮 → 甩进手里。</summary>
-	private static void Blade(Control layer, Vector2 home, Vector2 hand, float appear, float launch, float facing)
-	{
-		const float fly = 0.16f;
-		Node2D root = Fx.Root(layer, home, "P5ShivBlade", launch + fly + 0.05);
-		Vector2[] shape = { new(-30f, 0f), new(-22f, -5f), new(30f, -2f), new(42f, 0f), new(30f, 2f), new(-22f, 5f) };
-		Vector2[] grip = { new(-46f, -3f), new(-30f, -3f), new(-30f, 3f), new(-46f, 3f) };
-		Sprite2D halo = new() { Texture = Glow.Soft, Material = Fx.Additive, Modulate = new Color(Pal5.Bright, 0.55f), Scale = new Vector2(2.2f, 0.9f) };
-		root.AddChild(halo);
-		Fx.Poly(root, grip, new Color(Black, 0.95f));
-		Polygon2D body = Fx.Poly(root, shape, new Color(Pal5.Bright, 0.85f), additive: true);
-		Line2D rim = new() { Points = shape, Closed = true, Width = 2f, DefaultColor = Pal5.Hot, Material = Fx.Additive, Antialiased = true };
-		root.AddChild(rim);
-		Polygon2D slit = Glow.TaperPoly(layer, Pal5.Hot);
-		slit.GlobalPosition = home;
-		Fx.FreeAfter(slit, appear + 0.25);
-		root.Visible = false;
-		slit.Visible = false;
-		float aim = facing > 0f ? -0.25f : Mathf.Pi + 0.25f;
-		Fx.Animate(root, appear, launch + fly - appear, t =>
-		{
-			float s = appear + t * (launch + fly - appear);
-			root.Visible = true;
-			float open = Ease5.OutBack(Ease5.Seg(s, appear + 0.04f, 0.14f));
-			float line = Mathf.Clamp(1f - Ease5.Seg(s, appear + 0.06f, 0.1f), 0f, 1f) * Ease5.Seg(s, appear, 0.04f);
-			if (GodotObject.IsInstanceValid(slit))
-			{
-				slit.Visible = line > 0.02f;
-				slit.Polygon = Glow.TaperPts(new Vector2(0f, -60f), new Vector2(0f, 60f), 10f * line + 0.1f);
-			}
-			float turn = Ease5.OutBack(Ease5.Seg(s, appear + 0.12f, 0.2f));
-			float k = Ease5.Seg(s, launch, fly);
-			root.GlobalPosition = k > 0f ? home.Lerp(hand, Fx.InCubic(k)) : home + new Vector2(0f, -4f * Mathf.Sin(s * 12f));
-			float flyAng = (hand - home).Angle();
-			root.Rotation = Mathf.LerpAngle(Mathf.Lerp(-Mathf.Pi / 2f, aim, turn), flyAng, Ease5.OutExpo(k));
-			root.Scale = new Vector2(open, Mathf.Max(open, 0.01f)) * Mathf.Lerp(1.4f, 0.6f, k);
-			float flash = Mathf.Pow(Mathf.Max(0f, 1f - Mathf.Abs(s - (appear + 0.3f)) / 0.06f), 2f);
-			body.Modulate = new Color(1f + flash, 1f + flash, 1f + flash, 1f);
-			halo.Modulate = new Color(Pal5.Bright, 0.45f + 0.5f * flash);
-		});
-		Fx.After(layer, launch, () => Glow.Blade(layer, home.Lerp(hand, 0.5f), (hand - home).Angle(), home.DistanceTo(hand), 14f, 0.2f, 0.04f));
-		Fx.After(layer, launch + fly, () =>
-		{
-			Glow.Sparks(layer, hand, 6, 100f, 320f, 0.3f, new[] { Pal5.Hot, Pal5.Bright }, 240f, 0.08f, 0.2f);
-			Glow.Glint(layer, hand, 0.6f);
-		});
+		Curve c = new();
+		c.AddPoint(new Vector2(0f, 0.5f));
+		c.AddPoint(new Vector2(1f, 1.4f));
+		return c;
 	}
 }

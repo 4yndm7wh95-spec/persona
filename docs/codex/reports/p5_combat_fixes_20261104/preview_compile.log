@@ -1,0 +1,14 @@
+  Determining projects to restore...
+  Restored C:\Users\kkk\sts2_tools\tmp\p5_combat_fixes_20261104\preview_compile\PreviewCompile.csproj (in 148 ms).
+C:\Users\kkk\sts2_tools\tmp\p5_combat_fixes_20261104\worktree\tools\p5\fxpreview\Preview.cs(148,5): warning CS8620: Argument of type '(ulong, Vector2, float, float, Action<Color>)[]' cannot be used for parameter 'enemies' of type 'IReadOnlyList<(ulong Id, Vector2 Center, float H, float W, Action<Color>? Tint)>' in 'void DepthGrip.Play(Control front, Control back, Vector2 from, IReadOnlyList<(ulong Id, Vector2 Center, float H, float W, Action<Color>? Tint)> enemies, float attack)' due to differences in the nullability of reference types. [C:\Users\kkk\sts2_tools\tmp\p5_combat_fixes_20261104\preview_compile\PreviewCompile.csproj]
+C:\Users\kkk\sts2_tools\tmp\p5_combat_fixes_20261104\worktree\p5mod\src\Vfx\Ready.cs(37,20): warning CS0649: Field 'ReadyFx._aura' is never assigned to, and will always have its default value null [C:\Users\kkk\sts2_tools\tmp\p5_combat_fixes_20261104\preview_compile\PreviewCompile.csproj]
+  PreviewCompile -> C:\Users\kkk\sts2_tools\tmp\p5_combat_fixes_20261104\preview_compile\bin\Release\net9.0\PreviewCompile.dll
+
+Build succeeded.
+
+C:\Users\kkk\sts2_tools\tmp\p5_combat_fixes_20261104\worktree\tools\p5\fxpreview\Preview.cs(148,5): warning CS8620: Argument of type '(ulong, Vector2, float, float, Action<Color>)[]' cannot be used for parameter 'enemies' of type 'IReadOnlyList<(ulong Id, Vector2 Center, float H, float W, Action<Color>? Tint)>' in 'void DepthGrip.Play(Control front, Control back, Vector2 from, IReadOnlyList<(ulong Id, Vector2 Center, float H, float W, Action<Color>? Tint)> enemies, float attack)' due to differences in the nullability of reference types. [C:\Users\kkk\sts2_tools\tmp\p5_combat_fixes_20261104\preview_compile\PreviewCompile.csproj]
+C:\Users\kkk\sts2_tools\tmp\p5_combat_fixes_20261104\worktree\p5mod\src\Vfx\Ready.cs(37,20): warning CS0649: Field 'ReadyFx._aura' is never assigned to, and will always have its default value null [C:\Users\kkk\sts2_tools\tmp\p5_combat_fixes_20261104\preview_compile\PreviewCompile.csproj]
+    2 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.29

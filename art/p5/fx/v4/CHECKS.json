@@ -1,0 +1,200 @@
+{
+  "files": 124,
+  "total_bytes": 59793587,
+  "largest_bytes": 2307627,
+  "technical_checks": [
+    {
+      "file": "mask/flame_tongue_01.png",
+      "size": [
+        256,
+        512
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "mask/flame_tongue_02.png",
+      "size": [
+        256,
+        512
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "mask/flame_tongue_03.png",
+      "size": [
+        256,
+        512
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "mask/flame_tongue_04.png",
+      "size": [
+        256,
+        512
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "mask/flame_tongue_05.png",
+      "size": [
+        256,
+        512
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "mask/flame_tongue_06.png",
+      "size": [
+        256,
+        512
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "mask/mask_flame.png",
+      "size": [
+        1024,
+        640
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "slash/slash_cross.png",
+      "size": [
+        2048,
+        1024
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "slash/slash_flurry.png",
+      "size": [
+        2048,
+        1024
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "slash/slash_heavy.png",
+      "size": [
+        2048,
+        1024
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "slash/slash_tear.png",
+      "size": [
+        2048,
+        1024
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "slash/slash_thin.png",
+      "size": [
+        2048,
+        1024
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "slash/slash_thrust.png",
+      "size": [
+        2048,
+        1024
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "muzzle/muzzle_front.png",
+      "size": [
+        768,
+        768
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "muzzle/muzzle_side_01.png",
+      "size": [
+        1024,
+        512
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "muzzle/muzzle_side_02.png",
+      "size": [
+        1024,
+        512
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "muzzle/muzzle_side_03.png",
+      "size": [
+        1024,
+        512
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "muzzle/shell.png",
+      "size": [
+        128,
+        64
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "particles/feathers_sheet.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "particles/shards_sheet.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "particles/sparks_sheet.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "burst/burst_01.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "burst/burst_02.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    },
+    {
+      "file": "burst/burst_03.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "rgba_corners_zeroRGB_pass": true
+    }
+  ],
+  "failures": []
+}

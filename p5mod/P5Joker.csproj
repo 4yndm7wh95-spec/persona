@@ -18,6 +18,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="src/**/*.cs" />
+    <EmbeddedResource Include="data/eye_cutin.json" LogicalName="P5Joker.EyeCutIn.json" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="sts2"><HintPath>$(GameData)\sts2.dll</HintPath><Private>false</Private></Reference>

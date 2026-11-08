@@ -51,7 +51,7 @@ public static class Casts
 		["Outbreak"] = Cast.Big,
 		["Concoct"] = Cast.Glove,
 		["Expose"] = Cast.Glove,
-		["PiercingWail"] = Cast.Big,
+		["PiercingWail"] = Cast.Summon,                // 用户 2026-11-03：尖啸是白牌，不是大招
 		["Flanking"] = Cast.Glove,
 		["Tracking"] = Cast.Glove,
 		["Anticipate"] = Cast.Guard,

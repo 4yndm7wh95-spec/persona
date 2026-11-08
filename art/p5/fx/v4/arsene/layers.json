@@ -1,0 +1,92 @@
+{
+  "canvas": [
+    2048,
+    2304
+  ],
+  "coordinates": "pixels, origin top-left, +x right, +y down; angle degrees clockwise-positive in screen coordinates",
+  "master": "arsene_full.png",
+  "layers": [
+    {
+      "file": "layers/wing_back.png",
+      "z_index": 0,
+      "pivot": [
+        740,
+        940
+      ]
+    },
+    {
+      "file": "layers/wing_front.png",
+      "z_index": 1,
+      "pivot": [
+        800,
+        880
+      ]
+    },
+    {
+      "file": "layers/arm_back.png",
+      "z_index": 2,
+      "pivot": [
+        560,
+        1000
+      ]
+    },
+    {
+      "file": "layers/body.png",
+      "z_index": 3,
+      "pivot": [
+        680,
+        1080
+      ]
+    },
+    {
+      "file": "layers/arm_reach.png",
+      "z_index": 4,
+      "pivot": [
+        820,
+        860
+      ]
+    },
+    {
+      "file": "layers/eyes_glow.png",
+      "z_index": 5,
+      "pivot": [
+        650,
+        780
+      ]
+    }
+  ],
+  "landmarks": {
+    "wing_back_shoulder": [
+      740,
+      940
+    ],
+    "wing_front_shoulder": [
+      800,
+      880
+    ],
+    "arm_back_shoulder": [
+      560,
+      1000
+    ],
+    "arm_reach_shoulder": [
+      820,
+      860
+    ],
+    "body_float_center": [
+      680,
+      1080
+    ],
+    "claw_tip": [
+      1210,
+      760
+    ]
+  },
+  "registration": "approximate manually fitted after generation, adjustments may be needed",
+  "checks": {
+    "changed_pixel_fraction_canvas": 0.3383011288113064,
+    "changed_pixel_fraction_foreground_union": 0.8400836140439639,
+    "alpha_threshold": 20,
+    "rgba_difference_threshold": 8,
+    "note": "Independent generated layers plus manual approximate registration; not a pixel-exact decomposition."
+  }
+}

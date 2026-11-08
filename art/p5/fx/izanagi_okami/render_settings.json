@@ -1,0 +1,202 @@
+{
+  "blender": "4.5.9 LTS",
+  "engine": "BLENDER_EEVEE_NEXT",
+  "samples": 16,
+  "view_transform": "Standard",
+  "fps": 30,
+  "raw_canvas": [
+    1536,
+    1536
+  ],
+  "camera_direction": [
+    -0.8,
+    -1,
+    0
+  ],
+  "camera_location": [
+    -1876.0325927734375,
+    -2329.4892578125,
+    197.59884643554688
+  ],
+  "camera_rotation": [
+    1.5707961320877075,
+    3.852841601315049e-09,
+    -0.6747409701347351
+  ],
+  "ortho_scale": 471.26507568359375,
+  "camera_fixed_across_all_51_frames": true,
+  "shade": "original texture color multiplied by Diffuse -> ShaderToRGB -> constant two-step ramp -> Emission",
+  "ramp": [
+    {
+      "position": 0,
+      "value": 0.48
+    },
+    {
+      "position": 0.45,
+      "value": 1
+    }
+  ],
+  "sun_energy": 2,
+  "sun_rotation_degrees": [
+    25,
+    -25,
+    -30
+  ],
+  "union_crop_padding_raw_px": 8,
+  "outline_px": 3,
+  "body_center_world": [
+    0,
+    0,
+    117.1338062286377
+  ],
+  "mesh_inventory": [
+    {
+      "name": "buki_gfdMesh_0_mesh",
+      "vertices": 400,
+      "materials": [
+        "t01-3"
+      ],
+      "weapon": true
+    },
+    {
+      "name": "buki_gfdMesh_1_mesh",
+      "vertices": 836,
+      "materials": [
+        "t01-4"
+      ],
+      "weapon": true
+    },
+    {
+      "name": "buki_gfdMesh_2_mesh",
+      "vertices": 42,
+      "materials": [
+        "t01-2"
+      ],
+      "weapon": true
+    },
+    {
+      "name": "L_headparts_gfdMesh_0_mesh",
+      "vertices": 208,
+      "materials": [
+        "t01-4"
+      ],
+      "weapon": false
+    },
+    {
+      "name": "R_headparts_gfdMesh_0_mesh",
+      "vertices": 208,
+      "materials": [
+        "t01-4"
+      ],
+      "weapon": false
+    },
+    {
+      "name": "izanaginookami_gfdMesh_0_mesh",
+      "vertices": 2740,
+      "materials": [
+        "t01-2"
+      ],
+      "weapon": false
+    },
+    {
+      "name": "izanaginookami_gfdMesh_1_mesh",
+      "vertices": 1447,
+      "materials": [
+        "t01-7"
+      ],
+      "weapon": false
+    },
+    {
+      "name": "izanaginookami_gfdMesh_2_mesh",
+      "vertices": 753,
+      "materials": [
+        "t01-6"
+      ],
+      "weapon": false
+    },
+    {
+      "name": "izanaginookami_gfdMesh_3_mesh",
+      "vertices": 2332,
+      "materials": [
+        "t01-3"
+      ],
+      "weapon": false
+    },
+    {
+      "name": "izanaginookami_gfdMesh_4_mesh",
+      "vertices": 873,
+      "materials": [
+        "t01-1"
+      ],
+      "weapon": false
+    },
+    {
+      "name": "izanaginookami_gfdMesh_5_mesh",
+      "vertices": 58,
+      "materials": [
+        "t01-5"
+      ],
+      "weapon": false
+    },
+    {
+      "name": "izanaginookami_gfdMesh_6_mesh",
+      "vertices": 920,
+      "materials": [
+        "t01-4"
+      ],
+      "weapon": false
+    },
+    {
+      "name": "izanaginookami_gfdMesh_7_mesh",
+      "vertices": 43,
+      "materials": [
+        "t01-8"
+      ],
+      "weapon": false
+    },
+    {
+      "name": "Icosphere",
+      "vertices": 42,
+      "materials": [],
+      "weapon": false
+    }
+  ],
+  "spin_checks": {
+    "frame_count": 51,
+    "canvas": [
+      824,
+      1024
+    ],
+    "all_rgba": true,
+    "all_corners_zero": true,
+    "border_contact_frames": 0,
+    "transparent_rgb_nonzero": 0,
+    "alpha_union_bbox": [
+      2,
+      3,
+      823,
+      1023
+    ]
+  },
+  "weapon_checks": {
+    "canvas": [
+      439,
+      1536
+    ],
+    "mode": "RGBA",
+    "corners_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "border_nonzero_alpha": 0,
+    "alpha_bbox": [
+      3,
+      4,
+      436,
+      1532
+    ],
+    "transparent_rgb_nonzero": 0
+  }
+}

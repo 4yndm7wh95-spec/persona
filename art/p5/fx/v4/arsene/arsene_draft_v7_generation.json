@@ -1,0 +1,86 @@
+{
+  "name": "arsene_draft_v7",
+  "prompt": "Create a corrected Arsene approval draft for a Persona 5 game mod. THREE INPUTS with separate roles: IMAGE 1 (user's small in-game Arsene screenshot) is the AUTHORITATIVE POSE AND SILHOUETTE. Match that compact floating pose, not previous spread-arm poses. IMAGE 2 (official Arsene HEAD CLOSE-UP) is the AUTHORITATIVE FACE/HAT DESIGN: copy the actual narrow black angular mask face, sharply tapered downward facial point, slender red cheek/crest trims, tiny crisp white angular eye slits, tall black hat and long thin red lateral projections. Do not turn the face into a literal bird with an oversized protruding hooked beak, animal snout, big glowing red eyes or generic helmet. IMAGE 3 (v6A) is ONLY for clean 2D cel-shaded drawing style, black outlines, costume colors and the established character costume; DO NOT copy its frontal head, open-arm pose or raised broad wings. POSE from Image 1: upright airborne figure seen in three-quarter toward screen right, torso elegant and erect, shoulders lifted slightly; BOTH elbows bent, arms gathered near upper chest/cravat, hands close to chest rather than thrust toward camera or widely spread; slim claws relaxed, not huge. BOTH black feathered wings arch outward gently at shoulders then curve DOWN along each side, long feather tips hang at about boot level, like two drooping dark curtains, NOT horizontal spread eagle wings. Legs hang naturally with a small gap and asymmetry, one knee softly bent/one foot a little higher, no extreme lunge, no running stride, no tightly clenched crossed legs. Follow the screenshot's overall silhouette faithfully while rendering at full quality. Official fitted red/black coat, white cravat, narrow gold details, red sculptural thigh plates and blade-heeled boots, subtle dark red inner feathers. Strong simple 2D cel shadows, no 3D, no painterly texture. Portrait 2048x2304 genuine transparent RGBA, whole character with at least 60px clear margin, complete wing tips/hat/heels, alpha0 outside subject. No screenshot gray background, no official image gold outline/border, no scenery, haze, halo, smoke, magic, text or other figures. One complete draft only, not layers.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-4f3b8930-af96-4896-9fdb-ab343f674889.png",
+  "references": [
+    {
+      "role": "authoritative latest user pose",
+      "path": "C:/Users/kkk/AppData/Local/Temp/codex-clipboard-34ad1792-4d04-4d43-9faf-3549d9109e3e.png"
+    },
+    {
+      "role": "official head anatomy",
+      "source": "art/p5/fx/v4/arsene/arsene_official_reference.png",
+      "crop": [
+        120,
+        220,
+        390,
+        520
+      ]
+    },
+    {
+      "role": "style and costume only",
+      "path": "art/p5/fx/v4/arsene/arsene_draft_v6a.png"
+    }
+  ],
+  "user_feedback": "第一张v7姿势不对、脸不对；改按用户最新截图的垂翼、收手、悬浮姿势，并按官方头部重新画脸。最新用户截图优先于先前文档的水平展翼要求。",
+  "history": [
+    {
+      "attempt": 1,
+      "status": "rejected_by_user",
+      "prompt": "EDIT IMAGE 1, approved Arsene v6A, into Arsene v7. Preserve EXACT character design, proportions, drawing style, clean black line weight, cel-shading and red/black/white color palette of Image 1: black tilted top hat, red bird-beak demonic mask/head projections, white cravat, fitted red/black tailcoat, black feathered wings with muted dark crimson inner feathers, red high boots with metallic curved blade heels, black claws. IMAGE 2 is a facing/pose guide only: left panel old 3D Arsene cast frame, middle still 3D Arsene, right panel approved Joker idle. NEVER imitate the 3D rendering or draw the montage itself. MAIN CHANGE: turn the WHOLE character into a clearly THREE-QUARTER SIDE VIEW FACING SCREEN RIGHT, matching the Joker in Image 2. Chest, pelvis and head all turned right-front, near right shoulder forward and far shoulder receding, beaked face visibly points to the RIGHT, not frontally looking into camera. Spine and torso UPRIGHT, confident imposing presence, no forward lunge, no hunched back, no curled waist. Huge wings spread broadly in a relatively HORIZONTAL shallow V like the left panel of Image 2: nearer wing extends left/up behind the body, far wing extends right/up, both full silhouettes readable with little body overlap, not tall vertically folded wings. Right arm toward the enemy extends screen right-front, black claws open, other arm naturally opens outward away from torso. Airborne legs hang naturally down, a modest gap between legs, one knee slightly bent, boots' pointed toes downward, no knees clenched together, no broad running stride. Entire full character centered inside portrait 2048x2304 canvas, minimum 60px transparent margin on every side: complete wing tips, hat and blade heels must NOT touch any frame edge. Clean layer-friendly pose, one character only, no text, scenery, ground, cast shadow, glow halo, haze, smoke or particles. Genuine transparent RGBA PNG, alpha 0 outside subject. This is a single approval draft, NOT separate layers.",
+      "raw_output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-acf7c568-80f2-4133-81c2-5786b00c6853.png"
+    },
+    {
+      "attempt": 2,
+      "status": "submitted_for_user_review"
+    }
+  ],
+  "review_note": "此次姿势与头部按用户最新参考重画；最终脸型和悬浮姿势是否符合预期仍交用户验收，不自行追加生成。",
+  "method": "image_gen.imagegen",
+  "generation_count": 2,
+  "redraw_count": 1,
+  "raw_size": [
+    1182,
+    1330
+  ],
+  "delivery_size": [
+    2048,
+    2304
+  ],
+  "fit": {
+    "source_bbox": [
+      117,
+      42,
+      1010,
+      1313
+    ],
+    "uniform_scale": 1.7120377655389458,
+    "paste_xy": [
+      259,
+      64
+    ]
+  },
+  "processing": "原图保留raw；交付等比放入目标透明画布以保证至少60px留白，alpha<=2及全透明RGB清零，无局部结构重画。",
+  "checks": {
+    "mode": "RGBA",
+    "alpha_bbox": [
+      260,
+      64,
+      1788,
+      2240
+    ],
+    "margin_left_top_right_bottom": [
+      260,
+      64,
+      260,
+      64
+    ],
+    "corner_alpha": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "status": "approval draft only, not layered"
+}

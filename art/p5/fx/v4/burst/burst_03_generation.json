@@ -1,0 +1,36 @@
+{
+  "group": "burst",
+  "name": "burst_03",
+  "w": 1024,
+  "h": 1024,
+  "prompt": "Use case: stylized-concept. A standalone 2D game VFX sprite for a Persona 5 Joker mod: bold hand-painted anime/comic shapes, clean controlled ink accents, high contrast, no 3D or photorealism. GENUINE TRANSPARENT RGBA PNG: alpha zero outside the actual sprite; never paint a dark backdrop, colored haze, vignette, checkerboard or ground. Soft glow must taper to transparent at the outer edge. Keep the whole sprite inside the canvas with transparent margin, no clipping. No text, watermark, characters or additional objects. One Persona 5 impact comic burst frame, solid red fill, bold thick black outline, subtle black halftone dots inside, compressed diagonal jagged burst with dramatic side spikes. No lettering, no white page, transparent outside. Canvas 1024x1024 pixels.",
+  "output_path": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-144c2bf4-8d18-4834-ab94-86ced53b47eb.png",
+  "raw_size": [
+    1254,
+    1254
+  ],
+  "method": "imagegen",
+  "generation_count": 1,
+  "redraw_count": 0,
+  "delivery_size": [
+    1024,
+    1024
+  ],
+  "reference_images": [],
+  "processing": "保留raw；交付尺寸归一化，alpha<=2残点及全透明RGB清零；未抠底。",
+  "checks": {
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "corner_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "alpha_zero_pixels": 801939,
+    "soft_alpha_pixels": 242624
+  }
+}

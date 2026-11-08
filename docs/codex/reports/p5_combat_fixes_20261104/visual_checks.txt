@@ -1,0 +1,3 @@
+PASS: normal vs room-scale 0.7 + canvas zoom 0.55 / pan: mean per-channel delta 0.0282/255 after identical backdrop (960x540); geometry transform is identity
+PASS: OpenGL shader render stderr empty
+These are isolated Godot shader/geometry checks, not in-game captures.
