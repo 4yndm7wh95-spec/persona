@@ -55,3 +55,23 @@ git -c safe.directory=<wt> add art/velvet_elevator
 git -c safe.directory=<wt> -c user.name=Codex -c user.email=codex@local commit -m "art: P3R-style lattice cage walls for the velvet room with aligned lattice mask"
 git -c safe.directory=<wt> -c http.version=HTTP/1.1 push origin HEAD:claude/admiring-knuth-lqj1x7（失败等 5/10/20/40 秒重试，最多 4 次）
 不要改 mod\ 下的任何文件，不要改版本号，不需要编译和打包（接入由 Claude 做）。
+
+---
+
+【修订 1 · 修桌子两侧的旧墙残影，然后打包 0.15.26】
+格栅墙通过，已接入代码（0.15.26：房间换成 room_lattice.png，电梯只从格栅缝里透出，吊灯改为独立图层）。只剩一个问题：
+**圆桌左右上方各有一条半透明的旧墙残影**（你 README 里提到的"桌旁窄带"）：左侧约 x 331～565、右侧约 x 1107～1341，从格栅墙底部那条弧线到桌面银边、以及桌布左右边缘外侧到地面线之间，还是原来的浅蓝软包墙和扶手栏杆，并且有一条渐变过渡的弧形亮边。这是我给的编辑区遮罩把桌子保护得太宽造成的。
+
+要求：
+1. 用你上次 imagegen 的原生成图（那块区域里应该已经有格栅墙），或者重新编辑，把这两条残影换成和两边连续的格栅墙底部 / 地面倒影，一直画到**桌子真实的轮廓**（桌面银边上沿、桌布左右边缘）为止。
+2. 桌子本身（桌面、银边、桌布、桌布花纹）必须和 base_room.png 逐像素一致：先精确抠出桌子轮廓做保护遮罩（可以人工修边），合成后再用底图把桌子像素还原。
+3. 不允许出现弧形亮边、渐变过渡带或直线切边。
+4. 同步更新 lattice_mask.png（新补的格栅区域也要有正确的缝隙），然后把修好的两张图**同时**复制到 `mod\pck_stage\p3makoto\shop\room_lattice.png` 和 `mod\pck_stage\p3makoto\shop\lattice_mask.png`（覆盖），art\velvet_elevator\ 下的同名文件也一起更新。
+5. 交一张 fix_table_band.png：桌子左右两侧局部放大，修前 / 修后上下对比。
+
+然后编译、打包、安装：
+- 代码已在 `claude/admiring-knuth-lqj1x7` 上，版本号已是 0.15.26，不要再改。
+- `dotnet build mod/P3Makoto.csproj -c Release '-p:GameDir=<游戏目录>'`，0 错误。
+- 按 BUILD.md 重新打包 PCK。`p3makoto/shop/elevator_front.png` 和 `elevator_backdrop.png` 已删除，pck 里不要有；必须有 `room_lattice.png`、`lattice_mask.png`、`lantern_left.png`、`lantern_right.png`、`elevator_car.png`、`elevator_car_glow.png`，以及 `p3makoto/bgm/velvet_room.ogg`、`velvet_room.loop.txt`。打包后列出 pck 里 `p3makoto/shop/` 和 `p3makoto/bgm/` 的文件写进报告。
+- 备份后安装进游戏，按惯例生成 dist ZIP。
+- 提交并推回 `claude/admiring-knuth-lqj1x7`。

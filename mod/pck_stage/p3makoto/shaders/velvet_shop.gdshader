@@ -9,16 +9,17 @@ uniform float blink_amount = 0.0;
 uniform float left_sway = 0.0;
 uniform float right_sway = 0.0;
 
-// 0.15.24 passing elevator: the painted room stays as is (crisp rails, no seams).
-// The elevator only covers the velvet wall behind the rails; the wall matte is the
-// transparent part of the elevator front plate, minus both swaying lanterns.
+// 0.15.26 lattice room: P3R-style cage walls painted without lanterns. The elevator
+// shows only through the lattice gaps (mask: white = solid iron, black = gap);
+// both lanterns are separate layers drawn on top with their sway.
 uniform bool layered = false;
-uniform sampler2D front_tex : filter_linear;
+uniform sampler2D room_tex : filter_linear;
+uniform sampler2D lattice_mask_tex : filter_linear;
 uniform sampler2D lantern_left_tex : filter_linear;
 uniform sampler2D lantern_right_tex : filter_linear;
 uniform sampler2D car_tex : filter_linear;
 uniform sampler2D car_glow_tex : filter_linear;
-uniform vec2 left_pivot = vec2(192.0, 75.0);   // same pivot as the painted lantern sway
+uniform vec2 left_pivot = vec2(199.0, 75.0);   // measured chain hook of lantern_left.png
 uniform vec2 right_pivot = vec2(1474.0, 75.0);
 uniform vec2 car_size = vec2(600.0, 998.0);
 uniform float car_left_x = -8.0;              // left car's left edge, room pixels
@@ -65,12 +66,8 @@ float cable_mask(vec2 pixel, float x0) {
 
 vec3 passing_car(vec3 painted, vec2 pixel) {
     if (car_on <= 0.001) return painted;
-    float rail = texture(front_tex, pixel / vec2(1672.0, 941.0)).a;
+    float rail = texture(lattice_mask_tex, pixel / vec2(1672.0, 941.0)).r;
     float wall = 1.0 - rail;
-    wall *= 1.0 - lantern_layer(lantern_left_tex, pixel, left_pivot, left_sway).a;
-    wall *= 1.0 - lantern_layer(lantern_right_tex, pixel, right_pivot, right_sway).a;
-    // Soft lower edge above the table and floor: never a straight cut.
-    wall *= 1.0 - smoothstep(470.0, 590.0, pixel.y);
     float gl, gr;
     vec4 cl = car_sample(pixel, car_left_x, 0.0, gl);
     vec4 cr = car_sample(pixel, car_right_x, 1.0, gr);
@@ -92,6 +89,13 @@ vec3 passing_car(vec3 painted, vec2 pixel) {
     return color;
 }
 
+vec3 draw_lanterns(vec3 color, vec2 pixel) {
+    vec4 l = lantern_layer(lantern_left_tex, pixel, left_pivot, left_sway);
+    color = mix(color, l.rgb, l.a);
+    vec4 r = lantern_layer(lantern_right_tex, pixel, right_pivot, right_sway);
+    return mix(color, r.rgb, r.a);
+}
+
 vec2 sway_lantern(vec2 pixel, vec2 pivot, float angle) {
     float mask = smoothstep(-65.0, -52.0, pixel.x - pivot.x)
         * (1.0 - smoothstep(52.0, 65.0, pixel.x - pivot.x))
@@ -106,7 +110,7 @@ void fragment() {
 	vec2 pixel = UV * vec2(1672.0, 941.0);
     vec2 source = sway_lantern(pixel, vec2(192.0,75.0), left_sway);
     source = sway_lantern(source, vec2(1474.0,75.0), right_sway);
-    vec4 base = texture(TEXTURE, source / vec2(1672.0,941.0));
+    vec4 base = layered ? texture(room_tex, pixel / vec2(1672.0,941.0)) : texture(TEXTURE, source / vec2(1672.0,941.0));
     // Small eye-only patches: never replace the whole head or background.
     vec2 eye_uv = (pixel - vec2(788.0,365.0)) / vec2(97.0,50.0);
     float eye_mask = max(1.0-smoothstep(0.82,1.0,length((pixel-vec2(813.0,386.0))/vec2(20.0,15.0))),
@@ -116,7 +120,7 @@ void fragment() {
     vec3 blink_color = blink_amount < 0.5 ? mix(base.rgb,half_eye,blink_amount*2.0)
         : mix(half_eye,shut_eye,(blink_amount-0.5)*2.0);
     base.rgb = mix(base.rgb,blink_color,eye_mask);
-    if (layered) base.rgb = passing_car(base.rgb, pixel);
+    if (layered) base.rgb = draw_lanterns(passing_car(base.rgb, pixel), pixel);
 	float t = scene_time > 0.0 ? scene_time : TIME;
 	vec3 color = base.rgb;
 

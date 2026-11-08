@@ -25,17 +25,21 @@ internal static class VelvetShopLife
 	/// <summary>Loads the elevator textures; any missing file keeps the room static.</summary>
 	private static bool AttachLayers(ShaderMaterial material)
 	{
-		var front = RawPng("elevator_front.png");
+		var room = RawPng("room_lattice.png");
+		var mask = RawPng("lattice_mask.png");
 		var lanternLeft = RawPng("lantern_left.png");
 		var lanternRight = RawPng("lantern_right.png");
 		var car = RawPng("elevator_car.png");
 		var glow = RawPng("elevator_car_glow.png");
-		if (front == null || lanternLeft == null || lanternRight == null || car == null || glow == null)
+		if (room == null || mask == null || lanternLeft == null || lanternRight == null || car == null || glow == null)
 		{
-			GD.Print($"{ModEntry.Tag} velvet elevator textures missing; no passing elevator");
+			GD.Print($"{ModEntry.Tag} velvet elevator textures missing; painted room kept");
 			return false;
 		}
-		material.SetShaderParameter("front_tex", front);
+		// The lattice room replaces the painted one (same 1672×941 frame; Igor, table
+		// and window are pixel-identical, so blink, outline and hotspot still line up).
+		material.SetShaderParameter("room_tex", room);
+		material.SetShaderParameter("lattice_mask_tex", mask);
 		material.SetShaderParameter("lantern_left_tex", lanternLeft);
 		material.SetShaderParameter("lantern_right_tex", lanternRight);
 		material.SetShaderParameter("car_tex", car);
@@ -45,7 +49,7 @@ internal static class VelvetShopLife
 		material.SetShaderParameter("car_right_x", CarRightX);
 		material.SetShaderParameter("car_on", 0f);
 		material.SetShaderParameter("layered", true);
-		GD.Print($"{ModEntry.Tag} velvet elevator ready");
+		GD.Print($"{ModEntry.Tag} velvet lattice room and elevator ready");
 		return true;
 	}
 
