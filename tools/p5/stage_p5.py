@@ -146,10 +146,8 @@ def fx_textures():
         if (GEN_CODEX / f"{name}.png").exists():
             yield name, Image.open(GEN_CODEX / f"{name}.png").convert("RGBA")
     # Satanael motion prototype (tools/p5/satanael/proto_cut.py) until Codex's v6 layers arrive
-    for name in ("sat_base", "sat_upper", "sat_fore"):
-        f = ROOT / "art/p5/fx/v4/satanael/proto" / f"{name}.png"
-        if f.exists():
-            yield name, Image.open(f).convert("RGBA")
+    for f in sorted((ROOT / "art/p5/fx/v4/satanael/game").glob("sat_*.png")):   # Satanael v6 layers (tools/p5/satanael/game_layers.py)
+        yield f.stem, Image.open(f).convert("RGBA")
     # calling card back: Codex draws calling_card_back.png; until then a placeholder (black card, red border + stripes, card's
     # own silhouette) so CardFx.Neutralize can flip front/back
     back = GEN_CODEX / "calling_card_back.png"

@@ -220,14 +220,15 @@ void fragment() {
 	// ───────────────────────── 时序 ─────────────────────────
 
 	/// <summary>各拍的时刻（从出牌算起，秒）。</summary>
-	public const float RevealAt = 0.05f, RevealTime = 0.7f, AimAt = 1.35f, ChargeAt = 1.5f, FireAt = 2.5f, BulletSpeed = 3600f, ExitAfter = 1.2f, ExitTime = 0.6f;
+	public const float RevealAt = 0.05f, RevealTime = 0.7f, AimAt = 1.6f, ChargeAt = 1.78f, FireAt = 2.8f, BulletSpeed = 3600f, ExitAfter = 1.2f, ExitTime = 0.6f;
 
 	public sealed class Setup
 	{
 		public Vector2 JokerFeet, JokerHead, JokerMuzzle, PersonaMuzzle;
 		/// <summary>撒旦耶尔头在屏幕上的位置、原型图像素 → 屏幕像素的缩放（有原型图时用，没有就只用 PersonaMuzzle）。</summary>
-		public Vector2 PersonaHead = new(250f, 190f);
-		public float PersonaScale = 0.82f;
+		/// <summary>撒旦耶尔图层画布左上角在屏幕上的位置（1080p 像素）：脸推出屏幕上方、身体大半在左边外面，只露出翅膀、一部分身体和伸进来的持枪手臂（用户 2026-11-08）。</summary>
+		public Vector2 PersonaOrigin = new(-760f, -1035f);
+		public float PersonaScale = 1f;
 		public float FloorY;
 		public List<Vector2> Enemies = new();
 		/// <summary>穿过第 i 个敌人（按离枪口由近到远）的那一刻：游戏在这里结算这个敌人的伤害。</summary>
@@ -275,7 +276,7 @@ void fragment() {
 		const float RiseAt = RevealAt + RevealTime * 0.55f;
 		float exitAt = FireAt + ExitAfter;
 		Vector2 aimScreen = s.Enemies.Count > 0 ? toScreen(s.Enemies.Aggregate(Vector2.Zero, (a, b) => a + b) / s.Enemies.Count) : screen * 0.7f;
-		SatanaelPuppet? puppet = SatanaelPuppet.Available ? new SatanaelPuppet(personaSlot, s.PersonaHead * unit, s.PersonaScale * unit, aimScreen) : null;
+		SatanaelPuppet? puppet = SatanaelPuppet.Available ? new SatanaelPuppet(personaSlot, s.PersonaOrigin * unit, s.PersonaScale * unit, aimScreen) : null;
 		if (puppet != null)
 		{
 			puppet.Update(FireAt - 0.0005f, RiseAt, AimAt, FireAt, exitAt);
@@ -286,13 +287,17 @@ void fragment() {
 		Fx.Animate(root, 0, total, t =>
 		{
 			float time = t * total;
-			puppet?.Update(time, RiseAt, AimAt, FireAt, exitAt);
 			float rv = Mathf.Clamp((time - RevealAt) / RevealTime, 0f, 1f);
 			float reveal = far * (1f - Mathf.Pow(1f - rv, 2.2f));
 			float ex = Mathf.Clamp((time - FireAt - ExitAfter) / ExitTime, 0f, 1f);
 			float conceal = ex <= 0f ? 0f : far * ex * ex;
 			float dim = Mathf.Clamp((time - ChargeAt) / (FireAt - ChargeAt), 0f, 1f) * (time < FireAt ? 1f : Mathf.Exp(-(time - FireAt) / 0.4f));
 			float flash = time >= FireAt ? Mathf.Exp(-(time - FireAt) / 0.07f) : 0f;
+			if (puppet != null)
+			{
+				float charge = time < ChargeAt ? 0f : time < FireAt ? 0.3f + 1.4f * Mathf.Pow((time - ChargeAt) / (FireAt - ChargeAt), 2f) : 1.7f * Mathf.Exp(-(time - FireAt) / 0.12f);
+				puppet.Update(time, RiseAt, AimAt, FireAt, exitAt, puppet.MuzzleLocal, charge, flash, dim);
+			}
 			foreach (ShaderMaterial m in new[] { sky, rocks })
 			{
 				m.SetShaderParameter("reveal", reveal);
@@ -335,7 +340,7 @@ void fragment() {
 				float k = Mathf.Clamp(time / dur, 0f, 1f);
 				vm.SetShaderParameter("power", time <= dur ? 0.25f + 1.2f * k * k : Mathf.Max(0f, 1.45f * (1f - (time - dur) / 0.12f)));
 				vroot.Scale = Vector2.One * (1.15f - 0.35f * k);
-				if (puppet != null && GodotObject.IsInstanceValid(puppet.Root))
+				if (puppet != null)
 				{
 					vroot.GlobalPosition = puppet.MuzzleGlobal;              // 跟着枪口（抬枪后的微抖）
 				}
