@@ -1,0 +1,70 @@
+{
+  "tool": "built-in image_gen",
+  "use_case": "stylized-concept",
+  "prompt": "Use case: stylized-concept. Generate one transparent game foreground platform asset for Persona 5 cel-shaded battle scene. Target delivery canvas 3840 x 1100 pixels, extremely wide 3.49:1 panorama. This image is ONLY the isolated dark rock ledge. Reference1 provides its stage layout, reference2 and reference3 the cold nighttime mood. Exclude all characters, skies, clouds and effects visible in the references.\n\nExact composition: one continuous rock mass enters from the RIGHT edge and fills the bottom-right part of canvas. Its nearly straight, nearly horizontal WALKABLE TOP EDGE is at y=140 (12.7% canvas height). The top surface extends from x=760 (19.8% canvas width) to and through the right canvas edge. At x760 it terminates in a sharp projecting CLIFF on the LEFT. All pixels ABOVE the top edge and all LEFT of the cliff are transparent, apart from a few tiny protruding stone chips slightly above the edge. Show a very shallow top plane, nearly side-on, not a sloped ramp. Flat playable ground, enough for enemies to stand along the entire right side.\n\nThe left cliff face extends down to the bottom edge and recedes TO THE RIGHT as it descends, so its upper left lip is at x760 and its broken lower left edge is around x1050-1250. Large fractured layered black basalt rock slabs, bold deep cracks and a few suspended/falling pieces at the lower edge. Lower rock fades slightly into darkness. Keep most of right side as a solid heavy dark cliff wall, continuous to the right boundary, not a floating island.\n\nPersona 5 illustration sprite style, bold black outlines, TWO hard-edged shadow planes, simple angular grouped rock shapes. Low-saturation deep navy-black and near-black rock. A THIN restrained cold cyan-blue lit rim along the horizontal top edge, tiny dark crimson reflected edge at the very bottom of cliff from below. Overall dark, no bright glowing rocks, no overexposed highlights. True transparent RGBA background. No trees, plants, buildings, people, animals, guns, symbols, text, sky, stars, haze, smoke, clouds, external aura, ground shadow or additional platforms. The rock mass and its attached/debris silhouette only.",
+  "reference_images": [
+    "art/p5/fx/v4/satanael/ref_layout.png",
+    "art/p5/fx/v4/satanael/ref_platform_1.png",
+    "art/p5/fx/v4/satanael/ref_platform_2.png"
+  ],
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a1baf6-e8a5-7cd2-b246-2cbab877f27d\\exec-fa9af9b8-7fc9-432c-be90-80528d0cbe05.png",
+  "raw_size": [
+    2172,
+    724
+  ],
+  "delivery_size": [
+    3840,
+    1100
+  ],
+  "generation_count": 1,
+  "redraw_count": 0,
+  "processing": {
+    "original_anchor": [
+      419,
+      154
+    ],
+    "delivery_anchor": [
+      760,
+      140
+    ],
+    "scale": [
+      1.7569880205362236,
+      1.6842105263157894
+    ],
+    "offset": [
+      23.822019395322286,
+      -119.36842105263156
+    ],
+    "resampling": "BICUBIC affine to requested canvas, genuine source alpha preserved",
+    "cleared_outlying_alpha_pixels": 40101,
+    "alpha_cleanup": "outside 2 px of alpha>=200 contour set to zero; alpha<=2 and transparent RGB zeroed"
+  },
+  "checks": {
+    "fully_transparent_above_y": 97,
+    "left_opaque_at_y140": 761,
+    "top_median_y_x1200_to_right": 140.0,
+    "alpha_zero_pixels": 1592911,
+    "opaque_pixels_x_lt740": 0
+  },
+  "preview": {
+    "ref_layout_size": [
+      1920,
+      1080
+    ],
+    "platform_size": [
+      1920,
+      550
+    ],
+    "platform_offset": [
+      -40,
+      758
+    ],
+    "sole_baseline_y": 828,
+    "nominal_top_y": 70
+  },
+  "limitations": [
+    "Delivery is resampled from native 2172x724, not native 3840x1100 detail.",
+    "Lower-left cliff edge recedes farther right than initial prompt example, shape remains a single continuous right-hand platform.",
+    "Preview is a static alignment check only, no game verification."
+  ]
+}
