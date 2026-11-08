@@ -125,7 +125,7 @@ void fragment() {
 	public static void Play(Control back, Control front, Vector2 head, bool maskFlame = true, CutInPlayback? playback = null)
 	{
 		playback ??= new CutInPlayback(CutIn.SplitAt);
-		float split = playback.SplitAt, length = split + 0.25f;
+		float split = playback.SplitAt, length = split + 0.6f;
 		float crackDelay = playback.Crush ? 0f : 0.05f;
 		Vector2 screen = Fx.Screen(back);
 		TearSeed = playback.Seed;
@@ -152,8 +152,8 @@ void fragment() {
 		Fx.Play(root, playback, length, s =>
 		{
 			m.SetShaderParameter("intro", s);
-			// 背景：横幅碎开（裂纹定格 0.05s 之后）那一下白闪着退掉，0.12s 缓出
-			float gone = Mathf.Clamp((s - split - crackDelay) / 0.12f, 0f, 1f);
+			// 背景：横幅碎开（裂纹定格 0.05s 之后）那一下白闪着退掉。用户 2026-11-08：0.12s 太快、像直接消失 → 0.45s 缓出（OutCubic，前段还是退得快）
+			float gone = Mathf.Clamp((s - split - crackDelay) / 0.45f, 0f, 1f);
 			m.SetShaderParameter("amount", 1f - (1f - Mathf.Pow(1f - gone, 3f)));
 			// 白闪：纸条拍进来那一下（弱）、爪痕划完那一下
 			float fl = 0.12f * Mathf.Exp(-s / 0.05f) + (s >= split + crackDelay ? 0.6f * Mathf.Exp(-(s - split - crackDelay) / 0.06f) : 0f);

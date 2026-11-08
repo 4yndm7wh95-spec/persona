@@ -283,7 +283,7 @@ void fragment() {
 	private readonly ColorRect _fire, _fireRear, _haze;
 	private readonly GpuParticles2D[] _particles;
 	private readonly float _half, _w, _h;
-	private bool _ended;
+	private bool _ended, _clenched;
 
 	private static void Set(ColorRect r, string n, Variant v) => ((ShaderMaterial)r.Material).SetShaderParameter(n, v);
 
@@ -357,7 +357,7 @@ void fragment() {
 			breathe.TweenInterval(0.5);
 			breathe.TweenMethod(Callable.From<float>(t =>
 			{
-				if (!_ended)
+				if (!_ended && !_clenched)
 				{
 					Set(f, "glow", baseGlow * (1f + 0.12f * Mathf.Sin((t + ph) * Mathf.Tau)));
 					Set(f, "flame", 1f + 0.12f * Mathf.Sin((t * 2f + ph) * Mathf.Tau));
@@ -436,10 +436,74 @@ void fragment() {
 	}
 
 	/// <summary>
-	/// 被攥灭（毒性爆发，用户 2026-11-08）：火先往手心猛地一缩（0.07s，火舌压扁、亮一下），然后整团熄掉——
-	/// 蓝焰碎成火星从手心往四周甩开（快、几乎不往上飘），后面一圈暗蓝的余烬慢慢落，再冒几缕青烟。
+	/// 被攥住（毒性爆发，用户 2026-11-08：打出去火马上没了、人还扶着面具很怪 → 火要一直在，跟着手一起被攥着）：
+	/// 打出那一下火往手心猛地一缩、一亮（被攥住），之后压扁的火在指缝里挣扎——越接近捏碎跳得越凶、越亮、越乱，
+	/// 火星从手心往外迸。seconds 秒后由 Burst（捏碎那一刻）炸掉；万一没等到，再过 0.6s 自己炸掉。
 	/// </summary>
-	public void Snuff(Vector2 hand)
+	public void Clench(Vector2 hand, float seconds)
+	{
+		if (_ended || _clenched || !GodotObject.IsInstanceValid(_root))
+		{
+			return;
+		}
+		_clenched = true;
+		const float pull = 0.08f;
+		Sfx.Play(Sfx.SwishLow, 0.4f);
+		Glow.Flash(_back, hand, Hi, _half * 1.8f, 0.16f);
+		Glow.Sparks(_layer, hand, 26, 260f, 700f, 0.35f, new[] { Hot, Hi, Mid }, 40f, 0.06f, 0.22f);
+		foreach (GpuParticles2D p in _particles)
+		{
+			if (GodotObject.IsInstanceValid(p))
+			{
+				p.SpeedScale = 1.6;                                    // 火星被挤得窜得更快
+			}
+		}
+		// 整团往手心拉过去一点，之后停在那儿
+		foreach (Node2D n in new[] { _root, _rear })
+		{
+			Node2D node = n;
+			Vector2 from = node.GlobalPosition, to = from.Lerp(hand, 0.22f);
+			Fx.Animate(node, 0, pull, t => node.GlobalPosition = from.Lerp(to, Fx.OutCubic(t)));
+		}
+		float total = seconds + 0.6f;
+		foreach (ColorRect r in new[] { _fire, _fireRear })
+		{
+			ColorRect f = r;
+			float baseGlow = f == _fire ? 1f : 0.7f, ph = Fx.Rand(0f, 10f);
+			Fx.Animate(f, 0, total, t =>
+			{
+				if (_ended)
+				{
+					return;
+				}
+				float s = t * total;
+				float k = Mathf.Clamp(s / Mathf.Max(0.1f, seconds), 0f, 1f);       // 0 → 1：离捏碎越近越凶
+				float squeeze = Fx.OutCubic(Mathf.Clamp(s / pull, 0f, 1f));
+				float jit = Mathf.Sin(s * (23f + 30f * k) + ph) * Mathf.Sin(s * (37f + 41f * k) + ph * 1.7f);
+				f.Scale = new Vector2(Mathf.Sign(f.Scale.X), 1f) * (1f - 0.18f * squeeze - 0.05f * k + 0.03f * k * jit);
+				Set(f, "flame", 0.55f + 0.2f * k + (0.12f + 0.3f * k) * jit);
+				Set(f, "glow", baseGlow * (1.15f + 0.25f * (1f - squeeze) + 0.6f * k * k + 0.25f * k * Mathf.Abs(jit)));
+			});
+		}
+		// 指缝里往外迸的火星：越来越密
+		Tween spurts = _root.CreateTween().SetLoops();
+		spurts.TweenInterval(0.12);
+		spurts.TweenCallback(Callable.From(() =>
+		{
+			if (!_ended && GodotObject.IsInstanceValid(_layer))
+			{
+				Glow.Sparks(_layer, hand, 6 + (int)(10f * Mathf.Clamp((float)(Stage.NowMs() - _clenchMs) / 1000f / seconds, 0f, 1f)),
+					180f, 520f, 0.3f, new[] { Hot, Hi }, 30f, 0.05f, 0.16f);
+			}
+		}));
+		_clenchMs = Stage.NowMs();
+		Fx.After(_root, total, () => Burst());
+	}
+
+	private ulong _clenchMs;
+
+	/// <summary>捏碎那一刻：被攥着的火从手心炸开、往四面甩出去，0.35s 散掉，留几缕青烟。</summary>
+	public void Burst()
 	{
 		if (_ended || !GodotObject.IsInstanceValid(_root))
 		{
@@ -455,43 +519,30 @@ void fragment() {
 			}
 		}
 		Vector2 at = _root.GlobalPosition;
-		const float pull = 0.07f, die = 0.12f;
-		Sfx.Play(Sfx.PersonaFlame, 0.35f);
-		Sfx.Play(Sfx.SwishLow, 0.4f);
+		Glow.Flash(_back, at, Hi, _half * 3.6f, 0.4f);
+		Glow.Sparks(_layer, at, 80, 400f, 1200f, 0.6f, new[] { Hot, Hi, Mid }, 80f, 0.08f, 0.32f);
+		Glow.Sparks(_back, at, 30, 100f, 340f, 1.2f, new[] { Mid, Dark }, 120f, 0.25f, 0.55f);
+		Vanilla.Burst(_back, Vanilla.BigSlashSmoke, at + new Vector2(0f, -10f), -Mathf.Pi / 2f, 0.7f, Lut5.Smoke, delay: 0.05f);
+		const float dur = 0.35f;
 		foreach (ColorRect r in new[] { _fire, _fireRear })
 		{
 			ColorRect f = r;
 			float a0 = f == _fire ? 1f : 0.75f;
-			Fx.Animate(f, 0, pull + die, t =>
+			Vector2 s0 = f.Scale;
+			Fx.Animate(f, 0, dur, t =>
 			{
-				float s = t * (pull + die);
-				float k = Mathf.Clamp(s / pull, 0f, 1f), d = Mathf.Clamp((s - pull) / die, 0f, 1f);
-				f.Scale = new Vector2(Mathf.Sign(f.Scale.X), 1f) * (1f - 0.3f * Fx.OutCubic(k) - 0.4f * d);
-				Set(f, "flame", Mathf.Max(0f, 1f - 0.7f * Fx.OutCubic(k) - 0.3f * d));
-				Set(f, "glow", 1f + 0.8f * k * (1f - d));
-				Set(f, "alpha", a0 * (1f - Fx.OutCubic(d)));
+				f.Scale = s0 * (1f + 0.5f * Ease5.OutExpo(t));
+				Set(f, "flame", 1.4f * (1f - t) + 0.3f);
+				Set(f, "glow", 2f * (1f - t) + 0.6f);
+				Set(f, "alpha", a0 * (1f - Fx.OutCubic(t)));
 			});
 		}
-		// 整团往手心拉过去
-		foreach (Node2D n in new[] { _root, _rear })
-		{
-			Node2D node = n;
-			Vector2 from = node.GlobalPosition;
-			Fx.Animate(node, 0, pull, t => node.GlobalPosition = from.Lerp(hand, 0.35f * Fx.OutCubic(t)));
-		}
-		Fx.After(_layer, pull, () =>
-		{
-			Glow.Flash(_back, hand, Hi, _half * 2.2f, 0.18f);
-			Glow.Sparks(_layer, hand, 70, 500f, 1300f, 0.45f, new[] { Hot, Hi, Mid }, 60f, 0.08f, 0.3f);
-			Glow.Sparks(_back, hand, 26, 120f, 380f, 1.0f, new[] { Mid, Dark }, 140f, 0.25f, 0.55f);
-			Vanilla.Burst(_back, Vanilla.BigSlashSmoke, hand + new Vector2(0f, -20f), -Mathf.Pi / 2f, 0.55f, Lut5.Smoke, delay: 0.04f);
-		});
 		Set(_haze, "alpha", 0f);
 		Tween fade = _halo.CreateTween();
-		fade.TweenProperty(_halo, "modulate:a", 0f, pull + die);
+		fade.TweenProperty(_halo, "modulate:a", 0f, dur);
 		foreach (Node2D n in new[] { _root, _halo, _rear })
 		{
-			Fx.FreeAfter(n, pull + die + 0.1);
+			Fx.FreeAfter(n, dur + 0.1);
 		}
 	}
 
@@ -500,6 +551,11 @@ void fragment() {
 	{
 		if (_ended || !GodotObject.IsInstanceValid(_root))
 		{
+			return;
+		}
+		if (_clenched)
+		{
+			Burst();                                                   // 被攥着的火：捏碎那一下炸开（放回去不会发生在攥住之后）
 			return;
 		}
 		_ended = true;

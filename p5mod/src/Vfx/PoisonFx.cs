@@ -222,6 +222,47 @@ public static class PoisonFx
 
 	public readonly record struct Target(Vector2 At, Vector2 Top, float Width, Node2D? Body);
 
+	/// <summary>
+	/// 打出毒性爆发那一刻（用户 2026-11-08：敌人身上要马上有反馈、有铺垫，不能等到快结算才冒出来）：
+	/// 每个敌人身上先落一个咒印（暗红光 + 一小团咒火 + 一缕怨灵、身体暗一下、一声很轻的闷响），
+	/// 之后脚下一直暗燃——咒火星越来越密、越窜越快，隔一会儿舔起一小团火舌，越来越大，一直烧到捏碎；
+	/// 巨手攥拳那一下（fistIn）由 Squeeze 再压一层，捏碎后咒怨打到才引爆（Blast）。
+	/// </summary>
+	public static void Brand(Control layer, IReadOnlyList<Target> targets, float crushIn, float fistIn)
+	{
+		if (targets.Count == 0)
+		{
+			return;
+		}
+		Sfx.Play(Sfx.CurseSoft, 0.4f);
+		Color[] ramp = { new(1f, 0.16f, 0.22f), new(0.6f, 0.02f, 0.08f), new(0.12f, 0f, 0.03f) };
+		foreach (Target t in targets)
+		{
+			float h = Mathf.Max(80f, (t.At - t.Top).Length());
+			float k = Mathf.Clamp(t.Width / 240f, 0.55f, 1.3f);
+			Vector2 foot = t.At + new Vector2(0f, h * 0.7f);
+			Glow.Flash(layer, t.At, new Color(0.9f, 0.06f, 0.14f), t.Width * 1.1f, 0.35f);
+			Vanilla.Burst(layer, Vanilla.FireCenter, foot, 0f, 0.5f * k, Lut5.CurseInk);
+			Paint.Rise(layer, "curse_soul", t.At, 90f * k, 0.55f * k, Lut5.Curse, 0.6f);
+			BodyTint.Pulse(t.Body, new Color(0.8f, 0.58f, 0.64f), Mathf.Max(0.05f, fistIn - 0.2f), 0.12);
+			Node2D root = Fx.Root(layer, foot, "P5OutbreakSmolder", crushIn + 1.5);
+			GpuParticles2D em = ReadyFx.Embers(root, Vector2.Zero, ramp, 28, t.Width * 0.35f, 0.9f, 40f, 140f, 35f);
+			em.AmountRatio = 0.3f;
+			Fx.Animate(root, 0, Mathf.Max(0.1f, crushIn), u =>
+			{
+				em.AmountRatio = Mathf.Lerp(0.3f, 1f, u * u);
+				em.SpeedScale = 1.0 + 0.8 * u;
+			});
+			Fx.After(root, crushIn, () => em.Emitting = false);
+			for (float at = 0.22f; at < crushIn - 0.08f; at += 0.2f)
+			{
+				float g = at / crushIn;
+				Vanilla.Burst(layer, Vanilla.FireCenter, foot + new Vector2(Fx.Rand(-0.3f, 0.3f) * t.Width, 0f), 0f, (0.28f + 0.4f * g) * k,
+					Lut5.CurseInk, delay: at);
+			}
+		}
+	}
+
 	/// <summary>巨手攥住横幅：所有敌人身上一团暗燃的咒火（被攥住了），停到捏碎那一刻一起炸。</summary>
 	public static void Squeeze(Control layer, IEnumerable<Target> targets)
 	{
@@ -298,8 +339,8 @@ public static class PoisonFx
 		ulong now = Stage.NowMs();
 		if (now - _lastBlast > 150)
 		{
-			Sfx.Play(Sfx.CurseBlast, 0.75f);
-			Sfx.Play(Sfx.SubBoom, 0.5f);
+			Sfx.Play(Sfx.OutbreakBurst, 0.8f);                        // 用户 2026-11-08：换掉平淡的受击声（原版受击声在 OutbreakHitSfxPatch 里关掉）
+			Sfx.Play(Sfx.SubBoom, 0.45f);
 		}
 		_lastBlast = now;
 		// 每个敌人都被打得一顿（白闪 + 往远离拳心的方向退）；顿帧 / 震屏 / 红黑帧整批只放一次（Impact 自己合并）

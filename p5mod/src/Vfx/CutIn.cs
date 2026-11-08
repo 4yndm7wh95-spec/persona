@@ -111,6 +111,13 @@ void fragment() { COLOR = vec4(texture(TEXTURE, UV).rgb, 1.0); }
 	public const float ShatterLife = 0.5f;                     // 用户 2026-11-03：碎片飘太久压到后面的出手 / 引爆，太花
 
 	/// <summary>
+	/// 碎片动画真正要多久（用户 2026-11-08：收尾潦草、碎片直接消失）：原来动画只跑 ShatterLife（0.5s），碎片 0.25s 才开始淡、
+	/// 远处的碎片还要晚 0.1～0.27s 才出发 → 动画停的时候碎片还剩三成多不透明、定住，0.7s 时整层被删 = 一下子没了；
+	/// 碎片取图的离屏画面 0.6s 就被释放，碎片会先变空白。现在每块碎片都完整淡完，离屏画面留到碎片淡完之后。
+	/// </summary>
+	public const float ShardLife = 1.05f;
+
+	/// <summary>
 	/// 碎纸（舞台和特写共用，2026-11-01：用户嫌「一刀劈成两半滑走」不对）：三道爪痕把画面切成四条，每条再按 4 个点的
 	/// Voronoi 分块 → 最多 16 块纸片。shat = 碎开后几秒（&lt; 0 = 还没碎）：每块从自己的中心往外抛（初速快、指数减速，加重力往下掉）、
 	/// 打转、绕自己翻面（翻到背面是白纸）。shatterSample 把屏幕上的点反推回碎之前的位置。
@@ -237,7 +244,7 @@ void fragment() {
 		Clip clip = _clip!;
 		Prepared[] parts = _parts!;
 		Vector2 screen = Fx.Screen(back);
-		float life = playback.SplitAt + ShatterLife + 0.1f;
+		float life = playback.SplitAt + ShardLife + 0.15f;            // 离屏画面（碎片的图）要活到碎片淡完
 		// 离屏画面：和屏幕一样大，透明底
 		SubViewport view = new()
 		{
@@ -456,7 +463,7 @@ void fragment() { COLOR = vec4(COLOR.rgb, COLOR.a * step(0.5, texture(mask, SCRE
 			}
 		}
 		Node2D root = Fx.ScreenRoot(back, "P5CutInShatter");
-		Fx.FreeAfter(root, ShatterLife + 0.2);
+		Fx.FreeAfter(root, crackDelay + ShardLife + 0.1);
 		back.MoveChild(root, back.GetChildCount() - 1);
 		// 裂纹定格：白裂纹（只在横幅上）
 		Node2D cracks = new();
@@ -471,7 +478,7 @@ void fragment() { COLOR = vec4(COLOR.rgb, COLOR.a * step(0.5, texture(mask, SCRE
 			cracks.AddChild(new Line2D { Points = pts, Width = 3f, DefaultColor = new Color(1f, 0.96f, 0.94f), Material = mask, JointMode = Line2D.LineJointMode.Sharp });
 		}
 		Fx.Animate(cracks, 0, 0.16, t => cracks.Modulate = new Color(1f, 1f, 1f, 1f - Fx.InCubic(t)));
-		const float total = ShatterLife, tau = 0.2f;
+		const float total = ShardLife, tau = 0.2f;
 		Fx.After(root, crackDelay, () =>
 		{
 			hideBand();
@@ -520,8 +527,11 @@ void fragment() { COLOR = vec4(COLOR.rgb, COLOR.a * step(0.5, texture(mask, SCRE
 					sm.SetShaderParameter("glint", Mathf.Clamp(1f - tt / 0.15f, 0f, 1f) * 0.7f + 0.45f * flick);
 					sm.SetShaderParameter("phase", ph0 + shard.Rotation * 0.35f);
 					rim.Modulate = new Color(1f, 1f, 1f, 0.55f + 0.45f * flick);
-					float k = Mathf.Clamp((tt - 0.25f) / 0.4f, 0f, 1f);
-					shard.Modulate = new Color(1f, 1f, 1f, 1f - k * k * (3f - 2f * k));
+					// 0.2s 起淡，0.45s 里淡完（每块按自己的出发时刻算；最晚出发的 ~0.27s 也在 total 里淡完），淡的同时缩一点、往下沉
+					float k = Mathf.Clamp((tt - 0.2f) / 0.45f, 0f, 1f);
+					float fade = k * k * (3f - 2f * k);
+					shard.Modulate = new Color(1f, 1f, 1f, 1f - fade);
+					shard.Scale *= 1f - 0.25f * fade;
 				});
 			}
 			Glow.Sparks(light, root.ToGlobal(hit), 30, 300f, 1100f, 0.6f, new[] { Pal5.Hot, Pal5.Bright, Pal5.Deep }, 300f, 0.1f, 0.35f);

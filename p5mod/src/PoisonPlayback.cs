@@ -92,6 +92,16 @@ public sealed class OutbreakPlayback
 	}
 }
 
+/// <summary>
+/// 毒性爆发的毒伤结算（用户 2026-11-08：原版受击声很普通、很平淡）：原版每次扣血都放怪物的受击声（SfxCmd.PlayDamage），
+/// 这段时间关掉，换成 PoisonFx.Blast 里的咒怨引爆声。怪物自己的叫声（HurtSfx）不动。
+/// </summary>
+[HarmonyPatch(typeof(SfxCmd), nameof(SfxCmd.PlayDamage))]
+public static class OutbreakHitSfxPatch
+{
+	public static bool Prefix() => OutbreakPlayback.Current.Value == null || PoisonDamage.Current.Value == null;
+}
+
 [HarmonyPatch(typeof(Outbreak), "OnPlay")]
 public static class OutbreakTogetherPatch
 {

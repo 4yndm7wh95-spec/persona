@@ -49,6 +49,8 @@ public static class Sfx
 		Crack = "crash_object",         // 东西碎开（#176：手从地里钻出来）
 		PoisonTick = "continuas_damage",// 持续伤害（#20：每轮毒伤）
 		SubBoom = "sub_boom",           // 合成的低频重击（art/sfx_p5/sub_boom.ogg：P5 原声缺低频，垫在冲击层底下）
+		OutbreakBurst = "outbreak_burst", // 毒性爆发毒伤结算（用户 2026-11-08：原版受击声太平淡）：P5R SKILLSE 0406（咒怨系候选，起音 0.01s、偏暗），
+		                                //  滤掉 6kHz 以上、截 1.5s 淡出、响度归一（art/sfx_p5/outbreak_burst.ogg）
 		Crush = "crush";                // 合成的「捏碎」：几下密集的碎裂咔嚓 + 一记闷响（art/sfx_p5/crush.ogg，手捏爆用）           // 合成的低频重击（art/sfx_p5/sub_boom.ogg：P5 原声缺低频，垫在冲击层底下）
 
 	/// <summary>

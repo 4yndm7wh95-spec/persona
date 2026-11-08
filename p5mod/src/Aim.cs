@@ -222,6 +222,10 @@ public static class Aim
 			{
 				return;
 			}
+			if (cur is "cast_outbreak" or "cast_outbreak_from_mask" && time < 1.38f)
+			{
+				return;                                                // 毒性爆发：手一直攥着面具，火也一直在（捏碎时炸，见 OutbreakHand）
+			}
 			fx.End(casting);
 			if (_held == fx)
 			{
@@ -322,7 +326,19 @@ public static class Aim
 		{
 			if (outbreak)
 			{
-				Fx.After(layer, 0.03, () => Snuff(held));             // 毒性爆发：手一攥，面具火被攥灭、四散
+				// 毒性爆发：手一攥，面具火被攥住，一直攥到捏碎那一刻才炸（onCrush → Release）
+				float crushIn = HitFor(card);
+				_gripped = held;
+				_held = null;
+				Fx.After(layer, 0.03, () => held.Clench(crushIn - 0.03f));
+				Fx.After(layer, crushIn + 0.8, () =>
+				{
+					if (_gripped == held)
+					{
+						_gripped = null;
+						held.End(true);                                   // 兜底：没等到捏碎（巨手没放出来）也要收掉
+					}
+				});
 			}
 			else
 			{
@@ -426,6 +442,19 @@ public static class Aim
 			float face = Joker.Facing(node);
 			CutInPlayback clip = play?.Clip ?? new CutInPlayback(OutbreakEmerge + CrushHand.CrushAfter, crush: true);
 			clip.Start();      // 横幅碎开 = 捏碎
+			// 用户 2026-11-08：打出去敌人身上要马上有反馈 → 手一攥，所有敌人身上落咒印、开始暗燃，一直烧到捏碎
+			if (Joker.FxLayer() is Control bl && NCombatRoom.Instance is NCombatRoom br && node.Entity?.CombatState is { } bcs)
+			{
+				var marked = new List<PoisonFx.Target>();
+				foreach (Creature c in bcs.HittableEnemies)
+				{
+					if (br.GetCreatureNode(c) is NCreature n)
+					{
+						marked.Add(new PoisonFx.Target(n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, n.Visuals));
+					}
+				}
+				Fx.After(bl, 0.06, () => PoisonFx.Brand(bl, marked, OutbreakEmerge + CrushHand.CrushAfter - 0.06f, OutbreakEmerge + CrushHand.FistAfter - 0.06f));
+			}
 			if (Joker.FxLayer() is Control fr)
 			{
 				SummonStage.Play(back, fr, head, maskFlame: false, playback: clip);     // 用户 2026-11-03：亚森出现只响一声蓝焰（原来舞台一声 + 现身一声）
@@ -472,6 +501,11 @@ public static class Aim
 						}
 					}
 					PoisonFx.Crushed(fl, fl.GetCanvasTransform().AffineInverse() * at, targets);
+				}
+				if (_gripped is ReadyFx g)
+				{
+					_gripped = null;
+					g.End(true);                                        // 攥了一路的面具火跟着捏碎一起炸开
 				}
 				HitStop.Request(0.12, 0.05);
 				play?.Crush();
@@ -568,14 +602,8 @@ public static class Aim
 	/// <summary>打出去、等着施法的面具。</summary>
 	private static ReadyFx? _held;
 
-	private static void Snuff(ReadyFx fx)
-	{
-		fx.Snuff();
-		if (_held == fx)
-		{
-			_held = null;
-		}
-	}
+	/// <summary>毒性爆发：被攥住、等捏碎才炸的面具火。</summary>
+	private static ReadyFx? _gripped;
 
 	/// <summary>
 	/// 毒性爆发：Joker 攥着面具的手跟巨手一起越攥越紧——从巨手攥拳（fistAt）到捏碎（crushAt）身体越抖越厉害，
@@ -617,6 +645,10 @@ public static class Aim
 
 	private static void Release(ReadyFx fx)
 	{
+		if (fx == _gripped)
+		{
+			return;                                                    // 毒性爆发攥着的火：等捏碎（Played 的 0.8s 兜底不管它）
+		}
 		fx.End(true);
 		if (_held == fx)
 		{
