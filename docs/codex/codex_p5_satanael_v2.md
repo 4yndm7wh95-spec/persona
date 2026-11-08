@@ -82,6 +82,21 @@ satanael_v2_draft.png 的设计、配色（压暗的古铜金）、画风、单�
 输出 satanael_v4_draft.png（+ _raw.png + _generation.json）、check_satanael_v4.png（从左到右：pose_sketch_v4、v4、v4 与草图叠图、v3；深灰底）。最多重画 2 次。
 提交信息 "art: Satanael draft v4 (regenerated from the pose sketch)"。
 
+【第 5 版：加动势（用户 2026-11-08：「比之前好很多，但姿势偏拘谨了，不帅」）】
+第 4 版（用户在对话里看到的那张，已存为 art/p5/fx/v4/satanael/satanael_v4_seen.png）的单手持枪、手臂伸直、左轮侧面、设计配色都对，**保留**。
+「拘谨」的原因：身体竖直、肩膀水平（剪影是一个 T 字）；近处那只手直直垂着像立正（这是 Claude 草图里黄线那样画的，草图的锅）；头低着、偏小，像看地面；翅膀和披风静止，没有风和力量。
+**整张重新生成**，以 satanael_v4_seen.png 为底图 / 构图参考，按 art/p5/fx/v4/satanael/pose_notes_v5.png 上的标注改：
+1. **动势线**：从左下的披风下摆，斜着穿过身体，到右边的枪口，形成一条有力的斜线（红线）；整个人沿这条线发力。
+2. **上身前倾约 20°、往右压**：持枪那侧的肩膀抬高、往前顶；近处那侧的肩膀放低、往后（肩线是斜的，不是水平的）。
+3. **头更大一点、往前探、下巴下压**，红眼顺着枪管死盯着右边的敌人（不是看地面）；头盔和角的剪影完整、清楚。
+4. **近处那只手不要垂着**：手肘向外弯，爪子张开、绷紧，停在腰的高度（像蓄势、随时要扑出去的样子），但不要往后甩到身后。
+5. **翅膀张得更开、更高**，左右不对称，被风往后扫（翼尖朝后上方）；不要像背景板一样对称摆着。
+6. **披风被风猛地往左后方吹起**，有飘动的弧线。
+7. 枪保持侧面视角，可以再大一点、厚一点。
+画布、真透明底、画风同第 4 版（3400×3600，枪完整在画内）。
+输出 satanael_v5_draft.png（+ _raw.png + _generation.json）、check_satanael_v5.png（从左到右：v4、pose_notes_v5、v5；深灰底）。最多重画 2 次。
+提交信息 "art: Satanael draft v5 (line of action, forward lean, tense off hand, wind-swept wings and cape)"。
+
 【提交】只 add 新文件（含 ref_hold_gun.png 不用管，已在仓库）：v2_pose_ref.png、v2_pose_contact.png、satanael_v2_draft*.png / .json、check_satanael_v2.png、art/p5/fx/v4/satanael/README_v2.md（中文：用了哪个动作哪一帧、相机、重画次数、自己觉得哪里还不像）。
 提交信息 "art: Satanael draft v2 (three-quarter facing right, tall portrait, gun raised)"。
 【报告】中文：草图位置、重画次数、自己觉得哪里还不像、提交号或分支名。
