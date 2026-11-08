@@ -20,12 +20,19 @@
 运行 Get-Process | Where-Object { $_.ProcessName -like '*Slay the Spire 2*' }
 有输出 → 停下来报告「游戏正在运行」，不要关它。
 
-【2. 拉最新】
+【2. 拉最新（这台仓库副本没有这个分支，第一次要新建本地分支）】
 在 <repo> 里依次单独运行：
-   git -c safe.directory=* -c http.version=HTTP/1.1 fetch origin claude/epic-archimedes-m9an69
-   git -c safe.directory=* checkout claude/epic-archimedes-m9an69
-   git -c safe.directory=* merge --ff-only origin/claude/epic-archimedes-m9an69
-ff-only 失败 → 停下来报告。fetch 超时按 5/10/20/40 秒重试，4 次都失败就停下来报告。
+   git -c safe.directory=* -c http.version=HTTP/1.1 fetch origin claude/epic-archimedes-m9an69:refs/remotes/origin/claude/epic-archimedes-m9an69
+   （带完整的 :refs/remotes/... 写法，否则只写进 FETCH_HEAD，下一步会报 invalid reference）
+未跟踪文件 docs\codex\reports\p5_build_0.8.0.md 在新分支里已经被提交过，切分支会因为它停住：
+   新建目录 C:\Users\kkk\sts2_tools\backup\untracked_<当前日期时间>\，用 Move-Item（不带 -Force）把这个文件移进去。这是唯一允许移动的文件；
+   art\p5\fx\gen_codex\ink\ 不在新分支里，原样留着不动。
+然后：
+   git -c safe.directory=* switch -c claude/epic-archimedes-m9an69 --track origin/claude/epic-archimedes-m9an69
+   （如果提示本地分支已存在，改为依次运行 git -c safe.directory=* switch claude/epic-archimedes-m9an69 和
+    git -c safe.directory=* merge --ff-only origin/claude/epic-archimedes-m9an69）
+   git -c safe.directory=* log -1 --oneline   → 应该是 8a3ea299 或更新的提交
+switch 还是失败、ff-only 失败 → 停下来报告完整报错。fetch 超时按 5/10/20/40 秒重试，4 次都失败就停下来报告。
 确认 p5mod\P5Joker.json 里 "version" 是 "0.9.14"，p5mod\src\ModEntry.cs 里 Version = "0.9.14"。不是就停下来报告。
 
 【3. 编译 DLL】
