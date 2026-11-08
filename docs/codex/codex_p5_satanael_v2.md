@@ -108,6 +108,12 @@ satanael_v2_draft.png 的设计、配色（压暗的古铜金）、画风、单�
 6. 身体是 3/4 侧身朝右（侧着身子决斗的站姿），动感靠伸直的手臂、枪、翅膀和披风，不靠弯腰。
 **整张重新生成**：身体姿态参考第 4 版（satanael_v4_seen.png，直立）再更挺拔；翅膀 / 披风 / 枪参考第 5 版（satanael_v5_draft.png）。画布、透明底、画风同前。
 输出 satanael_v6_draft.png（+ _raw.png + _generation.json）、check_satanael_v6.png（从左到右：v4、v5、v6；深灰底）。最多重画 2 次。
+**分辨率（用户再次强调）：必须输出原生高分辨率的图，不能用 1024×1536 的小图直接放大充数。**
+撒旦耶尔在游戏里要撑满整个屏幕高度还显示不完，放大的小图细节是糊的。做法按顺序试：
+a. 生图工具能直接出更高原生分辨率（长边 ≥ 3000）就直接出；
+b. 不能的话：先出构图稿，再**分块高分辨率重绘**（头和角、胸甲和肩、持枪手臂和枪、翅膀左右、披风各一块，每块按原生分辨率生成、带重叠边），对齐拼回 3400×3600，拼缝处补画；
+c. 两种都做不到：停下来报告，不要交放大图。
+报告和 README 里写清楚最终图每个区域的**原生**分辨率是多少、用了哪种做法。
 提交信息 "art: Satanael draft v6 (upright and imperious, straight aim, wind-swept wings)"。
 
 【提交】只 add 新文件（含 ref_hold_gun.png 不用管，已在仓库）：v2_pose_ref.png、v2_pose_contact.png、satanael_v2_draft*.png / .json、check_satanael_v2.png、art/p5/fx/v4/satanael/README_v2.md（中文：用了哪个动作哪一帧、相机、重画次数、自己觉得哪里还不像）。
