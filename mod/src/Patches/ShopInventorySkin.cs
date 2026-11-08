@@ -195,6 +195,7 @@ internal partial class ShopWater : Control
     }
     private void Leave()
     {
+        Audio.Sfx.Clip("igor_shop_back", Audio.Sfx.IgorVoice);
         StopOpening();
         inventory.Modulate=Colors.White;
         tween?.Kill(); tween=CreateTween().SetParallel();
@@ -228,16 +229,14 @@ internal static class VelvetShopMerchantSilenceParam
     internal static bool Prefix(string sfx) => !VelvetShopMerchantSilence.Muted(sfx);
 }
 
-/// <summary>Igor answers each successful purchase, cycling three lines.</summary>
+/// <summary>Igor answers each successful purchase with a random line.</summary>
 [HarmonyPatch(typeof(NMerchantInventory), "OnPurchaseCompleted")]
 internal static class VelvetShopPurchaseVoice
 {
-    private static int _next;
     internal static void Postfix(NMerchantInventory __instance, MegaCrit.Sts2.Core.Entities.Merchant.PurchaseStatus status) => ModEntry.Safe("igor purchase voice", () =>
     {
         if (status != MegaCrit.Sts2.Core.Entities.Merchant.PurchaseStatus.Success) return;
         if (__instance.GetParent()?.GetNodeOrNull("P3VelvetShop") == null) return;
-        Audio.Sfx.Clip($"igor_buy_{_next % 3 + 1}", Audio.Sfx.IgorVoice);
-        _next++;
+        Audio.Sfx.Clip($"igor_buy_{GD.RandRange(1, 3)}", Audio.Sfx.IgorVoice);
     });
 }

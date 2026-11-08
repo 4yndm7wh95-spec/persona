@@ -1981,3 +1981,6 @@ BGM 不响的最可能原因：播放器在 NMerchantRoom._Ready 内加到 Scene
 
 ### 0.15.28 · 屏蔽原版商人音效，伊戈尔欢迎与购买语音
 天鹅绒房间在树内期间（VelvetShopPatch.ActiveRooms > 0），SfxCmd.Play 的两个重载里所有 event:/sfx/npcs/merchant/ 事件都被屏蔽（欢迎、感谢、失望、劣质药水等），取代 0.15.21 只屏蔽打开商品页欢迎声的补丁。进入房间 0.6 秒后播放 igor_welcome；每次成功购买（NMerchantInventory.OnPurchaseCompleted，status = Success）轮流播放 igor_buy_1～3。伊戈尔语音（含商品页 Cue107）统一 ×1.15。语音文件待用户从 Codex 导出的 P3R 候选里挑选，缺文件时静默跳过。
+
+### 0.15.29 · 伊戈尔欢迎、购买与返回语音
+按用户试听选择：进入天鹅绒商店 0.6 秒后从 001、002、003 随机选一条，购买成功从 005、004、009 随机选一条，商品页返回播放 014。欢迎延迟绑定房间节点，现有商品页打开语音保留。七段日语音频转为 48 kHz OGG，目标响度约 −14.6 LUFS。

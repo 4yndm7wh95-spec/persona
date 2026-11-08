@@ -68,7 +68,10 @@ public static class VelvetShopPatch
 			Audio.VelvetShopMusic.Attach(room);
 			Audio.VelvetShopMusic.AttachHum(room);
 			// "Welcome to the Velvet Room", once the room is on screen.
-			Audio.Sfx.Clip("igor_welcome", Audio.Sfx.IgorVoice, delay: 0.6f);
+			var welcome = room.CreateTween();
+			welcome.TweenInterval(0.6);
+			welcome.TweenCallback(Callable.From(() =>
+				Audio.Sfx.Clip($"igor_welcome_{GD.RandRange(1, 3)}", Audio.Sfx.IgorVoice)));
 		})).CallDeferred();
         Callable.From(()=>ModEntry.Safe("shop preload",()=>
         {
