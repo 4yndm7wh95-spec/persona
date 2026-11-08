@@ -620,9 +620,9 @@ public partial class Preview : Node2D
 		{
 			float tall = (JokerFeet - Pose(815f, 120f)).Length();
 			p.Ready(0.2, Stance.Guard, "guard", "cast_guard_from_ready", play: true);
-			p.At(0.2 + 1.63, () => HexGuard.Play(p._front, Chest, tall, 1f, 5));
+			p.At(0.2 + 1.63, () => HexGuard.Play(p._front, Chest, tall, 1f, 5, Pose(885f, 310f)));
 			p.Ready(2.8, Stance.Guard, "guard", "cast_guard_from_ready", play: true);
-			p.At(2.8 + 1.63, () => HexGuard.Play(p._front, Chest, tall, 1f, 12));
+			p.At(2.8 + 1.63, () => HexGuard.Play(p._front, Chest, tall, 1f, 12, Pose(885f, 310f)));
 		},
 		["block"] = p =>
 		{
