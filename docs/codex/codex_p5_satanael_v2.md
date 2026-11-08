@@ -97,6 +97,19 @@ satanael_v2_draft.png 的设计、配色（压暗的古铜金）、画风、单�
 输出 satanael_v5_draft.png（+ _raw.png + _generation.json）、check_satanael_v5.png（从左到右：v4、pose_notes_v5、v5；深灰底）。最多重画 2 次。
 提交信息 "art: Satanael draft v5 (line of action, forward lean, tense off hand, wind-swept wings and cape)"。
 
+【第 6 版：挺拔、居高临下（用户 2026-11-08 看第 5 版：「弓着腰也很奇怪」）】
+第 5 版变成了驼背：肩膀往前塌、脖子往下缩、背是弯的，再加上腰间的爪子，像准备偷袭的小反派。这是 Claude 第 5 版要求写错了
+（「前倾 + 头往前探 + 下巴下压 + 蓄势的爪子」叠在一起就成了弓腰）。撒旦耶尔是神一样的存在，原版的气势来自**挺拔、居高临下**：
+1. **脊背笔直、挺胸**，上身直立，甚至可以微微后仰；站得高高的。**不要弓腰、不要塌肩、不要缩脖子。**
+2. **头抬着**（下巴水平或略抬），用**眼睛往下睥睨**枪口方向的敌人——傲慢、俯视；头盔和角的剪影高高在上。
+3. 持枪手臂照第 4 / 第 5 版：从肩膀笔直伸向右边；肩膀跟着手臂自然前送，但不耸起。
+4. **另一只手**：放松地离开身体一点，在腰侧、手掌朝下、手指自然张开（像决斗者保持平衡），不要蜷成爪子、不要垂成立正、不要甩到身后。
+5. **翅膀、披风照第 5 版**（张得开、不对称、被风往后吹）——这部分第 5 版是对的。枪照第 5 版。
+6. 身体是 3/4 侧身朝右（侧着身子决斗的站姿），动感靠伸直的手臂、枪、翅膀和披风，不靠弯腰。
+**整张重新生成**：身体姿态参考第 4 版（satanael_v4_seen.png，直立）再更挺拔；翅膀 / 披风 / 枪参考第 5 版（satanael_v5_draft.png）。画布、透明底、画风同前。
+输出 satanael_v6_draft.png（+ _raw.png + _generation.json）、check_satanael_v6.png（从左到右：v4、v5、v6；深灰底）。最多重画 2 次。
+提交信息 "art: Satanael draft v6 (upright and imperious, straight aim, wind-swept wings)"。
+
 【提交】只 add 新文件（含 ref_hold_gun.png 不用管，已在仓库）：v2_pose_ref.png、v2_pose_contact.png、satanael_v2_draft*.png / .json、check_satanael_v2.png、art/p5/fx/v4/satanael/README_v2.md（中文：用了哪个动作哪一帧、相机、重画次数、自己觉得哪里还不像）。
 提交信息 "art: Satanael draft v2 (three-quarter facing right, tall portrait, gun raised)"。
 【报告】中文：草图位置、重画次数、自己觉得哪里还不像、提交号或分支名。
