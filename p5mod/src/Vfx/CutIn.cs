@@ -331,7 +331,8 @@ void fragment() {
 			if (!shattered && s >= playback.SplitAt)
 			{
 				shattered = true;
-				Shatter(back, view.GetTexture(), screen, bandRect, () => sprite.Visible = false, playback.ShatterFrom, playback.Crush ? 0f : 0.05f);
+				Shatter(back, view.GetTexture(), screen, bandRect, () => sprite.Visible = false, playback.ShatterFrom, playback.Crush ? 0f : 0.05f,
+					playback.Pinch, playback.PinchAt / screen);
 			}
 		});
 	}
@@ -396,8 +397,23 @@ void fragment() {
 shader_type canvas_item;
 uniform float glint = 0.0;
 uniform float phase = 0.0;
+// 碎开那一刻横幅被巨手攥住的形变（和 BandShader 同一套）：碎片按碎之前的样子取图，不会一下子弹回没被攥过的形状（用户 2026-11-08 的 bug）
+uniform vec2 sres = vec2(1920.0, 1080.0);
+uniform vec2 pinch_at = vec2(0.5);
+uniform float pinch = 0.0;
 void fragment() {
-	vec4 c = texture(TEXTURE, UV);
+	vec2 uv = UV;
+	float fold = 0.0;
+	if (pinch > 0.0) {
+		vec2 d = (uv - pinch_at) * vec2(sres.x / sres.y, 1.0);
+		float r = length(d);
+		float ang = atan(d.y, d.x);
+		float f = pinch * exp(-r * r / 0.14) * (1.0 + 0.3 * sin(ang * 7.0 + r * 22.0));
+		uv = pinch_at + (uv - pinch_at) * (1.0 + f * 1.5);
+		fold = pinch * exp(-r * r / 0.1) * (0.5 + 0.5 * sin(ang * 7.0 + r * 22.0));
+	}
+	vec4 c = texture(TEXTURE, uv);
+	c.rgb *= 1.0 - fold * 0.45;
 	// 玻璃：一道斜的高光随碎片转动扫过、整体偏冷一点、稍透
 	float sheen = exp(-pow((UV.x + UV.y * 0.55 - phase) / 0.025, 2.0)) * 0.9 + exp(-pow((UV.x + UV.y * 0.55 - phase - 0.06) / 0.008, 2.0)) * 0.6;
 	c.rgb = mix(c.rgb, c.rgb * vec3(0.92, 0.96, 1.05), 0.4) + vec3(1.0, 0.95, 0.95) * (glint + sheen) * c.a;
@@ -434,7 +450,8 @@ void fragment() { COLOR = vec4(COLOR.rgb, COLOR.a * step(0.5, texture(mask, SCRE
 	}
 
 	/// <summary>横幅从冲击点放射状裂开，0.05s 裂纹定格（白裂纹 + 白闪），然后碎成大块玻璃炸开、迅速减速、慢慢转着漂、一部分飞向镜头放大、淡出。</summary>
-	private static void Shatter(Control back, Texture2D tex, Vector2 screen, Rect2 band, System.Action hideBand, Vector2? shatterFrom, float crackDelay)
+	private static void Shatter(Control back, Texture2D tex, Vector2 screen, Rect2 band, System.Action hideBand, Vector2? shatterFrom, float crackDelay,
+		float pinch = 0f, Vector2 pinchAt = default)
 	{
 		Vector2 hit = shatterFrom ?? band.Position + band.Size * new Vector2(0.42f, 0.52f);      // 毒性爆发：从拳心碎开
 		Vector2[] rect = { band.Position, band.Position + new Vector2(band.Size.X, 0f), band.End, band.Position + new Vector2(0f, band.Size.Y) };
@@ -496,6 +513,9 @@ void fragment() { COLOR = vec4(COLOR.rgb, COLOR.a * step(0.5, texture(mask, SCRE
 				Node2D shard = new() { Position = c };
 				root.AddChild(shard);
 				ShaderMaterial sm = new() { Shader = ShardShader };
+				sm.SetShaderParameter("sres", screen);
+				sm.SetShaderParameter("pinch", pinch);
+				sm.SetShaderParameter("pinch_at", pinchAt);
 				shard.AddChild(new Polygon2D { Polygon = local, UV = piece, Texture = tex, TextureFilter = CanvasItem.TextureFilterEnum.Linear, Material = sm });
 				// 玻璃亮边：外面一道白、里面一道细红（加法，只在有图的地方）
 				var loop = new Vector2[local.Length + 1];
