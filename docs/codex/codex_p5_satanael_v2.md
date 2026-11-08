@@ -58,6 +58,16 @@ satanael_v2_draft.png 的设计、配色（压暗的古铜金）、画风、单�
 输出覆盖成 satanael_v3_draft.png（+ _raw.png + _generation.json），check_satanael_v3.png（从左到右：v2 重画稿、v3、ref_hold_gun.png、Joker idle_a3；深灰底）。
 最多重画 2 次。只出草图，不拆层。提交信息 "art: Satanael draft v3 (leaning into the aim, head down along the arm, wings flared)"。
 
+【用户对第 3 版第一稿的意见（2026-11-08）—— 第 3 版重画】
+第一稿见 art/p5/fx/v4/satanael/ref_v3_wrong.png（你在对话里给用户看的那张）。保留：身体前倾、往后张开的那只爪子、大张的翅膀、压暗的配色。改掉这些：
+1. **枪口对着镜头了——错**。游戏是横版，敌人在画面右边，**枪必须横着指向画面右侧**（可以略微朝下 10°～15°），我们从**侧面**看到整支枪：转轮、枪管、准星、枪口都是侧面轮廓，看不到枪口的圆洞正面。
+   上一轮文档写「枪往镜头这边靠、透视更大」，意思只是枪可以比手臂略大、略近，**不是让枪管朝向镜头**。枪管要和画面基本平行。
+2. **枪的造型要回到原设计**：第 2 版重画稿（satanael_v2_draft.png）那把长管左轮——大转轮、细长的枪管、枪口一圈金属边、枪身的花纹。不要变成粗圆筒 / 炮管 / 加特林。
+3. **头要看得清**：头盔、角、发光的红眼按第 2 版的设计，大小正常，不要缩小埋进肩膀里。头往前探、往下压、顺着手臂看向右边，但整个头和两只角的剪影要完整可辨。
+4. **透视收敛**：只要轻微仰视（比第 2 版低一点就够），身体比例正常，不要把躯干拉长、扭曲。
+5. **握枪的手要清楚**：单手（画面里远侧那只手）握住枪柄，手指扣在扳机护圈处，手腕在枪的后下方；整条手臂从耸起的肩膀往右前方伸出，看得清肩—肘—手。
+输出 satanael_v3_draft.png（覆盖第一稿），其余同上。
+
 【提交】只 add 新文件（含 ref_hold_gun.png 不用管，已在仓库）：v2_pose_ref.png、v2_pose_contact.png、satanael_v2_draft*.png / .json、check_satanael_v2.png、art/p5/fx/v4/satanael/README_v2.md（中文：用了哪个动作哪一帧、相机、重画次数、自己觉得哪里还不像）。
 提交信息 "art: Satanael draft v2 (three-quarter facing right, tall portrait, gun raised)"。
 【报告】中文：草图位置、重画次数、自己觉得哪里还不像、提交号或分支名。
