@@ -24,9 +24,10 @@ internal static class VelvetShopMusic
 		_loaded = true;
 		try
 		{
-			if (!FileAccess.FileExists(Path)) { GD.Print($"{ModEntry.Tag} velvet room bgm missing; native shop music kept"); return null; }
-			_stream = AudioStreamOggVorbis.LoadFromBuffer(FileAccess.GetFileAsBytes(Path));
-			if (_stream == null) return null;
+			if (!FileAccess.FileExists(Path)) { GD.Print($"{ModEntry.Tag} velvet room bgm missing ({Path} not in pck); native shop music kept"); return null; }
+			byte[] bytes = FileAccess.GetFileAsBytes(Path);
+			_stream = AudioStreamOggVorbis.LoadFromBuffer(bytes);
+			if (_stream == null) { GD.PrintErr($"{ModEntry.Tag} velvet room bgm could not be decoded ({bytes.Length} bytes)"); return null; }
 			_stream.Loop = true;
 			// Optional sidecar: loop start in seconds (the file itself ends at the loop end).
 			if (FileAccess.FileExists(LoopPath) && double.TryParse(FileAccess.GetFileAsString(LoopPath).Trim(),
@@ -47,10 +48,11 @@ internal static class VelvetShopMusic
 		// Lives under the root so it can fade out after the room is freed.
 		var player = new AudioStreamPlayer { Stream = stream, Bus = "Master", VolumeDb = -80f, Name = "P3VelvetShopMusic", ProcessMode = Node.ProcessModeEnum.Always };
 		tree.Root.AddChild(player);
+		if (!player.IsInsideTree()) { GD.PrintErr($"{ModEntry.Tag} velvet room bgm player not in tree"); player.QueueFree(); return; }
 		player.Play();
 		float fade = 0f, nativeApplied = -1f;
-		bool leaving = false;
-		ulong last = Time.GetTicksMsec();
+		bool leaving = false, reported = false;
+		ulong last = Time.GetTicksMsec(), started = last;
 		void Tick()
 		{
 			ulong now = Time.GetTicksMsec();
@@ -70,6 +72,11 @@ internal static class VelvetShopMusic
 			{
 				float native = bgm * (1f - smooth);
 				if (Mathf.Abs(native - nativeApplied) > 0.002f) { am.SetBgmVol(native); nativeApplied = native; }
+			}
+			if (!reported && now - started > 2500)
+			{
+				reported = true;
+				GD.Print($"{ModEntry.Tag} velvet room bgm state: playing={player.Playing} db={player.VolumeDb:0.0} fade={fade:0.00} bgmSetting={bgm:0.00} musicBox={box} bus={player.Bus}");
 			}
 			if (leaving && fade <= 0f)
 			{

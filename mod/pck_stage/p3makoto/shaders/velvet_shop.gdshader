@@ -9,20 +9,21 @@ uniform float blink_amount = 0.0;
 uniform float left_sway = 0.0;
 uniform float right_sway = 0.0;
 
-// 0.15.23 elevator layers: backdrop -> passing car -> front plate (alpha openings) -> lanterns.
+// 0.15.24 passing elevator: the painted room stays as is (crisp rails, no seams).
+// The elevator only covers the velvet wall behind the rails; the wall matte is the
+// transparent part of the elevator front plate, minus both swaying lanterns.
 uniform bool layered = false;
-uniform sampler2D backdrop_tex : filter_linear;
 uniform sampler2D front_tex : filter_linear;
 uniform sampler2D lantern_left_tex : filter_linear;
 uniform sampler2D lantern_right_tex : filter_linear;
 uniform sampler2D car_tex : filter_linear;
 uniform sampler2D car_glow_tex : filter_linear;
-uniform float backdrop_gain = 1.7;
-uniform vec2 left_pivot = vec2(199.0, 75.0);
+uniform vec2 left_pivot = vec2(192.0, 75.0);   // same pivot as the painted lantern sway
 uniform vec2 right_pivot = vec2(1474.0, 75.0);
-uniform vec2 car_pos = vec2(62.0, 2000.0);   // top-left, room pixels
-uniform vec2 car_size = vec2(392.0, 652.0);
-uniform float car_flip = 0.0;
+uniform vec2 car_size = vec2(600.0, 998.0);
+uniform float car_left_x = -8.0;              // left car's left edge, room pixels
+uniform float car_right_x = 1080.0;           // right car's left edge (drawn mirrored)
+uniform float car_y = 2000.0;                 // top edge, room pixels
 uniform float car_on = 0.0;
 uniform float car_blur = 0.0;                 // trail length below the car, room pixels
 
@@ -38,43 +39,56 @@ vec4 lantern_layer(sampler2D tex, vec2 pixel, vec2 pivot, float angle) {
     return tex_bounded(tex, src / vec2(1672.0, 941.0));
 }
 
-vec3 layered_room(vec2 pixel, out float spill) {
-    vec3 color = texture(backdrop_tex, pixel / vec2(1672.0, 941.0)).rgb * backdrop_gain + vec3(0.006, 0.012, 0.045);
-    spill = 0.0;
-    if (car_on > 0.001) {
-        // Moving up: earlier positions were lower, so the trail samples above in car space.
-        vec4 car = vec4(0.0);
-        float glow = 0.0;
-        for (int i = 0; i < 9; i++) {
-            float s = car_blur * float(i) / 8.0;
-            vec2 local = (pixel - car_pos - vec2(0.0, s)) / car_size;
-            local.x = mix(local.x, 1.0 - local.x, car_flip);
-            vec4 c = tex_bounded(car_tex, local);
-            car += vec4(c.rgb * c.a, c.a);
-            glow += tex_bounded(car_glow_tex, local).a;
-        }
-        car /= 9.0; glow /= 9.0;
-        color = color * (1.0 - car.a * car_on) + car.rgb * car_on;
-        // Hoist cables continue above the sprite's own short cable stubs.
-        float cable_x = abs(pixel.x - (car_pos.x + car_size.x * 0.5));
-        float cables = (1.0 - smoothstep(0.6, 1.6, abs(cable_x - 10.0))) + (1.0 - smoothstep(0.6, 1.6, cable_x));
-        cables *= 1.0 - smoothstep(car_pos.y + 20.0, car_pos.y + 40.0, pixel.y);
-        cables *= 1.0 - smoothstep(320.0, 600.0, car_pos.y);   // appear with the car, not before it
-        color = mix(color, vec3(0.22, 0.25, 0.34), clamp(cables, 0.0, 1.0) * 0.8 * car_on);
-        color += vec3(0.16, 0.30, 0.65) * glow * car_on;
-        float cx = car_pos.x + car_size.x * 0.5;
-        float top = car_pos.y - 90.0, bottom = car_pos.y + car_size.y + car_blur + 90.0;
-        spill = car_on * exp(-pow((pixel.x - cx) / (car_size.x * 0.62), 2.0))
-            * smoothstep(top - 60.0, top + 60.0, pixel.y) * (1.0 - smoothstep(bottom - 60.0, bottom + 60.0, pixel.y));
+// Premultiplied, vertically smeared car; .a of glow returned separately.
+vec4 car_sample(vec2 pixel, float x0, float flip, out float glow) {
+    vec4 car = vec4(0.0);
+    glow = 0.0;
+    for (int i = 0; i < 9; i++) {
+        // Moving up: earlier positions were lower, so the trail lies below the car.
+        float s = car_blur * float(i) / 8.0;
+        vec2 local = (pixel - vec2(x0, car_y + s)) / car_size;
+        local.x = mix(local.x, 1.0 - local.x, flip);
+        vec4 c = tex_bounded(car_tex, local);
+        car += vec4(c.rgb * c.a, c.a);
+        glow += tex_bounded(car_glow_tex, local).a;
     }
-    vec4 front = texture(front_tex, pixel / vec2(1672.0, 941.0));
-    float metal = dot(front.rgb, vec3(0.299, 0.587, 0.114));
-    vec3 lit = front.rgb + vec3(0.20, 0.36, 0.70) * spill * (0.25 + metal * 0.9);
-    color = mix(color, lit, front.a);
-    vec4 l = lantern_layer(lantern_left_tex, pixel, left_pivot, left_sway);
-    color = mix(color, l.rgb, l.a);
-    vec4 r = lantern_layer(lantern_right_tex, pixel, right_pivot, right_sway);
-    color = mix(color, r.rgb, r.a);
+    glow /= 9.0;
+    return car / 9.0;
+}
+
+float cable_mask(vec2 pixel, float x0) {
+    float cx = abs(pixel.x - (x0 + car_size.x * 0.5));
+    float c = (1.0 - smoothstep(0.8, 2.2, abs(cx - 15.0))) + (1.0 - smoothstep(0.8, 2.2, cx));
+    c *= 1.0 - smoothstep(car_y + 30.0, car_y + 60.0, pixel.y);
+    return clamp(c, 0.0, 1.0) * (1.0 - smoothstep(320.0, 600.0, car_y));
+}
+
+vec3 passing_car(vec3 painted, vec2 pixel) {
+    if (car_on <= 0.001) return painted;
+    float rail = texture(front_tex, pixel / vec2(1672.0, 941.0)).a;
+    float wall = 1.0 - rail;
+    wall *= 1.0 - lantern_layer(lantern_left_tex, pixel, left_pivot, left_sway).a;
+    wall *= 1.0 - lantern_layer(lantern_right_tex, pixel, right_pivot, right_sway).a;
+    // Soft lower edge above the table and floor: never a straight cut.
+    wall *= 1.0 - smoothstep(470.0, 590.0, pixel.y);
+    float gl, gr;
+    vec4 cl = car_sample(pixel, car_left_x, 0.0, gl);
+    vec4 cr = car_sample(pixel, car_right_x, 1.0, gr);
+    vec4 car = cl + cr;
+    float glow = gl + gr;
+    float k = wall * car_on;
+    vec3 color = painted * (1.0 - car.a * k) + car.rgb * k;
+    float cables = max(cable_mask(pixel, car_left_x), cable_mask(pixel, car_right_x));
+    color = mix(color, vec3(0.22, 0.25, 0.34), cables * 0.8 * k);
+    color += vec3(0.16, 0.30, 0.65) * glow * k;
+    // Cool light washing over the rails in front of each car.
+    float top = car_y - 90.0, bottom = car_y + car_size.y + car_blur + 90.0;
+    float band = smoothstep(top - 80.0, top + 80.0, pixel.y) * (1.0 - smoothstep(bottom - 80.0, bottom + 80.0, pixel.y));
+    float sx = exp(-pow((pixel.x - (car_left_x + car_size.x * 0.5)) / (car_size.x * 0.6), 2.0))
+             + exp(-pow((pixel.x - (car_right_x + car_size.x * 0.5)) / (car_size.x * 0.6), 2.0));
+    float metal = dot(painted, vec3(0.299, 0.587, 0.114));
+    color += vec3(0.20, 0.36, 0.70) * band * sx * car_on * rail * (0.25 + metal * 0.9)
+        * (1.0 - smoothstep(560.0, 680.0, pixel.y));
     return color;
 }
 
@@ -93,8 +107,6 @@ void fragment() {
     vec2 source = sway_lantern(pixel, vec2(192.0,75.0), left_sway);
     source = sway_lantern(source, vec2(1474.0,75.0), right_sway);
     vec4 base = texture(TEXTURE, source / vec2(1672.0,941.0));
-    float spill = 0.0;
-    if (layered) base = vec4(layered_room(pixel, spill), 1.0);
     // Small eye-only patches: never replace the whole head or background.
     vec2 eye_uv = (pixel - vec2(788.0,365.0)) / vec2(97.0,50.0);
     float eye_mask = max(1.0-smoothstep(0.82,1.0,length((pixel-vec2(813.0,386.0))/vec2(20.0,15.0))),
@@ -104,6 +116,7 @@ void fragment() {
     vec3 blink_color = blink_amount < 0.5 ? mix(base.rgb,half_eye,blink_amount*2.0)
         : mix(half_eye,shut_eye,(blink_amount-0.5)*2.0);
     base.rgb = mix(base.rgb,blink_color,eye_mask);
+    if (layered) base.rgb = passing_car(base.rgb, pixel);
 	float t = scene_time > 0.0 ? scene_time : TIME;
 	vec3 color = base.rgb;
 

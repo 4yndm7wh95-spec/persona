@@ -55,7 +55,12 @@ public static class VelvetShopPatch
 		// intercepts input; Inventory and ProceedButton keep their original order.
 		Vfx.VelvetShopOutline.Attach(background, merchant, material);
 		Vfx.VelvetShopLife.Attach(background, material);
-		Audio.VelvetShopMusic.Attach(room);
+		// Deferred: during _Ready the scene tree may still be adding this branch,
+		// and a player added to a busy parent never enters the tree (silent).
+		Callable.From(()=>ModEntry.Safe("velvet room bgm",()=>
+		{
+			if(GodotObject.IsInstanceValid(room) && room.IsInsideTree()) Audio.VelvetShopMusic.Attach(room);
+		})).CallDeferred();
         Callable.From(()=>ModEntry.Safe("shop preload",()=>
         {
             if(!GodotObject.IsInstanceValid(room) || !room.IsInsideTree()) return;
