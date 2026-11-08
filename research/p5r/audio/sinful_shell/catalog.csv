@@ -1,0 +1,11 @@
+﻿file,source_package,source_path,stream_index_1based,cue_name,stream_name,duration_seconds,battle_score,event_score,assessment,confidence
+BP01_stream370_bp01_p_170_ja.ogg,SOUND_J.CPK,SOUND/BATTLE/BP01.AWB,370,bp01_p_170; bp01_p_199,bp01_p_170; bp01_p_199,0.872333,0.16453074559321657,0.22750383287052572,Joker Persona call mapped to PS0170; shared with bp01_p_199,high for mapping; spoken words not transcribed
+BP01_stream370_bp01_p_170_en.ogg,SOUND_E.CPK,SOUND/BATTLE/BP01.AWB,370,bp01_p_170; bp01_p_199,bp01_p_170; bp01_p_199,0.878542,0.11175606065742047,0.2312847188784108,Joker Persona call mapped to PS0170; shared with bp01_p_199,high for mapping; spoken words not transcribed
+SKILLSE_0020_stream01.ogg,BASE.CPK,SOUND/SKILLSE/0020.ACB,1,,cut3,4.0,0.07107900116492583,0.49590888425320645,Unverified SFX audition candidate; no confirmed charge/gunshot/hit assignment,low
+SKILLSE_0113_stream01.ogg,BASE.CPK,SOUND/SKILLSE/0113.ACB,1,,cut1,2.0,0.15611000755691617,0.4950235839251616,Unverified SFX audition candidate; no confirmed charge/gunshot/hit assignment,low
+SKILLSE_0390_stream01.ogg,BASE.CPK,SOUND/SKILLSE/0390.ACB,1,,cut1,1.95551,0.04575074672457083,0.4924812993790109,Unverified SFX audition candidate; no confirmed charge/gunshot/hit assignment,low
+SKILLSE_0096_stream01.ogg,BASE.CPK,SOUND/SKILLSE/0096.ACB,1,,cut3,1.63424,0.1813064126237065,0.49137387411480665,Unverified SFX audition candidate; no confirmed charge/gunshot/hit assignment,low
+EVENT_E113_001_SE_stream04.ogg,BASE.CPK,SOUND/EVENT/E113_001_SE.AWB,4,,,1.583,0.3729524747140889,0.19474143212238182,Unverified SFX audition candidate; no confirmed charge/gunshot/hit assignment,low
+EVENT_E202_001_SE_stream11.ogg,BASE.CPK,SOUND/EVENT/E202_001_SE.AWB,11,,,0.955219,0.3444356777981511,0.5590596744262524,Unverified SFX audition candidate; no confirmed charge/gunshot/hit assignment,low
+EVENT_E419_001_SE_stream04.ogg,BASE.CPK,SOUND/EVENT/E419_001_SE.ACB,4,,0326_move,0.8,0.33582643308917054,0.30964770608036774,Unverified SFX audition candidate; no confirmed charge/gunshot/hit assignment,low
+EVENT_E132_002_SE_stream01.ogg,BASE.CPK,SOUND/EVENT/E132_002_SE.AWB,1,,,1.133344,0.310520818775264,0.3769818979713322,Unverified SFX audition candidate; no confirmed charge/gunshot/hit assignment,low

@@ -1,0 +1,38 @@
+{
+  "ja": {
+    "cue_name": "bp01_p_170",
+    "cue_id": 1170,
+    "cue_index": 180,
+    "track_index": 292,
+    "synth_index": 292,
+    "waveform_index": 279,
+    "MemoryAwbId": 65535,
+    "EncodeType": 0,
+    "Streaming": 1,
+    "NumChannels": 1,
+    "LoopFlag": 1,
+    "SamplingRate": 24000,
+    "NumSamples": 20936,
+    "ExtensionData": 65535,
+    "StreamAwbPortNo": 0,
+    "StreamAwbId": 369
+  },
+  "en": {
+    "cue_name": "bp01_p_170",
+    "cue_id": 1170,
+    "cue_index": 180,
+    "track_index": 292,
+    "synth_index": 292,
+    "waveform_index": 279,
+    "MemoryAwbId": 65535,
+    "EncodeType": 0,
+    "Streaming": 1,
+    "NumChannels": 1,
+    "LoopFlag": 1,
+    "SamplingRate": 24000,
+    "NumSamples": 21085,
+    "ExtensionData": 65535,
+    "StreamAwbPortNo": 0,
+    "StreamAwbId": 369
+  }
+}
