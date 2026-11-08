@@ -60,3 +60,22 @@ git -c safe.directory=<repo> add art/velvet_elevator
 git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local commit -m "art: velvet room elevator layers (front plate with shaft openings, lanterns, scrolling shaft)"
 git -c safe.directory=<repo> -c http.version=HTTP/1.1 push origin HEAD:claude/admiring-knuth-lqj1x7（失败等 5/10/20/40 秒重试，最多 4 次）
 不要改 mod\ 下的任何文件，不要改版本号。
+
+---
+
+【修订 1 · 井道风格不对，重做 shaft_near / shaft_far】
+用户看过第一版井道（已存为 art\velvet_elevator\rejected_shaft_v1.webp），判定不通过。原版参考：art\velvet_elevator\ref_p3r_velvet_room.webp（P3R 天鹅绒房间实机截图）。
+第一版的问题：
+1. 风格错了：工字钢横梁、铆钉、管道、防爆灯罩、现代电梯门，像工业厂房或写字楼。原版天鹅绒房间的墙本身就是**新艺术风格的铁艺格栅**（竖条、菱形格、圆形纹章、卷草花饰），深海军蓝偏紫，低对比，光线很暗，整体像剧场，不是机械感。
+2. 没有无缝：图片底部的电梯门在边缘被直线切断，顶部却是空墙，竖向平铺接缝非常明显。尺寸是 1134×1387，不是要求的 1672×2048。
+3. 太规整、太亮：横梁约每 350px 一道，滚动时会频闪；灯和梁的亮度偏高，会抢伊戈尔。
+
+重做要求（第 3 节 C/D 的其他要求不变）：
+- **shaft_near.png**（1672×2048，RGBA，竖向无缝）：电梯笼外侧经过的**井道铁艺格栅**，照参考图里墙上那种格栅画：竖向铁条、菱形格、纹章、卷草花饰，铁色是偏紫的暗蓝灰（约 #2A2F5A～#4A4F86），只在少数边缘有银紫色高光。格栅之间的空隙 **alpha = 0**，让远景透出来。
+  每 2048px 周期内只放 **一处"楼层"**：一块更华丽的拱形格栅门板，中间一枚纹章，门板顶上有一条柔和的冷蓝色光带（约 #4C7DFF，低亮度、边缘柔化）。除此之外不要灯具。
+  不要工字钢、铆钉、管道、防爆灯、现代电梯门、文字或数字。
+- **shaft_far.png**（1672×1024，不透明，竖向无缝）：近乎全黑的深海军蓝到暗紫渐变（约 #05071A～#141A3C），上面隐约有更远处的格栅剪影和极少的竖向冷光，模糊、低对比。
+- **无缝做法**：画完后把图上下循环平移半个高度（近景平移 1024，远景平移 512），只重画中间那一条接缝带，再平移回来；README 里附上平移后的检查图 seam_check_near.png / seam_check_far.png。
+- 整体亮度：近景格栅不透明部分的平均亮度不超过原软包墙的 50%，远景更暗。合成后的焦点必须仍然是伊戈尔。
+- 风格可以参考仓库里已有的 art\fx\velvet_elevator_grille.png 的花样，但要压暗、去掉亮蓝宝石，做成背景用的低对比版本。
+- room_front.png 和吊灯图层如果已经做好、自检通过，就不用重做；只更新 shaft_near / shaft_far / preview.png / preview_scroll.gif / compare.png / README.md。
