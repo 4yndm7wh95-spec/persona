@@ -73,6 +73,11 @@ KNIFE_CUT = [("slash_a10", .12, 0), ("knife_top_g", .2, 0), ("slash_follow_a", .
 BRIDGE = [("summon_bridge1_a", .035, .015), ("summon_bridge3_a", .035, .015), ("summon_bridge2_a", .04, .03)]
 COMMAND = BRIDGE + [("summon_command_a", .55, .02), ("summon_command_mid_a", .07),
                     ("pocket_in_e", .1, .04), ("idle_a3", .14, .08)]
+# Outbreak grip (user 2026-11-08): summon_grip_a = the hand on the mask clenched hard (docs/p5/prompts/summon_grip_a.md);
+# until that picture exists the old squeeze (summon_hold_a) stands in
+GRIP = "summon_grip_a" if (FINAL / "summon_grip_a.png").exists() else "summon_hold_a"
+OUTBREAK_GRIP_END = 1.4   # crush at 1.16 s + hold the fist a moment after it
+OUTBREAK_LET_GO = [("summon_touch2_a", .06, .04)] + [(n, .06) for n in SUMMON_UP[-2::-1]] + [("idle_a3", .14, .08)]
 IDLE_LOOP = 11.0   # 8 s idle (+ blinks), then the glove tug, ending back on idle_a3
 ANIMS = {
     "idle_loop": [("idle_a3", 8.6)] + GLOVE + [("idle_a3", IDLE_LOOP - 8.6 - sum(f[1] for f in GLOVE))],
@@ -133,6 +138,12 @@ ANIMS = {
     # 2026-11-03 (user): after the hand on the mask, Joker thrusts his right arm at the enemy, palm down, left hand in the
     # pocket - directing the Persona (Arsene attacks at ~0.41 s, inside the held command pose)
     "cast": [("idle_a3", .02)] + [(n, .05) for n in SUMMON_UP] + [("summon_hold_a", .07)] + COMMAND,
+    # Outbreak (user 2026-11-08): no hand-in-pocket command any more. The hand on the mask clenches the moment the card is
+    # played and stays clenched until the giant hand crushes the eye cut-in (p5mod Aim.HitFor("Outbreak") = 1.16 s after
+    # the cast starts; the tremble and the final squeeze are code, Aim.GripTremble), then lets go and lowers like mask_out.
+    "cast_outbreak_from_mask": [("summon_touch2_a", .02), (GRIP, OUTBREAK_GRIP_END - .02, .03)] + OUTBREAK_LET_GO,
+    "cast_outbreak": [("idle_a3", .02)] + [(n, .045) for n in SUMMON_UP]
+                     + [(GRIP, OUTBREAK_GRIP_END - .02 - .045 * len(SUMMON_UP), .03)] + OUTBREAK_LET_GO,
     "hurt": [("hurt_flinch_a", .05, 0), ("hurt_a4", .25), ("hurt_recover_b1", .1), ("hurt_recover_b2", .1),
              ("idle_a3", .2, .12)],
     "die": [("die_buckle_a", .12, .06), ("die_kneel_a2", .6), ("die_fall_a", .15), ("die_down_b", 1.0)],

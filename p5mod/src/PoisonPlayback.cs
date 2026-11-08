@@ -70,12 +70,25 @@ public sealed class OutbreakPlayback
 			}
 			// Start all targets before awaiting any target. Keep each vanilla Trigger, including
 			// Accelerant repeats, decrement, damage hooks and death handling; no Task.Run/thread pool.
+			// User 2026-11-08: each target's tick waits for the curse streak thrown from the fist to reach it
+			// (PoisonFx.Crushed / ArrivalDelay, 0.05-0.18 s of game time, so the crush hit-stop holds it too).
+			SceneTree? tree = Engine.GetMainLoop() as SceneTree;
+			NCombatRoom? room = NCombatRoom.Instance;
 			Task[] ticks = combat.HittableEnemies.ToArray()
-				.Select(c => c.GetPower<PoisonPower>()).OfType<PoisonPower>()
-				.Select(p => p.Trigger()).ToArray();
+				.Select(c => (Creature: c, Power: c.GetPower<PoisonPower>()))
+				.Where(x => x.Power != null)
+				.Select(x => Land(tree, room?.GetCreatureNode(x.Creature) is { } n ? PoisonFx.ArrivalDelay(n.VfxSpawnPosition) : 0f, x.Power!))
+				.ToArray();
 			await Task.WhenAll(ticks);
 		}
 		finally { Clip.Ready = true; Current.Value = previous; }
+	}
+
+	private static async Task Land(SceneTree? tree, float delay, PoisonPower power)
+	{
+		if (delay > 0f && tree != null)
+			await tree.ToSignal(tree.CreateTimer(delay), SceneTreeTimer.SignalName.Timeout);
+		await power.Trigger();
 	}
 }
 

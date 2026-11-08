@@ -217,7 +217,7 @@ public static class Aim
 			catch (System.Exception)
 			{
 			}
-			bool casting = cur is "cast_from_mask" or "cast" or "cast_big";
+			bool casting = cur is "cast_from_mask" or "cast" or "cast_big" or "cast_outbreak" or "cast_outbreak_from_mask";
 			if (cur is "mask_in" or "mask_loop" || (casting && time < 0.12f))
 			{
 				return;
@@ -299,9 +299,16 @@ public static class Aim
 		}
 		string pre = Prefix(stance);
 		string? current = Current(state);
-		string? name = current == pre + "_in" || current == pre + "_loop"
+		bool fromReady = current == pre + "_in" || current == pre + "_loop";
+		string? name = fromReady
 			? stance switch { Stance.Guard => "cast_guard_from_ready", Stance.Glove => "cast_glove_from_ready", _ => "cast_from_mask" }
 			: stance switch { Stance.Guard => "cast_guard", Stance.Glove => "cast_glove", _ => "cast" };
+		bool outbreak = card.GetType().Name == "Outbreak" && stance == Stance.Mask;
+		if (outbreak && body.HasAnimation(fromReady ? "cast_outbreak_from_mask" : "cast_outbreak"))
+		{
+			// 用户 2026-11-08：毒性爆发不接插兜伸手——扶面具的手一打出就攥紧，一直攥到巨手捏碎（tools/p5/build_rig_p5.py）
+			name = fromReady ? "cast_outbreak_from_mask" : "cast_outbreak";
+		}
 		if (name == null || !body.HasAnimation(name))
 		{
 			return false;
@@ -313,7 +320,18 @@ public static class Aim
 		SelfCast[node.GetInstanceId()] = Time.GetTicksMsec() + 1500;
 		if (_held is ReadyFx held && Joker.FxLayer() is Control layer)
 		{
-			Fx.After(layer, 0.04, () => Release(held));             // 手扣紧面具（summon_hold_a）的那一下炸开
+			if (outbreak)
+			{
+				Fx.After(layer, 0.03, () => Snuff(held));             // 毒性爆发：手一攥，面具火被攥灭、四散
+			}
+			else
+			{
+				Fx.After(layer, 0.04, () => Release(held));         // 手扣紧面具（summon_hold_a）的那一下炸开
+			}
+		}
+		if (outbreak && Joker.FxLayer() is Control tl)
+		{
+			GripTremble(node, tl, 0.04f + OutbreakEmerge + CrushHand.FistAfter, HitFor(card));
 		}
 		Tier tier = Tiers.For(card);
 		if (stance == Stance.Mask && (tier >= Tier.Uncommon || Grips(card.GetType().Name)) && Joker.FxLayer(back: true) is Control back)
@@ -436,7 +454,26 @@ public static class Aim
 				PoisonFx.Squeeze(layer, targets);
 			}, onCrush: () =>
 			{
-				CrushWave.Play(back, clip.ShatterFrom ?? Fx.Screen(back) * 0.5f);
+				Vector2 at = clip.ShatterFrom ?? Fx.Screen(back) * 0.5f;
+				CrushWave.Play(back, at);
+				// 用户 2026-11-08：捏碎那一下要有冲击力 → 全场定格一下，再从拳心甩出咒怨打到每个敌人身上（到了才结算、才炸）。
+				// 先记下拳心，再放行结算（Crush 会同步接着跑 OutbreakPlayback.Run，它要用拳心算每个敌人的到达时刻）
+				if (Joker.FxLayer() is Control fl)
+				{
+					var targets = new List<Vector2>();
+					if (NCombatRoom.Instance is NCombatRoom cr && node.Entity?.CombatState is { } ccs)
+					{
+						foreach (Creature c in ccs.HittableEnemies)
+						{
+							if (cr.GetCreatureNode(c) is NCreature n)
+							{
+								targets.Add(n.VfxSpawnPosition);
+							}
+						}
+					}
+					PoisonFx.Crushed(fl, fl.GetCanvasTransform().AffineInverse() * at, targets);
+				}
+				HitStop.Request(0.12, 0.05);
 				play?.Crush();
 			}, playback: clip);
 			play?.Started(hand.Rect);
@@ -530,6 +567,53 @@ public static class Aim
 
 	/// <summary>打出去、等着施法的面具。</summary>
 	private static ReadyFx? _held;
+
+	private static void Snuff(ReadyFx fx)
+	{
+		fx.Snuff();
+		if (_held == fx)
+		{
+			_held = null;
+		}
+	}
+
+	/// <summary>
+	/// 毒性爆发：Joker 攥着面具的手跟巨手一起越攥越紧——从巨手攥拳（fistAt）到捏碎（crushAt）身体越抖越厉害，
+	/// 捏碎那一下往下一沉（最后一捏），再弹回原位。时刻都从施法开始算。只动 Visuals.Body 的位置，结束时写回。
+	/// </summary>
+	private static void GripTremble(NCreature node, Control layer, float fistAt, float crushAt)
+	{
+		if (node.Visuals?.Body is not Node2D body)
+		{
+			return;
+		}
+		Node clock = new() { Name = "P5GripTremble" };
+		layer.AddChild(clock);
+		Vector2 home = body.Position;
+		float end = crushAt + 0.16f;
+		Fx.Animate(clock, 0, end, t =>
+		{
+			if (!GodotObject.IsInstanceValid(body))
+			{
+				return;
+			}
+			float s = t * end;
+			Vector2 off = Vector2.Zero;
+			if (s >= fistAt && s < crushAt)
+			{
+				float k = (s - fistAt) / Mathf.Max(0.05f, crushAt - fistAt);
+				float amp = 1.2f + 3.8f * k * k;
+				off = new Vector2(Mathf.Sin(s * 91f), Mathf.Cos(s * 73f) * 0.6f) * amp;
+			}
+			else if (s >= crushAt)
+			{
+				float u = (s - crushAt) / 0.16f;
+				off = new Vector2(0f, 7f * Mathf.Sin(Mathf.Min(u, 1f) * Mathf.Pi) * (1f - u * 0.5f));
+			}
+			body.Position = t >= 1f ? home : home + off;
+		});
+		Fx.FreeAfter(clock, end + 0.2);
+	}
 
 	private static void Release(ReadyFx fx)
 	{

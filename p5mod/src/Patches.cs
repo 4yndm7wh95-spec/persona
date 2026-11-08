@@ -205,7 +205,7 @@ public static class DamageNumberPatch
 				if (damage <= 0) return;
 				Popups.Damage(pl, pn.GetInstanceId(), pn.VfxSpawnPosition, damage, false);
 				PoisonFx.Tick(pl, pn.VfxSpawnPosition, pn.GetTopOfHitbox(), pn.Hitbox.GetGlobalRect().Size.X, pn.Visuals,
-					outbreak: OutbreakPlayback.Current.Value != null);
+					outbreak: OutbreakPlayback.Current.Value != null, killed: result.WasTargetKilled);
 				Grip.OnTick(pn.GetInstanceId());
 				DepthGrip.OnTick(pn.GetInstanceId());
 				Myriad.OnPoisonTick(pl, pn.GetInstanceId(), pn.VfxSpawnPosition, pn.GetTopOfHitbox(), null);
@@ -400,6 +400,20 @@ public static class CardPlayedPatch
 [HarmonyPatch(typeof(NPowerAppliedVfx), nameof(NPowerAppliedVfx.Create))]
 public static class PoisonApplyPatch
 {
+	/// <summary>
+	/// 毒性爆发（用户 2026-11-08）：毒在出牌一开始就加上了，原版的中毒图标弹出 + 减益特效会让敌人在 0 秒就有反应、抢了捏碎的戏 →
+	/// Joker 的毒性爆发上毒时不弹（只是不显示，层数照加）。敌人的反应全部留到捏碎后咒怨打到的那一刻。
+	/// </summary>
+	public static bool Prefix(PowerModel power, ref NPowerAppliedVfx? __result)
+	{
+		if (OutbreakPlayback.Current.Value != null && power is MegaCrit.Sts2.Core.Models.Powers.PoisonPower && !power.Owner.IsPlayer)
+		{
+			__result = null;
+			return false;
+		}
+		return true;
+	}
+
 	public static void Postfix(PowerModel power, int amount)
 	{
 		ModEntry.Safe("PoisonApply", () =>

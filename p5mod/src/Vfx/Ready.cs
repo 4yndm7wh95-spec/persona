@@ -101,14 +101,29 @@ public sealed class ReadyFx
 	/// <summary>已经收掉了。</summary>
 	public bool Ended => _ended;
 
-	public void End(bool played)
+	/// <summary>
+	/// 毒性爆发（用户 2026-11-08）：扶面具的手猛地一攥 → 面具火被攥灭：往手心一缩、蓝焰被攥碎往四面八方甩出去、只剩几缕青烟。
+	/// 不是普通打出那样一亮一胀。
+	/// </summary>
+	public void Snuff() => End(true, _pose(MaskHand));
+
+	public void End(bool played) => End(played, null);
+
+	private void End(bool played, Vector2? snuffAt)
 	{
 		if (_ended)
 		{
 			return;
 		}
 		_ended = true;
-		_wall?.End(played);
+		if (snuffAt is Vector2 grip && _wall != null)
+		{
+			_wall.Snuff(grip);
+		}
+		else
+		{
+			_wall?.End(played);
+		}
 		_aura?.End(played);
 		// 火焰着色器自己写颜色，不吃节点的 modulate：它们的透明度要单独淡掉（用户 2026-10-29：收手后火还留在半空）
 		foreach (Node2D n in new[] { _root, _back })

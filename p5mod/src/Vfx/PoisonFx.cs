@@ -207,6 +207,7 @@ public static class PoisonFx
 	/// </summary>
 	public static void BeginOutbreak(float seconds, bool hand = true)
 	{
+		_crushFrom = null;
 		_outbreakUntil = Stage.NowMs() + (ulong)(seconds * 1000f);
 		HandMode = hand;
 		ulong now = Stage.NowMs();
@@ -231,6 +232,38 @@ public static class PoisonFx
 	}
 
 	public static bool InOutbreak => Stage.NowMs() < _outbreakUntil;
+
+	/// <summary>捏碎时的拳心（全局坐标）：引爆时敌人被往远离拳心的方向打退；没捏碎过为空。</summary>
+	private static Vector2? _crushFrom;
+
+	/// <summary>
+	/// 捏碎（用户 2026-11-08：捏爆那一下和敌人身上的伤害要连上）：从拳心朝每个敌人甩出一道咒怨，ArrivalDelay 秒后打到 =
+	/// 那个敌人结算毒伤、引爆（OutbreakPlayback.Run 按同一个时刻等）。全场定格（HitStop）期间这些都停着，定格一松开才飞。
+	/// </summary>
+	public static void Crushed(Control layer, Vector2 from, IEnumerable<Vector2> targets)
+	{
+		_crushFrom = from;
+		Glow.Flash(layer, from, new Color(1f, 0.55f, 0.6f), 900f, 0.2f);
+		foreach (Vector2 at in targets)
+		{
+			Vector2 d = at - from;
+			float len = d.Length();
+			if (len < 60f)
+			{
+				continue;
+			}
+			float travel = ArrivalDelay(at);
+			// 和亚森爪尖甩出去的咒怨光束同一张笔触（slash_thrust）：宽的一头在拳心，沿着路扫过去，扫满 = 打到
+			float sx = len / 940f;
+			Vector2 center = from + d * 0.5f + d.Normalized() * (512f - 530f) * sx;
+			Paint.Sweep(layer, "slash_thrust", center, d.Angle(), new Vector2(sx, 0.5f), Lut5.Curse, travel, 0.03f, 0.2f, 0f, 0f, 1.5f);
+			Paint.Rise(layer, "curse_soul", from + d * 0.5f, 60f, 0.45f, Lut5.Curse, 0.45f, travel * 0.5f);
+		}
+	}
+
+	/// <summary>拳心甩出去的咒怨打到 at 要几秒（离得远的晚一点点，看得出是从拳心传过去的）。</summary>
+	public static float ArrivalDelay(Vector2 at) =>
+		_crushFrom is Vector2 from ? Mathf.Clamp(0.05f + from.DistanceTo(at) / 6000f, 0.05f, 0.18f) : 0f;
 
 	/// <summary>毒性爆发期间：离引爆还有几秒（毒伤的伤害数字推迟到这一刻再跳，DamageNumberPatch）。</summary>
 	public static double BlastWait()
@@ -257,7 +290,7 @@ public static class PoisonFx
 	/// 引爆（毒性爆发唯一的高潮）：所有标记同时炸开——一次顿帧 + 震屏 + 红黑帧（重档，0.15s）；每个敌人一根大咒火柱 + 两边各一团 + 一只怨灵，
 	/// 之后只留烟和火星慢慢散（不再有第二波，原来的第二波让画面一直很满）。同一批里只有第一下带全屏效果和音效。
 	/// </summary>
-	private static void Blast(Control layer, Vector2 at, Vector2 top, float width, Node2D? body)
+	private static void Blast(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, bool killed)
 	{
 		float h = Mathf.Max(80f, (at - top).Length());
 		Vector2 foot = at + new Vector2(0f, h * 0.75f);
@@ -267,9 +300,11 @@ public static class PoisonFx
 		{
 			Sfx.Play(Sfx.CurseBlast, 0.75f);
 			Sfx.Play(Sfx.SubBoom, 0.5f);
-			global::P5Joker.Impact.Confirm(layer, null, at, Vector2.Up, Weight.Heavy);
 		}
 		_lastBlast = now;
+		// 每个敌人都被打得一顿（白闪 + 往远离拳心的方向退）；顿帧 / 震屏 / 红黑帧整批只放一次（Impact 自己合并）
+		Vector2 dir = _crushFrom is Vector2 from && (at - from).LengthSquared() > 1f ? (at - from).Normalized() : Vector2.Up;
+		global::P5Joker.Impact.Confirm(layer, killed ? null : body, at, dir, Weight.Heavy);   // 打死的不击退，交给死亡动画
 		Glow.Flash(layer, at, new Color(1f, 0.3f, 0.35f), width * 1.8f, 0.25f);
 		Glow.Ripple(layer, at, width * 2.4f, 0.5f, 0.03f);
 		CurseFlame(layer, Vanilla.FireCenter, foot, 1.45f * k);
@@ -278,17 +313,16 @@ public static class PoisonFx
 		Vanilla.Burst(layer, Vanilla.Embers, foot, 0f, 1.3f * k, Lut5.Curse, delay: 0.1f);
 		Vanilla.Burst(layer, Vanilla.BigSlashSmoke, foot + new Vector2(0f, -0.3f * h), -Mathf.Pi / 2f, 1.1f * k, Lut5.Smoke, delay: 0.15f);
 		Paint.Rise(layer, "curse_ghost", at + new Vector2(Fx.Rand(-0.15f, 0.15f) * width, 0f), 260f * k, 0.9f * k, Lut5.Curse, 1.0f, 0.08f);
-		BodyTint.Pulse(body, new Color(2f, 0.7f, 0.75f), 0.04, 0.1);
-		Fx.After(layer, 0.14, () => BodyTint.Pulse(body, new Color(0.6f, 0.35f, 0.42f), 0.35, 0.6));
+		Fx.After(layer, 0.24, () => BodyTint.Pulse(body, new Color(0.6f, 0.35f, 0.42f), 0.35, 0.6));   // 等受击白闪（Impact）走完再染暗
 	}
 
 	/// <summary>每轮毒伤（回合开始，敌人越多越频繁）：一小团咒火 + 一缕怨灵 + 身体暗一下。</summary>
-	public static void Tick(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, bool? outbreak = null)
+	public static void Tick(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, bool? outbreak = null, bool killed = false)
 	{
 		if (outbreak ?? InOutbreak)
 		{
 			// The gameplay gate already releases on the actual crush. Never add a beam-land delay.
-			Blast(layer, at, top, width, body);
+			Blast(layer, at, top, width, body, killed);
 			return;
 		}
 		float h = Mathf.Max(80f, (at - top).Length());

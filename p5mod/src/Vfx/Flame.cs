@@ -435,6 +435,66 @@ void fragment() {
 		Fx.FreeAfter(n, 0.35);
 	}
 
+	/// <summary>
+	/// 被攥灭（毒性爆发，用户 2026-11-08）：火先往手心猛地一缩（0.07s，火舌压扁、亮一下），然后整团熄掉——
+	/// 蓝焰碎成火星从手心往四周甩开（快、几乎不往上飘），后面一圈暗蓝的余烬慢慢落，再冒几缕青烟。
+	/// </summary>
+	public void Snuff(Vector2 hand)
+	{
+		if (_ended || !GodotObject.IsInstanceValid(_root))
+		{
+			return;
+		}
+		_ended = true;
+		foreach (GpuParticles2D p in _particles)
+		{
+			if (GodotObject.IsInstanceValid(p))
+			{
+				p.Emitting = false;
+				Fx.FreeAfter(p, 2.4);
+			}
+		}
+		Vector2 at = _root.GlobalPosition;
+		const float pull = 0.07f, die = 0.12f;
+		Sfx.Play(Sfx.PersonaFlame, 0.35f);
+		Sfx.Play(Sfx.SwishLow, 0.4f);
+		foreach (ColorRect r in new[] { _fire, _fireRear })
+		{
+			ColorRect f = r;
+			float a0 = f == _fire ? 1f : 0.75f;
+			Fx.Animate(f, 0, pull + die, t =>
+			{
+				float s = t * (pull + die);
+				float k = Mathf.Clamp(s / pull, 0f, 1f), d = Mathf.Clamp((s - pull) / die, 0f, 1f);
+				f.Scale = new Vector2(Mathf.Sign(f.Scale.X), 1f) * (1f - 0.3f * Fx.OutCubic(k) - 0.4f * d);
+				Set(f, "flame", Mathf.Max(0f, 1f - 0.7f * Fx.OutCubic(k) - 0.3f * d));
+				Set(f, "glow", 1f + 0.8f * k * (1f - d));
+				Set(f, "alpha", a0 * (1f - Fx.OutCubic(d)));
+			});
+		}
+		// 整团往手心拉过去
+		foreach (Node2D n in new[] { _root, _rear })
+		{
+			Node2D node = n;
+			Vector2 from = node.GlobalPosition;
+			Fx.Animate(node, 0, pull, t => node.GlobalPosition = from.Lerp(hand, 0.35f * Fx.OutCubic(t)));
+		}
+		Fx.After(_layer, pull, () =>
+		{
+			Glow.Flash(_back, hand, Hi, _half * 2.2f, 0.18f);
+			Glow.Sparks(_layer, hand, 70, 500f, 1300f, 0.45f, new[] { Hot, Hi, Mid }, 60f, 0.08f, 0.3f);
+			Glow.Sparks(_back, hand, 26, 120f, 380f, 1.0f, new[] { Mid, Dark }, 140f, 0.25f, 0.55f);
+			Vanilla.Burst(_back, Vanilla.BigSlashSmoke, hand + new Vector2(0f, -20f), -Mathf.Pi / 2f, 0.55f, Lut5.Smoke, delay: 0.04f);
+		});
+		Set(_haze, "alpha", 0f);
+		Tween fade = _halo.CreateTween();
+		fade.TweenProperty(_halo, "modulate:a", 0f, pull + die);
+		foreach (Node2D n in new[] { _root, _halo, _rear })
+		{
+			Fx.FreeAfter(n, pull + die + 0.1);
+		}
+	}
+
 	/// <summary>打出：一亮、往外一胀、火舌窜高，蓝色火星炸开，0.4s 散掉。放回：往中间缩掉。</summary>
 	public void End(bool played)
 	{
