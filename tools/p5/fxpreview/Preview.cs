@@ -605,6 +605,15 @@ public partial class Preview : Node2D
 			p.HitC(4.1, Enemy3, 20, Impact.Grade(Weight.Medium, 20, 20, true, false), true, dies: true);
 			p.HitC(5.2, Enemy2, 40, Impact.Grade(Weight.Heavy, 40, 30, true, true), true, dies: true);
 		},
+		// 防御方向 A（用户 2026-11-08）：P5 漫画式格挡。普通一次、格挡 10 点以上一次
+		["guard_stamp"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.Ready(0.2, Stance.Guard, "guard", "cast_guard_from_ready", play: true);
+			p.At(0.2 + 1.63, () => GuardStamp.Play(p._front, Pose(885f, 310f), tall, 1f, 5));
+			p.Ready(2.6, Stance.Guard, "guard", "cast_guard_from_ready", play: true);
+			p.At(2.6 + 1.63, () => GuardStamp.Play(p._front, Pose(885f, 310f), tall, 1f, 12));
+		},
 		["block"] = p =>
 		{
 			p.EnemyAttack(0.3, Enemy);
