@@ -55,6 +55,7 @@ public static class VelvetShopPatch
 		// intercepts input; Inventory and ProceedButton keep their original order.
 		Vfx.VelvetShopOutline.Attach(background, merchant, material);
 		Vfx.VelvetShopLife.Attach(background, material);
+		Audio.VelvetShopMusic.Attach(room);
         Callable.From(()=>ModEntry.Safe("shop preload",()=>
         {
             if(!GodotObject.IsInstanceValid(room) || !room.IsInsideTree()) return;
