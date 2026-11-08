@@ -225,6 +225,9 @@ void fragment() {
 	public sealed class Setup
 	{
 		public Vector2 JokerFeet, JokerHead, JokerMuzzle, PersonaMuzzle;
+		/// <summary>撒旦耶尔头在屏幕上的位置、原型图像素 → 屏幕像素的缩放（有原型图时用，没有就只用 PersonaMuzzle）。</summary>
+		public Vector2 PersonaHead = new(250f, 190f);
+		public float PersonaScale = 0.82f;
 		public float FloorY;
 		public List<Vector2> Enemies = new();
 		/// <summary>穿过第 i 个敌人（按离枪口由近到远）的那一刻：游戏在这里结算这个敌人的伤害。</summary>
@@ -268,10 +271,22 @@ void fragment() {
 		root.AddChild(rockRect);
 		Fx.Clock(skyRect);
 		Fx.Clock(rockRect);
+		// ── 撒旦耶尔（部件动画）：先摆到开枪那一刻量出枪口，再回到登场姿势
+		const float RiseAt = RevealAt + RevealTime * 0.55f;
+		float exitAt = FireAt + ExitAfter;
+		Vector2 aimScreen = s.Enemies.Count > 0 ? toScreen(s.Enemies.Aggregate(Vector2.Zero, (a, b) => a + b) / s.Enemies.Count) : screen * 0.7f;
+		SatanaelPuppet? puppet = SatanaelPuppet.Available ? new SatanaelPuppet(personaSlot, s.PersonaHead * unit, s.PersonaScale * unit, aimScreen) : null;
+		if (puppet != null)
+		{
+			puppet.Update(FireAt - 0.0005f, RiseAt, AimAt, FireAt, exitAt);
+			s.PersonaMuzzle = puppet.MuzzleGlobal;
+			puppet.Update(0f, RiseAt, AimAt, FireAt, exitAt);
+		}
 		float far = (screen * 1.3f).Length();
 		Fx.Animate(root, 0, total, t =>
 		{
 			float time = t * total;
+			puppet?.Update(time, RiseAt, AimAt, FireAt, exitAt);
 			float rv = Mathf.Clamp((time - RevealAt) / RevealTime, 0f, 1f);
 			float reveal = far * (1f - Mathf.Pow(1f - rv, 2.2f));
 			float ex = Mathf.Clamp((time - FireAt - ExitAfter) / ExitTime, 0f, 1f);
@@ -320,6 +335,10 @@ void fragment() {
 				float k = Mathf.Clamp(time / dur, 0f, 1f);
 				vm.SetShaderParameter("power", time <= dur ? 0.25f + 1.2f * k * k : Mathf.Max(0f, 1.45f * (1f - (time - dur) / 0.12f)));
 				vroot.Scale = Vector2.One * (1.15f - 0.35f * k);
+				if (puppet != null && GodotObject.IsInstanceValid(puppet.Root))
+				{
+					vroot.GlobalPosition = puppet.MuzzleGlobal;              // 跟着枪口（抬枪后的微抖）
+				}
 				vroot.Rotation = -time * 2f;
 			});
 			// 周围的余烬被吸进枪口
