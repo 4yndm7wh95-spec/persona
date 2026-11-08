@@ -1,0 +1,140 @@
+{
+  "repo": "C:\\Users\\kkk\\Documents\\Codex\\2026-11-08\\full-body-character-art-of-joker\\work\\persona",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a1b9c1-3633-7952-824a-82ea95a17f21\\exec-ecca0605-f6f2-4546-9eb8-ed3d4a33a993.png",
+  "prompt": "Use case: precise-object-edit. Edit image 1, the approved 1024×1536 full-body transparent Joker Persona 5 Royal game sprite summon_touch2_a. Image 2 is for how the near-side hand approaches and covers the face, not for body geometry. Image 3 is for dark-red shadow planes, leather creases, strong short fingers, bold black outlines and cuff fit. Image 4 is the Persona 5 Royal illustration-style reference. Produce the edited sprite on the EXACT same 1024×1536 coordinate grid and registration as image 1, with transparent RGBA. Keep image 1's silhouette, black coat, torso, vest, gold fastenings, legs, stance, foot placement, margins and coat tails from the original, with edits confined to the raised arm, its shoulder, head, and lowered red glove. Match the arm's connection to the original torso and the lowered glove's wrist to the existing cuff with pixel-accurate placement. Near-side glove on screen left clenches HARD over the white-and-black domino mask, all fingers naturally bent like claws digging into mask and face, high knuckles, taut creased red leather with dark-red hard-edged shadow, thumb pressed against cheekbone. Rotate forearm slightly inward and raise the elbow slightly and draw it a little inward, with that shoulder lifted under the strain. Head tilts a little down and toward his grip, original scale and silhouette envelope. One narrowed cold glaring eye seen between his curled fingers, lips pressed together. Far-side red glove on screen right forms a tight fist at the same hanging wrist under the same cuff, a compact natural silhouette. Clean bold black outlines and high-contrast, hard-edged flat cel colors matching image 1. Whole character remains in frame from hair to soles at its original coordinates. Genuine transparent background. No flames, glow, gradients, motion lines, text, shadows, extra fingers, weapons or other effects.",
+  "inputs": [
+    "art/p5/poses/summon_touch2_a.png",
+    "art/p5/poses/summon_hold_a.png",
+    "art/p5/poses/ref_command_hand_style.png",
+    "art/p5/concept/style_A_p5r_official_1.png"
+  ],
+  "base": "summon_touch2_a",
+  "consistency_base": "idle_a3",
+  "tool": "built-in image_gen",
+  "occluded": true,
+  "mask": {
+    "canvas": [
+      1024,
+      1536
+    ],
+    "coordinate_origin": "top-left",
+    "head_raised_arm_shoulder_polygon": [
+      [
+        299,
+        0
+      ],
+      [
+        714,
+        0
+      ],
+      [
+        714,
+        252
+      ],
+      [
+        636,
+        250
+      ],
+      [
+        612,
+        278
+      ],
+      [
+        587,
+        289
+      ],
+      [
+        574,
+        311
+      ],
+      [
+        566,
+        345
+      ],
+      [
+        550,
+        362
+      ],
+      [
+        529,
+        373
+      ],
+      [
+        505,
+        409
+      ],
+      [
+        478,
+        440
+      ],
+      [
+        419,
+        450
+      ],
+      [
+        380,
+        446
+      ],
+      [
+        299,
+        423
+      ]
+    ],
+    "lowered_glove_polygon": [
+      [
+        747,
+        777
+      ],
+      [
+        761,
+        767
+      ],
+      [
+        786,
+        755
+      ],
+      [
+        799,
+        754
+      ],
+      [
+        851,
+        772
+      ],
+      [
+        868,
+        902
+      ],
+      [
+        786,
+        910
+      ],
+      [
+        779,
+        890
+      ],
+      [
+        769,
+        857
+      ],
+      [
+        758,
+        820
+      ]
+    ]
+  },
+  "changed_pixels_outside_mask": 0,
+  "cleanup_alpha_pixels": 742,
+  "transparent_pixels": 1019420,
+  "consistency_output": "summon_grip_a      (face covered) standing height x0.993  boot height x0.967  boot width x0.984  feet moved [83, 178] px  ok\nsheet: art\\p5\\poses\\check_summon_grip_a.png | overall: ok\n",
+  "normalization": {
+    "scale": 1.0,
+    "offset": [
+      434,
+      81
+    ],
+    "anchor_foot": "front"
+  },
+  "inherited_faint_alpha_pixels": 836,
+  "inherited_faint_alpha_max": 3
+}
