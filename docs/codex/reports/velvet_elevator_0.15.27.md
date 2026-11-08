@@ -10,7 +10,7 @@
 
 基于 `f120ea40`，0.107 和 0.111 均以 0 警告、0 错误编译。按 BUILD.md 从 `mod/pck_stage` 副本重打 PCK v3，并用 Godot 4.5.1 从成品包实际读取四张格栅/吊灯图层和三条 OGG。包内新环境声与打包源 SHA-256 一致。已删除的 `elevator_front.png`、`elevator_backdrop.png`、`elevator_car.png`、`elevator_car_glow.png` 均未入包。
 
-ZIP 位于 `mod/dist/P3Makoto_0.15.27.zip`，桌面 P3RMOD 有副本。打包后首次安装检查发现游戏仍在运行，安装等游戏退出后进行。
+ZIP 位于 `mod/dist/P3Makoto_0.15.27.zip`，桌面 P3RMOD 有副本。游戏退出后已备份并安装到 0.107 和 0.111 两套游戏，DLL、清单和 PCK 的安装文件哈希均与构建产物一致。
 
 ## 成品 PCK 文件清单
 
