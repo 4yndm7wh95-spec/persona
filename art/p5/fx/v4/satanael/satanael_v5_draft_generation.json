@@ -1,0 +1,32 @@
+{
+  "tool": "built-in ImageGen",
+  "base_commit": "680f2e03",
+  "references": [
+    "satanael_v4_seen.png",
+    "pose_notes_v5.png"
+  ],
+  "prompt": "Create a fresh full-frame Satanael V5 illustration for a Persona 5 Royal game sprite. Image 1 satanael_v4_seen is the base composition and the exact design, colors and cel-shading reference. Image 2 pose_notes_v5 is the authoritative pose annotation, with arrows and notes only as instructions. Repaint the entire figure, preserving identity, composition, waist-to-horn framing, black armor, aged dark bronze accents, deep burgundy cape, and the complete ornate long-barreled revolver. Near-square portrait 17:18, intended 3400×3600. True transparent RGBA. No letters or annotation marks.\n1. The red diagonal is the new overall line of action: from sweeping cape at lower left through waist, chest and forward shoulder to the muzzle at right. A forceful advancing gesture, as if pushing into a strong wind.\n2. Tilt the upper body clearly about 20 degrees toward screen right, keeping the waist behind. Raise and protract the gun-side shoulder; drop and pull back the near shoulder. Make these shoulders visibly different in height. Keep the far anatomical LEFT arm nearly straight and single-handed on the grip. Side-on revolver aimed toward screen right, entire length visible, slightly larger and thicker if it fits. Revolver has a distinct cylinder, long ornamental narrow barrel and side rim, no view directly down the muzzle.\n3. Make the horned helmet a little larger and further forward. The chin is tucked but bright red eyes glare along the gun toward screen right, at the same target level as the weapon rather than at the ground. Both horn tips must be cleanly visible.\n4. Change the near anatomical RIGHT arm from hanging: elbow bends outward on the screen-left side, forearm returns diagonally inward, open tense claw held in front of his waist. Fingers spread and poised. The right hand remains separate from the gun.\n5. Flare the two wings wider and higher, asymmetrically, swept back by wind. The silhouettes curve back and up, with different height and angle. Preserve star-decorated dark membranes. \n6. Draw the dark red cape in broad dynamic curved folds sweeping hard toward the lower left and out behind the character. Strong bold ink outlines and hard-edged P5 cel-shading, black and gray antique bronze with subdued burgundy. Keep the whole gun within the frame with transparent clearance at right. No background, glow, text, particles, scenery or other characters. Highest native detail available.",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a1b9c1-3633-7952-824a-82ea95a17f21\\exec-5c43a304-8420-49c0-8acf-bf2acfbe7299.png",
+  "native_size": [
+    1218,
+    1292
+  ],
+  "delivery_size": [
+    3400,
+    3600
+  ],
+  "scale": 2.7863777089783284,
+  "content_size": [
+    3394,
+    3600
+  ],
+  "offset": [
+    3,
+    0
+  ],
+  "processing": "Uniform Lanczos resize, zero alpha <= 2 and faint residuals beyond two raw pixels from the alpha >= 200 silhouette, zero RGB wherever alpha is zero.",
+  "source_pixels_cleaned": 10828,
+  "right_margin_at_alpha_128": 6,
+  "generation_count": 1,
+  "redraw_count": 0
+}
