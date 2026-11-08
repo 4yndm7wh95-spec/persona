@@ -140,6 +140,7 @@ internal partial class ShopWater : Control
         ApplyOpening(0f);
         // Preloaded stages are already rendered. Never gate opening on a render callback.
         StartTick();
+        Audio.Sfx.Clip("igor_shop_cue107");
         GD.Print($"{ModEntry.Tag} shop opening started; size={Size}");
     }
     private void StartTick()
