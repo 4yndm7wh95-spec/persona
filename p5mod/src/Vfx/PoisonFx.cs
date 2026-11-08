@@ -339,7 +339,7 @@ public static class PoisonFx
 		ulong now = Stage.NowMs();
 		if (now - _lastBlast > 150)
 		{
-			Sfx.Play(Sfx.OutbreakBurst, 0.8f);                        // 用户 2026-11-08：换掉平淡的受击声（原版受击声在 OutbreakHitSfxPatch 里关掉）
+			Sfx.Play(Sfx.OutbreakBurst, 1.2f);   // 用户 2026-11-08：被捏碎 / 碎玻璃声盖住、听不出来 → 文件压缩提响 + 音量 1.2                        // 用户 2026-11-08：换掉平淡的受击声（原版受击声在 OutbreakHitSfxPatch 里关掉）
 			Sfx.Play(Sfx.SubBoom, 0.45f);
 		}
 		_lastBlast = now;
