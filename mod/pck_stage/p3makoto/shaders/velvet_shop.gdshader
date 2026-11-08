@@ -17,13 +17,12 @@ uniform sampler2D room_tex : filter_linear;
 uniform sampler2D lattice_mask_tex : filter_linear;
 uniform sampler2D lantern_left_tex : filter_linear;
 uniform sampler2D lantern_right_tex : filter_linear;
-uniform sampler2D car_tex : filter_linear;
-uniform sampler2D car_glow_tex : filter_linear;
 uniform vec2 left_pivot = vec2(199.0, 75.0);   // measured chain hook of lantern_left.png
 uniform vec2 right_pivot = vec2(1474.0, 75.0);
-uniform vec2 car_size = vec2(600.0, 998.0);
-uniform float car_left_x = -8.0;              // left car's left edge, room pixels
-uniform float car_right_x = 1080.0;           // right car's left edge (drawn mirrored)
+// One wide car behind the whole room, seen through both lattice walls.
+uniform float car_x0 = 110.0;
+uniform float car_x1 = 1562.0;
+uniform float car_h = 540.0;
 uniform float car_y = 2000.0;                 // top edge, room pixels
 uniform float car_on = 0.0;
 uniform float car_blur = 0.0;                 // trail length below the car, room pixels
@@ -40,52 +39,66 @@ vec4 lantern_layer(sampler2D tex, vec2 pixel, vec2 pivot, float angle) {
     return tex_bounded(tex, src / vec2(1672.0, 941.0));
 }
 
-// Premultiplied, vertically smeared car; .a of glow returned separately.
-vec4 car_sample(vec2 pixel, float x0, float flip, out float glow) {
-    vec4 car = vec4(0.0);
-    glow = 0.0;
-    for (int i = 0; i < 9; i++) {
-        // Moving up: earlier positions were lower, so the trail lies below the car.
-        float s = car_blur * float(i) / 8.0;
-        vec2 local = (pixel - vec2(x0, car_y + s)) / car_size;
-        local.x = mix(local.x, 1.0 - local.x, flip);
-        vec4 c = tex_bounded(car_tex, local);
-        car += vec4(c.rgb * c.a, c.a);
-        glow += tex_bounded(car_glow_tex, local).a;
-    }
-    glow /= 9.0;
-    return car / 9.0;
+// Procedural cage car: dark roof with a lamp strip, lit interior behind a folding
+// gate (vertical bars + accordion diagonals), dark floor slab. Crisp at any size.
+vec3 car_color(vec2 p, out float inside) {
+    float ly = p.y - car_y;
+    inside = step(car_x0, p.x) * step(p.x, car_x1) * step(0.0, ly) * step(ly, car_h);
+    if (inside < 0.5) return vec3(0.0);
+    float edge = min(p.x - car_x0, car_x1 - p.x);
+    // Thick dark roof with a bright lamp strip under it, and a dark floor slab:
+    // the two strong horizontal edges are what reads through the lattice.
+    if (ly < 72.0) return ly > 62.0 ? vec3(0.95, 0.97, 1.0) : vec3(0.03, 0.035, 0.08);
+    if (ly > car_h - 56.0) return ly < car_h - 50.0 ? vec3(0.55, 0.65, 0.90) : vec3(0.03, 0.035, 0.08);
+    if (edge < 22.0) return vec3(0.05, 0.06, 0.12);
+    float k = (ly - 72.0) / (car_h - 128.0);
+    vec3 c = mix(vec3(0.82, 0.90, 1.0), vec3(0.34, 0.48, 0.88), k);
+    // Handrail across the car at waist height.
+    float rail = 1.0 - smoothstep(4.0, 7.0, abs(ly - car_h * 0.62));
+    c = mix(c, vec3(0.10, 0.12, 0.22), rail);
+    float gx = mod(p.x - car_x0, 30.0);
+    c *= 1.0 - 0.55 * (1.0 - smoothstep(3.0, 5.0, gx));
+    return c;
 }
 
-float cable_mask(vec2 pixel, float x0) {
-    float cx = abs(pixel.x - (x0 + car_size.x * 0.5));
-    float c = (1.0 - smoothstep(0.8, 2.2, abs(cx - 15.0))) + (1.0 - smoothstep(0.8, 2.2, cx));
-    c *= 1.0 - smoothstep(car_y + 30.0, car_y + 60.0, pixel.y);
-    return clamp(c, 0.0, 1.0) * (1.0 - smoothstep(320.0, 600.0, car_y));
+vec4 car_sample(vec2 pixel) {
+    vec4 acc = vec4(0.0);
+    for (int i = 0; i < 12; i++) {
+        // Moving up: earlier positions were lower, so the trail lies below the car.
+        float s = car_blur * float(i) / 11.0;
+        float inside;
+        vec3 c = car_color(pixel - vec2(0.0, s), inside);
+        acc += vec4(c * inside, inside);
+    }
+    return acc / 12.0;
+}
+
+float cable_mask(vec2 pixel) {
+    float w = car_x1 - car_x0, c = 0.0;
+    for (int i = 0; i < 2; i++) {
+        float cx = car_x0 + w * (i == 0 ? 0.2 : 0.8);
+        float d = abs(pixel.x - cx);
+        c += (1.0 - smoothstep(1.0, 2.6, abs(d - 9.0)));
+    }
+    c *= 1.0 - smoothstep(car_y - 4.0, car_y + 2.0, pixel.y);
+    return clamp(c, 0.0, 1.0) * (1.0 - smoothstep(330.0, 620.0, car_y));
 }
 
 vec3 passing_car(vec3 painted, vec2 pixel) {
     if (car_on <= 0.001) return painted;
     float rail = texture(lattice_mask_tex, pixel / vec2(1672.0, 941.0)).r;
-    float wall = 1.0 - rail;
-    float gl, gr;
-    vec4 cl = car_sample(pixel, car_left_x, 0.0, gl);
-    vec4 cr = car_sample(pixel, car_right_x, 1.0, gr);
-    vec4 car = cl + cr;
-    float glow = gl + gr;
-    float k = wall * car_on;
+    float k = (1.0 - rail) * car_on;
+    vec4 car = car_sample(pixel);
     vec3 color = painted * (1.0 - car.a * k) + car.rgb * k;
-    float cables = max(cable_mask(pixel, car_left_x), cable_mask(pixel, car_right_x));
-    color = mix(color, vec3(0.22, 0.25, 0.34), cables * 0.8 * k);
-    color += vec3(0.16, 0.30, 0.65) * glow * k;
-    // Cool light washing over the rails in front of each car.
-    float top = car_y - 90.0, bottom = car_y + car_size.y + car_blur + 90.0;
+    color = mix(color, vec3(0.20, 0.23, 0.33), cable_mask(pixel) * 0.85 * k);
+    // Cool light washing over the iron in front of the car.
+    float top = car_y - 90.0, bottom = car_y + car_h + car_blur + 90.0;
     float band = smoothstep(top - 80.0, top + 80.0, pixel.y) * (1.0 - smoothstep(bottom - 80.0, bottom + 80.0, pixel.y));
-    float sx = exp(-pow((pixel.x - (car_left_x + car_size.x * 0.5)) / (car_size.x * 0.6), 2.0))
-             + exp(-pow((pixel.x - (car_right_x + car_size.x * 0.5)) / (car_size.x * 0.6), 2.0));
+    float sx = smoothstep(car_x0 - 120.0, car_x0 + 40.0, pixel.x) * (1.0 - smoothstep(car_x1 - 40.0, car_x1 + 120.0, pixel.x));
+    sx *= 1.0 - smoothstep(560.0, 640.0, pixel.x) * (1.0 - smoothstep(1032.0, 1112.0, pixel.x)); // walls only, not Igor
     float metal = dot(painted, vec3(0.299, 0.587, 0.114));
-    color += vec3(0.20, 0.36, 0.70) * band * sx * car_on * rail * (0.25 + metal * 0.9)
-        * (1.0 - smoothstep(560.0, 680.0, pixel.y));
+    color += vec3(0.20, 0.34, 0.66) * band * sx * car_on * rail * (0.20 + metal * 1.1)
+        * (1.0 - smoothstep(560.0, 690.0, pixel.y));
     return color;
 }
 

@@ -59,7 +59,9 @@ public static class VelvetShopPatch
 		// and a player added to a busy parent never enters the tree (silent).
 		Callable.From(()=>ModEntry.Safe("velvet room bgm",()=>
 		{
-			if(GodotObject.IsInstanceValid(room) && room.IsInsideTree()) Audio.VelvetShopMusic.Attach(room);
+			if(!GodotObject.IsInstanceValid(room) || !room.IsInsideTree()) return;
+			Audio.VelvetShopMusic.Attach(room);
+			Audio.VelvetShopMusic.AttachHum(room);
 		})).CallDeferred();
         Callable.From(()=>ModEntry.Safe("shop preload",()=>
         {

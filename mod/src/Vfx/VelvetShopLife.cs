@@ -5,14 +5,16 @@ namespace P3Makoto.Vfx;
 
 internal static class VelvetShopLife
 {
-	// Room pixel space of velvet_room.png. Each car is centred in one side opening
-	// (x 0-584 / 1087-1670, y 0-600) with ~60px of still wall on both sides, so the
-	// rise reads against the room; both sides pass together, mirrored.
-	private static readonly Vector2 CarSize = new(460, 765);
-	private const float CarLeftX = 62f, CarRightX = 1148f;
-	// Start just below the openings, finish with the trail above the screen.
-	private const float CarFromY = 600f, CarToY = -765f - 300f;
-	private const double PassDur = 0.42;
+	// Room pixel space of velvet_room.png. One wide procedural car (drawn in the
+	// shader) passes behind the whole room and shows through both lattice walls,
+	// leaving still wall at the outer edges so the rise reads.
+	private const float CarX0 = 110f, CarX1 = 1562f, CarH = 540f;
+	// Start just below the walls, finish with the trail above the screen.
+	private const float CarFromY = 630f, CarToY = -CarH - 220f;
+	private const double PassDur = 0.60;
+	// velvet_elevator_pass.ogg peaks at 1.30 s; the car's middle crosses the walls
+	// ~0.34 s into the pass, so the sound starts this long before the car.
+	private const double SoundLead = 1.30 - 0.34;
 
 	private static Texture2D? RawPng(string file)
 	{
@@ -29,9 +31,7 @@ internal static class VelvetShopLife
 		var mask = RawPng("lattice_mask.png");
 		var lanternLeft = RawPng("lantern_left.png");
 		var lanternRight = RawPng("lantern_right.png");
-		var car = RawPng("elevator_car.png");
-		var glow = RawPng("elevator_car_glow.png");
-		if (room == null || mask == null || lanternLeft == null || lanternRight == null || car == null || glow == null)
+		if (room == null || mask == null || lanternLeft == null || lanternRight == null)
 		{
 			GD.Print($"{ModEntry.Tag} velvet elevator textures missing; painted room kept");
 			return false;
@@ -42,11 +42,9 @@ internal static class VelvetShopLife
 		material.SetShaderParameter("lattice_mask_tex", mask);
 		material.SetShaderParameter("lantern_left_tex", lanternLeft);
 		material.SetShaderParameter("lantern_right_tex", lanternRight);
-		material.SetShaderParameter("car_tex", car);
-		material.SetShaderParameter("car_glow_tex", glow);
-		material.SetShaderParameter("car_size", CarSize);
-		material.SetShaderParameter("car_left_x", CarLeftX);
-		material.SetShaderParameter("car_right_x", CarRightX);
+		material.SetShaderParameter("car_x0", CarX0);
+		material.SetShaderParameter("car_x1", CarX1);
+		material.SetShaderParameter("car_h", CarH);
 		material.SetShaderParameter("car_on", 0f);
 		material.SetShaderParameter("layered", true);
 		GD.Print($"{ModEntry.Tag} velvet lattice room and elevator ready");
@@ -77,7 +75,8 @@ internal static class VelvetShopLife
 		skeleton.AddChild(right);
 		var tree = background.GetTree();
 		double time = 0, nextBlink = GD.RandRange(2.8, 5.5);
-		double nextCar = GD.RandRange(3.0, 5.0), carStart = -1;
+		double nextCar = GD.RandRange(3.5, 5.5), carStart = -1;
+		bool soundPlayed = false;
 		CanvasItem? shopPage = null;
 		bool ShopPageOpen()
 		{
@@ -106,11 +105,16 @@ internal static class VelvetShopLife
 		{
 			if (carStart < 0)
 			{
+				// The approach is heard before the car shows: it swells, passes, fades away.
+				if (!soundPlayed && time >= nextCar - SoundLead)
+				{
+					// Hidden behind the goods page: wait instead of passing unseen.
+					if (ShopPageOpen()) { nextCar = time + SoundLead + GD.RandRange(2.0, 4.0); return; }
+					soundPlayed = true;
+					Audio.Sfx.Clip("velvet_elevator_pass", 0.9f);
+				}
 				if (time < nextCar) return;
-				// Hidden behind the goods page: wait instead of passing (and whooshing) unseen.
-				if (ShopPageOpen()) { nextCar = time + GD.RandRange(2.0, 4.0); return; }
 				carStart = time;
-				Audio.Sfx.Clip("swish_large_1", 0.32f, pitch: 0.55f);
 			}
 			float p = Mathf.Clamp((float)((time - carStart) / PassDur), 0f, 1f);
 			// Gentle acceleration through the opening, then full speed off the top.
@@ -118,13 +122,14 @@ internal static class VelvetShopLife
 			float y = Mathf.Lerp(CarFromY, CarToY, eased);
 			float speed = (CarToY - CarFromY) * (3.2f * p - 1.8f * p * p) / (float)PassDur; // d(y)/dt, px/s (negative)
 			material.SetShaderParameter("car_y", y);
-			// About 1/22 s of shutter: long streak at peak speed, short while entering.
-			material.SetShaderParameter("car_blur", Mathf.Min(Mathf.Abs(speed) / 22f, 300f));
+			// Short shutter (~1/45 s): enough streak to feel fast, edges stay readable.
+			material.SetShaderParameter("car_blur", Mathf.Min(Mathf.Abs(speed) / 45f, 90f));
 			material.SetShaderParameter("car_on", 1f);
 			if (p >= 1f)
 			{
 				material.SetShaderParameter("car_on", 0f);
 				carStart = -1;
+				soundPlayed = false;
 				nextCar = time + GD.RandRange(8.0, 15.0);
 			}
 		}

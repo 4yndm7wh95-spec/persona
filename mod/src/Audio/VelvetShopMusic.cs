@@ -14,7 +14,13 @@ internal static class VelvetShopMusic
 {
 	private const string Path = "res://p3makoto/bgm/velvet_room.ogg";
 	private const string LoopPath = "res://p3makoto/bgm/velvet_room.loop.txt";
-	private const float FadeIn = 1.6f, FadeOut = 0.9f, Gain = 0.85f;
+	private const float FadeIn = 1.6f, FadeOut = 0.9f;
+	// The piano file is mastered at about -18 LUFS; native BGM and the voice clips are far
+	// louder, so 0.15.23's volume²×0.85 left it ~14 dB under Igor's voice (inaudible).
+	private const float Boost = 1.4f;
+	// Low elevator hum under the whole room (SFX bus, independent of the music box).
+	private const string HumPath = "res://p3makoto/sfx/velvet_elevator_hum.ogg";
+	private const float HumVolume = 0.30f;
 	private static AudioStreamOggVorbis? _stream;
 	private static bool _loaded;
 
@@ -64,8 +70,7 @@ internal static class VelvetShopMusic
 			fade = Mathf.MoveToward(fade, target, dt / (target > fade ? FadeIn : FadeOut));
 			float smooth = fade * fade * (3f - 2f * fade);
 			float bgm = SaveManager.Instance?.SettingsSave?.VolumeBgm ?? 0.5f;
-			// The native BGM is applied as volume²; match that loudness curve.
-			float lin = smooth * bgm * bgm * Gain;
+			float lin = smooth * Mathf.Min(1f, bgm * Boost);
 			player.VolumeDb = lin <= 0.0001f ? -80f : Mathf.LinearToDb(lin);
 			// Native BGM: muted while our loop sounds; the music box manages it when it plays.
 			if (!box && NAudioManager.Instance is { } am)
@@ -88,5 +93,36 @@ internal static class VelvetShopMusic
 		tree.ProcessFrame += Tick;
 		room.TreeExiting += () => leaving = true;
 		GD.Print($"{ModEntry.Tag} velvet room bgm started (loop from {stream.LoopOffset:0.00}s)");
+	}
+
+	/// <summary>Loops the elevator hum while the room exists, fading in and out.</summary>
+	public static void AttachHum(Node room)
+	{
+		if (!FileAccess.FileExists(HumPath)) { GD.Print($"{ModEntry.Tag} velvet elevator hum missing"); return; }
+		var hum = AudioStreamOggVorbis.LoadFromBuffer(FileAccess.GetFileAsBytes(HumPath));
+		if (hum == null) return;
+		hum.Loop = true;
+		var tree = room.GetTree();
+		StringName bus = AudioServer.GetBusIndex("SFX") >= 0 ? new StringName("SFX") : new StringName("Master");
+		var player = new AudioStreamPlayer { Stream = hum, Bus = bus, VolumeDb = -80f, Name = "P3VelvetElevatorHum", ProcessMode = Node.ProcessModeEnum.Always };
+		tree.Root.AddChild(player);
+		if (!player.IsInsideTree()) { player.QueueFree(); return; }
+		player.Play((float)GD.RandRange(0.0, hum.GetLength()));
+		float fade = 0f;
+		bool leaving = false;
+		ulong last = Time.GetTicksMsec();
+		void Tick()
+		{
+			ulong now = Time.GetTicksMsec();
+			float dt = Mathf.Min((now - last) / 1000f, 0.1f);
+			last = now;
+			if (!GodotObject.IsInstanceValid(player)) { tree.ProcessFrame -= Tick; return; }
+			fade = Mathf.MoveToward(fade, leaving ? 0f : 1f, dt / (leaving ? FadeOut : FadeIn));
+			float lin = fade * fade * (3f - 2f * fade) * HumVolume;
+			player.VolumeDb = lin <= 0.0001f ? -80f : Mathf.LinearToDb(lin);
+			if (leaving && fade <= 0f) { tree.ProcessFrame -= Tick; player.QueueFree(); }
+		}
+		tree.ProcessFrame += Tick;
+		room.TreeExiting += () => leaving = true;
 	}
 }
