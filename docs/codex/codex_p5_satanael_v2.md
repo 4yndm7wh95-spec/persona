@@ -33,6 +33,17 @@
 出 art/p5/fx/v4/satanael/satanael_v2_draft.png（+ _raw.png + _generation.json）和 check_satanael_v2.png（从左到右：第 1 版、v2_pose_ref、第 2 版、Joker idle_a3；深灰底）。
 最多重画 2 次。**只出草图，不拆层**，等用户确认。
 
-【提交】只 add 新文件：v2_pose_ref.png、v2_pose_contact.png、satanael_v2_draft*.png / .json、check_satanael_v2.png、art/p5/fx/v4/satanael/README_v2.md（中文：用了哪个动作哪一帧、相机、重画次数、自己觉得哪里还不像）。
+
+【用户对第 2 版第一稿的意见（2026-11-08）—— 按这里重画】
+用户看了你在对话里给的第 2 版第一稿（3/4 朝右、双手在胸前握枪的那张）：
+1. **持枪姿势不对**。原版（art/p5/fx/v4/satanael/ref_hold_gun.png、ref_fire.png，用户录的原版画面）是：
+   - **单手**（右手）握枪，**整条手臂从肩膀笔直伸出去**，枪举在肩膀高度，直指敌人（画面右侧）——像决斗举枪；另一只手不碰枪，自然垂在身侧或往后张开；
+   - **枪非常巨大**：枪管比他整条手臂还长，枪身厚重，枪口很大。
+   所以这次：持枪手臂伸直、平举、指向画面右侧（可以略微朝下指向远处的敌人），枪管伸出画布右边被截断没关系。不要双手握枪、不要手肘弯曲收在胸前。
+2. **太金光灿烂**。原版在夜景冷光下，金色看起来是淡淡的银金色。这次：**金色降低饱和度、压暗**（偏古铜 / 暗金，不要亮黄金），黑色部分保持黑；不要画高光闪光。
+   （游戏里还会用着色器加一层冷蓝夜光和青色边光，所以素材本身偏暗、偏素就对了。）
+其余要求（3/4 朝右、竖构图 2400×3600、从腰画到角尖、真透明底、画风描边）不变。重画后同样出 check_satanael_v2.png（加一格 ref_hold_gun.png 对照）。
+
+【提交】只 add 新文件（含 ref_hold_gun.png 不用管，已在仓库）：v2_pose_ref.png、v2_pose_contact.png、satanael_v2_draft*.png / .json、check_satanael_v2.png、art/p5/fx/v4/satanael/README_v2.md（中文：用了哪个动作哪一帧、相机、重画次数、自己觉得哪里还不像）。
 提交信息 "art: Satanael draft v2 (three-quarter facing right, tall portrait, gun raised)"。
 【报告】中文：草图位置、重画次数、自己觉得哪里还不像、提交号或分支名。
