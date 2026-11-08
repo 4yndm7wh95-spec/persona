@@ -72,17 +72,12 @@ float revealDist(vec2 px) {
 	}
 	return s;
 }
-// 断崖：<0 在岩石里
+// 平台（用户 2026-11-08）：从屏幕右边伸出来的一整块，敌人和 Joker 都站在上面；到 Joker 脚下左边就是悬崖，崖面往下、往里收。<0 在岩石里
 float rock(vec2 px) {
-	// 左边 Joker 脚下那块：顶面在 feet_y，右边是往下、往里收的锯齿崖面
-	float topL = feet_y - 4.0 - 10.0 * fbm(vec2(px.x * 0.012, 3.1));
-	float edgeL = cliff_x - (px.y - feet_y) * 0.32 + (fbm(vec2(px.y * 0.02, 7.7)) - 0.5) * 70.0;
-	float l = max(topL - px.y, px.x - edgeL);
-	// 右边敌人脚下那块（远一点、矮一点）
-	float topR = floor_y - 2.0 - 8.0 * fbm(vec2(px.x * 0.01, 5.3));
-	float edgeR = cliff2_x + (px.y - floor_y) * 0.22 + (fbm(vec2(px.y * 0.022, 2.4)) - 0.5) * 60.0;
-	float r = max(topR - px.y, edgeR - px.x);
-	return min(l, r);
+	float top = feet_y - 3.0 - 9.0 * fbm(vec2(px.x * 0.012, 3.1)) + (px.x - cliff_x) * (floor_y - feet_y) / max(sres.x - cliff_x, 1.0);
+	float edge = cliff_x + (px.y - feet_y) * 0.28 + (fbm(vec2(px.y * 0.02, 7.7)) - 0.5) * 60.0
+		+ smoothstep(feet_y + 40.0, sres.y, px.y) * 120.0 * fbm(vec2(px.y * 0.006, 1.3));
+	return max(top - px.y, edge - px.x);
 }
 void fragment() {
 	vec2 px = UV * sres;
@@ -135,7 +130,7 @@ void fragment() {
 		float strata = fbm(vec2(px.x * 0.01, px.y * 0.05));
 		float crack = smoothstep(0.02, 0.0, abs(fbm(px * 0.02) - 0.5));
 		col = mix(vec3(0.02, 0.025, 0.045), vec3(0.06, 0.07, 0.1), strata) * (1.0 - 0.5 * crack);
-		float topLit = smoothstep(14.0, 0.0, abs(min(px.y - (feet_y - 6.0), px.y - (floor_y - 4.0)))) * step(d, 0.0);
+		float topLit = smoothstep(14.0, 0.0, abs(px.y - (feet_y - 6.0))) * step(d, 0.0);
 		col += vec3(0.25, 0.5, 0.75) * topLit * 0.5;
 		float rim = smoothstep(-16.0, 0.0, d);
 		col += vec3(0.45, 0.05, 0.08) * rim * smoothstep(feet_y, sres.y, px.y) * 1.2;
@@ -260,7 +255,7 @@ void fragment() {
 			m.SetShaderParameter("origin2", new Vector2(screen.X * 1.05f, screen.Y * 0.55f));
 			m.SetShaderParameter("feet_y", feetS.Y);
 			m.SetShaderParameter("floor_y", floorS.Y);
-			m.SetShaderParameter("cliff_x", feetS.X + 210f * unit);
+			m.SetShaderParameter("cliff_x", feetS.X - 95f * unit);           // Joker 站在悬崖边上
 			m.SetShaderParameter("cliff2_x", Mathf.Max(feetS.X + 420f * unit, firstEnemyX - 160f * unit));
 		}
 		sky.SetShaderParameter("part", 0);
@@ -343,6 +338,8 @@ void fragment() {
 
 		// ── 开枪
 		Fx.After(front, FireAt - 0.18f, () => s.OnJokerShoot?.Invoke());
+		// Joker 同步开枪，但大罪穿甲弹是撒旦耶尔打出来的：Joker 枪口只有一小点蓝光，不抢戏（用户 2026-11-08）
+		Fx.After(front, FireAt, () => Glow.Flash(front, s.JokerMuzzle, new Color(0.5f, 0.85f, 1f), 70f * unit, 0.1f));
 		var pierce = new float[s.Enemies.Count];
 		var orderIndex = enemiesOrdered.Select(t => t.i).ToList();
 		var travel = new float[enemiesOrdered.Count];

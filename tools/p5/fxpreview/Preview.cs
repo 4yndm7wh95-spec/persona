@@ -629,10 +629,10 @@ public partial class Preview : Node2D
 		{
 			p.At(0.3, () => SinfulShell.Play(p._back, p._front, new SinfulShell.Setup
 			{
-				JokerFeet = JokerFeet, JokerHead = Pose(1010f, 215f), JokerMuzzle = Muzzle, PersonaMuzzle = new Vector2(760f, 470f), FloorY = 830f,
+				JokerFeet = JokerFeet, JokerHead = Pose(1010f, 215f), JokerMuzzle = Muzzle, PersonaMuzzle = new Vector2(720f, 380f), FloorY = 830f,
 				Enemies = new List<Vector2> { Enemy2, Enemy, Enemy3 },
 				OnJokerAim = () => { p._joker?.Play("aim_in"); p._joker?.Queue("aim_loop", true); },
-				OnJokerShoot = () => { p._joker?.Play("shiv_from_aim"); p.At(0.18, () => HitFx.Muzzle(p._front, Muzzle)); },
+				OnJokerShoot = () => p._joker?.Play("shiv_from_aim"),
 				OnPierce = i => Popups.Damage(p._front, (ulong)(i + 1), new[] { Enemy2, Enemy, Enemy3 }[i], 50, true),
 			}));
 		},
