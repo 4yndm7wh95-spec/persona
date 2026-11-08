@@ -210,6 +210,8 @@ public static class Sfx
 
 	private const string SfxDir = "res://p3makoto/sfx/";
 	private const float SampleMaster = 0.7f;
+	/// <summary>Igor's Velvet Room lines play 15% louder than other clips.</summary>
+	public const float IgorVoice = 1.15f;
 	private static readonly ConcurrentDictionary<string, AudioStreamOggVorbis?> Samples = new();
 
 	/// <summary>读 pck 里的原始 .ogg 字节再解码（不走导入系统，所以不需要 .import 文件）。失败返回 null 并记住。</summary>

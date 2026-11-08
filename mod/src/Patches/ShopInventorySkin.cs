@@ -140,7 +140,7 @@ internal partial class ShopWater : Control
         ApplyOpening(0f);
         // Preloaded stages are already rendered. Never gate opening on a render callback.
         StartTick();
-        Audio.Sfx.Clip("igor_shop_cue107");
+        Audio.Sfx.Clip("igor_shop_cue107", Audio.Sfx.IgorVoice);
         GD.Print($"{ModEntry.Tag} shop opening started; size={Size}");
     }
     private void StartTick()
@@ -213,8 +213,31 @@ internal partial class ShopWater : Control
 }
 
 
+/// <summary>While the Velvet Room is open, the native merchant's voice/sound events stay silent.</summary>
 [HarmonyPatch(typeof(SfxCmd), nameof(SfxCmd.Play), new Type[]{typeof(string),typeof(float)})]
-internal static class VelvetShopWelcomeSound
+internal static class VelvetShopMerchantSilence
 {
-    internal static bool Prefix(string sfx) => ShopInventorySkin.OpeningVelvet==0 || sfx!="event:/sfx/npcs/merchant/merchant_welcome";
+    internal static bool Muted(string sfx) =>
+        (VelvetShopPatch.ActiveRooms>0 || ShopInventorySkin.OpeningVelvet>0) && sfx.StartsWith("event:/sfx/npcs/merchant/", StringComparison.Ordinal);
+    internal static bool Prefix(string sfx) => !Muted(sfx);
+}
+
+[HarmonyPatch(typeof(SfxCmd), nameof(SfxCmd.Play), new Type[]{typeof(string),typeof(string),typeof(float),typeof(float)})]
+internal static class VelvetShopMerchantSilenceParam
+{
+    internal static bool Prefix(string sfx) => !VelvetShopMerchantSilence.Muted(sfx);
+}
+
+/// <summary>Igor answers each successful purchase, cycling three lines.</summary>
+[HarmonyPatch(typeof(NMerchantInventory), "OnPurchaseCompleted")]
+internal static class VelvetShopPurchaseVoice
+{
+    private static int _next;
+    internal static void Postfix(NMerchantInventory __instance, MegaCrit.Sts2.Core.Entities.Merchant.PurchaseStatus status) => ModEntry.Safe("igor purchase voice", () =>
+    {
+        if (status != MegaCrit.Sts2.Core.Entities.Merchant.PurchaseStatus.Success) return;
+        if (__instance.GetParent()?.GetNodeOrNull("P3VelvetShop") == null) return;
+        Audio.Sfx.Clip($"igor_buy_{_next % 3 + 1}", Audio.Sfx.IgorVoice);
+        _next++;
+    });
 }

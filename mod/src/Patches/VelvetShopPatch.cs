@@ -12,6 +12,9 @@ public static class VelvetShopPatch
 	public static void Postfix(NMerchantRoom __instance) =>
 		ModEntry.Safe("velvet shop", () => Install(__instance));
 
+	/// <summary>Velvet Rooms currently in the tree (native merchant sounds are muted while > 0).</summary>
+	internal static int ActiveRooms;
+
 	private static void Install(NMerchantRoom room)
 	{
 		if (!Stage.MakotoRun || room.HasNode("P3VelvetShop")) return;
@@ -32,6 +35,8 @@ public static class VelvetShopPatch
 			MouseFilter = Control.MouseFilterEnum.Ignore
 		};
 		room.AddChild(background);
+		ActiveRooms++;
+		background.TreeExiting += () => ActiveRooms = Math.Max(0, ActiveRooms - 1);
 		background.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
 		room.MoveChild(background, 0);
 
@@ -62,6 +67,8 @@ public static class VelvetShopPatch
 			if(!GodotObject.IsInstanceValid(room) || !room.IsInsideTree()) return;
 			Audio.VelvetShopMusic.Attach(room);
 			Audio.VelvetShopMusic.AttachHum(room);
+			// "Welcome to the Velvet Room", once the room is on screen.
+			Audio.Sfx.Clip("igor_welcome", Audio.Sfx.IgorVoice, delay: 0.6f);
 		})).CallDeferred();
         Callable.From(()=>ModEntry.Safe("shop preload",()=>
         {

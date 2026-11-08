@@ -1978,3 +1978,6 @@ BGM 不响的最可能原因：播放器在 NMerchantRoom._Ready 内加到 Scene
 - 轿厢改为 shader 程序化绘制的一部宽轿厢（x 110～1562，高 540），从两面格栅墙后同时可见：厚暗顶板 + 亮灯带、亮的轿厢内部（上亮下暗）、腰部扶手、竖向闸门栅条、暗底板，任何尺寸都清晰；两根钢缆随轿厢出现。行程 y 630 → -760，0.60 秒，模糊缩短为速度 × 1/45 秒（上限 90px，12 次采样）。墙面受光只作用在两侧，不再照亮伊戈尔。删除 elevator_car*.png。
 - 声音：velvet_elevator_pass.ogg（2.6 秒，1.30 秒最响）在轿厢出现前 0.96 秒播放，峰值对上轿厢经过墙面中段；velvet_elevator_hum.ogg 在房间内循环（SFX 总线 0.30，淡入淡出），不受音乐盒影响。两条目前是程序合成的占位音效，Codex 去本机 P3R 找原版替换。
 - 音乐音量：原来按 BGM 设置² × 0.85 播放，对 -18 LUFS 的钢琴曲来说默认只有约 -31 LUFS，比伊戈尔语音低约 14dB，很可能就是"听不到"的原因。改为 BGM 设置 × 1.4（上限 1）。
+
+### 0.15.28 · 屏蔽原版商人音效，伊戈尔欢迎与购买语音
+天鹅绒房间在树内期间（VelvetShopPatch.ActiveRooms > 0），SfxCmd.Play 的两个重载里所有 event:/sfx/npcs/merchant/ 事件都被屏蔽（欢迎、感谢、失望、劣质药水等），取代 0.15.21 只屏蔽打开商品页欢迎声的补丁。进入房间 0.6 秒后播放 igor_welcome；每次成功购买（NMerchantInventory.OnPurchaseCompleted，status = Success）轮流播放 igor_buy_1～3。伊戈尔语音（含商品页 Cue107）统一 ×1.15。语音文件待用户从 Codex 导出的 P3R 候选里挑选，缺文件时静默跳过。
