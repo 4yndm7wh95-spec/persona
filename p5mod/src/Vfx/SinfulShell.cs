@@ -233,7 +233,13 @@ void fragment() {
 	// ───────────────────────── 时序 ─────────────────────────
 
 	/// <summary>各拍的时刻（从出牌算起，秒）。</summary>
-	public const float RevealAt = 0.05f, RevealTime = 0.7f, AimAt = 0.85f, ChargeAt = 1.7f, FireAt = 2.6f, BulletSpeed = 3600f, ExitAfter = 1.1f, ExitTime = 0.6f;
+	public const float RevealAt = 0.05f, RevealTime = 0.7f, AimAt = 0.45f, BulletSpeed = 3600f, ExitAfter = 1.1f, ExitTime = 0.6f;
+
+	/// <summary>开枪（用户 2026-11-08：不蓄力，转完枪停一小下就开）：撒旦耶尔接住枪后 0.2s。</summary>
+	public const float FireAt = AimAt + SatanaelPuppet.CatchAfter + 0.2f;
+
+	/// <summary>接住枪的时刻。</summary>
+	public const float CatchAt = AimAt + SatanaelPuppet.CatchAfter;
 
 	/// <summary>召唤撒旦耶尔的雷劈下的时刻（用户 2026-11-08：场景还没烧完雷就劈下来，前半段不空）。</summary>
 	public const float AppearAt = 0.3f;
@@ -356,9 +362,10 @@ void fragment() {
 			float reveal = far * (1f - Mathf.Pow(1f - rv, 2.2f));
 			float ex = Mathf.Clamp((time - FireAt - ExitAfter - 0.1f) / ExitTime, 0f, 1f);
 			float conceal = ex <= 0f ? 0f : far * ex * ex;
-			float dim = Mathf.Clamp((time - ChargeAt) / (FireAt - ChargeAt), 0f, 1f) * (time < FireAt ? 1f : Mathf.Exp(-(time - FireAt) / 0.4f));
+			const float dim = 0f;
 			float flash = time >= FireAt ? Mathf.Exp(-(time - FireAt) / 0.05f) : 0f;
-			float charge = time < ChargeAt ? 0f : time < FireAt ? 0.3f + 1.4f * Mathf.Pow((time - ChargeAt) / (FireAt - ChargeAt), 2f) : 1.7f * Mathf.Exp(-(time - FireAt) / 0.12f);
+			// 不蓄力：接住枪时枪口一闪，开枪时一闪
+			float charge = time < CatchAt ? 0f : time < FireAt ? 0.9f * Mathf.Exp(-(time - CatchAt) / 0.08f) : 1.7f * Mathf.Exp(-(time - FireAt) / 0.12f);
 			float thunder = 0f;
 			if (puppet != null)
 			{
@@ -403,7 +410,7 @@ void fragment() {
 		Fx.After(front, exitAt, () => { Sfx.Play(Sfx.SinfulThunder, 0.9f); Fx.Shake(2); });
 		if (puppet != null)
 		{
-			Fx.After(front, AimAt + SatanaelPuppet.CatchAfter, () => Sfx.Play(Sfx.SinfulCatch, 1f));
+			Fx.After(front, CatchAt, () => Sfx.Play(Sfx.SinfulCatch, 1f));
 		}
 		// 场景里飘的蓝色余烬
 		Fx.After(back, RevealAt + RevealTime * 0.6f, () =>
@@ -415,44 +422,15 @@ void fragment() {
 
 		// ── 举枪、蓄力
 		// Joker 同步转枪：他的转枪（aim_in）约 0.12s 接住，对到撒旦耶尔接住枪的那一刻
-		Fx.After(front, puppet != null ? AimAt + SatanaelPuppet.CatchAfter - 0.12f : AimAt, () => s.OnJokerAim?.Invoke());
+		Fx.After(front, puppet != null ? CatchAt - 0.12f : AimAt, () => s.OnJokerAim?.Invoke());
 		Vector2 muzzle = s.PersonaMuzzle;
 		Vector2 aimEnd = enemiesOrdered.Count > 0 ? enemiesOrdered[^1].e : muzzle + new Vector2(1000f, 200f);
 		Vector2 dir = (aimEnd - muzzle).Normalized();
-		Fx.After(front, ChargeAt, () =>
+		// 接住枪那一下：枪口一点亮光（不蓄力）
+		if (puppet != null)
 		{
-			float size = 520f * unit;
-			Node2D vroot = Fx.Root(front, muzzle, "P5SinfulCharge", FireAt - ChargeAt + 0.3);
-			ShaderMaterial vm = new() { Shader = Vortex };
-			ColorRect vr = new() { Size = Vector2.One * size, Position = -Vector2.One * size / 2f, Material = vm, MouseFilter = Control.MouseFilterEnum.Ignore };
-			vroot.AddChild(vr);
-			Fx.Clock(vr);
-			float dur = FireAt - ChargeAt;
-			Fx.Animate(vroot, 0, dur + 0.12, t =>
-			{
-				float time = t * (dur + 0.12f);
-				float k = Mathf.Clamp(time / dur, 0f, 1f);
-				vm.SetShaderParameter("power", time <= dur ? 0.25f + 1.2f * k * k : Mathf.Max(0f, 1.45f * (1f - (time - dur) / 0.12f)));
-				vroot.Scale = Vector2.One * (1.15f - 0.35f * k);
-				if (puppet != null)
-				{
-					vroot.GlobalPosition = puppet.MuzzleGlobal;              // 跟着枪口（抬枪后的微抖）
-				}
-				vroot.Rotation = -time * 2f;
-			});
-			// 周围的余烬被吸进枪口
-			for (int i = 0; i < 5; i++)
-			{
-				float delay = i * dur / 5f;
-				Fx.After(front, delay, () =>
-				{
-					float a = Fx.Rand(0f, Mathf.Tau);
-					Vector2 from = muzzle + Vector2.FromAngle(a) * size * 0.75f;
-					Glow.Sparks(front, from, 10, 300f, 700f, 0.3f, new[] { new Color(0.85f, 0.95f, 1f), new Color(0.3f, 0.7f, 1f) }, 0f, 0.04f, 0.1f, muzzle - from, 12f);
-				});
-			}
-			Sfx.Play(Sfx.SinfulCharge, 0.9f, Mathf.Max(0f, dur - 1.0f));
-		});
+			Fx.After(front, CatchAt, () => Glow.Flash(front, puppet.MuzzleGlobal, new Color(0.7f, 0.9f, 1f), 160f * unit, 0.12f));
+		}
 
 		// ── 开枪
 		Fx.After(front, FireAt - 0.18f, () => s.OnJokerShoot?.Invoke());

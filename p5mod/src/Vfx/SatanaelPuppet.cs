@@ -56,6 +56,7 @@ float noise(vec2 p) {
 	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
 }
 void fragment() {
+	float ma = COLOR.a;                                                      // 节点 modulate 的透明度（转枪残影用）
 	vec4 c = texture(TEXTURE, UV);
 	vec2 sp = SCREEN_UV * sres;
 	float l = dot(c.rgb, vec3(0.3, 0.59, 0.11));
@@ -79,7 +80,7 @@ void fragment() {
 	float band = step(0.18, e) * (1.0 - smoothstep(0.0, 40.0, s));
 	vec3 flame = e > 0.75 ? vec3(0.92, 0.98, 1.0) : e > 0.45 ? vec3(0.35, 0.78, 1.0) : vec3(0.08, 0.32, 0.95);
 	g = mix(g, flame, band);
-	COLOR = vec4(g, c.a * alpha * max(vis, band));
+	COLOR = vec4(g, c.a * alpha * max(vis, band) * ma);
 }" };
 
 	/// <summary>
@@ -140,7 +141,8 @@ void fragment() {
 	private readonly ShaderMaterial _mat, _riftMat;
 	private readonly Vector2 _origin;
 	private readonly float _scale, _aim, _riftX;
-	private float _spin = -1f;
+	private float _spin = -1f, _spinSpeed;
+	private readonly Sprite2D[] _ghosts = new Sprite2D[2];
 	private Transform2D _root = Transform2D.Identity, _muzzleXf = Transform2D.Identity;
 
 	public static bool Available => Fx.Tex("sat_body") != null && Fx.Tex("sat_arm_fore_gun") != null;
@@ -169,6 +171,18 @@ void fragment() {
 			_angle[L.Name] = 0f;
 		}
 		Fx.Clock(_sprites["body"]);
+		// 转枪的残影：枪后面两层半透明的枪，落后几度（转得越快落得越多）——转起来是连贯的动态模糊，不是一帧帧跳
+		if (_sprites["gun"].Texture != null)
+		{
+			for (int i = 0; i < 2; i++)
+			{
+				Sprite2D gh = new() { Texture = _sprites["gun"].Texture, Centered = false, Offset = Find("gun").Offset, Material = _mat, Visible = false,
+					Modulate = new Color(1f, 1f, 1f, i == 0 ? 0.4f : 0.18f) };
+				parent.AddChild(gh);
+				parent.MoveChild(gh, _sprites["gun"].GetIndex());
+				_ghosts[i] = gh;
+			}
+		}
 		Vector2 shoulder = Find("arm_upper").Pivot;
 		Vector2 sS = origin + shoulder * scale;
 		_aim = Mathf.Clamp(Mathf.RadToDeg((target - sS).Angle() - (MuzzlePx - shoulder).Angle()), -6f, 9f);   // 不往下压到敌人头上
@@ -200,7 +214,7 @@ void fragment() {
 	public const float RevealDelay = 0.05f, RevealTime = 0.45f, VanishDelay = 0.04f, VanishTime = 0.2f;
 
 	/// <summary>转枪：抬枪预备之后手一甩，枪套在食指上转两圈（先快后慢），SpinTime 秒后「啪」地接住。</summary>
-	public const float Anticipation = 0.12f, SpinTime = 0.7f;
+	public const float Anticipation = 0.04f, SpinTime = 0.45f;
 
 	/// <summary>接住枪的时刻（相对 raiseAt）：Joker 的转枪和接枪声对到这里。</summary>
 	public const float CatchAfter = Anticipation + SpinTime;
@@ -246,24 +260,29 @@ void fragment() {
 
 		float upper = 55f + 1.5f * Mathf.Sin(g * 2.1f), fore = 25f + 2f * Mathf.Sin(g * 2.1f - 0.6f);
 		_spin = -1f;
+		_spinSpeed = 0f;
 		_angle["gun"] = 0f;
 		float r = g - raiseAt;
 		if (r >= 0f)
 		{
-			const float ant = Anticipation, swing = 0.3f, lag = 0.06f;
-			upper = r < ant ? Mathf.Lerp(55f, 61f, EaseInOut(r / ant))
-				: r < ant + swing ? Mathf.Lerp(61f, -4f, EaseOutCubic((r - ant) / swing))
+			const float ant = Anticipation, swing = 0.32f, lag = 0.05f;
+			upper = r < ant ? Mathf.Lerp(55f, 58f, EaseInOut(r / ant))
+				: r < ant + swing ? Mathf.Lerp(58f, -4f, EaseInOut((r - ant) / swing))
 				: -4f * Mathf.Exp(-(r - ant - swing) / 0.09f) * Mathf.Cos((r - ant - swing) * 22f);
 			float rf = r - lag;
-			fore = rf < ant ? Mathf.Lerp(25f, 31f, EaseInOut(Mathf.Max(rf, 0f) / ant))
-				: rf < ant + swing ? Mathf.Lerp(31f, -3f, EaseOutCubic((rf - ant) / swing))
+			fore = rf < ant ? Mathf.Lerp(25f, 28f, EaseInOut(Mathf.Max(rf, 0f) / ant))
+				: rf < ant + swing ? Mathf.Lerp(28f, -3f, EaseInOut((rf - ant) / swing))
 				: -3f * Mathf.Exp(-(rf - ant - swing) / 0.1f) * Mathf.Cos((rf - ant - swing) * 20f);
 			// 转枪：手一甩张开，枪绕食指转两圈（先快后慢），最后接住
 			if (r >= ant && r < CatchAfter)
 			{
+				// 转速从快到 0 平滑减下来（接住时速度正好为 0）；手腕跟着枪甩，幅度越来越小，手不僵在原地
 				float k = (r - ant) / SpinTime;
-				_spin = 720f * (1f - Mathf.Pow(1f - k, 2.4f));
+				_spin = 720f * (1f - Mathf.Pow(1f - k, 3f));
 				_angle["gun"] = _spin;
+				fore += 7f * Mathf.Sin(Mathf.DegToRad(_spin)) * (1f - k);
+				upper += 2.5f * Mathf.Sin(Mathf.DegToRad(_spin) + 0.8f) * (1f - k);
+				_spinSpeed = 720f * 3f * Mathf.Pow(1f - k, 2f) / SpinTime;      // 度/秒（残影用）
 			}
 			else if (r >= CatchAfter)
 			{
@@ -314,5 +333,16 @@ void fragment() {
 			}
 		}
 		_muzzleXf = spinning ? _root * World("gun") : _root * World("arm_fore_gun");
+		for (int i = 0; i < 2; i++)
+		{
+			if (_ghosts[i] is not Sprite2D gh) continue;
+			gh.Visible = spinning && _spinSpeed > 200f;
+			if (gh.Visible)
+			{
+				float lagDeg = Mathf.Min(70f, _spinSpeed * 0.018f * (i + 1));
+				Layer G = Find("gun");
+				gh.Transform = _root * World("arm_fore_open") * Joint(G.Pivot, _spin - lagDeg);
+			}
+		}
 	}
 }
