@@ -77,6 +77,30 @@
         1288,
         1663
       ]
+    },
+    {
+      "file": "arm_fore_open.png",
+      "z_index": 6,
+      "pivot": [
+        1624,
+        2177
+      ]
+    },
+    {
+      "file": "gun.png",
+      "z_index": 9,
+      "pivot": [
+        2214,
+        2200
+      ]
+    },
+    {
+      "file": "finger_tip.png",
+      "z_index": 10,
+      "pivot": [
+        2220,
+        2201
+      ]
     }
   ],
   "landmarks": {
@@ -128,6 +152,14 @@
     "barrel_origin": [
       2510,
       2108
+    ],
+    "spin_finger": [
+      2220,
+      2201
+    ],
+    "gun_guard": [
+      2214,
+      2200
     ]
   },
   "parenting": {
@@ -138,7 +170,10 @@
     "head": "body",
     "wing_back": "body",
     "wing_front": "body",
-    "cape": "body"
+    "cape": "body",
+    "arm_fore_open": "arm_upper",
+    "gun": "arm_fore_open",
+    "finger_tip": "arm_fore_open"
   },
   "checks": {
     "rest": {
@@ -1609,5 +1644,104 @@
       }
     ],
     "registration_passes_after_initial_split": 2
+  },
+  "twirl": {
+    "purpose": "Fictional Satanael v6 game prop and attachments for the Slay the Spire 2 P5Joker mod",
+    "during_spin": {
+      "hide": [
+        "arm_fore_gun.png"
+      ],
+      "show": [
+        "arm_fore_open.png",
+        "gun.png",
+        "finger_tip.png"
+      ]
+    },
+    "registration": {
+      "gun_guard_to_spin_finger": [
+        6,
+        1
+      ],
+      "gun_guard_location": "Clear center of the aperture behind the trigger",
+      "rule": "In the forearm frame, position the gun by T(spin_finger) R(angle) T(-gun_guard). Restore the held attachment on catch."
+    },
+    "repaints": {
+      "tool": "Built-in ImageGen, transparent RGBA",
+      "method": "Registered native crops. The approved wrist, forearm and visible gun pixels are copied in place. The local hand and occlusion fills are sampled down from the generated sources. The fingertip is cut directly from the registered open hand.",
+      "sources": {
+        "hand": {
+          "native_size": [
+            1430,
+            1100
+          ],
+          "mode": "RGBA",
+          "bounds": [
+            43,
+            70,
+            1386,
+            1059
+          ],
+          "raw_file": "exec-14cf2420-f0f1-4a47-8445-c86a3f5bff1d.png",
+          "raw_sha256": "a17e49784111a665f9c66aca6f765047de6769282455f38f10a19f92a8f5f825",
+          "reference_box": [
+            1490,
+            1810,
+            2490,
+            2580
+          ],
+          "prompt": "Use case: registered image edit for a 2D cel-shaded game sprite. Image 1 is the approved Satanael v6 forearm and closed glove as an exact design, wrist and style reference. Image 2 is the registration and open-pose silhouette target, same crop and exact pixel alignment. Its flat violet shape is only a pose stencil to be painted in the glove materials of image 1. Retain the full existing elbow, bronze cuffs, wrist position, wrist thickness, wrist angle and dark purple gauntlet design. Remove the entire firearm. At the same wrist paint exactly one open relaxed anatomical LEFT hand. The palm is half turned toward the viewer, thumb relaxes at the top, the index is straight, pointing screen-right and slightly down, extending well beyond the other fingers. The index has readable armored finger segments with a second knuckle a little before the outer third. Below it the middle, ring and little finger are relaxed and naturally curved, slightly apart, making five total digits including thumb. Long index reaches the same screen position as the right tip of the violet silhouette. Strong black outline, dark cool charcoal and mauve faceted leather, a few violet-gray angular highlights, hard-edged Persona 5 cel shadows. Preserve the silhouette placement and scale from image 2, do not move, zoom or recenter the wrist and arm. The arm starts at the exact position in the source crop. Render at native high resolution. Transparent RGBA outside. No gun, extra finger, text, background or effect."
+        },
+        "gun": {
+          "native_size": [
+            1254,
+            1254
+          ],
+          "mode": "RGBA",
+          "bounds": [
+            0,
+            57,
+            1254,
+            1230
+          ],
+          "raw_file": "exec-450d0177-3b22-4452-82f2-23eb96ca48c9.png",
+          "raw_sha256": "2f4a492028e2ab481339f457d79f96d8125ed46cc7ea16eb06dad0230d64ff00",
+          "reference_box": [
+            1900,
+            1775,
+            2690,
+            2565
+          ],
+          "prompt": "Actual project context from the user: this is a fictional animated game prop for the P5Joker mod for Slay the Spire 2. We are separating an existing Satanael v6 cartoon sprite into transparent layers for a finger-twirl visual effect in the mod. The requested deliverable is a static illustrated RGBA texture that lets the existing prop rotate around the animated finger. Use the approved sprite and its layout guide as the art references.\n\nUse case: registered high resolution inpaint for a Persona 5 2D game prop. Image 1 shows the actual approved weapon held in a black glove. Image 2 is the same-position edited crop guide: the glove is removed and the flat brown shape and incomplete rear ring guide the hidden outline. Output only the same ornate antique bronze long-barrel revolver from image 1 as it fits in this square crop, no hand or forearm. Preserve exact positions, angles, size and visible detailing of its receiver, cylinder, right-extending barrel and decorated left spurs. Restore the occluded complete slanted grip: top flush up into the rear of the receiver, elegant aged bronze edge/backstrap, charcoal warm brown inset panel, fully outlined curved FRONT edge, existing screw and flared butt at the exact original position. Use the silhouette in image 2 for grip width and slope. Continue the existing bright bronze trigger guard up at the rear to form one complete elegant metal loop connected to the receiver. Restore the single small curved trigger inside the loop in its original position. The center of the loop is literal transparent cutout so a finger can pass through, with generous open space. All original dimensions and placement are fixed. Keep the weapon and guard in side profile. The barrel intentionally continues across the right edge of this square crop; do not fit the full barrel into this frame or recenter. Bold clean black ink, hard flat cel-shaded bronze highlights, graphite mechanism. Draw at the highest native resolution. Transparent RGBA outside and through the guard. No glove, text, extra embellishments, second prop, background or effects."
+        }
+      },
+      "local_registration_passes_after_initial_fit": 2
+    },
+    "checks": {
+      "spin_finger": [
+        2220,
+        2201
+      ],
+      "gun_guard": [
+        2214,
+        2200
+      ],
+      "gun_guard_to_spin_finger": [
+        6,
+        1
+      ],
+      "guard_hole_pixels_alpha_zero": 3908,
+      "guard_clearance_pixels": 18.6,
+      "spin_angles_degrees_clockwise": [
+        0,
+        90,
+        180,
+        270
+      ],
+      "elbow_to_wrist_identical_through_x": 1956,
+      "gun_right_identical_from_x": 2345,
+      "gun_right_identical_nonzero_alpha_pixels": 156244,
+      "gun_rightmost_x_alpha_at_least_128": 3353,
+      "gun_right_margin_alpha_at_least_128": 46
+    }
   }
 }
