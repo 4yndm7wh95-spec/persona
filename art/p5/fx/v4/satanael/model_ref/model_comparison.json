@@ -1,0 +1,132 @@
+{
+  "PS0170": {
+    "meshes": [
+      "m_head_gfdMesh_0",
+      "m_head_gfdMesh_1",
+      "m_head_gfdMesh_2",
+      "m_head_gfdMesh_3",
+      "m_wing_gfdMesh_0",
+      "m_wing_gfdMesh_1",
+      "m_body_gfdMesh_0",
+      "m_body_gfdMesh_1",
+      "m_body_gfdMesh_2",
+      "m_body_gfdMesh_3",
+      "m_body_gfdMesh_4",
+      "m_body_gfdMesh_5",
+      "m_body_gfdMesh_6",
+      "m_gun03_gfdMesh_0",
+      "m_gun03_gfdMesh_1",
+      "m_gun03_gfdMesh_2",
+      "m_gun03_gfdMesh_3",
+      "m_eyeL_gfdMesh_0",
+      "m_eyeR_gfdMesh_0",
+      "m_ring_gfdMesh_0",
+      "m_ring_gfdMesh_1",
+      "m_ring_gfdMesh_2"
+    ],
+    "materials": [
+      "bmetal",
+      "eyes",
+      "gold2",
+      "belt",
+      "gun",
+      "gold",
+      "wing",
+      "red",
+      "gnmetal",
+      "raber",
+      "nosp"
+    ],
+    "textures": {
+      "ps_satanael_t01.dds": "eeda44a9d3646c83f1ef218a832228e877ecbe1af6f551bab4aaddd14e8647af",
+      "ps_satanael_t01_shadow.dds": "94d0abfaab298f97ffa65c8e89c96858e423d11a744fce78d1f336474d82c570",
+      "ps_satanael_t01_sp.dds": "03ae18721112128e832b0ed6a7183df761a85e0c288f5fc07dff36c9a5fec270"
+    }
+  },
+  "PSZ0170": {
+    "meshes": [
+      "m_head_gfdMesh_0",
+      "m_head_gfdMesh_1",
+      "m_head_gfdMesh_2",
+      "m_head_gfdMesh_3",
+      "m_wing_gfdMesh_0",
+      "m_wing_gfdMesh_1",
+      "m_body_gfdMesh_0",
+      "m_body_gfdMesh_1",
+      "m_body_gfdMesh_2",
+      "m_body_gfdMesh_3",
+      "m_body_gfdMesh_4",
+      "m_body_gfdMesh_5",
+      "m_body_gfdMesh_6",
+      "m_gun03_gfdMesh_0",
+      "m_gun03_gfdMesh_1",
+      "m_gun03_gfdMesh_2",
+      "m_eyeL_gfdMesh_0",
+      "m_eyeR_gfdMesh_0",
+      "m_ring_gfdMesh_0",
+      "m_ring_gfdMesh_1",
+      "m_ring_gfdMesh_2"
+    ],
+    "materials": [
+      "bmetal",
+      "eyes",
+      "belt",
+      "gold",
+      "wing",
+      "red",
+      "gnmetal",
+      "raber",
+      "nosp"
+    ],
+    "textures": {
+      "ps_satanael_t01.dds": "eeda44a9d3646c83f1ef218a832228e877ecbe1af6f551bab4aaddd14e8647af",
+      "ps_satanael_t01_shadow.dds": "94d0abfaab298f97ffa65c8e89c96858e423d11a744fce78d1f336474d82c570",
+      "ps_satanael_t01_sp.dds": "03ae18721112128e832b0ed6a7183df761a85e0c288f5fc07dff36c9a5fec270"
+    }
+  },
+  "PS0199": {
+    "meshes": [
+      "m_head_gfdMesh_0",
+      "m_head_gfdMesh_1",
+      "m_head_gfdMesh_2",
+      "m_head_gfdMesh_3",
+      "m_wing_gfdMesh_0",
+      "m_wing_gfdMesh_1",
+      "m_body_gfdMesh_0",
+      "m_body_gfdMesh_1",
+      "m_body_gfdMesh_2",
+      "m_body_gfdMesh_3",
+      "m_body_gfdMesh_4",
+      "m_body_gfdMesh_5",
+      "m_body_gfdMesh_6",
+      "m_gun03_gfdMesh_0",
+      "m_gun03_gfdMesh_1",
+      "m_gun03_gfdMesh_2",
+      "m_gun03_gfdMesh_3",
+      "m_eyeL_gfdMesh_0",
+      "m_eyeR_gfdMesh_0",
+      "m_ring_gfdMesh_0",
+      "m_ring_gfdMesh_1",
+      "m_ring_gfdMesh_2"
+    ],
+    "materials": [
+      "bmetal",
+      "eyes",
+      "gold2",
+      "belt",
+      "gun",
+      "gold",
+      "wing",
+      "red",
+      "gnmetal",
+      "raber",
+      "nosp"
+    ],
+    "textures": {
+      "ev_satanael_t01_shadow.dds": "19b26478cdf08a39db108c37bcfa9d5f139018932ef7ae2e5a0f47a84c59e43f",
+      "ps_satanael_t01.dds": "eeda44a9d3646c83f1ef218a832228e877ecbe1af6f551bab4aaddd14e8647af",
+      "ps_satanael_t01_shadow.dds": "94d0abfaab298f97ffa65c8e89c96858e423d11a744fce78d1f336474d82c570",
+      "ps_satanael_t01_sp.dds": "03ae18721112128e832b0ed6a7183df761a85e0c288f5fc07dff36c9a5fec270"
+    }
+  }
+}
