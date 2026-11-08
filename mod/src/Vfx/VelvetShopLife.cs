@@ -5,12 +5,13 @@ namespace P3Makoto.Vfx;
 
 internal static class VelvetShopLife
 {
-	// Room pixel space of velvet_room.png. Each car fills one side opening
-	// (x 0-584 / 1087-1670, y 0-600); both sides pass together, mirrored.
-	private static readonly Vector2 CarSize = new(600, 998);
-	private const float CarLeftX = -8f, CarRightX = 1080f;
+	// Room pixel space of velvet_room.png. Each car is centred in one side opening
+	// (x 0-584 / 1087-1670, y 0-600) with ~60px of still wall on both sides, so the
+	// rise reads against the room; both sides pass together, mirrored.
+	private static readonly Vector2 CarSize = new(460, 765);
+	private const float CarLeftX = 62f, CarRightX = 1148f;
 	// Start just below the openings, finish with the trail above the screen.
-	private const float CarFromY = 600f, CarToY = -998f - 300f;
+	private const float CarFromY = 600f, CarToY = -765f - 300f;
 	private const double PassDur = 0.42;
 
 	private static Texture2D? RawPng(string file)
