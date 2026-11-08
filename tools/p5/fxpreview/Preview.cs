@@ -615,6 +615,15 @@ public partial class Preview : Node2D
 			p.Ready(2.6, Stance.Guard, "guard", "cast_guard_from_ready", play: true);
 			p.At(2.6 + 1.63, () => GuardWall.Play(p._front, Pose(885f, 310f), tall, 1f, 12, block));
 		},
+		// 防御（用户 2026-11-08）：照结城理 mod 的六边形蜂巢护盾（着色器版）。普通一次、格挡 10 点以上一次
+		["hex_guard"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.Ready(0.2, Stance.Guard, "guard", "cast_guard_from_ready", play: true);
+			p.At(0.2 + 1.63, () => HexGuard.Play(p._front, Chest, tall, 1f, 5));
+			p.Ready(2.8, Stance.Guard, "guard", "cast_guard_from_ready", play: true);
+			p.At(2.8 + 1.63, () => HexGuard.Play(p._front, Chest, tall, 1f, 12));
+		},
 		["block"] = p =>
 		{
 			p.EnemyAttack(0.3, Enemy);
