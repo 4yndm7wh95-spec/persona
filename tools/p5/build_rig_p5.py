@@ -141,6 +141,10 @@ ANIMS = {
     # Outbreak (user 2026-11-08): no hand-in-pocket command any more. The hand on the mask clenches the moment the card is
     # played and stays clenched until the giant hand crushes the eye cut-in (p5mod Aim.HitFor("Outbreak") = 1.16 s after
     # the cast starts; the tremble and the final squeeze are code, Aim.GripTremble), then lets go and lowers like mask_out.
+    # Sinful Shell: squeeze the mask -> hand down off the mask in one arc -> straight into the gun draw and spin -> caught aimed
+    # (squeeze .02 + .16, arc down .15, spin SINFUL_SPIN, catch at ~0.93 s; then holds the aim until shiv_from_aim fires)
+    "cast_sinful_from_mask": [("summon_touch2_a", .02), (GRIP, .16, .03), ("summon_touch_mid_a", .05, .03), ("summon_lift2_a", .04, .02),
+                              ("gun_arm_mid_h", .06, .02), ("gun_spin_g", .6, .015), ("gun_aim_b", 2.0, 0)],   # .6 = SINFUL_SPIN
     "cast_outbreak_from_mask": [("summon_touch2_a", .02), (GRIP, OUTBREAK_GRIP_END - .02, .03)] + OUTBREAK_LET_GO,
     "cast_outbreak": [("idle_a3", .02)] + [(n, .045) for n in SUMMON_UP]
                      + [(GRIP, OUTBREAK_GRIP_END - .02 - .045 * len(SUMMON_UP), .03)] + OUTBREAK_LET_GO,
@@ -214,7 +218,16 @@ SPIN_OUT = [("@@gun_spin_g", 0, *SPIN, 60, 1.05, 1, 0), ("@@gun_spin_g", .04, *S
 FINGER_TIP = ("gun_spin_g", (1279, 316, 1322, 370))   # the index finger from the trigger guard to the tip (final canvas)
 # each animation lists the prop's spin segments; the loose prop (and its trail / the fingertip) is only shown
 # within a segment - between them the prop drawn in the pose picture takes over
-GUN_PROP = {"aim_in": [SPIN_IN], "shiv": [SPIN_IN, SPIN_OUT], "shiv_from_aim": [SPIN_OUT], "aim_out": [SPIN_OUT]}
+# Grand Finale / Sinful Shell (user 2026-11-08): one continuous move - the hand squeezes the mask (blue flame shoots to the sky),
+# comes down off the mask in one arc and flicks straight out into the gun draw (no stop at idle); the gun spins ~1.6 turns on the
+# finger, slowing, and is caught aimed at SINFUL_CATCH - the same moment Satanael catches his (p5mod SinfulShell.CatchAt)
+SINFUL_SPIN = .6
+SPIN_SINFUL = [("@gun_spin_g", 0, *SPIN, 580, 1.1, 0, 0), ("@gun_spin_g", .02, *SPIN, 540, 1.1, 1, .5),
+               ("@gun_spin_g", .12, *SPIN, 360, 1.1, 1, .5), ("@gun_spin_g", .24, *SPIN, 210, 1.1, 1, .45),
+               ("@gun_spin_g", .36, *SPIN, 100, 1.1, 1, .35), ("@gun_spin_g", .47, *SPIN, 35, 1.08, 1, .2),
+               ("@gun_spin_g", SINFUL_SPIN - .01, *SPIN, 4, 1.04, 1, .05), ("@gun_aim_b", 0, *AIM_GUARD, 0, 1, 1, 0)]
+GUN_PROP = {"aim_in": [SPIN_IN], "shiv": [SPIN_IN, SPIN_OUT], "shiv_from_aim": [SPIN_OUT], "aim_out": [SPIN_OUT],
+            "cast_sinful_from_mask": [SPIN_SINFUL]}
 
 # the knife (user 2026-10-28: spin it the same way - on the draw at the hip, then cut upwards; and again at the hip
 # after the strike). art/p5/props/knife_c.png is drawn in code (tools/p5/draw_knife.py), pivot at the middle of

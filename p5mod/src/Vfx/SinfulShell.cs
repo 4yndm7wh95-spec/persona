@@ -230,6 +230,61 @@ void fragment() {
 	COLOR = vec4(tint.rgb * (1.0 + core) * (core + glow) * alpha * (1.0 - smoothstep(0.85, 1.0, d)), 1.0);
 }" };
 
+	// ───────────────────────── 面具蓝焰冲天 ─────────────────────────
+
+	private static Shader? _blade;
+
+	/// <summary>
+	/// 冲天的蓝焰刃（用户 2026-11-08：两道像刀刃一样又尖又快地冲上天）：底宽顶尖的刃形，边缘锯齿跳动，里面火舌往上窜；
+	/// 四档硬边配色（和面具蓝焰同一套）。grow = 刃尖冲到多高（0～1），thin = 收细散掉（0～1）。
+	/// </summary>
+	private static Shader BladeShader => _blade ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform float grow = 0.0;
+uniform float thin = 0.0;
+uniform float clock = 0.0;
+uniform float seed = 0.0;
+" + Noise + @"
+void fragment() {
+	float x = (UV.x - 0.5) * 2.0;
+	float y = 1.0 - UV.y;                                   // 0 = 底（面具），1 = 顶
+	float t = clock + seed * 7.0;
+	float hw = pow(max(1.0 - y, 0.0), 0.75) * (1.0 - thin * 0.75);
+	hw *= 0.78 + 0.35 * noise(vec2(y * 14.0 - t * 26.0, seed * 3.0));            // 边缘锯齿跳动
+	float tipLine = grow - 0.05 * noise(vec2(x * 6.0, t * 10.0));
+	float inside = step(abs(x), hw) * step(y, tipLine) * step(thin * 0.85, y);    // 收细时从底部断开往上散
+	float e = (1.0 - abs(x) / max(hw, 0.001)) * (0.55 + 0.7 * fbm(vec2(x * 3.0, y * 9.0 - t * 18.0)));
+	e += 0.45 * exp(-abs(x) / max(hw * 0.25, 0.001));                             // 中间一道白芯
+	vec3 col = e > 0.95 ? vec3(0.94, 0.98, 1.0) : e > 0.62 ? vec3(0.4, 0.8, 1.0) : e > 0.32 ? vec3(0.1, 0.38, 0.92) : vec3(0.03, 0.1, 0.36);
+	COLOR = vec4(col * 1.15, inside * smoothstep(0.08, 0.14, e));
+}" };
+
+	/// <summary>Joker 攥面具那一下：两道蓝焰刃从面具冲上天（0.07s 冲到顶 → 停一下 → 收细往上散），召唤撒旦耶尔的雷紧接着劈下。</summary>
+	public static void FlameBlades(Control layer, Vector2 mask, float unit)
+	{
+		Sfx.Play(Sfx.PersonaFlame, 1f);
+		Sfx.Play(Sfx.SwishHeavy, 0.7f);
+		Glow.Flash(layer, mask, new Color(0.45f, 0.82f, 1f), 280f * unit, 0.2f);
+		Glow.Sparks(layer, mask, 40, 400f, 1300f, 0.4f, new[] { new Color(0.9f, 0.97f, 1f), new Color(0.3f, 0.7f, 1f) }, -300f, 0.05f, 0.16f, Vector2.Up, 25f);
+		(float ang, float delay, float w, float h)[] blades = { (-0.12f, 0f, 150f, 1150f), (0.1f, 0.035f, 110f, 980f) };
+		foreach ((float ang, float delay, float w, float h) in blades)
+		{
+			Node2D root = Fx.Root(layer, mask, "P5SinfulBlade", delay + 0.5);
+			root.Rotation = ang;
+			ShaderMaterial m = new() { Shader = BladeShader };
+			m.SetShaderParameter("seed", Fx.Rand(0f, 10f));
+			ColorRect r = new() { Size = new Vector2(w, h) * unit, Position = new Vector2(-w / 2f, -h) * unit, Material = m, MouseFilter = Control.MouseFilterEnum.Ignore };
+			root.AddChild(r);
+			Fx.Clock(r);
+			Fx.Animate(root, delay, 0.4, t =>
+			{
+				float s = t * 0.4f;
+				m.SetShaderParameter("grow", Mathf.Clamp(s / 0.07f, 0f, 1f) * 1.05f);
+				m.SetShaderParameter("thin", Mathf.Clamp((s - 0.15f) / 0.25f, 0f, 1f));
+			});
+		}
+	}
+
 	// ───────────────────────── 时序 ─────────────────────────
 
 	/// <summary>各拍的时刻（从出牌算起，秒）。</summary>
@@ -256,6 +311,9 @@ void fragment() {
 		public Action<int>? OnPierce;
 		/// <summary>Joker 该开枪的时刻（游戏里播 shiv_from_aim）：FireAt - 0.18。</summary>
 		public Action? OnJokerAim, OnJokerShoot;
+		/// <summary>Joker 攥面具的时刻（从出牌算起）：两道蓝焰从面具冲上天。null = 不放（没有扶面具的架势时）。</summary>
+		public float? MaskSqueezeAt = 0.08f;
+		public Vector2 JokerMask;
 		/// <summary>场景里的人物（Joker、敌人的 Visuals）：场景期间统一染上夜色，结束时还原。</summary>
 		public List<CanvasItem> Actors = new();
 	}
@@ -404,7 +462,10 @@ void fragment() {
 		Glow.Flash(front, s.JokerHead, new Color(0.4f, 0.8f, 1f), 260f * unit, 0.3f);
 		Glow.Sparks(front, s.JokerFeet, 40, 200f, 700f, 0.7f, new[] { new Color(0.9f, 0.97f, 1f), new Color(0.3f, 0.7f, 1f), new Color(0.1f, 0.3f, 0.9f) },
 			-200f, 0.06f, 0.2f, Vector2.Up, 70f);
-		Sfx.Play(Sfx.PersonaFlame, 0.9f);
+		if (s.MaskSqueezeAt is float squeeze)
+		{
+			Fx.After(front, squeeze, () => FlameBlades(front, s.JokerMask, unit));
+		}
 		// 召唤 / 退场的闪雷声；接住枪的金属声
 		Fx.After(front, AppearAt, () => { Sfx.Play(Sfx.SinfulThunder, 1.1f); Fx.Shake(3); });
 		Fx.After(front, exitAt, () => { Sfx.Play(Sfx.SinfulThunder, 0.9f); Fx.Shake(2); });
