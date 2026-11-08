@@ -121,7 +121,11 @@ SFX = {
     "p3_evoker_shatter": ROOT / "art/sfx_p5/p3_evoker_shatter.ogg",    # eye cut-in shatter = the P3 mod evoker shot (user 2026-11-03)
     "curse_blast": ROOT / "art/sfx_p5/curse_blast.ogg",                # Outbreak blast (user: critical was too loud / harsh)                  # corrosive wave / poison tick (user: harsh)
     "battle_cutin": ROOT / "art/sfx_p5/battle_cutin.ogg",              # eye cut-in appears (user 2026-11-03; P5R SYSTEM.AWB #18, research/p5r/audio/eye_cutin)
-    "outbreak_burst": ROOT / "art/sfx_p5/outbreak_burst.ogg",        # Outbreak poison damage (user 2026-11-08: vanilla hit too plain): P5R SKILLSE 0406 (curse candidate), low-passed 6 kHz, 1.5 s
+    "outbreak_burst": ROOT / "art/sfx_p5/outbreak_burst.ogg",
+    "sinful_thunder": ROOT / "art/sfx_p5/sinful_thunder.ogg",          # Sinful Shell: Satanael's lightning (in / out), synthesized (tools/p5/sfx/synth_sinful.py)
+    "sinful_charge": ROOT / "art/sfx_p5/sinful_charge.ogg",
+    "sinful_catch": ROOT / "art/sfx_p5/sinful_catch.ogg",
+    "sinful_fire": ROOT / "art/sfx_p5/sinful_fire.ogg",        # Outbreak poison damage (user 2026-11-08: vanilla hit too plain): P5R SKILLSE 0406 (curse candidate), low-passed 6 kHz, 1.5 s
     "crush": ROOT / "art/sfx_p5/crush.ogg",                          # synthesized crunch for the hand crush                      # synthesized sub hit (ffmpeg aevalsrc)
 }
 
@@ -146,6 +150,10 @@ def fx_textures():
         if (GEN_CODEX / f"{name}.png").exists():
             yield name, Image.open(GEN_CODEX / f"{name}.png").convert("RGBA")
     # Satanael motion prototype (tools/p5/satanael/proto_cut.py) until Codex's v6 layers arrive
+    plat = ROOT / "art/p5/fx/v4/satanael/platform.png"                 # Sinful Shell platform (Codex): 3840x1100, top y=140, cliff edge x=760 -> x0.52
+    if plat.exists():
+        im = Image.open(plat).convert("RGBA")
+        yield "sinful_platform", im.resize((round(im.width * 0.52), round(im.height * 0.52)), Image.LANCZOS)
     for f in sorted((ROOT / "art/p5/fx/v4/satanael/game").glob("sat_*.png")):   # Satanael v6 layers (tools/p5/satanael/game_layers.py)
         yield f.stem, Image.open(f).convert("RGBA")
     # calling card back: Codex draws calling_card_back.png; until then a placeholder (black card, red border + stripes, card's

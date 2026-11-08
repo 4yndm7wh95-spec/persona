@@ -135,6 +135,51 @@
     49,
     38
    ]
+  },
+  "arm_fore_open": {
+   "offset": [
+    908.4,
+    1231.2
+   ],
+   "pivot": [
+    974.4,
+    1306.2
+   ],
+   "z": 6,
+   "size": [
+    491,
+    168
+   ]
+  },
+  "gun": {
+   "offset": [
+    1185.6,
+    1168.2
+   ],
+   "pivot": [
+    1328.3999999999999,
+    1320.0
+   ],
+   "z": 9,
+   "size": [
+    833,
+    276
+   ]
+  },
+  "finger_tip": {
+   "offset": [
+    1320.6,
+    1301.3999999999999
+   ],
+   "pivot": [
+    1332.0,
+    1320.6
+   ],
+   "z": 10,
+   "size": [
+    79,
+    44
+   ]
   }
  },
  "landmarks": {
@@ -186,6 +231,14 @@
   "barrel_origin": [
    1506.0,
    1264.8
+  ],
+  "spin_finger": [
+   1332.0,
+   1320.6
+  ],
+  "gun_guard": [
+   1328.3999999999999,
+   1320.0
   ]
  },
  "parenting": {
@@ -196,6 +249,9 @@
   "head": "body",
   "wing_back": "body",
   "wing_front": "body",
-  "cape": "body"
+  "cape": "body",
+  "arm_fore_open": "arm_upper",
+  "gun": "arm_fore_open",
+  "finger_tip": "arm_fore_open"
  }
 }

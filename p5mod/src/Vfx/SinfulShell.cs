@@ -50,6 +50,10 @@ uniform float feet_y = 830.0;
 uniform float cliff_x = 640.0;
 uniform float floor_y = 830.0;
 uniform float cliff2_x = 1000.0;
+// Codex 画的平台（有就用它，没有就用下面程序画的岩石）：贴图左上角在屏幕上的位置、在屏幕上的大小
+uniform sampler2D plat : filter_linear;
+uniform vec2 plat_origin = vec2(0.0);
+uniform vec2 plat_size = vec2(0.0);
 " + Noise + @"
 // 蓝焰边：烧穿的边界（d = 到边界的有向距离，>0 在场景里）
 vec4 flameEdge(vec2 px, float s) {
@@ -126,6 +130,12 @@ void fragment() {
 	} else {
 		float d = rock(px);
 		float inside = 1.0 - smoothstep(-1.0, 1.0, d);
+		vec4 pt = vec4(0.0);
+		if (plat_size.x > 0.0) {
+			vec2 puv = (px - plat_origin) / plat_size;
+			pt = (puv.x >= 0.0 && puv.x <= 1.0 && puv.y >= 0.0 && puv.y <= 1.0) ? texture(plat, puv) : vec4(0.0);
+			inside = pt.a;
+		}
 		// 岩石：暗蓝黑，层理 + 裂纹；顶面一道被天光照亮的冷色边；崖面靠深渊那侧被底下的红雾映红
 		float strata = fbm(vec2(px.x * 0.01, px.y * 0.05));
 		float crack = smoothstep(0.02, 0.0, abs(fbm(px * 0.02) - 0.5));
@@ -135,6 +145,9 @@ void fragment() {
 		float rim = smoothstep(-16.0, 0.0, d);
 		col += vec3(0.45, 0.05, 0.08) * rim * smoothstep(feet_y, sres.y, px.y) * 1.2;
 		col += vec3(0.3, 0.55, 0.8) * rim * smoothstep(feet_y + 60.0, feet_y, px.y) * 0.4;
+		if (plat_size.x > 0.0) {
+			col = pt.rgb * 0.8;                                             // 画的平台：整体压暗一点，跟夜景一致
+		}
 		col *= 1.0 - 0.45 * dim;
 		col += vec3(0.85, 0.95, 1.0) * flash * 0.6;
 		a = inside * shown;
@@ -220,14 +233,16 @@ void fragment() {
 	// ───────────────────────── 时序 ─────────────────────────
 
 	/// <summary>各拍的时刻（从出牌算起，秒）。</summary>
-	public const float RevealAt = 0.05f, RevealTime = 0.7f, AimAt = 1.6f, ChargeAt = 1.78f, FireAt = 2.8f, BulletSpeed = 3600f, ExitAfter = 1.2f, ExitTime = 0.6f;
+	public const float RevealAt = 0.05f, RevealTime = 0.7f, AimAt = 0.85f, ChargeAt = 1.7f, FireAt = 2.6f, BulletSpeed = 3600f, ExitAfter = 1.1f, ExitTime = 0.6f;
+
+	/// <summary>召唤撒旦耶尔的雷劈下的时刻（用户 2026-11-08：场景还没烧完雷就劈下来，前半段不空）。</summary>
+	public const float AppearAt = 0.3f;
 
 	public sealed class Setup
 	{
 		public Vector2 JokerFeet, JokerHead, JokerMuzzle, PersonaMuzzle;
-		/// <summary>撒旦耶尔头在屏幕上的位置、原型图像素 → 屏幕像素的缩放（有原型图时用，没有就只用 PersonaMuzzle）。</summary>
 		/// <summary>撒旦耶尔图层画布左上角在屏幕上的位置（1080p 像素）：脸推出屏幕上方、身体大半在左边外面，只露出翅膀、一部分身体和伸进来的持枪手臂（用户 2026-11-08）。</summary>
-		public Vector2 PersonaOrigin = new(-760f, -1035f);
+		public Vector2 PersonaOrigin = new(-610f, -1035f);
 		public float PersonaScale = 1f;
 		public float FloorY;
 		public List<Vector2> Enemies = new();
@@ -235,6 +250,26 @@ void fragment() {
 		public Action<int>? OnPierce;
 		/// <summary>Joker 该开枪的时刻（游戏里播 shiv_from_aim）：FireAt - 0.18。</summary>
 		public Action? OnJokerAim, OnJokerShoot;
+		/// <summary>场景里的人物（Joker、敌人的 Visuals）：场景期间统一染上夜色，结束时还原。</summary>
+		public List<CanvasItem> Actors = new();
+	}
+
+	private static GradientTexture2D? _lightTex;
+
+	/// <summary>引擎 2D 灯光用的径向渐变（中心白、边缘透明）。</summary>
+	private static Texture2D LightTex => _lightTex ??= new GradientTexture2D
+	{
+		Width = 256, Height = 256, Fill = GradientTexture2D.FillEnum.Radial, FillFrom = new Vector2(0.5f, 0.5f), FillTo = new Vector2(1f, 0.5f),
+		Gradient = new Gradient { Offsets = new[] { 0f, 0.35f, 1f }, Colors = new[] { Colors.White, new Color(1f, 1f, 1f, 0.45f), new Color(1f, 1f, 1f, 0f) } },
+	};
+
+	/// <summary>一盏引擎 2D 点光（PointLight2D，加法）：照亮它范围里的人物、怪物、人格面具和场景。</summary>
+	private static PointLight2D Light(Node parent, Vector2 at, Color c, float radiusPx)
+	{
+		PointLight2D l = new() { Texture = LightTex, TextureScale = radiusPx / 128f, Color = c, Energy = 0f };
+		parent.AddChild(l);
+		l.GlobalPosition = at;
+		return l;
 	}
 
 	/// <summary>放整段大罪穿甲弹。back = 背景层（场景、人格面具），front = 前景层（子弹、命中）。返回子弹穿过每个敌人的时刻（秒，从现在算）。</summary>
@@ -264,7 +299,17 @@ void fragment() {
 		}
 		sky.SetShaderParameter("part", 0);
 		rocks.SetShaderParameter("part", 1);
-		ColorRect skyRect = new() { Size = screen, Material = sky, MouseFilter = Control.MouseFilterEnum.Ignore };
+		if (Fx.Tex("sinful_platform") is Texture2D plat)
+		{
+			// Codex 的平台：原图 3840×1100（×0.52），顶面 y=140、悬崖边 x=760 → 悬崖边对到 Joker 脚边、顶面对到脚底
+			float k = unit;
+			Vector2 size = plat.GetSize() * k;
+			Vector2 org = new(feetS.X - 95f * unit - 760f * 0.52f * k, feetS.Y - 140f * 0.52f * k);
+			rocks.SetShaderParameter("plat", plat);
+			rocks.SetShaderParameter("plat_origin", org);
+			rocks.SetShaderParameter("plat_size", size);
+		}
+		ColorRect skyRect = new() { Size = screen, Material = sky, MouseFilter = Control.MouseFilterEnum.Ignore, LightMask = 0 };   // 天空不吃引擎灯光（不然整片被照白），只有自己的闪光
 		Node2D personaSlot = new() { Name = "PersonaSlot" };          // 撒旦耶尔第 2 版立绘放这里（天空和断崖之间）
 		ColorRect rockRect = new() { Size = screen, Material = rocks, MouseFilter = Control.MouseFilterEnum.Ignore };
 		root.AddChild(skyRect);
@@ -273,7 +318,7 @@ void fragment() {
 		Fx.Clock(skyRect);
 		Fx.Clock(rockRect);
 		// ── 撒旦耶尔（部件动画）：先摆到开枪那一刻量出枪口，再回到登场姿势
-		const float RiseAt = RevealAt + RevealTime * 0.55f;
+		const float RiseAt = AppearAt;
 		float exitAt = FireAt + ExitAfter;
 		Vector2 aimScreen = s.Enemies.Count > 0 ? toScreen(s.Enemies.Aggregate(Vector2.Zero, (a, b) => a + b) / s.Enemies.Count) : screen * 0.7f;
 		SatanaelPuppet? puppet = SatanaelPuppet.Available ? new SatanaelPuppet(personaSlot, s.PersonaOrigin * unit, s.PersonaScale * unit, aimScreen) : null;
@@ -283,27 +328,68 @@ void fragment() {
 			s.PersonaMuzzle = puppet.MuzzleGlobal;
 			puppet.Update(0f, RiseAt, AimAt, FireAt, exitAt);
 		}
+		Vector2 aimDir = ((enemiesOrdered.Count > 0 ? enemiesOrdered[^1].e : s.PersonaMuzzle + new Vector2(1000f, 200f)) - s.PersonaMuzzle).Normalized();
 		float far = (screen * 1.3f).Length();
+		// ── 光影（用户 2026-11-08：要照到人格面具、人物和怪物身上）：引擎 2D 点光 + 场景里的人物统一染上夜色
+		Node2D lights = new() { Name = "P5SinfulLights" };
+		front.AddChild(lights);
+		Vector2 world(Vector2 sp) => back.GetCanvasTransform().AffineInverse() * sp;
+		PointLight2D muzzleLight = Light(lights, s.PersonaMuzzle, new Color(0.5f, 0.82f, 1f), 520f * unit);
+		PointLight2D flashLight = Light(lights, s.PersonaMuzzle, new Color(0.85f, 0.93f, 1f), 2600f * unit);
+		PointLight2D bulletLight = Light(lights, s.PersonaMuzzle, new Color(0.55f, 0.85f, 1f), 560f * unit);
+		PointLight2D thunderLight = Light(lights, world(new Vector2(screen.X * 0.12f, screen.Y * 0.3f)), new Color(0.7f, 0.88f, 1f), 1900f * unit);
+		PointLight2D abyssLight = Light(lights, world(new Vector2(screen.X * 0.08f, screen.Y * 1.05f)), new Color(0.85f, 0.12f, 0.18f), 1100f * unit);
+		var actorRest = s.Actors.Where(GodotObject.IsInstanceValid).Select(a => (a, a.Modulate)).ToList();
+		Color grade = new(0.6f, 0.68f, 0.95f);
+		Fx.FreeAfter(lights, total + 0.1);
+		root.TreeExiting += () =>
+		{
+			foreach ((CanvasItem a, Color c) in actorRest)
+			{
+				if (GodotObject.IsInstanceValid(a)) a.Modulate = c;
+			}
+		};
 		Fx.Animate(root, 0, total, t =>
 		{
 			float time = t * total;
 			float rv = Mathf.Clamp((time - RevealAt) / RevealTime, 0f, 1f);
 			float reveal = far * (1f - Mathf.Pow(1f - rv, 2.2f));
-			float ex = Mathf.Clamp((time - FireAt - ExitAfter) / ExitTime, 0f, 1f);
+			float ex = Mathf.Clamp((time - FireAt - ExitAfter - 0.1f) / ExitTime, 0f, 1f);
 			float conceal = ex <= 0f ? 0f : far * ex * ex;
 			float dim = Mathf.Clamp((time - ChargeAt) / (FireAt - ChargeAt), 0f, 1f) * (time < FireAt ? 1f : Mathf.Exp(-(time - FireAt) / 0.4f));
-			float flash = time >= FireAt ? Mathf.Exp(-(time - FireAt) / 0.07f) : 0f;
+			float flash = time >= FireAt ? Mathf.Exp(-(time - FireAt) / 0.05f) : 0f;
+			float charge = time < ChargeAt ? 0f : time < FireAt ? 0.3f + 1.4f * Mathf.Pow((time - ChargeAt) / (FireAt - ChargeAt), 2f) : 1.7f * Mathf.Exp(-(time - FireAt) / 0.12f);
+			float thunder = 0f;
 			if (puppet != null)
 			{
-				float charge = time < ChargeAt ? 0f : time < FireAt ? 0.3f + 1.4f * Mathf.Pow((time - ChargeAt) / (FireAt - ChargeAt), 2f) : 1.7f * Mathf.Exp(-(time - FireAt) / 0.12f);
-				puppet.Update(time, RiseAt, AimAt, FireAt, exitAt, puppet.MuzzleLocal, charge, flash, dim);
+				puppet.Update(time, RiseAt, AimAt, FireAt, exitAt, puppet.MuzzleLocal, charge, flash * 0.6f, dim);
+				thunder = puppet.Lightning;
+				muzzleLight.GlobalPosition = puppet.MuzzleGlobal;
 			}
 			foreach (ShaderMaterial m in new[] { sky, rocks })
 			{
 				m.SetShaderParameter("reveal", reveal);
 				m.SetShaderParameter("conceal", conceal);
 				m.SetShaderParameter("dim", dim);
-				m.SetShaderParameter("flash", flash);
+				m.SetShaderParameter("flash", flash * 0.5f + thunder * 0.12f);
+			}
+			// 灯：枪口蓄力光、开枪全场白光、跟着子弹飞的光、雷光、深渊往上打的暗红光
+			float scene = rv * (1f - ex);
+			muzzleLight.Energy = charge * 1.1f;
+			flashLight.Energy = 1.5f * flash;
+			float fly = time - FireAt;
+			bulletLight.Energy = fly >= 0f && fly < 0.6f ? 2.6f * (1f - fly / 0.6f) : 0f;
+			if (fly >= 0f)
+			{
+				bulletLight.GlobalPosition = s.PersonaMuzzle + (aimDir * BulletSpeed * unit * fly);
+			}
+			thunderLight.Energy = thunder * 1.8f;
+			abyssLight.Energy = 0.9f * scene;
+			// 场景里的人物染上夜色（冷蓝、压暗）
+			Color tint = Colors.White.Lerp(grade, scene * (1f - 0.3f * dim) + 0.15f * dim);
+			foreach ((CanvasItem a, Color c) in actorRest)
+			{
+				if (GodotObject.IsInstanceValid(a)) a.Modulate = c * tint;
 			}
 		});
 		Fx.FreeAfter(root, total + 0.1);
@@ -312,6 +398,13 @@ void fragment() {
 		Glow.Sparks(front, s.JokerFeet, 40, 200f, 700f, 0.7f, new[] { new Color(0.9f, 0.97f, 1f), new Color(0.3f, 0.7f, 1f), new Color(0.1f, 0.3f, 0.9f) },
 			-200f, 0.06f, 0.2f, Vector2.Up, 70f);
 		Sfx.Play(Sfx.PersonaFlame, 0.9f);
+		// 召唤 / 退场的闪雷声；接住枪的金属声
+		Fx.After(front, AppearAt, () => { Sfx.Play(Sfx.SinfulThunder, 1.1f); Fx.Shake(3); });
+		Fx.After(front, exitAt, () => { Sfx.Play(Sfx.SinfulThunder, 0.9f); Fx.Shake(2); });
+		if (puppet != null)
+		{
+			Fx.After(front, AimAt + SatanaelPuppet.CatchAfter, () => Sfx.Play(Sfx.SinfulCatch, 1f));
+		}
 		// 场景里飘的蓝色余烬
 		Fx.After(back, RevealAt + RevealTime * 0.6f, () =>
 		{
@@ -321,7 +414,8 @@ void fragment() {
 		});
 
 		// ── 举枪、蓄力
-		Fx.After(front, AimAt, () => s.OnJokerAim?.Invoke());
+		// Joker 同步转枪：他的转枪（aim_in）约 0.12s 接住，对到撒旦耶尔接住枪的那一刻
+		Fx.After(front, puppet != null ? AimAt + SatanaelPuppet.CatchAfter - 0.12f : AimAt, () => s.OnJokerAim?.Invoke());
 		Vector2 muzzle = s.PersonaMuzzle;
 		Vector2 aimEnd = enemiesOrdered.Count > 0 ? enemiesOrdered[^1].e : muzzle + new Vector2(1000f, 200f);
 		Vector2 dir = (aimEnd - muzzle).Normalized();
@@ -357,11 +451,12 @@ void fragment() {
 					Glow.Sparks(front, from, 10, 300f, 700f, 0.3f, new[] { new Color(0.85f, 0.95f, 1f), new Color(0.3f, 0.7f, 1f) }, 0f, 0.04f, 0.1f, muzzle - from, 12f);
 				});
 			}
-			Sfx.Play(Sfx.PersonaFlame, 0.6f, dur * 0.3f);
+			Sfx.Play(Sfx.SinfulCharge, 0.9f, Mathf.Max(0f, dur - 1.0f));
 		});
 
 		// ── 开枪
 		Fx.After(front, FireAt - 0.18f, () => s.OnJokerShoot?.Invoke());
+		Fx.After(front, FireAt - 0.12f, () => Sfx.Play(Sfx.SinfulFire, 1.25f));          // 合成的开枪声，开头 0.12s 是倒吸，主冲击落在开枪那一帧
 		// Joker 同步开枪，但大罪穿甲弹是撒旦耶尔打出来的：Joker 枪口只有一小点蓝光，不抢戏（用户 2026-11-08）
 		Fx.After(front, FireAt, () => Glow.Flash(front, s.JokerMuzzle, new Color(0.5f, 0.85f, 1f), 70f * unit, 0.1f));
 		var pierce = new float[s.Enemies.Count];
@@ -378,9 +473,7 @@ void fragment() {
 			Fx.Shake(4);
 			Glow.Flash(front, muzzle, new Color(0.85f, 0.95f, 1f), 600f * unit, 0.2f);
 			Glow.Ripple(front, muzzle, 1100f * unit, 0.7f, 0.05f);
-			Sfx.Play(Sfx.Gun, 1.2f);
-			Sfx.Play(Sfx.SubBoom, 1f);
-			Sfx.Play(Sfx.Critical, 0.7f);
+			Sfx.Play(Sfx.SubBoom, 0.8f);
 			Rings(front, muzzle, dir, unit);
 			Bullet(front, muzzle, dir, screen, unit);
 			Glow.Sparks(front, muzzle, 50, 600f, 1800f, 0.4f, new[] { new Color(0.95f, 0.98f, 1f), new Color(0.35f, 0.75f, 1f), new Color(0.6f, 0.3f, 1f) }, 0f,
@@ -465,6 +558,10 @@ void fragment() {
 	private static void Pierce(Control layer, Vector2 at, Vector2 dir, float unit, bool last)
 	{
 		Glow.Flash(layer, at, new Color(0.8f, 0.92f, 1f), (last ? 700f : 460f) * unit, 0.22f);
+		// 贯穿处炸亮一盏灯，照亮这个敌人和旁边的
+		PointLight2D pl = Light(layer, at, new Color(0.7f, 0.9f, 1f), (last ? 900f : 650f) * unit);
+		Fx.Animate(pl, 0, 0.4, k => pl.Energy = (last ? 4.5f : 3.2f) * (1f - k) * (1f - k));
+		Fx.FreeAfter(pl, 0.45);
 		Glow.Sparks(layer, at, last ? 70 : 40, 500f, 1600f, 0.45f, new[] { new Color(0.95f, 0.98f, 1f), new Color(0.35f, 0.75f, 1f), new Color(0.65f, 0.3f, 1f) },
 			200f, 0.05f, 0.15f, dir, 35f);
 		Glow.Sparks(layer, at, 20, 200f, 600f, 0.35f, new[] { new Color(0.9f, 0.95f, 1f), new Color(0.3f, 0.6f, 1f) }, 300f, 0.04f, 0.1f, -dir, 60f);

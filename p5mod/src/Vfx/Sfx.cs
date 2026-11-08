@@ -51,6 +51,10 @@ public static class Sfx
 		SubBoom = "sub_boom",           // 合成的低频重击（art/sfx_p5/sub_boom.ogg：P5 原声缺低频，垫在冲击层底下）
 		OutbreakBurst = "outbreak_burst", // 毒性爆发毒伤结算（用户 2026-11-08：原版受击声太平淡）：P5R SKILLSE 0406（咒怨系候选，起音 0.01s、偏暗），
 		                                //  滤掉 6kHz 以上、截 1.5s 淡出、响度归一（art/sfx_p5/outbreak_burst.ogg）
+		SinfulThunder = "sinful_thunder", // 大罪穿甲弹：撒旦耶尔登场 / 退场的闪雷（合成：尖锐的爆裂 + 滚动的低频雷鸣，tools/p5/sfx/synth_sinful.py）
+		SinfulCharge = "sinful_charge",   // 蓄力：越来越高的啸叫 + 越来越重的低频嗡鸣
+		SinfulCatch = "sinful_catch",     // 转枪接住：沉重的金属咔嗒
+		SinfulFire = "sinful_fire",       // 开枪（用户：不要普通手枪声）：倒吸 → 爆裂 → 超低频重击 → 失真冲击 → 金属余振 → 长尾和回声
 		Crush = "crush";                // 合成的「捏碎」：几下密集的碎裂咔嚓 + 一记闷响（art/sfx_p5/crush.ogg，手捏爆用）           // 合成的低频重击（art/sfx_p5/sub_boom.ogg：P5 原声缺低频，垫在冲击层底下）
 
 	/// <summary>
@@ -60,7 +64,7 @@ public static class Sfx
 	private static readonly Dictionary<string, float> Lead = new()
 	{
 		[Parry] = 0.068f, [Slam] = 0.1f, [PoisonTick] = 0.078f, [CutIn] = 0.083f, [PersonaFlame] = 0.13f, [Wing] = 0.023f,
-		[Crack] = 0.019f, [SwishHeavy] = 0.005f, [KnifeRing] = 0.048f,
+		[Crack] = 0.019f, [SwishHeavy] = 0.005f, [KnifeRing] = 0.048f, [SinfulFire] = 0.12f,
 	};
 
 	/// <summary>在 delay 秒后的那一帧「打中」：按起音提前量提前开始播。</summary>
