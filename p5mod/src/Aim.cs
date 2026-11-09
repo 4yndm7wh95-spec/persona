@@ -132,7 +132,8 @@ public static class Aim
 
 	/// <summary>拿起的这张牌要摆哪种架势。</summary>
 	public static Stance StanceFor(CardModel card) =>
-		Joker.IsShot(card) || card.GetType().Name is "FanOfKnives" or "BulletTime" or "KnifeTrap" ? Stance.Gun   // 拿枪不开枪的牌：选中掏枪（用户 2026-11-04）
+		card.GetType().Name == "GrandFinale" ? Stance.Mask                       // 华丽收场：扶面具（大罪穿甲弹，GrandFinale.cs）
+		: Joker.IsShot(card) || card.GetType().Name is "FanOfKnives" or "BulletTime" or "KnifeTrap" ? Stance.Gun   // 拿枪不开枪的牌：选中掏枪（用户 2026-11-04）
 		: card.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Attack ? Stance.Knife
 		: Casts.For(card) switch { Cast.Guard => Stance.Guard, Cast.Glove => Stance.Glove, _ => Stance.Mask };
 
@@ -217,7 +218,7 @@ public static class Aim
 			catch (System.Exception)
 			{
 			}
-			bool casting = cur is "cast_from_mask" or "cast" or "cast_big" or "cast_outbreak" or "cast_outbreak_from_mask";
+			bool casting = cur is "cast_from_mask" or "cast" or "cast_big" or "cast_outbreak" or "cast_outbreak_from_mask" or "cast_sinful_from_mask";
 			if (cur is "mask_in" or "mask_loop" || (casting && time < 0.12f))
 			{
 				return;
@@ -577,6 +578,16 @@ public static class Aim
 
 	/// <summary>复制一份 Joker（同一帧的姿势），给残影这类特效用。</summary>
 	public static (Node2D, Transform2D)? CloneJoker(NCreature joker, Node target) => CloneBody(joker, target, "idle_loop");
+
+	/// <summary>华丽收场（GrandFinale.cs）：攥面具那一下，把等着的面具火炸开。</summary>
+	public static void ReleaseHeld()
+	{
+		if (_held is ReadyFx h)
+		{
+			_held = null;
+			Release(h);
+		}
+	}
 
 	/// <summary>打出去了：架势特效一闪收掉（出牌特效接上）。</summary>
 	public static void Played()

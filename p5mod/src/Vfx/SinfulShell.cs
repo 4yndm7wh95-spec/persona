@@ -266,6 +266,9 @@ void fragment() {
 	/// <summary>召唤撒旦耶尔的雷劈下的时刻（用户 2026-11-08：场景还没烧完雷就劈下来，前半段不空）。</summary>
 	public const float AppearAt = 0.12f;   // 交接待办 C（用户 2026-11-09：前半段空）：召唤的雷和场景刚烧开同时劈下
 
+	/// <summary>整段演出的时长（出牌算起，到场景收回完）。</summary>
+	public static float Duration => FireAt + Mathf.Max(ConcealAfter + ExitTime, ExitAfter + 0.6f) + 0.15f;
+
 	public sealed class Setup
 	{
 		public Vector2 JokerFeet, JokerHead, JokerMuzzle, PersonaMuzzle;
@@ -505,16 +508,16 @@ void fragment() {
 			-200f, 0.06f, 0.2f, Vector2.Up, 70f);
 		// 召唤 / 退场的闪雷声；接住枪的金属声
 		// 场景圈展开 / 收回的轻声（压在雷和开枪声下面）：收回那条 0.7s 的卷入正好在圈缩到脚下时收住
-		Fx.After(front, RevealAt, () => Sfx.Play(Sfx.SinfulSweepOpen, 0.45f));
-		Fx.After(front, FireAt + ConcealAfter + ExitTime - 0.7f, () => Sfx.Play(Sfx.SinfulSweepClose, 0.45f));
-		Fx.After(front, AppearAt, () => { Sfx.Play(Sfx.SinfulThunder, 0.75f); Fx.Shake(3); });
-		Fx.After(front, exitAt, () => { Sfx.Play(Sfx.SinfulThunder, 0.6f); Fx.Shake(2); });
+		Fx.After(front, RevealAt, () => Sfx.Play(Sfx.SinfulSweepOpen, 0.95f));
+		Fx.After(front, FireAt + ConcealAfter + ExitTime - 0.7f, () => Sfx.Play(Sfx.SinfulSweepClose, 0.85f));
+		Fx.After(front, AppearAt, () => { Sfx.Play(Sfx.SinfulThunder, 1.0f); Fx.Shake(3); });
+		Fx.After(front, exitAt, () => { Sfx.Play(Sfx.SinfulThunder, 0.85f); Fx.Shake(2); });
 		if (puppet != null)
 		{
 			// 转枪的破风声：只留撒旦耶尔的（用户 2026-11-09：Joker 的转枪声去掉；接枪的金属声也去掉——它正好落在开枪的倒吸里，叠在一起）
-			Fx.After(front, AimAt + SatanaelPuppet.Anticipation, () => Sfx.Play(Sfx.SinfulTwirl, 0.55f));
+			Fx.After(front, AimAt + SatanaelPuppet.Anticipation, () => Sfx.Play(Sfx.SinfulTwirl, 0.3f));
 			// 收枪的转枪声（轻一点）；撒旦耶尔的开枪时刻是 FireAt + 0.12（Update 里传的）
-			Fx.After(front, FireAt + 0.12f + SatanaelPuppet.PutAwayAfter + 0.02f, () => Sfx.Play(Sfx.SinfulTwirl, 0.4f));
+			Fx.After(front, FireAt + 0.12f + SatanaelPuppet.PutAwayAfter + 0.02f, () => Sfx.Play(Sfx.SinfulTwirl, 0.25f));
 		}
 		// 场景里飘的蓝色余烬
 		Fx.After(back, RevealAt + RevealTime * 0.6f, () =>

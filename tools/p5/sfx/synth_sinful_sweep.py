@@ -1,4 +1,5 @@
-"""Scene open / close for Sinful Shell (handoff item B, user 2026-11-09: light, just the feel of it).
+"""Scene open / close for Sinful Shell (handoff item B, user 2026-11-09: light, just the feel of it;
+v2, same day: the opening was hard to hear at all - brighter whoosh band that sits above the thunder's low end, more crackle).
 A low-passed blue-flame sweep with a little crackle. Open: strong at once, fading as the ring slows (0.75 s).
 Close: the reverse - swells as the ring shrinks into Joker's feet and ends on a soft thump.
 Writes art/sfx_p5/sinful_sweep_open.ogg, sinful_sweep_close.ogg."""
@@ -30,16 +31,18 @@ def sweep(sec):
     body = np.zeros(n)
     nz = rng.standard_normal(n)
     for i in range(0, n, 2048):
-        f = 2200 * (1 - k[i]) ** 1.5 + 250
+        f = 5000 * (1 - k[i]) ** 1.3 + 500
         seg = slice(i, min(n, i + 2048))
         body[seg] = lp(nz[max(0, i - 4096):seg.stop], f)[-(seg.stop - i):]
-    env = np.minimum(1, x / 0.02) * (1 - k) ** 1.6
+    env = np.minimum(1, x / 0.03) * (1 - k) ** 1.2
+    # a whoosh band (600-2500 Hz) that rises a little then fades, so the sweep reads above the thunder
+    whoosh = bp(rng.standard_normal(n), 600, 2500) * np.minimum(1, x / 0.06) * (1 - k) ** 0.9
     crack = np.zeros(n)
-    for _ in range(26):
+    for _ in range(60):
         s0 = int(rng.uniform(0, sec * 0.8) * SR); m = int(0.012 * SR)
         if s0 + m < n: crack[s0:s0 + m] += rng.standard_normal(m) * np.exp(-np.arange(m) / (0.002 * SR)) * rng.uniform(0.2, 0.6)
     crack = bp(crack, 1500, 6000) * env
-    return body * env + crack * 0.5
+    return body * env * 0.8 + whoosh * 0.9 + crack * 0.9
 
 
 op = sweep(0.8)

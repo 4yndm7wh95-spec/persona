@@ -125,6 +125,11 @@ public static class DamagePatch
 			{
 				return;
 			}
+			if (SinfulPlay.Active)
+			{
+				Hits.Mark(targets, false, Weight.Heavy);          // 华丽收场：数字照样换成 P5 样式，敌人那边的特效和声音全由 SinfulShell 放
+				return;
+			}
 			bool gun = Joker.IsShot(cardSource);
 			(Weight floor, bool calm) = HitWeights.NextHit(cardSource, gun);
 			Hits.Mark(targets, gun, floor, calm);
@@ -237,6 +242,7 @@ public static class DamageNumberPatch
 			// 打击确认感：顿帧 + 定向震屏 + 受击白闪 / 击退 + 重击 / 击杀的全屏冲击帧（Vfx/Impact.cs）
 			(Weight floor, bool calm) = Hits.FloorOf(target);
 			bool finale = result.WasTargetKilled && target.CombatState?.Enemies.All(e => e.IsDead) == true;
+			if (!SinfulPlay.Active)
 			Impact.Confirm(layer, node.Visuals, node.VfxSpawnPosition, new Godot.Vector2(1f, 0.12f),
 				Impact.Grade(floor, result.UnblockedDamage, target.CurrentHp + result.UnblockedDamage, result.WasTargetKilled, finale, calm));
 			original.QueueFree();

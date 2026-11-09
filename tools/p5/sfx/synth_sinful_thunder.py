@@ -1,4 +1,5 @@
-"""Satanael's summon / exit thunder, second version (user 2026-11-09: the old one was too "explosive", harsh and blown out - it should be
+"""Satanael's summon / exit thunder, third version (user 2026-11-09: v2 was too muffled - louder and brighter).
+Second version (user 2026-11-09: the old one was too "explosive", harsh and blown out - it should be
 the clean, crisp roar of thunder). Writes art/sfx_p5/sinful_thunder.ogg.
 
 Shape of a near lightning strike, kept clean (no distortion, no broadband blast):
@@ -27,7 +28,7 @@ def env(x, a, d): return np.minimum(1, x / max(a, 1e-4)) * np.exp(-np.maximum(0,
 def reverb(x, decay, mix):
     n = int(decay * SR)
     ir = rng.standard_normal(n) * np.exp(-np.arange(n) / (decay * SR / 5))
-    ir = lp(ir, 2500)
+    ir = lp(ir, 4500)
     wet = signal.fftconvolve(x, ir)[: len(x) + n]
     wet /= np.abs(wet).max() + 1e-9
     y = np.zeros(len(x) + n)
@@ -52,14 +53,20 @@ def compress(x, thresh=0.35, ratio=3.0, att=0.004, rel=0.12):
 x = t(2.6)
 y = np.zeros_like(x)
 # crack: a few close ticks, band-limited, short
-for at, amp in ((0.0, 1.0), (0.011, 0.6), (0.026, 0.45), (0.05, 0.25)):
+for at, amp in ((0.0, 1.0), (0.011, 0.7), (0.026, 0.55), (0.05, 0.35), (0.08, 0.25)):
     m = x >= at
     tt = x[m] - at
-    y[m] += bp(rng.standard_normal(m.sum()), 700, 5000) * env(tt, 0.0006, 0.012) * amp * 0.55
-y = lp(y, 4200)
+    y[m] += bp(rng.standard_normal(m.sum()), 600, 7500) * env(tt, 0.0006, 0.016) * amp * 1.1
+# v3: a rippling crackle over the first 0.35 s (the bright tearing of a close strike), then the edge rolls off
+cr = np.zeros_like(x)
+for _ in range(40):
+    s0 = rng.uniform(0.0, 0.35) * (rng.uniform() ** 1.5); k = int(s0 * SR); n = int(0.01 * SR)
+    cr[k:k + n] += rng.standard_normal(n) * np.exp(-np.arange(n) / (0.0025 * SR)) * rng.uniform(0.2, 0.7) * np.exp(-s0 / 0.15)
+y += bp(cr, 1200, 6000) * 0.8
+y = lp(y, 8000)
 # body: dense low-mid roar
-body = bp(rng.standard_normal(len(x)), 90, 600) * env(x - 0.015, 0.025, 0.45) * (x > 0.015)
-y += body * 0.9
+body = bp(rng.standard_normal(len(x)), 90, 1200) * env(x - 0.015, 0.02, 0.4) * (x > 0.015)
+y += body * 1.0
 # rolling rumble: uneven swells, each lower and softer
 rum = np.zeros_like(x)
 for at, amp, d in ((0.12, 1.0, 0.5), (0.45, 0.75, 0.6), (0.9, 0.5, 0.7), (1.4, 0.3, 0.8)):
