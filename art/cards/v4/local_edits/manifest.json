@@ -1,0 +1,212 @@
+[
+  {
+    "card": "strike_regent",
+    "batch": 1,
+    "file": "batch_01/strike_regent.png",
+    "sha256": "0feb2d9227fc5bd01a7d87eb0309669f646f475463011f7a473f38b9497b7c06",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "venerate",
+    "batch": 1,
+    "file": "batch_01/venerate.png",
+    "sha256": "b98d21c1bf4986528fb0faf28f247e093cc7d76e05219b777755d99cbb634a07",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "hidden_cache",
+    "batch": 1,
+    "file": "batch_01/hidden_cache.png",
+    "sha256": "04f9f0295de76b0f6c7d83f123850b564d3ca48cb33db68dd16cf484955a0000",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "know_thy_place",
+    "batch": 1,
+    "file": "batch_01/know_thy_place.png",
+    "sha256": "feda5d037af9e8061475e9c5379325dee59346bda28c49655c4490c227e3fc72",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "cloak_of_stars",
+    "batch": 1,
+    "file": "batch_01/cloak_of_stars.png",
+    "sha256": "ac31e2cd6d6b1670f057d87b8a3609d4dcbf462fd27107ad5a32c77cce1dcb81",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "bundle_of_joy",
+    "batch": 2,
+    "file": "batch_02/bundle_of_joy.png",
+    "sha256": "8299152d73406a55ebcbba0eb81c6dbe3e2b80e7183f6df2e1a76344957d015d",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "largesse",
+    "batch": 2,
+    "file": "batch_02/largesse.png",
+    "sha256": "d25b5058ff7493d5155cf2fec116ad37e9be6be89bb94fb1379454e42d472723",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "royalties",
+    "batch": 2,
+    "file": "batch_02/royalties.png",
+    "sha256": "70f20568d22b1daf73173f7abba98a1b00bd19ede04be810c9e7f801dc88ad2d",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "spoils_of_battle",
+    "batch": 2,
+    "file": "batch_02/spoils_of_battle.png",
+    "sha256": "a929afa7d342489dc782d2f945a54ebe3ac58dcd67003dc8366e45401b696fec",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "summon_forth",
+    "batch": 2,
+    "file": "batch_02/summon_forth.png",
+    "sha256": "8a47a51fd8d113a18ae76f8b68bc9764132071eb8342096536c098e7c2f0400e",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "guards",
+    "batch": 3,
+    "file": "batch_03/guards.png",
+    "sha256": "994efd753ccf82deb98a11bf4eb8b14831a8dcaa048f07125e0098cd52eb225f",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "patter",
+    "batch": 3,
+    "file": "batch_03/patter.png",
+    "sha256": "2b977fca7d147469be875a19a3e593a0fdedf2be7d7155d231776ec05376fd2c",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "tutor",
+    "batch": 3,
+    "file": "batch_03/tutor.png",
+    "sha256": "6dea0a1fa9adffc7bbb1e0395c0b19a639aeb73f32c0db4f7df0e70b939212b7",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "the_smith",
+    "batch": 3,
+    "file": "batch_03/the_smith.png",
+    "sha256": "f4cf13a85656da32c00870bde5f16d816c6ec958e7329920fb97b458a7326dec",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "refine_blade",
+    "batch": 3,
+    "file": "batch_03/refine_blade.png",
+    "sha256": "1d033c9083586f568836f5a7e51c40b05d3d4ed0eeb317d4d033af782974aee3",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "kingly_kick",
+    "batch": 4,
+    "file": "batch_04/kingly_kick.png",
+    "sha256": "6ee467acdd3e0613f489d12a5309235d0beda150fe918f9243fc82642104b92e",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "kingly_punch",
+    "batch": 4,
+    "file": "batch_04/kingly_punch.png",
+    "sha256": "0155401f9a7271b10118f7d3bf9005d4fe5ec72fa99dd404c1c2170836945fe9",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "heirloom_hammer",
+    "batch": 4,
+    "file": "batch_04/heirloom_hammer.png",
+    "sha256": "49450e276807c951ad6ad1342e7e6b5a7199149cb8de74ac2e5058cd4965ed20",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "royal_gamble",
+    "batch": 4,
+    "file": "batch_04/royal_gamble.png",
+    "sha256": "d836a14037481e250e59c6369622d80ebf1dd991ac1a674b589b7840f9a02c66",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "reserves",
+    "batch": 4,
+    "file": "batch_04/reserves.png",
+    "sha256": "cc27dfa6a0e8739040659e5ff0f2e3c92ddecc0885e5cf3b07abf5be870be683",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "parry",
+    "batch": 5,
+    "file": "batch_05/parry.png",
+    "sha256": "526bffbb8d5c5d261622a0087534dee58df9d63e530196516c9bcac95559a06a",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "reflect",
+    "batch": 5,
+    "file": "batch_05/reflect.png",
+    "sha256": "224cc27d75c4187135a3a5a99f90078b4e494d4ca05f529cef301bafc65fc7be",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "hegemony",
+    "batch": 5,
+    "file": "batch_05/hegemony.png",
+    "sha256": "e7a33d2e7c8bf2a8aaa057cd4b1d1d866be9b5167515ff2d9cdc2e126bcf15e9",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "manifest_authority",
+    "batch": 5,
+    "file": "batch_05/manifest_authority.png",
+    "sha256": "f73c11b547190228d088adcd2077a1b899d28f0174d3838c1d49c03b865756e1",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "royal_corona",
+    "batch": 5,
+    "file": "batch_05/royal_corona.png",
+    "sha256": "69cfd98f6a95084f2156705a005bb03de6d2d631902f2a30c5f2e4ede02e9b08",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "beat_into_shape",
+    "batch": 6,
+    "file": "batch_06/beat_into_shape.png",
+    "sha256": "d2c6999a73242ea365315f5a384edcf5f36974e17cd6d9027d46100a297e4b5d",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "hammer_time",
+    "batch": 6,
+    "file": "batch_06/hammer_time.png",
+    "sha256": "a7d2eac6671024fceb2cb9fb52a6c7b519eaee56a25b5479d9663f5ff2f9017a",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "furnace",
+    "batch": 6,
+    "file": "batch_06/furnace.png",
+    "sha256": "1ffe149fa69dc268681d356baa6d917e185c35cd678283835424e41ba07445fd",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "pale_blue_dot",
+    "batch": 6,
+    "file": "batch_06/pale_blue_dot.png",
+    "sha256": "830c8f7546364dbe993528b3e3a084b603b2db6d5267c720756fc44395a585c2",
+    "status": "awaiting_user_review"
+  },
+  {
+    "card": "monologue",
+    "batch": 6,
+    "file": "batch_06/monologue.png",
+    "sha256": "1529919e06b985b154e2b5e83db04cc5afd6c0ed79b2394d19d2dab6fbb5d3be",
+    "status": "awaiting_user_review"
+  }
+]

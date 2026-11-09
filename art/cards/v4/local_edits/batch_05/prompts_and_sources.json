@@ -1,0 +1,43 @@
+{
+  "batch": 5,
+  "tool": "built-in image_gen",
+  "original_root": "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/research/regent_assets/images/packed/card_portraits/regent/",
+  "approval": "User alone reviews. Stop after five cards.",
+  "cards": [
+    {
+      "name": "parry",
+      "prompt": "Use case: precise-object-edit. Image1 is original card edit target. Preserve original background palette and large shapes, composition, magic effect colors, core objects and impact positions. Only locally replace described subjects, no global filter. Rich crisp hard celshade: deep occlusion, purposeful folds/seams, thickness and material planes. Canonical P3R colors for new creatures. Completely remove replaced Regent head/armor, no old head floating as prop. No Makoto. Opaque1000x760 horizontal fullbleed safe crop margins no text/frame/watermark. Replace entire left Regent with compact JACK FROST parrying, complete white snowman face blue threepoint hat with white pompoms and blue collar, small complete body left. His white rounded hand rises toward original foreground grip and holds original BLUE celestial blade against incoming grey steel sword. Keep both crossing blades and cyan-white impact flare/shards exactly same original geometry and placement, purple/magenta background unchanged. Frost body in left third, arm foreshortens toward uppercenter grip, anatomically connected no long human sleeve or old gold gauntlet. Hat folds and controlled lavender-white body shadows, original cyan rim.",
+      "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-94a8d36d-386a-4ade-b02c-de41c8b4cf52.png",
+      "status": "awaiting_user_review",
+      "saved_file": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\outputs\\original_local_edits_batch05\\parry.png"
+    },
+    {
+      "name": "reflect",
+      "prompt": "Use case: precise-object-edit. Image1 is original card edit target. Preserve original background palette and large shapes, composition, magic effect colors, core objects and impact positions. Only locally replace described subjects, no global filter. Rich crisp hard celshade: deep occlusion, purposeful folds/seams, thickness and material planes. Canonical P3R colors for new creatures. Completely remove replaced Regent head/armor, no old head floating as prop. No Makoto. Opaque1000x760 horizontal fullbleed safe crop margins no text/frame/watermark. Replace ONLY glowing cyan spectral Regent at left with glowing spectral JACK FROST, same punch toward right, full white snowman face and blue threepoint hat, compact body and small rounded fist. Entire creature rendered original CYAN/WHITE luminous outline and blue interior, keep reflected magic monochrome cyan rather than regular orange/white lighting. Preserve right foreground red/brown armored enemy exactly including large helmet, guard hand and green rim, original green/olive backdrop and original left white horizontal flare. New Frost fist same original contact position. Do not replace foreground enemy or turn it into pumpkin.",
+      "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-8e4071a6-8e27-4bd4-bf6b-41805c9c10b8.png",
+      "status": "awaiting_user_review",
+      "saved_file": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\outputs\\original_local_edits_batch05\\reflect.png"
+    },
+    {
+      "name": "hegemony",
+      "prompt": "Use case: precise-object-edit. Image1 is original card edit target. Preserve original background palette and large shapes, composition, magic effect colors, core objects and impact positions. Only locally replace described subjects, no global filter. Rich crisp hard celshade: deep occlusion, purposeful folds/seams, thickness and material planes. Canonical P3R colors for new creatures. Completely remove replaced Regent head/armor, no old head floating as prop. No Makoto. Opaque1000x760 horizontal fullbleed safe crop margins no text/frame/watermark. Replace upper-left Regent firing yellow mouth beam with JACK-O-LANTERN looming from upper-left: ribbed orange pumpkin head, carved black mouth OPEN aligned original yellow beam origin, purple floppy witch hat cropped naturally at upperedge, purple cloak and grey mitten hands leaning on table at original locations. Complete attached head/body, remove old starhead/armor. Keep original enormous YELLOW beam and impact flash, cyan grid board/table, small GREEN BIRD lower-right, and RED background EXACT colors and layout. Pumpkin grain/grooves, hat stitching, grey hand shadowplanes, original gold beam illumination. No additional creatures.",
+      "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-22951e90-0ffc-497d-ad5a-144186c4ecf7.png",
+      "status": "awaiting_user_review",
+      "saved_file": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\outputs\\original_local_edits_batch05\\hegemony.png"
+    },
+    {
+      "name": "manifest_authority",
+      "prompt": "Use case: precise-object-edit. Image1 is original card edit target. Preserve original background palette and large shapes, composition, magic effect colors, core objects and impact positions. Only locally replace described subjects, no global filter. Rich crisp hard celshade: deep occlusion, purposeful folds/seams, thickness and material planes. Canonical P3R colors for new creatures. Completely remove replaced Regent head/armor, no old head floating as prop. No Makoto. Opaque1000x760 horizontal fullbleed safe crop margins no text/frame/watermark. Replace left Regent ONLY with PIXIE confidently raising a small open purple-gloved palm into original central white barrier, short darkblue hair, pointed ears, violet leotard and long violet gloves/boots, translucent lavender wings, natural light skin and expressive small fairy face. Full head remains within left third, body same original left subject footprint with clean complete anatomy, no human schoolboy. Keep red jagged enemy spear/attack shapes on right EXACT original color and placement; keep original bright WHITE jagged circular barrier, central impact lines and cobalt-blue background. Pixie hand aligns existing central upright palm region, aura integrated over creature not pasted. Detailed wing veins/fold planes, original cool light and dark purple shadows.",
+      "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-80c49e92-2864-43d2-99ef-4c59ffd9031b.png",
+      "status": "awaiting_user_review",
+      "saved_file": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\outputs\\original_local_edits_batch05\\manifest_authority.png"
+    },
+    {
+      "name": "royal_corona",
+      "prompt": "Use case: precise-object-edit. Image1 is original card edit target. Preserve original background palette and large shapes, composition, magic effect colors, core objects and impact positions. Only locally replace described subjects, no global filter. Rich crisp hard celshade: deep occlusion, purposeful folds/seams, thickness and material planes. Canonical P3R colors for new creatures. Completely remove replaced Regent head/armor, no old head floating as prop. No Makoto. Opaque1000x760 horizontal fullbleed safe crop margins no text/frame/watermark. Replace ONLY brown pointed Regent head rising from loweredge with JACK FROST white snowman HEAD and BLUE threepoint jester hat/white pompoms, viewed from slightly behind and below, centered lowerhalf; no torso needed because natural closeup crop at bottom. Original floating blue/cyan CONSTELLATION CROWN remains same tilted ellipse and points crossing above new hat, little ringed blue planet upperleft unchanged. Keep crown original exact cyan/iceblue/white colors and white constellation nodes/lines, purple background broad shadows unchanged. New hat's center peak rises beneath crown center, lower side hat lobes frame small white cheek edge, no giant brown starhead remnant. Detailed blue cloth shadowplanes, cyan rim from crown, no additional symbols/props.",
+      "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-07c3fb99-2584-45ea-9c60-4981dce66ce7.png",
+      "status": "awaiting_user_review",
+      "saved_file": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\outputs\\original_local_edits_batch05\\royal_corona.png"
+    }
+  ]
+}
