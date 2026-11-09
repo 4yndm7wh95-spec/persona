@@ -1,3 +1,5 @@
+**【作废 2026-11-09】这份任务单理解错了原版：原版不是六片鸟类羽毛翅膀。不要再按这份出图，改看 docs/codex/codex_p5_satanael_wing_roots.md。**
+
 你在用户的 Windows 电脑上工作。任务：**把撒旦耶尔第 10 版分层里的三层翅膀重画成原版那种黑色羽毛翅膀**。不改 mod 代码，不编译，不启动游戏，不用 Computer Use。
 
 **先读 docs/codex/README.md**（生图一律真透明底）。找仓库、git 参数、重试、「绝对不要做」清单照 docs/codex/codex_p5r_model_fix.md 执行，**分支是 claude/epic-archimedes-m9an69**
