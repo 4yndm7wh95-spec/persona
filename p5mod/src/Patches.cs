@@ -117,7 +117,7 @@ public static class DamagePatch
 			.Where(m => m.Name == "Damage" && m.GetParameters().Any(p => p.Name == "cardSource") && m.GetParameters().Any(p => p.Name == "targets"))
 			.OrderByDescending(m => m.GetParameters().Length).Take(1);
 
-	public static void Prefix(IEnumerable<Creature>? targets, CardModel? cardSource)
+	public static void Prefix(IEnumerable<Creature>? targets, decimal amount, CardModel? cardSource)
 	{
 		ModEntry.Safe("Damage", () =>
 		{
@@ -138,7 +138,9 @@ public static class DamagePatch
 				}
 				foreach (NCreature n in hit)
 				{
-					JokerFx.OnHit(joker, n, gun);
+					// 枪：这一发（按基础伤害估计）会打死目标 → 用收尾的重命中声（Five Cards 演示最后一发）
+					bool final = gun && n.Entity is Creature ce && amount >= ce.CurrentHp + ce.Block;
+					JokerFx.OnHit(joker, n, gun, final);
 				}
 			}
 		});
