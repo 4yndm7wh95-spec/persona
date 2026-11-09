@@ -904,6 +904,14 @@ void fragment() {
 		Shock(layer, zone, rot, 620f * unit * big, 0.42f, 0.55f, 0f, 1.2f, 1f);
 		Shock(layer, zone + dir * 40f * unit, rot, 900f * unit * big, 0.38f, 0.7f, 0.06f, 0.9f, 0.8f);
 		Shock(layer, zone + dir * 90f * unit, rot, 1250f * unit * big, 0.34f, 0.85f, 0.15f, 0.6f, 0.55f);
+		// 用户 2026-11-09（画了示意图）：大圈前面沿弹道再排一串光圈，一圈比一圈小、一圈比一圈稍晚，像子弹往前推出去的一串空气环，越远越小
+		// 都排在命中区以内（不跑出屏幕）；圈细一点、亮度适中，才看得出是一圈一圈的
+		float[] trainSize = { 0.62f, 0.44f, 0.3f, 0.2f };
+		float[] trainAt = { 95f, 180f, 250f, 305f };
+		for (int i = 0; i < trainSize.Length; i++)
+		{
+			Shock(layer, zone + dir * trainAt[i] * unit * big, rot, 620f * unit * big * trainSize[i], 0.4f, 0.5f - 0.03f * i, 0.04f * (i + 1), 0.85f - 0.06f * i, 0.55f);
+		}
 		// 地面波纹（平台顶面上）
 		Vector2 ground = new(zone.X, floorY);
 		Shock(layer, ground, Mathf.Pi / 2f, 1250f * unit * big, 0.13f, 0.85f, 0.03f, 0.75f, 0.9f);   // 转 90°：沿竖直方向压扁，贴着地面
