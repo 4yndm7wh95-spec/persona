@@ -1,11 +1,10 @@
-"""Sinful Shell gun twirls (user 2026-11-09: the spin needs a sound or it does not read).
-Writes art/sfx_p5/sinful_twirl.ogg (Satanael's giant gun) and sinful_twirl_small.ogg (Joker's pistol). Both start at the first
-frame of the spin; the catch itself is sinful_catch, played by code.
+"""Satanael's gun twirl, third version (user 2026-11-09: the earlier ones were too heavy, odd and too deliberate - a twirl
+should be crisp, clean and simple, and only just noticeable).
+Writes art/sfx_p5/sinful_twirl.ogg, played from the first frame of the spin (code volume is low too).
 
-A whoosh per quarter turn of the gun (barrel and grip each cut the air), timed from the same spin curve the code / rig uses, its pitch and
-loudness following the spin speed (fast -> slow), pure air, nothing tonal or metallic. Satanael's is lower and fuller (a huge gun, far away); Joker's is short, light and quick.
-  Satanael: angle = 720 * (1 - (1 - k)^3), k = t / SpinTime (p5mod SatanaelPuppet.SpinTime = 0.45)
-  Joker: rig keys of cast_sinful_from_mask (tools/p5/build_rig_p5.py SPIN_SINFUL): 580 -> 4 deg over 0.57 s, slowing
+One short, bright "fft" each half turn (a thin band of air, ~25 ms, no body, nothing tonal), timed from the spin curve the
+code uses, getting softer and a little lower as the spin slows; a tiny dry "tk" when the gun lands in the hand.
+  angle = 720 * (1 - (1 - k)^3), k = t / SpinTime (p5mod SatanaelPuppet.SpinTime = 0.45)
 """
 import subprocess
 from pathlib import Path
@@ -15,56 +14,16 @@ from scipy import signal
 
 SR = 44100
 OUT = Path(__file__).resolve().parents[3] / "art/sfx_p5"
-rng = np.random.default_rng(2611)
+rng = np.random.default_rng(2612)
+SPIN = 0.45
 
 
-def t(sec): return np.arange(int(sec * SR)) / SR
 def bp(x, lo, hi, order=2): return signal.sosfilt(signal.butter(order, [lo, hi], "band", fs=SR, output="sos"), x)
-def lp(x, f, order=2): return signal.sosfilt(signal.butter(order, f, "low", fs=SR, output="sos"), x)
-
-
-def crossings(times, angles, step=90.0):
-    """Times at which the angle passes each multiple of step, with the spin speed (deg/s) there."""
-    out = []
-    for i in range(1, len(times)):
-        a0, a1 = angles[i - 1], angles[i]
-        lo, hi = sorted((a0, a1))
-        k = np.floor(hi / step) * step
-        while k > lo:
-            f = (k - a0) / (a1 - a0)
-            out.append((times[i - 1] + f * (times[i] - times[i - 1]), abs(a1 - a0) / (times[i] - times[i - 1])))
-            k -= step
-    return sorted(out)
-
-
-def whoosh(x, at, speed, vmax, low, high, gain):
-    """One air cut: band noise whose band rises with speed, a short swell and a quicker release."""
-    v = speed / vmax
-    w = 0.018 + 0.05 * (1 - v)
-    d = x - at
-    envl = np.where(d < 0, np.exp(-(d / (w * 0.9)) ** 2), np.exp(-(d / (w * 0.55)) ** 2))
-    fc = low + (high - low) * v
-    n = bp(rng.standard_normal(len(x)), fc * 0.55, min(fc * 1.6, SR / 2 - 200))
-    return n * envl * gain * (0.35 + 0.65 * v)
-
-
-def twirl(length, times, angles, low, high, gain, body):
-    """Only air: one whoosh per quarter turn, nothing tonal, no metal (user 2026-11-09: the first version's motor-like buzz and
-    metal ring sounded mechanical and too heavy - not a twirl). body = how much low air (a big object) under each pass."""
-    x = t(length)
-    cr = crossings(times, angles)
-    vmax = max(s for _, s in cr)
-    y = sum(whoosh(x, at, s, vmax, low, high, gain) for at, s in cr)
-    if body:
-        y += sum(lp(whoosh(x, at, s, vmax, low * 0.5, low * 1.2, gain), low) * body for at, s in cr)
-    y = lp(y, high * 1.4)                                   # no hiss on top
-    y *= np.minimum(1, x / 0.01) * np.clip((times[-1] + 0.12 - x) / 0.12, 0, 1)
-    return y
 
 
 def save(name, x):
-    x = x / (np.abs(x).max() + 1e-9) * 0.9
-    d = int(0.002 * SR)
+    x = x / (np.abs(x).max() + 1e-9) * 0.8
+    d = int(0.0015 * SR)
     st = np.stack([x, np.concatenate([np.zeros(d), x[:-d]])], 1)
     raw = (np.clip(st, -1, 1) * 32767).astype(np.int16).tobytes()
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "s16le", "-ar", str(SR), "-ac", "2", "-i", "-", "-c:a", "libvorbis", "-q:a", "6",
@@ -72,12 +31,20 @@ def save(name, x):
     print(name, round(len(x) / SR, 2))
 
 
-SPIN = 0.45
-ts = np.linspace(0, SPIN, 400)
-sat = 720 * (1 - (1 - ts / SPIN) ** 3)
-save("sinful_twirl", twirl(SPIN + 0.15, ts, sat, 350, 1600, 1.0, 0.6))
-
-jt = np.array([0, .02, .12, .24, .36, .47, .57])
-ja = np.array([580, 540, 360, 210, 100, 35, 4], float)
-jts = np.linspace(0, .57, 400)
-save("sinful_twirl_small", twirl(.57 + 0.15, jts, np.interp(jts, jt, ja), 1100, 3800, 0.8, 0))
+n = int((SPIN + 0.12) * SR)
+x = np.arange(n) / SR
+y = np.zeros(n)
+# half-turn passes: angle = 180 * j  ->  k = 1 - (1 - a / 720)^(1/3)
+for j in range(1, 4):
+    at = SPIN * (1 - (1 - 180 * j / 720) ** (1 / 3))
+    v = 1 - j / 4                                   # spin speed falls off
+    d = x - at
+    env = np.where(d < 0, np.exp(-(d / 0.012) ** 2), np.exp(-(d / 0.009) ** 2))
+    lo = 2600 + 1800 * v
+    y += bp(rng.standard_normal(n), lo, lo * 1.9) * env * (0.45 + 0.55 * v)
+# the catch: a tiny dry click (two very short ticks)
+for off, g in ((0.0, 1.0), (0.006, 0.45)):
+    m = x >= SPIN + off
+    tt = x[m] - SPIN - off
+    y[m] += bp(rng.standard_normal(m.sum()), 1800, 5000) * np.exp(-tt / 0.0035) * 0.55 * g
+save("sinful_twirl", y)

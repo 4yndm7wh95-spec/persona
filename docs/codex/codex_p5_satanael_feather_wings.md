@@ -1,7 +1,7 @@
 你在用户的 Windows 电脑上工作。任务：**把撒旦耶尔第 10 版分层里的三层翅膀重画成原版那种黑色羽毛翅膀**。不改 mod 代码，不编译，不启动游戏，不用 Computer Use。
 
-**先读 docs/codex/README.md**（生图一律真透明底）。找仓库、git 参数、重试、「绝对不要做」清单照 docs/codex/codex_p5r_model_fix.md 执行，**分支是 claude/beautiful-keller-4lsbk4**
-（先 fetch origin claude/beautiful-keller-4lsbk4:refs/remotes/origin/claude/beautiful-keller-4lsbk4，再 merge --ff-only）。
+**先读 docs/codex/README.md**（生图一律真透明底）。找仓库、git 参数、重试、「绝对不要做」清单照 docs/codex/codex_p5r_model_fix.md 执行，**分支是 claude/epic-archimedes-m9an69**
+（先 fetch origin claude/epic-archimedes-m9an69:refs/remotes/origin/claude/epic-archimedes-m9an69，再 merge --ff-only）。
 网络慢：推送前如果合并要下载的东西超时，就别合并，直接 git push origin <提交号>:refs/heads/codex/p5-satanael-feather-wings，报告分支名。
 
 【用户的意见（2026-11-09）】

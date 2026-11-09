@@ -137,22 +137,3 @@ for lo in (0.6, 1.0, 1.6):
 wh *= np.exp(-(d / 0.12) ** 2) * 1.0 + np.exp(-np.maximum(d, 0) / 0.18) * (d > 0) * 0.5
 tone = np.sin(2 * np.pi * np.cumsum(f * 0.25) / SR) * np.exp(-(d / 0.1) ** 2) * 0.4
 save("sinful_flyby", wh + tone)
-
-# ── pierce (user 2026-11-09: the plain hit sound is far too light for this shot). Each enemy the round tears through:
-#    hard transient crack → armour-shred (ring-modulated metal noise) → low body slam (75→38 Hz) → saturated crunch → short dark room.
-#    The final one is bigger: a sub boom underneath, a longer shred and a glassy burst on top.
-def pierce(final):
-    x = t(2.2 if final else 1.2)
-    y = np.zeros_like(x)
-    y += hp(rng.standard_normal(len(x)), 2500) * env(x, 0.0003, 0.012) * 2.0
-    shred = bp(rng.standard_normal(len(x)), 900, 7000) * np.sin(2 * np.pi * 1730 * x) * env(x, 0.002, 0.16 if final else 0.09)
-    y += shred * 1.4
-    f = 38 + 37 * np.exp(-x / 0.07)
-    y += np.sin(2 * np.pi * np.cumsum(f) / SR) * env(x, 0.002, 0.35 if final else 0.22) * 2.4
-    y += np.tanh(4 * lp(rng.standard_normal(len(x)), 900, 4) * env(x, 0.001, 0.09) * 3) * 1.2
-    if final:
-        sub = 26 + 40 * np.exp(-x / 0.15)
-        y += np.sin(2 * np.pi * np.cumsum(sub) / SR) * env(x, 0.004, 0.8) * 2.2
-        y += hp(rng.standard_normal(len(x)), 4000) * env(x, 0.001, 0.25) * (0.6 + 0.4 * np.sin(2 * np.pi * 37 * x)) * 0.8
-    return reverb(y, 0.9 if final else 0.6, 0.2)
-save("sinful_pierce_b", pierce(True))   # one hit for the whole shot (user 2026-11-09: not one per enemy)

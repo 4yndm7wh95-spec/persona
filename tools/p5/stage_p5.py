@@ -130,9 +130,7 @@ SFX = {
     "sinful_flyby": ROOT / "art/sfx_p5/sinful_flyby.ogg",      # Sinful Shell round flying past the viewer (synthesized)
     "sinful_pierce": ROOT / "art/sfx_p5/sinful_pierce.ogg",    # Sinful Shell round piercing an enemy (synthesized: tools/p5/sfx/synth_sinful_pierce.py)
     "sinful_pierce_last": ROOT / "art/sfx_p5/sinful_pierce_last.ogg",
-    "sinful_pierce_b": ROOT / "art/sfx_p5/sinful_pierce_b.ogg",  # Sinful Shell hit, alternative version (synthesized, tools/p5/sfx/synth_sinful.py)
     "sinful_twirl": ROOT / "art/sfx_p5/sinful_twirl.ogg",      # Sinful Shell twirls (synthesized: tools/p5/sfx/synth_sinful_twirl.py)
-    "sinful_twirl_small": ROOT / "art/sfx_p5/sinful_twirl_small.ogg",
     "sinful_sweep_open": ROOT / "art/sfx_p5/sinful_sweep_open.ogg",    # scene ring opening (synthesized: tools/p5/sfx/synth_sinful_sweep.py)
     "sinful_sweep_close": ROOT / "art/sfx_p5/sinful_sweep_close.ogg",
     "crush": ROOT / "art/sfx_p5/crush.ogg",

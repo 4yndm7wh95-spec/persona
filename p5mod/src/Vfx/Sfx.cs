@@ -55,14 +55,12 @@ public static class Sfx
 		SinfulCharge = "sinful_charge",   // 蓄力：越来越高的啸叫 + 越来越重的低频嗡鸣
 		SinfulCatch = "sinful_catch",     // 转枪接住：沉重的金属咔嗒
 		SinfulShot = "sinful_shot",       // 开枪（重做，合成）：倒吸 → 一瞬静音 → 爆裂 + 超低频下坠 + 饱和重击 → 金属余振 → 碎石 → 远处云层滚回三声雷 → 耳鸣淡出；冲击在 0.30s
-		SinfulPierceB = "sinful_pierce_b", // 贯穿（另一版，待用户对比选定）：尖锐爆裂 → 撕裂金属 → 低频重砸 → 饱和碎裂 + 超低频轰鸣 + 玻璃碎裂，tools/p5/sfx/synth_sinful.py
 		SinfulFlyby = "sinful_flyby",     // 子弹从远处朝镜头飞过来的多普勒呼啸，最响在 0.35s
 		SinfulPierce = "sinful_pierce",   // 贯穿一个敌人（用户 2026-11-09：普通受击声太平淡，配不上这一枪）：脆裂 + 撕开装甲 + 饱和闷击 + 超低频 + 穿出去的撕裂，tools/p5/sfx/synth_sinful_pierce.py
 		SinfulPierceLast = "sinful_pierce_last", // 贯穿最后一个：更重、超低频更长、带碎片和滚动的低频尾
-		SinfulTwirl = "sinful_twirl",     // 撒旦耶尔转枪（用户 2026-11-09：转枪没声音看不出来）：每转 90° 一下破风声，跟着转速由快到慢；只有风声，没有嗡鸣和金属声（第一版太机械），tools/p5/sfx/synth_sinful_twirl.py
+		SinfulTwirl = "sinful_twirl",     // 撒旦耶尔转枪（用户 2026-11-09 第三版：干脆、简单、轻——每转半圈一声短促的「咻」，越转越慢越轻，接住时一声很小的「嗒」），tools/p5/sfx/synth_sinful_twirl.py
 		SinfulSweepOpen = "sinful_sweep_open",   // 场景圈展开（交接待办 B：轻的「呼——」蓝焰卷过，先响后弱）
 		SinfulSweepClose = "sinful_sweep_close", // 场景圈收回：由弱到响收进脚下，最后轻轻一顿（文件末尾 0.25s 是那一顿）
-		SinfulTwirlSmall = "sinful_twirl_small", // Joker 自己转枪：短、轻、亮的破风声
 		SinfulFire = "sinful_fire",      // 开枪（用户：不要普通手枪声）：倒吸 → 爆裂 → 超低频重击 → 失真冲击 → 金属余振 → 长尾和回声
 		GunHit = "gun_hit",             // 枪命中（演示混音：damage_enemy 升调 1.2、压低、偏右）
 		GunHitFinal = "gun_hit_final",  // 收尾那一发的命中：更响的命中 + sub_boom + 47Hz 低频

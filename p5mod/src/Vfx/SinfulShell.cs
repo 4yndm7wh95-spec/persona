@@ -235,7 +235,6 @@ void fragment() {
 	public const float CatchAt = AimAt + SatanaelPuppet.CatchAfter;
 
 	/// <summary>Joker 开始转枪的时刻（从出牌、也就是 cast_sinful_from_mask 开始算）：攥面具 .02+.14、放手 .04+.05、插兜 .06、抬手 .05 之后（tools/p5/build_rig_p5.py）。</summary>
-	public const float JokerSpinAt = 0.36f;
 
 	/// <summary>召唤撒旦耶尔的雷劈下的时刻（用户 2026-11-08：场景还没烧完雷就劈下来，前半段不空）。</summary>
 	public const float AppearAt = 0.12f;   // 交接待办 C（用户 2026-11-09：前半段空）：召唤的雷和场景刚烧开同时劈下
@@ -302,8 +301,8 @@ void fragment() {
 	}
 
 	/// <summary>放整段大罪穿甲弹。back = 背景层（场景、人格面具），front = 前景层（子弹、命中）。返回子弹穿过每个敌人的时刻（秒，从现在算）。</summary>
-	/// <summary>打中的那一声（两版待用户对比选定：SinfulPierceB = 本分支版，SinfulPierceLast = 另一账号版）。</summary>
-	public static string HitSound = Sfx.SinfulPierceB;
+	/// <summary>打中的那一声（用户 2026-11-09 对比后选定 sinful_pierce_last）。</summary>
+	public static string HitSound = Sfx.SinfulPierceLast;
 
 	public static float[] Play(Control back, Control front, Setup s)
 	{
@@ -443,7 +442,7 @@ void fragment() {
 		if (puppet != null)
 		{
 			// 转枪的破风声：只留撒旦耶尔的（用户 2026-11-09：Joker 的转枪声去掉；接枪的金属声也去掉——它正好落在开枪的倒吸里，叠在一起）
-			Fx.After(front, AimAt + SatanaelPuppet.Anticipation, () => Sfx.Play(Sfx.SinfulTwirl, 1.0f));
+			Fx.After(front, AimAt + SatanaelPuppet.Anticipation, () => Sfx.Play(Sfx.SinfulTwirl, 0.55f));
 		}
 		// 场景里飘的蓝色余烬
 		Fx.After(back, RevealAt + RevealTime * 0.6f, () =>
@@ -496,6 +495,7 @@ void fragment() {
 			puppet?.Blast();                                               // 远处云海被枪口冲击波压开、翻卷
 			Rings(front, muzzle, dir, unit * 0.45f);                       // 远处的枪口：冲击环小
 			Bullet(front, muzzle, dir, screen, unit);
+			BulletDetails(front, muzzle, dir, screen, unit);              // 弹道上的小光点、几道发丝一样的气流线
 			Glow.Sparks(front, muzzle, 50, 600f, 1800f, 0.4f, new[] { new Color(0.95f, 0.98f, 1f), new Color(0.35f, 0.75f, 1f), new Color(0.6f, 0.3f, 1f) }, 0f,
 				0.05f, 0.16f, dir, 22f);
 		});
@@ -518,7 +518,7 @@ void fragment() {
 		{
 			Vector2 zone = stopHits.Aggregate(Vector2.Zero, (a, b) => a + b) / stopHits.Count;
 			float span = stopHits.Count > 1 ? stopHits.Max(h => h.DistanceTo(zone)) : 0f;
-			Fx.After(front, FireAt + travel[0], () => HitZone(front, zone, dir, s.FloorY, span, unit));
+			Fx.After(front, FireAt + travel[0], () => { HitZone(front, zone, dir, s.FloorY, span, unit); HitDetails(front, zone, dir, span, unit); });
 		}
 		// 打中：一发子弹，只响一声（用户 2026-11-09：不是打中几个敌人就放几次），落在子弹碰到第一个敌人那一刻。
 		// 飞过镜头的呼啸去掉了（和开枪的冲击叠在一起）
@@ -841,6 +841,131 @@ void fragment() {
 		PointLight2D pl = Light(layer, zone, new Color(0.65f, 0.85f, 1f), 1100f * unit * big);
 		Fx.Animate(pl, 0, 0.6, k => pl.Energy = 1.3f * Mathf.Pow(1f - k, 2f));
 		Fx.FreeAfter(pl, 0.65);
+	}
+
+	// ───────────────────────── 小细节（用户 2026-11-09：光波之外再加一点层次，不要太多） ─────────────────────────
+
+	private static readonly Color[] Motes = { new(0.95f, 0.98f, 1f), new(0.5f, 0.85f, 1f), new(0.35f, 0.6f, 1f), new(0.65f, 0.45f, 1f) };
+
+	/// <summary>一粒小光点：delay 秒后出现在 at，往 vel 方向慢慢漂、闪烁、缩小消失。</summary>
+	private static void Mote(Control layer, Vector2 at, Vector2 vel, float size, float delay, float life, Color tint, float rise = 0f)
+	{
+		Sprite2D d = Glow.SoftSprite(layer, at, tint, size);
+		d.Material = Fx.Additive;
+		d.Visible = false;
+		float s0 = size, ph = Fx.Rand(0f, Mathf.Tau), tw = Fx.Rand(14f, 26f);
+		Fx.Animate(d, delay, life, t =>
+		{
+			d.Visible = true;
+			float sec = t * life;
+			d.Position = at + vel * (1f - Mathf.Exp(-3f * sec)) / 3f + new Vector2(Mathf.Sin(sec * 5f + ph) * 6f * rise, -rise * 60f * sec);
+			float tw2 = 0.65f + 0.35f * Mathf.Sin(sec * tw + ph);
+			d.Scale = Vector2.One * s0 * (1f - t * 0.6f);
+			d.Modulate = new Color(1f, 1f, 1f, tw2 * (1f - Fx.InCubic(t)) * Mathf.Clamp(t * 12f, 0f, 1f));
+		});
+		Fx.FreeAfter(d, delay + life + 0.05);
+	}
+
+	/// <summary>
+	/// 子弹的小细节：弹头经过的地方掉下一串小光点（往弹道两侧慢慢飘开、闪烁）；
+	/// 弹道两侧几道发丝细的气流线，弹头经过时一下拉出来又收掉。
+	/// </summary>
+	private static void BulletDetails(Control layer, Vector2 muzzle, Vector2 dir, Vector2 screen, float unit)
+	{
+		float reach = screen.Length() * 1.1f, v = BulletSpeed * unit;
+		Vector2 nrm = dir.Orthogonal();
+		for (int i = 0; i < 34; i++)
+		{
+			float d = Fx.Rand(0.05f, 1f) * reach, side = Fx.Rand(-1f, 1f);
+			float near = Mathf.Clamp(d / (screen.Length() * 0.55f), 0f, 1f);            // 越近越大（子弹朝我们来）
+			Vector2 at = muzzle + dir * d + nrm * side * Mathf.Lerp(6f, 45f, near) * unit;
+			Vector2 vel = (nrm * Mathf.Sign(side) * Fx.Rand(30f, 110f) - dir * Fx.Rand(10f, 60f)) * unit;
+			Mote(layer, at, vel, Fx.Rand(0.1f, 0.3f) * Mathf.Lerp(0.6f, 1.5f, near) * unit, d / v, Fx.Rand(0.45f, 0.9f), Motes[Fx.Rng.Next(Motes.Length)]);
+		}
+		for (int i = 0; i < 5; i++)
+		{
+			float off = (i % 2 == 0 ? 1f : -1f) * Fx.Rand(28f, 95f) * unit, d0 = Fx.Rand(0.1f, 0.7f) * reach, len = Fx.Rand(260f, 620f) * unit;
+			float delay = d0 / v, life = 0.2f, w = Fx.Rand(2f, 4f) * unit;
+			Node2D holder = new() { Visible = false };
+			layer.AddChild(holder);
+			Polygon2D line = Fx.Poly(holder, new Vector2[3], new Color(0.75f, 0.92f, 1f, 0.75f), additive: true);
+			Vector2 a = muzzle + dir * d0 + nrm * off;
+			Fx.Animate(holder, delay, life, t =>
+			{
+				holder.Visible = true;
+				float head = Ease5.OutExpo(Mathf.Min(1f, t * 2.5f)), tail = Fx.InCubic(t);
+				line.Polygon = Glow.TaperPts(a + dir * len * tail, a + dir * len * Mathf.Max(head, tail + 0.01f), w * (1f - t * 0.5f));
+			});
+			Fx.FreeAfter(holder, delay + life + 0.05);
+		}
+	}
+
+	/// <summary>
+	/// 命中区的小细节：几颗四角星光在敌人身上此起彼伏地闪一下；一把蓝色碎片顺着弹道迸出去、带一点下坠；
+	/// 一些小余烬从敌人那里慢慢往上飘、轻轻摆动。
+	/// </summary>
+	private static void HitDetails(Control layer, Vector2 zone, Vector2 dir, float span, float unit)
+	{
+		float rx = span + 120f * unit, ry = 110f * unit;
+		for (int i = 0; i < 7; i++)
+		{
+			Vector2 at = zone + new Vector2(Fx.Rand(-rx, rx), Fx.Rand(-ry, ry));
+			BlueGlint(layer, at, Fx.Rand(0.9f, 1.8f) * unit, Fx.Rand(0.05f, 0.5f));
+		}
+		for (int i = 0; i < 12; i++)
+		{
+			Vector2 at = zone + new Vector2(Fx.Rand(-rx, rx) * 0.7f, Fx.Rand(-ry, ry) * 0.6f);
+			BlueShard(layer, at, dir.Rotated(Fx.Rand(-0.7f, 0.7f)), unit);
+		}
+		for (int i = 0; i < 26; i++)
+		{
+			Vector2 at = zone + new Vector2(Fx.Rand(-rx, rx), Fx.Rand(-ry * 0.5f, ry * 1.4f));
+			Mote(layer, at, new Vector2(Fx.Rand(-20f, 20f), Fx.Rand(-40f, -10f)) * unit, Fx.Rand(0.08f, 0.22f) * unit, Fx.Rand(0.05f, 0.5f), Fx.Rand(0.8f, 1.4f),
+				Motes[Fx.Rng.Next(Motes.Length)], 1f);
+		}
+	}
+
+	/// <summary>蓝白的四角星光：一闪即逝、转一点。</summary>
+	private static void BlueGlint(Control layer, Vector2 at, float size, float delay)
+	{
+		Node2D root = Fx.Root(layer, at, "P5SinfulGlint", delay + 0.35);
+		Sprite2D halo = new() { Texture = Glow.Soft, Material = Fx.Additive };
+		root.AddChild(halo);
+		Polygon2D star = Fx.Poly(root, Glow.Star4(30f * size, 0.12f), new Color(0.92f, 0.97f, 1f), additive: true);
+		Polygon2D star2 = Fx.Poly(root, Glow.Star4(16f * size, 0.18f), new Color(0.5f, 0.8f, 1f, 0.8f), additive: true);
+		star2.Rotation = Mathf.Pi / 4f;
+		root.Visible = false;
+		Fx.Animate(root, delay, 0.26, t =>
+		{
+			root.Visible = true;
+			float k = Mathf.Sin(Mathf.Min(t * 1.4f, 1f) * Mathf.Pi);
+			star.Scale = Vector2.One * k;
+			star2.Scale = Vector2.One * k * 0.9f;
+			root.Rotation = t * 0.6f;
+			halo.Scale = Vector2.One * 1.6f * size * k;
+			halo.Modulate = new Color(0.4f, 0.75f, 1f, 0.6f * k);
+		});
+	}
+
+	/// <summary>一片蓝色碎片：细长的四边形、亮边，顺着 dir 迸出去，阻尼减速、带下坠、转着闪光。</summary>
+	private static void BlueShard(Control layer, Vector2 at, Vector2 dir, float unit)
+	{
+		float len = Fx.Rand(14f, 32f) * unit, wid = len * Fx.Rand(0.25f, 0.45f);
+		Vector2[] shape = { new(-len * 0.5f, 0f), new(-len * 0.1f, -wid * 0.5f), new(len * 0.5f, Fx.Rand(-wid * 0.2f, wid * 0.2f)), new(len * 0.05f, wid * 0.5f) };
+		Node2D root = Fx.Root(layer, at, "P5SinfulShard", 1.0);
+		Polygon2D body = Fx.Poly(root, shape, new Color(0.35f, 0.65f, 1f, 0.6f), additive: true);
+		Line2D edge = new() { Points = shape, Closed = true, Width = 2f * unit, DefaultColor = new Color(0.9f, 0.97f, 1f), Material = Fx.Additive, Antialiased = true };
+		root.AddChild(edge);
+		float speed = Fx.Rand(300f, 900f) * unit, spin = Fx.Rand(-12f, 12f), life = Fx.Rand(0.45f, 0.85f), ph = Fx.Rand(0f, Mathf.Tau);
+		Fx.Animate(root, 0, life, t =>
+		{
+			float sec = t * life, travel = speed * (1f - Mathf.Exp(-4.5f * sec)) / 4.5f;
+			root.Position = at + dir * travel + new Vector2(0f, 260f * unit * sec * sec);
+			root.Rotation = dir.Angle() + spin * (1f - Mathf.Exp(-2.5f * sec)) / 2.5f;
+			float glint = Mathf.Pow(Mathf.Max(0f, Mathf.Sin(root.Rotation * 3f + ph)), 8f);
+			edge.Modulate = new Color(1f + glint, 1f + glint, 1f + glint, 1f);
+			root.Modulate = new Color(1f, 1f, 1f, 1f - Fx.InCubic(t));
+		});
 	}
 
 	/// <summary>贯穿一个敌人：沿弹道方向喷出的火花 + 一圈冲击环 + 白闪 + 命中确认；最后一个敌人加 P5 红黑白冲击帧和横扫全场的冲击波。</summary>
