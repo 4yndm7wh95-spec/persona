@@ -6,9 +6,11 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[3]
-SRC = ROOT / "art/p5/fx/v4/satanael/layers_v6"
+import sys
+VER = sys.argv[1] if len(sys.argv) > 1 else "v10"          # v6 (side-on, retired) / v10 (distant, from the original model)
+SRC = ROOT / f"art/p5/fx/v4/satanael/layers_{VER}"
 OUT = ROOT / "art/p5/fx/v4/satanael/game"
-K = 0.6
+K = float(sys.argv[2]) if len(sys.argv) > 2 else (0.6 if VER == "v6" else 0.42)
 meta = json.load(open(SRC / "layers.json"))
 OUT.mkdir(parents=True, exist_ok=True)
 out = {"k": K, "layers": {}, "landmarks": {k: ([v[0] * K, v[1] * K] if isinstance(v, list) else v) for k, v in meta["landmarks"].items()},
@@ -17,6 +19,8 @@ for L in meta["layers"]:
     name = L["file"][:-4]
     im = Image.open(SRC / L["file"]).convert("RGBA")
     box = im.getbbox()
+    if box is None:
+        print(name, "empty, skipped"); continue
     pad = 8
     box = (max(0, box[0] - pad), max(0, box[1] - pad), min(im.width, box[2] + pad), min(im.height, box[3] + pad))
     crop = im.crop(box)

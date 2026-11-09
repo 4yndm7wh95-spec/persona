@@ -2,15 +2,15 @@
 
 importer="texture"
 type="CompressedTexture2D"
-path="res://.godot/imported/sat_cape.png-2be02389dbce5050970b1ec3322c4fcb.ctex"
+path="res://.godot/imported/sat_wings_front.png-f042581c5c3f30e009a071cae9ff7bc6.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://p5joker/fx/sat_cape.png"
-dest_files=["res://.godot/imported/sat_cape.png-2be02389dbce5050970b1ec3322c4fcb.ctex"]
+source_file="res://p5joker/fx/sat_wings_front.png"
+dest_files=["res://.godot/imported/sat_wings_front.png-f042581c5c3f30e009a071cae9ff7bc6.ctex"]
 
 [params]
 

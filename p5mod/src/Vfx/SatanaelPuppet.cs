@@ -19,23 +19,25 @@ public sealed class SatanaelPuppet
 	private sealed record Layer(string Name, Vector2 Offset, Vector2 Pivot, string? Parent);
 
 	// tools/p5/satanael/game_layers.py 的 game.json（K = 0.6），按绘制顺序（从后往前）
+	// 第 10 版（照原版模型画的远景巨人，layers_v10 → tools/p5/satanael/game_layers.py v10 0.42），按绘制顺序（从后往前）
 	private static readonly Layer[] Layers =
 	{
-		new("wing_back", new(684f, 369.6f), new(783.6f, 1160.4f), "body"),
-		new("wing_front", new(0f, 66f), new(526.2f, 1125.6f), "body"),
-		new("cape", new(0f, 681f), new(539.4f, 1144.8f), "body"),
-		new("arm_upper", new(738.6f, 1142.4f), new(825f, 1227f), "body"),
-		new("head", new(426f, 556.8f), new(696f, 1164f), "body"),
-		new("body", new(180.6f, 1072.8f), new(686.4f, 1638f), null),
-		new("arm_fore_gun", new(908.4f, 1168.2f), new(974.4f, 1306.2f), "arm_upper"),
-		// 转枪（Codex 补的）：空手 + 单独的枪（以扳机护圈为轴套在食指上转）+ 食指尖（画在枪上面，看起来手指穿过护圈）
-		new("arm_fore_open", new(908.4f, 1231.2f), new(974.4f, 1306.2f), "arm_upper"),
-		new("gun", new(1185.6f, 1168.2f), new(1332f, 1320.6f), "arm_fore_open"),
-		new("finger_tip", new(1320.6f, 1301.4f), new(1332f, 1320.6f), "arm_fore_open"),
-		new("arm_near", new(150.6f, 1263f), new(330.6f, 1317f), "body"),
-		new("eyes_glow", new(750f, 978f), new(772.8f, 997.8f), "head"),
+		new("wings_back_far", new(0f, 175.6f), new(420f, 588f), "body"),
+		new("wings_back_near", new(444.4f, 112.1f), new(525f, 672f), "body"),
+		new("body", new(9.7f, 501.1f), new(399f, 840f), null),
+		new("wings_front", new(499f, 596.4f), new(558.6f, 693f), "body"),
+		new("head", new(180.2f, 258.7f), new(378f, 546f), "body"),
+		new("arm_upper", new(349.4f, 485.5f), new(436.8f, 617.4f), "body"),
+		new("arm_fore_gun", new(463.7f, 112.1f), new(525f, 554.4f), "arm_upper"),
+		// 转枪：空手 + 单独的长枪（护圈中心 GunGuard 平移到食指 SpinFinger 上、绕食指转）+ 食指尖（画在枪上面）
+		new("arm_fore_open", new(458.6f, 369.2f), new(525f, 554.4f), "arm_upper"),
+		new("gun", new(550.2f, 112.1f), new(756f, 420f), "arm_fore_open"),
+		new("finger_tip", new(735.8f, 390.2f), new(756f, 420f), "arm_fore_open"),
 	};
-	private static readonly Vector2 MuzzlePx = new(1999.2f, 1302.6f);
+	private static readonly Vector2 MuzzlePx = new(1649.8f, 156.7f), GunGuard = new(751f, 448.6f), SpinFinger = new(756f, 420f);
+	/// <summary>光环中心（头的局部像素，头顶后上方）、云海顶线（大腿中部，图层像素 y）。</summary>
+	private static readonly Vector2 HaloAt = new(330f, 205f);
+	private const float CloudTopPx = 760f;
 
 	private static Shader? _shader, _rift;
 
@@ -49,6 +51,7 @@ uniform float alpha = 1.0;
 uniform vec4 point_light = vec4(0.0, 0.0, 300.0, 0.0);
 uniform float flash = 0.0;
 uniform float dim = 0.0;
+uniform float haze = 0.4;
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
@@ -61,7 +64,8 @@ void fragment() {
 	vec2 sp = SCREEN_UV * sres;
 	float l = dot(c.rgb, vec3(0.3, 0.59, 0.11));
 	// 夜光：压低饱和度（金色变成淡银金）、乘冷蓝环境光；越往下越暗（隐入深渊）
-	vec3 g = mix(vec3(l), c.rgb, 0.4) * vec3(0.55, 0.66, 0.95);
+	vec3 g = mix(vec3(l), c.rgb, 0.55) * vec3(0.6, 0.7, 0.95);
+	g = mix(g, vec3(0.16, 0.26, 0.4), haze);                                // 远处的大气：蒙一层冷蓝的雾
 	g *= mix(1.0, 0.45, smoothstep(sres.y * 0.55, sres.y * 1.05, sp.y));
 	// 边缘光：天空（右上）方向那一侧的轮廓亮一道青色
 	float a2 = texture(TEXTURE, UV + vec2(0.7, -0.7) * TEXTURE_PIXEL_SIZE * 7.0).a;
@@ -135,6 +139,55 @@ void fragment() {
 		return beats[k] * (1f - Mathf.Clamp((t - 0.22f) / 0.1f, 0f, 1f));
 	}
 
+	private static Shader? _halo, _clouds;
+
+	/// <summary>原版头顶的光环（模型 m_ring：一圈细环上挂 12 片红色尖刺翼片，model_ref/halo_cel.png）：细环 + 往外的红色尖刺，硬边 P5 配色，慢慢转。</summary>
+	private static Shader HaloShader => _halo ??= new Shader { Code = @"
+shader_type canvas_item;
+render_mode blend_mix;
+uniform float spin = 0.0;
+uniform float glow = 1.0;
+uniform float alpha = 1.0;
+void fragment() {
+	vec2 p = (UV - 0.5) * 2.0;
+	float r = length(p), a = atan(p.y, p.x) + spin;
+	float ring = 1.0 - smoothstep(0.012, 0.03, abs(r - 0.52));
+	float k = 12.0;
+	float seg = fract(a / 6.28318 * k) - 0.5;                 // 每片尖刺的局部角度
+	float t = (r - 0.56) / 0.4;                                // 0 = 根部，1 = 尖
+	float blade = step(0.0, t) * step(t, 1.0) * step(abs(seg), 0.42 * (1.0 - t) * (0.6 + 0.4 * sin(t * 9.0 + 1.0)));
+	vec3 red = vec3(0.85, 0.05, 0.1), dark = vec3(0.25, 0.0, 0.04), hot = vec3(1.0, 0.55, 0.5);
+	vec3 col = mix(red, dark, smoothstep(0.0, 0.25, abs(seg))) + hot * exp(-t * 6.0) * 0.4;
+	float halo = exp(-abs(r - 0.6) * 9.0) * 0.25;
+	vec3 c = ring > 0.5 ? vec3(0.12, 0.1, 0.12) : col;
+	float aa = max(ring, blade);
+	COLOR = vec4(c * glow + vec3(1.0, 0.15, 0.2) * halo * glow, max(aa, halo * 0.6) * alpha);
+}" };
+
+	/// <summary>远处的云海：盖在人格面具的大腿以下（他从云里升起来），顶线是翻滚的云头，越往下越实；冷蓝、顶上一道天光。cloud_y 是屏幕上的顶线。</summary>
+	private static Shader CloudShader => _clouds ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform vec2 sres = vec2(1920.0, 1080.0);
+uniform float cloud_y = 700.0;
+uniform float clock = 0.0;
+uniform float alpha = 1.0;
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+float noise(vec2 p) {
+	vec2 i = floor(p), f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+}
+float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p = p * 2.03 + vec2(1.7, 9.2); a *= 0.5; } return v; }
+void fragment() {
+	vec2 px = UV * sres;
+	float top = cloud_y + (fbm(vec2(px.x * 0.004 + clock * 0.02, clock * 0.05)) - 0.5) * 140.0 + 40.0 * sin(px.x * 0.006 + clock * 0.3);
+	float d = px.y - top;
+	float dens = smoothstep(-30.0, 90.0, d) * (0.75 + 0.25 * fbm(px * 0.006 + vec2(clock * 0.03, 0.0)));
+	float lit = exp(-max(d, 0.0) / 60.0);
+	vec3 col = mix(vec3(0.05, 0.09, 0.18), vec3(0.32, 0.52, 0.72), lit * 0.8);
+	COLOR = vec4(col, clamp(dens, 0.0, 1.0) * alpha);
+}" };
+
 	private readonly Dictionary<string, Sprite2D> _sprites = new();
 	private readonly Dictionary<string, float> _angle = new();
 	private readonly Node2D _parent;
@@ -142,6 +195,9 @@ void fragment() {
 	private readonly Vector2 _origin;
 	private readonly float _scale, _aim, _riftX;
 	private float _spin = -1f, _spinSpeed;
+	private Node2D? _haloRoot;
+	private ShaderMaterial? _haloMat;
+	private readonly ShaderMaterial _cloudMat;
 	private readonly Sprite2D[] _ghosts = new Sprite2D[2];
 	private Transform2D _root = Transform2D.Identity, _muzzleXf = Transform2D.Identity;
 
@@ -169,7 +225,24 @@ void fragment() {
 			parent.AddChild(sp);
 			_sprites[L.Name] = sp;
 			_angle[L.Name] = 0f;
+			if (L.Name == "wings_back_near")
+			{
+				// 光环：在翅膀前、身体和头后面；跟着头动，压扁成椭圆（从下往上看的透视）
+				_haloRoot = new Node2D { Name = "Halo" };
+				parent.AddChild(_haloRoot);
+				_haloMat = new ShaderMaterial { Shader = HaloShader };
+				const float hs = 300f;
+				ColorRect hr = new() { Size = new Vector2(hs, hs), Position = new Vector2(-hs / 2f, -hs / 2f), Material = _haloMat, MouseFilter = Control.MouseFilterEnum.Ignore };
+				Node2D squash = new() { Position = HaloAt, Scale = new Vector2(1f, 0.32f), Rotation = -0.18f };
+				_haloRoot.AddChild(squash);
+				squash.AddChild(hr);
+			}
 		}
+		_cloudMat = new ShaderMaterial { Shader = CloudShader };
+		_cloudMat.SetShaderParameter("sres", screen);
+		ColorRect clouds = new() { Size = screen, Material = _cloudMat, MouseFilter = Control.MouseFilterEnum.Ignore };
+		parent.AddChild(clouds);
+		Fx.Clock(clouds);
 		Fx.Clock(_sprites["body"]);
 		// 转枪的残影：枪后面两层半透明的枪，落后几度（转得越快落得越多）——转起来是连贯的动态模糊，不是一帧帧跳
 		if (_sprites["gun"].Texture != null)
@@ -185,8 +258,8 @@ void fragment() {
 		}
 		Vector2 shoulder = Find("arm_upper").Pivot;
 		Vector2 sS = origin + shoulder * scale;
-		_aim = Mathf.Clamp(Mathf.RadToDeg((target - sS).Angle() - (MuzzlePx - shoulder).Angle()), -6f, 9f);   // 不往下压到敌人头上
-		_riftX = Mathf.Max(origin.X + 820f * scale, 160f * scale);
+		_aim = Mathf.Clamp(Mathf.RadToDeg((target - sS).Angle() - (MuzzlePx - shoulder).Angle()), -5f, 65f);   // 远处高处 → 手臂往下转着对准前景的敌人
+		_riftX = origin.X + 400f * scale;
 	}
 
 	private static Layer Find(string n) => Array.Find(Layers, l => l.Name == n)!;
@@ -198,6 +271,10 @@ void fragment() {
 	{
 		Layer L = Find(name);
 		Transform2D own = Joint(L.Pivot, _angle[name]);
+		if (name == "gun")
+		{
+			own = own * Transform2D.Identity.Translated(SpinFinger - GunGuard);   // 护圈套到食指上
+		}
 		return L.Parent == null ? own : World(L.Parent) * own;
 	}
 
@@ -247,17 +324,14 @@ void fragment() {
 
 		float rise = 40f * (1f - EaseOutCubic(rv)) + 5f * Mathf.Sin(g * 1.7f);
 		float breathe = 0.006f * Mathf.Sin(g * 2.3f);
-		// 翅膀：登场时从收拢展开，之后慢慢鼓动
+		// 翅膀：登场时从收拢展开，之后小幅鼓动（±1.5° 以内，翼根不露切边）
 		float unfold = EaseOutCubic((a - RevealDelay) / 0.45f);
-		_angle["wing_back"] = Mathf.Lerp(14f, 0f, unfold) + 1.6f * Mathf.Sin(g * 1.9f);
-		_angle["wing_front"] = Mathf.Lerp(-18f, 0f, unfold) - 2f * Mathf.Sin(g * 1.9f + 0.4f);
-		_angle["cape"] = 1.2f * Mathf.Sin(g * 1.4f + 1f);
-		_angle["arm_near"] = 2f * Mathf.Sin(g * 1.6f + 0.5f);
+		_angle["wings_back_far"] = Mathf.Lerp(-6f, 0f, unfold) - 1.2f * Mathf.Sin(g * 1.9f);
+		_angle["wings_back_near"] = Mathf.Lerp(6f, 0f, unfold) + 1.5f * Mathf.Sin(g * 1.9f + 0.4f);
+		_angle["wings_front"] = Mathf.Lerp(8f, 0f, unfold) + 1.2f * Mathf.Sin(g * 1.7f + 0.9f);
 		_angle["head"] = 1f * Mathf.Sin(g * 1.1f);
-		_angle["eyes_glow"] = 0f;
 		_angle["arm_fore_open"] = 0f;
 		_angle["finger_tip"] = 0f;
-
 		float upper = 55f + 1.5f * Mathf.Sin(g * 2.1f), fore = 25f + 2f * Mathf.Sin(g * 2.1f - 0.6f);
 		_spin = -1f;
 		_spinSpeed = 0f;
@@ -310,8 +384,8 @@ void fragment() {
 			lean = -2.5f * kb;
 			push = new Vector2(-18f, -6f) * kb;
 			_angle["head"] += -3f * kb;
-			_angle["wing_back"] += 4f * kb;
-			_angle["wing_front"] += -5f * kb;
+			_angle["wings_back_near"] += 2f * kb;
+			_angle["wings_front"] += 2.5f * kb;
 		}
 		_angle["arm_upper"] = _aim + upper;
 		_angle["arm_fore_gun"] = fore;
@@ -323,6 +397,13 @@ void fragment() {
 		{
 			_sprites[L.Name].Transform = _root * World(L.Name);
 		}
+		if (_haloRoot != null && _haloMat != null)
+		{
+			_haloRoot.Transform = _root * World("head");
+			_haloMat.SetShaderParameter("spin", g * 0.6f);
+			_haloMat.SetShaderParameter("alpha", revealY < screen.Y ? Mathf.Clamp((screen.Y - revealY) / 300f, 0f, 1f) : 0f);
+		}
+		_cloudMat.SetShaderParameter("cloud_y", (_root * new Vector2(0f, CloudTopPx)).Y);
 		bool spinning = Twirls && _spin >= 0f;
 		_sprites["arm_fore_gun"].Visible = !spinning;
 		foreach (string n2 in new[] { "arm_fore_open", "gun", "finger_tip" })
@@ -341,7 +422,7 @@ void fragment() {
 			{
 				float lagDeg = Mathf.Min(70f, _spinSpeed * 0.018f * (i + 1));
 				Layer G = Find("gun");
-				gh.Transform = _root * World("arm_fore_open") * Joint(G.Pivot, _spin - lagDeg);
+				gh.Transform = _root * World("arm_fore_open") * Joint(G.Pivot, _spin - lagDeg) * Transform2D.Identity.Translated(SpinFinger - GunGuard);
 			}
 		}
 	}

@@ -324,8 +324,8 @@ void fragment() {
 	{
 		public Vector2 JokerFeet, JokerHead, JokerMuzzle, PersonaMuzzle;
 		/// <summary>撒旦耶尔图层画布左上角在屏幕上的位置（1080p 像素）：脸推出屏幕上方、身体大半在左边外面，只露出翅膀、一部分身体和伸进来的持枪手臂（用户 2026-11-08）。</summary>
-		public Vector2 PersonaOrigin = new(-610f, -1035f);
-		public float PersonaScale = 1f;
+		public Vector2 PersonaOrigin = new(144f, -105f);   // 肩膀在 (450,270)：高、偏左，长枪往下瞄准时枪口停在敌人前面一点
+		public float PersonaScale = 0.7f;   // 第 10 版：远处的巨人，头顶接近屏幕上缘、大腿以下埋进云海（用户 2026-11-08）
 		public float FloorY;
 		public List<Vector2> Enemies = new();
 		/// <summary>穿过第 i 个敌人（按离枪口由近到远）的那一刻：游戏在这里结算这个敌人的伤害。</summary>
@@ -536,7 +536,7 @@ void fragment() {
 			Glow.Flash(front, muzzle, new Color(0.85f, 0.95f, 1f), 600f * unit, 0.2f);
 			Glow.Ripple(front, muzzle, 1100f * unit, 0.7f, 0.05f);
 			Sfx.Play(Sfx.SubBoom, 0.8f);
-			Rings(front, muzzle, dir, unit);
+			Rings(front, muzzle, dir, unit * 0.45f);                       // 远处的枪口：冲击环小
 			Bullet(front, muzzle, dir, screen, unit);
 			Glow.Sparks(front, muzzle, 50, 600f, 1800f, 0.4f, new[] { new Color(0.95f, 0.98f, 1f), new Color(0.35f, 0.75f, 1f), new Color(0.6f, 0.3f, 1f) }, 0f,
 				0.05f, 0.16f, dir, 22f);
@@ -610,6 +610,12 @@ void fragment() {
 			q.Size = new Vector2(len + thick * 0.8f, thick);
 			q.Position = new Vector2(-thick * 0.1f, -thick / 2f);
 			m.SetShaderParameter("len_px", len + thick * 0.8f);
+			// 从远处射过来（用户 2026-11-08）：弹头越飞越近、越来越粗（透视放大）
+			float near = Mathf.Clamp(headDist / (screen.Length() * 0.55f), 0f, 1f);
+			float th = thick * Mathf.Lerp(0.18f, 1.25f, near * near);
+			q.Size = new Vector2(len + th * 0.8f, th);
+			q.Position = new Vector2(-th * 0.1f, -th / 2f);
+			m.SetShaderParameter("thick_px", th);
 			m.SetShaderParameter("thick_px", thick);
 			m.SetShaderParameter("tail", Mathf.Clamp(0.15f + time * 2.5f, 0f, 1f));
 			m.SetShaderParameter("fade", time < fly ? 1f : Mathf.Max(0f, 1f - (time - fly) / linger));

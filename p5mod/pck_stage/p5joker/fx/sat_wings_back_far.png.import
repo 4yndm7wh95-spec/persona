@@ -2,15 +2,15 @@
 
 importer="texture"
 type="CompressedTexture2D"
-path="res://.godot/imported/sat_eyes_glow.png-2986fc8f308ebc4fc1bddf9948705f05.ctex"
+path="res://.godot/imported/sat_wings_back_far.png-314eaff7039eaff02999ac48b9ccacf8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://p5joker/fx/sat_eyes_glow.png"
-dest_files=["res://.godot/imported/sat_eyes_glow.png-2986fc8f308ebc4fc1bddf9948705f05.ctex"]
+source_file="res://p5joker/fx/sat_wings_back_far.png"
+dest_files=["res://.godot/imported/sat_wings_back_far.png-314eaff7039eaff02999ac48b9ccacf8.ctex"]
 
 [params]
 
