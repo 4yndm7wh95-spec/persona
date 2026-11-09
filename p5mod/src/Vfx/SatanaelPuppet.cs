@@ -27,16 +27,16 @@ public sealed class SatanaelPuppet
 		new("body", new(9.7f, 501.1f), new(399f, 840f), null),
 		new("wings_front", new(499f, 596.4f), new(558.6f, 693f), "body"),
 		new("head", new(180.2f, 258.7f), new(378f, 546f), "body"),
-		new("arm_upper", new(349.4f, 485.5f), new(436.8f, 617.4f), "body"),
-		new("arm_fore_gun", new(463.7f, 112.1f), new(525f, 554.4f), "arm_upper"),
+		new("arm_upper", new(380.9f, 564.5f), new(436.8f, 617.4f), "body"),
+		new("arm_fore_gun", new(438.5f, 630.4f), new(472.5f, 700.1f), "arm_upper"),
 		// 转枪：空手 + 单独的长枪（护圈中心 GunGuard 平移到食指 SpinFinger 上、绕食指转）+ 食指尖（画在枪上面）
-		new("arm_fore_open", new(458.6f, 369.2f), new(525f, 554.4f), "arm_upper"),
-		new("gun", new(550.2f, 112.1f), new(756f, 420f), "arm_fore_open"),
-		new("finger_tip", new(735.8f, 390.2f), new(756f, 420f), "arm_fore_open"),
+		new("arm_fore_open", new(438.1f, 629.6f), new(472.5f, 700.1f), "arm_upper"),
+		new("gun", new(575f, 713.6f), new(679.1f, 793.4f), "arm_fore_open"),
+		new("finger_tip", new(654.8f, 767.3f), new(679.1f, 793.4f), "arm_fore_open"),
 	};
 	/// <summary>画里枪管的朝向（度，顺时针为正；layers.json 的 barrel_dir）。</summary>
-	private const float BarrelDirDeg = -15f;
-	private static readonly Vector2 MuzzlePx = new(1649.8f, 156.7f), GunGuard = new(751f, 448.6f), SpinFinger = new(756f, 420f);
+	private const float BarrelDirDeg = 23f;   // 短管版：画的时候就朝右前下方瞄准（用户 2026-11-09 选 B）
+	private static readonly Vector2 MuzzlePx = new(903f, 824f), GunGuard = new(679.1f, 793.4f), SpinFinger = new(679.1f, 793.4f);
 	/// <summary>光环中心（头的局部像素，头顶后上方）、云海顶线（大腿中部，图层像素 y）。</summary>
 	private static readonly Vector2 HaloAt = new(330f, 205f);
 	private const float CloudTopPx = 760f;
@@ -264,7 +264,7 @@ void fragment() {
 		// 手臂转 θ 后枪口在 M(θ)、枪管朝向 D(θ) = 画里的枪管朝向 + θ；迭代到 D 正好指向「M → 敌人」
 		// 逐个角度试：枪管延长线离敌人最近、敌人又在枪口前方的那个角度
 		float drawnBarrel = Mathf.DegToRad(BarrelDirDeg), th = 0f, best = float.MaxValue;
-		for (float deg = -10f; deg <= 70f; deg += 0.5f)
+		for (float deg = -30f; deg <= 30f; deg += 0.5f)
 		{
 			float r = Mathf.DegToRad(deg);
 			Vector2 m = sS + (MuzzlePx - shoulder).Rotated(r) * scale;
@@ -273,7 +273,7 @@ void fragment() {
 			float miss = Mathf.Abs(d.Cross(tm)) + (d.Dot(tm) < 0f ? 1e5f : 0f);
 			if (miss < best) { best = miss; th = r; }
 		}
-		_aim = Mathf.Clamp(Mathf.RadToDeg(th), -5f, 65f);
+		_aim = Mathf.Clamp(Mathf.RadToDeg(th), -25f, 25f);
 		_riftX = origin.X + 400f * scale;
 	}
 

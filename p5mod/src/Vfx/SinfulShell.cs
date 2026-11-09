@@ -324,8 +324,8 @@ void fragment() {
 	{
 		public Vector2 JokerFeet, JokerHead, JokerMuzzle, PersonaMuzzle;
 		/// <summary>撒旦耶尔图层画布左上角在屏幕上的位置（1080p 像素）：脸推出屏幕上方、身体大半在左边外面，只露出翅膀、一部分身体和伸进来的持枪手臂（用户 2026-11-08）。</summary>
-		public Vector2 PersonaOrigin = new(144f, -105f);   // 肩膀在 (450,270)：高、偏左，长枪往下瞄准时枪口停在敌人前面一点
-		public float PersonaScale = 0.7f;   // 第 10 版：远处的巨人，头顶接近屏幕上缘、大腿以下埋进云海（用户 2026-11-08）
+		public Vector2 PersonaOrigin = new(162f, -170f);   // 肩膀约在 (520,336)：远处高处、偏左
+		public float PersonaScale = 0.82f;   // 第 10 版：远处的巨人，头顶接近屏幕上缘、大腿以下埋进云海（用户 2026-11-08）
 		public float FloorY;
 		public List<Vector2> Enemies = new();
 		/// <summary>穿过第 i 个敌人（按离枪口由近到远）的那一刻：游戏在这里结算这个敌人的伤害。</summary>
