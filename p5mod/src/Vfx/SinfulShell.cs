@@ -309,7 +309,7 @@ void fragment() {
 	// ───────────────────────── 时序 ─────────────────────────
 
 	/// <summary>各拍的时刻（从出牌算起，秒）。</summary>
-	public const float RevealAt = 0.05f, RevealTime = 0.7f, AimAt = 0.45f, BulletSpeed = 3600f, ExitAfter = 1.1f, ExitTime = 0.6f;
+	public const float RevealAt = 0.05f, RevealTime = 0.7f, AimAt = 0.45f, BulletSpeed = 5200f, ExitAfter = 1.1f, ExitTime = 0.6f;
 
 	/// <summary>开枪（用户 2026-11-08：不蓄力，转完枪停一小下就开）：撒旦耶尔接住枪后 0.2s。</summary>
 	public const float FireAt = AimAt + SatanaelPuppet.CatchAfter + 0.2f;
@@ -324,8 +324,8 @@ void fragment() {
 	{
 		public Vector2 JokerFeet, JokerHead, JokerMuzzle, PersonaMuzzle;
 		/// <summary>撒旦耶尔图层画布左上角在屏幕上的位置（1080p 像素）：脸推出屏幕上方、身体大半在左边外面，只露出翅膀、一部分身体和伸进来的持枪手臂（用户 2026-11-08）。</summary>
-		public Vector2 PersonaOrigin = new(162f, -170f);   // 肩膀约在 (520,336)：远处高处、偏左
-		public float PersonaScale = 0.82f;   // 第 10 版：远处的巨人，头顶接近屏幕上缘、大腿以下埋进云海（用户 2026-11-08）
+		public Vector2 PersonaOrigin = new(-297f, -202f);   // 肩膀约在 (420,230)：枪口停在敌人前面一大段   // 肩膀约在 (520,336)：远处高处、偏左
+		public float PersonaScale = 0.7f;   // 第 10 版：远处的巨人，头顶接近屏幕上缘、大腿以下埋进云海（用户 2026-11-08）
 		public float FloorY;
 		public List<Vector2> Enemies = new();
 		/// <summary>穿过第 i 个敌人（按离枪口由近到远）的那一刻：游戏在这里结算这个敌人的伤害。</summary>
@@ -450,7 +450,7 @@ void fragment() {
 			float thunder = 0f;
 			if (puppet != null)
 			{
-				puppet.Update(time, RiseAt, AimAt, FireAt, exitAt, puppet.MuzzleLocal, charge, flash * 0.6f, dim);
+				puppet.Update(time, RiseAt, AimAt, FireAt + 0.05f, exitAt, puppet.MuzzleLocal, charge, flash * 0.6f, dim);
 				thunder = puppet.Lightning;
 				muzzleLight.GlobalPosition = puppet.MuzzleGlobal;
 			}
@@ -529,9 +529,15 @@ void fragment() {
 			travel[k] = Mathf.Max(0.03f, (enemiesOrdered[k].e - muzzle).Dot(dir) / (BulletSpeed * unit));
 			pierce[orderIndex[k]] = FireAt + travel[k];
 		}
+		var stopHits = new List<Vector2>();
+		for (int k = 0; k < enemiesOrdered.Count; k++)
+		{
+			Vector2 e = enemiesOrdered[k].e;
+			stopHits.Add((muzzle + dir * (e - muzzle).Dot(dir)).Lerp(e, 0.6f));
+		}
 		Fx.After(front, FireAt, () =>
 		{
-			HitStop.Request(0.14, 0.04);
+			TimeStop(front, muzzle, dir, stopHits, screen, unit);           // 用户 2026-11-09：开枪那一帧时停（照结城理 mod 君王之剑）
 			Fx.Shake(4);
 			Glow.Flash(front, muzzle, new Color(0.85f, 0.95f, 1f), 600f * unit, 0.2f);
 			Glow.Ripple(front, muzzle, 1100f * unit, 0.7f, 0.05f);
@@ -556,6 +562,129 @@ void fragment() {
 			});
 		}
 		return pierce;
+	}
+
+	// ───────────────────────── 时停 ─────────────────────────
+
+	private static Shader? _stopGrade;
+
+	/// <summary>时停的画面：读屏幕，压成 P5 红 / 黑 / 白三色（亮部白、中间调红带网点、暗部黑），边缘往里压暗。</summary>
+	private static Shader StopGrade => _stopGrade ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform sampler2D screen_tex : hint_screen_texture, filter_linear_mipmap;
+uniform float amount = 0.0;
+uniform float dot_px = 6.0;
+void fragment() {
+	vec3 src = textureLod(screen_tex, SCREEN_UV, 0.0).rgb;
+	float l = dot(src, vec3(0.3, 0.59, 0.11));
+	vec2 r = mat2(vec2(0.7071, -0.7071), vec2(0.7071, 0.7071)) * FRAGCOORD.xy / dot_px;
+	float dots = step(length(fract(r) - 0.5), 0.33);
+	vec3 col = l > 0.6 ? vec3(0.97, 0.95, 0.93) : l > 0.3 ? mix(vec3(0.78, 0.02, 0.08), vec3(0.35, 0.0, 0.04), dots) : l > 0.16 ? mix(vec3(0.03, 0.02, 0.03), vec3(0.45, 0.0, 0.05), dots * 0.6) : vec3(0.03, 0.02, 0.03);
+	float vig = smoothstep(1.25, 0.45, length((SCREEN_UV - 0.5) * vec2(1.6, 1.0)));
+	col *= mix(0.55, 1.0, vig);
+	COLOR = vec4(mix(src, col, amount), 1.0);
+}" };
+
+	/// <summary>时停总时长（真实时间，秒）。</summary>
+	public const float StopTime = 0.85f;
+
+	private static bool _frozen;
+
+	private static void Freeze(bool on)
+	{
+		if (on == _frozen) return;
+		_frozen = on;
+		Engine.TimeScale = on ? 0.0 : 1.0;
+		if (on && Engine.GetMainLoop() is SceneTree tree)
+		{
+			tree.CreateTimer(2.5, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () => { if (_frozen) Freeze(false); };
+		}
+	}
+
+	private static void AfterRT(Node anchor, double sec, Action a) =>
+		anchor.GetTree()?.CreateTimer(sec, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Connect("timeout",
+			Callable.From(() => { if (GodotObject.IsInstanceValid(anchor)) Stage.Safe("sinful stop", a); }));
+
+	private static void AnimRT(Node owner, double sec, Action<float> step)
+	{
+		Tween tw = owner.CreateTween().SetIgnoreTimeScale(true);
+		tw.SetPauseMode(Tween.TweenPauseMode.Process);
+		step(0f);
+		tw.TweenMethod(Callable.From<float>(t => { if (GodotObject.IsInstanceValid(owner)) step(t); }), 0f, 1f, sec);
+	}
+
+	/// <summary>
+	/// 时停（用户 2026-11-09，照结城理 mod 君王之剑：伤害结算前冻住时间，特效在真实时间里演完再放开）：
+	/// 开枪那一帧世界停住（子弹刚出枪口、枪口火焰定格）→ 画面压成 P5 红黑白 → 一道细亮的弹道线从枪口一节一节穿过每个敌人，
+	/// 每穿过一个，那里亮起一个红色准星 → 「吸」一下 → 放开：子弹一口气飞完、依次贯穿（伤害在放开之后才结算）。
+	/// </summary>
+	private static void TimeStop(Control layer, Vector2 muzzle, Vector2 dir, List<Vector2> hits, Vector2 screen, float unit)
+	{
+		Freeze(true);
+		Node2D root = Fx.ScreenRoot(layer, "P5SinfulTimeStop");
+		ColorRect grade = new() { Size = screen, Material = new ShaderMaterial { Shader = StopGrade }, MouseFilter = Control.MouseFilterEnum.Ignore };
+		((ShaderMaterial)grade.Material).SetShaderParameter("dot_px", 6f * unit);
+		root.AddChild(grade);
+		Node2D draw = new();
+		root.AddChild(draw);
+		Func<Vector2, Vector2> sp = w => Fx.ScreenPoint(layer, w);
+		Vector2 a = sp(muzzle);
+		float far = hits.Count > 0 ? (hits[^1] - muzzle).Dot(dir) + 260f * unit : 1400f * unit;
+		Vector2 b = sp(muzzle + dir * far);
+		// 弹道线：外面一层红、中间白芯
+		// 红白画面上要看得清：白色外描 + 黑芯（P5 的描边感）
+		Line2D glow = new() { Width = 16f * unit, DefaultColor = new Color(1f, 0.97f, 0.95f), BeginCapMode = Line2D.LineCapMode.Round };
+		Line2D core = new() { Width = 6f * unit, DefaultColor = new Color(0.03f, 0.02f, 0.03f) };
+		draw.AddChild(glow);
+		draw.AddChild(core);
+		AnimRT(grade, 0.08, t => ((ShaderMaterial)grade.Material).SetShaderParameter("amount", Fx.OutCubic(t)));
+		Sfx.Play(Sfx.Crack, 0.6f);
+		const float lineAt = 0.1f, lineTime = 0.45f;
+		AfterRT(root, lineAt, () => AnimRT(draw, lineTime, t =>
+		{
+			// 一节一节往前推（不是匀速）：每段 0～1 里先快后停
+			float seg = 4f, k = Mathf.Floor(t * seg) / seg + Fx.OutCubic(t * seg % 1f) / seg;
+			Vector2 end = a.Lerp(b, Mathf.Min(k, 1f));
+			glow.Points = new[] { a, end };
+			core.Points = new[] { a, end };
+		}));
+		// 每个敌人：弹道线穿过时亮起红色准星
+		for (int i = 0; i < hits.Count; i++)
+		{
+			Vector2 h = sp(hits[i]);
+			float u = Mathf.Clamp((hits[i] - muzzle).Dot(dir) / far, 0f, 1f);
+			AfterRT(root, lineAt + lineTime * u, () =>
+			{
+				Node2D mark = new() { Position = h };
+				draw.AddChild(mark);
+				float r = 46f * unit;
+				// 准星：白色粗外圈 + 黑色内圈 + 四根黑白十字刺（红白黑画面上都看得清）
+				mark.AddChild(new Line2D { Points = Fx.Circle(r, 36), Closed = true, Width = 11f * unit, DefaultColor = new Color(1f, 0.97f, 0.95f) });
+				mark.AddChild(new Line2D { Points = Fx.Circle(r, 36), Closed = true, Width = 5f * unit, DefaultColor = new Color(0.03f, 0.02f, 0.03f) });
+				for (int q = 0; q < 4; q++)
+				{
+					Vector2 d = Vector2.Right.Rotated(q * Mathf.Pi / 2f + Mathf.Pi / 4f);
+					mark.AddChild(new Line2D { Points = new[] { d * r * 0.5f, d * r * 1.6f }, Width = 10f * unit, DefaultColor = new Color(1f, 0.97f, 0.95f) });
+					mark.AddChild(new Line2D { Points = new[] { d * r * 0.55f, d * r * 1.55f }, Width = 4f * unit, DefaultColor = new Color(0.03f, 0.02f, 0.03f) });
+				}
+				Sfx.Play(Sfx.Cursor, 0.7f);
+				AnimRT(mark, 0.18, t => { mark.Scale = Vector2.One * Mathf.Lerp(2.2f, 1f, Fx.OutCubic(t)); mark.Rotation = (1f - t) * 1.2f; });
+			});
+		}
+		// 放开前「吸」一下：弹道线收细、画面往里一缩
+		AfterRT(root, StopTime - 0.12f, () => AnimRT(draw, 0.12, t => { core.Width = Mathf.Lerp(6f, 2f, t) * unit; glow.Width = Mathf.Lerp(16f, 26f, t) * unit; }));
+		AfterRT(root, StopTime, () =>
+		{
+			Freeze(false);
+			Glow.Flash(layer, muzzle, new Color(0.9f, 0.95f, 1f), 700f * unit, 0.2f);
+			Fx.Shake(5);
+			AnimRT(root, 0.18, t =>
+			{
+				((ShaderMaterial)grade.Material).SetShaderParameter("amount", 1f - t);
+				draw.Modulate = new Color(1f, 1f, 1f, 1f - t);
+			});
+			AfterRT(root, 0.2, () => root.QueueFree());
+		});
 	}
 
 	/// <summary>枪口外一串冲击环：沿枪管方向往前推，压扁成椭圆（垂直于枪管），一个接一个。</summary>

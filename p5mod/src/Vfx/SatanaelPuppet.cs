@@ -22,24 +22,24 @@ public sealed class SatanaelPuppet
 	// 第 10 版（照原版模型画的远景巨人，layers_v10 → tools/p5/satanael/game_layers.py v10 0.42），按绘制顺序（从后往前）
 	private static readonly Layer[] Layers =
 	{
-		new("wings_back_far", new(0f, 175.6f), new(420f, 588f), "body"),
-		new("wings_back_near", new(444.4f, 112.1f), new(525f, 672f), "body"),
-		new("body", new(9.7f, 501.1f), new(399f, 840f), null),
-		new("wings_front", new(499f, 596.4f), new(558.6f, 693f), "body"),
-		new("head", new(180.2f, 258.7f), new(378f, 546f), "body"),
-		new("arm_upper", new(380.9f, 564.5f), new(436.8f, 617.4f), "body"),
-		new("arm_fore_gun", new(438.5f, 630.4f), new(472.5f, 700.1f), "arm_upper"),
-		// 转枪：空手 + 单独的长枪（护圈中心 GunGuard 平移到食指 SpinFinger 上、绕食指转）+ 食指尖（画在枪上面）
-		new("arm_fore_open", new(438.1f, 629.6f), new(472.5f, 700.1f), "arm_upper"),
-		new("gun", new(575f, 713.6f), new(679.1f, 793.4f), "arm_fore_open"),
-		new("finger_tip", new(654.8f, 767.3f), new(679.1f, 793.4f), "arm_fore_open"),
+		new("wings_back_far", new(18.5f, 193.2f), new(1008f, 588f), "body"),
+		new("wings_back_near", new(1032.4f, 112.1f), new(1113f, 672f), "body"),
+		new("body", new(597.7f, 501.1f), new(987f, 840f), null),
+		new("wings_front", new(1087f, 596.4f), new(1146.6f, 693f), "body"),
+		new("head", new(768.2f, 258.7f), new(966f, 546f), "body"),
+		new("arm_upper", new(952.6f, 524.6f), new(1024.8f, 617.4f), "body"),
+		new("arm_fore_gun", new(1018.5f, 620.8f), new(1068.1f, 747.6f), "arm_upper"),
+		// 转枪：空手 + 单独的枪（护圈中心 GunGuard 平移到食指 SpinFinger 上、绕食指转）+ 食指尖（画在枪上面）
+		new("arm_fore_open", new(1018.1f, 619.5f), new(1068.1f, 747.6f), "arm_upper"),
+		new("gun", new(1163f, 713.6f), new(1384.7f, 841.7f), "arm_fore_open"),
+		new("finger_tip", new(1347.4f, 817.7f), new(1384.7f, 841.7f), "arm_fore_open"),
 	};
-	/// <summary>画里枪管的朝向（度，顺时针为正；layers.json 的 barrel_dir）。</summary>
-	private const float BarrelDirDeg = 23f;   // 短管版：画的时候就朝右前下方瞄准（用户 2026-11-09 选 B）
-	private static readonly Vector2 MuzzlePx = new(903f, 824f), GunGuard = new(679.1f, 793.4f), SpinFinger = new(679.1f, 793.4f);
+	/// <summary>画里枪管的朝向（度，顺时针为正；layers.json 的 barrel_dir）。第 10 版加长后的短管枪（用户 2026-11-09）。</summary>
+	private const float BarrelDirDeg = 22.4f;
+	private static readonly Vector2 MuzzlePx = new(1844.2f, 1009.3f), GunGuard = new(1267.1f, 793.4f), SpinFinger = new(1384.7f, 841.7f);
 	/// <summary>光环中心（头的局部像素，头顶后上方）、云海顶线（大腿中部，图层像素 y）。</summary>
-	private static readonly Vector2 HaloAt = new(330f, 205f);
-	private const float CloudTopPx = 760f;
+	private static readonly Vector2 HaloAt = new(918f, 205f);
+	private const float CloudTopPx = 1010f;   // 大腿中部（图层像素）
 
 	private static Shader? _shader, _rift;
 
@@ -244,6 +244,7 @@ void fragment() {
 		_cloudMat.SetShaderParameter("sres", screen);
 		ColorRect clouds = new() { Size = screen, Material = _cloudMat, MouseFilter = Control.MouseFilterEnum.Ignore };
 		parent.AddChild(clouds);
+		parent.MoveChild(clouds, _sprites["wings_front"].GetIndex() + 1);   // 云盖住腿和翅膀下端，头和持枪手臂在云上面
 		Fx.Clock(clouds);
 		Fx.Clock(_sprites["body"]);
 		// 转枪的残影：枪后面两层半透明的枪，落后几度（转得越快落得越多）——转起来是连贯的动态模糊，不是一帧帧跳
