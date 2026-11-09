@@ -14,7 +14,15 @@
     },
     {
       "file": "wings_back_near.png",
-      "z_index": 1,
+      "z_index": 10,
+      "pivot": [
+        2650,
+        1600
+      ]
+    },
+    {
+      "file": "wing_root_feathers.png",
+      "z_index": 15,
       "pivot": [
         2650,
         1600
@@ -22,7 +30,7 @@
     },
     {
       "file": "body.png",
-      "z_index": 2,
+      "z_index": 20,
       "pivot": [
         2350,
         2000
@@ -30,7 +38,15 @@
     },
     {
       "file": "wings_front.png",
-      "z_index": 3,
+      "z_index": 30,
+      "pivot": [
+        2730,
+        1650
+      ]
+    },
+    {
+      "file": "wing_root_feathers_front.png",
+      "z_index": 35,
       "pivot": [
         2730,
         1650
@@ -38,7 +54,7 @@
     },
     {
       "file": "head.png",
-      "z_index": 4,
+      "z_index": 40,
       "pivot": [
         2300,
         1300
@@ -46,7 +62,7 @@
     },
     {
       "file": "arm_upper.png",
-      "z_index": 5,
+      "z_index": 50,
       "pivot": [
         2730,
         1400
@@ -54,7 +70,15 @@
     },
     {
       "file": "arm_fore_gun.png",
-      "z_index": 6,
+      "z_index": 60,
+      "pivot": [
+        2965,
+        1665
+      ]
+    },
+    {
+      "file": "arm_fore_open.png",
+      "z_index": 60,
       "pivot": [
         2965,
         1665
@@ -62,7 +86,7 @@
     },
     {
       "file": "eyes_glow.png",
-      "z_index": 7,
+      "z_index": 70,
       "pivot": [
         2220,
         1080
@@ -70,23 +94,15 @@
     },
     {
       "file": "gun.png",
-      "z_index": 9,
+      "z_index": 90,
       "pivot": [
         3712,
         1954
       ]
     },
     {
-      "file": "arm_fore_open.png",
-      "z_index": 6,
-      "pivot": [
-        2965,
-        1665
-      ]
-    },
-    {
       "file": "finger_tip.png",
-      "z_index": 10,
+      "z_index": 100,
       "pivot": [
         3712,
         1954
@@ -406,5 +422,71 @@
     "reference_only_layout_not_used_as_output_pixels": true,
     "tile_overlap_px": 50,
     "preserved_inner_root_fragments": true
+  },
+  "wing_root_feathers": {
+    "approved_preview": "wing_roots_preview_native.png",
+    "source_commit": "e69381bc",
+    "native_regions": {
+      "left_top": {
+        "native_size": [
+          1254,
+          1254
+        ],
+        "placement_rect": [
+          1350,
+          500,
+          2550,
+          1700
+        ],
+        "sha256": "e5240d87c7c73c209fd6c52f069b64557c6370f61a20795b1f8dca3f03d36f7a"
+      },
+      "left_bottom": {
+        "native_size": [
+          1254,
+          1254
+        ],
+        "placement_rect": [
+          1350,
+          1500,
+          2550,
+          2700
+        ],
+        "sha256": "3fc7840993b9cb2a50acab8024f2bfc5c60dc00e1a52c72355819a24092e04c7"
+      },
+      "right_back": {
+        "native_size": [
+          1254,
+          1254
+        ],
+        "placement_rect": [
+          2500,
+          650,
+          3700,
+          1850
+        ],
+        "sha256": "c26510b54f571bbce6c5eb87d73c75192bd5643bccd00dd29e17fdf34f8b2a3f"
+      },
+      "front": {
+        "native_size": [
+          1254,
+          1254
+        ],
+        "placement_rect": [
+          2550,
+          1400,
+          3750,
+          2600
+        ],
+        "sha256": "adc0cf0db895041f729935ff51f6d5b443669577e38a607e2683beca91062a33"
+      }
+    },
+    "legacy_z_index_multiplier": 10,
+    "back_z_index": 15,
+    "front_z_index": 35,
+    "roots_unchanged": true,
+    "upscale_used": false,
+    "left_patch_overlap_px": 200,
+    "binding": "Feather mantle anchored to body; wings move +/-3 degrees underneath.",
+    "description": "New ragged black/dark-gray feathers cover only the inner wing roots; original PNG layers remain unchanged."
   }
 }
