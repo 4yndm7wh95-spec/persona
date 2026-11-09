@@ -53,7 +53,7 @@ public static class JokerFx
 	}
 
 	/// <summary>伤害结算那一刻（DamagePatch）：敌人身上的命中特效。</summary>
-	public static void OnHit(NCreature joker, NCreature target, bool gun)
+	public static void OnHit(NCreature joker, NCreature target, bool gun, bool final = false)
 	{
 		if (Joker.FxLayer() is not Control layer)
 		{
@@ -61,7 +61,7 @@ public static class JokerFx
 		}
 		if (gun)
 		{
-			GunFx.Shot(layer, Joker.Muzzle(joker), target.VfxSpawnPosition);                                       // 第四版弹道 + 命中
+			GunFx.Shot(layer, Joker.Muzzle(joker), target.VfxSpawnPosition, final);                                       // 第四版弹道 + 命中
 		}
 		else
 		{

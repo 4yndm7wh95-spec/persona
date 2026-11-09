@@ -55,7 +55,19 @@ public static class Sfx
 		SinfulCharge = "sinful_charge",   // 蓄力：越来越高的啸叫 + 越来越重的低频嗡鸣
 		SinfulCatch = "sinful_catch",     // 转枪接住：沉重的金属咔嗒
 		SinfulFire = "sinful_fire",       // 开枪（用户：不要普通手枪声）：倒吸 → 爆裂 → 超低频重击 → 失真冲击 → 金属余振 → 长尾和回声
-		Crush = "crush";                // 合成的「捏碎」：几下密集的碎裂咔嚓 + 一记闷响（art/sfx_p5/crush.ogg，手捏爆用）           // 合成的低频重击（art/sfx_p5/sub_boom.ogg：P5 原声缺低频，垫在冲击层底下）
+		GunHit = "gun_hit",             // 枪命中（演示混音：damage_enemy 升调 1.2、压低、偏右）
+		GunHitFinal = "gun_hit_final",  // 收尾那一发的命中：更响的命中 + sub_boom + 47Hz 低频
+		Crush = "crush";
+
+	/// <summary>
+	/// Joker 的枪声（用户 2026-11-09：要 Five Cards 演示开头连射里的最终听感）：tools/p5/sfx/five_cards_shots.py 按演示的 mix_audio.py
+	/// 原样复刻（同样的层、音量、音高、声像、淡入淡出和软削波），拆成单发：枪声 + 弹壳轻响。连射轮流用演示前四发的四个变体。
+	/// 文件已经按演示的音量混好，播放音量用 1.33（抵消 Play 里的 ×0.75）。
+	/// </summary>
+	public static readonly string[] GunShots = { "gun_shot_1", "gun_shot_2", "gun_shot_3", "gun_shot_4" };
+	private static int _gunShot;
+	public static string NextGunShot() => GunShots[_gunShot++ % GunShots.Length];
+	public const float DemoMixVolume = 1.33f;                // 合成的「捏碎」：几下密集的碎裂咔嚓 + 一记闷响（art/sfx_p5/crush.ogg，手捏爆用）           // 合成的低频重击（art/sfx_p5/sub_boom.ogg：P5 原声缺低频，垫在冲击层底下）
 
 	/// <summary>
 	/// 起音提前量（秒）：有的音效开头有一小段空白 / 渐起，主冲击在文件里第几秒（ffmpeg 量的首个过 30% 峰值的点）。

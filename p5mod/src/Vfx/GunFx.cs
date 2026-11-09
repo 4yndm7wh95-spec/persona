@@ -19,8 +19,7 @@ public static class GunFx
 	/// <summary>开火那一帧（动画 0.18s）：枪口火焰 + 暖白光 + 抛弹壳 + 枪声。dir = 射击方向（没有目标时用朝向）。</summary>
 	public static void Muzzle(Control layer, Vector2 muzzle, Vector2 dir, float facing = 1f)
 	{
-		Sfx.Play(Sfx.Gun, 0.95f);
-		Sfx.Play(Sfx.SubBoom, 0.35f);                                 // 低频垫一下，枪声有分量
+		Sfx.Play(Sfx.NextGunShot(), Sfx.DemoMixVolume);                // Five Cards 演示的枪声（枪 + 弹壳轻响），连射轮流换四个变体
 		dir = dir.LengthSquared() > 0.001f ? dir.Normalized() : new Vector2(facing, 0f);
 		float rot = dir.Angle();
 		int i = Fx.Rng.Next(CoreX.Length);
@@ -32,7 +31,7 @@ public static class GunFx
 	}
 
 	/// <summary>弹道 + 命中（伤害结算那一刻）。</summary>
-	public static void Shot(Control layer, Vector2 muzzle, Vector2 hit)
+	public static void Shot(Control layer, Vector2 muzzle, Vector2 hit, bool final = false)
 	{
 		Vector2 d = hit - muzzle;
 		float len = d.Length();
@@ -43,13 +42,13 @@ public static class GunFx
 			Vector2 center = muzzle + d * 0.5f + d.Normalized() * (512f - 530f) * sx;
 			Paint.Sweep(layer, "slash_thrust", center, d.Angle(), new Vector2(sx, 0.13f), Lut5.Blood, 0.04f, 0.01f, 0.12f, 0f, 0f, 1.3f);
 		}
-		Hit(layer, hit, len > 1f ? d / len : Vector2.Right);
+		Hit(layer, hit, len > 1f ? d / len : Vector2.Right, final);
 	}
 
-	public static void Hit(Control layer, Vector2 at, Vector2 dir)
+	public static void Hit(Control layer, Vector2 at, Vector2 dir, bool final = false)
 	{
-		// 命中只留一声很轻的低频闷响：不用 damage_enemy（刀命中的主音，会把枪声盖成打击声，用户 2026-11-02）
-		Sfx.Play(Sfx.SubBoom, 0.28f);
+		// 命中声照 Five Cards 演示（用户 2026-11-09）：升调压低的命中；打死目标的那一发用收尾的重命中（加低频重击）
+		Sfx.Play(final ? Sfx.GunHitFinal : Sfx.GunHit, Sfx.DemoMixVolume);
 		Paint.Pop(layer, "muzzle_front", at, Fx.Rand(-3.1f, 3.1f), 0.2f, Lut5.Muzzle, 0.01f, 0.1f, 0.6f, 0f, 1.2f);
 		Vanilla.Burst(layer, Vanilla.Specks, at, dir.Angle(), 0.8f, Lut5.Blood, amount: 14);
 		Vanilla.Burst(layer, Vanilla.Streaks, at, 0f, 0.55f, Lut5.Blood);

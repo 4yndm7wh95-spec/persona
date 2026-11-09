@@ -126,7 +126,9 @@ SFX = {
     "sinful_charge": ROOT / "art/sfx_p5/sinful_charge.ogg",
     "sinful_catch": ROOT / "art/sfx_p5/sinful_catch.ogg",
     "sinful_fire": ROOT / "art/sfx_p5/sinful_fire.ogg",        # Outbreak poison damage (user 2026-11-08: vanilla hit too plain): P5R SKILLSE 0406 (curse candidate), low-passed 6 kHz, 1.5 s
-    "crush": ROOT / "art/sfx_p5/crush.ogg",                          # synthesized crunch for the hand crush                      # synthesized sub hit (ffmpeg aevalsrc)
+    "crush": ROOT / "art/sfx_p5/crush.ogg",
+    # Joker gunshots matching the Five Cards demo mix (tools/p5/sfx/five_cards_shots.py, user 2026-11-09)
+    **{n: ROOT / f"art/sfx_p5/{n}.ogg" for n in ("gun_shot_1", "gun_shot_2", "gun_shot_3", "gun_shot_4", "gun_shot_final", "gun_hit", "gun_hit_final")},                          # synthesized crunch for the hand crush                      # synthesized sub hit (ffmpeg aevalsrc)
 }
 
 
