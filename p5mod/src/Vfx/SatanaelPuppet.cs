@@ -22,13 +22,13 @@ public sealed class SatanaelPuppet
 	// 第 10 版（照原版模型画的远景巨人，layers_v10 → tools/p5/satanael/game_layers.py v10 0.42），按绘制顺序（从后往前）
 	private static readonly Layer[] Layers =
 	{
-		new("wings_back_far", new(18.5f, 193.2f), new(1008f, 588f), "body"),
-		new("wings_back_near", new(1032.4f, 112.1f), new(1113f, 672f), "body"),
+		new("wings_back_far", new(0.0f, 158.8f), new(1008f, 588f), "body"),
+		new("wings_back_near", new(997.9f, 77.7f), new(1113f, 672f), "body"),
 		// 翼根的黑色羽毛（Codex b233f7a1；原版 = 六片硬翼 + 翼根一大簇撕裂状黑羽毛，用户 2026-11-09）：背后那簇在近侧翼和身体之间，前面那簇盖住前翼的根
-		new("wing_root_feathers", new(576.7f, 208.3f), new(1113f, 672f), "body"),
+		new("wing_root_feathers", new(542.2f, 173.9f), new(1113f, 672f), "body"),
 		new("body", new(597.7f, 501.1f), new(987f, 840f), null),
-		new("wings_front", new(1087f, 596.4f), new(1146.6f, 693f), "body"),
-		new("wing_root_feathers_front", new(1130.6f, 598.1f), new(1146.6f, 693f), "body"),
+		new("wings_front", new(1052.5f, 562.0f), new(1146.6f, 693f), "body"),
+		new("wing_root_feathers_front", new(1096.2f, 563.6f), new(1146.6f, 693f), "body"),
 		new("head", new(768.2f, 258.7f), new(966f, 546f), "body"),
 		new("arm_upper", new(1101.2f, 543.5f), new(1146.6f, 588f), "body"),
 		new("arm_fore_gun", new(1180.6f, 628.7f), new(1245.3f, 699.3f), "arm_upper"),
@@ -63,6 +63,15 @@ uniform float ghost_amt = 0.0;
 uniform vec2 mask_o = vec2(0.0);
 uniform float mask_r = 100000.0;
 uniform float wing = 0.0;
+// 翅膀弯曲（用户 2026-11-09：要更多活动的骨骼、翅膀能动）：每张翅膀图绕翼根按极角分相位弯——扇形排开的每一片翼 / 每簇羽毛
+// 各自错开节拍扇动，越往翼尖摆得越多；羽毛层再加一层细碎的抖动。root_px = 翼根（贴图像素），reach_px = 摆幅满额的半径
+uniform vec2 root_px = vec2(0.0);
+uniform float reach_px = 1000.0;
+uniform float flex = 0.0;
+uniform float flap_speed = 1.9;
+uniform float flap_phase = 0.0;
+uniform float fan = 2.5;
+uniform float rustle = 0.0;
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
@@ -71,7 +80,16 @@ float noise(vec2 p) {
 }
 void fragment() {
 	float ma = COLOR.a;                                                      // 节点 modulate 的透明度（转枪残影用）
-	vec4 c = texture(TEXTURE, UV);
+	vec2 uv = UV;
+	if (flex > 0.0 || rustle > 0.0) {
+		vec2 q = UV / TEXTURE_PIXEL_SIZE - root_px;
+		float r = length(q), th = atan(q.y, q.x);
+		float k = pow(clamp(r / reach_px, 0.0, 1.5), 1.6);
+		float ph = clock * flap_speed + flap_phase;
+		th -= flex * k * sin(ph + th * fan) + rustle * k * sin(ph * 3.7 + th * 23.0 + r * 0.02);
+		uv = (root_px + vec2(cos(th), sin(th)) * r) * TEXTURE_PIXEL_SIZE;
+	}
+	vec4 c = texture(TEXTURE, uv);
 	vec2 sp = SCREEN_UV * sres;
 	float l = dot(c.rgb, vec3(0.3, 0.59, 0.11));
 	// 夜光：压低饱和度（金色变成淡银金）、乘冷蓝环境光；越往下越暗（隐入深渊）
@@ -79,19 +97,19 @@ void fragment() {
 	g = mix(g, vec3(0.16, 0.26, 0.4), haze);                                // 远处的大气：蒙一层冷蓝的雾
 	g *= mix(1.0, 0.45, smoothstep(sres.y * 0.55, sres.y * 1.05, sp.y));
 	// 边缘光：天空（右上）方向那一侧的轮廓亮一道青色
-	float a2 = texture(TEXTURE, UV + vec2(0.7, -0.7) * TEXTURE_PIXEL_SIZE * 7.0).a;
+	float a2 = texture(TEXTURE, uv + vec2(0.7, -0.7) * TEXTURE_PIXEL_SIZE * 7.0).a;
 	float rim = clamp(c.a - a2, 0.0, 1.0);
 	g += vec3(0.3, 0.72, 1.0) * rim * 0.85;
 	// 翅膀（六片硬翼 + 翼根羽毛，单独一份材质 wing = 1）：照原版切入镜头的配色（用户 2026-11-09）——蓝光把金色骷髅照成深蓝，
 	// 整片偏冷蓝；翼骨 / 翼边 / 羽毛边缘一圈青色亮线
 	if (wing > 0.5) {
 		float gold = smoothstep(0.08, 0.3, c.r - c.b) * smoothstep(0.2, 0.45, l);
-		g = mix(g, vec3(0.07, 0.15, 0.38) * (0.45 + 1.0 * l), gold * 0.85);
-		g *= vec3(0.75, 0.88, 1.15);
+		g = mix(g, vec3(0.06, 0.09, 0.2) * (0.45 + 0.9 * l), gold * 0.85);   // 用户 2026-11-09：蓝没这么艳，再暗一些
+		g *= vec3(0.8, 0.86, 1.02);
 		vec2 tw = TEXTURE_PIXEL_SIZE * 4.0;
-		float nbw = min(min(texture(TEXTURE, UV + vec2(tw.x, 0.0)).a, texture(TEXTURE, UV - vec2(tw.x, 0.0)).a),
-			min(texture(TEXTURE, UV + vec2(0.0, tw.y)).a, texture(TEXTURE, UV - vec2(0.0, tw.y)).a));
-		g += vec3(0.3, 0.75, 1.0) * clamp(c.a - nbw, 0.0, 1.0) * 0.8;
+		float nbw = min(min(texture(TEXTURE, uv + vec2(tw.x, 0.0)).a, texture(TEXTURE, uv - vec2(tw.x, 0.0)).a),
+			min(texture(TEXTURE, uv + vec2(0.0, tw.y)).a, texture(TEXTURE, uv - vec2(0.0, tw.y)).a));
+		g += vec3(0.3, 0.7, 1.0) * clamp(c.a - nbw, 0.0, 1.0) * 0.5;
 	}
 	// 点光（枪口蓄力）：近的地方被照亮，亮部被照得更多
 	float d = length(sp - point_light.xy);
@@ -109,8 +127,8 @@ void fragment() {
 	// 轮廓先行 / 残留（用户 2026-11-09：登场、退场不要直接出现 / 消失）：烧线上方 ghost_len 内只亮一圈轮廓线（闪烁的青白），
 	// 登场时轮廓先描出来、实体随后烧上来；退场时实体烧没了，轮廓还留一会儿再散
 	vec2 tp = TEXTURE_PIXEL_SIZE * 3.0;
-	float nb = min(min(texture(TEXTURE, UV + vec2(tp.x, 0.0)).a, texture(TEXTURE, UV - vec2(tp.x, 0.0)).a),
-		min(texture(TEXTURE, UV + vec2(0.0, tp.y)).a, texture(TEXTURE, UV - vec2(0.0, tp.y)).a));
+	float nb = min(min(texture(TEXTURE, uv + vec2(tp.x, 0.0)).a, texture(TEXTURE, uv - vec2(tp.x, 0.0)).a),
+		min(texture(TEXTURE, uv + vec2(0.0, tp.y)).a, texture(TEXTURE, uv - vec2(0.0, tp.y)).a));
 	float outline = clamp(c.a - nb, 0.0, 1.0);
 	float lead = step(s, 0.0) * (1.0 - smoothstep(0.0, ghost_len, -s)) * ghost_amt;
 	float fl = 0.6 + 0.4 * noise(sp * 0.04 + vec2(clock * 9.0, 0.0));
@@ -294,13 +312,43 @@ void fragment() {
 	private readonly Dictionary<string, Sprite2D> _sprites = new();
 	private readonly Dictionary<string, float> _angle = new();
 	private readonly Node2D _parent;
-	private readonly ShaderMaterial _mat, _wingMat, _riftMat;
+	private readonly ShaderMaterial _mat, _riftMat;
+	private readonly Dictionary<string, ShaderMaterial> _wingMats = new();
 
-	/// <summary>同一个参数同时设到身体材质和翅膀材质上（两份只差 wing 这一个开关）。</summary>
+	/// <summary>同一个参数同时设到身体材质和每张翅膀的材质上（翅膀的材质多了 wing 开关和各自的弯曲参数）。</summary>
 	private void SetMat(string name, Variant value)
 	{
 		_mat.SetShaderParameter(name, value);
-		_wingMat.SetShaderParameter(name, value);
+		foreach (ShaderMaterial m in _wingMats.Values) m.SetShaderParameter(name, value);
+	}
+
+	/// <summary>各翅膀层的弯曲：(摆幅 弧度, 速度, 相位, 扇形相位系数, 细抖)。三组翼错开相位；翼根羽毛摆得小、抖得碎。</summary>
+	private static readonly Dictionary<string, (float Flex, float Speed, float Phase, float Fan, float Rustle)> Bend = new()
+	{
+		["wings_back_far"] = (0.06f, 1.9f, 0f, 2.5f, 0f),
+		["wings_back_near"] = (0.06f, 1.9f, 0.5f, 2.5f, 0f),
+		["wings_front"] = (0.05f, 1.7f, 1.1f, 2.5f, 0f),
+		["wing_root_feathers"] = (0.025f, 2.3f, 0.3f, 4f, 0.012f),
+		["wing_root_feathers_front"] = (0.025f, 2.3f, 1.4f, 4f, 0.012f),
+	};
+
+	private ShaderMaterial WingMat(Layer L, Texture2D? tex)
+	{
+		ShaderMaterial m = (ShaderMaterial)_mat.Duplicate();
+		m.SetShaderParameter("wing", 1f);
+		if (Bend.TryGetValue(L.Name, out var b) && tex != null)
+		{
+			Vector2 size = tex.GetSize();
+			m.SetShaderParameter("root_px", L.Pivot - L.Offset);
+			m.SetShaderParameter("reach_px", size.Length() * 0.75f);
+			m.SetShaderParameter("flex", b.Flex);
+			m.SetShaderParameter("flap_speed", b.Speed);
+			m.SetShaderParameter("flap_phase", b.Phase);
+			m.SetShaderParameter("fan", b.Fan);
+			m.SetShaderParameter("rustle", b.Rustle);
+		}
+		_wingMats[L.Name] = m;
+		return m;
 	}
 	private readonly Vector2 _origin;
 	private readonly float _scale, _aim, _riftX;
@@ -335,8 +383,6 @@ void fragment() {
 		Vector2 screen = Fx.Screen(parent);
 		_mat = new ShaderMaterial { Shader = PersonaShader };
 		_mat.SetShaderParameter("sres", screen);
-		_wingMat = (ShaderMaterial)_mat.Duplicate();
-		_wingMat.SetShaderParameter("wing", 1f);
 		_riftMat = new ShaderMaterial { Shader = RiftShader };
 		_riftMat.SetShaderParameter("sres", screen);
 		ColorRect rift = new() { Size = screen, Material = _riftMat, MouseFilter = Control.MouseFilterEnum.Ignore };
@@ -344,7 +390,8 @@ void fragment() {
 		Fx.Clock(rift);
 		foreach (Layer L in Layers)
 		{
-			Sprite2D sp = new() { Texture = Fx.Tex("sat_" + L.Name), Centered = false, Offset = L.Offset, Material = L.Name.StartsWith("wing") ? _wingMat : _mat };
+			Texture2D? tex = Fx.Tex("sat_" + L.Name);
+			Sprite2D sp = new() { Texture = tex, Centered = false, Offset = L.Offset, Material = L.Name.StartsWith("wing") ? WingMat(L, tex) : _mat };
 			parent.AddChild(sp);
 			_sprites[L.Name] = sp;
 			_angle[L.Name] = 0f;
@@ -354,7 +401,7 @@ void fragment() {
 				_haloRoot = new Node2D { Name = "Halo" };
 				parent.AddChild(_haloRoot);
 				_haloMat = new ShaderMaterial { Shader = HaloShader };
-				const float hs = 300f;
+				const float hs = 600f;                                     // 用户 2026-11-09：光环放大一倍
 				ColorRect hr = new() { Size = new Vector2(hs, hs), Position = new Vector2(-hs / 2f, -hs / 2f), Material = _haloMat, MouseFilter = Control.MouseFilterEnum.Ignore };
 				Node2D squash = new() { Position = HaloAt, Scale = new Vector2(1f, 0.32f), Rotation = -0.18f };
 				_haloRoot.AddChild(squash);
@@ -368,7 +415,7 @@ void fragment() {
 		parent.MoveChild(clouds, _sprites["wings_front"].GetIndex() + 1);   // 云盖住腿和翅膀下端，头和持枪手臂在云上面
 		Fx.Clock(clouds);
 		Fx.Clock(_sprites["body"]);
-		Fx.Clock(_sprites["wings_back_far"]);
+		foreach (string w in _wingMats.Keys) Fx.Clock(_sprites[w]);
 		// 转枪的残影：枪后面两层半透明的枪，落后几度（转得越快落得越多）——转起来是连贯的动态模糊，不是一帧帧跳
 		if (_sprites["gun"].Texture != null)
 		{
@@ -706,7 +753,7 @@ void fragment() {
 				fore += (0.2f + 0.9f * k) * Mathf.Sin(g * 61f + 1.3f);
 			}
 		}
-		float lean = 0f;
+		float lean = 0f, flare = 0f;
 		Vector2 push = Vector2.Zero;
 		float f = g - fireAt;
 		if (f >= 0f)
@@ -722,6 +769,13 @@ void fragment() {
 			_angle["head"] += -3f * kb;
 			_angle["wings_back_near"] += 2f * kb;
 			_angle["wings_front"] += 2.5f * kb;
+			flare = kb;
+		}
+		// 翅膀弯得更多的时候：登场展开、退场收拢时翼尖甩得大；开枪后坐时整片往外一张
+		float bendMul = 1f + 1.6f * (1f - unfold) * (a >= RevealDelay ? 1f : 0f) + 1.8f * flare;
+		foreach ((string w, ShaderMaterial m) in _wingMats)
+		{
+			if (Bend.TryGetValue(w, out var b)) m.SetShaderParameter("flex", b.Flex * bendMul);
 		}
 		// 翼根羽毛跟着各自那组翅膀动，幅度减半（根部动得少，盖住翼根接缝）
 		_angle["wing_root_feathers"] = 0.5f * _angle["wings_back_near"];

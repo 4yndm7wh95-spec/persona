@@ -21,7 +21,7 @@ for L in meta["layers"]:
     box = im.getbbox()
     if box is None:
         print(name, "empty, skipped"); continue
-    pad = 8
+    pad = 90 if name.startswith("wing") else 8      # wings bend in the shader (tips swing out): room around them
     box = (max(0, box[0] - pad), max(0, box[1] - pad), min(im.width, box[2] + pad), min(im.height, box[3] + pad))
     crop = im.crop(box)
     crop = crop.resize((round(crop.width * K), round(crop.height * K)), Image.LANCZOS)
