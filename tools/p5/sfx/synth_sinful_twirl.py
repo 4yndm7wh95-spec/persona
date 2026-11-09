@@ -3,8 +3,7 @@ Writes art/sfx_p5/sinful_twirl.ogg (Satanael's giant gun) and sinful_twirl_small
 frame of the spin; the catch itself is sinful_catch, played by code.
 
 A whoosh per quarter turn of the gun (barrel and grip each cut the air), timed from the same spin curve the code / rig uses, its pitch and
-loudness following the spin speed (fast -> slow), over a whir that winds down. Satanael's is low and heavy (a huge gun, far away),
-with a metallic shimmer; Joker's is short, light and bright.
+loudness following the spin speed (fast -> slow), pure air, nothing tonal or metallic. Satanael's is lower and fuller (a huge gun, far away); Joker's is short, light and quick.
   Satanael: angle = 720 * (1 - (1 - k)^3), k = t / SpinTime (p5mod SatanaelPuppet.SpinTime = 0.45)
   Joker: rig keys of cast_sinful_from_mask (tools/p5/build_rig_p5.py SPIN_SINFUL): 580 -> 4 deg over 0.57 s, slowing
 """
@@ -49,18 +48,16 @@ def whoosh(x, at, speed, vmax, low, high, gain):
     return n * envl * gain * (0.35 + 0.65 * v)
 
 
-def twirl(length, times, angles, low, high, whir_hz, shimmer, gain):
+def twirl(length, times, angles, low, high, gain, body):
+    """Only air: one whoosh per quarter turn, nothing tonal, no metal (user 2026-11-09: the first version's motor-like buzz and
+    metal ring sounded mechanical and too heavy - not a twirl). body = how much low air (a big object) under each pass."""
     x = t(length)
     cr = crossings(times, angles)
     vmax = max(s for _, s in cr)
     y = sum(whoosh(x, at, s, vmax, low, high, gain) for at, s in cr)
-    # the whir under it: the spin rate as a low buzz that winds down to the catch
-    speed = np.interp(x, times[1:], np.abs(np.diff(angles)) / np.diff(times))
-    ph = 2 * np.pi * np.cumsum(whir_hz * (0.4 + 0.6 * speed / vmax)) / SR
-    y += np.sin(ph) * (speed / vmax) ** 1.5 * 0.25 * gain * (np.sin(ph * 0.5) ** 2)
-    if shimmer:
-        ring = sum(a * np.sin(2 * np.pi * f * x) for f, a in [(1290, 1), (2030, 0.6), (3170, 0.35)])
-        y += ring * (speed / vmax) * 0.06 * gain * (1 + 0.5 * np.sin(np.cumsum(speed) / SR * np.pi / 90))
+    if body:
+        y += sum(lp(whoosh(x, at, s, vmax, low * 0.5, low * 1.2, gain), low) * body for at, s in cr)
+    y = lp(y, high * 1.4)                                   # no hiss on top
     y *= np.minimum(1, x / 0.01) * np.clip((times[-1] + 0.12 - x) / 0.12, 0, 1)
     return y
 
@@ -78,9 +75,9 @@ def save(name, x):
 SPIN = 0.45
 ts = np.linspace(0, SPIN, 400)
 sat = 720 * (1 - (1 - ts / SPIN) ** 3)
-save("sinful_twirl", twirl(SPIN + 0.15, ts, sat, 250, 1400, 70, True, 1.0))
+save("sinful_twirl", twirl(SPIN + 0.15, ts, sat, 350, 1600, 1.0, 0.6))
 
 jt = np.array([0, .02, .12, .24, .36, .47, .57])
 ja = np.array([580, 540, 360, 210, 100, 35, 4], float)
 jts = np.linspace(0, .57, 400)
-save("sinful_twirl_small", twirl(.57 + 0.15, jts, np.interp(jts, jt, ja), 900, 4200, 160, False, 0.8))
+save("sinful_twirl_small", twirl(.57 + 0.15, jts, np.interp(jts, jt, ja), 1100, 3800, 0.8, 0))

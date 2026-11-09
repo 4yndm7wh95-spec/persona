@@ -438,7 +438,7 @@ void fragment() {
 		{
 			Fx.After(front, CatchAt, () => Sfx.Play(Sfx.SinfulCatch, 1f));
 			// 转枪的破风声（用户 2026-11-09）：撒旦耶尔的大枪低沉，Joker 的手枪轻快，各自从转起来那一帧开始
-			Fx.After(front, AimAt + SatanaelPuppet.Anticipation, () => Sfx.Play(Sfx.SinfulTwirl, 1.3f));
+			Fx.After(front, AimAt + SatanaelPuppet.Anticipation, () => Sfx.Play(Sfx.SinfulTwirl, 1.0f));
 		}
 		// 场景里飘的蓝色余烬
 		Fx.After(back, RevealAt + RevealTime * 0.6f, () =>
@@ -449,7 +449,7 @@ void fragment() {
 			embers.Material = emberMask;
 		});
 
-		Fx.After(front, JokerSpinAt, () => Sfx.Play(Sfx.SinfulTwirlSmall, 1.1f));
+		Fx.After(front, JokerSpinAt, () => Sfx.Play(Sfx.SinfulTwirlSmall, 0.9f));
 		// ── 举枪、蓄力
 		// Joker 同步转枪：他的转枪（aim_in）约 0.12s 接住，对到撒旦耶尔接住枪的那一刻
 		Fx.After(front, puppet != null ? CatchAt - 0.12f : AimAt, () => s.OnJokerAim?.Invoke());

@@ -198,7 +198,7 @@ void fragment() {
 
 	private static Shader? _halo, _clouds;
 
-	/// <summary>原版头顶的光环（模型 m_ring：一圈细环上挂 12 片红色尖刺翼片，model_ref/halo_cel.png）：细环 + 往外的红色尖刺，硬边 P5 配色，慢慢转。</summary>
+	/// <summary>原版头顶的光环（模型 m_ring：一圈细环上挂 12 片尖刺翼片，model_ref/halo_cel.png）：细环 + 往外的尖刺，配色照战斗镜头（蓝白发光，ref_original_satanael.png 右上角），慢慢转。</summary>
 	private static Shader HaloShader => _halo ??= new Shader { Code = @"
 shader_type canvas_item;
 render_mode blend_mix;
@@ -213,12 +213,15 @@ void fragment() {
 	float seg = fract(a / 6.28318 * k) - 0.5;                 // 每片尖刺的局部角度
 	float t = (r - 0.56) / 0.4;                                // 0 = 根部，1 = 尖
 	float blade = step(0.0, t) * step(t, 1.0) * step(abs(seg), 0.42 * (1.0 - t) * (0.6 + 0.4 * sin(t * 9.0 + 1.0)));
-	vec3 red = vec3(0.85, 0.05, 0.1), dark = vec3(0.25, 0.0, 0.04), hot = vec3(1.0, 0.55, 0.5);
-	vec3 col = mix(red, dark, smoothstep(0.0, 0.25, abs(seg))) + hot * exp(-t * 6.0) * 0.4;
+	// 用户 2026-11-09：原版战斗镜头里光环不是红的（模型贴图是红，但游戏里打着蓝光）——细的暗环 + 一圈蓝白发光的尖刺：刺身深藏青、两侧一道亮青边、根部发白
+	float w = max(0.42 * (1.0 - clamp(t, 0.0, 1.0)) * (0.6 + 0.4 * sin(t * 9.0 + 1.0)), 0.002);
+	float rim = smoothstep(w * 0.35, w * 0.85, abs(seg));
+	vec3 navy = vec3(0.06, 0.1, 0.3), cyan = vec3(0.45, 0.85, 1.0), hot = vec3(0.85, 0.95, 1.0);
+	vec3 col = mix(navy, cyan, rim) + hot * exp(-max(t, 0.0) * 5.0) * 0.5;   // t 在圈里是负的：夹住，免得 exp 在圈内算出极大值
 	float halo = exp(-abs(r - 0.6) * 9.0) * 0.25;
-	vec3 c = ring > 0.5 ? vec3(0.12, 0.1, 0.12) : col;
+	vec3 c = ring > 0.5 ? vec3(0.06, 0.07, 0.14) : col;
 	float aa = max(ring, blade);
-	COLOR = vec4(c * glow + vec3(1.0, 0.15, 0.2) * halo * glow, max(aa, halo * 0.6) * alpha);
+	COLOR = vec4(c * glow + vec3(0.3, 0.6, 1.0) * halo * glow, max(aa, halo * 0.6) * alpha);
 }" };
 
 	/// <summary>远处的云海：盖在人格面具的大腿以下（他从云里升起来），顶线是翻滚的云头，越往下越实；冷蓝、顶上一道天光。cloud_y 是屏幕上的顶线。</summary>

@@ -58,7 +58,7 @@ public static class Sfx
 		SinfulFlyby = "sinful_flyby",     // 子弹从远处朝镜头飞过来的多普勒呼啸，最响在 0.35s
 		SinfulPierce = "sinful_pierce",   // 贯穿一个敌人（用户 2026-11-09：普通受击声太平淡，配不上这一枪）：脆裂 + 撕开装甲 + 饱和闷击 + 超低频 + 穿出去的撕裂，tools/p5/sfx/synth_sinful_pierce.py
 		SinfulPierceLast = "sinful_pierce_last", // 贯穿最后一个：更重、超低频更长、带碎片和滚动的低频尾
-		SinfulTwirl = "sinful_twirl",     // 撒旦耶尔转枪（用户 2026-11-09：转枪没声音看不出来）：每转 90° 一下低沉的破风声，跟着转速由快到慢 + 渐停的嗡鸣和金属微颤，tools/p5/sfx/synth_sinful_twirl.py
+		SinfulTwirl = "sinful_twirl",     // 撒旦耶尔转枪（用户 2026-11-09：转枪没声音看不出来）：每转 90° 一下破风声，跟着转速由快到慢；只有风声，没有嗡鸣和金属声（第一版太机械），tools/p5/sfx/synth_sinful_twirl.py
 		SinfulTwirlSmall = "sinful_twirl_small", // Joker 自己转枪：短、轻、亮的破风声
 		SinfulFire = "sinful_fire",      // 开枪（用户：不要普通手枪声）：倒吸 → 爆裂 → 超低频重击 → 失真冲击 → 金属余振 → 长尾和回声
 		GunHit = "gun_hit",             // 枪命中（演示混音：damage_enemy 升调 1.2、压低、偏右）
