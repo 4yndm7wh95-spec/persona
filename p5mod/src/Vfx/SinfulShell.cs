@@ -436,7 +436,9 @@ void fragment() {
 				if (GodotObject.IsInstanceValid(a)) a.Modulate = c;
 			}
 		};
-		Fx.Animate(root, 0, total, t =>
+		// 时停中（stopping）：开枪的闪光、枪口光压到很低（定格那一帧不要一大团白光），放开后再炸
+		bool stopping = false;
+		Action<float> step = t =>
 		{
 			float time = t * total;
 			float rv = Mathf.Clamp((time - RevealAt) / RevealTime, 0f, 1f);
@@ -447,6 +449,11 @@ void fragment() {
 			float flash = time >= FireAt ? Mathf.Exp(-(time - FireAt) / 0.05f) : 0f;
 			// 不蓄力：接住枪时枪口一闪，开枪时一闪
 			float charge = time < CatchAt ? 0f : time < FireAt ? 0.9f * Mathf.Exp(-(time - CatchAt) / 0.08f) : 1.7f * Mathf.Exp(-(time - FireAt) / 0.12f);
+			if (stopping)
+			{
+				flash *= 0.12f;
+				charge = Mathf.Min(charge, 0.35f);
+			}
 			float thunder = 0f;
 			if (puppet != null)
 			{
@@ -479,7 +486,8 @@ void fragment() {
 			{
 				if (GodotObject.IsInstanceValid(a)) a.Modulate = c * tint;
 			}
-		});
+		};
+		Fx.Animate(root, 0, total, step);
 		Fx.FreeAfter(root, total + 0.1);
 		// 开场：Joker 面具上的蓝焰一炸（烧穿从这里开始）
 		Glow.Flash(front, s.JokerHead, new Color(0.4f, 0.8f, 1f), 260f * unit, 0.3f);
@@ -537,11 +545,15 @@ void fragment() {
 		}
 		Fx.After(front, FireAt, () =>
 		{
-			TimeStop(front, muzzle, dir, stopHits, screen, unit);           // 用户 2026-11-09：开枪那一帧时停（照结城理 mod 君王之剑）
-			Fx.Shake(4);
-			Glow.Flash(front, muzzle, new Color(0.85f, 0.95f, 1f), 600f * unit, 0.2f);
-			Glow.Ripple(front, muzzle, 1100f * unit, 0.7f, 0.05f);
-			Sfx.Play(Sfx.SubBoom, 0.8f);
+			// 用户 2026-11-09：开枪那一帧时停。定格时枪口不留大光球（之前冻住的闪光 / 波纹就是那团光污染），冲击都放到解除那一下
+			stopping = true;
+			step(Mathf.Min(FireAt / total, 1f));
+			TimeStop(front, muzzle, dir, stopHits, screen, unit, () =>
+			{
+				stopping = false;
+				Fx.Shake(5);
+				Glow.Flash(front, muzzle, new Color(0.85f, 0.95f, 1f), 260f * unit, 0.15f);
+			});
 			Rings(front, muzzle, dir, unit * 0.45f);                       // 远处的枪口：冲击环小
 			Bullet(front, muzzle, dir, screen, unit);
 			Glow.Sparks(front, muzzle, 50, 600f, 1800f, 0.4f, new[] { new Color(0.95f, 0.98f, 1f), new Color(0.35f, 0.75f, 1f), new Color(0.6f, 0.3f, 1f) }, 0f,
@@ -566,27 +578,11 @@ void fragment() {
 
 	// ───────────────────────── 时停 ─────────────────────────
 
-	private static Shader? _stopGrade;
+	/// <summary>时停总时长（真实时间，秒）：定格 → 弹道刻印 → 一枪贯穿 → 解除。</summary>
+	public const float StopTime = 0.62f;
 
-	/// <summary>时停的画面：读屏幕，压成 P5 红 / 黑 / 白三色（亮部白、中间调红带网点、暗部黑），边缘往里压暗。</summary>
-	private static Shader StopGrade => _stopGrade ??= new Shader { Code = @"
-shader_type canvas_item;
-uniform sampler2D screen_tex : hint_screen_texture, filter_linear_mipmap;
-uniform float amount = 0.0;
-uniform float dot_px = 6.0;
-void fragment() {
-	vec3 src = textureLod(screen_tex, SCREEN_UV, 0.0).rgb;
-	float l = dot(src, vec3(0.3, 0.59, 0.11));
-	vec2 r = mat2(vec2(0.7071, -0.7071), vec2(0.7071, 0.7071)) * FRAGCOORD.xy / dot_px;
-	float dots = step(length(fract(r) - 0.5), 0.33);
-	vec3 col = l > 0.6 ? vec3(0.97, 0.95, 0.93) : l > 0.3 ? mix(vec3(0.78, 0.02, 0.08), vec3(0.35, 0.0, 0.04), dots) : l > 0.16 ? mix(vec3(0.03, 0.02, 0.03), vec3(0.45, 0.0, 0.05), dots * 0.6) : vec3(0.03, 0.02, 0.03);
-	float vig = smoothstep(1.25, 0.45, length((SCREEN_UV - 0.5) * vec2(1.6, 1.0)));
-	col *= mix(0.55, 1.0, vig);
-	COLOR = vec4(mix(src, col, amount), 1.0);
-}" };
-
-	/// <summary>时停总时长（真实时间，秒）。</summary>
-	public const float StopTime = 0.85f;
+	/// <summary>刻印阶段结束、贯穿那一笔落下的时刻（真实时间，从定格算起）。</summary>
+	private const float ThrustAt = 0.5f, ThrustTime = 0.07f;
 
 	private static bool _frozen;
 
@@ -613,77 +609,136 @@ void fragment() {
 		tw.TweenMethod(Callable.From<float>(t => { if (GodotObject.IsInstanceValid(owner)) step(t); }), 0f, 1f, sec);
 	}
 
+	/// <summary>折线展开成多边形；taper 时两端收尖（毛笔笔锋）。</summary>
+	private static Vector2[] StrokePts(Vector2[] points, float width, bool taper)
+	{
+		int n = points.Length;
+		var poly = new Vector2[n * 2];
+		for (int i = 0; i < n; i++)
+		{
+			Vector2 d = (points[Math.Min(i + 1, n - 1)] - points[Math.Max(i - 1, 0)]).Normalized();
+			float w = taper && n > 1 ? width * Mathf.Max(Mathf.Sin(Mathf.Pi * i / (n - 1)), 0.12f) : width;
+			Vector2 nrm = new Vector2(-d.Y, d.X) * (w * 0.5f);
+			poly[i] = points[i] + nrm;
+			poly[n * 2 - 1 - i] = points[i] - nrm;
+		}
+		return poly;
+	}
+
 	/// <summary>
-	/// 时停（用户 2026-11-09，照结城理 mod 君王之剑：伤害结算前冻住时间，特效在真实时间里演完再放开）：
-	/// 开枪那一帧世界停住（子弹刚出枪口、枪口火焰定格）→ 画面压成 P5 红黑白 → 一道细亮的弹道线从枪口一节一节穿过每个敌人，
-	/// 每穿过一个，那里亮起一个红色准星 → 「吸」一下 → 放开：子弹一口气飞完、依次贯穿（伤害在放开之后才结算）。
+	/// 时停（用户 2026-11-09）。逻辑照君王之剑的结构（刻满 → 定住 → 一刀打开），但内容是大罪穿甲弹自己的：
+	/// ① 扣扳机的一瞬硬停：一帧闪白，画面蒙上米白高调色层（半透明，不读屏幕——游戏里读屏幕会变成一整块不透明），世界定格，子弹刚出膛；
+	/// ② 弹道刻印：子弹未来要走的路被一圈圈墨黑的膛线环沿弹道「印」出去（越往前越大——子弹朝我们飞来，越来越快），
+	///    几道细墨线顺着弹道划过；印到哪个敌人，那里就炸开一团墨黑的弹孔裂痕；
+	/// ③ 一枪贯穿：一笔又粗又尖的墨黑刺击沿整条弹道捅穿（近大远小），笔锋带一道白刃；
+	/// ④ 解除：蓝白闪，米白层撤掉，刚才所有墨痕瞬间变成发光的青白光痕后散去；时间恢复，子弹一口气飞完、依次贯穿结算。
 	/// </summary>
-	private static void TimeStop(Control layer, Vector2 muzzle, Vector2 dir, List<Vector2> hits, Vector2 screen, float unit)
+	private static void TimeStop(Control layer, Vector2 muzzle, Vector2 dir, List<Vector2> hits, Vector2 screen, float unit, Action onRelease)
 	{
 		Freeze(true);
 		Node2D root = Fx.ScreenRoot(layer, "P5SinfulTimeStop");
-		ColorRect grade = new() { Size = screen, Material = new ShaderMaterial { Shader = StopGrade }, MouseFilter = Control.MouseFilterEnum.Ignore };
-		((ShaderMaterial)grade.Material).SetShaderParameter("dot_px", 6f * unit);
+		Color paper = new(0.97f, 0.94f, 0.88f), ink = new(0.05f, 0.04f, 0.05f, 0.94f);
+		ColorRect grade = new() { Size = screen, Color = new Color(paper, 0.6f), MouseFilter = Control.MouseFilterEnum.Ignore };
 		root.AddChild(grade);
-		Node2D draw = new();
-		root.AddChild(draw);
+		Node2D inkLayer = new(), glowLayer = new();
+		root.AddChild(inkLayer);
+		root.AddChild(glowLayer);
+		// 解除时要变成光痕的形状：给一个线宽倍数，返回多边形
+		var shapes = new List<Func<float, Vector2[]>>();
 		Func<Vector2, Vector2> sp = w => Fx.ScreenPoint(layer, w);
 		Vector2 a = sp(muzzle);
-		float far = hits.Count > 0 ? (hits[^1] - muzzle).Dot(dir) + 260f * unit : 1400f * unit;
-		Vector2 b = sp(muzzle + dir * far);
-		// 弹道线：外面一层红、中间白芯
-		// 红白画面上要看得清：白色外描 + 黑芯（P5 的描边感）
-		Line2D glow = new() { Width = 16f * unit, DefaultColor = new Color(1f, 0.97f, 0.95f), BeginCapMode = Line2D.LineCapMode.Round };
-		Line2D core = new() { Width = 6f * unit, DefaultColor = new Color(0.03f, 0.02f, 0.03f) };
-		draw.AddChild(glow);
-		draw.AddChild(core);
-		AnimRT(grade, 0.08, t => ((ShaderMaterial)grade.Material).SetShaderParameter("amount", Fx.OutCubic(t)));
-		Sfx.Play(Sfx.Crack, 0.6f);
-		const float lineAt = 0.1f, lineTime = 0.45f;
-		AfterRT(root, lineAt, () => AnimRT(draw, lineTime, t =>
+		Vector2 sdir = (sp(muzzle + dir * 100f) - a).Normalized(), nrm = sdir.Orthogonal();
+		float far = (screen * 1.25f).Length();
+		float Along(Vector2 w) => (sp(w) - a).Dot(sdir);
+		float lastHit = hits.Count > 0 ? hits.Max(Along) : screen.X * 0.6f;
+		float span = lastHit + 200f * unit;
+
+		// ① 硬停：一帧闪白
+		ColorRect white = new() { Size = screen, Color = new Color(1f, 1f, 1f, 0.95f), MouseFilter = Control.MouseFilterEnum.Ignore };
+		root.AddChild(white);
+		AnimRT(white, 0.1, t => white.Color = new Color(1f, 1f, 1f, 0.95f * (1f - Fx.OutCubic(t))));
+		Sfx.Play(Sfx.SinfulStop, 1.1f);                                     // 整段时停一条音轨（节拍和下面对齐）
+
+		// ② 膛线环：沿弹道印出去，越往前越大、越来越密
+		const int rings = 8;
+		const float stampFrom = 0.08f, stampTo = 0.44f;
+		float StampTime(float dist) => stampFrom + (stampTo - stampFrom) * Mathf.Pow(Mathf.Clamp(dist / span, 0f, 1f), 0.65f);
+		for (int i = 0; i < rings; i++)
 		{
-			// 一节一节往前推（不是匀速）：每段 0～1 里先快后停
-			float seg = 4f, k = Mathf.Floor(t * seg) / seg + Fx.OutCubic(t * seg % 1f) / seg;
-			Vector2 end = a.Lerp(b, Mathf.Min(k, 1f));
-			glow.Points = new[] { a, end };
-			core.Points = new[] { a, end };
-		}));
-		// 每个敌人：弹道线穿过时亮起红色准星
-		for (int i = 0; i < hits.Count; i++)
-		{
-			Vector2 h = sp(hits[i]);
-			float u = Mathf.Clamp((hits[i] - muzzle).Dot(dir) / far, 0f, 1f);
-			AfterRT(root, lineAt + lineTime * u, () =>
+			float u = (i + 0.6f) / rings, dist = span * u;
+			Vector2 c = a + sdir * dist;
+			float r = Mathf.Lerp(45f, 190f, u) * unit, squash = 0.3f, w = Mathf.Lerp(8f, 22f, u) * unit;
+			float start = Fx.Rand(0f, Mathf.Tau), sweep = Fx.Rand(4.4f, 5.4f);
+			Vector2[] Arc(float k)
 			{
-				Node2D mark = new() { Position = h };
-				draw.AddChild(mark);
-				float r = 46f * unit;
-				// 准星：白色粗外圈 + 黑色内圈 + 四根黑白十字刺（红白黑画面上都看得清）
-				mark.AddChild(new Line2D { Points = Fx.Circle(r, 36), Closed = true, Width = 11f * unit, DefaultColor = new Color(1f, 0.97f, 0.95f) });
-				mark.AddChild(new Line2D { Points = Fx.Circle(r, 36), Closed = true, Width = 5f * unit, DefaultColor = new Color(0.03f, 0.02f, 0.03f) });
-				for (int q = 0; q < 4; q++)
+				int m = 22;
+				var pts = new Vector2[m];
+				for (int q = 0; q < m; q++)
 				{
-					Vector2 d = Vector2.Right.Rotated(q * Mathf.Pi / 2f + Mathf.Pi / 4f);
-					mark.AddChild(new Line2D { Points = new[] { d * r * 0.5f, d * r * 1.6f }, Width = 10f * unit, DefaultColor = new Color(1f, 0.97f, 0.95f) });
-					mark.AddChild(new Line2D { Points = new[] { d * r * 0.55f, d * r * 1.55f }, Width = 4f * unit, DefaultColor = new Color(0.03f, 0.02f, 0.03f) });
+					float ang = start + sweep * k * q / (m - 1);
+					pts[q] = c + sdir * (Mathf.Cos(ang) * r * squash) + nrm * (Mathf.Sin(ang) * r);
 				}
-				Sfx.Play(Sfx.Cursor, 0.7f);
-				AnimRT(mark, 0.18, t => { mark.Scale = Vector2.One * Mathf.Lerp(2.2f, 1f, Fx.OutCubic(t)); mark.Rotation = (1f - t) * 1.2f; });
+				return pts;
+			}
+			shapes.Add(s => StrokePts(Arc(1f), w * s, true));
+			AfterRT(root, StampTime(dist), () =>
+			{
+				Polygon2D poly = Fx.Poly(inkLayer, new Vector2[3], ink);
+				AnimRT(poly, 0.06, t => poly.Polygon = StrokePts(Arc(Mathf.Max(Fx.OutCubic(t), 0.08f)), w, true));
 			});
 		}
-		// 放开前「吸」一下：弹道线收细、画面往里一缩
-		AfterRT(root, StopTime - 0.12f, () => AnimRT(draw, 0.12, t => { core.Width = Mathf.Lerp(6f, 2f, t) * unit; glow.Width = Mathf.Lerp(16f, 26f, t) * unit; }));
+		// 顺着弹道划过的细墨线（略偏开弹道，长短不一）
+		for (int i = 0; i < 4; i++)
+		{
+			float off = (i % 2 == 0 ? 1f : -1f) * Fx.Rand(30f, 110f) * unit, w = Fx.Rand(2.5f, 6f) * unit;
+			Vector2 p0 = a + sdir * Fx.Rand(-80f, 120f) * unit + nrm * off * 0.3f, p1 = a + sdir * far + nrm * off * 2.2f;
+			shapes.Add(s => StrokePts(new[] { p0, p1 }, w * s, true));
+			AfterRT(root, 0.12f + 0.08f * i, () =>
+			{
+				Polygon2D poly = Fx.Poly(inkLayer, new Vector2[3], ink);
+				AnimRT(poly, 0.07, t => poly.Polygon = StrokePts(new[] { p0, p0.Lerp(p1, Mathf.Max(Fx.OutCubic(t), 0.02f)) }, w, true));
+			});
+		}
+		// ③ 一枪贯穿：一笔墨黑刺击沿整条弹道捅穿（枪口细、往前越来越粗——朝我们飞来），笔锋一道白刃
+		Vector2 tipEnd = a + sdir * far;
+		Vector2[] Wedge(float k, float s)
+		{
+			Vector2 tip = a.Lerp(tipEnd, k);
+			float wEnd = Mathf.Lerp(10f, 120f, k) * unit * s, wBase = 7f * unit * s;
+			Vector2 neck = a.Lerp(tip, 0.9f);
+			return new[] { a + nrm * wBase, neck + nrm * wEnd * 0.5f, tip, neck - nrm * wEnd * 0.5f, a - nrm * wBase };
+		}
+		shapes.Add(s => Wedge(1f, s * 1.1f));
+		AfterRT(root, ThrustAt, () =>
+		{
+			Polygon2D thrust = Fx.Poly(inkLayer, new Vector2[3], new Color(0.03f, 0.02f, 0.03f, 0.97f));
+			Polygon2D edge = Fx.Poly(inkLayer, new Vector2[3], new Color(1f, 1f, 1f, 0.9f));
+			AnimRT(thrust, ThrustTime, t =>
+			{
+				float k = Mathf.Max(Fx.OutCubic(t), 0.02f);
+				thrust.Polygon = Wedge(k, 1f);
+				Vector2 tip = a.Lerp(tipEnd, k), back = a.Lerp(tip, 0.75f);
+				edge.Polygon = StrokePts(new[] { back + nrm * 6f * unit, tip }, 4f * unit, true);
+			});
+		});
+
+		// ④ 解除
 		AfterRT(root, StopTime, () =>
 		{
 			Freeze(false);
-			Glow.Flash(layer, muzzle, new Color(0.9f, 0.95f, 1f), 700f * unit, 0.2f);
-			Fx.Shake(5);
-			AnimRT(root, 0.18, t =>
+			grade.Visible = false;
+			inkLayer.Visible = false;
+			white.Color = new Color(0.85f, 0.93f, 1f, 0.9f);
+			white.MoveToFront();
+			AnimRT(white, 0.16, t => white.Color = new Color(0.85f, 0.93f, 1f, 0.9f * (1f - Fx.OutCubic(t))));
+			foreach (Func<float, Vector2[]> shape in shapes)
 			{
-				((ShaderMaterial)grade.Material).SetShaderParameter("amount", 1f - t);
-				draw.Modulate = new Color(1f, 1f, 1f, 1f - t);
-			});
-			AfterRT(root, 0.2, () => root.QueueFree());
+				Fx.Poly(glowLayer, shape(2.4f), new Color(0.3f, 0.7f, 1f, 0.22f), additive: true);
+				Fx.Poly(glowLayer, shape(0.55f), new Color(0.9f, 0.97f, 1f, 0.95f), additive: true);
+			}
+			AnimRT(glowLayer, 0.55, t => glowLayer.Modulate = new Color(1f, 1f, 1f, 1f - Fx.InCubic(Mathf.Clamp((t - 0.25f) / 0.75f, 0f, 1f))));
+			onRelease();
+			AfterRT(root, 0.6, () => root.QueueFree());
 		});
 	}
 
@@ -754,17 +809,17 @@ void fragment() {
 	/// <summary>贯穿一个敌人：沿弹道方向喷出的火花 + 一圈冲击环 + 白闪 + 命中确认；最后一个敌人加 P5 红黑白冲击帧和横扫全场的冲击波。</summary>
 	private static void Pierce(Control layer, Vector2 at, Vector2 dir, float unit, bool last)
 	{
-		Glow.Flash(layer, at, new Color(0.8f, 0.92f, 1f), (last ? 700f : 460f) * unit, 0.22f);
-		// 贯穿处炸亮一盏灯，照亮这个敌人和旁边的
-		PointLight2D pl = Light(layer, at, new Color(0.7f, 0.9f, 1f), (last ? 900f : 650f) * unit);
-		Fx.Animate(pl, 0, 0.4, k => pl.Energy = (last ? 4.5f : 3.2f) * (1f - k) * (1f - k));
-		Fx.FreeAfter(pl, 0.45);
-		Glow.Sparks(layer, at, last ? 70 : 40, 500f, 1600f, 0.45f, new[] { new Color(0.95f, 0.98f, 1f), new Color(0.35f, 0.75f, 1f), new Color(0.65f, 0.3f, 1f) },
-			200f, 0.05f, 0.15f, dir, 35f);
-		Glow.Sparks(layer, at, 20, 200f, 600f, 0.35f, new[] { new Color(0.9f, 0.95f, 1f), new Color(0.3f, 0.6f, 1f) }, 300f, 0.04f, 0.1f, -dir, 60f);
-		Rings(layer, at, dir, unit * (last ? 1.4f : 0.9f));
-		Glow.Ripple(layer, at, (last ? 900f : 520f) * unit, 0.5f, last ? 0.05f : 0.03f);
-		Sfx.Play(Sfx.Hit, 0.9f);
-		Impact.Confirm(layer, null, at, dir, Weight.Heavy);
+		// 用户 2026-11-09：是一发巨大的穿甲弹把所有人一起打穿，不是每人一发——每个敌人身上不做单独的圈、准星、冲击帧，
+		// 只有子弹穿过时顺着弹道喷出去的火花和一下亮光；最后一个之后整条弹道再统一一震
+		PointLight2D pl = Light(layer, at, new Color(0.7f, 0.9f, 1f), 600f * unit);
+		Fx.Animate(pl, 0, 0.35, k => pl.Energy = 3f * (1f - k) * (1f - k));
+		Fx.FreeAfter(pl, 0.4);
+		Glow.Sparks(layer, at, 36, 600f, 1800f, 0.4f, new[] { new Color(0.95f, 0.98f, 1f), new Color(0.35f, 0.75f, 1f), new Color(0.65f, 0.3f, 1f) },
+			200f, 0.05f, 0.14f, dir, 22f);
+		Sfx.Play(Sfx.Hit, last ? 0.9f : 0.6f);
+		if (last)
+		{
+			Fx.Shake(4);
+		}
 	}
 }

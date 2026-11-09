@@ -97,3 +97,34 @@ y += tail * 0.7
 for d, g in [(0.23, 0.35), (0.47, 0.2), (0.78, 0.1)]:
     n = int(d * SR); e = np.zeros_like(y); e[n:] = lp(y[:-n], 2500) * g; y += e
 save("sinful_fire", reverb(y, 1.8, 0.25))
+
+# ── time stop (user 2026-11-09: the original has no such sound, synthesize it). One clip played at the freeze, timed to SinfulShell.TimeStop:
+#    0.00 freeze: glassy metallic "ding" + a tape-stop dive (the world's sound winds down) and a thin high ring that hangs
+#    0.08-0.44: a clock-like metallic tick per rifling ring, getting closer together (same timing formula as the code)
+#    0.44-0.57: reverse-swell inhale  ·  0.50: the ink thrust (fast air rip)  ·  0.62: release — crack + sub boom
+x = t(2.0)
+y = np.zeros_like(x)
+def at(sec): return x >= sec
+ding = sum(a * np.sin(2 * np.pi * f * x + p) for f, a, p in [(1760, 1.0, 0), (2637, 0.6, 1.1), (3951, 0.35, 2.3), (5274, 0.2, 0.4)]) * env(x, 0.001, 0.35)
+ding += hp(rng.standard_normal(len(x)), 3000) * env(x, 0.0005, 0.012) * 1.5
+dive_f = 900 * np.exp(-x / 0.12) + 60
+dive = np.sin(2 * np.pi * np.cumsum(dive_f) / SR) * env(x, 0.002, 0.2) * 0.8
+ring = np.sin(2 * np.pi * 7040 * x) * 0.08 * (x < 0.62) * np.minimum(1, x / 0.05)
+y += ding * 0.6 + dive + ring
+for i in range(8):
+    u = (i + 0.6) / 8
+    s0 = 0.08 + 0.36 * u ** 0.65
+    m = at(s0); tt = x[m] - s0
+    tick = (np.sin(2 * np.pi * 3200 * tt) + 0.5 * np.sin(2 * np.pi * 5100 * tt)) * env(tt, 0.0003, 0.018) + bp(rng.standard_normal(m.sum()), 2000, 8000) * env(tt, 0.0002, 0.006)
+    y[m] += tick * (0.45 + 0.4 * u)
+m = (x >= 0.44) & (x < 0.62); tt = x[m] - 0.44
+y[m] += hp(rng.standard_normal(m.sum()), 1500) * (tt / 0.18) ** 3 * 0.7
+m = at(0.5); tt = x[m] - 0.5
+rip_f = 800 + 9000 * np.minimum(1, tt / 0.07)
+rip = bp(rng.standard_normal(m.sum()), 600, 12000) * env(tt, 0.004, 0.05)
+y[m] += rip * 1.1
+m = at(0.62); tt = x[m] - 0.62
+y[m] += hp(rng.standard_normal(m.sum()), 1200) * env(tt, 0.0006, 0.03) * 1.6
+y[m] += np.sin(2 * np.pi * (48 + 60 * np.exp(-tt / 0.05)) * tt) * env(tt, 0.002, 0.45) * 2.0
+y[m] += lp(rng.standard_normal(m.sum()), 300, 4) * env(tt, 0.01, 0.35) * 2.5
+save("sinful_stop", reverb(y, 1.0, 0.25))

@@ -54,6 +54,7 @@ public static class Sfx
 		SinfulThunder = "sinful_thunder", // 大罪穿甲弹：撒旦耶尔登场 / 退场的闪雷（合成：尖锐的爆裂 + 滚动的低频雷鸣，tools/p5/sfx/synth_sinful.py）
 		SinfulCharge = "sinful_charge",   // 蓄力：越来越高的啸叫 + 越来越重的低频嗡鸣
 		SinfulCatch = "sinful_catch",     // 转枪接住：沉重的金属咔嗒
+		SinfulStop = "sinful_stop",       // 时停（合成，原版没有）：定格叮 + 掉速 → 一圈一声滴答（越来越密）→ 吸气 + 刺击 → 解除重击，按 SinfulShell.TimeStop 的节拍
 		SinfulFire = "sinful_fire",       // 开枪（用户：不要普通手枪声）：倒吸 → 爆裂 → 超低频重击 → 失真冲击 → 金属余振 → 长尾和回声
 		GunHit = "gun_hit",             // 枪命中（演示混音：damage_enemy 升调 1.2、压低、偏右）
 		GunHitFinal = "gun_hit_final",  // 收尾那一发的命中：更响的命中 + sub_boom + 47Hz 低频

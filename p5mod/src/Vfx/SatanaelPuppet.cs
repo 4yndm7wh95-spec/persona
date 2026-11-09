@@ -39,7 +39,7 @@ public sealed class SatanaelPuppet
 	private static readonly Vector2 MuzzlePx = new(1844.2f, 1009.3f), GunGuard = new(1267.1f, 793.4f), SpinFinger = new(1384.7f, 841.7f);
 	/// <summary>光环中心（头的局部像素，头顶后上方）、云海顶线（大腿中部，图层像素 y）。</summary>
 	private static readonly Vector2 HaloAt = new(918f, 205f);
-	private const float CloudTopPx = 1010f;   // 大腿中部（图层像素）
+	private const float CloudTopPx = 930f;    // 腰下（图层像素）：身体图层在 1259 处截断，云要盖过断口一大段（用户 2026-11-09：腿像被截断）
 
 	private static Shader? _shader, _rift;
 
@@ -182,12 +182,22 @@ float noise(vec2 p) {
 float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p = p * 2.03 + vec2(1.7, 9.2); a *= 0.5; } return v; }
 void fragment() {
 	vec2 px = UV * sres;
-	float top = cloud_y + (fbm(vec2(px.x * 0.004 + clock * 0.02, clock * 0.05)) - 0.5) * 140.0 + 40.0 * sin(px.x * 0.006 + clock * 0.3);
-	float d = px.y - top;
-	float dens = smoothstep(-30.0, 90.0, d) * (0.75 + 0.25 * fbm(px * 0.006 + vec2(clock * 0.03, 0.0)));
-	float lit = exp(-max(d, 0.0) / 60.0);
-	vec3 col = mix(vec3(0.05, 0.09, 0.18), vec3(0.32, 0.52, 0.72), lit * 0.8);
-	COLOR = vec4(col, clamp(dens, 0.0, 1.0) * alpha);
+	// 两层翻滚的云头（远层稍高、稍淡），顶上一圈冷光；往下越来越实；顶线上方一层薄雾，人物下半身是慢慢没进云里
+	float n1 = fbm(vec2(px.x * 0.0035 + clock * 0.02, clock * 0.04));
+	float n2 = fbm(vec2(px.x * 0.007 - clock * 0.03, 3.1 + clock * 0.05));
+	float top = cloud_y + (n1 - 0.5) * 150.0 + 35.0 * sin(px.x * 0.005 + clock * 0.3);
+	float top2 = top - 70.0 + (n2 - 0.5) * 90.0;
+	float d = px.y - top, d2 = px.y - top2;
+	float puff = 0.7 + 0.3 * fbm(px * 0.005 + vec2(clock * 0.03, 0.0));
+	float near = smoothstep(-40.0, 110.0, d) * mix(puff, 1.0, smoothstep(60.0, 160.0, d));   // 云头有起伏，往下是实心的（不透出身体的断口）
+	float back = smoothstep(-30.0, 80.0, d2) * 0.55 * puff;
+	float haze = smoothstep(-260.0, 0.0, d) * 0.28;
+	float dens = clamp(max(max(near, back), haze), 0.0, 1.0);
+	float rim = exp(-abs(d) / 45.0) * near + exp(-abs(d2) / 40.0) * back * 0.7;
+	vec3 body = mix(vec3(0.07, 0.11, 0.21), vec3(0.04, 0.06, 0.13), smoothstep(0.0, 400.0, d));
+	vec3 col = body + vec3(0.42, 0.6, 0.85) * rim * 1.1 + vec3(0.1, 0.16, 0.26) * (puff - 0.7) * near;
+	col = mix(col, vec3(0.16, 0.24, 0.40), haze * (1.0 - near));
+	COLOR = vec4(col, dens * alpha);
 }" };
 
 	private readonly Dictionary<string, Sprite2D> _sprites = new();
