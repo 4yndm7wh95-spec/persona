@@ -25,7 +25,9 @@
 6. 预览视频：`tools/p5/fxpreview/out/sinful_shell.mp4`（`render.sh sinful_shell 8` + `mix.py`）。
 
 ### 没做完 / 待办
-**1. 翅膀：等 Codex 出图（最先处理）**
+**1. 翅膀：Codex 的翼根羽毛已经推上来了（`b233f7a1`，已合并进 A 分支），还没接进游戏、用户还没看**
+- 新文件：`layers_v10/wing_root_feathers.png`、`wing_root_feathers_front.png`、`check_wing_roots_v10.png`，`layers.json` 加了两层（z 顺序和父节点看 layers.json）。
+- 第一步：把 check 图给用户看，确认翼根羽毛的样子对不对；对了再按下面的步骤接进游戏。
 - 用户指出：原版**不是六片鸟类羽毛翅膀**。B 写的 `codex_p5_satanael_feather_wings.md` 已标作废（用户贴过一张按它生成的「六片全羽毛」图，是错的）。
 - 正确理解（对照 model_ref/turn_front_cel、turn_back_cel 和原版切入）：六片大翼本身是**硬的蝙蝠 / 镰刀翼**（翼骨 + 翼膜 + 金色骷髅，= 现在 layers_v10，结构对）；**羽毛只在翼根**——肩胛 / 背上一大簇层层叠叠、末端撕裂状的黑色羽毛，盖住每片翼的根部；原版镜头里显得全是蓝色羽毛，是因为近景拍的是翼根、蓝光把金色照成深蓝、翼骨边打了青色亮线。
 - 新任务单：`docs/codex/codex_p5_satanael_wing_roots.md`（只新画 `wing_root_feathers.png`，可能还有 `wing_root_feathers_front.png`；六片翼和身体不动；推到 A 分支）。参考 `art/p5/fx/v4/satanael/ref_wing_root_back.png`。
