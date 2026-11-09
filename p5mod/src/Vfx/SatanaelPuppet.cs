@@ -230,6 +230,9 @@ uniform float blast_x = 0.0;
 uniform float blast_t = -1.0;
 uniform float clock = 0.0;
 uniform float alpha = 1.0;
+// 场景圈（SinfulShell 的烧穿圈）：圈外不画云，场景收回时云跟着一起缩回 Joker 脚下（用户 2026-11-09）
+uniform vec2 mask_origin = vec2(0.0);
+uniform float mask_r = 1e6;
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
@@ -263,7 +266,8 @@ void fragment() {
 	rim += wave * 1.2 * exp(-abs(d) / 70.0) * near;   // 只亮浪头（云面那一圈），不要竖着一整条
 	vec3 col = body + vec3(0.42, 0.6, 0.85) * rim * 1.1 + vec3(0.1, 0.16, 0.26) * (puff - 0.7) * near;
 	col = mix(col, vec3(0.16, 0.24, 0.40), haze * (1.0 - near));
-	COLOR = vec4(col, dens * alpha);
+	float inside = 1.0 - smoothstep(mask_r - 70.0, mask_r - 30.0, length((px - mask_origin) * vec2(1.0, 1.25)));
+	COLOR = vec4(col, dens * alpha * inside);
 }" };
 
 	private readonly Dictionary<string, Sprite2D> _sprites = new();
@@ -285,6 +289,7 @@ void fragment() {
 	private ShaderMaterial? _swooshMat;
 	private Node2D? _swooshNode;
 	private GpuParticles2D? _embers;
+	private ShaderMaterial? _emberMask;
 	private float _lastG = -1f;
 	private float _embersHalf;
 	private Transform2D _root = Transform2D.Identity, _muzzleXf = Transform2D.Identity;
@@ -558,6 +563,19 @@ void fragment() {
 				_swooshMat.SetShaderParameter("span", Mathf.Clamp(Mathf.DegToRad(_spinSpeed * 0.07f), 0.3f, 3.6f));
 				_swooshMat.SetShaderParameter("alpha", Mathf.Clamp(_spinSpeed / 1500f, 0f, 1f));
 			}
+		}
+	}
+
+	/// <summary>场景圈（屏幕坐标的圆心、半径）：云海只画在圈里，烧线余烬在圈外也藏起来。</summary>
+	public void SceneMask(Vector2 origin, float radius)
+	{
+		_cloudMat.SetShaderParameter("mask_origin", origin);
+		_cloudMat.SetShaderParameter("mask_r", radius);
+		if (_embers != null)
+		{
+			_emberMask ??= SinfulShell.MaskMaterial(Fx.Screen(_parent), origin);
+			_embers.Material = _emberMask;
+			_emberMask.SetShaderParameter("reveal", radius);
 		}
 	}
 

@@ -627,11 +627,11 @@ public partial class Preview : Node2D
 		// 华丽收场 = 大罪穿甲弹（用户 2026-11-08）：场景 + 子弹预览，撒旦耶尔第 2 版立绘还没到，枪口先放在 Joker 身后上方
 		["sinful_shell"] = p =>
 		{
-			// 选中华丽收场：扶面具的架势（面具蓝焰）→ 打出：攥面具、蓝焰冲天、手顺着弧线放下直接转枪（cast_sinful_from_mask）
+			// 选中华丽收场：扶面具的架势（面具蓝焰）→ 打出：攥面具、手顺着弧线放下直接转枪（cast_sinful_from_mask）；面具不再冲出两道蓝焰（用户 2026-11-09）
 			p.Ready(0.0, Stance.Mask, "mask", "cast_sinful_from_mask", play: true);
 			p.At(1.6, () => SinfulShell.Play(p._back, p._front, new SinfulShell.Setup
 			{
-				JokerFeet = JokerFeet, JokerHead = Pose(1010f, 215f), JokerMask = Pose(1025f, 215f), JokerMaskHalf = (JokerFeet - Pose(1010f, 215f)).Length() * 0.24f, JokerMuzzle = Muzzle, PersonaMuzzle = new Vector2(720f, 380f), FloorY = 830f,
+				JokerFeet = JokerFeet, JokerHead = Pose(1010f, 215f), JokerMuzzle = Muzzle, PersonaMuzzle = new Vector2(720f, 380f), FloorY = 830f,
 				Enemies = new List<Vector2> { Enemy2, Enemy, Enemy3 },
 				OnJokerShoot = () => p._joker?.Play("shiv_from_aim"),
 				OnPierce = i => Popups.Damage(p._front, (ulong)(i + 1), new[] { Enemy2, Enemy, Enemy3 }[i], 50, true),
