@@ -1,0 +1,15 @@
+{
+  "tool": "built-in image_gen",
+  "cards": [
+    {
+      "name": "hammer_time",
+      "prompt": "Use case: precise-object-edit. IMAGE1 ORIGINAL card is STRICT POSITION/COMPOSITION master. IMAGE2 repo Makoto sword asset is SWORD DESIGN ONLY, ignore green background. Make local P3R replacements in image1, do not invent a new composition. Four ORIGINAL hands belong to THREE participants, do not stack them in a neat vertical column. TRACE original hand locations and overlaps: A upper-left hand around (30%,25%) with forearm running to upper-right edge; B second hand of SAME participant around (49%,53%) with forearm running to mid-right edge; C green-cuff participant hand around (38%,43%) entering left-middle and lying BEHIND B; D blue-sleeve participant hand around (52%,72%) entering bottom-left and lying BELOW B. Preserve these four grip footprints, wrist angles, hand orientations and the crossing/diagonal forearms EXACTLY, do not straighten arms or move hands onto one exposed long grip. Swap A/B to Jack Frost TWO small plump WHITE snow-mitten hands: short thumb nub and broad rounded mitten mass with at most TWO simple finger separations, no five long fingers, human knuckles/nails/tendons; short soft white forearms with blue pointed cuffs near canvas exits. Swap C to tiny Pixie purple-gloved hand, small delicate fairy size, same green-cuff original position, purple sleeve replaces green cuff. Swap D to Jack-o-Lantern small GREY cartoon mitten with deepviolet sleeve entering exact original bottomleft path; short rounded lobes no human fingernails. Relative footprints governed by image1, NOT giant realistic hands. Sword design MUST use image2: plain SILVER straight tapered blade with steelgrey bevel, simple narrow SILVER crossguard, BLACK leather wrap and plain ROUND silver pommel, NO gold ornament, bluegem, crown, ornate guard. Put this sword ON ORIGINAL IMAGE1 sword axis/position lower-right, same visible blade footprint beneath gripping cluster, pommel near original upper-left grip. Most grip is OCCLUDED by original interlocked hands, do NOT lengthen/expose grip to separate hands. Original CYAN magic along blade, original white impact ray and icy shards retained original positions. Preserve original magenta-purple background shapes/palette and exact original crop. Rich crisp HARD CELSHADING with small material details, no realistic muscular human arms, no faces/heads/bodies, no hammers/wooden tool shafts, no vise. Opaque1000x760 horizontal no text/cardframe/watermark. Priority original hand locations and original overlaps over clearer rearranged anatomy.",
+      "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-aa5437ef-bb59-47fe-b939-1087f16db552.png",
+      "references": [
+        "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/research/regent_assets/images/packed/card_portraits/regent/hammer_time.png",
+        "C:/Users/kkk/Documents/Codex/2026-10-12/claude-git-c-users-kkk-videos/work/persona-ref-upload/art/parts_src/sword.png"
+      ],
+      "status": "awaiting_user_review"
+    }
+  ]
+}
