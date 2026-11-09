@@ -48,16 +48,16 @@
       "file": "arm_upper.png",
       "z_index": 5,
       "pivot": [
-        2440,
-        1470
+        2730,
+        1400
       ]
     },
     {
       "file": "arm_fore_gun.png",
       "z_index": 6,
       "pivot": [
-        2543,
-        1780
+        2965,
+        1665
       ]
     },
     {
@@ -72,52 +72,52 @@
       "file": "gun.png",
       "z_index": 9,
       "pivot": [
-        3017,
-        1889
+        3712,
+        1954
       ]
     },
     {
       "file": "arm_fore_open.png",
       "z_index": 6,
       "pivot": [
-        2543,
-        1780
+        2965,
+        1665
       ]
     },
     {
       "file": "finger_tip.png",
       "z_index": 10,
       "pivot": [
-        3297,
-        2004
+        3712,
+        1954
       ]
     }
   ],
   "landmarks": {
     "gun_shoulder": [
-      2440,
-      1470
+      2730,
+      1400
     ],
     "gun_elbow": [
-      2543,
-      1780
+      2965,
+      1665
     ],
     "gun_wrist": [
-      2888,
-      1976
+      3270,
+      1870
     ],
     "muzzle": [
-      4391,
-      2403
+      4047,
+      2019
     ],
-    "barrel_dir": 22.4,
+    "barrel_dir": 23.4,
     "spin_finger": [
-      3297,
-      2004
+      3712,
+      1954
     ],
     "gun_guard": [
-      3017,
-      1889
+      3712,
+      1954
     ],
     "neck": [
       2300,
@@ -169,8 +169,8 @@
       "finger_tip"
     ],
     "gun_guard_to_spin_finger": [
-      280,
-      115
+      0,
+      0
     ]
   },
   "patches": {
@@ -253,12 +253,12 @@
       "sha256": "11fdd92614bc355ee3a50ae8cefb6d49a7044712e698c0429145a87b8a2f587e"
     }
   },
-  "status": "fix2_candidate",
+  "status": "arm2_candidate",
   "ready_for_runtime": false,
   "correction_passes": 2,
   "unresolved": [
-    "User/Claude visual review of arm anatomy, wing root and native tile seams is pending.",
-    "Game coordinate integration and runtime inspection were not part of this task."
+    "User/Claude visual review of shoulder occlusion, arm anatomy and fingertip twirl registration is pending.",
+    "No game launched or runtime code changed."
   ],
   "raw_patch_prompts": {
     "open": "Keep the exact forearm at its original coordinates and wrist orientation. Remove gun, head, horns and wings. Replace closed hand with one relaxed open anatomical left glove, index extended screen-right slightly upward, thumb relaxed, three other fingers curved. Preserve original dark feather gauntlet. Extend elbow leftward with round overlapping joint. Only forearm and open hand.",
@@ -269,36 +269,67 @@
     "near_root": "Only right-side black feather wing roots. Remove arm, hand, gun and body. Continue black feathers leftward underneath their occlusion, a broad rounded root joining existing long right wing edge. Preserve positions of existing wing edges and gold motifs."
   },
   "arm_redraw": {
+    "revision": "arm2",
     "native_patches": {
       "held": {
         "native_size": [
-          1484,
-          1060
+          1774,
+          887
         ],
-        "sha256": "bdcc8b69b18f7258f15d11d8416f7cfd4ed669de388518dba011dbd90e95e815",
-        "placement_rect": [
-          2200,
-          1200,
-          3600,
-          2200
+        "source_sha256": "b9b06d569046ce1a60ceb243711af8ed6f0fc643a8d20dd79a0f0c7db57600cf",
+        "placement_rect_before_rotation": [
+          2530,
+          1230,
+          4230,
+          2080
         ]
       },
       "open": {
         "native_size": [
-          1484,
-          1060
+          1774,
+          887
         ],
-        "sha256": "a9aa330c61b8494608affac1414f407f668d9c49298d7d1cdcd89170e9865c56",
+        "source_sha256": "3dd55123bbaa8bef329aa62b32a830775d6160d65e3231ae479268c1ed4e048d",
+        "placement_rect_before_rotation": [
+          2530,
+          1230,
+          4230,
+          2080
+        ]
+      },
+      "side": {
+        "native_size": [
+          1672,
+          941
+        ],
+        "source_sha256": "85e89bb3aa8a29d499af55704f3c9e337888942a1e73668701456fa0d238b705",
+        "standalone_size": [
+          1600,
+          900
+        ],
+        "trigger_hole_center_local": [
+          589.9953240501977,
+          489.51397627643115
+        ],
+        "twirl_canvas_width_before_rotation": 860
+      },
+      "body": {
+        "native_size": [
+          1254,
+          1254
+        ],
+        "source_sha256": "5d52824a40b5d0d9cdd4f075d12bd41126c5e8269e423065070606e0fa8c8e5c",
         "placement_rect": [
-          2200,
-          1200,
-          3600,
-          2200
+          2050,
+          1100,
+          3100,
+          2150
         ]
       }
     },
-    "whole_arm_registration_clockwise_degrees": 5,
-    "joint_overlap_local_px": 160,
+    "whole_arm_registration_clockwise_degrees": 8,
+    "shoulder_at_outer_pauldron": true,
+    "source_split_overlap_local_px": 180,
     "review": "candidate, no game launched"
   },
   "rest_check_legacy": {
@@ -315,7 +346,7 @@
       0
     ],
     "all_non_redrawn_sprite_pixels_preserved": true,
-    "standalone_gun_short_side_unchanged": true
+    "standalone_gun_short_side_unchanged": false
   },
   "far_wing_redraw": {
     "native_tiles": {
@@ -375,58 +406,5 @@
     "reference_only_layout_not_used_as_output_pixels": true,
     "tile_overlap_px": 50,
     "preserved_inner_root_fragments": true
-  },
-  "gun_lengthening": {
-    "native_regions": {
-      "held": {
-        "native_size": [
-          1774,
-          887
-        ],
-        "placement_size": [
-          1700,
-          850
-        ],
-        "source_sha256": "f41ecd83a06e22164b1f5e7f3e978160127ab6027267c8572569a7aa7ae03435"
-      },
-      "side_left": {
-        "native_size": [
-          1254,
-          1254
-        ],
-        "placement_size": [
-          1250,
-          1250
-        ],
-        "source_sha256": "ef752d485ce5d0ba9fc459c90408fdde205aac718deb9d9331e95922bd8b4903"
-      },
-      "side_right": {
-        "native_size": [
-          1254,
-          1254
-        ],
-        "placement_size": [
-          1250,
-          1250
-        ],
-        "source_sha256": "62664830188ca6dc2ceea6f57afc1c4ebae17c9b38946466fd849395d205c882"
-      }
-    },
-    "held_barrel_origin": [
-      3265,
-      1940
-    ],
-    "held_barrel_length_px": 1218,
-    "held_barrel_thickness_px": 110,
-    "held_muzzle": [
-      4391,
-      2403
-    ],
-    "side_canvas": [
-      3400,
-      800
-    ],
-    "only_barrel_regions_replaced": true,
-    "upscale_used": false
   }
 }
