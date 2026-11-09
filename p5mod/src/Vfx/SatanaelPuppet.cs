@@ -24,8 +24,11 @@ public sealed class SatanaelPuppet
 	{
 		new("wings_back_far", new(18.5f, 193.2f), new(1008f, 588f), "body"),
 		new("wings_back_near", new(1032.4f, 112.1f), new(1113f, 672f), "body"),
+		// 翼根的黑色羽毛（Codex b233f7a1；原版 = 六片硬翼 + 翼根一大簇撕裂状黑羽毛，用户 2026-11-09）：背后那簇在近侧翼和身体之间，前面那簇盖住前翼的根
+		new("wing_root_feathers", new(576.7f, 208.3f), new(1113f, 672f), "body"),
 		new("body", new(597.7f, 501.1f), new(987f, 840f), null),
 		new("wings_front", new(1087f, 596.4f), new(1146.6f, 693f), "body"),
+		new("wing_root_feathers_front", new(1130.6f, 598.1f), new(1146.6f, 693f), "body"),
 		new("head", new(768.2f, 258.7f), new(966f, 546f), "body"),
 		new("arm_upper", new(1101.2f, 543.5f), new(1146.6f, 588f), "body"),
 		new("arm_fore_gun", new(1180.6f, 628.7f), new(1245.3f, 699.3f), "arm_upper"),
@@ -59,6 +62,7 @@ uniform float ghost_len = 400.0;
 uniform float ghost_amt = 0.0;
 uniform vec2 mask_o = vec2(0.0);
 uniform float mask_r = 100000.0;
+uniform float wing = 0.0;
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
@@ -78,6 +82,17 @@ void fragment() {
 	float a2 = texture(TEXTURE, UV + vec2(0.7, -0.7) * TEXTURE_PIXEL_SIZE * 7.0).a;
 	float rim = clamp(c.a - a2, 0.0, 1.0);
 	g += vec3(0.3, 0.72, 1.0) * rim * 0.85;
+	// 翅膀（六片硬翼 + 翼根羽毛，单独一份材质 wing = 1）：照原版切入镜头的配色（用户 2026-11-09）——蓝光把金色骷髅照成深蓝，
+	// 整片偏冷蓝；翼骨 / 翼边 / 羽毛边缘一圈青色亮线
+	if (wing > 0.5) {
+		float gold = smoothstep(0.08, 0.3, c.r - c.b) * smoothstep(0.2, 0.45, l);
+		g = mix(g, vec3(0.07, 0.15, 0.38) * (0.45 + 1.0 * l), gold * 0.85);
+		g *= vec3(0.75, 0.88, 1.15);
+		vec2 tw = TEXTURE_PIXEL_SIZE * 4.0;
+		float nbw = min(min(texture(TEXTURE, UV + vec2(tw.x, 0.0)).a, texture(TEXTURE, UV - vec2(tw.x, 0.0)).a),
+			min(texture(TEXTURE, UV + vec2(0.0, tw.y)).a, texture(TEXTURE, UV - vec2(0.0, tw.y)).a));
+		g += vec3(0.3, 0.75, 1.0) * clamp(c.a - nbw, 0.0, 1.0) * 0.8;
+	}
 	// 点光（枪口蓄力）：近的地方被照亮，亮部被照得更多
 	float d = length(sp - point_light.xy);
 	g += vec3(0.45, 0.8, 1.0) * point_light.w * exp(-d / point_light.z) * (0.35 + l);
@@ -279,7 +294,14 @@ void fragment() {
 	private readonly Dictionary<string, Sprite2D> _sprites = new();
 	private readonly Dictionary<string, float> _angle = new();
 	private readonly Node2D _parent;
-	private readonly ShaderMaterial _mat, _riftMat;
+	private readonly ShaderMaterial _mat, _wingMat, _riftMat;
+
+	/// <summary>同一个参数同时设到身体材质和翅膀材质上（两份只差 wing 这一个开关）。</summary>
+	private void SetMat(string name, Variant value)
+	{
+		_mat.SetShaderParameter(name, value);
+		_wingMat.SetShaderParameter(name, value);
+	}
 	private readonly Vector2 _origin;
 	private readonly float _scale, _aim, _riftX;
 	private float _spin = -1f, _spinSpeed;
@@ -313,6 +335,8 @@ void fragment() {
 		Vector2 screen = Fx.Screen(parent);
 		_mat = new ShaderMaterial { Shader = PersonaShader };
 		_mat.SetShaderParameter("sres", screen);
+		_wingMat = (ShaderMaterial)_mat.Duplicate();
+		_wingMat.SetShaderParameter("wing", 1f);
 		_riftMat = new ShaderMaterial { Shader = RiftShader };
 		_riftMat.SetShaderParameter("sres", screen);
 		ColorRect rift = new() { Size = screen, Material = _riftMat, MouseFilter = Control.MouseFilterEnum.Ignore };
@@ -320,7 +344,7 @@ void fragment() {
 		Fx.Clock(rift);
 		foreach (Layer L in Layers)
 		{
-			Sprite2D sp = new() { Texture = Fx.Tex("sat_" + L.Name), Centered = false, Offset = L.Offset, Material = _mat };
+			Sprite2D sp = new() { Texture = Fx.Tex("sat_" + L.Name), Centered = false, Offset = L.Offset, Material = L.Name.StartsWith("wing") ? _wingMat : _mat };
 			parent.AddChild(sp);
 			_sprites[L.Name] = sp;
 			_angle[L.Name] = 0f;
@@ -344,6 +368,7 @@ void fragment() {
 		parent.MoveChild(clouds, _sprites["wings_front"].GetIndex() + 1);   // 云盖住腿和翅膀下端，头和持枪手臂在云上面
 		Fx.Clock(clouds);
 		Fx.Clock(_sprites["body"]);
+		Fx.Clock(_sprites["wings_back_far"]);
 		// 转枪的残影：枪后面两层半透明的枪，落后几度（转得越快落得越多）——转起来是连贯的动态模糊，不是一帧帧跳
 		if (_sprites["gun"].Texture != null)
 		{
@@ -577,8 +602,8 @@ void fragment() {
 	{
 		_cloudMat.SetShaderParameter("mask_origin", origin);
 		_cloudMat.SetShaderParameter("mask_r", radius);
-		_mat.SetShaderParameter("mask_o", origin);                        // 撒旦耶尔本体也只在圈里
-		_mat.SetShaderParameter("mask_r", radius);
+		SetMat("mask_o", origin);                        // 撒旦耶尔本体也只在圈里
+		SetMat("mask_r", radius);
 		if (_embers != null)
 		{
 			_emberMask ??= SinfulShell.MaskMaterial(Fx.Screen(_parent), origin);
@@ -609,13 +634,13 @@ void fragment() {
 			revealY = Mathf.Lerp(-160f, cloudLine + 160f, EaseInOut((x - VanishDelay) / VanishTime));
 			if (x - VanishDelay >= VanishTime) revealY = screen.Y + 600f;                              // 烧完：把烧线挪出画面（不然云里还留一截蓝焰）      // 退场：雷劈下，从翅尖往下烧到云里
 		}
-		_mat.SetShaderParameter("reveal_y", revealY);
+		SetMat("reveal_y", revealY);
 		float vx = Mathf.Clamp((x - VanishDelay) / VanishTime, 0f, 1f);
 		bool leaving = x >= VanishDelay;
 		// 从雾里显形 / 隐回雾里；轮廓线：登场时领先实体，退场时残留
-		_mat.SetShaderParameter("haze", leaving ? Mathf.Lerp(0.4f, 0.85f, EaseInOut(vx)) : Mathf.Lerp(0.85f, 0.4f, EaseOutCubic(rv)));
-		_mat.SetShaderParameter("ghost_len", (leaving ? 620f : 460f) * _scale);
-		_mat.SetShaderParameter("ghost_amt", leaving ? 1f - Mathf.Clamp((x - VanishDelay - VanishTime * 0.6f) / (VanishTime * 0.7f), 0f, 1f)
+		SetMat("haze", leaving ? Mathf.Lerp(0.4f, 0.85f, EaseInOut(vx)) : Mathf.Lerp(0.85f, 0.4f, EaseOutCubic(rv)));
+		SetMat("ghost_len", (leaving ? 620f : 460f) * _scale);
+		SetMat("ghost_amt", leaving ? 1f - Mathf.Clamp((x - VanishDelay - VanishTime * 0.6f) / (VanishTime * 0.7f), 0f, 1f)
 			: a < RevealDelay ? 0f : 1f - Mathf.Clamp((rv - 0.75f) / 0.25f, 0f, 1f));
 		// 烧线上的余烬（登场往上冒、退场往上飘散）
 		if (_embers != null)
@@ -624,9 +649,9 @@ void fragment() {
 			_embers.Emitting = burning;
 			_embers.Position = new Vector2(_origin.X + 1150f * _scale, Mathf.Clamp(revealY, -100f, screen.Y + 100f));
 		}
-		_mat.SetShaderParameter("flash", flash);
-		_mat.SetShaderParameter("dim", dim);
-		_mat.SetShaderParameter("point_light", chargeLight is Vector2 cl ? new Vector4(cl.X, cl.Y, 260f * _scale, chargePower) : Vector4.Zero);
+		SetMat("flash", flash);
+		SetMat("dim", dim);
+		SetMat("point_light", chargeLight is Vector2 cl ? new Vector4(cl.X, cl.Y, 260f * _scale, chargePower) : Vector4.Zero);
 		float s1 = Strike(a), s2 = Strike(x);
 		Lightning = Mathf.Max(s1, s2);
 		_riftMat.SetShaderParameter("strike", Lightning);
@@ -698,6 +723,9 @@ void fragment() {
 			_angle["wings_back_near"] += 2f * kb;
 			_angle["wings_front"] += 2.5f * kb;
 		}
+		// 翼根羽毛跟着各自那组翅膀动，幅度减半（根部动得少，盖住翼根接缝）
+		_angle["wing_root_feathers"] = 0.5f * _angle["wings_back_near"];
+		_angle["wing_root_feathers_front"] = 0.5f * _angle["wings_front"];
 		_angle["arm_upper"] = _aim + upper;
 		_angle["arm_fore_gun"] = fore;
 		_angle["body"] = lean;
