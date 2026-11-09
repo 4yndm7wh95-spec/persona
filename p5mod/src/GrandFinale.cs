@@ -125,6 +125,7 @@ public static class SinfulPlay
 			JokerMuzzle = Joker.Muzzle(joker),
 			FloorY = feet.Y,
 			Enemies = enemies.Select(e => e.VfxSpawnPosition).ToList(),
+			EnemyVisuals = enemies.Select(e => (CanvasItem?)e.Visuals).ToList(),
 			Actors = actors,
 			OnJokerShoot = () => ModEntry.Safe("GrandFinale shoot", () =>
 			{

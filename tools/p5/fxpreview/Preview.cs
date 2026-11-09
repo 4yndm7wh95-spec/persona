@@ -633,6 +633,7 @@ public partial class Preview : Node2D
 			{
 				JokerFeet = JokerFeet, JokerHead = Pose(1010f, 215f), JokerMuzzle = Muzzle, PersonaMuzzle = new Vector2(720f, 380f), FloorY = 830f,
 				Enemies = new List<Vector2> { Enemy2, Enemy, Enemy3 },
+				EnemyVisuals = new List<CanvasItem?> { p._enemies[Enemy2], p._enemies[Enemy], p._enemies[Enemy3] },
 				OnJokerShoot = () => p._joker?.Play("shiv_from_aim"),
 				OnPierce = i => Popups.Damage(p._front, (ulong)(i + 1), new[] { Enemy2, Enemy, Enemy3 }[i], 50, true),
 				Actors = new List<CanvasItem> { p._joker!, p._enemies[Enemy], p._enemies[Enemy2], p._enemies[Enemy3] },

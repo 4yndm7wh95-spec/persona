@@ -121,14 +121,17 @@ void fragment() {
 	g += vec3(0.45, 0.8, 1.0) * point_light.w * exp(-d / point_light.z) * (0.35 + l);
 	g *= 1.0 - 0.4 * dim;
 	g = mix(g, vec3(0.92, 0.97, 1.0), flash * 0.65);
-	// 登场溶解：reveal_y 以下显现；分界是一圈往上舔的蓝焰（四档硬边，和面具蓝焰同一套）
+	// 登场溶解：reveal_y 以下显现；分界是一道能量缝（见下）
 	float n = (noise(sp * vec2(0.012, 0.006) + vec2(0.0, clock * 1.6)) - 0.5) * 160.0;
 	float s = (sp.y + n) - reveal_y;
 	float vis = smoothstep(-1.5, 1.5, s);
-	float e = exp(-abs(s) / 28.0) * step(-70.0, s) * (0.7 + 0.6 * noise(sp * 0.03 + clock * 4.0));
-	float band = step(0.18, e) * (1.0 - smoothstep(0.0, 40.0, s));
-	vec3 flame = e > 0.75 ? vec3(0.92, 0.98, 1.0) : e > 0.45 ? vec3(0.35, 0.78, 1.0) : vec3(0.08, 0.32, 0.95);
-	g = mix(g, flame, band);
+	// 烧线（用户 2026-11-09：四档硬边太卡通）：和场景边缘同一套能量缝——细热白芯 + 平滑青色辉光，辉光只在人物剪影上，往未显现那侧淡出
+	float fl2 = 0.7 + 0.3 * noise(sp * 0.05 + vec2(clock * 9.0, 0.0));
+	float core = exp(-pow(s / 2.5, 2.0)) * fl2;
+	float glow = exp(-abs(s) / 18.0) * (0.6 + 0.5 * noise(sp * 0.025 + vec2(0.0, clock * 2.0)));
+	float band = clamp(core + glow * (s < 0.0 ? 0.85 : 0.6), 0.0, 1.0) * step(-80.0, s);
+	vec3 flame = vec3(0.95, 0.98, 1.0) * core + vec3(0.35, 0.75, 1.0) * glow;
+	g = mix(g, flame / max(band, 0.001), band);
 	// 轮廓先行 / 残留（用户 2026-11-09：登场、退场不要直接出现 / 消失）：烧线上方 ghost_len 内只亮一圈轮廓线（闪烁的青白），
 	// 登场时轮廓先描出来、实体随后烧上来；退场时实体烧没了，轮廓还留一会儿再散
 	vec2 tp = TEXTURE_PIXEL_SIZE * 3.0;

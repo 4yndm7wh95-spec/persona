@@ -54,16 +54,23 @@ uniform sampler2D plat : filter_linear;
 uniform vec2 plat_origin = vec2(0.0);
 uniform vec2 plat_size = vec2(0.0);
 " + Noise + @"
-// 蓝焰边：烧穿的边界（d = 到边界的有向距离，>0 在场景里）
+// 烧穿的边界（用户 2026-11-09：四档硬边的蓝焰太卡通、太漫画）：改成一道能量缝——
+// 极细的热白芯（亮度闪烁）+ 平滑衰减的青色辉光 + 更宽一层淡淡的深蓝雾；辉光被顺着边走的细丝噪声撕开，往外飘出几缕；边上零星的亮点。没有色阶硬边。
+// s = 到边界的有向距离（>0 在场景里）
 vec4 flameEdge(vec2 px, float s) {
 	float t = clock;
-	float w = 26.0 + 22.0 * noise(vec2(px.x * 0.02, t * 2.0));
-	float tongue = fbm(vec2(px.x * 0.018, px.y * 0.012 + t * 2.4));
-	float e = exp(-max(-s, 0.0) / w) * step(-w * 3.0, s) * (1.0 - smoothstep(0.0, w * 0.8, s));
-	e *= 0.6 + 0.9 * tongue;
-	vec3 c = e > 1.0 ? vec3(0.94, 0.98, 1.0) : e > 0.62 ? vec3(0.4, 0.8, 1.0) : e > 0.3 ? vec3(0.1, 0.38, 0.92) : vec3(0.03, 0.09, 0.32);
-	float a = smoothstep(0.12, 0.16, e);
-	return vec4(c * 1.2, a);
+	float d = abs(s);
+	float flick = 0.75 + 0.25 * noise(vec2(px.x * 0.05 + px.y * 0.03, t * 9.0));
+	float core = exp(-pow(s / 2.2, 2.0)) * flick;
+	float wisp = fbm(vec2(px.x * 0.03 + px.y * 0.02, t * 1.6 - s * 0.02));
+	float glow = exp(-d / 16.0) * (0.55 + 0.6 * wisp);
+	float out_side = 1.0 - smoothstep(-90.0, 0.0, s);                 // 场景外那一侧：辉光往外飘得更远、更碎
+	float haze = exp(-d / 70.0) * (0.25 + 0.5 * smoothstep(0.45, 0.8, wisp)) * (0.4 + 0.6 * out_side);
+	vec2 cell = floor(px / 9.0);
+	float spark = step(0.985, fract(sin(dot(cell, vec2(12.9898, 78.233)) + floor(t * 12.0)) * 43758.5453)) * exp(-d / 10.0);
+	vec3 c = vec3(0.95, 0.98, 1.0) * (core * 1.4 + spark) + vec3(0.35, 0.75, 1.0) * glow + vec3(0.08, 0.22, 0.7) * haze;
+	float a = clamp(core * 1.2 + glow * 0.9 + haze * 0.7 + spark, 0.0, 1.0);
+	return vec4(c / max(a, 0.001), a);
 }
 float revealDist(vec2 px) {
 	float n = (fbm(px / 110.0 + vec2(0.0, -clock * 0.5)) - 0.5) * 160.0;
@@ -284,6 +291,8 @@ void fragment() {
 		public Action? OnJokerAim, OnJokerShoot;
 		/// <summary>场景里的人物（Joker、敌人的 Visuals）：场景期间统一染上夜色，结束时还原。</summary>
 		public List<CanvasItem> Actors = new();
+		/// <summary>和 Enemies 一一对应的敌人 Visuals（子弹穿过时被光打透、过曝一下）；可以为空。</summary>
+		public List<CanvasItem?> EnemyVisuals = new();
 	}
 
 	private static Shader? _mask;
@@ -438,6 +447,7 @@ void fragment() {
 		PointLight2D moonLight = Light(lights, world(moonS), new Color(0.7f, 0.78f, 0.95f), 2600f * unit);
 		puppet?.LightFrom(moonS);
 		var actorRest = s.Actors.Where(GodotObject.IsInstanceValid).Select(a => (a, a.Modulate)).ToList();
+		var pierceOf = new Dictionary<CanvasItem, float>();        // 敌人 → 子弹穿过它的时刻（下面算出 pierce 后填）
 		Color grade = new(0.6f, 0.68f, 0.95f);
 		Fx.FreeAfter(lights, total + 0.1);
 		root.TreeExiting += () =>
@@ -497,7 +507,10 @@ void fragment() {
 			Color tint = Colors.White.Lerp(grade, scene * (1f - 0.3f * dim) + 0.15f * dim);
 			foreach ((CanvasItem a, Color c) in actorRest)
 			{
-				if (GodotObject.IsInstanceValid(a)) a.Modulate = c * tint;
+				if (!GodotObject.IsInstanceValid(a)) continue;
+				// 用户 2026-11-09：子弹穿过敌人的一瞬间被光从里面打透——不是描边，而是整只过曝成冷白再退回去（modulate 超过 1 就是提亮）
+				float ox = pierceOf.TryGetValue(a, out float pt) && time >= pt ? Mathf.Exp(-(time - pt) / 0.1f) : 0f;
+				a.Modulate = c * tint * new Color(1f + 1.2f * ox, 1f + 1.6f * ox, 1f + 2.2f * ox, 1f);
 			}
 		};
 		Fx.Animate(root, 0, total, step);
@@ -555,6 +568,7 @@ void fragment() {
 		{
 			travel[k] = Mathf.Max(0.03f, (enemiesOrdered[k].e - muzzle).Dot(dir) / (BulletSpeed * unit));
 			pierce[orderIndex[k]] = FireAt + travel[k];
+			if (orderIndex[k] < s.EnemyVisuals.Count && s.EnemyVisuals[orderIndex[k]] is CanvasItem ev) pierceOf[ev] = FireAt + travel[k];
 		}
 		var stopHits = new List<Vector2>();
 		for (int k = 0; k < enemiesOrdered.Count; k++)
@@ -570,6 +584,8 @@ void fragment() {
 			puppet?.Blast();                                               // 远处云海被枪口冲击波压开、翻卷
 			Rings(front, muzzle, dir, unit * 0.45f);                       // 远处的枪口：冲击环小
 			Bullet(front, muzzle, dir, screen, unit);
+			Spiral(front, muzzle, dir, screen, unit);                     // 绕着弹道拧的一股螺旋气流
+			SkyCrack(root, toScreen(muzzle), (toScreen(muzzle + dir * 100f) - toScreen(muzzle)).Normalized(), screen, unit, personaSlot.GetIndex() + 1);   // 夜空被划开一道细缝
 			BulletDetails(front, muzzle, dir, screen, unit);              // 弹道上的小光点、几道发丝一样的气流线
 			Glow.Sparks(front, muzzle, 50, 600f, 1800f, 0.4f, new[] { new Color(0.95f, 0.98f, 1f), new Color(0.35f, 0.75f, 1f), new Color(0.6f, 0.3f, 1f) }, 0f,
 				0.05f, 0.16f, dir, 22f);
@@ -924,6 +940,118 @@ void fragment() {
 		PointLight2D pl = Light(layer, zone, new Color(0.65f, 0.85f, 1f), 1100f * unit * big);
 		Fx.Animate(pl, 0, 0.6, k => pl.Energy = 1.3f * Mathf.Pow(1f - k, 2f));
 		Fx.FreeAfter(pl, 0.65);
+	}
+
+	// ───────────────────────── 螺旋气流、天空裂缝（用户 2026-11-09 选的 1、3） ─────────────────────────
+
+	private static Shader? _spiral, _crack;
+
+	/// <summary>
+	/// 螺旋气流：一股细光绕着弹道拧（半径越往前越大——子弹朝我们来，透视放大），只在弹头已经经过的地方有，弹头后面一段最亮、再往后淡掉；
+	/// 前半圈亮、后半圈暗（有立体感），外面一股更细更淡的第二股。head = 弹头走到哪（0～1），fade 整体淡出。
+	/// </summary>
+	private static Shader SpiralShader => _spiral ??= new Shader { Code = @"
+shader_type canvas_item;
+render_mode blend_add;
+uniform float len_px = 2000.0;
+uniform float thick_px = 200.0;
+uniform float head = 0.0;
+uniform float fade = 1.0;
+uniform float clock = 0.0;
+void fragment() {
+	float x = UV.x, y = (UV.y - 0.5) * 2.0, xp = x * len_px;
+	float r = mix(0.12, 0.7, x);
+	float ph = xp / (thick_px * (0.09 + 0.12 * x)) - clock * 10.0;    // 一圈约 150px，越远（越近镜头）越疏
+	float h1 = r * sin(ph), h2 = r * 0.82 * sin(ph + 2.4);
+	float w1 = 0.05 * (0.6 + x), w2 = 0.03 * (0.6 + x);
+	float s1 = exp(-pow((y - h1) / w1, 2.0)) * (0.35 + 0.65 * (0.5 + 0.5 * cos(ph)));
+	float s2 = exp(-pow((y - h2) / w2, 2.0)) * (0.3 + 0.7 * (0.5 + 0.5 * cos(ph + 2.4))) * 0.5;
+	float behind = head - x;
+	float trail = step(0.0, behind) * exp(-behind / 0.5) * smoothstep(0.0, 0.02, x);
+	vec3 col = vec3(0.85, 0.95, 1.0) * s1 * 1.3 + vec3(0.45, 0.6, 1.0) * s2;
+	COLOR = vec4(col * trail * fade * (1.0 - smoothstep(0.9, 1.0, abs(y))), 1.0);
+}" };
+
+	private static void Spiral(Control layer, Vector2 muzzle, Vector2 dir, Vector2 screen, float unit)
+	{
+		float reach = screen.Length() * 1.2f, thick = 260f * unit;
+		float fly = reach / (BulletSpeed * unit), linger = 0.45f;
+		Node2D root = Fx.Root(layer, muzzle, "P5SinfulSpiral", fly + linger + 0.1);
+		root.Rotation = dir.Angle();
+		ShaderMaterial m = new() { Shader = SpiralShader };
+		m.SetShaderParameter("len_px", reach);
+		m.SetShaderParameter("thick_px", thick);
+		ColorRect q = new() { Size = new Vector2(reach, thick), Position = new Vector2(0f, -thick / 2f), Material = m, MouseFilter = Control.MouseFilterEnum.Ignore };
+		root.AddChild(q);
+		Fx.Clock(q);
+		Fx.Animate(root, 0, fly + linger, t =>
+		{
+			float time = t * (fly + linger);
+			m.SetShaderParameter("head", Mathf.Min(1.2f, time / fly));
+			m.SetShaderParameter("fade", time < fly ? 1f : 1f - (time - fly) / linger);
+		});
+	}
+
+	/// <summary>
+	/// 天空裂缝：子弹飞过，夜空沿弹道被划开一道细缝——锯齿状的中线（大折点 + 细碎折点），热白的芯、青色辉光、缝两边一点暗边（有深度），
+	/// 几根短短的分叉细纹；跟着弹头裂开，停一下，然后从两头往中间慢慢合上、变细、淡掉。画在天空层（人物、平台后面）。
+	/// </summary>
+	private static Shader CrackShader => _crack ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform float len_px = 2000.0;
+uniform float thick_px = 120.0;
+uniform float head = 0.0;
+uniform float close = 0.0;
+uniform float seed = 0.0;
+float hh(float n) { return fract(sin(n * 91.3 + seed * 17.1) * 43758.5453); }
+float zig(float x, float seg, float amp, float salt) {
+	float k = x / seg, i = floor(k), f = k - i;
+	return mix(hh(i + salt) - 0.5, hh(i + 1.0 + salt) - 0.5, f) * 2.0 * amp;
+}
+void fragment() {
+	float x = UV.x, xp = x * len_px, yp = (UV.y - 0.5) * thick_px;
+	float line = zig(xp, 46.0, 9.0, 0.0) + zig(xp, 13.0, 2.5, 40.0);
+	float d = abs(yp - line);
+	// 合上：从两头往中间（|x - 0.5| 大的先合）
+	float open = step(x, head) * (1.0 - smoothstep(0.0, 1.0, close * 1.6 - (0.5 - abs(x - 0.5)) * 1.2));
+	float w = 1.6 * open;
+	float core = exp(-pow(d / max(w, 0.05), 2.0)) * open;
+	float glow = exp(-d / (7.0 * max(open, 0.05))) * open;
+	float rim = exp(-pow((d - 5.0) / 3.0, 2.0)) * open;                  // 缝两边一点暗边
+	// 分叉细纹：每 70px 一格，有一半概率从缝上斜着岔出一根短纹
+	float cell = floor(xp / 70.0), fx = xp - cell * 70.0;
+	float side = hh(cell + 9.0) > 0.5 ? 1.0 : -1.0;
+	float br = step(0.5, hh(cell + 3.0)) * step(fx, 30.0);
+	float bline = line + side * fx * 0.6;
+	float branch = br * exp(-pow((yp - bline) / 0.9, 2.0)) * (1.0 - fx / 30.0) * open;
+	vec3 col = vec3(0.95, 0.98, 1.0) * core * 1.3 + vec3(0.35, 0.75, 1.0) * (glow * 0.8 + branch * 0.7);
+	float a = clamp(core + glow * 0.7 + branch * 0.6, 0.0, 1.0);
+	float dark = rim * 0.35 * (1.0 - a);
+	float ends = smoothstep(0.0, 0.03, x) * (1.0 - smoothstep(0.97, 1.0, x));
+	COLOR = vec4(mix(vec3(0.0, 0.02, 0.06), col / max(a, 0.001), a / max(a + dark, 0.001)), (a + dark) * ends);
+}" };
+
+	private static void SkyCrack(Node2D sceneRoot, Vector2 muzzleS, Vector2 dirS, Vector2 screen, float unit, int index)
+	{
+		float reach = screen.Length() * 1.2f, thick = 120f * unit;
+		float fly = reach / (BulletSpeed * unit), hold = 0.35f, closeT = 1.1f;
+		Node2D root = new() { Name = "P5SinfulCrack", Position = muzzleS, Rotation = dirS.Angle() };
+		sceneRoot.AddChild(root);
+		sceneRoot.MoveChild(root, Mathf.Min(index, sceneRoot.GetChildCount() - 1));
+		ShaderMaterial m = new() { Shader = CrackShader };
+		m.SetShaderParameter("len_px", reach);
+		m.SetShaderParameter("thick_px", thick);
+		m.SetShaderParameter("seed", Fx.Rand(0f, 50f));
+		ColorRect q = new() { Size = new Vector2(reach, thick), Position = new Vector2(0f, -thick / 2f), Material = m, MouseFilter = Control.MouseFilterEnum.Ignore };
+		root.AddChild(q);
+		float life = fly + hold + closeT;
+		Fx.Animate(root, 0, life, t =>
+		{
+			float time = t * life;
+			m.SetShaderParameter("head", Mathf.Min(1f, time / fly));
+			m.SetShaderParameter("close", Mathf.Clamp((time - fly - hold) / closeT, 0f, 1f));
+		});
+		Fx.FreeAfter(root, life + 0.05);
 	}
 
 	// ───────────────────────── 小细节（用户 2026-11-09：光波之外再加一点层次，不要太多） ─────────────────────────
