@@ -57,6 +57,8 @@ uniform float dim = 0.0;
 uniform float haze = 0.4;
 uniform float ghost_len = 400.0;
 uniform float ghost_amt = 0.0;
+uniform vec2 mask_o = vec2(0.0);
+uniform float mask_r = 100000.0;
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
@@ -100,7 +102,8 @@ void fragment() {
 	float oa = outline * lead * fl;
 	float fa = c.a * max(vis, band);
 	vec3 oc = vec3(0.55, 0.88, 1.0) * 1.25;
-	COLOR = vec4(mix(oc, g, fa / (fa + oa + 1e-4)), max(fa, oa) * alpha * ma);
+	float mvis = smoothstep(0.0, 60.0, mask_r - length((sp - mask_o) * vec2(1.0, 1.25)) + (noise(sp / 110.0) - 0.5) * 120.0);   // 场景圆
+	COLOR = vec4(mix(oc, g, fa / (fa + oa + 1e-4)), max(fa, oa) * alpha * ma * mvis);
 }" };
 
 	/// <summary>
@@ -228,6 +231,8 @@ uniform vec2 sres = vec2(1920.0, 1080.0);
 uniform float cloud_y = 700.0;
 uniform float blast_x = 0.0;
 uniform float blast_t = -1.0;
+uniform vec2 mask_o = vec2(0.0);
+uniform float mask_r = 100000.0;
 uniform float clock = 0.0;
 uniform float alpha = 1.0;
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
@@ -263,7 +268,8 @@ void fragment() {
 	rim += wave * 1.2 * exp(-abs(d) / 70.0) * near;   // 只亮浪头（云面那一圈），不要竖着一整条
 	vec3 col = body + vec3(0.42, 0.6, 0.85) * rim * 1.1 + vec3(0.1, 0.16, 0.26) * (puff - 0.7) * near;
 	col = mix(col, vec3(0.16, 0.24, 0.40), haze * (1.0 - near));
-	COLOR = vec4(col, dens * alpha);
+	float mvis = smoothstep(0.0, 60.0, mask_r - length((px - mask_o) * vec2(1.0, 1.25)) + (fbm(px / 110.0) - 0.5) * 140.0);
+	COLOR = vec4(col, dens * alpha * mvis);
 }" };
 
 	private readonly Dictionary<string, Sprite2D> _sprites = new();
@@ -558,6 +564,16 @@ void fragment() {
 				_swooshMat.SetShaderParameter("span", Mathf.Clamp(Mathf.DegToRad(_spinSpeed * 0.07f), 0.3f, 3.6f));
 				_swooshMat.SetShaderParameter("alpha", Mathf.Clamp(_spinSpeed / 1500f, 0f, 1f));
 			}
+		}
+	}
+
+	/// <summary>场景圆（以 Joker 脚下为圆心、半径 radius 的椭圆，和场景着色器的切入 / 收回一致）：云海和撒旦耶尔只在圆里显示。</summary>
+	public void SceneMask(Vector2 origin, float radius)
+	{
+		foreach (ShaderMaterial m in new[] { _mat, _cloudMat })
+		{
+			m.SetShaderParameter("mask_o", origin);
+			m.SetShaderParameter("mask_r", radius);
 		}
 	}
 

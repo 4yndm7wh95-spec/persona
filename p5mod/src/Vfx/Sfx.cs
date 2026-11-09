@@ -55,6 +55,8 @@ public static class Sfx
 		SinfulCharge = "sinful_charge",   // 蓄力：越来越高的啸叫 + 越来越重的低频嗡鸣
 		SinfulCatch = "sinful_catch",     // 转枪接住：沉重的金属咔嗒
 		SinfulShot = "sinful_shot",       // 开枪（重做，合成）：倒吸 → 一瞬静音 → 爆裂 + 超低频下坠 + 饱和重击 → 金属余振 → 碎石 → 远处云层滚回三声雷 → 耳鸣淡出；冲击在 0.30s
+		SinfulPierce = "sinful_pierce",    // 贯穿一个敌人（合成，用户：普通受击音太淡）：尖锐爆裂 → 撕裂金属 → 低频重砸 → 饱和碎裂
+		SinfulPierceFinal = "sinful_pierce_final", // 贯穿最后一个：更重，底下一声超低频轰鸣、顶上一层玻璃碎裂
 		SinfulFlyby = "sinful_flyby",     // 子弹从远处朝镜头飞过来的多普勒呼啸，最响在 0.35s
 		SinfulFire = "sinful_fire",       // 开枪（用户：不要普通手枪声）：倒吸 → 爆裂 → 超低频重击 → 失真冲击 → 金属余振 → 长尾和回声
 		GunHit = "gun_hit",             // 枪命中（演示混音：damage_enemy 升调 1.2、压低、偏右）

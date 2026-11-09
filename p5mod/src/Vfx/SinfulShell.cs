@@ -333,7 +333,7 @@ void fragment() {
 		/// <summary>Joker 该开枪的时刻（游戏里播 shiv_from_aim）：FireAt - 0.18。</summary>
 		public Action? OnJokerAim, OnJokerShoot;
 		/// <summary>Joker 攥面具的时刻（从出牌算起）：两道蓝焰从面具冲上天。null = 不放（没有扶面具的架势时）。</summary>
-		public float? MaskSqueezeAt = 0.08f;
+		public float? MaskSqueezeAt = null;   // 用户 2026-11-09：面具冲天的两道蓝焰去掉（留着参数，默认不放）
 		public Vector2 JokerMask;
 		/// <summary>面具蓝焰的半宽（屏幕像素，ReadyFx.BuildMask 里是 Joker 身高 × 0.24）。</summary>
 		public float JokerMaskHalf = 60f;
@@ -378,7 +378,6 @@ void fragment() {
 		{
 			m.SetShaderParameter("sres", screen);
 			m.SetShaderParameter("origin", feetS);
-			m.SetShaderParameter("origin2", new Vector2(screen.X * 1.05f, screen.Y * 0.55f));
 			m.SetShaderParameter("feet_y", feetS.Y);
 			m.SetShaderParameter("floor_y", floorS.Y);
 			m.SetShaderParameter("cliff_x", feetS.X - 95f * unit);           // Joker 站在悬崖边上
@@ -442,7 +441,9 @@ void fragment() {
 			float rv = Mathf.Clamp((time - RevealAt) / RevealTime, 0f, 1f);
 			float reveal = far * (1f - Mathf.Pow(1f - rv, 2.2f));
 			float ex = Mathf.Clamp((time - FireAt - ExitAfter - 0.5f) / ExitTime, 0f, 1f);   // 撒旦耶尔烧完（0.54s）之后场景才收回
-			float conceal = ex <= 0f ? 0f : far * ex * ex;
+			// 用户 2026-11-09：切入、收回都以 Joker 脚下为圆心（收回 = 圆往回缩）
+			reveal *= 1f - ex * ex * (3f - 2f * ex);
+			const float conceal = 0f;
 			const float dim = 0f;
 			float flash = time >= FireAt ? Mathf.Exp(-(time - FireAt) / 0.05f) : 0f;
 			// 不蓄力：接住枪时枪口一闪，开枪时一闪
@@ -450,6 +451,7 @@ void fragment() {
 			float thunder = 0f;
 			if (puppet != null)
 			{
+				puppet.SceneMask(feetS, reveal);                         // 云海、撒旦耶尔也只在场景圆里（一起展开、一起收回）
 				puppet.Update(time, RiseAt, AimAt, FireAt + 0.12f, exitAt, puppet.MuzzleLocal, charge, flash * 0.6f, dim);
 				thunder = puppet.Lightning;
 				muzzleLight.GlobalPosition = puppet.MuzzleGlobal;
@@ -801,7 +803,7 @@ void fragment() {
 		Fx.FreeAfter(pl, 0.4);
 		Glow.Sparks(layer, at, 36, 600f, 1800f, 0.4f, new[] { new Color(0.95f, 0.98f, 1f), new Color(0.35f, 0.75f, 1f), new Color(0.65f, 0.3f, 1f) },
 			200f, 0.05f, 0.14f, dir, 22f);
-		Sfx.Play(Sfx.Hit, last ? 0.9f : 0.6f);
+		Sfx.Play(last ? Sfx.SinfulPierceFinal : Sfx.SinfulPierce, last ? 1.3f : 1.1f);
 		if (last)
 		{
 			Fx.Shake(5);

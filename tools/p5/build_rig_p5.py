@@ -146,7 +146,7 @@ ANIMS = {
     # (user: a frame glitched - the mask hand jumped from the face straight into the pocket; it now comes down the chest
     # (summon_lift2/lift1) and slides into the pocket (pocket_in_e) while the other hand rises for the draw)
     "cast_sinful_from_mask": [("summon_touch2_a", .02), (GRIP, .14, .03), ("summon_lift2_a", .04, .025), ("summon_lift1_a", .05, .025),
-                              ("pocket_in_e", .06, .03), ("gun_arm_mid_h", .05, .02), ("gun_spin_g", .58, .015), ("gun_aim_b", 2.0, 0)],   # .58 = SINFUL_SPIN
+                              ("pocket_in_e", .06, .03), ("gun_arm_mid_h", .05, .02), ("gun_spin_g", .58, .015), ("gun_aim_b", 3.5, 0)],   # .58 = SINFUL_SPIN; aim hold long enough that the shot (shiv_from_aim) always cuts in before it ends (user 2026-11-09: one idle frame slipped in)
     "cast_outbreak_from_mask": [("summon_touch2_a", .02), (GRIP, OUTBREAK_GRIP_END - .02, .03)] + OUTBREAK_LET_GO,
     "cast_outbreak": [("idle_a3", .02)] + [(n, .045) for n in SUMMON_UP]
                      + [(GRIP, OUTBREAK_GRIP_END - .02 - .045 * len(SUMMON_UP), .03)] + OUTBREAK_LET_GO,
@@ -155,6 +155,9 @@ ANIMS = {
     "die": [("die_buckle_a", .12, .06), ("die_kneel_a2", .6), ("die_fall_a", .15), ("die_down_b", 1.0)],
 }
 LOOPS = {"idle_loop", "low_health_loop", "relaxed_loop"}
+# animations whose last pose must really hold for its listed seconds (otherwise the animation ends at the last key and
+# the player falls back to idle): the Sinful Shell cast holds the aim until shiv_from_aim cuts in (user 2026-11-09)
+HOLD_TO_END = {"cast_sinful_from_mask"}
 # Impact on the `body` bone (pivot at the feet; user 2026-10-28: the strike felt weak, no impact). Keys are
 # (time, dx, dy, scaleX, scaleY, rotation): anticipation (pull back and crouch), a snap forward with a stretch,
 # a squash and a short shaking hit-stop on the cut, then an eased recovery. The gun kicks back on the recoil
@@ -596,6 +599,8 @@ def build():
             fade_col += [{"time": t0, "color": hexa(0)}, {"time": round(t0 + fade, 4), "color": hexa(1)}]
             pose_keys.append({"time": round(t0 + fade, 4), "name": p})
         end = round(sum(f[2] for f in fr), 4)
+        if name in HOLD_TO_END and end > pose_keys[-1]["time"]:
+            pose_keys.append({"time": end, "name": pose_keys[-1]["name"]})   # 最后一个姿势真的保持到 end（动画时长 = end）
         slots = {"pose": {"attachment": pose_keys}}
         if fade_keys:
             slots["fade"] = {"attachment": [{"time": 0, "name": None}] + fade_keys, "rgba": fade_col}
