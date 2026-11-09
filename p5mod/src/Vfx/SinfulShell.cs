@@ -48,6 +48,7 @@ uniform float feet_y = 830.0;
 uniform float cliff_x = 640.0;
 uniform float floor_y = 830.0;
 uniform float cliff2_x = 1000.0;
+uniform vec3 moon = vec3(1570.0, 170.0, 58.0);   // 月亮：屏幕位置 + 半径（像素）
 // Codex 画的平台（有就用它，没有就用下面程序画的岩石）：贴图左上角在屏幕上的位置、在屏幕上的大小
 uniform sampler2D plat : filter_linear;
 uniform vec2 plat_origin = vec2(0.0);
@@ -91,6 +92,22 @@ void fragment() {
 		// 星星（云少的上空）
 		vec2 sg = floor(px / 3.0);
 		col += vec3(0.7, 0.85, 1.0) * step(0.9985, hash(sg)) * smoothstep(0.45, 0.0, uv.y) * (0.6 + 0.4 * sin(clock * 3.0 + hash(sg) * 30.0));
+		// 月亮（用户 2026-11-09：着色器画、当光源）：略带残缺的满月——灰白的月面、暗色月海、小环形山、边缘变暗；外面两层月晕
+		vec2 mp = (px - moon.xy) / moon.z;
+		float md = length(mp);
+		col += vec3(0.32, 0.42, 0.58) * exp(-md * 0.45) * 0.28 + vec3(0.55, 0.64, 0.78) * exp(-md * 1.8) * 0.3;
+		col += vec3(0.5, 0.6, 0.75) * exp(-pow((md - 2.6) / 0.35, 2.0)) * 0.05;          // 一圈很淡的月晕环
+		if (md < 1.05) {
+			float z = sqrt(max(1.0 - md * md, 0.0));
+			vec3 nrm = vec3(mp, z);
+			float sun = clamp(dot(nrm, normalize(vec3(-0.35, -0.15, 1.0))) * 1.2 + 0.15, 0.0, 1.0);   // 受光面偏左上，右下边缘一点点阴影
+			float maria = fbm(mp * 1.7 + vec2(5.2, 1.3));
+			float crater = smoothstep(0.62, 0.8, noise(mp * 7.0 + 11.0)) * 0.5 + smoothstep(0.7, 0.85, noise(mp * 16.0 + 3.0)) * 0.3;
+			vec3 mc = mix(vec3(0.5, 0.54, 0.62), vec3(0.86, 0.89, 0.95), smoothstep(0.38, 0.62, maria));
+			mc *= (1.0 - 0.25 * crater) * (0.35 + 0.65 * sun) * (0.82 + 0.18 * z);
+			col = mix(col, mc, 1.0 - smoothstep(0.97, 1.03, md));
+		}
+		float moonNear = exp(-md / 7.0);                                     // 月光照到的云
 		// 乌云：两层域扭曲噪声，横向拉长，慢慢翻滚；亮边偏蓝，云底透红光
 		vec2 p = vec2(px.x / sres.y, px.y / sres.y);
 		for (int k = 0; k < 2; k++) {
@@ -103,6 +120,8 @@ void fragment() {
 			float lit = clamp((c - fbm(q + warp * 1.4 + fk * 3.7 + vec2(0.0, 0.05))) * 6.0 + 0.5, 0.0, 1.0);
 			vec3 cc = mix(vec3(0.02, 0.04, 0.09), vec3(0.18, 0.34, 0.5), lit);
 			cc += vec3(0.55, 0.04, 0.08) * (1.0 - lit) * smoothstep(0.15, 0.6, uv.y) * (0.6 + 0.4 * fk);
+			// 月光：月亮附近的云头镶一道银边，挡在月亮前面的薄云被从后面透亮
+			cc += vec3(0.5, 0.58, 0.72) * lit * moonNear * 0.9 + vec3(0.3, 0.36, 0.46) * exp(-md * 0.9) * (1.0 - dens * 0.5);
 			col = mix(col, cc, dens * (0.85 - fk * 0.15));
 		}
 		// 远处闪电：偶尔在一片云里亮一下
@@ -226,7 +245,15 @@ void fragment() {
 	// ───────────────────────── 时序 ─────────────────────────
 
 	/// <summary>各拍的时刻（从出牌算起，秒）。</summary>
-	public const float RevealAt = 0.05f, RevealTime = 0.7f, AimAt = 0.45f, BulletSpeed = 5200f, ExitAfter = 1.45f, ExitTime = 0.6f;   // ExitAfter 1.1 → 1.45（用户 2026-11-09：开完枪原路转枪收回，退场的雷等收完枪再劈）
+	public const float RevealAt = 0.05f, RevealTime = 0.7f, AimAt = 0.45f, BulletSpeed = 5200f;
+
+	/// <summary>
+	/// 退场（用户 2026-11-09：收枪结束时场景起码已经开始收回 20% 左右）：枪落回手里（撒旦耶尔开枪 FireAt+0.12 之后 PutAwayAfter + 转两圈 + 一顿）那一刻劈退场的雷；
+	/// 场景圈提前 ConcealAfter 开始收、用 ExitTime 收完：半径从画面最远的角开始按 smoothstep 收，收枪结束时（走了 40% 的时间）
+	/// 半径收了三成多、画面上明显在收（用户说「起码两成」）；撒旦耶尔从上往下烧（雷后 ~0.58s）的同时圈从外往脚下收，两个一起走完。
+	/// </summary>
+	public const float ExitAfter = 0.12f + SatanaelPuppet.PutAwayAfter + 0.02f + SatanaelPuppet.SpinTime + 0.04f, ExitTime = 1.0f,
+		ConcealAfter = ExitAfter - 0.4f * ExitTime;
 
 	/// <summary>开枪（用户 2026-11-08：不蓄力，转完枪停一小下就开）：撒旦耶尔接住枪后 0.2s。</summary>
 	public const float FireAt = AimAt + SatanaelPuppet.CatchAfter + 0.2f;
@@ -300,6 +327,39 @@ void fragment() {
 		return l;
 	}
 
+	/// <summary>
+	/// 预热（用户 2026-11-09：东西加多了，第一次打出肯定会卡）：Warmup.Run 每场战斗开始时在几乎透明的层里调一次。
+	/// 着色器本身 Warmup 已经按反射全编译过；这里补上它照顾不到的：撒旦耶尔的大贴图第一次画时才上传显卡（整套部件建一个很小的、摆一帧）、
+	/// 场景着色器带平台贴图 + 被引擎 2D 灯照着画一次、余烬 / 火花粒子的处理材质、命中区那一套（冲击波 + 粒子 + 灯），顺带把这些 C# 方法 JIT 掉。不出声。
+	/// </summary>
+	public static void Warm(Control hidden, Vector2 c)
+	{
+		Node2D slot = new() { Name = "SinfulWarm" };
+		hidden.AddChild(slot);
+		if (SatanaelPuppet.Available)
+		{
+			SatanaelPuppet pp = new(slot, c, 0.05f, c + new Vector2(100f, 100f));
+			pp.Update(1f, 0f, 0.5f, 1.5f, 9f);
+			pp.SceneMask(c, 1e5f);
+			pp.LightFrom(c + new Vector2(100f, -100f));
+		}
+		ShaderMaterial m = new() { Shader = Scene };
+		m.SetShaderParameter("reveal", 1e5f);
+		if (Fx.Tex("sinful_platform") is Texture2D plat)
+		{
+			m.SetShaderParameter("plat", plat);
+			m.SetShaderParameter("plat_size", new Vector2(8f, 8f));
+		}
+		ColorRect r = new() { Size = new Vector2(8f, 8f), Material = m, MouseFilter = Control.MouseFilterEnum.Ignore };
+		slot.AddChild(r);
+		r.GlobalPosition = c;
+		PointLight2D l = Light(slot, c, Colors.White, 64f);
+		l.Energy = 0.05f;
+		GpuParticles2D embers = ReadyFx.Embers(slot, c, new[] { Colors.White, Colors.White }, 4, 8f, 0.3f, 10f, 20f, 5f);
+		embers.Material = MaskMaterial(Fx.Screen(hidden), c);
+		HitZone(hidden, c, Vector2.Right, c.Y, 0f, 0.02f);
+	}
+
 	/// <summary>放整段大罪穿甲弹。back = 背景层（场景、人格面具），front = 前景层（子弹、命中）。返回子弹穿过每个敌人的时刻（秒，从现在算）。</summary>
 	/// <summary>打中的那一声（用户 2026-11-09 对比后选定 sinful_pierce_last）。</summary>
 	public static string HitSound = Sfx.SinfulPierceLast;
@@ -317,7 +377,7 @@ void fragment() {
 		Node2D root = Fx.ScreenRoot(back, "P5SinfulShellScene");
 		back.MoveChild(root, 0);
 		ShaderMaterial sky = new() { Shader = Scene }, rocks = new() { Shader = Scene };
-		float total = FireAt + ExitAfter + ExitTime + 0.65f;
+		float total = FireAt + Mathf.Max(ConcealAfter + ExitTime, ExitAfter + 0.6f) + 0.15f;
 		foreach (ShaderMaterial m in new[] { sky, rocks })
 		{
 			m.SetShaderParameter("sres", screen);
@@ -328,6 +388,8 @@ void fragment() {
 			m.SetShaderParameter("cliff2_x", Mathf.Max(feetS.X + 420f * unit, firstEnemyX - 160f * unit));
 		}
 		sky.SetShaderParameter("part", 0);
+		Vector2 moonS = new(screen.X * 0.82f, screen.Y * 0.16f);              // 右上的空天：敌人头上、撒旦耶尔翅膀够不到的地方
+		sky.SetShaderParameter("moon", new Vector3(moonS.X, moonS.Y, 58f * unit));
 		rocks.SetShaderParameter("part", 1);
 		if (Fx.Tex("sinful_platform") is Texture2D plat)
 		{
@@ -369,6 +431,9 @@ void fragment() {
 		PointLight2D bulletLight = Light(lights, s.PersonaMuzzle, new Color(0.55f, 0.85f, 1f), 560f * unit);
 		PointLight2D thunderLight = Light(lights, world(new Vector2(screen.X * 0.12f, screen.Y * 0.3f)), new Color(0.7f, 0.88f, 1f), 1900f * unit);
 		PointLight2D abyssLight = Light(lights, world(new Vector2(screen.X * 0.08f, screen.Y * 1.05f)), new Color(0.85f, 0.12f, 0.18f), 1100f * unit);
+		// 月光：从月亮那里打下来的一盏大范围冷白光，照场景里的人物、怪物、撒旦耶尔和平台（天空自己不吃灯光）
+		PointLight2D moonLight = Light(lights, world(moonS), new Color(0.7f, 0.78f, 0.95f), 2600f * unit);
+		puppet?.LightFrom(moonS);
 		var actorRest = s.Actors.Where(GodotObject.IsInstanceValid).Select(a => (a, a.Modulate)).ToList();
 		Color grade = new(0.6f, 0.68f, 0.95f);
 		Fx.FreeAfter(lights, total + 0.1);
@@ -379,16 +444,20 @@ void fragment() {
 				if (GodotObject.IsInstanceValid(a)) a.Modulate = c;
 			}
 		};
+		// 收回的起始半径：圈心到画面四个角里最远的那个（纵向 ×1.25，和场景圈一致）+ 噪声边的余量
+		float visR = new[] { Vector2.Zero, new Vector2(screen.X, 0f), screen, new Vector2(0f, screen.Y) }
+			.Max(k => ((k - feetS) * new Vector2(1f, 1.25f)).Length()) + 90f * unit;
 		ShaderMaterial emberMask = MaskMaterial(screen, feetS);                   // 场景里的余烬也只在圈里面
 		Action<float> step = t =>
 		{
 			float time = t * total;
 			float rv = Mathf.Clamp((time - RevealAt) / RevealTime, 0f, 1f);
-			float ex = Mathf.Clamp((time - FireAt - ExitAfter - 0.5f) / ExitTime, 0f, 1f);   // 撒旦耶尔烧完（0.54s）之后场景才收回
+			float ex = Mathf.Clamp((time - FireAt - ConcealAfter) / ExitTime, 0f, 1f);       // 收枪快结束时场景开始收回（和撒旦耶尔退场重叠）
 			// 用户 2026-11-09：切入和消失都以 Joker 脚下为圆心——展开时圈往外烧，收回时圈原路缩回脚下（和展开镜像：先快后慢）；
 			// 云海、余烬这些画在场景上的东西都用同一个圈遮住，一起收回
 			// 收到最后半径压到 -160：蓝焰边整圈烧没，不在脚下留一摊火
-			float reveal = far * (1f - Mathf.Pow(1f - rv, 2.2f)) * Mathf.Pow(1f - ex, 2.2f) - 160f * unit * ex;
+			float reveal = ex <= 0f ? far * (1f - Mathf.Pow(1f - rv, 2.2f))
+				: visR * (1f - ex * ex * (3f - 2f * ex)) - 160f * unit * ex;   // 收回：从画面最远的角开始（马上看得出在收），先慢后快再慢，合到脚下
 			emberMask.SetShaderParameter("reveal", reveal);
 			const float dim = 0f;
 			float flash = time >= FireAt ? Mathf.Exp(-(time - FireAt) / 0.05f) : 0f;
@@ -420,6 +489,7 @@ void fragment() {
 			}
 			thunderLight.Energy = thunder * 1.8f;
 			abyssLight.Energy = 0.9f * scene;
+			moonLight.Energy = 0.55f * scene;
 			// 场景里的人物染上夜色（冷蓝、压暗）
 			Color tint = Colors.White.Lerp(grade, scene * (1f - 0.3f * dim) + 0.15f * dim);
 			foreach ((CanvasItem a, Color c) in actorRest)
@@ -436,7 +506,7 @@ void fragment() {
 		// 召唤 / 退场的闪雷声；接住枪的金属声
 		// 场景圈展开 / 收回的轻声（压在雷和开枪声下面）：收回那条 0.7s 的卷入正好在圈缩到脚下时收住
 		Fx.After(front, RevealAt, () => Sfx.Play(Sfx.SinfulSweepOpen, 0.45f));
-		Fx.After(front, FireAt + ExitAfter + 0.5f + ExitTime - 0.7f, () => Sfx.Play(Sfx.SinfulSweepClose, 0.45f));
+		Fx.After(front, FireAt + ConcealAfter + ExitTime - 0.7f, () => Sfx.Play(Sfx.SinfulSweepClose, 0.45f));
 		Fx.After(front, AppearAt, () => { Sfx.Play(Sfx.SinfulThunder, 1.1f); Fx.Shake(3); });
 		Fx.After(front, exitAt, () => { Sfx.Play(Sfx.SinfulThunder, 0.9f); Fx.Shake(2); });
 		if (puppet != null)

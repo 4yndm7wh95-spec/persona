@@ -73,6 +73,7 @@ public static class Warmup
 		});
 		Stage.Safe("warmup impact", () => Impact.Warm(hidden));
 		Stage.Safe("warmup blue flame", () => BlueFlame.Tongue(hidden, c, 0.5f, 0.2f));
+		Stage.Safe("warmup sinful shell", () => SinfulShell.Warm(hidden, c));   // 华丽收场：撒旦耶尔大贴图上传、场景 + 灯光、粒子、命中区
 		// 所有着色器（mod 里每个 static Shader 属性：巨手、亚森、眼神特写、舞台、刀光……）各画一个 4×4 的小方块编译掉
 		foreach (System.Type type in typeof(Warmup).Assembly.GetTypes())
 		{

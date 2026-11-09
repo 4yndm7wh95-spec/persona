@@ -63,6 +63,7 @@ uniform float ghost_amt = 0.0;
 uniform vec2 mask_o = vec2(0.0);
 uniform float mask_r = 100000.0;
 uniform float wing = 0.0;
+uniform vec2 light_dir = vec2(0.6, -0.8);   // 光从哪个方向来（屏幕方向）：月亮（SinfulShell 设）
 // 翅膀弯曲（用户 2026-11-09：要更多活动的骨骼、翅膀能动）：每张翅膀图绕翼根按极角分相位弯——扇形排开的每一片翼 / 每簇羽毛
 // 各自错开节拍扇动，越往翼尖摆得越多；羽毛层再加一层细碎的抖动。root_px = 翼根（贴图像素），reach_px = 摆幅满额的半径
 uniform vec2 root_px = vec2(0.0);
@@ -97,8 +98,8 @@ void fragment() {
 	g = mix(g, vec3(0.16, 0.26, 0.4), haze);                                // 远处的大气：蒙一层冷蓝的雾
 	g *= mix(1.0, 0.45, smoothstep(sres.y * 0.55, sres.y * 1.05, sp.y));
 	// 光影（用户 2026-11-09：光影渲染的方向对、能减少贴图感，但之前那版每条边都一样亮一条细线，看着像描边）：
-	// 只有朝天空（右上）那一侧的边受光，往里几个像素慢慢淡掉；背光那一侧的边压暗一点，出体积
-	vec2 L = normalize(vec2(0.6, -0.8)) * TEXTURE_PIXEL_SIZE;
+	// 只有朝光源（月亮，light_dir）那一侧的边受光，往里几个像素慢慢淡掉；背光那一侧的边压暗一点，出体积
+	vec2 L = normalize(light_dir) * TEXTURE_PIXEL_SIZE;
 	float lit = 0.0, shade = 0.0;
 	for (int i = 1; i <= 3; i++) {
 		float d = float(i * i) * 3.0;                                          // 3, 12, 27 像素
@@ -650,6 +651,13 @@ void fragment() {
 				_swooshMat.SetShaderParameter("alpha", Mathf.Clamp(_spinSpeed / 1500f, 0f, 1f));
 			}
 		}
+	}
+
+	/// <summary>光源（月亮）在屏幕上的位置：受光边朝它那一侧。</summary>
+	public void LightFrom(Vector2 screenPos)
+	{
+		Vector2 center = _root * Find("body").Pivot;
+		SetMat("light_dir", (screenPos - center).Normalized());
 	}
 
 	/// <summary>场景圈（屏幕坐标的圆心、半径）：云海只画在圈里，烧线余烬在圈外也藏起来。</summary>
