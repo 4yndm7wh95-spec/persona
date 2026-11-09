@@ -373,7 +373,7 @@ void fragment() {
 		Node2D root = Fx.ScreenRoot(back, "P5SinfulShellScene");
 		back.MoveChild(root, 0);
 		ShaderMaterial sky = new() { Shader = Scene }, rocks = new() { Shader = Scene };
-		float total = FireAt + ExitAfter + ExitTime + 0.2f;
+		float total = FireAt + ExitAfter + ExitTime + 0.65f;
 		foreach (ShaderMaterial m in new[] { sky, rocks })
 		{
 			m.SetShaderParameter("sres", screen);
@@ -441,7 +441,7 @@ void fragment() {
 			float time = t * total;
 			float rv = Mathf.Clamp((time - RevealAt) / RevealTime, 0f, 1f);
 			float reveal = far * (1f - Mathf.Pow(1f - rv, 2.2f));
-			float ex = Mathf.Clamp((time - FireAt - ExitAfter - 0.1f) / ExitTime, 0f, 1f);
+			float ex = Mathf.Clamp((time - FireAt - ExitAfter - 0.5f) / ExitTime, 0f, 1f);   // 撒旦耶尔烧完（0.54s）之后场景才收回
 			float conceal = ex <= 0f ? 0f : far * ex * ex;
 			const float dim = 0f;
 			float flash = time >= FireAt ? Mathf.Exp(-(time - FireAt) / 0.05f) : 0f;
@@ -585,56 +585,146 @@ void fragment() {
 		Sfx.Duck(-16f, sec, 0.9f);
 	}
 
+	private static Shader? _impact;
+
 	/// <summary>
-	/// 冲击帧（动画里的打击帧）：开枪那一下连续两帧——全黑底上一道白色弹道 + 枪口放射线，再一帧反过来白底黑弹道——然后恢复。
-	/// 只有 2 帧（约 0.07s），不停顿；不读屏幕。
+	/// 冲击帧着色器（用户 2026-11-09：多边形拼的放射线太粗糙）：以枪口为中心的集中线——极坐标下按角度分 160 格，
+	/// 每格随机决定有没有线、多粗、从多远开始；线从内到外由细变粗、两侧抗锯齿；沿弹道方向一道锥形的光（越远越宽、边缘有细碎抖动），
+	/// 枪口一团白热。invert=0：黑底白线；invert=1：白底黑线。
+	/// </summary>
+	private static Shader ImpactShader => _impact ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform vec2 sres = vec2(1920.0, 1080.0);
+uniform vec2 center = vec2(900.0, 400.0);
+uniform float dir_ang = 0.4;
+uniform float invert = 0.0;
+uniform float seed = 0.0;
+uniform float unit = 1.0;
+uniform float bg_alpha = 0.9;
+float h(float n) { return fract(sin(n * 127.1 + seed * 31.7) * 43758.5453); }
+void fragment() {
+	vec2 p = UV * sres - center;
+	float r = length(p), ang = atan(p.y, p.x);
+	// 集中线
+	const float N = 160.0;
+	float k = (ang + 3.14159265) / 6.2831853 * N, cell = floor(k), f = k - cell - 0.5;
+	float on = step(0.52, h(cell));
+	float r0 = mix(90.0, 380.0, h(cell + 7.0)) * unit;
+	float w = mix(0.06, 0.34, h(cell + 13.0)) * smoothstep(r0, r0 + 500.0 * unit, r);
+	float px = abs(f) * (6.2831853 / N) * r;                         // 到线中心的像素距离
+	float halfw = w * (6.2831853 / N) * r * 0.5;
+	float line = on * (1.0 - smoothstep(halfw - 0.8, halfw + 0.8, px)) * step(r0, r);
+	// 弹道光锥：沿 dir 方向，越远越宽，边缘按距离抖动
+	vec2 d = vec2(cos(dir_ang), sin(dir_ang));
+	float along = dot(p, d), side = abs(dot(p, vec2(-d.y, d.x)));
+	float u0 = along / (30.0 * unit), i0 = floor(u0), fr = u0 - i0;
+	float jag = (mix(h(i0), h(i0 + 1.0), fr * fr * (3.0 - 2.0 * fr)) - 0.5) * 7.0 * unit + (h(floor(along / (6.0 * unit)) + 50.0) - 0.5) * 1.5 * unit;
+	float cone = (8.0 + along * 0.12) * unit + jag;
+	float beam = step(0.0, along) * (1.0 - smoothstep(cone - 1.0, cone + 1.0, side));
+	float core = step(0.0, along) * (1.0 - smoothstep(cone * 0.35 - 1.0, cone * 0.35 + 1.0, side));
+	// 枪口白热：小而亮的核 + 八道细星芒（不是一整块圆盘）
+	float star = pow(abs(cos(ang * 4.0 + seed)), 40.0) * exp(-r / (160.0 * unit));
+	float hot = exp(-r / (26.0 * unit)) * 1.2 + star * 0.9;
+	float fg = clamp(max(max(line, beam), hot * 1.4), 0.0, 1.0);
+	vec3 ink = vec3(0.02, 0.02, 0.035), paper = vec3(0.97, 0.98, 1.0);
+	vec3 bgc = mix(ink, paper, invert), fgc = mix(paper, ink, invert);
+	// 正片里光锥中心再亮一点偏青
+	fgc = mix(fgc, vec3(0.85, 0.95, 1.0), core * (1.0 - invert) * 0.6);
+	vec3 col = mix(bgc, fgc, fg);
+	COLOR = vec4(col, mix(bg_alpha, 1.0, fg));
+}" };
+
+	/// <summary>
+	/// 冲击帧（动画里的打击帧）：开枪那一下连续两帧——黑底白集中线 + 白色弹道光锥，再一帧反相（白底黑线）——然后恢复。
+	/// 只有 2 帧（约 0.07s），不停顿；不读屏幕（游戏里读不到画面）。
 	/// </summary>
 	private static void ImpactFrames(Control layer, Vector2 muzzle, Vector2 dir, Vector2 screen, float unit)
 	{
 		Node2D root = Fx.ScreenRoot(layer, "P5SinfulImpactFrame");
 		Vector2 a = Fx.ScreenPoint(layer, muzzle);
-		Vector2 sdir = (Fx.ScreenPoint(layer, muzzle + dir * 100f) - a).Normalized(), nrm = sdir.Orthogonal();
-		float far = (screen * 1.3f).Length();
-		Vector2 b = a + sdir * far;
-		Vector2[] Wedge(float w0, float w1) => new[] { a + nrm * w0, b + nrm * w1, b - nrm * w1, a - nrm * w0 };
-		Node2D frame(Color bg, Color fg)
+		Vector2 sdir = (Fx.ScreenPoint(layer, muzzle + dir * 100f) - a).Normalized();
+		float seed = Fx.Rand(0f, 100f);
+		ColorRect frame(float invert, float bg)
 		{
-			Node2D f = new();
-			root.AddChild(f);
-			f.AddChild(new ColorRect { Size = screen, Color = bg, MouseFilter = Control.MouseFilterEnum.Ignore });
-			Fx.Poly(f, Wedge(10f * unit, 260f * unit), fg);
-			for (int i = 0; i < 18; i++)
-			{
-				Vector2 d = sdir.Rotated(Fx.Rand(-Mathf.Pi, Mathf.Pi));
-				float r0 = Fx.Rand(60f, 160f) * unit, w = Fx.Rand(4f, 14f) * unit;
-				Fx.Poly(f, new[] { a + d * r0 + d.Orthogonal() * w, a + d * far, a + d * r0 - d.Orthogonal() * w }, fg);
-			}
-			return f;
+			ShaderMaterial m = new() { Shader = ImpactShader };
+			m.SetShaderParameter("sres", screen);
+			m.SetShaderParameter("center", a);
+			m.SetShaderParameter("dir_ang", sdir.Angle());
+			m.SetShaderParameter("invert", invert);
+			m.SetShaderParameter("seed", seed);
+			m.SetShaderParameter("unit", unit);
+			m.SetShaderParameter("bg_alpha", bg);
+			ColorRect q = new() { Size = screen, Material = m, MouseFilter = Control.MouseFilterEnum.Ignore };
+			root.AddChild(q);
+			return q;
 		}
-		Node2D f1 = frame(new Color(0.02f, 0.02f, 0.03f, 0.92f), new Color(1f, 1f, 1f, 0.95f));
-		Node2D f2 = frame(new Color(0.97f, 0.97f, 1f, 0.85f), new Color(0.02f, 0.02f, 0.03f, 0.95f));
+		ColorRect f1 = frame(0f, 0.9f), f2 = frame(1f, 0.82f);
 		f2.Visible = false;
-		Fx.After(root, 0.034, () => { f1.Visible = false; f2.Visible = true; });
-		Fx.After(root, 0.068, () => root.QueueFree());
+		Fx.After(root, 0.03, () => { f1.Visible = false; f2.Visible = true; });
+		Fx.After(root, 0.064, () => root.QueueFree());
 	}
 
-	/// <summary>余韵：弹道留下的一道细光痕（青色辉光 + 白芯），轻微闪烁，1.2s 里从枪口往前慢慢散掉。</summary>
+	private static Shader? _after;
+
+	/// <summary>
+	/// 余韵光痕（用户 2026-11-09：之前是白条垫一层淡蓝条，两头被截平，像贴图）：
+	/// 弹芯是一根两头收尖的细光（宽度沿长度起伏），外面两股还在慢慢拧的螺旋残丝，边上飘着往外散的火星；
+	/// 散去时不是整体变淡，而是从枪口那端开始被噪声「烧断」，断口边缘先亮一下再灭。decay 0→1。
+	/// </summary>
+	private static Shader AfterShader => _after ??= new Shader { Code = @"
+shader_type canvas_item;
+render_mode blend_add;
+uniform float clock = 0.0;
+uniform float len_px = 2000.0;
+uniform float thick_px = 120.0;
+uniform float decay = 0.0;
+" + Noise + @"
+float h1(float n) { return fract(sin(n * 91.7) * 43758.5453); }
+void fragment() {
+	float x = UV.x, y = (UV.y - 0.5) * 2.0, xp = x * len_px;
+	// 两头收尖：枪口端 6% 内、末端 12% 内收成尖
+	float ends = smoothstep(0.0, 0.06, x) * (1.0 - smoothstep(0.88, 1.0, x));
+	float wob = 0.75 + 0.25 * fbm(vec2(xp * 0.006, clock * 0.4));
+	float w = 0.07 * ends * wob;
+	// 烧蚀：阈值从枪口端往前推，噪声决定断口形状；断口附近一圈亮边
+	float n = fbm(vec2(xp * 0.01, y * 2.0 + clock * 0.3));
+	float front = decay * 1.35 - 0.2;
+	float m = x * 0.8 + n * 0.45 - front;
+	float alive = smoothstep(0.0, 0.05, m);
+	float burn = exp(-abs(m) / 0.025) * step(-0.02, m) * (1.0 - decay * 0.5);
+	float core = exp(-pow(y / max(w * 0.45, 0.004), 2.0)) * ends;
+	float glow = exp(-abs(y) / max(w * 2.4, 0.01)) * ends * 0.35;
+	// 螺旋残丝：越来越松、慢慢拧
+	float ph = xp / (thick_px * 1.6) - clock * 3.0;
+	float amp = (0.18 + 0.25 * decay) * ends;
+	float s1 = abs(y - amp * sin(ph)), s2 = abs(y - amp * sin(ph + 3.14159));
+	float strands = (exp(-s1 / 0.02) * (0.5 + 0.5 * cos(ph)) + exp(-s2 / 0.02) * (0.5 + 0.5 * cos(ph + 3.14159))) * 0.55;
+	// 火星：沿长度分格，每格一粒，往两侧飘
+	float cell = floor(xp / 22.0), fx = fract(xp / 22.0) - 0.5;
+	float drift = (h1(cell) - 0.5) * 2.0 * (0.15 + decay * 0.7);
+	float mote = step(0.72, h1(cell + 3.0)) * exp(-(fx * fx * 60.0 + pow((y - drift) * 9.0, 2.0)));
+	vec3 white = vec3(0.95, 0.98, 1.0), cyan = vec3(0.3, 0.75, 1.0), violet = vec3(0.6, 0.35, 1.0);
+	vec3 col = white * core * 1.3 + cyan * (glow + strands * (1.0 - decay * 0.6)) + mix(cyan, violet, h1(cell + 9.0)) * mote * 0.9;
+	col *= alive;
+	col += vec3(0.7, 0.92, 1.0) * burn * (core * 2.0 + glow * 2.0 + strands);
+	float edge = 1.0 - smoothstep(0.8, 1.0, abs(y));
+	COLOR = vec4(col * edge * (1.0 - smoothstep(0.85, 1.0, decay)), 1.0);
+}" };
+
+	/// <summary>余韵：弹道留下的光痕（AfterShader），1.4s 里从枪口那端开始烧断、散掉。</summary>
 	private static void Afterglow(Control layer, Vector2 muzzle, Vector2 dir, Vector2 screen, float unit)
 	{
-		const float life = 1.3f;
+		const float life = 1.4f;
 		Node2D root = Fx.Root(layer, muzzle, "P5SinfulAfterglow", life + 0.1);
 		root.Rotation = dir.Angle();
-		float far = (screen * 1.3f).Length();
-		Polygon2D glow = Fx.Poly(root, new Vector2[3], new Color(0.3f, 0.7f, 1f, 0.3f), additive: true);
-		Polygon2D core = Fx.Poly(root, new Vector2[3], new Color(0.9f, 0.97f, 1f, 0.9f), additive: true);
-		Fx.Animate(root, 0, life, t =>
-		{
-			float from = far * Fx.InCubic(t);                               // 从枪口那端开始散
-			float w = Mathf.Lerp(1f, 0.3f, t), fl = 0.85f + 0.15f * Mathf.Sin(t * 70f);
-			glow.Polygon = new[] { new Vector2(from, -14f * unit * w), new Vector2(far, -36f * unit * w), new Vector2(far, 36f * unit * w), new Vector2(from, 14f * unit * w) };
-			core.Polygon = new[] { new Vector2(from, -2.5f * unit * w), new Vector2(far, -6f * unit * w), new Vector2(far, 6f * unit * w), new Vector2(from, 2.5f * unit * w) };
-			root.Modulate = new Color(1f, 1f, 1f, (1f - Fx.InCubic(t)) * fl);
-		});
+		float far = (screen * 1.3f).Length(), thick = 160f * unit;
+		ShaderMaterial m = new() { Shader = AfterShader };
+		m.SetShaderParameter("len_px", far);
+		m.SetShaderParameter("thick_px", thick);
+		ColorRect q = new() { Size = new Vector2(far, thick), Position = new Vector2(0f, -thick / 2f), Material = m, MouseFilter = Control.MouseFilterEnum.Ignore };
+		root.AddChild(q);
+		Fx.Clock(q);
+		Fx.Animate(root, 0, life, t => m.SetShaderParameter("decay", t));
 	}
 
 	/// <summary>枪口外一串冲击环：沿枪管方向往前推，压扁成椭圆（垂直于枪管），一个接一个。</summary>
