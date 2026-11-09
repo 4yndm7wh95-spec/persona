@@ -450,7 +450,7 @@ void fragment() {
 			float thunder = 0f;
 			if (puppet != null)
 			{
-				puppet.Update(time, RiseAt, AimAt, FireAt + 0.05f, exitAt, puppet.MuzzleLocal, charge, flash * 0.6f, dim);
+				puppet.Update(time, RiseAt, AimAt, FireAt + 0.12f, exitAt, puppet.MuzzleLocal, charge, flash * 0.6f, dim);
 				thunder = puppet.Lightning;
 				muzzleLight.GlobalPosition = puppet.MuzzleGlobal;
 			}
