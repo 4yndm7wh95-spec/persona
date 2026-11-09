@@ -107,10 +107,10 @@
       1976
     ],
     "muzzle": [
-      3475,
-      2027
+      4391,
+      2403
     ],
-    "barrel_dir": 22.8,
+    "barrel_dir": 22.4,
     "spin_finger": [
       3297,
       2004
@@ -170,9 +170,7 @@
     ],
     "gun_guard_to_spin_finger": [
       280,
-      115,
-      5680,
-      3115
+      115
     ]
   },
   "patches": {
@@ -377,5 +375,58 @@
     "reference_only_layout_not_used_as_output_pixels": true,
     "tile_overlap_px": 50,
     "preserved_inner_root_fragments": true
+  },
+  "gun_lengthening": {
+    "native_regions": {
+      "held": {
+        "native_size": [
+          1774,
+          887
+        ],
+        "placement_size": [
+          1700,
+          850
+        ],
+        "source_sha256": "f41ecd83a06e22164b1f5e7f3e978160127ab6027267c8572569a7aa7ae03435"
+      },
+      "side_left": {
+        "native_size": [
+          1254,
+          1254
+        ],
+        "placement_size": [
+          1250,
+          1250
+        ],
+        "source_sha256": "ef752d485ce5d0ba9fc459c90408fdde205aac718deb9d9331e95922bd8b4903"
+      },
+      "side_right": {
+        "native_size": [
+          1254,
+          1254
+        ],
+        "placement_size": [
+          1250,
+          1250
+        ],
+        "source_sha256": "62664830188ca6dc2ceea6f57afc1c4ebae17c9b38946466fd849395d205c882"
+      }
+    },
+    "held_barrel_origin": [
+      3265,
+      1940
+    ],
+    "held_barrel_length_px": 1218,
+    "held_barrel_thickness_px": 110,
+    "held_muzzle": [
+      4391,
+      2403
+    ],
+    "side_canvas": [
+      3400,
+      800
+    ],
+    "only_barrel_regions_replaced": true,
+    "upscale_used": false
   }
 }
