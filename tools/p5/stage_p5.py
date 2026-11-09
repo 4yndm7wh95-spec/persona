@@ -130,6 +130,8 @@ SFX = {
     "sinful_flyby": ROOT / "art/sfx_p5/sinful_flyby.ogg",      # Sinful Shell round flying past the viewer (synthesized)
     "sinful_pierce": ROOT / "art/sfx_p5/sinful_pierce.ogg",    # Sinful Shell round piercing an enemy (synthesized: tools/p5/sfx/synth_sinful_pierce.py)
     "sinful_pierce_last": ROOT / "art/sfx_p5/sinful_pierce_last.ogg",
+    "sinful_twirl": ROOT / "art/sfx_p5/sinful_twirl.ogg",      # Sinful Shell twirls (synthesized: tools/p5/sfx/synth_sinful_twirl.py)
+    "sinful_twirl_small": ROOT / "art/sfx_p5/sinful_twirl_small.ogg",
     "crush": ROOT / "art/sfx_p5/crush.ogg",
     # Joker gunshots matching the Five Cards demo mix (tools/p5/sfx/five_cards_shots.py, user 2026-11-09)
     **{n: ROOT / f"art/sfx_p5/{n}.ogg" for n in ("gun_shot_1", "gun_shot_2", "gun_shot_3", "gun_shot_4", "gun_shot_final", "gun_hit", "gun_hit_final")},                          # synthesized crunch for the hand crush                      # synthesized sub hit (ffmpeg aevalsrc)

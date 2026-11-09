@@ -704,7 +704,9 @@ void fragment() {
 		{
 			_haloRoot.Transform = _root * World("head");
 			_haloMat.SetShaderParameter("spin", g * 0.6f);
-			_haloMat.SetShaderParameter("alpha", revealY < screen.Y ? Mathf.Clamp((screen.Y - revealY) / 300f, 0f, 1f) : 0f);
+			// 光环跟着烧线：烧线扫过光环那一高度才出现，退场烧线往下扫过它就没了（用户 2026-11-09 往下挪后光环进画面了，不能先于人物冒出来）
+			float haloY = (_haloRoot.Transform * HaloAt).Y;
+			_haloMat.SetShaderParameter("alpha", Mathf.Clamp((haloY - revealY) / 80f, 0f, 1f));
 		}
 		_cloudMat.SetShaderParameter("cloud_y", (_root * new Vector2(0f, CloudTopPx)).Y);
 		bool spinning = Twirls && _spin >= 0f;

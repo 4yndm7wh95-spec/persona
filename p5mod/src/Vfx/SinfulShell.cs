@@ -234,14 +234,18 @@ void fragment() {
 	/// <summary>接住枪的时刻。</summary>
 	public const float CatchAt = AimAt + SatanaelPuppet.CatchAfter;
 
+	/// <summary>Joker 开始转枪的时刻（从出牌、也就是 cast_sinful_from_mask 开始算）：攥面具 .02+.14、放手 .04+.05、插兜 .06、抬手 .05 之后（tools/p5/build_rig_p5.py）。</summary>
+	public const float JokerSpinAt = 0.36f;
+
 	/// <summary>召唤撒旦耶尔的雷劈下的时刻（用户 2026-11-08：场景还没烧完雷就劈下来，前半段不空）。</summary>
 	public const float AppearAt = 0.3f;
 
 	public sealed class Setup
 	{
 		public Vector2 JokerFeet, JokerHead, JokerMuzzle, PersonaMuzzle;
-		/// <summary>撒旦耶尔图层画布左上角在屏幕上的位置（1080p 像素）：脸推出屏幕上方、身体大半在左边外面，只露出翅膀、一部分身体和伸进来的持枪手臂（用户 2026-11-08）。</summary>
-		public Vector2 PersonaOrigin = new(-297f, -202f);   // 肩膀约在 (420,230)：枪口停在敌人前面一大段   // 肩膀约在 (520,336)：远处高处、偏左
+		/// <summary>撒旦耶尔图层画布左上角在屏幕上的位置（1080p 像素）：身体大半在左边外面，只露出翅膀、一部分身体和伸进来的持枪手臂（用户 2026-11-08）。</summary>
+		/// 用户 2026-11-09：整个往下挪 150px，头顶的光环才进画面（原来在屏幕上缘外面）；枪臂按枪管线重新对准敌人（构造时自动算），云海跟着一起往下。
+		public Vector2 PersonaOrigin = new(-297f, -52f);   // 肩膀约在 (420,230)：枪口停在敌人前面一大段   // 肩膀约在 (520,336)：远处高处、偏左
 		public float PersonaScale = 0.7f;   // 第 10 版：远处的巨人，头顶接近屏幕上缘、大腿以下埋进云海（用户 2026-11-08）
 		public float FloorY;
 		public List<Vector2> Enemies = new();
@@ -433,6 +437,8 @@ void fragment() {
 		if (puppet != null)
 		{
 			Fx.After(front, CatchAt, () => Sfx.Play(Sfx.SinfulCatch, 1f));
+			// 转枪的破风声（用户 2026-11-09）：撒旦耶尔的大枪低沉，Joker 的手枪轻快，各自从转起来那一帧开始
+			Fx.After(front, AimAt + SatanaelPuppet.Anticipation, () => Sfx.Play(Sfx.SinfulTwirl, 1.3f));
 		}
 		// 场景里飘的蓝色余烬
 		Fx.After(back, RevealAt + RevealTime * 0.6f, () =>
@@ -443,6 +449,7 @@ void fragment() {
 			embers.Material = emberMask;
 		});
 
+		Fx.After(front, JokerSpinAt, () => Sfx.Play(Sfx.SinfulTwirlSmall, 1.1f));
 		// ── 举枪、蓄力
 		// Joker 同步转枪：他的转枪（aim_in）约 0.12s 接住，对到撒旦耶尔接住枪的那一刻
 		Fx.After(front, puppet != null ? CatchAt - 0.12f : AimAt, () => s.OnJokerAim?.Invoke());
@@ -501,6 +508,13 @@ void fragment() {
 				Pierce(front, hit, dir, unit, last);
 				s.OnPierce?.Invoke(idx);
 			});
+		}
+		// 打到敌人那边（用户 2026-11-09）：不是每个敌人各一套，而是整片命中区一起——几圈冲击波沿弹道往外扩、地面一圈波纹贴着平台扫开、尘土和碎光
+		if (stopHits.Count > 0)
+		{
+			Vector2 zone = stopHits.Aggregate(Vector2.Zero, (a, b) => a + b) / stopHits.Count;
+			float span = stopHits.Count > 1 ? stopHits.Max(h => h.DistanceTo(zone)) : 0f;
+			Fx.After(front, FireAt + travel[0], () => HitZone(front, zone, dir, s.FloorY, span, unit));
 		}
 		// 子弹朝镜头飞过来：多普勒呼啸最响的那一下对到打穿最后一个敌人
 		float passAt = FireAt + (travel.Length > 0 ? travel[^1] : 0.1f);
@@ -729,13 +743,106 @@ void fragment() {
 		});
 	}
 
+	private static Shader? _shock;
+
+	/// <summary>
+	/// 命中区的冲击波（用户 2026-11-09：打到敌人那边要有命中感，波纹往外散，不要做得太简单）。一张四边形上画一圈：
+	/// 前沿是一道刺亮的细边（按角度用噪声断开成几段弧、粗细起伏，外侧一层紫色色散、内侧一层青色），
+	/// 紧跟着一条压暗的「折射带」（像空气被挤开），再往里是几道越来越淡的余波；前沿附近有细碎的放射短线往外甩；
+	/// 起手中心一团白热。prog 0→1：半径 easeOutExpo 冲出去，越扩越细越淡。premul 混合：亮的部分是加法，暗带是真的压暗。
+	/// </summary>
+	private static Shader ShockShader => _shock ??= new Shader { Code = @"
+shader_type canvas_item;
+render_mode blend_premul_alpha;
+uniform float prog = 0.0;
+uniform float seed = 0.0;
+uniform float power = 1.0;
+uniform float dark = 1.0;
+" + Noise + @"
+void fragment() {
+	vec2 p = (UV - 0.5) * 2.0;
+	float r = length(p), ang = atan(p.y, p.x);
+	float e = 1.0 - pow(2.0, -9.0 * prog);
+	float R = 0.06 + 0.88 * e;
+	float fade = pow(1.0 - prog, 1.4);
+	// 前沿：断成几段弧、粗细起伏
+	float a = ang / 6.2831853 + 0.5;
+	float seg = smoothstep(0.28, 0.42, noise(vec2(a * 7.0 + seed, seed * 3.1)));
+	float thick = (0.010 + 0.022 * (1.0 - e)) * (0.55 + 0.9 * noise(vec2(a * 23.0 + seed * 1.7, prog * 3.0)));
+	float d = r - R;
+	float edge = exp(-pow(d / thick, 2.0)) * mix(0.25, 1.0, seg);
+	float fringeOut = exp(-pow((d - thick * 2.2) / (thick * 1.2), 2.0)) * mix(0.2, 1.0, seg);
+	float fringeIn = exp(-pow((d + thick * 2.0) / (thick * 1.4), 2.0));
+	// 折射带：前沿后面一条暗带；再往里几道余波
+	float behind = clamp(-d, 0.0, 1.0);
+	float band = smoothstep(0.0, 0.02, behind) * (1.0 - smoothstep(0.03, 0.14 + 0.1 * e, behind));
+	float rip = pow(0.5 + 0.5 * cos(behind * 70.0 - prog * 18.0), 6.0) * exp(-behind * 9.0) * step(0.03, behind) * step(d, 0.0);
+	// 放射短线：前沿外侧往外甩的细线
+	float lane = pow(noise(vec2(a * 160.0, seed)), 10.0) * 4.0;
+	float streak = lane * smoothstep(0.0, 0.03, d) * (1.0 - smoothstep(0.03, 0.03 + 0.18 * e, d));
+	// 起手白热
+	float hot = exp(-r * 14.0) * pow(1.0 - prog, 8.0) * 0.9;
+	vec3 white = vec3(0.95, 0.98, 1.0), cyan = vec3(0.3, 0.8, 1.0), violet = vec3(0.62, 0.32, 1.0);
+	vec3 light = (white * edge * 1.4 + violet * fringeOut * 0.8 + cyan * (fringeIn * 0.7 + rip * 0.45 + streak * 0.8) + white * hot) * fade * power;
+	float shade = band * 0.45 * dark * fade;                          // 暗带：premul 下 alpha>0、颜色 0 = 压暗
+	float clip = 1.0 - smoothstep(0.92, 1.0, r);
+	COLOR = vec4(light * clip, shade * clip);
+}" };
+
+	/// <summary>一圈冲击波：size 是直径（像素），squash 是沿 rot 方向压扁的比例，life 秒内从中心冲出去。</summary>
+	private static void Shock(Control layer, Vector2 at, float rot, float size, float squash, float life, float delay, float power, float dark)
+	{
+		Node2D root = Fx.Root(layer, at, "P5SinfulShock", life + delay + 0.1);
+		root.Rotation = rot;
+		Node2D holder = new() { Scale = new Vector2(squash, 1f) };
+		root.AddChild(holder);
+		ShaderMaterial m = new() { Shader = ShockShader };
+		m.SetShaderParameter("seed", Fx.Rand(0f, 50f));
+		m.SetShaderParameter("power", power);
+		m.SetShaderParameter("dark", dark);
+		m.SetShaderParameter("prog", 0f);
+		ColorRect q = new() { Size = Vector2.One * size, Position = -Vector2.One * size / 2f, Material = m, MouseFilter = Control.MouseFilterEnum.Ignore, Visible = delay <= 0f };
+		holder.AddChild(q);
+		Fx.Animate(root, delay, life, t =>
+		{
+			q.Visible = true;
+			m.SetShaderParameter("prog", t);
+		});
+	}
+
+	/// <summary>
+	/// 命中区：子弹打进敌人那一片的时候整片一起反馈（不是每个敌人各一套）。zone = 几个穿透点的中心，span = 穿透点离中心最远多少。
+	/// ① 三圈冲击波，圈面垂直于弹道（沿弹道压扁成椭圆，像子弹推开的空气环），一圈比一圈大、晚、淡；
+	/// ② 地面波纹：贴着平台顶面的一圈很扁的椭圆，往两边扫得很远，带一层压暗；
+	/// ③ 沿地面往两边喷的尘土和碎光，往前（弹道方向）的一束碎光；④ 一下冷白的闪光 + 一盏点光照亮敌人。
+	/// </summary>
+	private static void HitZone(Control layer, Vector2 zone, Vector2 dir, float floorY, float span, float unit)
+	{
+		float rot = dir.Angle(), big = 1f + span / (420f * unit);
+		Shock(layer, zone, rot, 620f * unit * big, 0.42f, 0.55f, 0f, 1.2f, 1f);
+		Shock(layer, zone + dir * 40f * unit, rot, 900f * unit * big, 0.38f, 0.7f, 0.06f, 0.9f, 0.8f);
+		Shock(layer, zone + dir * 90f * unit, rot, 1250f * unit * big, 0.34f, 0.85f, 0.15f, 0.6f, 0.55f);
+		// 地面波纹（平台顶面上）
+		Vector2 ground = new(zone.X, floorY);
+		Shock(layer, ground, Mathf.Pi / 2f, 1250f * unit * big, 0.13f, 0.85f, 0.03f, 0.75f, 0.9f);   // 转 90°：沿竖直方向压扁，贴着地面
+		Color[] dust = { new(0.75f, 0.85f, 1f), new(0.35f, 0.55f, 0.9f), new(0.15f, 0.2f, 0.35f) };
+		Glow.Sparks(layer, ground, 40, 500f, 1500f, 0.55f, dust, 900f, 0.06f, 0.18f, Vector2.Right, 12f);
+		Glow.Sparks(layer, ground, 40, 500f, 1500f, 0.55f, dust, 900f, 0.06f, 0.18f, Vector2.Left, 12f);
+		Glow.Sparks(layer, zone, 60, 900f, 2600f, 0.45f, new[] { new Color(0.95f, 0.98f, 1f), new Color(0.4f, 0.8f, 1f), new Color(0.6f, 0.3f, 1f) },
+			300f, 0.04f, 0.14f, dir, 35f);
+		Glow.Flash(layer, zone, new Color(0.8f, 0.92f, 1f), 240f * unit, 0.1f);           // 小而短：不把敌人整片糊白
+		PointLight2D pl = Light(layer, zone, new Color(0.65f, 0.85f, 1f), 1100f * unit * big);
+		Fx.Animate(pl, 0, 0.6, k => pl.Energy = 1.3f * Mathf.Pow(1f - k, 2f));
+		Fx.FreeAfter(pl, 0.65);
+	}
+
 	/// <summary>贯穿一个敌人：沿弹道方向喷出的火花 + 一圈冲击环 + 白闪 + 命中确认；最后一个敌人加 P5 红黑白冲击帧和横扫全场的冲击波。</summary>
 	private static void Pierce(Control layer, Vector2 at, Vector2 dir, float unit, bool last)
 	{
 		// 用户 2026-11-09：是一发巨大的穿甲弹把所有人一起打穿，不是每人一发——每个敌人身上不做单独的圈、准星、冲击帧，
 		// 只有子弹穿过时顺着弹道喷出去的火花和一下亮光；最后一个之后整条弹道再统一一震
 		PointLight2D pl = Light(layer, at, new Color(0.7f, 0.9f, 1f), 600f * unit);
-		Fx.Animate(pl, 0, 0.35, k => pl.Energy = 3f * (1f - k) * (1f - k));
+		Fx.Animate(pl, 0, 0.35, k => pl.Energy = 2f * (1f - k) * (1f - k));
 		Fx.FreeAfter(pl, 0.4);
 		Glow.Sparks(layer, at, 36, 600f, 1800f, 0.4f, new[] { new Color(0.95f, 0.98f, 1f), new Color(0.35f, 0.75f, 1f), new Color(0.65f, 0.3f, 1f) },
 			200f, 0.05f, 0.14f, dir, 22f);
