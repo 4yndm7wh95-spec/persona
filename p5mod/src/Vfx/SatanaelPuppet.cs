@@ -22,13 +22,13 @@ public sealed class SatanaelPuppet
 	// 第 10 版（照原版模型画的远景巨人，layers_v10 → tools/p5/satanael/game_layers.py v10 0.42），按绘制顺序（从后往前）
 	private static readonly Layer[] Layers =
 	{
-		new("wings_back_far", new(0.0f, 158.8f), new(1008f, 588f), "body"),
-		new("wings_back_near", new(997.9f, 77.7f), new(1113f, 672f), "body"),
+		new("wings_back_far", new(-104.2f, 70.6f), new(1008f, 588f), "body"),
+		new("wings_back_near", new(909.7f, -10.5f), new(1113f, 672f), "body"),
 		// 翼根的黑色羽毛（Codex b233f7a1；原版 = 六片硬翼 + 翼根一大簇撕裂状黑羽毛，用户 2026-11-09）：背后那簇在近侧翼和身体之间，前面那簇盖住前翼的根
-		new("wing_root_feathers", new(542.2f, 173.9f), new(1113f, 672f), "body"),
+		new("wing_root_feathers", new(454.0f, 85.7f), new(1113f, 672f), "body"),
 		new("body", new(597.7f, 501.1f), new(987f, 840f), null),
-		new("wings_front", new(1052.5f, 562.0f), new(1146.6f, 693f), "body"),
-		new("wing_root_feathers_front", new(1096.2f, 563.6f), new(1146.6f, 693f), "body"),
+		new("wings_front", new(964.3f, 473.8f), new(1146.6f, 693f), "body"),
+		new("wing_root_feathers_front", new(1008.0f, 475.4f), new(1146.6f, 693f), "body"),
 		new("head", new(768.2f, 258.7f), new(966f, 546f), "body"),
 		new("arm_upper", new(1101.2f, 543.5f), new(1146.6f, 588f), "body"),
 		new("arm_fore_gun", new(1180.6f, 628.7f), new(1245.3f, 699.3f), "arm_upper"),
@@ -84,7 +84,7 @@ void fragment() {
 	if (flex > 0.0 || rustle > 0.0) {
 		vec2 q = UV / TEXTURE_PIXEL_SIZE - root_px;
 		float r = length(q), th = atan(q.y, q.x);
-		float k = pow(clamp(r / reach_px, 0.0, 1.5), 1.6);
+		float k = pow(clamp(r / reach_px, 0.0, 1.2), 1.6);
 		float ph = clock * flap_speed + flap_phase;
 		th -= flex * k * sin(ph + th * fan) + rustle * k * sin(ph * 3.7 + th * 23.0 + r * 0.02);
 		uv = (root_px + vec2(cos(th), sin(th)) * r) * TEXTURE_PIXEL_SIZE;
@@ -96,20 +96,13 @@ void fragment() {
 	vec3 g = mix(vec3(l), c.rgb, 0.55) * vec3(0.6, 0.7, 0.95);
 	g = mix(g, vec3(0.16, 0.26, 0.4), haze);                                // 远处的大气：蒙一层冷蓝的雾
 	g *= mix(1.0, 0.45, smoothstep(sres.y * 0.55, sres.y * 1.05, sp.y));
-	// 边缘光：天空（右上）方向那一侧的轮廓亮一道青色
-	float a2 = texture(TEXTURE, uv + vec2(0.7, -0.7) * TEXTURE_PIXEL_SIZE * 7.0).a;
-	float rim = clamp(c.a - a2, 0.0, 1.0);
-	g += vec3(0.3, 0.72, 1.0) * rim * 0.85;
+	// （用户 2026-11-09：不要描边——原来这里的青色边缘光、翅膀边线都去掉了；登场 / 退场的轮廓线是溶解效果，留着）
 	// 翅膀（六片硬翼 + 翼根羽毛，单独一份材质 wing = 1）：照原版切入镜头的配色（用户 2026-11-09）——蓝光把金色骷髅照成深蓝，
-	// 整片偏冷蓝；翼骨 / 翼边 / 羽毛边缘一圈青色亮线
+	// 整片偏冷蓝
 	if (wing > 0.5) {
 		float gold = smoothstep(0.08, 0.3, c.r - c.b) * smoothstep(0.2, 0.45, l);
 		g = mix(g, vec3(0.06, 0.09, 0.2) * (0.45 + 0.9 * l), gold * 0.85);   // 用户 2026-11-09：蓝没这么艳，再暗一些
 		g *= vec3(0.8, 0.86, 1.02);
-		vec2 tw = TEXTURE_PIXEL_SIZE * 4.0;
-		float nbw = min(min(texture(TEXTURE, uv + vec2(tw.x, 0.0)).a, texture(TEXTURE, uv - vec2(tw.x, 0.0)).a),
-			min(texture(TEXTURE, uv + vec2(0.0, tw.y)).a, texture(TEXTURE, uv - vec2(0.0, tw.y)).a));
-		g += vec3(0.3, 0.7, 1.0) * clamp(c.a - nbw, 0.0, 1.0) * 0.5;
 	}
 	// 点光（枪口蓄力）：近的地方被照亮，亮部被照得更多
 	float d = length(sp - point_light.xy);
@@ -325,11 +318,12 @@ void fragment() {
 	/// <summary>各翅膀层的弯曲：(摆幅 弧度, 速度, 相位, 扇形相位系数, 细抖)。三组翼错开相位；翼根羽毛摆得小、抖得碎。</summary>
 	private static readonly Dictionary<string, (float Flex, float Speed, float Phase, float Fan, float Rustle)> Bend = new()
 	{
-		["wings_back_far"] = (0.06f, 1.9f, 0f, 2.5f, 0f),
-		["wings_back_near"] = (0.06f, 1.9f, 0.5f, 2.5f, 0f),
-		["wings_front"] = (0.05f, 1.7f, 1.1f, 2.5f, 0f),
-		["wing_root_feathers"] = (0.025f, 2.3f, 0.3f, 4f, 0.012f),
-		["wing_root_feathers_front"] = (0.025f, 2.3f, 1.4f, 4f, 0.012f),
+		// 用户 2026-11-09：第一版（翼尖 3～4°）看不出在动——加大到翼尖约 7°，慢一点更像扇翅；动作里再乘 bendMul
+		["wings_back_far"] = (0.12f, 1.4f, 0f, 2.5f, 0f),
+		["wings_back_near"] = (0.12f, 1.4f, 0.6f, 2.5f, 0f),
+		["wings_front"] = (0.1f, 1.3f, 1.2f, 2.5f, 0f),
+		["wing_root_feathers"] = (0.05f, 1.8f, 0.3f, 4f, 0.025f),
+		["wing_root_feathers_front"] = (0.05f, 1.8f, 1.4f, 4f, 0.025f),
 	};
 
 	private ShaderMaterial WingMat(Layer L, Texture2D? tex)
@@ -352,7 +346,7 @@ void fragment() {
 	}
 	private readonly Vector2 _origin;
 	private readonly float _scale, _aim, _riftX;
-	private float _spin = -1f, _spinSpeed;
+	private float _spin = -1f, _spinSpeed, _spinDir = 1f;
 	private Node2D? _haloRoot;
 	private ShaderMaterial? _haloMat;
 	private readonly ShaderMaterial _cloudMat;
@@ -482,6 +476,9 @@ void fragment() {
 	/// <summary>接住枪的时刻（相对 raiseAt）：Joker 的转枪和接枪声对到这里。</summary>
 	public const float CatchAfter = Anticipation + SpinTime;
 
+	/// <summary>收枪（用户 2026-11-09：开完枪原路转枪收回）：开枪后 PutAwayAfter 秒手臂原路放回去，枪反着转两圈落回手里。</summary>
+	public const float PutAwayAfter = 0.55f, PutAwaySwing = 0.36f;
+
 	/// <summary>现在闪雷有多亮（给场景闪光 / 灯光用）。</summary>
 	public float Lightning { get; private set; }
 
@@ -582,7 +579,7 @@ void fragment() {
 		Transform2D fore = _root * World("arm_fore_gun");
 		_history.Add((g, fore, spinning));
 		while (_history.Count > 0 && g - _history[0].G > 0.2f) _history.RemoveAt(0);
-		bool swing = (r >= Anticipation && r < CatchAfter + 0.1f) || (f >= 0f && f < 0.3f);
+		bool swing = (r >= Anticipation && r < CatchAfter + 0.1f) || (f >= 0f && f < 0.3f) || (f >= PutAwayAfter && f < PutAwayAfter + SpinTime + 0.1f);
 		for (int lvl = 0; lvl < 2; lvl++)
 		{
 			float back = 0.035f * (lvl + 1);
@@ -637,7 +634,7 @@ void fragment() {
 			if (_swooshNode.Visible)
 			{
 				_swooshNode.Transform = _root * World("arm_fore_open") * Transform2D.Identity.Translated(SpinFinger);
-				_swooshMat.SetShaderParameter("head", Mathf.DegToRad(BarrelDirDeg + _spin));
+				_swooshMat.SetShaderParameter("head", Mathf.DegToRad(BarrelDirDeg + _spinDir * _spin));
 				_swooshMat.SetShaderParameter("span", Mathf.Clamp(Mathf.DegToRad(_spinSpeed * 0.07f), 0.3f, 3.6f));
 				_swooshMat.SetShaderParameter("alpha", Mathf.Clamp(_spinSpeed / 1500f, 0f, 1f));
 			}
@@ -709,15 +706,18 @@ void fragment() {
 		float breathe = 0.006f * Mathf.Sin(g * 2.3f);
 		// 翅膀：登场时从收拢展开，之后小幅鼓动（±1.5° 以内，翼根不露切边）
 		float unfold = EaseOutCubic((a - RevealDelay) / 0.55f) * (leaving ? 1f - EaseInOut(vx) : 1f);   // 退场时翅膀收拢
-		_angle["wings_back_far"] = Mathf.Lerp(-6f, 0f, unfold) - 1.2f * Mathf.Sin(g * 1.9f);
-		_angle["wings_back_near"] = Mathf.Lerp(6f, 0f, unfold) + 1.5f * Mathf.Sin(g * 1.9f + 0.4f);
-		_angle["wings_front"] = Mathf.Lerp(8f, 0f, unfold) + 1.2f * Mathf.Sin(g * 1.7f + 0.9f);
+		_angle["wings_back_far"] = Mathf.Lerp(-6f, 0f, unfold) - 2.5f * Mathf.Sin(g * 1.4f);
+		_angle["wings_back_near"] = Mathf.Lerp(6f, 0f, unfold) + 3f * Mathf.Sin(g * 1.4f + 0.6f);
+		_angle["wings_front"] = Mathf.Lerp(8f, 0f, unfold) + 2.5f * Mathf.Sin(g * 1.3f + 1.2f);
+		float wingAct = 0f;                                         // 动作带出来的翅膀摆动（转枪、开枪、收枪时额外弯的量）
+		float sway = 0f;                                            // 身体动作带动翅膀整体往反方向摆（度）
 		_angle["head"] = 1f * Mathf.Sin(g * 1.1f);
 		_angle["arm_fore_open"] = 0f;
 		_angle["finger_tip"] = 0f;
 		float upper = 55f + 1.5f * Mathf.Sin(g * 2.1f), fore = 25f + 2f * Mathf.Sin(g * 2.1f - 0.6f);
 		_spin = -1f;
 		_spinSpeed = 0f;
+		_spinDir = 1f;
 		_angle["gun"] = 0f;
 		float r = g - raiseAt;
 		if (r >= 0f)
@@ -739,12 +739,22 @@ void fragment() {
 				_angle["gun"] = _spin;
 				fore += 7f * Mathf.Sin(Mathf.DegToRad(_spin)) * (1f - k);
 				upper += 2.5f * Mathf.Sin(Mathf.DegToRad(_spin) + 0.8f) * (1f - k);
+				// 转枪带着身体：上身跟着甩、翅膀反着摆（用户 2026-11-09：转枪时翅膀要随身体动）
+				sway += -4f * Mathf.Sin(Mathf.DegToRad(_spin) + 0.4f) * (1f - k);
+				wingAct = Mathf.Max(wingAct, 1.3f * (1f - k));
 				_spinSpeed = 720f * 3f * Mathf.Pow(1f - k, 2f) / SpinTime;      // 度/秒（残影用）
 			}
 			else if (r >= CatchAfter)
 			{
 				float u = r - CatchAfter;
 				fore += 5f * Mathf.Exp(-u / 0.06f) * Mathf.Sin(Mathf.Min(u / 0.06f, 1f) * Mathf.Pi);   // 接住那一下手腕往下一顿
+			}
+			// 甩手出去那一下：翅膀被带得往后一扫
+			if (r >= ant && r < ant + swing)
+			{
+				float sw = Mathf.Sin((r - ant) / swing * Mathf.Pi);
+				sway += 3.5f * sw;
+				wingAct = Mathf.Max(wingAct, 1.2f * sw);
 			}
 			if (g < fireAt && r > CatchAfter)
 			{
@@ -761,18 +771,50 @@ void fragment() {
 			float kick = f < 0.06f ? EaseOutCubic(f / 0.06f)
 				: f < 0.35f ? 1f + 0.06f * Mathf.Exp(-(f - 0.06f) / 0.08f) * Mathf.Sin((f - 0.06f) * 60f)
 				: 1f - EaseOutCubic((f - 0.35f) / 0.6f) - 0.07f * Mathf.Sin(Mathf.Clamp((f - 0.35f) / 0.6f, 0f, 1f) * Mathf.Pi);
+			float pa = f - PutAwayAfter;
+			kick *= 1f - Mathf.Clamp(pa / 0.12f, 0f, 1f);                   // 收枪开始时后坐让位
 			upper += -12f * kick;
 			fore += -40f * kick;
 			float kb = f < 0.03f ? 0f : kick * Mathf.Clamp((f - 0.03f) / 0.08f, 0f, 1f);
-			lean = -2.5f * kb;
-			push = new Vector2(-18f, -6f) * kb;
-			_angle["head"] += -3f * kb;
-			_angle["wings_back_near"] += 2f * kb;
-			_angle["wings_front"] += 2.5f * kb;
-			flare = kb;
+			lean = -4f * kb;
+			push = new Vector2(-26f, -8f) * kb;
+			_angle["head"] += -4f * kb;
+			// 翅膀比身体晚半拍被后坐甩开，再回弹（跟随动作）
+			float fw = f - 0.05f;
+			float wk = fw <= 0f ? 0f : (1f - Mathf.Exp(-fw / 0.05f)) * Mathf.Exp(-fw / 0.45f) + 0.25f * Mathf.Sin(fw * 13f) * Mathf.Exp(-fw / 0.22f);
+			sway += 7f * wk;
+			flare = Mathf.Max(kb, wk);
+			// 收枪：手臂原路放回（瞄准 → 抬到肩上 → 垂下的初始姿势），枪反着转两圈、落回手里
+			if (pa >= 0f)
+			{
+				float up = Mathf.Clamp(pa / PutAwaySwing, 0f, 1f), upf = Mathf.Clamp((pa - 0.05f) / PutAwaySwing, 0f, 1f);
+				upper = Mathf.Lerp(upper, 55f + 1.5f * Mathf.Sin(g * 2.1f), EaseInOut(up));
+				fore = Mathf.Lerp(fore, 25f + 2f * Mathf.Sin(g * 2.1f - 0.6f), EaseInOut(upf));
+				float ps = pa - 0.02f;
+				if (ps >= 0f && ps < SpinTime)
+				{
+					float k = ps / SpinTime;
+					_spin = 720f * (1f - Mathf.Pow(1f - k, 3f));
+					_spinDir = -1f;
+					_angle["gun"] = -_spin;
+					fore += 7f * Mathf.Sin(Mathf.DegToRad(_spin)) * (1f - k);
+					_spinSpeed = 720f * 3f * Mathf.Pow(1f - k, 2f) / SpinTime;
+					sway += 3f * Mathf.Sin(Mathf.DegToRad(_spin) + 0.4f) * (1f - k);
+					wingAct = Mathf.Max(wingAct, 1.1f * (1f - k));
+				}
+				else if (ps >= SpinTime)
+				{
+					float u = ps - SpinTime;
+					fore += 4f * Mathf.Exp(-u / 0.06f) * Mathf.Sin(Mathf.Min(u / 0.06f, 1f) * Mathf.Pi);   // 落回手里那一下一顿
+				}
+			}
 		}
+		// 身体动作带动的翅膀摆（三组错开一点，远的那组反向），翼根羽毛跟着
+		_angle["wings_back_far"] += -0.8f * sway;
+		_angle["wings_back_near"] += 1f * sway;
+		_angle["wings_front"] += 1.15f * sway;
 		// 翅膀弯得更多的时候：登场展开、退场收拢时翼尖甩得大；开枪后坐时整片往外一张
-		float bendMul = 1f + 1.6f * (1f - unfold) * (a >= RevealDelay ? 1f : 0f) + 1.8f * flare;
+		float bendMul = Mathf.Min(1f + 1.4f * (1f - unfold) * (a >= RevealDelay ? 1f : 0f) + 1.6f * flare + wingAct, 3f);
 		foreach ((string w, ShaderMaterial m) in _wingMats)
 		{
 			if (Bend.TryGetValue(w, out var b)) m.SetShaderParameter("flex", b.Flex * bendMul);
@@ -817,7 +859,7 @@ void fragment() {
 			{
 				float lagDeg = Mathf.Min(70f, _spinSpeed * 0.018f * (i + 1));
 				Layer G = Find("gun");
-				gh.Transform = _root * World("arm_fore_open") * Joint(G.Pivot, _spin - lagDeg) * Transform2D.Identity.Translated(SpinFinger - GunGuard);
+				gh.Transform = _root * World("arm_fore_open") * Joint(G.Pivot, _spinDir * (_spin - lagDeg)) * Transform2D.Identity.Translated(SpinFinger - GunGuard);
 			}
 		}
 		UpdateMotionFx(g, raiseAt, fireAt, spinning);

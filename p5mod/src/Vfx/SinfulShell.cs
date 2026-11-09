@@ -226,7 +226,7 @@ void fragment() {
 	// ───────────────────────── 时序 ─────────────────────────
 
 	/// <summary>各拍的时刻（从出牌算起，秒）。</summary>
-	public const float RevealAt = 0.05f, RevealTime = 0.7f, AimAt = 0.45f, BulletSpeed = 5200f, ExitAfter = 1.1f, ExitTime = 0.6f;
+	public const float RevealAt = 0.05f, RevealTime = 0.7f, AimAt = 0.45f, BulletSpeed = 5200f, ExitAfter = 1.45f, ExitTime = 0.6f;   // ExitAfter 1.1 → 1.45（用户 2026-11-09：开完枪原路转枪收回，退场的雷等收完枪再劈）
 
 	/// <summary>开枪（用户 2026-11-08：不蓄力，转完枪停一小下就开）：撒旦耶尔接住枪后 0.2s。</summary>
 	public const float FireAt = AimAt + SatanaelPuppet.CatchAfter + 0.2f;
@@ -443,6 +443,8 @@ void fragment() {
 		{
 			// 转枪的破风声：只留撒旦耶尔的（用户 2026-11-09：Joker 的转枪声去掉；接枪的金属声也去掉——它正好落在开枪的倒吸里，叠在一起）
 			Fx.After(front, AimAt + SatanaelPuppet.Anticipation, () => Sfx.Play(Sfx.SinfulTwirl, 0.55f));
+			// 收枪的转枪声（轻一点）；撒旦耶尔的开枪时刻是 FireAt + 0.12（Update 里传的）
+			Fx.After(front, FireAt + 0.12f + SatanaelPuppet.PutAwayAfter + 0.02f, () => Sfx.Play(Sfx.SinfulTwirl, 0.4f));
 		}
 		// 场景里飘的蓝色余烬
 		Fx.After(back, RevealAt + RevealTime * 0.6f, () =>

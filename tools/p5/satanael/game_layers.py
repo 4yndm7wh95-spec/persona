@@ -21,8 +21,11 @@ for L in meta["layers"]:
     box = im.getbbox()
     if box is None:
         print(name, "empty, skipped"); continue
-    pad = 90 if name.startswith("wing") else 8      # wings bend in the shader (tips swing out): room around them
-    box = (max(0, box[0] - pad), max(0, box[1] - pad), min(im.width, box[2] + pad), min(im.height, box[3] + pad))
+    pad = 300 if name.startswith("wing") else 8     # wings bend in the shader (tips swing out): room around them
+    if name.startswith("wing"):
+        box = (box[0] - pad, box[1] - pad, box[2] + pad, box[3] + pad)   # may reach past the canvas: crop fills that with transparent
+    else:
+        box = (max(0, box[0] - pad), max(0, box[1] - pad), min(im.width, box[2] + pad), min(im.height, box[3] + pad))
     crop = im.crop(box)
     crop = crop.resize((round(crop.width * K), round(crop.height * K)), Image.LANCZOS)
     crop.save(OUT / f"sat_{name}.png")
