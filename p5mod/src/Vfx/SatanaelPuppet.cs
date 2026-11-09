@@ -27,16 +27,16 @@ public sealed class SatanaelPuppet
 		new("body", new(597.7f, 501.1f), new(987f, 840f), null),
 		new("wings_front", new(1087f, 596.4f), new(1146.6f, 693f), "body"),
 		new("head", new(768.2f, 258.7f), new(966f, 546f), "body"),
-		new("arm_upper", new(952.6f, 524.6f), new(1024.8f, 617.4f), "body"),
-		new("arm_fore_gun", new(1018.5f, 620.8f), new(1068.1f, 747.6f), "arm_upper"),
+		new("arm_upper", new(1101.2f, 543.5f), new(1146.6f, 588f), "body"),
+		new("arm_fore_gun", new(1180.6f, 628.7f), new(1245.3f, 699.3f), "arm_upper"),
 		// 转枪：空手 + 单独的枪（护圈中心 GunGuard 平移到食指 SpinFinger 上、绕食指转）+ 食指尖（画在枪上面）
-		new("arm_fore_open", new(1018.1f, 619.5f), new(1068.1f, 747.6f), "arm_upper"),
-		new("gun", new(1163f, 713.6f), new(1384.7f, 841.7f), "arm_fore_open"),
-		new("finger_tip", new(1347.4f, 817.7f), new(1384.7f, 841.7f), "arm_fore_open"),
+		new("arm_fore_open", new(1180.6f, 628.7f), new(1245.3f, 699.3f), "arm_upper"),
+		new("gun", new(1438.5f, 721.1f), new(1559f, 820.7f), "arm_fore_open"),
+		new("finger_tip", new(1532.2f, 796.7f), new(1559f, 820.7f), "arm_fore_open"),
 	};
 	/// <summary>画里枪管的朝向（度，顺时针为正；layers.json 的 barrel_dir）。第 10 版加长后的短管枪（用户 2026-11-09）。</summary>
-	private const float BarrelDirDeg = 22.4f;
-	private static readonly Vector2 MuzzlePx = new(1844.2f, 1009.3f), GunGuard = new(1267.1f, 793.4f), SpinFinger = new(1384.7f, 841.7f);
+	private const float BarrelDirDeg = 23.4f;
+	private static readonly Vector2 MuzzlePx = new(1699.7f, 848f), GunGuard = new(1559f, 820.7f), SpinFinger = new(1559f, 820.7f);
 	/// <summary>光环中心（头的局部像素，头顶后上方）、云海顶线（大腿中部，图层像素 y）。</summary>
 	private static readonly Vector2 HaloAt = new(918f, 205f);
 	private const float CloudTopPx = 930f;    // 腰下（图层像素）：身体图层在 1259 处截断，云要盖过断口一大段（用户 2026-11-09：腿像被截断）
@@ -171,6 +171,8 @@ void fragment() {
 shader_type canvas_item;
 uniform vec2 sres = vec2(1920.0, 1080.0);
 uniform float cloud_y = 700.0;
+uniform float blast_x = 0.0;
+uniform float blast_t = -1.0;
 uniform float clock = 0.0;
 uniform float alpha = 1.0;
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
@@ -186,6 +188,14 @@ void fragment() {
 	float n1 = fbm(vec2(px.x * 0.0035 + clock * 0.02, clock * 0.04));
 	float n2 = fbm(vec2(px.x * 0.007 - clock * 0.03, 3.1 + clock * 0.05));
 	float top = cloud_y + (n1 - 0.5) * 150.0 + 35.0 * sin(px.x * 0.005 + clock * 0.3);
+	// 开枪的冲击波（Blast）：从枪口正下方往两边推开——波前把云面压下去，外侧鼓起一道亮的浪头，里面被压平
+	float wave = 0.0;
+	if (blast_t >= 0.0) {
+		float r = 1100.0 * blast_t + 30.0, fade = exp(-blast_t / 0.7), dx = abs(px.x - blast_x);
+		wave = exp(-pow((dx - r) / 120.0, 2.0)) * fade;
+		top += 120.0 * wave + 70.0 * fade * (1.0 - smoothstep(r - 200.0, r, dx));
+		top -= 55.0 * exp(-pow((dx - r - 170.0) / 90.0, 2.0)) * fade;
+	}
 	float top2 = top - 70.0 + (n2 - 0.5) * 90.0;
 	float d = px.y - top, d2 = px.y - top2;
 	float puff = 0.7 + 0.3 * fbm(px * 0.005 + vec2(clock * 0.03, 0.0));
@@ -195,6 +205,7 @@ void fragment() {
 	float dens = clamp(max(max(near, back), haze), 0.0, 1.0);
 	float rim = exp(-abs(d) / 45.0) * near + exp(-abs(d2) / 40.0) * back * 0.7;
 	vec3 body = mix(vec3(0.07, 0.11, 0.21), vec3(0.04, 0.06, 0.13), smoothstep(0.0, 400.0, d));
+	rim += wave * 1.2 * exp(-abs(d) / 70.0) * near;   // 只亮浪头（云面那一圈），不要竖着一整条
 	vec3 col = body + vec3(0.42, 0.6, 0.85) * rim * 1.1 + vec3(0.1, 0.16, 0.26) * (puff - 0.7) * near;
 	col = mix(col, vec3(0.16, 0.24, 0.40), haze * (1.0 - near));
 	COLOR = vec4(col, dens * alpha);
@@ -326,6 +337,14 @@ void fragment() {
 	public float Lightning { get; private set; }
 
 	/// <summary>按全局时刻 g 摆姿势、更新材质。appearAt：召唤的雷劈下；raiseAt：开始抬枪；fireAt：开枪；exitAt：退场的雷劈下。</summary>
+	/// <summary>开枪：远处云海被枪口冲击波压开、往两边翻卷（云着色器里的 blast）。</summary>
+	public void Blast()
+	{
+		_cloudMat.SetShaderParameter("blast_x", MuzzleGlobal.X);
+		Fx.Animate(_parent, 0, 1.6, t => _cloudMat.SetShaderParameter("blast_t", t * 1.6f));
+		Fx.After(_parent, 1.65, () => _cloudMat.SetShaderParameter("blast_t", -1f));
+	}
+
 	public void Update(float g, float appearAt, float raiseAt, float fireAt, float exitAt, Vector2? chargeLight = null, float chargePower = 0f,
 		float flash = 0f, float dim = 0f)
 	{

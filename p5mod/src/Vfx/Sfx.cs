@@ -54,7 +54,8 @@ public static class Sfx
 		SinfulThunder = "sinful_thunder", // 大罪穿甲弹：撒旦耶尔登场 / 退场的闪雷（合成：尖锐的爆裂 + 滚动的低频雷鸣，tools/p5/sfx/synth_sinful.py）
 		SinfulCharge = "sinful_charge",   // 蓄力：越来越高的啸叫 + 越来越重的低频嗡鸣
 		SinfulCatch = "sinful_catch",     // 转枪接住：沉重的金属咔嗒
-		SinfulStop = "sinful_stop",       // 时停（合成，原版没有）：定格叮 + 掉速 → 一圈一声滴答（越来越密）→ 吸气 + 刺击 → 解除重击，按 SinfulShell.TimeStop 的节拍
+		SinfulShot = "sinful_shot",       // 开枪（重做，合成）：倒吸 → 一瞬静音 → 爆裂 + 超低频下坠 + 饱和重击 → 金属余振 → 碎石 → 远处云层滚回三声雷 → 耳鸣淡出；冲击在 0.30s
+		SinfulFlyby = "sinful_flyby",     // 子弹从远处朝镜头飞过来的多普勒呼啸，最响在 0.35s
 		SinfulFire = "sinful_fire",       // 开枪（用户：不要普通手枪声）：倒吸 → 爆裂 → 超低频重击 → 失真冲击 → 金属余振 → 长尾和回声
 		GunHit = "gun_hit",             // 枪命中（演示混音：damage_enemy 升调 1.2、压低、偏右）
 		GunHitFinal = "gun_hit_final",  // 收尾那一发的命中：更响的命中 + sub_boom + 47Hz 低频
@@ -77,7 +78,7 @@ public static class Sfx
 	private static readonly Dictionary<string, float> Lead = new()
 	{
 		[Parry] = 0.068f, [Slam] = 0.1f, [PoisonTick] = 0.078f, [CutIn] = 0.083f, [PersonaFlame] = 0.13f, [Wing] = 0.023f,
-		[Crack] = 0.019f, [SwishHeavy] = 0.005f, [KnifeRing] = 0.048f, [SinfulFire] = 0.12f,
+		[Crack] = 0.019f, [SwishHeavy] = 0.005f, [KnifeRing] = 0.048f, [SinfulFire] = 0.12f, [SinfulShot] = 0.30f,
 	};
 
 	/// <summary>在 delay 秒后的那一帧「打中」：按起音提前量提前开始播。</summary>
@@ -135,6 +136,27 @@ public static class Sfx
 	}
 
 	/// <summary>预热（Vfx/Warmup.cs）期间静音：特效照常跑一遍，但不出声。只拦当场播放的（预热不排延迟的声音）。</summary>
+	/// <summary>
+	/// 压低其他声音（用户 2026-11-09：这一枪的震撼感一半要靠声音——开枪前一瞬间周围安静下来）：
+	/// 除 Master 和本 mod 用的那条总线以外，所有音频总线降 db，hold 秒后在 release 秒里恢复。游戏走别的音频系统时这里不起作用，也无害。
+	/// </summary>
+	public static void Duck(float db, float hold, float release) => Stage.Safe("sfx duck", () =>
+	{
+		if (Engine.GetMainLoop() is not SceneTree tree) return;
+		string mine = AudioServer.GetBusIndex("SFX") >= 0 ? "SFX" : "Master";
+		for (int i = 0; i < AudioServer.BusCount; i++)
+		{
+			string name = AudioServer.GetBusName(i);
+			if (name == "Master" || name == mine) continue;
+			int bus = i;
+			float rest = AudioServer.GetBusVolumeDb(bus);
+			Tween tw = tree.CreateTween().SetIgnoreTimeScale(true);
+			tw.TweenMethod(Callable.From<float>(v => AudioServer.SetBusVolumeDb(bus, v)), rest, rest + db, Mathf.Min(0.12f, hold));
+			tw.TweenInterval(Mathf.Max(0f, hold - 0.12f));
+			tw.TweenMethod(Callable.From<float>(v => AudioServer.SetBusVolumeDb(bus, v)), rest + db, rest, release);
+		}
+	});
+
 	public static bool Muted;
 
 	/// <summary>播放；同一音效 45ms 内不重复叠加。volume 0～1.4。</summary>
