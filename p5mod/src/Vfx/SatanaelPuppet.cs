@@ -34,6 +34,8 @@ public sealed class SatanaelPuppet
 		new("gun", new(550.2f, 112.1f), new(756f, 420f), "arm_fore_open"),
 		new("finger_tip", new(735.8f, 390.2f), new(756f, 420f), "arm_fore_open"),
 	};
+	/// <summary>画里枪管的朝向（度，顺时针为正；layers.json 的 barrel_dir）。</summary>
+	private const float BarrelDirDeg = -15f;
 	private static readonly Vector2 MuzzlePx = new(1649.8f, 156.7f), GunGuard = new(751f, 448.6f), SpinFinger = new(756f, 420f);
 	/// <summary>光环中心（头的局部像素，头顶后上方）、云海顶线（大腿中部，图层像素 y）。</summary>
 	private static readonly Vector2 HaloAt = new(330f, 205f);
@@ -258,7 +260,20 @@ void fragment() {
 		}
 		Vector2 shoulder = Find("arm_upper").Pivot;
 		Vector2 sS = origin + shoulder * scale;
-		_aim = Mathf.Clamp(Mathf.RadToDeg((target - sS).Angle() - (MuzzlePx - shoulder).Angle()), -5f, 65f);   // 远处高处 → 手臂往下转着对准前景的敌人
+		// 瞄准（用户 2026-11-09：枪口没对着敌人）：不是让「肩 → 枪口」指向敌人，而是让**枪管的延长线**穿过敌人——
+		// 手臂转 θ 后枪口在 M(θ)、枪管朝向 D(θ) = 画里的枪管朝向 + θ；迭代到 D 正好指向「M → 敌人」
+		// 逐个角度试：枪管延长线离敌人最近、敌人又在枪口前方的那个角度
+		float drawnBarrel = Mathf.DegToRad(BarrelDirDeg), th = 0f, best = float.MaxValue;
+		for (float deg = -10f; deg <= 70f; deg += 0.5f)
+		{
+			float r = Mathf.DegToRad(deg);
+			Vector2 m = sS + (MuzzlePx - shoulder).Rotated(r) * scale;
+			Vector2 d = Vector2.FromAngle(drawnBarrel + r);
+			Vector2 tm = target - m;
+			float miss = Mathf.Abs(d.Cross(tm)) + (d.Dot(tm) < 0f ? 1e5f : 0f);
+			if (miss < best) { best = miss; th = r; }
+		}
+		_aim = Mathf.Clamp(Mathf.RadToDeg(th), -5f, 65f);
 		_riftX = origin.X + 400f * scale;
 	}
 
