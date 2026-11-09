@@ -122,7 +122,7 @@ SFX = {
     "curse_blast": ROOT / "art/sfx_p5/curse_blast.ogg",                # Outbreak blast (user: critical was too loud / harsh)                  # corrosive wave / poison tick (user: harsh)
     "battle_cutin": ROOT / "art/sfx_p5/battle_cutin.ogg",              # eye cut-in appears (user 2026-11-03; P5R SYSTEM.AWB #18, research/p5r/audio/eye_cutin)
     "outbreak_burst": ROOT / "art/sfx_p5/outbreak_burst.ogg",
-    "sinful_thunder": ROOT / "art/sfx_p5/sinful_thunder.ogg",          # Sinful Shell: Satanael's lightning (in / out), synthesized (tools/p5/sfx/synth_sinful.py)
+    "sinful_thunder": ROOT / "art/sfx_p5/sinful_thunder.ogg",          # Sinful Shell: Satanael's lightning (in / out), synthesized (tools/p5/sfx/synth_sinful_thunder.py)
     "sinful_charge": ROOT / "art/sfx_p5/sinful_charge.ogg",
     "sinful_catch": ROOT / "art/sfx_p5/sinful_catch.ogg",
     "sinful_fire": ROOT / "art/sfx_p5/sinful_fire.ogg",        # Outbreak poison damage (user 2026-11-08: vanilla hit too plain): P5R SKILLSE 0406 (curse candidate), low-passed 6 kHz, 1.5 s

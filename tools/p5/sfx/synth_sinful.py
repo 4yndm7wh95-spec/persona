@@ -1,5 +1,5 @@
 """Synthesized SFX for Sinful Shell (Grand Finale), user 2026-11-08: "synthesize it yourself, not an ordinary pistol".
-Writes art/sfx_p5/sinful_{thunder,charge,catch,fire}.ogg (44.1 kHz stereo)."""
+Writes art/sfx_p5/sinful_{charge,catch,fire,shot,flyby}.ogg (thunder: synth_sinful_thunder.py) (44.1 kHz stereo)."""
 import subprocess, numpy as np
 from pathlib import Path
 from scipy import signal
@@ -41,16 +41,7 @@ def save(name, x):
     print(name, len(x) / SR)
 
 
-# ── thunder: sharp crack (several close noise bursts, bright) + rolling low rumble
-x = t(2.2)
-crack = np.zeros_like(x)
-for k, (at, amp) in enumerate([(0.0, 1.0), (0.018, 0.7), (0.045, 0.85), (0.09, 0.5), (0.16, 0.35)]):
-    m = x >= at
-    crack[m] += amp * rng.standard_normal(m.sum()) * env(x[m] - at, 0.0008, 0.025)
-crack = hp(crack, 1800) * 0.9 + bp(crack, 400, 3000) * 0.6
-rumble = lp(rng.standard_normal(len(x)), 180, 4) * env(x, 0.06, 0.7) * (1 + 0.5 * np.sin(2 * np.pi * 3.1 * x))
-thunder = reverb(crack + rumble * 2.2, 1.6, 0.3)
-save("sinful_thunder", thunder)
+# ── thunder: moved to tools/p5/sfx/synth_sinful_thunder.py (user 2026-11-09: the old one was too explosive)
 
 # ── charge: rising whine + growing sub hum + crackle, ~1 s
 x = t(1.05)

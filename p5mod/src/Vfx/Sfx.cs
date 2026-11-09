@@ -51,7 +51,7 @@ public static class Sfx
 		SubBoom = "sub_boom",           // 合成的低频重击（art/sfx_p5/sub_boom.ogg：P5 原声缺低频，垫在冲击层底下）
 		OutbreakBurst = "outbreak_burst", // 毒性爆发毒伤结算（用户 2026-11-08：原版受击声太平淡）：P5R SKILLSE 0406（咒怨系候选，起音 0.01s、偏暗），
 		                                //  滤掉 6kHz 以上、截 1.5s 淡出、响度归一（art/sfx_p5/outbreak_burst.ogg）
-		SinfulThunder = "sinful_thunder", // 大罪穿甲弹：撒旦耶尔登场 / 退场的闪雷（合成：尖锐的爆裂 + 滚动的低频雷鸣，tools/p5/sfx/synth_sinful.py）
+		SinfulThunder = "sinful_thunder", // 大罪穿甲弹：撒旦耶尔登场 / 退场的闪雷（第二版，用户 2026-11-09：旧的太炸裂——现在是干脆的一声脆响 + 低沉滚动的轰鸣，tools/p5/sfx/synth_sinful_thunder.py）
 		SinfulCharge = "sinful_charge",   // 蓄力：越来越高的啸叫 + 越来越重的低频嗡鸣
 		SinfulCatch = "sinful_catch",     // 转枪接住：沉重的金属咔嗒
 		SinfulShot = "sinful_shot",       // 开枪（重做，合成）：倒吸 → 一瞬静音 → 爆裂 + 超低频下坠 + 饱和重击 → 金属余振 → 碎石 → 远处云层滚回三声雷 → 耳鸣淡出；冲击在 0.30s

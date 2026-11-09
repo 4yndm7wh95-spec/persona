@@ -507,8 +507,8 @@ void fragment() {
 		// 场景圈展开 / 收回的轻声（压在雷和开枪声下面）：收回那条 0.7s 的卷入正好在圈缩到脚下时收住
 		Fx.After(front, RevealAt, () => Sfx.Play(Sfx.SinfulSweepOpen, 0.45f));
 		Fx.After(front, FireAt + ConcealAfter + ExitTime - 0.7f, () => Sfx.Play(Sfx.SinfulSweepClose, 0.45f));
-		Fx.After(front, AppearAt, () => { Sfx.Play(Sfx.SinfulThunder, 1.1f); Fx.Shake(3); });
-		Fx.After(front, exitAt, () => { Sfx.Play(Sfx.SinfulThunder, 0.9f); Fx.Shake(2); });
+		Fx.After(front, AppearAt, () => { Sfx.Play(Sfx.SinfulThunder, 0.75f); Fx.Shake(3); });
+		Fx.After(front, exitAt, () => { Sfx.Play(Sfx.SinfulThunder, 0.6f); Fx.Shake(2); });
 		if (puppet != null)
 		{
 			// 转枪的破风声：只留撒旦耶尔的（用户 2026-11-09：Joker 的转枪声去掉；接枪的金属声也去掉——它正好落在开枪的倒吸里，叠在一起）
