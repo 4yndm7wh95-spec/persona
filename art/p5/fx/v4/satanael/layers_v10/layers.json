@@ -56,8 +56,8 @@
       "file": "arm_fore_gun.png",
       "z_index": 6,
       "pivot": [
-        1250,
-        1320
+        1125,
+        1667
       ]
     },
     {
@@ -72,24 +72,24 @@
       "file": "gun.png",
       "z_index": 9,
       "pivot": [
-        1788,
-        1068
+        1617,
+        1889
       ]
     },
     {
       "file": "arm_fore_open.png",
       "z_index": 6,
       "pivot": [
-        1250,
-        1320
+        1125,
+        1667
       ]
     },
     {
       "file": "finger_tip.png",
       "z_index": 10,
       "pivot": [
-        1800,
-        1000
+        1617,
+        1889
       ]
     }
   ],
@@ -99,25 +99,25 @@
       1470
     ],
     "gun_elbow": [
-      1250,
-      1320
+      1125,
+      1667
     ],
     "gun_wrist": [
-      1450,
-      1160
+      1385,
+      1819
     ],
     "muzzle": [
-      3928,
-      373
+      2150,
+      1962
     ],
-    "barrel_dir": -15.0,
+    "barrel_dir": 23.0,
     "spin_finger": [
-      1800,
-      1000
+      1617,
+      1889
     ],
     "gun_guard": [
-      1788,
-      1068
+      1617,
+      1889
     ],
     "neck": [
       900,
@@ -169,8 +169,8 @@
       "finger_tip"
     ],
     "gun_guard_to_spin_finger": [
-      12,
-      -68
+      0,
+      0
     ]
   },
   "patches": {
@@ -253,18 +253,12 @@
       "sha256": "11fdd92614bc355ee3a50ae8cefb6d49a7044712e698c0429145a87b8a2f587e"
     }
   },
-  "rest_check": {
-    "max_rgba_difference": 9,
-    "pixels_difference_over_8": 29
-  },
-  "status": "needs_revision",
+  "status": "arm_redraw_candidate",
   "ready_for_runtime": false,
   "correction_passes": 2,
   "unresolved": [
-    "Wing root cut boundaries remain visible under rotation",
-    "Independent gun rear/grip does not match the held silhouette closely enough",
-    "Twirl axis and fingertip occlusion need further close-up registration",
-    "Elbow and shoulder pivots are provisional visual estimates"
+    "New arm foreshortening, open finger axis and planar prop silhouette require user/Claude visual review.",
+    "Existing independent wing rotations were not redesigned in this arm-only task."
   ],
   "raw_patch_prompts": {
     "open": "Keep the exact forearm at its original coordinates and wrist orientation. Remove gun, head, horns and wings. Replace closed hand with one relaxed open anatomical left glove, index extended screen-right slightly upward, thumb relaxed, three other fingers curved. Preserve original dark feather gauntlet. Extend elbow leftward with round overlapping joint. Only forearm and open hand.",
@@ -273,5 +267,88 @@
     "head": "Only helmet, beak mask and both ram horns. Remove torso, arms, wings and gun. Preserve positions and geometry exactly. Extend a short dark armored neck down below face to overlap chest. Dark empty eye sockets replacing luminous eyes, eyes will be separate layer.",
     "far_root": "Only the left-side wing root behind helmet and body. Remove head, horns, arm, torso and gun; reconstruct curved black and gold wing material and a thick rounded wing root at center-right, continuous to left wing panels cut at image edges. Preserve existing wing pixel positions. No extra wing tips.",
     "near_root": "Only right-side black feather wing roots. Remove arm, hand, gun and body. Continue black feathers leftward underneath their occlusion, a broad rounded root joining existing long right wing edge. Preserve positions of existing wing edges and gold motifs."
+  },
+  "arm_redraw": {
+    "native_patches": {
+      "held": {
+        "native_size": [
+          1564,
+          1006
+        ],
+        "source_sha256": "d92b9f029d1389cb4f6d1f37af7d3800e46023cf99cbff1222e66a044a69de9e",
+        "source_file": "exec-204d24d4-8586-4c23-b616-56be99ff2c53.png",
+        "placement_rect": [
+          870,
+          1291,
+          2270,
+          2191
+        ]
+      },
+      "open": {
+        "native_size": [
+          1565,
+          1005
+        ],
+        "source_sha256": "f2f986436bb2c4bc20569b2a76a86bfd4bbbbd96d25c8b3ca0857006f62eb651",
+        "source_file": "exec-e30b73cf-7ee4-489a-bf40-b1f7038196c9.png",
+        "placement_rect": [
+          870,
+          1291,
+          2270,
+          2191
+        ]
+      },
+      "side": {
+        "native_size": [
+          1774,
+          887
+        ],
+        "source_sha256": "0160c1c91213e48db058ff31cef4a132f7796db8ae0869813a9d4712798e9b75",
+        "source_file": "exec-b78ddeaa-5523-4e88-a8f8-92492c9bdeba.png",
+        "standalone_size": [
+          1600,
+          800
+        ],
+        "twirl_width_before_rotation": 760
+      },
+      "body": {
+        "native_size": [
+          1254,
+          1254
+        ],
+        "source_sha256": "c8edd6981f9b96fe9facac8fa64d38be8c6cc5d2c91e2d2a49362bfec712a1ff",
+        "source_file": "exec-c5dbba82-e83a-4984-89c8-14e90981fa4d.png",
+        "placement_rect": [
+          650,
+          1000,
+          1700,
+          2050
+        ]
+      },
+      "wing": {
+        "native_size": [
+          1254,
+          1254
+        ],
+        "source_sha256": "ce16c64ba50cfa4330bdad62c3292b65df799625074557b090d4525963b61d67",
+        "source_file": "exec-ce7fa6fe-0ca6-47f1-b88e-eb633445304b.png",
+        "placement_rect": [
+          1000,
+          850,
+          2050,
+          1900
+        ]
+      }
+    },
+    "held_prop_screen_extent_px": 745,
+    "barrel_screen_angle": 23,
+    "upscale_used": false,
+    "joint_split_overlap_native_px": 120,
+    "tool": "built-in image_gen",
+    "review": "candidate for user and Claude visual review; no game launched"
+  },
+  "rest_check_legacy": {
+    "max_rgba_difference": 9,
+    "pixels_difference_over_8": 29
   }
 }
