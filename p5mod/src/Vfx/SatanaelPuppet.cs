@@ -234,8 +234,6 @@ uniform vec2 sres = vec2(1920.0, 1080.0);
 uniform float cloud_y = 700.0;
 uniform float blast_x = 0.0;
 uniform float blast_t = -1.0;
-uniform vec2 mask_o = vec2(0.0);
-uniform float mask_r = 100000.0;
 uniform float clock = 0.0;
 uniform float alpha = 1.0;
 // 场景圈（SinfulShell 的烧穿圈）：圈外不画云，场景收回时云跟着一起缩回 Joker 脚下（用户 2026-11-09）
@@ -375,7 +373,7 @@ void fragment() {
 			if (miss < best) { best = miss; th = r; }
 		}
 		_aim = Mathf.Clamp(Mathf.RadToDeg(th), -25f, 25f);
-		_riftX = origin.X + 400f * scale;
+		_riftX = origin.X + 987f * scale;   // 交接待办 A：雷劈在人格面具身体中间（body_center 987 图层像素）；之前 400 是加宽画布前的数，落在屏幕外
 	}
 
 	private static Layer Find(string n) => Array.Find(Layers, l => l.Name == n)!;
@@ -579,6 +577,8 @@ void fragment() {
 	{
 		_cloudMat.SetShaderParameter("mask_origin", origin);
 		_cloudMat.SetShaderParameter("mask_r", radius);
+		_mat.SetShaderParameter("mask_o", origin);                        // 撒旦耶尔本体也只在圈里
+		_mat.SetShaderParameter("mask_r", radius);
 		if (_embers != null)
 		{
 			_emberMask ??= SinfulShell.MaskMaterial(Fx.Screen(_parent), origin);

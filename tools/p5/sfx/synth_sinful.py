@@ -155,5 +155,4 @@ def pierce(final):
         y += np.sin(2 * np.pi * np.cumsum(sub) / SR) * env(x, 0.004, 0.8) * 2.2
         y += hp(rng.standard_normal(len(x)), 4000) * env(x, 0.001, 0.25) * (0.6 + 0.4 * np.sin(2 * np.pi * 37 * x)) * 0.8
     return reverb(y, 0.9 if final else 0.6, 0.2)
-save("sinful_pierce", pierce(False))
-save("sinful_pierce_final", pierce(True))
+save("sinful_pierce_b", pierce(True))   # one hit for the whole shot (user 2026-11-09: not one per enemy)

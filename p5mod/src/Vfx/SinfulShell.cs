@@ -238,7 +238,7 @@ void fragment() {
 	public const float JokerSpinAt = 0.36f;
 
 	/// <summary>召唤撒旦耶尔的雷劈下的时刻（用户 2026-11-08：场景还没烧完雷就劈下来，前半段不空）。</summary>
-	public const float AppearAt = 0.3f;
+	public const float AppearAt = 0.12f;   // 交接待办 C（用户 2026-11-09：前半段空）：召唤的雷和场景刚烧开同时劈下
 
 	public sealed class Setup
 	{
@@ -302,6 +302,9 @@ void fragment() {
 	}
 
 	/// <summary>放整段大罪穿甲弹。back = 背景层（场景、人格面具），front = 前景层（子弹、命中）。返回子弹穿过每个敌人的时刻（秒，从现在算）。</summary>
+	/// <summary>打中的那一声（两版待用户对比选定：SinfulPierceB = 本分支版，SinfulPierceLast = 另一账号版）。</summary>
+	public static string HitSound = Sfx.SinfulPierceB;
+
 	public static float[] Play(Control back, Control front, Setup s)
 	{
 		Vector2 screen = Fx.Screen(back);
@@ -395,7 +398,6 @@ void fragment() {
 			float thunder = 0f;
 			if (puppet != null)
 			{
-				puppet.SceneMask(feetS, reveal);                         // 云海、撒旦耶尔也只在场景圆里（一起展开、一起收回）
 				puppet.Update(time, RiseAt, AimAt, FireAt + 0.12f, exitAt, puppet.MuzzleLocal, charge, flash * 0.6f, dim);
 				puppet.SceneMask(feetS, reveal);
 				thunder = puppet.Lightning;
@@ -433,12 +435,14 @@ void fragment() {
 		Glow.Sparks(front, s.JokerFeet, 40, 200f, 700f, 0.7f, new[] { new Color(0.9f, 0.97f, 1f), new Color(0.3f, 0.7f, 1f), new Color(0.1f, 0.3f, 0.9f) },
 			-200f, 0.06f, 0.2f, Vector2.Up, 70f);
 		// 召唤 / 退场的闪雷声；接住枪的金属声
+		// 场景圈展开 / 收回的轻声（压在雷和开枪声下面）：收回那条 0.7s 的卷入正好在圈缩到脚下时收住
+		Fx.After(front, RevealAt, () => Sfx.Play(Sfx.SinfulSweepOpen, 0.45f));
+		Fx.After(front, FireAt + ExitAfter + 0.5f + ExitTime - 0.7f, () => Sfx.Play(Sfx.SinfulSweepClose, 0.45f));
 		Fx.After(front, AppearAt, () => { Sfx.Play(Sfx.SinfulThunder, 1.1f); Fx.Shake(3); });
 		Fx.After(front, exitAt, () => { Sfx.Play(Sfx.SinfulThunder, 0.9f); Fx.Shake(2); });
 		if (puppet != null)
 		{
-			Fx.After(front, CatchAt, () => Sfx.Play(Sfx.SinfulCatch, 1f));
-			// 转枪的破风声（用户 2026-11-09）：撒旦耶尔的大枪低沉，Joker 的手枪轻快，各自从转起来那一帧开始
+			// 转枪的破风声：只留撒旦耶尔的（用户 2026-11-09：Joker 的转枪声去掉；接枪的金属声也去掉——它正好落在开枪的倒吸里，叠在一起）
 			Fx.After(front, AimAt + SatanaelPuppet.Anticipation, () => Sfx.Play(Sfx.SinfulTwirl, 1.0f));
 		}
 		// 场景里飘的蓝色余烬
@@ -450,7 +454,6 @@ void fragment() {
 			embers.Material = emberMask;
 		});
 
-		Fx.After(front, JokerSpinAt, () => Sfx.Play(Sfx.SinfulTwirlSmall, 0.9f));
 		// ── 举枪、蓄力
 		// Joker 同步转枪：他的转枪（aim_in）约 0.12s 接住，对到撒旦耶尔接住枪的那一刻
 		Fx.After(front, puppet != null ? CatchAt - 0.12f : AimAt, () => s.OnJokerAim?.Invoke());
@@ -517,9 +520,12 @@ void fragment() {
 			float span = stopHits.Count > 1 ? stopHits.Max(h => h.DistanceTo(zone)) : 0f;
 			Fx.After(front, FireAt + travel[0], () => HitZone(front, zone, dir, s.FloorY, span, unit));
 		}
-		// 子弹朝镜头飞过来：多普勒呼啸最响的那一下对到打穿最后一个敌人
-		float passAt = FireAt + (travel.Length > 0 ? travel[^1] : 0.1f);
-		Fx.After(front, Mathf.Max(FireAt, passAt - 0.35f), () => Sfx.Play(Sfx.SinfulFlyby, 1f));
+		// 打中：一发子弹，只响一声（用户 2026-11-09：不是打中几个敌人就放几次），落在子弹碰到第一个敌人那一刻。
+		// 飞过镜头的呼啸去掉了（和开枪的冲击叠在一起）
+		if (travel.Length > 0)
+		{
+			Fx.After(front, FireAt + travel[0], () => Sfx.Play(HitSound, 1.3f));
+		}
 		// 余韵：弹道在夜空里留下一道细光痕，慢慢散掉
 		Fx.After(front, FireAt + 0.25f, () => Afterglow(front, muzzle, dir, screen, unit));
 		return pierce;
@@ -848,7 +854,6 @@ void fragment() {
 		Glow.Sparks(layer, at, 36, 600f, 1800f, 0.4f, new[] { new Color(0.95f, 0.98f, 1f), new Color(0.35f, 0.75f, 1f), new Color(0.65f, 0.3f, 1f) },
 			200f, 0.05f, 0.14f, dir, 22f);
 		// 用户 2026-11-09：原来用的是普通受击声（damage_enemy），太平淡——换成合成的贯穿声，最后一个更重
-		Sfx.Play(last ? Sfx.SinfulPierceLast : Sfx.SinfulPierce, last ? 1.25f : 1.1f);
 		if (last)
 		{
 			Fx.Shake(5);
