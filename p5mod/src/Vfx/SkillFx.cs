@@ -145,57 +145,205 @@ void fragment() {
 		}
 	}
 
+	// ───────────────────────── 增益：光柱 + 往上冲的 ^ + 弹开的环（中和的反向） ─────────────────────────
+
+	private static Shader? _column;
+
 	/// <summary>
-	/// 增益（自己身上）：脚下一圈光环弹开，两股光带绕着身体盘上去，到头顶一下亮、甩出几点火星。
-	/// feet / height = Joker 脚底和身高（屏幕像素）；big = 形态类大牌（三股、更高、更久）。
+	/// 从脚底冲上去的一道光柱（四边形：x -1～1，y 0 脚 → 1 顶）。头 0.3 的进度冲到顶（头最亮），之后尾巴从脚底往上收走；
+	/// 柱子里是往上流的噪声细丝，中间一条白芯，越往上越窄。dark > 0：外面裹一层压暗（咒怨）。
 	/// </summary>
-	public static void Buff(Control front, Control? back, Vector2 feet, float height, Tone tone = Tone.Blue, bool big = false, bool sound = true)
+	private static Shader Column => _column ??= new Shader { Code = @"
+shader_type canvas_item;
+render_mode blend_premul_alpha;
+uniform float prog = 0.0;
+uniform vec3 hot = vec3(1.0);
+uniform vec3 mid = vec3(1.0, 0.3, 0.35);
+uniform vec3 deep = vec3(0.8, 0.05, 0.14);
+uniform float dark = 0.0;
+uniform float alpha = 1.0;
+uniform float seed = 0.0;
+uniform float clock = 0.0;
+" + Noise + @"
+void fragment() {
+	float x = (UV.x - 0.5) * 2.0;
+	float y = 1.0 - UV.y;
+	float rise = clamp(prog / 0.3, 0.0, 1.0);
+	float head = 1.0 - pow(1.0 - rise, 3.0);
+	float lift = clamp((prog - 0.3) / 0.7, 0.0, 1.0);
+	float tail = lift * lift * 1.15 - 0.12;
+	float fill = (1.0 - smoothstep(head - 0.06, head + 0.01, y)) * smoothstep(tail, tail + 0.18, y);
+	float w = mix(0.62, 0.22, y) * (1.0 - 0.45 * lift);
+	float body = exp(-pow(x / w, 2.0));
+	float core = exp(-pow(x / (w * 0.16), 2.0));
+	float fl = noise(vec2(x * 7.0 / w + seed, y * 4.0 - clock * 5.5));
+	fl = smoothstep(0.5, 0.92, fl) * (0.6 + 0.4 * noise(vec2(x * 20.0 + seed, y * 9.0 - clock * 8.0)));
+	float lead = exp(-max(head - y, 0.0) / 0.06) * (1.0 - lift);
+	float ends = smoothstep(0.0, 0.05, y) * (1.0 - smoothstep(0.88, 1.0, y));
+	float a = fill * ends * alpha;
+	vec3 col = hot * core * (0.9 + 1.4 * lead) + mid * body * (0.35 + 1.1 * fl + 0.8 * lead) + deep * body * 0.35;
+	COLOR = vec4(col * a, dark * clamp(body * 1.4, 0.0, 0.6) * a);
+}" };
+
+	private static void ColumnAt(Control layer, Vector2 feet, float w, float h, Tone tone, float life, float alpha)
 	{
-		(Color hot, Color mid, _, _) = Pal(tone);
-		float unit = Unit(front), life = big ? 0.95f : 0.62f;
-		if (sound)
+		(Color hot, Color mid, Color deep, float dark) = Pal(tone);
+		Node2D root = Fx.Root(layer, feet, "P5BuffColumn", life + 0.1);
+		ColorRect q = Quad(root, Column, new Vector2(w, h), new Vector2(w / 2f, h * 0.98f));
+		Set(q, "hot", new Vector3(hot.R, hot.G, hot.B));
+		Set(q, "mid", new Vector3(mid.R, mid.G, mid.B));
+		Set(q, "deep", new Vector3(deep.R, deep.G, deep.B));
+		Set(q, "dark", dark);
+		Set(q, "alpha", alpha);
+		Set(q, "seed", Fx.Rand(0f, 30f));
+		Fx.Clock(q);
+		Fx.Animate(q, 0, life, t => Set(q, "prog", t));
+	}
+
+	/// <summary>一道往上指的发光「^」：从 from 冲到 to（先快后慢），到顶亮一下、放大散掉。中和那三道 V 的反向。</summary>
+	private static void Rise(Control layer, Vector2 from, Vector2 to, float width, float delay, Color glowC, Color coreC)
+	{
+		Node2D root = Fx.Root(layer, from, "P5BuffChevron", delay + 0.45);
+		float w = width / 2f, hh = width * 0.3f, th = width * 0.085f;
+		Vector2[] shape = { new(-w, hh), new(0f, -hh + th * 2f), new(w, hh), new(w, hh - th), new(0f, -hh), new(-w, hh - th) };
+		Polygon2D glow = Fx.Poly(root, shape, new Color(glowC, 0.85f), additive: true);
+		Polygon2D core = Fx.Poly(root, shape, coreC, additive: true);
+		core.Scale = new Vector2(0.94f, 0.5f);
+		glow.Scale = new Vector2(1.08f, 1.2f);
+		root.Visible = false;
+		Fx.Animate(root, delay, 0.34, t =>
 		{
-			Sfx.Play(tone is Tone.Curse or Tone.Shadow ? Sfx.BuffDark : Sfx.BuffUp, big ? 0.8f : 0.6f);
-		}
-		Glow.Shockwave(front, feet, mid, height * (big ? 1.5f : 1.1f), 0.4f, 0.24f);
-		HelixPair(front, back, feet, height * (big ? 0.95f : 0.78f), height * (big ? 1.45f : 1.22f), tone, true, life, big ? 2.6f : 2f, big ? 3 : 2);
-		Vector2 top = feet + new Vector2(0f, -height * (big ? 1.3f : 1.1f));
-		Fx.After(front, life * 0.58f, () =>
-		{
-			Glow.Flash(front, top, mid, height * (big ? 0.55f : 0.36f), 0.18f);
-			Glow.Sparks(front, top, big ? 16 : 9, 80f, 320f, 0.4f, new[] { hot, mid }, 260f, 0.03f * unit, 0.09f * unit, Vector2.Up, 70f);
+			root.Visible = true;
+			float k = Ease5.OutQuint(Mathf.Min(1f, t / 0.7f));
+			root.GlobalPosition = from.Lerp(to, k);
+			root.Modulate = new Color(1f, 1f, 1f, t < 0.7f ? Mathf.Min(1f, t * 7f) : 1f - (t - 0.7f) / 0.3f);
+			root.Scale = new Vector2(0.8f + 0.2f * k + 0.35f * Ease5.Seg(t, 0.7f, 0.3f), 1f - 0.3f * Ease5.Seg(t, 0.7f, 0.3f));
 		});
-		if (big)
-		{
-			Glow.Shockwave(front, feet, hot, height * 2.1f, 0.55f, 0.24f, 0.12f);
-		}
 	}
 
 	/// <summary>
-	/// 减益（敌人身上）：两股暗红的光带从头顶压下来、绕着身体拧到脚下，落地一圈暗环；身体跟着暗一下（tint）。
-	/// top / feet = 敌人头顶和脚底；width = 身体宽。
+	/// 增益（自己身上；用户 2026-11-10：绕着转几圈的光环太 low，要中和那样有冲击、有含义）：
+	/// 脚下一亮压出一圈扁波，一道光柱从脚底冲上头顶，三道「^」一道追一道冲上去，胸口一圈光环猛地弹开，到头顶一闪收住。
+	/// 按颜色各带一样东西：红（进攻）= 头顶炸开一圈短速度线和白星；蓝（防御 / 敏捷）= 身边一串细长的风线往上掠；
+	/// 咒怨（毒）= 脚下蹿起几根咒焰、飘出魂火，光柱裹着暗影。big = 形态类大牌（更高、更亮、多一道环、震一下）。
+	/// feet / height = Joker 脚底和身高（屏幕像素）。~0.8s。
+	/// </summary>
+	public static void Buff(Control front, Control? back, Vector2 feet, float height, Tone tone = Tone.Blue, bool big = false, bool sound = true)
+	{
+		(Color hot, Color mid, Color deep, _) = Pal(tone);
+		float unit = Unit(front), h = height, k = big ? 1.25f : 1f;
+		Vector2 chest = feet + new Vector2(0f, -h * 0.62f), top = feet + new Vector2(0f, -h * 1.08f * k);
+		if (sound)
+		{
+			Sfx.Play(tone is Tone.Curse or Tone.Shadow ? Sfx.BuffRiseDark : Sfx.BuffRise, big ? 0.6f : 0.4f);
+		}
+		// ① 脚下
+		Glow.Flash(front, feet, mid, h * 0.7f * k, 0.16f);
+		Glow.Shockwave(front, feet, mid, h * 1.7f * k, 0.42f, 0.22f);
+		Glow.Ripple(front, feet, h * 1.4f * k, 0.4f, 0.014f, 0.3f);
+		// ② 光柱：身后一道实的，身前一道淡的（人在柱子里，不被盖住）
+		float life = big ? 0.85f : 0.65f;
+		if (back != null && GodotObject.IsInstanceValid(back))
+		{
+			ColumnAt(back, feet, h * 0.7f * k, h * 1.35f * k, tone, life, 1f);
+		}
+		ColumnAt(front, feet, h * 0.5f * k, h * 1.3f * k, tone, life, 0.2f);
+		// ③ 三道 ^ 从腰冲上头顶
+		Vector2 from = feet + new Vector2(0f, -h * 0.35f);
+		for (int i = 0; i < 3; i++)
+		{
+			Rise(front, from, top + new Vector2(0f, -h * 0.12f * i), h * (0.5f - 0.08f * i) * k, 0.04f + 0.085f * i, mid, hot);
+		}
+		// ④ 胸口的环弹开
+		Node2D rr = Fx.Root(front, chest, "P5BuffRing", 0.8);
+		for (int i = 0; i < (big ? 2 : 1); i++)
+		{
+			ColorRect ring = Glow.RingRect(rr, h * 1.6f * k, 0.3f);
+			Glow.SetParam(ring, "tint", i == 0 ? mid : hot);
+			Glow.SetParam(ring, "width", 0.016f);
+			int ii = i;
+			Fx.Animate(ring, 0.1f + 0.08f * i, 0.55, t =>
+			{
+				float e = Ease5.OutExpo(t);
+				Glow.SetParam(ring, "radius", Mathf.Lerp(0.18f, 0.92f, e));
+				Glow.SetParam(ring, "width", Mathf.Lerp(0.03f, 0.006f, e));
+				Glow.SetParam(ring, "alpha", (ii == 0 ? 1f : 0.7f) * (1f - Fx.InCubic(t)));
+			});
+		}
+		// 往上飘的光点
+		Glow.Sparks(front, feet + new Vector2(0f, -h * 0.1f), big ? 26 : 16, 120f, 420f, 0.6f, new[] { hot, mid, deep }, -160f,
+			0.025f * unit, 0.07f * unit, Vector2.Up, 25f);
+		// ⑤ 头顶收住
+		Fx.After(front, 0.26f, () =>
+		{
+			Glow.Flash(front, top, mid, h * 0.45f * k, 0.18f);
+			Glow.Glint(front, top + new Vector2(h * 0.08f, 0f), big ? 1.1f : 0.8f);
+			if (big)
+			{
+				Fx.Shake(2);
+				Glow.Shockwave(front, chest, hot, h * 2.4f, 0.5f, 0.3f);
+			}
+		});
+		switch (tone)
+		{
+			case Tone.Red:
+				Fx.After(front, 0.26f, () => Glow.SpeedLines(front, top, hot, 10, h * 0.12f, h * 0.42f * k, 0.26f));
+				break;
+			case Tone.Blue:
+				for (int i = 0; i < 7; i++)
+				{
+					float side = i % 2 == 0 ? -1f : 1f, x = side * h * Fx.Rand(0.18f, 0.36f) * k;
+					WindLine(front, feet + new Vector2(x, -h * Fx.Rand(0.1f, 0.4f)), h * Fx.Rand(0.55f, 0.85f) * k, 0.02f + 0.04f * i, hot, mid, unit);
+				}
+				break;
+			case Tone.Curse:
+			case Tone.Shadow:
+				// 咒怨：脚下翻起一股暗红的余烬往上飘（不用咒焰——静帧里像墓碑）
+				Glow.Sparks(front, feet, big ? 34 : 22, 60f, 260f, 0.8f, new[] { hot, mid, deep }, -120f, 0.03f * unit, 0.09f * unit, Vector2.Up, 50f);
+				for (int i = 0; i < (big ? 4 : 2); i++)
+				{
+					Paint.Rise(front, "curse_soul", feet + new Vector2(Fx.Rand(-0.25f, 0.25f) * h, -h * 0.2f), h * 0.6f, 0.5f * k, Lut5.Curse, 0.7f, 0.05f + 0.08f * i);
+				}
+				break;
+		}
+	}
+
+	/// <summary>一根细长的风线：从 at 往上掠 len 像素，头细亮、尾巴拖长，0.3s。</summary>
+	private static void WindLine(Control layer, Vector2 at, float len, float delay, Color hot, Color mid, float unit)
+	{
+		Node2D root = Fx.Root(layer, at, "P5Wind", delay + 0.4);
+		Line2D glow = Glow.Line(root, new[] { Vector2.Zero, Vector2.Up }, new Color(mid, 0.9f), 12f * unit, false);
+		Line2D core = Glow.Line(root, new[] { Vector2.Zero, Vector2.Up }, hot, 4f * unit, false);
+		root.Visible = false;
+		Fx.Animate(root, delay, 0.38, t =>
+		{
+			root.Visible = true;
+			float headY = -len * Ease5.OutQuint(t), tailY = -len * Fx.InCubic(t);
+			Vector2[] pts = { new(0f, headY), new(0f, Mathf.Min(tailY, headY + 1f)) };
+			glow.Points = pts;
+			core.Points = pts;
+			root.Modulate = new Color(1f, 1f, 1f, 1f - Ease5.Seg(t, 0.6f, 0.4f));
+		});
+	}
+
+	/// <summary>
+	/// 减益（敌人身上）：用中和的「虚弱」那一套（锁环箍住、三道 V 砸下、光尘下沉、脚下压一圈波；用户 2026-11-10），身体跟着暗一下（tint）。
+	/// top / feet = 敌人头顶和脚底。
 	/// </summary>
 	public static void Debuff(Control front, Control? back, Vector2 feet, Vector2 top, float width, Action<Color>? tint = null, bool sound = true, float delay = 0f)
 	{
+		Vector2 center = feet.Lerp(top, 0.5f);
+		CardFx.Weaken(front, center, top, delay);
 		Fx.After(front, delay, () =>
 		{
-			(Color hot, Color mid, Color deep, _) = Pal(Tone.Curse);
-			float h = Mathf.Max(120f, (feet - top).Length()), unit = Unit(front);
-			const float life = 0.55f;
 			if (sound)
 			{
-				Sfx.Play(Sfx.DebuffDown, 0.6f);
+				Sfx.Play(Sfx.DebuffPress, 0.4f, 0.15f);
 			}
-			HelixPair(front, back, feet, Mathf.Max(width * 1.25f, h * 0.7f), h * 1.3f, Tone.Curse, false, life, 2f, 2);
-			Fx.After(front, life * 0.5f, () =>
-			{
-				Glow.Shockwave(front, feet, mid, h * 1.25f, 0.38f, 0.22f);
-				Glow.Sparks(front, feet, 8, 60f, 240f, 0.35f, new[] { hot, mid, deep }, 0f, 0.03f * unit, 0.08f * unit, Vector2.Up, 85f);
-			});
 			if (tint != null)
 			{
-				Node2D ticker = Fx.Root(front, feet, "P5DebuffTint", life + 0.25);
-				Fx.Animate(ticker, 0, life + 0.2f, t =>
+				Node2D ticker = Fx.Root(front, feet, "P5DebuffTint", 0.9);
+				Fx.Animate(ticker, 0.15f, 0.7f, t =>
 				{
 					float k = Mathf.Sin(Mathf.Clamp(t * 1.25f, 0f, 1f) * Mathf.Pi);
 					tint(Colors.White.Lerp(new Color(0.62f, 0.42f, 0.5f), k * 0.8f));
@@ -617,7 +765,7 @@ void fragment() {
 		const float pull = 0.28f;
 		if (sound)
 		{
-			Sfx.Play(Sfx.EnergySurge, 0.65f);
+			Sfx.Play(Sfx.EnergyPull, 0.4f);
 		}
 		Node2D root = Fx.Root(layer, chest, "P5Surge", pull + 0.1);
 		ColorRect q = Quad(root, SurgeShader, Vector2.One * height * 1.7f);

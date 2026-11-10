@@ -665,6 +665,23 @@ public partial class Preview : Node2D
 			p.At(7.5, () => p._joker?.Play("attack"));
 			p.At(7.65, () => CardFx.Weaken(p._front, Enemy3, Enemy3 + new Vector2(0f, -150f), 0.12f));
 		},
+		["buffs"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.3, () => p._joker?.Play("cast_glove"));
+			p.At(0.55, () => SkillFx.Buff(p._front, p._back, JokerFeet, tall, SkillFx.Tone.Red));
+			p.At(1.7, () => p._joker?.Play("cast_glove"));
+			p.At(1.95, () => SkillFx.Buff(p._front, p._back, JokerFeet, tall, SkillFx.Tone.Blue));
+			p.At(3.1, () => p._joker?.Play("cast_glove"));
+			p.At(3.35, () => SkillFx.Buff(p._front, p._back, JokerFeet, tall, SkillFx.Tone.Curse));
+			p.At(4.5, () => p._joker?.Play("cast_big"));
+			p.At(4.9, () => SkillFx.Buff(p._front, p._back, JokerFeet, tall, SkillFx.Tone.Curse, big: true));
+			p.At(6.3, () => p._joker?.Play("cast_guard"));
+			p.At(6.4, () => SkillFx.Debuff(p._front, p._back, new Vector2(Enemy.X, 830f), Enemy + new Vector2(0f, -170f), 260f,
+				c => p._enemies[Enemy].Modulate = c));
+			p.At(7.6, () => p._joker?.Play("cast_glove"));
+			p.At(7.85, () => SkillFx.Surge(p._front, Pose(1010f, 330f), tall));
+		},
 		["skills_a"] = p =>
 		{
 			float tall = (JokerFeet - Pose(815f, 120f)).Length();

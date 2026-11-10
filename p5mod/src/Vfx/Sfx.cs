@@ -71,6 +71,10 @@ public static class Sfx
 		CardFlick = "card_flick",       // 光牌弹出：干脆的纸牌一弹
 		CardBurn = "card_burn",         // 弃牌：一弹 + 烧掉的「嘶」和细碎噼啪
 		BulletLoad = "bullet_load",     // 装弹：一发子弹落回手里的金属轻响
+		BuffRise = "buff_rise",         // 增益第二版（用户 2026-11-10：克制）：一口往上掠的气 + 很轻的闷底，tools/p5/sfx/synth_skill_fx3.py
+		BuffRiseDark = "buff_rise_dark", // 咒怨 / 暗影增益：更暗、更低的气 + 低沉的底
+		DebuffPress = "debuff_press",   // 减益：一记往下压的闷响
+		EnergyPull = "energy_pull",     // 能量第二版：0.28s 吸气 + 一声软的闷响（没有叮）
 		BuffUp = "buff_up",             // 增益：往上盘的气音 + 到顶一声清亮的「叮」
 		BuffDark = "buff_dark",         // 咒怨 / 暗影类增益：低沉的上行 + 闷响
 		DebuffDown = "debuff_down",     // 减益：往下压的双音 + 落地闷响
