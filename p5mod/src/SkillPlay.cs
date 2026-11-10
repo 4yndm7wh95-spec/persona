@@ -125,7 +125,10 @@ public static class SkillPlay
 				SkillFx.Victim? tv = target != null && GodotObject.IsInstanceValid(target)
 					? new SkillFx.Victim(target.GetBottomOfHitbox(), target.GetTopOfHitbox(), target.Hitbox.GetGlobalRect().Size.X, Tint(target))
 					: null;
-				perCard(new SkillCtx(layer, back, feet, chest, hand, Joker.PosePoint(joker, ReadyFx.MaskFace), tall, face, selfTint, enemies, tv));
+				perCard(new SkillCtx(layer, back, feet, chest, hand, Joker.PosePoint(joker, ReadyFx.MaskFace), tall, face, selfTint, enemies, tv)
+				{
+					CopyBody = clone, Region = region,
+				});
 				return;
 			}
 			switch (kind)

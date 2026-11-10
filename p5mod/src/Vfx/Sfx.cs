@@ -83,6 +83,15 @@ public static class Sfx
 		BurstEcho = "burst_echo",         // 爆发：一记闷响紧跟一记回声
 		SerpentRise = "serpent_rise",     // 群蛇形态：低沉涌起 + 蛇的嘶声 + 扑出去的一下
 		WraithForm = "wraith_form",       // 幽魂形态：往里吸的阴风 + 合上时的闷响
+		// 第二批（Vfx/CardSkillFx2.cs；tools/p5/sfx/synth_card_fx2.py）
+		ShadowmeldSink = "shadowmeld_sink", // 融入暗影：往下沉的低气 + 两下轻的闷响
+		BlurDash = "blur_dash",             // 残影：一闪的短风声
+		AfterimageOrbit = "afterimage_orbit", // 余像：绕身的轻风 + 收进来的一下
+		ShadowStepCut = "shadow_step_cut",  // 暗影步：一刀切开的「唰」+ 沉下去的气 + 回来时的闷响
+		BulletTimeStop = "bullet_time_stop", // 子弹时间：慢下来的风压 + 停住的一下 + 很轻的余响
+		FlankCross = "flank_cross",         // 夹击：两刃交叉的双「唰」+ 一声干脆的合
+		MalaisePress = "malaise_press",     // 萎靡：低沉的压下来 + 闷响 + 被抽走的气
+		SweepLow = "sweep_low",             // 扫腿：贴地的一扫 + 尘土
 		EnergyPull = "energy_pull",     // 能量第二版：0.28s 吸气 + 一声软的闷响（没有叮）
 		BuffUp = "buff_up",             // 增益：往上盘的气音 + 到顶一声清亮的「叮」
 		BuffDark = "buff_dark",         // 咒怨 / 暗影类增益：低沉的上行 + 闷响

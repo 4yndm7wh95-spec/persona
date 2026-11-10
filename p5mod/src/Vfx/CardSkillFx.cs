@@ -10,6 +10,9 @@ public sealed record SkillCtx(
 	Action<Color>? SelfTint, IReadOnlyList<SkillFx.Victim> Enemies, SkillFx.Victim? Target)
 {
 	public float Unit => Fx.Screen(Front).Y / 1080f;
+	/// <summary>复制此刻的 Joker（剪影残像用，SkillFx.Ghosts）；Region = 剪影离屏画面覆盖的屏幕区域。</summary>
+	public Func<Node, (Node2D Clone, Transform2D Body)?>? CopyBody { get; init; }
+	public Rect2 Region { get; init; }
 	public Vector2 Head => Feet + new Vector2(0f, -Tall * 1.02f);
 }
 
@@ -32,6 +35,11 @@ public static class CardSkillFx
 		["SerpentForm"] = SerpentForm,
 		["WraithForm"] = WraithForm,
 	};
+
+	static CardSkillFx()
+	{
+		CardSkillFx2.Register(Cards);
+	}
 
 	private static readonly Color Hot = new(1f, 0.96f, 0.94f), Red = new(1f, 0.2f, 0.27f), Crimson = new(0.85f, 0.04f, 0.13f),
 		Deep = new(0.3f, 0f, 0.07f), Ice = new(0.94f, 0.98f, 1f), Sky = new(0.4f, 0.8f, 1f), Blue = new(0.1f, 0.38f, 0.98f),
@@ -347,17 +355,18 @@ void fragment() {
 	vec2 p = (UV - 0.5) * 2.0;
 	float down = max(p.y, 0.0);
 	float col_id = floor((p.x + 1.0) * 5.0);
-	float drip = step(0.55, hash(vec2(col_id, seed))) * smoothstep(0.0, 1.0, grow);
+	float drip = step(0.55, hash(vec2(col_id, seed))) * smoothstep(0.0, 1.0, grow) * 0.6;
 	vec2 q = vec2(p.x, p.y - down * down * 0.9 * drip * (0.6 + 0.4 * sin(clock * 3.0 + col_id)));
 	float n = fbm(q * 2.6 + vec2(seed, -clock * 1.3)) * 0.55 + noise(q * 8.0 + vec2(clock * 2.0, seed)) * 0.15;
-	float R = 0.28 + 0.32 * grow;
-	float d = length(q * vec2(1.0, 1.1)) - R - (n - 0.35) * 0.45 * grow;
+	float R = 0.16 + 0.2 * grow;
+	float d = length(q * vec2(1.0, 1.1)) - R - (n - 0.35) * 0.28 * grow;
 	float inside = 1.0 - smoothstep(-0.015, 0.015, d);
 	float rim = exp(-abs(d) / 0.035);
 	float hi = pow(rim, 4.0) * smoothstep(0.2, 0.8, noise(q * 5.0 - clock * 1.5 + seed));
 	vec3 col = vec3(0.16, 0.0, 0.04) * inside + vec3(0.85, 0.05, 0.16) * rim * 0.9 + vec3(1.0, 0.75, 0.72) * hi * 0.9;
-	float a = clamp(inside * 0.8 + rim * 0.45, 0.0, 1.0) * alpha * (1.0 - smoothstep(0.9, 1.0, length(p)));
-	COLOR = vec4(col * alpha, a);
+	float keep = 1.0 - smoothstep(0.6, 0.95, length(p));
+	float a = clamp(inside * 0.7 + rim * 0.4, 0.0, 1.0) * alpha * keep;
+	COLOR = vec4(col * alpha * keep, a);
 }" };
 
 	/// <summary>
@@ -440,15 +449,16 @@ void fragment() {
 	float x = UV.x, y = 1.0 - UV.y;
 	float n = fbm(vec2(x * 5.0 - clock * 0.45, y * 2.4 + clock * 0.12) + seed);
 	float n2 = fbm(vec2(x * 12.0 + clock * 0.3, y * 5.0 - clock * 0.4) + seed * 1.7);
-	float top = 0.28 + 0.55 * n * (0.7 + 0.3 * smoothstep(front - 0.25, front, x));
-	float body = 1.0 - smoothstep(top - 0.3, top, y);
+	float top = 0.25 + 0.5 * n * (0.7 + 0.3 * smoothstep(front - 0.25, front, x));
+	float body = (1.0 - smoothstep(top - 0.45, top, y)) * mix(1.0, 0.45, y / max(top, 0.01));
 	float edge = x + (n2 - 0.5) * 0.12;
 	float lead = 1.0 - smoothstep(front - 0.1, front + 0.02, edge);
 	float base = smoothstep(0.0, 0.05, x) * (1.0 - smoothstep(0.9, 1.0, x));
-	float d = body * lead * base * (0.45 + 0.55 * n2);
+	float holes = smoothstep(0.25, 0.65, fbm(vec2(x * 9.0 - clock * 0.6, y * 4.0) + seed * 3.1));
+	float d = body * lead * base * (0.25 + 0.75 * n2) * mix(0.35, 1.0, holes) * (1.0 - smoothstep(0.8, 1.0, y));
 	float rim = exp(-abs(y - top + 0.06) / 0.05) * lead * base;
-	vec3 col = mix(deep, mid, n2 * n * 1.4) * d * 0.9 + mid * rim * 0.35 * (0.5 + n2);
-	float a = clamp(d * 0.85, 0.0, 0.9) * alpha;
+	vec3 col = mix(deep, mid, clamp(pow(n2 * n * 2.0, 2.0), 0.0, 1.0)) * d + mid * rim * 0.4 * (0.4 + n2) * (1.0 - smoothstep(0.8, 1.0, y));
+	float a = clamp(d * 0.85, 0.0, 0.85) * alpha;
 	COLOR = vec4(col * alpha, a);
 }" };
 
@@ -463,9 +473,9 @@ void fragment() {
 		Vector2 scr = Fx.Screen(c.Front);
 		float far = c.Face > 0f ? scr.X * 0.98f : scr.X * 0.02f;
 		Vector2 start = c.Feet + new Vector2(-c.Face * h * 0.35f, h * 0.06f);
-		float len = Mathf.Abs(far - start.X), fh = h * 0.75f;
+		float len = Mathf.Abs(far - start.X), fh = h * 1.3f;
 		const float roll = 0.6f, life = 1.6f;
-		foreach ((Control? layer, float a) in new[] { (c.Back, 0.8f), ((Control?)c.Front, 0.55f) })
+		foreach ((Control? layer, float a) in new[] { (c.Back, 0.85f), ((Control?)c.Front, 0.5f) })
 		{
 			if (!Ok(layer)) continue;
 			Node2D root = Fx.Root(layer!, start, "P5Fumes", life + 0.1);
@@ -486,7 +496,7 @@ void fragment() {
 		{
 			float k = (i + 0.5f) / 6f;
 			Vector2 at = new(Mathf.Lerp(start.X, far, k * 0.9f), c.Feet.Y - h * Fx.Rand(0.0f, 0.12f));
-			Paint.Rise(c.Front, i % 3 == 2 ? "curse_ghost" : "curse_soul", at, h * Fx.Rand(0.35f, 0.55f), Fx.Rand(0.4f, 0.6f), Lut5.Curse, 0.8f, roll * k + 0.05f);
+			Paint.Rise(c.Front, i % 3 == 2 ? "curse_ghost" : "curse_soul", at, h * Fx.Rand(0.45f, 0.7f), Fx.Rand(0.6f, 0.85f), Lut5.Curse, 0.9f, roll * k + 0.05f);
 		}
 		foreach (SkillFx.Victim v in c.Enemies)
 		{
@@ -554,7 +564,8 @@ void fragment() {
 	private sealed class Serpent
 	{
 		public Node2D Root = null!;
-		public Polygon2D Glow = null!, Body = null!, Spine = null!;
+		public Polygon2D Halo = null!, Glow = null!, Body = null!, Spine = null!;
+		public List<Sprite2D> Scales = new();
 		public Sprite2D HeadGlow = null!, EyeA = null!, EyeB = null!;
 	}
 
@@ -578,25 +589,24 @@ void fragment() {
 		{
 			int si = sIdx;
 			float phase = si * Mathf.Tau / 3f + Fx.Rand(-0.3f, 0.3f), dly = 0.06f * si;
-			float R = h * (0.36f + 0.05f * si), topY = -h * (1.05f + 0.12f * (si == 1 ? 1 : 0));
-			float restX = (si - 1) * h * 0.36f;
+			float R = h * (0.3f + 0.04f * si), topY = -h * (si == 1 ? 1.25f : 1.05f);
+			float restX = (si - 1) * h * 0.42f;
 			Vector2 target = enemies.Count > 0
 				? enemies[si % enemies.Count].Feet.Lerp(enemies[si % enemies.Count].Top, 0.55f)
 				: c.Feet + new Vector2(c.Face * scr.X * 0.45f, -h * 0.5f);
+			Vector2 rest = c.Feet + new Vector2(restX, topY);
 			Vector2 Path(float pu)
 			{
 				if (pu <= 1f)
 				{
-					float a = phase + pu * Mathf.Tau * 1.25f;
-					float rad = R * (1f - 0.35f * pu);
-					Vector2 helix = new(rad * Mathf.Sin(a), topY * pu);
-					Vector2 rest = new(restX, topY);
-					return c.Feet + helix.Lerp(rest, Mathf.Pow(Mathf.Max(0f, pu - 0.75f) / 0.25f, 2f));
+					// 蛇身：一路往上爬的 S 形（y 单调往上，不会出现横着的段），越往上摆幅越小，最后立在肩头上方
+					float sway = R * Mathf.Sin(phase + pu * Mathf.Tau * 1.3f) * (1f - pu) * (1f - pu * 0.3f);
+					float x = Mathf.Lerp(restX * 0.25f, restX, pu * pu) + sway;
+					return c.Feet + new Vector2(x, topY * (1f - Mathf.Pow(1f - pu, 1.6f)));
 				}
-				float k = pu - 1f;
-				Vector2 p0 = c.Feet + new Vector2(restX, topY);
-				Vector2 p1 = p0 + new Vector2(c.Face * h * 0.4f, -h * 0.35f);
-				return p0.Lerp(p1, k).Lerp(p1.Lerp(target, k), k);
+				float kk = pu - 1f;
+				Vector2 p1 = rest + new Vector2(c.Face * h * 0.45f, -h * 0.3f);
+				return rest.Lerp(p1, kk).Lerp(p1.Lerp(target, kk), kk);
 			}
 			// 身子在 Joker 后面盘上来，扑出去时换到前面
 			Serpent s = MakeSerpent(c.Back ?? c.Front, u, h);
@@ -628,10 +638,17 @@ void fragment() {
 					front = true;
 					s.Root.Reparent(c.Front, true);
 				}
-				float w = h * 0.075f;
-				s.Glow.Polygon = global::P5Joker.Glow.Ribbon(pts, w * 1.9f);
+				float w = h * 0.11f;
+				s.Halo.Polygon = global::P5Joker.Glow.Ribbon(pts, w * 3.2f);
+				s.Glow.Polygon = global::P5Joker.Glow.Ribbon(pts, w * 1.7f);
 				s.Body.Polygon = global::P5Joker.Glow.Ribbon(pts, w);
-				s.Spine.Polygon = global::P5Joker.Glow.Ribbon(pts, w * 0.22f);
+				s.Spine.Polygon = global::P5Joker.Glow.Ribbon(pts, w * 0.18f);
+				for (int j = 0; j < s.Scales.Count; j++)
+				{
+					int idx = 4 + j * 3;
+					s.Scales[j].Position = pts[Mathf.Min(idx, n - 2)];
+					s.Scales[j].Modulate = new Color(1f, 0.25f, 0.3f, 0.5f + 0.5f * Mathf.Sin(tt * 18f - j * 1.3f));
+				}
 				Vector2 hp = pts[n - 1], hd = (pts[n - 1] - pts[n - 3]).Normalized();
 				Vector2 side = new(-hd.Y, hd.X);
 				s.HeadGlow.Position = hp;
@@ -661,10 +678,15 @@ void fragment() {
 		root.GlobalPosition = Vector2.Zero;
 		Fx.FreeAfter(root, 2.0);
 		var s = new Serpent { Root = root };
-		s.Glow = Fx.Poly(root, new[] { Vector2.Zero, Vector2.Right, Vector2.Down }, new Color(0.95f, 0.08f, 0.2f, 0.55f), additive: true);
-		s.Body = Fx.Poly(root, new[] { Vector2.Zero, Vector2.Right, Vector2.Down }, new Color(0.12f, 0f, 0.03f, 0.95f));
-		s.Spine = Fx.Poly(root, new[] { Vector2.Zero, Vector2.Right, Vector2.Down }, new Color(1f, 0.42f, 0.45f, 0.9f), additive: true);
-		s.HeadGlow = Glow.SoftSprite(root, Vector2.Zero, new Color(1f, 0.2f, 0.28f, 0.95f), h * 0.009f);
+		s.Halo = Fx.Poly(root, new[] { Vector2.Zero, Vector2.Right, Vector2.Down }, new Color(0.8f, 0.04f, 0.16f, 0.16f), additive: true);
+		s.Glow = Fx.Poly(root, new[] { Vector2.Zero, Vector2.Right, Vector2.Down }, new Color(0.95f, 0.08f, 0.2f, 0.26f), additive: true);
+		s.Body = Fx.Poly(root, new[] { Vector2.Zero, Vector2.Right, Vector2.Down }, new Color(0.07f, 0f, 0.02f, 0.97f));
+		s.Spine = Fx.Poly(root, new[] { Vector2.Zero, Vector2.Right, Vector2.Down }, new Color(0.9f, 0.18f, 0.25f, 0.7f), additive: true);
+		for (int i = 0; i < 6; i++)
+		{
+			s.Scales.Add(Glow.SoftSprite(root, Vector2.Zero, new Color(1f, 0.25f, 0.3f, 0.8f), h * 0.0035f));
+		}
+		s.HeadGlow = Glow.SoftSprite(root, Vector2.Zero, new Color(1f, 0.2f, 0.28f, 0.95f), h * 0.011f);
 		s.EyeA = Glow.SoftSprite(root, Vector2.Zero, Hot, h * 0.0016f);
 		s.EyeB = Glow.SoftSprite(root, Vector2.Zero, Hot, h * 0.0016f);
 		return s;
