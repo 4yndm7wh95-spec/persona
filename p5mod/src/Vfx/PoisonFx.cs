@@ -96,6 +96,19 @@ public static class PoisonFx
 		{
 			return;                                                   // 腐蚀波：抽牌带来的上毒由贴地的咒火浪表现（CorrosiveFx.Wave）
 		}
+		// 致命毒药 / 蛇咬（用户 2026-11-10）：这两张牌有自己的特效（VenomFx），不走通用的光束 + 脚下咒火
+		if (!outbreak)
+		{
+			switch (VenomFx.Take())
+			{
+				case VenomFx.Kind.Drop:
+					VenomFx.Drop(layer, ArseneFx.TryClaw(out Vector2 tip) ? tip : null, at, top, width, body);
+					return;
+				case VenomFx.Kind.Bite:
+					VenomFx.Bite(layer, at, top, width, body);
+					return;
+			}
+		}
 		if (ArseneFx.TryClaw(out Vector2 claw))
 		{
 			Vector2 d = at - claw;

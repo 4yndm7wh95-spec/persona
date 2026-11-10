@@ -153,7 +153,10 @@ public static class JokerFx
 				break;
 			case var n when Aim.Grips(n) && t != null:
 			{
-				// 第四版：0.7 的亚森之手（Grip）停用；施毒特效走 PoisonApplyPatch → PoisonFx
+				// 第四版：0.7 的亚森之手（Grip）停用；施毒特效走 PoisonApplyPatch → PoisonFx。
+				// 致命毒药 / 蛇咬（用户 2026-11-10）有自己的样子：记下这张牌，上毒那一刻 PoisonFx.Apply 转给 VenomFx
+				if (n == "DeadlyPoison") VenomFx.Arm(VenomFx.Kind.Drop);
+				else if (n == "Snakebite") VenomFx.Arm(VenomFx.Kind.Bite);
 				break;
 			}
 			case "DeadlyPoison" when t != null:
