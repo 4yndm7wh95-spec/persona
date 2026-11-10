@@ -1049,6 +1049,7 @@ void fragment() {
 	/// </summary>
 	public static void Ghosts(Control back, Func<Node, (Node2D Clone, Transform2D Body)?>? clone, Rect2 region, float facing, int count = 2, bool sound = true)
 	{
+		count = 1;                                       // 用户 2026-11-10：剪影只要一层，照参考图
 		if (sound)
 		{
 			Sfx.Play(Sfx.StealthVeil, 0.55f);
