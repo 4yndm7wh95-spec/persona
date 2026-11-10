@@ -39,6 +39,7 @@ def save(name, x, peak=0.85):
     print(name, round(len(x) / SR, 2))
 
 
+# card_flick is no longer used by the draw effect (it plays the P3 mod card_draw now)
 # ── card_flick: a stiff card snapped off the deck - one dry paper snap and a short flutter
 x = t(0.14); y = np.zeros_like(x)
 y += bp(nz(len(x)), 1800, 7500) * env(x, 0.0004, 0.008)
@@ -59,19 +60,18 @@ save("bullet_load", y, 0.8)
 # ── expose_break: armor split open - two hard dry cracks, a mid crunch, then debris ticking away
 x = t(0.65); y = np.zeros_like(x)
 for d, g in [(0.0, 1.0), (0.022, 0.7)]:
-    y += hp(nz(len(x)), 1200) * env(x - d, 0.0003, 0.009) * 1.6 * g
-y += np.tanh(4 * bp(nz(len(x)), 400, 2000) * env(x, 0.001, 0.05)) * 0.8
-y += lp(nz(len(x)), 160) * env(x, 0.002, 0.07) * 1.2
-for _ in range(26):
+    y += bp(nz(len(x)), 1200, 6000) * env(x - d, 0.0003, 0.007) * 1.2 * g
+y += bp(nz(len(x)), 400, 2000) * env(x, 0.001, 0.035) * 0.35
+y += lp(nz(len(x)), 160) * env(x, 0.002, 0.05) * 0.8
+for _ in range(12):
     d = rng.uniform(0.05, 0.5)
     y += bp(nz(len(x)), 2500, 6500) * env(x - d, 0.0003, 0.003) * rng.uniform(0.12, 0.4) * np.exp(-d / 0.22)
-save("expose_break", room(y, 0.35, 0.1), 0.85)
+save("expose_break", room(y, 0.3, 0.08), 0.8)
 
 # ── wail: a pressure wave thrown off Joker - a hard burst of air, a hollow howl of filtered noise that flutters as the fronts go out, a low thump
 x = t(0.95); y = np.zeros_like(x)
-y += bp(nz(len(x)), 500, 4500) * env(x, 0.004, 0.11) * 1.0
+y += bp(nz(len(x)), 500, 3500) * env(x, 0.006, 0.09) * 0.6
 flutter = 0.65 + 0.35 * np.sign(np.sin(2 * np.pi * 26 * x)) * np.exp(-x / 0.5)
 y += (bp(nz(len(x)), 750, 1150, 3) * 1.4 + bp(nz(len(x)), 2300, 3000, 3) * 0.7) * env(x, 0.02, 0.4) * flutter
-y += lp(nz(len(x)), 120, 3) * env(x, 0.004, 0.16) * 2.4
-y += hp(nz(len(x)), 3500) * env(x - 0.01, 0.03, 0.3) * 0.16
-save("wail", room(y, 0.7, 0.2), 0.85)
+y += lp(nz(len(x)), 120, 3) * env(x, 0.004, 0.14) * 1.6
+save("wail", room(y, 0.5, 0.15), 0.8)

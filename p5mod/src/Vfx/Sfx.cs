@@ -67,6 +67,7 @@ public static class Sfx
 		Crush = "crush",
 		// 技能 / 能力牌特效（Vfx/SkillFx.cs，用户 2026-11-10；全部合成：tools/p5/sfx/synth_skill_fx.py）
 		ExposeBreak = "expose_break",   // 暴露：护甲被劈开（两声干裂 + 闷的碎裂 + 碎屑），tools/p5/sfx/synth_skill_fx2.py（card_flick / bullet_load / wail 的第二版也在那里）
+		CardDraw = "card_draw",         // 抽牌（用户 2026-11-10：改用 P3 mod 的抽牌音，克制、能听出来就行）
 		CardFlick = "card_flick",       // 光牌弹出：干脆的纸牌一弹
 		CardBurn = "card_burn",         // 弃牌：一弹 + 烧掉的「嘶」和细碎噼啪
 		BulletLoad = "bullet_load",     // 装弹：一发子弹落回手里的金属轻响

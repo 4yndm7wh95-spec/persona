@@ -339,7 +339,7 @@ void fragment() {
 			{
 				if (sound)
 				{
-					Sfx.Play(Sfx.CardFlick, 0.55f - 0.05f * k);
+					Sfx.Play(Sfx.CardDraw, 0.32f - 0.04f * k, 0.03f * k);
 				}
 				CardNode c = MakeCard(layer, hand, size, outT + holdT + inT + 0.1);
 				Fx.Animate(c.Root, 0, outT + holdT + inT, t =>
@@ -559,7 +559,7 @@ void fragment() {
 			{
 				if (sound)
 				{
-					Sfx.Play(Sfx.BulletLoad, 0.6f);
+					Sfx.Play(Sfx.BulletLoad, 0.34f);
 				}
 				Glow.Flash(layer, dest, new Color(1f, 0.9f, 0.8f), 110f * unit, 0.09f);
 				Glow.Sparks(layer, dest, 7, 120f, 380f, 0.22f, new[] { new Color(1f, 0.95f, 0.85f), new Color(1f, 0.6f, 0.3f) }, 500f, 0.02f * unit, 0.055f * unit,
@@ -724,7 +724,7 @@ void fragment() {
 		const float life = 0.75f;
 		if (sound)
 		{
-			Sfx.Play(Sfx.Wail, 0.7f);
+			Sfx.Play(Sfx.Wail, 0.42f);
 		}
 		Fx.Shake(2);
 		Glow.Flash(front, mask, new Color(1f, 0.92f, 0.9f), 200f * unit, 0.12f);
@@ -955,7 +955,7 @@ void fragment() {
 		Cut.Razor(front, center, ang, h * 1.5f, 6f * unit, 0.16f);
 		Fx.After(front, 0.07, () =>
 		{
-			Sfx.Play(Sfx.ExposeBreak, 0.7f);
+			Sfx.Play(Sfx.ExposeBreak, 0.42f);
 			HitStop.Request(0.045);
 			Stage.ShakeDir?.Invoke(2, Mathf.RadToDeg(dir.Angle()));
 			Glow.Flash(front, center, new Color(1f, 0.92f, 0.9f), h * 1.1f, 0.12f);
