@@ -191,7 +191,7 @@ void fragment() {
 			float keep = smoothstep(-0.25, 0.9, fy);
 			// 外面的烟丝
 			float wn = fbm3(lp * vec3(1.8, 1.0, 1.8) - flow * 1.4);
-			float aura = smoothstep(0.4, 0.04, s) * smoothstep(0.6, 0.7, wn) * step(0.0, s) * keep;
+			float aura = smoothstep(0.5, 0.0, s) * smoothstep(0.52, 0.72, wn) * step(-0.05, s) * keep;
 			if (aura > 0.001) {
 				float aa = 1.0 - exp(-aura * stepv / sc * 1.8);
 				col += T * (aa * vec3(0.03, 0.002, 0.008) + vec3(0.75, 0.06, 0.08) * aura * smoothstep(0.62, 0.85, wn) * stepv / sc * 3.0);
@@ -200,16 +200,15 @@ void fragment() {
 			float fine = vnoise(lp * 11.0 - flow * 3.0);
 			float disp = part > 0.5 ? 0.13 : 0.22;                    // 头上的雾贴得更紧：角、吻、下颌的形看得出来
 			float sd = s + (nz - 0.5) * disp + (fine - 0.5) * 0.05;
-			float dens = smoothstep(0.02, -0.035, sd);
+			float dens = smoothstep(0.08, -0.1, sd);
 			if (dens > 0.001) {
 				float inner = max(-sd, 0.0);
-				float shellGlow = exp(-inner * 16.0);
+				float shellGlow = exp(-inner * 6.0) * smoothstep(0.0, 0.12, inner);   // 最外面一薄层不发光：边缘淡出，不勾边
 				float flick = fbm3(lp * 2.2 - flow * 3.0);
 				vec3 emit = mix(vec3(0.55, 0.04, 0.07), vec3(1.0, 0.36, 0.26), smoothstep(0.45, 0.8, flick)) * shellGlow * (0.35 + 0.9 * smoothstep(0.35, 0.75, flick));
 				// 雾面的褶：表面附近一道道细亮的纹（同大手的咒纹），让雾有清楚的结构
 				float vn = fbm3(lp * 2.4 - flow * 0.8);
-				emit += vec3(1.0, 0.35, 0.28) * (1.0 - smoothstep(0.0, 0.03, abs(vn - 0.5))) * exp(-inner * 10.0) * 0.9;
-				emit += vec3(1.0, 0.55, 0.45) * exp(-abs(sd) / 0.012) * 0.35;
+				emit += vec3(1.0, 0.35, 0.28) * (1.0 - smoothstep(0.0, 0.03, abs(vn - 0.5))) * smoothstep(0.03, 0.12, inner) * exp(-inner * 6.0) * 0.8;
 				// 雷光：雾体里亮一下
 				emit += vec3(0.7, 0.55, 0.65) * lightning * shellGlow * 0.6;
 				float a = (1.0 - exp(-dens * stepv / sc * 3.6)) * keep;
@@ -270,7 +269,7 @@ void fragment() {
 	vec2 uv = UV;
 	vec2 d = (uv - sun) * vec2(aspect, 1.0);
 	float r = length(d), ang = atan(d.y, d.x);
-	const float R = 0.095;
+	const float R = 0.082;
 	// 底色：整屏压暗偏暗红（盖在战斗背景上，不是不透明的）
 	vec3 col = mix(vec3(0.16, 0.02, 0.04), vec3(0.07, 0.0, 0.02), uv.y);
 	float a = 0.4;
@@ -293,18 +292,25 @@ void fragment() {
 	col += vec3(0.45, 0.05, 0.05) * floorLit * 0.3;
 	a = max(a, clamp(corona + halo * 0.4, 0.0, 1.0));
 	// 云体：暗，靠日冕和雷光照出边
-	vec3 cc = vec3(0.025, 0.0, 0.008) + vec3(0.6, 0.05, 0.05) * near * smoothstep(0.3, 0.9, c2) * 0.6 + vec3(0.7, 0.3, 0.35) * lightning * smoothstep(0.35, 0.9, c2) * 0.3;
-	col = mix(col, cc, cloud * 0.85);
-	a = max(a, cloud * 0.8);
-	// 黑日
-	float disk = 1.0 - smoothstep(R - 0.002, R + 0.0015, r);
-	vec3 face = mix(vec3(0.0), vec3(0.16, 0.01, 0.02), smoothstep(R * 0.4, R, r));       // 月面边缘被日冕透出一点暗红，不是一块平涂的黑
-	col = mix(col, face, disk);
-	a = max(a, disk);
-	float rim = exp(-pow((r - R) / 0.0035, 2.0));                                          // 贴着黑日一圈白热的细环
-	float bead = pow(max(0.0, cos(ang - 0.7)), 24.0) * exp(-pow((r - R) / 0.008, 2.0));     // 「钻石环」：一处更亮的光点
-	float streamer = pow(noise(vec2(ang * 5.0, 1.0 + clock * 0.03)), 2.0) * exp(-max(r - R, 0.0) / 0.06) * step(R, r);
-	col += vec3(1.0, 0.92, 0.88) * (rim * 1.2 + bead * 2.0) + vec3(1.0, 0.3, 0.2) * streamer * 0.5;
+	// 黑日（用户 2026-11-10：太突兀 → 融进天色）：边缘柔一点，不是纯黑而是被暗红的天光蒙了一层，环是暗红偏亮而不是白热
+	float disk = 1.0 - smoothstep(R - 0.006, R + 0.004, r);
+	vec3 face = mix(vec3(0.05, 0.0, 0.012), vec3(0.2, 0.02, 0.03), smoothstep(R * 0.3, R, r));
+	col = mix(col, face, disk * 0.82);
+	a = max(a, disk * 0.82);
+	float rim = exp(-pow((r - R) / 0.006, 2.0));
+	float bead = pow(max(0.0, cos(ang - 0.7)), 24.0) * exp(-pow((r - R) / 0.01, 2.0));
+	float streamer = pow(noise(vec2(ang * 5.0, 1.0 + clock * 0.03)), 2.0) * exp(-max(r - R, 0.0) / 0.07) * step(R, r);
+	col += vec3(1.0, 0.45, 0.38) * rim * 0.75 + vec3(1.0, 0.75, 0.65) * bead * 0.9 + vec3(1.0, 0.3, 0.2) * streamer * 0.45;
+	// 云在日蚀前面飘过：一部分云遮住黑日和日冕，被背后的光照红了边
+	vec3 cc = vec3(0.06, 0.004, 0.014) + vec3(0.75, 0.08, 0.07) * near * smoothstep(0.3, 0.9, c2) * 0.7 + vec3(0.7, 0.3, 0.35) * lightning * smoothstep(0.35, 0.9, c2) * 0.3;
+	// 横过日蚀的一缕薄云
+	float veil = smoothstep(0.45, 0.8, fbm(vec2(uv.x * 3.0 - clock * 0.02, (uv.y - sun.y) * 14.0 + 2.0))) * exp(-pow((uv.y - sun.y - 0.01) / 0.05, 2.0));
+	cloud = max(cloud, veil * 0.8);
+	col = mix(col, cc, cloud * 0.75);
+	a = max(a, cloud * 0.75);
+	// 一层很淡的天雾盖在最上面，把日蚀和天色揉在一起
+	float haze = fbm(vec2(uv.x * 1.5 + clock * 0.01, uv.y * 3.0));
+	col = mix(col, vec3(0.3, 0.03, 0.05), 0.18 * haze * (1.0 - smoothstep(0.4, 0.75, uv.y)));
 	// 贴地的薄红雾：没有边界，往上淡掉
 	float gy = (uv.y - ground + 0.25) / 0.35;
 	float mist = smoothstep(0.0, 1.0, gy) * (0.5 + 0.5 * fbm(vec2(uv.x * 3.0 - clock * 0.04, uv.y * 6.0)));
