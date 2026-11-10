@@ -708,6 +708,20 @@ public partial class Preview : Node2D
 		["cards1"] = p => Cards1(p, null),
 		["cards1b"] = p => Cards1(p, new[] { "Envenom", "NoxiousFumes", "SerpentForm" }),
 		["cards2"] = p => Cards2(p, null),
+		["orochi"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			Orochi? o = null;
+			double t0 = 0;
+			p.At(0.05, () => { o = new Orochi(p._back, JokerFeet, tall); });
+			p.Every(() =>
+			{
+				t0 += 1.0 / 30.0;
+				float tt = (float)t0;
+				float ltn = Mathf.Exp(-Mathf.Pow((tt - 1.6f) / 0.05f, 2f)) + 0.6f * Mathf.Exp(-Mathf.Pow((tt - 1.8f) / 0.04f, 2f));
+				o?.Set(tt, ltn, Mathf.Min(1f, tt / 0.3f));
+			});
+		},
 		["buffs"] = p =>
 		{
 			float tall = (JokerFeet - Pose(815f, 120f)).Length();
