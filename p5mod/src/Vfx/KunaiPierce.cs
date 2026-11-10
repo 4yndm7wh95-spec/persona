@@ -148,7 +148,7 @@ void fragment() {
 	float ring = exp(-max(dq, 0.0) * 34.0) * step(-0.002, dq) * inband;
 	float cn = noise(vec2(ang * 2.2, 3.7)) + 0.5 * noise(vec2(ang * 6.0, 1.3));
 	float cg = max(abs(dFdx(cn)) + abs(dFdy(cn)), 0.0006);
-	float line = 1.0 - smoothstep(0.6, 1.6, abs(cn - 0.8) / cg);
+	float line = 1.0 - smoothstep(1.0, 2.6, abs(cn - 0.8) / cg);
 	float reach = crack * (0.5 + 0.9 * noise(vec2(ang * 1.7, 9.0)));
 	float cracks = line * (1.0 - smoothstep(reach * 0.8, reach, rr)) * smoothstep(0.02, 0.08, rr) * through * step(0.0, dq);
 	float bulge = exp(-rr * rr / 0.5) * crack * 0.25 * through * step(0.0, dq);                            // 被顶起来的一块：微微发亮
@@ -180,7 +180,7 @@ void fragment() {
 	}
 
 	/// <summary>时间轴（秒，从 emergeAt 算）：冲到横幅、慢放、冲出镜头。</summary>
-	public const float Approach = 0.1f, Slow = 0.28f, Exit = 0.12f;   // 用户 2026-11-10：要迅捷、干脆利落，慢放只一小会儿
+	public const float Approach = 0.08f, Slow = 0.55f, Exit = 0.14f;   // 冲过来极快；慢放 = 正在刺穿的过程；刺穿那一刻横幅碎开、苦无猛冲出去
 
 	/// <summary>从苦无出现到横幅碎开过了多久（CutInPlayback 的 SplitAt = emergeAt + PierceAfter）。</summary>
 	public const float PierceAfter = Approach + Slow;
@@ -201,7 +201,7 @@ void fragment() {
 		Vector2 screen = Fx.Screen(back);
 		Node2D root = Fx.ScreenRoot(back, "P5KunaiPierce");
 		KunaiPierce k = new(root, screen);
-		const float size = 1.15f;     // 整把苦无（尖到环 ≈ 2.1 × size）在慢放里全部穿出来、横在画面中间
+		const float size = 1.7f;
 		// 长轴穿过横幅的点（世界）：屏幕中间偏右上一点；刃尖沿 Aim 朝镜头走
 		// 用户 2026-11-10：从眼神横幅的正中间穿出来（横幅中心在屏幕上的位置由 center 给，换算到横幅所在的深度）
 		Vector2 c = center ?? new Vector2(screen.X * 0.4f, screen.Y * 0.36f);
@@ -211,7 +211,7 @@ void fragment() {
 		float touchAt = emergeAt + Approach, splitAt = emergeAt + PierceAfter, life = splitAt + Exit;
 		bool touched = false, pierced = false;
 		playback.Outward = true;                                    // 碎片朝玩家炸开
-		float spin = 0f, last = 0f;
+		float spin = 0f, last = 0f, nextSpit = 0f;
 		k.Set("alpha", 0f);
 		k.Set("band_z", BandZ);
 		k.Set("size", size);
@@ -238,43 +238,62 @@ void fragment() {
 			{
 				// 慢放：尖端挤出来，转得看得清，裂纹越裂越远，刃口烧红
 				float u = (s - touchAt) / Slow;
-				tipPast = Mathf.Lerp(0.5f * size, 2.35f * size, Mathf.Pow(u, 0.75f));     // 一刺破就露出半截刃，慢放里整把（柄、环）都穿出来
-				rate = Mathf.Lerp(16f, 9f, u);
-				heat = Mathf.Min(1f, u * 2.5f);
-				crack = 0.3f + 1.4f * u;
+				// 慢放 = 苦无正在一点点刺穿横幅的过程（用户 2026-11-10）：尖端先露出来，刃被一寸寸顶出来（先快后几乎停住，憋着），
+				// 一边转一边往外挤；横幅上的裂纹从穿孔一路裂开，孔口不停地迸火星，画面一直在抖。柄和环还在横幅后面。
+				tipPast = Mathf.Lerp(0.06f * size, 1.2f * size, 1f - Mathf.Pow(1f - u, 2.2f));
+				rate = Mathf.Lerp(18f, 8f, u);
+				heat = Mathf.Min(1f, 0.3f + u);
+				crack = 0.25f + 3.2f * u;
+				Vector2 hole = root.ToGlobal(ToScreen(through, screen));
+				float unit = screen.Y / 1080f;
+				Vector2 fwd = new Vector2(Aim.X, -Aim.Y).Normalized();          // 苦无在屏幕上的去向
 				if (!touched)
 				{
 					touched = true;
-					Sfx.Play(Sfx.Crack, 0.6f);                         // 尖端顶破横幅
-					Sfx.Play(Sfx.SubBoom, 0.5f);
-					// 刺破那一下的冲击（用户 2026-11-10：冲击力、表现力要强）：白闪、两圈冲击环、空间一扭、玻璃碴朝镜头迸出来、火星、震屏
-					Vector2 hole = root.ToGlobal(ToScreen(through, screen));
-					float unit = screen.Y / 1080f;
-					Fx.Shake(4);
-					HitStop.Request(0.03);
-					Glow.Flash(back, hole, new Color(1f, 0.96f, 0.94f), 420f * unit, 0.12f);
-					Glow.Flash(back, hole, new Color(1f, 0.2f, 0.25f), 1100f * unit, 0.35f);
-					Glow.Shockwave(back, hole, new Color(1f, 0.92f, 0.9f), 900f * unit, 0.3f);
-					Glow.Shockwave(back, hole, new Color(1f, 0.25f, 0.3f), 1500f * unit, 0.45f, 1f, 0.04f);
-					Glow.Shockwave(back, hole, new Color(1f, 0.6f, 0.6f), 2200f * unit, 0.55f, 1f, 0.08f);   // 不用折射波纹：这里它把舞台后面的原场景折出一圈暗绿
-					Glow.Shards(back, hole, 30, 2.2f, new Vector2(0.6f, 0.5f), 2.6f);
-					Glow.Sparks(back, hole, 40, 500f, 1700f, 0.4f, new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.35f, 0.38f), new Color(0.7f, 0.04f, 0.12f) }, 300f,
-						0.03f * unit, 0.09f * unit, new Vector2(0.6f, 0.5f), 150f);
+					Sfx.Play(Sfx.Crack, 0.55f);                        // 尖端扎进横幅
+					Fx.Shake(2);
+					Glow.Flash(back, hole, new Color(1f, 0.96f, 0.94f), 260f * unit, 0.1f);
+					Glow.Shockwave(back, hole, new Color(1f, 0.92f, 0.9f), 520f * unit, 0.22f);
+					Glow.Glint(back, hole, 1.4f);
 					onTouch?.Invoke();
 				}
-				playback.ShatterFrom = ToScreen(through, screen);       // 横幅不变形（用户 2026-11-10），只记下从哪里碎开
+				// 孔口一直在迸火星、碎碴（每 0.07s 一小把，越到后面越多）
+				if (s >= nextSpit)
+				{
+					nextSpit = s + 0.07f;
+					Glow.Sparks(back, hole, 8 + (int)(10 * u), 400f, 1300f, 0.3f, new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.35f, 0.38f), new Color(0.7f, 0.04f, 0.12f) },
+						300f, 0.025f * unit, 0.07f * unit, fwd, 70f);
+					Glow.Shards(back, hole, 3, 1.2f, fwd, 1.6f);
+				}
+				k.Rect.Position = new Vector2(Mathf.Sin(s * 97f), Mathf.Cos(s * 71f)) * (1.5f + 3.5f * u) * unit;    // 憋着劲：越顶越抖
+				playback.ShatterFrom = ToScreen(through, screen);       // 横幅不变形，只记下从哪里碎开
 			}
 			else
 			{
-				// 横幅碎开，苦无恢复速度冲出镜头
+				// 一下刺穿：横幅在这一刻碎开（苦无还插在上面、柄还没出来），苦无猛地冲出去
 				float u = (s - splitAt) / Exit;
-				tipPast = Mathf.Lerp(2.35f * size, 2.35f * size + 5f, u * u);
-				rate = 26f;
+				tipPast = Mathf.Lerp(1.2f * size, 1.2f * size + 7.5f, u * (0.35f + 0.65f * u));
+				rate = 30f;
 				heat = 1f - u;
-				alpha = 1f - Mathf.Clamp((u - 0.7f) / 0.3f, 0f, 1f);
+				alpha = 1f - Mathf.Clamp((u - 0.75f) / 0.25f, 0f, 1f);
+				k.Rect.Position = Vector2.Zero;
 				if (!pierced)
 				{
 					pierced = true;
+					Vector2 hole = root.ToGlobal(ToScreen(through, screen));
+					float unit = screen.Y / 1080f;
+					Vector2 fwd = new Vector2(Aim.X, -Aim.Y).Normalized();
+					Sfx.Play(Sfx.SubBoom, 0.6f);
+					Fx.Shake(6);
+					HitStop.Request(0.04);
+					Glow.Flash(back, hole, new Color(1f, 0.96f, 0.94f), 520f * unit, 0.12f);
+					Glow.Flash(back, hole, new Color(1f, 0.2f, 0.25f), 1300f * unit, 0.35f);
+					Glow.Shockwave(back, hole, new Color(1f, 0.92f, 0.9f), 1000f * unit, 0.28f);
+					Glow.Shockwave(back, hole, new Color(1f, 0.25f, 0.3f), 1700f * unit, 0.42f, 1f, 0.03f);
+					Glow.Shockwave(back, hole, new Color(1f, 0.6f, 0.6f), 2400f * unit, 0.5f, 1f, 0.06f);
+					Glow.Shards(back, hole, 34, 2.4f, fwd, 2.2f);
+					Glow.Sparks(back, hole, 50, 600f, 2000f, 0.4f, new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.35f, 0.38f), new Color(0.7f, 0.04f, 0.12f) }, 300f,
+						0.03f * unit, 0.09f * unit, fwd, 120f);
 					onPierce?.Invoke();
 				}
 			}
