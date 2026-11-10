@@ -137,6 +137,7 @@ void fragment() {
 	public static void Play(Control layer, Vector2 chest, float height, float facing = 1f, int amount = 5, Vector2? fist = null)
 	{
 		bool big = amount >= 10;
+		Sfx.Play(Sfx.HexGuard, big ? 0.6f : 0.5f);                   // 用户 2026-11-10：音效也加上（原版格挡音照常响，这一声压得低）
 		float k = big ? 1.18f : 1f;
 		Vector2 size = new Vector2(height * 0.8f, height * 0.94f) * k;
 		Vector2 center = chest + new Vector2(height * 0.42f * facing, height * 0.08f);    // 立在身前，不盖住人

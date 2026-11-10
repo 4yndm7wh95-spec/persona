@@ -519,21 +519,6 @@ public partial class Preview : Node2D
 			var es = new List<ShivFx.Target> { new(Enemy2, 180f), new(Enemy, 230f), new(Enemy3, 180f) };
 			p.At(1.2, () => { p._joker?.Play("aim_out"); ShivFx.FanOfKnives(p._front, Pose(1275f, 345f), es); });
 		},
-		// 小刀流第二批（同 JokerFx.OnPlay）：子弹时间（转枪 + 慢波纹 + 四周压暗）→ 残影 → 精心策划（预告信）→ 隐形（暗烟 + 变暗）
-		["batch2"] = p =>
-		{
-			p.At(0.3, () => { p._joker?.Play("aim_in"); p._joker?.Queue("aim_out", false); ShivFx.BulletTime(p._front, Chest); });
-			p.At(1.7, () => p._joker?.Play("cast_glove"));
-			p.At(1.9, () => ShivFx.Afterimage(p._back, parent => BodyAura.CloneBody!(parent), 1f));
-			p.At(3.0, () => p._joker?.Play("cast_glove"));
-			p.At(3.2, () => ShivFx.CallingCard(p._front, Pose(1010f, 410f)));
-			p.At(4.3, () => p._joker?.Play("cast_glove"));
-			p.At(4.48, () =>
-			{
-				float tall = (JokerFeet - Pose(815f, 120f)).Length();
-				ShivFx.Shadowmeld(p._back, JokerFeet, tall, p._joker);
-			});
-		},
 		["warmup"] = p => p.At(0.1, () => Warmup.Run(p._front, 1ul)),
 		["monsters"] = p => { },
 		["attack_pose"] = p => p.At(0.3, () => p._joker?.Play("attack")),
@@ -671,6 +656,32 @@ public partial class Preview : Node2D
 			p.At(4.77, () => SkillFx.Plan(p._front, p._back, Chest, tall, 3, dark: true));
 			p.At(6.0, () => p._joker?.Play("cast_glove"));
 			p.At(6.27, () => SkillFx.Buff(p._front, p._back, JokerFeet, tall, SkillFx.Tone.Shadow, big: true));
+		},
+		// c：尖啸 → 子弹时间 → 残像（纯红剪影）→ 暗影裹身 → 暴露 → 夹击 → 蜂巢护盾
+		["skills_c"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			SkillFx.Victim V(Vector2 e, float top, float w) => new(new Vector2(e.X, 830f), e + new Vector2(0f, -top), w, c => p._enemies[e].Modulate = c);
+			p.At(0.2, () => p._joker?.Play("cast"));
+			p.At(0.6, () => SkillFx.Wail(p._front, p._back, Pose(1010f, 215f), new[] { V(Enemy2, 150f, 200f), V(Enemy, 170f, 260f), V(Enemy3, 150f, 200f) }));
+			p.At(1.9, () => { p._joker?.Play("aim_in"); p._joker?.Queue("aim_out", false); SkillFx.TimeSlow(p._front, Chest, tall); });
+			Rect2 region = new(JokerFeet + new Vector2(-tall * 0.75f, -tall * 1.15f), new Vector2(tall * 1.5f, tall * 1.3f));
+			p.At(3.6, () => p._joker?.Play("cast_guard"));
+			p.At(3.7, () => SkillFx.Ghosts(p._back, BodyAura.CloneBody, region, 1f));
+			p.At(4.9, () => p._joker?.Play("cast_glove"));
+			p.At(5.17, () => SkillFx.Veil(p._front, p._back, JokerFeet, tall, c => p._joker!.Modulate = c));
+		},
+		["skills_d"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.3, () => p._joker?.Play("cast_glove"));
+			p.At(0.57, () => SkillFx.Shatter(p._front, p._back, Enemy, new Vector2(Enemy.X, 830f), Enemy + new Vector2(0f, -170f), 260f, Vector2.Right, c => p._enemies[Enemy].Modulate = c));
+			p.At(1.7, () => p._joker?.Play("cast_glove"));
+			p.At(1.97, () => SkillFx.Mark(p._front, Enemy2, 200f, 260f));
+			p.At(3.2, () => p._joker?.Play("cast_guard"));
+			p.At(3.28, () => HexGuard.Play(p._front, Chest, tall, 1f, 5, Pose(885f, 310f)));
+			p.At(4.6, () => p._joker?.Play("cast_guard"));
+			p.At(4.68, () => { HexGuard.Play(p._front, Chest, tall, 1f, 12, Pose(885f, 310f)); SkillFx.Load(p._front, Pose(1010f, 410f), 1); });
 		},
 		["block"] = p =>
 		{

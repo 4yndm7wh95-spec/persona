@@ -609,7 +609,7 @@ void fragment() {
 		float fk = float(k);
 		float R = prog * 1.45 - fk * 0.14;
 		if (R <= 0.02) continue;
-		float w = 0.008 + 0.022 * R;
+		float w = 0.004 + 0.011 * R;
 		float seg = smoothstep(0.3, 0.45, noise(vec2(a * 9.0 + fk * 3.7 + seed, fk)));
 		float fall = (1.0 - smoothstep(0.55, 1.0, R)) * (1.0 - fk * 0.13);
 		light += exp(-pow((r - R) / w, 2.0)) * mix(0.3, 1.0, seg) * fall;
@@ -618,7 +618,7 @@ void fragment() {
 	float lane = pow(noise(vec2(a * 46.0 + seed, 1.0)), 7.0) * 3.0;
 	float streak = lane * smoothstep(0.05, 0.2, r) * (1.0 - smoothstep(prog * 1.2, prog * 1.45, r)) * (1.0 - prog) * 0.5;
 	float fade = inCone * (1.0 - smoothstep(0.9, 1.0, r)) * (1.0 - smoothstep(0.75, 1.0, prog));
-	vec3 col = vec3(1.0, 0.95, 0.93) * light + vec3(1.0, 0.25, 0.3) * (light * 0.6 + streak);
+	vec3 col = vec3(1.0, 0.95, 0.93) * light * 0.7 + vec3(1.0, 0.25, 0.3) * (light * 0.6 + streak * 0.6);
 	COLOR = vec4(col * fade, clamp(shade * 0.3, 0.0, 0.4) * fade);
 }" };
 
@@ -748,11 +748,26 @@ void fragment() {
 
 	// ───────────────────────── 潜行：残像 / 暗影 ─────────────────────────
 
+	private static Shader? _sil;
+
+	/// <summary>剪影：只取离屏画面里人物的形状，整片填一个纯色（不带任何人物细节）。脚下的影子（最多 0.43 不透明）不算。</summary>
+	private static Shader Silhouette => _sil ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform vec4 tint : source_color = vec4(0.9, 0.04, 0.12, 1.0);
+uniform float alpha = 1.0;
+void fragment() {
+	float a = smoothstep(0.5, 0.9, texture(TEXTURE, UV).a);
+	COLOR = vec4(tint.rgb, a * alpha);
+}" };
+
 	/// <summary>
-	/// 残像（残影、余像、侧步、暗影步……）：Joker 身上分出几道同姿势的残像，往身后依次滑开、拉长一点、淡掉。
-	/// clone = 复制一份此刻的 Joker（游戏里是骨骼的复制品，Aim.CloneBody），返回复制品和本体的全局变换。
+	/// 残像（残影、余像、侧步、暗影步……）。用户 2026-11-10：不要把局内模型复制一份换个滤镜——只要纯红色的人物轮廓剪影，
+	/// 没有任何人物细节，在他身后露出一点。
+	/// 做法（同 BodyAura）：复制一份此刻的 Joker 画进离屏画面取剪影，定格；在人物后面的层里把这张剪影填成纯红，
+	/// count 层依次往身后错开一小段（第一层几乎贴着身体，只露一道红边），停一下再淡掉。
+	/// region = 要罩住的区域（全局坐标：人物 + 四周留边）；clone 见 BodyAura.CloneBody。
 	/// </summary>
-	public static void Ghosts(Control back, Func<Node, (Node2D Clone, Transform2D Body)?>? clone, float facing, Tone tone = Tone.Blue, int count = 3, bool sound = true)
+	public static void Ghosts(Control back, Func<Node, (Node2D Clone, Transform2D Body)?>? clone, Rect2 region, float facing, int count = 2, bool sound = true)
 	{
 		if (sound)
 		{
@@ -762,29 +777,39 @@ void fragment() {
 		{
 			return;
 		}
-		(_, Color mid, Color deep, _) = Pal(tone);
-		Color tint = mid.Lerp(deep, 0.25f);
-		for (int i = 0; i < count; i++)
+		Vector2I size = new(Mathf.CeilToInt(region.Size.X), Mathf.CeilToInt(region.Size.Y));
+		SubViewport view = new() { Size = size, TransparentBg = true, RenderTargetUpdateMode = SubViewport.UpdateMode.Always, Disable3D = true };
+		back.AddChild(view);
+		if (clone(view) is not { } made)
+		{
+			view.QueueFree();
+			return;
+		}
+		made.Clone.Transform = new Transform2D(0f, -region.Position) * made.Body;
+		const float slide = 0.16f, hold = 0.14f, fade = 0.3f, life = slide + hold + fade;
+		float unit = Unit(back);
+		Node2D root = Fx.Root(back, region.Position, "P5Ghosts", life + 0.1);
+		Fx.FreeAfter(view, life + 0.15);
+		Fx.After(back, 0.06, () =>
+		{
+			if (GodotObject.IsInstanceValid(view))
+			{
+				view.RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled;   // 定格：残像是打出那一刻的姿势
+			}
+		});
+		for (int i = count - 1; i >= 0; i--)
 		{
 			int k = i;
-			Fx.After(back, 0.05f * k, () =>
+			ShaderMaterial m = new() { Shader = Silhouette };
+			m.SetShaderParameter("tint", new Color(0.9f, 0.04f, 0.12f).Lerp(new Color(0.45f, 0f, 0.06f), k / (float)Mathf.Max(1, count)));
+			Sprite2D sp = new() { Texture = view.GetTexture(), Centered = false, Material = m };
+			root.AddChild(sp);
+			float dist = (16f + 26f * k) * unit * -facing, a0 = 0.9f - 0.3f * k;
+			Fx.Animate(sp, 0, life, t =>
 			{
-				if (clone(back) is not { } c)
-				{
-					return;
-				}
-				c.Clone.GlobalTransform = c.Body;
-				Vector2 from = c.Clone.Position, sc = c.Clone.Scale;
-				float dist = (70f + 60f * k) * -facing, a0 = 0.62f - 0.12f * k;
-				c.Clone.Modulate = new Color(tint, a0);
-				Fx.Animate(c.Clone, 0, 0.5, t =>
-				{
-					float e = Ease5.OutQuint(t);
-					c.Clone.Position = from + new Vector2(dist * e, 0f);
-					c.Clone.Scale = new Vector2(sc.X * (1f + 0.06f * e), sc.Y);
-					c.Clone.Modulate = new Color(tint, a0 * (1f - t * t));
-				});
-				Fx.FreeAfter(c.Clone, 0.55);
+				float s = t * life;
+				sp.Position = new Vector2(dist * Ease5.OutQuint(Mathf.Clamp(s / slide, 0f, 1f)), 0f);
+				m.SetShaderParameter("alpha", a0 * Mathf.Min(1f, s / 0.04f) * (1f - Mathf.Clamp((s - slide - hold) / fade, 0f, 1f)));
 			});
 		}
 	}
