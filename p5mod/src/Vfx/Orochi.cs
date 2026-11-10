@@ -34,6 +34,7 @@ uniform float alpha = 1.0;
 uniform float aspect = 1.7778;
 uniform float focal = 1.3;
 uniform float ground_y = -1.0;
+uniform float ground_s = -0.5;   // 蛇身没入地面的那条线（屏幕 uv.y，-1 下 → 1 上）
 
 float hash3(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
 float vnoise(vec3 x) {
@@ -152,8 +153,9 @@ void fragment() {
 		float back = pow(fres, 2.5) * clamp(dot(n, Lb) * 0.6 + 0.55, 0.0, 1.0);
 		float wrap = clamp((dot(n, Lf) + 0.4) / 1.4, 0.0, 1.0);
 		float ltn = clamp((dot(n, Ll) + 0.2) / 1.2, 0.0, 1.0);
-		vec3 albedo = mix(vec3(0.035, 0.006, 0.01), vec3(0.09, 0.015, 0.02), cell);
-		col = albedo * (0.5 + 1.4 * wrap) * ao
+		vec3 albedo = mix(vec3(0.07, 0.012, 0.02), vec3(0.2, 0.035, 0.045), cell);
+		float sheen = pow(clamp(dot(reflect(rd, n), Lf), 0.0, 1.0), 6.0) * smoothstep(0.4, 0.8, cell);
+		col = albedo * (0.6 + 1.8 * wrap) * ao + vec3(0.55, 0.1, 0.1) * sheen * 0.35 * ao
 			+ vec3(0.95, 0.16, 0.12) * back * (0.75 + 0.5 * cell) * mix(0.6, 1.0, ao)
 			+ vec3(0.85, 0.82, 1.0) * ltn * lightning * (0.25 + 0.5 * cell) * ao;
 		// 眼：两道发光的竖瞳；张嘴：口腔里的暗红光
@@ -167,19 +169,19 @@ void fragment() {
 		}
 		// 远的蛇更暗、更多雾
 		float haze = smoothstep(8.0, 18.0, t);
-		col = mix(col, vec3(0.07, 0.0, 0.015), haze * 0.6);
+		col = mix(col, vec3(0.16, 0.02, 0.035), haze * 0.55);
 		a = 1.0;
-		float fogn = vnoise(vec3(p.x * 0.5 - clock * 0.15, p.y * 0.8, p.z * 0.5 + clock * 0.05));
-		float fy = p.y - ground_y + (fogn - 0.5) * 1.6;
-		float low = smoothstep(2.6, 0.2, fy);
-		col = mix(col, vec3(0.07, 0.0, 0.018), low * 0.9);
-		a *= smoothstep(-0.2, 1.4, fy);
+		float fogn = vnoise(vec3(p.x * 0.6 - clock * 0.2, p.y * 0.9, p.z * 0.5 + clock * 0.07));
+		float fy = (uv.y - ground_s) * 7.0 + (fogn - 0.5) * 1.3;
+		float low = smoothstep(1.8, 0.0, fy);
+		col = mix(col, vec3(0.32, 0.03, 0.05), low * 0.75);          // 没进雾里的那截被雾照成暗红，不是一刀切黑
+		a *= smoothstep(-0.25, 0.9, fy);
 		col *= a;
 	}
 	// 剪影外一圈暗红的辉（逆光透过来的散射）：离剪影越近越亮，没有硬边
 	float glow = exp(-max(m, 0.0) * focal * 90.0) * (hit ? 0.0 : 1.0);
 	vec3 gp = rd * tm;
-	glow *= smoothstep(1.2, 3.0, gp.y - ground_y);
+	glow *= smoothstep(0.1, 0.5, uv.y - ground_s);
 	col += (1.0 - a) * vec3(0.5, 0.03, 0.04) * glow * 0.6;
 	a += (1.0 - a) * glow * 0.12;
 	COLOR = vec4(col * alpha, a * alpha);
@@ -194,6 +196,8 @@ uniform float clock = 0.0;
 uniform float lightning = 0.0;
 uniform float amount = 1.0;
 uniform float ground = 0.84;            // 地面的高度（0～1，从上往下）
+uniform vec2 pool = vec2(0.2, 0.8);     // 蛇身没入地面的地方（0～1）
+uniform float pool_w = 0.25;
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
@@ -206,8 +210,8 @@ void fragment() {
 	float r = length(d), ang = atan(d.y, d.x);
 	const float R = 0.075;
 	// 底色：整屏压暗偏暗红（盖在战斗背景上，不是不透明的）
-	vec3 col = vec3(0.05, 0.0, 0.015);
-	float a = 0.62;
+	vec3 col = mix(vec3(0.16, 0.02, 0.04), vec3(0.07, 0.0, 0.02), uv.y);
+	float a = 0.4;
 	// 云：两层往右飘，日冕附近的云边被照红，雷光时整片云亮一下
 	float c1 = fbm(vec2(uv.x * 2.2 - clock * 0.012, uv.y * 4.0));
 	float c2 = fbm(vec2(uv.x * 4.5 - clock * 0.03, uv.y * 7.0 + 3.0));
@@ -216,7 +220,7 @@ void fragment() {
 	// 日冕
 	float corona = exp(-max(r - R, 0.0) / 0.018) * step(R, r);
 	float halo = exp(-max(r - R, 0.0) / 0.12);
-	float rays = pow(noise(vec2(ang * 9.0, clock * 0.05)), 3.0) * exp(-max(r - R, 0.0) / 0.45) * (1.0 - cloud * 0.8);
+	float rays = pow(noise(vec2(ang * 9.0, clock * 0.05)), 3.0) * exp(-max(r - R, 0.0) / 0.45) * (1.0 - cloud * 0.8) * smoothstep(ground - 0.02, ground - 0.25, uv.y);
 	vec3 light = vec3(1.0, 0.85, 0.75) * corona * 1.4 + vec3(0.9, 0.08, 0.06) * (halo * 0.9 + rays * 0.55);
 	light *= 1.0 - cloud * 0.6;
 	col += light;
@@ -237,8 +241,15 @@ void fragment() {
 	col += vec3(0.4, 0.12, 0.15) * lightning * 0.08;
 	// 暗角
 	float vig = smoothstep(0.45, 1.05, length((uv - 0.5) * vec2(aspect * 0.6, 1.0)));
-	col *= 1.0 - vig * 0.5;
-	a = max(a, vig * 0.5);
+	col *= 1.0 - vig * 0.3;
+	a = max(a, vig * 0.3);
+	// 蛇身没入的地方：一大片翻涌的暗红雾，中间亮、往四周淡开，往上飘起几缕
+	vec2 pd = (uv - pool) / vec2(pool_w, pool_w * 0.35);
+	float pn = fbm(vec2(uv.x * 5.0 - clock * 0.08, uv.y * 9.0 + clock * 0.05));
+	float pm = exp(-dot(pd, pd) * 1.2) * (0.55 + 0.6 * pn);
+	float wisp = smoothstep(0.55, 0.85, fbm(vec2(uv.x * 7.0, uv.y * 3.0 + clock * 0.25))) * exp(-pow((uv.x - pool.x) / pool_w, 2.0)) * smoothstep(pool.y + 0.05, pool.y - 0.35, uv.y) * smoothstep(pool.y - 0.5, pool.y - 0.1, uv.y);
+	col += vec3(0.75, 0.08, 0.1) * pm * 0.55 + vec3(0.6, 0.05, 0.08) * wisp * 0.25;
+	a = max(a, clamp(pm * 0.6, 0.0, 0.85));
 	COLOR = vec4(col * amount, a * amount);
 }" };
 
@@ -294,6 +305,10 @@ void fragment() {
 			_eye[i] = 0f;
 		}
 		_bodyM.SetShaderParameter("ground_y", World(feetS + new Vector2(0f, 0.05f * tallS), 10f, scr).Y);
+		float lineY = feetS.Y - 0.1f * tallS;
+		_bodyM.SetShaderParameter("ground_s", -(lineY / scr.Y * 2f - 1f));
+		_skyM.SetShaderParameter("pool", new Vector2(feetS.X / scr.X, lineY / scr.Y));
+		_skyM.SetShaderParameter("pool_w", tallS * 1.3f / scr.X);
 		Pose(0f);
 	}
 
