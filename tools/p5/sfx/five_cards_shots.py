@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[3]
 SRC = ROOT / "p5mod/pck_stage/p5joker/sfx"
 OUT = ROOT / "art/sfx_p5"
 RATE = 48_000
+SHOT_GAIN = 2.0
 
 
 def decode(clip, speed):
@@ -69,8 +70,11 @@ TIMES = [0.652, 0.824, 0.995, 1.166, 1.388]
 CLIPS = ["gun_02", "gun_07", "gun_02", "gun_10", "gun_00"]
 for i, clip in enumerate(CLIPS):
     b = np.zeros((RATE, 2))
-    cue(b, clip, 0.0, 0.42 if i < 4 else 0.56, -0.36, 1.00 + 0.022 * (i % 3), 0.46)
-    tone(b, 0.21, 0.042, 1750 + i * 91, 53.0, -0.45)
+    # user 2026-11-10: the shiv gunshot should be louder in the game. The demo gains put the shot at about -8 dB peak and the game
+    # already plays it at full volume, so the level has to come from the file: gun and casing tick x SHOT_GAIN into the same soft clip
+    # (about +5 dB peak, denser). The hits are unchanged.
+    cue(b, clip, 0.0, (0.42 if i < 4 else 0.56) * SHOT_GAIN, -0.36, 1.00 + 0.022 * (i % 3), 0.46)
+    tone(b, 0.21, 0.042 * SHOT_GAIN, 1750 + i * 91, 53.0, -0.45)
     save(f"gun_shot_{i + 1}" if i < 4 else "gun_shot_final", b)
 b = np.zeros((RATE, 2)); cue(b, "damage_enemy", 0.0, 0.19, 0.43, 1.20, 0.19); save("gun_hit", b)
 b = np.zeros((RATE * 2, 2)); cue(b, "damage_enemy", 0.004, 0.33, 0.43, 1.20, 0.19)
