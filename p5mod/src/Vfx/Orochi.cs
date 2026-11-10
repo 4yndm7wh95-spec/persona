@@ -143,90 +143,104 @@ vec3 normal_at(vec3 p, float e) {
 	return normalize(k.xyy * mapd(p + k.xyy * e) + k.yyx * mapd(p + k.yyx * e) + k.yxy * mapd(p + k.yxy * e) + k.xxx * mapd(p + k.xxx * e));
 }
 
+float fbm3(vec3 x) { return vnoise(x) * 0.55 + vnoise(x * 2.1 + 7.1) * 0.3 + vnoise(x * 4.3 + 3.3) * 0.15; }
+
+// 眼睛在世界里的位置（左右两只）
+vec3 eyeW(int i, float side) {
+	vec3 f = head_f[i], u = head_u[i], s = normalize(cross(u, f));
+	return head_p[i] + (s * 0.17 * side + u * 0.11 + f * 0.55) * head_s[i];
+}
+
+// 第四版（用户 2026-11-10：实体的还是丑 → 要像迷雾组成的大蛇，眼睛也是迷迷糊糊的雾光）：
+// 同毒性爆发的大手：沿视线走进蛇形的咒雾里，密度 = 蛇的距离场被往上、往后飘的 3D 噪声撕毛；越靠近表面的薄雾越透红光，越深越黑；
+// 外面一缕缕暗烟丝；眼睛是两团晕开的金红雾光，往后拖出一缕光雾。
 void fragment() {
+	if (alpha <= 0.0) { discard; }
 	vec2 uv = (UV * 2.0 - 1.0) * vec2(aspect, -1.0);
 	vec3 rd = normalize(vec3(uv, focal));
-	float t = 2.0, m = 1e3, tm = 0.0;
-	int id = 0; float part = 0.0;
-	bool hit = false;
-	for (int i = 0; i < 110; i++) {
-		vec3 p = rd * t;
-		float d = map(p, id, part);
-		if (d / t < m) { m = d / t; tm = t; }
-		if (d < 0.002 * t) { hit = true; break; }
-		t += d * 0.85;
+	float scAvg = (head_s[0] + head_s[1] + head_s[2] + head_s[3] + head_s[4]) * 0.2;
+	// 先追踪到雾的外壳
+	float t = 2.0, m = 1e3;
+	bool near_ = false;
+	for (int i = 0; i < 90; i++) {
+		float d = mapd(rd * t);
+		m = min(m, d / t);
+		if (d < 0.45 * scAvg) { near_ = true; break; }
+		t += d * 0.9;
 		if (t > 40.0) break;
 	}
 	vec3 col = vec3(0.0);
-	float a = 0.0;
-	// 地面的雾：越低越被吞掉（看不到蛇身的底）
-	if (hit) {
-		vec3 p = rd * t;
-		vec3 n = normal_at(p, 0.0015 * t);
-		float sc = head_s[id];
-		vec3 lp = part > 0.5 ? toHead(id, p) : p / sc;
-		// 鳞：一片片鳞甲（细胞噪声：片与片之间一道暗缝、每片中间微微隆起、颜色各不相同）+ 细微起伏
-		vec3 sp = lp * (part > 0.5 ? 17.0 : 11.0) * vec3(1.0, 1.35, 1.0);
-		vec3 vo = voro(sp);
-		float groove = smoothstep(0.0, 0.18, vo.y);
-		float dome = 1.0 - vo.x;
-		vec3 bump = vec3(vnoise(sp * 2.0), vnoise(sp * 2.0 + 3.7), vnoise(sp * 2.0 + 7.3)) - 0.5;
-		n = normalize(n + bump * 0.25 + (normalize(n + vec3(hash3(floor(sp)), hash3(floor(sp) + 5.0), hash3(floor(sp) + 9.0)) - 0.5) - n) * 0.12 * dome);
-		float cell = vo.z;
-		// 腹甲：朝下、朝镜头的那一面是一道道横的浅色宽鳞
-		float belly = part > 0.5 ? smoothstep(-0.1, -0.25, lp.y) * smoothstep(0.3, 0.9, lp.z) : smoothstep(0.1, -0.5, n.y) * smoothstep(-0.2, -0.7, n.z);
-		float band = smoothstep(0.0, 0.15, abs(fract(p.y / (sc * 0.22)) - 0.5) * 2.0);
-		float fres = 1.0 - abs(dot(n, rd));
-		vec3 Lb = normalize(vec3(0.55, 0.45, 1.0));               // 日冕在身后偏右上
-		vec3 Lf = normalize(vec3(-0.45, 0.8, -0.4));              // 微弱的前上方补光
-		vec3 Ll = normalize(vec3(-0.7, 0.9, -0.35));              // 雷光
-		float ao = clamp(0.35 + mapd(p + n * 0.25 * sc) / (0.25 * sc) * 0.65, 0.0, 1.0);
-		float back = pow(fres, 2.5) * clamp(dot(n, Lb) * 0.6 + 0.55, 0.0, 1.0);
-		float wrap = clamp((dot(n, Lf) + 0.4) / 1.4, 0.0, 1.0);
-		float ltn = clamp((dot(n, Ll) + 0.2) / 1.2, 0.0, 1.0);
-		vec3 albedo = mix(vec3(0.035, 0.008, 0.014), vec3(0.075, 0.014, 0.022), cell) * mix(0.62, 1.0, groove) * (0.9 + 0.2 * dome);
-		albedo = mix(albedo, vec3(0.3, 0.03, 0.05) * mix(0.55, 1.0, band), belly * 0.9);
-		// 漆黑的鳞带一层清漆般的光泽：前上方的光在每片鳞上落一点亮（被鳞缝打碎，不是一整片塑料高光），日冕在边上拉出一道红亮的反光
-		vec3 rf = reflect(rd, n);
-		float sheen = pow(clamp(dot(rf, Lf), 0.0, 1.0), 14.0) * groove * (0.6 + 0.6 * dome);
-		float edge = pow(clamp(dot(rf, Lb), 0.0, 1.0), 8.0) * groove;
-		col = albedo * (0.7 + 1.6 * wrap) * ao + vec3(1.0, 0.45, 0.42) * sheen * 0.55 * ao + vec3(1.0, 0.18, 0.14) * edge * 0.9
-			+ vec3(0.95, 0.16, 0.12) * back * (0.75 + 0.5 * cell) * mix(0.6, 1.0, ao)
-			+ vec3(0.85, 0.82, 1.0) * ltn * lightning * (0.25 + 0.5 * cell) * ao;
-		// 眼：两道发光的竖瞳；张嘴：口腔里的暗红光
-		if (part > 0.5) {
-			vec3 q = lp; q.x = abs(q.x);
-			float ed = length((q - vec3(0.17, 0.11, 0.55)) * vec3(1.6, 0.55, 1.0));
-			// 眼：琥珀金的眼，中间一道细竖瞳（不是发红光的凶光）
-			float eyeBall = exp(-pow(length((q - vec3(0.17, 0.11, 0.55)) * vec3(1.0, 2.2, 0.55)) / 0.06, 4.0));     // 细长上挑的眼
-			float pupil = exp(-pow(abs(q.z - 0.55) / 0.01, 2.0)) * eyeBall;
-			col = mix(col, vec3(1.0, 0.7, 0.25) * (0.9 + 0.8 * eye[id]), eyeBall * (1.0 - pupil));
-			col = mix(col, vec3(0.03, 0.0, 0.0), pupil * 0.9);
-			col += vec3(1.0, 0.6, 0.2) * exp(-ed / 0.05) * 0.25;
-			// 嘴角到下颌的一道唇线（暗缝）
-			float lip = exp(-pow((q.y + 0.055) / 0.01, 2.0)) * smoothstep(0.2, 0.5, q.z) * smoothstep(1.3, 1.05, q.z) * step(0.1, q.x);
-			col *= 1.0 - lip * 0.6;
-			float mouthGlow = jaw[id] * exp(-length((lp - vec3(0.0, -0.18, 0.55)) * vec3(1.2, 2.0, 0.7)) * 3.5);
-			col += vec3(1.0, 0.15, 0.1) * mouthGlow * 1.6;
+	float T = 1.0;
+	if (near_) {
+		float dt = 0.085 * scAvg;
+		t += fract(sin(dot(UV * 1000.0, vec2(12.9898, 78.233)) + clock) * 43758.5453) * dt;
+		for (int i = 0; i < 60; i++) {
+			vec3 pw = rd * t;
+			if (T < 0.03 || t > 40.0) break;
+			int id; float part;
+			float sdw = map(pw, id, part);
+			float sc = head_s[id];
+			float s = sdw / sc;
+			if (s > 0.55) { t += (s - 0.5) * sc; continue; }
+			float stepv = s > 0.1 ? 0.09 * sc : dt;
+			vec3 flow = vec3(-0.25, 1.0, 0.15) * clock * 0.55;          // 雾往上、往后飘
+			vec3 lp = pw / sc;
+			float nz = fbm3(lp * 3.2 - flow * 2.0);
+			// 越靠近地面越被雾吞掉（屏幕上的地面线 + 噪声）
+			float fy = (pw.y / pw.z * focal - ground_s) * 7.0 + (nz - 0.5) * 1.3;
+			float keep = smoothstep(-0.25, 0.9, fy);
+			// 外面的烟丝
+			float wn = fbm3(lp * vec3(1.8, 1.0, 1.8) - flow * 1.4);
+			float aura = smoothstep(0.5, 0.05, s) * smoothstep(0.5, 0.74, wn) * step(0.0, s) * keep;
+			if (aura > 0.001) {
+				float aa = 1.0 - exp(-aura * stepv / sc * 1.8);
+				col += T * (aa * vec3(0.03, 0.002, 0.008) + vec3(0.75, 0.06, 0.08) * aura * smoothstep(0.62, 0.85, wn) * stepv / sc * 3.0);
+				T *= 1.0 - aa;
+			}
+			float sd = s + (nz - 0.5) * 0.3;
+			float dens = smoothstep(0.06, -0.08, sd);
+			if (dens > 0.001) {
+				float inner = max(-sd, 0.0);
+				float shellGlow = exp(-inner * 9.0);
+				float flick = fbm3(lp * 2.2 - flow * 3.0);
+				vec3 emit = mix(vec3(0.55, 0.04, 0.07), vec3(1.0, 0.36, 0.26), smoothstep(0.45, 0.8, flick)) * shellGlow * (0.35 + 0.9 * smoothstep(0.35, 0.75, flick));
+				// 雷光：雾体里亮一下
+				emit += vec3(0.7, 0.55, 0.65) * lightning * shellGlow * 0.6;
+				float a = (1.0 - exp(-dens * stepv / sc * 3.6)) * keep;
+				col += T * (a * vec3(0.025, 0.002, 0.008) + emit * dens * stepv / sc * 8.5 * keep);
+				T *= 1.0 - a;
+			}
+			t += stepv;
 		}
-		// 远的蛇更暗、更多雾
-		float haze = smoothstep(8.0, 18.0, t);
-		col = mix(col, vec3(0.16, 0.02, 0.035), haze * 0.55);
-		a = 1.0;
-		float fogn = vnoise(vec3(p.x * 0.6 - clock * 0.2, p.y * 0.9, p.z * 0.5 + clock * 0.07));
-		float fy = (uv.y - ground_s) * 7.0 + (fogn - 0.5) * 1.3;
-		float low = smoothstep(1.8, 0.0, fy);
-		col = mix(col, vec3(0.32, 0.03, 0.05), low * 0.75);          // 没进雾里的那截被雾照成暗红，不是一刀切黑
-		a *= smoothstep(-0.25, 0.9, fy);
-		col *= a;
 	}
-	// 剪影外一圈暗红的辉（逆光透过来的散射）：离剪影越近越亮，没有硬边
-	float glow = exp(-max(m, 0.0) * focal * 90.0) * (hit ? 0.0 : 1.0);
-	vec3 gp = rd * tm;
-	glow *= smoothstep(0.1, 0.5, uv.y - ground_s);
-	col += (1.0 - a) * vec3(0.5, 0.03, 0.04) * glow * 0.6;
-	a += (1.0 - a) * glow * 0.12;
-	COLOR = vec4(col * alpha, a * alpha);
+	vec4 acc = vec4(col, 1.0 - T);
+	// 眼睛：两团晕开的雾光（不画眼球），往后拖一缕光雾
+	for (int i = 0; i < 5; i++) {
+		for (int k = 0; k < 2; k++) {
+			vec3 e = eyeW(i, k == 0 ? -1.0 : 1.0);
+			float ez = e.z;
+			vec2 es = e.xy / ez * focal;
+			vec2 dv = uv - es;
+			float rs = head_s[i] / ez * focal;                        // 头的 1 个单位在屏幕上多大
+			vec2 back = -normalize(head_f[i].xy + vec2(1e-4)) * rs;  // 往脑后
+			float along = clamp(dot(dv, back) / dot(back, back), 0.0, 0.6);
+			vec2 off = dv - back * along;
+			float trailN = vnoise(vec3(along * 3.0 - clock * 1.5, float(i * 2 + k), clock * 0.3));
+			float trail = exp(-dot(off, off) / pow(rs * (0.025 + 0.06 * along), 2.0)) * (1.0 - along / 0.6) * (0.4 + 0.6 * trailN) * step(0.0, dot(dv, back));
+			float core = exp(-dot(dv, dv) / pow(rs * 0.035, 2.0));
+			float halo = exp(-dot(dv, dv) / pow(rs * 0.12, 2.0));
+			float pulse = 0.8 + 0.2 * sin(clock * 2.0 + float(i));
+			vec3 ec = vec3(1.0, 0.8, 0.45) * core * 0.9 + vec3(1.0, 0.32, 0.14) * (halo * 0.35 + trail * 0.35);
+			ec *= pulse * (0.8 + eye[i]) * (ez > 13.0 ? 0.6 : 1.0);
+			acc.rgb += ec * (1.0 - acc.a * 0.3);
+			acc.a = max(acc.a, clamp(core + halo * 0.3, 0.0, 1.0));
+		}
+	}
+	// 雾外一圈很淡的暗红辉（没有硬边）
+	float glow = exp(-max(m, 0.0) * focal * 40.0) * 0.18 * smoothstep(0.05, 0.35, uv.y - ground_s);
+	acc.rgb += (1.0 - acc.a) * vec3(0.5, 0.03, 0.05) * glow;
+	acc.a += (1.0 - acc.a) * glow * 0.5;
+	COLOR = vec4(acc.rgb * alpha, clamp(acc.a, 0.0, 1.0) * alpha);
 }" };
 
 	private static Shader SkyShader => _skyShader ??= new Shader { Code = @"
