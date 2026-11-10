@@ -266,8 +266,11 @@ void fragment() {
 	/// 蓄力 → 时停 → 开枪（用户 2026-11-10：转完枪要先蓄力「滋——」，马上要打出去那一刻时停住，然后「啪」一枪，特别炸裂）。
 	/// 时停要有来由才不显得无厘头：蓄力期间光被一点点吸进枪口、画面跟着暗下去；吸到头一下闪白，全场静止、无声，
 	/// 只剩枪口一个极亮的小点（停住时不往画面上加任何新图案）；FreezeTime 之后这一枪把静止打破。
+	/// 用户 2026-11-10 看第一版：停着像卡住了，不像停顿，也太久——整张画面一动不动又没声音，和视频卡顿没区别。
+	/// 所以世界停住、但枪口的能量不停：悬着的细光以极慢的速度继续往里爬，一圈光从外面收向枪口、正好在开枪那一刻合上（倒计时），
+	/// 画面在整段时停里持续变暗，声音是「滋」被拖慢掉下去（像磁带停转）再接一小段往上提的气声；时长也从 0.42 缩到 0.3。
 	/// </summary>
-	public const float ChargeAt = CatchAt + 0.06f, ChargeTime = 0.95f, FreezeAt = ChargeAt + ChargeTime, FreezeTime = 0.42f;
+	public const float ChargeAt = CatchAt + 0.06f, ChargeTime = 0.95f, FreezeAt = ChargeAt + ChargeTime, FreezeTime = 0.3f;
 
 	/// <summary>开枪：时停结束的那一刻。</summary>
 	public const float FireAt = FreezeAt + FreezeTime;
@@ -712,6 +715,8 @@ render_mode blend_add;
 uniform float t = 0.0;
 uniform float k = 0.0;
 uniform float fz = 0.0;
+uniform float close = 0.0;
+uniform float rt = 0.0;
 uniform float size_px = 1600.0;
 uniform float unit = 1.0;
 uniform float dir_ang = 0.0;
@@ -750,7 +755,7 @@ void fragment() {
 		float R = mix(330.0, 26.0, ph * ph) * unit;
 		float wd = mix(1.3, 2.8, ph) * unit;
 		float ring = exp(-pow((rq - R) / wd, 2.0)) + 0.22 * exp(-abs(rq - R) / (10.0 * unit));
-		col += mix(cyan, white, ph) * ring * smoothstep(0.0, 0.2, ph) * (1.0 - smoothstep(0.9, 1.0, ph)) * k * 0.9;
+		col += mix(cyan, white, ph) * ring * smoothstep(0.0, 0.2, ph) * (1.0 - smoothstep(0.9, 1.0, ph)) * k * 0.9 * (1.0 - 0.85 * fz);
 	}
 	// ③ 细电弧：每隔一小会儿换一批位置，沿半径方向抖
 	for (int i = 0; i < 4; i++) {
@@ -765,14 +770,18 @@ void fragment() {
 		float gate = step(abs(da), 1.2) * (1.0 - smoothstep(L * 0.6, L, r)) * step(0.3, h(fi * 2.0 + tick * 1.3)) * k;
 		col += (white * exp(-pow(dist / (1.1 * unit), 2.0)) * 1.1 + cyan * exp(-dist / (5.0 * unit)) * 0.25) * gate;
 	}
-	// ④ 枪口的核；时停时收成一个小点 + 一道细长的十字光
-	float flick = 0.85 + 0.15 * vn(t * 40.0);
+	// 时停里的倒计时：一圈光从外面收向枪口，越收越快、越亮，开枪那一刻正好合上（世界停着，能量没停）
+	float cr = 440.0 * (1.0 - close * close) * unit;
+	float cring = exp(-pow((rq - cr) / ((1.6 + 1.6 * close) * unit), 2.0)) + 0.3 * exp(-abs(rq - cr) / (12.0 * unit));
+	col += white * cring * fz * (0.8 + 1.2 * close);
+	// ④ 枪口的核；时停时收成一个小点 + 一道很短的横向细光，还在不停地颤、越来越亮
+	float flick = mix(0.85 + 0.15 * vn(t * 40.0), 0.8 + 0.2 * vn(rt * 55.0), fz) * (1.0 + 0.6 * close);
 	float rc = mix((7.0 + 20.0 * k) * unit, 4.5 * unit, fz);
 	float core = exp(-r / rc) * (0.6 + 1.6 * k) * flick * (1.0 + 2.0 * fz);
 	float halo = exp(-r / (rc * 5.0)) * 0.35 * k * (1.0 - 0.7 * fz);
-	float fl_len = (50.0 * k * k + 170.0 * fz) * unit;
+	float fl_len = (50.0 * k * k + (60.0 + 110.0 * close) * fz) * unit;
 	float flare = exp(-abs(p.y) / ((1.0 + 1.6 * exp(-abs(p.x) / (40.0 * unit))) * unit)) * exp(-abs(p.x) / max(fl_len, 1.0));
-	col *= 1.0 - 0.6 * fz;
+	col *= 1.0 - 0.45 * fz;
 	col += white * (core + flare * (0.5 * k + 1.2 * fz)) + cyan * halo;
 	COLOR = vec4(col * edge, 1.0);
 }" };
@@ -812,17 +821,24 @@ void fragment() {
 			float z = time - ChargeTime;                                  // 时停开始后过了多久
 			if (z < 0f)
 			{
-				clock += dt * (0.5f + 1.7f * k);                          // 越蓄越快；时停后不再走
+				clock += dt * (0.5f + 1.7f * k);                          // 越蓄越快
 				root.GlobalPosition = muzzleAt();
 			}
+			else
+			{
+				clock += dt * 0.3f;                                      // 时停：没有完全停死，极慢地继续往里爬（一动不动会像卡住）
+			}
+			float close = Mathf.Clamp(z / FreezeTime, 0f, 1f);
 			float fz = z < 0f ? 0f : 1f - Mathf.Pow(1f - Mathf.Clamp(z / 0.07f, 0f, 1f), 3f);
 			m.SetShaderParameter("t", clock);
 			m.SetShaderParameter("k", k);
 			m.SetShaderParameter("fz", fz);
+			m.SetShaderParameter("close", close);
+			m.SetShaderParameter("rt", time);
 			hm.SetShaderParameter("center", Fx.ScreenPoint(layer, root.GlobalPosition));
-			hm.SetShaderParameter("alpha", z < 0f ? 0.5f * Mathf.Pow(k, 1.6f) : Mathf.Lerp(0.5f, 0.74f, Mathf.Clamp(z / 0.06f, 0f, 1f)));
+			hm.SetShaderParameter("alpha", z < 0f ? 0.5f * Mathf.Pow(k, 1.6f) : Mathf.Lerp(0.56f, 0.82f, close));   // 时停里一路暗下去，不是一下暗到底就不动了
 			// 时停那一下闪白（君王之剑那种闪白，不是彩色的光）
-			white.Color = new Color(0.94f, 0.97f, 1f, z < 0f ? 0f : 0.8f * Mathf.Pow(Mathf.Max(0f, 1f - z / 0.11f), 2f));
+			white.Color = new Color(0.94f, 0.97f, 1f, z < 0f ? 0f : 0.65f * Mathf.Pow(Mathf.Max(0f, 1f - z / 0.08f), 2f));
 		});
 		return () =>
 		{

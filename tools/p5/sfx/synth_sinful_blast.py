@@ -2,8 +2,9 @@
 before the shot, then one shot that must be very loud and explosive).
 Writes art/sfx_p5/sinful_charge.ogg and art/sfx_p5/sinful_shot.ogg (44.1 kHz stereo).
 
-sinful_charge: CHARGE s of electric sizzle that gets denser and higher, cut dead at the freeze (a tiny tick), then FREEZE s of
-               near silence with only a very faint high ping - so the stillness is in the same file and always in sync.
+sinful_charge: CHARGE s of electric sizzle that gets denser and higher; at the freeze it does not just cut (user: the stop looked
+               like the video hanging) - it is dragged down like a tape stopping (0.14 s), then a thin breath rises into the shot
+               and stops 20 ms before it. The freeze is in the same file, so it is always in sync.
 sinful_shot:   comes straight out of that silence; the impact is at 0.02 s (p5mod/src/Vfx/Sfx.cs Lead).
 CHARGE / FREEZE must match SinfulShell.ChargeTime / FreezeTime."""
 import subprocess, numpy as np
@@ -13,7 +14,7 @@ from scipy import signal
 SR = 44100
 OUT = Path(__file__).resolve().parents[3] / "art/sfx_p5"
 rng = np.random.default_rng(1110)
-CHARGE, FREEZE = 0.95, 0.42
+CHARGE, FREEZE = 0.95, 0.3
 
 
 def t(sec): return np.arange(int(sec * SR)) / SR
@@ -63,11 +64,23 @@ for i in np.nonzero(rng.random(len(x)) < (0.0006 + 0.006 * k ** 2))[0]:
     crk[i:i + n] += rng.standard_normal(n) * np.exp(-np.arange(n) / (0.0009 * SR)) * rng.uniform(0.5, 1.4)
 crk = hp(crk, 3200)
 charge = (sizzle * 0.85 + buzz * 0.45 + whine + sub * 0.6 + crk * 0.9) * (0.1 + 0.9 * k ** 1.6)
-charge *= np.minimum(1, x / 0.03) * np.clip((CHARGE - x) / 0.003, 0, 1)   # 3 ms cut at the freeze
+charge *= np.minimum(1, x / 0.03)
 z = t(FREEZE)
-tick = hp(rng.standard_normal(len(z)), 2500) * np.exp(-z / 0.0025) * 0.4
-ping = (np.sin(2 * np.pi * 6200 * z) + 0.5 * np.sin(2 * np.pi * 9300 * z)) * np.exp(-z / 0.3) * 0.02 * np.minimum(1, z / 0.01)
-save("sinful_charge", np.concatenate([charge, tick + ping]))
+# tape stop: the last stretch of the sizzle replayed slower and slower until it stands still
+D = 0.14
+n = int(D * SR); u = np.arange(n) / n
+rate = (1 - u) ** 1.6
+pos = len(charge) - int(0.2 * SR) + np.cumsum(rate)
+drop = np.interp(pos, np.arange(len(charge)), charge) * (1 - u) ** 0.8 * 0.9
+whomp = np.sin(2 * np.pi * np.cumsum(95 - 60 * u) / SR) * (1 - u) ** 1.2 * 0.5 * (0.1 + 0.9 * 1.0) * np.minimum(1, u / 0.03)
+frz = np.zeros(len(z)); frz[:n] += drop + whomp
+# the held breath: a thin rising tone and air pulled in, stopping just before the shot
+r0, r1 = 0.1, FREEZE - 0.02
+m = (z >= r0) & (z < r1); q = (z[m] - r0) / (r1 - r0)
+frz[m] += np.sin(2 * np.pi * np.cumsum(1800 + 3600 * q ** 2) / SR) * 0.05 * q ** 1.5
+frz[m] += bp(rng.standard_normal(m.sum()), 1500, 7000) * q ** 3 * 0.22
+frz[m] *= np.clip((1 - q) / 0.04, 0, 1)
+save("sinful_charge", np.concatenate([charge, frz]))
 
 # ── the shot, v3: a very loud, splitting "PAK" straight out of silence, then the sky rolling back
 I = 0.02
