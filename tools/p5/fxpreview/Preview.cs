@@ -652,8 +652,8 @@ public partial class Preview : Node2D
 			p.At(2.0, () => p._joker?.Play("cast_glove"));
 			p.At(2.27, () => SkillFx.Load(p._front, hand, 3, 1f, true, chamber));
 			p.At(2.27 + 0.45, () => view?.Set(3));
-			p.At(3.9, () => p._joker?.Play("cast_glove"));
-			p.At(4.17, () => SkillFx.Shatter(p._front, p._back, Enemy, new Vector2(Enemy.X, 830f), Enemy + new Vector2(0f, -170f), 260f, new Vector2(1f, -0.15f),
+			p.At(3.9, () => p._joker?.Play("cast_wave"));
+			p.At(3.98, () => SkillFx.Shatter(p._front, p._back, Enemy, new Vector2(Enemy.X, 830f), Enemy + new Vector2(0f, -170f), 260f, new Vector2(1f, -0.15f),
 				c => p._enemies[Enemy].Modulate = c));
 			p.At(5.6, () => p._joker?.Play("cast"));
 			p.At(6.0, () => SkillFx.Wail(p._front, p._back, Pose(1010f, 215f), new List<SkillFx.Victim>

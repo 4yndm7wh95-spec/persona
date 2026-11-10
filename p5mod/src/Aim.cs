@@ -89,6 +89,7 @@ public static class Aim
 			{
 				Cast.Guard => held is "guard_in" or "guard_loop" ? "cast_guard_from_ready" : "cast_guard",
 				Cast.Glove => held is "glove_in" or "glove_loop" ? "cast_glove_from_ready" : "cast_glove",
+				Cast.Wave => held is "glove_in" or "glove_loop" ? "cast_wave_from_ready" : "cast_wave",
 				_ => held is "mask_in" or "mask_loop" ? "cast_from_mask" : null,
 			};
 			return name != null && body.HasAnimation(name) ? name : null;
@@ -135,7 +136,7 @@ public static class Aim
 		card.GetType().Name == "GrandFinale" ? Stance.Mask                       // 华丽收场：扶面具（大罪穿甲弹，GrandFinale.cs）
 		: Joker.IsShot(card) || card.GetType().Name is "FanOfKnives" or "BulletTime" or "KnifeTrap" ? Stance.Gun   // 拿枪不开枪的牌：选中掏枪（用户 2026-11-04）
 		: card.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Attack ? Stance.Knife
-		: Casts.For(card) switch { Cast.Guard => Stance.Guard, Cast.Glove => Stance.Glove, _ => Stance.Mask };
+		: Casts.For(card) switch { Cast.Guard => Stance.Guard, Cast.Glove or Cast.Wave => Stance.Glove, _ => Stance.Mask };
 
 	private static string Prefix(Stance s) => s switch
 	{
@@ -308,6 +309,10 @@ public static class Aim
 		string? name = fromReady
 			? stance switch { Stance.Guard => "cast_guard_from_ready", Stance.Glove => "cast_glove_from_ready", _ => "cast_from_mask" }
 			: stance switch { Stance.Guard => "cast_guard", Stance.Glove => "cast_glove", _ => "cast" };
+		if (Casts.For(card) == Cast.Wave && body.HasAnimation("cast_wave"))
+		{
+			name = fromReady ? "cast_wave_from_ready" : "cast_wave";
+		}
 		bool outbreak = card.GetType().Name == "Outbreak" && stance == Stance.Mask;
 		if (outbreak && body.HasAnimation(fromReady ? "cast_outbreak_from_mask" : "cast_outbreak"))
 		{

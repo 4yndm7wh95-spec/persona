@@ -73,6 +73,7 @@ KNIFE_CUT = [("slash_a10", .12, 0), ("knife_top_g", .2, 0), ("slash_follow_a", .
 BRIDGE = [("summon_bridge1_a", .035, .015), ("summon_bridge3_a", .035, .015), ("summon_bridge2_a", .04, .03)]
 COMMAND = BRIDGE + [("summon_command_a", .55, .02), ("summon_command_mid_a", .07),
                     ("pocket_in_e", .1, .04), ("idle_a3", .14, .08)]
+WAVE = [("summon_command_a", .38, .02), ("summon_command_mid_a", .07), ("pocket_in_e", .1, .04), ("idle_a3", .14, .08)]
 # Outbreak grip (user 2026-11-08): summon_grip_a = the hand on the mask clenched hard (docs/p5/prompts/summon_grip_a.md);
 # until that picture exists the old squeeze (summon_hold_a) stands in
 GRIP = "summon_grip_a" if (FINAL / "summon_grip_a.png").exists() else "summon_hold_a"
@@ -129,6 +130,11 @@ ANIMS = {
     # buffs), the big summon (mask ripped off) for the large Persona cards
     "cast_guard": [("idle_a3", .02), ("guard_mid_a", .06), ("guard_a2", .45), ("guard_mid_a", .08), ("idle_a3", .12, .07)],
     "cast_glove": [("idle_a3", .02)] + GLOVE,
+    # wave (user 2026-11-10: Expose is just a swing of the hand, no hand on the mask): the arm comes up low-forward and is
+    # flung out at the enemy (summon_command_a, the command pose without the mask before it), then the holster way back.
+    # From the glove stance the hand swings out backhand from the glove reach. The fling lands at ~0.07 s.
+    "cast_wave": [("idle_a3", .02), ("summon_command_mid_a", .05, .03)] + WAVE,
+    "cast_wave_from_ready": [("glove_reach_a", .02), ("summon_bridge2_a", .04, .025)] + WAVE,
     # 2026-10-29 (user: the big summon dragged): ~2.3 s -> ~1.3 s; the release pose (arm flung out) still holds longest
     # 2026-11-03 (user): no more flinging the arm back after the rip - hold the rip through the eye cut-in shatter (0.56 s),
     # then the command (right arm thrust at the enemy, palm down; Arsene attacks at ~0.93 s while it is held)

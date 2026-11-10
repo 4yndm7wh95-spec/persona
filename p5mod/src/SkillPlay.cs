@@ -72,6 +72,8 @@ public static class SkillPlay
 			"cast_guard_from_ready" => 0.03f,
 			"cast" => 0.4f,                        // 扶面具 → 手甩出去指向前方（summon_command_a）
 			"cast_from_mask" => 0.23f,
+			"cast_wave" => 0.08f,                  // 挥手：手甩出去（summon_command_a）
+			"cast_wave_from_ready" => 0.07f,
 			"aim_in" or "aim_out" => 0.1f,
 			_ => 0.12f,
 		};
