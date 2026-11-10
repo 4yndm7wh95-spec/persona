@@ -146,12 +146,28 @@ void fragment() {
 	float inband = step(pos.z + d0.z * 1.25 * size, band_z) * step(band_z, pos.z - d0.z * 0.9 * size);   // 苦无正跨在横幅上
 	float through = max(inband, step(0.001, crack));
 	float ring = exp(-max(dq, 0.0) * 34.0) * step(-0.002, dq) * inband;
+	// 用户 2026-11-10：苦无都穿过来了，横幅不能还是完整的——慢放里横幅就在一点点碎：
+	// 穿孔处崩掉一块（多边形的破洞，越顶越大，洞里露出后面暗红的舞台），洞口一圈白热；
+	// 白色的裂纹从洞口往外裂（放射的 + 一段段折线的环裂，像玻璃的蛛网纹），越裂越远。横幅是横着的长条，裂纹横向走得更远。
+	vec2 er = rel * vec2(0.8, 3.0);
+	float er_r = length(er);
+	float sect = floor(ang / 6.2831853 * 9.0 + 0.5);
+	float hr = crack * 0.14 * (0.55 + 0.9 * hash(vec2(sect, 3.0)));
+	float onband = through * step(0.0, dq);
+	float hole = (1.0 - smoothstep(hr - 0.006, hr, er_r)) * onband;
+	float hedge = exp(-abs(er_r - hr) / 0.018) * onband;
 	float cn = noise(vec2(ang * 2.2, 3.7)) + 0.5 * noise(vec2(ang * 6.0, 1.3));
 	float cg = max(abs(dFdx(cn)) + abs(dFdy(cn)), 0.0006);
-	float line = 1.0 - smoothstep(1.0, 2.6, abs(cn - 0.8) / cg);
-	float reach = crack * (0.5 + 0.9 * noise(vec2(ang * 1.7, 9.0)));
-	float cracks = line * (1.0 - smoothstep(reach * 0.8, reach, rr)) * smoothstep(0.02, 0.08, rr) * through * step(0.0, dq);
-	float bulge = exp(-rr * rr / 0.5) * crack * 0.25 * through * step(0.0, dq);                            // 被顶起来的一块：微微发亮
+	float line = 1.0 - smoothstep(2.0, 5.0, abs(cn - 0.8) / cg);
+	float reach = crack * 0.6 * (0.5 + 0.9 * noise(vec2(ang * 1.7, 9.0)));
+	float web = 0.0;
+	for (int kk = 1; kk <= 3; kk++) {
+		float rk = 0.3 * float(kk) * (0.75 + 0.5 * hash(vec2(sect, float(kk) * 5.0)));
+		web += exp(-abs(er_r - rk) / 0.011) * step(0.45, hash(vec2(sect + float(kk) * 13.0, 1.0)));
+	}
+	float inreach = (1.0 - smoothstep(reach * 0.8, reach, er_r)) * step(hr, er_r);
+	float cracks = clamp(line + web, 0.0, 1.0) * inreach * onband;
+	float bulge = 0.0;
 	// 衬托旋转：绕着穿孔甩出去的几道弧光（跟着苦无一起转，头亮尾淡，两圈半径），转得越快甩得越开
 	float swirl = 0.0;
 	for (int i = 0; i < 2; i++) {
@@ -160,11 +176,14 @@ void fragment() {
 		swirl += exp(-pow((rr - R * (1.0 + 0.25 * (1.0 - saw))) / (0.02 + 0.014 * float(i)), 2.0)) * pow(saw, 2.0);
 	}
 	swirl *= inband;
-	bulge = 0.0;
-	float pa = clamp(ring + cracks * 0.9 + swirl, 0.0, 1.0) * (1.0 - a);
-	col += mix(vec3(1.0, 0.3, 0.3), vec3(1.0, 0.95, 0.92), swirl) * swirl * (1.0 - a) * 1.3;
-	col += mix(vec3(1.0, 0.2, 0.16), vec3(1.0, 0.85, 0.8), heat * ring) * (ring * 1.3 + cracks) + vec3(1.0, 0.25, 0.25) * bulge;
-	a = max(a, pa);
+	float rest = 1.0 - a;
+	// 破洞：先把洞里涂成后面的暗红舞台，再叠洞口的白热边、裂纹、孔口的红光和旋转的弧光
+	col = mix(col, vec3(0.2, 0.0, 0.025) * (1.0 - 0.5 * smoothstep(0.0, hr, er_r)), hole * rest);
+	a = max(a, hole * rest);
+	col += (vec3(1.0, 0.97, 0.95) * (cracks * 0.95 + hedge * 1.2) + vec3(1.0, 0.2, 0.2) * hedge * 0.6) * rest;
+	col += mix(vec3(1.0, 0.3, 0.3), vec3(1.0, 0.95, 0.92), swirl) * swirl * rest * 1.3;
+	col += mix(vec3(1.0, 0.2, 0.16), vec3(1.0, 0.85, 0.8), heat * ring) * ring * 1.3 * rest;
+	a = max(a, clamp(ring + cracks + hedge + swirl, 0.0, 1.0) * rest);
 	COLOR = vec4(col * alpha, clamp(a, 0.0, 1.0) * alpha);
 }" };
 
