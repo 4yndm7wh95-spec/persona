@@ -625,6 +625,27 @@ public partial class Preview : Node2D
 			}));
 		},
 		// 技能 / 能力牌特效（Vfx/SkillFx.cs，用户 2026-11-10）。a：抽牌 → 弃牌 → 装弹 → 蓝 / 红 / 咒怨三种增益
+		// 第二版样板（用户 2026-11-10：太简单）：抽牌 → 装弹（飞进弹巢）→ 暴露（易伤）→ 压制（降力量）→ 中和的虚弱（对照）
+		["samples"] = p =>
+		{
+			Vector2 hand = Pose(1010f, 410f);
+			AmmoView? view = null;
+			Vector2 chamber = new(250f, 930f);
+			p.At(0.05, () => { view = new AmmoView(p._front, 150f); view.Root.Position = chamber; });
+			p.Every(() => view?.Tick(1f / 30f));
+			p.At(0.3, () => p._joker?.Play("cast_glove"));
+			p.At(0.57, () => SkillFx.Draw(p._front, hand, 3));
+			p.At(2.0, () => p._joker?.Play("cast_glove"));
+			p.At(2.27, () => SkillFx.Load(p._front, hand, 3, 1f, true, chamber));
+			p.At(2.27 + 0.45, () => view?.Set(3));
+			p.At(3.9, () => p._joker?.Play("cast_glove"));
+			p.At(4.17, () => SkillFx.Shatter(p._front, p._back, Enemy, new Vector2(Enemy.X, 830f), Enemy + new Vector2(0f, -170f), 260f, new Vector2(1f, -0.15f),
+				c => p._enemies[Enemy].Modulate = c));
+			p.At(5.6, () => p._joker?.Play("cast"));
+			p.At(6.0, () => SkillFx.Crush(p._front, p._back, new Vector2(Enemy2.X, 830f), Enemy2 + new Vector2(0f, -170f), 230f, c => p._enemies[Enemy2].Modulate = c));
+			p.At(7.5, () => p._joker?.Play("attack"));
+			p.At(7.65, () => CardFx.Weaken(p._front, Enemy3, Enemy3 + new Vector2(0f, -150f), 0.12f));
+		},
 		["skills_a"] = p =>
 		{
 			float tall = (JokerFeet - Pose(815f, 120f)).Length();

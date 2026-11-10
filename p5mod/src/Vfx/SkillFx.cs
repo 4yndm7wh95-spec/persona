@@ -308,15 +308,31 @@ void fragment() {
 	public static void Draw(Control layer, Vector2 hand, int n, float facing = 1f, bool sound = true)
 	{
 		n = Mathf.Clamp(n, 1, 5);
-		float unit = Unit(layer), size = 46f * unit;
+		float unit = Unit(layer), size = 62f * unit;
 		Vector2 dest = HandUi(layer);
-		Glow.Flash(layer, hand, new Color(1f, 0.3f, 0.34f), 150f * unit, 0.14f);
+		// 用户 2026-11-10：只有牌飞出来太单薄。现在是一件完整的事：打响指（一闪 + 火星 + 一圈波纹）→ 牌扇甩开时划出一道红白的弧光
+		// → 牌在半空逐张亮一下 → 拉着长尾扎进手牌区，落点一道贴着屏幕底边的光和往上溅的碎光
+		Glow.Flash(layer, hand, new Color(1f, 0.85f, 0.82f), 110f * unit, 0.1f);
+		Glow.Flash(layer, hand, new Color(1f, 0.25f, 0.3f), 260f * unit, 0.22f);
+		Glow.Ripple(layer, hand, 300f * unit, 0.3f, 0.016f);
+		Glow.Sparks(layer, hand, 14, 220f, 620f, 0.3f, new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.35f, 0.38f), new Color(0.8f, 0.05f, 0.14f) }, 500f,
+			0.025f * unit, 0.07f * unit, new Vector2(0.5f * facing, -1f), 55f);
+		Vector2 arcAt = hand + new Vector2(95f * facing, -185f) * unit;
+		Paint.Sweep(layer, "slash_thin", arcAt, facing > 0f ? -0.35f : Mathf.Pi + 0.35f, new Vector2(0.42f, 0.5f) * unit, Lut5.Blood, 0.07f, 0.03f, 0.2f, 20f, 0.02f, 1.2f);
+		Vector2 land = layer.GetCanvasTransform().AffineInverse() * new Vector2(Fx.Screen(layer).X * 0.5f, Fx.Screen(layer).Y * 0.985f);
+		Fx.After(layer, 0.035f * (n - 1) + 0.5f, () =>
+		{
+			Glow.Shockwave(layer, land, new Color(1f, 0.35f, 0.38f), 760f * unit, 0.35f, 0.12f);
+			Glow.Flash(layer, land, new Color(1f, 0.5f, 0.5f), 420f * unit, 0.2f);
+			Glow.Sparks(layer, land, 16, 200f, 560f, 0.4f, new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.35f, 0.38f) }, 700f, 0.025f * unit, 0.06f * unit, Vector2.Up, 60f);
+		});
 		for (int i = 0; i < n; i++)
 		{
 			int k = i;
 			float delay = 0.035f * k;
 			float fan = n == 1 ? 0f : Mathf.Lerp(-0.5f, 0.5f, k / (n - 1f));
-			Vector2 apex = hand + new Vector2((70f + 120f * fan) * facing, -150f - 46f * (1f - fan * fan)) * unit * 1.1f;
+			Vector2 apex = hand + new Vector2((95f + 190f * fan) * facing, -205f - 60f * (1f - fan * fan)) * unit * 1.1f;
+			Fx.After(layer, delay + 0.17f + 0.03f * k, () => Glow.Glint(layer, apex + new Vector2(18f, -30f) * unit, 0.75f));
 			float tilt = fan * 0.5f * facing, spin = Fx.Rand(0.8f, 1.2f);
 			const float outT = 0.16f, holdT = 0.1f, inT = 0.24f;
 			Fx.After(layer, delay, () =>
@@ -473,57 +489,89 @@ void fragment() {
 }" };
 
 	/// <summary>
-	/// 装弹：n 发子弹从手里抛起来（一小把，各自翻转、转到某个角度闪一下光），到顶以后一发接一发落回手里，每落一发手上一点白闪、一声金属轻响。
-	/// hand = 扯手套的那只手。最多画 5 发。
+	/// 装弹（用户 2026-11-10：只有子弹飞一下太单薄，要有落点）：手一甩，n 发子弹抛起来各自翻转、闪光（一把火星跟着溅出来），
+	/// 到顶以后一发接一发拖着黄铜色的长尾射向弹巢（chamber：能量球旁的左轮弹巢；没有就落回手里），
+	/// 每发入膛：一下白闪、几点火星、一声金属「咔」；最后一发入膛时弹巢一圈光环弹开。hand = 扯手套的那只手。最多画 6 发。
 	/// </summary>
-	public static void Load(Control layer, Vector2 hand, int n, float facing = 1f, bool sound = true)
+	public static void Load(Control layer, Vector2 hand, int n, float facing = 1f, bool sound = true, Vector2? chamber = null)
 	{
-		n = Mathf.Clamp(n, 1, 5);
-		float unit = Unit(layer), len = 40f * unit;
-		Glow.Flash(layer, hand, new Color(1f, 0.7f, 0.45f), 120f * unit, 0.12f);
+		n = Mathf.Clamp(n, 1, 6);
+		float unit = Unit(layer), len = 52f * unit;
+		Vector2 dest = chamber ?? hand;
+		Glow.Flash(layer, hand, new Color(1f, 0.9f, 0.75f), 110f * unit, 0.1f);
+		Glow.Flash(layer, hand, new Color(1f, 0.6f, 0.3f), 240f * unit, 0.2f);
+		Glow.Sparks(layer, hand, 12, 200f, 560f, 0.3f, new[] { new Color(1f, 0.96f, 0.85f), new Color(1f, 0.65f, 0.3f), new Color(0.8f, 0.3f, 0.1f) }, 600f,
+			0.025f * unit, 0.06f * unit, Vector2.Up, 50f);
+		float lastAt = 0f;
 		for (int i = 0; i < n; i++)
 		{
 			int k = i;
 			float fan = n == 1 ? 0f : Mathf.Lerp(-1f, 1f, k / (n - 1f));
-			Vector2 apex = hand + new Vector2((18f + 40f * fan) * facing, -(150f + 26f * (1f - Mathf.Abs(fan)) + Fx.Rand(-10f, 10f))) * unit;
-			float up = 0.2f, hang = 0.05f + 0.055f * k, down = 0.13f, life = up + hang + down;
+			Vector2 apex = hand + new Vector2((30f + 75f * fan) * facing, -(210f + 40f * (1f - Mathf.Abs(fan)) + Fx.Rand(-12f, 12f))) * unit;
+			float up = 0.2f, hang = 0.06f + 0.07f * k, down = chamber != null ? 0.16f : 0.13f, life = up + hang + down;
+			lastAt = Mathf.Max(lastAt, life);
 			float turns = Fx.Rand(1.3f, 2.1f) * (k % 2 == 0 ? 1f : -1f), rot0 = Fx.Rand(0f, 6f);
 			Node2D root = Fx.Root(layer, hand, "P5Bullet", life + 0.1);
+			Line2D trail = new()
+			{
+				Width = len * 0.22f, Material = Fx.Additive, TopLevel = true, Antialiased = true, WidthCurve = new Curve(),
+				Gradient = new Gradient { Offsets = new[] { 0f, 1f }, Colors = new[] { new Color(1f, 0.5f, 0.2f, 0f), new Color(1f, 0.9f, 0.7f, 0.85f) } },
+			};
+			trail.WidthCurve.AddPoint(new Vector2(0f, 0f));
+			trail.WidthCurve.AddPoint(new Vector2(1f, 1f));
+			root.AddChild(trail);
+			var path = new List<Vector2>();
 			ColorRect q = Quad(root, Bullet, new Vector2(len * 1.6f, len * 1.6f));
 			Fx.Animate(root, 0, life, t =>
 			{
 				float s = t * life;
 				Vector2 p;
+				bool flying = s >= up + hang;
 				if (s < up)
 				{
 					p = hand.Lerp(apex, Ease5.OutQuint(s / up));
 				}
-				else if (s < up + hang)
+				else if (!flying)
 				{
 					float h = (s - up) / hang;
 					p = apex + new Vector2(0f, -5f * unit * Mathf.Sin(h * Mathf.Pi));
 				}
 				else
 				{
-					p = apex.Lerp(hand, Fx.InCubic((s - up - hang) / down));
+					p = apex.Lerp(dest, Fx.InCubic((s - up - hang) / down));
 				}
 				root.GlobalPosition = p;
-				float spinK = s < up + hang ? Ease5.OutQuint(Mathf.Min(1f, s / (up + hang))) : 1f;
-				root.Rotation = rot0 + turns * Mathf.Tau * spinK + (s >= up + hang ? -Mathf.Pi * 0.5f * Fx.InCubic((s - up - hang) / down) : 0f);
-				Set(q, "glint", Mathf.Pow(Mathf.Abs(Mathf.Sin(root.Rotation * 1.5f + k)), 6f));
+				float spinK = !flying ? Ease5.OutQuint(Mathf.Min(1f, s / (up + hang))) : 1f;
+				// 飞向弹巢时弹尖对准去向
+				root.Rotation = flying ? (dest - apex).Angle() : rot0 + turns * Mathf.Tau * spinK;
+				Set(q, "glint", flying ? 1f : Mathf.Pow(Mathf.Abs(Mathf.Sin(root.Rotation * 1.5f + k)), 6f));
 				Set(q, "alpha", Mathf.Min(1f, s / 0.03f));
+				if (flying)
+				{
+					path.Add(p);
+					if (path.Count > 9) path.RemoveAt(0);
+					trail.GlobalTransform = Transform2D.Identity;
+					trail.Points = path.ToArray();
+				}
 			});
+			Fx.After(layer, up * 0.9f, () => Glow.Glint(layer, apex, 0.6f));
 			Fx.After(layer, life, () =>
 			{
 				if (sound)
 				{
 					Sfx.Play(Sfx.BulletLoad, 0.6f);
 				}
-				Glow.Flash(layer, hand, new Color(1f, 0.9f, 0.8f), 70f * unit, 0.08f);
-				Glow.Sparks(layer, hand, 3, 80f, 200f, 0.18f, new[] { new Color(1f, 0.95f, 0.85f), new Color(1f, 0.6f, 0.3f) }, 300f, 0.02f * unit, 0.05f * unit,
-					Vector2.Up, 80f);
+				Glow.Flash(layer, dest, new Color(1f, 0.9f, 0.8f), 110f * unit, 0.09f);
+				Glow.Sparks(layer, dest, 7, 120f, 380f, 0.22f, new[] { new Color(1f, 0.95f, 0.85f), new Color(1f, 0.6f, 0.3f) }, 500f, 0.02f * unit, 0.055f * unit,
+					Vector2.Up, 90f);
 			});
 		}
+		// 最后一发入膛：弹巢一圈光环弹开
+		Fx.After(layer, lastAt + 0.02f, () =>
+		{
+			Glow.Shockwave(layer, dest, new Color(1f, 0.7f, 0.4f), 300f * unit, 0.3f);
+			Glow.Flash(layer, dest, new Color(1f, 0.75f, 0.5f), 260f * unit, 0.22f);
+		});
 	}
 
 	// ───────────────────────── 能量涌动 ─────────────────────────
@@ -842,17 +890,173 @@ void fragment() {
 	// ───────────────────────── 暴露 / 夹击 ─────────────────────────
 
 	/// <summary>
-	/// 暴露（去掉格挡和人工制品、给易伤）：目标身前像一层护甲被击碎——一下白闪、几道裂纹、朝 dir 迸开的锐利碎片，然后压下一道减益。
+	/// 暴露 / 易伤（用户 2026-11-10：减益不能只是绕几圈光环，光环只能是配角——像中和那样是一件事）：目标身前像一层护甲被劈开。
+	/// ① 一道极细的白线斜着划过目标；② 顿一下：白闪、裂纹从划痕炸开、玻璃碎片朝 Joker 这边迸出来、空间一扭、身体过曝；
+	/// ③ 裂口里透出红光，烧红的碎屑往下掉，身体被染红一阵（= 易伤）。dir = 碎片迸出的方向。
 	/// </summary>
 	public static void Shatter(Control front, Control? back, Vector2 center, Vector2 feet, Vector2 top, float width, Vector2 dir, Action<Color>? tint = null)
 	{
-		float h = Mathf.Max(120f, (feet - top).Length());
-		Sfx.Play(Sfx.Glass, 0.5f);
-		Glow.Flash(front, center, new Color(1f, 0.85f, 0.85f), h * 0.9f, 0.14f);
-		Cut.Cracks(front, center, 5, h * 0.45f, 0.28f);
-		Glow.Shards(front, center, 16, 1.5f, dir, 1.9f);
-		Glow.Shockwave(front, center, new Color(1f, 0.4f, 0.42f), h * 1.3f, 0.35f);
-		Debuff(front, back, feet, top, width, tint, sound: false, delay: 0.12f);
+		float h = Mathf.Max(120f, (feet - top).Length()), unit = Unit(front);
+		float ang = dir.X >= 0f ? -0.9f : Mathf.Pi + 0.9f;
+		Cut.Razor(front, center, ang, h * 1.5f, 6f * unit, 0.16f);
+		Sfx.Play(Sfx.SwishLow, 0.35f);
+		Fx.After(front, 0.07, () =>
+		{
+			Sfx.Play(Sfx.Glass, 0.6f);
+			HitStop.Request(0.045);
+			Stage.ShakeDir?.Invoke(2, Mathf.RadToDeg(dir.Angle()));
+			Glow.Flash(front, center, new Color(1f, 0.92f, 0.9f), h * 1.1f, 0.12f);
+			Glow.Flash(front, center, new Color(1f, 0.2f, 0.26f), h * 2.2f, 0.4f);
+			Cut.Cracks(front, center, 8, h * 0.62f, 0.4f);
+			Glow.Shards(front, center, 26, 1.8f, -dir, 1.3f);
+			Glow.Shards(front, center, 10, 1.0f, dir, 2.6f);
+			Glow.Ripple(front, center, h * 2.4f, 0.4f, 0.03f);
+			Glow.Shockwave(front, center, new Color(1f, 0.4f, 0.42f), h * 1.7f, 0.35f);
+			Vanilla.Burst(front, Vanilla.Specks, center, (-dir).Angle(), 1.0f, Lut5.Blood, amount: 18);
+		});
+		Fx.After(front, 0.2, () =>
+		{
+			Glow.Sparks(front, center, 22, 30f, 200f, 0.8f, new[] { new Color(1f, 0.8f, 0.75f), new Color(1f, 0.25f, 0.3f), new Color(0.6f, 0.02f, 0.1f) }, 520f,
+				0.03f * unit, 0.08f * unit, Vector2.Down, 120f);
+			Glow.Shockwave(front, feet, new Color(1f, 0.25f, 0.3f), h * 2.2f, 0.5f, 0.2f);
+		});
+		if (tint != null)
+		{
+			Node2D ticker = Fx.Root(front, feet, "P5ExposeTint", 1.0);
+			Fx.Animate(ticker, 0.07, 0.85, t =>
+			{
+				Color hot = new(1.9f, 1.5f, 1.5f), red = new(1.25f, 0.62f, 0.66f);
+				tint(t < 0.1f ? Colors.White.Lerp(hot, t / 0.1f) : t < 0.25f ? hot.Lerp(red, (t - 0.1f) / 0.15f) : red.Lerp(Colors.White, (t - 0.25f) / 0.75f));
+			});
+			ticker.TreeExiting += () => tint(Colors.White);
+		}
+	}
+
+	private static Shader? _press, _ground;
+
+	/// <summary>往下压的气流：一根罩住目标的柱子里，成百道发丝细的竖线往下冲（越往下越快、越亮），两侧淡出。k 0→1 整段进度。加法。</summary>
+	private static Shader Press => _press ??= new Shader { Code = @"
+shader_type canvas_item;
+render_mode blend_add;
+uniform float k = 0.0;
+uniform float seed = 0.0;
+float h(float n) { return fract(sin(n * 127.1 + seed) * 43758.5453); }
+void fragment() {
+	float x = (UV.x - 0.5) * 2.0;
+	float cells = 90.0;
+	float c = floor(UV.x * cells), f = fract(UV.x * cells) - 0.5;
+	float on = step(0.3, h(c));
+	float sp = mix(1.6, 3.2, h(c + 5.0));
+	float head = fract(h(c + 9.0) + k * sp);                      // 这道线的头现在在多高（0 顶 → 1 底）
+	head = head * head;                                           // 越往下越快
+	float len = mix(0.12, 0.34, h(c + 13.0));
+	float a = (head - UV.y) / len;
+	float body = step(0.0, a) * (1.0 - smoothstep(0.0, 1.0, a));
+	float line = on * body * exp(-pow(f / 0.16, 2.0));
+	float side = exp(-x * x * 3.2) * (1.0 - smoothstep(0.8, 1.0, abs(x)));
+	float env = smoothstep(0.0, 0.15, k) * (1.0 - smoothstep(0.7, 1.0, k));
+	float bottom = smoothstep(0.0, 0.25, UV.y);
+	vec3 col = mix(vec3(0.75, 0.04, 0.1), vec3(1.0, 0.86, 0.84), body * UV.y) * line * side * env * bottom * 1.5;
+	col += vec3(0.5, 0.02, 0.07) * side * side * env * UV.y * UV.y * 0.22;      // 底下压着的一层暗红
+	COLOR = vec4(col, 1.0);
+}" };
+
+	/// <summary>地面被压裂：贴地的一摊（椭圆），从中心放射的锯齿裂纹，先烧红再变暗，外圈淡出。open 0→1 裂开，cool 0→1 冷却。premul：裂纹本身是压暗的。</summary>
+	private static Shader Ground => _ground ??= new Shader { Code = @"
+shader_type canvas_item;
+render_mode blend_premul_alpha;
+uniform float open = 0.0;
+uniform float cool = 0.0;
+uniform float seed = 0.0;
+" + Noise + @"
+void fragment() {
+	vec2 p = (UV - 0.5) * 2.0;
+	float r = length(p) + 0.001, ang = atan(p.y, p.x);
+	vec2 c = p / r;
+	float n = noise(c * 2.4 + seed + r * 0.9) + 0.5 * noise(c * 6.0 + seed * 2.0 + r * 2.5);
+	float gr = max(length(vec2(dFdx(n), dFdy(n))), 0.0008);
+	float d = abs(n - 0.75) / gr;                                 // 到裂纹的像素距离
+	float reach = 1.0 - smoothstep(open * 0.95 - 0.12, open * 0.95, r);
+	float w = mix(3.4, 1.0, r);
+	float line = (1.0 - smoothstep(w * 0.5, w * 1.2, d)) * reach * smoothstep(0.02, 0.1, r);
+	float glow = exp(-d / (w * 3.0)) * reach;
+	float fade = 1.0 - cool;
+	vec3 hot = mix(vec3(0.9, 0.06, 0.1), vec3(1.0, 0.8, 0.75), (1.0 - cool) * (1.0 - r));
+	float dent = (1.0 - smoothstep(0.0, 0.9, r)) * reach * 0.35;  // 中间被压暗的一块
+	COLOR = vec4(hot * (glow * 0.5 + line * 0.5) * fade * fade, max(line * 0.85, dent) * (1.0 - cool * cool));
+}" };
+
+	/// <summary>
+	/// 压制（降力量：尖啸、萎靡）：目标被一股力从上往下压住。
+	/// ① 头顶上方聚起一片暗红，成百道细线往下冲（0.2s）；② 砸到地面：顿帧、上下震屏、脚下地面被压裂（裂纹烧红）、两侧尘土贴地喷开、
+	/// 一圈扁的冲击波和空间波纹、身体被压暗；③ 余韵：光尘往下沉，裂纹冷却变暗。光环只有落地那一圈。feet / top = 目标脚底和头顶。
+	/// </summary>
+	public static void Crush(Control front, Control? back, Vector2 feet, Vector2 top, float width, Action<Color>? tint = null, bool sound = true, float delay = 0f)
+	{
+		Fx.After(front, delay, () =>
+		{
+			float h = Mathf.Max(120f, (feet - top).Length()), unit = Unit(front);
+			float w = Mathf.Max(width * 1.5f, h * 0.9f);
+			const float fall = 0.2f;
+			if (sound)
+			{
+				Sfx.Play(Sfx.DebuffDown, 0.7f);
+			}
+			// ① 压下来
+			Vector2 colSize = new(w, h * 2.1f);
+			Node2D col = Fx.Root(front, feet + new Vector2(0f, -colSize.Y * 0.5f + 10f * unit), "P5Press", 0.6);
+			ColorRect pq = Quad(col, Press, colSize);
+			Set(pq, "seed", Fx.Rand(0f, 30f));
+			Fx.Animate(col, 0, 0.5, t => Set(pq, "k", t));
+			Glow.Flash(front, top + new Vector2(0f, -h * 0.5f), new Color(0.9f, 0.08f, 0.14f), w * 1.3f, 0.3f);
+			// ② 砸到地面
+			Fx.After(front, fall, () =>
+			{
+				if (sound)
+				{
+					Sfx.Play(Sfx.SubBoom, 0.55f);
+				}
+				HitStop.Request(0.05);
+				Stage.ShakeDir?.Invoke(3, 90f);
+				Control ground = back ?? front;
+				Vector2 gs = new(w * 2.6f, w * 0.62f);
+				Node2D g = Fx.Root(ground, feet, "P5GroundCrack", 1.5);
+				ColorRect gq = Quad(g, Ground, gs);
+				Set(gq, "seed", Fx.Rand(0f, 30f));
+				Fx.Animate(g, 0, 1.4, t =>
+				{
+					Set(gq, "open", Ease5.OutExpo(Mathf.Min(1f, t / 0.12f)));
+					Set(gq, "cool", Mathf.Clamp((t - 0.15f) / 0.85f, 0f, 1f));
+				});
+				Glow.Flash(front, feet, new Color(1f, 0.85f, 0.82f), w * 0.9f, 0.1f);
+				Glow.Flash(front, feet, new Color(1f, 0.15f, 0.22f), w * 2.2f, 0.35f);
+				Glow.Shockwave(front, feet, new Color(1f, 0.3f, 0.34f), w * 3.4f, 0.45f, 0.2f);
+				Glow.Shockwave(front, feet, new Color(1f, 0.8f, 0.78f), w * 2.2f, 0.3f, 0.2f, 0.04f);
+				Glow.Ripple(front, feet, w * 3f, 0.45f, 0.03f, 0.3f);
+				// 贴地往两边喷的碎光（不用原版的烟：换色后是一大片红色块）
+				foreach (float side in new[] { -1f, 1f })
+				{
+					Glow.Sparks(front, feet + new Vector2(side * w * 0.2f, 0f), 18, 300f, 900f, 0.35f,
+						new[] { new Color(1f, 0.9f, 0.88f), new Color(1f, 0.3f, 0.34f), new Color(0.5f, 0.02f, 0.08f) }, 300f, 0.025f * unit, 0.07f * unit,
+						new Vector2(side, -0.12f), 16f);
+				}
+				Glow.Sparks(front, feet, 24, 260f, 760f, 0.4f, new[] { new Color(1f, 0.9f, 0.88f), new Color(1f, 0.3f, 0.34f), new Color(0.6f, 0.02f, 0.1f) }, 900f,
+					0.025f * unit, 0.07f * unit, Vector2.Up, 85f);
+			});
+			// ③ 余韵：光尘往下沉
+			Fx.After(front, fall + 0.12f, () => Glow.Sparks(front, (feet + top) / 2f, 26, 30f, 150f, 0.9f,
+				new[] { new Color(1f, 0.3f, 0.34f), new Color(0.8f, 0.05f, 0.14f), new Color(0.35f, 0f, 0.06f) }, 420f, 0.03f * unit, 0.08f * unit, Vector2.Down, 85f));
+			if (tint != null)
+			{
+				Node2D ticker = Fx.Root(front, feet, "P5CrushTint", 1.2);
+				Fx.Animate(ticker, fall, 0.9, t =>
+				{
+					Color bright = new(1.6f, 1.1f, 1.1f), dark = new(0.55f, 0.36f, 0.44f);
+					tint(t < 0.08f ? Colors.White.Lerp(bright, t / 0.08f) : t < 0.22f ? bright.Lerp(dark, (t - 0.08f) / 0.14f) : dark.Lerp(Colors.White, (t - 0.22f) / 0.78f));
+				});
+				ticker.TreeExiting += () => tint(Colors.White);
+			}
+		});
 	}
 
 	/// <summary>
