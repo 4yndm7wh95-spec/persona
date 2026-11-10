@@ -74,6 +74,15 @@ public static class Sfx
 		BuffRise = "buff_rise",         // 增益第二版（用户 2026-11-10：克制）：一口往上掠的气 + 很轻的闷底，tools/p5/sfx/synth_skill_fx3.py
 		BuffRiseDark = "buff_rise_dark", // 咒怨 / 暗影增益：更暗、更低的气 + 低沉的底
 		DebuffPress = "debuff_press",   // 减益：一记往下压的闷响
+		// 每张牌的特效（Vfx/CardSkillFx.cs，第一批 2026-11-10；tools/p5/sfx/synth_card_fx1.py，全部噪声合成、克制）
+		FootworkSteps = "footwork_steps", // 灵动步法：三下轻快的踏步 + 一口往上的气
+		ReticleLock = "reticle_lock",     // 精准 / 跟踪：准星扣上的两下轻的机械咔嗒
+		TrackScan = "track_scan",         // 跟踪：很轻的一声细「嗖」
+		VenomCoat = "venom_coat",         // 涂毒：黏稠的液体翻涌 + 轻的「滋」
+		FumesRoll = "fumes_roll",         // 毒雾：低沉的雾涌过去的气声
+		BurstEcho = "burst_echo",         // 爆发：一记闷响紧跟一记回声
+		SerpentRise = "serpent_rise",     // 群蛇形态：低沉涌起 + 蛇的嘶声 + 扑出去的一下
+		WraithForm = "wraith_form",       // 幽魂形态：往里吸的阴风 + 合上时的闷响
 		EnergyPull = "energy_pull",     // 能量第二版：0.28s 吸气 + 一声软的闷响（没有叮）
 		BuffUp = "buff_up",             // 增益：往上盘的气音 + 到顶一声清亮的「叮」
 		BuffDark = "buff_dark",         // 咒怨 / 暗影类增益：低沉的上行 + 闷响

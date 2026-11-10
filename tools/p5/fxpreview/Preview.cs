@@ -665,6 +665,31 @@ public partial class Preview : Node2D
 			p.At(7.5, () => p._joker?.Play("attack"));
 			p.At(7.65, () => CardFx.Weaken(p._front, Enemy3, Enemy3 + new Vector2(0f, -150f), 0.12f));
 		},
+		["cards1"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			SkillCtx Ctx() => new(p._front, p._back, JokerFeet, Pose(1010f, 330f), Pose(1010f, 410f), Pose(1010f, 215f), tall, 1f,
+				c => p._joker!.Modulate = c, new List<SkillFx.Victim>
+				{
+					new(new Vector2(Enemy2.X, 830f), Enemy2 + new Vector2(0f, -170f), 230f, c => p._enemies[Enemy2].Modulate = c),
+					new(new Vector2(Enemy.X, 830f), Enemy + new Vector2(0f, -170f), 260f, c => p._enemies[Enemy].Modulate = c),
+					new(new Vector2(Enemy3.X, 830f), Enemy3 + new Vector2(0f, -150f), 230f, c => p._enemies[Enemy3].Modulate = c),
+				}, new SkillFx.Victim(new Vector2(Enemy.X, 830f), Enemy + new Vector2(0f, -170f), 260f, c => p._enemies[Enemy].Modulate = c));
+			(string Card, string Anim, double Lead, double Gap)[] seq =
+			{
+				("Footwork", "cast_guard", 0.08, 1.2), ("Accuracy", "cast_glove", 0.25, 1.3), ("Envenom", "cast_glove", 0.25, 1.5),
+				("NoxiousFumes", "cast_glove", 0.25, 2.0), ("Tracking", "cast_glove", 0.25, 1.4), ("Burst", "cast_glove", 0.25, 1.4),
+				("SerpentForm", "cast_big", 0.4, 2.2), ("WraithForm", "cast_big", 0.4, 2.0),
+			};
+			double at = 0.3;
+			foreach (var (card, anim, lead, gap) in seq)
+			{
+				string a = anim, cd = card;
+				p.At(at, () => p._joker?.Play(a));
+				p.At(at + lead, () => CardSkillFx.Cards[cd](Ctx()));
+				at += gap;
+			}
+		},
 		["buffs"] = p =>
 		{
 			float tall = (JokerFeet - Pose(815f, 120f)).Length();

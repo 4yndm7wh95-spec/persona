@@ -200,6 +200,19 @@ void fragment() {
 		Fx.Animate(q, 0, life, t => Set(q, "prog", t));
 	}
 
+	/// <summary>光柱（身后实、身前淡）：给每张牌的特效用（CardSkillFx）。</summary>
+	public static void ColumnFx(Control front, Control? back, Vector2 feet, float h, Tone tone, float life)
+	{
+		if (back != null && GodotObject.IsInstanceValid(back))
+		{
+			ColumnAt(back, feet, h * 0.7f, h * 1.35f, tone, life, 1f);
+		}
+		ColumnAt(front, feet, h * 0.5f, h * 1.3f, tone, life, 0.2f);
+	}
+
+	public static void RiseChevron(Control layer, Vector2 from, Vector2 to, float width, float delay, Color glowC, Color coreC) =>
+		Rise(layer, from, to, width, delay, glowC, coreC);
+
 	/// <summary>一道往上指的发光「^」：从 from 冲到 to（先快后慢），到顶亮一下、放大散掉。中和那三道 V 的反向。</summary>
 	private static void Rise(Control layer, Vector2 from, Vector2 to, float width, float delay, Color glowC, Color coreC)
 	{

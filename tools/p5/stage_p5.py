@@ -120,6 +120,7 @@ SFX = {
     "buff_rise_dark": ROOT / "art/sfx_p5/buff_rise_dark.ogg",
     "debuff_press": ROOT / "art/sfx_p5/debuff_press.ogg",
     "energy_pull": ROOT / "art/sfx_p5/energy_pull.ogg",
+    **{n: ROOT / f"art/sfx_p5/{n}.ogg" for n in ('footwork_steps', 'reticle_lock', 'track_scan', 'venom_coat', 'fumes_roll', 'burst_echo', 'serpent_rise', 'wraith_form')},   # per-card skill FX batch 1 (synth_card_fx1.py)
     "card_draw": ROOT / "mod/pck_stage/p3makoto/sfx/card_draw.ogg",  # draw effect: the P3 mod's card draw (user 2026-11-10)
     "shatter_big": ROOT / "art/sfx_p5/shatter_big.ogg",                # eye cut-in shatter (user 2026-11-03)
     "curse_soft": ROOT / "art/sfx_p5/curse_soft.ogg",

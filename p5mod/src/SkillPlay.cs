@@ -109,6 +109,25 @@ public static class SkillPlay
 			Action<Color> selfTint = c => { if (GodotObject.IsInstanceValid(joker) && joker.Visuals is { } v) v.Modulate = c; };
 			Rect2 region = new(feet + new Vector2(-tall * 0.75f, -tall * 1.15f), new Vector2(tall * 1.5f, tall * 1.3f));
 			Func<Node, (Node2D, Transform2D)?> clone = parent => Aim.CloneBody(joker, parent, "idle_loop");
+			if (CardSkillFx.Cards.TryGetValue(name, out Action<SkillCtx>? perCard))
+			{
+				var enemies = new List<SkillFx.Victim>();
+				if (joker.Entity?.CombatState is { } ecs)
+				{
+					foreach (Creature e in ecs.HittableEnemies)
+					{
+						if (room.GetCreatureNode(e) is NCreature en && GodotObject.IsInstanceValid(en))
+						{
+							enemies.Add(new SkillFx.Victim(en.GetBottomOfHitbox(), en.GetTopOfHitbox(), en.Hitbox.GetGlobalRect().Size.X, Tint(en)));
+						}
+					}
+				}
+				SkillFx.Victim? tv = target != null && GodotObject.IsInstanceValid(target)
+					? new SkillFx.Victim(target.GetBottomOfHitbox(), target.GetTopOfHitbox(), target.Hitbox.GetGlobalRect().Size.X, Tint(target))
+					: null;
+				perCard(new SkillCtx(layer, back, feet, chest, hand, Joker.PosePoint(joker, ReadyFx.MaskFace), tall, face, selfTint, enemies, tv));
+				return;
+			}
 			switch (kind)
 			{
 				case Kind.Draw:
