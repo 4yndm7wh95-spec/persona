@@ -1086,7 +1086,7 @@ void fragment() {
 			m.SetShaderParameter("tint", k == 0 ? new Color(0.95f, 0.04f, 0.1f) : new Color(0.6f, 0f, 0.06f));
 			Sprite2D sp = new() { Texture = view.GetTexture(), Centered = false, Material = m };
 			root.AddChild(sp);
-			float dist = (7f + 7f * k) * unit * -facing, drop = (2.5f + 2f * k) * unit, a0 = k == 0 ? 1f : 0.85f;
+			float dist = (4f + 4f * k) * unit * -facing, drop = (1.5f + 1f * k) * unit, a0 = k == 0 ? 1f : 0.85f;
 			Fx.Animate(sp, 0, life, t =>
 			{
 				float s = t * life;

@@ -42,6 +42,18 @@ float vnoise(vec3 x) {
 	return mix(mix(mix(hash3(i), hash3(i + vec3(1, 0, 0)), f.x), mix(hash3(i + vec3(0, 1, 0)), hash3(i + vec3(1, 1, 0)), f.x), f.y),
 		mix(mix(hash3(i + vec3(0, 0, 1)), hash3(i + vec3(1, 0, 1)), f.x), mix(hash3(i + vec3(0, 1, 1)), hash3(i + vec3(1, 1, 1)), f.x), f.y), f.z);
 }
+// 鳞片：3D 细胞噪声，返回 (到最近格点的距离, 次近 - 最近, 这一片的随机值)
+vec3 voro(vec3 x) {
+	vec3 i = floor(x), f = fract(x);
+	float d1 = 8.0, d2 = 8.0, id = 0.0;
+	for (int z = -1; z <= 1; z++) for (int y = -1; y <= 1; y++) for (int xx = -1; xx <= 1; xx++) {
+		vec3 g = vec3(float(xx), float(y), float(z));
+		vec3 o = vec3(hash3(i + g), hash3(i + g + 19.1), hash3(i + g + 47.7)) * 0.8 + 0.1;
+		float d = length(g + o - f);
+		if (d < d1) { d2 = d1; d1 = d; id = hash3(i + g + 3.3); } else if (d < d2) { d2 = d; }
+	}
+	return vec3(d1, d2 - d1, id);
+}
 float smin(float a, float b, float k) { float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0); return mix(b, a, h) - k * h * (1.0 - h); }
 float sdEll(vec3 p, vec3 r) { float k0 = length(p / r); float k1 = length(p / (r * r)); return k0 * (k0 - 1.0) / max(k1, 1e-4); }
 float sdRC(vec3 p, vec3 a, vec3 b, float r1, float r2) {
@@ -55,22 +67,29 @@ float sdRC(vec3 p, vec3 a, vec3 b, float r1, float r2) {
 }
 vec3 bez(vec3 a, vec3 b, vec3 c, vec3 d, float t) { vec3 ab = mix(a, b, t), bc = mix(b, c, t), cd = mix(c, d, t); return mix(mix(ab, bc, t), mix(bc, cd, t), t); }
 
-// 头：局部坐标 q（x 侧、y 上、z 朝前 = 吻部方向），单位 = 头长约 1.2
+// 头：局部坐标 q（x 侧、y 上、z 朝前 = 吻部方向），单位 = 头长约 1.3。
+// 第三版（用户 2026-11-10：要帅一点）：窄长的楔形吻、刀锋一样的眉骨、往后掠的长角和腮鳍，棱角干脆（smin 很小）
 float head(vec3 q, float open) {
 	vec3 qs = vec3(abs(q.x), q.y, q.z);
-	float d = sdEll(q - vec3(0.0, 0.02, 0.18), vec3(0.4, 0.3, 0.5));                     // 头骨
-	d = smin(d, sdRC(q * vec3(1.0, 1.25, 1.0), vec3(0.0, 0.02, 0.35), vec3(0.0, -0.02, 1.15), 0.27, 0.12), 0.12);   // 上吻（扁）
-	float a = open * 0.55;
-	vec3 jq = q - vec3(0.0, -0.08, 0.05);
-	jq = vec3(jq.x, jq.y * cos(a) + jq.z * sin(a), -jq.y * sin(a) + jq.z * cos(a));                // 下颌绕铰链往下张
-	d = smin(d, sdRC(jq * vec3(1.0, 1.4, 1.0), vec3(0.0, -0.1, 0.0), vec3(0.0, -0.12, 0.95), 0.22, 0.09), 0.08);
-	d = smin(d, sdEll(qs - vec3(0.22, 0.2, 0.42), vec3(0.11, 0.07, 0.32)), 0.06);       // 眉骨
-	d = smin(d, sdRC(qs, vec3(0.2, 0.22, 0.05), vec3(0.42, 0.58, -0.45), 0.08, 0.018), 0.07);     // 角
-	d = smin(d, sdRC(qs, vec3(0.28, 0.05, -0.05), vec3(0.5, 0.0, -0.4), 0.06, 0.015), 0.06);      // 腮边的骨刺
-	// 张嘴：口腔挖空
+	float d = sdEll(q - vec3(0.0, 0.03, 0.12), vec3(0.3, 0.23, 0.5));                    // 头骨（窄长）
+	d = smin(d, sdRC(q * vec3(1.0, 1.7, 1.0), vec3(0.0, 0.04, 0.3), vec3(0.0, 0.0, 1.32), 0.22, 0.05), 0.06);   // 上吻：扁的楔形
+	d = smin(d, sdEll(qs - vec3(0.15, 0.15, 0.36), vec3(0.075, 0.05, 0.27)), 0.04);     // 眉骨：一道刀锋似的棱，收在眼睛上方
+	float a = open * 0.6;
+	vec3 jq = q - vec3(0.0, -0.06, 0.02);
+	jq = vec3(jq.x, jq.y * cos(a) + jq.z * sin(a), -jq.y * sin(a) + jq.z * cos(a));
+	d = smin(d, sdRC(jq * vec3(1.0, 1.8, 1.0), vec3(0.0, -0.08, 0.0), vec3(0.0, -0.05, 1.15), 0.17, 0.04), 0.04);   // 下颌：细
+	d = smin(d, sdRC(qs, vec3(0.14, 0.18, 0.05), vec3(0.3, 0.45, -1.0), 0.075, 0.008), 0.04);    // 主角：往后掠的长角
+	d = smin(d, sdRC(qs, vec3(0.22, 0.02, -0.02), vec3(0.42, -0.06, -0.62), 0.05, 0.006), 0.04); // 下角
+	d = smin(d, sdEll(qs - vec3(0.25, 0.02, -0.25), vec3(0.02, 0.16, 0.3)), 0.03);      // 腮鳍（薄片）
+	d = smin(d, sdRC(q, vec3(0.0, 0.24, 0.0), vec3(0.0, 0.36, -0.55), 0.05, 0.01), 0.04);        // 头顶中线的棘
+	d = max(d, -sdEll(qs - vec3(0.06, 0.07, 1.25), vec3(0.025, 0.02, 0.05)));          // 鼻孔
 	if (open > 0.02) {
-		float mouth = sdEll(q - vec3(0.0, -0.1 - open * 0.15, 0.6), vec3(0.18, 0.06 + open * 0.16, 0.45));
+		float mouth = sdEll(q - vec3(0.0, -0.08 - open * 0.15, 0.62), vec3(0.13, 0.05 + open * 0.15, 0.5));
 		d = max(d, -mouth);
+		for (int k = 0; k < 3; k++) {
+			float z = 1.08 - float(k) * 0.2;
+			d = min(d, sdRC(qs, vec3(0.09 - float(k) * 0.005, -0.05, z), vec3(0.085, -0.05 - 0.1 * open - 0.035, z - 0.02), 0.02, 0.003));
+		}
 	}
 	return d;
 }
@@ -94,13 +113,19 @@ float serpent(int i, vec3 p, out float part) {
 		float t = float(k) / 10.0;
 		vec3 cur = bez(base_p[i], ctrl_p[i], ctrl2_p[i], neckTop, t);
 		float t0 = float(k - 1) / 10.0;
-		float r0 = mix(0.62, 0.24, pow(t0, 0.75)) * sc, r1 = mix(0.62, 0.24, pow(t, 0.75)) * sc;
+		float r0 = mix(0.5, 0.19, pow(t0, 0.7)) * sc, r1 = mix(0.5, 0.19, pow(t, 0.7)) * sc;
 		d = min(d, sdRC(p, prev, cur, r0, r1));
+		if (k >= 2 && k <= 9) {
+			vec3 tg = normalize(cur - prev);
+			vec3 out_ = normalize(cross(tg, vec3(0.0, 0.0, 1.0))) * sign(-head_f[i].x + 0.001);   // 背脊：朝背离敌人的那一侧
+			vec3 root = cur + out_ * r1 * 0.85;
+			d = smin(d, sdRC(p, root, root + (out_ * 0.32 - tg * 0.18) * sc * mix(1.0, 0.55, t), 0.07 * sc, 0.008 * sc), 0.05 * sc);
+		}
 		prev = cur;
 	}
 	float h = head(toHead(i, p), jaw[i]) * sc;
 	if (h < d) part = 1.0;
-	return smin(d, h, 0.18 * sc);
+	return smin(d, h, 0.1 * sc);
 }
 
 float map(vec3 p, out int id, out float part) {
@@ -140,30 +165,47 @@ void fragment() {
 		vec3 n = normal_at(p, 0.0015 * t);
 		float sc = head_s[id];
 		vec3 lp = part > 0.5 ? toHead(id, p) : p / sc;
-		// 鳞：表面的细微起伏（法线扰动，不画网格）
-		vec3 sp = lp * (part > 0.5 ? 9.0 : 5.5);
-		vec3 bump = vec3(vnoise(sp), vnoise(sp + 3.7), vnoise(sp + 7.3)) - 0.5;
-		float cell = vnoise(sp * 1.7 + 11.0);
-		n = normalize(n + bump * 0.45);
+		// 鳞：一片片鳞甲（细胞噪声：片与片之间一道暗缝、每片中间微微隆起、颜色各不相同）+ 细微起伏
+		vec3 sp = lp * (part > 0.5 ? 17.0 : 11.0) * vec3(1.0, 1.35, 1.0);
+		vec3 vo = voro(sp);
+		float groove = smoothstep(0.0, 0.18, vo.y);
+		float dome = 1.0 - vo.x;
+		vec3 bump = vec3(vnoise(sp * 2.0), vnoise(sp * 2.0 + 3.7), vnoise(sp * 2.0 + 7.3)) - 0.5;
+		n = normalize(n + bump * 0.25 + (normalize(n + vec3(hash3(floor(sp)), hash3(floor(sp) + 5.0), hash3(floor(sp) + 9.0)) - 0.5) - n) * 0.12 * dome);
+		float cell = vo.z;
+		// 腹甲：朝下、朝镜头的那一面是一道道横的浅色宽鳞
+		float belly = part > 0.5 ? smoothstep(-0.1, -0.25, lp.y) * smoothstep(0.3, 0.9, lp.z) : smoothstep(0.1, -0.5, n.y) * smoothstep(-0.2, -0.7, n.z);
+		float band = smoothstep(0.0, 0.15, abs(fract(p.y / (sc * 0.22)) - 0.5) * 2.0);
 		float fres = 1.0 - abs(dot(n, rd));
-		vec3 Lb = normalize(vec3(0.25, 0.45, 1.0));               // 日冕在身后
+		vec3 Lb = normalize(vec3(0.55, 0.45, 1.0));               // 日冕在身后偏右上
 		vec3 Lf = normalize(vec3(-0.45, 0.8, -0.4));              // 微弱的前上方补光
 		vec3 Ll = normalize(vec3(-0.7, 0.9, -0.35));              // 雷光
 		float ao = clamp(0.35 + mapd(p + n * 0.25 * sc) / (0.25 * sc) * 0.65, 0.0, 1.0);
 		float back = pow(fres, 2.5) * clamp(dot(n, Lb) * 0.6 + 0.55, 0.0, 1.0);
 		float wrap = clamp((dot(n, Lf) + 0.4) / 1.4, 0.0, 1.0);
 		float ltn = clamp((dot(n, Ll) + 0.2) / 1.2, 0.0, 1.0);
-		vec3 albedo = mix(vec3(0.07, 0.012, 0.02), vec3(0.2, 0.035, 0.045), cell);
-		float sheen = pow(clamp(dot(reflect(rd, n), Lf), 0.0, 1.0), 6.0) * smoothstep(0.4, 0.8, cell);
-		col = albedo * (0.6 + 1.8 * wrap) * ao + vec3(0.55, 0.1, 0.1) * sheen * 0.35 * ao
+		vec3 albedo = mix(vec3(0.035, 0.008, 0.014), vec3(0.075, 0.014, 0.022), cell) * mix(0.62, 1.0, groove) * (0.9 + 0.2 * dome);
+		albedo = mix(albedo, vec3(0.3, 0.03, 0.05) * mix(0.55, 1.0, band), belly * 0.9);
+		// 漆黑的鳞带一层清漆般的光泽：前上方的光在每片鳞上落一点亮（被鳞缝打碎，不是一整片塑料高光），日冕在边上拉出一道红亮的反光
+		vec3 rf = reflect(rd, n);
+		float sheen = pow(clamp(dot(rf, Lf), 0.0, 1.0), 14.0) * groove * (0.6 + 0.6 * dome);
+		float edge = pow(clamp(dot(rf, Lb), 0.0, 1.0), 8.0) * groove;
+		col = albedo * (0.7 + 1.6 * wrap) * ao + vec3(1.0, 0.45, 0.42) * sheen * 0.55 * ao + vec3(1.0, 0.18, 0.14) * edge * 0.9
 			+ vec3(0.95, 0.16, 0.12) * back * (0.75 + 0.5 * cell) * mix(0.6, 1.0, ao)
 			+ vec3(0.85, 0.82, 1.0) * ltn * lightning * (0.25 + 0.5 * cell) * ao;
 		// 眼：两道发光的竖瞳；张嘴：口腔里的暗红光
 		if (part > 0.5) {
 			vec3 q = lp; q.x = abs(q.x);
-			float ed = length((q - vec3(0.24, 0.13, 0.62)) * vec3(1.6, 0.55, 1.0));
-			col += vec3(1.0, 0.18, 0.12) * exp(-ed / 0.035) * (1.5 + 2.0 * eye[id]);
-			col += vec3(1.0, 0.7, 0.55) * exp(-ed / 0.012) * (0.6 + eye[id]);
+			float ed = length((q - vec3(0.17, 0.11, 0.55)) * vec3(1.6, 0.55, 1.0));
+			// 眼：琥珀金的眼，中间一道细竖瞳（不是发红光的凶光）
+			float eyeBall = exp(-pow(length((q - vec3(0.17, 0.11, 0.55)) * vec3(1.0, 2.2, 0.55)) / 0.06, 4.0));     // 细长上挑的眼
+			float pupil = exp(-pow(abs(q.z - 0.55) / 0.01, 2.0)) * eyeBall;
+			col = mix(col, vec3(1.0, 0.7, 0.25) * (0.9 + 0.8 * eye[id]), eyeBall * (1.0 - pupil));
+			col = mix(col, vec3(0.03, 0.0, 0.0), pupil * 0.9);
+			col += vec3(1.0, 0.6, 0.2) * exp(-ed / 0.05) * 0.25;
+			// 嘴角到下颌的一道唇线（暗缝）
+			float lip = exp(-pow((q.y + 0.055) / 0.01, 2.0)) * smoothstep(0.2, 0.5, q.z) * smoothstep(1.3, 1.05, q.z) * step(0.1, q.x);
+			col *= 1.0 - lip * 0.6;
 			float mouthGlow = jaw[id] * exp(-length((lp - vec3(0.0, -0.18, 0.55)) * vec3(1.2, 2.0, 0.7)) * 3.5);
 			col += vec3(1.0, 0.15, 0.1) * mouthGlow * 1.6;
 		}
@@ -208,7 +250,7 @@ void fragment() {
 	vec2 uv = UV;
 	vec2 d = (uv - sun) * vec2(aspect, 1.0);
 	float r = length(d), ang = atan(d.y, d.x);
-	const float R = 0.075;
+	const float R = 0.052;
 	// 底色：整屏压暗偏暗红（盖在战斗背景上，不是不透明的）
 	vec3 col = mix(vec3(0.16, 0.02, 0.04), vec3(0.07, 0.0, 0.02), uv.y);
 	float a = 0.4;
@@ -218,7 +260,7 @@ void fragment() {
 	float cloud = smoothstep(0.45, 0.75, c1 * 0.7 + c2 * 0.45) * (1.0 - smoothstep(0.55, 0.8, uv.y));
 	float near = exp(-max(r - R, 0.0) / 0.35);
 	// 日冕
-	float corona = exp(-max(r - R, 0.0) / 0.018) * step(R, r);
+	float corona = exp(-max(r - R, 0.0) / 0.014) * step(R, r) * 0.8;
 	float halo = exp(-max(r - R, 0.0) / 0.12);
 	float rays = pow(noise(vec2(ang * 9.0, clock * 0.05)), 3.0) * exp(-max(r - R, 0.0) / 0.45) * (1.0 - cloud * 0.8) * smoothstep(ground - 0.02, ground - 0.25, uv.y);
 	vec3 light = vec3(1.0, 0.85, 0.75) * corona * 1.4 + vec3(0.9, 0.08, 0.06) * (halo * 0.9 + rays * 0.55);
@@ -230,9 +272,14 @@ void fragment() {
 	col = mix(col, cc, cloud * 0.85);
 	a = max(a, cloud * 0.8);
 	// 黑日
-	float disk = 1.0 - smoothstep(R - 0.003, R + 0.002, r);
-	col = mix(col, vec3(0.0), disk);
+	float disk = 1.0 - smoothstep(R - 0.002, R + 0.0015, r);
+	vec3 face = mix(vec3(0.0), vec3(0.16, 0.01, 0.02), smoothstep(R * 0.4, R, r));       // 月面边缘被日冕透出一点暗红，不是一块平涂的黑
+	col = mix(col, face, disk);
 	a = max(a, disk);
+	float rim = exp(-pow((r - R) / 0.0035, 2.0));                                          // 贴着黑日一圈白热的细环
+	float bead = pow(max(0.0, cos(ang - 0.7)), 24.0) * exp(-pow((r - R) / 0.008, 2.0));     // 「钻石环」：一处更亮的光点
+	float streamer = pow(noise(vec2(ang * 5.0, 1.0 + clock * 0.03)), 2.0) * exp(-max(r - R, 0.0) / 0.06) * step(R, r);
+	col += vec3(1.0, 0.92, 0.88) * (rim * 1.2 + bead * 2.0) + vec3(1.0, 0.3, 0.2) * streamer * 0.5;
 	// 贴地的薄红雾：没有边界，往上淡掉
 	float gy = (uv.y - ground + 0.25) / 0.35;
 	float mist = smoothstep(0.0, 1.0, gy) * (0.5 + 0.5 * fbm(vec2(uv.x * 3.0 - clock * 0.04, uv.y * 6.0)));
@@ -290,7 +337,7 @@ void fragment() {
 		_bodyM.SetShaderParameter("aspect", aspect);
 		_bodyM.SetShaderParameter("focal", Focal);
 		Vector2 feetS = Fx.ScreenPoint(back, feet);
-		_skyM.SetShaderParameter("sun", new Vector2(feetS.X / scr.X + 0.03f, 0.17f));
+		_skyM.SetShaderParameter("sun", new Vector2(feetS.X / scr.X + 0.36f, 0.15f));   // 用户 2026-11-10：日蚀别被蛇头挡住 → 放到 Joker 和敌人之间的天空
 		_skyM.SetShaderParameter("ground", feetS.Y / scr.Y);
 		float tallS = tall * back.GetCanvasTransform().Scale.Y;
 		for (int i = 0; i < Heads; i++)
@@ -299,7 +346,7 @@ void fragment() {
 			Vector3 head = World(feetS + new Vector2(x, y) * tallS, z, scr);
 			Vector3 baseP = World(feetS + new Vector2(x * 0.35f, 0.35f) * tallS, z + 0.5f, scr);
 			float tallW = tallS / (scr.Y * 0.5f) * z / Focal;
-			_scale[i] = 0.34f * tallW * size;
+			_scale[i] = 0.36f * tallW * size;
 			_restHead[i] = head;
 			_base[i] = baseP;
 			_eye[i] = 0f;
@@ -333,7 +380,7 @@ void fragment() {
 			_ctrl[i] = _base[i] + span * 0.33f + new Vector3(bendA + side * 0.8f * s, 0f, 1.5f * s);
 			_ctrl2[i] = _base[i] + span * 0.72f + new Vector3(-bendA * 0.8f - 0.9f * s, 0.3f * s, -0.6f * s);
 			float look = Mathf.Sin(time * 0.4f + i * 1.3f) * 0.2f;
-			_fwd[i] = new Vector3(0.7f + look, -0.42f + 0.1f * Mathf.Sin(time * 0.7f + i), -0.6f).Normalized();
+			_fwd[i] = new Vector3(0.8f + look, -0.5f + 0.08f * Mathf.Sin(time * 0.7f + i), -0.45f).Normalized();
 			Vector3 right = _fwd[i].Cross(Vector3.Up).Normalized();
 			_up[i] = right.Cross(_fwd[i]).Normalized();
 		}
