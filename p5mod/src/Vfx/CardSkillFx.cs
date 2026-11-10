@@ -39,6 +39,7 @@ public static class CardSkillFx
 	static CardSkillFx()
 	{
 		CardSkillFx2.Register(Cards);
+		CardSkillFx3.Register(Cards);
 	}
 
 	private static readonly Color Hot = new(1f, 0.96f, 0.94f), Red = new(1f, 0.2f, 0.27f), Crimson = new(0.85f, 0.04f, 0.13f),

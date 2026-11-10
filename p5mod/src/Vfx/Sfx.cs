@@ -92,6 +92,12 @@ public static class Sfx
 		FlankCross = "flank_cross",         // 夹击：两刃交叉的双「唰」+ 一声干脆的合
 		MalaisePress = "malaise_press",     // 萎靡：低沉的压下来 + 闷响 + 被抽走的气
 		SweepLow = "sweep_low",             // 扫腿：贴地的一扫 + 尘土
+		// 第三批（Vfx/CardSkillFx3.cs；tools/p5/sfx/synth_card_fx3.py）
+		RetainLock = "retain_lock",   // 独门技术：保留扣上的一下很轻的「嗒」
+		SmokePuff = "smoke_puff",     // 逃脱计划：烟弹「噗」
+		CardCut = "card_cut",         // 生存者：一刀斩开牌的「唰」
+		GambleSpin = "gamble_spin",   // 计算下注：轮盘越转越慢的哒哒声 + 停住
+		Heartbeat = "heartbeat",      // 肾上腺素：「咚、咚」两下闷的心跳
 		EnergyPull = "energy_pull",     // 能量第二版：0.28s 吸气 + 一声软的闷响（没有叮）
 		BuffUp = "buff_up",             // 增益：往上盘的气音 + 到顶一声清亮的「叮」
 		BuffDark = "buff_dark",         // 咒怨 / 暗影类增益：低沉的上行 + 闷响

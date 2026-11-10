@@ -26,7 +26,21 @@ public partial class Preview : Node2D
 	private double _clock;
 
 
-	private static void Cards1(Preview p, string[]? only)
+	private static void Cards1(Preview p, string[]? only) => RunCards(p, only, new (string, string, double, double)[]
+	{
+		("Footwork", "cast_guard", 0.08, 1.2), ("Accuracy", "cast_glove", 0.25, 1.3), ("Envenom", "cast_glove", 0.25, 1.5),
+		("NoxiousFumes", "cast_glove", 0.25, 2.0), ("Tracking", "cast_glove", 0.25, 1.4), ("Burst", "cast_glove", 0.25, 1.4),
+		("SerpentForm", "cast_big", 0.4, 2.2), ("WraithForm", "cast_big", 0.4, 2.0),
+	});
+
+	private static void Cards2(Preview p, string[]? only) => RunCards(p, only, new (string, string, double, double)[]
+	{
+		("Shadowmeld", "cast_glove", 0.25, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Afterimage", "cast_glove", 0.25, 1.5),
+		("ShadowStep", "cast_glove", 0.25, 1.7), ("BulletTime", "aim_in", 0.1, 1.8), ("Flanking", "cast_glove", 0.25, 1.3),
+		("Malaise", "cast", 0.4, 1.8), ("LegSweep", "cast_guard", 0.08, 1.4),
+	});
+
+	private static void RunCards(Preview p, string[]? only, (string Card, string Anim, double Lead, double Gap)[] seq)
 	{
 		float tall = (JokerFeet - Pose(815f, 120f)).Length();
 		SkillCtx Ctx() => new(p._front, p._back, JokerFeet, Pose(1010f, 330f), Pose(1010f, 410f), Pose(1010f, 215f), tall, 1f,
@@ -35,12 +49,10 @@ public partial class Preview : Node2D
 				new(new Vector2(Enemy2.X, 830f), Enemy2 + new Vector2(0f, -170f), 230f, c => p._enemies[Enemy2].Modulate = c),
 				new(new Vector2(Enemy.X, 830f), Enemy + new Vector2(0f, -170f), 260f, c => p._enemies[Enemy].Modulate = c),
 				new(new Vector2(Enemy3.X, 830f), Enemy3 + new Vector2(0f, -150f), 230f, c => p._enemies[Enemy3].Modulate = c),
-			}, new SkillFx.Victim(new Vector2(Enemy.X, 830f), Enemy + new Vector2(0f, -170f), 260f, c => p._enemies[Enemy].Modulate = c));
-		(string Card, string Anim, double Lead, double Gap)[] seq =
+			}, new SkillFx.Victim(new Vector2(Enemy.X, 830f), Enemy + new Vector2(0f, -170f), 260f, c => p._enemies[Enemy].Modulate = c))
 		{
-			("Footwork", "cast_guard", 0.08, 1.2), ("Accuracy", "cast_glove", 0.25, 1.3), ("Envenom", "cast_glove", 0.25, 1.5),
-			("NoxiousFumes", "cast_glove", 0.25, 2.0), ("Tracking", "cast_glove", 0.25, 1.4), ("Burst", "cast_glove", 0.25, 1.4),
-			("SerpentForm", "cast_big", 0.4, 2.2), ("WraithForm", "cast_big", 0.4, 2.0),
+			CopyBody = BodyAura.CloneBody,
+			Region = new Rect2(JokerFeet + new Vector2(-tall * 0.75f, -tall * 1.15f), new Vector2(tall * 1.5f, tall * 1.3f)),
 		};
 		double at = 0.3;
 		foreach (var (card, anim, lead, gap) in seq)
@@ -695,6 +707,7 @@ public partial class Preview : Node2D
 		},
 		["cards1"] = p => Cards1(p, null),
 		["cards1b"] = p => Cards1(p, new[] { "Envenom", "NoxiousFumes", "SerpentForm" }),
+		["cards2"] = p => Cards2(p, null),
 		["buffs"] = p =>
 		{
 			float tall = (JokerFeet - Pose(815f, 120f)).Length();

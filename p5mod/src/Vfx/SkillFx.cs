@@ -413,7 +413,7 @@ void fragment() {
 	COLOR = vec4(col * alpha, aa * alpha);
 }" };
 
-	private sealed class CardNode
+	internal sealed class CardNode
 	{
 		public Node2D Root = null!;
 		public ColorRect Rect = null!;
@@ -454,6 +454,23 @@ void fragment() {
 		c.Trail.GlobalTransform = Transform2D.Identity;
 		c.Trail.Points = c.Path.ToArray();
 	}
+
+	/// <summary>一张光牌的公开把手（每张牌的特效自己编排牌的轨迹用，CardSkillFx3）。</summary>
+	public sealed class LightCard
+	{
+		internal CardNode N = null!;
+		public Node2D Root => N.Root;
+		public void Place(Vector2 pos, float tilt, float flip, float scale = 1f) => Pose(N, pos, tilt, flip, scale);
+		public void Burn(float v) => Set(N.Rect, "burn", v);
+		public void Sheen(float v) => Set(N.Rect, "sheen", v);
+		public void Alpha(float v) => Set(N.Rect, "alpha", v);
+	}
+
+	/// <summary>新建一张光牌（size = 牌宽的一半左右，抽牌用 42 × unit），life 秒后自动删掉。</summary>
+	public static LightCard NewCard(Control layer, Vector2 at, float size, double life) => new() { N = MakeCard(layer, at, size, life) };
+
+	/// <summary>手牌区（特效层坐标）。</summary>
+	public static Vector2 HandArea(Control layer) => HandUi(layer);
 
 	/// <summary>手牌区在特效层坐标里的位置（屏幕底边中间偏下）。</summary>
 	private static Vector2 HandUi(Control layer)

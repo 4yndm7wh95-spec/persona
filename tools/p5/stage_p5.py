@@ -122,6 +122,7 @@ SFX = {
     "energy_pull": ROOT / "art/sfx_p5/energy_pull.ogg",
     **{n: ROOT / f"art/sfx_p5/{n}.ogg" for n in ('footwork_steps', 'reticle_lock', 'track_scan', 'venom_coat', 'fumes_roll', 'burst_echo', 'serpent_rise', 'wraith_form')},   # per-card skill FX batch 1 (synth_card_fx1.py)
     **{n: ROOT / f"art/sfx_p5/{n}.ogg" for n in ('shadowmeld_sink', 'blur_dash', 'afterimage_orbit', 'shadow_step_cut', 'bullet_time_stop', 'flank_cross', 'malaise_press', 'sweep_low')},   # per-card skill FX batch 2 (synth_card_fx2.py)
+    **{n: ROOT / f"art/sfx_p5/{n}.ogg" for n in ('retain_lock', 'smoke_puff', 'card_cut', 'gamble_spin', 'heartbeat')},   # per-card skill FX batch 3 (synth_card_fx3.py)
     "card_draw": ROOT / "mod/pck_stage/p3makoto/sfx/card_draw.ogg",  # draw effect: the P3 mod's card draw (user 2026-11-10)
     "shatter_big": ROOT / "art/sfx_p5/shatter_big.ogg",                # eye cut-in shatter (user 2026-11-03)
     "curse_soft": ROOT / "art/sfx_p5/curse_soft.ogg",
