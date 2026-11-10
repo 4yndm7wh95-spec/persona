@@ -65,12 +65,16 @@ def save(name, buf, ogg=True):
     print(name, round(len(y) / RATE, 3))
 
 
+# User 2026-11-10: the shiv-card gunshot should be louder. The play volume in code is already at its ceiling (Sfx.DemoMixVolume),
+# so the game files themselves are mixed hotter: gun + casing tick x SHOT_GAIN through the same soft clip (peak about -2.5 dB
+# instead of -7.9). The hit files and the volley check keep the demo's own gains.
+SHOT_GAIN = 1.8
 TIMES = [0.652, 0.824, 0.995, 1.166, 1.388]
 CLIPS = ["gun_02", "gun_07", "gun_02", "gun_10", "gun_00"]
 for i, clip in enumerate(CLIPS):
     b = np.zeros((RATE, 2))
-    cue(b, clip, 0.0, 0.42 if i < 4 else 0.56, -0.36, 1.00 + 0.022 * (i % 3), 0.46)
-    tone(b, 0.21, 0.042, 1750 + i * 91, 53.0, -0.45)
+    cue(b, clip, 0.0, (0.42 if i < 4 else 0.56) * SHOT_GAIN, -0.36, 1.00 + 0.022 * (i % 3), 0.46)
+    tone(b, 0.21, 0.042 * SHOT_GAIN, 1750 + i * 91, 53.0, -0.45)
     save(f"gun_shot_{i + 1}" if i < 4 else "gun_shot_final", b)
 b = np.zeros((RATE, 2)); cue(b, "damage_enemy", 0.0, 0.19, 0.43, 1.20, 0.19); save("gun_hit", b)
 b = np.zeros((RATE * 2, 2)); cue(b, "damage_enemy", 0.004, 0.33, 0.43, 1.20, 0.19)
