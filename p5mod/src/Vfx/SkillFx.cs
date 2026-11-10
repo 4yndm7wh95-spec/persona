@@ -1036,7 +1036,7 @@ shader_type canvas_item;
 uniform vec4 tint : source_color = vec4(0.9, 0.04, 0.12, 1.0);
 uniform float alpha = 1.0;
 void fragment() {
-	float a = smoothstep(0.5, 0.9, texture(TEXTURE, UV).a);
+	float a = smoothstep(0.45, 0.6, texture(TEXTURE, UV).a);
 	COLOR = vec4(tint.rgb, a * alpha);
 }" };
 
@@ -1066,7 +1066,7 @@ void fragment() {
 			return;
 		}
 		made.Clone.Transform = new Transform2D(0f, -region.Position) * made.Body;
-		const float slide = 0.16f, hold = 0.14f, fade = 0.3f, life = slide + hold + fade;
+		const float slide = 0.08f, hold = 0.45f, fade = 0.3f, life = slide + hold + fade;
 		float unit = Unit(back);
 		Node2D root = Fx.Root(back, region.Position, "P5Ghosts", life + 0.1);
 		Fx.FreeAfter(view, life + 0.15);
@@ -1081,14 +1081,16 @@ void fragment() {
 		{
 			int k = i;
 			ShaderMaterial m = new() { Shader = Silhouette };
-			m.SetShaderParameter("tint", new Color(0.9f, 0.04f, 0.12f).Lerp(new Color(0.45f, 0f, 0.06f), k / (float)Mathf.Max(1, count)));
+			// 用户 2026-11-10 给的参考：实心纯红的剪影紧贴在身后，只往一侧（后下方）错开几个像素，边缘干脆、不模糊
+			m.SetShaderParameter("tint", k == 0 ? new Color(0.95f, 0.04f, 0.1f) : new Color(0.6f, 0f, 0.06f));
 			Sprite2D sp = new() { Texture = view.GetTexture(), Centered = false, Material = m };
 			root.AddChild(sp);
-			float dist = (16f + 26f * k) * unit * -facing, a0 = 0.9f - 0.3f * k;
+			float dist = (7f + 7f * k) * unit * -facing, drop = (2.5f + 2f * k) * unit, a0 = k == 0 ? 1f : 0.85f;
 			Fx.Animate(sp, 0, life, t =>
 			{
 				float s = t * life;
-				sp.Position = new Vector2(dist * Ease5.OutQuint(Mathf.Clamp(s / slide, 0f, 1f)), 0f);
+				float e = Ease5.OutQuint(Mathf.Clamp(s / slide, 0f, 1f));
+				sp.Position = new Vector2(dist * e, drop * e);
 				m.SetShaderParameter("alpha", a0 * Mathf.Min(1f, s / 0.04f) * (1f - Mathf.Clamp((s - slide - hold) / fade, 0f, 1f)));
 			});
 		}

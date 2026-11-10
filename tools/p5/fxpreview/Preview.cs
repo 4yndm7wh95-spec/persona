@@ -708,6 +708,7 @@ public partial class Preview : Node2D
 		["cards1"] = p => Cards1(p, null),
 		["cards1b"] = p => Cards1(p, new[] { "Envenom", "NoxiousFumes", "SerpentForm" }),
 		["cards2"] = p => Cards2(p, null),
+		["ghost"] = p => Cards2(p, new[] { "Blur" }),
 		["orochi"] = p =>
 		{
 			float tall = (JokerFeet - Pose(815f, 120f)).Length();
