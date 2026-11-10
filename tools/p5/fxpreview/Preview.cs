@@ -455,22 +455,6 @@ public partial class Preview : Node2D
 				});
 			}
 		},
-		// 致命毒药 ×2、蛇咬 ×2（用户 2026-11-10）：亚森出手那一刻上毒 → 一滴咒怨 + 脉络 / 咒怨之颚 + 脉络
-		["venom"] = p =>
-		{
-			Persona.Spec spec = Persona.ArseneSpec with { Linger = 1.1f };   // 同 Aim.PersonaFor("DeadlyPoison")
-			float hit = 0.04f + spec.AttackAt;
-			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
-			void play(double t0, Vector2 e, VenomFx.Kind k, int amount)
-			{
-				p.At(t0, () => { p._joker?.Play("cast"); Sfx.Play(Sfx.PersonaFlame, 0.8f); Persona.Show(spec, p._back, JokerFeet, tall); VenomFx.Arm(k); });
-				p.Poison(t0 + hit, e, amount);
-			}
-			play(0.3, Enemy, VenomFx.Kind.Drop, 5);
-			play(2.3, Enemy2, VenomFx.Kind.Bite, 7);
-			play(4.6, Enemy3, VenomFx.Kind.Drop, 5);
-			play(6.3, Enemy, VenomFx.Kind.Bite, 7);
-		},
 		// 原版火焰 / 毒 / 烟换咒怨 LUT 逐个看
 		["curse_test"] = p =>
 		{

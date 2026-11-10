@@ -115,8 +115,6 @@ SFX = {
     "punch_taiman": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0046.ogg",
     "crash_object": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0176.ogg",
     "continuas_damage": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0020.ogg",
-    "venom_drop": ROOT / "art/sfx_p5/venom_drop.ogg",          # Deadly Poison drop + heartbeat (synthesized: tools/p5/sfx/synth_venom.py)
-    "venom_bite": ROOT / "art/sfx_p5/venom_bite.ogg",          # Snakebite jaws: hiss in, snap, hiss out, heartbeat
     "sub_boom": ROOT / "art/sfx_p5/sub_boom.ogg",
     "shatter_big": ROOT / "art/sfx_p5/shatter_big.ogg",                # eye cut-in shatter (user 2026-11-03)
     "curse_soft": ROOT / "art/sfx_p5/curse_soft.ogg",

@@ -322,13 +322,6 @@ public static class GainBlockPatch
 	}
 }
 
-/// <summary>蛇咬：原版的獠牙贴图（VfxCmd.PlayOnCreatureCenter(target, "vfx/vfx_bite")）——Joker 的蛇咬换成咒怨之颚（VenomFx.Bite），原版的不放。</summary>
-[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Commands.VfxCmd), nameof(MegaCrit.Sts2.Core.Commands.VfxCmd.PlayOnCreatureCenter))]
-public static class VanillaBitePatch
-{
-	public static bool Prefix(string path) => !(path == "vfx/vfx_bite" && VenomFx.HidesVanillaBite);
-}
-
 /// <summary>原版致命毒药等出牌时在敌人身上放的毒雾（NPoisonImpactVfx）：Joker 出的牌不要，换成咒怨（CardFx.Eiha）。</summary>
 [HarmonyPatch(typeof(NPoisonImpactVfx), nameof(NPoisonImpactVfx.Create), typeof(Creature))]
 public static class PoisonImpactPatch
