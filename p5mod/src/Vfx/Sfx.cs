@@ -64,7 +64,20 @@ public static class Sfx
 		SinfulFire = "sinful_fire",      // 开枪（用户：不要普通手枪声）：倒吸 → 爆裂 → 超低频重击 → 失真冲击 → 金属余振 → 长尾和回声
 		GunHit = "gun_hit",             // 枪命中（演示混音：damage_enemy 升调 1.2、压低、偏右）
 		GunHitFinal = "gun_hit_final",  // 收尾那一发的命中：更响的命中 + sub_boom + 47Hz 低频
-		Crush = "crush";
+		Crush = "crush",
+		// 技能 / 能力牌特效（Vfx/SkillFx.cs，用户 2026-11-10；全部合成：tools/p5/sfx/synth_skill_fx.py）
+		CardFlick = "card_flick",       // 光牌弹出：干脆的纸牌一弹
+		CardBurn = "card_burn",         // 弃牌：一弹 + 烧掉的「嘶」和细碎噼啪
+		BulletLoad = "bullet_load",     // 装弹：一发子弹落回手里的金属轻响
+		BuffUp = "buff_up",             // 增益：往上盘的气音 + 到顶一声清亮的「叮」
+		BuffDark = "buff_dark",         // 咒怨 / 暗影类增益：低沉的上行 + 闷响
+		DebuffDown = "debuff_down",     // 减益：往下压的双音 + 落地闷响
+		EnergySurge = "energy_surge",   // 能量：吸气（0.28s）+ 清亮的一击
+		Wail = "wail",                  // 尖啸：带颤音的下滑嘶喊（压在 5kHz 以下，不刺耳）
+		StealthVeil = "stealth_veil",   // 潜行：往下收的风声 + 低气
+		TimeSlow = "time_slow",         // 子弹时间：越来越慢、越来越低的三下钟摆 + 像磁带停转的下滑音
+		HexGuard = "hex_guard",         // 蜂巢护盾：一串往上爬的玻璃轻响 + 低沉的「嗡」
+		ShadowMark = "shadow_mark";     // 夹击标记：两下合拢的轻响 + 锁定
 
 	/// <summary>
 	/// Joker 的枪声（用户 2026-11-09：要 Five Cards 演示开头连射里的最终听感）：tools/p5/sfx/five_cards_shots.py 按演示的 mix_audio.py

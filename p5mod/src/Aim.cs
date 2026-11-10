@@ -244,7 +244,7 @@ public static class Aim
 	/// 在 target 下面复制一份 Joker 的骨骼，同一个动作、同一时刻，之后接着播 then；返回复制品和本体此刻的全局变换
 	/// （轮廓蓝焰 BodyAura 把它画进离屏画面取剪影）。
 	/// </summary>
-	private static (Node2D, Transform2D)? CloneBody(NCreature joker, Node target, string then)
+	internal static (Node2D, Transform2D)? CloneBody(NCreature joker, Node target, string then)
 	{
 		if (joker.Visuals?.Body is not Node2D body || joker.Visuals.SpineBody?.TryGetAnimationState() is not MegaAnimationState src
 			|| body.Duplicate() is not Node2D clone)
@@ -737,7 +737,7 @@ public static class Aim
 		}
 	}
 
-	private static string? Current(MegaAnimationState state)
+	internal static string? Current(MegaAnimationState state)
 	{
 		try
 		{

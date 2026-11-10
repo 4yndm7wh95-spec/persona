@@ -161,6 +161,9 @@ public static class JokerFx
 				// 第四版：0.7 的精简咒怨（CardFx.CurseLight / Eiha）停用；施毒特效走 PoisonApplyPatch → PoisonFx
 				break;
 			}
+			default:
+				SkillPlay.OnPlay(card, joker, t, layer, room);       // 其余技能 / 能力牌（用户 2026-11-10）：按牌拼 SkillFx 的积木
+				break;
 		}
 	}
 
@@ -168,14 +171,25 @@ public static class JokerFx
 	private static readonly Vector2 GuardFist = new(885f, 310f), ShieldMid = new(1060f, 470f), ShieldTop = new(1060f, -170f), ShieldBottom = new(1060f, 1110f);
 
 	/// <summary>用牌获得格挡（GainBlockPatch）：身前张开光盾。</summary>
-	public static void OnBlock(NCreature joker)
+	private static ulong _lastGuardMs;
+
+	public static void OnBlock(NCreature joker, int amount = 5)
 	{
 		if (Joker.FxLayer() is not Control layer)
 		{
 			return;
 		}
-		float h = (Joker.PosePoint(joker, ShieldBottom) - Joker.PosePoint(joker, ShieldTop)).Length();
-		// 用户 2026-11-04：碎玻璃墙塑料感太强，要「用特效直接做」→ 重做之前只留动作和原版格挡音
-		_ = h;
+		// 用户 2026-11-08 指定照结城理 mod 的六边形蜂巢护盾（着色器版，Vfx/HexGuard.cs）；2026-11-10 接进游戏。
+		// 一张牌里连着几次获得格挡（比如带额外格挡的遗物）只立一次盾
+		ulong now = Time.GetTicksMsec();
+		if (now - _lastGuardMs < 350)
+		{
+			return;
+		}
+		_lastGuardMs = now;
+		Vector2 feet = Joker.PosePoint(joker, ReadyFx.Feet);
+		float tall = (feet - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length();
+		bool guarding = joker.Visuals?.SpineBody?.TryGetAnimationState() is { } st && Aim.Current(st) is "cast_guard" or "cast_guard_from_ready";
+		HexGuard.Play(layer, Joker.Chest(joker), tall, Joker.Facing(joker), amount, guarding ? Joker.PosePoint(joker, GuardFist) : null);
 	}
 }

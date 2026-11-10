@@ -316,7 +316,7 @@ public static class GainBlockPatch
 			if (amount > 0m && cardPlay != null && Joker.OwnsCard(cardPlay.Card) && creature.Player is { } p && Joker.Is(p)
 				&& NCombatRoom.Instance?.GetCreatureNode(creature) is NCreature node)
 			{
-				JokerFx.OnBlock(node);
+				JokerFx.OnBlock(node, (int)amount);
 			}
 		});
 	}
