@@ -172,9 +172,9 @@ void fragment() {
 	vec3 col = vec3(0.0);
 	float T = 1.0;
 	if (near_) {
-		float dt = 0.085 * scAvg;
+		float dt = 0.045 * scAvg;
 		t += fract(sin(dot(UV * 1000.0, vec2(12.9898, 78.233)) + clock) * 43758.5453) * dt;
-		for (int i = 0; i < 60; i++) {
+		for (int i = 0; i < 100; i++) {
 			vec3 pw = rd * t;
 			if (T < 0.03 || t > 40.0) break;
 			int id; float part;
@@ -182,7 +182,7 @@ void fragment() {
 			float sc = head_s[id];
 			float s = sdw / sc;
 			if (s > 0.55) { t += (s - 0.5) * sc; continue; }
-			float stepv = s > 0.1 ? 0.09 * sc : dt;
+			float stepv = s > 0.08 ? 0.07 * sc : dt;
 			vec3 flow = vec3(-0.25, 1.0, 0.15) * clock * 0.55;          // 雾往上、往后飘
 			vec3 lp = pw / sc;
 			float nz = fbm3(lp * 3.2 - flow * 2.0);
@@ -191,19 +191,25 @@ void fragment() {
 			float keep = smoothstep(-0.25, 0.9, fy);
 			// 外面的烟丝
 			float wn = fbm3(lp * vec3(1.8, 1.0, 1.8) - flow * 1.4);
-			float aura = smoothstep(0.5, 0.05, s) * smoothstep(0.5, 0.74, wn) * step(0.0, s) * keep;
+			float aura = smoothstep(0.4, 0.04, s) * smoothstep(0.6, 0.7, wn) * step(0.0, s) * keep;
 			if (aura > 0.001) {
 				float aa = 1.0 - exp(-aura * stepv / sc * 1.8);
 				col += T * (aa * vec3(0.03, 0.002, 0.008) + vec3(0.75, 0.06, 0.08) * aura * smoothstep(0.62, 0.85, wn) * stepv / sc * 3.0);
 				T *= 1.0 - aa;
 			}
-			float sd = s + (nz - 0.5) * 0.3;
-			float dens = smoothstep(0.06, -0.08, sd);
+			float fine = vnoise(lp * 11.0 - flow * 3.0);
+			float disp = part > 0.5 ? 0.13 : 0.22;                    // 头上的雾贴得更紧：角、吻、下颌的形看得出来
+			float sd = s + (nz - 0.5) * disp + (fine - 0.5) * 0.05;
+			float dens = smoothstep(0.02, -0.035, sd);
 			if (dens > 0.001) {
 				float inner = max(-sd, 0.0);
-				float shellGlow = exp(-inner * 9.0);
+				float shellGlow = exp(-inner * 16.0);
 				float flick = fbm3(lp * 2.2 - flow * 3.0);
 				vec3 emit = mix(vec3(0.55, 0.04, 0.07), vec3(1.0, 0.36, 0.26), smoothstep(0.45, 0.8, flick)) * shellGlow * (0.35 + 0.9 * smoothstep(0.35, 0.75, flick));
+				// 雾面的褶：表面附近一道道细亮的纹（同大手的咒纹），让雾有清楚的结构
+				float vn = fbm3(lp * 2.4 - flow * 0.8);
+				emit += vec3(1.0, 0.35, 0.28) * (1.0 - smoothstep(0.0, 0.03, abs(vn - 0.5))) * exp(-inner * 10.0) * 0.9;
+				emit += vec3(1.0, 0.55, 0.45) * exp(-abs(sd) / 0.012) * 0.35;
 				// 雷光：雾体里亮一下
 				emit += vec3(0.7, 0.55, 0.65) * lightning * shellGlow * 0.6;
 				float a = (1.0 - exp(-dens * stepv / sc * 3.6)) * keep;
@@ -227,10 +233,10 @@ void fragment() {
 			vec2 off = dv - back * along;
 			float trailN = vnoise(vec3(along * 3.0 - clock * 1.5, float(i * 2 + k), clock * 0.3));
 			float trail = exp(-dot(off, off) / pow(rs * (0.025 + 0.06 * along), 2.0)) * (1.0 - along / 0.6) * (0.4 + 0.6 * trailN) * step(0.0, dot(dv, back));
-			float core = exp(-dot(dv, dv) / pow(rs * 0.035, 2.0));
-			float halo = exp(-dot(dv, dv) / pow(rs * 0.12, 2.0));
+			float core = exp(-dot(dv, dv) / pow(rs * 0.022, 2.0));
+			float halo = exp(-dot(dv, dv) / pow(rs * 0.07, 2.0));
 			float pulse = 0.8 + 0.2 * sin(clock * 2.0 + float(i));
-			vec3 ec = vec3(1.0, 0.8, 0.45) * core * 0.9 + vec3(1.0, 0.32, 0.14) * (halo * 0.35 + trail * 0.35);
+			vec3 ec = vec3(1.0, 0.85, 0.55) * core * 1.3 + vec3(1.0, 0.32, 0.14) * (halo * 0.35 + trail * 0.35);
 			ec *= pulse * (0.8 + eye[i]) * (ez > 13.0 ? 0.6 : 1.0);
 			acc.rgb += ec * (1.0 - acc.a * 0.3);
 			acc.a = max(acc.a, clamp(core + halo * 0.3, 0.0, 1.0));
@@ -264,7 +270,7 @@ void fragment() {
 	vec2 uv = UV;
 	vec2 d = (uv - sun) * vec2(aspect, 1.0);
 	float r = length(d), ang = atan(d.y, d.x);
-	const float R = 0.052;
+	const float R = 0.095;
 	// 底色：整屏压暗偏暗红（盖在战斗背景上，不是不透明的）
 	vec3 col = mix(vec3(0.16, 0.02, 0.04), vec3(0.07, 0.0, 0.02), uv.y);
 	float a = 0.4;
@@ -275,11 +281,16 @@ void fragment() {
 	float near = exp(-max(r - R, 0.0) / 0.35);
 	// 日冕
 	float corona = exp(-max(r - R, 0.0) / 0.014) * step(R, r) * 0.8;
-	float halo = exp(-max(r - R, 0.0) / 0.12);
-	float rays = pow(noise(vec2(ang * 9.0, clock * 0.05)), 3.0) * exp(-max(r - R, 0.0) / 0.45) * (1.0 - cloud * 0.8) * smoothstep(ground - 0.02, ground - 0.25, uv.y);
+	float halo = exp(-max(r - R, 0.0) / 0.2);
+	float rays = pow(noise(vec2(ang * 9.0, clock * 0.05)), 3.0) * exp(-max(r - R, 0.0) / 0.7) * (1.0 - cloud * 0.8) * smoothstep(ground - 0.02, ground - 0.25, uv.y);
 	vec3 light = vec3(1.0, 0.85, 0.75) * corona * 1.4 + vec3(0.9, 0.08, 0.06) * (halo * 0.9 + rays * 0.55);
 	light *= 1.0 - cloud * 0.6;
 	col += light;
+	// 日冕的光洒满整个战场（用户：光影在中间断层）：从日蚀往下、往两边一大片暗红的泛光，地面被照出一大片暖红
+	float wash = exp(-r / 0.75);
+	col += vec3(0.5, 0.05, 0.06) * wash * 0.45;
+	float floorLit = smoothstep(ground - 0.15, ground + 0.05, uv.y) * exp(-pow((uv.x - sun.x) / 0.7, 2.0));
+	col += vec3(0.45, 0.05, 0.05) * floorLit * 0.3;
 	a = max(a, clamp(corona + halo * 0.4, 0.0, 1.0));
 	// 云体：暗，靠日冕和雷光照出边
 	vec3 cc = vec3(0.025, 0.0, 0.008) + vec3(0.6, 0.05, 0.05) * near * smoothstep(0.3, 0.9, c2) * 0.6 + vec3(0.7, 0.3, 0.35) * lightning * smoothstep(0.35, 0.9, c2) * 0.3;
@@ -330,7 +341,8 @@ void fragment() {
 	/// <summary>每个头相对 Joker 脚底的位置（身高为单位，x 右、y 下）和深度。前三个大，后两个小、远。</summary>
 	private static readonly (float X, float Y, float Z, float Size)[] Layout =
 	{
-		(-0.62f, -1.5f, 10f, 1f), (0.02f, -1.82f, 10.5f, 1.1f), (0.6f, -1.42f, 10f, 1f), (-1.05f, -1.15f, 14f, 0.85f), (0.95f, -1.12f, 14f, 0.85f),
+		// 五个头都要在画面里（用户 2026-11-10：怎么只有四只）：整组往右收一点，后两个也看得见
+		(-0.38f, -1.55f, 10f, 1f), (0.12f, -1.85f, 10.5f, 1.1f), (0.62f, -1.45f, 10f, 1f), (-0.78f, -1.22f, 12.5f, 0.9f), (1.0f, -1.15f, 12.5f, 0.9f),
 	};
 
 	public Orochi(Control back, Vector2 feet, float tall)
@@ -351,7 +363,7 @@ void fragment() {
 		_bodyM.SetShaderParameter("aspect", aspect);
 		_bodyM.SetShaderParameter("focal", Focal);
 		Vector2 feetS = Fx.ScreenPoint(back, feet);
-		_skyM.SetShaderParameter("sun", new Vector2(feetS.X / scr.X + 0.36f, 0.15f));   // 用户 2026-11-10：日蚀别被蛇头挡住 → 放到 Joker 和敌人之间的天空
+		_skyM.SetShaderParameter("sun", new Vector2(0.52f, 0.15f));   // 用户 2026-11-10：日蚀别被蛇头挡住 → 放到 Joker 和敌人之间的天空
 		_skyM.SetShaderParameter("ground", feetS.Y / scr.Y);
 		float tallS = tall * back.GetCanvasTransform().Scale.Y;
 		for (int i = 0; i < Heads; i++)
