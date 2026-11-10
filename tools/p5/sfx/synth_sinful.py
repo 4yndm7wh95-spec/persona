@@ -1,5 +1,5 @@
 """Synthesized SFX for Sinful Shell (Grand Finale), user 2026-11-08: "synthesize it yourself, not an ordinary pistol".
-Writes art/sfx_p5/sinful_{charge,catch,fire,shot,flyby}.ogg (thunder: synth_sinful_thunder.py) (44.1 kHz stereo)."""
+Writes art/sfx_p5/sinful_{catch,fire,flyby}.ogg (thunder: synth_sinful_thunder.py; charge and shot: synth_sinful_blast.py) (44.1 kHz stereo)."""
 import subprocess, numpy as np
 from pathlib import Path
 from scipy import signal
@@ -43,17 +43,7 @@ def save(name, x):
 
 # ── thunder: moved to tools/p5/sfx/synth_sinful_thunder.py (user 2026-11-09: the old one was too explosive)
 
-# ── charge: rising whine + growing sub hum + crackle, ~1 s
-x = t(1.05)
-k = x / x[-1]
-f = 220 + 1400 * k ** 2.2
-ph = 2 * np.pi * np.cumsum(f) / SR
-whine = (np.sin(ph) + 0.4 * np.sin(2.01 * ph) + 0.2 * np.sin(3.02 * ph)) * (0.15 + 0.85 * k ** 1.5)
-hum = np.sin(2 * np.pi * 48 * x) * (0.3 + 0.9 * k) + 0.4 * np.sin(2 * np.pi * 96 * x) * k
-crackle = hp(rng.standard_normal(len(x)), 3000) * (rng.random(len(x)) < 0.02 + 0.1 * k) * 0.8 * k
-charge = whine * 0.5 + hum * 0.7 + crackle
-charge *= np.minimum(1, x / 0.05) * (1 - np.clip((x - 0.98) / 0.07, 0, 1))
-save("sinful_charge", reverb(charge, 0.6, 0.2))
+# ── charge: moved to tools/p5/sfx/synth_sinful_blast.py (user 2026-11-10: charge → time stop → shot)
 
 # ── catch: heavy metal clack (two transients + short ring)
 x = t(0.6)
@@ -89,33 +79,7 @@ for d, g in [(0.23, 0.35), (0.47, 0.2), (0.78, 0.1)]:
     n = int(d * SR); e = np.zeros_like(y); e[n:] = lp(y[:-n], 2500) * g; y += e
 save("sinful_fire", reverb(y, 1.8, 0.25))
 
-# ── the shot, rebuilt (user 2026-11-09: no time stop; the impact should come from sound as much as picture). Impact lands at 0.30 s:
-#    0.00-0.26 reverse-swell inhale (air pulled toward the muzzle) → 0.26-0.30 dead silence → 0.30 crack + sub drop (90→28 Hz) + saturated boom
-#    → metallic ring-out → debris patter → three rolling thunder echoes off the far clouds → a thin tinnitus ring that fades over ~2.5 s
-x = t(4.5)
-y = np.zeros_like(x)
-I = 0.30
-m = x < 0.26; tt = x[m]
-y[m] += hp(rng.standard_normal(m.sum()), 900) * (tt / 0.26) ** 3.2 * 0.9 + np.sin(2 * np.pi * (60 + 140 * tt / 0.26) * tt) * (tt / 0.26) ** 2 * 0.5
-m = x >= I; tt = x[m] - I
-crack = hp(rng.standard_normal(m.sum()), 1500) * env(tt, 0.0004, 0.02) * 2.2
-sub_f = 28 + 62 * np.exp(-tt / 0.18)
-sub = np.sin(2 * np.pi * np.cumsum(sub_f) / SR) * env(tt, 0.003, 0.9) * 2.6
-boom = np.tanh(3.5 * lp(rng.standard_normal(m.sum()), 500, 4) * env(tt, 0.002, 0.28) * 4) * 1.2
-ring = sum(a * np.sin(2 * np.pi * f * tt) for f, a in [(523, 0.5), (1187, 0.35), (2093, 0.25), (3370, 0.15)]) * env(tt, 0.002, 0.6) * 0.35
-pat = np.zeros(m.sum())
-for _ in range(40):
-    s0 = rng.uniform(0.15, 1.6); k = int(s0 * SR)
-    n = int(0.03 * SR)
-    if k + n < len(pat): pat[k:k + n] += rng.standard_normal(n) * np.exp(-np.arange(n) / (0.006 * SR)) * rng.uniform(0.1, 0.35) * np.exp(-s0 / 0.9)
-pat = bp(pat, 800, 5000)
-echo = np.zeros(m.sum())
-for d, a in [(0.55, 0.8), (1.15, 0.55), (1.9, 0.35)]:
-    k = int(d * SR); r = lp(rng.standard_normal(len(echo) - k), 220, 4) * env(np.arange(len(echo) - k) / SR, 0.08, 0.7)
-    echo[k:] += r * a * 3.0
-tin = np.sin(2 * np.pi * 3520 * tt) * 0.06 * np.minimum(1, tt / 0.15) * np.exp(-tt / 1.4)
-y[m] += crack + sub + boom + ring + pat + echo + tin
-save("sinful_shot", reverb(y, 1.6, 0.22))
+# ── the shot: moved to tools/p5/sfx/synth_sinful_blast.py (v3, user 2026-11-10: much louder and more explosive)
 
 # ── fly-by: the round comes out of the deep toward the viewer — a doppler whoosh (rising, roaring past, falling), ~0.9 s, passing at 0.35 s
 x = t(0.9)

@@ -168,6 +168,39 @@ public static class Fx
 		}
 		Tween loop = item.CreateTween().SetLoops();
 		loop.TweenMethod(Callable.From<float>(v => mat.SetShaderParameter("clock", v)), 0f, 600f, 600.0);
+		item.SetMeta("p5_clock", loop);
+	}
+
+	/// <summary>
+	/// 时停（大罪穿甲弹，用户 2026-11-10）：把 root 底下所有着色器时钟（Fx.Clock）和粒子停住 / 放开。
+	/// 火焰、云、余烬这些自己会动的东西在停住期间一动不动；放开后从停下的地方接着走。
+	/// </summary>
+	public static void HoldClocks(Node root, bool hold)
+	{
+		if (!GodotObject.IsInstanceValid(root))
+		{
+			return;
+		}
+		if (root.HasMeta("p5_clock") && root.GetMeta("p5_clock").As<Tween>() is Tween tw && tw.IsValid())
+		{
+			if (hold) tw.Pause(); else tw.Play();
+		}
+		if (root is GpuParticles2D gp)
+		{
+			if (hold)
+			{
+				gp.SetMeta("p5_speed", gp.SpeedScale);
+				gp.SpeedScale = 0.0;
+			}
+			else if (gp.HasMeta("p5_speed"))
+			{
+				gp.SpeedScale = gp.GetMeta("p5_speed").AsDouble();
+			}
+		}
+		foreach (Node c in root.GetChildren())
+		{
+			HoldClocks(c, hold);
+		}
 	}
 
 	/// <summary>delay 秒后执行（节点没了就不执行）。</summary>

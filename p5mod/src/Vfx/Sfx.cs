@@ -52,9 +52,9 @@ public static class Sfx
 		OutbreakBurst = "outbreak_burst", // 毒性爆发毒伤结算（用户 2026-11-08：原版受击声太平淡）：P5R SKILLSE 0406（咒怨系候选，起音 0.01s、偏暗），
 		                                //  滤掉 6kHz 以上、截 1.5s 淡出、响度归一（art/sfx_p5/outbreak_burst.ogg）
 		SinfulThunder = "sinful_thunder", // 大罪穿甲弹：撒旦耶尔登场 / 退场的闪雷（第二版，用户 2026-11-09：旧的太炸裂——现在是干脆的一声脆响 + 低沉滚动的轰鸣，tools/p5/sfx/synth_sinful_thunder.py）
-		SinfulCharge = "sinful_charge",   // 蓄力：越来越高的啸叫 + 越来越重的低频嗡鸣
+		SinfulCharge = "sinful_charge",   // 蓄力（用户 2026-11-10）：0.95s 越来越密、越来越尖的电流「滋——」，到时停那一刻戛然而止，后面接 0.42s 几乎无声（只有一丝极轻的高音）；tools/p5/sfx/synth_sinful_blast.py
 		SinfulCatch = "sinful_catch",     // 转枪接住：沉重的金属咔嗒
-		SinfulShot = "sinful_shot",       // 开枪（重做，合成）：倒吸 → 一瞬静音 → 爆裂 + 超低频下坠 + 饱和重击 → 金属余振 → 碎石 → 远处云层滚回三声雷 → 耳鸣淡出；冲击在 0.30s
+		SinfulShot = "sinful_shot",       // 开枪（第三版，用户 2026-11-10：要特别响亮、特别炸裂）：从静默里直接炸开——三连的爆裂脆响 + 饱和的宽频冲击 + 低频下坠 + 撕开空气的滚动轰鸣 → 远处云层滚回三声 → 耳鸣；冲击在 0.02s
 		SinfulFlyby = "sinful_flyby",     // 子弹从远处朝镜头飞过来的多普勒呼啸，最响在 0.35s
 		SinfulPierce = "sinful_pierce",   // 贯穿一个敌人（用户 2026-11-09：普通受击声太平淡，配不上这一枪）：脆裂 + 撕开装甲 + 饱和闷击 + 超低频 + 穿出去的撕裂，tools/p5/sfx/synth_sinful_pierce.py
 		SinfulPierceLast = "sinful_pierce_last", // 贯穿最后一个：更重、超低频更长、带碎片和滚动的低频尾
@@ -83,7 +83,7 @@ public static class Sfx
 	private static readonly Dictionary<string, float> Lead = new()
 	{
 		[Parry] = 0.068f, [Slam] = 0.1f, [PoisonTick] = 0.078f, [CutIn] = 0.083f, [PersonaFlame] = 0.13f, [Wing] = 0.023f,
-		[Crack] = 0.019f, [SwishHeavy] = 0.005f, [KnifeRing] = 0.048f, [SinfulFire] = 0.12f, [SinfulShot] = 0.30f,
+		[Crack] = 0.019f, [SwishHeavy] = 0.005f, [KnifeRing] = 0.048f, [SinfulFire] = 0.12f, [SinfulShot] = 0.02f,
 	};
 
 	/// <summary>在 delay 秒后的那一帧「打中」：按起音提前量提前开始播。</summary>

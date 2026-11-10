@@ -123,10 +123,10 @@ SFX = {
     "battle_cutin": ROOT / "art/sfx_p5/battle_cutin.ogg",              # eye cut-in appears (user 2026-11-03; P5R SYSTEM.AWB #18, research/p5r/audio/eye_cutin)
     "outbreak_burst": ROOT / "art/sfx_p5/outbreak_burst.ogg",
     "sinful_thunder": ROOT / "art/sfx_p5/sinful_thunder.ogg",          # Sinful Shell: Satanael's lightning (in / out), synthesized (tools/p5/sfx/synth_sinful_thunder.py)
-    "sinful_charge": ROOT / "art/sfx_p5/sinful_charge.ogg",
+    "sinful_charge": ROOT / "art/sfx_p5/sinful_charge.ogg",    # Sinful Shell charge + the silent freeze (synthesized: tools/p5/sfx/synth_sinful_blast.py)
     "sinful_catch": ROOT / "art/sfx_p5/sinful_catch.ogg",
     "sinful_fire": ROOT / "art/sfx_p5/sinful_fire.ogg",        # Outbreak poison damage (user 2026-11-08: vanilla hit too plain): P5R SKILLSE 0406 (curse candidate), low-passed 6 kHz, 1.5 s
-    "sinful_shot": ROOT / "art/sfx_p5/sinful_shot.ogg",        # Sinful Shell shot, layered (synthesized: tools/p5/sfx/synth_sinful.py)
+    "sinful_shot": ROOT / "art/sfx_p5/sinful_shot.ogg",        # Sinful Shell shot v3 (synthesized: tools/p5/sfx/synth_sinful_blast.py)
     "sinful_flyby": ROOT / "art/sfx_p5/sinful_flyby.ogg",      # Sinful Shell round flying past the viewer (synthesized)
     "sinful_pierce": ROOT / "art/sfx_p5/sinful_pierce.ogg",    # Sinful Shell round piercing an enemy (synthesized: tools/p5/sfx/synth_sinful_pierce.py)
     "sinful_pierce_last": ROOT / "art/sfx_p5/sinful_pierce_last.ogg",

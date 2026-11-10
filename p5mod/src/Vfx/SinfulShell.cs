@@ -262,8 +262,15 @@ void fragment() {
 	public const float ExitAfter = 0.12f + SatanaelPuppet.PutAwayAfter + 0.02f + SatanaelPuppet.SpinTime + 0.04f, ExitTime = 1.0f,
 		ConcealAfter = ExitAfter - 0.4f * ExitTime;
 
-	/// <summary>开枪（用户 2026-11-08：不蓄力，转完枪停一小下就开）：撒旦耶尔接住枪后 0.2s。</summary>
-	public const float FireAt = AimAt + SatanaelPuppet.CatchAfter + 0.2f;
+	/// <summary>
+	/// 蓄力 → 时停 → 开枪（用户 2026-11-10：转完枪要先蓄力「滋——」，马上要打出去那一刻时停住，然后「啪」一枪，特别炸裂）。
+	/// 时停要有来由才不显得无厘头：蓄力期间光被一点点吸进枪口、画面跟着暗下去；吸到头一下闪白，全场静止、无声，
+	/// 只剩枪口一个极亮的小点（停住时不往画面上加任何新图案）；FreezeTime 之后这一枪把静止打破。
+	/// </summary>
+	public const float ChargeAt = CatchAt + 0.06f, ChargeTime = 0.95f, FreezeAt = ChargeAt + ChargeTime, FreezeTime = 0.42f;
+
+	/// <summary>开枪：时停结束的那一刻。</summary>
+	public const float FireAt = FreezeAt + FreezeTime;
 
 	/// <summary>接住枪的时刻。</summary>
 	public const float CatchAt = AimAt + SatanaelPuppet.CatchAfter;
@@ -424,13 +431,16 @@ void fragment() {
 		// ── 撒旦耶尔（部件动画）：先摆到开枪那一刻量出枪口，再回到登场姿势
 		const float RiseAt = AppearAt;
 		float exitAt = FireAt + ExitAfter;
+		// 撒旦耶尔自己的时钟：时停期间不走（姿势、翅膀、雷都停在那一刻），之后接着走
+		const float pFire = FireAt - FreezeTime;
+		float pExit = exitAt - FreezeTime;
 		Vector2 aimScreen = s.Enemies.Count > 0 ? toScreen(s.Enemies.Aggregate(Vector2.Zero, (a, b) => a + b) / s.Enemies.Count) : screen * 0.7f;
 		SatanaelPuppet? puppet = SatanaelPuppet.Available ? new SatanaelPuppet(personaSlot, s.PersonaOrigin * unit, s.PersonaScale * unit, aimScreen) : null;
 		if (puppet != null)
 		{
-			puppet.Update(FireAt - 0.0005f, RiseAt, AimAt, FireAt, exitAt);
+			puppet.Update(pFire - 0.0005f, RiseAt, AimAt, pFire, pExit);
 			s.PersonaMuzzle = puppet.MuzzleGlobal;
-			puppet.Update(0f, RiseAt, AimAt, FireAt, exitAt);
+			puppet.Update(0f, RiseAt, AimAt, pFire, pExit);
 		}
 		Vector2 aimDir = ((enemiesOrdered.Count > 0 ? enemiesOrdered[^1].e : s.PersonaMuzzle + new Vector2(1000f, 200f)) - s.PersonaMuzzle).Normalized();
 		float far = (screen * 1.3f).Length();
@@ -447,6 +457,7 @@ void fragment() {
 		PointLight2D moonLight = Light(lights, world(moonS), new Color(0.7f, 0.78f, 0.95f), 2600f * unit);
 		puppet?.LightFrom(moonS);
 		var actorRest = s.Actors.Where(GodotObject.IsInstanceValid).Select(a => (a, a.Modulate)).ToList();
+		float now = 0f, shotAt = 1e9f;                              // 当前时刻；开枪回调执行的时刻
 		var pierceOf = new Dictionary<CanvasItem, float>();        // 敌人 → 子弹穿过它的时刻（下面算出 pierce 后填）
 		Color grade = new(0.6f, 0.68f, 0.95f);
 		Fx.FreeAfter(lights, total + 0.1);
@@ -473,13 +484,22 @@ void fragment() {
 				: visR * (1f - ex * ex * (3f - 2f * ex)) - 160f * unit * ex;   // 收回：从画面最远的角开始（马上看得出在收），先慢后快再慢，合到脚下
 			emberMask.SetShaderParameter("reveal", reveal);
 			const float dim = 0f;
-			float flash = time >= FireAt ? Mathf.Exp(-(time - FireAt) / 0.05f) : 0f;
-			// 不蓄力：接住枪时枪口一闪，开枪时一闪
-			float charge = time < CatchAt ? 0f : time < FireAt ? 0.9f * Mathf.Exp(-(time - CatchAt) / 0.08f) : 1.7f * Mathf.Exp(-(time - FireAt) / 0.12f);
+			now = time;
+			float fly = time - shotAt;                                    // 开枪回调真正执行的那一帧算起（定时器和补间差一帧，闪光不能抢在特效前面）
+			float flash = fly >= 0f ? Mathf.Exp(-fly / 0.08f) : 0f;
+			// 开枪后云层里还滚着几下余光（不规则地闪几下，1 秒内灭掉）
+			float after = fly >= 0.1f ? 0.5f * Mathf.Exp(-(fly - 0.1f) / 0.45f) * Mathf.Pow(Mathf.Max(0f, Mathf.Sin(fly * 23f) * Mathf.Sin(fly * 37f + 1.3f)), 2f) : 0f;
+			// 接住枪时枪口一闪 → 蓄力：枪口的光越来越亮、带一点抖 → 时停：收成稳稳的一点 → 开枪：全放出来
+			float ck = Mathf.Clamp((time - ChargeAt) / ChargeTime, 0f, 1f);
+			bool frozen = time >= FreezeAt && fly < 0f;
+			float charge = time < CatchAt ? 0f
+				: time < FreezeAt ? 0.9f * Mathf.Exp(-(time - CatchAt) / 0.08f) + (time >= ChargeAt ? (0.15f + 1.0f * ck * ck) * (0.88f + 0.12f * Mathf.Sin(time * 71f)) : 0f)
+				: frozen ? 0.6f : 2.0f * Mathf.Exp(-fly / 0.1f);
+			float pg = time < FreezeAt ? time : frozen ? FreezeAt : FreezeAt + fly;
 			float thunder = 0f;
 			if (puppet != null)
 			{
-				puppet.Update(time, RiseAt, AimAt, FireAt + 0.12f, exitAt, puppet.MuzzleLocal, charge, flash * 0.6f, dim);
+				puppet.Update(pg, RiseAt, AimAt, pFire + 0.12f, pExit, puppet.MuzzleLocal, charge, flash * 0.6f, dim);
 				puppet.SceneMask(feetS, reveal);
 				thunder = puppet.Lightning;
 				muzzleLight.GlobalPosition = puppet.MuzzleGlobal;
@@ -488,13 +508,12 @@ void fragment() {
 			{
 				m.SetShaderParameter("reveal", reveal);
 				m.SetShaderParameter("dim", dim);
-				m.SetShaderParameter("flash", flash * 0.5f + thunder * 0.12f);
+				m.SetShaderParameter("flash", flash * 0.9f + after + thunder * 0.12f);
 			}
 			// 灯：枪口蓄力光、开枪全场白光、跟着子弹飞的光、雷光、深渊往上打的暗红光
 			float scene = rv * (1f - ex);
 			muzzleLight.Energy = charge * 1.1f;
-			flashLight.Energy = 1.5f * flash;
-			float fly = time - FireAt;
+			flashLight.Energy = 3.2f * flash + 1.2f * after;
 			bulletLight.Energy = fly >= 0f && fly < 0.6f ? 2.6f * (1f - fly / 0.6f) : 0f;
 			if (fly >= 0f)
 			{
@@ -553,12 +572,47 @@ void fragment() {
 			Fx.After(front, CatchAt, () => Glow.Flash(front, puppet.MuzzleGlobal, new Color(0.7f, 0.9f, 1f), 160f * unit, 0.12f));
 		}
 
+		// ── 蓄力 → 时停（用户 2026-11-10）
+		// 蓄力：「滋——」越来越尖，到时停那一刻戛然而止（同一条声音文件里后面接 FreezeTime 的静默，只剩一丝极轻的高音）；游戏其他声音一起压下去
+		Action? endCharge = null;
+		Fx.After(front, ChargeAt, () =>
+		{
+			Sfx.Play(Sfx.SinfulCharge, 1.0f);
+			Sfx.Duck(-20f, ChargeTime + FreezeTime, 1.2f);
+			endCharge = Charge(front, () => puppet?.MuzzleGlobal ?? muzzle, dir, screen, unit);
+		});
+		// 蓄到后半段地面开始发抖（越来越密），时停前收住
+		Fx.After(front, ChargeAt + 0.45f, () => Fx.Shake(1));
+		Fx.After(front, ChargeAt + 0.62f, () => Fx.Shake(1));
+		Fx.After(front, ChargeAt + 0.74f, () => Fx.Shake(2));
+		// 时停：场景里自己会动的东西（火焰、云、余烬、撒旦耶尔的翅膀）全部停住；敌人的待机动画也停住（Joker 这时本来就举着枪不动）
+		var held = new List<(Node n, Node.ProcessModeEnum mode)>();
+		void release()
+		{
+			foreach ((Node n, Node.ProcessModeEnum mode) in held)
+			{
+				if (GodotObject.IsInstanceValid(n)) n.ProcessMode = mode;
+			}
+			held.Clear();
+			Fx.HoldClocks(root, false);
+		}
+		Fx.After(front, FreezeAt, () =>
+		{
+			Fx.HoldClocks(root, true);
+			foreach (CanvasItem? ev in s.EnemyVisuals)
+			{
+				if (ev == null || !GodotObject.IsInstanceValid(ev)) continue;
+				held.Add((ev, ev.ProcessMode));
+				ev.ProcessMode = Node.ProcessModeEnum.Disabled;
+			}
+		});
+		Fx.After(front, FireAt, release);
+		root.TreeExiting += release;
+
 		// ── 开枪
-		Fx.After(front, FireAt - 0.18f, () => s.OnJokerShoot?.Invoke());
-		// 用户 2026-11-09：不做时停；震撼感一半交给声音。开枪声整条重做：倒吸 → 一瞬静音 → 爆裂 + 低频下坠 → 云层滚回的雷声 → 耳鸣（冲击在文件 0.30s）
-		Fx.After(front, FireAt - 0.30f, () => Sfx.Play(Sfx.SinfulShot, 1.3f));
-		// 开枪前「吸一口气」：画面压暗、游戏其他声音压下去，开枪那一下一起放开
-		Fx.After(front, FireAt - 0.26f, () => Inhale(front, screen, 0.26f));
+		Fx.After(front, FireAt - 0.18f, () => s.OnJokerShoot?.Invoke());       // shiv_from_aim 前 0.18s 是举枪不动，落在时停里看不出来
+		// 开枪声（第三版，用户 2026-11-10：要特别响亮、特别炸裂）：从静默里直接炸开，冲击在文件 0.02s
+		Fx.After(front, FireAt - 0.02f, () => Sfx.Play(Sfx.SinfulShot, 1.4f));
 		// Joker 同步开枪，但大罪穿甲弹是撒旦耶尔打出来的：Joker 枪口只有一小点蓝光，不抢戏（用户 2026-11-08）
 		Fx.After(front, FireAt, () => Glow.Flash(front, s.JokerMuzzle, new Color(0.5f, 0.85f, 1f), 70f * unit, 0.1f));
 		var pierce = new float[s.Enemies.Count];
@@ -578,18 +632,26 @@ void fragment() {
 		}
 		Fx.After(front, FireAt, () =>
 		{
-			Fx.Shake(7);
-			ImpactFrames(front, muzzle, dir, screen, unit);                // 两帧黑白冲击帧（动画打击帧，不停顿）
-			Glow.Flash(front, muzzle, new Color(0.85f, 0.95f, 1f), 380f * unit, 0.16f);
+			shotAt = now;
+			endCharge?.Invoke();
+			Fx.Shake(9);
+			ImpactFrames(front, muzzle, dir, screen, unit);                // 冲击帧：从时停的黑里先炸成白底黑线，再反成黑底白线，然后一层白慢慢退掉
+			Glow.Flash(front, muzzle, new Color(0.85f, 0.95f, 1f), 600f * unit, 0.16f);
 			puppet?.Blast();                                               // 远处云海被枪口冲击波压开、翻卷
-			Rings(front, muzzle, dir, unit * 0.45f);                       // 远处的枪口：冲击环小
+			MuzzleBlast(front, muzzle, dir, unit);                         // 枪口炸开的一团：往前一大股、两侧各一股泄压的气焰
+			Shock(front, muzzle, dir.Angle(), 1500f * unit, 0.4f, 0.5f, 0f, 0.85f, 0.7f);     // 垂直于枪管的一大圈冲击波
+			Shock(front, muzzle, 0f, 3600f * unit, 1f, 0.6f, 0.03f, 0.75f, 0.55f);           // 一圈空气波扫过整个画面
+			Rings(front, muzzle, dir, unit * 0.7f);
 			Bullet(front, muzzle, dir, screen, unit);
 			Spiral(front, muzzle, dir, screen, unit);                     // 绕着弹道拧的一股螺旋气流
 			SkyCrack(root, toScreen(muzzle), (toScreen(muzzle + dir * 100f) - toScreen(muzzle)).Normalized(), screen, unit, personaSlot.GetIndex() + 1);   // 夜空被划开一道细缝
 			BulletDetails(front, muzzle, dir, screen, unit);              // 弹道上的小光点、几道发丝一样的气流线
-			Glow.Sparks(front, muzzle, 50, 600f, 1800f, 0.4f, new[] { new Color(0.95f, 0.98f, 1f), new Color(0.35f, 0.75f, 1f), new Color(0.6f, 0.3f, 1f) }, 0f,
-				0.05f, 0.16f, dir, 22f);
+			Glow.Sparks(front, muzzle, 110, 600f, 2400f, 0.5f, new[] { new Color(0.95f, 0.98f, 1f), new Color(0.35f, 0.75f, 1f), new Color(0.6f, 0.3f, 1f) }, 0f,
+				0.05f, 0.16f, dir, 34f);
 		});
+		// 后坐的余震：一下不够，接着再震两下（越来越轻）
+		Fx.After(front, FireAt + 0.12f, () => Fx.Shake(8));
+		Fx.After(front, FireAt + 0.26f, () => Fx.Shake(5));
 		for (int k = 0; k < enemiesOrdered.Count; k++)
 		{
 			int kk = k, idx = orderIndex[k];
@@ -624,15 +686,193 @@ void fragment() {
 
 	// ───────────────────────── 开枪的冲击 ─────────────────────────
 
-	/// <summary>开枪前「吸一口气」：画面慢慢压暗（深蓝黑，半透明），游戏音乐 / 环境声压低；时间到瞬间撤掉（开枪那一帧）。</summary>
-	private static void Inhale(Control layer, Vector2 screen, float sec)
+	private static Shader? _hush, _charge, _blast;
+
+	/// <summary>蓄力 / 时停时盖在画面上的一层暗（不读屏幕）：深蓝黑，枪口周围留一圈稍亮的地方——像是只有枪口那点光还照得到。</summary>
+	private static Shader HushShader => _hush ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform vec2 sres = vec2(1920.0, 1080.0);
+uniform vec2 center = vec2(900.0, 400.0);
+uniform float alpha = 0.0;
+uniform float hole = 520.0;
+void fragment() {
+	float d = length(UV * sres - center);
+	COLOR = vec4(0.006, 0.012, 0.035, alpha * mix(0.4, 1.0, smoothstep(0.0, hole, d)));
+}" };
+
+	/// <summary>
+	/// 蓄力（用户 2026-11-10）：一张以枪口为中心的加法四边形，全部过程式——
+	/// ① 从四周被吸进枪口的发丝细光（按角度分格，每格一道，越靠近越快、拉得越长，越蓄越多）；
+	/// ② 套在枪管上的光圈一圈圈往枪口收（垂直于枪管的椭圆）；③ 枪口周围乱窜的细电弧（「滋」）；④ 枪口越来越亮的核。
+	/// t 是蓄力自己的时钟：时停时不再走，所有东西原地悬住、暗下去；fz 0→1：核收成一个极亮的小点，带一道很短的横向细光（不做十字——十字像准心）。只有冷白和青，不加别的颜色。
+	/// </summary>
+	private static Shader ChargeShader => _charge ??= new Shader { Code = @"
+shader_type canvas_item;
+render_mode blend_add;
+uniform float t = 0.0;
+uniform float k = 0.0;
+uniform float fz = 0.0;
+uniform float size_px = 1600.0;
+uniform float unit = 1.0;
+uniform float dir_ang = 0.0;
+float h(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float vn(float x) { float i = floor(x), f = x - i; f = f * f * (3.0 - 2.0 * f); return mix(h(i), h(i + 1.0), f); }
+void fragment() {
+	vec2 p = (UV - 0.5) * size_px;
+	float r = length(p), ang = atan(p.y, p.x);
+	float edge = 1.0 - smoothstep(0.4, 0.5, length(UV - 0.5));
+	vec3 white = vec3(0.95, 0.98, 1.0), cyan = vec3(0.3, 0.74, 1.0);
+	vec3 col = vec3(0.0);
+	// ① 被吸进来的发丝细光
+	const float N = 110.0;
+	float c = (ang + PI) / TAU * N, cell = floor(c), f = c - cell - 0.5;
+	float wpx = abs(f) * (TAU / N) * r;
+	for (int l = 0; l < 2; l++) {
+		float fl = float(l);
+		float sp = mix(0.7, 1.5, h(cell * 1.7 + fl * 31.0));
+		float cyc = t * sp + h(cell * 3.3 + fl * 11.0);
+		float ph = fract(cyc), id = floor(cyc);
+		float on = step(1.0 - (0.1 + 0.5 * k), h(cell + id * 7.3 + fl * 5.0));
+		float r_out = mix(340.0, 760.0, h(cell * 2.1 + id + fl)) * unit;
+		float head = mix(r_out, 14.0 * unit, ph * ph);
+		float len = (24.0 + 150.0 * ph) * unit;
+		float a = (r - head) / len;
+		float body = step(0.0, a) * (1.0 - smoothstep(0.0, 1.0, a));
+		float w = (0.9 + 0.8 * ph) * unit;
+		float s = body * exp(-pow(wpx / w, 2.0)) * on * smoothstep(0.0, 0.12, ph);
+		col += mix(cyan, white, ph) * s * (0.5 + 0.9 * ph);
+	}
+	// ② 往枪口收的光圈（垂直于枪管 → 沿枪管方向压扁）
+	vec2 d = vec2(cos(dir_ang), sin(dir_ang));
+	float rq = length(vec2(dot(p, d) / 0.34, dot(p, vec2(-d.y, d.x))));
+	for (int i = 0; i < 3; i++) {
+		float ph = fract(t * 0.55 + float(i) / 3.0);
+		float R = mix(330.0, 26.0, ph * ph) * unit;
+		float wd = mix(1.3, 2.8, ph) * unit;
+		float ring = exp(-pow((rq - R) / wd, 2.0)) + 0.22 * exp(-abs(rq - R) / (10.0 * unit));
+		col += mix(cyan, white, ph) * ring * smoothstep(0.0, 0.2, ph) * (1.0 - smoothstep(0.9, 1.0, ph)) * k * 0.9;
+	}
+	// ③ 细电弧：每隔一小会儿换一批位置，沿半径方向抖
+	for (int i = 0; i < 4; i++) {
+		float fi = float(i);
+		float tick = floor(t * 9.0 + fi * 0.37);
+		float a0 = h(fi * 9.1 + tick * 3.7) * TAU - PI;
+		float L = mix(70.0, 230.0, h(fi + tick)) * unit * (0.4 + 0.6 * k);
+		float da = ang - a0; da = atan(sin(da), cos(da));
+		float wob = (vn(r * 0.06 / unit + tick * 5.0 + fi * 13.0) - 0.5) * 38.0 * unit * smoothstep(0.0, 40.0 * unit, r)
+			+ (vn(r * 0.25 / unit + tick) - 0.5) * 8.0 * unit;
+		float dist = abs(da * r - wob);
+		float gate = step(abs(da), 1.2) * (1.0 - smoothstep(L * 0.6, L, r)) * step(0.3, h(fi * 2.0 + tick * 1.3)) * k;
+		col += (white * exp(-pow(dist / (1.1 * unit), 2.0)) * 1.1 + cyan * exp(-dist / (5.0 * unit)) * 0.25) * gate;
+	}
+	// ④ 枪口的核；时停时收成一个小点 + 一道细长的十字光
+	float flick = 0.85 + 0.15 * vn(t * 40.0);
+	float rc = mix((7.0 + 20.0 * k) * unit, 4.5 * unit, fz);
+	float core = exp(-r / rc) * (0.6 + 1.6 * k) * flick * (1.0 + 2.0 * fz);
+	float halo = exp(-r / (rc * 5.0)) * 0.35 * k * (1.0 - 0.7 * fz);
+	float fl_len = (50.0 * k * k + 170.0 * fz) * unit;
+	float flare = exp(-abs(p.y) / ((1.0 + 1.6 * exp(-abs(p.x) / (40.0 * unit))) * unit)) * exp(-abs(p.x) / max(fl_len, 1.0));
+	col *= 1.0 - 0.6 * fz;
+	col += white * (core + flare * (0.5 * k + 1.2 * fz)) + cyan * halo;
+	COLOR = vec4(col * edge, 1.0);
+}" };
+
+	/// <summary>
+	/// 蓄力 → 时停的画面（声音在 Play 里）：ChargeTime 秒里光往枪口收、画面一点点暗下去；到头一下闪白，
+	/// 然后 FreezeTime 秒全场静止：暗、无声，蓄力的细光和电弧原地悬住，只有枪口一个极亮的小点。开枪那一刻整套撤掉。
+	/// </summary>
+	private static Action Charge(Control layer, Func<Vector2> muzzleAt, Vector2 dir, Vector2 screen, float unit)
 	{
-		Node2D root = Fx.ScreenRoot(layer, "P5SinfulInhale");
-		ColorRect dark = new() { Size = screen, Color = new Color(0.01f, 0.02f, 0.05f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore };
-		root.AddChild(dark);
-		Fx.Animate(dark, 0, sec, t => dark.Color = new Color(0.01f, 0.02f, 0.05f, 0.42f * t * t));
-		Fx.FreeAfter(root, sec);
-		Sfx.Duck(-16f, sec, 0.9f);
+		const float total = ChargeTime + FreezeTime;
+		Node2D hushRoot = Fx.ScreenRoot(layer, "P5SinfulHush");
+		ShaderMaterial hm = new() { Shader = HushShader };
+		hm.SetShaderParameter("sres", screen);
+		hm.SetShaderParameter("hole", 560f * unit);
+		ColorRect hush = new() { Size = screen, Material = hm, MouseFilter = Control.MouseFilterEnum.Ignore };
+		ColorRect white = new() { Size = screen, Color = new Color(0.94f, 0.97f, 1f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore };
+		hushRoot.AddChild(hush);
+		hushRoot.AddChild(white);
+		Fx.FreeAfter(hushRoot, total + 0.2);                           // 正常由开枪那一刻撤掉（返回的委托）；这里只是兜底
+
+		float size = 1600f * unit;
+		Node2D root = Fx.Root(layer, muzzleAt(), "P5SinfulCharge", total + 0.2);
+		ShaderMaterial m = new() { Shader = ChargeShader };
+		m.SetShaderParameter("size_px", size);
+		m.SetShaderParameter("unit", unit);
+		Vector2 a = Fx.ScreenPoint(layer, muzzleAt());
+		m.SetShaderParameter("dir_ang", (Fx.ScreenPoint(layer, muzzleAt() + dir * 100f) - a).Angle());
+		ColorRect q = new() { Size = Vector2.One * size, Position = -Vector2.One * size / 2f, Material = m, MouseFilter = Control.MouseFilterEnum.Ignore };
+		root.AddChild(q);
+		float clock = 0f, last = 0f;
+		Fx.Animate(root, 0, total, t =>
+		{
+			float time = t * total, dt = time - last;
+			last = time;
+			float k = Mathf.Clamp(time / ChargeTime, 0f, 1f);
+			float z = time - ChargeTime;                                  // 时停开始后过了多久
+			if (z < 0f)
+			{
+				clock += dt * (0.5f + 1.7f * k);                          // 越蓄越快；时停后不再走
+				root.GlobalPosition = muzzleAt();
+			}
+			float fz = z < 0f ? 0f : 1f - Mathf.Pow(1f - Mathf.Clamp(z / 0.07f, 0f, 1f), 3f);
+			m.SetShaderParameter("t", clock);
+			m.SetShaderParameter("k", k);
+			m.SetShaderParameter("fz", fz);
+			hm.SetShaderParameter("center", Fx.ScreenPoint(layer, root.GlobalPosition));
+			hm.SetShaderParameter("alpha", z < 0f ? 0.5f * Mathf.Pow(k, 1.6f) : Mathf.Lerp(0.5f, 0.74f, Mathf.Clamp(z / 0.06f, 0f, 1f)));
+			// 时停那一下闪白（君王之剑那种闪白，不是彩色的光）
+			white.Color = new Color(0.94f, 0.97f, 1f, z < 0f ? 0f : 0.8f * Mathf.Pow(Mathf.Max(0f, 1f - z / 0.11f), 2f));
+		});
+		return () =>
+		{
+			if (GodotObject.IsInstanceValid(hushRoot)) hushRoot.QueueFree();
+			if (GodotObject.IsInstanceValid(root)) root.QueueFree();
+		};
+	}
+
+	/// <summary>
+	/// 枪口炸开的一团（用户 2026-11-10：这一枪要特别炸裂）。x 轴沿枪管：往前一大股、两侧斜后方各一股泄压的气焰、中心白热；
+	/// 边缘被噪声啃碎、亮度从中心往外连续衰减（白 → 青 → 深蓝，不分色阶），外面甩着一圈细的放射线。prog 0→1 冲出去再散掉。
+	/// </summary>
+	private static Shader BlastShader => _blast ??= new Shader { Code = @"
+shader_type canvas_item;
+render_mode blend_add;
+uniform float prog = 0.0;
+uniform float seed = 0.0;
+" + Noise + @"
+void fragment() {
+	vec2 p = (UV - 0.5) * 2.0;
+	float r = length(p), ang = atan(p.y, p.x);
+	float e = 1.0 - pow(1.0 - prog, 3.0);
+	float fwd = pow(max(cos(ang), 0.0), 16.0);
+	float side = pow(max(cos(abs(ang) - 1.9), 0.0), 26.0) * 0.6;
+	float lobe = fwd + side + 0.1;
+	float n = fbm(vec2(ang * 2.6 + seed, r * 3.5 - prog * 5.0));
+	float reach = lobe * (0.22 + 0.74 * e) * (0.7 + 0.6 * n);
+	float inside = clamp(1.0 - r / max(reach, 0.001), 0.0, 1.0);
+	float gas = pow(inside, 1.4) * (0.6 + 0.4 * fbm(p * 7.0 + vec2(seed, -prog * 4.0)));
+	float lane = pow(noise(vec2(ang * 46.0, seed)), 7.0) * 3.5;
+	float streak = lane * smoothstep(0.03, 0.12, r) * (1.0 - smoothstep(reach * 0.8, reach * 1.6 + 0.05, r));
+	float hot = exp(-r / (0.035 + 0.07 * e));
+	float fade = pow(1.0 - prog, 1.5);
+	vec3 white = vec3(0.96, 0.98, 1.0), cyan = vec3(0.3, 0.75, 1.0), deep = vec3(0.08, 0.22, 0.7);
+	vec3 gcol = mix(deep, mix(cyan, white, smoothstep(0.35, 0.85, inside)), smoothstep(0.0, 0.4, inside));
+	vec3 col = (gcol * gas * 1.25 + cyan * streak * 0.7 + white * hot * 1.6) * fade;
+	COLOR = vec4(col * (1.0 - smoothstep(0.9, 1.0, r)), 1.0);
+}" };
+
+	private static void MuzzleBlast(Control layer, Vector2 at, Vector2 dir, float unit)
+	{
+		const float life = 0.3f;
+		float size = 1700f * unit;
+		Node2D root = Fx.Root(layer, at, "P5SinfulMuzzleBlast", life + 0.05);
+		root.Rotation = dir.Angle();
+		ShaderMaterial m = new() { Shader = BlastShader };
+		m.SetShaderParameter("seed", Fx.Rand(0f, 50f));
+		ColorRect q = new() { Size = Vector2.One * size, Position = -Vector2.One * size / 2f, Material = m, MouseFilter = Control.MouseFilterEnum.Ignore };
+		root.AddChild(q);
+		Fx.Animate(root, 0, life, t => m.SetShaderParameter("prog", t));
 	}
 
 	private static Shader? _impact;
@@ -708,10 +948,18 @@ void fragment() {
 			root.AddChild(q);
 			return q;
 		}
-		ColorRect f1 = frame(0f, 0.9f), f2 = frame(1f, 0.82f);
+		// 用户 2026-11-10：这一枪要炸裂——从时停的黑里先炸成白（白底黑线），再反成黑底白线，最后一层白在 0.3s 里退掉
+		ColorRect f1 = frame(1f, 0.96f), f2 = frame(0f, 0.9f);
 		f2.Visible = false;
-		Fx.After(root, 0.03, () => { f1.Visible = false; f2.Visible = true; });
-		Fx.After(root, 0.064, () => root.QueueFree());
+		ColorRect veil = new() { Size = screen, Color = new Color(0.93f, 0.97f, 1f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore };
+		root.AddChild(veil);
+		Fx.After(root, 0.04, () => { f1.Visible = false; f2.Visible = true; });
+		Fx.After(root, 0.085, () =>
+		{
+			f2.Visible = false;
+			Fx.Animate(veil, 0, 0.24, t => veil.Color = new Color(0.93f, 0.97f, 1f, 0.38f * Mathf.Pow(1f - t, 2.2f)));
+		});
+		Fx.After(root, 0.4, () => root.QueueFree());
 	}
 
 	private static Shader? _after;
