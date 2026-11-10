@@ -642,7 +642,12 @@ public partial class Preview : Node2D
 			p.At(4.17, () => SkillFx.Shatter(p._front, p._back, Enemy, new Vector2(Enemy.X, 830f), Enemy + new Vector2(0f, -170f), 260f, new Vector2(1f, -0.15f),
 				c => p._enemies[Enemy].Modulate = c));
 			p.At(5.6, () => p._joker?.Play("cast"));
-			p.At(6.0, () => SkillFx.Crush(p._front, p._back, new Vector2(Enemy2.X, 830f), Enemy2 + new Vector2(0f, -170f), 230f, c => p._enemies[Enemy2].Modulate = c));
+			p.At(6.0, () => SkillFx.Wail(p._front, p._back, Pose(1010f, 215f), new List<SkillFx.Victim>
+			{
+				new(new Vector2(Enemy2.X, 830f), Enemy2 + new Vector2(0f, -170f), 230f, c => p._enemies[Enemy2].Modulate = c),
+				new(new Vector2(Enemy.X, 830f), Enemy + new Vector2(0f, -170f), 260f, c => p._enemies[Enemy].Modulate = c),
+				new(new Vector2(Enemy3.X, 830f), Enemy3 + new Vector2(0f, -150f), 230f, c => p._enemies[Enemy3].Modulate = c),
+			}));
 			p.At(7.5, () => p._joker?.Play("attack"));
 			p.At(7.65, () => CardFx.Weaken(p._front, Enemy3, Enemy3 + new Vector2(0f, -150f), 0.12f));
 		},

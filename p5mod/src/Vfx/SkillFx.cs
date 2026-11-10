@@ -672,41 +672,95 @@ void fragment() {
 
 	public readonly record struct Victim(Vector2 Feet, Vector2 Top, float Width, Action<Color>? Tint = null);
 
+	private static Shader? _sonic;
+
 	/// <summary>
-	/// 尖啸（所有敌人失去力量）：从面具朝敌人推出去一串弧形声波；声波扫到谁，谁身上压下一道减益（不再单独出声）。
-	/// mask = Joker 的面具；targets = 每个敌人的脚底 / 头顶 / 宽度。
+	/// 以四边形中心为圆心往外扩的声波（用户 2026-11-10：尖啸应该是以 Joker 为中心展开的声波）：五道一道追一道的圆形波前，
+	/// 每道是一条被噪声断开、粗细起伏的亮边，后面紧跟一条压暗的带子（空气被挤开）；波前之间有往外甩的放射细丝；越往外越细越淡。prog 0→1。
+	/// </summary>
+	private static Shader Sonic => _sonic ??= new Shader { Code = @"
+shader_type canvas_item;
+render_mode blend_premul_alpha;
+uniform float prog = 0.0;
+uniform float seed = 0.0;
+" + Noise + @"
+void fragment() {
+	vec2 p = (UV - 0.5) * 2.0;
+	float r = length(p), a = atan(p.y, p.x);
+	vec2 c = p / max(r, 0.001);
+	float light = 0.0, shade = 0.0;
+	for (int k = 0; k < 5; k++) {
+		float fk = float(k);
+		float R = (1.0 - pow(1.0 - clamp(prog * 1.25 - fk * 0.085, 0.0, 1.0), 2.2)) * 0.97;      // 先快后慢
+		if (R <= 0.015) continue;
+		float w = (0.0035 + 0.006 * R) * (0.6 + 0.9 * noise(c * 5.0 + fk * 3.1 + seed));
+		float seg = smoothstep(0.25, 0.45, noise(c * 3.2 + fk * 1.7 + seed * 2.0));
+		float fall = (1.0 - smoothstep(0.5, 0.97, R)) * (1.0 - fk * 0.15);
+		light += exp(-pow((r - R) / w, 2.0)) * mix(0.25, 1.0, seg) * fall;
+		shade += smoothstep(R - 0.075, R - 0.012, r) * (1.0 - smoothstep(R - 0.012, R, r)) * fall;
+	}
+	float lead = (1.0 - pow(1.0 - clamp(prog * 1.25, 0.0, 1.0), 2.2)) * 0.97;
+	// 放射细丝：只在最前面那道波前后面一小段，很细很淡（粗了像漫画速度线）
+	float lane = pow(noise(c * 90.0 + seed), 16.0) * 6.0;
+	float streak = lane * smoothstep(lead * 0.55, lead * 0.8, r) * (1.0 - smoothstep(lead * 0.9, lead, r)) * (1.0 - prog) * 0.22;
+	float fade = (1.0 - smoothstep(0.9, 1.0, r)) * (1.0 - smoothstep(0.72, 1.0, prog));
+	vec3 col = vec3(1.0, 0.95, 0.93) * light * 0.75 + vec3(1.0, 0.25, 0.3) * (light * 0.6 + streak * 0.6);
+	COLOR = vec4(col * fade, clamp(shade * 0.34, 0.0, 0.45) * fade);
+}" };
+
+	/// <summary>
+	/// 尖啸（所有敌人失去力量；用户 2026-11-10：以 Joker 为中心展开的声波）：面具一闪，五道圆形声波从 Joker 身上一道追一道往外扩，
+	/// 带着三圈空间扭曲；声波扫到哪个敌人，那个敌人一亮再被压暗、身上的碎光被吹向远离 Joker 的方向。
+	/// mask = 声波的圆心（Joker 的面具 / 胸口）；targets = 每个敌人的脚底 / 头顶 / 宽度。
 	/// </summary>
 	public static void Wail(Control front, Control? back, Vector2 mask, IReadOnlyList<Victim> targets, bool sound = true)
 	{
-		if (targets.Count == 0)
-		{
-			return;
-		}
-		Vector2 mid = Vector2.Zero;
-		float reach = 0f;
+		float reach = 0f, unit = Unit(front);
 		foreach (Victim v in targets)
 		{
-			Vector2 c = (v.Feet + v.Top) * 0.5f;
-			mid += c / targets.Count;
-			reach = Mathf.Max(reach, c.DistanceTo(mask));
+			reach = Mathf.Max(reach, ((v.Feet + v.Top) * 0.5f).DistanceTo(mask));
 		}
-		reach = reach * 1.12f + 120f;
-		const float life = 0.62f;
+		reach = Mathf.Max(reach * 1.2f + 160f * unit, 900f * unit);
+		const float life = 0.75f;
 		if (sound)
 		{
 			Sfx.Play(Sfx.Wail, 0.7f);
 		}
 		Fx.Shake(2);
-		Glow.Flash(front, mask, new Color(1f, 0.3f, 0.34f), reach * 0.22f, 0.16f);
-		Node2D root = Fx.Root(front, mask, "P5Wail", life + 0.1);
-		root.Rotation = (mid - mask).Angle();
-		ColorRect q = Quad(root, Wave, new Vector2(reach, reach), new Vector2(0f, reach / 2f));
+		Glow.Flash(front, mask, new Color(1f, 0.92f, 0.9f), 200f * unit, 0.12f);
+		Glow.Flash(front, mask, new Color(1f, 0.25f, 0.3f), 520f * unit, 0.3f);
+		for (int i = 0; i < 3; i++)
+		{
+			Glow.Ripple(front, mask, reach * 2f, 0.55f, 0.035f - 0.008f * i, 1f, 0.07f * i);
+		}
+		Node2D root = Fx.Root(back ?? front, mask, "P5Wail", life + 0.1);
+		ColorRect q = Quad(root, Sonic, new Vector2(reach * 2f, reach * 2f));
 		Set(q, "seed", Fx.Rand(0f, 30f));
 		Fx.Animate(q, 0, life, t => Set(q, "prog", t));
 		foreach (Victim v in targets)
 		{
-			float d = ((v.Feet + v.Top) * 0.5f).DistanceTo(mask);
-			Debuff(front, back, v.Feet, v.Top, v.Width, v.Tint, sound: false, delay: life * Mathf.Clamp(d / reach / 1.45f, 0f, 1f) * 1.0f);
+			Vector2 c = (v.Feet + v.Top) * 0.5f;
+			float d = c.DistanceTo(mask) / reach;
+			// 第一道波前到这个敌人的时刻（和着色器里 R 的走法互逆）
+			float at = life * (1f - Mathf.Pow(1f - Mathf.Clamp(d / 0.97f, 0f, 1f), 1f / 2.2f)) / 1.25f;
+			Vector2 away = (c - mask).Normalized();
+			float h = Mathf.Max(120f, (v.Feet - v.Top).Length());
+			Fx.After(front, at, () =>
+			{
+				Glow.Flash(front, c, new Color(1f, 0.3f, 0.34f), h * 1.3f, 0.2f);
+				Glow.Sparks(front, c, 16, 200f, 620f, 0.4f, new[] { new Color(1f, 0.9f, 0.88f), new Color(1f, 0.3f, 0.34f), new Color(0.5f, 0.02f, 0.08f) }, 200f,
+					0.025f * unit, 0.07f * unit, away, 28f);
+				if (v.Tint is Action<Color> tint)
+				{
+					Node2D ticker = Fx.Root(front, v.Feet, "P5WailTint", 1.0);
+					Fx.Animate(ticker, 0, 0.8, t =>
+					{
+						Color bright = new(1.5f, 1.1f, 1.1f), dark = new(0.58f, 0.4f, 0.47f);
+						tint(t < 0.08f ? Colors.White.Lerp(bright, t / 0.08f) : t < 0.22f ? bright.Lerp(dark, (t - 0.08f) / 0.14f) : dark.Lerp(Colors.White, (t - 0.22f) / 0.78f));
+					});
+					ticker.TreeExiting += () => tint(Colors.White);
+				}
+			});
 		}
 	}
 
@@ -899,10 +953,9 @@ void fragment() {
 		float h = Mathf.Max(120f, (feet - top).Length()), unit = Unit(front);
 		float ang = dir.X >= 0f ? -0.9f : Mathf.Pi + 0.9f;
 		Cut.Razor(front, center, ang, h * 1.5f, 6f * unit, 0.16f);
-		Sfx.Play(Sfx.SwishLow, 0.35f);
 		Fx.After(front, 0.07, () =>
 		{
-			Sfx.Play(Sfx.Glass, 0.6f);
+			Sfx.Play(Sfx.ExposeBreak, 0.7f);
 			HitStop.Request(0.045);
 			Stage.ShakeDir?.Invoke(2, Mathf.RadToDeg(dir.Angle()));
 			Glow.Flash(front, center, new Color(1f, 0.92f, 0.9f), h * 1.1f, 0.12f);

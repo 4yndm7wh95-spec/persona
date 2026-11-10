@@ -135,6 +135,7 @@ SFX = {
     "sinful_sweep_close": ROOT / "art/sfx_p5/sinful_sweep_close.ogg",
     "crush": ROOT / "art/sfx_p5/crush.ogg",
     # skill / power card effects (p5mod/src/Vfx/SkillFx.cs; synthesized: tools/p5/sfx/synth_skill_fx.py, user 2026-11-10)
+    "expose_break": ROOT / "art/sfx_p5/expose_break.ogg",
     **{n: ROOT / f"art/sfx_p5/{n}.ogg" for n in ("card_flick", "card_burn", "bullet_load", "buff_up", "buff_dark", "debuff_down", "energy_surge", "wail", "stealth_veil", "time_slow", "hex_guard", "shadow_mark")},
     # Joker gunshots matching the Five Cards demo mix (tools/p5/sfx/five_cards_shots.py, user 2026-11-09)
     **{n: ROOT / f"art/sfx_p5/{n}.ogg" for n in ("gun_shot_1", "gun_shot_2", "gun_shot_3", "gun_shot_4", "gun_shot_final", "gun_hit", "gun_hit_final")},                          # synthesized crunch for the hand crush                      # synthesized sub hit (ffmpeg aevalsrc)
