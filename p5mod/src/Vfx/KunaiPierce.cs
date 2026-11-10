@@ -50,7 +50,7 @@ vec3 to_local(vec3 pw) {
 float blade(vec3 p) {
 	float y = clamp(p.y, 0.0, 1.25);
 	float w = y < 0.38 ? mix(0.075, 0.23, y / 0.38) : mix(0.23, 0.0, (y - 0.38) / 0.87);
-	float t = w * 0.5 + 0.006;                                     // 厚一点：中间一道脊、两侧两个斜面，立体感才出得来
+	float t = w * 0.3 + 0.005;                                     // 薄的叶形刃，中间一道脊
 	float d = (abs(p.x) * t + abs(p.z) * w - w * t) / sqrt(w * w + t * t + 1e-5);
 	float cap = max(-p.y, p.y - 1.25);
 	return max(max(d, cap), abs(p.z) - w - 0.002);                 // 宽度方向也要封住（不然尖附近 w→0，整个刃面所在的平面都成了「表面」）
@@ -143,7 +143,7 @@ void fragment() {
 	vec3 ctr = pos + d0 * ((band_z - pos.z) / d0.z);                    // 长轴和横幅的交点
 	vec2 rel = q.xy - ctr.xy;
 	float rr = length(rel), ang = atan(rel.y, rel.x);
-	float inband = step(pos.z + d0.z * 1.25 * size, band_z) * step(band_z, pos.z - d0.z * 0.8 * size);   // 苦无正跨在横幅上
+	float inband = step(pos.z + d0.z * 1.25 * size, band_z) * step(band_z, pos.z - d0.z * 0.9 * size);   // 苦无正跨在横幅上
 	float through = max(inband, step(0.001, crack));
 	float ring = exp(-max(dq, 0.0) * 34.0) * step(-0.002, dq) * inband;
 	float cn = noise(vec2(ang * 2.2, 3.7)) + 0.5 * noise(vec2(ang * 6.0, 1.3));
@@ -186,7 +186,7 @@ void fragment() {
 	public const float PierceAfter = Approach + Slow;
 
 	private const float Focal = 1.25f, BandZ = 2.2f;
-	private static readonly Vector3 Aim = new Vector3(0.8f, -0.5f, -1f).Normalized();   // 用户 2026-11-10：从偏左的地方斜着刺出来，刀身朝右下前方伸，压在横幅亮的地方和红色舞台上，看得清
+	private static readonly Vector3 Aim = new Vector3(1f, -0.42f, -0.5f).Normalized();   // 用户 2026-11-10：要看得出是一把苦无 → 更侧着飞（朝右下、略朝镜头），整把的侧影都看得见
 
 	/// <summary>世界里的点 → 屏幕像素。</summary>
 	private static Vector2 ToScreen(Vector3 w, Vector2 screen) =>
@@ -201,7 +201,7 @@ void fragment() {
 		Vector2 screen = Fx.Screen(back);
 		Node2D root = Fx.ScreenRoot(back, "P5KunaiPierce");
 		KunaiPierce k = new(root, screen);
-		const float size = 2.6f;
+		const float size = 1.15f;     // 整把苦无（尖到环 ≈ 2.1 × size）在慢放里全部穿出来、横在画面中间
 		// 长轴穿过横幅的点（世界）：屏幕中间偏右上一点；刃尖沿 Aim 朝镜头走
 		// 用户 2026-11-10：从眼神横幅的正中间穿出来（横幅中心在屏幕上的位置由 center 给，换算到横幅所在的深度）
 		Vector2 c = center ?? new Vector2(screen.X * 0.4f, screen.Y * 0.36f);
@@ -238,8 +238,8 @@ void fragment() {
 			{
 				// 慢放：尖端挤出来，转得看得清，裂纹越裂越远，刃口烧红
 				float u = (s - touchAt) / Slow;
-				tipPast = Mathf.Lerp(0.25f * size, 0.95f * size, Mathf.Pow(u, 0.7f));     // 一刺破就露出一截，慢放里继续往外挤
-				rate = Mathf.Lerp(20f, 12f, u);
+				tipPast = Mathf.Lerp(0.5f * size, 2.35f * size, Mathf.Pow(u, 0.75f));     // 一刺破就露出半截刃，慢放里整把（柄、环）都穿出来
+				rate = Mathf.Lerp(16f, 9f, u);
 				heat = Mathf.Min(1f, u * 2.5f);
 				crack = 0.3f + 1.4f * u;
 				if (!touched)
@@ -268,7 +268,7 @@ void fragment() {
 			{
 				// 横幅碎开，苦无恢复速度冲出镜头
 				float u = (s - splitAt) / Exit;
-				tipPast = Mathf.Lerp(0.95f * size, 0.95f * size + 4.6f, u * u);
+				tipPast = Mathf.Lerp(2.35f * size, 2.35f * size + 5f, u * u);
 				rate = 26f;
 				heat = 1f - u;
 				alpha = 1f - Mathf.Clamp((u - 0.7f) / 0.3f, 0f, 1f);
