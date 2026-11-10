@@ -50,7 +50,7 @@ vec3 to_local(vec3 pw) {
 float blade(vec3 p) {
 	float y = clamp(p.y, 0.0, 1.25);
 	float w = y < 0.38 ? mix(0.075, 0.23, y / 0.38) : mix(0.23, 0.0, (y - 0.38) / 0.87);
-	float t = w * 0.24 + 0.004;
+	float t = w * 0.5 + 0.006;                                     // 厚一点：中间一道脊、两侧两个斜面，立体感才出得来
 	float d = (abs(p.x) * t + abs(p.z) * w - w * t) / sqrt(w * w + t * t + 1e-5);
 	float cap = max(-p.y, p.y - 1.25);
 	return max(max(d, cap), abs(p.z) - w - 0.002);                 // 宽度方向也要封住（不然尖附近 w→0，整个刃面所在的平面都成了「表面」）
@@ -151,7 +151,17 @@ void fragment() {
 	float reach = crack * (0.5 + 0.9 * noise(vec2(ang * 1.7, 9.0)));
 	float cracks = line * (1.0 - smoothstep(reach * 0.8, reach, rr)) * smoothstep(0.02, 0.08, rr) * through * step(0.0, dq);
 	float bulge = exp(-rr * rr / 0.5) * crack * 0.25 * through * step(0.0, dq);                            // 被顶起来的一块：微微发亮
-	float pa = clamp(ring + cracks * 0.9 + bulge, 0.0, 1.0) * (1.0 - a);
+	// 衬托旋转：绕着穿孔甩出去的几道弧光（跟着苦无一起转，头亮尾淡，两圈半径），转得越快甩得越开
+	float swirl = 0.0;
+	for (int i = 0; i < 2; i++) {
+		float R = (0.2 + 0.2 * float(i)) * size;
+		float saw = fract((ang - spin * (1.0 - 0.25 * float(i))) / 6.2831853 * 3.0 + float(i) * 0.17);
+		swirl += exp(-pow((rr - R * (1.0 + 0.25 * (1.0 - saw))) / (0.02 + 0.014 * float(i)), 2.0)) * pow(saw, 2.0);
+	}
+	swirl *= inband;
+	bulge = 0.0;
+	float pa = clamp(ring + cracks * 0.9 + swirl, 0.0, 1.0) * (1.0 - a);
+	col += mix(vec3(1.0, 0.3, 0.3), vec3(1.0, 0.95, 0.92), swirl) * swirl * (1.0 - a) * 1.3;
 	col += mix(vec3(1.0, 0.2, 0.16), vec3(1.0, 0.85, 0.8), heat * ring) * (ring * 1.3 + cracks) + vec3(1.0, 0.25, 0.25) * bulge;
 	a = max(a, pa);
 	COLOR = vec4(col * alpha, clamp(a, 0.0, 1.0) * alpha);
@@ -169,13 +179,13 @@ void fragment() {
 	}
 
 	/// <summary>时间轴（秒，从 emergeAt 算）：冲到横幅、慢放、冲出镜头。</summary>
-	public const float Approach = 0.2f, Slow = 0.55f, Exit = 0.16f;
+	public const float Approach = 0.1f, Slow = 0.28f, Exit = 0.12f;   // 用户 2026-11-10：要迅捷、干脆利落，慢放只一小会儿
 
 	/// <summary>从苦无出现到横幅碎开过了多久（CutInPlayback 的 SplitAt = emergeAt + PierceAfter）。</summary>
 	public const float PierceAfter = Approach + Slow;
 
 	private const float Focal = 1.25f, BandZ = 2.2f;
-	private static readonly Vector3 Aim = new Vector3(-1.35f, -0.5f, -1f).Normalized();   // 用户 2026-11-10：不要正对着飞进来，斜一点，看得见刀身
+	private static readonly Vector3 Aim = new Vector3(-0.95f, -0.38f, -1f).Normalized();   // 斜一点飞出来，看得见刀身
 
 	/// <summary>世界里的点 → 屏幕像素。</summary>
 	private static Vector2 ToScreen(Vector3 w, Vector2 screen) =>
@@ -184,18 +194,22 @@ void fragment() {
 	/// <summary>
 	/// 放一次（和 CutIn.Eyes 同一个 playback；放在背景层、眼神横幅上面、人物后面）。onTouch：尖端碰到横幅（慢放开始）；onPierce：横幅碎开。
 	/// </summary>
-	public static KunaiPierce Play(Control back, float emergeAt, CutInPlayback playback, System.Action? onTouch = null, System.Action? onPierce = null)
+	public static KunaiPierce Play(Control back, float emergeAt, CutInPlayback playback, System.Action? onTouch = null, System.Action? onPierce = null,
+		Vector2? center = null)
 	{
 		Vector2 screen = Fx.Screen(back);
 		Node2D root = Fx.ScreenRoot(back, "P5KunaiPierce");
 		KunaiPierce k = new(root, screen);
 		const float size = 2.3f;
 		// 长轴穿过横幅的点（世界）：屏幕中间偏右上一点；刃尖沿 Aim 朝镜头走
-		Vector3 through = new(0.95f, 0.36f, BandZ);
+		// 用户 2026-11-10：从眼神横幅的正中间穿出来（横幅中心在屏幕上的位置由 center 给，换算到横幅所在的深度）
+		Vector2 c = center ?? new Vector2(screen.X * 0.5f, screen.Y * 0.37f);
+		Vector3 through = new((c.X / screen.X * 2f - 1f) * (screen.X / screen.Y) * BandZ / Focal, (1f - c.Y / screen.Y * 2f) * BandZ / Focal, BandZ);
 		// 刃根的位置 = through - Aim * (尖到刃根 1.25*size) + Aim * 走了多远
 		Vector3 baseAt(float tipPast) => through + Aim * (tipPast - 1.25f * size);
 		float touchAt = emergeAt + Approach, splitAt = emergeAt + PierceAfter, life = splitAt + Exit;
 		bool touched = false, pierced = false;
+		playback.Outward = true;                                    // 碎片朝玩家炸开
 		float spin = 0f, last = 0f;
 		k.Set("alpha", 0f);
 		k.Set("band_z", BandZ);
@@ -223,10 +237,10 @@ void fragment() {
 			{
 				// 慢放：尖端挤出来，转得看得清，裂纹越裂越远，刃口烧红
 				float u = (s - touchAt) / Slow;
-				tipPast = Mathf.Lerp(0f, 0.95f * size, u * (0.55f + 0.45f * u));
-				rate = Mathf.Lerp(7.5f, 4.5f, u);
+				tipPast = Mathf.Lerp(0f, 0.8f * size, u * (0.6f + 0.4f * u));
+				rate = Mathf.Lerp(20f, 12f, u);
 				heat = Mathf.Min(1f, u * 2.5f);
-				crack = 0.25f + 1.6f * u;
+				crack = 0.3f + 1.4f * u;
 				if (!touched)
 				{
 					touched = true;
@@ -234,22 +248,19 @@ void fragment() {
 					Sfx.Play(Sfx.SubBoom, 0.35f);
 					onTouch?.Invoke();
 				}
-				playback.Pinch = 0.25f + 0.4f * u;
-				playback.PinchAt = ToScreen(through, screen);
-				playback.ShatterFrom = playback.PinchAt;
+				playback.ShatterFrom = ToScreen(through, screen);       // 横幅不变形（用户 2026-11-10），只记下从哪里碎开
 			}
 			else
 			{
 				// 横幅碎开，苦无恢复速度冲出镜头
 				float u = (s - splitAt) / Exit;
-				tipPast = Mathf.Lerp(0.95f * size, 0.95f * size + 4.6f, u * u);
+				tipPast = Mathf.Lerp(0.8f * size, 0.8f * size + 4.6f, u * u);
 				rate = 26f;
 				heat = 1f - u;
 				alpha = 1f - Mathf.Clamp((u - 0.7f) / 0.3f, 0f, 1f);
 				if (!pierced)
 				{
 					pierced = true;
-					playback.Pinch = 0f;
 					onPierce?.Invoke();
 				}
 			}

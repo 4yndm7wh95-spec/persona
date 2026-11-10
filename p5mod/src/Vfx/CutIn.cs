@@ -332,7 +332,7 @@ void fragment() {
 			{
 				shattered = true;
 				Shatter(back, view.GetTexture(), screen, bandRect, () => sprite.Visible = false, playback.ShatterFrom, playback.Crush ? 0f : 0.05f,
-					playback.Pinch, playback.PinchAt / screen);
+					playback.Pinch, playback.PinchAt / screen, playback.Outward);
 			}
 		});
 	}
@@ -451,7 +451,7 @@ void fragment() { COLOR = vec4(COLOR.rgb, COLOR.a * step(0.5, texture(mask, SCRE
 
 	/// <summary>横幅从冲击点放射状裂开，0.05s 裂纹定格（白裂纹 + 白闪），然后碎成大块玻璃炸开、迅速减速、慢慢转着漂、一部分飞向镜头放大、淡出。</summary>
 	private static void Shatter(Control back, Texture2D tex, Vector2 screen, Rect2 band, System.Action hideBand, Vector2? shatterFrom, float crackDelay,
-		float pinch = 0f, Vector2 pinchAt = default)
+		float pinch = 0f, Vector2 pinchAt = default, bool outward = false)
 	{
 		Vector2 hit = shatterFrom ?? band.Position + band.Size * new Vector2(0.42f, 0.52f);      // 毒性爆发：从拳心碎开
 		Vector2[] rect = { band.Position, band.Position + new Vector2(band.Size.X, 0f), band.End, band.Position + new Vector2(0f, band.Size.Y) };
@@ -535,11 +535,32 @@ void fragment() { COLOR = vec4(COLOR.rgb, COLOR.a * step(0.5, texture(mask, SCRE
 				float grow = Fx.Rand(0f, 1f) < 0.4f ? Fx.Rand(0.3f, 0.9f) : Fx.Rand(-0.3f, 0.1f);   // 一部分飞向镜头（放大）
 				float delay = dist / 7000f;
 				Vector2 p0 = c;
+				// 朝镜头飞（苦无从横幅后面刺过来，碎片往屏幕外、朝玩家炸开）：每块有自己的前冲速度，离穿孔越近冲得越猛；
+				// 透视：越近越大，并且从穿孔往四周散开（位置按同一个倍数放大）；边飞边绕一根斜轴翻（横向压扁再翻面）
+				float zSpeed = Fx.Rand(0.7f, 1.5f) * (1f + 1.3f * Mathf.Exp(-dist / 260f));
+				float tumble = Fx.Rand(5f, 11f) * (Fx.Rand(0f, 1f) < 0.5f ? -1f : 1f), tumble0 = Fx.Rand(0f, 6f);
 				Fx.Animate(shard, 0, total, t =>
 				{
 					float tt = t * total - delay;
 					if (tt < 0f) return;
 					float burst = tau * (1f - Mathf.Exp(-tt / tau));                 // 爆发后迅速减速
+					if (outward)
+					{
+						float adv = zSpeed * (burst * 3.2f + tt * 0.9f);             // 往镜头走了多远（横幅在 1，镜头在 0）
+						float sc = 1f / Mathf.Max(0.08f, 1f - adv);
+						shard.Position = hit + (p0 - hit) * sc + vel * 0.1f * burst + new Vector2(0f, 60f * tt * tt);
+						shard.Rotation = spin * 0.4f * burst + spin * 0.1f * tt;
+						float flip = Mathf.Cos(tumble0 + tumble * (burst * 2f + tt * 0.5f));
+						shard.Scale = new Vector2(sc * Mathf.Sign(flip) * Mathf.Max(0.12f, Mathf.Abs(flip)), sc);
+						float fl = Mathf.Pow(1f - Mathf.Abs(flip), 4f);                // 翻到侧面那一下反光
+						sm.SetShaderParameter("glint", Mathf.Clamp(1f - tt / 0.15f, 0f, 1f) * 0.7f + 0.6f * fl);
+						sm.SetShaderParameter("phase", ph0 + tumble * tt * 0.2f);
+						rim.Modulate = new Color(1f, 1f, 1f, 0.55f + 0.45f * fl);
+						// 冲到镜头跟前（放大 3 倍以后）淡掉；没冲那么快的 0.25s 起淡
+						float near = Mathf.Clamp((sc - 2.6f) / 2.4f, 0f, 1f), late = Mathf.Clamp((tt - 0.25f) / 0.4f, 0f, 1f);
+						shard.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Max(near, late * late));
+						return;
+					}
 					shard.Position = p0 + vel * burst + vel * 0.06f * tt + new Vector2(0f, 90f * tt * tt);
 					shard.Rotation = spin * burst + spin * 0.12f * tt;
 					shard.Scale = Vector2.One * (1f + grow * Fx.OutCubic(Mathf.Clamp(tt / 0.9f, 0f, 1f)));

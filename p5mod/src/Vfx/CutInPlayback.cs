@@ -10,6 +10,8 @@ public sealed class CutInPlayback
 	public readonly float Seed = Fx.Rand(0f, 100f);
 	public readonly bool Crush;
 	public bool Ready = true;
+	/// <summary>碎片朝镜头（屏幕外）炸开：从横幅后面刺穿过来的那种碎法（苦无，Vfx/KunaiPierce.cs）。</summary>
+	public bool Outward;
 	public float Pinch;
 	public Vector2 PinchAt;
 	public Vector2? ShatterFrom;
