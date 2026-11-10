@@ -350,6 +350,20 @@ public partial class Preview : Node2D
 		},
 		// 毒性爆发（稀有）：眼神特写 + 舞台 + 新亚森 → 出手，咒怨光束扇形射向三个敌人（各 9 层）→ 立即触发中毒：全场咒火一起引爆
 		// 毒性爆发巨手版（同 p5mod/src/Aim.cs OutbreakHand）：眼神特写 → 亚森现身 → 亚森出手 = 巨手从横幅冲出来 → 张开 → 攥拳（敌人被标记）→ 颤抖 → 捏碎 = 横幅碎开 = 全体引爆
+		// 苦无戳碎眼神特写（用户 2026-11-10）：眼神特写 → 苦无从深处飞来 → 尖端穿破横幅时慢放、旋转 → 横幅碎开，苦无冲出镜头
+		["kunai"] = p =>
+		{
+			float emerge = 0.75f;
+			p.At(0.3, () => p._joker?.Play("cast_big"));
+			p.At(0.34, () =>
+			{
+				CutInPlayback clip = new(emerge + KunaiPierce.PierceAfter, crush: true);
+				clip.Start();
+				SummonStage.Play(p._back, p._front, Pose(1010, 215), maskFlame: false, playback: clip);
+				CutIn.Eyes(p._back, clip);
+				KunaiPierce.Play(p._back, emerge, clip);
+			});
+		},
 		["outbreak_hand"] = p =>
 		{
 			Persona.Spec spec = Persona.ArseneSpec with { First = 18, Linger = CrushHand.CrushAfter + 0.5f };   // 同 Aim.PersonaFor("Outbreak")
