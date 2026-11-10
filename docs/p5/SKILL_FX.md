@@ -4,7 +4,7 @@
 
 - 特效积木：`p5mod/src/Vfx/SkillFx.cs`；按牌接线：`p5mod/src/SkillPlay.cs`（查表）；格挡：`JokerFx.OnBlock` → `Vfx/HexGuard.cs`。
 - 音效：`tools/p5/sfx/synth_skill_fx.py`（12 个，全部合成）。
-- 预览：`tools/p5/fxpreview` 的 `skills_a` / `skills_b` / `skills_c` / `skills_d` 四个场景。
+- 预览视频（带声音）：`docs/p5/preview/preview_skill_fx.mp4`；场景：`tools/p5/fxpreview` 的 `skills_a` / `skills_b` / `skills_c` / `skills_d` 四个场景。
 - 状态：预览里看过；游戏侧代码通过了类型检查，**还没打包实测**。
 
 ## 积木
