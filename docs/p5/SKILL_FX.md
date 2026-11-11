@@ -96,4 +96,4 @@
   - 常驻：五条各有自己的轨道（身后高处慢转 / 左右竖着绕 / 绕腰贴身转 / 左后上方），方向、快慢不同；身体沿头走过的路铺开，越老的位置越往下沉，叠一道 S 波。
   - 能力触发（用户的想法）：轮流挑一条闲着的蛇 → 它散成一大团往外、往上飘的烟（0～0.3s）→ 敌人身上一张正面的蛇头大嘴从画面深处朝镜头冲出来（四周的烟往外冲），张开的嘴把敌人罩在里面（嘴里是空的，看得见敌人），两对烟里透出来的獠牙、两腮上方斜的眼光 → 0.46s 咬合（咬合缝一道红光、闪光、火星、震屏、顿帧）→ 大嘴散成烟 → 那条蛇在原来的轨道上重新聚起来。全是距离场 + 噪声，没有贴图。连续出牌几条蛇轮流，同时最多 3 张嘴。音效 `serpent_maw`（`tools/p5/sfx/synth_serpent.py`）。
 - 接线 `SerpentFormPlay.cs`：原版 `NSerpentFormVfx` 藏掉并接到真的 Joker 上；`OnEffectTriggered` 之后那次 `vfx_attack_blunt` 换成咬；能力移除时淡出。
-- 预览场景 `serpent_form`，视频 `docs/p5/preview/serpent_form_v10.mp4`。被否掉的方案（墨烟蛇 MistSerpent、蛇影 SerpentShade、光蛇 LightSerpent / SerpentAscend、法球）都已删除。
+- 预览场景 `serpent_form`，视频 `docs/p5/preview/serpent_form_v11.mp4`。被否掉的方案（墨烟蛇 MistSerpent、蛇影 SerpentShade、光蛇 LightSerpent / SerpentAscend、法球）都已删除。
