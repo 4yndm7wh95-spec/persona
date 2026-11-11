@@ -27,6 +27,8 @@ uniform float reveal = 1.0;            // 0 → 1：从 from_uv 往外漫开（�
 uniform vec2 from_uv = vec2(0.25, 0.7);
 uniform float desat = 0.0;             // 压饱和度（群蛇形态：用户说原来的太艳）
 uniform float cover = 0.4;             // 底色的最低覆盖（群蛇形态：盖实一点，不透出原来的背景）
+uniform float disk_r = 0.082;          // 黑日半径（群蛇形态：用户说黑的面积太大 → 缩小一半，日冕不变）
+uniform float blend = 0.0;             // 天到地的过渡（群蛇形态：用户说中间光影断层 → 光束和泛光一直柔和地落到地面，云没有硬的下边）
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
@@ -37,19 +39,19 @@ void fragment() {
 	vec2 uv = UV;
 	vec2 d = (uv - sun) * vec2(aspect, 1.0);
 	float r = length(d), ang = atan(d.y, d.x);
-	const float R = 0.082;
+	float R = disk_r;
 	// 底色：整屏压暗偏暗红（盖在战斗背景上，不是不透明的）
 	vec3 col = mix(vec3(0.16, 0.02, 0.04), vec3(0.07, 0.0, 0.02), uv.y);
 	float a = cover;
 	// 云：两层往右飘，日冕附近的云边被照红，雷光时整片云亮一下
 	float c1 = fbm(vec2(uv.x * 2.2 - clock * 0.012, uv.y * 4.0));
 	float c2 = fbm(vec2(uv.x * 4.5 - clock * 0.03, uv.y * 7.0 + 3.0));
-	float cloud = smoothstep(0.45, 0.75, c1 * 0.7 + c2 * 0.45) * (1.0 - smoothstep(0.55, 0.8, uv.y));
+	float cloud = smoothstep(0.45, 0.75, c1 * 0.7 + c2 * 0.45) * mix(1.0 - smoothstep(0.55, 0.8, uv.y), 1.0 - smoothstep(0.3, 0.95, uv.y), blend);
 	float near = exp(-max(r - R, 0.0) / 0.35);
 	// 日冕
-	float corona = exp(-max(r - R, 0.0) / 0.014) * step(R, r) * 0.8;
-	float halo = exp(-max(r - R, 0.0) / 0.2);
-	float rays = pow(noise(vec2(ang * 9.0, clock * 0.05)), 3.0) * exp(-max(r - R, 0.0) / 0.7) * (1.0 - cloud * 0.8) * smoothstep(ground - 0.02, ground - 0.25, uv.y);
+	float corona = exp(-max(r - R, 0.0) / mix(0.014, 0.022, blend)) * step(R, r) * 0.8;
+	float halo = exp(-max(r - R, 0.0) / mix(0.2, 0.26, blend));
+	float rays = pow(noise(vec2(ang * 9.0, clock * 0.05)), 3.0) * exp(-max(r - R, 0.0) / 0.7) * (1.0 - cloud * 0.8) * mix(smoothstep(ground - 0.02, ground - 0.25, uv.y), smoothstep(ground + 0.2, ground - 0.4, uv.y), blend);
 	vec3 light = vec3(1.0, 0.85, 0.75) * corona * 1.4 + vec3(0.9, 0.08, 0.06) * (halo * 0.9 + rays * 0.55);
 	light *= 1.0 - cloud * 0.6;
 	col += light;
@@ -58,10 +60,15 @@ void fragment() {
 	col += vec3(0.5, 0.05, 0.06) * wash * 0.45;
 	float floorLit = smoothstep(ground - 0.15, ground + 0.05, uv.y) * exp(-pow((uv.x - sun.x) / 0.7, 2.0));
 	col += vec3(0.45, 0.05, 0.05) * floorLit * 0.3;
+	// 日蚀正下方一道柔和的光柱一直落到地面（接住天和地，不在中间断开）
+	float column = exp(-pow((uv.x - sun.x) * aspect / 0.45, 2.0)) * smoothstep(sun.y, sun.y + 0.15, uv.y) * smoothstep(ground + 0.2, ground - 0.1, uv.y);
+	col += vec3(0.45, 0.05, 0.06) * column * 0.22 * blend;
+	float floorWide = smoothstep(ground - 0.3, ground + 0.08, uv.y) * exp(-pow((uv.x - sun.x) / 0.9, 2.0));
+	col += vec3(0.4, 0.05, 0.05) * floorWide * 0.15 * blend;
 	a = max(a, clamp(corona + halo * 0.4, 0.0, 1.0));
 	// 云体：暗，靠日冕和雷光照出边
 	// 黑日（用户 2026-11-10：太突兀 → 融进天色）：边缘柔一点，不是纯黑而是被暗红的天光蒙了一层，环是暗红偏亮而不是白热
-	float disk = 1.0 - smoothstep(R - 0.006, R + 0.004, r);
+	float disk = 1.0 - smoothstep(R - 0.006 * (R / 0.082 + 0.3), R + 0.004, r);
 	vec3 face = mix(vec3(0.05, 0.0, 0.012), vec3(0.2, 0.02, 0.03), smoothstep(R * 0.3, R, r));
 	col = mix(col, face, disk * 0.82);
 	a = max(a, disk * 0.82);

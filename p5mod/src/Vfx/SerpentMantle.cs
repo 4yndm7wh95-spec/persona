@@ -407,6 +407,8 @@ void fragment() {
 		_skyM.SetShaderParameter("reveal", _reveal);
 		_skyM.SetShaderParameter("desat", 0.3f);
 		_skyM.SetShaderParameter("cover", 0.62f);
+		_skyM.SetShaderParameter("disk_r", 0.045f);
+		_skyM.SetShaderParameter("blend", 1f);
 		_skyM.SetShaderParameter("aspect", scr.X / scr.Y);
 		_skyM.SetShaderParameter("from_uv", new Vector2(fs.X / scr.X, (fs.Y - 0.5f * tallS) / scr.Y));
 		_skyM.SetShaderParameter("ground", fs.Y / scr.Y);
