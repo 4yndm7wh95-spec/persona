@@ -45,7 +45,7 @@ uniform float side = 1.0;
 uniform float clock = 0.0;
 uniform float unit = 300.0;     // Joker 身高（像素）
 uniform float diss[5];          // 每条蛇散成烟的程度（攻击时 0 → 1 → 0）
-uniform vec4 maw[3];            // 敌人身上冲出来的大嘴：xy 中心，z 由远到近（0～1），w 张嘴（0～1）
+uniform vec4 maw[3];            // 敌人身上的咬合：xy 中心，z 飞进来（0～1），w 合上（0 张开 → 1 咬死）
 uniform float maw_a[3];         // 大嘴的浓度（散掉时往 0 走）
 
 float h21(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
@@ -56,8 +56,8 @@ float ease3(float x) { return 1.0 - pow(1.0 - clamp(x, 0.0, 1.0), 3.0); }
 
 // 粗细（s：0 尾 → 1 吻尖）：尾巴细、身体、脖子略收、头上平下宽的楔形
 float profile(float s, float up) {
-	// 第二版（用户：头大身子小很怪）：身体粗细基本一致（只有尾巴最后一段收细），头和身体差不多宽
-	float body = mix(0.2, 1.0, smoothstep(0.0, 0.28, s)) * mix(1.0, 0.86, smoothstep(0.6, 0.88, s));
+	// 第三版（用户：身子太肥，像一坨）：从脖子往尾巴一路收细，尾巴拉成又细又长的一条；最粗在靠头的三分之一
+	float body = mix(0.08, 1.0, pow(smoothstep(0.0, 0.72, s), 0.8)) * mix(1.0, 0.85, smoothstep(0.74, 0.88, s));
 	if (s < 0.9) return body;
 	float hs = (s - 0.9) / 0.1;
 	float top = mix(0.86, 0.92, smoothstep(0.0, 0.3, hs)) * mix(1.0, 0.42, smoothstep(0.3, 1.0, hs));
@@ -97,10 +97,10 @@ void fragment() {
 		float headness = smoothstep(0.86, 0.92, bs);
 		float L = bs * 11.0;
 		float acr = sign(upv) * best / g;
-		float nz = fbm(vec2(L - clock * 1.3, acr * 1.1 - clock * 0.2) + float(j) * 11.0);
+		float nz = fbm(vec2(L * 2.2 - clock * 1.3, acr * 1.1 - clock * 0.2) + float(j) * 11.0);
 		float fine = vn(vec2(L * 3.5 - clock * 2.6, acr * 3.0) + float(j) * 4.0);
 		float dj = diss[j];
-		float torn = (nz - 0.5) * mix(0.8, 0.36, headness) + (fine - 0.5) * 0.2 + (1.0 - smoothstep(0.0, 0.3, bs)) * nz * 0.9;
+		float torn = (nz - 0.5) * mix(0.3, 0.18, headness) + (fine - 0.5) * 0.22 + (1.0 - smoothstep(0.0, 0.25, bs)) * nz * 0.6;   // 不要沿身子一块块的疙瘩，只在边上细碎
 		torn += dj * (0.5 + nz * 1.8);                                  // 散成烟：边被撕开、往里吃
 		float sd = r - 1.0 + torn;
 		float dens = smoothstep(0.16, -0.22, sd) * (1.0 - dj * 0.6);   // 芯是实的：挡住 / 被挡住看得出层次，只有边是烟
@@ -110,7 +110,10 @@ void fragment() {
 		float lit = 0.55 + 0.45 * smoothstep(-0.5, 0.8, -n2.y);
 		vec3 emit = vec3(0.6, 0.05, 0.07) * shell * smoothstep(0.5, 0.82, flick) * 1.1 * lit * (1.0 + dj * 1.5);   // 断断续续的透光，不成一圈描边
 		float nz2 = fbm(vec2(L * 2.0 - clock * 1.8, acr * 1.6) + float(j) * 2.0);
-		vec3 inner = mix(vec3(0.012, 0.003, 0.006), vec3(0.12, 0.022, 0.032), smoothstep(0.3, 0.85, nz2)) * mix(1.0, 0.7, smoothstep(0.6, 0.0, r));
+		vec3 inner = mix(vec3(0.008, 0.002, 0.004), vec3(0.045, 0.01, 0.016), smoothstep(0.4, 0.9, nz2));
+		// 圆柱的体积：朝上一侧一道细的暗红边光（日冕从上面照下来），背光一侧纯黑
+		float topRim = smoothstep(0.45, 0.9, r) * smoothstep(0.1, 0.8, -upv * sign(-hup[j].y) + 0.0) * (1.0 - smoothstep(0.95, 1.05, r + torn));
+		inner += vec3(0.42, 0.05, 0.06) * topRim * smoothstep(-0.2, 0.6, -n2.y) * 0.8;
 		// 外面一缕缕往上飘的暗烟
 		float wn = fbm(vec2(L * 0.7 - clock * 0.8, best / g * 0.9 + clock * 0.9 * sign(n2.y)) + 7.0 + float(j) * 3.0);
 		float wisp = smoothstep(0.5, 0.85, wn) * smoothstep(mix(1.8, 2.8, smoothstep(0.0, 0.8, -n2.y)), 0.9, r) * 0.6 * (1.0 - headness * 0.7);
@@ -128,75 +131,61 @@ void fragment() {
 		float e2 = dot(ed, ed);
 		glow += (vec3(1.0, 0.55, 0.25) * exp(-e2 / pow(g * 0.11, 2.0)) * 1.2 + vec3(0.9, 0.12, 0.08) * exp(-e2 / pow(g * 0.4, 2.0)) * 0.45) * eyes[j].z * (1.0 - dj);
 	}
-	// 敌人身上：一张从画面深处朝镜头冲出来的大嘴（正面看的蛇头：两边宽的头、中间张开的嘴把敌人罩在里面，两颗獠牙、两团眼光），
-	// 咬合以后整团散成烟。全用距离场 + 噪声，没有贴图。
+	// 敌人身上：咬合（用户选的 B：不画蛇头）——上下两排烟做的獠牙从两边飞进来、交错着猛地合上，合缝亮一下、留一排红的牙印，
+	// 然后两排牙散成烟。牙也是烟（近黑、边上透暗红），没有眼睛、不成一张脸。
 	if (side > 0.0) {
 		float T = unit;
 		for (int i = 0; i < 3; i++) {
 			if (maw_a[i] <= 0.0) continue;
-			float k = maw[i].z, op = maw[i].w, ma = maw_a[i];
-			float S = T * 0.48 * mix(0.12, 1.0, k);                  // 用户：大嘴缩小一半                  // 头半宽：由远到近一下子放大
+			float k = maw[i].z, c = maw[i].w, ma = maw_a[i];
+			float S = T * 0.5;
 			vec2 q = (p - maw[i].xy) / S;
-			if (abs(q.x) > 2.6 || abs(q.y) > 2.6) continue;
+			if (abs(q.x) > 1.8 || abs(q.y) > 2.2) continue;
 			float gone = 1.0 - ma;
-			float n = fbm(q * 2.2 + vec2(0.0, clock * 0.8) + float(i) * 9.0);
-			float n2 = vn(q * 6.0 - clock * 1.5);
-			// 头：上宽下窄的圆钝楔形（正面），额头两侧鼓一点
-			// 正面的蛇头：扁宽、两腮往外撑、往上收成平的头顶（不要圆鼓鼓的「耳朵」）
-			float head = length(q / vec2(1.0 - 0.2 * smoothstep(-0.8, 0.6, -q.y), 1.0) - vec2(0.0, 0.0)) - 1.0;
-			// 嘴：中间一道弧形的口子，张开时上下分开
-			const float MW = 0.6, MH = 0.4, MY = 0.32;   // 嘴：半宽、张开时的半高、中线（头的下半）
-			float mx = clamp(q.x / MW, -1.0, 1.0);
-			float lip = sqrt(max(1.0 - mx * mx, 0.0));
-			float mouth = abs(q.y - MY) - MH * op * lip;
-			float inMouth = smoothstep(0.04, -0.04, mouth) * step(abs(q.x), MW);
-			float hsd = head + (n - 0.5) * 0.5 + (n2 - 0.5) * 0.12 + gone * (0.5 + n * 1.6);
-			float dens = smoothstep(0.12, -0.3, hsd) * (1.0 - inMouth);
-			// 咬合缝和嘴里的一圈红光（嘴里是空的，看得见敌人）
-			float rim = smoothstep(0.0, -0.08, mouth) * (1.0 - smoothstep(-0.08, -0.2, mouth)) * step(abs(q.x), MW + 0.03) * op * smoothstep(0.45, 0.8, n);
-			float seam = exp(-pow((q.y - MY + (n2 - 0.5) * 0.06) / 0.025, 2.0)) * (1.0 - smoothstep(MW * 0.6, MW, abs(q.x))) * (1.0 - op) * step(0.5, k) * smoothstep(0.35, 0.7, n);
-			vec3 sc = mix(vec3(0.012, 0.003, 0.006), vec3(0.11, 0.02, 0.03), smoothstep(0.35, 0.8, n));
-			sc += vec3(0.6, 0.05, 0.07) * smoothstep(-0.28, -0.03, hsd) * (0.35 + 0.65 * smoothstep(0.45, 0.8, n));   // 头的外沿透光
-			// 上下颚的唇边：嘴口外面一圈亮一点的暗红，把颚的形状勾出来
-			float lipE = smoothstep(0.16, 0.0, mouth) * smoothstep(-0.02, 0.06, mouth) * step(abs(q.x), MW + 0.04);
-			sc += vec3(0.4, 0.05, 0.06) * lipE * op * smoothstep(0.45, 0.85, n) * 0.6;   // 唇边只零星透一点光，不成一圈描边
-			// 獠牙：上颚两颗往下、下颚两颗往上（亮的骨白，带红）
-			float fang = 0.0;
-			for (int s = 0; s < 2; s++) {
-				float sx = s == 0 ? -0.33 : 0.33;
-				vec2 fu = q - vec2(sx, MY - MH * op * sqrt(max(1.0 - pow(sx / MW, 2.0), 0.0)));
-				float tu = clamp(fu.y / (0.3 * op + 0.01), 0.0, 1.0);
-				fang = max(fang, smoothstep(0.05, -0.03, abs(fu.x + 0.05 * tu) + (n2 - 0.5) * 0.04 - 0.045 * (1.0 - tu)) * smoothstep(-0.04, 0.02, fu.y) * smoothstep(0.3 * op + 0.01, 0.3 * op - 0.03, fu.y));
-				vec2 fl = q - vec2(sx * 0.8, MY + MH * op * sqrt(max(1.0 - pow(sx * 0.8 / MW, 2.0), 0.0)));
-				float tl = clamp(-fl.y / (0.18 * op + 0.01), 0.0, 1.0);
-				fang = max(fang, smoothstep(0.05, -0.03, abs(fl.x) + (n2 - 0.5) * 0.04 - 0.032 * (1.0 - tl)) * smoothstep(0.04, -0.02, fl.y) * smoothstep(-0.18 * op - 0.01, -0.18 * op + 0.03, fl.y));
+			float n = fbm(q * 2.6 + vec2(0.0, clock * 0.7) + float(i) * 9.0);
+			float n2 = fbm(q * 5.0 - clock * 1.6 + float(i) * 3.0);
+			float gap = mix(0.75, 0.0, c) * mix(1.5, 1.0, k);            // 从远处飞进来，再合上
+			float bow = 0.36 * (1.0 - q.x * q.x);
+			float rootU = -gap * 0.5 - bow, rootL = gap * 0.5 + bow;    // 上颚 / 下颚的牙根线（屏幕 y 朝下）
+			float endFade = smoothstep(1.05, 0.7, abs(q.x));
+			// 牙：上面 5 颗朝下，下面 4 颗朝上，交错
+			float teeth = 0.0, tip = 0.0;
+			for (int t = 0; t < 9; t++) {
+				bool up = t < 5;
+				float xi = up ? (float(t) - 2.0) * 0.3 : (float(t - 5) - 1.5) * 0.3;
+				float root = up ? -gap * 0.5 - 0.36 * (1.0 - xi * xi) : gap * 0.5 + 0.36 * (1.0 - xi * xi);
+				float len = 0.5 * (1.0 - 0.3 * abs(xi));
+				float dy = (q.y - root) * (up ? 1.0 : -1.0);
+				float tt = dy / len;
+				float w = 0.09 * (1.0 - clamp(tt, 0.0, 1.0));
+				float d = abs(q.x - xi + 0.04 * tt * tt * sign(xi + 0.001)) - w + (n2 - 0.5) * 0.03;
+				float in_ = smoothstep(0.02, -0.02, d) * smoothstep(-0.05, 0.02, dy) * smoothstep(len + 0.02, len - 0.06, dy);
+				teeth = max(teeth, in_);
+				tip = max(tip, exp(-dot(q - vec2(xi, root + (up ? len : -len)), q - vec2(xi, root + (up ? len : -len))) / 0.004));
 			}
-			fang *= ma * smoothstep(0.3, 0.8, k);
-			// 由远到近：四周一圈往外冲的烟（朝镜头扑过来）
-			float ang = atan(q.y, q.x);
-			float rad = length(q);
-			float streak = smoothstep(0.55, 0.9, vn(vec2(ang * 7.0, rad * 2.0 - k * 6.0))) * smoothstep(0.9, 1.4, rad) * smoothstep(2.4, 1.5, rad) * (1.0 - k) * 1.5;
-			// 嘴里：不是空的——深处近黑，往嘴边过渡成暗红的肉色，喉咙深处一点暗红的光，带一点烟的起伏
-			float depth = clamp(-mouth / max(MH * op, 0.05), 0.0, 1.0);
-			vec3 throat = mix(vec3(0.1, 0.012, 0.018), vec3(0.012, 0.002, 0.004), smoothstep(0.0, 0.5, depth)) * (0.8 + 0.4 * n);
-			throat += vec3(0.16, 0.01, 0.02) * exp(-dot(q - vec2(0.0, MY), q - vec2(0.0, MY)) / 0.015) * op;
-			float mouthA = inMouth * smoothstep(0.0, 0.15, op) * (1.0 - gone * 0.8);
-			// over 是从前往后叠（先叠的在最前）：牙 → 嘴里 → 头的烟 → 四周冲出来的烟
-			over(acc, mix(vec3(0.22, 0.09, 0.08), vec3(0.5, 0.3, 0.27), smoothstep(0.3, 0.8, n)), fang * 0.8 * smoothstep(0.1, 0.45, n));   // 牙也是烟：暗的骨红色、边糊、被烟吃掉一部分
-			over(acc, throat, clamp(mouthA * 0.96, 0.0, 1.0) * ma);
-			over(acc, sc, clamp(dens * 0.9, 0.0, 1.0) * ma);
-			over(acc, vec3(0.02, 0.004, 0.008), clamp(streak, 0.0, 0.7) * ma);
-			glow += vec3(0.7, 0.06, 0.07) * rim * 0.2 * ma + vec3(1.0, 0.4, 0.28) * seam * 0.9 * ma;
-			// 眼睛：额头两侧两团暖红雾光
-			for (int s = 0; s < 2; s++) {
-				// 眼睛在两腮上方、斜着的细长一团（不是圆鼓鼓的大眼）
-				vec2 e = q - vec2(s == 0 ? -0.62 : 0.62, -0.32);
-				e = vec2(e.x * 0.8 + e.y * (s == 0 ? 0.6 : -0.6), e.y * 1.6);
-				float e2 = dot(e, e);
-				glow += (vec3(1.0, 0.5, 0.22) * exp(-e2 / 0.006) * 1.1 + vec3(0.8, 0.1, 0.07) * exp(-e2 / 0.04) * 0.3) * ma * smoothstep(0.2, 0.6, k);
-			}
+			// 牙龈：沿牙根线的一道烟带（往外一侧）
+			float gumU = abs(q.y - (rootU - 0.14)) - 0.16 * endFade;
+			float gumL = abs(q.y - (rootL + 0.14)) - 0.16 * endFade;
+			float gums = smoothstep(0.08, -0.12, min(gumU, gumL) + (n - 0.5) * 0.16) * endFade;
+			float erode = gone * (0.6 + n * 1.6);
+			teeth *= smoothstep(0.0, 0.25, 1.0 - erode) * endFade;
+			gums *= smoothstep(0.0, 0.3, 1.0 - erode);
+			// 颜色：近黑的烟，边上透暗红；牙比牙龈亮一点（暗的骨红）
+			vec3 tc = mix(vec3(0.03, 0.006, 0.01), vec3(0.32, 0.12, 0.11), smoothstep(0.35, 0.85, n)) ;
+			vec3 gc = mix(vec3(0.012, 0.003, 0.006), vec3(0.08, 0.014, 0.02), smoothstep(0.4, 0.85, n)) + vec3(0.45, 0.04, 0.06) * smoothstep(0.62, 0.8, n2) * smoothstep(-0.12, 0.0, min(gumU, gumL)) * 0.7;   // 只在牙龈边上零星透光
+			// 四周一团暗烟（让它有分量，不是两排剪纸）
+			float shroud = smoothstep(1.4, 0.3, length(q * vec2(0.75, 1.0 / (0.6 + gap * 0.5)))) * (0.45 + 0.55 * n) * k * 0.45;
+			over(acc, tc, teeth * 0.95 * ma);
+			over(acc, gc, gums * 0.92 * ma);
+			over(acc, vec3(0.02, 0.004, 0.008), clamp(shroud * (1.0 - erode), 0.0, 1.0) * ma);
+			// 合上的一下：合缝一道光 + 一排红的牙印，慢慢退掉
+			float shut = smoothstep(0.85, 1.0, c);
+			float seam = exp(-pow((q.y + (n2 - 0.5) * 0.05) / 0.035, 2.0)) * endFade * shut * ma;
+			glow += vec3(1.0, 0.35, 0.25) * seam * 1.1 + vec3(0.9, 0.08, 0.08) * tip * shut * (0.6 + 0.8 * gone) * (1.0 - gone * gone) * 1.2;
+			glow += vec3(0.6, 0.05, 0.06) * smoothstep(0.02, -0.02, min(gumU, gumL) + 0.05) * smoothstep(0.6, 0.9, n2) * 0.3 * ma;
 		}
 	}
+
 	// 蛇巢（背景层，在蛇后面）：Joker 身后一团翻滚的咒烟，里面零星透出暗红的光，往上飘起烟丝
 	if (side < 0.0 && nest_a > 0.0) {
 		vec2 dv = (p - nest.xy) / nest.z;
@@ -228,11 +217,11 @@ void fragment() {
 	/// </summary>
 	private static readonly (float Cx, float Cy, float Ax, float Ay, float W, float R, float Ph, float Tilt, float Za, float Zb, float Size, float Len)[] Orbits =
 	{
-		(0.15f, -1.4f, 0.5f, 0.3f, 0.42f, 1f, 0.0f, 28f, 0.6f, -0.45f, 1.05f, 1.9f),     // 身后偏右上，斜着一高一低地兜
-		(-0.4f, -0.9f, 0.45f, 0.35f, -0.55f, 1f, 1.3f, -42f, 1f, 0.05f, 0.95f, 1.8f),   // 左边，斜着从他身前穿过去再绕回身后
-		(0.5f, -1.0f, 0.38f, 0.42f, 0.36f, 2f, 2.4f, 12f, 1f, -0.2f, 0.95f, 1.8f),      // 右边（敌人那侧），竖着的 8 字，上下起伏大
-		(-0.05f, -0.42f, 0.72f, 0.16f, 0.46f, 1f, 3.6f, -10f, 1f, 0.05f, 0.9f, 2.0f),   // 低处，绕着腿，略斜
-		(-0.3f, -1.72f, 0.38f, 0.26f, -0.38f, 1.5f, 4.8f, 35f, 0.5f, -0.5f, 0.85f, 1.8f), // 最高处偏左，身后
+		(0.15f, -1.4f, 0.5f, 0.3f, 0.42f, 1f, 0.0f, 28f, 0.6f, -0.45f, 1.05f, 2.3f),     // 身后偏右上，斜着一高一低地兜
+		(-0.4f, -0.9f, 0.45f, 0.35f, -0.55f, 1f, 1.3f, -42f, 1f, 0.05f, 0.95f, 2.2f),   // 左边，斜着从他身前穿过去再绕回身后
+		(0.5f, -1.0f, 0.38f, 0.42f, 0.36f, 2f, 2.4f, 12f, 1f, -0.2f, 0.95f, 2.2f),      // 右边（敌人那侧），竖着的 8 字，上下起伏大
+		(-0.05f, -0.42f, 0.72f, 0.16f, 0.46f, 1f, 3.6f, -10f, 1f, 0.05f, 0.9f, 2.4f),   // 低处，绕着腿，略斜
+		(-0.3f, -1.72f, 0.38f, 0.26f, -0.38f, 1.5f, 4.8f, 35f, 0.5f, -0.5f, 0.85f, 2.2f), // 最高处偏左，身后
 	};
 
 	private readonly Control _front, _back;
@@ -300,7 +289,7 @@ void fragment() {
 		var rect = new Rect2(-3f * tall, -2.9f * tall, 10f * tall, 3.6f * tall);
 		(_frontRoot, _frontM) = Make(front, feet, rect, 1f, "P5SerpentsFront");
 		(_backRoot, _backM) = Make(back, feet, rect, -1f, "P5SerpentsBack");
-		for (int i = 0; i < Count; i++) _girth[i] = 0.092f * tall * Orbits[i].Size;   // 修长：细一些、长一些
+		for (int i = 0; i < Count; i++) _girth[i] = 0.068f * tall * Orbits[i].Size;   // 修长：细一些、长一些（第三版：再细，用户说太肥）
 		_skyRoot = Fx.ScreenRoot(back, "P5SerpentSky");
 		back.MoveChild(_skyRoot, 0);
 		_skyM = new ShaderMaterial { Shader = EclipseSky.Shader };
@@ -576,9 +565,10 @@ void fragment() {
 			Vector2 toward = a.Target - new Vector2(hp.X, hp.Y);
 			float lk = Ease5.OutQuint(Ease5.Seg(t, 0f, 0.18f)) * (1f - Smooth(0.45f, 0.6f, t));
 			_lunge[a.Serpent] = toward.LimitLength(0.45f * T) * lk;
-			float k = Ease5.OutQuint(Ease5.Seg(t, 0.18f, 0.2f));
-			float op = Smooth(0.2f, 0.32f, t) * (1f - Smooth(0.4f, BiteAt, t));
-			_maw[s] = new Vector4(a.Target.X, a.Target.Y, k, op);
+			float k = Ease5.OutQuint(Ease5.Seg(t, 0.2f, 0.16f));
+			float shut = Ease5.Seg(t, 0.38f, BiteAt - 0.38f);
+			shut = shut * shut;                                  // 越合越快，猛地咬死
+			_maw[s] = new Vector4(a.Target.X, a.Target.Y, k, shut);
 			_mawA[s] = Smooth(0.18f, 0.24f, t) * (1f - Smooth(0.5f, 0.85f, t));
 			if (!a.Bit && t >= BiteAt)
 			{
