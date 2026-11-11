@@ -556,141 +556,16 @@ void fragment() {
 		});
 	}
 
-	// ═══════════════════════════ 群蛇形态：咒怨之蛇 ═══════════════════════════
+	// ═══════════════════════════ 群蛇形态：光蛇升龙（Vfx/SerpentAscend.cs）+ 常驻的蛇（Vfx/SerpentMantle.cs） ═══════════════════════════
 
 	/// <summary>
-	/// 一条咒怨之蛇：身体是沿路径的带子（暗红近黑的身子、外面一层绯红的光、背上一条细亮的脊线），头是一团亮光加两点白眼。
-	/// path(u)：u 0～1 绕着 Joker 盘上去，1～2 从头顶朝敌人扑出去；head(t) 给出蛇头当前的 u。身长 len（u 单位）。
+	/// 群蛇形态（2026-11-11 第三版，用户：要霸气）：光做的巨蛇螺旋冲上去、昂首吼、俯冲扎进 Joker 胸口；之后常驻的蛇从他身上浮现
+	/// （能力挂上时由 SerpentFormVfxPatch 开始，这里只放起手）。原来的咒怨之蛇（三条带子蛇）撤掉。
 	/// </summary>
-	private sealed class Serpent
-	{
-		public Node2D Root = null!;
-		public Polygon2D Halo = null!, Glow = null!, Body = null!, Spine = null!;
-		public List<Sprite2D> Scales = new();
-		public Sprite2D HeadGlow = null!, EyeA = null!, EyeB = null!;
-	}
-
 	public static void SerpentForm(SkillCtx c)
 	{
-		float h = c.Tall, u = c.Unit;
 		Sfx.Play(Sfx.SerpentRise, 0.62f);
-		Vector2 scr = Fx.Screen(c.Front);
-		Fx.Shake(1);
-		// 脚下：咒印般的扁环 + 暗红光
-		Glow.Flash(c.Front, c.Feet, Crimson, h * 1.0f, 0.3f);
-		for (int i = 0; i < 3; i++)
-		{
-			Glow.Shockwave(c.Front, c.Feet, i == 0 ? Red : Crimson, h * (1.3f + 0.5f * i), 0.5f, 0.22f, 0.06f * i);
-		}
-		SkillFx.ColumnFx(c.Front, c.Back, c.Feet, h * 1.25f, SkillFx.Tone.Curse, 1.1f);
-		Glow.Sparks(c.Front, c.Feet, 40, 60f, 300f, 1.1f, new[] { Hot, Red, Crimson, Deep }, -140f, 0.03f * u, 0.09f * u, Vector2.Up, 60f);
-		var enemies = c.Enemies;
-		const float rise = 0.55f, sway = 0.35f, strike = 0.22f, total = rise + sway + strike + 0.25f;
-		for (int sIdx = 0; sIdx < 3; sIdx++)
-		{
-			int si = sIdx;
-			float phase = si * Mathf.Tau / 3f + Fx.Rand(-0.3f, 0.3f), dly = 0.06f * si;
-			float R = h * (0.3f + 0.04f * si), topY = -h * (si == 1 ? 1.25f : 1.05f);
-			float restX = (si - 1) * h * 0.42f;
-			Vector2 target = enemies.Count > 0
-				? enemies[si % enemies.Count].Feet.Lerp(enemies[si % enemies.Count].Top, 0.55f)
-				: c.Feet + new Vector2(c.Face * scr.X * 0.45f, -h * 0.5f);
-			Vector2 rest = c.Feet + new Vector2(restX, topY);
-			Vector2 Path(float pu)
-			{
-				if (pu <= 1f)
-				{
-					// 蛇身：一路往上爬的 S 形（y 单调往上，不会出现横着的段），越往上摆幅越小，最后立在肩头上方
-					float sway = R * Mathf.Sin(phase + pu * Mathf.Tau * 1.3f) * (1f - pu) * (1f - pu * 0.3f);
-					float x = Mathf.Lerp(restX * 0.25f, restX, pu * pu) + sway;
-					return c.Feet + new Vector2(x, topY * (1f - Mathf.Pow(1f - pu, 1.6f)));
-				}
-				float kk = pu - 1f;
-				Vector2 p1 = rest + new Vector2(c.Face * h * 0.45f, -h * 0.3f);
-				return rest.Lerp(p1, kk).Lerp(p1.Lerp(target, kk), kk);
-			}
-			// 身子在 Joker 后面盘上来，扑出去时换到前面
-			Serpent s = MakeSerpent(c.Back ?? c.Front, u, h);
-			bool front = false;
-			Fx.Animate(s.Root, dly, total, t =>
-			{
-				float tt = t * total;
-				float head;
-				if (tt < rise) head = Fx.OutCubic(tt / rise);
-				else if (tt < rise + sway) head = 1f;
-				else head = 1f + Mathf.Min(1f, Fx.InCubic((tt - rise - sway) / strike));
-				const float len = 0.85f;
-				int n = 22;
-				var pts = new List<Vector2>(n);
-				for (int i = 0; i < n; i++)
-				{
-					float b = (float)i / (n - 1);
-					float pu = Mathf.Max(0f, head - (1f - b) * len);
-					Vector2 p = Path(pu);
-					if (tt >= rise && tt < rise + sway + strike)
-					{
-						float wv = Mathf.Sin(tt * 14f + b * 9f + si) * h * 0.035f * b;   // 立着时身子微微摆
-						p += new Vector2(wv, 0f);
-					}
-					pts.Add(p - s.Root.GlobalPosition);
-				}
-				if (!front && head > 1.02f && Ok(c.Front))
-				{
-					front = true;
-					s.Root.Reparent(c.Front, true);
-				}
-				float w = h * 0.11f;
-				s.Halo.Polygon = global::P5Joker.Glow.Ribbon(pts, w * 3.2f);
-				s.Glow.Polygon = global::P5Joker.Glow.Ribbon(pts, w * 1.7f);
-				s.Body.Polygon = global::P5Joker.Glow.Ribbon(pts, w);
-				s.Spine.Polygon = global::P5Joker.Glow.Ribbon(pts, w * 0.18f);
-				for (int j = 0; j < s.Scales.Count; j++)
-				{
-					int idx = 4 + j * 3;
-					s.Scales[j].Position = pts[Mathf.Min(idx, n - 2)];
-					s.Scales[j].Modulate = new Color(1f, 0.25f, 0.3f, 0.5f + 0.5f * Mathf.Sin(tt * 18f - j * 1.3f));
-				}
-				Vector2 hp = pts[n - 1], hd = (pts[n - 1] - pts[n - 3]).Normalized();
-				Vector2 side = new(-hd.Y, hd.X);
-				s.HeadGlow.Position = hp;
-				s.EyeA.Position = hp - hd * w * 0.15f + side * w * 0.28f;
-				s.EyeB.Position = hp - hd * w * 0.15f - side * w * 0.28f;
-				float fade = 1f - Ease5.Seg(tt, rise + sway + strike - 0.02f, 0.2f);
-				s.Root.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, tt / 0.08f) * fade);
-			});
-			Fx.After(c.Front, dly + rise + sway + strike, () =>
-			{
-				Glow.Flash(c.Front, target, Red, h * 0.7f, 0.2f);
-				Glow.Sparks(c.Front, target, 18, 150f, 500f, 0.5f, new[] { Hot, Red, Deep }, 200f, 0.03f * u, 0.08f * u, new Vector2(c.Face, -0.2f), 70f);
-				Paint.Rise(c.Front, "curse_soul", target, h * 0.4f, 0.5f, Lut5.Curse, 0.6f);
-			});
-		}
-		Fx.After(c.Front, rise + 0.05f, () =>
-		{
-			Glow.Flash(c.Front, c.Head, Red, h * 0.9f, 0.25f);
-			Fx.Shake(2);
-		});
-	}
-
-	private static Serpent MakeSerpent(Control layer, float u, float h)
-	{
-		Node2D root = new() { Name = "P5Serpent" };
-		layer.AddChild(root);
-		root.GlobalPosition = Vector2.Zero;
-		Fx.FreeAfter(root, 2.0);
-		var s = new Serpent { Root = root };
-		s.Halo = Fx.Poly(root, new[] { Vector2.Zero, Vector2.Right, Vector2.Down }, new Color(0.8f, 0.04f, 0.16f, 0.16f), additive: true);
-		s.Glow = Fx.Poly(root, new[] { Vector2.Zero, Vector2.Right, Vector2.Down }, new Color(0.95f, 0.08f, 0.2f, 0.26f), additive: true);
-		s.Body = Fx.Poly(root, new[] { Vector2.Zero, Vector2.Right, Vector2.Down }, new Color(0.07f, 0f, 0.02f, 0.97f));
-		s.Spine = Fx.Poly(root, new[] { Vector2.Zero, Vector2.Right, Vector2.Down }, new Color(0.9f, 0.18f, 0.25f, 0.7f), additive: true);
-		for (int i = 0; i < 6; i++)
-		{
-			s.Scales.Add(Glow.SoftSprite(root, Vector2.Zero, new Color(1f, 0.25f, 0.3f, 0.8f), h * 0.0035f));
-		}
-		s.HeadGlow = Glow.SoftSprite(root, Vector2.Zero, new Color(1f, 0.2f, 0.28f, 0.95f), h * 0.011f);
-		s.EyeA = Glow.SoftSprite(root, Vector2.Zero, Hot, h * 0.0016f);
-		s.EyeB = Glow.SoftSprite(root, Vector2.Zero, Hot, h * 0.0016f);
-		return s;
+		SerpentAscend.Play(c.Front, c.Back ?? c.Front, c.Feet, c.Tall, c.Face, c.SelfTint);
 	}
 
 	// ═══════════════════════════ 幽魂形态：化作幽魂 ═══════════════════════════

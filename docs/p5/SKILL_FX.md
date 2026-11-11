@@ -71,3 +71,11 @@
 ## 还要做
 - 打包实测（看时刻对不对、音量、会不会和召唤亚森的演出打架）。
 - 召唤亚森的牌（爆发、肾上腺素、夜魇、萎靡、蜃景）的特效对在亚森出手那一刻，亚森本身还是扑向敌人的动作，对自己加增益的牌看着可能不搭，实测后再定。
+
+## 群蛇形态（2026-11-11 第三版）
+
+- 起手 `Vfx/SerpentAscend.cs`：光做的巨蛇从脚下炸出、绕 Joker 螺旋冲上去 → 头顶昂首（张嘴、眼睛横光、闪光 + 速度线 + 震屏 + 顿帧）→ 俯冲扎进胸口（白闪、地面冲击环、火星、重震）。
+- 常驻 `Vfx/SerpentMantle.cs`：能力在身上时一条光蛇盘在 Joker 身上（腰到胸口绕一圈多，头悬在肩膀后上方朝敌人，慢慢呼吸）；每打出一张牌能力触发，蛇头扑出去咬被打的敌人（咬中：闪光、速度线、火星、轻震，音效 `serpent_strike`，`tools/p5/sfx/synth_serpent.py`），连出就一口接一口。
+- 两者共用渲染 `Vfx/LightSerpent.cs`（加法混合，只靠光：热白芯 + 绯红身体 + 人字鳞光；头用轮廓光画上颚 / 下颌，嘴张开）。
+- 接线 `SerpentFormPlay.cs`：原版 `NSerpentFormVfx` 藏掉并开始常驻蛇；`OnEffectTriggered` 之后那次 `vfx_attack_blunt` 换成光蛇咬；能力移除时淡出。
+- 预览场景 `serpent_form`，视频 `docs/p5/preview/serpent_form_v1.mp4`。被否掉的方案（八岐大蛇 Orochi 之外、墨烟蛇 MistSerpent、蛇影 SerpentShade）都已删除。
