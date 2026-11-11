@@ -210,13 +210,18 @@ void fragment() {
 			+ (1.0 - smoothstep(0.0, 0.25, bs)) * nz * 0.6 * (1.0 - headness);
 		torn += dj * (0.5 + nz * 1.8);                              // 散成烟
 		float e = sdn + torn;
-		float dens = smoothstep(0.16, -0.22, e) * (1.0 - dj * 0.6);
+		float dens = smoothstep(0.16, -0.3, e) * (1.0 - dj * 0.6);   // 边缘更软、半透（2026-11-11 用户：通体乌黑不好看）
 		// 颜色：近黑的烟；边里面断断续续透一点暗红；朝上一侧一道细的暗红边光（头只在上半边，下颚不勾线）
 		float lit = 0.55 + 0.45 * smoothstep(-0.5, 0.8, -n2.y);
 		float shell = smoothstep(-0.34, -0.05, e) * (1.0 - smoothstep(-0.05, 0.1, e));
 		float upOnly = mix(1.0, smoothstep(-0.2, 0.15, qu.y), headness);
 		vec3 emit = vec3(0.6, 0.05, 0.07) * shell * smoothstep(0.5, 0.82, flick) * 1.1 * lit * (1.0 + dj * 1.5) * upOnly;
-		vec3 inner = mix(vec3(0.008, 0.002, 0.004), vec3(0.045, 0.01, 0.016), smoothstep(0.4, 0.9, nz2));
+		// 体积（用户 2026-11-11：蛇通体乌漆嘛黑不好看，但太亮又会露出没细节）：只用大面积的柔和过渡，不加线条亮斑——
+		// 核心深，往边缘渐渐变成背光透过来的暗红烟；朝上的一侧整体亮一点；烟里的明暗随噪声慢慢流动
+		vec3 inner = mix(vec3(0.045, 0.009, 0.014), vec3(0.13, 0.026, 0.034), smoothstep(0.35, 0.9, nz2));
+		float transl = smoothstep(0.15, 1.0, rr);
+		inner = mix(inner, vec3(0.3, 0.055, 0.06) * (0.8 + 0.4 * nz), transl * 0.8);
+		inner *= 0.75 + 0.55 * smoothstep(-0.6, 0.8, -n2.y);
 		float topRim = smoothstep(0.72, 0.95, rr) * smoothstep(0.35, 0.9, -n2.y) * (1.0 - smoothstep(-0.04, 0.04, e)) * upOnly;   // 只在最上沿一细条
 		inner += vec3(0.42, 0.05, 0.06) * topRim * 0.45;
 		// 外面往上飘的烟丝；散的时候一大团；几条之间一层薄烟
@@ -226,7 +231,7 @@ void fragment() {
 		wisp = max(wisp, exp(-pow(rr / 1.8, 2.0)) * 0.2 * smoothstep(0.35, 0.75, wn) * smoothstep(3.0, 2.0, rr) * (1.0 - headness));
 		float dim = (headness > 0.5 ? root.z : bz) < 0.0 ? 0.8 : 1.0;
 		vec3 c = (inner + emit) * dim;
-		vec3 wc = vec3(0.03, 0.008, 0.012) + vec3(0.22, 0.02, 0.03) * smoothstep(0.72, 0.9, wn);
+		vec3 wc = vec3(0.09, 0.02, 0.026) + vec3(0.22, 0.03, 0.04) * smoothstep(0.72, 0.9, wn);
 		float alphaJ = mix(ba, root.w, headness);
 		float a = clamp(dens + wisp * (1.0 - dens), 0.0, 1.0) * alphaJ;
 		vec3 cc = mix(wc, c, dens / max(dens + wisp * (1.0 - dens), 1e-3));

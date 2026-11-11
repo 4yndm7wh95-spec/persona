@@ -92,15 +92,15 @@ void fragment() {
 		// 背景压暗、降饱和，偏一点冷的暗红；上面和四角更暗
 		vec3 b = texture(screen_tex, SCREEN_UV).rgb;
 		float lum = dot(b, vec3(0.3, 0.55, 0.15));
-		vec3 g = mix(b, vec3(lum) * vec3(1.1, 0.82, 0.86), 0.75) * 0.55;
-		g += vec3(0.05, 0.013, 0.018);
+		vec3 g = mix(b, vec3(lum) * vec3(1.15, 0.8, 0.84), 0.7) * 0.72;
+		g += vec3(0.07, 0.018, 0.024);
 		// 对比（用户嫌日蚀耀眼，但黑蛇要有亮一点的底才看得清）：Joker 身后、雾里透出一大片很柔、低饱和的暗红背光，不是一个光源
 		vec2 bd = (uv - feet + vec2(0.1 * face * tall / aspect, 0.85 * tall)) * asp / tall;
 		float back = exp(-dot(bd * vec2(0.75, 1.0), bd * vec2(0.75, 1.0)) / 2.2);
 		back *= 0.8 + 0.4 * fbm(bd * 0.8 + vec2(clock * 0.03, -clock * 0.05));
-		g += vec3(0.34, 0.08, 0.08) * back * 0.95;
+		g += vec3(0.42, 0.1, 0.09) * back * 1.15;
 		float vig = smoothstep(0.35, 1.0, length((uv - vec2(0.5, 0.55)) * vec2(aspect * 0.55, 1.0)));
-		g *= (1.0 - 0.5 * vig) * mix(0.75, 1.0, smoothstep(0.0, 0.5, uv.y));
+		g *= (1.0 - 0.4 * vig) * mix(0.75, 1.0, smoothstep(0.0, 0.5, uv.y));
 		vec3 col = g;
 		// 蛇巢往上飘的烟：Joker 身后一股往上散的暗烟（接住五条蛇的尾巴）
 		float nx = (uv.x - feet.x) * aspect / tall + 0.12 * face;
@@ -109,7 +109,7 @@ void fragment() {
 		col = mix(col, vec3(0.02, 0.004, 0.008), rise * 0.45);
 		// 雾：近黑，雾顶一层暗红，深处零星透一点暗红的光
 		// 雾：暗淡的灰红，比背景亮一点（看得出一团团翻滚），越近 Joker 越被背光照亮；深处零星一点暗红
-		vec3 fc = mix(vec3(0.07, 0.022, 0.028), vec3(0.19, 0.06, 0.066), smoothstep(0.3, 0.85, fn));
+		vec3 fc = mix(vec3(0.1, 0.03, 0.036), vec3(0.27, 0.085, 0.085), smoothstep(0.3, 0.85, fn));
 		fc *= 0.8 + 0.6 * exp(-pow(dx / 1.6, 2.0));
 		// 上亮下暗：雾顶被背光照着，越往下越沉，一团团的体积感
 		fc *= mix(0.55, 1.25, smoothstep(top * 0.2, top * 0.95, hgt + (fn - 0.5) * 0.1));
