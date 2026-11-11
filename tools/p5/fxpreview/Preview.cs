@@ -723,11 +723,17 @@ public partial class Preview : Node2D
 				o?.Set(tt, ltn, Mathf.Min(1f, tt / 0.3f));
 			});
 		},
-		["mist_serpent"] = p =>
+		["serpent_shade"] = p =>
 		{
 			float tall = (JokerFeet - Pose(815f, 120f)).Length();
 			p.At(0.3, () => p._joker?.Play("cast_glove"));
-			p.At(0.55, () => { Sfx.Play(Sfx.SerpentRise, 0.62f); MistSerpent.Play(p._front, p._back, JokerFeet, tall, 1f); });
+			p.At(0.55, () =>
+			{
+				Sfx.Play(Sfx.SerpentRise, 0.62f);
+				Vector2[] feet = { new(Enemy2.X, 830f), new(Enemy.X, 830f), new(Enemy3.X, 830f) };
+				Action<Color>?[] tints = { c => p._enemies[Enemy2].Modulate = c, c => p._enemies[Enemy].Modulate = c, c => p._enemies[Enemy3].Modulate = c };
+				SerpentShade.Play(p._back, JokerFeet, tall, 1f, feet, tints, c => p._joker!.Modulate = c);
+			});
 		},
 		["buffs"] = p =>
 		{
