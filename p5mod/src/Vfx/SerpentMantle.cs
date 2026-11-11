@@ -682,6 +682,47 @@ void fragment() {
 		}
 	}
 
+	/// <summary>缠腰的那条（Orbits[3]，腰胯从身前横过）。</summary>
+	private const int Belt = 3;
+
+	/// <summary>
+	/// 缠腰那条蛇的身体（用户 2026-11-11：它的尾巴从 Joker 腋下钻过去，透视很怪）。以前尾巴直接拉回胸口高度、身后的蛇巢，
+	/// 身体从身前斜着穿过他的躯干才到身后。现在身体在胯部高度绕他一圈（俯视略斜的椭圆，下半弧在他前面、上半弧在他后面），
+	/// 前后只在椭圆左右两端换（那里在他轮廓外面）；绕到身后以后才往上收进蛇巢（被他挡住）。头在身前偏敌人一侧，顺着身体朝敌人。
+	/// f：0 尾 → 1 颈根；len：身长（像素）。
+	/// </summary>
+	private Vector3 BeltPoint(float f, float len, float T, float face)
+	{
+		const float cy = -0.47f, a = 0.31f, b = 0.065f;   // 身高为单位：胯部高度、半宽（比大衣和垂下的手宽）、斜看的半高
+		float s = (1f - f) * len / T;                     // 离颈根的路程（身高为单位）
+		float th0 = 0.5f + 0.22f * Mathf.Sin(_t * 0.45f) + 0.06f * Mathf.Sin(_t * 1.1f + 1f);   // 颈根在身前右侧，慢慢往前探、往回收
+		const float thEnd = 1.62f * Mathf.Pi;              // 绕到身后哪里为止（之后往上收进蛇巢）
+		float ra = (a + b) * 0.5f;
+		float th = th0 + s / ra;
+		Vector3 Ring(float t, float grow)
+		{
+			float aa = a * (1f + grow);
+			float breathe = 1f + 0.03f * Mathf.Sin(_t * 0.9f + t * 2f);
+			return new Vector3(aa * breathe * Mathf.Cos(t) * face * T, (cy + b * Mathf.Sin(t)) * T, Mathf.Sin(t));
+		}
+		// 靠近头的一段稍微往外、往上撑开：头探出轮廓、不贴着衣服
+		float near = 1f - Smooth(0f, 0.35f, s);
+		if (th <= thEnd)
+		{
+			Vector3 r = Ring(th, 0.18f * near);
+			r.Y -= 0.05f * T * near;
+			return r;
+		}
+		// 身后：从环的末端往上收进蛇巢（都在身后，被 Joker 挡住）
+		Vector3 e = Ring(thEnd, 0f);
+		float rest = (th - thEnd) * ra;
+		float k = Mathf.Clamp(rest / 0.6f, 0f, 1f);
+		Vector3 nestP = new(-0.12f * face * T, -0.78f * T, -0.6f);
+		Vector3 v = e.Lerp(nestP, Smooth(0f, 1f, k));
+		v.Z = Mathf.Min(v.Z, -0.3f);
+		return v;
+	}
+
 	private void PoseSerpent(int i, float T, float face, float alpha)
 	{
 		var o = Orbits[i];
@@ -722,19 +763,22 @@ void fragment() {
 			while (seg < used - 2 && acc[seg + 1] < s) seg++;
 			float u = acc[seg + 1] > acc[seg] ? Mathf.Clamp((s - acc[seg]) / (acc[seg + 1] - acc[seg]), 0f, 1f) : 0f;
 			Vector3 v = trail[seg].Lerp(trail[seg + 1], u);
+			if (i == Belt) v = BeltPoint(f, o.Len * T * o.Size, T, face);
+			else {
 			// 身体只「大致」顺着头游过的路（用户 2026-11-11：圈小了身体会把整圈都描一遍、绕成结）：
 			// 和蛇巢 → 头的直线各取一半，弯是跟着游动的弯，但不会回头描圈
 			Vector3 headNow = trail[0];
 			Vector3 nestP = new(-0.12f * face * T, -0.78f * T, -0.5f);
 			Vector3 line = nestP.Lerp(headNow, f) + new Vector3(0f, -Mathf.Sin(f * Mathf.Pi) * 0.25f * T, 0f);
 			v = v.Lerp(line, 0.55f * (1f - f * f * 0.6f));
+			}
 			// 沿身体往尾巴传的 S 波
 			float wave = Mathf.Sin(f * 9f - _t * 3.4f + i) * 0.065f * T * (0.25f + 0.75f * (1f - f));
 			v += new Vector3(wave * 0.4f, wave, 0f);
 			// 出动：朝敌人窜一下（越靠头越多）
 			v += new Vector3(_lunge[i].X, _lunge[i].Y, 0f) * Mathf.Pow(f, 1.5f);
 			// 一体：尾巴都收进 Joker 身后的蛇巢（同一团咒烟里伸出五个头）
-			float pull = 1f - Smooth(0f, 0.5f, f);
+			float pull = i == Belt ? 0f : 1f - Smooth(0f, 0.5f, f);
 			Vector3 nest3 = new(-0.12f * face * T + Mathf.Sin(_t * 0.7f + i * 1.3f) * 0.12f * T, -0.78f * T + Mathf.Cos(_t * 0.6f + i * 2.1f) * 0.1f * T, -0.5f);
 			v = v.Lerp(nest3, pull * pull * 0.92f);
 			v = chest.Lerp(v, grow);
