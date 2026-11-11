@@ -145,7 +145,7 @@ SFX = {
     # skill / power card effects (p5mod/src/Vfx/SkillFx.cs; synthesized: tools/p5/sfx/synth_skill_fx.py, user 2026-11-10)
     "expose_break": ROOT / "art/sfx_p5/expose_break.ogg",
     **{n: ROOT / f"art/sfx_p5/{n}.ogg" for n in ("card_flick", "card_burn", "bullet_load", "buff_up", "buff_dark", "debuff_down", "energy_surge", "wail", "stealth_veil", "time_slow", "hex_guard", "shadow_mark")},
-    "serpent_bolt": ROOT / "art/sfx_p5/serpent_bolt.ogg",   # Serpent Form: a serpent spits a curse bolt (tools/p5/sfx/synth_serpent.py)
+    "serpent_maw": ROOT / "art/sfx_p5/serpent_maw.ogg",   # Serpent Form: a serpent dissolves and its maw bites out of the screen (tools/p5/sfx/synth_serpent.py)
     # Joker gunshots matching the Five Cards demo mix (tools/p5/sfx/five_cards_shots.py, user 2026-11-09)
     **{n: ROOT / f"art/sfx_p5/{n}.ogg" for n in ("gun_shot_1", "gun_shot_2", "gun_shot_3", "gun_shot_4", "gun_shot_final", "gun_hit", "gun_hit_final")},                          # synthesized crunch for the hand crush                      # synthesized sub hit (ffmpeg aevalsrc)
 }

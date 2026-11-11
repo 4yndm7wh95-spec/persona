@@ -72,11 +72,11 @@
 - 打包实测（看时刻对不对、音量、会不会和召唤亚森的演出打架）。
 - 召唤亚森的牌（爆发、肾上腺素、夜魇、萎靡、蜃景）的特效对在亚森出手那一刻，亚森本身还是扑向敌人的动作，对自己加增益的牌看着可能不搭，实测后再定。
 
-## 群蛇形态（2026-11-11 第四版）
+## 群蛇形态（2026-11-11 第五版）
 
-- `Vfx/SerpentMantle.cs`：五条咒烟大蛇（近黑的烟，边缘里断断续续透出暗红光，外面往上飘的烟丝；眼睛是暖红的雾光；头是上平下宽的楔形，不画细节）。
+- `Vfx/SerpentMantle.cs`：五条咒烟大蛇（近黑的烟，边缘里断断续续透出暗红光，外面往上飘的烟丝，几条之间连着一层薄烟、迷迷糊糊不分得太清；眼睛是暖红的雾光；头是上平下宽的楔形，不画细节）。
   - 出场（打出群蛇形态，`CardSkillFx.SerpentForm`）：一团咒烟往里一收再炸开（震屏），五条蛇从 Joker 胸口一条接一条冲出、甩到各自的轨道上，最后五个头一起转向敌人、眼睛一亮。
   - 常驻：五条各有自己的轨道（身后高处慢转 / 左右竖着绕 / 绕腰贴身转 / 左后上方），方向、快慢不同；身体沿头走过的路铺开，越老的位置越往下沉，叠一道 S 波。
-  - 能力触发：随机（轮流）一条闲着的蛇转头对准敌人往后一缩，嘴前聚一团暗红的光（0.28s）→ 吐出咒怨法球（烟壳 + 热红芯 + 烟尾，0.2s 飞到）→ 命中处一团往外翻滚的咒烟 + 闪光 + 火星 + 轻震。连续出牌几条蛇轮流吐，同时最多 3 发。音效 `serpent_bolt`（`tools/p5/sfx/synth_serpent.py`）。
-- 接线 `SerpentFormPlay.cs`：原版 `NSerpentFormVfx` 藏掉并接到真的 Joker 上；`OnEffectTriggered` 之后那次 `vfx_attack_blunt` 换成法球；能力移除时淡出。
-- 预览场景 `serpent_form`，视频 `docs/p5/preview/serpent_form_v2.mp4`。被否掉的方案（墨烟蛇 MistSerpent、蛇影 SerpentShade、光蛇 LightSerpent / SerpentAscend）都已删除。
+  - 能力触发（用户的想法）：轮流挑一条闲着的蛇 → 它散成一大团往外、往上飘的烟（0～0.3s）→ 敌人身上一张正面的蛇头大嘴从画面深处朝镜头冲出来（四周的烟往外冲），张开的嘴把敌人罩在里面（嘴里是空的，看得见敌人），两对烟里透出来的獠牙、两腮上方斜的眼光 → 0.46s 咬合（咬合缝一道红光、闪光、火星、震屏、顿帧）→ 大嘴散成烟 → 那条蛇在原来的轨道上重新聚起来。全是距离场 + 噪声，没有贴图。连续出牌几条蛇轮流，同时最多 3 张嘴。音效 `serpent_maw`（`tools/p5/sfx/synth_serpent.py`）。
+- 接线 `SerpentFormPlay.cs`：原版 `NSerpentFormVfx` 藏掉并接到真的 Joker 上；`OnEffectTriggered` 之后那次 `vfx_attack_blunt` 换成咬；能力移除时淡出。
+- 预览场景 `serpent_form`，视频 `docs/p5/preview/serpent_form_v3.mp4`。被否掉的方案（墨烟蛇 MistSerpent、蛇影 SerpentShade、光蛇 LightSerpent / SerpentAscend、法球）都已删除。
