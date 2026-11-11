@@ -14,7 +14,7 @@ public sealed class Orochi
 {
 	public const int Heads = 5;
 
-	private static Shader? _bodyShader, _skyShader;
+	private static Shader? _bodyShader;
 
 	private static Shader BodyShader => _bodyShader ??= new Shader { Code = @"
 shader_type canvas_item;
@@ -248,88 +248,7 @@ void fragment() {
 	COLOR = vec4(acc.rgb * alpha, clamp(acc.a, 0.0, 1.0) * alpha);
 }" };
 
-	private static Shader SkyShader => _skyShader ??= new Shader { Code = @"
-shader_type canvas_item;
-render_mode blend_premul_alpha;
-uniform vec2 sun = vec2(0.22, 0.2);      // 日蚀在屏幕上的位置（0～1）
-uniform float aspect = 1.7778;
-uniform float clock = 0.0;
-uniform float lightning = 0.0;
-uniform float amount = 1.0;
-uniform float ground = 0.84;            // 地面的高度（0～1，从上往下）
-uniform vec2 pool = vec2(0.2, 0.8);     // 蛇身没入地面的地方（0～1）
-uniform float pool_w = 0.25;
-float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
-float noise(vec2 p) {
-	vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
-	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
-}
-float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p = p * 2.02 + vec2(3.1, 7.7); a *= 0.5; } return v; }
-void fragment() {
-	vec2 uv = UV;
-	vec2 d = (uv - sun) * vec2(aspect, 1.0);
-	float r = length(d), ang = atan(d.y, d.x);
-	const float R = 0.082;
-	// 底色：整屏压暗偏暗红（盖在战斗背景上，不是不透明的）
-	vec3 col = mix(vec3(0.16, 0.02, 0.04), vec3(0.07, 0.0, 0.02), uv.y);
-	float a = 0.4;
-	// 云：两层往右飘，日冕附近的云边被照红，雷光时整片云亮一下
-	float c1 = fbm(vec2(uv.x * 2.2 - clock * 0.012, uv.y * 4.0));
-	float c2 = fbm(vec2(uv.x * 4.5 - clock * 0.03, uv.y * 7.0 + 3.0));
-	float cloud = smoothstep(0.45, 0.75, c1 * 0.7 + c2 * 0.45) * (1.0 - smoothstep(0.55, 0.8, uv.y));
-	float near = exp(-max(r - R, 0.0) / 0.35);
-	// 日冕
-	float corona = exp(-max(r - R, 0.0) / 0.014) * step(R, r) * 0.8;
-	float halo = exp(-max(r - R, 0.0) / 0.2);
-	float rays = pow(noise(vec2(ang * 9.0, clock * 0.05)), 3.0) * exp(-max(r - R, 0.0) / 0.7) * (1.0 - cloud * 0.8) * smoothstep(ground - 0.02, ground - 0.25, uv.y);
-	vec3 light = vec3(1.0, 0.85, 0.75) * corona * 1.4 + vec3(0.9, 0.08, 0.06) * (halo * 0.9 + rays * 0.55);
-	light *= 1.0 - cloud * 0.6;
-	col += light;
-	// 日冕的光洒满整个战场（用户：光影在中间断层）：从日蚀往下、往两边一大片暗红的泛光，地面被照出一大片暖红
-	float wash = exp(-r / 0.75);
-	col += vec3(0.5, 0.05, 0.06) * wash * 0.45;
-	float floorLit = smoothstep(ground - 0.15, ground + 0.05, uv.y) * exp(-pow((uv.x - sun.x) / 0.7, 2.0));
-	col += vec3(0.45, 0.05, 0.05) * floorLit * 0.3;
-	a = max(a, clamp(corona + halo * 0.4, 0.0, 1.0));
-	// 云体：暗，靠日冕和雷光照出边
-	// 黑日（用户 2026-11-10：太突兀 → 融进天色）：边缘柔一点，不是纯黑而是被暗红的天光蒙了一层，环是暗红偏亮而不是白热
-	float disk = 1.0 - smoothstep(R - 0.006, R + 0.004, r);
-	vec3 face = mix(vec3(0.05, 0.0, 0.012), vec3(0.2, 0.02, 0.03), smoothstep(R * 0.3, R, r));
-	col = mix(col, face, disk * 0.82);
-	a = max(a, disk * 0.82);
-	float rim = exp(-pow((r - R) / 0.006, 2.0));
-	float bead = pow(max(0.0, cos(ang - 0.7)), 24.0) * exp(-pow((r - R) / 0.01, 2.0));
-	float streamer = pow(noise(vec2(ang * 5.0, 1.0 + clock * 0.03)), 2.0) * exp(-max(r - R, 0.0) / 0.07) * step(R, r);
-	col += vec3(1.0, 0.45, 0.38) * rim * 0.75 + vec3(1.0, 0.75, 0.65) * bead * 0.9 + vec3(1.0, 0.3, 0.2) * streamer * 0.45;
-	// 云在日蚀前面飘过：一部分云遮住黑日和日冕，被背后的光照红了边
-	vec3 cc = vec3(0.06, 0.004, 0.014) + vec3(0.75, 0.08, 0.07) * near * smoothstep(0.3, 0.9, c2) * 0.7 + vec3(0.7, 0.3, 0.35) * lightning * smoothstep(0.35, 0.9, c2) * 0.3;
-	// 横过日蚀的一缕薄云
-	float veil = smoothstep(0.45, 0.8, fbm(vec2(uv.x * 3.0 - clock * 0.02, (uv.y - sun.y) * 14.0 + 2.0))) * exp(-pow((uv.y - sun.y - 0.01) / 0.05, 2.0));
-	cloud = max(cloud, veil * 0.8);
-	col = mix(col, cc, cloud * 0.75);
-	a = max(a, cloud * 0.75);
-	// 一层很淡的天雾盖在最上面，把日蚀和天色揉在一起
-	float haze = fbm(vec2(uv.x * 1.5 + clock * 0.01, uv.y * 3.0));
-	col = mix(col, vec3(0.3, 0.03, 0.05), 0.18 * haze * (1.0 - smoothstep(0.4, 0.75, uv.y)));
-	// 贴地的薄红雾：没有边界，往上淡掉
-	float gy = (uv.y - ground + 0.25) / 0.35;
-	float mist = smoothstep(0.0, 1.0, gy) * (0.5 + 0.5 * fbm(vec2(uv.x * 3.0 - clock * 0.04, uv.y * 6.0)));
-	col += vec3(0.35, 0.02, 0.04) * mist * 0.35;
-	// 雷光：整屏轻轻提亮
-	col += vec3(0.4, 0.12, 0.15) * lightning * 0.08;
-	// 暗角
-	float vig = smoothstep(0.45, 1.05, length((uv - 0.5) * vec2(aspect * 0.6, 1.0)));
-	col *= 1.0 - vig * 0.3;
-	a = max(a, vig * 0.3);
-	// 蛇身没入的地方：一大片翻涌的暗红雾，中间亮、往四周淡开，往上飘起几缕
-	vec2 pd = (uv - pool) / vec2(pool_w, pool_w * 0.35);
-	float pn = fbm(vec2(uv.x * 5.0 - clock * 0.08, uv.y * 9.0 + clock * 0.05));
-	float pm = exp(-dot(pd, pd) * 1.2) * (0.55 + 0.6 * pn);
-	float wisp = smoothstep(0.55, 0.85, fbm(vec2(uv.x * 7.0, uv.y * 3.0 + clock * 0.25))) * exp(-pow((uv.x - pool.x) / pool_w, 2.0)) * smoothstep(pool.y + 0.05, pool.y - 0.35, uv.y) * smoothstep(pool.y - 0.5, pool.y - 0.1, uv.y);
-	col += vec3(0.75, 0.08, 0.1) * pm * 0.55 + vec3(0.6, 0.05, 0.08) * wisp * 0.25;
-	a = max(a, clamp(pm * 0.6, 0.0, 0.85));
-	COLOR = vec4(col * amount, a * amount);
-}" };
+
 
 	private readonly Control _layer;
 	private readonly Node2D _root;
@@ -358,7 +277,7 @@ void fragment() {
 		_tall = tall;
 		Vector2 scr = Fx.Screen(back);
 		_root = Fx.ScreenRoot(back, "P5Orochi");
-		_skyM = new ShaderMaterial { Shader = SkyShader };
+		_skyM = new ShaderMaterial { Shader = EclipseSky.Shader };   // 天色移到 Vfx/EclipseSky.cs（群蛇形态共用）
 		_sky = new ColorRect { Size = scr, Material = _skyM, MouseFilter = Control.MouseFilterEnum.Ignore };
 		_root.AddChild(_sky);
 		_bodyM = new ShaderMaterial { Shader = BodyShader };

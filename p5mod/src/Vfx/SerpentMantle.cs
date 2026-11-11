@@ -217,72 +217,7 @@ void fragment() {
 " };
 
 
-	private static Shader? _skyShader;
 
-	/// <summary>
-	/// 场景（用户：单这几条蛇出来很违和，要场景变换；另一个会话的日蚀不错只是太艳）：暗下来的天和地——
-	/// 一片暗色从 Joker 脚下往外漫开盖满画面（边是烟），天上一轮暗的日蚀（黑日 + 一圈暗红的细环 + 很淡的日冕和几缕光），
-	/// 飘过的乌云边被日冕照出一点暗红，贴地一层暗红的雾，四角压暗。都压着饱和度，只是把战场染成「咒怨里」的气氛。
-	/// </summary>
-	private static Shader SkyShader => _skyShader ??= new Shader { Code = @"
-shader_type canvas_item;
-render_mode blend_premul_alpha;
-uniform float amount = 0.0;
-uniform float reveal = 0.0;      // 0 → 1：从 Joker 往外漫开
-uniform vec2 from_uv = vec2(0.25, 0.75);
-uniform vec2 sun = vec2(0.45, 0.14);
-uniform float ground = 0.78;
-uniform float aspect = 1.7778;
-uniform float clock = 0.0;
-float h21(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
-float vn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
-	return mix(mix(h21(i), h21(i + vec2(1, 0)), f.x), mix(h21(i + vec2(0, 1)), h21(i + vec2(1, 1)), f.x), f.y); }
-float fbm(vec2 p) { return vn(p) * 0.5 + vn(p * 2.03 + 5.1) * 0.3 + vn(p * 4.1 + 1.7) * 0.2; }
-void fragment() {
-	vec2 uv = UV;
-	vec2 asp = vec2(aspect, 1.0);
-	float rd = length((uv - from_uv) * asp);
-	float en = fbm(uv * asp * 3.5 + vec2(clock * 0.15, 0.0));
-	float R0 = reveal * 2.3;
-	float spread = smoothstep(R0, R0 - 0.3, rd + (en - 0.5) * 0.35);
-	float sky = 1.0 - smoothstep(ground - 0.3, ground + 0.02, uv.y);
-	vec3 col = mix(vec3(0.028, 0.006, 0.012), vec3(0.045, 0.01, 0.016), uv.y);
-	float a = mix(0.36, 0.55, sky);
-	// 日蚀
-	vec2 d = (uv - sun) * asp;
-	float r = length(d);
-	const float R = 0.048;
-	float ang = atan(d.y, d.x);
-	float corona = exp(-max(r - R, 0.0) / 0.05) * step(R, r);
-	float rays = pow(vn(vec2(ang * 6.0, clock * 0.04)), 3.0) * exp(-max(r - R, 0.0) / 0.22) * step(R, r) * sky;
-	float halo = exp(-max(r - R, 0.0) / 0.16) * step(R, r);
-	col += vec3(0.4, 0.05, 0.06) * (corona * 0.55 + rays * 0.3 + halo * 0.25);
-	a = max(a, halo * 0.35);
-	float rim = exp(-pow((r - R) / 0.0035, 2.0));
-	col += vec3(0.55, 0.1, 0.09) * rim * 0.55;
-	float disk = 1.0 - smoothstep(R - 0.003, R + 0.002, r);
-	col = mix(col, vec3(0.01, 0.002, 0.004), disk);
-	a = max(a, max(disk * 0.95, rim * 0.6));
-	// 乌云：往一边飘，靠近日蚀的云边被照出一点暗红
-	float c1 = fbm(vec2(uv.x * aspect * 1.2 - clock * 0.012, uv.y * 4.0));
-	float c2 = fbm(vec2(uv.x * aspect * 2.4 - clock * 0.025, uv.y * 7.0 + 3.0));
-	float cloud = smoothstep(0.5, 0.8, c1 * 0.7 + c2 * 0.45) * sky * (1.0 - smoothstep(0.45, 0.7, uv.y));
-	vec3 cc = vec3(0.02, 0.004, 0.008) + vec3(0.32, 0.04, 0.05) * exp(-r / 0.3) * smoothstep(0.5, 0.9, c2);
-	col = mix(col, cc, cloud * 0.8);
-	a = max(a, cloud * 0.75);
-	// 贴地的暗红雾
-	float gm = smoothstep(ground - 0.14, ground + 0.06, uv.y) * (0.45 + 0.55 * fbm(vec2(uv.x * aspect * 3.0 - clock * 0.05, uv.y * 9.0)));
-	col += vec3(0.16, 0.02, 0.03) * gm * 0.45;
-	// 四角压暗
-	float vig = smoothstep(0.45, 1.15, length((uv - vec2(0.5, 0.48)) * vec2(aspect * 0.58, 1.0)));
-	a = max(a, vig * 0.72);
-	// 漫开的那道边：一圈翻滚的暗烟
-	float edge = smoothstep(0.18, 0.0, abs(rd + (en - 0.5) * 0.35 - (R0 - 0.15))) * step(0.001, reveal) * (1.0 - step(0.999, reveal));
-	col = mix(col, vec3(0.02, 0.004, 0.008), edge * 0.6);
-	a = max(a, edge * 0.8 * spread);
-	float k = amount * spread;
-	COLOR = vec4(col * a * k, a * k);
-}" };
 
 	/// <summary>
 	/// 五条蛇各自的游动路线（第三版，用户：一层一层的像魂环，太怪；分布自然一些、大概围绕就行；不要只有水平运动，要斜着上下）。
@@ -368,7 +303,7 @@ void fragment() {
 		for (int i = 0; i < Count; i++) _girth[i] = 0.092f * tall * Orbits[i].Size;   // 修长：细一些、长一些
 		_skyRoot = Fx.ScreenRoot(back, "P5SerpentSky");
 		back.MoveChild(_skyRoot, 0);
-		_skyM = new ShaderMaterial { Shader = SkyShader };
+		_skyM = new ShaderMaterial { Shader = EclipseSky.Shader };
 		var skyRect = new ColorRect { Size = Fx.Screen(back), Material = _skyM, MouseFilter = Control.MouseFilterEnum.Ignore };
 		_skyRoot.AddChild(skyRect);
 		Fx.Clock(skyRect);
@@ -478,12 +413,17 @@ void fragment() {
 		Vector2 scr = Fx.Screen(_back);
 		Vector2 fs = Fx.ScreenPoint(_back, feet);
 		float tallS = T * _back.GetCanvasTransform().Scale.Y;
+		// 场景：另一个会话的日蚀天色（Vfx/EclipseSky.cs），压一点饱和度、底色盖实；蛇巢那里正好是它「蛇身没入」的翻涌红雾
 		_skyM.SetShaderParameter("amount", _fadeOut >= 0f ? 1f - Smooth(0f, 0.8f, _fadeOut) : (_show > 0f || _intro >= 0f ? 1f : 0f));
 		_skyM.SetShaderParameter("reveal", _reveal);
+		_skyM.SetShaderParameter("desat", 0.3f);
+		_skyM.SetShaderParameter("cover", 0.62f);
 		_skyM.SetShaderParameter("aspect", scr.X / scr.Y);
 		_skyM.SetShaderParameter("from_uv", new Vector2(fs.X / scr.X, (fs.Y - 0.5f * tallS) / scr.Y));
 		_skyM.SetShaderParameter("ground", fs.Y / scr.Y);
-		_skyM.SetShaderParameter("sun", new Vector2(Mathf.Clamp((fs.X + face * tallS * 1.7f) / scr.X, 0.15f, 0.85f), 0.13f));
+		_skyM.SetShaderParameter("sun", new Vector2(Mathf.Clamp((fs.X + face * tallS * 1.7f) / scr.X, 0.15f, 0.85f), 0.15f));
+		_skyM.SetShaderParameter("pool", new Vector2((fs.X - 0.12f * face * tallS) / scr.X, (fs.Y - 0.05f * tallS) / scr.Y));
+		_skyM.SetShaderParameter("pool_w", tallS * 1.1f / scr.X);
 		Vector2 nestP = new(-0.12f * face * T, -0.78f * T);
 
 		// 攻击：有目标、有空位、出场演完了 → 挑一条闲着的蛇
