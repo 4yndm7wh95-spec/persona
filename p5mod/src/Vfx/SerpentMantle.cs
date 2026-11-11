@@ -367,8 +367,8 @@ void fragment() {
 	private float _t, _show = -1f, _intro = -1f, _fadeOut = -1f, _reveal;
 	private readonly float[] _tau = new float[Count];        // 每条蛇自己的时间（出动时会快一下）
 	private readonly Vector2[] _lunge = new Vector2[Count];  // 出动时朝敌人窜出去的偏移
-	private readonly Node2D _skyRoot;
-	private readonly ShaderMaterial _skyM;
+	private readonly Node2D _skyRoot, _mistFrontRoot;
+	private readonly ShaderMaterial _skyM, _mistFrontM;
 	private int _nextSerpent;
 
 	private sealed class Attack
@@ -417,10 +417,18 @@ void fragment() {
 		for (int i = 0; i < Count; i++) _girth[i] = 0.068f * tall * Orbits[i].Size;   // 修长：细一些、长一些（第三版：再细，用户说太肥）
 		_skyRoot = Fx.ScreenRoot(back, "P5SerpentSky");
 		back.MoveChild(_skyRoot, 0);
-		_skyM = new ShaderMaterial { Shader = EclipseSky.Shader };
+		// 场景：咒雾漫地（Vfx/SerpentMist.cs；2026-11-11 用户：日蚀不搭、太耀眼，换掉）。背景层调色 + 雾 + 雾里的巨蛇背，前景层只有贴地的雾丝
+		_skyM = new ShaderMaterial { Shader = SerpentMist.Shader };
+		_skyM.SetShaderParameter("side", -1f);
 		var skyRect = new ColorRect { Size = Fx.Screen(back), Material = _skyM, MouseFilter = Control.MouseFilterEnum.Ignore };
 		_skyRoot.AddChild(skyRect);
 		Fx.Clock(skyRect);
+		_mistFrontRoot = Fx.ScreenRoot(front, "P5SerpentMistFront");
+		_mistFrontM = new ShaderMaterial { Shader = SerpentMist.Shader };
+		_mistFrontM.SetShaderParameter("side", 1f);
+		var mistRect = new ColorRect { Size = Fx.Screen(front), Material = _mistFrontM, MouseFilter = Control.MouseFilterEnum.Ignore };
+		_mistFrontRoot.AddChild(mistRect);
+		Fx.Clock(mistRect);
 		for (int k = 0; k < _puff.Length; k++) _puff[k] = new Vector4(0f, 0f, -1f, 1f);
 		_tree = (SceneTree)Engine.GetMainLoop();
 		_tree.ProcessFrame += Tick;
@@ -481,6 +489,7 @@ void fragment() {
 		if (GodotObject.IsInstanceValid(_frontRoot)) _frontRoot.QueueFree();
 		if (GodotObject.IsInstanceValid(_backRoot)) _backRoot.QueueFree();
 		if (GodotObject.IsInstanceValid(_skyRoot)) _skyRoot.QueueFree();
+		if (GodotObject.IsInstanceValid(_mistFrontRoot)) _mistFrontRoot.QueueFree();
 	}
 
 	private static float Smooth(float a, float b, float x) { float t = Mathf.Clamp((x - a) / (b - a), 0f, 1f); return t * t * (3f - 2f * t); }
@@ -529,20 +538,18 @@ void fragment() {
 		Vector2 scr = Fx.Screen(_back);
 		Vector2 fs = Fx.ScreenPoint(_back, feet);
 		float tallS = T * _back.GetCanvasTransform().Scale.Y;
-		// 场景：另一个会话的日蚀天色（Vfx/EclipseSky.cs），压一点饱和度、底色盖实；蛇巢那里正好是它「蛇身没入」的翻涌红雾
-		_skyM.SetShaderParameter("amount", _fadeOut >= 0f ? 1f - Smooth(0f, 0.8f, _fadeOut) : (_show > 0f || _intro >= 0f ? 1f : 0f));
-		_skyM.SetShaderParameter("reveal", _reveal);
-		_skyM.SetShaderParameter("desat", 0.3f);
-		_skyM.SetShaderParameter("cover", 0.62f);
-		_skyM.SetShaderParameter("disk_r", 0.07f);
-		_skyM.SetShaderParameter("bleed", 1f);
-		_skyM.SetShaderParameter("blend", 1f);
-		_skyM.SetShaderParameter("aspect", scr.X / scr.Y);
-		_skyM.SetShaderParameter("from_uv", new Vector2(fs.X / scr.X, (fs.Y - 0.5f * tallS) / scr.Y));
-		_skyM.SetShaderParameter("ground", fs.Y / scr.Y);
-		_skyM.SetShaderParameter("sun", new Vector2(Mathf.Clamp((fs.X + face * tallS * 1.7f) / scr.X, 0.15f, 0.85f), 0.15f));
-		_skyM.SetShaderParameter("pool", new Vector2((fs.X - 0.12f * face * tallS) / scr.X, (fs.Y - 0.05f * tallS) / scr.Y));
-		_skyM.SetShaderParameter("pool_w", tallS * 1.1f / scr.X);
+		// 场景：咒雾漫地，出场时从 Joker 身边漫开；能力没了一起淡掉
+		float amt = _fadeOut >= 0f ? 1f - Smooth(0f, 0.8f, _fadeOut) : (_show > 0f || _intro >= 0f ? 1f : 0f);
+		foreach (ShaderMaterial sm in new[] { _skyM, _mistFrontM })
+		{
+			sm.SetShaderParameter("amount", amt);
+			sm.SetShaderParameter("reveal", _reveal);
+			sm.SetShaderParameter("aspect", scr.X / scr.Y);
+			sm.SetShaderParameter("from_uv", new Vector2(fs.X / scr.X, (fs.Y - 0.5f * tallS) / scr.Y));
+			sm.SetShaderParameter("feet", new Vector2(fs.X / scr.X, fs.Y / scr.Y));
+			sm.SetShaderParameter("tall", tallS / scr.Y);
+			sm.SetShaderParameter("face", face);
+		}
 		Vector2 nestP = new(-0.12f * face * T, -0.78f * T);
 
 		// 攻击：有目标、有空位、出场演完了 → 挑一条闲着的蛇
