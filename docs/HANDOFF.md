@@ -4,6 +4,55 @@
 
 ---
 
+## 2026-11-11 · 会话 A（`claude/epic-archimedes-m9an69`）交接 —— 接手了会话 B 的群蛇形态，正在逐项过；另有三批「具体到牌」的技能特效没收尾
+
+### 分支和状态
+- 工作分支 `claude/epic-archimedes-m9an69`，最新提交 `cc9cc1f1`，已推送，工作区干净。已快进合并会话 B 的 `claude/beautiful-keller-4lsbk4`（`15298c85`，含它的交接），之后 B 分支没有新提交。
+- 版本号仍是 **0.9.18**，下面所有东西**都没出包、没进游戏实测**，只在预览工具里看过；类型检查 `bash tools/p5/cloud/check.sh` 通过。
+- 出包：升 0.9.19 → `python3 tools/p5/stage_p5.py` → `tools/p5/cloud/build_package.sh`。
+
+### 群蛇形态（会话 B 的「做到一半」那份交接的第 1 项，正在等用户确认）
+- 用户否掉了 B 提的「扇形」布局：**还是几条蛇大致围着 Joker 游**，只小幅修分布和轨迹，其它不变。
+- 已改（`p5mod/src/Vfx/SerpentMantle.cs`）：
+  - `Orbits` 表换成新参数：每条守自己那一块、圈小、五条角速度一样（相位错开）。
+  - 用户又说「头部以上和腰部以下不均匀，腰部以下没有」→ 现在从高到低：右上（头顶以上，身后）、左上（头顶高度，身后）、右侧胸口高度朝敌人、腰胯从身前横过、左下膝盖高度贴地。
+  - `PoseSerpent`：身体不再完全沿头走过的路铺（圈小了会把整圈描一遍、绕成结），和「蛇巢 → 头」的直线各取一半。
+- 示意图 `docs/p5/preview/serpent_orbit_tweak.png`（脚本 `tools/p5/diagrams/serpent_orbit_tweak.py`，用同一个 Orbit 公式算路线，改参数要两边一起改）。
+- 预览 `docs/p5/preview/serpent_form_v16.mp4`（场景 `serpent_form`，7 秒约 4 分钟渲完）。**已发给用户，还没回复是否均匀了。**
+- 之后照 B 的顺序：**3. Joker 和蛇周围的迷雾**（一体感）→ **4. 场景切入动画**（约 1 秒、层层叠进来）→ 出包实测。
+- `Orochi.cs`：我这边做的八岐大蛇试了 6 版（实体 → 迷雾），用户最后觉得不行，**本体不用**；日蚀天色已被 B 抽成 `EclipseSky.cs` 共用。
+
+### 具体到牌的技能特效（用户 11-10：每张牌要有自己的特效、丰富一些、一批一批做、做完一批给看）
+- 机制：`Vfx/CardSkillFx.cs` 里 `CardSkillFx.Cards`（牌名 → 特效），`SkillPlay.OnPlay` 先查这里，查不到再走通用积木 `SkillFx`。上下文 `SkillCtx`（位置、身高、朝向、敌人列表 `Enemies`、目标 `Target`、`CopyBody`/`Region` 给剪影用）。预览场景 `cards1` / `cards2`（`Preview.cs` 的 `RunCards`）。
+- **第一批**（`CardSkillFx.cs`）灵动步法、精准、涂毒、毒雾、跟踪、爆发、幽魂形态（群蛇形态已由 B 改成 SerpentMantle）：预览 `docs/preview/card_fx_batch1_small.mp4` 已发。用户反馈：
+  - **毒雾**要改成**常驻**：开了之后一直在，时不时冒出几个魂火（`curse_soul` 那种），**不要有明显的范围边界**。还没改。
+  - **幽魂形态**要**重做**（用户说重做，没给方向）。还没做。
+- **第二批**（`CardSkillFx2.cs`）融入暗影、残影、余像、暗影步、子弹时间、夹击、萎靡、扫腿：代码 + 音效做了、渲过一版（`tools/p5/fxpreview/out/cards2`），**没发给用户**，因为：萎靡的咒云是一块扁平红盘、扫腿太淡、子弹时间里定格的子弹看不清。要先打磨。
+- **第三批**（`CardSkillFx3.cs`）杂技、早有准备、独门技术、本能反应、后空翻、逃脱计划、生存者、计算下注、战术大师、肾上腺素：代码 + 音效写完，**还没渲染过**。`SkillFx.LightCard` / `NewCard` / `HandArea` 是给它编排牌轨迹用的公开把手。
+- 还没做的牌（建议第四、五批）：生成小刀类（刀刃之舞、斗篷与匕首、墨之刃、袖里乾坤、刀刃交响曲、隐秘匕首、钢铁风暴、无尽刀刃、幻影之刃、刀刃陷阱）；谋划类（谋划专家、计划妥当、必备工具、手上技法、夜魇）；其它（鬼祟、磨蚀、消影、预判、侧步、速行者、触媒、调制）。
+- 音效：`tools/p5/sfx/synth_card_fx1.py` / `fx2` / `fx3`（全是噪声合成），登记在 `Sfx.cs` 和 `stage_p5.py`。
+
+### 这一轮其它已定的
+- **暴露**：动作改成挥手（新动画 `cast_wave` / `cast_wave_from_ready`，`tools/p5/build_rig_p5.py`；`Casts` 里 `Cast.Wave`，架势仍是扯手套）。用户认可。
+- **剪影**（`SkillFx.Ghosts`，残影 / 余像 / 暗影步用）：照用户给的参考图——**一层**实心纯红，紧贴身后往后下错开约 4 像素，边缘干脆。
+- **增益 / 减益通用积木**：增益 = 脚下扁波 + 光柱 + 三道「^」+ 胸口弹环（红 / 蓝 / 咒怨各带一样东西）；减益 = 中和的虚弱那套。
+- **抽牌声**用 P3 mod 的 `card_draw`（用户指定）。苦无（`KunaiPierce.cs`）用户叫停，不用。
+
+### 用户要求（接手照做）
+- **音效要克制**，能听出来有就行；只有毒性爆发、华丽收场这类大卡才要张力。不要卡通（纯音、滑音）。
+- 一个一个 / 一批一批做，做完给用户看，过了再做下一个；改形状 / 布局先画示意图。
+- 特效要着色器渲染、不要贴图感、不要明显轮廓描边；白卡简单但不单薄。
+- 预览放 `docs/preview/` 或 `docs/p5/preview/`，854 宽、小于 1 MB，用 SendUserFile 发；做一点推一点。
+- 回复用中文；交接只在用户要求时写。
+
+### 环境
+- Godot：`/root/godot/Godot_v4.5.1-stable_mono_linux_x86_64/Godot_v4.5.1-stable_mono_linux.x86_64`（`export GODOT=...`；B 的交接里写的 `/opt/tools/...` 在这个容器里没有）。
+- 预览：`cd tools/p5/fxpreview && bash render.sh <场景> <秒> && python3 mix.py <场景>`；体积光线步进的着色器在这里很慢（Orochi 迷雾版 ~9 秒一帧），渲染要放后台。
+- 改了音效要跑 `python3 tools/p5/stage_p5.py`。
+
+---
+
+
 ## 2026-11-11 · 会话 B（`claude/beautiful-keller-4lsbk4`）交接 —— 群蛇形态（Serpent Form）做到一半，从这里接
 
 ### 分支和状态
