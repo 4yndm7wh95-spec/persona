@@ -153,7 +153,7 @@ void fragment() {
 		vec4 bb = box[j];
 		if (p.x < bb.x || p.y < bb.y || p.x > bb.z || p.y > bb.w) continue;
 		float g = girth[j];
-		float best = 1e9, bs = 0.0, bz = 0.0, ba = 0.0;
+		float best = 1e9, bestR = 1e9, bs = 0.0, bz = 0.0, ba = 0.0;
 		vec2 bq = p;
 		for (int k = 0; k < 31; k++) {
 			vec4 a = spine[j * 32 + k], b = spine[j * 32 + k + 1];
@@ -163,7 +163,11 @@ void fragment() {
 			float h = clamp(dot(p - a.xy, ab) / max(dot(ab, ab), 1e-3), 0.0, 1.0);
 			vec2 q = a.xy + ab * h;
 			float d = length(p - q);
-			if (d < best) { best = d; bs = (float(k) + h) / 31.0; bz = mix(a.z, b.z, h); ba = mix(a.w, b.w, h); bq = q; }
+			// 用户：身体有断层、头和身体脱节 → 以前取「离中线最近的一段」，细尾巴 / 细脖子从粗身体上交叉过去时，粗身体里的像素会被算成细的那段而挖空。
+			// 改成取「在哪一段里面最深」（距离 / 那一段的粗细），交叉处就是两段的并集
+			float sk = (float(k) + h) / 31.0;
+			float rn = d / max(sk >= HEAD0 ? 0.58 : profile(sk, 0.5), 0.05);   // 头那几段按脖子粗细比（头本身由下面的轮廓画）
+			if (rn < bestR) { bestR = rn; best = d; bs = sk; bz = mix(a.z, b.z, h); ba = mix(a.w, b.w, h); bq = q; }
 		}
 		if (best > 1e8) continue;
 		vec2 n2 = (p - bq) / max(best, 1e-3);
@@ -225,9 +229,15 @@ void fragment() {
 			float hd = smoothstep(0.02, -0.05, dHead + (nz - 0.5) * smoke * 2.0 + dj * (0.4 + nz * 1.4));
 			float rimH = smoothstep(-0.12, -0.01, dHead) * (1.0 - smoothstep(-0.01, 0.04, dHead)) * smoothstep(0.45, 0.8, flick) * lit * smoothstep(-0.2, 0.15, qu.y);   // 透光只在上半，下颚边不勾线
 			vec3 headC = (inner + vec3(0.6, 0.05, 0.07) * rimH * 0.9) * dim;
-			a = mix(a, clamp(hd + wisp * 0.25 * (1.0 - hd), 0.0, 1.0) * ba, hw);
-			dens = mix(dens, hd, hw);
-			cc = mix(cc, mix(wc, headC, hd), hw);
+			// 头和脖子取并集（用户：头和身体脱节、脖子被切成方头——头转向时以前是「替换」那一截脖子）：
+			// 脖子一直是身体管道，头的轮廓接在根部；轮廓自带的那截脖子往后淡掉，转头时不会横着戳出来
+			float hdN = hd * smoothstep(-0.62, -0.32, q.x);
+			float capA = bs >= HEAD0 ? 0.0 : a;                       // 管道里属于头的那几段不画（头由轮廓画）
+			float headA = clamp(hdN + wisp * 0.25 * (1.0 - hdN), 0.0, 1.0) * ba;
+			vec3 headCC = mix(wc, headC, hd);
+			cc = capA > 0.0 ? mix(cc, headCC, clamp(hdN * 1.2, 0.0, 1.0)) : headCC;
+			a = max(capA, headA);
+			dens = max(bs >= HEAD0 ? 0.0 : dens, hdN);
 			// 口腔：上唇和下唇之间，嘴角最深、往吻尖淡掉（前面透出后面）
 			if (openA > 0.001 && q.x > HINGE.x) {
 				float upLip = lipY(lip_up, qu.x);
@@ -235,7 +245,7 @@ void fragment() {
 				float inGap = smoothstep(0.015, -0.015, qu.y - upLip) * smoothstep(-0.015, 0.015, ql.y - lowLip);
 				float fade = clamp((1.35 - q.x) / 0.6, 0.0, 1.0);
 				float th = inGap * fade * hw * (1.0 - dj);
-				vec3 throatC = vec3(0.27, 0.047, 0.07) * (0.85 + 0.3 * nz);
+				vec3 throatC = mix(vec3(0.015, 0.002, 0.005), vec3(0.27, 0.047, 0.07), smoothstep(HINGE.x, HINGE.x + 0.55, q.x)) * (0.85 + 0.3 * nz);   // 嘴角最深（近黑），不在铰点那里切出一道
 				cc = mix(cc, throatC, th * (1.0 - hd));
 				a = max(a, th * ba);
 			}
