@@ -133,7 +133,7 @@ void fragment() {
 		for (int i = 0; i < 3; i++) {
 			if (maw_a[i] <= 0.0) continue;
 			float k = maw[i].z, op = maw[i].w, ma = maw_a[i];
-			float S = T * 0.95 * mix(0.12, 1.0, k);                  // 头半宽：由远到近一下子放大
+			float S = T * 0.48 * mix(0.12, 1.0, k);                  // 用户：大嘴缩小一半                  // 头半宽：由远到近一下子放大
 			vec2 q = (p - maw[i].xy) / S;
 			if (abs(q.x) > 2.6 || abs(q.y) > 2.6) continue;
 			float gone = 1.0 - ma;
@@ -141,38 +141,50 @@ void fragment() {
 			float n2 = vn(q * 6.0 - clock * 1.5);
 			// 头：上宽下窄的圆钝楔形（正面），额头两侧鼓一点
 			// 正面的蛇头：扁宽、两腮往外撑、往上收成平的头顶（不要圆鼓鼓的「耳朵」）
-			float head = length(q / vec2(1.12 - 0.18 * smoothstep(-0.8, 0.6, -q.y), 0.78) - vec2(0.0, 0.08)) - 1.0;
+			float head = length(q / vec2(1.0 - 0.2 * smoothstep(-0.8, 0.6, -q.y), 1.0) - vec2(0.0, 0.0)) - 1.0;
 			// 嘴：中间一道弧形的口子，张开时上下分开
-			float mx = clamp(q.x / 0.82, -1.0, 1.0);
+			const float MW = 0.6, MH = 0.4, MY = 0.32;   // 嘴：半宽、张开时的半高、中线（头的下半）
+			float mx = clamp(q.x / MW, -1.0, 1.0);
 			float lip = sqrt(max(1.0 - mx * mx, 0.0));
-			float mouth = abs(q.y - 0.18) - 0.6 * op * lip;
-			float inMouth = smoothstep(0.04, -0.04, mouth) * step(abs(q.x), 0.82);
-			float dens = smoothstep(0.2, -0.45, head + (n - 0.5) * 0.7 + (n2 - 0.5) * 0.15 + gone * (0.5 + n * 1.6)) * (1.0 - inMouth);
+			float mouth = abs(q.y - MY) - MH * op * lip;
+			float inMouth = smoothstep(0.04, -0.04, mouth) * step(abs(q.x), MW);
+			float hsd = head + (n - 0.5) * 0.5 + (n2 - 0.5) * 0.12 + gone * (0.5 + n * 1.6);
+			float dens = smoothstep(0.12, -0.3, hsd) * (1.0 - inMouth);
 			// 咬合缝和嘴里的一圈红光（嘴里是空的，看得见敌人）
-			float rim = smoothstep(0.0, -0.08, mouth) * (1.0 - smoothstep(-0.08, -0.2, mouth)) * step(abs(q.x), 0.85) * op * smoothstep(0.45, 0.8, n);
-			float seam = exp(-pow((q.y - 0.18 + (n2 - 0.5) * 0.06) / 0.025, 2.0)) * (1.0 - smoothstep(0.5, 0.85, abs(q.x))) * (1.0 - op) * step(0.5, k) * smoothstep(0.35, 0.7, n);
+			float rim = smoothstep(0.0, -0.08, mouth) * (1.0 - smoothstep(-0.08, -0.2, mouth)) * step(abs(q.x), MW + 0.03) * op * smoothstep(0.45, 0.8, n);
+			float seam = exp(-pow((q.y - MY + (n2 - 0.5) * 0.06) / 0.025, 2.0)) * (1.0 - smoothstep(MW * 0.6, MW, abs(q.x))) * (1.0 - op) * step(0.5, k) * smoothstep(0.35, 0.7, n);
 			vec3 sc = mix(vec3(0.012, 0.003, 0.006), vec3(0.11, 0.02, 0.03), smoothstep(0.35, 0.8, n));
-			sc += vec3(0.55, 0.05, 0.07) * smoothstep(-0.3, -0.04, head) * smoothstep(0.5, 0.8, n) * 0.9;
+			sc += vec3(0.6, 0.05, 0.07) * smoothstep(-0.28, -0.03, hsd) * (0.35 + 0.65 * smoothstep(0.45, 0.8, n));   // 头的外沿透光
+			// 上下颚的唇边：嘴口外面一圈亮一点的暗红，把颚的形状勾出来
+			float lipE = smoothstep(0.16, 0.0, mouth) * smoothstep(-0.02, 0.06, mouth) * step(abs(q.x), MW + 0.04);
+			sc += vec3(0.4, 0.05, 0.06) * lipE * op * smoothstep(0.45, 0.85, n) * 0.6;   // 唇边只零星透一点光，不成一圈描边
 			// 獠牙：上颚两颗往下、下颚两颗往上（亮的骨白，带红）
 			float fang = 0.0;
 			for (int s = 0; s < 2; s++) {
-				float sx = s == 0 ? -0.42 : 0.42;
-				vec2 fu = q - vec2(sx, 0.18 - 0.6 * op * sqrt(max(1.0 - pow(sx / 0.82, 2.0), 0.0)));
-				float tu = clamp(fu.y / (0.42 * op + 0.01), 0.0, 1.0);
-				fang = max(fang, smoothstep(0.06, -0.01, abs(fu.x + 0.05 * tu) - 0.055 * (1.0 - tu)) * step(0.0, fu.y) * step(fu.y, 0.42 * op));
-				vec2 fl = q - vec2(sx * 0.8, 0.18 + 0.6 * op * sqrt(max(1.0 - pow(sx * 0.8 / 0.82, 2.0), 0.0)));
-				float tl = clamp(-fl.y / (0.25 * op + 0.01), 0.0, 1.0);
-				fang = max(fang, smoothstep(0.06, -0.01, abs(fl.x) - 0.04 * (1.0 - tl)) * step(fl.y, 0.0) * step(-0.25 * op, fl.y));
+				float sx = s == 0 ? -0.33 : 0.33;
+				vec2 fu = q - vec2(sx, MY - MH * op * sqrt(max(1.0 - pow(sx / MW, 2.0), 0.0)));
+				float tu = clamp(fu.y / (0.3 * op + 0.01), 0.0, 1.0);
+				fang = max(fang, smoothstep(0.018, -0.012, abs(fu.x + 0.05 * tu) - 0.05 * (1.0 - tu)) * smoothstep(-0.04, 0.02, fu.y) * smoothstep(0.3 * op + 0.01, 0.3 * op - 0.03, fu.y));
+				vec2 fl = q - vec2(sx * 0.8, MY + MH * op * sqrt(max(1.0 - pow(sx * 0.8 / MW, 2.0), 0.0)));
+				float tl = clamp(-fl.y / (0.18 * op + 0.01), 0.0, 1.0);
+				fang = max(fang, smoothstep(0.018, -0.012, abs(fl.x) - 0.036 * (1.0 - tl)) * smoothstep(0.04, -0.02, fl.y) * smoothstep(-0.18 * op - 0.01, -0.18 * op + 0.03, fl.y));
 			}
 			fang *= ma * smoothstep(0.3, 0.8, k);
 			// 由远到近：四周一圈往外冲的烟（朝镜头扑过来）
 			float ang = atan(q.y, q.x);
 			float rad = length(q);
 			float streak = smoothstep(0.55, 0.9, vn(vec2(ang * 7.0, rad * 2.0 - k * 6.0))) * smoothstep(0.9, 1.4, rad) * smoothstep(2.4, 1.5, rad) * (1.0 - k) * 1.5;
-			over(acc, vec3(0.02, 0.004, 0.008), clamp(streak, 0.0, 0.7) * ma);
+			// 嘴里：不是空的——深处近黑，往嘴边过渡成暗红的肉色，喉咙深处一点暗红的光，带一点烟的起伏
+			float depth = clamp(-mouth / max(MH * op, 0.05), 0.0, 1.0);
+			vec3 throat = mix(vec3(0.1, 0.012, 0.018), vec3(0.012, 0.002, 0.004), smoothstep(0.0, 0.5, depth)) * (0.8 + 0.4 * n);
+			throat += vec3(0.16, 0.01, 0.02) * exp(-dot(q - vec2(0.0, MY), q - vec2(0.0, MY)) / 0.015) * op;
+			float mouthA = inMouth * smoothstep(0.0, 0.15, op) * (1.0 - gone * 0.8);
+			// over 是从前往后叠（先叠的在最前）：牙 → 嘴里 → 头的烟 → 四周冲出来的烟
+			over(acc, vec3(0.55, 0.44, 0.4) + vec3(0.15, 0.02, 0.03) * n, fang * 0.85);
+			over(acc, throat, clamp(mouthA * 0.96, 0.0, 1.0) * ma);
 			over(acc, sc, clamp(dens * 0.9, 0.0, 1.0) * ma);
-			over(acc, vec3(0.5, 0.38, 0.34) + vec3(0.25, 0.04, 0.05) * n, fang * 0.55 * smoothstep(0.25, 0.6, n2 + 0.3));   // 牙也是烟里透出来的，不是贴上去的白三角
-			glow += vec3(0.7, 0.06, 0.07) * rim * 0.45 * ma + vec3(1.0, 0.4, 0.28) * seam * 0.9 * ma;
+			over(acc, vec3(0.02, 0.004, 0.008), clamp(streak, 0.0, 0.7) * ma);
+			glow += vec3(0.7, 0.06, 0.07) * rim * 0.2 * ma + vec3(1.0, 0.4, 0.28) * seam * 0.9 * ma;
 			// 眼睛：额头两侧两团暖红雾光
 			for (int s = 0; s < 2; s++) {
 				// 眼睛在两腮上方、斜着的细长一团（不是圆鼓鼓的大眼）
@@ -376,7 +388,7 @@ void fragment() {
 				if (serp < 0) break;
 				_nextSerpent = (serp + 2) % Count;
 				_attacks[s] = new Attack { Serpent = serp, Target = _targets.Dequeue() - feet };
-				Sfx.Play(Sfx.SerpentMaw, 0.75f);
+				Sfx.Play(Sfx.SerpentMaw, 0.8f, BiteAt - 0.01f);   // 只有咬合的声音（用户：冲出来不要音效）
 				break;
 			}
 		}
@@ -506,8 +518,8 @@ void fragment() {
 			{
 				a.Bit = true;
 				Vector2 at = feet + a.Target;
-				Glow.Flash(_front, at, Pal5.Crimson, 1.6f * T, 0.3f);
-				Glow.Flash(_front, at + new Vector2(0f, 0.17f * T), Pal5.Hot, 0.6f * T, 0.12f);
+				Glow.Flash(_front, at, Pal5.Crimson, 0.9f * T, 0.25f);
+				Glow.Flash(_front, at + new Vector2(0f, 0.15f * T), Pal5.Hot, 0.35f * T, 0.12f);
 				Glow.Sparks(_front, at, 30, 200f, 700f, 0.55f, new[] { Pal5.Bright, Pal5.Crimson, Pal5.Deep }, 250f, 0.12f, 0.38f, Vector2.Up, 160f);
 				Fx.Shake(2);
 				HitStop.Request(0.04);
