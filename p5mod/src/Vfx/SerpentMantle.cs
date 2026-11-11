@@ -164,10 +164,10 @@ void fragment() {
 				float sx = s == 0 ? -0.33 : 0.33;
 				vec2 fu = q - vec2(sx, MY - MH * op * sqrt(max(1.0 - pow(sx / MW, 2.0), 0.0)));
 				float tu = clamp(fu.y / (0.3 * op + 0.01), 0.0, 1.0);
-				fang = max(fang, smoothstep(0.018, -0.012, abs(fu.x + 0.05 * tu) - 0.05 * (1.0 - tu)) * smoothstep(-0.04, 0.02, fu.y) * smoothstep(0.3 * op + 0.01, 0.3 * op - 0.03, fu.y));
+				fang = max(fang, smoothstep(0.05, -0.03, abs(fu.x + 0.05 * tu) + (n2 - 0.5) * 0.04 - 0.045 * (1.0 - tu)) * smoothstep(-0.04, 0.02, fu.y) * smoothstep(0.3 * op + 0.01, 0.3 * op - 0.03, fu.y));
 				vec2 fl = q - vec2(sx * 0.8, MY + MH * op * sqrt(max(1.0 - pow(sx * 0.8 / MW, 2.0), 0.0)));
 				float tl = clamp(-fl.y / (0.18 * op + 0.01), 0.0, 1.0);
-				fang = max(fang, smoothstep(0.018, -0.012, abs(fl.x) - 0.036 * (1.0 - tl)) * smoothstep(0.04, -0.02, fl.y) * smoothstep(-0.18 * op - 0.01, -0.18 * op + 0.03, fl.y));
+				fang = max(fang, smoothstep(0.05, -0.03, abs(fl.x) + (n2 - 0.5) * 0.04 - 0.032 * (1.0 - tl)) * smoothstep(0.04, -0.02, fl.y) * smoothstep(-0.18 * op - 0.01, -0.18 * op + 0.03, fl.y));
 			}
 			fang *= ma * smoothstep(0.3, 0.8, k);
 			// 由远到近：四周一圈往外冲的烟（朝镜头扑过来）
@@ -180,7 +180,7 @@ void fragment() {
 			throat += vec3(0.16, 0.01, 0.02) * exp(-dot(q - vec2(0.0, MY), q - vec2(0.0, MY)) / 0.015) * op;
 			float mouthA = inMouth * smoothstep(0.0, 0.15, op) * (1.0 - gone * 0.8);
 			// over 是从前往后叠（先叠的在最前）：牙 → 嘴里 → 头的烟 → 四周冲出来的烟
-			over(acc, vec3(0.55, 0.44, 0.4) + vec3(0.15, 0.02, 0.03) * n, fang * 0.85);
+			over(acc, mix(vec3(0.22, 0.09, 0.08), vec3(0.5, 0.3, 0.27), smoothstep(0.3, 0.8, n)), fang * 0.8 * smoothstep(0.1, 0.45, n));   // 牙也是烟：暗的骨红色、边糊、被烟吃掉一部分
 			over(acc, throat, clamp(mouthA * 0.96, 0.0, 1.0) * ma);
 			over(acc, sc, clamp(dens * 0.9, 0.0, 1.0) * ma);
 			over(acc, vec3(0.02, 0.004, 0.008), clamp(streak, 0.0, 0.7) * ma);
@@ -203,19 +203,19 @@ void fragment() {
 " };
 
 	/// <summary>
-	/// 五条蛇各自的轨道（身高为单位，相对脚底；x 朝敌人为正）：中心 (cx, cy)、横向半径 rx、上下 ry、角速度 w（正负 = 方向）、相位、
-	/// 深度：z = cos(角) * za + zb（&gt; 0 时转到 Joker 前面）、粗细、身长（身高为单位：身体沿头走过的路往回铺这么长，越老的位置越往下沉）。
+	/// 五条蛇各自的游动路线（第三版，用户：一层一层的像魂环，太怪；分布自然一些、大概围绕就行；不要只有水平运动，要斜着上下）。
+	/// 每条是一个斜放的利萨如曲线（椭圆 / 8 字），再叠一点慢慢漂的偏移：头会斜着往上游、再斜着往下沉，几条的高低、远近、快慢都错开，
+	/// 只是大致围着 Joker，不是一圈圈地绕。
+	/// Cx, Cy：中心（身高为单位，相对脚底，x 朝敌人为正）；Ax, Ay：两个方向的幅度；W：角速度；R：竖直方向的频率比（1 椭圆、2 八字、1.5 扭一下）；
+	/// Ph：相位；Tilt：整条路线斜放的角度（度，正 = 朝敌人那边往上翘）；Za, Zb：深度 z = cos(角) * Za + Zb（&gt; 0 时在 Joker 前面）；粗细；身长。
 	/// </summary>
-	private static readonly (float Cx, float Cy, float Rx, float Ry, float W, float Ph, float Za, float Zb, float Size, float Len)[] Orbits =
+	private static readonly (float Cx, float Cy, float Ax, float Ay, float W, float R, float Ph, float Tilt, float Za, float Zb, float Size, float Len)[] Orbits =
 	{
-		// 用户：分布别太散 → 都收在 Joker 身边（左边不出画面），Len = 身长（身高为单位）
-		// 第二版（用户：要修长；要有被 Joker 挡住 / 挡住 Joker 的层次才有围绕感）：中间三条的轨道都以 Joker 为中心、
-		// 半径比他的身体宽，转到前面时从他身前横过去（画在前景层、不透明地挡住他），转到后面时被他挡住
-		(0.05f, -1.45f, 0.55f, 0.1f, 0.45f, 0.0f, 0.5f, -0.6f, 1.05f, 1.9f),   // 身后高处，慢慢转
-		(-0.05f, -0.68f, 0.62f, 0.1f, -0.6f, 1.3f, 1f, 0f, 0.95f, 1.8f),      // 胸口高度绕身体（反方向，从他身前横过去，不过脸）
-		(0.1f, -1.25f, 0.66f, 0.12f, 0.55f, 2.4f, 0.8f, -0.35f, 0.95f, 1.8f), // 头顶上方绕，偶尔从前面掠过
-		(0.05f, -0.3f, 0.86f, 0.06f, 0.45f, 3.6f, 1f, 0f, 0.9f, 2.0f),        // 绕着腰腿
-		(-0.1f, -1.8f, 0.45f, 0.08f, -0.45f, 4.8f, 0.5f, -0.6f, 0.85f, 1.8f), // 最高处，身后
+		(0.15f, -1.4f, 0.5f, 0.3f, 0.42f, 1f, 0.0f, 28f, 0.6f, -0.45f, 1.05f, 1.9f),     // 身后偏右上，斜着一高一低地兜
+		(-0.4f, -0.9f, 0.45f, 0.35f, -0.55f, 1f, 1.3f, -42f, 1f, 0.05f, 0.95f, 1.8f),   // 左边，斜着从他身前穿过去再绕回身后
+		(0.5f, -1.0f, 0.38f, 0.42f, 0.36f, 2f, 2.4f, 12f, 1f, -0.2f, 0.95f, 1.8f),      // 右边（敌人那侧），竖着的 8 字，上下起伏大
+		(-0.05f, -0.42f, 0.72f, 0.16f, 0.46f, 1f, 3.6f, -10f, 1f, 0.05f, 0.9f, 2.0f),   // 低处，绕着腿，略斜
+		(-0.3f, -1.72f, 0.38f, 0.26f, -0.38f, 1.5f, 4.8f, 35f, 0.5f, -0.5f, 0.85f, 1.8f), // 最高处偏左，身后
 	};
 
 	private readonly Control _front, _back;
@@ -347,10 +347,12 @@ void fragment() {
 	{
 		var o = Orbits[i];
 		float a = o.W * t + o.Ph;
-		float x = o.Cx + o.Rx * Mathf.Sin(a);
-		float y = o.Cy + o.Ry * Mathf.Sin(2f * a + 0.7f * i) + 0.05f * Mathf.Sin(t * 0.9f + i * 1.7f);
+		Vector2 l = new(o.Ax * Mathf.Sin(a), o.Ay * Mathf.Sin(o.R * a + 1.57f + 0.6f * i));
+		l = l.Rotated(-Mathf.DegToRad(o.Tilt));                          // 斜放（屏幕 y 朝下，所以取负）
+		// 慢慢漂：整条路线自己也在挪，不会一直重复同一个圈
+		l += new Vector2(0.08f * Mathf.Sin(t * 0.23f + i * 2.1f), 0.1f * Mathf.Sin(t * 0.31f + i * 1.3f));
 		float z = Mathf.Cos(a) * o.Za + o.Zb;
-		return new Vector3(x * face * T, y * T, z);
+		return new Vector3((o.Cx + l.X) * face * T, (o.Cy + l.Y) * T, z);
 	}
 
 	private void Tick()
@@ -448,7 +450,7 @@ void fragment() {
 		for (int k = 0; k < D; k++)
 		{
 			float back = k * step;
-			Vector3 v = Orbit(i, _t - back, T, face) + new Vector3(0f, back * 0.03f * T, 0f);
+			Vector3 v = Orbit(i, _t - back, T, face);
 			trail[k] = v;
 			acc[k] = k == 0 ? 0f : acc[k - 1] + new Vector2(v.X - trail[k - 1].X, v.Y - trail[k - 1].Y).Length();
 			if (acc[k] >= want) { used = k + 1; break; }
