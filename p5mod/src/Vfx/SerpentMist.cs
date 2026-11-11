@@ -8,7 +8,7 @@ namespace P5Joker;
 /// 只有雾的上沿和最深处透一点暗红（和蛇身边缘同一种光）。雾里偶尔浮起一截很大、很模糊的蛇背，翻一下又沉下去。
 /// 背景整体压暗、降饱和（读屏幕纹理调色，不是刷一层红），四角更暗。
 /// side：-1 背景层（调色 + 雾 + 蛇背 + 蛇巢往上飘的烟），1 前景层（只有贴地一薄层雾丝，盖住脚踝）。
-/// 用法：ColorRect 铺满屏幕（Fx.ScreenRoot），每帧设 aspect / feet / tall / face / reveal / from_uv / amount，clock 用 Fx.Clock。
+/// 用法：ColorRect 铺满屏幕（Fx.ScreenRoot），每帧设 aspect / feet / tall / face / amount 和出场进度 dim_t / fog_t / glow_t / surge，clock 用 Fx.Clock。
 /// </summary>
 public static class SerpentMist
 {
@@ -21,12 +21,15 @@ uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
 uniform float side = -1.0;
 uniform float aspect = 1.7778;
 uniform float clock = 0.0;
-uniform float amount = 1.0;
+uniform float amount = 0.0;
 uniform vec2 feet = vec2(0.22, 0.76);    // Joker 脚底（0～1）
 uniform float tall = 0.3;               // Joker 身高（屏幕高度的比例）
 uniform float face = 1.0;               // 朝敌人的方向
-uniform float reveal = 1.0;             // 0 → 1：从 from_uv 往外漫开
-uniform vec2 from_uv = vec2(0.22, 0.6);
+// 出场分层推进（2026-11-11 用户认可的分镜）：每个 0 → 1
+uniform float dim_t = 0.0;              // 画面压暗（四角先暗）
+uniform float fog_t = 0.0;              // 雾浪从脚下沿地面往两边铺开
+uniform float glow_t = 0.0;             // 身后背光、蛇巢的烟亮起来
+uniform float surge = 0.0;              // 雾里第一次翻起巨蛇背（出场 0.9s 一下）
 
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
@@ -38,12 +41,6 @@ float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a
 void fragment() {
 	vec2 uv = UV;
 	vec2 asp = vec2(aspect, 1.0);
-	// 漫开：从 from_uv 往外，边上一圈翻滚的暗烟
-	float rd = length((uv - from_uv) * asp);
-	float en = noise(uv * asp * 7.0 + vec2(clock * 0.3, 0.0)) * 0.6 + noise(uv * asp * 15.0) * 0.4;
-	float R0 = reveal * 2.3;
-	float spread = smoothstep(R0, R0 - 0.3, rd + (en - 0.5) * 0.35);
-	float edge = smoothstep(0.16, 0.0, abs(rd + (en - 0.5) * 0.35 - (R0 - 0.15))) * step(0.001, reveal) * (1.0 - step(0.999, reveal)) * step(rd, R0);
 
 	// 离 Joker 多远（朝敌人为正，单位 = 身高）；雾在他脚下最厚，往敌人那边漫过去慢慢变薄，往身后很快收掉
 	float dx = (uv.x - feet.x) * aspect / tall * face;
@@ -58,7 +55,15 @@ void fragment() {
 	float top = (0.16 + 0.36 * exp(-pow(dx / 1.5, 2.0))) * (0.75 + 0.55 * fbm(vec2(uv.x * aspect * 1.6 - clock * 0.04 * face, clock * 0.05)));
 	float hgt = (feet.y - uv.y) / tall;                         // 脚底以上多高（负 = 脚底以下）
 	float fogEdge = top + (fn - 0.5) * 0.18 - hgt;              // > 0 在雾里
-	float fog = smoothstep(-0.03, 0.12, fogEdge) * reach;
+	// 雾浪：从脚下往两边推（朝敌人推得远、身后近），浪头处雾顶拱高一截，铺开以后浪头走出画面
+	float ft = 1.0 - pow(1.0 - clamp(fog_t, 0.0, 1.0), 3.0);
+	float frontD = (dx > 0.0 ? 7.0 : 3.0) * ft;
+	float wn = noise(vec2(hgt * 6.0, clock * 0.8) + uv.x * 3.0) - 0.5;
+	float front = smoothstep(frontD + 0.05, frontD - 0.45, abs(dx) + wn * 0.3);
+	top *= 0.55 + 0.45 * ft;
+	top += 0.3 * exp(-pow((abs(dx) - frontD + 0.35) / 0.45, 2.0)) * (1.0 - ft);
+	fogEdge = top + (fn - 0.5) * 0.18 - hgt;
+	float fog = smoothstep(-0.03, 0.12, fogEdge) * reach * front;
 	// 一团团翻滚：细一档的噪声决定浓淡，往上挪一点再取一次，差值当作团的受光面（上面亮、下面暗）
 	vec2 bp = vec2(uv.x * aspect / tall * 2.6 - clock * 0.12 * face, hgt * 5.0 - clock * 0.08) + warp * 1.8;
 	float bl = fbm(bp);
@@ -76,6 +81,9 @@ void fragment() {
 		// 包络：沿 x 慢慢移动的一段（大约两三个拱），并且随时间浮起、沉下
 		float cx = feet.x * aspect / tall + face * (0.6 + 1.6 * fk) + sin(clock * (0.11 + 0.05 * fk) + fk * 3.0) * 1.4;
 		float env = exp(-pow((sx - cx) / 1.0, 2.0)) * smoothstep(0.15, 0.7, sin(clock * (0.23 + 0.07 * fk) + fk * 1.7) * 0.5 + 0.5);
+		// 出场时第一次翻上来：近处那条在 Joker 前方一点浮起
+		if (k == 0) env = max(env, surge * exp(-pow((sx - feet.x * aspect / tall - face * 1.4) / 1.0, 2.0)));
+		env *= front;
 		// 波谷沉到地面以下（只有拱起的几段露出来），露出来的部分底下埋进雾里
 		float yc = -0.12 + (0.34 + 0.06 * fk) * arch * env;          // 背脊中线离地多高（身高为单位）
 		float th = (0.07 + 0.02 * fk) * env;                          // 背的半厚
@@ -98,15 +106,17 @@ void fragment() {
 		vec2 bd = (uv - feet + vec2(0.1 * face * tall / aspect, 0.85 * tall)) * asp / tall;
 		float back = exp(-dot(bd * vec2(0.75, 1.0), bd * vec2(0.75, 1.0)) / 2.2);
 		back *= 0.8 + 0.4 * fbm(bd * 0.8 + vec2(clock * 0.03, -clock * 0.05));
-		g += vec3(0.42, 0.1, 0.09) * back * 1.15;
+		g += vec3(0.42, 0.1, 0.09) * back * 1.15 * glow_t;
 		float vig = smoothstep(0.35, 1.0, length((uv - vec2(0.5, 0.55)) * vec2(aspect * 0.55, 1.0)));
 		g *= (1.0 - 0.4 * vig) * mix(0.75, 1.0, smoothstep(0.0, 0.5, uv.y));
-		vec3 col = g;
+		// 压暗从四角先开始（光像被他脚下吸走），然后整屏
+		float dk = clamp(dim_t * 1.6 - (1.0 - vig) * 0.6, 0.0, 1.0);
+		vec3 col = mix(b, g, dk);
 		// 蛇巢往上飘的烟：Joker 身后一股往上散的暗烟（接住五条蛇的尾巴）
 		float nx = (uv.x - feet.x) * aspect / tall + 0.12 * face;
 		float rise = smoothstep(0.5, 0.85, fbm(vec2(nx * 2.2, hgt * 1.4 - clock * 0.35) + 3.0))
 			* exp(-pow(nx / (0.45 + 0.25 * hgt), 2.0)) * smoothstep(1.9, 0.6, hgt) * smoothstep(0.1, 0.5, hgt);
-		col = mix(col, vec3(0.02, 0.004, 0.008), rise * 0.45);
+		col = mix(col, vec3(0.02, 0.004, 0.008), rise * 0.45 * glow_t);
 		// 雾：近黑，雾顶一层暗红，深处零星透一点暗红的光
 		// 雾：暗淡的灰红，比背景亮一点（看得出一团团翻滚），越近 Joker 越被背光照亮；深处零星一点暗红
 		vec3 fc = mix(vec3(0.1, 0.03, 0.036), vec3(0.27, 0.085, 0.085), smoothstep(0.3, 0.85, fn));
@@ -121,17 +131,13 @@ void fragment() {
 		// 巨蛇背：比雾更黑一点，上沿一道暗红
 		col = mix(col, vec3(0.012, 0.003, 0.005), hump * 0.95);
 		col += vec3(0.32, 0.045, 0.055) * humpRim * 0.22;
-		// 漫开的边：一圈暗烟
-		col = mix(col, vec3(0.02, 0.003, 0.008), edge * 0.7);
 		// 没漫到的地方保持原背景；整个场景跟着 amount 淡入淡出（读的是原背景，所以输出不透明）
-		float k = clamp(max(spread, edge * 0.85) * amount, 0.0, 1.0);
-		if (k <= 0.002) discard;
-		COLOR = vec4(mix(b, col, k), 1.0);
+		COLOR = vec4(mix(b, col, amount), 1.0);
 	} else {
 		// ── 前景层：贴地一薄层雾丝，盖住脚踝和鞋（也盖住敌人的脚），淡、不压暗角色 ──
 		float low = smoothstep(0.1, -0.02, hgt - (fn - 0.5) * 0.1) * smoothstep(-0.12, 0.0, hgt);
 		float wisp = smoothstep(0.45, 0.8, fbm(vec2(uv.x * aspect * 3.5 - clock * 0.09 * face, hgt * 9.0 + clock * 0.1) + warp));
-		float af = low * wisp * reach * 0.6 * spread * amount;
+		float af = low * wisp * reach * 0.6 * front * amount;
 		vec3 c = mix(vec3(0.1, 0.03, 0.035), vec3(0.24, 0.075, 0.075), smoothstep(0.3, 0.8, bl)) * (1.0 + 0.4 * billowLit);
 		if (af <= 0.002) discard;
 		COLOR = vec4(c * af, af);

@@ -402,7 +402,9 @@ void fragment() {
 	private readonly float[] _mouth = new float[Count];
 	private readonly Queue<(Vector2 At, Node2D? Body)> _targets = new();
 	private readonly Attack?[] _attacks = new Attack?[Slots];
-	private float _t, _show = -1f, _intro = -1f, _fadeOut = -1f, _reveal;
+	private float _t, _show = -1f, _intro = -1f, _fadeOut = -1f, _dimT, _fogT, _glowT;
+	private bool _introFresh;
+	private readonly float[] _introDiss = new float[Count];
 	private readonly float[] _tau = new float[Count];        // 每条蛇自己的时间（出动时会快一下）
 	private readonly Vector2[] _lunge = new Vector2[Count];  // 出动时朝敌人窜出去的偏移
 	private readonly Node2D _skyRoot, _mistFrontRoot;
@@ -491,22 +493,18 @@ void fragment() {
 		return (root, m);
 	}
 
-	/// <summary>出场：一团咒烟炸开，五条蛇一条接一条冲出来。已经在场上就只让五个头一起转向敌人吼一下。</summary>
+	/// <summary>
+	/// 出场（2026-11-11 用户认可的分镜，约 1.2 秒，层层叠进来）：0 画面先压暗（四角先暗）→ 0.1 雾浪从脚下沿地面铺开 →
+	/// 0.25 身后蛇巢鼓起、背光亮起 → 0.35～0.9 五条蛇依次从蛇巢里化成一道暗影窜出、聚成形 → 0.9 雾里翻起第一道巨蛇背、轻震 →
+	/// 1.1 五双眼睛由近到远亮起。已经在场上就只亮眼睛。
+	/// </summary>
 	private void Intro()
 	{
-		if (_show > 0.3f) { _intro = 1.0f; return; }          // 已经在了：直接跳到「一起转头」那一段
+		if (_show > 0.3f) { _intro = 1.0f; _introFresh = false; return; }
 		_intro = 0f;
+		_introFresh = true;
 		_show = 1f;
-		if (_body() is var (feet, tall, _))
-		{
-			Fx.After(_frontRoot, 0.18, () =>
-			{
-				Glow.Flash(_back, feet + new Vector2(0f, -0.6f * tall), Pal5.Deep, 2.6f * tall, 0.5f);
-				Glow.Flash(_front, feet + new Vector2(0f, -0.6f * tall), Pal5.Crimson, 1.2f * tall, 0.25f);
-				Glow.Sparks(_front, feet + new Vector2(0f, -0.5f * tall), 40, 150f, 650f, 0.8f, new[] { Pal5.Bright, Pal5.Crimson, Pal5.Deep }, -120f, 0.12f, 0.4f, Vector2.Up, 180f);
-				Fx.Shake(2);
-			});
-		}
+		Fx.After(_frontRoot, 0.9, () => Fx.Shake(1));
 	}
 
 	/// <summary>能力触发：一条蛇朝 target（层坐标，敌人身体中间）吐一颗法球。</summary>
@@ -572,7 +570,19 @@ void fragment() {
 		_backRoot.GlobalPosition = feet;
 		float alpha = (_intro >= 0f ? 1f : Smooth(0f, 0.8f, _show)) * (_fadeOut >= 0f ? 1f - Smooth(0f, 0.8f, _fadeOut) : 1f);
 		// 场景：出场时从 Joker 脚下漫开（0.7s），静静浮现时淡入；能力没了一起淡掉
-		_reveal = _intro >= 0f ? Mathf.Max(_reveal, Ease5.OutQuint(Ease5.Seg(_intro, 0.05f, 0.75f))) : Mathf.Max(_reveal, Smooth(0f, 0.8f, _show));
+		// 场景分层推进（出场分镜）；不播出场时 0.8s 一起淡入；能力没了跟着 amount 一起淡掉
+		if (_intro >= 0f)
+		{
+			_dimT = Mathf.Max(_dimT, Smooth(0f, 0.25f, _intro));
+			_fogT = Mathf.Max(_fogT, Ease5.Seg(_intro, 0.1f, 0.6f));
+			_glowT = Mathf.Max(_glowT, Smooth(0.25f, 0.65f, _intro));
+		}
+		else
+		{
+			float k = Smooth(0f, 0.8f, _show);
+			_dimT = Mathf.Max(_dimT, k); _fogT = Mathf.Max(_fogT, k); _glowT = Mathf.Max(_glowT, k);
+		}
+		float surge = _intro >= 0f && _introFresh ? Smooth(0.82f, 1.0f, _intro) * (1f - Smooth(1.3f, 1.9f, _intro)) : 0f;
 		Vector2 scr = Fx.Screen(_back);
 		Vector2 fs = Fx.ScreenPoint(_back, feet);
 		float tallS = T * _back.GetCanvasTransform().Scale.Y;
@@ -581,9 +591,11 @@ void fragment() {
 		foreach (ShaderMaterial sm in new[] { _skyM, _mistFrontM })
 		{
 			sm.SetShaderParameter("amount", amt);
-			sm.SetShaderParameter("reveal", _reveal);
+			sm.SetShaderParameter("dim_t", _dimT);
+			sm.SetShaderParameter("fog_t", _fogT);
+			sm.SetShaderParameter("glow_t", _glowT);
+			sm.SetShaderParameter("surge", surge);
 			sm.SetShaderParameter("aspect", scr.X / scr.Y);
-			sm.SetShaderParameter("from_uv", new Vector2(fs.X / scr.X, (fs.Y - 0.5f * tallS) / scr.Y));
 			sm.SetShaderParameter("feet", new Vector2(fs.X / scr.X, fs.Y / scr.Y));
 			sm.SetShaderParameter("tall", tallS / scr.Y);
 			sm.SetShaderParameter("face", face);
@@ -620,6 +632,7 @@ void fragment() {
 			PoseSerpent(i, T, face, alpha);
 		}
 		UpdateAttacks(dt, feet, T);
+		for (int i = 0; i < Count; i++) _diss[i] = Mathf.Max(_diss[i], _introDiss[i]);
 
 		for (int j = 0; j < Count; j++)
 		{
@@ -642,8 +655,10 @@ void fragment() {
 			mat.SetShaderParameter("eyes", _eyes);
 			mat.SetShaderParameter("unit", T);
 			mat.SetShaderParameter("diss", _diss);
-			mat.SetShaderParameter("nest", new Vector3(nestP.X, nestP.Y, 0.55f * T));
-			mat.SetShaderParameter("nest_a", alpha * (_intro >= 0f ? Smooth(0.05f, 0.4f, _intro) : 1f));
+			// 出场 0.25s 蛇巢鼓起来（一团烟往上翻涌、比平时大一圈），再收回平时的大小
+			float swell = _intro >= 0f && _introFresh ? Smooth(0.2f, 0.45f, _intro) * (1f - Smooth(0.6f, 1.2f, _intro)) : 0f;
+			mat.SetShaderParameter("nest", new Vector3(nestP.X, nestP.Y - 0.1f * T * swell, 0.55f * T * (1f + 0.4f * swell)));
+			mat.SetShaderParameter("nest_a", alpha * (_intro >= 0f && _introFresh ? Smooth(0.2f, 0.45f, _intro) : 1f));
 			mat.SetShaderParameter("puff", _puff);
 			mat.SetShaderParameter("mouth", _mouth);
 		}
@@ -730,6 +745,9 @@ void fragment() {
 	/// <summary>缠腰的那条（Orbits[3]，腰胯从身前横过）。</summary>
 	private const int Belt = 3;
 
+	/// <summary>出场时眼睛亮起的先后（0 最先）：缠腰的最近，其次胸口朝敌人的、左下，最后身后的两条。</summary>
+	private static readonly int[] EyeRank = { 3, 4, 1, 0, 2 };
+
 	/// <summary>
 	/// 缠腰那条蛇的身体（用户 2026-11-11：它的尾巴从 Joker 腋下钻过去，透视很怪）。以前尾巴直接拉回胸口高度、身后的蛇巢，
 	/// 身体从身前斜着穿过他的躯干才到身后。现在身体在胯部高度绕他一圈（俯视略斜的椭圆，下半弧在他前面、上半弧在他后面），
@@ -778,12 +796,15 @@ void fragment() {
 			return;
 		}
 		// 出场：每条蛇从 Joker 胸口冲出来、甩到自己的轨道上
+		// 出场：五条蛇依次从身后的蛇巢里窜出来（先是一道散着的暗影，窜到位置时聚成形）
 		float grow = 1f;
-		if (_intro >= 0f && _intro < 1.6f)
+		_introDiss[i] = 0f;
+		if (_intro >= 0f && _introFresh && _intro < 1.6f)
 		{
-			grow = Ease5.OutQuint(Ease5.Seg(_intro, 0.18f + 0.09f * i, 0.75f));
+			grow = Ease5.OutQuint(Ease5.Seg(_intro, 0.35f + 0.11f * i, 0.45f));
+			_introDiss[i] = grow < 1f ? 0.85f * (1f - Smooth(0.3f, 0.9f, grow)) : 0f;
 		}
-		Vector3 chest = new(0f, -0.7f * T, 0.3f);
+		Vector3 chest = new(-0.12f * face * T, -0.78f * T, -0.5f);   // 从蛇巢出来（变量名沿用）
 		int nb = N - HeadPts;
 		// 沿头走过的路往回取（越老的位置越往下沉一点，绕圈的蛇就成了松开的螺旋、不会叠成一团），按路程铺满身长
 		const int D = 220;
@@ -844,11 +865,12 @@ void fragment() {
 		}
 		// 出场最后五个头一起转向敌人：不单独转头，而是把脖子最后一截弯过去（头永远顺着脖子，不会错开）
 		Vector2 enemyDir = new Vector2(face, 0.12f).Normalized();
-		float turn = _intro >= 0f ? Smooth(1.05f, 1.25f, _intro) * (1f - Smooth(1.9f, 2.2f, _intro)) : 0f;
+		// 出场 1.1s 五双眼睛由近到远依次亮一下（不转头：用户说一起转头很怪）
 		float eyes = 0.45f + 0.1f * Mathf.Sin(_t * 2f + i);
-		if (turn > 0f)
+		if (_intro >= 0f)
 		{
-			eyes = Mathf.Max(eyes, turn);   // 用户：出场时五个头一起转向敌人再扭回去很怪 → 不再转头，只让眼睛亮一下
+			float te = 1.1f + 0.06f * EyeRank[i];
+			eyes = Mathf.Max(eyes, Smooth(te, te + 0.06f, _intro) * (1f - Smooth(te + 0.3f, te + 0.75f, _intro)));
 		}
 		Vector4 hb4 = _spine[i * N + nb - 1];
 		Vector2 hb = new(hb4.X, hb4.Y);

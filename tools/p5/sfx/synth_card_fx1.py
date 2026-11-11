@@ -1,7 +1,7 @@
 """Per-card skill sounds, batch 1 (p5mod/src/Vfx/CardSkillFx.cs, user 2026-11-10). Restrained (you can tell it is there, no more),
 noise only - no pure tones, no pitch glides; only the two Forms (rare powers) get some weight.
-Writes art/sfx_p5/: footwork_steps, reticle_lock, track_scan, venom_coat, fumes_roll, burst_echo, serpent_rise, wraith_form.
-This script only writes these eight files."""
+Writes art/sfx_p5/: footwork_steps, reticle_lock, track_scan, venom_coat, fumes_roll, burst_echo, wraith_form.
+This script only writes these seven files."""
 import subprocess
 from pathlib import Path
 import numpy as np
@@ -98,16 +98,7 @@ for d, g, hi in [(0.0, 1.0, 0.25), (0.16, 0.85, 0.4)]:
 y += moving_band(x, 600, 2500, 0.3, 0.5, 0.16) * np.minimum(1, np.maximum(0, x - 0.16) / 0.05) * np.exp(-np.maximum(0, x - 0.3) / 0.1) * (x > 0.16) * 0.35
 save("burst_echo", room(y, 0.35, 0.12), 0.7)
 
-# serpent_rise (rare power): a dark swell from below, the serpents' hiss over it, the strike (a whip of air and a dull hit at ~1.15 s)
-x = t(1.8)
-swell = np.minimum(1, x / 0.4) * np.exp(-np.maximum(0, x - 0.6) / 0.35)
-y = lp(nz(len(x)), 120, 3) * swell * 2.0
-y += moving_band(x, 200, 800, 0.55, 0.6) * swell * 0.8
-hiss = np.minimum(1, np.maximum(0, x - 0.3) / 0.25) * np.exp(-np.maximum(0, x - 0.8) / 0.2) * (0.7 + 0.3 * np.sin(2 * np.pi * 5 * x))
-y += bp(nz(len(x)), 3500, 6800) * hiss * 0.28
-y += moving_band(x, 900, 3500, 0.15, 0.4, 0.95) * env(x - 0.95, 0.06, 0.06) * 0.6
-y += lp(nz(len(x)), 150, 3) * env(x - 1.15, 0.003, 0.12) * 2.2
-save("serpent_rise", room(y, 0.6, 0.2), 0.8)
+# serpent_rise moved to synth_serpent.py (2026-11-11, redone for the new Serpent Form intro)
 
 # wraith_form (rare power): a cold wind drawn inward (band closing down over 0.5 s), a hollow breath under it, a dull closing thump at 0.55 s
 x = t(1.6)

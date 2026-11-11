@@ -2,7 +2,12 @@
 2026-11-11 v2 (user: the attack sound is not pleasant -> a light sound with a sense of confirmation): a short soft tick 10 ms in,
 a small muffled "tok" under it and a faint puff of smoke - no hard snap, no deep thump. Played 0.45 s after the attack starts,
 so the tick lands on the bite frame. Low-passed at 6.5 kHz like the other skill sounds.
-Writes art/sfx_p5/serpent_maw.ogg. This script only writes this file."""
+
+serpent_rise (2026-11-11, user: the intro sound is not pleasant; redone for the new intro storyboard, t = 0 when the intro starts):
+a soft inhaling whoosh as the screen darkens (0-0.35 s), a low swell under the mist (0.1-1.4 s), a faint puff of smoke as each of the
+five serpents comes out of the nest (0.4 s + 0.11 s each), a soft low push when the first huge back surfaces (0.9 s) and a light
+settling tick-and-tok when the eyes light up (1.1 s). No hiss, no pure tones or glides.
+Writes art/sfx_p5/serpent_maw.ogg and art/sfx_p5/serpent_rise.ogg. This script only writes these two files."""
 # helpers copied from synth_skill_fx.py (importing it would rerun it and rewrite its files)
 import subprocess
 from pathlib import Path
@@ -68,3 +73,26 @@ tok = np.sin(2 * np.pi * (175 * y - 60 * y ** 2)) * env(y, 0.0015, 0.04) * on(x,
 tok_n = bp(nz(x), 250, 900) * env(y, 0.001, 0.03) * on(x, BITE) * 0.5
 puff = bp(nz(x), 400, 1600) * env(at(x, BITE + 0.01), 0.012, 0.08) * on(x, BITE + 0.01) * 0.22
 save("serpent_maw", room(tick + tok + tok_n + puff, 0.35, 0.1), peak=0.6)
+
+
+# ── serpent_rise: the intro ──
+x = t(2.0)
+def seg_env(x, t0, a, d): return env(at(x, t0), a, d) * on(x, t0)
+# inhale: a band of air closing downward, swelling into 0.3 s, gone by 0.5 s
+inhale = sweep_noise(x, 2200, 500, 0.4, 0.5) * np.minimum(1, x / 0.3) ** 2 * np.exp(-np.maximum(0, x - 0.3) / 0.08)
+# low swell under the mist
+swell = np.minimum(1, at(x, 0.1) / 0.45) * np.exp(-np.maximum(0, x - 0.75) / 0.4) * on(x, 0.1)
+low = lp(nz(x), 160, 3) * swell * 1.4 + bp(nz(x), 180, 520) * swell * 0.35
+# five puffs of smoke as the serpents come out
+puffs = np.zeros_like(x)
+for i in range(5):
+    t0 = 0.4 + 0.11 * i
+    lo, hi = 450 + 60 * i, 1700 + 120 * i
+    puffs += bp(nz(x), lo, hi) * seg_env(x, t0, 0.015, 0.09) * (0.26 - 0.02 * i)
+# the first huge back surfacing: a soft low push
+push = lp(nz(x), 110, 3) * seg_env(x, 0.88, 0.04, 0.2) * 1.4
+# eyes light up: the same light confirming family as the bite, softer
+y1 = at(x, 1.1)
+tick = bp(nz(x), 1600, 3800) * env(y1, 0.0006, 0.005) * on(x, 1.1) * 0.45
+tok = np.sin(2 * np.pi * (150 * y1 - 50 * y1 ** 2)) * env(y1, 0.002, 0.05) * on(x, 1.1) * 0.55
+save("serpent_rise", room(inhale * 0.5 + low + puffs + push + tick + tok, 0.6, 0.18), peak=0.7)
