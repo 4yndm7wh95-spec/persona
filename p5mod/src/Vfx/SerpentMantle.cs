@@ -54,11 +54,12 @@ float ease3(float x) { return 1.0 - pow(1.0 - clamp(x, 0.0, 1.0), 3.0); }
 
 // 粗细（s：0 尾 → 1 吻尖）：尾巴细、身体、脖子略收、头上平下宽的楔形
 float profile(float s, float up) {
-	float body = mix(0.15, 1.0, smoothstep(0.0, 0.42, s)) * mix(1.0, 0.72, smoothstep(0.55, 0.84, s));
-	if (s < 0.86) return body;
-	float hs = (s - 0.86) / 0.14;
-	float top = mix(0.72, 0.95, smoothstep(0.0, 0.3, hs)) * mix(1.0, 0.45, smoothstep(0.3, 1.0, hs));
-	float jaw = mix(0.72, 1.18, smoothstep(0.0, 0.25, hs)) * mix(1.0, 0.3, smoothstep(0.25, 1.0, hs));
+	// 第二版（用户：头大身子小很怪）：身体粗细基本一致（只有尾巴最后一段收细），头和身体差不多宽
+	float body = mix(0.2, 1.0, smoothstep(0.0, 0.28, s)) * mix(1.0, 0.86, smoothstep(0.6, 0.88, s));
+	if (s < 0.9) return body;
+	float hs = (s - 0.9) / 0.1;
+	float top = mix(0.86, 0.92, smoothstep(0.0, 0.3, hs)) * mix(1.0, 0.42, smoothstep(0.3, 1.0, hs));
+	float jaw = mix(0.86, 1.02, smoothstep(0.0, 0.25, hs)) * mix(1.0, 0.3, smoothstep(0.25, 1.0, hs));
 	return mix(jaw, top, up);
 }
 
@@ -91,8 +92,8 @@ void fragment() {
 		float w = g * profile(bs, smoothstep(-0.3, 0.3, upv));
 		float r = best / max(w, 0.5);
 		if (r > 3.0) continue;
-		float headness = smoothstep(0.8, 0.88, bs);
-		float L = bs * 7.0;
+		float headness = smoothstep(0.86, 0.92, bs);
+		float L = bs * 11.0;
 		float acr = sign(upv) * best / g;
 		float nz = fbm(vec2(L - clock * 1.3, acr * 1.1 - clock * 0.2) + float(j) * 11.0);
 		float fine = vn(vec2(L * 3.5 - clock * 2.6, acr * 3.0) + float(j) * 4.0);
@@ -100,7 +101,7 @@ void fragment() {
 		float torn = (nz - 0.5) * mix(0.8, 0.36, headness) + (fine - 0.5) * 0.2 + (1.0 - smoothstep(0.0, 0.3, bs)) * nz * 0.9;
 		torn += dj * (0.5 + nz * 1.8);                                  // 散成烟：边被撕开、往里吃
 		float sd = r - 1.0 + torn;
-		float dens = smoothstep(0.25, -0.45, sd) * (1.0 - dj * 0.6);
+		float dens = smoothstep(0.16, -0.22, sd) * (1.0 - dj * 0.6);   // 芯是实的：挡住 / 被挡住看得出层次，只有边是烟
 		// 边缘里面一薄层透光（越靠上越亮：天光从上面来）
 		float shell = smoothstep(-0.34, -0.05, sd) * (1.0 - smoothstep(-0.05, 0.1, sd));
 		float flick = fbm(vec2(L * 1.7 - clock * 2.2, acr * 2.0) + 3.0 + float(j));
@@ -111,13 +112,13 @@ void fragment() {
 		// 外面一缕缕往上飘的暗烟
 		float wn = fbm(vec2(L * 0.7 - clock * 0.8, best / g * 0.9 + clock * 0.9 * sign(n2.y)) + 7.0 + float(j) * 3.0);
 		float wisp = smoothstep(0.5, 0.85, wn) * smoothstep(mix(1.8, 2.8, smoothstep(0.0, 0.8, -n2.y)), 0.9, r) * 0.6 * (1.0 - headness * 0.7);
-		wisp += dj * (1.0 - dj) * 3.0 * smoothstep(0.4, 0.8, wn) * smoothstep(3.0, 0.6, r);   // 散的时候一大团烟往外、往上飘
+		wisp += dj * (1.0 - dj) * 3.0 * smoothstep(0.4, 0.8, wn) * smoothstep(2.9, 0.6, r);   // 散的时候一大团烟往外、往上飘
 		// 几条蛇之间连成一片的薄烟（迷迷糊糊、不分得那么清楚）
-		wisp = max(wisp, exp(-pow(r / 2.4, 2.0)) * 0.22 * smoothstep(0.35, 0.75, wn));
+		wisp = max(wisp, exp(-pow(r / 1.8, 2.0)) * 0.2 * smoothstep(0.35, 0.75, wn) * smoothstep(3.0, 2.0, r));
 		float dim = bz < 0.0 ? 0.8 : 1.0;
 		vec3 c = (inner + emit) * dim;
 		vec3 wc = vec3(0.03, 0.008, 0.012) + vec3(0.22, 0.02, 0.03) * smoothstep(0.72, 0.9, wn);
-		float a = clamp(dens * 0.88 + wisp * (1.0 - dens), 0.0, 1.0) * ba;
+		float a = clamp(dens + wisp * (1.0 - dens), 0.0, 1.0) * ba;
 		vec3 cc = mix(wc, c, dens / max(dens + wisp * (1.0 - dens), 1e-3));
 		over(acc, cc, a);
 		// 眼睛：一团晕开的暖红雾光
@@ -196,11 +197,13 @@ void fragment() {
 	private static readonly (float Cx, float Cy, float Rx, float Ry, float W, float Ph, float Za, float Zb, float Size, float Len)[] Orbits =
 	{
 		// 用户：分布别太散 → 都收在 Joker 身边（左边不出画面），Len = 身长（身高为单位）
-		(0.08f, -1.45f, 0.48f, 0.12f, 0.55f, 0.0f, 0.4f, -0.7f, 1.15f, 1.7f),    // 正后方最高、最大，慢慢转
-		(-0.45f, -1.0f, 0.3f, 0.24f, -0.8f, 1.3f, 1f, -0.3f, 0.95f, 1.4f),      // 左边，竖着绕
-		(0.6f, -1.15f, 0.32f, 0.22f, 0.75f, 2.4f, 1f, -0.3f, 0.95f, 1.4f),      // 右边（敌人那侧）
-		(0.05f, -0.48f, 0.78f, 0.1f, 0.5f, 3.6f, 1f, 0f, 0.9f, 1.5f),          // 绕着腰贴身转，会转到 Joker 前面
-		(-0.12f, -1.82f, 0.4f, 0.1f, -0.5f, 4.8f, 0.5f, -0.6f, 0.85f, 1.4f),   // 左后上方
+		// 第二版（用户：要修长；要有被 Joker 挡住 / 挡住 Joker 的层次才有围绕感）：中间三条的轨道都以 Joker 为中心、
+		// 半径比他的身体宽，转到前面时从他身前横过去（画在前景层、不透明地挡住他），转到后面时被他挡住
+		(0.05f, -1.45f, 0.55f, 0.1f, 0.45f, 0.0f, 0.5f, -0.6f, 1.05f, 1.9f),   // 身后高处，慢慢转
+		(-0.05f, -0.68f, 0.62f, 0.1f, -0.6f, 1.3f, 1f, 0f, 0.95f, 1.8f),      // 胸口高度绕身体（反方向，从他身前横过去，不过脸）
+		(0.1f, -1.25f, 0.66f, 0.12f, 0.55f, 2.4f, 0.8f, -0.35f, 0.95f, 1.8f), // 头顶上方绕，偶尔从前面掠过
+		(0.05f, -0.3f, 0.86f, 0.06f, 0.45f, 3.6f, 1f, 0f, 0.9f, 2.0f),        // 绕着腰腿
+		(-0.1f, -1.8f, 0.45f, 0.08f, -0.45f, 4.8f, 0.5f, -0.6f, 0.85f, 1.8f), // 最高处，身后
 	};
 
 	private readonly Control _front, _back;
@@ -264,7 +267,7 @@ void fragment() {
 		var rect = new Rect2(-3f * tall, -2.9f * tall, 10f * tall, 3.6f * tall);
 		(_frontRoot, _frontM) = Make(front, feet, rect, 1f, "P5SerpentsFront");
 		(_backRoot, _backM) = Make(back, feet, rect, -1f, "P5SerpentsBack");
-		for (int i = 0; i < Count; i++) _girth[i] = 0.12f * tall * Orbits[i].Size;
+		for (int i = 0; i < Count; i++) _girth[i] = 0.092f * tall * Orbits[i].Size;   // 修长：细一些、长一些
 		_tree = (SceneTree)Engine.GetMainLoop();
 		_tree.ProcessFrame += Tick;
 		_frontRoot.TreeExiting += Detach;
@@ -383,7 +386,7 @@ void fragment() {
 
 		for (int j = 0; j < Count; j++)
 		{
-			float m = _girth[j] * 3.2f;
+			float m = _girth[j] * 3.4f;
 			Vector2 lo = new(1e9f, 1e9f), hi = new(-1e9f, -1e9f);
 			for (int k = 0; k < N; k++)
 			{
@@ -425,7 +428,7 @@ void fragment() {
 		Vector3 chest = new(0f, -0.7f * T, 0.3f);
 		int nb = N - HeadPts;
 		// 沿头走过的路往回取（越老的位置越往下沉一点，绕圈的蛇就成了松开的螺旋、不会叠成一团），按路程铺满身长
-		const int D = 120;
+		const int D = 220;
 		Span<Vector3> trail = stackalloc Vector3[D];
 		Span<float> acc = stackalloc float[D];
 		float want = o.Len * T * o.Size, step = 0.06f;
@@ -433,7 +436,7 @@ void fragment() {
 		for (int k = 0; k < D; k++)
 		{
 			float back = k * step;
-			Vector3 v = Orbit(i, _t - back, T, face) + new Vector3(0f, back * 0.07f * T, 0f);
+			Vector3 v = Orbit(i, _t - back, T, face) + new Vector3(0f, back * 0.03f * T, 0f);
 			trail[k] = v;
 			acc[k] = k == 0 ? 0f : acc[k - 1] + new Vector2(v.X - trail[k - 1].X, v.Y - trail[k - 1].Y).Length();
 			if (acc[k] >= want) { used = k + 1; break; }
@@ -452,7 +455,6 @@ void fragment() {
 			v += new Vector3(wave * 0.4f, wave, 0f);
 			v = chest.Lerp(v, grow);
 			float a = Smooth(0f, 0.16f, f) * alpha;
-			if (v.Z > 0f) a *= 0.85f;
 			_spine[i * N + k] = new Vector4(v.X, v.Y, v.Z, a * (_intro >= 0f ? Smooth(0f, 0.15f, grow) : 1f));
 		}
 		Vector4 hb4 = _spine[i * N + nb - 1], pr4 = _spine[i * N + nb - 4];
