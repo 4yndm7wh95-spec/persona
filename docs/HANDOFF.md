@@ -4,6 +4,53 @@
 
 ---
 
+## 2026-11-11 · 会话 B（`claude/beautiful-keller-4lsbk4`）交接 —— 群蛇形态（Serpent Form）做到一半，从这里接
+
+### 分支和状态
+- 工作分支 `claude/beautiful-keller-4lsbk4`，最新提交 `b2c266c1`，工作区干净、已推送。开始时已合并会话 A 的 `ce7be92a`（之后 A 分支没有新提交）。
+- 版本号仍是 **0.9.18**，这一轮所有改动**都没出安装包、没进游戏实测**，只在预览工具里渲染过。类型检查（Roslyn + .NET 9 引用 + `research/libs`）通过。
+- 出包：升 0.9.19 → `python3 tools/p5/stage_p5.py` → `tools/p5/cloud/build_package.sh`（见会话 A 的交接）。
+
+### 群蛇形态现在的样子（用户逐项确认过的）
+- 代码：`p5mod/src/Vfx/SerpentMantle.cs`（五条咒烟大蛇 + 场景 + 攻击，全部着色器）、`p5mod/src/Vfx/EclipseSky.cs`（日蚀天色，Orochi 也用）、
+  `p5mod/src/SerpentFormPlay.cs`（接进游戏：藏原版 `NSerpentFormVfx`、能力挂上时开始、`OnEffectTriggered` 之后那次 `vfx_attack_blunt` 换成蛇咬、能力移除时淡出）、
+  `CardSkillFx.SerpentForm`（打出时播出场）。音效 `serpent_maw`（只有咬合声，`tools/p5/sfx/synth_serpent.py`）。说明：`docs/p5/SKILL_FX.md`「群蛇形态」一节。
+- 预览：场景 `serpent_form`（`tools/p5/fxpreview/Preview.cs`），最新视频 `docs/p5/preview/serpent_form_v14.mp4`。
+- **场景**：会话 A 的日蚀天色，参数 `desat 0.3 / cover 0.62 / disk_r 0.07 / bleed 1 / blend 1`（黑只留中心一小块往外过渡成暗红；云保留但不挡光；光调弱过一次；天地之间不断层）；出场时从 Joker 身边漫开。
+- **蛇身**：一根粗细连续变化的管子（脊线 0～27 的圆头小段取并集），比例照 `docs/p5/preview/serpent_body_plan.png` 蓝线（中段 1.1 W、颈根 1.0 W、后 55% 收成细长尾巴；W = 脖子粗细 = 1.16 girth）。
+- **蛇头**：照 `docs/p5/preview/serpent_head_plan.png`（点在 `tools/p5/diagrams/serpent_head_plan.py`，C# 里 `Upper/Mouth/JawTop/JawUnder` 同一组点），
+  多边形距离场，沿脖子末端方向放在颈根、和管子 smin 成一个形状；下颚绕颚角铰点转（平时 12°，扑咬 40° + 上颚抬 8°，咬住合上）；
+  口腔嘴角最深往吻尖淡掉；四颗模糊烟獠牙（上下各一对，近亮远暗）；隐约的分叉舌头；暖红雾光眼睛。头永远顺着脖子（转向只能弯脖子 `BendNeck`）。
+- **攻击**：轮到的蛇先猛窜（自己的时间 ×5 再慢下来）边窜边散成烟 → 敌人斜上方一团咒烟里聚出头和前半身（放大 1.45 倍）往后一缩、嘴张大 → 0.46s 扑咬合上 → 敌人闪白（`BodyTint.Pulse`）+ 咒烟炸开 + 闪光火星震屏顿帧 → 散掉、回原位重新聚起。
+- **出场**：咒烟一收一炸，五条蛇从 Joker 胸口一条接一条冲出到各自位置；**不再一起转头**（用户说怪），只是眼睛亮一下。
+- 一体感：Joker 身后一团「蛇巢」咒烟，五条的尾巴都收进去。
+
+### 正在讨论、还没做的
+1. **五条蛇的分布和轨迹**（用户：现在有点乱、不美观）。方案图 `docs/p5/preview/serpent_layout_plan.png`（脚本 `tools/p5/diagrams/serpent_layout_plan.py`）：
+   五条从身后蛇巢伸出来展成扇子（左上最高 / 正上 / 右上朝敌人 在身后；右下、左下从他身前横过去挡住腰），头在各自的小范围里慢慢漂、身体是 S 形轻轻波动，不再沿 8 字兜圈打结，各自节奏。
+   **已发给用户，还没得到确认**，先问用户这个方案行不行。实现时改的是 `Orbits` + `PoseSerpent` 里「身体沿头走过的路铺开」那段（改成从蛇巢到头的 S 形脊线）；出场的 `grow` 和攻击的 `StrikePose` 要跟着对上。
+2. 之后按顺序：**3. Joker 和蛇周围的迷雾**（加强一体感）→ **4. 场景切入动画**（更自然、层层叠进来，大约 1 秒）。
+3. 全部过关后：升 0.9.19 出包，用户进游戏试。实机要看：群蛇形态是稀有牌，打出时还有亚森召唤和眼神特写，出场节奏会比预览长；`SerpentFormPlay.TakeHit` 靠 600ms 内的 `vfx_attack_blunt` 认出是群蛇触发。
+
+### 其它这一轮做的（都已推送）
+- 技能 / 能力牌通用特效 `Vfx/SkillFx.cs` + `SkillPlay.cs`（会话 A 之后又按牌名做了专属的 `CardSkillFx*.cs`，那些优先）。小刀牌枪声加大。
+- 苦无（`KunaiPierce.cs`）**用户说已废弃**，没接进任何牌。Orochi（`Orochi.cs`）只剩天色被复用，大蛇本体不用。
+
+### 用户这一轮的要求 / 教训（接手一定要照做）
+- **做一点推一点**：每一小步都提交推送，预览视频和图放进 `docs/p5/preview/`，不要留在本地。
+- **一个一个做，做完一个给用户看，过关了再做下一个。** 改形状之前**先画示意图**给用户确认（头、身体、布局都是这样过的），做进游戏要**准确还原示意图**。
+- **不要在旧代码上反复打补丁**：头和身体就是因为补丁越改越错位，才整个重写成一个形状的。发现结构不对就重写。
+- 不要发调试画面给用户（彩色的距离 / 噪声图会吓到人）；查错自己看。
+- 不要粗糙地「涂一块颜色」充当形状（嘴就是这样被骂的）；形状要来自轮廓本身。
+- 蛇：暗、像烟、有气势；不要艳、不要光蛇、不要正面大脸、不要上下两排锯齿、不要亮斑白线；獠牙要模糊不要硬三角。日蚀不要煎蛋样的白环。
+- 着色器里别用 1e9 这种哨兵值直接进 `smin`（显卡精度会把真实距离吃掉，整条蛇变成半透明带子）。
+
+### 环境（这个容器里）
+- Godot 4.5.1 mono：`/opt/tools/Godot_v4.5.1-stable_mono_linux_x86_64/Godot_v4.5.1-stable_mono_linux.x86_64`；预览：`tools/p5/fxpreview/render.sh <场景> <秒>`（xvfb + `--write-movie`），配音 `python3 tools/p5/fxpreview/mix.py <场景>`。
+- 类型检查要用 .NET 9 引用程序集 + `research/libs`（**不是** `research/libs_0.107.1`，那是别的游戏版本）；容器里只有 .NET 8 SDK，用它的 Roslyn `csc.dll` 编。
+
+---
+
 ## 2026-11-10 · 会话 A（`claude/epic-archimedes-m9an69`）交接 —— 用户中途叫停「一次做完剩余卡牌特效」，从这里接
 
 ### 分支和状态
