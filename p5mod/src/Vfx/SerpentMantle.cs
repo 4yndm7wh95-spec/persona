@@ -80,7 +80,9 @@ uniform float side = 1.0;
 uniform float clock = 0.0;
 uniform float unit = 300.0;     // Joker 身高（像素）
 uniform float diss[5];          // 每条蛇散成烟的程度（攻击时 0 → 1 → 0）
-uniform vec4 puff[6];           // 咒烟团：xy 中心，z 进度（0～1；< 0 没有），w 大小（像素；负数 = 咬中那一团，中间带一下光）
+uniform vec4 puff[9];           // 咒烟团（每发攻击 3 个：烟团、咬中、原位留下的残烟）：xy 中心，z 进度（0～1；< 0 没有），w 大小（像素；负数 = 咬中那一团，中间带一下光）
+uniform vec4 streak[3];         // 攻击的烟迹：xy 尾、zw 头（相对脚底）；蛇在原位散掉的同时化成一道咒烟飞向敌人上方
+uniform float streak_a[3];      // 烟迹的浓度（0 = 没有）
 uniform float mouth[5];         // 嘴张多大：0 平时微张，1 张到最大，< 0 合上
 // 蛇头的轮廓（照 docs/p5/preview/serpent_head_plan.png 的点，tools/p5/diagrams/serpent_head_plan.py 同一组；单位 = 脖子粗细 W，x 朝吻尖，y 朝上）
 uniform vec2 head_fixed[72];    // 不动的部分：脖子上沿 → 后脑 → 头顶 → 眉骨 → 吻尖 → 嘴线 → 铰点 → 后脑下沿 → 脖子下沿
@@ -322,12 +324,12 @@ void fragment() {
 		if (headHere) {
 			vec2 ed = p - eyes[j].xy;
 			float e2 = dot(ed, ed);
-			glow += (vec3(1.0, 0.6, 0.3) * exp(-e2 / pow(g * 0.14, 2.0)) * 2.0 + vec3(0.95, 0.15, 0.08) * exp(-e2 / pow(g * 0.42, 2.0)) * 0.55) * eyes[j].z * (1.0 - dj);
+			glow += (vec3(1.0, 0.6, 0.3) * exp(-e2 / pow(g * 0.14, 2.0)) * 2.0 + vec3(0.95, 0.15, 0.08) * exp(-e2 / pow(g * 0.42, 2.0)) * 0.55) * eyes[j].z * (1.0 - dj * 0.6);   // 散成烟 / 聚出来时眼睛比身体先亮、后灭
 		}
 	}
 	// 咒烟团（前景层）：蛇从烟里聚出来的那一团、咬中时往外炸开的那一团、蛇散掉时的那一团。翻滚着变大、变淡
 	if (side > 0.0) {
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < 9; i++) {
 			if (puff[i].z < 0.0) continue;
 			float k = puff[i].z;
 			float sz = abs(puff[i].w);
@@ -342,6 +344,27 @@ void fragment() {
 			vec3 pc = mix(vec3(0.015, 0.003, 0.007), vec3(0.09, 0.016, 0.024), smoothstep(0.35, 0.8, pn)) + vec3(0.45, 0.04, 0.06) * smoothstep(0.62, 0.85, pf) * (1.0 - k) * 0.6;
 			over(acc, pc, clamp(body * hole, 0.0, 1.0) * 0.9);
 			if (puff[i].w < 0.0) glow += vec3(1.0, 0.35, 0.22) * exp(-d * d / 0.08) * pow(1.0 - k, 5.0) * 0.9;
+		}
+	}
+
+	// 攻击的烟迹（前景层）：一道越往前越粗的咒烟，烟里一条暗红的芯，最前面带着那条蛇的一对红眼
+	if (side > 0.0) {
+		for (int i = 0; i < 3; i++) {
+			if (streak_a[i] <= 0.001) continue;
+			vec2 sa = streak[i].xy, sb = streak[i].zw;
+			vec2 ab = sb - sa;
+			float L2 = max(dot(ab, ab), 1.0);
+			float h = clamp(dot(p - sa, ab) / L2, 0.0, 1.0);
+			float d = length(p - (sa + ab * h));
+			float w = unit * mix(0.03, 0.2, pow(h, 1.5));
+			if (d > w * 3.0 && length(p - sb) > unit * 0.2) continue;
+			float sn = fbm(vec2(h * sqrt(L2) / unit * 5.0 - clock * 6.0, d / max(w, 1.0) * 0.8) + float(i) * 5.0);
+			float body = smoothstep(w, w * 0.1, d + (sn - 0.5) * w * 1.0) * smoothstep(0.0, 0.25, h);
+			vec3 sc = mix(vec3(0.03, 0.006, 0.01), vec3(0.12, 0.022, 0.03), smoothstep(0.4, 0.8, sn));
+			sc += vec3(0.5, 0.06, 0.07) * exp(-d * d / pow(w * 0.35, 2.0)) * h * 0.8;
+			over(acc, sc, clamp(body * streak_a[i], 0.0, 1.0) * 0.92);
+			vec2 ed = p - sb;
+			glow += (vec3(1.0, 0.6, 0.3) * exp(-dot(ed, ed) / pow(unit * 0.012, 2.0)) * 2.2 + vec3(0.95, 0.15, 0.08) * exp(-dot(ed, ed) / pow(unit * 0.05, 2.0)) * 0.7) * streak_a[i];
 		}
 	}
 
@@ -398,7 +421,9 @@ void fragment() {
 	private readonly Vector2[] _hup = new Vector2[Count];
 	private readonly Vector3[] _eyes = new Vector3[Count];
 	private readonly float[] _diss = new float[Count];
-	private readonly Vector4[] _puff = new Vector4[6];
+	private readonly Vector4[] _puff = new Vector4[9];
+	private readonly Vector4[] _streak = new Vector4[Slots];
+	private readonly float[] _streakA = new float[Slots];
 	private readonly float[] _mouth = new float[Count];
 	private readonly Queue<(Vector2 At, Node2D? Body)> _targets = new();
 	private readonly Attack?[] _attacks = new Attack?[Slots];
@@ -418,6 +443,7 @@ void fragment() {
 		public float T;
 		public bool Bit, Emerged, Faded;
 		public Node2D? Body;              // 被咬的敌人（咬中时闪一下白）
+		public Vector2 From;              // 冲出去散掉的位置（烟迹从这里飞出，原位的残烟也在这里）
 	}
 
 	/// <summary>
@@ -628,7 +654,7 @@ void fragment() {
 			// 扑咬时那条蛇放大一些（更有气势），回到轨道上恢复
 			Attack? sa = AttackOf(i);
 			float big = sa != null ? Smooth(EmergeAt - 0.02f, EmergeAt + 0.02f, sa.T) * (1f - Smooth(LeaveAt - 0.02f, LeaveAt, sa.T)) : 0f;
-			_girth[i] = 0.068f * T * Orbits[i].Size * (1f + 0.45f * big);
+			_girth[i] = 0.068f * T * Orbits[i].Size * (1f + 1.0f * big);   // 扑咬时放大到两倍（用户：要更有表现力）
 			PoseSerpent(i, T, face, alpha);
 		}
 		UpdateAttacks(dt, feet, T);
@@ -660,6 +686,8 @@ void fragment() {
 			mat.SetShaderParameter("nest", new Vector3(nestP.X, nestP.Y - 0.1f * T * swell, 0.55f * T * (1f + 0.4f * swell)));
 			mat.SetShaderParameter("nest_a", alpha * (_intro >= 0f && _introFresh ? Smooth(0.2f, 0.45f, _intro) : 1f));
 			mat.SetShaderParameter("puff", _puff);
+			mat.SetShaderParameter("streak", _streak);
+			mat.SetShaderParameter("streak_a", _streakA);
 			mat.SetShaderParameter("mouth", _mouth);
 		}
 	}
@@ -680,17 +708,17 @@ void fragment() {
 		int nb = N - HeadPts;
 		float t = atk.T;
 		Vector2 P = atk.Target;
-		Vector2 A = P + new Vector2(-0.45f * face * T, -0.95f * T);         // 烟团
-		Vector2 cocked = P + new Vector2(-0.5f * face * T, -0.55f * T);     // 往后缩、准备扑
+		Vector2 A = P + new Vector2(-0.6f * face * T, -1.25f * T);          // 烟团
+		Vector2 cocked = P + new Vector2(-0.72f * face * T, -0.72f * T);    // 往后缩、准备扑
 		float headLen = _girth[i] * 2.16f;   // 照示意图：头根（x=-0.3）到吻尖（1.56）= 1.86 W，W = 1.16 g
 		float lunge = Ease5.Seg(t, 0.38f, BiteAt - 0.38f);
 		lunge = lunge * lunge;
 		float rear = Smooth(EmergeAt, 0.38f, t);
 		Vector2 toP = (P - cocked).Normalized();
 		Vector2 bite = P - toP * headLen * 0.75f;
-		Vector2 hb = cocked.Lerp(cocked - toP * 0.12f * T, rear * (1f - lunge)).Lerp(bite, lunge);
-		Vector2 c1 = A + new Vector2(0.1f * face * T, 0.35f * T);
-		Vector2 c2 = hb - toP * 0.45f * T + new Vector2(0f, -0.15f * T);
+		Vector2 hb = cocked.Lerp(cocked - toP * 0.22f * T, rear * (1f - lunge)).Lerp(bite, lunge);
+		Vector2 c1 = A + new Vector2(0.35f * face * T, 0.3f * T);
+		Vector2 c2 = hb - toP * 0.55f * T + new Vector2(-0.2f * face * T, -0.25f * T);
 		Vector2 tail = A + new Vector2(-0.15f * face * T, -0.1f * T);
 		for (int k = 0; k < nb; k++)
 		{
@@ -712,7 +740,8 @@ void fragment() {
 		if (up.Y > 0f) up = -up;
 		_hup[i] = up;
 		Vector2 eye = hb + dir * _girth[i] * 1.16f * 1.12f + up * _girth[i] * 1.16f * 0.3f;   // 示意图的眼睛 (0.82, 0.30)
-		_eyes[i] = new Vector3(eye.X, eye.Y, alpha);
+		// 眼睛先亮：烟迹扎进烟团时最亮，蛇头聚出来以后回到平常
+		_eyes[i] = new Vector3(eye.X, eye.Y, alpha * (1f + 1.2f * (1f - Smooth(EmergeAt + 0.04f, 0.42f, t))));
 		// 嘴：聚出来以后张到最大，扑到时猛地合上
 		_mouth[i] = t < BiteAt ? Smooth(EmergeAt, 0.36f, t) : -0.2f;
 	}
@@ -900,21 +929,50 @@ void fragment() {
 			a.T += dt;
 			float t = a.T;
 			float face = a.Target.X >= 0f ? 1f : -1f;
-			Vector2 cloud = a.Target + new Vector2(-0.45f * face * T, -0.95f * T);
-			// 散 / 聚：轨道上散掉 → 烟里聚出来 → 咬完散掉 → 回轨道上聚起来
-			_diss[a.Serpent] = t < EmergeAt ? Smooth(0.06f, EmergeAt, t)
-				: t < 0.5f ? 1f - Smooth(EmergeAt, 0.36f, t)
-				: t < LeaveAt ? Smooth(0.5f, 0.74f, t)
+			Vector2 cloud = a.Target + new Vector2(-0.6f * face * T, -1.25f * T);
+			// 加强表达（2026-11-11 用户：随机到的那条加速冲出、缓缓消失、敌人那里出现一只去咬——这套再强一点）：
+			// 0～0.07 往回一缩、眼睛一亮（看得出是它要出手）→ 0.07～0.23 朝敌人猛窜 0.85 身高、边窜边散 →
+			// 0.12～0.32 原地化成一道咒烟、带着那对红眼飞到敌人上方，原位留下一团慢慢散掉的残烟（到 0.9）→
+			// 0.28 烟迹扎进烟团，眼睛先亮、蛇头再聚出来 → 扑咬 → 散掉、回原位重新聚起
+			_diss[a.Serpent] = t < EmergeAt ? Smooth(0.1f, EmergeAt, t)
+				: t < 0.56f ? 1f - Smooth(EmergeAt, 0.34f, t)
+				: t < LeaveAt ? Smooth(0.56f, 0.76f, t)
 				: 1f - Smooth(LeaveAt, 1.12f, t);
 			if (t < EmergeAt)
 			{
-				// 猛窜：朝敌人窜出去，边窜边散
 				Vector3 hp = Orbit(a.Serpent, _tau[a.Serpent], T, 1f);
-				_lunge[a.Serpent] = (a.Target - new Vector2(hp.X, hp.Y)).LimitLength(0.45f * T) * Ease5.OutQuint(Ease5.Seg(t, 0f, 0.18f));
+				Vector2 dir = (a.Target - new Vector2(hp.X, hp.Y)).Normalized();
+				float coil = -0.12f * T * Smooth(0f, 0.07f, t) * (1f - Smooth(0.07f, 0.11f, t));
+				float dash = 0.85f * T * Ease5.OutQuint(Ease5.Seg(t, 0.07f, 0.16f));
+				_lunge[a.Serpent] = dir * (coil + dash);
+				// 头现在在哪（烟迹的起点）：跟着窜出去的头走，窜到底就定住
+				if (t < 0.2f)
+				{
+					Vector4 hb = _spine[a.Serpent * N + N - HeadPts - 1];
+					a.From = new Vector2(hb.X, hb.Y);
+				}
+				// 眼睛：缩的时候一亮，随烟迹飞走
+				float flare = Smooth(0f, 0.05f, t) * (1f - Smooth(0.13f, 0.19f, t));
+				Vector3 ey = _eyes[a.Serpent];
+				_eyes[a.Serpent] = new Vector3(ey.X, ey.Y, Mathf.Max(ey.Z * (1f - Smooth(0.13f, 0.19f, t)), 1.6f * flare));
 			}
-			// 咒烟团：聚出来的那一团（烟团处）、咬中往外炸的那一团（敌人身上）、散掉的那一团（蛇身中间）
-			if (t >= EmergeAt - 0.04f) Puff(cloud, Ease5.Seg(t, EmergeAt - 0.04f, 0.7f), 0.5f * T, s * 2);
-			if (t >= BiteAt) Puff(a.Target, Ease5.Seg(t, BiteAt, 0.55f), -0.42f * T, s * 2 + 1);
+			// 烟迹：头 0.12→0.3 从原位飞到烟团（先快后慢），尾巴落后一点跟上
+			if (t >= 0.12f && t < 0.42f)
+			{
+				float hk = Ease5.OutQuint(Ease5.Seg(t, 0.12f, 0.18f));
+				float tk = Ease5.OutQuint(Ease5.Seg(t, 0.17f, 0.2f));
+				Vector2 head = a.From.Lerp(cloud, hk), tail = a.From.Lerp(cloud, tk * 0.97f);
+				// 飞的路线往上拱一点，不是直线
+				head += new Vector2(0f, -0.25f * T * Mathf.Sin(hk * Mathf.Pi));
+				tail += new Vector2(0f, -0.25f * T * Mathf.Sin(tk * Mathf.Pi));
+				_streak[s] = new Vector4(tail.X, tail.Y, head.X, head.Y);
+				_streakA[s] = Smooth(0.12f, 0.15f, t) * (1f - Smooth(0.3f, 0.42f, t));
+			}
+			else _streakA[s] = 0f;
+			// 咒烟团：原位留下的残烟（慢慢散）、聚出来的那一团（烟团处，大一点）、咬中往外炸的那一团
+			if (t >= 0.14f && t < 0.95f) Puff(a.From, Ease5.Seg(t, 0.14f, 0.8f), 0.55f * T, s * 3 + 2);
+			if (t >= EmergeAt - 0.04f) Puff(cloud, Ease5.Seg(t, EmergeAt - 0.04f, 0.7f), 0.75f * T, s * 3);
+			if (t >= BiteAt) Puff(a.Target, Ease5.Seg(t, BiteAt, 0.6f), -0.5f * T, s * 3 + 1);
 			if (!a.Bit && t >= BiteAt)
 			{
 				a.Bit = true;
@@ -923,9 +981,9 @@ void fragment() {
 				Glow.Sparks(_front, at, 22, 180f, 600f, 0.5f, new[] { Pal5.Bright, Pal5.Crimson, Pal5.Deep }, 250f, 0.1f, 0.32f, Vector2.Up, 160f);
 				if (a.Body != null && GodotObject.IsInstanceValid(a.Body)) BodyTint.Pulse(a.Body, new Color(2.2f, 2.2f, 2.2f), 0.05, 0.2);   // 被咬的敌人闪一下白
 				Fx.Shake(2);
-				HitStop.Request(0.04);
+				HitStop.Request(0.06);
 			}
-			if (t > AttackLen) _attacks[s] = null;
+			if (t > AttackLen) { _attacks[s] = null; _streakA[s] = 0f; }
 		}
 	}
 }
