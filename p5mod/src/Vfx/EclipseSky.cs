@@ -53,7 +53,7 @@ void fragment() {
 	float corona = exp(-max(r - R, 0.0) / mix(0.014, 0.022, blend)) * step(R, r) * 0.8;
 	float halo = exp(-max(r - R, 0.0) / mix(0.2, 0.26, blend));
 	float rays = pow(noise(vec2(ang * 9.0, clock * 0.05)), 3.0) * exp(-max(r - R, 0.0) / 0.7) * (1.0 - cloud * mix(0.8, 0.1, blend)) * mix(smoothstep(ground - 0.02, ground - 0.25, uv.y), smoothstep(ground + 0.2, ground - 0.4, uv.y), blend);
-	vec3 light = vec3(1.0, 0.85, 0.75) * corona * 1.4 + vec3(0.9, 0.08, 0.06) * (halo * 0.9 + rays * 0.55);
+	vec3 light = vec3(1.0, 0.85, 0.75) * corona * 1.4 + vec3(0.9, 0.08, 0.06) * (halo * mix(0.9, 0.75, blend) + rays * mix(0.55, 0.3, blend));   // 群蛇形态：光穿过云以后调弱一点（用户）
 	light *= 1.0 - cloud * mix(0.6, 0.08, blend);   // 群蛇形态（用户：云别挡光）：光穿过云
 	col += light;
 	// 日冕的光洒满整个战场（用户：光影在中间断层）：从日蚀往下、往两边一大片暗红的泛光，地面被照出一大片暖红
