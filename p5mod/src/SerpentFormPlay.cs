@@ -12,13 +12,13 @@ namespace P5Joker;
 /// <summary>
 /// 群蛇形态的常驻特效（2026-11-11）：原版能力挂上时在角色身上放一个 NSerpentFormVfx（骨骼上跟着几条小蛇），
 /// 每打出一张牌能力触发：OnEffectTriggered + 对随机敌人放 vfx/vfx_attack_blunt 再造成伤害。
-/// Joker 的换成：原版的小蛇藏掉，常驻一条光蛇盘在身上（Vfx/SerpentMantle.cs）；触发时光蛇扑出去咬那个敌人，原版的钝击特效不放。
+/// Joker 的换成：原版的小蛇藏掉，五条咒烟大蛇浮空绕着他（Vfx/SerpentMantle.cs）；触发时一条蛇朝那个敌人吐咒怨法球，原版的钝击特效不放。
 /// </summary>
 public static class SerpentFormPlay
 {
 	private static ulong _triggeredMs;
 
-	/// <summary>能力挂上（或刷新）：常驻的蛇开始；起手还在演就等它扎进胸口再浮现。</summary>
+	/// <summary>能力挂上（或刷新）：常驻的蛇开始（接到真的 Joker 上）。</summary>
 	internal static void Begin(Creature owner)
 	{
 		if (owner.Player is not { } player || !Joker.Is(player) || Joker.Node(player) is not NCreature node)
@@ -29,10 +29,8 @@ public static class SerpentFormPlay
 		{
 			return;
 		}
-		ulong now = Time.GetTicksMsec();
-		// 起手在出牌后 Aim.HitFor 才开始，比能力挂上晚：至少等起手演到扎进胸口
-		float delay = SerpentAscend.BusyUntilMs > now ? (SerpentAscend.BusyUntilMs - now) / 1000f : SerpentAscend.StrikeAt + 0.6f;
-		SerpentMantle.Start(front, back, () => Body(node), delay);
+		// 出牌的出场（CardSkillFx.SerpentForm）在 Aim.HitFor 之后才放，可能比能力挂上晚：这里先静静等 2.5 秒，出场来了就接上它
+		SerpentMantle.Start(front, back, () => Body(node), live: true, intro: false, delay: 2.5f);
 	}
 
 	private static (Vector2 Feet, float Tall, float Face)? Body(NCreature node)
@@ -48,7 +46,7 @@ public static class SerpentFormPlay
 
 	internal static void Triggered() => _triggeredMs = Time.GetTicksMsec();
 
-	/// <summary>能力触发后紧跟着的那次钝击特效：换成光蛇扑过去咬。返回 true = 已经接管（原版不放）。</summary>
+	/// <summary>能力触发后紧跟着的那次钝击特效：换成一条蛇吐法球。返回 true = 已经接管（原版不放）。</summary>
 	internal static bool TakeHit(Creature target)
 	{
 		if (Time.GetTicksMsec() - _triggeredMs > 600 || SerpentMantle.Current is not { } m || NCombatRoom.Instance is not NCombatRoom room)

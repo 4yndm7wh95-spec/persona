@@ -556,16 +556,16 @@ void fragment() {
 		});
 	}
 
-	// ═══════════════════════════ 群蛇形态：光蛇升龙（Vfx/SerpentAscend.cs）+ 常驻的蛇（Vfx/SerpentMantle.cs） ═══════════════════════════
+	// ═══════════════════════════ 群蛇形态：五条咒烟大蛇（Vfx/SerpentMantle.cs） ═══════════════════════════
 
 	/// <summary>
-	/// 群蛇形态（2026-11-11 第三版，用户：要霸气）：光做的巨蛇螺旋冲上去、昂首吼、俯冲扎进 Joker 胸口；之后常驻的蛇从他身上浮现
-	/// （能力挂上时由 SerpentFormVfxPatch 开始，这里只放起手）。原来的咒怨之蛇（三条带子蛇）撤掉。
+	/// 群蛇形态（2026-11-11 第四版，用户：暗的、像烟、大、霸气）：一团咒烟炸开，五条咒烟大蛇从 Joker 身上冲出来、各自浮空绕着他漂，
+	/// 最后五个头一起转向敌人。能力挂上时 SerpentFormPlay 把它接到真的 Joker 上（之后跟着他走、触发时吐法球）。
 	/// </summary>
 	public static void SerpentForm(SkillCtx c)
 	{
 		Sfx.Play(Sfx.SerpentRise, 0.62f);
-		SerpentAscend.Play(c.Front, c.Back ?? c.Front, c.Feet, c.Tall, c.Face, c.SelfTint);
+		SerpentMantle.Start(c.Front, c.Back ?? c.Front, () => (c.Feet, c.Tall, c.Face), live: false, intro: true);
 	}
 
 	// ═══════════════════════════ 幽魂形态：化作幽魂 ═══════════════════════════

@@ -723,29 +723,18 @@ public partial class Preview : Node2D
 				o?.Set(tt, ltn, Mathf.Min(1f, tt / 0.3f));
 			});
 		},
-		["serpent_ascend"] = p =>
-		{
-			float tall = (JokerFeet - Pose(815f, 120f)).Length();
-			p.At(0.3, () => p._joker?.Play("cast_glove"));
-			p.At(0.55, () =>
-			{
-				Sfx.Play(Sfx.SerpentRise, 0.62f);
-				SerpentAscend.Play(p._front, p._back, JokerFeet, tall, 1f, c => p._joker!.Modulate = c);
-			});
-		},
 		["serpent_form"] = p =>
 		{
-			// 起手 + 常驻：扎进胸口后常驻的蛇浮现，之后每打一张牌扑出去咬一口（连出两张时一口接一口）
+			// 出场 → 五条咒烟大蛇绕着 Joker 漂 → 每打一张牌一条蛇吐一颗法球（连出时几条轮流吐）
 			float tall = (JokerFeet - Pose(815f, 120f)).Length();
 			p.At(0.3, () => p._joker?.Play("cast_glove"));
 			p.At(0.55, () =>
 			{
 				Sfx.Play(Sfx.SerpentRise, 0.62f);
-				SerpentAscend.Play(p._front, p._back, JokerFeet, tall, 1f, c => p._joker!.Modulate = c);
-				SerpentMantle.Start(p._front, p._back, () => (JokerFeet, tall, 1f), SerpentAscend.StrikeAt);
+				SerpentMantle.Start(p._front, p._back, () => (JokerFeet, tall, 1f), live: true, intro: true);
 			});
-			Vector2[] hits = { Enemy + new Vector2(0f, -170f), Enemy2 + new Vector2(0f, -150f), Enemy3 + new Vector2(0f, -140f), Enemy + new Vector2(0f, -170f) };
-			double[] when = { 3.2, 3.9, 4.15, 5.1 };
+			Vector2[] hits = { Enemy + new Vector2(0f, -170f), Enemy2 + new Vector2(0f, -150f), Enemy3 + new Vector2(0f, -140f), Enemy + new Vector2(0f, -170f), Enemy2 + new Vector2(0f, -150f) };
+			double[] when = { 3.4, 4.3, 4.55, 4.8, 6.0 };
 			for (int i = 0; i < hits.Length; i++)
 			{
 				Vector2 h = hits[i];

@@ -1,7 +1,8 @@
-"""Serpent Form's standing light serpent (p5mod/src/Vfx/SerpentMantle.cs, 2026-11-11): every card played, its head lunges out and
-bites a random enemy. One short sound for that: a sharp hiss, a fast whoosh as it lunges, a bite (tight transient + low thump) and a
-short tail. Played on every card, so it stays short (~0.45 s) and nothing harsh (low-passed at 6.5 kHz like the other skill sounds).
-Writes art/sfx_p5/serpent_strike.ogg. This script only writes this file."""
+"""Serpent Form (p5mod/src/Vfx/SerpentMantle.cs, 2026-11-11 fourth pass): when the power deals damage, one of the five curse-smoke
+serpents spits a curse bolt at the enemy. One sound for that, timed to the effect: 0.28 s of an inward hissing draw (the charge at
+its mouth), the spit (a short breathy burst), and at 0.48 s the dull curse blast where it lands (low thump + a soft smoky crackle).
+Played on every card, so it stays under a second and nothing harsh (low-passed at 6.5 kHz like the other skill sounds).
+Writes art/sfx_p5/serpent_bolt.ogg. This script only writes this file."""
 # helpers copied from synth_skill_fx.py (importing it would rerun it and rewrite its files)
 import subprocess
 from pathlib import Path
@@ -59,17 +60,18 @@ def save(name, x, peak=0.8, width=0.0015):
 
 
 
-x = t(0.55)
-BITE = 0.15
-# hiss: a breathy "shh" band that opens fast and dies into the lunge
-hiss = bp(nz(x), 2600, 5200) * env(x, 0.012, 0.07) * 0.5
-# lunge: a whoosh sweeping up until the bite
-whoosh = sweep_noise(x, 500, 2600, BITE, q=0.5) * np.clip(x / BITE, 0, 1) ** 1.5 * (1 - on(x, BITE + 0.02)) * 0.9
-whoosh += sweep_noise(x, 2600, 700, 0.25, q=0.5) * env(at(x, BITE), 0.003, 0.06) * on(x, BITE) * 0.5
-# bite: a hard snap + low thump
-y = at(x, BITE)
-snap = hp(nz(x), 1500) * env(y, 0.0008, 0.012) * on(x, BITE) * 1.4
-thump = np.sin(2 * np.pi * (95 * y - 30 * y ** 2)) * env(y, 0.002, 0.09) * on(x, BITE) * 1.3
-body = lp(nz(x), 900) * env(y, 0.003, 0.05) * on(x, BITE) * 0.7
-mix = hiss + whoosh + snap + thump + body
-save("serpent_strike", room(mix, 0.35, 0.12), peak=0.85)
+x = t(0.85)
+CH, HIT = 0.28, 0.48
+# charge: a hissing draw that swells into the mouth, with a low rumble under it
+draw = sweep_noise(x, 3800, 1600, CH, q=0.45) * np.clip(x / CH, 0, 1) ** 1.6 * (1 - on(x, CH)) * 0.8
+rumble = lp(nz(x), 160) * np.clip(x / CH, 0, 1) ** 2 * (1 - on(x, CH + 0.02)) * 1.2
+# spit: a breathy burst as the bolt leaves
+y = at(x, CH)
+spit = bp(nz(x), 700, 3200) * env(y, 0.004, 0.05) * on(x, CH) * 1.0
+spit += sweep_noise(x, 1800, 600, CH + 0.2, q=0.5) * env(y, 0.01, 0.12) * on(x, CH) * 0.5
+# blast: dull thump, a smoky crackle and a short low tail
+z = at(x, HIT)
+thump = np.sin(2 * np.pi * (70 * z - 25 * z ** 2)) * env(z, 0.003, 0.14) * on(x, HIT) * 1.5
+puff = lp(nz(x), 1100) * env(z, 0.004, 0.09) * on(x, HIT) * 0.9
+crackle = bp(nz(x) * (rng.random(len(x)) > 0.985), 1200, 4500) * env(z, 0.005, 0.18) * on(x, HIT) * 2.0
+save("serpent_bolt", room(draw + rumble + spit + thump + puff + crackle, 0.45, 0.14), peak=0.85)

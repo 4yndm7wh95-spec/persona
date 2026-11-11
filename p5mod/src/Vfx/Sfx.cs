@@ -82,7 +82,7 @@ public static class Sfx
 		FumesRoll = "fumes_roll",         // 毒雾：低沉的雾涌过去的气声
 		BurstEcho = "burst_echo",         // 爆发：一记闷响紧跟一记回声
 		SerpentRise = "serpent_rise",
-		SerpentStrike = "serpent_strike", // 群蛇形态常驻的蛇：每打出一张牌扑出去咬一口（嘶 → 扑的风声 → 咬合的一下 + 低沉的闷响），tools/p5/sfx/synth_serpent.py     // 群蛇形态：低沉涌起 + 蛇的嘶声 + 扑出去的一下
+		SerpentBolt = "serpent_bolt",     // 群蛇形态：一条蛇吐咒怨法球（0.28s 往里吸的嘶声聚力 → 吐出的一下 → 0.48s 命中的闷爆），tools/p5/sfx/synth_serpent.py     // 群蛇形态：低沉涌起 + 蛇的嘶声 + 扑出去的一下
 		WraithForm = "wraith_form",       // 幽魂形态：往里吸的阴风 + 合上时的闷响
 		// 第二批（Vfx/CardSkillFx2.cs；tools/p5/sfx/synth_card_fx2.py）
 		ShadowmeldSink = "shadowmeld_sink", // 融入暗影：往下沉的低气 + 两下轻的闷响
