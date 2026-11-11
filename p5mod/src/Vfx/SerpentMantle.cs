@@ -835,8 +835,10 @@ void fragment() {
 		_introDiss[i] = 0f;
 		if (_intro >= 0f && _introFresh && _intro < 1.6f)
 		{
-			grow = Ease5.OutQuint(Ease5.Seg(_intro, 0.35f + 0.11f * i, 0.45f));
-			_introDiss[i] = grow < 1f ? 0.85f * (1f - Smooth(0.3f, 0.9f, grow)) : 0f;
+			// 「钻」出来（用户 2026-11-11：现在纯是平移出来的）：0.6s，先快后慢，到位时多冲一点再收回
+			float g0 = Ease5.Seg(_intro, 0.35f + 0.11f * i, 0.6f);
+			grow = g0 >= 1f ? 1f : Ease5.OutBack(g0 * 0.92f + 0.08f * g0 * g0);
+			_introDiss[i] = g0 < 1f ? 0.6f * (1f - Smooth(0.0f, 0.45f, g0)) : 0f;   // 头刚冲出蛇巢时带着烟
 		}
 		Vector3 chest = new(-0.12f * face * T, -0.78f * T, -0.5f);   // 从蛇巢出来（变量名沿用）
 		int nb = N - HeadPts;
@@ -881,9 +883,8 @@ void fragment() {
 			float pull = i == Belt ? 0f : 1f - Smooth(0f, 0.75f, f);   // 收进蛇巢的那段拉长一些，不在身体中间折出急弯
 			Vector3 nest3 = new(-0.12f * face * T + Mathf.Sin(_t * 0.7f + i * 1.3f) * 0.12f * T, -0.78f * T + Mathf.Cos(_t * 0.6f + i * 2.1f) * 0.1f * T, -0.5f);
 			v = v.Lerp(nest3, pull * pull * 0.92f);
-			v = chest.Lerp(v, grow);
 			float a = Smooth(0f, 0.08f, f) * alpha;
-			_spine[i * N + k] = new Vector4(v.X, v.Y, v.Z, a * (_intro >= 0f ? Smooth(0f, 0.15f, grow) : 1f));
+			_spine[i * N + k] = new Vector4(v.X, v.Y, v.Z, a);
 		}
 		// 脊线平滑四遍（2026-11-11 用户：一节一节的）：拉向蛇巢的那一段会在身体上折出急弯，折线的拐点就成了一个球形的关节
 		for (int pass = 0; pass < 4; pass++)
@@ -899,6 +900,35 @@ void fragment() {
 		}
 		// 出场最后五个头一起转向敌人：不单独转头，而是把脖子最后一截弯过去（头永远顺着脖子，不会错开）
 		Vector2 enemyDir = new Vector2(face, 0.12f).Normalized();
+		// 出场「钻」：蛇顺着自己最终的身体路线从蛇巢里游出来——身上 f 处的点放在路线的 f − (1 − grow) 处
+		// （还在蛇巢里的部分留在路线起点、藏起来），头在前面开路、身体沿着头走过的路一节节跟出来；
+		// 游的时候身上一道往尾巴传的 S 形扭动，越接近到位越平缓；grow 到位时略过头（OutBack），头冲出去一点再收回
+		if (grow < 1f || (_intro >= 0f && _introFresh && _intro < 1.6f && grow != 1f))
+		{
+			Span<Vector4> fin = stackalloc Vector4[N];
+			for (int k = 0; k < nb; k++) fin[k] = _spine[i * N + k];
+			float lag = 1f - grow;
+			for (int k = 0; k < nb; k++)
+			{
+				float f = k / (nb - 1f);
+				float sp = f - lag;
+				Vector4 v;
+				if (sp <= 0f) { v = fin[0]; v.W = 0f; }
+				else
+				{
+					float x = sp * (nb - 1f);
+					int a0 = Mathf.Min((int)x, nb - 2);
+					float u = x - a0;
+					v = fin[a0].Lerp(fin[a0 + 1], u);   // sp > 1（冲过头）时沿最后一段往外延
+					// 扭动：垂直于身体、往尾巴传的 S 波，刚出来时最大
+					Vector2 tg = new Vector2(fin[a0 + 1].X - fin[a0].X, fin[a0 + 1].Y - fin[a0].Y).Normalized();
+					float wig = Mathf.Sin(sp * 13f - _intro * 26f + i) * 0.07f * T * Mathf.Clamp(lag * 1.6f + 0.15f, 0f, 1f) * Smooth(0f, 0.25f, sp);
+					v += new Vector4(-tg.Y * wig, tg.X * wig, 0f, 0f);
+					v.W = fin[k].W * Smooth(0f, 0.12f, sp);
+				}
+				_spine[i * N + k] = v;
+			}
+		}
 		// 出场 1.1s 五双眼睛由近到远依次亮一下（不转头：用户说一起转头很怪）
 		float eyes = 0.45f + 0.1f * Mathf.Sin(_t * 2f + i);
 		if (_intro >= 0f)
