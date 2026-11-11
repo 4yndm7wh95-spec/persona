@@ -208,6 +208,48 @@ public static class Sfx
 
 	public static bool Muted;
 
+	private const string E = "event:/sfx/";
+
+	/// <summary>
+	/// 代码合成的技能牌音效 → 游戏自带的 FMOD 事件（2026-11-11 用户：合成的音效有很重的代码感，跟专业音效差远了，换成游戏自带的；
+	/// 不换的：攻击牌的打击和命中、亚森召唤 / 眼神特写 / 卡牌燃烧和抽牌、华丽收场整套）。查到就改播游戏的事件（音量 × Gain），
+	/// Event 为 null = 不出声（同一个动作里已经有别的声音）。预览工具里没有 FMOD，这些都不响，要进游戏听。
+	/// 只凭事件名挑的，没试听过：哪个不合适就在这里换。
+	/// </summary>
+	private static readonly Dictionary<string, (string? Event, float Gain)> GameSfx = new()
+	{
+		// 增益 / 减益通用积木
+		[BuffRise] = (E + "buff", 0.8f), [BuffUp] = (E + "buff", 0.8f),
+		[BuffRiseDark] = (E + "characters/defect/defect_dark_channel", 0.55f), [BuffDark] = (E + "characters/defect/defect_dark_channel", 0.55f),
+		[DebuffPress] = (E + "debuff", 0.8f), [DebuffDown] = (E + "debuff", 0.8f), [ShadowMark] = (E + "debuff", 0.7f),
+		[EnergyPull] = (E + "ui/gain_energy", 0.8f), [EnergySurge] = (E + "ui/gain_energy", 0.8f), [Heartbeat] = (E + "ui/gain_energy", 0.8f),
+		[CardFlick] = (E + "ui/relic_activate_draw", 0.7f),
+		[BulletLoad] = (E + "enemy/enemy_attacks/crossbow_ruby_raider/crossbow_ruby_raider_reload", 0.5f),
+		[ExposeBreak] = (E + "block_break", 0.7f),
+		[HexGuard] = (E + "block_gain", 0.8f),
+		// 每张牌的
+		[FootworkSteps] = (E + "buff", 0.7f),
+		[ReticleLock] = (E + "ui/relic_activate_general", 0.7f), [TrackScan] = (null, 0f),
+		[VenomCoat] = (E + "enemy/enemy_attacks/slimed_berserker/slimed_berserker_slime", 0.5f),
+		[FumesRoll] = (E + "enemy/enemy_attacks/living_fog/living_fog_summon", 0.55f),
+		[BurstEcho] = (E + "ui/enchant_shimmer", 0.7f),
+		[WraithForm] = (E + "enemy/enemy_attacks/spectral_knight/spectral_knight_hex", 0.6f),
+		[ShadowmeldSink] = (E + "enemy/enemy_attacks/vantom/vantom_buff", 0.55f), [StealthVeil] = (E + "enemy/enemy_attacks/vantom/vantom_buff", 0.5f),
+		[BlurDash] = (E + "block_gain", 0.7f), [AfterimageOrbit] = (E + "buff", 0.7f),
+		[ShadowStepCut] = (E + "enemy/enemy_attacks/spectral_knight/spectral_knight_soul_slash", 0.5f),
+		[BulletTimeStop] = (E + "characters/defect/defect_frost_channel", 0.55f), [TimeSlow] = (E + "characters/defect/defect_frost_channel", 0.55f),
+		[FlankCross] = (E + "enemy/enemy_attacks/the_kin_minion/the_kin_minion_quick_slash", 0.5f),
+		[MalaisePress] = (E + "debuff", 0.8f), [Wail] = (E + "debuff", 0.8f),
+		[SweepLow] = (E + "enemy/enemy_attacks/seapunk/seapunk_kick", 0.5f),
+		[RetainLock] = (E + "ui/clicks/ui_checkbox_on", 0.6f),
+		[SmokePuff] = (E + "enemy/enemy_attacks/fogmog/fogmog_summon", 0.5f),
+		[CardCut] = (E + "enemy/enemy_attacks/test_subject/test_subject_slash", 0.45f),
+		[GambleSpin] = (E + "ui/gold/gold_2", 0.7f),
+		// 群蛇形态（SerpentMantle 已直接播游戏事件，这两个不再被调用；万一调用到也走游戏的）
+		[SerpentRise] = (E + "characters/defect/defect_dark_channel", 0.6f),
+		[SerpentMaw] = (E + "enemy/enemy_attacks/scroll_of_biting/scroll_of_biting_bite", 0.55f),
+	};
+
 	/// <summary>播放；同一音效 45ms 内不重复叠加。volume 0～1.4。</summary>
 	public static void Play(string name, float volume = 1f, float delay = 0f) => Stage.Safe("sfx " + name, () =>
 	{
@@ -226,6 +268,11 @@ public static class Sfx
 			return;
 		}
 		Last[name] = now;
+		if (GameSfx.TryGetValue(name, out var game))
+		{
+			if (game.Event != null) Stage.PlayEvent?.Invoke(game.Event, Mathf.Clamp(volume, 0f, 1.4f) * game.Gain);
+			return;
+		}
 		Recorder?.Invoke(name, volume);
 		if (Load(name) is not AudioStreamOggVorbis stream)
 		{
