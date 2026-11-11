@@ -174,11 +174,11 @@ void fragment() {
 	/// </summary>
 	private static readonly (float Ang, float HX, float HY, float LX, float LY, float Size, float Z, float Delay)[] Layout =
 	{
-		(250f, 0.02f, -1.78f, 1f, 0.22f, 1.0f, -0.6f, 0.15f),      // 正中、最高，在身后
-		(205f, -0.62f, -1.42f, 0.75f, -0.35f, 0.92f, -0.55f, 0.28f), // 左后，抬着头
-		(320f, 0.66f, -1.5f, 1f, 0.32f, 0.96f, -0.5f, 0.22f),      // 右后
+		(250f, 0.1f, -1.72f, 1f, 0.35f, 1.0f, -0.6f, 0.15f),      // 正中、最高，在身后
+		(205f, -0.55f, -1.42f, 0.9f, -0.1f, 0.92f, -0.55f, 0.28f), // 左后，抬着头
+		(320f, 0.7f, -1.45f, 1f, 0.4f, 0.96f, -0.5f, 0.22f),      // 右后
 		(25f, 0.98f, -0.92f, 1f, 0.12f, 0.86f, 0.55f, 0.36f),      // 右前、低
-		(160f, -0.98f, -0.86f, -0.65f, -0.5f, 0.82f, 0.5f, 0.44f), // 左前、低，朝外抬着
+		(160f, -0.98f, -0.9f, -0.75f, -0.25f, 0.82f, 0.5f, 0.44f), // 左前、低，朝外抬着
 	};
 
 	private readonly Node2D _frontRoot, _backRoot, _airRoot;
@@ -289,8 +289,9 @@ void fragment() {
 			float H = baseP.Y - headP.Y;
 			// S 形的脖子：先往外鼓，再往回弯，最后顺着头的朝向进去
 			float outward = (hx >= 0f ? 1f : -1f) * _face;
-			Vector3 c1 = baseP + new Vector3(outward * 0.32f * T, -H * 0.42f, 0f);
-			Vector3 c2 = head3 - new Vector3(look.X, look.Y, 0f) * 0.45f * T + new Vector3(-outward * 0.15f * T, 0.12f * T, 0f);
+			// 用户 2026-11-11：别一直往上再在顶上折成直角横过去 → 脖子是一道圆滑的大弧：根部略往外鼓，上半段从斜下方弯进头里
+			Vector3 c1 = baseP + new Vector3(outward * 0.16f * T, -H * 0.55f, 0f);
+			Vector3 c2 = head3 - new Vector3(look.X, look.Y, 0f) * 0.2f * T + new Vector3(0f, 0.3f * T, 0f);
 			c1.Z = baseP.Z * 0.5f + z * 0.5f;
 			c2.Z = z;
 
@@ -303,7 +304,7 @@ void fragment() {
 				float u = grow * k / (D - 1);
 				Vector3 pt = Bez(baseP, c1, c2, head3, u);
 				// 往头传的 S 波（根部和头附近为 0）
-				float env = Mathf.Sin(Mathf.Pi * Mathf.Clamp(u, 0f, 1f)) * 0.06f * T;
+				float env = Mathf.Sin(Mathf.Pi * Mathf.Clamp(u, 0f, 1f)) * (1f - 0.6f * u) * 0.05f * T;
 				float wave = Mathf.Sin((u * 1.8f - t * 1.1f) * Mathf.Tau + i);
 				Vector3 tg = Bez(baseP, c1, c2, head3, Mathf.Min(1f, u + 0.01f)) - Bez(baseP, c1, c2, head3, Mathf.Max(0f, u - 0.01f));
 				Vector2 nrm = new Vector2(-tg.Y, tg.X).Normalized();
@@ -324,7 +325,7 @@ void fragment() {
 			Vector3 tip = _spine[j * N + nb - 1], prev = _spine[j * N + nb - 3];
 			Vector2 tan = new Vector2(tip.X - prev.X, tip.Y - prev.Y);
 			tan = tan.LengthSquared() > 1e-3f ? tan.Normalized() : look;
-			Vector2 dir = tan.Lerp(look, 0.6f * grow).Normalized();
+			Vector2 dir = tan.Lerp(look, 0.45f * grow).Normalized();
 			float headLen = g * 3.1f;
 			for (int k = 1; k <= HeadPts; k++)
 			{
