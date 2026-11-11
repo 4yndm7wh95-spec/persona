@@ -1,6 +1,7 @@
-"""Serpent Form (p5mod/src/Vfx/SerpentMantle.cs): the bite when a serpent's maw snaps shut on the enemy. Only the bite (user
-2026-11-11: no sound for the maw rushing out): a hard snap 10 ms in, a low thump and a short dark tail. Played 0.45 s after the attack
-starts, so the snap lands on the bite frame. Low-passed at 6.5 kHz like the other skill sounds.
+"""Serpent Form (p5mod/src/Vfx/SerpentMantle.cs): the bite when a serpent's maw snaps shut on the enemy.
+2026-11-11 v2 (user: the attack sound is not pleasant -> a light sound with a sense of confirmation): a short soft tick 10 ms in,
+a small muffled "tok" under it and a faint puff of smoke - no hard snap, no deep thump. Played 0.45 s after the attack starts,
+so the tick lands on the bite frame. Low-passed at 6.5 kHz like the other skill sounds.
 Writes art/sfx_p5/serpent_maw.ogg. This script only writes this file."""
 # helpers copied from synth_skill_fx.py (importing it would rerun it and rewrite its files)
 import subprocess
@@ -59,11 +60,11 @@ def save(name, x, peak=0.8, width=0.0015):
 
 
 
-x = t(0.5)
+x = t(0.32)
 BITE = 0.01
 y = at(x, BITE)
-snap = hp(nz(x), 1400) * env(y, 0.0008, 0.014) * on(x, BITE) * 1.6
-click = bp(nz(x), 2500, 5500) * env(at(x, BITE + 0.012), 0.0005, 0.008) * on(x, BITE + 0.012) * 0.8
-thump = np.sin(2 * np.pi * (85 * y - 30 * y ** 2)) * env(y, 0.002, 0.12) * on(x, BITE) * 1.6
-body = lp(nz(x), 800) * env(y, 0.003, 0.07) * on(x, BITE) * 0.8
-save("serpent_maw", room(snap + click + thump + body, 0.4, 0.12), peak=0.85)
+tick = bp(nz(x), 1800, 4200) * env(y, 0.0006, 0.005) * on(x, BITE) * 0.9
+tok = np.sin(2 * np.pi * (175 * y - 60 * y ** 2)) * env(y, 0.0015, 0.04) * on(x, BITE) * 0.9
+tok_n = bp(nz(x), 250, 900) * env(y, 0.001, 0.03) * on(x, BITE) * 0.5
+puff = bp(nz(x), 400, 1600) * env(at(x, BITE + 0.01), 0.012, 0.08) * on(x, BITE + 0.01) * 0.22
+save("serpent_maw", room(tick + tok + tok_n + puff, 0.35, 0.1), peak=0.6)
