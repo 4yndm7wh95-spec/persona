@@ -730,7 +730,6 @@ public partial class Preview : Node2D
 			p.At(0.3, () => p._joker?.Play("cast_glove"));
 			p.At(0.55, () =>
 			{
-				Sfx.Play(Sfx.SerpentRise, 0.62f);
 				SerpentMantle.Start(p._front, p._back, () => (JokerFeet, tall, 1f), live: true, intro: true);
 			});
 			(Vector2 E, float Up)[] hits = { (Enemy, 170f), (Enemy2, 150f), (Enemy3, 140f), (Enemy, 170f), (Enemy2, 150f) };

@@ -564,7 +564,6 @@ void fragment() {
 	/// </summary>
 	public static void SerpentForm(SkillCtx c)
 	{
-		Sfx.Play(Sfx.SerpentRise, 0.62f);
 		SerpentMantle.Start(c.Front, c.Back ?? c.Front, () => (c.Feet, c.Tall, c.Face), live: false, intro: true);
 	}
 

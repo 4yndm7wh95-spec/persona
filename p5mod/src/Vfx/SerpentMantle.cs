@@ -530,6 +530,7 @@ void fragment() {
 		_intro = 0f;
 		_introFresh = true;
 		_show = 1f;
+		Stage.PlayEvent?.Invoke(IntroSfx, 0.6f);
 		Fx.After(_frontRoot, 0.9, () => Fx.Shake(1));
 	}
 
@@ -644,7 +645,6 @@ void fragment() {
 				_nextSerpent = (serp + 2) % Count;
 				var (tat, tbody) = _targets.Dequeue();
 				_attacks[s] = new Attack { Serpent = serp, Target = tat - feet, Body = tbody };
-				Sfx.Play(Sfx.SerpentMaw, 0.8f, BiteAt - 0.01f);   // 只有咬合的声音（用户：冲出来不要音效）
 				break;
 			}
 		}
@@ -773,6 +773,11 @@ void fragment() {
 
 	/// <summary>缠腰的那条（Orbits[3]，腰胯从身前横过）。</summary>
 	private const int Belt = 3;
+
+	// 音效用游戏自带的 FMOD 事件（2026-11-11 用户：合成的音效有很重的代码感，跟专业音效差远了 → 以后都换成游戏自带的；
+	// 预览工具里没有 FMOD，不出声，要在游戏里听）。原来合成的 serpent_rise / serpent_maw 不再使用。
+	private const string BiteSfx = "event:/sfx/enemy/enemy_attacks/scroll_of_biting/scroll_of_biting_bite";
+	private const string IntroSfx = "event:/sfx/characters/defect/defect_dark_channel";
 
 	/// <summary>出场时眼睛亮起的先后（0 最先）：缠腰的最近，其次胸口朝敌人的、左下，最后身后的两条。</summary>
 	private static readonly int[] EyeRank = { 3, 4, 1, 0, 2 };
@@ -976,6 +981,7 @@ void fragment() {
 			if (!a.Bit && t >= BiteAt)
 			{
 				a.Bit = true;
+				Stage.PlayEvent?.Invoke(BiteSfx, 0.55f);   // 只有咬合的声音（用户：冲出来不要音效）
 				Vector2 at = feet + a.Target;
 				Glow.Flash(_front, at, Pal5.Crimson, 0.8f * T, 0.22f);
 				Glow.Sparks(_front, at, 22, 180f, 600f, 0.5f, new[] { Pal5.Bright, Pal5.Crimson, Pal5.Deep }, 250f, 0.1f, 0.32f, Vector2.Up, 160f);
