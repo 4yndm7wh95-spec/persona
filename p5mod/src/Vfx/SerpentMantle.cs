@@ -521,8 +521,8 @@ void fragment() {
 
 	/// <summary>
 	/// 出场（2026-11-11 用户认可的分镜，约 1.2 秒，层层叠进来）：0 画面先压暗（四角先暗）→ 0.1 雾浪从脚下沿地面铺开 →
-	/// 0.25 身后蛇巢鼓起、背光亮起 → 0.35～0.9 五条蛇依次从蛇巢里化成一道暗影窜出、聚成形 → 0.9 雾里翻起第一道巨蛇背、轻震 →
-	/// 1.1 五双眼睛由近到远亮起。已经在场上就只亮眼睛。
+	/// 0.25 身后蛇巢鼓起、背光亮起 → 0.35 起五条蛇依次（间隔 0.15s、各 1.1s）从蛇巢里游出来 → 0.9 雾里翻起第一道巨蛇背、轻震 →
+	/// 1.55 五双眼睛由近到远亮起。已经在场上就只亮眼睛。
 	/// </summary>
 	private void Intro()
 	{
@@ -587,7 +587,7 @@ void fragment() {
 			_tau[i] += dt * (1f + boost);
 		}
 		_show += dt;
-		if (_intro >= 0f) { _intro += dt; if (_intro > 2.2f) _intro = -1f; }
+		if (_intro >= 0f) { _intro += dt; if (_intro > 2.6f) _intro = -1f; }
 		if (_fadeOut >= 0f)
 		{
 			_fadeOut += dt;
@@ -630,7 +630,7 @@ void fragment() {
 		Vector2 nestP = new(-0.12f * face * T, -0.78f * T);
 
 		// 攻击：有目标、有空位、出场演完了 → 挑一条闲着的蛇
-		if (_targets.Count > 0 && _show > 0.6f && (_intro < 0f || _intro > 1.6f))
+		if (_targets.Count > 0 && _show > 0.6f && (_intro < 0f || _intro > 2.1f))
 		{
 			for (int s = 0; s < Slots; s++)
 			{
@@ -833,11 +833,12 @@ void fragment() {
 		// 出场：五条蛇依次从身后的蛇巢里窜出来（先是一道散着的暗影，窜到位置时聚成形）
 		float grow = 1f;
 		_introDiss[i] = 0f;
-		if (_intro >= 0f && _introFresh && _intro < 1.6f)
+		if (_intro >= 0f && _introFresh && _intro < 2.2f)
 		{
-			// 「钻」出来（用户 2026-11-11：现在纯是平移出来的）：0.6s，先快后慢，到位时多冲一点再收回
-			float g0 = Ease5.Seg(_intro, 0.35f + 0.11f * i, 0.6f);
-			grow = g0 >= 1f ? 1f : Ease5.OutBack(g0 * 0.92f + 0.08f * g0 * g0);
+			// 「钻」出来（用户 2026-11-11：现在纯是平移出来的）；第二版（用户：出来那么快又马上停住，常驻几乎是停住的，很怪 → 幅度小一些、慢一些）：
+			// 每条 1.1s、间隔 0.15s，平缓减速、不冲过头，最后自然接上常驻的慢游
+			float g0 = Ease5.Seg(_intro, 0.35f + 0.15f * i, 1.1f);
+			grow = g0 >= 1f ? 1f : 1f - Mathf.Pow(1f - g0, 2.2f);
 			_introDiss[i] = g0 < 1f ? 0.6f * (1f - Smooth(0.0f, 0.45f, g0)) : 0f;   // 头刚冲出蛇巢时带着烟
 		}
 		Vector3 chest = new(-0.12f * face * T, -0.78f * T, -0.5f);   // 从蛇巢出来（变量名沿用）
@@ -903,7 +904,7 @@ void fragment() {
 		// 出场「钻」：蛇顺着自己最终的身体路线从蛇巢里游出来——身上 f 处的点放在路线的 f − (1 − grow) 处
 		// （还在蛇巢里的部分留在路线起点、藏起来），头在前面开路、身体沿着头走过的路一节节跟出来；
 		// 游的时候身上一道往尾巴传的 S 形扭动，越接近到位越平缓；grow 到位时略过头（OutBack），头冲出去一点再收回
-		if (grow < 1f || (_intro >= 0f && _introFresh && _intro < 1.6f && grow != 1f))
+		if (grow < 1f)
 		{
 			Span<Vector4> fin = stackalloc Vector4[N];
 			for (int k = 0; k < nb; k++) fin[k] = _spine[i * N + k];
@@ -922,7 +923,7 @@ void fragment() {
 					v = fin[a0].Lerp(fin[a0 + 1], u);   // sp > 1（冲过头）时沿最后一段往外延
 					// 扭动：垂直于身体、往尾巴传的 S 波，刚出来时最大
 					Vector2 tg = new Vector2(fin[a0 + 1].X - fin[a0].X, fin[a0 + 1].Y - fin[a0].Y).Normalized();
-					float wig = Mathf.Sin(sp * 13f - _intro * 26f + i) * 0.07f * T * Mathf.Clamp(lag * 1.6f + 0.15f, 0f, 1f) * Smooth(0f, 0.25f, sp);
+					float wig = Mathf.Sin(sp * 11f - _intro * 12f + i) * 0.035f * T * Mathf.Clamp(lag * 1.4f, 0f, 1f) * Smooth(0f, 0.25f, sp);
 					v += new Vector4(-tg.Y * wig, tg.X * wig, 0f, 0f);
 					v.W = fin[k].W * Smooth(0f, 0.12f, sp);
 				}
@@ -933,7 +934,7 @@ void fragment() {
 		float eyes = 0.45f + 0.1f * Mathf.Sin(_t * 2f + i);
 		if (_intro >= 0f)
 		{
-			float te = 1.1f + 0.06f * EyeRank[i];
+			float te = 1.55f + 0.08f * EyeRank[i];
 			eyes = Mathf.Max(eyes, Smooth(te, te + 0.06f, _intro) * (1f - Smooth(te + 0.3f, te + 0.75f, _intro)));
 		}
 		Vector4 hb4 = _spine[i * N + nb - 1];
