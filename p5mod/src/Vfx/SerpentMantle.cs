@@ -338,11 +338,13 @@ void fragment() {
 	/// </summary>
 	private static readonly (float Cx, float Cy, float Ax, float Ay, float W, float R, float Ph, float Tilt, float Za, float Zb, float Size, float Len)[] Orbits =
 	{
-		(0.15f, -1.4f, 0.5f, 0.3f, 0.42f, 1f, 0.0f, 28f, 0.6f, -0.45f, 1.05f, 2.3f),     // 身后偏右上，斜着一高一低地兜
-		(-0.4f, -0.9f, 0.45f, 0.35f, -0.55f, 1f, 1.3f, -42f, 1f, 0.05f, 0.95f, 2.2f),   // 左边，斜着从他身前穿过去再绕回身后
-		(0.5f, -1.0f, 0.38f, 0.42f, 0.36f, 2f, 2.4f, 12f, 1f, -0.2f, 0.95f, 2.2f),      // 右边（敌人那侧），竖着的 8 字，上下起伏大
-		(-0.05f, -0.42f, 0.72f, 0.16f, 0.46f, 1f, 3.6f, -10f, 1f, 0.05f, 0.9f, 2.4f),   // 低处，绕着腿，略斜
-		(-0.3f, -1.72f, 0.38f, 0.26f, -0.38f, 1.5f, 4.8f, 35f, 0.5f, -0.5f, 0.85f, 2.2f), // 最高处偏左，身后
+		// 第四版（用户 2026-11-11：还是围着他游，只小幅修分布和轨迹；示意图 docs/p5/preview/serpent_orbit_tweak.png）：
+		// 每条守着自己那一块、圈小一些、转得一样快（相位错开），不会挤到一边，身体也不会绕成结
+		(-0.5f, -1.45f, 0.3f, 0.2f, 0.45f, 1f, 0.0f, 25f, 0.5f, -0.45f, 1.05f, 2.3f),     // 左上，身后
+		(0.12f, -1.78f, 0.32f, 0.16f, -0.42f, 1f, 1.9f, -15f, 0.4f, -0.5f, 0.95f, 2.2f),  // 正上，身后
+		(0.62f, -1.12f, 0.26f, 0.26f, 0.48f, 2f, 3.4f, 15f, 0.8f, -0.15f, 0.95f, 2.2f),   // 右侧，朝敌人
+		(0.05f, -0.5f, 0.5f, 0.12f, -0.45f, 1f, 4.6f, -8f, 0.9f, 0.3f, 0.9f, 2.4f),       // 低处，从他身前横过去（挡住腰）
+		(-0.7f, -0.88f, 0.22f, 0.24f, 0.44f, 1.5f, 5.7f, -30f, 0.8f, -0.05f, 0.85f, 2.2f), // 左侧中间
 	};
 
 	private readonly Control _front, _back;
@@ -719,6 +721,12 @@ void fragment() {
 			while (seg < used - 2 && acc[seg + 1] < s) seg++;
 			float u = acc[seg + 1] > acc[seg] ? Mathf.Clamp((s - acc[seg]) / (acc[seg + 1] - acc[seg]), 0f, 1f) : 0f;
 			Vector3 v = trail[seg].Lerp(trail[seg + 1], u);
+			// 身体只「大致」顺着头游过的路（用户 2026-11-11：圈小了身体会把整圈都描一遍、绕成结）：
+			// 和蛇巢 → 头的直线各取一半，弯是跟着游动的弯，但不会回头描圈
+			Vector3 headNow = trail[0];
+			Vector3 nestP = new(-0.12f * face * T, -0.78f * T, -0.5f);
+			Vector3 line = nestP.Lerp(headNow, f) + new Vector3(0f, -Mathf.Sin(f * Mathf.Pi) * 0.25f * T, 0f);
+			v = v.Lerp(line, 0.55f * (1f - f * f * 0.6f));
 			// 沿身体往尾巴传的 S 波
 			float wave = Mathf.Sin(f * 9f - _t * 3.4f + i) * 0.065f * T * (0.25f + 0.75f * (1f - f));
 			v += new Vector3(wave * 0.4f, wave, 0f);
