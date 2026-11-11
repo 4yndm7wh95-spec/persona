@@ -128,11 +128,13 @@ float lipY(vec2 pts[26], float x) {
 vec2 rotAbout(vec2 p, vec2 c, float a) { float s = sin(a), co = cos(a); p -= c; return c + vec2(co * p.x - s * p.y, s * p.x + co * p.y); }
 float smin(float a, float b, float k) { float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0); return mix(b, a, h) - k * h * (1.0 - h); }
 
-// 身体的半径（× girth；s：0 尾尖 → 1 头根）。尾巴又细又长，最粗在中段，往头根收出一截细脖子：头根处 0.58 = 脖子半宽（W = 1.16 girth）
+// 身体的半径（× girth；s：0 尾尖 → 1 颈根）
 float bodyR(float s) {
-	float body = mix(0.08, 1.0, pow(smoothstep(0.0, 0.75, s), 0.8));
-	float neck = 1.0 - 0.42 * smoothstep(0.8, 0.97, s);
-	return body * neck;
+	// 照 docs/p5/preview/serpent_body_plan.png 的蓝线（用户 2026-11-11：身子太肥）：全宽（单位 W = 脖子粗细）中段最粗 1.1 W（比 1.3 W 的头窄），
+	// 后 55% 慢慢收到又细又长的尾巴，往颈根收到 1.0 W；换成半径 × girth：W / 2 = 0.58 girth
+	float w = 0.04 + 1.06 * pow(smoothstep(0.0, 0.55, s), 0.75);
+	w *= 1.0 - (1.0 - 1.0 / 1.1) * smoothstep(0.82, 0.97, s);
+	return w * 0.58;
 }
 
 // 叠一层（预乘）
