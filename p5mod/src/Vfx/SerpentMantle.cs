@@ -128,18 +128,11 @@ float lipY(vec2 pts[26], float x) {
 vec2 rotAbout(vec2 p, vec2 c, float a) { float s = sin(a), co = cos(a); p -= c; return c + vec2(co * p.x - s * p.y, s * p.x + co * p.y); }
 float smin(float a, float b, float k) { float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0); return mix(b, a, h) - k * h * (1.0 - h); }
 
-// 粗细（s：0 尾 → 1 吻尖）：尾巴细、身体、脖子略收、头上平下宽的楔形
-const float HEAD0 = 0.871;          // 头从脊线的第 27 点（27/31）开始
-float profile(float s, float up) {
-	// 第三版（用户：身子太肥，像一坨）：从脖子往尾巴一路收细，尾巴拉成又细又长的一条；最粗在靠头的三分之一
-	float body = mix(0.08, 1.0, pow(smoothstep(0.0, 0.72, s), 0.8));
-	// 第四版（用户：头和身子太一体、没有分割）：头后面收出一段明显的细脖子，头比脖子宽出一截
-	float neck = 1.0 - 0.42 * smoothstep(0.76, 0.85, s);
-	if (s < HEAD0) return body * neck;
-	float hs = (s - HEAD0) / (1.0 - HEAD0);
-	float top = mix(0.6, 1.0, smoothstep(0.0, 0.28, hs)) * mix(1.0, 0.4, smoothstep(0.35, 1.0, hs));
-	float jaw = mix(0.6, 1.05, smoothstep(0.0, 0.22, hs)) * mix(1.0, 0.32, smoothstep(0.3, 1.0, hs));
-	return mix(jaw, top, up) * 1.3;
+// 身体的半径（× girth；s：0 尾尖 → 1 头根）。尾巴又细又长，最粗在中段，往头根收出一截细脖子：头根处 0.58 = 脖子半宽（W = 1.16 girth）
+float bodyR(float s) {
+	float body = mix(0.08, 1.0, pow(smoothstep(0.0, 0.75, s), 0.8));
+	float neck = 1.0 - 0.42 * smoothstep(0.8, 0.97, s);
+	return body * neck;
 }
 
 // 叠一层（预乘）
@@ -149,149 +142,148 @@ void fragment() {
 	vec2 p = origin + UV * size;
 	vec4 acc = vec4(0.0);
 	vec3 glow = vec3(0.0);
+	// 每条蛇是「一个」形状（2026-11-11 重写：以前蛇身管道和头的轮廓各画各的、靠替换 / 裁掉拼起来，越改越错位）：
+	// 蛇身 = 一根粗细连续变化的管子（所有小段的并集，交叉处不会互相挖空）；头 = 示意图的轮廓（docs/p5/preview/serpent_head_plan.png），
+	// 以颈根为原点、沿脖子末端的方向放，和管子平滑地融成一个形状。烟、透光、层次都对这一个形状算；嘴、牙、舌头只在头的坐标里画。
 	for (int j = 0; j < 5; j++) {
 		vec4 bb = box[j];
 		if (p.x < bb.x || p.y < bb.y || p.x > bb.z || p.y > bb.w) continue;
 		float g = girth[j];
-		float best = 1e9, bestR = 1e9, bs = 0.0, bz = 0.0, ba = 0.0;
+		float dj = diss[j];
+		// ── 蛇身：脊线 0～27（27 = 颈根）上每一小段是一个圆头的管子，取并集（距离 − 半径 最小的那段）──
+		float sdB = 1e9, bs = 0.0, bz = 0.0, ba = 0.0, br = g;
 		vec2 bq = p;
-		for (int k = 0; k < 31; k++) {
+		for (int k = 0; k < 27; k++) {
 			vec4 a = spine[j * 32 + k], b = spine[j * 32 + k + 1];
 			if (max(a.w, b.w) <= 0.001) continue;
 			if (side > 0.0 ? max(a.z, b.z) <= 0.0 : min(a.z, b.z) > 0.0) continue;
 			vec2 ab = b.xy - a.xy;
 			float h = clamp(dot(p - a.xy, ab) / max(dot(ab, ab), 1e-3), 0.0, 1.0);
-			vec2 q = a.xy + ab * h;
-			float d = length(p - q);
-			// 用户：身体有断层、头和身体脱节 → 以前取「离中线最近的一段」，细尾巴 / 细脖子从粗身体上交叉过去时，粗身体里的像素会被算成细的那段而挖空。
-			// 改成取「在哪一段里面最深」（距离 / 那一段的粗细），交叉处就是两段的并集
-			float sk = (float(k) + h) / 31.0;
-			float rn = d / max(sk >= HEAD0 ? 0.58 : profile(sk, 0.5), 0.05);   // 头那几段按脖子粗细比（头本身由下面的轮廓画）
-			if (rn < bestR) { bestR = rn; best = d; bs = sk; bz = mix(a.z, b.z, h); ba = mix(a.w, b.w, h); bq = q; }
+			vec2 cq = a.xy + ab * h;
+			float sk = (float(k) + h) / 27.0;
+			float rk = g * bodyR(sk);
+			float sdk = length(p - cq) - rk;
+			if (sdk < sdB) { sdB = sdk; bs = sk; bz = mix(a.z, b.z, h); ba = mix(a.w, b.w, h); bq = cq; br = rk; }
 		}
-		if (best > 1e8) continue;
-		vec2 n2 = (p - bq) / max(best, 1e-3);
-		float upv = dot(n2, hup[j]);
-		float w = g * profile(bs, smoothstep(-0.3, 0.3, upv));
-		float r = best / max(w, 0.5);
-		if (r > 3.0) continue;
-		float headness = smoothstep(0.85, 0.89, bs);
-		float L = bs * 11.0;
-		float acr = sign(upv) * best / g;
+		// ── 头：示意图的轮廓，单位 W = 脖子粗细；原点在颈根后 0.3 W（示意图 x = -0.3 是颈根）──
+		vec4 root = spine[j * 32 + 27];
+		vec2 hDir = normalize(spine[j * 32 + 31].xy - root.xy + vec2(1e-4));
+		float Wd = g * 1.16;
+		vec2 q = vec2(dot(p - root.xy, hDir) / Wd - 0.3, dot(p - root.xy, hup[j]) / Wd);
+		bool headHere = root.w > 0.001 && (side > 0.0 ? root.z > 0.0 : root.z <= 0.0) && q.x > -1.3 && q.x < 2.5 && abs(q.y) < 1.8;
+		float mo = mouth[j];
+		float openA = radians(mo < 0.0 ? 0.0 : 12.0 + 28.0 * mo);   // 平时 12°，扑咬 40°，咬住 0°
+		float upA = radians(mo > 0.0 ? 8.0 * mo : 0.0);
+		vec2 HINGE = vec2(0.06, -0.3);
+		vec2 qu = rotAbout(q, HINGE, -upA);
+		vec2 ql = rotAbout(q, HINGE, openA);
+		float sdH = 1e9;
+		if (headHere) {
+			// 示意图的「不动部分」带着一截脖子（x < -0.3），这里只要头：颈根往后切掉，脖子由管子负责
+			float dF = max(sdPolyFixed(qu), -0.25 - qu.x);
+			float dJ = sdPolyJaw(ql);
+			sdH = smin(dF, dJ, 0.05) * Wd;
+		}
+		if (sdB > 1e8 && sdH > 1e8) continue;
+		// ── 一个形状：管子和头平滑融合（颈根像一个球关节，转头不会错开）──
+		// 没有头的地方直接用蛇身（1e9 进 smin 会在显卡上把蛇身的距离吃掉，整条变成半透明的带子）
+		float sd = sdH > 1e8 ? sdB : (sdB > 1e8 ? sdH : smin(sdB, sdH, 0.2 * Wd));
+		float headness = sdH < 1e8 ? smoothstep(0.12 * Wd, -0.12 * Wd, sdH - sdB) : 0.0;
+		float R = mix(br, 0.5 * Wd, headness);
+		float sdn = sd / max(R, 0.5);                              // 中线 ≈ -1，边 = 0
+		if (sdn > 2.2) continue;
+		float rr = 1.0 + sdn;                                       // 离中线几个半径
+		vec2 hc = root.xy + hDir * Wd * 0.9;                        // 头中间（算头上的光照方向）
+		vec2 n2 = normalize(mix(p - bq, p - hc, headness) + vec2(1e-4));
+		float hx = clamp(q.x, -0.3, 1.6);
+		float L = mix(bs * 11.0, 11.0 + hx * 1.5, headness);
+		float acr = rr * (n2.y < 0.0 ? 1.0 : -1.0);
 		float nz = fbm(vec2(L * 2.2 - clock * 1.3, acr * 1.1 - clock * 0.2) + float(j) * 11.0);
 		float fine = vn(vec2(L * 3.5 - clock * 2.6, acr * 3.0) + float(j) * 4.0);
-		float dj = diss[j];
-		float torn = (nz - 0.5) * mix(0.3, 0.18, headness) + (fine - 0.5) * 0.22 + (1.0 - smoothstep(0.0, 0.25, bs)) * nz * 0.6;   // 不要沿身子一块块的疙瘩，只在边上细碎
-		torn += dj * (0.5 + nz * 1.8);                                  // 散成烟：边被撕开、往里吃
-		float sd = r - 1.0 + torn;
-		float dens = smoothstep(0.16, -0.22, sd) * (1.0 - dj * 0.6);   // 芯是实的：挡住 / 被挡住看得出层次，只有边是烟
-		// 边缘里面一薄层透光（越靠上越亮：天光从上面来）
-		float shell = smoothstep(-0.34, -0.05, sd) * (1.0 - smoothstep(-0.05, 0.1, sd));
-		float flick = fbm(vec2(L * 1.7 - clock * 2.2, acr * 2.0) + 3.0 + float(j));
-		float lit = 0.55 + 0.45 * smoothstep(-0.5, 0.8, -n2.y);
-		vec3 emit = vec3(0.6, 0.05, 0.07) * shell * smoothstep(0.5, 0.82, flick) * 1.1 * lit * (1.0 + dj * 1.5);   // 断断续续的透光，不成一圈描边
 		float nz2 = fbm(vec2(L * 2.0 - clock * 1.8, acr * 1.6) + float(j) * 2.0);
+		float flick = fbm(vec2(L * 1.7 - clock * 2.2, acr * 2.0) + 3.0 + float(j));
+		// 烟：身体边上细碎、尾巴散开；头上后脑带一点，吻部、颚、嘴线保持干净
+		float headSmoke = mix(0.3, 0.04, smoothstep(-0.1, 0.7, q.x));
+		float torn = (nz - 0.5) * mix(0.3, headSmoke, headness) + (fine - 0.5) * mix(0.22, 0.05, headness)
+			+ (1.0 - smoothstep(0.0, 0.25, bs)) * nz * 0.6 * (1.0 - headness);
+		torn += dj * (0.5 + nz * 1.8);                              // 散成烟
+		float e = sdn + torn;
+		float dens = smoothstep(0.16, -0.22, e) * (1.0 - dj * 0.6);
+		// 颜色：近黑的烟；边里面断断续续透一点暗红；朝上一侧一道细的暗红边光（头只在上半边，下颚不勾线）
+		float lit = 0.55 + 0.45 * smoothstep(-0.5, 0.8, -n2.y);
+		float shell = smoothstep(-0.34, -0.05, e) * (1.0 - smoothstep(-0.05, 0.1, e));
+		float upOnly = mix(1.0, smoothstep(-0.2, 0.15, qu.y), headness);
+		vec3 emit = vec3(0.6, 0.05, 0.07) * shell * smoothstep(0.5, 0.82, flick) * 1.1 * lit * (1.0 + dj * 1.5) * upOnly;
 		vec3 inner = mix(vec3(0.008, 0.002, 0.004), vec3(0.045, 0.01, 0.016), smoothstep(0.4, 0.9, nz2));
-		// 圆柱的体积：朝上一侧一道细的暗红边光（日冕从上面照下来），背光一侧纯黑
-		float topRim = smoothstep(0.45, 0.9, r) * smoothstep(0.1, 0.8, -upv * sign(-hup[j].y) + 0.0) * (1.0 - smoothstep(0.95, 1.05, r + torn));
-		inner += vec3(0.42, 0.05, 0.06) * topRim * smoothstep(-0.2, 0.6, -n2.y) * 0.8;
-		// 外面一缕缕往上飘的暗烟
-		float wn = fbm(vec2(L * 0.7 - clock * 0.8, best / g * 0.9 + clock * 0.9 * sign(n2.y)) + 7.0 + float(j) * 3.0);
-		float wisp = smoothstep(0.5, 0.85, wn) * smoothstep(mix(1.8, 2.8, smoothstep(0.0, 0.8, -n2.y)), 0.9, r) * 0.6 * (1.0 - headness * 0.7);
-		wisp += dj * (1.0 - dj) * 3.0 * smoothstep(0.4, 0.8, wn) * smoothstep(2.9, 0.6, r);   // 散的时候一大团烟往外、往上飘
-		// 几条蛇之间连成一片的薄烟（迷迷糊糊、不分得那么清楚）
-		wisp = max(wisp, exp(-pow(r / 1.8, 2.0)) * 0.2 * smoothstep(0.35, 0.75, wn) * smoothstep(3.0, 2.0, r));
-		float dim = bz < 0.0 ? 0.8 : 1.0;
+		float topRim = smoothstep(0.72, 0.95, rr) * smoothstep(0.35, 0.9, -n2.y) * (1.0 - smoothstep(-0.04, 0.04, e)) * upOnly;   // 只在最上沿一细条
+		inner += vec3(0.42, 0.05, 0.06) * topRim * 0.45;
+		// 外面往上飘的烟丝；散的时候一大团；几条之间一层薄烟
+		float wn = fbm(vec2(L * 0.7 - clock * 0.8, rr * 0.9 + clock * 0.9 * sign(n2.y)) + 7.0 + float(j) * 3.0);
+		float wisp = smoothstep(0.5, 0.85, wn) * smoothstep(mix(1.8, 2.8, smoothstep(0.0, 0.8, -n2.y)), 0.9, rr) * 0.6 * (1.0 - headness * 0.75);
+		wisp += dj * (1.0 - dj) * 3.0 * smoothstep(0.4, 0.8, wn) * smoothstep(2.9, 0.6, rr);
+		wisp = max(wisp, exp(-pow(rr / 1.8, 2.0)) * 0.2 * smoothstep(0.35, 0.75, wn) * smoothstep(3.0, 2.0, rr) * (1.0 - headness));
+		float dim = (headness > 0.5 ? root.z : bz) < 0.0 ? 0.8 : 1.0;
 		vec3 c = (inner + emit) * dim;
 		vec3 wc = vec3(0.03, 0.008, 0.012) + vec3(0.22, 0.02, 0.03) * smoothstep(0.72, 0.9, wn);
-		float a = clamp(dens + wisp * (1.0 - dens), 0.0, 1.0) * ba;
+		float alphaJ = mix(ba, root.w, headness);
+		float a = clamp(dens + wisp * (1.0 - dens), 0.0, 1.0) * alphaJ;
 		vec3 cc = mix(wc, c, dens / max(dens + wisp * (1.0 - dens), 1e-3));
-		// 头：两片真的颚（用户：嘴看起来乱糟糟，像涂上去的一块 → 头的剪影本身张开）。
-		// 局部坐标：x 沿头（0 = 头根，单位 = 脖子半宽 g），off 横向（+ 朝上）。上颚连着后脑；下颚绕嘴角的铰点往下转开 th，
-		// 两片颚中间是真的缺口：嘴角那头是暗红的口腔，往吻尖就是空的（看得见后面）。上下各一对模糊的烟獠牙长在唇边，跟着颚动。
-		// 头：照示意图的轮廓（多边形距离场），不再用公式近似。头根（spine 27）= 示意图 x = -0.3，吻尖（spine 31）= 1.56
-		vec2 hRoot = spine[j * 32 + 27].xy, hTip = spine[j * 32 + 31].xy;
-		vec2 hDir = normalize(hTip - hRoot + vec2(1e-4));
-		float Wd = g * 1.16;                                        // 脖子粗细（像素）
-		vec2 q = vec2(dot(p - hRoot, hDir) / Wd - 0.3, dot(p - hRoot, hup[j]) / Wd);
-		if (bs > HEAD0 - 0.12 && q.x > -0.75 && q.x < 2.4 && q.y > -1.6 && q.y < 1.15 && spine[j * 32 + 27].w > 0.001) {   // 只管靠头那一段：路过的蛇身不能被头的范围切掉
-			float hw = smoothstep(-0.7, -0.35, q.x);                  // 脖子 → 头：两边一样粗，平滑接过去
-			float mo = mouth[j];
-			float openA = radians(mo < 0.0 ? 0.0 : 12.0 + 28.0 * mo);   // 平时 12°，扑咬 40°，咬住 0°
-			float upA = radians(mo > 0.0 ? 8.0 * mo : 0.0);
-			vec2 HINGE = vec2(0.06, -0.3);
-			vec2 qu = rotAbout(q, HINGE, -upA * smoothstep(-0.3, 0.3, q.x));   // 上颚抬起（只抬头，不带脖子）
-			vec2 ql = rotAbout(q, HINGE, openA);                              // 下颚往下转（量的时候转回去）
-			float dF = sdPolyFixed(qu), dJ = sdPolyJaw(ql);
-			float dHead = smin(dF, dJ, 0.05);   // 下颚和头接得平滑（用户：下颚分割线淡一点）
-			// 烟只在后脑和脖子散开；吻部、颚、嘴线保持干净
-			float smoke = mix(0.16, 0.025, smoothstep(-0.1, 0.7, q.x));
-			float hd = smoothstep(0.02, -0.05, dHead + (nz - 0.5) * smoke * 2.0 + dj * (0.4 + nz * 1.4));
-			float rimH = smoothstep(-0.12, -0.01, dHead) * (1.0 - smoothstep(-0.01, 0.04, dHead)) * smoothstep(0.45, 0.8, flick) * lit * smoothstep(-0.2, 0.15, qu.y);   // 透光只在上半，下颚边不勾线
-			vec3 headC = (inner + vec3(0.6, 0.05, 0.07) * rimH * 0.9) * dim;
-			// 头和脖子取并集（用户：头和身体脱节、脖子被切成方头——头转向时以前是「替换」那一截脖子）：
-			// 脖子一直是身体管道，头的轮廓接在根部；轮廓自带的那截脖子往后淡掉，转头时不会横着戳出来
-			float hdN = hd * smoothstep(-0.62, -0.32, q.x);
-			float capA = bs >= HEAD0 ? 0.0 : a;                       // 管道里属于头的那几段不画（头由轮廓画）
-			float headA = clamp(hdN + wisp * 0.25 * (1.0 - hdN), 0.0, 1.0) * ba;
-			vec3 headCC = mix(wc, headC, hd);
-			cc = capA > 0.0 ? mix(cc, headCC, clamp(hdN * 1.2, 0.0, 1.0)) : headCC;
-			a = max(capA, headA);
-			dens = max(bs >= HEAD0 ? 0.0 : dens, hdN);
-			// 口腔：上唇和下唇之间，嘴角最深、往吻尖淡掉（前面透出后面）
+		// ── 头上的细节（头的坐标里画，跟着颚动）──
+		if (headHere && sdH < 1e8) {
+			float hw = smoothstep(-0.3, 0.0, q.x) * (1.0 - dj);
+			// 口腔：上唇和下唇之间，嘴角最深（近黑），往吻尖淡掉（前面透出后面）
 			if (openA > 0.001 && q.x > HINGE.x) {
 				float upLip = lipY(lip_up, qu.x);
 				float lowLip = lipY(lip_low, ql.x);
 				float inGap = smoothstep(0.015, -0.015, qu.y - upLip) * smoothstep(-0.015, 0.015, ql.y - lowLip);
-				float fade = clamp((1.35 - q.x) / 0.6, 0.0, 1.0);
-				float th = inGap * fade * hw * (1.0 - dj);
-				vec3 throatC = mix(vec3(0.015, 0.002, 0.005), vec3(0.27, 0.047, 0.07), smoothstep(HINGE.x, HINGE.x + 0.55, q.x)) * (0.85 + 0.3 * nz);   // 嘴角最深（近黑），不在铰点那里切出一道
-				cc = mix(cc, throatC, th * (1.0 - hd));
-				a = max(a, th * ba);
+				float th = inGap * clamp((1.35 - q.x) / 0.6, 0.0, 1.0) * hw;
+				vec3 throatC = mix(vec3(0.015, 0.002, 0.005), vec3(0.27, 0.047, 0.07), smoothstep(HINGE.x, HINGE.x + 0.55, q.x)) * (0.85 + 0.3 * nz);
+				cc = mix(cc, throatC, th * (1.0 - dens));
+				a = max(a, th * root.w);
 			}
-			// 舌头：细长、末端分叉，从嘴里伸出去一伸一缩、抖；和牙一样只是隐约的一道暗红烟痕
+			// 舌头：细长、末端分叉，一伸一缩、抖；隐约一道暗红
 			if (openA > 0.001) {
-				vec2 qt = rotAbout(q, HINGE, openA * 0.5);          // 两片颚中间的方向
+				vec2 qt = rotAbout(q, HINGE, openA * 0.5);
 				float flickT = 0.5 + 0.5 * sin(clock * 3.1 + float(j) * 2.3);
 				float tipX = mix(1.55, 2.2, flickT * flickT);
-				float tx = qt.x;
-				float wav = sin(tx * 9.0 - clock * 22.0) * 0.025 * smoothstep(1.2, 2.0, tx);
+				float wav = sin(qt.x * 9.0 - clock * 22.0) * 0.025 * smoothstep(1.2, 2.0, qt.x);
 				float cy = -0.17 + wav;
-				float fork = smoothstep(tipX - 0.24, tipX, tx);
+				float fork = smoothstep(tipX - 0.24, tipX, qt.x);
 				float dy = min(abs(qt.y - cy - fork * 0.09), abs(qt.y - cy + fork * 0.09));
-				float tw = 0.024 * (1.0 - 0.5 * smoothstep(tipX - 0.5, tipX, tx));
-				float tongue = smoothstep(tw + 0.02, tw - 0.01, dy) * smoothstep(0.75, 0.9, tx) * smoothstep(tipX + 0.02, tipX - 0.04, tx);
-				tongue *= hw * (1.0 - dj) * (0.55 + 0.25 * fine);
-				cc = mix(cc, vec3(0.5, 0.07, 0.11), tongue * (1.0 - hd * 0.7));
-				a = max(a, tongue * 0.75 * ba);
+				float tw = 0.024 * (1.0 - 0.5 * smoothstep(tipX - 0.5, tipX, qt.x));
+				float tongue = smoothstep(tw + 0.02, tw - 0.01, dy) * smoothstep(0.75, 0.9, qt.x) * smoothstep(tipX + 0.02, tipX - 0.04, qt.x);
+				tongue *= hw * (0.55 + 0.25 * fine);
+				cc = mix(cc, vec3(0.5, 0.07, 0.11), tongue * (1.0 - dens * 0.7));
+				a = max(a, tongue * 0.75 * root.w);
 			}
-			// 獠牙：照示意图的位置和长度（长度受开口限制），模糊的烟痕；上排长、下排短，近的亮、远的稍后且暗
+			// 獠牙：示意图的位置和长度（受开口限制），模糊的烟痕；上排长、下排短，近的亮、远的稍后且暗
 			float gapK = tan(openA + upA);
 			float fang = 0.0;
 			for (int f = 0; f < 4; f++) {
 				bool upper = f < 2;
 				bool far_ = f == 1 || f == 3;
 				vec2 base = upper ? (far_ ? vec2(1.14, -0.09) : vec2(1.24, -0.085)) : (far_ ? vec2(0.93, -0.105) : vec2(1.02, -0.1));
-				float L = min(upper ? (far_ ? 0.28 : 0.36) : (far_ ? 0.17 : 0.22), (base.x - HINGE.x) * gapK * (upper ? (far_ ? 0.5 : 0.62) : (far_ ? 0.32 : 0.4)));
+				float Lf = min(upper ? (far_ ? 0.28 : 0.36) : (far_ ? 0.17 : 0.22), (base.x - HINGE.x) * gapK * (upper ? (far_ ? 0.5 : 0.62) : (far_ ? 0.32 : 0.4)));
 				vec2 fq = upper ? qu : ql;
-				float t = clamp((upper ? base.y - fq.y : fq.y - base.y) / max(L, 1e-3), -0.2, 1.2);
-				float cx = base.x - 0.12 * L * t * t;
+				float t = clamp((upper ? base.y - fq.y : fq.y - base.y) / max(Lf, 1e-3), -0.2, 1.2);
+				float cx = base.x - 0.12 * Lf * t * t;
 				float wid = 0.04 * (1.0 - clamp(t, 0.0, 1.0)) + 0.006;
 				float fd = abs(fq.x - cx) - wid + (fine - 0.5) * 0.02;
-				float m = smoothstep(0.025, -0.01, fd) * smoothstep(-0.05, 0.03, t) * smoothstep(1.05, 0.85, t) * step(0.02, L);
+				float m = smoothstep(0.025, -0.01, fd) * smoothstep(-0.05, 0.03, t) * smoothstep(1.05, 0.85, t) * step(0.02, Lf);
 				fang = max(fang, m * (far_ ? 0.45 : 1.0));
 			}
-			fang *= hw * (1.0 - dj);
+			fang *= hw;
 			vec3 fangC = mix(vec3(0.3, 0.12, 0.11), vec3(0.75, 0.58, 0.5), smoothstep(0.3, 0.8, nz2));
 			cc = mix(cc, fangC, fang * 0.85);
-			a = max(a, fang * 0.85 * ba);
+			a = max(a, fang * 0.85 * root.w);
 		}
-		else if (bs > HEAD0 + 0.02) { a = 0.0; }   // 头的范围外：旧的管道头不要（不然吻尖前面会留几块碎片）
 		over(acc, cc, a);
-		// 眼睛：一团晕开的暖红雾光
-		vec2 ed = p - eyes[j].xy;
-		float e2 = dot(ed, ed);
-		glow += (vec3(1.0, 0.6, 0.3) * exp(-e2 / pow(g * 0.14, 2.0)) * 2.0 + vec3(0.95, 0.15, 0.08) * exp(-e2 / pow(g * 0.42, 2.0)) * 0.55) * eyes[j].z * (1.0 - dj);   // 眼睛亮一点（用户：快看不见）
+		// 眼睛：一团晕开的暖红雾光（只在头所在的那一层）
+		if (headHere) {
+			vec2 ed = p - eyes[j].xy;
+			float e2 = dot(ed, ed);
+			glow += (vec3(1.0, 0.6, 0.3) * exp(-e2 / pow(g * 0.14, 2.0)) * 2.0 + vec3(0.95, 0.15, 0.08) * exp(-e2 / pow(g * 0.42, 2.0)) * 0.55) * eyes[j].z * (1.0 - dj);
+		}
 	}
 	// 咒烟团（前景层）：蛇从烟里聚出来的那一团、咬中时往外炸开的那一团、蛇散掉时的那一团。翻滚着变大、变淡
 	if (side > 0.0) {
@@ -645,7 +637,7 @@ void fragment() {
 			float a = Smooth(0.15f, 0.4f, f) * alpha;                         // 尾巴那截藏在烟里
 			_spine[i * N + k] = new Vector4(q.X, q.Y, 0.5f, a);
 		}
-		Vector2 dir = toP;
+		Vector2 dir = NeckDir(i, face);                                   // 头顺着脖子
 		for (int k = 1; k <= HeadPts; k++)
 		{
 			Vector2 hp = hb + dir * headLen * k / HeadPts;
@@ -658,6 +650,31 @@ void fragment() {
 		_eyes[i] = new Vector3(eye.X, eye.Y, alpha);
 		// 嘴：聚出来以后张到最大，扑到时猛地合上
 		_mouth[i] = t < BiteAt ? Smooth(EmergeAt, 0.36f, t) : -0.2f;
+	}
+
+	/// <summary>脖子末端的方向（头就朝这个方向放）。</summary>
+	private Vector2 NeckDir(int i, float face)
+	{
+		int nb = N - HeadPts;
+		Vector4 a = _spine[i * N + nb - 3], b = _spine[i * N + nb - 1];
+		Vector2 d = new(b.X - a.X, b.Y - a.Y);
+		return d.LengthSquared() > 1e-3f ? d.Normalized() : new Vector2(face, 0f);
+	}
+
+	/// <summary>把脖子最后 8 个点绕第 9 个点逐渐弯过去，让末端朝 target 方向（amount 0～1）。</summary>
+	private void BendNeck(int i, Vector2 target, float amount)
+	{
+		int nb = N - HeadPts, piv = nb - 9;
+		float ang = NeckDir(i, 1f).AngleTo(target) * amount;
+		Vector4 pv = _spine[i * N + piv];
+		Vector2 c = new(pv.X, pv.Y);
+		for (int k = piv + 1; k < nb; k++)
+		{
+			float w = Smooth(piv, nb - 1, k);
+			Vector4 v = _spine[i * N + k];
+			Vector2 r = (new Vector2(v.X, v.Y) - c).Rotated(ang * w) + c;
+			_spine[i * N + k] = new Vector4(r.X, r.Y, v.Z, v.W);
+		}
 	}
 
 	private void PoseSerpent(int i, float T, float face, float alpha)
@@ -713,20 +730,18 @@ void fragment() {
 			float a = Smooth(0f, 0.08f, f) * alpha;
 			_spine[i * N + k] = new Vector4(v.X, v.Y, v.Z, a * (_intro >= 0f ? Smooth(0f, 0.15f, grow) : 1f));
 		}
-		Vector4 hb4 = _spine[i * N + nb - 1], pr4 = _spine[i * N + nb - 4];
-		Vector2 hb = new(hb4.X, hb4.Y);
-		Vector2 move = new(hb4.X - pr4.X, hb4.Y - pr4.Y);
-		Vector2 dir = move.LengthSquared() > 1e-3f ? move.Normalized() : new Vector2(face, 0f);
-		// 出场最后五个头一起转向敌人
+		// 出场最后五个头一起转向敌人：不单独转头，而是把脖子最后一截弯过去（头永远顺着脖子，不会错开）
 		Vector2 enemyDir = new Vector2(face, 0.12f).Normalized();
 		float turn = _intro >= 0f ? Smooth(1.05f, 1.25f, _intro) * (1f - Smooth(1.9f, 2.2f, _intro)) : 0f;
 		float eyes = 0.45f + 0.1f * Mathf.Sin(_t * 2f + i);
 		if (turn > 0f)
 		{
-			dir = dir.Lerp(enemyDir, turn).Normalized();
+			BendNeck(i, enemyDir, turn);
 			eyes = Mathf.Max(eyes, turn);
 		}
-		_spine[i * N + nb - 1] = new Vector4(hb.X, hb.Y, hb4.Z, hb4.W);
+		Vector4 hb4 = _spine[i * N + nb - 1];
+		Vector2 hb = new(hb4.X, hb4.Y);
+		Vector2 dir = NeckDir(i, face);
 		float headLen = _girth[i] * 2.16f;   // 照示意图：头根（x=-0.3）到吻尖（1.56）= 1.86 W，W = 1.16 g
 		for (int k = 1; k <= HeadPts; k++)
 		{
