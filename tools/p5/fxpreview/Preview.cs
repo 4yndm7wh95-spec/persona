@@ -1012,6 +1012,7 @@ public partial class Preview : Node2D
 		string sfxLog = ProjectSettings.GlobalizePath("res://") + $"out/{scenario}/sfx.txt";
 		System.IO.File.WriteAllText(sfxLog, "");
 		Sfx.Recorder = (name, vol) => System.IO.File.AppendAllText(sfxLog, $"{_frames / 30.0:0.000} {name} {vol:0.00}\n");                 // 顿帧按录像帧数计时（不受时间流速影响）
+		Stage.PlayEvent = (e, vol) => Sfx.Recorder?.Invoke(e, vol);   // 游戏自带的 FMOD 事件：记下事件名，mix.py 用解出来的原版样本（tools/p5/fxpreview/game_sfx.py）
 		GD.Seed(52029);
 		Stage.Shake = s => { _shake = s; _shakeLeft = 0.25f; _shakeDir = null; };
 		BodyAura.CloneBody = parent =>
