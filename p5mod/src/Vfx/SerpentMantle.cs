@@ -152,21 +152,51 @@ void fragment() {
 		if (p.x < bb.x || p.y < bb.y || p.x > bb.z || p.y > bb.w) continue;
 		float g = girth[j];
 		float dj = diss[j];
-		// ── 蛇身：脊线 0～27（27 = 颈根）上每一小段是一个圆头的管子，取并集（距离 − 半径 最小的那段）──
-		float sdB = 1e9, bs = 0.0, bz = 0.0, ba = 0.0, br = g;
-		vec2 bq = p;
+		// ── 蛇身：脊线 0～27（27 = 颈根）上每一小段是一个圆头的管子 ──
+		// 交叉的地方分前后（2026-11-11 用户：提亮以后蛇身一节一节的——以前所有小段取并集当一个形状算明暗，
+		// 身体自己交叉 / 两段重叠的地方在交界上折出一道痕）：先找离得最近的那段；如果这个像素同时在身体另一截
+		// （脊线上隔得远的段）里面、而那一截更靠前，就用那一截自己的轮廓算明暗，盖在后面那截上。轮廓（透明度）仍取并集。
+		float sdArr[27];
+		float zArr[27];
+		float sdU = 1e9; int kb = -1;
 		for (int k = 0; k < 27; k++) {
+			sdArr[k] = 1e9; zArr[k] = -9.0;
 			vec4 a = spine[j * 32 + k], b = spine[j * 32 + k + 1];
 			if (max(a.w, b.w) <= 0.001) continue;
-			if (side > 0.0 ? max(a.z, b.z) <= 0.0 : min(a.z, b.z) > 0.0) continue;
+			// 前后两层在 z = 0 附近重叠一段（前景层在那里渐渐淡掉），绕到身后的地方不会断成一个圆头（用户：一节一节的）
+			if (side > 0.0 ? max(a.z, b.z) <= -0.05 : min(a.z, b.z) > 0.15) continue;
 			vec2 ab = b.xy - a.xy;
 			float h = clamp(dot(p - a.xy, ab) / max(dot(ab, ab), 1e-3), 0.0, 1.0);
 			vec2 cq = a.xy + ab * h;
 			float sk = (float(k) + h) / 27.0;
-			float rk = g * bodyR(sk);
-			float sdk = length(p - cq) - rk;
-			if (sdk < sdB) { sdB = sdk; bs = sk; bz = mix(a.z, b.z, h); ba = mix(a.w, b.w, h); bq = cq; br = rk; }
+			float sdk = length(p - cq) - g * bodyR(sk);
+			sdArr[k] = sdk; zArr[k] = mix(a.z, b.z, h);
+			if (sdk < sdU) { sdU = sdk; kb = k; }
 		}
+		int kc = kb;
+		if (kb >= 0) {
+			float zb = zArr[kb], zf = zb + 0.02;
+			for (int k = 0; k < 27; k++) {
+				if (abs(k - kb) > 3 && sdArr[k] < 0.0 && zArr[k] > zf) { zf = zArr[k]; kc = k; }
+			}
+		}
+		// 选中的那一截：在它前后 2 段里取最近的（同一截里换段是连续的，不会折）
+		float sdB = 1e9, bs = 0.0, bz = 0.0, ba = 0.0, br = g;
+		vec2 bq = p;
+		if (kc >= 0) {
+			for (int k = max(kc - 2, 0); k <= min(kc + 2, 26); k++) {
+				if (sdArr[k] > 1e8) continue;
+				vec4 a = spine[j * 32 + k], b = spine[j * 32 + k + 1];
+				vec2 ab = b.xy - a.xy;
+				float h = clamp(dot(p - a.xy, ab) / max(dot(ab, ab), 1e-3), 0.0, 1.0);
+				vec2 cq = a.xy + ab * h;
+				float sk = (float(k) + h) / 27.0;
+				float rk = g * bodyR(sk);
+				float sdk = length(p - cq) - rk;
+				if (sdk < sdB) { sdB = sdk; bs = sk; bz = mix(a.z, b.z, h); ba = mix(a.w, b.w, h); bq = cq; br = rk; }
+			}
+		}
+		bool layered = kc != kb;
 		// ── 头：示意图的轮廓，单位 W = 脖子粗细；原点在颈根后 0.3 W（示意图 x = -0.3 是颈根）──
 		vec4 root = spine[j * 32 + 27];
 		vec2 hDir = normalize(spine[j * 32 + 31].xy - root.xy + vec2(1e-4));
@@ -211,6 +241,8 @@ void fragment() {
 		torn += dj * (0.5 + nz * 1.8);                              // 散成烟
 		float e = sdn + torn;
 		float dens = smoothstep(0.16, -0.3, e) * (1.0 - dj * 0.6);   // 边缘更软、半透（2026-11-11 用户：通体乌黑不好看）
+		// 前面那截的边缘下面是后面那截的身体，不能透出背景：透明度按并集的轮廓
+		if (layered) dens = max(dens, smoothstep(0.16, -0.3, sdU / max(br, 0.5) + 1.0 + torn) * (1.0 - dj * 0.6) * 0.92);
 		// 颜色：近黑的烟；边里面断断续续透一点暗红；朝上一侧一道细的暗红边光（头只在上半边，下颚不勾线）
 		float lit = 0.55 + 0.45 * smoothstep(-0.5, 0.8, -n2.y);
 		float shell = smoothstep(-0.34, -0.05, e) * (1.0 - smoothstep(-0.05, 0.1, e));
@@ -234,6 +266,7 @@ void fragment() {
 		vec3 wc = vec3(0.09, 0.02, 0.026) + vec3(0.22, 0.03, 0.04) * smoothstep(0.72, 0.9, wn);
 		float alphaJ = mix(ba, root.w, headness);
 		float a = clamp(dens + wisp * (1.0 - dens), 0.0, 1.0) * alphaJ;
+		if (side > 0.0) a *= mix(smoothstep(-0.05, 0.12, bz), 1.0, headness);   // 前景层：身体快绕到身后时渐渐淡掉，下面接着背景层的那段
 		vec3 cc = mix(wc, c, dens / max(dens + wisp * (1.0 - dens), 1e-3));
 		// ── 头上的细节（头的坐标里画，跟着颚动）──
 		if (headHere && sdH < 1e8) {
@@ -790,12 +823,24 @@ void fragment() {
 			// 出动：朝敌人窜一下（越靠头越多）
 			v += new Vector3(_lunge[i].X, _lunge[i].Y, 0f) * Mathf.Pow(f, 1.5f);
 			// 一体：尾巴都收进 Joker 身后的蛇巢（同一团咒烟里伸出五个头）
-			float pull = i == Belt ? 0f : 1f - Smooth(0f, 0.5f, f);
+			float pull = i == Belt ? 0f : 1f - Smooth(0f, 0.75f, f);   // 收进蛇巢的那段拉长一些，不在身体中间折出急弯
 			Vector3 nest3 = new(-0.12f * face * T + Mathf.Sin(_t * 0.7f + i * 1.3f) * 0.12f * T, -0.78f * T + Mathf.Cos(_t * 0.6f + i * 2.1f) * 0.1f * T, -0.5f);
 			v = v.Lerp(nest3, pull * pull * 0.92f);
 			v = chest.Lerp(v, grow);
 			float a = Smooth(0f, 0.08f, f) * alpha;
 			_spine[i * N + k] = new Vector4(v.X, v.Y, v.Z, a * (_intro >= 0f ? Smooth(0f, 0.15f, grow) : 1f));
+		}
+		// 脊线平滑四遍（2026-11-11 用户：一节一节的）：拉向蛇巢的那一段会在身体上折出急弯，折线的拐点就成了一个球形的关节
+		for (int pass = 0; pass < 4; pass++)
+		{
+			Vector4 prev = _spine[i * N];
+			for (int k = 1; k < nb - 1; k++)
+			{
+				Vector4 cur = _spine[i * N + k], next = _spine[i * N + k + 1];
+				Vector4 avg = (prev + next) * 0.5f;
+				_spine[i * N + k] = new Vector4(Mathf.Lerp(cur.X, avg.X, 0.5f), Mathf.Lerp(cur.Y, avg.Y, 0.5f), Mathf.Lerp(cur.Z, avg.Z, 0.5f), cur.W);
+				prev = cur;
+			}
 		}
 		// 出场最后五个头一起转向敌人：不单独转头，而是把脖子最后一截弯过去（头永远顺着脖子，不会错开）
 		Vector2 enemyDir = new Vector2(face, 0.12f).Normalized();
