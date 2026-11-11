@@ -4,61 +4,70 @@ using Godot;
 namespace P5Joker;
 
 /// <summary>
-/// 群蛇形态 · 墨烟蛇（用户 2026-11-11：八岐大蛇太艳、不像蛇、太丑太吓人，又不要太分明的形象）。
-/// 思路：靠「动作」认出是蛇，不靠画清楚的样子。
-/// - 颜色：画面保持原样，只压暗四角；蛇是近黑到深酒红的烟，只有朝上的一侧被天光勾出一线暗红。日蚀只是天上一个小点。
-/// - 形象：一条平滑、往尾巴变细的烟带，头是简单的三角形轮廓（窄脖子 → 宽的头根 → 尖吻），不画牙、不张嘴、不画鳞；眼睛最多一点很弱的暖光。
-/// - 动作：一道 S 形的波从尾巴传到头；身体沿着自己走过的路线前进（真蛇的走法）。
-///   主蛇从脚下的雾里绕着 Joker 盘旋升起（前半圈在他前面、后半圈在他身后），过了头顶朝敌人探一下头，再散回烟里；
-///   两条小的在身后，S 形地升起来，更淡，藏在雾里。
-/// 全部着色器：脊线在 CPU 上算好（每条 24 个点，带深度），着色器里求到折线的距离、按体长套一条蛇的粗细曲线，边缘用流动的噪声撕成烟。
-/// 前后两层：深度 &gt; 0 的部分画在前景层（盖住 Joker），其余画在背景层。
+/// 群蛇形态 · 墨烟大蛇（用户 2026-11-11：八岐大蛇太艳、不像蛇、太丑太吓人，又不要太分明的形象）。
+/// 第二版（用户：只看得到一个头；要五个头；要稍微围着 Joker、有一体感；蛇头上下宽窄不能一样）：
+/// - 一体：一圈烟做的蛇身贴着地面绕在 Joker 脚边（前半圈在他腿前，后半圈在身后），五条脖子都从这一圈里长出来，
+///   像同一条大蛇的五个头：三个在身后高处，两个在左右两边、低一点、在他前面。
+/// - 头：侧面看是蛇头——头顶平、略收；下颌在头根处往下鼓出来，再一起收到吻尖；一条暗的嘴线；眼睛在上半边，一点很弱的暖光。
+/// - 颜色：画面保持原样，只压暗四角；蛇是近黑到深酒红的烟，朝上一侧被天光勾一线暗红。天上一个很小的日蚀。
+/// - 动作：脖子沿自己的路线长出来（头带着走），身上一道 S 形的波往头传；五个头各自慢慢摆，
+///   一起朝敌人探一下头，再散回烟里。
+/// 全部着色器：脊线在 CPU 上算（6 条 × 24 点，带深度），着色器里求到折线的距离、套粗细曲线，边缘用流动的噪声撕成烟；
+/// 深度 &gt; 0 的部分画在前景层（盖住 Joker），其余画在背景层。
 /// </summary>
 public sealed class MistSerpent
 {
-	private const int N = 24;          // 每条蛇的脊线点数（最后 HeadPts 个是头）
-	private const int HeadPts = 4;
-	private const int Count = 3;
-	public const float Life = 3.1f;
+	private const int N = 24;          // 每条的脊线点数（脖子的最后 HeadPts 个是头）
+	private const int HeadPts = 5;
+	private const int Strands = 6;     // 0 = 脚边那一圈蛇身，1～5 = 五条脖子
+	private const int Necks = 5;
+	public const float Life = 3.2f;
 
 	private static Shader? _body, _air;
 
 	private static Shader Body => _body ??= new Shader { Code = @"
 shader_type canvas_item;
 render_mode blend_premul_alpha;
-uniform vec3 spine[72];          // 3 条 × 24 点：xy = 相对 Joker 脚底的像素，z = 深度（> 0 在 Joker 前面）
-uniform float girth[3];          // 身体最粗处的半宽（像素）
-uniform float vis[3];
-uniform vec3 eyes[3];            // xy 位置，z 亮度
-uniform vec2 origin;             // 这块四边形左上角相对脚底的像素
+uniform vec3 spine[144];         // 6 条 × 24 点：xy = 相对 Joker 脚底的像素，z = 深度（> 0 在 Joker 前面）
+uniform vec4 box[6];             // 每条的包围盒（像素，已放宽），盒外直接跳过
+uniform float girth[6];          // 最粗处的半宽（像素）
+uniform float vis[6];
+uniform vec2 hup[6];             // 头的「上」方向（屏幕）
+uniform vec3 eyes[6];            // xy 位置，z 亮度
+uniform vec2 origin;
 uniform vec2 size;
 uniform float side = 1.0;        // 1 前景层 / -1 背景层
 uniform float clock = 0.0;
 uniform float dissolve = 0.0;
-uniform float ground = 0.0;      // 地面（像素 y，相对脚底）
+uniform float ground = 0.0;
 
 float h21(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float vn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
 	return mix(mix(h21(i), h21(i + vec2(1, 0)), f.x), mix(h21(i + vec2(0, 1)), h21(i + vec2(1, 1)), f.x), f.y); }
 float fbm(vec2 p) { return vn(p) * 0.5 + vn(p * 2.03 + 5.1) * 0.3 + vn(p * 4.1 + 1.7) * 0.2; }
 
-// 蛇的粗细（s：0 尾尖 → 1 吻尖）：尾巴细 → 身体 → 脖子收窄 → 头根最宽 → 三角形收到吻尖
-float profile(float s) {
-	float body = mix(0.12, 1.0, smoothstep(0.0, 0.42, s)) * mix(1.0, 0.72, smoothstep(0.45, 0.8, s));
-	float neck = 1.0 - 0.28 * smoothstep(0.74, 0.82, s);
-	float hs = clamp((s - 0.82) / 0.18, 0.0, 1.0);
-	float head = mix(0.62, 1.0, smoothstep(0.0, 0.18, hs)) * mix(1.0, 0.38, smoothstep(0.25, 1.0, hs));
-	return s < 0.82 ? body * neck : head * 1.12;
+// 脖子的粗细（s：0 根部 → 1 吻尖）。头（s > 0.8）按上下分开算：up = 1 头顶那半边，0 下颌那半边
+float profile(float s, float up) {
+	float neck = mix(1.0, 0.62, smoothstep(0.05, 0.7, s)) * (1.0 - 0.22 * smoothstep(0.68, 0.79, s));   // 头后面一截细脖子
+	if (s < 0.8) return neck;
+	float hs = (s - 0.8) / 0.2;                       // 0 头根 → 1 吻尖
+	// 头顶：平，眉骨处略鼓一点，往吻尖慢慢收
+	float top = mix(0.5, 0.8, smoothstep(0.0, 0.3, hs)) * mix(1.0, 0.45, smoothstep(0.35, 1.0, hs));
+	// 下颌：头根往下鼓出（颌角），再斜着收到吻尖
+	float jaw = mix(0.5, 1.4, smoothstep(0.0, 0.25, hs)) * mix(1.0, 0.24, smoothstep(0.25, 1.0, hs));
+	return mix(jaw, top, up);
 }
 
 void fragment() {
 	vec2 p = origin + UV * size;
 	vec3 acc = vec3(0.0);
 	float A = 0.0;
-	for (int j = 0; j < 3; j++) {
+	for (int j = 0; j < 6; j++) {
 		if (vis[j] <= 0.001) continue;
-		float best = 1e9, bs = 0.0, bsg = 1.0, bz = 0.0;
-		vec2 bdir = vec2(1.0, 0.0), bq = p;
+		vec4 bb = box[j];
+		if (p.x < bb.x || p.y < bb.y || p.x > bb.z || p.y > bb.w) continue;
+		float best = 1e9, bs = 0.0, bz = 0.0;
+		vec2 bq = p;
 		for (int k = 0; k < 23; k++) {
 			vec3 a = spine[j * 24 + k], b = spine[j * 24 + k + 1];
 			if (side > 0.0 ? max(a.z, b.z) <= 0.0 : min(a.z, b.z) > 0.0) continue;
@@ -66,51 +75,55 @@ void fragment() {
 			float h = clamp(dot(p - a.xy, ab) / max(dot(ab, ab), 1e-3), 0.0, 1.0);
 			vec2 q = a.xy + ab * h;
 			float d = length(p - q);
-			if (d < best) {
-				best = d; bs = (float(k) + h) / 23.0; bz = mix(a.z, b.z, h); bq = q; bdir = normalize(ab + vec2(1e-4));
-				bsg = sign(ab.x * (p.y - a.y) - ab.y * (p.x - a.x));
-			}
+			if (d < best) { best = d; bs = (float(k) + h) / 23.0; bz = mix(a.z, b.z, h); bq = q; }
 		}
-		float w = girth[j] * profile(bs) * (1.0 + 0.12 * bz);
-		if (best > w * 2.6) continue;
-		float headness = smoothstep(0.78, 0.86, bs);
-		float L = bs * 11.0;
-		vec2 flowp = vec2(L + clock * 1.3, bsg * best / girth[j] * 0.9 - clock * 0.25);     // 烟往尾巴、往外流
+		if (best > 1e8) continue;
+		vec2 n2 = (p - bq) / max(best, 1e-3);
+		bool ring = j == 0;
+		float headness = ring ? 0.0 : smoothstep(0.78, 0.83, bs);
+		float upv = dot(n2, hup[j]);
+		float w = girth[j] * (ring ? 1.0 : profile(bs, smoothstep(-0.25, 0.25, upv))) * (1.0 + 0.1 * bz);
+		if (best > w * 2.8) continue;
+		float L = bs * (ring ? 16.0 : 9.0);
+		vec2 flowp = vec2(L - clock * 1.1, best / girth[j] * 0.9 * sign(upv) - clock * 0.25);   // 烟往根部、往外流
 		float nz = fbm(flowp + float(j) * 13.0);
 		float fine = vn(flowp * 3.0 + 4.0);
 		float r = best / w;
-		float torn = (nz - 0.5) * mix(0.85, 0.3, headness) + (fine - 0.5) * 0.1;
-		torn += smoothstep(0.25, 0.0, bs) * (nz - 0.3) * 0.9;            // 尾巴散成雾
+		float torn = (nz - 0.5) * mix(ring ? 1.1 : 0.8, 0.22, headness) + (fine - 0.5) * 0.1;
+		torn += ring ? 0.0 : smoothstep(0.12, 0.0, bs) * (nz - 0.25) * 0.8;    // 根部散进脚边那一圈
 		torn += dissolve * (0.5 + nz * 1.6);
 		float dd = r + torn;
-		float dens = smoothstep(1.0, 0.6, dd) * smoothstep(0.0, 0.08, bs);
+		float dens = smoothstep(1.0, 0.58, dd);
 		// 埋进地里的部分被地面的雾吞掉
-		float under = smoothstep(ground + girth[j] * 0.2, ground - girth[j] * 1.6, p.y);
+		float under = smoothstep(ground + girth[j] * 0.5, ground - girth[j] * 1.2, p.y);
 		dens *= under;
-		// 光：只有朝上（略朝左上，天光那边）的一侧勾出一线暗红；里面近黑，带一点酒红的烟色变化
-		vec2 n2 = (p - bq) / max(best, 1e-3);
-		// 身体外面一缕缕的烟
-		float wn = fbm(vec2(L * 0.6 + clock * 1.4, best / girth[j] * 0.8 - clock * 0.9) + 7.0 + float(j) * 3.0);
-		float upSide = smoothstep(-0.3, 0.6, dot(n2, vec2(0.0, -1.0)));
-		float wisp = smoothstep(0.48, 0.8, wn) * smoothstep(mix(1.8, 2.8, upSide), 1.0, r) * (1.0 - headness * 0.7) * 0.5 + smoothstep(1.9, 0.9, r) * 0.15;
-		wisp *= under;
-		float lit = max(dot(n2, normalize(vec2(-0.35, -1.0))), 0.0);
-		float rim = smoothstep(0.35, 0.95, dd) * pow(lit, 1.4);
-		// 体积感：朝光的半边整体透一点酒红，背光半边近黑
-		float halfLit = smoothstep(-0.2, 0.8, dot(n2, normalize(vec2(-0.35, -1.0)))) * smoothstep(0.0, 0.9, r);
-		vec3 core = mix(vec3(0.03, 0.012, 0.016), vec3(0.13, 0.04, 0.047), smoothstep(0.3, 0.8, nz)) + vec3(0.075, 0.016, 0.02) * halfLit;
-		float band = smoothstep(0.75, 1.0, sin(L * 1.6 - clock * 4.0)) * (1.0 - headness) * 0.08;   // 沿身体往前爬的一点暗光：看得出在游动
-		vec3 col = core + vec3(0.5, 0.13, 0.13) * rim * 0.9 + vec3(0.3, 0.07, 0.08) * band;
-		float depthDim = bz < 0.0 ? 0.62 : 1.0;
+		// 身体外面一缕缕往上飘的烟
+		float wn = fbm(vec2(L * 0.6 - clock * 1.2, best / girth[j] * 0.8 - clock * 0.9) + 7.0 + float(j) * 3.0);
+		float upSide = smoothstep(-0.3, 0.6, -n2.y);
+		float wisp = (smoothstep(0.48, 0.8, wn) * smoothstep(mix(1.8, 2.8, upSide), 1.0, r) * 0.5 + smoothstep(1.9, 0.9, r) * 0.14) * (1.0 - headness * 0.75) * under;
+		// 光：朝上（略朝左上）一侧勾一线暗红；朝光半边透一点酒红；背光半边近黑
+		vec2 L2 = normalize(vec2(-0.35, -1.0));
+		float lit = max(dot(n2, L2), 0.0);
+		float rim = smoothstep(0.35, 0.95, dd) * pow(lit, 1.4) * (1.0 + headness * 0.5);
+		float halfLit = smoothstep(-0.2, 0.8, dot(n2, L2)) * smoothstep(0.0, 0.9, r);
+		vec3 core = mix(vec3(0.03, 0.012, 0.016), vec3(0.13, 0.04, 0.047), smoothstep(0.3, 0.8, nz)) + vec3(0.08, 0.017, 0.021) * halfLit;
+		float band = smoothstep(0.75, 1.0, sin(L * 1.6 + clock * 4.0)) * (1.0 - headness) * 0.08;   // 沿脖子往头爬的一点暗光
+		vec3 col = core + vec3(0.52, 0.13, 0.13) * rim * 0.9 + vec3(0.3, 0.07, 0.08) * band;
+		// 嘴线：下半边、靠近中线的一道暗缝，从吻尖往回到头的一半
+		if (headness > 0.0) {
+			float hs = clamp((bs - 0.8) / 0.2, 0.0, 1.0);
+			float off = -upv * best / girth[j];                     // 往下为正
+			float mouth = exp(-pow((off - 0.12) / 0.07, 2.0)) * smoothstep(0.3, 0.5, hs) * smoothstep(1.0, 0.85, hs);
+			col *= 1.0 - mouth * 0.75;
+		}
+		float depthDim = bz < 0.0 ? 0.66 : 1.0;
 		col *= depthDim;
-		float a = clamp(dens * 0.93 + wisp * (1.0 - dens), 0.0, 1.0) * vis[j] * mix(0.8, 1.0, depthDim);
+		float a = clamp(dens * 0.94 + wisp * (1.0 - dens), 0.0, 1.0) * vis[j] * mix(0.82, 1.0, depthDim);
 		vec3 wc = vec3(0.05, 0.016, 0.02) + vec3(0.12, 0.03, 0.035) * smoothstep(0.65, 0.9, wn);
 		vec3 c = mix(wc, col, dens / max(dens + wisp * (1.0 - dens), 1e-3));
-		// 眼睛：头上一点很弱的暖光（没有眼球、不瞪人）
 		vec2 ed = p - eyes[j].xy;
-		float e = exp(-dot(ed, ed) / pow(girth[j] * 0.16, 2.0)) * eyes[j].z * dens;
-		c += vec3(0.55, 0.24, 0.12) * e * 0.9;
-		// 叠起来（后来的蛇在下面）
+		float e = exp(-dot(ed, ed) / pow(girth[j] * 0.14, 2.0)) * eyes[j].z * dens;
+		c += vec3(0.6, 0.27, 0.13) * e;
 		acc += (1.0 - A) * c * a;
 		A += (1.0 - A) * a;
 	}
@@ -134,11 +147,9 @@ float vn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
 float fbm(vec2 p) { return vn(p) * 0.5 + vn(p * 2.03 + 5.1) * 0.3 + vn(p * 4.1 + 1.7) * 0.2; }
 void fragment() {
 	vec2 uv = UV;
-	// 暗角：中间几乎不动，四角压暗，带一点点酒红
 	float vig = smoothstep(0.3, 1.05, length((uv - vec2(0.45, 0.5)) * vec2(aspect * 0.55, 1.0)));
 	vec3 col = vec3(0.025, 0.006, 0.01);
 	float a = 0.1 + vig * 0.42;
-	// 日蚀：一个小点 + 一圈很柔的红晕（不要白边）
 	vec2 d = (uv - sun) * vec2(aspect, 1.0);
 	float r = length(d);
 	const float R = 0.018;
@@ -149,7 +160,6 @@ void fragment() {
 	a = max(a, disk * 0.9);
 	float ring = exp(-pow((r - R) / 0.0035, 2.0));
 	col += vec3(0.5, 0.13, 0.12) * ring * 0.35;
-	// 脚下的暗雾：翻涌、中间浓、往四周和上面淡开
 	vec2 pd = (uv - pool) / vec2(pool_w, pool_w * 0.28);
 	float pn = fbm(vec2(uv.x * 7.0 - clock * 0.15, uv.y * 12.0 + clock * 0.1));
 	float pm = exp(-dot(pd, pd) * 1.1) * (0.45 + 0.7 * pn);
@@ -158,28 +168,39 @@ void fragment() {
 	COLOR = vec4(col * a * amount, a * amount);
 }" };
 
+	/// <summary>
+	/// 五条脖子：根在脚边那一圈上的角度（0 = 朝敌人那边，90° = 正前方），头的位置（身高为单位，x 朝敌人、y 往上为负），
+	/// 头朝向，大小，深度（&gt; 0 在 Joker 前面），出场延迟。
+	/// </summary>
+	private static readonly (float Ang, float HX, float HY, float LX, float LY, float Size, float Z, float Delay)[] Layout =
+	{
+		(250f, 0.02f, -1.78f, 1f, 0.22f, 1.0f, -0.6f, 0.15f),      // 正中、最高，在身后
+		(205f, -0.62f, -1.42f, 0.75f, -0.35f, 0.92f, -0.55f, 0.28f), // 左后，抬着头
+		(320f, 0.66f, -1.5f, 1f, 0.32f, 0.96f, -0.5f, 0.22f),      // 右后
+		(25f, 0.98f, -0.92f, 1f, 0.12f, 0.86f, 0.55f, 0.36f),      // 右前、低
+		(160f, -0.98f, -0.86f, -0.65f, -0.5f, 0.82f, 0.5f, 0.44f), // 左前、低，朝外抬着
+	};
+
 	private readonly Node2D _frontRoot, _backRoot, _airRoot;
 	private readonly ShaderMaterial _frontM, _backM, _airM;
 	private readonly float _tall, _face;
-	private readonly Vector2 _toEnemy;
-	private readonly Vector3[] _spine = new Vector3[N * Count];
-	private readonly float[] _girth = new float[Count], _vis = new float[Count];
-	private readonly Vector3[] _eyes = new Vector3[Count];
+	private readonly Vector3[] _spine = new Vector3[N * Strands];
+	private readonly Vector4[] _box = new Vector4[Strands];
+	private readonly float[] _girth = new float[Strands], _vis = new float[Strands];
+	private readonly Vector2[] _hup = new Vector2[Strands];
+	private readonly Vector3[] _eyes = new Vector3[Strands];
 
-	/// <summary>放一次。feet = Joker 脚底（层坐标），tall = 身高（像素），face = 朝向（1 朝右），enemy = 敌人大致的位置（主蛇往那边探头）。</summary>
-	public static MistSerpent Play(Control front, Control back, Vector2 feet, float tall, float face, Vector2 enemy) => new(front, back, feet, tall, face, enemy);
+	/// <summary>放一次。feet = Joker 脚底（层坐标），tall = 身高（像素），face = 朝向（1 朝右）。</summary>
+	public static MistSerpent Play(Control front, Control back, Vector2 feet, float tall, float face) => new(front, back, feet, tall, face);
 
-	private MistSerpent(Control front, Control back, Vector2 feet, float tall, float face, Vector2 enemy)
+	private MistSerpent(Control front, Control back, Vector2 feet, float tall, float face)
 	{
 		_tall = tall;
 		_face = face;
-		Vector2 te = enemy - (feet + new Vector2(0f, -1.3f * tall));
-		_toEnemy = te.LengthSquared() > 1f ? te.Normalized() : new Vector2(face, 0.1f).Normalized();
-		_girth[0] = 0.13f * tall;
-		_girth[1] = 0.09f * tall;
-		_girth[2] = 0.08f * tall;
+		_girth[0] = 0.15f * tall;
+		for (int i = 0; i < Necks; i++) _girth[i + 1] = 0.095f * tall * Layout[i].Size;
 
-		Vector2 origin = new(-1.7f * tall, -2.3f * tall), size = new(3.6f * tall, 2.7f * tall);
+		Vector2 origin = new(-1.9f * tall, -2.3f * tall), size = new(3.9f * tall, 2.65f * tall);
 		(_frontRoot, _frontM) = MakeBody(front, feet, origin, size, 1f);
 		(_backRoot, _backM) = MakeBody(back, feet, origin, size, -1f);
 
@@ -193,7 +214,7 @@ void fragment() {
 		float tallS = tall * back.GetCanvasTransform().Scale.Y;
 		_airM.SetShaderParameter("aspect", scr.X / scr.Y);
 		_airM.SetShaderParameter("pool", new Vector2(fs.X / scr.X, (fs.Y - 0.02f * tallS) / scr.Y));
-		_airM.SetShaderParameter("pool_w", tallS * 0.9f / scr.X);
+		_airM.SetShaderParameter("pool_w", tallS * 1.1f / scr.X);
 		_airM.SetShaderParameter("sun", new Vector2((fs.X + face * tallS * 1.6f) / scr.X, 0.12f));
 		Fx.Clock(air);
 
@@ -219,104 +240,128 @@ void fragment() {
 		return (root, m);
 	}
 
-	private static float Ease(float x) => 1f - Mathf.Pow(1f - Mathf.Clamp(x, 0f, 1f), 3f);
 	private static float Smooth(float a, float b, float x) { float t = Mathf.Clamp((x - a) / (b - a), 0f, 1f); return t * t * (3f - 2f * t); }
 
-	/// <summary>
-	/// 主蛇的路线（u 0 → 1 盘旋上升，u &gt; 1 往敌人那边直伸出去）。返回 (x, y, 深度)，像素、相对脚底。
-	/// 从侧前方的雾里出来，绕 Joker 转一圈多，过了头顶时正好在他正前方、朝着敌人走。
-	/// </summary>
-	private Vector3 MainPath(float u, float t)
+	/// <summary>脚边那一圈上角度 deg 处的点（x 朝敌人，前半圈在下面、在 Joker 前面）。</summary>
+	private Vector3 Ring(float deg, float t)
 	{
-		float T = _tall;
-		if (u > 1f)
-		{
-			Vector3 end = MainPath(1f, t);
-			Vector3 pre = MainPath(0.97f, t);
-			Vector2 tan = new Vector2(end.X - pre.X, end.Y - pre.Y).Normalized();
-			float k = (u - 1f) / 0.3f;
-			Vector2 dir = tan.Lerp(_toEnemy, Smooth(0f, 0.6f, k)).Normalized();
-			return new Vector3(end.X + dir.X * k * 0.75f * T, end.Y + dir.Y * k * 0.75f * T, end.Z);
-		}
-		float th = (-2.3f + u * 2.3f) * Mathf.Pi * _face;
-		float R = T * (0.78f - 0.2f * u);
-		float x = R * Mathf.Sin(th), z = Mathf.Cos(th);
-		float y = T * (0.12f - 1.62f * Smooth(0f, 1f, u * 0.85f + 0.15f * u * u)) + z * 0.1f * T;
-		// 横向的 S 波：沿路线往前传
-		float wave = Mathf.Sin((u * 3.2f - t * 0.9f) * Mathf.Tau) * 0.045f * T;
-		return new Vector3(x + wave * Mathf.Cos(th), y + wave * 0.4f, z);
+		float a = Mathf.DegToRad(deg);
+		float rx = 0.78f * _tall, ry = 0.13f * _tall;
+		float wob = Mathf.Sin(a * 3f + t * 1.5f) * 0.02f * _tall;
+		return new Vector3(Mathf.Cos(a) * rx * _face, -0.04f * _tall + Mathf.Sin(a) * ry + wob, Mathf.Sin(a));
 	}
 
-	/// <summary>小蛇：在 Joker 身后 S 形地升起来，一直在背景层。</summary>
-	private Vector3 SidePath(int i, float u, float t)
+	private static Vector3 Bez(Vector3 a, Vector3 b, Vector3 c, Vector3 d, float t)
 	{
-		float T = _tall;
-		float cx = (i == 1 ? -0.55f : 0.5f) * T * _face;
-		float h = (i == 1 ? 1.25f : 1.05f) * T;
-		float amp = 0.22f * T * (1f - 0.4f * u);
-		float sx = Mathf.Sin(u * Mathf.Pi * 1.6f + (i == 1 ? 0.4f : 2.2f) - t * 0.9f) * amp;
-		float lean = u * u * 0.35f * T * _face;
-		return new Vector3(cx + sx + lean, 0.15f * T - u * h, -0.6f);
+		float u = 1f - t;
+		return a * (u * u * u) + b * (3f * u * u * t) + c * (3f * u * t * t) + d * (t * t * t);
 	}
-
-	private Vector3 PathOf(int i, float u, float t) => i == 0 ? MainPath(u, t) : SidePath(i, u, t);
 
 	private void Update(float t)
 	{
-		// 时间线：0～1.5 升起（小蛇晚一点）→ 1.75 朝敌人探头 → 2.05 收回一点 → 2.2 起散成烟
-		float lunge = Smooth(1.72f, 1.88f, t) - 0.55f * Smooth(1.9f, 2.25f, t);
-		float diss = Smooth(2.2f, 2.95f, t);
-		for (int i = 0; i < Count; i++)
+		float T = _tall;
+		float lunge = Smooth(1.72f, 1.9f, t) - 0.6f * Smooth(1.95f, 2.3f, t);
+		float diss = Smooth(2.25f, 3.0f, t);
+
+		// 0：脚边那一圈（首尾接上，绕着慢慢转；出场时从雾里浓起来）
+		float spin = t * 12f;
+		for (int k = 0; k < N; k++)
 		{
-			float start = i == 0 ? 0.12f : (i == 1 ? 0.3f : 0.42f);
-			float rise = i == 0 ? 1.45f : 1.35f;
-			float head = Ease((t - start) / rise);
-			float headU = i == 0 ? head * 1f + lunge * 0.3f - diss * 0.25f : head * 0.95f - diss * 0.2f;
-			float len = i == 0 ? 0.62f : 0.75f;                   // 身体沿路线占多长（u）
-			_vis[i] = Smooth(start, start + 0.3f, t) * (1f - diss * 0.6f) * (i == 0 ? 1f : (i == 1 ? 0.65f : 0.55f));
-			// 身体：从头往回沿路线均匀取点（按弧长），头：沿最后的切线伸出去一段直的三角形
-			Vector3[] dense = new Vector3[64];
-			float[] acc = new float[64];
-			for (int k = 0; k < 64; k++)
+			_spine[k] = Ring(spin + 360f * k / (N - 1), t);
+		}
+		_vis[0] = Smooth(0.0f, 0.45f, t) * (1f - diss * 0.6f) * 0.9f;
+		_hup[0] = new Vector2(0f, -1f);
+		_eyes[0] = Vector3.Zero;
+
+		for (int i = 0; i < Necks; i++)
+		{
+			var (ang, hx, hy, lx, ly, sz, z, delay) = Layout[i];
+			int j = i + 1;
+			float g = _girth[j];
+			float grow = Smooth(delay, delay + 1.0f, t);
+			grow = 1f - (1f - grow) * (1f - grow);
+			// 每个头各自慢慢摆；探头时一起往朝向那边伸
+			Vector2 look = new Vector2(lx * _face, ly).Normalized();
+			Vector2 sway = new(Mathf.Sin(t * 1.3f + i * 1.9f) * 0.05f * T, Mathf.Sin(t * 1.7f + i * 2.6f) * 0.035f * T);
+			Vector2 headP = new Vector2(hx * _face * T, hy * T) + sway + look * lunge * 0.28f * T + new Vector2(0f, diss * 0.15f * T);
+			Vector3 baseP = Ring(ang, t);
+			Vector3 head3 = new(headP.X, headP.Y, z);
+			float H = baseP.Y - headP.Y;
+			// S 形的脖子：先往外鼓，再往回弯，最后顺着头的朝向进去
+			float outward = (hx >= 0f ? 1f : -1f) * _face;
+			Vector3 c1 = baseP + new Vector3(outward * 0.32f * T, -H * 0.42f, 0f);
+			Vector3 c2 = head3 - new Vector3(look.X, look.Y, 0f) * 0.45f * T + new Vector3(-outward * 0.15f * T, 0.12f * T, 0f);
+			c1.Z = baseP.Z * 0.5f + z * 0.5f;
+			c2.Z = z;
+
+			// 沿曲线 0 → grow 取点（头带着身体从根部长出来），按弧长均匀分
+			const int D = 48;
+			Vector3[] dense = new Vector3[D];
+			float[] acc = new float[D];
+			for (int k = 0; k < D; k++)
 			{
-				float u = headU - len * (1f - k / 63f);
-				dense[k] = PathOf(i, u, t);
+				float u = grow * k / (D - 1);
+				Vector3 pt = Bez(baseP, c1, c2, head3, u);
+				// 往头传的 S 波（根部和头附近为 0）
+				float env = Mathf.Sin(Mathf.Pi * Mathf.Clamp(u, 0f, 1f)) * 0.06f * T;
+				float wave = Mathf.Sin((u * 1.8f - t * 1.1f) * Mathf.Tau + i);
+				Vector3 tg = Bez(baseP, c1, c2, head3, Mathf.Min(1f, u + 0.01f)) - Bez(baseP, c1, c2, head3, Mathf.Max(0f, u - 0.01f));
+				Vector2 nrm = new Vector2(-tg.Y, tg.X).Normalized();
+				dense[k] = pt + new Vector3(nrm.X, nrm.Y, 0f) * wave * env;
 				acc[k] = k == 0 ? 0f : acc[k - 1] + new Vector2(dense[k].X - dense[k - 1].X, dense[k].Y - dense[k - 1].Y).Length();
 			}
 			int nb = N - HeadPts;
-			float total = acc[63];
+			float total = acc[D - 1];
 			int seg = 0;
 			for (int k = 0; k < nb; k++)
 			{
 				float target = total * k / (nb - 1);
-				while (seg < 62 && acc[seg + 1] < target) seg++;
+				while (seg < D - 2 && acc[seg + 1] < target) seg++;
 				float f = acc[seg + 1] > acc[seg] ? (target - acc[seg]) / (acc[seg + 1] - acc[seg]) : 0f;
-				_spine[i * N + k] = dense[seg].Lerp(dense[seg + 1], Mathf.Clamp(f, 0f, 1f));
+				_spine[j * N + k] = dense[seg].Lerp(dense[seg + 1], Mathf.Clamp(f, 0f, 1f));
 			}
-			Vector3 tip = _spine[i * N + nb - 1], prev = _spine[i * N + nb - 3];
-			Vector2 dir = new Vector2(tip.X - prev.X, tip.Y - prev.Y);
-			dir = dir.LengthSquared() > 1e-3f ? dir.Normalized() : new Vector2(_face, 0f);
-			float headLen = _girth[i] * 2.5f;
+			// 头：沿朝向（和脖子末端的切线混一点）伸出去一段直的
+			Vector3 tip = _spine[j * N + nb - 1], prev = _spine[j * N + nb - 3];
+			Vector2 tan = new Vector2(tip.X - prev.X, tip.Y - prev.Y);
+			tan = tan.LengthSquared() > 1e-3f ? tan.Normalized() : look;
+			Vector2 dir = tan.Lerp(look, 0.6f * grow).Normalized();
+			float headLen = g * 3.1f;
 			for (int k = 1; k <= HeadPts; k++)
 			{
 				Vector2 hp = new Vector2(tip.X, tip.Y) + dir * headLen * k / HeadPts;
-				_spine[i * N + nb - 1 + k] = new Vector3(hp.X, hp.Y, tip.Z);
+				_spine[j * N + nb - 1 + k] = new Vector3(hp.X, hp.Y, tip.Z);
 			}
-			// 眼睛：头根往前 40%，偏朝上那一侧
 			Vector2 up = new Vector2(dir.Y, -dir.X);
 			if (up.Y > 0f) up = -up;
-			Vector2 eye = new Vector2(tip.X, tip.Y) + dir * headLen * 0.42f + up * _girth[i] * 0.3f;
-			_eyes[i] = new Vector3(eye.X, eye.Y, Smooth(start + 0.6f, start + 1.2f, t) * (1f - diss) * (i == 0 ? 0.7f : 0.35f));
+			_hup[j] = up;
+			Vector2 eye = new Vector2(tip.X, tip.Y) + dir * headLen * 0.3f + up * g * 0.32f;
+			_eyes[j] = new Vector3(eye.X, eye.Y, Smooth(delay + 0.5f, delay + 1.0f, t) * (1f - diss) * 0.75f);
+			_vis[j] = Smooth(delay, delay + 0.25f, t) * (1f - diss * 0.6f);
 		}
-		foreach (ShaderMaterial m in new[] { _frontM, _backM })
+
+		for (int j = 0; j < Strands; j++)
 		{
-			m.SetShaderParameter("spine", _spine);
-			m.SetShaderParameter("girth", _girth);
-			m.SetShaderParameter("vis", _vis);
-			m.SetShaderParameter("eyes", _eyes);
-			m.SetShaderParameter("dissolve", diss);
-			m.SetShaderParameter("ground", 0.05f * _tall);
+			float m = _girth[j] * 3f;
+			Vector2 lo = new(1e9f, 1e9f), hi = new(-1e9f, -1e9f);
+			for (int k = 0; k < N; k++)
+			{
+				Vector3 q = _spine[j * N + k];
+				lo = new Vector2(Mathf.Min(lo.X, q.X), Mathf.Min(lo.Y, q.Y));
+				hi = new Vector2(Mathf.Max(hi.X, q.X), Mathf.Max(hi.Y, q.Y));
+			}
+			_box[j] = new Vector4(lo.X - m, lo.Y - m, hi.X + m, hi.Y + m);
 		}
-		_airM.SetShaderParameter("amount", Smooth(0f, 0.45f, t) * (1f - Smooth(2.5f, 3.1f, t)));
+		foreach (ShaderMaterial mat in new[] { _frontM, _backM })
+		{
+			mat.SetShaderParameter("spine", _spine);
+			mat.SetShaderParameter("box", _box);
+			mat.SetShaderParameter("girth", _girth);
+			mat.SetShaderParameter("vis", _vis);
+			mat.SetShaderParameter("hup", _hup);
+			mat.SetShaderParameter("eyes", _eyes);
+			mat.SetShaderParameter("dissolve", diss);
+			mat.SetShaderParameter("ground", 0.06f * T);
+		}
+		_airM.SetShaderParameter("amount", Smooth(0f, 0.45f, t) * (1f - Smooth(2.6f, 3.2f, t)));
 	}
 }
