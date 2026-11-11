@@ -738,8 +738,7 @@ void fragment() {
 		float eyes = 0.45f + 0.1f * Mathf.Sin(_t * 2f + i);
 		if (turn > 0f)
 		{
-			BendNeck(i, enemyDir, turn);
-			eyes = Mathf.Max(eyes, turn);
+			eyes = Mathf.Max(eyes, turn);   // 用户：出场时五个头一起转向敌人再扭回去很怪 → 不再转头，只让眼睛亮一下
 		}
 		Vector4 hb4 = _spine[i * N + nb - 1];
 		Vector2 hb = new(hb4.X, hb4.Y);
