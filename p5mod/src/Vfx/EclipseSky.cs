@@ -52,9 +52,9 @@ void fragment() {
 	// 日冕
 	float corona = exp(-max(r - R, 0.0) / mix(0.014, 0.022, blend)) * step(R, r) * 0.8;
 	float halo = exp(-max(r - R, 0.0) / mix(0.2, 0.26, blend));
-	float rays = pow(noise(vec2(ang * 9.0, clock * 0.05)), 3.0) * exp(-max(r - R, 0.0) / 0.7) * (1.0 - cloud * 0.8) * mix(smoothstep(ground - 0.02, ground - 0.25, uv.y), smoothstep(ground + 0.2, ground - 0.4, uv.y), blend);
+	float rays = pow(noise(vec2(ang * 9.0, clock * 0.05)), 3.0) * exp(-max(r - R, 0.0) / 0.7) * (1.0 - cloud * mix(0.8, 0.1, blend)) * mix(smoothstep(ground - 0.02, ground - 0.25, uv.y), smoothstep(ground + 0.2, ground - 0.4, uv.y), blend);
 	vec3 light = vec3(1.0, 0.85, 0.75) * corona * 1.4 + vec3(0.9, 0.08, 0.06) * (halo * 0.9 + rays * 0.55);
-	light *= 1.0 - cloud * 0.6;
+	light *= 1.0 - cloud * mix(0.6, 0.08, blend);   // 群蛇形态（用户：云别挡光）：光穿过云
 	col += light;
 	// 日冕的光洒满整个战场（用户：光影在中间断层）：从日蚀往下、往两边一大片暗红的泛光，地面被照出一大片暖红
 	float wash = exp(-r / 0.75);
@@ -86,8 +86,10 @@ void fragment() {
 	// 横过日蚀的一缕薄云
 	float veil = smoothstep(0.45, 0.8, fbm(vec2(uv.x * 3.0 - clock * 0.02, (uv.y - sun.y) * 14.0 + 2.0))) * exp(-pow((uv.y - sun.y - 0.01) / 0.05, 2.0));
 	cloud = max(cloud, veil * 0.8);
-	col = mix(col, cc, cloud * 0.75);
-	a = max(a, cloud * 0.75);
+	// 群蛇形态：云更薄更透、被日冕照亮边，光从云里透过来，不截出一块暗的
+	cc = mix(cc, cc + vec3(0.55, 0.07, 0.07) * near * smoothstep(0.35, 0.8, c2) * 0.6 + light * 0.6, blend);
+	col = mix(col, cc, cloud * mix(0.75, 0.38, blend));
+	a = max(a, cloud * mix(0.75, 0.38, blend));
 	// 一层很淡的天雾盖在最上面，把日蚀和天色揉在一起
 	float haze = fbm(vec2(uv.x * 1.5 + clock * 0.01, uv.y * 3.0));
 	col = mix(col, vec3(0.3, 0.03, 0.05), 0.18 * haze * (1.0 - smoothstep(0.4, 0.75, uv.y)));
