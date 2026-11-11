@@ -723,6 +723,12 @@ public partial class Preview : Node2D
 				o?.Set(tt, ltn, Mathf.Min(1f, tt / 0.3f));
 			});
 		},
+		["mist_serpent"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.3, () => p._joker?.Play("cast_glove"));
+			p.At(0.55, () => { Sfx.Play(Sfx.SerpentRise, 0.62f); MistSerpent.Play(p._front, p._back, JokerFeet, tall, 1f, Enemy + new Vector2(0f, -170f)); });
+		},
 		["buffs"] = p =>
 		{
 			float tall = (JokerFeet - Pose(815f, 120f)).Length();
