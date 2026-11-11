@@ -27,7 +27,8 @@ uniform float reveal = 1.0;            // 0 → 1：从 from_uv 往外漫开（�
 uniform vec2 from_uv = vec2(0.25, 0.7);
 uniform float desat = 0.0;             // 压饱和度（群蛇形态：用户说原来的太艳）
 uniform float cover = 0.4;             // 底色的最低覆盖（群蛇形态：盖实一点，不透出原来的背景）
-uniform float disk_r = 0.082;          // 黑日半径（群蛇形态：用户说黑的面积太大 → 缩小一半，日冕不变）
+uniform float disk_r = 0.082;          // 黑日半径
+uniform float bleed = 0.0;             // 群蛇形态（用户：太阳上黑的面积太多不好看）：黑只留在中心一小块，往外过渡成暗红，日冕的光往里渗，盘面上慢慢流动的暗红纹
 uniform float blend = 0.0;             // 天到地的过渡（群蛇形态：用户说中间光影断层 → 光束和泛光一直柔和地落到地面，云没有硬的下边）
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
@@ -70,7 +71,11 @@ void fragment() {
 	// 黑日（用户 2026-11-10：太突兀 → 融进天色）：边缘柔一点，不是纯黑而是被暗红的天光蒙了一层，环是暗红偏亮而不是白热
 	float disk = 1.0 - smoothstep(R - 0.006 * (R / 0.082 + 0.3), R + 0.004, r);
 	vec3 face = mix(vec3(0.05, 0.0, 0.012), vec3(0.2, 0.02, 0.03), smoothstep(R * 0.3, R, r));
-	col = mix(col, face, disk * 0.82);
+	float swirl = noise(vec2(ang * 3.0 + clock * 0.06, r / R * 3.0 - clock * 0.1)) * 0.6 + noise(d / R * 4.0 + clock * 0.05) * 0.4;
+	float lit = pow(smoothstep(R * 0.1, R * 0.95, r + (swirl - 0.5) * R * 0.3), 1.15);
+	vec3 bled = mix(vec3(0.03, 0.0, 0.008), vec3(0.62, 0.07, 0.07), lit) + vec3(0.9, 0.25, 0.15) * pow(lit, 4.0) * 0.5;
+	face = mix(face, bled, bleed);
+	col = mix(col, face, disk * mix(0.82, 1.0, bleed));
 	a = max(a, disk * 0.82);
 	float rim = exp(-pow((r - R) / 0.006, 2.0));
 	float bead = pow(max(0.0, cos(ang - 0.7)), 24.0) * exp(-pow((r - R) / 0.01, 2.0));
