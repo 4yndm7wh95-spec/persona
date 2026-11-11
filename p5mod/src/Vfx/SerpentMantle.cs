@@ -38,6 +38,8 @@ uniform float girth[5];
 uniform vec2 hup[5];
 uniform vec3 eyes[5];           // xy 位置，z 亮度
 uniform vec2 origin;
+uniform vec3 nest;               // 蛇巢：xy 中心（相对脚底），z 半径；五条蛇的尾巴都收进这一团咒烟
+uniform float nest_a = 0.0;
 uniform vec2 size;
 uniform float side = 1.0;
 uniform float clock = 0.0;
@@ -195,12 +197,92 @@ void fragment() {
 			}
 		}
 	}
+	// 蛇巢（背景层，在蛇后面）：Joker 身后一团翻滚的咒烟，里面零星透出暗红的光，往上飘起烟丝
+	if (side < 0.0 && nest_a > 0.0) {
+		vec2 dv = (p - nest.xy) / nest.z;
+		float d = length(dv * vec2(0.85, 1.15));
+		float nn = fbm(dv * 1.6 + vec2(clock * 0.15, clock * 0.35));
+		float nf = vn(dv * 4.5 - vec2(0.0, clock * 0.8));
+		float body = smoothstep(1.0, 0.25, d + (nn - 0.5) * 0.6 + (nf - 0.5) * 0.12);
+		float rise = smoothstep(0.5, 0.85, fbm(vec2(dv.x * 2.0, dv.y * 1.2 + clock * 0.6) + 4.0)) * smoothstep(1.9, 0.6, d) * smoothstep(0.6, -0.6, dv.y) * 0.5;
+		vec3 nc = mix(vec3(0.015, 0.003, 0.007), vec3(0.09, 0.016, 0.024), smoothstep(0.35, 0.8, nn));
+		nc += vec3(0.4, 0.035, 0.05) * smoothstep(0.7, 0.9, nf) * smoothstep(0.9, 0.3, d) * 0.3;
+		over(acc, nc, clamp(body * 0.92 + rise * (1.0 - body), 0.0, 1.0) * nest_a);
+	}
 	acc.rgb += glow * (1.0 - acc.a * 0.4);
 	acc.a = clamp(acc.a + dot(glow, vec3(0.33)) * 0.6, 0.0, 1.0);
 	if (acc.a <= 0.002) discard;
 	COLOR = acc;
 }
 " };
+
+
+	private static Shader? _skyShader;
+
+	/// <summary>
+	/// 场景（用户：单这几条蛇出来很违和，要场景变换；另一个会话的日蚀不错只是太艳）：暗下来的天和地——
+	/// 一片暗色从 Joker 脚下往外漫开盖满画面（边是烟），天上一轮暗的日蚀（黑日 + 一圈暗红的细环 + 很淡的日冕和几缕光），
+	/// 飘过的乌云边被日冕照出一点暗红，贴地一层暗红的雾，四角压暗。都压着饱和度，只是把战场染成「咒怨里」的气氛。
+	/// </summary>
+	private static Shader SkyShader => _skyShader ??= new Shader { Code = @"
+shader_type canvas_item;
+render_mode blend_premul_alpha;
+uniform float amount = 0.0;
+uniform float reveal = 0.0;      // 0 → 1：从 Joker 往外漫开
+uniform vec2 from_uv = vec2(0.25, 0.75);
+uniform vec2 sun = vec2(0.45, 0.14);
+uniform float ground = 0.78;
+uniform float aspect = 1.7778;
+uniform float clock = 0.0;
+float h21(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+float vn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(h21(i), h21(i + vec2(1, 0)), f.x), mix(h21(i + vec2(0, 1)), h21(i + vec2(1, 1)), f.x), f.y); }
+float fbm(vec2 p) { return vn(p) * 0.5 + vn(p * 2.03 + 5.1) * 0.3 + vn(p * 4.1 + 1.7) * 0.2; }
+void fragment() {
+	vec2 uv = UV;
+	vec2 asp = vec2(aspect, 1.0);
+	float rd = length((uv - from_uv) * asp);
+	float en = fbm(uv * asp * 3.5 + vec2(clock * 0.15, 0.0));
+	float R0 = reveal * 2.3;
+	float spread = smoothstep(R0, R0 - 0.3, rd + (en - 0.5) * 0.35);
+	float sky = 1.0 - smoothstep(ground - 0.3, ground + 0.02, uv.y);
+	vec3 col = mix(vec3(0.028, 0.006, 0.012), vec3(0.045, 0.01, 0.016), uv.y);
+	float a = mix(0.36, 0.55, sky);
+	// 日蚀
+	vec2 d = (uv - sun) * asp;
+	float r = length(d);
+	const float R = 0.048;
+	float ang = atan(d.y, d.x);
+	float corona = exp(-max(r - R, 0.0) / 0.05) * step(R, r);
+	float rays = pow(vn(vec2(ang * 6.0, clock * 0.04)), 3.0) * exp(-max(r - R, 0.0) / 0.22) * step(R, r) * sky;
+	float halo = exp(-max(r - R, 0.0) / 0.16) * step(R, r);
+	col += vec3(0.4, 0.05, 0.06) * (corona * 0.55 + rays * 0.3 + halo * 0.25);
+	a = max(a, halo * 0.35);
+	float rim = exp(-pow((r - R) / 0.0035, 2.0));
+	col += vec3(0.55, 0.1, 0.09) * rim * 0.55;
+	float disk = 1.0 - smoothstep(R - 0.003, R + 0.002, r);
+	col = mix(col, vec3(0.01, 0.002, 0.004), disk);
+	a = max(a, max(disk * 0.95, rim * 0.6));
+	// 乌云：往一边飘，靠近日蚀的云边被照出一点暗红
+	float c1 = fbm(vec2(uv.x * aspect * 1.2 - clock * 0.012, uv.y * 4.0));
+	float c2 = fbm(vec2(uv.x * aspect * 2.4 - clock * 0.025, uv.y * 7.0 + 3.0));
+	float cloud = smoothstep(0.5, 0.8, c1 * 0.7 + c2 * 0.45) * sky * (1.0 - smoothstep(0.45, 0.7, uv.y));
+	vec3 cc = vec3(0.02, 0.004, 0.008) + vec3(0.32, 0.04, 0.05) * exp(-r / 0.3) * smoothstep(0.5, 0.9, c2);
+	col = mix(col, cc, cloud * 0.8);
+	a = max(a, cloud * 0.75);
+	// 贴地的暗红雾
+	float gm = smoothstep(ground - 0.14, ground + 0.06, uv.y) * (0.45 + 0.55 * fbm(vec2(uv.x * aspect * 3.0 - clock * 0.05, uv.y * 9.0)));
+	col += vec3(0.16, 0.02, 0.03) * gm * 0.45;
+	// 四角压暗
+	float vig = smoothstep(0.45, 1.15, length((uv - vec2(0.5, 0.48)) * vec2(aspect * 0.58, 1.0)));
+	a = max(a, vig * 0.72);
+	// 漫开的那道边：一圈翻滚的暗烟
+	float edge = smoothstep(0.18, 0.0, abs(rd + (en - 0.5) * 0.35 - (R0 - 0.15))) * step(0.001, reveal) * (1.0 - step(0.999, reveal));
+	col = mix(col, vec3(0.02, 0.004, 0.008), edge * 0.6);
+	a = max(a, edge * 0.8 * spread);
+	float k = amount * spread;
+	COLOR = vec4(col * a * k, a * k);
+}" };
 
 	/// <summary>
 	/// 五条蛇各自的游动路线（第三版，用户：一层一层的像魂环，太怪；分布自然一些、大概围绕就行；不要只有水平运动，要斜着上下）。
@@ -234,7 +316,11 @@ void fragment() {
 	private readonly float[] _mawA = new float[Slots];
 	private readonly Queue<Vector2> _targets = new();
 	private readonly Attack?[] _attacks = new Attack?[Slots];
-	private float _t, _show = -1f, _intro = -1f, _fadeOut = -1f;
+	private float _t, _show = -1f, _intro = -1f, _fadeOut = -1f, _reveal;
+	private readonly float[] _tau = new float[Count];        // 每条蛇自己的时间（出动时会快一下）
+	private readonly Vector2[] _lunge = new Vector2[Count];  // 出动时朝敌人窜出去的偏移
+	private readonly Node2D _skyRoot;
+	private readonly ShaderMaterial _skyM;
 	private int _nextSerpent;
 
 	private sealed class Attack
@@ -280,6 +366,12 @@ void fragment() {
 		(_frontRoot, _frontM) = Make(front, feet, rect, 1f, "P5SerpentsFront");
 		(_backRoot, _backM) = Make(back, feet, rect, -1f, "P5SerpentsBack");
 		for (int i = 0; i < Count; i++) _girth[i] = 0.092f * tall * Orbits[i].Size;   // 修长：细一些、长一些
+		_skyRoot = Fx.ScreenRoot(back, "P5SerpentSky");
+		back.MoveChild(_skyRoot, 0);
+		_skyM = new ShaderMaterial { Shader = SkyShader };
+		var skyRect = new ColorRect { Size = Fx.Screen(back), Material = _skyM, MouseFilter = Control.MouseFilterEnum.Ignore };
+		_skyRoot.AddChild(skyRect);
+		Fx.Clock(skyRect);
 		_tree = (SceneTree)Engine.GetMainLoop();
 		_tree.ProcessFrame += Tick;
 		_frontRoot.TreeExiting += Detach;
@@ -310,7 +402,6 @@ void fragment() {
 		_show = 1f;
 		if (_body() is var (feet, tall, _))
 		{
-			Glow.Gather(_back, feet + new Vector2(0f, -0.5f * tall), Pal5.Deep, 1.6f * tall, 0.18f, 1f);
 			Fx.After(_frontRoot, 0.18, () =>
 			{
 				Glow.Flash(_back, feet + new Vector2(0f, -0.6f * tall), Pal5.Deep, 2.6f * tall, 0.5f);
@@ -338,6 +429,7 @@ void fragment() {
 		Detach();
 		if (GodotObject.IsInstanceValid(_frontRoot)) _frontRoot.QueueFree();
 		if (GodotObject.IsInstanceValid(_backRoot)) _backRoot.QueueFree();
+		if (GodotObject.IsInstanceValid(_skyRoot)) _skyRoot.QueueFree();
 	}
 
 	private static float Smooth(float a, float b, float x) { float t = Mathf.Clamp((x - a) / (b - a), 0f, 1f); return t * t * (3f - 2f * t); }
@@ -364,6 +456,13 @@ void fragment() {
 		}
 		float dt = Mathf.Min((float)_frontRoot.GetProcessDeltaTime(), 0.1f);   // 游戏帧时间（顿帧、录屏时都对）
 		_t += dt;
+		for (int i = 0; i < Count; i++)
+		{
+			// 出动的那条：先猛地快一下，再慢下来（配合散成烟）
+			float boost = 0f;
+			if (AttackOf(i) is { } ak) boost = 5f * Smooth(0f, 0.07f, ak.T) * (1f - Smooth(0.07f, 0.4f, ak.T));
+			_tau[i] += dt * (1f + boost);
+		}
 		_show += dt;
 		if (_intro >= 0f) { _intro += dt; if (_intro > 2.2f) _intro = -1f; }
 		if (_fadeOut >= 0f)
@@ -374,6 +473,18 @@ void fragment() {
 		_frontRoot.GlobalPosition = feet;
 		_backRoot.GlobalPosition = feet;
 		float alpha = (_intro >= 0f ? 1f : Smooth(0f, 0.8f, _show)) * (_fadeOut >= 0f ? 1f - Smooth(0f, 0.8f, _fadeOut) : 1f);
+		// 场景：出场时从 Joker 脚下漫开（0.7s），静静浮现时淡入；能力没了一起淡掉
+		_reveal = _intro >= 0f ? Mathf.Max(_reveal, Ease5.OutQuint(Ease5.Seg(_intro, 0.05f, 0.75f))) : Mathf.Max(_reveal, Smooth(0f, 0.8f, _show));
+		Vector2 scr = Fx.Screen(_back);
+		Vector2 fs = Fx.ScreenPoint(_back, feet);
+		float tallS = T * _back.GetCanvasTransform().Scale.Y;
+		_skyM.SetShaderParameter("amount", _fadeOut >= 0f ? 1f - Smooth(0f, 0.8f, _fadeOut) : (_show > 0f || _intro >= 0f ? 1f : 0f));
+		_skyM.SetShaderParameter("reveal", _reveal);
+		_skyM.SetShaderParameter("aspect", scr.X / scr.Y);
+		_skyM.SetShaderParameter("from_uv", new Vector2(fs.X / scr.X, (fs.Y - 0.5f * tallS) / scr.Y));
+		_skyM.SetShaderParameter("ground", fs.Y / scr.Y);
+		_skyM.SetShaderParameter("sun", new Vector2(Mathf.Clamp((fs.X + face * tallS * 1.7f) / scr.X, 0.15f, 0.85f), 0.13f));
+		Vector2 nestP = new(-0.12f * face * T, -0.78f * T);
 
 		// 攻击：有目标、有空位、出场演完了 → 挑一条闲着的蛇
 		if (_targets.Count > 0 && _show > 0.6f && (_intro < 0f || _intro > 1.6f))
@@ -419,6 +530,8 @@ void fragment() {
 			mat.SetShaderParameter("eyes", _eyes);
 			mat.SetShaderParameter("unit", T);
 			mat.SetShaderParameter("diss", _diss);
+			mat.SetShaderParameter("nest", new Vector3(nestP.X, nestP.Y, 0.55f * T));
+			mat.SetShaderParameter("nest_a", alpha * (_intro >= 0f ? Smooth(0.05f, 0.4f, _intro) : 1f));
 			mat.SetShaderParameter("maw", _maw);
 			mat.SetShaderParameter("maw_a", _mawA);
 		}
@@ -450,7 +563,7 @@ void fragment() {
 		for (int k = 0; k < D; k++)
 		{
 			float back = k * step;
-			Vector3 v = Orbit(i, _t - back, T, face);
+			Vector3 v = Orbit(i, _tau[i] - back, T, face);
 			trail[k] = v;
 			acc[k] = k == 0 ? 0f : acc[k - 1] + new Vector2(v.X - trail[k - 1].X, v.Y - trail[k - 1].Y).Length();
 			if (acc[k] >= want) { used = k + 1; break; }
@@ -467,8 +580,14 @@ void fragment() {
 			// 沿身体往尾巴传的 S 波
 			float wave = Mathf.Sin(f * 9f - _t * 3.4f + i) * 0.065f * T * (0.25f + 0.75f * (1f - f));
 			v += new Vector3(wave * 0.4f, wave, 0f);
+			// 出动：朝敌人窜一下（越靠头越多）
+			v += new Vector3(_lunge[i].X, _lunge[i].Y, 0f) * Mathf.Pow(f, 1.5f);
+			// 一体：尾巴都收进 Joker 身后的蛇巢（同一团咒烟里伸出五个头）
+			float pull = 1f - Smooth(0f, 0.5f, f);
+			Vector3 nest3 = new(-0.12f * face * T + Mathf.Sin(_t * 0.7f + i * 1.3f) * 0.12f * T, -0.78f * T + Mathf.Cos(_t * 0.6f + i * 2.1f) * 0.1f * T, -0.5f);
+			v = v.Lerp(nest3, pull * pull * 0.92f);
 			v = chest.Lerp(v, grow);
-			float a = Smooth(0f, 0.16f, f) * alpha;
+			float a = Smooth(0f, 0.08f, f) * alpha;
 			_spine[i * N + k] = new Vector4(v.X, v.Y, v.Z, a * (_intro >= 0f ? Smooth(0f, 0.15f, grow) : 1f));
 		}
 		Vector4 hb4 = _spine[i * N + nb - 1], pr4 = _spine[i * N + nb - 4];
@@ -504,14 +623,19 @@ void fragment() {
 	/// </summary>
 	private void UpdateAttacks(float dt, Vector2 feet, float T)
 	{
-		for (int i = 0; i < Count; i++) _diss[i] = 0f;
+		for (int i = 0; i < Count; i++) { _diss[i] = 0f; _lunge[i] = Vector2.Zero; }
 		for (int s = 0; s < Slots; s++)
 		{
 			_mawA[s] = 0f;
 			if (_attacks[s] is not { } a) continue;
 			a.T += dt;
 			float t = a.T;
-			_diss[a.Serpent] = Smooth(0f, 0.3f, t) * (1f - Smooth(0.7f, 1.1f, t));
+			_diss[a.Serpent] = Smooth(0.06f, 0.32f, t) * (1f - Smooth(0.7f, 1.1f, t));
+			// 窜出去：0.12s 内冲出去，边冲边散；散完以后不再偏（重新聚起来时在原轨道上）
+			Vector3 hp = Orbit(a.Serpent, _tau[a.Serpent], T, 1f);
+			Vector2 toward = a.Target - new Vector2(hp.X, hp.Y);
+			float lk = Ease5.OutQuint(Ease5.Seg(t, 0f, 0.18f)) * (1f - Smooth(0.45f, 0.6f, t));
+			_lunge[a.Serpent] = toward.LimitLength(0.45f * T) * lk;
 			float k = Ease5.OutQuint(Ease5.Seg(t, 0.18f, 0.2f));
 			float op = Smooth(0.2f, 0.32f, t) * (1f - Smooth(0.4f, BiteAt, t));
 			_maw[s] = new Vector4(a.Target.X, a.Target.Y, k, op);
