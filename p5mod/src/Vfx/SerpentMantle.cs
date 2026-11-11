@@ -135,21 +135,26 @@ void fragment() {
 			float xg = hs * 3.4;                                     // 沿头的长度（单位：脖子半宽 g）
 			float off = acr;                                          // 横向（+ 朝上）
 			float mo = mouth[j];
-			float gw = (0.15 + 0.3 * max(mo, 0.0)) * smoothstep(0.3, 1.0, hs) * clamp(1.0 + mo * 6.0, 0.0, 1.0);
+			float gw = (0.24 + 0.28 * max(mo, 0.0)) * smoothstep(0.22, 0.8, hs) * clamp(1.0 + mo * 6.0, 0.0, 1.0);   // 微张：从嘴角往吻尖张开一道口子
 			float lipU = -0.05 + gw, lipL = -0.05 - gw;
-			float inMouth = smoothstep(gw + 0.04, gw - 0.03, abs(off + 0.05)) * smoothstep(0.3, 0.45, hs) * smoothstep(1.02, 0.9, hs);
-			vec3 mouthC = vec3(0.06, 0.006, 0.012) + vec3(0.42, 0.04, 0.06) * smoothstep(0.3, 0.8, fbm(vec2(xg * 2.0 - clock * 2.0, off * 4.0))) * (1.0 - dj);
+			float inMouth = smoothstep(gw + 0.04, gw - 0.03, abs(off + 0.05)) * smoothstep(0.22, 0.34, hs);
+			vec3 mouthC = mix(vec3(0.03, 0.003, 0.008), vec3(0.2, 0.02, 0.03), smoothstep(0.3, 0.9, hs)) + vec3(0.4, 0.04, 0.06) * smoothstep(0.35, 0.8, fbm(vec2(xg * 2.0 - clock * 2.0, off * 4.0))) * (1.0 - dj);   // 口腔：嘴角深、往吻尖透出暗红
 			cc = mix(cc, mouthC, inMouth * dens);
 			float fang = 0.0;
+			// 四颗獠牙：上下各一对（左右两颗是立体的：近的一颗在前、亮、长，远的一颗略靠后、暗、短一点）
+			float fangFar = 0.0;
 			for (int f = 0; f < 4; f++) {
 				bool upper = f < 2;
-				float fx = (upper ? (f == 0 ? 0.6 : 0.8) : (f == 2 ? 0.52 : 0.72)) * 3.4;
-				float L = upper ? 0.34 : 0.24;
-				float t = upper ? (lipU - off) / L : (off - lipL) / L;   // 从唇往缝里伸
+				bool far_ = f == 1 || f == 3;
+				float fx = (upper ? (far_ ? 0.7 : 0.78) : (far_ ? 0.63 : 0.71)) * 3.4;
+				float L = (upper ? 0.4 : 0.3) * (far_ ? 0.78 : 1.0);
+				float t = upper ? (lipU - off) / L : (off - lipL) / L;   // 从唇往口子里伸
 				float w = 0.1 * (1.0 - clamp(t, 0.0, 1.0)) + 0.02;
 				float d = abs(xg - fx + 0.08 * t) - w + (fine - 0.5) * 0.06;
-				fang = max(fang, smoothstep(0.07, -0.05, d) * smoothstep(-0.15, 0.05, t) * smoothstep(1.1, 0.6, t));
+				float m = smoothstep(0.07, -0.05, d) * smoothstep(-0.15, 0.05, t) * smoothstep(1.1, 0.6, t);
+				if (far_) fangFar = max(fangFar, m); else fang = max(fang, m);
 			}
+			fang = max(fang, fangFar * 0.5);
 			fang *= smoothstep(0.3, 0.5, hs) * (1.0 - dj);
 			vec3 fangC = mix(vec3(0.22, 0.07, 0.07), vec3(0.6, 0.36, 0.3), smoothstep(0.3, 0.8, nz2)) + vec3(0.2, 0.02, 0.03) * fang;
 			cc = mix(cc, fangC, fang * 0.85);
