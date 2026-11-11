@@ -733,12 +733,12 @@ public partial class Preview : Node2D
 				Sfx.Play(Sfx.SerpentRise, 0.62f);
 				SerpentMantle.Start(p._front, p._back, () => (JokerFeet, tall, 1f), live: true, intro: true);
 			});
-			Vector2[] hits = { Enemy + new Vector2(0f, -170f), Enemy2 + new Vector2(0f, -150f), Enemy3 + new Vector2(0f, -140f), Enemy + new Vector2(0f, -170f), Enemy2 + new Vector2(0f, -150f) };
+			(Vector2 E, float Up)[] hits = { (Enemy, 170f), (Enemy2, 150f), (Enemy3, 140f), (Enemy, 170f), (Enemy2, 150f) };
 			double[] when = { 3.4, 4.3, 4.55, 4.8, 6.0 };
 			for (int i = 0; i < hits.Length; i++)
 			{
-				Vector2 h = hits[i];
-				p.At(when[i], () => SerpentMantle.Current?.Strike(h));
+				var (e, up) = hits[i];
+				p.At(when[i], () => { p._enemies.TryGetValue(e, out Node2D? body); SerpentMantle.Current?.Strike(e + new Vector2(0f, -up), body); });
 			}
 		},
 		["buffs"] = p =>

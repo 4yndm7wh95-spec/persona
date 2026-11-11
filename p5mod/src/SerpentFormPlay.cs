@@ -46,7 +46,7 @@ public static class SerpentFormPlay
 
 	internal static void Triggered() => _triggeredMs = Time.GetTicksMsec();
 
-	/// <summary>能力触发后紧跟着的那次钝击特效：换成一条蛇吐法球。返回 true = 已经接管（原版不放）。</summary>
+	/// <summary>能力触发后紧跟着的那次钝击特效：换成一条蛇扑过去咬。返回 true = 已经接管（原版不放）。</summary>
 	internal static bool TakeHit(Creature target)
 	{
 		if (Time.GetTicksMsec() - _triggeredMs > 600 || SerpentMantle.Current is not { } m || NCombatRoom.Instance is not NCombatRoom room)
@@ -58,7 +58,7 @@ public static class SerpentFormPlay
 			return false;
 		}
 		_triggeredMs = 0;
-		m.Strike(n.Hitbox.GetGlobalRect().GetCenter());
+		m.Strike(n.Hitbox.GetGlobalRect().GetCenter(), n.Visuals);
 		return true;
 	}
 }

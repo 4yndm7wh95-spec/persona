@@ -45,8 +45,8 @@ uniform float side = 1.0;
 uniform float clock = 0.0;
 uniform float unit = 300.0;     // Joker 身高（像素）
 uniform float diss[5];          // 每条蛇散成烟的程度（攻击时 0 → 1 → 0）
-uniform vec4 maw[3];            // 敌人身上的咬合：xy 中心，z 飞进来（0～1），w 合上（0 张开 → 1 咬死）
-uniform float maw_a[3];         // 大嘴的浓度（散掉时往 0 走）
+uniform vec4 puff[6];           // 咒烟团：xy 中心，z 进度（0～1；< 0 没有），w 大小（像素；负数 = 咬中那一团，中间带一下光）
+uniform float mouth[5];         // 嘴张多大：0 平时微张，1 张到最大，< 0 合上
 
 float h21(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float vn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
@@ -134,7 +134,8 @@ void fragment() {
 			float hs = (bs - HEAD0) / (1.0 - HEAD0);
 			float xg = hs * 3.4;                                     // 沿头的长度（单位：脖子半宽 g）
 			float off = acr;                                          // 横向（+ 朝上）
-			float gw = 0.15 * smoothstep(0.3, 1.0, hs);
+			float mo = mouth[j];
+			float gw = (0.15 + 0.3 * max(mo, 0.0)) * smoothstep(0.3, 1.0, hs) * clamp(1.0 + mo * 6.0, 0.0, 1.0);
 			float lipU = -0.05 + gw, lipL = -0.05 - gw;
 			float inMouth = smoothstep(gw + 0.04, gw - 0.03, abs(off + 0.05)) * smoothstep(0.3, 0.45, hs) * smoothstep(1.02, 0.9, hs);
 			vec3 mouthC = vec3(0.06, 0.006, 0.012) + vec3(0.42, 0.04, 0.06) * smoothstep(0.3, 0.8, fbm(vec2(xg * 2.0 - clock * 2.0, off * 4.0))) * (1.0 - dj);
@@ -160,58 +161,23 @@ void fragment() {
 		float e2 = dot(ed, ed);
 		glow += (vec3(1.0, 0.55, 0.25) * exp(-e2 / pow(g * 0.11, 2.0)) * 1.2 + vec3(0.9, 0.12, 0.08) * exp(-e2 / pow(g * 0.4, 2.0)) * 0.45) * eyes[j].z * (1.0 - dj);
 	}
-	// 敌人身上：咬合（用户选的 B：不画蛇头）——上下两排烟做的獠牙从两边飞进来、交错着猛地合上，合缝亮一下、留一排红的牙印，
-	// 然后两排牙散成烟。牙也是烟（近黑、边上透暗红），没有眼睛、不成一张脸。
+	// 咒烟团（前景层）：蛇从烟里聚出来的那一团、咬中时往外炸开的那一团、蛇散掉时的那一团。翻滚着变大、变淡
 	if (side > 0.0) {
-		float T = unit;
-		for (int i = 0; i < 3; i++) {
-			if (maw_a[i] <= 0.0) continue;
-			float k = maw[i].z, c = maw[i].w, ma = maw_a[i];
-			float S = T * 0.5;
-			vec2 q = (p - maw[i].xy) / S;
-			if (abs(q.x) > 1.8 || abs(q.y) > 2.2) continue;
-			float gone = 1.0 - ma;
-			float n = fbm(q * 2.6 + vec2(0.0, clock * 0.7) + float(i) * 9.0);
-			float n2 = fbm(q * 5.0 - clock * 1.6 + float(i) * 3.0);
-			float gap = mix(0.75, 0.0, c) * mix(1.5, 1.0, k);            // 从远处飞进来，再合上
-			float bow = 0.36 * (1.0 - q.x * q.x);
-			float rootU = -gap * 0.5 - bow, rootL = gap * 0.5 + bow;    // 上颚 / 下颚的牙根线（屏幕 y 朝下）
-			float endFade = smoothstep(1.05, 0.7, abs(q.x));
-			// 牙：上面 5 颗朝下，下面 4 颗朝上，交错
-			float teeth = 0.0, tip = 0.0;
-			for (int t = 0; t < 9; t++) {
-				bool up = t < 5;
-				float xi = up ? (float(t) - 2.0) * 0.3 : (float(t - 5) - 1.5) * 0.3;
-				float root = up ? -gap * 0.5 - 0.36 * (1.0 - xi * xi) : gap * 0.5 + 0.36 * (1.0 - xi * xi);
-				float len = 0.5 * (1.0 - 0.3 * abs(xi));
-				float dy = (q.y - root) * (up ? 1.0 : -1.0);
-				float tt = dy / len;
-				float w = 0.09 * (1.0 - clamp(tt, 0.0, 1.0));
-				float d = abs(q.x - xi + 0.04 * tt * tt * sign(xi + 0.001)) - w + (n2 - 0.5) * 0.03;
-				float in_ = smoothstep(0.02, -0.02, d) * smoothstep(-0.05, 0.02, dy) * smoothstep(len + 0.02, len - 0.06, dy);
-				teeth = max(teeth, in_);
-				tip = max(tip, exp(-dot(q - vec2(xi, root + (up ? len : -len)), q - vec2(xi, root + (up ? len : -len))) / 0.004));
-			}
-			// 牙龈：沿牙根线的一道烟带（往外一侧）
-			float gumU = abs(q.y - (rootU - 0.14)) - 0.16 * endFade;
-			float gumL = abs(q.y - (rootL + 0.14)) - 0.16 * endFade;
-			float gums = smoothstep(0.08, -0.12, min(gumU, gumL) + (n - 0.5) * 0.16) * endFade;
-			float erode = gone * (0.6 + n * 1.6);
-			teeth *= smoothstep(0.0, 0.25, 1.0 - erode) * endFade;
-			gums *= smoothstep(0.0, 0.3, 1.0 - erode);
-			// 颜色：近黑的烟，边上透暗红；牙比牙龈亮一点（暗的骨红）
-			vec3 tc = mix(vec3(0.03, 0.006, 0.01), vec3(0.32, 0.12, 0.11), smoothstep(0.35, 0.85, n)) ;
-			vec3 gc = mix(vec3(0.012, 0.003, 0.006), vec3(0.08, 0.014, 0.02), smoothstep(0.4, 0.85, n)) + vec3(0.45, 0.04, 0.06) * smoothstep(0.62, 0.8, n2) * smoothstep(-0.12, 0.0, min(gumU, gumL)) * 0.7;   // 只在牙龈边上零星透光
-			// 四周一团暗烟（让它有分量，不是两排剪纸）
-			float shroud = smoothstep(1.4, 0.3, length(q * vec2(0.75, 1.0 / (0.6 + gap * 0.5)))) * (0.45 + 0.55 * n) * k * 0.45;
-			over(acc, tc, teeth * 0.95 * ma);
-			over(acc, gc, gums * 0.92 * ma);
-			over(acc, vec3(0.02, 0.004, 0.008), clamp(shroud * (1.0 - erode), 0.0, 1.0) * ma);
-			// 合上的一下：合缝一道光 + 一排红的牙印，慢慢退掉
-			float shut = smoothstep(0.85, 1.0, c);
-			float seam = exp(-pow((q.y + (n2 - 0.5) * 0.05) / 0.035, 2.0)) * endFade * shut * ma;
-			glow += vec3(1.0, 0.35, 0.25) * seam * 1.1 + vec3(0.9, 0.08, 0.08) * tip * shut * (0.6 + 0.8 * gone) * (1.0 - gone * gone) * 1.2;
-			glow += vec3(0.6, 0.05, 0.06) * smoothstep(0.02, -0.02, min(gumU, gumL) + 0.05) * smoothstep(0.6, 0.9, n2) * 0.3 * ma;
+		for (int i = 0; i < 6; i++) {
+			if (puff[i].z < 0.0) continue;
+			float k = puff[i].z;
+			float sz = abs(puff[i].w);
+			vec2 dv = (p - puff[i].xy) / sz;
+			float d = length(dv);
+			if (d > 2.2) continue;
+			float pn = fbm(dv * 2.4 + vec2(0.0, -k * 1.6) + float(i) * 7.0);
+			float pf = vn(dv * 6.0 - k * 3.0 + float(i));
+			float R = 0.45 + 0.75 * ease3(k);
+			float body = smoothstep(R, R * 0.25, d + (pn - 0.5) * 0.6 + (pf - 0.5) * 0.12) * pow(1.0 - k, 1.3);
+			float hole = puff[i].w < 0.0 ? mix(1.0, smoothstep(0.0, R * 0.7, d), smoothstep(0.0, 0.4, k)) : 1.0;   // 炸开的那团中间先空
+			vec3 pc = mix(vec3(0.015, 0.003, 0.007), vec3(0.09, 0.016, 0.024), smoothstep(0.35, 0.8, pn)) + vec3(0.45, 0.04, 0.06) * smoothstep(0.62, 0.85, pf) * (1.0 - k) * 0.6;
+			over(acc, pc, clamp(body * hole, 0.0, 1.0) * 0.9);
+			if (puff[i].w < 0.0) glow += vec3(1.0, 0.35, 0.22) * exp(-d * d / 0.08) * pow(1.0 - k, 5.0) * 0.9;
 		}
 	}
 
@@ -265,9 +231,9 @@ void fragment() {
 	private readonly Vector2[] _hup = new Vector2[Count];
 	private readonly Vector3[] _eyes = new Vector3[Count];
 	private readonly float[] _diss = new float[Count];
-	private readonly Vector4[] _maw = new Vector4[Slots];
-	private readonly float[] _mawA = new float[Slots];
-	private readonly Queue<Vector2> _targets = new();
+	private readonly Vector4[] _puff = new Vector4[6];
+	private readonly float[] _mouth = new float[Count];
+	private readonly Queue<(Vector2 At, Node2D? Body)> _targets = new();
 	private readonly Attack?[] _attacks = new Attack?[Slots];
 	private float _t, _show = -1f, _intro = -1f, _fadeOut = -1f, _reveal;
 	private readonly float[] _tau = new float[Count];        // 每条蛇自己的时间（出动时会快一下）
@@ -281,7 +247,8 @@ void fragment() {
 		public int Serpent;
 		public Vector2 Target;            // 相对脚底
 		public float T;
-		public bool Bit;
+		public bool Bit, Emerged, Faded;
+		public Node2D? Body;              // 被咬的敌人（咬中时闪一下白）
 	}
 
 	/// <summary>
@@ -325,6 +292,7 @@ void fragment() {
 		var skyRect = new ColorRect { Size = Fx.Screen(back), Material = _skyM, MouseFilter = Control.MouseFilterEnum.Ignore };
 		_skyRoot.AddChild(skyRect);
 		Fx.Clock(skyRect);
+		for (int k = 0; k < _puff.Length; k++) _puff[k] = new Vector4(0f, 0f, -1f, 1f);
 		_tree = (SceneTree)Engine.GetMainLoop();
 		_tree.ProcessFrame += Tick;
 		_frontRoot.TreeExiting += Detach;
@@ -366,9 +334,9 @@ void fragment() {
 	}
 
 	/// <summary>能力触发：一条蛇朝 target（层坐标，敌人身体中间）吐一颗法球。</summary>
-	public void Strike(Vector2 target)
+	public void Strike(Vector2 target, Node2D? body = null)
 	{
-		if (_targets.Count < 8) _targets.Enqueue(target);
+		if (_targets.Count < 8) _targets.Enqueue((target, body));
 	}
 
 	private void Detach()
@@ -460,13 +428,21 @@ void fragment() {
 				}
 				if (serp < 0) break;
 				_nextSerpent = (serp + 2) % Count;
-				_attacks[s] = new Attack { Serpent = serp, Target = _targets.Dequeue() - feet };
+				var (tat, tbody) = _targets.Dequeue();
+				_attacks[s] = new Attack { Serpent = serp, Target = tat - feet, Body = tbody };
 				Sfx.Play(Sfx.SerpentMaw, 0.8f, BiteAt - 0.01f);   // 只有咬合的声音（用户：冲出来不要音效）
 				break;
 			}
 		}
 
-		for (int i = 0; i < Count; i++) PoseSerpent(i, T, face, alpha);
+		for (int i = 0; i < Count; i++)
+		{
+			// 扑咬时那条蛇放大一些（更有气势），回到轨道上恢复
+			Attack? sa = AttackOf(i);
+			float big = sa != null ? Smooth(EmergeAt - 0.02f, EmergeAt + 0.02f, sa.T) * (1f - Smooth(LeaveAt - 0.02f, LeaveAt, sa.T)) : 0f;
+			_girth[i] = 0.068f * T * Orbits[i].Size * (1f + 0.45f * big);
+			PoseSerpent(i, T, face, alpha);
+		}
 		UpdateAttacks(dt, feet, T);
 
 		for (int j = 0; j < Count; j++)
@@ -492,8 +468,8 @@ void fragment() {
 			mat.SetShaderParameter("diss", _diss);
 			mat.SetShaderParameter("nest", new Vector3(nestP.X, nestP.Y, 0.55f * T));
 			mat.SetShaderParameter("nest_a", alpha * (_intro >= 0f ? Smooth(0.05f, 0.4f, _intro) : 1f));
-			mat.SetShaderParameter("maw", _maw);
-			mat.SetShaderParameter("maw_a", _mawA);
+			mat.SetShaderParameter("puff", _puff);
+			mat.SetShaderParameter("mouth", _mouth);
 		}
 	}
 
@@ -503,9 +479,62 @@ void fragment() {
 		return null;
 	}
 
+	// 攻击：0～0.28 在原轨道上猛窜、散成烟 → 0.28 敌人斜上方一团咒烟，这条蛇的头和前半身从烟里聚出来、往后一缩、嘴张大
+	// → 0.38～0.46 猛地扑下去咬（BiteAt）→ 0.5～0.75 散成烟 → 0.78 起回到原轨道上慢慢聚起来
+	private const float EmergeAt = 0.28f, LeaveAt = 0.78f;
+
+	/// <summary>扑咬时的样子：尾巴藏在敌人斜上方的烟团里，S 形的前半身，头先往后缩、再扑向目标。</summary>
+	private void StrikePose(int i, Attack atk, float T, float face, float alpha)
+	{
+		int nb = N - HeadPts;
+		float t = atk.T;
+		Vector2 P = atk.Target;
+		Vector2 A = P + new Vector2(-0.45f * face * T, -0.95f * T);         // 烟团
+		Vector2 cocked = P + new Vector2(-0.5f * face * T, -0.55f * T);     // 往后缩、准备扑
+		float headLen = _girth[i] * 2.6f * 1.3f;
+		float lunge = Ease5.Seg(t, 0.38f, BiteAt - 0.38f);
+		lunge = lunge * lunge;
+		float rear = Smooth(EmergeAt, 0.38f, t);
+		Vector2 toP = (P - cocked).Normalized();
+		Vector2 bite = P - toP * headLen * 0.75f;
+		Vector2 hb = cocked.Lerp(cocked - toP * 0.12f * T, rear * (1f - lunge)).Lerp(bite, lunge);
+		Vector2 c1 = A + new Vector2(0.1f * face * T, 0.35f * T);
+		Vector2 c2 = hb - toP * 0.45f * T + new Vector2(0f, -0.15f * T);
+		Vector2 tail = A + new Vector2(-0.15f * face * T, -0.1f * T);
+		for (int k = 0; k < nb; k++)
+		{
+			float f = k / (nb - 1f);
+			float u = 1f - f;
+			Vector2 q = u * u * u * tail + 3f * u * u * f * c1 + 3f * u * f * f * c2 + f * f * f * hb;
+			float wave = Mathf.Sin(f * 8f - _t * 5f) * 0.03f * T * (1f - f);
+			q += new Vector2(0f, wave);
+			float a = Smooth(0.15f, 0.4f, f) * alpha;                         // 尾巴那截藏在烟里
+			_spine[i * N + k] = new Vector4(q.X, q.Y, 0.5f, a);
+		}
+		Vector2 dir = toP;
+		for (int k = 1; k <= HeadPts; k++)
+		{
+			Vector2 hp = hb + dir * headLen * k / HeadPts;
+			_spine[i * N + nb - 1 + k] = new Vector4(hp.X, hp.Y, 0.5f, alpha);
+		}
+		Vector2 up = new(dir.Y, -dir.X);
+		if (up.Y > 0f) up = -up;
+		_hup[i] = up;
+		Vector2 eye = hb + dir * headLen * 0.38f + up * _girth[i] * 0.42f;
+		_eyes[i] = new Vector3(eye.X, eye.Y, alpha);
+		// 嘴：聚出来以后张到最大，扑到时猛地合上
+		_mouth[i] = t < BiteAt ? Smooth(EmergeAt, 0.36f, t) : -0.2f;
+	}
+
 	private void PoseSerpent(int i, float T, float face, float alpha)
 	{
 		var o = Orbits[i];
+		_mouth[i] = 0f;
+		if (AttackOf(i) is { } sa && sa.T >= EmergeAt && sa.T < LeaveAt)
+		{
+			StrikePose(i, sa, T, face, alpha);
+			return;
+		}
 		// 出场：每条蛇从 Joker 胸口冲出来、甩到自己的轨道上
 		float grow = 1f;
 		if (_intro >= 0f && _intro < 1.6f)
@@ -577,37 +606,40 @@ void fragment() {
 		_eyes[i] = new Vector3(eye.X, eye.Y, eyes * hb4.W);
 	}
 
-	/// <summary>
-	/// 攻击的时间线（从挑中算）：0～0.3 这条蛇散成烟 → 0.18 敌人身上一张大嘴从深处朝镜头冲出来（0.2s 放大、嘴张开）
-	/// → 0.4～0.46 咬合（BiteAt：闪光、火星、震屏、顿帧）→ 0.5～0.85 大嘴散成烟 → 0.7～1.1 这条蛇在原来的轨道上重新聚起来。
-	/// </summary>
+	private void Puff(Vector2 at, float progress, float size, int slot) => _puff[slot] = new Vector4(at.X, at.Y, progress, size);
+
 	private void UpdateAttacks(float dt, Vector2 feet, float T)
 	{
 		for (int i = 0; i < Count; i++) { _diss[i] = 0f; _lunge[i] = Vector2.Zero; }
+		for (int k = 0; k < _puff.Length; k++) _puff[k].Z = -1f;
 		for (int s = 0; s < Slots; s++)
 		{
-			_mawA[s] = 0f;
 			if (_attacks[s] is not { } a) continue;
 			a.T += dt;
 			float t = a.T;
-			_diss[a.Serpent] = Smooth(0.06f, 0.32f, t) * (1f - Smooth(0.7f, 1.1f, t));
-			// 窜出去：0.12s 内冲出去，边冲边散；散完以后不再偏（重新聚起来时在原轨道上）
-			Vector3 hp = Orbit(a.Serpent, _tau[a.Serpent], T, 1f);
-			Vector2 toward = a.Target - new Vector2(hp.X, hp.Y);
-			float lk = Ease5.OutQuint(Ease5.Seg(t, 0f, 0.18f)) * (1f - Smooth(0.45f, 0.6f, t));
-			_lunge[a.Serpent] = toward.LimitLength(0.45f * T) * lk;
-			float k = Ease5.OutQuint(Ease5.Seg(t, 0.2f, 0.16f));
-			float shut = Ease5.Seg(t, 0.38f, BiteAt - 0.38f);
-			shut = shut * shut;                                  // 越合越快，猛地咬死
-			_maw[s] = new Vector4(a.Target.X, a.Target.Y, k, shut);
-			_mawA[s] = Smooth(0.18f, 0.24f, t) * (1f - Smooth(0.5f, 0.85f, t));
+			float face = a.Target.X >= 0f ? 1f : -1f;
+			Vector2 cloud = a.Target + new Vector2(-0.45f * face * T, -0.95f * T);
+			// 散 / 聚：轨道上散掉 → 烟里聚出来 → 咬完散掉 → 回轨道上聚起来
+			_diss[a.Serpent] = t < EmergeAt ? Smooth(0.06f, EmergeAt, t)
+				: t < 0.5f ? 1f - Smooth(EmergeAt, 0.36f, t)
+				: t < LeaveAt ? Smooth(0.5f, 0.74f, t)
+				: 1f - Smooth(LeaveAt, 1.12f, t);
+			if (t < EmergeAt)
+			{
+				// 猛窜：朝敌人窜出去，边窜边散
+				Vector3 hp = Orbit(a.Serpent, _tau[a.Serpent], T, 1f);
+				_lunge[a.Serpent] = (a.Target - new Vector2(hp.X, hp.Y)).LimitLength(0.45f * T) * Ease5.OutQuint(Ease5.Seg(t, 0f, 0.18f));
+			}
+			// 咒烟团：聚出来的那一团（烟团处）、咬中往外炸的那一团（敌人身上）、散掉的那一团（蛇身中间）
+			if (t >= EmergeAt - 0.04f) Puff(cloud, Ease5.Seg(t, EmergeAt - 0.04f, 0.7f), 0.5f * T, s * 2);
+			if (t >= BiteAt) Puff(a.Target, Ease5.Seg(t, BiteAt, 0.55f), -0.42f * T, s * 2 + 1);
 			if (!a.Bit && t >= BiteAt)
 			{
 				a.Bit = true;
 				Vector2 at = feet + a.Target;
-				Glow.Flash(_front, at, Pal5.Crimson, 0.9f * T, 0.25f);
-				Glow.Flash(_front, at + new Vector2(0f, 0.15f * T), Pal5.Hot, 0.35f * T, 0.12f);
-				Glow.Sparks(_front, at, 30, 200f, 700f, 0.55f, new[] { Pal5.Bright, Pal5.Crimson, Pal5.Deep }, 250f, 0.12f, 0.38f, Vector2.Up, 160f);
+				Glow.Flash(_front, at, Pal5.Crimson, 0.8f * T, 0.22f);
+				Glow.Sparks(_front, at, 22, 180f, 600f, 0.5f, new[] { Pal5.Bright, Pal5.Crimson, Pal5.Deep }, 250f, 0.1f, 0.32f, Vector2.Up, 160f);
+				if (a.Body != null && GodotObject.IsInstanceValid(a.Body)) BodyTint.Pulse(a.Body, new Color(2.2f, 2.2f, 2.2f), 0.05, 0.2);   // 被咬的敌人闪一下白
 				Fx.Shake(2);
 				HitStop.Request(0.04);
 			}
