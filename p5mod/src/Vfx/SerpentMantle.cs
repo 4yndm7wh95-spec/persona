@@ -53,6 +53,7 @@ float vn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
 	return mix(mix(h21(i), h21(i + vec2(1, 0)), f.x), mix(h21(i + vec2(0, 1)), h21(i + vec2(1, 1)), f.x), f.y); }
 float fbm(vec2 p) { return vn(p) * 0.5 + vn(p * 2.03 + 5.1) * 0.3 + vn(p * 4.1 + 1.7) * 0.2; }
 float ease3(float x) { return 1.0 - pow(1.0 - clamp(x, 0.0, 1.0), 3.0); }
+float smin(float a, float b, float k) { float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0); return mix(b, a, h) - k * h * (1.0 - h); }
 
 // 粗细（s：0 尾 → 1 吻尖）：尾巴细、身体、脖子略收、头上平下宽的楔形
 const float HEAD0 = 0.871;          // 头从脊线的第 27 点（27/31）开始
@@ -128,35 +129,65 @@ void fragment() {
 		vec3 wc = vec3(0.03, 0.008, 0.012) + vec3(0.22, 0.02, 0.03) * smoothstep(0.72, 0.9, wn);
 		float a = clamp(dens + wisp * (1.0 - dens), 0.0, 1.0) * ba;
 		vec3 cc = mix(wc, c, dens / max(dens + wisp * (1.0 - dens), 1e-3));
-		// 嘴：微微张开——上下颚之间一道往吻尖张开的缝，里面透出暗红的光；四颗獠牙（上两颗朝下、下两颗朝上），
-		// 不画成三角形：一道道模糊、带暗红微光、边被烟吃掉的细痕，看起来像牙就行
-		if (bs > HEAD0) {
-			float hs = (bs - HEAD0) / (1.0 - HEAD0);
-			float xg = hs * 3.4;                                     // 沿头的长度（单位：脖子半宽 g）
-			float off = acr;                                          // 横向（+ 朝上）
+		// 头：两片真的颚（用户：嘴看起来乱糟糟，像涂上去的一块 → 头的剪影本身张开）。
+		// 局部坐标：x 沿头（0 = 头根，单位 = 脖子半宽 g），off 横向（+ 朝上）。上颚连着后脑；下颚绕嘴角的铰点往下转开 th，
+		// 两片颚中间是真的缺口：嘴角那头是暗红的口腔，往吻尖就是空的（看得见后面）。上下各一对模糊的烟獠牙长在唇边，跟着颚动。
+		vec2 hRoot = spine[j * 32 + 27].xy, hTip = spine[j * 32 + 31].xy;
+		vec2 hDir = normalize(hTip - hRoot + vec2(1e-4));
+		float x = dot(p - hRoot, hDir) / g;                       // 头自己的坐标：沿头（0 = 头根），单位 = 脖子半宽
+		float off = dot(p - hRoot, hup[j]) / g;                   // 横向（+ 朝上）
+		if (x > -0.6 && x < 4.0 && abs(off) < 2.2 && spine[j * 32 + 27].w > 0.001) {
+			float hw = smoothstep(-0.5, 0.15, x);                   // 脖子 → 头：平滑接过去，不切一刀
 			float mo = mouth[j];
-			float gw = (0.24 + 0.28 * max(mo, 0.0)) * smoothstep(0.22, 0.8, hs) * clamp(1.0 + mo * 6.0, 0.0, 1.0);   // 微张：从嘴角往吻尖张开一道口子
-			float lipU = -0.05 + gw, lipL = -0.05 - gw;
-			float inMouth = smoothstep(gw + 0.04, gw - 0.03, abs(off + 0.05)) * smoothstep(0.22, 0.34, hs);
-			vec3 mouthC = mix(vec3(0.03, 0.003, 0.008), vec3(0.2, 0.02, 0.03), smoothstep(0.3, 0.9, hs)) + vec3(0.4, 0.04, 0.06) * smoothstep(0.35, 0.8, fbm(vec2(xg * 2.0 - clock * 2.0, off * 4.0))) * (1.0 - dj);   // 口腔：嘴角深、往吻尖透出暗红
-			cc = mix(cc, mouthC, inMouth * dens);
-			float fang = 0.0;
-			// 四颗獠牙：上下各一对（左右两颗是立体的：近的一颗在前、亮、长，远的一颗略靠后、暗、短一点）
-			float fangFar = 0.0;
+			float th = mo < 0.0 ? max(0.0, 0.2 * (1.0 + mo * 5.0)) : 0.2 + 0.32 * mo;   // 平时微张；扑咬时张大；咬住时合上
+			vec2 H = vec2(0.85, -0.05);                                  // 嘴角（铰点）
+			// 上颚 + 后脑
+			// 后脑（椭圆）+ 上颚（往吻尖收的板），平滑连在一起
+			float dCran = (length(vec2((x - 0.55) / 1.05, (off + 0.02) / 0.9)) - 1.0) * 0.9;
+			// 上颚往吻尖收：上沿是一条往下弯的弧线，吻尖圆钝
+			float ht = mix(0.85, 0.2, pow(smoothstep(0.5, 3.3, x), 1.2));
+			float dUpper = max(max(off - ht, -0.05 - off), -x);
+			dUpper = smin(dUpper, x - 3.3, -0.12);                         // 吻尖圆钝地收住
+			float dU = smin(dCran, dUpper, 0.35);
+			// 下颚：把点转回下颚没张开时的位置再量
+			vec2 rq = vec2(x, off) - H;
+			float cs = cos(th), sn = sin(th);
+			vec2 lq = vec2(cs * rq.x - sn * rq.y, sn * rq.x + cs * rq.y) + H;
+			// 下颚：比上颚短、细，同样往前收成圆钝的尖
+			float hb = mix(0.6, 0.15, pow(smoothstep(0.9, 3.05, lq.x), 1.1));
+			float dL = max(max(lq.y + 0.05, (-0.05 - hb) - lq.y), H.x - 0.3 - lq.x);
+			dL = smin(dL, lq.x - 3.05, -0.1);
+			float dHead = smin(dU, dL, 0.12);
+			dHead = max(dHead, -max(max(-off - 0.05, off - (-0.05 - (x - H.x) * tan(th))), H.x + 0.05 - x) - 0.0);   // 两片颚中间挖空
+			float hd = smoothstep(0.08, -0.12, dHead + (nz - 0.5) * 0.12 + dj * (0.5 + nz * 1.6));
+			float emitH = smoothstep(-0.22, -0.02, dHead) * (1.0 - smoothstep(-0.02, 0.08, dHead)) * smoothstep(0.5, 0.82, flick) * 0.9 * lit;
+			vec3 headC = (inner + vec3(0.6, 0.05, 0.07) * emitH) * dim;
+			a = mix(a, clamp(hd + wisp * 0.3 * (1.0 - hd), 0.0, 1.0) * ba, hw);
+			dens = mix(dens, hd, hw);
+			cc = mix(cc, mix(wc, headC, hd), hw);
+			// 口腔：两片唇之间、靠嘴角那一段（往吻尖淡掉成空的）
+			float lowLip = -0.05 - (x - H.x) * tan(th);
+			float gap = step(H.x, x) * smoothstep(lowLip - 0.03, lowLip + 0.03, off) * smoothstep(-0.02, -0.08, off);
+			float throat = gap * smoothstep(H.x + 1.4, H.x + 0.2, x) * hw * (1.0 - dj);
+			vec3 throatC = mix(vec3(0.03, 0.003, 0.008), vec3(0.22, 0.02, 0.035), smoothstep(H.x, H.x + 1.2, x));
+			cc = mix(cc, throatC, throat * (1.0 - hd));
+			a = max(a, throat * 0.95 * ba);
+			// 獠牙：上下各一对（近的一颗在前、长、亮；远的一颗略靠后、短、暗），模糊的烟痕，不是三角形
+			float fang = 0.0, fangFar = 0.0;
 			for (int f = 0; f < 4; f++) {
 				bool upper = f < 2;
 				bool far_ = f == 1 || f == 3;
-				float fx = (upper ? (far_ ? 0.7 : 0.78) : (far_ ? 0.63 : 0.71)) * 3.4;
-				float L = (upper ? 0.4 : 0.3) * (far_ ? 0.78 : 1.0);
-				float t = upper ? (lipU - off) / L : (off - lipL) / L;   // 从唇往口子里伸
+				float fx = upper ? (far_ ? 2.35 : 2.6) : (far_ ? 2.15 : 2.4);
+				float L = (upper ? 0.42 : 0.32) * (far_ ? 0.78 : 1.0);
+				vec2 fq = upper ? vec2(x, off) : lq;                    // 下面那对跟着下颚
+				float t = upper ? (-0.05 - fq.y) / L : (fq.y + 0.05) / L;   // 从唇往缺口里伸
 				float w = 0.1 * (1.0 - clamp(t, 0.0, 1.0)) + 0.02;
-				float d = abs(xg - fx + 0.08 * t) - w + (fine - 0.5) * 0.06;
+				float d = abs(fq.x - fx + 0.08 * t) - w + (fine - 0.5) * 0.06;
 				float m = smoothstep(0.07, -0.05, d) * smoothstep(-0.15, 0.05, t) * smoothstep(1.1, 0.6, t);
 				if (far_) fangFar = max(fangFar, m); else fang = max(fang, m);
 			}
-			fang = max(fang, fangFar * 0.5);
-			fang *= smoothstep(0.3, 0.5, hs) * (1.0 - dj);
-			vec3 fangC = mix(vec3(0.22, 0.07, 0.07), vec3(0.6, 0.36, 0.3), smoothstep(0.3, 0.8, nz2)) + vec3(0.2, 0.02, 0.03) * fang;
+			fang = max(fang, fangFar * 0.5) * hw * (1.0 - dj) * smoothstep(0.02, 0.12, th);
+			vec3 fangC = mix(vec3(0.22, 0.07, 0.07), vec3(0.6, 0.36, 0.3), smoothstep(0.3, 0.8, nz2));
 			cc = mix(cc, fangC, fang * 0.85);
 			a = max(a, fang * 0.85 * ba);
 		}
