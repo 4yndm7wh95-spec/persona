@@ -55,14 +55,17 @@ float fbm(vec2 p) { return vn(p) * 0.5 + vn(p * 2.03 + 5.1) * 0.3 + vn(p * 4.1 +
 float ease3(float x) { return 1.0 - pow(1.0 - clamp(x, 0.0, 1.0), 3.0); }
 
 // 粗细（s：0 尾 → 1 吻尖）：尾巴细、身体、脖子略收、头上平下宽的楔形
+const float HEAD0 = 0.871;          // 头从脊线的第 27 点（27/31）开始
 float profile(float s, float up) {
 	// 第三版（用户：身子太肥，像一坨）：从脖子往尾巴一路收细，尾巴拉成又细又长的一条；最粗在靠头的三分之一
-	float body = mix(0.08, 1.0, pow(smoothstep(0.0, 0.72, s), 0.8)) * mix(1.0, 0.85, smoothstep(0.74, 0.88, s));
-	if (s < 0.9) return body;
-	float hs = (s - 0.9) / 0.1;
-	float top = mix(0.86, 0.92, smoothstep(0.0, 0.3, hs)) * mix(1.0, 0.42, smoothstep(0.3, 1.0, hs));
-	float jaw = mix(0.86, 1.02, smoothstep(0.0, 0.25, hs)) * mix(1.0, 0.3, smoothstep(0.25, 1.0, hs));
-	return mix(jaw, top, up);
+	float body = mix(0.08, 1.0, pow(smoothstep(0.0, 0.72, s), 0.8));
+	// 第四版（用户：头和身子太一体、没有分割）：头后面收出一段明显的细脖子，头比脖子宽出一截
+	float neck = 1.0 - 0.42 * smoothstep(0.76, 0.85, s);
+	if (s < HEAD0) return body * neck;
+	float hs = (s - HEAD0) / (1.0 - HEAD0);
+	float top = mix(0.6, 1.0, smoothstep(0.0, 0.28, hs)) * mix(1.0, 0.4, smoothstep(0.35, 1.0, hs));
+	float jaw = mix(0.6, 1.05, smoothstep(0.0, 0.22, hs)) * mix(1.0, 0.32, smoothstep(0.3, 1.0, hs));
+	return mix(jaw, top, up) * 1.3;
 }
 
 // 叠一层（预乘）
@@ -94,7 +97,7 @@ void fragment() {
 		float w = g * profile(bs, smoothstep(-0.3, 0.3, upv));
 		float r = best / max(w, 0.5);
 		if (r > 3.0) continue;
-		float headness = smoothstep(0.86, 0.92, bs);
+		float headness = smoothstep(0.85, 0.89, bs);
 		float L = bs * 11.0;
 		float acr = sign(upv) * best / g;
 		float nz = fbm(vec2(L * 2.2 - clock * 1.3, acr * 1.1 - clock * 0.2) + float(j) * 11.0);
@@ -125,6 +128,32 @@ void fragment() {
 		vec3 wc = vec3(0.03, 0.008, 0.012) + vec3(0.22, 0.02, 0.03) * smoothstep(0.72, 0.9, wn);
 		float a = clamp(dens + wisp * (1.0 - dens), 0.0, 1.0) * ba;
 		vec3 cc = mix(wc, c, dens / max(dens + wisp * (1.0 - dens), 1e-3));
+		// 嘴：微微张开——上下颚之间一道往吻尖张开的缝，里面透出暗红的光；四颗獠牙（上两颗朝下、下两颗朝上），
+		// 不画成三角形：一道道模糊、带暗红微光、边被烟吃掉的细痕，看起来像牙就行
+		if (bs > HEAD0) {
+			float hs = (bs - HEAD0) / (1.0 - HEAD0);
+			float xg = hs * 3.4;                                     // 沿头的长度（单位：脖子半宽 g）
+			float off = acr;                                          // 横向（+ 朝上）
+			float gw = 0.15 * smoothstep(0.3, 1.0, hs);
+			float lipU = -0.05 + gw, lipL = -0.05 - gw;
+			float inMouth = smoothstep(gw + 0.04, gw - 0.03, abs(off + 0.05)) * smoothstep(0.3, 0.45, hs) * smoothstep(1.02, 0.9, hs);
+			vec3 mouthC = vec3(0.06, 0.006, 0.012) + vec3(0.42, 0.04, 0.06) * smoothstep(0.3, 0.8, fbm(vec2(xg * 2.0 - clock * 2.0, off * 4.0))) * (1.0 - dj);
+			cc = mix(cc, mouthC, inMouth * dens);
+			float fang = 0.0;
+			for (int f = 0; f < 4; f++) {
+				bool upper = f < 2;
+				float fx = (upper ? (f == 0 ? 0.6 : 0.8) : (f == 2 ? 0.52 : 0.72)) * 3.4;
+				float L = upper ? 0.34 : 0.24;
+				float t = upper ? (lipU - off) / L : (off - lipL) / L;   // 从唇往缝里伸
+				float w = 0.1 * (1.0 - clamp(t, 0.0, 1.0)) + 0.02;
+				float d = abs(xg - fx + 0.08 * t) - w + (fine - 0.5) * 0.06;
+				fang = max(fang, smoothstep(0.07, -0.05, d) * smoothstep(-0.15, 0.05, t) * smoothstep(1.1, 0.6, t));
+			}
+			fang *= smoothstep(0.3, 0.5, hs) * (1.0 - dj);
+			vec3 fangC = mix(vec3(0.22, 0.07, 0.07), vec3(0.6, 0.36, 0.3), smoothstep(0.3, 0.8, nz2)) + vec3(0.2, 0.02, 0.03) * fang;
+			cc = mix(cc, fangC, fang * 0.85);
+			a = max(a, fang * 0.85 * ba);
+		}
 		over(acc, cc, a);
 		// 眼睛：一团晕开的暖红雾光
 		vec2 ed = p - eyes[j].xy;
@@ -535,7 +564,7 @@ void fragment() {
 			eyes = Mathf.Max(eyes, turn);
 		}
 		_spine[i * N + nb - 1] = new Vector4(hb.X, hb.Y, hb4.Z, hb4.W);
-		float headLen = _girth[i] * 2.6f;
+		float headLen = _girth[i] * 2.6f * 1.3f;
 		for (int k = 1; k <= HeadPts; k++)
 		{
 			Vector2 hp = hb + dir * headLen * k / HeadPts;
