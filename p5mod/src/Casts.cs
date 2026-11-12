@@ -51,7 +51,7 @@ public static class Casts
 		["KnifeTrap"] = Cast.Glove,
 		["Outbreak"] = Cast.Big,
 		["Concoct"] = Cast.Glove,
-		["Snakebite"] = Cast.Wave,                     // 用户 2026-11-11：蛇咬不召唤亚森，挥手、敌人那里冒出一条蛇咬
+		// 蛇咬（用户 2026-11-12）：扶面具（带面具火）的施法，不在表里 = 默认扶面具；不召唤亚森（Aim.Summons），敌人那里冒出一条蛇咬
 		["Adrenaline"] = Cast.Glove,                   // 不召唤亚森（召唤太频繁）
 		["Burst"] = Cast.Glove,
 		["Malaise"] = Cast.Wave,

@@ -61,7 +61,7 @@ public static class SkillPlay
 	public static bool HidingVanilla => Time.GetTicksMsec() < _hideUntil;
 
 	/// <summary>施法动作里「出手」的那一帧离现在还有几秒（tools/p5/build_rig_p5.py 的帧表）。</summary>
-	private static float Moment(NCreature joker)
+	internal static float Moment(NCreature joker)
 	{
 		string? cur = joker.Visuals?.SpineBody?.TryGetAnimationState() is { } st ? Aim.Current(st) : null;
 		return cur switch

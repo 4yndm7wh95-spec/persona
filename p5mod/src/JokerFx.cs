@@ -166,7 +166,7 @@ public static class JokerFx
 				Control back = Joker.FxLayer(back: true) ?? layer;
 				float tall = (Joker.PosePoint(joker, ReadyFx.Feet) - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length();
 				float face = Joker.Facing(joker);
-				const float lead = 0.08f;                                      // 挥手甩出去的那一帧（cast_wave）
+				float lead = SkillPlay.Moment(joker);                          // 扶面具施法里手甩出去的那一帧（cast 0.4s / 从扶面具接 0.23s）
 				float biteIn = lead + SerpentMantle.BiteDelay;
 				Aim.HoldCast(joker, biteIn);
 				NCreature tn = t;
