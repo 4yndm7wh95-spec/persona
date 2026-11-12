@@ -21,7 +21,7 @@ public static class SkillRedo
 	}
 
 	private static float CardW(SkillCtx c) => c.Tall * 0.16f;
-	// 音效跟着画面走（用户 2026-11-12：音效和动画各放各的）：出手那一下一声、每张牌落进手牌区那一刻一声、斩 / 交叉 / 烟弹各在那一帧（PlayHit 按样本的起音提前）
+	// 音效按节拍配（用户 2026-11-12：太杂，配合不好）：每个效果只留两三个关键拍，每拍一个声音、主拍最清楚，其余更轻；同一种动作重复时只响一次（几张牌落进手牌只一声）
 	private static void DrawTick(int k, float delay = 0f) { }
 	/// <summary>音色板里的一个音（Sfx.Palette），at 秒后、对在那一帧。都压得很轻：有，但不抢。</summary>
 	private static void S(string name, float vol, float at = 0f) => Sfx.Take(name, vol * 0.8f, at);
@@ -40,8 +40,8 @@ public static class SkillRedo
 			float e = Fx.InCubic(t) * 0.7f + t * 0.3f;
 			card.Place(a.Lerp(ctrl, e).Lerp(ctrl.Lerp(hand, e), e), tilt0 + e * c.Face * 1.1f, e * spin, 1f - 0.45f * e);
 		});
-		S("gx_card_slide", 0.16f, delay);
-		S("gx_card_stack", 0.22f, delay + life);
+
+
 		Fx.After(c.Front, delay + life, () =>
 		{
 			card.Trail?.Kill();
@@ -79,7 +79,7 @@ public static class SkillRedo
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face, w = CardW(c);
 		Vector2 hand = SkillFx.HandArea(c.Front);
-		S("gx_card_slide", 0.24f);
+		S("gx_card_stack", 0.18f, 0.16f + 0.2f + 0.42f);                // 落进手牌：只一声
 		for (int pr = 0; pr < 2; pr++)
 		{
 			int k = pr;
@@ -98,8 +98,8 @@ public static class SkillRedo
 				old.Place(pos, f * (0.5f + s * 4f), Mathf.Pi + s * 14f, 1f);
 			});
 			Fx.After(c.Front, d + toMeet + 0.18f, () => BurnAway(c, old, far, f * 1.2f, new Vector2(f * h * 0.12f, -h * 0.05f)));
-			S("gx_burn", 0.16f, d + toMeet + 0.2f);
-			S("gx_card_slide", 0.18f, d);
+
+
 			// 新牌：手牌区 → 交汇点 → 回手牌区
 			Phantom.P5Card fresh = Phantom.Card(c.Front, hand, w, d + toMeet + 0.05, 0.9f);
 			fresh.Root.Visible = false;
@@ -111,7 +111,7 @@ public static class SkillRedo
 			Fx.After(c.Front, d + toMeet, () => { fresh.Trail?.Kill(); fresh.Root.Visible = false; });
 			ToHand(c, meet, d + toMeet, 0.42f, -f * 1.4f, h * 0.25f);
 			DrawTick(k, d);
-			S("gx_slice", 0.24f, d + toMeet);
+			S("gx_slice", k == 0 ? 0.26f : 0.2f, d + toMeet);              // 主拍：交叉
 			Fx.After(c.Front, d + toMeet, () =>
 			{
 				Cut.Razor(c.Front, meet, f > 0f ? -0.9f : Mathf.Pi + 0.9f, w * 3.4f, 3f * u, 0.09f);
@@ -135,8 +135,10 @@ public static class SkillRedo
 		Vector2 pivot = c.Chest + new Vector2(f * h * 0.45f, h * 0.12f);       // 扇轴（牌的下端握在这里）
 		const int n = 5;
 		const float open = 0.22f, hold = 0.5f, close = 0.12f;
-		S("gx_fan_open", 0.3f, 0.02f);
-		S("gx_fan_close", 0.3f, open + hold);
+		S("gx_fan_open", 0.22f, 0.02f);
+		S("gx_ping", 0.1f, open + 0.06f + 0.07f * (n - 1) + 0.07f);      // 扫完扣上：一声
+		S("gx_fan_close", 0.3f, open + hold);                            // 主拍：收拢
+		S("gx_card_stack", 0.16f, open + hold + close + 0.44f);
 		for (int i = 0; i < n; i++)
 		{
 			int k = i;
@@ -159,7 +161,7 @@ public static class SkillRedo
 			{
 				Vector2 pos = pivot + new Vector2(0f, -h * 0.3f) + off.Rotated(target);
 				Brackets(c.Front, pos, target, w, u);
-				S("gx_ping", 0.1f + 0.02f * k);
+
 			});
 			if (k < 3) DrawTick(k);
 		}
@@ -210,7 +212,8 @@ public static class SkillRedo
 		Vector2 hand = SkillFx.HandArea(c.Front);
 		Glow.Flash(c.Front, c.Hand, Phantom.Hot, h * 0.3f, 0.08f);
 		Phantom.Shards(c.Front, c.Hand, 10, 600f * u, 1200f * u, new Vector2(-f, 0.1f), 18f, 0.18f, 0f, 30f * u);
-		S("gx_whoosh", 0.24f);
+		S("gx_whoosh", 0.26f);                                           // 主拍
+		S("gx_card_stack", 0.16f, 0.42f);
 		for (int i = 0; i < 3; i++)
 		{
 			int k = i;
@@ -234,7 +237,7 @@ public static class SkillRedo
 				Glow.Flash(c.Front, mid, Phantom.Hot, w * 1.8f, 0.08f);
 				Vector2 jump = mid.Lerp(hand, 0.35f);
 				Phantom.Shards(c.Front, mid, 6, 300f * u, 700f * u, (jump - mid).Normalized(), 20f, 0.2f, 0f, 22f * u);
-				S("gx_ping", 0.08f);
+
 				ToHand(c, jump, 0f, 0.18f, f * 0.6f, h * 0.02f, 1.2f, 4f);
 			});
 		}
@@ -253,8 +256,9 @@ public static class SkillRedo
 		Vector2 hub = c.Feet + new Vector2(-f * h * 0.12f, -h * 0.62f);
 		Paint.Sweep(back, "slash_thin", hub, Mathf.Pi * 0.5f, new Vector2(0.75f, 0.75f) * u * h / 300f, Lut5.Blood, 0.05f, 0.04f, 0.28f, -45f * f, 0.02f, 1.25f);
 		Glow.Flash(back, hub + new Vector2(0f, -h * 0.4f), Phantom.Red, h * 1.1f, 0.22f);
-		S("gx_whoosh", 0.32f);
-		S("gx_pop", 0.1f, 0.2f);
+		S("gx_whoosh", 0.3f);                                            // 主拍
+		S("gx_card_stack", 0.16f, 0.72f);
+
 		Vector2 top = hub + new Vector2(-f * h * 0.05f, -h * 0.62f);
 		for (int i = 0; i < 2; i++)
 		{
@@ -282,9 +286,9 @@ public static class SkillRedo
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face, w = CardW(c);
 		Vector2 top = c.Hand + new Vector2(f * h * 0.08f, -h * 0.58f);
-		S("gx_card_slide", 0.22f);
-		S("gx_whoosh", 0.1f, 0.12f);
-		S("gx_ping", 0.12f, 0.42f);
+		S("gx_card_slide", 0.16f);
+
+		S("gx_card_stack", 0.16f, 0.82f);
 		DrawTick(0);
 		Phantom.P5Card card = Phantom.Card(c.Front, c.Hand, w, 0.5, 0.6f);
 		Fx.Animate(card.Root, 0, 0.42, t =>
@@ -296,7 +300,7 @@ public static class SkillRedo
 		});
 		Fx.After(c.Front, 0.42f, () => { card.Trail?.Kill(); card.Root.Visible = false; Glow.Glint(c.Front, top, 0.7f); });
 		ToHand(c, top, 0.42f, 0.4f, 0f, h * 0.15f, 1f, 6.3f);
-		S("gx_pop", 0.3f, 0.24f);
+		S("gx_pop", 0.28f, 0.24f);                                       // 主拍：烟弹
 		Fx.After(c.Front, 0.24f, () =>
 		{
 			Vector2 at = c.Feet + new Vector2(0f, -h * 0.12f);
@@ -328,10 +332,10 @@ public static class SkillRedo
 		Glow.Flash(c.Front, c.Hand, Phantom.Hot, h * 0.25f, 0.1f);
 		Phantom.Shards(c.Front, c.Hand, 8, 300f * u, 700f * u, new Vector2(f, -0.6f), 40f, 0.3f, 600f * u, 22f * u);
 		// （试过身后的网点斜切色带：在这张牌上像一根红棍，不加）
-		S("gx_card_slide", 0.24f);
-		S("gx_whoosh", 0.2f, 0.06f);
-		S("gx_ping", 0.12f, 0.36f);
-		S("gx_card_slide", 0.16f, 0.46f);
+		S("gx_card_slide", 0.18f);
+
+		S("gx_ping", 0.1f, 0.36f);
+
 
 		const float arc = 0.36f, hold = 0.08f;
 		for (int i = 0; i < 3; i++)
@@ -386,7 +390,7 @@ public static class SkillRedo
 			});
 			if (!cut)
 			{
-				S("gx_card_stack", 0.22f, lag + total);
+				if (k == 2) S("gx_card_stack", 0.16f, lag + total);
 				Fx.After(c.Front, lag + total, () =>
 				{
 					card.Trail?.Kill();
@@ -397,8 +401,8 @@ public static class SkillRedo
 			}
 			// 被斩的那张：一刀横斩、短顿帧，两半翻开烧掉、碎成纸屑
 			float cutAt = lag + arc + hold + 0.03f;
-			S("gx_slice", 0.3f, cutAt);
-			S("gx_burn", 0.15f, cutAt + 0.12f);
+			S("gx_slice", 0.28f, cutAt);                                     // 主拍：斩
+
 			Fx.After(c.Front, cutAt, () =>
 			{
 				card.Trail?.Kill();
