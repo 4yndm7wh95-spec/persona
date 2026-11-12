@@ -61,7 +61,7 @@ public sealed class TimeStop
 		public Node2D Node = null!;
 		public Polygon2D? Glint;
 		public Vector2 Pos, Vel, Origin;
-		public float Rot, Spin, Travel, Need, Speed = 1f, Life = -1f, Fade = 1f;
+		public float Rot, Spin, Travel, Need, Speed = 1f, Life = -1f, Fade = 1f, KickAt = -10f;
 		public bool Streak;
 		public float Len;
 	}
@@ -127,6 +127,7 @@ public sealed class TimeStop
 			if (_goAt >= 0f || _done) return;
 			Pulse();
 			_ticks.Add(_t);
+			foreach (Bit b in _bits) if (b.Life < 0f) b.KickAt = _t + Dist(b.Pos) / 3.2f;   // 跟着出牌的涟漪（3.2 身高/秒）依次被推一下
 			Sfx.Take("gx_tick", 0.3f);
 			// 秒针跳到的那一格：针尖迸出一点红火花，飞一下就冻住（越积越多）
 			float a = _hs + Mathf.Tau / 12f;
@@ -364,7 +365,10 @@ public sealed class TimeStop
 			bool freeze = b.Life < 0f && d < stopR && b.Travel >= b.Need;
 			if (b.Life < 0f)
 			{
-				b.Speed = freeze ? Mathf.MoveToward(b.Speed, 0.006f, dt * 9f) : b.Speed;
+				// 冻住也不是死的：极慢地蠕动、自转（高光跟着一闪一闪）；出牌时扭曲波扫过，往前蹿一小段再慢下来
+				float kick = _t >= b.KickAt ? Mathf.Exp(-(_t - b.KickAt) * 3.5f) : 0f;
+				b.Speed = freeze ? Mathf.MoveToward(b.Speed, 0.025f + 0.4f * kick, dt * 9f) : b.Speed;
+				if (freeze) b.Vel *= Mathf.Exp(-0.12f * dt);
 			}
 			float s = b.Speed;
 			Vector2 step = b.Vel * s * dt;
@@ -401,7 +405,8 @@ public sealed class TimeStop
 				b.Node.Rotation = b.Rot;
 				// 翻转：横向压扁随转动变化，像薄片在空中翻；冻住时几乎不动，高光跟着慢慢变
 				b.Node.Scale = new Vector2(1f, 0.35f + 0.65f * Mathf.Abs(Mathf.Cos(b.Rot * 1.3f)));
-				if (b.Glint != null) b.Glint.Modulate = new Color(1f, 1f, 1f, 0.15f + 0.85f * Mathf.Pow(Mathf.Abs(Mathf.Sin(b.Rot * 1.3f + 0.6f)), 6f));
+				float flash = _t >= b.KickAt ? Mathf.Exp(-(_t - b.KickAt) * 6f) : 0f;
+				if (b.Glint != null) b.Glint.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, 0.15f + 0.85f * Mathf.Pow(Mathf.Abs(Mathf.Sin(b.Rot * 1.3f + 0.6f)), 6f) + flash));
 			}
 			// 冻住的东西退一点亮度，靠近冷灰的世界；接着飞的时候回到原色
 			float cold = b.Life < 0f ? 1f - s : 0f;
@@ -851,11 +856,17 @@ void fragment() {
 				if (h > 0.42) continue;
 				vec2 base = (c2 + 0.15 + 0.7 * hash2(c2 + fk * 7.3)) * cs;
 				float cd = dist(local(base / 1080.0 / vec2(aspect, 1.0)));
-				float tau = min(t, arrive(cd, 0.0, stop_dur)) + max(0.0, t - arrive(cd, go_at, go_dur));
+				// 停住以后还以 7% 的速度极慢地漂（不是死的）；时间回来恢复原速
+				float tf = arrive(cd, 0.0, stop_dur), tg = arrive(cd, go_at, go_dur);
+				float tau = min(t, tf) + max(0.0, min(t, tg) - tf) * 0.07 + max(0.0, t - tg);
 				vec2 p = base + vec2(sin(tau * (0.5 + h) + h * 40.0) * cs * 0.22, sin(tau * (0.4 + 0.6 * h) + h * 17.0) * cs * 0.18);
+				// 出牌的涟漪经过：浮尘被往外推一下
+				float pRr = pulse_s * 3.2;
+				vec2 cdir = normalize(base / 1080.0 / vec2(aspect, 1.0) - center + 1e-5) * vec2(1.0, 1.0);
+				p += cdir * 9.0 * (pulse_s >= 0.0 && pulse_s < 1.5 ? exp(-pow((cd - pRr) / 0.6, 2.0)) * exp(-pulse_s * 1.2) : 0.0);
 				float r = 0.7 + 1.5 * hash(c2 + 5.1 + fk);
 				float dd = length(px - p);
-				float tw = 0.55 + 0.45 * sin(tau * (1.3 + 2.0 * h) + h * 60.0);
+				float tw = 0.55 + 0.45 * sin(t * (0.6 + 1.2 * h) + h * 60.0);   // 一直在轻轻闪
 				dust += (smoothstep(r, r * 0.25, dd) + 0.18 * smoothstep(r * 4.0, 0.0, dd)) * tw * (0.35 + 0.65 * h / 0.42) * (0.5 + 0.25 * fk);
 			}
 		}
