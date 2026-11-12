@@ -50,11 +50,10 @@ public sealed class TimeStop
 	{
 		public Phantom.P5Card C = null!;
 		public Vector2 From, To;
-		public float Tilt, Flip, Spin, Sheen = -10f, Burn = -1f, Seed;
+		public float Tilt, Flip, Spin, Sheen = -10f, Burn = -1f, Seed, Ang;
 		public Vector2 BurnVel;
 	}
 	private readonly List<FrozenCard> _cards = new();
-	private int _nextSheen;
 	private bool _shattered;
 
 	private sealed class Bit
@@ -140,7 +139,6 @@ public sealed class TimeStop
 				AddStreak(tip, v, Fx.Rand(18f, 32f) * u, Fx.Rand(0.03f, 0.1f) * _tall, true);
 			}
 			// 钟边上的一张卡闪过一道高光
-			if (_cards.Count > 0) _cards[_nextSheen++ % _cards.Count].Sheen = _t;
 		});
 	}
 
@@ -433,7 +431,7 @@ public sealed class TimeStop
 			c.Root.Visible = false;
 			_cards.Add(new FrozenCard
 			{
-				C = c, From = _hand, To = ClockCenter + dir * ClockR * _tall * 1.08f, Tilt = Fx.Rand(-0.5f, 0.5f) + angs[i] * 0.25f,
+				C = c, Ang = angs[i], From = _hand, To = ClockCenter + dir * ClockR * _tall * 1.08f, Tilt = Fx.Rand(-0.5f, 0.5f) + angs[i] * 0.25f,
 				Flip = Fx.Rand(0.25f, 0.6f) * (i % 2 == 0 ? 1f : -1f), Spin = Fx.Rand(14f, 20f), Seed = Fx.Rand(0f, 6f),
 			});
 		}
@@ -451,20 +449,32 @@ public sealed class TimeStop
 			f.C.Root.Visible = true;
 			if (f.Burn < 0f)
 			{
-				// 飞出去：0.38s 急停（OutQuint），翻转越转越慢，停在略带角度的牌面；之后几乎不动（极慢地浮、翻）
+				// 卡是他的东西，不受时停影响：绕着钟极慢地公转、上下浮、慢慢翻转露出正反面、轻轻摇摆；
+				// 每出一张牌：依次快速翻一整圈、往外弹一下再回来、一起沿着钟往前挪一格（和秒针跳格对上）、高光依次扫过
+				float orbit = _t * 0.1f * _face, flipKick = 0f, push = 0f, glowKick = 0f;
+				foreach (float tk in _ticks)
+				{
+					float d = _t - tk - 0.06f * i;
+					orbit += 0.42f * _face * Spring(d);
+					if (d > 0f && d < 0.42f) flipKick += Mathf.Tau * Ease5.OutQuint(d / 0.42f) - Mathf.Tau;
+					if (d > 0f && d < 0.5f) push = Mathf.Max(push, Mathf.Sin(Mathf.Pi * Mathf.Min(1f, d / 0.4f)) * Mathf.Exp(-d * 2f));
+					if (d > 0f) glowKick = Mathf.Max(glowKick, Mathf.Exp(-d * 5f));
+					if (d >= 0f && d < 0.05f) f.Sheen = tk + 0.06f * i;
+				}
+				float a0 = f.Ang + orbit;
+				float rr = _ckR * _tall * (1.1f + 0.1f * push) + Mathf.Sin(_t * 0.9f + f.Seed) * 0.012f * _tall;
+				Vector2 to = ClockCenter + new Vector2(Mathf.Sin(a0), -Mathf.Cos(a0)) * rr + new Vector2(0f, Mathf.Sin(_t * 1.3f + f.Seed * 2f) * 0.018f * _tall);
 				float k = Mathf.Clamp(s / 0.38f, 0f, 1f), e = Ease5.OutQuint(k);
-				Vector2 mid = f.From.Lerp(f.To, 0.5f) + (f.To - f.From).Orthogonal().Normalized() * 0.18f * _tall * _face;
-				Vector2 pos = f.From.Lerp(mid, e).Lerp(mid.Lerp(f.To, e), e);
-				float hover = Mathf.Max(0f, s - 0.38f);
-				pos += new Vector2(Mathf.Sin(hover * 0.5f + f.Seed), Mathf.Sin(hover * 0.37f + f.Seed * 2f)) * 0.006f * _tall;
-				float sv = _tickBump;
-				pos += new Vector2(Mathf.Sin(_t * 47f + f.Seed), Mathf.Cos(_t * 39f + f.Seed)) * 0.008f * _tall * sv * sv;
-				float flip = f.Flip + f.Spin * (1f - e) * 1.2f + Mathf.Sin(hover * 0.3f + f.Seed) * 0.08f + 0.35f * sv * Mathf.Sin((1f - sv) * 9f);
-				f.C.Place(pos, f.Tilt * e + Mathf.Sin(hover * 0.21f + f.Seed) * 0.03f, flip, 0.6f + 0.4f * Ease5.OutQuint(Mathf.Min(1f, s / 0.2f)));
+				Vector2 mid = f.From.Lerp(to, 0.5f) + (to - f.From).Orthogonal().Normalized() * 0.18f * _tall * _face;
+				Vector2 pos = f.From.Lerp(mid, e).Lerp(mid.Lerp(to, e), e);
+				float idleFlip = Mathf.Max(0f, s - 0.38f) * 0.8f;
+				float flip = f.Flip + f.Spin * (1f - e) * 1.2f + idleFlip + flipKick;
+				float tilt = f.Tilt * e + Mathf.Sin(_t * 0.7f + f.Seed) * 0.14f + push * 0.25f * _face;
+				f.C.Place(pos, tilt, flip, (0.6f + 0.4f * Ease5.OutQuint(Mathf.Min(1f, s / 0.2f))) * (1f + 0.12f * push));
 				if (k >= 1f && f.C.Trail != null) { f.C.Trail.Kill(); f.C.Trail = null; }
 				float sh = _t - f.Sheen;
 				f.C.Set("sheen", sh >= 0f && sh < 0.4f ? sh / 0.4f * 3f - 1f : -1f);
-				f.C.Set("glow", k < 1f ? 0f : Mathf.Max(0f, 0.5f - (s - 0.38f) * 3f));
+				f.C.Set("glow", Mathf.Max(k < 1f ? 0f : Mathf.Max(0f, 0.5f - (s - 0.38f) * 3f), glowKick * 0.6f));
 				f.C.Set("alpha", 1f);
 			}
 			else
@@ -534,12 +544,12 @@ public sealed class TimeStop
 		}
 		float r = ClockR * (0.25f + 0.75f * OutBack(Mathf.Min(1f, t / 0.5f)));
 		float a = Mathf.Min(1f, t / 0.25f);
-		a = Mathf.Lerp(a, 0.24f, Mathf.SmoothStep(0.9f, 1.7f, t));
+		a = Mathf.Lerp(a, 0.4f, Mathf.SmoothStep(0.9f, 1.7f, t));
 		// 出牌反馈：亮一下、轻轻一涨回弹，一圈涟漪荡过表盘，外沿跟着秒针亮起一道高光（不强，但每张牌都有）
-		float since = t - lastTick, bump = since >= 0f && lastTick > 0f ? Mathf.Exp(-since * 3.5f) : 0f;
+		float since = t - lastTick, bump = since >= 0f && lastTick > 0f ? Mathf.Exp(-since * 2.4f) : 0f;
 		_tickBump = bump;
-		a = Mathf.Min(1f, a + 0.6f * bump);
-		r *= 1f + 0.05f * bump * Mathf.Cos(Mathf.Max(0f, since) * 22f);
+		a = Mathf.Min(1f, a + 0.8f * bump);
+		r *= 1f + 0.09f * bump * Mathf.Cos(Mathf.Max(0f, since) * 20f);
 		float shatter = 0f;
 		if (_goAt >= 0f)
 		{
@@ -686,7 +696,8 @@ Clk clockFx(vec2 q) {
 	vec2 off = -cq * 0.05 * (1.0 - r * r) * inside;
 	// 出牌：一圈涟漪从钟心往外荡过玻璃
 	float rp = ck_tick.y * 2.6;
-	off += cq / max(r, 1e-3) * 0.022 * ck_tick.x * exp(-pow((r - rp) / 0.08, 2.0)) * inside;
+	off += cq / max(r, 1e-3) * 0.05 * ck_tick.x * exp(-pow((r - rp) / 0.1, 2.0)) * inside;
+	spec += exp(-pow((r - rp) / 0.05, 2.0)) * inside * ck_tick.x * 0.25;
 	// 外沿：玻璃的厚边（内外两道斜面，受光面亮、背光面暗），不是线
 	float rim = exp(-pow((r - 1.0) / 0.055, 2.0)), rim2 = exp(-pow((r - 0.95) / 0.02, 2.0));
 	off += n * ((r - 1.0) / 0.055) * rim * 0.045 - n * ((r - 0.95) / 0.02) * rim2 * 0.01;
@@ -694,8 +705,8 @@ Clk clockFx(vec2 q) {
 	float spec = rim * (0.03 + 0.32 * pow(lit, 2.0)) + rim2 * (0.02 + 0.18 * pow(max(0.0, -dot(n, L)), 3.0));
 	// 外沿跟着秒针亮起一道高光（出牌时）
 	float ad = abs(mod(ang - ck_h.z + 3.14159, 6.28318) - 3.14159);
-	spec += (rim + rim2) * exp(-ad * ad / 0.12) * ck_tick.x * 0.8;
-	o.red += rim * exp(-ad * ad / 0.04) * ck_tick.x * 0.35;
+	spec += (rim + rim2) * exp(-ad * ad / 0.2) * ck_tick.x * 1.4;
+	o.red += rim * exp(-ad * ad / 0.08) * ck_tick.x * 0.6;
 	// 60 个分刻度（细小的玻璃切口）
 	float a60 = abs(fract(ang / 6.28318 * 60.0 + 0.5) - 0.5) / 60.0 * 6.28318 * r;
 	float m60 = smoothstep(0.006, 0.002, a60) * smoothstep(0.89, 0.9, r) * smoothstep(0.945, 0.935, r);
@@ -752,6 +763,7 @@ Clk clockFx(vec2 q) {
 		spec += h.x * (0.2 + 0.7 * pow(max(0.0, h.y * sign(dot(side, L))), 4.0));
 	}
 	o.red += hS.x * 0.95;
+	spec += hS.x * ck_tick.x * 0.9;                    // 秒针跳格时整根闪一下
 	spec += hS.x * smoothstep(0.6, 0.0, abs(hS.y)) * 0.45;
 	// 秒针尾巴上的配重圆片 + 钟心
 	vec2 sd = vec2(sin(ck_h.z), -cos(ck_h.z));
@@ -850,7 +862,7 @@ void fragment() {
 		col += vec3(0.78, 0.86, 1.0) * dust * 0.3 * dustA;
 		// 时钟：表盘里透一点暗红的光（越近钟心越暖），玻璃高光，红色的刻度、网点、秒针
 		float cr = length((q - ck_c) / ck_r);
-		col += vec3(0.16, 0.012, 0.03) * ck.inside * pow(max(0.0, 1.0 - cr), 1.5) * (0.9 + 1.2 * ck_tick.x);
+		col += vec3(0.16, 0.012, 0.03) * ck.inside * pow(max(0.0, 1.0 - cr), 1.5) * (0.9 + 2.2 * ck_tick.x);
 		col += vec3(1.0, 0.96, 0.95) * ck.spec * 0.5;
 		col = mix(col, vec3(0.93, 0.07, 0.13), ck.red * 0.85);
 		col += vec3(0.25, 0.02, 0.04) * ck.red * 0.35;
