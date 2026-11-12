@@ -128,6 +128,7 @@ public static class Sfx
 	{
 		[Parry] = 0.068f, [Slam] = 0.1f, [PoisonTick] = 0.078f, [CutIn] = 0.083f, [PersonaFlame] = 0.13f, [Wing] = 0.023f,
 		[Crack] = 0.019f, [SwishHeavy] = 0.005f, [KnifeRing] = 0.048f, [SinfulFire] = 0.12f, [SinfulShot] = 0.02f,
+		[CardCut] = 0.29f, [CardDraw] = 0.046f, [SmokePuff] = 0.012f, [RetainLock] = 0.013f,   // 游戏音效样本里主冲击的位置（2026-11-12 量的）
 	};
 
 	/// <summary>在 delay 秒后的那一帧「打中」：按起音提前量提前开始播。</summary>
@@ -246,7 +247,7 @@ public static class Sfx
 		[MalaisePress] = (E + "debuff", 0.8f), [Wail] = (E + "debuff", 0.8f),
 		[SweepLow] = (E + "enemy/enemy_attacks/seapunk/seapunk_kick", 0.5f),
 		[RetainLock] = (E + "ui/clicks/ui_click", 0.6f),
-		[SmokePuff] = (E + "enemy/enemy_attacks/fogmog/fogmog_summon", 0.5f),
+		[SmokePuff] = (E + "block_break", 0.5f),   // 起音快（fogmog_summon 前面有 0.73s 空白，和画面对不上）
 		[CardCut] = (E + "enemy/enemy_attacks/test_subject/test_subject_slash", 0.45f),
 		[GambleSpin] = (E + "ui/gold/gold_2", 0.7f),
 		// 群蛇形态（SerpentMantle 已直接播游戏事件，这两个不再被调用；万一调用到也走游戏的）
