@@ -40,7 +40,6 @@ public static class CardSkillFx
 	{
 		CardSkillFx2.Register(Cards);
 		CardSkillFx3.Register(Cards);
-		// CardSkillRedo1.Register(Cards);   // 2026-11-12 重做第一批（咒烟版）：用户觉得太暗淡、不像 P5，先不接，等新风格定了再改
 	}
 
 	private static readonly Color Hot = new(1f, 0.96f, 0.94f), Red = new(1f, 0.2f, 0.27f), Crimson = new(0.85f, 0.04f, 0.13f),
