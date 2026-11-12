@@ -403,8 +403,8 @@ public sealed class TimeStop
 		}
 		float r = 1.3f * (0.25f + 0.75f * OutBack(Mathf.Min(1f, t / 0.5f)));
 		float a = Mathf.Min(1f, t / 0.25f);
-		a = Mathf.Lerp(a, 0.42f, Mathf.SmoothStep(0.9f, 1.7f, t));
-		a = Mathf.Min(1f, a + 0.45f * Mathf.Exp(-(t - lastTick) * 3f) * (t >= lastTick ? 1f : 0f));
+		a = Mathf.Lerp(a, 0.24f, Mathf.SmoothStep(0.9f, 1.7f, t));
+		a = Mathf.Min(1f, a + 0.5f * Mathf.Exp(-(t - lastTick) * 3f) * (t >= lastTick ? 1f : 0f));
 		float shatter = 0f;
 		if (_goAt >= 0f)
 		{
@@ -543,10 +543,10 @@ Clk clockFx(vec2 q) {
 	o.inside = inside * vis;
 	vec2 off = -cq * 0.05 * (1.0 - r * r) * inside;
 	// 外沿：玻璃的厚边（内外两道斜面，受光面亮、背光面暗），不是线
-	float rim = exp(-pow((r - 1.0) / 0.03, 2.0)), rim2 = exp(-pow((r - 0.955) / 0.012, 2.0));
-	off += n * ((r - 1.0) / 0.03) * rim * 0.03 - n * ((r - 0.955) / 0.012) * rim2 * 0.008;
+	float rim = exp(-pow((r - 1.0) / 0.055, 2.0)), rim2 = exp(-pow((r - 0.95) / 0.02, 2.0));
+	off += n * ((r - 1.0) / 0.055) * rim * 0.045 - n * ((r - 0.95) / 0.02) * rim2 * 0.01;
 	float lit = max(0.0, dot(n, L));
-	float spec = rim * (0.12 + 0.9 * pow(lit, 3.0)) + rim2 * (0.08 + 0.5 * pow(max(0.0, -dot(n, L)), 4.0));
+	float spec = rim * (0.03 + 0.32 * pow(lit, 2.0)) + rim2 * (0.02 + 0.18 * pow(max(0.0, -dot(n, L)), 3.0));
 	// 60 个分刻度（细小的玻璃切口）
 	float a60 = abs(fract(ang / 6.28318 * 60.0 + 0.5) - 0.5) / 60.0 * 6.28318 * r;
 	float m60 = smoothstep(0.006, 0.002, a60) * smoothstep(0.89, 0.9, r) * smoothstep(0.945, 0.935, r);
@@ -556,12 +556,12 @@ Clk clockFx(vec2 q) {
 	float idx = floor(fi + 0.5);
 	bool major = mod(idx + 12.0, 3.0) < 0.5;
 	float a12 = (fi - idx) / 12.0 * 6.28318 * r;
-	float tw = major ? 0.03 : 0.018, tin = major ? 0.66 : 0.75;
+	float tw = major ? 0.022 : 0.013, tin = major ? 0.7 : 0.77;
 	float m12 = smoothstep(tw, tw * 0.4, abs(a12)) * smoothstep(tin - 0.01, tin + 0.01, r) * smoothstep(0.9, 0.88, r);
 	vec2 tdir = vec2(cos(ang), sin(ang));
 	off += tdir * sign(a12) * m12 * (1.0 - abs(a12) / tw) * 0.012;
-	spec += m12 * (0.25 + 0.6 * smoothstep(0.0, tw, -a12 * sign(dot(tdir, L) + 1e-3)));
-	o.red += smoothstep(tw * 0.55, tw * 0.15, abs(a12)) * m12 * (major ? 0.95 : 0.7);
+	spec += m12 * (0.12 + 0.35 * smoothstep(0.0, tw, -a12 * sign(dot(tdir, L) + 1e-3)));
+	o.red += smoothstep(tw * 0.55, tw * 0.15, abs(a12)) * m12 * (major ? 0.62 : 0.38);
 	// 红色半调网点环（P5）：钟面里一圈，网点越往外越大，跟分针反着慢慢转
 	float ra = ang - ck_h.y * 0.35;
 	vec2 hp = vec2(ra / 6.28318 * 84.0, (r - 0.42) * 26.0);
@@ -569,7 +569,7 @@ Clk clockFx(vec2 q) {
 	vec2 hc = vec2(fract(hp.x + 0.5 * mod(row, 2.0)) - 0.5, fract(hp.y) - 0.5);
 	float ring = smoothstep(0.42, 0.47, r) * smoothstep(0.64, 0.58, r);
 	float dotR = 0.12 + 0.3 * clamp((r - 0.42) / 0.22, 0.0, 1.0);
-	o.red += smoothstep(dotR, dotR - 0.08, length(hc * vec2(1.0, 1.1))) * ring * 0.45;
+	o.red += smoothstep(dotR, dotR - 0.08, length(hc * vec2(1.0, 1.1))) * ring * 0.36;
 	// 指针：时针、分针透明玻璃，秒针 P5 红
 	vec2 hH = hand(cq, ck_h.x, 0.48, 0.08, 0.05);
 	vec2 hM = handBlur(cq, ck_h.y, ck_blur.x, 0.72, 0.1, 0.036);
@@ -579,7 +579,7 @@ Clk clockFx(vec2 q) {
 		float a = i == 0 ? ck_h.x : ck_h.y;
 		vec2 dir = vec2(sin(a), -cos(a)), side = vec2(-dir.y, dir.x);
 		off += side * h.y * h.x * 0.016;
-		spec += h.x * (0.1 + 0.75 * pow(max(0.0, h.y * sign(dot(side, L))), 5.0));
+		spec += h.x * (0.2 + 0.7 * pow(max(0.0, h.y * sign(dot(side, L))), 4.0));
 	}
 	o.red += hS.x * 0.95;
 	spec += hS.x * smoothstep(0.6, 0.0, abs(hS.y)) * 0.45;
@@ -647,7 +647,7 @@ void fragment() {
 		g *= 1.0 - 0.16 * vig;
 		// P5 的红：暗部透一点暗红（亮部还是冷白），四角一层很淡的红色半调网点
 		float gl = dot(g, vec3(0.3, 0.55, 0.15));
-		g += vec3(0.075, 0.0, 0.012) * (1.0 - smoothstep(0.02, 0.32, gl));
+		g += vec3(0.032, 0.0, 0.006) * (1.0 - smoothstep(0.01, 0.16, gl));
 		vec2 hpx = mat2(vec2(0.7071, 0.7071), vec2(-0.7071, 0.7071)) * (uv * vec2(aspect, 1.0) * 1080.0) / 11.0;
 		float hdot = smoothstep(vig * 0.55, vig * 0.55 - 0.1, length(fract(hpx) - 0.5));
 		g = mix(g, vec3(0.42, 0.03, 0.06), hdot * smoothstep(0.15, 0.8, vig) * 0.38);
