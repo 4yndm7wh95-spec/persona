@@ -737,7 +737,8 @@ public partial class Preview : Node2D
 				var list = new List<TimeStop.Actor>();
 				foreach (var (at, body) in p._enemies)
 				{
-					if (body is SpinePlayer sp) list.Add(new TimeStop.Actor(body, at, s => sp.Speed = s));
+					float w = at == Enemy ? 300f : 240f;
+					if (body is SpinePlayer sp) list.Add(new TimeStop.Actor(body, at, new Rect2(at.X - w * 0.5f, 830f - 330f, w, 330f), s => sp.Speed = s));
 				}
 				return list;
 			};

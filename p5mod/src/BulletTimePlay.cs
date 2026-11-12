@@ -36,7 +36,8 @@ public static class BulletTimePlay
 		{
 			if (!GodotObject.IsInstanceValid(n) || n.Entity is not Creature c || !c.IsEnemy || c.IsDead || n.Visuals is not { } v) continue;
 			NCreature node = n;
-			list.Add(new TimeStop.Actor(v, n.VfxSpawnPosition, s =>
+			Rect2 hb = n.Hitbox.GetGlobalRect();
+			list.Add(new TimeStop.Actor(v, n.VfxSpawnPosition, hb.Grow(hb.Size.Y * 0.15f), s =>
 			{
 				if (GodotObject.IsInstanceValid(node) && node.Visuals?.SpineBody?.TryGetAnimationState() is { } st) st.SetTimeScale(s);
 			}));

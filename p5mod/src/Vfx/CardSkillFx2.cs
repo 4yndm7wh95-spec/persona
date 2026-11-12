@@ -313,7 +313,7 @@ void fragment() {
 	// ═══════════════════════════ 子弹时间：只有他在动的世界 ═══════════════════════════
 
 	/// <summary>子弹时间：时停到回合结束（Vfx/TimeStop.cs；回合结束的接法在 BulletTimePlay.cs）。</summary>
-	public static void BulletTime(SkillCtx c) => TimeStop.Start(c.Front, c.Feet, c.Tall, c.Face);
+	public static void BulletTime(SkillCtx c) => TimeStop.Start(c.Front, c.Back, c.Feet, c.Tall, c.Face);
 
 	// ═══════════════════════════ 夹击：左右两刃交叉钉住 ═══════════════════════════
 
