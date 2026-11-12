@@ -28,7 +28,8 @@ public sealed class TimeStop
 
 	private const float StopDur = 0.75f, GoDur = 0.55f, Reach = 7.5f, EnemySlow = 0.1f;
 
-	private readonly Control _front;
+	private readonly Control _front, _back;
+	private Vector2 _hand;
 	private readonly Node2D _screen, _enemyScreen, _bitsRoot;
 	private readonly ShaderMaterial _m, _em;
 	private readonly Vector2 _center;
@@ -41,7 +42,20 @@ public sealed class TimeStop
 	private readonly Dictionary<ulong, (Actor A, float Cur, bool Hit, bool Jolted)> _actors = new();
 	private readonly List<(Vector2 At, Vector2 Dir)> _marks = new();
 	private readonly List<float> _ticks = new();          // 时停里每出一张牌的时刻：秒针往前跳一格
-	private float _prevS, _prevM;
+	private float _prevS, _prevM, _ckR = 1f, _hs;
+	private const float ClockR = 0.85f;
+	private Vector2 ClockCenter => _center + new Vector2(0f, -0.13f * _tall);
+	// 三张冻在钟边上的预告信卡
+	private sealed class FrozenCard
+	{
+		public Phantom.P5Card C = null!;
+		public Vector2 From, To;
+		public float Tilt, Flip, Spin, Sheen = -10f, Burn = -1f, Seed;
+		public Vector2 BurnVel;
+	}
+	private readonly List<FrozenCard> _cards = new();
+	private int _nextSheen;
+	private bool _shattered;
 
 	private sealed class Bit
 	{
@@ -56,6 +70,8 @@ public sealed class TimeStop
 	private TimeStop(Control front, Control back, Vector2 feet, float tall, float face)
 	{
 		_front = front;
+		_back = back;
+		_hand = feet + new Vector2(0.35f * face, -0.75f) * tall;
 		_tall = tall;
 		_face = face;
 		_center = feet + new Vector2(0f, -0.5f * tall);
@@ -83,7 +99,7 @@ public sealed class TimeStop
 	}
 
 	/// <summary>打出子弹时间。已经在时停里（同一回合又打一张）：只再涨一下，不再开一层。</summary>
-	public static void Start(Control front, Control? back, Vector2 feet, float tall, float face)
+	public static void Start(Control front, Control? back, Vector2 feet, float tall, float face, Vector2? hand = null)
 	{
 		if (Current is { } cur && !cur._done && cur._goAt < 0f)
 		{
@@ -94,18 +110,38 @@ public sealed class TimeStop
 		Current?.Finish();
 		var ts = new TimeStop(front, back ?? front, feet, tall, face);
 		Current = ts;
+		if (hand is Vector2 h) ts._hand = h;
 		// 拍 1：「咔」——钟停住；冷的霜声往里收。拍 2（0.62s）：最后一下很轻的「嗒」，像秒针停住前的余震
 		Sfx.Take("gx_tock", 0.55f);
 		Sfx.Take("gx_freeze", 0.28f, 0.02f);
 		Sfx.Take("gx_tick", 0.28f, 0.62f);   // 指针急停、卡住
 		ts.Burst();
+		ts.Cards();
 	}
 
 	/// <summary>时停里出了一张牌（delay 秒后 = 出手那一帧）：空间轻轻一涨 + 很轻的「嗒」。</summary>
 	public void Card(float delay)
 	{
 		if (_goAt >= 0f) return;
-		Fx.After(_front, delay, () => { Pulse(); _ticks.Add(_t); Sfx.Take("gx_tick", 0.3f); });
+		Fx.After(_front, delay, () =>
+		{
+			if (_goAt >= 0f || _done) return;
+			Pulse();
+			_ticks.Add(_t);
+			Sfx.Take("gx_tick", 0.3f);
+			// 秒针跳到的那一格：针尖迸出一点红火花，飞一下就冻住（越积越多）
+			float a = _hs + Mathf.Tau / 12f;
+			Vector2 dir = new(Mathf.Sin(a), -Mathf.Cos(a));
+			Vector2 tip = ClockCenter + dir * _ckR * _tall * 0.9f;
+			float u = _tall / 360f;
+			for (int i = 0; i < 3; i++)
+			{
+				Vector2 v = dir.Rotated(Fx.Rand(-0.9f, 0.9f)) * Fx.Rand(260f, 480f) * u;
+				AddStreak(tip, v, Fx.Rand(18f, 32f) * u, Fx.Rand(0.03f, 0.1f) * _tall, true);
+			}
+			// 钟边上的一张卡闪过一道高光
+			if (_cards.Count > 0) _cards[_nextSheen++ % _cards.Count].Sheen = _t;
+		});
 	}
 
 	/// <summary>命中（Impact.Confirm）：命中点溅出的碎片、火花飞一小段就冻在半空，回合结束一齐接着飞。</summary>
@@ -132,6 +168,13 @@ public sealed class TimeStop
 	{
 		if (_goAt >= 0f || _done) return;
 		_goAt = _t;
+		foreach (FrozenCard f in _cards)
+		{
+			if (!GodotObject.IsInstanceValid(f.C.Root)) continue;
+			f.Burn = 0f;
+			f.BurnVel = (f.C.Root.GlobalPosition - ClockCenter).Normalized() * 420f * _tall / 360f + new Vector2(0f, -150f);
+		}
+		Sfx.Take("gx_burn", 0.22f, 0.12f);
 		Sfx.Take("gx_tock", 0.5f);
 		Sfx.Take("gx_glass", 0.36f, 0.1f);
 		Sfx.Take("gx_whoosh", 0.18f, 0.04f);
@@ -241,6 +284,7 @@ public sealed class TimeStop
 			m.SetShaderParameter("amount", Mathf.Min(1f, _t / 0.06f));
 		}
 		Clock(dt);
+		StepCards(dt);
 
 		// 敌人：波过了就慢下来（平滑地慢，不是一下卡住）；回来的波过了恢复，被打过的一震
 		List<Actor> live = Enemies();
@@ -377,6 +421,91 @@ public sealed class TimeStop
 		}
 	}
 
+	/// <summary>三张预告信卡从手里甩出去，飞到钟边上急停、冻在半空（微微浮动），回合结束接着转、从底边烧掉。</summary>
+	private void Cards()
+	{
+		float w = 0.15f * _tall;
+		float[] angs = { -_face * 1.1f, _face * 0.55f, -_face * 2.3f };      // 钟面上的角度（0 = 12 点，顺时针）：身后上方、身前上方、身后下方
+		for (int i = 0; i < angs.Length; i++)
+		{
+			Vector2 dir = new(Mathf.Sin(angs[i]), -Mathf.Cos(angs[i]));
+			Phantom.P5Card c = Phantom.Card(_back, _hand, w, 900.0, trail: 0.55f);
+			c.Root.Visible = false;
+			_cards.Add(new FrozenCard
+			{
+				C = c, From = _hand, To = ClockCenter + dir * ClockR * _tall * 1.08f, Tilt = Fx.Rand(-0.5f, 0.5f) + angs[i] * 0.25f,
+				Flip = Fx.Rand(0.25f, 0.6f) * (i % 2 == 0 ? 1f : -1f), Spin = Fx.Rand(14f, 20f), Seed = Fx.Rand(0f, 6f),
+			});
+		}
+		Sfx.Take("gx_card_slide", 0.3f, 0.05f);
+	}
+
+	private void StepCards(float dt)
+	{
+		for (int i = 0; i < _cards.Count; i++)
+		{
+			FrozenCard f = _cards[i];
+			if (!GodotObject.IsInstanceValid(f.C.Root)) continue;
+			float s = _t - 0.04f * i;
+			if (s < 0f) continue;
+			f.C.Root.Visible = true;
+			if (f.Burn < 0f)
+			{
+				// 飞出去：0.38s 急停（OutQuint），翻转越转越慢，停在略带角度的牌面；之后几乎不动（极慢地浮、翻）
+				float k = Mathf.Clamp(s / 0.38f, 0f, 1f), e = Ease5.OutQuint(k);
+				Vector2 mid = f.From.Lerp(f.To, 0.5f) + (f.To - f.From).Orthogonal().Normalized() * 0.18f * _tall * _face;
+				Vector2 pos = f.From.Lerp(mid, e).Lerp(mid.Lerp(f.To, e), e);
+				float hover = Mathf.Max(0f, s - 0.38f);
+				pos += new Vector2(Mathf.Sin(hover * 0.5f + f.Seed), Mathf.Sin(hover * 0.37f + f.Seed * 2f)) * 0.006f * _tall;
+				float flip = f.Flip + f.Spin * (1f - e) * 1.2f + Mathf.Sin(hover * 0.3f + f.Seed) * 0.08f;
+				f.C.Place(pos, f.Tilt * e + Mathf.Sin(hover * 0.21f + f.Seed) * 0.03f, flip, 0.6f + 0.4f * Ease5.OutQuint(Mathf.Min(1f, s / 0.2f)));
+				if (k >= 1f && f.C.Trail != null) { f.C.Trail.Kill(); f.C.Trail = null; }
+				float sh = _t - f.Sheen;
+				f.C.Set("sheen", sh >= 0f && sh < 0.4f ? sh / 0.4f * 3f - 1f : -1f);
+				f.C.Set("glow", k < 1f ? 0f : Mathf.Max(0f, 0.5f - (s - 0.38f) * 3f));
+				f.C.Set("alpha", 1f);
+			}
+			else
+			{
+				// 时间回来：接着转起来往外飞，从底边烧掉
+				f.Burn += dt;
+				float b = f.Burn;
+				f.BurnVel += new Vector2(0f, 500f * _tall / 360f) * dt;
+				Vector2 pos = f.C.Root.GlobalPosition + f.BurnVel * dt;
+				f.Flip += f.Spin * dt * 0.6f;
+				f.Tilt += dt * 3f * _face;
+				f.C.Place(pos, f.Tilt, f.Flip, 1f);
+				f.C.Set("clip", new Vector3(0f, -1f, -1.2f));
+				f.C.Set("burn", Mathf.Clamp(b / 0.55f, 0f, 1f));
+				if (b > 0.7f) f.C.Root.QueueFree();
+			}
+		}
+	}
+
+	/// <summary>回合结束：钟碎成玻璃碎片，从钟面上往外迸、落下。</summary>
+	private void Shatter()
+	{
+		_shattered = true;
+		float u = _tall / 360f, R = _ckR * _tall;
+		for (int i = 0; i < 26; i++)
+		{
+			float a = Fx.Rand(0f, Mathf.Tau);
+			float rr = Mathf.Sqrt(Fx.Rand(0.15f, 1f)) * R;
+			Vector2 dir = new(Mathf.Sin(a), -Mathf.Cos(a));
+			Vector2 at = ClockCenter + dir * rr;
+			Node2D n = new();
+			_bitsRoot.AddChild(n);
+			float sz = Fx.Rand(10f, 26f) * u;
+			Vector2[] tri = { new(-sz, -sz * Fx.Rand(0.2f, 0.6f)), new(sz * Fx.Rand(0.6f, 1.1f), -sz * 0.1f), new(-sz * 0.3f, sz * Fx.Rand(0.5f, 0.9f)) };
+			Fx.Poly(n, tri, new Color(0.78f, 0.85f, 0.95f, 0.16f));
+			Polygon2D glint = Fx.Poly(n, new[] { tri[0], tri[1], tri[0].Lerp(tri[1], 0.5f) + new Vector2(0f, sz * 0.12f) }, new Color(1f, 0.97f, 0.96f, 0.9f), additive: true);
+			if (i % 4 == 0) Fx.Poly(n, new[] { tri[1], tri[2], tri[1].Lerp(tri[2], 0.5f) + new Vector2(-sz * 0.1f, 0f) }, new Color(1f, 0.15f, 0.2f, 0.7f), additive: true);
+			Vector2 v = dir * Fx.Rand(280f, 720f) * u * (0.6f + rr / R) + new Vector2(0f, -160f * u);
+			_bits.Add(new Bit { Node = n, Glint = glint, Pos = at, Origin = ClockCenter, Vel = v, Rot = Fx.Rand(0f, Mathf.Tau), Spin = Fx.Rand(6f, 16f) * (i % 2 == 0 ? 1f : -1f), Life = 0f, Need = 0f, Travel = 1f });
+			n.Position = at;
+		}
+	}
+
 	private static float OutBack(float x) { const float c1 = 1.70158f; float y = x - 1f; return 1f + (c1 + 1f) * y * y * y + c1 * y * y; }
 
 	private static float Spring(float s) => s <= 0f ? 0f : 1f - Mathf.Exp(-s * 22f) * Mathf.Cos(s * 34f);
@@ -401,7 +530,7 @@ public sealed class TimeStop
 			hm += notch / 12f * Spring(t - tk);
 			lastTick = tk;
 		}
-		float r = 1.3f * (0.25f + 0.75f * OutBack(Mathf.Min(1f, t / 0.5f)));
+		float r = ClockR * (0.25f + 0.75f * OutBack(Mathf.Min(1f, t / 0.5f)));
 		float a = Mathf.Min(1f, t / 0.25f);
 		a = Mathf.Lerp(a, 0.24f, Mathf.SmoothStep(0.9f, 1.7f, t));
 		a = Mathf.Min(1f, a + 0.5f * Mathf.Exp(-(t - lastTick) * 3f) * (t >= lastTick ? 1f : 0f));
@@ -415,10 +544,13 @@ public sealed class TimeStop
 			r *= 1f + 0.45f * ee;
 			a = Mathf.Max(a, 1f - g / 0.25f) * (1f - Mathf.SmoothStep(0.15f, 0.6f, g));
 			shatter = Mathf.Clamp((g - 0.12f) / 0.45f, 0f, 1f);
+			if (!_shattered && g > 0.2f) Shatter();
 		}
 		// 转得快的时候指针拖出残影（按这一帧转过的角度）
 		float bs = dt > 0f ? Mathf.Min(1.4f, Mathf.Abs(hs - _prevS)) : 0f, bm = dt > 0f ? Mathf.Min(1.0f, Mathf.Abs(hm - _prevM)) : 0f;
 		_prevS = hs;
+		_hs = hs;
+		_ckR = r;
 		_prevM = hm;
 		_m.SetShaderParameter("ck_r", r);
 		_m.SetShaderParameter("ck_a", a);
@@ -453,6 +585,7 @@ public sealed class TimeStop
 		if (GodotObject.IsInstanceValid(_screen)) _screen.QueueFree();
 		if (GodotObject.IsInstanceValid(_enemyScreen)) _enemyScreen.QueueFree();
 		if (GodotObject.IsInstanceValid(_bitsRoot)) _bitsRoot.QueueFree();
+		foreach (FrozenCard f in _cards) if (GodotObject.IsInstanceValid(f.C.Root)) f.C.Root.QueueFree();
 		if (Current == this) Current = null;
 	}
 
@@ -482,7 +615,7 @@ uniform float reach = 7.5;              // 波走多远（身高为单位）
 uniform float pulse_s = 10.0;           // 时停里出牌后过了几秒（从他身边推出一小圈涟漪）
 uniform float amount = 1.0;
 // 透明大时钟（mode 0）
-uniform float ck_r = 1.3;               // 半径（身高为单位）
+uniform float ck_r = 0.85;               // 半径（身高为单位）
 uniform float ck_a = 0.0;               // 可见度
 uniform vec3 ck_h = vec3(0.0);          // 时针、分针、秒针角度（0 = 12 点，顺时针）
 uniform vec2 ck_blur = vec2(0.0);       // 分针、秒针这一帧转过的角度（拖影）
@@ -570,6 +703,26 @@ Clk clockFx(vec2 q) {
 	float ring = smoothstep(0.42, 0.47, r) * smoothstep(0.64, 0.58, r);
 	float dotR = 0.12 + 0.3 * clamp((r - 0.42) / 0.22, 0.0, 1.0);
 	o.red += smoothstep(dotR, dotR - 0.08, length(hc * vec2(1.0, 1.1))) * ring * 0.36;
+	// 表盘里两个透明齿轮（跟着分针转、一起停）：只靠折射 + 受光边的高光，齿尖一点红
+	for (int gi = 0; gi < 2; gi++) {
+		vec2 gc = gi == 0 ? vec2(-0.3, 0.22) : vec2(0.17, 0.4);
+		float gR = gi == 0 ? 0.27 : 0.17, teeth = gi == 0 ? 16.0 : 10.0;
+		float rot = gi == 0 ? ck_h.y * 1.6 : -ck_h.y * 1.6 * 16.0 / 10.0 + 0.16;
+		vec2 gp = cq - gc;
+		float gr = length(gp), ga = atan(gp.y, gp.x) - rot;
+		float tooth = smoothstep(0.15, 0.55, 0.5 + 0.5 * cos(ga * teeth));
+		float edgeR = gR + 0.03 * tooth;
+		float body = smoothstep(edgeR + 0.008, edgeR - 0.006, gr) * (1.0 - smoothstep(gR * 0.28 + 0.006, gR * 0.28 - 0.006, gr));
+		// 轮辐之间的镂空
+		float spoke = abs(fract((ga * 5.0) / 6.28318 + 0.5) - 0.5);
+		float hole = smoothstep(0.17, 0.14, spoke) * smoothstep(gR * 0.42, gR * 0.48, gr) * smoothstep(gR * 0.8, gR * 0.74, gr);
+		body *= 1.0 - hole;
+		vec2 gn = gp / max(gr, 1e-4);
+		float gEdge = body * smoothstep(edgeR - 0.035, edgeR, gr);
+		off += gn * body * 0.012 + gn * gEdge * 0.01;
+		spec += gEdge * (0.06 + 0.4 * pow(max(0.0, dot(gn, L)), 3.0)) * 0.8 + body * 0.03;
+		o.red += gEdge * tooth * 0.22;
+	}
 	// 指针：时针、分针透明玻璃，秒针 P5 红
 	vec2 hH = hand(cq, ck_h.x, 0.48, 0.08, 0.05);
 	vec2 hM = handBlur(cq, ck_h.y, ck_blur.x, 0.72, 0.1, 0.036);
@@ -623,7 +776,9 @@ void fragment() {
 		}
 		m *= frozen * amount;
 		if (m <= 0.001) discard;
-		vec3 b = texture(screen_tex, uv).rgb;
+		// 冻住的敌人带一点红蓝错开（像停在动作中间）
+		vec2 ca = vec2(2.5 / 1080.0 / aspect, 0.0);
+		vec3 b = vec3(texture(screen_tex, uv + ca).r, texture(screen_tex, uv).g, texture(screen_tex, uv - ca).b);
 		COLOR = vec4(grade(b, 0.0), m);
 	} else {
 		vec2 radial = normalize(q + 1e-5) / vec2(aspect, 1.0) * tall;
