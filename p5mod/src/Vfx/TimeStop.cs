@@ -40,6 +40,8 @@ public sealed class TimeStop
 	private readonly List<Bit> _bits = new();
 	private readonly Dictionary<ulong, (Actor A, float Cur, bool Hit, bool Jolted)> _actors = new();
 	private readonly List<(Vector2 At, Vector2 Dir)> _marks = new();
+	private readonly List<float> _ticks = new();          // 时停里每出一张牌的时刻：秒针往前跳一格
+	private float _prevS, _prevM;
 
 	private sealed class Bit
 	{
@@ -95,7 +97,7 @@ public sealed class TimeStop
 		// 拍 1：「咔」——钟停住；冷的霜声往里收。拍 2（0.62s）：最后一下很轻的「嗒」，像秒针停住前的余震
 		Sfx.Take("gx_tock", 0.55f);
 		Sfx.Take("gx_freeze", 0.28f, 0.02f);
-		Sfx.Take("gx_tick", 0.2f, 0.62f);
+		Sfx.Take("gx_tick", 0.28f, 0.62f);   // 指针急停、卡住
 		ts.Burst();
 	}
 
@@ -103,7 +105,7 @@ public sealed class TimeStop
 	public void Card(float delay)
 	{
 		if (_goAt >= 0f) return;
-		Fx.After(_front, delay, () => { Pulse(); Sfx.Take("gx_tick", 0.3f); });
+		Fx.After(_front, delay, () => { Pulse(); _ticks.Add(_t); Sfx.Take("gx_tick", 0.3f); });
 	}
 
 	/// <summary>命中（Impact.Confirm）：命中点溅出的碎片、火花飞一小段就冻在半空，回合结束一齐接着飞。</summary>
@@ -133,6 +135,7 @@ public sealed class TimeStop
 		Sfx.Take("gx_tock", 0.5f);
 		Sfx.Take("gx_glass", 0.36f, 0.1f);
 		Sfx.Take("gx_whoosh", 0.18f, 0.04f);
+		for (int i = 0; i < 4; i++) Sfx.Take("gx_tick", 0.13f - 0.02f * i, 0.05f + 0.07f * i);   // 指针快进追回时间：一串很轻的棘轮声
 	}
 
 	public static void StopCurrent() => Current?.Stop();
@@ -237,6 +240,7 @@ public sealed class TimeStop
 			m.SetShaderParameter("pulse_s", ps);
 			m.SetShaderParameter("amount", Mathf.Min(1f, _t / 0.06f));
 		}
+		Clock(dt);
 
 		// 敌人：波过了就慢下来（平滑地慢，不是一下卡住）；回来的波过了恢复，被打过的一震
 		List<Actor> live = Enemies();
@@ -373,6 +377,56 @@ public sealed class TimeStop
 		}
 	}
 
+	private static float OutBack(float x) { const float c1 = 1.70158f; float y = x - 1f; return 1f + (c1 + 1f) * y * y * y + c1 * y * y; }
+
+	private static float Spring(float s) => s <= 0f ? 0f : 1f - Mathf.Exp(-s * 22f) * Mathf.Cos(s * 34f);
+
+	/// <summary>
+	/// 透明大时钟（背景层着色器画，玻璃一样只靠折射 + 高光显形；用户 2026-11-12：从 Joker 身上展开一个透明的时钟特效）：
+	/// 打出时从他胸口展开、三根针飞转后急停卡住（0.62s，和「嗒」对上）；之后淡到很淡挂在他身后；
+	/// 时停里每出一张牌，红色秒针往前跳一格（带一点回弹），钟亮一下；回合结束指针快进追回时间，钟放大、碎散。
+	/// </summary>
+	private void Clock(float dt)
+	{
+		float t = _t;
+		float k = Mathf.Clamp(t / 0.62f, 0f, 1f), e = 1f - Mathf.Pow(1f - k, 3f);
+		float hh = -1.05f - 0.6f * (1f - e), hm = 1.9f - Mathf.Tau * (1f - e), hs = -5f * Mathf.Pi * (1f - e);
+		float rs = t - 0.62f;
+		if (rs > 0f) hs += 0.09f * Mathf.Sin(rs * 45f) * Mathf.Exp(-rs * 10f);
+		const float notch = Mathf.Tau / 12f;
+		float lastTick = -10f;
+		foreach (float tk in _ticks)
+		{
+			hs += notch * Spring(t - tk);
+			hm += notch / 12f * Spring(t - tk);
+			lastTick = tk;
+		}
+		float r = 1.3f * (0.25f + 0.75f * OutBack(Mathf.Min(1f, t / 0.5f)));
+		float a = Mathf.Min(1f, t / 0.25f);
+		a = Mathf.Lerp(a, 0.42f, Mathf.SmoothStep(0.9f, 1.7f, t));
+		a = Mathf.Min(1f, a + 0.45f * Mathf.Exp(-(t - lastTick) * 3f) * (t >= lastTick ? 1f : 0f));
+		float shatter = 0f;
+		if (_goAt >= 0f)
+		{
+			float g = t - _goAt, kk = Mathf.Clamp(g / 0.42f, 0f, 1f), ee = kk * kk * (3f - 2f * kk);
+			hs += 6f * Mathf.Pi * ee;
+			hm += 1.5f * Mathf.Pi * ee;
+			hh += 0.4f * ee;
+			r *= 1f + 0.45f * ee;
+			a = Mathf.Max(a, 1f - g / 0.25f) * (1f - Mathf.SmoothStep(0.15f, 0.6f, g));
+			shatter = Mathf.Clamp((g - 0.12f) / 0.45f, 0f, 1f);
+		}
+		// 转得快的时候指针拖出残影（按这一帧转过的角度）
+		float bs = dt > 0f ? Mathf.Min(1.4f, Mathf.Abs(hs - _prevS)) : 0f, bm = dt > 0f ? Mathf.Min(1.0f, Mathf.Abs(hm - _prevM)) : 0f;
+		_prevS = hs;
+		_prevM = hm;
+		_m.SetShaderParameter("ck_r", r);
+		_m.SetShaderParameter("ck_a", a);
+		_m.SetShaderParameter("ck_h", new Vector3(hh, hm, hs));
+		_m.SetShaderParameter("ck_blur", new Vector2(bm, bs));
+		_m.SetShaderParameter("ck_shatter", shatter);
+	}
+
 	/// <summary>被打过的敌人：时间回来那一下，攒着的受击一下子落到身上——往后一震、白一下。</summary>
 	private void Jolt(Actor a)
 	{
@@ -427,6 +481,13 @@ uniform float go_dur = 0.55;
 uniform float reach = 7.5;              // 波走多远（身高为单位）
 uniform float pulse_s = 10.0;           // 时停里出牌后过了几秒（从他身边推出一小圈涟漪）
 uniform float amount = 1.0;
+// 透明大时钟（mode 0）
+uniform float ck_r = 1.3;               // 半径（身高为单位）
+uniform float ck_a = 0.0;               // 可见度
+uniform vec3 ck_h = vec3(0.0);          // 时针、分针、秒针角度（0 = 12 点，顺时针）
+uniform vec2 ck_blur = vec2(0.0);       // 分针、秒针这一帧转过的角度（拖影）
+uniform float ck_shatter = 0.0;         // 回合结束碎散 0 → 1
+uniform vec2 ck_c = vec2(0.0, -0.13);   // 钟心相对身体中间（身高为单位）：胸口
 
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 vec2 hash2(vec2 p) { return vec2(hash(p), hash(p + 17.31)); }
@@ -435,6 +496,104 @@ vec2 local(vec2 uv) { return (uv - center) * vec2(aspect, 1.0) / tall; }
 float dist(vec2 q) { return length(q * vec2(1.0, 1.15)); }
 float arrive(float d, float t0, float dur) { return t0 + dur * (1.0 - sqrt(max(0.0, 1.0 - clamp(d / reach, 0.0, 1.0)))); }
 float waveR(float s, float dur) { return s <= 0.0 ? 0.0 : reach * (1.0 - pow(1.0 - min(1.0, s / dur), 2.0)); }
+
+float noise(vec2 p) {
+	vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+}
+
+// 一根指针（钟面单位坐标，半径 1）：返回 x = 覆盖，y = 有符号的横向位置（-1～1，算折射和受光边）
+vec2 hand(vec2 cq, float a, float len, float tail, float w) {
+	vec2 dir = vec2(sin(a), -cos(a));
+	float al = dot(cq, dir), pp = dot(cq, vec2(-dir.y, dir.x));
+	float ww = w * (1.0 - 0.65 * clamp(al / len, 0.0, 1.0)) + 0.002;
+	float m = smoothstep(ww, ww * 0.45, abs(pp)) * smoothstep(-tail - 0.01, -tail + 0.02, al) * smoothstep(len + 0.01, len - 0.03, al);
+	return vec2(m, clamp(pp / ww, -1.0, 1.0));
+}
+
+// 拖影：沿转过的角度往回取 5 次平均
+vec2 handBlur(vec2 cq, float a, float blur, float len, float tail, float w) {
+	vec2 acc = vec2(0.0); float wsum = 0.0;
+	for (int i = 0; i < 5; i++) {
+		float f = float(i) / 4.0;
+		float wt = 1.0 - 0.75 * f;
+		vec2 h = hand(cq, a - blur * f, len, tail, w);
+		acc += vec2(h.x * wt, h.y * h.x * wt); wsum += wt;
+	}
+	return vec2(min(1.0, acc.x / wsum * (1.0 + blur * 1.5)), acc.x > 0.001 ? acc.y / max(acc.x, 1e-3) : 0.0);
+}
+
+// 透明大时钟：返回折射偏移（身高单位）、高光、红、表盘内部
+struct Clk { vec2 off; float spec; float red; float inside; };
+Clk clockFx(vec2 q) {
+	Clk o; o.off = vec2(0.0); o.spec = 0.0; o.red = 0.0; o.inside = 0.0;
+	if (ck_a <= 0.001) return o;
+	vec2 cq = (q - ck_c) / ck_r;
+	float r = length(cq);
+	if (r > 1.15) return o;
+	float ang = atan(cq.x, -cq.y);
+	vec2 n = cq / max(r, 1e-4);
+	vec2 L = normalize(vec2(-0.55, -0.85));          // 光从左上来
+	// 碎散：按噪声一块块化掉
+	float sh = noise(cq * 5.0 + 3.1) * 0.8 + noise(cq * 13.0) * 0.2;
+	float vis = ck_a * (1.0 - smoothstep(sh - 0.1, sh + 0.02, ck_shatter * 1.15));
+	if (vis <= 0.001) return o;
+	// 表盘：一块很薄的透镜，往里放大一点
+	float inside = smoothstep(1.0, 0.96, r);
+	o.inside = inside * vis;
+	vec2 off = -cq * 0.05 * (1.0 - r * r) * inside;
+	// 外沿：玻璃的厚边（内外两道斜面，受光面亮、背光面暗），不是线
+	float rim = exp(-pow((r - 1.0) / 0.03, 2.0)), rim2 = exp(-pow((r - 0.955) / 0.012, 2.0));
+	off += n * ((r - 1.0) / 0.03) * rim * 0.03 - n * ((r - 0.955) / 0.012) * rim2 * 0.008;
+	float lit = max(0.0, dot(n, L));
+	float spec = rim * (0.12 + 0.9 * pow(lit, 3.0)) + rim2 * (0.08 + 0.5 * pow(max(0.0, -dot(n, L)), 4.0));
+	// 60 个分刻度（细小的玻璃切口）
+	float a60 = abs(fract(ang / 6.28318 * 60.0 + 0.5) - 0.5) / 60.0 * 6.28318 * r;
+	float m60 = smoothstep(0.006, 0.002, a60) * smoothstep(0.89, 0.9, r) * smoothstep(0.945, 0.935, r);
+	spec += m60 * 0.3;
+	// 12 个时刻度：玻璃条，红芯；3、6、9、12 更长更粗
+	float fi = ang / 6.28318 * 12.0;
+	float idx = floor(fi + 0.5);
+	bool major = mod(idx + 12.0, 3.0) < 0.5;
+	float a12 = (fi - idx) / 12.0 * 6.28318 * r;
+	float tw = major ? 0.03 : 0.018, tin = major ? 0.66 : 0.75;
+	float m12 = smoothstep(tw, tw * 0.4, abs(a12)) * smoothstep(tin - 0.01, tin + 0.01, r) * smoothstep(0.9, 0.88, r);
+	vec2 tdir = vec2(cos(ang), sin(ang));
+	off += tdir * sign(a12) * m12 * (1.0 - abs(a12) / tw) * 0.012;
+	spec += m12 * (0.25 + 0.6 * smoothstep(0.0, tw, -a12 * sign(dot(tdir, L) + 1e-3)));
+	o.red += smoothstep(tw * 0.55, tw * 0.15, abs(a12)) * m12 * (major ? 0.95 : 0.7);
+	// 红色半调网点环（P5）：钟面里一圈，网点越往外越大，跟分针反着慢慢转
+	float ra = ang - ck_h.y * 0.35;
+	vec2 hp = vec2(ra / 6.28318 * 84.0, (r - 0.42) * 26.0);
+	float row = floor(hp.y);
+	vec2 hc = vec2(fract(hp.x + 0.5 * mod(row, 2.0)) - 0.5, fract(hp.y) - 0.5);
+	float ring = smoothstep(0.42, 0.47, r) * smoothstep(0.64, 0.58, r);
+	float dotR = 0.12 + 0.3 * clamp((r - 0.42) / 0.22, 0.0, 1.0);
+	o.red += smoothstep(dotR, dotR - 0.08, length(hc * vec2(1.0, 1.1))) * ring * 0.45;
+	// 指针：时针、分针透明玻璃，秒针 P5 红
+	vec2 hH = hand(cq, ck_h.x, 0.48, 0.08, 0.05);
+	vec2 hM = handBlur(cq, ck_h.y, ck_blur.x, 0.72, 0.1, 0.036);
+	vec2 hS = handBlur(cq, ck_h.z, ck_blur.y, 0.9, 0.2, 0.014);
+	for (int i = 0; i < 2; i++) {
+		vec2 h = i == 0 ? hH : hM;
+		float a = i == 0 ? ck_h.x : ck_h.y;
+		vec2 dir = vec2(sin(a), -cos(a)), side = vec2(-dir.y, dir.x);
+		off += side * h.y * h.x * 0.016;
+		spec += h.x * (0.1 + 0.75 * pow(max(0.0, h.y * sign(dot(side, L))), 5.0));
+	}
+	o.red += hS.x * 0.95;
+	spec += hS.x * smoothstep(0.6, 0.0, abs(hS.y)) * 0.45;
+	// 秒针尾巴上的配重圆片 + 钟心
+	vec2 sd = vec2(sin(ck_h.z), -cos(ck_h.z));
+	float cw = smoothstep(0.045, 0.03, length(cq + sd * 0.15));
+	float hub = smoothstep(0.045, 0.03, r);
+	o.red += max(cw, hub) * 0.95;
+	spec += hub * smoothstep(0.03, 0.0, length(cq - vec2(-0.012, -0.014))) * 0.9;
+	o.off = off * vis;
+	o.spec = spec * vis;
+	o.red = clamp(o.red, 0.0, 1.0) * vis;
+	return o;
+}
 
 // 褪色：冷灰，红色不褪
 vec3 grade(vec3 b, float tint) {
@@ -476,7 +635,8 @@ void fragment() {
 		// 出牌：他身边推出一小圈涟漪（走 1.6 个身高就散）
 		float pR = pulse_s * 3.2;
 		float pFront = pulse_s >= 0.0 && pulse_s < 0.6 ? exp(-pow((d - pR) / 0.16, 2.0)) * (1.0 - pulse_s / 0.6) : 0.0;
-		vec2 off = radial * (sFront * 0.05 + gFront * 0.07 + pFront * 0.025);
+		Clk ck = clockFx(q);
+		vec2 off = radial * (sFront * 0.05 + gFront * 0.07 + pFront * 0.025) + ck.off * ck_r * tall / vec2(aspect, 1.0);
 		vec3 b;
 		b.r = texture(screen_tex, uv - off * 1.35).r;
 		b.g = texture(screen_tex, uv - off).g;
@@ -485,6 +645,12 @@ void fragment() {
 		g = (g - 0.4) * 1.04 + 0.42;
 		float vig = smoothstep(0.45, 1.3, length((uv - vec2(0.5)) * vec2(aspect * 0.6, 1.0)));
 		g *= 1.0 - 0.16 * vig;
+		// P5 的红：暗部透一点暗红（亮部还是冷白），四角一层很淡的红色半调网点
+		float gl = dot(g, vec3(0.3, 0.55, 0.15));
+		g += vec3(0.075, 0.0, 0.012) * (1.0 - smoothstep(0.02, 0.32, gl));
+		vec2 hpx = mat2(vec2(0.7071, 0.7071), vec2(-0.7071, 0.7071)) * (uv * vec2(aspect, 1.0) * 1080.0) / 11.0;
+		float hdot = smoothstep(vig * 0.55, vig * 0.55 - 0.1, length(fract(hpx) - 0.5));
+		g = mix(g, vec3(0.42, 0.03, 0.06), hdot * smoothstep(0.15, 0.8, vig) * 0.38);
 		vec3 col = mix(b, g, frozen);
 
 		// 浮尘：动着的时候慢慢漂；波过之处停住，时间回来接着漂
@@ -510,6 +676,12 @@ void fragment() {
 		}
 		float dustA = (0.25 + 0.75 * frozen) * smoothstep(0.0, 0.25, t) * (1.0 - step(0.0, gS) * smoothstep(0.0, go_dur + 0.6, gS));
 		col += vec3(0.78, 0.86, 1.0) * dust * 0.3 * dustA;
+		// 时钟：表盘里透一点暗红的光（越近钟心越暖），玻璃高光，红色的刻度、网点、秒针
+		float cr = length((q - ck_c) / ck_r);
+		col += vec3(0.16, 0.012, 0.03) * ck.inside * pow(max(0.0, 1.0 - cr), 1.5) * 0.9;
+		col += vec3(1.0, 0.96, 0.95) * ck.spec * 0.5;
+		col = mix(col, vec3(0.93, 0.07, 0.13), ck.red * 0.85);
+		col += vec3(0.25, 0.02, 0.04) * ck.red * 0.35;
 		COLOR = vec4(mix(b, col, amount), 1.0);
 	}
 }" };
