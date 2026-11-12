@@ -1,0 +1,15 @@
+{
+  "status": "approved_by_user",
+  "cards": {
+    "genesis": "approved_by_user",
+    "stardust": "approved_by_user",
+    "supermassive": "approved_by_user",
+    "crescent_spear": "approved_by_user",
+    "quasar": "approved_by_user"
+  },
+  "user_review": {
+    "date": "2026-11-12",
+    "message": "OK下一批",
+    "status": "approved_by_user"
+  }
+}

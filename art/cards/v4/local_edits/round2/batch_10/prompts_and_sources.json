@@ -1,0 +1,119 @@
+{
+  "workspace": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a",
+  "base_commit": "8339f23aff2058219755f7dae10a83b151bf76ef",
+  "prompt_document": "docs/codex/codex_card_art_local_edits_round2.md",
+  "batch": 10,
+  "tool": "built-in imagegen",
+  "status": "awaiting_user_review",
+  "review_policy": "User requested completion without intermediate approval; these outputs have not been marked approved.",
+  "records": [
+    {
+      "name": "void_form",
+      "zh_name": "虚空形态",
+      "batch": 10,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/void_form.png",
+      "references": [],
+      "zh_plan": "头顶一圈四角星形光瓣 → 一对简洁的天鹅绒房间蓝蝶翅膀（只要一对大翅膀，不要碎片）；黑色身影、星系漩涡、棕色星座背景不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the radiating cyan four-point star petals and ring around the black figure's head with ONE clean pair of large Velvet Room blue butterfly wings spread behind the head, same overall footprint and glow color, simple big wing shapes with a few vein lines — no scattered shards, no flower-like petals. Keep unchanged: the black figure silhouette with its cyan outline, the small swirling galaxy in its hands, the brown background with its constellation lines.\nInput roles: Image1 is the only edit target and composition master. ",
+      "status": "awaiting_user_review",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the radiating cyan four-point star petals and ring around the black figure's head with ONE clean pair of large Velvet Room blue butterfly wings spread behind the head, same overall footprint and glow color, simple big wing shapes with a few vein lines — no scattered shards, no flower-like petals. Keep unchanged: the black figure silhouette with its cyan outline, the small swirling galaxy in its hands, the brown background with its constellation lines.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-12e9b048-c362-4cc3-baf8-001211ea3834.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-12e9b048-c362-4cc3-baf8-001211ea3834.png",
+      "output_file": "void_form.png",
+      "output_size": [
+        1000,
+        760
+      ],
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/void_form.png": "43e6f01c2d636ec8c81bd979d6b3d12a1e885243b35c8a6a35450dc15e3b3400"
+      }
+    },
+    {
+      "name": "alignment",
+      "zh_name": "星位序列",
+      "batch": 10,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/alignment.png",
+      "references": [],
+      "zh_plan": "没有角色。只把三颗四角星和星座连线换成天鹅绒房间的银丝边加皇家蓝材质；形状、位置、绿色背景全部不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. There is NO character in Image1. Change ONLY the finish of the three large four-point stars and their thin constellation links: keep every star silhouette, size, position, facet layout and link route exactly. New finish: thin silver filigree rim, deep royal-blue and ivory facets, a tiny engraved crescent-moon motif on the largest star's blue facet; the links become fine silver chains. Keep unchanged: the green background, its dark leaf shapes and its glow.\nInput roles: Image1 is the only edit target and composition master. ",
+      "status": "awaiting_user_review",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. There is NO character in Image1. Change ONLY the finish of the three large four-point stars and their thin constellation links: keep every star silhouette, size, position, facet layout and link route exactly. New finish: thin silver filigree rim, deep royal-blue and ivory facets, a tiny engraved crescent-moon motif on the largest star's blue facet; the links become fine silver chains. Keep unchanged: the green background, its dark leaf shapes and its glow.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-cafd5e7c-3896-4dcd-b226-6067cc8d86fc.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-cafd5e7c-3896-4dcd-b226-6067cc8d86fc.png",
+      "output_file": "alignment.png",
+      "output_size": [
+        1000,
+        760
+      ],
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/alignment.png": "2aaa8173f76b20c7a919481d9a0804788e89bfb7d7ee46bcdade13e63c07fe37"
+      }
+    },
+    {
+      "name": "charge",
+      "zh_name": "冲锋！！",
+      "batch": 10,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/charge.png",
+      "references": [],
+      "zh_plan": "没有角色。橙棕色的弯曲翼形（Regent 的形状）→ 深蓝天鹅绒配银边；中间金色四角星和青绿色边线不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. There is NO character in Image1. Change ONLY the material of the large orange-brown curved four-wing shape around the center: keep its silhouette and shading structure exactly, but make it deep royal-blue velvet with thin silver filigree edging and soft hard-edged velvet fold planes. Keep unchanged: the golden four-point star in the center, the teal-green edge lines, the dark navy background.\nInput roles: Image1 is the only edit target and composition master. ",
+      "status": "awaiting_user_review",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. There is NO character in Image1. Change ONLY the material of the large orange-brown curved four-wing shape around the center: keep its silhouette and shading structure exactly, but make it deep royal-blue velvet with thin silver filigree edging and soft hard-edged velvet fold planes. Keep unchanged: the golden four-point star in the center, the teal-green edge lines, the dark navy background.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-431d6382-f37e-4be2-978f-9cd5c765ceb5.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-431d6382-f37e-4be2-978f-9cd5c765ceb5.png",
+      "output_file": "charge.png",
+      "output_size": [
+        1000,
+        760
+      ],
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/charge.png": "c891654b32a6ae7eba339229e706430e7305026386c84b709ed718c0d4876007"
+      }
+    },
+    {
+      "name": "the_sealed_throne",
+      "zh_name": "封印王座",
+      "batch": 10,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/the_sealed_throne.png",
+      "references": [],
+      "zh_plan": "（竖图 606×852）漂浮岛上的金色王座 → 伊戈尔的蓝色天鹅绒高背椅（同位置同大小同轮廓）；岛、裂开的石框、星空不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. IMPORTANT: Image1 is a PORTRAIT 606x852 illustration; keep the output at 606x852 portrait with identical framing (do not convert to landscape). Replace ONLY the small golden throne on the floating rock island in the center with Igor's Velvet Room high-back armchair: royal-blue tufted velvet wingback with gold studs and a silver-trimmed base, same position, height and silhouette footprint, a small cyan star glint kept at its top. Keep unchanged: the floating rock island, the cracked dark stone frame around it, the deep blue starry sky and its constellation lines.\nInput roles: Image1 is the only edit target and composition master. ",
+      "status": "awaiting_user_review",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. IMPORTANT: Image1 is a PORTRAIT 606x852 illustration; keep the output at 606x852 portrait with identical framing (do not convert to landscape). Replace ONLY the small golden throne on the floating rock island in the center with Igor's Velvet Room high-back armchair: royal-blue tufted velvet wingback with gold studs and a silver-trimmed base, same position, height and silhouette footprint, a small cyan star glint kept at its top. Keep unchanged: the floating rock island, the cracked dark stone frame around it, the deep blue starry sky and its constellation lines.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-c87a6d22-e95c-4fac-a32f-bacb44863464.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-c87a6d22-e95c-4fac-a32f-bacb44863464.png",
+      "output_file": "the_sealed_throne.png",
+      "output_size": [
+        606,
+        852
+      ],
+      "generated_size": [
+        1058,
+        1487
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/the_sealed_throne.png": "9ab9f86e0a48e97dc2759be19e8813bcb7675f7a72883e2cc63e5c026f405d83"
+      }
+    }
+  ]
+}

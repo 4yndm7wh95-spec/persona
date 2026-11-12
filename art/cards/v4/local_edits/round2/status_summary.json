@@ -1,0 +1,720 @@
+{
+  "source_commit": "8339f23aff2058219755f7dae10a83b151bf76ef",
+  "generated_count": 49,
+  "approved_by_user_count": 20,
+  "awaiting_user_review_count": 29,
+  "all_prompts_generated": true,
+  "tool": "built-in imagegen",
+  "generation_attempts_per_card": 1,
+  "user_requested_no_intermediate_approval": true,
+  "batches": [
+    {
+      "batch": 1,
+      "count": 5,
+      "comparison": "batch_01/comparison.png"
+    },
+    {
+      "batch": 2,
+      "count": 5,
+      "comparison": "batch_02/comparison.png"
+    },
+    {
+      "batch": 3,
+      "count": 5,
+      "comparison": "batch_03/comparison.png"
+    },
+    {
+      "batch": 4,
+      "count": 5,
+      "comparison": "batch_04/comparison.png"
+    },
+    {
+      "batch": 5,
+      "count": 5,
+      "comparison": "batch_05/comparison.png"
+    },
+    {
+      "batch": 6,
+      "count": 5,
+      "comparison": "batch_06/comparison.png"
+    },
+    {
+      "batch": 7,
+      "count": 5,
+      "comparison": "batch_07/comparison.png"
+    },
+    {
+      "batch": 8,
+      "count": 5,
+      "comparison": "batch_08/comparison.png"
+    },
+    {
+      "batch": 9,
+      "count": 5,
+      "comparison": "batch_09/comparison.png"
+    },
+    {
+      "batch": 10,
+      "count": 4,
+      "comparison": "batch_10/comparison.png"
+    }
+  ],
+  "cards": [
+    {
+      "name": "genesis",
+      "zh_name": "创世纪",
+      "batch": 1,
+      "file": "batch_01/genesis.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/genesis.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "approved_by_user",
+      "sha256": "156b9fb35da039b8017c4d83ca0d4abd15a5f89a5b4c54685d5ecf8777a17166"
+    },
+    {
+      "name": "stardust",
+      "zh_name": "星尘",
+      "batch": 1,
+      "file": "batch_01/stardust.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/stardust.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "approved_by_user",
+      "sha256": "19d1117006e3bb6a27212eb2c7cdc9aa8bc20c4e7717b225349bb78d5ddd84d9"
+    },
+    {
+      "name": "supermassive",
+      "zh_name": "超质量体",
+      "batch": 1,
+      "file": "batch_01/supermassive.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/supermassive.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "approved_by_user",
+      "sha256": "39df450d0310601df143b983e2e8a4e77f18871d4922dbbcf7a6dab9008dc1f6"
+    },
+    {
+      "name": "crescent_spear",
+      "zh_name": "新月长矛",
+      "batch": 1,
+      "file": "batch_01/crescent_spear.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/crescent_spear.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "approved_by_user",
+      "sha256": "788e289372c3ae869b15d9aed89585079d446509a1276323061e33b46b02ef6d"
+    },
+    {
+      "name": "quasar",
+      "zh_name": "类星体",
+      "batch": 1,
+      "file": "batch_01/quasar.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/quasar.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "approved_by_user",
+      "sha256": "81200a7c78ed0619342b64440b58e3a87c0f87939665315221f54c74f77bac74"
+    },
+    {
+      "name": "big_bang",
+      "zh_name": "大爆炸",
+      "batch": 2,
+      "file": "batch_02/big_bang.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/big_bang.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "approved_by_user",
+      "sha256": "48b6b11f176aac8d8fc12e3b7fa0b6687a830c94013115f4d64bda273548dda9"
+    },
+    {
+      "name": "constellation",
+      "zh_name": "群星荟萃",
+      "batch": 2,
+      "file": "batch_02/constellation.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/constellation.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "approved_by_user",
+      "sha256": "fbf168ba84e5bdd7ba0bd35a23aca4d330e395c44dbfe76f6ac99b5a04836ec4"
+    },
+    {
+      "name": "glimmer",
+      "zh_name": "微光",
+      "batch": 2,
+      "file": "batch_02/glimmer.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/glimmer.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "approved_by_user",
+      "sha256": "e5ad15aa73f503fbbcd5b6277481a66a4311b258290bd5cd9433d7aa13f84150"
+    },
+    {
+      "name": "glitterstream",
+      "zh_name": "流光溢彩",
+      "batch": 2,
+      "file": "batch_02/glitterstream.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/glitterstream.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "approved_by_user",
+      "sha256": "60a31731255306a6463b5511bd6eff69a7ef33085017a307740dd5297cd5767c"
+    },
+    {
+      "name": "prophesize",
+      "zh_name": "预言",
+      "batch": 2,
+      "file": "batch_02/prophesize.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/prophesize.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "approved_by_user",
+      "sha256": "f76bae7b3181ed190c88accd367b2d0a62dd2b437c47dcba92ed1a1029c6c060"
+    },
+    {
+      "name": "photon_cut",
+      "zh_name": "光子切割",
+      "batch": 3,
+      "file": "batch_03/photon_cut.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/photon_cut.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "approved_by_user",
+      "sha256": "957d725037cc6ea72cca62c84a02f45db5554e1574f46fb30eb06bcce91c4dd5"
+    },
+    {
+      "name": "shining_strike",
+      "zh_name": "明耀打击",
+      "batch": 3,
+      "file": "batch_03/shining_strike.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/shining_strike.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "approved_by_user",
+      "sha256": "18d6e88ff88953a611297d9e4e4c0977d41eb8b125d3ab6d1b5a1f806b0d8467"
+    },
+    {
+      "name": "radiate",
+      "zh_name": "辐射",
+      "batch": 3,
+      "file": "batch_03/radiate.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/radiate.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "approved_by_user",
+      "sha256": "9eee46971cb874011254696a471bf443b03e602fa9aba0d88e0b88a5394112e1"
+    },
+    {
+      "name": "sword_sage",
+      "zh_name": "剑圣",
+      "batch": 3,
+      "file": "batch_03/sword_sage.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/sword_sage.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "approved_by_user",
+      "sha256": "3bc21d82a95274f189b38d6096c7205fff49b86b9d776545586618f8cec1a7d1"
+    },
+    {
+      "name": "tyranny",
+      "zh_name": "暴政",
+      "batch": 3,
+      "file": "batch_03/tyranny.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/tyranny.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "approved_by_user",
+      "sha256": "6b09eeb041b52e7f91d84392b6d63ac00938723a14d49a8eb4d8a35a31c64ca2"
+    },
+    {
+      "name": "begone",
+      "zh_name": "下去！",
+      "batch": 4,
+      "file": "batch_04/begone.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/begone.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "approved_by_user",
+      "sha256": "d9e2a1d124afe441c927ec8f33752e5a471f851d1e80a5272a5215c33ed6156d"
+    },
+    {
+      "name": "bulwark",
+      "zh_name": "铸墙",
+      "batch": 4,
+      "file": "batch_04/bulwark.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/bulwark.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "approved_by_user",
+      "sha256": "ed2db8e0b4361aa0b4e538765bcf5a1608dd2475e98f78efd315f9dfaa69dd88"
+    },
+    {
+      "name": "celestial_might",
+      "zh_name": "天穹之力",
+      "batch": 4,
+      "file": "batch_04/celestial_might.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/celestial_might.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "approved_by_user",
+      "sha256": "db7ade0688f0ffb3f996c7fbd84194f1b69119777abda391a1ad7d0c8abf5e79"
+    },
+    {
+      "name": "convergence",
+      "zh_name": "汇流",
+      "batch": 4,
+      "file": "batch_04/convergence.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/convergence.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "approved_by_user",
+      "sha256": "00a975485c1bcd42db0415d9b262c1eb3c815fa810329a1ccddf73c88d5a379e"
+    },
+    {
+      "name": "cosmic_indifference",
+      "zh_name": "宇宙冷漠",
+      "batch": 4,
+      "file": "batch_04/cosmic_indifference.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/cosmic_indifference.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "approved_by_user",
+      "sha256": "93db46690363615ae85c9d69c1c430637ba54e7290f37d995d24ae72f23d288e"
+    },
+    {
+      "name": "crash_landing",
+      "zh_name": "迫降",
+      "batch": 5,
+      "file": "batch_05/crash_landing.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/crash_landing.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "7fe6f939aa46360c3f77622da38578db9b7dfda5297fd25fd61a3f205a66968c"
+    },
+    {
+      "name": "crush_under",
+      "zh_name": "下砸",
+      "batch": 5,
+      "file": "batch_05/crush_under.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/crush_under.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "93503a1c0d71444b2a4c42f6b2bb6e67c3af4a7cbf783ce563c2dbb38f44f581"
+    },
+    {
+      "name": "decisions_decisions",
+      "zh_name": "抉择，抉择",
+      "batch": 5,
+      "file": "batch_05/decisions_decisions.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/decisions_decisions.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "702a07675737b826f9282d1ea60664c3b73f0fa98b370e8c3e0ea9d0869473f2"
+    },
+    {
+      "name": "devastate",
+      "zh_name": "葬送",
+      "batch": 5,
+      "file": "batch_05/devastate.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/devastate.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "55fdded22f4e11b2bbe1529ba1f22b91a8011dec96b3599062452bd473e0245b"
+    },
+    {
+      "name": "gamma_blast",
+      "zh_name": "伽马爆破",
+      "batch": 5,
+      "file": "batch_05/gamma_blast.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/gamma_blast.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "87ea921f838dbae2fca5aeb72700d0aa9add64a0cc46d71de13bb1421672ff32"
+    },
+    {
+      "name": "heavenly_drill",
+      "zh_name": "天际钻头",
+      "batch": 6,
+      "file": "batch_06/heavenly_drill.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/heavenly_drill.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "5c90efa7dfd48525d8490ba5835dc68c0b4de0c9d37382ef9b2b1a501235f09a"
+    },
+    {
+      "name": "knockout_blow",
+      "zh_name": "决胜一击",
+      "batch": 6,
+      "file": "batch_06/knockout_blow.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/knockout_blow.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "e66c90807e9150745118bad22a326350a27aa97723a18a214d0ae50f8b3ca321"
+    },
+    {
+      "name": "plot",
+      "zh_name": "筹划",
+      "batch": 6,
+      "file": "batch_06/plot.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/plot.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "0b36cc8c8cef279dd7e4af0a73803bef05dedf87d320f9105f05caae660c9bb3"
+    },
+    {
+      "name": "resonance",
+      "zh_name": "共鸣",
+      "batch": 6,
+      "file": "batch_06/resonance.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/resonance.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "b735bec45dd41fdf59ab174c1e346d6c41dfc01fc133673041d48d1f423e8b05"
+    },
+    {
+      "name": "wrought_in_war",
+      "zh_name": "战火铸就",
+      "batch": 6,
+      "file": "batch_06/wrought_in_war.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/wrought_in_war.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "32376877778124a22fc6bbcd00aa66707d43441a819263c5ddcceecfab3908ca"
+    },
+    {
+      "name": "arsenal",
+      "zh_name": "武器库",
+      "batch": 7,
+      "file": "batch_07/arsenal.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/arsenal.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "e4c678dbd5f898eed4c7dfd8c0de000c405d6b0a860a81bc605f592cfddf4640"
+    },
+    {
+      "name": "comet",
+      "zh_name": "彗星",
+      "batch": 7,
+      "file": "batch_07/comet.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/comet.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "02dc689c261d2629181b123cf8802399c239f8d9ef18cad46d1fde823a2967c7"
+    },
+    {
+      "name": "child_of_the_stars",
+      "zh_name": "群星之子",
+      "batch": 7,
+      "file": "batch_07/child_of_the_stars.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/child_of_the_stars.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "9c538c2cd56b0c1e055b51775c408ddeaa9557e786007becb56a91124cb5b985"
+    },
+    {
+      "name": "make_it_so",
+      "zh_name": "如此甚好",
+      "batch": 7,
+      "file": "batch_07/make_it_so.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/make_it_so.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "4db7c60559a0d19ef3f9de3ca1fd8bc293cb645a722b25443011f65b603d538c"
+    },
+    {
+      "name": "neutron_aegis",
+      "zh_name": "中子护盾",
+      "batch": 7,
+      "file": "batch_07/neutron_aegis.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/neutron_aegis.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "5d4da42e94a571b0be6ed2d3e60b82c0eb2702681e7d83670e0b166bba140567"
+    },
+    {
+      "name": "astral_pulse",
+      "zh_name": "星界脉冲",
+      "batch": 8,
+      "file": "batch_08/astral_pulse.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/astral_pulse.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "8e4b253d41bae3dd97bd38ee65ab970f25b06f7acdfef772133ed729a2e0ca7f"
+    },
+    {
+      "name": "foregone_conclusion",
+      "zh_name": "既定事项",
+      "batch": 8,
+      "file": "batch_08/foregone_conclusion.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/foregone_conclusion.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "e8fdc8a2e54ff4d73c38cf8c6fb923bafe1b01cf70d84b5a3db7555e1562336a"
+    },
+    {
+      "name": "i_am_invincible",
+      "zh_name": "所向无敌",
+      "batch": 8,
+      "file": "batch_08/i_am_invincible.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/i_am_invincible.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "8dc535e078de41e29d0f93a5f9f10572ba735c7c6da34b985a36e77c6573cb68"
+    },
+    {
+      "name": "seeking_edge",
+      "zh_name": "追踪之刃",
+      "batch": 8,
+      "file": "batch_08/seeking_edge.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/seeking_edge.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "6ec21d44d6ddf3a8f3fba7f6dcfdf810d6773476177dba5c7a0242a73c7f08ac"
+    },
+    {
+      "name": "meteor_shower",
+      "zh_name": "流星雨",
+      "batch": 8,
+      "file": "batch_08/meteor_shower.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/meteor_shower.png",
+      "size": [
+        606,
+        852
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "a9f3a34f15aa8c1591c6dd00c97f03ea4589586e09e5ac6850440ae0515075a5"
+    },
+    {
+      "name": "conqueror",
+      "zh_name": "征服者",
+      "batch": 9,
+      "file": "batch_09/conqueror.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/conqueror.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "b659983d77029c2ac18408f5d5a30845a398bd3b426c739b3c1b0b6cf34b3b60"
+    },
+    {
+      "name": "terraforming",
+      "zh_name": "地形改造",
+      "batch": 9,
+      "file": "batch_09/terraforming.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/terraforming.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "cb4ff993979f1a07d20d84258d7d40f4855193b99c1774ddaf4198c781e9b79a"
+    },
+    {
+      "name": "orbit",
+      "zh_name": "环绕轨道",
+      "batch": 9,
+      "file": "batch_09/orbit.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/orbit.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "66a6d59a07c2912e54060c8f8467e2e0d4a46ec615c51627d258ff836a131836"
+    },
+    {
+      "name": "collision_course",
+      "zh_name": "碰撞轨迹",
+      "batch": 9,
+      "file": "batch_09/collision_course.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/collision_course.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "0f892b62c3bec6a8c33e8269049ca67c06d31531744da160b66a79e51a44f8bc"
+    },
+    {
+      "name": "pillar_of_creation",
+      "zh_name": "创世之柱",
+      "batch": 9,
+      "file": "batch_09/pillar_of_creation.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/pillar_of_creation.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "43e2fcac75969d5b6b06f99370539c7b64e8699d671562eea5b3bc476cbd3b0d"
+    },
+    {
+      "name": "void_form",
+      "zh_name": "虚空形态",
+      "batch": 10,
+      "file": "batch_10/void_form.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/void_form.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "ea5e19d8ad9555763425f7e09bac7b3e20dd90ea31344fcf99f1902900ea9b10"
+    },
+    {
+      "name": "alignment",
+      "zh_name": "星位序列",
+      "batch": 10,
+      "file": "batch_10/alignment.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/alignment.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "0d3d7ac3c177363fa4d03e7bb6b99aa917fccfcd5a6551ff423c4321f8fb5134"
+    },
+    {
+      "name": "charge",
+      "zh_name": "冲锋！！",
+      "batch": 10,
+      "file": "batch_10/charge.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/charge.png",
+      "size": [
+        1000,
+        760
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "3e2e419cf8e11aaa0b73e5fbe57766a100b29f89e6701f5b93473b540fe3b314"
+    },
+    {
+      "name": "the_sealed_throne",
+      "zh_name": "封印王座",
+      "batch": 10,
+      "file": "batch_10/the_sealed_throne.png",
+      "original": "research/regent_assets/images/packed/card_portraits/regent/the_sealed_throne.png",
+      "size": [
+        606,
+        852
+      ],
+      "status": "awaiting_user_review",
+      "sha256": "3c21006c2759c3b646d4c1383e43660cfc9f6217b234b0ba795f2172acd44eeb"
+    }
+  ],
+  "hammer_furnace_v5": {
+    "hammer_time": "approved_by_user",
+    "furnace_f1": "approved_by_user",
+    "furnace_f2": "awaiting_user_review"
+  },
+  "not_generated_by_this_round": [
+    "black_hole",
+    "bombardment",
+    "dying_star",
+    "guiding_star",
+    "lunar_blast",
+    "monarchs_gaze",
+    "particle_wall",
+    "seven_stars",
+    "solar_strike",
+    "spectrum_shift",
+    "sovereign_blade"
+  ],
+  "scope_note": "All 49 numbered round 2 prompts are complete. Optional accents and cards without a supplied numbered prompt were not generated."
+}

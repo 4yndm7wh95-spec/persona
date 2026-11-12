@@ -1,0 +1,15 @@
+{
+  "status": "approved_by_user",
+  "cards": {
+    "photon_cut": "approved_by_user",
+    "shining_strike": "approved_by_user",
+    "radiate": "approved_by_user",
+    "sword_sage": "approved_by_user",
+    "tyranny": "approved_by_user"
+  },
+  "user_review": {
+    "date": "2026-11-12",
+    "message": "OK",
+    "status": "approved_by_user"
+  }
+}

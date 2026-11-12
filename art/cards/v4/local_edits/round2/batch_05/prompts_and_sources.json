@@ -1,0 +1,163 @@
+{
+  "workspace": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a",
+  "base_commit": "8339f23aff2058219755f7dae10a83b151bf76ef",
+  "prompt_document": "docs/codex/codex_card_art_local_edits_round2.md",
+  "batch": 5,
+  "tool": "built-in imagegen",
+  "status": "awaiting_user_review",
+  "review_policy": "User requested completion without intermediate approval; these outputs have not been marked approved.",
+  "records": [
+    {
+      "name": "crash_landing",
+      "zh_name": "迫降",
+      "batch": 5,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/crash_landing.png",
+      "references": [
+        "art/cards/v4/local_edits/batch_04/kingly_punch.png"
+      ],
+      "zh_plan": "斜着砸进地面的 Regent → 头朝下俯冲的南瓜灯杰克；白色爆炸、碎石、粉色敌人残骸、红色背景不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the armored Regent diving diagonally into the ground at the upper center with PYRO JACK in the same diagonal dive pose, scale and trajectory, comic wide-eyed grin, cloak and hat streaming behind. Keep unchanged: the white-cyan impact explosion, the cracked ground and cream rubble, the pink debris of the enemies at the right, the red background. Character designs: [PYRO JACK] = JACK-O'-LANTERN (Pyro Jack): carved ORANGE ribbed pumpkin head with black crescent eyes and a jagged grin, deep-violet floppy witch hat with a buckled band, violet cloak with a round button, small GREY cartoon mitten hands with short rounded lobes (no human fingers or fingernails).\nInput roles: Image1 is the only edit target and composition master. Image2 is the Pyro Jack character DESIGN reference only; ignore its pose, enemies, effects and background.",
+      "status": "awaiting_user_review",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the armored Regent diving diagonally into the ground at the upper center with PYRO JACK in the same diagonal dive pose, scale and trajectory, comic wide-eyed grin, cloak and hat streaming behind. Keep unchanged: the white-cyan impact explosion, the cracked ground and cream rubble, the pink debris of the enemies at the right, the red background. Character designs: [PYRO JACK] = JACK-O'-LANTERN (Pyro Jack): carved ORANGE ribbed pumpkin head with black crescent eyes and a jagged grin, deep-violet floppy witch hat with a buckled band, violet cloak with a round button, small GREY cartoon mitten hands with short rounded lobes (no human fingers or fingernails).",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-a399eab5-190f-418e-92aa-97e0491aac9c.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-a399eab5-190f-418e-92aa-97e0491aac9c.png",
+      "output_file": "crash_landing.png",
+      "output_size": [
+        1000,
+        760
+      ],
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/crash_landing.png": "383f9c6b726f10f74e6245243999733ffaa091186e7e4e0e7b592ed6b81f40d9",
+        "art/cards/v4/local_edits/batch_04/kingly_punch.png": "0155401f9a7271b10118f7d3bf9005d4fe5ec72fa99dd404c1c2170836945fe9"
+      }
+    },
+    {
+      "name": "crush_under",
+      "zh_name": "下砸",
+      "batch": 5,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/crush_under.png",
+      "references": [
+        "art/cards/v4/local_edits/batch_04/kingly_punch.png"
+      ],
+      "zh_plan": "中间蹲着砸地的 Regent（红描边）→ 南瓜灯杰克双拳砸地；绿色梨形敌人、灰色碎石、黄色放射光背景不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the crouching hooded Regent at the center (red outline, smashing the ground) with PYRO JACK in the same crouch, both grey mitten fists slamming into the same spot, hat tilted, same scale and red-orange rim light. Keep unchanged: the green pear-shaped enemies, the grey rubble, the white-yellow impact flash, the yellow radial rays and the dark red background. Character designs: [PYRO JACK] = JACK-O'-LANTERN (Pyro Jack): carved ORANGE ribbed pumpkin head with black crescent eyes and a jagged grin, deep-violet floppy witch hat with a buckled band, violet cloak with a round button, small GREY cartoon mitten hands with short rounded lobes (no human fingers or fingernails).\nInput roles: Image1 is the only edit target and composition master. Image2 is the Pyro Jack character DESIGN reference only; ignore its pose, enemies, effects and background.",
+      "status": "awaiting_user_review",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the crouching hooded Regent at the center (red outline, smashing the ground) with PYRO JACK in the same crouch, both grey mitten fists slamming into the same spot, hat tilted, same scale and red-orange rim light. Keep unchanged: the green pear-shaped enemies, the grey rubble, the white-yellow impact flash, the yellow radial rays and the dark red background. Character designs: [PYRO JACK] = JACK-O'-LANTERN (Pyro Jack): carved ORANGE ribbed pumpkin head with black crescent eyes and a jagged grin, deep-violet floppy witch hat with a buckled band, violet cloak with a round button, small GREY cartoon mitten hands with short rounded lobes (no human fingers or fingernails).",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-d1317c91-4186-4058-8c47-1a867f5bd789.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-d1317c91-4186-4058-8c47-1a867f5bd789.png",
+      "output_file": "crush_under.png",
+      "output_size": [
+        1000,
+        760
+      ],
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/crush_under.png": "25ef9d5d3bb11cf787152bef67ef4fc69b95a00673d48b1f1588ca5af446bf03",
+        "art/cards/v4/local_edits/batch_04/kingly_punch.png": "0155401f9a7271b10118f7d3bf9005d4fe5ec72fa99dd404c1c2170836945fe9"
+      }
+    },
+    {
+      "name": "decisions_decisions",
+      "zh_name": "抉择，抉择",
+      "batch": 5,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/decisions_decisions.png",
+      "references": [
+        "art/cards/v4/local_edits/batch_04/kingly_punch.png"
+      ],
+      "zh_plan": "坐着、伸手指向金色行星的大 Regent → 南瓜灯杰克（灰色连指手指向行星）；金色行星、螺旋、深蓝背景不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the large hooded Regent in the upper left (blue robe, pointed brown hat, one brown hand pointing at the golden planets) with PYRO JACK in the same seated pose and scale, pumpkin face under the witch hat, one grey mitten pointing at the same spot. Keep unchanged: the orbiting golden planets with rings, the yellow starburst, the blue-purple spiral and the dark navy background. Character designs: [PYRO JACK] = JACK-O'-LANTERN (Pyro Jack): carved ORANGE ribbed pumpkin head with black crescent eyes and a jagged grin, deep-violet floppy witch hat with a buckled band, violet cloak with a round button, small GREY cartoon mitten hands with short rounded lobes (no human fingers or fingernails).\nInput roles: Image1 is the only edit target and composition master. Image2 is the Pyro Jack character DESIGN reference only; ignore its pose, enemies, effects and background.",
+      "status": "awaiting_user_review",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the large hooded Regent in the upper left (blue robe, pointed brown hat, one brown hand pointing at the golden planets) with PYRO JACK in the same seated pose and scale, pumpkin face under the witch hat, one grey mitten pointing at the same spot. Keep unchanged: the orbiting golden planets with rings, the yellow starburst, the blue-purple spiral and the dark navy background. Character designs: [PYRO JACK] = JACK-O'-LANTERN (Pyro Jack): carved ORANGE ribbed pumpkin head with black crescent eyes and a jagged grin, deep-violet floppy witch hat with a buckled band, violet cloak with a round button, small GREY cartoon mitten hands with short rounded lobes (no human fingers or fingernails).",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-a3b59fc0-056a-492a-ab6d-05f4fd1e233c.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-a3b59fc0-056a-492a-ab6d-05f4fd1e233c.png",
+      "output_file": "decisions_decisions.png",
+      "output_size": [
+        1000,
+        760
+      ],
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/decisions_decisions.png": "22514ee1fc6e5ac1e559da0f601d24a89b039c40c1da49895c48e4080b4e6a3d",
+        "art/cards/v4/local_edits/batch_04/kingly_punch.png": "0155401f9a7271b10118f7d3bf9005d4fe5ec72fa99dd404c1c2170836945fe9"
+      }
+    },
+    {
+      "name": "devastate",
+      "zh_name": "葬送",
+      "batch": 5,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/devastate.png",
+      "references": [
+        "art/cards/v4/local_edits/batch_04/kingly_punch.png",
+        "art/cards/v4/local_edits/batch_05/manifest_authority.png"
+      ],
+      "zh_plan": "举起双臂的巨大棕色铠甲 Regent → 巨大的南瓜灯杰克（双手高举）；左上角的小 Regent → 小 Pixie；黄色光束、红色背景不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace the huge armored brown Regent in the lower center whose arms are raised toward the upper left with PYRO JACK at the same huge scale and pose, both grey mittens raised, hat tip where the old helmet crest was. The tiny Regent figure at the upper left holding a trident becomes a tiny PIXIE with the same trident. Keep unchanged: the yellow-orange converging light beams, the red-black background shapes. Character designs: [PYRO JACK] = JACK-O'-LANTERN (Pyro Jack): carved ORANGE ribbed pumpkin head with black crescent eyes and a jagged grin, deep-violet floppy witch hat with a buckled band, violet cloak with a round button, small GREY cartoon mitten hands with short rounded lobes (no human fingers or fingernails). [PIXIE] = PIXIE: tiny fairy with short dark-blue bob hair, pointed ears, violet/navy leotard, violet gloves and thigh-high boots, translucent lavender insect wings, natural light skin, small delicate hands.\nInput roles: Image1 is the only edit target and composition master. Image2 is the Pyro Jack character DESIGN reference only; ignore its pose, enemies, effects and background. Image3 is the Pixie character DESIGN reference only; ignore its pose, enemies, effects and background.",
+      "status": "awaiting_user_review",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace the huge armored brown Regent in the lower center whose arms are raised toward the upper left with PYRO JACK at the same huge scale and pose, both grey mittens raised, hat tip where the old helmet crest was. The tiny Regent figure at the upper left holding a trident becomes a tiny PIXIE with the same trident. Keep unchanged: the yellow-orange converging light beams, the red-black background shapes. Character designs: [PYRO JACK] = JACK-O'-LANTERN (Pyro Jack): carved ORANGE ribbed pumpkin head with black crescent eyes and a jagged grin, deep-violet floppy witch hat with a buckled band, violet cloak with a round button, small GREY cartoon mitten hands with short rounded lobes (no human fingers or fingernails). [PIXIE] = PIXIE: tiny fairy with short dark-blue bob hair, pointed ears, violet/navy leotard, violet gloves and thigh-high boots, translucent lavender insect wings, natural light skin, small delicate hands.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-4ff88207-40fb-4c7f-9287-65362f2f53d4.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-4ff88207-40fb-4c7f-9287-65362f2f53d4.png",
+      "output_file": "devastate.png",
+      "output_size": [
+        1000,
+        760
+      ],
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/devastate.png": "1b3d3eceef8ebd02ea6ee8298a4b8dc3f7661acce23e12effb42e335648c4326",
+        "art/cards/v4/local_edits/batch_04/kingly_punch.png": "0155401f9a7271b10118f7d3bf9005d4fe5ec72fa99dd404c1c2170836945fe9",
+        "art/cards/v4/local_edits/batch_05/manifest_authority.png": "f73c11b547190228d088adcd2077a1b899d28f0174d3838c1d49c03b865756e1"
+      }
+    },
+    {
+      "name": "gamma_blast",
+      "zh_name": "伽马爆破",
+      "batch": 5,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/gamma_blast.png",
+      "references": [
+        "art/cards/v4/local_edits/batch_04/kingly_punch.png"
+      ],
+      "zh_plan": "大特写的 Regent 头和双手 → 南瓜灯杰克的南瓜脸（紫巫师帽盖住画面上方）和灰色连指手；中间白色光球和细针不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the close-up Regent (huge pointed hat covering the top, black face slit, two hands holding the white energy sphere with a needle) with PYRO JACK in the same close-up framing: huge violet witch hat covering the top, glowing pumpkin face where the face slit was, two grey mittens holding the same white sphere and needle. Keep unchanged: the white glowing sphere with its needle, the orange-red background with dark red shapes, the white outline accents. Character designs: [PYRO JACK] = JACK-O'-LANTERN (Pyro Jack): carved ORANGE ribbed pumpkin head with black crescent eyes and a jagged grin, deep-violet floppy witch hat with a buckled band, violet cloak with a round button, small GREY cartoon mitten hands with short rounded lobes (no human fingers or fingernails).\nInput roles: Image1 is the only edit target and composition master. Image2 is the Pyro Jack character DESIGN reference only; ignore its pose, enemies, effects and background.",
+      "status": "awaiting_user_review",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the close-up Regent (huge pointed hat covering the top, black face slit, two hands holding the white energy sphere with a needle) with PYRO JACK in the same close-up framing: huge violet witch hat covering the top, glowing pumpkin face where the face slit was, two grey mittens holding the same white sphere and needle. Keep unchanged: the white glowing sphere with its needle, the orange-red background with dark red shapes, the white outline accents. Character designs: [PYRO JACK] = JACK-O'-LANTERN (Pyro Jack): carved ORANGE ribbed pumpkin head with black crescent eyes and a jagged grin, deep-violet floppy witch hat with a buckled band, violet cloak with a round button, small GREY cartoon mitten hands with short rounded lobes (no human fingers or fingernails).",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-c01aaed1-2e32-484a-beb9-9b3153047c65.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-c01aaed1-2e32-484a-beb9-9b3153047c65.png",
+      "output_file": "gamma_blast.png",
+      "output_size": [
+        1000,
+        760
+      ],
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/gamma_blast.png": "700adee546691453c7009715ac7d80b5f05e9b31faa869cb6877c49e04f4f7d1",
+        "art/cards/v4/local_edits/batch_04/kingly_punch.png": "0155401f9a7271b10118f7d3bf9005d4fe5ec72fa99dd404c1c2170836945fe9"
+      }
+    }
+  ]
+}

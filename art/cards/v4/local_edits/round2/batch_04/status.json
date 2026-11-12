@@ -1,0 +1,15 @@
+{
+  "status": "approved_by_user",
+  "cards": {
+    "begone": "approved_by_user",
+    "bulwark": "approved_by_user",
+    "celestial_might": "approved_by_user",
+    "convergence": "approved_by_user",
+    "cosmic_indifference": "approved_by_user"
+  },
+  "user_review": {
+    "date": "2026-11-12",
+    "message": "ok",
+    "status": "approved_by_user"
+  }
+}

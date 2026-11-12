@@ -1,0 +1,161 @@
+{
+  "workspace": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a",
+  "base_commit": "8339f23aff2058219755f7dae10a83b151bf76ef",
+  "prompt_document": "docs/codex/codex_card_art_local_edits_round2.md",
+  "batch": 8,
+  "tool": "built-in imagegen",
+  "status": "awaiting_user_review",
+  "review_policy": "User requested completion without intermediate approval; these outputs have not been marked approved.",
+  "records": [
+    {
+      "name": "astral_pulse",
+      "zh_name": "星界脉冲",
+      "batch": 8,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/astral_pulse.png",
+      "references": [
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png"
+      ],
+      "zh_plan": "右上方蜷在粉色星球上的金色 Regent → 圆滚滚的杰克冰人（同轮廓）；左边那只小棕手 → 冰人另一只白色连指手；粉色星球和背景不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the golden-olive hooded Regent figure curled over the pink planet at the upper right with JACK FROST curled into a round ball on the planet horizon, inside the same silhouette, size and position (the jester hat points sit where the Regent's hood tip was and do not extend past the old silhouette). The small brown hand at the left becomes JACK FROST's other small white mitten reaching up, same position and gesture. Keep the magenta-pink planet with its white sparkles and the purple background exactly. Character designs: [JACK FROST] = JACK FROST: compact round ivory-white snowman demon, vivid blue three-point jester hat with white pompoms, blue collar with small bells, wide happy black oval eyes and open grin, stubby plump rounded MITTEN hands (thumb nub, at most two simple finger separations), small dark-blue boots, white planes with lavender-grey shadow planes.\nInput roles: Image1 is the only edit target and composition master. Image2 is the Jack Frost character DESIGN reference only; ignore its other characters, pose, enemies, effects and background.",
+      "status": "awaiting_user_review",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the golden-olive hooded Regent figure curled over the pink planet at the upper right with JACK FROST curled into a round ball on the planet horizon, inside the same silhouette, size and position (the jester hat points sit where the Regent's hood tip was and do not extend past the old silhouette). The small brown hand at the left becomes JACK FROST's other small white mitten reaching up, same position and gesture. Keep the magenta-pink planet with its white sparkles and the purple background exactly. Character designs: [JACK FROST] = JACK FROST: compact round ivory-white snowman demon, vivid blue three-point jester hat with white pompoms, blue collar with small bells, wide happy black oval eyes and open grin, stubby plump rounded MITTEN hands (thumb nub, at most two simple finger separations), small dark-blue boots, white planes with lavender-grey shadow planes.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-98ebccca-d093-403a-b817-8b82ddf33906.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-98ebccca-d093-403a-b817-8b82ddf33906.png",
+      "output_file": "astral_pulse.png",
+      "output_size": [
+        1000,
+        760
+      ],
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/astral_pulse.png": "d002659404b5f3fec425a7a2af36f50d532d5428b1f85c4865e6858d54f590db",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png": "6ee467acdd3e0613f489d12a5309235d0beda150fe918f9243fc82642104b92e"
+      }
+    },
+    {
+      "name": "foregone_conclusion",
+      "zh_name": "既定事项",
+      "batch": 8,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/foregone_conclusion.png",
+      "references": [
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png"
+      ],
+      "zh_plan": "举着卷轴的棕色大 Regent 头 → 从卷轴后探出的杰克冰人（圆脑袋加小丑帽）；卷轴上的绿色星座、背景不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the large brown Regent head and hands peeking behind the scroll on the left with JACK FROST peeking over the same scroll edge, round white head with jester hat, two white mitten hands holding the scroll's rolled ends at the same positions. Keep unchanged: the scroll with its green constellation diagrams, its yellow-green outline, the olive green background. Character designs: [JACK FROST] = JACK FROST: compact round ivory-white snowman demon, vivid blue three-point jester hat with white pompoms, blue collar with small bells, wide happy black oval eyes and open grin, stubby plump rounded MITTEN hands (thumb nub, at most two simple finger separations), small dark-blue boots, white planes with lavender-grey shadow planes.\nInput roles: Image1 is the only edit target and composition master. Image2 is the Jack Frost character DESIGN reference only; ignore its other characters, pose, enemies, effects and background.",
+      "status": "awaiting_user_review",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the large brown Regent head and hands peeking behind the scroll on the left with JACK FROST peeking over the same scroll edge, round white head with jester hat, two white mitten hands holding the scroll's rolled ends at the same positions. Keep unchanged: the scroll with its green constellation diagrams, its yellow-green outline, the olive green background. Character designs: [JACK FROST] = JACK FROST: compact round ivory-white snowman demon, vivid blue three-point jester hat with white pompoms, blue collar with small bells, wide happy black oval eyes and open grin, stubby plump rounded MITTEN hands (thumb nub, at most two simple finger separations), small dark-blue boots, white planes with lavender-grey shadow planes.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-b4d7ee9a-49fb-42b8-8f60-7f3084704c9d.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-b4d7ee9a-49fb-42b8-8f60-7f3084704c9d.png",
+      "output_file": "foregone_conclusion.png",
+      "output_size": [
+        1000,
+        760
+      ],
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/foregone_conclusion.png": "be43e8f11098bef815e504a5fd12534ee595f75746c286b8887233d63061be55",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png": "6ee467acdd3e0613f489d12a5309235d0beda150fe918f9243fc82642104b92e"
+      }
+    },
+    {
+      "name": "i_am_invincible",
+      "zh_name": "所向无敌",
+      "batch": 8,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/i_am_invincible.png",
+      "references": [
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png"
+      ],
+      "zh_plan": "青色线框英雄姿势的 Regent → 同样线框网格风格的杰克冰人（圆身体、两臂举起秀肌肉）；右上金色飞行物、紫色背景不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the cyan wireframe Regent striking a flexing pose with a wireframe JACK FROST: the same cyan wire-mesh style with the same node dots and lightning crackle, the body silhouette becomes Jack Frost's round body with jester hat points where the Regent's hat point was, both short arms flexed in the same two positions. Keep unchanged: the golden floating device at the upper right, the purple background and its shapes. Character designs: [JACK FROST] = JACK FROST: compact round ivory-white snowman demon, vivid blue three-point jester hat with white pompoms, blue collar with small bells, wide happy black oval eyes and open grin, stubby plump rounded MITTEN hands (thumb nub, at most two simple finger separations), small dark-blue boots, white planes with lavender-grey shadow planes.\nInput roles: Image1 is the only edit target and composition master. Image2 is the Jack Frost character DESIGN reference only; ignore its other characters, pose, enemies, effects and background.",
+      "status": "awaiting_user_review",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the cyan wireframe Regent striking a flexing pose with a wireframe JACK FROST: the same cyan wire-mesh style with the same node dots and lightning crackle, the body silhouette becomes Jack Frost's round body with jester hat points where the Regent's hat point was, both short arms flexed in the same two positions. Keep unchanged: the golden floating device at the upper right, the purple background and its shapes. Character designs: [JACK FROST] = JACK FROST: compact round ivory-white snowman demon, vivid blue three-point jester hat with white pompoms, blue collar with small bells, wide happy black oval eyes and open grin, stubby plump rounded MITTEN hands (thumb nub, at most two simple finger separations), small dark-blue boots, white planes with lavender-grey shadow planes.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-33665c4d-61c3-49a2-8d75-cc5cbd2a19a4.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-33665c4d-61c3-49a2-8d75-cc5cbd2a19a4.png",
+      "output_file": "i_am_invincible.png",
+      "output_size": [
+        1000,
+        760
+      ],
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/i_am_invincible.png": "ed543ce41b3078c2db14aebb0eff74ff57cdb6576917d592d401da40195fdc38",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png": "6ee467acdd3e0613f489d12a5309235d0beda150fe918f9243fc82642104b92e"
+      }
+    },
+    {
+      "name": "seeking_edge",
+      "zh_name": "追踪之刃",
+      "batch": 8,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/seeking_edge.png",
+      "references": [
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png"
+      ],
+      "zh_plan": "上方倒挂的巨大 Regent 头 → 倒挂的杰克冰人脑袋（小丑帽尖朝下，替代原来向下的帽尖）；下方带眼睛的橙色尖刺剑和红色激光线不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the huge inverted Regent head at the top center (brown hat pointing downward) with JACK FROST's head hanging upside down in the same silhouette and size: jester hat points hang downward where the old hat point was, round white face with the wide grin, small white mitten hands only if they were visible. Keep unchanged: the orange spiked eye blade at the bottom, the red laser lines, the dark violet-blue background and its sparkles. Character designs: [JACK FROST] = JACK FROST: compact round ivory-white snowman demon, vivid blue three-point jester hat with white pompoms, blue collar with small bells, wide happy black oval eyes and open grin, stubby plump rounded MITTEN hands (thumb nub, at most two simple finger separations), small dark-blue boots, white planes with lavender-grey shadow planes.\nInput roles: Image1 is the only edit target and composition master. Image2 is the Jack Frost character DESIGN reference only; ignore its other characters, pose, enemies, effects and background.",
+      "status": "awaiting_user_review",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the huge inverted Regent head at the top center (brown hat pointing downward) with JACK FROST's head hanging upside down in the same silhouette and size: jester hat points hang downward where the old hat point was, round white face with the wide grin, small white mitten hands only if they were visible. Keep unchanged: the orange spiked eye blade at the bottom, the red laser lines, the dark violet-blue background and its sparkles. Character designs: [JACK FROST] = JACK FROST: compact round ivory-white snowman demon, vivid blue three-point jester hat with white pompoms, blue collar with small bells, wide happy black oval eyes and open grin, stubby plump rounded MITTEN hands (thumb nub, at most two simple finger separations), small dark-blue boots, white planes with lavender-grey shadow planes.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-53fbe243-d89f-4203-ac52-f4f69a8a092b.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-53fbe243-d89f-4203-ac52-f4f69a8a092b.png",
+      "output_file": "seeking_edge.png",
+      "output_size": [
+        1000,
+        760
+      ],
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/seeking_edge.png": "065d11b4c7573b82f9fb237cd8123dc82d308ce6f05ed2d76fe00b644066a0a0",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png": "6ee467acdd3e0613f489d12a5309235d0beda150fe918f9243fc82642104b92e"
+      }
+    },
+    {
+      "name": "meteor_shower",
+      "zh_name": "流星雨",
+      "batch": 8,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/meteor_shower.png",
+      "references": [
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png"
+      ],
+      "zh_plan": "爆炸中心很小的红色人影 → 同样红橙逆光剪影的小杰克冰人；蓝白爆炸、岩石、竖构图全部不动。（原图是 606×852 竖图，保持竖图！）",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. IMPORTANT: Image1 is a PORTRAIT 606x852 illustration; keep the output at 606x852 portrait with identical framing (do not convert to landscape). Replace ONLY the tiny red backlit silhouette of the Regent with raised arms in the center of the blast with a tiny JACK FROST silhouette of the same size and position, same red-orange backlit shading, arms raised, jester hat points visible. Keep unchanged: the blue-white explosion, the falling rocks, the dark grey stones, the magenta ground. Character designs: [JACK FROST] = JACK FROST: compact round ivory-white snowman demon, vivid blue three-point jester hat with white pompoms, blue collar with small bells, wide happy black oval eyes and open grin, stubby plump rounded MITTEN hands (thumb nub, at most two simple finger separations), small dark-blue boots, white planes with lavender-grey shadow planes.\nInput roles: Image1 is the only edit target and composition master. Image2 is the Jack Frost character DESIGN reference only; ignore its other characters, pose, enemies, effects and background.",
+      "status": "awaiting_user_review",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. IMPORTANT: Image1 is a PORTRAIT 606x852 illustration; keep the output at 606x852 portrait with identical framing (do not convert to landscape). Replace ONLY the tiny red backlit silhouette of the Regent with raised arms in the center of the blast with a tiny JACK FROST silhouette of the same size and position, same red-orange backlit shading, arms raised, jester hat points visible. Keep unchanged: the blue-white explosion, the falling rocks, the dark grey stones, the magenta ground. Character designs: [JACK FROST] = JACK FROST: compact round ivory-white snowman demon, vivid blue three-point jester hat with white pompoms, blue collar with small bells, wide happy black oval eyes and open grin, stubby plump rounded MITTEN hands (thumb nub, at most two simple finger separations), small dark-blue boots, white planes with lavender-grey shadow planes.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-0ddca423-7edf-4c17-88da-677bd3e14f7d.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-0ddca423-7edf-4c17-88da-677bd3e14f7d.png",
+      "output_file": "meteor_shower.png",
+      "output_size": [
+        606,
+        852
+      ],
+      "generated_size": [
+        1058,
+        1487
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/meteor_shower.png": "7a7c098524a65340ffeb65c75a3e5e3dd4dde42022d5e64bc73b66cda7fdb432",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png": "6ee467acdd3e0613f489d12a5309235d0beda150fe918f9243fc82642104b92e"
+      }
+    }
+  ]
+}

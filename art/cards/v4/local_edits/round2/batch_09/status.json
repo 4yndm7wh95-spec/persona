@@ -1,0 +1,10 @@
+{
+  "status": "awaiting_user_review",
+  "cards": {
+    "conqueror": "awaiting_user_review",
+    "terraforming": "awaiting_user_review",
+    "orbit": "awaiting_user_review",
+    "collision_course": "awaiting_user_review",
+    "pillar_of_creation": "awaiting_user_review"
+  }
+}

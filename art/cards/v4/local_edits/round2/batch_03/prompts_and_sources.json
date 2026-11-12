@@ -1,0 +1,151 @@
+{
+  "workspace": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a",
+  "base_commit": "8339f23aff2058219755f7dae10a83b151bf76ef",
+  "prompt_document": "docs/codex/codex_card_art_local_edits_round2.md",
+  "batch": 3,
+  "tool": "built-in imagegen",
+  "status": "approved_by_user",
+  "records": [
+    {
+      "name": "photon_cut",
+      "zh_name": "光子切割",
+      "batch": 3,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/photon_cut.png",
+      "references": [
+        "art/parts_src/sword.png"
+      ],
+      "zh_plan": "发光弧形剑的黑白条纹剑柄 → 结城理剑的剑柄（黑皮缠绕、银色护手、圆形剑首）；发光弧刃、被砍的蘑菇敌人、右边小人影、暗红背景不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the black-and-white striped sword hilt with the gold star at the lower right with the hilt of MAKOTO SWORD at the same position, angle and size: black leather-wrapped grip, simple silver crossguard, round silver pommel, joined to the same glowing curved orange-yellow blade arc. Keep unchanged: the glowing blade arc, the mushroom enemy being cut, the tiny figure at the right, the dark crimson background. Character designs: [MAKOTO SWORD] = Makoto's sword (asset art/parts_src/sword.png): plain SILVER straight single-edge tapered blade with steel-grey bevel, simple narrow silver crossguard, black leather-wrapped grip, round silver pommel, no gold ornament, gems or crown.\nInput roles: Image1 is the only edit target and composition master. Image2 is the Makoto sword DESIGN reference only; ignore its green background and orientation, and change only the sword parts named in the prompt.",
+      "status": "approved_by_user",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the black-and-white striped sword hilt with the gold star at the lower right with the hilt of MAKOTO SWORD at the same position, angle and size: black leather-wrapped grip, simple silver crossguard, round silver pommel, joined to the same glowing curved orange-yellow blade arc. Keep unchanged: the glowing blade arc, the mushroom enemy being cut, the tiny figure at the right, the dark crimson background. Character designs: [MAKOTO SWORD] = Makoto's sword (asset art/parts_src/sword.png): plain SILVER straight single-edge tapered blade with steel-grey bevel, simple narrow silver crossguard, black leather-wrapped grip, round silver pommel, no gold ornament, gems or crown.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-103073f3-5ba6-4727-abae-7fe861d5504a.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-103073f3-5ba6-4727-abae-7fe861d5504a.png",
+      "output_file": "photon_cut.png",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/photon_cut.png": "c8515acf5d9afe6e6e71de597e32d891294ec688eb9a3bc3e8d17770f5a295a7",
+        "art/parts_src/sword.png": "017c1c9ba18c9fcc851b52a36b59bab1604d64b24399d3ed35c57e472818bed5"
+      }
+    },
+    {
+      "name": "shining_strike",
+      "zh_name": "明耀打击",
+      "batch": 3,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/shining_strike.png",
+      "references": [
+        "art/parts_src/sword.png"
+      ],
+      "zh_plan": "左上角斜劈下来的金色宽刃 → 结城理剑的银色剑刃带暖金反光（同角度）；青绿色敌人、白色星爆、红色背景不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the broad golden blade slashing in from the upper left with the blade of MAKOTO SWORD at the same angle, length and impact point, silver blade lit with the same warm gold flare and sparks. Keep unchanged: the teal ghost enemy, the ivory star burst, the grey-green leaf shapes, the dark red background. Character designs: [MAKOTO SWORD] = Makoto's sword (asset art/parts_src/sword.png): plain SILVER straight single-edge tapered blade with steel-grey bevel, simple narrow silver crossguard, black leather-wrapped grip, round silver pommel, no gold ornament, gems or crown.\nInput roles: Image1 is the only edit target and composition master. Image2 is the Makoto sword DESIGN reference only; ignore its green background and orientation, and change only the sword parts named in the prompt.",
+      "status": "approved_by_user",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the broad golden blade slashing in from the upper left with the blade of MAKOTO SWORD at the same angle, length and impact point, silver blade lit with the same warm gold flare and sparks. Keep unchanged: the teal ghost enemy, the ivory star burst, the grey-green leaf shapes, the dark red background. Character designs: [MAKOTO SWORD] = Makoto's sword (asset art/parts_src/sword.png): plain SILVER straight single-edge tapered blade with steel-grey bevel, simple narrow silver crossguard, black leather-wrapped grip, round silver pommel, no gold ornament, gems or crown.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-94b52e5b-66c2-4a95-9c54-b3f2c440793b.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-94b52e5b-66c2-4a95-9c54-b3f2c440793b.png",
+      "output_file": "shining_strike.png",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/shining_strike.png": "4c31a75d1b70b7e7062baad6cc343aad5442a3557f83a38eb9bd8e68260ac86b",
+        "art/parts_src/sword.png": "017c1c9ba18c9fcc851b52a36b59bab1604d64b24399d3ed35c57e472818bed5"
+      }
+    },
+    {
+      "name": "radiate",
+      "zh_name": "辐射",
+      "batch": 3,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/radiate.png",
+      "references": [
+        "art/cards/v4/local_edits/batch_05/manifest_authority.png",
+        "art/parts_src/sword.png"
+      ],
+      "zh_plan": "白光中央金色的小 Regent 人影 → 金色逆光的小 Pixie；竖直的金色剑 → 结城理的剑（保留金色发光）；放射光线、红色背景不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the small golden Regent figure in the white burst at the center with a tiny golden-lit PIXIE with arms spread, same size and position, covered by the same blinding white core. The vertical golden sword becomes MAKOTO SWORD in shape but keeps its golden glow color. Keep unchanged: the white rays, the black and red background, the sparkles. Character designs: [PIXIE] = PIXIE: tiny fairy with short dark-blue bob hair, pointed ears, violet/navy leotard, violet gloves and thigh-high boots, translucent lavender insect wings, natural light skin, small delicate hands. [MAKOTO SWORD] = Makoto's sword (asset art/parts_src/sword.png): plain SILVER straight single-edge tapered blade with steel-grey bevel, simple narrow silver crossguard, black leather-wrapped grip, round silver pommel, no gold ornament, gems or crown.\nInput roles: Image1 is the only edit target and composition master. Image2 is the Pixie character DESIGN reference only; ignore its pose, effects, enemies and background. Image3 is the Makoto sword DESIGN reference only; ignore its green background and orientation, and change only the sword parts named in the prompt.",
+      "status": "approved_by_user",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the small golden Regent figure in the white burst at the center with a tiny golden-lit PIXIE with arms spread, same size and position, covered by the same blinding white core. The vertical golden sword becomes MAKOTO SWORD in shape but keeps its golden glow color. Keep unchanged: the white rays, the black and red background, the sparkles. Character designs: [PIXIE] = PIXIE: tiny fairy with short dark-blue bob hair, pointed ears, violet/navy leotard, violet gloves and thigh-high boots, translucent lavender insect wings, natural light skin, small delicate hands. [MAKOTO SWORD] = Makoto's sword (asset art/parts_src/sword.png): plain SILVER straight single-edge tapered blade with steel-grey bevel, simple narrow silver crossguard, black leather-wrapped grip, round silver pommel, no gold ornament, gems or crown.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-86862cd2-9a89-40d5-8e60-ae71184a88d3.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-86862cd2-9a89-40d5-8e60-ae71184a88d3.png",
+      "output_file": "radiate.png",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/radiate.png": "f2960efc2569f51054aa8f457ffe6a1d86bf7eb92a3ead25e047cae3d1087004",
+        "art/cards/v4/local_edits/batch_05/manifest_authority.png": "f73c11b547190228d088adcd2077a1b899d28f0174d3838c1d49c03b865756e1",
+        "art/parts_src/sword.png": "017c1c9ba18c9fcc851b52a36b59bab1604d64b24399d3ed35c57e472818bed5"
+      }
+    },
+    {
+      "name": "sword_sage",
+      "zh_name": "剑圣",
+      "batch": 3,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/sword_sage.png",
+      "references": [
+        "art/cards/v4/local_edits/batch_04/kingly_punch.png",
+        "art/parts_src/sword.png"
+      ],
+      "zh_plan": "左边的 Regent（兜帽蓝袍，右手握剑）→ 南瓜灯杰克（灰色连指手握剑，剑柄换成结城理的剑柄）；晶体光刃、紫色背景不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the hooded Regent at the center-left (blue robe, gripping the crystal sword with one brown hand at the right) with PYRO JACK in the same pose and scale, grey mitten gripping the same place; the hilt of the held sword becomes the hilt of MAKOTO SWORD. Keep unchanged: the glowing crystal blades and the crystal sword tower, the purple background and its shapes, the dark grey rock shape behind. Character designs: [PYRO JACK] = JACK-O'-LANTERN (Pyro Jack): carved ORANGE ribbed pumpkin head with black crescent eyes and a jagged grin, deep-violet floppy witch hat with a buckled band, violet cloak with a round button, small GREY cartoon mitten hands with short rounded lobes (no human fingers or fingernails). [MAKOTO SWORD] = Makoto's sword (asset art/parts_src/sword.png): plain SILVER straight single-edge tapered blade with steel-grey bevel, simple narrow silver crossguard, black leather-wrapped grip, round silver pommel, no gold ornament, gems or crown.\nInput roles: Image1 is the only edit target and composition master. Image2 is the Pyro Jack character DESIGN reference only; ignore its pose, effects, enemies and background. Image3 is the Makoto sword DESIGN reference only; ignore its green background and orientation, and change only the sword parts named in the prompt.",
+      "status": "approved_by_user",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the hooded Regent at the center-left (blue robe, gripping the crystal sword with one brown hand at the right) with PYRO JACK in the same pose and scale, grey mitten gripping the same place; the hilt of the held sword becomes the hilt of MAKOTO SWORD. Keep unchanged: the glowing crystal blades and the crystal sword tower, the purple background and its shapes, the dark grey rock shape behind. Character designs: [PYRO JACK] = JACK-O'-LANTERN (Pyro Jack): carved ORANGE ribbed pumpkin head with black crescent eyes and a jagged grin, deep-violet floppy witch hat with a buckled band, violet cloak with a round button, small GREY cartoon mitten hands with short rounded lobes (no human fingers or fingernails). [MAKOTO SWORD] = Makoto's sword (asset art/parts_src/sword.png): plain SILVER straight single-edge tapered blade with steel-grey bevel, simple narrow silver crossguard, black leather-wrapped grip, round silver pommel, no gold ornament, gems or crown.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-e76454c2-1569-4124-8353-889ad6dd9452.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-e76454c2-1569-4124-8353-889ad6dd9452.png",
+      "output_file": "sword_sage.png",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/sword_sage.png": "2312155c45360099689f6d4640f3701cd8aab6a0aad3d69703949b8a6612802b",
+        "art/cards/v4/local_edits/batch_04/kingly_punch.png": "0155401f9a7271b10118f7d3bf9005d4fe5ec72fa99dd404c1c2170836945fe9",
+        "art/parts_src/sword.png": "017c1c9ba18c9fcc851b52a36b59bab1604d64b24399d3ed35c57e472818bed5"
+      }
+    },
+    {
+      "name": "tyranny",
+      "zh_name": "暴政",
+      "batch": 3,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/tyranny.png",
+      "references": [
+        "art/cards/v4/local_edits/batch_04/kingly_punch.png",
+        "art/parts_src/sword.png"
+      ],
+      "zh_plan": "踩着东西、握剑的 Regent（红色描边、尖帽）→ 南瓜灯杰克握结城理的剑（剑尖朝下插地），橙色描边光保留；深蓝背景和黑色尖刺剪影不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the Regent at the center (brown pointed hat, red outline, standing with a vertical sword) with PYRO JACK in the same pose and scale, grey mittens gripping MAKOTO SWORD planted point-down in the same place as the old sword; keep the red-orange rim light on his outline. Keep unchanged: the dark navy background, the black spiky silhouettes at the bottom, the faint dark red shapes. Character designs: [PYRO JACK] = JACK-O'-LANTERN (Pyro Jack): carved ORANGE ribbed pumpkin head with black crescent eyes and a jagged grin, deep-violet floppy witch hat with a buckled band, violet cloak with a round button, small GREY cartoon mitten hands with short rounded lobes (no human fingers or fingernails). [MAKOTO SWORD] = Makoto's sword (asset art/parts_src/sword.png): plain SILVER straight single-edge tapered blade with steel-grey bevel, simple narrow silver crossguard, black leather-wrapped grip, round silver pommel, no gold ornament, gems or crown.\nInput roles: Image1 is the only edit target and composition master. Image2 is the Pyro Jack character DESIGN reference only; ignore its pose, effects, enemies and background. Image3 is the Makoto sword DESIGN reference only; ignore its green background and orientation, and change only the sword parts named in the prompt.",
+      "status": "approved_by_user",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the Regent at the center (brown pointed hat, red outline, standing with a vertical sword) with PYRO JACK in the same pose and scale, grey mittens gripping MAKOTO SWORD planted point-down in the same place as the old sword; keep the red-orange rim light on his outline. Keep unchanged: the dark navy background, the black spiky silhouettes at the bottom, the faint dark red shapes. Character designs: [PYRO JACK] = JACK-O'-LANTERN (Pyro Jack): carved ORANGE ribbed pumpkin head with black crescent eyes and a jagged grin, deep-violet floppy witch hat with a buckled band, violet cloak with a round button, small GREY cartoon mitten hands with short rounded lobes (no human fingers or fingernails). [MAKOTO SWORD] = Makoto's sword (asset art/parts_src/sword.png): plain SILVER straight single-edge tapered blade with steel-grey bevel, simple narrow silver crossguard, black leather-wrapped grip, round silver pommel, no gold ornament, gems or crown.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-b65cf140-5da4-455d-95ca-0c6c00b66629.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-b65cf140-5da4-455d-95ca-0c6c00b66629.png",
+      "output_file": "tyranny.png",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/tyranny.png": "73719fe81c8ab29f75229fdcaa85c8bf595f271f560caeff65f08453970b1fd7",
+        "art/cards/v4/local_edits/batch_04/kingly_punch.png": "0155401f9a7271b10118f7d3bf9005d4fe5ec72fa99dd404c1c2170836945fe9",
+        "art/parts_src/sword.png": "017c1c9ba18c9fcc851b52a36b59bab1604d64b24399d3ed35c57e472818bed5"
+      }
+    }
+  ],
+  "user_review": {
+    "date": "2026-11-12",
+    "message": "OK",
+    "status": "approved_by_user"
+  }
+}

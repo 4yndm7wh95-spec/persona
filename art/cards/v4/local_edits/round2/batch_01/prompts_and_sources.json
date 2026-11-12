@@ -1,0 +1,155 @@
+{
+  "workspace": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a",
+  "base_commit": "8339f23aff2058219755f7dae10a83b151bf76ef",
+  "prompt_document": "docs/codex/codex_card_art_local_edits_round2.md",
+  "batch": 1,
+  "tool": "built-in imagegen",
+  "status": "approved_by_user",
+  "records": [
+    {
+      "name": "genesis",
+      "zh_name": "创世纪",
+      "batch": 1,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/genesis.png",
+      "references": [
+        "art/cards/v4/local_edits/batch_01/know_thy_place.png",
+        "mod/pck_stage/p3makoto/ui/charselect_portrait.png"
+      ],
+      "zh_plan": "右上伸来的手 → 结城理的手（黑袖白袖口，同样食指触碰星光的姿势）；金色四角星、星空背景不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the hand reaching in from the upper right (cuffed sleeve, index finger about to touch the star) with MAKOTO HAND in the same pose: index finger touching toward the golden star, sleeve entering from the upper-right edge. Keep unchanged: the large golden four-point star, the small stars, the blue-purple starfield background. Character designs: [MAKOTO HAND] = MAKOTO YUKI's natural warm pale bare hand(s) with black school-blazer sleeve and white shirt cuff (a small red armband only if the upper arm is visible); NO Makoto face, head, hair or neck anywhere, sleeves leave the canvas at the same edges where the original arms did.\nInput roles: Image2 and Image3 are reference images for Makoto's hand anatomy, natural skin color, black uniform sleeve and white cuff ONLY. Do not copy their faces, heads, characters, backgrounds or compositions. Image1 alone controls the edited scene.",
+      "status": "approved_by_user",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the hand reaching in from the upper right (cuffed sleeve, index finger about to touch the star) with MAKOTO HAND in the same pose: index finger touching toward the golden star, sleeve entering from the upper-right edge. Keep unchanged: the large golden four-point star, the small stars, the blue-purple starfield background. Character designs: [MAKOTO HAND] = MAKOTO YUKI's natural warm pale bare hand(s) with black school-blazer sleeve and white shirt cuff (a small red armband only if the upper arm is visible); NO Makoto face, head, hair or neck anywhere, sleeves leave the canvas at the same edges where the original arms did.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-6075a4e4-4574-4ba8-bbc6-80bf5c8b350b.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-6075a4e4-4574-4ba8-bbc6-80bf5c8b350b.png",
+      "output_file": "genesis.png",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/genesis.png": "430546fd5c2294916b64e9b01975e0be576be06cd17c59f34839e1e41a211287",
+        "art/cards/v4/local_edits/batch_01/know_thy_place.png": "feda5d037af9e8061475e9c5379325dee59346bda28c49655c4490c227e3fc72",
+        "mod/pck_stage/p3makoto/ui/charselect_portrait.png": "d218b06e6fdf2a57d201c49c9c526852283696a80f6a24e29101f7c05a5f95c2"
+      }
+    },
+    {
+      "name": "stardust",
+      "zh_name": "星尘",
+      "batch": 1,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/stardust.png",
+      "references": [
+        "art/cards/v4/local_edits/batch_01/know_thy_place.png",
+        "mod/pck_stage/p3makoto/ui/charselect_portrait.png"
+      ],
+      "zh_plan": "上方撒星尘的金色护手 → 结城理的手（黑袖白袖口，同样撒落的姿势）；金色星尘、红色火光、蓝色背景不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the golden gauntlet hand entering from the top and pouring stardust with MAKOTO HAND in the same pinching and pouring pose, sleeve entering from the top edge at the same place. Keep unchanged: the falling gold stars and dust, the red-orange glow below, the blue background and its dark shapes. Character designs: [MAKOTO HAND] = MAKOTO YUKI's natural warm pale bare hand(s) with black school-blazer sleeve and white shirt cuff (a small red armband only if the upper arm is visible); NO Makoto face, head, hair or neck anywhere, sleeves leave the canvas at the same edges where the original arms did.\nInput roles: Image2 and Image3 are reference images for Makoto's hand anatomy, natural skin color, black uniform sleeve and white cuff ONLY. Do not copy their faces, heads, characters, backgrounds or compositions. Image1 alone controls the edited scene.",
+      "status": "approved_by_user",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the golden gauntlet hand entering from the top and pouring stardust with MAKOTO HAND in the same pinching and pouring pose, sleeve entering from the top edge at the same place. Keep unchanged: the falling gold stars and dust, the red-orange glow below, the blue background and its dark shapes. Character designs: [MAKOTO HAND] = MAKOTO YUKI's natural warm pale bare hand(s) with black school-blazer sleeve and white shirt cuff (a small red armband only if the upper arm is visible); NO Makoto face, head, hair or neck anywhere, sleeves leave the canvas at the same edges where the original arms did.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-bb3334f7-6126-4b88-816c-c4daeffb7456.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-bb3334f7-6126-4b88-816c-c4daeffb7456.png",
+      "output_file": "stardust.png",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/stardust.png": "60bc17f61b2909fdbdbd0f37bc7860930256e3ff7c88b0d96dc8d718e23bf218",
+        "art/cards/v4/local_edits/batch_01/know_thy_place.png": "feda5d037af9e8061475e9c5379325dee59346bda28c49655c4490c227e3fc72",
+        "mod/pck_stage/p3makoto/ui/charselect_portrait.png": "d218b06e6fdf2a57d201c49c9c526852283696a80f6a24e29101f7c05a5f95c2"
+      }
+    },
+    {
+      "name": "supermassive",
+      "zh_name": "超质量体",
+      "batch": 1,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/supermassive.png",
+      "references": [
+        "art/cards/v4/local_edits/batch_01/know_thy_place.png",
+        "mod/pck_stage/p3makoto/ui/charselect_portrait.png"
+      ],
+      "zh_plan": "画面中央张开的金棕色巨大护手（掌心带发光圆环）→ 结城理的手（同样张开姿势，掌心保留发光圆环符文）；黄色闪电、绿色背景不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the huge golden-brown gauntlet in the center (open hand facing the viewer, glowing ring sigil on the palm) with MAKOTO HAND in the same open pose and scale, blazer sleeve entering from the lower edge. The glowing green-yellow ring sigil stays on the palm as a glowing magic mark. Keep unchanged: the yellow-green lightning arcs, the green background and its shapes. Character designs: [MAKOTO HAND] = MAKOTO YUKI's natural warm pale bare hand(s) with black school-blazer sleeve and white shirt cuff (a small red armband only if the upper arm is visible); NO Makoto face, head, hair or neck anywhere, sleeves leave the canvas at the same edges where the original arms did.\nInput roles: Image2 and Image3 are reference images for Makoto's hand anatomy, natural skin color, black uniform sleeve and white cuff ONLY. Do not copy their faces, heads, characters, backgrounds or compositions. Image1 alone controls the edited scene.",
+      "status": "approved_by_user",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the huge golden-brown gauntlet in the center (open hand facing the viewer, glowing ring sigil on the palm) with MAKOTO HAND in the same open pose and scale, blazer sleeve entering from the lower edge. The glowing green-yellow ring sigil stays on the palm as a glowing magic mark. Keep unchanged: the yellow-green lightning arcs, the green background and its shapes. Character designs: [MAKOTO HAND] = MAKOTO YUKI's natural warm pale bare hand(s) with black school-blazer sleeve and white shirt cuff (a small red armband only if the upper arm is visible); NO Makoto face, head, hair or neck anywhere, sleeves leave the canvas at the same edges where the original arms did.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-e96be409-8a08-43c4-86f5-d06244a7d5a9.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-e96be409-8a08-43c4-86f5-d06244a7d5a9.png",
+      "output_file": "supermassive.png",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/supermassive.png": "c00272e7bdd33ad8061ef031ccee74c41720fc228850f643ae5749564f9aea78",
+        "art/cards/v4/local_edits/batch_01/know_thy_place.png": "feda5d037af9e8061475e9c5379325dee59346bda28c49655c4490c227e3fc72",
+        "mod/pck_stage/p3makoto/ui/charselect_portrait.png": "d218b06e6fdf2a57d201c49c9c526852283696a80f6a24e29101f7c05a5f95c2"
+      }
+    },
+    {
+      "name": "crescent_spear",
+      "zh_name": "新月长矛",
+      "batch": 1,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/crescent_spear.png",
+      "references": [
+        "art/cards/v4/local_edits/batch_01/know_thy_place.png",
+        "mod/pck_stage/p3makoto/ui/charselect_portrait.png"
+      ],
+      "zh_plan": "左下角握着长矛的蓝袖棕手 → 结城理的手（黑袖白袖口）；粉紫发光新月矛头、星光、背景不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the brown gloved hand and blue sleeve at the lower left that grips the spear shaft with MAKOTO HAND gripping the same place on the shaft, same grip angle, sleeve leaving at the same lower-left edge. Keep unchanged: the pink-white crescent spearhead and its sparkles, the glowing outline, the purple background. Character designs: [MAKOTO HAND] = MAKOTO YUKI's natural warm pale bare hand(s) with black school-blazer sleeve and white shirt cuff (a small red armband only if the upper arm is visible); NO Makoto face, head, hair or neck anywhere, sleeves leave the canvas at the same edges where the original arms did.\nInput roles: Image2 and Image3 are reference images for Makoto's hand anatomy, natural skin color, black uniform sleeve and white cuff ONLY. Do not copy their faces, heads, characters, backgrounds or compositions. Image1 alone controls the edited scene.",
+      "status": "approved_by_user",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace ONLY the brown gloved hand and blue sleeve at the lower left that grips the spear shaft with MAKOTO HAND gripping the same place on the shaft, same grip angle, sleeve leaving at the same lower-left edge. Keep unchanged: the pink-white crescent spearhead and its sparkles, the glowing outline, the purple background. Character designs: [MAKOTO HAND] = MAKOTO YUKI's natural warm pale bare hand(s) with black school-blazer sleeve and white shirt cuff (a small red armband only if the upper arm is visible); NO Makoto face, head, hair or neck anywhere, sleeves leave the canvas at the same edges where the original arms did.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-4086aed2-907e-489c-9bd3-1139a1eb4a70.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-4086aed2-907e-489c-9bd3-1139a1eb4a70.png",
+      "output_file": "crescent_spear.png",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/crescent_spear.png": "e376301713f219243e40dc1f5ecbebbe1d3d4bceb79f3935c53ce3f72c1d9588",
+        "art/cards/v4/local_edits/batch_01/know_thy_place.png": "feda5d037af9e8061475e9c5379325dee59346bda28c49655c4490c227e3fc72",
+        "mod/pck_stage/p3makoto/ui/charselect_portrait.png": "d218b06e6fdf2a57d201c49c9c526852283696a80f6a24e29101f7c05a5f95c2"
+      }
+    },
+    {
+      "name": "quasar",
+      "zh_name": "类星体",
+      "batch": 1,
+      "tier": "A",
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/quasar.png",
+      "references": [
+        "art/cards/v4/local_edits/batch_01/know_thy_place.png",
+        "mod/pck_stage/p3makoto/ui/charselect_portrait.png"
+      ],
+      "zh_plan": "拉着青色丝带的两只棕色护手 → 结城理的两只手（握拳，黑袖白袖口）；背后昏暗的兜帽轮廓 → 同色天鹅绒窗帘褶皱；旋转星系圆盘、紫蓝背景不动。",
+      "prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace the two brown gauntlet hands (a fist at the upper left and a fist at the lower right pulling the cyan ribbon around the galaxy disc) with two MAKOTO HAND in the same grips and angles. The dim hooded Regent shape behind (top center) becomes plain purple Velvet Room drapery in the same colors and folds, without any Regent head or face. Keep unchanged: the swirling galaxy disc, the cyan ribbon and sparkles, the purple-blue background. Character designs: [MAKOTO HAND] = MAKOTO YUKI's natural warm pale bare hand(s) with black school-blazer sleeve and white shirt cuff (a small red armband only if the upper arm is visible); NO Makoto face, head, hair or neck anywhere, sleeves leave the canvas at the same edges where the original arms did.\nInput roles: Image2 and Image3 are reference images for Makoto's hand anatomy, natural skin color, black uniform sleeve and white cuff ONLY. Do not copy their faces, heads, characters, backgrounds or compositions. Image1 alone controls the edited scene.",
+      "status": "approved_by_user",
+      "source_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET and composition master. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything. Make LOCAL replacements only, at the same positions, silhouette footprints and scale as the replaced parts. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind as props, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. New P3R characters use their canonical colors. Makoto Yuki's face and head must never appear (hands and sleeves only). Persona hands are plump cartoon mittens with no long human fingers, knuckles or fingernails. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760 unless this prompt says portrait, no text, letters, numbers, frame, UI or watermark. Replace the two brown gauntlet hands (a fist at the upper left and a fist at the lower right pulling the cyan ribbon around the galaxy disc) with two MAKOTO HAND in the same grips and angles. The dim hooded Regent shape behind (top center) becomes plain purple Velvet Room drapery in the same colors and folds, without any Regent head or face. Keep unchanged: the swirling galaxy disc, the cyan ribbon and sparkles, the purple-blue background. Character designs: [MAKOTO HAND] = MAKOTO YUKI's natural warm pale bare hand(s) with black school-blazer sleeve and white shirt cuff (a small red armband only if the upper arm is visible); NO Makoto face, head, hair or neck anywhere, sleeves leave the canvas at the same edges where the original arms did.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-151e2b64-776f-41ff-b139-e2b72bc4257c.png",
+      "attempts": 1,
+      "raw_file": "generation_sources/exec-151e2b64-776f-41ff-b139-e2b72bc4257c.png",
+      "output_file": "quasar.png",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/quasar.png": "e7173cbb26fae839bef2273ad445381eb5755691cdcc56300b04b5b60334767c",
+        "art/cards/v4/local_edits/batch_01/know_thy_place.png": "feda5d037af9e8061475e9c5379325dee59346bda28c49655c4490c227e3fc72",
+        "mod/pck_stage/p3makoto/ui/charselect_portrait.png": "d218b06e6fdf2a57d201c49c9c526852283696a80f6a24e29101f7c05a5f95c2"
+      }
+    }
+  ],
+  "user_review": {
+    "date": "2026-11-12",
+    "message": "OK下一批",
+    "status": "approved_by_user"
+  }
+}

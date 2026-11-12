@@ -1,0 +1,16 @@
+{
+  "status": "partially_user_approved",
+  "cards": {
+    "hammer_time": "approved_by_user",
+    "furnace_f1": "approved_by_user",
+    "furnace_f2": "awaiting_user_review"
+  },
+  "user_review": {
+    "date": "2026-11-12",
+    "approved": [
+      "hammer_time",
+      "furnace_f1"
+    ],
+    "note": "User approved furnace image exec-f863342c-93ed-4aef-bc2c-1111eb5d241e.png and hammer_time. furnace_f2 remains awaiting_user_review."
+  }
+}

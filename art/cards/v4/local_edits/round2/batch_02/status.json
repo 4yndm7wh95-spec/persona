@@ -1,0 +1,15 @@
+{
+  "status": "approved_by_user",
+  "cards": {
+    "big_bang": "approved_by_user",
+    "constellation": "approved_by_user",
+    "glimmer": "approved_by_user",
+    "glitterstream": "approved_by_user",
+    "prophesize": "approved_by_user"
+  },
+  "user_review": {
+    "date": "2026-11-12",
+    "message": "ok",
+    "status": "approved_by_user"
+  }
+}
