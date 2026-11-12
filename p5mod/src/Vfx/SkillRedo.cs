@@ -18,6 +18,11 @@ public static class SkillRedo
 		cards["Reflex"] = Reflex;
 		cards["Backflip"] = Backflip;
 		cards["EscapePlan"] = EscapePlan;
+		cards["Survivor"] = Survivor;
+		cards["CalculatedGamble"] = CalculatedGamble;
+		cards["Tactician"] = Tactician;
+		cards["Adrenaline"] = Adrenaline;
+		cards["ShadowStep"] = ShadowStep;
 	}
 
 	private static float CardW(SkillCtx c) => c.Tall * 0.16f;
@@ -435,5 +440,307 @@ public static class SkillRedo
 				Glow.Sparks(c.Front, apex, 12, 40f, 160f, 0.6f, new[] { Phantom.Hot, Phantom.Red, new Color(0.3f, 0f, 0.05f) }, -80f, 0.02f * u, 0.05f * u, Vector2.Up, 120f);
 			});
 		}
+	}
+
+	// ═══════════════════════════ 第三批（2026-11-12） ═══════════════════════════
+
+	/// <summary>一圈厚而柔的冲击带（不是细线圈）：从 r0 胀到 r1，越胀越薄、越淡。squash = 竖向压扁。</summary>
+	private static void Thump(Control layer, Vector2 at, Color tint, float size, float life, float squash, float delay = 0f)
+	{
+		Node2D root = Fx.Root(layer, at, "P5Thump", delay + life + 0.1);
+		ColorRect ring = Glow.RingRect(root, size, squash);
+		Glow.SetParam(ring, "tint", tint);
+		Glow.SetParam(ring, "alpha", 0f);
+		Fx.Animate(ring, delay, life, t =>
+		{
+			float e = Ease5.OutExpo(t);
+			Glow.SetParam(ring, "radius", Mathf.Lerp(0.12f, 0.85f, e));
+			Glow.SetParam(ring, "width", Mathf.Lerp(0.16f, 0.03f, e));
+			Glow.SetParam(ring, "alpha", 0.55f * (1f - t));
+		});
+	}
+
+	/// <summary>身上一下泛色（tint），k 秒内回来。</summary>
+	private static void Pulse(SkillCtx c, Color to, float delay, float life)
+	{
+		if (c.SelfTint is not { } tint) return;
+		Fx.After(c.Front, delay, () =>
+		{
+			Node2D tick = Fx.Root(c.Front, c.Feet, "P5SelfTint", life + 0.1);
+			Fx.Animate(tick, 0, life, t => tint(Colors.White.Lerp(to, Mathf.Exp(-t * 5f))));
+			tick.TreeExiting += () => tint(Colors.White);
+		});
+	}
+
+	/// <summary>
+	/// 生存者（格挡 + 弃 1）：一张牌被甩到身前半空打着转——他反手掷出一道红白刀光，「噔」地钉穿那张牌（顿帧、白闪），
+	/// 牌被钉着往后一仰，随即炸成一团红黑白纸屑和余烬。约 0.8s。拍子：甩出（滑动）→ 钉穿（刀，主拍）→ 碎（很轻的噗）。
+	/// </summary>
+	public static void Survivor(SkillCtx c)
+	{
+		float h = c.Tall, u = c.Unit, f = c.Face, w = CardW(c) * 1.45f;
+		Vector2 at = c.Chest + new Vector2(f * h * 0.42f, -h * 0.25f);
+		const float fly = 0.22f, pin = 0.3f;
+		S("gx_card_slide", 0.16f);
+		S("gx_slice", 0.28f, pin);
+		S("gx_pop", 0.12f, pin + 0.16f);
+		Phantom.P5Card card = Phantom.Card(c.Front, c.Hand, w, pin + 0.3, 0.6f);
+		Fx.Animate(card.Root, 0, pin + 0.16f, t =>
+		{
+			float s = t * (pin + 0.16f);
+			if (s < fly) card.Place(c.Hand.Lerp(at, Ease5.OutQuint(s / fly)), f * s * 6f, Mathf.Pi + s * 20f, 1f);
+			else if (s < pin) card.Place(at + new Vector2(0f, Mathf.Sin((s - fly) * 20f) * h * 0.01f), f * (fly * 6f + (s - fly) * 2f), Mathf.Pi + fly * 20f + (s - fly) * 6f, 1f);
+			else
+			{
+				float k = (s - pin) / 0.16f;
+				card.Place(at + new Vector2(f * h * 0.06f * Ease5.OutQuint(k), 0f), f * (fly * 6f + 0.16f) + f * 0.5f * Ease5.OutQuint(k), Mathf.Pi + fly * 20f + 0.5f, 1f + 0.08f * k);
+				card.Set("glow", 1f - k);
+			}
+		});
+		// 刀光：从手里掷出，钉到牌上
+		Vector2 from = c.Hand + new Vector2(f * h * 0.05f, -h * 0.02f);
+		Fx.After(c.Front, pin - 0.06f, () =>
+		{
+			float ang = (at - from).Angle();
+			Glow.Blade(c.Front, from.Lerp(at, 0.55f), ang, from.DistanceTo(at) * 1.1f, 24f * u, 0.18f);
+			Phantom.Shards(c.Front, from, 5, 300f * u, 600f * u, at - from, 15f, 0.15f, 0f, 20f * u);
+		});
+		Fx.After(c.Front, pin, () =>
+		{
+			card.Trail?.Kill();
+			HitStop.Request(0.04);
+			Fx.Shake(1);
+			Glow.Flash(c.Front, at, Phantom.Hot, w * 2.6f, 0.1f);
+			Glow.Glint(c.Front, at, 0.7f);
+			Phantom.Shards(c.Front, at, 14, 300f * u, 900f * u, new Vector2(f, -0.1f), 35f, 0.32f, 300f * u, 24f * u);
+		});
+		Fx.After(c.Front, pin + 0.16f, () =>
+		{
+			card.Root.Visible = false;
+			Glow.Flash(c.Front, at, Phantom.Red, w * 3f, 0.16f);
+			Phantom.Confetti(c.Front, at, 26, 420f * u, new Vector2(f, -0.4f), 75f, 1.0f, 8f * u);
+			Glow.Sparks(c.Front, at, 12, 40f, 180f, 0.6f, new[] { Phantom.Hot, Phantom.Red, new Color(0.3f, 0f, 0.05f) }, -80f, 0.02f * u, 0.05f * u, Vector2.Up, 140f);
+		});
+	}
+
+	/// <summary>
+	/// 计算下注（弃掉全部手牌，再抽同样多）：五张牌绕着他横着飞转（转到身后的被挡住、变小），越转越慢——停住的一刻五张同时「轰」地炸成纸屑
+	/// （白闪、一圈红波、短顿帧），紧接着五张新牌从他手里「唰」地扇形弹开、一张接一张飞进手牌区。约 1.5s。
+	/// 拍子：转起来（风）→ 停住炸开（噗，主拍）→ 新牌扇开（展开声）→ 落进手牌（一声）。
+	/// </summary>
+	public static void CalculatedGamble(SkillCtx c)
+	{
+		float h = c.Tall, u = c.Unit, f = c.Face, w = CardW(c);
+		const int n = 5;
+		const float spin = 0.75f;
+		Vector2 center = c.Feet + new Vector2(0f, -h * 0.55f);
+		Control back = c.Back != null && GodotObject.IsInstanceValid(c.Back) ? c.Back : c.Front;
+		S("gx_whoosh", 0.2f, 0.02f);
+		S("gx_pop", 0.3f, spin);
+		S("gx_fan_open", 0.2f, spin + 0.14f);
+		S("gx_card_stack", 0.16f, spin + 0.14f + 0.05f * (n - 1) + 0.5f);
+		for (int i = 0; i < n; i++)
+		{
+			int k = i;
+			float ph = Mathf.Tau * k / n;
+			Phantom.P5Card fr = Phantom.Card(c.Front, center, w, spin + 0.05, 0.5f);
+			Phantom.P5Card bk = Phantom.Card(back, center, w * 0.85f, spin + 0.05);
+			Fx.Animate(fr.Root, 0, spin, t =>
+			{
+				float a = ph + Mathf.Tau * 2.3f * (1f - Mathf.Pow(1f - t, 3f));
+				float rad = h * 0.6f * Ease5.OutQuint(Mathf.Min(1f, t * 4f));
+				Vector2 pos = center + new Vector2(Mathf.Cos(a) * rad, Mathf.Sin(a) * rad * 0.24f);
+				bool front = Mathf.Sin(a) > 0f;
+				fr.Root.Visible = front; bk.Root.Visible = !front;
+				if (fr.Trail != null) fr.Trail.Fade = front ? 1f : 0f;
+				fr.Place(pos, -Mathf.Cos(a) * 0.25f, a + Mathf.Pi / 2f, 0.95f + 0.1f * Mathf.Sin(a));
+				bk.Place(pos, -Mathf.Cos(a) * 0.25f, a + Mathf.Pi / 2f, 0.85f);
+				fr.Set("glow", Mathf.Clamp((t - 0.85f) / 0.15f, 0f, 1f));
+			});
+			Fx.After(c.Front, spin, () =>
+			{
+				fr.Trail?.Kill(); fr.Root.Visible = false; bk.Root.Visible = false;
+				float a = ph + Mathf.Tau * 2.3f;
+				Vector2 pos = center + new Vector2(Mathf.Cos(a), Mathf.Sin(a) * 0.24f) * h * 0.6f;
+				Phantom.Confetti(c.Front, pos, 9, 360f * u, (pos - center).Normalized() + Vector2.Up * 0.4f, 50f, 0.9f, 7f * u);
+			});
+		}
+		Fx.After(c.Front, spin, () =>
+		{
+			Glow.Flash(c.Front, center, Phantom.Hot, h * 0.9f, 0.14f);
+			Thump(c.Front, center, Phantom.Red, h * 1.8f, 0.4f, 0.3f);
+			Phantom.Shards(c.Front, center, 18, 300f * u, 900f * u, Vector2.Up, 180f, 0.35f, 400f * u, 24f * u);
+			HitStop.Request(0.04);
+			Fx.Shake(1);
+		});
+		// 新牌：从手里扇形弹开，再一张张飞进手牌
+		for (int i = 0; i < n; i++)
+		{
+			int k = i;
+			float d = spin + 0.14f + 0.05f * k;
+			float ang = -Mathf.Pi / 2f + f * (k - (n - 1) / 2f) * 0.38f;
+			Vector2 apex = c.Hand + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * h * 0.42f;
+			Phantom.P5Card card = Phantom.Card(c.Front, c.Hand, w, d + 0.2, 0.6f);
+			card.Root.Visible = false;
+			Fx.Animate(card.Root, d, 0.16, t =>
+			{
+				card.Root.Visible = true;
+				card.Place(c.Hand.Lerp(apex, Ease5.OutBack(t)), ang + Mathf.Pi / 2f, (1f - t) * Mathf.Pi, 0.7f + 0.3f * t);
+			});
+			Fx.After(c.Front, d + 0.16f, () => { card.Trail?.Kill(); card.Root.Visible = false; });
+			ToHand(c, apex, d + 0.16f, 0.4f, ang + Mathf.Pi / 2f, h * 0.15f);
+		}
+	}
+
+	/// <summary>
+	/// 战术大师（获得能量）：一张牌从他指间弹起、翻到正面——「啪」地碎成一圈红白碎光，碎光一下子被吸回他胸口，
+	/// 胸口一记白闪、一圈红色冲击环和往上蹿的火花，身上红光一泛。约 0.9s。拍子：弹起（滑动）→ 吸回（叮）→ 胸口一震（噗，主拍）。
+	/// </summary>
+	public static void Tactician(SkillCtx c)
+	{
+		float h = c.Tall, u = c.Unit, f = c.Face, w = CardW(c) * 1.5f;
+		Vector2 at = c.Chest + new Vector2(f * h * 0.32f, -h * 0.4f);
+		const float up = 0.24f, shatter = 0.32f, absorb = 0.52f;
+		S("gx_card_slide", 0.16f);
+		S("gx_ping", 0.12f, shatter);
+		S("gx_pop", 0.28f, absorb);
+		Phantom.P5Card card = Phantom.Card(c.Front, c.Hand, w, shatter + 0.05, 0.5f);
+		Fx.Animate(card.Root, 0, shatter, t =>
+		{
+			float s = t * shatter;
+			card.Place(s < up ? c.Hand.Lerp(at, Ease5.OutQuint(s / up)) : at, 0f, s < up ? Mathf.Pi + s / up * Mathf.Pi * 3f : 0f, s < up ? 0.9f : 1f + 0.15f * (s - up) / (shatter - up));
+			card.Set("glow", Mathf.Clamp((s - up) / (shatter - up), 0f, 1f));
+		});
+		Fx.After(c.Front, shatter, () =>
+		{
+			card.Trail?.Kill(); card.Root.Visible = false;
+			Glow.Flash(c.Front, at, Phantom.Hot, w * 2.4f, 0.1f);
+			Phantom.Shards(c.Front, at, 14, 250f * u, 600f * u, Vector2.Up, 180f, 0.16f, 0f, 20f * u);
+			// 碎光吸回胸口：一圈小光点从碎点甩开再弯回去
+			for (int i = 0; i < 10; i++)
+			{
+				float a = Mathf.Tau * i / 10f;
+				Vector2 out_ = at + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * h * 0.18f;
+				Node2D dot = Fx.Root(c.Front, at, "P5Mote", 0.3);
+				Sprite2D sp = Glow.SoftSprite(dot, Vector2.Zero, i % 2 == 0 ? Phantom.Hot : new Color(1f, 0.25f, 0.3f), 0.6f * u);
+				Fx.Animate(dot, 0, absorb - shatter, t =>
+				{
+					Vector2 p = at.Lerp(out_, Ease5.OutQuint(Mathf.Min(1f, t * 2.5f))).Lerp(c.Chest, Fx.InCubic(t));
+					dot.GlobalPosition = p;
+					sp.Scale = Vector2.One * 0.6f * u * (1f - 0.4f * t);
+				});
+			}
+		});
+		Fx.After(c.Front, absorb, () =>
+		{
+			Glow.Flash(c.Front, c.Chest, Phantom.Hot, h * 0.6f, 0.12f);
+			Thump(c.Front, c.Chest, Phantom.Red, h * 1.6f, 0.4f, 0.6f);
+			Glow.Flash(c.Front, c.Chest, Phantom.Red, h * 1.2f, 0.25f);
+			Phantom.Shards(c.Front, c.Chest, 12, 300f * u, 700f * u, Vector2.Up, 60f, 0.35f, -200f * u, 22f * u);
+			Fx.Shake(1);
+		});
+		Pulse(c, new Color(1.5f, 0.65f, 0.65f), absorb, 0.45f);
+	}
+
+	/// <summary>
+	/// 肾上腺素（获得能量，抽 2）：「咚、咚」两下心跳——胸口两下红闪，每下推出一圈扁的冲击环、身上红光一泛，第二下更重（短震、
+	/// 一圈往外甩的速度线）；随后两张牌从胸口甩出、飞进手牌区。约 1.1s。拍子：心跳一（轻噗）→ 心跳二（噗，主拍）→ 落进手牌（一声）。
+	/// </summary>
+	public static void Adrenaline(SkillCtx c)
+	{
+		float h = c.Tall, u = c.Unit, f = c.Face;
+		S("gx_pop", 0.14f, 0.02f);
+		S("gx_pop", 0.3f, 0.26f);
+		for (int b = 0; b < 2; b++)
+		{
+			int bb = b;
+			float d = 0.02f + 0.24f * b;
+			Fx.After(c.Front, d, () =>
+			{
+				Glow.Flash(c.Front, c.Chest, bb == 0 ? Phantom.Red : Phantom.Hot, h * (0.55f + 0.25f * bb), 0.14f);
+				Thump(c.Front, c.Chest, Phantom.Red, h * (1.3f + 0.6f * bb), 0.36f, 0.75f);
+				if (bb == 1)
+				{
+					Fx.Shake(1);
+					Glow.SpeedLines(c.Front, c.Chest, Phantom.Hot, 14, h * 0.3f, h * 0.85f, 0.26f);
+					Phantom.Shards(c.Front, c.Chest, 16, 400f * u, 1000f * u, Vector2.Up, 180f, 0.3f, 0f, 24f * u);
+				}
+			});
+			Pulse(c, new Color(1.6f, 0.6f, 0.62f), d, 0.3f);
+		}
+		for (int i = 0; i < 2; i++)
+		{
+			int k = i;
+			float d = 0.42f + 0.07f * k;
+			Vector2 apex = c.Chest + new Vector2(f * h * (0.3f + 0.15f * k), -h * (0.4f - 0.1f * k));
+			Phantom.P5Card card = Phantom.Card(c.Front, c.Chest, CardW(c), d + 0.2, 0.7f);
+			card.Root.Visible = false;
+			Fx.Animate(card.Root, d, 0.16, t =>
+			{
+				card.Root.Visible = true;
+				card.Place(c.Chest.Lerp(apex, Ease5.OutQuint(t)), f * 0.3f, t * 6f, 0.7f + 0.3f * t);
+			});
+			Fx.After(c.Front, d + 0.16f, () => { card.Trail?.Kill(); card.Root.Visible = false; });
+			ToHand(c, apex, d + 0.16f, 0.42f, f * 0.3f, h * 0.15f);
+		}
+		S("gx_card_stack", 0.16f, 0.49f + 0.16f + 0.42f);
+	}
+
+	/// <summary>
+	/// 暗影步（弃掉手牌，下回合攻击伤害翻倍）：三张牌从手里甩出去、在半空烧掉碎成纸屑；同时一道黑红的斜斩「唰」地从他身上劈过，
+	/// 他身后留下一层贴身的红剪影、人一下暗下去再回来；最后面具上一点红光、握刀的手上缠着一圈收紧的红光（下回合翻倍）。约 1.1s。
+	/// 拍子：甩牌（滑动）→ 斜斩（刀，主拍）→ 手上的红光（叮）。
+	/// </summary>
+	public static void ShadowStep(SkillCtx c)
+	{
+		float h = c.Tall, u = c.Unit, f = c.Face, w = CardW(c);
+		const float slash = 0.22f;
+		S("gx_card_slide", 0.16f);
+		S("gx_slice", 0.3f, slash);
+		S("gx_ping", 0.12f, 0.75f);
+		for (int i = 0; i < 3; i++)
+		{
+			int k = i;
+			float ang = Mathf.Lerp(-0.7f, 0.1f, k / 2f);
+			Vector2 to = c.Hand + new Vector2(Mathf.Cos(ang) * f, Mathf.Sin(ang)) * h * 0.55f;
+			Phantom.P5Card card = Phantom.Card(c.Front, c.Hand, w, 0.9, 0.6f);
+			float d = 0.03f * k;
+			card.Root.Visible = false;
+			Fx.Animate(card.Root, d, 0.22, t =>
+			{
+				card.Root.Visible = true;
+				card.Place(c.Hand.Lerp(to, Ease5.OutQuint(t)), f * t * 3f, Mathf.Pi + t * 12f, 1f);
+			});
+			Fx.After(c.Front, d + 0.22f, () => BurnAway(c, card, to, f * 0.66f, new Vector2(f * h * 0.08f, -h * 0.06f)));
+		}
+		Fx.After(c.Front, slash, () =>
+		{
+			Cut.Razor(c.Front, c.Chest, f > 0f ? -1.0f : Mathf.Pi + 1.0f, h * 1.4f, 5f * u, 0.14f);
+			Glow.Flash(c.Front, c.Chest, Phantom.Hot, h * 0.7f, 0.1f);
+			HitStop.Request(0.04);
+			Fx.Shake(1);
+			Phantom.Shards(c.Front, c.Chest, 14, 300f * u, 900f * u, new Vector2(f, 0.6f), 30f, 0.3f, 300f * u, 26f * u);
+			if (c.Back != null && GodotObject.IsInstanceValid(c.Back) && c.CopyBody != null)
+				SkillFx.Ghosts(c.Back, c.CopyBody, c.Region, c.Face, 1, sound: false, subtle: true);
+		});
+		Pulse(c, new Color(0.25f, 0.18f, 0.25f), slash, 0.5f);
+		Fx.After(c.Front, 0.75f, () =>
+		{
+			Glow.Glint(c.Front, c.Mask + new Vector2(f * h * 0.03f, 0f), 0.9f);
+			Node2D rr = Fx.Root(c.Front, c.Hand, "P5Intent", 0.6);
+			for (int i = 0; i < 2; i++)
+			{
+				ColorRect ring = Glow.RingRect(rr, h * 0.45f, 0.5f);
+				Glow.SetParam(ring, "tint", i == 0 ? Phantom.Red : Phantom.Hot);
+				int ii = i;
+				Fx.Animate(ring, 0.05f * i, 0.45, t =>
+				{
+					Glow.SetParam(ring, "radius", Mathf.Lerp(0.9f, 0.2f, Ease5.OutQuint(t)));
+					Glow.SetParam(ring, "width", 0.02f + 0.015f * ii);
+					Glow.SetParam(ring, "alpha", Mathf.Min(1f, t * 6f) * (1f - Ease5.Seg(t, 0.6f, 0.4f)));
+				});
+			}
+			Phantom.Shards(c.Front, c.Hand, 8, 150f * u, 400f * u, Vector2.Up, 90f, 0.35f, -150f * u, 16f * u);
+		});
 	}
 }
