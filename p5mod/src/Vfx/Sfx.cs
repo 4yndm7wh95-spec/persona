@@ -218,6 +218,36 @@ public static class Sfx
 	/// 都挑预览里也能听到的（tools/p5/fxpreview/game_sfx.py 找得到样本的）；能量那组 gain_energy 例外（样本不在 sfx.bank 里，预览里不响）。
 	/// 用户在预览 / 游戏里听了哪个不合适就在这里换。
 	/// </summary>
+	/// <summary>
+	/// 技能牌的音色板（用户 2026-11-12：只有抽牌声一枝独秀、很多动作没声音；要有，但不要明显）：游戏自带的样本，
+	/// 去掉了冲击前的空白（直接在那一帧播就对得上）、统一响度，每种几个变体随机挑（tools/p5/sfx/stage_game_samples.py → art/sfx_p5/game）。
+	/// </summary>
+	public static readonly Dictionary<string, int> Palette = new()
+	{
+		["gx_card_slide"] = 6,   // 一张牌飞过 / 擦过
+		["gx_card_stack"] = 6,   // 牌落进手牌、叠起来
+		["gx_fan_open"] = 3,     // 扇形展开
+		["gx_fan_close"] = 3,    // 扇子收拢
+		["gx_whoosh"] = 4,       // 快的弧光 / 翻身 / 闪现
+		["gx_slice"] = 4,        // 斩开 / 交叉一闪
+		["gx_burn"] = 3,         // 牌烧掉
+		["gx_ping"] = 1,         // 很小的「叮」：定格的闪光、扣上
+		["gx_pop"] = 1,          // 烟弹「噗」
+	};
+
+	private static readonly Dictionary<string, int> _lastTake = new();
+
+	/// <summary>从音色板里挑一个变体在 delay 秒后播（不和上一次同一个）。</summary>
+	public static void Take(string name, float volume, float delay = 0f)
+	{
+		int n = Palette.TryGetValue(name, out int c) ? c : 1;
+		int last = _lastTake.TryGetValue(name, out int l) ? l : -1;
+		int k = (int)(Fx.Rand(0f, n - 0.001f));
+		if (n > 1 && k == last) k = (k + 1) % n;
+		_lastTake[name] = k;
+		Play(name + "_" + k, volume, delay);
+	}
+
 	/// <summary>技能牌音效整体再压一档（用户 2026-11-12：音效真的不用太明显，现在太大声）。</summary>
 	public const float SkillQuiet = 0.5f;
 
