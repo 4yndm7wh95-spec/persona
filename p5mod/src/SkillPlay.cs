@@ -79,6 +79,44 @@ public static class SkillPlay
 		};
 	}
 
+	/// <summary>技能特效要用的位置（SkillCtx）：从此刻的 Joker 和目标取。summon = 召唤牌（手从胸口出）。</summary>
+	internal static SkillCtx Ctx(NCreature joker, NCreature? target, Control layer, Control? back, NCombatRoom room, bool summon = false)
+	{
+		Vector2 feet = Joker.PosePoint(joker, ReadyFx.Feet), chest = Joker.Chest(joker), hand = summon ? chest : Joker.PosePoint(joker, ReadyFx.GloveCuff);
+		float tall = (feet - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length(), face = Joker.Facing(joker);
+		Action<Color> selfTint = c => { if (GodotObject.IsInstanceValid(joker) && joker.Visuals is { } v) v.Modulate = c; };
+		Rect2 region = new(feet + new Vector2(-tall * 0.75f, -tall * 1.15f), new Vector2(tall * 1.5f, tall * 1.3f));
+		Func<Node, (Node2D, Transform2D)?> clone = parent => Aim.CloneBody(joker, parent, "idle_loop");
+		var enemies = new List<SkillFx.Victim>();
+		if (joker.Entity?.CombatState is { } ecs)
+		{
+			foreach (Creature e in ecs.HittableEnemies)
+			{
+				if (room.GetCreatureNode(e) is NCreature en && GodotObject.IsInstanceValid(en))
+				{
+					enemies.Add(new SkillFx.Victim(en.GetBottomOfHitbox(), en.GetTopOfHitbox(), en.Hitbox.GetGlobalRect().Size.X, Tint(en)));
+				}
+			}
+		}
+		SkillFx.Victim? tv = target != null && GodotObject.IsInstanceValid(target)
+			? new SkillFx.Victim(target.GetBottomOfHitbox(), target.GetTopOfHitbox(), target.Hitbox.GetGlobalRect().Size.X, Tint(target))
+			: null;
+		return new SkillCtx(layer, back, feet, chest, hand, Joker.PosePoint(joker, ReadyFx.MaskFace), tall, face, selfTint, enemies, tv)
+		{
+			CopyBody = clone, Region = region,
+		};
+	}
+
+	/// <summary>余像能力：之后每打出一张牌获得 1 点格挡的那一刻（AfterimageTickPatch），身上剥下一层很淡的红色残影。</summary>
+	internal static void AfterimageTick(NCreature joker)
+	{
+		if (Joker.FxLayer() is not Control layer || NCombatRoom.Instance is not NCombatRoom room || !GodotObject.IsInstanceValid(joker))
+		{
+			return;
+		}
+		SkillRedo4.AfterimageTick(Ctx(joker, null, layer, Joker.FxLayer(back: true), room));
+	}
+
 	public static void OnPlay(CardModel card, NCreature joker, NCreature? target, Control layer, NCombatRoom room)
 	{
 		string name = card.GetType().Name;
@@ -111,24 +149,7 @@ public static class SkillPlay
 			Func<Node, (Node2D, Transform2D)?> clone = parent => Aim.CloneBody(joker, parent, "idle_loop");
 			if (CardSkillFx.Cards.TryGetValue(name, out Action<SkillCtx>? perCard))
 			{
-				var enemies = new List<SkillFx.Victim>();
-				if (joker.Entity?.CombatState is { } ecs)
-				{
-					foreach (Creature e in ecs.HittableEnemies)
-					{
-						if (room.GetCreatureNode(e) is NCreature en && GodotObject.IsInstanceValid(en))
-						{
-							enemies.Add(new SkillFx.Victim(en.GetBottomOfHitbox(), en.GetTopOfHitbox(), en.Hitbox.GetGlobalRect().Size.X, Tint(en)));
-						}
-					}
-				}
-				SkillFx.Victim? tv = target != null && GodotObject.IsInstanceValid(target)
-					? new SkillFx.Victim(target.GetBottomOfHitbox(), target.GetTopOfHitbox(), target.Hitbox.GetGlobalRect().Size.X, Tint(target))
-					: null;
-				perCard(new SkillCtx(layer, back, feet, chest, hand, Joker.PosePoint(joker, ReadyFx.MaskFace), tall, face, selfTint, enemies, tv)
-				{
-					CopyBody = clone, Region = region,
-				});
+				perCard(Ctx(joker, target, layer, back, room, summon));
 				return;
 			}
 			switch (kind)

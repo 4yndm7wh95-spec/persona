@@ -313,6 +313,10 @@ public static class GainBlockPatch
 	{
 		ModEntry.Safe("GainBlock", () =>
 		{
+			if (AfterimageTickPatch.Depth > 0)
+			{
+				return;                                         // 余像每张牌的 1 点格挡：只有淡淡的残影（AfterimageTickPatch），不立盾
+			}
 			if (amount > 0m && cardPlay != null && Joker.OwnsCard(cardPlay.Card) && creature.Player is { } p && Joker.Is(p)
 				&& NCombatRoom.Instance?.GetCreatureNode(creature) is NCreature node)
 			{
