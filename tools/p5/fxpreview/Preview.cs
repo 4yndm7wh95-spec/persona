@@ -729,6 +729,7 @@ public partial class Preview : Node2D
 		["cards1"] = p => Cards1(p, null),
 		["cards1b"] = p => Cards1(p, new[] { "Envenom", "NoxiousFumes", "SerpentForm" }),
 		["cards2"] = p => Cards2(p, null),
+		["redo"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Acrobatics", "cast_glove", 0.25, 1.7), ("Acrobatics", "cast_glove", 0.25, 1.7) }),
 		["cards3"] = p => Cards3(p, null),
 
 		["ghost"] = p => Cards2(p, new[] { "Blur" }),
