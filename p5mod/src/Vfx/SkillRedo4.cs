@@ -23,11 +23,10 @@ public static class SkillRedo4
 	private static void S(string name, float vol, float at = 0f) => Sfx.Take(name, vol * 0.8f, at);
 	private static float CardW(SkillCtx c) => c.Tall * 0.16f;
 
-	/// <summary>冲击：一圈透明的空气扭曲往外推（没有线圈）+ 中心一团柔光。</summary>
+	/// <summary>冲击：中心一团柔光（不要任何圈）。</summary>
 	private static void Wave(Control layer, Vector2 at, Color tint, float size, float life, float squash)
 	{
-		Glow.Ripple(layer, at, size, life + 0.15f, 0.035f, squash);
-		Glow.Flash(layer, at, tint, size * 0.4f, life * 0.45f);
+		Glow.Flash(layer, at, tint, size * 0.45f, life * 0.5f);   // 只留一团柔光（扭曲波在这个尺寸上也看得出一圈边，去掉）
 	}
 
 	// ═══════════════════════════ 积木 ═══════════════════════════
