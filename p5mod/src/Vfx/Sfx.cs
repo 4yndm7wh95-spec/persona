@@ -233,6 +233,10 @@ public static class Sfx
 		["gx_burn"] = 3,         // 牌烧掉
 		["gx_ping"] = 1,         // 很小的「叮」：定格的闪光、扣上
 		["gx_pop"] = 1,          // 烟弹「噗」
+		["gx_tick"] = 4,         // 子弹时间：很短很脆的「嗒」（时停里每出一张牌）
+		["gx_tock"] = 4,         // 子弹时间：低一点、有箱体共鸣的钟摆「咔」（停住 / 恢复）
+		["gx_glass"] = 5,        // 碎玻璃一样的细碎声（冻住的碎片一齐碎开）
+		["gx_freeze"] = 3,       // 冷的、往里收的霜声（时间被抽走）
 	};
 
 	private static readonly Dictionary<string, int> _lastTake = new();

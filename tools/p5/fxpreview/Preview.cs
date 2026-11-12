@@ -729,6 +729,33 @@ public partial class Preview : Node2D
 		["cards1"] = p => Cards1(p, null),
 		["cards1b"] = p => Cards1(p, new[] { "Envenom", "NoxiousFumes", "SerpentForm" }),
 		["cards2"] = p => Cards2(p, null),
+		// 子弹时间：打出 → 时停里砍一刀、开一枪、重砍一刀、出一张技能牌 → 回合结束时间回来（Vfx/TimeStop.cs）
+		["bullet_time"] = p =>
+		{
+			TimeStop.Enemies = () =>
+			{
+				var list = new List<TimeStop.Actor>();
+				foreach (var (at, body) in p._enemies)
+				{
+					if (body is SpinePlayer sp) list.Add(new TimeStop.Actor(body, at, s => sp.Speed = s));
+				}
+				return list;
+			};
+			void Hurt(double t, Vector2 e) => p.At(t, () => { if (p._enemies[e] is SpinePlayer sp) sp.Play("hurt"); });
+			RunCards(p, null, new (string, string, double, double)[] { ("BulletTime", "cast_glove", 0.25, 1.0) });
+			p.At(2.0, () => TimeStop.Current?.Card(0.15f));
+			p.HitC(2.15, Enemy, 9, Weight.Medium, swing: true);
+			Hurt(2.15, Enemy);
+			p.At(3.0, () => TimeStop.Current?.Card(0.2f));
+			p.ShotC(3.2, Enemy2, 6, Weight.Light);
+			Hurt(3.2, Enemy2);
+			p.At(4.0, () => TimeStop.Current?.Card(0.15f));
+			p.HitC(4.15, Enemy3, 14, Weight.Heavy, swing: true);
+			Hurt(4.15, Enemy3);
+			p.At(5.0, () => { p._joker?.Play("cast_glove"); TimeStop.Current?.Card(0.25f); });
+			p.At(5.25, () => SkillFx.Draw(p._front, Pose(1010f, 410f), 2));
+			p.At(6.7, () => TimeStop.StopCurrent());
+		},
 		["redo"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Acrobatics", "cast_glove", 0.25, 1.7), ("Acrobatics", "cast_glove", 0.25, 1.7) }),
 		["redo3"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Survivor", "cast_guard", 0.08, 1.2), ("CalculatedGamble", "cast_glove", 0.25, 1.9), ("Tactician", "cast_glove", 0.25, 1.2), ("Adrenaline", "cast_glove", 0.25, 1.4), ("ShadowStep", "cast_glove", 0.25, 1.4) }),
 		["redo2"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Prepared", "cast_glove", 0.25, 1.5), ("Expertise", "cast_glove", 0.25, 1.7), ("Reflex", "cast_glove", 0.25, 1.1), ("Backflip", "cast_guard", 0.08, 1.3), ("EscapePlan", "cast_guard", 0.08, 1.3) }),

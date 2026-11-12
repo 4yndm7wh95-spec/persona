@@ -310,54 +310,10 @@ void fragment() {
 		});
 	}
 
-	// ═══════════════════════════ 子弹时间：子弹停在半空 ═══════════════════════════
+	// ═══════════════════════════ 子弹时间：只有他在动的世界 ═══════════════════════════
 
-	/// <summary>
-	/// 子弹时间（本回合手牌全部免费）：沿用钟面（指针越转越慢、停住、四周压暗），再加上：他身边七八颗黄铜子弹「定」在半空、
-	/// 拖着凝固的气浪环，停住的那一刻全场一顿；随后子弹一颗颗化成光点飘散，时间恢复。1.4s。
-	/// </summary>
-	public static void BulletTime(SkillCtx c)
-	{
-		float h = c.Tall, u = c.Unit;
-		Sfx.Play(Sfx.BulletTimeStop, 0.5f);
-		SkillFx.TimeSlow(c.Front, c.Chest, h, sound: false);
-		for (int i = 0; i < 8; i++)
-		{
-			float ang = Fx.Rand(-0.5f, 0.5f) + (i % 2 == 0 ? 0f : Mathf.Pi);
-			Vector2 at = c.Chest + new Vector2(Mathf.Cos(Mathf.Tau * i / 8f) * h * Fx.Rand(0.45f, 0.75f), Mathf.Sin(Mathf.Tau * i / 8f) * h * Fx.Rand(0.35f, 0.6f));
-			FrozenBullet(c.Front, at, ang + Fx.Rand(-0.3f, 0.3f), 0.04f * i, u, h);
-		}
-	}
-
-	private static void FrozenBullet(Control layer, Vector2 at, float ang, float delay, float u, float h)
-	{
-		const float life = 1.3f, stopAt = 0.5f;
-		Node2D root = Fx.Root(layer, at, "P5Frozen", delay + life + 0.1);
-		root.Rotation = ang;
-		float L = 22f * u, W = 7f * u;
-		Polygon2D glow = Fx.Poly(root, Fx.Circle(1f, 16), new Color(1f, 0.7f, 0.4f, 0.35f), additive: true);
-		glow.Scale = new Vector2(L * 1.1f, W * 1.6f);
-		Polygon2D body = Fx.Poly(root, new[] { new Vector2(-L * 0.5f, -W * 0.5f), new Vector2(L * 0.15f, -W * 0.5f), new Vector2(L * 0.5f, 0f), new Vector2(L * 0.15f, W * 0.5f), new Vector2(-L * 0.5f, W * 0.5f) }, Brass);
-		Polygon2D shine = Fx.Poly(root, new[] { new Vector2(-L * 0.45f, -W * 0.38f), new Vector2(L * 0.2f, -W * 0.38f), new Vector2(L * 0.3f, -W * 0.15f), new Vector2(-L * 0.45f, -W * 0.15f) }, new Color(1f, 0.97f, 0.9f, 0.9f), additive: true);
-		ColorRect ring = Glow.RingRect(root, L * 2.4f, 1f);
-		ring.Position = new Vector2(-L * 1.2f - L * 0.5f, -L * 1.2f);
-		ring.Scale = new Vector2(0.35f, 1f);
-		Glow.SetParam(ring, "tint", new Color(1f, 0.9f, 0.8f));
-		Glow.SetParam(ring, "radius", 0.7f);
-		root.Modulate = new Color(1f, 1f, 1f, 0f);
-		Vector2 drift = Vector2.Right.Rotated(ang) * h * 0.25f;
-		Fx.Animate(root, delay, life, t =>
-		{
-			float s = t * life;
-			float speed = s < stopAt ? Mathf.Pow(1f - s / stopAt, 3f) : 0f;
-			root.GlobalPosition = at - drift + drift * (1f - Mathf.Pow(1f - Mathf.Min(1f, s / stopAt), 4f));
-			root.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, s / 0.1f) * (1f - Mathf.Clamp((s - 1.0f) / 0.3f, 0f, 1f)));
-			Glow.SetParam(ring, "alpha", (0.25f + 0.6f * (1f - speed)) * (s < stopAt ? s / stopAt : 1f));
-			Glow.SetParam(ring, "width", 0.04f);
-		});
-		Fx.After(layer, delay + 1.0f, () =>
-			Glow.Sparks(layer, at, 6, 20f, 80f, 0.5f, new[] { Hot, Brass }, -40f, 0.015f * u, 0.035f * u, Vector2.Up, 180f));
-	}
+	/// <summary>子弹时间：时停到回合结束（Vfx/TimeStop.cs；回合结束的接法在 BulletTimePlay.cs）。</summary>
+	public static void BulletTime(SkillCtx c) => TimeStop.Start(c.Front, c.Feet, c.Tall, c.Face);
 
 	// ═══════════════════════════ 夹击：左右两刃交叉钉住 ═══════════════════════════
 

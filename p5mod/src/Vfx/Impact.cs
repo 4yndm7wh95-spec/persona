@@ -76,6 +76,7 @@ public static class Impact
 	{
 		Spec s = For(w);
 		dir = dir.LengthSquared() > 0.001f ? dir.Normalized() : Vector2.Right;
+		TimeStop.Current?.Hit(at, dir, body);   // 子弹时间里：命中点的碎片冻在半空
 		if (body != null && GodotObject.IsInstanceValid(body) && w < Weight.Kill)
 		{
 			FlashBody(body, s.Flash);

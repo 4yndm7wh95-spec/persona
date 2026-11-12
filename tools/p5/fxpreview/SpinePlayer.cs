@@ -241,9 +241,12 @@ public partial class SpinePlayer : Node2D
 
 	public void Queue(string anim, bool loop = false) => _queue.Enqueue((anim, loop));
 
+	/// <summary>播放速度（游戏里 MegaAnimationState.SetTimeScale）。</summary>
+	public float Speed = 1f;
+
 	public override void _Process(double delta)
 	{
-		_time += (float)delta;
+		_time += (float)delta * Speed;
 		Anim a = _anims[_current];
 		if (_time >= a.Duration)
 		{

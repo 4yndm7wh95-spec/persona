@@ -110,6 +110,10 @@ public static class JokerFx
 			return;
 		}
 		NCreature? t = target != null && !target.IsPlayer ? room.GetCreatureNode(target) : null;
+		if (card.GetType().Name != "BulletTime")
+		{
+			TimeStop.Current?.Card(SkillPlay.Moment(joker));   // 子弹时间里每出一张牌：那圈空间一涨、很轻的「嗒」
+		}
 		switch (card.GetType().Name)
 		{
 			case "Neutralize" when t != null:

@@ -21,6 +21,11 @@ PALETTE = {
     "gx_burn": ("*attack_fire_highend*", 3, 0.7),
     "gx_ping": ("*ui_settings_check_on*", 1, 0.15),
     "gx_pop": ("*Block_Break_Low*", 1, 0.6),
+    # Bullet Time (time stop): a short sharp tick, a deeper clock "tock" with body, glass, frost
+    "gx_tick": ("*ui_timeline_click_layer2*", 4, 0.2),
+    "gx_tock": ("*ui_timeline_click_layer1*", 4, 0.5),
+    "gx_glass": ("*defect_glass_channel_layer1*", 5, 0.8),
+    "gx_freeze": ("*defect_frost_channel_layer2*", 3, 0.9),
 }
 
 def load(f):

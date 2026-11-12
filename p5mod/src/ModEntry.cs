@@ -26,6 +26,7 @@ public static class ModEntry
 		}, ShakeDuration.Short);
 		Stage.PlayEvent = (e, v) => MegaCrit.Sts2.Core.Commands.SfxCmd.Play(e, v);
 		Stage.ShakeDir = (s, deg) => NGame.Instance?.ScreenShake(Strength(s), ShakeDuration.Short, deg);
+		BulletTimePlay.Install();
 		// 逐个补丁类应用：一个失败（别的游戏版本里目标被改名）不影响其他
 		Harmony harmony = new("brooks.p5joker");
 		int ok = 0, failed = 0;
