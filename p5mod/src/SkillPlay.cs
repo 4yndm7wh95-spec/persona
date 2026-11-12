@@ -91,7 +91,7 @@ public static class SkillPlay
 			return;
 		}
 		Control? back = Joker.FxLayer(back: true);
-		bool summon = card.Type != CardType.Attack && Aim.StanceFor(card) == Stance.Mask && Tiers.For(card) >= Tier.Uncommon;
+		bool summon = Aim.Summons(card);
 		float at = summon ? Aim.HitFor(card) : Moment(joker);
 		int cards = Count(card);
 		Fx.After(layer, at, () =>
@@ -272,7 +272,8 @@ public static class SkillVanillaFullScreenPatch
 public static class SkillVanillaCenterPatch
 {
 	public static bool Prefix(Creature target, string path) =>
-		!(SkillPlay.HidingVanilla && path == "vfx/vfx_flying_slash" && target?.Player is { } p && Joker.Is(p));
+		!(SkillPlay.HidingVanilla && path == "vfx/vfx_flying_slash" && target?.Player is { } p && Joker.Is(p))
+		&& !(path == "vfx/vfx_bite" && Time.GetTicksMsec() < JokerFx.HideBiteUntil);   // 蛇咬：原版獠牙换成冒出来咬的蛇
 }
 
 /// <summary>原版夜魇 / 迷雾的彩色烟雾暗角、迷雾的绿色烟团、夜魇的手：Joker 打出时藏掉（照 CorrosiveGasPatch 的做法只设不可见）。</summary>

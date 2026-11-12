@@ -432,8 +432,9 @@ void fragment() {
 	private readonly float[] _introDiss = new float[Count];
 	private readonly float[] _tau = new float[Count];        // 每条蛇自己的时间（出动时会快一下）
 	private readonly Vector2[] _lunge = new Vector2[Count];  // 出动时朝敌人窜出去的偏移
-	private readonly Node2D _skyRoot, _mistFrontRoot;
-	private readonly ShaderMaterial _skyM, _mistFrontM;
+	private readonly Node2D? _skyRoot, _mistFrontRoot;
+	private readonly ShaderMaterial? _skyM, _mistFrontM;
+	private readonly bool _biteOnly;   // 只有一条蛇从咒烟里冒出来咬一口（蛇咬那张牌用，Bite）：没有场景、蛇巢、其它几条
 	private int _nextSerpent;
 
 	private sealed class Attack
@@ -465,13 +466,33 @@ void fragment() {
 		return Current;
 	}
 
+	/// <summary>
+	/// 蛇咬（2026-11-11 用户：把群蛇形态里「敌人那里冒出一条蛇去咬」那段单独拿出来给蛇咬用，敌人身上的上毒特效照旧）：
+	/// at（层坐标，敌人身体中间）斜上方一团咒烟里聚出一条蛇，往后一缩、张嘴，扑下去咬合；和群蛇形态的攻击同一套姿势和烟，
+	/// 只是没有前面那条蛇冲出去 / 烟迹。返回从现在到咬合那一下的秒数（游戏的上毒要等到这一刻）。不影响正在场上的群蛇（不是 Current）。
+	/// </summary>
+	public static float Bite(Control front, Control back, Vector2 at, Node2D? body, float tall, float face)
+	{
+		float small = tall * BiteScale;   // 「小蛇」：整套姿势、烟团、粗细都按 0.6 倍的身高算，烟团离敌人更近
+		var m = new SerpentMantle(front, back, () => (at, small, face), live: false, biteOnly: true) { _show = 1f };
+		m._attacks[0] = new Attack { Serpent = 0, Target = Vector2.Zero, Body = body, T = BiteStart };
+		return BiteDelay;
+	}
+
+	private const float BiteStart = EmergeAt - 0.06f;
+	private const float BiteScale = 0.6f;   // 从烟团开始聚的前一点开始
+
+	/// <summary>Bite 开始到咬合的秒数。</summary>
+	public const float BiteDelay = BiteAt - BiteStart;
+
 	public static void StopCurrent()
 	{
 		if (Current != null && Current._fadeOut < 0f) Current._fadeOut = 0f;
 	}
 
-	private SerpentMantle(Control front, Control back, Func<(Vector2 Feet, float Tall, float Face)?> body, bool live)
+	private SerpentMantle(Control front, Control back, Func<(Vector2 Feet, float Tall, float Face)?> body, bool live, bool biteOnly = false)
 	{
+		_biteOnly = biteOnly;
 		_front = front;
 		_back = back;
 		_body = body;
@@ -481,6 +502,8 @@ void fragment() {
 		(_frontRoot, _frontM) = Make(front, feet, rect, 1f, "P5SerpentsFront");
 		(_backRoot, _backM) = Make(back, feet, rect, -1f, "P5SerpentsBack");
 		for (int i = 0; i < Count; i++) _girth[i] = 0.068f * tall * Orbits[i].Size;   // 修长：细一些、长一些（第三版：再细，用户说太肥）
+		if (!biteOnly)
+		{
 		_skyRoot = Fx.ScreenRoot(back, "P5SerpentSky");
 		back.MoveChild(_skyRoot, 0);
 		// 场景：咒雾漫地（Vfx/SerpentMist.cs；2026-11-11 用户：日蚀不搭、太耀眼，换掉）。背景层调色 + 雾 + 雾里的巨蛇背，前景层只有贴地的雾丝
@@ -495,6 +518,7 @@ void fragment() {
 		var mistRect = new ColorRect { Size = Fx.Screen(front), Material = _mistFrontM, MouseFilter = Control.MouseFilterEnum.Ignore };
 		_mistFrontRoot.AddChild(mistRect);
 		Fx.Clock(mistRect);
+		}
 		for (int k = 0; k < _puff.Length; k++) _puff[k] = new Vector4(0f, 0f, -1f, 1f);
 		_tree = (SceneTree)Engine.GetMainLoop();
 		_tree.ProcessFrame += Tick;
@@ -540,8 +564,12 @@ void fragment() {
 		if (_targets.Count < 8) _targets.Enqueue((target, body));
 	}
 
+	private bool _detached;
+
 	private void Detach()
 	{
+		if (_detached) return;
+		_detached = true;
 		_tree.ProcessFrame -= Tick;
 		if (Current == this) Current = null;
 	}
@@ -615,8 +643,9 @@ void fragment() {
 		float tallS = T * _back.GetCanvasTransform().Scale.Y;
 		// 场景：咒雾漫地，出场时从 Joker 身边漫开；能力没了一起淡掉
 		float amt = _fadeOut >= 0f ? 1f - Smooth(0f, 0.8f, _fadeOut) : (_show > 0f || _intro >= 0f ? 1f : 0f);
-		foreach (ShaderMaterial sm in new[] { _skyM, _mistFrontM })
+		foreach (ShaderMaterial? sm in new[] { _skyM, _mistFrontM })
 		{
+			if (sm == null) continue;
 			sm.SetShaderParameter("amount", amt);
 			sm.SetShaderParameter("dim_t", _dimT);
 			sm.SetShaderParameter("fog_t", _fogT);
@@ -655,9 +684,10 @@ void fragment() {
 			Attack? sa = AttackOf(i);
 			float big = sa != null ? Smooth(EmergeAt - 0.02f, EmergeAt + 0.02f, sa.T) * (1f - Smooth(LeaveAt - 0.02f, LeaveAt, sa.T)) : 0f;
 			_girth[i] = 0.068f * T * Orbits[i].Size * (1f + 1.0f * big);   // 扑咬时放大到两倍（用户：要更有表现力）
-			PoseSerpent(i, T, face, alpha);
+			PoseSerpent(i, T, face, _biteOnly && sa == null ? 0f : alpha);
 		}
 		UpdateAttacks(dt, feet, T);
+		if (_biteOnly && _attacks[0] == null) { Free(); return; }
 		for (int i = 0; i < Count; i++) _diss[i] = Mathf.Max(_diss[i], _introDiss[i]);
 
 		for (int j = 0; j < Count; j++)
@@ -684,7 +714,7 @@ void fragment() {
 			// 出场 0.25s 蛇巢鼓起来（一团烟往上翻涌、比平时大一圈），再收回平时的大小
 			float swell = _intro >= 0f && _introFresh ? Smooth(0.2f, 0.45f, _intro) * (1f - Smooth(0.6f, 1.2f, _intro)) : 0f;
 			mat.SetShaderParameter("nest", new Vector3(nestP.X, nestP.Y - 0.1f * T * swell, 0.55f * T * (1f + 0.4f * swell)));
-			mat.SetShaderParameter("nest_a", alpha * (_intro >= 0f && _introFresh ? Smooth(0.2f, 0.45f, _intro) : 1f));
+			mat.SetShaderParameter("nest_a", (_biteOnly ? 0f : alpha) * (_intro >= 0f && _introFresh ? Smooth(0.2f, 0.45f, _intro) : 1f));
 			mat.SetShaderParameter("puff", _puff);
 			mat.SetShaderParameter("streak", _streak);
 			mat.SetShaderParameter("streak_a", _streakA);
@@ -993,7 +1023,7 @@ void fragment() {
 				_eyes[a.Serpent] = new Vector3(ey.X, ey.Y, Mathf.Max(ey.Z * (1f - Smooth(0.13f, 0.19f, t)), 1.6f * flare));
 			}
 			// 烟迹：头 0.12→0.3 从原位飞到烟团（先快后慢），尾巴落后一点跟上
-			if (t >= 0.12f && t < 0.42f)
+			if (!_biteOnly && t >= 0.12f && t < 0.42f)
 			{
 				float hk = Ease5.OutQuint(Ease5.Seg(t, 0.12f, 0.18f));
 				float tk = Ease5.OutQuint(Ease5.Seg(t, 0.17f, 0.2f));
@@ -1006,7 +1036,7 @@ void fragment() {
 			}
 			else _streakA[s] = 0f;
 			// 咒烟团：原位留下的残烟（慢慢散）、聚出来的那一团（烟团处，大一点）、咬中往外炸的那一团
-			if (t >= 0.14f && t < 0.95f) Puff(a.From, Ease5.Seg(t, 0.14f, 0.8f), 0.55f * T, s * 3 + 2);
+			if (!_biteOnly && t >= 0.14f && t < 0.95f) Puff(a.From, Ease5.Seg(t, 0.14f, 0.8f), 0.55f * T, s * 3 + 2);
 			if (t >= EmergeAt - 0.04f) Puff(cloud, Ease5.Seg(t, EmergeAt - 0.04f, 0.7f), 0.75f * T, s * 3);
 			if (t >= BiteAt) Puff(a.Target, Ease5.Seg(t, BiteAt, 0.6f), -0.5f * T, s * 3 + 1);
 			if (!a.Bit && t >= BiteAt)

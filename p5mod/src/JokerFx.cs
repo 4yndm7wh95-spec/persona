@@ -98,6 +98,9 @@ public static class JokerFx
 		HitFx.Ricochet(layer, Joker.Muzzle(joker), order.Select(t => t.VfxSpawnPosition).ToList(), Joker.Facing(joker));
 	}
 
+	/// <summary>蛇咬打出后这段时间里，原版的獠牙特效（vfx/vfx_bite）不显示。</summary>
+	public static ulong HideBiteUntil;
+
 	/// <summary>出牌那一刻（CardPlayedPatch）：按牌放出牌特效。target = 选中的目标（群体牌为 null）。</summary>
 	public static void OnPlay(CardModel card, NCreature joker, Creature? target)
 	{
@@ -154,6 +157,23 @@ public static class JokerFx
 			case var n when Aim.Grips(n) && t != null:
 			{
 				// 第四版：0.7 的亚森之手（Grip）停用；施毒特效走 PoisonApplyPatch → PoisonFx
+				break;
+			}
+			case "Snakebite" when t != null:
+			{
+				// 用户 2026-11-11：复用群蛇形态的扑咬——敌人斜上方一团咒烟里冒出一条蛇咬下去；上毒（PoisonApplyPatch → PoisonFx）等到咬合那一刻
+				HideBiteUntil = Time.GetTicksMsec() + 3000;
+				Control back = Joker.FxLayer(back: true) ?? layer;
+				float tall = (Joker.PosePoint(joker, ReadyFx.Feet) - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length();
+				float face = Joker.Facing(joker);
+				const float lead = 0.08f;                                      // 挥手甩出去的那一帧（cast_wave）
+				float biteIn = lead + SerpentMantle.BiteDelay;
+				Aim.HoldCast(joker, biteIn);
+				NCreature tn = t;
+				Fx.After(layer, lead, () =>
+				{
+					if (GodotObject.IsInstanceValid(tn)) SerpentMantle.Bite(layer, back, tn.Hitbox.GetGlobalRect().GetCenter(), tn.Visuals, tall, face);
+				});
 				break;
 			}
 			case "DeadlyPoison" when t != null:

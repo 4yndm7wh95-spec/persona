@@ -51,6 +51,13 @@ public static class Casts
 		["KnifeTrap"] = Cast.Glove,
 		["Outbreak"] = Cast.Big,
 		["Concoct"] = Cast.Glove,
+		["Snakebite"] = Cast.Wave,                     // 用户 2026-11-11：蛇咬不召唤亚森，挥手、敌人那里冒出一条蛇咬
+		["Adrenaline"] = Cast.Glove,                   // 不召唤亚森（召唤太频繁）
+		["Burst"] = Cast.Glove,
+		["Malaise"] = Cast.Wave,
+		["Mirage"] = Cast.Guard,
+		["Nightmare"] = Cast.Glove,
+		["Haze"] = Cast.Wave,
 		["Expose"] = Cast.Wave,                        // 用户 2026-11-10：挥手就行，不用扶面具
 		["PiercingWail"] = Cast.Summon,                // 用户 2026-11-03：尖啸是白牌，不是大招
 		["Flanking"] = Cast.Glove,

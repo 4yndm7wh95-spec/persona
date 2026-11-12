@@ -1,3 +1,4 @@
+using MegaCrit.Sts2.Core.Entities.Cards;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -356,7 +357,7 @@ public static class Aim
 			GripTremble(node, tl, 0.04f + OutbreakEmerge + CrushHand.FistAfter, HitFor(card));
 		}
 		Tier tier = Tiers.For(card);
-		if (stance == Stance.Mask && (tier >= Tier.Uncommon || Grips(card.GetType().Name)) && Joker.FxLayer(back: true) is Control back)
+		if (stance == Stance.Mask && Summons(card) && Joker.FxLayer(back: true) is Control back)
 		{
 			// 按稀有度分级（Tiers）：稀有 = 完整召唤；罕见 = 只有人格面具现身；普通毒牌 = 亚森伸手
 			// 标杆 1（2026-11-02，照结城理 mod 召唤器 → 君王之剑的两拍结构）：
@@ -417,7 +418,21 @@ public static class Aim
 	};
 
 	/// <summary>召唤人格面具、单体上毒的牌：亚森伸手攥住中毒的怪（Grip）。</summary>
-	public static bool Grips(string cardName) => cardName is "BubbleBubble" or "DeadlyPoison" or "Snakebite";   // 用户 2026-11-01：只要用毒就亚森 + 手捏
+	public static bool Grips(string cardName) => cardName is "BubbleBubble" or "DeadlyPoison";   // 用户 2026-11-01：只要用毒就亚森 + 手捏（蛇咬 2026-11-11 改成敌人那里冒出一条蛇咬，不召唤）
+
+	/// <summary>
+	/// 扶面具 / 撕面具、罕见及以上但不召唤人格面具的牌（2026-11-11 用户：召唤亚森太频繁，调一调）：
+	/// 只留亚森真的出手的（毒系：致命毒药、咕嘟冒泡、弹跳烧瓶、腐蚀波、毒性爆发；华丽收场是撒旦耶尔）。
+	/// 这些以前召唤出来什么都不做；群蛇 / 幽魂形态有自己的出场。
+	/// </summary>
+	private static readonly HashSet<string> NoPersona = new() { "Adrenaline", "Burst", "Malaise", "Mirage", "Nightmare", "Haze", "SerpentForm", "WraithForm" };
+
+	/// <summary>这张牌打出时会不会召唤人格面具（Aim.PlayCast 和 SkillPlay 的时刻都按这个）。</summary>
+	public static bool Summons(CardModel card) => card.Type != CardType.Attack && StanceFor(card) == Stance.Mask && !NoPersona.Contains(card.GetType().Name)
+		&& (Tiers.For(card) >= Tier.Uncommon || Grips(card.GetType().Name));
+
+	/// <summary>游戏结算这张牌（Cast 之后的等待）推迟 seconds 秒（蛇咬：等蛇咬下去再上毒）。</summary>
+	public static void HoldCast(NCreature node, float seconds) => Summoning[node.GetInstanceId()] = Time.GetTicksMsec() + (ulong)(seconds * 1000f);
 
 	/// <summary>这张牌召唤时人格面具出手的时刻（施法后几秒）：出牌特效对齐到这一刻。</summary>
 	public static float HitFor(CardModel card) => card.GetType().Name == "Outbreak"

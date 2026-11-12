@@ -496,6 +496,17 @@ public partial class Preview : Node2D
 				});
 			}
 		},
+		// 蛇咬（2026-11-11）：挥手 → 敌人斜上方咒烟里冒出一条蛇咬下去（群蛇形态的扑咬）→ 咬合那一刻上毒（照游戏：结算推迟到这一刻）
+		["snakebite"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			foreach ((Vector2 e, double t0, int amt) in new[] { (Enemy, 0.3, 7), (Enemy3, 2.2, 10) })
+			{
+				p.At(t0, () => p._joker?.Play("cast_wave"));
+				p.At(t0 + 0.08, () => { p._enemies.TryGetValue(e, out Node2D? n); SerpentMantle.Bite(p._front, p._back, e + new Vector2(0f, -170f), n, tall, 1f); });
+				p.Poison(t0 + 0.08 + SerpentMantle.BiteDelay, e, amt);
+			}
+		},
 		// 第四版毒组：致命毒药（5 层）→ 弹跳药瓶（3 跳随机）→ 一次加 9 层 → 回合开始三个敌人各结算一轮毒伤
 		["poison_v4"] = p =>
 		{
