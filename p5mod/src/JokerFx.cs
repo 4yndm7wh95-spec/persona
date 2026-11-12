@@ -112,7 +112,7 @@ public static class JokerFx
 		NCreature? t = target != null && !target.IsPlayer ? room.GetCreatureNode(target) : null;
 		if (card.GetType().Name != "BulletTime")
 		{
-			TimeStop.Current?.Card(SkillPlay.Moment(joker));   // 子弹时间里每出一张牌：那圈空间一涨、很轻的「嗒」
+			TimeStop.Current?.Card(0f);   // 子弹时间里每出一张牌：打出那一刻就给反馈（和人物动作同时起步，用户 2026-11-12：不要等出手、不要延迟）
 		}
 		switch (card.GetType().Name)
 		{

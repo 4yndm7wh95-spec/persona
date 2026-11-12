@@ -35,7 +35,7 @@ public sealed class TimeStop
 	private readonly Vector2 _center;
 	private readonly float _tall, _face;
 	private readonly SceneTree _tree;
-	private readonly ulong _t0;
+	private readonly double _t0;
 	private float _t, _goAt = -1f, _pulseAt = -10f, _last;
 	private bool _done, _hadEnemies;
 	private readonly List<Bit> _bits = new();
@@ -75,7 +75,7 @@ public sealed class TimeStop
 		_face = face;
 		_center = feet + new Vector2(0f, -0.5f * tall);
 		_tree = (SceneTree)Engine.GetMainLoop();
-		_t0 = Stage.NowMs();
+		_t0 = HitStop.RealSeconds();   // 真实时间：命中顿帧压慢游戏时间时，钟和卡不跟着卡住
 		// 背景调色垫在背景层最底下（人物在它上面，Joker 自然保持原色，不用在他身边挖一圈）；
 		// 敌人另外在前景层最底下按各自身体范围软边褪色（之后放的特效、伤害数字在它上面保持原色）
 		_screen = Fx.ScreenRoot(back, "P5TimeStop");
@@ -257,7 +257,7 @@ public sealed class TimeStop
 
 	private void Step()
 	{
-		float now = (Stage.NowMs() - _t0) / 1000f;
+		float now = (float)(HitStop.RealSeconds() - _t0);
 		float dt = Mathf.Clamp(now - _last, 0f, 0.1f);
 		_last = now;
 		_t = now;
@@ -454,12 +454,12 @@ public sealed class TimeStop
 				float orbit = _t * 0.1f * _face, flipKick = 0f, push = 0f, glowKick = 0f;
 				foreach (float tk in _ticks)
 				{
-					float d = _t - tk - 0.06f * i;
+					float d = _t - tk - 0.03f * i;
 					orbit += 0.42f * _face * Spring(d);
 					if (d > 0f && d < 0.42f) flipKick += Mathf.Tau * Ease5.OutQuint(d / 0.42f) - Mathf.Tau;
 					if (d > 0f && d < 0.5f) push = Mathf.Max(push, Mathf.Sin(Mathf.Pi * Mathf.Min(1f, d / 0.4f)) * Mathf.Exp(-d * 2f));
 					if (d > 0f) glowKick = Mathf.Max(glowKick, Mathf.Exp(-d * 5f));
-					if (d >= 0f && d < 0.05f) f.Sheen = tk + 0.06f * i;
+					if (d >= 0f && d < 0.05f) f.Sheen = tk + 0.03f * i;
 				}
 				float a0 = f.Ang + orbit;
 				float rr = _ckR * _tall * (1.1f + 0.1f * push) + Mathf.Sin(_t * 0.9f + f.Seed) * 0.012f * _tall;

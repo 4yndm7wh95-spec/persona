@@ -744,16 +744,16 @@ public partial class Preview : Node2D
 			};
 			void Hurt(double t, Vector2 e) => p.At(t, () => { if (p._enemies[e] is SpinePlayer sp) sp.Play("hurt"); });
 			RunCards(p, null, new (string, string, double, double)[] { ("BulletTime", "cast_glove", 0.25, 1.0) });
-			p.At(2.0, () => TimeStop.Current?.Card(0.15f));
+			p.At(2.0, () => TimeStop.Current?.Card(0f));
 			p.HitC(2.15, Enemy, 9, Weight.Medium, swing: true);
 			Hurt(2.15, Enemy);
-			p.At(3.0, () => TimeStop.Current?.Card(0.2f));
+			p.At(3.0, () => TimeStop.Current?.Card(0f));
 			p.ShotC(3.2, Enemy2, 6, Weight.Light);
 			Hurt(3.2, Enemy2);
-			p.At(4.0, () => TimeStop.Current?.Card(0.15f));
+			p.At(4.0, () => TimeStop.Current?.Card(0f));
 			p.HitC(4.15, Enemy3, 14, Weight.Heavy, swing: true);
 			Hurt(4.15, Enemy3);
-			p.At(5.0, () => { p._joker?.Play("cast_glove"); TimeStop.Current?.Card(0.25f); });
+			p.At(5.0, () => { p._joker?.Play("cast_glove"); TimeStop.Current?.Card(0f); });
 			p.At(5.25, () => SkillFx.Draw(p._front, Pose(1010f, 410f), 2));
 			p.At(6.7, () => TimeStop.StopCurrent());
 		},
