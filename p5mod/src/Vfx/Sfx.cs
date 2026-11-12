@@ -214,7 +214,8 @@ public static class Sfx
 	/// 代码合成的技能牌音效 → 游戏自带的 FMOD 事件（2026-11-11 用户：合成的音效有很重的代码感，跟专业音效差远了，换成游戏自带的；
 	/// 不换的：攻击牌的打击和命中、亚森召唤 / 眼神特写 / 卡牌燃烧和抽牌、华丽收场整套）。查到就改播游戏的事件（音量 × Gain），
 	/// Event 为 null = 不出声（同一个动作里已经有别的声音）。预览工具里没有 FMOD，这些都不响，要进游戏听。
-	/// 只凭事件名挑的，没试听过：哪个不合适就在这里换。
+	/// 都挑预览里也能听到的（tools/p5/fxpreview/game_sfx.py 找得到样本的）；能量那组 gain_energy 例外（样本不在 sfx.bank 里，预览里不响）。
+	/// 用户在预览 / 游戏里听了哪个不合适就在这里换。
 	/// </summary>
 	private static readonly Dictionary<string, (string? Event, float Gain)> GameSfx = new()
 	{
@@ -230,18 +231,18 @@ public static class Sfx
 		// 每张牌的
 		[FootworkSteps] = (E + "buff", 0.7f),
 		[ReticleLock] = (E + "ui/relic_activate_general", 0.7f), [TrackScan] = (null, 0f),
-		[VenomCoat] = (E + "enemy/enemy_attacks/slimed_berserker/slimed_berserker_slime", 0.5f),
+		[VenomCoat] = (E + "enemy/enemy_attacks/spiny_toad/spiny_toad_lick", 0.5f),
 		[FumesRoll] = (E + "enemy/enemy_attacks/living_fog/living_fog_summon", 0.55f),
 		[BurstEcho] = (E + "ui/enchant_shimmer", 0.7f),
 		[WraithForm] = (E + "enemy/enemy_attacks/spectral_knight/spectral_knight_hex", 0.6f),
 		[ShadowmeldSink] = (E + "enemy/enemy_attacks/vantom/vantom_buff", 0.55f), [StealthVeil] = (E + "enemy/enemy_attacks/vantom/vantom_buff", 0.5f),
 		[BlurDash] = (E + "block_gain", 0.7f), [AfterimageOrbit] = (E + "buff", 0.7f),
-		[ShadowStepCut] = (E + "enemy/enemy_attacks/spectral_knight/spectral_knight_soul_slash", 0.5f),
+		[ShadowStepCut] = (E + "enemy/enemy_attacks/test_subject/test_subject_slash", 0.45f),
 		[BulletTimeStop] = (E + "characters/defect/defect_frost_channel", 0.55f), [TimeSlow] = (E + "characters/defect/defect_frost_channel", 0.55f),
-		[FlankCross] = (E + "enemy/enemy_attacks/the_kin_minion/the_kin_minion_quick_slash", 0.5f),
+		[FlankCross] = (E + "characters/silent/silent_dagger_spray", 0.45f),
 		[MalaisePress] = (E + "debuff", 0.8f), [Wail] = (E + "debuff", 0.8f),
 		[SweepLow] = (E + "enemy/enemy_attacks/seapunk/seapunk_kick", 0.5f),
-		[RetainLock] = (E + "ui/clicks/ui_checkbox_on", 0.6f),
+		[RetainLock] = (E + "ui/clicks/ui_click", 0.6f),
 		[SmokePuff] = (E + "enemy/enemy_attacks/fogmog/fogmog_summon", 0.5f),
 		[CardCut] = (E + "enemy/enemy_attacks/test_subject/test_subject_slash", 0.45f),
 		[GambleSpin] = (E + "ui/gold/gold_2", 0.7f),

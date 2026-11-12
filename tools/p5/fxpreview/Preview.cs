@@ -40,6 +40,14 @@ public partial class Preview : Node2D
 		("Malaise", "cast", 0.4, 1.8), ("LegSweep", "cast_guard", 0.08, 1.4),
 	});
 
+	private static void Cards3(Preview p, string[]? only) => RunCards(p, only, new (string, string, double, double)[]
+	{
+		("Acrobatics", "cast_glove", 0.25, 1.4), ("Prepared", "cast_glove", 0.25, 1.3), ("Expertise", "cast_glove", 0.25, 1.3),
+		("Reflex", "cast_glove", 0.25, 1.3), ("Backflip", "cast_guard", 0.08, 1.3), ("EscapePlan", "cast_guard", 0.08, 1.4),
+		("Survivor", "cast_guard", 0.08, 1.4), ("CalculatedGamble", "cast_glove", 0.25, 1.6), ("Tactician", "cast_glove", 0.25, 1.3),
+		("Adrenaline", "cast_glove", 0.25, 1.4),
+	});
+
 	private static void RunCards(Preview p, string[]? only, (string Card, string Anim, double Lead, double Gap)[] seq)
 	{
 		float tall = (JokerFeet - Pose(815f, 120f)).Length();
@@ -708,6 +716,7 @@ public partial class Preview : Node2D
 		["cards1"] = p => Cards1(p, null),
 		["cards1b"] = p => Cards1(p, new[] { "Envenom", "NoxiousFumes", "SerpentForm" }),
 		["cards2"] = p => Cards2(p, null),
+		["cards3"] = p => Cards3(p, null),
 		["ghost"] = p => Cards2(p, new[] { "Blur" }),
 		["orochi"] = p =>
 		{
