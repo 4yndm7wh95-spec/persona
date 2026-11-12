@@ -23,6 +23,13 @@ public static class SkillRedo4
 	private static void S(string name, float vol, float at = 0f) => Sfx.Take(name, vol * 0.8f, at);
 	private static float CardW(SkillCtx c) => c.Tall * 0.16f;
 
+	/// <summary>冲击：一圈透明的空气扭曲往外推（没有线圈）+ 中心一团柔光。</summary>
+	private static void Wave(Control layer, Vector2 at, Color tint, float size, float life, float squash)
+	{
+		Glow.Ripple(layer, at, size, life + 0.15f, 0.035f, squash);
+		Glow.Flash(layer, at, tint, size * 0.4f, life * 0.45f);
+	}
+
 	// ═══════════════════════════ 积木 ═══════════════════════════
 
 	/// <summary>
@@ -103,33 +110,46 @@ void fragment() {
 	/// <summary>往下淌的墨（萎靡）：从上沿一道道往下流的墨痕，长短不一、头上鼓一个墨珠；墨里零星暗红的反光。</summary>
 	private static Shader DripShader => _drip ??= new Shader { Code = @"
 shader_type canvas_item;
-uniform float grow = 0.0;     // 0 → 1 往下流
+uniform float grow = 0.0;     // 0 → 1：墨云聚起、墨痕往下挂
 uniform float fade = 1.0;
 uniform float seed = 0.0;
 uniform float clock = 0.0;
-float hash(float x) { return fract(sin(x * 91.17 + seed) * 43758.5453); }
+float h1(float x) { return fract(sin(x * 91.17 + seed * 1.7) * 43758.5453); }
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031 + seed * 0.013); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
-	float a = fract(sin(dot(i, vec2(127.1, 311.7)) + seed) * 43758.5), b = fract(sin(dot(i + vec2(1, 0), vec2(127.1, 311.7)) + seed) * 43758.5);
-	float c = fract(sin(dot(i + vec2(0, 1), vec2(127.1, 311.7)) + seed) * 43758.5), d = fract(sin(dot(i + vec2(1, 1), vec2(127.1, 311.7)) + seed) * 43758.5);
-	return mix(mix(a, b, f.x), mix(c, d, f.x), f.y); }
+	return mix(mix(hash(i), hash(i + vec2(1, 0)), f.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), f.x), f.y); }
+float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { v += a * noise(p); p *= 2.03; a *= 0.5; } return v; }
 void fragment() {
 	vec2 uv = UV;
-	float cols = 11.0;
-	float x = uv.x * cols;
-	float ci = floor(x), fx = fract(x) - 0.5;
-	float len = (0.35 + 0.65 * hash(ci)) * grow * (1.1 + 0.2 * hash(ci + 7.0));
-	float w = (0.18 + 0.2 * hash(ci + 3.0)) * (1.0 - 0.5 * uv.y);
-	// 墨痕：上沿连成一片，往下一道道，头上一颗墨珠
-	float body = smoothstep(w, w * 0.55, abs(fx + (noise(vec2(ci, uv.y * 6.0)) - 0.5) * 0.25)) * step(uv.y, len);
-	float bead = smoothstep(w * 1.5, w * 1.1, length(vec2(fx, (uv.y - len) * 3.0)));
-	float top = smoothstep(0.16 * grow + 0.02, 0.0, uv.y);
-	float m = max(max(body, bead), top) * smoothstep(0.0, 0.08, uv.x) * smoothstep(1.0, 0.92, uv.x);
+	float aa = 0.012;
+	// 头顶的墨云：噪声撕碎的软边一团，翻滚
+	vec2 cp = (uv - vec2(0.5, 0.1)) / vec2(0.46, 0.11 + 0.05 * grow);
+	float cn = fbm(uv * vec2(5.0, 9.0) + vec2(clock * 0.25, -clock * 0.15)) - 0.5;
+	float cloud = smoothstep(1.0, 0.75, length(cp) + cn * 0.6) * smoothstep(0.0, 0.35, grow);
+	// 墨痕：7 道，位置、粗细、长短都不一样，越往下越细、轻轻弯，头上一颗墨珠
+	float drip = 0.0, bead = 0.0;
+	for (int i = 0; i < 7; i++) {
+		float fi = float(i);
+		float x0 = 0.12 + 0.76 * (fi + 0.2 + 0.6 * h1(fi)) / 7.0;
+		float len = 0.1 + (0.3 + 0.55 * h1(fi + 4.0)) * pow(clamp(grow * 1.15 - 0.12 * h1(fi + 9.0), 0.0, 1.0), 1.3);
+		float y = uv.y - 0.12;
+		float k = clamp(y / max(len, 1e-3), 0.0, 1.0);
+		float wob = sin(y * 16.0 + fi * 2.1) * 0.006 + (noise(vec2(fi * 3.0, y * 9.0)) - 0.5) * 0.012;
+		float w = (0.012 + 0.016 * h1(fi + 2.0)) * (1.0 - 0.6 * k);
+		float dx = abs(uv.x - x0 - wob);
+		drip = max(drip, smoothstep(w + aa, w - aa * 0.5, dx) * step(0.0, y) * step(y, len));
+		float br = w * 1.9;
+		bead = max(bead, smoothstep(br + aa, br - aa * 0.5, length(vec2(uv.x - x0 - wob, (y - len) * 0.8))) * step(0.02, len));
+	}
+	float m = max(cloud, max(drip, bead));
 	if (m <= 0.002) discard;
 	vec3 col = vec3(0.03, 0.008, 0.015);
-	float shine = smoothstep(0.7, 0.95, noise(vec2(x * 2.0, uv.y * 14.0 - clock * 1.5)));
-	col += vec3(0.6, 0.04, 0.09) * shine * 0.6;
-	col += vec3(0.45, 0.03, 0.07) * bead * 0.35;
-	COLOR = vec4(col, m * 0.9 * fade);
+	// 墨的反光：沿墨痕往下走的一点暗红高光，墨珠上一点亮
+	float shine = smoothstep(0.65, 0.9, noise(vec2(uv.x * 30.0, uv.y * 10.0 - clock * 2.0)));
+	col += vec3(0.6, 0.04, 0.09) * shine * (drip + bead) * 0.5;
+	col += vec3(0.7, 0.08, 0.12) * bead * 0.25;
+	col += vec3(0.35, 0.02, 0.05) * smoothstep(0.55, 0.85, fbm(uv * 12.0 + clock * 0.3)) * cloud * 0.5;
+	COLOR = vec4(col, m * 0.92 * fade);
 }" };
 
 	private static Shader? _smear;
@@ -193,7 +213,7 @@ void fragment() {
 			int k = i;
 			float a0 = Mathf.Tau * k / 6f + Fx.Rand(-0.3f, 0.3f), turns = Fx.Rand(0.7f, 1.1f) * (k % 2 == 0 ? 1f : -1f);
 			float top = h * Fx.Rand(0.75f, 1.05f), rad = h * Fx.Rand(0.26f, 0.36f), d = 0.04f + 0.03f * k;
-			var rib = new Phantom.Ribbon(c.Front, h * Fx.Rand(0.05f, 0.075f), d + 0.75, 12, ink: true);
+			var rib = new Phantom.Ribbon(c.Front, h * Fx.Rand(0.08f, 0.11f), d + 0.75, 14, ink: true);
 			Node2D tick = Fx.Root(c.Front, c.Feet, "P5InkWisp", d + 0.75);
 			Fx.Animate(tick, d, 0.6, t =>
 			{
@@ -222,7 +242,7 @@ void fragment() {
 		Fx.After(c.Front, rise, () =>
 		{
 			Glow.Glint(c.Front, c.Mask + new Vector2(f * h * 0.03f, 0f), 0.9f);
-			SkillRedo.Thump(c.Front, c.Chest, Phantom.Red, h * 1.5f, 0.42f, 0.8f);
+			Wave(c.Front, c.Chest, Phantom.Red, h * 1.5f, 0.42f, 0.8f);
 			Fx.Shake(1);
 			if (Freeze(c, back, 0.8) is { } fr)
 			{
@@ -244,7 +264,7 @@ void fragment() {
 		// 第二拍：翻倍——再一圈白的，墨缕散开
 		Fx.After(c.Front, twice, () =>
 		{
-			SkillRedo.Thump(c.Front, c.Chest, Phantom.Hot, h * 2.0f, 0.38f, 0.8f);
+			Wave(c.Front, c.Chest, Phantom.Hot, h * 2.0f, 0.38f, 0.8f);
 			Glow.Flash(c.Front, c.Chest, Phantom.Red, h * 0.6f, 0.12f);
 			Phantom.Confetti(c.Front, c.Chest, 14, 300f * u, Vector2.Up, 160f, 0.8f, 6f * u);
 		});
@@ -291,7 +311,7 @@ void fragment() {
 		Fx.After(c.Front, merge, () =>
 		{
 			Glow.Flash(c.Front, c.Chest, Phantom.Hot, h * 0.8f, 0.14f);
-			SkillRedo.Thump(c.Front, c.Chest, Phantom.Red, h * 1.8f, 0.4f, 0.85f);
+			Wave(c.Front, c.Chest, Phantom.Red, h * 1.8f, 0.4f, 0.85f);
 			Phantom.Shards(c.Front, c.Chest, 16, 350f * u, 900f * u, new Vector2(-f, -0.2f), 80f, 0.32f, 200f * u, 22f * u);
 			Fx.Shake(1);
 		});
@@ -352,7 +372,7 @@ void fragment() {
 		Fx.After(c.Front, 0.36f, () =>
 		{
 			Glow.Glint(c.Front, c.Chest + new Vector2(f * h * 0.05f, -h * 0.05f), 0.8f);
-			SkillRedo.Thump(c.Front, c.Chest, Phantom.Hot, h * 1.2f, 0.3f, 0.85f);
+			Wave(c.Front, c.Chest, Phantom.Hot, h * 1.2f, 0.3f, 0.85f);
 		});
 	}
 
@@ -468,7 +488,7 @@ void fragment() {
 		});
 		Fx.After(c.Front, press, () =>
 		{
-			SkillRedo.Thump(c.Front, v.Feet + new Vector2(0f, -h * 0.03f), new Color(0.6f, 0.03f, 0.09f), wid * 1.8f, 0.4f, 0.28f);
+			Wave(c.Front, v.Feet + new Vector2(0f, -h * 0.03f), new Color(0.6f, 0.03f, 0.09f), wid * 1.8f, 0.4f, 0.28f);
 			Phantom.Shards(c.Front, v.Feet, 10, 200f * u, 500f * u, Vector2.Up, 75f, 0.3f, 1100f * u, 14f * u);
 		});
 	}
