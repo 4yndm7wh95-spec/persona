@@ -70,6 +70,8 @@ public sealed class TimeStop
 		front.MoveChild(_enemyScreen, 0);
 		_em = new ShaderMaterial { Shader = Shader };
 		_em.SetShaderParameter("mode", 1);
+		// 背景层已经读过一次屏幕：这里先重新拷贝一次（带上人物），不然读到的是没有人物的旧画面
+		_enemyScreen.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
 		_enemyScreen.AddChild(new ColorRect { Size = Fx.Screen(front), Material = _em, MouseFilter = Control.MouseFilterEnum.Ignore });
 		_bitsRoot = new Node2D { Name = "P5TimeStopBits" };
 		front.AddChild(_bitsRoot);
