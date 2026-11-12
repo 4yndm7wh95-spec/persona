@@ -217,6 +217,9 @@ public static class Sfx
 	/// 都挑预览里也能听到的（tools/p5/fxpreview/game_sfx.py 找得到样本的）；能量那组 gain_energy 例外（样本不在 sfx.bank 里，预览里不响）。
 	/// 用户在预览 / 游戏里听了哪个不合适就在这里换。
 	/// </summary>
+	/// <summary>技能牌音效整体再压一档（用户 2026-11-12：音效真的不用太明显，现在太大声）。</summary>
+	public const float SkillQuiet = 0.5f;
+
 	private static readonly Dictionary<string, (string? Event, float Gain)> GameSfx = new()
 	{
 		// 增益 / 减益通用积木
@@ -271,7 +274,7 @@ public static class Sfx
 		Last[name] = now;
 		if (GameSfx.TryGetValue(name, out var game))
 		{
-			if (game.Event != null) Stage.PlayEvent?.Invoke(game.Event, Mathf.Clamp(volume, 0f, 1.4f) * game.Gain);
+			if (game.Event != null) Stage.PlayEvent?.Invoke(game.Event, Mathf.Clamp(volume, 0f, 1.4f) * game.Gain * SkillQuiet);
 			return;
 		}
 		Recorder?.Invoke(name, volume);
