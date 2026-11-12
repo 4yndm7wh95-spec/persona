@@ -757,6 +757,7 @@ public partial class Preview : Node2D
 			p.At(5.25, () => SkillFx.Draw(p._front, Pose(1010f, 410f), 2));
 			p.At(6.7, () => TimeStop.StopCurrent());
 		},
+		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_big", 0.4, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast", 0.4, 1.6) }),
 		["redo"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Acrobatics", "cast_glove", 0.25, 1.7), ("Acrobatics", "cast_glove", 0.25, 1.7) }),
 		["redo3"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Survivor", "cast_guard", 0.08, 1.2), ("CalculatedGamble", "cast_glove", 0.25, 1.9), ("Tactician", "cast_glove", 0.25, 1.2), ("Adrenaline", "cast_glove", 0.25, 1.4), ("ShadowStep", "cast_glove", 0.25, 1.4) }),
 		["redo2"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Prepared", "cast_glove", 0.25, 1.5), ("Expertise", "cast_glove", 0.25, 1.7), ("Reflex", "cast_glove", 0.25, 1.1), ("Backflip", "cast_guard", 0.08, 1.3), ("EscapePlan", "cast_guard", 0.08, 1.3) }),

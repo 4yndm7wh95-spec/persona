@@ -146,8 +146,12 @@ void fragment() {
 			Fx.Animate(_root, 0, 0.12, t => _root.Modulate = new Color(1f, 1f, 1f, 1f - t));
 		}
 
-		public Ribbon(Control layer, float width, double life, int n = 10)
+		private readonly bool _ink;
+
+		/// <summary>ink = 墨色拖尾（不叠加发光：外层近黑、芯是暗红），给暗影类的牌用。</summary>
+		public Ribbon(Control layer, float width, double life, int n = 10, bool ink = false)
 		{
+			_ink = ink;
 			_w = width;
 			_n = n;
 			Node2D root = new() { Name = "P5Ribbon", TopLevel = true };
@@ -155,8 +159,8 @@ void fragment() {
 			layer.AddChild(root);
 			root.GlobalPosition = Vector2.Zero;
 			Fx.FreeAfter(root, life);
-			_outer = Fx.Poly(root, new[] { Vector2.Zero, Vector2.Right, Vector2.Down }, Colors.White, additive: true);
-			_core = Fx.Poly(root, new[] { Vector2.Zero, Vector2.Right, Vector2.Down }, Colors.White, additive: true);
+			_outer = Fx.Poly(root, new[] { Vector2.Zero, Vector2.Right, Vector2.Down }, Colors.White, additive: !ink);
+			_core = Fx.Poly(root, new[] { Vector2.Zero, Vector2.Right, Vector2.Down }, Colors.White, additive: !ink);
 		}
 
 		public void Push(Vector2 p)
@@ -165,6 +169,12 @@ void fragment() {
 			_pts.Add(p);
 			while (_pts.Count > _n) _pts.RemoveAt(0);
 			if (_pts.Count < 3) return;
+			if (_ink)
+			{
+				Draw(_outer, _w, new Color(0.03f, 0.01f, 0.02f, 0f), new Color(0.04f, 0.01f, 0.02f, 0.85f * Fade));
+				Draw(_core, _w * 0.3f, new Color(0.4f, 0.02f, 0.05f, 0f), new Color(0.62f, 0.03f, 0.08f, 0.9f * Fade));
+				return;
+			}
 			Draw(_outer, _w, new Color(Red, 0f), new Color(1f, 0.25f, 0.3f, 0.75f * Fade));
 			Draw(_core, _w * 0.32f, new Color(1f, 0.6f, 0.6f, 0f), new Color(Hot, 0.95f * Fade));
 		}

@@ -57,7 +57,7 @@ public static class SkillRedo
 	}
 
 	/// <summary>一张牌烧掉、碎成纸屑：在 at 处（倾斜 tilt）从一角烧起，0.35s 后迸出纸屑和余烬。</summary>
-	private static void BurnAway(SkillCtx c, Phantom.P5Card card, Vector2 at, float tilt, Vector2 drift)
+	internal static void BurnAway(SkillCtx c, Phantom.P5Card card, Vector2 at, float tilt, Vector2 drift)
 	{
 		float u = c.Unit;
 		card.Set("clip", new Vector3(0.6f, 0.8f, -1.6f));
@@ -180,7 +180,7 @@ public static class SkillRedo
 	}
 
 	/// <summary>一张牌四角扣上的白色角括号（倾斜 ang，牌宽 w），一下扣紧、停一会儿淡掉。</summary>
-	private static void Brackets(Control layer, Vector2 at, float ang, float w, float u)
+	internal static void Brackets(Control layer, Vector2 at, float ang, float w, float u)
 	{
 		Node2D root = Fx.Root(layer, at, "P5Retain", 0.7);
 		root.Rotation = ang;
@@ -445,7 +445,7 @@ public static class SkillRedo
 	// ═══════════════════════════ 第三批（2026-11-12） ═══════════════════════════
 
 	/// <summary>一圈厚而柔的冲击带（不是细线圈）：从 r0 胀到 r1，越胀越薄、越淡。squash = 竖向压扁。</summary>
-	private static void Thump(Control layer, Vector2 at, Color tint, float size, float life, float squash, float delay = 0f)
+	internal static void Thump(Control layer, Vector2 at, Color tint, float size, float life, float squash, float delay = 0f)
 	{
 		Node2D root = Fx.Root(layer, at, "P5Thump", delay + life + 0.1);
 		ColorRect ring = Glow.RingRect(root, size, squash);
@@ -461,7 +461,7 @@ public static class SkillRedo
 	}
 
 	/// <summary>身上一下泛色（tint），k 秒内回来。</summary>
-	private static void Pulse(SkillCtx c, Color to, float delay, float life)
+	internal static void Pulse(SkillCtx c, Color to, float delay, float life)
 	{
 		if (c.SelfTint is not { } tint) return;
 		Fx.After(c.Front, delay, () =>

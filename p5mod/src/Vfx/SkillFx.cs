@@ -1031,7 +1031,7 @@ void fragment() {
 	private static Shader? _sil;
 
 	/// <summary>剪影：只取离屏画面里人物的形状，整片填一个纯色（不带任何人物细节）。脚下的影子（最多 0.43 不透明）不算。</summary>
-	private static Shader Silhouette => _sil ??= new Shader { Code = @"
+	internal static Shader Silhouette => _sil ??= new Shader { Code = @"
 shader_type canvas_item;
 uniform vec4 tint : source_color = vec4(0.9, 0.04, 0.12, 1.0);
 uniform float alpha = 1.0;
