@@ -697,12 +697,13 @@ Clk clockFx(vec2 q) {
 	// 出牌：一圈涟漪从钟心往外荡过玻璃
 	float rp = ck_tick.y * 2.6;
 	off += cq / max(r, 1e-3) * 0.05 * ck_tick.x * exp(-pow((r - rp) / 0.1, 2.0)) * inside;
-	spec += exp(-pow((r - rp) / 0.05, 2.0)) * inside * ck_tick.x * 0.25;
+	float rippleSpec = exp(-pow((r - rp) / 0.05, 2.0)) * inside * ck_tick.x * 0.25;
 	// 外沿：玻璃的厚边（内外两道斜面，受光面亮、背光面暗），不是线
 	float rim = exp(-pow((r - 1.0) / 0.055, 2.0)), rim2 = exp(-pow((r - 0.95) / 0.02, 2.0));
 	off += n * ((r - 1.0) / 0.055) * rim * 0.045 - n * ((r - 0.95) / 0.02) * rim2 * 0.01;
 	float lit = max(0.0, dot(n, L));
 	float spec = rim * (0.03 + 0.32 * pow(lit, 2.0)) + rim2 * (0.02 + 0.18 * pow(max(0.0, -dot(n, L)), 3.0));
+	spec += rippleSpec;
 	// 外沿跟着秒针亮起一道高光（出牌时）
 	float ad = abs(mod(ang - ck_h.z + 3.14159, 6.28318) - 3.14159);
 	spec += (rim + rim2) * exp(-ad * ad / 0.2) * ck_tick.x * 1.4;
