@@ -48,6 +48,13 @@ public partial class Preview : Node2D
 		("Adrenaline", "cast_glove", 0.25, 1.4),
 	});
 
+	// 2026-11-12 重做第一批：融入暗影、残影、暗影步、萎靡、扫腿
+	private static void Redo1(Preview p, string[]? only) => RunCards(p, only, new (string, string, double, double)[]
+	{
+		("Shadowmeld", "cast_glove", 0.25, 2.0), ("Blur", "cast_guard", 0.08, 1.4), ("ShadowStep", "cast_glove", 0.25, 1.8),
+		("Malaise", "cast_wave", 0.08, 2.0), ("LegSweep", "cast_guard", 0.08, 1.6),
+	});
+
 	private static void RunCards(Preview p, string[]? only, (string Card, string Anim, double Lead, double Gap)[] seq)
 	{
 		float tall = (JokerFeet - Pose(815f, 120f)).Length();
@@ -500,11 +507,11 @@ public partial class Preview : Node2D
 		["snakebite"] = p =>
 		{
 			float tall = (JokerFeet - Pose(815f, 120f)).Length();
-			// 拿起牌：扶面具架势 + 面具火、锁定目标 → 打出（cast_from_mask，0.23s 手甩出去）
+			// 拿起牌：扶面具架势 + 面具火、锁定目标 → 打出（手放下）
 			foreach ((Vector2 e, double t0, int amt) in new[] { (Enemy, 0.2, 7), (Enemy3, 3.0, 10) })
 			{
-				p.Ready(t0, Stance.Mask, "mask", "cast_from_mask", play: true, lockOn: e);
-				double go = t0 + 1.6 + 0.23;
+				p.Ready(t0, Stance.Mask, "mask", "mask_out", play: true, lockOn: e);   // 打出时不甩手，只放下（用户 2026-11-12）
+				double go = t0 + 1.6 + 0.12;
 				p.At(go, () => { p._enemies.TryGetValue(e, out Node2D? n); SerpentMantle.Bite(p._front, p._back, e + new Vector2(0f, -170f), n, tall, 1f); });
 				p.Poison(go + SerpentMantle.BiteDelay, e, amt);
 			}
@@ -730,6 +737,14 @@ public partial class Preview : Node2D
 		["cards1b"] = p => Cards1(p, new[] { "Envenom", "NoxiousFumes", "SerpentForm" }),
 		["cards2"] = p => Cards2(p, null),
 		["cards3"] = p => Cards3(p, null),
+		["redo1"] = p =>
+		{
+			Redo1(p, null);
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			// 残影、扫腿也给格挡：游戏里走 GainBlockPatch → 蜂巢护盾，预览里手动放
+			p.At(2.3 + 0.1, () => HexGuard.Play(p._front, Chest, tall, 1f, 8, Pose(885f, 310f)));
+			p.At(7.5 + 0.1, () => HexGuard.Play(p._front, Chest, tall, 1f, 3, Pose(885f, 310f)));
+		},
 		["ghost"] = p => Cards2(p, new[] { "Blur" }),
 		["orochi"] = p =>
 		{

@@ -1047,7 +1047,7 @@ void fragment() {
 	/// count 层依次往身后错开一小段（第一层几乎贴着身体，只露一道红边），停一下再淡掉。
 	/// region = 要罩住的区域（全局坐标：人物 + 四周留边）；clone 见 BodyAura.CloneBody。
 	/// </summary>
-	public static void Ghosts(Control back, Func<Node, (Node2D Clone, Transform2D Body)?>? clone, Rect2 region, float facing, int count = 2, bool sound = true)
+	public static void Ghosts(Control back, Func<Node, (Node2D Clone, Transform2D Body)?>? clone, Rect2 region, float facing, int count = 2, bool sound = true, bool subtle = false)
 	{
 		count = 1;                                       // 用户 2026-11-10：剪影只要一层，照参考图
 		if (sound)
@@ -1083,10 +1083,11 @@ void fragment() {
 			int k = i;
 			ShaderMaterial m = new() { Shader = Silhouette };
 			// 用户 2026-11-10 给的参考：实心纯红的剪影紧贴在身后，只往一侧（后下方）错开几个像素，边缘干脆、不模糊
-			m.SetShaderParameter("tint", k == 0 ? new Color(0.95f, 0.04f, 0.1f) : new Color(0.6f, 0f, 0.06f));
+			m.SetShaderParameter("tint", subtle ? new Color(0.62f, 0.02f, 0.07f) : k == 0 ? new Color(0.95f, 0.04f, 0.1f) : new Color(0.6f, 0f, 0.06f));
 			Sprite2D sp = new() { Texture = view.GetTexture(), Centered = false, Material = m };
 			root.AddChild(sp);
-			float dist = (4f + 4f * k) * unit * -facing, drop = (1.5f + 1f * k) * unit, a0 = k == 0 ? 1f : 0.85f;
+			// subtle（残影，用户 2026-11-12：一层、贴身、不用很明显）：错开更少、更暗、半透明
+			float dist = (subtle ? 2.5f : 4f + 4f * k) * unit * -facing, drop = (subtle ? 1f : 1.5f + 1f * k) * unit, a0 = subtle ? 0.7f : k == 0 ? 1f : 0.85f;
 			Fx.Animate(sp, 0, life, t =>
 			{
 				float s = t * life;

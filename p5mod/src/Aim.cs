@@ -91,6 +91,7 @@ public static class Aim
 				Cast.Guard => held is "guard_in" or "guard_loop" ? "cast_guard_from_ready" : "cast_guard",
 				Cast.Glove => held is "glove_in" or "glove_loop" ? "cast_glove_from_ready" : "cast_glove",
 				Cast.Wave => held is "glove_in" or "glove_loop" ? "cast_wave_from_ready" : "cast_wave",
+				Cast.MaskOff => "mask_out",
 				_ => held is "mask_in" or "mask_loop" ? "cast_from_mask" : null,
 			};
 			return name != null && body.HasAnimation(name) ? name : null;
@@ -310,6 +311,10 @@ public static class Aim
 		string? name = fromReady
 			? stance switch { Stance.Guard => "cast_guard_from_ready", Stance.Glove => "cast_glove_from_ready", _ => "cast_from_mask" }
 			: stance switch { Stance.Guard => "cast_guard", Stance.Glove => "cast_glove", _ => "cast" };
+		if (Casts.For(card) == Cast.MaskOff && body.HasAnimation("mask_out"))
+		{
+			name = "mask_out";
+		}
 		if (Casts.For(card) == Cast.Wave && body.HasAnimation("cast_wave"))
 		{
 			name = fromReady ? "cast_wave_from_ready" : "cast_wave";

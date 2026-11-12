@@ -179,23 +179,11 @@ void fragment() {
 	public static void Blur(SkillCtx c)
 	{
 		float h = c.Tall, u = c.Unit;
-		Sfx.Play(Sfx.BlurDash, 0.42f);
+		// 用户 2026-11-12：残影只要一层红色剪影，贴身、不用很明显（格挡照旧是蜂巢护盾，走 GainBlockPatch）；速度线、闪光、冲击波、火星都去掉
 		if (Ok(c.Back) && c.CopyBody != null)
 		{
-			SkillFx.Ghosts(c.Back!, c.CopyBody, c.Region, c.Face, 3, sound: false);
+			SkillFx.Ghosts(c.Back!, c.CopyBody, c.Region, c.Face, 1, sound: false, subtle: true);
 		}
-		for (int i = 0; i < 7; i++)
-		{
-			float y = -h * Fx.Rand(0.05f, 0.9f);
-			Vector2 at = c.Feet + new Vector2(c.Face * h * Fx.Rand(-0.1f, 0.15f), y);
-			Streakline(c.Front, at, new Vector2(-c.Face, 0f), h * Fx.Rand(0.5f, 0.9f), 0.26f, Hot, Red, 2.2f * u, 0.02f * i);
-		}
-		Glow.Flash(c.Front, c.Chest, Red, h * 0.7f, 0.14f);
-		Fx.After(c.Front, 0.3f, () =>
-		{
-			Glow.Shockwave(c.Front, c.Chest, Hot, h * 1.2f, 0.32f, 0.9f);
-			Glow.Sparks(c.Front, c.Chest + new Vector2(c.Face * h * 0.2f, 0f), 16, 20f, 90f, 0.7f, new[] { Hot, Red, Crimson }, 0f, 0.02f * u, 0.05f * u, Vector2.Up, 180f);
-		});
 	}
 
 	private static void Streakline(Control layer, Vector2 at, Vector2 dir, float len, float life, Color core, Color glow, float width, float delay = 0f)
