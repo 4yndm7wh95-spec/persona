@@ -22,6 +22,23 @@ public static class CutInFx
 	private const string KaPath = "res://p3makoto/ui/cutin_ka.png";
 	private static readonly Vector2 EyeTex = new(690f, 215f);          // 贴图里眼睛的位置（build_ui_assets.EYE）
 	private const float TexW = 1600f, TexH = 440f;
+	internal const string SelectTitle = "結城 理";
+	internal const string SelectPersona = "ORPHEUS";
+
+	internal static void WarmSelect(Node2D parent)
+	{
+		// Draw the same glyph sizes and canvas shader variants as the selection cut-in.
+		Node2D sample = new() { Scale = Vector2.One * 0.005f };
+		parent.AddChild(sample);
+		Typo.Text(sample, SelectPersona, Typo.Latin, WatermarkSize(parent.GetViewportRect().Size.Y), Colors.White, Vector2.Zero);
+		Typo.Text(sample, "PERSONA  \u25B8  " + SelectPersona, Typo.Latin, 26, Colors.White, Vector2.Zero, outline: 4);
+		P3Ui.RedTag(sample, SelectTitle, Vector2.Zero, 44);
+		Vector2[] triangle = { Vector2.Zero, new(250f, 0f), new(250f, 250f) };
+		sample.AddChild(Fx.TexPoly(Fx.SoftDot, triangle, new[] { Vector2.Zero, Vector2.Right, Vector2.One }));
+		Fx.ShaderQuad(sample, Shaders.Flash, 250f);
+	}
+
+	private static int WatermarkSize(float viewportHeight) => Math.Max(1, (int)(viewportHeight * 0.3f));
 
 	private sealed class State
 	{
@@ -111,6 +128,17 @@ public static class CutInFx
 
 	private static void BeginOn(Control back, Control front, ulong id, string title, string persona, Action<float>? onFire, Func<Vector2> impact, double timeout)
 	{
+		bool selection = back == front && title == SelectTitle && persona == SelectPersona;
+		ulong sectionStart = selection ? Time.GetTicksUsec() : 0;
+		void Mark(string section)
+		{
+			if (!selection) return;
+			ulong now = Time.GetTicksUsec();
+			double elapsed = (now - sectionStart) / 1000.0;
+			if (elapsed >= 20) GD.Print($"{ModEntry.Tag} perf select cut-in {section} {elapsed:F1}ms");
+			sectionStart = now;
+		}
+
 		if (ResourceLoader.Load(EyesPath) is not Texture2D eyes)
 		{
 			onFire?.Invoke(0f);
@@ -123,6 +151,7 @@ public static class CutInFx
 		Vector2 size = back.GetViewportRect().Size;
 		var st = new State { Eyes = eyes, Screen = size, Cy = size.Y * 0.4f, HalfH = size.Y * 0.19f, Start = Time.GetTicksMsec(), OnFire = onFire, Impact = impact, Back = back };
 		Live[id] = st;
+		Mark("eyes texture");
 
 		// 压暗背景（在人物身后）
 		st.Dim = new ColorRect { Color = new Color(0.01f, 0.03f, 0.1f, 0f), Size = size * 1.2f, Position = -size * 0.1f, MouseFilter = Control.MouseFilterEnum.Ignore };
@@ -137,7 +166,7 @@ public static class CutInFx
 		decor.AddChild(slabs);
 		P3Ui.Slab(slabs, -200f, size.X * 0.4f, size.Y * 0.64f, size.Y + 60f, 190f, new Color(0.93f, 0.96f, 1f, 0.9f));
 		P3Ui.Slab(slabs, -200f, size.X * 0.36f, size.Y * 0.64f, size.Y * 0.64f + 10f, 190f, new Color(0.9f, 0.1f, 0.25f, 0.9f));
-		Node2D word = P3Ui.GiantWord(slabs, persona, new Vector2(size.X * 0.03f, size.Y * 1.08f), (int)(size.Y * 0.3f), -1.0f, new Color(0.02f, 0.03f, 0.09f, 0.88f));
+		Node2D word = P3Ui.GiantWord(slabs, persona, new Vector2(size.X * 0.03f, size.Y * 1.08f), WatermarkSize(size.Y), -1.0f, new Color(0.02f, 0.03f, 0.09f, 0.88f));
 		Node2D topSlab = new();
 		decor.AddChild(topSlab);
 		P3Ui.Slab(topSlab, size.X * 0.5f, size.X + 300f, -60f, size.Y * 0.15f, -140f, new Color(0.02f, 0.06f, 0.24f, 0.92f));
@@ -149,6 +178,7 @@ public static class CutInFx
 		decor.AddChild(arcs);
 		Line2D arc1 = P3Ui.Arc(arcs, Vector2.Zero, discR * 1.07f, Mathf.Pi * 0.55f, Mathf.Pi * 1.45f, new Color(Pal.Cyan, 0.55f), 3f);
 		Line2D arc2 = P3Ui.Arc(arcs, Vector2.Zero, discR * 1.16f, Mathf.Pi * 0.8f, Mathf.Pi * 1.25f, new Color(1f, 1f, 1f, 0.45f), 2f);
+		Mark("backdrop");
 		Fx.Animate(decor, 3.0, t =>
 		{
 			float time = t * 3f;
@@ -203,6 +233,7 @@ public static class CutInFx
 			sweep.Position = new Vector2(Mathf.Lerp(-200f, st.Screen.X + 400f, Mathf.Clamp(time / 0.5f, 0f, 1f)), 0f);
 		});
 		st.Band.Scale = new Vector2(1f, 0.02f);
+		Mark("eye banner");
 
 		// 左上技能名 + 右侧"咔"
 		st.Ui = Fx.Root(front, Vector2.Zero, "P3CutInUi");
@@ -224,6 +255,7 @@ public static class CutInFx
 			ka.AddChild(new Sprite2D { Texture = kaTex, Scale = Vector2.One * (st.HalfH * 1.05f / kaTex.GetHeight()) });
 		}
 		ka.Modulate = new Color(1f, 1f, 1f, 0f);
+		Mark("title and lettering");
 
 		// P3R 的节奏：横幅"啪"地张开（0.2s，略过冲再落定）→ 长停顿慢推（眼神）→ 碎裂
 		const float open = 0.2f;
@@ -244,6 +276,7 @@ public static class CutInFx
 			ka.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((time - 0.12f) / 0.18f, 0f, 1f));
 		});
 		P3Fx.Flash(back, new Vector2(size.X * 0.5f, st.Cy), Pal.Cyan, size.X * 0.5f, 0.18f);
+		Mark("opening flash");
 		// 兜底：没等到扣扳机就自己碎
 		Fx.After(st.Band, timeout, "cut-in timeout", () => Fire(id));
 	}

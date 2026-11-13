@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
@@ -6,9 +8,24 @@ using MegaCrit.Sts2.Core.Nodes.Rooms;
 namespace P3Makoto.Patches;
 
 /// <summary>Only the local Makoto run's merchant room receives the Velvet Room presentation.</summary>
-[HarmonyPatch(typeof(NMerchantRoom), nameof(NMerchantRoom._Ready))]
+[HarmonyPatch]
 public static class VelvetShopPatch
 {
+	public static IEnumerable<MethodBase> TargetMethods()
+	{
+		// 0.113 initializes the merchant button in each room override, after base._Ready().
+		const string roomNamespace = "MegaCrit.Sts2.Core.Nodes.Rooms.";
+		Assembly game = typeof(NMerchantRoom).Assembly;
+		if (game.GetType(roomNamespace + "NStandardMerchantRoom") is not Type standard)
+		{
+			yield return AccessTools.DeclaredMethod(typeof(NMerchantRoom), nameof(NMerchantRoom._Ready));
+			yield break;
+		}
+		yield return AccessTools.DeclaredMethod(standard, nameof(NMerchantRoom._Ready));
+		if (game.GetType(roomNamespace + "NBlitzMerchantRoom") is Type blitz)
+			yield return AccessTools.DeclaredMethod(blitz, nameof(NMerchantRoom._Ready));
+	}
+
 	public static void Postfix(NMerchantRoom __instance) =>
 		ModEntry.Safe("velvet shop", () => Install(__instance));
 
@@ -22,8 +39,9 @@ public static class VelvetShopPatch
 		var texture = ResourceLoader.Load<Texture2D>("res://p3makoto/shop/velvet_room.png");
 		var shader = ResourceLoader.Load<Shader>("res://p3makoto/shaders/velvet_shop.gdshader");
 		if (texture == null || shader == null) return;
-		var scenery = room.GetNode<CanvasItem>("SceneContainer");
+		var scenery = room.GetNodeOrNull<CanvasItem>("SceneContainer");
 		var merchant = room.MerchantButton;
+		if (scenery == null || merchant == null) return;
 		var material = new ShaderMaterial { Shader = shader };
 		var background = new TextureRect
 		{

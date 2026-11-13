@@ -142,6 +142,10 @@ public static class Preload
 		// 选人界面：夜空着色器、上升光点的粒子着色器、介绍板（字体 / 扫光 / 文字栅格化）
 		n.AddChild(new ColorRect { Size = new Vector2(2f, 2f), Material = new ShaderMaterial { Shader = Shaders.Menu }, MouseFilter = Control.MouseFilterEnum.Ignore });
 		Fx.Sparks(n, Pal.Cyan, 4, 1f, 2f, 0.3f, gravity: 0f, scaleMin: 0.01f, scaleMax: 0.02f, oneShot: false);
+		if (Core.P3Settings.SelectSummon)
+		{
+			ModEntry.Safe("select cut-in warmup", () => CutInFx.WarmSelect(n));
+		}
 		ModEntry.Safe("charselect info warmup", () => Scenes.CharSelectInfo.Warm(n));
 		int frames = 0;
 		void Tick()
