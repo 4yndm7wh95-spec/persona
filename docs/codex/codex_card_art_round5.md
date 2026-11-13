@@ -350,3 +350,19 @@ Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the 
 ```
 Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET. The previous pass only swapped characters and looked plain and standard: this pass must feel INVENTIVE, reinterpreting the replaced subject as a specific Persona 3 Reload moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. Makoto Yuki's face and head never appear (hands and sleeves only); other characters' faces are allowed. Persona creatures' hands are plump cartoon mittens with no long human fingers. If a named character's design is uncertain, follow the described features, keep the rest simple, and never invent text. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760, no text, letters, numbers, frame, UI or watermark. Never use Pyro Jack, Jack Frost or Pixie in this card. Replace the figure writing at the desk with EDOGAWA standing behind the same desk at the same scale, lecturing with his pointer, notes covered in occult symbols (no readable text) spread on the desk, the golden halo rays behind him kept. Keep the dark teal background. Character and object designs: [EDOGAWA] = MR. EDOGAWA, the eccentric school nurse: gaunt, long black hair, dark-circled eyes, a white lab coat, a wide unsettling grin, holding a pointer.
 ```
+
+---
+
+## 修正：打击（剑弯了）
+
+用户：剑看起来是弯的。
+
+**原因**：剑柄和剑身不在同一条直线上。在 1439×1093 的图上量，剑柄从剑首到护手大约是 18° 的斜度，剑身从护手到剑尖大约是 35°，在护手处折了约 17°，所以看起来像弯的。
+
+**改法**：剑身的角度和剑尖位置不动，剑柄和剑首改成顺着剑身的延长线往左上走（剑首大约落在画面 x27%、y33%），护手和剑身垂直；那张宝剑牌跟着剑首挪过去，牌的碎玻璃效果、金色斩痕、星光、背景都不动。
+
+Image1 = 当前候选 `art/cards/v4/local_edits/round5/batch_01/strike_regent.png`；输出 `strike_regent_v2.png`，附对比图（当前 | 修正）。生成后自检：用一条直线连剑首中心和剑尖，剑柄中线、护手中心、剑身中脊都要在这条线上。
+
+```
+Use case: precise-object-edit. Image1 is the current candidate and the edit target. Fix ONE problem: the sword looks bent because its grip and pommel are angled flatter (about 18 degrees) than the blade (about 35 degrees), with a kink at the crossguard. Make the whole sword ONE perfectly straight rigid object: pommel, grip, crossguard center, blade spine and tip all on a single straight axis. Keep the blade exactly where it is (same angle, length and tip position at the lower right); redraw only the grip and pommel so they continue the blade's axis up and to the left (the pommel ends at about x27%, y33% of the canvas), with the crossguard exactly perpendicular to that axis. Move the Swords tarot card along with the pommel so the sword still bursts out of the card at the hilt end, keeping the card's design, its tilt relative to the sword, and the pale-blue glass shards around the breaking point. Keep the gold slash fragments, the sparkles, the warm glow and the purple-magenta background unchanged. Crisp hard cel-shading. Opaque, full-bleed, same size as Image1, no text, frame or watermark.
+```
