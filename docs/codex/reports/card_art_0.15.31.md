@@ -1,3 +1,5 @@
+> 后续更正：用户要求卡面独立成 Mod。此报告记录的整合安装已被 P3Makoto 0.15.32 + P3CardArt 1.0.0 替代，见 [拆分报告](standalone_card_art_1.0.0.md)。
+
 # 0.15.31 卡图构建与安装报告
 
 基于 `claude/admiring-knuth-lqj1x7` 的 `de6c50c72dc14c237854dbe7db1aa2f3d9d3a43d`。按 `docs/codex/codex_v0.15.31_card_art.md` 构建，不修改代码、版本号或源图片。用户随后明确“审查工作交给我就行，你装完告诉我”，因此未启动游戏，实机验收留给用户。

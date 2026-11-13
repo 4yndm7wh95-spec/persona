@@ -1,16 +1,16 @@
 """Export the approved card illustrations (art/cards/final/final_manifest.json) into the PCK stage.
 
-Usage: python3 tools/pck/export_card_art.py [--stage mod/pck_stage]
+Usage: python3 tools/pck/export_card_art.py [--stage cardart/pck_stage]
 Each image is resized to the vanilla portrait size of that card (1000x760, ancients 606x852) and written as
-p3makoto/card_art/<card>.jpg (quality 90, 4:4:4) plus index.txt (one card id per line). Loaded at runtime through FileAccess; no .import files.
+p3cardart/card_art/<card>.jpg (quality 90, 4:4:4) plus index.txt (one card id per line). Loaded at runtime through FileAccess; no .import files.
 """
 import argparse, json, os
 from PIL import Image
 
 ap = argparse.ArgumentParser()
-ap.add_argument("--stage", default="mod/pck_stage")
+ap.add_argument("--stage", default="cardart/pck_stage")
 a = ap.parse_args()
-out = os.path.join(a.stage, "p3makoto", "card_art")
+out = os.path.join(a.stage, "p3cardart", "card_art")
 os.makedirs(out, exist_ok=True)
 manifest = json.load(open("art/cards/final/final_manifest.json", encoding="utf-8"))
 total = 0

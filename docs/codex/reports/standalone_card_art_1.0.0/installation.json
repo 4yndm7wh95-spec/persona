@@ -1,0 +1,126 @@
+[
+  {
+    "mod_id": "P3Makoto",
+    "zip_sha256": "c30c8acfbccade1db66e979d51e40dde6827818f98eaca88cf4b0dc35cae7433",
+    "backup_path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a\\mod\\_build\\standalone_01532\\backup_20261113_103040_111\\P3Makoto",
+    "installed_hashes_verified": true,
+    "game_version": "v0.111.0",
+    "install_path": "C:\\Users\\kkk\\Desktop\\slaythespire\\Slay the Spire 2\\mods\\P3Makoto",
+    "mod_version": "0.15.32",
+    "files": [
+      {
+        "sha256": "f3021fe49bc9480bf63ec82f074bd8ecf28a82801bd4ab9b5017a2d9046853a9",
+        "name": "P3Makoto.json",
+        "bytes": 327,
+        "existed": true
+      },
+      {
+        "sha256": "e2ffdb0704b73ba68a2d8c3a8cd39b77cfa27c2690f3aa80d9567fea42d2bfc2",
+        "name": "P3Makoto.dll",
+        "bytes": 1147392,
+        "existed": true
+      },
+      {
+        "sha256": "e228dbab7523073b3cae52fe81834ebf7cfd41311a299c4163b7d1b6ebdd6e5a",
+        "name": "P3Makoto.pck",
+        "bytes": 135237252,
+        "existed": true
+      }
+    ],
+    "zip_path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a\\mod\\dist\\0.15.32\\P3Makoto_0.15.32_game0.111.0.zip",
+    "zip_member_hashes_verified": true
+  },
+  {
+    "mod_id": "P3CardArt",
+    "zip_sha256": "b03ed7617dfd555343600e5b4c56cee3f8d4cf6036037d2cee985f55bdc77aac",
+    "backup_path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a\\mod\\_build\\standalone_01532\\backup_20261113_103040_111\\P3CardArt",
+    "installed_hashes_verified": true,
+    "game_version": "v0.111.0",
+    "install_path": "C:\\Users\\kkk\\Desktop\\slaythespire\\Slay the Spire 2\\mods\\P3CardArt",
+    "mod_version": "1.0.0",
+    "files": [
+      {
+        "sha256": "1f250de43a776b9a421405d52cbc24d07face45d3e51c79aa6c685bd7973e9e5",
+        "name": "P3CardArt.json",
+        "bytes": 338,
+        "existed": false
+      },
+      {
+        "sha256": "ea280a7be3bd6e239d0e9ecda2367efe44525df2d66243b11323eafbe167dc78",
+        "name": "P3CardArt.dll",
+        "bytes": 10240,
+        "existed": false
+      },
+      {
+        "sha256": "562351a67953239c02570a9c5c23eaf8bb48542a75dc8dca5e71c795ad612f95",
+        "name": "P3CardArt.pck",
+        "bytes": 18973700,
+        "existed": false
+      }
+    ],
+    "zip_path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a\\cardart\\dist\\P3CardArt_1.0.0_game0.111.0.zip",
+    "zip_member_hashes_verified": true
+  },
+  {
+    "mod_id": "P3Makoto",
+    "zip_sha256": "0c4fa36136d1ca04c18fea2444e08defd3c6dcb9c9a32d64430ae46ba73d5005",
+    "backup_path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a\\mod\\_build\\standalone_01532\\backup_20261113_103040_113\\P3Makoto",
+    "installed_hashes_verified": true,
+    "game_version": "v0.113.0",
+    "install_path": "G:\\SteamLibrary\\steamapps\\common\\Slay the Spire 2\\mods\\P3Makoto",
+    "mod_version": "0.15.32",
+    "files": [
+      {
+        "sha256": "f3021fe49bc9480bf63ec82f074bd8ecf28a82801bd4ab9b5017a2d9046853a9",
+        "name": "P3Makoto.json",
+        "bytes": 327,
+        "existed": true
+      },
+      {
+        "sha256": "5346aae85b1fe9d4929dccdc79488abb234cbc71ae4b3aa466558f031b69a204",
+        "name": "P3Makoto.dll",
+        "bytes": 1147392,
+        "existed": true
+      },
+      {
+        "sha256": "e228dbab7523073b3cae52fe81834ebf7cfd41311a299c4163b7d1b6ebdd6e5a",
+        "name": "P3Makoto.pck",
+        "bytes": 135237252,
+        "existed": true
+      }
+    ],
+    "zip_path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a\\mod\\dist\\0.15.32\\P3Makoto_0.15.32.zip",
+    "zip_member_hashes_verified": true
+  },
+  {
+    "mod_id": "P3CardArt",
+    "zip_sha256": "3f88df1c35b540f3b7c47766fa4f8c31579a300d9aa44503eab14dff584fbd65",
+    "backup_path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a\\mod\\_build\\standalone_01532\\backup_20261113_103040_113\\P3CardArt",
+    "installed_hashes_verified": true,
+    "game_version": "v0.113.0",
+    "install_path": "G:\\SteamLibrary\\steamapps\\common\\Slay the Spire 2\\mods\\P3CardArt",
+    "mod_version": "1.0.0",
+    "files": [
+      {
+        "sha256": "1f250de43a776b9a421405d52cbc24d07face45d3e51c79aa6c685bd7973e9e5",
+        "name": "P3CardArt.json",
+        "bytes": 338,
+        "existed": false
+      },
+      {
+        "sha256": "136ee11d3f4c818e81f3e31d57e373ab6e85ec63101d17324a2be2d879a3f8a7",
+        "name": "P3CardArt.dll",
+        "bytes": 10240,
+        "existed": false
+      },
+      {
+        "sha256": "562351a67953239c02570a9c5c23eaf8bb48542a75dc8dca5e71c795ad612f95",
+        "name": "P3CardArt.pck",
+        "bytes": 18973700,
+        "existed": false
+      }
+    ],
+    "zip_path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a\\cardart\\dist\\P3CardArt_1.0.0.zip",
+    "zip_member_hashes_verified": true
+  }
+]

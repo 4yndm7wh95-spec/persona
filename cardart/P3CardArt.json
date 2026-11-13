@@ -1,0 +1,10 @@
+{
+  "id": "P3CardArt",
+  "name": "P3 卡面替换",
+  "author": "brooks",
+  "description": "独立替换 94 张卡牌插画，保留原版卡框和文字。可单独使用，也可搭配 P3 结城理 Mod。启用或停用后重启游戏生效。",
+  "version": "1.0.0",
+  "has_pck": true,
+  "has_dll": true,
+  "affects_gameplay": false
+}

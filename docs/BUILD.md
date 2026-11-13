@@ -26,3 +26,7 @@
 
 ## 冲突
 Mesugaki（另一个储君换皮 mod）覆盖同一批文件，测试本 mod 时需要把它移出 mods 文件夹。
+
+## 独立卡面 Mod（P3CardArt）
+
+主 Mod 自 0.15.32 起不含卡面替换。独立卡面源码、清单和 PCK 源分别在 `cardart/src/`、`cardart/P3CardArt.json` 和 `cardart/pck_stage/`。编译 `cardart/P3CardArt.csproj`，用相同 GDRE 参数将源副本打包为 `P3CardArt.pck`。包内必须只有 `p3cardart/card_art/` 下 94 张 JPG 与 index.txt，原样保留，无 .import。安装到 `mods/P3CardArt/`，可单独启停，不依赖 P3Makoto。主包不得再含 `p3makoto/card_art/` 或 `p3cardart/`。详见 `cardart/README.md`。

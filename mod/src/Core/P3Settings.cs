@@ -27,7 +27,6 @@ public static class P3Settings
 		public bool TipList { get; set; } = true;         // v0.14.66 角色状态说明：P3R 滚动列表
 		public bool SettingsSkin { get; set; } = true;    // v0.14.67 设置界面（P3R 主菜单风格）
 		public bool CursorSkin { get; set; } = true;      // 鼠标光标：关闭恢复游戏原版，立即生效
-		public bool CardArt { get; set; } = true;         // 0.15.31 卡图：P3R 插画 / 原版（新出现的卡牌生效）
 		public bool DrawPileOrder { get; set; } = true;   // v0.14.98 抽牌堆按原版顺序排（SL 看抽牌顺序用）；false = 按类型分区
 		public bool DeckPileOrder { get; set; } = false;
 		public bool DiscardPileOrder { get; set; } = true;

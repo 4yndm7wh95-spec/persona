@@ -4,21 +4,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Godot;
 using MegaCrit.Sts2.Core.Models;
-using P3Makoto.Core;
 
-namespace P3Makoto.Vfx;
+namespace P3CardArt;
 
-/// <summary>
-/// 0.15.31: the 94 approved P3R card illustrations (art/cards/final, exported by tools/pck/export_card_art.py
-/// to p3makoto/card_art/&lt;card&gt;.jpg at the vanilla portrait size). Only the portrait texture changes:
-/// frame, banner, fonts, text and layout stay vanilla. Card ids are matched by name, so any card without a
-/// file keeps its vanilla art. Off when the setting is off, the pack is missing, or another Regent skin owns
-/// the rig. Textures load on first use and stay for the session; while a run is open the deck's cards are
-/// decoded on a worker thread and uploaded one per frame so the first draw does not stall.
-/// </summary>
+/// <summary>Standalone portrait replacements with cached textures and background deck prefetch.</summary>
 internal static class CardArt
 {
-	private const string Dir = "res://p3makoto/card_art/";
+	private const string Dir = "res://p3cardart/card_art/";
 	private static HashSet<string>? names;
 	private static readonly Dictionary<string, Texture2D> Textures = new(StringComparer.Ordinal);
 	private static readonly ConcurrentDictionary<string, Image> Decoded = new(StringComparer.Ordinal);
@@ -26,7 +18,7 @@ internal static class CardArt
 	private static SceneTree? tree;
 	private static ulong nextDeckCheck;
 
-	private static bool Enabled => P3Settings.Current.CardArt && AssetGuard.PackLoaded && Makoto.AssetsOurs;
+	private static bool Enabled => FileAccess.FileExists(Dir + "index.txt");
 
 	private static HashSet<string> Names
 	{
@@ -76,8 +68,22 @@ internal static class CardArt
 	internal static void Watch()
 	{
 		if (tree != null || Engine.GetMainLoop() is not SceneTree t) return;
+		if (Enabled) _ = Names.Count;
 		tree = t;
-		t.ProcessFrame += () => ModEntry.Safe("card art prefetch", Tick);
+		t.ProcessFrame += () => TickSafely();
+	}
+
+	private static bool prefetchFailed;
+
+	private static void TickSafely()
+	{
+		if (prefetchFailed) return;
+		try { Tick(); }
+		catch (Exception e)
+		{
+			prefetchFailed = true;
+			GD.PrintErr($"{ModEntry.Tag} prefetch disabled; portraits still load on demand: {e.Message}");
+		}
 	}
 
 	private static void Tick()
@@ -92,7 +98,7 @@ internal static class CardArt
 		ulong now = Time.GetTicksMsec();
 		if (now < nextDeckCheck) return;
 		nextDeckCheck = now + 2000;
-		if (!Enabled || !Patches.Stage.MakotoRun) return;
+		if (!Enabled) return;
 		var players = MegaCrit.Sts2.Core.Runs.RunManager.Instance?.DebugOnlyGetState()?.Players;
 		if (players == null || MegaCrit.Sts2.Core.Context.LocalContext.GetMe(players) is not { } me) return;
 		List<string>? todo = null;
