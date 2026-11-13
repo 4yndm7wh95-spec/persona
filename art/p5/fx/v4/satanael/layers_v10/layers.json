@@ -1,0 +1,492 @@
+{
+  "canvas": [
+    5400,
+    3000
+  ],
+  "layers": [
+    {
+      "file": "wings_back_far.png",
+      "z_index": 0,
+      "pivot": [
+        2400,
+        1400
+      ]
+    },
+    {
+      "file": "wings_back_near.png",
+      "z_index": 10,
+      "pivot": [
+        2650,
+        1600
+      ]
+    },
+    {
+      "file": "wing_root_feathers.png",
+      "z_index": 15,
+      "pivot": [
+        2650,
+        1600
+      ]
+    },
+    {
+      "file": "body.png",
+      "z_index": 20,
+      "pivot": [
+        2350,
+        2000
+      ]
+    },
+    {
+      "file": "wings_front.png",
+      "z_index": 30,
+      "pivot": [
+        2730,
+        1650
+      ]
+    },
+    {
+      "file": "wing_root_feathers_front.png",
+      "z_index": 35,
+      "pivot": [
+        2730,
+        1650
+      ]
+    },
+    {
+      "file": "head.png",
+      "z_index": 40,
+      "pivot": [
+        2300,
+        1300
+      ]
+    },
+    {
+      "file": "arm_upper.png",
+      "z_index": 50,
+      "pivot": [
+        2730,
+        1400
+      ]
+    },
+    {
+      "file": "arm_fore_gun.png",
+      "z_index": 60,
+      "pivot": [
+        2965,
+        1665
+      ]
+    },
+    {
+      "file": "arm_fore_open.png",
+      "z_index": 60,
+      "pivot": [
+        2965,
+        1665
+      ]
+    },
+    {
+      "file": "eyes_glow.png",
+      "z_index": 70,
+      "pivot": [
+        2220,
+        1080
+      ]
+    },
+    {
+      "file": "gun.png",
+      "z_index": 90,
+      "pivot": [
+        3712,
+        1954
+      ]
+    },
+    {
+      "file": "finger_tip.png",
+      "z_index": 100,
+      "pivot": [
+        3712,
+        1954
+      ]
+    }
+  ],
+  "landmarks": {
+    "gun_shoulder": [
+      2730,
+      1400
+    ],
+    "gun_elbow": [
+      2965,
+      1665
+    ],
+    "gun_wrist": [
+      3270,
+      1870
+    ],
+    "muzzle": [
+      4047,
+      2019
+    ],
+    "barrel_dir": 23.4,
+    "spin_finger": [
+      3712,
+      1954
+    ],
+    "gun_guard": [
+      3712,
+      1954
+    ],
+    "neck": [
+      2300,
+      1300
+    ],
+    "eyes": [
+      2220,
+      1080
+    ],
+    "body_center": [
+      2350,
+      2000
+    ],
+    "wing_far_root": [
+      2400,
+      1400
+    ],
+    "wing_near_root": [
+      2650,
+      1600
+    ],
+    "wing_front_root": [
+      2730,
+      1650
+    ],
+    "tie_root": [
+      2350,
+      1430
+    ]
+  },
+  "angle_conventions": {
+    "barrel_dir": "clockwise from screen-right",
+    "preview_rotation": "positive counterclockwise; arm down is -40 degrees"
+  },
+  "parenting": {
+    "arm_fore_gun": "arm_upper",
+    "arm_fore_open": "arm_upper",
+    "eyes_glow": "head",
+    "gun": "arm_fore_open",
+    "finger_tip": "arm_fore_open"
+  },
+  "twirl": {
+    "hide": [
+      "arm_fore_gun"
+    ],
+    "show": [
+      "arm_fore_open",
+      "gun",
+      "finger_tip"
+    ],
+    "gun_guard_to_spin_finger": [
+      0,
+      0
+    ]
+  },
+  "patches": {
+    "open": {
+      "native_size": [
+        1254,
+        1254
+      ],
+      "box": [
+        2450,
+        850,
+        3500,
+        1900
+      ],
+      "sha256": "b351c95ceb380e4bf45ed33a893f742f2722807cafed5e505f55b9a0459c26e6"
+    },
+    "gun": {
+      "native_size": [
+        1254,
+        1254
+      ],
+      "box": [
+        2650,
+        650,
+        3700,
+        1700
+      ],
+      "sha256": "a3d7af867c4518bb1c99130d373bc716bfccf6a0d8ed05bf477420aeb064e730"
+    },
+    "body": {
+      "native_size": [
+        1254,
+        1254
+      ],
+      "box": [
+        2050,
+        1000,
+        3100,
+        2050
+      ],
+      "sha256": "5201c964a0bc58e353323d4147e3c46e7e1be18ff637cca910e17b3985dcd70b"
+    },
+    "head": {
+      "native_size": [
+        1254,
+        1254
+      ],
+      "box": [
+        1800,
+        500,
+        2850,
+        1550
+      ],
+      "sha256": "1b26ea2617522ef56c786ff82a5f3d727f946dc278321a2450519618be337da2"
+    },
+    "far_root": {
+      "native_size": [
+        1254,
+        1254
+      ],
+      "box": [
+        2000,
+        700,
+        3050,
+        1750
+      ],
+      "sha256": "5c56ff01ddb56fcec776f34cc6585bd6c8ce0d47f7a4ed03279a2f17cedcc2a8"
+    },
+    "near_root": {
+      "native_size": [
+        1254,
+        1254
+      ],
+      "box": [
+        2400,
+        1200,
+        3450,
+        2250
+      ],
+      "sha256": "11fdd92614bc355ee3a50ae8cefb6d49a7044712e698c0429145a87b8a2f587e"
+    }
+  },
+  "status": "arm2_candidate",
+  "ready_for_runtime": false,
+  "correction_passes": 2,
+  "unresolved": [
+    "User/Claude visual review of shoulder occlusion, arm anatomy and fingertip twirl registration is pending.",
+    "No game launched or runtime code changed."
+  ],
+  "raw_patch_prompts": {
+    "open": "Keep the exact forearm at its original coordinates and wrist orientation. Remove gun, head, horns and wings. Replace closed hand with one relaxed open anatomical left glove, index extended screen-right slightly upward, thumb relaxed, three other fingers curved. Preserve original dark feather gauntlet. Extend elbow leftward with round overlapping joint. Only forearm and open hand.",
+    "gun": "Only the same fictional long game prop in this cropped region. Remove glove, forearm and wings. Preserve exact receiver, fan ornament, barrel and gold butt position. Fill missing gold handle behind glove and complete curved trigger and gold trigger guard as one ring with a transparent hole. The long barrel intentionally continues outside right edge of this crop. Do not recenter or shorten.",
+    "body": "Only the dark armored torso. Remove head, horns, both arms, gun and wings. Reconstruct the entire chest hidden behind raised arm, continue layered dark chest armor and shoulder socket. Keep red tie and studded belt exactly placed. Solid chest extends to right where arm was.",
+    "head": "Only helmet, beak mask and both ram horns. Remove torso, arms, wings and gun. Preserve positions and geometry exactly. Extend a short dark armored neck down below face to overlap chest. Dark empty eye sockets replacing luminous eyes, eyes will be separate layer.",
+    "far_root": "Only the left-side wing root behind helmet and body. Remove head, horns, arm, torso and gun; reconstruct curved black and gold wing material and a thick rounded wing root at center-right, continuous to left wing panels cut at image edges. Preserve existing wing pixel positions. No extra wing tips.",
+    "near_root": "Only right-side black feather wing roots. Remove arm, hand, gun and body. Continue black feathers leftward underneath their occlusion, a broad rounded root joining existing long right wing edge. Preserve positions of existing wing edges and gold motifs."
+  },
+  "arm_redraw": {
+    "revision": "arm2",
+    "native_patches": {
+      "held": {
+        "native_size": [
+          1774,
+          887
+        ],
+        "source_sha256": "b9b06d569046ce1a60ceb243711af8ed6f0fc643a8d20dd79a0f0c7db57600cf",
+        "placement_rect_before_rotation": [
+          2530,
+          1230,
+          4230,
+          2080
+        ]
+      },
+      "open": {
+        "native_size": [
+          1774,
+          887
+        ],
+        "source_sha256": "3dd55123bbaa8bef329aa62b32a830775d6160d65e3231ae479268c1ed4e048d",
+        "placement_rect_before_rotation": [
+          2530,
+          1230,
+          4230,
+          2080
+        ]
+      },
+      "side": {
+        "native_size": [
+          1672,
+          941
+        ],
+        "source_sha256": "85e89bb3aa8a29d499af55704f3c9e337888942a1e73668701456fa0d238b705",
+        "standalone_size": [
+          1600,
+          900
+        ],
+        "trigger_hole_center_local": [
+          589.9953240501977,
+          489.51397627643115
+        ],
+        "twirl_canvas_width_before_rotation": 860
+      },
+      "body": {
+        "native_size": [
+          1254,
+          1254
+        ],
+        "source_sha256": "5d52824a40b5d0d9cdd4f075d12bd41126c5e8269e423065070606e0fa8c8e5c",
+        "placement_rect": [
+          2050,
+          1100,
+          3100,
+          2150
+        ]
+      }
+    },
+    "whole_arm_registration_clockwise_degrees": 8,
+    "shoulder_at_outer_pauldron": true,
+    "source_split_overlap_local_px": 180,
+    "review": "candidate, no game launched"
+  },
+  "rest_check_legacy": {
+    "max_rgba_difference": 9,
+    "pixels_difference_over_8": 29
+  },
+  "coordinate_transform": {
+    "previous_canvas": [
+      4000,
+      3000
+    ],
+    "translation": [
+      1400,
+      0
+    ],
+    "all_non_redrawn_sprite_pixels_preserved": true,
+    "standalone_gun_short_side_unchanged": false
+  },
+  "far_wing_redraw": {
+    "native_tiles": {
+      "tl": {
+        "native_size": [
+          1254,
+          1254
+        ],
+        "sha256": "2926558e408de267e4b1bf03e8f18af30a92396a5bfccf92dceb42a4a44e94f4",
+        "placement_rect": [
+          0,
+          400,
+          1250,
+          1650
+        ]
+      },
+      "tr": {
+        "native_size": [
+          1254,
+          1254
+        ],
+        "sha256": "2bc5034a333bca7f940e76e98c23463ad3227cfc5dbb73dfdc0a4718f0bbceb9",
+        "placement_rect": [
+          1200,
+          400,
+          2450,
+          1650
+        ]
+      },
+      "bl": {
+        "native_size": [
+          1254,
+          1254
+        ],
+        "sha256": "a372bb1505dc375b918870662d960ad7010ca0ab6811251047820a3d41125bd2",
+        "placement_rect": [
+          0,
+          1600,
+          1250,
+          2850
+        ]
+      },
+      "br": {
+        "native_size": [
+          1254,
+          1254
+        ],
+        "sha256": "a700dd1d6860d30b14307145d7cdaacb41b02d85d7a36ec1bbe4936802d5bf99",
+        "placement_rect": [
+          1200,
+          1600,
+          2450,
+          2850
+        ]
+      }
+    },
+    "reference_only_layout_not_used_as_output_pixels": true,
+    "tile_overlap_px": 50,
+    "preserved_inner_root_fragments": true
+  },
+  "wing_root_feathers": {
+    "approved_preview": "wing_roots_preview_native.png",
+    "source_commit": "e69381bc",
+    "native_regions": {
+      "left_top": {
+        "native_size": [
+          1254,
+          1254
+        ],
+        "placement_rect": [
+          1350,
+          500,
+          2550,
+          1700
+        ],
+        "sha256": "e5240d87c7c73c209fd6c52f069b64557c6370f61a20795b1f8dca3f03d36f7a"
+      },
+      "left_bottom": {
+        "native_size": [
+          1254,
+          1254
+        ],
+        "placement_rect": [
+          1350,
+          1500,
+          2550,
+          2700
+        ],
+        "sha256": "3fc7840993b9cb2a50acab8024f2bfc5c60dc00e1a52c72355819a24092e04c7"
+      },
+      "right_back": {
+        "native_size": [
+          1254,
+          1254
+        ],
+        "placement_rect": [
+          2500,
+          650,
+          3700,
+          1850
+        ],
+        "sha256": "c26510b54f571bbce6c5eb87d73c75192bd5643bccd00dd29e17fdf34f8b2a3f"
+      },
+      "front": {
+        "native_size": [
+          1254,
+          1254
+        ],
+        "placement_rect": [
+          2550,
+          1400,
+          3750,
+          2600
+        ],
+        "sha256": "adc0cf0db895041f729935ff51f6d5b443669577e38a607e2683beca91062a33"
+      }
+    },
+    "legacy_z_index_multiplier": 10,
+    "back_z_index": 15,
+    "front_z_index": 35,
+    "roots_unchanged": true,
+    "upscale_used": false,
+    "left_patch_overlap_px": 200,
+    "binding": "Feather mantle anchored to body; wings move +/-3 degrees underneath.",
+    "description": "New ragged black/dark-gray feathers cover only the inner wing roots; original PNG layers remain unchanged."
+  }
+}

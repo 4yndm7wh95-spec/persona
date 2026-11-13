@@ -1,0 +1,31 @@
+{
+  "name": "glass_dust",
+  "prompt": "One production tiny GLASS DUST particle texture, square256x256 transparent RGBA. A sparse loose cluster of about15 MINUSCULE sharp glass chips and pinpoint glints, unevenly scattered around center with at least24px fully empty border. Each chip only2-10px at final256 size, a few tiny thin triangles/slivers, cold white/silver with very subtle scarlet #E5191C reflections on3or4 specks. Detailed crystalline sharp edges, no black outlines, no cartoon fill. Keep vast majority of image EMPTY TRANSPARENT, alpha ZERO outside the small chips. Bright reflective points may opaque, tiny semitransparent bodies. No large shards, no dust fog, no flare cloud, no broad halo, no background texture/noise, no ground, shadow, labels, grid or text. Not an animation and no objects besides these fifteen tiny glass specks.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-df2b2fc6-20f6-48ac-b3a6-969474f73aef.png",
+  "raw_size": [
+    1254,
+    1254
+  ],
+  "delivery_size": [
+    256,
+    256
+  ],
+  "generation_count": 1,
+  "redraw_count": 0,
+  "checks": {
+    "postprocess": "whole canvas downsample256; alpha<12 noise cleared",
+    "size": [
+      256,
+      256
+    ],
+    "mode": "RGBA",
+    "corners_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "transparent_rgb_zero": true,
+    "file_bytes": 3231
+  }
+}

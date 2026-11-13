@@ -10,7 +10,9 @@ public enum Cast
 	Summon,     // 手扶面具（原版 cast）
 	Big,        // 撕面具（cast_big）
 	Guard,      // 防御（cast_guard）
-	Glove       // 扯手套（cast_glove）
+	Glove,      // 扯手套（cast_glove）
+	Wave,       // 挥手（cast_wave：手直接甩向敌人，不扶面具；架势同扯手套）
+	MaskOff     // 扶面具的架势（带面具火），打出时不甩手，只把手放下（mask_out）：蛇咬（用户 2026-11-12）
 }
 
 /// <summary>每张牌的施法动作（人物动作已定稿，特效重做期间保留）。没列出的：能力牌扯手套，其他手扶面具。</summary>
@@ -50,8 +52,15 @@ public static class Casts
 		["KnifeTrap"] = Cast.Glove,
 		["Outbreak"] = Cast.Big,
 		["Concoct"] = Cast.Glove,
-		["Expose"] = Cast.Glove,
-		["PiercingWail"] = Cast.Big,
+		["Snakebite"] = Cast.MaskOff,                  // 用户 2026-11-12：扶面具（带面具火），打出时不甩手；不召唤亚森（Aim.Summons），敌人那里冒出一条蛇咬
+		["Adrenaline"] = Cast.Glove,                   // 不召唤亚森（召唤太频繁）
+		["Burst"] = Cast.Glove,
+		["Malaise"] = Cast.Wave,
+		["Mirage"] = Cast.Guard,
+		["Nightmare"] = Cast.Glove,
+		["Haze"] = Cast.Wave,
+		["Expose"] = Cast.Wave,                        // 用户 2026-11-10：挥手就行，不用扶面具
+		["PiercingWail"] = Cast.Summon,                // 用户 2026-11-03：尖啸是白牌，不是大招
 		["Flanking"] = Cast.Glove,
 		["Tracking"] = Cast.Glove,
 		["Anticipate"] = Cast.Guard,

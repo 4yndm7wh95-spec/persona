@@ -8,9 +8,14 @@ Usage: python tools/p5/normalize_poses.py
 """
 import json
 import numpy as np
+import sys
 from pathlib import Path
 from PIL import Image
-from scipy import ndimage
+try:
+    from scipy import ndimage
+except ImportError:  # Codex 那边没有 scipy：用纯 numpy 版（tools/p5/_ndimage.py）
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import _ndimage as ndimage
 
 ROOT = Path(__file__).resolve().parents[2]
 P = ROOT / 'art/p5/poses'
@@ -25,7 +30,7 @@ TOP = 96  # and 96 px taller at the top
 # 1536x1632 final canvas as the others).
 # Scales are set by hand from head size and body length (chin to sole, for standing frames) against idle_a3;
 # automatic head measurement is unreliable because raised black sleeves touch the hair.
-POSES = {'idle_a3': (1.0, 'rear'), 'guard_a2': (1.0, 'front'), 'knife_ready_a': (0.96, 'rear'),
+POSES = {'summon_bridge1_a': (1.0, 'front'), 'summon_bridge2_a': (1.0, 'rear'), 'summon_bridge3_a': (1.0, 'front'), 'summon_command_a': (1.0, 'rear'), 'summon_command_mid_a': (1.0, 'rear'), 'idle_a3': (1.0, 'rear'), 'guard_a2': (1.0, 'front'), 'knife_ready_a': (0.96, 'rear'),
          'slash_a3': (0.96, 'mid'), 'slash_follow_a': (0.96, 'mid'), 'slash_a7': (0.96, 'mid'), 'slash_a8': (0.96, 'mid'), 'slash_a9': (0.96, 'mid'), 'slash_a10': (0.96, 'mid'),
          'slash_mid_a': (0.96, 'mid'), 'slash_smear_a3': (0.96, 'mid'), 'guard_mid_a': (1.0, 'front'),
          'gun_draw_a2': (1.0, 'rear'), 'gun_a2': (1.03, 'rear'), 'gun_raise_a2': (1.03, 'rear'), 'gun_recoil_a6': (1.045, 'rear'),
@@ -42,6 +47,7 @@ POSES = {'idle_a3': (1.0, 'rear'), 'guard_a2': (1.0, 'front'), 'knife_ready_a': 
          'gun_lift_near_a': (1.0, 'rear'), 'summon_hold_a': (1.0, 'front'), 'summon_rip_a2': (1.0, 'front'), 'summon_release_a': (1.035, 'front', 45),
          'summon_lift1_a': (1.0, 'front'), 'summon_lift2_a': (1.0, 'front'), 'summon_fling_a': (1.015, 'front', 45), 'summon_settle_a': (1.035, 'front', 22),
          'summon_lift_mid_a': (1.0, 'front'), 'summon_touch1_a': (1.0, 'front'), 'summon_touch2_a': (1.0, 'front'),
+         'summon_grip_a': (1.0, 'front'),
          'summon_fling1_a': (1.0, 'front'), 'summon_fling2_a': (1.015, 'front', 45),
          'summon_lift_bridge_a': (1.0, 'front'), 'summon_touch_mid_a': (1.0, 'front'), 'summon_contact_a': (1.0, 'front'),
          'summon_open1_b': (1.0, 'front'), 'summon_open2_b': (1.0, 'front'),

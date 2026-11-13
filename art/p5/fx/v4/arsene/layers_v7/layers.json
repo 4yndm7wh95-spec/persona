@@ -1,0 +1,194 @@
+{
+  "canvas": [
+    2048,
+    2304
+  ],
+  "master": "../arsene_draft_v7_facefix.png",
+  "coordinates": "pixels, top-left origin; +x right, +y down; pivots approximate",
+  "layers": [
+    {
+      "file": "wing_back.png",
+      "z_index": 0,
+      "pivot": [
+        1060,
+        790
+      ]
+    },
+    {
+      "file": "wing_front.png",
+      "z_index": 1,
+      "pivot": [
+        1370,
+        745
+      ]
+    },
+    {
+      "file": "body.png",
+      "z_index": 2,
+      "pivot": [
+        1260,
+        1130
+      ]
+    },
+    {
+      "file": "arm_back.png",
+      "z_index": 3,
+      "pivot": [
+        1090,
+        665
+      ]
+    },
+    {
+      "file": "arm_reach.png",
+      "z_index": 4,
+      "pivot": [
+        1380,
+        665
+      ]
+    },
+    {
+      "file": "eyes_glow.png",
+      "z_index": 5,
+      "pivot": [
+        1255,
+        508
+      ]
+    }
+  ],
+  "landmarks": {
+    "wing_back_shoulder": [
+      1060,
+      790
+    ],
+    "wing_front_shoulder": [
+      1370,
+      745
+    ],
+    "arm_back_shoulder": [
+      1090,
+      665
+    ],
+    "arm_reach_shoulder": [
+      1380,
+      665
+    ],
+    "body_float_center": [
+      1260,
+      1130
+    ],
+    "claw_tip": [
+      1250,
+      610
+    ],
+    "toe": [
+      955,
+      2185
+    ],
+    "hat_top": [
+      1240,
+      70
+    ]
+  },
+  "checks": {
+    "canvas": [
+      2048,
+      2304
+    ],
+    "all_layers_same_canvas": true,
+    "changed_pixel_fraction_foreground_union": 0.7552215542723749,
+    "note": "Independent generated layers registered approximately; assembly is NOT pixel-exact to master. Rotation contact sheets require user review.",
+    "alpha_checks": [
+      {
+        "file": "wing_back.png",
+        "size": [
+          2048,
+          2304
+        ],
+        "mode": "RGBA",
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "edge_alpha_max": 0
+      },
+      {
+        "file": "wing_front.png",
+        "size": [
+          2048,
+          2304
+        ],
+        "mode": "RGBA",
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "edge_alpha_max": 0
+      },
+      {
+        "file": "body.png",
+        "size": [
+          2048,
+          2304
+        ],
+        "mode": "RGBA",
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "edge_alpha_max": 0
+      },
+      {
+        "file": "arm_back.png",
+        "size": [
+          2048,
+          2304
+        ],
+        "mode": "RGBA",
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "edge_alpha_max": 0
+      },
+      {
+        "file": "arm_reach.png",
+        "size": [
+          2048,
+          2304
+        ],
+        "mode": "RGBA",
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "edge_alpha_max": 0
+      },
+      {
+        "file": "eyes_glow.png",
+        "size": [
+          2048,
+          2304
+        ],
+        "mode": "RGBA",
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "edge_alpha_max": 0
+      }
+    ]
+  },
+  "registration": "Approximate independent generated layers fitted to master; approved head/hat and visible chest arm retained from master. Not pixel-exact."
+}

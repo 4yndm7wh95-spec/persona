@@ -1,0 +1,20 @@
+{
+  "name": "summon_bridge3_a",
+  "prompt": "Edit IMAGE1 (Joker bridge1) into one halfway transition toward IMAGE2 (bridge2 endpoint, pose reference only). Preserve IMAGE1's EXACT head size, body height, costume, face identity and drawing style, not IMAGE2's smaller head. Same 1024x1536 framing. Right EMPTY hand moves halfway from IMAGE1's chin-level position to IMAGE2's chest position, still elbow bent and fingers relaxed, not palm-up. Left hand halfway from lifting at hip to entering trouser pocket, fingertips just approaching opening. Body/head and orientation halfway between the two, tiny natural rotation right, NOT a big head translation. Feet: front/image-right boot around x750 at baseline1500, rear/image-left boot around x310, a medium separated stance, knees easy. Keep head center near x535, same hair-to-chin height as IMAGE1. Coat same length and outfit, subtle folds movement only, no broad lunge. This is a small intermediate motion, not a new key pose. Same hand sizes, rounded face, irises with highlights looking right. One entire character, transparent RGBA alpha ZERO outside silhouette, no ambient source glow/haze, mask, weapon, effects, ground, shadows, background or text.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-01d66182-bdb7-434e-949a-c69c93ed6db2.png",
+  "inputs": [
+    "summon_bridge1_a.png",
+    "summon_bridge2_a.png"
+  ],
+  "sequence_role": "between bridge1 and bridge2",
+  "raw_size": [
+    1024,
+    1536
+  ],
+  "delivery_size": [
+    1024,
+    1536
+  ],
+  "generation_count": 1,
+  "redraw_count": 0
+}

@@ -1,0 +1,19 @@
+{
+  "method": "original",
+  "cpk": "SC.CPK",
+  "source_path": "CAMP/P5_CARD01.DDS",
+  "local_source": "C:\\Users\\kkk\\sts2_tools\\p5r_rip\\raw\\SC\\CAMP\\P5_CARD01.DDS",
+  "source_sha256": "60dcf0ccf6d8a1190ca36620afaf2e3b3bae0060d7df1b0b5b141d6fe764cda9",
+  "prompt": null,
+  "reference_images": [],
+  "raw_size": [
+    1024,
+    512
+  ],
+  "delivery_size": [
+    1024,
+    512
+  ],
+  "processing": "原尺寸DDS解码为RGBA PNG，不缩放、不改色、不抠图；两张均为正面设计变体，不标成背面。",
+  "generation_count": 0
+}

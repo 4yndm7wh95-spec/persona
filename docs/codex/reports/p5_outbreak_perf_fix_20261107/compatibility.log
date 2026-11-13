@@ -1,0 +1,17 @@
+SentryGodotInitializer: Sentry GDExtension not loaded in this process; skipping. If you see this in a running game (not during project export or IDE script analysis), check Godot's log for extension load failures.
+PASS: clip advances on the shared clock
+PASS: slow poison application holds immediately before crush
+PASS: overlapping cards keep independent time and pinch
+PASS: application completion releases the next-frame crush
+PASS: a clock rewind cannot underflow into a huge elapsed time
+PASS: exactly one real PoisonPower.Trigger damage call tagged; vanilla Trigger loops retained
+PASS: only the poison owner argument and wrapper call are added
+PASS: Harmony applied PoisonDamageContextPatch
+PASS: Harmony applied OutbreakTogetherPatch
+PASS: Harmony applied DamageNumberPatch
+PASS: Harmony applied TriggerAnimDelayPatch
+PASS: Harmony applied CardPlayedPatch
+PASS: overlapping poison damage calls carry their own exact power instance
+PASS: poison context does not leak into the caller
+PASS: out-of-order completion clears poison context
+PASS: compatibility patches removed; no game launched

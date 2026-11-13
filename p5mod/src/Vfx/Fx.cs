@@ -21,6 +21,22 @@ public static class Fx
 	/// <summary>P5R 原版特效贴图（tools/p5/stage_p5.py 打进 pck 的 res://p5joker/fx/）。</summary>
 	private static readonly System.Collections.Generic.Dictionary<string, Texture2D?> Cache = new();
 
+	/// <summary>
+	/// 预热：res://p5joker/fx/ 里所有贴图在后台线程开始加载（亚森的分层大图、眼神特写贴图……第一次用到才同步加载会卡一帧）。
+	/// 之后 Tex() 走 ResourceLoader.Load 会直接拿到加载好的那份。
+	/// </summary>
+	public static void PreloadAll()
+	{
+		foreach (string f in DirAccess.GetFilesAt("res://p5joker/fx"))
+		{
+			string n = f.Replace(".import", "").Replace(".remap", "");
+			if (n.EndsWith(".png"))
+			{
+				ResourceLoader.LoadThreadedRequest("res://p5joker/fx/" + n);
+			}
+		}
+	}
+
 	public static Texture2D? Tex(string name)
 	{
 		if (!Cache.TryGetValue(name, out Texture2D? tex))
@@ -140,6 +156,53 @@ public static class Fx
 
 	public static void Shake(int strength) => Stage.Shake?.Invoke(strength);
 
+	/// <summary>
+	/// 给着色器一个从 0 开始走的时钟（uniform clock）。不用内置的 TIME：游戏开久了 TIME 很大，噪声的精度在显卡上崩成一块块的马赛克
+	/// （用户 2026-10-29 实机截图）。10 分钟绕回 0 一次，特效都活不了那么久。
+	/// </summary>
+	public static void Clock(CanvasItem item)
+	{
+		if (item.Material is not ShaderMaterial mat)
+		{
+			return;
+		}
+		Tween loop = item.CreateTween().SetLoops();
+		loop.TweenMethod(Callable.From<float>(v => mat.SetShaderParameter("clock", v)), 0f, 600f, 600.0);
+		item.SetMeta("p5_clock", loop);
+	}
+
+	/// <summary>
+	/// 时停（大罪穿甲弹，用户 2026-11-10）：把 root 底下所有着色器时钟（Fx.Clock）和粒子停住 / 放开。
+	/// 火焰、云、余烬这些自己会动的东西在停住期间一动不动；放开后从停下的地方接着走。
+	/// </summary>
+	public static void HoldClocks(Node root, bool hold)
+	{
+		if (!GodotObject.IsInstanceValid(root))
+		{
+			return;
+		}
+		if (root.HasMeta("p5_clock") && root.GetMeta("p5_clock").As<Tween>() is Tween tw && tw.IsValid())
+		{
+			if (hold) tw.Pause(); else tw.Play();
+		}
+		if (root is GpuParticles2D gp)
+		{
+			if (hold)
+			{
+				gp.SetMeta("p5_speed", gp.SpeedScale);
+				gp.SpeedScale = 0.0;
+			}
+			else if (gp.HasMeta("p5_speed"))
+			{
+				gp.SpeedScale = gp.GetMeta("p5_speed").AsDouble();
+			}
+		}
+		foreach (Node c in root.GetChildren())
+		{
+			HoldClocks(c, hold);
+		}
+	}
+
 	/// <summary>delay 秒后执行（节点没了就不执行）。</summary>
 	public static void After(Node anchor, double delay, Action action)
 	{
@@ -158,6 +221,36 @@ public static class Fx
 	}
 
 	public static Vector2 Screen(Node any) => any.GetViewport()?.GetVisibleRect().Size ?? new Vector2(1920f, 1080f);
+
+	/// <summary>Keep room-layer draw order, cancel both room transforms and Camera2D zoom/pan.</summary>
+	public static Node2D ScreenRoot(Control layer, string name)
+	{
+		// Stay in this container's draw list. TopLevel also detaches draw order:
+		// the stage's screen-reading shader would then sample actors and the HUD.
+		Node2D root = new() { Name = name };
+		layer.AddChild(root);
+		void Place() { if (GodotObject.IsInstanceValid(layer)) root.Transform = layer.GetGlobalTransformWithCanvas().AffineInverse(); }
+		Place();
+		SceneTree tree = root.GetTree();
+		tree.ProcessFrame += Place;
+		root.TreeExiting += () => tree.ProcessFrame -= Place;
+		return root;
+	}
+
+	public static Vector2 ScreenPoint(Control layer, Vector2 world) => layer.GetCanvasTransform() * world;
+
+	/// <summary>All parts sample the same per-play clock, including an optional wait before crushing.</summary>
+	public static void Play(Node owner, CutInPlayback clip, float life, Action<float> step)
+	{
+		step(clip.Time);
+		Tween tween = owner.CreateTween();
+		tween.TweenMethod(Callable.From<float>(_ =>
+		{
+			float s = clip.Time;
+			step(Mathf.Min(s, life));
+			if (s >= life) owner.QueueFree();
+		}), 0f, 1f, 600.0);
+	}
 
 	/// <summary>白字黑描边的文字（P5 的字都是硬边粗体）。</summary>
 	public static Label Text(Node parent, string text, int size, Color color, Color outline, int outlineSize = 8)

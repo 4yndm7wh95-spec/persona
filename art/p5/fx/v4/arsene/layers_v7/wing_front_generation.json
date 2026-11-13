@@ -1,0 +1,30 @@
+{
+  "name": "wing_front",
+  "prompt": "Isolate ONLY the drooping feathered wing on IMAGE RIGHT in the attached approved Arsene master, reconstructing its hidden root behind the shoulder and torso for a 2D puppet layer. Preserve this exact long narrow downward sweeping silhouette, curved top, layered black-violet feathers with muted red inside, clean thick black ink and same flat cel shading. Do NOT mirror the image-left wing: this is the other, narrower wing. Wing root complete with overlap for ±12 degree shoulder rotation. No body, head, hat, arm, hand, legs, opposite wing or other objects. Genuine transparent RGBA, no background, shadow, haze or text. Same 2048x2304 canvas, wing original position and size at image right with transparent room to left. Do not spread wing sideways.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-6cac5a31-32d1-40a7-8ead-aa53ad704c47.png",
+  "master": "../arsene_draft_v7_facefix.png",
+  "canvas": [
+    2048,
+    2304
+  ],
+  "source_alpha_bbox": [
+    246,
+    51,
+    800,
+    1865
+  ],
+  "registered_bbox": [
+    1210,
+    470,
+    1810,
+    2250
+  ],
+  "pivot": [
+    1370,
+    745
+  ],
+  "mirrored_for_shoulder_direction": false,
+  "registration": "manual bounding-box fit; independent generation, not pixel-exact decomposition",
+  "generation_count": 1,
+  "redraw_count": 0
+}

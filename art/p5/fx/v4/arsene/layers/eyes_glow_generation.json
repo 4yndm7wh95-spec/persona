@@ -1,0 +1,16 @@
+{
+  "method": "extract visible eye pixels from registered body with local polygon alpha mask",
+  "source": "layers/body.png",
+  "canvas": [
+    2048,
+    2304
+  ],
+  "alpha_bbox": [
+    591,
+    721,
+    714,
+    796
+  ],
+  "position_matches": "registered body, not original draft",
+  "generated_again": false
+}
