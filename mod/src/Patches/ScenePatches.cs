@@ -1,5 +1,6 @@
 using Godot;
 using HarmonyLib;
+using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Screens.CharacterSelect;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
 using P3Makoto.Core;
@@ -49,9 +50,14 @@ public static class CharSelectBgPatch
 [HarmonyPatch(typeof(NCharacterSelectScreen), nameof(NCharacterSelectScreen.SelectCharacter))]
 public static class CharSelectInfoPatch
 {
-	public static void Postfix(NCharacterSelectScreen __instance, NCharacterSelectButton charSelectButton, MegaCrit.Sts2.Core.Models.CharacterModel characterModel)
+	public static void Postfix(NCharacterSelectScreen __instance, NCharacterSelectButton charSelectButton, object[] __args)
 	{
-		ModEntry.Safe("CharSelectInfo", () => Vfx.Perf.Time("info panel apply", () => CharSelectInfo.Apply(__instance, charSelectButton, characterModel)));
+		ModEntry.Safe("CharSelectInfo", () => Vfx.Perf.Time("info panel apply", () =>
+		{
+			// 0.113 从按钮读取角色，旧版直接传入解析后的角色。
+			CharacterModel model = __args.Length > 1 && __args[1] is CharacterModel selected ? selected : charSelectButton.Character;
+			CharSelectInfo.Apply(__instance, charSelectButton, model);
+		}));
 	}
 }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -51,32 +52,46 @@ public static class AttackHitVfxPatch
 	}
 }
 
-/// <summary>每一击伤害（所有 Damage 重载最终都汇到这个签名；0.111 带 cardPlay，0.107 不带）。</summary>
+/// <summary>在伤害结算入口触发一次命中特效。0.113 的攻击直接传入 DamageTargetData，旧版传入 Creature。</summary>
 [HarmonyPatch]
 public static class DamagePatch
 {
 	public static IEnumerable<MethodBase> TargetMethods() =>
 		typeof(CreatureCmd).GetMethods(BindingFlags.Public | BindingFlags.Static)
-			.Where(m => m.Name == "Damage" && (Sig.Params(m, "choiceContext", "targets", "amount", "props", "dealer", "cardSource", "cardPlay")
-				|| Sig.Params(m, "choiceContext", "targets", "amount", "props", "dealer", "cardSource")))      // 0.107：最终那个重载还没有 cardPlay 参数
-			.OrderByDescending(m => m.GetParameters().Length).Take(1);            // 两种都在时只挂参数多的那个（别的重载都汇到它）
+		.Where(m => m.Name == nameof(CreatureCmd.Damage) && m.GetParameters() is { Length: >= 6 } p
+			&& p[2].ParameterType == typeof(decimal) && p.Any(a => a.Name == "cardSource")
+			&& (p[1].ParameterType == typeof(IEnumerable<Creature>) || p[1].ParameterType == TargetDataSequence))
+		.OrderByDescending(m => m.GetParameters()[1].ParameterType == TargetDataSequence)
+		.ThenByDescending(m => m.GetParameters().Length).Take(1);
 
-	public static void Prefix(IEnumerable<Creature>? targets, Creature? dealer, CardModel? cardSource)
+	private static readonly Type? TargetData = typeof(Creature).Assembly.GetType("MegaCrit.Sts2.Core.Entities.Creatures.DamageTargetData");
+	private static readonly Type? TargetDataSequence = TargetData == null ? null : typeof(IEnumerable<>).MakeGenericType(TargetData);
+	private static readonly FieldInfo? TargetCreature = TargetData?.GetField("target");
+
+	private static IEnumerable<Creature>? Creatures(object? targetList) =>
+		targetList is IEnumerable<Creature> creatures ? creatures
+			: targetList is System.Collections.IEnumerable data && TargetCreature is FieldInfo target
+				? data.Cast<object>().Select(d => target.GetValue(d)).OfType<Creature>().ToArray()
+				: null;
+
+	public static void Prefix(object? __1, Creature? dealer, CardModel? cardSource)
 	{
 		ModEntry.Safe("Damage", () =>
 		{
+			bool makotoCard = CardFx.IsMakotoCard(cardSource);
+			if (!makotoCard && !(dealer?.Player is Player p && Makoto.Is(p)))
+			{
+				return;
+			}
+			IEnumerable<Creature>? targets = Creatures(__1);
 			if (targets == null)
 			{
 				return;
 			}
-			if (CardFx.IsMakotoCard(cardSource))
+			Popups.MarkHits(targets);
+			if (makotoCard)
 			{
-				Popups.MarkHits(targets);
 				CardFx.OnHit(cardSource!, targets);
-			}
-			else if (dealer?.Player is Player p && Makoto.Is(p))
-			{
-				Popups.MarkHits(targets);                 // 不是出牌造成的伤害（黑洞等能力）：伤害数字也换成 P3R 样式
 			}
 		});
 	}

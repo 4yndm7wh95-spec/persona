@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using Godot;
 using MegaCrit.Sts2.Core.Bindings.MegaSpine;
+using MegaCrit.Sts2.Core.Nodes.CommonUi;
 
 namespace P3Makoto.Core;
 
@@ -17,6 +18,37 @@ namespace P3Makoto.Core;
 /// </summary>
 public static class Compat
 {
+	// 0.113 给 Push 增加了优先级参数，Remove 的返回值也从 void 变成了 long。
+	private static readonly MethodInfo? PushPressed = FindHotkeyPush("PushHotkeyPressedBinding");
+	private static readonly MethodInfo? PushReleased = FindHotkeyPush("PushHotkeyReleasedBinding");
+	private static readonly MethodInfo? RemovePressed = typeof(NHotkeyManager).GetMethod("RemoveHotkeyPressedBinding", new[] { typeof(string), typeof(Action) });
+	private static readonly MethodInfo? RemoveReleased = typeof(NHotkeyManager).GetMethod("RemoveHotkeyReleasedBinding", new[] { typeof(string), typeof(Action) });
+
+	private static MethodInfo? FindHotkeyPush(string name) =>
+		typeof(NHotkeyManager).GetMethod(name, new[] { typeof(string), typeof(Action), typeof(long) })
+		?? typeof(NHotkeyManager).GetMethod(name, new[] { typeof(string), typeof(Action) });
+
+	internal static void SetHotkeyBindings(NHotkeyManager manager, string key, Action pressed, Action released, bool enabled)
+	{
+		if (enabled)
+		{
+			Push(PushPressed, pressed);
+			Push(PushReleased, released);
+		}
+		else
+		{
+			RemovePressed?.Invoke(manager, new object[] { key, pressed });
+			RemoveReleased?.Invoke(manager, new object[] { key, released });
+		}
+
+		void Push(MethodInfo? method, Action callback)
+		{
+			method?.Invoke(manager, method.GetParameters().Length == 3
+				? new object[] { key, callback, 0L }
+				: new object[] { key, callback });
+		}
+	}
+
 	private static readonly MethodInfo? SetAnim =
 		typeof(MegaAnimationState).GetMethod("SetAnimation", BindingFlags.Public | BindingFlags.Instance, null, new[] { typeof(string), typeof(bool), typeof(int) }, null);
 

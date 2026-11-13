@@ -132,7 +132,8 @@ public static class PileFx
 		public float Born = -1f, Die = -1f;    // v0.14.98 切换排列模式时标题淡入 / 淡出
 	}
 
-	private static readonly AccessTools.FieldRef<NCardGrid, List<CardModel>>? GridCards = Field();
+	private static readonly System.Reflection.PropertyInfo? SortedCards = AccessTools.Property(typeof(NCardGrid), "SortedCards");
+	private static readonly AccessTools.FieldRef<NCardGrid, List<CardModel>>? GridCards = SortedCards == null ? Field() : null;
 	private static AccessTools.FieldRef<NCardGrid, List<CardModel>>? Field()
 	{
 		try { return AccessTools.FieldRefAccess<NCardGrid, List<CardModel>>("_cards"); }
@@ -141,18 +142,24 @@ public static class PileFx
 
 	/// <summary>
 	/// v0.14.98（用户：按类型分区看不习惯，也看不出抽牌顺序，影响 SL）：原版抽牌堆界面的顺序。
-	/// 原版是 Pile.Cards 再按 稀有度 → Id 用 List.Sort（不稳定排序）排一次 —— 同名牌谁在前取决于牌堆里的实际位置，SL 靠的就是这个。
-	/// 优先直接读原版网格（我们只是把它藏起来，它照样排好了），游戏更新了排法也跟着变；读不到时按同一段代码现算（同输入同算法 = 同结果）。
+	/// 优先使用 0.113 的公开排序列表，旧版读取原版网格的 _cards。网格尚未刷新时按当前版本的规则计算。
 	/// </summary>
 	private static List<CardModel> VanillaOrder(Control grid, CardPile pile)
 	{
 		List<CardModel> cards = pile.Cards.ToList();
-		if (grid is NCardGrid g && GridCards != null && GridCards(g) is List<CardModel> shown && shown.Count == cards.Count && shown.All(c => cards.Contains(c)))
+		IReadOnlyList<CardModel>? shown = grid is NCardGrid g
+			? SortedCards?.GetValue(g) as IReadOnlyList<CardModel> ?? GridCards?.Invoke(g)
+			: null;
+		if (shown != null && shown.Count == cards.Count && shown.All(c => cards.Contains(c, ReferenceEqualityComparer.Instance)))
 		{
 			return shown.ToList();
 		}
 		if (pile.Type == PileType.Draw)
 		{
+			if (SortedCards != null)
+			{
+				return cards.OrderBy(c => c.Rarity).ThenBy(c => c).ToList();
+			}
 			cards.Sort((c1, c2) => c1.Rarity != c2.Rarity ? c1.Rarity.CompareTo(c2.Rarity) : string.Compare(c1.Id.Entry, c2.Id.Entry, StringComparison.Ordinal));
 		}
 		return cards;
@@ -731,7 +738,7 @@ public static class PileFx
 			if (h == null)
 			{
 				card?.QueueFreeSafely();
-				return;
+				throw new InvalidOperationException($"Could not create a card holder for {it.Card.Id}");
 			}
 			Control slot = new() { MouseFilter = Control.MouseFilterEnum.Ignore, Modulate = new Color(1f, 1f, 1f, 0f) };
 			Control clip = new() { Name = "PileCardClip", Position = clipAt, Size = clipSize,
@@ -851,16 +858,7 @@ public static class PileFx
 				{
 					continue;                                    // 旧版本没有的动作不挂（否则每次按键都会报"动作不存在"）
 				}
-				if (on)
-				{
-					hk.PushHotkeyPressedBinding(key, unzoom);
-					hk.PushHotkeyReleasedBinding(key, swallow);   // 原版返回按钮可能挂在"松开"上：特写期间一并挡住
-				}
-				else
-				{
-					hk.RemoveHotkeyPressedBinding(key, unzoom);
-					hk.RemoveHotkeyReleasedBinding(key, swallow);
-				}
+				Compat.SetHotkeyBindings(hk, key, unzoom, swallow, on);
 			}
 		}
 
@@ -1135,7 +1133,16 @@ public static class PileFx
 						pending.RemoveAt(0);
 						if (items.FirstOrDefault(i => i.Card == model && i.Slot == null) is Item it)
 						{
-							Create(it);
+							try
+							{
+								Create(it);
+							}
+							catch (Exception e)
+							{
+								ModEntry.Report("pile card creation", e);
+								Rollback(screen);
+								return;
+							}
 						}
 					}
 				}

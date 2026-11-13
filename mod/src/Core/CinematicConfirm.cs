@@ -33,8 +33,7 @@ internal sealed class CinematicConfirm : IDisposable
 		foreach (string action in Actions)
 		{
 			if (!InputMap.HasAction(action)) continue;
-			_hotkeys?.PushHotkeyPressedBinding(action, _pressed);
-			_hotkeys?.PushHotkeyReleasedBinding(action, _released);
+			if (_hotkeys != null) Compat.SetHotkeyBindings(_hotkeys, action, _pressed, _released, true);
 		}
 		_focus.GuiInput += ev =>
 		{
@@ -77,8 +76,7 @@ internal sealed class CinematicConfirm : IDisposable
 			foreach (string action in Actions)
 			{
 				if (!InputMap.HasAction(action)) continue;
-				_hotkeys.RemoveHotkeyPressedBinding(action, _pressed);
-				_hotkeys.RemoveHotkeyReleasedBinding(action, _released);
+				Compat.SetHotkeyBindings(_hotkeys, action, _pressed, _released, false);
 			}
 			_hotkeys.RemoveBlockingScreen(_focus);
 		}
