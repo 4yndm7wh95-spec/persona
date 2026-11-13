@@ -102,19 +102,19 @@ void fragment() {
 
 	private static Shader? _grade;
 
-	/// <summary>他周围压暗透红：读屏、按亮度往深红黑压（红的地方留着），椭圆软边。k：强度。不是烟，是调色。</summary>
+	/// <summary>
+	/// 他周围压暗透红：乘法混合（屏幕 × 暗红），椭圆软边，外面乘 1 = 不变。k：强度。不是烟，是调色。
+	/// 用户 2026-11-13：原来读屏调色、整块方形都输出读到的画面，在群蛇形态的红色场景下露出一块没染色的方块 → 改成不读屏。
+	/// </summary>
 	private static Shader Grade => _grade ??= new Shader { Code = @"
 shader_type canvas_item;
-uniform sampler2D scr : hint_screen_texture, filter_linear;
+render_mode blend_mul;
 uniform float k = 0.0;
 void fragment() {
 	vec2 p = UV * 2.0 - 1.0;
 	float m = smoothstep(1.0, 0.25, length(p)) * k;
-	vec3 bg = texture(scr, SCREEN_UV).rgb;
-	float l = dot(bg, vec3(0.3, 0.55, 0.15));
-	vec3 g = mix(vec3(0.02, 0.0, 0.015), vec3(0.55, 0.05, 0.12), smoothstep(0.02, 0.5, l));
-	g = mix(g, bg, smoothstep(0.35, 0.8, bg.r - bg.g) * 0.8);
-	COLOR = vec4(mix(bg, g, m * 0.62), 1.0);
+	vec3 tint = vec3(0.42, 0.16, 0.22);
+	COLOR = vec4(mix(vec3(1.0), tint, m * 0.62), 1.0);
 }" };
 
 	private sealed class Blade
@@ -148,7 +148,6 @@ void fragment() {
 			Vector2 sz = new(h * 2.6f, h * 1.7f);
 			Node2D gr = Fx.Root(back, chest, "P5MeldGrade", life + 0.1);
 			ShaderMaterial gm = new() { Shader = Grade };
-			gr.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });   // 读屏前先刷新
 			gr.AddChild(new ColorRect { Size = sz, Position = -sz / 2f, Material = gm, MouseFilter = Control.MouseFilterEnum.Ignore });
 			Fx.Animate(gr, 0, life, t =>
 			{

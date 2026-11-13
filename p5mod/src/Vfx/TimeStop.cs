@@ -82,6 +82,8 @@ public sealed class TimeStop
 		back.MoveChild(_screen, 0);
 		_m = new ShaderMaterial { Shader = Shader };
 		_m.SetShaderParameter("mode", 0);
+		// 读屏前先刷新（用户 2026-11-13：先开群蛇形态、再打子弹时间，时停结束时有一秒露出原版场景 —— 读到的是群蛇场景画上去之前的旧拷贝）
+		_screen.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
 		_screen.AddChild(new ColorRect { Size = Fx.Screen(back), Material = _m, MouseFilter = Control.MouseFilterEnum.Ignore });
 		_enemyScreen = Fx.ScreenRoot(front, "P5TimeStopEnemies");
 		front.MoveChild(_enemyScreen, 0);

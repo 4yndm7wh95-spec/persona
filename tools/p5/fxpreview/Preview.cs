@@ -763,6 +763,14 @@ public partial class Preview : Node2D
 		["redo4b"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.8), ("Afterimage", "cast_big", 0.4, 1.4), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast", 0.4, 1.8) }),
 		["redo5"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.9), ("Shadowmeld", "cast_glove", 0.25, 1.9) }),
 		["redo6"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Afterimage", "cast_big", 0.4, 1.6), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast", 0.4, 2.1), ("Malaise", "cast", 0.4, 2.1) }),
+		// 2026-11-13：群蛇形态的场景下打融入暗影、子弹时间（结束时不该露出原版场景）
+		["combo_serpent"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.3, () => SerpentMantle.Start(p._front, p._back, () => (JokerFeet, tall, 1f), live: true, intro: true));
+			RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 2.0), ("BulletTime", "cast_glove", 0.25, 1.0) });
+			p.At(4.6, () => TimeStop.StopCurrent());
+		},
 		["redo7"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.9) }),
 		["fumes"] = p => RunCards(p, null, new (string, string, double, double)[] { ("NoxiousFumes", "cast", 0.4, 7.5) }),
 		["redo"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Acrobatics", "cast_glove", 0.25, 1.7), ("Acrobatics", "cast_glove", 0.25, 1.7) }),

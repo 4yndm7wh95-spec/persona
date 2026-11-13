@@ -554,6 +554,7 @@ void fragment() {
 		_skyM = new ShaderMaterial { Shader = SerpentMist.Shader };
 		_skyM.SetShaderParameter("side", -1f);
 		var skyRect = new ColorRect { Size = Fx.Screen(back), Material = _skyM, MouseFilter = Control.MouseFilterEnum.Ignore };
+		_skyRoot.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });   // 读屏前先刷新（和子弹时间的褪色叠在一起时不读到旧画面）
 		_skyRoot.AddChild(skyRect);
 		Fx.Clock(skyRect);
 		_mistFrontRoot = Fx.ScreenRoot(front, "P5SerpentMistFront");
