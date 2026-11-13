@@ -75,11 +75,54 @@ void fragment() {
 	COLOR = vec4(col, inside * alpha * 0.95);
 }" };
 
+	private static Shader? _floor;
+
+	/// <summary>
+	/// 脚下的一片玻璃地面：压扁的椭圆里由不规则棱面（Voronoi）拼成，每块折射角度不同、亮暗不同；棱面之间细白缝，缝里透一点红；
+	/// spread 0 → 1 从中心往外漫开（边缘参差），alpha 淡出。不是圆圈：外沿由棱面的块参差地截断。
+	/// </summary>
+	private static Shader Floor => _floor ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform sampler2D scr : hint_screen_texture, filter_linear;
+uniform float spread = 0.0;
+uniform float alpha = 1.0;
+uniform float seed = 0.0;
+uniform float aspect = 4.0;     // 宽 / 高
+uniform vec2 px = vec2(0.002);
+vec2 h22(vec2 p) { p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3))); return fract(sin(p + seed) * 43758.5453); }
+void fragment() {
+	vec2 p = (UV - 0.5) * 2.0;                 // 椭圆归一化：边 = 1
+	float r = length(p);
+	vec2 g = vec2(p.x * aspect, p.y) * 2.2;     // 棱面网格（按真实比例，块是扁的）
+	vec2 ip = floor(g), fp = fract(g);
+	float d1 = 9.0, d2 = 9.0; vec2 cid = vec2(0.0);
+	for (int j = -1; j <= 1; j++) for (int i = -1; i <= 1; i++) {
+		vec2 o = vec2(float(i), float(j));
+		vec2 pt = o + h22(ip + o);
+		float d = length(pt - fp);
+		if (d < d1) { d2 = d1; d1 = d; cid = ip + o; } else if (d < d2) d2 = d;
+	}
+	float cellR = length(vec2(cid.x / aspect, cid.y) / 2.2 + 0.25 / 2.2);
+	float h = h22(cid + 7.0).x;
+	// 漫开：按块参差地出现（块离中心越远越晚），外沿再随机截掉一些块
+	float show = smoothstep(cellR - 0.05, cellR + 0.05, spread * 1.15 - h * 0.15) * step(cellR + h * 0.18, 1.05);
+	show *= 1.0 - smoothstep(0.85, 1.0, r);
+	if (show <= 0.002) discard;
+	float edge = 1.0 - smoothstep(0.0, 0.05 + fwidth(d2 - d1), d2 - d1);
+	vec2 off = (h22(cid + 3.0) - 0.5) * 14.0 * px;
+	vec3 bg = texture(scr, SCREEN_UV + off).rgb;
+	vec3 col = bg * mix(0.55, 0.95, h) + vec3(0.06, 0.03, 0.05);
+	col = mix(col, vec3(1.0, 0.94, 0.93), edge * 0.4);
+	col += vec3(0.6, 0.03, 0.08) * edge * (1.0 - r) * 0.5;
+	col += vec3(0.5, 0.05, 0.08) * (1.0 - r) * 0.25;
+	COLOR = vec4(col, show * alpha * (0.4 + 0.3 * (1.0 - r)));
+}" };
+
 	private sealed class Shard
 	{
 		public Node2D Root = null!;
 		public ShaderMaterial M = null!;
-		public float Ang, H, W, Tilt, Delay;
+		public float Ang, H, W, Tilt, Delay, Depth;
 		public bool Front;
 	}
 
@@ -96,45 +139,43 @@ void fragment() {
 		const float flashAt = 0.35f, breakAt = 0.85f, life = 1.3f;
 		Control back = c.Back ?? c.Front;
 		Vector2 ring = c.Feet + new Vector2(0f, -h * 0.01f);
-		float rx = h * 0.42f, ry = h * 0.09f;
+		float rx = h * 0.44f, ry = h * 0.15f;
 		S("gx_freeze", 0.12f, 0.02f);
 		S("gx_ping", 0.2f, flashAt);
 		S("gx_glass", 0.3f, breakAt);
 
 		// 前面那一层先拷贝一次屏幕（带上人物），水晶折射才看得到他
 		Node2D frontRoot = Fx.Root(c.Front, Vector2.Zero, "P5Crystals", life + 0.2);
-		frontRoot.TopLevel = true;
-		frontRoot.GlobalPosition = Vector2.Zero;
+		// 不用 TopLevel（会脱离所在层的绘制顺序、画到人物前面），位置每帧按全局坐标设
 		frontRoot.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
 		Vector2 scr = Fx.Screen(c.Front);
 
-		const int n = 9;
+		// 角度：前排（下半圈，在他前面）只放在他身体两侧、正前方不放（用户：遮挡关系要理清）；后排在他身后。按远近排序，近的后画
+		var angs = new List<float>();
+		foreach (float a0 in new[] { 0.32f, 0.85f, 2.29f, 2.82f, 3.45f, 3.95f, 4.45f, 4.97f, 5.47f, 5.98f }) angs.Add(a0 + Fx.Rand(-0.07f, 0.07f));
+		angs.Sort((x, y) => Mathf.Sin(x).CompareTo(Mathf.Sin(y)));
 		var shards = new List<Shard>();
-		for (int i = 0; i < n; i++)
+		Node2D backRoot = Fx.Root(back, Vector2.Zero, "P5CrystalBack", life + 0.2);
+
+		foreach (float ang in angs)
 		{
-			// 角度错开一点
-			float ang = Mathf.Tau * (i + 0.5f) / n + Fx.Rand(-0.12f, 0.12f);
 			bool front = Mathf.Sin(ang) > 0f;
-			float hgt = h * (front ? Fx.Rand(0.24f, 0.36f) : Fx.Rand(0.5f, 0.82f));
-			float wid = h * (front ? Fx.Rand(0.055f, 0.075f) : Fx.Rand(0.065f, 0.095f));
+			float depth = Mathf.Sin(ang);                                   // -1 最远 → 1 最近
+			float k = 1f + 0.12f * depth;                                    // 近大远小
+			float hgt = h * k * (front ? Fx.Rand(0.3f, 0.42f) : Fx.Rand(0.5f, 0.8f));
+			float wid = h * k * (front ? Fx.Rand(0.06f, 0.08f) : Fx.Rand(0.06f, 0.09f));
 			Node2D root = new() { Name = "P5Crystal" };
-			if (front) frontRoot.AddChild(root);
-			else
-			{
-				Node2D br = Fx.Root(back, Vector2.Zero, "P5CrystalBack", life + 0.2);
-				br.TopLevel = true;
-				br.GlobalPosition = Vector2.Zero;
-				br.AddChild(root);
-			}
+			(front ? frontRoot : backRoot).AddChild(root);
 			ShaderMaterial m = new() { Shader = Crystal };
 			m.SetShaderParameter("lean", Fx.Rand(-1f, 1f));
 			m.SetShaderParameter("seed", Fx.Rand(0f, 20f));
 			m.SetShaderParameter("px", new Vector2(1f / scr.X, 1f / scr.Y));
 			root.AddChild(new ColorRect { Size = new Vector2(wid, hgt), Position = new Vector2(-wid / 2f, -hgt), Material = m, MouseFilter = Control.MouseFilterEnum.Ignore });
-			// 从正前方开始往两边一片接一片
+			float lum = 0.8f + 0.2f * (depth * 0.5f + 0.5f);                 // 远的稍暗
+			root.Modulate = new Color(lum, lum, lum, 1f);
 			float order = Mathf.Abs(Mathf.Wrap(ang - Mathf.Pi * 0.5f, -Mathf.Pi, Mathf.Pi)) / Mathf.Pi;
-			shards.Add(new Shard { Root = root, M = m, Ang = ang, H = hgt, W = wid, Front = front, Delay = 0.02f + order * 0.2f,
-				Tilt = Mathf.Cos(ang) * 0.22f + Fx.Rand(-0.08f, 0.08f) });
+			shards.Add(new Shard { Root = root, M = m, Ang = ang, H = hgt, W = wid, Front = front, Depth = depth, Delay = 0.05f + order * 0.2f,
+				Tilt = Mathf.Cos(ang) * 0.24f + Fx.Rand(-0.06f, 0.06f) });
 		}
 		foreach (Shard sh in shards)
 		{
@@ -144,7 +185,7 @@ void fragment() {
 			{
 				float s = t * life;
 				float up = s < s0.Delay ? 0f : Ease5.OutBack(Mathf.Min(1f, (s - s0.Delay) / 0.16f));
-				float turn = 0.28f * f * Fx.OutCubic(Ease5.Seg(s, flashAt - 0.08f, 0.3f));
+				float turn = 0.12f * f * Fx.OutCubic(Ease5.Seg(s, flashAt - 0.08f, 0.3f));   // 小转，不让前后排越过两侧
 				float a = s0.Ang + turn;
 				s0.Root.Visible = up > 0.001f && s < breakAt + s0.Delay * 0.4f;
 				s0.Root.GlobalPosition = ring + new Vector2(Mathf.Cos(a) * rx, Mathf.Sin(a) * ry);
@@ -160,6 +201,44 @@ void fragment() {
 				Vector2 at = s0.Root.GlobalPosition;
 				Phantom.Shards(c.Front, at, 4, 120f * u, 300f * u, new Vector2(Mathf.Cos(s0.Ang) * 0.6f, -1f), 35f, 0.25f, 500f * u, 9f * u);
 			});
+		}
+		// 脚下的玻璃地面（人后面一层）：0～0.3 从脚下往外漫开，碎开时淡掉
+		{
+			Vector2 fsz = new(rx * 2.6f, ry * 2.6f);
+			Node2D fr = Fx.Root(back, ring + new Vector2(0f, h * 0.01f), "P5CrystalFloor", life + 0.1);
+			ShaderMaterial fm = new() { Shader = Floor };
+			fm.SetShaderParameter("seed", Fx.Rand(0f, 30f));
+			fm.SetShaderParameter("aspect", fsz.X / fsz.Y);
+			fm.SetShaderParameter("px", new Vector2(1f / scr.X, 1f / scr.Y));
+			fr.AddChild(new ColorRect { Size = fsz, Position = -fsz / 2f, Material = fm, MouseFilter = Control.MouseFilterEnum.Ignore });
+			back.MoveChild(fr, backRoot.GetIndex());          // 在后排水晶下面
+			Fx.Animate(fr, 0, life, t =>
+			{
+				float s = t * life;
+				fm.SetShaderParameter("spread", Fx.OutCubic(Ease5.Seg(s, 0f, 0.32f)));
+				fm.SetShaderParameter("alpha", 1f - Fx.OutCubic(Ease5.Seg(s, breakAt, 0.35f)));
+			});
+		}
+		// 身后一团柔和的暗红背光，衬出轮廓
+		{
+			Node2D gr = Fx.Root(back, ring + new Vector2(0f, -h * 0.45f), "P5CrystalGlow", life + 0.1);
+			back.MoveChild(gr, backRoot.GetIndex());
+			Sprite2D glow = Glow.SoftSprite(gr, Vector2.Zero, new Color(1f, 0.1f, 0.18f, 0f), h * 0.05f);
+			glow.Scale = new Vector2(h * 0.04f, h * 0.055f);
+			Fx.Animate(gr, 0, life, t =>
+			{
+				float s = t * life;
+				float k = Fx.OutCubic(Ease5.Seg(s, 0.05f, 0.3f)) * (1f - Fx.OutCubic(Ease5.Seg(s, breakAt, 0.4f)));
+				float pulse = s >= flashAt ? Mathf.Exp(-(s - flashAt) * 6f) * 0.5f : 0f;
+				glow.Modulate = new Color(1f, 0.1f, 0.18f, 0.32f * k + 0.3f * pulse);
+			});
+		}
+		// 水晶之间慢慢浮起的细小碎光
+		for (int i = 0; i < 4; i++)
+		{
+			float d = 0.2f + 0.14f * i;
+			Fx.After(c.Front, d, () => Glow.Sparks(c.Front, ring + new Vector2(Fx.Rand(-0.3f, 0.3f) * h, -h * 0.05f), 8, 15f, 60f, 0.9f,
+				new[] { new Color(1f, 0.97f, 0.95f), new Color(1f, 0.55f, 0.6f) }, -70f, 0.025f * u, 0.055f * u, Vector2.Up, 50f));
 		}
 		// 主拍：一闪
 		Fx.After(c.Front, flashAt, () =>
