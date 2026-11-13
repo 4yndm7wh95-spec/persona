@@ -324,7 +324,7 @@ void fragment() {
 					float on = Fx.OutCubic(Ease5.Seg(s, 0.02f, melt0));
 					float d = Fx.OutCubic(Ease5.Seg(s, melt0, melt1 - melt0)) * (1f - Fx.InCubic(Ease5.Seg(s, back0, 0.1f)));
 					float off = Ease5.Seg(s, back0 + 0.08f, 0.08f);
-					dm.SetShaderParameter("fill", on * (1f - off));
+					dm.SetShaderParameter("fill", 0.45f * on * (1f - off));   // 用户：人不能真的消失 → 黑底半透明，透出真人
 					dm.SetShaderParameter("dots", on * (1f - off));
 					dm.SetShaderParameter("dis", d);
 				});
@@ -349,7 +349,8 @@ void fragment() {
 				float s = t * life;
 				float gone = Fx.OutCubic(Ease5.Seg(s, 0.04f, melt0)) * (1f - Ease5.Seg(s, back0 + 0.06f, 0.1f));
 				float wf = s >= back0 + 0.08f ? Mathf.Exp(-(s - back0 - 0.08f) * 12f) : 0f;
-				Color col = new(1f + wf, 1f + wf, 1f + wf, 1f - 0.92f * gone);
+				Color col = new Color(1f, 1f, 1f).Lerp(new Color(0.42f, 0.34f, 0.42f), gone) + new Color(wf, wf, wf, 0f);   // 不透明，只暗一些（人一直在）
+				col.A = 1f;
 				tint(col);
 			});
 			tk.TreeExiting += () => tint(Colors.White);
