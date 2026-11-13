@@ -1,0 +1,34 @@
+{
+  "base_commit": "5de0198b",
+  "prompt_document": "docs/codex/codex_card_art_seeking_edge_fix.md",
+  "revision": 2,
+  "tool": "built-in imagegen",
+  "status": "awaiting_user_review",
+  "generation_count": 1,
+  "automatic_retry": false,
+  "records": [
+    {
+      "name": "seeking_edge",
+      "variant": "v2",
+      "status": "awaiting_user_review",
+      "submitted_prompt": "Use case: precise-object-edit. Image1 is the CURRENT candidate and the edit target: keep Koromaru (head, paws, kunai in his mouth, red scarf knot), the orange spiked eye blade, the red laser lines and the background exactly as they are. Image2 is the ORIGINAL card, used ONLY to locate the wide V shape of the old inverted hat: from the top center it spreads down to the left (to about x8%, y32%) and down to the right (to about x92%, y32%), framing the blade. In Image1 the two wings of that V are now empty background; fill them as follows. (1) TRACKING KUNAI: from the kunai in Koromaru's mouth, two fans of flying kunai sweep outward along the two arms of the V, three or four kunai per side, each smaller than the one in his mouth and getting smaller toward the ends, all pointing along their flight, each trailing a thin glowing red-orange tracking streak that curves along the V; this shows the blade now hitting every enemy. (2) SCARF TAILS: the two loose ends of his dark-red scarf stream out long and wavy along the same V, under the kunai, filling the upper part of each wing; cloth with folds, clearly a scarf, never wings or ears. Together they give the V the same weight as the original hat brim. No wings, no bat ears, no new characters, no text. Match Image1's hard cel-shading and crisp outlines. Opaque, full-bleed, 1000x760, no frame or watermark.",
+      "image1": "art/cards/v4/local_edits/round3/fix_seeking_edge/seeking_edge.png",
+      "image2": "research/regent_assets/images/packed/card_portraits/regent/seeking_edge.png",
+      "raw_file": "generation_sources/exec-49715897-cf07-4575-8c8d-5b1ce529071b.png",
+      "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-49715897-cf07-4575-8c8d-5b1ce529071b.png",
+      "generated_size": [
+        1438,
+        1093
+      ],
+      "output_file": "seeking_edge_v2.png",
+      "output_size": [
+        1000,
+        760
+      ],
+      "reference_sha256": {
+        "image1": "899ee4f2c1ed367739ee94a0c47e31adb395b93a906c52afbfcfb29ba0f9e550",
+        "image2": "065d11b4c7573b82f9fb237cd8123dc82d308ce6f05ed2d76fe00b644066a0a0"
+      }
+    }
+  ]
+}

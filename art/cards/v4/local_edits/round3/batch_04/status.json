@@ -1,0 +1,14 @@
+{
+  "status": "approved_by_user",
+  "cards": {
+    "child_of_the_stars": "approved_by_user",
+    "make_it_so": "approved_by_user",
+    "neutron_aegis": "approved_by_user",
+    "astral_pulse": "approved_by_user",
+    "foregone_conclusion": "approved_by_user"
+  },
+  "user_review": {
+    "message": "ok",
+    "scope": "round3 batch_04 all five cards"
+  }
+}

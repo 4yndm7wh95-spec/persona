@@ -1,0 +1,14 @@
+{
+  "status": "approved_by_user",
+  "cards": {
+    "knockout_blow": "approved_by_user",
+    "plot": "approved_by_user",
+    "resonance": "approved_by_user",
+    "wrought_in_war": "approved_by_user",
+    "arsenal": "approved_by_user"
+  },
+  "user_review": {
+    "message": "OK",
+    "scope": "round3 batch_03 all five cards"
+  }
+}

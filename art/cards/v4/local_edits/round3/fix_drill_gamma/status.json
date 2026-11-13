@@ -1,0 +1,18 @@
+{
+  "status": "user_selection_complete",
+  "active_candidates": {
+    "heavenly_drill_A.png": "not_selected",
+    "heavenly_drill_B.png": "approved_by_user",
+    "gamma_blast_v2_A.png": "not_selected",
+    "gamma_blast_v2_B.png": "approved_by_user",
+    "gamma_blast_v2_C.png": "not_selected"
+  },
+  "superseded_candidates": {
+    "gamma_blast_A.png": "superseded_by_v2_not_generated",
+    "gamma_blast_B.png": "superseded_by_v2"
+  },
+  "gamma_v2_generated_count": 3,
+  "drill_preserved": true,
+  "selected_gamma_blast": "gamma_blast_v2_B.png",
+  "selected_heavenly_drill": "heavenly_drill_B.png"
+}

@@ -1,0 +1,13 @@
+{
+  "cards": {
+    "seeking_edge": "awaiting_user_review"
+  },
+  "candidates": {
+    "seeking_edge.png": "awaiting_user_review",
+    "seeking_edge_v2.png": "awaiting_user_review"
+  },
+  "active_candidate": "seeking_edge_v2.png",
+  "status": "awaiting_user_review",
+  "automatic_retry": false,
+  "latest_generation_count": 1
+}

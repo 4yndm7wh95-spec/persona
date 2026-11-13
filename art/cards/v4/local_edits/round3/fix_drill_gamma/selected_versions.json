@@ -1,0 +1,23 @@
+{
+  "status": "approved_by_user",
+  "selected": {
+    "heavenly_drill": {
+      "card": "heavenly_drill",
+      "variant": "B",
+      "file": "heavenly_drill_B.png",
+      "status": "approved_by_user",
+      "user_message": "Selected by attached image",
+      "attachment": "C:/Users/kkk/AppData/Local/Temp/codex-clipboard-c8461b13-2248-4f70-b79b-2eec114e8d3c.png",
+      "sha256": "ade43e58f1977ad2f3f86266e00a6a0074228b8419eac1d814f27a684990926b"
+    },
+    "gamma_blast": {
+      "card": "gamma_blast",
+      "variant": "v2_B",
+      "file": "gamma_blast_v2_B.png",
+      "status": "approved_by_user",
+      "user_message": "这个吧",
+      "attachment": "C:/Users/kkk/AppData/Local/Temp/codex-clipboard-deb4bcd1-5d1d-439d-9c90-424249c641e2.png",
+      "sha256": "06929c89d19f209a7a9d8471d7037e5ecfc79448494fa51db256eedbceb3a26e"
+    }
+  }
+}
