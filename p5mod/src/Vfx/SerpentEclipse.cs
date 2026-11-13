@@ -56,7 +56,9 @@ void fragment() {
 	float inDisk = smoothstep(1.0, 0.985, rr);
 	// 日轮不是纯黑（用户看的是 Joker 的黑大衣站在它前面：纯黑会糊成一片）：深暗红，中间稍亮、往边上暗下去，边上再透一圈红
 	// 用户 2026-11-13：黑的面积太大 → 光从边缘往里渗，只在正中留一小块黑（约日轮直径的一半）
-	vec3 diskCol = mix(vec3(0.03, 0.0, 0.015), vec3(0.6, 0.06, 0.12), smoothstep(0.45, 0.98, rr));
+	// 2026-11-13 第二次：太暗 → 中心改成深红（不再是黑），往边上亮成绯红、贴边一圈亮红
+	vec3 diskCol = mix(vec3(0.26, 0.025, 0.06), vec3(0.88, 0.13, 0.17), smoothstep(0.15, 0.98, rr));
+	diskCol += vec3(0.35, 0.1, 0.1) * smoothstep(0.85, 1.0, rr);
 	diskCol += vec3(0.25, 0.02, 0.05) * (0.5 + 0.5 * anoise(a + clock * 0.03, rr * 2.0 + clock * 0.05, 4.0)) * smoothstep(0.85, 0.2, rr) * 0.5;
 	diskCol += vec3(0.45, 0.03, 0.08) * smoothstep(0.8, 1.0, rr) * 0.55;
 	float lit = (1.0 + 1.4 * pulse);
