@@ -131,7 +131,9 @@ public static class VanillaFumesTickPatch
 	{
 		ModEntry.Safe("FumesTick", () =>
 		{
-			if (VanillaSilentFx.IsJoker(__instance.Owner)) VanillaSilentFx.HideFor(2f);
+			if (!VanillaSilentFx.IsJoker(__instance.Owner)) return;
+			VanillaSilentFx.HideFor(2f);
+			Stage.Safe("fumes pulse", () => FumesField.Current?.Pulse());
 		});
 	}
 }

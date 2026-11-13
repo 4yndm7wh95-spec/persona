@@ -697,6 +697,8 @@ public partial class Preview : Node2D
 				OnJokerShoot = () => p._joker?.Play("shiv_from_aim"),
 				OnPierce = i => Popups.Damage(p._front, (ulong)(i + 1), new[] { Enemy2, Enemy, Enemy3 }[i], 50, true),
 				Actors = new List<CanvasItem> { p._joker!, p._enemies[Enemy], p._enemies[Enemy2], p._enemies[Enemy3] },
+				Shadows = new List<(Vector2, float)> { (JokerFeet, (JokerFeet - Pose(1010f, 215f)).Length() * 0.55f),
+					(new Vector2(Enemy2.X, 830f), 240f), (new Vector2(Enemy.X, 830f), 240f), (new Vector2(Enemy3.X, 830f), 240f) },
 			}));
 		},
 		// 技能 / 能力牌特效（Vfx/SkillFx.cs，用户 2026-11-10）。a：抽牌 → 弃牌 → 装弹 → 蓝 / 红 / 咒怨三种增益
@@ -762,6 +764,7 @@ public partial class Preview : Node2D
 		["redo5"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.9), ("Shadowmeld", "cast_glove", 0.25, 1.9) }),
 		["redo6"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Afterimage", "cast_big", 0.4, 1.6), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast", 0.4, 2.1), ("Malaise", "cast", 0.4, 2.1) }),
 		["redo7"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.9) }),
+		["fumes"] = p => RunCards(p, null, new (string, string, double, double)[] { ("NoxiousFumes", "cast", 0.4, 7.5) }),
 		["redo"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Acrobatics", "cast_glove", 0.25, 1.7), ("Acrobatics", "cast_glove", 0.25, 1.7) }),
 		["redo3"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Survivor", "cast_guard", 0.08, 1.2), ("CalculatedGamble", "cast_glove", 0.25, 1.9), ("Tactician", "cast_glove", 0.25, 1.2), ("Adrenaline", "cast_glove", 0.25, 1.4), ("ShadowStep", "cast_glove", 0.25, 1.4) }),
 		["redo2"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Prepared", "cast_glove", 0.25, 1.5), ("Expertise", "cast_glove", 0.25, 1.7), ("Reflex", "cast_glove", 0.25, 1.1), ("Backflip", "cast_guard", 0.08, 1.3), ("EscapePlan", "cast_guard", 0.08, 1.3) }),

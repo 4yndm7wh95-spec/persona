@@ -79,7 +79,7 @@ float revealDist(vec2 px) {
 }
 // 平台（用户 2026-11-08）：从屏幕右边伸出来的一整块，敌人和 Joker 都站在上面；到 Joker 脚下左边就是悬崖，崖面往下、往里收。<0 在岩石里
 float rock(vec2 px) {
-	float top = feet_y - 3.0 - 9.0 * fbm(vec2(px.x * 0.012, 3.1)) + (px.x - cliff_x) * (floor_y - feet_y) / max(sres.x - cliff_x, 1.0);
+	float top = feet_y - 12.0 - 9.0 * fbm(vec2(px.x * 0.012, 3.1)) + (px.x - cliff_x) * (floor_y - feet_y) / max(sres.x - cliff_x, 1.0);
 	float edge = cliff_x + (px.y - feet_y) * 0.28 + (fbm(vec2(px.y * 0.02, 7.7)) - 0.5) * 60.0
 		+ smoothstep(feet_y + 40.0, sres.y, px.y) * 120.0 * fbm(vec2(px.y * 0.006, 1.3));
 	return max(top - px.y, edge - px.x);
@@ -159,7 +159,7 @@ void fragment() {
 		float strata = fbm(vec2(px.x * 0.01, px.y * 0.05));
 		float crack = smoothstep(0.02, 0.0, abs(fbm(px * 0.02) - 0.5));
 		col = mix(vec3(0.02, 0.025, 0.045), vec3(0.06, 0.07, 0.1), strata) * (1.0 - 0.5 * crack);
-		float topLit = smoothstep(14.0, 0.0, abs(px.y - (feet_y - 6.0))) * step(d, 0.0);
+		float topLit = smoothstep(14.0, 0.0, abs(px.y - (feet_y - 15.0))) * step(d, 0.0);
 		col += vec3(0.25, 0.5, 0.75) * topLit * 0.5;
 		float rim = smoothstep(-16.0, 0.0, d);
 		col += vec3(0.45, 0.05, 0.08) * rim * smoothstep(feet_y, sres.y, px.y) * 1.2;
@@ -303,6 +303,8 @@ void fragment() {
 		public List<CanvasItem> Actors = new();
 		/// <summary>和 Enemies 一一对应的敌人 Visuals（子弹穿过时被光打透、过曝一下）；可以为空。</summary>
 		public List<CanvasItem?> EnemyVisuals = new();
+		/// <summary>场景里每个人物脚下的接触阴影（脚底世界坐标, 宽度）：用户 2026-11-13：脚和平台贴不实、像两个图层。</summary>
+		public List<(Vector2 Feet, float Width)> Shadows = new();
 	}
 
 	private static Shader? _mask;
@@ -418,7 +420,7 @@ void fragment() {
 			// Codex 的平台：原图 3840×1100（×0.52），顶面 y=140、悬崖边 x=760 → 悬崖边对到 Joker 脚边、顶面对到脚底
 			float k = unit;
 			Vector2 size = plat.GetSize() * k;
-			Vector2 org = new(feetS.X - 95f * unit - 760f * 0.52f * k, feetS.Y - 140f * 0.52f * k);
+			Vector2 org = new(feetS.X - 95f * unit - 760f * 0.52f * k, feetS.Y - 140f * 0.52f * k - 9f * unit);   // 2026-11-13：顶面往上 9px，脚踩在顶面上（原来脚悬在边线上面）
 			rocks.SetShaderParameter("plat", plat);
 			rocks.SetShaderParameter("plat_origin", org);
 			rocks.SetShaderParameter("plat_size", size);
@@ -460,6 +462,21 @@ void fragment() {
 		PointLight2D moonLight = Light(lights, world(moonS), new Color(0.7f, 0.78f, 0.95f), 2600f * unit);
 		puppet?.LightFrom(moonS);
 		var actorRest = s.Actors.Where(GodotObject.IsInstanceValid).Select(a => (a, a.Modulate)).ToList();
+		// 脚下的接触阴影：一大片软的冷黑影（往月亮反方向略拖长）+ 脚底一道更实的接触暗线，让人物「踩」在平台上
+		Node2D shadowRoot = new() { Name = "P5SinfulShadows" };
+		back.AddChild(shadowRoot);
+		shadowRoot.GlobalPosition = Vector2.Zero;   // 子节点直接用世界坐标
+		Fx.FreeAfter(shadowRoot, total + 0.1);
+		var shadows = new List<(Sprite2D Soft, Sprite2D Core)>();
+		foreach ((Vector2 sf, float sw) in s.Shadows)
+		{
+			Sprite2D soft = new() { Texture = Glow.Soft, Position = sf + new Vector2(-sw * 0.12f, -sw * 0.01f), Scale = new Vector2(sw * 1.35f, sw * 0.22f) / 32f };
+			Sprite2D core = new() { Texture = Glow.Soft, Position = sf + new Vector2(0f, -sw * 0.005f), Scale = new Vector2(sw * 0.8f, sw * 0.08f) / 32f };
+			soft.Modulate = core.Modulate = new Color(0f, 0f, 0f, 0f);
+			shadowRoot.AddChild(soft);
+			shadowRoot.AddChild(core);
+			shadows.Add((soft, core));
+		}
 		float now = 0f, shotAt = 1e9f;                              // 当前时刻；开枪回调执行的时刻
 		var pierceOf = new Dictionary<CanvasItem, float>();        // 敌人 → 子弹穿过它的时刻（下面算出 pierce 后填）
 		Color grade = new(0.6f, 0.68f, 0.95f);
@@ -515,6 +532,11 @@ void fragment() {
 			}
 			// 灯：枪口蓄力光、开枪全场白光、跟着子弹飞的光、雷光、深渊往上打的暗红光
 			float scene = rv * (1f - ex);
+			foreach ((Sprite2D soft, Sprite2D core) in shadows)
+			{
+				soft.Modulate = new Color(0.01f, 0.02f, 0.06f, 0.62f * scene);
+				core.Modulate = new Color(0f, 0f, 0.02f, 0.8f * scene);
+			}
 			muzzleLight.Energy = charge * 1.1f;
 			flashLight.Energy = 3.2f * flash + 1.2f * after;
 			bulletLight.Energy = fly >= 0f && fly < 0.6f ? 2.6f * (1f - fly / 0.6f) : 0f;

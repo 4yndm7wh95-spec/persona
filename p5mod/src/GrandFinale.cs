@@ -176,6 +176,8 @@ public static class SinfulPlay
 			Enemies = enemies.Select(e => e.VfxSpawnPosition).ToList(),
 			EnemyVisuals = enemies.Select(e => (CanvasItem?)e.Visuals).ToList(),
 			Actors = actors,
+			Shadows = enemies.Select(e => (e.GetBottomOfHitbox(), e.Hitbox.GetGlobalRect().Size.X * 0.95f))
+				.Prepend((feet, (feet - head).Length() * 0.55f)).ToList(),
 			OnJokerShoot = () => ModEntry.Safe("GrandFinale shoot", () =>
 			{
 				if (state != null && joker.Visuals?.SpineBody?.HasAnimation("shiv_from_aim") == true)

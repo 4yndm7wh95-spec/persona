@@ -467,46 +467,20 @@ void fragment() {
 }" };
 
 	/// <summary>
-	/// 毒雾（每回合开始给所有敌人施毒）：脚下一圈暗红咒印似的扁波，一层咒怨雾贴着地从 Joker 脚边朝敌人那边涌过去（0.6s 涌到头），
-	/// 雾里一路冒起魂火；雾漫过哪个敌人，那个敌人暗红一闪；雾停一会儿慢慢散掉。1.6s。
+	/// 毒雾（每回合开始给所有敌人施毒）（用户 2026-11-13 重做）：脚边一下暗红闪光，一阵咒怨雾像风一样从屏幕左边很快地吹进来、再慢下来，
+	/// 铺满整个画面的地面（没有边界），之后一直留着慢慢流动、时不时冒小怨灵（FumesField）；雾吹过哪个敌人，那个敌人暗红一闪。
 	/// </summary>
 	public static void NoxiousFumes(SkillCtx c)
 	{
 		float h = c.Tall, u = c.Unit;
 		Sfx.Play(Sfx.FumesRoll, 0.42f);
+		Glow.Flash(c.Front, c.Feet, Crimson, h * 0.7f, 0.22f);
+		FumesField.Start(c.Front, c.Back, c.Feet, h);
 		Vector2 scr = Fx.Screen(c.Front);
-		float far = c.Face > 0f ? scr.X * 0.98f : scr.X * 0.02f;
-		Vector2 start = c.Feet + new Vector2(-c.Face * h * 0.35f, h * 0.06f);
-		float len = Mathf.Abs(far - start.X), fh = h * 1.3f;
-		const float roll = 0.6f, life = 1.6f;
-		foreach ((Control? layer, float a) in new[] { (c.Back, 0.85f), ((Control?)c.Front, 0.5f) })
-		{
-			if (!Ok(layer)) continue;
-			Node2D root = Fx.Root(layer!, start, "P5Fumes", life + 0.1);
-			ColorRect q = Quad(root, Fog, new Vector2(len, fh), new Vector2(0f, fh));
-			if (c.Face < 0f) q.Scale = new Vector2(-1f, 1f);
-			Set(q, "seed", Fx.Rand(0f, 50f));
-			Fx.Clock(q);
-			Fx.Animate(q, 0, life, t =>
-			{
-				float s = t * life;
-				Set(q, "front", 0.04f + 0.98f * Fx.OutCubic(Mathf.Min(1f, s / roll)));
-				Set(q, "alpha", a * Mathf.Min(1f, s / 0.1f) * (1f - Ease5.Seg(s, 0.9f, 0.7f)));
-			});
-		}
-		Glow.Shockwave(c.Front, c.Feet, Crimson, h * 1.5f, 0.45f, 0.22f);
-		Glow.Flash(c.Front, c.Feet, Crimson, h * 0.6f, 0.2f);
-		for (int i = 0; i < 6; i++)
-		{
-			float k = (i + 0.5f) / 6f;
-			Vector2 at = new(Mathf.Lerp(start.X, far, k * 0.9f), c.Feet.Y - h * Fx.Rand(0.0f, 0.12f));
-			Paint.Rise(c.Front, i % 3 == 2 ? "curse_ghost" : "curse_soul", at, h * Fx.Rand(0.45f, 0.7f), Fx.Rand(0.6f, 0.85f), Lut5.Curse, 0.9f, roll * k + 0.05f);
-		}
 		foreach (SkillFx.Victim v in c.Enemies)
 		{
-			float k = Mathf.Clamp(Mathf.Abs(v.Feet.X - start.X) / len, 0f, 1f);
-			float when = roll * (1f - Mathf.Pow(1f - k, 1f / 3f)) + 0.04f;
-			Fx.After(c.Front, when, () =>
+			float sx = Fx.ScreenPoint(c.Front, v.Feet).X / scr.X;
+			Fx.After(c.Front, FumesField.ArriveAt(sx), () =>
 			{
 				Glow.Sparks(c.Front, v.Feet, 10, 40f, 160f, 0.6f, new[] { Red, Crimson, Deep }, -80f, 0.03f * u, 0.07f * u, Vector2.Up, 40f);
 				if (v.Tint is { } tint)
