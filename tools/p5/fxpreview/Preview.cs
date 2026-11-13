@@ -801,7 +801,7 @@ public partial class Preview : Node2D
 			{
 				var (e, up) = hits[i];
 				p.At(when[i], () => { p._enemies.TryGetValue(e, out Node2D? body); SerpentMantle.Current?.Strike(e + new Vector2(0f, -up), body); });
-				p.At(when[i] - 0.12, () => HitFx.Slash(p._front, e + new Vector2(0f, -up), 1f));   // 同时打出的打击牌的命中特效（看蛇会不会被挡住）
+				p.At(when[i] - 0.12, () => { Sfx.Muted = true; HitFx.Slash(p._front, e + new Vector2(0f, -up), 1f); Sfx.Muted = false; });   // 静音：视频里只听咬合声   // 同时打出的打击牌的命中特效（看蛇会不会被挡住）
 			}
 		},
 		["buffs"] = p =>

@@ -269,6 +269,9 @@ void fragment() {
 		_ripples++;
 		Node2D root = Fx.Root(layer, at, "P5Ripple", duration + delay + 0.1);
 		root.TreeExiting += () => _ripples--;
+		// 先把此刻的画面拷一份再读（用户 2026-11-13：群蛇形态的红色场景下，波纹里露出没染红的绿色场景，像一圈盖掉场景颜色的怪光
+		// —— 读到的是这一层之前的旧拷贝）
+		root.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
 		ColorRect q = Quad(root, Refract, size, squashY);
 		Set(q, "strength", strength);
 		Set(q, "alpha", 0f);
