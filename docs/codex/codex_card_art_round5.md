@@ -369,20 +369,16 @@ Use case: precise-object-edit. Image1 is the current candidate and the edit targ
 
 ---
 
-## 修正：何人僭越（美鹤的手太短）
+## 修正：何人僭越（美鹤的手太短）· 修订版
 
-用户：不符合常理，手怎么这么短。
+用户否定了上一版修正方向：缩小人物、改成击剑姿势会改动原图的结构。**上一版（击剑前刺、人物缩小）作废，不要做。**
 
-**原因**：美鹤的头画得很大（约占画面高度的五分之一），但伸出去的手从胸口直接到手腕，上臂几乎没有，看不到肩膀和手肘，整条手臂只有大约一个半头长；正常人从肩膀到手腕大约是两个半到三个头长。所以看起来像一截从胸口长出来的短手。
+**原图结构**：原版只有一只从左上角伸进来的护手，手指指向右下方跪着的小家伙；画面里没有那个人的头和身体。
 
-**改法**：
-- 改成侧身的击剑前刺姿势：肩膀、上臂、手肘、前臂、手腕一节一节都看得到，手臂几乎伸直。
-- 比例按头长算：肩膀到手腕约 2.5 个头长，肩膀到指尖约 3 个头长。
-- 为了放得下，人物整体缩小一些（头约占画面高度 15%～16%），往左上边缘靠；细剑剑尖仍然点在暗影面具的十字中心。
-- 暗影、背景、美鹤的样子（红色长卷发、制服、白手套、金色护手细剑、冷冷的眼神）都不变。
+**改法**：回到这个结构。美鹤的头和上身都移出画面，只留她的手臂：穿制服袖子、戴白手套的手从左上角原来护手进来的位置伸入，握着金色护手细剑，剑尖指向原来手指指的地方，也就是暗影面具的十字中心。袖口边可以露几缕红色卷发，让人认出是美鹤。手臂整条从画面边缘进来，所以不会再有"手太短"的问题。暗影、地面、背景都不动。
 
-Image1 = 当前候选 `art/cards/v4/local_edits/round5/batch_03/know_thy_place.png`；输出 `know_thy_place_v2.png`，附对比图（当前 | 修正）。
+附图：Image1 = 当前候选 `art/cards/v4/local_edits/round5/batch_03/know_thy_place.png`（编辑底图，保留暗影、背景、细剑和手套的样子）；Image2 = 原版 `research/regent_assets/images/packed/card_portraits/regent/know_thy_place.png`（只看那只手从哪里进来、指向哪里）。输出 `know_thy_place_v2.png`，附对比图（原版 | 当前 | 修正）。
 
 ```
-Use case: precise-object-edit. Image1 is the current candidate and the edit target. Fix ONE problem: Mitsuru's sword arm is anatomically far too short. Her head is drawn large, but the arm comes straight out of her chest with almost no upper arm, so shoulder to wrist is only about 1.5 head-lengths; a real arm is about 2.5 head-lengths from shoulder to wrist and about 3 to the fingertips. Redraw MITSURU KIRIJO (same design: long wavy auburn-red hair, school uniform with the red bow, white gloves, the gold basket-hilted rapier, the same cold stare) in a correct side-on fencing LUNGE: shoulder, upper arm, elbow, forearm and wrist each clearly readable, the sword arm almost straight and extended forward, upper body leaning into the thrust. Use correct proportions measured in head-lengths (chin to crown): shoulder to wrist 2.5, shoulder to fingertips 3. To fit, scale her down so her head is about 15 to 16% of the canvas height and place her against the upper-left edge. The rapier tip must still touch the center of the cross on the Shadow's mask exactly where it does now, and the rapier blade must stay straight. Keep the trembling Shadow, its puddle, the clock-like floor shape and the purple background unchanged. Crisp hard cel-shading. Opaque, full-bleed, same size as Image1, no text, frame or watermark.
+Use case: precise-object-edit. Image1 is the current candidate and the edit target. Image2 is the ORIGINAL card, used only for its structure: a single arm entering from the upper-left corner and pointing at the kneeling creature at the lower right, with no head or body of that person in the picture. Fix Image1 back to that structure: REMOVE Mitsuru's head, hair mass and torso from the picture and refill that area with the same purple background shapes. Keep only her sword arm, entering from the upper-left edge exactly where the original arm enters in Image2, along the same direction: black school-uniform sleeve with a white cuff, white glove, the same gold basket-hilted rapier, the arm continuous from the canvas edge so its length is natural. A few strands of long wavy auburn-red hair may trail past the sleeve at the very edge so she is recognizable. The rapier tip points at, and touches, the center of the cross on the Shadow's mask, exactly where the original finger pointed; the blade stays straight. Keep the trembling Shadow, its puddle, the clock-like floor shape and the purple background unchanged. Crisp hard cel-shading. Opaque, full-bleed, same size as Image1, no text, frame or watermark.
 ```
