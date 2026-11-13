@@ -382,3 +382,19 @@ Use case: precise-object-edit. Image1 is the current candidate and the edit targ
 ```
 Use case: precise-object-edit. Image1 is the current candidate and the edit target. Image2 is the ORIGINAL card, used only for its structure: a single arm entering from the upper-left corner and pointing at the kneeling creature at the lower right, with no head or body of that person in the picture. Fix Image1 back to that structure: REMOVE Mitsuru's head, hair mass and torso from the picture and refill that area with the same purple background shapes. Keep only her sword arm, entering from the upper-left edge exactly where the original arm enters in Image2, along the same direction: black school-uniform sleeve with a white cuff, white glove, the same gold basket-hilted rapier, the arm continuous from the canvas edge so its length is natural. A few strands of long wavy auburn-red hair may trail past the sleeve at the very edge so she is recognizable. The rapier tip points at, and touches, the center of the cross on the Shadow's mask, exactly where the original finger pointed; the blade stays straight. Keep the trembling Shadow, its puddle, the clock-like floor shape and the purple background unchanged. Crisp hard cel-shading. Opaque, full-bleed, same size as Image1, no text, frame or watermark.
 ```
+
+---
+
+## 修正：淬炼刀刃（后面还留着 Regent）
+
+用户：这张怎么还有 Regent 的形象。
+
+**原因**：原版后面那个巨大的棕色兜帽人影（中间一道金色眼缝，刀刃下方还有它的棕色倒影）就是 Regent 本人。提示词只换了两只手，没点名这个人影，所以它被原样保留了。
+
+**改法**：两只手不动（伊戈尔的白手套、结城理握刀的手都保留）。把后面的兜帽人影换成**伊戈尔本人俯身凑过来**：整个人和撒星尘的那只手是同一个人，构图上顺理成章。他的大脑袋占兜帽原来的位置和大小，长长的鹰钩鼻顺着兜帽尖向下指着刀刃，圆眼睛里有一点金光（接替原来那道金色眼缝），咧嘴笑，稀疏的灰白头发，黑西装的肩膀从右边原来棕色袍子的位置出去。刀刃下方的棕色倒影改成伊戈尔的暗色倒影。画面里不能留任何棕色兜帽、袍子或那道金色眼缝。刀刃、青色闪光、紫色背景都不动。
+
+附图：Image1 = 当前候选 `art/cards/v4/local_edits/round5/batch_04/refine_blade.png`（编辑底图）；Image2 = 原版 `research/regent_assets/images/packed/card_portraits/regent/refine_blade.png`（只看人影的位置和大小）。输出 `refine_blade_v2.png`，附对比图（原版 | 当前 | 修正）。
+
+```
+Use case: precise-object-edit. Image1 is the current candidate and the edit target. Fix ONE problem: the huge brown hooded figure looming behind the blade (pointed hood, a single gold eye slit in its dark face, brown robe sweeping to the right, and its brown reflection under the blade) is the old Regent character and must be completely removed. Replace it, in the same place and at the same size, with IGOR himself leaning in over the blade, so he is the owner of the white-gloved hand sprinkling the dust: his large bald head where the hood was, his very long hooked nose following the hood's point downward toward the blade, huge round bulging eyes with tiny pupils and a small gold glint, a wide toothy grin, sparse white-grey hair at the sides, black suit shoulders exiting to the right where the brown robe was. Keep his cyan rim light on the side facing the sparkles, like the original figure had. Replace the brown reflection under the blade with Igor's dark reflection. No brown hood, robe, or gold eye slit may remain anywhere. Keep the white-gloved hand at the left, Makoto's hand gripping the blade at the right, the horizontal glowing blade, the cyan sparkles and the purple background unchanged. Crisp hard cel-shading. Opaque, full-bleed, same size as Image1, no text, frame or watermark.
+```
