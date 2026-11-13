@@ -1,0 +1,10 @@
+{
+  "status": "awaiting_user_review",
+  "cards": {
+    "crash_landing": "awaiting_user_review",
+    "crush_under": "awaiting_user_review",
+    "devastate": "awaiting_user_review",
+    "gamma_blast": "awaiting_user_review",
+    "heavenly_drill": "awaiting_user_review"
+  }
+}

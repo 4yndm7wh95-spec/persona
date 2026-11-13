@@ -1,0 +1,10 @@
+{
+  "status": "awaiting_user_review",
+  "cards": {
+    "void_form": "awaiting_user_review",
+    "comet": "awaiting_user_review",
+    "alignment": "awaiting_user_review",
+    "charge": "awaiting_user_review",
+    "pillar_of_creation": "awaiting_user_review"
+  }
+}
