@@ -419,10 +419,14 @@ public static class Aim
 		"Outbreak" => Persona.ArseneSpec with { First = 18, Linger = CrushHand.CrushAfter + 0.4f },   // 巨手版：一现身就出手（0.25s）= 手冲出来，捏碎后再停 0.4s 退场
 		"BouncingFlask" => Persona.ArseneSpec with { Linger = 1.7f },   // 等咒怨火球三跳都落地再退场
 		var n when Grips(n) => Persona.ArseneSpec with { Linger = 1.1f },   // 伸手抓人：等手收回来再走
+		var n when Commands(n) => Persona.ArseneSpec with { Linger = 0.9f },
 		_ => Persona.ArseneSpec,
 	};
 
 	/// <summary>召唤人格面具、单体上毒的牌：亚森伸手攥住中毒的怪（Grip）。</summary>
+	/// <summary>普通稀有度、但也召唤亚森的牌：蛇咬（用户 2026-11-13：召唤亚森，亚森一挥手、蛇从咒烟里窜出来咬）。</summary>
+	public static bool Commands(string cardName) => cardName is "Snakebite";
+
 	public static bool Grips(string cardName) => cardName is "BubbleBubble" or "DeadlyPoison";   // 用户 2026-11-01：只要用毒就亚森 + 手捏（蛇咬 2026-11-11 改成敌人那里冒出一条蛇咬，不召唤）
 
 	/// <summary>
@@ -434,7 +438,7 @@ public static class Aim
 
 	/// <summary>这张牌打出时会不会召唤人格面具（Aim.PlayCast 和 SkillPlay 的时刻都按这个）。</summary>
 	public static bool Summons(CardModel card) => card.Type != CardType.Attack && StanceFor(card) == Stance.Mask && !NoPersona.Contains(card.GetType().Name)
-		&& (Tiers.For(card) >= Tier.Uncommon || Grips(card.GetType().Name));
+		&& (Tiers.For(card) >= Tier.Uncommon || Grips(card.GetType().Name) || Commands(card.GetType().Name));
 
 	/// <summary>游戏结算这张牌（Cast 之后的等待）推迟 seconds 秒（蛇咬：等蛇咬下去再上毒）。</summary>
 	public static void HoldCast(NCreature node, float seconds) => Summoning[node.GetInstanceId()] = Time.GetTicksMsec() + (ulong)(seconds * 1000f);

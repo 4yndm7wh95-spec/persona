@@ -96,16 +96,14 @@ public static class PoisonFx
 		{
 			return;                                                   // 腐蚀波：抽牌带来的上毒由贴地的咒火浪表现（CorrosiveFx.Wave）
 		}
-		if (ArseneFx.TryClaw(out Vector2 claw))
+		if (Stage.NowMs() >= NoBeamUntil && ArseneFx.TryClaw(out Vector2 claw))
 		{
 			Vector2 d = at - claw;
 			float len = d.Length();
 			if (len > 40f)
 			{
-				// slash_thrust（打包后 1024×512）：宽的起爆在爪尖、细线伸向敌人；比枪的弹道粗、用咒怨 LUT
-				float sx = len / 940f;
-				Vector2 center = claw + d * 0.5f + d.Normalized() * (512f - 530f) * sx;
-				Paint.Sweep(layer, "slash_thrust", center, d.Angle(), new Vector2(sx, 0.42f), Lut5.Curse, 0.08f, 0.04f, 0.22f, 0f, 0f, 1.4f);
+				// 用户 2026-11-13：原来的贴图光束（slash_thrust）偏硬、很贴图 → 换成着色器画的咒怨光带（CurseBeam）
+				Beam(layer, claw, at, 0.07f, 0.08f, Mathf.Clamp(width * 0.16f, 22f, 46f));
 				for (int i = 1; i <= 3; i++)
 				{
 					Vector2 p = claw + d * (0.25f * i);
@@ -273,6 +271,93 @@ public static class PoisonFx
 	}
 
 	public static bool InOutbreak => Stage.NowMs() < _outbreakUntil;
+
+	/// <summary>这段时间里的上毒走普通落点（不从亚森爪尖甩光束）：蛇咬召唤了亚森，但毒是蛇咬上的（用户 2026-11-13：蛇咬原来的毒特效保留）。</summary>
+	public static ulong NoBeamUntil;
+
+	private static Shader? _beam;
+
+	/// <summary>
+	/// 咒怨光带（亚森爪尖 → 敌人）：ColorRect 沿着两点放（UV.x 0 起点 → 1 终点，UV.y 横向）。整条按 bend 拱起一道弧；
+	/// 头 head 从起点冲到终点，两头都是圆的（宽度平滑收起来，没有尖角）；里面的纹理和细丝往终点方向流（flow）；
+	/// 白热芯、暗红身、外面一圈柔光；thin 0 → 1 变细淡掉。
+	/// </summary>
+	private static Shader BeamShader => _beam ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform float head = 1.0;
+uniform float tail = 0.0;
+uniform float thin = 0.0;
+uniform float flow = 0.0;
+uniform float bend = 0.2;
+uniform float waves = 1.0;     // 1 = 一道弧；> 1 = 像蛇一样弯几道（越往终点摆得越小）
+uniform float aspect = 8.0;
+uniform float seed = 0.0;
+uniform float alpha = 1.0;
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+float noise(vec2 p) {
+	vec2 i = floor(p), f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+}
+void fragment() {
+	float x = UV.x;
+	// 弧：中间拱起（UV.y 0.5 是直线，quad 上下留了余量）
+	float y = (UV.y - 0.5) * 2.0 + bend * sin(x * 3.14159 * waves) * 2.0 * (waves > 1.0 ? (1.0 - 0.6 * x) : 1.0);
+	// 两头圆：在头、尾附近宽度平滑收起来
+	float span = max(head - tail, 0.001);
+	float capL = 0.45 / aspect;   // 圆头的长度 ≈ 光带半宽
+	float body = smoothstep(tail, tail + capL, x) * (1.0 - smoothstep(head - capL, head, x));
+	float w = (0.42 + 0.12 * sin(x * 18.0 - flow * 1.3 + seed)) * body * (1.0 - 0.75 * thin);
+	float n = noise(vec2(x * aspect * 1.6 - flow * 2.0, y * 3.0 + seed));
+	float n2 = noise(vec2(x * aspect * 4.0 - flow * 3.5, y * 9.0 - seed));
+	float wl = max(w, 1e-3);
+	float d = abs(y) / wl;
+	float glow = exp(-d * d * 0.9) * body;
+	float bodyA = smoothstep(1.0, 0.55, d + (n - 0.5) * 0.4);
+	float core = smoothstep(0.42, 0.0, d + (n2 - 0.5) * 0.25) * (1.0 - thin * 0.6);
+	// 细丝：顺着方向流
+	float fil = pow(1.0 - abs(noise(vec2(x * aspect * 2.2 - flow * 4.0, y * 14.0 + seed)) * 2.0 - 1.0), 8.0) * smoothstep(1.2, 0.3, d);
+	vec3 deep = vec3(0.32, 0.0, 0.06);
+	vec3 red = vec3(0.92, 0.06, 0.16);
+	vec3 col = mix(deep, red, smoothstep(0.9, 0.3, d) * (0.6 + 0.4 * n));
+	col = mix(col, vec3(1.0, 0.92, 0.9), core);
+	col += vec3(1.0, 0.45, 0.45) * fil * 0.6 * body;
+	float a = max(bodyA * body * (0.75 + 0.25 * n), glow * 0.35) + fil * 0.3 * body;
+	a = clamp(a, 0.0, 1.0) * alpha;
+	if (a <= 0.003) discard;
+	COLOR = vec4(col, a);
+}" };
+
+	/// <summary>
+	/// 从 from 到 to 的一道咒怨光带：grow 秒冲过去，停一下，再 fade 秒变细淡掉。bend 拱起的程度（相对长度），width 光带粗细（像素）。
+	/// </summary>
+	public static void Beam(Control layer, Vector2 from, Vector2 to, float bend, float grow, float width, float hold = 0.06f, float fade = 0.2f, float waves = 1f)
+	{
+		Vector2 dv = to - from;
+		float len = dv.Length();
+		if (len < 10f) return;
+		float hgt = width * 2f + Mathf.Abs(bend) * len * 1.2f;   // 上下留出弧的余量
+		Node2D root = Fx.Root(layer, from, "P5CurseBeam", grow + hold + fade + 0.1);
+		root.Rotation = dv.Angle();
+		ShaderMaterial m = new() { Shader = BeamShader };
+		m.SetShaderParameter("aspect", len / hgt);
+		m.SetShaderParameter("waves", waves);
+		m.SetShaderParameter("seed", Fx.Rand(0f, 30f));
+		// bend 是相对 quad 半高的：拱起 bend*len 像素 → 换算
+		m.SetShaderParameter("bend", bend * len / hgt * (dv.X >= 0f ? 1f : -1f));   // 往上拱（朝左时 quad 是倒过来的）
+		ColorRect q = new() { Size = new Vector2(len, hgt), Position = new Vector2(0f, -hgt / 2f), Material = m, MouseFilter = Control.MouseFilterEnum.Ignore };
+		root.AddChild(q);
+		float total = grow + hold + fade;
+		Fx.Animate(root, 0, total, t =>
+		{
+			float s = t * total;
+			m.SetShaderParameter("head", Ease5.OutQuint(Mathf.Min(1f, s / grow)) * 1.02f);
+			m.SetShaderParameter("tail", Fx.InCubic(Ease5.Seg(s, grow + hold * 0.5f, fade + hold * 0.5f)) * 1.02f);
+			m.SetShaderParameter("thin", Ease5.Seg(s, grow + hold, fade));
+			m.SetShaderParameter("flow", s * 12f);
+			m.SetShaderParameter("alpha", 1f - Ease5.Seg(s, grow + hold + fade * 0.6f, fade * 0.4f));
+		});
+	}
 
 	/// <summary>捏碎时的拳心（全局坐标）：引爆时敌人被往远离拳心的方向打退；没捏碎过为空。</summary>
 	private static Vector2? _crushFrom;

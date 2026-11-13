@@ -510,6 +510,26 @@ public partial class Preview : Node2D
 			}
 		},
 		// 第四版毒组：致命毒药（5 层）→ 弹跳药瓶（3 跳随机）→ 一次加 9 层 → 回合开始三个敌人各结算一轮毒伤
+		// 2026-11-13（B 方案）：蛇咬召唤亚森 → 一挥手、蛇形光带游到敌人斜上方、咒烟鼓起 → 蛇窜出来咬 → 咬合时上毒（原来的落点）
+		["snakebite_arsene"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			float atk = Persona.ArseneSpec.AttackAt;
+			Vector2 fb = JokerFeet + new Vector2(-tall * 0.3f, -tall * 1.2f);
+			foreach ((Vector2 e, double t0) in new[] { (Enemy, 0.3), (Enemy3, 2.6) })
+			{
+				p.At(t0, () => { p._joker?.Play("cast"); PoisonFx.NoBeamUntil = Stage.NowMs() + 2000; });   // 同 JokerFx：毒走原来的落点
+				p.At(t0 + 0.04, () => ArseneFx.Show(p._back, JokerFeet, tall * 1.35f, 1f, atk, atk + 0.9f));
+				p.At(t0 + 0.04 + atk, () =>
+				{
+					Vector2 at = e + new Vector2(0f, -10f);
+					SnakeSummonFx.Play(p._front, p._back, ArseneFx.TryClaw(out Vector2 c0) ? c0 : fb, at, tall, 1f);
+					p._enemies.TryGetValue(e, out Node2D? n);
+					p.At(SnakeSummonFx.Lag, () => SerpentMantle.Bite(p._front, p._back, at, n, tall, 1f));   // At 是从现在算
+				});
+				p.Poison(t0 + 0.04 + atk + SnakeSummonFx.Lag + SerpentMantle.BiteDelay, e, 7);
+			}
+		},
 		["poison_v4"] = p =>
 		{
 			p.At(0.2, () => p._joker?.Play("cast"));

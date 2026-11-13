@@ -168,18 +168,25 @@ public static class JokerFx
 			}
 			case "Snakebite" when t != null:
 			{
-				// 用户 2026-11-11：复用群蛇形态的扑咬——敌人斜上方一团咒烟里冒出一条蛇咬下去；上毒（PoisonApplyPatch → PoisonFx）等到咬合那一刻
-				HideBiteUntil = Time.GetTicksMsec() + 3000;
+				// 用户 2026-11-13（B 方案）：召唤亚森（Aim.Commands）→ 亚森出手时一挥手，蛇形咒怨光带游到敌人斜上方，咒烟鼓起，
+				// 蛇从烟里窜出来咬（群蛇形态的扑咬，原来的毒的落点不变：不从亚森爪尖甩光束）；上毒等到咬合那一刻
+				HideBiteUntil = Time.GetTicksMsec() + 4000;
 				Control back = Joker.FxLayer(back: true) ?? layer;
 				float tall = (Joker.PosePoint(joker, ReadyFx.Feet) - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length();
 				float face = Joker.Facing(joker);
-				float lead = SkillPlay.Moment(joker);                          // 扶面具施法里手甩出去的那一帧（cast 0.4s / 从扶面具接 0.23s）
-				float biteIn = lead + SerpentMantle.BiteDelay;
+				float hit = Aim.HitFor(card);
+				float biteIn = hit + SnakeSummonFx.Lag + SerpentMantle.BiteDelay;
 				Aim.HoldCast(joker, biteIn);
+				PoisonFx.NoBeamUntil = Stage.NowMs() + (ulong)((biteIn + 0.6f) * 1000f);
 				NCreature tn = t;
-				Fx.After(layer, lead, () =>
+				Vector2 fallback = Joker.Chest(joker) + new Vector2(-face * tall * 0.3f, -tall * 0.6f);
+				Fx.After(layer, hit, () =>
 				{
-					if (GodotObject.IsInstanceValid(tn)) SerpentMantle.Bite(layer, back, tn.Hitbox.GetGlobalRect().GetCenter(), tn.Visuals, tall, face);
+					if (!GodotObject.IsInstanceValid(tn)) return;
+					Vector2 at = tn.Hitbox.GetGlobalRect().GetCenter();
+					SnakeSummonFx.Play(layer, back, ArseneFx.TryClaw(out Vector2 c0) ? c0 : fallback, at, tall, face);
+					Node2D? vis = tn.Visuals;
+					Fx.After(layer, SnakeSummonFx.Lag, () => { if (GodotObject.IsInstanceValid(tn)) SerpentMantle.Bite(layer, back, at, vis, tall, face); });
 				});
 				break;
 			}
