@@ -483,3 +483,35 @@ void fragment() {
 		}
 	}
 }
+
+public static partial class SkillRedo5
+{
+	/// <summary>
+	/// 群蛇形态的一咬（用户 2026-11-13：蛇咬的时候敌人身上同时有打击牌的刀光火花，蛇被挡住、看不清 → 加强）：
+	/// 扑下去那 0.1s 一道亮红白的疾光从蛇缩起的位置射向咬点；咬合那一刻上下两道弧形「獠牙」猛地合上，
+	/// 身后漾开一圈红网点光晕。top = 盖在命中特效上面的那一层，back = 敌人身后。from = 蛇缩起的位置，at = 咬点，T = Joker 身高。
+	/// </summary>
+	public static void SerpentStrike(Control top, Control back, Vector2 from, Vector2 at, float T, float biteIn)
+	{
+		Vector2 dir = (at - from).LengthSquared() > 1f ? (at - from).Normalized() : Vector2.Right;
+		Vector2 perp = new(-dir.Y, dir.X);
+		Vector2 a0 = from, a1 = at;
+		DashFly(top, t => a0.Lerp(a1, t), 0f, biteIn + 0.04f, T * 0.7f, T * 0.09f, new Color(0.95f, 0.06f, 0.15f), 1f, Fx.InCubic, 0.7f);
+		DashFly(top, t => a0.Lerp(a1, t), 0.01f, biteIn + 0.03f, T * 0.55f, T * 0.025f, new Color(1f, 0.85f, 0.85f), 1.5f, Fx.InCubic, 0.7f);
+		Fx.After(top, biteIn, () =>
+		{
+			float R = T * 0.45f;
+			foreach (float s in new[] { 1f, -1f })
+			{
+				// 獠牙：从咬点两侧外面（偏后）沿弧线猛地合到咬点
+				Vector2 p0 = at + perp * R * s - dir * R * 0.7f, c = at + perp * R * 0.9f * s + dir * R * 0.5f;
+				Func<float, Vector2> jaw = t => p0.Lerp(c, t).Lerp(c.Lerp(at, t), t);
+				DashFly(top, jaw, 0f, 0.2f, R * 1.4f, T * 0.11f, new Color(0.95f, 0.06f, 0.15f), 1f, t => Ease5.OutQuint(Mathf.Min(1f, t * 2.2f)), 0.55f);
+				DashFly(top, jaw, 0.005f, 0.19f, R * 1.2f, T * 0.035f, new Color(1f, 0.9f, 0.88f), 1.6f, t => Ease5.OutQuint(Mathf.Min(1f, t * 2.2f)), 0.55f);
+			}
+			Glow.Flash(top, at, new Color(1f, 0.92f, 0.9f), T * 0.45f, 0.14f);
+			HalftoneBurst(back, at, T * 1.5f, 0.38f);
+			Glow.Flash(back, at, new Color(1f, 0.12f, 0.22f), T * 1.4f, 0.3f);
+		});
+	}
+}

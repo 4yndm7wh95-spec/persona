@@ -417,6 +417,7 @@ void fragment() {
 	private Func<(Vector2 Feet, float Tall, float Face)?> _body;
 	private bool _live;
 	private readonly Node2D _frontRoot, _backRoot;
+	private readonly Control _top = null!;
 	private readonly ShaderMaterial _frontM, _backM;
 	private readonly SceneTree _tree;
 	private readonly Vector4[] _spine = new Vector4[Count * N];
@@ -532,6 +533,11 @@ void fragment() {
 		(Vector2 feet, float tall, float _) = body() ?? (Vector2.Zero, 300f, 1f);
 		var rect = new Rect2(-3f * tall, -2.9f * tall, 10f * tall, 3.6f * tall);
 		(_frontRoot, _frontM) = Make(front, feet, rect, 1f, "P5SerpentsFront");
+		// 用户 2026-11-13：蛇咬时被打击牌的命中特效盖住 → 身前那层蛇和咬合特效画在命中特效上面
+		_frontRoot.ZIndex = 30;
+		_top = new Control { Name = "P5SerpentTop", ZIndex = 31, MouseFilter = Control.MouseFilterEnum.Ignore };
+		front.AddChild(_top);
+		_frontRoot.TreeExiting += () => { if (GodotObject.IsInstanceValid(_top)) _top.QueueFree(); };
 		(_backRoot, _backM) = Make(back, feet, rect, -1f, "P5SerpentsBack");
 		for (int i = 0; i < Count; i++) _girth[i] = 0.068f * tall * Orbits[i].Size;   // 修长：细一些、长一些（第三版：再细，用户说太肥）
 		if (!biteOnly)
@@ -717,7 +723,11 @@ void fragment() {
 			var (side, tilt) = PickApproach();
 			Vector3 op = Orbit(serp, _tau[serp], T, face);
 			// 直接从扑咬开始（StrikeStart）：跳过了在轨道上窜出去那段，原位的残烟就放在这条蛇现在所在的位置
-			_attacks[slot] = new Attack { Serpent = serp, Target = tat - feet, Body = tbody, T = StrikeStart, Side = side, Tilt = tilt, From = new Vector2(op.X, op.Y) };
+			Attack na = new() { Serpent = serp, Target = tat - feet, Body = tbody, T = StrikeStart, Side = side, Tilt = tilt, From = new Vector2(op.X, op.Y) };
+			_attacks[slot] = na;
+			// 扑下去的疾光 + 咬合的獠牙（画在命中特效上面）
+			if (!_biteOnly && GodotObject.IsInstanceValid(_top))
+				SkillRedo5.SerpentStrike(_top, _back, tat + na.L(new Vector2(-0.72f * T, -0.72f * T), face), tat, T, BiteAt - StrikeStart);
 		}
 
 		for (int i = 0; i < Count; i++)
@@ -1084,10 +1094,11 @@ void fragment() {
 			if (!a.Bit && t >= BiteAt)
 			{
 				a.Bit = true;
-				Stage.PlayEvent?.Invoke(BiteSfx, 0.55f);   // 只有咬合的声音（用户：冲出来不要音效）
+				Stage.PlayEvent?.Invoke(BiteSfx, 0.8f);   // 只有咬合的声音（用户：冲出来不要音效）；2026-11-13 用户：稍微小了一点 → 0.55 提到 0.8
 				Vector2 at = feet + a.Target;
-				Glow.Flash(_front, at, Pal5.Crimson, 0.8f * T, 0.22f);
-				Glow.Sparks(_front, at, 22, 180f, 600f, 0.5f, new[] { Pal5.Bright, Pal5.Crimson, Pal5.Deep }, 250f, 0.1f, 0.32f, Vector2.Up, 160f);
+				Control fx = GodotObject.IsInstanceValid(_top) ? _top : _front;
+				Glow.Flash(fx, at, Pal5.Crimson, 0.8f * T, 0.22f);
+				Glow.Sparks(fx, at, 22, 180f, 600f, 0.5f, new[] { Pal5.Bright, Pal5.Crimson, Pal5.Deep }, 250f, 0.1f, 0.32f, Vector2.Up, 160f);
 				if (a.Body != null && GodotObject.IsInstanceValid(a.Body)) BodyTint.Pulse(a.Body, new Color(2.2f, 2.2f, 2.2f), 0.05, 0.2);   // 被咬的敌人闪一下白
 				Fx.Shake(2);
 				HitStop.Request(0.06);
