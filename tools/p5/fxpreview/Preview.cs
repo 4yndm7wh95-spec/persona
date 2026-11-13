@@ -539,7 +539,7 @@ public partial class Preview : Node2D
 		["knife_trap"] = p =>
 		{
 			p.At(0.2, () => p._joker?.Play("aim_in"));
-			p.At(0.35, () => { p._enemies.TryGetValue(Enemy, out Node2D? n); KnifeTrapFx.Begin(p._front, p._back, Enemy + new Vector2(0f, -10f), 285f, 260f, 6, n); });
+			p.At(0.35, () => { p._enemies.TryGetValue(Enemy, out Node2D? n); KnifeTrapFx.Begin(p._front, p._back, Muzzle, Enemy + new Vector2(0f, -10f), 285f, 260f, 6, n); });
 			for (int i = 0; i < 6; i++)
 			{
 				double at = 1.0 + 0.28 * i;
@@ -833,6 +833,7 @@ public partial class Preview : Node2D
 		},
 		["redo7"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.9) }),
 		["haze"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Haze", "cast_wave", 0.08, 2.6), ("Haze", "cast_wave", 0.08, 2.6) }),
+		["adrenaline"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Adrenaline", "cast_glove", 0.25, 1.6), ("Adrenaline", "cast_glove", 0.25, 1.6) }),
 		["fumes"] = p => RunCards(p, null, new (string, string, double, double)[] { ("NoxiousFumes", "cast", 0.4, 7.5) }),
 		["redo"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Acrobatics", "cast_glove", 0.25, 1.7), ("Acrobatics", "cast_glove", 0.25, 1.7) }),
 		["redo3"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Survivor", "cast_guard", 0.08, 1.2), ("CalculatedGamble", "cast_glove", 0.25, 1.9), ("Tactician", "cast_glove", 0.25, 1.2), ("Adrenaline", "cast_glove", 0.25, 1.4), ("ShadowStep", "cast_glove", 0.25, 1.4) }),

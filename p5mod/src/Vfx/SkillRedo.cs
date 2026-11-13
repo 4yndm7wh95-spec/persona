@@ -25,7 +25,7 @@ public static class SkillRedo
 		cards["ShadowStep"] = ShadowStep;
 	}
 
-	private static float CardW(SkillCtx c) => c.Tall * 0.16f;
+	internal static float CardW(SkillCtx c) => c.Tall * 0.16f;
 	// 音效按节拍配（用户 2026-11-12：太杂，配合不好）：每个效果只留两三个关键拍，每拍一个声音、主拍最清楚，其余更轻；同一种动作重复时只响一次（几张牌落进手牌只一声）
 	private static void DrawTick(int k, float delay = 0f) { }
 	/// <summary>音色板里的一个音（Sfx.Palette），at 秒后、对在那一帧。都压得很轻：有，但不抢。</summary>
@@ -33,7 +33,7 @@ public static class SkillRedo
 	private static void Snap(float at, float vol = 0.16f) => Sfx.PlayHit(Sfx.CardDraw, vol, at);
 
 	/// <summary>从 a 飞进手牌区（先慢后快、带一点弧），越飞越小；结束时拖尾收掉、牌藏起、手牌区几根火花。</summary>
-	private static Phantom.P5Card ToHand(SkillCtx c, Vector2 a, float delay, float life, float tilt0, float arc, float trail = 0.85f, float spin = 9f)
+	internal static Phantom.P5Card ToHand(SkillCtx c, Vector2 a, float delay, float life, float tilt0, float arc, float trail = 0.85f, float spin = 9f)
 	{
 		float u = c.Unit, w = CardW(c);
 		Vector2 hand = SkillFx.HandArea(c.Front), ctrl = a.Lerp(hand, 0.35f) + new Vector2(c.Face * c.Tall * 0.2f, -arc);
