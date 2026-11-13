@@ -1,0 +1,29 @@
+{
+  "name": "particle_wall",
+  "variant": "",
+  "zh_name": "粒子墙",
+  "batch": 2,
+  "base_commit": "64107701",
+  "local_head": "fe062416",
+  "tool": "built-in imagegen",
+  "status": "approved_by_user",
+  "generation_count": 1,
+  "automatic_retry": false,
+  "image1": "research/regent_assets/images/packed/card_portraits/regent/particle_wall.png",
+  "references": [],
+  "reference_sha256": {
+    "research/regent_assets/images/packed/card_portraits/regent/particle_wall.png": "b61b5c33ade47c6ffe77c79a278ed972acf64a54ca03b28c4e22a61f9ae39aa0"
+  },
+  "submitted_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET. The previous pass only swapped characters and looked plain and standard: this pass must feel INVENTIVE, reinterpreting the replaced subject as a specific Persona 3 Reload moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. Makoto Yuki's face and head never appear (hands and sleeves only); other characters' faces are allowed. Persona creatures' hands are plump cartoon mittens with no long human fingers. If a named character's design is uncertain, follow the described features, keep the rest simple, and never invent text. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760, no text, letters, numbers, frame, UI or watermark. The wall of blue constellation bricks becomes a TARTARUS WALL in the same position, perspective and brick layout: dark teal-green stone blocks with thin glowing cyan-green circuit-like lines and a faint checker pattern, the white star points kept as small glowing rivets at the joints. The green flower enemy at the upper left becomes a SHADOW clinging to the top of the wall in the same place, mask peering over. Keep unchanged: the red-orange background, the white light streak at the right. Character and object designs: [SHADOW] = P3R SHADOW: a blob of glossy black ooze with a few dripping tendrils, wearing one pale mask (bone-white or pale blue, simple stylised face with narrow eye slits); each Shadow gets a different simple mask.",
+  "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-cb0e6286-c360-490f-b932-f1fb7a2498bd.png",
+  "raw_file": "generation_sources/exec-cb0e6286-c360-490f-b932-f1fb7a2498bd.png",
+  "generated_size": [
+    1438,
+    1093
+  ],
+  "output_file": "particle_wall.png",
+  "output_size": [
+    1000,
+    760
+  ]
+}

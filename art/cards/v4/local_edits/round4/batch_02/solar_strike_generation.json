@@ -1,0 +1,32 @@
+{
+  "name": "solar_strike",
+  "variant": "",
+  "zh_name": "太阳打击",
+  "batch": 2,
+  "base_commit": "64107701",
+  "local_head": "fe062416",
+  "tool": "built-in imagegen",
+  "status": "approved_by_user",
+  "generation_count": 1,
+  "automatic_retry": false,
+  "image1": "research/regent_assets/images/packed/card_portraits/regent/solar_strike.png",
+  "references": [
+    "art/parts_src/sword.png"
+  ],
+  "reference_sha256": {
+    "research/regent_assets/images/packed/card_portraits/regent/solar_strike.png": "bcf63d01dc97fced30444cbf113e7728894381377dbdfaedb8c212296505bf8d",
+    "art/parts_src/sword.png": "017c1c9ba18c9fcc851b52a36b59bab1604d64b24399d3ed35c57e472818bed5"
+  },
+  "submitted_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET. The previous pass only swapped characters and looked plain and standard: this pass must feel INVENTIVE, reinterpreting the replaced subject as a specific Persona 3 Reload moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. Makoto Yuki's face and head never appear (hands and sleeves only); other characters' faces are allowed. Persona creatures' hands are plump cartoon mittens with no long human fingers. If a named character's design is uncertain, follow the described features, keep the rest simple, and never invent text. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760, no text, letters, numbers, frame, UI or watermark. The big white crescent slash at the upper right becomes the slash trail of MAKOTO SWORD: the silver blade tip visible at the start of the arc, the arc itself staying the same white crescent shape and size. The blue eye-blob enemy being hit becomes a SHADOW at the same size and position, its mask lit by the orange-yellow beam. Keep unchanged: the orange-yellow fire beam, the dark leaves, the red background. Character and object designs: [MAKOTO SWORD] = Makoto's sword: plain silver straight single-edge blade, simple silver crossguard, black wrapped grip, round silver pommel. [SHADOW] = P3R SHADOW: a blob of glossy black ooze with a few dripping tendrils, wearing one pale mask (bone-white or pale blue, simple stylised face with narrow eye slits); each Shadow gets a different simple mask.\nSupporting images after Image1 are DESIGN REFERENCES ONLY, in the listed order: art/parts_src/sword.png. Do not import their backgrounds, other characters, poses or framing. Only use the named character/object designs specified in the prompt.",
+  "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-cdad2e14-20b4-483b-8c02-365426982968.png",
+  "raw_file": "generation_sources/exec-cdad2e14-20b4-483b-8c02-365426982968.png",
+  "generated_size": [
+    1439,
+    1093
+  ],
+  "output_file": "solar_strike.png",
+  "output_size": [
+    1000,
+    760
+  ]
+}

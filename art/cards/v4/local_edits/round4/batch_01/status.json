@@ -1,0 +1,28 @@
+{
+  "automatic_retry": false,
+  "cards": {
+    "collision_course": "approved_by_user",
+    "meteor_shower": "approved_by_user",
+    "black_hole": "approved_by_user",
+    "bombardment": "approved_by_user",
+    "dying_star": "approved_by_user",
+    "guiding_star": "approved_by_user"
+  },
+  "status": "approved_by_user",
+  "latest_candidates": {
+    "meteor_shower": "meteor_shower.png",
+    "black_hole": "black_hole.png",
+    "guiding_star": "guiding_star.png",
+    "collision_course": "collision_course_v2.png",
+    "dying_star": "dying_star.png",
+    "bombardment": "bombardment.png"
+  },
+  "collision_course_candidates": {
+    "collision_course_v2.png": "approved_by_user",
+    "collision_course.png": "revision_requested_by_user"
+  },
+  "user_review": {
+    "scope": "round4 batch_01 all six cards; collision_course_v2.png selected",
+    "message": "过关"
+  }
+}

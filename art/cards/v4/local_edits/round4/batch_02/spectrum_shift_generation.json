@@ -1,0 +1,29 @@
+{
+  "name": "spectrum_shift",
+  "variant": "",
+  "zh_name": "光谱偏移",
+  "batch": 2,
+  "base_commit": "64107701",
+  "local_head": "fe062416",
+  "tool": "built-in imagegen",
+  "status": "approved_by_user",
+  "generation_count": 1,
+  "automatic_retry": false,
+  "image1": "research/regent_assets/images/packed/card_portraits/regent/spectrum_shift.png",
+  "references": [],
+  "reference_sha256": {
+    "research/regent_assets/images/packed/card_portraits/regent/spectrum_shift.png": "a7f9dfbd673ae48f5772170bcb0115a4b15bc6975dad8389c0eab3e14d77d96c"
+  },
+  "submitted_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET. The previous pass only swapped characters and looked plain and standard: this pass must feel INVENTIVE, reinterpreting the replaced subject as a specific Persona 3 Reload moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. Makoto Yuki's face and head never appear (hands and sleeves only); other characters' faces are allowed. Persona creatures' hands are plump cartoon mittens with no long human fingers. If a named character's design is uncertain, follow the described features, keep the rest simple, and never invent text. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760, no text, letters, numbers, frame, UI or watermark. The rainbow ribbon becomes a long flowing STREAM OF TAROT CARDS: dozens of overlapping cards following exactly the same ribbon shape, width, curve and perspective, each band of cards tinted one rainbow color in the same order as the original bands (red, orange, yellow, green, cyan, blue, violet), the card faces showing simple gold emblems (no text), the curling white tip becoming one bright white card. Keep unchanged: the dark navy background and its rays.",
+  "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-9a855af6-6dde-4d04-b7f2-715754ac2f14.png",
+  "raw_file": "generation_sources/exec-9a855af6-6dde-4d04-b7f2-715754ac2f14.png",
+  "generated_size": [
+    1439,
+    1093
+  ],
+  "output_file": "spectrum_shift.png",
+  "output_size": [
+    1000,
+    760
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "user_message": "过关",
+  "status": "approved_by_user",
+  "selected_versions": {
+    "meteor_shower": "meteor_shower.png",
+    "black_hole": "black_hole.png",
+    "guiding_star": "guiding_star.png",
+    "collision_course": "collision_course_v2.png",
+    "dying_star": "dying_star.png",
+    "bombardment": "bombardment.png"
+  }
+}

@@ -1,0 +1,160 @@
+{
+  "records": [
+    {
+      "name": "lunar_blast",
+      "variant": "",
+      "zh_name": "月面射击",
+      "batch": 2,
+      "base_commit": "64107701",
+      "local_head": "fe062416",
+      "tool": "built-in imagegen",
+      "status": "approved_by_user",
+      "generation_count": 1,
+      "automatic_retry": false,
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/lunar_blast.png",
+      "references": [],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/lunar_blast.png": "4fa7ae8f24184a01a9427d7d33dac6141c5ae5de0161eb5e94eb9f37506b5062"
+      },
+      "submitted_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET. The previous pass only swapped characters and looked plain and standard: this pass must feel INVENTIVE, reinterpreting the replaced subject as a specific Persona 3 Reload moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. Makoto Yuki's face and head never appear (hands and sleeves only); other characters' faces are allowed. Persona creatures' hands are plump cartoon mittens with no long human fingers. If a named character's design is uncertain, follow the described features, keep the rest simple, and never invent text. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760, no text, letters, numbers, frame, UI or watermark. The white swirling disc at the left becomes a huge FULL MOON in the same circle: pale ivory with a few crater planes and a crescent-shaped shadow sweeping across it like a turning moon phase, its blast of white light shooting toward the right along the same path. The brown rock enemy with ice shards at the right becomes a SHADOW armored in the same brown rock plates, the plates shattering into the same white-cyan shards. Keep unchanged: the dark red-purple background. Character and object designs: [SHADOW] = P3R SHADOW: a blob of glossy black ooze with a few dripping tendrils, wearing one pale mask (bone-white or pale blue, simple stylised face with narrow eye slits); each Shadow gets a different simple mask.",
+      "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-091657f4-37a0-4dfd-bcc4-cd8daf3c866a.png",
+      "raw_file": "generation_sources/exec-091657f4-37a0-4dfd-bcc4-cd8daf3c866a.png",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "output_file": "lunar_blast.png",
+      "output_size": [
+        1000,
+        760
+      ]
+    },
+    {
+      "name": "particle_wall",
+      "variant": "",
+      "zh_name": "粒子墙",
+      "batch": 2,
+      "base_commit": "64107701",
+      "local_head": "fe062416",
+      "tool": "built-in imagegen",
+      "status": "approved_by_user",
+      "generation_count": 1,
+      "automatic_retry": false,
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/particle_wall.png",
+      "references": [],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/particle_wall.png": "b61b5c33ade47c6ffe77c79a278ed972acf64a54ca03b28c4e22a61f9ae39aa0"
+      },
+      "submitted_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET. The previous pass only swapped characters and looked plain and standard: this pass must feel INVENTIVE, reinterpreting the replaced subject as a specific Persona 3 Reload moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. Makoto Yuki's face and head never appear (hands and sleeves only); other characters' faces are allowed. Persona creatures' hands are plump cartoon mittens with no long human fingers. If a named character's design is uncertain, follow the described features, keep the rest simple, and never invent text. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760, no text, letters, numbers, frame, UI or watermark. The wall of blue constellation bricks becomes a TARTARUS WALL in the same position, perspective and brick layout: dark teal-green stone blocks with thin glowing cyan-green circuit-like lines and a faint checker pattern, the white star points kept as small glowing rivets at the joints. The green flower enemy at the upper left becomes a SHADOW clinging to the top of the wall in the same place, mask peering over. Keep unchanged: the red-orange background, the white light streak at the right. Character and object designs: [SHADOW] = P3R SHADOW: a blob of glossy black ooze with a few dripping tendrils, wearing one pale mask (bone-white or pale blue, simple stylised face with narrow eye slits); each Shadow gets a different simple mask.",
+      "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-cb0e6286-c360-490f-b932-f1fb7a2498bd.png",
+      "raw_file": "generation_sources/exec-cb0e6286-c360-490f-b932-f1fb7a2498bd.png",
+      "generated_size": [
+        1438,
+        1093
+      ],
+      "output_file": "particle_wall.png",
+      "output_size": [
+        1000,
+        760
+      ]
+    },
+    {
+      "name": "seven_stars",
+      "variant": "",
+      "zh_name": "七星",
+      "batch": 2,
+      "base_commit": "64107701",
+      "local_head": "fe062416",
+      "tool": "built-in imagegen",
+      "status": "approved_by_user",
+      "generation_count": 1,
+      "automatic_retry": false,
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/seven_stars.png",
+      "references": [],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/seven_stars.png": "e880bc27583b5e3f3b15949f7d27c278a146317c3cd73a95a04048186b80a3f8"
+      },
+      "submitted_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET. The previous pass only swapped characters and looked plain and standard: this pass must feel INVENTIVE, reinterpreting the replaced subject as a specific Persona 3 Reload moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. Makoto Yuki's face and head never appear (hands and sleeves only); other characters' faces are allowed. Persona creatures' hands are plump cartoon mittens with no long human fingers. If a named character's design is uncertain, follow the described features, keep the rest simple, and never invent text. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760, no text, letters, numbers, frame, UI or watermark. Replace the three enemies (the spotted toad-like creature, the dark spiky creature and the golden beetle) with three different SHADOWs at the same sizes and positions, in the same poses being hit. Along the glowing blue constellation stream, each of the seven stars becomes a small glowing TAROT CARD (royal blue and gold, no text) linked by the same light line, keeping the stream's shape and colors. Keep unchanged: the dark red background, the white star flashes. Character and object designs: [SHADOW] = P3R SHADOW: a blob of glossy black ooze with a few dripping tendrils, wearing one pale mask (bone-white or pale blue, simple stylised face with narrow eye slits); each Shadow gets a different simple mask.",
+      "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-a0e08b30-21a2-43de-9072-63ea04e960e1.png",
+      "raw_file": "generation_sources/exec-a0e08b30-21a2-43de-9072-63ea04e960e1.png",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "output_file": "seven_stars.png",
+      "output_size": [
+        1000,
+        760
+      ]
+    },
+    {
+      "name": "solar_strike",
+      "variant": "",
+      "zh_name": "太阳打击",
+      "batch": 2,
+      "base_commit": "64107701",
+      "local_head": "fe062416",
+      "tool": "built-in imagegen",
+      "status": "approved_by_user",
+      "generation_count": 1,
+      "automatic_retry": false,
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/solar_strike.png",
+      "references": [
+        "art/parts_src/sword.png"
+      ],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/solar_strike.png": "bcf63d01dc97fced30444cbf113e7728894381377dbdfaedb8c212296505bf8d",
+        "art/parts_src/sword.png": "017c1c9ba18c9fcc851b52a36b59bab1604d64b24399d3ed35c57e472818bed5"
+      },
+      "submitted_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET. The previous pass only swapped characters and looked plain and standard: this pass must feel INVENTIVE, reinterpreting the replaced subject as a specific Persona 3 Reload moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. Makoto Yuki's face and head never appear (hands and sleeves only); other characters' faces are allowed. Persona creatures' hands are plump cartoon mittens with no long human fingers. If a named character's design is uncertain, follow the described features, keep the rest simple, and never invent text. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760, no text, letters, numbers, frame, UI or watermark. The big white crescent slash at the upper right becomes the slash trail of MAKOTO SWORD: the silver blade tip visible at the start of the arc, the arc itself staying the same white crescent shape and size. The blue eye-blob enemy being hit becomes a SHADOW at the same size and position, its mask lit by the orange-yellow beam. Keep unchanged: the orange-yellow fire beam, the dark leaves, the red background. Character and object designs: [MAKOTO SWORD] = Makoto's sword: plain silver straight single-edge blade, simple silver crossguard, black wrapped grip, round silver pommel. [SHADOW] = P3R SHADOW: a blob of glossy black ooze with a few dripping tendrils, wearing one pale mask (bone-white or pale blue, simple stylised face with narrow eye slits); each Shadow gets a different simple mask.\nSupporting images after Image1 are DESIGN REFERENCES ONLY, in the listed order: art/parts_src/sword.png. Do not import their backgrounds, other characters, poses or framing. Only use the named character/object designs specified in the prompt.",
+      "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-cdad2e14-20b4-483b-8c02-365426982968.png",
+      "raw_file": "generation_sources/exec-cdad2e14-20b4-483b-8c02-365426982968.png",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "output_file": "solar_strike.png",
+      "output_size": [
+        1000,
+        760
+      ]
+    },
+    {
+      "name": "spectrum_shift",
+      "variant": "",
+      "zh_name": "光谱偏移",
+      "batch": 2,
+      "base_commit": "64107701",
+      "local_head": "fe062416",
+      "tool": "built-in imagegen",
+      "status": "approved_by_user",
+      "generation_count": 1,
+      "automatic_retry": false,
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/spectrum_shift.png",
+      "references": [],
+      "reference_sha256": {
+        "research/regent_assets/images/packed/card_portraits/regent/spectrum_shift.png": "a7f9dfbd673ae48f5772170bcb0115a4b15bc6975dad8389c0eab3e14d77d96c"
+      },
+      "submitted_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET. The previous pass only swapped characters and looked plain and standard: this pass must feel INVENTIVE, reinterpreting the replaced subject as a specific Persona 3 Reload moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. Makoto Yuki's face and head never appear (hands and sleeves only); other characters' faces are allowed. Persona creatures' hands are plump cartoon mittens with no long human fingers. If a named character's design is uncertain, follow the described features, keep the rest simple, and never invent text. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760, no text, letters, numbers, frame, UI or watermark. The rainbow ribbon becomes a long flowing STREAM OF TAROT CARDS: dozens of overlapping cards following exactly the same ribbon shape, width, curve and perspective, each band of cards tinted one rainbow color in the same order as the original bands (red, orange, yellow, green, cyan, blue, violet), the card faces showing simple gold emblems (no text), the curling white tip becoming one bright white card. Keep unchanged: the dark navy background and its rays.",
+      "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-9a855af6-6dde-4d04-b7f2-715754ac2f14.png",
+      "raw_file": "generation_sources/exec-9a855af6-6dde-4d04-b7f2-715754ac2f14.png",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "output_file": "spectrum_shift.png",
+      "output_size": [
+        1000,
+        760
+      ]
+    }
+  ],
+  "base_commit": "64107701",
+  "prompt_document": "docs/codex/codex_card_art_round4.md",
+  "tool": "built-in imagegen",
+  "status": "approved_by_user",
+  "user_review": {
+    "message": "ok",
+    "scope": "round4 batch_02 all five current candidates, including seven_stars.png after disclosed deviations"
+  }
+}

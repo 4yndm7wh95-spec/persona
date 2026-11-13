@@ -1,0 +1,22 @@
+{
+  "automatic_retry": false,
+  "cards": {
+    "lunar_blast": "approved_by_user",
+    "particle_wall": "approved_by_user",
+    "seven_stars": "approved_by_user",
+    "solar_strike": "approved_by_user",
+    "spectrum_shift": "approved_by_user"
+  },
+  "status": "approved_by_user",
+  "user_review": {
+    "message": "ok",
+    "scope": "round4 batch_02 all five current candidates, including seven_stars.png after disclosed deviations"
+  },
+  "selected_versions": {
+    "lunar_blast": "lunar_blast.png",
+    "particle_wall": "particle_wall.png",
+    "seven_stars": "seven_stars.png",
+    "solar_strike": "solar_strike.png",
+    "spectrum_shift": "spectrum_shift.png"
+  }
+}

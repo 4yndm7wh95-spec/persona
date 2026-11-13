@@ -1,0 +1,29 @@
+{
+  "name": "collision_course",
+  "variant": "v2",
+  "zh_name": "碰撞轨迹",
+  "batch": 1,
+  "base_commit": "64107701",
+  "local_head": "fe062416",
+  "tool": "built-in imagegen",
+  "status": "approved_by_user",
+  "generation_count": 1,
+  "automatic_retry": false,
+  "image1": "art/cards/v4/local_edits/round4/batch_01/collision_course.png",
+  "references": [],
+  "reference_sha256": {
+    "art/cards/v4/local_edits/round4/batch_01/collision_course.png": "33fa18e47ce1199c6215790b528c5b388c4a8c8dfa34e867e52667b4dd5effae"
+  },
+  "submitted_prompt": "Use case: precise-object-edit. Edit this current collision_course candidate only. The user says the dizzy eyes are poorly drawn. Correct ONLY the eyes of Jack Frost on the left and Pyro Jack on the right: make each of their two eyes a clean, immediately readable comic dizzy spiral, one simple bold smooth black spiral per eye with even spacing and a clear center, consistent line weight, contained comfortably in its own eye area. Four eyes total, two per character; no tangled scribbles, no overlapping loops, no extra pupils or eyes. Jack Frost's eye spirals sit cleanly on his white face. Pyro Jack's spirals read as dark carved spiral eye shapes against his orange pumpkin face. Keep the existing eye placements and the characters' head angles, the knocked-together heads, open mouths, faces, head sizes, hats, limbs, clothing, ice/fire collision, cream swoosh arcs, purple-pink shards, background, palette, light and hard cel shading exactly unchanged. This is a small localized eye correction, not a redraw. Opaque RGB full bleed horizontal 1000x760, no labels, text, frame or watermark.\n",
+  "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-4ed8976d-528a-43d7-9cca-1e7a1cb6b741.png",
+  "raw_file": "generation_sources/exec-4ed8976d-528a-43d7-9cca-1e7a1cb6b741.png",
+  "generated_size": [
+    1439,
+    1093
+  ],
+  "output_file": "collision_course_v2.png",
+  "output_size": [
+    1000,
+    760
+  ]
+}

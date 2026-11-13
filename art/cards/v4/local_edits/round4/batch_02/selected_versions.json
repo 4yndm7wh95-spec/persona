@@ -1,0 +1,11 @@
+{
+  "status": "approved_by_user",
+  "user_message": "ok",
+  "selected_versions": {
+    "lunar_blast": "lunar_blast.png",
+    "particle_wall": "particle_wall.png",
+    "seven_stars": "seven_stars.png",
+    "solar_strike": "solar_strike.png",
+    "spectrum_shift": "spectrum_shift.png"
+  }
+}

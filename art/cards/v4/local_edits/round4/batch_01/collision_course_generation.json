@@ -1,0 +1,34 @@
+{
+  "name": "collision_course",
+  "zh_name": "碰撞轨迹",
+  "batch": 1,
+  "base_commit": "64107701",
+  "local_head": "fe062416",
+  "tool": "built-in imagegen",
+  "status": "revision_requested_by_user",
+  "generation_count": 1,
+  "automatic_retry": false,
+  "image1": "research/regent_assets/images/packed/card_portraits/regent/collision_course.png",
+  "references": [
+    "art/cards/v4/local_edits/batch_04/kingly_kick.png",
+    "art/cards/v4/local_edits/batch_04/kingly_punch.png"
+  ],
+  "reference_sha256": {
+    "research/regent_assets/images/packed/card_portraits/regent/collision_course.png": "220dd42efcf554a63b6ac8f7fd205f4455234b45afb1a0e02de6523a1cc52da4",
+    "art/cards/v4/local_edits/batch_04/kingly_kick.png": "6ee467acdd3e0613f489d12a5309235d0beda150fe918f9243fc82642104b92e",
+    "art/cards/v4/local_edits/batch_04/kingly_punch.png": "0155401f9a7271b10118f7d3bf9005d4fe5ec72fa99dd404c1c2170836945fe9"
+  },
+  "submitted_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET. The previous pass only swapped characters and looked plain and standard: this pass must feel INVENTIVE, reinterpreting the replaced subject as a specific Persona 3 Reload moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. Makoto Yuki's face and head never appear (hands and sleeves only); other characters' faces are allowed. Persona creatures' hands are plump cartoon mittens with no long human fingers. If a named character's design is uncertain, follow the described features, keep the rest simple, and never invent text. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760, no text, letters, numbers, frame, UI or watermark. Replace the rolling brown-and-green mass at the center with JACK FROST and PYRO JACK colliding head-on in mid-tumble along the same arc and at the same overall size: their heads knocking together at the center, limbs flailing, comic dizzy expressions; at the collision point a burst split half icy cyan-white crystals and half orange flame. Keep unchanged: the cream-white swoosh arcs, the purple and pink crystal shards (they read as debris of the crash), the dark red background. Character and object designs: [JACK FROST] = JACK FROST: compact round ivory-white snowman demon, vivid blue three-point jester hat with white pompoms, blue collar with small bells, wide happy black oval eyes and open grin, stubby plump rounded MITTEN hands (thumb nub, at most two simple finger separations), small dark-blue boots, white planes with lavender-grey shadow planes. [PYRO JACK] = JACK-O'-LANTERN (Pyro Jack): carved ORANGE ribbed pumpkin head with black crescent eyes and a jagged grin, deep-violet floppy witch hat with a buckled band, violet cloak with a round button, small GREY cartoon mitten hands with short rounded lobes (no human fingers or fingernails).\nSupporting images after Image1 are DESIGN REFERENCES ONLY, in the listed order: art/cards/v4/local_edits/batch_04/kingly_kick.png; art/cards/v4/local_edits/batch_04/kingly_punch.png. Do not import their backgrounds, other characters, poses or framing. Only use the named character/object designs specified in the prompt.",
+  "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-9e2b825b-33c6-4b10-81a7-7efe96672e60.png",
+  "raw_file": "generation_sources/exec-9e2b825b-33c6-4b10-81a7-7efe96672e60.png",
+  "generated_size": [
+    1439,
+    1093
+  ],
+  "output_file": "collision_course.png",
+  "output_size": [
+    1000,
+    760
+  ],
+  "user_feedback": "眩晕的眼神没画好"
+}

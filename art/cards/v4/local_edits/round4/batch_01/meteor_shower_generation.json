@@ -1,0 +1,33 @@
+{
+  "name": "meteor_shower",
+  "zh_name": "流星雨",
+  "batch": 1,
+  "base_commit": "64107701",
+  "local_head": "fe062416",
+  "tool": "built-in imagegen",
+  "status": "approved_by_user",
+  "generation_count": 1,
+  "automatic_retry": false,
+  "image1": "research/regent_assets/images/packed/card_portraits/regent/meteor_shower.png",
+  "references": [
+    "mod/pck_stage/p3makoto/persona/thanatos.png",
+    "art/cards/v4/local_edits/batch_04/kingly_kick.png"
+  ],
+  "reference_sha256": {
+    "research/regent_assets/images/packed/card_portraits/regent/meteor_shower.png": "7a7c098524a65340ffeb65c75a3e5e3dd4dde42022d5e64bc73b66cda7fdb432",
+    "mod/pck_stage/p3makoto/persona/thanatos.png": "eb840bb1fcc46278390d9cbc329de0092170e198f58e8f3b5051374020ae60dc",
+    "art/cards/v4/local_edits/batch_04/kingly_kick.png": "6ee467acdd3e0613f489d12a5309235d0beda150fe918f9243fc82642104b92e"
+  },
+  "submitted_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET. The previous pass only swapped characters and looked plain and standard: this pass must feel INVENTIVE, reinterpreting the replaced subject as a specific Persona 3 Reload moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. Makoto Yuki's face and head never appear (hands and sleeves only); other characters' faces are allowed. Persona creatures' hands are plump cartoon mittens with no long human fingers. If a named character's design is uncertain, follow the described features, keep the rest simple, and never invent text. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760, no text, letters, numbers, frame, UI or watermark. IMPORTANT: Image1 is a PORTRAIT 606x852 illustration; keep the output at 606x852 portrait with identical framing. The falling meteors and rock chunks above the blast become falling COFFINs of matching sizes and directions, each wrapped in a cold blue-white flame trail like a meteor. The tiny red backlit silhouette at the center of the blast becomes a tiny JACK FROST silhouette with raised arms, same size, same red-orange backlit shading. Keep unchanged: the blue-white explosion shape, the dark grey stones on the ground, the magenta ground. Character and object designs: [JACK FROST] = JACK FROST: compact round ivory-white snowman demon, vivid blue three-point jester hat with white pompoms, blue collar with small bells, wide happy black oval eyes and open grin, stubby plump rounded MITTEN hands (thumb nub, at most two simple finger separations), small dark-blue boots, white planes with lavender-grey shadow planes. [COFFIN] = a Dark Hour COFFIN: tall narrow six-sided coffin, near-black lacquer with thin silver trim and a pale cyan edge light, thick iron chains wrapped around it with a heavy lock (design language of Thanatos, reference mod/pck_stage/p3makoto/persona/thanatos.png).\nSupporting images after Image1 are DESIGN REFERENCES ONLY, in the listed order: mod/pck_stage/p3makoto/persona/thanatos.png; art/cards/v4/local_edits/batch_04/kingly_kick.png. Do not import their backgrounds, other characters, poses or framing. Only use the named character/object designs specified in the prompt.",
+  "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-c4977af3-8a11-482f-9c12-3c6ef1b2c410.png",
+  "raw_file": "generation_sources/exec-c4977af3-8a11-482f-9c12-3c6ef1b2c410.png",
+  "generated_size": [
+    1058,
+    1487
+  ],
+  "output_file": "meteor_shower.png",
+  "output_size": [
+    606,
+    852
+  ]
+}
