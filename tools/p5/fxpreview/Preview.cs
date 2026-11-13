@@ -523,9 +523,14 @@ public partial class Preview : Node2D
 				p.At(t0 + 0.04 + atk, () =>
 				{
 					Vector2 at = e + new Vector2(0f, -10f);
-					SnakeSummonFx.Play(p._front, p._back, ArseneFx.TryClaw(out Vector2 c0) ? c0 : fb, at, tall, 1f);
 					p._enemies.TryGetValue(e, out Node2D? n);
-					p.At(SnakeSummonFx.Lag, () => SerpentMantle.Bite(p._front, p._back, at, n, tall, 1f));   // At 是从现在算
+					Vector2 hand = Persona.ChestOf(Persona.ArseneSpec, JokerFeet, tall * 1.35f, 1f) + new Vector2(tall * 0.37f, -tall * 0.41f);
+					ArseneFx.WhenClaw(p._front, fb, _ =>
+					{
+						Vector2 claw = hand;
+						SnakeSummonFx.Play(p._front, p._back, claw, at, tall, 1f);
+						p.At(SnakeSummonFx.Lag, () => SerpentMantle.Bite(p._front, p._back, at, n, tall, 1f));   // At 是从现在算
+					});
 				});
 				p.Poison(t0 + 0.04 + atk + SnakeSummonFx.Lag + SerpentMantle.BiteDelay, e, 7);
 			}

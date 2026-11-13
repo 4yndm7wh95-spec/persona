@@ -302,12 +302,16 @@ float noise(vec2 p) {
 void fragment() {
 	float x = UV.x;
 	// 弧：中间拱起（UV.y 0.5 是直线，quad 上下留了余量）
-	float y = (UV.y - 0.5) * 2.0 + bend * sin(x * 3.14159 * waves) * 2.0 * (waves > 1.0 ? (1.0 - 0.6 * x) : 1.0);
+	bool snake = waves > 1.0;
+	// 蛇形（waves > 1）：波沿着光带往前游（flow 推相位），两端摆幅收到 0、中间最大；一道弧（waves = 1）就是静止的拱
+	float env = snake ? pow(max(sin(x * 3.14159), 0.0), 0.8) : 1.0;
+	float y = (UV.y - 0.5) * 2.0 + bend * sin(x * 3.14159 * waves - (snake ? flow * 0.55 : 0.0)) * 2.0 * env;
 	// 两头圆：在头、尾附近宽度平滑收起来
 	float span = max(head - tail, 0.001);
 	float capL = 0.45 / aspect;   // 圆头的长度 ≈ 光带半宽
 	float body = smoothstep(tail, tail + capL, x) * (1.0 - smoothstep(head - capL, head, x));
 	float w = (0.42 + 0.12 * sin(x * 18.0 - flow * 1.3 + seed)) * body * (1.0 - 0.75 * thin);
+	if (snake) w *= mix(0.3, 1.0, smoothstep(0.0, 0.8, x));   // 靠手那头细、往前变粗
 	float n = noise(vec2(x * aspect * 1.6 - flow * 2.0, y * 3.0 + seed));
 	float n2 = noise(vec2(x * aspect * 4.0 - flow * 3.5, y * 9.0 - seed));
 	float wl = max(w, 1e-3);
@@ -323,6 +327,12 @@ void fragment() {
 	col = mix(col, vec3(1.0, 0.92, 0.9), core);
 	col += vec3(1.0, 0.45, 0.45) * fil * 0.6 * body;
 	float a = max(bodyA * body * (0.75 + 0.25 * n), glow * 0.35) + fil * 0.3 * body;
+	// 蛇头：最前面一团亮的
+	if (snake) {
+		float hd = exp(-pow((x - head + 0.035) / 0.035, 2.0)) * exp(-pow(y / max(w * 1.6, 0.05), 2.0)) * (1.0 - thin);
+		col = mix(col, vec3(1.0, 0.85, 0.82), hd * 0.8);
+		a = max(a, hd);
+	}
 	a = clamp(a, 0.0, 1.0) * alpha;
 	if (a <= 0.003) discard;
 	COLOR = vec4(col, a);
@@ -336,7 +346,7 @@ void fragment() {
 		Vector2 dv = to - from;
 		float len = dv.Length();
 		if (len < 10f) return;
-		float hgt = width * 2f + Mathf.Abs(bend) * len * 1.2f;   // 上下留出弧的余量
+		float hgt = width * 3f + Mathf.Abs(bend) * len * 2.6f;   // 上下留出弧的余量（2026-11-13：留少了，摆到顶被切成直边）
 		Node2D root = Fx.Root(layer, from, "P5CurseBeam", grow + hold + fade + 0.1);
 		root.Rotation = dv.Angle();
 		ShaderMaterial m = new() { Shader = BeamShader };

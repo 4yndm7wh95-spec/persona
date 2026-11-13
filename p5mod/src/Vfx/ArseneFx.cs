@@ -162,6 +162,17 @@ void fragment() {
 	private static Vector2 _claw;
 	private static ulong _clawAt;
 
+	/// <summary>
+	/// 等到亚森出手、爪尖位置记下来再执行（每 0.03s 看一次，最多等 maxWait 秒；还没有就用 fallback）。
+	/// 用户 2026-11-13：蛇咬的光带从亚森头上出来 —— 那一刻爪尖还没记下、用了估的点 → 等爪尖。
+	/// </summary>
+	public static void WhenClaw(Node anchor, Vector2 fallback, Action<Vector2> act, float maxWait = 0.25f)
+	{
+		if (TryClaw(out Vector2 c) && Stage.NowMs() - _clawAt < 200) { act(c); return; }
+		if (maxWait <= 0f || !GodotObject.IsInstanceValid(anchor)) { act(TryClaw(out c) ? c : fallback); return; }
+		Fx.After(anchor, 0.03, () => WhenClaw(anchor, fallback, act, maxWait - 0.03f));
+	}
+
 	/// <summary>亚森刚出过手（0.6s 内）：返回爪尖位置，PoisonFx 从这里甩出咒怨。</summary>
 	public static bool TryClaw(out Vector2 claw)
 	{

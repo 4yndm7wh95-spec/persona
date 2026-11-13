@@ -184,9 +184,16 @@ public static class JokerFx
 				{
 					if (!GodotObject.IsInstanceValid(tn)) return;
 					Vector2 at = tn.Hitbox.GetGlobalRect().GetCenter();
-					SnakeSummonFx.Play(layer, back, ArseneFx.TryClaw(out Vector2 c0) ? c0 : fallback, at, tall, face);
 					Node2D? vis = tn.Visuals;
-					Fx.After(layer, SnakeSummonFx.Lag, () => { if (GodotObject.IsInstanceValid(tn)) SerpentMantle.Bite(layer, back, at, vis, tall, face); });
+					// 从亚森抬到下巴的那只手前面放出来（用户 2026-11-13：不要接到他头上；爪尖记的是伸臂出手姿势的点，这个姿势下落在帽子后面）
+					Vector2 jf = Joker.PosePoint(joker, ReadyFx.Feet);
+					Vector2 hand = Persona.ChestOf(Persona.ArseneSpec, jf, tall * 1.35f, face) + new Vector2(face * tall * 0.37f, -tall * 0.41f);
+					ArseneFx.WhenClaw(layer, fallback, _ =>
+					{
+						Vector2 claw = hand;
+						SnakeSummonFx.Play(layer, back, claw, at, tall, face);
+						Fx.After(layer, SnakeSummonFx.Lag, () => { if (GodotObject.IsInstanceValid(tn)) SerpentMantle.Bite(layer, back, at, vis, tall, face); });
+					});
 				});
 				break;
 			}
