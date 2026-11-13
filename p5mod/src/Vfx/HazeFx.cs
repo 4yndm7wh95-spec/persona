@@ -61,7 +61,7 @@ void fragment() {
 	// 横向：中轴最浓，边缘被噪声撕开（喇叭口）
 	float lat = 1.0 - smoothstep(0.2, 1.0, abs(l) / wid + (n - 0.5) * 0.7);
 	// 前沿 / 尾巴 / 喷口：都是带噪声的软边
-	float front = 1.0 - smoothstep(reach - 0.14, reach + 0.02, a + (n2 - 0.5) * 0.16);
+	float front = 1.0 - smoothstep(reach - 0.32, reach + 0.04, a + (n2 - 0.5) * 0.28 + (n - 0.5) * 0.12);   // 宽的噪声软边（2026-11-13：前沿停住时成了一道边）
 	float back = smoothstep(tail_d - 0.02, tail_d + 0.16, a + (n2 - 0.5) * 0.12);
 	float mouth = smoothstep(-0.14, 0.08, a + (n2 - 0.5) * 0.1);   // 起点是一团（往后也鼓一点），不是一个尖点
 	// 风丝：沿方向急流的细丝
@@ -143,7 +143,8 @@ void fragment() {
 			last = s;
 			// 喷的时候雾纹往外急流，喷完慢下来
 			flow += dt * Mathf.Lerp(9f, 0.8f, Fx.OutCubic(Ease5.Seg(s, 0f, 0.8f)));
-			float reach = reachMax * Fx.OutCubic(Ease5.Seg(s, 0f, blast));
+			// 吹到以后前沿继续慢慢往前飘出画面（边飘边散），不在画面里停成一道边
+			float reach = reachMax * Fx.OutCubic(Ease5.Seg(s, 0f, blast)) + 0.6f * Ease5.Seg(s, blast, life - blast);
 			float tail = reachMax * 0.45f * Fx.OutCubic(Ease5.Seg(s, cut, life - cut));
 			float clear = Fx.OutCubic(Ease5.Seg(s, clearAt, life - clearAt - 0.05f));
 			float a = Mathf.Min(1f, s / 0.04f) * (1f - Ease5.Seg(s, life - 0.35f, 0.35f));
