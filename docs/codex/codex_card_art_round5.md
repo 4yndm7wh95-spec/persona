@@ -366,3 +366,23 @@ Image1 = 当前候选 `art/cards/v4/local_edits/round5/batch_01/strike_regent.pn
 ```
 Use case: precise-object-edit. Image1 is the current candidate and the edit target. Fix ONE problem: the sword looks bent because its grip and pommel are angled flatter (about 18 degrees) than the blade (about 35 degrees), with a kink at the crossguard. Make the whole sword ONE perfectly straight rigid object: pommel, grip, crossguard center, blade spine and tip all on a single straight axis. Keep the blade exactly where it is (same angle, length and tip position at the lower right); redraw only the grip and pommel so they continue the blade's axis up and to the left (the pommel ends at about x27%, y33% of the canvas), with the crossguard exactly perpendicular to that axis. Move the Swords tarot card along with the pommel so the sword still bursts out of the card at the hilt end, keeping the card's design, its tilt relative to the sword, and the pale-blue glass shards around the breaking point. Keep the gold slash fragments, the sparkles, the warm glow and the purple-magenta background unchanged. Crisp hard cel-shading. Opaque, full-bleed, same size as Image1, no text, frame or watermark.
 ```
+
+---
+
+## 修正：何人僭越（美鹤的手太短）
+
+用户：不符合常理，手怎么这么短。
+
+**原因**：美鹤的头画得很大（约占画面高度的五分之一），但伸出去的手从胸口直接到手腕，上臂几乎没有，看不到肩膀和手肘，整条手臂只有大约一个半头长；正常人从肩膀到手腕大约是两个半到三个头长。所以看起来像一截从胸口长出来的短手。
+
+**改法**：
+- 改成侧身的击剑前刺姿势：肩膀、上臂、手肘、前臂、手腕一节一节都看得到，手臂几乎伸直。
+- 比例按头长算：肩膀到手腕约 2.5 个头长，肩膀到指尖约 3 个头长。
+- 为了放得下，人物整体缩小一些（头约占画面高度 15%～16%），往左上边缘靠；细剑剑尖仍然点在暗影面具的十字中心。
+- 暗影、背景、美鹤的样子（红色长卷发、制服、白手套、金色护手细剑、冷冷的眼神）都不变。
+
+Image1 = 当前候选 `art/cards/v4/local_edits/round5/batch_03/know_thy_place.png`；输出 `know_thy_place_v2.png`，附对比图（当前 | 修正）。
+
+```
+Use case: precise-object-edit. Image1 is the current candidate and the edit target. Fix ONE problem: Mitsuru's sword arm is anatomically far too short. Her head is drawn large, but the arm comes straight out of her chest with almost no upper arm, so shoulder to wrist is only about 1.5 head-lengths; a real arm is about 2.5 head-lengths from shoulder to wrist and about 3 to the fingertips. Redraw MITSURU KIRIJO (same design: long wavy auburn-red hair, school uniform with the red bow, white gloves, the gold basket-hilted rapier, the same cold stare) in a correct side-on fencing LUNGE: shoulder, upper arm, elbow, forearm and wrist each clearly readable, the sword arm almost straight and extended forward, upper body leaning into the thrust. Use correct proportions measured in head-lengths (chin to crown): shoulder to wrist 2.5, shoulder to fingertips 3. To fit, scale her down so her head is about 15 to 16% of the canvas height and place her against the upper-left edge. The rapier tip must still touch the center of the cross on the Shadow's mask exactly where it does now, and the rapier blade must stay straight. Keep the trembling Shadow, its puddle, the clock-like floor shape and the purple background unchanged. Crisp hard cel-shading. Opaque, full-bleed, same size as Image1, no text, frame or watermark.
+```
