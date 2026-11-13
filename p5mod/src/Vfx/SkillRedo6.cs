@@ -114,3 +114,28 @@ public static partial class SkillRedo5
 	public static void TrapCage(Control front, Control back, Vector2 feet, float h, float radius, float t0, float dur) =>
 		Vortex(front, back, feet, h, radius, 6, t0, dur, 1f, 0.15f, 0.9f, 1.3f, 0f);
 }
+
+public static partial class SkillRedo5
+{
+	/// <summary>一根悬停的疾光（Dash 着色器：UV.x 0 尾 → 1 头）。返回节点（父：layer）和材质；位置 / 方向 / 长度每帧自己设（Scale = (长, 粗)）。</summary>
+	public static (Node2D Root, ShaderMaterial M) Needle(Control layer, Color tint, float hot, double life)
+	{
+		Node2D root = Fx.Root(layer, Vector2.Zero, "P5Needle", life);
+		ShaderMaterial m = new() { Shader = Dash };
+		m.SetShaderParameter("tint", tint);
+		m.SetShaderParameter("hot", hot);
+		m.SetShaderParameter("seed", Fx.Rand(0f, 9f));
+		m.SetShaderParameter("alpha", 0f);
+		root.AddChild(new ColorRect { Size = new Vector2(1f, 1f), Position = new Vector2(-1f, -0.5f), Material = m, MouseFilter = Control.MouseFilterEnum.Ignore });
+		return (root, m);
+	}
+
+	/// <summary>一块压暗透红（乘法，椭圆软边）：k(t) 0 → 1 控制强度，size 直径。</summary>
+	public static void Dim(Control layer, Vector2 center, Vector2 size, double life, Func<float, float> k)
+	{
+		Node2D gr = Fx.Root(layer, center, "P5Dim", life + 0.1);
+		ShaderMaterial gm = new() { Shader = Grade };
+		gr.AddChild(new ColorRect { Size = size, Position = -size / 2f, Material = gm, MouseFilter = Control.MouseFilterEnum.Ignore });
+		Fx.Animate(gr, 0, life, t => gm.SetShaderParameter("k", k(t * (float)life)));
+	}
+}
