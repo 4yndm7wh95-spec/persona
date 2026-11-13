@@ -5,27 +5,30 @@ using Godot;
 namespace P5Joker;
 
 /// <summary>
-/// 迷雾（给所有敌人中毒 + 虚弱）（用户 2026-11-13：就是从人物那里吹过去一团迷雾，给敌人上毒，马上就散；
-/// 不要包裹敌人；之前左边有明显的边界、太像矩形；颜色不要粉）。约 1.2s：
-/// ① 0 Joker 一挥手，手边一团暗红迷雾吹出去（前后两头都是带噪声的宽软边，雾顶高低起伏，整团往右飘，不是从他身前一刀切铺开的墙）；
-/// ② 雾飘到哪个敌人，那个敌人身上一闪、冒一点毒的光粒、染暗红（中毒 + 虚弱）；
-/// ③ 0.5 起雾边飘边散，1.2s 散完，什么都不留下（毒雾那张能力牌才是常驻的雾）。
+/// 迷雾（给所有敌人中毒 + 虚弱）（用户 2026-11-13：从人物那里吹出一团迷雾，给敌人上毒，马上就散；不要包裹敌人、不要矩形边界、不要粉；
+/// 第二次：不要简单平移过去，要真的有「吹出来」的感觉；音效不合适就不要）。约 1.25s：
+/// ① 0～0.45 他身前半个身位的空中先鼓起一团迷雾，从那里吹出去，越往外越宽（喇叭口），里面的雾纹和风丝顺着方向往外急流，前沿往前冲（先快后慢）；
+///    几团雾团从那里吹出去，边飞边胀开、慢下来；
+/// ② 前沿扫过哪个敌人，它一闪、冒毒的光粒、染暗红（中毒 + 虚弱）；
+/// ③ 0.35 起这股气流和手断开、整股往前散，1.25s 散完，什么都不留下。不放音效。
 /// </summary>
 public static class HazeFx
 {
-	private static Shader? _wall;
+	private static Shader? _plume;
 
 	/// <summary>
-	/// 屏幕空间的一团迷雾：floor_y 地面（屏幕 UV）、band 雾的高度；head / tail 雾团的前后两头（屏幕 x），两头都是宽的噪声软边；
-	/// flow 横向流动；clear 0 → 1 变稀散掉（由薄处先化开）。
+	/// 屏幕空间的一股喷出的迷雾：src 喷口（屏幕 UV），dir 方向（按屏幕高度为单位的坐标），reach 前沿离喷口多远，tail_d 尾巴（喷完后和喷口断开），
+	/// w0 喷口半宽、spread 往外张开的斜率；雾纹沿方向往外流（flow）；clear 0 → 1 变稀散掉。
 	/// </summary>
-	private static Shader Wall => _wall ??= new Shader { Code = @"
+	private static Shader Plume => _plume ??= new Shader { Code = @"
 shader_type canvas_item;
 render_mode blend_premul_alpha;
-uniform float floor_y = 0.75;
-uniform float band = 0.4;
-uniform float head = 0.3;
-uniform float tail = 0.1;
+uniform vec2 src = vec2(0.2, 0.6);
+uniform vec2 dir = vec2(1.0, 0.0);
+uniform float reach = 0.5;
+uniform float tail_d = 0.0;
+uniform float w0 = 0.03;
+uniform float spread = 0.4;
 uniform float flow = 0.0;
 uniform float clear = 0.0;
 uniform float alpha = 1.0;
@@ -35,7 +38,7 @@ uniform float clock = 0.0;
 uniform float dens = 1.0;
 uniform vec3 deep = vec3(0.22, 0.05, 0.06);
 uniform vec3 mid = vec3(0.66, 0.16, 0.17);
-uniform vec3 hot = vec3(1.0, 0.45, 0.35);
+uniform vec3 hot = vec3(1.0, 0.5, 0.42);
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
@@ -44,54 +47,67 @@ float noise(vec2 p) {
 }
 float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p = p * 2.03 + vec2(1.7, 9.2); a *= 0.5; } return v; }
 void fragment() {
-	vec2 uv = UV;
-	float x = uv.x * aspect;
-	float h = (floor_y - uv.y) / band;
-	vec2 q = vec2(x * 2.2 - flow, h * 1.6 - clock * 0.12);
-	vec2 w = vec2(fbm(q + seed), fbm(q + vec2(5.2, 1.3) + seed));
-	float n = fbm(q + w * 1.6 + clock * 0.05);
-	float n2 = fbm(q * 2.3 + w + seed * 1.7);
-	// 雾顶按大尺度噪声高低起伏；上下都软
-	float big = fbm(vec2(x * 0.9 - flow * 0.4, 7.0 + seed));
-	float top = 0.6 + 0.5 * big;
-	float prof = smoothstep(-0.4, 0.05, h) * (1.0 - smoothstep(top * 0.3, top, h + (n - 0.5) * 0.3));
-	// 前后两头：宽的噪声软边（看不出直线），中间最浓
-	float e = uv.x + (n2 - 0.5) * 0.2 + (big - 0.5) * 0.12;
-	float len = max(head - tail, 0.05);
-	float span = smoothstep(tail - 0.02, tail + len * 0.45, e) * (1.0 - smoothstep(head - len * 0.3, head + 0.04, e));
-	// 散：由薄处先化开
+	vec2 p = vec2(UV.x * aspect, UV.y);
+	vec2 s = vec2(src.x * aspect, src.y);
+	vec2 dv = p - s;
+	float a = dot(dv, dir);
+	float l = dot(dv, vec2(-dir.y, dir.x));
+	float wid = w0 + max(a, 0.0) * spread;
+	// 雾纹往外流：沿方向的坐标减去 flow（越往外拉得越长）
+	vec2 q = vec2(a * 2.0 - flow * 0.7, l / wid * 1.1 + seed);
+	vec2 w = vec2(fbm(q + seed), fbm(q + vec2(5.2, 1.3)));
+	float n = fbm(q + w * 1.3 + vec2(0.0, clock * 0.1));
+	float n2 = fbm(q * 2.1 + w + seed * 1.7);
+	// 横向：中轴最浓，边缘被噪声撕开（喇叭口）
+	float lat = 1.0 - smoothstep(0.2, 1.0, abs(l) / wid + (n - 0.5) * 0.7);
+	// 前沿 / 尾巴 / 喷口：都是带噪声的软边
+	float front = 1.0 - smoothstep(reach - 0.14, reach + 0.02, a + (n2 - 0.5) * 0.16);
+	float back = smoothstep(tail_d - 0.02, tail_d + 0.16, a + (n2 - 0.5) * 0.12);
+	float mouth = smoothstep(-0.14, 0.08, a + (n2 - 0.5) * 0.1);   // 起点是一团（往后也鼓一点），不是一个尖点
+	// 风丝：沿方向急流的细丝
+	float st = 1.0 - abs(noise(vec2(a * 1.6 - flow * 1.7, l / wid * 9.0 + seed)) * 2.0 - 1.0);
+	st = pow(st, 7.0);
 	float keep = smoothstep(clear * 1.1 - 0.15, clear * 1.1 + 0.25, n);
-	float d = prof * span * (0.6 + 0.85 * n) * dens;
+	float shape = lat * front * back * mouth * keep;
+	float d = shape * (0.5 + 0.85 * n) * dens;
 	vec3 col = mix(deep, mid, smoothstep(0.35, 0.9, n * n2 * 1.9));
-	col = mix(col, hot, smoothstep(0.72, 0.95, n2) * 0.25);
-	float lit = smoothstep(0.0, 0.08, fbm(q + w * 1.6 + vec2(0.0, -0.06)) - n + 0.03);
+	col = mix(col, hot, smoothstep(0.72, 0.95, n2) * 0.22);
+	float lit = smoothstep(0.0, 0.08, fbm(q + w * 1.3 + vec2(0.06, 0.0)) - n + 0.03);
 	col *= mix(0.65, 1.3, lit);
-	float a = clamp(d * keep * 0.85, 0.0, 0.85) * alpha;
-	col = col * a;
-	if (a <= 0.003) discard;
-	COLOR = vec4(col, a);
+	col += hot * st * shape * 0.1;
+	float aa = clamp(d * 0.9 + st * shape * 0.04 * dens, 0.0, 0.88) * alpha;
+	col *= aa;
+	if (aa <= 0.003) discard;
+	COLOR = vec4(col, aa);
 }" };
-
-	private static void S(string name, float vol, float at = 0f) => Sfx.Take(name, vol * 0.8f, at);
 
 	public static void Play(SkillCtx c)
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face;
-		const float travel = 0.6f, clearAt = 0.5f, life = 1.2f;
+		const float blast = 0.45f, cut = 0.35f, clearAt = 0.5f, life = 1.25f;
 		Control back = c.Back ?? c.Front;
 		Vector2 scr = Fx.Screen(c.Front);
-		float floorS = Fx.ScreenPoint(c.Front, c.Feet).Y / scr.Y;
 		float tallS = h * c.Front.GetCanvasTransform().Scale.Y / scr.Y;
-		float hx = Fx.ScreenPoint(c.Front, c.Hand).X / scr.X;
-		// 雾飘到敌人那边为止：最远的敌人再过去一点
-		float far = hx + 0.3f * f;
+		Vector2 ToS(Vector2 world) { Vector2 sp = Fx.ScreenPoint(c.Front, world); return new Vector2(sp.X / scr.X, sp.Y / scr.Y); }
+		// 起点不在手上（用户 2026-11-13：毒雾不会真的从手里喷出来）：他身前半个身位的空中先鼓起一团，再从那里吹出去
+		Vector2 origin = c.Hand + new Vector2(f * h * 0.5f, h * 0.12f);
+		Vector2 srcUV = ToS(origin);
+		// 瞄准敌人身体中间的平均位置；喷到最远那个再过去一点
+		Vector2 aimW = Vector2.Zero;
+		foreach (SkillFx.Victim v in c.Enemies) aimW += v.Feet.Lerp(v.Top, 0.4f);
+		aimW = c.Enemies.Count > 0 ? aimW / c.Enemies.Count : c.Hand + new Vector2(f * h * 2f, h * 0.3f);
+		float aspect = scr.X / scr.Y;
+		Vector2 A(Vector2 uv) => new(uv.X * aspect, uv.Y);
+		Vector2 dir = (A(ToS(aimW)) - A(srcUV)).Normalized();
+		float reachMax = 0.15f;
+		var proj = new List<float>();
 		foreach (SkillFx.Victim v in c.Enemies)
 		{
-			float vx = Fx.ScreenPoint(c.Front, v.Feet).X / scr.X;
-			far = f > 0f ? Mathf.Max(far, vx + 0.12f) : Mathf.Min(far, vx - 0.12f);
+			float pa = (A(ToS(v.Feet.Lerp(v.Top, 0.4f))) - A(srcUV)).Dot(dir);
+			proj.Add(pa);
+			reachMax = Mathf.Max(reachMax, pa + 0.18f);
 		}
-		S("gx_whoosh", 0.22f, 0f);
-		S("gx_pop", 0.16f, 0.3f);
+		float w0 = tallS * 0.2f, spread = Mathf.Max(0.05f, (tallS * 1.05f - w0) / Mathf.Max(0.1f, reachMax));
 
 		float seed = Fx.Rand(0f, 50f);
 		var mats = new List<ShaderMaterial>();
@@ -99,21 +115,19 @@ void fragment() {
 		{
 			Node2D root = Fx.ScreenRoot(layer, "P5Haze");
 			Fx.FreeAfter(root, life + 0.1);
-			ShaderMaterial m = new() { Shader = Wall };
+			ShaderMaterial m = new() { Shader = Plume };
 			ColorRect q = new() { Size = scr, Material = m, MouseFilter = Control.MouseFilterEnum.Ignore };
-			if (f < 0f) { q.Scale = new Vector2(-1f, 1f); q.Position = new Vector2(scr.X, 0f); }   // 朝左时整个镜像
 			root.AddChild(q);
 			Fx.Clock(q);
-			m.SetShaderParameter("aspect", scr.X / scr.Y);
+			m.SetShaderParameter("aspect", aspect);
 			m.SetShaderParameter("seed", seed);
 			m.SetShaderParameter("dens", dens);
-			m.SetShaderParameter("floor_y", floorS + tallS * 0.04f);
-			m.SetShaderParameter("band", tallS * 1.35f);
+			m.SetShaderParameter("src", srcUV);
+			m.SetShaderParameter("dir", dir);
+			m.SetShaderParameter("w0", w0);
+			m.SetShaderParameter("spread", spread);
 			mats.Add(m);
 		}
-		// 镜像后用的横坐标：朝右就是本身，朝左是 1 - x
-		float X(float sx) => f > 0f ? sx : 1f - sx;
-		float startX = X(hx), endX = X(far);
 		Node2D driver = Fx.Root(c.Front, c.Feet, "P5HazeDriver", life + 0.05);
 		float flow = 0f, last = 0f;
 		Fx.Animate(driver, 0, life, t =>
@@ -121,32 +135,52 @@ void fragment() {
 			float s = t * life;
 			float dt = Mathf.Max(0f, s - last);
 			last = s;
-			flow += dt * Mathf.Lerp(2.4f, 0.4f, Ease5.Seg(s, 0f, 0.8f));
-			float k = Ease5.OutQuint(Ease5.Seg(s, 0f, travel));
-			// 雾团：头从手边飘到最远的敌人，尾巴跟在后面（一开始挤在手边，飘开后拉长）
-			float headX = Mathf.Lerp(startX + 0.04f, endX, k);
-			float tailX = Mathf.Lerp(startX - 0.02f, startX + (endX - startX) * 0.35f, Ease5.OutQuint(Ease5.Seg(s, 0.05f, travel + 0.2f)));
+			// 喷的时候雾纹往外急流，喷完慢下来
+			flow += dt * Mathf.Lerp(9f, 1.2f, Fx.OutCubic(Ease5.Seg(s, 0f, 0.7f)));
+			float reach = reachMax * Fx.OutCubic(Ease5.Seg(s, 0f, blast));
+			float tail = reachMax * 0.55f * Fx.OutCubic(Ease5.Seg(s, cut, life - cut));
 			float clear = Fx.OutCubic(Ease5.Seg(s, clearAt, life - clearAt - 0.05f));
-			float a = Mathf.Min(1f, s / 0.05f) * (1f - Ease5.Seg(s, life - 0.2f, 0.2f));
+			float a = Mathf.Min(1f, s / 0.04f) * (1f - Ease5.Seg(s, life - 0.18f, 0.18f));
 			foreach (ShaderMaterial m in mats)
 			{
-				m.SetShaderParameter("head", headX);
-				m.SetShaderParameter("tail", tailX);
+				m.SetShaderParameter("reach", reach);
+				m.SetShaderParameter("tail_d", tail);
 				m.SetShaderParameter("flow", flow);
 				m.SetShaderParameter("clear", clear);
 				m.SetShaderParameter("alpha", a);
 			}
 		});
-		Glow.Sparks(c.Front, c.Hand, 18, 200f * u, 560f * u, 0.45f,
-			new[] { new Color(1f, 0.88f, 0.85f), new Color(0.9f, 0.12f, 0.16f), new Color(0.3f, 0.02f, 0.04f) }, 0f, 0.02f * u, 0.045f * u, new Vector2(f, -0.1f), 22f);
-
-		// 雾飘到哪个敌人：它身上一闪、冒毒的光粒、染暗红
-		foreach (SkillFx.Victim v in c.Enemies)
+		// 喷口：一下闪光
+		Glow.Flash(back, origin, new Color(0.9f, 0.15f, 0.18f), h * 0.8f, 0.3f);
+		// 雾团：从手边喷出去，边飞边胀开、慢下来（普通混合的柔光团，暗红偏灰）
+		Vector2 dirW = (aimW - origin).Normalized();
+		float distW = origin.DistanceTo(aimW);
+		for (int i = 0; i < 10; i++)
 		{
-			float vx = X(Fx.ScreenPoint(c.Front, v.Feet).X / scr.X);
-			float kk = Mathf.Clamp((vx - startX - 0.04f) / Mathf.Max(0.01f, endX - startX - 0.04f), 0f, 0.999f);
-			// OutQuint 反解：1 - (1 - t)^5 = kk
-			float hitAt = travel * (1f - Mathf.Pow(1f - kk, 0.2f)) + 0.02f;
+			float d0 = 0.018f * i;
+			Vector2 off = dirW.Rotated(Fx.Rand(-0.22f, 0.22f));
+			float go = distW * Fx.Rand(0.55f, 1.15f), size = h * Fx.Rand(0.5f, 0.85f);
+			Node2D pr = Fx.Root(i % 2 == 0 ? back : c.Front, origin, "P5HazePuff", d0 + 0.9);
+			Sprite2D sp = new() { Texture = Glow.Soft };
+			pr.AddChild(sp);
+			Color pc = i % 3 == 0 ? new Color(0.75f, 0.2f, 0.2f) : new Color(0.42f, 0.09f, 0.1f);
+			pr.Visible = false;
+			Fx.Animate(pr, d0, 0.85, t =>
+			{
+				pr.Visible = true;
+				float e = 1f - Mathf.Exp(-t * 4.5f);
+				pr.GlobalPosition = origin + off * go * e + new Vector2(0f, -h * 0.08f * t);
+				sp.Scale = Vector2.One * (size * (0.25f + 1.6f * e)) / 32f;
+				sp.Modulate = new Color(pc, (i % 2 == 0 ? 0.55f : 0.32f) * Mathf.Min(1f, t * 8f) * (1f - Fx.InCubic(t)));
+			});
+		}
+
+		// 前沿扫过哪个敌人：它一闪、冒毒的光粒、染暗红
+		for (int i = 0; i < c.Enemies.Count; i++)
+		{
+			SkillFx.Victim v = c.Enemies[i];
+			float kk = Mathf.Clamp(proj[i] / reachMax, 0f, 0.999f);
+			float hitAt = blast * (1f - Mathf.Pow(1f - kk, 1f / 3f)) + 0.03f;   // OutCubic 反解
 			float th = Mathf.Max(120f, (v.Feet - v.Top).Length());
 			float wid = Mathf.Max(v.Width, th * 0.6f);
 			Vector2 tc = v.Feet.Lerp(v.Top, 0.45f);
