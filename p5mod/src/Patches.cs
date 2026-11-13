@@ -108,20 +108,38 @@ public static class AmmoPatch
 	}
 }
 
-/// <summary>每一击伤害（所有 Damage 重载最终汇到参数最多的那个）：放命中特效，记下 Joker 打中了谁、是不是枪击（伤害数字据此换成 P5 样式）。</summary>
+/// <summary>在伤害结算入口触发一次命中特效。0.113 的攻击直接传入 DamageTargetData，旧版传入 Creature。</summary>
 [HarmonyPatch]
 public static class DamagePatch
 {
 	public static IEnumerable<MethodBase> TargetMethods() =>
 		typeof(CreatureCmd).GetMethods(BindingFlags.Public | BindingFlags.Static)
-			.Where(m => m.Name == "Damage" && m.GetParameters().Any(p => p.Name == "cardSource") && m.GetParameters().Any(p => p.Name == "targets"))
-			.OrderByDescending(m => m.GetParameters().Length).Take(1);
+		.Where(m => m.Name == nameof(CreatureCmd.Damage) && m.GetParameters() is { Length: >= 6 } p
+			&& p[2].ParameterType == typeof(decimal) && p.Any(a => a.Name == "cardSource")
+			&& (p[1].ParameterType == typeof(IEnumerable<Creature>) || p[1].ParameterType == TargetDataSequence))
+		.OrderByDescending(m => m.GetParameters()[1].ParameterType == TargetDataSequence)
+		.ThenByDescending(m => m.GetParameters().Length).Take(1);
 
-	public static void Prefix(IEnumerable<Creature>? targets, decimal amount, CardModel? cardSource)
+	private static readonly Type? TargetData = typeof(Creature).Assembly.GetType("MegaCrit.Sts2.Core.Entities.Creatures.DamageTargetData");
+	private static readonly Type? TargetDataSequence = TargetData == null ? null : typeof(IEnumerable<>).MakeGenericType(TargetData);
+	private static readonly FieldInfo? TargetCreature = TargetData?.GetField("target");
+
+	private static IEnumerable<Creature>? Creatures(object? targetList) =>
+		targetList is IEnumerable<Creature> creatures ? creatures
+			: targetList is System.Collections.IEnumerable data && TargetCreature is FieldInfo target
+				? data.Cast<object>().Select(d => target.GetValue(d)).OfType<Creature>().ToArray()
+				: null;
+
+	public static void Prefix(object? __1, decimal amount, CardModel? cardSource)
 	{
 		ModEntry.Safe("Damage", () =>
 		{
-			if (targets == null || cardSource == null || !Joker.OwnsCard(cardSource))
+			if (cardSource == null || !Joker.OwnsCard(cardSource))
+			{
+				return;
+			}
+			IEnumerable<Creature>? targets = Creatures(__1);
+			if (targets == null)
 			{
 				return;
 			}
