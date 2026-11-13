@@ -19,7 +19,7 @@ public static class GunFx
 	/// <summary>开火那一帧（动画 0.18s）：枪口火焰 + 暖白光 + 抛弹壳 + 枪声。dir = 射击方向（没有目标时用朝向）。</summary>
 	public static void Muzzle(Control layer, Vector2 muzzle, Vector2 dir, float facing = 1f)
 	{
-		Sfx.Play(Sfx.NextGunShot(), Sfx.DemoMixVolume);                // Five Cards 演示的枪声（枪 + 弹壳轻响），连射轮流换四个变体
+		Sfx.Play(Sfx.Gun, 0.55f);   // 用户 2026-11-13：演示的枪声像抽鞭子 → 换回 2026-11-03 试听时选的 D（gun_10，干脆的手枪声）；一直用这一个
 		dir = dir.LengthSquared() > 0.001f ? dir.Normalized() : new Vector2(facing, 0f);
 		float rot = dir.Angle();
 		int i = Fx.Rng.Next(CoreX.Length);

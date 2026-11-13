@@ -258,13 +258,14 @@ public static class SkillRedo
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face;
 		Control back = c.Back != null && GodotObject.IsInstanceValid(c.Back) ? c.Back : c.Front;
-		Vector2 hub = c.Feet + new Vector2(-f * h * 0.12f, -h * 0.62f);
-		Paint.Sweep(back, "slash_thin", hub, Mathf.Pi * 0.5f, new Vector2(0.75f, 0.75f) * u * h / 300f, Lut5.Blood, 0.05f, 0.04f, 0.28f, -45f * f, 0.02f, 1.25f);
-		Glow.Flash(back, hub + new Vector2(0f, -h * 0.4f), Phantom.Red, h * 1.1f, 0.22f);
+		Vector2 hub = c.Feet + new Vector2(-f * h * 0.12f, -h * 0.52f);
+		// 用户 2026-11-13：游戏里这道弧光有人物两倍高 → 缩到和人差不多高
+		Paint.Sweep(back, "slash_thin", hub, Mathf.Pi * 0.5f, new Vector2(0.36f, 0.36f) * u * h / 300f, Lut5.Blood, 0.05f, 0.04f, 0.28f, -45f * f, 0.02f, 1.25f);
+		Glow.Flash(back, hub + new Vector2(0f, -h * 0.25f), Phantom.Red, h * 0.8f, 0.22f);
 		S("gx_whoosh", 0.3f);                                            // 主拍
 		S("gx_card_stack", 0.16f, 0.72f);
 
-		Vector2 top = hub + new Vector2(-f * h * 0.05f, -h * 0.62f);
+		Vector2 top = hub + new Vector2(-f * h * 0.05f, -h * 0.5f);
 		for (int i = 0; i < 2; i++)
 		{
 			int k = i;

@@ -319,9 +319,28 @@ public static class GainBlockPatch
 			if (amount > 0m && cardPlay != null && Joker.OwnsCard(cardPlay.Card) && creature.Player is { } p && Joker.Is(p)
 				&& NCombatRoom.Instance?.GetCreatureNode(creature) is NCreature node)
 			{
+				// 用户 2026-11-13：有专属特效的牌（后空翻、生存者……）再叠一层通用蜂巢盾，两种特效打架 → 只放专属的。
+				// 模糊例外：它的专属特效就是配着蜂巢盾做的。
+				string name = cardPlay.Card.GetType().Name;
+				if (CardSkillFx.Cards.ContainsKey(name) && name != "Blur")
+				{
+					return;
+				}
 				JokerFx.OnBlock(node, (int)amount);
 			}
 		});
+	}
+}
+
+/// <summary>Joker 获得格挡时原版的蓝色盾牌（vfx/vfx_block）不要：有蜂巢盾或者牌的专属特效（用户 2026-11-13：几层特效叠在一起冲突）。</summary>
+[HarmonyPatch(typeof(VfxCmd), nameof(VfxCmd.PlayOnCreatureCenter))]
+public static class BlockVfxPatch
+{
+	public static bool Prefix(Creature target, string path)
+	{
+		bool skip = false;
+		ModEntry.Safe("BlockVfx", () => skip = path == "vfx/vfx_block" && target != null && target.IsPlayer && target.Player is { } p && Joker.Is(p));
+		return !skip;
 	}
 }
 
