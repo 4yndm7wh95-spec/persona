@@ -81,6 +81,9 @@ void fragment() {
 	COLOR = vec4(col, aa);
 }" };
 
+	/// <summary>出手：手上一闪、疾光射到起点的时间；雾从这之后才吹出去。</summary>
+	private const float Pre = 0.11f;
+
 	public static void Play(SkillCtx c)
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face;
@@ -116,7 +119,7 @@ void fragment() {
 		foreach ((Control layer, float dens) in new[] { (back, 1f), (c.Front, 0.4f) })
 		{
 			Node2D root = Fx.ScreenRoot(layer, "P5Haze");
-			Fx.FreeAfter(root, life + 0.1);
+			Fx.FreeAfter(root, life + Pre + 0.1);
 			ShaderMaterial m = new() { Shader = Plume };
 			ColorRect q = new() { Size = scr, Material = m, MouseFilter = Control.MouseFilterEnum.Ignore };
 			root.AddChild(q);
@@ -128,11 +131,12 @@ void fragment() {
 			m.SetShaderParameter("dir", dir);
 			m.SetShaderParameter("w0", w0);
 			m.SetShaderParameter("spread", spread);
+			m.SetShaderParameter("alpha", 0f);   // 出手的疾光到之前不显示
 			mats.Add(m);
 		}
-		Node2D driver = Fx.Root(c.Front, c.Feet, "P5HazeDriver", life + 0.05);
+		Node2D driver = Fx.Root(c.Front, c.Feet, "P5HazeDriver", life + Pre + 0.05);
 		float flow = 0f, last = 0f;
-		Fx.Animate(driver, 0, life, t =>
+		Fx.Animate(driver, Pre, life, t =>   // 疾光到达起点（Pre）以后才开始吹
 		{
 			float s = t * life;
 			float dt = Mathf.Max(0f, s - last);
@@ -152,14 +156,28 @@ void fragment() {
 				m.SetShaderParameter("alpha", a);
 			}
 		});
-		// 喷口：一下闪光
-		Glow.Flash(back, origin, new Color(0.9f, 0.15f, 0.18f), h * 0.8f, 0.3f);
+		// 出手（用户 2026-11-13：手和雾之间要有打出的特效，不然像凭空冒出来的雾）：
+		// 手上一闪、迸一小撮碎光 → 两道暗红疾光从手里射向身前的起点（一道带弧）→ 起点鼓起一团网点光晕、迸开一圈碎光，雾从那里吹开
+		Glow.Flash(c.Front, c.Hand, new Color(1f, 0.88f, 0.85f), h * 0.28f, 0.14f);
+		Glow.Sparks(c.Front, c.Hand, 10, 80f * u, 260f * u, 0.35f, new[] { new Color(1f, 0.9f, 0.88f), new Color(0.9f, 0.12f, 0.16f) }, 0f,
+			0.015f * u, 0.035f * u, new Vector2(f, -0.1f), 40f);
+		Vector2 hand = c.Hand, mid = (c.Hand + origin) * 0.5f + new Vector2(0f, -h * 0.22f);
+		SkillRedo5.Streak(c.Front, t => hand.Lerp(origin, t), 0f, 0.12f, h * 0.5f, h * 0.11f, new Color(0.9f, 0.08f, 0.14f));
+		SkillRedo5.Streak(c.Front, t => hand.Lerp(mid, t).Lerp(mid.Lerp(origin, t), t), 0.02f, 0.13f, h * 0.4f, h * 0.045f, new Color(1f, 0.85f, 0.85f), 1.5f);
+		Fx.After(c.Front, 0.1f, () =>
+		{
+			Glow.Flash(back, origin, new Color(0.9f, 0.15f, 0.18f), h * 0.9f, 0.3f);
+			Glow.Flash(c.Front, origin, new Color(1f, 0.88f, 0.86f), h * 0.3f, 0.12f);
+			SkillRedo5.SoftBurst(back, origin, h * 0.9f, 0.4f, new Color(0.85f, 0.06f, 0.12f));
+			Glow.Sparks(c.Front, origin, 18, 120f * u, 380f * u, 0.45f, new[] { new Color(1f, 0.9f, 0.88f), new Color(0.9f, 0.12f, 0.16f), new Color(0.3f, 0.02f, 0.04f) },
+				60f * u, 0.02f * u, 0.04f * u, Vector2.Up, 180f);
+		});
 		// 雾团：从手边喷出去，边飞边胀开、慢下来（普通混合的柔光团，暗红偏灰）
 		Vector2 dirW = (aimW - origin).Normalized();
 		float distW = origin.DistanceTo(aimW);
 		for (int i = 0; i < 10; i++)
 		{
-			float d0 = 0.018f * i;
+			float d0 = Pre + 0.018f * i;
 			Vector2 off = dirW.Rotated(Fx.Rand(-0.22f, 0.22f));
 			float go = distW * Fx.Rand(0.55f, 1.15f), size = h * Fx.Rand(0.5f, 0.85f);
 			Node2D pr = Fx.Root(i % 2 == 0 ? back : c.Front, origin, "P5HazePuff", d0 + 1.45);
@@ -182,7 +200,7 @@ void fragment() {
 		{
 			SkillFx.Victim v = c.Enemies[i];
 			float kk = Mathf.Clamp(proj[i] / reachMax, 0f, 0.999f);
-			float hitAt = blast * (1f - Mathf.Pow(1f - kk, 1f / 3f)) + 0.03f;   // OutCubic 反解
+			float hitAt = blast * (1f - Mathf.Pow(1f - kk, 1f / 3f)) + 0.03f + Pre;   // OutCubic 反解；出手之后才吹
 			float th = Mathf.Max(120f, (v.Feet - v.Top).Length());
 			float wid = Mathf.Max(v.Width, th * 0.6f);
 			Vector2 tc = v.Feet.Lerp(v.Top, 0.45f);
@@ -195,11 +213,11 @@ void fragment() {
 			});
 			if (v.Tint is { } tint)
 			{
-				Node2D tk = Fx.Root(c.Front, v.Feet, "P5HazeTint", life + 0.1);
+				Node2D tk = Fx.Root(c.Front, v.Feet, "P5HazeTint", life + Pre + 0.1);
 				Color dark = new(0.62f, 0.4f, 0.42f);
 				Fx.Animate(tk, 0, life, t =>
 				{
-					float s = t * life;
+					float s = t * life - Pre;
 					float d = Fx.OutCubic(Ease5.Seg(s, hitAt - 0.03f, 0.1f)) * (1f - Ease5.Seg(s, clearAt + 0.1f, 0.8f));
 					float flash = s >= hitAt ? Mathf.Exp(-(s - hitAt) * 14f) * 0.6f : 0f;
 					tint(Colors.White.Lerp(dark, d) + new Color(flash, flash * 0.8f, flash * 0.8f, 0f));

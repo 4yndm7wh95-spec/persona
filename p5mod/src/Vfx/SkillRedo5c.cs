@@ -533,6 +533,10 @@ public static partial class SkillRedo5
 		Flare(layer, at, h * 0.012f, h * 0.9f, new Color(1f, 0.95f, 0.96f, 1f), 0.22f);
 	}
 
+	/// <summary>一道疾光沿直线 / 曲线飞（给别的文件用；path 0 → 1）。</summary>
+	public static void Streak(Control layer, Func<float, Vector2> path, float t0, float dur, float len, float thick, Color tint, float hot = 1.2f) =>
+		DashFly(layer, path, t0, dur, len, thick, tint, hot, Ease5.OutQuint, 0.7f);
+
 	/// <summary>圆润的网点光晕（给别的文件用）。</summary>
 	public static void SoftBurst(Control layer, Vector2 at, float size, float dur, Color tint) => HalftoneBurst(layer, at, size, dur, 0f, tint);
 }
