@@ -34,10 +34,10 @@
  {
   "name": "begone",
   "zh": "下去！",
-  "file": "art/cards/v4/local_edits/round2/batch_04/begone.png",
-  "source": "第二轮",
-  "status": "第五轮重做中",
-  "sha256": "d9e2a1d124afe441c927ec8f33752e5a471f851d1e80a5272a5215c33ed6156d"
+  "file": "art/cards/v4/local_edits/round5/batch_01/begone.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "49120a5e93ad00a23125a1d439a549269462e4851715636961c569ecb832c104"
  },
  {
   "name": "big_bang",
@@ -82,10 +82,10 @@
  {
   "name": "celestial_might",
   "zh": "天穹之力",
-  "file": "art/cards/v4/local_edits/round2/batch_04/celestial_might.png",
-  "source": "第二轮",
-  "status": "第五轮重做中",
-  "sha256": "db7ade0688f0ffb3f996c7fbd84194f1b69119777abda391a1ad7d0c8abf5e79"
+  "file": "art/cards/v4/local_edits/round5/batch_02/celestial_might.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "d3d3d739e5f89e7f52103d36b632a4f679723cf6d8b0eafe8199b67e95937216"
  },
  {
   "name": "charge",
@@ -138,26 +138,26 @@
  {
   "name": "constellation",
   "zh": "群星荟萃",
-  "file": "art/cards/v4/local_edits/round2/batch_02/constellation.png",
-  "source": "第二轮",
-  "status": "第五轮重做中",
-  "sha256": "fbf168ba84e5bdd7ba0bd35a23aca4d330e395c44dbfe76f6ac99b5a04836ec4"
+  "file": "art/cards/v4/local_edits/round5/batch_02/constellation.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "812d9a358da7153a0a1fc67c4c0da150020be15fe9f493b791d78b1b1f5e7ea6"
  },
  {
   "name": "convergence",
   "zh": "汇流",
-  "file": "art/cards/v4/local_edits/round2/batch_04/convergence.png",
-  "source": "第二轮",
-  "status": "第五轮重做中",
-  "sha256": "00a975485c1bcd42db0415d9b262c1eb3c815fa810329a1ccddf73c88d5a379e"
+  "file": "art/cards/v4/local_edits/round5/batch_02/convergence.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "3fd51ddfbd6979fe852d2d4aa3009a04743825e071e35cab16f0cf7d24374e5c"
  },
  {
   "name": "cosmic_indifference",
   "zh": "宇宙冷漠",
-  "file": "art/cards/v4/local_edits/round2/batch_04/cosmic_indifference.png",
-  "source": "第二轮",
-  "status": "第五轮重做中",
-  "sha256": "93db46690363615ae85c9d69c1c430637ba54e7290f37d995d24ae72f23d288e"
+  "file": "art/cards/v4/local_edits/round5/batch_02/cosmic_indifference.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "db46047a80fc25473f344a133152d97f4df7243715e12233c2b5284dc9b1bdb7"
  },
  {
   "name": "crash_landing",
@@ -170,10 +170,10 @@
  {
   "name": "crescent_spear",
   "zh": "新月长矛",
-  "file": "art/cards/v4/local_edits/round2/batch_01/crescent_spear.png",
-  "source": "第二轮",
-  "status": "第五轮重做中",
-  "sha256": "788e289372c3ae869b15d9aed89585079d446509a1276323061e33b46b02ef6d"
+  "file": "art/cards/v4/local_edits/round5/batch_02/crescent_spear.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "18e8c6647bc1f83ed1c9556eb365271d544d16ee98633bfb40cea6433faeac48"
  },
  {
   "name": "crush_under",
@@ -194,10 +194,10 @@
  {
   "name": "defend_regent",
   "zh": "防御",
-  "file": "art/cards/v4/retained/defend_regent.png",
-  "source": "早期已认可（v3 保留）",
-  "status": "第五轮重做中",
-  "sha256": "17f213a10d1faa3ffc0af0eef1b0f33c376dbc9d9dc7e1b03126b923907cee6a"
+  "file": "art/cards/v4/local_edits/round5/batch_01/defend_regent.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "99b16a65e7925f7e3759a09f6d484bf615e6910ea64e53ebcdd6b4f7e9685e47"
  },
  {
   "name": "devastate",
@@ -218,10 +218,10 @@
  {
   "name": "falling_star",
   "zh": "陨星",
-  "file": "art/cards/v4/retained/falling_star.png",
-  "source": "早期已认可（v3 保留）",
-  "status": "第五轮重做中",
-  "sha256": "73ed3718857a8efb0ee5b2dae40be2b43fd8d6b46484b580618771559ff3a920"
+  "file": "art/cards/v4/local_edits/round5/batch_01/falling_star.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "287a8242308bf78c969fbc82a4b8cce5f4c0e7a9a8c51a06fcb47392bdf3c1b9"
  },
  {
   "name": "foregone_conclusion",
@@ -250,10 +250,10 @@
  {
   "name": "gather_light",
   "zh": "收集光辉",
-  "file": "art/cards/approved/gather_light/gather_light.png",
-  "source": "早期已认可",
-  "status": "第五轮重做中",
-  "sha256": "a690f8f34806ee60dd79a7637147e7b17d6718c07fe3933f055ba71c896070f0"
+  "file": "art/cards/v4/local_edits/round5/batch_01/gather_light.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "7167897c57b9bc8fb7724da180498ad844087051b23c57e43148d716139f0770"
  },
  {
   "name": "genesis",
@@ -274,18 +274,18 @@
  {
   "name": "glitterstream",
   "zh": "流光溢彩",
-  "file": "art/cards/v4/local_edits/round2/batch_02/glitterstream.png",
-  "source": "第二轮",
-  "status": "第五轮重做中",
-  "sha256": "60a31731255306a6463b5511bd6eff69a7ef33085017a307740dd5297cd5767c"
+  "file": "art/cards/v4/local_edits/round5/batch_02/glitterstream.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "b645b4343f276d3ec53c1299bdf936b69faffba505d675ec06c6fbbef250adf4"
  },
  {
   "name": "glow",
   "zh": "辉光",
-  "file": "art/cards/v4/retained/glow.png",
-  "source": "早期已认可（v3 保留）",
-  "status": "第五轮重做中",
-  "sha256": "df245fd75643154d04b7aa0a8434ecb2d77a462f9bb51d7d4445a0a7586b4b13"
+  "file": "art/cards/v4/local_edits/round5/batch_01/glow.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "f0bc527b8136654a6160e796372eb52a039384217dc0315d9381a96cf7d19ed5"
  },
  {
   "name": "guards",
@@ -354,18 +354,18 @@
  {
   "name": "kingly_kick",
   "zh": "王者之踢",
-  "file": "art/cards/v4/local_edits/batch_04/kingly_kick.png",
-  "source": "第一轮局部修改",
-  "status": "第五轮重做中",
-  "sha256": "6ee467acdd3e0613f489d12a5309235d0beda150fe918f9243fc82642104b92e"
+  "file": "art/cards/v4/local_edits/round5/batch_03/kingly_kick.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "306fc195d897c668d3f7163e08ad6cd50703a4300d810eb39f34018304989595"
  },
  {
   "name": "kingly_punch",
   "zh": "王者之拳",
-  "file": "art/cards/v4/local_edits/batch_04/kingly_punch.png",
-  "source": "第一轮局部修改",
-  "status": "第五轮重做中",
-  "sha256": "0155401f9a7271b10118f7d3bf9005d4fe5ec72fa99dd404c1c2170836945fe9"
+  "file": "art/cards/v4/local_edits/round5/batch_03/kingly_punch.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "94d41cc8cd11a03b9337a76b34ab4370bb0e88a1eb9662df203ce6830126e0fb"
  },
  {
   "name": "knockout_blow",
@@ -378,10 +378,10 @@
  {
   "name": "know_thy_place",
   "zh": "何人僭越",
-  "file": "art/cards/v4/local_edits/batch_01/know_thy_place.png",
-  "source": "第一轮局部修改",
-  "status": "第五轮重做中",
-  "sha256": "feda5d037af9e8061475e9c5379325dee59346bda28c49655c4490c227e3fc72"
+  "file": "art/cards/v4/local_edits/round5/batch_03/know_thy_place_v2.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "5c502f67401cbbdd7b85d5b57d90260960c41100fe98fec067f8e39b493351c5"
  },
  {
   "name": "largesse",
@@ -458,10 +458,10 @@
  {
   "name": "pale_blue_dot",
   "zh": "暗淡蓝点",
-  "file": "art/cards/v4/local_edits/batch_06/pale_blue_dot.png",
-  "source": "第一轮局部修改",
-  "status": "第五轮重做中",
-  "sha256": "830c8f7546364dbe993528b3e3a084b603b2db6d5267c720756fc44395a585c2"
+  "file": "art/cards/v4/local_edits/round5/batch_03/pale_blue_dot.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "245e09ee8bd4fec1305f28a94df690a289fe2879a327864534b762f4b311bdb7"
  },
  {
   "name": "parry",
@@ -490,10 +490,10 @@
  {
   "name": "photon_cut",
   "zh": "光子切割",
-  "file": "art/cards/v4/local_edits/round2/batch_03/photon_cut.png",
-  "source": "第二轮",
-  "status": "第五轮重做中",
-  "sha256": "957d725037cc6ea72cca62c84a02f45db5554e1574f46fb30eb06bcce91c4dd5"
+  "file": "art/cards/v4/local_edits/round5/batch_03/photon_cut.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "e02e15f8557d81636a85005a2333a06248b23a69533ebce912d1de8b7a4badf5"
  },
  {
   "name": "pillar_of_creation",
@@ -514,42 +514,42 @@
  {
   "name": "prophesize",
   "zh": "预言",
-  "file": "art/cards/v4/local_edits/round2/batch_02/prophesize.png",
-  "source": "第二轮",
-  "status": "第五轮重做中",
-  "sha256": "f76bae7b3181ed190c88accd367b2d0a62dd2b437c47dcba92ed1a1029c6c060"
+  "file": "art/cards/v4/local_edits/round5/batch_03/prophesize.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "addf6c4b5161783513886d7e206c8f8245c334a741db47274a29f4aba250e6c3"
  },
  {
   "name": "quasar",
   "zh": "类星体",
-  "file": "art/cards/v4/local_edits/round2/batch_01/quasar.png",
-  "source": "第二轮",
-  "status": "第五轮重做中",
-  "sha256": "81200a7c78ed0619342b64440b58e3a87c0f87939665315221f54c74f77bac74"
+  "file": "art/cards/v4/local_edits/round5/batch_04/quasar.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "17253d39a9d415b9c60dba3b4ca903b0508ffdcb3a90131163675e21bb5f5421"
  },
  {
   "name": "radiate",
   "zh": "辐射",
-  "file": "art/cards/v4/local_edits/round2/batch_03/radiate.png",
-  "source": "第二轮",
-  "status": "第五轮重做中",
-  "sha256": "9eee46971cb874011254696a471bf443b03e602fa9aba0d88e0b88a5394112e1"
+  "file": "art/cards/v4/local_edits/round5/batch_04/radiate.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "753178c10ec303a675bd60546c1635ad31e543b45c8aea36e8b6ea26f5a2c935"
  },
  {
   "name": "refine_blade",
   "zh": "淬炼刀刃",
-  "file": "art/cards/v4/local_edits/batch_03/refine_blade.png",
-  "source": "第一轮局部修改",
-  "status": "第五轮重做中",
-  "sha256": "1d033c9083586f568836f5a7e51c40b05d3d4ed0eeb317d4d033af782974aee3"
+  "file": "art/cards/v4/local_edits/round5/batch_04/refine_blade_v2.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "8dfc98a1e0b6aed72f00e1916cb49beef459059dbeac0729a08f16dd5fb313b7"
  },
  {
   "name": "reflect",
   "zh": "倒映",
-  "file": "art/cards/v4/local_edits/batch_05/reflect.png",
-  "source": "第一轮局部修改",
-  "status": "第五轮重做中",
-  "sha256": "224cc27d75c4187135a3a5a99f90078b4e494d4ca05f529cef301bafc65fc7be"
+  "file": "art/cards/v4/local_edits/round5/batch_04/reflect.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "85b481b78d3419b74e0bd3c2347ac35fe0f1cb11cb8d7a77c2b2bd35a36a6de9"
  },
  {
   "name": "reserves",
@@ -610,10 +610,10 @@
  {
   "name": "shining_strike",
   "zh": "明耀打击",
-  "file": "art/cards/v4/local_edits/round2/batch_03/shining_strike.png",
-  "source": "第二轮",
-  "status": "第五轮重做中",
-  "sha256": "18d6e88ff88953a611297d9e4e4c0977d41eb8b125d3ab6d1b5a1f806b0d8467"
+  "file": "art/cards/v4/local_edits/round5/batch_04/shining_strike.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "f84431fde4d17c7a889eb1cca83d0ab56b6592a843a8a935f392ef264f01bc02"
  },
  {
   "name": "solar_strike",
@@ -650,42 +650,42 @@
  {
   "name": "stardust",
   "zh": "星尘",
-  "file": "art/cards/v4/local_edits/round2/batch_01/stardust.png",
-  "source": "第二轮",
-  "status": "第五轮重做中",
-  "sha256": "19d1117006e3bb6a27212eb2c7cdc9aa8bc20c4e7717b225349bb78d5ddd84d9"
+  "file": "art/cards/v4/local_edits/round5/batch_04/stardust.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "5d4d74266789633aad238b64d2b41312b6c5c62589d85382376885edc28e1b58"
  },
  {
   "name": "strike_regent",
   "zh": "打击",
-  "file": "art/cards/v4/local_edits/batch_01/strike_regent.png",
-  "source": "第一轮局部修改",
-  "status": "第五轮重做中",
-  "sha256": "0feb2d9227fc5bd01a7d87eb0309669f646f475463011f7a473f38b9497b7c06"
+  "file": "art/cards/v4/local_edits/round5/batch_01/strike_regent_v2.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "a8c1f4cb861ec5563d01696ade39ccb9ea44ff5bfc1d11cb7e99b3d0a5066ab2"
  },
  {
   "name": "summon_forth",
   "zh": "征召上前",
-  "file": "art/cards/v4/local_edits/batch_02/summon_forth.png",
-  "source": "第一轮局部修改",
-  "status": "第五轮重做中",
-  "sha256": "8a47a51fd8d113a18ae76f8b68bc9764132071eb8342096536c098e7c2f0400e"
+  "file": "art/cards/v4/local_edits/round5/batch_05/summon_forth.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "066f956ce67842166cf4f2b0e5af879316f78373544669199dc2476210228c1f"
  },
  {
   "name": "supermassive",
   "zh": "超质量体",
-  "file": "art/cards/v4/local_edits/round2/batch_01/supermassive.png",
-  "source": "第二轮",
-  "status": "第五轮重做中",
-  "sha256": "39df450d0310601df143b983e2e8a4e77f18871d4922dbbcf7a6dab9008dc1f6"
+  "file": "art/cards/v4/local_edits/round5/batch_05/supermassive.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "ba98fdc4f442587c786b59706cc6d077a72a4c925f4e53bb786ae85dd1da8ca4"
  },
  {
   "name": "sword_sage",
   "zh": "剑圣",
-  "file": "art/cards/v4/local_edits/round2/batch_03/sword_sage.png",
-  "source": "第二轮",
-  "status": "第五轮重做中",
-  "sha256": "3bc21d82a95274f189b38d6096c7205fff49b86b9d776545586618f8cec1a7d1"
+  "file": "art/cards/v4/local_edits/round5/batch_05/sword_sage.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "b7c98b0680344af71798989325cebe56cc3ae051ca0023959c5ef2cc31e27dd7"
  },
  {
   "name": "terraforming",
@@ -706,18 +706,18 @@
  {
   "name": "the_smith",
   "zh": "铸剑者",
-  "file": "art/cards/v4/local_edits/batch_03/the_smith.png",
-  "source": "第一轮局部修改",
-  "status": "第五轮重做中",
-  "sha256": "f4cf13a85656da32c00870bde5f16d816c6ec958e7329920fb97b458a7326dec"
+  "file": "art/cards/v4/local_edits/round5/batch_05/the_smith.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "3358d0f41c4c971a411c9c1f0e65445cb99114899f084a52dca7206aaf04e554"
  },
  {
   "name": "tutor",
   "zh": "指导",
-  "file": "art/cards/v4/local_edits/batch_03/tutor.png",
-  "source": "第一轮局部修改",
-  "status": "第五轮重做中",
-  "sha256": "6dea0a1fa9adffc7bbb1e0395c0b19a639aeb73f32c0db4f7df0e70b939212b7"
+  "file": "art/cards/v4/local_edits/round5/batch_05/tutor.png",
+  "source": "第五轮",
+  "status": "完全通过（第五轮）",
+  "sha256": "0227d9eee7cfb267088a0357b640951c6c8eabf9f6aaa9e307fd461c008079fb"
  },
  {
   "name": "tyranny",
