@@ -50,16 +50,18 @@
  {
   "name": "black_hole",
   "zh": "黑洞",
-  "file": null,
-  "source": "原版（还没做）",
-  "status": "—"
+  "file": "art/cards/v4/local_edits/round4/batch_01/black_hole.png",
+  "source": "第四轮",
+  "status": "已通过",
+  "sha256": "857cb5c545b9177df01799100494cd00c9edd3f9025a839b00dd49c19335d6a9"
  },
  {
   "name": "bombardment",
   "zh": "轰击",
-  "file": null,
-  "source": "原版（还没做）",
-  "status": "—"
+  "file": "art/cards/v4/local_edits/round4/batch_01/bombardment.png",
+  "source": "第四轮",
+  "status": "已通过",
+  "sha256": "b6bb4b6f91c1465807f4e65d24270ac94cecd1c3f9947fe26203c3d15018c618"
  },
  {
   "name": "bulwark",
@@ -112,10 +114,10 @@
  {
   "name": "collision_course",
   "zh": "碰撞轨迹",
-  "file": "art/cards/v4/local_edits/round2/batch_09/collision_course.png",
-  "source": "第二轮",
-  "status": "待审（第四轮会重做）",
-  "sha256": "0f892b62c3bec6a8c33e8269049ca67c06d31531744da160b66a79e51a44f8bc"
+  "file": "art/cards/v4/local_edits/round4/batch_01/collision_course_v2.png",
+  "source": "第四轮",
+  "status": "已通过",
+  "sha256": "2b90badec81c9af063d1e74aef8fa17ae244b21a91c0f4d4387826df4b0a0b4d"
  },
  {
   "name": "comet",
@@ -208,9 +210,10 @@
  {
   "name": "dying_star",
   "zh": "星灭",
-  "file": null,
-  "source": "原版（还没做）",
-  "status": "—"
+  "file": "art/cards/v4/local_edits/round4/batch_01/dying_star.png",
+  "source": "第四轮",
+  "status": "已通过",
+  "sha256": "6bf3198dca4c341c7baaf1163840e80392f86574bb4c71e3072488d447db9c52"
  },
  {
   "name": "falling_star",
@@ -295,9 +298,10 @@
  {
   "name": "guiding_star",
   "zh": "引导之星",
-  "file": null,
-  "source": "原版（还没做）",
-  "status": "—"
+  "file": "art/cards/v4/local_edits/round4/batch_01/guiding_star.png",
+  "source": "第四轮",
+  "status": "已通过",
+  "sha256": "f57a3082e573c54adb870b5ceaa288fd0554cf756ee834a67990cae5fcd6aaaf"
  },
  {
   "name": "hammer_time",
@@ -390,9 +394,10 @@
  {
   "name": "lunar_blast",
   "zh": "月面射击",
-  "file": null,
-  "source": "原版（还没做）",
-  "status": "—"
+  "file": "art/cards/v4/local_edits/round4/batch_02/lunar_blast.png",
+  "source": "第四轮",
+  "status": "已通过",
+  "sha256": "9f6557820700135a0d2c36a6a612472f5388310ef0c4beea1133ec3aeafb0552"
  },
  {
   "name": "make_it_so",
@@ -413,10 +418,10 @@
  {
   "name": "meteor_shower",
   "zh": "流星雨",
-  "file": "art/cards/v4/local_edits/round2/batch_08/meteor_shower.png",
-  "source": "第二轮",
-  "status": "待审（第四轮会重做）",
-  "sha256": "a9f3a34f15aa8c1591c6dd00c97f03ea4589586e09e5ac6850440ae0515075a5"
+  "file": "art/cards/v4/local_edits/round4/batch_01/meteor_shower.png",
+  "source": "第四轮",
+  "status": "已通过",
+  "sha256": "3d538b42bf6662c74deb12751cc3e5f68ff91b21213c3c0f05a681732892bd6d"
  },
  {
   "name": "monarchs_gaze",
@@ -469,9 +474,10 @@
  {
   "name": "particle_wall",
   "zh": "粒子墙",
-  "file": null,
-  "source": "原版（还没做）",
-  "status": "—"
+  "file": "art/cards/v4/local_edits/round4/batch_02/particle_wall.png",
+  "source": "第四轮",
+  "status": "已通过",
+  "sha256": "db764efe48bec40f0af725ded832a714f3276b2eb6a9d2c00acf8ad518421e3e"
  },
  {
   "name": "patter",
@@ -596,9 +602,10 @@
  {
   "name": "seven_stars",
   "zh": "七星",
-  "file": null,
-  "source": "原版（还没做）",
-  "status": "—"
+  "file": "art/cards/v4/local_edits/round4/batch_02/seven_stars.png",
+  "source": "第四轮",
+  "status": "已通过",
+  "sha256": "5eb1afffd34e0629ccd8fc68f19d03ff4880ae697408463b5052b1a8c07c59e9"
  },
  {
   "name": "shining_strike",
@@ -611,9 +618,10 @@
  {
   "name": "solar_strike",
   "zh": "太阳打击",
-  "file": null,
-  "source": "原版（还没做）",
-  "status": "—"
+  "file": "art/cards/v4/local_edits/round4/batch_02/solar_strike.png",
+  "source": "第四轮",
+  "status": "已通过",
+  "sha256": "fee5054c67c10acd4003323400faaaec93a2e402e9e3174c6962cd6e8fba032f"
  },
  {
   "name": "sovereign_blade",
@@ -626,9 +634,10 @@
  {
   "name": "spectrum_shift",
   "zh": "光谱偏移",
-  "file": null,
-  "source": "原版（还没做）",
-  "status": "—"
+  "file": "art/cards/v4/local_edits/round4/batch_02/spectrum_shift.png",
+  "source": "第四轮",
+  "status": "已通过",
+  "sha256": "ca9aea7adc0e7b1e203f4229cc2d59d1ef1de9a124f73a998885d9d65a9732c1"
  },
  {
   "name": "spoils_of_battle",
