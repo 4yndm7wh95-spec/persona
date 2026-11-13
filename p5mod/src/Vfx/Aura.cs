@@ -35,7 +35,8 @@ uniform float base_w = 0.12;    // 底座火半宽（UV）
 uniform float clock = 0.0;
 uniform float seed = 0.0;
 uniform float use_pal = 0.0;
-uniform float even = 0.0;        // 0～1：火舌分布更均匀（降低噪声门槛的起伏、少断开；融入暗影用，面具火是 0 不变）     // 1 = 用 c_dark～c_hot 四档颜色（融入暗影的红黑暗焰）；0 = 原来的蓝焰（面具火，不动）
+uniform float even = 0.0;
+uniform float peel = 0.0;        // 0～1：火从脚往上剥离（下面先熄，熄的线往上走）——退场用        // 0～1：火舌分布更均匀（降低噪声门槛的起伏、少断开；融入暗影用，面具火是 0 不变）     // 1 = 用 c_dark～c_hot 四档颜色（融入暗影的红黑暗焰）；0 = 原来的蓝焰（面具火，不动）
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
@@ -92,6 +93,9 @@ void fragment() {
 	// 点火：从脚往上爬
 	float up = (feet.y - UV.y) / max(feet.y, 0.01);
 	fire *= smoothstep(climb * 1.15, climb * 1.15 - 0.15, up);
+	fire *= smoothstep(peel * 1.25 - 0.18, peel * 1.25, up + (noise(vec2(sp.x * 0.05, t * 2.0)) - 0.5) * 0.08 * peel);
+	// 离屏画面的边上淡掉（火舌拔高 / 往两边飘时不会被画面边缘切成一条直线）
+	fire *= smoothstep(0.0, 0.12, UV.y) * smoothstep(0.0, 0.05, UV.x) * smoothstep(1.0, 0.95, UV.x);
 	// 火丝
 	vec2 w = vec2(noise(sp * 0.02 + vec2(0.0, t * 0.8)), noise(sp * 0.02 + vec2(5.2, t * 0.8)));
 	float n = ridge(vec2(sp.x * 0.07 + w.x * 1.5, sp.y * 0.022 + t * 1.9));
@@ -185,6 +189,31 @@ void fragment() {
 	}
 
 	/// <summary>火舌猛地一窜（k 秒内窜高到 1 + boost 倍、再落回），亮一下。</summary>
+	/// <summary>
+	/// 退场：火从脚往上剥离（下面先熄、熄的线往上走），同时火舌被往上拔高拉长，最后一截从头顶上方散掉；然后删掉离屏画面和复制品。
+	/// </summary>
+	public void PeelUp(float seconds = 0.45f, float stretch = 1.2f)
+	{
+		if (_ended || _root == null || _mat == null || !GodotObject.IsInstanceValid(_root)) return;
+		_ended = true;
+		ShaderMaterial m = _mat;
+		float len0 = (float)m.GetShaderParameter("len");
+		Tween tw = _root.CreateTween();
+		tw.TweenMethod(Callable.From<float>(t =>
+		{
+			m.SetShaderParameter("peel", Fx.InCubic(t) * 0.35f + t * 0.65f);
+			m.SetShaderParameter("len", len0 * (1f + stretch * Fx.OutCubic(t)));
+			m.SetShaderParameter("alpha", 1f - Mathf.Max(0f, (t - 0.75f) / 0.25f));
+		}), 0f, 1f, seconds);
+		SubViewport? view = _view;
+		Node2D root = _root;
+		tw.TweenCallback(Callable.From(() =>
+		{
+			if (view != null && GodotObject.IsInstanceValid(view)) view.QueueFree();
+			if (GodotObject.IsInstanceValid(root)) root.QueueFree();
+		}));
+	}
+
 	public void Surge(float boost = 0.8f, float seconds = 0.3f)
 	{
 		if (_ended || _root == null || _mat == null || !GodotObject.IsInstanceValid(_root)) return;

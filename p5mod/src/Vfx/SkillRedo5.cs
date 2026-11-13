@@ -29,32 +29,42 @@ public static class SkillRedo5
 
 	/// <summary>
 	/// 融入暗影（本回合获得的格挡翻倍），约 1.3s：
-	/// ① 0～0.25 红黑的暗焰贴着他的轮廓从脚下烧上来（同拿起技能牌时的面具火那一套，换成红黑），他暗下去；
-	/// ② 0.25 主拍：火舌猛地一窜——红闪、火星往上迸、空间扭一下、轻震；
-	/// ③ 烧着、火星往上飘；0.85 第二下（翻倍）：火舌再往上一冲、一闪，散掉，人亮回来。
+	/// ① 0～0.3 红黑的暗焰贴着他的轮廓从脚下烧上来（同拿起技能牌时的面具火那一套，换成红黑），脚下两侧扫出两股火星，他暗下去；
+	/// ② 0.3 主拍：火舌一窜——小的红闪、火星往上、轻震；
+	/// ③ 烧着、火星往上飘；0.85 第二下（翻倍）：火从脚往上剥离、被拔高，从头顶上方化成一股火星散掉，人亮回来。
 	/// 拍子：点火（风，很轻）→ 一窜（主拍）→ 第二下（轻）。
 	/// </summary>
 	public static void Shadowmeld(SkillCtx c)
 	{
 		float h = c.Tall;
-		const float surge = 0.25f, second = 0.85f, life = 1.3f;
+		const float surge = 0.3f, second = 0.85f, life = 1.4f;
 		Control back = c.Back ?? c.Front;
 		Vector2 body = new(c.Feet.X, c.Feet.Y - h * 0.5f);
 		S("gx_whoosh", 0.12f);
 		S("gx_burn", 0.24f, surge);
 		S("gx_pop", 0.14f, second);
 
-		// 贴身的暗焰（人后面一层）
-		// 不要脚下那圈底座火（用户 2026-11-13：脚下有一道明显的横条，不像特效）；火舌沿轮廓分布均匀一些（even）
-		BodyAura? aura = BodyAura.CloneBody != null ? new BodyAura(back, c.Region, c.Feet, 0f, DarkFlame, even: 0.8f) : null;
+		// 贴身的暗焰（人后面一层）：从脚下 0.3s 烧满全身（BodyAura 自己的点火），火舌沿轮廓均匀；不要脚下那圈底座火
+		//（用户 2026-11-13：脚下有一道明显的横条，不像特效）。不用做太大（用户：金卡也不用到华丽收场那种程度，人物周围帅一点就行）
+		// 离屏画面在头顶多留 0.55 身高、两边各多 0.15：火舌拔高时不碰边
+		Rect2 region = new(c.Region.Position - new Vector2(h * 0.15f, h * 0.55f), c.Region.Size + new Vector2(h * 0.3f, h * 0.55f));
+		BodyAura? aura = BodyAura.CloneBody != null ? new BodyAura(back, region, c.Feet, 0f, DarkFlame, even: 0.8f) : null;
+		// 进场：点火时脚下两侧贴地扫出两股火星
+		Fx.After(back, 0.16, () =>
+		{
+			for (int sd = -1; sd <= 1; sd += 2)
+			{
+				Glow.Sparks(c.Front, c.Feet + new Vector2(sd * h * 0.1f, -h * 0.02f), 16, 160f, 420f, 0.45f, Embers, 60f, 0.04f, 0.12f,
+					new Vector2(sd, -0.18f), 14f);
+			}
+		});
+		// 主拍：火舌一窜（收着：小一点的红闪、轻震，没有顿帧）
 		Fx.After(back, surge, () =>
 		{
-			aura?.Surge(1.0f, 0.35f);
-			HitStop.Request(0.04);
+			aura?.Surge(0.7f, 0.32f);
 			Fx.Shake(1);
-			Glow.Flash(back, body, new Color(1f, 0.12f, 0.18f), h * 1.2f, 0.25f);
-			Glow.Ripple(c.Front, body, h * 1.2f, 0.5f, 0.022f);
-			Glow.Sparks(c.Front, c.Feet + new Vector2(0f, -h * 0.1f), 40, 120f, 420f, 0.6f, Embers, -260f, 0.05f, 0.15f, Vector2.Up, 55f);
+			Glow.Flash(back, body, new Color(1f, 0.12f, 0.18f), h * 0.9f, 0.2f);
+			Glow.Sparks(c.Front, body + new Vector2(0f, h * 0.2f), 26, 90f, 300f, 0.55f, Embers, -220f, 0.04f, 0.12f, Vector2.Up, 50f);
 		});
 		// 烧着的时候火星慢慢往上飘
 		for (int i = 0; i < 3; i++)
@@ -63,11 +73,13 @@ public static class SkillRedo5
 			Fx.After(back, d, () => Glow.Sparks(c.Front, body + new Vector2(Fx.Rand(-0.15f, 0.15f) * h, h * 0.2f), 10, 30f, 110f, 0.8f, Embers, -140f, 0.04f, 0.1f,
 				Vector2.Up, 40f));
 		}
-		Fx.After(back, second, () =>
+		// 退场（翻倍的第二下）：火从脚往上剥离、被往上拔高，最后一截从头顶上方化成一股往上的火星散掉
+		Fx.After(back, second, () => aura?.PeelUp(0.45f, 1.3f));
+		Fx.After(back, second + 0.3, () =>
 		{
-			aura?.End(true);
-			Glow.Flash(back, body + new Vector2(0f, -h * 0.15f), new Color(1f, 0.2f, 0.25f), h * 0.9f, 0.2f);
-			Glow.Sparks(c.Front, body + new Vector2(0f, -h * 0.3f), 24, 150f, 380f, 0.5f, Embers, -220f, 0.04f, 0.12f, Vector2.Up, 70f);
+			Vector2 top = c.Head + new Vector2(0f, -h * 0.08f);
+			Glow.Sparks(c.Front, top, 30, 120f, 380f, 0.7f, Embers, -160f, 0.04f, 0.12f, Vector2.Up, 35f);
+			Glow.Flash(back, top, new Color(1f, 0.2f, 0.25f), h * 0.5f, 0.22f);
 		});
 		// 他沉进暗处，再亮回来
 		if (c.SelfTint is { } tint)
