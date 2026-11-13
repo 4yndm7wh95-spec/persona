@@ -79,7 +79,10 @@ public sealed class TimeStop
 		// 背景调色垫在背景层最底下（人物在它上面，Joker 自然保持原色，不用在他身边挖一圈）；
 		// 敌人另外在前景层最底下按各自身体范围软边褪色（之后放的特效、伤害数字在它上面保持原色）
 		_screen = Fx.ScreenRoot(back, "P5TimeStop");
-		back.MoveChild(_screen, 0);
+		// 固定顺序（用户 2026-11-13：先群蛇后子弹时间，钟和卡被群蛇场景盖住）：已经有群蛇场景就紧跟在它后面，没有就放最底下
+		Node? sky = null;
+		foreach (Node ch in back.GetChildren()) if (ch.Name == "P5SerpentSky") { sky = ch; break; }
+		back.MoveChild(_screen, sky != null ? sky.GetIndex() + 1 : 0);
 		_m = new ShaderMaterial { Shader = Shader };
 		_m.SetShaderParameter("mode", 0);
 		// 读屏前先刷新（用户 2026-11-13：先开群蛇形态、再打子弹时间，时停结束时有一秒露出原版场景 —— 读到的是群蛇场景画上去之前的旧拷贝）

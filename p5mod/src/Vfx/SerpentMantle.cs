@@ -569,7 +569,7 @@ void fragment() {
 		if (!biteOnly)
 		{
 		_skyRoot = Fx.ScreenRoot(back, "P5SerpentSky");
-		back.MoveChild(_skyRoot, 0);
+		back.MoveChild(_skyRoot, 0);   // 固定顺序（2026-11-13）：群蛇场景永远在背景层最底下，子弹时间的褪色 / 钟紧跟在它后面（TimeStop）
 		// 场景：咒雾漫地（Vfx/SerpentMist.cs；2026-11-11 用户：日蚀不搭、太耀眼，换掉）。背景层调色 + 雾 + 雾里的巨蛇背，前景层只有贴地的雾丝
 		_skyM = new ShaderMaterial { Shader = SerpentMist.Shader };
 		_skyM.SetShaderParameter("side", -1f);

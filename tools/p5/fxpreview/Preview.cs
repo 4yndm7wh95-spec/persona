@@ -803,6 +803,21 @@ public partial class Preview : Node2D
 			RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 2.0), ("BulletTime", "cast_glove", 0.25, 1.0) });
 			p.At(4.6, () => TimeStop.StopCurrent());
 		},
+		// 2026-11-13：群蛇 → 子弹时间（钟 / 卡要在群蛇场景上面），4s 起反过来：子弹时间 → 群蛇
+		["combo_bt"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.2, () => SerpentMantle.Start(p._front, p._back, () => (JokerFeet, tall, 1f), live: true, intro: false));
+			RunCards(p, null, new (string, string, double, double)[] { ("BulletTime", "cast_glove", 0.25, 1.0) });
+			p.At(3.0, () => TimeStop.StopCurrent());
+		},
+		["combo_bt2"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			RunCards(p, null, new (string, string, double, double)[] { ("BulletTime", "cast_glove", 0.25, 1.0) });
+			p.At(1.4, () => SerpentMantle.Start(p._front, p._back, () => (JokerFeet, tall, 1f), live: true, intro: false));
+			p.At(3.4, () => TimeStop.StopCurrent());
+		},
 		["redo7"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.9) }),
 		["haze"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Haze", "cast_wave", 0.08, 2.6), ("Haze", "cast_wave", 0.08, 2.6) }),
 		["fumes"] = p => RunCards(p, null, new (string, string, double, double)[] { ("NoxiousFumes", "cast", 0.4, 7.5) }),
