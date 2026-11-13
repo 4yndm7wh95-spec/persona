@@ -68,7 +68,7 @@ public partial class Preview : Node2D
 			if (only != null && Array.IndexOf(only, card) < 0) continue;
 			string a = anim, cd = card;
 			p.At(at, () => p._joker?.Play(a));
-			p.At(at + lead, () => (cd == "AfterimageTick" ? SkillRedo4.AfterimageTick : CardSkillFx.Cards[cd])(Ctx()));
+			p.At(at + lead, () => (cd == "AfterimageTick" ? SkillRedo5.AfterimageTick : CardSkillFx.Cards[cd])(Ctx()));
 			at += gap;
 		}
 	}
@@ -760,6 +760,7 @@ public partial class Preview : Node2D
 		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_big", 0.4, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast", 0.4, 1.6) }),
 		["redo4b"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.8), ("Afterimage", "cast_big", 0.4, 1.4), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast", 0.4, 1.8) }),
 		["redo5"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.9), ("Shadowmeld", "cast_glove", 0.25, 1.9) }),
+		["redo6"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Afterimage", "cast_big", 0.4, 1.3), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast", 0.4, 2.0), ("Malaise", "cast", 0.4, 2.0) }),
 		["redo"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Acrobatics", "cast_glove", 0.25, 1.7), ("Acrobatics", "cast_glove", 0.25, 1.7) }),
 		["redo3"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Survivor", "cast_guard", 0.08, 1.2), ("CalculatedGamble", "cast_glove", 0.25, 1.9), ("Tactician", "cast_glove", 0.25, 1.2), ("Adrenaline", "cast_glove", 0.25, 1.4), ("ShadowStep", "cast_glove", 0.25, 1.4) }),
 		["redo2"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Prepared", "cast_glove", 0.25, 1.5), ("Expertise", "cast_glove", 0.25, 1.7), ("Reflex", "cast_glove", 0.25, 1.1), ("Backflip", "cast_guard", 0.08, 1.3), ("EscapePlan", "cast_guard", 0.08, 1.3) }),

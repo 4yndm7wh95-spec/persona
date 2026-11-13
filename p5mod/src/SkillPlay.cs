@@ -114,7 +114,7 @@ public static class SkillPlay
 		{
 			return;
 		}
-		SkillRedo4.AfterimageTick(Ctx(joker, null, layer, Joker.FxLayer(back: true), room));
+		SkillRedo5.AfterimageTick(Ctx(joker, null, layer, Joker.FxLayer(back: true), room));
 	}
 
 	public static void OnPlay(CardModel card, NCreature joker, NCreature? target, Control layer, NCombatRoom room)

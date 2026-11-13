@@ -12,11 +12,13 @@ namespace P5Joker;
 /// 主拍胸口一道横向光芒 + 碎光迸开；最后刀光一下收进身体，再闪一下。全部着色器，不用贴图。
 /// 登记在 CardSkillFx 最后，覆盖第四批的同名牌。旧版本（水晶、网点剪影）在 git 历史里。
 /// </summary>
-public static class SkillRedo5
+public static partial class SkillRedo5
 {
 	public static void Register(Dictionary<string, Action<SkillCtx>> cards)
 	{
 		cards["Shadowmeld"] = Shadowmeld;
+		cards["Afterimage"] = Afterimage;
+		cards["Malaise"] = Malaise;
 	}
 
 	private static void S(string name, float vol, float at = 0f) => Sfx.Take(name, vol * 0.8f, at);
@@ -83,6 +85,20 @@ void fragment() {
 	if (a <= 0.003) discard;
 	COLOR = vec4(col, clamp(a, 0.0, 1.0));
 }" };
+
+	/// <summary>一道横向（或任意方向）的柔光光芒：一下拉长、变细、淡掉（加法）。</summary>
+	private static void Flare(Control layer, Vector2 at, float len, float thick, Color col, float dur, float rot = 0f)
+	{
+		Node2D r = Fx.Root(layer, at, "P5Flare", dur + 0.1);
+		r.Rotation = rot;
+		Sprite2D sp = Glow.SoftSprite(r, Vector2.Zero, col, 1f);
+		Fx.Animate(sp, 0, dur, t =>
+		{
+			float e = Ease5.OutExpo(t);
+			sp.Scale = new Vector2(len * (0.4f + 0.6f * e) / 32f, thick * (1f - t * 0.6f) / 32f);
+			sp.Modulate = new Color(col, col.A * (1f - Fx.OutCubic(t)));
+		});
+	}
 
 	private static Shader? _grade;
 
@@ -261,24 +277,13 @@ void fragment() {
 		}
 
 		// ── 主拍：胸口白红一闪 + 横向光芒 + 碎光迸开 ──
-		void Streak(Control layer, Vector2 at, float len, float thick, Color col, float dur)
-		{
-			Node2D r = Fx.Root(layer, at, "P5MeldStreak", dur + 0.1);
-			Sprite2D sp = Glow.SoftSprite(r, Vector2.Zero, col, 1f);
-			Fx.Animate(sp, 0, dur, t =>
-			{
-				float e = Ease5.OutExpo(t);
-				sp.Scale = new Vector2(len * (0.4f + 0.6f * e) / 32f, thick * (1f - t * 0.6f) / 32f);
-				sp.Modulate = new Color(col, col.A * (1f - Fx.OutCubic(t)));
-			});
-		}
 		Fx.After(c.Front, hit, () =>
 		{
 			Fx.Shake(1);
 			Glow.Flash(back, chest, new Color(1f, 0.15f, 0.25f), h * 1.3f, 0.3f);
 			Glow.Flash(c.Front, chest, new Color(1f, 0.92f, 0.9f), h * 0.45f, 0.16f);
-			Streak(c.Front, chest, h * 1.8f, h * 0.05f, new Color(1f, 0.15f, 0.25f, 0.85f), 0.32f);
-			Streak(c.Front, chest, h * 1.5f, h * 0.012f, new Color(1f, 0.97f, 0.95f, 1f), 0.26f);
+			Flare(c.Front, chest, h * 1.8f, h * 0.05f, new Color(1f, 0.15f, 0.25f, 0.85f), 0.32f);
+			Flare(c.Front, chest, h * 1.5f, h * 0.012f, new Color(1f, 0.97f, 0.95f, 1f), 0.26f);
 			Glow.Sparks(c.Front, chest, 26, 160f * u, 520f * u, 0.5f, new[] { new Color(1f, 0.97f, 0.95f), new Color(1f, 0.25f, 0.32f) }, 80f * u,
 				0.02f * u, 0.05f * u, Vector2.Up, 180f);
 			Glow.Glint(c.Front, c.Mask, 0.7f * u);
@@ -290,10 +295,10 @@ void fragment() {
 			Fx.Shake(1);
 			Glow.Flash(c.Front, chest, new Color(1f, 0.94f, 0.92f), h * 0.9f, 0.22f);
 			Glow.Flash(back, chest, new Color(1f, 0.15f, 0.25f), h * 1.9f, 0.4f);
-			Streak(c.Front, chest, h * 0.08f, h * 1.6f, new Color(1f, 0.2f, 0.3f, 0.8f), 0.34f);
-			Streak(c.Front, chest, h * 0.02f, h * 1.3f, new Color(1f, 0.97f, 0.95f, 1f), 0.26f);
-			Streak(c.Front, chest, h * 2.0f, h * 0.05f, new Color(1f, 0.15f, 0.25f, 0.8f), 0.34f);
-			Streak(c.Front, chest, h * 1.6f, h * 0.012f, new Color(1f, 0.97f, 0.95f, 1f), 0.26f);
+			Flare(c.Front, chest, h * 0.08f, h * 1.6f, new Color(1f, 0.2f, 0.3f, 0.8f), 0.34f);
+			Flare(c.Front, chest, h * 0.02f, h * 1.3f, new Color(1f, 0.97f, 0.95f, 1f), 0.26f);
+			Flare(c.Front, chest, h * 2.0f, h * 0.05f, new Color(1f, 0.15f, 0.25f, 0.8f), 0.34f);
+			Flare(c.Front, chest, h * 1.6f, h * 0.012f, new Color(1f, 0.97f, 0.95f, 1f), 0.26f);
 			Glow.SpeedLines(back, chest, new Color(1f, 0.18f, 0.26f), 22, h * 0.25f, h * 1.05f, 0.34f);
 			Glow.SpeedLines(c.Front, chest, Pal5.Hot, 8, h * 0.3f, h * 0.8f, 0.28f, 0.02f);
 			Glow.Sparks(c.Front, chest, 40, 220f * u, 700f * u, 0.6f, new[] { new Color(1f, 0.97f, 0.95f), new Color(1f, 0.22f, 0.3f), new Color(0.6f, 0.02f, 0.1f) },
