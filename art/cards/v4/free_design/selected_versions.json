@@ -1,0 +1,37 @@
+{
+  "user_response": "AABBAB",
+  "order_source": "docs/codex/codex_card_art_key_cards_free_design.md",
+  "status": "approved_by_user",
+  "selected": {
+    "sovereign_blade": {
+      "candidate": "A",
+      "file": "sovereign_blade_A.png",
+      "sha256": "d1742c97eb0b478e76a2d58531d009821224a126956c7be1b35ed2c5a39efc26"
+    },
+    "void_form": {
+      "candidate": "A",
+      "file": "void_form_A.png",
+      "sha256": "521116c96c4b05de5af6549dd8e09eb379be01d73435785236a5ce5e05b6ec34"
+    },
+    "the_sealed_throne": {
+      "candidate": "B",
+      "file": "the_sealed_throne_B.png",
+      "sha256": "eac4ad0f06ebfc6b4a6ba0384679ac1f37cead3932b46958ac570cd444943eee"
+    },
+    "genesis": {
+      "candidate": "B",
+      "file": "genesis_B.png",
+      "sha256": "0648ae0ae38242fd917874d7424f1da721d2a21f6004d5918ce175f682f943cb"
+    },
+    "big_bang": {
+      "candidate": "A",
+      "file": "big_bang_A.png",
+      "sha256": "1b12ad8fdc579fdc6315fcdcc2df1a1e436b5ef7d71105fdd0baf5dea1d497f8"
+    },
+    "monarchs_gaze": {
+      "candidate": "B",
+      "file": "monarchs_gaze_B.png",
+      "sha256": "96738523da0e6ae137ae07bf48f1cd995907b11362af1e84304617224a57ac79"
+    }
+  }
+}

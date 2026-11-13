@@ -1,0 +1,26 @@
+{
+  "status": "user_selection_complete",
+  "user_response": "AABBAB",
+  "selected": {
+    "sovereign_blade": "sovereign_blade_A.png",
+    "void_form": "void_form_A.png",
+    "the_sealed_throne": "the_sealed_throne_B.png",
+    "genesis": "genesis_B.png",
+    "big_bang": "big_bang_A.png",
+    "monarchs_gaze": "monarchs_gaze_B.png"
+  },
+  "candidates": {
+    "sovereign_blade_A.png": "approved_by_user",
+    "sovereign_blade_B.png": "not_selected",
+    "void_form_A.png": "approved_by_user",
+    "void_form_B.png": "not_selected",
+    "the_sealed_throne_A.png": "not_selected",
+    "the_sealed_throne_B.png": "approved_by_user",
+    "genesis_A.png": "not_selected",
+    "genesis_B.png": "approved_by_user",
+    "big_bang_A.png": "approved_by_user",
+    "big_bang_B.png": "not_selected",
+    "monarchs_gaze_A.png": "not_selected",
+    "monarchs_gaze_B.png": "approved_by_user"
+  }
+}

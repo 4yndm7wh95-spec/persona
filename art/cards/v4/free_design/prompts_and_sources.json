@@ -1,0 +1,466 @@
+{
+  "base_commit": "abf9ab2c",
+  "prompt_document": "docs/codex/codex_card_art_key_cards_free_design.md",
+  "tool": "built-in imagegen",
+  "status": "user_selection_complete",
+  "policy": "One call per candidate, sequential. No automatic retries or visual acceptance judgement. Only listed references attached, no original card image.",
+  "records": [
+    {
+      "name": "sovereign_blade",
+      "zh_name": "君王之剑",
+      "rarity": "衍生牌（Regent 的招牌武器）",
+      "size": "1000x760",
+      "references": [
+        "art/parts_src/sword.png",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png (STYLE ONLY: hard cel-shaded poster look, ignore its subject)"
+      ],
+      "concept_zh": "结城理的银剑倒插在棺材田里，剑格上方绽开一圈八把幽灵剑，像一顶王冠。",
+      "prompt": "Create ONE new opaque full-bleed horizontal 1000x760 card illustration: a heroic poster of SOVEREIGN BLADE. COMPOSITION (percent of canvas): MAKOTO'S SWORD stands upright, blade pointing down, planted in the ground at the bottom center, tilted about 6 degrees clockwise: pommel at about (51%, 14%), crossguard at about (50%, 30%), blade tip buried at about (48%, 80%). It is the biggest and brightest shape (about 13% of the canvas width at the crossguard). A thin cyan-gold glow runs along its cutting edge. A CROWN OF SPECTRAL BLADES: from a point just behind the grip, EIGHT slimmer translucent ice-cyan ghost copies of the same sword radiate outward like the points of a royal crown or sunburst, fanning across the upper half in an arc of about 140 degrees; the longest two reach about x10% and x90%, the shortest point almost straight up; semi-transparent with bright white edges; all stay inside the safe area. GROUND: a dark plain with two rows of tall narrow black COFFINS (silver trim, pale cyan edge light) standing upright in receding perspective on both sides of the sword, large ones at the lower corners partly cropped, smaller ones fading toward the horizon; a few iron chains lie across the ground; a thin low mist. SKY: deep teal-navy with a few large flat diagonal bands behind the crown and a few four-point star glints; no moon. PALETTE: deep navy and teal about 60%, silver and ice-white, cyan; a single warm gold accent only on the blade-edge glow. AVOID: no people, hands or faces, no Regent star emblem, no gold ornate hilt. Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.",
+      "candidates_per_card": 2,
+      "status": "approved_by_user",
+      "candidate": "A",
+      "actual_references": [
+        "art/parts_src/sword.png",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png"
+      ],
+      "submitted_prompt": "Create ONE new opaque full-bleed horizontal 1000x760 card illustration: a heroic poster of SOVEREIGN BLADE. COMPOSITION (percent of canvas): MAKOTO'S SWORD stands upright, blade pointing down, planted in the ground at the bottom center, tilted about 6 degrees clockwise: pommel at about (51%, 14%), crossguard at about (50%, 30%), blade tip buried at about (48%, 80%). It is the biggest and brightest shape (about 13% of the canvas width at the crossguard). A thin cyan-gold glow runs along its cutting edge. A CROWN OF SPECTRAL BLADES: from a point just behind the grip, EIGHT slimmer translucent ice-cyan ghost copies of the same sword radiate outward like the points of a royal crown or sunburst, fanning across the upper half in an arc of about 140 degrees; the longest two reach about x10% and x90%, the shortest point almost straight up; semi-transparent with bright white edges; all stay inside the safe area. GROUND: a dark plain with two rows of tall narrow black COFFINS (silver trim, pale cyan edge light) standing upright in receding perspective on both sides of the sword, large ones at the lower corners partly cropped, smaller ones fading toward the horizon; a few iron chains lie across the ground; a thin low mist. SKY: deep teal-navy with a few large flat diagonal bands behind the crown and a few four-point star glints; no moon. PALETTE: deep navy and teal about 60%, silver and ice-white, cyan; a single warm gold accent only on the blade-edge glow. AVOID: no people, hands or faces, no Regent star emblem, no gold ornate hilt. Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.\nREFERENCE ROLES (there is no original edit target):\nReference image 1: Makoto sword object design only. Ignore green background.\nReference image 2: STYLE ONLY, learn hard-edged cel-shading, dark outlines and material planes; do NOT copy its characters, action, background or palette.\nCANDIDATE A: Use the primary composition specified above.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-7e8cf752-dc12-4cf4-88ab-dcfda33d2d88.png",
+      "result_hint": "Generated images are saved to C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581 as C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-7e8cf752-dc12-4cf4-88ab-dcfda33d2d88.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "output_size": [
+        1000,
+        760
+      ],
+      "output_file": "sovereign_blade_A.png",
+      "raw_file": "generation_sources/exec-7e8cf752-dc12-4cf4-88ab-dcfda33d2d88.png",
+      "reference_sha256": {
+        "art/parts_src/sword.png": "017c1c9ba18c9fcc851b52a36b59bab1604d64b24399d3ed35c57e472818bed5",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png": "6ee467acdd3e0613f489d12a5309235d0beda150fe918f9243fc82642104b92e"
+      }
+    },
+    {
+      "name": "sovereign_blade",
+      "zh_name": "君王之剑",
+      "rarity": "衍生牌（Regent 的招牌武器）",
+      "size": "1000x760",
+      "references": [
+        "art/parts_src/sword.png",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png (STYLE ONLY: hard cel-shaded poster look, ignore its subject)"
+      ],
+      "concept_zh": "结城理的银剑倒插在棺材田里，剑格上方绽开一圈八把幽灵剑，像一顶王冠。",
+      "prompt": "Create ONE new opaque full-bleed horizontal 1000x760 card illustration: a heroic poster of SOVEREIGN BLADE. COMPOSITION (percent of canvas): MAKOTO'S SWORD stands upright, blade pointing down, planted in the ground at the bottom center, tilted about 6 degrees clockwise: pommel at about (51%, 14%), crossguard at about (50%, 30%), blade tip buried at about (48%, 80%). It is the biggest and brightest shape (about 13% of the canvas width at the crossguard). A thin cyan-gold glow runs along its cutting edge. A CROWN OF SPECTRAL BLADES: from a point just behind the grip, EIGHT slimmer translucent ice-cyan ghost copies of the same sword radiate outward like the points of a royal crown or sunburst, fanning across the upper half in an arc of about 140 degrees; the longest two reach about x10% and x90%, the shortest point almost straight up; semi-transparent with bright white edges; all stay inside the safe area. GROUND: a dark plain with two rows of tall narrow black COFFINS (silver trim, pale cyan edge light) standing upright in receding perspective on both sides of the sword, large ones at the lower corners partly cropped, smaller ones fading toward the horizon; a few iron chains lie across the ground; a thin low mist. SKY: deep teal-navy with a few large flat diagonal bands behind the crown and a few four-point star glints; no moon. PALETTE: deep navy and teal about 60%, silver and ice-white, cyan; a single warm gold accent only on the blade-edge glow. AVOID: no people, hands or faces, no Regent star emblem, no gold ornate hilt. Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.",
+      "candidates_per_card": 2,
+      "status": "not_selected",
+      "candidate": "B",
+      "actual_references": [
+        "art/parts_src/sword.png",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png"
+      ],
+      "submitted_prompt": "Create ONE new opaque full-bleed horizontal 1000x760 card illustration: a heroic poster of SOVEREIGN BLADE. COMPOSITION (percent of canvas): MAKOTO'S SWORD stands upright, blade pointing down, planted in the ground at the bottom center, tilted about 6 degrees clockwise: pommel at about (51%, 14%), crossguard at about (50%, 30%), blade tip buried at about (48%, 80%). It is the biggest and brightest shape (about 13% of the canvas width at the crossguard). A thin cyan-gold glow runs along its cutting edge. A CROWN OF SPECTRAL BLADES: from a point just behind the grip, EIGHT slimmer translucent ice-cyan ghost copies of the same sword radiate outward like the points of a royal crown or sunburst, fanning across the upper half in an arc of about 140 degrees; the longest two reach about x10% and x90%, the shortest point almost straight up; semi-transparent with bright white edges; all stay inside the safe area. GROUND: a dark plain with two rows of tall narrow black COFFINS (silver trim, pale cyan edge light) standing upright in receding perspective on both sides of the sword, large ones at the lower corners partly cropped, smaller ones fading toward the horizon; a few iron chains lie across the ground; a thin low mist. SKY: deep teal-navy with a few large flat diagonal bands behind the crown and a few four-point star glints; no moon. PALETTE: deep navy and teal about 60%, silver and ice-white, cyan; a single warm gold accent only on the blade-edge glow. AVOID: no people, hands or faces, no Regent star emblem, no gold ornate hilt. Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.\nREFERENCE ROLES (there is no original edit target):\nReference image 1: Makoto sword object design only. Ignore green background.\nReference image 2: STYLE ONLY, learn hard-edged cel-shading, dark outlines and material planes; do NOT copy its characters, action, background or palette.\nCANDIDATE B: The SAME concept with a deliberately distinct composition/camera as follows. Use a distinctly LOW, three-quarter camera looking slightly upward along the planted sword. Keep the sword central and fully readable, with the silver hilt above the converging coffin rows and the eight ghost swords forming a shallow crown in foreshortened perspective behind the grip. The coffin rows converge to a slightly rightward vanishing point rather than bilateral symmetry. This camera adjustment supersedes the exact front-view positions above; preserve the specified subjects, counts, palette and crop-safe area.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-8a3940e1-bd26-4962-9c0e-c6b2fc9788e4.png",
+      "result_hint": "Generated images are saved to C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581 as C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-8a3940e1-bd26-4962-9c0e-c6b2fc9788e4.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "generated_size": [
+        1438,
+        1093
+      ],
+      "output_size": [
+        1000,
+        760
+      ],
+      "output_file": "sovereign_blade_B.png",
+      "raw_file": "generation_sources/exec-8a3940e1-bd26-4962-9c0e-c6b2fc9788e4.png",
+      "reference_sha256": {
+        "art/parts_src/sword.png": "017c1c9ba18c9fcc851b52a36b59bab1604d64b24399d3ed35c57e472818bed5",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png": "6ee467acdd3e0613f489d12a5309235d0beda150fe918f9243fc82642104b92e"
+      }
+    },
+    {
+      "name": "void_form",
+      "zh_name": "虚空形态",
+      "rarity": "稀有 · 能力",
+      "size": "1000x760",
+      "references": [
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png (STYLE ONLY: hard cel-shaded poster look, ignore its subject)"
+      ],
+      "concept_zh": "「黑暗时间」被冻住的一瞬：午夜的大钟，周围凝固的玻璃碎片和悬在半空的塔罗牌，中间一把悬浮的召唤器。没有人物。",
+      "prompt": "Create ONE new opaque full-bleed horizontal 1000x760 card illustration: VOID FORM, the hidden hour frozen in time. COMPOSITION (percent of canvas): a huge round CLOCK FACE seen almost head-on in the center (center at (50%, 47%), diameter about 62% of the canvas width): dark gunmetal rim with thin silver edging, a deep black face, twelve small four-point-star markers in place of numerals (NO numerals), and both slim silver filigree clock hands pointing straight up at twelve, overlapping. AROUND THE CLOCK a FROZEN EXPLOSION: a ring of hard-edged translucent pale-blue GLASS SHARDS, like a shattered Persona summon, hanging motionless in mid-air, expanding outward from the clock's center, large shards near the edges and tiny ones near the center, with crisp white highlights. Among the shards hang FIVE TAROT CARDS (royal-blue backs with a gold four-point star, no text) at different tilts, each with a tiny cyan glint, positioned roughly at (19%, 27%), (79%, 24%), (15%, 55%), (84%, 53%) and (50%, 15%). At the clock's center floats a small silver EVOKER (a gun-shaped summoner: short barrel ringed with small slots) horizontally, muzzle pointing right, with a tiny hot-pink glint at the muzzle, frozen mid-flash. BACKGROUND: dark teal-green with a few large flat diagonal bands, and a few giant black COFFIN silhouettes as flat dark shapes in the far distance. EVERYTHING IS STILL: no motion blur, no speed lines. PALETTE: Dark Hour teal-green about 40%, black about 25%, ice-white and pale blue glass about 25%, royal-blue cards, one small hot-pink accent. AVOID: no people, no faces, no butterflies or wings, no text or numerals. Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.",
+      "candidates_per_card": 2,
+      "status": "approved_by_user",
+      "candidate": "A",
+      "actual_references": [
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png"
+      ],
+      "submitted_prompt": "Create ONE new opaque full-bleed horizontal 1000x760 card illustration: VOID FORM, the hidden hour frozen in time. COMPOSITION (percent of canvas): a huge round CLOCK FACE seen almost head-on in the center (center at (50%, 47%), diameter about 62% of the canvas width): dark gunmetal rim with thin silver edging, a deep black face, twelve small four-point-star markers in place of numerals (NO numerals), and both slim silver filigree clock hands pointing straight up at twelve, overlapping. AROUND THE CLOCK a FROZEN EXPLOSION: a ring of hard-edged translucent pale-blue GLASS SHARDS, like a shattered Persona summon, hanging motionless in mid-air, expanding outward from the clock's center, large shards near the edges and tiny ones near the center, with crisp white highlights. Among the shards hang FIVE TAROT CARDS (royal-blue backs with a gold four-point star, no text) at different tilts, each with a tiny cyan glint, positioned roughly at (19%, 27%), (79%, 24%), (15%, 55%), (84%, 53%) and (50%, 15%). At the clock's center floats a small silver EVOKER (a gun-shaped summoner: short barrel ringed with small slots) horizontally, muzzle pointing right, with a tiny hot-pink glint at the muzzle, frozen mid-flash. BACKGROUND: dark teal-green with a few large flat diagonal bands, and a few giant black COFFIN silhouettes as flat dark shapes in the far distance. EVERYTHING IS STILL: no motion blur, no speed lines. PALETTE: Dark Hour teal-green about 40%, black about 25%, ice-white and pale blue glass about 25%, royal-blue cards, one small hot-pink accent. AVOID: no people, no faces, no butterflies or wings, no text or numerals. Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.\nREFERENCE ROLES (there is no original edit target):\nReference image 1: STYLE ONLY, learn hard-edged cel-shading, dark outlines and material planes; do NOT copy its characters, action, background or palette.\nCANDIDATE A: Use the primary composition specified above.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-e35566f4-6045-4100-a60b-18388ce0d2e1.png",
+      "result_hint": "Generated images are saved to C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581 as C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-e35566f4-6045-4100-a60b-18388ce0d2e1.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "output_size": [
+        1000,
+        760
+      ],
+      "output_file": "void_form_A.png",
+      "raw_file": "generation_sources/exec-e35566f4-6045-4100-a60b-18388ce0d2e1.png",
+      "reference_sha256": {
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png": "6ee467acdd3e0613f489d12a5309235d0beda150fe918f9243fc82642104b92e"
+      }
+    },
+    {
+      "name": "void_form",
+      "zh_name": "虚空形态",
+      "rarity": "稀有 · 能力",
+      "size": "1000x760",
+      "references": [
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png (STYLE ONLY: hard cel-shaded poster look, ignore its subject)"
+      ],
+      "concept_zh": "「黑暗时间」被冻住的一瞬：午夜的大钟，周围凝固的玻璃碎片和悬在半空的塔罗牌，中间一把悬浮的召唤器。没有人物。",
+      "prompt": "Create ONE new opaque full-bleed horizontal 1000x760 card illustration: VOID FORM, the hidden hour frozen in time. COMPOSITION (percent of canvas): a huge round CLOCK FACE seen almost head-on in the center (center at (50%, 47%), diameter about 62% of the canvas width): dark gunmetal rim with thin silver edging, a deep black face, twelve small four-point-star markers in place of numerals (NO numerals), and both slim silver filigree clock hands pointing straight up at twelve, overlapping. AROUND THE CLOCK a FROZEN EXPLOSION: a ring of hard-edged translucent pale-blue GLASS SHARDS, like a shattered Persona summon, hanging motionless in mid-air, expanding outward from the clock's center, large shards near the edges and tiny ones near the center, with crisp white highlights. Among the shards hang FIVE TAROT CARDS (royal-blue backs with a gold four-point star, no text) at different tilts, each with a tiny cyan glint, positioned roughly at (19%, 27%), (79%, 24%), (15%, 55%), (84%, 53%) and (50%, 15%). At the clock's center floats a small silver EVOKER (a gun-shaped summoner: short barrel ringed with small slots) horizontally, muzzle pointing right, with a tiny hot-pink glint at the muzzle, frozen mid-flash. BACKGROUND: dark teal-green with a few large flat diagonal bands, and a few giant black COFFIN silhouettes as flat dark shapes in the far distance. EVERYTHING IS STILL: no motion blur, no speed lines. PALETTE: Dark Hour teal-green about 40%, black about 25%, ice-white and pale blue glass about 25%, royal-blue cards, one small hot-pink accent. AVOID: no people, no faces, no butterflies or wings, no text or numerals. Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.",
+      "candidates_per_card": 2,
+      "status": "not_selected",
+      "candidate": "B",
+      "actual_references": [
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png"
+      ],
+      "submitted_prompt": "Create ONE new opaque full-bleed horizontal 1000x760 card illustration: VOID FORM, the hidden hour frozen in time. COMPOSITION (percent of canvas): a huge round CLOCK FACE seen almost head-on in the center (center at (50%, 47%), diameter about 62% of the canvas width): dark gunmetal rim with thin silver edging, a deep black face, twelve small four-point-star markers in place of numerals (NO numerals), and both slim silver filigree clock hands pointing straight up at twelve, overlapping. AROUND THE CLOCK a FROZEN EXPLOSION: a ring of hard-edged translucent pale-blue GLASS SHARDS, like a shattered Persona summon, hanging motionless in mid-air, expanding outward from the clock's center, large shards near the edges and tiny ones near the center, with crisp white highlights. Among the shards hang FIVE TAROT CARDS (royal-blue backs with a gold four-point star, no text) at different tilts, each with a tiny cyan glint, positioned roughly at (19%, 27%), (79%, 24%), (15%, 55%), (84%, 53%) and (50%, 15%). At the clock's center floats a small silver EVOKER (a gun-shaped summoner: short barrel ringed with small slots) horizontally, muzzle pointing right, with a tiny hot-pink glint at the muzzle, frozen mid-flash. BACKGROUND: dark teal-green with a few large flat diagonal bands, and a few giant black COFFIN silhouettes as flat dark shapes in the far distance. EVERYTHING IS STILL: no motion blur, no speed lines. PALETTE: Dark Hour teal-green about 40%, black about 25%, ice-white and pale blue glass about 25%, royal-blue cards, one small hot-pink accent. AVOID: no people, no faces, no butterflies or wings, no text or numerals. Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.\nREFERENCE ROLES (there is no original edit target):\nReference image 1: STYLE ONLY, learn hard-edged cel-shading, dark outlines and material planes; do NOT copy its characters, action, background or palette.\nCANDIDATE B: The SAME concept with a deliberately distinct composition/camera as follows. Use a three-quarter view of the clock tilted back and turned slightly left, making its face a shallow ellipse while the silver Evoker remains clearly silhouetted across its hub, muzzle right. The five tarot cards and frozen glass shards circle it in a visibly deep orbit with a foreground shard at left and receding cards at right. Both hands still point to midnight. This viewpoint variation supersedes the exact head-on placements above; keep the same motif, palette and safe area.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-d757a69e-ec5b-4c45-87c7-71e126f27522.png",
+      "result_hint": "Generated images are saved to C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581 as C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-d757a69e-ec5b-4c45-87c7-71e126f27522.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "generated_size": [
+        1438,
+        1093
+      ],
+      "output_size": [
+        1000,
+        760
+      ],
+      "output_file": "void_form_B.png",
+      "raw_file": "generation_sources/exec-d757a69e-ec5b-4c45-87c7-71e126f27522.png",
+      "reference_sha256": {
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png": "6ee467acdd3e0613f489d12a5309235d0beda150fe918f9243fc82642104b92e"
+      }
+    },
+    {
+      "name": "the_sealed_throne",
+      "zh_name": "封印王座",
+      "rarity": "远古 · 能力",
+      "size": "606x852（竖图，和原版一样）",
+      "references": [
+        "art/velvet_elevator/base_room.png",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png (STYLE ONLY: hard cel-shaded poster look, ignore its subject)"
+      ],
+      "concept_zh": "伊戈尔的蓝色天鹅绒高背椅空着，被二十一张塔罗牌围成的椭圆封印锁住；椅子上方独自悬着第二十二张——愚者。",
+      "prompt": "Create ONE new opaque full-bleed PORTRAIT 606x852 card illustration: THE SEALED THRONE. COMPOSITION (centered, symmetrical): IGOR'S VELVET ROOM ARMCHAIR, a royal-blue tufted high-back wingback with gold studs and silver trim (see art/velvet_elevator/base_room.png for the chair's design), sits EMPTY on a small round silver-and-stone dais at the center (chair centered at (50%, 56%), about 30% of the canvas height). Around it a vertical oval RING of TWENTY-ONE TAROT CARDS floats upright like a halo and a seal (oval about 70% of the width and 62% of the height, centered at (50%, 52%)), each card slightly overlapping the next and facing outward with ornate gold-and-royal-blue faces showing simple stylised arcana emblems (no text, no numerals). From every card a thin iron chain runs inward to the chair's arms and base, twenty-one chains converging in a star pattern to lock it. ABOVE the chair, outside the ring at about (50%, 14%), the TWENTY-SECOND card, THE FOOL, hovers alone, tilted about 10 degrees, glowing bright white-gold, with a soft vertical column of white light falling from it toward the empty seat; this is the only warm light. BACKGROUND: the Velvet Room, deep indigo-navy, silver filigree arches and columns on both sides as flat dark shapes, heavy royal-blue velvet drapes at the top corners, a patterned floor in perspective at the bottom. PALETTE: indigo and royal blue about 55%, silver 15%, gold 15%, white-gold glow. AVOID: no people, no faces, no text, no numerals. Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.",
+      "candidates_per_card": 2,
+      "status": "not_selected",
+      "candidate": "A",
+      "actual_references": [
+        "art/velvet_elevator/base_room.png",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png"
+      ],
+      "submitted_prompt": "Create ONE new opaque full-bleed PORTRAIT 606x852 card illustration: THE SEALED THRONE. COMPOSITION (centered, symmetrical): IGOR'S VELVET ROOM ARMCHAIR, a royal-blue tufted high-back wingback with gold studs and silver trim (see art/velvet_elevator/base_room.png for the chair's design), sits EMPTY on a small round silver-and-stone dais at the center (chair centered at (50%, 56%), about 30% of the canvas height). Around it a vertical oval RING of TWENTY-ONE TAROT CARDS floats upright like a halo and a seal (oval about 70% of the width and 62% of the height, centered at (50%, 52%)), each card slightly overlapping the next and facing outward with ornate gold-and-royal-blue faces showing simple stylised arcana emblems (no text, no numerals). From every card a thin iron chain runs inward to the chair's arms and base, twenty-one chains converging in a star pattern to lock it. ABOVE the chair, outside the ring at about (50%, 14%), the TWENTY-SECOND card, THE FOOL, hovers alone, tilted about 10 degrees, glowing bright white-gold, with a soft vertical column of white light falling from it toward the empty seat; this is the only warm light. BACKGROUND: the Velvet Room, deep indigo-navy, silver filigree arches and columns on both sides as flat dark shapes, heavy royal-blue velvet drapes at the top corners, a patterned floor in perspective at the bottom. PALETTE: indigo and royal blue about 55%, silver 15%, gold 15%, white-gold glow. AVOID: no people, no faces, no text, no numerals. Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.\nREFERENCE ROLES (there is no original edit target):\nReference image 1: Room and armchair design only; the requested chair is EMPTY. Do not include Igor, other people or the desk.\nReference image 2: STYLE ONLY, learn hard-edged cel-shading, dark outlines and material planes; do NOT copy its characters, action, background or palette.\nCANDIDATE A: Use the primary composition specified above.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-8b68f394-36ce-4f2d-9584-d401bab4fd20.png",
+      "result_hint": "Generated images are saved to C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581 as C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-8b68f394-36ce-4f2d-9584-d401bab4fd20.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "generated_size": [
+        1058,
+        1487
+      ],
+      "output_size": [
+        606,
+        852
+      ],
+      "output_file": "the_sealed_throne_A.png",
+      "raw_file": "generation_sources/exec-8b68f394-36ce-4f2d-9584-d401bab4fd20.png",
+      "reference_sha256": {
+        "art/velvet_elevator/base_room.png": "7aff9ee7104cf57c0f45bb43a039df0e05901052d3a82affdee99c385599c203",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png": "6ee467acdd3e0613f489d12a5309235d0beda150fe918f9243fc82642104b92e"
+      }
+    },
+    {
+      "name": "the_sealed_throne",
+      "zh_name": "封印王座",
+      "rarity": "远古 · 能力",
+      "size": "606x852（竖图，和原版一样）",
+      "references": [
+        "art/velvet_elevator/base_room.png",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png (STYLE ONLY: hard cel-shaded poster look, ignore its subject)"
+      ],
+      "concept_zh": "伊戈尔的蓝色天鹅绒高背椅空着，被二十一张塔罗牌围成的椭圆封印锁住；椅子上方独自悬着第二十二张——愚者。",
+      "prompt": "Create ONE new opaque full-bleed PORTRAIT 606x852 card illustration: THE SEALED THRONE. COMPOSITION (centered, symmetrical): IGOR'S VELVET ROOM ARMCHAIR, a royal-blue tufted high-back wingback with gold studs and silver trim (see art/velvet_elevator/base_room.png for the chair's design), sits EMPTY on a small round silver-and-stone dais at the center (chair centered at (50%, 56%), about 30% of the canvas height). Around it a vertical oval RING of TWENTY-ONE TAROT CARDS floats upright like a halo and a seal (oval about 70% of the width and 62% of the height, centered at (50%, 52%)), each card slightly overlapping the next and facing outward with ornate gold-and-royal-blue faces showing simple stylised arcana emblems (no text, no numerals). From every card a thin iron chain runs inward to the chair's arms and base, twenty-one chains converging in a star pattern to lock it. ABOVE the chair, outside the ring at about (50%, 14%), the TWENTY-SECOND card, THE FOOL, hovers alone, tilted about 10 degrees, glowing bright white-gold, with a soft vertical column of white light falling from it toward the empty seat; this is the only warm light. BACKGROUND: the Velvet Room, deep indigo-navy, silver filigree arches and columns on both sides as flat dark shapes, heavy royal-blue velvet drapes at the top corners, a patterned floor in perspective at the bottom. PALETTE: indigo and royal blue about 55%, silver 15%, gold 15%, white-gold glow. AVOID: no people, no faces, no text, no numerals. Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.",
+      "candidates_per_card": 2,
+      "status": "approved_by_user",
+      "candidate": "B",
+      "actual_references": [
+        "art/velvet_elevator/base_room.png",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png"
+      ],
+      "submitted_prompt": "Create ONE new opaque full-bleed PORTRAIT 606x852 card illustration: THE SEALED THRONE. COMPOSITION (centered, symmetrical): IGOR'S VELVET ROOM ARMCHAIR, a royal-blue tufted high-back wingback with gold studs and silver trim (see art/velvet_elevator/base_room.png for the chair's design), sits EMPTY on a small round silver-and-stone dais at the center (chair centered at (50%, 56%), about 30% of the canvas height). Around it a vertical oval RING of TWENTY-ONE TAROT CARDS floats upright like a halo and a seal (oval about 70% of the width and 62% of the height, centered at (50%, 52%)), each card slightly overlapping the next and facing outward with ornate gold-and-royal-blue faces showing simple stylised arcana emblems (no text, no numerals). From every card a thin iron chain runs inward to the chair's arms and base, twenty-one chains converging in a star pattern to lock it. ABOVE the chair, outside the ring at about (50%, 14%), the TWENTY-SECOND card, THE FOOL, hovers alone, tilted about 10 degrees, glowing bright white-gold, with a soft vertical column of white light falling from it toward the empty seat; this is the only warm light. BACKGROUND: the Velvet Room, deep indigo-navy, silver filigree arches and columns on both sides as flat dark shapes, heavy royal-blue velvet drapes at the top corners, a patterned floor in perspective at the bottom. PALETTE: indigo and royal blue about 55%, silver 15%, gold 15%, white-gold glow. AVOID: no people, no faces, no text, no numerals. Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.\nREFERENCE ROLES (there is no original edit target):\nReference image 1: Room and armchair design only; the requested chair is EMPTY. Do not include Igor, other people or the desk.\nReference image 2: STYLE ONLY, learn hard-edged cel-shading, dark outlines and material planes; do NOT copy its characters, action, background or palette.\nCANDIDATE B: The SAME concept with a deliberately distinct composition/camera as follows. Use a restrained LOW three-quarter camera from the left of the dais rather than a perfectly frontal symmetrical shot. The empty chair is turned slightly toward the viewer, the 21-card seal becomes an oblique vertical oval in perspective and all chains converge inward. The isolated 22nd Fool card still floats above and illuminates the empty seat. Keep the portrait proportions, full seal visible and every important feature in the safe area. This perspective variation supersedes the earlier frontal symmetry and exact positions; maintain all counts and other requirements.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-cfc03f82-ef7b-4651-a30d-e5616b89275e.png",
+      "result_hint": "Generated images are saved to C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581 as C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-cfc03f82-ef7b-4651-a30d-e5616b89275e.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "generated_size": [
+        1058,
+        1487
+      ],
+      "output_size": [
+        606,
+        852
+      ],
+      "output_file": "the_sealed_throne_B.png",
+      "raw_file": "generation_sources/exec-cfc03f82-ef7b-4651-a30d-e5616b89275e.png",
+      "reference_sha256": {
+        "art/velvet_elevator/base_room.png": "7aff9ee7104cf57c0f45bb43a039df0e05901052d3a82affdee99c385599c203",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png": "6ee467acdd3e0613f489d12a5309235d0beda150fe918f9243fc82642104b92e"
+      }
+    },
+    {
+      "name": "genesis",
+      "zh_name": "创世纪",
+      "rarity": "稀有 · 能力",
+      "size": "1000x760",
+      "references": [
+        "mod/pck_stage/p3makoto/persona/orpheus.png",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png (STYLE ONLY: hard cel-shaded poster look, ignore its subject)"
+      ],
+      "concept_zh": "一张塔罗牌从中间裂开，金白色的光倾泻而出，俄耳甫斯从裂缝里升起；左下角一只结城理的手刚松开牌角。",
+      "prompt": "Create ONE new opaque full-bleed horizontal 1000x760 card illustration: GENESIS, the birth of a Persona from a tarot card. COMPOSITION (percent of canvas): at the center (50%, 46%) a single tall TAROT CARD (about 19% of the canvas width, royal-blue and gold, its face a stylised THE FOOL: a small white figure at a cliff edge under a gold sun, no text) floats upright and cracks down its middle; a vertical blade of golden-white light pours out of the crack, and glass-like shards of the card fly outward. Rising out of the crack is the upper body of ORPHEUS (follow the design in mod/pck_stage/p3makoto/persona/orpheus.png exactly), arms open and holding up his lyre, as if stepping out of the card, about as tall as the card. At the lower left, one HAND of Makoto Yuki (pale bare hand, black blazer sleeve with a white cuff) enters from the left edge at about (14%, 78%), the thumb and forefinger just released from the card's lower corner; about 18% of the canvas width; no face, no body, no head. About eighteen tiny golden four-point stars drift upward like sparks in varied sizes. BACKGROUND: deep violet-blue with big flat diagonal bands (violet, indigo, one lighter blue band behind the card) and a soft golden radial glow at the crack. PALETTE: violet and indigo about 55%, gold-white about 25%, royal-blue card about 10%, cyan rim light. AVOID: no faces of Makoto, no text. Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.",
+      "candidates_per_card": 2,
+      "status": "not_selected",
+      "candidate": "A",
+      "actual_references": [
+        "mod/pck_stage/p3makoto/persona/orpheus.png",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png"
+      ],
+      "submitted_prompt": "Create ONE new opaque full-bleed horizontal 1000x760 card illustration: GENESIS, the birth of a Persona from a tarot card. COMPOSITION (percent of canvas): at the center (50%, 46%) a single tall TAROT CARD (about 19% of the canvas width, royal-blue and gold, its face a stylised THE FOOL: a small white figure at a cliff edge under a gold sun, no text) floats upright and cracks down its middle; a vertical blade of golden-white light pours out of the crack, and glass-like shards of the card fly outward. Rising out of the crack is the upper body of ORPHEUS (follow the design in mod/pck_stage/p3makoto/persona/orpheus.png exactly), arms open and holding up his lyre, as if stepping out of the card, about as tall as the card. At the lower left, one HAND of Makoto Yuki (pale bare hand, black blazer sleeve with a white cuff) enters from the left edge at about (14%, 78%), the thumb and forefinger just released from the card's lower corner; about 18% of the canvas width; no face, no body, no head. About eighteen tiny golden four-point stars drift upward like sparks in varied sizes. BACKGROUND: deep violet-blue with big flat diagonal bands (violet, indigo, one lighter blue band behind the card) and a soft golden radial glow at the crack. PALETTE: violet and indigo about 55%, gold-white about 25%, royal-blue card about 10%, cyan rim light. AVOID: no faces of Makoto, no text. Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.\nREFERENCE ROLES (there is no original edit target):\nReference image 1: Orpheus identity/design only: mechanical Persona with teal armored torso, silver robotic limbs, dark mask face, silver hair, red scarf and integrated lyre; never a human wearing a costume.\nReference image 2: STYLE ONLY, learn hard-edged cel-shading, dark outlines and material planes; do NOT copy its characters, action, background or palette.\nCANDIDATE A: Use the primary composition specified above.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-2a8db1ee-5af5-4777-8d40-0f0769ef0247.png",
+      "result_hint": "Generated images are saved to C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581 as C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-2a8db1ee-5af5-4777-8d40-0f0769ef0247.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "output_size": [
+        1000,
+        760
+      ],
+      "output_file": "genesis_A.png",
+      "raw_file": "generation_sources/exec-2a8db1ee-5af5-4777-8d40-0f0769ef0247.png",
+      "reference_sha256": {
+        "mod/pck_stage/p3makoto/persona/orpheus.png": "9007ccc479ff43748f6cafd8b4a4265392ee086b0da726e884119131271c7068",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png": "6ee467acdd3e0613f489d12a5309235d0beda150fe918f9243fc82642104b92e"
+      }
+    },
+    {
+      "name": "genesis",
+      "zh_name": "创世纪",
+      "rarity": "稀有 · 能力",
+      "size": "1000x760",
+      "references": [
+        "mod/pck_stage/p3makoto/persona/orpheus.png",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png (STYLE ONLY: hard cel-shaded poster look, ignore its subject)"
+      ],
+      "concept_zh": "一张塔罗牌从中间裂开，金白色的光倾泻而出，俄耳甫斯从裂缝里升起；左下角一只结城理的手刚松开牌角。",
+      "prompt": "Create ONE new opaque full-bleed horizontal 1000x760 card illustration: GENESIS, the birth of a Persona from a tarot card. COMPOSITION (percent of canvas): at the center (50%, 46%) a single tall TAROT CARD (about 19% of the canvas width, royal-blue and gold, its face a stylised THE FOOL: a small white figure at a cliff edge under a gold sun, no text) floats upright and cracks down its middle; a vertical blade of golden-white light pours out of the crack, and glass-like shards of the card fly outward. Rising out of the crack is the upper body of ORPHEUS (follow the design in mod/pck_stage/p3makoto/persona/orpheus.png exactly), arms open and holding up his lyre, as if stepping out of the card, about as tall as the card. At the lower left, one HAND of Makoto Yuki (pale bare hand, black blazer sleeve with a white cuff) enters from the left edge at about (14%, 78%), the thumb and forefinger just released from the card's lower corner; about 18% of the canvas width; no face, no body, no head. About eighteen tiny golden four-point stars drift upward like sparks in varied sizes. BACKGROUND: deep violet-blue with big flat diagonal bands (violet, indigo, one lighter blue band behind the card) and a soft golden radial glow at the crack. PALETTE: violet and indigo about 55%, gold-white about 25%, royal-blue card about 10%, cyan rim light. AVOID: no faces of Makoto, no text. Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.",
+      "candidates_per_card": 2,
+      "status": "approved_by_user",
+      "candidate": "B",
+      "actual_references": [
+        "mod/pck_stage/p3makoto/persona/orpheus.png",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png"
+      ],
+      "submitted_prompt": "Create ONE new opaque full-bleed horizontal 1000x760 card illustration: GENESIS, the birth of a Persona from a tarot card. COMPOSITION (percent of canvas): at the center (50%, 46%) a single tall TAROT CARD (about 19% of the canvas width, royal-blue and gold, its face a stylised THE FOOL: a small white figure at a cliff edge under a gold sun, no text) floats upright and cracks down its middle; a vertical blade of golden-white light pours out of the crack, and glass-like shards of the card fly outward. Rising out of the crack is the upper body of ORPHEUS (follow the design in mod/pck_stage/p3makoto/persona/orpheus.png exactly), arms open and holding up his lyre, as if stepping out of the card, about as tall as the card. At the lower left, one HAND of Makoto Yuki (pale bare hand, black blazer sleeve with a white cuff) enters from the left edge at about (14%, 78%), the thumb and forefinger just released from the card's lower corner; about 18% of the canvas width; no face, no body, no head. About eighteen tiny golden four-point stars drift upward like sparks in varied sizes. BACKGROUND: deep violet-blue with big flat diagonal bands (violet, indigo, one lighter blue band behind the card) and a soft golden radial glow at the crack. PALETTE: violet and indigo about 55%, gold-white about 25%, royal-blue card about 10%, cyan rim light. AVOID: no faces of Makoto, no text. Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.\nREFERENCE ROLES (there is no original edit target):\nReference image 1: Orpheus identity/design only: mechanical Persona with teal armored torso, silver robotic limbs, dark mask face, silver hair, red scarf and integrated lyre; never a human wearing a costume.\nReference image 2: STYLE ONLY, learn hard-edged cel-shading, dark outlines and material planes; do NOT copy its characters, action, background or palette.\nCANDIDATE B: The SAME concept with a deliberately distinct composition/camera as follows. Use a dynamic three-quarter view of the split tarot card, its top tilted slightly away and its long axis angled approximately 15 degrees clockwise. Orpheus emerges diagonally upward toward the upper right from the gold-white split; his mechanical body and integrated lyre follow the reference exactly. The sole hand just releasing the lower left corner remains at the lower left. Make the golden crack and the Persona's silhouette form a strong diagonal rather than a straight vertical axis. This layout change supersedes exact placements above; preserve all motifs, palette and crop safety.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-c9418251-b120-4629-9ead-121bc310cc53.png",
+      "result_hint": "Generated images are saved to C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581 as C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-c9418251-b120-4629-9ead-121bc310cc53.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "output_size": [
+        1000,
+        760
+      ],
+      "output_file": "genesis_B.png",
+      "raw_file": "generation_sources/exec-c9418251-b120-4629-9ead-121bc310cc53.png",
+      "reference_sha256": {
+        "mod/pck_stage/p3makoto/persona/orpheus.png": "9007ccc479ff43748f6cafd8b4a4265392ee086b0da726e884119131271c7068",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png": "6ee467acdd3e0613f489d12a5309235d0beda150fe918f9243fc82642104b92e"
+      }
+    },
+    {
+      "name": "big_bang",
+      "zh_name": "大爆炸",
+      "rarity": "稀有 · 技能",
+      "size": "1000x760",
+      "references": [
+        "art/parts_src/sword.png",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png (STYLE ONLY: hard cel-shaded poster look, ignore its subject)"
+      ],
+      "concept_zh": "从一点白光炸开二十二张大阿尔卡那，近大远小飞向四周，一把结城理的剑混在里面，最大的一张是愚者。",
+      "prompt": "Create ONE new opaque full-bleed horizontal 1000x760 card illustration: BIG BANG, the twenty-two Major Arcana bursting out at once. COMPOSITION (percent of canvas): a radial burst centered at (50%, 48%): a blinding ivory-white and pale-gold flash disc (about 14% of the canvas width) with eight long sharp rays. From it TWENTY-TWO TAROT CARDS fly outward in every direction in strong perspective: small and far near the center, large and near at the edges, each rotated along its flight path, with painted faces showing distinct simple emblems (sun, moon, star, tower, wheel, sword, cup, coin, lantern, scales, chariot, skull and so on) in flat royal blue, gold, cyan and rose-pink; no text or numerals. The nearest, largest card at the lower right at about (79%, 68%) is THE FOOL (a small white figure at a cliff edge under a gold sun). Mixed in among the cards at the upper left, MAKOTO'S SWORD flies outward along a diagonal. Two thin cyan shockwave rings circle the flash, and a few glowing four-point stars sparkle between the cards. BACKGROUND: deep navy with flat radial bands in two blues. PALETTE: navy about 40%, white flash about 15%, gold about 15%, cyan about 10%, with rose-pink and royal-blue card accents. AVOID: no people, hands or faces, no text or numerals. MAKOTO'S SWORD (asset art/parts_src/sword.png): plain silver straight single-edge tapered blade with steel-grey bevel, simple narrow silver crossguard, black leather-wrapped grip, round silver pommel, no gold ornament, gems or crown.Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.",
+      "candidates_per_card": 2,
+      "status": "approved_by_user",
+      "candidate": "A",
+      "actual_references": [
+        "art/parts_src/sword.png",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png"
+      ],
+      "submitted_prompt": "Create ONE new opaque full-bleed horizontal 1000x760 card illustration: BIG BANG, the twenty-two Major Arcana bursting out at once. COMPOSITION (percent of canvas): a radial burst centered at (50%, 48%): a blinding ivory-white and pale-gold flash disc (about 14% of the canvas width) with eight long sharp rays. From it TWENTY-TWO TAROT CARDS fly outward in every direction in strong perspective: small and far near the center, large and near at the edges, each rotated along its flight path, with painted faces showing distinct simple emblems (sun, moon, star, tower, wheel, sword, cup, coin, lantern, scales, chariot, skull and so on) in flat royal blue, gold, cyan and rose-pink; no text or numerals. The nearest, largest card at the lower right at about (79%, 68%) is THE FOOL (a small white figure at a cliff edge under a gold sun). Mixed in among the cards at the upper left, MAKOTO'S SWORD flies outward along a diagonal. Two thin cyan shockwave rings circle the flash, and a few glowing four-point stars sparkle between the cards. BACKGROUND: deep navy with flat radial bands in two blues. PALETTE: navy about 40%, white flash about 15%, gold about 15%, cyan about 10%, with rose-pink and royal-blue card accents. AVOID: no people, hands or faces, no text or numerals. MAKOTO'S SWORD (asset art/parts_src/sword.png): plain silver straight single-edge tapered blade with steel-grey bevel, simple narrow silver crossguard, black leather-wrapped grip, round silver pommel, no gold ornament, gems or crown.Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.\nREFERENCE ROLES (there is no original edit target):\nReference image 1: Makoto sword object design only. Ignore green background.\nReference image 2: STYLE ONLY, learn hard-edged cel-shading, dark outlines and material planes; do NOT copy its characters, action, background or palette.\nCANDIDATE A: Use the primary composition specified above.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-d453fccf-eec3-44a2-a6f3-68e93d2acf6d.png",
+      "result_hint": "Generated images are saved to C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581 as C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-d453fccf-eec3-44a2-a6f3-68e93d2acf6d.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "generated_size": [
+        1438,
+        1093
+      ],
+      "output_size": [
+        1000,
+        760
+      ],
+      "output_file": "big_bang_A.png",
+      "raw_file": "generation_sources/exec-d453fccf-eec3-44a2-a6f3-68e93d2acf6d.png",
+      "reference_sha256": {
+        "art/parts_src/sword.png": "017c1c9ba18c9fcc851b52a36b59bab1604d64b24399d3ed35c57e472818bed5",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png": "6ee467acdd3e0613f489d12a5309235d0beda150fe918f9243fc82642104b92e"
+      }
+    },
+    {
+      "name": "big_bang",
+      "zh_name": "大爆炸",
+      "rarity": "稀有 · 技能",
+      "size": "1000x760",
+      "references": [
+        "art/parts_src/sword.png",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png (STYLE ONLY: hard cel-shaded poster look, ignore its subject)"
+      ],
+      "concept_zh": "从一点白光炸开二十二张大阿尔卡那，近大远小飞向四周，一把结城理的剑混在里面，最大的一张是愚者。",
+      "prompt": "Create ONE new opaque full-bleed horizontal 1000x760 card illustration: BIG BANG, the twenty-two Major Arcana bursting out at once. COMPOSITION (percent of canvas): a radial burst centered at (50%, 48%): a blinding ivory-white and pale-gold flash disc (about 14% of the canvas width) with eight long sharp rays. From it TWENTY-TWO TAROT CARDS fly outward in every direction in strong perspective: small and far near the center, large and near at the edges, each rotated along its flight path, with painted faces showing distinct simple emblems (sun, moon, star, tower, wheel, sword, cup, coin, lantern, scales, chariot, skull and so on) in flat royal blue, gold, cyan and rose-pink; no text or numerals. The nearest, largest card at the lower right at about (79%, 68%) is THE FOOL (a small white figure at a cliff edge under a gold sun). Mixed in among the cards at the upper left, MAKOTO'S SWORD flies outward along a diagonal. Two thin cyan shockwave rings circle the flash, and a few glowing four-point stars sparkle between the cards. BACKGROUND: deep navy with flat radial bands in two blues. PALETTE: navy about 40%, white flash about 15%, gold about 15%, cyan about 10%, with rose-pink and royal-blue card accents. AVOID: no people, hands or faces, no text or numerals. MAKOTO'S SWORD (asset art/parts_src/sword.png): plain silver straight single-edge tapered blade with steel-grey bevel, simple narrow silver crossguard, black leather-wrapped grip, round silver pommel, no gold ornament, gems or crown.Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.",
+      "candidates_per_card": 2,
+      "status": "not_selected",
+      "candidate": "B",
+      "actual_references": [
+        "art/parts_src/sword.png",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png"
+      ],
+      "submitted_prompt": "Create ONE new opaque full-bleed horizontal 1000x760 card illustration: BIG BANG, the twenty-two Major Arcana bursting out at once. COMPOSITION (percent of canvas): a radial burst centered at (50%, 48%): a blinding ivory-white and pale-gold flash disc (about 14% of the canvas width) with eight long sharp rays. From it TWENTY-TWO TAROT CARDS fly outward in every direction in strong perspective: small and far near the center, large and near at the edges, each rotated along its flight path, with painted faces showing distinct simple emblems (sun, moon, star, tower, wheel, sword, cup, coin, lantern, scales, chariot, skull and so on) in flat royal blue, gold, cyan and rose-pink; no text or numerals. The nearest, largest card at the lower right at about (79%, 68%) is THE FOOL (a small white figure at a cliff edge under a gold sun). Mixed in among the cards at the upper left, MAKOTO'S SWORD flies outward along a diagonal. Two thin cyan shockwave rings circle the flash, and a few glowing four-point stars sparkle between the cards. BACKGROUND: deep navy with flat radial bands in two blues. PALETTE: navy about 40%, white flash about 15%, gold about 15%, cyan about 10%, with rose-pink and royal-blue card accents. AVOID: no people, hands or faces, no text or numerals. MAKOTO'S SWORD (asset art/parts_src/sword.png): plain silver straight single-edge tapered blade with steel-grey bevel, simple narrow silver crossguard, black leather-wrapped grip, round silver pommel, no gold ornament, gems or crown.Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.\nREFERENCE ROLES (there is no original edit target):\nReference image 1: Makoto sword object design only. Ignore green background.\nReference image 2: STYLE ONLY, learn hard-edged cel-shading, dark outlines and material planes; do NOT copy its characters, action, background or palette.\nCANDIDATE B: The SAME concept with a deliberately distinct composition/camera as follows. Use a tilted tunnel-like explosion in deep perspective: move the burst origin slightly left of center (about 42%,43%), with the 22 cards spiralling outward along a broad clockwise arc rather than evenly radiating in a flat wheel. The nearest largest Fool card remains lower right, partly foreshortened but fully readable within the safe area; Makoto's silver sword remains upper left. Keep two cyan shock rings as perspective ellipses. This composition variation supersedes exact center and radial placements above; preserve all counts, emblems, palette and safe area.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-4e89ef67-6ebc-478b-991a-c100a3c5f9cb.png",
+      "result_hint": "Generated images are saved to C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581 as C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-4e89ef67-6ebc-478b-991a-c100a3c5f9cb.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "generated_size": [
+        1438,
+        1093
+      ],
+      "output_size": [
+        1000,
+        760
+      ],
+      "output_file": "big_bang_B.png",
+      "raw_file": "generation_sources/exec-4e89ef67-6ebc-478b-991a-c100a3c5f9cb.png",
+      "reference_sha256": {
+        "art/parts_src/sword.png": "017c1c9ba18c9fcc851b52a36b59bab1604d64b24399d3ed35c57e472818bed5",
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png": "6ee467acdd3e0613f489d12a5309235d0beda150fe918f9243fc82642104b92e"
+      }
+    },
+    {
+      "name": "monarchs_gaze",
+      "zh_name": "王之凝视",
+      "rarity": "稀有 · 能力",
+      "size": "1000x760",
+      "references": [
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png (STYLE ONLY: hard cel-shaded poster look, ignore its subject)"
+      ],
+      "concept_zh": "满月变成一只巨大的眼睛（竖瞳）俯视；光柱落下，里面是一只戴着开裂白面具、正在缩小的暗影。",
+      "prompt": "Create ONE new opaque full-bleed horizontal 1000x760 card illustration: MONARCH'S GAZE, the Moon as a watching eye. COMPOSITION (percent of canvas): the upper two-thirds are a huge pale FULL MOON (sickly yellow-green, diameter about 70% of the canvas width, centered at (50%, 30%), cropped by the top edge) that is also a giant EYE: a narrow vertical black slit pupil at its center, surrounded by an iris of darker green rings and a few craters acting as eyelid creases, with a thin black upper-eyelid curve across the top. A cold pale cone of light falls straight down from the pupil onto the ground. At the bottom center (50%, 72%), inside the cone, cowers a small SHADOW (a Persona 3 enemy): a black glossy ooze blob with a pale cracked white mask (a stylised smiling mask with a crack running through it) and two thin tentacle arms raised to shield itself, visibly shrinking, with dark drips. GROUND: dark plum, with a few coffins lying as silhouettes at the horizon. SKY: dark magenta-plum with flat diagonal bands and fine cracks radiating from the moon's rim. PALETTE: dark magenta-plum about 40%, sickly yellow-green moon about 25%, black about 25%, bone-white mask about 10%. AVOID: no people, no faces other than the Shadow's mask, no text. Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.",
+      "candidates_per_card": 2,
+      "status": "not_selected",
+      "candidate": "A",
+      "actual_references": [
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png"
+      ],
+      "submitted_prompt": "Create ONE new opaque full-bleed horizontal 1000x760 card illustration: MONARCH'S GAZE, the Moon as a watching eye. COMPOSITION (percent of canvas): the upper two-thirds are a huge pale FULL MOON (sickly yellow-green, diameter about 70% of the canvas width, centered at (50%, 30%), cropped by the top edge) that is also a giant EYE: a narrow vertical black slit pupil at its center, surrounded by an iris of darker green rings and a few craters acting as eyelid creases, with a thin black upper-eyelid curve across the top. A cold pale cone of light falls straight down from the pupil onto the ground. At the bottom center (50%, 72%), inside the cone, cowers a small SHADOW (a Persona 3 enemy): a black glossy ooze blob with a pale cracked white mask (a stylised smiling mask with a crack running through it) and two thin tentacle arms raised to shield itself, visibly shrinking, with dark drips. GROUND: dark plum, with a few coffins lying as silhouettes at the horizon. SKY: dark magenta-plum with flat diagonal bands and fine cracks radiating from the moon's rim. PALETTE: dark magenta-plum about 40%, sickly yellow-green moon about 25%, black about 25%, bone-white mask about 10%. AVOID: no people, no faces other than the Shadow's mask, no text. Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.\nREFERENCE ROLES (there is no original edit target):\nReference image 1: STYLE ONLY, learn hard-edged cel-shading, dark outlines and material planes; do NOT copy its characters, action, background or palette.\nCANDIDATE A: Use the primary composition specified above.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-245b4a12-4618-48ba-b245-0f1d650dc2ee.png",
+      "result_hint": "Generated images are saved to C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581 as C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-245b4a12-4618-48ba-b245-0f1d650dc2ee.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "generated_size": [
+        1438,
+        1093
+      ],
+      "output_size": [
+        1000,
+        760
+      ],
+      "output_file": "monarchs_gaze_A.png",
+      "raw_file": "generation_sources/exec-245b4a12-4618-48ba-b245-0f1d650dc2ee.png",
+      "reference_sha256": {
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png": "6ee467acdd3e0613f489d12a5309235d0beda150fe918f9243fc82642104b92e"
+      }
+    },
+    {
+      "name": "monarchs_gaze",
+      "zh_name": "王之凝视",
+      "rarity": "稀有 · 能力",
+      "size": "1000x760",
+      "references": [
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png (STYLE ONLY: hard cel-shaded poster look, ignore its subject)"
+      ],
+      "concept_zh": "满月变成一只巨大的眼睛（竖瞳）俯视；光柱落下，里面是一只戴着开裂白面具、正在缩小的暗影。",
+      "prompt": "Create ONE new opaque full-bleed horizontal 1000x760 card illustration: MONARCH'S GAZE, the Moon as a watching eye. COMPOSITION (percent of canvas): the upper two-thirds are a huge pale FULL MOON (sickly yellow-green, diameter about 70% of the canvas width, centered at (50%, 30%), cropped by the top edge) that is also a giant EYE: a narrow vertical black slit pupil at its center, surrounded by an iris of darker green rings and a few craters acting as eyelid creases, with a thin black upper-eyelid curve across the top. A cold pale cone of light falls straight down from the pupil onto the ground. At the bottom center (50%, 72%), inside the cone, cowers a small SHADOW (a Persona 3 enemy): a black glossy ooze blob with a pale cracked white mask (a stylised smiling mask with a crack running through it) and two thin tentacle arms raised to shield itself, visibly shrinking, with dark drips. GROUND: dark plum, with a few coffins lying as silhouettes at the horizon. SKY: dark magenta-plum with flat diagonal bands and fine cracks radiating from the moon's rim. PALETTE: dark magenta-plum about 40%, sickly yellow-green moon about 25%, black about 25%, bone-white mask about 10%. AVOID: no people, no faces other than the Shadow's mask, no text. Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.",
+      "candidates_per_card": 2,
+      "status": "approved_by_user",
+      "candidate": "B",
+      "actual_references": [
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png"
+      ],
+      "submitted_prompt": "Create ONE new opaque full-bleed horizontal 1000x760 card illustration: MONARCH'S GAZE, the Moon as a watching eye. COMPOSITION (percent of canvas): the upper two-thirds are a huge pale FULL MOON (sickly yellow-green, diameter about 70% of the canvas width, centered at (50%, 30%), cropped by the top edge) that is also a giant EYE: a narrow vertical black slit pupil at its center, surrounded by an iris of darker green rings and a few craters acting as eyelid creases, with a thin black upper-eyelid curve across the top. A cold pale cone of light falls straight down from the pupil onto the ground. At the bottom center (50%, 72%), inside the cone, cowers a small SHADOW (a Persona 3 enemy): a black glossy ooze blob with a pale cracked white mask (a stylised smiling mask with a crack running through it) and two thin tentacle arms raised to shield itself, visibly shrinking, with dark drips. GROUND: dark plum, with a few coffins lying as silhouettes at the horizon. SKY: dark magenta-plum with flat diagonal bands and fine cracks radiating from the moon's rim. PALETTE: dark magenta-plum about 40%, sickly yellow-green moon about 25%, black about 25%, bone-white mask about 10%. AVOID: no people, no faces other than the Shadow's mask, no text. Same visual language as the existing card set: bold hard-edged cel-shading, thick dark outlines with a thin bright rim light on the hero shapes, large flat colour planes with a few deep near-black occlusion planes, crisp clean details, a strong poster composition that reads at 250x190 thumbnail size. It is Slay the Spire 2 card art re-skinned for Persona 3 Reload. No blur, no soft bloom, no photoreal rendering, no gradients except subtle sky gradients. Keep every important feature inside x8-92%, y10-76% (the card frame crops the rest). Opaque, full-bleed, no text, letters, numerals, UI, frame, border or watermark. Makoto Yuki's face and head never appear. Generate this as a NEW illustration; there is no original to preserve.\nREFERENCE ROLES (there is no original edit target):\nReference image 1: STYLE ONLY, learn hard-edged cel-shading, dark outlines and material planes; do NOT copy its characters, action, background or palette.\nCANDIDATE B: The SAME concept with a deliberately distinct composition/camera as follows. Use a ground-level three-quarter viewpoint: the enormous moon-eye dominates the upper right, and its cold cone descends diagonally to the cowering masked Shadow at lower left-center. The Shadow is slightly nearer the camera with its white cracked mask and raised thin arms clearly readable, visibly compressed under the gaze. The moon may crop at the top but its vertical slit pupil must remain fully visible inside the safe area. This asymmetrical composition supersedes earlier centered placements; preserve the same palette, coffin silhouettes and story.",
+      "source_file": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-28890d81-ffbe-4bef-a987-3b9b042825b9.png",
+      "result_hint": "Generated images are saved to C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581 as C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-28890d81-ffbe-4bef-a987-3b9b042825b9.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "output_size": [
+        1000,
+        760
+      ],
+      "output_file": "monarchs_gaze_B.png",
+      "raw_file": "generation_sources/exec-28890d81-ffbe-4bef-a987-3b9b042825b9.png",
+      "reference_sha256": {
+        "art/cards/v4/local_edits/batch_04/kingly_kick.png": "6ee467acdd3e0613f489d12a5309235d0beda150fe918f9243fc82642104b92e"
+      }
+    }
+  ],
+  "user_review": {
+    "user_response": "AABBAB",
+    "order_source": "docs/codex/codex_card_art_key_cards_free_design.md",
+    "status": "approved_by_user",
+    "selected": {
+      "sovereign_blade": {
+        "candidate": "A",
+        "file": "sovereign_blade_A.png",
+        "sha256": "d1742c97eb0b478e76a2d58531d009821224a126956c7be1b35ed2c5a39efc26"
+      },
+      "void_form": {
+        "candidate": "A",
+        "file": "void_form_A.png",
+        "sha256": "521116c96c4b05de5af6549dd8e09eb379be01d73435785236a5ce5e05b6ec34"
+      },
+      "the_sealed_throne": {
+        "candidate": "B",
+        "file": "the_sealed_throne_B.png",
+        "sha256": "eac4ad0f06ebfc6b4a6ba0384679ac1f37cead3932b46958ac570cd444943eee"
+      },
+      "genesis": {
+        "candidate": "B",
+        "file": "genesis_B.png",
+        "sha256": "0648ae0ae38242fd917874d7424f1da721d2a21f6004d5918ce175f682f943cb"
+      },
+      "big_bang": {
+        "candidate": "A",
+        "file": "big_bang_A.png",
+        "sha256": "1b12ad8fdc579fdc6315fcdcc2df1a1e436b5ef7d71105fdd0baf5dea1d497f8"
+      },
+      "monarchs_gaze": {
+        "candidate": "B",
+        "file": "monarchs_gaze_B.png",
+        "sha256": "96738523da0e6ae137ae07bf48f1cd995907b11362af1e84304617224a57ac79"
+      }
+    }
+  }
+}
