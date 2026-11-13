@@ -3,10 +3,12 @@ using Godot;
 namespace P5Joker;
 
 /// <summary>
-/// 群蛇形态：Joker 身后的日食（用户 2026-11-13：之前的日食挂在场景天空里，像贴上去的、太亮 → 这次只放在他身后，直径比他身高大一点点，做细节和光效）。
-/// 一个着色器画全部：近黑的日轮（边缘透一点暗红、中心微微发紫），一圈很细的亮红白光环（亮度沿圈起伏，带一颗慢慢绕行的「钻石环」亮点），
-/// 往外丝缕状的暗红日冕（极坐标噪声拉出的长短不一的光丝，慢慢转、呼吸），最外一层柔的红晕。没有贴图，没有硬边。
-/// grow 0 → 1 出场（光环先亮、日冕往外长）；pulse 一下变亮（蛇咬时）。
+/// 群蛇形态：Joker 身后的红日（用户 2026-11-13：放在他身后、比身高大一点；之后又说黑的面积太大、太暗；
+/// 第三次：一圈细亮环 + 平的暗盘像荧光灯带，没有细节 → 重写）。一个着色器画全部，没有贴图、没有硬边：
+/// · 日面：缓慢翻涌的等离子（域扭曲的 fbm，慢慢转），暗红到绯红，有颗粒和暗色细丝，往边上稍暗（临边昏暗）；
+/// · 边缘：没有细亮环，是一层宽而柔、沿圈亮度不均的边缘光，加上一簇簇不规则的日珥火舌往外卷（长短不一、慢慢变）；
+/// · 日冕：长短不一的柔光丝缕，慢慢转、呼吸，最外一层柔晕。
+/// grow 0 → 1 出场（从中心长出来）；pulse 一下变亮（蛇咬时）。
 /// </summary>
 public static class SerpentEclipse
 {
@@ -19,68 +21,74 @@ uniform float clock = 0.0;
 uniform float grow = 1.0;
 uniform float pulse = 0.0;
 uniform float alpha = 1.0;
-uniform float disk = 0.42;     // 日轮半径（quad 半边长 = 1）；用户 2026-11-13：亮的面积要比黑的大很多
+uniform float disk = 0.42;     // 日面半径（quad 半边长 = 1）
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
 	f = f * f * (3.0 - 2.0 * f);
 	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
 }
-// 角度方向循环的噪声：把角度放到圆上取样，接缝处连续
+float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p = p * 2.03 + vec2(1.7, 9.2); a *= 0.5; } return v; }
 float anoise(float a, float r, float k) { return noise(vec2(cos(a), sin(a)) * k + vec2(r, r * 0.7)); }
+mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(vec2(c, s), vec2(-s, c)); }
 void fragment() {
 	vec2 p = UV * 2.0 - 1.0;
 	float r = length(p);
 	float a = atan(p.y, p.x);
-	float R = disk;
-	float g = grow;
-	float rr = r / R;                       // 1 = 日轮边
-	// 日冕：长短不一的光丝，慢慢转、呼吸
-	float rot = clock * 0.05;
-	float s1 = anoise(a + rot, clock * 0.15, 3.0);
-	float s2 = anoise(a * 1.0 - rot * 1.7, 4.0 + clock * 0.1, 9.0);
-	float s3 = anoise(a + rot * 0.6, 9.0 + clock * 0.2, 22.0);
-	float reach = (0.5 + 0.8 * s1 + 0.35 * s2) * g;               // 光丝能伸多远（日轮半径的倍数）
-	float out_ = max(rr - 1.0, 0.0);
-	float strand = exp(-out_ / max(reach * 0.5, 0.02)) * (0.6 + 0.4 * s3);
-	strand *= smoothstep(2.35, 1.6, rr);   // 到 quad 边之前淡完
-	float breathe = 0.85 + 0.15 * sin(clock * 1.3);
-	float corona = strand * step(1.0, rr) * breathe;
-	// 柔的外晕
-	float halo = exp(-out_ * 1.4 / max(g, 0.05)) * 0.3 * step(1.0, rr) * smoothstep(2.35, 1.7, rr);
-	// 细光环：亮度沿圈起伏 + 一颗绕行的钻石环亮点
-	float ring = exp(-pow((rr - 1.0) / 0.035, 2.0));
-	float ringVar = 0.55 + 0.45 * anoise(a - clock * 0.3, 2.0, 5.0);
-	float bead = exp(-pow(mod(a - clock * 0.35 + 3.14159, 6.28318) - 3.14159, 2.0) / 0.02) * exp(-pow((rr - 1.0) / 0.06, 2.0));
-	// 日轮：近黑，边上一点暗红，中心微微发紫
-	float inDisk = smoothstep(1.0, 0.985, rr);
-	// 日轮不是纯黑（用户看的是 Joker 的黑大衣站在它前面：纯黑会糊成一片）：深暗红，中间稍亮、往边上暗下去，边上再透一圈红
-	// 用户 2026-11-13：黑的面积太大 → 光从边缘往里渗，只在正中留一小块黑（约日轮直径的一半）
-	// 2026-11-13 第二次：太暗 → 中心改成深红（不再是黑），往边上亮成绯红、贴边一圈亮红
-	vec3 diskCol = mix(vec3(0.26, 0.025, 0.06), vec3(0.88, 0.13, 0.17), smoothstep(0.15, 0.98, rr));
-	diskCol += vec3(0.35, 0.1, 0.1) * smoothstep(0.85, 1.0, rr);
-	diskCol += vec3(0.25, 0.02, 0.05) * (0.5 + 0.5 * anoise(a + clock * 0.03, rr * 2.0 + clock * 0.05, 4.0)) * smoothstep(0.85, 0.2, rr) * 0.5;
-	diskCol += vec3(0.45, 0.03, 0.08) * smoothstep(0.8, 1.0, rr) * 0.55;
-	float lit = (1.0 + 1.4 * pulse);
-	vec3 crimson = vec3(0.85, 0.05, 0.12);
-	vec3 hot = vec3(1.0, 0.75, 0.7);
+	float R = disk * mix(0.15, 1.0, grow);
+	float rr = r / R;
+	float lit = 1.0 + 0.9 * pulse;
+	vec3 deep = vec3(0.32, 0.03, 0.05);
+	vec3 crimson = vec3(0.8, 0.08, 0.1);
+	vec3 orange = vec3(0.95, 0.32, 0.18);
 	vec3 col = vec3(0.0);
 	float al = 0.0;
-	// 日冕和外晕（加在后面）
-	// 光芒压暗（用户：太耀眼）
-	vec3 cc = mix(crimson * 0.55, mix(crimson, hot, 0.25), exp(-out_ * 1.5));
-	col += cc * corona * 0.65 * lit + crimson * halo * 0.8 * lit;
-	al = max(al, clamp(corona * 0.6 + halo, 0.0, 1.0));
-	// 光环
-	vec3 rc = mix(crimson, hot, 0.55 + 0.45 * ringVar);
-	col += rc * ring * ringVar * 0.85 * lit * g;
-	col += vec3(1.0, 0.92, 0.9) * bead * 0.9 * g * lit;
-	al = max(al, clamp(ring * ringVar * g + bead * g, 0.0, 1.0));
-	// 日轮盖在最上（不透明的黑）
-	col = mix(col, diskCol, inDisk * g);
-	al = max(al, inDisk * g);
-	al *= alpha;
-	col *= alpha;
+
+	// ── 日冕：柔光丝缕（慢慢转、呼吸）+ 外晕 ──
+	float out_ = max(rr - 1.0, 0.0);
+	float s1 = anoise(a + clock * 0.04, clock * 0.12, 3.0);
+	float s2 = anoise(a - clock * 0.07, 4.0 + clock * 0.1, 8.0);
+	float reach = (0.45 + 0.75 * s1 + 0.3 * s2);
+	float strand = exp(-out_ / max(reach * 0.5, 0.02)) * (0.6 + 0.4 * anoise(a, 9.0 + clock * 0.2, 20.0));
+	strand *= smoothstep(2.35, 1.6, rr) * step(1.0, rr) * (0.85 + 0.15 * sin(clock * 1.2));
+	float halo = exp(-out_ * 1.6) * 0.28 * step(1.0, rr) * smoothstep(2.35, 1.7, rr);
+	col += mix(deep, crimson, exp(-out_ * 2.0)) * strand * 0.55 * lit + crimson * halo * 0.7 * lit;
+	al = max(al, clamp(strand * 0.5 + halo, 0.0, 1.0));
+
+	// ── 日珥：边上一簇簇不规则的火舌往外卷 ──
+	float pa = a + 0.25 * sin(out_ * 9.0 - clock * 0.8) * smoothstep(0.0, 0.2, out_);   // 往外卷
+	float tongue = anoise(pa * 1.0 + clock * 0.03, clock * 0.25, 6.0);
+	tongue = smoothstep(0.45, 0.85, tongue) * (0.5 + 0.5 * anoise(pa, 3.0 + clock * 0.3, 14.0));
+	float tLen = 0.04 + 0.22 * tongue;
+	float prom = smoothstep(tLen, 0.0, out_) * step(1.0, rr) * smoothstep(0.0, 0.02, tongue);
+	float promN = fbm(vec2(pa * 6.0, out_ * 18.0 - clock * 0.6));
+	prom *= smoothstep(0.25, 0.65, promN);
+	col += mix(crimson, orange, 0.5 * (1.0 - out_ / max(tLen, 0.01))) * prom * 0.75 * lit;
+	al = max(al, prom * 0.8);
+
+	// ── 日面：翻涌的等离子 ──
+	if (rr < 1.03) {
+		vec2 q = rot(clock * 0.03) * p / R;
+		vec2 w = vec2(fbm(q * 2.2 + clock * 0.06), fbm(q * 2.2 + vec2(5.2, 1.3) - clock * 0.05));
+		float n = fbm(q * 3.0 + w * 1.8);
+		float gran = fbm(q * 11.0 + w * 2.0 + clock * 0.1);
+		float fil = 1.0 - abs(fbm(q * 5.0 - w * 1.5) * 2.0 - 1.0);
+		fil = pow(fil, 6.0);
+		vec3 sc = mix(deep * 1.5, crimson * 1.15, smoothstep(0.25, 0.7, n));
+		sc = mix(sc, orange, smoothstep(0.55, 0.85, n * 0.7 + gran * 0.3) * 0.55);
+		sc *= 0.75 + 0.35 * gran;
+		sc = mix(sc, deep * 0.7, fil * 0.45);                          // 暗色细丝
+		// 临边：往边上暗一点，但贴边一层宽而柔、亮度不均的边缘光（不是细亮环）
+		float limb = mix(1.0, 0.7, smoothstep(0.55, 0.98, rr));
+		float edgeLight = smoothstep(0.78, 1.0, rr) * (0.35 + 0.65 * anoise(a - clock * 0.05, 1.5, 4.0));
+		sc = sc * limb + crimson * edgeLight * 0.35;
+		sc *= lit;
+		float inDisk = smoothstep(1.03, 0.98, rr);
+		col = mix(col, sc, inDisk);
+		al = max(al, inDisk);
+	}
+	al *= alpha * smoothstep(0.0, 0.25, grow);
+	col *= alpha * smoothstep(0.0, 0.25, grow);
 	if (al <= 0.003) discard;
 	COLOR = vec4(col, al);
 }" };

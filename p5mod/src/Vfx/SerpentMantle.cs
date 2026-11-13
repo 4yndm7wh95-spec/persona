@@ -816,7 +816,7 @@ void fragment() {
 			// 出场 0.25s 蛇巢鼓起来（一团烟往上翻涌、比平时大一圈），再收回平时的大小
 			float swell = _intro >= 0f && _introFresh ? Smooth(0.2f, 0.45f, _intro) * (1f - Smooth(0.6f, 1.2f, _intro)) : 0f;
 			mat.SetShaderParameter("nest", new Vector3(nestP.X, nestP.Y - 0.1f * T * swell, 0.55f * T * (1f + 0.4f * swell)));
-			mat.SetShaderParameter("nest_a", (_biteOnly ? 0f : alpha) * (_intro >= 0f && _introFresh ? Smooth(0.2f, 0.45f, _intro) : 1f));
+			mat.SetShaderParameter("nest_a", 0.4f * (_biteOnly ? 0f : alpha) * (_intro >= 0f && _introFresh ? Smooth(0.2f, 0.45f, _intro) : 1f));   // 2026-11-13：调淡，让身后的红日透出来
 			mat.SetShaderParameter("puff", _puff);
 			mat.SetShaderParameter("streak", _streak);
 			mat.SetShaderParameter("streak_a", _streakA);
