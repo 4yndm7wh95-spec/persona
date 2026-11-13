@@ -443,7 +443,9 @@ void fragment() {
 	private readonly float[] _introDiss = new float[Count];
 	private readonly float[] _tau = new float[Count];        // 每条蛇自己的时间（出动时会快一下）
 	private readonly Vector2[] _lunge = new Vector2[Count];  // 出动时朝敌人窜出去的偏移
-	private readonly Node2D? _skyRoot, _mistFrontRoot;
+	private readonly Node2D? _skyRoot, _mistFrontRoot, _eclipseRoot;
+	private readonly ShaderMaterial? _eclipseM;
+	private float _eclPulse;
 	private readonly ShaderMaterial? _skyM, _mistFrontM;
 	private readonly bool _biteOnly;   // 只有一条蛇从咒烟里冒出来咬一口（蛇咬那张牌用，Bite）：没有场景、蛇巢、其它几条
 	private int _nextSerpent;
@@ -534,7 +536,7 @@ void fragment() {
 	public static void Fade(float alpha)
 	{
 		if (Current is not { } m) return;
-		foreach (CanvasItem? n in new CanvasItem?[] { m._frontRoot, m._backRoot, m._skyRoot, m._mistFrontRoot, m._top })
+		foreach (CanvasItem? n in new CanvasItem?[] { m._frontRoot, m._backRoot, m._skyRoot, m._mistFrontRoot, m._top, m._eclipseRoot })
 		{
 			if (n == null || !GodotObject.IsInstanceValid(n)) continue;
 			n.Visible = alpha > 0.005f;
@@ -577,6 +579,14 @@ void fragment() {
 		_skyRoot.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });   // 读屏前先刷新（和子弹时间的褪色叠在一起时不读到旧画面）
 		_skyRoot.AddChild(skyRect);
 		Fx.Clock(skyRect);
+		// 身后的日食（用户 2026-11-13）：在咒雾场景上面、蛇和人物后面；直径 1.15 倍身高
+		_eclipseRoot = new Node2D { Name = "P5SerpentEclipse" };
+		back.AddChild(_eclipseRoot);
+		back.MoveChild(_eclipseRoot, _skyRoot.GetIndex() + 1);
+		_eclipseM = new ShaderMaterial { Shader = SerpentEclipse.Shader };
+		var ecl = new ColorRect { Size = new Vector2(2f, 2f), Position = new Vector2(-1f, -1f), Material = _eclipseM, MouseFilter = Control.MouseFilterEnum.Ignore };
+		_eclipseRoot.AddChild(ecl);
+		Fx.Clock(ecl);
 		_mistFrontRoot = Fx.ScreenRoot(front, "P5SerpentMistFront");
 		_mistFrontM = new ShaderMaterial { Shader = SerpentMist.Shader };
 		_mistFrontM.SetShaderParameter("side", 1f);
@@ -690,6 +700,18 @@ void fragment() {
 		_frontRoot.GlobalPosition = feet;
 		_backRoot.GlobalPosition = feet;
 		float alpha = (_intro >= 0f ? 1f : Smooth(0f, 0.8f, _show)) * (_fadeOut >= 0f ? 1f - Smooth(0f, 0.8f, _fadeOut) : 1f);
+		if (_eclipseRoot != null && _eclipseM != null && GodotObject.IsInstanceValid(_eclipseRoot))
+		{
+			// 日食：在他身后（胸口偏上、往背后偏一点），直径 1.15 倍身高（日轮半径 = quad 半边长 × 0.38）
+			float half = 1.02f * T;   // quad 半边长：日轮直径约 0.85 T（中间只留一小块黑），光冕整体约 1.3 T，再往外柔柔淡掉
+			_eclipseRoot.GlobalPosition = feet + new Vector2(-0.05f * face * T, -0.62f * T);
+			_eclipseRoot.Scale = Vector2.One * half;
+			float grow = _intro >= 0f && _introFresh ? Smooth(0.15f, 0.9f, _intro) : 1f;
+			_eclPulse = Mathf.Max(0f, _eclPulse - dt * 2.5f);
+			_eclipseM.SetShaderParameter("grow", grow);
+			_eclipseM.SetShaderParameter("alpha", alpha);
+			_eclipseM.SetShaderParameter("pulse", _eclPulse * _eclPulse);
+		}
 		// 场景：出场时从 Joker 脚下漫开（0.7s），静静浮现时淡入；能力没了一起淡掉
 		// 场景分层推进（出场分镜）；不播出场时 0.8s 一起淡入；能力没了跟着 amount 一起淡掉
 		if (_intro >= 0f)
@@ -1122,6 +1144,7 @@ void fragment() {
 			if (!a.Bit && t >= BiteAt)
 			{
 				a.Bit = true;
+				_eclPulse = 1f;   // 日食跟着亮一下
 				Stage.PlayEvent?.Invoke(BiteSfx, 0.8f);   // 只有咬合的声音（用户：冲出来不要音效）；2026-11-13 用户：稍微小了一点 → 0.55 提到 0.8
 				Vector2 at = feet + a.Target;
 				Control fx = GodotObject.IsInstanceValid(_top) ? _top : _front;
