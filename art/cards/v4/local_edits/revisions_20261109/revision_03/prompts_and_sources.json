@@ -1,0 +1,12 @@
+{
+  "tool": "built-in image_gen",
+  "cards": [
+    {
+      "name": "hammer_time",
+      "prompt": "Use case: precise-object-edit. Edit ORIGINAL hammer_time image supplied. CRITICAL USER EXPLAINS SEMANTICS: THREE DIFFERENT CHARACTERS, FOUR HANDS together GRIP ONE SOVEREIGN SWORD. This is NOT a hammer, NOT forging. Preserve all FOUR ORIGINAL HAND SILHOUETTES, individual locations, grip, overlap and limb entry directions. Two orange/brown armored arms entering from UPPER RIGHT are ONE CHARACTER'S PAIR OF HANDS (one hand upperleft, another central). Separate arm entering LEFT MIDDLE with GREEN CUFF has ONE HAND at center. Separate BLUE SLEEVE entering LOWER LEFT has ONE HAND at lowercenter/right. Total FOUR HANDS, four continuous forearms, each grip stays where originally. The long icyblue/cyan/white SOVEREIGN SWORD runs through original center toward bottomright; retain its original blade silhouette, cyan magic interior, white impact and shards. Do NOT mistake orange arms for wooden shaft/hammerhead: they are arms and hands and MUST become arms/hands, no woodtools. LOCAL REPLACEMENTS: original upper-right character PAIR of armored hands/arms becomes Jack Frost's TWO rounded ivorywhite hands/forearms with blue jester cuffs at right canvas edge, maintaining same individual grips; original leftmiddle GREEN cuff arm/hand becomes Pixie's small natural peach hand with violet glove sleeve ending before fingertips, original center grip and left entry; original bottomleft BLUE sleeve arm/hand becomes Jack-o-Lantern grey mitten hand with deepviolet cloth sleeve, original lower grip and lowerleft entry. Distinguish all three character materials: ivorywhite pair, peach fairy hand, grey pumpkin creature hand. No heads/bodies added. Exactly FOUR readable hands, no extra digits/arms, no old bronze gauntlets. Keep original PURPLE/MAGENTA background and broad shadows, original tightly overlapped diagonal action and sword geometry unchanged; coherent fourhands-on-one-sword, NOT two parallel hammerhandles. Rich original HARD CELSHADE, material folds, finger contact shadows, cool cyan reflected edges. Opaque horizontal1000x760 fullbleed no text/frame/watermark. No hammers, shafts, forging, vise, bench, tongs.",
+      "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a15e99-df41-74c0-9295-77ee3aad2581\\exec-84e69d2e-f1c9-403d-a503-55416a802a6b.png",
+      "status": "rejected_by_user",
+      "feedback": "手太像人；位置不对；君王之剑样式不对。"
+    }
+  ]
+}
