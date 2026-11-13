@@ -5,10 +5,10 @@ using Godot;
 namespace P5Joker;
 
 /// <summary>
-/// 技能牌重做第五批（2026-11-13，会话 C）。第四批的融入暗影 / 余像 / 萎靡（影子、墨、烟）改了三版都被否（用户：质量太差、塑料感、看不出关联）；
-/// 斗篷戏法也被否（用户：太难做了，弄点特效就好，不要非弄这些）→ 用已经认可的东西做「特效」：
-/// 贴着人物轮廓烧的火（BodyAura，就是拿起技能牌时的面具蓝焰）换成红黑暗焰 + 闪光、火星、折射波。细节要多、不要粗糙（用户 2026-11-13）。
-/// 登记在 CardSkillFx 最后，覆盖第四批的同名牌。
+/// 技能牌重做第五批（2026-11-13，会话 C）。融入暗影前后被否的：影子 / 墨 / 烟（会话 A 三版）、斗篷戏法（太难做）、红黑暗焰（用户：火焰很 low、塑料感）。
+/// 用户要「华丽」、他认可过的是子弹时间（玻璃钟）、华丽收场、P3 召唤器的碎玻璃 → 改用玻璃和光：一圈水晶「暗之结界」。
+/// 每片水晶是一个着色器：折射后面的画面 + 细白边（菲涅尔）+ 暗红的芯 + 下部一点红网点 + 往上扫的高光，不用贴图。用户 2026-11-13：细节要多、不要粗糙；
+/// 金卡也不用做到华丽收场那么大，人物周围就行。登记在 CardSkillFx 最后，覆盖第四批的同名牌。
 /// </summary>
 public static class SkillRedo5
 {
@@ -19,80 +19,189 @@ public static class SkillRedo5
 
 	private static void S(string name, float vol, float at = 0f) => Sfx.Take(name, vol * 0.8f, at);
 
-	/// <summary>红黑暗焰的四档：暗（近黑的深红）→ 绯红 → 亮红 → 白芯。</summary>
-	private static readonly Color[] DarkFlame =
-	{
-		new(0.09f, 0.0f, 0.025f), new(0.62f, 0.02f, 0.07f), new(1f, 0.16f, 0.2f), new(1f, 0.88f, 0.84f),
-	};
-
-	private static readonly Color[] Embers = { new(1f, 0.92f, 0.88f), new(1f, 0.2f, 0.26f), new(0.5f, 0.0f, 0.08f) };
+	private static Shader? _crystal;
 
 	/// <summary>
-	/// 融入暗影（本回合获得的格挡翻倍），约 1.3s：
-	/// ① 0～0.3 红黑的暗焰贴着他的轮廓从脚下烧上来（同拿起技能牌时的面具火那一套，换成红黑），脚下两侧扫出两股火星，他暗下去；
-	/// ② 0.3 主拍：火舌一窜——小的红闪、火星往上、轻震；
-	/// ③ 烧着、火星往上飘；0.85 第二下（翻倍）：火从脚往上剥离、被拔高，从头顶上方化成一股火星散掉，人亮回来。
-	/// 拍子：点火（风，很轻）→ 一窜（主拍）→ 第二下（轻）。
+	/// 一片水晶（ColorRect 的 UV：x 0～1 左右、y 0 顶 → 1 底）：竖长的六棱柱、顶上削成尖；两个棱面折射角度不同，
+	/// 中间一道棱线，边上一圈细白光，芯里一道暗红，下部淡红网点，高光带从下往上扫（glint），flash 整片一亮。
+	/// </summary>
+	private static Shader Crystal => _crystal ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform sampler2D scr : hint_screen_texture, filter_linear;
+uniform float glint = -1.0;     // 高光带的位置（0 底 → 1 顶；< 0 没有）
+uniform float flash = 0.0;
+uniform float alpha = 1.0;
+uniform float lean = 0.0;       // 棱线偏向哪边（-1～1），每片不一样
+uniform float seed = 0.0;
+uniform vec2 px = vec2(0.002);  // 屏幕一个像素（UV）
+void fragment() {
+	float x = UV.x * 2.0 - 1.0;              // -1 左 → 1 右
+	float y = 1.0 - UV.y;                    // 0 底 → 1 顶
+	// 轮廓：底下略窄，0.7 以上削成尖（不对称的尖）
+	float tipY = 0.68 + 0.08 * sin(seed * 3.0);
+	float w = mix(0.82, 1.0, smoothstep(0.0, 0.12, y));
+	float tipX = 0.25 * sin(seed * 5.0);
+	if (y > tipY) w *= 1.0 - (y - tipY) / (1.0 - tipY);
+	float d = abs(x - tipX * smoothstep(tipY, 1.0, y)) - w;  // < 0 里面
+	float aa = fwidth(d) * 1.2 + 0.002;
+	float inside = smoothstep(aa, -aa, d);
+	if (inside <= 0.001) discard;
+	// 棱面：棱线在 lean 处，左边一面、右边一面，折射往不同方向偏
+	float ridge = lean * 0.35;
+	float face = step(ridge, x);
+	vec2 off = (face > 0.5 ? vec2(10.0, -4.0) : vec2(-8.0, 3.0)) * px;
+	off += vec2(x * 6.0, 0.0) * px;
+	vec3 bg = texture(scr, SCREEN_UV + off).rgb;
+	// 玻璃本身：背后画面压暗一点、偏冷白，一面亮一面暗
+	vec3 col = bg * mix(0.62, 0.92, face) + vec3(0.05, 0.035, 0.05);
+	// 芯：一道暗红从底往上淡
+	float core = exp(-pow((x - ridge * 0.5) / 0.22, 2.0)) * (1.0 - y * 0.7);
+	col = mix(col, col * vec3(1.2, 0.35, 0.4) + vec3(0.25, 0.0, 0.03), core * 0.55);
+	// 下部淡红网点
+	vec2 g = vec2(UV.x * 7.0, UV.y * 24.0);
+	float r = 0.12 + 0.22 * smoothstep(0.5, 0.0, y);
+	float dots = 1.0 - smoothstep(r - 0.06, r, length(fract(g) - 0.5));
+	col = mix(col, vec3(0.95, 0.12, 0.18), dots * smoothstep(0.55, 0.0, y) * 0.35);
+	// 棱线、边缘：细白光（菲涅尔：越靠边越亮）
+	float edge = smoothstep(-0.16, 0.0, d);
+	col += vec3(1.0, 0.95, 0.94) * pow(edge, 3.0) * 0.9;
+	col += vec3(1.0, 0.92, 0.92) * exp(-abs(x - ridge) / 0.025) * 0.35 * (0.4 + 0.6 * y);
+	// 高光带：斜着从下往上扫
+	if (glint >= 0.0) {
+		float band = exp(-pow((y - glint + x * 0.12) / 0.045, 2.0));
+		col += vec3(1.0, 0.96, 0.95) * band * 1.1;
+	}
+	col = mix(col, vec3(1.0, 0.95, 0.95), flash);
+	COLOR = vec4(col, inside * alpha * 0.95);
+}" };
+
+	private sealed class Shard
+	{
+		public Node2D Root = null!;
+		public ShaderMaterial M = null!;
+		public float Ang, H, W, Tilt, Delay;
+		public bool Front;
+	}
+
+	/// <summary>
+	/// 融入暗影（本回合获得的格挡翻倍），「暗之结界」，约 1.3s：
+	/// ① 0～0.3 九片细长的水晶围着他从地面一片接一片破土升起（后排高、前排矮，不挡人），根部迸出白红碎屑；
+	/// ② 0.35 主拍：整圈水晶微微一转，一道高光同时扫过每一片、「叮」一闪，他暗下来一点；
+	/// ③ 0.85 第二下（翻倍）：水晶依次碎开，碎玻璃带着棱光往外迸，他身上闪一下淡红剪影，亮回来。
+	/// 拍子：破土（很轻）→ 一闪（叮，主拍）→ 碎开（玻璃）。
 	/// </summary>
 	public static void Shadowmeld(SkillCtx c)
 	{
-		float h = c.Tall;
-		const float surge = 0.3f, second = 0.85f, life = 1.4f;
+		float h = c.Tall, u = c.Unit, f = c.Face;
+		const float flashAt = 0.35f, breakAt = 0.85f, life = 1.3f;
 		Control back = c.Back ?? c.Front;
-		Vector2 body = new(c.Feet.X, c.Feet.Y - h * 0.5f);
-		S("gx_whoosh", 0.12f);
-		S("gx_burn", 0.24f, surge);
-		S("gx_pop", 0.14f, second);
+		Vector2 ring = c.Feet + new Vector2(0f, -h * 0.01f);
+		float rx = h * 0.42f, ry = h * 0.09f;
+		S("gx_freeze", 0.12f, 0.02f);
+		S("gx_ping", 0.2f, flashAt);
+		S("gx_glass", 0.3f, breakAt);
 
-		// 贴身的暗焰（人后面一层）：从脚下 0.3s 烧满全身（BodyAura 自己的点火），火舌沿轮廓均匀；不要脚下那圈底座火
-		//（用户 2026-11-13：脚下有一道明显的横条，不像特效）。不用做太大（用户：金卡也不用到华丽收场那种程度，人物周围帅一点就行）
-		// 离屏画面在头顶多留 0.55 身高、两边各多 0.15：火舌拔高时不碰边
-		Rect2 region = new(c.Region.Position - new Vector2(h * 0.15f, h * 0.55f), c.Region.Size + new Vector2(h * 0.3f, h * 0.55f));
-		BodyAura? aura = BodyAura.CloneBody != null ? new BodyAura(back, region, c.Feet, 0f, DarkFlame, even: 0.8f) : null;
-		// 进场：点火时脚下两侧贴地扫出两股火星
-		Fx.After(back, 0.16, () =>
+		// 前面那一层先拷贝一次屏幕（带上人物），水晶折射才看得到他
+		Node2D frontRoot = Fx.Root(c.Front, Vector2.Zero, "P5Crystals", life + 0.2);
+		frontRoot.TopLevel = true;
+		frontRoot.GlobalPosition = Vector2.Zero;
+		frontRoot.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
+		Vector2 scr = Fx.Screen(c.Front);
+
+		const int n = 9;
+		var shards = new List<Shard>();
+		for (int i = 0; i < n; i++)
 		{
-			for (int sd = -1; sd <= 1; sd += 2)
+			// 角度错开一点
+			float ang = Mathf.Tau * (i + 0.5f) / n + Fx.Rand(-0.12f, 0.12f);
+			bool front = Mathf.Sin(ang) > 0f;
+			float hgt = h * (front ? Fx.Rand(0.24f, 0.36f) : Fx.Rand(0.5f, 0.82f));
+			float wid = h * (front ? Fx.Rand(0.055f, 0.075f) : Fx.Rand(0.065f, 0.095f));
+			Node2D root = new() { Name = "P5Crystal" };
+			if (front) frontRoot.AddChild(root);
+			else
 			{
-				Glow.Sparks(c.Front, c.Feet + new Vector2(sd * h * 0.1f, -h * 0.02f), 16, 160f, 420f, 0.45f, Embers, 60f, 0.04f, 0.12f,
-					new Vector2(sd, -0.18f), 14f);
+				Node2D br = Fx.Root(back, Vector2.Zero, "P5CrystalBack", life + 0.2);
+				br.TopLevel = true;
+				br.GlobalPosition = Vector2.Zero;
+				br.AddChild(root);
+			}
+			ShaderMaterial m = new() { Shader = Crystal };
+			m.SetShaderParameter("lean", Fx.Rand(-1f, 1f));
+			m.SetShaderParameter("seed", Fx.Rand(0f, 20f));
+			m.SetShaderParameter("px", new Vector2(1f / scr.X, 1f / scr.Y));
+			root.AddChild(new ColorRect { Size = new Vector2(wid, hgt), Position = new Vector2(-wid / 2f, -hgt), Material = m, MouseFilter = Control.MouseFilterEnum.Ignore });
+			// 从正前方开始往两边一片接一片
+			float order = Mathf.Abs(Mathf.Wrap(ang - Mathf.Pi * 0.5f, -Mathf.Pi, Mathf.Pi)) / Mathf.Pi;
+			shards.Add(new Shard { Root = root, M = m, Ang = ang, H = hgt, W = wid, Front = front, Delay = 0.02f + order * 0.2f,
+				Tilt = Mathf.Cos(ang) * 0.22f + Fx.Rand(-0.08f, 0.08f) });
+		}
+		foreach (Shard sh in shards)
+		{
+			Shard s0 = sh;
+			s0.Root.Visible = false;
+			Fx.Animate(s0.Root, 0, life, t =>
+			{
+				float s = t * life;
+				float up = s < s0.Delay ? 0f : Ease5.OutBack(Mathf.Min(1f, (s - s0.Delay) / 0.16f));
+				float turn = 0.28f * f * Fx.OutCubic(Ease5.Seg(s, flashAt - 0.08f, 0.3f));
+				float a = s0.Ang + turn;
+				s0.Root.Visible = up > 0.001f && s < breakAt + s0.Delay * 0.4f;
+				s0.Root.GlobalPosition = ring + new Vector2(Mathf.Cos(a) * rx, Mathf.Sin(a) * ry);
+				s0.Root.Rotation = s0.Tilt + Mathf.Sin(s * 3f + s0.Ang) * 0.015f;
+				s0.Root.Scale = new Vector2(1f, Mathf.Max(0.001f, up));
+				s0.M.SetShaderParameter("glint", s >= flashAt - 0.04f && s < flashAt + 0.2f ? (s - flashAt + 0.04f) / 0.2f * 1.3f - 0.15f : -1f);
+				s0.M.SetShaderParameter("flash", s >= flashAt ? Mathf.Exp(-(s - flashAt) * 14f) * 0.55f : 0f);
+				s0.M.SetShaderParameter("alpha", Mathf.Min(1f, up * 1.5f));
+			});
+			// 破土：根部迸一小撮白红碎屑
+			Fx.After(c.Front, s0.Delay + 0.02, () =>
+			{
+				Vector2 at = s0.Root.GlobalPosition;
+				Phantom.Shards(c.Front, at, 4, 120f * u, 300f * u, new Vector2(Mathf.Cos(s0.Ang) * 0.6f, -1f), 35f, 0.25f, 500f * u, 9f * u);
+			});
+		}
+		// 主拍：一闪
+		Fx.After(c.Front, flashAt, () =>
+		{
+			Fx.Shake(1);
+			Glow.Flash(back, ring + new Vector2(0f, -h * 0.25f), new Color(1f, 0.25f, 0.3f), h * 1.1f, 0.22f);
+			Glow.Sparks(c.Front, ring + new Vector2(0f, -h * 0.3f), 20, 40f, 160f, 0.6f, new[] { new Color(1f, 0.97f, 0.95f), new Color(1f, 0.3f, 0.35f) }, -60f,
+				0.03f * u, 0.07f * u, Vector2.Up, 160f);
+		});
+		// 碎开：从前往后依次碎，碎玻璃往外迸
+		foreach (Shard sh in shards)
+		{
+			Shard s0 = sh;
+			float d = breakAt + s0.Delay * 0.4f;
+			Fx.After(c.Front, d, () =>
+			{
+				Vector2 basePt = s0.Root.GlobalPosition;
+				Vector2 mid = basePt + new Vector2(Mathf.Sin(s0.Tilt), -Mathf.Cos(s0.Tilt)) * s0.H * 0.5f;
+				Vector2 outDir = new(Mathf.Cos(s0.Ang), Mathf.Sin(s0.Ang) * 0.4f - 0.5f);
+				Control layer = s0.Front ? c.Front : back;
+				Glow.Shards(layer, mid, s0.Front ? 6 : 8, 0.9f * u, outDir, 1.0f);
+				Phantom.Shards(layer, mid, 5, 200f * u, 520f * u, outDir, 50f, 0.35f, 380f * u, 12f * u);
+				Glow.Flash(layer, mid, new Color(1f, 0.9f, 0.9f), s0.H * 0.7f, 0.12f);
+			});
+		}
+		Fx.After(c.Front, breakAt + 0.05, () =>
+		{
+			if (c.Back != null && c.CopyBody != null)
+			{
+				SkillFx.Ghosts(c.Back, c.CopyBody, c.Region, f, 1, sound: false, subtle: true);
 			}
 		});
-		// 主拍：火舌一窜（收着：小一点的红闪、轻震，没有顿帧）
-		Fx.After(back, surge, () =>
-		{
-			aura?.Surge(0.7f, 0.32f);
-			Fx.Shake(1);
-			Glow.Flash(back, body, new Color(1f, 0.12f, 0.18f), h * 0.9f, 0.2f);
-			Glow.Sparks(c.Front, body + new Vector2(0f, h * 0.2f), 26, 90f, 300f, 0.55f, Embers, -220f, 0.04f, 0.12f, Vector2.Up, 50f);
-		});
-		// 烧着的时候火星慢慢往上飘
-		for (int i = 0; i < 3; i++)
-		{
-			float d = surge + 0.12f + 0.15f * i;
-			Fx.After(back, d, () => Glow.Sparks(c.Front, body + new Vector2(Fx.Rand(-0.15f, 0.15f) * h, h * 0.2f), 10, 30f, 110f, 0.8f, Embers, -140f, 0.04f, 0.1f,
-				Vector2.Up, 40f));
-		}
-		// 退场（翻倍的第二下）：火从脚往上剥离、被往上拔高，最后一截从头顶上方化成一股往上的火星散掉
-		Fx.After(back, second, () => aura?.PeelUp(0.45f, 1.3f));
-		Fx.After(back, second + 0.3, () =>
-		{
-			Vector2 top = c.Head + new Vector2(0f, -h * 0.08f);
-			Glow.Sparks(c.Front, top, 30, 120f, 380f, 0.7f, Embers, -160f, 0.04f, 0.12f, Vector2.Up, 35f);
-			Glow.Flash(back, top, new Color(1f, 0.2f, 0.25f), h * 0.5f, 0.22f);
-		});
-		// 他沉进暗处，再亮回来
+		// 他暗下来一点，碎开时亮回来
 		if (c.SelfTint is { } tint)
 		{
 			Node2D tk = Fx.Root(c.Front, c.Feet, "P5MeldTint", life + 0.1);
-			Color dim = new(0.28f, 0.2f, 0.26f), ember = new(0.85f, 0.35f, 0.4f);
+			Color dim = new(0.5f, 0.44f, 0.55f);
 			Fx.Animate(tk, 0, life, t =>
 			{
 				float s = t * life;
-				float k = Fx.OutCubic(Ease5.Seg(s, 0.02f, surge)) * (1f - Fx.OutCubic(Ease5.Seg(s, second, 0.4f)));
-				Color col = Colors.White.Lerp(dim, k);
-				float flick = s >= surge ? Mathf.Exp(-(s - surge) * 9f) * 0.5f : 0f;
-				tint(col.Lerp(ember, flick));
+				float k = Fx.OutCubic(Ease5.Seg(s, flashAt - 0.05f, 0.15f)) * (1f - Fx.OutCubic(Ease5.Seg(s, breakAt, 0.3f)));
+				tint(Colors.White.Lerp(dim, k));
 			});
 			tk.TreeExiting += () => tint(Colors.White);
 		}
