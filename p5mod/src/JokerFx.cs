@@ -161,54 +161,31 @@ public static class JokerFx
 			case "BouncingFlask":
 				SnakeFx.BeginFlask(card.DynamicVars.Repeat.IntValue);
 				break;
+			case var n when Aim.Grips(n) && t != null:
+			{
+				// 第四版：0.7 的亚森之手（Grip）停用；施毒特效走 PoisonApplyPatch → PoisonFx
+				break;
+			}
 			case "Snakebite" when t != null:
 			{
-				// 用户 2026-11-13：召唤亚森来咬 —— 亚森出手（Aim.HitFor）时爪尖一亮、一道疾光射到敌人斜上方，那里的咒烟里窜出一条蛇咬下去；
-				// 结算（上毒）等到咬合那一刻
-				HideBiteUntil = Time.GetTicksMsec() + 4000;
+				// 用户 2026-11-11：复用群蛇形态的扑咬——敌人斜上方一团咒烟里冒出一条蛇咬下去；上毒（PoisonApplyPatch → PoisonFx）等到咬合那一刻
+				HideBiteUntil = Time.GetTicksMsec() + 3000;
 				Control back = Joker.FxLayer(back: true) ?? layer;
 				float tall = (Joker.PosePoint(joker, ReadyFx.Feet) - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length();
 				float face = Joker.Facing(joker);
-				float hit = Aim.HitFor(card);
-				const float lag = 0.1f;   // 亚森的疾光先射到烟团，蛇再从烟里窜出来
-				Aim.HoldCast(joker, hit + lag + SerpentMantle.BiteDelay);
-				PoisonFx.QuietUntil = Stage.NowMs() + (ulong)((hit + lag + SerpentMantle.BiteDelay + 0.6f) * 1000f);
+				float lead = SkillPlay.Moment(joker);                          // 扶面具施法里手甩出去的那一帧（cast 0.4s / 从扶面具接 0.23s）
+				float biteIn = lead + SerpentMantle.BiteDelay;
+				Aim.HoldCast(joker, biteIn);
 				NCreature tn = t;
-				Vector2 fallback = Joker.Chest(joker) + new Vector2(-face * tall * 0.3f, -tall * 0.6f);
-				Fx.After(layer, hit, () =>
+				Fx.After(layer, lead, () =>
 				{
-					if (!GodotObject.IsInstanceValid(tn)) return;
-					Vector2 at = tn.Hitbox.GetGlobalRect().GetCenter();
-					Vector2 claw = ArseneFx.TryClaw(out Vector2 c0) ? c0 : fallback;
-					PoisonCardsFx.ArseneSummonsSnake(layer, back, claw, at, tall, face);
-					Node2D? vis = tn.Visuals;
-					Fx.After(layer, lag, () => { if (GodotObject.IsInstanceValid(tn)) SerpentMantle.Bite(layer, back, at, vis, tall, face); });
+					if (GodotObject.IsInstanceValid(tn)) SerpentMantle.Bite(layer, back, tn.Hitbox.GetGlobalRect().GetCenter(), tn.Visuals, tall, face);
 				});
 				break;
 			}
 			case "DeadlyPoison" when t != null:
 			{
-				// 用户 2026-11-13 重做：亚森出手时隔空一爪 —— 三道弧形爪光飞过去，在敌人身上划出三道爪痕，毒从爪痕里渗开
-				Control back = Joker.FxLayer(back: true) ?? layer;
-				float tall = (Joker.PosePoint(joker, ReadyFx.Feet) - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length();
-				float face = Joker.Facing(joker);
-				float hit = Aim.HitFor(card);
-				Aim.HoldCast(joker, hit + PoisonCardsFx.ClawFly);   // 结算（上毒）等爪光到
-				PoisonFx.QuietUntil = Stage.NowMs() + (ulong)((hit + PoisonCardsFx.ClawFly + 0.6f) * 1000f);
-				NCreature tn = t;
-				Vector2 fallback = Joker.Chest(joker) + new Vector2(-face * tall * 0.3f, -tall * 0.6f);
-				Fx.After(layer, hit, () =>
-				{
-					if (!GodotObject.IsInstanceValid(tn)) return;
-					Vector2 claw = ArseneFx.TryClaw(out Vector2 c0) ? c0 : fallback;
-					Rect2 box = tn.Hitbox.GetGlobalRect();
-					PoisonCardsFx.ArseneClaw(layer, back, claw, box.GetCenter(), box.Size.Y, box.Size.X, tn.Visuals, tall, face);
-				});
-				break;
-			}
-			case var n when Aim.Grips(n) && t != null:
-			{
-				// 第四版：0.7 的亚森之手（Grip）停用；施毒特效走 PoisonApplyPatch → PoisonFx
+				// 第四版：0.7 的精简咒怨（CardFx.CurseLight / Eiha）停用；施毒特效走 PoisonApplyPatch → PoisonFx
 				break;
 			}
 			default:

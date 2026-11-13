@@ -40,7 +40,7 @@ public static class KeyCardPlay
 	}
 
 	/// <summary>要看动画的关键牌：会召唤人格面具（罕见及以上）或亚森伸手抓人的毒牌。</summary>
-	private static bool IsKey(CardModel card) => Tiers.For(card) >= Tier.Uncommon || Aim.Grips(card.GetType().Name) || Aim.Commands(card.GetType().Name);   // 蛇咬：结算等蛇咬下去
+	private static bool IsKey(CardModel card) => Tiers.For(card) >= Tier.Uncommon || Aim.Grips(card.GetType().Name) || card.GetType().Name == "Snakebite";   // 蛇咬：结算等蛇咬下去
 }
 
 /// <summary>远程 / 选择后重新回到出牌堆的牌（NCard.AnimCardToPlayPile）：淡到透明。</summary>
