@@ -72,6 +72,7 @@ public static class PoisonFx
 
 	private static void Apply(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount, int retry, bool outbreak)
 	{
+		if (Stage.NowMs() < QuietUntil) return;
 		// 弹跳烧瓶：咒怨火球落到这个敌人身上（SnakeFx.Throw 飞过来，落地 = 这一刻）
 		if (SnakeFx.FlaskActive)
 		{
@@ -273,6 +274,9 @@ public static class PoisonFx
 	}
 
 	public static bool InOutbreak => Stage.NowMs() < _outbreakUntil;
+
+	/// <summary>这段时间里的上毒不放通用施毒特效（牌自己有完整的表现：致命毒药的爪痕、蛇咬的蛇）。</summary>
+	public static ulong QuietUntil;
 
 	/// <summary>捏碎时的拳心（全局坐标）：引爆时敌人被往远离拳心的方向打退；没捏碎过为空。</summary>
 	private static Vector2? _crushFrom;
