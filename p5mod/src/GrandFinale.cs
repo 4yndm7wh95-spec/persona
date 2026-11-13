@@ -43,7 +43,7 @@ public static class GrandFinalePatch
 	{
 		float hit = 0f, rest = 0f;
 		ModEntry.Safe("GrandFinale start", () => (hit, rest) = SinfulPlay.Start(card));
-		ModEntry.Safe("GrandFinale card fade", () => SinfulPlay.FadePlayedCard(card, 0.22f, 0.15f));
+		ModEntry.Safe("GrandFinale card tuck", () => SinfulPlay.TuckPlayedCard(card));
 		if (hit > 0f)
 		{
 			await Cmd.Wait(hit);
@@ -65,7 +65,7 @@ public static class GrandFinalePatch
 		{
 			await Cmd.Wait(rest);
 		}
-		ModEntry.Safe("GrandFinale card restore", () => SinfulPlay.FadePlayedCard(card, 1f, 0.1f));   // 飞去弃牌堆前恢复
+		ModEntry.Safe("GrandFinale card restore", () => SinfulPlay.RestorePlayedCard(card));   // 真的进弃牌堆以后恢复（节点可能被复用）
 	}
 }
 
@@ -97,6 +97,55 @@ public static class SinfulPlay
 		}
 		Tween tw = node.CreateTween();
 		tw.TweenProperty(node, "modulate:a", alpha, seconds);
+	}
+
+	private static NCard? PlayedNode(CardModel card) =>
+		NCombatRoom.Instance?.Ui is { } ui ? ui.PlayContainer.GetChildren().OfType<NCard>().FirstOrDefault(c => c.Model == card) ?? ui.PlayQueue.GetCardNode(card) : null;
+
+	private static readonly Dictionary<CardModel, Vector2> TuckedScale = new();
+
+	/// <summary>
+	/// 用户 2026-11-13：牌（半透明）在屏幕中间停太久、挡演出 → 在中间亮一下（0.2s）就缩小、淡掉、飞向弃牌堆。
+	/// 游戏要等结算完才真的把它收进弃牌堆，那时它已经看不见了；收完以后 RestorePlayedCard 恢复（牌节点会被复用）。
+	/// </summary>
+	public static void TuckPlayedCard(CardModel card, bool retry = true)
+	{
+		if (NCombatRoom.Instance?.Ui is not { } ui)
+		{
+			return;
+		}
+		NCard? node = PlayedNode(card);
+		if (node == null || !GodotObject.IsInstanceValid(node))
+		{
+			if (retry) Fx.After(ui, 0.1, () => TuckPlayedCard(card, false));
+			return;
+		}
+		TuckedScale[card] = node.Scale;
+		Vector2 pile = ui.DiscardPile.GetGlobalRect().GetCenter();
+		Tween tw = node.CreateTween();
+		tw.TweenInterval(0.2);
+		tw.SetParallel();
+		tw.TweenProperty(node, "global_position", pile, 0.3).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.In);
+		tw.TweenProperty(node, "scale", node.Scale * 0.3f, 0.3).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.In);
+		tw.TweenProperty(node, "modulate:a", 0f, 0.3).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.In);
+	}
+
+	public static void RestorePlayedCard(CardModel card)
+	{
+		NCard? node = PlayedNode(card);
+		Vector2 scale = TuckedScale.TryGetValue(card, out Vector2 s) ? s : Vector2.One;
+		TuckedScale.Remove(card);
+		if (node == null || !GodotObject.IsInstanceValid(node) || NCombatRoom.Instance?.Ui is not { } ui)
+		{
+			return;
+		}
+		// 游戏把它飞进弃牌堆要一小会儿：看不见地飞完再恢复
+		Fx.After(ui, 0.7, () =>
+		{
+			if (!GodotObject.IsInstanceValid(node) || node.Modulate.A > 0.05f) return;   // 游戏已经自己改过就不动
+			node.Modulate = new Color(node.Modulate, 1f);
+			if (node.Scale.X < scale.X * 0.5f) node.Scale = scale;
+		});
 	}
 
 	/// <summary>开演出。返回（出牌后多久结算伤害, 结算后还要等多久演出才完）。拿不到节点就返回 (0,0)：照常立即结算。</summary>

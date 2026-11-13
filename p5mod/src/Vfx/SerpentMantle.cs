@@ -25,7 +25,7 @@ public sealed class SerpentMantle
 	private const int Slots = 5;         // 同时最多几条蛇在咬（2026-11-13：3 → 5，连出牌时不排队等）
 	private const float BiteAt = 0.46f, AttackLen = 1.15f;
 	/// <summary>能力触发的那一咬从攻击动画的哪一刻开始（用户 2026-11-13：伤害都出了蛇才慢慢去咬 → 跳过前面在轨道上猛窜的一段）。</summary>
-	private const float StrikeStart = 0.2f;
+	private const float StrikeStart = 0.36f;   // 2026-11-13 第二次：还是不跟手 → 直接从「往后一缩」开始，0.1s 就咬下去
 	/// <summary>能力触发到咬合的秒数（伤害数字推迟到这一刻跳）。</summary>
 	public const float StrikeDelay = BiteAt - StrikeStart;
 
