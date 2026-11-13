@@ -1,0 +1,583 @@
+{
+  "format_version": 3,
+  "engine_version": "4.5.1",
+  "total_pck_files": 754,
+  "card_art_count": 95,
+  "jpg_count": 94,
+  "index_count": 1,
+  "all_card_art_bytes_identical": true,
+  "pck_bytes": 154210724,
+  "pck_sha256": "39307a095955b9bdd74a46035ba3b8ea663b31d05ed9bbc9c7c987b7b1e37018",
+  "card_art_files": [
+    {
+      "path": "p3makoto/card_art/alignment.jpg",
+      "bytes": 170293,
+      "sha256": "0877db7ce00648e0013d1695e5579269757e3103331fa4ac89c1cf59bf616809",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/arsenal.jpg",
+      "bytes": 223820,
+      "sha256": "ef2e14d11947b33b893992bdcc182cb2509f8716b1d1856399ab184c6be05d65",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/astral_pulse.jpg",
+      "bytes": 160575,
+      "sha256": "4f3362fe2a1995be4f88112b588081acf6124995497f02aa9c8d49b41f483da5",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/beat_into_shape.jpg",
+      "bytes": 232057,
+      "sha256": "bb00312d433d83c63cc325e51970fc87f49babffe71116619e3978e3331188c0",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/begone.jpg",
+      "bytes": 170223,
+      "sha256": "372c68fe1ff8beb1740b4b41a038302096f5f7210d9a6925ad30d4d6230f1a45",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/big_bang.jpg",
+      "bytes": 393126,
+      "sha256": "2363885e218ba7c7aaf8ef3a2cbf1a4a99125b142008e12a916c655d689f3cc1",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/black_hole.jpg",
+      "bytes": 209597,
+      "sha256": "bcec0841fd74d52ce9fdeb802f703ee7b6811674b6e84dffb2a250c9c2f7e3fb",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/bombardment.jpg",
+      "bytes": 243634,
+      "sha256": "647755f5f6bf71ef43693c05d7e636b95a2f76a618032845a21ab259a9d286b5",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/bulwark.jpg",
+      "bytes": 251766,
+      "sha256": "a31efdb2c160e294d51b9f3f5f925c49b3d309410748bf77ffb2df27b7a1247f",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/bundle_of_joy.jpg",
+      "bytes": 169928,
+      "sha256": "7ced41d0bc5f988dc172698b6f052191a4f8be314c105babe823c4aeea33226e",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/celestial_might.jpg",
+      "bytes": 241444,
+      "sha256": "f88dc9ed218791d301088929b37866e09432f283fd79be488e325fe16f1db162",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/charge.jpg",
+      "bytes": 239120,
+      "sha256": "eb341e48a5fb1218786b2790a359050adedf7bda41efbc2c4d1aacc3c04731c2",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/child_of_the_stars.jpg",
+      "bytes": 169265,
+      "sha256": "43eb64a0b0e621eefbb44d51a017fc91065b2cb4cb414da11c46e9c43b38894f",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/cloak_of_stars.jpg",
+      "bytes": 193619,
+      "sha256": "f5b78988ea73f4dfb4b9f791629975a08cc1507bb028e8a2e2ab54ada9576ae2",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/collision_course.jpg",
+      "bytes": 226625,
+      "sha256": "7391141f9ab8108d3794aea072f1b3d9e9d43255fd0fefcc229543a8fc719754",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/comet.jpg",
+      "bytes": 195425,
+      "sha256": "948239093210992bbd11f7dd1467062ff052c2644be27bcd2b678d1d7cf31817",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/conqueror.jpg",
+      "bytes": 162886,
+      "sha256": "0f3efa1de1d9d1ca94545ca45dc915ff6e5fcff29085f0697527156477208ce0",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/constellation.jpg",
+      "bytes": 175323,
+      "sha256": "413edd8081caabf9bd1ddd3f66923afcc47dd366c9358aa5355bcc7baf3b6c99",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/convergence.jpg",
+      "bytes": 200741,
+      "sha256": "9d6ca6fd54cca578396cbd1a937be1c59d3c60321f9682f911eccba190cb0b06",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/cosmic_indifference.jpg",
+      "bytes": 197394,
+      "sha256": "ae7f84892136849169415ae1b76a6e57cf6fa7caa3b77929ead2ba558ae19ab4",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/crash_landing.jpg",
+      "bytes": 238042,
+      "sha256": "9706f5e874c40aa4c8b6fe959c947801eb8c4a14806ceaf1b8ef8228097813b7",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/crescent_spear.jpg",
+      "bytes": 156993,
+      "sha256": "7257b0bf3b824038ec470afef5e53541d4f391c84839568477bb3bce71909807",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/crush_under.jpg",
+      "bytes": 240474,
+      "sha256": "41c1a4ce40f8405b1987f1b2210fb8256e69e4d61c51e14675f84254fd72b26f",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/decisions_decisions.jpg",
+      "bytes": 184611,
+      "sha256": "0ba02febe70aa7b432ef4aa9b778e2c0494cf74c02d468fcb435a9f55ad2b37a",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/defend_regent.jpg",
+      "bytes": 171875,
+      "sha256": "c9d6fb9249bd60baa515009190b83b0fad310126bf8951f73b03d69e7266ee0a",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/devastate.jpg",
+      "bytes": 219708,
+      "sha256": "676793bad0642074545df21575c44d73f5ce78973db64ef892d5e73b4a4138cf",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/dying_star.jpg",
+      "bytes": 266326,
+      "sha256": "6c86fcd9854a7627376f93f4af9753188773d0a8056e0d899ef07c6a67b3406f",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/falling_star.jpg",
+      "bytes": 219411,
+      "sha256": "f3d2136ffa51e8dfc3591d69aaf42e60460bccb018676aa0c0d80735c548db49",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/foregone_conclusion.jpg",
+      "bytes": 215441,
+      "sha256": "98e4579cb056c9cdab01618644643c574e5f0ce634e9e977dd451696be75fbdf",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/furnace.jpg",
+      "bytes": 191167,
+      "sha256": "b98ffb5bae5d78d656348bcf58070222605bdcfebfae89d89c1e01c55c08c282",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/gamma_blast.jpg",
+      "bytes": 226439,
+      "sha256": "09c35dc360b52518c73eff1b04eeb1a772f47d33ec53681eb7808d41c8c71920",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/gather_light.jpg",
+      "bytes": 187055,
+      "sha256": "edacb59fb11b7ec3d71d031a5da6a0aad4d5468c5d5b593e6994121812fade53",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/genesis.jpg",
+      "bytes": 241792,
+      "sha256": "33ee4dade5e0fcc6c9d99219ab9da6b2ff41d8fee4f0d39b279067ab3e72703a",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/glimmer.jpg",
+      "bytes": 175666,
+      "sha256": "0a088f1790901eb2cabb2f88c50d556b688d95affa7fa00b622a118b822d3d83",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/glitterstream.jpg",
+      "bytes": 221032,
+      "sha256": "3b1a51b8d2df92cf9b9fd5d88fffb71d25d2e1661a1218c47d49525307d0c89a",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/glow.jpg",
+      "bytes": 165255,
+      "sha256": "db877220818ffdace93fdda3ff1442b7f73d9c7c011f3d0f7fc96aa003579f50",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/guards.jpg",
+      "bytes": 189379,
+      "sha256": "c42f73e804b25120fe4f915589d3a93ab8e3bfe115b2e15905c40787523977bd",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/guiding_star.jpg",
+      "bytes": 167311,
+      "sha256": "90d7214a31930568867e4cc770e4bbbf738bcb72af185c8e02ca257ff91229ea",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/hammer_time.jpg",
+      "bytes": 186356,
+      "sha256": "8a86a5a91ec17630cba7c39ff0bd2af4ba875e5e80ac50e2e0e8f0628b74604c",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/heavenly_drill.jpg",
+      "bytes": 197314,
+      "sha256": "2dafe2ded9c5d494f3d01f662a702a1e48bf982d7e4ad0152406003af79e43cd",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/hegemony.jpg",
+      "bytes": 203300,
+      "sha256": "9740bf0d98a01ac7a667a2fe0e0298f562d487682209603727b559d92b550279",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/heirloom_hammer.jpg",
+      "bytes": 212065,
+      "sha256": "fb344a3c53e99fddfebe209229eb8190c85de6f5950adec087c44ddfe84f5ad3",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/hidden_cache.jpg",
+      "bytes": 181612,
+      "sha256": "1886104bf762c991df2c20156737ecedcecc168eb2c1b477627bda83205b9160",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/i_am_invincible.jpg",
+      "bytes": 214433,
+      "sha256": "e1ca4a19ae8e80060d7affa5cab0b0dbf91db72523e7c2e230db3e8fc6a496c9",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/index.txt",
+      "bytes": 1133,
+      "sha256": "0b61cb01018ce29558802741564a889c8b73919d102400b98f3eacb71dd00dd3",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/kingly_kick.jpg",
+      "bytes": 173723,
+      "sha256": "87ce83a4a2fba6bb92ae7103ac001beec709885e2f244682806295c7fe6b4d6a",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/kingly_punch.jpg",
+      "bytes": 170572,
+      "sha256": "626f25cc08e3317f4dce380211e53b7caad07564dc55d557360d48800637904e",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/knockout_blow.jpg",
+      "bytes": 208298,
+      "sha256": "38dc6eae484e38fa5a9115f5c64a4ae0b8cad2ceef3f92c2526c84f3bc9e8cfa",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/know_thy_place.jpg",
+      "bytes": 105142,
+      "sha256": "9e250b6ffaa2b91572bdc53eb116998f1d16cd9b7a0315919df2d3d9c51a4fe8",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/largesse.jpg",
+      "bytes": 162482,
+      "sha256": "8b1e63ba1e36adc8c5a0d8f598f55de027aede4bdabd1db42bd7b76c3e2daf77",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/lunar_blast.jpg",
+      "bytes": 169716,
+      "sha256": "017c7bf9d317b2809157edd5932afaa8032e3a09d4b0a05a2075aa8574761143",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/make_it_so.jpg",
+      "bytes": 227290,
+      "sha256": "070153e46ca7caa7684cf9bfe5cbf3b435f51b47a5cfdb6e7bd9767dc7df614b",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/manifest_authority.jpg",
+      "bytes": 226849,
+      "sha256": "5377eab5005d5c59cd80a1b5b332e7c2d273be63519be5ed05782c0f365deb6c",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/meteor_shower.jpg",
+      "bytes": 170724,
+      "sha256": "e246e7143ee905e311a4d3d7f146914dfe80dbad5dbe0ccb6481fcb48ab3eb88",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/monarchs_gaze.jpg",
+      "bytes": 166027,
+      "sha256": "7451ba4fa874df21e32f753b8a4385cc185a5c207bd4b22523e7a1d1962cf428",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/monologue.jpg",
+      "bytes": 218484,
+      "sha256": "8c9e76084e647e5b9db60e93bb2f46d1db8dbe75ca11311e45a514a83c8066ca",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/neutron_aegis.jpg",
+      "bytes": 200160,
+      "sha256": "6e68ab45b98408ed701a75d91d966da2c573892727100c682fee9e3e85a01c88",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/orbit.jpg",
+      "bytes": 207993,
+      "sha256": "909fe9d25a2f37d6f9d6a78a6df2c55b5285701cc3caca29bc8ad53dbff61f84",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/pale_blue_dot.jpg",
+      "bytes": 219364,
+      "sha256": "202f77b191b333c02837df343a5e14d15b353fedabdfd6ca75c8939171cb549e",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/parry.jpg",
+      "bytes": 188759,
+      "sha256": "d4e2429b1730a8feb20d620b4177134e6e3ae42238d5fbbab60e458415a87b6d",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/particle_wall.jpg",
+      "bytes": 207742,
+      "sha256": "c356c90aa945f4cc55a0be054a0d8cf69cea830a3105c82dc04454ca2a0909e5",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/patter.jpg",
+      "bytes": 231249,
+      "sha256": "f150949f57db742c92b5d69dcd976f3f2f928b6ad27da9990b8d69b422008507",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/photon_cut.jpg",
+      "bytes": 182268,
+      "sha256": "aca92d0cf188a88408a7f91d1adc16ba2778b1637da1d177a4e97f56a7d0808c",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/pillar_of_creation.jpg",
+      "bytes": 212502,
+      "sha256": "c6fca5953141287d62886087df99275bd9b7b498d9f622bcbe8479b0637fb6da",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/plot.jpg",
+      "bytes": 243063,
+      "sha256": "a7db86dbe2cd6b7a9d7829ab65d467cd9d39d88c9cc76505041df6242ff76275",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/prophesize.jpg",
+      "bytes": 182951,
+      "sha256": "e469228d8ec76f48da12e4eca384db9c477450ad877230dfb6adda16750c4634",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/quasar.jpg",
+      "bytes": 193958,
+      "sha256": "170fe02ec2349e1493ce1189ded4fef4a1fa2fec0b2433d85643208b49411d77",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/radiate.jpg",
+      "bytes": 176121,
+      "sha256": "493641a9328a87647d191747a00fbca7ca0228f46c6c895884f54bcee9e20b9f",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/refine_blade.jpg",
+      "bytes": 218603,
+      "sha256": "193375bf7684f6dc4d164fcc2bc5455212df7323d259b6a327b9d97ffb297dff",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/reflect.jpg",
+      "bytes": 224583,
+      "sha256": "be67efe085d6c05166bfd5de177497198f4696ca09e1d9b3a4f84f9c614d7356",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/reserves.jpg",
+      "bytes": 208816,
+      "sha256": "13ae76c5bd0f32e7584f0825b3123a8469cf9530c0b498ff238f0135c2122432",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/resonance.jpg",
+      "bytes": 220281,
+      "sha256": "92df7f6a61cd1f61bd65c10e775812bdb524a29147994753b23244c4ed90ce9d",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/royal_corona.jpg",
+      "bytes": 156477,
+      "sha256": "e94c6522c53c6219415d703c5b5f275debe29d4802ea45b56c1116fde8c0b9bf",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/royal_gamble.jpg",
+      "bytes": 238403,
+      "sha256": "2e5346f95ee64238bc1707b439001d597560ad8be4766aefca7facc34e7ad3aa",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/royalties.jpg",
+      "bytes": 225325,
+      "sha256": "0dd909c64f455e8388a0f7eaacfecc8fb610def9eea338da725b5a35e5facc67",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/seeking_edge.jpg",
+      "bytes": 214199,
+      "sha256": "a41e9eb7aa95573accde4903e932deae93e241f6b412a29a10bf0b2f3093fd5d",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/seven_stars.jpg",
+      "bytes": 193821,
+      "sha256": "689f420cfa262fd773b490bbd476e352e01aff8595e6b5746b077a1be5066a08",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/shining_strike.jpg",
+      "bytes": 190471,
+      "sha256": "b7513dcfc60207449edf05e6d7ee5f5d0b36e0a11e5e11fb412130ecb3c631e6",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/solar_strike.jpg",
+      "bytes": 159077,
+      "sha256": "5d09c0d03c6b9bfbc39f9685f5844e842571383f2b8c0f949a6f4e610a2de988",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/sovereign_blade.jpg",
+      "bytes": 213491,
+      "sha256": "a19683341777941a9ae9154377058964dad0ddef1fa2138ce42c9be1c2dd7d28",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/spectrum_shift.jpg",
+      "bytes": 242594,
+      "sha256": "c37c7416732c5c4c90b4e929068917b40cbb249d4a599525a970a66ff7feda2a",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/spoils_of_battle.jpg",
+      "bytes": 249456,
+      "sha256": "94d7d993521d4cdacda59298a581827b862b04b10657145946ed0fe8b83c9744",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/stardust.jpg",
+      "bytes": 129143,
+      "sha256": "e8e5d1d34561c1f5053ca258a3c77bce5c74efc68087267f0eecaefd20a33eaa",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/strike_regent.jpg",
+      "bytes": 170183,
+      "sha256": "8375634ed479f2e245dc747b3b1bf694d50dd858d4f04b5b8a08ae0059269337",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/summon_forth.jpg",
+      "bytes": 194115,
+      "sha256": "225e5ee2a1e0c03a906b8f341ab69cc926731628b09efd7bb67e37b066035457",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/supermassive.jpg",
+      "bytes": 171836,
+      "sha256": "6ed39fa8b688b658094308ac86935eab01d6cce26616c75660d38f9468af4c38",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/sword_sage.jpg",
+      "bytes": 178928,
+      "sha256": "219ab3537f0d98d33f110714330ef24b41f64329021c7a91c11d2ee954a96aff",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/terraforming.jpg",
+      "bytes": 198730,
+      "sha256": "730f1a5d84ba46aa133a508e8b73c8823ac8b9ee391f83e84cb7e91f0a0e2d50",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/the_sealed_throne.jpg",
+      "bytes": 287961,
+      "sha256": "c731851e0158bb8d35b5525bea1312e41189baca907fb44222f8c789e9d288fc",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/the_smith.jpg",
+      "bytes": 183603,
+      "sha256": "5de6d7a83afa0248b734b596313bc747732e1943dcb9ff88870667781827ca1d",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/tutor.jpg",
+      "bytes": 196233,
+      "sha256": "e57431cd91d018f20cd3d044b97ab7c809a1a79d3ab6364dfb1d1adfd4e62810",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/tyranny.jpg",
+      "bytes": 109928,
+      "sha256": "5b8e3708507ba7c695150fe55317312d976744f4dabad6c332a4d83c0266c36a",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/venerate.jpg",
+      "bytes": 184167,
+      "sha256": "bd90d72fcd4b58e1c3bfe028c00a8a1c6af0a7278c3bc28fd5463ea23dd1cde4",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/void_form.jpg",
+      "bytes": 241242,
+      "sha256": "924d1a8b3c81626e22e5908fd361974ba6e41ef2a4d789d550cdd782f5bed73c",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3makoto/card_art/wrought_in_war.jpg",
+      "bytes": 216651,
+      "sha256": "3cec91a500a477341198346d3a373a8bae1cae4cd4706f8a5031c9d0b52b9742",
+      "identical_to_source": true
+    }
+  ]
+}

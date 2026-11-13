@@ -1,0 +1,58 @@
+[
+  {
+    "zip_path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a\\mod\\dist\\0.15.31\\P3Makoto_0.15.31_game0.111.0.zip",
+    "mod_version": "0.15.31",
+    "backup_path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a\\mod\\_build\\card_art_0.15.31\\backup_20261113_100421_111",
+    "installed_hashes_verified": true,
+    "previous_mod_version": "0.15.29",
+    "zip_sha256": "44ba784cb77c96c4c2112d98e9c08b79ae24299791d0579295fe55c6cbf9f59a",
+    "game_version": "v0.111.0",
+    "install_path": "C:\\Users\\kkk\\Desktop\\slaythespire\\Slay the Spire 2\\mods\\P3Makoto",
+    "files": [
+      {
+        "name": "P3Makoto.json",
+        "sha256": "fbc07b0faf605583d2373c3d4632f33ca23f5669ea54926d7efcb3a57bab98a6",
+        "bytes": 317
+      },
+      {
+        "name": "P3Makoto.dll",
+        "sha256": "c4c6c8abfc0d8a06b374809fdedc6dd171fee788f1c80e8a6a51ece28efbf83f",
+        "bytes": 1150976
+      },
+      {
+        "name": "P3Makoto.pck",
+        "sha256": "39307a095955b9bdd74a46035ba3b8ea663b31d05ed9bbc9c7c987b7b1e37018",
+        "bytes": 154210724
+      }
+    ],
+    "zip_member_hashes_verified": true
+  },
+  {
+    "zip_path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a\\mod\\dist\\0.15.31\\P3Makoto_0.15.31.zip",
+    "mod_version": "0.15.31",
+    "backup_path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a\\mod\\_build\\card_art_0.15.31\\backup_20261113_100421_113",
+    "installed_hashes_verified": true,
+    "previous_mod_version": "0.15.31",
+    "zip_sha256": "1b4047f1ec5b2be0a912954cc9c5bcce991be4a7b2ba32940e4d728355ad9c19",
+    "game_version": "v0.113.0",
+    "install_path": "G:\\SteamLibrary\\steamapps\\common\\Slay the Spire 2\\mods\\P3Makoto",
+    "files": [
+      {
+        "name": "P3Makoto.json",
+        "sha256": "fbc07b0faf605583d2373c3d4632f33ca23f5669ea54926d7efcb3a57bab98a6",
+        "bytes": 317
+      },
+      {
+        "name": "P3Makoto.dll",
+        "sha256": "da3e4683ab633c64628314c6daa1ae69d6a839ab0cc3206736e95c31b205b7c0",
+        "bytes": 1150976
+      },
+      {
+        "name": "P3Makoto.pck",
+        "sha256": "39307a095955b9bdd74a46035ba3b8ea663b31d05ed9bbc9c7c987b7b1e37018",
+        "bytes": 154210724
+      }
+    ],
+    "zip_member_hashes_verified": true
+  }
+]
