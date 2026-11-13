@@ -148,6 +148,7 @@ void fragment() {
 			Vector2 sz = new(h * 2.6f, h * 1.7f);
 			Node2D gr = Fx.Root(back, chest, "P5MeldGrade", life + 0.1);
 			ShaderMaterial gm = new() { Shader = Grade };
+			gr.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });   // 读屏前先刷新
 			gr.AddChild(new ColorRect { Size = sz, Position = -sz / 2f, Material = gm, MouseFilter = Control.MouseFilterEnum.Ignore });
 			Fx.Animate(gr, 0, life, t =>
 			{

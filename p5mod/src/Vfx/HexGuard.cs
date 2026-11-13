@@ -157,6 +157,7 @@ void fragment() {
 		rm.SetShaderParameter("facing", facing);
 		ColorRect refract = new() { Size = size, Position = -size / 2f, Material = rm, MouseFilter = Control.MouseFilterEnum.Ignore };
 		ColorRect face = new() { Size = size, Position = -size / 2f, Material = fm, MouseFilter = Control.MouseFilterEnum.Ignore };
+		root.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });   // 读屏前先刷新（2026-11-13：不然在别的读屏效果下面会露出旧画面）
 		root.AddChild(refract);
 		root.AddChild(face);
 

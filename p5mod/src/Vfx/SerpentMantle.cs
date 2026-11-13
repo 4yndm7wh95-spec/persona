@@ -25,9 +25,15 @@ public sealed class SerpentMantle
 	private const int Slots = 5;         // 同时最多几条蛇在咬（2026-11-13：3 → 5，连出牌时不排队等）
 	private const float BiteAt = 0.46f, AttackLen = 1.15f;
 	/// <summary>能力触发的那一咬从攻击动画的哪一刻开始（用户 2026-11-13：伤害都出了蛇才慢慢去咬 → 跳过前面在轨道上猛窜的一段）。</summary>
-	private const float StrikeStart = 0.36f;   // 2026-11-13 第二次：还是不跟手 → 直接从「往后一缩」开始，0.1s 就咬下去
+	private const float StrikeStart = 0f;
+	/// <summary>
+	/// 咬下去之前那段（轨道上一缩、猛窜、化成烟飞到敌人上方、聚出蛇头、扑咬）的播放倍速。
+	/// 用户 2026-11-13：直接从扑咬开始虽然跟手，但「这条蛇加速冲一下、消失、咬完再回来」的表现没了 → 整段保留、加速播，
+	/// 从触发到咬合约 0.2s（BiteAt / 2.3），咬完以后（散成烟、回原位）照常速。
+	/// </summary>
+	private const float PreBiteSpeed = 2.3f;
 	/// <summary>能力触发到咬合的秒数（伤害数字推迟到这一刻跳）。</summary>
-	public const float StrikeDelay = BiteAt - StrikeStart;
+	public const float StrikeDelay = (BiteAt - StrikeStart) / PreBiteSpeed;
 
 	public static SerpentMantle? Current { get; private set; }
 
@@ -554,6 +560,7 @@ void fragment() {
 		_mistFrontM = new ShaderMaterial { Shader = SerpentMist.Shader };
 		_mistFrontM.SetShaderParameter("side", 1f);
 		var mistRect = new ColorRect { Size = Fx.Screen(front), Material = _mistFrontM, MouseFilter = Control.MouseFilterEnum.Ignore };
+		_mistFrontRoot.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });   // 读屏前先刷新（2026-11-13）
 		_mistFrontRoot.AddChild(mistRect);
 		Fx.Clock(mistRect);
 		}
@@ -727,7 +734,7 @@ void fragment() {
 			_attacks[slot] = na;
 			// 扑下去的疾光 + 咬合的獠牙（画在命中特效上面）
 			if (!_biteOnly && GodotObject.IsInstanceValid(_top))
-				SkillRedo5.SerpentStrike(_top, _back, tat + na.L(new Vector2(-0.72f * T, -0.72f * T), face), tat, T, BiteAt - StrikeStart);
+				SkillRedo5.SerpentStrike(_top, _back, tat + na.L(new Vector2(-0.72f * T, -0.72f * T), face), tat, T, StrikeDelay, (0.36f - StrikeStart) / PreBiteSpeed);
 		}
 
 		for (int i = 0; i < Count; i++)
@@ -1044,7 +1051,7 @@ void fragment() {
 		for (int s = 0; s < Slots; s++)
 		{
 			if (_attacks[s] is not { } a) continue;
-			a.T += dt;
+			a.T += dt * (a.T < BiteAt && !_biteOnly ? PreBiteSpeed : 1f);   // 蛇咬那张牌（_biteOnly）照原速：它的结算时机按 BiteDelay 算
 			float t = a.T;
 			float face = a.Target.X >= 0f ? 1f : -1f;
 			Vector2 cloud = a.Target + a.L(new Vector2(-0.6f * T, -1.25f * T), face);
