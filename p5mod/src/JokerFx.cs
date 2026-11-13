@@ -166,6 +166,14 @@ public static class JokerFx
 				// 第四版：0.7 的亚森之手（Grip）停用；施毒特效走 PoisonApplyPatch → PoisonFx
 				break;
 			}
+			case "KnifeTrap" when t != null:
+			{
+				// 用户 2026-11-13：原来太简单 → 敌人四周亮起一圈红光弹（数量 = 要打出的小刀），之后每发小刀打中收一颗扎进去（KnifeTrapFx）
+				int n = MegaCrit.Sts2.Core.Entities.Cards.PileType.Exhaust.GetPile(card.Owner).Cards.Count(c => c.Tags.Contains(CardTag.Shiv));
+				Rect2 box = t.Hitbox.GetGlobalRect();
+				KnifeTrapFx.Begin(layer, Joker.FxLayer(back: true) ?? layer, box.GetCenter(), box.Size.Y, box.Size.X, n, t.Visuals);
+				break;
+			}
 			case "Snakebite" when t != null:
 			{
 				// 用户 2026-11-13（B 方案）：召唤亚森（Aim.Commands）→ 亚森出手时一挥手，蛇形咒怨光带游到敌人斜上方，咒烟鼓起，

@@ -47,6 +47,7 @@ public static class GunFx
 
 	public static void Hit(Control layer, Vector2 at, Vector2 dir, bool final = false)
 	{
+		KnifeTrapFx.OnHit(at);   // 刀刃陷阱：收一颗光弹
 		// 命中声照 Five Cards 演示（用户 2026-11-09）：升调压低的命中；打死目标的那一发用收尾的重命中（加低频重击）
 		Sfx.Play(final ? Sfx.GunHitFinal : Sfx.GunHit, Sfx.DemoMixVolume);
 		Paint.Pop(layer, "muzzle_front", at, Fx.Rand(-3.1f, 3.1f), 0.2f, Lut5.Muzzle, 0.01f, 0.1f, 0.6f, 0f, 1.2f);

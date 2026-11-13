@@ -535,6 +535,19 @@ public partial class Preview : Node2D
 				p.Poison(t0 + 0.04 + atk + SnakeSummonFx.Lag + SerpentMantle.BiteDelay, e, 7);
 			}
 		},
+		// 2026-11-13：刀刃陷阱 —— 敌人四周亮起一圈光弹，之后每发小刀打中收一颗
+		["knife_trap"] = p =>
+		{
+			p.At(0.2, () => p._joker?.Play("aim_in"));
+			p.At(0.35, () => { p._enemies.TryGetValue(Enemy, out Node2D? n); KnifeTrapFx.Begin(p._front, p._back, Enemy + new Vector2(0f, -10f), 285f, 260f, 6, n); });
+			for (int i = 0; i < 6; i++)
+			{
+				double at = 1.0 + 0.28 * i;
+				p.At(at - 0.18, () => p._joker?.Play("shiv_from_aim"));
+				p.At(at - 0.02, () => GunFx.Muzzle(p._front, Muzzle, (Enemy - Muzzle).Normalized()));
+				p.At(at, () => GunFx.Shot(p._front, Muzzle, Enemy + new Vector2(Fx.Rand(-20f, 20f), Fx.Rand(-30f, 30f)), i == 5));
+			}
+		},
 		["poison_v4"] = p =>
 		{
 			p.At(0.2, () => p._joker?.Play("cast"));
@@ -1012,7 +1025,7 @@ public partial class Preview : Node2D
 		});
 	}
 
-	private void ShotC(double t, Vector2 enemy, int amount, Weight w, bool dies = false)
+	public void ShotC(double t, Vector2 enemy, int amount, Weight w, bool dies = false)
 	{
 		At(t - 0.2, () => _joker?.Play("shiv"));
 		At(t - 0.02, () => HitFx.Muzzle(_front, Muzzle));
