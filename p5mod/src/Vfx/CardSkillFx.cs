@@ -42,6 +42,7 @@ public static class CardSkillFx
 		CardSkillFx3.Register(Cards);
 		SkillRedo.Register(Cards);          // 技能牌重做第三版（怪盗风），覆盖上面的旧版本
 		SkillRedo4.Register(Cards);         // 第四批：融入暗影、余像、模糊、夹击、萎靡
+		SkillRedo5.Register(Cards);         // 第五批（会话 C，2026-11-13）：融入暗影改成怪盗斗篷戏法
 	}
 
 	private static readonly Color Hot = new(1f, 0.96f, 0.94f), Red = new(1f, 0.2f, 0.27f), Crimson = new(0.85f, 0.04f, 0.13f),

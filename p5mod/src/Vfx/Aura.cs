@@ -34,6 +34,8 @@ uniform vec2 feet = vec2(0.5, 0.95);   // 脚底（UV）：脚下一圈底座火
 uniform float base_w = 0.12;    // 底座火半宽（UV）
 uniform float clock = 0.0;
 uniform float seed = 0.0;
+uniform float use_pal = 0.0;
+uniform float even = 0.0;        // 0～1：火舌分布更均匀（降低噪声门槛的起伏、少断开；融入暗影用，面具火是 0 不变）     // 1 = 用 c_dark～c_hot 四档颜色（融入暗影的红黑暗焰）；0 = 原来的蓝焰（面具火，不动）
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
@@ -72,15 +74,16 @@ void fragment() {
 		s = max(s, 0.85 * sil(UV + vec2(drift + len * k * 0.55, len * k * 0.7) * px));
 		s = max(s, 0.85 * sil(UV + vec2(drift - len * k * 0.55, len * k * 0.7) * px));
 		float colN = fbm(vec2((sp.x - drift) * 0.06 + seed, sp.y * 0.02 + t * 2.4));
-		float reach = smoothstep(0.3 + k * 0.36, 0.44 + k * 0.36, colN);
-		float gap = smoothstep(0.55, 0.8, noise(vec2(sp.x * 0.07 + seed * 3.0, sp.y * 0.05 + t * 3.4)));
+		float lo = mix(0.3 + k * 0.36, 0.22 + k * 0.3, even);
+		float reach = smoothstep(lo, lo + mix(0.14, 0.2, even), mix(colN, 0.5 + (colN - 0.5) * 0.55, even));
+		float gap = smoothstep(0.55, 0.8, noise(vec2(sp.x * 0.07 + seed * 3.0, sp.y * 0.05 + t * 3.4))) * (1.0 - even * 0.6);
 		fire = max(fire, s * reach * smoothstep(0.0, 0.18, k) * (1.0 - k * 0.45) * (1.0 - gap * smoothstep(0.3, 0.8, k)));
 	}
 	// 不画贴身的一圈（用户 2026-11-01：太像描边），只要往上窜的火舌
 	// 脚下的底座火：贴地一圈低矮的火往上冒，把人「托」起来（重心往下移）
 	float gx = abs(UV.x - feet.x) / base_w;
 	float gy = (feet.y - UV.y) / (len * 1.3 * px.y);
-	if (gx < 1.0 && gy > -0.04 && gy < 1.0) {
+	if (base_w > 0.0 && gx < 1.0 && gy > -0.04 && gy < 1.0) {
 		float colG = fbm(vec2(sp.x * 0.05 + seed * 2.0, sp.y * 0.03 + t * 2.6));
 		float hG = (1.0 - gx * gx) * (0.45 + 0.55 * colG);
 		fire = max(fire, smoothstep(hG, hG - 0.25, gy) * smoothstep(-0.04, 0.05, gy) * 0.9);
@@ -99,6 +102,7 @@ void fragment() {
 	float heat = f * (0.55 + 0.6 * e);
 	float a = smoothstep(0.16, 0.19, f);
 	vec3 col = heat > 0.78 ? vec3(0.94, 0.98, 1.0) : heat > 0.55 ? vec3(0.4, 0.8, 1.0) : heat > 0.32 ? vec3(0.1, 0.38, 0.92) : vec3(0.03, 0.09, 0.32);
+	if (use_pal > 0.5) col = heat > 0.78 ? c_hot.rgb : heat > 0.55 ? c_hi.rgb : heat > 0.32 ? c_mid.rgb : c_dark.rgb;
 	COLOR = vec4(col, a * alpha);
 }" };
 
@@ -109,7 +113,8 @@ void fragment() {
 
 	/// <param name="back">人物后面的特效层</param>
 	/// <param name="region">要罩住的区域（全局坐标：人物 + 四周留给火的边）</param>
-	public BodyAura(Control back, Rect2 region, Vector2? feetGlobal = null, float baseHalfWidth = 0f)
+	/// <param name="palette">四档颜色（暗 → 中 → 亮 → 白芯）；不给 = 原来的蓝焰</param>
+	public BodyAura(Control back, Rect2 region, Vector2? feetGlobal = null, float baseHalfWidth = 0f, Color[]? palette = null, float even = 0f)
 	{
 		if (CloneBody == null)
 		{
@@ -140,6 +145,15 @@ void fragment() {
 		_mat.SetShaderParameter("c_hi", PersonaMask.Hi);
 		_mat.SetShaderParameter("c_hot", PersonaMask.Hot);
 		_mat.SetShaderParameter("seed", Fx.Rand(0f, 20f));
+		if (palette is { Length: 4 })
+		{
+			_mat.SetShaderParameter("use_pal", 1f);
+			_mat.SetShaderParameter("even", even);
+			_mat.SetShaderParameter("c_dark", palette[0]);
+			_mat.SetShaderParameter("c_mid", palette[1]);
+			_mat.SetShaderParameter("c_hi", palette[2]);
+			_mat.SetShaderParameter("c_hot", palette[3]);
+		}
 		_mat.SetShaderParameter("alpha", 0f);
 		if (feetGlobal is Vector2 fg)
 		{
@@ -168,6 +182,22 @@ void fragment() {
 				m.SetShaderParameter("alpha", 0.85f + 0.15f * Mathf.Sin(v * Mathf.Tau));
 			}
 		}), 0f, 1f, 1.2);
+	}
+
+	/// <summary>火舌猛地一窜（k 秒内窜高到 1 + boost 倍、再落回），亮一下。</summary>
+	public void Surge(float boost = 0.8f, float seconds = 0.3f)
+	{
+		if (_ended || _root == null || _mat == null || !GodotObject.IsInstanceValid(_root)) return;
+		ShaderMaterial m = _mat;
+		float len0 = (float)m.GetShaderParameter("len");
+		Tween tw = _root.CreateTween();
+		tw.TweenMethod(Callable.From<float>(t =>
+		{
+			float k = Mathf.Sin(Mathf.Min(1f, t * 2.2f) * Mathf.Pi * 0.5f) * (1f - t);
+			m.SetShaderParameter("len", len0 * (1f + boost * k));
+			m.SetShaderParameter("alpha", 1f + 0.8f * k);
+		}), 0f, 1f, seconds);
+		tw.TweenCallback(Callable.From(() => { if (GodotObject.IsInstanceValid(m)) m.SetShaderParameter("len", len0); }));
 	}
 
 	/// <summary>打出：火舌一下窜高、亮一下再散掉；放回：淡掉。然后删掉离屏画面和复制品。</summary>
