@@ -10,7 +10,7 @@ namespace P5Joker;
 /// ① 0～0.45 他身前半个身位的空中先鼓起一团迷雾，从那里吹出去，越往外越宽（喇叭口），里面的雾纹和风丝顺着方向往外急流，前沿往前冲（先快后慢）；
 ///    几团雾团从那里吹出去，边飞边胀开、慢下来；
 /// ② 前沿扫过哪个敌人，它一闪、冒毒的光粒、染暗红（中毒 + 虚弱）；
-/// ③ 0.35 起这股气流和手断开、整股往前散，1.25s 散完，什么都不留下。不放音效。
+/// ③ 0.65 起这股气流和起点断开、整股往前慢慢散，2.1s 散完，什么都不留下。音效：原版活雾的吹气攻击。
 /// </summary>
 public static class HazeFx
 {
@@ -84,8 +84,10 @@ void fragment() {
 	public static void Play(SkillCtx c)
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face;
-		const float blast = 0.45f, cut = 0.35f, clearAt = 0.5f, life = 1.25f;
+		const float blast = 0.5f, cut = 0.65f, clearAt = 0.95f, life = 2.1f;   // 2026-11-13 用户：散得太快 → 停久一点
 		Control back = c.Back ?? c.Front;
+		// 音效：原版活雾的吹气攻击（用户 2026-11-13 指定）
+		Stage.PlayEvent?.Invoke("event:/sfx/enemy/enemy_attacks/living_fog/living_fog_attack_blow", 0.7f);
 		Vector2 scr = Fx.Screen(c.Front);
 		float tallS = h * c.Front.GetCanvasTransform().Scale.Y / scr.Y;
 		Vector2 ToS(Vector2 world) { Vector2 sp = Fx.ScreenPoint(c.Front, world); return new Vector2(sp.X / scr.X, sp.Y / scr.Y); }
@@ -136,11 +138,11 @@ void fragment() {
 			float dt = Mathf.Max(0f, s - last);
 			last = s;
 			// 喷的时候雾纹往外急流，喷完慢下来
-			flow += dt * Mathf.Lerp(9f, 1.2f, Fx.OutCubic(Ease5.Seg(s, 0f, 0.7f)));
+			flow += dt * Mathf.Lerp(9f, 0.8f, Fx.OutCubic(Ease5.Seg(s, 0f, 0.8f)));
 			float reach = reachMax * Fx.OutCubic(Ease5.Seg(s, 0f, blast));
-			float tail = reachMax * 0.55f * Fx.OutCubic(Ease5.Seg(s, cut, life - cut));
+			float tail = reachMax * 0.45f * Fx.OutCubic(Ease5.Seg(s, cut, life - cut));
 			float clear = Fx.OutCubic(Ease5.Seg(s, clearAt, life - clearAt - 0.05f));
-			float a = Mathf.Min(1f, s / 0.04f) * (1f - Ease5.Seg(s, life - 0.18f, 0.18f));
+			float a = Mathf.Min(1f, s / 0.04f) * (1f - Ease5.Seg(s, life - 0.35f, 0.35f));
 			foreach (ShaderMaterial m in mats)
 			{
 				m.SetShaderParameter("reach", reach);
@@ -160,12 +162,12 @@ void fragment() {
 			float d0 = 0.018f * i;
 			Vector2 off = dirW.Rotated(Fx.Rand(-0.22f, 0.22f));
 			float go = distW * Fx.Rand(0.55f, 1.15f), size = h * Fx.Rand(0.5f, 0.85f);
-			Node2D pr = Fx.Root(i % 2 == 0 ? back : c.Front, origin, "P5HazePuff", d0 + 0.9);
+			Node2D pr = Fx.Root(i % 2 == 0 ? back : c.Front, origin, "P5HazePuff", d0 + 1.45);
 			Sprite2D sp = new() { Texture = Glow.Soft };
 			pr.AddChild(sp);
 			Color pc = i % 3 == 0 ? new Color(0.75f, 0.2f, 0.2f) : new Color(0.42f, 0.09f, 0.1f);
 			pr.Visible = false;
-			Fx.Animate(pr, d0, 0.85, t =>
+			Fx.Animate(pr, d0, 1.4, t =>
 			{
 				pr.Visible = true;
 				float e = 1f - Mathf.Exp(-t * 4.5f);
@@ -198,7 +200,7 @@ void fragment() {
 				Fx.Animate(tk, 0, life, t =>
 				{
 					float s = t * life;
-					float d = Fx.OutCubic(Ease5.Seg(s, hitAt - 0.03f, 0.1f)) * (1f - Ease5.Seg(s, clearAt + 0.1f, 0.5f));
+					float d = Fx.OutCubic(Ease5.Seg(s, hitAt - 0.03f, 0.1f)) * (1f - Ease5.Seg(s, clearAt + 0.1f, 0.8f));
 					float flash = s >= hitAt ? Mathf.Exp(-(s - hitAt) * 14f) * 0.6f : 0f;
 					tint(Colors.White.Lerp(dark, d) + new Color(flash, flash * 0.8f, flash * 0.8f, 0f));
 				});

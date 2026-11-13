@@ -45,7 +45,7 @@ def variant_key(n):
 
 
 # events whose sample names do not contain the event name
-ALIAS = {"enchant_shimmer": "enchant_v2_tonal_shimmer", "gold_1": "gold_few", "gold_2": "gold_medium", "gold_3": "gold_many"}
+ALIAS = {"enchant_shimmer": "enchant_v2_tonal_shimmer", "gold_1": "gold_few", "gold_2": "gold_medium", "gold_3": "gold_many", "living_fog_attack_blow": "living_fog_blow"}
 
 
 def resolve(event, names=None):
