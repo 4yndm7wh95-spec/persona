@@ -4,7 +4,7 @@
   "zh": "星位序列",
   "file": "art/cards/v4/local_edits/round3/batch_01/alignment.png",
   "source": "第三轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "003de6f9a7c9a05c1352830564a2f5c26b108fcd6c7dfee96b0de885fc8e27cc"
  },
  {
@@ -12,7 +12,7 @@
   "zh": "武器库",
   "file": "art/cards/v4/local_edits/round3/batch_03/arsenal.png",
   "source": "第三轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "d648cc625256a7157143568b5adcf9a357c9ae8028b3f1c0845d608771d44732"
  },
  {
@@ -20,7 +20,7 @@
   "zh": "星界脉冲",
   "file": "art/cards/v4/local_edits/round3/batch_04/astral_pulse.png",
   "source": "第三轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "21c8e7a4e6ea0da921a987dfa46889838d742a1af29c941d30e67f16783a5b1d"
  },
  {
@@ -28,7 +28,7 @@
   "zh": "锻打成型",
   "file": "art/cards/v4/local_edits/batch_06/beat_into_shape.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "d2c6999a73242ea365315f5a384edcf5f36974e17cd6d9027d46100a297e4b5d"
  },
  {
@@ -36,7 +36,7 @@
   "zh": "下去！",
   "file": "art/cards/v4/local_edits/round2/batch_04/begone.png",
   "source": "第二轮",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "d9e2a1d124afe441c927ec8f33752e5a471f851d1e80a5272a5215c33ed6156d"
  },
  {
@@ -44,7 +44,7 @@
   "zh": "大爆炸",
   "file": "art/cards/v4/free_design/big_bang_A.png",
   "source": "关键牌自由设计",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "1b12ad8fdc579fdc6315fcdcc2df1a1e436b5ef7d71105fdd0baf5dea1d497f8"
  },
  {
@@ -52,7 +52,7 @@
   "zh": "黑洞",
   "file": "art/cards/v4/local_edits/round4/batch_01/black_hole.png",
   "source": "第四轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "857cb5c545b9177df01799100494cd00c9edd3f9025a839b00dd49c19335d6a9"
  },
  {
@@ -60,7 +60,7 @@
   "zh": "轰击",
   "file": "art/cards/v4/local_edits/round4/batch_01/bombardment.png",
   "source": "第四轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "b6bb4b6f91c1465807f4e65d24270ac94cecd1c3f9947fe26203c3d15018c618"
  },
  {
@@ -68,7 +68,7 @@
   "zh": "铸墙",
   "file": "art/cards/v4/local_edits/round2/batch_04/bulwark.png",
   "source": "第二轮",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "ed2db8e0b4361aa0b4e538765bcf5a1608dd2475e98f78efd315f9dfaa69dd88"
  },
  {
@@ -76,7 +76,7 @@
   "zh": "新生之喜",
   "file": "art/cards/v4/local_edits/batch_02/bundle_of_joy.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "8299152d73406a55ebcbba0eb81c6dbe3e2b80e7183f6df2e1a76344957d015d"
  },
  {
@@ -84,7 +84,7 @@
   "zh": "天穹之力",
   "file": "art/cards/v4/local_edits/round2/batch_04/celestial_might.png",
   "source": "第二轮",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "db7ade0688f0ffb3f996c7fbd84194f1b69119777abda391a1ad7d0c8abf5e79"
  },
  {
@@ -92,7 +92,7 @@
   "zh": "冲锋！！",
   "file": "art/cards/v4/local_edits/round3/batch_01/charge.png",
   "source": "第三轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "6f9862728b22f5a07bfd72e22ed430449c10843227e8762e76cc6749e19c6c2e"
  },
  {
@@ -100,7 +100,7 @@
   "zh": "群星之子",
   "file": "art/cards/v4/local_edits/round3/batch_04/child_of_the_stars.png",
   "source": "第三轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "5c68af183bcba9ef79ddeb1645fce0c4c4dc9b2fcd8546749d902a84201a3c8d"
  },
  {
@@ -108,7 +108,7 @@
   "zh": "群星斗篷",
   "file": "art/cards/v4/local_edits/batch_01/cloak_of_stars.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "ac31e2cd6d6b1670f057d87b8a3609d4dcbf462fd27107ad5a32c77cce1dcb81"
  },
  {
@@ -116,7 +116,7 @@
   "zh": "碰撞轨迹",
   "file": "art/cards/v4/local_edits/round4/batch_01/collision_course_v2.png",
   "source": "第四轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "2b90badec81c9af063d1e74aef8fa17ae244b21a91c0f4d4387826df4b0a0b4d"
  },
  {
@@ -124,7 +124,7 @@
   "zh": "彗星",
   "file": "art/cards/v4/local_edits/round3/batch_01/comet.png",
   "source": "第三轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "8050c16c41ad6808c774b9ce5fca584b916cb1f45b6e511e864e02fb79cebabd"
  },
  {
@@ -132,7 +132,7 @@
   "zh": "征服者",
   "file": "art/cards/v4/local_edits/round3/batch_05/conqueror.png",
   "source": "第三轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "ee1857b8f9fc8f6392a5aaa55f41bbcad7037a106de0d135369e95eb39678b2b"
  },
  {
@@ -140,7 +140,7 @@
   "zh": "群星荟萃",
   "file": "art/cards/v4/local_edits/round2/batch_02/constellation.png",
   "source": "第二轮",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "fbf168ba84e5bdd7ba0bd35a23aca4d330e395c44dbfe76f6ac99b5a04836ec4"
  },
  {
@@ -148,7 +148,7 @@
   "zh": "汇流",
   "file": "art/cards/v4/local_edits/round2/batch_04/convergence.png",
   "source": "第二轮",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "00a975485c1bcd42db0415d9b262c1eb3c815fa810329a1ccddf73c88d5a379e"
  },
  {
@@ -156,7 +156,7 @@
   "zh": "宇宙冷漠",
   "file": "art/cards/v4/local_edits/round2/batch_04/cosmic_indifference.png",
   "source": "第二轮",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "93db46690363615ae85c9d69c1c430637ba54e7290f37d995d24ae72f23d288e"
  },
  {
@@ -164,7 +164,7 @@
   "zh": "迫降",
   "file": "art/cards/v4/local_edits/round3/batch_02/crash_landing.png",
   "source": "第三轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "c2c21c01431c8abfdd5fae5ceaa5bee175e0fe5a338ba41164d8de5c823941af"
  },
  {
@@ -172,7 +172,7 @@
   "zh": "新月长矛",
   "file": "art/cards/v4/local_edits/round2/batch_01/crescent_spear.png",
   "source": "第二轮",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "788e289372c3ae869b15d9aed89585079d446509a1276323061e33b46b02ef6d"
  },
  {
@@ -180,7 +180,7 @@
   "zh": "下砸",
   "file": "art/cards/v4/local_edits/round3/batch_02/crush_under.png",
   "source": "第三轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "de3c1d5273578e2a5c138c7aaaa04899a4c7c30303bc426034002041710a1307"
  },
  {
@@ -188,7 +188,7 @@
   "zh": "抉择，抉择",
   "file": "art/cards/v4/local_edits/round3/batch_05/decisions_decisions.png",
   "source": "第三轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "4c65df7b871620e481f8f6180817c0a37951205ebedc956c1bd8bd57c0b02d5a"
  },
  {
@@ -196,7 +196,7 @@
   "zh": "防御",
   "file": "art/cards/v4/retained/defend_regent.png",
   "source": "早期已认可（v3 保留）",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "17f213a10d1faa3ffc0af0eef1b0f33c376dbc9d9dc7e1b03126b923907cee6a"
  },
  {
@@ -204,7 +204,7 @@
   "zh": "葬送",
   "file": "art/cards/v4/local_edits/round3/batch_02/devastate.png",
   "source": "第三轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "c47e4c84b8d7829196433a526ef1c2b3c7200b575d60d420c812dabad316aa8c"
  },
  {
@@ -212,7 +212,7 @@
   "zh": "星灭",
   "file": "art/cards/v4/local_edits/round4/batch_01/dying_star.png",
   "source": "第四轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "6bf3198dca4c341c7baaf1163840e80392f86574bb4c71e3072488d447db9c52"
  },
  {
@@ -220,7 +220,7 @@
   "zh": "陨星",
   "file": "art/cards/v4/retained/falling_star.png",
   "source": "早期已认可（v3 保留）",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "73ed3718857a8efb0ee5b2dae40be2b43fd8d6b46484b580618771559ff3a920"
  },
  {
@@ -228,7 +228,7 @@
   "zh": "既定事项",
   "file": "art/cards/v4/local_edits/round3/batch_04/foregone_conclusion.png",
   "source": "第三轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "c9a12cfcfd56dfd0ad5c40b728b3c917675afa3ba3db6c2745badadec94ca531"
  },
  {
@@ -236,7 +236,7 @@
   "zh": "熔炉",
   "file": "art/cards/v4/local_edits/round2/hammer_furnace_v5/furnace_f1.png",
   "source": "第二轮修正 v5（F1）",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "6febdb504ac7b70a21554f73c1a90610ea628bd0473729841526a6b36d5149b3"
  },
  {
@@ -244,7 +244,7 @@
   "zh": "伽马爆破",
   "file": "art/cards/v4/local_edits/round3/fix_drill_gamma/gamma_blast_v2_B.png",
   "source": "第三轮修正 v2-B",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "06929c89d19f209a7a9d8471d7037e5ecfc79448494fa51db256eedbceb3a26e"
  },
  {
@@ -252,7 +252,7 @@
   "zh": "收集光辉",
   "file": "art/cards/approved/gather_light/gather_light.png",
   "source": "早期已认可",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "a690f8f34806ee60dd79a7637147e7b17d6718c07fe3933f055ba71c896070f0"
  },
  {
@@ -260,7 +260,7 @@
   "zh": "创世纪",
   "file": "art/cards/v4/free_design/genesis_B.png",
   "source": "关键牌自由设计",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "0648ae0ae38242fd917874d7424f1da721d2a21f6004d5918ce175f682f943cb"
  },
  {
@@ -268,7 +268,7 @@
   "zh": "微光",
   "file": "art/cards/v4/local_edits/round2/batch_02/glimmer.png",
   "source": "第二轮",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "e5ad15aa73f503fbbcd5b6277481a66a4311b258290bd5cd9433d7aa13f84150"
  },
  {
@@ -276,7 +276,7 @@
   "zh": "流光溢彩",
   "file": "art/cards/v4/local_edits/round2/batch_02/glitterstream.png",
   "source": "第二轮",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "60a31731255306a6463b5511bd6eff69a7ef33085017a307740dd5297cd5767c"
  },
  {
@@ -284,7 +284,7 @@
   "zh": "辉光",
   "file": "art/cards/v4/retained/glow.png",
   "source": "早期已认可（v3 保留）",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "df245fd75643154d04b7aa0a8434ecb2d77a462f9bb51d7d4445a0a7586b4b13"
  },
  {
@@ -292,7 +292,7 @@
   "zh": "护驾！！！",
   "file": "art/cards/v4/local_edits/batch_03/guards.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "994efd753ccf82deb98a11bf4eb8b14831a8dcaa048f07125e0098cd52eb225f"
  },
  {
@@ -300,7 +300,7 @@
   "zh": "引导之星",
   "file": "art/cards/v4/local_edits/round4/batch_01/guiding_star.png",
   "source": "第四轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "f57a3082e573c54adb870b5ceaa288fd0554cf756ee834a67990cae5fcd6aaaf"
  },
  {
@@ -308,7 +308,7 @@
   "zh": "锤子时间",
   "file": "art/cards/v4/local_edits/round2/hammer_furnace_v5/hammer_time.png",
   "source": "第二轮修正 v5",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "f0108fde3c4e7adfdde8e1dad4b84e4bedfeaac7bdb6679c697b97c98b9aeaf2"
  },
  {
@@ -316,7 +316,7 @@
   "zh": "天际钻头",
   "file": "art/cards/v4/local_edits/round3/fix_drill_gamma/heavenly_drill_B.png",
   "source": "第三轮修正 B",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "ade43e58f1977ad2f3f86266e00a6a0074228b8419eac1d814f27a684990926b"
  },
  {
@@ -324,7 +324,7 @@
   "zh": "霸权",
   "file": "art/cards/v4/local_edits/batch_05/hegemony.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "e7a33d2e7c8bf2a8aaa057cd4b1d1d866be9b5167515ff2d9cdc2e126bcf15e9"
  },
  {
@@ -332,7 +332,7 @@
   "zh": "传承之锤",
   "file": "art/cards/v4/local_edits/batch_04/heirloom_hammer.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "49450e276807c951ad6ad1342e7e6b5a7199149cb8de74ac2e5058cd4965ed20"
  },
  {
@@ -340,7 +340,7 @@
   "zh": "隐秘藏品",
   "file": "art/cards/v4/local_edits/batch_01/hidden_cache.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "04f9f0295de76b0f6c7d83f123850b564d3ca48cb33db68dd16cf484955a0000"
  },
  {
@@ -348,7 +348,7 @@
   "zh": "所向无敌",
   "file": "art/cards/v4/local_edits/round3/batch_05/i_am_invincible.png",
   "source": "第三轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "eb9e1931f33c2e5f0784bab58484b8d2bde01350ea2bcd6f32ab032771e27fdc"
  },
  {
@@ -356,7 +356,7 @@
   "zh": "王者之踢",
   "file": "art/cards/v4/local_edits/batch_04/kingly_kick.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "6ee467acdd3e0613f489d12a5309235d0beda150fe918f9243fc82642104b92e"
  },
  {
@@ -364,7 +364,7 @@
   "zh": "王者之拳",
   "file": "art/cards/v4/local_edits/batch_04/kingly_punch.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "0155401f9a7271b10118f7d3bf9005d4fe5ec72fa99dd404c1c2170836945fe9"
  },
  {
@@ -372,7 +372,7 @@
   "zh": "决胜一击",
   "file": "art/cards/v4/local_edits/round3/batch_03/knockout_blow.png",
   "source": "第三轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "630ab58fa1ccf1fe98ebfe26b00329cd0efaa1ce44d75d1f34dbb34329e00517"
  },
  {
@@ -380,7 +380,7 @@
   "zh": "何人僭越",
   "file": "art/cards/v4/local_edits/batch_01/know_thy_place.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "feda5d037af9e8061475e9c5379325dee59346bda28c49655c4490c227e3fc72"
  },
  {
@@ -388,7 +388,7 @@
   "zh": "慷慨捐助",
   "file": "art/cards/v4/local_edits/batch_02/largesse.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "d25b5058ff7493d5155cf2fec116ad37e9be6be89bb94fb1379454e42d472723"
  },
  {
@@ -396,7 +396,7 @@
   "zh": "月面射击",
   "file": "art/cards/v4/local_edits/round4/batch_02/lunar_blast.png",
   "source": "第四轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "9f6557820700135a0d2c36a6a612472f5388310ef0c4beea1133ec3aeafb0552"
  },
  {
@@ -404,7 +404,7 @@
   "zh": "如此甚好",
   "file": "art/cards/v4/local_edits/round3/batch_04/make_it_so.png",
   "source": "第三轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "e3e9ee66023a7f343f18f1cdf092ad48dedb937968d64b2812e917059c5a5e5f"
  },
  {
@@ -412,7 +412,7 @@
   "zh": "君权自授",
   "file": "art/cards/v4/local_edits/batch_05/manifest_authority.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "f73c11b547190228d088adcd2077a1b899d28f0174d3838c1d49c03b865756e1"
  },
  {
@@ -420,7 +420,7 @@
   "zh": "流星雨",
   "file": "art/cards/v4/local_edits/round4/batch_01/meteor_shower.png",
   "source": "第四轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "3d538b42bf6662c74deb12751cc3e5f68ff91b21213c3c0f05a681732892bd6d"
  },
  {
@@ -428,7 +428,7 @@
   "zh": "王之凝视",
   "file": "art/cards/v4/free_design/monarchs_gaze_B.png",
   "source": "关键牌自由设计",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "96738523da0e6ae137ae07bf48f1cd995907b11362af1e84304617224a57ac79"
  },
  {
@@ -436,7 +436,7 @@
   "zh": "独白",
   "file": "art/cards/v4/local_edits/batch_06/monologue.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "1529919e06b985b154e2b5e83db04cc5afd6c0ed79b2394d19d2dab6fbb5d3be"
  },
  {
@@ -444,7 +444,7 @@
   "zh": "中子护盾",
   "file": "art/cards/v4/local_edits/round3/batch_04/neutron_aegis.png",
   "source": "第三轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "06a4a92f5a804ff410a3a6f790848fb247438ec5fec21e7dc15de1c68c0d1803"
  },
  {
@@ -452,7 +452,7 @@
   "zh": "环绕轨道",
   "file": "art/cards/v4/local_edits/round3/batch_05/orbit.png",
   "source": "第三轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "5c5aa7e5bdb7d49638b4d7828fd4ccc5e354643dcbf04bafa37701ffb9205be1"
  },
  {
@@ -460,7 +460,7 @@
   "zh": "暗淡蓝点",
   "file": "art/cards/v4/local_edits/batch_06/pale_blue_dot.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "830c8f7546364dbe993528b3e3a084b603b2db6d5267c720756fc44395a585c2"
  },
  {
@@ -468,7 +468,7 @@
   "zh": "招架",
   "file": "art/cards/v4/local_edits/batch_05/parry.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "526bffbb8d5c5d261622a0087534dee58df9d63e530196516c9bcac95559a06a"
  },
  {
@@ -476,7 +476,7 @@
   "zh": "粒子墙",
   "file": "art/cards/v4/local_edits/round4/batch_02/particle_wall.png",
   "source": "第四轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "db764efe48bec40f0af725ded832a714f3276b2eb6a9d2c00acf8ad518421e3e"
  },
  {
@@ -484,7 +484,7 @@
   "zh": "星星点点",
   "file": "art/cards/v4/local_edits/batch_03/patter.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "2b977fca7d147469be875a19a3e593a0fdedf2be7d7155d231776ec05376fd2c"
  },
  {
@@ -492,7 +492,7 @@
   "zh": "光子切割",
   "file": "art/cards/v4/local_edits/round2/batch_03/photon_cut.png",
   "source": "第二轮",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "957d725037cc6ea72cca62c84a02f45db5554e1574f46fb30eb06bcce91c4dd5"
  },
  {
@@ -500,7 +500,7 @@
   "zh": "创世之柱",
   "file": "art/cards/v4/local_edits/round3/batch_01/pillar_of_creation.png",
   "source": "第三轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "8bc650949d3c0b3b7544a7e5cda4ae23cecce0972a7d8b4a317e06ef26189d4d"
  },
  {
@@ -508,7 +508,7 @@
   "zh": "筹划",
   "file": "art/cards/v4/local_edits/round3/batch_03/plot.png",
   "source": "第三轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "e8245447bb49dc9264b45671ff9f46b525aa6d0b1885a91740c3e3ecc0450ab1"
  },
  {
@@ -516,7 +516,7 @@
   "zh": "预言",
   "file": "art/cards/v4/local_edits/round2/batch_02/prophesize.png",
   "source": "第二轮",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "f76bae7b3181ed190c88accd367b2d0a62dd2b437c47dcba92ed1a1029c6c060"
  },
  {
@@ -524,7 +524,7 @@
   "zh": "类星体",
   "file": "art/cards/v4/local_edits/round2/batch_01/quasar.png",
   "source": "第二轮",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "81200a7c78ed0619342b64440b58e3a87c0f87939665315221f54c74f77bac74"
  },
  {
@@ -532,7 +532,7 @@
   "zh": "辐射",
   "file": "art/cards/v4/local_edits/round2/batch_03/radiate.png",
   "source": "第二轮",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "9eee46971cb874011254696a471bf443b03e602fa9aba0d88e0b88a5394112e1"
  },
  {
@@ -540,7 +540,7 @@
   "zh": "淬炼刀刃",
   "file": "art/cards/v4/local_edits/batch_03/refine_blade.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "1d033c9083586f568836f5a7e51c40b05d3d4ed0eeb317d4d033af782974aee3"
  },
  {
@@ -548,7 +548,7 @@
   "zh": "倒映",
   "file": "art/cards/v4/local_edits/batch_05/reflect.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "224cc27d75c4187135a3a5a99f90078b4e494d4ca05f529cef301bafc65fc7be"
  },
  {
@@ -556,7 +556,7 @@
   "zh": "储备",
   "file": "art/cards/v4/local_edits/batch_04/reserves.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "cc27dfa6a0e8739040659e5ff0f2e3c92ddecc0885e5cf3b07abf5be870be683"
  },
  {
@@ -564,7 +564,7 @@
   "zh": "共鸣",
   "file": "art/cards/v4/local_edits/round3/batch_03/resonance.png",
   "source": "第三轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "4efa530bb026146dee84c8e73313c018eb267c71958a4e726b224406898cf0e0"
  },
  {
@@ -572,7 +572,7 @@
   "zh": "royal_corona",
   "file": "art/cards/v4/local_edits/batch_05/royal_corona.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "69cfd98f6a95084f2156705a005bb03de6d2d631902f2a30c5f2e4ede02e9b08"
  },
  {
@@ -580,7 +580,7 @@
   "zh": "胜券在王",
   "file": "art/cards/v4/local_edits/batch_04/royal_gamble.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "d836a14037481e250e59c6369622d80ebf1dd991ac1a674b589b7840f9a02c66"
  },
  {
@@ -588,7 +588,7 @@
   "zh": "王国资产",
   "file": "art/cards/v4/local_edits/batch_02/royalties.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "70f20568d22b1daf73173f7abba98a1b00bd19ede04be810c9e7f801dc88ad2d"
  },
  {
@@ -596,7 +596,7 @@
   "zh": "追踪之刃",
   "file": "art/cards/v4/local_edits/round3/fix_seeking_edge/seeking_edge_v2.png",
   "source": "第三轮修正 v2",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "31c02ed73b201bca504e983eeb7cee49e7da7de8e18518a682f04562c3812d13"
  },
  {
@@ -604,7 +604,7 @@
   "zh": "七星",
   "file": "art/cards/v4/local_edits/round4/batch_02/seven_stars.png",
   "source": "第四轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "5eb1afffd34e0629ccd8fc68f19d03ff4880ae697408463b5052b1a8c07c59e9"
  },
  {
@@ -612,7 +612,7 @@
   "zh": "明耀打击",
   "file": "art/cards/v4/local_edits/round2/batch_03/shining_strike.png",
   "source": "第二轮",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "18d6e88ff88953a611297d9e4e4c0977d41eb8b125d3ab6d1b5a1f806b0d8467"
  },
  {
@@ -620,7 +620,7 @@
   "zh": "太阳打击",
   "file": "art/cards/v4/local_edits/round4/batch_02/solar_strike.png",
   "source": "第四轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "fee5054c67c10acd4003323400faaaec93a2e402e9e3174c6962cd6e8fba032f"
  },
  {
@@ -628,7 +628,7 @@
   "zh": "君王之剑",
   "file": "art/cards/v4/free_design/sovereign_blade_A.png",
   "source": "关键牌自由设计",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "d1742c97eb0b478e76a2d58531d009821224a126956c7be1b35ed2c5a39efc26"
  },
  {
@@ -636,7 +636,7 @@
   "zh": "光谱偏移",
   "file": "art/cards/v4/local_edits/round4/batch_02/spectrum_shift.png",
   "source": "第四轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "ca9aea7adc0e7b1e203f4229cc2d59d1ef1de9a124f73a998885d9d65a9732c1"
  },
  {
@@ -644,7 +644,7 @@
   "zh": "战利品",
   "file": "art/cards/v4/local_edits/batch_02/spoils_of_battle.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "a929afa7d342489dc782d2f945a54ebe3ac58dcd67003dc8366e45401b696fec"
  },
  {
@@ -652,7 +652,7 @@
   "zh": "星尘",
   "file": "art/cards/v4/local_edits/round2/batch_01/stardust.png",
   "source": "第二轮",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "19d1117006e3bb6a27212eb2c7cdc9aa8bc20c4e7717b225349bb78d5ddd84d9"
  },
  {
@@ -660,7 +660,7 @@
   "zh": "打击",
   "file": "art/cards/v4/local_edits/batch_01/strike_regent.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "0feb2d9227fc5bd01a7d87eb0309669f646f475463011f7a473f38b9497b7c06"
  },
  {
@@ -668,7 +668,7 @@
   "zh": "征召上前",
   "file": "art/cards/v4/local_edits/batch_02/summon_forth.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "8a47a51fd8d113a18ae76f8b68bc9764132071eb8342096536c098e7c2f0400e"
  },
  {
@@ -676,7 +676,7 @@
   "zh": "超质量体",
   "file": "art/cards/v4/local_edits/round2/batch_01/supermassive.png",
   "source": "第二轮",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "39df450d0310601df143b983e2e8a4e77f18871d4922dbbcf7a6dab9008dc1f6"
  },
  {
@@ -684,7 +684,7 @@
   "zh": "剑圣",
   "file": "art/cards/v4/local_edits/round2/batch_03/sword_sage.png",
   "source": "第二轮",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "3bc21d82a95274f189b38d6096c7205fff49b86b9d776545586618f8cec1a7d1"
  },
  {
@@ -692,7 +692,7 @@
   "zh": "地形改造",
   "file": "art/cards/v4/local_edits/round3/batch_05/terraforming.png",
   "source": "第三轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "8cfc44edd9b8be7ad6afc416f72a190a596bfd08dad17d138fd637e7ae079224"
  },
  {
@@ -700,7 +700,7 @@
   "zh": "封印王座",
   "file": "art/cards/v4/free_design/the_sealed_throne_B.png",
   "source": "关键牌自由设计",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "eac4ad0f06ebfc6b4a6ba0384679ac1f37cead3932b46958ac570cd444943eee"
  },
  {
@@ -708,7 +708,7 @@
   "zh": "铸剑者",
   "file": "art/cards/v4/local_edits/batch_03/the_smith.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "f4cf13a85656da32c00870bde5f16d816c6ec958e7329920fb97b458a7326dec"
  },
  {
@@ -716,7 +716,7 @@
   "zh": "指导",
   "file": "art/cards/v4/local_edits/batch_03/tutor.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "6dea0a1fa9adffc7bbb1e0395c0b19a639aeb73f32c0db4f7df0e70b939212b7"
  },
  {
@@ -724,7 +724,7 @@
   "zh": "暴政",
   "file": "art/cards/v4/local_edits/round2/batch_03/tyranny.png",
   "source": "第二轮",
-  "status": "已通过",
+  "status": "待做第三版",
   "sha256": "6b09eeb041b52e7f91d84392b6d63ac00938723a14d49a8eb4d8a35a31c64ca2"
  },
  {
@@ -732,7 +732,7 @@
   "zh": "崇拜",
   "file": "art/cards/v4/local_edits/batch_01/venerate.png",
   "source": "第一轮局部修改",
-  "status": "状态未记录",
+  "status": "待做第三版",
   "sha256": "b98d21c1bf4986528fb0faf28f247e093cc7d76e05219b777755d99cbb634a07"
  },
  {
@@ -740,7 +740,7 @@
   "zh": "虚空形态",
   "file": "art/cards/v4/free_design/void_form_A.png",
   "source": "关键牌自由设计",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "521116c96c4b05de5af6549dd8e09eb379be01d73435785236a5ce5e05b6ec34"
  },
  {
@@ -748,7 +748,7 @@
   "zh": "战火铸就",
   "file": "art/cards/v4/local_edits/round3/batch_03/wrought_in_war.png",
   "source": "第三轮",
-  "status": "已通过",
+  "status": "完全通过（第三版）",
   "sha256": "719824cb074192d5d073f6cb3c6f667760b2afb0908c2de80bcc8ef4c746d43a"
  }
 ]
