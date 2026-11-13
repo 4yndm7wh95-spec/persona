@@ -416,7 +416,7 @@ public static class Aim
 
 	public static Persona.Spec PersonaFor(string cardName) => cardName switch
 	{
-		"Outbreak" => Persona.ArseneSpec with { First = 18, Linger = CrushHand.CrushAfter + 0.5f },   // 巨手版：一现身就出手（0.25s）= 手冲出来，捏碎后再停 0.5s 退场
+		"Outbreak" => Persona.ArseneSpec with { First = 18, Linger = CrushHand.CrushAfter + 0.4f },   // 巨手版：一现身就出手（0.25s）= 手冲出来，捏碎后再停 0.4s 退场
 		"BouncingFlask" => Persona.ArseneSpec with { Linger = 1.7f },   // 等咒怨火球三跳都落地再退场
 		var n when Grips(n) => Persona.ArseneSpec with { Linger = 1.1f },   // 伸手抓人：等手收回来再走
 		_ => Persona.ArseneSpec,

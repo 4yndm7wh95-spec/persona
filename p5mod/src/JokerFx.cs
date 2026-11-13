@@ -77,6 +77,9 @@ public static class JokerFx
 	/// <summary>弹射：敌人节点 → (记下的时刻, 伤害数字要晚几秒)。</summary>
 	private static readonly Dictionary<ulong, (ulong At, float Delay)> NumberDelay = new();
 
+	/// <summary>这个敌人接下来的伤害数字晚 delay 秒再跳（群蛇形态：等蛇咬到它）。</summary>
+	public static void DelayNumber(NCreature target, float delay) => NumberDelay[target.GetInstanceId()] = (Time.GetTicksMsec(), delay);
+
 	/// <summary>这个敌人的伤害数字要晚几秒（刀扇弹射时，等子弹弹到它）。</summary>
 	public static float DamageNumberDelay(NCreature target) =>
 		NumberDelay.TryGetValue(target.GetInstanceId(), out var d) && Time.GetTicksMsec() - d.At < 1000 ? d.Delay : 0f;

@@ -231,20 +231,19 @@ public static class DamageNumberPatch
 				return;
 			}
 			float wait = JokerFx.DamageNumberDelay(node);
-			if (wait > 0f)
-			{
-				Fx.After(layer, wait, () => Popups.Damage(layer, node.GetInstanceId(), node.VfxSpawnPosition, amount, gun));
-			}
-			else
-			{
-				Popups.Damage(layer, node.GetInstanceId(), node.VfxSpawnPosition, amount, gun);
-			}
-			// 打击确认感：顿帧 + 定向震屏 + 受击白闪 / 击退 + 重击 / 击杀的全屏冲击帧（Vfx/Impact.cs）
+			// 打击确认感：顿帧 + 定向震屏 + 受击白闪 / 击退 + 重击 / 击杀的全屏冲击帧（Vfx/Impact.cs）；数字推迟时一起推迟（打到的那一刻才有冲击）
 			(Weight floor, bool calm) = Hits.FloorOf(target);
 			bool finale = result.WasTargetKilled && target.CombatState?.Enemies.All(e => e.IsDead) == true;
-			if (!SinfulPlay.Active)
-			Impact.Confirm(layer, node.Visuals, node.VfxSpawnPosition, new Godot.Vector2(1f, 0.12f),
-				Impact.Grade(floor, result.UnblockedDamage, target.CurrentHp + result.UnblockedDamage, result.WasTargetKilled, finale, calm));
+			var grade = Impact.Grade(floor, result.UnblockedDamage, target.CurrentHp + result.UnblockedDamage, result.WasTargetKilled, finale, calm);
+			void Land()
+			{
+				if (!Godot.GodotObject.IsInstanceValid(node) || !Godot.GodotObject.IsInstanceValid(layer)) return;
+				Popups.Damage(layer, node.GetInstanceId(), node.VfxSpawnPosition, amount, gun);
+				if (!SinfulPlay.Active)
+					Impact.Confirm(layer, node.Visuals, node.VfxSpawnPosition, new Godot.Vector2(1f, 0.12f), grade);
+			}
+			if (wait > 0f) Fx.After(layer, wait, Land);
+			else Land();
 			original.QueueFree();
 			replaced = true;
 		});

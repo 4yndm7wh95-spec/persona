@@ -414,7 +414,7 @@ public partial class Preview : Node2D
 		},
 		["outbreak_hand"] = p =>
 		{
-			Persona.Spec spec = Persona.ArseneSpec with { First = 18, Linger = CrushHand.CrushAfter + 0.5f };   // 同 Aim.PersonaFor("Outbreak")
+			Persona.Spec spec = Persona.ArseneSpec with { First = 18, Linger = CrushHand.CrushAfter + 0.4f };   // 同 Aim.PersonaFor("Outbreak")
 			float emerge = 0.3f + spec.AttackAt;                                                  // 同 Aim.OutbreakEmerge
 			float hit = 0.04f + emerge + CrushHand.CrushAfter;                                    // 同 Aim.HitFor
 			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;

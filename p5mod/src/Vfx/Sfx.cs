@@ -116,8 +116,8 @@ public static class Sfx
 	/// 文件已经按演示的音量混好，播放音量用 1.33（抵消 Play 里的 ×0.75）。
 	/// </summary>
 	public static readonly string[] GunShots = { "gun_shot_1", "gun_shot_2", "gun_shot_3", "gun_shot_4" };
-	private static int _gunShot;
-	public static string NextGunShot() => GunShots[_gunShot++ % GunShots.Length];
+	/// <summary>用户 2026-11-13：连打小刀时四个变体轮流换，听着每一枪都不一样、很怪 → 固定用第一发。</summary>
+	public static string NextGunShot() => GunShots[0];
 	public const float DemoMixVolume = 1.33f;                // 合成的「捏碎」：几下密集的碎裂咔嚓 + 一记闷响（art/sfx_p5/crush.ogg，手捏爆用）           // 合成的低频重击（art/sfx_p5/sub_boom.ogg：P5 原声缺低频，垫在冲击层底下）
 
 	/// <summary>
@@ -249,11 +249,17 @@ public static class Sfx
 		int k = (int)(Fx.Rand(0f, n - 0.001f));
 		if (n > 1 && k == last) k = (k + 1) % n;
 		_lastTake[name] = k;
-		Play(name + "_" + k, volume, delay);
+		Play(name + "_" + k, volume * TakeBoost, delay);
 	}
 
-	/// <summary>技能牌音效整体再压一档（用户 2026-11-12：音效真的不用太明显，现在太大声）。</summary>
-	public const float SkillQuiet = 0.5f;
+	/// <summary>
+	/// 音色板样本整体提响（用户 2026-11-13：新加的音效明显比原版自带的小）。样本本身已经和原版样本一样响（峰值 -6 dBFS），
+	/// 但调用处给的音量是 0.1～0.3，算下来比原版低 12～18 dB；×4 ≈ +12 dB，主拍接近原版、很轻的「嗒」仍然轻。
+	/// </summary>
+	public const float TakeBoost = 4f;
+
+	/// <summary>技能牌音效（游戏事件）的整体倍数（2026-11-12 压过一档 0.5；2026-11-13 用户嫌比原版小，回到 1）。</summary>
+	public const float SkillQuiet = 1f;   // 2026-11-13 用户：新加的音效比原版自带的小 → 不再额外压一档
 
 	private static readonly Dictionary<string, (string? Event, float Gain)> GameSfx = new()
 	{

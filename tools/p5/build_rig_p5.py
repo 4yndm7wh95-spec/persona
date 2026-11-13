@@ -77,7 +77,7 @@ WAVE = [("summon_command_a", .38, .02), ("summon_command_mid_a", .07), ("pocket_
 # Outbreak grip (user 2026-11-08): summon_grip_a = the hand on the mask clenched hard (docs/p5/prompts/summon_grip_a.md);
 # until that picture exists the old squeeze (summon_hold_a) stands in
 GRIP = "summon_grip_a" if (FINAL / "summon_grip_a.png").exists() else "summon_hold_a"
-OUTBREAK_GRIP_END = 1.4   # crush at 1.16 s + hold the fist a moment after it
+OUTBREAK_GRIP_END = 1.28   # crush at 1.04 s (2026-11-13: crush a little sooner) + hold the fist a moment after it
 OUTBREAK_LET_GO = [("summon_touch2_a", .06, .04)] + [(n, .06) for n in SUMMON_UP[-2::-1]] + [("idle_a3", .14, .08)]
 IDLE_LOOP = 11.0   # 8 s idle (+ blinks), then the glove tug, ending back on idle_a3
 ANIMS = {

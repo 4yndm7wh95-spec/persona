@@ -22,8 +22,12 @@ public sealed class SerpentMantle
 	private const int Count = 5;
 	private const int N = 32;            // 每条脊线点数（最后 4 个是头）
 	private const int HeadPts = 4;
-	private const int Slots = 3;         // 同时最多几发法球
+	private const int Slots = 5;         // 同时最多几条蛇在咬（2026-11-13：3 → 5，连出牌时不排队等）
 	private const float BiteAt = 0.46f, AttackLen = 1.15f;
+	/// <summary>能力触发的那一咬从攻击动画的哪一刻开始（用户 2026-11-13：伤害都出了蛇才慢慢去咬 → 跳过前面在轨道上猛窜的一段）。</summary>
+	private const float StrikeStart = 0.2f;
+	/// <summary>能力触发到咬合的秒数（伤害数字推迟到这一刻跳）。</summary>
+	public const float StrikeDelay = BiteAt - StrikeStart;
 
 	public static SerpentMantle? Current { get; private set; }
 
@@ -659,7 +663,7 @@ void fragment() {
 		Vector2 nestP = new(-0.12f * face * T, -0.78f * T);
 
 		// 攻击：有目标、有空位、出场演完了 → 挑一条闲着的蛇
-		if (_targets.Count > 0 && _show > 0.6f && (_intro < 0f || _intro > 1.6f))
+		if (_targets.Count > 0 && _show > 0.3f && (_intro < 0f || _intro > 0.8f))
 		{
 			for (int s = 0; s < Slots; s++)
 			{
@@ -673,7 +677,7 @@ void fragment() {
 				if (serp < 0) break;
 				_nextSerpent = (serp + 2) % Count;
 				var (tat, tbody) = _targets.Dequeue();
-				_attacks[s] = new Attack { Serpent = serp, Target = tat - feet, Body = tbody };
+				_attacks[s] = new Attack { Serpent = serp, Target = tat - feet, Body = tbody, T = StrikeStart };
 				break;
 			}
 		}

@@ -59,6 +59,9 @@ public static class SerpentFormPlay
 		}
 		_triggeredMs = 0;
 		m.Strike(n.Hitbox.GetGlobalRect().GetCenter(), n.Visuals);
+		// 伤害数字换成 P5 样式（DamageNumberPatch 只换「Joker 打中的」），并推迟到蛇咬合那一刻（用户 2026-11-13）
+		Hits.Mark(new[] { target }, gun: false);
+		JokerFx.DelayNumber(n, SerpentMantle.StrikeDelay);
 		return true;
 	}
 }
