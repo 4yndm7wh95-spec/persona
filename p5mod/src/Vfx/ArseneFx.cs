@@ -34,6 +34,7 @@ public static class ArseneFx
 	};
 
 	private static readonly Vector2 ClawTip = new(1250f, 610f);
+	private static Vector2 _hand;
 
 	private static Shader? _shader;
 
@@ -200,6 +201,9 @@ void fragment() {
 		(float FistAt, float CrushAt)? clench = NextClench;
 		NextClench = null;
 		_attackPendingUntil = Stage.NowMs() + (ulong)((attackAt + 0.3f) * 1000f);
+		// 出手的特效都从他抬到下巴的那只手放出（用户 2026-11-13：原来的爪尖点在这个姿势下落在帽子后面，看着像从头上冒出来）
+		float tallJ = height / 1.35f;
+		_hand = Persona.ChestOf(Persona.ArseneSpec, feet, height, facing) + new Vector2(facing * tallJ * 0.37f, -tallJ * 0.41f);
 		float k = height / (BodyToe - BodyTop);                // 全图像素 → 屏幕
 		// 飘在 Joker 左后方、离开一段距离，脚尖大约在 Joker 腰的高度（沿用用户对 0.7 版亚森站位的意见：别太近、别太高、再往左）
 		Vector2 toeScreen = feet + new Vector2(-0.62f * height * facing, -0.3f * height);   // v7 两翼垂着、扑出去时别压到 Joker 身上
@@ -339,7 +343,7 @@ void fragment() {
 				}
 				if (time >= attackAt && time < crushAt + 0.3f)
 				{
-					_claw = display.GlobalPosition + armR.GetGlobalTransform() * (ClawTip - Parts[4].Pivot);
+					_claw = _hand;
 					_clawAt = Stage.NowMs();
 				}
 			}
@@ -387,7 +391,7 @@ void fragment() {
 				}
 				if (u < 0.3f)
 				{
-					_claw = display.GlobalPosition + armR.GetGlobalTransform() * (ClawTip - Parts[4].Pivot);   // 爪尖：离屏画面坐标 → 屏幕
+					_claw = _hand;   // 爪尖：离屏画面坐标 → 屏幕
 					_clawAt = Stage.NowMs();
 				}
 			}

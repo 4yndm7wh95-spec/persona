@@ -103,6 +103,9 @@ public static class PoisonFx
 			if (len > 40f)
 			{
 				// 用户 2026-11-13：原来的贴图光束（slash_thrust）偏硬、很贴图 → 换成着色器画的咒怨光带（CurseBeam）
+				// 手边一亮（看得出是他放出来的）
+				Glow.Flash(layer, claw, new Color(1f, 0.9f, 0.88f), 110f, 0.14f);
+				Glow.Flash(layer, claw, new Color(0.9f, 0.1f, 0.16f), 260f, 0.28f);
 				Beam(layer, claw, at, 0.07f, 0.08f, Mathf.Clamp(width * 0.16f, 22f, 46f));
 				for (int i = 1; i <= 3; i++)
 				{
