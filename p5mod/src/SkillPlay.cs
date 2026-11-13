@@ -131,7 +131,10 @@ public static class SkillPlay
 		Control? back = Joker.FxLayer(back: true);
 		bool summon = Aim.Summons(card);
 		float at = summon ? Aim.HitFor(card) : Moment(joker);
-		int cards = Count(card);
+		CardSkillFx.Cards.TryGetValue(name, out Action<SkillCtx>? perCard);
+		int cards = perCard == null && kind is (Kind.Draw or Kind.DrawDiscard or Kind.Load or Kind.DiscardLoad or Kind.SurgeDraw)
+			? Count(card)
+			: 0;
 		Fx.After(layer, at, () =>
 		{
 			if (!GodotObject.IsInstanceValid(joker))
@@ -147,7 +150,7 @@ public static class SkillPlay
 			Action<Color> selfTint = c => { if (GodotObject.IsInstanceValid(joker) && joker.Visuals is { } v) v.Modulate = c; };
 			Rect2 region = new(feet + new Vector2(-tall * 0.75f, -tall * 1.15f), new Vector2(tall * 1.5f, tall * 1.3f));
 			Func<Node, (Node2D, Transform2D)?> clone = parent => Aim.CloneBody(joker, parent, "idle_loop");
-			if (CardSkillFx.Cards.TryGetValue(name, out Action<SkillCtx>? perCard))
+			if (perCard != null)
 			{
 				perCard(Ctx(joker, target, layer, back, room, summon));
 				return;
@@ -265,12 +268,8 @@ public static class SkillPlay
 	}
 
 	/// <summary>这张牌抽几张 / 生成几张（DynamicVars.Cards；没有就 2）。</summary>
-	private static int Count(CardModel card)
-	{
-		int n = 2;
-		ModEntry.Safe("SkillPlay.Count", () => n = Mathf.Clamp(card.DynamicVars.Cards.IntValue, 1, 5));
-		return n;
-	}
+	private static int Count(CardModel card) =>
+		card.DynamicVars.TryGetValue("Cards", out var cards) ? Mathf.Clamp(cards.IntValue, 1, 5) : 2;
 
 	private static Action<Color> Tint(NCreature n) => c =>
 	{
