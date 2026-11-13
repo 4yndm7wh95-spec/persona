@@ -10,11 +10,11 @@ namespace P3Makoto;
 public static class ModEntry
 {
 	public const string Tag = "[P3Makoto]";
-	public const string Version = "0.15.30";
+	public const string Version = "0.15.31";
 
 	public static void Init()
 	{
-		GD.Print($"{Tag} init v{Version} build 20261104-shop-life");
+		GD.Print($"{Tag} init v{Version} build 20261113-card-art");
 		// v0.14.44（多版本兼容）：记下游戏版本，换版本出问题时日志里一眼能看到是哪个版本
 		Safe("game version", () => GD.Print($"{Tag} game version {P3Makoto.Core.Compat.GameVersion()}"));
 		// v0.14.59（玩家：iOS 移植版报 PlatformNotSupportedException）：iOS / 纯 AOT 平台不能在运行时生成代码，
@@ -66,6 +66,7 @@ public static class ModEntry
 		Safe("health log", Core.Health.Install);              // v0.14.60：卡顿诊断日志（每 60 秒一行 + 低帧率时的明细）
 		Safe("sfx prewarm", Audio.Sfx.Prewarm);
 		Safe("shop assets", Vfx.ShopAssets.Watch);         // 0.15.30：商店房间的贴图 / 模型 / 着色器在地图空闲时提前准备
+		Safe("card art", Vfx.CardArt.Watch);               // 0.15.31：94 张 P3R 卡图（只换插画，卡框文字不动）
 		Safe("star orbit", Vfx.StarOrbit.Install);
 		Safe("preload", Vfx.Preload.Start);                  // 选中结城理时要用的大资源后台预加载 + 着色器预编译（避免第一次选中掉帧）
 		// 低血溺水暗角已按用户要求关闭（Vfx/LowHpFx.cs 保留未用）

@@ -83,6 +83,7 @@ public static class P3SettingsSectionPatch
 			d.CursorSkin = v;
 			CursorPatch.RefreshExisting();
 		}, on => on ? (Zh ? "P3风格" : "P3 style") : (Zh ? "原版" : "Original"));
+		Option( Zh ? "卡图" : "Card art", () => d.CardArt, v => d.CardArt = v, on => on ? (Zh ? "P3插画" : "P3 art") : (Zh ? "原版" : "Original"));
 	}
 
 	private static void BuildModes(VBoxContainer section, Font? font, int size, float rowH, List<Action> refreshers, Action refreshAll)
