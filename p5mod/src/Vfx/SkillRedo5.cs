@@ -75,6 +75,61 @@ void fragment() {
 	COLOR = vec4(col, inside * alpha * 0.95);
 }" };
 
+	private static Shader? _dots;
+
+	/// <summary>
+	/// 网点剪影（融入暗影的主体）：TEXTURE = 此刻 Joker 的离屏剪影。剪影里黑底 + 斜 45° 的红网点 + 一道锐利的红轮廓；
+	/// dis 0 → 1：从脚往上、带噪声地一格一格「化掉」——黑底先褪、网点缩小消失（化掉的边上网点更亮）；fill / dots 是整体强度。
+	/// </summary>
+	private static Shader Dots => _dots ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform float fill = 1.0;
+uniform float dots = 1.0;
+uniform float dis = 0.0;
+uniform float cell = 9.0;       // 网点间距（像素）
+uniform float seed = 0.0;
+float h21(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+float sil(sampler2D tx, vec2 uv) { return smoothstep(0.45, 0.6, texture(tx, uv).a); }
+void fragment() {
+	vec2 P = UV / TEXTURE_PIXEL_SIZE;
+	float c = cos(0.785), s = sin(0.785);
+	vec2 Q = vec2(c * P.x - s * P.y, s * P.x + c * P.y) / cell;
+	vec2 id = floor(Q), f = fract(Q) - 0.5;
+	// 这一格中心回到原坐标，取剪影
+	vec2 Qc = (id + 0.5) * cell;
+	vec2 Pc = vec2(c * Qc.x + s * Qc.y, -s * Qc.x + c * Qc.y);
+	vec2 uvc = Pc * TEXTURE_PIXEL_SIZE;
+	float inC = sil(TEXTURE, uvc);
+	float me = sil(TEXTURE, UV);
+	// 化掉的进度：从脚往上（uv.y 大 = 脚），带噪声
+	float th = dis * 1.45 - (1.0 - uvc.y) * 0.75 + (h21(id + seed) - 0.5) * 0.35;
+	float k = clamp(th / 0.25, 0.0, 1.0);
+	// 网点：越往下越大一点（P5 的渐变网点），化掉时缩小；化掉的那条边上亮一下
+	float r = mix(0.2, 0.36, uvc.y) * (1.0 - k);
+	float aa = fwidth(length(f)) * 1.2;
+	float dot = smoothstep(r + aa, r - aa, length(f)) * inC;
+	float hot = exp(-pow((th - 0.12) / 0.1, 2.0));
+	vec3 dc = mix(vec3(0.92, 0.06, 0.13), vec3(1.0, 0.85, 0.82), hot * 0.8);
+	// 黑底：化掉得比网点早
+	float kf = clamp((th + 0.12) / 0.2, 0.0, 1.0);
+	float base = me * (1.0 - kf) * fill;
+	// 锐利的红轮廓：剪影边上一圈
+	float edgeN = 0.0;
+	for (int i = 0; i < 8; i++) {
+		float a = 6.2831853 * float(i) / 8.0;
+		edgeN = max(edgeN, sil(TEXTURE, UV + vec2(cos(a), sin(a)) * TEXTURE_PIXEL_SIZE * 2.5));
+	}
+	float rim = edgeN * (1.0 - me) * (1.0 - kf) * fill;
+	vec3 col = vec3(0.05, 0.02, 0.035);
+	float a = base * 0.92;
+	col = mix(col, dc, dot * dots);
+	a = max(a, dot * dots);
+	col = mix(col, vec3(1.0, 0.12, 0.18), rim);
+	a = max(a, rim);
+	if (a <= 0.003) discard;
+	COLOR = vec4(col, a);
+}" };
+
 	private sealed class Shard
 	{
 		public Node2D Root = null!;
@@ -246,17 +301,59 @@ void fragment() {
 			}
 		});
 		// 他暗下来一点，碎开时亮回来
+		// ── 主体：他化成网点剪影、一格一格融进暗处，再聚回来（用户：水晶只是次要的，主要是「融入暗影」的感觉；别做成黑乎乎的一团）──
+		const float melt0 = 0.12f, melt1 = 0.62f, back0 = breakAt - 0.06f;
+		if (c.CopyBody != null)
+		{
+			Vector2I sz = new(Mathf.CeilToInt(c.Region.Size.X), Mathf.CeilToInt(c.Region.Size.Y));
+			SubViewport view = new() { Size = sz, TransparentBg = true, RenderTargetUpdateMode = SubViewport.UpdateMode.Always, Disable3D = true };
+			c.Front.AddChild(view);
+			if (c.CopyBody(view) is { } made)
+			{
+				made.Clone.Transform = new Transform2D(0f, -c.Region.Position) * made.Body;
+				Fx.FreeAfter(view, life + 0.15);
+				Fx.After(c.Front, 0.06, () => { if (GodotObject.IsInstanceValid(view)) view.RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled; });
+				Node2D dr = Fx.Root(c.Front, c.Region.Position, "P5MeldDots", life + 0.1);
+				ShaderMaterial dm = new() { Shader = Dots };
+				dm.SetShaderParameter("cell", h * 0.022f);
+				dm.SetShaderParameter("seed", Fx.Rand(0f, 30f));
+				dr.AddChild(new Sprite2D { Texture = view.GetTexture(), Centered = false, Material = dm });
+				Fx.Animate(dr, 0, life, t =>
+				{
+					float s = t * life;
+					float on = Fx.OutCubic(Ease5.Seg(s, 0.02f, melt0));
+					float d = Fx.OutCubic(Ease5.Seg(s, melt0, melt1 - melt0)) * (1f - Fx.InCubic(Ease5.Seg(s, back0, 0.1f)));
+					float off = Ease5.Seg(s, back0 + 0.08f, 0.08f);
+					dm.SetShaderParameter("fill", on * (1f - off));
+					dm.SetShaderParameter("dots", on * (1f - off));
+					dm.SetShaderParameter("dis", d);
+				});
+				// 化掉时一粒粒红黑白的小点往上飘走
+				for (int i = 0; i < 6; i++)
+				{
+					float k = i / 5f;
+					float dd = melt0 + (melt1 - melt0) * k * 0.9f;
+					Vector2 at = c.Feet + new Vector2(Fx.Rand(-0.12f, 0.12f) * h, -h * (0.1f + 0.8f * k));
+					Fx.After(c.Front, dd, () => Glow.Sparks(c.Front, at, 12, 40f, 150f, 0.7f,
+						new[] { new Color(1f, 0.9f, 0.88f), new Color(0.95f, 0.08f, 0.14f), new Color(0.06f, 0.02f, 0.04f) }, -120f, 0.03f * u, 0.07f * u, Vector2.Up, 70f));
+				}
+			}
+			else view.QueueFree();
+		}
+		// 真人：变成网点剪影时淡出（剩一点影子），聚回来时一下白闪、恢复
 		if (c.SelfTint is { } tint)
 		{
 			Node2D tk = Fx.Root(c.Front, c.Feet, "P5MeldTint", life + 0.1);
-			Color dim = new(0.5f, 0.44f, 0.55f);
 			Fx.Animate(tk, 0, life, t =>
 			{
 				float s = t * life;
-				float k = Fx.OutCubic(Ease5.Seg(s, flashAt - 0.05f, 0.15f)) * (1f - Fx.OutCubic(Ease5.Seg(s, breakAt, 0.3f)));
-				tint(Colors.White.Lerp(dim, k));
+				float gone = Fx.OutCubic(Ease5.Seg(s, 0.04f, melt0)) * (1f - Ease5.Seg(s, back0 + 0.06f, 0.1f));
+				float wf = s >= back0 + 0.08f ? Mathf.Exp(-(s - back0 - 0.08f) * 12f) : 0f;
+				Color col = new(1f + wf, 1f + wf, 1f + wf, 1f - 0.92f * gone);
+				tint(col);
 			});
 			tk.TreeExiting += () => tint(Colors.White);
 		}
+		Fx.After(c.Front, back0 + 0.08, () => Glow.Flash(c.Front, c.Feet + new Vector2(0f, -h * 0.5f), new Color(1f, 0.92f, 0.9f), h * 0.8f, 0.16f));
 	}
 }
