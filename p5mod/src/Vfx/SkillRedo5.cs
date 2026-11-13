@@ -287,7 +287,12 @@ void fragment() {
 			Glow.Sparks(c.Front, chest, 26, 160f * u, 520f * u, 0.5f, new[] { new Color(1f, 0.97f, 0.95f), new Color(1f, 0.25f, 0.32f) }, 80f * u,
 				0.02f * u, 0.05f * u, Vector2.Up, 180f);
 			Glow.Glint(c.Front, c.Mask, 0.7f * u);
+			HalftoneBurst(back, chest, h * 1.9f, 0.45f);
+			Sweep(c.Front, back, chest, h * 0.62f, -0.4f * fc, fc, 0f, 0.42f, 0.12f, new Color(0.95f, 0.06f, 0.15f), 1f);
+			Sweep(c.Front, back, chest + new Vector2(0f, h * 0.08f), h * 0.7f, 0.35f * fc, fc, 0.04f, 0.4f, 0.035f, new Color(1f, 0.85f, 0.85f), 1.5f);
 		});
+		Glitter(c.Front, feet, h, u, hit + 0.1f, snap - hit - 0.1f, 5);
+		Glitter(back, feet, h, u, hit + 0.15f, snap - hit - 0.1f, 5);
 
 		// ── 第二拍：刀光收进身体，再从他身上爆开一圈放射斩线 + 碎光 ──
 		Fx.After(c.Front, snap + 0.06, () =>
@@ -299,8 +304,10 @@ void fragment() {
 			Flare(c.Front, chest, h * 0.02f, h * 1.3f, new Color(1f, 0.97f, 0.95f, 1f), 0.26f);
 			Flare(c.Front, chest, h * 2.0f, h * 0.05f, new Color(1f, 0.15f, 0.25f, 0.8f), 0.34f);
 			Flare(c.Front, chest, h * 1.6f, h * 0.012f, new Color(1f, 0.97f, 0.95f, 1f), 0.26f);
-			Glow.SpeedLines(back, chest, new Color(1f, 0.18f, 0.26f), 22, h * 0.25f, h * 1.05f, 0.34f);
-			Glow.SpeedLines(c.Front, chest, Pal5.Hot, 8, h * 0.3f, h * 0.8f, 0.28f, 0.02f);
+			Sweep(c.Front, back, chest, h * 0.7f, 0.25f, -fc, 0f, 0.45f, 0.14f, new Color(0.95f, 0.06f, 0.15f), 1f);
+			Sweep(c.Front, back, chest + new Vector2(0f, -h * 0.1f), h * 0.6f, -0.5f, fc, 0.03f, 0.42f, 0.04f, new Color(1f, 0.85f, 0.85f), 1.5f);
+			Sweep(c.Front, back, chest + new Vector2(0f, h * 0.2f), h * 0.8f, 0.45f, fc, 0.06f, 0.45f, 0.08f, new Color(1f, 0.2f, 0.28f), 1.1f);
+			HalftoneBurst(back, chest, h * 2.4f, 0.5f);
 			Glow.Sparks(c.Front, chest, 40, 220f * u, 700f * u, 0.6f, new[] { new Color(1f, 0.97f, 0.95f), new Color(1f, 0.22f, 0.3f), new Color(0.6f, 0.02f, 0.1f) },
 				160f * u, 0.025f * u, 0.06f * u, Vector2.Up, 180f);
 			Glow.Sparks(back, chest + new Vector2(0f, h * 0.2f), 24, 80f * u, 260f * u, 0.9f, new[] { new Color(1f, 0.9f, 0.88f), new Color(1f, 0.2f, 0.28f) },
