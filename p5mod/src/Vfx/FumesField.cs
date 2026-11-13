@@ -130,6 +130,24 @@ void fragment() {
 		Tick();
 	}
 
+	/// <summary>别的场景（华丽收场）占满画面时藏起来、演完放回来（同 SerpentMantle.Suspend）。</summary>
+	public static void Suspend(bool hidden) => Fade(hidden ? 0f : 1f);
+
+	/// <summary>整体透明度（同 SerpentMantle.Fade）。</summary>
+	public static void Fade(float alpha)
+	{
+		if (Current is not { } f) return;
+		f._hidden = alpha < 0.5f;
+		foreach (var (root, _) in f._layers)
+		{
+			if (!GodotObject.IsInstanceValid(root)) continue;
+			root.Visible = alpha > 0.005f;
+			root.Modulate = new Color(root.Modulate, alpha);
+		}
+	}
+
+	private bool _hidden;
+
 	/// <summary>再来一阵风（每回合毒雾触发、再打一张毒雾）：风丝亮起、流速一下变快、冒几个怨灵。</summary>
 	public void Pulse()
 	{
@@ -178,7 +196,7 @@ void fragment() {
 			m.SetShaderParameter("band", tallS * 0.95f);
 		}
 		// 小怨灵：时不时冒一两个（风还没吹到的地方不冒）
-		if (_fade < 0f && _t > _nextGhost)
+		if (_fade < 0f && !_hidden && _t > _nextGhost)
 		{
 			_nextGhost = _t + Fx.Rand(1.0f, 2.4f);
 			int n = Fx.Rand(0f, 1f) < 0.35f ? 2 : 1;

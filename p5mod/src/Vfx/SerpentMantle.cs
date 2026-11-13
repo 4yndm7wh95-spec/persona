@@ -524,6 +524,24 @@ void fragment() {
 	/// <summary>Bite 开始到咬合的秒数。</summary>
 	public const float BiteDelay = BiteAt - BiteStart;
 
+	/// <summary>
+	/// 别的场景（华丽收场的断崖）要占满画面时整个藏起来、演完再放回来（用户 2026-11-13：两个场景叠着渲染，撒旦耶尔和平台被咒雾染得朦胧，还卡；
+	/// 多个场景就直接切换，不要叠）。藏着的时候照样计时，回来时接着漂。
+	/// </summary>
+	public static void Suspend(bool hidden) => Fade(hidden ? 0f : 1f);
+
+	/// <summary>整体透明度（0 = 藏起来）：华丽收场的断崖场景展开多少，这边就淡掉多少，交叉切换、中间不露出原版场景。</summary>
+	public static void Fade(float alpha)
+	{
+		if (Current is not { } m) return;
+		foreach (CanvasItem? n in new CanvasItem?[] { m._frontRoot, m._backRoot, m._skyRoot, m._mistFrontRoot, m._top })
+		{
+			if (n == null || !GodotObject.IsInstanceValid(n)) continue;
+			n.Visible = alpha > 0.005f;
+			n.Modulate = new Color(n.Modulate, alpha);
+		}
+	}
+
 	public static void StopCurrent()
 	{
 		if (Current != null && Current._fadeOut < 0f) Current._fadeOut = 0f;
@@ -540,8 +558,10 @@ void fragment() {
 		var rect = new Rect2(-3f * tall, -2.9f * tall, 10f * tall, 3.6f * tall);
 		(_frontRoot, _frontM) = Make(front, feet, rect, 1f, "P5SerpentsFront");
 		// 用户 2026-11-13：蛇咬时被打击牌的命中特效盖住 → 身前那层蛇和咬合特效画在命中特效上面
-		_frontRoot.ZIndex = 30;
-		_top = new Control { Name = "P5SerpentTop", ZIndex = 31, MouseFilter = Control.MouseFilterEnum.Ignore };
+		// 只比别的战斗特效高一点（它们所在的容器整体是 z -9，相对层级）：高过打击牌的命中特效，但不能高过游戏界面
+		// （2026-11-13 第一次给了 30，结果选牌界面、设置界面上都透出蛇）
+		_frontRoot.ZIndex = 4;
+		_top = new Control { Name = "P5SerpentTop", ZIndex = 5, MouseFilter = Control.MouseFilterEnum.Ignore };
 		front.AddChild(_top);
 		_frontRoot.TreeExiting += () => { if (GodotObject.IsInstanceValid(_top)) _top.QueueFree(); };
 		(_backRoot, _backM) = Make(back, feet, rect, -1f, "P5SerpentsBack");

@@ -685,6 +685,13 @@ public partial class Preview : Node2D
 			p.At(2.8 + 1.63, () => HexGuard.Play(p._front, Chest, tall, 1f, 12, Pose(885f, 310f)));
 		},
 		// 华丽收场 = 大罪穿甲弹（用户 2026-11-08）：场景 + 子弹预览，撒旦耶尔第 2 版立绘还没到，枪口先放在 Joker 身后上方
+		// 2026-11-13：群蛇形态下打华丽收场 → 群蛇的场景整个藏起来，演完放回来
+		["combo_sinful"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.0, () => SerpentMantle.Start(p._front, p._back, () => (JokerFeet, tall, 1f), live: true, intro: false));
+			Scenarios["sinful_shell"](p);
+		},
 		["sinful_shell"] = p =>
 		{
 			// 选中华丽收场：扶面具的架势（面具蓝焰）→ 打出：攥面具、手顺着弧线放下直接转枪（cast_sinful_from_mask）；面具不再冲出两道蓝焰（用户 2026-11-09）

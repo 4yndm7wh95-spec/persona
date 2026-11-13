@@ -399,6 +399,8 @@ void fragment() {
 
 		// ── 场景：天空层（最底下）+ 断崖层（盖在人格面具前面）
 		Node2D root = Fx.ScreenRoot(back, "P5SinfulShellScene");
+		// 场景切换，不叠（用户 2026-11-13）：群蛇形态的咒雾 / 蛇、毒雾在华丽收场期间整个藏起来，演完放回来
+		root.TreeExiting += () => { SerpentMantle.Suspend(false); FumesField.Suspend(false); };
 		back.MoveChild(root, 0);
 		ShaderMaterial sky = new() { Shader = Scene }, rocks = new() { Shader = Scene };
 		float total = FireAt + Mathf.Max(ConcealAfter + ExitTime, ExitAfter + 0.6f) + 0.15f;
@@ -532,6 +534,10 @@ void fragment() {
 			}
 			// 灯：枪口蓄力光、开枪全场白光、跟着子弹飞的光、雷光、深渊往上打的暗红光
 			float scene = rv * (1f - ex);
+			// 群蛇形态 / 毒雾的场景跟着断崖场景交叉淡化（断崖出来多少，它们就淡掉多少）
+			float other = 1f - Mathf.Clamp(scene * 1.6f, 0f, 1f);
+			SerpentMantle.Fade(other);
+			FumesField.Fade(other);
 			foreach ((Sprite2D soft, Sprite2D core) in shadows)
 			{
 				soft.Modulate = new Color(0.01f, 0.02f, 0.06f, 0.62f * scene);
