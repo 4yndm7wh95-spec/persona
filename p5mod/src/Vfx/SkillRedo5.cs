@@ -19,6 +19,7 @@ public static partial class SkillRedo5
 		cards["Shadowmeld"] = Shadowmeld;
 		cards["Afterimage"] = Afterimage;
 		cards["Malaise"] = Malaise;
+		cards["Haze"] = HazeFx.Play;   // 迷雾（2026-11-13 重做）
 	}
 
 	private static void S(string name, float vol, float at = 0f) => Sfx.Take(name, vol * 0.8f, at);

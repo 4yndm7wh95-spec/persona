@@ -779,6 +779,7 @@ public partial class Preview : Node2D
 			p.At(4.6, () => TimeStop.StopCurrent());
 		},
 		["redo7"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.9) }),
+		["haze"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Haze", "cast_wave", 0.08, 2.0), ("Haze", "cast_wave", 0.08, 2.0) }),
 		["fumes"] = p => RunCards(p, null, new (string, string, double, double)[] { ("NoxiousFumes", "cast", 0.4, 7.5) }),
 		["redo"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Acrobatics", "cast_glove", 0.25, 1.7), ("Acrobatics", "cast_glove", 0.25, 1.7) }),
 		["redo3"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Survivor", "cast_guard", 0.08, 1.2), ("CalculatedGamble", "cast_glove", 0.25, 1.9), ("Tactician", "cast_glove", 0.25, 1.2), ("Adrenaline", "cast_glove", 0.25, 1.4), ("ShadowStep", "cast_glove", 0.25, 1.4) }),

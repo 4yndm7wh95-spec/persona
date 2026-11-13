@@ -72,7 +72,7 @@ void fragment() {
 
 	/// <summary>一阵短暂的刀光旋涡：n 道刀光绕 basePt（脚下）在 y0～y1 高度转、往上卷、淡掉。</summary>
 	private static void Vortex(Control front, Control back, Vector2 basePt, float h, float radius, int n, float t0, float dur, float dir, float y0, float y1,
-		float widthK = 1f)
+		float widthK = 1f, float rise = 0.12f)
 	{
 		var list = new List<(Blade b, float y, float r, float spin, float ph, float w)>();
 		for (int i = 0; i < n; i++)
@@ -93,7 +93,7 @@ void fragment() {
 				x.b.B.Visible = true;
 				x.b.F.Visible = true;
 				float rr = x.r * (0.8f + 0.35f * Fx.OutCubic(t));
-				Vector2 at = basePt + new Vector2(0f, -h * (x.y + 0.12f * t));
+				Vector2 at = basePt + new Vector2(0f, -h * (x.y + rise * t));
 				Vector2 sz = new(rr * 2f, rr * 2f * 0.3f);
 				foreach (Node2D nd in new[] { x.b.B, x.b.F })
 				{
@@ -516,4 +516,23 @@ public static partial class SkillRedo5
 			Glow.Flash(back, at, new Color(1f, 0.12f, 0.22f), T * 1.4f, 0.3f);
 		});
 	}
+}
+
+public static partial class SkillRedo5
+{
+	/// <summary>迷雾：一圈刀光绕着敌人往下压（rise 负 = 往下卷）。</summary>
+	public static void HazeVortex(Control front, Control back, Vector2 feet, float h, float radius, float t0, float dur, float dir) =>
+		Vortex(front, back, feet, h, radius, 6, Mathf.Max(0f, t0), dur, dir, 0.35f, 1.0f, 1.3f, -0.4f);
+
+	/// <summary>十字光芒（横竖各一道红晕 + 白芯），给别的文件用。</summary>
+	public static void Cross(Control layer, Vector2 at, float h)
+	{
+		Flare(layer, at, h * 1.7f, h * 0.05f, new Color(1f, 0.15f, 0.22f, 0.85f), 0.3f);
+		Flare(layer, at, h * 1.3f, h * 0.012f, new Color(1f, 0.95f, 0.96f, 1f), 0.24f);
+		Flare(layer, at, h * 0.05f, h * 1.2f, new Color(1f, 0.15f, 0.22f, 0.7f), 0.28f);
+		Flare(layer, at, h * 0.012f, h * 0.9f, new Color(1f, 0.95f, 0.96f, 1f), 0.22f);
+	}
+
+	/// <summary>圆润的网点光晕（给别的文件用）。</summary>
+	public static void SoftBurst(Control layer, Vector2 at, float size, float dur, Color tint) => HalftoneBurst(layer, at, size, dur, 0f, tint);
 }

@@ -9,8 +9,8 @@ namespace P5Joker;
 
 /// <summary>
 /// 血条上「下回合会被毒掉的那一段」（原版绿色）：Joker 上的毒换成咒怨色（用户 2026-11-13）。
-/// 血条本身是红的（F1373E），只换成深红会混在一起 → 用暗紫红打底、亮一点的玫红斜条纹慢慢往右流，一眼就和红色血量分得开；
-/// 毒能毒死时血量数字原版变绿，也换成同一套颜色（粉白字 + 暗紫描边）。只认 Joker 施的毒（PoisonPower.Applier 是 Joker）。
+/// 血条本身是整块亮红（F1373E），灾厄是紫色 → 用黑底 + 暗红斜条纹慢慢往右流，两边都分得开；
+/// 毒能毒死时血量数字原版变绿，换成红字 + 黑描边。只认 Joker 施的毒（PoisonPower.Applier 是 Joker）。
 /// </summary>
 [HarmonyPatch(typeof(NHealthBar), nameof(NHealthBar.RefreshValues))]
 public static class PoisonBarPatch
@@ -27,15 +27,14 @@ uniform float clock = 0.0;
 void fragment() {
 	vec4 tex = texture(TEXTURE, UV);
 	float lum = dot(tex.rgb, vec3(0.3, 0.59, 0.11));
-	vec3 deep = vec3(0.26, 0.015, 0.14);
-	vec3 mid = vec3(0.62, 0.05, 0.3);
+	// 黑底 + 暗红斜条纹（用户 2026-11-13：紫粉色和原版「灾厄」撞了 → 换成红黑；血量本身是整块亮红，这个是黑底条纹，分得开）
+	vec3 deep = vec3(0.07, 0.01, 0.015);
+	vec3 mid = vec3(0.2, 0.02, 0.03);
 	vec3 col = mix(deep, mid, smoothstep(0.15, 0.85, lum));
-	// 斜条纹（屏幕像素算，粗细不随血条长短变）慢慢往右流
 	float s = fract((FRAGCOORD.x + FRAGCOORD.y) / 14.0 - clock * 0.6);
-	float stripe = smoothstep(0.42, 0.5, s) * (1.0 - smoothstep(0.82, 0.9, s));
-	col = mix(col, vec3(0.95, 0.22, 0.52), stripe * 0.55);
-	// 上沿一道细亮边
-	col += vec3(0.5, 0.15, 0.3) * smoothstep(0.35, 0.0, UV.y) * 0.35;
+	float stripe = smoothstep(0.42, 0.5, s) * (1.0 - smoothstep(0.78, 0.86, s));
+	col = mix(col, vec3(0.78, 0.06, 0.1), stripe * 0.85);
+	col += vec3(0.5, 0.08, 0.08) * smoothstep(0.35, 0.0, UV.y) * 0.3;
 	COLOR = vec4(col, tex.a);
 }" };
 
@@ -76,8 +75,8 @@ void fragment() {
 			int dmg = poison?.CalculateTotalDamageNextTurn() ?? 0;
 			if (joker && dmg > 0 && dmg >= c.CurrentHp && LabelF.GetValue(__instance) is Control label)
 			{
-				label.AddThemeColorOverride("font_color", new Color("FFB3D2"));
-				label.AddThemeColorOverride("font_outline_color", new Color("3D0024"));
+				label.AddThemeColorOverride("font_color", new Color("FF6E6E"));
+				label.AddThemeColorOverride("font_outline_color", new Color("1E0000"));
 			}
 		});
 	}

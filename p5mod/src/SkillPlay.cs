@@ -47,7 +47,7 @@ public static class SkillPlay
 		["Shadowmeld"] = Kind.Veil, ["Blur"] = Kind.Ghosts, ["Afterimage"] = Kind.GhostsBuff, ["ShadowStep"] = Kind.StepAway,
 		// 谋划
 		["MasterPlanner"] = Kind.Plan, ["WellLaidPlans"] = Kind.Plan, ["ToolsOfTheTrade"] = Kind.Plan, ["HandTrick"] = Kind.PlanOne,
-		["Nightmare"] = Kind.Nightmare,
+		["Nightmare"] = Kind.Nightmare, ["Haze"] = Kind.Wail,   // 迷雾：表里有就行，特效走 CardSkillFx（HazeFx）
 		// 压在敌人身上的
 		["Malaise"] = Kind.Debuff, ["LegSweep"] = Kind.Debuff, ["Expose"] = Kind.Shatter, ["Flanking"] = Kind.Mark, ["KnifeTrap"] = Kind.Mark,
 		["PiercingWail"] = Kind.Wail,
