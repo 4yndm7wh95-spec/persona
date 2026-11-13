@@ -8,7 +8,7 @@ namespace P5Joker;
 /// · 日面：缓慢翻涌的等离子（域扭曲的 fbm，慢慢转），暗红到绯红，有颗粒和暗色细丝，往边上稍暗（临边昏暗）；
 /// · 边缘：没有细亮环，是一层宽而柔、沿圈亮度不均的边缘光，加上一簇簇不规则的日珥火舌往外卷（长短不一、慢慢变）；
 /// · 日冕：长短不一的柔光丝缕，慢慢转、呼吸，最外一层柔晕。
-/// grow 0 → 1 出场（从中心长出来）；pulse 一下变亮（蛇咬时）。
+/// grow 0 → 1 出场（大小不变，慢慢淡入）；pulse 一下变亮（蛇咬时）。
 /// </summary>
 public static class SerpentEclipse
 {
@@ -35,7 +35,7 @@ void fragment() {
 	vec2 p = UV * 2.0 - 1.0;
 	float r = length(p);
 	float a = atan(p.y, p.x);
-	float R = disk * mix(0.15, 1.0, grow);
+	float R = disk;   // 2026-11-13 用户：别放大出场 → 大小不变，只淡入
 	float rr = r / R;
 	float lit = 1.0 + 0.9 * pulse;
 	vec3 deep = vec3(0.32, 0.03, 0.05);
@@ -87,8 +87,9 @@ void fragment() {
 		col = mix(col, sc, inDisk);
 		al = max(al, inDisk);
 	}
-	al *= alpha * smoothstep(0.0, 0.25, grow);
-	col *= alpha * smoothstep(0.0, 0.25, grow);
+	float fin = smoothstep(0.0, 1.0, grow);
+	al *= alpha * fin;
+	col *= alpha * fin;
 	if (al <= 0.003) discard;
 	COLOR = vec4(col, al);
 }" };
