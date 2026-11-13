@@ -794,8 +794,9 @@ public partial class Preview : Node2D
 			{
 				SerpentMantle.Start(p._front, p._back, () => (JokerFeet, tall, 1f), live: true, intro: true);
 			});
-			(Vector2 E, float Up)[] hits = { (Enemy, 170f), (Enemy2, 150f), (Enemy3, 140f), (Enemy, 170f), (Enemy2, 150f) };
-			double[] when = { 3.4, 4.3, 4.55, 4.8, 6.0 };
+			// 2026-11-13：快速连出牌 —— 同一个敌人被连咬（方向轮换）、几条蛇同时在咬
+			(Vector2 E, float Up)[] hits = { (Enemy, 170f), (Enemy, 170f), (Enemy2, 150f), (Enemy, 170f), (Enemy3, 140f), (Enemy, 170f), (Enemy, 170f), (Enemy2, 150f) };
+			double[] when = { 3.0, 3.25, 3.5, 3.7, 3.9, 4.1, 4.3, 4.5 };
 			for (int i = 0; i < hits.Length; i++)
 			{
 				var (e, up) = hits[i];

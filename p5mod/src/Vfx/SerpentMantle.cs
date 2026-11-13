@@ -84,9 +84,9 @@ uniform float side = 1.0;
 uniform float clock = 0.0;
 uniform float unit = 300.0;     // Joker 身高（像素）
 uniform float diss[5];          // 每条蛇散成烟的程度（攻击时 0 → 1 → 0）
-uniform vec4 puff[9];           // 咒烟团（每发攻击 3 个：烟团、咬中、原位留下的残烟）：xy 中心，z 进度（0～1；< 0 没有），w 大小（像素；负数 = 咬中那一团，中间带一下光）
-uniform vec4 streak[3];         // 攻击的烟迹：xy 尾、zw 头（相对脚底）；蛇在原位散掉的同时化成一道咒烟飞向敌人上方
-uniform float streak_a[3];      // 烟迹的浓度（0 = 没有）
+uniform vec4 puff[15];          // 咒烟团（每发攻击 3 个：烟团、咬中、原位留下的残烟）：xy 中心，z 进度（0～1；< 0 没有），w 大小（像素；负数 = 咬中那一团，中间带一下光）
+uniform vec4 streak[5];        // 攻击的烟迹：xy 尾、zw 头（相对脚底）；蛇在原位散掉的同时化成一道咒烟飞向敌人上方
+uniform float streak_a[5];     // 烟迹的浓度（0 = 没有）
 uniform float mouth[5];         // 嘴张多大：0 平时微张，1 张到最大，< 0 合上
 // 蛇头的轮廓（照 docs/p5/preview/serpent_head_plan.png 的点，tools/p5/diagrams/serpent_head_plan.py 同一组；单位 = 脖子粗细 W，x 朝吻尖，y 朝上）
 uniform vec2 head_fixed[72];    // 不动的部分：脖子上沿 → 后脑 → 头顶 → 眉骨 → 吻尖 → 嘴线 → 铰点 → 后脑下沿 → 脖子下沿
@@ -333,7 +333,7 @@ void fragment() {
 	}
 	// 咒烟团（前景层）：蛇从烟里聚出来的那一团、咬中时往外炸开的那一团、蛇散掉时的那一团。翻滚着变大、变淡
 	if (side > 0.0) {
-		for (int i = 0; i < 9; i++) {
+		for (int i = 0; i < 15; i++) {
 			if (puff[i].z < 0.0) continue;
 			float k = puff[i].z;
 			float sz = abs(puff[i].w);
@@ -353,7 +353,7 @@ void fragment() {
 
 	// 攻击的烟迹（前景层）：一道越往前越粗的咒烟，烟里一条暗红的芯，最前面带着那条蛇的一对红眼
 	if (side > 0.0) {
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 5; i++) {
 			if (streak_a[i] <= 0.001) continue;
 			vec2 sa = streak[i].xy, sb = streak[i].zw;
 			vec2 ab = sb - sa;
@@ -425,7 +425,7 @@ void fragment() {
 	private readonly Vector2[] _hup = new Vector2[Count];
 	private readonly Vector3[] _eyes = new Vector3[Count];
 	private readonly float[] _diss = new float[Count];
-	private readonly Vector4[] _puff = new Vector4[9];
+	private readonly Vector4[] _puff = new Vector4[Slots * 3];
 	private readonly Vector4[] _streak = new Vector4[Slots];
 	private readonly float[] _streakA = new float[Slots];
 	private readonly float[] _mouth = new float[Count];
@@ -449,6 +449,34 @@ void fragment() {
 		public bool Bit, Emerged, Faded;
 		public Node2D? Body;              // 被咬的敌人（咬中时闪一下白）
 		public Vector2 From;              // 冲出去散掉的位置（烟迹从这里飞出，原位的残烟也在这里）
+		public float Side = 1f, Tilt;     // 从哪边扑（1 = 敌人靠 Joker 这一侧的斜上方，-1 = 另一侧）、整套姿势绕目标转多少（正 = 更平、负 = 更从上往下）
+
+		/// <summary>扑咬姿势里的一个偏移（按「从左上扑、面朝右」画的）换到这次的方向。</summary>
+		public Vector2 L(Vector2 v, float face) { float sf = face * Side; return new Vector2(v.X * sf, v.Y).Rotated(Tilt * sf); }
+	}
+
+	/// <summary>
+	/// 扑咬的几个方向（用户 2026-11-13：只从左上角咬容易看腻）：敌人两侧的斜上方、更平的侧面、更陡的上方。
+	/// 连着出牌时挑一个和正在咬的都不一样、也不是上一次的方向，几条蛇像是从四面围上去咬。
+	/// </summary>
+	private static readonly (float Side, float Tilt)[] Approaches = { (1f, 0f), (-1f, 0f), (1f, 0.38f), (-1f, 0.32f), (1f, -0.3f), (-1f, -0.34f) };
+	private int _lastApproach = -1;
+
+	private (float Side, float Tilt) PickApproach()
+	{
+		var used = new HashSet<int>();
+		foreach (Attack? a in _attacks)
+		{
+			if (a == null) continue;
+			for (int k = 0; k < Approaches.Length; k++)
+				if (Mathf.IsEqualApprox(Approaches[k].Side, a.Side) && Mathf.IsEqualApprox(Approaches[k].Tilt, a.Tilt)) used.Add(k);
+		}
+		var pool = new List<int>();
+		for (int k = 0; k < Approaches.Length; k++) if (!used.Contains(k) && k != _lastApproach) pool.Add(k);
+		if (pool.Count == 0) for (int k = 0; k < Approaches.Length; k++) if (k != _lastApproach) pool.Add(k);
+		int pick = pool[(int)Fx.Rand(0f, pool.Count - 0.001f)];
+		_lastApproach = pick;
+		return Approaches[pick];
 	}
 
 	/// <summary>
@@ -662,24 +690,34 @@ void fragment() {
 		}
 		Vector2 nestP = new(-0.12f * face * T, -0.78f * T);
 
-		// 攻击：有目标、有空位、出场演完了 → 挑一条闲着的蛇
-		if (_targets.Count > 0 && _show > 0.3f && (_intro < 0f || _intro > 0.8f))
+		// 攻击：有目标、出场演完了 → 挑一条闲着的蛇；都在忙（玩家出牌很快）就接手一条已经咬完、正散成烟的蛇（用户 2026-11-13：
+		// 快速出牌时不要排队等上一条演完）。每帧把排着的目标都派出去，不是一帧一个。
+		while (_targets.Count > 0 && _show > 0.3f && (_intro < 0f || _intro > 0.8f))
 		{
-			for (int s = 0; s < Slots; s++)
+			int slot = -1, serp = -1;
+			for (int s = 0; s < Slots && slot < 0; s++) if (_attacks[s] == null) slot = s;
+			for (int k = 0; k < Count && serp < 0; k++)
 			{
-				if (_attacks[s] != null) continue;
-				int serp = -1;
-				for (int k = 0; k < Count; k++)
-				{
-					int c = (_nextSerpent + k) % Count;
-					if (AttackOf(c) == null) { serp = c; break; }
-				}
-				if (serp < 0) break;
-				_nextSerpent = (serp + 2) % Count;
-				var (tat, tbody) = _targets.Dequeue();
-				_attacks[s] = new Attack { Serpent = serp, Target = tat - feet, Body = tbody, T = StrikeStart };
-				break;
+				int c = (_nextSerpent + k) % Count;
+				if (AttackOf(c) == null) serp = c;
 			}
+			if (slot < 0 || serp < 0)
+			{
+				// 接手：咬完（T ≥ 0.6，已经在散成烟）里最靠后的那条
+				int best = -1;
+				for (int s = 0; s < Slots; s++)
+					if (_attacks[s] is { } a && a.T >= 0.6f && (best < 0 || a.T > _attacks[best]!.T)) best = s;
+				if (best < 0) break;
+				slot = best;
+				serp = _attacks[best]!.Serpent;
+				_streakA[best] = 0f;
+			}
+			_nextSerpent = (serp + 2) % Count;
+			var (tat, tbody) = _targets.Dequeue();
+			var (side, tilt) = PickApproach();
+			Vector3 op = Orbit(serp, _tau[serp], T, face);
+			// 直接从扑咬开始（StrikeStart）：跳过了在轨道上窜出去那段，原位的残烟就放在这条蛇现在所在的位置
+			_attacks[slot] = new Attack { Serpent = serp, Target = tat - feet, Body = tbody, T = StrikeStart, Side = side, Tilt = tilt, From = new Vector2(op.X, op.Y) };
 		}
 
 		for (int i = 0; i < Count; i++)
@@ -742,8 +780,8 @@ void fragment() {
 		int nb = N - HeadPts;
 		float t = atk.T;
 		Vector2 P = atk.Target;
-		Vector2 A = P + new Vector2(-0.6f * face * T, -1.25f * T);          // 烟团
-		Vector2 cocked = P + new Vector2(-0.72f * face * T, -0.72f * T);    // 往后缩、准备扑
+		Vector2 A = P + atk.L(new Vector2(-0.6f * T, -1.25f * T), face);          // 烟团
+		Vector2 cocked = P + atk.L(new Vector2(-0.72f * T, -0.72f * T), face);    // 往后缩、准备扑
 		float headLen = _girth[i] * 2.16f;   // 照示意图：头根（x=-0.3）到吻尖（1.56）= 1.86 W，W = 1.16 g
 		float lunge = Ease5.Seg(t, 0.38f, BiteAt - 0.38f);
 		lunge = lunge * lunge;
@@ -751,9 +789,9 @@ void fragment() {
 		Vector2 toP = (P - cocked).Normalized();
 		Vector2 bite = P - toP * headLen * 0.75f;
 		Vector2 hb = cocked.Lerp(cocked - toP * 0.22f * T, rear * (1f - lunge)).Lerp(bite, lunge);
-		Vector2 c1 = A + new Vector2(0.35f * face * T, 0.3f * T);
-		Vector2 c2 = hb - toP * 0.55f * T + new Vector2(-0.2f * face * T, -0.25f * T);
-		Vector2 tail = A + new Vector2(-0.15f * face * T, -0.1f * T);
+		Vector2 c1 = A + atk.L(new Vector2(0.35f * T, 0.3f * T), face);
+		Vector2 c2 = hb - toP * 0.55f * T + atk.L(new Vector2(-0.2f * T, -0.25f * T), face);
+		Vector2 tail = A + atk.L(new Vector2(-0.15f * T, -0.1f * T), face);
 		for (int k = 0; k < nb; k++)
 		{
 			float f = k / (nb - 1f);
@@ -999,7 +1037,7 @@ void fragment() {
 			a.T += dt;
 			float t = a.T;
 			float face = a.Target.X >= 0f ? 1f : -1f;
-			Vector2 cloud = a.Target + new Vector2(-0.6f * face * T, -1.25f * T);
+			Vector2 cloud = a.Target + a.L(new Vector2(-0.6f * T, -1.25f * T), face);
 			// 加强表达（2026-11-11 用户：随机到的那条加速冲出、缓缓消失、敌人那里出现一只去咬——这套再强一点）：
 			// 0～0.07 往回一缩、眼睛一亮（看得出是它要出手）→ 0.07～0.23 朝敌人猛窜 0.85 身高、边窜边散 →
 			// 0.12～0.32 原地化成一道咒烟、带着那对红眼飞到敌人上方，原位留下一团慢慢散掉的残烟（到 0.9）→
