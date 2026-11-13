@@ -1,0 +1,38 @@
+{
+  "name": "strike_regent",
+  "variant": "v2",
+  "base_commit": "70e431f8",
+  "prompt_document": "docs/codex/codex_card_art_round5.md#修正打击剑弯了",
+  "status": "approved_by_user",
+  "tool": "built-in imagegen",
+  "generation_count": 1,
+  "automatic_retry": false,
+  "image1": "art/cards/v4/local_edits/round5/batch_01/strike_regent.png",
+  "input_sha256": "74cc56e734beb3550139c97e8dcc99dfe1f06d1952399fbddd6eb06ecc1e4ae4",
+  "submitted_prompt": "Use case: precise-object-edit. Image1 is the current candidate and the edit target. Fix ONE problem: the sword looks bent because its grip and pommel are angled flatter (about 18 degrees) than the blade (about 35 degrees), with a kink at the crossguard. Make the whole sword ONE perfectly straight rigid object: pommel, grip, crossguard center, blade spine and tip all on a single straight axis. Keep the blade exactly where it is (same angle, length and tip position at the lower right); redraw only the grip and pommel so they continue the blade's axis up and to the left (the pommel ends at about x27%, y33% of the canvas), with the crossguard exactly perpendicular to that axis. Move the Swords tarot card along with the pommel so the sword still bursts out of the card at the hilt end, keeping the card's design, its tilt relative to the sword, and the pale-blue glass shards around the breaking point. Keep the gold slash fragments, the sparkles, the warm glow and the purple-magenta background unchanged. Crisp hard cel-shading. Opaque, full-bleed, same size as Image1, no text, frame or watermark.",
+  "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-1deec46e-f25d-4de6-8435-9560edd3a254.png",
+  "raw_file": "generation_sources/exec-1deec46e-f25d-4de6-8435-9560edd3a254.png",
+  "generated_size": [
+    1439,
+    1093
+  ],
+  "output_file": "strike_regent_v2.png",
+  "output_size": [
+    1000,
+    760
+  ],
+  "straightness_check": {
+    "method": "Visual straight-line overlay on 1000x760 export; manually located pommel center and blade tip",
+    "pommel_center": [
+      267,
+      277
+    ],
+    "blade_tip": [
+      794,
+      625
+    ],
+    "overlay_file": "strike_regent_v2_axis_check.png",
+    "result": "Grip centerline, crossguard center and blade spine visually follow the same axis with no obvious original kink; approximate visual check, not a pixel-exact geometry guarantee",
+    "status": "checked"
+  }
+}

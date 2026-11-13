@@ -1,0 +1,21 @@
+{
+  "status": "approved_by_user",
+  "automatic_retry": false,
+  "cards": {
+    "strike_regent": "approved_by_user",
+    "defend_regent": "approved_by_user",
+    "falling_star": "approved_by_user",
+    "gather_light": "approved_by_user",
+    "glow": "approved_by_user",
+    "begone": "approved_by_user"
+  },
+  "strike_regent_candidates": {
+    "strike_regent.png": "revision_requested_by_user",
+    "strike_regent_v2.png": "approved_by_user"
+  },
+  "strike_regent_latest_candidate": "strike_regent_v2.png",
+  "user_review": {
+    "message": "OK 下一批",
+    "scope": "round5 batch_01 all six cards; strike_regent_v2.png selected"
+  }
+}

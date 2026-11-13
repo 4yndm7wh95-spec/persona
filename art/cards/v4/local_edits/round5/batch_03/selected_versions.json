@@ -1,0 +1,15 @@
+{
+  "status": "approved_by_user",
+  "selected_versions": {
+    "kingly_kick": "kingly_kick.png",
+    "kingly_punch": "kingly_punch.png",
+    "know_thy_place": "know_thy_place_v2.png",
+    "pale_blue_dot": "pale_blue_dot.png",
+    "photon_cut": "photon_cut.png",
+    "prophesize": "prophesize.png"
+  },
+  "user_review": {
+    "scope": "round5 batch_03 all six cards; know_thy_place_v2 arm-only revision selected",
+    "message": "OK"
+  }
+}

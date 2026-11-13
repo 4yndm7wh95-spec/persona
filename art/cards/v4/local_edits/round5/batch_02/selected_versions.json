@@ -1,0 +1,15 @@
+{
+  "status": "approved_by_user",
+  "user_review": {
+    "message": "ok",
+    "scope": "round5 batch_02 all six current candidates"
+  },
+  "selected_versions": {
+    "celestial_might": "celestial_might.png",
+    "constellation": "constellation.png",
+    "convergence": "convergence.png",
+    "cosmic_indifference": "cosmic_indifference.png",
+    "crescent_spear": "crescent_spear.png",
+    "glitterstream": "glitterstream.png"
+  }
+}

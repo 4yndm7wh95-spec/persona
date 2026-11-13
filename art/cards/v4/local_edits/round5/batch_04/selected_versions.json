@@ -1,0 +1,15 @@
+{
+  "selected_versions": {
+    "quasar": "quasar.png",
+    "radiate": "radiate.png",
+    "refine_blade": "refine_blade_v2.png",
+    "reflect": "reflect.png",
+    "shining_strike": "shining_strike.png",
+    "stardust": "stardust.png"
+  },
+  "status": "approved_by_user",
+  "user_review": {
+    "message": "ok",
+    "scope": "round5 batch_04 all six cards; refine_blade_v2.png selected"
+  }
+}

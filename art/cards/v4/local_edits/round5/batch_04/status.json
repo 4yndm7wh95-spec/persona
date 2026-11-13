@@ -1,0 +1,21 @@
+{
+  "automatic_retry": false,
+  "status": "approved_by_user",
+  "cards": {
+    "quasar": "approved_by_user",
+    "radiate": "approved_by_user",
+    "refine_blade": "approved_by_user",
+    "reflect": "approved_by_user",
+    "shining_strike": "approved_by_user",
+    "stardust": "approved_by_user"
+  },
+  "refine_blade_candidates": {
+    "refine_blade.png": "revision_requested_by_user",
+    "refine_blade_v2.png": "approved_by_user"
+  },
+  "refine_blade_latest_candidate": "refine_blade_v2.png",
+  "user_review": {
+    "message": "ok",
+    "scope": "round5 batch_04 all six cards; refine_blade_v2.png selected"
+  }
+}

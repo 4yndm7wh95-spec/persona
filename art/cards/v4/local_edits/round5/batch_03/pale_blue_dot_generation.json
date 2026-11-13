@@ -1,0 +1,33 @@
+{
+  "name": "pale_blue_dot",
+  "zh_name": "暗淡蓝点",
+  "batch": 3,
+  "base_commit": "1af45f39",
+  "prompt_document": "docs/codex/codex_card_art_round5.md",
+  "tool": "built-in imagegen",
+  "status": "approved_by_user",
+  "generation_count": 1,
+  "automatic_retry": false,
+  "image1": "research/regent_assets/images/packed/card_portraits/regent/pale_blue_dot.png",
+  "current_comparison_only": "art/cards/v4/local_edits/batch_06/pale_blue_dot.png",
+  "reference_sha256": {
+    "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/research/regent_assets/images/packed/card_portraits/regent/pale_blue_dot.png": "8dcbbb676f4fd9de8713a39b3f7424ebffb6b6534c0e3e4887d47864c2fe4808"
+  },
+  "submitted_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET. The previous pass only swapped characters and looked plain and standard: this pass must feel INVENTIVE, reinterpreting the replaced subject as a specific Persona 3 Reload moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. Makoto Yuki's face and head never appear (hands and sleeves only); other characters' faces are allowed. Persona creatures' hands are plump cartoon mittens with no long human fingers. If a named character's design is uncertain, follow the described features, keep the rest simple, and never invent text. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760, no text, letters, numbers, frame, UI or watermark. Never use Pyro Jack, Jack Frost or Pixie in this card. Replace the central figure with arms crossed with CERBERUS sitting proudly at the same place and scale, three heads alert. The four small figures on both sides become four floating orange will-o'-wisp flames in the same positions. The glowing dot between the two cyan tiles becomes a small blue soul flame. Keep the two cyan tiles and the green-blue background. Character and object designs: [CERBERUS] = CERBERUS (Koromaru's Persona): a huge white three-headed hound with fiery red manes and spiked collars.",
+  "actual_references": [
+    "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/research/regent_assets/images/packed/card_portraits/regent/pale_blue_dot.png"
+  ],
+  "local_reference_copies": {},
+  "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-0faeea58-81d6-4f55-9d3b-6fce6f8cc0bb.png",
+  "raw_file": "generation_sources/exec-0faeea58-81d6-4f55-9d3b-6fce6f8cc0bb.png",
+  "generated_size": [
+    1439,
+    1093
+  ],
+  "output_file": "pale_blue_dot.png",
+  "output_size": [
+    1000,
+    760
+  ],
+  "local_head": "70e431f8"
+}

@@ -1,0 +1,30 @@
+{
+  "name": "refine_blade",
+  "variant": "v2",
+  "base_commit": "67e9c901",
+  "prompt_document": "docs/codex/codex_card_art_round5.md",
+  "prompt_section": "修正：淬炼刀刃（后面还留着 Regent）",
+  "status": "approved_by_user",
+  "tool": "built-in imagegen",
+  "generation_count": 1,
+  "automatic_retry": false,
+  "image1": "art/cards/v4/local_edits/round5/batch_04/refine_blade.png",
+  "image2": "research/regent_assets/images/packed/card_portraits/regent/refine_blade.png",
+  "image2_role": "Original figure and reflection position/scale only",
+  "input_sha256": {
+    "image2": "d8ffdc6db11d2ffb59831dd3f06493beff683b0a15f54f089a69206578fb8549",
+    "image1": "228220fa0cbfa053f29ed48195b6265588580ac87d77ad17b145c07423a174f6"
+  },
+  "submitted_prompt": "Use case: precise-object-edit. Image1 is the current candidate and the edit target. Fix ONE problem: the huge brown hooded figure looming behind the blade (pointed hood, a single gold eye slit in its dark face, brown robe sweeping to the right, and its brown reflection under the blade) is the old Regent character and must be completely removed. Replace it, in the same place and at the same size, with IGOR himself leaning in over the blade, so he is the owner of the white-gloved hand sprinkling the dust: his large bald head where the hood was, his very long hooked nose following the hood's point downward toward the blade, huge round bulging eyes with tiny pupils and a small gold glint, a wide toothy grin, sparse white-grey hair at the sides, black suit shoulders exiting to the right where the brown robe was. Keep his cyan rim light on the side facing the sparkles, like the original figure had. Replace the brown reflection under the blade with Igor's dark reflection. No brown hood, robe, or gold eye slit may remain anywhere. Keep the white-gloved hand at the left, Makoto's hand gripping the blade at the right, the horizontal glowing blade, the cyan sparkles and the purple background unchanged. Crisp hard cel-shading. Opaque, full-bleed, same size as Image1, no text, frame or watermark.\nImage2 is the ORIGINAL card, used ONLY to locate the old hooded figure and its reflection and match their position and scale. Image1 is the sole edit target; keep Image1's two existing hands.",
+  "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-70dab998-7996-4029-9398-f231b4f4c3fd.png",
+  "raw_file": "generation_sources/exec-70dab998-7996-4029-9398-f231b4f4c3fd.png",
+  "generated_size": [
+    1439,
+    1093
+  ],
+  "output_file": "refine_blade_v2.png",
+  "output_size": [
+    1000,
+    760
+  ]
+}

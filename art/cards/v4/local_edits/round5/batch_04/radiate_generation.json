@@ -1,0 +1,35 @@
+{
+  "name": "radiate",
+  "zh_name": "辐射",
+  "batch": 4,
+  "base_commit": "1af45f39",
+  "prompt_document": "docs/codex/codex_card_art_round5.md",
+  "tool": "built-in imagegen",
+  "status": "approved_by_user",
+  "generation_count": 1,
+  "automatic_retry": false,
+  "image1": "research/regent_assets/images/packed/card_portraits/regent/radiate.png",
+  "current_comparison_only": "art/cards/v4/local_edits/round2/batch_03/radiate.png",
+  "reference_sha256": {
+    "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/research/regent_assets/images/packed/card_portraits/regent/radiate.png": "f2960efc2569f51054aa8f457ffe6a1d86bf7eb92a3ead25e047cae3d1087004",
+    "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/mod/pck_stage/p3makoto/persona/messiah.png": "0a8bd11ee14d31b1902d85e8aee82ad0478d6358f37a9dfe372756227c892282"
+  },
+  "submitted_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET. The previous pass only swapped characters and looked plain and standard: this pass must feel INVENTIVE, reinterpreting the replaced subject as a specific Persona 3 Reload moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. Makoto Yuki's face and head never appear (hands and sleeves only); other characters' faces are allowed. Persona creatures' hands are plump cartoon mittens with no long human fingers. If a named character's design is uncertain, follow the described features, keep the rest simple, and never invent text. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760, no text, letters, numbers, frame, UI or watermark. Never use Pyro Jack, Jack Frost or Pixie in this card. Replace the small figure in the white burst at the center with a small MESSIAH with arms spread, radiating golden light, same size and position. The vertical golden sword stays as a golden sword of light. Keep the white rays, the black and red background. Character and object designs: [MESSIAH] = MESSIAH (reference mod/pck_stage/p3makoto/persona/messiah.png: follow that design exactly).\nImage2 is MESSIAH's design reference ONLY: follow the armor, blond hair and recognizable silhouette in Image1's light-burst pose. Do not copy the reference background, full-height portrait layout, pose or hanging coffin arrangement into the scene.",
+  "actual_references": [
+    "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/research/regent_assets/images/packed/card_portraits/regent/radiate.png",
+    "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/mod/pck_stage/p3makoto/persona/messiah.png"
+  ],
+  "local_reference_copies": {},
+  "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-77bbe004-5192-4244-854d-5fcbec02bdb6.png",
+  "raw_file": "generation_sources/exec-77bbe004-5192-4244-854d-5fcbec02bdb6.png",
+  "generated_size": [
+    1439,
+    1093
+  ],
+  "output_file": "radiate.png",
+  "output_size": [
+    1000,
+    760
+  ],
+  "local_head": "47b99f84"
+}

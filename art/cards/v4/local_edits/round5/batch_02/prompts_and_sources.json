@@ -1,0 +1,217 @@
+{
+  "records": [
+    {
+      "name": "celestial_might",
+      "zh_name": "天穹之力",
+      "batch": 2,
+      "base_commit": "1af45f39",
+      "prompt_document": "docs/codex/codex_card_art_round5.md",
+      "tool": "built-in imagegen",
+      "status": "approved_by_user",
+      "generation_count": 1,
+      "automatic_retry": false,
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/celestial_might.png",
+      "current_comparison_only": "art/cards/v4/local_edits/round2/batch_04/celestial_might.png",
+      "reference_sha256": {
+        "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/research/regent_assets/images/packed/card_portraits/regent/celestial_might.png": "32b3af2e71640e1bdb9c34a4a6aadb908a494cb485ff3ebdd827ef659ab1bbad"
+      },
+      "submitted_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET. The previous pass only swapped characters and looked plain and standard: this pass must feel INVENTIVE, reinterpreting the replaced subject as a specific Persona 3 Reload moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. Makoto Yuki's face and head never appear (hands and sleeves only); other characters' faces are allowed. Persona creatures' hands are plump cartoon mittens with no long human fingers. If a named character's design is uncertain, follow the described features, keep the rest simple, and never invent text. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760, no text, letters, numbers, frame, UI or watermark. Never use Pyro Jack, Jack Frost or Pixie in this card. Replace the huge figure behind with CASTOR at the same huge scale, horse and rider rearing behind the center, the lance thrust forward so its tip pierces the glowing cyan crystalline object at the center, the constellation pattern kept as faint white stars on the dark armor. Keep the flying bone-like debris and the red background. Character and object designs: [CASTOR] = CASTOR (Shinjiro's Persona): a dark-armored knight riding a black warhorse, a long lance, a flowing dark cape.",
+      "actual_references": [
+        "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/research/regent_assets/images/packed/card_portraits/regent/celestial_might.png"
+      ],
+      "local_reference_copies": {},
+      "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-cccafadd-78c0-4ea3-a236-fb026309c4b3.png",
+      "raw_file": "generation_sources/exec-cccafadd-78c0-4ea3-a236-fb026309c4b3.png",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "output_file": "celestial_might.png",
+      "output_size": [
+        1000,
+        760
+      ],
+      "local_head": "70e431f8"
+    },
+    {
+      "name": "constellation",
+      "zh_name": "群星荟萃",
+      "batch": 2,
+      "base_commit": "1af45f39",
+      "prompt_document": "docs/codex/codex_card_art_round5.md",
+      "tool": "built-in imagegen",
+      "status": "approved_by_user",
+      "generation_count": 1,
+      "automatic_retry": false,
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/constellation.png",
+      "current_comparison_only": "art/cards/v4/local_edits/round2/batch_02/constellation.png",
+      "reference_sha256": {
+        "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/research/regent_assets/images/packed/card_portraits/regent/constellation.png": "3bd4a5a3f5771d92e92edf5203fb772d728864006d5afce380ab3edcc1bff99a",
+        "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/mod/pck_stage/p3makoto/ui/charselect_portrait.png": "d218b06e6fdf2a57d201c49c9c526852283696a80f6a24e29101f7c05a5f95c2"
+      },
+      "submitted_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET. The previous pass only swapped characters and looked plain and standard: this pass must feel INVENTIVE, reinterpreting the replaced subject as a specific Persona 3 Reload moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. Makoto Yuki's face and head never appear (hands and sleeves only); other characters' faces are allowed. Persona creatures' hands are plump cartoon mittens with no long human fingers. If a named character's design is uncertain, follow the described features, keep the rest simple, and never invent text. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760, no text, letters, numbers, frame, UI or watermark. Never use Pyro Jack, Jack Frost or Pixie in this card. Replace the two hands with two hands meeting over one card: the lower-left fist becomes MAKOTO HAND, the upper-right reaching hand becomes YUKARI TAKEBA's hand (slim, with a pale-pink cardigan sleeve and a thin bracelet), both holding the two ends of one glowing tarot card (The Lovers: two small figures under a sun, gold on royal blue, no text) where the cyan tiles were. The small hanging constellation figure becomes a few gold sparkles rising from the card. Keep the violet-blue cloth behind and the background. Character and object designs: [MAKOTO HAND] = MAKOTO YUKI's natural warm pale bare hand(s) with black school-blazer sleeve and white shirt cuff (a small red armband only if the upper arm is visible); NO Makoto face, head, hair or neck anywhere, sleeves leave the canvas at the same edges where the original arms did.\nImage2 is a design reference ONLY for Makoto's natural hand, black school-blazer sleeve and white shirt cuff. Never include his face, head, hair or portrait framing. Image1 is the sole edit target. The other hand belongs to Yukari and has the pink cardigan sleeve and bracelet specified above.",
+      "actual_references": [
+        "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/research/regent_assets/images/packed/card_portraits/regent/constellation.png",
+        "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/mod/pck_stage/p3makoto/ui/charselect_portrait.png"
+      ],
+      "local_reference_copies": {},
+      "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-1f8ae1c1-ab46-4675-ac5d-82c8212f82b5.png",
+      "raw_file": "generation_sources/exec-1f8ae1c1-ab46-4675-ac5d-82c8212f82b5.png",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "output_file": "constellation.png",
+      "output_size": [
+        1000,
+        760
+      ],
+      "local_head": "70e431f8"
+    },
+    {
+      "name": "convergence",
+      "zh_name": "汇流",
+      "batch": 2,
+      "base_commit": "1af45f39",
+      "prompt_document": "docs/codex/codex_card_art_round5.md",
+      "tool": "built-in imagegen",
+      "status": "approved_by_user",
+      "generation_count": 1,
+      "automatic_retry": false,
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/convergence.png",
+      "current_comparison_only": "art/cards/v4/local_edits/round2/batch_04/convergence.png",
+      "reference_sha256": {
+        "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/research/regent_assets/images/packed/card_portraits/regent/convergence.png": "9b92bd4f7425070af33fdf5e40841e94d608486d39be74c18549a566934324b9"
+      },
+      "submitted_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET. The previous pass only swapped characters and looked plain and standard: this pass must feel INVENTIVE, reinterpreting the replaced subject as a specific Persona 3 Reload moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. Makoto Yuki's face and head never appear (hands and sleeves only); other characters' faces are allowed. Persona creatures' hands are plump cartoon mittens with no long human fingers. If a named character's design is uncertain, follow the described features, keep the rest simple, and never invent text. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760, no text, letters, numbers, frame, UI or watermark. Never use Pyro Jack, Jack Frost or Pixie in this card. Replace the figure with the raised wand with CHIDORI in the same position and scale, her raised hand holding a pencil exactly where the wand was, a sketchbook in her other hand; the cyan, white and violet orbit lines become glowing sketch strokes drawn by her pencil, same paths and colors. Keep the dark violet background. Character and object designs: [CHIDORI] = CHIDORI YOSHINO: short red hair, pale skin, a gothic white-and-red dress, a calm distant expression, a sketchbook and a pencil.",
+      "actual_references": [
+        "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/research/regent_assets/images/packed/card_portraits/regent/convergence.png"
+      ],
+      "local_reference_copies": {},
+      "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-b4259cee-14d2-4e16-a5f3-cc3c01d8f6dd.png",
+      "raw_file": "generation_sources/exec-b4259cee-14d2-4e16-a5f3-cc3c01d8f6dd.png",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "output_file": "convergence.png",
+      "output_size": [
+        1000,
+        760
+      ],
+      "local_head": "70e431f8"
+    },
+    {
+      "name": "cosmic_indifference",
+      "zh_name": "宇宙冷漠",
+      "batch": 2,
+      "base_commit": "1af45f39",
+      "prompt_document": "docs/codex/codex_card_art_round5.md",
+      "tool": "built-in imagegen",
+      "status": "approved_by_user",
+      "generation_count": 1,
+      "automatic_retry": false,
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/cosmic_indifference.png",
+      "current_comparison_only": "art/cards/v4/local_edits/round2/batch_04/cosmic_indifference.png",
+      "reference_sha256": {
+        "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/research/regent_assets/images/packed/card_portraits/regent/cosmic_indifference.png": "706e88db31067bba8df53644873691b806dfe9d769d6e8389eb595f1525e9854"
+      },
+      "submitted_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET. The previous pass only swapped characters and looked plain and standard: this pass must feel INVENTIVE, reinterpreting the replaced subject as a specific Persona 3 Reload moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. Makoto Yuki's face and head never appear (hands and sleeves only); other characters' faces are allowed. Persona creatures' hands are plump cartoon mittens with no long human fingers. If a named character's design is uncertain, follow the described features, keep the rest simple, and never invent text. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760, no text, letters, numbers, frame, UI or watermark. Never use Pyro Jack, Jack Frost or Pixie in this card. Replace the large frontal seated figure with TAKAYA seated frontally on a stone throne at the same huge scale, legs apart, the revolver resting on one knee, the dark coat over his shoulders spreading where the old robe was, a calm cold smile. Keep the yellow lightning bolts, the glowing emblems and the starry blue background. Character and object designs: [TAKAYA] = TAKAYA SAKAKI: long black hair, a pale lean bare chest under a dark coat draped over his shoulders, a calm cold smile, a revolver.",
+      "actual_references": [
+        "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/research/regent_assets/images/packed/card_portraits/regent/cosmic_indifference.png"
+      ],
+      "local_reference_copies": {},
+      "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-9102dc4f-1408-4a7c-9a63-9af1c96192ab.png",
+      "raw_file": "generation_sources/exec-9102dc4f-1408-4a7c-9a63-9af1c96192ab.png",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "output_file": "cosmic_indifference.png",
+      "output_size": [
+        1000,
+        760
+      ],
+      "local_head": "70e431f8"
+    },
+    {
+      "name": "crescent_spear",
+      "zh_name": "新月长矛",
+      "batch": 2,
+      "base_commit": "1af45f39",
+      "prompt_document": "docs/codex/codex_card_art_round5.md",
+      "tool": "built-in imagegen",
+      "status": "approved_by_user",
+      "generation_count": 1,
+      "automatic_retry": false,
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/crescent_spear.png",
+      "current_comparison_only": "art/cards/v4/local_edits/round2/batch_01/crescent_spear.png",
+      "reference_sha256": {
+        "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/research/regent_assets/images/packed/card_portraits/regent/crescent_spear.png": "e376301713f219243e40dc1f5ecbebbe1d3d4bceb79f3935c53ce3f72c1d9588"
+      },
+      "submitted_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET. The previous pass only swapped characters and looked plain and standard: this pass must feel INVENTIVE, reinterpreting the replaced subject as a specific Persona 3 Reload moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. Makoto Yuki's face and head never appear (hands and sleeves only); other characters' faces are allowed. Persona creatures' hands are plump cartoon mittens with no long human fingers. If a named character's design is uncertain, follow the described features, keep the rest simple, and never invent text. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760, no text, letters, numbers, frame, UI or watermark. Never use Pyro Jack, Jack Frost or Pixie in this card. Replace the hand and sleeve gripping the spear with the hand and forearm of RYOJI (school uniform sleeve, the end of his yellow scarf streaming beside it) in the same grip. The crescent spearhead becomes a real CRESCENT MOON with crater detail and the same pink-white glow and sparkles, same shape and size; the shaft becomes a beam of pale moonlight. Keep the purple background. Character and object designs: [RYOJI] = RYOJI MOCHIZUKI: wavy black hair, a long yellow scarf, a school uniform, a charming playful smile.",
+      "actual_references": [
+        "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/research/regent_assets/images/packed/card_portraits/regent/crescent_spear.png"
+      ],
+      "local_reference_copies": {},
+      "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-d266cf88-6113-48dd-b9bc-63fd22ae0eb0.png",
+      "raw_file": "generation_sources/exec-d266cf88-6113-48dd-b9bc-63fd22ae0eb0.png",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "output_file": "crescent_spear.png",
+      "output_size": [
+        1000,
+        760
+      ],
+      "local_head": "70e431f8"
+    },
+    {
+      "name": "glitterstream",
+      "zh_name": "流光溢彩",
+      "batch": 2,
+      "base_commit": "1af45f39",
+      "prompt_document": "docs/codex/codex_card_art_round5.md",
+      "tool": "built-in imagegen",
+      "status": "approved_by_user",
+      "generation_count": 1,
+      "automatic_retry": false,
+      "image1": "research/regent_assets/images/packed/card_portraits/regent/glitterstream.png",
+      "current_comparison_only": "art/cards/v4/local_edits/round2/batch_02/glitterstream.png",
+      "reference_sha256": {
+        "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/research/regent_assets/images/packed/card_portraits/regent/glitterstream.png": "adbede73c6db82f3b8785b048d983754afecdc7a96c9a5ef0c657aec51d0857d",
+        "C:/Users/kkk/sts2_tools/p3r_ui_catalog_20261105/stage/tex/Xrd777/UI/Cutin/Texture/PC0007/T_UI_CI_PC0007_02.png": "f9d4e723892965af870c4a06ab49296428302c227a0e30453307d5c15375fcf4"
+      },
+      "submitted_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET. The previous pass only swapped characters and looked plain and standard: this pass must feel INVENTIVE, reinterpreting the replaced subject as a specific Persona 3 Reload moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. Makoto Yuki's face and head never appear (hands and sleeves only); other characters' faces are allowed. Persona creatures' hands are plump cartoon mittens with no long human fingers. If a named character's design is uncertain, follow the described features, keep the rest simple, and never invent text. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760, no text, letters, numbers, frame, UI or watermark. Never use Pyro Jack, Jack Frost or Pixie in this card. Replace the head at the top and the hand at the lower left with AIGIS: her face peering down at the top in the same place, her mechanical hand at the lower left held palm-out where the old hand was. The cyan sparkling stream now flows into her palm and spreads into a translucent cyan hexagon-patterned barrier in front of it. Keep the white star accents and the purple-blue background. Character and object designs: [AIGIS] = AIGIS: short blonde hair, pale blue eyes, a school uniform, visible mechanical joints at the neck and wrists.\nImage2 is the original P3R exported Aigis character design reference ONLY: match her short blonde hair, blue eyes, headband and mechanical ear pieces, and visible mechanical neck and wrist joints. Do not copy the cut-in crop, background, facial angle or pose; preserve Image1's specified placements and the shield composition.",
+      "actual_references": [
+        "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/research/regent_assets/images/packed/card_portraits/regent/glitterstream.png",
+        "C:/Users/kkk/sts2_tools/p3r_ui_catalog_20261105/stage/tex/Xrd777/UI/Cutin/Texture/PC0007/T_UI_CI_PC0007_02.png"
+      ],
+      "local_reference_copies": {
+        "C:/Users/kkk/sts2_tools/p3r_ui_catalog_20261105/stage/tex/Xrd777/UI/Cutin/Texture/PC0007/T_UI_CI_PC0007_02.png": "reference_sources/T_UI_CI_PC0007_02.png"
+      },
+      "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-5e9583fe-005e-4563-a1c8-d67ce008c002.png",
+      "raw_file": "generation_sources/exec-5e9583fe-005e-4563-a1c8-d67ce008c002.png",
+      "generated_size": [
+        1439,
+        1093
+      ],
+      "output_file": "glitterstream.png",
+      "output_size": [
+        1000,
+        760
+      ],
+      "local_head": "70e431f8"
+    }
+  ],
+  "status": "approved_by_user",
+  "prompt_document": "docs/codex/codex_card_art_round5.md",
+  "tool": "built-in imagegen",
+  "base_commit": "1af45f39",
+  "local_head": "70e431f8",
+  "user_review": {
+    "message": "ok",
+    "scope": "round5 batch_02 all six current candidates"
+  }
+}

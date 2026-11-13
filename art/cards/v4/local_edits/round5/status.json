@@ -1,0 +1,16 @@
+{
+  "batches": {
+    "batch_01": "approved_by_user",
+    "batch_02": "approved_by_user",
+    "batch_03": "approved_by_user",
+    "batch_04": "approved_by_user",
+    "batch_05": "approved_by_user"
+  },
+  "game_integration": "not_performed",
+  "generated_card_count": 29,
+  "status": "approved_by_user",
+  "planned_count": 29,
+  "publication_status": "included_in_round5_publication",
+  "automatic_retry": false,
+  "publication_target": "claude/admiring-knuth-lqj1x7"
+}

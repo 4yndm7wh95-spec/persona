@@ -1,0 +1,14 @@
+{
+  "method": "Visual straight-line overlay on 1000x760 export; manually located pommel center and blade tip",
+  "pommel_center": [
+    267,
+    277
+  ],
+  "blade_tip": [
+    794,
+    625
+  ],
+  "overlay_file": "strike_regent_v2_axis_check.png",
+  "result": "Grip centerline, crossguard center and blade spine visually follow the same axis with no obvious original kink; approximate visual check, not a pixel-exact geometry guarantee",
+  "status": "checked"
+}

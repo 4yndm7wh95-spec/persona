@@ -1,0 +1,25 @@
+{
+  "name": "know_thy_place",
+  "variant": "v2",
+  "base_commit": "25e40638",
+  "prompt_document": "docs/codex/codex_card_art_round5.md",
+  "prompt_section": "修正：何人僭越（美鹤的手太短）",
+  "status": "awaiting_user_review",
+  "tool": "built-in imagegen",
+  "generation_count": 1,
+  "automatic_retry": false,
+  "image1": "art/cards/v4/local_edits/round5/batch_03/know_thy_place.png",
+  "input_sha256": "4c11b33ac9f900ba74d4afd3ac9ccbdf99f670f1508f0f17be7fba1c9246d737",
+  "submitted_prompt": "Use case: precise-object-edit. Image1 is the current candidate and the edit target. Fix ONE problem: Mitsuru's sword arm is anatomically far too short. Her head is drawn large, but the arm comes straight out of her chest with almost no upper arm, so shoulder to wrist is only about 1.5 head-lengths; a real arm is about 2.5 head-lengths from shoulder to wrist and about 3 to the fingertips. Redraw MITSURU KIRIJO (same design: long wavy auburn-red hair, school uniform with the red bow, white gloves, the gold basket-hilted rapier, the same cold stare) in a correct side-on fencing LUNGE: shoulder, upper arm, elbow, forearm and wrist each clearly readable, the sword arm almost straight and extended forward, upper body leaning into the thrust. Use correct proportions measured in head-lengths (chin to crown): shoulder to wrist 2.5, shoulder to fingertips 3. To fit, scale her down so her head is about 15 to 16% of the canvas height and place her against the upper-left edge. The rapier tip must still touch the center of the cross on the Shadow's mask exactly where it does now, and the rapier blade must stay straight. Keep the trembling Shadow, its puddle, the clock-like floor shape and the purple background unchanged. Crisp hard cel-shading. Opaque, full-bleed, same size as Image1, no text, frame or watermark.",
+  "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-31388342-647f-4514-bd0f-8dca005726aa.png",
+  "raw_file": "generation_sources/exec-31388342-647f-4514-bd0f-8dca005726aa.png",
+  "generated_size": [
+    1439,
+    1093
+  ],
+  "output_file": "know_thy_place_v2.png",
+  "output_size": [
+    1000,
+    760
+  ]
+}

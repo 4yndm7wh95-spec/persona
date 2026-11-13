@@ -1,0 +1,15 @@
+{
+  "user_review": {
+    "message": "OK 下一批",
+    "scope": "round5 batch_01 all six cards; strike_regent_v2.png selected"
+  },
+  "selected_versions": {
+    "strike_regent": "strike_regent_v2.png",
+    "defend_regent": "defend_regent.png",
+    "falling_star": "falling_star.png",
+    "gather_light": "gather_light.png",
+    "glow": "glow.png",
+    "begone": "begone.png"
+  },
+  "status": "approved_by_user"
+}

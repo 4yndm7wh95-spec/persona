@@ -1,0 +1,37 @@
+{
+  "name": "kingly_punch",
+  "zh_name": "王者之拳",
+  "batch": 3,
+  "base_commit": "1af45f39",
+  "prompt_document": "docs/codex/codex_card_art_round5.md",
+  "tool": "built-in imagegen",
+  "status": "approved_by_user",
+  "generation_count": 1,
+  "automatic_retry": false,
+  "image1": "research/regent_assets/images/packed/card_portraits/regent/kingly_punch.png",
+  "current_comparison_only": "art/cards/v4/local_edits/batch_04/kingly_punch.png",
+  "reference_sha256": {
+    "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/research/regent_assets/images/packed/card_portraits/regent/kingly_punch.png": "979939f31b2345493286ab75f733fe91dfe1130cbe54fa0701fb28a9793874ee",
+    "C:/Users/kkk/sts2_tools/p3r_ui_catalog_20261105/stage/tex/Xrd777/UI/Cutin/Texture/PC0010/T_UI_CI_PC0010_02.png": "1c62f734d589c845ab77ab5eb463de99f12d436ba4929c7ea5ba9f5a799bbe75"
+  },
+  "submitted_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET. The previous pass only swapped characters and looked plain and standard: this pass must feel INVENTIVE, reinterpreting the replaced subject as a specific Persona 3 Reload moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. Makoto Yuki's face and head never appear (hands and sleeves only); other characters' faces are allowed. Persona creatures' hands are plump cartoon mittens with no long human fingers. If a named character's design is uncertain, follow the described features, keep the rest simple, and never invent text. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760, no text, letters, numbers, frame, UI or watermark. Never use Pyro Jack, Jack Frost or Pixie in this card. Replace the punching figure with SHINJIRO throwing a heavy haymaker at the same place and scale, his fist driving into the same white impact burst, coat flaring. Keep the hammer and log shapes, the impact burst and the red-orange background. Character and object designs: [SHINJIRO] = SHINJIRO ARAGAKI: tall, dark brown hair under a black beanie, a long maroon pea coat, tough tired eyes, a huge battle axe.\nImage2 is the original P3R exported Shinjiro design reference ONLY for his recognizable facial features, dark-brown hair and black beanie. Do not copy the portrait framing, background or pose. Keep the punch pose specified for Image1; no axe added to this punching scene, no beanie lettering.",
+  "actual_references": [
+    "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/research/regent_assets/images/packed/card_portraits/regent/kingly_punch.png",
+    "C:/Users/kkk/sts2_tools/p3r_ui_catalog_20261105/stage/tex/Xrd777/UI/Cutin/Texture/PC0010/T_UI_CI_PC0010_02.png"
+  ],
+  "local_reference_copies": {
+    "C:/Users/kkk/sts2_tools/p3r_ui_catalog_20261105/stage/tex/Xrd777/UI/Cutin/Texture/PC0010/T_UI_CI_PC0010_02.png": "reference_sources/T_UI_CI_PC0010_02.png"
+  },
+  "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-237134c8-7499-451b-a20f-b4121d9440b6.png",
+  "raw_file": "generation_sources/exec-237134c8-7499-451b-a20f-b4121d9440b6.png",
+  "generated_size": [
+    1438,
+    1093
+  ],
+  "output_file": "kingly_punch.png",
+  "output_size": [
+    1000,
+    760
+  ],
+  "local_head": "70e431f8"
+}

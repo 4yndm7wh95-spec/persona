@@ -1,0 +1,16 @@
+{
+  "automatic_retry": false,
+  "cards": {
+    "celestial_might": "approved_by_user",
+    "constellation": "approved_by_user",
+    "convergence": "approved_by_user",
+    "cosmic_indifference": "approved_by_user",
+    "crescent_spear": "approved_by_user",
+    "glitterstream": "approved_by_user"
+  },
+  "status": "approved_by_user",
+  "user_review": {
+    "message": "ok",
+    "scope": "round5 batch_02 all six current candidates"
+  }
+}

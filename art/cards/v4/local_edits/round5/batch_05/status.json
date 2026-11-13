@@ -1,0 +1,11 @@
+{
+  "status": "approved_by_user",
+  "automatic_retry": false,
+  "cards": {
+    "summon_forth": "approved_by_user",
+    "supermassive": "approved_by_user",
+    "sword_sage": "approved_by_user",
+    "the_smith": "approved_by_user",
+    "tutor": "approved_by_user"
+  }
+}

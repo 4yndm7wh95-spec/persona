@@ -1,0 +1,33 @@
+{
+  "name": "stardust",
+  "zh_name": "星尘",
+  "batch": 4,
+  "base_commit": "1af45f39",
+  "prompt_document": "docs/codex/codex_card_art_round5.md",
+  "tool": "built-in imagegen",
+  "status": "approved_by_user",
+  "generation_count": 1,
+  "automatic_retry": false,
+  "image1": "research/regent_assets/images/packed/card_portraits/regent/stardust.png",
+  "current_comparison_only": "art/cards/v4/local_edits/round2/batch_01/stardust.png",
+  "reference_sha256": {
+    "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/research/regent_assets/images/packed/card_portraits/regent/stardust.png": "60bc17f61b2909fdbdbd0f37bc7860930256e3ff7c88b0d96dc8d718e23bf218"
+  },
+  "submitted_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET. The previous pass only swapped characters and looked plain and standard: this pass must feel INVENTIVE, reinterpreting the replaced subject as a specific Persona 3 Reload moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. Makoto Yuki's face and head never appear (hands and sleeves only); other characters' faces are allowed. Persona creatures' hands are plump cartoon mittens with no long human fingers. If a named character's design is uncertain, follow the described features, keep the rest simple, and never invent text. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760, no text, letters, numbers, frame, UI or watermark. Never use Pyro Jack, Jack Frost or Pixie in this card. Replace the hand pouring stardust from the top with the small pale hand of PHAROS (black-and-white striped sleeve) in the same pinching and pouring pose. Keep the falling gold stars and dust, the red-orange glow below and the blue background. Character and object designs: [PHAROS] = PHAROS: a pale child with short ash-grey hair and a black-and-white striped top, seen only from behind here.",
+  "actual_references": [
+    "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/research/regent_assets/images/packed/card_portraits/regent/stardust.png"
+  ],
+  "local_reference_copies": {},
+  "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-b7c31e63-2c1e-4156-92da-6e4110251ec8.png",
+  "raw_file": "generation_sources/exec-b7c31e63-2c1e-4156-92da-6e4110251ec8.png",
+  "generated_size": [
+    1439,
+    1093
+  ],
+  "output_file": "stardust.png",
+  "output_size": [
+    1000,
+    760
+  ],
+  "local_head": "47b99f84"
+}

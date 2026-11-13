@@ -1,0 +1,22 @@
+{
+  "status": "approved_by_user",
+  "cards": {
+    "kingly_kick": "approved_by_user",
+    "kingly_punch": "approved_by_user",
+    "know_thy_place": "approved_by_user",
+    "pale_blue_dot": "approved_by_user",
+    "photon_cut": "approved_by_user",
+    "prophesize": "approved_by_user"
+  },
+  "automatic_retry": false,
+  "know_thy_place_candidates": {
+    "know_thy_place.png": "revision_requested_by_user",
+    "know_thy_place_v2.png": "approved_by_user",
+    "superseded_fencing_fix_25e40638/know_thy_place_v2.png": "superseded_by_user"
+  },
+  "know_thy_place_latest_candidate": "know_thy_place_v2.png",
+  "user_review": {
+    "scope": "round5 batch_03 all six cards; know_thy_place_v2 arm-only revision selected",
+    "message": "OK"
+  }
+}

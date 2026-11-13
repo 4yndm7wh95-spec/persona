@@ -1,0 +1,31 @@
+{
+  "name": "know_thy_place",
+  "variant": "v2_revised_arm_only",
+  "base_commit": "47b99f84",
+  "prompt_document": "docs/codex/codex_card_art_round5.md",
+  "prompt_section": "修正：何人僭越（美鹤的手太短）· 修订版",
+  "status": "approved_by_user",
+  "tool": "built-in imagegen",
+  "generation_count": 1,
+  "automatic_retry": false,
+  "image1": "art/cards/v4/local_edits/round5/batch_03/know_thy_place.png",
+  "image2": "research/regent_assets/images/packed/card_portraits/regent/know_thy_place.png",
+  "image2_role": "Original arm entry and pointing location only",
+  "input_sha256": {
+    "image1": "4c11b33ac9f900ba74d4afd3ac9ccbdf99f670f1508f0f17be7fba1c9246d737",
+    "image2": "c46a1c21e90ee9db10df90ce10636b3cf41b2a3ef6d485ba631e8b6b58115ef2"
+  },
+  "submitted_prompt": "Use case: precise-object-edit. Image1 is the current candidate and the edit target. Image2 is the ORIGINAL card, used only for its structure: a single arm entering from the upper-left corner and pointing at the kneeling creature at the lower right, with no head or body of that person in the picture. Fix Image1 back to that structure: REMOVE Mitsuru's head, hair mass and torso from the picture and refill that area with the same purple background shapes. Keep only her sword arm, entering from the upper-left edge exactly where the original arm enters in Image2, along the same direction: black school-uniform sleeve with a white cuff, white glove, the same gold basket-hilted rapier, the arm continuous from the canvas edge so its length is natural. A few strands of long wavy auburn-red hair may trail past the sleeve at the very edge so she is recognizable. The rapier tip points at, and touches, the center of the cross on the Shadow's mask, exactly where the original finger pointed; the blade stays straight. Keep the trembling Shadow, its puddle, the clock-like floor shape and the purple background unchanged. Crisp hard cel-shading. Opaque, full-bleed, same size as Image1, no text, frame or watermark.",
+  "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-b5b350e1-a22e-4ab2-8669-efec83d448c2.png",
+  "raw_file": "generation_sources/exec-b5b350e1-a22e-4ab2-8669-efec83d448c2.png",
+  "generated_size": [
+    1439,
+    1093
+  ],
+  "output_file": "know_thy_place_v2.png",
+  "output_size": [
+    1000,
+    760
+  ],
+  "superseded_fencing_candidate": "superseded_fencing_fix_25e40638/know_thy_place_v2.png"
+}

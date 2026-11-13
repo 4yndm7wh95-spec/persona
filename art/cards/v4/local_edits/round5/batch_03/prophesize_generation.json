@@ -1,0 +1,37 @@
+{
+  "name": "prophesize",
+  "zh_name": "预言",
+  "batch": 3,
+  "base_commit": "1af45f39",
+  "prompt_document": "docs/codex/codex_card_art_round5.md",
+  "tool": "built-in imagegen",
+  "status": "approved_by_user",
+  "generation_count": 1,
+  "automatic_retry": false,
+  "image1": "research/regent_assets/images/packed/card_portraits/regent/prophesize.png",
+  "current_comparison_only": "art/cards/v4/local_edits/round2/batch_02/prophesize.png",
+  "reference_sha256": {
+    "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/research/regent_assets/images/packed/card_portraits/regent/prophesize.png": "49f03a797983ae0b52bb9ab484a428b3b732f08d41f2903491481e0f4ef2170c",
+    "C:/Users/kkk/sts2_tools/p3r_ui_catalog_20261105/stage/tex/Xrd777/UI/Cutin/Texture/PC0006/T_UI_CI_PC0006_01.png": "9f8710bf3a779800e4f3842a114574c9aa822f43a0cbe91ea1adcb0e26f2ee48"
+  },
+  "submitted_prompt": "Use case: precise-object-edit. Image1 is the ORIGINAL card illustration and the strict EDIT TARGET. The previous pass only swapped characters and looked plain and standard: this pass must feel INVENTIVE, reinterpreting the replaced subject as a specific Persona 3 Reload moment, character or object, while the card stays instantly recognizable at thumbnail size: same silhouettes, same action, same footprint, same camera. Keep the exact background: its palette, large shapes, lighting direction, cast shadows, magical effects, enemies and core objects stay as in Image1 unless this prompt names them. Do NOT redraw the scene, do NOT recolor globally, do NOT move or rescale anything beyond what is stated. Completely remove the replaced Regent parts (old brown/gold four-point hat-head, gold gauntlets, blue robe, armor) with no remnants left behind, and refill the cleared area with the original background shapes. Match the original's rich hard cel-shading: crisp dark outlines, deep near-black occlusion planes, clear midtone and lit planes, material thickness, purposeful small details; no blur, no soft glow, no photoreal rendering. Makoto Yuki's face and head never appear (hands and sleeves only); other characters' faces are allowed. Persona creatures' hands are plump cartoon mittens with no long human fingers. If a named character's design is uncertain, follow the described features, keep the rest simple, and never invent text. Keep important features inside x8-92%, y10-85% (crop-safe). Output: opaque, full-bleed, horizontal 1000x760, no text, letters, numbers, frame, UI or watermark. Never use Pyro Jack, Jack Frost or Pixie in this card. Replace the figure cupping the glowing orange orb with FUUKA at the same place and scale, wearing a translucent navigation visor, her hands around the orb, which becomes a glowing orange data sphere with thin rings of scanning data and tiny enemy silhouettes. Keep the dark purple background. Character and object designs: [FUUKA] = FUUKA YAMAGISHI: short mint-green hair, gentle focused expression, school uniform, a thin headset with a small visor.\nImage2 is the original P3R exported Fuuka design reference ONLY for her short mint-green hair and recognizable facial design. Do not copy the portrait crop, pose or background. Follow Image1's composition with the navigation visor and orange data sphere as specified.",
+  "actual_references": [
+    "C:/Users/kkk/Documents/Codex/2026-10-21/p3makoto-c-users-kkk-documents-codex/work/hammer_furnace_v5_8339f23a/research/regent_assets/images/packed/card_portraits/regent/prophesize.png",
+    "C:/Users/kkk/sts2_tools/p3r_ui_catalog_20261105/stage/tex/Xrd777/UI/Cutin/Texture/PC0006/T_UI_CI_PC0006_01.png"
+  ],
+  "local_reference_copies": {
+    "C:/Users/kkk/sts2_tools/p3r_ui_catalog_20261105/stage/tex/Xrd777/UI/Cutin/Texture/PC0006/T_UI_CI_PC0006_01.png": "reference_sources/T_UI_CI_PC0006_01.png"
+  },
+  "source_file": "C:\\Users\\kkk\\.codex\\generated_images\\01a1d467-2d37-7c42-9f81-e483d8495ca9\\exec-a96a66ca-11ec-40bf-9b05-cb208b3cc99a.png",
+  "raw_file": "generation_sources/exec-a96a66ca-11ec-40bf-9b05-cb208b3cc99a.png",
+  "generated_size": [
+    1439,
+    1093
+  ],
+  "output_file": "prophesize.png",
+  "output_size": [
+    1000,
+    760
+  ],
+  "local_head": "70e431f8"
+}

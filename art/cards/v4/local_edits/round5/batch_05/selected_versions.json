@@ -1,0 +1,14 @@
+{
+  "selected_versions": {
+    "summon_forth": "summon_forth.png",
+    "supermassive": "supermassive.png",
+    "sword_sage": "sword_sage.png",
+    "the_smith": "the_smith.png",
+    "tutor": "tutor.png"
+  },
+  "status": "approved_by_user",
+  "user_review": {
+    "message": "ok",
+    "scope": "round5 batch_05 all five cards"
+  }
+}
