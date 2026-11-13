@@ -63,12 +63,7 @@ internal partial class ShopWater : Control
     private float elapsed, endRadius;
     private int warmFrames;
     private bool ticking;
-    private static Texture2D Png(string path)
-    {
-        using var im = new Image();
-        if(im.LoadPngFromBuffer(FileAccess.GetFileAsBytes("res://p3makoto/"+path)) != Error.Ok) throw new InvalidOperationException(path);
-        return ImageTexture.CreateFromImage(im);
-    }
+    private static Texture2D Png(string path) => Vfx.ShopAssets.Texture(path) ?? throw new InvalidOperationException(path);
     internal void Setup(NMerchantInventory inv, Control back)
     {
         inventory = inv;

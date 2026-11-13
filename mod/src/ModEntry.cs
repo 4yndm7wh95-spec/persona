@@ -10,7 +10,7 @@ namespace P3Makoto;
 public static class ModEntry
 {
 	public const string Tag = "[P3Makoto]";
-	public const string Version = "0.15.29";
+	public const string Version = "0.15.30";
 
 	public static void Init()
 	{
@@ -65,6 +65,7 @@ public static class ModEntry
 		Safe("timescale watchdog", Core.TimeScale.Install);     // v0.14.51：减速没恢复时自己恢复（玩家：一直像子弹时间）
 		Safe("health log", Core.Health.Install);              // v0.14.60：卡顿诊断日志（每 60 秒一行 + 低帧率时的明细）
 		Safe("sfx prewarm", Audio.Sfx.Prewarm);
+		Safe("shop assets", Vfx.ShopAssets.Watch);         // 0.15.30：商店房间的贴图 / 模型 / 着色器在地图空闲时提前准备
 		Safe("star orbit", Vfx.StarOrbit.Install);
 		Safe("preload", Vfx.Preload.Start);                  // 选中结城理时要用的大资源后台预加载 + 着色器预编译（避免第一次选中掉帧）
 		// 低血溺水暗角已按用户要求关闭（Vfx/LowHpFx.cs 保留未用）

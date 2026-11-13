@@ -16,26 +16,14 @@ internal static class VelvetShopLife
 	// ~0.34 s into the pass, so the sound starts this long before the car.
 	private const double SoundLead = 1.30 - 0.34;
 
-	private static Texture2D? RawPng(string file)
+	/// <summary>Sets the elevator layers on a room material from the shared cache; any missing file keeps the room static.</summary>
+	internal static bool ApplyLayers(ShaderMaterial material)
 	{
-		string path = "res://p3makoto/shop/" + file;
-		if (!FileAccess.FileExists(path)) return null;
-		using var image = new Image();
-		return image.LoadPngFromBuffer(FileAccess.GetFileAsBytes(path)) == Error.Ok ? ImageTexture.CreateFromImage(image) : null;
-	}
-
-	/// <summary>Loads the elevator textures; any missing file keeps the room static.</summary>
-	private static bool AttachLayers(ShaderMaterial material)
-	{
-		var room = RawPng("room_lattice.png");
-		var mask = RawPng("lattice_mask.png");
-		var lanternLeft = RawPng("lantern_left.png");
-		var lanternRight = RawPng("lantern_right.png");
-		if (room == null || mask == null || lanternLeft == null || lanternRight == null)
-		{
-			GD.Print($"{ModEntry.Tag} velvet elevator textures missing; painted room kept");
-			return false;
-		}
+		var room = ShopAssets.Texture("shop/room_lattice.png");
+		var mask = ShopAssets.Texture("shop/lattice_mask.png");
+		var lanternLeft = ShopAssets.Texture("shop/lantern_left.png");
+		var lanternRight = ShopAssets.Texture("shop/lantern_right.png");
+		if (room == null || mask == null || lanternLeft == null || lanternRight == null) return false;
 		// The lattice room replaces the painted one (same 1672×941 frame; Igor, table
 		// and window are pixel-identical, so blink, outline and hotspot still line up).
 		material.SetShaderParameter("room_tex", room);
@@ -47,14 +35,20 @@ internal static class VelvetShopLife
 		material.SetShaderParameter("car_h", CarH);
 		material.SetShaderParameter("car_on", 0f);
 		material.SetShaderParameter("layered", true);
-		GD.Print($"{ModEntry.Tag} velvet lattice room and elevator ready");
 		return true;
+	}
+
+	private static bool AttachLayers(ShaderMaterial material)
+	{
+		if (ApplyLayers(material)) return true;
+		GD.Print($"{ModEntry.Tag} velvet elevator textures missing; painted room kept");
+		return false;
 	}
 
 	public static void Attach(Control background, ShaderMaterial material)
 	{
-		var half = ResourceLoader.Load<Texture2D>("res://p3makoto/shop/blink_half.png");
-		var closed = ResourceLoader.Load<Texture2D>("res://p3makoto/shop/blink_closed.png");
+		var half = ShopAssets.Keep<Texture2D>("res://p3makoto/shop/blink_half.png");
+		var closed = ShopAssets.Keep<Texture2D>("res://p3makoto/shop/blink_closed.png");
 		if (half == null || closed == null) return;
 		material.SetShaderParameter("blink_half", half);
 		material.SetShaderParameter("blink_closed", closed);

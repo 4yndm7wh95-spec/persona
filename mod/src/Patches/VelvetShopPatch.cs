@@ -18,9 +18,11 @@ public static class VelvetShopPatch
 	private static void Install(NMerchantRoom room)
 	{
 		if (!Stage.MakotoRun || room.HasNode("P3VelvetShop")) return;
+		ulong installStart = Time.GetTicksUsec();
 		// Load before hiding anything: missing artwork leaves the native room usable.
-		var texture = ResourceLoader.Load<Texture2D>("res://p3makoto/shop/velvet_room.png");
-		var shader = ResourceLoader.Load<Shader>("res://p3makoto/shaders/velvet_shop.gdshader");
+		// Kept for the session (0.15.30): reloading them on every visit was part of the entry stall.
+		var texture = Vfx.ShopAssets.Keep<Texture2D>("res://p3makoto/shop/velvet_room.png");
+		var shader = Vfx.ShopAssets.Keep<Shader>("res://p3makoto/shaders/velvet_shop.gdshader");
 		if (texture == null || shader == null) return;
 		var scenery = room.GetNode<CanvasItem>("SceneContainer");
 		var merchant = room.MerchantButton;
@@ -73,15 +75,19 @@ public static class VelvetShopPatch
 			welcome.TweenCallback(Callable.From(() =>
 				Audio.Sfx.Clip($"igor_welcome_{GD.RandRange(1, 3)}", Audio.Sfx.IgorVoice)));
 		})).CallDeferred();
-        Callable.From(()=>ModEntry.Safe("shop preload",()=>
-        {
-            if(!GodotObject.IsInstanceValid(room) || !room.IsInsideTree()) return;
-            var inventory=room.GetNodeOrNull<MegaCrit.Sts2.Core.Nodes.Screens.Shops.NMerchantInventory>("Inventory");
-            if(inventory==null)
-                foreach(var child in room.GetChildren())
-                    if(child is MegaCrit.Sts2.Core.Nodes.Screens.Shops.NMerchantInventory found) {inventory=found;break;}
-            if(inventory!=null) ShopInventorySkin.GetOrCreateLayer(inventory)?.Preload();
-        })).CallDeferred();
+		// Build the goods-page stage only after the room has faded in (0.15.30): doing it in the
+		// frame after entry stacked its model/texture/shader work onto the room transition.
+		// Opening the goods page earlier still builds it on demand.
+		room.GetTree().CreateTimer(0.7, processAlways: false).Timeout += () => ModEntry.Safe("shop preload", () =>
+		{
+			if(!GodotObject.IsInstanceValid(room) || !room.IsInsideTree()) return;
+			var inventory=room.GetNodeOrNull<MegaCrit.Sts2.Core.Nodes.Screens.Shops.NMerchantInventory>("Inventory");
+			if(inventory==null)
+				foreach(var child in room.GetChildren())
+					if(child is MegaCrit.Sts2.Core.Nodes.Screens.Shops.NMerchantInventory found) {inventory=found;break;}
+			if(inventory!=null) ShopInventorySkin.GetOrCreateLayer(inventory)?.Preload();
+		});
+		GD.Print($"{ModEntry.Tag} perf velvet shop install {(Time.GetTicksUsec() - installStart) / 1000f:0.0}ms");
 		GD.Print($"{ModEntry.Tag} velvet shop installed: native merchant interaction, all room player visuals hidden");
 	}
 }

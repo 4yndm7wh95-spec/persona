@@ -23,6 +23,7 @@ internal static class VelvetShopMusic
 	private const float HumVolume = 0.30f;
 	private static AudioStreamOggVorbis? _stream;
 	private static bool _loaded;
+	private static AudioStreamOggVorbis? _hum;   // kept for the session; reloading it cost a stall on every visit
 
 	private static AudioStreamOggVorbis? Load()
 	{
@@ -98,10 +99,14 @@ internal static class VelvetShopMusic
 	/// <summary>Loops the elevator hum while the room exists, fading in and out.</summary>
 	public static void AttachHum(Node room)
 	{
-		if (!FileAccess.FileExists(HumPath)) { GD.Print($"{ModEntry.Tag} velvet elevator hum missing"); return; }
-		var hum = AudioStreamOggVorbis.LoadFromBuffer(FileAccess.GetFileAsBytes(HumPath));
-		if (hum == null) return;
-		hum.Loop = true;
+		if (_hum == null)
+		{
+			if (!FileAccess.FileExists(HumPath)) { GD.Print($"{ModEntry.Tag} velvet elevator hum missing"); return; }
+			_hum = AudioStreamOggVorbis.LoadFromBuffer(FileAccess.GetFileAsBytes(HumPath));
+			if (_hum == null) return;
+			_hum.Loop = true;
+		}
+		var hum = _hum;
 		var tree = room.GetTree();
 		StringName bus = AudioServer.GetBusIndex("SFX") >= 0 ? new StringName("SFX") : new StringName("Master");
 		var player = new AudioStreamPlayer { Stream = hum, Bus = bus, VolumeDb = -80f, Name = "P3VelvetElevatorHum", ProcessMode = Node.ProcessModeEnum.Always };
