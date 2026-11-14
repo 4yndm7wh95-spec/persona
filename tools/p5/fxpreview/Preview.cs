@@ -837,6 +837,26 @@ public partial class Preview : Node2D
 		["adrenaline"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Adrenaline", "cast_glove", 0.25, 1.6), ("Adrenaline", "cast_glove", 0.25, 1.6) }),
 		["shadowstep"] = p => RunCards(p, null, new (string, string, double, double)[] { ("ShadowStep", "cast_glove", 0.25, 1.8), ("ShadowStep", "cast_glove", 0.25, 1.8) }),
 		["wraith"] = p => RunCards(p, null, new (string, string, double, double)[] { ("WraithForm", "cast_big", 0.4, 2.4) }),
+		["retain"] = p =>
+		{
+			var bodies = new List<Control>();
+			p.At(0.1, () =>
+			{
+				for (int i = 0; i < 5; i++)
+				{
+					float k = i - 2f;
+					var holder = new Control { Position = new Vector2(960f + k * 175f, 1010f + Mathf.Abs(k) * 12f), Rotation = k * 0.05f, Scale = Vector2.One * 0.62f };
+					p._front.AddChild(holder);
+					var body = new Panel { Size = new Vector2(300f, 422f), Position = new Vector2(-150f, -422f) };
+					var sb = new StyleBoxFlat { BgColor = new Color(0.16f, 0.12f, 0.14f), CornerRadiusTopLeft = 22, CornerRadiusTopRight = 22, CornerRadiusBottomLeft = 22, CornerRadiusBottomRight = 22, BorderColor = new Color(0.5f, 0.45f, 0.4f), BorderWidthBottom = 6, BorderWidthTop = 6, BorderWidthLeft = 6, BorderWidthRight = 6 };
+					body.AddThemeStyleboxOverride("panel", sb);
+					holder.AddChild(body);
+					bodies.Add(body);
+				}
+			});
+			p.At(0.6, () => { Sfx.Take("gx_card_stack", 0.1f); for (int i = 0; i < bodies.Count; i++) RetainFx.Play(bodies[i], 0.07f * i); });
+			p.At(2.2, () => { Sfx.Take("gx_card_stack", 0.1f); for (int i = 0; i < bodies.Count; i++) RetainFx.Play(bodies[i], 0.07f * i); });
+		},
 		["plans"] = p => RunCards(p, null, new (string, string, double, double)[] { ("WellLaidPlans", "cast_glove", 0.25, 1.8), ("WellLaidPlans", "cast_glove", 0.25, 1.8) }),
 		["fumes"] = p => RunCards(p, null, new (string, string, double, double)[] { ("NoxiousFumes", "cast", 0.4, 7.5) }),
 		["redo"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Acrobatics", "cast_glove", 0.25, 1.7), ("Acrobatics", "cast_glove", 0.25, 1.7) }),
