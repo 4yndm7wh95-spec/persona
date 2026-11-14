@@ -20,6 +20,7 @@ public static partial class SkillRedo5
 		cards["Afterimage"] = Afterimage;
 		cards["Malaise"] = Malaise;
 		cards["Haze"] = HazeFx.Play;   // 迷雾（2026-11-13 重做）
+		cards["ShadowStep"] = ShadowStepV2;   // 暗影步（2026-11-14 重做：赤影换步）
 		cards["Adrenaline"] = Adrenaline;   // 肾上腺素（2026-11-13 重做：心跳涌动）
 	}
 

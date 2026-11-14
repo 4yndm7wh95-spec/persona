@@ -126,6 +126,124 @@ public static partial class SkillRedo5
 
 public static partial class SkillRedo5
 {
+	/// <summary>
+	/// 暗影步（弃掉手牌，下回合攻击伤害翻倍），「赤影换步」约 1.3s（2026-11-14 重做：去掉细圈、尖碎片）：
+	/// ① 0 三张牌从手里甩出去、在半空烧成纸屑；
+	/// ② 0.2 主拍：周围一下压暗，他「唰」地往旁边错一步 —— 原地留下一层红残影被拽成一道往后拖的影子，
+	///    两道交叉的大弧光绕身扫过、身后网点光晕炸开、一排横向疾光往后掠、他身上暗一下再回来、轻震；
+	/// ③ 0.6 蓄力（下回合翻倍）：四周光粒往握刀的手上汇，手上一团红光越聚越亮，一小圈刀光绕着前臂转起来收紧，
+	///    最后手上一闪、十字光、面具一亮（叮）。
+	/// </summary>
+	public static void ShadowStepV2(SkillCtx c)
+	{
+		float h = c.Tall, u = c.Unit, f = c.Face, w = SkillRedo.CardW(c);
+		Control back = c.Back ?? c.Front;
+		const float step = 0.2f, charge = 0.45f;
+		S("gx_card_slide", 0.16f);
+		S("gx_slice", 0.3f, step);
+		S("gx_ping", 0.14f, charge + 0.3f);
+		// ① 甩牌
+		for (int i = 0; i < 3; i++)
+		{
+			int k = i;
+			float ang = Mathf.Lerp(-0.8f, 0.15f, k / 2f);
+			Vector2 to = c.Hand + new Vector2(Mathf.Cos(ang) * f, Mathf.Sin(ang)) * h * 0.6f;
+			Phantom.P5Card card = Phantom.Card(c.Front, c.Hand, w, 0.9, 0.6f);
+			float d = 0.03f * k;
+			card.Root.Visible = false;
+			Fx.Animate(card.Root, d, 0.22, t =>
+			{
+				card.Root.Visible = true;
+				card.Place(c.Hand.Lerp(to, Ease5.OutQuint(t)), f * t * 3f, Mathf.Pi + t * 12f, 1f);
+			});
+			Fx.After(c.Front, d + 0.22f, () => SkillRedo.BurnAway(c, card, to, f * 0.66f, new Vector2(f * h * 0.08f, -h * 0.06f)));
+		}
+		// ② 错步
+		Dim(back, c.Chest, new Vector2(h * 2.4f, h * 1.9f), 0.9, s => Fx.OutCubic(Ease5.Seg(s, step - 0.05f, 0.1f)) * (1f - Ease5.Seg(s, 0.55f, 0.35f)) * 0.8f);
+		Fx.After(c.Front, step, () =>
+		{
+			Glow.Flash(c.Front, c.Chest, new Color(1f, 0.93f, 0.92f), h * 0.6f, 0.11f);
+			Glow.Flash(back, c.Chest, new Color(0.9f, 0.08f, 0.15f), h * 1.8f, 0.3f);
+			HalftoneBurst(back, c.Chest - new Vector2(f * h * 0.15f, 0f), h * 2f, 0.45f);
+			HitStop.Request(0.04);
+			Fx.Shake(1);
+			Glow.Sparks(c.Front, c.Chest, 18, 120f * u, 520f * u, 0.4f, new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.22f, 0.3f) }, 80f * u,
+				0.015f * u, 0.04f * u, new Vector2(-f, -0.2f), 50f);
+			if (RedEcho(c, 0.6) is { } echo)
+			{
+				var (sp, m) = echo;
+				Fx.Animate(sp, 0, 0.6, t =>
+				{
+					float e = Ease5.OutQuint(t);
+					sp.Position = new Vector2(-f * h * 0.14f * e, 0f);
+					m.SetShaderParameter("smear", f * 0.22f * (1f - e * 0.5f));
+					m.SetShaderParameter("flow", t * 5f);
+					m.SetShaderParameter("fill", 0.55f);
+					m.SetShaderParameter("alpha", 0.85f * Mathf.Min(1f, t / 0.05f) * (1f - Ease5.Seg(t, 0.4f, 0.6f)));
+				});
+			}
+		});
+		Sweep(c.Front, back, c.Chest, h * 0.55f, 0.5f * f, f, step, 0.42f, 0.08f, new Color(0.95f, 0.06f, 0.15f), 1.2f, 0.85f);
+		Sweep(c.Front, back, c.Chest + new Vector2(0f, h * 0.06f), h * 0.5f, -0.45f * f, -f, step + 0.04f, 0.4f, 0.035f, new Color(1f, 0.85f, 0.85f), 1.6f, 0.8f);
+		for (int i = 0; i < 7; i++)
+		{
+			float y = c.Feet.Y - h * (0.12f + 0.13f * i + Fx.Rand(-0.04f, 0.04f));
+			Vector2 a = new(c.Feet.X + f * h * 0.1f, y), b = new(c.Feet.X - f * h * Fx.Rand(0.7f, 1.1f), y);
+			bool white = i % 3 == 1;
+			DashFly(i % 2 == 0 ? back : c.Front, t => a.Lerp(b, t), step + Fx.Rand(0f, 0.08f), Fx.Rand(0.22f, 0.3f), h * Fx.Rand(0.4f, 0.65f),
+				h * (white ? 0.035f : 0.08f), white ? new Color(1f, 0.85f, 0.85f) : new Color(0.95f, 0.06f, 0.15f), white ? 1.4f : 1f);
+		}
+		SkillRedo.Pulse(c, new Color(0.3f, 0.2f, 0.28f), step, 0.4f);
+		// ③ 手上蓄力
+		Vector2 hand = c.Hand;
+		for (int i = 0; i < 10; i++)
+		{
+			Vector2 from = hand + Vector2.FromAngle(Mathf.Tau * i / 10f + Fx.Rand(-0.2f, 0.2f)) * h * Fx.Rand(0.4f, 0.6f);
+			float d0 = charge - 0.08f + 0.015f * i;
+			Node2D pr = Fx.Root(i % 2 == 0 ? c.Front : back, from, "P5StepMote", d0 + 0.3);
+			Sprite2D g = Glow.SoftSprite(pr, Vector2.Zero, new Color(1f, 0.2f, 0.28f, 0f), h * 0.12f / 32f);
+			Sprite2D cc = Glow.SoftSprite(pr, Vector2.Zero, new Color(1f, 0.92f, 0.9f, 0f), h * 0.045f / 32f);
+			pr.Visible = false;
+			Fx.Animate(pr, d0, 0.24, t =>
+			{
+				pr.Visible = true;
+				pr.GlobalPosition = from.Lerp(hand, Fx.InCubic(t));
+				float a = Mathf.Sin(Mathf.Pi * Mathf.Min(1f, t * 1.1f));
+				g.Modulate = new Color(1f, 0.2f, 0.28f, 0.85f * a);
+				cc.Modulate = new Color(1f, 0.92f, 0.9f, a);
+			});
+		}
+		Node2D orb = Fx.Root(c.Front, hand, "P5StepOrb", charge + 0.9);
+		Sprite2D og = Glow.SoftSprite(orb, Vector2.Zero, new Color(1f, 0.12f, 0.2f, 0f), 1f);
+		Sprite2D oc = Glow.SoftSprite(orb, Vector2.Zero, new Color(1f, 0.9f, 0.88f, 0f), 1f);
+		Fx.Animate(orb, charge, 0.85, t =>
+		{
+			float s = t * 0.85f;
+			float gather = Fx.OutCubic(Mathf.Min(1f, s / 0.3f));
+			float pop = s > 0.3f ? Mathf.Exp(-(s - 0.3f) * 7f) : 0f;
+			float a = 1f - Ease5.Seg(s, 0.36f, 0.22f);
+			og.Scale = Vector2.One * h * (0.15f + 0.25f * gather + 0.3f * pop) / 32f;
+			og.Modulate = new Color(1f, 0.12f, 0.2f, (0.4f + 0.4f * gather) * a);
+			oc.Scale = Vector2.One * h * (0.05f + 0.08f * gather + 0.12f * pop) / 32f;
+			oc.Modulate = new Color(1f, 0.9f, 0.88f, (0.3f + 0.7f * gather) * a);
+		});
+		Vortex(c.Front, back, hand + new Vector2(0f, h * 0.12f), h * 0.4f, h * 0.17f, 4, charge + 0.02f, 0.38f, f, 0.05f, 0.55f, 0.8f, -0.1f);
+		Fx.After(c.Front, charge + 0.3f, () =>
+		{
+			Glow.Flash(c.Front, hand, new Color(1f, 0.95f, 0.92f), h * 0.4f, 0.13f);
+			Glow.Flash(back, hand, new Color(0.95f, 0.1f, 0.16f), h * 1.1f, 0.28f);
+			HalftoneBurst(back, hand, h * 1.1f, 0.38f);
+			Cross(c.Front, hand, h * 0.8f);
+			Glow.Glint(c.Front, c.Mask + new Vector2(f * h * 0.03f, 0f), 0.9f);
+			Glow.Sparks(c.Front, hand, 14, 80f * u, 300f * u, 0.45f, new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.22f, 0.3f) }, -60f * u,
+				0.015f * u, 0.04f * u, Vector2.Up, 180f);
+		});
+		Glitter(c.Front, c.Feet, h, u, charge + 0.4f, 0.4f, 4, 0.35f);
+	}
+}
+
+public static partial class SkillRedo5
+{
 	/// <summary>刀刃陷阱的笼子：几道细刀光绕着敌人一直转（不往上卷），t0 起 dur 秒。</summary>
 	public static void TrapCage(Control front, Control back, Vector2 feet, float h, float radius, float t0, float dur) =>
 		Vortex(front, back, feet, h, radius, 6, t0, dur, 1f, 0.15f, 0.9f, 1.3f, 0f);
