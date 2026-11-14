@@ -117,6 +117,7 @@ public static class PileFx
 		public NGridCardHolder? Holder;
 		public CardModel Card = null!;
 		public int Index;
+		public bool AnimateEntrance;
 		public float Born = -1f;
 		public float Lift;
 		public float Dim = 1f;
@@ -144,15 +145,15 @@ public static class PileFx
 	/// 原版是 Pile.Cards 再按 稀有度 → Id 用 List.Sort（不稳定排序）排一次 —— 同名牌谁在前取决于牌堆里的实际位置，SL 靠的就是这个。
 	/// 优先直接读原版网格（我们只是把它藏起来，它照样排好了），游戏更新了排法也跟着变；读不到时按同一段代码现算（同输入同算法 = 同结果）。
 	/// </summary>
-	private static List<CardModel> VanillaOrder(Control grid, CardPile pile)
+	private static List<CardModel> VanillaOrder(Control grid, PileType type, List<CardModel> cards)
 	{
-		List<CardModel> cards = pile.Cards.ToList();
 		if (grid is NCardGrid g && GridCards != null && GridCards(g) is List<CardModel> shown && shown.Count == cards.Count && shown.All(c => cards.Contains(c)))
 		{
 			return shown.ToList();
 		}
-		if (pile.Type == PileType.Draw)
+		if (type == PileType.Draw)
 		{
+			cards = cards.ToList();
 			cards.Sort((c1, c2) => c1.Rarity != c2.Rarity ? c1.Rarity.CompareTo(c2.Rarity) : string.Compare(c1.Id.Entry, c2.Id.Entry, StringComparison.Ordinal));
 		}
 		return cards;
@@ -566,6 +567,7 @@ public static class PileFx
 		List<Section> dying = new();
 		float sweepT0 = -10f;
 		Queue<Item> pending = new();
+		List<CardModel>? displayed = null;
 		Item? hovered = null;
 		float scroll = 0f, target = 0f, contentH = 0f;
 		bool dragging = false;
@@ -584,31 +586,38 @@ public static class PileFx
 			it.Clip = null;
 		}
 
-		void Refill()
+		void Refresh(List<CardModel> all, bool animateSort)
 		{
-			List<CardModel> all = pile.Cards.ToList();
+			bool initial = displayed == null;
+			if (!animateSort && displayed != null && all.SequenceEqual(displayed, ReferenceEqualityComparer.Instance)) return;
 			var groups = Groups(all);
-			foreach (Item it in items) ReleaseCard(it);
-			foreach (Section s in sections)
+			var reuse = new Dictionary<CardModel, Item>(ReferenceEqualityComparer.Instance);
+			foreach (Item it in items) reuse[it.Card] = it;
+			foreach (Section section in sections)
 			{
-				if (GodotObject.IsInstanceValid(s.Head))
+				if (animateSort)
 				{
-					s.Head.QueueFree();
+					section.Die = Now();
+					dying.Add(section);
 				}
+				else if (GodotObject.IsInstanceValid(section.Head)) section.Head.QueueFree();
 			}
-			items.Clear();
 			sections.Clear();
 			pending.Clear();
-			hovered = null;
-			focused = null;
-			focusOn = false;
-			focusP = 0f;
-			catcher.Visible = false;
-			upBtn?.Hide();
-			FreeFlip(flip);
-			flip = null;
-
-			contentH = Place(groups, null);
+			contentH = Place(groups, reuse, animateSort, initial);
+			foreach (Item gone in reuse.Values) ReleaseCard(gone);
+			if (hovered != null && !items.Contains(hovered)) hovered = null;
+			if (focused != null && !items.Contains(focused))
+			{
+				focused = null;
+				focusOn = false;
+				focusP = 0f;
+				catcher.Visible = false;
+				upBtn?.Hide();
+				FreeFlip(flip);
+				flip = null;
+			}
+			displayed = all;
 			countL.Text = all.Count.ToString();
 			if (item && itemHeader != null)
 			{
@@ -628,7 +637,7 @@ public static class PileFx
 			if (orderMode)
 			{
 				// 原版顺序：一整段，从左到右、从上往下（行宽按我们的版式，不照抄原版一行几张）
-				if (all.Count > 0) groups.Add((kind == Kind.Draw ? "DRAW ORDER" : kind == Kind.Deck ? "DECK ORDER" : kind == Kind.Discard ? "DISCARD ORDER" : "EXHAUST ORDER", "", VanillaOrder(grid, pile)));   // v0.14.100：不加中文副标题（和 ×张数 叠在一起，也没用）
+				if (all.Count > 0) groups.Add((kind == Kind.Draw ? "DRAW ORDER" : kind == Kind.Deck ? "DECK ORDER" : kind == Kind.Discard ? "DISCARD ORDER" : "EXHAUST ORDER", "", VanillaOrder(grid, pile.Type, all)));   // v0.14.100：不加中文副标题（和 ×张数 叠在一起，也没用）
 			}
 			else
 			{
@@ -641,8 +650,8 @@ public static class PileFx
 			return groups;
 		}
 
-		// 按分组摆位置。reuse == null：新建 Item（之后分批建牌）；否则沿用已有的牌，只给新位置（切换排列模式，牌飞过去）
-		float Place(List<(string En, string Zh, List<CardModel> Cards)> groups, Dictionary<CardModel, Item>? reuse)
+		// Reuse holders and their entrance state across pile changes and sorting.
+		float Place(List<(string En, string Zh, List<CardModel> Cards)> groups, Dictionary<CardModel, Item> reuse, bool animateSort, bool initial)
 		{
 			float y = 0f;
 			int index = 0;
@@ -650,35 +659,27 @@ public static class PileFx
 			List<Item> order = new();
 			foreach ((string en, string zh, List<CardModel> list) in groups)
 			{
-				sections.Add(new Section { Head = SectionHead(heads, en, zh, list.Count, font, k, L.Cols * L.CellW), Y = y, Born = reuse != null ? now + 0.18f : -1f });
+				sections.Add(new Section { Head = SectionHead(heads, en, zh, list.Count, font, k, L.Cols * L.CellW), Y = y, Born = animateSort ? now + 0.18f : -1f });
 				y += HeaderH;
 				for (int i = 0; i < list.Count; i++)
 				{
 					Vector2 at = new((i % L.Cols) * L.CellW + L.CellW / 2f, y + (i / L.Cols) * L.CellH + L.CellH / 2f);
-					if (reuse != null && reuse.Remove(list[i], out Item? it))
+					if (!reuse.Remove(list[i], out Item? it))
 					{
-						it.From = it.At;
-						it.At = at;
-						it.Index = index;
-						it.MoveT0 = now;
-						it.MoveDelay = Mathf.Min(0.3f, index * 0.014f);
-					if (it.Slot == null) pending.Enqueue(it);
-						order.Add(it);
-						index++;
-						continue;
+						it = new Item { Card = list[i], At = at, AnimateEntrance = initial };
 					}
-					Item n = new() { Card = list[i], Index = index++, At = at };
-				pending.Enqueue(n);
-					items.Add(n);
-					order.Add(n);
+					it.From = it.At;
+					it.At = at;
+					it.Index = index++;
+					it.MoveT0 = animateSort ? now : -1f;
+					it.MoveDelay = Mathf.Min(0.3f, it.Index * 0.014f);
+					if (it.Slot == null) pending.Enqueue(it);
+					order.Add(it);
 				}
 				y += Mathf.Ceil(list.Count / (float)L.Cols) * L.CellH + 16f;
 			}
-			if (reuse != null)
-			{
-				items.Clear();
-				items.AddRange(order);
-			}
+			items.Clear();
+			items.AddRange(order);
 			return y;
 		}
 
@@ -698,23 +699,8 @@ public static class PileFx
 				case Kind.Exhaust: P3Settings.Current.ExhaustPileOrder = toOrder; break;
 			}
 			P3Settings.Save();
-			float now = Now();
-			foreach (Section s in sections)
-			{
-				s.Die = now;
-			}
-			dying.AddRange(sections);
-			sections.Clear();
-			Dictionary<CardModel, Item> reuse = new(ReferenceEqualityComparer.Instance);
-			foreach (Item it in items)
-			{
-				reuse[it.Card] = it;
-			}
-			pending.Clear();
-			contentH = Place(Groups(pile.Cards.ToList()), reuse);
-			foreach (Item gone in reuse.Values) ReleaseCard(gone);
-			target = Mathf.Clamp(target, 0f, MaxScroll());
-			sweepT0 = now;
+			Refresh(pile.Cards.ToList(), animateSort: true);
+			sweepT0 = Now();
 			modeSwitch.Set(toOrder);
 			Audio.Sfx.Clip("ShuffleTime_CardSet", 0.4f);
 		}
@@ -752,8 +738,13 @@ public static class PileFx
 			card.UpdateVisuals(pile.Type, CardPreviewMode.Normal);
 			h.SetIsPreviewingUpgrade(upgradeOn && it.Card.IsUpgradable);
 			PooledCardInput.Track(h);
-			it.Born = Mathf.Max(Now(), nextBorn);
-			nextBorn = it.Born + 0.022f;
+			// Only the opening snapshot plays the stagger. Live arrivals can be
+			// replaced again on the next frame, so show them as soon as they exist.
+			if (it.AnimateEntrance)
+			{
+				it.Born = Mathf.Max(Now(), nextBorn);
+				nextBorn = it.Born + 0.022f;
+			}
 			bool OwnsHolder() => !exiting && GodotObject.IsInstanceValid(root) && root.IsInsideTree()
 				&& GodotObject.IsInstanceValid(h) && h.GetParent() == slot && it.Holder == h;
 			void Enter()
@@ -1064,8 +1055,7 @@ public static class PileFx
 				if (!exiting && (needsRefill || items.Count != pile.Cards.Count))
 				{
 					needsRefill = false;
-					nextBorn = Now();
-			Refill();
+					Refresh(pile.Cards.ToList(), animateSort: false);
 				}
 				SyncGridUpgradePreview();                      // 必须早于本帧分批建牌，不能沿用 _Ready 的默认选中值。
 				float now = Now();
@@ -1216,7 +1206,7 @@ public static class PileFx
 					}
 					Vector2 p = Screen(at) + new Vector2(0f, -42f * k * move);
 					// 入场（每个界面不同）：抽牌堆从左下弹入；牌组一列列从右侧滑入；弃牌堆从上方飘落（左右摆着转）；消耗堆由光点聚拢显形（从大到小、淡入）
-					float born = Mathf.Clamp((now - it.Born) / (kind == Kind.Discard ? 0.6f : 0.38f), 0f, 1f);
+					float born = it.Born < 0f ? 1f : Mathf.Clamp((now - it.Born) / (kind == Kind.Discard ? 0.6f : 0.38f), 0f, 1f);
 					float pop = Ease.OutBack(born);
 					float enterRot = 0f, enterScale = 1f;
 					it.Lift = Mathf.MoveToward(it.Lift, it == hovered ? 1f : 0f, 0.12f);
@@ -1363,7 +1353,7 @@ public static class PileFx
 					plate.Visible = true;
 					Vector2 cs = ph.Hitbox.Size.X > 1f ? ph.Hitbox.Size : new Vector2(300f, 422f);
 					float half = cs.Y * ps.Scale.Y * ph.Scale.Y * 0.5f;
-						plate.Position = ps.Position + clipAt + new Vector2(-20f * k, half + 8f * k);
+					plate.Position = ps.Position + clipAt + new Vector2(-20f * k, half + 8f * k);
 					SetPileTitle((Label)plate.GetChild(plate.GetChildCount() - 1), hv.Card.Title);
 					float a = Ease.OutCubic(hv.Lift);
 					plate.Modulate = new Color(1f, 1f, 1f, a);
@@ -1380,7 +1370,7 @@ public static class PileFx
 			}
 		}
 
-		Refill();
+		Refresh(pile.Cards.ToList(), animateSort: false);
 		pile.ContentsChanged += OnChanged;
 		tree.ProcessFrame += Tick;
 		ulong sid = screen.GetInstanceId();
