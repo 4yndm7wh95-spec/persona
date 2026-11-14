@@ -201,8 +201,8 @@ public static class PileFx
 	public static void Rollback(Control screen)
 	{
 		Exits.Remove(screen.GetInstanceId());
-		if (screen.GetNodeOrNull(RootName) is Node root) HeroStage.Close(root);
-		screen.GetNodeOrNull(RootName)?.QueueFree();
+		if (screen.GetNodeOrNull<Control>(RootName) is not Control root) return;
+		root.Hide();
 		foreach (string path in Hidden)
 		{
 			if (screen.GetNodeOrNull<CanvasItem>(path) is CanvasItem ci)
@@ -210,6 +210,8 @@ public static class PileFx
 				ci.Visible = true;
 			}
 		}
+		ModEntry.Safe("pile hero rollback", () => HeroStage.Close(root));
+		root.QueueFree();
 	}
 
 	public static void Build(Control screen, CardPile pile, Kind kind)
@@ -219,6 +221,7 @@ public static class PileFx
 			return;
 		}
 		Vector2 view = screen.GetViewportRect().Size;
+		if (view.X <= 0f || view.Y <= 0f) return;
 		ulong buildStart = Time.GetTicksUsec();
 		float k = view.Y / 1080f;
 		float rx = view.X - 1920f * k;                    // 右侧元素的水平偏移（宽屏时贴右边缘）
@@ -562,27 +565,30 @@ public static class PileFx
 		List<Section> sections = new();
 		List<Section> dying = new();
 		float sweepT0 = -10f;
-		List<CardModel> pending = new();
+		Queue<Item> pending = new();
 		Item? hovered = null;
 		float scroll = 0f, target = 0f, contentH = 0f;
 		bool dragging = false;
 		float dragFrom = 0f, dragScroll = 0f;
 		float nextBorn = dive ? 0.35f : 0.22f;              // 入水：等水花散开再出牌
 
+		void ReleaseCard(Item it)
+		{
+			// The holder owns the card and returns it on exit. Return the holder
+			// before deleting the clipping wrapper that contains it.
+			if (it.Holder is { } holder && GodotObject.IsInstanceValid(holder) && holder.GetParent() == it.Slot)
+				holder.QueueFreeSafely();
+			if (it.Clip is { } clip && GodotObject.IsInstanceValid(clip)) clip.QueueFree();
+			it.Holder = null;
+			it.Slot = null;
+			it.Clip = null;
+		}
+
 		void Refill()
 		{
-			foreach (Item it in items)
-			{
-				// 卡牌 holder 是对象池里的：先还回池子，再删外面的 slot
-				if (it.Holder != null && GodotObject.IsInstanceValid(it.Holder))
-				{
-					it.Holder.QueueFreeSafely();
-				}
-				if (it.Clip != null && GodotObject.IsInstanceValid(it.Clip))
-				{
-					it.Clip.QueueFree();
-				}
-			}
+			List<CardModel> all = pile.Cards.ToList();
+			var groups = Groups(all);
+			foreach (Item it in items) ReleaseCard(it);
 			foreach (Section s in sections)
 			{
 				if (GodotObject.IsInstanceValid(s.Head))
@@ -598,12 +604,11 @@ public static class PileFx
 			focusOn = false;
 			focusP = 0f;
 			catcher.Visible = false;
+			upBtn?.Hide();
 			FreeFlip(flip);
 			flip = null;
 
-			List<CardModel> all = pile.Cards.ToList();
-			float y = Place(Groups(all), null);
-			contentH = y;
+			contentH = Place(groups, null);
 			countL.Text = all.Count.ToString();
 			if (item && itemHeader != null)
 			{
@@ -657,12 +662,13 @@ public static class PileFx
 						it.Index = index;
 						it.MoveT0 = now;
 						it.MoveDelay = Mathf.Min(0.3f, index * 0.014f);
+					if (it.Slot == null) pending.Enqueue(it);
 						order.Add(it);
 						index++;
 						continue;
 					}
-					pending.Add(list[i]);
 					Item n = new() { Card = list[i], Index = index++, At = at };
+				pending.Enqueue(n);
 					items.Add(n);
 					order.Add(n);
 				}
@@ -704,20 +710,14 @@ public static class PileFx
 			{
 				reuse[it.Card] = it;
 			}
-			List<Item> before = items.ToList();
+			pending.Clear();
 			contentH = Place(Groups(pile.Cards.ToList()), reuse);
-			foreach (Item gone in reuse.Values)
-			{
-				// 牌堆在切换的同一帧变了（极少见）：多出来的直接还回去
-				if (gone.Holder != null && GodotObject.IsInstanceValid(gone.Holder)) gone.Holder.QueueFreeSafely();
-				if (gone.Slot != null && GodotObject.IsInstanceValid(gone.Slot)) gone.Slot.QueueFree();
-			}
+			foreach (Item gone in reuse.Values) ReleaseCard(gone);
 			target = Mathf.Clamp(target, 0f, MaxScroll());
 			sweepT0 = now;
 			modeSwitch.Set(toOrder);
 			Audio.Sfx.Clip("ShuffleTime_CardSet", 0.4f);
 		}
-		modeSwitch.Changed = Switch;
 		// 扫光：一道青色细光带从网格顶扫到底（切换排列模式时）
 		Polygon2D sweep = new() { Color = new Color(0.55f, 0.9f, 1f, 0f), Polygon = new[] { new Vector2(-20f, -3f), new Vector2(L.Cols * L.CellW + 20f, -3f), new Vector2(L.Cols * L.CellW + 20f, 3f), new Vector2(-20f, 3f) }.Select(v => v * k).ToArray() };
 		heads.AddChild(sweep);
@@ -726,26 +726,32 @@ public static class PileFx
 
 		void Create(Item it)
 		{
-			NCard? card = NCard.Create(it.Card);
-			NGridCardHolder? h = card != null ? NGridCardHolder.Create(card) : null;
-			if (h == null)
+			NCard card = NCard.Create(it.Card) ?? throw new InvalidOperationException($"Could not create pile card {it.Card.Id}");
+			NGridCardHolder h;
+			try
 			{
-				card?.QueueFreeSafely();
-				return;
+				h = NGridCardHolder.Create(card) ?? throw new InvalidOperationException($"Could not create pile card holder {it.Card.Id}");
 			}
-			Control slot = new() { MouseFilter = Control.MouseFilterEnum.Ignore, Modulate = new Color(1f, 1f, 1f, 0f) };
+			catch
+			{
+				if (card.GetParent() == null) card.QueueFreeSafely();
+				throw;
+			}
 			Control clip = new() { Name = "PileCardClip", Position = clipAt, Size = clipSize,
 				ClipContents = true, MouseFilter = Control.MouseFilterEnum.Ignore };
-			cards.AddChild(clip);
+			Control slot = new() { MouseFilter = Control.MouseFilterEnum.Ignore, Modulate = new Color(1f, 1f, 1f, 0f) };
 			clip.AddChild(slot);
+			it.Clip = clip;
+			it.Slot = slot;
+			it.Holder = h;
 			h.Visible = true;
 			slot.AddChild(h);
-			card!.UpdateVisuals(pile.Type, CardPreviewMode.Normal);
+			cards.AddChild(clip);
+			if (!card.IsInsideTree() || h.CardNode != card)
+				throw new InvalidOperationException($"Pile card {it.Card.Id} did not attach to its holder");
+			card.UpdateVisuals(pile.Type, CardPreviewMode.Normal);
 			h.SetIsPreviewingUpgrade(upgradeOn && it.Card.IsUpgradable);
 			PooledCardInput.Track(h);
-			it.Slot = slot;
-			it.Clip = clip;
-			it.Holder = h;
 			it.Born = Mathf.Max(Now(), nextBorn);
 			nextBorn = it.Born + 0.022f;
 			bool OwnsHolder() => !exiting && GodotObject.IsInstanceValid(root) && root.IsInsideTree()
@@ -847,12 +853,12 @@ public static class PileFx
 			backBound = on;
 			foreach (string key in backKeys)
 			{
-			if (on && !InputMap.HasAction(key))
+				if (on && !InputMap.HasAction(key))
 				{
 					continue;                                    // 旧版本没有的动作不挂（否则每次按键都会报"动作不存在"）
 				}
-			// 原版返回按钮可能挂在"松开"上：特写期间一并挡住。
-			Compat.HotkeyBindings.Set(hk, key, unzoom, swallow, on);
+				// 原版返回按钮可能挂在"松开"上：特写期间一并挡住。
+				Compat.HotkeyBindings.Set(hk, key, unzoom, swallow, on);
 			}
 		}
 
@@ -1021,38 +1027,29 @@ public static class PileFx
 			}
 		});
 
-		Refill();
-		Action onChanged = () => ModEntry.Safe("pile changed", () =>
-		{
-			nextBorn = Now();
-			Refill();
-		});
-		pile.ContentsChanged += onChanged;
-
 		SceneTree tree = screen.GetTree();
-		// v0.14.53 兜底：每帧的排版连续出错 3 次 → 拆掉这个界面、退回原版网格（不能留一堆没排好的牌）
-		int tickFails = 0;
-		void RunTick(Action body)
+		bool needsRefill = false;
+		void OnChanged() => needsRefill = true;
+
+		void FallBack(string where, Exception error)
 		{
-			try
+			tree.ProcessFrame -= Tick;
+			pile.ContentsChanged -= OnChanged;
+			ModEntry.Safe("pile input cleanup", () => BindBack(false));
+			Rollback(screen);
+			if (exiting) Finalize(screen);
+			ModEntry.Report($"pile {kind} {where} ({pile.Cards.Count} cards in pile, {items.Count} slots, {pending.Count} pending); using vanilla grid", error);
+			ModEntry.Safe("pile card cleanup", () =>
 			{
-				body();
-				tickFails = 0;
-			}
-			catch (Exception e)
-			{
-				ModEntry.Report("pile tick", e);
-				if (++tickFails >= 3)
-				{
-					tree.ProcessFrame -= Tick;
-					BindBack(false);
-					ModEntry.Warn("pile screen: layout keeps failing -> back to the vanilla grid");
-					FreeFlip(flip);
-					flip = null;
-					Rollback(screen);
-				}
-			}
+				foreach (Item it in items) ReleaseCard(it);
+			});
 		}
+
+		modeSwitch.Changed = order =>
+		{
+			try { Switch(order); }
+			catch (Exception e) { FallBack("sort", e); }
+		};
 
 		void Tick()
 		{
@@ -1060,8 +1057,16 @@ public static class PileFx
 			{
 				return;
 			}
-			RunTick(() =>
+			try
 			{
+				// A draw/shuffle can raise ContentsChanged for each card. Rebuild once
+				// from the final snapshot, outside the game's notification callback.
+				if (!exiting && (needsRefill || items.Count != pile.Cards.Count))
+				{
+					needsRefill = false;
+					nextBorn = Now();
+			Refill();
+				}
 				SyncGridUpgradePreview();                      // 必须早于本帧分批建牌，不能沿用 _Ready 的默认选中值。
 				float now = Now();
 				float dt = Mathf.Clamp(now - lastNow, 0f, 0.1f);
@@ -1119,17 +1124,10 @@ public static class PileFx
 					}
 				}
 				// 圆孔张开一小会儿之后开始建卡牌节点（每帧 4 张，避免一帧卡顿）；入场按序号错开
-				if (now > 0.12f)
+				if (!exiting && now > 0.12f)
 				{
-					for (int n = 0; n < 4 && pending.Count > 0; n++)
-					{
-						CardModel model = pending[0];
-						pending.RemoveAt(0);
-						if (items.FirstOrDefault(i => i.Card == model && i.Slot == null) is Item it)
-						{
-							Create(it);
-						}
-					}
+					for (int n = 0; n < 4 && pending.TryDequeue(out Item? it); n++)
+						Create(it);
 				}
 				empty.Visible = items.Count == 0 && now > 0.4f;
 
@@ -1200,11 +1198,9 @@ public static class PileFx
 				}
 				foreach (Item it in items)
 				{
-					if (it.Slot == null || !GodotObject.IsInstanceValid(it.Holder))
-					{
-						continue;
-					}
-					NGridCardHolder h = it.Holder;
+					if (it.Slot == null) continue; // Waiting in the creation queue.
+					if (it.Holder is not { } h || !GodotObject.IsInstanceValid(h) || !GodotObject.IsInstanceValid(h.CardNode))
+						throw new InvalidOperationException($"Pile card {it.Card.Id} lost its display node");
 					Vector2 cs = h.Hitbox.Size.X > 1f ? h.Hitbox.Size : new Vector2(300f, 422f);
 					float baseScale = L.CardW * k / cs.X;
 					// v0.14.98 切换排列模式：从旧位置沿弧线飞到新位置（先慢后快再慢），途中略放大、转一点
@@ -1377,9 +1373,15 @@ public static class PileFx
 				{
 					if (plate != null) plate.Visible = false;
 				}
-			});
+			}
+			catch (Exception e)
+			{
+				FallBack("display", e);
+			}
 		}
 
+		Refill();
+		pile.ContentsChanged += OnChanged;
 		tree.ProcessFrame += Tick;
 		ulong sid = screen.GetInstanceId();
 		Exits[sid] = () =>
@@ -1420,19 +1422,20 @@ public static class PileFx
 		};
 		root.TreeExiting += () =>
 		{
-			if (kind == Kind.Draw || item || skill) HeroStage.Close(right);
 			Exits.Remove(sid);
 			tree.ProcessFrame -= Tick;
-			BindBack(false);
-			pile.ContentsChanged -= onChanged;
-			FreeFlip(flip);                                  // 特写中途关掉界面：翻转替身借的卡牌还回对象池
+			pile.ContentsChanged -= OnChanged;
+			ModEntry.Safe("pile input cleanup", () => BindBack(false));
+			ModEntry.Safe("pile flip cleanup", () => FreeFlip(flip));
 			flip = null;
+			if (kind == Kind.Draw || item || skill)
+				ModEntry.Safe("pile hero cleanup", () => HeroStage.Close(right));
 		};
 		// 同上跳过静音引子；再延到下一帧才播：建界面这一帧要几十毫秒，立刻播的话声音会抢在画面前面
 		Audio.Sfx.Clip("ShuffleTime_Whoosh", 0.45f, delay: 0.001f, from: WhooshSkip);
 		if (dive) DiveFx.Start(root, water, view);       // 水花在最上层，最后加
 		lap("tail");
-		GD.Print($"{ModEntry.Tag} perf pile {kind} build {(Time.GetTicksUsec() - buildStart) / 1000f:0.0}ms (decor {decorMs:0.0}ms;{laps}); idle warmup complete={IdleWarmup.Complete}");
+		GD.Print($"{ModEntry.Tag} perf pile {kind} build {(Time.GetTicksUsec() - buildStart) / 1000f:0.0}ms (decor {decorMs:0.0}ms;{laps}); cards={items.Count}, order={(orderMode ? "original" : "type")}, idle warmup complete={IdleWarmup.Complete}");
 	}
 
 	// ── 点击特写 ──
