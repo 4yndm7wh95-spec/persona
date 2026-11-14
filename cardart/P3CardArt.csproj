@@ -7,6 +7,8 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <!-- Never resolve game references from a previous build copied below this project. -->
+    <AssemblySearchPaths>{HintPathFromItem};{TargetFrameworkDirectory};{RawFileName}</AssemblySearchPaths>
     <GameDir Condition="'$(GameDir)' == ''">C:\Users\kkk\Desktop\slaythespire\Slay the Spire 2</GameDir>
     <GameData>$(GameDir)\data_sts2_windows_x86_64</GameData>
   </PropertyGroup>
