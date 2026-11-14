@@ -1,0 +1,17 @@
+[
+  {
+    "case": "puppet_only",
+    "gpu_ms_median": 0.73199999332428,
+    "gpu_ms_p95": 0.917999982833862
+  },
+  {
+    "case": "puppet_six_lights",
+    "gpu_ms_median": 1.50600004196167,
+    "gpu_ms_p95": 2.10800004005432
+  },
+  {
+    "case": "optimized_puppet_six_lights",
+    "gpu_ms_median": 0.734000027179718,
+    "gpu_ms_p95": 1.00800001621246
+  }
+]
