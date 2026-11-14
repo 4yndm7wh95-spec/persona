@@ -7,7 +7,13 @@ using MegaCrit.Sts2.Core.Models;
 
 namespace P3CardArt;
 
-/// <summary>Standalone portrait replacements with cached textures and background deck prefetch.</summary>
+/// <summary>
+/// Standalone portrait replacements with cached textures and background deck prefetch.
+/// 1.0.2 (user: every illustration looks over-sharpened): cards draw the portrait at 250x190 (the vanilla
+/// card_atlas region; ancients 250x351), and the 1000x760 export was minified 4x by the GPU without mipmaps,
+/// aliasing the fine line work. &lt;card&gt;.jpg is now exported at exactly that size; &lt;card&gt;_big.jpg (2x)
+/// serves the 0.113 full-size inspection (BigPortrait) and loads only when that view opens.
+/// </summary>
 internal static class CardArt
 {
 	private const string Dir = "res://p3cardart/card_art/";
@@ -36,11 +42,13 @@ internal static class CardArt
 	}
 
 	/// <summary>The P3R illustration for this card, or null to keep the vanilla portrait.</summary>
-	internal static Texture2D? For(CardModel card)
+	internal static Texture2D? For(CardModel card, bool big = false)
 	{
 		if (!Enabled) return null;
 		string id = card.Id.Entry.ToLowerInvariant();
-		return Names.Contains(id) ? Get(id) : null;
+		if (!Names.Contains(id)) return null;
+		// Older packs have no _big file: the inspection view then uses the normal one.
+		return big && FileAccess.FileExists(Dir + id + "_big.jpg") ? Get(id + "_big") : Get(id);
 	}
 
 	private static Texture2D? Get(string id)

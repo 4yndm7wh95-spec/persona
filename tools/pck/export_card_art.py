@@ -1,8 +1,10 @@
 """Export the approved card illustrations (art/cards/final/final_manifest.json) into the PCK stage.
 
 Usage: python3 tools/pck/export_card_art.py [--stage cardart/pck_stage]
-Each image is resized to the vanilla portrait size of that card (1000x760, ancients 606x852) and written as
-p3cardart/card_art/<card>.jpg (quality 90, 4:4:4) plus index.txt (one card id per line). Loaded at runtime through FileAccess; no .import files.
+<card>.jpg is the size cards actually draw the portrait at, the vanilla card_atlas region 250x190 (ancients
+250x351); <card>_big.jpg is 2x for the 0.113 full-size inspection view (BigPortrait). Lanczos downscale,
+quality 95, 4:4:4, plus index.txt (one card id per line). 1.0.2: the old 1000x760 export was minified 4x by the
+GPU without mipmaps, which aliased the fine line work into a harsh, over-sharpened look. Loaded at runtime through FileAccess; no .import files.
 """
 import argparse, json, os
 from PIL import Image
@@ -16,11 +18,10 @@ manifest = json.load(open("art/cards/final/final_manifest.json", encoding="utf-8
 total = 0
 for e in manifest:
     im = Image.open(e["file"]).convert("RGB")
-    size = (606, 852) if im.width < im.height else (1000, 760)
-    if im.size != size:
-        im = im.resize(size, Image.LANCZOS)
-    p = os.path.join(out, e["name"] + ".jpg")
-    im.save(p, quality=90, subsampling=0, optimize=True)
-    total += os.path.getsize(p)
+    small = (250, 351) if im.width < im.height else (250, 190)
+    for suffix, k in (("", 1), ("_big", 2)):
+        p = os.path.join(out, e["name"] + suffix + ".jpg")
+        im.resize((small[0] * k, small[1] * k), Image.LANCZOS).save(p, quality=95, subsampling=0, optimize=True)
+        total += os.path.getsize(p)
 open(os.path.join(out, "index.txt"), "w", encoding="utf-8", newline="\n").write("\n".join(e["name"] for e in manifest) + "\n")
-print(f"{len(manifest)} card illustrations -> {out} ({total / 1e6:.1f} MB)")
+print(f"{len(manifest)} card illustrations -> {out} ({total / 1e6:.2f} MB)")

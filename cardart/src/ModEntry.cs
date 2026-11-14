@@ -16,7 +16,7 @@ public static class ModEntry
 
     public static void Init()
     {
-        GD.Print($"{Tag} init v1.0.1 (card refresh and full-size portraits)");
+        GD.Print($"{Tag} init v1.0.2 (portraits at the vanilla 250x190 size, 2x for full-size view)");
         try
         {
             Harmony harmony = new("brooks.p3cardart");
@@ -44,11 +44,11 @@ public static class CardArtPortraitPatch
         if (AccessTools.PropertyGetter(typeof(CardModel), "BigPortrait") is MethodInfo big) yield return big;
     }
 
-    public static void Postfix(CardModel __instance, ref Texture2D __result)
+    public static void Postfix(CardModel __instance, MethodBase __originalMethod, ref Texture2D __result)
     {
         try
         {
-            if (CardArt.For(__instance) is Texture2D art) __result = art;
+            if (CardArt.For(__instance, __originalMethod.Name.Contains("BigPortrait")) is Texture2D art) __result = art;
         }
         catch (Exception e)
         {
@@ -74,9 +74,13 @@ public static class CardArtRefreshPatch
     {
         try
         {
-            if (__instance.Model is not CardModel model || CardArt.For(model) is not Texture2D art) return;
+            if (__instance.Model is not CardModel model) return;
             FieldInfo field = model.Rarity == MegaCrit.Sts2.Core.Entities.Cards.CardRarity.Ancient ? AncientPortrait : Portrait;
             if (field.GetValue(__instance) is not TextureRect rect) return;
+            // A vanilla texture wider than the 250 px atlas region means the game put the big portrait here
+            // (0.113 inspection): keep it big so the full-size view is not upscaled from the small file.
+            bool big = rect.Texture is Texture2D current && current.GetWidth() > 300;
+            if (CardArt.For(model, big) is not Texture2D art) return;
             rect.Texture = art;
             RefreshBlur?.Invoke(__instance, null);
             if (applied) return;

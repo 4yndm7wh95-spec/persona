@@ -1995,3 +1995,8 @@ BGM 不响的最可能原因：播放器在 NMerchantRoom._Ready 内加到 Scene
 加载：Vfx/CardArt.cs 第一次用到时同步解码（Godot 4.5.1 实测每张解码约 5~7 ms、上传约 2~3 ms），之后整局缓存；在结城理的局里每 2 秒查一次牌组，没加载过的牌在后台线程解码、每帧上传一张，抽到手里时已经准备好。
 开关：设置里新增「卡图：P3插画 / 原版」，默认 P3插画；切换后新出现的卡牌生效。别的储君换皮 mod 接管骨骼时自动用原版图。
 预览：art/cards/final/in_frame_preview.jpg（tools/ui/card_compose.py 按原版卡框拼的 94 张）。
+
+### P3CardArt 1.0.2 · 卡图看着锐度太高
+用户：卡图都有一个共同特征，锐度太高，看着不舒服。
+原因：卡牌上的插画实际只画 250×190（原版 card_atlas 图集区域尺寸，远古牌 250×351），之前给的是 1000×760，显示时 GPU 实时缩小约 4 倍且没有多级纹理，AI 图偏多的细线条被采样成锯齿和硬边，看起来像锐化过度。
+改法：tools/pck/export_card_art.py 用 Lanczos 直接缩到原版区域尺寸（质量 95，4:4:4），和原版走同样的显示路径；另导出 2 倍的 <卡名>_big.jpg，只给 0.113 完整查看界面（BigPortrait）用。NCard 刷新补丁看到原版放进来的是大图（宽度大于 300）时也换成 _big。PCK 189 个文件约 13.7 MB。对比：art/cards/final/sharpness_fix_compare.jpg（左 = 旧版模拟显示，中 = 修正，右 = 原版）。
