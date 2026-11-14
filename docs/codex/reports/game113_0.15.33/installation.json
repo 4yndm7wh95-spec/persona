@@ -1,0 +1,64 @@
+[
+  {
+    "files": [
+      {
+        "sha256": "612300ed4d99d4d6c7afc48892963cfa589d057de6455329b2258de213cec169",
+        "bytes": 327,
+        "existed": true,
+        "name": "P3Makoto.json"
+      },
+      {
+        "sha256": "bc5253cbe8f06e5a7e460fd174fc356412cd192610b58fd76e33d6a2f6534ed8",
+        "bytes": 1149952,
+        "existed": true,
+        "name": "P3Makoto.dll"
+      },
+      {
+        "sha256": "e228dbab7523073b3cae52fe81834ebf7cfd41311a299c4163b7d1b6ebdd6e5a",
+        "bytes": 135237252,
+        "existed": true,
+        "name": "P3Makoto.pck"
+      }
+    ],
+    "installed_hashes_verified": true,
+    "game_version": "v0.111.0",
+    "zip_sha256": "92e0dc3a71842346850e1e9d1fb007aa908420d591aad15de01a602dad56d928",
+    "zip_path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a\\mod\\dist\\0.15.33\\P3Makoto_0.15.33_game0.111.0.zip",
+    "mod_version": "0.15.33",
+    "backup_path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a\\mod\\_build\\0.15.33\\install\\backup_20261113_214552_111\\P3Makoto",
+    "mod_id": "P3Makoto",
+    "install_path": "C:\\Users\\kkk\\Desktop\\slaythespire\\Slay the Spire 2\\mods\\P3Makoto",
+    "zip_members_and_current_install_verified": true
+  },
+  {
+    "files": [
+      {
+        "sha256": "612300ed4d99d4d6c7afc48892963cfa589d057de6455329b2258de213cec169",
+        "bytes": 327,
+        "existed": true,
+        "name": "P3Makoto.json"
+      },
+      {
+        "sha256": "d19b0a5d12655f69c749084de727c25d679ccf596089ceb77a2244905616bb13",
+        "bytes": 1149952,
+        "existed": true,
+        "name": "P3Makoto.dll"
+      },
+      {
+        "sha256": "e228dbab7523073b3cae52fe81834ebf7cfd41311a299c4163b7d1b6ebdd6e5a",
+        "bytes": 135237252,
+        "existed": true,
+        "name": "P3Makoto.pck"
+      }
+    ],
+    "installed_hashes_verified": true,
+    "game_version": "v0.113.0",
+    "zip_sha256": "f32b575b8f4e3d221ca85db0a13e559c4a7dac295b2f97ad504c3b2fc31dddc2",
+    "zip_path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a\\mod\\dist\\0.15.33\\P3Makoto_0.15.33.zip",
+    "mod_version": "0.15.33",
+    "backup_path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a\\mod\\_build\\0.15.33\\install\\backup_20261113_214552_113\\P3Makoto",
+    "mod_id": "P3Makoto",
+    "install_path": "G:\\SteamLibrary\\steamapps\\common\\Slay the Spire 2\\mods\\P3Makoto",
+    "zip_members_and_current_install_verified": true
+  }
+]

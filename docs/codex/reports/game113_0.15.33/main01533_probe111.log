@@ -1,0 +1,10 @@
+SentryGodotInitializer: Sentry GDExtension not loaded in this process; skipping. If you see this in a running game (not during project export or IDE script analysis), check Godot's log for extension load failures.
+PASS damage target: System.Threading.Tasks.Task`1[System.Collections.Generic.IEnumerable`1[MegaCrit.Sts2.Core.Entities.Creatures.DamageResult]] Damage(MegaCrit.Sts2.Core.GameActions.Multiplayer.PlayerChoiceContext, System.Collections.Generic.IEnumerable`1[MegaCrit.Sts2.Core.Entities.Creatures.Creature], System.Decimal, MegaCrit.Sts2.Core.ValueProps.ValueProp, MegaCrit.Sts2.Core.Entities.Creatures.Creature, MegaCrit.Sts2.Core.Models.CardModel, MegaCrit.Sts2.Core.Entities.Cards.CardPlay)
+PASS: damage target extraction preserves both creatures and their order
+PASS shop ready target: NMerchantRoom._Ready
+PASS patch installed: DamagePatch
+PASS patch installed: DamageNumberPatch
+PASS patch installed: AttackHitVfxPatch
+PASS patch installed: VelvetShopPatch
+PASS patch installed: CharSelectInfoPatch
+PASS: 5 affected patch classes installed against actual game assemblies; no game rendering started

@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
@@ -6,9 +7,13 @@ using MegaCrit.Sts2.Core.Nodes.Rooms;
 namespace P3Makoto.Patches;
 
 /// <summary>Only the local Makoto run's merchant room receives the Velvet Room presentation.</summary>
-[HarmonyPatch(typeof(NMerchantRoom), nameof(NMerchantRoom._Ready))]
+[HarmonyPatch]
 public static class VelvetShopPatch
 {
+	// 0.113's base _Ready runs before NStandardMerchantRoom initializes MerchantButton.
+	public static MethodBase TargetMethod() => AccessTools.DeclaredMethod(
+		AccessTools.TypeByName("MegaCrit.Sts2.Core.Nodes.Rooms.NStandardMerchantRoom") ?? typeof(NMerchantRoom), "_Ready");
+
 	public static void Postfix(NMerchantRoom __instance) =>
 		ModEntry.Safe("velvet shop", () => Install(__instance));
 
@@ -25,7 +30,7 @@ public static class VelvetShopPatch
 		var shader = Vfx.ShopAssets.Keep<Shader>("res://p3makoto/shaders/velvet_shop.gdshader");
 		if (texture == null || shader == null) return;
 		var scenery = room.GetNode<CanvasItem>("SceneContainer");
-		var merchant = room.MerchantButton;
+		var merchant = room.MerchantButton ?? throw new InvalidOperationException("MerchantButton is not initialized; Velvet Shop was not installed");
 		var material = new ShaderMaterial { Shader = shader };
 		var background = new TextureRect
 		{

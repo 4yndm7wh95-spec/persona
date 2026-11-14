@@ -1,0 +1,14 @@
+[P3Makoto] init v0.15.32 build 20261113-standalone-card-art
+[P3Makoto] game version v0.113.0
+[P3Makoto] patch DamagePatch failed: Patching exception in method null
+[P3Makoto] patch CharSelectInfoPatch failed: Patching exception in method virtual System.Void MegaCrit.Sts2.Core.Nodes.Screens.CharacterSelect.NCharacterSelectScreen::SelectCharacter(MegaCrit.Sts2.Core.Nodes.Screens.CharacterSelect.NCharacterSelectButton charSelectButton)
+[P3Makoto] harmony patches applied: 78 ok, 2 failed
+[P3Makoto] P3R sfx loaded 89/89
+[P3CardArt] init v1.0.1 (card refresh and full-size portraits)
+[P3CardArt] portrait and card refresh patches installed
+[P3CardArt] card art: 94 illustrations in pck
+[P3Makoto] health LOW last 2s: p3_ms_per_frame=663.20 over 1 frames; top: asset guard 337.07ms×2 (max 336.9), shader warmup 288.05ms×1 (max 288.0), charselect info warmup 208.73ms×1 (max 208.7), cursor late init 30.16ms×1 (max 30.2), preload 4.81ms×1 (max 4.8), game version 0.88ms×1 (max 0.9), star orbit 0.59ms×1 (max 0.6), health log 0.57ms×1 (max 0.6); frame_ms=166.7 gpu_ms=1.8 render_cpu_ms=0.1 process_ms=18.5 draw_calls=2 objects=2
+[P3CardArt] card refresh replaced illustration: DEFEND_REGENT
+[P3Makoto] velvet shop failed: System.NullReferenceException: Object reference not set to an instance of an object.
+[WARN] [P3Makoto] velvet shop failed: System.NullReferenceException: Object reference not set to an instance of an object.
+[P3Makoto] perf shop stage built in 12.4ms (prepared=True)
