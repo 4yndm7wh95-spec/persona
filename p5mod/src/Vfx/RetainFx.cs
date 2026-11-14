@@ -4,7 +4,7 @@ namespace P5Joker;
 
 /// <summary>
 /// 回合结束时被保留在手里的牌（计划妥当、带保留的牌）：一张张从左到右「封」一下（用户 2026-11-14：每回合都会出现，不要太花哨，但要好看）。
-/// 每张牌：一圈红色柔光描边从牌边亮起来、边上一层网点光晕，一道白色高光斜着扫过牌面，然后柔柔地收掉；牌顶上冒几粒光点。
+/// 每张牌：一圈红色柔光描边从牌边亮起来（网点被用户拉黑，2026-11-14 去掉），一道白色高光斜着扫过牌面，然后柔柔地收掉；牌顶上冒几粒光点。
 /// 整次只响一声很轻的叠牌声。约 0.9s，每张错开 0.07s。
 /// </summary>
 public static class RetainFx
@@ -31,19 +31,14 @@ void fragment() {
 	float vary = 0.55 + 0.45 * sin(ang * 3.0 + seed * 6.0 + t * 5.0) * sin(ang * 5.0 - seed * 3.0);
 	float outer = exp(-max(d, 0.0) / 20.0) * step(-1.0, d) * (0.6 + 0.4 * vary);
 	float edge = exp(-abs(d + 3.0) / (7.0 + 4.0 * flash)) * (0.45 + 0.55 * vary);
-	// 外圈网点：越靠边越大
-	vec2 g = p / 9.0;
-	vec2 cell = fract(g) - 0.5;
-	float rr = 0.42 * exp(-max(d, 0.0) / 18.0) * step(0.0, d);
-	float dots = smoothstep(rr, rr - 0.12, length(cell)) * step(0.0, d);
 	// 牌面里一层淡淡的红 + 一道斜着扫过的白高光
 	float inside = smoothstep(1.0, -2.0, d);
 	float x = (p.x / card.x + p.y / card.y * 0.45);
 	float sweep = mix(-0.9, 0.9, smoothstep(0.05, 0.55, t));
 	float sheen = exp(-pow((x - sweep) / 0.08, 2.0)) * inside;
-	vec3 col = red * (outer * 0.55 + dots * 0.5) + mix(red, vec3(1.0, 0.85, 0.85), 0.25 + 0.6 * flash) * edge * 0.7
+	vec3 col = red * outer * 0.7 + mix(red, vec3(1.0, 0.85, 0.85), 0.25 + 0.6 * flash) * edge * 0.7
 		+ red * inside * 0.12 + vec3(1.0, 0.95, 0.93) * sheen * 0.45;
-	float a = clamp(outer * 0.45 + dots * 0.4 + edge * 0.6 + inside * 0.1 + sheen * 0.35, 0.0, 1.0);
+	float a = clamp(outer * 0.55 + edge * 0.6 + inside * 0.1 + sheen * 0.35, 0.0, 1.0);
 	col *= env;
 	a *= env;
 	if (a <= 0.003) discard;

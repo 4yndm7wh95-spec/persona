@@ -31,7 +31,7 @@ public static partial class SkillRedo5
 				float k = bb == 0 ? 0.7f : 1f;
 				Glow.Flash(c.Front, c.Chest, new Color(1f, 0.92f, 0.9f), h * 0.35f * k, 0.13f);
 				Glow.Flash(back, c.Chest, new Color(1f, 0.12f, 0.2f), h * 1.4f * k, 0.3f);
-				HalftoneBurst(back, c.Chest, h * 1.7f * k, 0.42f);
+				Glow.Flash(back, c.Chest, new Color(0.9f, 0.08f, 0.15f), (h * 1.7f * k) * 0.85f, (0.42f) * 0.9f, 0f);
 				if (bb == 1)
 				{
 					Fx.Shake(1);
@@ -164,7 +164,7 @@ public static partial class SkillRedo5
 		{
 			Glow.Flash(c.Front, c.Chest, new Color(1f, 0.93f, 0.92f), h * 0.6f, 0.11f);
 			Glow.Flash(back, c.Chest, new Color(0.9f, 0.08f, 0.15f), h * 1.8f, 0.3f);
-			HalftoneBurst(back, c.Chest - new Vector2(f * h * 0.15f, 0f), h * 2f, 0.45f);
+			Glow.Flash(back, c.Chest - new Vector2(f * h * 0.15f, 0f), new Color(0.9f, 0.08f, 0.15f), (h * 2f) * 0.85f, (0.45f) * 0.9f, 0f);
 			HitStop.Request(0.04);
 			Fx.Shake(1);
 			Glow.Sparks(c.Front, c.Chest, 18, 120f * u, 520f * u, 0.4f, new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.22f, 0.3f) }, 80f * u,
@@ -232,7 +232,7 @@ public static partial class SkillRedo5
 		{
 			Glow.Flash(c.Front, hand, new Color(1f, 0.95f, 0.92f), h * 0.4f, 0.13f);
 			Glow.Flash(back, hand, new Color(0.95f, 0.1f, 0.16f), h * 1.1f, 0.28f);
-			HalftoneBurst(back, hand, h * 1.1f, 0.38f);
+			Glow.Flash(back, hand, new Color(0.9f, 0.08f, 0.15f), (h * 1.1f) * 0.85f, (0.38f) * 0.9f, 0f);
 			Cross(c.Front, hand, h * 0.8f);
 			Glow.Glint(c.Front, c.Mask + new Vector2(f * h * 0.03f, 0f), 0.9f);
 			Glow.Sparks(c.Front, hand, 14, 80f * u, 300f * u, 0.45f, new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.22f, 0.3f) }, -60f * u,
@@ -245,21 +245,44 @@ public static partial class SkillRedo5
 public static partial class SkillRedo5
 {
 	/// <summary>
-	/// 幽魂形态（获得无实体），「怪盗幻影」约 1.6s（2026-11-14 重做：去掉紫色漩涡、细圈和亡魂贴图）：
-	/// ① 0 四周压暗，他整个人褪成半透明的淡红白（像幻影），身后一根柔光气柱慢慢升起；
-	/// ② 0.06 起三道宽的红弧光从脚下往上一圈圈裹住他（像斗篷卷上来），一大圈刀光往上卷、光粒往上飘；
-	/// ③ 0.75 主拍：白红闪光、超大网点光晕、十字光芒、两道交叉大弧光、碎光四散、重震；
-	/// ④ 之后一排疾光从他身上直接穿过去（无实体：打不中），人跟着闪两下幻影的抖动，再慢慢恢复颜色。
-	/// （第一版是三层残影剥离再合回，用户：很怪 → 去掉。）
+	/// 幽魂形态（获得无实体），「相位虚化」约 1.4s（2026-11-14 第四版）：
+	/// 用户否掉的：三层残影剥离（怪）、弧光环绕裹身（环绕光圈当主体不好看）、红网点化身（网点 low，拉黑）。
+	/// 延续影刃旋风 / 余像这套已经满意的语言：压暗透红、光线往身上收、贴身红残影、柔光光芒、疾光、碎光。
+	/// ① 0～0.3 周围压暗透红，二十来道光线从四面往他胸口收，身后一根柔光气柱升起；
+	/// ② 0.2 起他「失相」：人褪成半透明的淡红白，一层贴身的红残影在他身上左右急抖、拖出横向的影纹（不离开身体），
+	///    几道横向细光芒在身上一闪一闪；
+	/// ③ 0.5 主拍：白红闪光、一道很长的横向光芒 + 十字光、碎光四散、重震，残影一下散开淡掉；
+	/// ④ 之后一排疾光从他身上直接穿过去（无实体：打不中），人跟着闪两下，再慢慢恢复颜色。
 	/// </summary>
 	public static void WraithFormV2(SkillCtx c)
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face;
 		Control back = c.Back ?? c.Front;
-		const float snap = 0.75f, life = 1.6f;
+		const float snap = 0.5f, life = 1.4f;
 		Sfx.Play(Sfx.WraithForm, 0.6f);
-		S("gx_slice", 0.22f, snap - 0.04f);
-		Dim(back, c.Chest, new Vector2(h * 3.2f, h * 2.4f), life, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.25f)) * (1f - Ease5.Seg(s, 1.1f, 0.5f)));
+		S("gx_slice", 0.22f, snap - 0.03f);
+		Vector2 chest = c.Chest;
+		Dim(back, chest, new Vector2(h * 3f, h * 2.2f), life, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.3f)) * (1f - Ease5.Seg(s, 1.0f, 0.4f)));
+		// ① 光线往胸口收
+		for (int i = 0; i < 22; i++)
+		{
+			float ang = Mathf.Tau * i / 22f + Fx.Rand(-0.1f, 0.1f);
+			Vector2 dir = new(Mathf.Cos(ang), Mathf.Sin(ang) * 0.8f);
+			float r0 = h * Fx.Rand(0.75f, 1.15f), r1 = h * Fx.Rand(0.08f, 0.16f);
+			float delay = Fx.Rand(0f, 0.16f), dur = Fx.Rand(0.16f, 0.24f);
+			Node2D lr = Fx.Root(c.Front, chest, "P5WraithIn", delay + dur + 0.1);
+			Polygon2D line = Glow.TaperPoly(lr, i % 3 == 0 ? Pal5.Hot : new Color(1f, 0.16f, 0.24f));
+			float w = Fx.Rand(2f, 4.5f) * u;
+			line.Visible = false;
+			Fx.Animate(line, delay, dur, t =>
+			{
+				line.Visible = true;
+				float hd = Fx.InCubic(Mathf.Min(1f, t * 1.3f)), tl = Fx.InCubic(t);
+				Vector2 a = dir * Mathf.Lerp(r0, r1, hd), b = dir * Mathf.Lerp(r0 * 1.25f, r1, tl);
+				line.Polygon = Glow.TaperPts(b, a, w);
+				line.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, t * 4f) * (1f - Ease5.Seg(t, 0.8f, 0.2f)));
+			});
+		}
 		// 人褪成幻影
 		if (c.SelfTint is { } tint)
 		{
@@ -268,8 +291,8 @@ public static partial class SkillRedo5
 			Fx.Animate(tick, 0, life, t =>
 			{
 				float s = t * life;
-				float k = Ease5.Seg(s, 0f, 0.25f) * (1f - 0.6f * Ease5.Seg(s, snap, 0.08f)) * (1f - Ease5.Seg(s, snap + 0.2f, 0.6f));
-				float jit = s > snap ? 0.25f * Mathf.Max(0f, Mathf.Sin(s * 40f)) * (1f - Ease5.Seg(s, snap, 0.5f)) : 0.1f * Mathf.Sin(s * 30f);
+				float k = Ease5.Seg(s, 0.15f, 0.3f) * (1f - 0.6f * Ease5.Seg(s, snap, 0.08f)) * (1f - Ease5.Seg(s, snap + 0.3f, 0.5f));
+				float jit = s > snap ? 0.25f * Mathf.Max(0f, Mathf.Sin(s * 40f)) * (1f - Ease5.Seg(s, snap, 0.5f)) : 0.15f * Mathf.Sin(s * 50f);
 				tint(Colors.White.Lerp(ghost, Mathf.Clamp(k + jit * k, 0f, 1f)));
 			});
 			tick.TreeExiting += () => tint(Colors.White);
@@ -281,21 +304,52 @@ public static partial class SkillRedo5
 		{
 			float s = t * life;
 			float pop = s > snap ? Mathf.Exp(-(s - snap) * 5f) : 0f;
-			float a = Fx.OutCubic(Ease5.Seg(s, 0f, 0.4f)) * (1f - Ease5.Seg(s, 1.0f, 0.6f));
+			float a = Fx.OutCubic(Ease5.Seg(s, 0f, 0.4f)) * (1f - Ease5.Seg(s, 0.9f, 0.5f));
 			aw.Scale = new Vector2(h * (0.8f + 0.5f * pop), h * (1.4f + 0.4f * Ease5.Seg(s, 0f, snap) + 0.5f * pop)) / 32f;
 			aw.Position = new Vector2(0f, -h * (0.6f + 0.15f * Ease5.Seg(s, 0f, snap)));
 			aw.Modulate = new Color(1f, 0.1f, 0.18f, (0.4f + 0.4f * pop) * a);
 		});
-		// 三道宽的红弧光从脚下往上一圈圈裹住他（像斗篷卷上来）
-		for (int i = 0; i < 3; i++)
+		// ② 失相：一层贴身红残影左右急抖、拖横向影纹（不离开身体）
+		Fx.After(c.Front, 0.18f, () =>
 		{
-			float y = 0.18f + 0.3f * i;
-			Sweep(c.Front, back, c.Feet + new Vector2(0f, -h * y), h * (0.55f - 0.05f * i), 0.12f * f * (i - 1), f, 0.06f + 0.15f * i, 0.5f, 0.13f,
-				new Color(0.92f, 0.05f, 0.14f), 1.1f, 1.2f);
-			Sweep(c.Front, back, c.Feet + new Vector2(0f, -h * (y + 0.06f)), h * (0.5f - 0.05f * i), 0.12f * f * (i - 1), f, 0.1f + 0.15f * i, 0.45f, 0.04f,
-				new Color(1f, 0.86f, 0.86f), 1.6f, 1.1f);
+			if (RedEcho(c, 0.6) is not { } echo) return;
+			var (sp, m) = echo;
+			Vector2 pivot = chest - c.Region.Position;
+			Fx.Animate(sp, 0, 0.6, t =>
+			{
+				float s = 0.18f + t * 0.6f;
+				float shake = s < snap ? Mathf.Sin(s * 70f) * (0.6f + 0.4f * Mathf.Sin(s * 23f)) : 0f;
+				float burst = Fx.OutCubic(Ease5.Seg(s, snap, 0.25f));
+				float sc = 1f + 0.08f * burst;
+				sp.Scale = Vector2.One * sc;
+				sp.Position = pivot * (1f - sc) + new Vector2(shake * h * 0.03f, 0f);
+				m.SetShaderParameter("smear", shake * 0.08f);
+				m.SetShaderParameter("flow", s * 8f);
+				m.SetShaderParameter("fill", 0.35f);
+				m.SetShaderParameter("alpha", 0.75f * Mathf.Min(1f, t * 0.6f / 0.08f) * (1f - burst));
+			});
+		});
+		for (int i = 0; i < 5; i++)
+		{
+			Vector2 at = c.Feet + new Vector2(Fx.Rand(-0.1f, 0.1f) * h, -h * Fx.Rand(0.2f, 0.85f));
+			int k = i;
+			Fx.After(c.Front, 0.2f + 0.06f * k, () => Flare(c.Front, at, h * Fx.Rand(0.5f, 0.8f), h * 0.018f, new Color(1f, 0.3f, 0.36f, 0.8f), 0.14f));
 		}
-		// 无实体：主拍之后一排疾光从他身上直接穿过去（打不中他）
+		Glitter(c.Front, c.Feet, h, u, 0.1f, 1.0f, 8, 0.45f);
+		// ③ 主拍
+		Fx.After(c.Front, snap, () =>
+		{
+			Glow.Flash(c.Front, chest, new Color(1f, 0.95f, 0.93f), h * 0.9f, 0.16f);
+			Glow.Flash(back, chest, new Color(0.9f, 0.08f, 0.15f), h * 2.4f, 0.4f);
+			Flare(c.Front, chest, h * 3.2f, h * 0.06f, new Color(1f, 0.15f, 0.22f, 0.9f), 0.36f);
+			Flare(c.Front, chest, h * 2.4f, h * 0.014f, new Color(1f, 0.95f, 0.96f, 1f), 0.3f);
+			Cross(c.Front, chest, h * 1.1f);
+			HitStop.Request(0.05);
+			Fx.Shake(2);
+			Glow.Sparks(c.Front, chest, 40, 160f * u, 700f * u, 0.55f, new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.22f, 0.3f), new Color(0.5f, 0.02f, 0.08f) },
+				120f * u, 0.02f * u, 0.05f * u, Vector2.Up, 180f);
+		});
+		// ④ 无实体：一排疾光从他身上直接穿过去（打不中他）
 		for (int i = 0; i < 6; i++)
 		{
 			float y = c.Feet.Y - h * (0.15f + 0.14f * i + Fx.Rand(-0.03f, 0.03f));
@@ -305,23 +359,6 @@ public static partial class SkillRedo5
 			DashFly(c.Front, t => a.Lerp(b, t), snap + 0.12f + 0.05f * i, 0.24f, h * 0.65f, h * (white ? 0.05f : 0.11f),
 				white ? new Color(1f, 0.88f, 0.88f) : new Color(0.95f, 0.06f, 0.15f), white ? 1.6f : 1.1f, null, 0.8f);
 		}
-		Vortex(c.Front, back, c.Feet, h, h * 0.6f, 8, 0.1f, snap - 0.05f, f, 0.05f, 0.9f, 1.2f, 0.3f);
-		Glitter(c.Front, c.Feet, h, u, 0.1f, 1.2f, 10, 0.5f);
-		// 合回：主拍
-		Fx.After(c.Front, snap, () =>
-		{
-			Glow.Flash(c.Front, c.Chest, new Color(1f, 0.95f, 0.93f), h * 0.9f, 0.16f);
-			Glow.Flash(back, c.Chest, new Color(0.9f, 0.08f, 0.15f), h * 2.6f, 0.4f);
-			HalftoneBurst(back, c.Chest, h * 2.8f, 0.6f);
-			HalftoneBurst(back, c.Chest, h * 1.6f, 0.4f, 0.05f, new Color(1f, 0.3f, 0.36f));
-			Cross(c.Front, c.Chest, h * 1.3f);
-			HitStop.Request(0.05);
-			Fx.Shake(2);
-			Glow.Sparks(c.Front, c.Chest, 40, 160f * u, 700f * u, 0.55f, new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.22f, 0.3f), new Color(0.5f, 0.02f, 0.08f) },
-				120f * u, 0.02f * u, 0.05f * u, Vector2.Up, 180f);
-		});
-		Sweep(c.Front, back, c.Chest, h * 0.75f, 0.4f, f, snap, 0.5f, 0.09f, new Color(0.95f, 0.06f, 0.15f), 1.2f, 1f);
-		Sweep(c.Front, back, c.Chest, h * 0.7f, -0.4f, -f, snap + 0.04f, 0.48f, 0.04f, new Color(1f, 0.85f, 0.85f), 1.6f, 0.95f);
 	}
 }
 
@@ -347,7 +384,7 @@ public static partial class SkillRedo5
 		Dim(back, hub + new Vector2(0f, -h * 0.4f), new Vector2(h * 2.8f, h * 2.2f), life, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.2f)) * (1f - Ease5.Seg(s, life - 0.35f, 0.35f)) * 0.85f);
 		Fx.After(c.Front, lit, () =>
 		{
-			HalftoneBurst(back, hub + new Vector2(0f, -h * 0.55f), h * 2.6f, 0.55f);
+			Glow.Flash(back, hub + new Vector2(0f, -h * 0.55f), new Color(0.9f, 0.08f, 0.15f), (h * 2.6f) * 0.85f, (0.55f) * 0.9f, 0f);
 			Glow.Flash(back, hub + new Vector2(0f, -h * 0.55f), new Color(0.95f, 0.1f, 0.16f), h * 2f, 0.35f);
 			Glow.Sparks(c.Front, hub + new Vector2(0f, -h * 0.75f), 30, 60f * u, 260f * u, 0.9f, new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.22f, 0.3f) }, 160f * u,
 				0.015f * u, 0.04f * u, Vector2.Up, 120f);
@@ -409,7 +446,7 @@ public static partial class SkillRedo5
 			Fx.After(c.Front, d + flyIn * 0.7f, () =>
 			{
 				Glow.Flash(c.Front, slot, new Color(1f, 0.93f, 0.92f), w * 1.6f, 0.11f);
-				HalftoneBurst(back, slot, w * 3.2f, 0.32f);
+				Glow.Flash(back, slot, new Color(0.9f, 0.08f, 0.15f), (w * 3.2f) * 0.85f, (0.32f) * 0.9f, 0f);
 				Glow.Sparks(c.Front, slot, 8, 60f * u, 220f * u, 0.35f, new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.22f, 0.3f) }, 40f * u,
 					0.012f * u, 0.03f * u, Vector2.Up, 180f);
 			});
@@ -429,14 +466,13 @@ public static partial class SkillRedo5
 		{
 			Glow.Flash(c.Front, stack, new Color(1f, 0.95f, 0.92f), h * 0.55f, 0.14f);
 			Glow.Flash(back, stack, new Color(0.9f, 0.08f, 0.15f), h * 1.7f, 0.32f);
-			HalftoneBurst(back, stack, h * 1.9f, 0.48f);
+			Glow.Flash(back, stack, new Color(0.9f, 0.08f, 0.15f), (h * 1.9f) * 0.85f, (0.48f) * 0.9f, 0f);
 			Cross(c.Front, stack, h * 0.95f);
 			Phantom.Confetti(c.Front, stack, 16, 380f * u, Vector2.Up, 150f, 0.8f, 7f * u);
 			Fx.Shake(1);
 			Glow.Sparks(c.Front, stack, 16, 100f * u, 380f * u, 0.45f, new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.22f, 0.3f) }, -40f * u,
 				0.015f * u, 0.04f * u, Vector2.Up, 180f);
 		});
-		Vortex(c.Front, back, stack + new Vector2(0f, h * 0.1f), h * 0.4f, h * 0.22f, 5, fold + 0.15f, 0.4f, f, 0.1f, 0.4f, 0.8f, 0.05f);
 		Glitter(c.Front, c.Feet, h, u, 0.2f, 0.9f, 6, 0.45f);
 	}
 }

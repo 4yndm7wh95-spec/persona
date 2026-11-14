@@ -4,15 +4,12 @@ using Godot;
 namespace P5Joker;
 
 /// <summary>
-/// 刀刃陷阱（把消耗牌堆里的小刀全部对一个敌人打出）「预告信星环」
-/// （用户 2026-11-13：原来太简单 → 光弹太少 → 光点看不清、太小胆；2026-11-14：光点不该从 Joker 那里出来，应该在敌人附近现身、
-///   有几张小刀就有几个；v4 卡冲过去撞敌人怪怪的；要再华丽、再花哨）：
-/// ① 布阵：有几张小刀就有几张预告信卡，一张接一张在敌人四周现身（红白一闪、网点光晕、碎光，卡翻转着弹出来，很轻的翻牌声），
-///    排成绕着它腰上转的一圈斜光环 —— 卡拖着红白丝带绕它转，转到身前在它前面、转到身后在它后面；
-///    阵成时一道大弧光绕它扫一圈、光粒往上飘；敌人周围压暗、脚下红光呼吸。
-/// ② 每一枪（GunFx.Hit）：下一张卡停下来正对它、一亮，射出一道带弯的红白光矛扎进它；
-///    卡在原地被切开烧掉、炸成纸屑；它身上闪光、网点光晕、碎光、一道弧光绕身一扫、轻震。剩下的卡越转越快。
-/// ③ 收官（最后一张）：整圈炸开 —— 刀光旋涡往上卷、两道交叉大弧光、十字光芒、超大网点光晕、漫天纸屑、重震。
+/// 刀刃陷阱（把消耗牌堆里的小刀全部对一个敌人打出）「预告信」
+/// （用户 2026-11-13/14：光点太少太小、不该从 Joker 出来、卡冲过去撞怪怪的；环绕光圈当主体不好看、网点拉黑）：
+/// ① 布阵：有几张小刀就有几张预告信卡，一张接一张在敌人头顶两侧现身（红白一闪、柔光、碎光，卡翻转着弹出来），
+///    排成一道挂在它头顶的月牙（不转圈），牌顶朝外、悬停轻轻浮动，高光扫过牌面；敌人周围压暗、脚下红光呼吸、光粒往上飘。
+/// ② 每一枪（GunFx.Hit）：一张卡往后一缩被切开散掉，射出一道带弯的红白光矛扎进它；它身上闪光、碎光、轻震。
+/// ③ 收官（最后一张）：大闪光、十字光芒、柔光、漫天纸屑碎光、重震。
 /// </summary>
 public static class KnifeTrapFx
 {
@@ -53,7 +50,7 @@ public static class KnifeTrapFx
 		float life = 1.0f + Interval * count + 3.5f;
 		_until = Stage.NowMs() + (ulong)(life * 1000f);
 		_rx = Mathf.Max(tw * 0.95f, th * 0.78f);
-		_ry = th * 0.26f;
+		_ry = th * 0.62f;
 		float cw = th * 0.27f;
 		_cw = cw;
 		_spin = 0.9f;
@@ -88,7 +85,7 @@ public static class KnifeTrapFx
 		// 一张张现身：从正上方开始顺着环排开
 		for (int i = 0; i < count; i++)
 		{
-			float slot = -Mathf.Pi / 2f + Mathf.Tau * i / count;
+			float slot = count == 1 ? -Mathf.Pi / 2f : Mathf.Lerp(-Mathf.Pi * 0.97f, -Mathf.Pi * 0.03f, (float)i / (count - 1));   // 一道月牙挂在它头顶两侧（不转圈）
 			Trap tp = new() { Slot = slot, Phase = Fx.Rand(0f, Mathf.Tau), Born = 0.05f + Interval * i };
 			tp.Card = Phantom.Card(back, OrbitAt(slot), cw, life + 0.2);
 			tp.Card.Root.Visible = false;
@@ -104,7 +101,7 @@ public static class KnifeTrapFx
 				Sfx.Take("gx_card_slide", 0.08f);
 				Glow.Flash(layer, at, new Color(1f, 0.92f, 0.9f), cw * 1.8f, 0.12f);
 				Glow.Flash(back, at, new Color(0.9f, 0.1f, 0.15f), cw * 3.6f, 0.26f);
-				SkillRedo5.SoftBurst(back, at, cw * 3.4f, 0.35f, new Color(0.85f, 0.05f, 0.12f));
+				Glow.Flash(back, at, new Color(0.85f, 0.05f, 0.12f), (cw * 3.4f) * 0.85f, (0.35f) * 0.9f, 0f);
 				Glow.Sparks(layer, at, 14, 80f * u, 320f * u, 0.45f, new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.22f, 0.3f) }, 60f * u,
 					0.015f * u, 0.04f * u, Vector2.Up, 180f);
 			});
@@ -112,8 +109,6 @@ public static class KnifeTrapFx
 		// 阵成：一道大弧光沿着环扫一圈、光粒往上飘、叮
 		float done = 0.05f + Interval * count;
 		Fx.After(front, done, () => Sfx.Take("gx_ping", 0.13f));
-		SkillRedo5.RingSweep(front, back, center + new Vector2(0f, -th * 0.05f), _rx * 1.05f, 0f, 1f, done, 0.6f, 0.07f, new Color(0.95f, 0.08f, 0.16f), 1.2f, 1.1f);
-		SkillRedo5.RingSweep(front, back, center + new Vector2(0f, -th * 0.05f), _rx * 0.9f, 0.12f, 1f, done + 0.06f, 0.5f, 0.03f, new Color(1f, 0.85f, 0.85f), 1.5f, 1.0f);
 		SkillRedo5.Motes(front, feet, th, u, 0.2f, life - 1.2f, 10, 0.55f);
 
 		var traps = new List<Trap>(_traps);
@@ -123,14 +118,12 @@ public static class KnifeTrapFx
 			float s = t * life;
 			float dt = s - _lastS;
 			_lastS = s;
-			_spin = Mathf.Lerp(_spin, 0.9f + 3.2f * (1f - (float)_left / _total), Mathf.Min(1f, dt * 4f));
-			_rot += _spin * dt;
 			foreach (Trap tp in traps)
 			{
 				if (tp.Used || !GodotObject.IsInstanceValid(tp.Card.Root)) continue;
 				float ang = tp.Slot + _rot;
 				Vector2 pos = OrbitAt(ang) + new Vector2(0f, Mathf.Sin(s * 2.6f + tp.Phase) * _h * 0.025f);
-				bool fr = Mathf.Sin(ang) > 0f;
+				bool fr = true;
 				if (fr != tp.Front || tp.Card.Root.GetParent() == null)
 				{
 					tp.Front = fr;
@@ -144,19 +137,17 @@ public static class KnifeTrapFx
 				float pop = Ease5.OutBack(Mathf.Min(1f, a / 0.22f));
 				float spin = (1f - Fx.OutCubic(Mathf.Min(1f, a / 0.3f))) * Mathf.Tau * 1.5f;   // 翻转着弹出来
 				// 深度：身后的小一点、暗一点
-				float depth = 0.5f + 0.5f * Mathf.Sin(ang);
+				float depth = 1f;
 				float sc = (0.3f + 0.7f * pop) * (0.82f + 0.25f * depth);
 				// 卡沿着环的切线方向转着飞，牌面时正时反
-				float tilt = Mathf.Sin(ang + Mathf.Pi / 2f) * 0.35f + Mathf.Sin(s * 1.7f + tp.Phase) * 0.08f;
-				tp.Card.Place(pos, tilt, spin + ang * 0.5f + Mathf.Sin(s * 1.3f + tp.Phase) * 0.3f, sc);
+				float tilt = (ang + Mathf.Pi / 2f) * 0.6f + Mathf.Sin(s * 1.7f + tp.Phase) * 0.08f;   // 牌顶朝外，像一圈王冠
+				tp.Card.Place(pos, tilt, spin + Mathf.Sin(s * 1.3f + tp.Phase) * 0.3f, sc);
 				tp.Card.Root.Modulate = new Color(1f, 1f, 1f).Lerp(new Color(0.75f, 0.6f, 0.65f), 1f - depth);
 				tp.Card.Set("sheen", Mathf.PosMod(s * 0.6f + tp.Phase, 3f) - 1f);
 				tp.Card.Set("glow", Mathf.Exp(-a * 8f) * 0.8f + 0.15f);
 				float fade = 1f - Ease5.Seg(s, life - 0.4f, 0.4f);
 				tp.Card.Set("alpha", fade);
-				Phantom.Ribbon rib = fr ? tp.RibF : tp.RibB;
-				rib.Fade = fade * Mathf.Min(1f, a / 0.25f) * (0.55f + 0.45f * Mathf.Min(1f, _spin / 2f));
-				rib.Push(pos);
+
 			}
 		});
 	}
@@ -210,7 +201,7 @@ public static class KnifeTrapFx
 			0.015f * u, 0.04f * u, (from - c).Normalized(), 120f);
 		Glow.Flash(own, from, new Color(1f, 0.95f, 0.92f), cw * 2.2f, 0.14f);
 		Glow.Flash(b, from, new Color(0.95f, 0.1f, 0.16f), cw * 4f, 0.3f);
-		SkillRedo5.SoftBurst(b, from, cw * 3.6f, 0.4f, new Color(0.85f, 0.05f, 0.12f));
+		Glow.Flash(b, from, new Color(0.85f, 0.05f, 0.12f), (cw * 3.6f) * 0.85f, (0.4f) * 0.9f, 0f);
 		Phantom.Confetti(own, from, 12, 300f * u, (from - c).Normalized(), 120f, 0.8f, 7f * u);
 		// 带弯的光矛：红色宽身 + 白芯
 		Vector2 mid = (from + hit) / 2f;
@@ -224,10 +215,9 @@ public static class KnifeTrapFx
 		{
 			Glow.Flash(f, hit, new Color(1f, 0.93f, 0.9f), h * 0.6f, 0.13f);
 			Glow.Flash(b, hit, new Color(0.9f, 0.1f, 0.15f), h * 1.4f, 0.26f);
-			SkillRedo5.SoftBurst(b, c, h * 1.3f, 0.38f, new Color(0.85f, 0.05f, 0.12f));
+			Glow.Flash(b, c, new Color(0.85f, 0.05f, 0.12f), (h * 1.3f) * 0.85f, (0.38f) * 0.9f, 0f);
 			Glow.Sparks(f, hit, 18, 160f * u, 520f * u, 0.42f, new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.22f, 0.3f) }, 160f * u,
 				0.02f * u, 0.045f * u, (hit - from).Normalized(), 75f);
-			SkillRedo5.RingSweep(f, b, c, w * 0.75f, Fx.Rand(-0.6f, 0.6f), Fx.Rand(0f, 1f) > 0.5f ? 1f : -1f, 0f, 0.32f, 0.05f, new Color(0.95f, 0.08f, 0.16f), 1.3f, 0.7f);
 			Fx.Shake(1);
 			if (last) Finale(f, b, c, h, w, u);
 		});
@@ -242,12 +232,9 @@ public static class KnifeTrapFx
 		Sfx.Take("gx_ping", 0.16f);
 		Glow.Flash(f, c, new Color(1f, 0.95f, 0.92f), w * 1.4f, 0.2f);
 		Glow.Flash(b, c, new Color(0.9f, 0.08f, 0.14f), big * 3.4f, 0.45f);
-		SkillRedo5.SoftBurst(b, c, big * 3.2f, 0.65f, new Color(0.85f, 0.05f, 0.12f));
-		SkillRedo5.SoftBurst(b, c, big * 1.8f, 0.45f, new Color(1f, 0.3f, 0.35f));
+		Glow.Flash(b, c, new Color(0.85f, 0.05f, 0.12f), (big * 3.2f) * 0.85f, (0.65f) * 0.9f, 0f);
+		Glow.Flash(b, c, new Color(1f, 0.3f, 0.35f), (big * 1.8f) * 0.85f, (0.45f) * 0.9f, 0f);
 		SkillRedo5.Cross(f, c, h * 1.7f);
-		SkillRedo5.Whirl(f, b, feet, h, _rx * 0.85f, 8, 0f, 0.75f, 1f, 0.15f, 0.95f, 1.2f, 0.35f);
-		SkillRedo5.RingSweep(f, b, c, _rx * 1.25f, 0.45f, 1f, 0.02f, 0.55f, 0.08f, new Color(0.95f, 0.08f, 0.16f), 1.3f, 1f);
-		SkillRedo5.RingSweep(f, b, c, _rx * 1.15f, -0.45f, -1f, 0.06f, 0.55f, 0.06f, new Color(1f, 0.85f, 0.85f), 1.6f, 1f);
 		// 沿着环一圈纸屑往外炸
 		for (int i = 0; i < 10; i++)
 		{
