@@ -27,6 +27,7 @@ public static class ModEntry
 		Stage.PlayEvent = (e, v) => MegaCrit.Sts2.Core.Commands.SfxCmd.Play(e, v);
 		Stage.ShakeDir = (s, deg) => NGame.Instance?.ScreenShake(Strength(s), ShakeDuration.Short, deg);
 		BulletTimePlay.Install();
+		WraithPlay.Install();
 		// 毒雾的常驻咒怨雾：Joker 还在战斗里、身上还有毒雾能力就一直留着（Vfx/FumesField.cs）
 		FumesField.Alive = () =>
 		{
