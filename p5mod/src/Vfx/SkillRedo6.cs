@@ -332,6 +332,112 @@ public static partial class SkillRedo5
 
 public static partial class SkillRedo5
 {
+	/// <summary>
+	/// 计划妥当（回合结束保留手牌），「作战图」约 1.3s（2026-11-14 重做：原来太简单）：
+	/// ① 0 五张牌从手里迸出、转着排成他身前上方一道大扇面，每张落位时一闪、网点光晕、碎光；扇面后面一层柔光；
+	/// ② 0.45 一道大弧光从扇面里扫过，牌从左到右依次亮一下（叮）—— 计划定了；
+	/// ③ 0.78 五张牌一齐收拢叠成一摞回到手上：一摞牌一闪、十字光、网点光晕、一小圈刀光绕着它转，然后缩进手里。
+	/// </summary>
+	public static void WellLaidPlans(SkillCtx c)
+	{
+		float h = c.Tall, u = c.Unit, f = c.Face, w = SkillRedo.CardW(c) * 1.15f;
+		Control back = c.Back ?? c.Front;
+		const int n = 5;
+		const float lit = 0.36f, fold = 0.6f, life = 1.1f;
+		S("gx_card_slide", 0.16f);
+		S("gx_ping", 0.14f, lit + 0.1f);
+		S("gx_card_stack", 0.2f, fold + 0.14f);
+		Vector2 hub = c.Chest + new Vector2(f * h * 0.12f, h * 0.12f);
+		Vector2 stack = c.Hand + new Vector2(f * h * 0.08f, -h * 0.05f);
+		// 扇面后的柔光
+		Node2D glow = Fx.Root(back, hub + new Vector2(0f, -h * 0.5f), "P5PlanGlow", life);
+		Sprite2D gs = Glow.SoftSprite(glow, Vector2.Zero, new Color(1f, 0.1f, 0.18f, 0f), 1f);
+		gs.Scale = new Vector2(h * 1.5f, h * 0.8f) / 32f;
+		Fx.Animate(glow, 0, life - 0.05, t =>
+		{
+			float s = t * (life - 0.05f);
+			float pulse = s > lit ? Mathf.Exp(-(s - lit) * 6f) : 0f;
+			float a = Fx.OutCubic(Ease5.Seg(s, 0.05f, 0.3f)) * (1f - Ease5.Seg(s, fold, 0.3f));
+			gs.Modulate = new Color(1f, 0.1f, 0.18f, (0.35f + 0.35f * pulse) * a);
+		});
+		for (int i = 0; i < n; i++)
+		{
+			int k = i;
+			float ang = -Mathf.Pi / 2f + f * Mathf.Lerp(-0.85f, 0.85f, k / (n - 1f));
+			Vector2 slot = hub + Vector2.FromAngle(ang) * h * 0.62f;
+			float tilt = ang + Mathf.Pi / 2f;
+			float d = 0.03f + 0.05f * k;
+			float flyIn = 0.24f;
+			Phantom.P5Card card = Phantom.Card(c.Front, c.Hand, w, life, 0.6f);
+			card.Root.Visible = false;
+			Vector2 ctl = (c.Hand + slot) / 2f + new Vector2(-f * h * 0.15f, -h * 0.2f);
+			float litAt = lit + 0.05f * k;
+			Fx.Animate(card.Root, d, life - d - 0.02f, t =>
+			{
+				float s = d + t * (life - d - 0.02f);
+				card.Root.Visible = true;
+				float a = s - d;
+				Vector2 pos;
+				float rot, flip, sc;
+				if (s < fold)
+				{
+					float e = Ease5.OutQuint(Mathf.Min(1f, a / flyIn));
+					pos = c.Hand.Lerp(ctl, e).Lerp(ctl.Lerp(slot, e), e) + new Vector2(0f, Mathf.Sin(s * 3f + k) * h * 0.012f);
+					rot = Mathf.Lerp(0f, tilt, e);
+					flip = (1f - e) * Mathf.Tau * 1.5f;
+					sc = 0.5f + 0.5f * e;
+				}
+				else
+				{
+					float e = Mathf.SmoothStep(0f, 1f, Mathf.Min(1f, (s - fold) / 0.16f));
+					pos = slot.Lerp(stack + new Vector2(0f, -k * h * 0.008f), e);
+					rot = Mathf.Lerp(tilt, f * 0.2f, e);
+					flip = 0f;
+					float sh = Ease5.Seg(s, fold + 0.24f, 0.12f);
+					sc = Mathf.Lerp(1f, 0.85f, e) * (1f - 0.9f * Fx.InCubic(sh));
+				}
+				card.Place(pos, rot, flip, sc);
+				float glowK = (s > litAt ? Mathf.Exp(-(s - litAt) * 9f) : 0f) + Mathf.Exp(-a * 10f) * 0.6f;
+				card.Set("glow", glowK);
+				card.Set("sheen", s > litAt ? Mathf.Min(1f, (s - litAt) * 4f) * 2f - 1f : -1f);
+				card.Set("alpha", 1f - Ease5.Seg(s, fold + 0.33f, 0.05f));
+			});
+			Fx.After(c.Front, d + flyIn * 0.7f, () =>
+			{
+				Glow.Flash(c.Front, slot, new Color(1f, 0.93f, 0.92f), w * 1.6f, 0.11f);
+				HalftoneBurst(back, slot, w * 3.2f, 0.32f);
+				Glow.Sparks(c.Front, slot, 8, 60f * u, 220f * u, 0.35f, new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.22f, 0.3f) }, 40f * u,
+					0.012f * u, 0.03f * u, Vector2.Up, 180f);
+			});
+			Fx.After(c.Front, litAt, () => Glow.Flash(back, slot, new Color(0.95f, 0.1f, 0.16f), w * 2.4f, 0.22f));
+			Fx.After(c.Front, d + flyIn + 0.04f, () => card.Trail?.Kill());
+		}
+		// 一道疾光沿着扇面扫过去（跟牌一样的弧）
+		float a0 = -Mathf.Pi / 2f - f * 1.05f, a1 = -Mathf.Pi / 2f + f * 1.05f;
+		DashFly(c.Front, t => hub + Vector2.FromAngle(Mathf.Lerp(a0, a1, t)) * h * 0.62f, lit - 0.02f, 0.3f, h * 0.8f, h * 0.15f,
+			new Color(0.95f, 0.06f, 0.15f), 1.3f, Ease5.OutQuint, 0.7f);
+		DashFly(c.Front, t => hub + Vector2.FromAngle(Mathf.Lerp(a0, a1, t)) * h * 0.62f, lit, 0.3f, h * 0.65f, h * 0.06f,
+			new Color(1f, 0.88f, 0.88f), 1.8f, Ease5.OutQuint, 0.7f);
+		DashFly(back, t => hub + Vector2.FromAngle(Mathf.Lerp(a0, a1, t)) * h * 0.78f, lit + 0.03f, 0.34f, h * 0.6f, h * 0.1f,
+			new Color(0.95f, 0.06f, 0.15f), 1f, Ease5.OutQuint, 0.7f);
+		// 收拢成一摞
+		Fx.After(c.Front, fold + 0.16f, () =>
+		{
+			Glow.Flash(c.Front, stack, new Color(1f, 0.95f, 0.92f), h * 0.45f, 0.13f);
+			Glow.Flash(back, stack, new Color(0.9f, 0.08f, 0.15f), h * 1.3f, 0.3f);
+			HalftoneBurst(back, stack, h * 1.4f, 0.42f);
+			Cross(c.Front, stack, h * 0.75f);
+			Fx.Shake(1);
+			Glow.Sparks(c.Front, stack, 16, 100f * u, 380f * u, 0.45f, new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.22f, 0.3f) }, -40f * u,
+				0.015f * u, 0.04f * u, Vector2.Up, 180f);
+		});
+		Vortex(c.Front, back, stack + new Vector2(0f, h * 0.1f), h * 0.4f, h * 0.18f, 4, fold + 0.12f, 0.4f, f, 0.1f, 0.4f, 0.8f, 0.05f);
+		Glitter(c.Front, c.Feet, h, u, 0.2f, 0.9f, 6, 0.45f);
+	}
+}
+
+public static partial class SkillRedo5
+{
 	/// <summary>刀刃陷阱的笼子：几道细刀光绕着敌人一直转（不往上卷），t0 起 dur 秒。</summary>
 	public static void TrapCage(Control front, Control back, Vector2 feet, float h, float radius, float t0, float dur) =>
 		Vortex(front, back, feet, h, radius, 6, t0, dur, 1f, 0.15f, 0.9f, 1.3f, 0f);

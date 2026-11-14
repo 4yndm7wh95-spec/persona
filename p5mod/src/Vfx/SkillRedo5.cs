@@ -22,6 +22,7 @@ public static partial class SkillRedo5
 		cards["Haze"] = HazeFx.Play;   // 迷雾（2026-11-13 重做）
 		cards["ShadowStep"] = ShadowStepV2;   // 暗影步（2026-11-14 重做：赤影换步）
 		cards["WraithForm"] = WraithFormV2;   // 幽魂形态（2026-11-14 重做：怪盗幻影）
+		cards["WellLaidPlans"] = WellLaidPlans;   // 计划妥当（2026-11-14 重做：作战图）
 		cards["Adrenaline"] = Adrenaline;   // 肾上腺素（2026-11-13 重做：心跳涌动）
 	}
 

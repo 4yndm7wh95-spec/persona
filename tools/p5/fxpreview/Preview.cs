@@ -837,6 +837,7 @@ public partial class Preview : Node2D
 		["adrenaline"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Adrenaline", "cast_glove", 0.25, 1.6), ("Adrenaline", "cast_glove", 0.25, 1.6) }),
 		["shadowstep"] = p => RunCards(p, null, new (string, string, double, double)[] { ("ShadowStep", "cast_glove", 0.25, 1.8), ("ShadowStep", "cast_glove", 0.25, 1.8) }),
 		["wraith"] = p => RunCards(p, null, new (string, string, double, double)[] { ("WraithForm", "cast_big", 0.4, 2.4) }),
+		["plans"] = p => RunCards(p, null, new (string, string, double, double)[] { ("WellLaidPlans", "cast_glove", 0.25, 1.8), ("WellLaidPlans", "cast_glove", 0.25, 1.8) }),
 		["fumes"] = p => RunCards(p, null, new (string, string, double, double)[] { ("NoxiousFumes", "cast", 0.4, 7.5) }),
 		["redo"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Acrobatics", "cast_glove", 0.25, 1.7), ("Acrobatics", "cast_glove", 0.25, 1.7) }),
 		["redo3"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Survivor", "cast_guard", 0.08, 1.2), ("CalculatedGamble", "cast_glove", 0.25, 1.9), ("Tactician", "cast_glove", 0.25, 1.2), ("Adrenaline", "cast_glove", 0.25, 1.4), ("ShadowStep", "cast_glove", 0.25, 1.4) }),
