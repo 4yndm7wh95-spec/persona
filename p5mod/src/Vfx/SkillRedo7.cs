@@ -9,11 +9,11 @@ namespace P5Joker;
 /// ① 0 四周压暗，身后一轮红白的月从脚下的「水面」升起，脚下是它被水波揉碎的倒影；人褪成半透明的月白；
 /// ② 0.34 / 0.46 / 0.6 三道弯刀光从敌人那边砍来、直接穿过他：每一刀他整个人像水面一样横向荡开（读屏），水珠顺着刀势溅出去；
 /// ③ 0.62 主拍：第三刀最大，月亮亮一下、倒影碎成一片粼光、水珠往上扬；
-/// ④ 之后他带着残余的微波站着，几缕红白光带从衣摆往上飘，月亮慢慢淡掉。
+/// ④ 之后他带着残余的微波站着，光粒往上飘，月亮慢慢淡掉。
 /// </summary>
 public static partial class SkillRedo5
 {
-	private static Shader? _moon, _moonRefl, _waterBody, _slash, _wisp;
+	private static Shader? _moon, _moonRefl, _waterBody, _slash;
 
 	private const string Noise = @"
 float h21(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
@@ -35,24 +35,22 @@ uniform float seed = 0.0;
 void fragment() {
 	vec2 p = (UV - 0.5) * 3.2;
 	float d = length(p);
-	float disc = smoothstep(1.0, 0.965, d);
-	float mott = fbm(p * 2.2 + seed * 3.0 + vec2(clock * 0.03, 0.0));
-	float mare = smoothstep(0.42, 0.7, mott);
+	float disc = smoothstep(1.0, 0.9, d);
+	float mott = fbm(p * 3.4 + seed * 3.0 + vec2(clock * 0.03, 0.0));
+	float mare = smoothstep(0.46, 0.78, mott) * 0.6 + smoothstep(0.5, 0.62, fbm(p * 7.0 + seed)) * 0.25;
 	vec3 pale = vec3(1.0, 0.9, 0.88), rose = vec3(1.0, 0.3, 0.36), deep = vec3(0.75, 0.04, 0.12);
-	vec3 col = mix(pale, rose, mare * 0.75);
+	vec3 col = mix(pale, rose, mare * 0.6);
 	float limb = smoothstep(0.35, 1.0, d);
 	col = mix(col, deep, limb * 0.55);
 	col *= 0.62 + 0.38 * smoothstep(1.2, -0.6, p.x * 0.6 + p.y);   // 左上亮、右下暗一点，有体积
-	float rim = smoothstep(0.9, 0.985, d) * disc;
-	col += vec3(1.0, 0.75, 0.75) * rim * 0.5;
-	float halo = exp(-max(0.0, d - 0.97) * 3.4) * (1.0 - disc);
+	float halo = exp(-max(0.0, d - 0.9) * 3.0) * (1.0 - disc);
 	float rays = 0.75 + 0.25 * vn(vec2(atan(p.y, p.x) * 5.0, clock * 0.4 + seed));
-	vec3 outc = col * disc * (0.78 + 0.5 * pulse) + vec3(1.0, 0.1, 0.18) * halo * rays * (0.5 + 0.7 * pulse);
+	vec3 outc = col * disc * (1.0 + 0.22 * pulse) + vec3(1.0, 0.1, 0.18) * halo * rays * (0.5 + 0.7 * pulse);
 	float wl = p.y - waterline;
 	float wob = sin(p.x * 14.0 + clock * 5.0) * 0.012;
 	float above = smoothstep(0.02, -0.03, wl + wob);
-	float lip = exp(-abs(wl + wob) * 38.0) * smoothstep(1.25, 0.6, abs(p.x));
-	outc = outc * above + vec3(1.0, 0.8, 0.8) * lip * 0.55;
+	float lip = exp(-abs(wl + wob) * 14.0) * smoothstep(1.1, 0.3, abs(p.x));
+	outc = outc * above + vec3(1.0, 0.45, 0.5) * lip * 0.22;
 	COLOR = vec4(outc * alpha, 1.0);
 }" };
 
@@ -143,29 +141,6 @@ void fragment() {
 	vec3 col = mix(vec3(1.0, 0.1, 0.18), vec3(1.0, 0.96, 0.94), core);
 	float a = (body * fib + soft) * vis * alpha;
 	COLOR = vec4(col * a, 1.0);
-}" };
-
-	/// <summary>一缕往上飘的光带：矩形竖着放，带子左右摆，两头尖。</summary>
-	private static Shader Wisp => _wisp ??= new Shader { Code = @"
-shader_type canvas_item;
-render_mode blend_add;
-uniform float alpha = 1.0;
-uniform float clock = 0.0;
-uniform float seed = 0.0;
-uniform float grow = 1.0;
-uniform vec3 tint : source_color = vec3(1.0, 0.2, 0.28);
-void fragment() {
-	float y = 1.0 - UV.y;                     // 0 根 → 1 梢
-	float k = clamp(y / max(0.001, grow), 0.0, 1.0);
-	float vis = step(y, grow);
-	float cx = 0.5 + (sin(y * 7.0 - clock * 3.2 + seed) * 0.2 + sin(y * 15.0 - clock * 5.0 + seed * 2.3) * 0.07) * (0.25 + y);
-	float w = 0.085 * pow(sin(3.14159 * k), 0.8);
-	float d = abs(UV.x - cx);
-	float body = smoothstep(w, w * 0.2, d);
-	float core = smoothstep(w * 0.35, 0.0, d);
-	float soft = exp(-d / max(0.01, w) * 1.3) * 0.3 * sin(3.14159 * k);
-	vec3 col = mix(tint, vec3(1.0, 0.95, 0.94), core * 0.8);
-	COLOR = vec4(col * (body + soft) * vis * alpha, 1.0);
 }" };
 
 	public static void WraithFormV3(SkillCtx c)
@@ -263,7 +238,7 @@ void fragment() {
 			Vector2 a = Fx.ScreenPoint(front, feet + new Vector2(-h * 0.62f, -h * 1.22f)), b = Fx.ScreenPoint(front, feet + new Vector2(h * 0.62f, h * 0.12f));
 			m.SetShaderParameter("box", new Vector4(a.X / scr.X, a.Y / scr.Y, b.X / scr.X, b.Y / scr.Y));
 			float px = 1f / scr.X;
-			float[] cutY = { chest.Y - h * 0.12f, chest.Y + h * 0.16f, chest.Y };
+			float[] cutY = { chest.Y + h * 0.05f, chest.Y + h * 0.3f, chest.Y + h * 0.16f };
 			Fx.Animate(rect, 0, life, t =>
 			{
 				float s = t * life;
@@ -289,10 +264,10 @@ void fragment() {
 		{
 			int k = i;
 			bool big = i == 2;
-			Vector2 mid = chest + new Vector2(0f, big ? 0f : (i == 0 ? -h * 0.12f : h * 0.16f));
+			Vector2 mid = chest + new Vector2(0f, big ? h * 0.16f : (i == 0 ? h * 0.05f : h * 0.3f));
 			// 从敌人那边来：方向朝 -f
 			float ang = (f > 0 ? Mathf.Pi : 0f) + angs[i] * f;
-			float len = h * (big ? 3.4f : 2.5f), thick = h * (big ? 0.5f : 0.36f);
+			float len = h * (big ? 2.3f : 1.8f), thick = h * (big ? 0.42f : 0.3f);
 			float dur = big ? 0.3f : 0.24f, t0 = cuts[i] - dur * 0.42f;
 			Node2D root = Fx.Root(front, mid, "P5WraithSlash", t0 + dur + 0.15);
 			root.Rotation = ang;
@@ -314,7 +289,7 @@ void fragment() {
 				Glow.Sparks(front, mid, big ? 46 : 22, 140f * u, (big ? 780f : 520f) * u, big ? 0.8f : 0.55f,
 					new[] { new Color(1f, 0.97f, 0.96f), new Color(1f, 0.5f, 0.56f), new Color(0.8f, 0.06f, 0.14f) },
 					520f * u, 0.014f * u, (big ? 0.05f : 0.036f) * u, dir + new Vector2(0f, -0.25f), big ? 46f : 30f);
-				Glow.Flash(front, mid, new Color(1f, 0.9f, 0.9f), h * (big ? 0.7f : 0.4f), 0.14f);
+				Glow.Flash(back, mid, new Color(1f, 0.9f, 0.9f), h * (big ? 0.5f : 0.36f), 0.12f);
 				for (int j = 0; j < (big ? 5 : 3); j++)
 				{
 					Vector2 at = water + new Vector2(Fx.Rand(-0.9f, 0.9f) * h, h * Fx.Rand(0.03f, 0.3f));
@@ -326,38 +301,14 @@ void fragment() {
 		Fx.After(front, beat, () =>
 		{
 			Glow.Flash(back, moonAt, new Color(1f, 0.16f, 0.24f), R * 3.4f, 0.5f);
-			Glow.Flash(front, chest, new Color(1f, 0.95f, 0.94f), h * 0.85f, 0.16f);
-			Flare(front, chest, h * 3.4f, h * 0.02f, new Color(1f, 0.92f, 0.92f, 1f), 0.3f);
-			HitStop.Request(0.05);
+						HitStop.Request(0.05);
 			Fx.Shake(2);
 			// 水珠往上扬、慢慢落回
 			Glow.Sparks(front, water, 54, 220f * u, 760f * u, 1.1f,
 				new[] { new Color(1f, 0.97f, 0.96f), new Color(1f, 0.4f, 0.48f), new Color(0.7f, 0.04f, 0.12f) },
 				900f * u, 0.014f * u, 0.046f * u, Vector2.Up, 62f);
 		});
-		// ④ 衣摆飘起的光带
-		for (int i = 0; i < 7; i++)
-		{
-			float x = Fx.Rand(-0.26f, 0.26f) * h, len = h * Fx.Rand(0.6f, 1.05f), wid = len * 0.42f;
-			float t0 = 0.24f + 0.09f * i + Fx.Rand(0f, 0.05f), dur = Fx.Rand(1.0f, 1.3f);
-			bool frontSide = i % 3 == 0;
-			Node2D root = Fx.Root(frontSide ? front : back, feet + new Vector2(x, -h * Fx.Rand(0.1f, 0.42f)), "P5WraithWisp", t0 + dur + 0.1);
-			ShaderMaterial m = new() { Shader = Wisp };
-			float seed = Fx.Rand(0f, 9f);
-			m.SetShaderParameter("seed", seed);
-			m.SetShaderParameter("alpha", 0f);
-			m.SetShaderParameter("tint", i % 2 == 0 ? new Color(1f, 0.16f, 0.24f) : new Color(1f, 0.62f, 0.66f));
-			ColorRect rect = new() { Size = new Vector2(wid, len), Position = new Vector2(-wid / 2f, -len), Material = m, MouseFilter = Control.MouseFilterEnum.Ignore };
-			root.AddChild(rect);
-			float drift = h * Fx.Rand(0.25f, 0.5f);
-			Fx.Animate(root, t0, dur, t =>
-			{
-				rect.Position = new Vector2(-wid / 2f, -len - drift * t);
-				m.SetShaderParameter("grow", Fx.OutCubic(Mathf.Min(1f, t * 2.2f)));
-				m.SetShaderParameter("clock", t * dur + seed);
-				m.SetShaderParameter("alpha", Mathf.Min(1f, t * 5f) * (1f - Ease5.Seg(t, 0.55f, 0.45f)) * (frontSide ? 0.55f : 0.8f));
-			});
-		}
-		Glitter(front, feet, h, u, 0.3f, 1.2f, 9, 0.5f);
+		// ④ 余韵：往上飘的光粒
+		Glitter(front, feet, h, u, 0.3f, 1.3f, 14, 0.6f);
 	}
 }
