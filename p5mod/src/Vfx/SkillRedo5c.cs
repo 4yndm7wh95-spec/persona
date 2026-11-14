@@ -537,6 +537,18 @@ public static partial class SkillRedo5
 	public static void Streak(Control layer, Func<float, Vector2> path, float t0, float dur, float len, float thick, Color tint, float hot = 1.2f) =>
 		DashFly(layer, path, t0, dur, len, thick, tint, hot, Ease5.OutQuint, 0.7f);
 
+	/// <summary>绕身横扫的大弧光（给别的文件用）。</summary>
+	public static void RingSweep(Control front, Control back, Vector2 center, float radius, float tilt, float dir, float t0, float dur, float width, Color tint, float hot = 1f, float turns = 0.9f) =>
+		Sweep(front, back, center, radius, tilt, dir, t0, dur, width, tint, hot, turns);
+
+	/// <summary>刀光旋涡（给别的文件用）。</summary>
+	public static void Whirl(Control front, Control back, Vector2 basePt, float h, float radius, int n, float t0, float dur, float dir, float y0, float y1, float widthK = 1f, float rise = 0.12f) =>
+		Vortex(front, back, basePt, h, radius, n, t0, dur, dir, y0, y1, widthK, rise);
+
+	/// <summary>往上飘的光粒（给别的文件用）。</summary>
+	public static void Motes(Control layer, Vector2 basePt, float h, float u, float t0, float dur, int bursts = 6, float spread = 0.35f) =>
+		Glitter(layer, basePt, h, u, t0, dur, bursts, spread);
+
 	/// <summary>圆润的网点光晕（给别的文件用）。</summary>
 	public static void SoftBurst(Control layer, Vector2 at, float size, float dur, Color tint) => HalftoneBurst(layer, at, size, dur, 0f, tint);
 }

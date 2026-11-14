@@ -146,6 +146,17 @@ void fragment() {
 			Fx.Animate(_root, 0, 0.12, t => _root.Modulate = new Color(1f, 1f, 1f, 1f - t));
 		}
 
+		/// <summary>清掉记下的点（拖尾从下一次 Push 重新开始，不会连回旧位置）。</summary>
+		public void Reset()
+		{
+			_pts.Clear();
+			if (!GodotObject.IsInstanceValid(_root)) return;
+			_outer.Polygon = new[] { Vector2.Zero, Vector2.Zero, Vector2.Zero };
+			_outer.VertexColors = new[] { Colors.Transparent, Colors.Transparent, Colors.Transparent };
+			_core.Polygon = new[] { Vector2.Zero, Vector2.Zero, Vector2.Zero };
+			_core.VertexColors = new[] { Colors.Transparent, Colors.Transparent, Colors.Transparent };
+		}
+
 		private readonly bool _ink;
 
 		/// <summary>ink = 墨色拖尾（不叠加发光：外层近黑、芯是暗红），给暗影类的牌用。</summary>

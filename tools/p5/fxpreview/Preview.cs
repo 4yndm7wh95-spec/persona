@@ -543,9 +543,10 @@ public partial class Preview : Node2D
 			for (int i = 0; i < 6; i++)
 			{
 				double at = 1.0 + 0.28 * i;
+				bool lastShot = i == 5;
 				p.At(at - 0.18, () => p._joker?.Play("shiv_from_aim"));
 				p.At(at - 0.02, () => GunFx.Muzzle(p._front, Muzzle, (Enemy - Muzzle).Normalized()));
-				p.At(at, () => GunFx.Shot(p._front, Muzzle, Enemy + new Vector2(Fx.Rand(-20f, 20f), Fx.Rand(-30f, 30f)), i == 5));
+				p.At(at, () => GunFx.Shot(p._front, Muzzle, Enemy + new Vector2(Fx.Rand(-20f, 20f), Fx.Rand(-30f, 30f)), lastShot));
 			}
 		},
 		["poison_v4"] = p =>
