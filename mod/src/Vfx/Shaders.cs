@@ -249,6 +249,8 @@ uniform sampler2D caustics : repeat_enable, filter_linear;
 uniform float aspect = 1.777;
 uniform vec2 center = vec2(0.1, 0.9);
 uniform float radius = 3.0;
+varying float layer_alpha;
+void vertex() { layer_alpha = COLOR.a; }
 float curve(float x, vec4 xs, vec4 ys) {
 	if (x < xs.y) return mix(ys.x, ys.y, (x - xs.x) / (xs.y - xs.x));
 	if (x < xs.z) return mix(ys.y, ys.z, (x - xs.y) / (xs.z - xs.y));
@@ -278,7 +280,7 @@ void fragment() {
 	float rim = smoothstep(0.02, 0.0, abs(r - radius)) * step(0.001, radius);
 	float shown = reveal;
 	if (shown < 1.0) shown = max(mix(texture(mask_tex, SCREEN_UV).r, texture(mask_next, SCREEN_UV).r, mask_mix), reveal);
-	COLOR = vec4(c + vec3(0.7, 0.95, 1.0) * rim * 0.9, max(inside, rim * 0.9) * shown);
+	COLOR = vec4(c + vec3(0.7, 0.95, 1.0) * rim * 0.9, max(inside, rim * 0.9) * shown * (shop_opaque ? layer_alpha : 1.0));
 }
 ");
 	private static Shader? _shopPaper;

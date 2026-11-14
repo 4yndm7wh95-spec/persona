@@ -56,13 +56,10 @@ internal partial class ShopWater : Control
     private Action<bool>? setActive;
     private CanvasLayer? warmCanvas;
     private bool prewarming;
-    private const float OpenEnd=.28f;
+    private const double OpenDuration = .28;
     private NMerchantInventory inventory = null!;
     private SceneTree tree = null!;
-    private ulong lastTick;
-    private float elapsed, endRadius;
     private int warmFrames;
-    private bool ticking;
     private static Texture2D Png(string path) => Vfx.ShopAssets.Texture(path) ?? throw new InvalidOperationException(path);
     internal void Setup(NMerchantInventory inv, Control back)
     {
@@ -91,7 +88,7 @@ internal partial class ShopWater : Control
     }
     internal void Preload()
     {
-        if (dispose != null) return;
+        if (dispose != null || inventory.IsOpen) return;
         EnsureStage();
         // Draw the actual materials behind the opaque room, not through a hidden parent.
         warmCanvas=new CanvasLayer {Layer=-100};
@@ -103,27 +100,37 @@ internal partial class ShopWater : Control
         warmCanvas.AddChild(new ColorRect {Material=paper,Size=Size,MouseFilter=MouseFilterEnum.Ignore});
         warmCanvas.AddChild(new TextureRect {Texture=display.Texture,Material=portrait,Size=Size,ExpandMode=TextureRect.ExpandModeEnum.IgnoreSize,MouseFilter=MouseFilterEnum.Ignore});
         warmFrames=0; prewarming=true;
-        StartTick();
+        tree.ProcessFrame += TickWarmup;
     }
     private void EnsureStage()
     {
         if(dispose==null)
         {
             dispose=HeroStage.ShowShopHero(hero,Size,out paper,out portrait,out setActive);
-            ApplyOpening(0f);
+            paper.SetShaderParameter("paper_y",0f);
+            paper.SetShaderParameter("word_y",0f);
+            paper.SetShaderParameter("hero_x",0f);
+            paper.SetShaderParameter("paper_alpha",1f);
+            paper.SetShaderParameter("word_alpha",1f);
+            paper.SetShaderParameter("hero_alpha",1f);
+            portrait.SetShaderParameter("shop_slide_x",0f);
+            portrait.SetShaderParameter("shop_alpha",1f);
         }
     }
     internal void Enter()
     {
-        StopOpening();
-        tween?.Kill(); water.SetShaderParameter("reveal",1f); Show();
+        StopWarmup();
+        tween?.Kill();
+        inventory.Modulate=Colors.White;
+        water.SetShaderParameter("reveal",1f); Show();
         // The merchant button encloses Igor's visible torso in normalized room coordinates.
         Vector2 center=new(.5f,.465f);
         if(inventory.GetParent() is MegaCrit.Sts2.Core.Nodes.Rooms.NMerchantRoom room)
             center=GetGlobalTransform().AffineInverse()*room.MerchantButton.GetGlobalRect().GetCenter()/Size;
         float aspect=Size.X/Math.Max(Size.Y,1);
         water.SetShaderParameter("center",center); water.SetShaderParameter("aspect",aspect);
-        endRadius=new Vector2(Math.Max(center.X,1-center.X)*aspect,Math.Max(center.Y,1-center.Y)).Length()+.03f;
+        float endRadius=new Vector2(Math.Max(center.X,1-center.X)*aspect,Math.Max(center.Y,1-center.Y)).Length()+.03f;
+        water.SetShaderParameter("radius",endRadius);
         hero.Modulate=Colors.White;
         EnsureStage();
         setActive?.Invoke(true);
@@ -131,67 +138,33 @@ internal partial class ShopWater : Control
         if(AccessTools.Field(typeof(NMerchantInventory), "_inventoryTween").GetValue(inventory) is Tween nativeTween) nativeTween.Kill();
         if(inventory.GetNodeOrNull<Control>("SlotsContainer") is {} slots) slots.Position=new Vector2(slots.Position.X,80f);
         if(AccessTools.Field(typeof(NMerchantInventory), "_backstop").GetValue(inventory) is CanvasItem backstop) backstop.Modulate=new Color(1,1,1,.8f);
-        elapsed=0f;
-        ApplyOpening(0f);
-        // Preloaded stages are already rendered. Never gate opening on a render callback.
-        StartTick();
+        // Goods are already interactive. Start partially visible and let the
+        // tween finish regardless of window focus, pause or combat time scale.
+        tween=CreateTween().SetPauseMode(Tween.TweenPauseMode.Process).SetIgnoreTimeScale(true);
+        tween.TweenProperty(inventory,"modulate:a",1f,OpenDuration)
+            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+        tween.TweenCallback(Callable.From(() => GD.Print($"{ModEntry.Tag} shop opening completed")));
+        inventory.Modulate=new Color(1,1,1,.25f);
         Audio.Sfx.Clip("igor_shop_cue107", Audio.Sfx.IgorVoice);
         GD.Print($"{ModEntry.Tag} shop opening started; size={Size}");
     }
-    private void StartTick()
+    private void StopWarmup()
     {
-        lastTick=Time.GetTicksUsec();
-        if(ticking) return;
-        ticking=true;
-        tree.ProcessFrame+=Tick;
-    }
-    private void StopOpening()
-    {
-        if (ticking) tree.ProcessFrame-=Tick;
-        ticking=false;
+        if (prewarming) tree.ProcessFrame-=TickWarmup;
         prewarming=false;
         warmCanvas?.QueueFree(); warmCanvas=null;
     }
-    private void Tick()
+    private void TickWarmup()
     {
-        if(prewarming)
-        {
-            if(++warmFrames<3) return;
-            StopOpening();
-            ApplyOpening(0f);
-            setActive?.Invoke(false);
-            GD.Print($"{ModEntry.Tag} shop preload ready");
-            return;
-        }
-        ulong now=Time.GetTicksUsec();
-        float delta=(now-lastTick)/1000000f;
-        lastTick=now;
-        // Do not discard long frames: a 20 FPS opening must not run at 2/3 speed.
-        // Paused/unfocused time is excluded, rather than capped on every frame.
-        if (tree.Paused || !DisplayServer.WindowIsFocused()) return;
-        elapsed+=delta;
-        ApplyOpening(elapsed);
-        if (elapsed>=OpenEnd) { ApplyOpening(OpenEnd); StopOpening(); GD.Print($"{ModEntry.Tag} shop opening completed"); }
-    }
-    private void ApplyOpening(float time)
-    {
-        water.SetShaderParameter("radius",endRadius);
-        paper.SetShaderParameter("paper_y",0f);
-        paper.SetShaderParameter("word_y",0f);
-        paper.SetShaderParameter("hero_x",0f);
-        paper.SetShaderParameter("paper_alpha",1f);
-        paper.SetShaderParameter("word_alpha",1f);
-        paper.SetShaderParameter("hero_alpha",1f);
-        portrait.SetShaderParameter("shop_slide_x",0f);
-        portrait.SetShaderParameter("shop_alpha",1f);
-        float p=Mathf.Clamp(time/OpenEnd,0f,1f);
-        // Fade the complete inventory, including goods and the return button, together.
-        inventory.Modulate=new Color(1,1,1,p*p*(3f-2f*p));
+        if (++warmFrames<3) return;
+        StopWarmup();
+        setActive?.Invoke(false);
+        GD.Print($"{ModEntry.Tag} shop preload ready");
     }
     private void Leave()
     {
         Audio.Sfx.Clip("igor_shop_back", Audio.Sfx.IgorVoice);
-        StopOpening();
+        StopWarmup();
         inventory.Modulate=Colors.White;
         tween?.Kill(); tween=CreateTween().SetParallel();
         tween.TweenMethod(Callable.From<float>(v=>water.SetShaderParameter("reveal",v)),1f,0f,.35);
@@ -200,9 +173,13 @@ internal partial class ShopWater : Control
     }
     private void Cleanup()
     {
-        StopOpening();
+        StopWarmup();
         tween?.Kill();
-        if (GodotObject.IsInstanceValid(inventory)) inventory.InventoryClosed-=Leave;
+        if (GodotObject.IsInstanceValid(inventory))
+        {
+            inventory.Modulate=Colors.White;
+            inventory.InventoryClosed-=Leave;
+        }
         dispose?.Invoke();
         dispose=null;
     }
