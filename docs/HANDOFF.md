@@ -14,6 +14,7 @@
 - 用户自己在本地用 Codex 做事，推的是 `codex/...` 分支，比如 `codex/p5-finale-perf-handoff-20261114`。
   - 用户让合的时候，先审它的 diff 和 README，再合。这一次已经合入，内容是华丽收场的 GPU 优化，说明在 `docs/codex/reports/p5_finale_perf_handoff_20261114/README.md`。
 - 待办清单见 `docs/p5/TODO.md`，最下面记着用户拉黑的手法。**动手前先读它。**
+- 特效方向和「为什么老是不过关」的总结见 `docs/p5/FX_STYLE_GUIDE.md`（会话 A 写，2026-11-14）。**做特效前先读它。**
 
 ### 每次升版给用户的 Codex 提示词（只换版本号 X）
 > 读仓库 4yndm7wh95-spec/persona 分支 claude/confident-hypatia-nropgi 上的 docs/codex/codex_p5_build_X.md 并严格照做：把 P5Joker X 编译、打包 PCK、装进游戏 mods\P5Joker\，写报告 docs/codex/reports/p5_build_X.md 推回同一分支。仓库副本在 C:\Users\kkk\sts2_tools\p5_build\repo，先 fetch 这个分支（任务单第 2 步有完整命令）再读任务单。任何一步报错就停下来写报告，不要自己改代码。
