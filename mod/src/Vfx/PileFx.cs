@@ -847,20 +847,12 @@ public static class PileFx
 			backBound = on;
 			foreach (string key in backKeys)
 			{
-				if (!InputMap.HasAction(key))
+			if (on && !InputMap.HasAction(key))
 				{
 					continue;                                    // 旧版本没有的动作不挂（否则每次按键都会报"动作不存在"）
 				}
-				if (on)
-				{
-					hk.PushHotkeyPressedBinding(key, unzoom);
-					hk.PushHotkeyReleasedBinding(key, swallow);   // 原版返回按钮可能挂在"松开"上：特写期间一并挡住
-				}
-				else
-				{
-					hk.RemoveHotkeyPressedBinding(key, unzoom);
-					hk.RemoveHotkeyReleasedBinding(key, swallow);
-				}
+			// 原版返回按钮可能挂在"松开"上：特写期间一并挡住。
+			Compat.HotkeyBindings.Set(hk, key, unzoom, swallow, on);
 			}
 		}
 

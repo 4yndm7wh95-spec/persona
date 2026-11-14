@@ -29,12 +29,12 @@ internal sealed class CinematicConfirm : IDisposable
 		_pressed = Confirm;
 		_released = () => { };
 		_hotkeys = NHotkeyManager.Instance;
-		_hotkeys?.AddBlockingScreen(_focus);
-		foreach (string action in Actions)
+		if (_hotkeys != null)
 		{
-			if (!InputMap.HasAction(action)) continue;
-			_hotkeys?.PushHotkeyPressedBinding(action, _pressed);
-			_hotkeys?.PushHotkeyReleasedBinding(action, _released);
+			_hotkeys.AddBlockingScreen(_focus);
+			foreach (string action in Actions)
+				if (InputMap.HasAction(action))
+					Compat.HotkeyBindings.Set(_hotkeys, action, _pressed, _released, bind: true);
 		}
 		_focus.GuiInput += ev =>
 		{
@@ -75,11 +75,7 @@ internal sealed class CinematicConfirm : IDisposable
 		if (_hotkeys != null && GodotObject.IsInstanceValid(_hotkeys))
 		{
 			foreach (string action in Actions)
-			{
-				if (!InputMap.HasAction(action)) continue;
-				_hotkeys.RemoveHotkeyPressedBinding(action, _pressed);
-				_hotkeys.RemoveHotkeyReleasedBinding(action, _released);
-			}
+				Compat.HotkeyBindings.Set(_hotkeys, action, _pressed, _released, bind: false);
 			_hotkeys.RemoveBlockingScreen(_focus);
 		}
 		if (GodotObject.IsInstanceValid(_focus))

@@ -10,11 +10,11 @@ namespace P3Makoto;
 public static class ModEntry
 {
 	public const string Tag = "[P3Makoto]";
-	public const string Version = "0.15.33";
+	public const string Version = "0.15.34";
 
 	public static void Init()
 	{
-		GD.Print($"{Tag} init v{Version} build 20261113-game113-compat");
+		GD.Print($"{Tag} init v{Version} build 20261114-unified");
 		// v0.14.44（多版本兼容）：记下游戏版本，换版本出问题时日志里一眼能看到是哪个版本
 		Safe("game version", () => GD.Print($"{Tag} game version {P3Makoto.Core.Compat.GameVersion()}"));
 		// v0.14.59（玩家：iOS 移植版报 PlatformNotSupportedException）：iOS / 纯 AOT 平台不能在运行时生成代码，
@@ -40,8 +40,8 @@ public static class ModEntry
 					{
 						continue;
 					}
-					harmony.CreateClassProcessor(t).Patch();
-					if (t == typeof(Patches.DamagePatch))
+				var applied = harmony.CreateClassProcessor(t).Patch();
+				if (t == typeof(Patches.DamagePatch) && applied is { Count: > 0 })
 					{
 						Patches.DamagePatch.Installed = true;
 						GD.Print($"{Tag} damage hook installed: {string.Join(", ", Patches.DamagePatch.TargetMethods())}");
