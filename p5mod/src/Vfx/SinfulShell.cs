@@ -147,25 +147,26 @@ void fragment() {
 		col = mix(col, edge.rgb, edge.a);
 		a = max(a, edge.a);
 	} else {
-		float d = rock(px);
-		float inside = 1.0 - smoothstep(-1.0, 1.0, d);
-		vec4 pt = vec4(0.0);
+		float inside;
 		if (plat_size.x > 0.0) {
 			vec2 puv = (px - plat_origin) / plat_size;
-			pt = (puv.x >= 0.0 && puv.x <= 1.0 && puv.y >= 0.0 && puv.y <= 1.0) ? texture(plat, puv) : vec4(0.0);
+			if (puv.x < 0.0 || puv.x > 1.0 || puv.y < 0.0 || puv.y > 1.0) discard;
+			vec4 pt = texture(plat, puv);
+			if (pt.a <= 0.0) discard;
 			inside = pt.a;
-		}
-		// 岩石：暗蓝黑，层理 + 裂纹；顶面一道被天光照亮的冷色边；崖面靠深渊那侧被底下的红雾映红
-		float strata = fbm(vec2(px.x * 0.01, px.y * 0.05));
-		float crack = smoothstep(0.02, 0.0, abs(fbm(px * 0.02) - 0.5));
-		col = mix(vec3(0.02, 0.025, 0.045), vec3(0.06, 0.07, 0.1), strata) * (1.0 - 0.5 * crack);
-		float topLit = smoothstep(14.0, 0.0, abs(px.y - (feet_y - 15.0))) * step(d, 0.0);
-		col += vec3(0.25, 0.5, 0.75) * topLit * 0.5;
-		float rim = smoothstep(-16.0, 0.0, d);
-		col += vec3(0.45, 0.05, 0.08) * rim * smoothstep(feet_y, sres.y, px.y) * 1.2;
-		col += vec3(0.3, 0.55, 0.8) * rim * smoothstep(feet_y + 60.0, feet_y, px.y) * 0.4;
-		if (plat_size.x > 0.0) {
-			col = pt.rgb * 0.8;                                             // 画的平台：整体压暗一点，跟夜景一致
+			col = pt.rgb * 0.8;
+		} else {
+			float d = rock(px);
+			inside = 1.0 - smoothstep(-1.0, 1.0, d);
+			if (inside <= 0.0) discard;
+			float strata = fbm(vec2(px.x * 0.01, px.y * 0.05));
+			float crack = smoothstep(0.02, 0.0, abs(fbm(px * 0.02) - 0.5));
+			col = mix(vec3(0.02, 0.025, 0.045), vec3(0.06, 0.07, 0.1), strata) * (1.0 - 0.5 * crack);
+			float topLit = smoothstep(14.0, 0.0, abs(px.y - (feet_y - 15.0))) * step(d, 0.0);
+			col += vec3(0.25, 0.5, 0.75) * topLit * 0.5;
+			float rim = smoothstep(-16.0, 0.0, d);
+			col += vec3(0.45, 0.05, 0.08) * rim * smoothstep(feet_y, sres.y, px.y) * 1.2;
+			col += vec3(0.3, 0.55, 0.8) * rim * smoothstep(feet_y + 60.0, feet_y, px.y) * 0.4;
 		}
 		col *= 1.0 - 0.45 * dim;
 		col += vec3(0.85, 0.95, 1.0) * flash * 0.6;
@@ -345,7 +346,7 @@ void fragment() {
 	/// <summary>一盏引擎 2D 点光（PointLight2D，加法）：照亮它范围里的人物、怪物、人格面具和场景。</summary>
 	private static PointLight2D Light(Node parent, Vector2 at, Color c, float radiusPx)
 	{
-		PointLight2D l = new() { Texture = LightTex, TextureScale = radiusPx / 128f, Color = c, Energy = 0f };
+		PointLight2D l = new() { Texture = LightTex, TextureScale = radiusPx / 128f, Color = c, Energy = 0f, RangeItemCullMask = SinfulRender.ActorLightMask };
 		parent.AddChild(l);
 		l.GlobalPosition = at;
 		return l;
@@ -399,6 +400,7 @@ void fragment() {
 
 		// ── 场景：天空层（最底下）+ 断崖层（盖在人格面具前面）
 		Node2D root = Fx.ScreenRoot(back, "P5SinfulShellScene");
+		SinfulRender.Observe(root);
 		// 场景切换，不叠（用户 2026-11-13）：群蛇形态的咒雾 / 蛇、毒雾在华丽收场期间整个藏起来，演完放回来
 		root.TreeExiting += () => { SerpentMantle.Suspend(false); FumesField.Suspend(false); };
 		back.MoveChild(root, 0);
@@ -427,10 +429,9 @@ void fragment() {
 			rocks.SetShaderParameter("plat_origin", org);
 			rocks.SetShaderParameter("plat_size", size);
 		}
-		ColorRect skyRect = new() { Size = screen, Material = sky, MouseFilter = Control.MouseFilterEnum.Ignore, LightMask = 0 };   // 天空不吃引擎灯光（不然整片被照白），只有自己的闪光
+		ColorRect skyRect = SinfulRender.Sky(root, screen, sky);
 		Node2D personaSlot = new() { Name = "PersonaSlot" };          // 撒旦耶尔第 2 版立绘放这里（天空和断崖之间）
-		ColorRect rockRect = new() { Size = screen, Material = rocks, MouseFilter = Control.MouseFilterEnum.Ignore };
-		root.AddChild(skyRect);
+		ColorRect rockRect = new() { Size = screen, Material = rocks, MouseFilter = Control.MouseFilterEnum.Ignore, LightMask = SinfulRender.ActorLightMask };
 		root.AddChild(personaSlot);
 		root.AddChild(rockRect);
 		Fx.Clock(skyRect);
@@ -464,6 +465,7 @@ void fragment() {
 		PointLight2D moonLight = Light(lights, world(moonS), new Color(0.7f, 0.78f, 0.95f), 2600f * unit);
 		puppet?.LightFrom(moonS);
 		var actorRest = s.Actors.Where(GodotObject.IsInstanceValid).Select(a => (a, a.Modulate)).ToList();
+		SinfulRender.LightActors(root, s.Actors.Append(personaSlot));
 		// 脚下的接触阴影：一大片软的冷黑影（往月亮反方向略拖长）+ 脚底一道更实的接触暗线，让人物「踩」在平台上
 		Node2D shadowRoot = new() { Name = "P5SinfulShadows" };
 		back.AddChild(shadowRoot);

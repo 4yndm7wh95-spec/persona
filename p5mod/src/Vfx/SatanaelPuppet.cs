@@ -91,6 +91,7 @@ void fragment() {
 		uv = (root_px + vec2(cos(th), sin(th)) * r) * TEXTURE_PIXEL_SIZE;
 	}
 	vec4 c = texture(TEXTURE, uv);
+	if (c.a <= 0.0) discard; // Transparent pixels have no inner rim or dissolve contribution.
 	vec2 sp = SCREEN_UV * sres;
 	float l = dot(c.rgb, vec3(0.3, 0.59, 0.11));
 	// 夜光：压低饱和度（金色变成淡银金）、乘冷蓝环境光；越往下越暗（隐入深渊）
@@ -178,6 +179,7 @@ float bolt(vec2 p, float x0, float y0, float y1, float lean, float salt, float w
 	return (exp(-pow(d / width, 2.0)) * 1.6 + exp(-d / (width * 9.0)) * 0.45) * taper;
 }
 void fragment() {
+	if (strike <= 0.0) discard;
 	vec2 p = UV * sres;
 	float b = bolt(p, cx, -20.0, sres.y * 1.05, 0.05, 0.0, 2.6);
 	// 两条分叉：从主干上一个随机高度往斜下方岔出去
