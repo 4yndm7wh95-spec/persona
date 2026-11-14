@@ -4,6 +4,125 @@
 
 ---
 
+## 2026-11-14 · 会话 D（`claude/confident-hypatia-nropgi`）交接：幽魂形态四版都没过，计划妥当还要再优化
+
+### 分支和状态
+- 工作分支 `claude/confident-hypatia-nropgi`，已推送，工作区干净。版本 **0.9.46**。
+- 任务单 `docs/codex/codex_p5_build_0.9.46.md` 已写好；下次升版就复制一份改版本号。
+- **Codex 也往这个分支推报告**，推送前先 `git fetch` 再 merge。
+- 仓库里 Codex 的编译报告只到 0.9.28：0.9.29～0.9.46 有没有编译、装进游戏，要问用户。
+- 用户自己在本地用 Codex 做事，推的是 `codex/...` 分支，比如 `codex/p5-finale-perf-handoff-20261114`。
+  - 用户让合的时候，先审它的 diff 和 README，再合。这一次已经合入，内容是华丽收场的 GPU 优化，说明在 `docs/codex/reports/p5_finale_perf_handoff_20261114/README.md`。
+- 待办清单见 `docs/p5/TODO.md`，最下面记着用户拉黑的手法。**动手前先读它。**
+
+### 每次升版给用户的 Codex 提示词（只换版本号 X）
+> 读仓库 4yndm7wh95-spec/persona 分支 claude/confident-hypatia-nropgi 上的 docs/codex/codex_p5_build_X.md 并严格照做：把 P5Joker X 编译、打包 PCK、装进游戏 mods\P5Joker\，写报告 docs/codex/reports/p5_build_X.md 推回同一分支。仓库副本在 C:\Users\kkk\sts2_tools\p5_build\repo，先 fetch 这个分支（任务单第 2 步有完整命令）再读任务单。任何一步报错就停下来写报告，不要自己改代码。
+
+### 游戏 0.113 兼容（要盯）
+- Codex 做的 0.113 适配在 0.9.22 合入：伤害入口能接 `DamageTargetData`，`SkillPlay.Count` 也做了兼容。
+- 云端类型检查用的 `research/libs/sts2.dll` **还是旧版**。
+  - 从 0.9.44 起，任务单第 4.5 步让 Codex 把游戏里 0.113 的 `sts2.dll`、`0Harmony.dll`、`GodotSharp.dll` 复制进 `research/libs/` 推上来。
+  - 推上来以后，`check.sh` 就是对着 0.113 检查。然后要逐个核对下面这些按名字挂的钩子（名字变了编译照过，但游戏里会挂不上）：
+    - `SerpentFormPower.AfterCardPlayed`、`Cmd.CustomScaledWait`（群蛇形态）
+    - `NoxiousFumesPower.AfterSideTurnStart`（毒雾）
+    - `VfxCmd.PlayOnCreature` / `PlayOnCreatureCenter` / `PlayFullScreenInCombat`（屏蔽猎人原版特效）
+    - `NHealthBar.RefreshValues` 和私有字段 `_poisonForeground` / `_creature` / `_hpLabel`（毒条）
+    - `Hook.AfterFlush`（保留手牌，新加的）
+- 补丁是一个类一个类应用的。挂不上的那个只会在日志里打一行 `[P5Joker] patch XXX failed`，不影响别的补丁。
+
+### 用户这两天定下的规矩（`docs/p5/TODO.md` 也有）
+- **拉黑**：
+  - 红色网格网点：网点光晕 `HalftoneBurst` / `SoftBurst`，身体化成网点等。用户原话：「太丑了，不要那么 low」。
+  - **环绕光圈 / 光环 / 刀光绕身转圈**，即 `Vortex`、`Sweep`/`RingSweep`、卡绕敌人转圈：不能当主体，最多做次要点缀。
+- **已经满意的牌里用到的网点不用换**，用户说「不用」：融入暗影「影刃旋风」、余像、迷雾、蛇咬召唤。
+- **要延续已满意特效的风格**。用户原话：「就不能延续一下我们之前做好的已经满意的特效的风格吗」。这套风格是：
+  - 压暗透红：`Dim` / `Grade`，是调色，不是烟；
+  - 二十来道细光线往胸口收：`Glow.TaperPoly` + `TaperPts`，见 `Shadowmeld` 和 `WraithFormV2`；
+  - 柔光光芒 `Flare`、十字光 `Cross`；
+  - 疾光 `DashFly` / `Streak`（圆头的拖尾）；
+  - 贴身红残影 `RedEcho`：贴身，不要拉开分身；
+  - `Glow.Flash` 的柔闪、`Glow.Sparks` 碎光、`Glitter` 往上飘的光粒；
+  - 卡牌用 `Phantom.Card`。
+- 之前的规矩照旧：
+  - 回复中文；做一点就提交推送一次；
+  - 预览放 `docs/p5/preview/`，854 宽带声音，用 SendUserFile 发，先自己逐帧看过；
+  - 不要火焰、塑料感、阴暗黑烟、贴图感、细线圈、有棱有角的形状；
+  - 人物不能消失，前后遮挡要清楚；
+  - 音效只用游戏样本（`Sfx.Take("gx_*")` / `Sfx.Play` / FMOD 事件），没合适的就不要；
+  - 每次升版都写 Codex 任务单并给提示词；交接只在用户要求时写。
+
+### 幽魂形态（不过关，下一个会话的第一件事）
+- 代码在 `p5mod/src/Vfx/SkillRedo6.cs` 的 `WraithFormV2`，`SkillRedo5.Register` 里写着 `cards["WraithForm"] = WraithFormV2`。
+- 预览场景 `wraith`：`render.sh wraith 3`。施法动作是 `cast_big`。
+- 被否的版本，**别在这些方向上修补**：
+  0. 最早的旧版在 `CardSkillFx.WraithForm`：紫色漩涡、细圈、亡魂贴图。
+  1. v2：三层红残影从身上剥离、往左 / 右 / 后上方飘开再合回。用户：「真的做三个剪影拉出来会很奇怪」。
+  2. v3：三道宽红弧光从脚下往上裹住他（像斗篷），加刀光旋涡。用户：环绕光圈当主体不好看。
+  3. 第三版半路改过一次：身体从脚往上化成红网点、往上飘（`DotBody` 着色器，已删）。用户：「红色网格网点也要拉黑，太丑了」。
+  4. v4（现在的代码）「相位虚化」：
+     - 压暗、光线往胸口收、身后柔光气柱；
+     - 人褪成半透明淡红白，一层贴身红残影左右急抖、拖横向影纹；
+     - 主拍是长横向光芒加十字光、碎光、重震；之后一排疾光从他身上穿过去，表示无实体、打不中。
+     - 用户：「不过关」，没说具体原因。**接手先问用户哪里不行、想要什么感觉**，别再猜着改。
+- 卡牌效果：获得「无实体」，这一回合受到的伤害变成 1。
+- 一个时间上的坑：`cast_big` 动作大约在效果开始后 0.6～0.7 秒手放下、换姿势。用 `RedEcho` / `SkillRedo4.Freeze` 冻住的身形要在那之前淡掉，不然会和人对不上。
+
+### 计划妥当（用户：还能再优化）
+- 代码在 `SkillRedo6.cs` 的 `WellLaidPlans`。预览场景 `plans`：`render.sh plans 4`，打两次。
+- 现在的版本 v3（0.9.46）：
+  - 周围压暗；五张大卡从手里迸出，转着在他头顶排成扇面，每张落位时柔闪、碎光；
+  - 疾光沿着扇面扫过，牌从左到右依次亮起；背后柔光，往上喷碎光；
+  - 五张牌绕着手旋进来，叠成一摞，柔闪、十字光、纸屑、轻震，再缩进手里。
+- 用户只说「打出的时候可以再华丽一些」「还能再优化」。没说具体哪里，可以问，也可以按满意的风格加料。别用网点、别用环绕光圈当主体。
+- 时间限制：`cast_glove` 的手大约在开始后 0.7 秒放下。那一摞牌要在手放下前缩掉，现在 `fold = 0.6`，收在 `fold + 0.36` 左右。
+- **保留手牌特效**（用户要求做的，配合计划妥当）：
+  - 代码在 `Vfx/RetainFx.cs`，负责画；`RetainPatch.cs` 里的 `RetainFlushPatch` 挂 `Hook.AfterFlush` 的前缀，按类型取参数里的 `Player` 和最后一个 `IReadOnlyCollection<CardModel>`，也就是被保留的牌。
+  - 效果：本地 Joker 被保留的手牌从左到右，每张错开 0.07 秒，各「封」一下：
+    - 牌边一圈柔红描边亮起，亮度沿边不均匀；
+    - 一道白高光斜扫过牌面，右上角 `Glint`，牌顶几粒光点；
+    - 每张约 0.9 秒，整次一声很轻的 `gx_card_stack`。
+  - 用户要求：每回合都会出现，所以不要花哨，但要好看。
+  - 预览场景 `retain` 用的是灰色假牌，**没进游戏验证过**：要确认牌节点用 `NCard.Body` 定位对不对，以及 0.113 下钩子能不能挂上。
+
+### 其他这次做的、等用户意见的
+- **刀刃陷阱**（`Vfx/KnifeTrapFx.cs`，0.9.46）：
+  - 有几张小刀，敌人头顶两侧就排几张预告信，排成一道月牙，**不转圈**；
+  - 每一枪：一张卡往后一缩、被切开散掉，射出一道带弯的光矛扎进敌人；最后一张收官。
+  - 走过的版本：
+    - v1 太简单；v2 光弹太小太胆小；v3 光点不该从 Joker 出来；
+    - v4 卡冲过去撞敌人，用户说怪；
+    - v5 卡绕敌人转圈：踩了环绕光圈的雷，0.9.46 改成月牙。
+  - 0.9.46 的月牙版用户还没表态。
+- **肾上腺素**、**暗影步**（`SkillRedo6.cs`）：用户说「还算可以」。0.9.46 把里面的网点换成了柔光，别的没动。
+- 预览：`docs/p5/preview/*_046.mp4`。
+
+### 还要做的（按顺序）
+1. 幽魂形态：先问用户要什么，再做。
+2. 计划妥当：再加强。
+3. 增益牌：预判、侧步、磨蚀、消影、速行者、触媒、调制。鬼祟用户说没问题，不动。
+4. 谋划牌：谋划专家、必备工具、手上技法、夜魇。
+5. 咕嘟冒泡：小优化。
+6. 大块的：选人界面重构、开始后的过场、Boss / 精英最后一击的总攻击（参考 P3 mod）、战后选牌界面小改。
+7. 0.113 的库同步上来以后，核对上面列的钩子。
+
+### 预览工具（这个容器）
+- 渲染：在 `tools/p5/fxpreview` 下，先 `export GODOT=/opt/tools/Godot_v4.5.1-stable_mono_linux_x86_64/Godot_v4.5.1-stable_mono_linux.x86_64`，再 `bash render.sh <场景> <秒数>`。
+  - 秒数必须是**整数**，写 4.6 会报错。
+  - 一次大约 1～2 分钟，命令要给够超时。
+- 出视频：
+  - `python3 mix.py <场景>` 生成 `out/<场景>.mp4`，带游戏样本音效；
+  - 再 `ffmpeg -i out/<场景>.mp4 -vf scale=854:-2 -c:a copy docs/p5/preview/<名字>.mp4` 缩到 854 宽。
+- 看关键帧：`python3 tools/p5/fxpreview/mont.py out/<场景> <输出.png> 帧,帧,帧 [x0,y0,x1,y1]`。默认裁到 Joker 周围，看敌人用 `700,150,1920,1000`。帧率 30。
+- 类型检查：`bash tools/p5/cloud/check.sh`。
+- `p5mod/src/Vfx/` 下的文件会被预览工程编译，**不能引用游戏类型**（MegaCrit、Harmony）。要挂游戏的代码放在 `p5mod/src/` 下，参考 `RetainPatch.cs`。
+- 预览场景都在 `tools/p5/fxpreview/Preview.cs`：
+  - `RunCards(...)` 打卡牌；
+  - `knife_trap` 自己写了开枪的时间线；
+  - `p.At` 的时间相对于「现在」，回调里面再套 `At` 要注意。
+- 写给别的文件用的公开包装在 `SkillRedo5c.cs` 末尾：`Cross`、`Streak`、`SoftBurst`、`RingSweep`、`Whirl`、`Motes`、`HazeVortex`。后三个和网点都属于拉黑或只能做次要的手法，慎用。
+
+---
+
 ## 2026-11-13 · 会话 C（`claude/blissful-clarke-rgwshm`）交接 —— 融入暗影重做到「网点融影 v2」，等用户回复；余像 / 萎靡和后面的牌都还没做
 
 ### 分支和状态
