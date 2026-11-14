@@ -244,6 +244,94 @@ public static partial class SkillRedo5
 
 public static partial class SkillRedo5
 {
+	/// <summary>
+	/// 幽魂形态（获得无实体），「怪盗幻影」约 1.6s（2026-11-14 重做：去掉紫色漩涡、细圈和亡魂贴图）：
+	/// ① 0 四周压暗，他整个人褪成半透明的淡红白（像幻影），身后一根柔光气柱慢慢升起；
+	/// ② 0.1 起三层红残影从他身上剥离、往左 / 右 / 后上方飘开（拖着横向影子），一大圈刀光绕着他往上卷、光粒往上飘；
+	/// ③ 0.75 主拍：三层残影「唰」地合回他身上 —— 白红闪光、超大网点光晕、十字光芒、两道交叉大弧光、碎光四散、重震；
+	/// ④ 之后人慢慢恢复颜色，身上还闪两下幻影的抖动。
+	/// </summary>
+	public static void WraithFormV2(SkillCtx c)
+	{
+		float h = c.Tall, u = c.Unit, f = c.Face;
+		Control back = c.Back ?? c.Front;
+		const float snap = 0.75f, life = 1.6f;
+		Sfx.Play(Sfx.WraithForm, 0.6f);
+		S("gx_slice", 0.22f, snap - 0.04f);
+		Dim(back, c.Chest, new Vector2(h * 3.2f, h * 2.4f), life, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.25f)) * (1f - Ease5.Seg(s, 1.1f, 0.5f)));
+		// 人褪成幻影
+		if (c.SelfTint is { } tint)
+		{
+			Node2D tick = Fx.Root(c.Front, c.Feet, "P5WraithTint", life + 0.05);
+			Color ghost = new(1f, 0.72f, 0.76f, 0.45f);
+			Fx.Animate(tick, 0, life, t =>
+			{
+				float s = t * life;
+				float k = Ease5.Seg(s, 0f, 0.25f) * (1f - 0.6f * Ease5.Seg(s, snap, 0.08f)) * (1f - Ease5.Seg(s, snap + 0.2f, 0.6f));
+				float jit = s > snap ? 0.25f * Mathf.Max(0f, Mathf.Sin(s * 40f)) * (1f - Ease5.Seg(s, snap, 0.5f)) : 0.1f * Mathf.Sin(s * 30f);
+				tint(Colors.White.Lerp(ghost, Mathf.Clamp(k + jit * k, 0f, 1f)));
+			});
+			tick.TreeExiting += () => tint(Colors.White);
+		}
+		// 身后柔光气柱
+		Node2D col = Fx.Root(back, c.Feet, "P5WraithAura", life + 0.05);
+		Sprite2D aw = Glow.SoftSprite(col, new Vector2(0f, -h * 0.6f), new Color(1f, 0.1f, 0.18f, 0f), 1f);
+		Fx.Animate(col, 0, life, t =>
+		{
+			float s = t * life;
+			float pop = s > snap ? Mathf.Exp(-(s - snap) * 5f) : 0f;
+			float a = Fx.OutCubic(Ease5.Seg(s, 0f, 0.4f)) * (1f - Ease5.Seg(s, 1.0f, 0.6f));
+			aw.Scale = new Vector2(h * (0.8f + 0.5f * pop), h * (1.4f + 0.4f * Ease5.Seg(s, 0f, snap) + 0.5f * pop)) / 32f;
+			aw.Position = new Vector2(0f, -h * (0.6f + 0.15f * Ease5.Seg(s, 0f, snap)));
+			aw.Modulate = new Color(1f, 0.1f, 0.18f, (0.4f + 0.4f * pop) * a);
+		});
+		// 三层残影剥离、飘开、合回
+		Vector2[] dirs = { new(-f, -0.05f), new(f, -0.1f), new(-0.25f * f, -0.6f) };
+		for (int i = 0; i < 3; i++)
+		{
+			Vector2 dv = dirs[i].Normalized() * h * (i == 2 ? 0.22f : 0.3f);
+			float d0 = 0.08f + 0.06f * i;
+			Fx.After(c.Front, d0, () =>
+			{
+				if (RedEcho(c, life) is not { } echo) return;
+				var (sp, m) = echo;
+				float dur = life - d0;
+				Fx.Animate(sp, 0, dur, t =>
+				{
+					float s = d0 + t * dur;
+					float out_ = Ease5.OutQuint(Ease5.Seg(s, d0, 0.4f));
+					float back_ = Fx.InCubic(Ease5.Seg(s, snap - 0.12f, 0.12f));
+					float k = out_ * (1f - back_);
+					sp.Position = dv * k + new Vector2(0f, Mathf.Sin(s * 5f + d0 * 9f) * h * 0.01f * k);
+					m.SetShaderParameter("smear", -Mathf.Sign(dv.X == 0f ? 1f : dv.X) * 0.07f * k + (s > snap - 0.12f && s < snap ? Mathf.Sign(dv.X) * 0.1f * back_ : 0f));
+					m.SetShaderParameter("flow", s * 5f);
+					m.SetShaderParameter("fill", 0.35f);
+					m.SetShaderParameter("alpha", 0.7f * Mathf.Min(1f, (s - d0) / 0.06f) * (s < snap ? 1f : 0f));
+				});
+			});
+		}
+		Vortex(c.Front, back, c.Feet, h, h * 0.6f, 8, 0.1f, snap - 0.05f, f, 0.05f, 0.9f, 1.2f, 0.3f);
+		Glitter(c.Front, c.Feet, h, u, 0.1f, 1.2f, 10, 0.5f);
+		// 合回：主拍
+		Fx.After(c.Front, snap, () =>
+		{
+			Glow.Flash(c.Front, c.Chest, new Color(1f, 0.95f, 0.93f), h * 0.9f, 0.16f);
+			Glow.Flash(back, c.Chest, new Color(0.9f, 0.08f, 0.15f), h * 2.6f, 0.4f);
+			HalftoneBurst(back, c.Chest, h * 2.8f, 0.6f);
+			HalftoneBurst(back, c.Chest, h * 1.6f, 0.4f, 0.05f, new Color(1f, 0.3f, 0.36f));
+			Cross(c.Front, c.Chest, h * 1.3f);
+			HitStop.Request(0.05);
+			Fx.Shake(2);
+			Glow.Sparks(c.Front, c.Chest, 40, 160f * u, 700f * u, 0.55f, new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.22f, 0.3f), new Color(0.5f, 0.02f, 0.08f) },
+				120f * u, 0.02f * u, 0.05f * u, Vector2.Up, 180f);
+		});
+		Sweep(c.Front, back, c.Chest, h * 0.75f, 0.4f, f, snap, 0.5f, 0.09f, new Color(0.95f, 0.06f, 0.15f), 1.2f, 1f);
+		Sweep(c.Front, back, c.Chest, h * 0.7f, -0.4f, -f, snap + 0.04f, 0.48f, 0.04f, new Color(1f, 0.85f, 0.85f), 1.6f, 0.95f);
+	}
+}
+
+public static partial class SkillRedo5
+{
 	/// <summary>刀刃陷阱的笼子：几道细刀光绕着敌人一直转（不往上卷），t0 起 dur 秒。</summary>
 	public static void TrapCage(Control front, Control back, Vector2 feet, float h, float radius, float t0, float dur) =>
 		Vortex(front, back, feet, h, radius, 6, t0, dur, 1f, 0.15f, 0.9f, 1.3f, 0f);
