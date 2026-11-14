@@ -1,0 +1,64 @@
+[
+  {
+    "zip_sha256": "7f6a47dc72ec61c468c39fcc69cfcdd1b0b47a77b2030ac14b1e18e90d65e273",
+    "backup_path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a\\cardart\\_build\\1.0.2\\install\\backup_20261113_224556_111\\P3CardArt",
+    "game_version": "v0.111.0",
+    "zip_path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a\\cardart\\dist\\P3CardArt_1.0.2_game0.111.0.zip",
+    "install_path": "C:\\Users\\kkk\\Desktop\\slaythespire\\Slay the Spire 2\\mods\\P3CardArt",
+    "files": [
+      {
+        "name": "P3CardArt.json",
+        "bytes": 338,
+        "sha256": "0089b5bf5693eaa8eb7c6416c850a48a6c731e6d9d6ca38c9b8708927c342470",
+        "existed": true
+      },
+      {
+        "name": "P3CardArt.dll",
+        "bytes": 13312,
+        "sha256": "b6b8d06e9d2b92b372c9b9d4f5e79b58b29b8622ef008094caf47e7e0776ccae",
+        "existed": true
+      },
+      {
+        "name": "P3CardArt.pck",
+        "bytes": 13740900,
+        "sha256": "11362d3dbbf89c751802b98585f1a81ef157ebff020cbef5c82339a93e89e977",
+        "existed": true
+      }
+    ],
+    "mod_version": "1.0.2",
+    "installed_hashes_verified": true,
+    "mod_id": "P3CardArt",
+    "zip_members_verified": true
+  },
+  {
+    "zip_sha256": "37eaf7b04ef6681a098ecf2d32bcfa232292573ff2c43b58b0cb5cc779d434e8",
+    "backup_path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a\\cardart\\_build\\1.0.2\\install\\backup_20261113_224556_113\\P3CardArt",
+    "game_version": "v0.113.0",
+    "zip_path": "C:\\Users\\kkk\\Documents\\Codex\\2026-10-21\\p3makoto-c-users-kkk-documents-codex\\work\\hammer_furnace_v5_8339f23a\\cardart\\dist\\P3CardArt_1.0.2.zip",
+    "install_path": "G:\\SteamLibrary\\steamapps\\common\\Slay the Spire 2\\mods\\P3CardArt",
+    "files": [
+      {
+        "name": "P3CardArt.json",
+        "bytes": 338,
+        "sha256": "0089b5bf5693eaa8eb7c6416c850a48a6c731e6d9d6ca38c9b8708927c342470",
+        "existed": true
+      },
+      {
+        "name": "P3CardArt.dll",
+        "bytes": 13312,
+        "sha256": "b647d09aefc3e603000746b1e41b80489ea639c7054730ae91b885a78377dc71",
+        "existed": true
+      },
+      {
+        "name": "P3CardArt.pck",
+        "bytes": 13740900,
+        "sha256": "11362d3dbbf89c751802b98585f1a81ef157ebff020cbef5c82339a93e89e977",
+        "existed": true
+      }
+    ],
+    "mod_version": "1.0.2",
+    "installed_hashes_verified": true,
+    "mod_id": "P3CardArt",
+    "zip_members_verified": true
+  }
+]

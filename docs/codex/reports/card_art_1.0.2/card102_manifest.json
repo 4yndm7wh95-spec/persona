@@ -1,0 +1,1899 @@
+{
+  "source_commit": "db2b094f",
+  "version": "1.0.2",
+  "pck_files": 189,
+  "normal_jpg": 94,
+  "big_jpg": 94,
+  "index": 1,
+  "all_bytes_identical": true,
+  "all_images_decoded": true,
+  "pck_sha256": "11362d3dbbf89c751802b98585f1a81ef157ebff020cbef5c82339a93e89e977",
+  "files": [
+    {
+      "path": "p3cardart/card_art/alignment.jpg",
+      "bytes": 29014,
+      "sha256": "7aaefd42f7f03baa4d973d23a9668d89e29dc976fc0fb5ccd8c83f42391ad023",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/alignment_big.jpg",
+      "bytes": 86317,
+      "sha256": "4c0bff010f0a094d84830533832e0a2e0f273187008157c03e1244ecdd03887d",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/arsenal.jpg",
+      "bytes": 39611,
+      "sha256": "10598050b99ec6ded678dff3121a62f290c84dcc712fa5760ded7aa04d227b75",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/arsenal_big.jpg",
+      "bytes": 114363,
+      "sha256": "ae1b20750fb0fbbf2eee4734948fccc42036658c6ec06f888c0a29b3092da45a",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/astral_pulse.jpg",
+      "bytes": 31914,
+      "sha256": "da647889b9855d8dd62df3040394ba0f2eb16b9986fbcfd29edc1166fe9cc7ef",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/astral_pulse_big.jpg",
+      "bytes": 89594,
+      "sha256": "d45f747e1e3a3cbe3e3560a7d93fb5b07e336b6bea2f9a1f7b39cc2dff298a5d",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/beat_into_shape.jpg",
+      "bytes": 42143,
+      "sha256": "65b962df236f07c11b7c50c195b36e6050368b4e426d03774984e2efa76ede2b",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/beat_into_shape_big.jpg",
+      "bytes": 122883,
+      "sha256": "0e25f6d81e394c6216f19f046f5cb7d08e668ac9835a0bf5a1afacedf22cd0c1",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/begone.jpg",
+      "bytes": 29373,
+      "sha256": "7d718d40dbd47094d9db909f1e6bd1d2ecf89d2135034182c0ae202e4220d001",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/begone_big.jpg",
+      "bytes": 88287,
+      "sha256": "9f042fe6af596c4029e418c457fc0e284b19c5cf4059a121b22d1eaef7526b6d",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/big_bang.jpg",
+      "bytes": 63683,
+      "sha256": "2a76398ef1c25cf0b2ec7f423d98e15277a902befdd3c1f220ec5f42e67e7b48",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/big_bang_big.jpg",
+      "bytes": 193991,
+      "sha256": "eb9651bc5e719b5ab36614ba9f6d1cbf59edcc425d8743378644e1905206de82",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/black_hole.jpg",
+      "bytes": 39095,
+      "sha256": "0071e55778c672a043369eb166ac5e739043475aab6d092d9281070aa4c765f9",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/black_hole_big.jpg",
+      "bytes": 112268,
+      "sha256": "4bddd812ed6db6422705b633b1b1edfcb3cd46a8893ae12e02f3f960368d34f7",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/bombardment.jpg",
+      "bytes": 45914,
+      "sha256": "47da737847e437d34e11adf88fc4f071170abb00942d0925866b20a423cf5067",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/bombardment_big.jpg",
+      "bytes": 134175,
+      "sha256": "e6789e4841a6909a9f77e27b98de20e0c923cb2dfb51edfa4d0ac9b3f15e3eae",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/bulwark.jpg",
+      "bytes": 45581,
+      "sha256": "df10c3c74f257fb93ceed9474fbd34626cabbf8a90516f62333bf2984cccde5e",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/bulwark_big.jpg",
+      "bytes": 131919,
+      "sha256": "05b747deb0b4743afa8d71889af6aacbfd4bb04961876488b6fd7b5a73ad1338",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/bundle_of_joy.jpg",
+      "bytes": 34017,
+      "sha256": "34dde6a179f998ee4df80add6f862568f2e010ca9ae24762a1105c6ff3e69fe1",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/bundle_of_joy_big.jpg",
+      "bytes": 93097,
+      "sha256": "3d48f66bc99f270d6035fae2da4216bfef144412cb806c62f12c9f6cf35d022b",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/celestial_might.jpg",
+      "bytes": 43487,
+      "sha256": "765afd89e07879ad384369960ecdd187c5f4319474347fc04076772583815e72",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/celestial_might_big.jpg",
+      "bytes": 128383,
+      "sha256": "d9d09abee6c3d4d4102798efff4c147e7c733ca32de31389a2373d1797ee5e76",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/charge.jpg",
+      "bytes": 42595,
+      "sha256": "ecd965d02e3440ae4e12092dacfac4b897ade1890725d0c67a8481ecd25366f2",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/charge_big.jpg",
+      "bytes": 126366,
+      "sha256": "9a82919ed49d33a5cb3ca9548765e609e9dcbac6fad96ffa6876e7255cbb5403",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/child_of_the_stars.jpg",
+      "bytes": 31532,
+      "sha256": "0e6cf1a3d17651dcaeac6f7a7ce88d8bb35f5d91211bf66ccd1533e97eea5918",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/child_of_the_stars_big.jpg",
+      "bytes": 89586,
+      "sha256": "9c7f1333b16854d52ce0c936f5c12a5b8723b0dfd574acf042e91d9c2a03a5a6",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/cloak_of_stars.jpg",
+      "bytes": 38239,
+      "sha256": "793a9236862e0b134040b2e69104001bd9bcc167527524efbe653550b90f67cc",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/cloak_of_stars_big.jpg",
+      "bytes": 107230,
+      "sha256": "94e767fd45187cee6dfe270f06eac07494ecdc21e4c97755f36f3b1f0f616c74",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/collision_course.jpg",
+      "bytes": 41156,
+      "sha256": "58ba577719e75df9e4b4ec9f681041d0ec305854bdaa4072f23324e64185af23",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/collision_course_big.jpg",
+      "bytes": 121483,
+      "sha256": "e5a531b1c2de981fa5c86c6ecce88baf0d153166746218d977dc8ebb9245c8c7",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/comet.jpg",
+      "bytes": 34742,
+      "sha256": "6fcf324cfd9cbf7026234348e11bfc510876ceed10e86e4622988ed812209191",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/comet_big.jpg",
+      "bytes": 102293,
+      "sha256": "42ab2338689e85c05681913d1c447f714e5d085757b1f42fdc6b2a75ca8cb268",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/conqueror.jpg",
+      "bytes": 31375,
+      "sha256": "a360ae4cd65750f6b6d88288c8f75a9ef4c6d381a4968324313e6cc0873c7055",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/conqueror_big.jpg",
+      "bytes": 87931,
+      "sha256": "b6a8fb19ac9f40abf7a1e78897256fa4e671ab29761b3ab000d5bd274bb6f04c",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/constellation.jpg",
+      "bytes": 34565,
+      "sha256": "03adf3018dbddee34d8e7fe9fb4ff19dda23bd603ad80ded4d54482d58bb95e5",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/constellation_big.jpg",
+      "bytes": 96860,
+      "sha256": "76869dd160f2da7c3adb965ff3bd9a4ba11b72cf54c15bcd86b796aa131be780",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/convergence.jpg",
+      "bytes": 35496,
+      "sha256": "de10781412e24c6209250e57ace8ed20a6a1a2b62300566f1cbceea20f0af18c",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/convergence_big.jpg",
+      "bytes": 104803,
+      "sha256": "73ab173d68abff2a367ed3410bcc81b5de61e83034a30d263735015b91652162",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/cosmic_indifference.jpg",
+      "bytes": 37191,
+      "sha256": "893e8168e5f65a85eedb8fbf6c084eebcf7102e683baf34c5359562f3a319225",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/cosmic_indifference_big.jpg",
+      "bytes": 106043,
+      "sha256": "49967a5a603f1311039c2f756169ec1d7262b4c4d79fac4eb47b33b3eacb40f9",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/crash_landing.jpg",
+      "bytes": 40800,
+      "sha256": "8ff7c17c27a84327bc953e8bff9feb1b376299b703f6697f3e82dff6ba05889b",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/crash_landing_big.jpg",
+      "bytes": 120823,
+      "sha256": "9b4c21895b415dff3145e95c2533c8e2966c5d8b06140d94e913dc9d2a2281c3",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/crescent_spear.jpg",
+      "bytes": 27513,
+      "sha256": "08558779990bc8168bbe4807984210c6e0eb871728358040442bc78e90e40d58",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/crescent_spear_big.jpg",
+      "bytes": 82517,
+      "sha256": "ecd7b1de477d9155aa39322b1901809c71d5cf713be776575bf0b604592d2380",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/crush_under.jpg",
+      "bytes": 43159,
+      "sha256": "f1a3b071bd9eff605312846a82429dc70ebbbe45a6bfbdf43b088a403471ec00",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/crush_under_big.jpg",
+      "bytes": 125672,
+      "sha256": "7b0fa5942fd5bb0e1c11bb20f4c8ab81440dd3f49f9ca2e49885639eb7fd5f69",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/decisions_decisions.jpg",
+      "bytes": 33733,
+      "sha256": "c1e78c79f47fd8a2a8bb956dceab17c989c98697bdff4d1dfb75dc84ddc37659",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/decisions_decisions_big.jpg",
+      "bytes": 97683,
+      "sha256": "74f9e8a3aa6f9c89c9683e15e84ec1b482e8fae7cbc53c94465959d5e85c7f64",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/defend_regent.jpg",
+      "bytes": 31717,
+      "sha256": "ab3a4dbdb8ee7847bcbe4ee0569877ddd276e24275e4e9a91fb42cf7cfbe1921",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/defend_regent_big.jpg",
+      "bytes": 92504,
+      "sha256": "18612d8b1dffebaf7e0c105d957da0fd7f70015298b51aae685cc0e51cc30a6e",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/devastate.jpg",
+      "bytes": 41912,
+      "sha256": "9ef2cae13db551fc10434290101cad48e2e60d957c2d512bdd741ef6382c43b4",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/devastate_big.jpg",
+      "bytes": 117751,
+      "sha256": "2da8bb402a1a5c04147b890f884feaf05ea150c9ce37b16961d280469c59d18d",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/dying_star.jpg",
+      "bytes": 44987,
+      "sha256": "a9efd232bdb1ee66492a63fa65d5af0bafde3c727da930f3ea2679a6db1e62a6",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/dying_star_big.jpg",
+      "bytes": 139546,
+      "sha256": "6dfb9009b02a8e2d55fee7bd2a7c9f3cf48fafe1c53e372a7abdf04e47830a42",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/falling_star.jpg",
+      "bytes": 41138,
+      "sha256": "79779f6afea8270335ca782d851a48c5d9a5ef5a5d2a3daa6d405023262b7811",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/falling_star_big.jpg",
+      "bytes": 118128,
+      "sha256": "f69ebb9c50b8fa00fe2d307647bd05459897f45cfc4c8b4d511103e62d191c1a",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/foregone_conclusion.jpg",
+      "bytes": 35676,
+      "sha256": "4789089615257e8b5e3c40f7dae422fb94096dd11558f1cb78cdda919338bfa9",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/foregone_conclusion_big.jpg",
+      "bytes": 105913,
+      "sha256": "dbb1b5327c29cd17815ac1bc9e0b8ebb8291a24078182c87e3b71211ad26f70e",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/furnace.jpg",
+      "bytes": 36252,
+      "sha256": "0fadbef100c5250b77468b64a70ce3336d3b965611e5de0a20766e03bfab9686",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/furnace_big.jpg",
+      "bytes": 101188,
+      "sha256": "db855934e99ec5ffe2ba4a8eac646a5bf9b1a0b7208a69160cf5a64037454065",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/gamma_blast.jpg",
+      "bytes": 38805,
+      "sha256": "94d6c3bf4ba795280b7a9c6c92007858b23bffa2ac8a199f814b68200bb419fd",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/gamma_blast_big.jpg",
+      "bytes": 114770,
+      "sha256": "2ecb5f9276e7b808dabf762d1938b5f9c5f7e255718c57e21494620089231a75",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/gather_light.jpg",
+      "bytes": 33758,
+      "sha256": "1e381f07c30bf83b8f0526536e0bc824ccf3abac25808b2c752a781d2a6b74eb",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/gather_light_big.jpg",
+      "bytes": 97429,
+      "sha256": "66e2580d795d90b9cef68e42599c560aa09a265c7b46d24aa9d3f3d5b84b0b58",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/genesis.jpg",
+      "bytes": 41589,
+      "sha256": "100f62fd461fcda7c191e8fd12f1e1ec235c79d63e2158d8a04ae4d2ec031382",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/genesis_big.jpg",
+      "bytes": 122490,
+      "sha256": "b3f97594c9810469a5268214a63ec4af8ad18c571feba812f4c9f3054a16e153",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/glimmer.jpg",
+      "bytes": 32516,
+      "sha256": "a9c75438dd55d9e65b6f6f5bef932b1e6c2fac52b515300e2c607988c932d203",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/glimmer_big.jpg",
+      "bytes": 95895,
+      "sha256": "b2bc66daf2b502b97747faabaea85e65ab453b58cb41abe9a4619bbd3434fc16",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/glitterstream.jpg",
+      "bytes": 37841,
+      "sha256": "0cde2faf5d7cdb894737fe5eef3a1f51640ef28d2475ce6821a181e6d32ad0ab",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/glitterstream_big.jpg",
+      "bytes": 114452,
+      "sha256": "81d414808eaf73e82f67109f42e461ca566bd60abc19fe1cc11106538721df65",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/glow.jpg",
+      "bytes": 29892,
+      "sha256": "09691ea3c81c05fd06a1f821ce0ef662fee92bf2a0be42acd6de8efe7aded7e2",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/glow_big.jpg",
+      "bytes": 87942,
+      "sha256": "f66a03ac969b6f6c0565eef76d8df446376a596eb8087aeb9945a7936442d1ce",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/guards.jpg",
+      "bytes": 36336,
+      "sha256": "b39da307120e3c0638b8cbb08af7cc63e357a59f32945b9e12928e2662636a72",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/guards_big.jpg",
+      "bytes": 101329,
+      "sha256": "f7c0ee7be0704def9fea08842ab6523f71ca6c3b87c4a18106337995ac75373b",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/guiding_star.jpg",
+      "bytes": 33395,
+      "sha256": "d4ee7f9917536f738b1fa97218b3b299fc854799b66aa8f90bd4aaea5b3927fb",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/guiding_star_big.jpg",
+      "bytes": 93847,
+      "sha256": "0e80bdfc0bf1f1603a39ae3c92ee273cd11f1aba35cc609d4a87e5fcdd4d217a",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/hammer_time.jpg",
+      "bytes": 36126,
+      "sha256": "7e630fefaf65891f56f7e0b382b5cb4b81554954e29674595f0284524e2c36a7",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/hammer_time_big.jpg",
+      "bytes": 100017,
+      "sha256": "faf13b9d1188e4d7e0f6d25d5408f7b6796f84ff5ee18745790408057b00af75",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/heavenly_drill.jpg",
+      "bytes": 34968,
+      "sha256": "33776335160b1a876b44365ea2423d40fdd9d9a357d6faa1e1e7d4abb29f1c70",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/heavenly_drill_big.jpg",
+      "bytes": 101801,
+      "sha256": "c73132ab5c5e388be0d604ecf2bb47754e732772aecc289f257ca8bbfe016202",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/hegemony.jpg",
+      "bytes": 37805,
+      "sha256": "d7caaed3cdd13f3dbc327ce3b5dc67f3af0d720c01458c07b8d89f9861b138bf",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/hegemony_big.jpg",
+      "bytes": 106551,
+      "sha256": "c777e987bed94c4c6734567652f8dd5e2155eeef64cdad1f1d4e4f7455886dc7",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/heirloom_hammer.jpg",
+      "bytes": 39683,
+      "sha256": "ed2d089855ecb680fd8c0fcadd4988fa5f6098e764fcecc867e941d5ca0987a8",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/heirloom_hammer_big.jpg",
+      "bytes": 112717,
+      "sha256": "52392a1941ee6d23eafe59cccd2aabf2e61e133449a8864056dc60ce0c324a3c",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/hidden_cache.jpg",
+      "bytes": 32756,
+      "sha256": "99265cb780a2b0b4912acf4a6802b3d1aeb195c03dfe13f7d608f7a8f55cb6ae",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/hidden_cache_big.jpg",
+      "bytes": 93989,
+      "sha256": "e7416a1365b9f67ce5a43adf7d66634e9665ba4e8f877af77b7eedd2a1ae461f",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/i_am_invincible.jpg",
+      "bytes": 38654,
+      "sha256": "4f3fb440f3ad97d192c6d01c1fd7250b3a8c15112781592e6cd252059b093b10",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/i_am_invincible_big.jpg",
+      "bytes": 112685,
+      "sha256": "8294075c9f02921486311852267d0d6c99b44b1c44170c9013f6b949eebb3d3a",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/index.txt",
+      "bytes": 1133,
+      "sha256": "0b61cb01018ce29558802741564a889c8b73919d102400b98f3eacb71dd00dd3",
+      "identical_to_source": true
+    },
+    {
+      "path": "p3cardart/card_art/kingly_kick.jpg",
+      "bytes": 34194,
+      "sha256": "bf13b0f77035c949d3328d02c2b5b3660a2af1a19a01d9573d85d4d346ff01ca",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/kingly_kick_big.jpg",
+      "bytes": 95482,
+      "sha256": "ab2e95bea194b05adc778070eab236ee7d31b0118bdb566b16f04857ef35ed6f",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/kingly_punch.jpg",
+      "bytes": 33016,
+      "sha256": "725cc02de8db5154fa3cc3d739510131121bed981c649b25bc184aeeaa7a3989",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/kingly_punch_big.jpg",
+      "bytes": 94713,
+      "sha256": "6bb99b4167ef1f6760fbf33de2b76694de6e1a4b8f7c33aa3299cd68674ded4b",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/knockout_blow.jpg",
+      "bytes": 40401,
+      "sha256": "636aa2840f34c9c58cff9d3950d43f8ed050606a2d59fe6c1fb80892ba8360ff",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/knockout_blow_big.jpg",
+      "bytes": 112238,
+      "sha256": "3ec9095a0f971193a8cd8359c79b5579c3cdb240549c60effc9c28e2f0f3ec4b",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/know_thy_place.jpg",
+      "bytes": 19393,
+      "sha256": "78ebae14442daa0f8351fe5b41b5873bff95215af75a522759403b334f3567c6",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/know_thy_place_big.jpg",
+      "bytes": 58011,
+      "sha256": "77c2c259452f58ce628975de08a2e686fbfcc41bc7fe1d0e30ffcdb8c7fb3113",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/largesse.jpg",
+      "bytes": 31631,
+      "sha256": "14a332d4ee275de44292f8e877a652ed6cd352062fdb2703639d447f9a82b9eb",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/largesse_big.jpg",
+      "bytes": 88874,
+      "sha256": "de1defbc23353b36ea9fe2286433a32dbae3b1a8b69cd8560701bcc420da9612",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/lunar_blast.jpg",
+      "bytes": 33451,
+      "sha256": "381a708a7b9cfc645cf45f0acd04498aec3a8e1edddd26c5848fc08acbb9593c",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/lunar_blast_big.jpg",
+      "bytes": 94623,
+      "sha256": "c92f94d081911153494a5bdb1b19434a8a1b2465728b0d1863cb100ed7abcc6f",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/make_it_so.jpg",
+      "bytes": 42881,
+      "sha256": "1e2c915fad282c94efb6169ce90a3d59a2425e715e561f6f51f5677c3eb0de99",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/make_it_so_big.jpg",
+      "bytes": 120972,
+      "sha256": "671a51988759e0d597f7e06e727b7187a78d5770ea4dd1139e824e934a1f89a8",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/manifest_authority.jpg",
+      "bytes": 41195,
+      "sha256": "00408c21cdb5f5aef75834067baed4cb7ca4c82855ef6c14c0569b941bcb6a6f",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/manifest_authority_big.jpg",
+      "bytes": 118803,
+      "sha256": "12d490da08ce8863988fbb9b1f5ad536f13ad120f195015355972aa9842bc84e",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/meteor_shower.jpg",
+      "bytes": 65209,
+      "sha256": "433fdfbf57c61f9f10cdfd3f8ec5a343f8033588a1ef7a6fcbc37d32f09027b2",
+      "identical_to_source": true,
+      "size": [
+        250,
+        351
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/meteor_shower_big.jpg",
+      "bytes": 184784,
+      "sha256": "46cb0f6cff852c3e6450ec9ce0eff464d161665dbf7c2d87d475005f98588bbe",
+      "identical_to_source": true,
+      "size": [
+        500,
+        702
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/monarchs_gaze.jpg",
+      "bytes": 31656,
+      "sha256": "07c6b0f49fed5d518ed60c5c3b636735877a89798e0bafd0d8454a718857d181",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/monarchs_gaze_big.jpg",
+      "bytes": 90689,
+      "sha256": "925f1b2a565c14d9dd590f525363a20d8d26c977654a9d1934c8899d8b943cdc",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/monologue.jpg",
+      "bytes": 41480,
+      "sha256": "16d54bb124390260fe19c1598172fbe63e78c05b2881bd575edad3773264aac9",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/monologue_big.jpg",
+      "bytes": 116858,
+      "sha256": "f99d996be65a0eabb369e93a4a25272bdd601eb65425102cdc53b898a0714023",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/neutron_aegis.jpg",
+      "bytes": 36582,
+      "sha256": "c8c1b342de1dee346b256e25755682e087ce145859ab97b346ae5d7fcb13c4f7",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/neutron_aegis_big.jpg",
+      "bytes": 104419,
+      "sha256": "df2f09649587e8fc58ee07a8f16a24406faacde105b279dae49ea91b0fafddd4",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/orbit.jpg",
+      "bytes": 37418,
+      "sha256": "c49a54dd3ca8b866959e54143e9d570d04390494e14bc30f75414979c587b874",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/orbit_big.jpg",
+      "bytes": 107570,
+      "sha256": "0d5409ada6ed8c9d32288a0651128f3860d53464a9c3449e51ef0c13b6b3ea69",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/pale_blue_dot.jpg",
+      "bytes": 38640,
+      "sha256": "76356b49bbf06fa66ef43778234aa9c99c5539457df96869480b9b7f27be76c2",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/pale_blue_dot_big.jpg",
+      "bytes": 114178,
+      "sha256": "a8fb2154644cf78bba8fa4110347e45eb991c523294cfa74af012819b7e7a660",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/parry.jpg",
+      "bytes": 36233,
+      "sha256": "754440212c9e2518b0dd45ebd45747e844ecfc4ae340aaf3214ad9aa222a8c25",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/parry_big.jpg",
+      "bytes": 101436,
+      "sha256": "18f0f0fda8b4c69df947ef68f672ae095f3179304e173dcfe6e7dce6aba458b7",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/particle_wall.jpg",
+      "bytes": 39236,
+      "sha256": "dd40ec48577e7a04568288b2c06a898ed487147822f2eaee7777ce5fae2f9d0c",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/particle_wall_big.jpg",
+      "bytes": 110254,
+      "sha256": "99f45732c06d268c691af9ba581a90ad3926c3232df666f66b034bbe2f2c5409",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/patter.jpg",
+      "bytes": 43009,
+      "sha256": "a5aa5faf3ff57afbd9575f8dfe01f1b2366676a0dfffd097193948cf44de143c",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/patter_big.jpg",
+      "bytes": 121737,
+      "sha256": "36a0da9b09854dccbb58ef26c6cfadc2017a51a2644c4d6c59fe3ebb81669786",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/photon_cut.jpg",
+      "bytes": 31950,
+      "sha256": "72b298d160020f3b53ec3d2a56b47c853e5378addc8ec6f44640fb2aba5b90e8",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/photon_cut_big.jpg",
+      "bytes": 95100,
+      "sha256": "6e138e8dbb16866996397f82a4d1998a24699be3fd3b72dfad55d30f28e8af76",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/pillar_of_creation.jpg",
+      "bytes": 36566,
+      "sha256": "2ecbe74aedaf12c0f5e3896f6c0a5080d142f5d462c12df0a87aa45e6debf0f6",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/pillar_of_creation_big.jpg",
+      "bytes": 106768,
+      "sha256": "7b62c63bb71ffb870593614662794fc58a4951c736d0b7acd51c0f07bd9558ad",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/plot.jpg",
+      "bytes": 42171,
+      "sha256": "6bda670c9bd11f88e4921043f9513e156f09497e696e7b97309d37351c973fb2",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/plot_big.jpg",
+      "bytes": 125185,
+      "sha256": "d06a23ab49f101c427641ebee8c6082a98af8eea48289d44256bcd2297a51181",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/prophesize.jpg",
+      "bytes": 31409,
+      "sha256": "e73c56e1c988fe019f1f48aee88da9ada517f33144d1b7a7c367e8b2798692ad",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/prophesize_big.jpg",
+      "bytes": 94797,
+      "sha256": "2af441e8c8e385a273b5280a9020724b3b2083ef966e7566f0426e84ccaeca36",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/quasar.jpg",
+      "bytes": 34497,
+      "sha256": "d80809635643678fc1e610a9a9f01c67bb4b62c9629504272094ba6db031c5e0",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/quasar_big.jpg",
+      "bytes": 102745,
+      "sha256": "859afcdc596f5833329f4f146529d46c94e7dfa401f61e8bb6ab40cecff41ae8",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/radiate.jpg",
+      "bytes": 33512,
+      "sha256": "4093a08ed4e4e72abadca7a2c3adebbab03b4a17b68a97c6b480ca385215d1ba",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/radiate_big.jpg",
+      "bytes": 94248,
+      "sha256": "c61763eadc53ad42325dcefca58ad0a48fcde8cc140597f0253d08f4733ac30a",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/refine_blade.jpg",
+      "bytes": 37012,
+      "sha256": "e68c8aeb7a519f834405e54cf52ad7f8ffc10546d1ed753588114dc7b3372668",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/refine_blade_big.jpg",
+      "bytes": 111267,
+      "sha256": "2dfd6f50b73864f86cf5200e5cb5953c26e422d2b67cf726af72e555ef60eee0",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/reflect.jpg",
+      "bytes": 39120,
+      "sha256": "c0a3307ac48f0965aa1626649b71b50277151787d6e7e7f3f6e2507a8c731a3d",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/reflect_big.jpg",
+      "bytes": 116433,
+      "sha256": "5dfcd54f8ec5a35382e0a5136ca3292d97d198437f0c05a9d759fac8284d297e",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/reserves.jpg",
+      "bytes": 34184,
+      "sha256": "f7af990dcbd913e2b100ddf41faac84912309f8006f87c24e3cb5080f07d7496",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/reserves_big.jpg",
+      "bytes": 102444,
+      "sha256": "52e4b0dbdaebdd67b6fffc6ad42deea68fe0dc6a0f17f7f876a412f2195178b7",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/resonance.jpg",
+      "bytes": 39140,
+      "sha256": "1889973a213ce2abb7d1c1ab77abd7863e0b89770cbb0cd7f13553c6acdb8167",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/resonance_big.jpg",
+      "bytes": 114676,
+      "sha256": "d6f14f3a7542b48fd8b24007d0e58f63e5ad620976a1035daf54d4caed980ac1",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/royal_corona.jpg",
+      "bytes": 29105,
+      "sha256": "294091ef0de81c5617c4d9c1b94711ea32bd11cfff5bed14c158bee15fde418a",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/royal_corona_big.jpg",
+      "bytes": 83501,
+      "sha256": "b60c817109cbf27ee82afc10585753bc5a624f7387a4bbd86f2d3ff43a2b84e4",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/royal_gamble.jpg",
+      "bytes": 42949,
+      "sha256": "9b18932ece978d15d912132ab381969d9108b408b803ea1249aa9f581d527fd2",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/royal_gamble_big.jpg",
+      "bytes": 122790,
+      "sha256": "ef5c5175096831d35a1f768ece33603bec00631412462c54e3d84122cade7abf",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/royalties.jpg",
+      "bytes": 42016,
+      "sha256": "d8bf71de0ab5aa205ce3f44e5cb5e57d5271d60536adaa5133c72b5a3d877149",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/royalties_big.jpg",
+      "bytes": 119403,
+      "sha256": "7977770af9e2bca42700ea7aa796adfb145fae2601fde8070edfa3ca18b7bd40",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/seeking_edge.jpg",
+      "bytes": 38557,
+      "sha256": "a1a7a16646f39dca3fde08cf834ac31f774409f288681793d424967065756cdd",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/seeking_edge_big.jpg",
+      "bytes": 113582,
+      "sha256": "7574e1f96b22e649d7b0d63dd115e653e5b45b6bc8473f89f130c61744ce3bdb",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/seven_stars.jpg",
+      "bytes": 34269,
+      "sha256": "20ca5b7e0f07bde081db5db1dbe48717b7dae84a0c7b5c138cce951c2b540e6f",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/seven_stars_big.jpg",
+      "bytes": 102514,
+      "sha256": "20a2473e04feb8739442d28520d11ab46a21a5714ed0d954221a7eb865f3a4f0",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/shining_strike.jpg",
+      "bytes": 34330,
+      "sha256": "c3f5e96bf1b2df731a38b36b02024528385f35f2c1b52b200691edf5d6606195",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/shining_strike_big.jpg",
+      "bytes": 101863,
+      "sha256": "43fbde859fbb0997ba8ccf27fe9204841d14e25125ca7c50c53d11b6bd3c7e4c",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/solar_strike.jpg",
+      "bytes": 32637,
+      "sha256": "66034cb5c5837df8f4f9d47355014e0f4e22caef35d0109c8c3173a1e7c10518",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/solar_strike_big.jpg",
+      "bytes": 89455,
+      "sha256": "79776ac427bb63601dfc44c436e5321077aa8f4bc4519155dc4a31b319c4a1f5",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/sovereign_blade.jpg",
+      "bytes": 35319,
+      "sha256": "00bb24be5bfe1c112854e47ff799042cfd0038f3966f15e12075dea997f1e009",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/sovereign_blade_big.jpg",
+      "bytes": 106790,
+      "sha256": "f1b1f1d6ea9989909c488c2e473b837c9a4c5b0239689c5e05e66035e0728d94",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/spectrum_shift.jpg",
+      "bytes": 33096,
+      "sha256": "d58d2f85a3a207e98d1a6d08a2d3d76b8c31de10ced84bf9a362cf9ea41b9659",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/spectrum_shift_big.jpg",
+      "bytes": 112747,
+      "sha256": "98d65cc4635824397411fc459968d4134f0d845dd36c673c25f2d9b2931a6fc6",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/spoils_of_battle.jpg",
+      "bytes": 43740,
+      "sha256": "f7c03a7a867c60a44ba0de0625a1054e9ccfff18cd01df4356db7fa9b5bc789d",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/spoils_of_battle_big.jpg",
+      "bytes": 130152,
+      "sha256": "0272e0171018d54be28bd5db7d5b2ca231b12ff3068e3b6f8906faecc02f9eb7",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/stardust.jpg",
+      "bytes": 23679,
+      "sha256": "457bf6a923f65d46876f8abcd96693c0eee53214fcf062bc90047f25e47e2980",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/stardust_big.jpg",
+      "bytes": 70241,
+      "sha256": "6c80503f0fd7b55006e5f8a20dedaa72fcb743d4d883a96ec00276626a5a6f6d",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/strike_regent.jpg",
+      "bytes": 27635,
+      "sha256": "7cecd9b31e545450d915d3a1e8b15dd711a48bef4d15774e158f588db1556909",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/strike_regent_big.jpg",
+      "bytes": 84754,
+      "sha256": "538cdf68d628592fe4b43d7fc89a78583727d423c0b4ff50fc5b82e37e7a00f9",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/summon_forth.jpg",
+      "bytes": 30482,
+      "sha256": "5125f054d16f7f5c4505b3154e04ecd6795134487f72cf0431b08f0f0d008fa2",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/summon_forth_big.jpg",
+      "bytes": 95987,
+      "sha256": "32dd2162fa03cb5df80415668f701e97099e01c8044bf91378a77090cac487cf",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/supermassive.jpg",
+      "bytes": 33729,
+      "sha256": "6e9e6b13d7d0cbe6723a2e63ab189ac8a9e65f5854a00e0717cbef3a8d23f92e",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/supermassive_big.jpg",
+      "bytes": 93328,
+      "sha256": "69f85224a374a3733c95d593c87079e61abf3df9a29009955c10c17f17ede474",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/sword_sage.jpg",
+      "bytes": 31012,
+      "sha256": "67115ce7024997566ba519fb4470c5b8e6ba6c303f742276d35cf6ca7b1e3232",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/sword_sage_big.jpg",
+      "bytes": 92670,
+      "sha256": "7a6346549e8dfec09a6d0dd1ca369080aa2fb906960c509bc9590546857d821b",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/terraforming.jpg",
+      "bytes": 36561,
+      "sha256": "0efe89de8366a1376bd819d0de4ce25230c9cac71d30cfcceee2666bb3602966",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/terraforming_big.jpg",
+      "bytes": 104617,
+      "sha256": "2dc7d682e03cce7540bfeba7c4be06b212c28376e08813191ec90ff7667eea30",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/the_sealed_throne.jpg",
+      "bytes": 93163,
+      "sha256": "e19ffe147e37e5681d119e6e3074d4b071c03d7126cfe3cc75a9266929865077",
+      "identical_to_source": true,
+      "size": [
+        250,
+        351
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/the_sealed_throne_big.jpg",
+      "bytes": 292745,
+      "sha256": "52cf1b4492af0ab46787654b847f43dd83d479eb0e7f39a75b146e5bc8cfc2c4",
+      "identical_to_source": true,
+      "size": [
+        500,
+        702
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/the_smith.jpg",
+      "bytes": 34275,
+      "sha256": "7b79610a76a317c019bb8510a815cb0b479d98b5c9eabac7d1adf2eb00c29d27",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/the_smith_big.jpg",
+      "bytes": 99118,
+      "sha256": "aa4087c28028f255d40e4b29b5c3d27f7d986f46efedeaad674c5b4cef014c4a",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/tutor.jpg",
+      "bytes": 33909,
+      "sha256": "53c3656e7538af6a63249ba48239d3155c271c8f5065aa9f5c5afd3de6d0a9f2",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/tutor_big.jpg",
+      "bytes": 102010,
+      "sha256": "aba284173572907215a8519a13d63dd94827c69bf4b40dfd617d3a372ee9b902",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/tyranny.jpg",
+      "bytes": 20766,
+      "sha256": "f8e61466f25289e78f7aed4863ffda365b7b3f8d688c1ce771cd3668264c8a31",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/tyranny_big.jpg",
+      "bytes": 60167,
+      "sha256": "7a6b8ae366c9d49cf477f4f77a9acfc767a9775817664f7d1336b5c4997c2246",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/venerate.jpg",
+      "bytes": 36206,
+      "sha256": "28b086e3d7575eb614d7f4a02c6eb348c446a28f70f601df283aad28a4cf1ee4",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/venerate_big.jpg",
+      "bytes": 101303,
+      "sha256": "22ab2863caf933d4b80f35c81d69f18be4744b246efea0c60d960127cd265865",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/void_form.jpg",
+      "bytes": 43730,
+      "sha256": "944e76ba8913af5c1a924af2ac9b7ae26a187951288542bfc1246ef69c5993ca",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/void_form_big.jpg",
+      "bytes": 125505,
+      "sha256": "b73147fc67f88879a02180b330bfe1306b1c5f78fd3a4be628582509c47294cf",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/wrought_in_war.jpg",
+      "bytes": 39529,
+      "sha256": "77d2ae860417a7220d496f84e295058100caa2fa45f974b3bb47c4c90f74912e",
+      "identical_to_source": true,
+      "size": [
+        250,
+        190
+      ]
+    },
+    {
+      "path": "p3cardart/card_art/wrought_in_war_big.jpg",
+      "bytes": 114360,
+      "sha256": "49489d7bcec97e7a0731dd595f1dae7f00f09051f252cba1d413fdcf0d890547",
+      "identical_to_source": true,
+      "size": [
+        500,
+        380
+      ]
+    }
+  ]
+}
