@@ -247,9 +247,10 @@ public static partial class SkillRedo5
 	/// <summary>
 	/// 幽魂形态（获得无实体），「怪盗幻影」约 1.6s（2026-11-14 重做：去掉紫色漩涡、细圈和亡魂贴图）：
 	/// ① 0 四周压暗，他整个人褪成半透明的淡红白（像幻影），身后一根柔光气柱慢慢升起；
-	/// ② 0.1 起三层红残影从他身上剥离、往左 / 右 / 后上方飘开（拖着横向影子），一大圈刀光绕着他往上卷、光粒往上飘；
-	/// ③ 0.75 主拍：三层残影「唰」地合回他身上 —— 白红闪光、超大网点光晕、十字光芒、两道交叉大弧光、碎光四散、重震；
-	/// ④ 之后人慢慢恢复颜色，身上还闪两下幻影的抖动。
+	/// ② 0.06 起三道宽的红弧光从脚下往上一圈圈裹住他（像斗篷卷上来），一大圈刀光往上卷、光粒往上飘；
+	/// ③ 0.75 主拍：白红闪光、超大网点光晕、十字光芒、两道交叉大弧光、碎光四散、重震；
+	/// ④ 之后一排疾光从他身上直接穿过去（无实体：打不中），人跟着闪两下幻影的抖动，再慢慢恢复颜色。
+	/// （第一版是三层残影剥离再合回，用户：很怪 → 去掉。）
 	/// </summary>
 	public static void WraithFormV2(SkillCtx c)
 	{
@@ -285,30 +286,24 @@ public static partial class SkillRedo5
 			aw.Position = new Vector2(0f, -h * (0.6f + 0.15f * Ease5.Seg(s, 0f, snap)));
 			aw.Modulate = new Color(1f, 0.1f, 0.18f, (0.4f + 0.4f * pop) * a);
 		});
-		// 三层残影剥离、飘开、合回
-		Vector2[] dirs = { new(-f, -0.05f), new(f, -0.1f), new(-0.25f * f, -0.6f) };
+		// 三道宽的红弧光从脚下往上一圈圈裹住他（像斗篷卷上来）
 		for (int i = 0; i < 3; i++)
 		{
-			Vector2 dv = dirs[i].Normalized() * h * (i == 2 ? 0.22f : 0.3f);
-			float d0 = 0.08f + 0.06f * i;
-			Fx.After(c.Front, d0, () =>
-			{
-				if (RedEcho(c, life) is not { } echo) return;
-				var (sp, m) = echo;
-				float dur = life - d0;
-				Fx.Animate(sp, 0, dur, t =>
-				{
-					float s = d0 + t * dur;
-					float out_ = Ease5.OutQuint(Ease5.Seg(s, d0, 0.4f));
-					float back_ = Fx.InCubic(Ease5.Seg(s, snap - 0.12f, 0.12f));
-					float k = out_ * (1f - back_);
-					sp.Position = dv * k + new Vector2(0f, Mathf.Sin(s * 5f + d0 * 9f) * h * 0.01f * k);
-					m.SetShaderParameter("smear", -Mathf.Sign(dv.X == 0f ? 1f : dv.X) * 0.07f * k + (s > snap - 0.12f && s < snap ? Mathf.Sign(dv.X) * 0.1f * back_ : 0f));
-					m.SetShaderParameter("flow", s * 5f);
-					m.SetShaderParameter("fill", 0.35f);
-					m.SetShaderParameter("alpha", 0.7f * Mathf.Min(1f, (s - d0) / 0.06f) * (s < snap ? 1f : 0f));
-				});
-			});
+			float y = 0.18f + 0.3f * i;
+			Sweep(c.Front, back, c.Feet + new Vector2(0f, -h * y), h * (0.55f - 0.05f * i), 0.12f * f * (i - 1), f, 0.06f + 0.15f * i, 0.5f, 0.13f,
+				new Color(0.92f, 0.05f, 0.14f), 1.1f, 1.2f);
+			Sweep(c.Front, back, c.Feet + new Vector2(0f, -h * (y + 0.06f)), h * (0.5f - 0.05f * i), 0.12f * f * (i - 1), f, 0.1f + 0.15f * i, 0.45f, 0.04f,
+				new Color(1f, 0.86f, 0.86f), 1.6f, 1.1f);
+		}
+		// 无实体：主拍之后一排疾光从他身上直接穿过去（打不中他）
+		for (int i = 0; i < 6; i++)
+		{
+			float y = c.Feet.Y - h * (0.15f + 0.14f * i + Fx.Rand(-0.03f, 0.03f));
+			float dir = i % 2 == 0 ? -f : f;
+			Vector2 a = new(c.Feet.X + dir * h * 0.9f, y), b = new(c.Feet.X - dir * h * 0.9f, y + Fx.Rand(-0.04f, 0.04f) * h);
+			bool white = i % 3 == 1;
+			DashFly(c.Front, t => a.Lerp(b, t), snap + 0.12f + 0.05f * i, 0.24f, h * 0.65f, h * (white ? 0.05f : 0.11f),
+				white ? new Color(1f, 0.88f, 0.88f) : new Color(0.95f, 0.06f, 0.15f), white ? 1.6f : 1.1f, null, 0.8f);
 		}
 		Vortex(c.Front, back, c.Feet, h, h * 0.6f, 8, 0.1f, snap - 0.05f, f, 0.05f, 0.9f, 1.2f, 0.3f);
 		Glitter(c.Front, c.Feet, h, u, 0.1f, 1.2f, 10, 0.5f);
@@ -340,15 +335,23 @@ public static partial class SkillRedo5
 	/// </summary>
 	public static void WellLaidPlans(SkillCtx c)
 	{
-		float h = c.Tall, u = c.Unit, f = c.Face, w = SkillRedo.CardW(c) * 1.15f;
+		float h = c.Tall, u = c.Unit, f = c.Face, w = SkillRedo.CardW(c) * 1.35f;
 		Control back = c.Back ?? c.Front;
 		const int n = 5;
 		const float lit = 0.36f, fold = 0.6f, life = 1.1f;
 		S("gx_card_slide", 0.16f);
 		S("gx_ping", 0.14f, lit + 0.1f);
-		S("gx_card_stack", 0.2f, fold + 0.14f);
+		S("gx_card_stack", 0.2f, fold + 0.18f);
 		Vector2 hub = c.Chest + new Vector2(f * h * 0.12f, h * 0.12f);
 		Vector2 stack = c.Hand + new Vector2(f * h * 0.08f, -h * 0.05f);
+		Dim(back, hub + new Vector2(0f, -h * 0.4f), new Vector2(h * 2.8f, h * 2.2f), life, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.2f)) * (1f - Ease5.Seg(s, life - 0.35f, 0.35f)) * 0.85f);
+		Fx.After(c.Front, lit, () =>
+		{
+			HalftoneBurst(back, hub + new Vector2(0f, -h * 0.55f), h * 2.6f, 0.55f);
+			Glow.Flash(back, hub + new Vector2(0f, -h * 0.55f), new Color(0.95f, 0.1f, 0.16f), h * 2f, 0.35f);
+			Glow.Sparks(c.Front, hub + new Vector2(0f, -h * 0.75f), 30, 60f * u, 260f * u, 0.9f, new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.22f, 0.3f) }, 160f * u,
+				0.015f * u, 0.04f * u, Vector2.Up, 120f);
+		});
 		// 扇面后的柔光
 		Node2D glow = Fx.Root(back, hub + new Vector2(0f, -h * 0.5f), "P5PlanGlow", life);
 		Sprite2D gs = Glow.SoftSprite(glow, Vector2.Zero, new Color(1f, 0.1f, 0.18f, 0f), 1f);
@@ -364,7 +367,7 @@ public static partial class SkillRedo5
 		{
 			int k = i;
 			float ang = -Mathf.Pi / 2f + f * Mathf.Lerp(-0.85f, 0.85f, k / (n - 1f));
-			Vector2 slot = hub + Vector2.FromAngle(ang) * h * 0.62f;
+			Vector2 slot = hub + Vector2.FromAngle(ang) * h * 0.72f;
 			float tilt = ang + Mathf.Pi / 2f;
 			float d = 0.03f + 0.05f * k;
 			float flyIn = 0.24f;
@@ -389,18 +392,19 @@ public static partial class SkillRedo5
 				}
 				else
 				{
-					float e = Mathf.SmoothStep(0f, 1f, Mathf.Min(1f, (s - fold) / 0.16f));
-					pos = slot.Lerp(stack + new Vector2(0f, -k * h * 0.008f), e);
-					rot = Mathf.Lerp(tilt, f * 0.2f, e);
+					float e = Mathf.SmoothStep(0f, 1f, Mathf.Min(1f, (s - fold) / 0.2f));
+					Vector2 dst = stack + new Vector2(0f, -k * h * 0.008f);
+					pos = dst + (slot - dst).Rotated(f * Mathf.Pi * 0.9f * e) * (1f - e);   // 绕着手旋进来
+					rot = Mathf.Lerp(tilt, f * 0.2f, e) + f * Mathf.Tau * e;
 					flip = 0f;
-					float sh = Ease5.Seg(s, fold + 0.24f, 0.12f);
+					float sh = Ease5.Seg(s, fold + 0.27f, 0.12f);
 					sc = Mathf.Lerp(1f, 0.85f, e) * (1f - 0.9f * Fx.InCubic(sh));
 				}
 				card.Place(pos, rot, flip, sc);
 				float glowK = (s > litAt ? Mathf.Exp(-(s - litAt) * 9f) : 0f) + Mathf.Exp(-a * 10f) * 0.6f;
 				card.Set("glow", glowK);
 				card.Set("sheen", s > litAt ? Mathf.Min(1f, (s - litAt) * 4f) * 2f - 1f : -1f);
-				card.Set("alpha", 1f - Ease5.Seg(s, fold + 0.33f, 0.05f));
+				card.Set("alpha", 1f - Ease5.Seg(s, fold + 0.36f, 0.05f));
 			});
 			Fx.After(c.Front, d + flyIn * 0.7f, () =>
 			{
@@ -414,24 +418,25 @@ public static partial class SkillRedo5
 		}
 		// 一道疾光沿着扇面扫过去（跟牌一样的弧）
 		float a0 = -Mathf.Pi / 2f - f * 1.05f, a1 = -Mathf.Pi / 2f + f * 1.05f;
-		DashFly(c.Front, t => hub + Vector2.FromAngle(Mathf.Lerp(a0, a1, t)) * h * 0.62f, lit - 0.02f, 0.3f, h * 0.8f, h * 0.15f,
+		DashFly(c.Front, t => hub + Vector2.FromAngle(Mathf.Lerp(a0, a1, t)) * h * 0.72f, lit - 0.02f, 0.3f, h * 0.8f, h * 0.15f,
 			new Color(0.95f, 0.06f, 0.15f), 1.3f, Ease5.OutQuint, 0.7f);
-		DashFly(c.Front, t => hub + Vector2.FromAngle(Mathf.Lerp(a0, a1, t)) * h * 0.62f, lit, 0.3f, h * 0.65f, h * 0.06f,
+		DashFly(c.Front, t => hub + Vector2.FromAngle(Mathf.Lerp(a0, a1, t)) * h * 0.72f, lit, 0.3f, h * 0.65f, h * 0.06f,
 			new Color(1f, 0.88f, 0.88f), 1.8f, Ease5.OutQuint, 0.7f);
-		DashFly(back, t => hub + Vector2.FromAngle(Mathf.Lerp(a0, a1, t)) * h * 0.78f, lit + 0.03f, 0.34f, h * 0.6f, h * 0.1f,
+		DashFly(back, t => hub + Vector2.FromAngle(Mathf.Lerp(a0, a1, t)) * h * 0.9f, lit + 0.03f, 0.34f, h * 0.6f, h * 0.1f,
 			new Color(0.95f, 0.06f, 0.15f), 1f, Ease5.OutQuint, 0.7f);
 		// 收拢成一摞
-		Fx.After(c.Front, fold + 0.16f, () =>
+		Fx.After(c.Front, fold + 0.2f, () =>
 		{
-			Glow.Flash(c.Front, stack, new Color(1f, 0.95f, 0.92f), h * 0.45f, 0.13f);
-			Glow.Flash(back, stack, new Color(0.9f, 0.08f, 0.15f), h * 1.3f, 0.3f);
-			HalftoneBurst(back, stack, h * 1.4f, 0.42f);
-			Cross(c.Front, stack, h * 0.75f);
+			Glow.Flash(c.Front, stack, new Color(1f, 0.95f, 0.92f), h * 0.55f, 0.14f);
+			Glow.Flash(back, stack, new Color(0.9f, 0.08f, 0.15f), h * 1.7f, 0.32f);
+			HalftoneBurst(back, stack, h * 1.9f, 0.48f);
+			Cross(c.Front, stack, h * 0.95f);
+			Phantom.Confetti(c.Front, stack, 16, 380f * u, Vector2.Up, 150f, 0.8f, 7f * u);
 			Fx.Shake(1);
 			Glow.Sparks(c.Front, stack, 16, 100f * u, 380f * u, 0.45f, new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.22f, 0.3f) }, -40f * u,
 				0.015f * u, 0.04f * u, Vector2.Up, 180f);
 		});
-		Vortex(c.Front, back, stack + new Vector2(0f, h * 0.1f), h * 0.4f, h * 0.18f, 4, fold + 0.12f, 0.4f, f, 0.1f, 0.4f, 0.8f, 0.05f);
+		Vortex(c.Front, back, stack + new Vector2(0f, h * 0.1f), h * 0.4f, h * 0.22f, 5, fold + 0.15f, 0.4f, f, 0.1f, 0.4f, 0.8f, 0.05f);
 		Glitter(c.Front, c.Feet, h, u, 0.2f, 0.9f, 6, 0.45f);
 	}
 }
