@@ -36,7 +36,7 @@ public static partial class SkillRedo5
 				{
 					Fx.Shake(1);
 					Cross(c.Front, c.Chest, h * 0.9f);
-					Vortex(c.Front, back, c.Feet, h, h * 0.45f, 4, 0f, 0.55f, f, 0.25f, 0.6f, 0.9f);
+					Vortex(c.Front, back, c.Feet, h, h * 0.55f, 6, 0f, 0.65f, f, 0.15f, 0.75f, 1.3f, 0.25f);
 				}
 			});
 			// 剪影脉冲：一层红剪影从身上往外扩、淡掉
@@ -60,13 +60,13 @@ public static partial class SkillRedo5
 			SkillRedo.Pulse(c, new Color(1.6f, 0.62f, 0.64f), d, 0.28f);
 		}
 		// 疾光往上冲
-		for (int i = 0; i < 10; i++)
+		for (int i = 0; i < 16; i++)
 		{
-			float x = c.Feet.X + h * Fx.Rand(-0.28f, 0.28f);
+			float x = c.Feet.X + h * Fx.Rand(-0.34f, 0.34f);
 			Vector2 a = new(x, c.Feet.Y - h * Fx.Rand(0f, 0.15f)), b2 = new(x + Fx.Rand(-0.05f, 0.05f) * h, c.Feet.Y - h * Fx.Rand(0.95f, 1.35f));
 			bool white = i % 3 == 1;
 			DashFly(i % 2 == 0 ? c.Front : back, t => a.Lerp(b2, t), 0.1f + Fx.Rand(0f, 0.2f), Fx.Rand(0.22f, 0.32f), h * Fx.Rand(0.4f, 0.7f),
-				h * (white ? 0.02f : 0.045f), white ? new Color(1f, 0.85f, 0.85f) : new Color(0.95f, 0.06f, 0.15f), white ? 1.4f : 1f);
+				h * (white ? 0.04f : 0.09f), white ? new Color(1f, 0.85f, 0.85f) : new Color(0.95f, 0.06f, 0.15f), white ? 1.4f : 1f);
 		}
 		// 柔光粒往胸口汇聚（能量）
 		for (int i = 0; i < 9; i++)
@@ -87,7 +87,23 @@ public static partial class SkillRedo5
 				cc.Modulate = new Color(1f, 0.92f, 0.9f, a);
 			});
 		}
-		Glitter(c.Front, c.Feet, h, u, 0.35f, 0.5f, 4);
+		Glitter(c.Front, c.Feet, h, u, 0.3f, 0.7f, 8, 0.45f);
+		// 身后一根柔光气柱：随两拍心跳鼓起来，然后往上散掉
+		Node2D col = Fx.Root(back, c.Feet, "P5AdrenalineAura", 1.2);
+		Sprite2D aw = Glow.SoftSprite(col, new Vector2(0f, -h * 0.6f), new Color(1f, 0.1f, 0.18f, 0f), 1f);
+		Sprite2D ac = Glow.SoftSprite(col, new Vector2(0f, -h * 0.55f), new Color(1f, 0.75f, 0.75f, 0f), 1f);
+		Fx.Animate(col, 0, 1.1, t =>
+		{
+			float s = t * 1.1f;
+			float beat = Mathf.Exp(-Mathf.Max(0f, s - 0.02f) * 9f) * 0.6f * (s >= 0.02f ? 1f : 0f) + Mathf.Exp(-Mathf.Max(0f, s - 0.28f) * 6f) * (s >= 0.28f ? 1f : 0f);
+			float a = Mathf.Min(1f, s / 0.06f) * (1f - Ease5.Seg(s, 0.6f, 0.5f));
+			float rise = Fx.OutCubic(Ease5.Seg(s, 0.28f, 0.8f));
+			aw.Scale = new Vector2(h * (0.75f + 0.35f * beat), h * (1.5f + 0.5f * beat + 0.4f * rise)) / 32f;
+			aw.Position = new Vector2(0f, -h * (0.6f + 0.2f * rise));
+			aw.Modulate = new Color(1f, 0.1f, 0.18f, (0.35f + 0.45f * beat) * a);
+			ac.Scale = new Vector2(h * (0.3f + 0.15f * beat), h * (1.1f + 0.3f * beat)) / 32f;
+			ac.Modulate = new Color(1f, 0.75f, 0.75f, 0.35f * beat * a);
+		});
 		// 抽 2
 		for (int i = 0; i < 2; i++)
 		{
