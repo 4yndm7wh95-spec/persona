@@ -20,9 +20,10 @@ public static class RetainHand
 		var nodes = cards.Select(c => hand.GetCard(c)).OfType<NCard>().Where(GodotObject.IsInstanceValid)
 			.OrderBy(n => n.GlobalPosition.X).ToList();
 		if (nodes.Count == 0) return;
-		Sfx.Take("gx_card_stack", 0.1f);
+		Sfx.Take("gx_card_slide", 0.08f);
+		Sfx.Take("gx_card_stack", 0.1f, 0.2f);
 		for (int i = 0; i < nodes.Count; i++)
-			RetainFx.Play(nodes[i].Body ?? nodes[i], 0.07f * i);
+			RetainFx.Play(nodes[i].Body ?? nodes[i], 0.08f * i);
 	}
 }
 

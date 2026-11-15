@@ -3,9 +3,9 @@ using Godot;
 namespace P5Joker;
 
 /// <summary>
-/// 回合结束时被保留在手里的牌（计划妥当、带保留的牌）：一张张从左到右「封」一下（用户 2026-11-14：每回合都会出现，不要太花哨，但要好看）。
-/// 每张牌：一圈红色柔光描边从牌边亮起来（网点被用户拉黑，2026-11-14 去掉），一道白色高光斜着扫过牌面，然后柔柔地收掉；牌顶上冒几粒光点。
-/// 整次只响一声很轻的叠牌声。约 0.9s，每张错开 0.07s。
+/// 回合结束时被保留在手里的牌（计划妥当、带保留的牌）：怪盗给这张牌「做记号」（2026-11-15 重做；用户：从左到右闪白高光太 low、没特色）。
+/// 每张牌：一张小预告信从上面转着飞下来，斜着「钉」在牌的右上角 —— 钉上的一下牌边亮起一圈红光、角上一闪、几粒碎光；
+/// 小卡钉着停一会儿，然后从切口烧掉成纸屑，牌边的红光跟着收。每回合都有，所以小、快（约 1s，每张错开 0.08s）。
 /// </summary>
 public static class RetainFx
 {
@@ -37,20 +37,22 @@ void fragment() {
 	float sweep = mix(-0.9, 0.9, smoothstep(0.05, 0.55, t));
 	float sheen = exp(-pow((x - sweep) / 0.08, 2.0)) * inside;
 	vec3 col = red * outer * 0.7 + mix(red, vec3(1.0, 0.85, 0.85), 0.25 + 0.6 * flash) * edge * 0.7
-		+ red * inside * 0.12 + vec3(1.0, 0.95, 0.93) * sheen * 0.45;
-	float a = clamp(outer * 0.55 + edge * 0.6 + inside * 0.1 + sheen * 0.35, 0.0, 1.0);
+		+ red * inside * 0.1;
+	float a = clamp(outer * 0.55 + edge * 0.6 + inside * 0.08, 0.0, 1.0);
 	col *= env;
 	a *= env;
 	if (a <= 0.003) discard;
 	COLOR = vec4(col, a);
 }" };
 
-	/// <summary>在一张牌的牌身（body）上「封」一下：delay 秒后开始。</summary>
+	/// <summary>在一张牌的牌身（body）上做记号：delay 秒后开始。</summary>
 	public static void Play(Control body, float delay)
 	{
 		if (!GodotObject.IsInstanceValid(body)) return;
 		Vector2 size = body.Size.X > 10f ? body.Size : new Vector2(300f, 422f);
-		const float margin = 40f, life = 0.9f;
+		const float margin = 40f, fly = 0.2f, hold = 0.38f, burn = 0.3f;
+		float impact = delay + fly, glowLife = hold + burn + 0.2f;
+		// 牌边的红光：钉上那一下亮起，跟着小卡烧掉收掉
 		ShaderMaterial m = new() { Shader = Shader };
 		m.SetShaderParameter("card", size);
 		m.SetShaderParameter("margin", margin);
@@ -62,14 +64,60 @@ void fragment() {
 			Material = m, MouseFilter = Control.MouseFilterEnum.Ignore, ZIndex = 1,
 		};
 		body.AddChild(r);
-		Fx.FreeAfter(r, delay + life + 0.1);
-		Fx.Animate(r, delay, life, t => m.SetShaderParameter("t", t));
-		Fx.After(body, delay + 0.1f, () =>
+		Fx.FreeAfter(r, impact + glowLife + 0.1);
+		Fx.Animate(r, impact, glowLife, t => m.SetShaderParameter("t", t));
+		// 小预告信（坐标都按牌身的本地像素算，再换成全局）
+		Transform2D xf = body.GetGlobalTransform();
+		float cw = size.X * 0.36f;
+		Vector2 pinL = new(size.X * 0.84f, size.Y * 0.1f), fromL = pinL + new Vector2(-size.X * 0.55f, -size.Y * 0.75f);
+		float rot0 = body.GetGlobalTransform().Rotation, tilt = 0.55f;
+		Phantom.P5Card card = Phantom.Card(body, xf * fromL, cw, delay + fly + hold + burn + 0.2, 0.32f);
+		card.Rect.ZIndex = 2;
+		card.Root.Visible = false;
+		Vector2 ctlL = (fromL + pinL) * 0.5f + new Vector2(size.X * 0.3f, -size.Y * 0.1f);
+		Fx.Animate(card.Root, delay, fly, t =>
 		{
 			if (!GodotObject.IsInstanceValid(body)) return;
-			Glow.Glint(body, body.GetGlobalTransform() * new Vector2(size.X * 0.88f, size.Y * 0.06f), 0.5f);
-			Glow.Sparks(body, body.GetGlobalTransform() * new Vector2(size.X * 0.5f, size.Y * 0.1f), 7, 40f, 130f, 0.6f,
-				new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.25f, 0.32f) }, -60f, 0.1f, 0.22f, Vector2.Up, 70f);
+			card.Root.Visible = true;
+			Transform2D x = body.GetGlobalTransform();
+			float e = t * t * (3f - 2f * t);
+			Vector2 l = fromL.Lerp(ctlL, e).Lerp(ctlL.Lerp(pinL, e), e);
+			card.Place(x * l, x.Rotation + Mathf.Lerp(-2.4f, tilt, e), Mathf.Pi + (1f - e) * 9f, 1f);
 		});
+		Fx.After(body, impact, () =>
+		{
+			if (!GodotObject.IsInstanceValid(body)) return;
+			Transform2D x = body.GetGlobalTransform();
+			Vector2 pin = x * pinL;
+			card.Trail?.Kill();
+			// 钉着：轻轻颤一下，停住
+			Fx.Animate(card.Root, 0, hold, t =>
+			{
+				if (!GodotObject.IsInstanceValid(body)) return;
+				Transform2D x2 = body.GetGlobalTransform();
+				float wob = Mathf.Sin(t * 30f) * Mathf.Exp(-t * 9f) * 0.12f;
+				card.Place(x2 * pinL, x2.Rotation + tilt + wob, Mathf.Pi, 1f);
+				card.Set("glow", 0.6f * Mathf.Exp(-t * 8f));
+			});
+			Glow.Flash(body, pin, new Color(1f, 0.93f, 0.92f), size.X * 0.55f, 0.12f);
+			Glow.Glint(body, pin + x.BasisXform(new Vector2(-size.X * 0.1f, size.Y * 0.05f)), 0.5f);
+			Glow.Sparks(body, pin, 9, 60f, 200f, 0.45f, new[] { new Color(1f, 0.96f, 0.94f), new Color(1f, 0.25f, 0.32f) }, 80f, 0.12f, 0.26f, Vector2.Up, 90f);
+		});
+		// 烧掉成纸屑
+		Fx.After(body, impact + hold, () =>
+		{
+			if (!GodotObject.IsInstanceValid(body)) return;
+			card.Set("clip", new Vector3(0.6f, 0.8f, -1.6f));
+			Fx.Animate(card.Root, 0, burn, t =>
+			{
+				if (!GodotObject.IsInstanceValid(body)) return;
+				Transform2D x2 = body.GetGlobalTransform();
+				card.Place(x2 * (pinL + new Vector2(size.X * 0.04f, -size.Y * 0.05f) * t), x2.Rotation + tilt + t * 0.3f, Mathf.Pi, 1f);
+				card.Set("burn", t * 1.3f);
+			});
+			Transform2D x = body.GetGlobalTransform();
+			Phantom.Confetti(body, x * pinL, 7, 160f, Vector2.Up, 70f, 0.7f, 5f);
+		});
+		Fx.After(body, impact + hold + burn, () => { if (GodotObject.IsInstanceValid(card.Root)) card.Root.Visible = false; });
 	}
 }

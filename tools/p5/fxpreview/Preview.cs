@@ -69,7 +69,7 @@ public partial class Preview : Node2D
 		foreach (double at in new[] { at1, at2 })
 		{
 			if (at < 0) continue;
-			p.At(at, () => { Sfx.Take("gx_card_stack", 0.1f); for (int i = 0; i < bodies.Count; i++) RetainFx.Play(bodies[i], 0.07f * i); });
+			p.At(at, () => { Sfx.Take("gx_card_slide", 0.08f); Sfx.Take("gx_card_stack", 0.1f, 0.2f); for (int i = 0; i < bodies.Count; i++) RetainFx.Play(bodies[i], 0.08f * i); });
 		}
 	}
 
