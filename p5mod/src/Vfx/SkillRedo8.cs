@@ -16,7 +16,7 @@ public static partial class SkillRedo5
 {
 	public static void WellLaidPlansV4(SkillCtx c)
 	{
-		float h = c.Tall, u = c.Unit, f = c.Face, w = SkillRedo.CardW(c) * 1.6f;
+		float h = c.Tall, u = c.Unit, f = c.Face, w = SkillRedo.CardW(c) * 1.45f;
 		Control back = c.Back ?? c.Front, front = c.Front;
 		const int n = 5;
 		const float reveal = 0.36f, lockAt = 0.78f, gather = 0.98f, seal = 1.16f, send = 1.22f, life = 1.7f;
@@ -24,10 +24,11 @@ public static partial class SkillRedo5
 		S("gx_slice", 0.18f, lockAt);
 		S("gx_card_stack", 0.24f, seal);
 		// 牌阵：他身前（朝敌人那边）一把像拿在手里一样的扇形牌，互相压着；扇心在下
-		Vector2 pivot = c.Feet + new Vector2(f * h * 0.58f, -h * 0.42f);
-		float rad = h * 0.5f;
+		// 牌阵：他头顶一道拱门一样的弧（圆心在他胸口一带，五张牌沿着上半圆排开，牌头朝外）
+		Vector2 pivot = c.Feet + new Vector2(0f, -h * 0.6f);
+		float rad = h * 0.72f;
 		Vector2 center = pivot + new Vector2(0f, -rad);
-		Vector2 stack = pivot + new Vector2(0f, -rad * 0.75f);
+		Vector2 stack = c.Feet + new Vector2(f * h * 0.42f, -h * 0.85f);
 		Dim(back, center + new Vector2(0f, h * 0.3f), new Vector2(h * 3.4f, h * 2.6f), life,
 			s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.2f)) * (1f - Ease5.Seg(s, life - 0.4f, 0.4f)) * 0.85f);
 		// 牌阵后面的背光：落位时亮起，定下来的那一下再涨一下，收拢时跟着收
@@ -39,7 +40,7 @@ public static partial class SkillRedo5
 			float pulse = s > lockAt ? Mathf.Exp(-(s - lockAt) * 5f) : 0f;
 			float a = Fx.OutCubic(Ease5.Seg(s, 0.15f, 0.3f)) * (1f - Ease5.Seg(s, gather, 0.25f));
 			glow.GlobalPosition = center.Lerp(stack, Ease5.Seg(s, gather, 0.2f));
-			gs.Scale = new Vector2(h * (1.4f + 0.3f * pulse), h * (1.0f + 0.25f * pulse)) / 32f;
+			gs.Scale = new Vector2(h * (2.0f + 0.3f * pulse), h * (1.0f + 0.25f * pulse)) / 32f;
 			gs.Modulate = new Color(1f, 0.1f, 0.18f, (0.4f + 0.4f * pulse) * a);
 		});
 		var slots = new Vector2[n];
@@ -47,7 +48,7 @@ public static partial class SkillRedo5
 		for (int i = 0; i < n; i++)
 		{
 			float k = i / (n - 1f) * 2f - 1f;   // -1 … 1（左 → 右）
-			float a = k * 0.58f;
+			float a = k * 0.95f;
 			slots[i] = pivot + new Vector2(Mathf.Sin(a), -Mathf.Cos(a)) * rad;
 			tilts[i] = a;
 		}
@@ -116,7 +117,7 @@ public static partial class SkillRedo5
 		// ③ 疾光沿着牌阵扫过去（红 + 白芯，略高于牌阵、跟着弧）
 		Vector2 Arc(float t)
 		{
-			float a = Mathf.Lerp(-0.9f, 0.9f, t);
+			float a = Mathf.Lerp(-1.35f, 1.35f, t);
 			return pivot + new Vector2(Mathf.Sin(a), -Mathf.Cos(a)) * rad * 1.08f;
 		}
 		DashFly(front, Arc, lockAt, 0.3f, h * 0.9f, h * 0.16f, new Color(0.95f, 0.06f, 0.15f), 1.3f, Ease5.OutQuint, 0.7f);
