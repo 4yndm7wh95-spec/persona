@@ -100,51 +100,104 @@ public sealed class WraithVeil
 		SkillRedo5.Dim(back, _mid, new Vector2(h * 3.8f, h * 2.9f), 1.8, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.25f)) * (1f - Ease5.Seg(s, 1.1f, 0.7f)) * 0.85f);
 		Glow.Flash(back, _chest, new Color(1f, 0.14f, 0.22f), h * 1.6f, 0.3f);
 		Glow.Sparks(front, _chest, 24, 160f * u, 700f * u, 0.5f, new[] { Phantom.Hot, Phantom.Red }, 0f, 0.01f * u, 0.03f * u, Vector2.Up, 180f);
-		const int n = 20;
-		for (int i = 0; i < n; i++)
+		// 卡排成他身后一把整齐的大扇面（外圈 10 张、内圈 5 张，牌面朝外），从中间往两边依次落位
+		var slots = new System.Collections.Generic.List<(Vector2 Pos, float Tilt, float Scale, float Order)>();
+		for (int i = 0; i < 10; i++)
 		{
-			float ang = Mathf.Tau * (i + Fx.Rand(-0.3f, 0.3f)) / n;
-			Vector2 dir = new(Mathf.Cos(ang), Mathf.Sin(ang) * 0.78f - 0.12f);
-			float r = h * Fx.Rand(0.55f, 1.05f);
-			Vector2 hang = _chest + dir * r;
-			Vector2 exit = _chest - dir * h * Fx.Rand(0.15f, 0.3f);
-			bool inFront = i % 3 == 0;
-			float sc = Fx.Rand(0.8f, 1.15f);
-			Phantom.P5Card card = Phantom.Card(inFront ? front : back, _chest, _w * sc, Beat + 0.2, 0.5f);
-			float tilt0 = Fx.Rand(-1f, 1f), spin = Fx.Rand(-9f, 9f), flipV = Fx.Rand(12f, 22f) * (i % 2 == 0 ? 1f : -1f), ph = Fx.Rand(0f, 6f);
-			float o0 = Fx.Rand(0f, 0.05f), back0 = Hang + Fx.Rand(0f, 0.06f);
+			float k = i / 9f;
+			float ang = Mathf.Lerp(-Mathf.Pi - 0.38f, 0.38f, k);
+			Vector2 dir = new(Mathf.Cos(ang), Mathf.Sin(ang) * 0.86f);
+			slots.Add((_chest + new Vector2(0f, -h * 0.06f) + dir * h * 0.88f, ang + Mathf.Pi / 2f, 1.08f, Mathf.Abs(k - 0.5f) * 2f));
+		}
+		for (int i = 0; i < 5; i++)
+		{
+			float k = i / 4f;
+			float ang = Mathf.Lerp(-Mathf.Pi + 0.2f, -0.2f, k);
+			Vector2 dir = new(Mathf.Cos(ang), Mathf.Sin(ang) * 0.86f);
+			slots.Add((_chest + new Vector2(0f, -h * 0.06f) + dir * h * 0.56f, ang + Mathf.Pi / 2f, 0.82f, Mathf.Abs(k - 0.5f) * 2f + 0.1f));
+		}
+		// 扇面后面的背光：一片宽的柔光托着
+		Node2D fanGlow = Fx.Root(back, _chest + new Vector2(0f, -h * 0.3f), "P5DecoyFanGlow", Beat + 0.3);
+		Sprite2D fg = Glow.SoftSprite(fanGlow, Vector2.Zero, new Color(1f, 0.1f, 0.18f, 0f), 1f);
+		Fx.Animate(fanGlow, 0, Beat + 0.25, t =>
+		{
+			float s = t * (Beat + 0.25f);
+			float a = Fx.OutCubic(Ease5.Seg(s, 0.1f, 0.3f)) * (1f - Ease5.Seg(s, Hang, Beat - Hang));
+			fg.Scale = new Vector2(h * 2.3f, h * 1.3f) * (0.7f + 0.3f * a) / 32f;
+			fg.Modulate = new Color(1f, 0.1f, 0.18f, 0.55f * a);
+		});
+		// 蓄力：光线往胸口收（在扇面收回之前）
+		for (int i = 0; i < 22; i++)
+		{
+			float ang = Mathf.Tau * i / 22f + Fx.Rand(-0.1f, 0.1f);
+			Vector2 dir = new(Mathf.Cos(ang), Mathf.Sin(ang) * 0.85f);
+			float r0 = h * Fx.Rand(0.5f, 0.75f), r1 = h * Fx.Rand(0.05f, 0.12f);
+			float dur = Fx.Rand(0.18f, 0.24f), delay = Beat - dur - Fx.Rand(0.02f, 0.12f);
+			Node2D lr = Fx.Root(front, _chest, "P5WraithIn", delay + dur + 0.1);
+			Polygon2D ln = Glow.TaperPoly(lr, i % 3 == 0 ? Pal5.Hot : new Color(1f, 0.16f, 0.24f));
+			float lw = Fx.Rand(2f, 4f) * u;
+			ln.Visible = false;
+			Fx.Animate(ln, delay, dur, t =>
+			{
+				ln.Visible = true;
+				float hd = Fx.InCubic(Mathf.Min(1f, t * 1.3f)), tl = Fx.InCubic(t);
+				ln.Polygon = Glow.TaperPts(dir * Mathf.Lerp(r0 * 1.25f, r1, tl), dir * Mathf.Lerp(r0, r1, hd), lw);
+				ln.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, t * 4f) * (1f - Ease5.Seg(t, 0.8f, 0.2f)));
+			});
+		}
+		for (int i = 0; i < slots.Count; i++)
+		{
+			var (hang, tiltT, sc, order) = slots[i];
+			bool inner = i >= 10;
+			Vector2 exit = _chest + (_chest - hang).Normalized() * h * 0.2f;
+			Phantom.P5Card card = Phantom.Card(inner ? front : back, _chest, _w * sc, Beat + 0.2, 0.45f);
+			float o0 = 0.03f + order * 0.12f, land = o0 + 0.24f;
+			float back0 = Hang + order * 0.05f;
+			float side = hang.X < _chest.X ? -1f : 1f;
 			bool killed = false;
+			Vector2 ctrl = (_chest + hang) * 0.5f + new Vector2(side * h * 0.25f, h * 0.15f);   // 往外甩出去的弧
+			Fx.After(front, land, () =>
+			{
+				Glow.Flash(front, hang, new Color(1f, 0.92f, 0.9f), h * 0.22f, 0.12f);
+				Glow.Sparks(front, hang, 6, 60f * u, 260f * u, 0.4f, new[] { Phantom.Hot, Phantom.Red }, 0f, 0.008f * u, 0.022f * u, (hang - _chest).Normalized(), 50f);
+			});
 			Fx.Animate(card.Root, 0, Beat + 0.05, t =>
 			{
 				float s = t * (Beat + 0.05f);
 				Vector2 pos;
-				float tilt, flip, a = 1f;
+				float tilt, flip, a = 1f, glow = 0f;
 				if (s < back0)
 				{
-					float e = Ease5.OutQuint(Mathf.Clamp((s - o0) / Out, 0f, 1f));
-					float drift = Mathf.Max(0f, s - o0 - Out);
-					pos = _chest.Lerp(hang, e) + new Vector2(Mathf.Sin(s * 3f + ph), Mathf.Cos(s * 2.3f + ph)) * h * 0.02f * drift * 4f;
-					tilt = tilt0 + spin * (1f - Mathf.Exp(-s * 4f)) * 0.3f;
-					flip = flipV * (1f - Mathf.Exp(-s * 5f)) * 0.25f + Mathf.Sin(s * 4f + ph) * 0.5f;
-					a = Mathf.Min(1f, (s - o0) * 20f);
+					float e = Ease5.OutQuint(Mathf.Clamp((s - o0) / (land - o0), 0f, 1f));
+					Vector2 q1 = _chest.Lerp(ctrl, e), q2 = ctrl.Lerp(hang, e);
+					pos = q1.Lerp(q2, e);
+					float settle = Mathf.Max(0f, s - land);
+					pos += new Vector2(0f, Mathf.Sin(settle * 9f) * Mathf.Exp(-settle * 8f) * h * 0.02f);
+					tilt = Mathf.LerpAngle(tiltT + side * 2.5f, tiltT, e);
+					flip = Mathf.Pi + (1f - e) * 9f * side;   // 落位后露出牌背（红底菱形）
+					a = Mathf.Min(1f, (s - o0) * 25f);
+					glow = 0.45f * Mathf.Exp(-Mathf.Max(0f, s - land) * 14f);
+					if (s > land + 0.02f && !killed) { killed = true; card.Trail?.Kill(); }
+					// 高光依次扫过整把扇面（从左到右）
+					float sweepAt = Hang - 0.2f + ((hang.X - _chest.X) / h * 0.5f + 0.5f) * 0.18f;
+					card.Set("sheen", Mathf.Lerp(-1f, 2f, Mathf.Clamp((s - sweepAt) / 0.22f, 0f, 1f)));
 				}
 				else
 				{
 					float e = Mathf.Clamp((s - back0) / (Beat - back0), 0f, 1f);
 					float ei = e * e * e;
 					pos = ei < 0.85f ? hang.Lerp(_chest, ei / 0.85f) : _chest.Lerp(exit, (ei - 0.85f) / 0.15f);
-					tilt = tilt0 + (pos - hang).Angle() * 0.2f;
-					flip = Mathf.Sin(s * 4f + ph) * 0.5f + e * 6f;
+					tilt = tiltT;
+					flip = Mathf.Pi + e * 5f;
 					a = 1f - Ease5.Seg(ei, 0.7f, 0.18f);
-					if (!killed) { killed = true; card.Trail?.Kill(); }
+					glow = 0.6f * e;
 				}
 				card.Place(pos, tilt, flip, 1f);
 				card.Set("alpha", a);
-				card.Set("glow", s > back0 ? 0.5f * Ease5.Seg(s, back0, Beat - back0) : 0f);
-				if (s > o0 + Out * 0.6f && s < o0 + Out * 0.6f + 0.02f) card.Set("sheen", -1f);
-				card.Set("sheen", Mathf.Lerp(-1f, 2f, Mathf.Clamp((s - o0 - Out * 0.5f) / 0.35f, 0f, 1f)));
+				card.Set("glow", glow);
 			});
 		}
+		Sfx.Take("gx_ping", 0.08f, Hang - 0.12f);
 		// 主拍：全部收拢穿过他
 		Fx.After(front, Beat, () =>
 		{
