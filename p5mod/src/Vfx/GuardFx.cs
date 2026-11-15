@@ -15,7 +15,7 @@ public static class GuardFx
 {
 	private static Shader? _shader;
 
-	private static Shader ShardShader => _shader ??= new Shader { Code = @"
+	internal static Shader ShardShader => _shader ??= new Shader { Code = @"
 shader_type canvas_item;
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear_mipmap;
 uniform vec2 tilt = vec2(0.0);
