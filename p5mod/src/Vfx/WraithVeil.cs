@@ -5,16 +5,15 @@ namespace P5Joker;
 
 /// <summary>
 /// 幽魂形态第八版「幻影之身」（2026-11-15）。
-/// 前七版的教训：身后的大件（月亮、羽翼、裂隙）用着色器画不出质感，用户都否了；场景不用变；被打时把身体错开几截也不要；
-/// 「无实体期间一直持续、结束时收回」这一点用户认可。
-/// 这一版不加任何物件、不改场景：直接给 Joker 的身体换一套着色器，他本人变成幻影 ——
-/// · 原画还在（不是剪影填色），褪成半透明的苍白；
-/// · 轮廓上一圈流动的红白光（按图的透明度算出来的真轮廓，跟着每个动作走）；
-/// · 身体里有光往上流；
-/// · 打出时一道白热的线从脚扫到头，扫过的地方变成幻影；结束时从头扫回脚；
-/// · 被打：轮廓亮一下、人更透一下。
-/// 身后只有一团很淡的柔光和零星往上飘的光粒（衬托，不是主体）。
-/// 游戏接法在 WraithPlay.cs；身体材质通过 SkillCtx.BodyMaterial 换（游戏里是骨骼动画节点的材质）。
+/// 前七版的教训：身后的大件（月亮、羽翼、裂隙）用着色器画不出质感；场景不用变；被打时把身体错开几截不要；
+/// 「无实体期间一直持续、结束时收回」用户认可；身体质感（半透明 + 一侧红轮廓光）用户说还可以；
+/// 从脚往上扫的覆盖（v8.2）用户说很 low，特效太克制。
+/// 这一版：没有扫描。主意象是「魂震」—— 他的魂（此刻这个姿势的他，原画）一下下从身上震出去：
+/// · 蓄力 0～0.45：压暗，光线往胸口收，一下很小的预震；
+/// · 主拍 0.45：一瞬间变成幻影，同时三层魂像从胸口往外震开（越来越大、越来越淡），疾光往四面射、尘往外扬、十字光、重震；
+/// · 持续：每隔两秒左右很淡地震一下（不打扰），细尘往上飘；被打时震一下；
+/// · 结束：两层魂像从外面收回到他身上，一闪，变回实体。
+/// 游戏接法在 WraithPlay.cs；身体材质通过 SkillCtx.BodyMaterial 换。
 /// </summary>
 public sealed class WraithVeil
 {
@@ -23,27 +22,29 @@ public sealed class WraithVeil
 	/// <summary>无实体还在不在（游戏里设置；预览不设）。在场 2 秒后每半秒问一次，不在了就自己收掉。</summary>
 	public static Func<bool>? StillOn;
 
-	private const float SweepAt = 0.16f, SweepDur = 0.5f, EndDur = 0.6f, PreA = 0.04f, PreB = 0.2f, PreDur = 0.2f;
+	private const float Beat = 0.45f, EndDur = 0.6f;
 
+	private readonly SkillCtx _c;
 	private readonly Control _front, _back;
 	private readonly Node2D _glow;
-	private readonly Sprite2D _glowSprite, _lineRed, _lineHot;
-	private readonly Node2D _lineRoot;
+	private readonly Sprite2D _glowSprite;
 	private readonly ShaderMaterial _m;
 	private readonly Action<ShaderMaterial?>? _setBody;
-	private readonly Vector2 _feet;
+	private readonly Vector2 _feet, _chest;
 	private readonly float _tall, _face, _unit;
 	private readonly SceneTree _tree;
 	private readonly double _t0;
-	private float _t, _stopAt = -1f, _hitAt = -10f, _nextCheck = 2f, _nextApply, _nextMote = 0.7f, _nextSpark;
+	private float _t, _stopAt = -1f, _hitAt = -10f, _nextCheck = 2f, _nextApply, _nextMote = 0.7f, _nextPulse = Beat + 2.2f;
 	private bool _done;
 
 	private WraithVeil(SkillCtx c)
 	{
+		_c = c;
 		_front = c.Front;
 		_back = c.Back ?? c.Front;
 		_setBody = c.BodyMaterial;
 		_feet = c.Feet;
+		_chest = c.Chest;
 		_tall = c.Tall;
 		_face = c.Face;
 		_unit = c.Unit;
@@ -51,21 +52,18 @@ public sealed class WraithVeil
 		_t0 = HitStop.RealSeconds();
 		_m = new ShaderMaterial { Shader = Body };
 		_m.SetShaderParameter("seed", Fx.Rand(0f, 9f));
+		_m.SetShaderParameter("band", 0f);
+		_m.SetShaderParameter("pre", new Vector2(-1f, -1f));
 		_glow = new Node2D { Name = "P5WraithGlow" };
 		_back.AddChild(_glow);
 		_glow.GlobalPosition = _feet + new Vector2(0f, -0.52f * _tall);
 		_glowSprite = Glow.SoftSprite(_glow, Vector2.Zero, new Color(1f, 0.1f, 0.18f, 0f), 1f);
-		// 扫描的那道横光（前景，比身体宽，两头尖）
-		_lineRoot = new Node2D { Name = "P5WraithLine" };
-		_front.AddChild(_lineRoot);
-		_lineRed = Glow.SoftSprite(_lineRoot, Vector2.Zero, new Color(1f, 0.12f, 0.2f, 0f), 1f);
-		_lineHot = Glow.SoftSprite(_lineRoot, Vector2.Zero, new Color(1f, 0.95f, 0.93f, 0f), 1f);
 		_tree.ProcessFrame += Tick;
 		_glow.TreeExiting += Finish;
 		Step();
 	}
 
-	/// <summary>打出幽魂形态。已经开着（再打一张）：只亮一下。</summary>
+	/// <summary>打出幽魂形态。已经开着（再打一张）：震一下。</summary>
 	public static void Start(SkillCtx c)
 	{
 		if (Current is { _done: false, _stopAt: < 0f } cur)
@@ -76,41 +74,22 @@ public sealed class WraithVeil
 		Current?.Finish();
 		var w = new WraithVeil(c);
 		Current = w;
-		// 拍 1：冷的、往里收的一声（开始褪）；拍 2（主拍）：扫到头顶，整个人成了幻影
 		Sfx.Play(Sfx.WraithForm, 0.5f);
 		Sfx.Take("gx_freeze", 0.2f, 0.02f);
-		Sfx.Take("gx_ping", 0.14f, SweepAt + SweepDur);
-		Sfx.Take("gx_whoosh", 0.2f, SweepAt + SweepDur - 0.03f);
+		Sfx.Take("gx_tick", 0.1f, 0.2f);
+		Sfx.Take("gx_whoosh", 0.24f, Beat - 0.03f);
+		Sfx.Take("gx_ping", 0.14f, Beat);
 		float h = c.Tall, u = c.Unit;
 		Control back = w._back;
-		Vector2 mid = c.Feet + new Vector2(0f, -0.55f * h);
-		SkillRedo5.Dim(back, mid, new Vector2(h * 3.4f, h * 2.6f), 1.5, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.3f)) * (1f - Ease5.Seg(s, 0.8f, 0.7f)) * 0.8f);
-		// 两道很快的预扫：细一点的横光从脚扫到头，每道过去两边扬起一点尘
-		foreach (float t0 in new[] { PreA, PreB })
+		Vector2 chest = c.Chest, mid = c.Feet + new Vector2(0f, -0.55f * h);
+		SkillRedo5.Dim(back, mid, new Vector2(h * 3.6f, h * 2.8f), 1.6, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.3f)) * (1f - Ease5.Seg(s, 0.9f, 0.7f)) * 0.85f);
+		// 蓄力：光线往胸口收，正好在主拍收到
+		for (int i = 0; i < 26; i++)
 		{
-			Node2D pr = Fx.Root(c.Front, c.Feet, "P5WraithPre", t0 + PreDur + 0.1);
-			Sprite2D red = Glow.SoftSprite(pr, Vector2.Zero, new Color(1f, 0.12f, 0.2f, 0f), 1f), hot = Glow.SoftSprite(pr, Vector2.Zero, new Color(1f, 0.95f, 0.93f, 0f), 1f);
-			Vector2 feet0 = c.Feet;
-			Fx.Animate(pr, t0, PreDur, t =>
-			{
-				pr.GlobalPosition = feet0 + new Vector2(0f, -1.18f * h * t);
-				float vis = Mathf.Pow(Mathf.Sin(t * Mathf.Pi), 0.5f);
-				float wide = h * (1.0f + 0.3f * Mathf.Sin(t * Mathf.Pi));
-				red.Scale = new Vector2(wide, h * 0.045f) / 32f;
-				hot.Scale = new Vector2(wide * 0.75f, h * 0.012f) / 32f;
-				red.Modulate = new Color(1f, 0.12f, 0.2f, 0.7f * vis);
-				hot.Modulate = new Color(1f, 0.95f, 0.93f, 0.9f * vis);
-			});
-			Sfx.Take("gx_tick", 0.1f, t0);
-		}
-		// 光线往胸口收（和影刃旋风同一种做法）
-		Vector2 chest = c.Chest;
-		for (int i = 0; i < 24; i++)
-		{
-			float ang = Mathf.Tau * i / 24f + Fx.Rand(-0.1f, 0.1f);
-			Vector2 dir = new(Mathf.Cos(ang), Mathf.Sin(ang) * 0.8f);
-			float r0 = h * Fx.Rand(0.55f, 0.85f), r1 = h * Fx.Rand(0.06f, 0.14f);
-			float delay = Fx.Rand(0f, 0.2f), dur = Fx.Rand(0.18f, 0.26f);
+			float ang = Mathf.Tau * i / 26f + Fx.Rand(-0.1f, 0.1f);
+			Vector2 dir = new(Mathf.Cos(ang), Mathf.Sin(ang) * 0.85f);
+			float r0 = h * Fx.Rand(0.6f, 0.95f), r1 = h * Fx.Rand(0.05f, 0.12f);
+			float dur = Fx.Rand(0.2f, 0.28f), delay = Beat - dur - Fx.Rand(0f, 0.2f);
 			Node2D lr = Fx.Root(c.Front, chest, "P5WraithIn", delay + dur + 0.1);
 			Polygon2D ln = Glow.TaperPoly(lr, i % 3 == 0 ? Pal5.Hot : new Color(1f, 0.16f, 0.24f));
 			float lw = Fx.Rand(2f, 4.5f) * u;
@@ -123,60 +102,95 @@ public sealed class WraithVeil
 				ln.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, t * 4f) * (1f - Ease5.Seg(t, 0.8f, 0.2f)));
 			});
 		}
-		Fx.After(c.Front, SweepAt + SweepDur, () =>
+		// 预震：很小的一下
+		w.Pulse(0.2f, 1f, 1.1f, 0.45f, 0.3f, false);
+		// 主拍：三层魂像震开（在主拍前 0.1 秒抓姿势，那时身体还没换成幻影）
+		Fx.After(c.Front, Beat - 0.1f, () =>
 		{
-			HitStop.Request(0.06);
+			w.Pulse(0.1f, 1f, 1.25f, 0.95f, 0.45f, false, 1.2f);
+			w.Pulse(0.16f, 1.03f, 1.45f, 0.7f, 0.5f, false, 0.6f);
+			w.Pulse(0.22f, 1.06f, 1.65f, 0.45f, 0.55f, false, 0.2f);
+		});
+		Fx.After(c.Front, Beat, () =>
+		{
+			HitStop.Request(0.07);
 			Fx.Shake(2);
-			SkillRedo5.Cross(c.Front, chest, h * 1.1f);
-			// 几道疾光贴着身体从脚下往上冲出头顶（前后都有）
-			for (int k = 0; k < 9; k++)
+			SkillRedo5.Cross(c.Front, chest, h * 1.2f);
+			Glow.Flash(back, chest, new Color(1f, 0.12f, 0.2f), h * 2.4f, 0.4f);
+			Glow.Flash(c.Front, chest, new Color(1f, 0.95f, 0.94f), h * 0.6f, 0.14f);
+			// 疾光从胸口往四面射出去（不出屏，最长一个多身高）
+			for (int k = 0; k < 12; k++)
 			{
-				float fx = (k - 4f) / 4f;
-				float x = fx * h * 0.3f + Fx.Rand(-0.03f, 0.03f) * h;
-				Vector2 a0 = c.Feet + new Vector2(x, -h * Fx.Rand(0.1f, 0.5f)), b0 = c.Feet + new Vector2(x + fx * h * 0.35f, -h * Fx.Rand(1.35f, 1.75f));
+				float ang = Mathf.Tau * k / 12f + Fx.Rand(-0.12f, 0.12f);
+				Vector2 d = new(Mathf.Cos(ang), Mathf.Sin(ang) * 0.75f);
+				Vector2 a0 = chest + d * h * 0.12f, b0 = chest + d * h * Fx.Rand(0.95f, 1.35f);
 				bool white = k % 3 == 1;
-				SkillRedo5.Streak(k % 2 == 0 ? back : c.Front, t => a0.Lerp(b0, t), Fx.Rand(0f, 0.09f), 0.26f, h * 0.8f, h * (white ? 0.08f : 0.16f),
+				SkillRedo5.Streak(k % 2 == 0 ? back : c.Front, t => a0.Lerp(b0, t), Fx.Rand(0f, 0.05f), 0.24f, h * 0.55f, h * (white ? 0.06f : 0.12f),
 					white ? new Color(1f, 0.9f, 0.9f) : new Color(0.95f, 0.07f, 0.16f), white ? 1.6f : 1.2f);
 			}
-			// 他的「实体」被一口气吹散：大量细尘从全身往上、往身后扬起
-			for (int k = 0; k < 6; k++)
-			{
-				Vector2 at = c.Feet + new Vector2(Fx.Rand(-0.2f, 0.2f) * h, -h * (0.1f + 0.15f * k));
-				Glow.Sparks(k % 2 == 0 ? back : c.Front, at, 26, 120f * u, 620f * u, 1.3f,
-					new[] { new Color(1f, 0.95f, 0.93f), new Color(1f, 0.28f, 0.35f), new Color(0.5f, 0.02f, 0.08f) }, -90f * u, 0.006f * u, 0.024f * u,
-					new Vector2(-c.Face * 0.5f, -1f), 70f);
-			}
-			Glow.Flash(back, mid, new Color(1f, 0.12f, 0.2f), h * 2.2f, 0.45f);
-			Glow.Flash(back, c.Feet + new Vector2(0f, -h), new Color(1f, 0.93f, 0.92f), h * 0.7f, 0.16f);
-			Glow.Sparks(c.Front, c.Feet + new Vector2(0f, -h * 0.95f), 34, 120f * u, 700f * u, 0.9f,
-				new[] { new Color(1f, 0.96f, 0.95f), new Color(1f, 0.3f, 0.38f), new Color(0.6f, 0.03f, 0.1f) }, 240f * u, 0.012f * u, 0.04f * u, Vector2.Up, 120f);
+			// 尘往外扬
+			Glow.Sparks(back, chest, 60, 200f * u, 900f * u, 1.1f,
+				new[] { new Color(1f, 0.95f, 0.93f), new Color(1f, 0.28f, 0.35f), new Color(0.5f, 0.02f, 0.08f) }, -60f * u, 0.006f * u, 0.026f * u, Vector2.Up, 180f);
+			Glow.Sparks(c.Front, chest, 30, 160f * u, 700f * u, 0.9f,
+				new[] { new Color(1f, 0.96f, 0.95f), new Color(1f, 0.3f, 0.38f) }, -40f * u, 0.008f * u, 0.032f * u, Vector2.Up, 180f);
 		});
 	}
 
-	/// <summary>被打（伤害被压成 1 的那一下）：轮廓亮一下、人更透一下。</summary>
-	public void Hit()
+	/// <summary>
+	/// 魂像：抓此刻的他（原画），放在身后，从胸口往外放大、变淡（converge = 反过来，从大收回到原位、变亮）。
+	/// delay 秒后开始动；s0 → s1 缩放；a0 起始亮度；dur 时长；hot 边更亮。
+	/// </summary>
+	private void Pulse(float delay, float s0, float s1, float a0, float dur, bool converge, float hot = 0f)
 	{
-		if (_done || _stopAt >= 0f || _t < SweepAt + SweepDur) return;
-		_hitAt = _t;
-		Sfx.Take("gx_ping", 0.1f);
-		Glow.Sparks(_front, _feet + new Vector2(0f, -0.55f * _tall), 12, 100f * _unit, 460f * _unit, 0.5f,
-			new[] { new Color(1f, 0.96f, 0.95f), new Color(1f, 0.3f, 0.38f) }, 60f * _unit, 0.01f * _unit, 0.03f * _unit, new Vector2(-_face, -0.3f), 70f);
+		if (SkillRedo4.Freeze(_c, _back, delay + dur + 0.1) is not { } fr) return;
+		ShaderMaterial m = new() { Shader = Soul };
+		m.SetShaderParameter("alpha", 0f);
+		m.SetShaderParameter("hot", hot);
+		Sprite2D sp = new() { Texture = fr.Tex, Centered = false, Material = m };
+		fr.Root.AddChild(sp);
+		Vector2 pivot = _feet + new Vector2(0f, -0.5f * _tall) - _c.Region.Position;   // 身体中间（胸口点在有的姿势里偏到手边）
+		float stretch = Fx.Rand(1.0f, 1.06f);
+		Fx.Animate(sp, delay, dur, t =>
+		{
+			float e = converge ? Fx.InCubic(t) : Fx.OutCubic(t);
+			float sc = Mathf.Lerp(s0, s1, e);
+			Vector2 k = new(sc * Mathf.Lerp(1f, stretch, e), sc);
+			sp.Scale = k;
+			sp.Position = pivot - pivot * k;
+			float a = converge ? a0 * Mathf.Min(1f, t * 2.5f) * (1f - Ease5.Seg(t, 0.85f, 0.15f)) : a0 * Mathf.Pow(1f - t, 1.6f) * Mathf.Min(1f, t * 12f);
+			m.SetShaderParameter("alpha", a);
+		});
 	}
 
-	/// <summary>无实体结束：从头到脚扫回去，变回实体。</summary>
+	/// <summary>被打（伤害被压成 1 的那一下）：震一下，轮廓亮一下。</summary>
+	public void Hit()
+	{
+		if (_done || _stopAt >= 0f || _t < Beat) return;
+		_hitAt = _t;
+		_nextPulse = _t + 2.2f;
+		Sfx.Take("gx_ping", 0.1f);
+		Pulse(0f, 1f, 1.35f, 0.75f, 0.45f, false, 0.6f);
+		Glow.Sparks(_front, _chest, 16, 120f * _unit, 520f * _unit, 0.55f,
+			new[] { new Color(1f, 0.96f, 0.95f), new Color(1f, 0.3f, 0.38f) }, 60f * _unit, 0.01f * _unit, 0.03f * _unit, new Vector2(-_face, -0.3f), 80f);
+	}
+
+	/// <summary>无实体结束：魂像从外面收回到他身上，一闪，变回实体。</summary>
 	public void Stop()
 	{
 		if (_done || _stopAt >= 0f) return;
 		_stopAt = _t;
 		Sfx.Take("gx_fan_close", 0.16f);
-		Sfx.Take("gx_ping", 0.1f, EndDur - 0.14f);
+		Sfx.Take("gx_ping", 0.12f, EndDur - 0.12f);
+		Pulse(0f, 1.7f, 1f, 0.5f, EndDur - 0.12f, true, 0.3f);
+		Pulse(0.08f, 1.35f, 1f, 0.7f, EndDur - 0.2f, true, 0.6f);
 		Control fr = _front;
-		Vector2 ft = _feet;
+		Vector2 ch = _chest;
 		float uu = _unit, hh2 = _tall;
-		Fx.After(fr, EndDur - 0.14f, () =>
+		Fx.After(fr, EndDur - 0.12f, () =>
 		{
-			Glow.Flash(fr, ft + new Vector2(0f, -hh2 * 0.05f), new Color(1f, 0.9f, 0.9f), hh2 * 0.6f, 0.16f);
-			Glow.Sparks(fr, ft, 26, 100f * uu, 520f * uu, 0.6f, new[] { new Color(1f, 0.95f, 0.93f), new Color(1f, 0.28f, 0.35f) }, 300f * uu, 0.008f * uu, 0.03f * uu, Vector2.Up, 150f);
+			Glow.Flash(fr, ch, new Color(1f, 0.92f, 0.92f), hh2 * 0.7f, 0.16f);
+			Glow.Sparks(fr, ch, 30, 120f * uu, 560f * uu, 0.6f, new[] { new Color(1f, 0.95f, 0.93f), new Color(1f, 0.28f, 0.35f) }, 200f * uu, 0.008f * uu, 0.03f * uu, Vector2.Up, 180f);
+			Fx.Shake(1);
 		});
 	}
 
@@ -213,7 +227,6 @@ public sealed class WraithVeil
 			Finish();
 			return;
 		}
-		// 材质隔一会儿重新设一次（游戏自己换过材质的话接回来）
 		if (s >= _nextApply)
 		{
 			_nextApply = s + 0.5f;
@@ -221,58 +234,35 @@ public sealed class WraithVeil
 		}
 		Vector2 scr = Fx.Screen(_front);
 		float feetY = Fx.ScreenPoint(_front, _feet).Y / scr.Y, topY = Fx.ScreenPoint(_front, _feet + new Vector2(0f, -1.12f * _tall)).Y / scr.Y;
-		// 扫描线的位置：0 = 脚下，1 = 头顶以上。打出时往上扫，结束时往下扫回去
-		float up0 = Seg(s, SweepAt, SweepDur);
-		float up = up0 * up0 * (1.6f - 0.6f * up0);   // 先慢后快，正好在主拍扫到头顶
-		float line = g >= 0f ? 1f - Smooth(Seg(g, 0f, EndDur - 0.12f)) : up;
-		bool sweeping = (s >= SweepAt && s < SweepAt + SweepDur) || g >= 0f;
+		// 幻影：主拍那一瞬间整个人一起换（没有扫描）；结束时在最后那一闪换回来
+		bool ghost = s >= Beat && (g < 0f || g < EndDur - 0.12f);
 		float hit = s >= _hitAt ? Mathf.Exp(-(s - _hitAt) * 5f) : 0f;
-		float arrive = s >= SweepAt + SweepDur ? Mathf.Exp(-(s - SweepAt - SweepDur) * 3.5f) : 0f;
+		float arrive = s >= Beat ? Mathf.Exp(-(s - Beat) * 3.5f) : 0f;
+		float back = g >= EndDur - 0.12f ? Mathf.Exp(-(g - EndDur + 0.12f) * 8f) : 0f;
 		_m.SetShaderParameter("feet_y", feetY);
 		_m.SetShaderParameter("top_y", topY);
-		_m.SetShaderParameter("line", Mathf.Lerp(-0.08f, 1.08f, line));
-		_m.SetShaderParameter("band", sweeping ? 1f : 0f);
+		_m.SetShaderParameter("line", ghost ? 1.3f : -0.3f);
 		_m.SetShaderParameter("clock", s);
-		_m.SetShaderParameter("flash", Mathf.Min(1f, hit + arrive));
+		_m.SetShaderParameter("flash", Mathf.Min(1f, hit + arrive + back));
 		_m.SetShaderParameter("thin", 0.16f * hit);
 		_m.SetShaderParameter("aspect", scr.X / scr.Y);
 		_m.SetShaderParameter("face", _face);
-		float p1 = Seg(s, PreA, PreDur), p2 = Seg(s, PreB, PreDur);
-		_m.SetShaderParameter("pre", new Vector2(p1 > 0f && p1 < 1f ? p1 * 1.05f : -1f, p2 > 0f && p2 < 1f ? p2 * 1.05f : -1f));
 
-		// 身后的柔光：到位后淡淡地亮着、慢慢呼吸；被打亮一下
-		float on = Smooth(Seg(s, SweepAt + 0.1f, SweepDur)) * (g >= 0f ? 1f - Smooth(Seg(g, 0f, EndDur - 0.1f)) : 1f);
-		float breath = 0.5f + 0.5f * Mathf.Sin(s * 1.4f);
-		_glowSprite.Scale = new Vector2(_tall * (0.95f + 0.08f * breath + 0.3f * arrive), _tall * (1.5f + 0.1f * breath + 0.3f * arrive)) / 32f;
-		// 身后的柔光只在到位和被打的一瞬间亮一下，平时没有（用户：平时那层淡淡的光怪）
+		// 身后的柔光只在主拍和被打的一瞬间亮一下
+		float on = g >= 0f ? 1f - Smooth(Seg(g, 0f, EndDur - 0.1f)) : 1f;
+		_glowSprite.Scale = new Vector2(_tall * (0.95f + 0.3f * arrive), _tall * (1.5f + 0.3f * arrive)) / 32f;
 		_glowSprite.Modulate = new Color(1f, 0.1f, 0.18f, on * (0.45f * arrive + 0.16f * hit));
-		// 横光跟着扫描线走：扫的时候宽、亮，快到头时收窄
-		if (GodotObject.IsInstanceValid(_lineRoot))
-		{
-			float vis = sweeping && line < 0.99f ? Mathf.Sin(Mathf.Clamp(line, 0f, 1f) * Mathf.Pi) : 0f;
-			vis = Mathf.Pow(vis, 0.35f) * (sweeping ? 1f : 0f);
-			_lineRoot.GlobalPosition = _feet + new Vector2(0f, -1.12f * _tall * line);
-			float wide = _tall * (1.5f + 0.5f * Mathf.Sin(line * Mathf.Pi));
-			_lineRed.Scale = new Vector2(wide, _tall * 0.075f) / 32f;
-			_lineHot.Scale = new Vector2(wide * 0.8f, _tall * 0.02f) / 32f;
-			_lineRed.Modulate = new Color(1f, 0.12f, 0.2f, 0.85f * vis);
-			_lineHot.Modulate = new Color(1f, 0.95f, 0.93f, vis);
-		}
 
-		// 扫描线上往两边迸的碎光
-		if (sweeping && s >= _nextSpark && line > 0.02f && line < 0.98f)
+		// 持续期间：隔一会儿很淡地震一下
+		if (g < 0f && s >= _nextPulse)
 		{
-			_nextSpark = s + 0.035f;
-			Vector2 at = _feet + new Vector2(Fx.Rand(-0.16f, 0.16f) * _tall, -1.12f * _tall * line);
-			float side = Fx.Rand(0f, 1f) < 0.5f ? -1f : 1f;
-			Glow.Sparks(_front, at, 3, 80f * _unit, 380f * _unit, 0.45f, new[] { new Color(1f, 0.96f, 0.95f), new Color(1f, 0.28f, 0.36f) },
-				-80f * _unit, 0.01f * _unit, 0.03f * _unit, new Vector2(side, -0.4f), 50f);
+			_nextPulse = s + Fx.Rand(1.9f, 2.6f);
+			Pulse(0f, 1f, 1.16f, 0.32f, 0.7f, false);
 		}
-		// 平时零星往上飘的光粒
-		if (g < 0f && s >= _nextMote && s > SweepAt + SweepDur)
+		// 细尘往上飘
+		if (g < 0f && s >= _nextMote && s > Beat)
 		{
 			_nextMote = s + Fx.Rand(0.1f, 0.2f);
-			// 从身体边上剥下来的细尘：下半身多一些，往上、往身后漂
 			float hh = Fx.Rand(0f, 1f); hh *= hh;
 			float wide = Mathf.Lerp(0.34f, 0.14f, hh);
 			Vector2 at = _feet + new Vector2((Fx.Rand(0f, 1f) < 0.5f ? -1f : 1f) * Fx.Rand(0.5f, 1f) * wide * _tall, -(0.05f + 0.95f * hh) * _tall);
@@ -289,13 +279,36 @@ public sealed class WraithVeil
 		_tree.ProcessFrame -= Tick;
 		if (_setBody != null) Stage.Safe("WraithVeil.body", () => _setBody(null));
 		if (GodotObject.IsInstanceValid(_glow)) _glow.QueueFree();
-		if (GodotObject.IsInstanceValid(_lineRoot)) _lineRoot.QueueFree();
 		if (Current == this) Current = null;
 	}
 
 	// ───────────────────────── 着色器 ─────────────────────────
 
-	private static Shader? _body;
+	private static Shader? _body, _soul;
+
+	/// <summary>魂像：TEXTURE = 冻住的他（原画）。加法：边上一圈亮、里面按原画明暗透一点淡红白（不是填色）。</summary>
+	private static Shader Soul => _soul ??= new Shader { Code = @"
+shader_type canvas_item;
+render_mode blend_add;
+uniform float alpha = 1.0;
+uniform float hot = 0.0;
+void fragment() {
+	vec4 t = texture(TEXTURE, UV);
+	float a = smoothstep(0.2, 0.7, t.a);
+	float nb = 0.0, nb2 = 0.0;
+	for (int i = 0; i < 8; i++) {
+		float ang = 6.2831853 * (float(i) + 0.5) / 8.0;
+		vec2 d = vec2(cos(ang), sin(ang)) * TEXTURE_PIXEL_SIZE;
+		nb += smoothstep(0.2, 0.7, texture(TEXTURE, UV + d * 2.5).a);
+		nb2 += smoothstep(0.2, 0.7, texture(TEXTURE, UV + d * 8.0).a);
+	}
+	nb /= 8.0; nb2 /= 8.0;
+	float rim = clamp((a - nb) * 2.5, 0.0, 1.0) + clamp((nb - a) * 1.2, 0.0, 1.0);
+	float soft = clamp((a - nb2) * 1.3, 0.0, 1.0);
+	float l = dot(t.rgb, vec3(0.299, 0.587, 0.114));
+	vec3 col = vec3(0.95, 0.04, 0.13) * (a * 0.3 + soft * 0.7) + vec3(1.0, 0.7, 0.72) * l * a * 0.3 + vec3(1.0, 0.92, 0.9) * rim * (0.9 + hot);
+	COLOR = vec4(col * alpha, 1.0);
+}" };
 
 	/// <summary>
 	/// Joker 身体的幻影材质。TEXTURE = 姿势图（图集，不预乘）。位置用屏幕坐标（feet_y / top_y：脚、头顶在屏幕上的纵坐标 0～1），不依赖节点怎么摆。
