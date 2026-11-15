@@ -86,6 +86,23 @@ public static class SkillPlay
 		float tall = (feet - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length(), face = Joker.Facing(joker);
 		Action<Color> selfTint = c => { if (GodotObject.IsInstanceValid(joker) && joker.Visuals is { } v) v.Modulate = c; };
 		Rect2 region = new(feet + new Vector2(-tall * 0.75f, -tall * 1.15f), new Vector2(tall * 1.5f, tall * 1.3f));
+		// 身体材质：第一次换之前记下原来的，传 null 时换回去
+		Material? original = null;
+		bool saved = false;
+		Action<ShaderMaterial?> bodyMat = m =>
+		{
+			if (!GodotObject.IsInstanceValid(joker) || joker.Visuals?.SpineBody is not { } sb) return;
+			if (m != null)
+			{
+				if (!saved) { original = sb.GetNormalMaterial(); saved = true; }
+				sb.SetNormalMaterial(m);
+			}
+			else if (saved)
+			{
+				sb.SetNormalMaterial(original!);
+				saved = false;
+			}
+		};
 		Func<Node, (Node2D, Transform2D)?> clone = parent => Aim.CloneBody(joker, parent, "idle_loop");
 		var enemies = new List<SkillFx.Victim>();
 		if (joker.Entity?.CombatState is { } ecs)
@@ -103,7 +120,7 @@ public static class SkillPlay
 			: null;
 		return new SkillCtx(layer, back, feet, chest, hand, Joker.PosePoint(joker, ReadyFx.MaskFace), tall, face, selfTint, enemies, tv)
 		{
-			CopyBody = clone, Region = region,
+			CopyBody = clone, Region = region, BodyMaterial = bodyMat,
 		};
 	}
 

@@ -10,10 +10,10 @@ using MegaCrit.Sts2.Core.Nodes.Rooms;
 namespace P5Joker;
 
 /// <summary>
-/// 幽魂形态的游戏接法（特效本体在 Vfx/WraithRift.cs）：
+/// 幽魂形态的游戏接法（特效本体在 Vfx/WraithVeil.cs）：
 /// · 被打：无实体把掉血压成 1 之后会调 AfterModifyingHpLostAfterOsty → 给一下反馈；
 /// · 结束：无实体在敌方回合结束（AfterSideTurnEnd）时减一层，减到 0 那次收掉；
-/// · 兜底：WraithRift.StillOn 每半秒看一眼 Joker 身上还有没有无实体（被别的方式移除、漏了钩子时也能收掉）。
+/// · 兜底：WraithVeil.StillOn 每半秒看一眼 Joker 身上还有没有无实体（被别的方式移除、漏了钩子时也能收掉）。
 /// 只改表现，不动游戏逻辑。
 /// </summary>
 public static class WraithPlay
@@ -24,7 +24,7 @@ public static class WraithPlay
 	{
 		if (_installed) return;
 		_installed = true;
-		WraithRift.StillOn = StillOn;
+		WraithVeil.StillOn = StillOn;
 	}
 
 	private static bool StillOn()
@@ -48,7 +48,7 @@ public static class WraithHitPatch
 	{
 		Stage.Safe("wraith hit", () =>
 		{
-			if (WraithRift.Current != null && WraithPlay.Mine(__instance)) WraithRift.Current.Hit();
+			if (WraithVeil.Current != null && WraithPlay.Mine(__instance)) WraithVeil.Current.Hit();
 		});
 	}
 }
@@ -60,7 +60,7 @@ public static class WraithTurnEndPatch
 	{
 		Stage.Safe("wraith end", () =>
 		{
-			if (WraithRift.Current != null && side == CombatSide.Enemy && WraithPlay.Mine(__instance) && __instance.Amount <= 1) WraithRift.StopCurrent();
+			if (WraithVeil.Current != null && side == CombatSide.Enemy && WraithPlay.Mine(__instance) && __instance.Amount <= 1) WraithVeil.StopCurrent();
 		});
 	}
 }

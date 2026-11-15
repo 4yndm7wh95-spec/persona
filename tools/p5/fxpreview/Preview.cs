@@ -61,6 +61,7 @@ public partial class Preview : Node2D
 		{
 			CopyBody = BodyAura.CloneBody,
 			Region = new Rect2(JokerFeet + new Vector2(-tall * 0.75f, -tall * 1.15f), new Vector2(tall * 1.5f, tall * 1.3f)),
+			BodyMaterial = m => p._joker!.Material = m,
 		};
 		double at = 0.3;
 		foreach (var (card, anim, lead, gap) in seq)
@@ -836,13 +837,14 @@ public partial class Preview : Node2D
 		["haze"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Haze", "cast_wave", 0.08, 2.6), ("Haze", "cast_wave", 0.08, 2.6) }),
 		["adrenaline"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Adrenaline", "cast_glove", 0.25, 1.6), ("Adrenaline", "cast_glove", 0.25, 1.6) }),
 		["shadowstep"] = p => RunCards(p, null, new (string, string, double, double)[] { ("ShadowStep", "cast_glove", 0.25, 1.8), ("ShadowStep", "cast_glove", 0.25, 1.8) }),
-		// 幽魂形态：打出 → 被打两次 → 无实体结束（Vfx/WraithRift.cs）
+		// 幽魂形态：打出 → 被打两次 → 无实体结束（Vfx/WraithVeil.cs）
 		["wraith"] = p =>
 		{
 			RunCards(p, null, new (string, string, double, double)[] { ("WraithForm", "cast_big", 0.4, 1.0) });
-			p.At(3.0, () => WraithRift.Current?.Hit());
-			p.At(3.9, () => WraithRift.Current?.Hit());
-			p.At(5.0, () => WraithRift.StopCurrent());
+			p.At(2.0, () => p._joker?.Play("attack"));
+			p.At(3.0, () => WraithVeil.Current?.Hit());
+			p.At(3.9, () => WraithVeil.Current?.Hit());
+			p.At(5.0, () => WraithVeil.StopCurrent());
 		},
 		["retain"] = p =>
 		{

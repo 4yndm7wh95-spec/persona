@@ -13,6 +13,8 @@ public sealed record SkillCtx(
 	/// <summary>复制此刻的 Joker（剪影残像用，SkillFx.Ghosts）；Region = 剪影离屏画面覆盖的屏幕区域。</summary>
 	public Func<Node, (Node2D Clone, Transform2D Body)?>? CopyBody { get; init; }
 	public Rect2 Region { get; init; }
+	/// <summary>给 Joker 的身体换材质（null = 换回原来的）。持续型的身体特效用（幽魂形态，Vfx/WraithVeil.cs）。</summary>
+	public Action<ShaderMaterial?>? BodyMaterial { get; init; }
 	public Vector2 Head => Feet + new Vector2(0f, -Tall * 1.02f);
 }
 
