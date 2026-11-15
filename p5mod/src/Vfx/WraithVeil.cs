@@ -74,14 +74,44 @@ public sealed class WraithVeil
 		Sfx.Play(Sfx.WraithForm, 0.5f);
 		Sfx.Take("gx_freeze", 0.2f, 0.02f);
 		Sfx.Take("gx_ping", 0.14f, SweepAt + SweepDur);
+		Sfx.Take("gx_whoosh", 0.2f, SweepAt + SweepDur - 0.03f);
 		float h = c.Tall, u = c.Unit;
 		Control back = w._back;
 		Vector2 mid = c.Feet + new Vector2(0f, -0.55f * h);
 		SkillRedo5.Dim(back, mid, new Vector2(h * 3.4f, h * 2.6f), 1.5, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.3f)) * (1f - Ease5.Seg(s, 0.8f, 0.7f)) * 0.8f);
+		// 光线往胸口收（和影刃旋风同一种做法）
+		Vector2 chest = c.Chest;
+		for (int i = 0; i < 24; i++)
+		{
+			float ang = Mathf.Tau * i / 24f + Fx.Rand(-0.1f, 0.1f);
+			Vector2 dir = new(Mathf.Cos(ang), Mathf.Sin(ang) * 0.8f);
+			float r0 = h * Fx.Rand(0.55f, 0.85f), r1 = h * Fx.Rand(0.06f, 0.14f);
+			float delay = Fx.Rand(0f, 0.2f), dur = Fx.Rand(0.18f, 0.26f);
+			Node2D lr = Fx.Root(c.Front, chest, "P5WraithIn", delay + dur + 0.1);
+			Polygon2D ln = Glow.TaperPoly(lr, i % 3 == 0 ? Pal5.Hot : new Color(1f, 0.16f, 0.24f));
+			float lw = Fx.Rand(2f, 4.5f) * u;
+			ln.Visible = false;
+			Fx.Animate(ln, delay, dur, t =>
+			{
+				ln.Visible = true;
+				float hd = Fx.InCubic(Mathf.Min(1f, t * 1.3f)), tl = Fx.InCubic(t);
+				ln.Polygon = Glow.TaperPts(dir * Mathf.Lerp(r0 * 1.25f, r1, tl), dir * Mathf.Lerp(r0, r1, hd), lw);
+				ln.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, t * 4f) * (1f - Ease5.Seg(t, 0.8f, 0.2f)));
+			});
+		}
 		Fx.After(c.Front, SweepAt + SweepDur, () =>
 		{
-			HitStop.Request(0.05);
-			Fx.Shake(1);
+			HitStop.Request(0.06);
+			Fx.Shake(2);
+			SkillRedo5.Cross(c.Front, chest, h * 1.1f);
+			// 他的「实体」被一口气吹散：大量细尘从全身往上、往身后扬起
+			for (int k = 0; k < 6; k++)
+			{
+				Vector2 at = c.Feet + new Vector2(Fx.Rand(-0.2f, 0.2f) * h, -h * (0.1f + 0.15f * k));
+				Glow.Sparks(k % 2 == 0 ? back : c.Front, at, 26, 120f * u, 620f * u, 1.3f,
+					new[] { new Color(1f, 0.95f, 0.93f), new Color(1f, 0.28f, 0.35f), new Color(0.5f, 0.02f, 0.08f) }, -90f * u, 0.006f * u, 0.024f * u,
+					new Vector2(-c.Face * 0.5f, -1f), 70f);
+			}
 			Glow.Flash(back, mid, new Color(1f, 0.12f, 0.2f), h * 2.2f, 0.45f);
 			Glow.Flash(back, c.Feet + new Vector2(0f, -h), new Color(1f, 0.93f, 0.92f), h * 0.7f, 0.16f);
 			Glow.Sparks(c.Front, c.Feet + new Vector2(0f, -h * 0.95f), 34, 120f * u, 700f * u, 0.9f,
@@ -160,14 +190,15 @@ public sealed class WraithVeil
 		_m.SetShaderParameter("band", sweeping ? 1f : 0f);
 		_m.SetShaderParameter("clock", s);
 		_m.SetShaderParameter("flash", Mathf.Min(1f, hit + arrive));
-		_m.SetShaderParameter("thin", 0.3f * hit);
+		_m.SetShaderParameter("thin", 0.16f * hit);
 		_m.SetShaderParameter("aspect", scr.X / scr.Y);
+		_m.SetShaderParameter("face", _face);
 
 		// 身后的柔光：到位后淡淡地亮着、慢慢呼吸；被打亮一下
 		float on = Smooth(Seg(s, SweepAt + 0.1f, SweepDur)) * (g >= 0f ? 1f - Smooth(Seg(g, 0f, EndDur - 0.1f)) : 1f);
 		float breath = 0.5f + 0.5f * Mathf.Sin(s * 1.4f);
 		_glowSprite.Scale = new Vector2(_tall * (0.95f + 0.08f * breath + 0.3f * arrive), _tall * (1.5f + 0.1f * breath + 0.3f * arrive)) / 32f;
-		_glowSprite.Modulate = new Color(1f, 0.1f, 0.18f, on * (0.3f + 0.06f * breath + 0.3f * arrive + 0.2f * hit));
+		_glowSprite.Modulate = new Color(1f, 0.1f, 0.18f, on * (0.16f + 0.05f * breath + 0.4f * arrive + 0.2f * hit));
 
 		// 扫描线上往两边迸的碎光
 		if (sweeping && s >= _nextSpark && line > 0.02f && line < 0.98f)
@@ -181,10 +212,14 @@ public sealed class WraithVeil
 		// 平时零星往上飘的光粒
 		if (g < 0f && s >= _nextMote && s > SweepAt + SweepDur)
 		{
-			_nextMote = s + Fx.Rand(0.35f, 0.7f);
-			Vector2 at = _feet + new Vector2(Fx.Rand(-0.28f, 0.28f) * _tall, -Fx.Rand(0.1f, 0.85f) * _tall);
-			Glow.Sparks(Fx.Rand(0f, 1f) < 0.5f ? _back : _front, at, 2, 30f * _unit, 90f * _unit, 1.3f, new[] { new Color(1f, 0.9f, 0.9f), new Color(1f, 0.22f, 0.3f) },
-				-60f * _unit, 0.008f * _unit, 0.022f * _unit, Vector2.Up, 40f);
+			_nextMote = s + Fx.Rand(0.1f, 0.2f);
+			// 从身体边上剥下来的细尘：下半身多一些，往上、往身后漂
+			float hh = Fx.Rand(0f, 1f); hh *= hh;
+			float wide = Mathf.Lerp(0.34f, 0.14f, hh);
+			Vector2 at = _feet + new Vector2((Fx.Rand(0f, 1f) < 0.5f ? -1f : 1f) * Fx.Rand(0.5f, 1f) * wide * _tall, -(0.05f + 0.95f * hh) * _tall);
+			Glow.Sparks(Fx.Rand(0f, 1f) < 0.4f ? _back : _front, at, 3, 40f * _unit, 150f * _unit, 1.2f,
+				new[] { new Color(1f, 0.92f, 0.9f), new Color(1f, 0.25f, 0.32f), new Color(0.5f, 0.02f, 0.08f) },
+				-70f * _unit, 0.006f * _unit, 0.02f * _unit, new Vector2(-_face * 0.35f, -1f), 34f);
 		}
 	}
 
@@ -217,6 +252,7 @@ uniform float flash = 0.0;
 uniform float thin = 0.0;      // 被打时更透一点
 uniform float aspect = 1.7778;
 uniform float seed = 0.0;
+uniform float face = 1.0;
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
@@ -245,37 +281,34 @@ void fragment() {
 	float lineGlow = exp(-abs(dl) * 55.0) * band;
 	float under = exp(-max(-dl, 0.0) * 9.0) * band * cv;     // 线刚扫过的地方还热着
 
-	// 轮廓：离边越近越亮（两圈：贴边的一线 + 往里的一段柔边）
-	float near = ring(TEXTURE, UV, TEXTURE_PIXEL_SIZE, 2.2);
-	float far = ring(TEXTURE, UV, TEXTURE_PIXEL_SIZE, 7.0);
-	float rimHot = clamp((a - near) * 2.6, 0.0, 1.0);
-	float rimSoft = clamp((a - far) * 1.5, 0.0, 1.0);
-	float rimWide = clamp((a - ring(TEXTURE, UV, TEXTURE_PIXEL_SIZE, 17.0)) * 1.25, 0.0, 1.0);
-	// 轮廓上的光是流动的：一段段亮、往上走
-	float flow = fbm(vec2(q.x * 5.0 + seed, q.y * 3.2 - clock * 0.9));
-	float flowK = 0.35 + 1.1 * smoothstep(0.3, 0.75, flow);
+	// 背光：光从他身后上方来。朝光那一侧、紧贴轮廓的地方有一道利落的亮边（不是整圈发光）；
+	// 另一侧是地面反上来的一点红。
+	vec2 px = TEXTURE_PIXEL_SIZE;
+	vec2 L = normalize(vec2(-face * 0.75, -0.66));
+	float keyRim = clamp((a - texture(TEXTURE, UV + L * px * 3.0).a) * 1.6, 0.0, 1.0) * clamp((a - texture(TEXTURE, UV + L * px * 7.0).a) * 1.6 + 0.35, 0.0, 1.0);
+	float keyWide = clamp((a - texture(TEXTURE, UV + L * px * 12.0).a) * 1.2, 0.0, 1.0);
+	vec2 B = normalize(vec2(face * 0.6, 0.8));
+	float bounce = clamp((a - texture(TEXTURE, UV + B * px * 5.0).a) * 1.4, 0.0, 1.0);
+	// 亮边的强弱沿身体缓慢起伏（光在动）
+	float flick = 0.75 + 0.25 * sin(q.y * 9.0 - clock * 1.7 + seed);
 
-	// 幻影的身体：原画还在，褪色发白、稍微压暗，半透明
+	// 身体：原画褪掉一些颜色、略冷；厚薄像雾一样缓慢流动（大块、柔的，不是颗粒），脸和胸口留得实一些
 	float l = dot(base.rgb, vec3(0.299, 0.587, 0.114));
-	vec3 pale = mix(base.rgb, vec3(l) * vec3(1.0, 0.9, 0.93), 0.5);
-	pale = pale * 1.05 + vec3(0.17, 0.04, 0.07);
-	// 身体里往上流的光：细长的竖条，疏密不匀
-	float st = noise(vec2(q.x * 26.0 + seed * 3.0, q.y * 2.6 - clock * 0.55));
-	float st2 = noise(vec2(q.x * 11.0, q.y * 1.4 - clock * 0.3 + 4.0));
-	float stream = smoothstep(0.62, 0.92, st) * smoothstep(0.35, 0.7, st2);
-	vec3 ghost = pale + (vec3(1.0, 0.16, 0.24) + vec3(0.0, 0.5, 0.45) * smoothstep(0.85, 1.0, st)) * stream * 0.7;
-	ghost += vec3(0.85, 0.06, 0.14) * rimWide * 0.5;
-	// 轮廓光
-	ghost += vec3(1.0, 0.1, 0.18) * rimSoft * 1.0 * flowK;
-	ghost += vec3(1.0, 0.88, 0.86) * rimHot * (0.7 + 0.5 * flowK);
-	ghost += vec3(1.0, 0.75, 0.75) * flash * (0.18 + 0.7 * rimSoft);
-	ghost += vec3(1.0, 0.5, 0.52) * under * 0.6;
+	vec3 ghost = mix(base.rgb, vec3(l) * vec3(0.97, 0.93, 1.0), 0.42);
+	ghost = ghost + vec3(0.035, 0.02, 0.04);
+	float mist = fbm(vec2(q.x * 3.6 + seed, q.y * 2.4 - clock * 0.28));
+	float core = smoothstep(0.45, 0.9, h);
+	float bodyA = mix(0.36, 0.9, smoothstep(0.28, 0.68, mist + core * 0.3)) - thin;
+	// 光：背光的亮边（白，利落）+ 往里一小段的受光过渡 + 另一侧的红
+	ghost = mix(ghost, vec3(1.0, 0.95, 0.93), keyRim * 0.95 * flick);
+	ghost += vec3(0.5, 0.42, 0.46) * keyWide * 0.22 * flick;
+	ghost = mix(ghost, vec3(0.95, 0.08, 0.16), bounce * 0.6);
+	ghost += vec3(1.0, 0.85, 0.85) * flash * (0.12 + 0.6 * keyRim + 0.3 * bounce);
+	ghost += vec3(1.0, 0.5, 0.52) * under * 0.5;
 
 	vec3 col = mix(base.rgb, ghost, cv);
 	col += vec3(1.0, 0.94, 0.92) * lineGlow * 1.2;
-	// 透明度：身体半透，轮廓不透（边还是清楚的）；扫描线本身不透
-	float bodyA = mix(0.42, 0.8, smoothstep(0.04, 0.5, l)) - thin;
-	float alphaK = mix(bodyA, 1.0, clamp(rimSoft * 1.3 + rimHot, 0.0, 1.0));
+	float alphaK = mix(bodyA, 1.0, clamp(keyRim + bounce * 0.8, 0.0, 1.0));
 	float outA = a * mix(1.0, alphaK, cv);
 	outA = max(outA, a * min(1.0, lineGlow));
 	COLOR = vec4(col, outA);
