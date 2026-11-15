@@ -48,6 +48,31 @@ public partial class Preview : Node2D
 		("Adrenaline", "cast_glove", 0.25, 1.4),
 	});
 
+	/// <summary>假手牌（5 张灰牌）at0 时出现，at1 / at2（&lt;0 = 不要）时放「保留手牌」的封。</summary>
+	private static void RetainDemo(Preview p, double at0, double at1, double at2)
+	{
+		var bodies = new List<Control>();
+		p.At(at0, () =>
+		{
+			for (int i = 0; i < 5; i++)
+			{
+				float k = i - 2f;
+				var holder = new Control { Position = new Vector2(960f + k * 175f, 1010f + Mathf.Abs(k) * 12f), Rotation = k * 0.05f, Scale = Vector2.One * 0.62f };
+				p._front.AddChild(holder);
+				var body = new Panel { Size = new Vector2(300f, 422f), Position = new Vector2(-150f, -422f) };
+				var sb = new StyleBoxFlat { BgColor = new Color(0.16f, 0.12f, 0.14f), CornerRadiusTopLeft = 22, CornerRadiusTopRight = 22, CornerRadiusBottomLeft = 22, CornerRadiusBottomRight = 22, BorderColor = new Color(0.5f, 0.45f, 0.4f), BorderWidthBottom = 6, BorderWidthTop = 6, BorderWidthLeft = 6, BorderWidthRight = 6 };
+				body.AddThemeStyleboxOverride("panel", sb);
+				holder.AddChild(body);
+				bodies.Add(body);
+			}
+		});
+		foreach (double at in new[] { at1, at2 })
+		{
+			if (at < 0) continue;
+			p.At(at, () => { Sfx.Take("gx_card_stack", 0.1f); for (int i = 0; i < bodies.Count; i++) RetainFx.Play(bodies[i], 0.07f * i); });
+		}
+	}
+
 	private static void RunCards(Preview p, string[]? only, (string Card, string Anim, double Lead, double Gap)[] seq)
 	{
 		float tall = (JokerFeet - Pose(815f, 120f)).Length();
@@ -846,27 +871,13 @@ public partial class Preview : Node2D
 			p.At(3.9, () => WraithVeil.Current?.Hit());
 			p.At(5.0, () => WraithVeil.StopCurrent());
 		},
-		["retain"] = p =>
+		["retain"] = p => RetainDemo(p, 0.1, 0.6, 2.2),
+		// 计划妥当：打一次 → 回合结束保留手牌的「封」（RetainFx，每回合都会出现）
+		["plans"] = p =>
 		{
-			var bodies = new List<Control>();
-			p.At(0.1, () =>
-			{
-				for (int i = 0; i < 5; i++)
-				{
-					float k = i - 2f;
-					var holder = new Control { Position = new Vector2(960f + k * 175f, 1010f + Mathf.Abs(k) * 12f), Rotation = k * 0.05f, Scale = Vector2.One * 0.62f };
-					p._front.AddChild(holder);
-					var body = new Panel { Size = new Vector2(300f, 422f), Position = new Vector2(-150f, -422f) };
-					var sb = new StyleBoxFlat { BgColor = new Color(0.16f, 0.12f, 0.14f), CornerRadiusTopLeft = 22, CornerRadiusTopRight = 22, CornerRadiusBottomLeft = 22, CornerRadiusBottomRight = 22, BorderColor = new Color(0.5f, 0.45f, 0.4f), BorderWidthBottom = 6, BorderWidthTop = 6, BorderWidthLeft = 6, BorderWidthRight = 6 };
-					body.AddThemeStyleboxOverride("panel", sb);
-					holder.AddChild(body);
-					bodies.Add(body);
-				}
-			});
-			p.At(0.6, () => { Sfx.Take("gx_card_stack", 0.1f); for (int i = 0; i < bodies.Count; i++) RetainFx.Play(bodies[i], 0.07f * i); });
-			p.At(2.2, () => { Sfx.Take("gx_card_stack", 0.1f); for (int i = 0; i < bodies.Count; i++) RetainFx.Play(bodies[i], 0.07f * i); });
+			RunCards(p, null, new (string, string, double, double)[] { ("WellLaidPlans", "cast_glove", 0.25, 2.2) });
+			RetainDemo(p, 2.4, 2.9, -1);
 		},
-		["plans"] = p => RunCards(p, null, new (string, string, double, double)[] { ("WellLaidPlans", "cast_glove", 0.25, 2.2), ("WellLaidPlans", "cast_glove", 0.25, 2.2) }),
 		["fumes"] = p => RunCards(p, null, new (string, string, double, double)[] { ("NoxiousFumes", "cast", 0.4, 7.5) }),
 		["redo"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Acrobatics", "cast_glove", 0.25, 1.7), ("Acrobatics", "cast_glove", 0.25, 1.7) }),
 		["redo3"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Survivor", "cast_guard", 0.08, 1.2), ("CalculatedGamble", "cast_glove", 0.25, 1.9), ("Tactician", "cast_glove", 0.25, 1.2), ("Adrenaline", "cast_glove", 0.25, 1.4), ("ShadowStep", "cast_glove", 0.25, 1.4) }),
