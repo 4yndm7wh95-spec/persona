@@ -146,17 +146,24 @@ public static partial class SkillRedo5
 				float ang = dir.Angle() + Mathf.DegToRad(Fx.Rand(-spreadDeg, spreadDeg) * 0.5f);
 				Vector2 v = Vector2.FromAngle(ang) * speed * Fx.Rand(0.45f, 1f);
 				float sc = size * Fx.Rand(0.5f, 1.1f) / cell, spin = Fx.Rand(-9f, 9f), r0 = Fx.Rand(-3f, 3f), ph = Fx.Rand(0f, 6f);
-				float g = speed * 1.6f;
+				float g = speed * 0.25f, tumble = Fx.Rand(10f, 22f) * (Fx.Rand(0f, 1f) < 0.5f ? -1f : 1f);
 				Fx.Animate(sp, 0, life, t =>
 				{
 					float s = t * life;
-					float k = 1f - Mathf.Exp(-s * 5f);
-					sp.Position = v * k / 5f * 2.2f + new Vector2(0f, g * s * s * 0.5f);
+					float k = 1f - Mathf.Exp(-s * 7f);
+					// 往外迸、很快被空气拖住（不直直往下掉），边飞边翻（横向缩放 = 绕竖轴翻转），越来越小、化成一点星光消失
+					sp.Position = v * k / 7f * 2.4f + new Vector2(0f, g * s * s * 0.5f);
 					sp.Rotation = r0 + spin * k;
-					sp.Scale = Vector2.One * sc * Mathf.Lerp(0.5f, 1f, Mathf.Min(1f, t * 8f));
-					m.SetShaderParameter("opacity", Mathf.Min(1f, t * 10f) * (1f - Ease5.Seg(t, 0.6f, 0.4f)));
-					m.SetShaderParameter("glint", Mathf.Pow(Mathf.Max(0f, Mathf.Sin(s * 14f + ph)), 10f));
+					float shrink = 1f - Fx.InCubic(Ease5.Seg(t, 0.35f, 0.65f));
+					sp.Scale = new Vector2(Mathf.Cos(s * tumble + ph), 1f) * sc * Mathf.Lerp(0.5f, 1f, Mathf.Min(1f, t * 8f)) * shrink;
+					m.SetShaderParameter("opacity", Mathf.Min(1f, t * 10f) * (1f - Ease5.Seg(t, 0.75f, 0.25f)));
+					m.SetShaderParameter("glint", Mathf.Pow(Mathf.Abs(Mathf.Cos(s * tumble + ph)), 16f) + Fx.InCubic(Ease5.Seg(t, 0.4f, 0.5f)) * 0.8f);
 				});
+				if (i % 3 == 0)
+				{
+					Vector2 end = at + v / 7f * 2.4f * 0.92f;
+					Glow.Glint(layer, end, Fx.Rand(0.3f, 0.5f), life * Fx.Rand(0.55f, 0.8f));
+				}
 			}
 		});
 	}
@@ -206,7 +213,8 @@ public static partial class SkillRedo5
 			HitStop.Request(0.03);
 			Glow.Flash(front, at, Hot, h * 0.45f, 0.1f);
 			Glow.Glint(front, at + new Vector2(0f, -h * 0.05f), 1f);
-			Glass(front, at, 22, h * 0.2f, new Vector2(f, -0.2f), 300f, h * 2.2f, 0.8f);
+			Glass(front, at, 18, h * 0.15f, new Vector2(f, -0.2f), 360f, h * 1.8f, 0.6f);
+			Motes(front, at, new Vector2(h * 0.25f, h * 0.2f), h, 8, 0.15f, 0.5f, 0.25f);
 			Glow.Ripple(front, at, h * 1.6f, 0.45f, 0.035f);
 		});
 	}
@@ -332,7 +340,7 @@ public static partial class SkillRedo5
 		Glow.Flash(back, mid, new Color(1f, 0.1f, 0.18f), h * 1.4f, 0.4f, beat - 0.2f);
 
 		// 身后的荆棘丛：边转边从中心放大刺出，停一下溶掉
-		Paint.Stroke? burst = Bloom(back, "thorn_burst", hub, 0f, h * 1.6f, Lut5.Blood, beat, 0.12f, 0.35f, 0.3f, 0.3f, 1.4f, f);
+		Paint.Stroke? burst = Bloom(back, "thorn_burst", hub, 0f, h * 1.3f, Lut5.Blood, beat, 0.1f, 0.2f, 0.26f, 0.3f, 1.3f, f);
 		if (burst != null)
 		{
 			float r0 = Fx.Rand(-0.2f, 0.2f);
@@ -340,14 +348,14 @@ public static partial class SkillRedo5
 		}
 		string[] vines = { "thorn_vine_01", "thorn_vine_02", "thorn_vine_03" };
 		// 第一圈：6 根，绕着他顺时针（按朝向）旋开
-		for (int i = 0; i < 6; i++)
+		for (int i = 0; i < 5; i++)
 		{
-			float a1 = -Mathf.Pi * 0.5f + Mathf.Tau * i / 6f + 0.2f;
+			float a1 = -Mathf.Pi * 0.5f + Mathf.Tau * i / 5f + 0.2f;
 			float a0 = a1 + f * 1.4f;   // 从「后面」甩过来
 			Vine(back, vines[i % 3], hub, a0, a1, h * (i % 2 == 0 ? 1.05f : 0.82f), 0.5f, beat - 0.02f + 0.015f * i, 0.16f, 0.38f, 0.32f, -f * 0.5f, i % 2 == 1);
 		}
 		// 第二圈：5 根短的，反方向旋开，夹在第一圈的空隙里
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < 0; i++)   // 用户：荆棘太多 → 去掉第二圈
 		{
 			float a1 = -Mathf.Pi * 0.5f + Mathf.Tau * (i + 0.5f) / 5f;
 			float a0 = a1 - f * 1.2f;
@@ -387,7 +395,7 @@ public static partial class SkillRedo5
 			bool left = i % 2 == 0;
 			S("gx_tick", 0.1f + 0.1f * k, b);
 			// 落在身上的一点（胸口到大腿之间，左右错开）
-			Vector2 at = c.Feet + new Vector2((left ? -1f : 1f) * f * h * Fx.Rand(0.04f, 0.14f), -h * Fx.Rand(0.35f, 0.85f));
+			Vector2 at = c.Feet + new Vector2(f * h * Fx.Rand(-0.9f, 1.3f), -h * Fx.Rand(0.2f, 1.35f));   // 用户：不用紧贴人物 → 散在他周围的空中
 			float ang = (left ? 0f : Mathf.Pi) + Fx.Rand(-0.45f, 0.45f);
 			Vector2 dir = Vector2.FromAngle(ang);
 			Vector2 a0 = at - dir * h * 0.4f, b0 = at + dir * h * 0.4f;
@@ -397,7 +405,6 @@ public static partial class SkillRedo5
 				Glow.Flash(back, at, new Color(1f, 0.12f, 0.2f), h * (0.9f + 0.8f * k), 0.2f);
 				Flare(front, at, h * (0.5f + 0.4f * k), h * (0.012f + 0.01f * k), new Color(1f, 0.92f, 0.92f), 0.1f, ang);
 				// 他整个人跟着节拍闪一下（越往后越亮）
-				if (c.SelfTint is { } tint) Fx.Animate(front, 0, 0.1, t => tint(Colors.White.Lerp(new Color(1.6f + 0.6f * k, 1.1f, 1.15f), 1f - t)));
 				Glow.Sparks(front, at, 6 + (int)(8 * k), 80f * u, 380f * u, 0.3f, new[] { Hot, Pink, Deep }, 0f, 0.006f * u, 0.018f * u, dir, 70f);
 			});
 			Streak(front, t => a0.Lerp(b0, t), b, 0.12f, h * (0.5f + 0.3f * k), h * (0.06f + 0.05f * k), i % 3 == 1 ? new Color(1f, 0.9f, 0.9f) : Red, 1.35f);
@@ -406,8 +413,8 @@ public static partial class SkillRedo5
 		for (int j = 0; j < 9; j++)
 		{
 			float d = 0.86f + 0.025f * j;
-			float y = -h * Fx.Rand(0.3f, 1.0f), dirX = j % 2 == 0 ? 1f : -1f;
-			Vector2 a0 = c.Feet + new Vector2(-dirX * h * 0.45f, y + Fx.Rand(-0.05f, 0.05f) * h), b0 = c.Feet + new Vector2(dirX * h * 0.45f, y - Fx.Rand(-0.05f, 0.05f) * h);
+			float y = -h * Fx.Rand(0.15f, 1.4f), dirX = j % 2 == 0 ? 1f : -1f, cx = f * h * Fx.Rand(-0.5f, 0.9f);
+			Vector2 a0 = c.Feet + new Vector2(cx - dirX * h * 0.5f, y + Fx.Rand(-0.08f, 0.08f) * h), b0 = c.Feet + new Vector2(cx + dirX * h * 0.5f, y - Fx.Rand(-0.08f, 0.08f) * h);
 			Streak(j % 2 == 0 ? front : back, t => a0.Lerp(b0, t), d, 0.1f, h * 0.55f, h * 0.07f, j % 3 == 0 ? new Color(1f, 0.92f, 0.92f) : Red, 1.4f);
 		}
 		S("gx_slice", 0.22f, climax);
@@ -441,8 +448,8 @@ public static partial class SkillRedo5
 
 	/// <summary>
 	/// 触媒约 1.4s「连锁反应」：他手边先亮起一个暗红光点；它「啪」地炸开、分成两点沿短弧飞出去，两点各自再炸成两点……一代比一代快、
-	/// 一代比一代亮（1 → 2 → 4 → 8），每次炸开带一闪而过的毒纹分叉；八个点同时引爆一下，然后全部被吸回手心，手心最后重重一跳
-	/// （闪光、毒纹、空间一扭、轻震），光点往上飘。意思是反应被催化、放大。
+	/// 一代比一代亮（1 → 2 → 4 → 8），每次炸开一点星光（用户：不要裂痕状的毒纹）；八个点同时引爆一下，然后全部被吸回手心，手心最后重重一跳
+	/// （闪光、碎光、空间一扭、轻震），光点往上飘。意思是反应被催化、放大。
 	/// </summary>
 	public static void Accelerant(SkillCtx c)
 	{
@@ -463,10 +470,10 @@ public static partial class SkillRedo5
 			Fx.After(front, when, () =>
 			{
 				Glow.Flash(front, p, gen == 3 ? Hot : new Color(1f, 0.7f, 0.72f), h * (0.2f + 0.08f * k), 0.08f);
-				Glow.Flash(back, p, crimson, h * (0.6f + 0.2f * k), 0.22f);
+				Glow.Flash(back, p, crimson, h * (0.28f + 0.12f * k), 0.16f);
 				Glow.Sparks(front, p, 5 + gen * 2, 60f * u, 300f * u, 0.3f, new[] { Pink, Deep, new Color(0.15f, 0f, 0.04f) }, 0f, 0.006f * u, 0.016f * u, Vector2.Up, 180f);
 			});
-			if (gen >= 1) Bloom(back, gen % 2 == 0 ? "venom_veins_01" : "venom_veins_02", p, Fx.Rand(0f, Mathf.Tau), h * (0.3f + 0.12f * gen), Lut5.Blood, when, 0.04f, 0.02f, 0.16f, 0.5f, 1.5f);
+			if (gen >= 1) Glow.Glint(front, p, 0.3f + 0.12f * gen, when);
 		}
 
 		// 第 0 代：手边亮起
@@ -510,7 +517,7 @@ public static partial class SkillRedo5
 			foreach (Vector2 p in finals)
 			{
 				Glow.Flash(front, p, Hot, h * 0.16f, 0.08f);
-				Glow.Flash(back, p, crimson, h * 0.5f, 0.22f);
+				Glow.Flash(back, p, crimson, h * 0.3f, 0.16f);
 			}
 		});
 		foreach (Vector2 p in finals)
@@ -528,7 +535,7 @@ public static partial class SkillRedo5
 			Glow.Flash(back, palm, crimson, h * 1.8f, 0.38f);
 			Glow.Sparks(front, palm, 22, 140f * u, 600f * u, 0.5f, new[] { Hot, Pink, Deep }, 40f * u, 0.008f * u, 0.026f * u, Vector2.Up, 200f);
 		});
-		Bloom(back, "venom_veins_01", palm, Fx.Rand(-0.6f, 0.6f), h * 1.3f, Lut5.Blood, finale, 0.05f, 0.05f, 0.26f, 0.5f, 1.7f, f);
+		Fx.After(front, finale, () => Phantom.Shards(front, palm, 14, 300f * u, 800f * u, Vector2.Up, 180f, 0.3f, 0f, 22f * u));
 		Embed(front, palm, h, 1.1f, 0f, 24, finale);
 		Motes(front, palm, new Vector2(h * 0.15f, h * 0.12f), h, 8, finale + 0.08f, 0.8f);
 	}
