@@ -866,7 +866,7 @@ public partial class Preview : Node2D
 			p.At(0.6, () => { Sfx.Take("gx_card_stack", 0.1f); for (int i = 0; i < bodies.Count; i++) RetainFx.Play(bodies[i], 0.07f * i); });
 			p.At(2.2, () => { Sfx.Take("gx_card_stack", 0.1f); for (int i = 0; i < bodies.Count; i++) RetainFx.Play(bodies[i], 0.07f * i); });
 		},
-		["plans"] = p => RunCards(p, null, new (string, string, double, double)[] { ("WellLaidPlans", "cast_glove", 0.25, 1.8), ("WellLaidPlans", "cast_glove", 0.25, 1.8) }),
+		["plans"] = p => RunCards(p, null, new (string, string, double, double)[] { ("WellLaidPlans", "cast_glove", 0.25, 2.2), ("WellLaidPlans", "cast_glove", 0.25, 2.2) }),
 		["fumes"] = p => RunCards(p, null, new (string, string, double, double)[] { ("NoxiousFumes", "cast", 0.4, 7.5) }),
 		["redo"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Acrobatics", "cast_glove", 0.25, 1.7), ("Acrobatics", "cast_glove", 0.25, 1.7) }),
 		["redo3"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Survivor", "cast_guard", 0.08, 1.2), ("CalculatedGamble", "cast_glove", 0.25, 1.9), ("Tactician", "cast_glove", 0.25, 1.2), ("Adrenaline", "cast_glove", 0.25, 1.4), ("ShadowStep", "cast_glove", 0.25, 1.4) }),

@@ -22,7 +22,7 @@ public static partial class SkillRedo5
 		cards["Haze"] = HazeFx.Play;   // 迷雾（2026-11-13 重做）
 		cards["ShadowStep"] = ShadowStepV2;   // 暗影步（2026-11-14 重做：赤影换步）
 		cards["WraithForm"] = WraithVeil.Start;   // 幽魂形态（2026-11-14 第八版：幻影之身，持续到无实体结束，见 WraithVeil.cs / WraithPlay.cs）
-		cards["WellLaidPlans"] = WellLaidPlans;   // 计划妥当（2026-11-14 重做：作战图）
+		cards["WellLaidPlans"] = WellLaidPlansV4;   // 计划妥当（2026-11-15 第四版：牌阵，SkillRedo8.cs）
 		cards["Adrenaline"] = Adrenaline;   // 肾上腺素（2026-11-13 重做：心跳涌动）
 	}
 
