@@ -369,276 +369,167 @@ public static partial class SkillRedo5
 	// ═══════════════════════════ 速行者（罕见能力） ═══════════════════════════
 
 	/// <summary>
-	/// 速行者约 1.5s「牌即子弹」：他肩后浮现一个左轮弹巢（ammo_cylinder，转着、放大着现身）；六张预告信从指间一张接一张弹出，
-	/// 划着弧线飞向弹巢、边飞边缩，「咔」地塞进正上方的弹膛变成一发子弹（弹膛一亮），弹巢随即转一格；六发装满后弹巢飞快地转两圈、
-	/// 「锵」地锁死（闪光、星光、空间一扭），然后淡进他身后。意思是：之后每抽一张牌，就是一发。
+	/// 速行者约 1.4s「节奏加速」：不用道具，只靠节奏 —— 他身上一下一下爆开红白闪光，每下一道贴着身体划过的短疾光；
+	/// 间隔越来越短（嗒……嗒…嗒.嗒嗒嗒），最后几下密到连成一片，疾光贴着他身上来回刷；最后一下最亮（十字光、空间一扭、轻震），
+	/// 余下的电光在他手边噼啪闪几下才散。意思是「快」，而且每一下都是一击。
 	/// </summary>
 	public static void Speedster(SkillCtx c)
 	{
-		float h = c.Tall, u = c.Unit, f = c.Face, w = SkillRedo.CardW(c);
+		float h = c.Tall, u = c.Unit, f = c.Face;
 		Control back = c.Back ?? c.Front, front = c.Front;
-		const int n = 6;
-		const float appear = 0.2f, first = 0.38f, gap = 0.1f, spinDur = 0.26f, fadeDur = 0.3f;
-		float lockAt = first + gap * (n - 1) + 0.1f, endAt = lockAt + spinDur;
-		float size = h * 0.62f, step = Mathf.Tau / n * f;
-		Vector2 at = c.Feet + new Vector2(-f * h * 0.42f, -h * 1.08f);
-		Vector2 mid = c.Feet + new Vector2(0f, -h * 0.6f);
-		Dim(back, mid, new Vector2(h * 3.2f, h * 2.8f), endAt + fadeDur + 0.2f, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.12f)) * (1f - Ease5.Seg(s, 0.8f, 0.2f)) * 0.65f);
-		S("gx_whoosh", 0.14f, 0.02f);
-		S("gx_fan_open", 0.14f, first - 0.2f);
-		Node2D root = Fx.Root(back, at, "P5Cylinder", endAt + fadeDur + 0.1);
-		Sprite2D halo = new() { Texture = Glow.Soft, Material = Fx.Additive, Modulate = new Color(1f, 0.15f, 0.22f, 0f), Scale = Vector2.One * size / 64f * 1.5f };
-		root.AddChild(halo);
-		Node2D wheel = new();
-		root.AddChild(wheel);
-		if (Fx.Tex("ammo_cylinder") is Texture2D cyl) wheel.AddChild(new Sprite2D { Texture = cyl, Scale = Vector2.One * size / cyl.GetWidth() });
-		Texture2D? roundTex = Fx.Tex("ammo_round");
-		float chamberR = size * 0.275f, roundD = size * 0.2f;
-		var rounds = new Sprite2D?[n];
-		for (int i = 0; i < n; i++)
+		float[] beats = { 0.08f, 0.36f, 0.56f, 0.7f, 0.8f, 0.87f, 0.92f, 0.96f, 0.99f, 1.02f };
+		const float climax = 1.08f;
+		Vector2 mid = c.Feet + new Vector2(0f, -h * 0.55f);
+		Dim(back, mid, new Vector2(h * 3f, h * 2.6f), climax + 0.5f, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.15f)) * (1f - Ease5.Seg(s, 0.8f, 0.2f)) * 0.7f);
+		for (int i = 0; i < beats.Length; i++)
 		{
-			// 第 i 发装填时弹巢已经转了 i 格，所以它的弹膛在本地 -i 格的位置（装的时候正好在正上方）
-			Node2D slot = new() { Position = Vector2.Up.Rotated(-step * i) * chamberR };
-			wheel.AddChild(slot);
-			if (roundTex != null)
+			float b = beats[i], k = i / (float)(beats.Length - 1);   // 0 → 1：越往后越亮、越密
+			bool left = i % 2 == 0;
+			S("gx_tick", 0.1f + 0.1f * k, b);
+			// 落在身上的一点（胸口到大腿之间，左右错开）
+			Vector2 at = c.Feet + new Vector2((left ? -1f : 1f) * f * h * Fx.Rand(0.04f, 0.14f), -h * Fx.Rand(0.35f, 0.85f));
+			float ang = (left ? 0f : Mathf.Pi) + Fx.Rand(-0.45f, 0.45f);
+			Vector2 dir = Vector2.FromAngle(ang);
+			Vector2 a0 = at - dir * h * 0.4f, b0 = at + dir * h * 0.4f;
+			Fx.After(front, b, () =>
 			{
-				rounds[i] = new Sprite2D { Texture = roundTex, Scale = Vector2.One * roundD / (roundTex.GetWidth() * 0.64f), Visible = false };
-				slot.AddChild(rounds[i]);
-			}
-		}
-		float turn = 0f;
-		// 现身：转着放大、淡入；装填时每格「咔」地转一下（OutBack）；锁死前飞快转两圈；最后淡出
-		Fx.Animate(root, 0, endAt + fadeDur, t =>
-		{
-			float s = t * (endAt + fadeDur);
-			float a = Fx.OutCubic(Mathf.Min(1f, s / appear));
-			float o = 1f - Ease5.Seg(s, endAt + 0.05f, fadeDur - 0.05f);
-			root.Modulate = new Color(1f, 1f, 1f, a * o);
-			root.Scale = Vector2.One * (Mathf.Lerp(0.55f, 1f, a) * (1f + 0.12f * Ease5.Seg(s, endAt, fadeDur)));
-			float intro = -f * 1.6f * (1f - a);
-			float loaded = 0f;
-			for (int i = 0; i < n; i++)
-			{
-				float l = first + gap * i;
-				loaded += Ease5.OutBack(Mathf.Clamp((s - l - 0.01f) / 0.07f, 0f, 1f));
-			}
-			float spin = Fx.OutCubic(Ease5.Seg(s, lockAt, spinDur)) * Mathf.Tau * 2f * f;
-			wheel.Rotation = intro + step * loaded + spin + turn;
-			halo.Modulate = new Color(1f, 0.15f, 0.22f, (0.25f * a + 0.6f * Mathf.Exp(-Mathf.Pow((s - endAt) / 0.06f, 2f))) * o);
-		});
-		Fx.After(back, appear * 0.6f, () => Glow.Glint(back, at + new Vector2(size * 0.3f, -size * 0.3f), 0.6f));
-		Vector2 top = at + Vector2.Up * chamberR;
-		for (int i = 0; i < n; i++)
-		{
-			int k = i;
-			float l = first + gap * k, fly = 0.22f, d = l - fly;
-			Vector2 from = c.Hand + new Vector2(f * h * 0.04f, -h * 0.04f);
-			Vector2 ctrl = from.Lerp(top, 0.5f) + new Vector2(f * h * (0.35f - 0.05f * k), -h * (0.45f + 0.04f * k));
-			Vector2 Path(float t) => from.Lerp(ctrl, t).Lerp(ctrl.Lerp(top, t), t);
-			Control layer = k % 2 == 0 ? front : back;
-			Phantom.P5Card card = Phantom.Card(layer, from, w * 1.25f, l + 0.05, 0f);
-			card.Root.Visible = false;
-			Fx.Animate(card.Root, d, fly, t =>
-			{
-				card.Root.Visible = true;
-				float e = Ease5.OutQuint(t) * 0.35f + Fx.InCubic(t) * 0.65f;
-				Vector2 p = Path(e), q = Path(Mathf.Min(1f, e + 0.03f));
-				card.Place(p, (q - p).Angle() + Mathf.Pi * 0.5f, e * Mathf.Tau * 2.5f, Mathf.Lerp(1f, roundD / (w * 1.25f) * 1.2f, Fx.InCubic(t)));
-				card.Set("glow", Mathf.Max(0f, e - 0.6f) * 2.2f);
+				Glow.Flash(front, at, Hot, h * (0.3f + 0.25f * k), 0.08f);
+				Glow.Flash(back, at, new Color(1f, 0.12f, 0.2f), h * (0.9f + 0.8f * k), 0.2f);
+				Flare(front, at, h * (0.5f + 0.4f * k), h * (0.012f + 0.01f * k), new Color(1f, 0.92f, 0.92f), 0.1f, ang);
+				// 他整个人跟着节拍闪一下（越往后越亮）
+				if (c.SelfTint is { } tint) Fx.Animate(front, 0, 0.1, t => tint(Colors.White.Lerp(new Color(1.6f + 0.6f * k, 1.1f, 1.15f), 1f - t)));
+				Glow.Sparks(front, at, 6 + (int)(8 * k), 80f * u, 380f * u, 0.3f, new[] { Hot, Pink, Deep }, 0f, 0.006f * u, 0.018f * u, dir, 70f);
 			});
-			Streak(layer, Path, d, fly, h * 0.55f, h * 0.045f, k % 3 == 1 ? new Color(1f, 0.9f, 0.9f) : Red, 1.25f);
-			S("gx_tick", 0.16f, l);
-			Fx.After(back, l, () =>
-			{
-				card.Root.Visible = false;
-				if (rounds[k] is Sprite2D r)
-				{
-					r.Visible = true;
-					Fx.Animate(r, 0, 0.12, t => r.Modulate = new Color(1f + 2f * (1f - t), 1f + 1.6f * (1f - t), 1f + 1.6f * (1f - t), 1f));
-				}
-				Glow.Flash(back, top, Hot, roundD * 2.2f, 0.1f);
-				Glow.Sparks(back, top, 8, 60f * u, 260f * u, 0.3f, new[] { Hot, Pink, Deep }, 0f, 0.006f * u, 0.016f * u, Vector2.Up, 120f);
-			});
+			Streak(front, t => a0.Lerp(b0, t), b, 0.12f, h * (0.5f + 0.3f * k), h * (0.06f + 0.05f * k), i % 3 == 1 ? new Color(1f, 0.9f, 0.9f) : Red, 1.35f);
 		}
-		S("gx_whoosh", 0.16f, lockAt);
-		S("gx_tock", 0.22f, endAt);
-		S("gx_ping", 0.14f, endAt + 0.02f);
-		Fx.After(back, endAt, () =>
+		// 连成一片：最后 0.2s 疾光贴着他身上来回刷（前后两层）
+		for (int j = 0; j < 9; j++)
+		{
+			float d = 0.86f + 0.025f * j;
+			float y = -h * Fx.Rand(0.3f, 1.0f), dirX = j % 2 == 0 ? 1f : -1f;
+			Vector2 a0 = c.Feet + new Vector2(-dirX * h * 0.45f, y + Fx.Rand(-0.05f, 0.05f) * h), b0 = c.Feet + new Vector2(dirX * h * 0.45f, y - Fx.Rand(-0.05f, 0.05f) * h);
+			Streak(j % 2 == 0 ? front : back, t => a0.Lerp(b0, t), d, 0.1f, h * 0.55f, h * 0.07f, j % 3 == 0 ? new Color(1f, 0.92f, 0.92f) : Red, 1.4f);
+		}
+		S("gx_slice", 0.22f, climax);
+		S("gx_pop", 0.16f, climax);
+		Fx.After(front, climax, () =>
 		{
 			HitStop.Request(0.04);
 			Fx.Shake(1);
-			Glow.Flash(back, at, Hot, size * 0.8f, 0.12f);
-			Glow.Flash(back, at, new Color(1f, 0.12f, 0.2f), size * 2.6f, 0.35f);
-			Glow.Glint(front, at + new Vector2(size * 0.32f, -size * 0.34f), 1.1f);
-			Glow.Ripple(back, at, size * 2.2f, 0.4f, 0.035f);
-			Vanilla.Burst(back, Vanilla.Specks, at, 0f, 1f, Lut5.Blood, amount: 24);
+			Glow.Flash(front, c.Chest, Hot, h * 0.5f, 0.1f);
+			Glow.Flash(back, mid, new Color(1f, 0.12f, 0.2f), h * 2.2f, 0.4f);
+			Cross(back, c.Chest, h * 1.0f);
+			Glow.Sparks(front, c.Chest, 26, 160f * u, 700f * u, 0.55f, new[] { Hot, Pink, Deep }, -30f * u, 0.008f * u, 0.028f * u, Vector2.Up, 180f);
 		});
-		Motes(back, at, new Vector2(size * 0.35f, size * 0.25f), h, 10, endAt + 0.05f, 0.7f, 0.35f);
+		Embed(front, c.Chest, h, 1.2f, 0f, 28, climax);
+		// 余下的电光：手边噼啪闪几下
+		for (int j = 0; j < 7; j++)
+		{
+			float d = climax + 0.08f + 0.06f * j + Fx.Rand(0f, 0.03f);
+			Vector2 p = c.Hand + new Vector2(Fx.Rand(-0.12f, 0.12f) * h, Fx.Rand(-0.15f, 0.08f) * h);
+			Vector2 q = p + Vector2.FromAngle(Fx.Rand(0f, Mathf.Tau)) * h * 0.1f;
+			Fx.After(front, d, () =>
+			{
+				Glow.Glint(front, p, 0.35f);
+				Glow.Sparks(front, p, 4, 40f * u, 180f * u, 0.22f, new[] { Hot, Pink }, 0f, 0.005f * u, 0.012f * u, Vector2.Up, 180f);
+			});
+			Streak(front, t => p.Lerp(q, t), d, 0.06f, h * 0.1f, h * 0.012f, new Color(1f, 0.9f, 0.9f), 1.5f);
+		}
 	}
 
 	// ═══════════════════════════ 触媒（罕见能力） ═══════════════════════════
 
-	/// <summary>小毒瓶：圆底长颈的玻璃瓶（折射背后的画面、亮边、一道高光），里面黑红毒液会晃（slosh）、冒泡（heat 越高泡越多越快、越亮），level = 液面高度。</summary>
-	private static Shader? _vial;
-	private static Shader VialShader => _vial ??= new Shader { Code = @"
-shader_type canvas_item;
-uniform sampler2D screen_tex : hint_screen_texture, filter_linear_mipmap;
-uniform float clock = 0.0;
-uniform float heat = 0.0;
-uniform float level = 0.15;
-uniform float slosh = 0.0;
-uniform float tilt = 0.0;
-uniform float alpha = 1.0;
-uniform float aspect = 0.7;
-float h21(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
-float sdBox(vec2 p, vec2 b) { vec2 d = abs(p) - b; return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0); }
-float smin(float a, float b, float k) { float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0); return mix(b, a, h) - k * h * (1.0 - h); }
-float shape(vec2 p) {
-	float body = length(p - vec2(0.0, 0.38)) - 0.55;
-	float neck = sdBox(p - vec2(0.0, -0.42), vec2(0.15, 0.36));
-	float lip = sdBox(p - vec2(0.0, -0.8), vec2(0.21, 0.05)) - 0.02;
-	return min(smin(body, neck, 0.12), lip);
-}
-void fragment() {
-	vec2 p = (UV - 0.5) * 2.0;
-	p.x *= aspect;
-	float d = shape(p);
-	float aa = fwidth(d) * 1.2;
-	float inside = 1.0 - smoothstep(-aa, aa, d);
-	if (inside <= 0.0) discard;
-	// 液面：level 是相对瓶身（-1 顶 → 1 底）的高度；晃动 = 斜一下 + 波浪
-	float surf = level + p.x * tilt + sin(p.x * 7.0 + clock * 9.0) * 0.04 * slosh + sin(p.x * 13.0 - clock * 14.0) * 0.015 * (slosh + heat);
-	float liquid = smoothstep(surf - 0.01, surf + 0.01, p.y) * step(d, -0.035);
-	// 折射的背景（玻璃身）
-	vec2 off = vec2(-p.x, p.y) * 0.012;
-	vec3 bg = textureLod(screen_tex, SCREEN_UV + off, 0.0).rgb * vec3(0.92, 0.9, 0.95);
-	vec3 col = bg;
-	// 毒液：深红 → 绯红，越热越亮；底部更深
-	float depth = clamp((p.y - surf) / 0.9, 0.0, 1.0);
-	vec3 deep = vec3(0.16, 0.0, 0.03), hot = vec3(0.95, 0.06, 0.16);
-	vec3 liq = mix(hot * 0.8, deep, 0.35 + depth * 0.6) * (0.8 + heat * 0.35);
-	// 气泡：一格一格往上冒
-	vec2 q = vec2(p.x * 6.0, p.y * 6.0 + clock * (2.0 + heat * 7.0));
-	vec2 cell = floor(q), fr = fract(q) - 0.5;
-	float rnd = h21(cell);
-	float r = mix(0.06, 0.2, h21(cell + 7.0)) * step(1.0 - heat * 0.85 - 0.08, rnd);
-	float bub = 1.0 - smoothstep(r - 0.04, r, length(fr - vec2(rnd - 0.5, 0.0) * 0.5));
-	float ring = bub * smoothstep(r * 0.4, r, length(fr - vec2(rnd - 0.5, 0.0) * 0.5));
-	liq += vec3(1.0, 0.75, 0.75) * ring * (0.5 + 0.6 * heat) + vec3(1.0, 0.3, 0.35) * bub * 0.2;
-	// 液面一道亮线
-	liq += vec3(1.0, 0.6, 0.6) * exp(-pow((p.y - surf) / 0.025, 2.0)) * (0.5 + heat);
-	col = mix(col, liq, liquid * 0.92);
-	// 玻璃：亮边（内外两道）+ 左侧一道竖高光 + 一点红色反光
-	float rim = exp(-pow((d + 0.02) / 0.018, 2.0));
-	col += vec3(1.0, 0.95, 0.95) * rim * 0.9;
-	float spec = exp(-pow((p.x + 0.3 + p.y * 0.15) / 0.035, 2.0)) * smoothstep(-0.2, 0.3, p.y) * smoothstep(0.85, 0.5, p.y);
-	col += vec3(1.0) * spec * 0.7;
-	col += vec3(1.0, 0.1, 0.18) * exp(-pow((d + 0.05) / 0.03, 2.0)) * 0.25 * (0.5 + heat);
-	COLOR = vec4(col, inside * alpha);
-}" };
-
 	/// <summary>
-	/// 触媒约 1.3s「毒瓶沸腾」：他手里冒出一个小毒瓶（转着放大、星光一闪）；他晃两下 —— 瓶里的黑红毒液跟着晃、开始冒泡，越来越热、越来越亮，
-	/// 背后的红光一下比一下大；第三下毒液「噗」地涌出瓶口：毒液往上喷、溢出来顺着瓶身往下淌、空间一扭、毒纹在瓶后一闪、轻震；然后瓶子淡掉，光点往上飘。
-	/// 意思是：毒被催化了，更烈（额外触发）。
+	/// 触媒约 1.4s「连锁反应」：他手边先亮起一个暗红光点；它「啪」地炸开、分成两点沿短弧飞出去，两点各自再炸成两点……一代比一代快、
+	/// 一代比一代亮（1 → 2 → 4 → 8），每次炸开带一闪而过的毒纹分叉；八个点同时引爆一下，然后全部被吸回手心，手心最后重重一跳
+	/// （闪光、毒纹、空间一扭、轻震），光点往上飘。意思是反应被催化、放大。
 	/// </summary>
 	public static void Accelerant(SkillCtx c)
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face;
 		Control back = c.Back ?? c.Front, front = c.Front;
-		const float appear = 0.16f, shake1 = 0.24f, shake2 = 0.46f, boil = 0.7f, fadeAt = 1.05f, end = 1.3f;
-		Vector2 at = c.Hand + new Vector2(f * h * 0.05f, -h * 0.17f), mid = c.Feet + new Vector2(0f, -h * 0.55f);
-		float vw = h * 0.3f, vh = h * 0.42f;
-		Dim(back, mid, new Vector2(h * 3f, h * 2.4f), end + 0.1f, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.15f)) * (1f - Ease5.Seg(s, 0.75f, 0.25f)) * 0.7f);
-		S("gx_card_slide", 0.12f, 0.02f);
-		S("gx_whoosh", 0.12f, shake1);
-		S("gx_whoosh", 0.14f, shake2);
-		S("gx_pop", 0.24f, boil);
-		front.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport, Name = "P5VialCopy" });
-		Node2D root = Fx.Root(front, at, "P5Vial", end + 0.05);
-		ShaderMaterial m = new() { Shader = VialShader };
-		m.SetShaderParameter("aspect", vw / vh);
-		ColorRect quad = new() { Size = new Vector2(vw, vh), Position = new Vector2(-vw * 0.5f, -vh * 0.62f), Material = m, MouseFilter = Control.MouseFilterEnum.Ignore };
-		root.AddChild(quad);
-		// 瓶后一团会跟着热度变大的红光
-		Sprite2D halo = new() { Texture = Glow.Soft, Material = Fx.Additive, Modulate = new Color(0.9f, 0.05f, 0.15f, 0f) };
-		back.AddChild(halo);
-		halo.GlobalPosition = at;
-		Fx.FreeAfter(halo, end + 0.05);
-		float Bump(float s, float c0, float wd) => Mathf.Exp(-Mathf.Pow((s - c0) / wd, 2f));
-		Fx.Animate(root, 0, end, t =>
+		Vector2 palm = c.Hand + new Vector2(f * h * 0.08f, -h * 0.06f), mid = c.Feet + new Vector2(0f, -h * 0.55f);
+		Vector2 center = palm + new Vector2(f * h * 0.15f, -h * 0.1f);   // 反应往手前上方扩散
+		float[] gap = { 0.24f, 0.16f, 0.11f };                             // 每一代飞出去的时间（越来越快）
+		float[] dist = { 0.27f, 0.21f, 0.16f };
+		const float start = 0.14f;
+		float allAt = start + gap[0] + gap[1] + gap[2] + 0.04f, pullDur = 0.14f, finale = allAt + 0.08f + pullDur;
+		Dim(back, mid, new Vector2(h * 3.2f, h * 2.6f), finale + 0.45f, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.15f)) * (1f - Ease5.Seg(s, 0.8f, 0.2f)) * 0.7f);
+		Color crimson = new(0.85f, 0.03f, 0.14f);
+
+		void Pop(Vector2 p, int gen, float when)
 		{
-			float s = t * end;
-			float a = Fx.OutCubic(Mathf.Min(1f, s / appear)), o = 1f - Ease5.Seg(s, fadeAt, end - fadeAt);
-			// 晃：两下左右摆（每下来回），第三下（沸腾）往上一顶
-			float wob = Mathf.Sin(Mathf.Clamp((s - shake1) / 0.16f, 0f, 1f) * Mathf.Tau) * 0.38f + Mathf.Sin(Mathf.Clamp((s - shake2) / 0.16f, 0f, 1f) * Mathf.Tau) * 0.45f;
-			root.Rotation = f * (wob - 0.6f * (1f - a)) ;
-			float jolt = Bump(s, boil, 0.04f);
-			root.Scale = new Vector2(1f - 0.08f * jolt, 1f + 0.1f * jolt) * Mathf.Lerp(0.5f, 1f, a);
-			root.GlobalPosition = at + new Vector2(0f, -h * 0.04f * jolt);
-			float heat = Mathf.Clamp(Ease5.Seg(s, shake1, boil - shake1) + 0.25f * Ease5.Seg(s, 0f, shake1), 0f, 1f);
-			float slosh = Mathf.Min(1.4f, Mathf.Abs(wob) * 2.2f + heat * 0.6f);
-			m.SetShaderParameter("clock", s);
-			m.SetShaderParameter("heat", heat);
-			m.SetShaderParameter("slosh", slosh);
-			m.SetShaderParameter("tilt", -wob * 0.6f);
-			m.SetShaderParameter("level", Mathf.Lerp(0.05f, -0.75f, Fx.OutCubic(Ease5.Seg(s, boil - 0.06f, 0.1f))) + 0.6f * Ease5.Seg(s, boil + 0.1f, 0.25f));
-			m.SetShaderParameter("alpha", a * o);
-			float pulse = 0.25f + 0.5f * heat + 0.5f * Bump(s, shake1 + 0.08f, 0.06f) + 0.7f * Bump(s, shake2 + 0.08f, 0.06f) + 1.2f * Bump(s, boil, 0.08f);
-			halo.Modulate = new Color(0.9f, 0.05f, 0.15f, Mathf.Min(0.55f, pulse * 0.5f) * a * o);
-			halo.Scale = Vector2.One * h * (0.6f + 0.4f * heat + 0.6f * Bump(s, boil, 0.1f)) / 64f;
-		});
-		Fx.After(front, appear * 0.7f, () => Glow.Glint(front, at + new Vector2(-f * vw * 0.25f, -vh * 0.35f), 0.6f));
-		foreach (float sh in new[] { shake1, shake2 })
-			Fx.After(front, sh + 0.08f, () => Glow.Sparks(front, at, 8, 60f * u, 240f * u, 0.35f, new[] { Pink, Deep }, 60f * u, 0.006f * u, 0.016f * u, Vector2.Up, 160f));
-		Vector2 mouth = at + new Vector2(0f, -vh * 0.62f + vh * 0.06f);
-		Fx.After(front, boil, () =>
-		{
-			HitStop.Request(0.035);
-			Fx.Shake(1);
-			Glow.Flash(front, mouth, Hot, h * 0.35f, 0.1f);
-			Glow.Flash(back, at, new Color(0.85f, 0.03f, 0.14f), h * 1.8f, 0.35f);
-			Glow.Ripple(front, at, h * 1.4f, 0.4f, 0.035f);
-			Vanilla.Burst(front, Vanilla.Specks, mouth, -Mathf.Pi * 0.5f, 0.9f, Lut5.Blood, amount: 20);
-			// 往上喷
-			for (int j = 0; j < 9; j++)
+			float k = gen / 3f;
+			Fx.After(front, when, () =>
 			{
-				Vector2 vel = Vector2.FromAngle(-Mathf.Pi * 0.5f + Fx.Rand(-0.6f, 0.6f)) * h * Fx.Rand(1.0f, 2.0f);
-				float life = Fx.Rand(0.4f, 0.6f), sz = h * Fx.Rand(0.05f, 0.1f);
-				int cell = (int)Fx.Rand(0f, 15.99f);
-				Node2D r = Fx.Root(front, mouth, "P5Spurt", life + 0.05);
-				if (Cell(r, "venom_drops_sheet", cell, sz, false) is not Sprite2D sp) continue;
-				Fx.Animate(r, 0, life, t =>
+				Glow.Flash(front, p, gen == 3 ? Hot : new Color(1f, 0.7f, 0.72f), h * (0.2f + 0.08f * k), 0.08f);
+				Glow.Flash(back, p, crimson, h * (0.6f + 0.2f * k), 0.22f);
+				Glow.Sparks(front, p, 5 + gen * 2, 60f * u, 300f * u, 0.3f, new[] { Pink, Deep, new Color(0.15f, 0f, 0.04f) }, 0f, 0.006f * u, 0.016f * u, Vector2.Up, 180f);
+			});
+			if (gen >= 1) Bloom(back, gen % 2 == 0 ? "venom_veins_01" : "venom_veins_02", p, Fx.Rand(0f, Mathf.Tau), h * (0.3f + 0.12f * gen), Lut5.Blood, when, 0.04f, 0.02f, 0.16f, 0.5f, 1.5f);
+		}
+
+		// 第 0 代：手边亮起
+		Sprite2D seed = new() { Texture = Glow.Soft, Material = Fx.Additive, Modulate = new Color(crimson, 0f) };
+		front.AddChild(seed);
+		seed.GlobalPosition = center;
+		Fx.Animate(seed, 0, start, t => { seed.Modulate = new Color(1f, 0.25f, 0.3f, t); seed.Scale = Vector2.One * h * (0.05f + 0.12f * t) / 64f; });
+		Fx.FreeAfter(seed, start + 0.02);
+		S("gx_tick", 0.12f, start);
+		var nodes = new List<(Vector2 P, float Ang)> { (center, f > 0f ? 0f : Mathf.Pi) };
+		Pop(center, 0, start);
+		float when = start;
+		var finals = new List<Vector2>();
+		for (int g = 0; g < 3; g++)
+		{
+			var next = new List<(Vector2, float)>();
+			float spread = 1.0f - 0.15f * g;
+			foreach (var (p, a) in nodes)
+			{
+				for (int s = -1; s <= 1; s += 2)
 				{
-					float s = t * life;
-					r.GlobalPosition = mouth + vel * s + new Vector2(0f, h * 4f * s * s);
-					r.Rotation = (vel + new Vector2(0f, h * 8f * s)).Angle() - Mathf.Pi * 0.5f;
-					sp.Modulate = new Color(1f, 1f, 1f, 1f - Ease5.Seg(t, 0.55f, 0.45f));
-				});
+					float na = a + s * spread * Fx.Rand(0.8f, 1.1f) + (g == 0 ? -0.4f * f : 0f);
+					Vector2 q = p + Vector2.FromAngle(na) * h * dist[g] * Fx.Rand(0.85f, 1.1f);
+					Vector2 bend = (q - p).Orthogonal() * 0.25f * s;
+					Vector2 pp = p, qq = q;
+					Streak(front, t => pp.Lerp(qq, t) + bend * 4f * t * (1f - t), when, gap[g], h * (0.18f + 0.04f * g), h * 0.02f, g == 2 ? new Color(1f, 0.85f, 0.85f) : Red, 1.25f);
+					next.Add((q, na));
+				}
+			}
+			when += gap[g];
+			S("gx_tick", 0.12f + 0.05f * g, when);
+			foreach (var (q, _) in next) Pop(q, g + 1, when);
+			nodes = next;
+		}
+		foreach (var (p, _) in nodes) finals.Add(p);
+		// 八点同时引爆，然后吸回手心
+		S("gx_pop", 0.18f, allAt);
+		Fx.After(front, allAt, () =>
+		{
+			HitStop.Request(0.025);
+			foreach (Vector2 p in finals)
+			{
+				Glow.Flash(front, p, Hot, h * 0.16f, 0.08f);
+				Glow.Flash(back, p, crimson, h * 0.5f, 0.22f);
 			}
 		});
-		Bloom(back, "venom_veins_01", at, Fx.Rand(-0.6f, 0.6f), h * 1.3f, Lut5.Blood, boil, 0.05f, 0.05f, 0.24f, 0.55f, 1.6f, f);
-		// 溢出来顺着瓶身往下淌：几滴从瓶口两侧滑下去，到瓶底再落下
-		for (int j = 0; j < 4; j++)
+		foreach (Vector2 p in finals)
 		{
-			float side = j % 2 == 0 ? -1f : 1f, d = boil + 0.04f + 0.06f * j, life = 0.45f;
-			float sz = h * Fx.Rand(0.05f, 0.075f);
-			int cell = 4 + j;
-			Fx.After(front, d, () =>
-			{
-				Node2D r = Fx.Root(front, mouth, "P5Drip", life + 0.05);
-				if (Cell(r, "venom_drops_sheet", cell, sz, false) is not Sprite2D sp) return;
-				Fx.Animate(r, 0, life, t =>
-				{
-					// 沿瓶颈 → 瓶身外沿（圆）→ 落下
-					float y = Fx.InCubic(t);
-					float xo = side * vw * (t < 0.35f ? 0.2f : 0.2f + 0.3f * Mathf.Sin(Mathf.Min(1f, (t - 0.35f) / 0.4f) * Mathf.Pi * 0.6f));
-					r.GlobalPosition = mouth + new Vector2(xo, vh * 1.25f * y);
-					r.Rotation = 0f;
-					sp.Modulate = new Color(1f, 1f, 1f, 1f - Ease5.Seg(t, 0.75f, 0.25f));
-				});
-			});
+			Vector2 pp = p;
+			Streak(front, t => pp.Lerp(palm, t), allAt + 0.08f, pullDur, h * 0.3f, h * 0.03f, Red, 1.3f);
 		}
-		Motes(front, at, new Vector2(h * 0.15f, h * 0.12f), h, 8, boil + 0.1f, 0.8f);
+		S("gx_slice", 0.2f, finale);
+		S("gx_pop", 0.22f, finale);
+		Fx.After(front, finale, () =>
+		{
+			HitStop.Request(0.04);
+			Fx.Shake(1);
+			Glow.Flash(front, palm, Hot, h * 0.4f, 0.1f);
+			Glow.Flash(back, palm, crimson, h * 1.8f, 0.38f);
+			Glow.Sparks(front, palm, 22, 140f * u, 600f * u, 0.5f, new[] { Hot, Pink, Deep }, 40f * u, 0.008f * u, 0.026f * u, Vector2.Up, 200f);
+		});
+		Bloom(back, "venom_veins_01", palm, Fx.Rand(-0.6f, 0.6f), h * 1.3f, Lut5.Blood, finale, 0.05f, 0.05f, 0.26f, 0.5f, 1.7f, f);
+		Embed(front, palm, h, 1.1f, 0f, 24, finale);
+		Motes(front, palm, new Vector2(h * 0.15f, h * 0.12f), h, 8, finale + 0.08f, 0.8f);
 	}
 }
