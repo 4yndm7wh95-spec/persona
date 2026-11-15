@@ -23,11 +23,12 @@ public sealed class WraithVeil
 	/// <summary>无实体还在不在（游戏里设置；预览不设）。在场 2 秒后每半秒问一次，不在了就自己收掉。</summary>
 	public static Func<bool>? StillOn;
 
-	private const float SweepAt = 0.1f, SweepDur = 0.5f, EndDur = 0.6f;
+	private const float SweepAt = 0.16f, SweepDur = 0.5f, EndDur = 0.6f, PreA = 0.04f, PreB = 0.2f, PreDur = 0.2f;
 
 	private readonly Control _front, _back;
 	private readonly Node2D _glow;
-	private readonly Sprite2D _glowSprite;
+	private readonly Sprite2D _glowSprite, _lineRed, _lineHot;
+	private readonly Node2D _lineRoot;
 	private readonly ShaderMaterial _m;
 	private readonly Action<ShaderMaterial?>? _setBody;
 	private readonly Vector2 _feet;
@@ -54,6 +55,11 @@ public sealed class WraithVeil
 		_back.AddChild(_glow);
 		_glow.GlobalPosition = _feet + new Vector2(0f, -0.52f * _tall);
 		_glowSprite = Glow.SoftSprite(_glow, Vector2.Zero, new Color(1f, 0.1f, 0.18f, 0f), 1f);
+		// 扫描的那道横光（前景，比身体宽，两头尖）
+		_lineRoot = new Node2D { Name = "P5WraithLine" };
+		_front.AddChild(_lineRoot);
+		_lineRed = Glow.SoftSprite(_lineRoot, Vector2.Zero, new Color(1f, 0.12f, 0.2f, 0f), 1f);
+		_lineHot = Glow.SoftSprite(_lineRoot, Vector2.Zero, new Color(1f, 0.95f, 0.93f, 0f), 1f);
 		_tree.ProcessFrame += Tick;
 		_glow.TreeExiting += Finish;
 		Step();
@@ -79,6 +85,24 @@ public sealed class WraithVeil
 		Control back = w._back;
 		Vector2 mid = c.Feet + new Vector2(0f, -0.55f * h);
 		SkillRedo5.Dim(back, mid, new Vector2(h * 3.4f, h * 2.6f), 1.5, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.3f)) * (1f - Ease5.Seg(s, 0.8f, 0.7f)) * 0.8f);
+		// 两道很快的预扫：细一点的横光从脚扫到头，每道过去两边扬起一点尘
+		foreach (float t0 in new[] { PreA, PreB })
+		{
+			Node2D pr = Fx.Root(c.Front, c.Feet, "P5WraithPre", t0 + PreDur + 0.1);
+			Sprite2D red = Glow.SoftSprite(pr, Vector2.Zero, new Color(1f, 0.12f, 0.2f, 0f), 1f), hot = Glow.SoftSprite(pr, Vector2.Zero, new Color(1f, 0.95f, 0.93f, 0f), 1f);
+			Vector2 feet0 = c.Feet;
+			Fx.Animate(pr, t0, PreDur, t =>
+			{
+				pr.GlobalPosition = feet0 + new Vector2(0f, -1.18f * h * t);
+				float vis = Mathf.Pow(Mathf.Sin(t * Mathf.Pi), 0.5f);
+				float wide = h * (1.0f + 0.3f * Mathf.Sin(t * Mathf.Pi));
+				red.Scale = new Vector2(wide, h * 0.045f) / 32f;
+				hot.Scale = new Vector2(wide * 0.75f, h * 0.012f) / 32f;
+				red.Modulate = new Color(1f, 0.12f, 0.2f, 0.7f * vis);
+				hot.Modulate = new Color(1f, 0.95f, 0.93f, 0.9f * vis);
+			});
+			Sfx.Take("gx_tick", 0.1f, t0);
+		}
 		// 光线往胸口收（和影刃旋风同一种做法）
 		Vector2 chest = c.Chest;
 		for (int i = 0; i < 24; i++)
@@ -104,6 +128,16 @@ public sealed class WraithVeil
 			HitStop.Request(0.06);
 			Fx.Shake(2);
 			SkillRedo5.Cross(c.Front, chest, h * 1.1f);
+			// 几道疾光贴着身体从脚下往上冲出头顶（前后都有）
+			for (int k = 0; k < 9; k++)
+			{
+				float fx = (k - 4f) / 4f;
+				float x = fx * h * 0.3f + Fx.Rand(-0.03f, 0.03f) * h;
+				Vector2 a0 = c.Feet + new Vector2(x, -h * Fx.Rand(0.1f, 0.5f)), b0 = c.Feet + new Vector2(x + fx * h * 0.35f, -h * Fx.Rand(1.35f, 1.75f));
+				bool white = k % 3 == 1;
+				SkillRedo5.Streak(k % 2 == 0 ? back : c.Front, t => a0.Lerp(b0, t), Fx.Rand(0f, 0.09f), 0.26f, h * 0.8f, h * (white ? 0.08f : 0.16f),
+					white ? new Color(1f, 0.9f, 0.9f) : new Color(0.95f, 0.07f, 0.16f), white ? 1.6f : 1.2f);
+			}
 			// 他的「实体」被一口气吹散：大量细尘从全身往上、往身后扬起
 			for (int k = 0; k < 6; k++)
 			{
@@ -135,6 +169,15 @@ public sealed class WraithVeil
 		if (_done || _stopAt >= 0f) return;
 		_stopAt = _t;
 		Sfx.Take("gx_fan_close", 0.16f);
+		Sfx.Take("gx_ping", 0.1f, EndDur - 0.14f);
+		Control fr = _front;
+		Vector2 ft = _feet;
+		float uu = _unit, hh2 = _tall;
+		Fx.After(fr, EndDur - 0.14f, () =>
+		{
+			Glow.Flash(fr, ft + new Vector2(0f, -hh2 * 0.05f), new Color(1f, 0.9f, 0.9f), hh2 * 0.6f, 0.16f);
+			Glow.Sparks(fr, ft, 26, 100f * uu, 520f * uu, 0.6f, new[] { new Color(1f, 0.95f, 0.93f), new Color(1f, 0.28f, 0.35f) }, 300f * uu, 0.008f * uu, 0.03f * uu, Vector2.Up, 150f);
+		});
 	}
 
 	public static void StopCurrent() => Current?.Stop();
@@ -179,7 +222,8 @@ public sealed class WraithVeil
 		Vector2 scr = Fx.Screen(_front);
 		float feetY = Fx.ScreenPoint(_front, _feet).Y / scr.Y, topY = Fx.ScreenPoint(_front, _feet + new Vector2(0f, -1.12f * _tall)).Y / scr.Y;
 		// 扫描线的位置：0 = 脚下，1 = 头顶以上。打出时往上扫，结束时往下扫回去
-		float up = Ease5.OutQuint(Seg(s, SweepAt, SweepDur) * 0.9f) / Ease5.OutQuint(0.9f);
+		float up0 = Seg(s, SweepAt, SweepDur);
+		float up = up0 * up0 * (1.6f - 0.6f * up0);   // 先慢后快，正好在主拍扫到头顶
 		float line = g >= 0f ? 1f - Smooth(Seg(g, 0f, EndDur - 0.12f)) : up;
 		bool sweeping = (s >= SweepAt && s < SweepAt + SweepDur) || g >= 0f;
 		float hit = s >= _hitAt ? Mathf.Exp(-(s - _hitAt) * 5f) : 0f;
@@ -193,12 +237,27 @@ public sealed class WraithVeil
 		_m.SetShaderParameter("thin", 0.16f * hit);
 		_m.SetShaderParameter("aspect", scr.X / scr.Y);
 		_m.SetShaderParameter("face", _face);
+		float p1 = Seg(s, PreA, PreDur), p2 = Seg(s, PreB, PreDur);
+		_m.SetShaderParameter("pre", new Vector2(p1 > 0f && p1 < 1f ? p1 * 1.05f : -1f, p2 > 0f && p2 < 1f ? p2 * 1.05f : -1f));
 
 		// 身后的柔光：到位后淡淡地亮着、慢慢呼吸；被打亮一下
 		float on = Smooth(Seg(s, SweepAt + 0.1f, SweepDur)) * (g >= 0f ? 1f - Smooth(Seg(g, 0f, EndDur - 0.1f)) : 1f);
 		float breath = 0.5f + 0.5f * Mathf.Sin(s * 1.4f);
 		_glowSprite.Scale = new Vector2(_tall * (0.95f + 0.08f * breath + 0.3f * arrive), _tall * (1.5f + 0.1f * breath + 0.3f * arrive)) / 32f;
-		_glowSprite.Modulate = new Color(1f, 0.1f, 0.18f, on * (0.16f + 0.05f * breath + 0.4f * arrive + 0.2f * hit));
+		// 身后的柔光只在到位和被打的一瞬间亮一下，平时没有（用户：平时那层淡淡的光怪）
+		_glowSprite.Modulate = new Color(1f, 0.1f, 0.18f, on * (0.45f * arrive + 0.16f * hit));
+		// 横光跟着扫描线走：扫的时候宽、亮，快到头时收窄
+		if (GodotObject.IsInstanceValid(_lineRoot))
+		{
+			float vis = sweeping && line < 0.99f ? Mathf.Sin(Mathf.Clamp(line, 0f, 1f) * Mathf.Pi) : 0f;
+			vis = Mathf.Pow(vis, 0.35f) * (sweeping ? 1f : 0f);
+			_lineRoot.GlobalPosition = _feet + new Vector2(0f, -1.12f * _tall * line);
+			float wide = _tall * (1.5f + 0.5f * Mathf.Sin(line * Mathf.Pi));
+			_lineRed.Scale = new Vector2(wide, _tall * 0.075f) / 32f;
+			_lineHot.Scale = new Vector2(wide * 0.8f, _tall * 0.02f) / 32f;
+			_lineRed.Modulate = new Color(1f, 0.12f, 0.2f, 0.85f * vis);
+			_lineHot.Modulate = new Color(1f, 0.95f, 0.93f, vis);
+		}
 
 		// 扫描线上往两边迸的碎光
 		if (sweeping && s >= _nextSpark && line > 0.02f && line < 0.98f)
@@ -230,6 +289,7 @@ public sealed class WraithVeil
 		_tree.ProcessFrame -= Tick;
 		if (_setBody != null) Stage.Safe("WraithVeil.body", () => _setBody(null));
 		if (GodotObject.IsInstanceValid(_glow)) _glow.QueueFree();
+		if (GodotObject.IsInstanceValid(_lineRoot)) _lineRoot.QueueFree();
 		if (Current == this) Current = null;
 	}
 
@@ -253,6 +313,7 @@ uniform float thin = 0.0;      // 被打时更透一点
 uniform float aspect = 1.7778;
 uniform float seed = 0.0;
 uniform float face = 1.0;
+uniform vec2 pre = vec2(-1.0, -1.0);   // 两道预扫的高度（<0 = 没有）
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
@@ -307,7 +368,8 @@ void fragment() {
 	ghost += vec3(1.0, 0.5, 0.52) * under * 0.5;
 
 	vec3 col = mix(base.rgb, ghost, cv);
-	col += vec3(1.0, 0.94, 0.92) * lineGlow * 1.2;
+	float preGlow = exp(-abs(h - pre.x) * 42.0) * step(0.0, pre.x) + exp(-abs(h - pre.y) * 42.0) * step(0.0, pre.y);
+	col += vec3(1.0, 0.94, 0.92) * lineGlow * 1.2 + vec3(1.0, 0.45, 0.48) * preGlow * 0.9;
 	float alphaK = mix(bodyA, 1.0, clamp(keyRim + bounce * 0.8, 0.0, 1.0));
 	float outA = a * mix(1.0, alphaK, cv);
 	outA = max(outA, a * min(1.0, lineGlow));
