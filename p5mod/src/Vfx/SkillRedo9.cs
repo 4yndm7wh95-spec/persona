@@ -95,19 +95,20 @@ public static partial class SkillRedo5
 			Vector2 dir = Vector2.Right.Rotated(ang);
 			Vector2 stop = c.Chest + new Vector2(f * h * (0.28f + 0.04f * k), (k - 1) * h * 0.16f);
 			Vector2 from = stop - dir * h * 0.9f;
-			var (node, m) = Needle(front, k == 1 ? new Color(1f, 0.92f, 0.92f) : Red, k == 1 ? 1.7f : 1.3f, snap + 0.2);
-			float thick = h * (k == 1 ? 0.06f : 0.1f), len = h * 0.75f;
+			// 刀光：两头尖的光刃（红晕 + 白芯），头先到、停住时轻轻颤
+			Node2D node = Fx.Root(front, from, "P5ReadSlash", snap + 0.2);
+			Polygon2D glow = Glow.TaperPoly(node, new Color(1f, 0.1f, 0.2f, 0.9f)), core = Glow.TaperPoly(node, Pal5.Hot);
+			float wid = h * (k == 1 ? 0.07f : 0.1f), len = h * 0.85f;
+			node.Visible = false;
 			Fx.Animate(node, t0, snap - t0, t =>
 			{
+				node.Visible = true;
 				float s = t0 + t * (snap - t0);
 				float e = Ease5.OutQuint(Mathf.Min(1f, (s - t0) / 0.14f));
-				Vector2 head = from.Lerp(stop, e);
-				node.GlobalPosition = head;
-				node.Rotation = dir.Angle();
-				float shiver = s > t0 + 0.14f ? Mathf.Sin(s * 90f) * 0.08f : 0f;
-				node.Scale = new Vector2(len * (0.3f + 0.7f * e), thick * (1f + shiver));
-				m.SetShaderParameter("alpha", Mathf.Min(1f, (s - t0) * 25f));
-				m.SetShaderParameter("flow", s * 6f);
+				Vector2 head = from.Lerp(stop, e), tail = head - dir * len * (0.35f + 0.65f * e);
+				float shiver = s > t0 + 0.14f ? 1f + Mathf.Sin(s * 90f) * 0.12f : 1f;
+				glow.Polygon = Glow.TaperPts(tail - from, head - from, wid * shiver);
+				core.Polygon = Glow.TaperPts(tail - from + dir * len * 0.2f, head - from, wid * 0.3f * shiver);
 			});
 			Fx.After(front, snap - 0.01f * k, () =>
 			{
