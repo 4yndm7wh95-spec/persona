@@ -396,7 +396,7 @@ void fragment() {
 				}
 			}
 			body.Position = Parts[3].Pivot + pos;
-			body.Rotation = lean;
+			body.Rotation = 0f * lean;   // 用户 2026-11-16：亚森施法时身体不要前倾（蓄 / 扑 / 捏碎都不再转身体，手臂和翅膀照旧）
 			body.Scale = new Vector2(scale * (1f + 0.1f * stretch), scale * (1f - 0.05f * stretch));
 			armR.Rotation = reach;
 			armB.Rotation = -reach * 0.35f + Mathf.Sin(time * 2.6f) * 0.04f;

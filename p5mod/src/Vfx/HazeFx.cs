@@ -87,20 +87,22 @@ void fragment() {
 	public static void Play(SkillCtx c)
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face;
-		const float blast = 0.5f, cut = 0.65f, clearAt = 0.95f, life = 2.1f;   // 2026-11-13 用户：散得太快 → 停久一点
+		const float blast = 0.6f, cut = 0.8f, clearAt = 1.1f, life = 2.3f;   // 2026-11-13 用户：散得太快 → 停久一点
 		Control back = c.Back ?? c.Front;
+		// 挥手（cast_wave）伸直的手：c.Hand 是出牌那一刻、手还没甩出去（同触媒）
+		Vector2 hp = c.Feet + new Vector2(f * h * 0.28f, -h * 0.83f);
 		// 音效：原版活雾的吹气攻击（用户 2026-11-13 指定）
 		Stage.PlayEvent?.Invoke("event:/sfx/enemy/enemy_attacks/living_fog/living_fog_attack_blow", 0.7f);
 		Vector2 scr = Fx.Screen(c.Front);
 		float tallS = h * c.Front.GetCanvasTransform().Scale.Y / scr.Y;
 		Vector2 ToS(Vector2 world) { Vector2 sp = Fx.ScreenPoint(c.Front, world); return new Vector2(sp.X / scr.X, sp.Y / scr.Y); }
 		// 起点不在手上（用户 2026-11-13：毒雾不会真的从手里喷出来）：他身前半个身位的空中先鼓起一团，再从那里吹出去
-		Vector2 origin = c.Hand + new Vector2(f * h * 0.5f, h * 0.12f);
+		Vector2 origin = hp + new Vector2(f * h * 0.5f, h * 0.12f);
 		Vector2 srcUV = ToS(origin);
 		// 瞄准敌人身体中间的平均位置；喷到最远那个再过去一点
 		Vector2 aimW = Vector2.Zero;
 		foreach (SkillFx.Victim v in c.Enemies) aimW += v.Feet.Lerp(v.Top, 0.4f);
-		aimW = c.Enemies.Count > 0 ? aimW / c.Enemies.Count : c.Hand + new Vector2(f * h * 2f, h * 0.3f);
+		aimW = c.Enemies.Count > 0 ? aimW / c.Enemies.Count : hp + new Vector2(f * h * 2f, h * 0.3f);
 		float aspect = scr.X / scr.Y;
 		Vector2 A(Vector2 uv) => new(uv.X * aspect, uv.Y);
 		Vector2 dir = (A(ToS(aimW)) - A(srcUV)).Normalized();
@@ -110,9 +112,9 @@ void fragment() {
 		{
 			float pa = (A(ToS(v.Feet.Lerp(v.Top, 0.4f))) - A(srcUV)).Dot(dir);
 			proj.Add(pa);
-			reachMax = Mathf.Max(reachMax, pa + 0.18f);
+			reachMax = Mathf.Max(reachMax, pa + 0.5f);   // 2026-11-16 用户（实机）：范围太短太小 → 吹过敌人一大截
 		}
-		float w0 = tallS * 0.2f, spread = Mathf.Max(0.05f, (tallS * 1.05f - w0) / Mathf.Max(0.1f, reachMax));
+		float w0 = tallS * 0.28f, spread = Mathf.Max(0.05f, (tallS * 1.7f - w0) / Mathf.Max(0.1f, reachMax));
 
 		float seed = Fx.Rand(0f, 50f);
 		var mats = new List<ShaderMaterial>();
@@ -159,28 +161,37 @@ void fragment() {
 		});
 		// 出手（用户 2026-11-13：手和雾之间要有打出的特效，不然像凭空冒出来的雾）：
 		// 手上一闪、迸一小撮碎光 → 两道暗红疾光从手里射向身前的起点（一道带弧）→ 起点鼓起一团网点光晕、迸开一圈碎光，雾从那里吹开
-		Glow.Flash(c.Front, c.Hand, new Color(1f, 0.88f, 0.85f), h * 0.28f, 0.14f);
-		Glow.Sparks(c.Front, c.Hand, 10, 80f * u, 260f * u, 0.35f, new[] { new Color(1f, 0.9f, 0.88f), new Color(0.9f, 0.12f, 0.16f) }, 0f,
-			0.015f * u, 0.035f * u, new Vector2(f, -0.1f), 40f);
-		Vector2 hand = c.Hand, mid = (c.Hand + origin) * 0.5f + new Vector2(0f, -h * 0.22f);
+		// 2026-11-16 用户（实机）：手前要有更明显的出手特效
+		Glow.Flash(c.Front, hp, new Color(1f, 0.9f, 0.88f), h * 0.45f, 0.14f);
+		Glow.Flash(back, hp, new Color(0.9f, 0.08f, 0.15f), h * 1.1f, 0.3f);
+		Glow.Glint(c.Front, hp, 0.9f);
+		Glow.Ripple(c.Front, hp + new Vector2(f * h * 0.15f, 0f), h * 1.0f, 0.35f, 0.03f);
+		Glow.Sparks(c.Front, hp, 22, 120f * u, 520f * u, 0.4f, new[] { new Color(1f, 0.9f, 0.88f), new Color(0.9f, 0.12f, 0.16f), new Color(0.3f, 0.02f, 0.04f) }, 0f,
+			0.015f * u, 0.035f * u, new Vector2(f, -0.1f), 55f);
+		for (int k = 0; k < 4; k++)
+		{
+			float ang = (f > 0f ? 0f : Mathf.Pi) + (k - 1.5f) * 0.22f * f;
+			Vector2 a0 = hp, b0 = hp + Vector2.FromAngle(ang) * h * 0.55f;
+			SkillRedo5.Streak(c.Front, t => a0.Lerp(b0, t), 0.01f * k, 0.13f, h * 0.35f, h * (k % 2 == 0 ? 0.05f : 0.03f), k % 2 == 0 ? new Color(0.9f, 0.08f, 0.14f) : new Color(1f, 0.88f, 0.88f), 1.4f);
+		}
+		Vector2 hand = hp, mid = (hp + origin) * 0.5f + new Vector2(0f, -h * 0.22f);
 		SkillRedo5.Streak(c.Front, t => hand.Lerp(origin, t), 0f, 0.12f, h * 0.5f, h * 0.11f, new Color(0.9f, 0.08f, 0.14f));
 		SkillRedo5.Streak(c.Front, t => hand.Lerp(mid, t).Lerp(mid.Lerp(origin, t), t), 0.02f, 0.13f, h * 0.4f, h * 0.045f, new Color(1f, 0.85f, 0.85f), 1.5f);
 		Fx.After(c.Front, 0.1f, () =>
 		{
 			Glow.Flash(back, origin, new Color(0.9f, 0.15f, 0.18f), h * 0.9f, 0.3f);
 			Glow.Flash(c.Front, origin, new Color(1f, 0.88f, 0.86f), h * 0.3f, 0.12f);
-			SkillRedo5.SoftBurst(back, origin, h * 0.9f, 0.4f, new Color(0.85f, 0.06f, 0.12f));
 			Glow.Sparks(c.Front, origin, 18, 120f * u, 380f * u, 0.45f, new[] { new Color(1f, 0.9f, 0.88f), new Color(0.9f, 0.12f, 0.16f), new Color(0.3f, 0.02f, 0.04f) },
 				60f * u, 0.02f * u, 0.04f * u, Vector2.Up, 180f);
 		});
 		// 雾团：从手边喷出去，边飞边胀开、慢下来（普通混合的柔光团，暗红偏灰）
 		Vector2 dirW = (aimW - origin).Normalized();
 		float distW = origin.DistanceTo(aimW);
-		for (int i = 0; i < 10; i++)
+		for (int i = 0; i < 16; i++)
 		{
-			float d0 = Pre + 0.018f * i;
+			float d0 = Pre + 0.016f * i;
 			Vector2 off = dirW.Rotated(Fx.Rand(-0.22f, 0.22f));
-			float go = distW * Fx.Rand(0.55f, 1.15f), size = h * Fx.Rand(0.5f, 0.85f);
+			float go = distW * Fx.Rand(0.6f, 1.7f), size = h * Fx.Rand(0.6f, 1.05f);
 			Node2D pr = Fx.Root(i % 2 == 0 ? back : c.Front, origin, "P5HazePuff", d0 + 1.45);
 			Sprite2D sp = new() { Texture = Glow.Soft };
 			pr.AddChild(sp);

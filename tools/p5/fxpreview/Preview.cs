@@ -30,14 +30,14 @@ public partial class Preview : Node2D
 	{
 		("Footwork", "cast_guard", 0.08, 1.2), ("Accuracy", "cast_glove", 0.25, 1.3), ("Envenom", "cast_glove", 0.25, 1.5),
 		("NoxiousFumes", "cast_glove", 0.25, 2.0), ("Tracking", "cast_glove", 0.25, 1.4), ("Burst", "cast_glove", 0.25, 1.4),
-		("SerpentForm", "cast_big", 0.4, 2.2), ("WraithForm", "cast_big", 0.4, 2.0),
+		("SerpentForm", "cast_wave", 0.08, 2.2), ("WraithForm", "cast_wave", 0.08, 2.0),
 	});
 
 	private static void Cards2(Preview p, string[]? only) => RunCards(p, only, new (string, string, double, double)[]
 	{
 		("Shadowmeld", "cast_glove", 0.25, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Afterimage", "cast_glove", 0.25, 1.5),
 		("ShadowStep", "cast_glove", 0.25, 1.7), ("BulletTime", "aim_in", 0.1, 1.8), ("Flanking", "cast_glove", 0.25, 1.3),
-		("Malaise", "cast", 0.4, 1.8), ("LegSweep", "cast_guard", 0.08, 1.4),
+		("Malaise", "cast_wave", 0.08, 1.8), ("LegSweep", "cast_guard", 0.08, 1.4),
 	});
 
 	private static void Cards3(Preview p, string[]? only) => RunCards(p, only, new (string, string, double, double)[]
@@ -263,6 +263,23 @@ public partial class Preview : Node2D
 			p.At(1.89, () => { Sfx.Play(Sfx.PersonaFlame, 0.8f); Persona.Show(spec, p._back, JokerFeet, tall); });   // 同 Aim：没有舞台时自己放蓝焰声
 			p.At(1.85, () => Grip.Play(p._front, 1ul, Persona.ChestOf(spec, JokerFeet, tall) + new Vector2(0.22f * tall, -0.12f * tall), Enemy, 170f,
 				0.04f + spec.AttackAt, 1f, c => p._enemies[Enemy].Modulate = c, ownImpact: true));
+		},
+		// 致命毒药 / 咕嘟冒泡（2026-11-16）：挥手召唤亚森 → 亚森出手的那一刻 PoisonFx.Apply 走爪尖光束（同游戏）
+		["poison_beam"] = p =>
+		{
+			Persona.Spec spec = Persona.ArseneSpec with { Linger = 1.1f };
+			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 1.35f;
+			for (int k = 0; k < 2; k++)
+			{
+				double t0 = 0.3 + 2.4 * k;
+				p.At(t0, () => p._joker?.Play("cast_wave"));
+				p.At(t0 + 0.1, () => { Sfx.Play(Sfx.PersonaFlame, 0.8f); Persona.Show(spec, p._back, JokerFeet, tall); });
+				p.At(t0 + 0.1 + spec.AttackAt + 0.02, () =>
+				{
+					p._enemies.TryGetValue(Enemy, out Node2D? body);
+					PoisonFx.Apply(p._front, Enemy + new Vector2(0f, -170f), Enemy + new Vector2(0f, -340f), 220f, body, 3);
+				});
+			}
 		},
 		// 防御（设计说明 docs/p5/FX_DESIGN_HITS.md 方案 A：菱形光格）：选中防御牌 → 打出，再来一次
 		["guard"] = p =>
@@ -831,10 +848,10 @@ public partial class Preview : Node2D
 			p.At(5.25, () => SkillFx.Draw(p._front, Pose(1010f, 410f), 2));
 			p.At(6.7, () => TimeStop.StopCurrent());
 		},
-		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_big", 0.4, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast", 0.4, 1.6) }),
-		["redo4b"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.8), ("Afterimage", "cast_big", 0.4, 1.4), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast", 0.4, 1.8) }),
+		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_glove", 0.25, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast_wave", 0.08, 1.6) }),
+		["redo4b"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.8), ("Afterimage", "cast_glove", 0.25, 1.4), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast_wave", 0.08, 1.8) }),
 		["redo5"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.9), ("Shadowmeld", "cast_glove", 0.25, 1.9) }),
-		["redo6"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Afterimage", "cast_big", 0.4, 1.6), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast", 0.4, 2.1), ("Malaise", "cast", 0.4, 2.1) }),
+		["redo6"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Afterimage", "cast_glove", 0.25, 1.6), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast_wave", 0.08, 2.1), ("Malaise", "cast_wave", 0.08, 2.1) }),
 		// 2026-11-13：群蛇形态的场景下打融入暗影、子弹时间（结束时不该露出原版场景）
 		["combo_serpent"] = p =>
 		{
@@ -865,7 +882,7 @@ public partial class Preview : Node2D
 		// 幽魂形态：打出 → 被打两次 → 无实体结束（Vfx/WraithVeil.cs）
 		["wraith"] = p =>
 		{
-			RunCards(p, null, new (string, string, double, double)[] { ("WraithForm", "cast_big", 0.4, 1.0) });
+			RunCards(p, null, new (string, string, double, double)[] { ("WraithForm", "cast_wave", 0.08, 1.0) });
 			p.At(2.0, () => p._joker?.Play("attack"));
 			p.At(3.0, () => WraithVeil.Current?.Hit());
 			p.At(3.9, () => WraithVeil.Current?.Hit());
@@ -879,7 +896,7 @@ public partial class Preview : Node2D
 			RunCards(p, null, new (string, string, double, double)[] { ("WellLaidPlans", "cast_glove", 0.25, 2.2) });
 			RetainDemo(p, 2.4, 2.9, -1);
 		},
-		["fumes"] = p => RunCards(p, null, new (string, string, double, double)[] { ("NoxiousFumes", "cast", 0.4, 7.5) }),
+		["fumes"] = p => RunCards(p, null, new (string, string, double, double)[] { ("NoxiousFumes", "cast_glove", 0.25, 7.5) }),
 		["redo"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Acrobatics", "cast_glove", 0.25, 1.7), ("Acrobatics", "cast_glove", 0.25, 1.7) }),
 		["redo3"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Survivor", "cast_guard", 0.08, 1.2), ("CalculatedGamble", "cast_glove", 0.25, 1.9), ("Tactician", "cast_glove", 0.25, 1.2), ("Adrenaline", "cast_glove", 0.25, 1.4), ("ShadowStep", "cast_glove", 0.25, 1.4) }),
 		["redo2"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Prepared", "cast_glove", 0.25, 1.5), ("Expertise", "cast_glove", 0.25, 1.7), ("Reflex", "cast_glove", 0.25, 1.1), ("Backflip", "cast_guard", 0.08, 1.3), ("EscapePlan", "cast_guard", 0.08, 1.3) }),

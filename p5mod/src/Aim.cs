@@ -90,7 +90,7 @@ public static class Aim
 			{
 				Cast.Guard => held is "guard_in" or "guard_loop" ? "cast_guard_from_ready" : "cast_guard",
 				Cast.Glove => held is "glove_in" or "glove_loop" ? "cast_glove_from_ready" : "cast_glove",
-				Cast.Wave => held is "glove_in" or "glove_loop" ? "cast_wave_from_ready" : "cast_wave",
+				Cast.Wave or Cast.Summon or Cast.Big => held is "glove_in" or "glove_loop" ? "cast_wave_from_ready" : "cast_wave",
 				Cast.MaskOff => "mask_out",
 				_ => held is "mask_in" or "mask_loop" ? "cast_from_mask" : null,
 			};
@@ -138,7 +138,9 @@ public static class Aim
 		card.GetType().Name == "GrandFinale" ? Stance.Mask                       // 华丽收场：扶面具（大罪穿甲弹，GrandFinale.cs）
 		: Joker.IsShot(card) || card.GetType().Name is "FanOfKnives" or "BulletTime" or "KnifeTrap" ? Stance.Gun   // 拿枪不开枪的牌：选中掏枪（用户 2026-11-04）
 		: card.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Attack ? Stance.Knife
-		: Casts.For(card) switch { Cast.Guard => Stance.Guard, Cast.Glove or Cast.Wave => Stance.Glove, _ => Stance.Mask };
+		: card.GetType().Name == "Outbreak" || Casts.For(card) == Cast.MaskOff ? Stance.Mask   // 毒性爆发（扶面具 → 攥拳）、蛇咬（只放下手）保留扶面具架势
+		// 用户 2026-11-16：不要再有「扶面具 → 挥手」的复合动作 → 原来扶面具 / 撕面具甩手的牌一律改成直接挥手（架势同扯手套）
+		: Casts.For(card) switch { Cast.Guard => Stance.Guard, _ => Stance.Glove };
 
 	private static string Prefix(Stance s) => s switch
 	{
@@ -315,7 +317,7 @@ public static class Aim
 		{
 			name = "mask_out";
 		}
-		if (Casts.For(card) == Cast.Wave && body.HasAnimation("cast_wave"))
+		if (Waves(card) && body.HasAnimation("cast_wave"))
 		{
 			name = fromReady ? "cast_wave_from_ready" : "cast_wave";
 		}
@@ -362,7 +364,7 @@ public static class Aim
 			GripTremble(node, tl, 0.04f + OutbreakEmerge + CrushHand.FistAfter, HitFor(card));
 		}
 		Tier tier = Tiers.For(card);
-		if (stance == Stance.Mask && Summons(card) && Joker.FxLayer(back: true) is Control back)
+		if (Summons(card) && Joker.FxLayer(back: true) is Control back)
 		{
 			// 按稀有度分级（Tiers）：稀有 = 完整召唤；罕见 = 只有人格面具现身；普通毒牌 = 亚森伸手
 			// 标杆 1（2026-11-02，照结城理 mod 召唤器 → 君王之剑的两拍结构）：
@@ -436,8 +438,16 @@ public static class Aim
 	/// </summary>
 	private static readonly HashSet<string> NoPersona = new() { "Adrenaline", "Burst", "Malaise", "Mirage", "Nightmare", "Haze", "SerpentForm", "WraithForm" };
 
+	/// <summary>原来属于「面具」一类的牌（召唤人格面具按这个判断；动作已经不再扶面具，见 StanceFor）。</summary>
+	private static bool MaskCard(CardModel card) =>
+		card.GetType().Name is "GrandFinale" or "Outbreak" || Casts.For(card) is Cast.Summon or Cast.Big or Cast.MaskOff;
+
+	/// <summary>打出时直接挥手（cast_wave）的牌：标了挥手的，加上原来扶面具 / 撕面具甩手的（毒性爆发、华丽收场、蛇咬除外）。</summary>
+	public static bool Waves(CardModel card) =>
+		Casts.For(card) is Cast.Wave or Cast.Summon or Cast.Big && card.GetType().Name is not ("Outbreak" or "GrandFinale");
+
 	/// <summary>这张牌打出时会不会召唤人格面具（Aim.PlayCast 和 SkillPlay 的时刻都按这个）。</summary>
-	public static bool Summons(CardModel card) => card.Type != CardType.Attack && StanceFor(card) == Stance.Mask && !NoPersona.Contains(card.GetType().Name)
+	public static bool Summons(CardModel card) => card.Type != CardType.Attack && MaskCard(card) && !NoPersona.Contains(card.GetType().Name)
 		&& (Tiers.For(card) >= Tier.Uncommon || Grips(card.GetType().Name) || Commands(card.GetType().Name));
 
 	/// <summary>游戏结算这张牌（Cast 之后的等待）推迟 seconds 秒（蛇咬：等蛇咬下去再上毒）。</summary>

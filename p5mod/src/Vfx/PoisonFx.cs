@@ -106,7 +106,8 @@ public static class PoisonFx
 				// 手边一亮（看得出是他放出来的）
 				Glow.Flash(layer, claw, new Color(1f, 0.9f, 0.88f), 110f, 0.14f);
 				Glow.Flash(layer, claw, new Color(0.9f, 0.1f, 0.16f), 260f, 0.28f);
-				Beam(layer, claw, at, 0.07f, 0.08f, Mathf.Clamp(width * 0.16f, 22f, 46f));
+				// 2026-11-16 用户（实机）：光束太粗太大、出得太柔 → 细一半多、0.05s 打到、几乎不停就收（致命毒药 / 咕嘟冒泡共用）
+				Beam(layer, claw, at, 0.09f, 0.05f, Mathf.Clamp(width * 0.07f, 10f, 18f), 0.02f, 0.11f, 1f, true);
 				for (int i = 1; i <= 3; i++)
 				{
 					Vector2 p = claw + d * (0.25f * i);
@@ -296,6 +297,7 @@ uniform float waves = 1.0;     // 1 = 一道弧；> 1 = 像蛇一样弯几道（
 uniform float aspect = 8.0;
 uniform float seed = 0.0;
 uniform float alpha = 1.0;
+uniform float wk = 1.0;   // 粗细倍率（真实宽度模式：width * 3 / quad 高）
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
@@ -313,7 +315,7 @@ void fragment() {
 	float span = max(head - tail, 0.001);
 	float capL = 0.45 / aspect;   // 圆头的长度 ≈ 光带半宽
 	float body = smoothstep(tail, tail + capL, x) * (1.0 - smoothstep(head - capL, head, x));
-	float w = (0.42 + 0.12 * sin(x * 18.0 - flow * 1.3 + seed)) * body * (1.0 - 0.75 * thin);
+	float w = (0.42 + 0.12 * sin(x * 18.0 - flow * 1.3 + seed)) * body * (1.0 - 0.75 * thin) * wk;
 	if (snake) w *= mix(0.3, 1.0, smoothstep(0.0, 0.8, x));   // 靠手那头细、往前变粗
 	float n = noise(vec2(x * aspect * 1.6 - flow * 2.0, y * 3.0 + seed));
 	float n2 = noise(vec2(x * aspect * 4.0 - flow * 3.5, y * 9.0 - seed));
@@ -344,7 +346,7 @@ void fragment() {
 	/// <summary>
 	/// 从 from 到 to 的一道咒怨光带：grow 秒冲过去，停一下，再 fade 秒变细淡掉。bend 拱起的程度（相对长度），width 光带粗细（像素）。
 	/// </summary>
-	public static void Beam(Control layer, Vector2 from, Vector2 to, float bend, float grow, float width, float hold = 0.06f, float fade = 0.2f, float waves = 1f)
+	public static void Beam(Control layer, Vector2 from, Vector2 to, float bend, float grow, float width, float hold = 0.06f, float fade = 0.2f, float waves = 1f, bool trueWidth = false)
 	{
 		Vector2 dv = to - from;
 		float len = dv.Length();
@@ -355,6 +357,7 @@ void fragment() {
 		ShaderMaterial m = new() { Shader = BeamShader };
 		m.SetShaderParameter("aspect", len / hgt);
 		m.SetShaderParameter("waves", waves);
+		m.SetShaderParameter("wk", trueWidth ? width * 3f / hgt : 1f);   // 老调用：粗细随弧高的 quad 走（拱得越高越粗）
 		m.SetShaderParameter("seed", Fx.Rand(0f, 30f));
 		// bend 是相对 quad 半高的：拱起 bend*len 像素 → 换算
 		m.SetShaderParameter("bend", bend * len / hgt * (dv.X >= 0f ? 1f : -1f));   // 往上拱（朝左时 quad 是倒过来的）
