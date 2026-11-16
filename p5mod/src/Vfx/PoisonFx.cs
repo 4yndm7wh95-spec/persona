@@ -107,7 +107,7 @@ public static class PoisonFx
 				Glow.Flash(layer, claw, new Color(1f, 0.9f, 0.88f), 110f, 0.14f);
 				Glow.Flash(layer, claw, new Color(0.9f, 0.1f, 0.16f), 260f, 0.28f);
 				// 2026-11-16 用户（实机）：光束太粗太大、出得太柔 → 细一半多、0.05s 打到、几乎不停就收（致命毒药 / 咕嘟冒泡共用）
-				Beam(layer, claw, at, 0.09f, 0.05f, Mathf.Clamp(width * 0.07f, 10f, 18f), 0.02f, 0.11f, 1f, true);
+				Beam(layer, claw, at, 0.09f, 0.06f, Mathf.Clamp(width * 0.12f, 18f, 30f), 0.03f, 0.14f, 1f, true);   // 2026-11-16 第二次：太细了 → 加粗一些
 				for (int i = 1; i <= 3; i++)
 				{
 					Vector2 p = claw + d * (0.25f * i);

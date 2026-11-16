@@ -161,6 +161,15 @@ void fragment() {
 		});
 		// 出手（用户 2026-11-13：手和雾之间要有打出的特效，不然像凭空冒出来的雾）：
 		// 手上一闪、迸一小撮碎光 → 两道暗红疾光从手里射向身前的起点（一道带弧）→ 起点鼓起一团网点光晕、迸开一圈碎光，雾从那里吹开
+		// 2026-11-16 第二次：要像手从上面挥下来那样的出手 → 一道从肩上方划到手前的大月牙（弧背朝外），再跟一道细的副刃
+		{
+			Vector2 top = c.Feet + new Vector2(-f * h * 0.05f, -h * 1.3f), endP = hp + new Vector2(f * h * 0.12f, h * 0.08f);
+			Vector2 dv = endP - top;
+			Vector2 nrm = new(dv.Normalized().Y, -dv.Normalized().X);   // Blade.Arc 往局部 -y 拱
+			bool flip = nrm.X * f < 0f;                                   // 让弧背朝身前外侧
+			Blade.Arc(c.Front, (top + endP) * 0.5f, dv.Angle(), dv.Length() * 1.1f, h * 0.24f, h * 0.16f, flip, 0.07f, 0.04f, 0.05f, 0.2f);
+			Blade.Arc(back, (top + endP) * 0.5f + nrm * (flip ? -1f : 1f) * h * 0.08f, dv.Angle(), dv.Length() * 0.9f, h * 0.16f, h * 0.06f, flip, 0.07f, 0.03f, 0.05f, 0.18f, true, 0.03f);
+		}
 		// 2026-11-16 用户（实机）：手前要有更明显的出手特效
 		Glow.Flash(c.Front, hp, new Color(1f, 0.9f, 0.88f), h * 0.45f, 0.14f);
 		Glow.Flash(back, hp, new Color(0.9f, 0.08f, 0.15f), h * 1.1f, 0.3f);
