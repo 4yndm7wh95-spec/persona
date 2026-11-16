@@ -106,22 +106,18 @@ public static class PoisonFx
 				// 手边一亮（看得出是他放出来的）
 				Glow.Flash(layer, claw, new Color(1f, 0.9f, 0.88f), 110f, 0.14f);
 				Glow.Flash(layer, claw, new Color(0.9f, 0.1f, 0.16f), 260f, 0.28f);
-				// 2026-11-16 用户（实机）：光束太粗太大、出得太柔 → 细一半多、0.05s 打到、几乎不停就收（致命毒药 / 咕嘟冒泡共用）
-				Beam(layer, claw, at, 0.09f, 0.06f, Mathf.Clamp(width * 0.12f, 18f, 30f), 0.03f, 0.14f, 1f, true);   // 2026-11-16 第二次：太细了 → 加粗一些
-				for (int i = 1; i <= 3; i++)
-				{
-					Vector2 p = claw + d * (0.25f * i);
-					Paint.Rise(layer, "curse_soul", p, 70f, 0.4f, Lut5.Curse, 0.5f, 0.03f * i);
-				}
+				// 2026-11-16 第三次（用户：光束太直白，换一种表达）：不再是一道光带 —— 爪尖一甩，一群咒怨光点划着各自的弧飞向敌人
+				//（细的红 / 白疾光，前后错开，越靠后越小），几乎同时扎进去（致命毒药 / 咕嘟冒泡共用）
+				Swarm(layer, claw, at, Mathf.Clamp(width, 120f, 260f));
 			}
-			_beamLand = Stage.NowMs() + 80;
+			_beamLand = Stage.NowMs() + (ulong)(SwarmArrive * 1000f);
 			// 毒性爆发：光束命中只留「标记」，不炸（用户 2026-11-03：太花、几个高潮挤在一起）——唯一的高潮留给引爆
 			if (outbreak)
 			{
-				Fx.After(layer, 0.08, () => Mark(layer, at, top, width, body));
+				Fx.After(layer, SwarmArrive, () => Mark(layer, at, top, width, body));
 				return;
 			}
-			Fx.After(layer, 0.08, () => Impact(layer, at, top, width, body, amount, d, true));
+			Fx.After(layer, SwarmArrive, () => Impact(layer, at, top, width, body, amount, d, true));
 			return;
 		}
 		if (outbreak)
@@ -342,6 +338,32 @@ void fragment() {
 	if (a <= 0.003) discard;
 	COLOR = vec4(col, a);
 }" };
+
+	/// <summary>咒怨光点群从爪尖飞到敌人的时间（最后一颗到的时刻 = 命中）。</summary>
+	private const float SwarmArrive = 0.2f;
+
+	/// <summary>一群咒怨光点：从 from 划着各自的弧飞向 to（细的红 / 白疾光，错开起飞，同一刻前后扎进去），起点一亮、沿路几粒火星。</summary>
+	private static void Swarm(Control layer, Vector2 from, Vector2 to, float width)
+	{
+		Vector2 d = to - from;
+		float len = d.Length();
+		Vector2 n = d.Orthogonal().Normalized();
+		if (n.Y > 0f) n = -n;                                          // 往上拱
+		for (int i = 0; i < 9; i++)
+		{
+			float bend = (i % 2 == 0 ? 1f : -0.35f) * len * Fx.Rand(0.06f, 0.2f);
+			float delay = 0.014f * i, dur = SwarmArrive - delay;
+			Vector2 aim = to + new Vector2(Fx.Rand(-0.18f, 0.18f) * width, Fx.Rand(-0.25f, 0.2f) * width);
+			Vector2 start = from + Vector2.FromAngle(Fx.Rand(0f, Mathf.Tau)) * 14f;
+			Vector2 P(float t) => start.Lerp(aim, t) + n * bend * 4f * t * (1f - t);
+			bool white = i % 3 == 0;
+			SkillRedo5.Streak(layer, P, delay, dur, len * Fx.Rand(0.25f, 0.4f), Mathf.Lerp(80f, 44f, i / 8f) * (white ? 0.5f : 1f),
+				white ? new Color(1f, 0.9f, 0.9f) : new Color(0.9f, 0.05f, 0.16f), white ? 1.6f : 1.25f);
+		}
+		Vanilla.Burst(layer, Vanilla.Specks, from.Lerp(to, 0.5f), d.Angle(), 0.7f, Lut5.Curse, amount: 10, delay: 0.06f);
+		Glow.Flash(layer, from, new Color(1f, 0.9f, 0.88f), 140f, 0.12f);
+		Glow.Flash(layer, from, new Color(0.9f, 0.08f, 0.16f), 320f, 0.28f);
+	}
 
 	/// <summary>
 	/// 从 from 到 to 的一道咒怨光带：grow 秒冲过去，停一下，再 fade 秒变细淡掉。bend 拱起的程度（相对长度），width 光带粗细（像素）。
