@@ -333,29 +333,29 @@ public static partial class SkillRedo5
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face;
 		Control back = c.Back ?? c.Front, front = c.Front;
-		const float beat = 0.32f;
+		const float beat = 0.2f;   // 2026-11-16 用户：节奏收紧
 		S("gx_whoosh", 0.14f, 0.04f);
 		S("gx_slice", 0.28f, beat);
 		S("gx_pop", 0.18f, beat + 0.01f);
 		Vector2 mid = c.Feet + new Vector2(0f, -h * 0.58f);
-		Dim(back, mid, new Vector2(h * 3.4f, h * 2.8f), 1.25, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.15f)) * (1f - Ease5.Seg(s, 0.7f, 0.3f)) * 0.75f);
-		Gather(front, c.Chest, h, u, beat, 18, 0.7f);
-		Glow.Flash(back, mid, new Color(1f, 0.1f, 0.18f), h * 1.3f, 0.35f, beat - 0.18f);
+		Dim(back, mid, new Vector2(h * 3.4f, h * 2.8f), 0.85, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.15f)) * (1f - Ease5.Seg(s, 0.7f, 0.3f)) * 0.75f);
+		Gather(front, c.Chest, h, u, beat, 14, 0.55f);
+		Glow.Flash(back, mid, new Color(1f, 0.1f, 0.18f), h * 1.3f, 0.25f, beat - 0.1f);
 		void Crescent(float deg, float dist, float len, float bow, float thick, float d, bool fr, float skew)
 		{
 			Vector2 dir = Vector2.FromAngle(Mathf.DegToRad(deg));
 			dir.X *= f;
 			// 弦垂直于径向、弧背朝外（Blade.Arc 往局部 -y 拱）
-			global::P5Joker.Blade.Arc(fr ? front : back, mid + dir * dist, dir.Angle() + Mathf.Pi * 0.5f + skew * f, len, bow, thick, false, 0.06f, 0.04f, 0.06f, 0.2f, true, d);
+			global::P5Joker.Blade.Arc(fr ? front : back, mid + dir * dist, dir.Angle() + Mathf.Pi * 0.5f + skew * f, len, bow, thick, false, 0.05f, 0.03f, 0.05f, 0.16f, true, d);
 		}
 		// 用户：五道 + 三道太乱 → 只要左右对称的两道大月牙，同时斩出（弧背朝外、略往上扬），干净
 		// 2026-11-16：一个规整的半圆太死板 → 左右不对称（左大右小、高低错开），每道外侧再跟一道细的副刃，再点缀两道小月牙
 		Crescent(-162f, h * 0.38f, h * 1.4f, h * 0.32f, h * 0.18f, beat, false, 0.3f);
-		Crescent(-162f + 6f, h * 0.5f, h * 0.95f, h * 0.2f, h * 0.06f, beat + 0.04f, true, 0.42f);
-		Crescent(-28f, h * 0.34f, h * 1.15f, h * 0.24f, h * 0.15f, beat + 0.03f, true, -0.45f);
-		Crescent(-28f - 8f, h * 0.46f, h * 0.8f, h * 0.16f, h * 0.05f, beat + 0.07f, false, -0.6f);
-		Crescent(-95f, h * 0.62f, h * 0.45f, h * 0.08f, h * 0.05f, beat + 0.06f, true, 0.9f);
-		Crescent(150f, h * 0.48f, h * 0.5f, h * 0.09f, h * 0.05f, beat + 0.09f, false, -0.8f);
+		Crescent(-162f + 6f, h * 0.5f, h * 0.95f, h * 0.2f, h * 0.06f, beat + 0.025f, true, 0.42f);
+		Crescent(-28f, h * 0.34f, h * 1.15f, h * 0.24f, h * 0.15f, beat + 0.012f, true, -0.45f);
+		Crescent(-28f - 8f, h * 0.46f, h * 0.8f, h * 0.16f, h * 0.05f, beat + 0.035f, false, -0.6f);
+		Crescent(-95f, h * 0.62f, h * 0.45f, h * 0.08f, h * 0.05f, beat + 0.03f, true, 0.9f);
+		Crescent(150f, h * 0.48f, h * 0.5f, h * 0.09f, h * 0.05f, beat + 0.045f, false, -0.8f);
 		Fx.After(front, beat, () =>
 		{
 			HitStop.Request(0.05);
@@ -365,7 +365,7 @@ public static partial class SkillRedo5
 			Glow.Sparks(front, mid, 26, 160f * u, 700f * u, 0.6f, new[] { Hot, Pink, Deep }, -40f * u, 0.008f * u, 0.03f * u, Vector2.Up, 180f);
 		});
 		Embed(front, mid, h, 1.4f, 0f, 30, beat);
-		Motes(front, mid, new Vector2(h * 0.4f, h * 0.45f), h, 10, beat + 0.25f, 0.8f);
+		Motes(front, mid, new Vector2(h * 0.4f, h * 0.45f), h, 10, beat + 0.12f, 0.6f);
 	}
 
 	// ═══════════════════════════ 速行者（罕见能力） ═══════════════════════════
@@ -448,7 +448,8 @@ public static partial class SkillRedo5
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face;
 		Control back = c.Back ?? c.Front, front = c.Front;
-		Vector2 palm = c.Hand + new Vector2(f * h * 0.05f, -h * 0.02f);
+		// 挥手（cast_wave）伸直的手在脚前上方这一点；c.Hand 是出牌那一刻的手（还没甩出去），用它会落在前臂上（用户 2026-11-16）
+		Vector2 palm = c.Feet + new Vector2(f * h * 0.28f, -h * 0.83f);
 		Color crimson = new(0.85f, 0.03f, 0.14f);
 		const float p1 = 0.05f, p2 = 0.22f;   // 挥手的手只伸出去约 0.3s
 		S("gx_pop", 0.14f, p1);
