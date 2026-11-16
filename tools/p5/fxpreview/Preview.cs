@@ -564,10 +564,10 @@ public partial class Preview : Node2D
 			Vector2[] es = { Enemy, Enemy2 };
 			for (int k = 0; k < 2; k++)
 			{
-				double t0 = 0.3 + 1.6 * k;
+				double t0 = 0.3 + 1.9 * k;
 				Vector2 e = es[k];
 				p.At(t0, () => p._joker?.Play("cast_wave"));
-				p.At(t0 + 0.08, () => SnakebiteFx.Play(p._front, p._back, JokerFeet, tall, 1f, e + new Vector2(0f, -60f), e + new Vector2(0f, 115f)));
+				p.At(t0 + 0.08, () => { p._enemies.TryGetValue(e, out Node2D? n); SnakebiteFx.Play(p._front, p._back, JokerFeet, tall, 1f, e + new Vector2(0f, -60f), n); });
 				p.Poison(t0 + 0.08 + SnakebiteFx.BiteDelay, e, 7);
 			}
 		},

@@ -108,16 +108,18 @@ public static class PoisonFx
 				Glow.Flash(layer, claw, new Color(0.9f, 0.1f, 0.16f), 260f, 0.28f);
 				// 2026-11-16 第三次（用户：光束太直白，换一种表达）：不再是一道光带 —— 爪尖一甩，一群咒怨光点划着各自的弧飞向敌人
 				//（细的红 / 白疾光，前后错开，越靠后越小），几乎同时扎进去（致命毒药 / 咕嘟冒泡共用）
-				Swarm(layer, claw, at, Mathf.Clamp(width, 120f, 260f));
+				// 2026-11-16 第六版（用户：光束太直白；光点 / 光尘砸过去很丑）：不再从爪尖往敌人发东西 —— 亚森一挥爪，
+				// 敌人身上同一刻被三道咒怨爪痕撕开（打击牌命中的那套手绘笔触：沿走向扫出、溶解，换咒怨的黑红 LUT），咒火从脚下冲起
+				ClawRake(layer, at, width, d);
 			}
-			_beamLand = Stage.NowMs() + (ulong)(SwarmArrive * 1000f);
+			_beamLand = Stage.NowMs() + (ulong)(RakeAt * 1000f);
 			// 毒性爆发：光束命中只留「标记」，不炸（用户 2026-11-03：太花、几个高潮挤在一起）——唯一的高潮留给引爆
 			if (outbreak)
 			{
-				Fx.After(layer, SwarmArrive, () => Mark(layer, at, top, width, body));
+				Fx.After(layer, RakeAt, () => Mark(layer, at, top, width, body));
 				return;
 			}
-			Fx.After(layer, SwarmArrive, () => Impact(layer, at, top, width, body, amount, d, true));
+			Fx.After(layer, RakeAt, () => Impact(layer, at, top, width, body, amount, d, true));
 			return;
 		}
 		if (outbreak)
@@ -339,48 +341,29 @@ void fragment() {
 	COLOR = vec4(col, a);
 }" };
 
-	/// <summary>咒怨光点群从爪尖飞到敌人的时间（最后一颗到的时刻 = 命中）。</summary>
-	private const float SwarmArrive = 0.2f;
+	/// <summary>亚森挥爪到爪痕落在敌人身上（= 命中）的秒数。</summary>
+	private const float RakeAt = 0.05f;
 
-	/// <summary>
-	/// 2026-11-16 第五版（光点单薄、光尘圆点难看）：一群怨灵（手绘 curse_soul，咒怨 LUT）从爪尖划着各自的弧扑向敌人，
-	/// 头朝前、边飞边扭（噪声扭曲），身后拖一道带速度纹的暗红疾光；前后错开，同一刻前后扎进去。
-	/// </summary>
-	private static void Swarm(Control layer, Vector2 from, Vector2 to, float width)
+	/// <summary>三道咒怨爪痕：斜着（从亚森那边往下撕）并排扫过敌人，一道接一道（0.025s），白芯黑红边，扫完溶解。</summary>
+	private static void ClawRake(Control layer, Vector2 at, float width, Vector2 dir)
 	{
-		Vector2 d = to - from;
-		float len = d.Length();
-		Vector2 n = d.Orthogonal().Normalized();
-		if (n.Y > 0f) n = -n;                                          // 往上拱
-		Glow.Flash(layer, from, new Color(1f, 0.9f, 0.88f), 140f, 0.12f);
-		Glow.Flash(layer, from, new Color(0.9f, 0.08f, 0.16f), 320f, 0.28f);
-		for (int i = 0; i < 5; i++)
+		float facing = dir.X >= 0f ? 1f : -1f;
+		float rot = 0.62f * facing + Fx.Rand(-0.06f, 0.06f);            // 从左上往右下撕（朝左时镜像）
+		Vector2 along = Vector2.FromAngle(rot), across = along.Orthogonal();
+		float k = Mathf.Clamp(width / 240f, 0.7f, 1.3f);
+		for (int i = 0; i < 3; i++)
 		{
-			float bend = (i % 2 == 0 ? 1f : -0.4f) * len * Fx.Rand(0.08f, 0.2f);
-			float delay = 0.02f * i, dur = SwarmArrive - delay;
-			Vector2 aim = to + new Vector2(Fx.Rand(-0.15f, 0.15f) * width, Fx.Rand(-0.2f, 0.15f) * width);
-			Vector2 P(float t) => from.Lerp(aim, t) + n * bend * 4f * t * (1f - t);
-			float sc = Mathf.Lerp(1.6f, 1.1f, i / 4f);
-			SkillRedo5.StreakEase(layer, P, delay, dur, len * 0.4f, 70f * sc, new Color(0.85f, 0.04f, 0.14f), 1.3f, t => Fx.InCubic(t) * 0.7f + t * 0.3f);   // 和怨灵同一个缓动，疾光拖在它身后
-			Fx.After(layer, delay, () =>
-			{
-				Paint.Stroke? st = Paint.Make(layer, "curse_soul", from, 0f, Vector2.One * sc, Lut5.Curse, 0.5f, 1.15f);
-				if (st == null) return;
-				st.Set("glow", 1.9f);
-				st.Set("wobble", 0.04f);
-				Fx.Animate(st.Root, 0, dur, t =>
-				{
-					float e = Fx.InCubic(t) * 0.7f + t * 0.3f;
-					Vector2 p = P(e), q = P(Mathf.Min(1f, e + 0.03f));
-					st.Root.GlobalPosition = p;
-					st.Root.Rotation = (q - p).Angle() + Mathf.Pi * 0.5f;   // 贴图的头在上 → 转到朝前
-					st.Set("scroll", t * 2f);
-					st.Root.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, t * 8f));
-				});
-				Fx.FreeAfter(st.Root, dur + 0.02);
-			});
+			Vector2 c = at + across * (i - 1) * 52f * k + along * (i - 1) * 16f * k;
+			float w = (i == 1 ? 0.6f : 0.5f) * k;
+			Paint.Sweep(layer, "slash_thin", c, rot, new Vector2(w * facing, w * 0.9f), Lut5.Blood, 0.05f, 0.05f, 0.28f, 36f, RakeAt - 0.03f + 0.025f * i, 1.3f);
 		}
-		Vanilla.Burst(layer, Vanilla.Specks, from.Lerp(to, 0.5f), d.Angle(), 0.7f, Lut5.Curse, amount: 10, delay: 0.06f);
+		Fx.After(layer, RakeAt, () =>
+		{
+			Glow.Flash(layer, at, new Color(1f, 0.82f, 0.8f), 220f * k, 0.12f);
+			Glow.Ripple(layer, at, 380f * k, 0.38f, 0.025f);
+		});
+		// 火星（打击牌命中同一套原版粒子；暗烟那个转过来像一根尖刺，不用）
+		Vanilla.Burst(layer, Vanilla.Specks, at, rot, 1f, Lut5.Curse, amount: 24, delay: RakeAt);
 	}
 
 	/// <summary>

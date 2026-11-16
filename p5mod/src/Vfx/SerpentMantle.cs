@@ -93,6 +93,7 @@ uniform float diss[5];          // 每条蛇散成烟的程度（攻击时 0 →
 uniform vec4 puff[15];          // 咒烟团（每发攻击 3 个：烟团、咬中、原位留下的残烟）：xy 中心，z 进度（0～1；< 0 没有），w 大小（像素；负数 = 咬中那一团，中间带一下光）
 uniform vec4 streak[5];        // 攻击的烟迹：xy 尾、zw 头（相对脚底）；蛇在原位散掉的同时化成一道咒烟飞向敌人上方
 uniform float streak_a[5];     // 烟迹的浓度（0 = 没有）
+uniform float ember = 0.0;     // 蛇咬单独出场（没有群蛇的红雾场景，背景暗）：边里的暗红透光更足、外面一圈暗红的晕，看得清
 uniform float mouth[5];         // 嘴张多大：0 平时微张，1 张到最大，< 0 合上
 // 蛇头的轮廓（照 docs/p5/preview/serpent_head_plan.png 的点，tools/p5/diagrams/serpent_head_plan.py 同一组；单位 = 脖子粗细 W，x 朝吻尖，y 朝上）
 uniform vec2 head_fixed[72];    // 不动的部分：脖子上沿 → 后脑 → 头顶 → 眉骨 → 吻尖 → 嘴线 → 铰点 → 后脑下沿 → 脖子下沿
@@ -259,7 +260,8 @@ void fragment() {
 		float lit = 0.55 + 0.45 * smoothstep(-0.5, 0.8, -n2.y);
 		float shell = smoothstep(-0.34, -0.05, e) * (1.0 - smoothstep(-0.05, 0.1, e));
 		float upOnly = mix(1.0, smoothstep(-0.2, 0.15, qu.y), headness);
-		vec3 emit = vec3(0.6, 0.05, 0.07) * shell * smoothstep(0.5, 0.82, flick) * 1.1 * lit * (1.0 + dj * 1.5) * upOnly;
+		vec3 emit = vec3(0.6, 0.05, 0.07) * shell * smoothstep(0.5 - 0.3 * ember, 0.82, flick) * 1.1 * lit * (1.0 + dj * 1.5) * upOnly * (1.0 + 1.4 * ember);
+		glow += vec3(0.75, 0.04, 0.1) * exp(-max(e, 0.0) * 2.2) * step(0.0, e) * ember * 0.3 * ba * (1.0 - dj);
 		// 体积（用户 2026-11-11：蛇通体乌漆嘛黑不好看，但太亮又会露出没细节）：只用大面积的柔和过渡，不加线条亮斑——
 		// 核心深，往边缘渐渐变成背光透过来的暗红烟；朝上的一侧整体亮一点；烟里的明暗随噪声慢慢流动
 		vec3 inner = mix(vec3(0.045, 0.009, 0.014), vec3(0.13, 0.026, 0.034), smoothstep(0.35, 0.9, nz2));
@@ -448,6 +450,8 @@ void fragment() {
 	private float _eclPulse;
 	private readonly ShaderMaterial? _skyM, _mistFrontM;
 	private readonly bool _biteOnly;   // 只有一条蛇从咒烟里冒出来咬一口（蛇咬那张牌用，Bite）：没有场景、蛇巢、其它几条
+	/// <summary>蛇咬第四版（Lunge）：一条蛇从 Joker 身边聚出来，整段扑咬（窜出去 → 化成烟迹飞过去 → 敌人上方聚出蛇头 → 咬），咬完散掉不回来。</summary>
+	private bool _solo;
 	private int _nextSerpent;
 
 	private sealed class Attack
@@ -518,6 +522,28 @@ void fragment() {
 		var m = new SerpentMantle(front, back, () => (at, small, face), live: false, biteOnly: true) { _show = 1f };
 		m._attacks[0] = new Attack { Serpent = 0, Target = Vector2.Zero, Body = body, T = BiteStart };
 		return BiteDelay;
+	}
+
+	/// <summary>蛇咬第四版：蛇从 Joker 身边聚出来前的那一段（烟里显形、眼睛一亮）。</summary>
+	private const float LungePre = 0.3f;
+	private const int LungeSerpent = 2;       // 右侧胸口高度、朝敌人的那条轨道
+	private const float LungeScale = 1.0f;
+
+	/// <summary>Lunge 开始到咬合的秒数。</summary>
+	public const float LungeDelay = LungePre + BiteAt;
+
+	/// <summary>
+	/// 蛇咬（2026-11-16 第四版；用户：光点 / 光带 / 月牙都是贴图感，没有特效的感觉 → 用群蛇形态那条咒烟蛇，「没有明确轮廓、纯靠渲染」）：
+	/// feet = Joker 脚底，target = 敌人身体中间（层坐标）。一条咒烟蛇在他身前胸口高度从烟里聚出来、眼睛一亮（慢）→ 往回一缩、朝敌人猛窜、
+	/// 化成一道咒烟带着红眼飞到敌人斜上方（快）→ 烟里聚出蛇头、往后一缩、张嘴（慢）→ 扑下去咬合（快）→ 散成烟，不回来。
+	/// 返回到咬合的秒数（游戏的上毒等到这一刻）。
+	/// </summary>
+	public static float Lunge(Control front, Control back, Vector2 feet, float tall, float face, Vector2 target, Node2D? body)
+	{
+		float T = tall * LungeScale;
+		var m = new SerpentMantle(front, back, () => (feet, T, face), live: false, biteOnly: true) { _solo = true, _show = 1f };
+		m._attacks[0] = new Attack { Serpent = LungeSerpent, Target = target - feet, Body = body, T = -LungePre, Side = 1f, Tilt = -0.5f };   // 斜着从 Joker 这边扑过去，烟团不要飘到敌人头顶很高的地方
+		return LungeDelay;
 	}
 
 	private const float BiteStart = EmergeAt - 0.06f;
@@ -786,7 +812,7 @@ void fragment() {
 			Attack? sa = AttackOf(i);
 			float big = sa != null ? Smooth(EmergeAt - 0.02f, EmergeAt + 0.02f, sa.T) * (1f - Smooth(LeaveAt - 0.02f, LeaveAt, sa.T)) : 0f;
 			_girth[i] = 0.068f * T * Orbits[i].Size * (1f + 1.0f * big);   // 扑咬时放大到两倍（用户：要更有表现力）
-			PoseSerpent(i, T, face, _biteOnly && sa == null ? 0f : alpha);
+			PoseSerpent(i, T, face, _biteOnly && (sa == null || (_solo && sa.T >= LeaveAt)) ? 0f : alpha);
 		}
 		UpdateAttacks(dt, feet, T);
 		if (_biteOnly && _attacks[0] == null) { Free(); return; }
@@ -821,6 +847,7 @@ void fragment() {
 			mat.SetShaderParameter("streak", _streak);
 			mat.SetShaderParameter("streak_a", _streakA);
 			mat.SetShaderParameter("mouth", _mouth);
+			mat.SetShaderParameter("ember", _solo ? 1f : 0f);
 		}
 	}
 
@@ -1102,7 +1129,9 @@ void fragment() {
 			// 0～0.07 往回一缩、眼睛一亮（看得出是它要出手）→ 0.07～0.23 朝敌人猛窜 0.85 身高、边窜边散 →
 			// 0.12～0.32 原地化成一道咒烟、带着那对红眼飞到敌人上方，原位留下一团慢慢散掉的残烟（到 0.9）→
 			// 0.28 烟迹扎进烟团，眼睛先亮、蛇头再聚出来 → 扑咬 → 散掉、回原位重新聚起
-			_diss[a.Serpent] = t < EmergeAt ? Smooth(0.1f, EmergeAt, t)
+			_diss[a.Serpent] = t < 0f ? 1f - Smooth(-LungePre, -0.08f, t)   // 蛇咬第四版：先从烟里聚出来
+				: _solo && t >= LeaveAt ? 1f
+				: t < EmergeAt ? Smooth(0.1f, EmergeAt, t)
 				: t < 0.56f ? 1f - Smooth(EmergeAt, 0.34f, t)
 				: t < LeaveAt ? Smooth(0.56f, 0.76f, t)
 				: 1f - Smooth(LeaveAt, 1.12f, t);
@@ -1120,12 +1149,12 @@ void fragment() {
 					a.From = new Vector2(hb.X, hb.Y);
 				}
 				// 眼睛：缩的时候一亮，随烟迹飞走
-				float flare = Smooth(0f, 0.05f, t) * (1f - Smooth(0.13f, 0.19f, t));
+				float flare = Mathf.Max(Smooth(0f, 0.05f, t), _solo ? Smooth(-0.16f, -0.04f, t) : 0f) * (1f - Smooth(0.13f, 0.19f, t));
 				Vector3 ey = _eyes[a.Serpent];
 				_eyes[a.Serpent] = new Vector3(ey.X, ey.Y, Mathf.Max(ey.Z * (1f - Smooth(0.13f, 0.19f, t)), 1.6f * flare));
 			}
 			// 烟迹：头 0.12→0.3 从原位飞到烟团（先快后慢），尾巴落后一点跟上
-			if (!_biteOnly && t >= 0.12f && t < 0.42f)
+			if ((!_biteOnly || _solo) && t >= 0.12f && t < 0.42f)
 			{
 				float hk = Ease5.OutQuint(Ease5.Seg(t, 0.12f, 0.18f));
 				float tk = Ease5.OutQuint(Ease5.Seg(t, 0.17f, 0.2f));
@@ -1138,14 +1167,21 @@ void fragment() {
 			}
 			else _streakA[s] = 0f;
 			// 咒烟团：原位留下的残烟（慢慢散）、聚出来的那一团（烟团处，大一点）、咬中往外炸的那一团
-			if (!_biteOnly && t >= 0.14f && t < 0.95f) Puff(a.From, Ease5.Seg(t, 0.14f, 0.8f), 0.55f * T, s * 3 + 2);
+			if ((!_biteOnly || _solo) && t >= 0.14f && t < 0.95f) Puff(a.From, Ease5.Seg(t, 0.14f, 0.8f), 0.55f * T, s * 3 + 2);
+			if (_solo && t < 0.12f)
+			{
+				// 聚出来的地方一团咒烟（蛇从烟里显形）
+				Vector3 op = Orbit(a.Serpent, _tau[a.Serpent], T, face);
+				Puff(new Vector2(op.X, op.Y), Ease5.Seg(t, -LungePre, LungePre + 0.12f), 0.5f * T, s * 3 + 1);
+			}
 			if (t >= EmergeAt - 0.04f) Puff(cloud, Ease5.Seg(t, EmergeAt - 0.04f, 0.7f), 0.75f * T, s * 3);
 			if (t >= BiteAt) Puff(a.Target, Ease5.Seg(t, BiteAt, 0.6f), -0.5f * T, s * 3 + 1);
 			if (!a.Bit && t >= BiteAt)
 			{
 				a.Bit = true;
 				_eclPulse = 1f;   // 日食跟着亮一下
-				Stage.PlayEvent?.Invoke(BiteSfx, 0.8f);   // 只有咬合的声音（用户：冲出来不要音效）；2026-11-13 用户：稍微小了一点 → 0.55 提到 0.8
+				if (_solo) Sfx.Take("gx_slice", 0.21f);   // 蛇咬：用户说这个咬合声不错
+				else Stage.PlayEvent?.Invoke(BiteSfx, 0.8f);   // 只有咬合的声音（用户：冲出来不要音效）；2026-11-13 用户：稍微小了一点 → 0.55 提到 0.8
 				Vector2 at = feet + a.Target;
 				Control fx = GodotObject.IsInstanceValid(_top) ? _top : _front;
 				Glow.Flash(fx, at, Pal5.Crimson, 0.8f * T, 0.22f);
@@ -1154,7 +1190,7 @@ void fragment() {
 				Fx.Shake(2);
 				HitStop.Request(0.06);
 			}
-			if (t > AttackLen) { _attacks[s] = null; _streakA[s] = 0f; }
+			if (t > (_solo ? 1.08f : AttackLen)) { _attacks[s] = null; _streakA[s] = 0f; }
 		}
 	}
 }

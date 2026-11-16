@@ -193,7 +193,7 @@ public static class JokerFx
 				{
 					if (!GodotObject.IsInstanceValid(tn)) return;
 					Rect2 box = tn.Hitbox.GetGlobalRect();
-					SnakebiteFx.Play(layer, back, jf, tall, face, box.GetCenter(), new Vector2(box.GetCenter().X, box.End.Y));
+					SnakebiteFx.Play(layer, back, jf, tall, face, box.GetCenter(), tn.Visuals);
 				});
 				break;
 			}
