@@ -58,7 +58,7 @@ public static class Casts
 		["Malaise"] = Cast.Summon,                    // 用户 2026-11-13：萎靡从召唤用的面具出手（扶面具 → 指向敌人），不召唤亚森
 		["Mirage"] = Cast.Guard,
 		["Nightmare"] = Cast.Glove,
-		["Haze"] = Cast.Wave,
+		["Haze"] = Cast.MaskOff,                       // 用户 2026-11-16：扶面具（带面具火），打出时只放下手
 		["Expose"] = Cast.Wave,                        // 用户 2026-11-10：挥手就行，不用扶面具
 		["PiercingWail"] = Cast.Summon,                // 用户 2026-11-03：尖啸是白牌，不是大招
 		["Flanking"] = Cast.Glove,

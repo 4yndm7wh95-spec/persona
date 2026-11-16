@@ -349,16 +349,15 @@ void fragment() {
 		float len = d.Length();
 		Vector2 n = d.Orthogonal().Normalized();
 		if (n.Y > 0f) n = -n;                                          // 往上拱
-		for (int i = 0; i < 9; i++)
+		for (int i = 0; i < 7; i++)
 		{
 			float bend = (i % 2 == 0 ? 1f : -0.35f) * len * Fx.Rand(0.06f, 0.2f);
 			float delay = 0.014f * i, dur = SwarmArrive - delay;
 			Vector2 aim = to + new Vector2(Fx.Rand(-0.18f, 0.18f) * width, Fx.Rand(-0.25f, 0.2f) * width);
 			Vector2 start = from + Vector2.FromAngle(Fx.Rand(0f, Mathf.Tau)) * 14f;
 			Vector2 P(float t) => start.Lerp(aim, t) + n * bend * 4f * t * (1f - t);
-			bool white = i % 3 == 0;
-			SkillRedo5.Streak(layer, P, delay, dur, len * Fx.Rand(0.25f, 0.4f), Mathf.Lerp(80f, 44f, i / 8f) * (white ? 0.5f : 1f),
-				white ? new Color(1f, 0.9f, 0.9f) : new Color(0.9f, 0.05f, 0.16f), white ? 1.6f : 1.25f);
+			// 2026-11-16 第四版：小光点太单薄 → 每一股都是一颗带光晕的光头 + 一路洒下的咒怨光尘（EmberTrail），前几股更大
+			EmberTrail.Run(layer, P, delay, dur, Mathf.Lerp(80f, 45f, i / 6f), 34, new Color(0.9f, 0.05f, 0.16f, 0.85f), 0.4f, Fx.InCubic, 1.2f);
 		}
 		Vanilla.Burst(layer, Vanilla.Specks, from.Lerp(to, 0.5f), d.Angle(), 0.7f, Lut5.Curse, amount: 10, delay: 0.06f);
 		Glow.Flash(layer, from, new Color(1f, 0.9f, 0.88f), 140f, 0.12f);

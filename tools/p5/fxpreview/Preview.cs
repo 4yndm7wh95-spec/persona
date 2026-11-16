@@ -76,7 +76,7 @@ public partial class Preview : Node2D
 		}
 	}
 
-	private static void RunCards(Preview p, string[]? only, (string Card, string Anim, double Lead, double Gap)[] seq)
+	private static void RunCards(Preview p, string[]? only, (string Card, string Anim, double Lead, double Gap)[] seq, double start = 0.3)
 	{
 		float tall = (JokerFeet - Pose(815f, 120f)).Length();
 		SkillCtx Ctx() => new(p._front, p._back, JokerFeet, Pose(1010f, 330f), Pose(1010f, 410f), Pose(1010f, 215f), tall, 1f,
@@ -91,12 +91,12 @@ public partial class Preview : Node2D
 			Region = new Rect2(JokerFeet + new Vector2(-tall * 0.75f, -tall * 1.15f), new Vector2(tall * 1.5f, tall * 1.3f)),
 			BodyMaterial = m => p._joker!.Material = m,
 		};
-		double at = 0.3;
+		double at = start;
 		foreach (var (card, anim, lead, gap) in seq)
 		{
 			if (only != null && Array.IndexOf(only, card) < 0) continue;
 			string a = anim, cd = card;
-			p.At(at, () => p._joker?.Play(a));
+			if (a.Length > 0) p.At(at, () => p._joker?.Play(a));
 			p.At(at + lead, () => (cd == "AfterimageTick" ? SkillRedo5.AfterimageTick : CardSkillFx.Cards[cd])(Ctx()));
 			at += gap;
 		}
@@ -893,7 +893,12 @@ public partial class Preview : Node2D
 			p.At(3.4, () => TimeStop.StopCurrent());
 		},
 		["redo7"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.9) }),
-		["haze"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Haze", "cast_wave", 0.08, 2.6), ("Haze", "cast_wave", 0.08, 2.6) }),
+		["haze"] = p =>
+		{
+			// 2026-11-16：迷雾改扶面具（带面具火）→ 打出时只放下手（mask_out）
+			p.Ready(0.1, Stance.Mask, "mask", "mask_out", play: true);
+			RunCards(p, null, new (string, string, double, double)[] { ("Haze", "", 0.05, 2.6) }, 1.7);
+		},
 		["adrenaline"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Adrenaline", "cast_glove", 0.25, 1.6), ("Adrenaline", "cast_glove", 0.25, 1.6) }),
 		["shadowstep"] = p => RunCards(p, null, new (string, string, double, double)[] { ("ShadowStep", "cast_glove", 0.25, 1.8), ("ShadowStep", "cast_glove", 0.25, 1.8) }),
 		// 幽魂形态：打出 → 被打两次 → 无实体结束（Vfx/WraithVeil.cs）

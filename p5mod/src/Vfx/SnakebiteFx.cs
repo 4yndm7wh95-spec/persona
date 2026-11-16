@@ -61,11 +61,9 @@ public static class SnakebiteFx
 		Vector2 dv = at - hand, nrm = dv.Orthogonal().Normalized();
 		float amp = Mathf.Min(h * 0.26f, dv.Length() * 0.13f);
 		Vector2 Path(float t, float ph) => hand.Lerp(at, t) + nrm * Mathf.Sin(t * Mathf.Pi * 2f + ph) * amp * (1f - t * 0.8f);
-		SkillRedo5.Streak(back, t => Path(t, 0.5f), Coil, Strike, h * 1.2f, h * 0.16f, deep, 0.9f);
-		SkillRedo5.Streak(front, t => Path(t, 0f), Coil, Strike, h * 1.3f, h * 0.13f, red, 1.4f);
-		SkillRedo5.Streak(front, t => Path(t, 0f), Coil + 0.01f, Strike, h * 0.9f, h * 0.05f, hot, 1.6f);
-		Body(front, back, t => Path(t, 0f), Coil, Strike, h, red, hot);
-
+		// 2026-11-16 第四版：蛇身不用光带（塑料、像贴图）→ 光头沿 S 形窜过去，身后洒一路柔光粒（像蛇身散成的光尘）
+		EmberTrail.Run(back, t => Path(t, 0.4f), Coil, Strike, h * 0.3f, 70, new Color(0.55f, 0.02f, 0.1f, 0.7f), 0.55f);
+		EmberTrail.Run(front, t => Path(t, 0f), Coil, Strike, h * 0.2f, 90, new Color(0.95f, 0.08f, 0.18f, 0.8f), 0.5f, null, 1.3f);
 		// ③ 慢：毒牙合拢、咬住停一下、红光往里渗，再松开
 		float ang = f > 0f ? 0f : Mathf.Pi;
 		float jaw = h * 0.85f;
@@ -89,38 +87,60 @@ public static class SnakebiteFx
 		}
 		return BiteDelay;
 	}
+}
 
-	/// <summary>蛇身光痕：扑过去的同时沿路径长出来（红晕 + 白芯，头宽尾细），到头后停一下、慢慢淡掉。</summary>
-	private static void Body(Control front, Control back, System.Func<float, Vector2> path, float t0, float dur, float h, Color red, Color hot)
+/// <summary>
+/// 光尘轨迹（2026-11-16 用户：光束 / 光带塑料感太强、像贴图）：一颗亮的光头沿 path 跑，身后一路洒下柔光粒（大小不一、各自往外漂一点、慢慢淡掉），
+/// 读起来是一股「光尘」流过去，不是一条实心的带子。蛇咬的蛇身、致命毒药的咒怨都用这个。
+/// </summary>
+public static class EmberTrail
+{
+	public static void Run(Control layer, System.Func<float, Vector2> path, float t0, float dur, float size, int n, Color col, float linger = 0.4f,
+		System.Func<float, float>? ease = null, float headSize = 1f)
 	{
-		const int n = 36;
-		float life = dur + 0.45f;
-		Node2D root = Fx.Root(back, Vector2.Zero, "P5SnakeBody", t0 + life + 0.05);
-		root.GlobalPosition = Vector2.Zero;
-		Curve taper = new();
-		taper.AddPoint(new Vector2(0f, 0.2f));
-		taper.AddPoint(new Vector2(0.7f, 0.9f));
-		taper.AddPoint(new Vector2(1f, 0.6f));
-		Line2D glow = new() { Width = h * 0.16f, DefaultColor = new Color(red, 0.45f), WidthCurve = taper, Material = Fx.Additive, Antialiased = true,
-			JointMode = Line2D.LineJointMode.Round, BeginCapMode = Line2D.LineCapMode.Round, EndCapMode = Line2D.LineCapMode.Round };
-		Line2D core = new() { Width = h * 0.035f, DefaultColor = new Color(hot, 0.85f), WidthCurve = taper, Material = Fx.Additive, Antialiased = true,
-			JointMode = Line2D.LineJointMode.Round, BeginCapMode = Line2D.LineCapMode.Round, EndCapMode = Line2D.LineCapMode.Round };
-		root.AddChild(glow);
-		root.AddChild(core);
-		root.Visible = false;
-		Fx.Animate(root, t0, life, k =>
+		System.Func<float, float> ez = ease ?? Ease5.OutQuint;
+		// 光头
+		Node2D head = Fx.Root(layer, path(0f), "P5EmberHead", t0 + dur + 0.1);
+		Sprite2D hg = new() { Texture = Glow.Soft, Material = Fx.Additive, Modulate = col, Scale = Vector2.One * size * 2.2f * headSize / 32f };
+		Sprite2D hc = new() { Texture = Glow.Soft, Material = Fx.Additive, Modulate = new Color(1f, 0.95f, 0.93f), Scale = Vector2.One * size * 0.8f * headSize / 32f };
+		head.AddChild(hg);
+		head.AddChild(hc);
+		head.Visible = false;
+		Fx.Animate(head, t0, dur, t =>
 		{
-			root.Visible = true;
-			float s = k * life;
-			float head = Ease5.OutQuint(Mathf.Min(1f, s / dur));
-			float tail = Fx.InCubic(Ease5.Seg(s, dur + 0.1f, life - dur - 0.1f));
-			var pts = new Vector2[n];
-			for (int i = 0; i < n; i++) pts[i] = path(Mathf.Lerp(tail, head, i / (n - 1f)));
-			glow.Points = pts;
-			core.Points = pts;
-			float o = 1f - Ease5.Seg(s, dur + 0.15f, life - dur - 0.15f);
-			glow.Modulate = new Color(1f, 1f, 1f, o);
-			core.Modulate = new Color(1f, 1f, 1f, o);
+			head.Visible = true;
+			head.GlobalPosition = path(ez(t));
+			head.Modulate = new Color(1f, 1f, 1f, 1f - Ease5.Seg(t, 0.85f, 0.15f));
 		});
+		// 一路洒下的光粒
+		for (int i = 0; i < n; i++)
+		{
+			float k = (i + Fx.Rand(0f, 1f)) / n;
+			float when = t0 + dur * InvEase(ez, k);
+			float sz = size * Fx.Rand(0.45f, 1.15f), life = linger * Fx.Rand(0.6f, 1.2f);
+			Vector2 drift = Vector2.FromAngle(Fx.Rand(0f, Mathf.Tau)) * size * Fx.Rand(0.3f, 1.2f) + new Vector2(0f, -size * 0.6f);
+			bool hot = i % 4 == 0;
+			Color c = hot ? new Color(1f, 0.85f, 0.85f) : new Color(col.R * Fx.Rand(0.6f, 1f), col.G, col.B, col.A);
+			Fx.After(layer, when, () =>
+			{
+				Vector2 p0 = path(k);
+				Node2D r = Fx.Root(layer, p0, "P5Ember", life + 0.05);
+				Sprite2D sp = new() { Texture = Glow.Soft, Material = Fx.Additive, Modulate = c };
+				r.AddChild(sp);
+				Fx.Animate(r, 0, life, t =>
+				{
+					r.GlobalPosition = p0 + drift * Fx.OutCubic(t);
+					sp.Scale = Vector2.One * sz * (hot ? 0.6f : 1f) * Mathf.Lerp(1.1f, 0.4f, t) / 32f;
+					sp.Modulate = new Color(c, c.A * (1f - t) * Mathf.Min(1f, t * 10f + 0.3f));
+				});
+			});
+		}
+	}
+
+	private static float InvEase(System.Func<float, float> ez, float y)
+	{
+		float lo = 0f, hi = 1f;
+		for (int i = 0; i < 14; i++) { float m = (lo + hi) * 0.5f; if (ez(m) < y) lo = m; else hi = m; }
+		return (lo + hi) * 0.5f;
 	}
 }

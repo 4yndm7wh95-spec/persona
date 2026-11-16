@@ -63,7 +63,7 @@ void fragment() {
 	// 前沿 / 尾巴 / 喷口：都是带噪声的软边
 	float front = 1.0 - smoothstep(reach - 0.32, reach + 0.04, a + (n2 - 0.5) * 0.28 + (n - 0.5) * 0.12);   // 宽的噪声软边（2026-11-13：前沿停住时成了一道边）
 	float back = smoothstep(tail_d - 0.02, tail_d + 0.16, a + (n2 - 0.5) * 0.12);
-	float mouth = smoothstep(-0.14, 0.08, a + (n2 - 0.5) * 0.1);   // 起点是一团（往后也鼓一点），不是一个尖点
+	float mouth = smoothstep(-0.05, 0.3, a + (n2 - 0.5) * 0.18);   // 2026-11-16 用户：首端太突 → 起点拉长、慢慢浓起来
 	// 风丝：沿方向急流的细丝
 	float st = 1.0 - abs(noise(vec2(a * 1.6 - flow * 1.7, l / wid * 9.0 + seed)) * 2.0 - 1.0);
 	st = pow(st, 7.0);
@@ -90,7 +90,8 @@ void fragment() {
 		const float blast = 0.6f, cut = 0.8f, clearAt = 1.1f, life = 2.3f;   // 2026-11-13 用户：散得太快 → 停久一点
 		Control back = c.Back ?? c.Front;
 		// 挥手（cast_wave）伸直的手：c.Hand 是出牌那一刻、手还没甩出去（同触媒）
-		Vector2 hp = c.Feet + new Vector2(f * h * 0.28f, -h * 0.83f);
+		// 2026-11-16 用户：迷雾改扶面具（带面具火）→ 出手点在面具前
+		Vector2 hp = c.Mask + new Vector2(f * h * 0.1f, h * 0.02f);
 		// 音效：原版活雾的吹气攻击（用户 2026-11-13 指定）
 		Stage.PlayEvent?.Invoke("event:/sfx/enemy/enemy_attacks/living_fog/living_fog_attack_blow", 0.7f);
 		Vector2 scr = Fx.Screen(c.Front);
@@ -161,15 +162,6 @@ void fragment() {
 		});
 		// 出手（用户 2026-11-13：手和雾之间要有打出的特效，不然像凭空冒出来的雾）：
 		// 手上一闪、迸一小撮碎光 → 两道暗红疾光从手里射向身前的起点（一道带弧）→ 起点鼓起一团网点光晕、迸开一圈碎光，雾从那里吹开
-		// 2026-11-16 第三次：挥手的弧要跟着手、小一点、不用很明显 → 一道细月牙沿手臂挥下来的轨迹（肩上方 → 伸直的手）
-		{
-			Vector2 shoulder = c.Feet + new Vector2(f * h * 0.06f, -h * 0.9f);
-			Vector2 top = shoulder + new Vector2(-f * h * 0.04f, -h * 0.27f), endP = hp;
-			Vector2 dv = endP - top;
-			Vector2 nrm = new(dv.Normalized().Y, -dv.Normalized().X);   // Blade.Arc 往局部 -y 拱
-			bool flip = (nrm.X * f + -nrm.Y * 0.5f) < 0f;               // 弧背朝前上方（远离肩膀）
-			Blade.Arc(c.Front, (top + endP) * 0.5f, dv.Angle(), dv.Length() * 1.05f, h * 0.08f, h * 0.055f, flip, 0.06f, 0.03f, 0.03f, 0.14f, false);
-		}
 		// 2026-11-16 用户（实机）：手前要有更明显的出手特效
 		Glow.Flash(c.Front, hp, new Color(1f, 0.9f, 0.88f), h * 0.45f, 0.14f);
 		Glow.Flash(back, hp, new Color(0.9f, 0.08f, 0.15f), h * 1.1f, 0.3f);
