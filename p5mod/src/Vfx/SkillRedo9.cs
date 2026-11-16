@@ -321,19 +321,17 @@ public static partial class SkillRedo5
 	}
 
 	/// <summary>
-	/// 磨蚀约 1.2s「月牙反斩」（用户 2026-11-16：荆棘贴图、三角光刺都是棱角分明的贴图，不算特效 → 用认可过的柔和 P5 月牙刀光，按我的想法做）：
-	/// 四周暗下来、光线往他胸口收；主拍时从他身上往四面「唰」地斩出五道月牙刀光（弧背朝外，前后两层错开，一道接一道），重震、白闪、空间一扭、火星；
-	/// 紧跟着第二波四道更细的月牙在更外一圈、夹在第一波的空隙里再斩一次（像刀风往外扩）；最后光点往上飘。
+	/// 磨蚀约 1s「月牙反斩」（用户 2026-11-16：荆棘、三角光刺是棱角分明的贴图；五道 + 三道月牙又太乱 → 只留两道）：四周暗下来、光线往胸口收；
+	/// 主拍时左右对称的两道大月牙刀光同时从他身上斩出（弧背朝外、略往上扬），重震、白闪、空间一扭、火星；最后光点往上飘。
 	/// </summary>
 	public static void Abrasive(SkillCtx c)
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face;
 		Control back = c.Back ?? c.Front, front = c.Front;
-		const float beat = 0.32f, wave2 = 0.52f;
+		const float beat = 0.32f;
 		S("gx_whoosh", 0.14f, 0.04f);
 		S("gx_slice", 0.28f, beat);
 		S("gx_pop", 0.18f, beat + 0.01f);
-		S("gx_slice", 0.2f, wave2);
 		Vector2 mid = c.Feet + new Vector2(0f, -h * 0.58f);
 		Dim(back, mid, new Vector2(h * 3.4f, h * 2.8f), 1.25, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.15f)) * (1f - Ease5.Seg(s, 0.7f, 0.3f)) * 0.75f);
 		Gather(front, c.Chest, h, u, beat, 18, 0.7f);
@@ -345,14 +343,9 @@ public static partial class SkillRedo5
 			// 弦垂直于径向、弧背朝外（Blade.Arc 往局部 -y 拱）
 			global::P5Joker.Blade.Arc(fr ? front : back, mid + dir * dist, dir.Angle() + Mathf.Pi * 0.5f + skew * f, len, bow, thick, false, 0.06f, 0.04f, 0.06f, 0.2f, true, d);
 		}
-		// 第一波：五道，上半三道、下半两道，前后层交替
-		float[] w1 = { -150f, -95f, -40f, 25f, 160f };
-		for (int i = 0; i < w1.Length; i++)
-			Crescent(w1[i], h * 0.42f, h * 1.2f, h * 0.22f, h * 0.17f, beat + 0.02f * i, i % 2 == 0, (i % 2 == 0 ? 0.55f : -0.5f));   // 斜一点：几道月牙不连成一个圈
-		// 第二波：四道更细、更外，夹在空隙里
-		float[] w2 = { -120f, -65f, 100f };
-		for (int i = 0; i < w2.Length; i++)
-			Crescent(w2[i], h * 0.66f, h * 1.0f, h * 0.18f, h * 0.1f, wave2 + 0.02f * i, i % 2 == 1, (i % 2 == 0 ? -0.6f : 0.6f));
+		// 用户：五道 + 三道太乱 → 只要左右对称的两道大月牙，同时斩出（弧背朝外、略往上扬），干净
+		Crescent(-180f + 20f, h * 0.38f, h * 1.35f, h * 0.3f, h * 0.18f, beat, false, 0.25f);
+		Crescent(-20f, h * 0.38f, h * 1.35f, h * 0.3f, h * 0.18f, beat, true, -0.25f);
 		Fx.After(front, beat, () =>
 		{
 			HitStop.Request(0.05);
@@ -362,9 +355,7 @@ public static partial class SkillRedo5
 			Glow.Sparks(front, mid, 26, 160f * u, 700f * u, 0.6f, new[] { Hot, Pink, Deep }, -40f * u, 0.008f * u, 0.03f * u, Vector2.Up, 180f);
 		});
 		Embed(front, mid, h, 1.4f, 0f, 30, beat);
-		Fx.After(front, wave2, () => Glow.Flash(back, mid, new Color(1f, 0.12f, 0.2f), h * 1.8f, 0.3f));
-		Embed(front, mid, h, 1.0f, 0f, 16, wave2);
-		Motes(front, mid, new Vector2(h * 0.45f, h * 0.5f), h, 12, wave2 + 0.15f, 0.8f);
+		Motes(front, mid, new Vector2(h * 0.4f, h * 0.45f), h, 10, beat + 0.25f, 0.8f);
 	}
 
 	// ═══════════════════════════ 速行者（罕见能力） ═══════════════════════════
