@@ -1,5 +1,8 @@
 你在用户的 Windows 电脑上工作。任务：把 P5Joker mod 0.9.48 编译、打包、装进游戏。不改任何代码、不生图、不启动游戏、不用 Computer Use。
 
+【这是重跑】第一次跑 0.9.48 时，第 2 步 merge --ff-only 在按需下载文件时网络断开（RPC failed / Connection was reset / could not fetch ... from promisor remote），
+什么都没编译、没安装，报告在 docs/codex/reports/p5_build_0.9.48.md（别动它）。这次 merge 也带上 HTTP/1.1，网络错误按第 2 步重试；报告写到新文件 p5_build_0.9.48_retry.md。
+
 【0. 绝对不要做】
 - 不修改仓库里任何已有文件（只允许按第 5 步新建报告文件）。
 - 不 rebase / reset / amend / stash；不 --force；不改全局 git config、系统环境变量 / PATH；不安装任何东西。
@@ -27,9 +30,12 @@
    git -c safe.directory=* status --short --untracked-files=no   → 有输出（受跟踪文件被改过）就停下来报告
    git -c safe.directory=* -c http.version=HTTP/1.1 fetch origin claude/confident-hypatia-nropgi:refs/remotes/origin/claude/confident-hypatia-nropgi
    （带完整的 :refs/remotes/... 写法，否则只写进 FETCH_HEAD，下一步会报 invalid reference；超时按 5/10/20/40 秒重试，4 次都失败就停下来报告）
-   git -c safe.directory=* merge --ff-only origin/claude/confident-hypatia-nropgi
+   git -c safe.directory=* -c http.version=HTTP/1.1 merge --ff-only origin/claude/confident-hypatia-nropgi
    git -c safe.directory=* log -1 --oneline   → 应该是含「0.9.48」的提交或更新的提交
-ff-only 失败 → 停下来报告完整报错。
+merge 报网络错误（RPC failed / Connection was reset / early EOF / index-pack failed / could not fetch ... from promisor remote）：
+   先单独运行 git -c safe.directory=* status --short --untracked-files=no（必须无输出）和 git -c safe.directory=* log -1 --oneline（还是 merge 前的提交），
+   确认工作区没被改动；然后等 10 / 20 / 40 / 60 秒，重试同一条 merge 命令，最多 4 次。4 次都失败、或者 status 有输出，就停下来报告完整报错。
+merge 报的是别的错误 → 直接停下来报告完整报错。
 确认 p5mod\P5Joker.json 里 "version" 是 "0.9.48"，p5mod\src\ModEntry.cs 里 Version = "0.9.48"。不是就停下来报告。
 确认 p5mod\pck_stage\p5joker\fx\ 下有 thorn_burst.png、mirror_crack_02.png、ribbon_01.png（这一版新加的贴图；稀疏检出时可能没检出来）。缺任何一个就停下来报告。
 
@@ -53,10 +59,10 @@ ff-only 失败 → 停下来报告完整报错。
 5. 列出 mods\P5Joker\ 里每个文件的文件名、大小、修改时间。
 
 【5. 报告并推送】
-新建 <repo>\docs\codex\reports\p5_build_0.9.48.md（中文）：git log -1 --oneline 的输出、编译结果（warning 条数）、PCK 大小、备份位置、第 4 步第 5 条的文件列表。
+新建 <repo>\docs\codex\reports\p5_build_0.9.48_retry.md（中文；不要改第一次的 p5_build_0.9.48.md）：git log -1 --oneline 的输出、编译结果（warning 条数）、PCK 大小、备份位置、第 4 步第 5 条的文件列表。
 依次单独运行：
-   git -c safe.directory=* add docs/codex/reports/p5_build_0.9.48.md
-   git -c safe.directory=* -c user.name=Codex -c user.email=codex@local commit -m "Codex: P5Joker 0.9.48 编译安装报告"
+   git -c safe.directory=* add docs/codex/reports/p5_build_0.9.48_retry.md
+   git -c safe.directory=* -c user.name=Codex -c user.email=codex@local commit -m "Codex: P5Joker 0.9.48 编译安装报告（重跑）"
    git -c safe.directory=* -c http.version=HTTP/1.1 push origin claude/confident-hypatia-nropgi
 推送被拒：先运行 git -c safe.directory=* -c http.version=HTTP/1.1 pull --no-rebase --no-edit origin claude/confident-hypatia-nropgi，再推；有冲突就停下来报告。
 最后在对话里回复：提交号 + 报告全文。
