@@ -52,7 +52,7 @@ public static class Casts
 		["KnifeTrap"] = Cast.Glove,
 		["Outbreak"] = Cast.Big,
 		["Concoct"] = Cast.Glove,
-		["Snakebite"] = Cast.MaskOff,                  // 用户 2026-11-12：扶面具（带面具火），打出时不甩手；不召唤亚森（Aim.Summons），敌人那里冒出一条蛇咬
+		["Snakebite"] = Cast.Wave,                     // 用户 2026-11-16：重做，直接挥手（SnakebiteFx）
 		["Adrenaline"] = Cast.Glove,                   // 不召唤亚森（召唤太频繁）
 		["Burst"] = Cast.Glove,
 		["Malaise"] = Cast.Summon,                    // 用户 2026-11-13：萎靡从召唤用的面具出手（扶面具 → 指向敌人），不召唤亚森

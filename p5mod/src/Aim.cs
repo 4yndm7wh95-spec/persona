@@ -427,7 +427,7 @@ public static class Aim
 
 	/// <summary>召唤人格面具、单体上毒的牌：亚森伸手攥住中毒的怪（Grip）。</summary>
 	/// <summary>普通稀有度、但也召唤亚森的牌：蛇咬（用户 2026-11-13：召唤亚森，亚森一挥手、蛇从咒烟里窜出来咬）。</summary>
-	public static bool Commands(string cardName) => cardName is "Snakebite";
+	public static bool Commands(string cardName) => false;   // 蛇咬 2026-11-16 重做后不再召唤亚森（SnakebiteFx）
 
 	public static bool Grips(string cardName) => cardName is "BubbleBubble" or "DeadlyPoison";   // 用户 2026-11-01：只要用毒就亚森 + 手捏（蛇咬 2026-11-11 改成敌人那里冒出一条蛇咬，不召唤）
 

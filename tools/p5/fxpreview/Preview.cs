@@ -554,6 +554,20 @@ public partial class Preview : Node2D
 		},
 		// 第四版毒组：致命毒药（5 层）→ 弹跳药瓶（3 跳随机）→ 一次加 9 层 → 回合开始三个敌人各结算一轮毒伤
 		// 2026-11-13（B 方案）：蛇咬召唤亚森 → 一挥手、蛇形光带游到敌人斜上方、咒烟鼓起 → 蛇窜出来咬 → 咬合时上毒（原来的落点）
+		// 蛇咬第三版（2026-11-16 推倒重做）：挥手 → 蛇影贴地游过去 → 昂头扑起 → 毒牙合拢（SnakebiteFx）
+		["snakebite3"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			Vector2[] es = { Enemy, Enemy2 };
+			for (int k = 0; k < 2; k++)
+			{
+				double t0 = 0.3 + 1.6 * k;
+				Vector2 e = es[k];
+				p.At(t0, () => p._joker?.Play("cast_wave"));
+				p.At(t0 + 0.08, () => SnakebiteFx.Play(p._front, p._back, JokerFeet, tall, 1f, e + new Vector2(0f, -60f), e + new Vector2(0f, 115f)));
+				p.Poison(t0 + 0.08 + SnakebiteFx.BiteDelay, e, 7);
+			}
+		},
 		["snakebite_arsene"] = p =>
 		{
 			float tall = (JokerFeet - Pose(815f, 120f)).Length();
