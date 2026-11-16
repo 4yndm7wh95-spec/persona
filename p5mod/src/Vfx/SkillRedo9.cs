@@ -49,6 +49,10 @@ public static partial class SkillRedo5
 		}
 	}
 
+	/// <summary>两头尖的疾光（粗的疾光头不平）。</summary>
+	private static void Sharp(Control layer, Func<float, Vector2> path, float t0, float dur, float len, float thick, Color tint, float hot = 1.3f) =>
+		DashFly(layer, path, t0, dur, len, thick, tint, hot, Ease5.OutQuint, 0.7f, 1f);
+
 	private static float TexW(string tex) => Fx.Tex(tex) is Texture2D t ? t.GetWidth() : 1024f;
 
 	/// <summary>
@@ -242,9 +246,10 @@ public static partial class SkillRedo5
 		Vanilla.Burst(front, Vanilla.Specks, body, f > 0f ? Mathf.Pi : 0f, 0.9f, Lut5.Blood, amount: 16);
 
 		Vector2 top = c.Feet + new Vector2(-f * h * 0.32f, -h * 1.22f);
-		Phantom.P5Card card = Phantom.Card(front, c.Hand, w * 1.5f, 0.95, 0.5f);
+		Phantom.P5Card card = Phantom.Card(front, c.Hand, w * 1.5f, 0.95, 0f);   // 2026-11-16：牌的拖尾带子两头是平的 → 不要带子，收进胸口时用两头尖的疾光
 		card.Root.Visible = false;
 		const float t0 = 0.1f, park = 0.44f, dive = 0.74f, end = 0.85f;
+		DashFly(front, t => top.Lerp(c.Chest, t), dive, end - dive, h * 0.55f, h * 0.05f, Red, 1.3f, Fx.InCubic, 0.8f, 1f);
 		Fx.Animate(card.Root, t0, end - t0, t =>
 		{
 			card.Root.Visible = true;
@@ -344,8 +349,13 @@ public static partial class SkillRedo5
 			global::P5Joker.Blade.Arc(fr ? front : back, mid + dir * dist, dir.Angle() + Mathf.Pi * 0.5f + skew * f, len, bow, thick, false, 0.06f, 0.04f, 0.06f, 0.2f, true, d);
 		}
 		// 用户：五道 + 三道太乱 → 只要左右对称的两道大月牙，同时斩出（弧背朝外、略往上扬），干净
-		Crescent(-180f + 20f, h * 0.38f, h * 1.35f, h * 0.3f, h * 0.18f, beat, false, 0.25f);
-		Crescent(-20f, h * 0.38f, h * 1.35f, h * 0.3f, h * 0.18f, beat, true, -0.25f);
+		// 2026-11-16：一个规整的半圆太死板 → 左右不对称（左大右小、高低错开），每道外侧再跟一道细的副刃，再点缀两道小月牙
+		Crescent(-162f, h * 0.38f, h * 1.4f, h * 0.32f, h * 0.18f, beat, false, 0.3f);
+		Crescent(-162f + 6f, h * 0.5f, h * 0.95f, h * 0.2f, h * 0.06f, beat + 0.04f, true, 0.42f);
+		Crescent(-28f, h * 0.34f, h * 1.15f, h * 0.24f, h * 0.15f, beat + 0.03f, true, -0.45f);
+		Crescent(-28f - 8f, h * 0.46f, h * 0.8f, h * 0.16f, h * 0.05f, beat + 0.07f, false, -0.6f);
+		Crescent(-95f, h * 0.62f, h * 0.45f, h * 0.08f, h * 0.05f, beat + 0.06f, true, 0.9f);
+		Crescent(150f, h * 0.48f, h * 0.5f, h * 0.09f, h * 0.05f, beat + 0.09f, false, -0.8f);
 		Fx.After(front, beat, () =>
 		{
 			HitStop.Request(0.05);
@@ -391,7 +401,7 @@ public static partial class SkillRedo5
 				// 他整个人跟着节拍闪一下（越往后越亮）
 				Glow.Sparks(front, at, 6 + (int)(8 * k), 80f * u, 380f * u, 0.3f, new[] { Hot, Pink, Deep }, 0f, 0.006f * u, 0.018f * u, dir, 70f);
 			});
-			Streak(front, t => a0.Lerp(b0, t), b, 0.12f, h * (0.5f + 0.3f * k), h * (0.06f + 0.05f * k), i % 3 == 1 ? new Color(1f, 0.9f, 0.9f) : Red, 1.35f);
+			Sharp(front, t => a0.Lerp(b0, t), b, 0.12f, h * (0.5f + 0.3f * k), h * (0.06f + 0.05f * k), i % 3 == 1 ? new Color(1f, 0.9f, 0.9f) : Red, 1.35f);
 		}
 		// 连成一片：最后 0.2s 疾光贴着他身上来回刷（前后两层）
 		for (int j = 0; j < 9; j++)
@@ -399,7 +409,7 @@ public static partial class SkillRedo5
 			float d = 0.86f + 0.025f * j;
 			float y = -h * Fx.Rand(0.15f, 1.4f), dirX = j % 2 == 0 ? 1f : -1f, cx = f * h * Fx.Rand(-0.5f, 0.9f);
 			Vector2 a0 = c.Feet + new Vector2(cx - dirX * h * 0.5f, y + Fx.Rand(-0.08f, 0.08f) * h), b0 = c.Feet + new Vector2(cx + dirX * h * 0.5f, y - Fx.Rand(-0.08f, 0.08f) * h);
-			Streak(j % 2 == 0 ? front : back, t => a0.Lerp(b0, t), d, 0.1f, h * 0.55f, h * 0.07f, j % 3 == 0 ? new Color(1f, 0.92f, 0.92f) : Red, 1.4f);
+			Sharp(j % 2 == 0 ? front : back, t => a0.Lerp(b0, t), d, 0.1f, h * 0.55f, h * 0.07f, j % 3 == 0 ? new Color(1f, 0.92f, 0.92f) : Red, 1.4f);
 		}
 		S("gx_slice", 0.22f, climax);
 		S("gx_pop", 0.16f, climax);

@@ -22,6 +22,7 @@ uniform float hot = 1.0;
 uniform float flow = 0.0;
 uniform float seed = 0.0;
 uniform vec4 tint : source_color = vec4(1.0, 0.1, 0.18, 1.0);
+uniform float tip = 0.0;   // 1 = 头部收成尖（2026-11-16 用户：粗的疾光头太平）
 float h21(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float vn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
 	return mix(mix(h21(i), h21(i + vec2(1.0, 0.0)), f.x), mix(h21(i + vec2(0.0, 1.0)), h21(i + vec2(1.0, 1.0)), f.x), f.y); }
@@ -29,6 +30,8 @@ void fragment() {
 	float x = UV.x;
 	float y = UV.y * 2.0 - 1.0;
 	float w = mix(0.06, 1.0, pow(x, 1.2)) * sqrt(max(0.0, 1.0 - pow(max(x - 0.88, 0.0) / 0.12, 2.0)));
+	float pointed = sin(clamp(x, 0.0, 1.0) * 3.14159) * mix(1.0, 0.75, x);   // 两头尖、中间偏后最粗
+	w = mix(w, pointed, tip);
 	float wl = max(w, 1e-3);
 	float body = exp(-pow(y / wl, 2.0) * 3.0);
 	float core = exp(-pow(y / (wl * 0.3), 2.0) * 3.0);
@@ -44,10 +47,11 @@ void fragment() {
 	/// 一道疾光沿 path(0→1) 飞：t0 起飞，dur 飞完；头在 path(e)，长度随飞过的距离长到 len，最后一段淡掉。
 	/// </summary>
 	private static void DashFly(Control layer, Func<float, Vector2> path, float t0, float dur, float len, float thick, Color tint, float hot = 1f,
-		Func<float, float>? ease = null, float fadeFrom = 0.75f)
+		Func<float, float>? ease = null, float fadeFrom = 0.75f, float tip = 0f)
 	{
 		Node2D root = Fx.Root(layer, path(0f), "P5Dash", t0 + dur + 0.1);
 		ShaderMaterial m = new() { Shader = Dash };
+		m.SetShaderParameter("tip", tip);
 		m.SetShaderParameter("tint", tint);
 		m.SetShaderParameter("hot", hot);
 		m.SetShaderParameter("seed", Fx.Rand(0f, 9f));
