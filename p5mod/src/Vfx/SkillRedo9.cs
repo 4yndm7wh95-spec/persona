@@ -446,122 +446,136 @@ public static partial class SkillRedo5
 
 	// ═══════════════════════════ 触媒（罕见能力） ═══════════════════════════
 
-	/// <summary>一段会「长」出去的光丝：从 a 沿弧线长到 b（grow 秒），红色辉光 + 白芯，长满后停 hold 再 fade 秒淡掉；返回整段的亮度调节（给引爆时提亮用）。</summary>
-	private static void Filament(Control layer, Vector2 a, Vector2 b, float bend, float width, float delay, float grow, float hold, float fade, float flashAt)
+	/// <summary>
+	/// 一股咒怨：沿着绕他身体的螺旋线往上涌的一条黑红光流（头先冲上去、尾巴追着收），绕到身后的那段画在人物后面、绕到身前的画在前面；
+	/// 三层：外面一层红色辉光（加法）、中间墨黑偏暗红的身子、里面一道粉白的亮芯。turns 圈数，phase 起始角，height 冲多高。
+	/// </summary>
+	private static void CurseStream(Control front, Control back, Vector2 feet, float h, float rx, float height, float turns, float phase, float dir, float width,
+		float delay, float rise, float trail, float bright)
 	{
-		const int n = 14;
-		Vector2 side = (b - a).Orthogonal() * bend;
-		Vector2 P(float t) => a.Lerp(b, t) + side * 4f * t * (1f - t);
-		float total = delay + grow + hold + fade;
-		Node2D root = Fx.Root(layer, Vector2.Zero, "P5Filament", total + 0.05);
-		root.GlobalPosition = Vector2.Zero;
+		const int n = 40;
+		float total = delay + rise + trail;
+		Node2D rb = Fx.Root(back, Vector2.Zero, "P5CurseB", total + 0.05), rf = Fx.Root(front, Vector2.Zero, "P5CurseF", total + 0.05);
+		rb.GlobalPosition = Vector2.Zero;
+		rf.GlobalPosition = Vector2.Zero;
 		Curve taper = new();
-		taper.AddPoint(new Vector2(0f, 1f));
-		taper.AddPoint(new Vector2(1f, 0.25f));
-		Line2D glow = new() { Width = width * 3.2f, DefaultColor = new Color(0.95f, 0.06f, 0.16f, 0.55f), WidthCurve = taper, Material = Fx.Additive, Antialiased = true,
-			JointMode = Line2D.LineJointMode.Round, BeginCapMode = Line2D.LineCapMode.Round, EndCapMode = Line2D.LineCapMode.Round };
-		Line2D core = new() { Width = width, DefaultColor = new Color(1f, 0.93f, 0.93f), WidthCurve = taper, Material = Fx.Additive, Antialiased = true,
-			JointMode = Line2D.LineJointMode.Round, BeginCapMode = Line2D.LineCapMode.Round, EndCapMode = Line2D.LineCapMode.Round };
-		root.AddChild(glow);
-		root.AddChild(core);
-		root.Visible = false;
-		Fx.Animate(root, 0, total, k =>
+		taper.AddPoint(new Vector2(0f, 0.15f));
+		taper.AddPoint(new Vector2(0.55f, 1f));
+		taper.AddPoint(new Vector2(1f, 0.35f));
+		Line2D Mk(Node parent, float w, Color col, bool add)
+		{
+			Line2D l = new() { Width = w, DefaultColor = col, WidthCurve = taper, Antialiased = true, JointMode = Line2D.LineJointMode.Round,
+				BeginCapMode = Line2D.LineCapMode.Round, EndCapMode = Line2D.LineCapMode.Round };
+			if (add) l.Material = Fx.Additive;
+			l.SetMeta("col", col);
+			parent.AddChild(l);
+			return l;
+		}
+		var layers = new[] { rb, rf };
+		var lines = new List<(Line2D L, bool Front)>();
+		foreach (Node2D r in layers)
+		{
+			bool fr = r == rf;
+			lines.Add((Mk(r, width * 1.9f, new Color(0.9f, 0.04f, 0.14f, 0.32f * bright), true), fr));
+			lines.Add((Mk(r, width, new Color(0.16f, 0f, 0.03f, 0.92f), false), fr));
+			lines.Add((Mk(r, width * 0.18f, new Color(1f, 0.5f, 0.52f, 0.85f * bright), true), fr));
+		}
+		Vector2 P(float t)
+		{
+			float a = phase + dir * t * turns * Mathf.Tau;
+			float r = rx * (1f - 0.55f * t * t);                    // 越往上越收
+			return feet + new Vector2(Mathf.Sin(a) * r, -t * height + Mathf.Cos(a) * r * 0.18f);
+		}
+		bool InFront(float t) => Mathf.Cos(phase + dir * t * turns * Mathf.Tau) > 0f;
+		Fx.Animate(rb, 0, total, k =>
 		{
 			float s = k * total - delay;
 			if (s < 0f) return;
-			root.Visible = true;
-			float g = Ease5.OutQuint(Mathf.Min(1f, s / grow));
+			float head = Fx.OutCubic(Mathf.Min(1f, s / rise));
+			float tail = Fx.InCubic(Mathf.Clamp((s - rise * 0.35f) / (rise * 0.65f + trail), 0f, 1f));
 			var pts = new Vector2[n];
-			for (int i = 0; i < n; i++) pts[i] = P(g * i / (n - 1));
-			glow.Points = pts;
-			core.Points = pts;
-			float o = 1f - Ease5.Seg(s, grow + hold, fade);
-			float pop = Mathf.Exp(-Mathf.Pow((s + delay - flashAt) / 0.05f, 2f));     // 引爆那一下整条一亮
-			glow.Modulate = new Color(1f + pop, 1f + pop, 1f + pop, o);
-			core.Modulate = new Color(1f, 1f, 1f, o * (0.8f + 0.2f * pop));
-			glow.Width = width * (3.2f + 2.5f * pop);
+			float[] offs = new float[n];
+			bool[] isFront = new bool[n];
+			for (int i = 0; i < n; i++)
+			{
+				float u = i / (n - 1f), t = Mathf.Lerp(tail, head, u);
+				pts[i] = P(t) + new Vector2(Mathf.Sin(t * 23f + s * 9f) * width * 0.25f, 0f);
+				isFront[i] = InFront(t);
+				offs[i] = u;
+			}
+			float fade = 1f - Ease5.Seg(s, rise + trail * 0.5f, trail * 0.5f);
+			foreach (var (l, fr) in lines)
+			{
+				// Line2D 有 Gradient 时不用 DefaultColor → 每条线用自己的颜色，按前后把不该出现的那半段 alpha 置 0
+				Color baseCol = (Color)l.GetMeta("col");
+				Color[] cs = new Color[n];
+				for (int i = 0; i < n; i++) cs[i] = new Color(baseCol, isFront[i] == fr ? baseCol.A : 0f);
+				l.Points = pts;
+				l.Gradient = new Gradient { Offsets = offs, Colors = cs };
+				l.Modulate = new Color(1f, 1f, 1f, fade * Mathf.Min(1f, s / 0.05f));
+			}
 		});
 	}
 
 	/// <summary>
-	/// 触媒约 1.4s「连锁反应」：他挥手，掌前亮起一颗红白星光；它「啪」地一闪、向前分出两道光丝（沿弧线长出去），每道尽头再亮一颗星、再各分出两道……
-	/// 一代比一代快、比一代亮（1 → 2 → 4 → 8），在他手前长成一棵往外伸展的光枝；整棵光枝同时一亮（引爆），然后光沿着枝杈全部收回手心，
-	/// 手心重重一跳（闪光、碎光、空间一扭、轻震），光点往上飘。意思是反应被催化、一层层放大。
+	/// 触媒约 1.3s「咒怨涌动」（和毒性爆发、萎靡同一套黑红咒怨质感）：他一挥手，脚下涌起一股黑红咒怨，绕着他螺旋往上卷（身后的半圈在他后面、
+	/// 身前的半圈在他前面），咒怨里飘起几缕怨魂；紧接着第二股 —— 更快、更高、更亮、股数更多，怨魂也更多；两股在他头顶汇成一点，
+	/// 暗红一闪，顺着手臂收进他手里（手心一跳、空间一扭、轻震）。两股、一股比一股强 = 毒多触发一次。
 	/// </summary>
 	public static void Accelerant(SkillCtx c)
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face;
 		Control back = c.Back ?? c.Front, front = c.Front;
-		Vector2 palm = c.Hand + new Vector2(f * h * 0.06f, -h * 0.02f), mid = c.Feet + new Vector2(0f, -h * 0.55f);
-		float[] gap = { 0.2f, 0.14f, 0.1f };
-		float[] dist = { 0.3f, 0.24f, 0.19f };
-		const float start = 0.12f;
-		float allAt = start + gap[0] + gap[1] + gap[2] + 0.06f, pullDur = 0.13f, finale = allAt + 0.1f + pullDur;
-		Dim(back, mid + new Vector2(f * h * 0.3f, 0f), new Vector2(h * 3.4f, h * 2.6f), finale + 0.45f, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.15f)) * (1f - Ease5.Seg(s, 0.8f, 0.2f)) * 0.7f);
+		const float surge1 = 0.06f, surge2 = 0.4f, top = 0.8f, home = 0.94f;
+		Vector2 feet = c.Feet + new Vector2(0f, -h * 0.02f), mid = c.Feet + new Vector2(0f, -h * 0.55f), crown = c.Feet + new Vector2(0f, -h * 1.42f);
+		Vector2 palm = c.Hand + new Vector2(f * h * 0.04f, -h * 0.02f);
 		Color crimson = new(0.85f, 0.03f, 0.14f);
-
-		void Star(Vector2 p, int gen, float when)
+		Dim(back, mid, new Vector2(h * 3.2f, h * 2.8f), home + 0.5f, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.15f)) * (1f - Ease5.Seg(s, 0.8f, 0.2f)) * 0.75f);
+		S("gx_whoosh", 0.16f, surge1);
+		S("gx_whoosh", 0.22f, surge2);
+		S("gx_pop", 0.16f, surge2);
+		// 第一股：3 条，慢一点、到胸口以上
+		for (int i = 0; i < 2; i++)
+			CurseStream(front, back, feet, h, h * 0.5f, h * 1.15f, 0.75f, Mathf.Pi * i, f, h * 0.06f, surge1 + 0.04f * i, 0.4f, 0.16f, 0.8f);
+		// 第二股：5 条，更快、更高、更亮
+		for (int i = 0; i < 3; i++)
+			CurseStream(front, back, feet, h, h * 0.58f, h * 1.42f, 0.9f, Mathf.Tau * i / 3f + 0.5f, f, h * 0.075f, surge2 + 0.03f * i, 0.32f, 0.14f, 1.2f);
+		// 脚下涌起的那一下
+		foreach (float t0 in new[] { surge1, surge2 })
 		{
-			Glow.Glint(front, p, 0.45f + 0.15f * gen, when);
-			Fx.After(front, when, () =>
+			bool second = t0 == surge2;
+			Fx.After(front, t0, () =>
 			{
-				Glow.Flash(front, p, Hot, h * (0.12f + 0.04f * gen), 0.07f);
-				Glow.Flash(back, p, crimson, h * (0.22f + 0.06f * gen), 0.14f);
-				Glow.Sparks(front, p, 4 + gen * 2, 50f * u, 260f * u, 0.28f, new[] { Hot, Pink, Deep }, 0f, 0.005f * u, 0.014f * u, Vector2.Up, 180f);
+				Glow.Flash(back, feet + new Vector2(0f, -h * 0.1f), crimson, h * (second ? 1.6f : 1.1f), 0.35f);
+				Glow.Sparks(front, feet, second ? 22 : 12, 120f * u, 520f * u, 0.5f, new[] { Pink, Deep, new Color(0.12f, 0f, 0.03f) }, -120f * u, 0.008f * u, 0.022f * u, Vector2.Up, 60f);
 			});
-		}
-
-		S("gx_tick", 0.12f, start);
-		Star(palm, 0, start);
-		var nodes = new List<(Vector2 P, float Ang)> { (palm, f > 0f ? 0f : Mathf.Pi) };
-		var edges = new List<(Vector2 A, Vector2 B)>();
-		float when = start;
-		for (int g = 0; g < 3; g++)
-		{
-			var next = new List<(Vector2, float)>();
-			float spread = 0.62f - 0.1f * g;
-			foreach (var (p, a) in nodes)
+			Vanilla.Burst(front, Vanilla.Specks, feet, -Mathf.Pi * 0.5f, second ? 1.1f : 0.8f, Lut5.Curse, amount: second ? 24 : 12, delay: t0);
+			// 怨魂：从咒怨里飘起
+			for (int j = 0; j < (second ? 5 : 3); j++)
 			{
-				for (int s = -1; s <= 1; s += 2)
-				{
-					float na = a + s * spread * Fx.Rand(0.85f, 1.1f);
-					Vector2 q = p + Vector2.FromAngle(na) * h * dist[g] * Fx.Rand(0.9f, 1.1f);
-					Filament(front, p, q, 0.12f * s, h * (0.022f - 0.004f * g), when, gap[g], allAt - when - gap[g] + 0.08f, 0.16f, allAt);
-					edges.Add((p, q));
-					next.Add((q, na));
-				}
+				Vector2 at = c.Feet + new Vector2(f * Fx.Rand(-0.45f, 0.45f) * h, -h * Fx.Rand(0.25f, 0.6f));
+				Paint.Rise(j % 2 == 0 ? back : front, "curse_soul", at, h * Fx.Rand(0.5f, 0.8f), h * Fx.Rand(0.22f, 0.32f) / 256f, Lut5.Curse, 0.7f, t0 + 0.08f + 0.06f * j);
 			}
-			when += gap[g];
-			S("gx_tick", 0.12f + 0.05f * g, when);
-			foreach (var (q, _) in next) Star(q, g + 1, when);
-			nodes = next;
 		}
-		// 整棵同时一亮
-		S("gx_pop", 0.18f, allAt);
-		Fx.After(front, allAt, () =>
+		// 头顶汇成一点 → 收进手里
+		Fx.After(front, top, () =>
 		{
-			HitStop.Request(0.025);
-			foreach (var (q, _) in nodes) { Glow.Flash(front, q, Hot, h * 0.18f, 0.08f); Glow.Glint(front, q, 0.7f); }
+			HitStop.Request(0.03);
+			Glow.Flash(front, crown, Hot, h * 0.35f, 0.1f);
+			Glow.Flash(back, crown, crimson, h * 1.4f, 0.32f);
+			Glow.Ripple(front, crown, h * 1.3f, 0.4f, 0.03f);
 		});
-		// 光沿枝杈收回手心：末梢的光点沿原路（逐段）飞回
-		foreach (var (q, _) in nodes)
+		Streak(front, t => crown.Lerp(palm, t) + new Vector2(f * h * 0.25f, 0f) * 4f * t * (1f - t), top + 0.02f, home - top, h * 0.6f, h * 0.06f, Red, 1.3f);
+		S("gx_slice", 0.2f, home);
+		Fx.After(front, home, () =>
 		{
-			Vector2 qq = q;
-			Streak(front, t => qq.Lerp(palm, t) + (palm - qq).Orthogonal() * 0.1f * 4f * t * (1f - t), allAt + 0.1f, pullDur, h * 0.3f, h * 0.03f, Red, 1.35f);
-		}
-		S("gx_slice", 0.2f, finale);
-		S("gx_pop", 0.22f, finale);
-		Fx.After(front, finale, () =>
-		{
-			HitStop.Request(0.04);
+			HitStop.Request(0.035);
 			Fx.Shake(1);
-			Glow.Flash(front, palm, Hot, h * 0.4f, 0.1f);
-			Glow.Flash(back, palm, crimson, h * 1.4f, 0.34f);
-			Glow.Glint(front, palm, 1.2f);
-			Glow.Sparks(front, palm, 22, 140f * u, 600f * u, 0.5f, new[] { Hot, Pink, Deep }, 40f * u, 0.008f * u, 0.026f * u, Vector2.Up, 200f);
-			Phantom.Shards(front, palm, 14, 300f * u, 800f * u, Vector2.Up, 180f, 0.3f, 0f, 22f * u);
+			Glow.Flash(front, palm, Hot, h * 0.35f, 0.1f);
+			Glow.Flash(back, palm, crimson, h * 1.2f, 0.3f);
+			Glow.Sparks(front, palm, 18, 120f * u, 520f * u, 0.45f, new[] { Hot, Pink, Deep }, 40f * u, 0.008f * u, 0.022f * u, Vector2.Up, 200f);
 		});
-		Embed(front, palm, h, 1.1f, 0f, 24, finale);
-		Motes(front, palm, new Vector2(h * 0.15f, h * 0.12f), h, 8, finale + 0.08f, 0.8f);
+		Embed(front, palm, h, 0.9f, 0f, 18, home);
+		Motes(front, mid, new Vector2(h * 0.4f, h * 0.5f), h, 10, home, 0.7f);
 	}
 }
