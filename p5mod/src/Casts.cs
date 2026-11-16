@@ -66,6 +66,7 @@ public static class Casts
 		["Anticipate"] = Cast.Guard,
 		["Fade"] = Cast.Glove,
 		["Speedster"] = Cast.Glove,
+		["Abrasive"] = Cast.Glove,                     // 用户 2026-11-16：不要复合动作，只扯手套
 		["Accelerant"] = Cast.Wave,                    // 用户 2026-11-16：不要扶面具 → 挥手的连贯动作，只取挥手
 		["Afterimage"] = Cast.Glove,
 		["Sneaky"] = Cast.Glove,

@@ -467,10 +467,26 @@ public static partial class SkillRedo5
 				Glow.Flash(front, palm, big ? Hot : new Color(1f, 0.7f, 0.72f), h * (big ? 0.38f : 0.24f), 0.09f);
 				Glow.Flash(back, palm, crimson, h * (big ? 0.75f : 0.45f), big ? 0.28f : 0.2f);
 				Glow.Sparks(front, palm, big ? 20 : 10, 100f * u, (big ? 520f : 340f) * u, 0.45f, new[] { Hot, Pink, Deep }, 30f * u, 0.007f * u, 0.02f * u, Vector2.Up, 200f);
-				if (big) { HitStop.Request(0.03); Fx.Shake(1); Glow.Glint(front, palm + new Vector2(0f, -h * 0.04f), 0.8f); }
+				if (big)
+				{
+					HitStop.Request(0.03);
+					Fx.Shake(1);
+					Glow.Glint(front, palm + new Vector2(0f, -h * 0.04f), 0.9f);
+					Flare(front, palm, h * 0.9f, h * 0.014f, new Color(1f, 0.9f, 0.9f), 0.16f, f * -0.12f);
+					Phantom.Shards(front, palm, 12, 300f * u, 800f * u, new Vector2(f, -0.2f), 120f, 0.3f, 0f, 20f * u);
+				}
+				else Glow.Glint(front, palm, 0.5f);
 			});
 			Glow.Ripple(front, palm, h * (big ? 1.1f : 0.7f), 0.35f, big ? 0.03f : 0.018f, 1f, when);
 		}
-		Motes(front, palm, new Vector2(h * 0.12f, h * 0.08f), h, 6, p2 + 0.05f, 0.6f);
+		// 第二下：几道暗红疾光从掌心往前甩开，原版火星（咒怨色）
+		for (int j = 0; j < 4; j++)
+		{
+			float ang = (f > 0f ? 0f : Mathf.Pi) + (j - 1.5f) * 0.32f * f + Fx.Rand(-0.08f, 0.08f);
+			Vector2 a0 = palm, b0 = palm + Vector2.FromAngle(ang) * h * Fx.Rand(0.45f, 0.65f);
+			Streak(front, t => a0.Lerp(b0, t), p2 + 0.01f * j, 0.16f, h * 0.35f, h * (j % 2 == 0 ? 0.05f : 0.03f), j % 2 == 0 ? Red : new Color(1f, 0.88f, 0.88f), 1.3f);
+		}
+		Vanilla.Burst(front, Vanilla.Specks, palm, f > 0f ? 0f : Mathf.Pi, 0.9f, Lut5.Curse, amount: 20, delay: p2);
+		Motes(front, palm, new Vector2(h * 0.12f, h * 0.08f), h, 8, p2 + 0.05f, 0.6f);
 	}
 }
