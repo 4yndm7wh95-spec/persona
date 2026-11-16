@@ -446,84 +446,108 @@ public static partial class SkillRedo5
 
 	// ═══════════════════════════ 触媒（罕见能力） ═══════════════════════════
 
+	/// <summary>一段会「长」出去的光丝：从 a 沿弧线长到 b（grow 秒），红色辉光 + 白芯，长满后停 hold 再 fade 秒淡掉；返回整段的亮度调节（给引爆时提亮用）。</summary>
+	private static void Filament(Control layer, Vector2 a, Vector2 b, float bend, float width, float delay, float grow, float hold, float fade, float flashAt)
+	{
+		const int n = 14;
+		Vector2 side = (b - a).Orthogonal() * bend;
+		Vector2 P(float t) => a.Lerp(b, t) + side * 4f * t * (1f - t);
+		float total = delay + grow + hold + fade;
+		Node2D root = Fx.Root(layer, Vector2.Zero, "P5Filament", total + 0.05);
+		root.GlobalPosition = Vector2.Zero;
+		Curve taper = new();
+		taper.AddPoint(new Vector2(0f, 1f));
+		taper.AddPoint(new Vector2(1f, 0.25f));
+		Line2D glow = new() { Width = width * 3.2f, DefaultColor = new Color(0.95f, 0.06f, 0.16f, 0.55f), WidthCurve = taper, Material = Fx.Additive, Antialiased = true,
+			JointMode = Line2D.LineJointMode.Round, BeginCapMode = Line2D.LineCapMode.Round, EndCapMode = Line2D.LineCapMode.Round };
+		Line2D core = new() { Width = width, DefaultColor = new Color(1f, 0.93f, 0.93f), WidthCurve = taper, Material = Fx.Additive, Antialiased = true,
+			JointMode = Line2D.LineJointMode.Round, BeginCapMode = Line2D.LineCapMode.Round, EndCapMode = Line2D.LineCapMode.Round };
+		root.AddChild(glow);
+		root.AddChild(core);
+		root.Visible = false;
+		Fx.Animate(root, 0, total, k =>
+		{
+			float s = k * total - delay;
+			if (s < 0f) return;
+			root.Visible = true;
+			float g = Ease5.OutQuint(Mathf.Min(1f, s / grow));
+			var pts = new Vector2[n];
+			for (int i = 0; i < n; i++) pts[i] = P(g * i / (n - 1));
+			glow.Points = pts;
+			core.Points = pts;
+			float o = 1f - Ease5.Seg(s, grow + hold, fade);
+			float pop = Mathf.Exp(-Mathf.Pow((s + delay - flashAt) / 0.05f, 2f));     // 引爆那一下整条一亮
+			glow.Modulate = new Color(1f + pop, 1f + pop, 1f + pop, o);
+			core.Modulate = new Color(1f, 1f, 1f, o * (0.8f + 0.2f * pop));
+			glow.Width = width * (3.2f + 2.5f * pop);
+		});
+	}
+
 	/// <summary>
-	/// 触媒约 1.4s「连锁反应」：他手边先亮起一个暗红光点；它「啪」地炸开、分成两点沿短弧飞出去，两点各自再炸成两点……一代比一代快、
-	/// 一代比一代亮（1 → 2 → 4 → 8），每次炸开一点星光（用户：不要裂痕状的毒纹）；八个点同时引爆一下，然后全部被吸回手心，手心最后重重一跳
-	/// （闪光、碎光、空间一扭、轻震），光点往上飘。意思是反应被催化、放大。
+	/// 触媒约 1.4s「连锁反应」：他挥手，掌前亮起一颗红白星光；它「啪」地一闪、向前分出两道光丝（沿弧线长出去），每道尽头再亮一颗星、再各分出两道……
+	/// 一代比一代快、比一代亮（1 → 2 → 4 → 8），在他手前长成一棵往外伸展的光枝；整棵光枝同时一亮（引爆），然后光沿着枝杈全部收回手心，
+	/// 手心重重一跳（闪光、碎光、空间一扭、轻震），光点往上飘。意思是反应被催化、一层层放大。
 	/// </summary>
 	public static void Accelerant(SkillCtx c)
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face;
 		Control back = c.Back ?? c.Front, front = c.Front;
-		Vector2 palm = c.Hand + new Vector2(f * h * 0.08f, -h * 0.06f), mid = c.Feet + new Vector2(0f, -h * 0.55f);
-		Vector2 center = palm + new Vector2(f * h * 0.15f, -h * 0.1f);   // 反应往手前上方扩散
-		float[] gap = { 0.24f, 0.16f, 0.11f };                             // 每一代飞出去的时间（越来越快）
-		float[] dist = { 0.27f, 0.21f, 0.16f };
-		const float start = 0.14f;
-		float allAt = start + gap[0] + gap[1] + gap[2] + 0.04f, pullDur = 0.14f, finale = allAt + 0.08f + pullDur;
-		Dim(back, mid, new Vector2(h * 3.2f, h * 2.6f), finale + 0.45f, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.15f)) * (1f - Ease5.Seg(s, 0.8f, 0.2f)) * 0.7f);
+		Vector2 palm = c.Hand + new Vector2(f * h * 0.06f, -h * 0.02f), mid = c.Feet + new Vector2(0f, -h * 0.55f);
+		float[] gap = { 0.2f, 0.14f, 0.1f };
+		float[] dist = { 0.3f, 0.24f, 0.19f };
+		const float start = 0.12f;
+		float allAt = start + gap[0] + gap[1] + gap[2] + 0.06f, pullDur = 0.13f, finale = allAt + 0.1f + pullDur;
+		Dim(back, mid + new Vector2(f * h * 0.3f, 0f), new Vector2(h * 3.4f, h * 2.6f), finale + 0.45f, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.15f)) * (1f - Ease5.Seg(s, 0.8f, 0.2f)) * 0.7f);
 		Color crimson = new(0.85f, 0.03f, 0.14f);
 
-		void Pop(Vector2 p, int gen, float when)
+		void Star(Vector2 p, int gen, float when)
 		{
-			float k = gen / 3f;
+			Glow.Glint(front, p, 0.45f + 0.15f * gen, when);
 			Fx.After(front, when, () =>
 			{
-				Glow.Flash(front, p, gen == 3 ? Hot : new Color(1f, 0.7f, 0.72f), h * (0.2f + 0.08f * k), 0.08f);
-				Glow.Flash(back, p, crimson, h * (0.28f + 0.12f * k), 0.16f);
-				Glow.Sparks(front, p, 5 + gen * 2, 60f * u, 300f * u, 0.3f, new[] { Pink, Deep, new Color(0.15f, 0f, 0.04f) }, 0f, 0.006f * u, 0.016f * u, Vector2.Up, 180f);
+				Glow.Flash(front, p, Hot, h * (0.12f + 0.04f * gen), 0.07f);
+				Glow.Flash(back, p, crimson, h * (0.22f + 0.06f * gen), 0.14f);
+				Glow.Sparks(front, p, 4 + gen * 2, 50f * u, 260f * u, 0.28f, new[] { Hot, Pink, Deep }, 0f, 0.005f * u, 0.014f * u, Vector2.Up, 180f);
 			});
-			if (gen >= 1) Glow.Glint(front, p, 0.3f + 0.12f * gen, when);
 		}
 
-		// 第 0 代：手边亮起
-		Sprite2D seed = new() { Texture = Glow.Soft, Material = Fx.Additive, Modulate = new Color(crimson, 0f) };
-		front.AddChild(seed);
-		seed.GlobalPosition = center;
-		Fx.Animate(seed, 0, start, t => { seed.Modulate = new Color(1f, 0.25f, 0.3f, t); seed.Scale = Vector2.One * h * (0.05f + 0.12f * t) / 64f; });
-		Fx.FreeAfter(seed, start + 0.02);
 		S("gx_tick", 0.12f, start);
-		var nodes = new List<(Vector2 P, float Ang)> { (center, f > 0f ? 0f : Mathf.Pi) };
-		Pop(center, 0, start);
+		Star(palm, 0, start);
+		var nodes = new List<(Vector2 P, float Ang)> { (palm, f > 0f ? 0f : Mathf.Pi) };
+		var edges = new List<(Vector2 A, Vector2 B)>();
 		float when = start;
-		var finals = new List<Vector2>();
 		for (int g = 0; g < 3; g++)
 		{
 			var next = new List<(Vector2, float)>();
-			float spread = 1.0f - 0.15f * g;
+			float spread = 0.62f - 0.1f * g;
 			foreach (var (p, a) in nodes)
 			{
 				for (int s = -1; s <= 1; s += 2)
 				{
-					float na = a + s * spread * Fx.Rand(0.8f, 1.1f) + (g == 0 ? -0.4f * f : 0f);
-					Vector2 q = p + Vector2.FromAngle(na) * h * dist[g] * Fx.Rand(0.85f, 1.1f);
-					Vector2 bend = (q - p).Orthogonal() * 0.25f * s;
-					Vector2 pp = p, qq = q;
-					Streak(front, t => pp.Lerp(qq, t) + bend * 4f * t * (1f - t), when, gap[g], h * (0.18f + 0.04f * g), h * 0.02f, g == 2 ? new Color(1f, 0.85f, 0.85f) : Red, 1.25f);
+					float na = a + s * spread * Fx.Rand(0.85f, 1.1f);
+					Vector2 q = p + Vector2.FromAngle(na) * h * dist[g] * Fx.Rand(0.9f, 1.1f);
+					Filament(front, p, q, 0.12f * s, h * (0.022f - 0.004f * g), when, gap[g], allAt - when - gap[g] + 0.08f, 0.16f, allAt);
+					edges.Add((p, q));
 					next.Add((q, na));
 				}
 			}
 			when += gap[g];
 			S("gx_tick", 0.12f + 0.05f * g, when);
-			foreach (var (q, _) in next) Pop(q, g + 1, when);
+			foreach (var (q, _) in next) Star(q, g + 1, when);
 			nodes = next;
 		}
-		foreach (var (p, _) in nodes) finals.Add(p);
-		// 八点同时引爆，然后吸回手心
+		// 整棵同时一亮
 		S("gx_pop", 0.18f, allAt);
 		Fx.After(front, allAt, () =>
 		{
 			HitStop.Request(0.025);
-			foreach (Vector2 p in finals)
-			{
-				Glow.Flash(front, p, Hot, h * 0.16f, 0.08f);
-				Glow.Flash(back, p, crimson, h * 0.3f, 0.16f);
-			}
+			foreach (var (q, _) in nodes) { Glow.Flash(front, q, Hot, h * 0.18f, 0.08f); Glow.Glint(front, q, 0.7f); }
 		});
-		foreach (Vector2 p in finals)
+		// 光沿枝杈收回手心：末梢的光点沿原路（逐段）飞回
+		foreach (var (q, _) in nodes)
 		{
-			Vector2 pp = p;
-			Streak(front, t => pp.Lerp(palm, t), allAt + 0.08f, pullDur, h * 0.3f, h * 0.03f, Red, 1.3f);
+			Vector2 qq = q;
+			Streak(front, t => qq.Lerp(palm, t) + (palm - qq).Orthogonal() * 0.1f * 4f * t * (1f - t), allAt + 0.1f, pullDur, h * 0.3f, h * 0.03f, Red, 1.35f);
 		}
 		S("gx_slice", 0.2f, finale);
 		S("gx_pop", 0.22f, finale);
@@ -532,10 +556,11 @@ public static partial class SkillRedo5
 			HitStop.Request(0.04);
 			Fx.Shake(1);
 			Glow.Flash(front, palm, Hot, h * 0.4f, 0.1f);
-			Glow.Flash(back, palm, crimson, h * 1.8f, 0.38f);
+			Glow.Flash(back, palm, crimson, h * 1.4f, 0.34f);
+			Glow.Glint(front, palm, 1.2f);
 			Glow.Sparks(front, palm, 22, 140f * u, 600f * u, 0.5f, new[] { Hot, Pink, Deep }, 40f * u, 0.008f * u, 0.026f * u, Vector2.Up, 200f);
+			Phantom.Shards(front, palm, 14, 300f * u, 800f * u, Vector2.Up, 180f, 0.3f, 0f, 22f * u);
 		});
-		Fx.After(front, finale, () => Phantom.Shards(front, palm, 14, 300f * u, 800f * u, Vector2.Up, 180f, 0.3f, 0f, 22f * u));
 		Embed(front, palm, h, 1.1f, 0f, 24, finale);
 		Motes(front, palm, new Vector2(h * 0.15f, h * 0.12f), h, 8, finale + 0.08f, 0.8f);
 	}

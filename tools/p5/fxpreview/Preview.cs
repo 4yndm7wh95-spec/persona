@@ -873,7 +873,7 @@ public partial class Preview : Node2D
 		},
 		["retain"] = p => RetainDemo(p, 0.1, 0.6, 2.2),
 		// 计划妥当：打一次 → 回合结束保留手牌的「封」（RetainFx，每回合都会出现）
-		["buffs1"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Anticipate", "cast_glove", 0.25, 1.3), ("Sidestep", "cast_guard", 0.08, 1.4), ("Abrasive", "cast_big", 0.4, 1.7), ("Speedster", "cast_glove", 0.25, 2.0), ("Accelerant", "cast", 0.4, 1.9) }),
+		["buffs1"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Anticipate", "cast_glove", 0.25, 1.3), ("Sidestep", "cast_guard", 0.08, 1.4), ("Abrasive", "cast_big", 0.4, 1.7), ("Speedster", "cast_glove", 0.25, 2.0), ("Accelerant", "cast_wave", 0.08, 1.9) }),
 		["plans"] = p =>
 		{
 			RunCards(p, null, new (string, string, double, double)[] { ("WellLaidPlans", "cast_glove", 0.25, 2.2) });
