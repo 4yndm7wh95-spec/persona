@@ -49,7 +49,11 @@ void fragment() {
 	public static void Play(Control body, float delay)
 	{
 		if (!GodotObject.IsInstanceValid(body)) return;
-		Vector2 size = body.Size.X > 10f ? body.Size : new Vector2(300f, 422f);
+		// 实机（2026-11-16 用户：位置 / 大小不对）：牌身 CardContainer 是个 0 大小、原点在牌正中的 Control，牌面各层往四周偏 ±150 / ±211
+		// （research/card_frame_src/scenes/cards/card.tscn）→ 原来当左上角原点画，整个偏了半张牌。这里按原点在中心算（有尺寸的才当左上角）
+		bool centered = body.Size.X <= 10f;
+		Vector2 size = centered ? new Vector2(300f, 422f) : body.Size;
+		Vector2 o = centered ? -size * 0.5f : Vector2.Zero;
 		const float margin = 40f, fly = 0.2f, hold = 0.38f, burn = 0.3f;
 		float impact = delay + fly, glowLife = hold + burn + 0.2f;
 		// 牌边的红光：钉上那一下亮起，跟着小卡烧掉收掉
@@ -60,7 +64,7 @@ void fragment() {
 		m.SetShaderParameter("t", 0f);
 		ColorRect r = new()
 		{
-			Name = "P5Retain", Size = size + Vector2.One * margin * 2f, Position = -Vector2.One * margin,
+			Name = "P5Retain", Size = size + Vector2.One * margin * 2f, Position = o - Vector2.One * margin,
 			Material = m, MouseFilter = Control.MouseFilterEnum.Ignore, ZIndex = 1,
 		};
 		body.AddChild(r);
@@ -69,9 +73,9 @@ void fragment() {
 		// 小预告信（坐标都按牌身的本地像素算，再换成全局）
 		Transform2D xf = body.GetGlobalTransform();
 		float cw = size.X * 0.36f;
-		Vector2 pinL = new(size.X * 0.84f, size.Y * 0.1f), fromL = pinL + new Vector2(-size.X * 0.55f, -size.Y * 0.75f);
-		float rot0 = body.GetGlobalTransform().Rotation, tilt = 0.55f;
-		Phantom.P5Card card = Phantom.Card(body, xf * fromL, cw, delay + fly + hold + burn + 0.2, 0.32f);
+		Vector2 pinL = o + new Vector2(size.X * 0.84f, size.Y * 0.1f), fromL = pinL + new Vector2(-size.X * 0.55f, -size.Y * 0.75f);
+		const float tilt = 0.55f;
+		Phantom.P5Card card = Phantom.Card(body, xf * fromL, cw, delay + fly + hold + burn + 0.2, 0f);   // 不要拖尾：Ribbon 按全局坐标画，挂在有变换的牌身下会画歪
 		card.Rect.ZIndex = 2;
 		card.Root.Visible = false;
 		Vector2 ctlL = (fromL + pinL) * 0.5f + new Vector2(size.X * 0.3f, -size.Y * 0.1f);
@@ -82,7 +86,7 @@ void fragment() {
 			Transform2D x = body.GetGlobalTransform();
 			float e = t * t * (3f - 2f * t);
 			Vector2 l = fromL.Lerp(ctlL, e).Lerp(ctlL.Lerp(pinL, e), e);
-			card.Place(x * l, x.Rotation + Mathf.Lerp(-2.4f, tilt, e), Mathf.Pi + (1f - e) * 9f, 1f);
+			card.Place(x * l, Mathf.Lerp(-2.4f, tilt, e), Mathf.Pi + (1f - e) * 9f, 1f);   // 小卡挂在牌身下：转角是本地的，不再加牌自己的倾斜
 		});
 		Fx.After(body, impact, () =>
 		{
@@ -96,7 +100,7 @@ void fragment() {
 				if (!GodotObject.IsInstanceValid(body)) return;
 				Transform2D x2 = body.GetGlobalTransform();
 				float wob = Mathf.Sin(t * 30f) * Mathf.Exp(-t * 9f) * 0.12f;
-				card.Place(x2 * pinL, x2.Rotation + tilt + wob, Mathf.Pi, 1f);
+				card.Place(x2 * pinL, tilt + wob, Mathf.Pi, 1f);
 				card.Set("glow", 0.6f * Mathf.Exp(-t * 8f));
 			});
 			Glow.Flash(body, pin, new Color(1f, 0.93f, 0.92f), size.X * 0.55f, 0.12f);
@@ -112,7 +116,7 @@ void fragment() {
 			{
 				if (!GodotObject.IsInstanceValid(body)) return;
 				Transform2D x2 = body.GetGlobalTransform();
-				card.Place(x2 * (pinL + new Vector2(size.X * 0.04f, -size.Y * 0.05f) * t), x2.Rotation + tilt + t * 0.3f, Mathf.Pi, 1f);
+				card.Place(x2 * (pinL + new Vector2(size.X * 0.04f, -size.Y * 0.05f) * t), tilt + t * 0.3f, Mathf.Pi, 1f);
 				card.Set("burn", t * 1.3f);
 			});
 			Transform2D x = body.GetGlobalTransform();

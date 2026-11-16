@@ -59,11 +59,14 @@ public partial class Preview : Node2D
 				float k = i - 2f;
 				var holder = new Control { Position = new Vector2(960f + k * 175f, 1010f + Mathf.Abs(k) * 12f), Rotation = k * 0.05f, Scale = Vector2.One * 0.62f };
 				p._front.AddChild(holder);
-				var body = new Panel { Size = new Vector2(300f, 422f), Position = new Vector2(-150f, -422f) };
+				// 同游戏的 NCard：牌身（CardContainer）是 0 大小、原点在牌正中的 Control，牌面往四周偏 ±150 / ±211
+				var container = new Control { Position = new Vector2(0f, -211f) };
+				holder.AddChild(container);
+				var body = new Panel { Size = new Vector2(300f, 422f), Position = new Vector2(-150f, -211f) };
 				var sb = new StyleBoxFlat { BgColor = new Color(0.16f, 0.12f, 0.14f), CornerRadiusTopLeft = 22, CornerRadiusTopRight = 22, CornerRadiusBottomLeft = 22, CornerRadiusBottomRight = 22, BorderColor = new Color(0.5f, 0.45f, 0.4f), BorderWidthBottom = 6, BorderWidthTop = 6, BorderWidthLeft = 6, BorderWidthRight = 6 };
 				body.AddThemeStyleboxOverride("panel", sb);
-				holder.AddChild(body);
-				bodies.Add(body);
+				container.AddChild(body);
+				bodies.Add(container);
 			}
 		});
 		foreach (double at in new[] { at1, at2 })
