@@ -95,6 +95,8 @@ uniform vec4 streak[5];        // 攻击的烟迹：xy 尾、zw 头（相对脚�
 uniform float streak_a[5];     // 烟迹的浓度（0 = 没有）
 uniform float ember = 0.0;     // 蛇咬单独出场（没有群蛇的红雾场景，背景暗）：边里的暗红透光更足、外面一圈暗红的晕，看得清
 uniform float mouth[5];         // 嘴张多大：0 平时微张，1 张到最大，< 0 合上
+uniform float nshift[5];        // 身体噪声沿身长方向的平移（蛇咬身后那道咒烟：纹理钉在路上，不跟着蛇跑）
+uniform float wake[5];          // 1 = 蛇咬身后拖着的那道咒烟：粗细匀、更散更透、红光弱（不像一道发光的线）
 // 蛇头的轮廓（照 docs/p5/preview/serpent_head_plan.png 的点，tools/p5/diagrams/serpent_head_plan.py 同一组；单位 = 脖子粗细 W，x 朝吻尖，y 朝上）
 uniform vec2 head_fixed[72];    // 不动的部分：脖子上沿 → 后脑 → 头顶 → 眉骨 → 吻尖 → 嘴线 → 铰点 → 后脑下沿 → 脖子下沿
 uniform int head_fixed_n = 0;
@@ -150,6 +152,9 @@ float bodyR(float s) {
 	return w * 0.58;
 }
 
+// 每一小段的半径（× girth）：身后那道咒烟粗细匀一些，越老的一头（s → 1）越散越粗
+float segR(int j, float s) { return wake[j] > 0.5 ? 0.42 + 0.3 * s : bodyR(s); }
+
 // 叠一层（预乘）
 void over(inout vec4 acc, vec3 c, float a) { acc.rgb += (1.0 - acc.a) * c * a; acc.a += (1.0 - acc.a) * a; }
 
@@ -182,7 +187,7 @@ void fragment() {
 			float h = clamp(dot(p - a.xy, ab) / max(dot(ab, ab), 1e-3), 0.0, 1.0);
 			vec2 cq = a.xy + ab * h;
 			float sk = (float(k) + h) / 27.0;
-			float sdk = length(p - cq) - g * bodyR(sk);
+			float sdk = length(p - cq) - g * segR(j, sk);
 			sdArr[k] = sdk; zArr[k] = mix(a.z, b.z, h);
 			if (sdk < sdU) { sdU = sdk; kb = k; }
 		}
@@ -204,7 +209,7 @@ void fragment() {
 				float h = clamp(dot(p - a.xy, ab) / max(dot(ab, ab), 1e-3), 0.0, 1.0);
 				vec2 cq = a.xy + ab * h;
 				float sk = (float(k) + h) / 27.0;
-				float rk = g * bodyR(sk);
+				float rk = g * segR(j, sk);
 				float sdk = length(p - cq) - rk;
 				if (sdk < sdB) { sdB = sdk; bs = sk; bz = mix(a.z, b.z, h); ba = mix(a.w, b.w, h); bq = cq; br = rk; }
 			}
@@ -241,7 +246,7 @@ void fragment() {
 		vec2 hc = root.xy + hDir * Wd * 0.9;                        // 头中间（算头上的光照方向）
 		vec2 n2 = normalize(mix(p - bq, p - hc, headness) + vec2(1e-4));
 		float hx = clamp(q.x, -0.3, 1.6);
-		float L = mix(bs * 11.0, 11.0 + hx * 1.5, headness);
+		float L = mix(bs * 11.0 + nshift[j], 11.0 + hx * 1.5, headness);
 		float acr = rr * (n2.y < 0.0 ? 1.0 : -1.0);
 		float nz = fbm(vec2(L * 2.2 - clock * 1.3, acr * 1.1 - clock * 0.2) + float(j) * 11.0);
 		float fine = vn(vec2(L * 3.5 - clock * 2.6, acr * 3.0) + float(j) * 4.0);
@@ -253,15 +258,15 @@ void fragment() {
 			+ (1.0 - smoothstep(0.0, 0.25, bs)) * nz * 0.6 * (1.0 - headness);
 		torn += dj * (0.5 + nz * 1.8);                              // 散成烟
 		float e = sdn + torn;
-		float dens = smoothstep(0.16, -0.3, e) * (1.0 - dj * 0.6);   // 边缘更软、半透（2026-11-11 用户：通体乌黑不好看）
+		float dens = smoothstep(0.16, -0.3, e) * (1.0 - dj * 0.6) * (1.0 - 0.15 * wake[j]);   // 边缘更软、半透（2026-11-11 用户：通体乌黑不好看）
 		// 前面那截的边缘下面是后面那截的身体，不能透出背景：透明度按并集的轮廓
 		if (layered) dens = max(dens, smoothstep(0.16, -0.3, sdU / max(br, 0.5) + 1.0 + torn) * (1.0 - dj * 0.6) * 0.92);
 		// 颜色：近黑的烟；边里面断断续续透一点暗红；朝上一侧一道细的暗红边光（头只在上半边，下颚不勾线）
 		float lit = 0.55 + 0.45 * smoothstep(-0.5, 0.8, -n2.y);
 		float shell = smoothstep(-0.34, -0.05, e) * (1.0 - smoothstep(-0.05, 0.1, e));
 		float upOnly = mix(1.0, smoothstep(-0.2, 0.15, qu.y), headness);
-		vec3 emit = vec3(0.6, 0.05, 0.07) * shell * smoothstep(0.5 - 0.3 * ember, 0.82, flick) * 1.1 * lit * (1.0 + dj * 1.5) * upOnly * (1.0 + 1.4 * ember);
-		glow += vec3(0.75, 0.04, 0.1) * exp(-max(e, 0.0) * 2.2) * step(0.0, e) * ember * 0.3 * ba * (1.0 - dj);
+		vec3 emit = vec3(0.6, 0.05, 0.07) * shell * smoothstep(0.5 - 0.3 * ember, 0.82, flick) * 1.1 * lit * (1.0 + dj * 1.5) * upOnly * (1.0 + 1.4 * ember) * (1.0 - 0.6 * wake[j]);
+		glow += vec3(0.75, 0.04, 0.1) * exp(-max(e, 0.0) * 2.2) * step(0.0, e) * ember * 0.3 * ba * (1.0 - dj) * (1.0 - wake[j]);
 		// 体积（用户 2026-11-11：蛇通体乌漆嘛黑不好看，但太亮又会露出没细节）：只用大面积的柔和过渡，不加线条亮斑——
 		// 核心深，往边缘渐渐变成背光透过来的暗红烟；朝上的一侧整体亮一点；烟里的明暗随噪声慢慢流动
 		vec3 inner = mix(vec3(0.045, 0.009, 0.014), vec3(0.13, 0.026, 0.034), smoothstep(0.35, 0.9, nz2));
@@ -525,31 +530,31 @@ void fragment() {
 	}
 
 	/// <summary>
-	/// 蛇咬的节奏（第六版用户：太拖沓、不跟手；第七版用户：咬下去前稍微停一下，要有顿感）：attack.T 从 -LungePre 开始。
-	/// -LungePre～0 从手里钻出来；0～SoloSwim 猛游过去（一路留下咒烟）；～SoloRear 停在斜上方一仰、张嘴；
-	/// ～SoloHold 定住（微微发抖、眼睛大亮、嘴前聚起暗红的光、光线往里收）；～SoloBite 扑下去咬合。
+	/// 蛇咬第八版的节奏（2026-11-16 用户画的线路：红段快 → 转到蓝段时慢一点 → 又变快咬上去，中途加特效润滑）：attack.T 从 0（冲出手）到 SoloDur（咬合）。
+	/// 速度按「过山车」算：贴着手的高度冲出去最快，往上兜圈越高越慢，翻过圈顶时最慢（顿一下：倒挂着、眼睛大亮、嘴前聚光），
+	/// 顺着圈的后半边俯冲越来越快，斜着扎到敌人身上。圈顶、蹬出去那一刻的时间按这次的路线算（_soloApexT、_soloKickT）。
 	/// </summary>
-	private const float LungePre = 0.06f, SoloSwim = 0.14f, SoloRear = 0.18f, SoloHold = 0.3f, SoloBite = 0.35f;
-	private const int LungeSerpent = 2;       // 右侧胸口高度、朝敌人的那条轨道
+	private const float SoloDur = 0.48f;
+	private const int LungeSerpent = 2;       // 用这条蛇的粗细
+	private const int WakeSerpent = 3;        // 借一条用不上的蛇画身后拖着的那道咒烟
 	private const float LungeScale = 1.0f;
 
 	/// <summary>Lunge 开始到咬合的秒数。</summary>
-	public const float LungeDelay = LungePre + SoloBite;
+	public const float LungeDelay = SoloDur;
 
 	/// <summary>
-	/// 蛇咬（2026-11-16 第四版；用户：光点 / 光带 / 月牙都是贴图感，没有特效的感觉 → 用群蛇形态那条咒烟蛇，「没有明确轮廓、纯靠渲染」）：
-	/// feet = Joker 脚底，target = 敌人身体中间（层坐标）。一条咒烟蛇在他身前胸口高度从烟里聚出来、眼睛一亮（慢）→ 往回一缩、朝敌人猛窜、
-	/// 化成一道咒烟带着红眼飞到敌人斜上方（快）→ 烟里聚出蛇头、往后一缩、张嘴（慢）→ 扑下去咬合（快）→ 散成烟，不回来。
-	/// 返回到咬合的秒数（游戏的上毒等到这一刻）。
+	/// 蛇咬（用户：光点 / 光带 / 月牙都是贴图感 → 用群蛇形态那条咒烟蛇，「没有明确轮廓、纯靠渲染」）：
+	/// feet = Joker 脚底，target = 敌人身体中间（层坐标）。第八版（2026-11-16 用户画的线路）：咒烟蛇从他伸出的手里冲出来，
+	/// 往前猛窜、往上兜一个大圈（快）→ 翻过圈顶时慢下来、倒挂着锁定敌人（顿一下）→ 顺着后半圈加速俯冲，斜着扎到敌人身上咬合（快）→ 散成烟。
+	/// 身后拖着一道慢慢散开、往上飘的咒烟，转弯、圈顶、蹬出去的地方各炸开一团烟。返回到咬合的秒数（游戏的上毒等到这一刻）。
 	/// </summary>
 	public static float Lunge(Control front, Control back, Vector2 feet, float tall, float face, Vector2 target, Node2D? body)
 	{
 		float T = tall * LungeScale;
 		var m = new SerpentMantle(front, back, () => (feet, T, face), live: false, biteOnly: true) { _solo = true, _show = 1f };
-		// 第五版（用户：出手、蛇的运动轨迹奇怪 —— 在手边绕成一圈、化烟飞上去又在别处聚出来）：
-		// 蛇从他伸出的手里钻出来，整条沿一道往上拱的弧线游过去（身体跟着头走过的路），到敌人斜上方一缩、扑下去咬，不再散成烟中转
+		// 第八版（用户画的线路）：蛇从他伸出的手里冲出来，整条沿「往前 → 往上兜一圈 → 俯冲」的路线游过去（身体跟着头走过的路）
 		Vector2 hand = new(face * tall * 0.3f, -tall * 0.83f);
-		m._attacks[0] = new Attack { Serpent = LungeSerpent, Target = target - feet, Body = body, T = -LungePre, Side = 1f, From = hand };
+		m._attacks[0] = new Attack { Serpent = LungeSerpent, Target = target - feet, Body = body, T = 0f, Side = 1f, From = hand };
 		return LungeDelay;
 	}
 
@@ -855,6 +860,8 @@ void fragment() {
 			mat.SetShaderParameter("streak_a", _streakA);
 			mat.SetShaderParameter("mouth", _mouth);
 			mat.SetShaderParameter("ember", _solo ? 1f : 0f);
+			mat.SetShaderParameter("nshift", _nshift);
+			mat.SetShaderParameter("wake", _wakeK);
 		}
 	}
 
@@ -987,10 +994,9 @@ void fragment() {
 	}
 
 	private Node2D? _charge;
-	private readonly Vector2?[] _trail = new Vector2?[5];
 
 	/// <summary>
-	/// 蛇咬定住的那一下（SoloRear～SoloHold）：蛇嘴前聚起一团暗红的光、越聚越亮，四周几道光线往嘴里收；扑出去的那一刻光一闪收掉。
+	/// 蛇咬圈顶顿住的那一下（_soloApexT 前一点～_soloKickT）：蛇嘴前聚起一团暗红的光、越聚越亮（不加往里收的直线光：贴图感）；蹬出去俯冲的那一刻光一闪收掉。
 	/// </summary>
 	private void SoloCharge(Attack a, float t, Vector2 feet, float T)
 	{
@@ -998,7 +1004,8 @@ void fragment() {
 		Vector4 tip = _spine[i * N + N - 1];
 		Vector2 mouth = feet + new Vector2(tip.X, tip.Y);
 		Control fx = GodotObject.IsInstanceValid(_top) ? _top : _front;
-		if (t >= SoloRear && t < SoloHold)
+		float c0 = Mathf.Min(_soloApexT - 0.05f, _soloKickT - 0.1f), c1 = _soloKickT;
+		if (t >= c0 && t < c1)
 		{
 			if (_charge == null)
 			{
@@ -1006,9 +1013,8 @@ void fragment() {
 				fx.AddChild(_charge);
 				_charge.AddChild(new Sprite2D { Texture = Glow.Soft, Material = Fx.Additive, Modulate = new Color(0.9f, 0.05f, 0.14f, 0f) });
 				_charge.AddChild(new Sprite2D { Texture = Glow.Soft, Material = Fx.Additive, Modulate = new Color(1f, 0.75f, 0.72f, 0f) });
-				SkillRedo5.GatherAt(fx, mouth, T, fx.GetCanvasTransform().Scale.Y, SoloHold - SoloRear, 12, 0.45f);
 			}
-			float k = Smooth(SoloRear, SoloHold, t);
+			float k = Smooth(c0, c1, t);
 			_charge.GlobalPosition = mouth;
 			var outer = (Sprite2D)_charge.GetChild(0);
 			var core = (Sprite2D)_charge.GetChild(1);
@@ -1017,96 +1023,215 @@ void fragment() {
 			core.Scale = Vector2.One * T * (0.04f + 0.08f * k) / 32f;
 			core.Modulate = new Color(1f, 0.75f, 0.72f, 0.4f + 0.5f * k);
 		}
-		else if (_charge != null && t >= SoloHold)
+		else if (_charge != null && t >= c1)
 		{
-			Glow.Flash(fx, _charge.GlobalPosition, new Color(1f, 0.85f, 0.82f), 0.35f * T, 0.08f);   // 扑出去：嘴前那团光一闪
+			Glow.Flash(fx, _charge.GlobalPosition, new Color(1f, 0.85f, 0.82f), 0.35f * T, 0.08f);   // 蹬出去：嘴前那团光一闪
 			_charge.QueueFree();
 			_charge = null;
 		}
 	}
 
-	private readonly Vector2[] _soloPts = new Vector2[65];
-	private readonly float[] _soloLen = new float[65];
+	// ── 蛇咬第八版的路线（2026-11-16 用户画的线路）──
+	// 四段三次 Hermite：手 →（往前猛窜、往上拐）→ 圈的前沿 →（四分之一圆）→ 圈顶 →（四分之一圆）→ 圈的后沿 →（往下、再往前拐）→ 目标。
+	// 每段 SoloSeg 个点，路程表 _soloLen、时间表 _soloTime（头走到这段路程的时刻，咬合 = SoloDur）。
+	private const int SoloSeg = 40, SoloN = SoloSeg * 4 + 1;
+	private readonly Vector2[] _soloPts = new Vector2[SoloN];
+	private readonly float[] _soloLen = new float[SoloN];
+	private readonly float[] _soloTime = new float[SoloN];
+	private readonly float[] _nshift = new float[Count];
+	private readonly float[] _wakeK = new float[Count];
+	private bool _soloBuilt;
+	private float _soloEnd, _soloRtT, _soloApexT, _soloKickT;
+	private Vector2 _soloRt, _soloApex, _soloKick;
 
-	/// <summary>蛇咬第五版：手 → 敌人的那道弧（三次贝塞尔，往上拱，最后从斜上方落向目标）。</summary>
-	private static Vector2 SoloPath(Attack a, float T, float face, float u)
+	private static Vector2 Herm(Vector2 p0, Vector2 m0, Vector2 p1, Vector2 m1, float u)
 	{
-		Vector2 H = a.From, P = a.Target;
-		Vector2 d = P - H;
-		Vector2 c1 = H + new Vector2(d.X * 0.3f, -0.35f * T), c2 = P + new Vector2(-face * 0.5f * T, -0.6f * T);   // 第六版：拱得低一些，更直接
-		float v = 1f - u;
-		return v * v * v * H + 3f * v * v * u * c1 + 3f * v * u * u * c2 + u * u * u * P;
+		float u2 = u * u, u3 = u2 * u;
+		return (2f * u3 - 3f * u2 + 1f) * p0 + (u3 - 2f * u2 + u) * m0 + (-2f * u3 + 3f * u2) * p1 + (u3 - u2) * m1;
 	}
 
 	/// <summary>
-	/// 蛇咬第五版的姿势：头沿 SoloPath 走到 s（0 = 手，1 = 咬在目标上），身体是头身后那一段路（再叠一道往后传的 S 波），
-	/// 还没从手里钻出来的那截藏起来。节奏：钻出来（慢）→ 一缩 → 猛游过去（快）→ 停在斜上方往后一仰、张嘴（慢）→ 扑下去咬（快）。
+	/// 按这次的手和目标铺路线、算时间表。圈在手和敌人之间（圈心在 0.5 倍距离处；敌人远时往敌人那边挪，最后俯冲那段不会太长），
+	/// 敌人越远圈越大（半径 0.32～0.42 身高；圈顶最多比手高 0.96 身高，免得碰到顶栏），圈底比手高 0.12 身高，敌人比手高时整个圈再往上抬。速度：手的高度 = 1，越高越慢（圈顶 0.14），比手低的地方更快（最多 1.48）；
+	/// 刚出手 0.08 身高内从一半加到全速；翻过圈顶 0.08 身高处再压慢一截（顿一下），之后蹬出去、俯冲再快一半。
+	/// </summary>
+	private void BuildSolo(Attack a, float T, float face, float headLen)
+	{
+		Vector2 H = a.From, P = a.Target;
+		Vector2 F(float x, float y) => new(face * x, y);
+		float dx = Mathf.Max((P.X - H.X) * face, 0.8f * T), dy = P.Y - H.Y;
+		float R = Mathf.Clamp(dx * 0.29f, 0.32f * T, 0.42f * T);
+		float cx = Mathf.Min(Mathf.Max(Mathf.Max(dx * 0.5f, dx - R - 0.35f * T), R + 0.25f * T), dx - 0.6f * R);
+		float cy = -(R + 0.12f * T) + Mathf.Min(0f, dy) * 0.5f;
+		Vector2 C = H + F(cx, cy), rt = C + F(R, 0f), top = C + new Vector2(0f, -R), lf = C + F(-R, 0f);
+		float k = 1.657f * R, c1 = (rt - H).Length(), c4 = (P - lf).Length();
+		Vector2 sd = F(1f, 0.5f).Normalized();                       // 最后斜着往下扎进去
+		var segs = new[]
+		{
+			(H, F(Mathf.Min(c1 * 1.1f, 2.2f * T), 0f), rt, new Vector2(0f, -Mathf.Min(c1 * 0.9f, 1.3f * T))),   // 远的时候不先往下沉
+			(rt, new Vector2(0f, -k), top, F(-k, 0f)),
+			(top, F(-k, 0f), lf, new Vector2(0f, k)),
+			(lf, new Vector2(0f, c4 * 0.9f), P, sd * c4 * 1.1f),
+		};
+		int n = 0;
+		for (int si = 0; si < 4; si++)
+		{
+			var (p0, m0, p1, m1) = segs[si];
+			for (int j = 0; j < SoloSeg + (si == 3 ? 1 : 0); j++) _soloPts[n++] = Herm(p0, m0, p1, m1, j / (float)SoloSeg);
+		}
+		_soloLen[0] = 0f;
+		int iap = 0;
+		for (int j = 1; j < SoloN; j++)
+		{
+			_soloLen[j] = _soloLen[j - 1] + (_soloPts[j] - _soloPts[j - 1]).Length();
+			if (_soloPts[j].Y < _soloPts[iap].Y) iap = j;
+		}
+		_soloEnd = _soloLen[SoloN - 1] - headLen * 0.5f;              // 头中间停在这里时吻尖正好到目标
+		float htop = Mathf.Max(H.Y - _soloPts[iap].Y, 0.2f * T), sap = _soloLen[iap] + 0.08f * T;
+		const float vmin = 0.14f, dwell = 0.4f, kick = 0.5f;
+		float V(int j)
+		{
+			float L = _soloLen[j], depth = _soloPts[j].Y - _soloPts[iap].Y;
+			float v = Mathf.Sqrt(Mathf.Clamp(vmin * vmin + (1f - vmin * vmin) * depth / htop, vmin * vmin, 2.2f));
+			v *= 0.5f + 0.5f * Mathf.Clamp(L / (0.08f * T), 0f, 1f);
+			v *= 1f - dwell * Mathf.Exp(-Mathf.Pow((L - sap) / (0.12f * T), 2f));
+			float x = Mathf.Clamp((L - sap) / (0.4f * T), 0f, 1f);
+			return v * (1f + kick * x * x * (3f - 2f * x));
+		}
+		_soloTime[0] = 0f;
+		float pv = V(0);
+		for (int j = 1; j < SoloN; j++)
+		{
+			float v = V(j);
+			_soloTime[j] = _soloTime[j - 1] + (_soloLen[j] - _soloLen[j - 1]) / ((v + pv) * 0.5f);
+			pv = v;
+		}
+		float scale = SoloDur / Mathf.Max(SoloTimeAt(_soloEnd), 1e-4f);
+		for (int j = 0; j < SoloN; j++) _soloTime[j] *= scale;
+		_soloRt = rt;
+		_soloApex = _soloPts[iap];
+		_soloKick = SoloAt(sap);
+		_soloRtT = _soloTime[SoloSeg];
+		_soloApexT = _soloTime[iap];
+		_soloKickT = SoloTimeAt(sap);
+		_soloBuilt = true;
+	}
+
+	/// <summary>arr（递增）里不大于 x 的最后一个下标，夹在 0～SoloN-2。</summary>
+	private static int SoloIdx(float[] arr, float x)
+	{
+		int lo = 0, hi = SoloN - 1;
+		if (x <= arr[0]) return 0;
+		if (x >= arr[hi]) return hi - 1;
+		while (hi - lo > 1)
+		{
+			int m = (lo + hi) >> 1;
+			if (arr[m] <= x) lo = m; else hi = m;
+		}
+		return lo;
+	}
+
+	/// <summary>路线上路程 dist 处的点（相对脚底）。</summary>
+	private Vector2 SoloAt(float dist)
+	{
+		int k = SoloIdx(_soloLen, dist);
+		float span = _soloLen[k + 1] - _soloLen[k];
+		return _soloPts[k].Lerp(_soloPts[k + 1], span > 1e-4f ? Mathf.Clamp((dist - _soloLen[k]) / span, 0f, 1f) : 0f);
+	}
+
+	/// <summary>头中间走到路程 dist 的时刻。</summary>
+	private float SoloTimeAt(float dist)
+	{
+		int k = SoloIdx(_soloLen, dist);
+		float span = _soloLen[k + 1] - _soloLen[k];
+		return Mathf.Lerp(_soloTime[k], _soloTime[k + 1], span > 1e-4f ? Mathf.Clamp((dist - _soloLen[k]) / span, 0f, 1f) : 0f);
+	}
+
+	/// <summary>时刻 t 头中间走到的路程（咬合以后停在 _soloEnd）。</summary>
+	private float SoloHead(float t)
+	{
+		if (t <= 0f) return 0f;
+		if (t >= SoloDur) return _soloEnd;
+		int k = SoloIdx(_soloTime, t);
+		float span = _soloTime[k + 1] - _soloTime[k];
+		return Mathf.Min(Mathf.Lerp(_soloLen[k], _soloLen[k + 1], span > 1e-6f ? Mathf.Clamp((t - _soloTime[k]) / span, 0f, 1f) : 0f), _soloEnd);
+	}
+
+	/// <summary>
+	/// 蛇咬第八版的姿势：头沿路线走到 SoloHead(t)，身体是头身后那一段路（再叠一道往后传的 S 波），还没从手里钻出来的那截藏起来；
+	/// 头稍微往前看一点（转弯前先转头），最后一段对准目标；头跟着圈翻过去（圈顶倒挂，不在竖直的地方突然翻面）。
+	/// 身后拖着的咒烟画在 WakeSerpent 那条上：尾巴过去以后的那段路，越久越淡、往上飘、散开。
 	/// </summary>
 	private void SoloPose(int i, Attack atk, float T, float face, float alpha)
 	{
 		float t = atk.T;
-		float s = t < 0f ? 0.15f * Ease5.OutQuint(Ease5.Seg(t, -LungePre, LungePre))                                  // 从手里钻出来
-			: t < SoloSwim ? Mathf.Lerp(0.15f, 0.8f, Fx.OutCubic(Ease5.Seg(t, 0f, SoloSwim)))                          // 猛游过去
-			: t < SoloRear ? 0.8f - 0.03f * Mathf.Sin(Ease5.Seg(t, SoloSwim, SoloRear - SoloSwim) * Mathf.Pi * 0.5f)  // 一仰
-			: t < SoloHold ? 0.77f + 0.004f * Mathf.Sin(t * 95f)                                                       // 定住、绷着发抖
-			: Mathf.Lerp(0.77f, 0.97f, Mathf.Pow(Ease5.Seg(t, SoloHold, SoloBite - SoloHold), 2f));                   // 扑下去
-		// 弧长表：路程 ↔ 参数
-		const int S = 64;
-		var pts = _soloPts;
-		var len = _soloLen;
-		for (int k = 0; k <= S; k++)
-		{
-			pts[k] = SoloPath(atk, T, face, k / (float)S);
-			len[k] = k == 0 ? 0f : len[k - 1] + (pts[k] - pts[k - 1]).Length();
-		}
-		float total = len[S];
-		Vector2 At(float dist)
-		{
-			dist = Mathf.Clamp(dist, 0f, total);
-			int k = 0;
-			while (k < S - 1 && len[k + 1] < dist) k++;
-			float u = len[k + 1] > len[k] ? (dist - len[k]) / (len[k + 1] - len[k]) : 0f;
-			return pts[k].Lerp(pts[k + 1], u);
-		}
-		int nb = N - HeadPts;
 		float headLen = _girth[i] * 2.16f;
+		if (!_soloBuilt) BuildSolo(atk, T, face, headLen);
+		float mid = SoloHead(t);
+		int nb = N - HeadPts;
 		float bodyLen = 1.9f * T;
-		float headD = s * total;
-		Vector2 hb = At(headD - headLen * 0.5f);
 		for (int k = 0; k < nb; k++)
 		{
 			float f = k / (nb - 1f);                               // 0 尾 → 1 颈根
-			float dd = headD - headLen * 0.5f - (1f - f) * bodyLen;
-			Vector2 q = At(dd);
-			Vector2 tan = (At(dd + 4f) - At(dd - 4f));
+			float dd = mid - headLen * 0.5f - (1f - f) * bodyLen;
+			Vector2 q = SoloAt(dd);
+			Vector2 tan = dd < 4f ? _soloPts[1] - _soloPts[0] : SoloAt(dd + 4f) - SoloAt(dd - 4f);
 			Vector2 nrm = tan.LengthSquared() > 1e-3f ? new Vector2(-tan.Y, tan.X).Normalized() : Vector2.Up;
-			q += nrm * Mathf.Sin(f * 9f - _t * 14f) * 0.11f * T * Mathf.Pow(1f - f, 0.7f) * Smooth(0f, 0.15f, 1f - f);   // 游动的 S 波：从颈后往尾巴传、越往后摆得越大
+			q += nrm * Mathf.Sin(f * 9f - _t * 14f) * 0.09f * T * Mathf.Pow(1f - f, 0.7f) * Smooth(0f, 0.15f, 1f - f) * Smooth(0f, 0.3f * T, dd);   // 游动的 S 波：从颈后往尾巴传，刚出手那截是直的
 			float a = alpha * Smooth(0f, 0.12f, f) * (dd > 0f ? 1f : Smooth(-0.1f * T, 0f, dd));   // 没钻出手的那截藏起来
 			_spine[i * N + k] = new Vector4(q.X, q.Y, 0.5f, a);
 		}
-		Vector2 dir = NeckDir(i, face);
-		// 仰起时头往上抬一点，扑的时候对准目标
-		float lift = t < SoloSwim ? 0f : t < SoloRear ? Mathf.Sin(Ease5.Seg(t, SoloSwim, SoloRear - SoloSwim) * Mathf.Pi * 0.5f) : t < SoloHold ? 1f : 0f;
-		dir = dir.Rotated(-face * 0.4f * lift);                                   // 仰头（定住时一直仰着）
-		if (t >= SoloHold) dir = dir.Lerp((atk.Target - hb).Normalized(), Ease5.Seg(t, SoloHold, 0.03f)).Normalized();   // 扑的时候对准目标
+		Vector2 hb = SoloAt(mid - headLen * 0.5f);
+		Vector2 look = SoloAt(mid + headLen * 0.5f + 0.1f * T) - hb;     // 往前看一点
+		Vector2 dir = look.LengthSquared() > 1f ? look.Normalized() : new Vector2(face, 0f);
+		Vector2 toP = atk.Target - hb;
+		if (toP.LengthSquared() > 1f) dir = dir.Lerp(toP.Normalized(), Smooth(_soloEnd - 0.5f * T, _soloEnd, mid)).Normalized();
 		for (int k = 1; k <= HeadPts; k++)
 		{
 			Vector2 hp = hb + dir * headLen * k / HeadPts;
-			_spine[i * N + nb - 1 + k] = new Vector4(hp.X, hp.Y, 0.5f, alpha * (headD > headLen * 0.3f ? 1f : 0f));
+			_spine[i * N + nb - 1 + k] = new Vector4(hp.X, hp.Y, 0.5f, alpha);
 		}
-		Vector2 up = new(dir.Y, -dir.X);
-		if (up.Y > 0f) up = -up;
+		Vector2 up = face * new Vector2(dir.Y, -dir.X);
 		_hup[i] = up;
 		Vector2 eye = hb + dir * _girth[i] * 1.16f * 1.12f + up * _girth[i] * 1.16f * 0.3f;
-		float glint = 1.6f * Smooth(-LungePre, -0.01f, t) * (1f - Smooth(0f, 0.08f, t))
-			+ 2.2f * Smooth(SoloRear, SoloRear + 0.05f, t) * (1f - Smooth(SoloHold, SoloHold + 0.05f, t));   // 定住时眼睛大亮
-		_eyes[i] = new Vector3(eye.X, eye.Y, alpha * (1f + glint) * (1f - Smooth(SoloBite + 0.08f, SoloBite + 0.35f, t)));
-		_mouth[i] = t < SoloSwim ? 0.15f : t < SoloBite ? Smooth(SoloSwim, SoloRear, t) : -0.2f;
+		float glint = 1.6f * (1f - Smooth(0.03f, 0.12f, t))                                                       // 冲出手时眼睛一亮
+			+ 2.2f * Smooth(_soloApexT - 0.07f, _soloApexT, t) * (1f - Smooth(_soloKickT, _soloKickT + 0.06f, t));   // 圈顶锁定：眼睛大亮
+		_eyes[i] = new Vector3(eye.X, eye.Y, alpha * (1f + glint) * (1f - Smooth(SoloDur + 0.08f, SoloDur + 0.35f, t)));
+		_mouth[i] = t < SoloDur ? 0.15f + 0.85f * Smooth(_soloApexT - 0.05f, _soloKickT, t) : -0.2f;   // 圈顶张开嘴，咬合时合上
+
+		// 身后拖着的咒烟：贴着尾巴开始、往回 1.7 身高；尾巴过去越久越淡（0.24s）、往上飘、左右散开；离手太近的不画（手边有那团炸开的烟）
+		int w = WakeSerpent;
+		float wakeLen = 1.7f * T, s0 = mid - headLen * 0.5f - bodyLen + 0.15f * T;
+		float fade = 1f - Smooth(SoloDur, SoloDur + 0.35f, t);
+		for (int k = 0; k < nb; k++)
+		{
+			float f = k / (nb - 1f);                               // 0 = 贴着尾巴，1 = 最老的一头（这一头粗：烟散开了）
+			float sk = s0 - f * wakeLen;
+			float age = Mathf.Max(0f, t - SoloTimeAt(sk + headLen * 0.5f + bodyLen));
+			Vector2 q = SoloAt(sk);
+			Vector2 tan = SoloAt(sk + 4f) - SoloAt(sk - 4f);
+			Vector2 nrm = tan.LengthSquared() > 1e-3f ? new Vector2(-tan.Y, tan.X).Normalized() : Vector2.Up;
+			q += nrm * Mathf.Sin(sk / T * 7f - _t * 5f) * 0.05f * T * Smooth(0f, 0.25f, age) + new Vector2(0f, -0.3f * T * age);
+			float a = alpha * Mathf.Exp(-age / 0.24f) * Smooth(0f, 0.2f, f) * (1f - Smooth(0.6f, 1f, f)) * Smooth(0f, 0.25f * T, sk) * fade;
+			_spine[w * N + k] = new Vector4(q.X, q.Y, 0.5f, k == nb - 1 ? 0f : a);   // 颈根透明 = 不画头
+		}
+		Vector4 last = _spine[w * N + nb - 1];
+		for (int k = nb; k < N; k++) _spine[w * N + k] = new Vector4(last.X, last.Y, 0.5f, 0f);
+		_eyes[w] = Vector3.Zero;
+		_hup[w] = Vector2.Up;
+		_mouth[w] = 0f;
+		_nshift[w] = -11f * s0 / wakeLen;                          // 烟的纹理钉在路上，不跟着蛇跑
+		_wakeK[w] = 1f;
 	}
 
 	private void PoseSerpent(int i, float T, float face, float alpha)
 	{
 		var o = Orbits[i];
+		if (_solo && i == WakeSerpent)
+		{
+			_girth[i] = _girth[LungeSerpent] * 1.3f;    // 蛇咬身后的咒烟：形状在 SoloPose 里画好了（那条先算），这里只定粗细
+			return;
+		}
 		_mouth[i] = 0f;
 		if (_solo && AttackOf(i) is { } so)
 		{
@@ -1255,25 +1380,29 @@ void fragment() {
 			float t = a.T;
 			if (_solo)
 			{
-				// 蛇咬第五版：没有烟迹 / 中转烟团；手边钻出来时一小团咒烟，咬完原地散成烟
-				_diss[a.Serpent] = t < 0f ? 0.4f * (1f - Smooth(-LungePre, 0f, t)) : t < SoloBite + 0.04f ? 0f : Smooth(SoloBite + 0.04f, SoloBite + 0.26f, t);   // 咬完很快散掉，不拖
-				if (t < 0.4f) Puff(a.From, Ease5.Seg(t, -LungePre, LungePre + 0.4f), -0.34f * T, s * 3 + 2);   // 冲出来时手边往外炸开的一团咒烟（中间一下暗红光）
-				if (t >= SoloBite) Puff(a.Target, Ease5.Seg(t, SoloBite, 0.5f), -0.5f * T, s * 3 + 1);
-				// 游过去的路上一团团咒烟（头经过时冒出、翻滚着散开），用空着的烟团槽
-				for (int k = 0; k < 5; k++)
+				// 蛇咬第八版：手边炸开一团咒烟、蛇冲出来；身后拖着一道咒烟（WakeSerpent，SoloPose 里画）；
+				// 往上拐的地方、圈顶（慢下来时身后鼓起一团翻滚的烟）、蹬出去俯冲的地方各一团；咬完原地散成烟
+				_diss[a.Serpent] = t < SoloDur + 0.04f ? 0.35f * (1f - Smooth(0f, 0.07f, t)) : Smooth(SoloDur + 0.04f, SoloDur + 0.26f, t);   // 咬完很快散掉，不拖
+				_diss[WakeSerpent] = 0.45f + 0.35f * Smooth(SoloDur, SoloDur + 0.3f, t);
+				if (t < 0.46f) Puff(a.From, Ease5.Seg(t, 0f, 0.46f), -0.34f * T, s * 3 + 2);   // 冲出来时手边往外炸开的一团咒烟（中间一下暗红光）
+				if (t >= SoloDur) Puff(a.Target, Ease5.Seg(t, SoloDur, 0.5f), -0.5f * T, s * 3 + 1);
+				if (t >= _soloRtT && t < _soloRtT + 0.45f) Puff(_soloRt, Ease5.Seg(t, _soloRtT, 0.45f), -0.26f * T, 3);   // 负数 = 炸开的那种（中间先一下暗红的光）
+				float cloudAt = _soloApexT - 0.08f;
+				if (t >= cloudAt && t < cloudAt + 0.6f) Puff(_soloApex + new Vector2(0f, 0.05f * T), Ease5.Seg(t, cloudAt, 0.6f), 0.34f * T, 4);
+				if (t >= _soloKickT && t < _soloKickT + 0.45f) Puff(_soloKick, Ease5.Seg(t, _soloKickT, 0.45f), -0.3f * T, 5);
+				if (!a.Emerged && t >= _soloKickT)
 				{
-					float born = SoloSwim * (0.12f + 0.16f * k);
-					if (t < born) continue;
-					if (_trail[k] is not Vector2 at0)
-					{
-						Vector4 hr = _spine[a.Serpent * N + N - HeadPts - 1];   // 头经过的那一刻、颈根所在的位置
-						_trail[k] = at0 = new Vector2(hr.X, hr.Y);
-					}
-					if (t < born + 0.5f) Puff(at0, Ease5.Seg(t, born, 0.5f), -(0.3f - 0.03f * k) * T, 3 + k);   // 负数 = 炸开的那种（中间先一下暗红的光）
+					// 蹬出去俯冲：空间一扭、身后一下暗红的光（不加声音：用户说音效别加那么多）
+					a.Emerged = true;
+					Control fx = GodotObject.IsInstanceValid(_top) ? _top : _front;
+					Vector4 hr = _spine[a.Serpent * N + N - HeadPts - 1];
+					Vector2 at = feet + new Vector2(hr.X, hr.Y);
+					Glow.Ripple(fx, at, 0.9f * T, 0.32f, 0.025f);
+					Glow.Flash(_back, at, new Color(0.8f, 0.04f, 0.12f), 0.9f * T, 0.3f);
 				}
 				SoloCharge(a, t, feet, T);
 				_streakA[s] = 0f;
-				if (!a.Bit && t >= SoloBite)
+				if (!a.Bit && t >= SoloDur)
 				{
 					a.Bit = true;
 					Stage.PlayEvent?.Invoke(BiteSfx, 0.65f);   // 只有这一下咬合声：群蛇形态那个原版咬合（用户：gx_slice 太刺耳）；上毒的咒怨闷响走原来的落点
@@ -1286,7 +1415,7 @@ void fragment() {
 					Fx.Shake(2);
 					HitStop.Request(0.06);
 				}
-				if (t > SoloBite + 0.4f) _attacks[s] = null;
+				if (t > SoloDur + 0.4f) _attacks[s] = null;
 				continue;
 			}
 			float face = a.Target.X >= 0f ? 1f : -1f;

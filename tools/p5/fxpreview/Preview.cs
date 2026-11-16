@@ -561,10 +561,10 @@ public partial class Preview : Node2D
 		["snakebite3"] = p =>
 		{
 			float tall = (JokerFeet - Pose(815f, 120f)).Length();
-			Vector2[] es = { Enemy, Enemy2 };
-			for (int k = 0; k < 2; k++)
+			Vector2[] es = { Enemy2, Enemy, Enemy3 };   // 近、中、远三个敌人：绕圈的路线按敌人位置算
+			for (int k = 0; k < 3; k++)
 			{
-				double t0 = 0.3 + 1.9 * k;
+				double t0 = 0.3 + 1.6 * k;
 				Vector2 e = es[k];
 				p.At(t0, () => p._joker?.Play("cast_wave"));
 				p.At(t0 + 0.1, () => { p._enemies.TryGetValue(e, out Node2D? n); SnakebiteFx.Play(p._front, p._back, JokerFeet, tall, 1f, e + new Vector2(0f, -60f), n); });
