@@ -36,7 +36,9 @@ void fragment() {
 	float r = length(p);
 	float a = atan(p.y, p.x);
 	float R = disk;   // 2026-11-13 用户：别放大出场 → 大小不变，只淡入
-	float rr = r / R;
+	// 2026-11-16 用户：圆形轮廓太明显、要模糊；边上一小段锯齿太尬 → 半径沿圈慢慢起伏（不是正圆），边缘过渡拉宽，去掉日珥
+	float wob = 1.0 + 0.07 * (anoise(a + clock * 0.05, clock * 0.1, 2.5) - 0.5) + 0.03 * (anoise(a - clock * 0.08, 3.0 + clock * 0.13, 6.0) - 0.5);
+	float rr = r / (R * wob);
 	float lit = 1.0 + 0.9 * pulse;
 	vec3 deep = vec3(0.32, 0.03, 0.05);
 	vec3 crimson = vec3(0.8, 0.08, 0.1);
@@ -45,13 +47,13 @@ void fragment() {
 	float al = 0.0;
 
 	// ── 日冕：柔光丝缕（慢慢转、呼吸）+ 外晕 ──
-	float out_ = max(rr - 1.0, 0.0);
+	float out_ = max(rr - 0.85, 0.0);
 	float s1 = anoise(a + clock * 0.04, clock * 0.12, 3.0);
 	float s2 = anoise(a - clock * 0.07, 4.0 + clock * 0.1, 8.0);
 	float reach = (0.45 + 0.75 * s1 + 0.3 * s2);
 	float strand = exp(-out_ / max(reach * 0.5, 0.02)) * (0.6 + 0.4 * anoise(a, 9.0 + clock * 0.2, 20.0));
-	strand *= smoothstep(2.35, 1.6, rr) * step(1.0, rr) * (0.85 + 0.15 * sin(clock * 1.2));
-	float halo = exp(-out_ * 1.6) * 0.28 * step(1.0, rr) * smoothstep(2.35, 1.7, rr);
+	strand *= smoothstep(2.35, 1.5, rr) * smoothstep(0.7, 1.15, rr) * (0.85 + 0.15 * sin(clock * 1.2));
+	float halo = exp(-out_ * 1.6) * 0.32 * smoothstep(0.6, 1.1, rr) * smoothstep(2.35, 1.6, rr);
 	col += mix(deep, crimson, exp(-out_ * 2.0)) * strand * 0.55 * lit + crimson * halo * 0.7 * lit;
 	al = max(al, clamp(strand * 0.5 + halo, 0.0, 1.0));
 
@@ -63,11 +65,11 @@ void fragment() {
 	float prom = smoothstep(tLen, 0.0, out_) * step(1.0, rr) * smoothstep(0.0, 0.02, tongue);
 	float promN = fbm(vec2(pa * 6.0, out_ * 18.0 - clock * 0.6));
 	prom *= smoothstep(0.25, 0.65, promN);
-	col += mix(crimson, orange, 0.5 * (1.0 - out_ / max(tLen, 0.01))) * prom * 0.75 * lit;
-	al = max(al, prom * 0.8);
+	col += mix(crimson, orange, 0.5 * (1.0 - out_ / max(tLen, 0.01))) * prom * 0.0;   // 日珥去掉（锯齿边）
+	al = max(al, prom * 0.0);
 
 	// ── 日面：翻涌的等离子 ──
-	if (rr < 1.03) {
+	if (rr < 1.42) {
 		vec2 q = rot(clock * 0.03) * p / R;
 		vec2 w = vec2(fbm(q * 2.2 + clock * 0.06), fbm(q * 2.2 + vec2(5.2, 1.3) - clock * 0.05));
 		float n = fbm(q * 3.0 + w * 1.8);
@@ -79,11 +81,11 @@ void fragment() {
 		sc *= 0.75 + 0.35 * gran;
 		sc = mix(sc, deep * 0.7, fil * 0.45);                          // 暗色细丝
 		// 临边：往边上暗一点，但贴边一层宽而柔、亮度不均的边缘光（不是细亮环）
-		float limb = mix(1.0, 0.7, smoothstep(0.55, 0.98, rr));
-		float edgeLight = smoothstep(0.78, 1.0, rr) * (0.35 + 0.65 * anoise(a - clock * 0.05, 1.5, 4.0));
-		sc = sc * limb + crimson * edgeLight * 0.35;
+		float limb = mix(1.0, 0.8, smoothstep(0.3, 1.0, rr));
+		float edgeLight = smoothstep(0.6, 1.0, rr) * (0.35 + 0.65 * anoise(a - clock * 0.05, 1.5, 4.0));
+		sc = sc * limb + crimson * edgeLight * 0.08;   // 边缘光几乎去掉：亮边会描出一圈轮廓
 		sc *= lit;
-		float inDisk = smoothstep(1.03, 0.98, rr);
+		float inDisk = smoothstep(1.4, 0.4, rr) * smoothstep(1.4, 0.4, rr) * (3.0 - 2.0 * smoothstep(1.4, 0.4, rr));   // 宽而软的边：日面慢慢化进光冕里
 		col = mix(col, sc, inDisk);
 		al = max(al, inDisk);
 	}
