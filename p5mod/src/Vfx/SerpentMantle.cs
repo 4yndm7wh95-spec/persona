@@ -542,7 +542,10 @@ void fragment() {
 	{
 		float T = tall * LungeScale;
 		var m = new SerpentMantle(front, back, () => (feet, T, face), live: false, biteOnly: true) { _solo = true, _show = 1f };
-		m._attacks[0] = new Attack { Serpent = LungeSerpent, Target = target - feet, Body = body, T = -LungePre, Side = 1f, Tilt = -0.5f };   // 斜着从 Joker 这边扑过去，烟团不要飘到敌人头顶很高的地方
+		// 第五版（用户：出手、蛇的运动轨迹奇怪 —— 在手边绕成一圈、化烟飞上去又在别处聚出来）：
+		// 蛇从他伸出的手里钻出来，整条沿一道往上拱的弧线游过去（身体跟着头走过的路），到敌人斜上方一缩、扑下去咬，不再散成烟中转
+		Vector2 hand = new(face * tall * 0.3f, -tall * 0.83f);
+		m._attacks[0] = new Attack { Serpent = LungeSerpent, Target = target - feet, Body = body, T = -LungePre, Side = 1f, From = hand };
 		return LungeDelay;
 	}
 
@@ -811,8 +814,8 @@ void fragment() {
 			// 扑咬时那条蛇放大一些（更有气势），回到轨道上恢复
 			Attack? sa = AttackOf(i);
 			float big = sa != null ? Smooth(EmergeAt - 0.02f, EmergeAt + 0.02f, sa.T) * (1f - Smooth(LeaveAt - 0.02f, LeaveAt, sa.T)) : 0f;
-			_girth[i] = 0.068f * T * Orbits[i].Size * (1f + 1.0f * big);   // 扑咬时放大到两倍（用户：要更有表现力）
-			PoseSerpent(i, T, face, _biteOnly && (sa == null || (_solo && sa.T >= LeaveAt)) ? 0f : alpha);
+			_girth[i] = 0.068f * T * Orbits[i].Size * (_solo ? 1.5f : 1f + 1.0f * big);   // 扑咬时放大到两倍（用户：要更有表现力）；蛇咬单独那条一直粗一些
+			PoseSerpent(i, T, face, _biteOnly && sa == null ? 0f : alpha);
 		}
 		UpdateAttacks(dt, feet, T);
 		if (_biteOnly && _attacks[0] == null) { Free(); return; }
@@ -979,10 +982,92 @@ void fragment() {
 		return v;
 	}
 
+	private readonly Vector2[] _soloPts = new Vector2[65];
+	private readonly float[] _soloLen = new float[65];
+
+	/// <summary>蛇咬第五版：手 → 敌人的那道弧（三次贝塞尔，往上拱，最后从斜上方落向目标）。</summary>
+	private static Vector2 SoloPath(Attack a, float T, float face, float u)
+	{
+		Vector2 H = a.From, P = a.Target;
+		Vector2 d = P - H;
+		Vector2 c1 = H + new Vector2(d.X * 0.3f, -0.55f * T), c2 = P + new Vector2(-face * 0.55f * T, -0.95f * T);
+		float v = 1f - u;
+		return v * v * v * H + 3f * v * v * u * c1 + 3f * v * u * u * c2 + u * u * u * P;
+	}
+
+	/// <summary>
+	/// 蛇咬第五版的姿势：头沿 SoloPath 走到 s（0 = 手，1 = 咬在目标上），身体是头身后那一段路（再叠一道往后传的 S 波），
+	/// 还没从手里钻出来的那截藏起来。节奏：钻出来（慢）→ 一缩 → 猛游过去（快）→ 停在斜上方往后一仰、张嘴（慢）→ 扑下去咬（快）。
+	/// </summary>
+	private void SoloPose(int i, Attack atk, float T, float face, float alpha)
+	{
+		float t = atk.T;
+		float s = t < -0.05f ? 0.13f * Ease5.OutQuint(Ease5.Seg(t, -LungePre, LungePre - 0.05f))     // 从手里钻出来
+			: t < 0.05f ? 0.13f - 0.03f * Mathf.Sin(Ease5.Seg(t, -0.05f, 0.1f) * Mathf.Pi)         // 往回一缩
+			: t < 0.3f ? Mathf.Lerp(0.13f, 0.8f, Fx.OutCubic(Ease5.Seg(t, 0.05f, 0.25f)))           // 猛游过去
+			: t < 0.38f ? 0.8f - 0.035f * Mathf.Sin(Ease5.Seg(t, 0.3f, 0.08f) * Mathf.Pi * 0.5f)   // 停住、往后一仰
+			: Mathf.Lerp(0.765f, 0.97f, Mathf.Pow(Ease5.Seg(t, 0.38f, BiteAt - 0.38f), 2f));         // 扑下去
+		// 弧长表：路程 ↔ 参数
+		const int S = 64;
+		var pts = _soloPts;
+		var len = _soloLen;
+		for (int k = 0; k <= S; k++)
+		{
+			pts[k] = SoloPath(atk, T, face, k / (float)S);
+			len[k] = k == 0 ? 0f : len[k - 1] + (pts[k] - pts[k - 1]).Length();
+		}
+		float total = len[S];
+		Vector2 At(float dist)
+		{
+			dist = Mathf.Clamp(dist, 0f, total);
+			int k = 0;
+			while (k < S - 1 && len[k + 1] < dist) k++;
+			float u = len[k + 1] > len[k] ? (dist - len[k]) / (len[k + 1] - len[k]) : 0f;
+			return pts[k].Lerp(pts[k + 1], u);
+		}
+		int nb = N - HeadPts;
+		float headLen = _girth[i] * 2.16f;
+		float bodyLen = 1.9f * T;
+		float headD = s * total;
+		Vector2 hb = At(headD - headLen * 0.5f);
+		for (int k = 0; k < nb; k++)
+		{
+			float f = k / (nb - 1f);                               // 0 尾 → 1 颈根
+			float dd = headD - headLen * 0.5f - (1f - f) * bodyLen;
+			Vector2 q = At(dd);
+			Vector2 tan = (At(dd + 4f) - At(dd - 4f));
+			Vector2 nrm = tan.LengthSquared() > 1e-3f ? new Vector2(-tan.Y, tan.X).Normalized() : Vector2.Up;
+			q += nrm * Mathf.Sin(f * 9f - _t * 14f) * 0.11f * T * Mathf.Pow(1f - f, 0.7f) * Smooth(0f, 0.15f, 1f - f);   // 游动的 S 波：从颈后往尾巴传、越往后摆得越大
+			float a = alpha * Smooth(0f, 0.12f, f) * (dd > 0f ? 1f : Smooth(-0.1f * T, 0f, dd));   // 没钻出手的那截藏起来
+			_spine[i * N + k] = new Vector4(q.X, q.Y, 0.5f, a);
+		}
+		Vector2 dir = NeckDir(i, face);
+		// 仰起时头往上抬一点，扑的时候对准目标
+		if (t >= 0.3f && t < 0.38f) dir = dir.Rotated(-face * 0.35f * Mathf.Sin(Ease5.Seg(t, 0.3f, 0.08f) * Mathf.Pi * 0.5f));
+		if (t >= 0.38f) dir = dir.Lerp((atk.Target - hb).Normalized(), Ease5.Seg(t, 0.38f, 0.04f)).Normalized();
+		for (int k = 1; k <= HeadPts; k++)
+		{
+			Vector2 hp = hb + dir * headLen * k / HeadPts;
+			_spine[i * N + nb - 1 + k] = new Vector4(hp.X, hp.Y, 0.5f, alpha * (headD > headLen * 0.3f ? 1f : 0f));
+		}
+		Vector2 up = new(dir.Y, -dir.X);
+		if (up.Y > 0f) up = -up;
+		_hup[i] = up;
+		Vector2 eye = hb + dir * _girth[i] * 1.16f * 1.12f + up * _girth[i] * 1.16f * 0.3f;
+		float glint = 1.6f * Smooth(-0.16f, -0.06f, t) * (1f - Smooth(0.0f, 0.1f, t));
+		_eyes[i] = new Vector3(eye.X, eye.Y, alpha * Mathf.Max(1f, glint + 1f) * (t < BiteAt + 0.1f ? 1f : 1f - Smooth(BiteAt + 0.1f, 0.7f, t)));
+		_mouth[i] = t < 0.3f ? 0.15f : t < BiteAt ? Smooth(0.3f, 0.37f, t) : -0.2f;
+	}
+
 	private void PoseSerpent(int i, float T, float face, float alpha)
 	{
 		var o = Orbits[i];
 		_mouth[i] = 0f;
+		if (_solo && AttackOf(i) is { } so)
+		{
+			SoloPose(i, so, T, face, alpha);
+			return;
+		}
 		if (AttackOf(i) is { } sa && sa.T >= EmergeAt && sa.T < LeaveAt)
 		{
 			StrikePose(i, sa, T, face, alpha);
@@ -1123,6 +1208,29 @@ void fragment() {
 			if (_attacks[s] is not { } a) continue;
 			a.T += dt * (a.T < BiteAt && !_biteOnly ? PreBiteSpeed : 1f);   // 蛇咬那张牌（_biteOnly）照原速：它的结算时机按 BiteDelay 算
 			float t = a.T;
+			if (_solo)
+			{
+				// 蛇咬第五版：没有烟迹 / 中转烟团；手边钻出来时一小团咒烟，咬完原地散成烟
+				_diss[a.Serpent] = t < -0.1f ? 0.5f * (1f - Smooth(-LungePre, -0.1f, t)) : t < BiteAt + 0.08f ? 0f : Smooth(BiteAt + 0.08f, 0.8f, t);
+				if (t < 0.15f) Puff(a.From, Ease5.Seg(t, -LungePre, LungePre + 0.15f), 0.32f * T, s * 3 + 2);
+				if (t >= BiteAt) Puff(a.Target, Ease5.Seg(t, BiteAt, 0.6f), -0.5f * T, s * 3 + 1);
+				_streakA[s] = 0f;
+				if (!a.Bit && t >= BiteAt)
+				{
+					a.Bit = true;
+					Sfx.Take("gx_slice", 0.21f);   // 用户说这个咬合声不错
+					Vector2 at = feet + a.Target;
+					Control fx = GodotObject.IsInstanceValid(_top) ? _top : _front;
+					Glow.Flash(fx, at, Pal5.Crimson, 0.8f * T, 0.22f);
+					Glow.Flash(fx, at, new Color(1f, 0.92f, 0.9f), 0.3f * T, 0.1f);
+					Glow.Sparks(fx, at, 22, 180f, 600f, 0.5f, new[] { Pal5.Bright, Pal5.Crimson, Pal5.Deep }, 250f, 0.1f, 0.32f, Vector2.Up, 160f);
+					if (a.Body != null && GodotObject.IsInstanceValid(a.Body)) BodyTint.Pulse(a.Body, new Color(2.2f, 2.2f, 2.2f), 0.05, 0.2);
+					Fx.Shake(2);
+					HitStop.Request(0.06);
+				}
+				if (t > 0.85f) _attacks[s] = null;
+				continue;
+			}
 			float face = a.Target.X >= 0f ? 1f : -1f;
 			Vector2 cloud = a.Target + a.L(new Vector2(-0.6f * T, -1.25f * T), face);
 			// 加强表达（2026-11-11 用户：随机到的那条加速冲出、缓缓消失、敌人那里出现一只去咬——这套再强一点）：

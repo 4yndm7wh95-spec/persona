@@ -913,6 +913,13 @@ public partial class Preview : Node2D
 		["retain"] = p => RetainDemo(p, 0.1, 0.6, 2.2),
 		// 计划妥当：打一次 → 回合结束保留手牌的「封」（RetainFx，每回合都会出现）
 		["buffs1"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Anticipate", "cast_guard", 0.08, 1.3), ("Sidestep", "cast_guard", 0.08, 1.4), ("Abrasive", "cast_glove", 0.25, 1.7), ("Speedster", "cast_glove", 0.25, 2.0), ("Accelerant", "cast_wave", 0.08, 1.4) }),
+		// 速行者：打出 → 之后每抽一张牌，所有敌人身上一下轻的伤害特效（SpeedsterTick）
+		["speedster"] = p =>
+		{
+			RunCards(p, null, new (string, string, double, double)[] { ("Speedster", "cast_glove", 0.25, 2.0) });
+			foreach (double t in new[] { 2.2, 2.55, 2.9, 3.6 })
+				p.At(t, () => { int i = 0; foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 }) SkillRedo5.SpeedsterTick(p._front, e + new Vector2(0f, -150f), 300f, 0.03f * i++); });
+		},
 		["plans"] = p =>
 		{
 			RunCards(p, null, new (string, string, double, double)[] { ("WellLaidPlans", "cast_glove", 0.25, 2.2) });

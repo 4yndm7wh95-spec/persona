@@ -438,6 +438,26 @@ public static partial class SkillRedo5
 		}
 	}
 
+	/// <summary>
+	/// 速行者每抽一张牌造成伤害的那一下（每回合可能很多次 → 轻、短，约 0.25s）：敌人身上一道斜着划过的尖头红白疾光、一点白闪、几粒火星。
+	/// at = 敌人身体中间，h = 敌人高度。
+	/// </summary>
+	public static void SpeedsterTick(Control layer, Vector2 at, float h, float delay = 0f)
+	{
+		float ang = Fx.Rand(-0.5f, -0.25f) + (Fx.Rand(0f, 1f) < 0.5f ? 0f : Mathf.Pi);
+		Vector2 d = Vector2.FromAngle(ang);
+		float L = Mathf.Clamp(h * 0.9f, 120f, 320f);
+		Vector2 a0 = at - d * L * 0.6f, b0 = at + d * L * 0.6f;
+		Sharp(layer, t => a0.Lerp(b0, t), delay, 0.12f, L, Mathf.Clamp(h * 0.14f, 22f, 40f), Red, 1.4f);
+		Sharp(layer, t => a0.Lerp(b0, t), delay + 0.01f, 0.12f, L * 0.7f, Mathf.Clamp(h * 0.05f, 8f, 14f), new Color(1f, 0.92f, 0.92f), 1.7f);
+		Fx.After(layer, delay + 0.05f, () =>
+		{
+			Glow.Flash(layer, at, Hot, L * 0.45f, 0.08f);
+			Glow.Flash(layer, at, new Color(1f, 0.12f, 0.2f), L * 1.0f, 0.2f);
+			Glow.Sparks(layer, at, 6, 60f, 260f, 0.25f, new[] { Hot, Pink, Deep }, 0f, 0.08f, 0.2f, d, 60f);
+		});
+	}
+
 	// ═══════════════════════════ 触媒（罕见能力） ═══════════════════════════
 
 	/// <summary>
