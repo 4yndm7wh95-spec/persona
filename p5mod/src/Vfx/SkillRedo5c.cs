@@ -537,6 +537,10 @@ public static partial class SkillRedo5
 	public static void Streak(Control layer, Func<float, Vector2> path, float t0, float dur, float len, float thick, Color tint, float hot = 1.2f) =>
 		DashFly(layer, path, t0, dur, len, thick, tint, hot, Ease5.OutQuint, 0.7f);
 
+	/// <summary>疾光，可指定缓动（OutQuint 头几帧就冲完，看着太快时用缓一点的）。</summary>
+	public static void StreakEase(Control layer, Func<float, Vector2> path, float t0, float dur, float len, float thick, Color tint, float hot, Func<float, float> ease) =>
+		DashFly(layer, path, t0, dur, len, thick, tint, hot, ease, 0.7f);
+
 	/// <summary>绕身横扫的大弧光（给别的文件用）。</summary>
 	public static void RingSweep(Control front, Control back, Vector2 center, float radius, float tilt, float dir, float t0, float dur, float width, Color tint, float hot = 1f, float turns = 0.9f) =>
 		Sweep(front, back, center, radius, tilt, dir, t0, dur, width, tint, hot, turns);

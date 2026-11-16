@@ -12,7 +12,7 @@ namespace P5Joker;
 /// </summary>
 public static class SnakebiteFx
 {
-	private const float Coil = 0.32f, Strike = 0.14f;
+	private const float Coil = 0.32f, Strike = 0.24f;
 
 	/// <summary>咬合在出手后多少秒。</summary>
 	public const float BiteDelay = Coil + Strike;
@@ -59,11 +59,21 @@ public static class SnakebiteFx
 
 		// ② 快：扑出去，沿 S 形的路；身后留一整条蛇身光痕
 		Vector2 dv = at - hand, nrm = dv.Orthogonal().Normalized();
-		float amp = Mathf.Min(h * 0.26f, dv.Length() * 0.13f);
+		float amp = Mathf.Min(h * 0.3f, dv.Length() * 0.15f);
 		Vector2 Path(float t, float ph) => hand.Lerp(at, t) + nrm * Mathf.Sin(t * Mathf.Pi * 2f + ph) * amp * (1f - t * 0.8f);
-		// 2026-11-16 第四版：蛇身不用光带（塑料、像贴图）→ 光头沿 S 形窜过去，身后洒一路柔光粒（像蛇身散成的光尘）
-		EmberTrail.Run(back, t => Path(t, 0.4f), Coil, Strike, h * 0.3f, 70, new Color(0.55f, 0.02f, 0.1f, 0.7f), 0.55f);
-		EmberTrail.Run(front, t => Path(t, 0f), Coil, Strike, h * 0.2f, 90, new Color(0.95f, 0.08f, 0.18f, 0.8f), 0.5f, null, 1.3f);
+		// 2026-11-16 第五版：光尘一堆圆点难看 → 回到用户说「创意不错」的 S 形疾光（带速度纹），扑得慢一点、粗一点、层次多一点
+		// 2026-11-16 第六版：直的疾光拼不出 S（又像光束）→ 用认可过的 P5 月牙刀光接成 S：前半段往上拱、后半段往下拱，一段接一段划过去
+		Vector2 mid = hand.Lerp(at, 0.5f);
+		Vector2 d1 = mid - hand, d2 = at - mid;
+		float half = Strike * 0.5f;
+		// Blade.Arc：往局部 -y 拱、从左（-x）端划到右端；朝左时翻转让它仍从手划向敌人
+		bool flipX = f < 0f;
+		global::P5Joker.Blade.Arc(front, hand.Lerp(mid, 0.5f), d1.Angle(), d1.Length() * 1.08f, h * 0.22f, h * 0.17f, flipX, half, 0.03f, 0.08f, 0.22f, false, Coil);
+		global::P5Joker.Blade.Arc(front, mid.Lerp(at, 0.5f), d2.Angle(), d2.Length() * 1.08f, h * 0.18f, h * 0.15f, !flipX, half, 0.03f, 0.08f, 0.22f, true, Coil + half);
+		global::P5Joker.Blade.Arc(back, hand.Lerp(mid, 0.5f), d1.Angle(), d1.Length(), h * 0.26f, h * 0.07f, flipX, half, 0.02f, 0.06f, 0.2f, false, Coil + 0.02f);
+		global::P5Joker.Blade.Arc(back, mid.Lerp(at, 0.5f), d2.Angle(), d2.Length(), h * 0.22f, h * 0.06f, !flipX, half, 0.02f, 0.06f, 0.2f, false, Coil + half + 0.02f);
+		for (int i = 1; i <= 3; i++)
+			Vanilla.Burst(back, Vanilla.Specks, Path(i / 4f, 0f), dv.Angle(), 0.6f, Lut5.Curse, amount: 6, delay: Coil + Strike * i / 4f);
 		// ③ 慢：毒牙合拢、咬住停一下、红光往里渗，再松开
 		float ang = f > 0f ? 0f : Mathf.Pi;
 		float jaw = h * 0.85f;

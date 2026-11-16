@@ -342,26 +342,45 @@ void fragment() {
 	/// <summary>咒怨光点群从爪尖飞到敌人的时间（最后一颗到的时刻 = 命中）。</summary>
 	private const float SwarmArrive = 0.2f;
 
-	/// <summary>一群咒怨光点：从 from 划着各自的弧飞向 to（细的红 / 白疾光，错开起飞，同一刻前后扎进去），起点一亮、沿路几粒火星。</summary>
+	/// <summary>
+	/// 2026-11-16 第五版（光点单薄、光尘圆点难看）：一群怨灵（手绘 curse_soul，咒怨 LUT）从爪尖划着各自的弧扑向敌人，
+	/// 头朝前、边飞边扭（噪声扭曲），身后拖一道带速度纹的暗红疾光；前后错开，同一刻前后扎进去。
+	/// </summary>
 	private static void Swarm(Control layer, Vector2 from, Vector2 to, float width)
 	{
 		Vector2 d = to - from;
 		float len = d.Length();
 		Vector2 n = d.Orthogonal().Normalized();
 		if (n.Y > 0f) n = -n;                                          // 往上拱
-		for (int i = 0; i < 7; i++)
-		{
-			float bend = (i % 2 == 0 ? 1f : -0.35f) * len * Fx.Rand(0.06f, 0.2f);
-			float delay = 0.014f * i, dur = SwarmArrive - delay;
-			Vector2 aim = to + new Vector2(Fx.Rand(-0.18f, 0.18f) * width, Fx.Rand(-0.25f, 0.2f) * width);
-			Vector2 start = from + Vector2.FromAngle(Fx.Rand(0f, Mathf.Tau)) * 14f;
-			Vector2 P(float t) => start.Lerp(aim, t) + n * bend * 4f * t * (1f - t);
-			// 2026-11-16 第四版：小光点太单薄 → 每一股都是一颗带光晕的光头 + 一路洒下的咒怨光尘（EmberTrail），前几股更大
-			EmberTrail.Run(layer, P, delay, dur, Mathf.Lerp(80f, 45f, i / 6f), 34, new Color(0.9f, 0.05f, 0.16f, 0.85f), 0.4f, Fx.InCubic, 1.2f);
-		}
-		Vanilla.Burst(layer, Vanilla.Specks, from.Lerp(to, 0.5f), d.Angle(), 0.7f, Lut5.Curse, amount: 10, delay: 0.06f);
 		Glow.Flash(layer, from, new Color(1f, 0.9f, 0.88f), 140f, 0.12f);
 		Glow.Flash(layer, from, new Color(0.9f, 0.08f, 0.16f), 320f, 0.28f);
+		for (int i = 0; i < 5; i++)
+		{
+			float bend = (i % 2 == 0 ? 1f : -0.4f) * len * Fx.Rand(0.08f, 0.2f);
+			float delay = 0.02f * i, dur = SwarmArrive - delay;
+			Vector2 aim = to + new Vector2(Fx.Rand(-0.15f, 0.15f) * width, Fx.Rand(-0.2f, 0.15f) * width);
+			Vector2 P(float t) => from.Lerp(aim, t) + n * bend * 4f * t * (1f - t);
+			float sc = Mathf.Lerp(1.6f, 1.1f, i / 4f);
+			SkillRedo5.StreakEase(layer, P, delay, dur, len * 0.4f, 70f * sc, new Color(0.85f, 0.04f, 0.14f), 1.3f, t => Fx.InCubic(t) * 0.7f + t * 0.3f);   // 和怨灵同一个缓动，疾光拖在它身后
+			Fx.After(layer, delay, () =>
+			{
+				Paint.Stroke? st = Paint.Make(layer, "curse_soul", from, 0f, Vector2.One * sc, Lut5.Curse, 0.5f, 1.15f);
+				if (st == null) return;
+				st.Set("glow", 1.9f);
+				st.Set("wobble", 0.04f);
+				Fx.Animate(st.Root, 0, dur, t =>
+				{
+					float e = Fx.InCubic(t) * 0.7f + t * 0.3f;
+					Vector2 p = P(e), q = P(Mathf.Min(1f, e + 0.03f));
+					st.Root.GlobalPosition = p;
+					st.Root.Rotation = (q - p).Angle() + Mathf.Pi * 0.5f;   // 贴图的头在上 → 转到朝前
+					st.Set("scroll", t * 2f);
+					st.Root.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, t * 8f));
+				});
+				Fx.FreeAfter(st.Root, dur + 0.02);
+			});
+		}
+		Vanilla.Burst(layer, Vanilla.Specks, from.Lerp(to, 0.5f), d.Angle(), 0.7f, Lut5.Curse, amount: 10, delay: 0.06f);
 	}
 
 	/// <summary>
