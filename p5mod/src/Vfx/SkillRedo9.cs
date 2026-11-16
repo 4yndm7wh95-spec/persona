@@ -320,107 +320,51 @@ public static partial class SkillRedo5
 		Fx.FreeAfter(st.Root, total + 0.05);
 	}
 
-	/// <summary>他身体轮廓上的一点：v 0（头顶）→ 1（脚边），side ±1 左右；返回点和朝外的方向。</summary>
-	private static (Vector2 P, Vector2 N) Outline(Vector2 feet, float h, float v, float side)
-	{
-		// 半宽：头 → 肩 → 腰 → 风衣下摆
-		float hw = v < 0.12f ? Mathf.Lerp(0.05f, 0.09f, v / 0.12f)
-			: v < 0.25f ? Mathf.Lerp(0.09f, 0.19f, (v - 0.12f) / 0.13f)
-			: v < 0.5f ? Mathf.Lerp(0.19f, 0.15f, (v - 0.25f) / 0.25f)
-			: Mathf.Lerp(0.15f, 0.26f, (v - 0.5f) / 0.5f);
-		Vector2 p = feet + new Vector2(side * hw * h, -h * (1.02f - v));
-		Vector2 n = new Vector2(side, -0.55f * (1f - v) + 0.15f).Normalized();
-		return (p, n);
-	}
-
 	/// <summary>
-	/// 磨蚀约 1.3s「刺甲」（用户 2026-11-16：荆棘贴图旋转很怪 → 重做；意思可以弱、好看为主）：四周暗下来、光线往他身上收、他身上一层红慢慢亮起；
-	/// 主拍时沿着他的身体轮廓「唰」地竖起一圈锐利的光刺（暗红的刺身 + 红晕 + 白芯，长短错落，从胸口往头和下摆一路炸开），刺尖逐个闪星光，
-	/// 重震、闪光、空间一扭；光刺停一下、微微颤，紧跟着一圈更细更长的白色光针再刺一次，然后全部收回身体，只在肩头和下摆留几点红光。
+	/// 磨蚀约 1.2s「月牙反斩」（用户 2026-11-16：荆棘贴图、三角光刺都是棱角分明的贴图，不算特效 → 用认可过的柔和 P5 月牙刀光，按我的想法做）：
+	/// 四周暗下来、光线往他胸口收；主拍时从他身上往四面「唰」地斩出五道月牙刀光（弧背朝外，前后两层错开，一道接一道），重震、白闪、空间一扭、火星；
+	/// 紧跟着第二波四道更细的月牙在更外一圈、夹在第一波的空隙里再斩一次（像刀风往外扩）；最后光点往上飘。
 	/// </summary>
 	public static void Abrasive(SkillCtx c)
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face;
 		Control back = c.Back ?? c.Front, front = c.Front;
-		const float beat = 0.34f, echo = 0.62f, retract = 0.78f;
+		const float beat = 0.32f, wave2 = 0.52f;
 		S("gx_whoosh", 0.14f, 0.04f);
-		S("gx_slice", 0.26f, beat);
-		S("gx_pop", 0.2f, beat + 0.01f);
-		S("gx_slice", 0.16f, echo);
-		S("gx_whoosh", 0.12f, retract);
-		Vector2 mid = c.Feet + new Vector2(0f, -h * 0.55f);
-		Dim(back, mid, new Vector2(h * 3.2f, h * 2.6f), 1.35, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.15f)) * (1f - Ease5.Seg(s, 0.72f, 0.28f)) * 0.75f);
+		S("gx_slice", 0.28f, beat);
+		S("gx_pop", 0.18f, beat + 0.01f);
+		S("gx_slice", 0.2f, wave2);
+		Vector2 mid = c.Feet + new Vector2(0f, -h * 0.58f);
+		Dim(back, mid, new Vector2(h * 3.4f, h * 2.8f), 1.25, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.15f)) * (1f - Ease5.Seg(s, 0.7f, 0.3f)) * 0.75f);
 		Gather(front, c.Chest, h, u, beat, 18, 0.7f);
-		if (c.SelfTint is { } tint)
-			Fx.Animate(front, 0, retract + 0.25f, t =>
-			{
-				float s = t * (retract + 0.25f);
-				float k = Ease5.Seg(s, 0.05f, beat - 0.05f) * 0.5f + 0.8f * Mathf.Exp(-Mathf.Pow((s - beat) / 0.05f, 2f));
-				k *= 1f - Ease5.Seg(s, retract, 0.25f);
-				tint(Colors.White.Lerp(new Color(1.35f, 0.9f, 0.92f), k * 0.7f));
-			});
-
-		// 光刺：左右各一列，沿轮廓排开
-		Color body = new(0.3f, 0f, 0.05f, 0.85f), glowC = new(0.95f, 0.04f, 0.12f, 0.6f);
-		int glints = 0;
-		for (int side = -1; side <= 1; side += 2)
+		Glow.Flash(back, mid, new Color(1f, 0.1f, 0.18f), h * 1.3f, 0.35f, beat - 0.18f);
+		void Crescent(float deg, float dist, float len, float bow, float thick, float d, bool fr, float skew)
 		{
-			for (int i = 0; i < 8; i++)
-			{
-				float v = 0.06f + 0.86f * i / 7f + Fx.Rand(-0.03f, 0.03f);
-				var (p, n) = Outline(c.Feet, h, v, side);
-				n = n.Rotated(Fx.Rand(-0.18f, 0.18f));
-				float len = h * (i % 3 == 0 ? Fx.Rand(0.48f, 0.6f) : i % 3 == 1 ? Fx.Rand(0.26f, 0.34f) : Fx.Rand(0.36f, 0.44f));
-				float w = h * (i % 3 == 0 ? 0.022f : 0.016f);
-				float d = beat + Mathf.Abs(v - 0.3f) * 0.12f;            // 从胸口往上下炸开
-				Node2D r = Fx.Root(front, p, "P5Spike", retract + 0.2);
-				Polygon2D g = Fx.Poly(r, new Vector2[3], glowC, additive: true);
-				Polygon2D b = Fx.Poly(r, new Vector2[3], body);
-				Polygon2D core = Fx.Poly(r, new Vector2[3], new Color(1f, 0.94f, 0.94f), additive: true);
-				r.Visible = false;
-				float ph = Fx.Rand(0f, 6f), rd = retract + Fx.Rand(0f, 0.05f);
-				Fx.Animate(r, d, retract + 0.16f - d, t =>
-				{
-					r.Visible = true;
-					float s = d + t * (retract + 0.16f - d);
-					float ext = s < rd ? Ease5.OutExpo(Mathf.Min(1f, (s - d) / 0.07f)) : 1f - Fx.InCubic(Mathf.Min(1f, (s - rd) / 0.12f));
-					float l = len * ext * (1f + 0.04f * Mathf.Sin(s * 40f + ph));
-					Vector2 tip = n * l, side2 = n.Orthogonal() * w;
-					b.Polygon = new[] { -side2, tip, side2 };
-					g.Polygon = new[] { -side2 * 2.6f - n * w, tip + n * w * 1.5f, side2 * 2.6f - n * w };
-					core.Polygon = new[] { -side2 * 0.45f, tip * 0.97f, side2 * 0.45f };
-					float flash = Mathf.Exp(-Mathf.Pow((s - d - 0.04f) / 0.05f, 2f));
-					g.Modulate = new Color(1f + flash, 1f + flash, 1f + flash, 1f);
-				});
-				if (i % 3 == 0 && glints++ < 6) Glow.Glint(front, p + n * len, 0.5f, d + 0.06f);
-			}
+			Vector2 dir = Vector2.FromAngle(Mathf.DegToRad(deg));
+			dir.X *= f;
+			// 弦垂直于径向、弧背朝外（Blade.Arc 往局部 -y 拱）
+			global::P5Joker.Blade.Arc(fr ? front : back, mid + dir * dist, dir.Angle() + Mathf.Pi * 0.5f + skew * f, len, bow, thick, false, 0.06f, 0.04f, 0.06f, 0.2f, true, d);
 		}
-		// 第二下：更细更长的白色光针，从轮廓里再刺一次
-		for (int j = 0; j < 12; j++)
-		{
-			float v = Fx.Rand(0.1f, 0.95f), side = j % 2 == 0 ? -1f : 1f;
-			var (p, n) = Outline(c.Feet, h, v, side);
-			n = n.Rotated(Fx.Rand(-0.25f, 0.25f));
-			float len = h * Fx.Rand(0.4f, 0.6f);
-			Glow.Blade(front, p + n * len * 0.5f, n.Angle(), len, h * 0.03f, 0.2f, echo + 0.01f * j, Pal5.Bright);
-		}
+		// 第一波：五道，上半三道、下半两道，前后层交替
+		float[] w1 = { -150f, -95f, -40f, 25f, 160f };
+		for (int i = 0; i < w1.Length; i++)
+			Crescent(w1[i], h * 0.42f, h * 1.2f, h * 0.22f, h * 0.17f, beat + 0.02f * i, i % 2 == 0, (i % 2 == 0 ? 0.55f : -0.5f));   // 斜一点：几道月牙不连成一个圈
+		// 第二波：四道更细、更外，夹在空隙里
+		float[] w2 = { -120f, -65f, 100f };
+		for (int i = 0; i < w2.Length; i++)
+			Crescent(w2[i], h * 0.66f, h * 1.0f, h * 0.18f, h * 0.1f, wave2 + 0.02f * i, i % 2 == 1, (i % 2 == 0 ? -0.6f : 0.6f));
 		Fx.After(front, beat, () =>
 		{
 			HitStop.Request(0.05);
 			Fx.Shake(2);
-			Glow.Flash(front, c.Chest, Hot, h * 0.45f, 0.12f);
+			Glow.Flash(front, mid, Hot, h * 0.5f, 0.12f);
 			Glow.Flash(back, mid, new Color(1f, 0.12f, 0.2f), h * 2.4f, 0.45f);
 			Glow.Sparks(front, mid, 26, 160f * u, 700f * u, 0.6f, new[] { Hot, Pink, Deep }, -40f * u, 0.008f * u, 0.03f * u, Vector2.Up, 180f);
 		});
 		Embed(front, mid, h, 1.4f, 0f, 30, beat);
-		Fx.After(front, echo, () => Glow.Flash(back, mid, new Color(1f, 0.12f, 0.2f), h * 1.6f, 0.3f));
-		// 收回后：肩头和下摆留几点红光
-		foreach (var (v, sd) in new[] { (0.2f, -1f), (0.22f, 1f), (0.88f, -1f), (0.92f, 1f), (0.55f, 1f) })
-		{
-			var (p, _) = Outline(c.Feet, h, v, sd);
-			Glow.Glint(front, p, 0.4f, retract + 0.12f + Fx.Rand(0f, 0.12f));
-		}
-		Motes(front, mid, new Vector2(h * 0.35f, h * 0.45f), h, 10, retract, 0.7f);
+		Fx.After(front, wave2, () => Glow.Flash(back, mid, new Color(1f, 0.12f, 0.2f), h * 1.8f, 0.3f));
+		Embed(front, mid, h, 1.0f, 0f, 16, wave2);
+		Motes(front, mid, new Vector2(h * 0.45f, h * 0.5f), h, 12, wave2 + 0.15f, 0.8f);
 	}
 
 	// ═══════════════════════════ 速行者（罕见能力） ═══════════════════════════
