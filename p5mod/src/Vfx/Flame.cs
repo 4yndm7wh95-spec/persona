@@ -561,6 +561,9 @@ void fragment() {
 			if (GodotObject.IsInstanceValid(p)) p.Modulate = c;
 		}
 		if (GodotObject.IsInstanceValid(_haze)) Set(_haze, "alpha", a * a);
+		// 火是着色器直接写 COLOR，不吃节点的 Modulate：透明度要走着色器参数（同 End 里的 a0）
+		if (GodotObject.IsInstanceValid(_fire)) Set(_fire, "alpha", a);
+		if (GodotObject.IsInstanceValid(_fireRear)) Set(_fireRear, "alpha", 0.75f * a);
 	}
 
 	/// <summary>跟着头挪（选人界面立绘的呼吸 / 微摆）：面具、后层火、托底光的中心一起移到 center（屏幕坐标）。</summary>

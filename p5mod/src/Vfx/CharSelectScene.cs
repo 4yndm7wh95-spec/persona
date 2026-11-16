@@ -31,10 +31,10 @@ public static class CharSelectScene
 	private static readonly Vector2 BlinkAt = new(330f, 320f);                // tools/p5/charselect_assets.py BLINK_BOX 左上角
 	private static readonly Vector2 Eye = new(578f, 430f);                    // 露出来的那只眼睛（画面右边那只）
 	private static readonly Vector2 EyeHidden = new(432f, 452f);              // 刘海 / 手指下面那只
-	private static readonly Vector2 MaskAt = new(505f, 440f);                 // 蓝焰面具中心：两眼之间
-	private const float MaskHalf = 150f;                                      // 面具半宽（画布像素）
+	private static readonly Vector2 MaskAt = new(505f, 470f);                 // 蓝焰面具中心：两眼之间（火往上舔，中心放在眼睛下沿一点）
+	private const float MaskHalf = 165f;                                      // 面具半宽（画布像素）
 	private const float MaskFacing = -1f, MaskRoll = -0.08f;
-	private const float MaskSoft = 0.36f, MaskIntro = 0.85f;                  // 常驻 / 选中那一下的透明度
+	private const float MaskSoft = 0.55f, MaskIntro = 0.9f;                  // 常驻 / 选中那一下的透明度
 	// TAKE YOUR HEART 拆块（charselect_assets.py banner_parts 的输出）：在整条里的左上角
 	private static readonly Vector2[] BannerParts = { new(0, 0), new(228, 8), new(492, 8), new(958, 0), new(1164, 16), new(1276, 14) };
 	private static readonly Color Crimson = new("e0101e"), Ink = new("0a0708"), Ice = new("bfe9ff");
@@ -84,8 +84,8 @@ public static class CharSelectScene
 		Searchlights(root);
 		Skyline(root);
 		Train(root);
-		Banner(root);
 		Rooftop(root);
+		Banner(root);                         // 色带压在楼顶前面（不然开头被水塔挡住）
 		Cards(root);
 		Stars(root);
 		Rig r = new() { Root = root };
@@ -291,7 +291,7 @@ void fragment() {
 		// 摩尔加纳坐在水塔顶（贴图里水塔顶 x 40..165, y≈80；摩尔加纳贴图 314×314，屁股在 y≈300）
 		if (Fx.Tex("cs_morgana") is Texture2D mt && Fx.Tex("cs_morgana_tail") is Texture2D tt)
 		{
-			const float mk = 0.36f;
+			const float mk = 0.46f;
 			Node2D cat = new() { Name = "Morgana", Position = at + new Vector2(102f, 82f) * k, Scale = Vector2.One * mk };
 			root.AddChild(cat);
 			Vector2 tailRoot = new(116f, 265f);                                // 贴图里尾巴根（charselect_assets 量的）
@@ -491,7 +491,7 @@ void fragment() {
 				nextBlink = t + (Fx.Rng.NextDouble() < 0.2 ? 0.25 : Fx.Rand(2.8f, 5.2f));   // 偶尔连眨两下
 			}
 			float m = r.MaskAlpha;
-			float eye = 0.45f + 0.18f * Mathf.Sin(t * 1.7f) + 0.9f * m;
+			float eye = 0.6f + 0.2f * Mathf.Sin(t * 1.7f) + 1.2f * m;
 			r.EyeDot.Modulate = new Color(PersonaMask.Hi, Mathf.Min(1f, eye));
 			r.EyeStreak.Modulate = new Color(PersonaMask.Hi, Mathf.Min(1f, eye * 0.8f));
 			r.EyeStreak.Scale = new Vector2(5.5f + 2.5f * m + 0.4f * Mathf.Sin(t * 2.3f), 0.32f);
