@@ -53,7 +53,7 @@ void fragment() {
 	float reach = (0.45 + 0.75 * s1 + 0.3 * s2);
 	float strand = exp(-out_ / max(reach * 0.5, 0.02)) * (0.6 + 0.4 * anoise(a, 9.0 + clock * 0.2, 20.0));
 	strand *= smoothstep(2.35, 1.5, rr) * smoothstep(0.7, 1.15, rr) * (0.85 + 0.15 * sin(clock * 1.2));
-	float halo = exp(-out_ * 1.6) * 0.32 * smoothstep(0.6, 1.1, rr) * smoothstep(2.35, 1.6, rr);
+	float halo = exp(-out_ * 1.4) * 0.5 * smoothstep(0.6, 1.1, rr) * smoothstep(2.35, 1.6, rr);
 	col += mix(deep, crimson, exp(-out_ * 2.0)) * strand * 0.55 * lit + crimson * halo * 0.7 * lit;
 	al = max(al, clamp(strand * 0.5 + halo, 0.0, 1.0));
 
@@ -84,8 +84,8 @@ void fragment() {
 		float limb = mix(1.0, 0.8, smoothstep(0.3, 1.0, rr));
 		float edgeLight = smoothstep(0.6, 1.0, rr) * (0.35 + 0.65 * anoise(a - clock * 0.05, 1.5, 4.0));
 		sc = sc * limb + crimson * edgeLight * 0.08;   // 边缘光几乎去掉：亮边会描出一圈轮廓
-		sc *= lit;
-		float inDisk = smoothstep(1.4, 0.4, rr) * smoothstep(1.4, 0.4, rr) * (3.0 - 2.0 * smoothstep(1.4, 0.4, rr));   // 宽而软的边：日面慢慢化进光冕里
+		sc *= lit * 1.3;
+		float inDisk = smoothstep(1.28, 0.62, rr);   // 2026-11-16 第二次：太糊看不出 → 边缘软但日面要在   // 宽而软的边：日面慢慢化进光冕里
 		col = mix(col, sc, inDisk);
 		al = max(al, inDisk);
 	}
