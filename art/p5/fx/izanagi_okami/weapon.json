@@ -1,0 +1,51 @@
+{
+  "coordinate_origin": "top-left",
+  "units": "pixels",
+  "canvas": [
+    439,
+    1536
+  ],
+  "source_action": "BPS0360_000_main_0006",
+  "source_frame": 41,
+  "ring_center": [
+    219.735,
+    951.511
+  ],
+  "shaft_endpoints": [
+    [
+      239.904,
+      9.484
+    ],
+    [
+      240.162,
+      1526.521
+    ]
+  ],
+  "crop_from_1536": [
+    562,
+    48,
+    974,
+    1488
+  ],
+  "outline_px": 3,
+  "visible_meshes": [
+    "buki_gfdMesh_0_mesh",
+    "buki_gfdMesh_1_mesh",
+    "buki_gfdMesh_2_mesh"
+  ],
+  "ring_center_method": "center of buki_gfdMesh_0 local bounding box projected to image",
+  "shaft_end_method": "buki_gfdMesh_1 projected vertices at top and bottom extremes",
+  "camera_method": "ring plane normal from minimum PCA variance; shaft up direction from maximum PCA variance, projected into ring plane",
+  "camera_location": [
+    4.228714942932129,
+    2946.840576171875,
+    236.35841369628906
+  ],
+  "camera_rotation": [
+    -1.570997714996338,
+    3.132525682449341,
+    0.0006712590111419559
+  ],
+  "ortho_scale": 378.94921875,
+  "axis_horizontal_drift_px_per_100_world_units": 0.0
+}

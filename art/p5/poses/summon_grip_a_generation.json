@@ -1,0 +1,53 @@
+{
+  "tool": "built-in image_gen",
+  "base": "summon_hold_a",
+  "source": [
+    "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a1b9c1-3633-7952-824a-82ea95a17f21\\exec-a8e71e66-618d-49e2-a810-1315c061857b.png",
+    "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a1b9c1-3633-7952-824a-82ea95a17f21\\exec-43f48ab2-88e0-4854-8e88-1030d8350e11.png"
+  ],
+  "inputs": [
+    "summon_hold_a.png",
+    "ref_command_hand_style.png"
+  ],
+  "selection": [
+    {
+      "crop": [
+        480,
+        110,
+        672,
+        302
+      ],
+      "red_expansion_px": 14,
+      "protected": "original skin, eye, hair, collar, cuff and sleeve",
+      "editable_pixels": 6940
+    },
+    {
+      "crop": [
+        704,
+        720,
+        896,
+        912
+      ],
+      "red_expansion_px": 14,
+      "protected": "original skin, eye, hair, collar, cuff and sleeve",
+      "editable_pixels": 9404
+    }
+  ],
+  "changed_pixels_outside_selection": 0,
+  "generated_patch_resize": "192x192 native crop grid, full figure never resized or generated",
+  "redraws": 0,
+  "prompts": [
+    "Edit only the red glove in this tightly cropped reference. Same red-gloved hand in exactly the same place on his face, but gripping his own face HARD. All four fingers are deeply curled inward at BOTH joints, fingertips hooked downward into cheek and forehead, compact curled silhouette, knuckles sharply raised, red leather stretched and heavily creased at bent knuckles, thumb pressing jaw. Small gaps between fingers. Preserve wrist and cuff, the original three-quarter face and original small gray eye above the fingers. Nothing on the face except the hand. Persona 5 Royal illustration, bold black outlines, flat cel shading, hard dark-red shadows and highlights, short strong fingers. Same square crop coordinates. Transparent RGBA background. No effects, glow, text or other objects.",
+    "Repaint only the red glove in image 1. Hanging hand clenched into a compact tight fist, all four fingers curled into palm, knuckles facing viewer, thumb folded over fingers. Same size, same wrist position, same cuff. Keep exact square crop coordinates. Red glove, bold black outlines, Persona 5 Royal cel shading, hard dark-red shadows and red highlights, short strong fingers. Transparent background. No extra objects, effects, glow or text. Image 2 provides glove shading style."
+  ],
+  "selection_image_local": "C:\\Users\\kkk\\Documents\\Codex\\2026-11-08\\full-body-character-art-of-joker\\work\\grip_v2_selection.png",
+  "consistency_output": "summon_grip_a      (face covered) standing height x0.999  boot height x0.971  boot width x0.921  feet moved [204, 179] px  ok\nsheet: art\\p5\\poses\\check_summon_grip_a.png | overall: ok\n",
+  "normalization": {
+    "scale": 1.0,
+    "offset": [
+      435,
+      81
+    ],
+    "anchor_foot": "front"
+  }
+}

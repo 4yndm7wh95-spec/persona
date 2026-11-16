@@ -1,0 +1,39 @@
+{
+  "group": "orochi",
+  "name": "orochi_draft",
+  "w": 2048,
+  "h": 1280,
+  "prompt": "Use case: stylized-concept. Transparent 2D game character design draft: Yamata-no-Orochi as depicted in Persona 5. Image 1 is a local original PS0052 model design reference ONLY: it is a stiff bind-pose preview, DO NOT copy its rigid straight vertical neck arrangement. Use its deep green reptilian heads, tan segmented underbellies, green scales, long serpentine anatomy and small fierce eyes. Image 2 is our approved Joker sprite and determines the DRAWING STYLE: clean bold black outlines, broad flat colors and crisp hard-edged cel shadows, no realistic texture or 3D rendering. Draw exactly EIGHT distinct snake heads rising on eight elegantly curved necks from a single large intertwined coiled serpent mass. Arrange eight readable head silhouettes in a broad dramatic fan, each at a different height/angle, all connected to the coils; green upper scales, warm ochre/tan belly plates, pale pointed fangs. Match the Persona design, not a Western dragon: no legs, no wings, no invented horns or extra heads. A clean finished approval draft, full creature completely inside a 2048x1280 landscape canvas with clear transparent margin, balanced composition. Genuine transparent RGBA, alpha zero outside creature. No scene, ground, cast shadow, fire, breath, magic, text or other characters. No painterly tiny scale texture, no gradients, no grain, no photorealism; match the graphic simplicity of Image 2.",
+  "reference_images": [
+    "MODEL/CHARACTER/PERSONA/0052/PS0052.GMD (ps_orochi_t02.dds etc.; bind-pose design reference)",
+    "art/p5/poses/final/idle_a3.png (style)"
+  ],
+  "output_path": "C:/Users/kkk/ChatGPT-Accounts/Account2/codex/generated_images/01a17136-0549-7e82-b9cb-f93f6454a90b/exec-ff4f77bd-16ff-4f5b-9dd4-edc2cb9f3928.png",
+  "raw_size": [
+    1536,
+    1024
+  ],
+  "method": "imagegen",
+  "generation_count": 1,
+  "redraw_count": 0,
+  "delivery_size": [
+    2048,
+    1280
+  ],
+  "processing": "保留raw；交付尺寸归一化，alpha<=2残点及全透明RGB清零；未抠底。",
+  "checks": {
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "corner_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "alpha_zero_pixels": 1281230,
+    "soft_alpha_pixels": 1337734
+  }
+}

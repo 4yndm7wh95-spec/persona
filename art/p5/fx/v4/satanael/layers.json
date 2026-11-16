@@ -1,0 +1,85 @@
+{
+  "canvas": [
+    3200,
+    1700
+  ],
+  "coordinates": "pixels, origin top-left, +x right, +y down; angle degrees clockwise-positive in screen coordinates",
+  "master": "satanael_full.png",
+  "layers": [
+    {
+      "file": "layers/wings_left.png",
+      "z_index": 0,
+      "pivot": [
+        1440,
+        780
+      ]
+    },
+    {
+      "file": "layers/wings_right.png",
+      "z_index": 1,
+      "pivot": [
+        1850,
+        790
+      ]
+    },
+    {
+      "file": "layers/body.png",
+      "z_index": 2,
+      "pivot": [
+        1640,
+        980
+      ]
+    },
+    {
+      "file": "layers/gun_arms.png",
+      "z_index": 3,
+      "pivot": [
+        1270,
+        790
+      ]
+    },
+    {
+      "file": "layers/eyes_glow.png",
+      "z_index": 4,
+      "pivot": [
+        1630,
+        600
+      ]
+    }
+  ],
+  "landmarks": {
+    "wings_left_shoulder": [
+      1440,
+      780
+    ],
+    "wings_right_shoulder": [
+      1850,
+      790
+    ],
+    "gun_arms_shoulder": [
+      1270,
+      790
+    ],
+    "body_float_center": [
+      1640,
+      980
+    ],
+    "muzzle_center": [
+      3100,
+      530
+    ],
+    "barrel_origin": [
+      2150,
+      690
+    ],
+    "barrel_angle_degrees": -9.560096480886301
+  },
+  "registration": "approximate manually fitted after generation, adjustments may be needed",
+  "checks": {
+    "changed_pixel_fraction_canvas": 0.5134805147058824,
+    "changed_pixel_fraction_foreground_union": 0.8191511510848387,
+    "alpha_threshold": 20,
+    "rgba_difference_threshold": 8,
+    "note": "Independent generated layers plus manual approximate registration; not a pixel-exact decomposition."
+  }
+}

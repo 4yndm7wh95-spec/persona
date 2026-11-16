@@ -1,0 +1,152 @@
+{
+  "group": "buff",
+  "name": "buff_motes_sheet",
+  "w": 2048,
+  "h": 2048,
+  "prompt": "Use case: stylized-concept. Asset type: stand-alone hand-painted 2D sprites for buff VFX in a Persona 5 Joker Slay the Spire 2 game mod. Match the visual vocabulary of the project's slash_thin and slash_cross sprites: sharply tapered brushwork; bright white specular cores, vivid scarlet rims near #E5191C, and sparse strands of rich burgundy and ink-black dry-brush marks. The game's shader reads luminance, so keep crisp, separated white, red, and dark values. Fine hand-drawn irregularity and soft antialiasing at the actual silhouette; no heavy cartoon outline, halftone, large flat color patches, flames, or black smoke. Use real RGBA transparency (alpha zero anywhere outside the asset); do not paint checkerboard, gray, white or black backdrops, mist or colored haze. No text, watermark, logo, characters, ground, frame, or axes.\nComposition and canvas: Target 2048×2048 pixels, exact square 4×4 sprite atlas for fixed 512×512 cells. Use invisible equal-size rows and columns, with the four center coordinates on each axis at 12.5%, 37.5%, 62.5%, 87.5%. Exactly one isolated sprite at each center, exactly sixteen, in four straight rows and four straight columns. Do not draw guides, labels or grid borders. Maintain fully transparent gutters so no part of a sprite enters another cell.\nPrimary request: Exactly 16 different small upward floating luminous flecks. Row one: upright pin light, tapered tall ember-like sliver without fire, left-leaning white splinter, right-leaning scarlet-white sliver. Row two: narrow four-point vertical star, broad four-point twinkle, small tilted four-point star, offset four-point sparkle. Row three: thin upright diamond, small squat diamond, tilted chipped diamond, tapering prism flake. Row four: rising curved sharp flicker, short vertical white seed, irregular glass glint, elongated kite-shaped mote. Each is one sharply shaped brush-painted small sprite, about 30–46% of cell, with concentrated white core, scarlet edge and restrained burgundy accents. Delicate transparent edge. No surrounding scattered flecks or labels; all 16 forms are separate with ample empty space.",
+  "description": "4×4 上飘光屑，包含细长光点、四角星和菱形亮片。",
+  "method": "imagegen (built-in)",
+  "transparent_background": true,
+  "generation_count": 1,
+  "redraw_count": 0,
+  "rejected": false,
+  "raw_image": "buff_motes_sheet_raw.png",
+  "raw_sha256": "af40563763d12dbdb75b4fa4a5d33c4fc31995e6de12056fbd49d8e2ae29b156",
+  "raw_size": [
+    1254,
+    1254
+  ],
+  "delivery_size": [
+    2048,
+    2048
+  ],
+  "mode": "RGBA",
+  "style_references_reviewed": [
+    "art/p5/fx/v4/slash/slash_thin.png",
+    "art/p5/fx/v4/slash/slash_cross.png"
+  ],
+  "processing": "保留原始 4×4 布局，等比重采样至 2048×2048；原始图为 1254×1254，非原生 2048。 清零 alpha≤2 的边缘残点和全透明区域的 RGB；未做抠底。",
+  "checks": {
+    "alpha_range": [
+      0,
+      255
+    ],
+    "alpha_bbox_xyxy": [
+      126,
+      45,
+      1960,
+      1963
+    ],
+    "transparent_pixels": 3919811,
+    "soft_alpha_pixels": 274218,
+    "transparent_outer_border": true,
+    "grid": [
+      4,
+      4
+    ],
+    "cell_size": [
+      512,
+      512
+    ],
+    "occupied_cells": 16,
+    "minimum_cell_edge_gap_px": 36,
+    "cell_alpha_bboxes_local_xyxy": [
+      [
+        233,
+        84,
+        296,
+        446
+      ],
+      [
+        210,
+        45,
+        324,
+        476
+      ],
+      [
+        101,
+        113,
+        345,
+        453
+      ],
+      [
+        159,
+        88,
+        412,
+        454
+      ],
+      [
+        162,
+        59,
+        376,
+        460
+      ],
+      [
+        70,
+        66,
+        460,
+        458
+      ],
+      [
+        137,
+        136,
+        395,
+        392
+      ],
+      [
+        136,
+        117,
+        424,
+        401
+      ],
+      [
+        201,
+        73,
+        314,
+        434
+      ],
+      [
+        150,
+        159,
+        378,
+        336
+      ],
+      [
+        187,
+        131,
+        325,
+        384
+      ],
+      [
+        133,
+        61,
+        329,
+        409
+      ],
+      [
+        126,
+        65,
+        384,
+        427
+      ],
+      [
+        205,
+        126,
+        301,
+        399
+      ],
+      [
+        154,
+        111,
+        362,
+        378
+      ],
+      [
+        194,
+        53,
+        327,
+        421
+      ]
+    ]
+  }
+}

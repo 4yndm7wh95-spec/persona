@@ -1,0 +1,93 @@
+{
+  "name": "arsene_draft_v7_facefix",
+  "prompt": "Precise FACE CORRECTION EDIT. IMAGE 1 is the actual face crop from our current Arsene draft: preserve its clean 2D cel-shaded drawing style, camera angle, head location, size and face silhouette. IMAGE 2 and IMAGE 3 are verified original PS0201 game-model close-ups, front and three-quarter, NOT AI art: use them as the authoritative face anatomy/design reference. Change ONLY the mask FACE below the upper red crest. The real face has a wicked serrated GRIN in the LOWER HALF: two rows of clearly readable sharp triangular red-orange teeth across the mouth, dark gaps between teeth, an angular cheek-to-cheek smiling zigzag mouth, pointed black chin below it. It is NOT a smooth blank no-mouth helmet. Reproduce the original model's sharply angled RED-ORANGE EYE SURROUNDS with dark narrow inner eye slits, in place of the present simplistic solid white eyes. Preserve the black sculptural multi-faceted face planes, forehead ridge down the center and red-orange cheek outlines, like images 2 and 3. Draw the grin and eye pattern faithfully, do not invent a literal bird beak, animal muzzle, human lips/nose or skull. Keep the same three-quarter head tilt as image 1; don't copy the front camera of image 2. KEEP the hat, long upper projections, collar, cravat, hand, shoulder, wing and all pixels outside the face unchanged, do not move or enlarge the face, no new accessories. Same crop framing and relative positions as image 1, no zooming or recentering. Flat 2D ink/cel rendering matching image 1, not the 3D texture look of reference models. Genuine transparent RGBA preserving existing transparency. No background, smoke, haze, halo, text or other elements.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-85b42f3e-7eb3-4d0e-8623-3cfb153a7380.png",
+  "references": [
+    {
+      "role": "edit target",
+      "source": "art/p5/fx/v4/arsene/arsene_draft_v7.png",
+      "crop": [
+        1050,
+        350,
+        1500,
+        750
+      ]
+    },
+    {
+      "role": "original PS0201 face anatomy",
+      "path": "face_reference_study/face_front.png"
+    },
+    {
+      "role": "original PS0201 three-quarter face",
+      "path": "face_reference_study/face_threequarter.png"
+    }
+  ],
+  "source_model": "MODEL/CHARACTER/PERSONA/0201/PS0201.GMD",
+  "raw_size": [
+    1330,
+    1182
+  ],
+  "method": "imagegen face-crop edit, local masked composite into unchanged full body",
+  "source": "arsene_draft_v7.png",
+  "face_crop_box": [
+    1050,
+    350,
+    1500,
+    750
+  ],
+  "face_mask_polygon_local": [
+    [
+      111,
+      94
+    ],
+    [
+      145,
+      111
+    ],
+    [
+      205,
+      132
+    ],
+    [
+      269,
+      115
+    ],
+    [
+      278,
+      143
+    ],
+    [
+      253,
+      202
+    ],
+    [
+      219,
+      255
+    ],
+    [
+      183,
+      229
+    ],
+    [
+      157,
+      191
+    ],
+    [
+      132,
+      160
+    ]
+  ],
+  "mask_blur_px": 2,
+  "delivery_size": [
+    2048,
+    2304
+  ],
+  "generation_count": 1,
+  "automatic_redraw_count": 0,
+  "checks": {
+    "mode": "RGBA",
+    "outside_face_changed_pixels": 0,
+    "total_changed_pixels": 15080
+  },
+  "status": "face correction draft awaiting user review, no layers"
+}

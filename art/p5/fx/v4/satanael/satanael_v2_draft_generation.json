@@ -1,0 +1,59 @@
+{
+  "tool": "built-in image_gen",
+  "prompt": "Correct the anatomical handedness of this Satanael character. The attached draft is WRONG: it fires with HIS OWN RIGHT HAND, because the large NEAR shoulder on the LEFT of the image feeds the extended firing arm. You MUST SWAP WHICH ARM IS DOING WHAT, keeping the body facing screen right. Do not mirror the whole picture or merely reshape fingers.\n\nREQUIRED ANATOMY: the NEAR RIGHT SHOULDER, the large pauldron on IMAGE LEFT, now connects to an arm that DROPS VERTICALLY DOWN AT THE IMAGE-LEFT SIDE OF HIS TORSO. Show that large near shoulder, downward right upper arm, right elbow, long downward right forearm and open right hand beside his waist. This near arm must NOT extend across the chest. Keep its entire shoulder-to-hand connection readable. \nThe FAR LEFT SHOULDER is the smaller pauldron on IMAGE RIGHT, on the far side of his neck and upper torso. From THIS IMAGE-RIGHT SHOULDER his anatomical LEFT upper arm extends STRAIGHT HORIZONTALLY toward SCREEN RIGHT. Its elbow, left wrist and LEFT HAND grip the enormous revolver. The firing arm comes out of the FAR side of the torso on IMAGE RIGHT, NOT from the large near shoulder on the left. The visible torso has no firing arm crossing from image left to right in front of his chest. Exactly two arms. No extra hands. HIS left hand is the only hand touching the gun. The far firing arm should be straight, not bent to chest.\n\nKeep the full long revolver, including entire massive barrel and complete muzzle with empty transparent margin after muzzle. Barrel longer than shoulder-to-wrist arm, pointing screen right a few degrees DOWN. Move torso farther left and pull camera back if needed to fit the entire gun. Single figure from waist to complete horn tips, tall 2:3 portrait requested2400x3600. Helmet/chest/horns clearly three-quarter facing RIGHT, low angle. Horns at least80px clear of top and side. Wings may crop. Full weapon must not crop.\n\nPreserve this muted dark palette: black armor, desaturated aged gray-bronze/silver-gold plates, dark burgundy lining, red narrow eyes. No bright gold. Same Satanael enclosed angular helmet with tall swept horns, emblem, plated waist and huge dark bat wings with star bands. Bold black outlines and exactly two flat cel-shading planes, no painting texture. Transparent RGBA background, alpha zero outside character. No aura, fog, light cloud, effects, glow halo, muzzleflash, ground, backgrounds, labels or other figures.",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a1b9c1-3633-7952-824a-82ea95a17f21\\exec-54ad55e0-3d3c-4fa9-8b3b-f9b2f6132942.png",
+  "raw_size": [
+    1024,
+    1536
+  ],
+  "delivery_size": [
+    2400,
+    3600
+  ],
+  "resize": {
+    "method": "uniform Lanczos upscale plus transparent letterbox; no aspect distortion",
+    "scale": 2.34375,
+    "content_size": [
+      2400,
+      3600
+    ],
+    "offset": [
+      0,
+      0
+    ]
+  },
+  "cleanup": {
+    "removed_alpha_pixels": 21184,
+    "rule": "outside 2px dilation of alpha>=200 and alpha<=2 to zero; transparent RGB zero"
+  },
+  "generation_count_this_revision": 1,
+  "redraw_count_from_rejected_v2_right_hand": 1,
+  "reference_images": [
+    "C:/Users/kkk/ChatGPT-Accounts/Account2/codex/generated_images/01a1b9c1-3633-7952-824a-82ea95a17f21/exec-23d46ca6-e5d8-4224-bac5-8b4d6e414a7e.png"
+  ],
+  "pose_reference": {
+    "clip": "BPS0170_000_main_0005",
+    "frame": 27,
+    "fps_assumed": 30,
+    "camera": {
+      "clip": "BPS0170_000_main_0005",
+      "frame": 27,
+      "fps": 30,
+      "camera": [
+        122.5044174194336,
+        155.00669860839844,
+        -4.038690090179443
+      ],
+      "rotation": [
+        1.648725152015686,
+        -6.540900460150212e-11,
+        2.4668517112731934
+      ],
+      "ortho_scale": 36.828121185302734,
+      "waist_z": 7.526525644659996
+    },
+    "postprocess": "mirror horizontal, crop [0,540,1200,1300]",
+    "limit": "incomplete head and halo in source-model render; design supplied by satanael_full"
+  },
+  "status": "draft_waiting_for_user"
+}

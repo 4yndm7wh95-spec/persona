@@ -1,0 +1,401 @@
+{
+  "glass_shards_sheet": {
+    "cells": [
+      {
+        "row": 0,
+        "col": 0,
+        "cell": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          89,
+          107,
+          425,
+          422
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 0,
+        "col": 1,
+        "cell": [
+          512,
+          0,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          126,
+          105,
+          410,
+          433
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 0,
+        "col": 2,
+        "cell": [
+          1024,
+          0,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          99,
+          125,
+          411,
+          430
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 0,
+        "col": 3,
+        "cell": [
+          1536,
+          0,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          160,
+          78,
+          373,
+          460
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 1,
+        "col": 0,
+        "cell": [
+          0,
+          512,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          89,
+          119,
+          428,
+          423
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 1,
+        "col": 1,
+        "cell": [
+          512,
+          512,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          86,
+          126,
+          432,
+          365
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 1,
+        "col": 2,
+        "cell": [
+          1024,
+          512,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          168,
+          73,
+          344,
+          458
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 1,
+        "col": 3,
+        "cell": [
+          1536,
+          512,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          89,
+          141,
+          429,
+          374
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 2,
+        "col": 0,
+        "cell": [
+          0,
+          1024,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          133,
+          112,
+          379,
+          421
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 2,
+        "col": 1,
+        "cell": [
+          512,
+          1024,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          82,
+          127,
+          429,
+          377
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 2,
+        "col": 2,
+        "cell": [
+          1024,
+          1024,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          85,
+          101,
+          419,
+          422
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 2,
+        "col": 3,
+        "cell": [
+          1536,
+          1024,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          88,
+          113,
+          405,
+          416
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 3,
+        "col": 0,
+        "cell": [
+          0,
+          1536,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          87,
+          150,
+          430,
+          348
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 3,
+        "col": 1,
+        "cell": [
+          512,
+          1536,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          174,
+          86,
+          347,
+          426
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 3,
+        "col": 2,
+        "cell": [
+          1024,
+          1536,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          87,
+          109,
+          432,
+          388
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "cell": [
+          1536,
+          1536,
+          512,
+          512
+        ],
+        "content_bbox_in_cell": [
+          145,
+          91,
+          370,
+          406
+        ],
+        "body_alpha_range": [
+          64,
+          153
+        ],
+        "highlight_alpha": 235
+      }
+    ],
+    "postprocess": "per-cell largest alpha>80 component, enclosed glass interior filled, outside alpha noise removed; body alpha mapped64..153, bright bevel/reflections235;32px safety inset plus source margins",
+    "size": [
+      2048,
+      2048
+    ],
+    "mode": "RGBA",
+    "corners_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "transparent_rgb_zero": true,
+    "file_bytes": 1468480,
+    "actual_min_cell_margin": 52,
+    "body_alpha64_to153_fraction": 0.8556298014984949,
+    "highlight_pixels_alpha235": 91218
+  },
+  "glass_glints": {
+    "grid": [
+      4,
+      1
+    ],
+    "cell_size": [
+      256,
+      256
+    ],
+    "min_cell_margin": 16,
+    "postprocess": "each generated glint alpha component fitted independently without shape stretching; no hand-drawn replacement",
+    "size": [
+      1024,
+      256
+    ],
+    "mode": "RGBA",
+    "corners_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "transparent_rgb_zero": true,
+    "file_bytes": 44220
+  },
+  "glass_dust": {
+    "postprocess": "whole canvas downsample256; alpha<12 noise cleared",
+    "size": [
+      256,
+      256
+    ],
+    "mode": "RGBA",
+    "corners_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "transparent_rgb_zero": true,
+    "file_bytes": 3231,
+    "visible_components_alpha32_min2px": 17
+  }
+}

@@ -1,0 +1,1000 @@
+{
+  "$type": "ModelPack",
+  "ResourceType": "ModelPack",
+  "Textures": [],
+  "Materials": [
+    {
+      "$type": "KeyValuePair\u00602",
+      "Key": "01 - Default",
+      "Value": {
+        "$type": "Material",
+        "ResourceType": "Material",
+        "Name": "01 - Default",
+        "Flags": "HasAmbientColor, HasDiffuseColor, Diffusitivity",
+        "DrawMethod": "Opaque",
+        "LegacyParameters": {
+          "$type": "MaterialLegacyParameters",
+          "ResourceType": "MaterialParameterSetLegacy",
+          "AmbientColor": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 0,
+            "W": 1
+          },
+          "DiffuseColor": {
+            "$type": "Vector4",
+            "X": 0.9960785,
+            "Y": 0.9960785,
+            "Z": 0.9960785,
+            "W": 1
+          },
+          "EmissiveColor": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 0,
+            "W": 0
+          },
+          "SpecularColor": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 0,
+            "W": 0
+          },
+          "Reflectivity": 1,
+          "Diffusivity": 0.1,
+          "Version": 17844592
+        },
+        "BlendSourceColor": 1,
+        "BlendDestinationColor": 0,
+        "SourceAlpha": 1,
+        "DestinationAlpha": 0,
+        "HighlightMapBlendMode": "Lerp",
+        "AlphaClip": 0,
+        "AlphaClipMode": "Greater",
+        "Flags2": "0",
+        "SortPriority": 0,
+        "ShaderId": 0,
+        "TexCoordFlags0": 4294967295,
+        "TexCoordFlags1": 4294967295,
+        "DisableBackfaceCulling": 0,
+        "Field98": 4294967295,
+        "DiffuseMap": null,
+        "NormalMap": null,
+        "SpecularMap": null,
+        "ReflectionMap": null,
+        "HighlightMap": null,
+        "GlowMap": null,
+        "NightMap": null,
+        "DetailMap": null,
+        "ShadowMap": null,
+        "TextureMap10": null,
+        "TextureMaps": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "Attributes": null,
+        "METAPHOR_UseMaterialParameterSet": false,
+        "METAPHOR_MaterialParameterSet": null,
+        "Field6C_2": 0,
+        "MatFlags0": "0",
+        "MatFlags1": "0",
+        "MatFlags2": "0",
+        "Version": 17844592
+      }
+    }
+  ],
+  "Model": {
+    "$type": "Model",
+    "ResourceType": "Model",
+    "Flags": "HasBoundingBox, HasBoundingSphere",
+    "Bones": null,
+    "BoundingBox": {
+      "$type": "BoundingBox",
+      "Max": {
+        "$type": "Vector3",
+        "X": 500,
+        "Y": 1.0494741E-11,
+        "Z": 0.00023083843
+      },
+      "Min": {
+        "$type": "Vector3",
+        "X": -500,
+        "Y": -1000,
+        "Z": -3.774895E-05
+      }
+    },
+    "BoundingSphere": {
+      "$type": "BoundingSphere",
+      "Center": {
+        "$type": "Vector3",
+        "X": 0,
+        "Y": -500,
+        "Z": 9.654474E-05
+      },
+      "Radius": 707.1068
+    },
+    "RootNode": {
+      "$type": "Node",
+      "ResourceType": "Node",
+      "Name": "RootNode",
+      "Translation": {
+        "$type": "Vector3",
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Rotation": {
+        "$type": "Quaternion",
+        "IsIdentity": true,
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "W": 1
+      },
+      "Scale": {
+        "$type": "Vector3",
+        "X": 1,
+        "Y": 1,
+        "Z": 1
+      },
+      "LocalTransform": {
+        "$type": "Matrix4x4",
+        "IsIdentity": true,
+        "Translation": {
+          "$type": "Vector3",
+          "X": 0,
+          "Y": 0,
+          "Z": 0
+        },
+        "X": {
+          "$type": "Vector4",
+          "X": 1,
+          "Y": 0,
+          "Z": 0,
+          "W": 0
+        },
+        "Y": {
+          "$type": "Vector4",
+          "X": 0,
+          "Y": 1,
+          "Z": 0,
+          "W": 0
+        },
+        "Z": {
+          "$type": "Vector4",
+          "X": 0,
+          "Y": 0,
+          "Z": 1,
+          "W": 0
+        },
+        "W": {
+          "$type": "Vector4",
+          "X": 0,
+          "Y": 0,
+          "Z": 0,
+          "W": 1
+        },
+        "M11": 1,
+        "M12": 0,
+        "M13": 0,
+        "M14": 0,
+        "M21": 0,
+        "M22": 1,
+        "M23": 0,
+        "M24": 0,
+        "M31": 0,
+        "M32": 0,
+        "M33": 1,
+        "M34": 0,
+        "M41": 0,
+        "M42": 0,
+        "M43": 0,
+        "M44": 1
+      },
+      "WorldTransform": {
+        "$type": "Matrix4x4",
+        "IsIdentity": true,
+        "Translation": {
+          "$type": "Vector3",
+          "X": 0,
+          "Y": 0,
+          "Z": 0
+        },
+        "X": {
+          "$type": "Vector4",
+          "X": 1,
+          "Y": 0,
+          "Z": 0,
+          "W": 0
+        },
+        "Y": {
+          "$type": "Vector4",
+          "X": 0,
+          "Y": 1,
+          "Z": 0,
+          "W": 0
+        },
+        "Z": {
+          "$type": "Vector4",
+          "X": 0,
+          "Y": 0,
+          "Z": 1,
+          "W": 0
+        },
+        "W": {
+          "$type": "Vector4",
+          "X": 0,
+          "Y": 0,
+          "Z": 0,
+          "W": 1
+        },
+        "M11": 1,
+        "M12": 0,
+        "M13": 0,
+        "M14": 0,
+        "M21": 0,
+        "M22": 1,
+        "M23": 0,
+        "M24": 0,
+        "M31": 0,
+        "M32": 0,
+        "M33": 1,
+        "M34": 0,
+        "M41": 0,
+        "M42": 0,
+        "M43": 0,
+        "M44": 1
+      },
+      "Attachments": [],
+      "HasAttachments": false,
+      "AttachmentCount": 0,
+      "Meshes": [],
+      "Properties": [],
+      "HasProperties": false,
+      "PropertyCount": 0,
+      "FieldE0": 1,
+      "HasParent": false,
+      "Children": [
+        {
+          "$type": "Node",
+          "ResourceType": "Node",
+          "Name": "Plane02",
+          "Translation": {
+            "$type": "Vector3",
+            "X": 0,
+            "Y": 0,
+            "Z": 0
+          },
+          "Rotation": {
+            "$type": "Quaternion",
+            "IsIdentity": false,
+            "X": -8.4293696E-08,
+            "Y": 0,
+            "Z": 0,
+            "W": 0.99999994
+          },
+          "Scale": {
+            "$type": "Vector3",
+            "X": 1,
+            "Y": 1,
+            "Z": 1
+          },
+          "LocalTransform": {
+            "$type": "Matrix4x4",
+            "IsIdentity": false,
+            "Translation": {
+              "$type": "Vector3",
+              "X": 0,
+              "Y": 0,
+              "Z": 0
+            },
+            "X": {
+              "$type": "Vector4",
+              "X": 1,
+              "Y": 0,
+              "Z": 0,
+              "W": 0
+            },
+            "Y": {
+              "$type": "Vector4",
+              "X": 0,
+              "Y": 1,
+              "Z": -1.6858738E-07,
+              "W": 0
+            },
+            "Z": {
+              "$type": "Vector4",
+              "X": 0,
+              "Y": 1.6858738E-07,
+              "Z": 1,
+              "W": 0
+            },
+            "W": {
+              "$type": "Vector4",
+              "X": 0,
+              "Y": 0,
+              "Z": 0,
+              "W": 1
+            },
+            "M11": 1,
+            "M12": 0,
+            "M13": 0,
+            "M14": 0,
+            "M21": 0,
+            "M22": 1,
+            "M23": -1.6858738E-07,
+            "M24": 0,
+            "M31": 0,
+            "M32": 1.6858738E-07,
+            "M33": 1,
+            "M34": 0,
+            "M41": 0,
+            "M42": 0,
+            "M43": 0,
+            "M44": 1
+          },
+          "WorldTransform": {
+            "$type": "Matrix4x4",
+            "IsIdentity": false,
+            "Translation": {
+              "$type": "Vector3",
+              "X": 0,
+              "Y": 0,
+              "Z": 0
+            },
+            "X": {
+              "$type": "Vector4",
+              "X": 1,
+              "Y": 0,
+              "Z": 0,
+              "W": 0
+            },
+            "Y": {
+              "$type": "Vector4",
+              "X": 0,
+              "Y": 1,
+              "Z": -1.6858738E-07,
+              "W": 0
+            },
+            "Z": {
+              "$type": "Vector4",
+              "X": 0,
+              "Y": 1.6858738E-07,
+              "Z": 1,
+              "W": 0
+            },
+            "W": {
+              "$type": "Vector4",
+              "X": 0,
+              "Y": 0,
+              "Z": 0,
+              "W": 1
+            },
+            "M11": 1,
+            "M12": 0,
+            "M13": 0,
+            "M14": 0,
+            "M21": 0,
+            "M22": 1,
+            "M23": -1.6858738E-07,
+            "M24": 0,
+            "M31": 0,
+            "M32": 1.6858738E-07,
+            "M33": 1,
+            "M34": 0,
+            "M41": 0,
+            "M42": 0,
+            "M43": 0,
+            "M44": 1
+          },
+          "Attachments": [
+            {
+              "$type": "NodeMeshAttachment",
+              "Mesh": {
+                "$type": "Mesh",
+                "ResourceType": "Mesh",
+                "Flags": "HasMaterial, HasTriangles, HasBoundingBox, HasBoundingSphere",
+                "VertexAttributeFlags": "Position, Normal",
+                "TriangleCount": 32,
+                "TriangleIndexFormat": "UInt16",
+                "VertexCount": 25,
+                "Field14": 0,
+                "Vertices": [
+                  {
+                    "$type": "Vector3",
+                    "X": -500,
+                    "Y": -750,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": -500,
+                    "Y": -1000,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": -250,
+                    "Y": -750,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": -250,
+                    "Y": -1000,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": -750,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": -1000,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 250,
+                    "Y": -750,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 250,
+                    "Y": -1000,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 500,
+                    "Y": -750,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 500,
+                    "Y": -1000,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": -500,
+                    "Y": -500,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": -250,
+                    "Y": -500,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": -500,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 250,
+                    "Y": -500,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 500,
+                    "Y": -500,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": -500,
+                    "Y": -250,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": -250,
+                    "Y": -250,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": -250,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 250,
+                    "Y": -250,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 500,
+                    "Y": -250,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": -500,
+                    "Y": 0,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": -250,
+                    "Y": 0,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 250,
+                    "Y": 0,
+                    "Z": -3.774895E-05
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 500,
+                    "Y": 0,
+                    "Z": -3.774895E-05
+                  }
+                ],
+                "Normals": [
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 1
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 0.99999994
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 0.99999994
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 1
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 0.99999994
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 1
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 0.99999994
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 1
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 0.99999994
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 1
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 1
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 0.99999994
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 0.99999994
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 0.99999994
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 0.99999994
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 1
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 0.99999994
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 0.99999994
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 0.99999994
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 0.99999994
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 1
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 0.99999994
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 0.99999994
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 0.99999994
+                  },
+                  {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 0.99999994
+                  }
+                ],
+                "Tangents": null,
+                "Binormals": null,
+                "ColorChannel0": null,
+                "ColorChannel1": null,
+                "ColorChannel2": null,
+                "TexCoordsChannel0": null,
+                "TexCoordsChannel1": null,
+                "TexCoordsChannel2": null,
+                "VertexWeights": null,
+                "Triangles": [
+                  {
+                    "$type": "Triangle",
+                    "A": 0,
+                    "B": 1,
+                    "C": 2
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 3,
+                    "B": 2,
+                    "C": 1
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 2,
+                    "B": 3,
+                    "C": 4
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 5,
+                    "B": 4,
+                    "C": 3
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 4,
+                    "B": 5,
+                    "C": 6
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 7,
+                    "B": 6,
+                    "C": 5
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 6,
+                    "B": 7,
+                    "C": 8
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 9,
+                    "B": 8,
+                    "C": 7
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 10,
+                    "B": 0,
+                    "C": 11
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 2,
+                    "B": 11,
+                    "C": 0
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 11,
+                    "B": 2,
+                    "C": 12
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 4,
+                    "B": 12,
+                    "C": 2
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 12,
+                    "B": 4,
+                    "C": 13
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 6,
+                    "B": 13,
+                    "C": 4
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 13,
+                    "B": 6,
+                    "C": 14
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 8,
+                    "B": 14,
+                    "C": 6
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 15,
+                    "B": 10,
+                    "C": 16
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 11,
+                    "B": 16,
+                    "C": 10
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 16,
+                    "B": 11,
+                    "C": 17
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 12,
+                    "B": 17,
+                    "C": 11
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 17,
+                    "B": 12,
+                    "C": 18
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 13,
+                    "B": 18,
+                    "C": 12
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 18,
+                    "B": 13,
+                    "C": 19
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 14,
+                    "B": 19,
+                    "C": 13
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 20,
+                    "B": 15,
+                    "C": 21
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 16,
+                    "B": 21,
+                    "C": 15
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 21,
+                    "B": 16,
+                    "C": 22
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 17,
+                    "B": 22,
+                    "C": 16
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 22,
+                    "B": 17,
+                    "C": 23
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 18,
+                    "B": 23,
+                    "C": 17
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 23,
+                    "B": 18,
+                    "C": 24
+                  },
+                  {
+                    "$type": "Triangle",
+                    "A": 19,
+                    "B": 24,
+                    "C": 18
+                  }
+                ],
+                "MorphTargets": null,
+                "MaterialName": "01 - Default",
+                "BoundingBox": {
+                  "$type": "BoundingBox",
+                  "Max": {
+                    "$type": "Vector3",
+                    "X": 500,
+                    "Y": 0,
+                    "Z": 6.225105E-05
+                  },
+                  "Min": {
+                    "$type": "Vector3",
+                    "X": -500,
+                    "Y": -1000,
+                    "Z": -3.774895E-05
+                  }
+                },
+                "BoundingSphere": {
+                  "$type": "BoundingSphere",
+                  "Center": {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": -500,
+                    "Z": -3.7748894E-05
+                  },
+                  "Radius": 707.1068
+                },
+                "LodStart": 0,
+                "LodEnd": 0,
+                "Unk_StrideType": 0,
+                "Unk_VertexWeight": 0,
+                "TexCoordChannels": [
+                  null,
+                  null,
+                  null
+                ],
+                "ColorChannels": [
+                  null,
+                  null,
+                  null
+                ],
+                "Version": 17844592
+              },
+              "Type": "Mesh"
+            }
+          ],
+          "HasAttachments": true,
+          "AttachmentCount": 1,
+          "Meshes": [
+            "[reference]"
+          ],
+          "Properties": [],
+          "HasProperties": false,
+          "PropertyCount": 0,
+          "FieldE0": 1,
+          "HasParent": true,
+          "Children": [],
+          "HasChildren": false,
+          "ChildCount": 0,
+          "Version": 17844592
+        }
+      ],
+      "HasChildren": true,
+      "ChildCount": 1,
+      "Version": 17844592
+    },
+    "Field100_10": 0,
+    "Nodes": [
+      "[reference]",
+      "[reference]"
+    ],
+    "Meshes": [
+      "[reference]"
+    ],
+    "Version": 17844592
+  },
+  "AnimationPack": null,
+  "ChunkType000100F8": null,
+  "ChunkType000100F9": null,
+  "Version": 17844592
+}

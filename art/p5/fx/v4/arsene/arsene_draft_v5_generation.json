@@ -1,0 +1,27 @@
+{
+  "group": "arsene",
+  "name": "arsene_draft_v5",
+  "w": 1536,
+  "h": 2048,
+  "prompt": "Edit Image 1 (Arsene draft v4) into draft v5, preserve exact official character design and clean 2D cel style. Image 2 official art is leg/anatomy reference only; Image 3 Joker sets outline thickness and restrained red saturation. Make pose menacing: whole torso leans toward screen right, three-quarter side/front, forward arm reaches right-front with claw fingers spread, other arm pulled close at side. Knees BENT and brought together, toes pointing down, hovering, NOT straight legs spread apart. Make BOTH black feather wings larger and spread wider, both complete silhouettes visible and separated from body, rich grouped feather layers with a LITTLE deep crimson inner shading. Glowing red eyes but NO external halo. Slightly desaturate red clothing to match Joker. Preserve tilted top hat, beaked red mask/head, white cravat, fitted red/black costume and blade heels; no invented costume. Clean layer-friendly silhouette, few overlaps, no background effects/smoke/haze. Portrait 1536x2048, all wing tips and feet inside frame with transparent margin. GENUINE TRANSPARENT RGBA, alpha zero outside character. No text, scenery, ground, cast shadow, particles. Only one character, not 3D or painterly.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-7cdf0a96-b248-48bb-830d-624229bb99a3.png",
+  "raw_size": [
+    1086,
+    1448
+  ],
+  "method": "imagegen",
+  "generation_count": 1,
+  "redraw_count": 0,
+  "status": "pending_approval_not_layered",
+  "processing": "尺寸归一、alpha<=2和透明RGB清零；未局部修图",
+  "corner_alpha": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "reference_images": [
+    "C:\\Users\\kkk\\sts2_tools\\tmp\\sts2_vfx_20261102\\repo\\art\\p5\\fx\\v4\\arsene\\arsene_draft.png",
+    "C:\\Users\\kkk\\sts2_tools\\tmp\\sts2_vfx_20261102\\repo\\art\\p5\\fx\\v4\\arsene\\arsene_official_reference.png"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "summon_bridge1_a",
+  "prompt": "Edit IMAGE1 (approved Joker hand-on-face sprite) into the FIRST SMALL transition toward IMAGE2 (command middle pose, endpoint reference only). SAME Joker, head size, standing height, costume and cel-shaded line art as IMAGE1, do not copy endpoint head scale. Right hand leaves face a short distance, just in front of chin/upper chest, elbow bent, fingers relaxed, back of hand leading, palm NOT cupped upward. Left hand starts lifting toward hip, not in pocket yet. Rear/image-left boot steps LEFT/back by about 125 pixels (from x515 toward x390) while front/image-right boot stays near x650, soles around original y1500. Thus feet only slightly separated, NOT the endpoint's wide stance. Body/head shift subtly left as torso begins turning to right, about one third toward endpoint, keep height and head proportions EXACT. Coat same design and length, minimal movement. Face looks image right with bright iris highlights, rounded Joker chin. Hands same size as base. One full character entirely within 1024x1536, boots baseline near1500. True transparent RGBA, alpha zero outside silhouette; remove source haze, no halo, ground, shadow, mask, weapon, effect, background or text.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-f3dd836b-2ff6-4acc-82e9-01ddd79e547a.png",
+  "inputs": [
+    "summon_hold_a.png",
+    "summon_command_mid_a.png"
+  ],
+  "raw_size": [
+    1024,
+    1536
+  ],
+  "delivery_size": [
+    1024,
+    1536
+  ],
+  "generation_count": 1,
+  "redraw_count": 0
+}

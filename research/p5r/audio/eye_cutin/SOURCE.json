@@ -1,0 +1,26 @@
+[
+  {
+    "file": "battle_cutin.wav",
+    "mod_trigger": "眼神特写出现",
+    "source_package": "SOUND_E.CPK",
+    "source_bank": "SOUND/SYSTEM.AWB",
+    "original_cue": "battle_cutin",
+    "vgmstream_subsong_1_based": 18,
+    "sample_rate": 44100,
+    "channels": 2,
+    "duration_seconds": 3.045056689342404,
+    "sha256": "af75a2f2a709e5a7d23e498cb89e70cfb0b17a65d523fc309e03dd4f0657e50b"
+  },
+  {
+    "file": "damage_critical.wav",
+    "mod_trigger": "眼神特写被捏碎",
+    "source_package": "SOUND_E.CPK",
+    "source_bank": "SOUND/SYSTEM.ACB",
+    "original_cue": "damage_critical",
+    "vgmstream_subsong_1_based": 21,
+    "sample_rate": 44100,
+    "channels": 1,
+    "duration_seconds": 2.120997732426304,
+    "sha256": "3529c6d486c1657db6d8e362e053310bd52cc79d137816db1d8af18e54eec832"
+  }
+]

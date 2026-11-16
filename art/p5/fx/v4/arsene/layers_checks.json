@@ -1,0 +1,7 @@
+{
+  "changed_pixel_fraction_canvas": 0.3383011288113064,
+  "changed_pixel_fraction_foreground_union": 0.8400836140439639,
+  "alpha_threshold": 20,
+  "rgba_difference_threshold": 8,
+  "note": "Independent generated layers plus manual approximate registration; not a pixel-exact decomposition."
+}

@@ -1,0 +1,119 @@
+[
+  {
+    "name": "be0cmn_smk_nml_t.dds",
+    "package": "0066.BED",
+    "offset": 1007,
+    "bytes": 16512,
+    "width": 128,
+    "height": 128,
+    "sha256": "e304e184140313c2eaac651523400ee416f03897dc9e6c39cd4e7057f58976e9"
+  },
+  {
+    "name": "be0cmn_smk_nml_n.dds",
+    "package": "0066.BED",
+    "offset": 17567,
+    "bytes": 16512,
+    "width": 128,
+    "height": 128,
+    "sha256": "76d75dcf69c9d7f6e64ca6cce8690ee291c280ede9f4f01f6a5eedebc6c8353f"
+  },
+  {
+    "name": "be0cmn_rayline_rw.dds",
+    "package": "0066.BED",
+    "offset": 34293,
+    "bytes": 32896,
+    "width": 128,
+    "height": 256,
+    "sha256": "cac857fe123083a9066962f653a93606b3cc29541d40f1891c4bce9fdd85dc6f"
+  },
+  {
+    "name": "be0cmn_mud_face.dds",
+    "package": "0066.BED",
+    "offset": 85245,
+    "bytes": 32896,
+    "width": 128,
+    "height": 256,
+    "sha256": "4d8e12ef9ff644881b03c68d15fbe9a1b42272b9bf45b54d034f0faf65062bc5"
+  },
+  {
+    "name": "be0cmn_up_red_nml.dds",
+    "package": "0066.BED",
+    "offset": 118174,
+    "bytes": 16512,
+    "width": 128,
+    "height": 128,
+    "sha256": "d149ef28936da853c26e08512ab70ee90fdd0b3ecec7de8d69d0884c6c8b26a3"
+  },
+  {
+    "name": "be0cmn_glow_nrml.dds",
+    "package": "0066.BED",
+    "offset": 134718,
+    "bytes": 16512,
+    "width": 128,
+    "height": 128,
+    "sha256": "f2a6a4155c4b26b3f7c6a8fb25fd263964c8df568221b236b83383887d37fc2a"
+  },
+  {
+    "name": "be0cmn_aura_glow.dds",
+    "package": "0066.BED",
+    "offset": 151262,
+    "bytes": 16512,
+    "width": 128,
+    "height": 128,
+    "sha256": "5484b51b055e3937738130e379c2199ff9169e287c71aefaa234b3d966926b9b"
+  },
+  {
+    "name": "be0cmn_up_wind_white.dds",
+    "package": "0066.BED",
+    "offset": 295355,
+    "bytes": 16512,
+    "width": 128,
+    "height": 128,
+    "sha256": "e58095a91789c099abfb090f065351af1ee72fd2533021f9f85ef01c9a6862a6"
+  },
+  {
+    "name": "be0cmn_rayline_bw_t.dds",
+    "package": "0066.BED",
+    "offset": 332545,
+    "bytes": 32896,
+    "width": 128,
+    "height": 256,
+    "sha256": "5b0583ba2dc68d06b126920f89fb6747f57cb54bed9c51076910f17fd4a48ce9"
+  },
+  {
+    "name": "bes_en_ent01add.dds",
+    "package": "BE_SYOLOOP.EPL",
+    "offset": 1861,
+    "bytes": 8320,
+    "width": 128,
+    "height": 128,
+    "sha256": "bdea8aa54aad363ef58385a6a4b72c643e00e6bbec64ef674e8e26b207b6cf8a"
+  },
+  {
+    "name": "bes_syo_sbk1-1.dds",
+    "package": "BE_SYOLOOP.EPL",
+    "offset": 22669,
+    "bytes": 1152,
+    "width": 32,
+    "height": 32,
+    "sha256": "f0701d20d6dfadbe130d3ad7b5867c92625ca0adf19036804ae60a3fc0db490f"
+  },
+  {
+    "name": "bes_syo_sbk1-2.dds",
+    "package": "BE_SYOLOOP.EPL",
+    "offset": 23857,
+    "bytes": 8320,
+    "width": 128,
+    "height": 128,
+    "sha256": "ad37d9cedcc459c3351a3e21821af616ff6282b820771ebb4e728af8a17f47e0"
+  },
+  {
+    "name": "bes_syo_fkomaB12kf2.dds",
+    "package": "BE_SYOLOOP.EPL",
+    "offset": 33325,
+    "bytes": 131200,
+    "width": 512,
+    "height": 512,
+    "sha256": "b4707c7a7cf90687d32f00a43ec404b4f9e0d09718a508a7c62f9c3208f5f52c"
+  }
+]

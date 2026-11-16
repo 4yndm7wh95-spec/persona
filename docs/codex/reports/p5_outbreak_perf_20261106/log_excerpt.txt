@@ -1,0 +1,35 @@
+godot2026-11-06T08.19.04.log
+1: MegaDot v4.5.1.m.14.mono.custom_build - https://godotengine.org
+2: D3D12 12_0 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 4060 Laptop GPU
+3: WARNING: PSO caching is not implemented yet in the Direct3D 12 driver.
+4:    at: pipeline_cache_create (drivers/d3d12/rendering_device_driver_d3d12.cpp:4469)
+273: [P5Joker] init v0.9.12
+274: [P3Makoto] P3R sfx loaded 89/89
+275: [P5Joker] harmony patches applied: 30 ok, 0 failed
+751: [INFO] Player 1 playing card OUTBREAK (no target)
+752: [WARN] Asset not cached: res://images/powers/poison_power.png
+753: [P3Makoto] health hitch 63ms gpu=24.3ms render_cpu=0.3ms p3=0.1ms process=43.1ms vfx_nodes=27 fps=48
+754: [P3Makoto] trace card done CARD.OUTBREAK (t=201564ms, timescale=1)
+755: [INFO] Player 1 playing card OUTBREAK (no target)
+756: [P3Makoto] trace card done CARD.OUTBREAK (t=205031ms, timescale=1)
+757: [INFO] Player 1 playing card OUTBREAK (no target)
+758: [P3Makoto] trace card done CARD.OUTBREAK (t=208577ms, timescale=1)
+759: [INFO] Player 1 playing card OUTBREAK (no target)
+760: [P3Makoto] trace card done CARD.OUTBREAK (t=212248ms, timescale=1)
+godot2026-11-06T08.39.29.log
+615: [INFO] Player 1 playing card OUTBREAK (no target)
+616: [WARN] Asset not cached: res://images/powers/poison_power.png
+617: [P3Makoto] trace card done CARD.OUTBREAK (t=71480ms, timescale=1)
+618: [INFO] Player 1 playing card OUTBREAK (no target)
+619: [P3Makoto] trace card done CARD.OUTBREAK (t=74942ms, timescale=1)
+620: [INFO] Player 1 playing card OUTBREAK (no target)
+621: [P3Makoto] trace card done CARD.OUTBREAK (t=78044ms, timescale=1)
+622: [INFO] Player 1 playing card OUTBREAK (no target)
+623: [P3Makoto] trace card done CARD.OUTBREAK (t=81158ms, timescale=1)
+624: [INFO] MuteInBackground: FocusOut received [tween=False, windowFocused=False]
+625: [INFO] Limiting background FPS to 30
+626: [INFO] MuteInBackground: FocusIn received [tween=True, msSinceFocusOut=3900, windowFocused=True]
+627: [INFO] MuteInBackground: Unmuted, restored volume to 0.48
+628: [INFO] Restored foreground FPS
+629: [INFO] Player 1 playing card OUTBREAK (no target)
+630: [P3Makoto] trace card done CARD.OUTBREAK (t=90290ms, timescale=1)

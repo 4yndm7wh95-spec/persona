@@ -1,0 +1,30 @@
+{
+  "name": "body",
+  "prompt": "Create the BODY-ONLY layer of attached approved Arsene illustration for 2D puppet animation. Keep EXACT same corrected jagged grinning black face with red-orange teeth and eye pattern, tall black top hat/red sweeping brim, white cravat, red tuxedo jacket/coat tails, black waistcoat/gold chains, long red legs and ornate pointed high-heeled boots, same asymmetrical floating pose. REMOVE BOTH arms and BOTH wings entirely. Reconstruct the concealed chest, cravat folds, waistcoat, side waist, shoulder sockets and coat underneath the removed arms; complete overlapping fabric at both shoulder joints for later arm rotation. Body includes head, hat, torso, coat tails and legs, no arms/hands/feathers. Preserve original camera, proportions, exact head/hat location and foot tips; not a new character redesign. Same clean flat 2D P5 cel shading. Genuine transparent RGBA, no effects, ground, shadow, haze, text or background. Same 2048x2304 canvas with original size and placement, no crop or zoom.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-a5814cad-b314-49ee-9492-61673a31420f.png",
+  "master": "../arsene_draft_v7_facefix.png",
+  "canvas": [
+    2048,
+    2304
+  ],
+  "source_alpha_bbox": [
+    495,
+    37,
+    896,
+    1267
+  ],
+  "registered_bbox": [
+    875,
+    65,
+    1595,
+    2190
+  ],
+  "pivot": [
+    1260,
+    1130
+  ],
+  "mirrored_for_shoulder_direction": false,
+  "registration": "manual bounding-box fit; independent generation, not pixel-exact decomposition",
+  "generation_count": 1,
+  "redraw_count": 0
+}

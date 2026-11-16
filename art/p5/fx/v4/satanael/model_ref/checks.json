@@ -1,0 +1,562 @@
+[
+  {
+    "file": "aim_lowfront_cel.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      132,
+      264,
+      1916,
+      1784
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "aim_lowfront_cel_mirrored.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      132,
+      264,
+      1916,
+      1784
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "aim_lowfront_lit.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      132,
+      265,
+      1916,
+      1783
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "aim_lowfront_lit_mirrored.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      132,
+      265,
+      1916,
+      1783
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "aim_side_cel.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      132,
+      543,
+      1916,
+      1505
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "aim_side_lit.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      133,
+      543,
+      1916,
+      1505
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "gun_grip_cel.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      132,
+      437,
+      1565,
+      1438
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "gun_grip_lit.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      171,
+      438,
+      1565,
+      1437
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "gun_side_cel.png",
+    "size": [
+      2560,
+      1440
+    ],
+    "bbox": [
+      166,
+      536,
+      2219,
+      865
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "gun_side_lit.png",
+    "size": [
+      2560,
+      1440
+    ],
+    "bbox": [
+      166,
+      536,
+      2218,
+      864
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "halo_cel.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      132,
+      392,
+      1916,
+      1656
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "halo_lit.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      133,
+      393,
+      1915,
+      1655
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "head_front_cel.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      132,
+      286,
+      1916,
+      1762
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "head_front_lit.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      132,
+      287,
+      1916,
+      1761
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "head_low_cel.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      131,
+      425,
+      1916,
+      1624
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "head_low_lit.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      133,
+      425,
+      1916,
+      1623
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "head_right_3q_cel.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      132,
+      261,
+      1916,
+      1787
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "head_right_3q_lit.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      132,
+      262,
+      1916,
+      1787
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "turn_back_cel.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      132,
+      522,
+      1916,
+      1526
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "turn_back_lit.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      132,
+      523,
+      1916,
+      1525
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "turn_front_cel.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      132,
+      522,
+      1916,
+      1526
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "turn_front_lit.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      132,
+      523,
+      1916,
+      1525
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "turn_left_3q_cel.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      132,
+      425,
+      1916,
+      1623
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "turn_left_3q_lit.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      133,
+      426,
+      1916,
+      1622
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "turn_right_3q_cel.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      132,
+      371,
+      1916,
+      1676
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "turn_right_3q_lit.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      132,
+      372,
+      1915,
+      1676
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "turn_side_cel.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      595,
+      132,
+      1453,
+      1916
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  },
+  {
+    "file": "turn_side_lit.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "bbox": [
+      596,
+      132,
+      1452,
+      1915
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "touches_edge": false
+  }
+]

@@ -1,0 +1,33 @@
+{
+  "canvas": [
+    2048,
+    2304
+  ],
+  "pivot": [
+    1380,
+    665
+  ],
+  "shoulder_alpha": 253,
+  "arm_before_wrist_changed_pixels": 0,
+  "red_sleeve_changed_pixels": 0,
+  "wrist_boundary_x": 1834,
+  "joint_overlap_pixels_with_body": 4074,
+  "arm_reach_extend": {
+    "corner_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "edge_alpha_max": 0
+  },
+  "arm_reach_fist": {
+    "corner_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "edge_alpha_max": 0
+  }
+}

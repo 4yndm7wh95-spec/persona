@@ -1,0 +1,20 @@
+{
+  "method": "original_model_reference",
+  "source_path": "BASE.CPK/MODEL/CHARACTER/PERSONA/0052/PS0052.GMD",
+  "texture_names": [
+    "ps_orochi_t02.dds",
+    "ps_orochi_t01_sp.dds",
+    "ps_orochi_t01_shadow.dds"
+  ],
+  "tools": [
+    "GFDExport",
+    "fix_gfd_glb.py",
+    "Blender 4.5.9 LTS Workbench texture preview"
+  ],
+  "pose": "bind pose, rigid upright necks; design reference only, not the desired draft pose",
+  "size": [
+    1024,
+    1536
+  ],
+  "note": "Initial export to temp rejected by exporter output-path restriction; exported successfully inside existing p5r_rip library without altering tool restrictions."
+}
