@@ -1214,13 +1214,13 @@ void fragment() {
 			{
 				// 蛇咬第五版：没有烟迹 / 中转烟团；手边钻出来时一小团咒烟，咬完原地散成烟
 				_diss[a.Serpent] = t < 0f ? 0.4f * (1f - Smooth(-LungePre, 0f, t)) : t < SoloBite + 0.04f ? 0f : Smooth(SoloBite + 0.04f, SoloBite + 0.26f, t);   // 咬完很快散掉，不拖
-				if (t < 0.12f) Puff(a.From, Ease5.Seg(t, -LungePre, LungePre + 0.12f), 0.28f * T, s * 3 + 2);
+				if (t < 0.4f) Puff(a.From, Ease5.Seg(t, -LungePre, LungePre + 0.4f), -0.34f * T, s * 3 + 2);   // 冲出来时手边往外炸开的一团咒烟（中间一下暗红光）
 				if (t >= SoloBite) Puff(a.Target, Ease5.Seg(t, SoloBite, 0.5f), -0.5f * T, s * 3 + 1);
 				_streakA[s] = 0f;
 				if (!a.Bit && t >= SoloBite)
 				{
 					a.Bit = true;
-					Sfx.Take("gx_slice", 0.21f);   // 用户说这个咬合声不错
+					Sfx.Take("gx_slice", 0.17f);   // 只有这一下咬合声（用户：音效别加那么多）；上毒的咒怨闷响走原来的落点
 					Vector2 at = feet + a.Target;
 					Control fx = GodotObject.IsInstanceValid(_top) ? _top : _front;
 					Glow.Flash(fx, at, Pal5.Crimson, 0.8f * T, 0.22f);

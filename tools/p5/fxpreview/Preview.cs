@@ -567,8 +567,8 @@ public partial class Preview : Node2D
 				double t0 = 0.3 + 1.9 * k;
 				Vector2 e = es[k];
 				p.At(t0, () => p._joker?.Play("cast_wave"));
-				p.At(t0 + 0.08, () => { p._enemies.TryGetValue(e, out Node2D? n); SnakebiteFx.Play(p._front, p._back, JokerFeet, tall, 1f, e + new Vector2(0f, -60f), n); });
-				p.Poison(t0 + 0.08 + SnakebiteFx.BiteDelay, e, 7);
+				p.At(t0 + 0.1, () => { p._enemies.TryGetValue(e, out Node2D? n); SnakebiteFx.Play(p._front, p._back, JokerFeet, tall, 1f, e + new Vector2(0f, -60f), n); });
+				p.Poison(t0 + 0.1 + SnakebiteFx.BiteDelay, e, 7);
 			}
 		},
 		["snakebite_arsene"] = p =>
