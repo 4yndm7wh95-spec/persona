@@ -4,7 +4,7 @@ namespace P5Joker;
 
 /// <summary>
 /// 蛇咬（2026-11-16）：他挥手，手前一亮；群蛇形态那条咒烟蛇（SerpentMantle.Lunge，「没有明确轮廓、纯靠渲染」）从他伸出的手里钻出来，
-/// 沿一道弧线猛游过去、在敌人斜上方一仰、扑下去咬。第六版（用户：太拖沓、不跟手）：出手到咬合约 0.3s。
+/// 沿一道弧线猛游过去（一路炸开几团咒烟）、在敌人斜上方一仰、定住一下（嘴前聚光、光线往里收）、扑下去咬。出手到咬合约 0.4s。
 /// 敌人身上保留前几版的咬合特效（用户点名）：上下两道月牙毒牙合拢「咔」一下 + 空间一扭 + 火星；声音只有咬合那一下（gx_slice，Lunge 里放）。
 /// 敌人身上的上毒落点照旧（游戏的上毒等到咬合那一刻）。
 /// </summary>
@@ -24,8 +24,8 @@ public static class SnakebiteFx
 
 		// 毒牙：上下两道月牙合拢（前几版的咬合特效）
 		float ang = f > 0f ? 0f : Mathf.Pi, jaw = h * 0.85f;
-		Blade.Arc(front, at + new Vector2(0f, -h * 0.1f), ang, jaw, h * 0.2f, h * 0.15f, f < 0f, 0.05f, 0.04f, 0.08f, 0.2f, true, bite - 0.04f);
-		Blade.Arc(front, at + new Vector2(0f, h * 0.1f), ang, jaw * 0.9f, h * 0.18f, h * 0.13f, f > 0f, 0.05f, 0.04f, 0.08f, 0.2f, true, bite - 0.03f);
+		Blade.Arc(front, at + new Vector2(0f, -h * 0.1f), ang, jaw, h * 0.2f, h * 0.15f, f < 0f, 0.05f, 0.04f, 0.08f, 0.2f, true, bite - 0.02f);
+		Blade.Arc(front, at + new Vector2(0f, h * 0.1f), ang, jaw * 0.9f, h * 0.18f, h * 0.13f, f > 0f, 0.05f, 0.04f, 0.08f, 0.2f, true, bite - 0.01f);
 		Fx.After(front, bite, () =>
 		{
 			Glow.Ripple(front, at, h * 1.2f, 0.38f, 0.03f);

@@ -525,10 +525,11 @@ void fragment() {
 	}
 
 	/// <summary>
-	/// 蛇咬第六版的节奏（用户 2026-11-16：太拖沓、不跟手，尽量快）：attack.T 从 -LungePre 开始。
-	/// -LungePre～0 从手里钻出来；0～SoloSwim 猛游过去；～SoloRear 停在斜上方一仰、张嘴；～SoloBite 扑下去咬合。
+	/// 蛇咬的节奏（第六版用户：太拖沓、不跟手；第七版用户：咬下去前稍微停一下，要有顿感）：attack.T 从 -LungePre 开始。
+	/// -LungePre～0 从手里钻出来；0～SoloSwim 猛游过去（一路留下咒烟）；～SoloRear 停在斜上方一仰、张嘴；
+	/// ～SoloHold 定住（微微发抖、眼睛大亮、嘴前聚起暗红的光、光线往里收）；～SoloBite 扑下去咬合。
 	/// </summary>
-	private const float LungePre = 0.06f, SoloSwim = 0.14f, SoloRear = 0.18f, SoloBite = 0.23f;
+	private const float LungePre = 0.06f, SoloSwim = 0.14f, SoloRear = 0.18f, SoloHold = 0.3f, SoloBite = 0.35f;
 	private const int LungeSerpent = 2;       // 右侧胸口高度、朝敌人的那条轨道
 	private const float LungeScale = 1.0f;
 
@@ -985,6 +986,45 @@ void fragment() {
 		return v;
 	}
 
+	private Node2D? _charge;
+	private readonly Vector2?[] _trail = new Vector2?[5];
+
+	/// <summary>
+	/// 蛇咬定住的那一下（SoloRear～SoloHold）：蛇嘴前聚起一团暗红的光、越聚越亮，四周几道光线往嘴里收；扑出去的那一刻光一闪收掉。
+	/// </summary>
+	private void SoloCharge(Attack a, float t, Vector2 feet, float T)
+	{
+		int i = a.Serpent;
+		Vector4 tip = _spine[i * N + N - 1];
+		Vector2 mouth = feet + new Vector2(tip.X, tip.Y);
+		Control fx = GodotObject.IsInstanceValid(_top) ? _top : _front;
+		if (t >= SoloRear && t < SoloHold)
+		{
+			if (_charge == null)
+			{
+				_charge = new Node2D { Name = "P5SnakeCharge" };
+				fx.AddChild(_charge);
+				_charge.AddChild(new Sprite2D { Texture = Glow.Soft, Material = Fx.Additive, Modulate = new Color(0.9f, 0.05f, 0.14f, 0f) });
+				_charge.AddChild(new Sprite2D { Texture = Glow.Soft, Material = Fx.Additive, Modulate = new Color(1f, 0.75f, 0.72f, 0f) });
+				SkillRedo5.GatherAt(fx, mouth, T, fx.GetCanvasTransform().Scale.Y, SoloHold - SoloRear, 12, 0.45f);
+			}
+			float k = Smooth(SoloRear, SoloHold, t);
+			_charge.GlobalPosition = mouth;
+			var outer = (Sprite2D)_charge.GetChild(0);
+			var core = (Sprite2D)_charge.GetChild(1);
+			outer.Scale = Vector2.One * T * (0.15f + 0.3f * k) / 32f;
+			outer.Modulate = new Color(0.9f, 0.05f, 0.14f, 0.35f + 0.45f * k);
+			core.Scale = Vector2.One * T * (0.04f + 0.08f * k) / 32f;
+			core.Modulate = new Color(1f, 0.75f, 0.72f, 0.4f + 0.5f * k);
+		}
+		else if (_charge != null && t >= SoloHold)
+		{
+			Glow.Flash(fx, _charge.GlobalPosition, new Color(1f, 0.85f, 0.82f), 0.35f * T, 0.08f);   // 扑出去：嘴前那团光一闪
+			_charge.QueueFree();
+			_charge = null;
+		}
+	}
+
 	private readonly Vector2[] _soloPts = new Vector2[65];
 	private readonly float[] _soloLen = new float[65];
 
@@ -1008,7 +1048,8 @@ void fragment() {
 		float s = t < 0f ? 0.15f * Ease5.OutQuint(Ease5.Seg(t, -LungePre, LungePre))                                  // 从手里钻出来
 			: t < SoloSwim ? Mathf.Lerp(0.15f, 0.8f, Fx.OutCubic(Ease5.Seg(t, 0f, SoloSwim)))                          // 猛游过去
 			: t < SoloRear ? 0.8f - 0.03f * Mathf.Sin(Ease5.Seg(t, SoloSwim, SoloRear - SoloSwim) * Mathf.Pi * 0.5f)  // 一仰
-			: Mathf.Lerp(0.77f, 0.97f, Mathf.Pow(Ease5.Seg(t, SoloRear, SoloBite - SoloRear), 2f));                   // 扑下去
+			: t < SoloHold ? 0.77f + 0.004f * Mathf.Sin(t * 95f)                                                       // 定住、绷着发抖
+			: Mathf.Lerp(0.77f, 0.97f, Mathf.Pow(Ease5.Seg(t, SoloHold, SoloBite - SoloHold), 2f));                   // 扑下去
 		// 弧长表：路程 ↔ 参数
 		const int S = 64;
 		var pts = _soloPts;
@@ -1045,8 +1086,9 @@ void fragment() {
 		}
 		Vector2 dir = NeckDir(i, face);
 		// 仰起时头往上抬一点，扑的时候对准目标
-		if (t >= SoloSwim && t < SoloRear) dir = dir.Rotated(-face * 0.35f * Mathf.Sin(Ease5.Seg(t, SoloSwim, SoloRear - SoloSwim) * Mathf.Pi * 0.5f));
-		if (t >= SoloRear) dir = dir.Lerp((atk.Target - hb).Normalized(), Ease5.Seg(t, SoloRear, 0.03f)).Normalized();
+		float lift = t < SoloSwim ? 0f : t < SoloRear ? Mathf.Sin(Ease5.Seg(t, SoloSwim, SoloRear - SoloSwim) * Mathf.Pi * 0.5f) : t < SoloHold ? 1f : 0f;
+		dir = dir.Rotated(-face * 0.4f * lift);                                   // 仰头（定住时一直仰着）
+		if (t >= SoloHold) dir = dir.Lerp((atk.Target - hb).Normalized(), Ease5.Seg(t, SoloHold, 0.03f)).Normalized();   // 扑的时候对准目标
 		for (int k = 1; k <= HeadPts; k++)
 		{
 			Vector2 hp = hb + dir * headLen * k / HeadPts;
@@ -1056,7 +1098,8 @@ void fragment() {
 		if (up.Y > 0f) up = -up;
 		_hup[i] = up;
 		Vector2 eye = hb + dir * _girth[i] * 1.16f * 1.12f + up * _girth[i] * 1.16f * 0.3f;
-		float glint = 1.6f * Smooth(-LungePre, -0.01f, t) * (1f - Smooth(0f, 0.08f, t));
+		float glint = 1.6f * Smooth(-LungePre, -0.01f, t) * (1f - Smooth(0f, 0.08f, t))
+			+ 2.2f * Smooth(SoloRear, SoloRear + 0.05f, t) * (1f - Smooth(SoloHold, SoloHold + 0.05f, t));   // 定住时眼睛大亮
 		_eyes[i] = new Vector3(eye.X, eye.Y, alpha * (1f + glint) * (1f - Smooth(SoloBite + 0.08f, SoloBite + 0.35f, t)));
 		_mouth[i] = t < SoloSwim ? 0.15f : t < SoloBite ? Smooth(SoloSwim, SoloRear, t) : -0.2f;
 	}
@@ -1216,11 +1259,24 @@ void fragment() {
 				_diss[a.Serpent] = t < 0f ? 0.4f * (1f - Smooth(-LungePre, 0f, t)) : t < SoloBite + 0.04f ? 0f : Smooth(SoloBite + 0.04f, SoloBite + 0.26f, t);   // 咬完很快散掉，不拖
 				if (t < 0.4f) Puff(a.From, Ease5.Seg(t, -LungePre, LungePre + 0.4f), -0.34f * T, s * 3 + 2);   // 冲出来时手边往外炸开的一团咒烟（中间一下暗红光）
 				if (t >= SoloBite) Puff(a.Target, Ease5.Seg(t, SoloBite, 0.5f), -0.5f * T, s * 3 + 1);
+				// 游过去的路上一团团咒烟（头经过时冒出、翻滚着散开），用空着的烟团槽
+				for (int k = 0; k < 5; k++)
+				{
+					float born = SoloSwim * (0.12f + 0.16f * k);
+					if (t < born) continue;
+					if (_trail[k] is not Vector2 at0)
+					{
+						Vector4 hr = _spine[a.Serpent * N + N - HeadPts - 1];   // 头经过的那一刻、颈根所在的位置
+						_trail[k] = at0 = new Vector2(hr.X, hr.Y);
+					}
+					if (t < born + 0.5f) Puff(at0, Ease5.Seg(t, born, 0.5f), -(0.3f - 0.03f * k) * T, 3 + k);   // 负数 = 炸开的那种（中间先一下暗红的光）
+				}
+				SoloCharge(a, t, feet, T);
 				_streakA[s] = 0f;
 				if (!a.Bit && t >= SoloBite)
 				{
 					a.Bit = true;
-					Sfx.Take("gx_slice", 0.17f);   // 只有这一下咬合声（用户：音效别加那么多）；上毒的咒怨闷响走原来的落点
+					Stage.PlayEvent?.Invoke(BiteSfx, 0.65f);   // 只有这一下咬合声：群蛇形态那个原版咬合（用户：gx_slice 太刺耳）；上毒的咒怨闷响走原来的落点
 					Vector2 at = feet + a.Target;
 					Control fx = GodotObject.IsInstanceValid(_top) ? _top : _front;
 					Glow.Flash(fx, at, Pal5.Crimson, 0.8f * T, 0.22f);

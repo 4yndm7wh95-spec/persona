@@ -26,6 +26,9 @@ public static partial class SkillRedo5
 
 	private static readonly Color Hot = new(1f, 0.96f, 0.95f), Red = new(0.95f, 0.07f, 0.16f), Pink = new(1f, 0.3f, 0.38f), Deep = new(0.55f, 0.02f, 0.08f);
 
+	/// <summary>光线往一点收（给别的文件用，比如蛇咬定住时往蛇嘴里收）。</summary>
+	public static void GatherAt(Control layer, Vector2 at, float h, float u, float arrive, int n = 18, float r0 = 0.6f) => Gather(layer, at, h, u, arrive, n, r0);
+
 	/// <summary>光线往一点收（蓄力）：n 道，在 arrive 秒收到。</summary>
 	private static void Gather(Control layer, Vector2 at, float h, float u, float arrive, int n = 18, float r0 = 0.6f)
 	{

@@ -185,7 +185,7 @@ public static class JokerFx
 				float tall = (jf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length();
 				float face = Joker.Facing(joker);
 				const float start = 0.1f;                                // 挥手（cast_wave）手伸直的时刻：蛇从伸直的手里钻出来
-				float biteIn = start + SnakebiteFx.BiteDelay;
+				float biteIn = start + SnakebiteFx.BiteDelay + 0.03f;   // 上毒（带顿帧）落在咬合之后一点：先结算会把蛇的咬合拖到顿帧之后
 				Aim.HoldCast(joker, biteIn);
 				PoisonFx.NoBeamUntil = Stage.NowMs() + (ulong)((biteIn + 0.6f) * 1000f);
 				NCreature tn = t;
