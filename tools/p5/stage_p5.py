@@ -167,6 +167,9 @@ def fx_textures():
     for name, (idx, k) in DMG_TEX.items():
         im = Image.open(DMG / f"{idx:05d}.png").convert("RGBA")
         yield name, im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
+    # character select scene (docs/p5/CHARSELECT_PLAN.md, tools/p5/charselect_assets.py)
+    from charselect_assets import textures as charselect_textures
+    yield from charselect_textures()
     for name in GEN_TEX:
         drawn = GEN_CODEX / f"{name}.png"                 # Codex's drawn version wins over the scripted one (user 2026-10-28)
         yield name, Image.open(drawn if drawn.exists() else GEN / f"{name}.png").convert("RGBA")

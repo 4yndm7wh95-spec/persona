@@ -546,6 +546,32 @@ void fragment() {
 		}
 	}
 
+	/// <summary>
+	/// 整体透明度（选人界面的常驻淡面具用：CharSelectScene 慢慢渐现 / 渐隐）。火、托底光、余烬、星光一起乘上；热浪按比例减弱。
+	/// </summary>
+	public void SetOpacity(float a)
+	{
+		Color c = new(1f, 1f, 1f, a);
+		foreach (Node2D n in new[] { _root, _rear, _halo })
+		{
+			if (GodotObject.IsInstanceValid(n)) n.Modulate = c;
+		}
+		foreach (GpuParticles2D p in _particles)
+		{
+			if (GodotObject.IsInstanceValid(p)) p.Modulate = c;
+		}
+		if (GodotObject.IsInstanceValid(_haze)) Set(_haze, "alpha", a * a);
+	}
+
+	/// <summary>跟着头挪（选人界面立绘的呼吸 / 微摆）：面具、后层火、托底光的中心一起移到 center（屏幕坐标）。</summary>
+	public void Follow(Vector2 center)
+	{
+		foreach (Node2D n in new[] { _root, _rear, _halo })
+		{
+			if (GodotObject.IsInstanceValid(n)) n.GlobalPosition = center;
+		}
+	}
+
 	/// <summary>打出：一亮、往外一胀、火舌窜高，蓝色火星炸开，0.4s 散掉。放回：往中间缩掉。</summary>
 	public void End(bool played)
 	{

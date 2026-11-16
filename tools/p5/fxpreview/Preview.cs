@@ -120,6 +120,17 @@ public partial class Preview : Node2D
 				0.04f + SummonStage.EvokeAt + spec.AttackAt, 1f, c => p._enemies[Enemy].Modulate = c, ownImpact: true));
 		},
 
+		// 选人界面（Vfx/CharSelectScene.cs）：藏掉假战斗场景，整屏换成选人背景；第二遍（6s）切走再选一次看不带切入的常驻
+		["charselect"] = p =>
+		{
+			foreach (Node c in p._world.GetChildren())
+			{
+				if (c is CanvasItem ci) ci.Visible = false;
+			}
+			Control bg = new() { Size = new Vector2(CharSelectScene.W, CharSelectScene.H), MouseFilter = Control.MouseFilterEnum.Ignore };
+			p._world.AddChild(bg);
+			CharSelectScene.Build(bg, true);
+		},
 		["damage"] = p =>
 		{
 			p.Strike(0.3, Enemy, 7);
