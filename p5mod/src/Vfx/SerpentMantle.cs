@@ -524,13 +524,16 @@ void fragment() {
 		return BiteDelay;
 	}
 
-	/// <summary>蛇咬第四版：蛇从 Joker 身边聚出来前的那一段（烟里显形、眼睛一亮）。</summary>
-	private const float LungePre = 0.3f;
+	/// <summary>
+	/// 蛇咬第六版的节奏（用户 2026-11-16：太拖沓、不跟手，尽量快）：attack.T 从 -LungePre 开始。
+	/// -LungePre～0 从手里钻出来；0～SoloSwim 猛游过去；～SoloRear 停在斜上方一仰、张嘴；～SoloBite 扑下去咬合。
+	/// </summary>
+	private const float LungePre = 0.06f, SoloSwim = 0.14f, SoloRear = 0.18f, SoloBite = 0.23f;
 	private const int LungeSerpent = 2;       // 右侧胸口高度、朝敌人的那条轨道
 	private const float LungeScale = 1.0f;
 
 	/// <summary>Lunge 开始到咬合的秒数。</summary>
-	public const float LungeDelay = LungePre + BiteAt;
+	public const float LungeDelay = LungePre + SoloBite;
 
 	/// <summary>
 	/// 蛇咬（2026-11-16 第四版；用户：光点 / 光带 / 月牙都是贴图感，没有特效的感觉 → 用群蛇形态那条咒烟蛇，「没有明确轮廓、纯靠渲染」）：
@@ -990,7 +993,7 @@ void fragment() {
 	{
 		Vector2 H = a.From, P = a.Target;
 		Vector2 d = P - H;
-		Vector2 c1 = H + new Vector2(d.X * 0.3f, -0.55f * T), c2 = P + new Vector2(-face * 0.55f * T, -0.95f * T);
+		Vector2 c1 = H + new Vector2(d.X * 0.3f, -0.35f * T), c2 = P + new Vector2(-face * 0.5f * T, -0.6f * T);   // 第六版：拱得低一些，更直接
 		float v = 1f - u;
 		return v * v * v * H + 3f * v * v * u * c1 + 3f * v * u * u * c2 + u * u * u * P;
 	}
@@ -1002,11 +1005,10 @@ void fragment() {
 	private void SoloPose(int i, Attack atk, float T, float face, float alpha)
 	{
 		float t = atk.T;
-		float s = t < -0.05f ? 0.13f * Ease5.OutQuint(Ease5.Seg(t, -LungePre, LungePre - 0.05f))     // 从手里钻出来
-			: t < 0.05f ? 0.13f - 0.03f * Mathf.Sin(Ease5.Seg(t, -0.05f, 0.1f) * Mathf.Pi)         // 往回一缩
-			: t < 0.3f ? Mathf.Lerp(0.13f, 0.8f, Fx.OutCubic(Ease5.Seg(t, 0.05f, 0.25f)))           // 猛游过去
-			: t < 0.38f ? 0.8f - 0.035f * Mathf.Sin(Ease5.Seg(t, 0.3f, 0.08f) * Mathf.Pi * 0.5f)   // 停住、往后一仰
-			: Mathf.Lerp(0.765f, 0.97f, Mathf.Pow(Ease5.Seg(t, 0.38f, BiteAt - 0.38f), 2f));         // 扑下去
+		float s = t < 0f ? 0.15f * Ease5.OutQuint(Ease5.Seg(t, -LungePre, LungePre))                                  // 从手里钻出来
+			: t < SoloSwim ? Mathf.Lerp(0.15f, 0.8f, Fx.OutCubic(Ease5.Seg(t, 0f, SoloSwim)))                          // 猛游过去
+			: t < SoloRear ? 0.8f - 0.03f * Mathf.Sin(Ease5.Seg(t, SoloSwim, SoloRear - SoloSwim) * Mathf.Pi * 0.5f)  // 一仰
+			: Mathf.Lerp(0.77f, 0.97f, Mathf.Pow(Ease5.Seg(t, SoloRear, SoloBite - SoloRear), 2f));                   // 扑下去
 		// 弧长表：路程 ↔ 参数
 		const int S = 64;
 		var pts = _soloPts;
@@ -1043,8 +1045,8 @@ void fragment() {
 		}
 		Vector2 dir = NeckDir(i, face);
 		// 仰起时头往上抬一点，扑的时候对准目标
-		if (t >= 0.3f && t < 0.38f) dir = dir.Rotated(-face * 0.35f * Mathf.Sin(Ease5.Seg(t, 0.3f, 0.08f) * Mathf.Pi * 0.5f));
-		if (t >= 0.38f) dir = dir.Lerp((atk.Target - hb).Normalized(), Ease5.Seg(t, 0.38f, 0.04f)).Normalized();
+		if (t >= SoloSwim && t < SoloRear) dir = dir.Rotated(-face * 0.35f * Mathf.Sin(Ease5.Seg(t, SoloSwim, SoloRear - SoloSwim) * Mathf.Pi * 0.5f));
+		if (t >= SoloRear) dir = dir.Lerp((atk.Target - hb).Normalized(), Ease5.Seg(t, SoloRear, 0.03f)).Normalized();
 		for (int k = 1; k <= HeadPts; k++)
 		{
 			Vector2 hp = hb + dir * headLen * k / HeadPts;
@@ -1054,9 +1056,9 @@ void fragment() {
 		if (up.Y > 0f) up = -up;
 		_hup[i] = up;
 		Vector2 eye = hb + dir * _girth[i] * 1.16f * 1.12f + up * _girth[i] * 1.16f * 0.3f;
-		float glint = 1.6f * Smooth(-0.16f, -0.06f, t) * (1f - Smooth(0.0f, 0.1f, t));
-		_eyes[i] = new Vector3(eye.X, eye.Y, alpha * Mathf.Max(1f, glint + 1f) * (t < BiteAt + 0.1f ? 1f : 1f - Smooth(BiteAt + 0.1f, 0.7f, t)));
-		_mouth[i] = t < 0.3f ? 0.15f : t < BiteAt ? Smooth(0.3f, 0.37f, t) : -0.2f;
+		float glint = 1.6f * Smooth(-LungePre, -0.01f, t) * (1f - Smooth(0f, 0.08f, t));
+		_eyes[i] = new Vector3(eye.X, eye.Y, alpha * (1f + glint) * (1f - Smooth(SoloBite + 0.08f, SoloBite + 0.35f, t)));
+		_mouth[i] = t < SoloSwim ? 0.15f : t < SoloBite ? Smooth(SoloSwim, SoloRear, t) : -0.2f;
 	}
 
 	private void PoseSerpent(int i, float T, float face, float alpha)
@@ -1211,11 +1213,11 @@ void fragment() {
 			if (_solo)
 			{
 				// 蛇咬第五版：没有烟迹 / 中转烟团；手边钻出来时一小团咒烟，咬完原地散成烟
-				_diss[a.Serpent] = t < -0.1f ? 0.5f * (1f - Smooth(-LungePre, -0.1f, t)) : t < BiteAt + 0.08f ? 0f : Smooth(BiteAt + 0.08f, 0.8f, t);
-				if (t < 0.15f) Puff(a.From, Ease5.Seg(t, -LungePre, LungePre + 0.15f), 0.32f * T, s * 3 + 2);
-				if (t >= BiteAt) Puff(a.Target, Ease5.Seg(t, BiteAt, 0.6f), -0.5f * T, s * 3 + 1);
+				_diss[a.Serpent] = t < 0f ? 0.4f * (1f - Smooth(-LungePre, 0f, t)) : t < SoloBite + 0.04f ? 0f : Smooth(SoloBite + 0.04f, SoloBite + 0.26f, t);   // 咬完很快散掉，不拖
+				if (t < 0.12f) Puff(a.From, Ease5.Seg(t, -LungePre, LungePre + 0.12f), 0.28f * T, s * 3 + 2);
+				if (t >= SoloBite) Puff(a.Target, Ease5.Seg(t, SoloBite, 0.5f), -0.5f * T, s * 3 + 1);
 				_streakA[s] = 0f;
-				if (!a.Bit && t >= BiteAt)
+				if (!a.Bit && t >= SoloBite)
 				{
 					a.Bit = true;
 					Sfx.Take("gx_slice", 0.21f);   // 用户说这个咬合声不错
@@ -1228,7 +1230,7 @@ void fragment() {
 					Fx.Shake(2);
 					HitStop.Request(0.06);
 				}
-				if (t > 0.85f) _attacks[s] = null;
+				if (t > SoloBite + 0.4f) _attacks[s] = null;
 				continue;
 			}
 			float face = a.Target.X >= 0f ? 1f : -1f;
@@ -1237,9 +1239,7 @@ void fragment() {
 			// 0～0.07 往回一缩、眼睛一亮（看得出是它要出手）→ 0.07～0.23 朝敌人猛窜 0.85 身高、边窜边散 →
 			// 0.12～0.32 原地化成一道咒烟、带着那对红眼飞到敌人上方，原位留下一团慢慢散掉的残烟（到 0.9）→
 			// 0.28 烟迹扎进烟团，眼睛先亮、蛇头再聚出来 → 扑咬 → 散掉、回原位重新聚起
-			_diss[a.Serpent] = t < 0f ? 1f - Smooth(-LungePre, -0.08f, t)   // 蛇咬第四版：先从烟里聚出来
-				: _solo && t >= LeaveAt ? 1f
-				: t < EmergeAt ? Smooth(0.1f, EmergeAt, t)
+			_diss[a.Serpent] = t < EmergeAt ? Smooth(0.1f, EmergeAt, t)
 				: t < 0.56f ? 1f - Smooth(EmergeAt, 0.34f, t)
 				: t < LeaveAt ? Smooth(0.56f, 0.76f, t)
 				: 1f - Smooth(LeaveAt, 1.12f, t);
@@ -1257,12 +1257,12 @@ void fragment() {
 					a.From = new Vector2(hb.X, hb.Y);
 				}
 				// 眼睛：缩的时候一亮，随烟迹飞走
-				float flare = Mathf.Max(Smooth(0f, 0.05f, t), _solo ? Smooth(-0.16f, -0.04f, t) : 0f) * (1f - Smooth(0.13f, 0.19f, t));
+				float flare = Smooth(0f, 0.05f, t) * (1f - Smooth(0.13f, 0.19f, t));
 				Vector3 ey = _eyes[a.Serpent];
 				_eyes[a.Serpent] = new Vector3(ey.X, ey.Y, Mathf.Max(ey.Z * (1f - Smooth(0.13f, 0.19f, t)), 1.6f * flare));
 			}
 			// 烟迹：头 0.12→0.3 从原位飞到烟团（先快后慢），尾巴落后一点跟上
-			if ((!_biteOnly || _solo) && t >= 0.12f && t < 0.42f)
+			if (!_biteOnly && t >= 0.12f && t < 0.42f)
 			{
 				float hk = Ease5.OutQuint(Ease5.Seg(t, 0.12f, 0.18f));
 				float tk = Ease5.OutQuint(Ease5.Seg(t, 0.17f, 0.2f));
@@ -1275,21 +1275,14 @@ void fragment() {
 			}
 			else _streakA[s] = 0f;
 			// 咒烟团：原位留下的残烟（慢慢散）、聚出来的那一团（烟团处，大一点）、咬中往外炸的那一团
-			if ((!_biteOnly || _solo) && t >= 0.14f && t < 0.95f) Puff(a.From, Ease5.Seg(t, 0.14f, 0.8f), 0.55f * T, s * 3 + 2);
-			if (_solo && t < 0.12f)
-			{
-				// 聚出来的地方一团咒烟（蛇从烟里显形）
-				Vector3 op = Orbit(a.Serpent, _tau[a.Serpent], T, face);
-				Puff(new Vector2(op.X, op.Y), Ease5.Seg(t, -LungePre, LungePre + 0.12f), 0.5f * T, s * 3 + 1);
-			}
+			if (!_biteOnly && t >= 0.14f && t < 0.95f) Puff(a.From, Ease5.Seg(t, 0.14f, 0.8f), 0.55f * T, s * 3 + 2);
 			if (t >= EmergeAt - 0.04f) Puff(cloud, Ease5.Seg(t, EmergeAt - 0.04f, 0.7f), 0.75f * T, s * 3);
 			if (t >= BiteAt) Puff(a.Target, Ease5.Seg(t, BiteAt, 0.6f), -0.5f * T, s * 3 + 1);
 			if (!a.Bit && t >= BiteAt)
 			{
 				a.Bit = true;
 				_eclPulse = 1f;   // 日食跟着亮一下
-				if (_solo) Sfx.Take("gx_slice", 0.21f);   // 蛇咬：用户说这个咬合声不错
-				else Stage.PlayEvent?.Invoke(BiteSfx, 0.8f);   // 只有咬合的声音（用户：冲出来不要音效）；2026-11-13 用户：稍微小了一点 → 0.55 提到 0.8
+				Stage.PlayEvent?.Invoke(BiteSfx, 0.8f);   // 只有咬合的声音（用户：冲出来不要音效）；2026-11-13 用户：稍微小了一点 → 0.55 提到 0.8
 				Vector2 at = feet + a.Target;
 				Control fx = GodotObject.IsInstanceValid(_top) ? _top : _front;
 				Glow.Flash(fx, at, Pal5.Crimson, 0.8f * T, 0.22f);
@@ -1298,7 +1291,7 @@ void fragment() {
 				Fx.Shake(2);
 				HitStop.Request(0.06);
 			}
-			if (t > (_solo ? 1.08f : AttackLen)) { _attacks[s] = null; _streakA[s] = 0f; }
+			if (t > AttackLen) { _attacks[s] = null; _streakA[s] = 0f; }
 		}
 	}
 }
