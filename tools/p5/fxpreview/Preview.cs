@@ -935,19 +935,6 @@ public partial class Preview : Node2D
 			p.At(3.9, () => WraithVeil.Current?.Hit());
 			p.At(5.0, () => WraithVeil.StopCurrent());
 		},
-		["transition"] = p =>
-		{
-			// 选人 → 进游戏的过场：全屏一层材质，threshold 0 → 1 线性（游戏里 NTransition.FadeOut 同样的走法）；
-			// gx_whoosh 代替游戏里原版的 wipe 音效
-			p.At(0.5, () =>
-			{
-				if (JokerTransition.Make() is not { } m) return;
-				var rect = new ColorRect { Size = Fx.Screen(p._front), Material = m, Color = Colors.Black, MouseFilter = Control.MouseFilterEnum.Ignore, TopLevel = true, ZIndex = 100 };
-				p._front.AddChild(rect);
-				Fx.Animate(rect, 0, JokerTransition.Time, t => m.SetShaderParameter("threshold", t));
-				Sfx.Take("gx_whoosh", 0.3f);
-			});
-		},
 		["retain"] = p => RetainDemo(p, 0.1, 0.6, 2.2),
 		// 计划妥当：打一次 → 回合结束保留手牌的「封」（RetainFx，每回合都会出现）
 		["buffs1"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Anticipate", "cast_guard", 0.08, 1.3), ("Sidestep", "cast_guard", 0.08, 1.4), ("Abrasive", "cast_glove", 0.25, 1.7), ("Speedster", "cast_glove", 0.25, 2.0), ("Accelerant", "cast_wave", 0.08, 1.4) }),
