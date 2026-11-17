@@ -6,6 +6,10 @@ stage_p5.fx_textures() 会调用 textures()，所以打包和预览（tools/p5/f
   手   = 底图里手的像素（用 portrait_hand 的透明度当遮罩）；
   眨眼 = 闭眼图里眼睛那一块（贴片，带羽化），偏移见 BLINK_BOX。
 摩尔加纳：身体图本身带尾巴，按尾巴那张的形状抠掉，尾巴单独一层（根部见 TAIL_ROOT）。
+描边（白边 + 外圈黑边）离线烘焙成 cs_body_line / cs_hand_line，游戏里画在人物后面，运行时不用描边着色器。
+天际线重新上色（recolor）：原图的白色楼面、自带的前景楼顶全部压成剪影，只留小窗灯 —— 原图白块太多是"脏"的主要来源。
+锯齿球（cs_burst，游戏里染红、压在立绘面板的暗红黑底上）、斜条上的竖排小字（cs_slab_text）、标题黑带（cs_header_band）都是超采样画的，边缘抗锯齿；
+眼睛蓝光的横向光条是 cs_eye_streak。
 用法：python3 tools/p5/charselect_assets.py  → art/p5/charselect/game/ 下出一份检查用的 PNG + preview.png
 """
 from pathlib import Path
@@ -16,7 +20,12 @@ from PIL import Image, ImageFilter
 ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "art/p5/charselect"
 BLINK_BOX = (330, 320, 690, 570)            # 眨眼贴片在立绘画布里的范围（p5mod/src/Vfx/CharSelectScene.cs 的 BlinkAt 同步）
-PORTRAIT_K = 0.75                           # 立绘贴图缩放（1024x1536 → 768x1152，游戏里显示约 0.72 倍原图，够用）
+PORTRAIT_K = 1.0                            # 立绘贴图原尺寸（游戏里按图 2 的范围显示，约 0.92 倍）
+LINE_WHITE, LINE_BLACK = 10.0, 17.0         # 描边：白边宽 / 白 + 黑总宽（画布像素）
+# 锯齿球：贴图 1024，尖角外半径 400（游戏里缩放到画布 700，CharSelectScene.BurstK 同步）
+BURST_SIZE, BURST_R, BURST_SPIKES = 1024, 400.0, 12
+SLAB_TEXT = "PHANTOM THIEVES  //  CODE NAME : JOKER  //  ARCANA 0  //  "
+FONT = ROOT / "tools/ui/fonts/BarlowCondensed-700Italic.ttf"
 
 
 def _rgba(name):
@@ -69,6 +78,42 @@ def portrait_layers():
     }
 
 
+def outline(im, white=LINE_WHITE, black=LINE_BLACK):
+    """剪影描边：离人物 white 以内白色、再往外到 black 黑色（距离场 + 1px 过渡 = 抗锯齿）。里面是实心的，画在人物后面。"""
+    import scipy.ndimage as nd
+    a = np.asarray(im)[..., 3] > 127
+    d = nd.distance_transform_edt(~a)
+    w = np.clip(white + 0.5 - d, 0, 1)
+    al = np.clip(black + 0.5 - d, 0, 1)
+    rgb = np.stack([w * 255 + (1 - w) * 10, w * 255 + (1 - w) * 6, w * 255 + (1 - w) * 8], -1)
+    return Image.fromarray(np.dstack([rgb, al * 255]).clip(0, 255).astype(np.uint8), "RGBA")
+
+
+def recolor(im, base=(12, 2, 5), win_k=0.85, seed=3):
+    """天际线压成剪影：只有紧凑的小亮块（窗灯）保留原色（30% 调暗一半），大块白色楼面 / 线条 → 剪影色；大块红色（电波塔）→ 暗红。"""
+    import scipy.ndimage as nd
+    a = np.asarray(im).astype(np.float32)
+    rgb, al = a[..., :3], a[..., 3]
+    bright = (rgb.max(-1) > 110) & (al > 100)
+    lab, n = nd.label(bright, structure=np.ones((3, 3)))
+    area = nd.sum(bright, lab, range(1, n + 1))
+    keep = np.zeros(n + 1, np.float32)
+    rng = np.random.default_rng(seed)
+    for i, sl in enumerate(nd.find_objects(lab)):
+        h, w = sl[0].stop - sl[0].start, sl[1].stop - sl[1].start
+        if area[i] <= 260 and h <= 26 and w <= 26 and area[i] >= 0.55 * h * w:
+            keep[i + 1] = win_k * (0.45 if rng.random() < 0.3 else 1.0)
+    k = keep[lab]
+    out = np.zeros_like(a)
+    out[..., :3] = np.array(base, np.float32)
+    red = (rgb[..., 0] > 150) & (rgb[..., 1] < 100) & bright & (k == 0)
+    out[..., :3][red] = (95, 8, 16)
+    win = k > 0
+    out[..., :3][win] = rgb[win] * k[win][:, None] + np.array(base, np.float32) * (1 - k[win][:, None])
+    out[..., 3] = al
+    return Image.fromarray(out.clip(0, 255).astype(np.uint8), "RGBA")
+
+
 def morgana_layers():
     body = np.asarray(_rgba("morgana")).astype(np.float32)
     tail = np.asarray(_rgba("morgana_tail")).astype(np.float32)
@@ -100,36 +145,87 @@ def banner_parts():
     return [(f"cs_banner_{i}", im, off) for i, (im, off) in enumerate(parts)]
 
 
-def burst(size=1024, spikes=13, ss=4):
-    """P5 锯齿爆炸形（白色，游戏里染色）：超采样画多边形再缩小 = 抗锯齿的硬边。尖角长短交替、带一点随机。"""
-    from PIL import ImageDraw
-    rng = np.random.default_rng(5)
-    S = size * ss
-    c = S / 2
+def _star(c, R, n, seed=5):
+    rng = np.random.default_rng(seed)
     pts = []
-    for i in range(spikes * 2):
-        ang = -np.pi / 2 + np.pi * i / spikes + rng.uniform(-0.06, 0.06)
-        r = (0.49 if i % 4 == 0 else 0.42) * S if i % 2 == 0 else rng.uniform(0.25, 0.3) * S
+    for i in range(n * 2):
+        ang = -np.pi / 2 + np.pi * i / n + rng.uniform(-0.06, 0.06)
+        r = (R if i % 4 == 0 else R * 0.86) if i % 2 == 0 else rng.uniform(0.5, 0.6) * R
         pts.append((c + np.cos(ang) * r, c + np.sin(ang) * r))
-    im = Image.new("L", (S, S), 0)
-    ImageDraw.Draw(im).polygon(pts, fill=255)
-    a = im.resize((size, size), Image.LANCZOS)
+    return pts
+
+
+def _poly_tex(pts_fn, size, ss=4):
+    from PIL import ImageDraw
+    im = Image.new("L", (size * ss, size * ss), 0)
+    ImageDraw.Draw(im).polygon(pts_fn(ss), fill=255)
     out = Image.new("RGBA", (size, size), (255, 255, 255, 0))
-    out.putalpha(a)
+    out.putalpha(im.resize((size, size), Image.LANCZOS))
+    return out
+
+
+def burst():
+    """P5 锯齿爆炸形（白色，游戏里染红）。"""
+    c = BURST_SIZE / 2
+    return _poly_tex(lambda k: [(x * k, y * k) for x, y in _star(c, BURST_R, BURST_SPIKES)], BURST_SIZE)
+
+
+def slab_text():
+    """斜条上滚动的竖排小字（2 倍大烘焙，游戏里缩 0.5）：宽度正好是一个循环单元，首尾相接不跳。"""
+    from PIL import ImageDraw, ImageFont
+    font = ImageFont.truetype(str(FONT), 68)
+    w = round(font.getlength(SLAB_TEXT))
+    im = Image.new("RGBA", (w, 96), (255, 255, 255, 0))
+    ImageDraw.Draw(im).text((0, 10), SLAB_TEXT, font=font, fill=(255, 255, 255, 235))
+    return im
+
+
+def header_band():
+    """左上角标题的黑带：平行四边形（右端斜切），四周留透明边，游戏里旋转时边缘靠贴图过滤抗锯齿。"""
+    from PIL import ImageDraw
+    W, H, m, ss = 1060, 138, 4, 4
+    im = Image.new("L", ((W + 2 * m) * ss, (H + 2 * m) * ss), 0)
+    pts = [(m, m + 16), (m + W, m), (m + W - 34, m + H - 8), (m, m + H)]
+    ImageDraw.Draw(im).polygon([(x * ss, y * ss) for x, y in pts], fill=255)
+    out = Image.new("RGBA", (W + 2 * m, H + 2 * m), (10, 6, 8, 0))
+    out.putalpha(im.resize((W + 2 * m, H + 2 * m), Image.LANCZOS).point(lambda v: v * 240 // 255))
+    return out
+
+
+def eye_streak(w=512, h=64):
+    """眼睛的横向光条（白色，游戏里染蓝、加法混合）：中间粗、两头尖，外层柔光 + 中间一道更细更亮的芯。"""
+    x = np.linspace(-1, 1, w)[None, :]
+    y = np.linspace(-1, 1, h)[:, None]
+    taper = np.clip(1 - np.abs(x), 0, 1)
+    soft = np.exp(-(y * 3.2) ** 2) * taper ** 1.8
+    core = np.exp(-(y * 11.0) ** 2) * taper ** 3.0
+    a = np.clip(0.55 * soft + 0.9 * core, 0, 1)
+    rgb = np.full((h, w, 3), 255, np.float32)
+    return Image.fromarray(np.dstack([rgb, a * 255]).astype(np.uint8), "RGBA")
+
+
+def _pad(im, m=6):
+    out = Image.new("RGBA", (im.width + 2 * m, im.height + 2 * m), (0, 0, 0, 0))
+    out.alpha_composite(im, (m, m))
     return out
 
 
 def textures():
     """(name, image)：res://p5joker/fx/<name>.png。"""
-    yield from portrait_layers().items()
+    layers = portrait_layers()
+    yield from layers.items()
+    yield "cs_body_line", outline(layers["cs_body"])
+    yield "cs_hand_line", outline(layers["cs_hand"])
     yield from morgana_layers().items()
-    yield "cs_skyline", _scale(_rgba("city_skyline").crop((0, 351, 1536, 1024)), 1.0)
+    yield "cs_skyline", recolor(_rgba("city_skyline").crop((0, 351, 1536, 1024)))
     yield "cs_rooftop", _rgba("rooftop_foreground").crop((0, 305, 1536, 1024))
     for name, im, _ in banner_parts():
         yield name, im
     yield "cs_burst", burst()
-    yield "cs_title", _scale(_trim(_rgba("title_joker"))[0], 0.5)
-    yield "cs_card", _scale(_rgba("calling_card"), 0.25)
+    yield "cs_slab_text", slab_text()
+    yield "cs_eye_streak", eye_streak()
+    yield "cs_header_band", header_band()
+    yield "cs_card", _pad(_scale(_rgba("calling_card"), 0.25))
     yield "cs_button", button_icons()[0]
 
 

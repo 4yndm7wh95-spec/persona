@@ -5,47 +5,60 @@ using Godot;
 namespace P5Joker;
 
 /// <summary>
-/// 选人界面（静默猎手的 char_select_bg_silent 场景，设计见 docs/p5/CHARSELECT_PLAN.md）：原版画面藏起来，换成 P5R 风格的楼顶夜景 ——
-/// 深红天空 + 缓慢旋转的黑色放射线 + 漂移的黑云；东京天际线剪影（窗灯明灭）、高架上偶尔驶过的电车、楼下扫上来的探照灯；
-/// 斜的 TAKE YOUR HEART 剪贴字色带（纸片不时跳一下）；楼顶前景 + 坐在水塔上的摩尔加纳（尾巴摆）；风里翻飞的预告信、一闪的星光。
-/// 右边是 Joker 立绘（art/p5/charselect，分层：身体 / 眨眼 / 手），身后红色锯齿爆炸形 + 白色描边；
-/// 眼睛泛蓝光，手和脸前方一层淡淡的蓝焰面具渐隐渐现（局内召唤的 PersonaMask，透明度压低）。
-/// 选中时：从右侧带红黑残影滑入 → 原版眼神特写切入 + 召唤舞台 → 横幅碎开那一下蓝焰面具亮起、亚森在身后现身 → 退回常驻。
-/// 只用 Godot 类型（预览工具 tools/p5/fxpreview 直接编译这个文件）；挂到游戏里的补丁在 Patches.cs 的 CharSelectBgPatch。
-/// 坐标：场景根 Control 的本地坐标（2560×1200，tscn 的 offset -960,-521），本地 (0..1920, 0..1080) 大致就是 1080p 屏幕。
+/// 选人界面（静默猎手的 char_select_bg_silent 场景，设计见 docs/p5/CHARSELECT_PLAN.md）。构图照结城理 mod 的选人界面：
+/// 立绘是贴着右边、占满屏幕高度的大特写，左边一道斜切口把它收进一块面板里（切口上压一组 P5 的黑 / 红 / 白斜条 + 滚动小字），
+/// 面板是暗红黑底，上面压着红色锯齿爆炸形（用户 2026-11-17：锯齿球要有层次、黑底加粗）；左边是干净的场景：深红夜空（只有很淡的云）、压低的东京天际线黑剪影（窗灯明灭）、
+/// 面板旁边楼顶水塔上坐着摩尔加纳；左上角是 TAKE YOUR HEART 剪贴字标题（P5 菜单的标题位置）；偶尔一张预告信飘过。
+/// 立绘范围按用户 2026-11-17 的图 2：画布 x≈896 落在屏幕右边、画布 y≈25 落在屏幕顶边（模板匹配出来的），缩放 0.92。
+/// 露出来的那只眼睛泛金光（虹膜染金 + 亮芯 + 柔光 + 横向光条 + 偶尔一闪的四角星，跟着呼吸起伏、眨眼时熄灭；
+/// 用户 2026-11-17：不要蓝焰面具、蓝色不搭 → 金色：P5 觉醒时的眼睛，暖色和红黑白协调，也不会被旁边的红手套吞掉）。
+/// 选中：立绘滑入、斜条切入 → 原版眼神特写 → 碎开那一下眼睛的金光猛地一亮、光条拉长 → 常驻。
+/// 只用 Godot 类型（预览工具 tools/p5/fxpreview 直接编译这个文件）；挂到游戏里的补丁在 CharSelectPatches.cs。
+/// 坐标：下面的布局全是 1080p 屏幕坐标，挂在场景根里一个下移 ScreenTop 的容器上（tscn offset -960,-521：屏幕中心 = 本地 (960,521)）。
 /// </summary>
 public static class CharSelectScene
 {
 	public const float W = 2560f, H = 1200f;
-	/// <summary>设置里关掉"选人动画"时为 false：不播切入 / 亚森，直接常驻。</summary>
+	/// <summary>场景根本地坐标里 1080p 屏幕顶边的位置。</summary>
+	public const float ScreenTop = -19f;
+	/// <summary>设置里关掉"选人动画"时为 false：不播切入，直接常驻。</summary>
 	public static Func<bool> IntroEnabled = () => true;
 
-	// 立绘：原画布 1024×1536（贴图按 0.75 存）。显示范围按用户 2026-11-16 的截图：宽度用满、右边贴屏幕右边，
-	// 画布 y 0..1400 落在屏幕 6%..100%（再往下的伸出屏幕）。
-	private const float CanvasW = 1024f, CanvasH = 1536f, TexK = 0.75f;
-	private const float ScreenW = 1920f, ScreenH = 1080f;
-	private static readonly float PScale = ScreenH * 0.94f / 1400f;
-	private static readonly Vector2 POrigin = new(ScreenW - CanvasW * PScale, ScreenH * 0.06f);
+	private const float SW = 1920f, SH = 1080f;
+	// 立绘：图 2 的范围（画布 x -6..896、y 25..1174），右边贴屏幕右边、顶边贴屏幕顶边，往下比图 2 多露一点
+	private const float PScale = 0.92f;
+	private static readonly Vector2 POrigin = new(SW - 896f * PScale, -25f * PScale);
 	private static readonly Vector2 Pivot = new(512f, 1536f);                 // 呼吸 / 微摆的支点：画布底边中点
 	private static readonly Vector2 ArmPivot = new(150f, 1230f);              // 手（连前臂袖子）浮动的支点：袖口根部
 	private static readonly Vector2 BlinkAt = new(330f, 320f);                // tools/p5/charselect_assets.py BLINK_BOX 左上角
-	private static readonly Vector2 Eye = new(578f, 430f);                    // 露出来的那只眼睛（画面右边那只）
-	private static readonly Vector2 EyeHidden = new(432f, 452f);              // 刘海 / 手指下面那只
-	private static readonly Vector2 MaskAt = new(505f, 470f);                 // 蓝焰面具中心：两眼之间（火往上舔，中心放在眼睛下沿一点）
-	private const float MaskHalf = 165f;                                      // 面具半宽（画布像素）
-	private const float MaskFacing = -1f, MaskRoll = -0.08f;
-	private const float MaskSoft = 0.55f, MaskIntro = 0.9f;                  // 常驻 / 选中那一下的透明度
+	private static readonly Vector2 Eye = new(608f, 421f);                    // 露出来的那只眼睛的虹膜中心（画面右边那只；另一只被刘海和阴影盖住了）
+	private const float EyeRoll = -0.1f;                                      // 眼睛的倾斜（光条跟着眼线走）
+	private static readonly Color EyeTint = new(1f, 0.7f, 0.18f), EyeHot = new(1f, 0.95f, 0.78f);   // 金色光 / 白热的芯
+	// 斜切口（屏幕坐标，上端 → 下端）：切口左边的立绘不画，斜条压在切口上
+	private static readonly Vector2 CutA = new(1150f, 0f), CutB = new(1330f, 1080f);
+	// 锯齿球（charselect_assets.py：贴图尖角外半径 400 → 画布 700）：中心在画布 (520,460)
+	private static readonly Vector2 BurstAt = new(520f, 460f);
+	private const float BurstK = 700f / 400f;
+	private static readonly Color PanelInk = new("22040a");                   // 立绘面板底色：比斜板的纯黑暖一点，两者分得开
+	// 天际线顶边（屏幕 y）、远景再高一点
+	private const float Horizon = 700f;
 	// TAKE YOUR HEART 拆块（charselect_assets.py banner_parts 的输出）：在整条里的左上角
 	private static readonly Vector2[] BannerParts = { new(0, 0), new(228, 8), new(492, 8), new(958, 0), new(1164, 16), new(1276, 14) };
-	private static readonly Color Crimson = new("e0101e"), Ink = new("0a0708"), Ice = new("bfe9ff");
+	private static readonly Color Crimson = new("de101e"), Ink = new("0a0608");
 
 	private sealed class Rig
 	{
-		public Control Root = null!, Back = null!, Front = null!;
-		public Node2D Group = null!, Chest = null!, ArmBack = null!, ArmFront = null!;
-		public Sprite2D Blink = null!, EyeDot = null!, EyeStreak = null!, EyeHiddenDot = null!, Glow = null!;
-		public PersonaMask? Mask;
-		public float MaskAlpha;
+		public Control Root = null!, Screen = null!, Back = null!, Front = null!;
+		public Node2D Group = null!, Chest = null!, Burst = null!, Header = null!;
+		public ColorRect Panel = null!;
+		public Node2D[] Arms = Array.Empty<Node2D>();
+		public Sprite2D Blink = null!, EyeHalo = null!, EyeIris = null!, EyeCore = null!, EyeStreak = null!;
+		public Node2D Eye = null!;
+		public float Flare;                                                    // 选中那一下的眼睛闪光 0..1
+		public List<Sprite2D> Letters = new();
+		public List<ShaderMaterial> Bands = new();
+		public Node2D SlabText = null!;
+		public ShaderMaterial Clip = null!;
 		public double T;
 	}
 
@@ -78,222 +91,136 @@ public static class CharSelectScene
 
 	private static Texture2D Need(string name) => Fx.Tex(name) ?? throw new InvalidOperationException($"missing texture {name}");
 
+	private static Control Layer(Control parent, string name)
+	{
+		Control c = new() { Name = name, MouseFilter = Control.MouseFilterEnum.Ignore, Size = new Vector2(W, H) };
+		parent.AddChild(c);
+		return c;
+	}
+
 	private static void BuildInto(Control root, bool intro)
 	{
-		Sky(root);
-		Searchlights(root);
-		Skyline(root);
-		Train(root);
-		Rooftop(root);
-		Banner(root);                         // 色带压在楼顶前面（不然开头被水塔挡住）
-		Cards(root);
-		Stars(root);
 		Rig r = new() { Root = root };
-		r.Back = Layer(root, "Back");
+		r.Screen = Layer(root, "Screen");
+		r.Screen.Position = new Vector2(0f, ScreenTop);
+		Sky(r.Screen);
+		City(r.Screen);
+		Cards(r.Screen);
+		Rooftop(r.Screen);
+		Shade(r.Screen);
+		Header(r);
+		r.Back = Layer(r.Screen, "Back");
 		Portrait(r);
-		r.Front = Layer(root, "Front");
+		Stripes(r);
+		r.Front = Layer(r.Screen, "Front");
 		Animate(r);
 		Entrance(r, intro);
 	}
 
-	private static Control Layer(Control root, string name)
-	{
-		Control c = new() { Name = name, MouseFilter = Control.MouseFilterEnum.Ignore, Size = new Vector2(W, H) };
-		root.AddChild(c);
-		return c;
-	}
+	private static Vector2 G(Rig r, Vector2 screen) => r.Screen.GetGlobalTransform() * screen;
 
 	// ───────────────────────── 背景 ─────────────────────────
 
 	private static Shader? _sky;
 
-	/// <summary>深红 → 近黑；黑色放射线绕 center 慢转（越往外越淡）；上半部几缕黑云横向漂；每隔 9 秒一道很淡的白光斜扫过去。</summary>
+	/// <summary>上暗下亮的深红夜空（城市那条地平线后面最亮，像城市灯光照上来）+ 很淡、很慢的云。没有放射线 / 光束（用户 2026-11-17：太乱）。</summary>
 	private static Shader SkyShader => _sky ??= new Shader { Code = @"
 shader_type canvas_item;
-uniform vec2 res = vec2(3160.0, 1800.0);
-uniform vec2 center = vec2(1060.0, 600.0);
+uniform vec2 res = vec2(2520.0, 1680.0);
+uniform vec2 pad = vec2(300.0, 300.0);
+uniform float horizon = 700.0;
+uniform vec3 c_top : source_color = vec3(0.275, 0.016, 0.047);
+uniform vec3 c_mid : source_color = vec3(0.53, 0.031, 0.078);
+uniform vec3 c_glow : source_color = vec3(0.77, 0.063, 0.11);
 uniform float clock = 0.0;
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
 	return mix(mix(hash(i), hash(i + vec2(1, 0)), f.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), f.x), f.y); }
-float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p = p * 2.02 + 7.1; a *= 0.5; } return v; }
+float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { v += a * noise(p); p = p * 2.03 + 5.3; a *= 0.5; } return v; }
 void fragment() {
-	vec2 px = UV * res;
-	float y = UV.y;
-	vec3 top = vec3(0.62, 0.03, 0.07), mid = vec3(0.36, 0.01, 0.04), bot = vec3(0.06, 0.0, 0.015);
-	vec3 col = mix(top, mid, smoothstep(0.0, 0.55, y));
-	col = mix(col, bot, smoothstep(0.45, 1.0, y));
-	// 中心一团亮红
-	float d = length((px - center) / vec2(1.0, 0.9));
-	col += vec3(0.35, 0.02, 0.04) * exp(-d / 420.0);
-	// 放射线：14 道，边缘稍软，绕中心慢转（60 秒一圈）
-	float ang = atan(px.y - center.y, px.x - center.x) + clock * 6.2831 / 60.0;
-	float ray = smoothstep(0.42, 0.62, sin(ang * 14.0) * 0.5 + 0.5);
-	float rayFade = smoothstep(120.0, 360.0, d) * (1.0 - smoothstep(900.0, 2200.0, d) * 0.6);
-	col *= 1.0 - 0.5 * ray * rayFade;
-	// 黑云：上半部横向漂
-	vec2 q = px / vec2(900.0, 260.0) + vec2(clock * 0.012, 0.0);
-	float cloud = smoothstep(0.52, 0.8, fbm(q + vec2(0.0, fbm(q * 1.7) * 0.6)));
-	col *= 1.0 - 0.55 * cloud * (1.0 - smoothstep(0.25, 0.7, y));
-	// 白光斜扫
-	float cyc = mod(clock, 9.0) / 1.4;
-	float band = (px.x + px.y * 0.6) / (res.x + res.y * 0.6);
-	float sweep = cyc < 1.0 ? exp(-pow((band - (cyc * 1.4 - 0.2)) / 0.04, 2.0)) : 0.0;
-	col += vec3(1.0, 0.85, 0.85) * sweep * 0.06;
+	vec2 px = UV * res - pad;                       // 屏幕坐标
+	float t = clamp(px.y / horizon, 0.0, 1.0);
+	vec3 col = mix(c_top, c_mid, clamp(t / 0.75, 0.0, 1.0));
+	col = mix(col, c_glow, pow(clamp((t - 0.6) / 0.4, 0.0, 1.0), 1.5));
+	// 很淡的云：大块、横向慢漂，只在上半部
+	vec2 q = px / vec2(760.0, 300.0) + vec2(clock * 0.006, 0.0);
+	float cloud = smoothstep(0.45, 0.85, fbm(q + vec2(0.0, fbm(q * 1.3) * 0.7)));
+	col *= 1.0 - 0.28 * cloud * pow(1.0 - clamp((px.y - 100.0) / (horizon - 100.0), 0.0, 1.0), 0.7);
 	COLOR = vec4(col, 1.0);
 }" };
 
-	private static void Sky(Control root)
+	private static void Sky(Control screen)
 	{
-		const float pad = 300f;
-		Vector2 size = new(W + 2 * pad, H + 2 * pad);
-		ColorRect sky = new() { Name = "Sky", Position = new Vector2(-pad, -pad), Size = size, MouseFilter = Control.MouseFilterEnum.Ignore,
+		Vector2 pad = new(300f, 300f), size = new(SW + 600f, SH + 600f);
+		ColorRect sky = new() { Name = "Sky", Position = -pad, Size = size, MouseFilter = Control.MouseFilterEnum.Ignore,
 			Material = new ShaderMaterial { Shader = SkyShader } };
 		ShaderMaterial m = (ShaderMaterial)sky.Material;
 		m.SetShaderParameter("res", size);
-		m.SetShaderParameter("center", new Vector2(760f + pad, 300f + pad));
-		root.AddChild(sky);
+		m.SetShaderParameter("pad", pad);
+		m.SetShaderParameter("horizon", Horizon);
+		screen.AddChild(sky);
 		Fx.Clock(sky);
 	}
 
-	/// <summary>楼下两道探照灯：淡红白的锥形光，从城市后面扫上来，各自慢慢左右摆。</summary>
-	private static void Searchlights(Control root)
-	{
-		Node2D at = new() { Name = "Searchlights" };
-		root.AddChild(at);
-		(Vector2 from, float a0, float amp, float period)[] beams = { (new(380f, 1000f), -0.32f, 0.22f, 11f), (new(1020f, 1000f), 0.18f, 0.26f, 14f) };
-		foreach (var (from, a0, amp, period) in beams)
-		{
-			Polygon2D beam = new()
-			{
-				Polygon = new[] { new Vector2(-6f, 0f), new Vector2(6f, 0f), new Vector2(150f, -1250f), new Vector2(-150f, -1250f) },
-				VertexColors = new[] { new Color(1f, 0.8f, 0.8f, 0.22f), new Color(1f, 0.8f, 0.8f, 0.22f), new Color(1f, 0.6f, 0.6f, 0f), new Color(1f, 0.6f, 0.6f, 0f) },
-				Material = Fx.Additive, Position = from, Rotation = a0,
-			};
-			at.AddChild(beam);
-			float ph = Fx.Rand(0f, Mathf.Tau);
-			Tween t = beam.CreateTween().SetLoops();
-			t.TweenMethod(Callable.From<float>(v => beam.Rotation = a0 + amp * Mathf.Sin(v + ph)), 0f, Mathf.Tau, period);
-		}
-	}
+	private static Shader? _city;
 
-	private static Shader? _windows;
-
-	/// <summary>天际线：黑剪影不动，亮的像素（窗灯、电波塔的灯）按小格子各自明灭。</summary>
-	private static Shader WindowShader => _windows ??= new Shader { Code = @"
+	/// <summary>
+	/// 天际线（charselect_assets.py 已压成黑剪影 + 小窗灯）：亮的像素（窗灯）按小格子各自明灭；
+	/// haze_k > 0 时剪影换成 haze 色、窗灯变淡（远景那层，用同一张图翻过来）。
+	/// </summary>
+	private static Shader CityShader => _city ??= new Shader { Code = @"
 shader_type canvas_item;
 uniform float clock = 0.0;
+uniform vec3 haze : source_color = vec3(0.38, 0.03, 0.07);
+uniform float haze_k = 0.0;
+uniform float win_k = 1.0;
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 void fragment() {
 	vec4 c = texture(TEXTURE, UV);
 	float lum = max(c.r, max(c.g, c.b));
+	float win = smoothstep(0.16, 0.32, lum);
 	vec2 cell = floor(UV * vec2(180.0, 80.0));
 	float h = hash(cell);
-	// 每格自己的节奏：大多数时间亮着，偶尔灭一会儿；少数格子缓慢呼吸
-	float t = clock * (0.05 + 0.12 * h) + h * 17.0;
-	float on = step(0.16, fract(t));
-	float breathe = 0.8 + 0.2 * sin(clock * (0.6 + h) + h * 40.0);
-	float k = mix(1.0, mix(0.18, 1.15, on) * breathe, smoothstep(0.18, 0.35, lum));
-	COLOR = vec4(c.rgb * k, c.a);
+	float t = clock * (0.04 + 0.1 * h) + h * 17.0;
+	float on = step(0.14, fract(t));
+	float k = mix(0.2, 1.1, on) * (0.85 + 0.15 * sin(clock * (0.5 + h) + h * 40.0));
+	vec3 sil = mix(c.rgb, haze, haze_k);
+	vec3 lit = mix(sil, c.rgb * k, win_k);
+	COLOR = vec4(mix(sil, lit, win), c.a * COLOR.a);
 }" };
 
-	private static void Skyline(Control root)
+	private static void City(Control screen)
 	{
 		Texture2D tex = Need("cs_skyline");
-		Sprite2D s = new() { Name = "Skyline", Texture = tex, Centered = false, Position = new Vector2(-20f, 1030f - tex.GetSize().Y),
-			Material = new ShaderMaterial { Shader = WindowShader } };
-		root.AddChild(s);
-		Fx.Clock(s);
+		// 远景：同一张图翻过来、小一点、高一点，剪影染成接近天色的暗红
+		Sprite2D far = new() { Name = "CityFar", Texture = tex, Centered = false, FlipH = true, Scale = Vector2.One * 0.64f,
+			Position = new Vector2(-200f, Horizon - 60f), Material = new ShaderMaterial { Shader = CityShader } };
+		((ShaderMaterial)far.Material).SetShaderParameter("haze_k", 1f);
+		((ShaderMaterial)far.Material).SetShaderParameter("win_k", 0.3f);
+		screen.AddChild(far);
+		Fx.Clock(far);
+		Sprite2D near = new() { Name = "City", Texture = tex, Centered = false, Scale = Vector2.One * 0.8f, Position = new Vector2(-40f, Horizon),
+			Material = new ShaderMaterial { Shader = CityShader } };
+		screen.AddChild(near);
+		Fx.Clock(near);
 	}
 
-	/// <summary>高架电车：一串亮着窗的车厢从左往右驶过天际线中段，每 13~18 秒一趟。</summary>
-	private static void Train(Control root)
-	{
-		Node2D line = new() { Name = "Train", Position = new Vector2(0f, 872f) };
-		root.AddChild(line);
-		Node2D train = new() { Position = new Vector2(-900f, 0f) };
-		line.AddChild(train);
-		const float car = 92f, gap = 6f;
-		for (int i = 0; i < 7; i++)
-		{
-			float x = i * (car + gap);
-			Fx.Poly(train, new[] { new Vector2(x, -15f), new Vector2(x + car, -15f), new Vector2(x + car, 0f), new Vector2(x, 0f) }, Ink);
-			for (int w = 0; w < 6; w++)
-			{
-				float wx = x + 8f + w * 14f;
-				Fx.Poly(train, new[] { new Vector2(wx, -11f), new Vector2(wx + 9f, -11f), new Vector2(wx + 9f, -5f), new Vector2(wx, -5f) }, new Color(1f, 0.93f, 0.8f, 0.95f));
-			}
-			Glow.SoftSprite(train, new Vector2(x + car * 0.5f, -8f), new Color(1f, 0.85f, 0.7f, 0.18f), 3.2f).Scale = new Vector2(4.2f, 0.9f);
-		}
-		Glow.SoftSprite(train, new Vector2(7 * (car + gap) + 4f, -7f), new Color(1f, 0.95f, 0.85f, 0.7f), 1.2f);   // 车头灯
-		void Run()
-		{
-			if (!GodotObject.IsInstanceValid(train)) return;
-			train.Position = new Vector2(-900f, 0f);
-			Tween t = train.CreateTween();
-			t.TweenProperty(train, "position:x", 1750f, 6.5);
-			t.TweenInterval(Fx.Rand(7f, 12f));
-			t.TweenCallback(Callable.From(Run));
-		}
-		Fx.After(train, 1.5, Run);
-	}
-
-	/// <summary>斜色带：半透明红带 + TAKE YOUR HEART 剪贴字（拆成几块），整条慢慢左右漂，隔几秒随机一块纸片抖一下、歪一点。</summary>
-	private static void Banner(Control root)
-	{
-		Node2D band = new() { Name = "Banner", Position = new Vector2(-260f, 760f), Rotation = Mathf.DegToRad(-8f) };
-		root.AddChild(band);
-		Fx.Poly(band, new[] { new Vector2(0f, -70f), new Vector2(2700f, -70f), new Vector2(2700f, 70f), new Vector2(0f, 70f) }, new Color(0.72f, 0f, 0.06f, 0.5f));
-		Fx.Poly(band, new[] { new Vector2(0f, 76f), new Vector2(2700f, 76f), new Vector2(2700f, 80f), new Vector2(0f, 80f) }, new Color(0f, 0f, 0f, 0.7f));
-		Node2D words = new() { Position = new Vector2(420f, -68f), Scale = Vector2.One * 0.7f };
-		band.AddChild(words);
-		var parts = new List<Sprite2D>();
-		for (int i = 0; i < BannerParts.Length; i++)
-		{
-			if (Fx.Tex($"cs_banner_{i}") is not Texture2D tex) continue;
-			Vector2 half = tex.GetSize() * 0.5f;
-			Sprite2D s = new() { Texture = tex, Position = BannerParts[i] + half };
-			words.AddChild(s);
-			parts.Add(s);
-		}
-		Tween drift = words.CreateTween().SetLoops();
-		drift.TweenProperty(words, "position:x", 520f, 14.0).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-		drift.TweenProperty(words, "position:x", 420f, 14.0).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-		Tween hop = words.CreateTween().SetLoops();
-		hop.TweenInterval(2.6);
-		hop.TweenCallback(Callable.From(() =>
-		{
-			if (parts.Count == 0) return;
-			Sprite2D s = parts[Fx.Rng.Next(parts.Count)];
-			if (!GodotObject.IsInstanceValid(s)) return;
-			float rot = Fx.Rand(-0.09f, 0.09f);
-			Vector2 home = s.Position;
-			Tween t = s.CreateTween();
-			t.TweenProperty(s, "position", home + new Vector2(0f, -14f), 0.07).SetEase(Tween.EaseType.Out);
-			t.Parallel().TweenProperty(s, "rotation", rot, 0.07);
-			t.TweenProperty(s, "position", home, 0.18).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-		}));
-	}
-
-	/// <summary>楼顶前景（黑剪影 + 红轮廓光）+ 水塔上的摩尔加纳：尾巴慢摆，隔一阵耳朵（整只）轻轻一抖。天线顶的红灯慢闪。</summary>
-	private static void Rooftop(Control root)
+	/// <summary>
+	/// 楼顶前景（左右翻过来：水塔在最右、挨着立绘面板，栏杆 / 空调 / 广告架往左铺到底）+ 水塔顶上的摩尔加纳（面朝 Joker）：
+	/// 尾巴慢摆，隔一阵整只轻轻一抖。
+	/// </summary>
+	private static void Rooftop(Control screen)
 	{
 		Texture2D tex = Need("cs_rooftop");
-		const float k = 0.95f;
-		Vector2 at = new(60f, 1110f - tex.GetSize().Y * k);
-		Sprite2D roof = new() { Name = "Rooftop", Texture = tex, Centered = false, Position = at, Scale = Vector2.One * k };
-		root.AddChild(roof);
-		// 天线顶（贴图里 x≈195, y≈38）
-		Sprite2D lamp = Glow.SoftSprite(root, at + new Vector2(197f, 36f) * k, new Color(1f, 0.1f, 0.12f, 0.9f), 0.7f);
-		Tween blink = lamp.CreateTween().SetLoops();
-		blink.TweenProperty(lamp, "modulate:a", 0.05f, 0.9).SetDelay(0.6);
-		blink.TweenProperty(lamp, "modulate:a", 0.9f, 0.15);
-		// 摩尔加纳坐在水塔顶（贴图里水塔顶 x 40..165, y≈80；摩尔加纳贴图 314×314，屁股在 y≈300）
+		const float k = 0.72f, tankRight = 1010f;
+		Vector2 at = new(tankRight - 1506f * k, SH + 40f - tex.GetSize().Y * k);
+		screen.AddChild(new Sprite2D { Name = "Rooftop", Texture = tex, Centered = false, FlipH = true, Position = at, Scale = Vector2.One * k });
 		if (Fx.Tex("cs_morgana") is Texture2D mt && Fx.Tex("cs_morgana_tail") is Texture2D tt)
 		{
-			const float mk = 0.46f;
-			Node2D cat = new() { Name = "Morgana", Position = at + new Vector2(102f, 82f) * k, Scale = Vector2.One * mk };
-			root.AddChild(cat);
+			const float mk = 0.42f;
+			// 水塔顶（翻过来之后在贴图 x≈1351, y≈45），摩尔加纳贴图 314×314：屁股在 (176, 300)
+			Node2D cat = new() { Name = "Morgana", Position = at + new Vector2(1536f - 185f, 75f) * k, Scale = new Vector2(-mk, mk) };
+			screen.AddChild(cat);
 			Vector2 tailRoot = new(116f, 265f);                                // 贴图里尾巴根（charselect_assets 量的）
 			Node2D tail = new() { Position = tailRoot - new Vector2(176f, 300f) };
 			cat.AddChild(tail);
@@ -304,171 +231,290 @@ void fragment() {
 			sway.TweenProperty(tail, "rotation", -0.1f, 1.9).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
 			Tween twitch = cat.CreateTween().SetLoops();
 			twitch.TweenInterval(9.0);
-			twitch.TweenProperty(cat, "scale", new Vector2(mk * 1.03f, mk * 0.97f), 0.08);
-			twitch.TweenProperty(cat, "scale", Vector2.One * mk, 0.22).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+			twitch.TweenProperty(cat, "scale", new Vector2(-mk * 1.03f, mk * 0.97f), 0.08);
+			twitch.TweenProperty(cat, "scale", new Vector2(-mk, mk), 0.22).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
 		}
 	}
 
-	/// <summary>预告信被风吹着从左上往右飘过，边飘边翻（横向缩放模拟翻面）、打转；同时最多 3 张。</summary>
-	private static void Cards(Control root)
+	/// <summary>预告信偶尔一张：从左上被风吹着往右下飘，边飘边翻（横向缩放模拟翻面）；飘到面板那里被立绘 / 斜条挡住。</summary>
+	private static void Cards(Control screen)
 	{
 		if (Fx.Tex("cs_card") is not Texture2D tex) return;
 		Node2D layer = new() { Name = "Cards" };
-		root.AddChild(layer);
-		void Spawn(bool warm)
+		screen.AddChild(layer);
+		void Spawn(float start)
 		{
 			if (!GodotObject.IsInstanceValid(layer)) return;
-			float size = Fx.Rand(0.16f, 0.26f);
-			Node2D card = new() { Position = new Vector2(Fx.Rand(-200f, 500f), Fx.Rand(-120f, 380f)) };
+			float size = Fx.Rand(0.17f, 0.24f);
+			Node2D card = new() { Position = new Vector2(Fx.Rand(-150f, 300f), Fx.Rand(120f, 420f)) };
 			layer.AddChild(card);
 			Sprite2D s = new() { Texture = tex, Scale = Vector2.One * size };
 			card.AddChild(s);
-			float dur = Fx.Rand(9f, 13f), spin = Fx.Rand(-1.2f, 1.2f), flip = Fx.Rand(1.6f, 2.6f), sway = Fx.Rand(30f, 70f), ph = Fx.Rand(0f, Mathf.Tau);
-			Vector2 from = card.Position, vel = new(Fx.Rand(150f, 230f), Fx.Rand(30f, 80f));
-			float start = warm ? Fx.Rand(0.2f, 0.7f) : 0f;
+			float dur = Fx.Rand(10f, 13f), spin = Fx.Rand(-1f, 1f), flip = Fx.Rand(1.4f, 2.2f), sway = Fx.Rand(30f, 60f), ph = Fx.Rand(0f, Mathf.Tau);
+			Vector2 from = card.Position, vel = new(Fx.Rand(110f, 150f), Fx.Rand(18f, 40f));
 			Fx.Animate(card, 0, dur * (1f - start), u =>
 			{
 				float t = (start + u * (1f - start)) * dur;
-				card.Position = from + vel * t + new Vector2(0f, sway * Mathf.Sin(t * 0.9f + ph));
-				card.Rotation = spin * t * 0.3f + 0.3f * Mathf.Sin(t * 1.3f + ph);
+				card.Position = from + vel * t + new Vector2(0f, sway * Mathf.Sin(t * 0.8f + ph));
+				card.Rotation = spin * t * 0.25f + 0.25f * Mathf.Sin(t * 1.2f + ph);
 				s.Scale = new Vector2(size * Mathf.Cos(t * flip + ph), size);
 				s.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, t / 0.8f) * Mathf.Min(1f, (dur - t) / 1.2f));
 			});
 			Fx.FreeAfter(card, dur + 0.1);
 		}
-		for (int i = 0; i < 2; i++) Spawn(true);
+		Spawn(Fx.Rand(0.3f, 0.5f));
 		Tween loop = layer.CreateTween().SetLoops();
-		loop.TweenInterval(4.2);
-		loop.TweenCallback(Callable.From(() => Spawn(false)));
+		loop.TweenInterval(7.0);
+		loop.TweenCallback(Callable.From(() => Spawn(0f)));
 	}
 
-	/// <summary>天上不时一闪的白色四角星（星光贴图 star4，原版 P5R 的）。</summary>
-	private static void Stars(Control root)
+	private static Shader? _shade;
+
+	/// <summary>左侧（信息面板那边）和底部（角色按钮那边）压暗一点，衬字。</summary>
+	private static Shader ShadeShader => _shade ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform vec2 res = vec2(2520.0, 1680.0);
+uniform vec2 pad = vec2(300.0, 300.0);
+void fragment() {
+	vec2 px = UV * res - pad;
+	float left = 0.42 * clamp(1.0 - px.x / 860.0, 0.0, 1.0);
+	float bottom = 0.45 * clamp((px.y - 880.0) / 200.0, 0.0, 1.0);
+	COLOR = vec4(0.0, 0.0, 0.0, clamp(left + bottom, 0.0, 0.75));
+}" };
+
+	private static void Shade(Control screen)
 	{
-		Texture2D? star = Fx.Tex("star4");
-		Node2D layer = new() { Name = "Stars" };
-		root.AddChild(layer);
-		Tween loop = layer.CreateTween().SetLoops();
-		loop.TweenInterval(0.7);
-		loop.TweenCallback(Callable.From(() =>
+		Vector2 pad = new(300f, 300f), size = new(SW + 600f, SH + 600f);
+		ColorRect c = new() { Name = "Shade", Position = -pad, Size = size, MouseFilter = Control.MouseFilterEnum.Ignore,
+			Material = new ShaderMaterial { Shader = ShadeShader } };
+		((ShaderMaterial)c.Material).SetShaderParameter("res", size);
+		((ShaderMaterial)c.Material).SetShaderParameter("pad", pad);
+		screen.AddChild(c);
+	}
+
+	/// <summary>左上角标题：斜的黑带 + TAKE YOUR HEART 剪贴字（P5 菜单标题的位置），纸片隔几秒随机一块跳一下、歪一点。</summary>
+	private static void Header(Rig r)
+	{
+		Node2D header = new() { Name = "Header", Position = new Vector2(-146f, 112f), Rotation = Mathf.DegToRad(-4f) };
+		r.Screen.AddChild(header);
+		r.Header = header;
+		header.AddChild(new Sprite2D { Texture = Need("cs_header_band"), Centered = false, Position = new Vector2(-4f, -4f) });
+		const float bk = 0.52f;
+		for (int i = 0; i < BannerParts.Length; i++)
 		{
-			Vector2 at = new(Fx.Rand(80f, 1250f), Fx.Rand(40f, 560f));
-			Node2D s = star != null
-				? new Sprite2D { Texture = star, Material = Fx.Additive, Position = at, Scale = Vector2.Zero }
-				: Glow.SoftSprite(layer, at, new Color(1f, 1f, 1f, 0.8f), 0f);
-			if (s.GetParent() == null) layer.AddChild(s);
-			float k = Fx.Rand(0.25f, 0.55f) * (star != null ? 64f / star.GetSize().X : 1f);
-			Fx.Animate(s, 0, 0.9, t =>
-			{
-				float e = Mathf.Sin(t * Mathf.Pi);
-				s.Scale = Vector2.One * k * e;
-				s.Rotation = t * 0.6f;
-			});
-			Fx.FreeAfter(s, 1.0);
+			if (Fx.Tex($"cs_banner_{i}") is not Texture2D tex) continue;
+			Sprite2D s = new() { Texture = tex, Scale = Vector2.One * bk, Position = new Vector2(170f, 16f) + (BannerParts[i] + tex.GetSize() * 0.5f) * bk };
+			header.AddChild(s);
+			r.Letters.Add(s);
+		}
+		Tween hop = header.CreateTween().SetLoops();
+		hop.TweenInterval(2.8);
+		hop.TweenCallback(Callable.From(() =>
+		{
+			if (r.Letters.Count == 0) return;
+			Sprite2D s = r.Letters[Fx.Rng.Next(r.Letters.Count)];
+			if (!GodotObject.IsInstanceValid(s)) return;
+			float rot = Fx.Rand(-0.08f, 0.08f);
+			Vector2 home = s.Position;
+			Tween t = s.CreateTween();
+			t.TweenProperty(s, "position", home + new Vector2(0f, -10f), 0.07).SetEase(Tween.EaseType.Out);
+			t.Parallel().TweenProperty(s, "rotation", rot, 0.07);
+			t.TweenProperty(s, "position", home, 0.18).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
 		}));
 	}
 
-	// ───────────────────────── 立绘 ─────────────────────────
+	// ───────────────────────── 立绘面板 ─────────────────────────
 
-	private static Shader? _outline;
+	private static Shader? _clip;
 
-	/// <summary>剪影描边：周围一圈（radius 像素）里只要有不透明的就画成 tint。画在立绘后面 = 外描边。</summary>
-	private static Shader OutlineShader => _outline ??= new Shader { Code = @"
+	/// <summary>
+	/// 斜切口裁剪：只画切口右边（面板里）的像素，按全局坐标算（立绘滑入 / 手浮动时切口不跟着动）。
+	/// mode 1 = 剪影：只用贴图透明度，颜色 = tint（入场残影用）。
+	/// </summary>
+	private static Shader ClipShader => _clip ??= new Shader { Code = @"
 shader_type canvas_item;
+uniform vec2 cut_a;
+uniform vec2 cut_b;
+uniform float mode = 0.0;
 uniform vec4 tint : source_color = vec4(1.0);
-uniform float radius = 6.0;
+varying vec2 world;
+varying vec4 vmod;
+void vertex() {
+	world = (MODEL_MATRIX * vec4(VERTEX, 0.0, 1.0)).xy;
+	vmod = COLOR;
+}
 void fragment() {
-	float a = 0.0;
-	for (int i = 0; i < 16; i++) {
-		float ang = 6.2831853 * float(i) / 16.0;
-		vec2 o = vec2(cos(ang), sin(ang)) * radius * TEXTURE_PIXEL_SIZE;
-		a = max(a, texture(TEXTURE, UV + o).a);
-		a = max(a, texture(TEXTURE, UV + o * 0.5).a);
+	vec2 d = cut_b - cut_a;
+	float side = (d.y * (world.x - cut_a.x) - d.x * (world.y - cut_a.y)) / length(d);
+	float k = clamp(side + 0.5, 0.0, 1.0);
+	if (mode > 0.5) {
+		COLOR = vec4(tint.rgb, tint.a * texture(TEXTURE, UV).a * vmod.a);
 	}
-	COLOR = vec4(tint.rgb, tint.a * a);
+	COLOR.a *= k;
 }" };
 
-	private static Sprite2D Layer(Node2D parent, Texture2D tex, Vector2 canvasPos, Shader? shader = null)
+	private static ShaderMaterial ClipMaterial(Rig r, float mode = 0f, Color? tint = null)
 	{
-		Sprite2D s = new() { Texture = tex, Centered = false, Position = canvasPos, Scale = Vector2.One / TexK };
-		if (shader != null) s.Material = new ShaderMaterial { Shader = shader };
+		ShaderMaterial m = new() { Shader = ClipShader };
+		m.SetShaderParameter("cut_a", G(r, CutA));
+		m.SetShaderParameter("cut_b", G(r, CutB));
+		m.SetShaderParameter("mode", mode);
+		m.SetShaderParameter("tint", tint ?? Colors.White);
+		return m;
+	}
+
+	private static Sprite2D Part(Rig r, Node2D parent, Texture2D tex, Vector2 at)
+	{
+		Sprite2D s = new() { Texture = tex, Centered = false, Position = at, Material = r.Clip };
 		parent.AddChild(s);
 		return s;
 	}
 
 	private static void Portrait(Rig r)
 	{
-		Texture2D body = Need("cs_body"), hand = Need("cs_hand"), blink = Need("cs_blink");
+		r.Clip = ClipMaterial(r);
+		// 面板底：切口右边整块暗红黑（锯齿之间、人物四周露出来的都是它）
+		r.Panel = new ColorRect { Name = "Panel", Position = new Vector2(CutA.X - 40f, -60f), Size = new Vector2(SW - CutA.X + 700f, SH + 120f),
+			Color = PanelInk, MouseFilter = Control.MouseFilterEnum.Ignore, Material = r.Clip };
+		r.Screen.AddChild(r.Panel);
 		Node2D group = new() { Name = "Joker", Position = POrigin, Scale = Vector2.One * PScale };
-		r.Root.AddChild(group);
+		r.Screen.AddChild(group);
 		r.Group = group;
-		// 身后：红色锯齿爆炸形 + 错开的黑色同形（慢慢呼吸、极慢地转）
-		if (Fx.Tex("cs_burst") is Texture2D burst)
-		{
-			Node2D b = new() { Position = new Vector2(560f, 520f) };
-			group.AddChild(b);
-			Sprite2D shadow = new() { Texture = burst, Modulate = Ink, Position = new Vector2(26f, 26f), Scale = Vector2.One * 1.45f };
-			Sprite2D red = new() { Texture = burst, Modulate = Crimson, Scale = Vector2.One * 1.45f };
-			b.AddChild(shadow);
-			b.AddChild(red);
-			Tween t = b.CreateTween().SetLoops();
-			t.TweenProperty(b, "scale", Vector2.One * 1.03f, 2.2).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-			t.TweenProperty(b, "scale", Vector2.One, 2.2).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-			Tween spin = b.CreateTween().SetLoops();
-			spin.TweenProperty(b, "rotation", Mathf.Tau, 240.0).AsRelative();
-		}
-		// 身体（呼吸）：chest 支点在画布底边中点
+		// 面板里垫着的锯齿球：红色，压在暗红黑底上，慢慢呼吸
+		Node2D burst = new() { Name = "Burst", Position = BurstAt };
+		group.AddChild(burst);
+		r.Burst = burst;
+		burst.AddChild(new Sprite2D { Texture = Need("cs_burst"), Modulate = Crimson, Scale = Vector2.One * BurstK, Material = r.Clip });
+		Tween breathe = burst.CreateTween().SetLoops();
+		breathe.TweenProperty(burst, "scale", Vector2.One * 1.025f, 2.4).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+		breathe.TweenProperty(burst, "scale", Vector2.One, 2.4).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+		// 身体（呼吸）：chest 支点在画布底边中点。描边（离线烘焙的白 + 黑）画在人物后面，手的那份跟着手动
 		Node2D chest = new() { Position = Pivot };
 		group.AddChild(chest);
 		r.Chest = chest;
 		Node2D Arm()
 		{
 			Node2D a = new() { Position = ArmPivot - Pivot };
+			chest.AddChild(a);
 			return a;
 		}
-		Vector2 o = -Pivot;
-		// 描边（红色宽光晕 → 白色细边），身体和手各一份；手的那份放在跟手同步的节点里
-		Sprite2D glowBody = Layer(chest, body, o, OutlineShader);
-		r.ArmBack = Arm();
-		chest.AddChild(r.ArmBack);
-		Sprite2D glowHand = Layer(r.ArmBack, hand, -ArmPivot, OutlineShader);
-		Sprite2D lineBody = Layer(chest, body, o, OutlineShader);
+		Part(r, chest, Need("cs_body_line"), -Pivot);
 		Node2D armLine = Arm();
-		chest.AddChild(armLine);
-		Sprite2D lineHand = Layer(armLine, hand, -ArmPivot, OutlineShader);
-		foreach (Sprite2D g in new[] { glowBody, glowHand })
-		{
-			((ShaderMaterial)g.Material).SetShaderParameter("tint", new Color(1f, 0.05f, 0.1f, 0.45f));
-			((ShaderMaterial)g.Material).SetShaderParameter("radius", 22f * TexK);
-		}
-		foreach (Sprite2D l in new[] { lineBody, lineHand })
-		{
-			((ShaderMaterial)l.Material).SetShaderParameter("tint", new Color(1f, 1f, 1f, 1f));
-			((ShaderMaterial)l.Material).SetShaderParameter("radius", 7f * TexK);
-		}
-		r.Glow = glowBody;
-		Layer(chest, body, o);
-		r.Blink = Layer(chest, blink, BlinkAt - Pivot);
+		Part(r, armLine, Need("cs_hand_line"), -ArmPivot);
+		Part(r, chest, Need("cs_body"), -Pivot);
+		r.Blink = Part(r, chest, Need("cs_blink"), BlinkAt - Pivot);
 		r.Blink.Visible = false;
-		// 眼睛蓝光（在手下面：手指挡住的那只只透一点）
-		r.EyeHiddenDot = Glow.SoftSprite(chest, EyeHidden - Pivot, new Color(Ice, 0.25f), 1.6f);
-		r.ArmFront = Arm();
-		chest.AddChild(r.ArmFront);
-		Layer(r.ArmFront, hand, -ArmPivot);
-		r.EyeDot = Glow.SoftSprite(chest, Eye - Pivot, new Color(PersonaMask.Hi, 0.6f), 1.5f);
-		r.EyeStreak = Glow.SoftSprite(chest, Eye - Pivot + new Vector2(6f, 0f), new Color(PersonaMask.Hi, 0.5f), 1f);
-		r.EyeStreak.Scale = new Vector2(5.5f, 0.32f);
-		// 手的三个节点同步
-		r.Group.SetMeta("arm_line", armLine);
+		Node2D armFront = Arm();
+		Part(r, armFront, Need("cs_hand"), -ArmPivot);
+		r.Arms = new[] { armLine, armFront };
+		// 眼睛的金光（跟着胸口一起呼吸摆动；顺着眼线倾斜）：大柔光 → 虹膜染金 → 亮芯 → 横向光条
+		Node2D eye = new() { Name = "Eye", Position = Eye - Pivot, Rotation = EyeRoll };
+		chest.AddChild(eye);
+		r.Eye = eye;
+		r.EyeHalo = Glow.SoftSprite(eye, Vector2.Zero, new Color(EyeTint, 0.22f), 4.6f);
+		r.EyeIris = Glow.SoftSprite(eye, Vector2.Zero, new Color(EyeTint, 0.55f), 1.9f);
+		r.EyeCore = Glow.SoftSprite(eye, new Vector2(1f, -1f), new Color(EyeHot, 0.85f), 0.7f);
+		r.EyeStreak = new Sprite2D { Texture = Need("cs_eye_streak"), Material = Fx.Additive, Modulate = new Color(EyeTint, 0.55f) };
+		eye.AddChild(r.EyeStreak);
+		// 隔几秒虹膜右上角闪一下四角星（P5R 原版星光贴图）
+		Texture2D? star = Fx.Tex("star4");
+		Tween glint = eye.CreateTween().SetLoops();
+		glint.TweenInterval(4.2);
+		glint.TweenCallback(Callable.From(() =>
+		{
+			if (star == null || r.Blink.Visible || Fx.Rng.NextDouble() < 0.25) return;
+			Sprite2D s = new() { Texture = star, Material = Fx.Additive, Modulate = EyeHot, Position = new Vector2(11f, -10f), Scale = Vector2.Zero };
+			eye.AddChild(s);
+			float k = 34f / Mathf.Max(1f, star.GetSize().X);
+			Fx.Animate(s, 0, 0.55, t =>
+			{
+				s.Scale = Vector2.One * k * Mathf.Sin(t * Mathf.Pi);
+				s.Rotation = 0.6f * t;
+			});
+			Fx.FreeAfter(s, 0.6);
+		}));
 	}
 
-	/// <summary>常驻：呼吸、微摆、手浮动、眨眼、红光晕呼吸、眼睛蓝光跟着面具亮暗；蓝焰面具渐现 → 烧一会儿 → 渐隐 → 歇一会儿 → 循环。</summary>
+	private static Shader? _band;
+
+	/// <summary>
+	/// 斜条：切口左边 o0..o1（屏幕像素 × 全局缩放）的一条带子，边缘抗锯齿（原生 Polygon2D 的斜边有锯齿）。
+	/// reveal 0..1：沿切口方向从上（from_top = 1）或从下画出来（入场）。
+	/// </summary>
+	private static Shader BandShader => _band ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform vec2 cut_a;
+uniform vec2 cut_b;
+uniform float o0 = 0.0;
+uniform float o1 = 10.0;
+uniform vec4 color : source_color = vec4(0.0, 0.0, 0.0, 1.0);
+uniform float reveal = 1.0;
+uniform float from_top = 1.0;
+varying vec2 world;
+void vertex() { world = (MODEL_MATRIX * vec4(VERTEX, 0.0, 1.0)).xy; }
+void fragment() {
+	vec2 d = cut_b - cut_a;
+	float L = length(d);
+	vec2 rel = world - cut_a;
+	float left = (d.x * rel.y - d.y * rel.x) / L;
+	float along = dot(rel, d) / (L * L);
+	float a = smoothstep(o0 - 0.6, o0 + 0.6, left) * (1.0 - smoothstep(o1 - 0.6, o1 + 0.6, left));
+	float edge = mix(-0.08, 1.08, reveal);
+	float shown = from_top > 0.5 ? 1.0 - smoothstep(edge - 0.01, edge, along) : smoothstep(1.0 - edge, 1.0 - edge + 0.01, along);
+	COLOR = vec4(color.rgb, color.a * a * shown);
+}" };
+
+	/// <summary>切口上的斜条组：黑色实心斜板（压住切口）+ 红条 + 白色细线 + 外侧半透明宽带；斜板上滚动竖排小字。</summary>
+	private static void Stripes(Rig r)
+	{
+		Control at = Layer(r.Screen, "Stripes");
+		float gs = r.Screen.GetGlobalTransform().Scale.X;
+		(float o0, float o1, Color c)[] bands =
+		{
+			(-10f, 74f, Ink),                               // 黑色斜板（往面板里多压 10px，盖住裁剪的边）
+			(74f, 90f, Crimson),                            // 红条
+			(102f, 107f, Colors.White),                     // 白色细线
+			(150f, 236f, new Color(Ink, 0.32f)),            // 外侧半透明宽带
+		};
+		foreach (var (o0, o1, c) in bands)
+		{
+			ColorRect rect = new() { Position = new Vector2(CutA.X - 360f, -60f), Size = new Vector2(CutB.X - CutA.X + 420f, SH + 120f),
+				MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = BandShader } };
+			ShaderMaterial m = (ShaderMaterial)rect.Material;
+			m.SetShaderParameter("cut_a", G(r, CutA));
+			m.SetShaderParameter("cut_b", G(r, CutB));
+			m.SetShaderParameter("o0", o0 * gs);
+			m.SetShaderParameter("o1", o1 * gs);
+			m.SetShaderParameter("color", c);
+			at.AddChild(rect);
+			r.Bands.Add(m);
+		}
+		// 竖排小字：沿斜板中线（切口左边 32px）往下读，字头朝面板；一个循环单元宽正好是贴图宽，滚动首尾相接
+		Texture2D text = Need("cs_slab_text");
+		Vector2 u = (CutB - CutA).Normalized();
+		Vector2 leftN = new(-u.Y, u.X);
+		float unit = text.GetSize().X * 0.5f;
+		Node2D lane = new() { Name = "SlabText", Position = CutA + leftN * 32f, Rotation = Mathf.Atan2(u.Y, u.X) };
+		at.AddChild(lane);
+		Node2D scroll = new() { Position = new Vector2(-unit - 120f, 0f) };
+		lane.AddChild(scroll);
+		for (int i = 0; i < 3; i++)
+		{
+			scroll.AddChild(new Sprite2D { Texture = text, Centered = false, Scale = Vector2.One * 0.5f, Position = new Vector2(i * unit, -24f) });
+		}
+		Tween roll = scroll.CreateTween().SetLoops();
+		roll.TweenProperty(scroll, "position:x", -120f, unit / 28.0).From(-unit - 120f);
+		r.SlabText = lane;
+	}
+
+	// ───────────────────────── 动起来 ─────────────────────────
+
+	/// <summary>常驻：呼吸、微摆、手浮动、眨眼、眼睛金光呼吸（闭眼时熄掉）、选中那一下的眼睛闪光。</summary>
 	private static void Animate(Rig r)
 	{
-		Node2D armLine = (Node2D)r.Group.GetMeta("arm_line");
 		double nextBlink = 2.5;
 		ulong last = Stage.NowMs();
-		Callable step = Callable.From(() =>
+		void Step()
 		{
 			ulong now = Stage.NowMs();
 			float dt = Mathf.Min(0.1f, (now - last) / 1000f);
@@ -479,7 +525,7 @@ void fragment() {
 			r.Chest.Rotation = 0.0035f * Mathf.Sin(t * Mathf.Tau / 7.3f);
 			Vector2 armOff = new(2.2f * Mathf.Sin(t * 1.1f), 3.2f * Mathf.Sin(t * 0.83f + 1.2f));
 			float armRot = 0.006f * Mathf.Sin(t * 0.7f + 0.4f);
-			foreach (Node2D a in new[] { r.ArmBack, armLine, r.ArmFront })
+			foreach (Node2D a in r.Arms)
 			{
 				a.Position = ArmPivot - Pivot + armOff;
 				a.Rotation = armRot;
@@ -490,20 +536,17 @@ void fragment() {
 				Fx.After(r.Blink, 0.11, () => r.Blink.Visible = false);
 				nextBlink = t + (Fx.Rng.NextDouble() < 0.2 ? 0.25 : Fx.Rand(2.8f, 5.2f));   // 偶尔连眨两下
 			}
-			float m = r.MaskAlpha;
-			float eye = 0.6f + 0.2f * Mathf.Sin(t * 1.7f) + 1.2f * m;
-			r.EyeDot.Modulate = new Color(PersonaMask.Hi, Mathf.Min(1f, eye));
-			r.EyeStreak.Modulate = new Color(PersonaMask.Hi, Mathf.Min(1f, eye * 0.8f));
-			r.EyeStreak.Scale = new Vector2(5.5f + 2.5f * m + 0.4f * Mathf.Sin(t * 2.3f), 0.32f);
-			r.EyeHiddenDot.Modulate = new Color(Ice, 0.12f + 0.25f * m);
-			r.Glow.Modulate = new Color(1f, 1f, 1f, 0.75f + 0.25f * Mathf.Sin(t * Mathf.Tau / 3.3f));
-			if (r.Mask != null)
-			{
-				r.Mask.Follow(r.Chest.ToGlobal(MaskAt - Pivot));
-				r.Mask.SetOpacity(r.MaskAlpha);
-			}
-		});
-		// 逐帧：用 SceneTree 的 process_frame（Node2D 没法在 C# 里动态挂 _Process）
+			// 眼睛金光：慢慢呼吸（2.6s 一次），闭眼时熄掉；选中那一下（Flare）猛地一亮、光条拉长
+			float f = r.Flare;
+			float k = (r.Blink.Visible ? 0.08f : 1f) * (0.82f + 0.18f * Mathf.Sin(t * Mathf.Tau / 2.6f) + 1.4f * f);
+			r.EyeHalo.Modulate = new Color(EyeTint, Mathf.Min(1f, 0.26f * k));
+			r.EyeIris.Modulate = new Color(EyeTint, Mathf.Min(1f, 0.75f * k));
+			r.EyeCore.Modulate = new Color(EyeHot, Mathf.Min(1f, 0.85f * k));
+			r.EyeCore.Scale = Vector2.One * (0.7f + 0.9f * f);
+			r.EyeStreak.Modulate = new Color(EyeTint, Mathf.Min(1f, 0.55f * k));
+			r.EyeStreak.Scale = new Vector2((420f + 50f * Mathf.Sin(t * 1.9f) + 700f * f) / 512f, (22f + 10f * f) / 64f);
+		}
+		// 逐帧：SceneTree.ProcessFrame（场景被原版换掉后自动解绑）
 		SceneTree? tree = r.Root.GetTree();
 		if (tree != null)
 		{
@@ -514,70 +557,54 @@ void fragment() {
 					tree.ProcessFrame -= OnFrame;
 					return;
 				}
-				Stage.Safe("charselect frame", () => step.Call());
+				Stage.Safe("charselect frame", Step);
 			}
 			tree.ProcessFrame += OnFrame;
 		}
 	}
 
-	/// <summary>点燃一张淡面具：alpha 从 0 升到 peak（rise 秒）→ 烧 hold 秒 → 降到 0（fall 秒）→ 收掉；然后歇 2~3 秒再来一张。</summary>
-	private static void MaskCycle(Rig r, float peak, float rise, float hold, float fall, float settleTo = -1f)
-	{
-		if (!GodotObject.IsInstanceValid(r.Group)) return;
-		Vector2 c = r.Chest.ToGlobal(MaskAt - Pivot);
-		float half = MaskHalf * r.Group.GetGlobalTransform().Scale.X;
-		PersonaMask mask = new(r.Back, r.Front, c, half, MaskFacing, MaskRoll);
-		r.Mask = mask;
-		r.MaskAlpha = 0f;
-		mask.SetOpacity(0f);
-		Tween t = r.Group.CreateTween();
-		t.TweenMethod(Callable.From<float>(v => r.MaskAlpha = v), 0f, peak, rise).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
-		if (settleTo >= 0f)
-		{
-			t.TweenMethod(Callable.From<float>(v => r.MaskAlpha = v), peak, settleTo, 0.8).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-			peak = settleTo;
-		}
-		t.TweenInterval(hold);
-		t.TweenMethod(Callable.From<float>(v => r.MaskAlpha = v), peak, 0f, fall).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.In);
-		t.TweenCallback(Callable.From(() =>
-		{
-			mask.End(false);
-			if (r.Mask == mask) r.Mask = null;
-			r.MaskAlpha = 0f;
-		}));
-		t.TweenInterval(Fx.Rand(2f, 3f));
-		t.TweenCallback(Callable.From(() => MaskCycle(r, MaskSoft, 1.2f, 2.5f, 1.2f)));
-	}
-
 	/// <summary>
-	/// 入场：白闪一下，立绘从右侧带红 / 黑两道残影滑入（0.35s）。intro：随后原版眼神特写切入 + 召唤舞台，
-	/// 横幅碎开那一下面具蓝焰炸亮（之后退到常驻的淡）、亚森在身后现身；否则直接开始常驻的面具循环。
+	/// 入场：白闪一下；斜条沿切口方向错开着从上 / 下画出来；立绘从右边带红 / 黑两道残影滑入（残影也按切口裁）；
+	/// 左上标题从左边滑进来。intro：随后原版眼神特写切入 + 召唤舞台，横幅碎开那一下眼睛的金光猛地一亮（光条拉长），再退回常驻。
 	/// </summary>
 	private static void Entrance(Rig r, bool intro)
 	{
 		Node2D g = r.Group;
 		Vector2 home = g.Position;
-		const float slide = 0.35f;
-		ColorRect flash = new() { Position = new Vector2(-300f, -300f), Size = new Vector2(W + 600f, H + 600f), Color = new Color(1f, 0.96f, 0.96f, 0.5f),
+		const float slide = 0.38f;
+		ColorRect flash = new() { Position = new Vector2(-300f, -300f), Size = new Vector2(SW + 600f, SH + 600f), Color = new Color(1f, 0.96f, 0.96f, 0.5f),
 			MouseFilter = Control.MouseFilterEnum.Ignore };
-		r.Root.AddChild(flash);
-		r.Root.MoveChild(flash, r.Root.GetChildCount() - 1);
+		r.Screen.AddChild(flash);
 		Fx.Animate(flash, 0, 0.16, t => flash.Color = new Color(1f, 0.96f, 0.96f, 0.5f * (1f - t)));
 		Fx.FreeAfter(flash, 0.2);
-		// 残影：同一张身体图，红 / 黑剪影，落后一点
+		// 斜条：错开 0.05s，一上一下
+		for (int i = 0; i < r.Bands.Count; i++)
+		{
+			ShaderMaterial m = r.Bands[i];
+			m.SetShaderParameter("from_top", i % 2 == 0 ? 1f : 0f);
+			m.SetShaderParameter("reveal", 0f);
+			Fx.Animate(r.SlabText, 0.04 * i, 0.32, t => m.SetShaderParameter("reveal", Ease5.OutExpo(t)));
+		}
+		r.SlabText.Modulate = new Color(1f, 1f, 1f, 0f);
+		Fx.Animate(r.SlabText, 0.22, 0.3, t => r.SlabText.Modulate = new Color(1f, 1f, 1f, t));
+		// 面板底跟着斜条一起亮出来
+		r.Panel.Modulate = new Color(1f, 1f, 1f, 0f);
+		Fx.Animate(r.Panel, 0, 0.18, t => r.Panel.Modulate = new Color(1f, 1f, 1f, t));
+		// 标题从左边滑进来
+		Vector2 hHome = r.Header.Position;
+		r.Header.Position = hHome + new Vector2(-900f, 0f);
+		Fx.Animate(r.Header, 0.06, 0.36, t => r.Header.Position = hHome + new Vector2(-900f * (1f - Ease5.OutExpo(t)), 0f));
+		// 残影：同一张身体图的红 / 黑剪影，落后一点，也按切口裁
 		var echoes = new List<(Sprite2D s, float lag)>();
 		Texture2D body = Need("cs_body");
 		foreach ((Color c, float lag) in new[] { (Ink, 0.09f), (Crimson, 0.05f) })
 		{
-			Sprite2D e = new() { Texture = body, Centered = false, Scale = Vector2.One * PScale / TexK, Modulate = c,
-				Material = new ShaderMaterial { Shader = OutlineShader } };
-			((ShaderMaterial)e.Material).SetShaderParameter("tint", c);
-			((ShaderMaterial)e.Material).SetShaderParameter("radius", 0f);
-			r.Root.AddChild(e);
-			r.Root.MoveChild(e, g.GetIndex());
+			Sprite2D e = new() { Texture = body, Centered = false, Scale = Vector2.One * PScale, Material = ClipMaterial(r, 1f, c) };
+			r.Screen.AddChild(e);
+			r.Screen.MoveChild(e, g.GetIndex());
 			echoes.Add((e, lag));
 		}
-		float X(float t) => home.X + 520f * (1f - Ease5.OutExpo(Mathf.Clamp(t / slide, 0f, 1f)));
+		float X(float t) => home.X + 560f * (1f - Ease5.OutExpo(Mathf.Clamp(t / slide, 0f, 1f)));
 		g.Position = new Vector2(X(0f), home.Y);
 		g.Modulate = new Color(1f, 1f, 1f, 0f);
 		Fx.Animate(g, 0, slide + 0.2, u =>
@@ -589,32 +616,27 @@ void fragment() {
 			{
 				if (!GodotObject.IsInstanceValid(s)) continue;
 				s.Position = new Vector2(X(t - lag), home.Y);
-				s.Modulate = new Color(s.Modulate, 0.75f * (1f - Mathf.Clamp((t - slide * 0.6f) / 0.25f, 0f, 1f)) * Mathf.Clamp(t / 0.06f, 0f, 1f));
+				s.Modulate = new Color(1f, 1f, 1f, 0.75f * (1f - Mathf.Clamp((t - slide * 0.6f) / 0.25f, 0f, 1f)) * Mathf.Clamp(t / 0.06f, 0f, 1f));
 			}
 		});
 		foreach (var (s, _) in echoes) Fx.FreeAfter(s, slide + 0.3);
 		Sfx.Play(Sfx.CutIn, 0.6f, 0.03f);
 		if (!intro)
 		{
-			Fx.After(g, slide, () => MaskCycle(r, MaskSoft, 1.2f, 2.5f, 1.2f));
 			return;
 		}
 		Fx.After(g, slide + 0.05, () =>
 		{
-			Vector2 head = r.Chest.ToGlobal(MaskAt - Pivot);
+			Vector2 eye = r.Eye.GlobalPosition;
 			CutInPlayback clip = new(SummonStage.EvokeAt - 0.05f);
-			SummonStage.Play(r.Back, r.Front, head, maskFlame: false, playback: clip);
+			SummonStage.Play(r.Back, r.Front, eye, maskFlame: false, playback: clip);
 			CutIn.Eyes(r.Back, clip);
 			Fx.After(g, SummonStage.EvokeAt, () =>
 			{
-				Vector2 c = r.Chest.ToGlobal(MaskAt - Pivot);
-				Sfx.Play(Sfx.PersonaFlame, 0.85f);
-				Glow.Flash(r.Front, c, PersonaMask.Hi, 700f * g.GetGlobalTransform().Scale.X, 0.4f);
-				MaskCycle(r, MaskIntro, 0.12f, 1.1f, 1.2f, settleTo: MaskSoft);
-				// 亚森在身后（立绘左后方）从蓝焰里现身，不出手，停一会儿退场
-				Vector2 feet = g.ToGlobal(new Vector2(380f, 1500f));
-				float tall = 1150f * g.GetGlobalTransform().Scale.X;
-				ArseneFx.Show(r.Back, feet, tall, 1f, 9f, 1.9f);
+				Glow.Flash(r.Front, r.Eye.GlobalPosition, EyeTint, 300f * g.GetGlobalTransform().Scale.X, 0.35f);
+				Tween t = r.Group.CreateTween();
+				t.TweenMethod(Callable.From<float>(v => r.Flare = v), 0f, 1f, 0.08);
+				t.TweenMethod(Callable.From<float>(v => r.Flare = v), 1f, 0f, 1.0).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
 			});
 		});
 	}

@@ -127,7 +127,9 @@ public partial class Preview : Node2D
 			{
 				if (c is CanvasItem ci) ci.Visible = false;
 			}
-			Control bg = new() { Size = new Vector2(CharSelectScene.W, CharSelectScene.H), MouseFilter = Control.MouseFilterEnum.Ignore };
+			// 游戏里场景根的本地 (0, ScreenTop) 是屏幕左上角：预览里把根往下挪同样的量，录出来的画面和游戏一致
+			Control bg = new() { Size = new Vector2(CharSelectScene.W, CharSelectScene.H), MouseFilter = Control.MouseFilterEnum.Ignore,
+				Position = new Vector2(0f, -CharSelectScene.ScreenTop) };
 			p._world.AddChild(bg);
 			CharSelectScene.Build(bg, true);
 		},
