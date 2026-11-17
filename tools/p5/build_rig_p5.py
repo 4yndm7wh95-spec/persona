@@ -611,12 +611,20 @@ def prop_timelines(fr, segments, slot_defs):
     """slot + bone timelines for a loose prop: keys are (time, x, y, rotation, scale, prop alpha, trail alpha) with
     "@pose" / "@@pose" times (that pose's first / last start); each segment shows the prop from its first to its
     last key."""
-    first_at, last_at = {}, {}
+    first_at, last_at, first_end, last_end = {}, {}, {}, {}
     for p, t0, dur, fade in fr:
-        first_at.setdefault(p, t0)
-        last_at[p] = t0
-    segs = [[(round((last_at[k[0][2:]] if k[0].startswith("@@") else first_at[k[0][1:]]) + k[1], 4), *k[2:]) for k in seg]
-            for seg in segments]
+        if p not in first_at:
+            first_at[p], first_end[p] = t0, t0 + dur
+        last_at[p], last_end[p] = t0, t0 + dur
+
+    def at(k):
+        # a prop never outlives its picture: the in-betweens after it (tween.py) already draw the hand without it
+        if k[0].startswith("@@"):
+            return round(min(last_at[k[0][2:]] + k[1], last_end[k[0][2:]]), 4)
+        n = k[0][1:]
+        end = first_end[n] if k[1] > 0 else first_at[n]
+        return round(min(first_at[n] + k[1], max(end, first_at[n])), 4)
+    segs = [[(at(k), *k[2:]) for k in seg] for seg in segments]
     keys = [k for seg in segs for k in seg]
     slots = {}
     for slot, att_name, col in slot_defs:
