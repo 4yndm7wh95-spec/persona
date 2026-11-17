@@ -47,6 +47,50 @@ GEN_TEX = ["cutin_band", "calling_card", "joker_ghost", "arsene_idle", "joker_tr
 GEN_CODEX = ROOT / "art/p5/fx/gen_codex"
 # P5R's own battle cut-in (BATTLE/CUTIN/BCT_P_BC0001.DDS): Joker's eyes, used for the "1 MORE" eye cut-in (Eyes.cs)
 EYES = ROOT / "research/p5r/art/portrait/BASE__BCT_P_BC0001__e5a7b5aabe.png"
+# P5R's day-change (日替わり) sheet: the calling card, the knife that pins it and the glint (char select embark transition, EmbarkTransition.cs)
+HIGAWARI = ROOT / "research/p5r/ui/calendar/sprites/HIGAWARI_COMMON.SPD_unpacked__27626017d8"
+HIGAWARI_TEX = {"day_knife": 98, "day_glint": 56}   # ナイフ / きらめき1
+# the calling card itself: camp P5_CARD02 (original quality) drawn with a slight perspective -> rectified to a flat card (user 2026-11-17: 予告状 was too tilted)
+CARD02 = ROOT / "research/p5r/ui/camp/SC__P5_CARD02__90df21923c.png"
+CARD02_CORNERS = [(241, 68), (762, 87), (781, 419), (250, 441)]   # TL TR BR BL, measured on the sprite
+
+
+def flat_card(w=720, h=518, keep=0.5, pad=24):
+    """P5_CARD02 透视校正：keep = 保留原图透视的比例（0 = 完全拉正，用户 2026-11-17：完全拉正太正、没有透视 → 留一半）。
+    卡画在带透明边的画布上（pad），沿卡的四边描 4px 白边（黑圈的卡压在黑门上也看得出轮廓）。"""
+    import numpy as np
+    from PIL import ImageDraw
+    src = Image.open(CARD02).convert("RGBA")
+    c = np.array(CARD02_CORNERS, float)
+    # 原图四角归一化到 w×h 的框里（保持原来的形状），再和正矩形按 keep 混合
+    rect = np.array([(0, 0), (w, 0), (w, h), (0, h)], float)
+    lo, hi = c.min(0), c.max(0)
+    orig = (c - lo) / (hi - lo) * [w, h]
+    quad = rect * (1 - keep) + orig * keep + pad
+    W, H = w + 2 * pad, h + 2 * pad
+    A, B = [], []
+    for (x, y), (u, v) in zip(c, quad):
+        A += [[u, v, 1, 0, 0, 0, -x * u, -x * v], [0, 0, 0, u, v, 1, -y * u, -y * v]]
+        B += [x, y]
+    coeffs = np.linalg.solve(np.array(A, float), np.array(B, float))
+    im = src.transform((W, H), Image.PERSPECTIVE, tuple(coeffs), Image.BICUBIC)
+    # 卡的范围：四角往里收 3px（去掉原图投影的边），4 倍超采样画遮罩 + 白边
+    k = 4
+    ctr = quad.mean(0)
+    inner = [tuple(((p - ctr) * (1 - 3 / max(w, h)) + ctr) * k) for p in quad]
+    mask = Image.new("L", (W * k, H * k), 0)
+    ImageDraw.Draw(mask).polygon(inner, fill=255)
+    mask = mask.resize((W, H), Image.LANCZOS)
+    rgb = im.convert("RGB")
+    edge = Image.new("L", (W * k, H * k), 0)
+    ImageDraw.Draw(edge).line(inner + [inner[0]], fill=255, width=4 * k, joint="curve")
+    edge = edge.resize((W, H), Image.LANCZOS)
+    rgb.paste((255, 250, 248), mask=edge)
+    out = rgb.convert("RGBA")
+    out.putalpha(mask)
+    return out
+
+
 # P5R damage numbers / slash lines (research/p5r/ui/battle_gui DAMAGE_DATA.SPD sprites): name -> (sprite index, scale)
 DMG = ROOT / "research/p5r/ui/battle_gui/sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6"
 DMG_TEX = {**{f"dmg_{d}": (79 + d, 0.5) for d in range(10)},
@@ -106,6 +150,10 @@ SFX = {
     "swish_04": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0149.ogg",
     "swish_05": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0151.ogg",
     "sword_sheath": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0048.ogg",          # knife spin: the catch (user 2026-11-02)
+    "camp_whoosh": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0224.ogg",           # char select embark transition: the doors whoosh in (EmbarkTransition.cs)
+    # embark transition: P5R's own day-change cues (SYSTEM.AWB streams 37 / 82, ripped by Codex: research/p5r/audio/calendar/README.md)
+    "calendar_change": ROOT / "research/p5r/audio/calendar/calendar_change.ogg",   # the date slams down -> the doors close
+    "stab_knife": ROOT / "research/p5r/audio/calendar/stab_knife.ogg",             # the knife pins it: thunk + metallic ring in one cue
     "damage_enemy": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0022.ogg",
     "battle_all_out_atk": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0024.ogg",
     "gun_02": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0032.ogg",
@@ -167,6 +215,9 @@ def fx_textures():
     for name, (idx, k) in DMG_TEX.items():
         im = Image.open(DMG / f"{idx:05d}.png").convert("RGBA")
         yield name, im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
+    # character select scene (docs/p5/CHARSELECT_PLAN.md, tools/p5/charselect_assets.py)
+    from charselect_assets import textures as charselect_textures
+    yield from charselect_textures()
     for name in GEN_TEX:
         drawn = GEN_CODEX / f"{name}.png"                 # Codex's drawn version wins over the scripted one (user 2026-10-28)
         yield name, Image.open(drawn if drawn.exists() else GEN / f"{name}.png").convert("RGBA")
@@ -205,6 +256,9 @@ def fx_textures():
         yield "persona_flame_strip", Image.open(flame).convert("RGBA")
     eyes = Image.open(EYES).convert("RGBA")
     yield "eyes", eyes.resize((eyes.width // 2, eyes.height // 2), Image.LANCZOS)
+    for name, idx in HIGAWARI_TEX.items():
+        yield name, Image.open(HIGAWARI / f"{idx:05d}.png").convert("RGBA")
+    yield "yokoku", flat_card()
     yield "arsene_cast", arsene_atlas()
     # Izanagi-no-Okami (Codex render of BPS0360_000_main_0006, art/p5/fx/izanagi_okami): spin action atlas + weapon alone
     if (IZANAGI / "spin").exists():
@@ -374,6 +428,10 @@ default_mix = 0.1
 """)
     for name, im in fx_textures():
         write_texture(STAGE, f"p5joker/fx/{name}.png", im)
+    # fonts: raw .ttf (p5mod/src/Vfx/P5Ui.cs loads them with FontFile.LoadDynamicFont, no import needed; SIL OFL)
+    (STAGE / "p5joker/fonts").mkdir(parents=True, exist_ok=True)
+    for f in ("BarlowCondensed-900Italic.ttf", "BarlowCondensed-700Italic.ttf"):
+        shutil.copy(ROOT / "tools/ui/fonts" / f, STAGE / "p5joker/fonts" / f)
     # sounds: raw .ogg (p5mod/src/Vfx/Sfx.cs decodes the bytes itself, no import needed)
     (STAGE / "p5joker/sfx").mkdir(parents=True, exist_ok=True)
     for name, src in SFX.items():

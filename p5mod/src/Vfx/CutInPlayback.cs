@@ -15,6 +15,8 @@ public sealed class CutInPlayback
 	public float Pinch;
 	public Vector2 PinchAt;
 	public Vector2? ShatterFrom;
+	/// <summary>整条眼神特写在屏幕上平移（屏幕像素，默认不动）。选人界面把它往左挪，免得主眼被右边的立绘面板挡住。</summary>
+	public Vector2 Offset;
 	internal Node2D? PaperRoot; // The actual sibling for this play, including overlapping summons.
 	private ulong _last;
 	private float _time;

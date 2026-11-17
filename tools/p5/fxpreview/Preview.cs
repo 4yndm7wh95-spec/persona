@@ -120,6 +120,31 @@ public partial class Preview : Node2D
 				0.04f + SummonStage.EvokeAt + spec.AttackAt, 1f, c => p._enemies[Enemy].Modulate = c, ownImpact: true));
 		},
 
+		// 选人界面（Vfx/CharSelectScene.cs）：藏掉假战斗场景，整屏换成选人背景；第二遍（6s）切走再选一次看不带切入的常驻
+		["charselect"] = p => CharSelect(p),
+		// 出发过场（Vfx/EmbarkTransition.cs）：选人画面 2.6s 后点出发 → 门合拢、预告信、飞刀钉住 → 盖住时把底下换成假战斗场景（代替进局）→
+		// 钉着预告信的那一帧停 0.6s（加载）→ 展开
+		["embark"] = p =>
+		{
+			List<Node> charSelect = CharSelect(p);
+			CanvasLayer top = new() { Layer = 50 };
+			p.AddChild(top);
+			Control host = new() { Size = new Vector2(1920f, 1080f), MouseFilter = Control.MouseFilterEnum.Ignore };
+			top.AddChild(host);
+			p.At(2.6, () =>
+			{
+				EmbarkTransition.Curtain? curtain = null;
+				curtain = EmbarkTransition.Out(host, () =>
+				{
+					foreach (Node n in charSelect) n.QueueFree();
+					foreach (Node c in p._world.GetChildren())
+					{
+						if (c is CanvasItem ci && !charSelect.Contains(c)) ci.Visible = true;
+					}
+					p.At(0.6, () => curtain?.Open());
+				});
+			});
+		},
 		["damage"] = p =>
 		{
 			p.Strike(0.3, Enemy, 7);
@@ -1225,6 +1250,54 @@ public partial class Preview : Node2D
 			tw.TweenProperty(n, "position", enemy, 0.35).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
 		}
 	});
+
+	/// <summary>选人界面（Vfx/CharSelectScene.cs）：藏掉假战斗场景，整屏换成选人背景。返回加进去的节点（出发过场全黑时删掉）。</summary>
+	private static List<Node> CharSelect(Preview p)
+	{
+		List<Node> made = new();
+		foreach (Node c in p._world.GetChildren())
+		{
+			if (c is CanvasItem ci) ci.Visible = false;
+		}
+		// 字体：mod 自带的 Barlow 读仓库里的文件，游戏自带的中文字体换成系统的 Noto Sans CJK
+		string repo = ProjectSettings.GlobalizePath("res://") + "../../../";
+		P5Ui.Load = path =>
+		{
+			string file = path switch
+			{
+				P5Ui.Barlow => repo + "tools/ui/fonts/BarlowCondensed-900Italic.ttf",
+				P5Ui.BarlowBold => repo + "tools/ui/fonts/BarlowCondensed-700Italic.ttf",
+				P5Ui.CjkBold => "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
+				P5Ui.CjkMedium => "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+				_ => path,
+			};
+			FontFile f = new();
+			return f.LoadDynamicFont(file) == Error.Ok ? f : null;
+		};
+		// 游戏里场景根的本地 (0, ScreenTop) 是屏幕左上角：预览里把根往下挪同样的量，录出来的画面和游戏一致
+		Control bg = new() { Size = new Vector2(CharSelectScene.W, CharSelectScene.H), MouseFilter = Control.MouseFilterEnum.Ignore,
+			Position = new Vector2(0f, -CharSelectScene.ScreenTop) };
+		p._world.AddChild(bg);
+		made.Add(bg);
+		CharSelectScene.Build(bg, true);
+		// 原版信息面板的替身（介绍板的坐标以原版面板左上角为原点；位置按结城理 mod 的排版推算）+ 假数据
+		Control panel = new() { Position = new Vector2(256f, 260f), MouseFilter = Control.MouseFilterEnum.Ignore };
+		p._world.AddChild(panel);
+		made.Add(panel);
+		p.At(CharSelectScene.InfoPanelDelay, () => CharSelectInfoPanel.Build(panel, new CharSelectInfoPanel.Data("70/70", "99", "蛇之戒指",
+			"在每场战斗开始时，额外抽 [color=#ffd24a]2[/color] 张牌。", Fx.Tex("cs_card"))));
+		// --mockui：画出原版底部 UI 的位置（按用户 2026-11-17 的结城理 mod 实机截图量的），只用来自查排版
+		if (System.Array.IndexOf(OS.GetCmdlineUserArgs(), "--mockui") >= 0)
+		{
+			foreach (Rect2 box in new[] { new Rect2(0f, 763f, 144f, 87f), new Rect2(605f, 757f, 480f, 106f), new Rect2(624f, 888f, 672f, 130f), new Rect2(1776f, 739f, 144f, 87f) })
+			{
+				ColorRect mock = new() { Position = box.Position, Size = box.Size, Color = new Color(0.2f, 0.25f, 0.3f, 0.55f), MouseFilter = Control.MouseFilterEnum.Ignore };
+				p._world.AddChild(mock);
+				made.Add(mock);
+			}
+		}
+		return made;
+	}
 
 	public override void _Ready()
 	{

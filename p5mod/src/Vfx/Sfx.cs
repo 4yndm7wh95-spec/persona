@@ -47,6 +47,10 @@ public static class Sfx
 		Wing = "wing_large",            // 大翅膀扇动（#64：亚森）
 		Slam = "punch_taiman",          // 重拳砸中（#46：咒怨之手砸下去）
 		Crack = "crash_object",         // 东西碎开（#176：手从地里钻出来）
+		MenuWhoosh = "camp_whoosh",     // 菜单的「唰」（#224，偏暖的低频风声，峰值在 0.21s）：出发过场两扇门滑进来 / 滑开
+		// 出发过场：P5R 切日历的原版音效（SYSTEM.AWB 流 37 / 82，Codex 从用户本机资源库解出、和原版演示互相关核对过：research/p5r/audio/calendar）
+		DoorSlam = "calendar_change",   // 日期「30」砸下来的那一声 → 两扇门合拢
+		KnifeStab = "stab_knife",       // 飞刀钉住：插入的低频闷响 + 4.27/6.13kHz 的金属长余响，同一条 cue
 		PoisonTick = "continuas_damage",// 持续伤害（#20：每轮毒伤）
 		SubBoom = "sub_boom",           // 合成的低频重击（art/sfx_p5/sub_boom.ogg：P5 原声缺低频，垫在冲击层底下）
 		OutbreakBurst = "outbreak_burst", // 毒性爆发毒伤结算（用户 2026-11-08：原版受击声太平淡）：P5R SKILLSE 0406（咒怨系候选，起音 0.01s、偏暗），
@@ -128,7 +132,7 @@ public static class Sfx
 	{
 		[Parry] = 0.068f, [Slam] = 0.1f, [PoisonTick] = 0.078f, [CutIn] = 0.083f, [PersonaFlame] = 0.13f, [Wing] = 0.023f,
 		[Crack] = 0.019f, [SwishHeavy] = 0.005f, [KnifeRing] = 0.048f, [SinfulFire] = 0.12f, [SinfulShot] = 0.02f,
-		[CardCut] = 0.29f, [CardDraw] = 0.046f, [SmokePuff] = 0.012f, [RetainLock] = 0.013f,   // 游戏音效样本里主冲击的位置（2026-11-12 量的）
+		[CardCut] = 0.29f, [DoorSlam] = 0.03f, [KnifeStab] = 0.09f, [CardDraw] = 0.046f, [SmokePuff] = 0.012f, [RetainLock] = 0.013f,   // 游戏音效样本里主冲击的位置（2026-11-12 量的）
 	};
 
 	/// <summary>在 delay 秒后的那一帧「打中」：按起音提前量提前开始播。</summary>

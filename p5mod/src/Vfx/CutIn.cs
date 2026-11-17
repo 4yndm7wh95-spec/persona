@@ -236,6 +236,26 @@ void fragment() {
 	public static Vector2? ShatterFrom;
 
 	/// <summary>放一次眼神特写（背景层，人物、敌人在前面）。原版网格画进离屏画面，再用 BandShader 显示。</summary>
+	/// <summary>
+	/// 眼神特写里瞪着的那只主眼在屏幕上的位置（屏幕像素，不含 playback.Offset；原版网格里 UV (0.593, 0.535) 落在画布 (773, 372)）。
+	/// 选人界面用它算横幅要挪多少、从哪里碎开。
+	/// </summary>
+	public static Vector2 MainEye(Vector2 screen)
+	{
+		Load();
+		Clip clip = _clip!;
+		float scale = Mathf.Max(screen.X / clip.Canvas[0], screen.Y / clip.Canvas[1]) * 0.82f;
+		Vector2 root = (screen - new Vector2(clip.Canvas[0], clip.Canvas[1]) * scale) * 0.5f + new Vector2(0f, -screen.Y * 0.06f);
+		return root + new Vector2(773f, 372f) * scale;
+	}
+
+	/// <summary>眼神特写原版画布到屏幕的缩放（和 Eyes 里一样）。</summary>
+	public static float BandScale(Vector2 screen)
+	{
+		Load();
+		return Mathf.Max(screen.X / _clip!.Canvas[0], screen.Y / _clip.Canvas[1]) * 0.82f;
+	}
+
 	public static void Eyes(Control back, CutInPlayback? playback = null)
 	{
 		if (Fx.Tex("eyes") is not Texture2D tex) return;
@@ -257,7 +277,7 @@ void fragment() {
 		view.AddChild(root);
 		// 原版带子缩到 82%、往上挪一点（用户 2026-11-01：铺满太大、缩小两头又空）；两头接上 Codex 画的撕纸延伸段，把带子接到屏幕边缘
 		float scale = Mathf.Max(screen.X / clip.Canvas[0], screen.Y / clip.Canvas[1]) * 0.82f;
-		root.Position = (screen - new Vector2(clip.Canvas[0], clip.Canvas[1]) * scale) * 0.5f + new Vector2(0f, -screen.Y * 0.06f);
+		root.Position = (screen - new Vector2(clip.Canvas[0], clip.Canvas[1]) * scale) * 0.5f + new Vector2(0f, -screen.Y * 0.06f) + playback.Offset;
 		Node2D[] tails = Tails(root, clip.Canvas[0]);
 		root.Scale = Vector2.One * scale;
 		MeshInstance2D?[] nodes = new MeshInstance2D?[parts.Length];
