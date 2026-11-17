@@ -49,7 +49,31 @@ GEN_CODEX = ROOT / "art/p5/fx/gen_codex"
 EYES = ROOT / "research/p5r/art/portrait/BASE__BCT_P_BC0001__e5a7b5aabe.png"
 # P5R's day-change (日替わり) sheet: the calling card, the knife that pins it and the glint (char select embark transition, EmbarkTransition.cs)
 HIGAWARI = ROOT / "research/p5r/ui/calendar/sprites/HIGAWARI_COMMON.SPD_unpacked__27626017d8"
-HIGAWARI_TEX = {"yokoku": 193, "day_knife": 98, "day_glint": 56}   # 予告状 / ナイフ / きらめき1
+HIGAWARI_TEX = {"day_knife": 98, "day_glint": 56}   # ナイフ / きらめき1
+# the calling card itself: camp P5_CARD02 (original quality) drawn with a slight perspective -> rectified to a flat card (user 2026-11-17: 予告状 was too tilted)
+CARD02 = ROOT / "research/p5r/ui/camp/SC__P5_CARD02__90df21923c.png"
+CARD02_CORNERS = [(241, 68), (762, 87), (781, 419), (250, 441)]   # TL TR BR BL, measured on the sprite
+
+
+def flat_card(w=720, h=518):
+    """P5_CARD02 透视校正成正的矩形卡（四角往里收 2px 去掉投影的边）。"""
+    import numpy as np
+    src = Image.open(CARD02).convert("RGBA")
+    dst = [(0, 0), (w, 0), (w, h), (0, h)]
+    A, B = [], []
+    for (x, y), (u, v) in zip(CARD02_CORNERS, dst):
+        A += [[u, v, 1, 0, 0, 0, -x * u, -x * v], [0, 0, 0, u, v, 1, -y * u, -y * v]]
+        B += [x, y]
+    coeffs = np.linalg.solve(np.array(A, float), np.array(B, float))
+    im = src.transform((w, h), Image.PERSPECTIVE, tuple(coeffs), Image.BICUBIC)
+    m = 3
+    out = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    out.paste(im.crop((m, m, w - m, h - m)).resize((w, h), Image.BICUBIC), (0, 0))
+    a = Image.new("L", (w, h), 255)
+    out.putalpha(a)
+    from PIL import ImageDraw                                                # 白边：黑圈的卡压在黑门上也看得出轮廓
+    ImageDraw.Draw(out).rectangle([0, 0, w - 1, h - 1], outline=(255, 250, 248, 255), width=4)
+    return out
 # P5R damage numbers / slash lines (research/p5r/ui/battle_gui DAMAGE_DATA.SPD sprites): name -> (sprite index, scale)
 DMG = ROOT / "research/p5r/ui/battle_gui/sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6"
 DMG_TEX = {**{f"dmg_{d}": (79 + d, 0.5) for d in range(10)},
@@ -215,6 +239,7 @@ def fx_textures():
     yield "eyes", eyes.resize((eyes.width // 2, eyes.height // 2), Image.LANCZOS)
     for name, idx in HIGAWARI_TEX.items():
         yield name, Image.open(HIGAWARI / f"{idx:05d}.png").convert("RGBA")
+    yield "yokoku", flat_card()
     yield "arsene_cast", arsene_atlas()
     # Izanagi-no-Okami (Codex render of BPS0360_000_main_0006, art/p5/fx/izanagi_okami): spin action atlas + weapon alone
     if (IZANAGI / "spin").exists():

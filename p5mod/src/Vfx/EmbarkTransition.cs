@@ -31,12 +31,13 @@ public static class EmbarkTransition
 	private const float RedW = 22f;                       // 每扇门内沿的红边宽（用户：红边太粗 → 两扇拼起来 44，一道细红边）
 	private const float Gap = 10f;                        // 红边和白线之间的黑缝
 	private const float LineW = 3f;                       // 白线宽
-	private static readonly Vector2 CardAt = new(0f, 40f);
-	private const float CardH = 620f;                     // 预告信显示高（原图 552×528，卡面本身画成斜的）
-	private static readonly Vector2 PinAt = new(150f, -40f);    // 刀扎进纸面的入口：预告信右上那片红黑圈上（门缝右边，展开时跟右半边走）
+	private static readonly Vector2 CardAt = new(0f, 30f);
+	private const float CardH = 520f;                     // 预告信显示高（P5_CARD02 透视校正成正的卡，720×518）
+	private const float CardDeg = -2f;                    // 只略微歪一点
+	private static readonly Vector2 PinAt = new(292f, -172f);   // 刀扎进纸面的入口：预告信右上角（用户 2026-11-17），展开时跟右半边走
 	private const float Hidden = 90f;                           // 刀尖进了纸的那一截长（画面单位）
 	private const float KnifeDeg = -57f;                  // 飞刀几乎从正上方扎下来（刀柄朝右上，同 P5R 切日历那把）
-	private const float KnifeScale = 0.6f;                // 原图 858×468
+	private const float KnifeScale = 0.55f;               // 原图 858×468（刀柄不顶出屏幕上沿）
 	private static readonly Vector2 KnifeTip = new(8f, 236f);   // 刀尖在原图里的位置（刀身是水平的，刀尖朝左）
 	private static readonly Vector2 GlintOnBlade = new(230f, 230f); // 闪光在刀身上的位置（原图像素）
 
@@ -254,7 +255,7 @@ void fragment() {
 			float bump = 1f + 0.05f * jolt;                                       // 扎中那一下整张卡一震（先大一点再回位）
 			card.Scale = Vector2.One * cardScale * Mathf.Lerp(1.3f, 1f, OutExpo(Seg(t, Close, Close + 0.05f))) * bump;
 			card.Position = CardAt - toHandle * 6f * jolt;
-			card.Rotation = Mathf.DegToRad(-1f) * jolt;
+			card.Rotation = Mathf.DegToRad(CardDeg - 1f * jolt);
 			// 口子：扎中的一瞬间顺着刀的方向撕开（0.04s 长到全长），跟着卡一起震
 			slit.Visible = t >= Stab;
 			slit.Scale = new Vector2(OutCubic(Seg(t, Stab, Stab + 0.04f)), 1f) * bump;
