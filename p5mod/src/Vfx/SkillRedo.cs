@@ -261,7 +261,7 @@ public static class SkillRedo
 		Paint.Sweep(back, "slash_thin", hub, Mathf.Pi * 0.5f, new Vector2(0.5f, 0.5f) * u * h / 300f, Lut5.Blood, 0.05f, 0.05f, 0.3f, -45f * f, 0.02f, 1.6f);
 		Glow.Flash(back, hub + new Vector2(0f, -h * 0.25f), Phantom.Red, h * 1.4f, 0.35f);
 		Glow.Flash(c.Front, hub + new Vector2(0f, -h * 0.4f), Phantom.Hot, h * 0.3f, 0.08f, 0.04f);
-		S("gx_whoosh", 0.3f);                                            // 主拍
+		// 2026-11-17 用户：后空翻有个像锅一样的音效 → 去掉这声 whoosh
 		S("gx_card_stack", 0.16f, 0.72f);
 
 		Vector2 top = hub + new Vector2(-f * h * 0.05f, -h * 0.5f);
