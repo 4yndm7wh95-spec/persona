@@ -301,6 +301,10 @@ def time_map(anim):
 TWEEN_MAX = 2
 TWEEN_TEX = 0.3                # in-betweens are on screen for one frame each: stored smaller than the poses
 NO_TWEEN_INTO = set(ANCHORS)
+# picture changes a spinning prop (gun / knife and the glove drawn over it, GUN_PROP / KNIFE_PROP) carries across:
+# the prop is drawn on its own bone at the hand of the picture it belongs to, so over a morph (where the hand is
+# somewhere in between) it would float next to the hand. These keep the cut; the spin hides it.
+PROP_SEAMS = {("gun_spin_g", "gun_aim_b"), ("knife_spin_g", "knife_lower_h"), ("knife_lower_h", "knife_ready_b")}
 # review 2026-11-17: the fall moves the whole body too far for a morph (two Jokers on top of each other)
 TWEEN_SKIP = {("die_buckle_a", "die_kneel_a2"), ("die_fall_a", "die_kneel_a2"), ("die_down_b", "die_fall_a")}
 
@@ -314,6 +318,8 @@ def _tween_counts(anim):
     for i in range(len(raw) - 1):
         a, b = raw[i][0], raw[i + 1][0]
         skip = (a, b) in TWEEN_SKIP or (b, a) in TWEEN_SKIP
+        if (a, b) in PROP_SEAMS or (b, a) in PROP_SEAMS:
+            continue
         if a == b or b in NO_TWEEN_INTO or (skip and not tween.has_override(a, b)):   # a drawn one re-enables it
             continue
         while tw[i] < TWEEN_MAX:
@@ -752,6 +758,44 @@ def build():
     return data, tex
 
 
+def check_props(data):
+    """every frame at 60 fps: a loose prop (gun / knife / the glove drawn over them) may only be on screen over a drawn
+    pose, never over an in-between (it would float beside the moving hand - the bug seen in the 2026-11-17 preview)."""
+    props = ["gun", "gun_smear", "finger_tip", "knife", "knife_smear", "knife_hand_hip", "knife_back",
+             "knife_back_smear", "knife_hand_top"]
+
+    def att(keys, t):
+        cur = None
+        for k in keys:
+            if k["time"] <= t + 1e-6:
+                cur = k["name"]
+        return cur
+
+    def alpha(keys, t):
+        if not keys:
+            return 1.0
+        pts = [(k["time"], int(k["color"][6:8], 16) / 255) for k in keys]
+        if t <= pts[0][0]:
+            return pts[0][1]
+        for (t0, a0), (t1, a1) in zip(pts, pts[1:]):
+            if t0 <= t <= t1:
+                return a0 if t1 == t0 else a0 + (a1 - a0) * (t - t0) / (t1 - t0)
+        return pts[-1][1]
+    bad = []
+    for name, a in data["animations"].items():
+        sl = a["slots"]
+        end = max(k["time"] for s in sl.values() for arr in s.values() for k in arr)
+        for f in range(int(end * GRID) + 1):
+            t = f / GRID + 1e-4
+            pic = att(sl["pose"]["attachment"], t)
+            for p in props:
+                if p in sl and att(sl[p]["attachment"], t) and alpha(sl[p].get("rgba"), t) > 0.03 and pic and pic.startswith("tw_"):
+                    bad.append(f"{name} frame {f}: {p} over {pic}")
+    if bad:
+        raise SystemExit("prop over an in-between:\n" + "\n".join(bad))
+    print("props: never over an in-between")
+
+
 def export(data, tex):
     OUT.mkdir(parents=True, exist_ok=True)
     sheets, atlas = pack(tex)
@@ -783,6 +827,7 @@ def previews(data, tex):
 
 if __name__ == "__main__":
     d, t = build()
+    check_props(d)
     export(d, t)
     if "--no-preview" not in sys.argv:
         previews(d, t)
