@@ -55,33 +55,40 @@ CARD02 = ROOT / "research/p5r/ui/camp/SC__P5_CARD02__90df21923c.png"
 CARD02_CORNERS = [(241, 68), (762, 87), (781, 419), (250, 441)]   # TL TR BR BL, measured on the sprite
 
 
-def flat_card(w=720, h=518):
-    """P5_CARD02 透视校正成正的矩形卡（四角往里收 2px 去掉投影的边）。"""
+def flat_card(w=720, h=518, keep=0.5, pad=24):
+    """P5_CARD02 透视校正：keep = 保留原图透视的比例（0 = 完全拉正，用户 2026-11-17：完全拉正太正、没有透视 → 留一半）。
+    卡画在带透明边的画布上（pad），沿卡的四边描 4px 白边（黑圈的卡压在黑门上也看得出轮廓）。"""
     import numpy as np
+    from PIL import ImageDraw
     src = Image.open(CARD02).convert("RGBA")
-    dst = [(0, 0), (w, 0), (w, h), (0, h)]
+    c = np.array(CARD02_CORNERS, float)
+    # 原图四角归一化到 w×h 的框里（保持原来的形状），再和正矩形按 keep 混合
+    rect = np.array([(0, 0), (w, 0), (w, h), (0, h)], float)
+    lo, hi = c.min(0), c.max(0)
+    orig = (c - lo) / (hi - lo) * [w, h]
+    quad = rect * (1 - keep) + orig * keep + pad
+    W, H = w + 2 * pad, h + 2 * pad
     A, B = [], []
-    for (x, y), (u, v) in zip(CARD02_CORNERS, dst):
+    for (x, y), (u, v) in zip(c, quad):
         A += [[u, v, 1, 0, 0, 0, -x * u, -x * v], [0, 0, 0, u, v, 1, -y * u, -y * v]]
         B += [x, y]
     coeffs = np.linalg.solve(np.array(A, float), np.array(B, float))
-    im = src.transform((w, h), Image.PERSPECTIVE, tuple(coeffs), Image.BICUBIC)
-    m = 3
-    out = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    out.paste(im.crop((m, m, w - m, h - m)).resize((w, h), Image.BICUBIC), (0, 0))
-    a = Image.new("L", (w, h), 255)
-    out.putalpha(a)
-    from PIL import ImageDraw                                                # 白边：黑圈的卡压在黑门上也看得出轮廓
-    ImageDraw.Draw(out).rectangle([0, 0, w - 1, h - 1], outline=(255, 250, 248, 255), width=4)
+    im = src.transform((W, H), Image.PERSPECTIVE, tuple(coeffs), Image.BICUBIC)
+    # 卡的范围：四角往里收 3px（去掉原图投影的边），4 倍超采样画遮罩 + 白边
+    k = 4
+    ctr = quad.mean(0)
+    inner = [tuple(((p - ctr) * (1 - 3 / max(w, h)) + ctr) * k) for p in quad]
+    mask = Image.new("L", (W * k, H * k), 0)
+    ImageDraw.Draw(mask).polygon(inner, fill=255)
+    mask = mask.resize((W, H), Image.LANCZOS)
+    rgb = im.convert("RGB")
+    edge = Image.new("L", (W * k, H * k), 0)
+    ImageDraw.Draw(edge).line(inner + [inner[0]], fill=255, width=4 * k, joint="curve")
+    edge = edge.resize((W, H), Image.LANCZOS)
+    rgb.paste((255, 250, 248), mask=edge)
+    out = rgb.convert("RGBA")
+    out.putalpha(mask)
     return out
-# P5R damage numbers / slash lines (research/p5r/ui/battle_gui DAMAGE_DATA.SPD sprites): name -> (sprite index, scale)
-DMG = ROOT / "research/p5r/ui/battle_gui/sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6"
-DMG_TEX = {**{f"dmg_{d}": (79 + d, 0.5) for d in range(10)},
-           "dmg_splash": (90, 1.0), "dmg_splash_gun": (96, 1.0), "speed_line": (93, 1.0), "weak": (94, 1.0),
-           "block_b": (126, 1.0), "block_l": (127, 1.0), "block_o": (128, 1.0), "block_c": (129, 1.0), "block_k": (130, 1.0)}
-
-RIG = ROOT / "art/p5/rig"
-STAGE = ROOT / "p5mod/pck_stage"
 
 
 def renamed(src_base, dst_base, tmp):

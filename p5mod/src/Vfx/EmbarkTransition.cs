@@ -32,10 +32,10 @@ public static class EmbarkTransition
 	private const float Gap = 10f;                        // 红边和白线之间的黑缝
 	private const float LineW = 3f;                       // 白线宽
 	private static readonly Vector2 CardAt = new(0f, 30f);
-	private const float CardH = 520f;                     // 预告信显示高（P5_CARD02 透视校正成正的卡，720×518）
-	private const float CardDeg = -2f;                    // 只略微歪一点
-	private static readonly Vector2 PinAt = new(292f, -172f);   // 刀扎进纸面的入口：预告信右上角（用户 2026-11-17），展开时跟右半边走
-	private const float Hidden = 90f;                           // 刀尖进了纸的那一截长（画面单位）
+	private const float CardH = 450f;                     // 预告信贴图显示高（含透明边；P5_CARD02 校正一半透视，卡面约 420 高）
+	private const float CardDeg = -4f;                    // 略微歪一点
+	private static readonly Vector2 PinAt = new(222f, -147f);   // 刀扎进纸面的入口：预告信右上角（用户 2026-11-17），展开时跟右半边走
+	private const float Hidden = 45f;                           // 刀尖进了纸的那一截长（画面单位）
 	private const float KnifeDeg = -57f;                  // 飞刀几乎从正上方扎下来（刀柄朝右上，同 P5R 切日历那把）
 	private const float KnifeScale = 0.55f;               // 原图 858×468（刀柄不顶出屏幕上沿）
 	private static readonly Vector2 KnifeTip = new(8f, 236f);   // 刀尖在原图里的位置（刀身是水平的，刀尖朝左）
