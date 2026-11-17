@@ -208,43 +208,40 @@ public static class SkillRedo
 	// ═══════════════════════════ 本能反应：快 ═══════════════════════════
 
 	/// <summary>
-	/// 本能反应（抽牌）：快到看不清——手边一下白闪、几根速度线往后甩，牌几乎是直线「射」进手牌区：每张中途「闪现」一次
-	/// （原地留下一个淡下去的残影、往前跳一段），拖着拉长的红白光痕；一张紧跟一张。约 0.5s。
+	/// 本能反应（2026-11-17 审阅：这是抽牌，原来牌从手里往敌人那边甩出去，像弃牌 → 中改）：两张牌从他身后上方「嗖」地射下来，
+	/// 他抬手一把接住（接住那一下手边一闪、星光、短顿帧 —— 反应快），停一瞬，再一张张收进下面的手牌里。方向是「进来」，不是「甩出去」。
 	/// </summary>
 	public static void Reflex(SkillCtx c)
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face, w = CardW(c);
-		Vector2 hand = SkillFx.HandArea(c.Front);
-		Glow.Flash(c.Front, c.Hand, Phantom.Hot, h * 0.3f, 0.08f);
-		Phantom.Shards(c.Front, c.Hand, 10, 600f * u, 1200f * u, new Vector2(-f, 0.1f), 18f, 0.18f, 0f, 30f * u);
-		S("gx_whoosh", 0.26f);                                           // 主拍
-		S("gx_card_stack", 0.16f, 0.42f);
-		for (int i = 0; i < 3; i++)
+		S("gx_whoosh", 0.22f);
+		S("gx_card_stack", 0.16f, 0.62f);
+		Glow.Flash(c.Front, c.Hand, Phantom.Hot, h * 0.22f, 0.08f);
+		for (int i = 0; i < 2; i++)
 		{
 			int k = i;
-			float d = 0.06f * k;
-			Vector2 start = c.Hand + new Vector2(f * h * 0.12f, -h * (0.05f + 0.06f * k));
-			Vector2 mid = start.Lerp(hand, 0.45f) + new Vector2(f * h * 0.15f, -h * 0.12f);
-			DrawTick(k);
-			Phantom.P5Card a = Phantom.Card(c.Front, start, w, d + 0.4, 1.1f);
+			float d = 0.04f + 0.11f * k, fly = 0.16f;
+			Vector2 from = c.Feet + new Vector2(-f * h * (0.8f + 0.2f * k), -h * (1.45f + 0.08f * k));
+			Vector2 grab = c.Hand + new Vector2(f * h * 0.05f, -h * (0.06f + 0.12f * k));
+			Phantom.P5Card a = Phantom.Card(c.Front, from, w, d + fly + 0.1, 1.1f);
 			a.Root.Visible = false;
-			Fx.Animate(a.Root, d, 0.12, t =>
+			Fx.Animate(a.Root, d, fly, t =>
 			{
 				a.Root.Visible = true;
-				a.Place(start.Lerp(mid, Ease5.OutQuint(t)), f * 0.6f, t * 6f, 0.9f);
+				float e = Ease5.OutExpo(t);
+				a.Place(from.Lerp(grab, e), f * (0.9f - 0.7f * e), (1f - e) * 8f, 0.8f + 0.2f * e);
 			});
-			Fx.After(c.Front, d + 0.12f, () =>
+			Fx.After(c.Front, d + fly, () =>
 			{
-				// 闪现：原地留一个白亮的残影淡掉，牌向前跳一段
-				a.Set("glow", 1f);
-				Fx.Animate(a.Root, 0, 0.12, t => a.Set("alpha", 1f - t));
 				a.Trail?.Kill();
-				Glow.Flash(c.Front, mid, Phantom.Hot, w * 1.8f, 0.08f);
-				Vector2 jump = mid.Lerp(hand, 0.35f);
-				Phantom.Shards(c.Front, mid, 6, 300f * u, 700f * u, (jump - mid).Normalized(), 20f, 0.2f, 0f, 22f * u);
-
-				ToHand(c, jump, 0f, 0.18f, f * 0.6f, h * 0.02f, 1.2f, 4f);
+				a.Root.Visible = false;
+				Glow.Flash(c.Front, grab, Phantom.Hot, w * 2.2f, 0.09f);
+				Glow.Flash(c.Front, grab, Phantom.Red, w * 4f, 0.2f);
+				Glow.Glint(c.Front, grab + new Vector2(w * 0.3f, -w * 0.5f), 0.6f);
+				Phantom.Shards(c.Front, grab, 6, 200f * u, 500f * u, new Vector2(f, -0.3f), 40f, 0.22f, 300f * u, 16f * u);
+				if (k == 0) HitStop.Request(0.03);
 			});
+			ToHand(c, grab, d + fly + 0.07f, 0.34f, f * 0.2f, h * 0.12f, 1.0f, 5f);
 		}
 	}
 
@@ -260,8 +257,11 @@ public static class SkillRedo
 		Control back = c.Back != null && GodotObject.IsInstanceValid(c.Back) ? c.Back : c.Front;
 		Vector2 hub = c.Feet + new Vector2(-f * h * 0.12f, -h * 0.52f);
 		// 用户 2026-11-13：游戏里这道弧光有人物两倍高 → 缩到和人差不多高
-		Paint.Sweep(back, "slash_thin", hub, Mathf.Pi * 0.5f, new Vector2(0.36f, 0.36f) * u * h / 300f, Lut5.Blood, 0.05f, 0.04f, 0.28f, -45f * f, 0.02f, 1.25f);
-		Glow.Flash(back, hub + new Vector2(0f, -h * 0.25f), Phantom.Red, h * 0.8f, 0.22f);
+		// 2026-11-17 审阅：太小不明显 → 小改：弧光放大到比人略高（0.36 → 0.5）、更亮，紧跟一道错开的回响弧，身后的红光更大更久
+		Paint.Sweep(back, "slash_thin", hub, Mathf.Pi * 0.5f, new Vector2(0.5f, 0.5f) * u * h / 300f, Lut5.Blood, 0.05f, 0.05f, 0.3f, -45f * f, 0.02f, 1.6f);
+		Paint.Sweep(back, "slash_thin", hub + new Vector2(-f * h * 0.06f, h * 0.03f), Mathf.Pi * 0.5f + f * 0.25f, new Vector2(0.42f, 0.42f) * u * h / 300f, Lut5.Blood, 0.05f, 0.04f, 0.26f, -40f * f, 0.07f, 1.2f);
+		Glow.Flash(back, hub + new Vector2(0f, -h * 0.25f), Phantom.Red, h * 1.4f, 0.35f);
+		Glow.Flash(c.Front, hub + new Vector2(0f, -h * 0.4f), Phantom.Hot, h * 0.3f, 0.08f, 0.04f);
 		S("gx_whoosh", 0.3f);                                            // 主拍
 		S("gx_card_stack", 0.16f, 0.72f);
 
@@ -276,7 +276,7 @@ public static class SkillRedo
 		}
 		Fx.After(c.Front, 0.2f, () =>
 		{
-			Glow.Shockwave(c.Front, c.Feet, Phantom.Hot, h * 1.3f, 0.32f, 0.22f);
+			Glow.Shockwave(c.Front, c.Feet, Phantom.Hot, h * 1.8f, 0.4f, 0.22f);
 			Phantom.Shards(c.Front, c.Feet, 8, 200f * u, 500f * u, new Vector2(-1f, -0.2f), 15f, 0.28f, 400f * u, 18f * u);
 			Phantom.Shards(c.Front, c.Feet, 8, 200f * u, 500f * u, new Vector2(1f, -0.2f), 15f, 0.28f, 400f * u, 18f * u);
 		});

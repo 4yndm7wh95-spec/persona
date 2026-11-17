@@ -468,34 +468,14 @@ void fragment() {
 	// ═══════════════════════════ 扫腿 ═══════════════════════════
 
 	/// <summary>
-	/// 扫腿（虚弱 + 格挡）：一道贴地的弧形光刃从目标脚下横扫过去（白芯红晕），扫过的地面扬起一溜尘土和碎光、地上留一道发光的弧痕；
-	/// 目标被扫得一晃（往后一倾），然后中和的锁环 + V 压下（虚弱）。1s。格挡的蜂巢盾由格挡钩子另放。
+	/// 扫腿（2026-11-17 审阅：不用真的做扫腿特效，有挂虚弱的意思 + 防御就行 → 大改）：去掉地上那道扫击刀光、火星、冲击波和顿帧；
+	/// 只留中和同款的虚弱（用户认可的那套），敌人身上一下发灰。格挡照旧走 GainBlockPatch 的蜂巢护盾，这里不再加。
 	/// </summary>
 	public static void LegSweep(SkillCtx c)
 	{
 		if (c.Target is not SkillFx.Victim v) return;
-		float h = Mathf.Max(120f, (v.Feet - v.Top).Length()), u = c.Unit;
-		Sfx.Play(Sfx.SweepLow, 0.45f);
-		float wdt = Mathf.Max(v.Width, h * 0.7f);
-		Vector2 ground = v.Feet + new Vector2(0f, -h * 0.06f);
-		Paint.Sweep(c.Front, "slash_thin", ground, c.Face > 0f ? 0f : Mathf.Pi, new Vector2(0.9f, 0.22f) * u * wdt / 300f, Lut5.Blood, 0.06f, 0.04f, 0.25f, 0f, 0f, 1.1f);
-		Glow.Blade(c.Front, ground, c.Face > 0f ? 0f : Mathf.Pi, wdt * 1.6f, 18f * u, 0.3f);
-		for (int i = 0; i < 6; i++)
-		{
-			float k = i / 5f;
-			Vector2 at = ground + new Vector2((k - 0.5f) * wdt * 1.4f * c.Face, 0f);
-			Fx.After(c.Front, 0.03f * i, () =>
-			{
-				Glow.Sparks(c.Front, at, 6, 80f, 260f, 0.4f, new[] { Hot, Red, new Color(0.35f, 0.3f, 0.28f) }, 600f, 0.02f * u, 0.06f * u, new Vector2(c.Face * 0.4f, -1f), 40f);
-			});
-		}
-		Fx.After(c.Front, 0.1f, () =>
-		{
-			Glow.Shockwave(c.Front, v.Feet, Red, wdt * 1.6f, 0.35f, 0.22f);
-			HitStop.Request(0.035);
-			Fx.Shake(1);
-		});
-		CardFx.Weaken(c.Front, v.Feet.Lerp(v.Top, 0.5f), v.Top, 0.3f);
-		TintPulse(c.Front, v.Feet, v.Tint, new Color(0.6f, 0.45f, 0.5f), 0.35f, 0.7f, 0.2f);
+		Sfx.Play(Sfx.SweepLow, 0.3f);
+		CardFx.Weaken(c.Front, v.Feet.Lerp(v.Top, 0.5f), v.Top, 0.15f);
+		TintPulse(c.Front, v.Feet, v.Tint, new Color(0.6f, 0.45f, 0.5f), 0.25f, 0.7f, 0.2f);
 	}
 }

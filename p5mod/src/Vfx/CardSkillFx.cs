@@ -281,20 +281,31 @@ void fragment() {
 	/// 精准（小刀伤害提高）：Joker 手边，一个红色准星从两倍大转着收拢、扣上四个角括号、中心一亮；锁住的那一刻
 	/// 一道细长的瞄准线从准星朝敌人方向「嗖」地拉出去，沿线掠过几点火星；身上一圈红环弹开，头顶一点白星。0.8s。
 	/// </summary>
+	/// <summary>
+	/// 精准（2026-11-17 审阅：高度太高、风格太简约 → 中改）：准星落在手前（手的高度，不再在头顶前面）；
+	/// 慢：他身后一团暗红的光慢慢亮起、准星从大往里收；快：锁定那一下顿帧，手里的刀「噌」地亮出一道刀锋（打击牌同款刀光材质，横着、很短），
+	/// 刀尖一颗星光、手边一圈细环往外推、身上一下红光，火星顺着刀锋往前溅；慢：身后的光和身上的红慢慢退掉。去掉原来那道横穿半个屏幕的长光线（太直白）。
+	/// </summary>
 	public static void Accuracy(SkillCtx c)
 	{
-		float h = c.Tall, u = c.Unit;
-		Vector2 at = c.Chest + new Vector2(c.Face * h * 0.42f, -h * 0.05f);
-		float lockAt = LockOn(c.Front, at, h * 0.62f, 0f, Red);
+		float h = c.Tall, u = c.Unit, f = c.Face;
+		Control back = c.Back != null && GodotObject.IsInstanceValid(c.Back) ? c.Back : c.Front;
+		Vector2 at = c.Hand + new Vector2(f * h * 0.32f, -h * 0.02f);
+		Vector2 dir = new(f, 0f);
+		Glow.Flash(back, c.Chest + new Vector2(-f * h * 0.05f, 0f), Crimson, h * 1.6f, 0.9f);   // 身后慢慢亮起的暗红
+		float lockAt = LockOn(c.Front, at, h * 0.5f, 0f, Red);
+		if (c.SelfTint is { } tint)
+			Fx.Animate(c.Front, lockAt, 0.6, t => tint(Colors.White.Lerp(new Color(1.35f, 0.85f, 0.88f), (1f - t) * (1f - t))));
 		Fx.After(c.Front, lockAt, () =>
 		{
-			Vector2 dir = new(c.Face, 0f);
-			float reach = Fx.Screen(c.Front).X * 0.55f;
-			Streak(c.Front, at + dir * h * 0.25f, dir, reach, 0.32f, Hot, Red, 2.2f * u);
-			Streak(c.Front, at + dir * h * 0.25f + new Vector2(0f, h * 0.02f), dir, reach * 0.8f, 0.28f, Hot, Crimson, 1.2f * u, 0.03f);
-			Glow.Sparks(c.Front, at + dir * h * 0.3f, 10, 300f, 900f, 0.3f, new[] { Hot, Red }, 0f, 0.02f * u, 0.05f * u, dir, 8f);
-			Node2D rr = Fx.Root(c.Front, c.Chest, "P5AccRing", 0.6);
-			ColorRect ring = Glow.RingRect(rr, h * 1.4f, 0.32f);
+			HitStop.Request(0.035);
+			Paint.Sweep(c.Front, "slash_thin", at + dir * h * 0.2f, f > 0f ? 0f : Mathf.Pi, new Vector2(0.24f, 0.1f) * u * h / 300f, Lut5.Blood, 0.05f, 0.06f, 0.2f, 12f * u, 0f, 1.4f);
+			Glow.Flash(c.Front, at, Hot, h * 0.35f, 0.1f);
+			Glow.Flash(back, at, Red, h * 1.1f, 0.35f);
+			Glow.Glint(c.Front, at + dir * h * 0.36f, 0.9f, 0.03f);
+			Glow.Sparks(c.Front, at + dir * h * 0.25f, 12, 200f * u, 620f * u, 0.32f, new[] { Hot, Red, Crimson }, 0f, 0.012f * u, 0.03f * u, dir, 14f);
+			Node2D rr = Fx.Root(c.Front, at, "P5AccRing", 0.6);
+			ColorRect ring = Glow.RingRect(rr, h * 0.9f, 0.32f);
 			Glow.SetParam(ring, "tint", Red);
 			Fx.Animate(ring, 0, 0.45, t =>
 			{
@@ -303,7 +314,6 @@ void fragment() {
 				Glow.SetParam(ring, "width", Mathf.Lerp(0.03f, 0.006f, e));
 				Glow.SetParam(ring, "alpha", 1f - Fx.InCubic(t));
 			});
-			Glow.Glint(c.Front, c.Head + new Vector2(h * 0.1f, -h * 0.05f), 0.8f, 0.08f);
 		});
 	}
 
@@ -381,35 +391,59 @@ void fragment() {
 	/// 涂毒（攻击造成未格挡伤害时施毒）：一团翻滚的咒毒从手心涌出、把手裹住（下面拉出要滴的液柱），毒液一滴滴落到地上溅开小花，
 	/// 手里冒起一缕魂火；最后「滋」地一亮收进手里，脚下一圈暗红的扁波。1s。
 	/// </summary>
+	/// <summary>
+	/// 涂毒（金卡；2026-11-17 审阅：手上的特效不错但太简单、规模可以大 → 中改）：
+	/// 慢：手里的毒液翻涌起来（原来那团，放大），四周暗下来，身后升起一团暗红的光、两三缕怨魂从手边飘起；
+	/// 快：毒「轰」地顺着手臂漫上全身 —— 身上一下红光、身后一大团暗红闪光、脚下一圈扁平的冲击波、顿帧轻震；
+	/// 慢：毒液从手上一滴滴往下落，身上的红慢慢退成一层若有若无的暗红。
+	/// </summary>
 	public static void Envenom(SkillCtx c)
 	{
 		float h = c.Tall, u = c.Unit;
+		Control back = c.Back != null && GodotObject.IsInstanceValid(c.Back) ? c.Back : c.Front;
+		const float surge = 0.62f;
 		Sfx.Play(Sfx.VenomCoat, 0.4f);
-		Node2D root = Fx.Root(c.Front, c.Hand, "P5Venom", 1.1);
-		ColorRect q = Quad(root, Venom, Vector2.One * h * 0.55f);
+		Vector2 mid = c.Feet + new Vector2(0f, -h * 0.55f);
+		Node2D root = Fx.Root(c.Front, c.Hand, "P5Venom", 1.4);
+		ColorRect q = Quad(root, Venom, Vector2.One * h * 0.85f);
 		Set(q, "seed", Fx.Rand(0f, 40f));
 		Fx.Clock(q);
-		Fx.Animate(q, 0, 1.0, t =>
+		Fx.Animate(q, 0, 1.3, t =>
 		{
-			Set(q, "grow", Ease5.OutBack(Ease5.Seg(t, 0f, 0.3f)) * (1f - 0.85f * Fx.InCubic(Ease5.Seg(t, 0.75f, 0.25f))));
-			Set(q, "alpha", 1f - Ease5.Seg(t, 0.8f, 0.2f));
+			float s2 = t * 1.3f;
+			float pulse = 1f + 0.18f * Mathf.Exp(-Mathf.Pow((s2 - surge) / 0.06f, 2f));
+			Set(q, "grow", Ease5.OutBack(Ease5.Seg(s2, 0f, 0.4f)) * pulse * (1f - 0.85f * Fx.InCubic(Ease5.Seg(s2, 1.0f, 0.3f))));
+			Set(q, "alpha", 1f - Ease5.Seg(s2, 1.05f, 0.25f));
 		});
-		Glow.Flash(c.Front, c.Hand, Crimson, h * 0.45f, 0.2f);
-		// 滴落
-		float ground = c.Feet.Y;
-		for (int i = 0; i < 5; i++)
+		Glow.Flash(c.Front, c.Hand, Crimson, h * 0.5f, 0.25f);
+		Glow.Flash(back, mid, new Color(0.6f, 0.02f, 0.1f), h * 2.2f, 1.1f);           // 身后慢慢升起的暗红
+		for (int i = 0; i < 3; i++)
+			Paint.Rise(i == 1 ? back : c.Front, "curse_soul", c.Hand + new Vector2((i - 1) * h * 0.12f, -h * 0.05f), h * (0.45f + 0.1f * i), 0.5f, Lut5.Curse, 0.85f, 0.08f + 0.12f * i);
+		if (c.SelfTint is { } tint)
+			Fx.Animate(c.Front, 0, 1.6, t =>
+			{
+				float s2 = t * 1.6f;
+				float k = Ease5.Seg(s2, 0.1f, surge - 0.1f) * 0.25f + 0.9f * Mathf.Exp(-Mathf.Pow((s2 - surge) / 0.08f, 2f));
+				k = Mathf.Max(k, 0.25f * (1f - Ease5.Seg(s2, surge + 0.1f, 0.8f)));
+				tint(Colors.White.Lerp(new Color(1.5f, 0.6f, 0.7f), k));
+			});
+		Fx.After(c.Front, surge, () =>
 		{
-			float d = 0.18f + 0.12f * i + Fx.Rand(-0.03f, 0.03f);
+			HitStop.Request(0.04);
+			Fx.Shake(1);
+			Glow.Flash(c.Front, c.Hand, Hot, h * 0.4f, 0.12f);
+			Glow.Flash(back, mid, Red, h * 2.6f, 0.45f);
+			Glow.Shockwave(c.Front, c.Feet, Crimson, h * 1.8f, 0.5f, 0.24f);
+			Glow.Sparks(c.Front, c.Hand, 18, 120f * u, 520f * u, 0.5f, new[] { Hot, Red, Deep }, -60f * u, 0.015f * u, 0.04f * u, Vector2.Up, 140f);
+		});
+		// 毒液滴落
+		float ground = c.Feet.Y;
+		for (int i = 0; i < 7; i++)
+		{
+			float d = surge + 0.06f + 0.1f * i + Fx.Rand(-0.03f, 0.03f);
 			Vector2 from = c.Hand + new Vector2(Fx.Rand(-0.08f, 0.08f) * h, h * 0.1f);
 			Drop(c.Front, from, ground + Fx.Rand(-0.02f, 0.03f) * h, d, h, u);
 		}
-		Paint.Rise(c.Front, "curse_soul", c.Hand + new Vector2(0f, -h * 0.05f), h * 0.4f, 0.45f, Lut5.Curse, 0.75f, 0.12f);
-		Fx.After(c.Front, 0.78f, () =>
-		{
-			Glow.Flash(c.Front, c.Hand, Red, h * 0.3f, 0.12f);
-			Glow.Sparks(c.Front, c.Hand, 10, 80f, 240f, 0.35f, new[] { Hot, Red, Deep }, -60f, 0.02f * u, 0.05f * u, Vector2.Up, 120f);
-			Glow.Shockwave(c.Front, c.Feet, Crimson, h * 1.2f, 0.4f, 0.24f);
-		});
 	}
 
 	/// <summary>一滴毒液：从 from 落到 groundY（加速），落地溅起一小圈和几点飞沫。</summary>
