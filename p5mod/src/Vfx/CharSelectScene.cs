@@ -8,7 +8,7 @@ namespace P5Joker;
 /// 选人界面（静默猎手的 char_select_bg_silent 场景，设计见 docs/p5/CHARSELECT_PLAN.md）。构图照结城理 mod 的选人界面：
 /// 立绘是贴着右边、占满屏幕高度的大特写，左边一道斜切口把它收进一块面板里（切口上压一组 P5 的黑 / 红 / 白斜条 + 滚动小字），
 /// 面板是暗红黑底，上面压着红色锯齿爆炸形（用户 2026-11-17：锯齿球要有层次、黑底加粗）；左边是干净的场景：深红夜空（只有很淡的云）、压低的东京天际线黑剪影（窗灯明灭）、
-/// 面板旁边楼顶水塔上坐着摩尔加纳；左上角是 TAKE YOUR HEART 剪贴字标题（P5 菜单的标题位置）；偶尔一张预告信飘过。
+/// 面板旁边楼顶上一座水塔；左上角是 TAKE YOUR HEART 剪贴字标题（P5 菜单的标题位置）；偶尔一张预告信飘过。
 /// 立绘范围按用户 2026-11-17 的图 2：画布 x≈896 落在屏幕右边、画布 y≈25 落在屏幕顶边（模板匹配出来的），缩放 0.92。
 /// 露出来的那只眼睛泛金光（虹膜染金 + 亮芯 + 柔光 + 横向光条 + 偶尔一闪的四角星，跟着呼吸起伏、眨眼时熄灭；
 /// 用户 2026-11-17：不要蓝焰面具、蓝色不搭 → 金色：P5 觉醒时的眼睛，暖色和红黑白协调，也不会被旁边的红手套吞掉）。
@@ -211,8 +211,7 @@ void fragment() {
 	}
 
 	/// <summary>
-	/// 楼顶前景（左右翻过来：水塔在最右、挨着立绘面板，栏杆 / 空调 / 广告架往左铺到底）+ 水塔顶上的摩尔加纳（面朝 Joker）：
-	/// 尾巴慢摆，隔一阵整只轻轻一抖。
+	/// 楼顶前景（左右翻过来：水塔在最右、挨着立绘面板，栏杆 / 空调 / 广告架往左铺到底）。
 	/// </summary>
 	private static void Rooftop(Control screen)
 	{
@@ -220,25 +219,6 @@ void fragment() {
 		const float k = 0.72f, tankRight = 1010f;
 		Vector2 at = new(tankRight - 1506f * k, SH + 40f - tex.GetSize().Y * k);
 		screen.AddChild(new Sprite2D { Name = "Rooftop", Texture = tex, Centered = false, FlipH = true, Position = at, Scale = Vector2.One * k });
-		if (Fx.Tex("cs_morgana") is Texture2D mt && Fx.Tex("cs_morgana_tail") is Texture2D tt)
-		{
-			const float mk = 0.42f;
-			// 水塔顶（翻过来之后在贴图 x≈1351, y≈45），摩尔加纳贴图 314×314：屁股在 (176, 300)
-			Node2D cat = new() { Name = "Morgana", Position = at + new Vector2(1536f - 185f, 75f) * k, Scale = new Vector2(-mk, mk) };
-			screen.AddChild(cat);
-			Vector2 tailRoot = new(116f, 265f);                                // 贴图里尾巴根（charselect_assets 量的）
-			Node2D tail = new() { Position = tailRoot - new Vector2(176f, 300f) };
-			cat.AddChild(tail);
-			tail.AddChild(new Sprite2D { Texture = tt, Centered = false, Position = -tailRoot });
-			cat.AddChild(new Sprite2D { Texture = mt, Centered = false, Position = new Vector2(-176f, -300f) });
-			Tween sway = tail.CreateTween().SetLoops();
-			sway.TweenProperty(tail, "rotation", 0.16f, 1.6).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-			sway.TweenProperty(tail, "rotation", -0.1f, 1.9).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-			Tween twitch = cat.CreateTween().SetLoops();
-			twitch.TweenInterval(9.0);
-			twitch.TweenProperty(cat, "scale", new Vector2(-mk * 1.03f, mk * 0.97f), 0.08);
-			twitch.TweenProperty(cat, "scale", new Vector2(-mk, mk), 0.22).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-		}
 	}
 
 	/// <summary>预告信偶尔一张：从左上被风吹着往右下飘，边飘边翻（横向缩放模拟翻面）；飘到面板那里被立绘 / 斜条挡住。</summary>

@@ -5,7 +5,6 @@ stage_p5.fx_textures() 会调用 textures()，所以打包和预览（tools/p5/f
   身体 = 底图，只在手盖住的地方（外扩、羽化）换成"去掉手"那张 —— 静止时身体 + 手和底图逐像素一样；
   手   = 底图里手的像素（用 portrait_hand 的透明度当遮罩）；
   眨眼 = 闭眼图里眼睛那一块（贴片，带羽化），偏移见 BLINK_BOX。
-摩尔加纳：身体图本身带尾巴，按尾巴那张的形状抠掉，尾巴单独一层（根部见 TAIL_ROOT）。
 描边（白边 + 外圈黑边）离线烘焙成 cs_body_line / cs_hand_line，游戏里画在人物后面，运行时不用描边着色器。
 天际线重新上色（recolor）：原图的白色楼面、自带的前景楼顶全部压成剪影，只留小窗灯 —— 原图白块太多是"脏"的主要来源。
 斜条上的竖排小字（cs_slab_text）、介绍板抬头（cs_info_head / cs_info_ghost，同结城理 mod 的 build_info_panel 几何）都是超采样画的，边缘抗锯齿；
@@ -142,16 +141,6 @@ def warp_map(body):
     return Image.merge("RGBA", chans + [Image.new("L", chans[0].size, 255)])
 
 
-def morgana_layers():
-    body = np.asarray(_rgba("morgana")).astype(np.float32)
-    tail = np.asarray(_rgba("morgana_tail")).astype(np.float32)
-    cut = _feather(tail[..., 3] > 20, 3, 1.5)
-    body[..., 3] *= 1 - cut
-    to = lambda a: Image.fromarray(a.clip(0, 255).astype(np.uint8), "RGBA")
-    k = 0.25                                # 1254 → 314：游戏里约 80px 高，留两倍余量
-    return {"cs_morgana": _scale(to(body), k), "cs_morgana_tail": _scale(to(tail), k)}
-
-
 def slab_text():
     """斜条上滚动的竖排小字（2 倍大烘焙，游戏里缩 0.5）：宽度正好是一个循环单元，首尾相接不跳。"""
     from PIL import ImageDraw, ImageFont
@@ -260,7 +249,6 @@ def textures():
     yield "cs_body_line", outline(layers["cs_body"])
     yield "cs_warp", warp_map(layers["cs_body"])
     yield "cs_hand_line", outline(layers["cs_hand"])
-    yield from morgana_layers().items()
     yield "cs_skyline", recolor(_rgba("city_skyline").crop((0, 351, 1536, 1024)))
     yield "cs_rooftop", _rgba("rooftop_foreground").crop((0, 305, 1536, 1024))
     yield "cs_info_head", info_head()

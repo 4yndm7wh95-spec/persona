@@ -40,19 +40,10 @@ void fragment() {
 	COLOR = c;
 }" };
 
-	public static string ShortDesc()
-	{
-		string loc = TranslationServer.GetLocale();
-		if (loc.StartsWith("zh", StringComparison.Ordinal))
-		{
-			return "心之怪盗团的首领。\n以叛逆之魂，夺取扭曲的心。";
-		}
-		if (loc.StartsWith("ja", StringComparison.Ordinal))
-		{
-			return "心の怪盗団のリーダー。\n反逆の魂で、歪んだ心を奪う。";
-		}
-		return "Leader of the Phantom Thieves of Hearts.\nWith a rebel's soul, he steals distorted hearts.";
-	}
+	/// <summary>精简描述：日文界面用日文，其余都用中文（用户 2026-11-17：这段要中文）。</summary>
+	public static string ShortDesc() => TranslationServer.GetLocale().StartsWith("ja", StringComparison.Ordinal)
+		? "心の怪盗団のリーダー。\n反逆の魂で、歪んだ心を奪う。"
+		: "心之怪盗团的首领。\n以叛逆之魂，夺取扭曲的心。";
 
 	private static Label Text(Node parent, string text, Font font, int size, Color top, Color bottom, Vector2 pos, int outline = 0)
 	{
