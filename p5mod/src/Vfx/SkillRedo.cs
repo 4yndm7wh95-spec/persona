@@ -257,9 +257,8 @@ public static class SkillRedo
 		Control back = c.Back != null && GodotObject.IsInstanceValid(c.Back) ? c.Back : c.Front;
 		Vector2 hub = c.Feet + new Vector2(-f * h * 0.12f, -h * 0.52f);
 		// 用户 2026-11-13：游戏里这道弧光有人物两倍高 → 缩到和人差不多高
-		// 2026-11-17 审阅：太小不明显 → 小改：弧光放大到比人略高（0.36 → 0.5）、更亮，紧跟一道错开的回响弧，身后的红光更大更久
+		// 2026-11-17 审阅：太小不明显 → 小改：弧光放大到比人略高（0.36 → 0.5）、更亮，身后的红光更大更久（第二轮：只要一道弧）
 		Paint.Sweep(back, "slash_thin", hub, Mathf.Pi * 0.5f, new Vector2(0.5f, 0.5f) * u * h / 300f, Lut5.Blood, 0.05f, 0.05f, 0.3f, -45f * f, 0.02f, 1.6f);
-		Paint.Sweep(back, "slash_thin", hub + new Vector2(-f * h * 0.06f, h * 0.03f), Mathf.Pi * 0.5f + f * 0.25f, new Vector2(0.42f, 0.42f) * u * h / 300f, Lut5.Blood, 0.05f, 0.04f, 0.26f, -40f * f, 0.07f, 1.2f);
 		Glow.Flash(back, hub + new Vector2(0f, -h * 0.25f), Phantom.Red, h * 1.4f, 0.35f);
 		Glow.Flash(c.Front, hub + new Vector2(0f, -h * 0.4f), Phantom.Hot, h * 0.3f, 0.08f, 0.04f);
 		S("gx_whoosh", 0.3f);                                            // 主拍

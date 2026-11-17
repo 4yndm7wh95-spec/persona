@@ -898,6 +898,13 @@ public partial class Preview : Node2D
 			foreach (double g in new[] { 2.3 + 0.2, 6.3 + 0.2 })   // 后空翻、扫腿的格挡：游戏里走 GainBlockPatch 的蜂巢护盾
 				p.At(g, () => HexGuard.Play(p._front, Chest, tall, 1f, 5, Pose(885f, 310f)));
 		},
+		["fix1b"] = p =>
+		{
+			// 第一遍精准只为让着色器先编译好（预览里第一次用到的着色器要编译几帧才显示），出视频时剪掉前 2s
+			RunCards(p, null, new (string, string, double, double)[] { ("Accuracy", "cast_glove", 0.25, 2.0), ("Accuracy", "cast_glove", 0.25, 2.0), ("Backflip", "cast_guard", 0.08, 2.0) });
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(4.3 + 0.2, () => HexGuard.Play(p._front, Chest, tall, 1f, 5, Pose(885f, 310f)));
+		},
 		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_glove", 0.25, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast_wave", 0.08, 1.6) }),
 		["redo4b"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.8), ("Afterimage", "cast_glove", 0.25, 1.4), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast_wave", 0.08, 1.8) }),
 		["redo5"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.9), ("Shadowmeld", "cast_glove", 0.25, 1.9) }),

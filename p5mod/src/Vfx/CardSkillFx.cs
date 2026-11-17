@@ -282,39 +282,47 @@ void fragment() {
 	/// 一道细长的瞄准线从准星朝敌人方向「嗖」地拉出去，沿线掠过几点火星；身上一圈红环弹开，头顶一点白星。0.8s。
 	/// </summary>
 	/// <summary>
-	/// 精准（2026-11-17 审阅：高度太高、风格太简约 → 中改）：准星落在手前（手的高度，不再在头顶前面）；
-	/// 慢：他身后一团暗红的光慢慢亮起、准星从大往里收；快：锁定那一下顿帧，手里的刀「噌」地亮出一道刀锋（打击牌同款刀光材质，横着、很短），
-	/// 刀尖一颗星光、手边一圈细环往外推、身上一下红光，火星顺着刀锋往前溅；慢：身后的光和身上的红慢慢退掉。去掉原来那道横穿半个屏幕的长光线（太直白）。
+	/// 精准（小刀牌的加持；2026-11-17 审阅第二轮：不要刀锋 —— 这张是给小刀（开枪）加伤害的 buff）：
+	/// 慢：他身后慢慢亮起一团暗红，准星在手前（手的高度）从大往里收、锁定；快：锁定那一下顿帧，准星「收」进他的手里 ——
+	/// 手边一圈细环从外往里收紧、手心一闪、身上一下红光（之后每一枪都带着这份准头）；慢：身后的光和身上的红慢慢退掉。
 	/// </summary>
 	public static void Accuracy(SkillCtx c)
 	{
-		float h = c.Tall, u = c.Unit, f = c.Face;
+		float h = c.Tall, f = c.Face;
 		Control back = c.Back != null && GodotObject.IsInstanceValid(c.Back) ? c.Back : c.Front;
 		Vector2 at = c.Hand + new Vector2(f * h * 0.32f, -h * 0.02f);
-		Vector2 dir = new(f, 0f);
+		Vector2 palm = c.Hand + new Vector2(f * h * 0.04f, 0f);
 		Glow.Flash(back, c.Chest + new Vector2(-f * h * 0.05f, 0f), Crimson, h * 1.6f, 0.9f);   // 身后慢慢亮起的暗红
 		float lockAt = LockOn(c.Front, at, h * 0.5f, 0f, Red);
-		if (c.SelfTint is { } tint)
-			Fx.Animate(c.Front, lockAt, 0.6, t => tint(Colors.White.Lerp(new Color(1.35f, 0.85f, 0.88f), (1f - t) * (1f - t))));
+		const float absorb = 0.2f, hold = 0.14f;
 		Fx.After(c.Front, lockAt, () =>
 		{
 			HitStop.Request(0.035);
-			Paint.Sweep(c.Front, "slash_thin", at + dir * h * 0.2f, f > 0f ? 0f : Mathf.Pi, new Vector2(0.24f, 0.1f) * u * h / 300f, Lut5.Blood, 0.05f, 0.06f, 0.2f, 12f * u, 0f, 1.4f);
-			Glow.Flash(c.Front, at, Hot, h * 0.35f, 0.1f);
-			Glow.Flash(back, at, Red, h * 1.1f, 0.35f);
-			Glow.Glint(c.Front, at + dir * h * 0.36f, 0.9f, 0.03f);
-			Glow.Sparks(c.Front, at + dir * h * 0.25f, 12, 200f * u, 620f * u, 0.32f, new[] { Hot, Red, Crimson }, 0f, 0.012f * u, 0.03f * u, dir, 14f);
-			Node2D rr = Fx.Root(c.Front, at, "P5AccRing", 0.6);
+			Glow.Flash(c.Front, at, Hot, h * 0.3f, 0.08f);
+		});
+		Fx.After(c.Front, lockAt + hold, () =>
+		{
+			// 准星收进手里：一圈细环从准星的大小往手心收紧
+			Node2D rr = Fx.Root(c.Front, at, "P5AccRing", absorb + 0.3);
 			ColorRect ring = Glow.RingRect(rr, h * 0.9f, 0.32f);
 			Glow.SetParam(ring, "tint", Red);
-			Fx.Animate(ring, 0, 0.45, t =>
+			Fx.Animate(ring, 0, absorb + 0.05, t =>
 			{
-				float e = Ease5.OutExpo(t);
-				Glow.SetParam(ring, "radius", Mathf.Lerp(0.2f, 0.92f, e));
-				Glow.SetParam(ring, "width", Mathf.Lerp(0.03f, 0.006f, e));
-				Glow.SetParam(ring, "alpha", 1f - Fx.InCubic(t));
+				float x = Mathf.Min(1f, t * (absorb + 0.05f) / absorb), e = x * x * (3f - 2f * x);
+				rr.GlobalPosition = at.Lerp(palm, e);
+				Glow.SetParam(ring, "radius", Mathf.Lerp(0.85f, 0.1f, e));
+				Glow.SetParam(ring, "width", Mathf.Lerp(0.02f, 0.05f, e));
+				Glow.SetParam(ring, "alpha", 1f - Ease5.Seg(t, 0.8f, 0.2f));
 			});
 		});
+		Fx.After(c.Front, lockAt + hold + absorb, () =>
+		{
+			Glow.Flash(c.Front, palm, Hot, h * 0.28f, 0.1f);
+			Glow.Flash(back, palm, Red, h * 1.0f, 0.4f);
+			Glow.Glint(c.Front, palm, 0.8f);
+		});
+		if (c.SelfTint is { } tint)
+			Fx.After(c.Front, lockAt + hold + absorb, () => Fx.Animate(c.Front, 0, 0.6, t => tint(Colors.White.Lerp(new Color(1.35f, 0.85f, 0.88f), (1f - t) * (1f - t)))));   // 不能直接给图层带延迟的 Animate：等待期间会把整个图层藏起来
 	}
 
 	/// <summary>
