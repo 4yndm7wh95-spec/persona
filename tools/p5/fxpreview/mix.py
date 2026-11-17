@@ -26,7 +26,7 @@ for _, f, _ in events:
     cmd += ["-i", str(f)]
 if events:
     parts = [f"[{i + 1}]adelay={int(t * 1000)}|{int(t * 1000)},volume={v * 0.75:.3f}[a{i}]" for i, (t, n, v) in enumerate(events)]
-    mix = "".join(f"[a{i}]" for i in range(len(events))) + f"amix=inputs={len(events)}:normalize=0,alimiter=limit=0.95[a]"
+    mix = "".join(f"[a{i}]" for i in range(len(events))) + f"amix=inputs={len(events)}:normalize=0,alimiter=limit=0.95,apad[a]"   # apad：声音比画面短时补静音，画面不被 -shortest 截断
     cmd += ["-filter_complex", ";".join(parts) + ";" + mix, "-map", "0:v", "-map", "[a]", "-c:a", "aac", "-b:a", "160k"]
 cmd += ["-c:v", "libx264", "-pix_fmt", "yuv420p", "-vf", "scale=1280:-2", "-shortest" if events else "-an", str(HERE / "out" / f"{s}.mp4")]
 cmd = [c for c in cmd if c]
