@@ -33,11 +33,11 @@ public static class EmbarkTransition
 	private const float RedW = 22f;                       // 每扇门内沿的红边宽（两扇拼起来 44，一道细红边）
 	private const float Gap = 10f;                        // 红边和白线之间的黑缝
 	private const float LineW = 3f;                       // 白线宽
-	private static readonly Vector2 CardAt = new(0f, 30f);
+	private static readonly Vector2 CardAt = new(0f, -15f);   // 稍微偏上（用户：上下空间不平衡）
 	private const float CardH = 450f;                     // 预告信贴图显示高（含透明边；卡面约 420 高）
 	private const float CardDeg = -4f;                    // 落定后略微歪一点
 	private const float Focal = 1500f;                    // 立体转动的透视焦距（越小透视越强）
-	private static readonly Vector2 PinAt = new(222f, -147f);   // 刀扎进纸面的入口：预告信右上角
+	private static readonly Vector2 PinAt = new(222f, -192f);   // 刀扎进纸面的入口：预告信右上角
 	private const float Hidden = 45f;                           // 刀尖进了纸的那一截长
 	private const float KnifeDeg = -57f;                  // 飞刀几乎从正上方扎下来（刀柄朝右上，同 P5R 切日历那把）
 	private const float KnifeScale = 0.55f;               // 原图 858×468
@@ -188,9 +188,7 @@ void fragment() {
 				if (GodotObject.IsInstanceValid(Root)) Root.QueueFree();
 				Stage.Safe("embark open done", () => onDone?.Invoke());
 			});
-			// 拔刀的「唰」→ 预告信飞走的短风声 → 两扇门展开的菜单风声
-			Sfx.Play(Sfx.Swish, 0.4f, 0f);
-			Sfx.Play(Sfx.SwishHeavy, 0.35f, 0.12f);
+			// 预告信转出去不出声（用户 2026-11-17），只有两扇门展开的菜单风声
 			Sfx.Play(Sfx.MenuWhoosh, 0.75f, 0.36f);
 		}
 	}
