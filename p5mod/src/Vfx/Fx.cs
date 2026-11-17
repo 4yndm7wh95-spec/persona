@@ -21,27 +21,56 @@ public static class Fx
 	/// <summary>P5R 原版特效贴图（tools/p5/stage_p5.py 打进 pck 的 res://p5joker/fx/）。</summary>
 	private static readonly System.Collections.Generic.Dictionary<string, Texture2D?> Cache = new();
 
-	/// <summary>
-	/// 预热：res://p5joker/fx/ 里所有贴图在后台线程开始加载（亚森的分层大图、眼神特写贴图……第一次用到才同步加载会卡一帧）。
-	/// 之后 Tex() 走 ResourceLoader.Load 会直接拿到加载好的那份。
-	/// </summary>
-	public static void PreloadAll()
+	private const string TextureDirectory = "res://p5joker/fx/";
+	private static readonly System.Collections.Generic.HashSet<string> Loading = new();
+
+	internal static System.Collections.Generic.IEnumerable<string> TextureNames()
 	{
-		foreach (string f in DirAccess.GetFilesAt("res://p5joker/fx"))
+		var seen = new System.Collections.Generic.HashSet<string>();
+		foreach (string file in DirAccess.GetFilesAt(TextureDirectory))
 		{
-			string n = f.Replace(".import", "").Replace(".remap", "");
-			if (n.EndsWith(".png"))
-			{
-				ResourceLoader.LoadThreadedRequest("res://p5joker/fx/" + n);
-			}
+			string name = file.Replace(".import", "").Replace(".remap", "");
+			if (name.EndsWith(".png", StringComparison.Ordinal) && seen.Add(name[..^4]))
+				yield return name[..^4];
 		}
+	}
+
+	// 主线程轮询，只有加载完成后才取资源，并持有引用供实际演出使用。
+	internal static bool PollTexture(string name)
+	{
+		if (Cache.ContainsKey(name)) return true;
+		if (!PollResource(TextureDirectory + name + ".png", out Resource? resource)) return false;
+		if (resource is Texture2D texture) Cache[name] = texture;
+		return true;
+	}
+
+	internal static bool PollResource(string path, out Resource? resource)
+	{
+		resource = null;
+		if (!Loading.Contains(path))
+		{
+			if (!ResourceLoader.Exists(path) || ResourceLoader.LoadThreadedRequest(path) != Error.Ok)
+				return true;
+			Loading.Add(path);
+		}
+
+		var status = ResourceLoader.LoadThreadedGetStatus(path);
+		if (status == ResourceLoader.ThreadLoadStatus.InProgress) return false;
+		Loading.Remove(path);
+		if (status == ResourceLoader.ThreadLoadStatus.Loaded)
+			resource = ResourceLoader.LoadThreadedGet(path);
+		return true;
 	}
 
 	public static Texture2D? Tex(string name)
 	{
 		if (!Cache.TryGetValue(name, out Texture2D? tex))
 		{
-			tex = Stage.LoadTexture(name);
+			// 玩家如果比预热先用到该资源，沿用已经发出的读取请求。
+			string path = TextureDirectory + name + ".png";
+			if (Loading.Remove(path))
+				tex = ResourceLoader.LoadThreadedGet(path) as Texture2D;
+			tex ??= Stage.LoadTexture(name);
 			Cache[name] = tex;
 		}
 		return tex;

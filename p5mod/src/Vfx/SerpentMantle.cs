@@ -61,7 +61,10 @@ public sealed class SerpentMantle
 		return o;
 	}
 
-	private static void PushHead(ShaderMaterial m)
+	private sealed record HeadShape(Vector2[] Fixed, int FixedCount, Vector2[] Jaw, int JawCount, Vector2[] UpperLip, Vector2[] LowerLip);
+	private static HeadShape? _headShape;
+
+	private static HeadShape MakeHeadShape()
 	{
 		var up = CatRom(Upper); var mouth = CatRom(Mouth); var jt = CatRom(JawTop); var ju = CatRom(JawUnder);
 		var fixedP = new List<Vector2>(up); fixedP.AddRange(mouth);
@@ -69,9 +72,18 @@ public sealed class SerpentMantle
 		var jaw = new List<Vector2>(jt); jaw.AddRange(ju.GetRange(1, ju.Count - 2));
 		var f72 = new Vector2[72]; for (int i = 0; i < fixedP.Count && i < 72; i++) f72[i] = fixedP[i];
 		var j60 = new Vector2[60]; for (int i = 0; i < jaw.Count && i < 60; i++) j60[i] = jaw[i];
-		m.SetShaderParameter("head_fixed", f72); m.SetShaderParameter("head_fixed_n", Math.Min(fixedP.Count, 72));
-		m.SetShaderParameter("head_jaw", j60); m.SetShaderParameter("head_jaw_n", Math.Min(jaw.Count, 60));
-		m.SetShaderParameter("lip_up", mouth.ToArray()); m.SetShaderParameter("lip_low", jt.ToArray());
+		return new HeadShape(f72, Math.Min(fixedP.Count, 72), j60, Math.Min(jaw.Count, 60), mouth.ToArray(), jt.ToArray());
+	}
+
+	private static void PushHead(ShaderMaterial m)
+	{
+		HeadShape head = _headShape ??= MakeHeadShape();
+		m.SetShaderParameter("head_fixed", head.Fixed);
+		m.SetShaderParameter("head_fixed_n", head.FixedCount);
+		m.SetShaderParameter("head_jaw", head.Jaw);
+		m.SetShaderParameter("head_jaw_n", head.JawCount);
+		m.SetShaderParameter("lip_up", head.UpperLip);
+		m.SetShaderParameter("lip_low", head.LowerLip);
 	}
 
 	private static Shader Shade => _shader ??= new Shader { Code = @"
@@ -641,6 +653,14 @@ void fragment() {
 
 	private bool Valid => GodotObject.IsInstanceValid(_frontRoot) && GodotObject.IsInstanceValid(_backRoot);
 
+	internal static void Warm(Control slot)
+	{
+		Vector2 center = Fx.Screen(slot) * 0.5f;
+		Rect2 rect = new(-8f, -8f, 16f, 16f);
+		Make(slot, center, rect, -1f, "P5WarmSerpentBack");
+		Make(slot, center, rect, 1f, "P5WarmSerpentFront");
+	}
+
 	private static (Node2D, ShaderMaterial) Make(Control layer, Vector2 anchor, Rect2 rect, float side, string name)
 	{
 		Node2D root = new() { Name = name };
@@ -695,6 +715,7 @@ void fragment() {
 		if (GodotObject.IsInstanceValid(_backRoot)) _backRoot.QueueFree();
 		if (GodotObject.IsInstanceValid(_skyRoot)) _skyRoot.QueueFree();
 		if (GodotObject.IsInstanceValid(_mistFrontRoot)) _mistFrontRoot.QueueFree();
+		if (GodotObject.IsInstanceValid(_eclipseRoot)) _eclipseRoot.QueueFree();
 	}
 
 	private static float Smooth(float a, float b, float x) { float t = Mathf.Clamp((x - a) / (b - a), 0f, 1f); return t * t * (3f - 2f * t); }

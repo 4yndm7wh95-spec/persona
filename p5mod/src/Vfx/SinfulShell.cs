@@ -352,37 +352,54 @@ void fragment() {
 		return l;
 	}
 
-	/// <summary>
-	/// 预热（用户 2026-11-09：东西加多了，第一次打出肯定会卡）：Warmup.Run 每场战斗开始时在几乎透明的层里调一次。
-	/// 着色器本身 Warmup 已经按反射全编译过；这里补上它照顾不到的：撒旦耶尔的大贴图第一次画时才上传显卡（整套部件建一个很小的、摆一帧）、
-	/// 场景着色器带平台贴图 + 被引擎 2D 灯照着画一次、余烬 / 火花粒子的处理材质、命中区那一套（冲击波 + 粒子 + 灯），顺带把这些 C# 方法 JIT 掉。不出声。
-	/// </summary>
-	public static void Warm(Control hidden, Vector2 c)
+	// 分帧画出实机对应的着色器变体：独立天空视口、带灯的平台和人物、粒子及命中区。
+	internal static void WarmScene(Control slot)
 	{
-		Node2D slot = new() { Name = "SinfulWarm" };
-		hidden.AddChild(slot);
-		if (SatanaelPuppet.Available)
+		Vector2 screen = Fx.Screen(slot), c = screen * 0.5f;
+		ShaderMaterial sky = new() { Shader = Scene };
+		sky.SetShaderParameter("sres", screen);
+		sky.SetShaderParameter("origin", c);
+		sky.SetShaderParameter("reveal", 1e5f);
+		SinfulRender.Sky(slot, screen, sky);
+		ShaderMaterial rocks = new() { Shader = Scene };
+		rocks.SetShaderParameter("part", 1);
+		rocks.SetShaderParameter("sres", screen);
+		rocks.SetShaderParameter("origin", c);
+		rocks.SetShaderParameter("reveal", 1e5f);
+		if (Fx.Tex("sinful_platform") is Texture2D platform)
 		{
-			SatanaelPuppet pp = new(slot, c, 0.05f, c + new Vector2(100f, 100f));
-			pp.Update(1f, 0f, 0.5f, 1.5f, 9f);
-			pp.SceneMask(c, 1e5f);
-			pp.LightFrom(c + new Vector2(100f, -100f));
+			rocks.SetShaderParameter("plat", platform);
+			rocks.SetShaderParameter("plat_origin", c);
+			rocks.SetShaderParameter("plat_size", new Vector2(36f, 18f));
 		}
-		ShaderMaterial m = new() { Shader = Scene };
-		m.SetShaderParameter("reveal", 1e5f);
-		if (Fx.Tex("sinful_platform") is Texture2D plat)
+		slot.AddChild(new ColorRect
 		{
-			m.SetShaderParameter("plat", plat);
-			m.SetShaderParameter("plat_size", new Vector2(8f, 8f));
-		}
-		ColorRect r = new() { Size = new Vector2(8f, 8f), Material = m, MouseFilter = Control.MouseFilterEnum.Ignore };
-		slot.AddChild(r);
-		r.GlobalPosition = c;
-		PointLight2D l = Light(slot, c, Colors.White, 64f);
-		l.Energy = 0.05f;
+			Size = screen, Material = rocks, LightMask = SinfulRender.ActorLightMask,
+			MouseFilter = Control.MouseFilterEnum.Ignore,
+		});
+		Light(slot, c, Colors.White, 64f).Energy = 1f;
+	}
+
+	internal static void WarmPuppet(Control slot)
+	{
+		if (!SatanaelPuppet.Available) return;
+		Vector2 c = Fx.Screen(slot) * 0.5f;
+		Node2D puppetRoot = new();
+		slot.AddChild(puppetRoot);
+		SatanaelPuppet puppet = new(puppetRoot, new Vector2(6f, 0f), 0.05f, c + new Vector2(48f, 24f));
+		puppet.Update(1f, 0f, 0.5f, 1.5f, 9f);
+		puppet.SceneMask(c, 1e5f);
+		puppet.LightFrom(c + new Vector2(32f, -32f));
+		SinfulRender.LightActors(slot, new[] { puppetRoot });
+		Light(slot, c, Colors.White, 64f).Energy = 1f;
+	}
+
+	internal static void WarmImpact(Control slot)
+	{
+		Vector2 c = Fx.Screen(slot) * 0.5f;
 		GpuParticles2D embers = ReadyFx.Embers(slot, c, new[] { Colors.White, Colors.White }, 4, 8f, 0.3f, 10f, 20f, 5f);
-		embers.Material = MaskMaterial(Fx.Screen(hidden), c);
-		HitZone(hidden, c, Vector2.Right, c.Y, 0f, 0.02f);
+		embers.Material = MaskMaterial(Fx.Screen(slot), c);
+		HitZone(slot, c, Vector2.Right, c.Y, 0f, 0.02f);
 	}
 
 	/// <summary>放整段大罪穿甲弹。back = 背景层（场景、人格面具），front = 前景层（子弹、命中）。返回子弹穿过每个敌人的时刻（秒，从现在算）。</summary>

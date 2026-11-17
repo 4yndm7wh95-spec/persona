@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Models;
@@ -67,10 +66,11 @@ public static class CharSelectInfo
 			}
 			string hp = Traverse.Create(screen).Field("_hp").GetValue<Label>()?.Text ?? "";
 			string gold = Traverse.Create(screen).Field("_gold").GetValue<Label>()?.Text ?? "";
-			string relicTitle = Traverse.Create(screen).Field("_relicTitle").GetValue<RichTextLabel>()?.Text ?? "";
-			string relicDesc = Traverse.Create(screen).Field("_relicDescription").GetValue<RichTextLabel>()?.Text ?? "";
+			RichTextLabel? relicTitle = Traverse.Create(screen).Field("_relicTitle").GetValue<RichTextLabel>();
+			RichTextLabel? relicDesc = Traverse.Create(screen).Field("_relicDescription").GetValue<RichTextLabel>();
 			Texture2D? relicIcon = Traverse.Create(screen).Field("_relicIcon").GetValue<TextureRect>()?.Texture;
-			CharSelectInfoPanel.Data data = new(hp, gold, Regex.Replace(relicTitle, @"\[[^\]]*\]", ""), relicDesc, relicIcon);
+			CharSelectInfoPanel.Data data = new(hp, gold, relicTitle?.GetParsedText() ?? "", relicDesc?.Text ?? "",
+				relicIcon, relicDesc?.CustomEffects);
 			Fx.After(anchor, intro ? CharSelectScene.InfoPanelDelay : 0.1, () =>
 			{
 				// 快速切走再切回来时，上一次的计时器仍会触发 —— 它的面板已经不是当前这块了，什么都不做

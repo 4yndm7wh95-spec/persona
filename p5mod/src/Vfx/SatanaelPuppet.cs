@@ -381,6 +381,11 @@ void fragment() {
 	private float _embersHalf;
 	private Transform2D _root = Transform2D.Identity, _muzzleXf = Transform2D.Identity;
 
+	internal static IEnumerable<string> TextureNames()
+	{
+		foreach (Layer layer in Layers) yield return "sat_" + layer.Name;
+	}
+
 	public static bool Available => Fx.Tex("sat_body") != null && Fx.Tex("sat_arm_fore_gun") != null;
 
 	private bool Twirls => _sprites.TryGetValue("gun", out Sprite2D? g) && g.Texture != null && _sprites["arm_fore_open"].Texture != null;

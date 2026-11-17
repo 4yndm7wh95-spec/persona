@@ -56,10 +56,11 @@ public static class ModEntry
 			catch (Exception e)
 			{
 				failed++;
-				GD.PrintErr($"{Tag} patch {t.Name} failed: {e.Message}");
+				GD.PrintErr($"{Tag} patch {t.Name} failed: {e}");
 			}
 		}
 		GD.Print($"{Tag} harmony patches applied: {ok} ok, {failed} failed");
+		Warmup.StartMenu();
 	}
 
 	private static ShakeStrength Strength(int s) => s switch

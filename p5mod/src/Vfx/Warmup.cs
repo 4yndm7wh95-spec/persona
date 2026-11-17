@@ -1,107 +1,262 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using Godot;
 
 namespace P5Joker;
 
-/// <summary>
-/// 预热（用户 2026-11-02：特效首次打出会卡顿一下）。第一次用到某个特效时引擎要现编译着色器、现加载原版特效场景，那一帧就会卡。
-/// 每场战斗开始时把第四版用到的东西都在一个几乎全透明（alpha 0.004，仍然会真正绘制）的层里各放一次：
-/// 原版粒子场景（换 LUT 的复制材质）、手绘贴图材质（正常 + 加法两种）、命中白闪 / 空间扭曲、全屏冲击帧。玩家看不见，之后第一次打出就不卡。
-/// </summary>
+/// <summary>菜单提前读取选人资源。战斗特效分帧在小视口中静默绘制，同一游戏进程只做一次。</summary>
 public static class Warmup
 {
+	private static bool _menuStarted, _combatRunning, _combatReady;
 	private static ulong _lastRoom;
+	private static Task? _menu;
+	private static Task<bool>? _critical;
+	private static readonly List<Resource> SerpentResources = new();
 
-	/// <summary>room = 这场战斗的标识（同一场只预热一次）；layer = 战斗特效层。</summary>
-	public static void Run(Control layer, ulong room)
+	private static readonly string[] MenuTextures =
 	{
-		if (room == _lastRoom || !GodotObject.IsInstanceValid(layer))
+		"cs_button", "cs_body", "cs_body_line", "cs_hand", "cs_hand_line", "cs_blink", "cs_warp",
+		"cs_skyline", "cs_rooftop", "cs_slab_text", "cs_eye_streak", "cs_card",
+		"cs_info_head", "cs_info_ghost", "eyes", "cutin_tail_left", "cutin_tail_right", "star4",
+	};
+
+	private static readonly string[] FinaleSounds =
+	{
+		Sfx.SinfulSweepOpen, Sfx.SinfulSweepClose, Sfx.SinfulThunder, Sfx.SinfulTwirl,
+		Sfx.SinfulCharge, Sfx.SinfulShot, Sfx.SinfulPierceLast,
+	};
+
+	private static bool Alive(Node node) =>
+		GodotObject.IsInstanceValid(node) && node.IsInsideTree() && !node.IsQueuedForDeletion();
+
+	public static void StartMenu()
+	{
+		if (_menuStarted) return;
+		_menuStarted = true;
+		Callable.From(() =>
 		{
-			return;
-		}
-		_lastRoom = room;
-		Control hidden = new()
-		{
-			Name = "P5Warmup",
-			Modulate = new Color(1f, 1f, 1f, 0.004f),
-			MouseFilter = Control.MouseFilterEnum.Ignore,
-			Size = Fx.Screen(layer),
-		};
-		layer.AddChild(hidden);
-		hidden.GlobalPosition = Vector2.Zero;
-		Vector2 c = Fx.Screen(layer) * 0.5f;
-		Stage.Safe("warmup textures", Fx.PreloadAll);
-		Stage.Safe("warmup sfx", () => Sfx.PreloadAll(layer));
-		Stage.Safe("warmup cutin", CutIn.Preload);
-		Sfx.Muted = true;                                             // 特效里自带的音效（枪声、命中声）预热时不要响
+			if (Engine.GetMainLoop() is SceneTree tree) _menu = PrepareMenu(tree.Root);
+		}).CallDeferred();
+	}
+
+	private static async Task PrepareMenu(Window parent)
+	{
 		try
 		{
-			WarmAll(hidden, c);
+			if (!await LoadTextures(parent, MenuTextures)) return;
+			if (await RenderBatch(parent, MenuSteps())) GD.Print("[P5Joker] character select warmup ready");
+			if (Alive(parent)) await EnsureCritical(parent);
+		}
+		catch (Exception e)
+		{
+			Stage.Report("menu warmup", e);
+		}
+	}
+
+	public static void Run(Control layer, ulong room)
+	{
+		if (_combatReady || _combatRunning || room == _lastRoom || !Alive(layer)) return;
+		_lastRoom = room;
+		_combatRunning = true;
+		_ = PrepareCombat(layer);
+	}
+
+	private static async Task PrepareCombat(Control layer)
+	{
+		try
+		{
+			if (_menu != null) await _menu;
+			if (!Alive(layer)) return;
+			await EnsureCritical(layer.GetViewport());
+			if (!Alive(layer)) return;
+			if (!await RenderBatch(layer, CombatSteps())) return;
+			_combatReady = await LoadTextures(layer, Fx.TextureNames());
+		}
+		catch (Exception e)
+		{
+			Stage.Report("combat warmup", e);
 		}
 		finally
 		{
-			Sfx.Muted = false;
+			_combatRunning = false;
 		}
-		Fx.FreeAfter(hidden, 1.5);
 	}
 
-	private static void WarmAll(Control hidden, Vector2 c)
-	{
+	// 关键的两张牌用稳定的视口预热。切房间或从菜单进局不会取消已经排入的工作。
+	private static Task<bool> EnsureCritical(Viewport viewport) => _critical ??= PrepareCritical(viewport);
 
-		foreach (string path in new[] { Vanilla.BigSlashSmoke, Vanilla.Specks, Vanilla.Streaks })
+	private static async Task<bool> PrepareCritical(Viewport viewport)
+	{
+		try
 		{
-			Stage.Safe("warmup " + path, () => Vanilla.Burst(hidden, path, c, 0f, 1f, Lut5.Blood));
+			if (!await LoadTextures(viewport, SatanaelPuppet.TextureNames().Prepend("sinful_platform"))) return false;
+			if (!await LoadSerpentResources(viewport)) return false;
+			bool ready = await RenderBatch(viewport, CriticalSteps());
+			if (ready) GD.Print("[P5Joker] Serpent Form / Grand Finale warmup ready");
+			return ready;
 		}
-		Stage.Safe("warmup smoke lut", () => Vanilla.Burst(hidden, Vanilla.BigSlashSmoke, c, 0f, 1f, Lut5.Smoke));
-		Stage.Safe("warmup gun", () =>
+		catch (Exception e)
 		{
-			GunFx.Muzzle(hidden, c, Vector2.Right);
-			GunFx.Shot(hidden, c, c + new Vector2(300f, 0f));
+			Stage.Report("Serpent Form / Grand Finale warmup", e);
+			return false;
+		}
+	}
+
+	private static async Task<bool> LoadSerpentResources(Viewport viewport)
+	{
+		if (!Alive(viewport)) return false;
+		SceneTree tree = viewport.GetTree();
+		foreach (string path in new[]
+		{
+			"res://scenes/vfx/forms/serpent/vfx_serpent_form_idle_vfx.tscn",
+			"res://images/powers/serpent_form_power.png",
+		})
+		{
+			Resource? resource = null;
+			while (Alive(viewport) && !Fx.PollResource(path, out resource))
+				await tree.ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+			if (resource != null) SerpentResources.Add(resource);
+			if (!Alive(viewport)) return false;
+		}
+		return true;
+	}
+
+	private static async Task<bool> LoadTextures(Node parent, IEnumerable<string> names)
+	{
+		if (!Alive(parent)) return false;
+		SceneTree tree = parent.GetTree();
+		foreach (string name in names)
+		{
+			while (Alive(parent) && !Fx.PollTexture(name))
+				await tree.ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+			if (!Alive(parent)) return false;
+			await tree.ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+		}
+		return Alive(parent);
+	}
+
+	private static async Task<bool> RenderBatch(Node parent, IEnumerable<(string Name, Action<Control> Draw)> steps)
+	{
+		if (!Alive(parent)) return false;
+		// 预热前等待当前场景挂载结束。视口不合成到游戏画面，2D 设置跟随实际目标，
+		// 避免在不同的 HDR / MSAA 管线里预热，或意外把读屏着色器画到玩家视野。
+		SceneTree tree = parent.GetTree();
+		await tree.ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+		if (!Alive(parent)) return false;
+		Viewport target = parent as Viewport ?? parent.GetViewport();
+		SubViewport viewport = new()
+		{
+			Name = "P5Warmup", Size = new Vector2I(128, 96), Disable3D = true,
+			World2D = new World2D(), TransparentBg = target.TransparentBg, UseHdr2D = target.UseHdr2D, Msaa2D = target.Msaa2D,
+			GuiDisableInput = true, RenderTargetUpdateMode = SubViewport.UpdateMode.Always,
+		};
+		parent.AddChild(viewport);
+		try
+		{
+			foreach (var (name, draw) in steps)
+			{
+				if (!Alive(viewport)) return false;
+				Control slot = new() { Size = viewport.Size, MouseFilter = Control.MouseFilterEnum.Ignore };
+				viewport.AddChild(slot);
+				bool wasMuted = Sfx.Muted;
+				Sfx.Muted = true;
+				try { Stage.Safe("warmup " + name, () => draw(slot)); }
+				finally { Sfx.Muted = wasMuted; }
+
+				// 等实际绘制完成，再在下一帧释放节点并推进，避免所有阶段挤在同一帧。
+				await tree.ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+				await tree.ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+				if (GodotObject.IsInstanceValid(slot)) slot.Free();
+			}
+			return Alive(viewport);
+		}
+		finally
+		{
+			if (GodotObject.IsInstanceValid(viewport)) viewport.QueueFree();
+		}
+	}
+
+	private static Vector2 Center(Control slot) => Fx.Screen(slot) * 0.5f;
+
+	private static IEnumerable<(string, Action<Control>)> MenuSteps()
+	{
+		yield return ("character select", CharSelectScene.Warm);
+		yield return ("character info", slot =>
+		{
+			var sample = new Node2D { Position = new Vector2(36f, 16f), Scale = Vector2.One * 0.08f };
+			slot.AddChild(sample);
+			CharSelectInfoPanel.Build(sample,
+				new("70/70", "99", "蛇之戒指", "在每场战斗开始时，额外抽[blue]2[/blue]张牌。", null), animate: false);
 		});
-		Stage.Safe("warmup poison", () =>
+		yield return ("eye cut-in", slot => CutIn.Eyes(slot, warm: true));
+		foreach (var step in ShaderSteps(typeof(CutIn))) yield return step;
+		foreach (string sound in new[] { Sfx.CutIn, Sfx.OneMore, Sfx.SubBoom, Sfx.EvokerShatter })
+			yield return ("audio " + sound, _ => Sfx.Preload(sound));
+	}
+
+	private static IEnumerable<(string, Action<Control>)> CriticalSteps()
+	{
+		yield return ("serpent body", SerpentMantle.Warm);
+		yield return ("serpent mist", slot => DrawShader(slot, SerpentMist.Shader));
+		yield return ("serpent eclipse", slot => DrawShader(slot, SerpentEclipse.Shader));
+		yield return ("finale sky / platform light", SinfulShell.WarmScene);
+		yield return ("finale Satanael light", SinfulShell.WarmPuppet);
+		yield return ("finale impact", SinfulShell.WarmImpact);
+		foreach (var step in ShaderSteps(typeof(SinfulShell), typeof(SatanaelPuppet))) yield return step;
+		foreach (string sound in FinaleSounds) yield return ("audio " + sound, _ => Sfx.Preload(sound));
+	}
+
+	private static IEnumerable<(string, Action<Control>)> CombatSteps()
+	{
+		yield return ("gun", slot =>
 		{
-			PoisonFx.Apply(hidden, c, c - new Vector2(0f, 120f), 200f, null, 9);
-			PoisonFx.Tick(hidden, c, c - new Vector2(0f, 120f), 200f, null);
+			Vector2 c = Center(slot);
+			GunFx.Muzzle(slot, c, Vector2.Right);
+			GunFx.Shot(slot, c, c + new Vector2(30f, 0f));
+		});
+		yield return ("poison", slot =>
+		{
+			Vector2 c = Center(slot);
+			PoisonFx.Apply(slot, c, c - new Vector2(0f, 12f), 20f, null, 9);
+			PoisonFx.Tick(slot, c, c - new Vector2(0f, 12f), 20f, null);
 		});
 		foreach (string tex in new[] { "slash_thin", "slash_heavy" })
+			yield return (tex, slot => Paint.Sweep(slot, tex, Center(slot), 0f, Vector2.One * 0.03f, Lut5.Blood, 0.05f, 0.05f, 0.2f));
+		yield return ("impact", Impact.Warm);
+		yield return ("blue flame", slot => BlueFlame.Tongue(slot, Center(slot), 0.5f, 0.2f));
+		yield return ("smoke LUT", slot => Vanilla.Burst(slot, Vanilla.BigSlashSmoke, Center(slot), 0f, 0.3f, Lut5.Smoke));
+		yield return ("slash smoke LUT", slot => Vanilla.Burst(slot, Vanilla.BigSlashSmoke, Center(slot), 0f, 0.3f, Lut5.Blood));
+		foreach (FieldInfo field in typeof(Vanilla).GetFields(BindingFlags.Static | BindingFlags.Public))
+			if (field.IsLiteral && field.GetRawConstantValue() is string path)
+				yield return (path, slot => Vanilla.Burst(slot, path, Center(slot), 0f, 0.3f, Lut5.Curse));
+		foreach (var step in ShaderSteps(typeof(Warmup).Assembly.GetTypes()
+			.Except(new[] { typeof(SinfulShell), typeof(SatanaelPuppet), typeof(SerpentMantle), typeof(SerpentMist),
+				typeof(SerpentEclipse), typeof(CharSelectScene), typeof(CharSelectInfoPanel), typeof(P5Ui), typeof(CutIn) }).ToArray()))
+			yield return step;
+		foreach (string sound in Sfx.PreloadNames()) yield return ("audio " + sound, _ => Sfx.Preload(sound));
+	}
+
+	private static IEnumerable<(string, Action<Control>)> ShaderSteps(params Type[] types)
+	{
+		foreach (Type type in types)
+		foreach (PropertyInfo prop in type.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
 		{
-			Stage.Safe("warmup " + tex, () => Paint.Sweep(hidden, tex, c, 0f, Vector2.One * 0.3f, Lut5.Blood, 0.05f, 0.05f, 0.2f));
-		}
-		Stage.Safe("warmup glow", () =>
-		{
-			Glow.Flash(hidden, c, new Color(1f, 1f, 1f, 0f), 8f, 0.1f);
-			Glow.Ripple(hidden, c, 8f, 0.1f, 0f);
-		});
-		Stage.Safe("warmup impact", () => Impact.Warm(hidden));
-		Stage.Safe("warmup blue flame", () => BlueFlame.Tongue(hidden, c, 0.5f, 0.2f));
-		Stage.Safe("warmup sinful shell", () => SinfulShell.Warm(hidden, c));   // 华丽收场：撒旦耶尔大贴图上传、场景 + 灯光、粒子、命中区
-		// 所有着色器（mod 里每个 static Shader 属性：巨手、亚森、眼神特写、舞台、刀光……）各画一个 4×4 的小方块编译掉
-		foreach (System.Type type in typeof(Warmup).Assembly.GetTypes())
-		{
-			foreach (System.Reflection.PropertyInfo prop in type.GetProperties(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic))
+			if (prop.PropertyType != typeof(Shader) || prop.GetIndexParameters().Length != 0) continue;
+			yield return (type.Name + "." + prop.Name, slot =>
 			{
-				if (prop.PropertyType != typeof(Shader) || prop.GetIndexParameters().Length > 0)
-				{
-					continue;
-				}
-				Stage.Safe("warmup shader " + type.Name + "." + prop.Name, () =>
-				{
-					if (prop.GetValue(null) is not Shader sh || sh.GetMode() != Shader.Mode.CanvasItem)
-					{
-						return;
-					}
-					ColorRect r = new() { Material = new ShaderMaterial { Shader = sh }, Size = new Vector2(4f, 4f), MouseFilter = Control.MouseFilterEnum.Ignore };
-					hidden.AddChild(r);
-					r.GlobalPosition = c;
-				});
-			}
-		}
-		// 原版特效场景：每个都放一次（粒子材质第一次用也要编译）
-		foreach (System.Reflection.FieldInfo fi in typeof(Vanilla).GetFields(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public))
-		{
-			if (fi.IsLiteral && fi.GetRawConstantValue() is string path)
-			{
-				Stage.Safe("warmup " + path, () => Vanilla.Burst(hidden, path, c, 0f, 0.3f, Lut5.Curse));
-			}
+				if (prop.GetValue(null) is Shader shader && shader.GetMode() == Shader.Mode.CanvasItem)
+					DrawShader(slot, shader);
+			});
 		}
 	}
+
+	private static void DrawShader(Control slot, Shader shader) =>
+		slot.AddChild(new ColorRect
+		{
+			Material = new ShaderMaterial { Shader = shader }, Size = new Vector2(8f, 8f), Position = Center(slot),
+			MouseFilter = Control.MouseFilterEnum.Ignore,
+		});
 }

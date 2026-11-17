@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Models;
@@ -20,33 +21,109 @@ public static class CharSelectBgPatch
 	private static readonly AccessTools.FieldRef<NCharacterSelectScreen, Control> BgContainer =
 		AccessTools.FieldRefAccess<NCharacterSelectScreen, Control>("_bgContainer");
 
-	/// <summary>原版先放选中音效、再换背景：这一次要换成 Joker 的画面，就先把那声音效拦下来。</summary>
-	public static void Prefix(NCharacterSelectButton charSelectButton, CharacterModel characterModel)
+	private const string OriginalBackground = "p5_original_select_bg";
+	private static readonly HashSet<string> LayoutProperties = new()
 	{
-		CharSelectSfxMute.Armed = characterModel is Silent && !charSelectButton.IsRandom && !charSelectButton.IsLocked;
+		"layout_mode", "anchors_preset", "anchor_left", "anchor_top", "anchor_right", "anchor_bottom",
+		"offset_left", "offset_top", "offset_right", "offset_bottom", "grow_horizontal", "grow_vertical", "pivot_offset",
+	};
+
+	private static bool IsJoker(NCharacterSelectButton button) =>
+		!button.IsRandom && !button.IsLocked && button.Character is Silent;
+
+	// 0.111 另传 CharacterModel，0.113 从同一个按钮读 Character。两版都以第一个参数为准。
+	public static void Prefix(NCharacterSelectButton __0) => CharSelectSfxMute.Armed = IsJoker(__0);
+
+	public static void Finalizer() => CharSelectSfxMute.Armed = false;
+
+	public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+	{
+		List<CodeInstruction> body = instructions.ToList();
+		var calls = body.Where(i => (i.opcode == OpCodes.Call || i.opcode == OpCodes.Callvirt)
+			&& i.operand is MethodInfo method && method.DeclaringType == typeof(PackedScene)
+			&& method.Name == nameof(PackedScene.Instantiate) && method.IsGenericMethod
+			&& method.ReturnType == typeof(Control)
+			&& method.GetParameters() is { Length: 1 } parameters
+			&& parameters[0].ParameterType == typeof(PackedScene.GenEditState)).ToArray();
+		if (calls.Length != 1 || calls[0].blocks.Count != 0)
+		{
+			return body;   // 游戏改动这段 IL 时，仍可在 Postfix 替换原版的背景内容。
+		}
+
+		CodeInstruction call = calls[0];
+		var button = new CodeInstruction(OpCodes.Ldarg_1).MoveLabelsFrom(call);
+		body.Insert(body.IndexOf(call), button);
+		call.opcode = OpCodes.Call;
+		call.operand = AccessTools.Method(typeof(CharSelectBgPatch), nameof(InstantiateBackground));
+		return body;
 	}
 
-	public static void Postfix(NCharacterSelectScreen __instance, NCharacterSelectButton charSelectButton, CharacterModel characterModel)
+	private static Control InstantiateBackground(PackedScene scene, PackedScene.GenEditState editState, NCharacterSelectButton button)
+	{
+		if (IsJoker(button))
+		{
+			Control? root = null;
+			try
+			{
+				SceneState state = scene.GetState();
+				if (state.GetNodeCount() > 0 && state.GetNodeType(0).ToString() == nameof(Control))
+				{
+					// 保留原版场景根节点的布局。Joker 不需要实例化随后会隐藏的 Spine、粒子和灯光。
+					root = new Control { MouseFilter = Control.MouseFilterEnum.Ignore };
+					for (int i = 0; i < state.GetNodePropertyCount(0); i++)
+					{
+						StringName property = state.GetNodePropertyName(0, i);
+						if (LayoutProperties.Contains(property.ToString()))
+							root.Set(property, state.GetNodePropertyValue(0, i));
+					}
+					root.SetMeta(OriginalBackground, scene);
+					return root;
+				}
+			}
+			catch (System.Exception e)
+			{
+				root?.Free();
+				Stage.Report("CharSelect background layout", e);
+			}
+		}
+		return scene.Instantiate<Control>(editState);
+	}
+
+	public static void Postfix(NCharacterSelectScreen __instance, NCharacterSelectButton __0)
 	{
 		CharSelectSfxMute.Armed = false;
 		bool built = false;
 		bool intro = CharSelectScene.IntroEnabled();
+		CharacterModel? model = IsJoker(__0) ? __0.Character : null;
 		ModEntry.Safe("CharSelectBg", () =>
 		{
-			if (characterModel is not Silent || charSelectButton.IsLocked || charSelectButton.IsRandom)
-			{
+			if (model == null || BgContainer(__instance) is not Control container
+				|| container.GetNodeOrNull<Control>(model.Id.Entry + "_bg") is not Control bg)
 				return;
-			}
-			Control? bg = BgContainer(__instance)?.GetNodeOrNull<Control>(characterModel.Id.Entry + "_bg");
-			if (bg == null || bg.GetNodeOrNull("P5Select") != null)
+
+			if (bg.GetNodeOrNull("P5Select") == null)
 			{
-				return;
+				try
+				{
+					CharSelectScene.Build(bg, intro);
+				}
+				catch
+				{
+					if (bg.HasMeta(OriginalBackground) && bg.GetMeta(OriginalBackground).As<PackedScene>() is PackedScene original)
+					{
+						Control vanilla = original.Instantiate<Control>();
+						vanilla.Name = bg.Name;
+						container.RemoveChild(bg);
+						bg.QueueFree();
+						container.AddChild(vanilla);
+					}
+					throw;
+				}
 			}
-			CharSelectScene.Build(bg, intro);
+			if (bg.HasMeta(OriginalBackground)) bg.RemoveMeta(OriginalBackground);
 			built = true;
 		});
-		// 介绍板：选中 Joker 且选人画面搭好了才换；其他角色（或搭建失败）一律恢复原版面板
-		ModEntry.Safe("CharSelectInfo", () => CharSelectInfo.Apply(__instance, charSelectButton, built ? characterModel : null, intro));
+		ModEntry.Safe("CharSelectInfo", () => CharSelectInfo.Apply(__instance, __0, built ? model : null, intro));
 	}
 }
 

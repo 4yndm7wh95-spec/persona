@@ -94,6 +94,17 @@ public static class CharSelectScene
 		}
 	}
 
+	internal static void Warm(Control slot)
+	{
+		Control sample = new()
+		{
+			Size = new Vector2(W, H), Scale = Vector2.One * 0.03f,
+			Position = new Vector2(12f, 16f), MouseFilter = Control.MouseFilterEnum.Ignore,
+		};
+		slot.AddChild(sample);
+		BuildInto(sample, false);
+	}
+
 	private static Texture2D Need(string name) => Fx.Tex(name) ?? throw new InvalidOperationException($"missing texture {name}");
 
 	private static Control Layer(Control parent, string name)
