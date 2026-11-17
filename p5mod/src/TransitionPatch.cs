@@ -16,19 +16,27 @@ public static class TransitionPatch
 {
 	private const string SilentPath = "silent_transition_mat.tres";
 
-	public static void Prefix(NTransition __instance, ref float time, ref string transitionPath) => ModEntry.Safe("JokerTransition", () =>
+	public static void Prefix(NTransition __instance, ref float time, string transitionPath)
 	{
 		if (transitionPath == null || !transitionPath.EndsWith(SilentPath)) return;
-		if (JokerTransition.Make() is not { } mat) return;
-		PreloadManager.Cache.SetAsset(transitionPath, mat);
-		time = JokerTransition.Time;
-		if (__instance.GetNodeOrNull<Control>("SimpleTransition") is { } simple)
+		bool ok = false;
+		ModEntry.Safe("JokerTransition", () =>
 		{
+			if (JokerTransition.Make() is not { } mat) return;
+			PreloadManager.Cache.SetAsset(transitionPath, mat);
+			ok = true;
+		});
+		if (!ok) return;
+		time = JokerTransition.Time;
+		float hold = time;
+		ModEntry.Safe("JokerTransition.Simple", () =>
+		{
+			if (__instance.GetNodeOrNull<Control>("SimpleTransition") is not { } simple) return;
 			simple.Visible = false;
-			__instance.GetTree().CreateTimer(time + 0.4).Connect("timeout", Callable.From(() =>
+			__instance.GetTree().CreateTimer(hold + 0.4).Connect("timeout", Callable.From(() =>
 			{
 				if (GodotObject.IsInstanceValid(simple)) simple.Visible = true;
 			}));
-		}
-	});
+		});
+	}
 }
