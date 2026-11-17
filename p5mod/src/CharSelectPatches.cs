@@ -122,6 +122,7 @@ public static class CharSelectBgPatch
 			}
 			if (bg.HasMeta(OriginalBackground)) bg.RemoveMeta(OriginalBackground);
 			built = true;
+			Warmup.MenuShown();
 		});
 		ModEntry.Safe("CharSelectInfo", () => CharSelectInfo.Apply(__instance, __0, built ? model : null, intro));
 	}

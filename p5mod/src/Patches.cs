@@ -93,11 +93,7 @@ public static class AmmoPatch
 				{
 					CorrosiveFx.Aura(cl, Joker.PosePoint(jn, ReadyFx.Feet));
 				}
-				// 每场战斗预热一次第四版特效（首次打出不卡，Vfx/Warmup.cs）
-				if (Joker.FxLayer() is Godot.Control fx && NCombatRoom.Instance is NCombatRoom room)
-				{
-					Warmup.Run(fx, room.GetInstanceId());
-				}
+				// 预热由菜单 / 非战斗空闲队列负责，不在战斗首次更新时集中启动。
 			}
 			// 能量球右上方
 			view.Root.Position = __instance.Size / 2f + new Godot.Vector2(110f, -70f);

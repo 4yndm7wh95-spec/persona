@@ -60,7 +60,7 @@ public static class ModEntry
 			}
 		}
 		GD.Print($"{Tag} harmony patches applied: {ok} ok, {failed} failed");
-		Warmup.StartMenu();
+		WarmupGame.Install();
 	}
 
 	private static ShakeStrength Strength(int s) => s switch

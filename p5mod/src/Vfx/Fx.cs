@@ -44,6 +44,8 @@ public static class Fx
 		return true;
 	}
 
+	internal static Texture2D? ReadyTexture(string name) => Cache.TryGetValue(name, out Texture2D? texture) ? texture : null;
+
 	internal static bool PollResource(string path, out Resource? resource)
 	{
 		resource = null;

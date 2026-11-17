@@ -34,6 +34,12 @@ public static class ArseneFx
 	};
 
 	private static readonly Vector2 ClawTip = new(1250f, 610f);
+	internal static System.Collections.Generic.IEnumerable<string> TextureNames()
+	{
+		foreach (Part part in Parts) yield return part.Tex;
+		yield return "arsene_arm_reach_fist";
+		yield return "arsene_arm_reach_extend";
+	}
 	private static Vector2 _hand;
 
 	private static Shader? _shader;
