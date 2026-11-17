@@ -91,6 +91,16 @@ def flat_card(w=720, h=518, keep=0.5, pad=24):
     return out
 
 
+# P5R damage numbers / slash lines (research/p5r/ui/battle_gui DAMAGE_DATA.SPD sprites): name -> (sprite index, scale)
+DMG = ROOT / "research/p5r/ui/battle_gui/sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6"
+DMG_TEX = {**{f"dmg_{d}": (79 + d, 0.5) for d in range(10)},
+           "dmg_splash": (90, 1.0), "dmg_splash_gun": (96, 1.0), "speed_line": (93, 1.0), "weak": (94, 1.0),
+           "block_b": (126, 1.0), "block_l": (127, 1.0), "block_o": (128, 1.0), "block_c": (129, 1.0), "block_k": (130, 1.0)}
+
+RIG = ROOT / "art/p5/rig"
+STAGE = ROOT / "p5mod/pck_stage"
+
+
 def renamed(src_base, dst_base, tmp):
     """copy <src_base>.{spine-json,atlas,png} to tmp as <dst_base>.*, fixing the atlas page name."""
     shutil.copy(RIG / f"{src_base}.spine-json", tmp / f"{dst_base}.spine-json")
@@ -141,7 +151,9 @@ SFX = {
     "swish_05": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0151.ogg",
     "sword_sheath": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0048.ogg",          # knife spin: the catch (user 2026-11-02)
     "camp_whoosh": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0224.ogg",           # char select embark transition: the doors whoosh in (EmbarkTransition.cs)
-    "card_func_on": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0250.ogg",          # embark transition knife "ching" (stand-in until the day-change originals are ripped)
+    # embark transition: P5R's own day-change cues (SYSTEM.AWB streams 37 / 82, ripped by Codex: research/p5r/audio/calendar/README.md)
+    "calendar_change": ROOT / "research/p5r/audio/calendar/calendar_change.ogg",   # the date slams down -> the doors close
+    "stab_knife": ROOT / "research/p5r/audio/calendar/stab_knife.ogg",             # the knife pins it: thunk + metallic ring in one cue
     "damage_enemy": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0022.ogg",
     "battle_all_out_atk": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0024.ogg",
     "gun_02": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0032.ogg",
