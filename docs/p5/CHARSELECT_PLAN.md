@@ -295,3 +295,15 @@ root → chest（呼吸）→ head（微摆）→ hair_l / hair_r（发梢）、
 2. 写 `tools/p5/build_charselect_portrait.py`：分层 → Spine 网格（仿 `tools/ui/build_portrait.py`），出预览 GIF。
 3. `p5mod/src/Scenes/CharSelectBg.cs` / `CharSelectInfo.cs`：天空着色器、各层视差与动画、眼睛蓝光 + 淡蓝焰面具（复用 `Flame.PersonaMask`）、选中演出、介绍板；沿用 P3 的"先搭好再藏原版、出错回滚"。**代码要在 p5 主线分支（`codex/p5-sts2-v0.113` 一系）上做**，当前分支的 p5mod 比主线旧很多。
 4. 预热：立绘、火焰着色器、剪贴字贴图在 mod 启动时后台预加载（P3 首次选中掉帧的教训）。
+
+## 8. 出发过场（点「出发」→ 进局，替换原版静默猎手那段黑色斜线淡出）
+
+代码：`p5mod/src/Vfx/EmbarkTransition.cs`（纯 Godot，预览 `render.sh embark 5`）+ `p5mod/src/EmbarkPatches.cs`（接进游戏）。
+
+- 原版：`SfxCmd.Play(wipe_silent)` → `NTransition.FadeOut(0.8, silent_transition_mat)`（一张着色器材质，阈值 0→1）→ 加载 → 进局 `RoomFadeIn`（主菜单「继续」是 `FadeIn`）。
+- 换法：FadeOut 用静默猎手的材质时换成我们的过场，画在 NTransition 上；全黑时调一次原版 `FadeOut(0 秒, 普通淡出材质)` 让 NTransition 自己变黑，再撤掉我们的层，加载 / 淡入的状态全是原版的。之后第一次 RoomFadeIn / FadeIn：原版两层当场透明，换成开门。wipe_silent 拦掉。「瞬间」快速模式不换。
+- 第三版设计（用户 2026-11-17：第一版的锯齿门 / 预告信贴图「太糙」「锯齿难看」「不要再用贴图」「看看 P5R 的 UI 过场怎么做」；第二版把画面切成很多斜条交替滑走，太碎、运动模糊有阶梯残影，自查否掉）：
+  - P5R 的做法（看 `research/p5r/ui` 的暂停菜单 / 协作升级 / 通缉令切图）：少数几块大面、干净的直边，红黑白三色，色块边上带白色细线和错位的层次；出手时整个画面变红黑双色调；节奏是一下砸到位 → 停一拍 → 甩出去。拆出来的资源里没有 UI 时间轴（动画写在程序里），所以只取这些原则，不照抄某一段。
+  - Out（0.9s）：0 定格（读屏幕：平滑红黑双色调 + 推镜 3.5% + 一闪）→ 0.05 右门、0.14 左门滑进来（直边黑门，内沿白线 + 黑缝 + 红带，斜度同立绘斜切线），合上后中间是 300 宽的红色斜带 → 0.31 TAKE / YOUR / HEART 依次砸上（Barlow 粗斜体白字、黑描边、红色错位影子、倾斜 8°）→ 0.62 字甩出画面、红带缩回门后、白线淡掉 → 纯黑。
+  - In（0.62s）：中线白光一闪 → 红带从门后张开 → 两扇门往两边滑开。
+  - 声音（P5R 原声）：门滑进来的菜单风声 `camp_whoosh`（#224）→ 左门合上的重击 + 低频 → 字砸上的切入声 → 字甩走的「唰」；进局：「唰」+ 两扇门滑开的风声。

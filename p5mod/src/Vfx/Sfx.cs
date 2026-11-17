@@ -47,6 +47,7 @@ public static class Sfx
 		Wing = "wing_large",            // 大翅膀扇动（#64：亚森）
 		Slam = "punch_taiman",          // 重拳砸中（#46：咒怨之手砸下去）
 		Crack = "crash_object",         // 东西碎开（#176：手从地里钻出来）
+		MenuWhoosh = "camp_whoosh",     // 菜单的「唰」（#224，偏暖的低频风声，峰值在 0.21s）：出发过场里各条甩出去
 		PoisonTick = "continuas_damage",// 持续伤害（#20：每轮毒伤）
 		SubBoom = "sub_boom",           // 合成的低频重击（art/sfx_p5/sub_boom.ogg：P5 原声缺低频，垫在冲击层底下）
 		OutbreakBurst = "outbreak_burst", // 毒性爆发毒伤结算（用户 2026-11-08：原版受击声太平淡）：P5R SKILLSE 0406（咒怨系候选，起音 0.01s、偏暗），

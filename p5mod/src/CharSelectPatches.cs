@@ -50,7 +50,10 @@ public static class CharSelectBgPatch
 	}
 }
 
-/// <summary>拦掉一次原版静默猎手的选中音效（event:/sfx/characters/silent/silent_select）。只在 CharSelectBgPatch 要换成 Joker 画面的那一次生效。</summary>
+/// <summary>
+/// 拦掉一次原版静默猎手的选中音效（event:/sfx/characters/silent/silent_select）：只在 CharSelectBgPatch 要换成 Joker 画面的那一次生效。
+/// 另外点出发时的 event:/sfx/ui/wipe_silent 也拦掉（出发过场换成了 EmbarkTransition，自己有声音）。
+/// </summary>
 [HarmonyPatch]
 public static class CharSelectSfxMute
 {
@@ -63,7 +66,16 @@ public static class CharSelectSfxMute
 
 	public static bool Prefix(object[] __args)
 	{
-		if (!Armed || __args.Length == 0 || __args[0] is not string path || path != Event)
+		if (__args.Length == 0 || __args[0] is not string path)
+		{
+			return true;
+		}
+		// 点出发时原版的 wipe_silent：出发过场（EmbarkPatches）自己有声音
+		if (Embark.MutesWipe(path))
+		{
+			return false;
+		}
+		if (!Armed || path != Event)
 		{
 			return true;
 		}
