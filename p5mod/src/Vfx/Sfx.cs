@@ -47,7 +47,9 @@ public static class Sfx
 		Wing = "wing_large",            // 大翅膀扇动（#64：亚森）
 		Slam = "punch_taiman",          // 重拳砸中（#46：咒怨之手砸下去）
 		Crack = "crash_object",         // 东西碎开（#176：手从地里钻出来）
-		MenuWhoosh = "camp_whoosh",     // 菜单的「唰」（#224，偏暖的低频风声，峰值在 0.21s）：出发过场里各条甩出去
+		MenuWhoosh = "camp_whoosh",     // 菜单的「唰」（#224，偏暖的低频风声，峰值在 0.21s）：出发过场两扇门滑进来 / 滑开
+		KnifeChing = "shop_weapon_tag", // 清亮的金属「锵~」（#218，起音 20ms、0.45s 的高频余响）：出发过场飞刀钉住预告信
+		                                //  （P5R 切日历那声飞刀在 SYSTEM.AWB 的流式音频里，仓库没解出来；这是现有原声里最像的）
 		PoisonTick = "continuas_damage",// 持续伤害（#20：每轮毒伤）
 		SubBoom = "sub_boom",           // 合成的低频重击（art/sfx_p5/sub_boom.ogg：P5 原声缺低频，垫在冲击层底下）
 		OutbreakBurst = "outbreak_burst", // 毒性爆发毒伤结算（用户 2026-11-08：原版受击声太平淡）：P5R SKILLSE 0406（咒怨系候选，起音 0.01s、偏暗），

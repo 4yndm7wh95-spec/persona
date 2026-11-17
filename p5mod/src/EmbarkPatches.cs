@@ -12,11 +12,12 @@ namespace P5Joker;
 /// <summary>
 /// 出发过场（Vfx/EmbarkTransition.cs）接进游戏。原版流程（NCharacterSelectScreen.StartNewSingleplayerRun，主菜单「继续」、每日挑战等同理）：
 ///   SfxCmd.Play(CharacterTransitionSfx = event:/sfx/ui/wipe_silent) → NTransition.FadeOut(0.8, silent_transition_mat) → 加载 → 进局时 RoomFadeIn / FadeIn。
-/// · FadeOut 用静默猎手的过场材质时换成我们的过场，画在 NTransition 上面（全屏、在所有界面之上的那块 ColorRect）。全黑那一刻调一次原版
-///   FadeOut(0 秒、普通淡出材质)，让 NTransition 自己变成不透明的黑，再撤掉我们的层 —— 之后加载、淡入用的全是原版自己的状态。
+/// · FadeOut 用静默猎手的过场材质时换成我们的过场，画在 NTransition 上面（全屏、在所有界面之上的那块 ColorRect）。画面盖住那一刻调一次原版
+///   FadeOut(0 秒、普通淡出材质)，让 NTransition 自己在底下变成不透明的黑 —— 之后加载、淡入用的全是原版自己的状态；
+///   我们的幕（钉着预告信的那一帧）留在 NTransition 上面当加载画面。
 /// · 点出发时原版先放的 wipe_silent 拦掉（过场自己有声音，CharSelectSfxMute）。
 /// · 紧接着的第一次 RoomFadeIn / FadeIn（进局）：原版淡入的两层（材质阈值、SimpleTransition）当场变透明（它们的补间还没开始取初值，
-///   之后就从 0 补到 0），换成我们的开门，同样画在 NTransition 上。
+///   之后就从 0 补到 0），我们的幕展开（预告信顺着门缝一分为二、两扇门滑开）。30 秒内没等到淡入就把幕撤掉（底下是原版的黑屏）。
 /// 快速模式「瞬间」不换（原版直接隐藏 NTransition）。过场出错就退回原版的黑屏，不打断进局。
 /// </summary>
 public static class Embark
@@ -26,7 +27,7 @@ public static class Embark
 	private const string WipeSfx = "event:/sfx/ui/wipe_silent";
 
 	private static bool _running;
-	private static ulong _pendingAt;                                       // 出发过场结束的时刻；0 = 没有待接的开门
+	private static EmbarkTransition.Curtain? _curtain;                     // 盖着的幕（等进局时展开）
 
 	private static readonly AccessTools.FieldRef<NTransition, Control> Simple =
 		AccessTools.FieldRefAccess<NTransition, Control>("_simpleTransition");
@@ -40,16 +41,16 @@ public static class Embark
 	public static async Task Out(NTransition t, CancellationToken? token)
 	{
 		_running = true;
-		Control? overlay = null;
+		EmbarkTransition.Curtain? curtain = null;
 		try
 		{
+			Close(_curtain);
 			Traverse.Create(t).Property("InTransition").SetValue(true);
-			bool black = false;
-			overlay = EmbarkTransition.Out(t, () => black = true);
+			bool covered = false;
+			curtain = EmbarkTransition.Out(t, () => covered = true);
 			ulong start = Time.GetTicksMsec();
 			ulong limit = (ulong)((EmbarkTransition.OutTime + 2f) * 1000f);  // 补间被意外停掉时的保底
-			while (!black && GodotObject.IsInstanceValid(overlay) && Time.GetTicksMsec() - start < limit
-				&& !(token?.IsCancellationRequested ?? false))
+			while (!covered && curtain.Alive && Time.GetTicksMsec() - start < limit && !(token?.IsCancellationRequested ?? false))
 			{
 				await t.ToSignal(t.GetTree(), SceneTree.SignalName.ProcessFrame);
 			}
@@ -62,19 +63,27 @@ public static class Embark
 		{
 			_running = false;
 		}
-		// 接上原版的黑屏：原版 FadeOut 0 秒同步跑完（循环一次都不进），NTransition 换成普通淡出材质、阈值 1 = 不透明的黑，并挡住输入
+		// 接上原版的黑屏：原版 FadeOut 0 秒同步跑完（循环一次都不进），NTransition 换成普通淡出材质、阈值 1 = 不透明的黑，并挡住输入。
+		// 我们的幕还盖在它上面（钉着预告信的那一帧当加载画面），等进局时展开；30 秒没等到就撤掉
 		await t.FadeOut(0f, FadePath, null);
-		if (overlay != null && GodotObject.IsInstanceValid(overlay)) overlay.QueueFree();
-		_pendingAt = Time.GetTicksMsec();
+		if (curtain is { Alive: true })
+		{
+			_curtain = curtain;
+			t.GetTree().CreateTimer(30.0).Timeout += () => { if (_curtain == curtain) { Close(curtain); _curtain = null; } };
+		}
 	}
 
-	/// <summary>进局淡入：只接我们刚做过的出发（一分钟内），原版的两层当场透明，换成开门。</summary>
+	private static void Close(EmbarkTransition.Curtain? c)
+	{
+		if (c is { Alive: true }) c.Root.QueueFree();
+	}
+
+	/// <summary>进局淡入：只接我们还盖着的幕，原版的两层当场透明，幕展开。</summary>
 	public static void In(NTransition t)
 	{
-		if (_pendingAt == 0) return;
-		bool fresh = Time.GetTicksMsec() - _pendingAt < 60000;
-		_pendingAt = 0;
-		if (!fresh || Instant) return;
+		EmbarkTransition.Curtain? curtain = _curtain;
+		_curtain = null;
+		if (curtain is not { Alive: true }) return;
 		if (Simple(t) is Control simple)
 		{
 			Color c = simple.Modulate;
@@ -82,7 +91,7 @@ public static class Embark
 			simple.Modulate = c;
 		}
 		(t.Material as ShaderMaterial)?.SetShaderParameter("threshold", 0f);
-		EmbarkTransition.In(t);
+		curtain.Open();
 	}
 }
 

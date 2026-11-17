@@ -122,7 +122,8 @@ public partial class Preview : Node2D
 
 		// 选人界面（Vfx/CharSelectScene.cs）：藏掉假战斗场景，整屏换成选人背景；第二遍（6s）切走再选一次看不带切入的常驻
 		["charselect"] = p => CharSelect(p),
-		// 出发过场（Vfx/EmbarkTransition.cs）：选人画面 2.6s 后点出发 → 全黑时换成假战斗场景（代替进局）→ 黑着停 0.5s（加载）→ 裂开
+		// 出发过场（Vfx/EmbarkTransition.cs）：选人画面 2.6s 后点出发 → 门合拢、预告信、飞刀钉住 → 盖住时把底下换成假战斗场景（代替进局）→
+		// 钉着预告信的那一帧停 0.6s（加载）→ 展开
 		["embark"] = p =>
 		{
 			List<Node> charSelect = CharSelect(p);
@@ -132,18 +133,15 @@ public partial class Preview : Node2D
 			top.AddChild(host);
 			p.At(2.6, () =>
 			{
-				Control? overlay = null;
-				overlay = EmbarkTransition.Out(host, () =>
+				EmbarkTransition.Curtain? curtain = null;
+				curtain = EmbarkTransition.Out(host, () =>
 				{
 					foreach (Node n in charSelect) n.QueueFree();
 					foreach (Node c in p._world.GetChildren())
 					{
 						if (c is CanvasItem ci && !charSelect.Contains(c)) ci.Visible = true;
 					}
-					ColorRect hold = new() { Size = host.Size, Color = Colors.Black, MouseFilter = Control.MouseFilterEnum.Ignore };   // 原版的黑屏（NTransition）
-					host.AddChild(hold);
-					overlay?.QueueFree();
-					p.At(0.5, () => { hold.QueueFree(); EmbarkTransition.In(host); });
+					p.At(0.6, () => curtain?.Open());
 				});
 			});
 		},

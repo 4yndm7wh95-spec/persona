@@ -47,6 +47,9 @@ GEN_TEX = ["cutin_band", "calling_card", "joker_ghost", "arsene_idle"]
 GEN_CODEX = ROOT / "art/p5/fx/gen_codex"
 # P5R's own battle cut-in (BATTLE/CUTIN/BCT_P_BC0001.DDS): Joker's eyes, used for the "1 MORE" eye cut-in (Eyes.cs)
 EYES = ROOT / "research/p5r/art/portrait/BASE__BCT_P_BC0001__e5a7b5aabe.png"
+# P5R's day-change (日替わり) sheet: the calling card, the knife that pins it and the glint (char select embark transition, EmbarkTransition.cs)
+HIGAWARI = ROOT / "research/p5r/ui/calendar/sprites/HIGAWARI_COMMON.SPD_unpacked__27626017d8"
+HIGAWARI_TEX = {"yokoku": 193, "day_knife": 98, "day_glint": 56}   # 予告状 / ナイフ / きらめき1
 # P5R damage numbers / slash lines (research/p5r/ui/battle_gui DAMAGE_DATA.SPD sprites): name -> (sprite index, scale)
 DMG = ROOT / "research/p5r/ui/battle_gui/sprites/DAMAGE_DATA.SPD_unpacked__a87542a9d6"
 DMG_TEX = {**{f"dmg_{d}": (79 + d, 0.5) for d in range(10)},
@@ -106,7 +109,8 @@ SFX = {
     "swish_04": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0149.ogg",
     "swish_05": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0151.ogg",
     "sword_sheath": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0048.ogg",          # knife spin: the catch (user 2026-11-02)
-    "camp_whoosh": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0224.ogg",           # char select embark transition: the slices whoosh away (EmbarkTransition.cs)
+    "camp_whoosh": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0224.ogg",           # char select embark transition: the doors whoosh in (EmbarkTransition.cs)
+    "shop_weapon_tag": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0218.ogg",       # embark transition: the knife pins the calling card ("ching~", bright 0.45 s ring)
     "damage_enemy": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0022.ogg",
     "battle_all_out_atk": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0024.ogg",
     "gun_02": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0032.ogg",
@@ -209,6 +213,8 @@ def fx_textures():
         yield "persona_flame_strip", Image.open(flame).convert("RGBA")
     eyes = Image.open(EYES).convert("RGBA")
     yield "eyes", eyes.resize((eyes.width // 2, eyes.height // 2), Image.LANCZOS)
+    for name, idx in HIGAWARI_TEX.items():
+        yield name, Image.open(HIGAWARI / f"{idx:05d}.png").convert("RGBA")
     yield "arsene_cast", arsene_atlas()
     # Izanagi-no-Okami (Codex render of BPS0360_000_main_0006, art/p5/fx/izanagi_okami): spin action atlas + weapon alone
     if (IZANAGI / "spin").exists():
