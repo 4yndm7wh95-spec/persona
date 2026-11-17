@@ -46,28 +46,20 @@ public static class CharSelectScene
 	// 入场节奏（照 P3）：立绘沿切口从下往上升入 0.45s → 落定后眼神特写切入 → 停 0.65s 后裂开（裂纹定格 0.05s）→ 碎片炸开 → 信息面板淡入
 	private const float Rise = 0.45f, CutInSplit = 0.65f;
 	private const float ShatterAt = Rise + CutInSplit + 0.05f;
-	// 锯齿球（charselect_assets.py：贴图尖角外半径 400 → 画布 700）：中心在画布 (520,460)
-	private static readonly Vector2 BurstAt = new(520f, 460f);
-	private const float BurstK = 700f / 400f;
-	private static readonly Color PanelInk = new("22040a");                   // 立绘面板底色：比斜板的纯黑暖一点，两者分得开
 	// 天际线顶边（屏幕 y）、远景再高一点
 	private const float Horizon = 700f;
-	// TAKE YOUR HEART 拆块（charselect_assets.py banner_parts 的输出）：在整条里的左上角
-	private static readonly Vector2[] BannerParts = { new(0, 0), new(228, 8), new(492, 8), new(958, 0), new(1164, 16), new(1276, 14) };
 	private static readonly Color Crimson = new("de101e"), Ink = new("0a0608");
 
 	private sealed class Rig
 	{
 		public Control Root = null!, Screen = null!, Back = null!, Front = null!;
-		public Node2D Group = null!, Chest = null!, Burst = null!, Header = null!;
-		public ColorRect Panel = null!;
+		public Node2D Group = null!, Chest = null!;
 		public Node2D[] Arms = Array.Empty<Node2D>();
 		public Sprite2D Blink = null!, EyeHalo = null!, EyeIris = null!, EyeCore = null!, EyeStreak = null!;
 		public ShaderMaterial Warp = null!, BlinkMat = null!;
 		public float Open = 1f;                                                // 眼睛睁开的程度（眨眼时 1 → 0 → 1）
 		public Node2D Eye = null!;
 		public float Flare;                                                    // 选中那一下的眼睛闪光 0..1
-		public List<Sprite2D> Letters = new();
 		public List<(ShaderMaterial m, float fromTop, float delay)> Bands = new();
 		public Node2D Tag = null!;
 		public Node2D SlabText = null!;
@@ -117,11 +109,11 @@ public static class CharSelectScene
 		r.Screen = Layer(root, "Screen");
 		r.Screen.Position = new Vector2(0f, ScreenTop);
 		Sky(r.Screen);
+		Band(r.Screen);
 		City(r.Screen);
 		Cards(r.Screen);
 		Rooftop(r.Screen);
 		Shade(r.Screen);
-		Header(r);
 		r.Back = Layer(r.Screen, "Back");
 		Portrait(r);
 		Stripes(r);
@@ -305,35 +297,20 @@ void fragment() {
 		screen.AddChild(c);
 	}
 
-	/// <summary>左上角标题：斜的黑带 + TAKE YOUR HEART 剪贴字（P5 菜单标题的位置），纸片隔几秒随机一块跳一下、歪一点。</summary>
-	private static void Header(Rig r)
+	/// <summary>
+	/// P3 那条斜切色带（照结城理 mod 的 Band：-9°，位置低 90px 让开介绍板）：半透明黑带 + 下沿细红线 + 超大号淡字 TAKE YOUR HEART 缓慢漂移；
+	/// 在天空和城市之间（城市剪影压在它前面），一路斜着穿到立绘后面。
+	/// </summary>
+	private static void Band(Control screen)
 	{
-		Node2D header = new() { Name = "Header", Position = new Vector2(-146f, 112f), Rotation = Mathf.DegToRad(-4f) };
-		r.Screen.AddChild(header);
-		r.Header = header;
-		header.AddChild(new Sprite2D { Texture = Need("cs_header_band"), Centered = false, Position = new Vector2(-4f, -4f) });
-		const float bk = 0.52f;
-		for (int i = 0; i < BannerParts.Length; i++)
-		{
-			if (Fx.Tex($"cs_banner_{i}") is not Texture2D tex) continue;
-			Sprite2D s = new() { Texture = tex, Scale = Vector2.One * bk, Position = new Vector2(170f, 16f) + (BannerParts[i] + tex.GetSize() * 0.5f) * bk };
-			header.AddChild(s);
-			r.Letters.Add(s);
-		}
-		Tween hop = header.CreateTween().SetLoops();
-		hop.TweenInterval(2.8);
-		hop.TweenCallback(Callable.From(() =>
-		{
-			if (r.Letters.Count == 0) return;
-			Sprite2D s = r.Letters[Fx.Rng.Next(r.Letters.Count)];
-			if (!GodotObject.IsInstanceValid(s)) return;
-			float rot = Fx.Rand(-0.08f, 0.08f);
-			Vector2 home = s.Position;
-			Tween t = s.CreateTween();
-			t.TweenProperty(s, "position", home + new Vector2(0f, -10f), 0.07).SetEase(Tween.EaseType.Out);
-			t.Parallel().TweenProperty(s, "rotation", rot, 0.07);
-			t.TweenProperty(s, "position", home, 0.18).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-		}));
+		Node2D band = new() { Name = "Band", Position = new Vector2(-200f, 790f), Rotation = Mathf.DegToRad(-9f) };   // 比 P3 低 90px：让开左边介绍板的天赋说明
+		screen.AddChild(band);
+		P5Ui.Quad(band, new[] { new Vector2(0f, 0f), new Vector2(1900f, 0f), new Vector2(1820f, 150f), new Vector2(-80f, 150f) }, new Color(Ink, 0.26f));
+		P5Ui.Quad(band, new[] { new Vector2(0f, 160f), new Vector2(1900f, 160f), new Vector2(1897f, 165f), new Vector2(-3f, 165f) }, new Color(Crimson, 0.6f));
+		Label text = P5Ui.Text(band, "TAKE YOUR HEART    TAKE YOUR HEART    TAKE YOUR HEART", P5Ui.Font(P5Ui.Barlow), 130, new Color(1f, 0.92f, 0.92f, 0.12f), new Vector2(-300f, -10f));
+		Tween drift = text.CreateTween().SetLoops();
+		drift.TweenProperty(text, "position:x", 0f, 26.0).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+		drift.TweenProperty(text, "position:x", -300f, 26.0).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
 	}
 
 	// ───────────────────────── 立绘面板 ─────────────────────────
@@ -430,21 +407,9 @@ void fragment() {
 	private static void Portrait(Rig r)
 	{
 		r.Clip = ClipMaterial(r);
-		// 面板底：切口右边整块暗红黑（锯齿之间、人物四周露出来的都是它）
-		r.Panel = new ColorRect { Name = "Panel", Position = new Vector2(CutA.X - 40f, -60f), Size = new Vector2(SW - CutA.X + 700f, SH + 120f),
-			Color = PanelInk, MouseFilter = Control.MouseFilterEnum.Ignore, Material = r.Clip };
-		r.Screen.AddChild(r.Panel);
 		Node2D group = new() { Name = "Joker", Position = POrigin, Scale = Vector2.One * PScale };
 		r.Screen.AddChild(group);
 		r.Group = group;
-		// 面板里垫着的锯齿球：红色，压在暗红黑底上，慢慢呼吸
-		Node2D burst = new() { Name = "Burst", Position = BurstAt };
-		group.AddChild(burst);
-		r.Burst = burst;
-		burst.AddChild(new Sprite2D { Texture = Need("cs_burst"), Modulate = Crimson, Scale = Vector2.One * BurstK, Material = r.Clip });
-		Tween breathe = burst.CreateTween().SetLoops();
-		breathe.TweenProperty(burst, "scale", Vector2.One * 1.025f, 2.4).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-		breathe.TweenProperty(burst, "scale", Vector2.One, 2.4).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
 		// 身体（呼吸）：chest 支点在画布底边中点。描边（离线烘焙的白 + 黑）画在人物后面，手的那份跟着手动
 		Node2D chest = new() { Position = Pivot };
 		group.AddChild(chest);
@@ -688,13 +653,6 @@ void fragment() {
 		Fx.Animate(r.SlabText, 0.3, 0.4, t => r.SlabText.Modulate = new Color(1f, 1f, 1f, 0.6f * t));
 		r.Tag.Scale = Vector2.Zero;
 		Fx.Animate(r.Tag, 0.35, 0.3, t => r.Tag.Scale = Vector2.One * Mathf.Lerp(1.6f, 1f, Ease5.OutBack(t)) * Mathf.Clamp(t * 3f, 0f, 1f));
-		// 面板底跟着斜条一起亮出来
-		r.Panel.Modulate = new Color(1f, 1f, 1f, 0f);
-		Fx.Animate(r.Panel, 0, 0.2, t => r.Panel.Modulate = new Color(1f, 1f, 1f, t));
-		// 标题从左边滑进来
-		Vector2 hHome = r.Header.Position;
-		r.Header.Position = hHome + new Vector2(-900f, 0f);
-		Fx.Animate(r.Header, 0.1, 0.4, t => r.Header.Position = hHome + new Vector2(-900f * (1f - Ease5.OutExpo(t)), 0f));
 		// 立绘：沿切口方向从下往上升入（起点在切口方向往下 520px），两道残影（同一张身体图的剪影，也按切口裁）落后 0.05 / 0.1s
 		Vector2 from = home + (CutB - CutA).Normalized() * 520f;
 		Vector2 P(float t) => from.Lerp(home, Ease5.OutExpo(Mathf.Clamp(t / Rise, 0f, 1f)));
@@ -737,6 +695,7 @@ void fragment() {
 				MouseFilter = Control.MouseFilterEnum.Ignore };
 			r.Back.AddChild(dim);
 			Fx.Animate(dim, 0, 0.2, t => dim.Color = new Color(0.04f, 0f, 0.015f, 0.55f * Ease5.OutQuint(t)));
+			Action clearDecor = CutInDecor(r);
 			CutInPlayback clip = new(CutInSplit) { Offset = new Vector2(-CutInShift * CutIn.BandScale(screen) / 1.23f, 0f) };
 			Vector2 eyeAt = CutIn.MainEye(screen) + clip.Offset;
 			clip.ShatterFrom = eyeAt;
@@ -748,10 +707,81 @@ void fragment() {
 				Sfx.Play(Sfx.SubBoom, 0.45f, 0.033f);                 // 和 CutIn 里的碎裂声同一刻
 				Fx.Animate(dim, 0, 0.6, t => dim.Color = new Color(0.04f, 0f, 0.015f, 0.55f * (1f - Fx.InCubic(t))));
 				Fx.FreeAfter(dim, 0.65);
+				clearDecor();
 				Tween t = r.Group.CreateTween();
 				t.TweenMethod(Callable.From<float>(v => r.Flare = v), 0f, 1f, 0.08);
 				t.TweenMethod(Callable.From<float>(v => r.Flare = v), 1f, 0f, 1.0).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
 			});
 		});
+	}
+
+	/// <summary>
+	/// 眼神特写期间的背景拼贴 + 左上名字标签（照结城理 mod CutInFx.BeginOn 的 decor / RedTag，配色换成 P5）：
+	/// 左下白色斜切大色块（上沿一道红线）+ 上面斜着的超大人格面具名 ARSÈNE 水印、右上黑色斜块，从画面外滑入（0.3s）；
+	/// 左上白底红字的名字标签「雨宮 蓮」+ 一行 PERSONA ▸ ARSÈNE。都在横幅后面 / 立绘后面（标签在最前）。返回碎开时调用的收尾。
+	/// </summary>
+	private static Action CutInDecor(Rig r)
+	{
+		Node2D decor = new() { Name = "CutInDecor" };
+		r.Back.AddChild(decor);
+		Node2D slabs = new();
+		decor.AddChild(slabs);
+		P5Ui.Slab(slabs, -200f, SW * 0.4f, SH * 0.64f, SH + 60f, 190f, new Color(0.94f, 0.93f, 0.93f, 0.92f));
+		P5Ui.Slab(slabs, -200f, SW * 0.36f, SH * 0.64f, SH * 0.64f + 10f, 190f, new Color(Crimson, 0.95f));
+		Node2D word = new() { Position = new Vector2(SW * 0.03f, SH * 1.08f), Rotation = -1.0f };
+		slabs.AddChild(word);
+		P5Ui.Text(word, "ARSÈNE", P5Ui.Font(P5Ui.Barlow), (int)(SH * 0.3f), new Color(0.07f, 0.02f, 0.03f, 0.88f), new Vector2(0f, -SH * 0.3f));
+		Node2D top = new();
+		decor.AddChild(top);
+		P5Ui.Slab(top, SW * 0.5f, SW + 300f, -60f, SH * 0.15f, -140f, new Color(Ink, 0.92f));
+		// 名字标签（最前面：Front 层）
+		Node2D ui = new() { Name = "CutInTag" };
+		r.Front.AddChild(ui);
+		Font cjk = P5Ui.Font(P5Ui.CjkBold), lat = P5Ui.Font(P5Ui.Barlow);
+		const string name = "雨宮 蓮";
+		const int size = 44;
+		float w = P5Ui.Width(cjk, name, size);
+		Node2D tag = new() { Position = new Vector2(-420f, SH * 0.14f) };
+		ui.AddChild(tag);
+		P5Ui.Slab(tag, -12f, w + 40f, 8f, 70f, 14f, new Color(Ink, 0.95f));
+		P5Ui.Slab(tag, -24f, w + 28f, 0f, 62f, 14f, new Color(0.97f, 0.96f, 0.96f, 1f));
+		Node2D nameAt = new() { Position = new Vector2(8f, -2f), Skew = -0.2f };
+		tag.AddChild(nameAt);
+		P5Ui.Text(nameAt, name, cjk, size, Crimson, Vector2.Zero);
+		Node2D sub = new() { Position = new Vector2(30f, 76f), Skew = -0.25f };
+		tag.AddChild(sub);
+		P5Ui.Text(sub, "PERSONA  \u25B8  ARSÈNE", lat, 26, new Color(1f, 0.93f, 0.93f), Vector2.Zero, 4, new Color(0.08f, 0f, 0.02f));
+		Fx.Animate(decor, 0, 3.0, t =>
+		{
+			float time = t * 3f;
+			float a = Ease5.OutQuint(Mathf.Clamp(time / 0.3f, 0f, 1f));
+			float b = Ease5.OutQuint(Mathf.Clamp((time - 0.05f) / 0.3f, 0f, 1f));
+			slabs.Position = new Vector2(-SW * 0.5f * (1f - a), 0f);
+			top.Position = new Vector2(SW * 0.5f * (1f - b), 0f);
+			word.Position = new Vector2(SW * 0.03f + 30f * time, SH * 1.08f);
+		});
+		Fx.Animate(tag, 0.04, 0.26, t => tag.Position = new Vector2(Mathf.Lerp(-420f, 56f, Ease5.OutQuint(t)), SH * 0.14f));
+		return () =>
+		{
+			if (GodotObject.IsInstanceValid(decor))
+			{
+				Fx.Animate(decor, 0, 0.55, t =>
+				{
+					decor.Modulate = new Color(1f, 1f, 1f, 1f - t * t * (3f - 2f * t));
+					decor.Scale = Vector2.One * (1f + 0.05f * Fx.OutCubic(t));
+				});
+				Fx.FreeAfter(decor, 0.6);
+			}
+			if (GodotObject.IsInstanceValid(ui))
+			{
+				Vector2 p0 = ui.Position;
+				Fx.Animate(ui, 0, 0.3, t =>
+				{
+					ui.Modulate = new Color(1f, 1f, 1f, 1f - t * t * (3f - 2f * t));
+					ui.Position = p0 + new Vector2(-40f * Fx.InCubic(t), 0f);
+				});
+				Fx.FreeAfter(ui, 0.35);
+			}
+		};
 	}
 }

@@ -377,6 +377,10 @@ default_mix = 0.1
 """)
     for name, im in fx_textures():
         write_texture(STAGE, f"p5joker/fx/{name}.png", im)
+    # fonts: raw .ttf (p5mod/src/Vfx/P5Ui.cs loads them with FontFile.LoadDynamicFont, no import needed; SIL OFL)
+    (STAGE / "p5joker/fonts").mkdir(parents=True, exist_ok=True)
+    for f in ("BarlowCondensed-900Italic.ttf", "BarlowCondensed-700Italic.ttf"):
+        shutil.copy(ROOT / "tools/ui/fonts" / f, STAGE / "p5joker/fonts" / f)
     # sounds: raw .ogg (p5mod/src/Vfx/Sfx.cs decodes the bytes itself, no import needed)
     (STAGE / "p5joker/sfx").mkdir(parents=True, exist_ok=True)
     for name, src in SFX.items():

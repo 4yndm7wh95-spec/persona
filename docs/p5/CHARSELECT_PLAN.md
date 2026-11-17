@@ -1,5 +1,22 @@
 # P5Joker 选人界面设计（静默猎手 → Joker）
 
+## v5 修改（2026-11-17：介绍板照 P3 做；去掉红色锯齿球；左右不分开）
+
+预览：[charselect_v5.mp4](preview/charselect_v5.mp4)、[眼神特写](preview/charselect_v5_cutin.png)、[常驻](preview/charselect_v5.png)。参照用户给的结城理 mod 实机截图（切入那一刻）。
+
+- **左右是一个画面**：去掉立绘面板的暗红黑底和红色锯齿球（颜色太艳、和左边偏暗的背景冲突）。立绘后面就是同一片天空 / 城市 / 斜带；
+  眼神特写横幅铺满整个横屏（右段的撕纸延伸本来就到屏幕外），切入时从立绘后面透出来。
+- **切入期间的拼贴（照 CutInFx.BeginOn）**：左下白色斜切大色块 + 上沿红线 + 斜着的超大 ARSÈNE 水印、右上黑色斜块，从画面外滑入，碎开后 0.55s 淡掉；
+  左上名字标签「雨宮 蓮」+ PERSONA ▸ ARSÈNE（白底红字 + 错开黑块），碎开时往左收掉。
+- **介绍板（照 CharSelectInfo）**：原版面板整块藏掉，在它下面搭 P5 版（`Vfx/CharSelectInfoPanel.cs` + 游戏侧 `CharSelectInfo.cs`），坐标、入场、常驻都同 P3：
+  抬头黑色倾斜带（`cs_info_head`：上红条 / 下白细条、0 ARCANA、勒索信 JOKER、CODE NAME / REN AMAMIYA）+ 深色「愚者」漂移 + 扫光；
+  HP 白 → 红 / 金币白 → 金（Barlow Condensed 粗斜体，mod 自带），同色下划线、白斜杠；描述 + 红线；天赋红边卡 + 名称 + 白色 PASSIVE + 原版说明。
+  碎开后（1.3s）入场。数值 / 天赋都实时读原版标签；选别的角色时原版面板原样恢复。
+- **TAKE YOUR HEART**：左上的剪贴字标题去掉（那里是介绍板抬头），改成 P3 的 MEMENTO MORI 那种斜带：半透明黑带 + 细红线 + 超大号淡字，
+  比 P3 低 90px 让开天赋说明，在城市剪影后面一路斜穿到立绘后面。
+- 字体：Barlow Condensed 900 / 700 Italic 原样放进 PCK（`res://p5joker/fonts/`，LoadDynamicFont 读），中文用游戏自带的 Noto Sans CJK（同 P3）。
+- **没验证的**：原版信息面板的屏幕位置（介绍板坐标照 P3、以原版面板左上角为原点；预览里的假面板放在 (256,260) 是推算的）。
+
 ## v4 修改（2026-11-17，按用户：照 P3 mod 的思路来，眼神特写和立绘分开入场）
 
 预览：[charselect_v4.mp4](preview/charselect_v4.mp4)、[眼神特写](preview/charselect_v4_cutin.png)、[常驻](preview/charselect_v4.png)。

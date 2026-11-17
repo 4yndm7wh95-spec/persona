@@ -8,8 +8,8 @@ stage_p5.fx_textures() 会调用 textures()，所以打包和预览（tools/p5/f
 摩尔加纳：身体图本身带尾巴，按尾巴那张的形状抠掉，尾巴单独一层（根部见 TAIL_ROOT）。
 描边（白边 + 外圈黑边）离线烘焙成 cs_body_line / cs_hand_line，游戏里画在人物后面，运行时不用描边着色器。
 天际线重新上色（recolor）：原图的白色楼面、自带的前景楼顶全部压成剪影，只留小窗灯 —— 原图白块太多是"脏"的主要来源。
-锯齿球（cs_burst，游戏里染红、压在立绘面板的暗红黑底上）、斜条上的竖排小字（cs_slab_text）、标题黑带（cs_header_band）都是超采样画的，边缘抗锯齿；
-眼睛蓝光的横向光条是 cs_eye_streak。
+斜条上的竖排小字（cs_slab_text）、介绍板抬头（cs_info_head / cs_info_ghost，同结城理 mod 的 build_info_panel 几何）都是超采样画的，边缘抗锯齿；
+眼睛金光的横向光条是 cs_eye_streak。
 用法：python3 tools/p5/charselect_assets.py  → art/p5/charselect/game/ 下出一份检查用的 PNG + preview.png
 """
 from pathlib import Path
@@ -22,8 +22,6 @@ SRC = ROOT / "art/p5/charselect"
 BLINK_BOX = (330, 320, 690, 570)            # 眨眼贴片在立绘画布里的范围（p5mod/src/Vfx/CharSelectScene.cs 的 BlinkAt 同步）
 PORTRAIT_K = 1.0                            # 立绘贴图原尺寸（游戏里按图 2 的范围显示，约 0.92 倍）
 LINE_WHITE, LINE_BLACK = 10.0, 17.0         # 描边：白边宽 / 白 + 黑总宽（画布像素）
-# 锯齿球：贴图 1024，尖角外半径 400（游戏里缩放到画布 700，CharSelectScene.BurstK 同步）
-BURST_SIZE, BURST_R, BURST_SPIKES = 1024, 400.0, 12
 SLAB_TEXT = "PHANTOM THIEVES  //  CODE NAME : JOKER  //  ARCANA 0  //  "
 FONT = ROOT / "tools/ui/fonts/BarlowCondensed-700Italic.ttf"
 
@@ -154,52 +152,6 @@ def morgana_layers():
     return {"cs_morgana": _scale(to(body), k), "cs_morgana_tail": _scale(to(tail), k)}
 
 
-def banner_parts():
-    """TAKE YOUR HEART 按连通块拆成几块（字母纸片互相压着，拆不到单个字母），游戏里每块单独"跳"。
-    返回 [(名字, 图, (x, y))]，偏移是在整条 cs_banner 里的位置（CharSelectScene.BannerParts 同步）。"""
-    import scipy.ndimage as nd
-    full = _trim(_rgba("banner_take_your_heart"))[0]
-    a = np.asarray(full).astype(np.float32)
-    lab, _ = nd.label(a[..., 3] > 128)
-    parts = []
-    for i, sl in enumerate(nd.find_objects(lab)):
-        if (sl[0].stop - sl[0].start) * (sl[1].stop - sl[1].start) < 2000:
-            continue
-        own = nd.binary_dilation(lab == i + 1, iterations=3)
-        im = a.copy()
-        im[..., 3] *= own
-        x0, y0 = max(sl[1].start - 3, 0), max(sl[0].start - 3, 0)
-        x1, y1 = min(sl[1].stop + 3, a.shape[1]), min(sl[0].stop + 3, a.shape[0])
-        parts.append((Image.fromarray(im[y0:y1, x0:x1].clip(0, 255).astype(np.uint8), "RGBA"), (x0, y0)))
-    parts.sort(key=lambda p: p[1][0])
-    return [(f"cs_banner_{i}", im, off) for i, (im, off) in enumerate(parts)]
-
-
-def _star(c, R, n, seed=5):
-    rng = np.random.default_rng(seed)
-    pts = []
-    for i in range(n * 2):
-        ang = -np.pi / 2 + np.pi * i / n + rng.uniform(-0.06, 0.06)
-        r = (R if i % 4 == 0 else R * 0.86) if i % 2 == 0 else rng.uniform(0.5, 0.6) * R
-        pts.append((c + np.cos(ang) * r, c + np.sin(ang) * r))
-    return pts
-
-
-def _poly_tex(pts_fn, size, ss=4):
-    from PIL import ImageDraw
-    im = Image.new("L", (size * ss, size * ss), 0)
-    ImageDraw.Draw(im).polygon(pts_fn(ss), fill=255)
-    out = Image.new("RGBA", (size, size), (255, 255, 255, 0))
-    out.putalpha(im.resize((size, size), Image.LANCZOS))
-    return out
-
-
-def burst():
-    """P5 锯齿爆炸形（白色，游戏里染红）。"""
-    c = BURST_SIZE / 2
-    return _poly_tex(lambda k: [(x * k, y * k) for x, y in _star(c, BURST_R, BURST_SPIKES)], BURST_SIZE)
-
-
 def slab_text():
     """斜条上滚动的竖排小字（2 倍大烘焙，游戏里缩 0.5）：宽度正好是一个循环单元，首尾相接不跳。"""
     from PIL import ImageDraw, ImageFont
@@ -208,18 +160,6 @@ def slab_text():
     im = Image.new("RGBA", (w, 96), (255, 255, 255, 0))
     ImageDraw.Draw(im).text((0, 10), SLAB_TEXT, font=font, fill=(255, 255, 255, 235))
     return im
-
-
-def header_band():
-    """左上角标题的黑带：平行四边形（右端斜切），四周留透明边，游戏里旋转时边缘靠贴图过滤抗锯齿。"""
-    from PIL import ImageDraw
-    W, H, m, ss = 1060, 138, 4, 4
-    im = Image.new("L", ((W + 2 * m) * ss, (H + 2 * m) * ss), 0)
-    pts = [(m, m + 16), (m + W, m), (m + W - 34, m + H - 8), (m, m + H)]
-    ImageDraw.Draw(im).polygon([(x * ss, y * ss) for x, y in pts], fill=255)
-    out = Image.new("RGBA", (W + 2 * m, H + 2 * m), (10, 6, 8, 0))
-    out.putalpha(im.resize((W + 2 * m, H + 2 * m), Image.LANCZOS).point(lambda v: v * 240 // 255))
-    return out
 
 
 def eye_streak(w=512, h=64):
@@ -232,6 +172,79 @@ def eye_streak(w=512, h=64):
     a = np.clip(0.55 * soft + 0.9 * core, 0, 1)
     rgb = np.full((h, w, 3), 255, np.float32)
     return Image.fromarray(np.dstack([rgb, a * 255]).astype(np.uint8), "RGBA")
+
+
+# ───────── 介绍板抬头（照结城理 mod tools/ui/build_info_panel.py：同一套几何，运行时 1:1 贴，坐标沿用 P3 的 CharSelectInfo） ─────────
+IK = 2                                       # 烘焙倍数
+IW, IH, BT, BB = 1000, 220, 40, 176          # 运行时尺寸、带子上下沿
+JP = ROOT / "tools/ui/fonts/NotoSansJP-Black-subset.ttf"
+LAT = ROOT / "tools/ui/fonts/BarlowCondensed-900Italic.ttf"
+
+
+def _mask(text, font, size, spacing=0.0):
+    from PIL import ImageDraw, ImageFont
+    f = ImageFont.truetype(str(font), size * IK)
+    probe = ImageDraw.Draw(Image.new("L", (1, 1)))
+    w = int(sum(probe.textlength(c, font=f) for c in text) + spacing * size * IK * len(text)) + 40 * IK
+    m = Image.new("L", (w, int(size * IK * 1.5)), 0)
+    d = ImageDraw.Draw(m)
+    x = 10 * IK
+    for c in text:
+        d.text((x, size * IK * 0.1), c, font=f, fill=255)
+        x += probe.textlength(c, font=f) + spacing * size * IK
+    return m.crop(m.getbbox())
+
+
+def _fill(m, top, bot=None):
+    bot = bot or top
+    t = np.linspace(0, 1, m.height)[:, None]
+    g = np.zeros((m.height, m.width, 4), np.uint8)
+    for i in range(3):
+        g[..., i] = top[i] * (1 - t) + bot[i] * t
+    g[..., 3] = np.asarray(m)
+    return Image.fromarray(g, "RGBA")
+
+
+def _mid(im, layer, x, cy):
+    im.alpha_composite(layer, (int(x * IK), int(cy * IK - layer.height / 2)))
+
+
+def _tilt(im):
+    """绕中心逆时针转 5°（右端上扬，expand），再从 2 倍缩回 1 倍（同 P3）。"""
+    im = im.rotate(5.0, expand=True, resample=Image.BICUBIC)
+    return im.resize((im.width // IK, im.height // IK), Image.LANCZOS)
+
+
+def info_head():
+    """
+    P5R 状态界面风格的抬头：黑色倾斜带 + 上沿红条 + 下沿白细条；左边大号「0」+ ARCANA；中间勒索信剪贴字 JOKER（生图 title_joker）
+    压在带子上、上下略出界；右边 CODE NAME / REN AMAMIYA。
+    """
+    from PIL import ImageDraw
+    im = Image.new("RGBA", (IW * IK, IH * IK), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    S = lambda pts: [(x * IK, y * IK) for x, y in pts]  # noqa: E731
+    d.polygon(S([(0, BT - 12), (620, BT - 12), (614, BT - 4), (0, BT - 4)]), fill=(222, 16, 30, 255))
+    d.polygon(S([(0, BB + 2), (800, BB + 2), (795, BB + 9), (0, BB + 9)]), fill=(240, 236, 236, 255))
+    d.polygon(S([(0, BT), (990, BT), (950, BB), (0, BB)]), fill=(14, 10, 12, 255))
+    mid = (BT + BB) / 2
+    _mid(im, _fill(_mask("0", LAT, 96), (250, 248, 248), (200, 190, 192)), 52, mid + 8)
+    im.alpha_composite(_fill(_mask("ARCANA", LAT, 19), (170, 160, 165)), (int(58 * IK), int((BT + 10) * IK)))
+    title = _trim(_rgba("title_joker"))[0]
+    th = 150 * IK
+    title = title.resize((round(title.width * th / title.height), th), Image.LANCZOS)
+    im.alpha_composite(title, (int(156 * IK), int((mid - 4) * IK - th / 2)))
+    x_txt = 156 + title.width / IK + 18
+    im.alpha_composite(_fill(_mask("CODE NAME", LAT, 18, spacing=0.1), (232, 40, 54)), (int(x_txt * IK), int((mid - 30) * IK)))
+    im.alpha_composite(_fill(_mask("REN  AMAMIYA", LAT, 22, spacing=0.1), (236, 232, 232), (190, 184, 186)), (int(x_txt * IK), int((mid - 2) * IK)))
+    return _tilt(im)
+
+
+def info_ghost():
+    """「愚者」：和抬头同一画布、同一位置，深红色，运行时叠在黑带上单独慢慢漂移（只在带子里）。"""
+    im = Image.new("RGBA", (IW * IK, IH * IK), (0, 0, 0, 0))
+    _mid(im, _fill(_mask("愚者", JP, 104), (40, 12, 16), (30, 9, 12)), 728, (BT + BB) / 2)
+    return _tilt(im)
 
 
 def _pad(im, m=6):
@@ -250,12 +263,10 @@ def textures():
     yield from morgana_layers().items()
     yield "cs_skyline", recolor(_rgba("city_skyline").crop((0, 351, 1536, 1024)))
     yield "cs_rooftop", _rgba("rooftop_foreground").crop((0, 305, 1536, 1024))
-    for name, im, _ in banner_parts():
-        yield name, im
-    yield "cs_burst", burst()
+    yield "cs_info_head", info_head()
+    yield "cs_info_ghost", info_ghost()
     yield "cs_slab_text", slab_text()
     yield "cs_eye_streak", eye_streak()
-    yield "cs_header_band", header_band()
     yield "cs_card", _pad(_scale(_rgba("calling_card"), 0.25))
     yield "cs_button", button_icons()[0]
 
@@ -276,7 +287,6 @@ if __name__ == "__main__":
     out.mkdir(exist_ok=True)
     ims = dict(textures())
     ims["cs_button_locked"] = button_icons()[1]
-    print("banner parts", [(n, off, im.size) for n, im, off in banner_parts()])
     for n, im in ims.items():
         im.save(out / f"{n}.png")
         print(n, im.size)
