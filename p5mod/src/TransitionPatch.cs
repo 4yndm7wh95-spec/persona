@@ -11,7 +11,7 @@ namespace P5Joker;
 /// 原版 FadeOut 里另有一层黑色 SimpleTransition 跟着变黑（画在材质上面，会把剪影的红光盖掉）→ 这段时间先藏起来，演完再放回。
 /// 不改原版文件；只认静默猎手的过场路径（Joker 就是换皮的静默猎手）。
 /// </summary>
-[HarmonyPatch(typeof(NTransition), nameof(NTransition.FadeOut))]
+// 两个方案都被否（2026-11-17：太粗糙），先不启用，游戏里保持原版过场：[HarmonyPatch(typeof(NTransition), nameof(NTransition.FadeOut))]
 public static class TransitionPatch
 {
 	private const string SilentPath = "silent_transition_mat.tres";
