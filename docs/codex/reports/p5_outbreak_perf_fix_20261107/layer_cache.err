@@ -1,0 +1,2 @@
+WARNING: PSO caching is not implemented yet in the Direct3D 12 driver.
+   at: pipeline_cache_create (drivers/d3d12/rendering_device_driver_d3d12.cpp:4462)

@@ -1,0 +1,50 @@
+{
+  "method": "imagegen",
+  "tool": "image_gen.imagegen",
+  "prompt": "Create a faithful 2D game character illustration of Arsene from Persona 5 using the ATTACHED OFFICIAL ART as the sole primary character design and pose reference. This is a correction of inaccurate earlier drawings; do not invent or simplify the costume. Study and match the official silhouette, head and body proportions, facial structure, thin elongated tilted black top hat, angular red face and long lateral head projections, high red collar, white layered lace cravat, red fitted jacket sleeves, black close-fitting central torso and short black hip garment, small gold trim/chains exactly as seen. CRITICAL legs: reproduce the official sculptural red pointed thigh structures and narrow red lower legs with dramatic curved metallic KNIFE-BLADE HEELS extending downward behind the feet; these are NOT ordinary tall fashion boots. CRITICAL wings: two huge organic BLACK feathered wings, charcoal gray and subdued brown/purple feather shading as in the reference, ragged naturally layered feather silhouette. NO broad crimson/red wing lining. NO invented long red coat tails or extra draped chains. Match the attached official pose closely: upright airborne stance, head subtly bowed, one arm extended outward/up with elegantly curved black claw fingers, other arm lowered relaxed, two legs naturally separated with one knee slightly bent, no crossed legs and no twisting contortion. Keep the reference's theatrical but balanced character proportions, do not stretch or bulk up the anatomy independently. Full body including blade heels and both wings visible, arrange wider wings within portrait 1536x2048 canvas with clear transparent margin on all four sides. Clean official P5 hand-drawn cel-shaded aesthetic, precise dark contours and graphic red/black/white shapes, not 3D rendering, no photoreal texture. The reference website's gold silhouette outline, decorative border/background and any backdrop artifacts MUST NOT appear. Genuine transparent RGBA PNG, alpha zero outside character, no ground, shadows cast on background, effects, text, other characters or props. This is a design-faithful approval draft.",
+  "reference_images": [
+    "https://p5r.jp/resources/img/character/hero/persona_aa0c6566c4bd27dd93fc4f7a5444bc7b.png"
+  ],
+  "raw_output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-19c28de1-9ea0-414d-a15b-359757e2421e.png",
+  "raw_size": [
+    1086,
+    1448
+  ],
+  "delivery_size": [
+    1536,
+    2048
+  ],
+  "transparent_background": true,
+  "generation_count_total": 3,
+  "revision_reason": "用户要求重新核对官方亚森形象；以P5R官网立绘为唯一主要设计与姿势参考。",
+  "automatic_redraw_count": 0,
+  "processing": "交付版尺寸归一到1536x2048；alpha<=2透明残点清零；alpha=0的RGB清零；保留raw，不进行抠底或局部结构修图。",
+  "checks": {
+    "mode": "RGBA",
+    "corner_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "alpha_range": [
+      0,
+      255
+    ],
+    "nonzero_bbox": [
+      0,
+      0,
+      1536,
+      2045
+    ],
+    "edge_alpha_max_top_bottom_left_right": [
+      4,
+      0,
+      4,
+      4
+    ]
+  },
+  "status": "pending_user_approval",
+  "layering": "not started",
+  "official_reference_url": "https://p5r.jp/resources/img/character/hero/persona_aa0c6566c4bd27dd93fc4f7a5444bc7b.png"
+}

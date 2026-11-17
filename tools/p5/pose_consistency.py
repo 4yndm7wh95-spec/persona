@@ -29,7 +29,10 @@ BODY_TOL = 0.025
 
 
 def boot_dims(a):
-    from scipy import ndimage
+    try:
+        from scipy import ndimage
+    except ImportError:  # Codex 那边没有 scipy：用纯 numpy 版
+        import _ndimage as ndimage
     r, g, b, al = (a[..., i] for i in range(4))
     m = (al > 200) & (r > 50) & (r - b > 25) & (g < 110) & (r < 200) & (r > g + 15)
     m[:1100] = False
@@ -46,7 +49,10 @@ def boot_dims(a):
 
 def head_height(a):
     """Hair top to chin, measured in a band around the face (raised arms beside the head are excluded)."""
-    from scipy import ndimage
+    try:
+        from scipy import ndimage
+    except ImportError:  # Codex 那边没有 scipy：用纯 numpy 版
+        import _ndimage as ndimage
     r, g, b, al = (a[..., i] for i in range(4))
     skin = (al > 200) & (r > 215) & (g > 170) & (g < 230) & (b > 140) & (b < 210) & (r - b > 30)
     skin[700:] = False
@@ -60,7 +66,10 @@ def head_height(a):
 
 def body_length(a):
     """Chin to the lowest sole: the body below the head. A frame can match the head and still be short."""
-    from scipy import ndimage
+    try:
+        from scipy import ndimage
+    except ImportError:  # Codex 那边没有 scipy：用纯 numpy 版
+        import _ndimage as ndimage
     r, g, b, al = (a[..., i] for i in range(4))
     skin = (al > 200) & (r > 215) & (g > 170) & (g < 230) & (b > 140) & (b < 210) & (r - b > 30)
     skin[700:] = False

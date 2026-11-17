@@ -68,6 +68,19 @@ KNIFE_OUT = [("knife_lower_h", .08, 0), ("knife_spin_g", .2, 0), ("idle_a3", .12
 # before the follow-through brings it down
 KNIFE_CUT = [("slash_a10", .12, 0), ("knife_top_g", .2, 0), ("slash_follow_a", .06), ("knife_return_a", .06),
              ("slash_recover_a", .08), ("idle_a3", .1, .06)]
+# the command (user 2026-11-03): command frames are gun_aim_b / gun_arm_mid_h with the gun swapped for an open hand and
+# the left hand pocketed, so the way back is the gun's holster path (arm down -> hand to the pocket -> idle)
+# 2026-11-03 bridge frames (Codex; user: hand-on-mask -> command jumped): hand leaves the mask -> chest -> thrust. The way
+# in skips summon_command_mid_a (its arm hangs low-forward: the hand would dip and come back up); it is only used going back
+BRIDGE = [("summon_bridge1_a", .035, .015), ("summon_bridge3_a", .035, .015), ("summon_bridge2_a", .04, .03)]
+COMMAND = BRIDGE + [("summon_command_a", .55, .02), ("summon_command_mid_a", .07),
+                    ("pocket_in_e", .1, .04), ("idle_a3", .14, .08)]
+WAVE = [("summon_command_a", .38, .02), ("summon_command_mid_a", .07), ("pocket_in_e", .1, .04), ("idle_a3", .14, .08)]
+# Outbreak grip (user 2026-11-08): summon_grip_a = the hand on the mask clenched hard (docs/p5/prompts/summon_grip_a.md);
+# until that picture exists the old squeeze (summon_hold_a) stands in
+GRIP = "summon_grip_a" if (FINAL / "summon_grip_a.png").exists() else "summon_hold_a"
+OUTBREAK_GRIP_END = 1.28   # crush at 1.04 s (2026-11-13: crush a little sooner) + hold the fist a moment after it
+OUTBREAK_LET_GO = [("summon_touch2_a", .06, .04)] + [(n, .06) for n in SUMMON_UP[-2::-1]] + [("idle_a3", .14, .08)]
 IDLE_LOOP = 11.0   # 8 s idle (+ blinks), then the glove tug, ending back on idle_a3
 ANIMS = {
     "idle_loop": [("idle_a3", 8.6)] + GLOVE + [("idle_a3", IDLE_LOOP - 8.6 - sum(f[1] for f in GLOVE))],
@@ -97,21 +110,61 @@ ANIMS = {
     "aim_loop": [("gun_aim_b", 4.8)],
     "aim_out": [("gun_aim_b", .01)] + GUN_OUT,
     "shiv_from_aim": [("gun_aim_b", .18)] + GUN_SHOT,
+    # holding a skill / power / block card while choosing where to play it (user 2026-10-29: every card should have a
+    # ready stance, not only the knife and the gun; p5mod/src/Aim.cs). Built from the existing cast pictures:
+    #  mask  - hand raised to the mask (summon_touch2_a), blue fire leaks between the fingers (code effect); playing it
+    #          squeezes the mask (summon_hold_a) and lowers the hand
+    #  guard - fist half raised (guard_mid_a); playing it snaps into the full guard
+    #  glove - right hand reaching for the left glove (glove_reach_a); playing it pulls the glove
+    "mask_in": [("idle_a3", .02)] + [(n, .06) for n in SUMMON_UP],
+    "mask_loop": [("summon_touch2_a", 4.8)],
+    "mask_out": [("summon_touch2_a", .01)] + [(n, .06) for n in SUMMON_UP[-2::-1]] + [("idle_a3", .14, .08)],
+    "cast_from_mask": [("summon_touch2_a", .02), ("summon_hold_a", .1)] + COMMAND,
+    "guard_in": [("idle_a3", .02), ("guard_mid_a", .08)],
+    "guard_loop": [("guard_mid_a", 4.8)],
+    "guard_out": [("guard_mid_a", .01), ("idle_a3", .14, .08)],
+    "cast_guard_from_ready": [("guard_mid_a", .02), ("guard_a2", .45, .03), ("guard_mid_a", .08), ("idle_a3", .12, .07)],
+    "glove_in": [("idle_a3", .02), ("glove_mid_a", .08), ("glove_reach_a", .08)],
+    "glove_loop": [("glove_reach_a", 4.8)],
+    "glove_out": [("glove_reach_a", .01), ("glove_mid_a", .08), ("idle_a3", .14, .08)],
+    "cast_glove_from_ready": [("glove_reach_a", .02)] + GLOVE[2:],
     # cast variants picked per card by p5mod/src (Aim.Rename): guard (block cards), glove tug (card tricks /
     # buffs), the big summon (mask ripped off) for the large Persona cards
     "cast_guard": [("idle_a3", .02), ("guard_mid_a", .06), ("guard_a2", .45), ("guard_mid_a", .08), ("idle_a3", .12, .07)],
     "cast_glove": [("idle_a3", .02)] + GLOVE,
+    # wave (user 2026-11-10: Expose is just a swing of the hand, no hand on the mask): the arm comes up low-forward and is
+    # flung out at the enemy (summon_command_a, the command pose without the mask before it), then the holster way back.
+    # From the glove stance the hand swings out backhand from the glove reach. The fling lands at ~0.07 s.
+    "cast_wave": [("idle_a3", .02), ("summon_command_mid_a", .05, .03)] + WAVE,
+    "cast_wave_from_ready": [("glove_reach_a", .02), ("summon_bridge2_a", .04, .025)] + WAVE,
     # 2026-10-29 (user: the big summon dragged): ~2.3 s -> ~1.3 s; the release pose (arm flung out) still holds longest
-    "cast_big": [("idle_a3", .02)] + [(n, .045) for n in SUMMON_UP] + [("summon_hold_a", .14), ("summon_rip_a2", .08),
-                 ("summon_open1_b", .045), ("summon_open2_b", .045), ("summon_release_b", .42), ("summon_settle_b", .07),
-                 ("summon_down1_e", .065), ("summon_down05_c", .065), ("summon_down25_c", .065), ("idle_a3", .12, .06)],
-    "cast": [("idle_a3", .02)] + [(n, .08) for n in SUMMON_UP] + [("summon_hold_a", .9)]
-            + [(n, .08) for n in SUMMON_UP[::-1]] + [("idle_a3", .15, .08)],
+    # 2026-11-03 (user): no more flinging the arm back after the rip - hold the rip through the eye cut-in shatter (0.56 s),
+    # then the command (right arm thrust at the enemy, palm down; Arsene attacks at ~0.93 s while it is held)
+    # 2026-11-03 (user): the mask rip (summon_rip_a2) is a retired pose - hold the mask, then straight into the command
+    "cast_big": [("idle_a3", .02)] + [(n, .045) for n in SUMMON_UP] + [("summon_hold_a", .14)]
+                + BRIDGE + [("summon_command_a", .52, .02)] + COMMAND[len(BRIDGE) + 1:],
+    # 2026-11-03 (user): after the hand on the mask, Joker thrusts his right arm at the enemy, palm down, left hand in the
+    # pocket - directing the Persona (Arsene attacks at ~0.41 s, inside the held command pose)
+    "cast": [("idle_a3", .02)] + [(n, .05) for n in SUMMON_UP] + [("summon_hold_a", .07)] + COMMAND,
+    # Outbreak (user 2026-11-08): no hand-in-pocket command any more. The hand on the mask clenches the moment the card is
+    # played and stays clenched until the giant hand crushes the eye cut-in (p5mod Aim.HitFor("Outbreak") = 1.16 s after
+    # the cast starts; the tremble and the final squeeze are code, Aim.GripTremble), then lets go and lowers like mask_out.
+    # Sinful Shell: squeeze the mask -> hand down off the mask in one arc -> straight into the gun draw and spin -> caught aimed
+    # (squeeze .02 + .16, arc down .15, spin SINFUL_SPIN, catch at ~0.93 s; then holds the aim until shiv_from_aim fires)
+    # (user: a frame glitched - the mask hand jumped from the face straight into the pocket; it now comes down the chest
+    # (summon_lift2/lift1) and slides into the pocket (pocket_in_e) while the other hand rises for the draw)
+    "cast_sinful_from_mask": [("summon_touch2_a", .02), (GRIP, .14, .03), ("summon_lift2_a", .04, .025), ("summon_lift1_a", .05, .025),
+                              ("pocket_in_e", .06, .03), ("gun_arm_mid_h", .05, .02), ("gun_spin_g", .58, .015), ("gun_aim_b", 3.5, 0)],   # .58 = SINFUL_SPIN; aim hold long enough that the shot (shiv_from_aim) always cuts in before it ends (user 2026-11-09: one idle frame slipped in)
+    "cast_outbreak_from_mask": [("summon_touch2_a", .02), (GRIP, OUTBREAK_GRIP_END - .02, .03)] + OUTBREAK_LET_GO,
+    "cast_outbreak": [("idle_a3", .02)] + [(n, .045) for n in SUMMON_UP]
+                     + [(GRIP, OUTBREAK_GRIP_END - .02 - .045 * len(SUMMON_UP), .03)] + OUTBREAK_LET_GO,
     "hurt": [("hurt_flinch_a", .05, 0), ("hurt_a4", .25), ("hurt_recover_b1", .1), ("hurt_recover_b2", .1),
              ("idle_a3", .2, .12)],
     "die": [("die_buckle_a", .12, .06), ("die_kneel_a2", .6), ("die_fall_a", .15), ("die_down_b", 1.0)],
 }
 LOOPS = {"idle_loop", "low_health_loop", "relaxed_loop"}
+# non-looping animations whose last pose must be held for its full listed duration (code plays the next one inside it)
+HOLD_END = {"cast_sinful_from_mask"}
 # Impact on the `body` bone (pivot at the feet; user 2026-10-28: the strike felt weak, no impact). Keys are
 # (time, dx, dy, scaleX, scaleY, rotation): anticipation (pull back and crouch), a snap forward with a stretch,
 # a squash and a short shaking hit-stop on the cut, then an eased recovery. The gun kicks back on the recoil
@@ -125,6 +178,12 @@ IMPACT = {
     "aim_loop": [(0, 0, 0, 1, 1, 0), (1.2, 0, 2, .997, 1.006, -.15), (2.4, 0, 0, 1, 1, 0), (3.6, 0, 2, .997, 1.006, -.15),
                  (4.8, 0, 0, 1, 1, 0)],
     "knife_loop": [(0, 0, 0, 1, 1, 0), (1.2, 0, 2, .997, 1.006, -.15), (2.4, 0, 0, 1, 1, 0), (3.6, 0, 2, .997, 1.006, -.15),
+                   (4.8, 0, 0, 1, 1, 0)],
+    "mask_loop": [(0, 0, 0, 1, 1, 0), (1.2, 0, 2, .997, 1.006, -.15), (2.4, 0, 0, 1, 1, 0), (3.6, 0, 2, .997, 1.006, -.15),
+                   (4.8, 0, 0, 1, 1, 0)],
+    "guard_loop": [(0, 0, 0, 1, 1, 0), (1.2, 0, 2, .997, 1.006, -.15), (2.4, 0, 0, 1, 1, 0), (3.6, 0, 2, .997, 1.006, -.15),
+                   (4.8, 0, 0, 1, 1, 0)],
+    "glove_loop": [(0, 0, 0, 1, 1, 0), (1.2, 0, 2, .997, 1.006, -.15), (2.4, 0, 0, 1, 1, 0), (3.6, 0, 2, .997, 1.006, -.15),
                    (4.8, 0, 0, 1, 1, 0)],
     # from the held guard: a short wind-up into the same cut as "attack"
     "attack_from_ready": [(0, 0, 0, 1, 1, 0), (.08, -10, 0, 1.01, .985, 1), (.12, -24, -4, 1.025, .965, 2),
@@ -171,7 +230,16 @@ SPIN_OUT = [("@@gun_spin_g", 0, *SPIN, 60, 1.05, 1, 0), ("@@gun_spin_g", .04, *S
 FINGER_TIP = ("gun_spin_g", (1279, 316, 1322, 370))   # the index finger from the trigger guard to the tip (final canvas)
 # each animation lists the prop's spin segments; the loose prop (and its trail / the fingertip) is only shown
 # within a segment - between them the prop drawn in the pose picture takes over
-GUN_PROP = {"aim_in": [SPIN_IN], "shiv": [SPIN_IN, SPIN_OUT], "shiv_from_aim": [SPIN_OUT], "aim_out": [SPIN_OUT]}
+# Grand Finale / Sinful Shell (user 2026-11-08): one continuous move - the hand squeezes the mask (blue flame shoots to the sky),
+# comes down off the mask in one arc and flicks straight out into the gun draw (no stop at idle); the gun spins ~1.6 turns on the
+# finger, slowing, and is caught aimed at SINFUL_CATCH - the same moment Satanael catches his (p5mod SinfulShell.CatchAt)
+SINFUL_SPIN = .58
+SPIN_SINFUL = [("@gun_spin_g", 0, *SPIN, 580, 1.1, 0, 0), ("@gun_spin_g", .02, *SPIN, 540, 1.1, 1, .5),
+               ("@gun_spin_g", .12, *SPIN, 360, 1.1, 1, .5), ("@gun_spin_g", .24, *SPIN, 210, 1.1, 1, .45),
+               ("@gun_spin_g", .36, *SPIN, 100, 1.1, 1, .35), ("@gun_spin_g", .47, *SPIN, 35, 1.08, 1, .2),
+               ("@gun_spin_g", SINFUL_SPIN - .01, *SPIN, 4, 1.04, 1, .05), ("@gun_aim_b", 0, *AIM_GUARD, 0, 1, 1, 0)]
+GUN_PROP = {"aim_in": [SPIN_IN], "shiv": [SPIN_IN, SPIN_OUT], "shiv_from_aim": [SPIN_OUT], "aim_out": [SPIN_OUT],
+            "cast_sinful_from_mask": [SPIN_SINFUL]}
 
 # the knife (user 2026-10-28: spin it the same way - on the draw at the hip, then cut upwards; and again at the hip
 # after the strike). art/p5/props/knife_c.png is drawn in code (tools/p5/draw_knife.py), pivot at the middle of
@@ -240,10 +308,10 @@ def silhouette_iou(a, b):
 # 60 fps frame grid (2026-11-17, user: "the moves don't switch smoothly from frame to frame"). The game draws at 60 fps
 # (16.7 ms a frame) but many pictures were held 10 / 15 / 25 / 30 / 45 ms: a 15 ms picture was shown for one frame
 # or skipped entirely, a 45 ms one for 2 or 3 frames depending on where the animation started, so the same move
-# played with a different, uneven rhythm every time. Every hold is now a whole number of frames, at least MIN_HOLD
-# (the first picture of an animation is the one already on screen, 1 frame is enough). The moments the code waits
-# for stay put: the cut (slash_a10) lands on frame 8 (0.133 s) and the shot (gun_recoil_b) on frame 11 (0.183 s);
-# the hold just before them gives or takes the difference. Loops keep their exact length.
+# played with a different, uneven rhythm every time. Every change of picture is now on a frame (the nearest one to
+# its hand-written time) and every picture is held at least MIN_HOLD frames where its neighbours can spare it (the
+# first picture of an animation is the one already on screen, 1 frame is enough). The cut (slash_a10) lands on frame 8
+# (0.133 s) and the shot (gun_recoil_b) on frame 11 (0.183 s). Loops keep their exact length.
 GRID = 60
 MIN_HOLD = 2
 ANCHORS = {"slash_a10": 8, "gun_recoil_b": 11}
@@ -260,23 +328,37 @@ def frames_raw(anim):
 
 
 def _grid_counts(anim):
+    """frames per picture. Each change of picture goes to the frame nearest its hand-written time (so code timed to a
+    pose - Arsene's hit, the Sinful Shell catch, the Outbreak crush - stays within half a frame; nothing drifts), the
+    anchors exactly. A picture that would get less than MIN_HOLD frames borrows from a neighbour that can spare one."""
     raw = frames_raw(anim)
-    n = [0 if d <= 0 else max(1 if i == 0 else MIN_HOLD, round(d * GRID)) for i, (_, _, d, _) in enumerate(raw)]
+    T = [0.0]
+    for _, _, d, _ in raw:
+        T.append(T[-1] + max(d, 0.0))
+    B = [round(x * GRID) for x in T]
+    fixed = {0, len(B) - 1}
     for i, (p, _, _, _) in enumerate(raw):
         if p in ANCHORS and i > 0 and not any(q == p for q, *_ in raw[:i]):
-            diff = ANCHORS[p] - sum(n[:i])
-            for j in range(i - 1, -1, -1):              # take it from / give it to the holds before, nearest first
-                lo = 1 if j == 0 else MIN_HOLD
-                new = max(lo, n[j] + diff)
-                diff -= new - n[j]
-                n[j] = new
-                if diff == 0:
-                    break
-    if anim in LOOPS:
-        total = round(sum(d for _, _, d, _ in raw) * GRID)
-        k = max(range(len(n)), key=lambda j: n[j])       # the long idle hold absorbs the rounding
-        n[k] += total - sum(n)
-    return n
+            B[i] = ANCHORS[p]
+            fixed.add(i)
+    lo = [0 if d <= 0 else (1 if i == 0 else MIN_HOLD) for i, (_, _, d, _) in enumerate(raw)]
+    for _ in range(4 * len(raw)):
+        changed = False
+        for i in range(len(raw)):
+            if B[i + 1] - B[i] >= lo[i]:
+                continue
+            # push the end later if the next picture can give a frame, else pull the start earlier
+            if i + 1 not in fixed and i + 1 < len(raw) and B[i + 2] - B[i + 1] > lo[i + 1]:
+                B[i + 1] += 1
+                changed = True
+            elif i not in fixed and i > 0 and B[i] - B[i - 1] > lo[i - 1]:
+                B[i] -= 1
+                changed = True
+        if not changed:
+            break
+    for i in range(1, len(B)):                       # never backwards (a squeezed run keeps 1 frame a picture)
+        B[i] = max(B[i], B[i - 1] + (1 if raw[i - 1][2] > 0 else 0))
+    return [B[i + 1] - B[i] for i in range(len(raw))]
 
 
 def time_map(anim):
@@ -306,7 +388,9 @@ NO_TWEEN_INTO = set(ANCHORS)
 # somewhere in between) it would float next to the hand. These keep the cut; the spin hides it.
 PROP_SEAMS = {("gun_spin_g", "gun_aim_b"), ("knife_spin_g", "knife_lower_h"), ("knife_lower_h", "knife_ready_b")}
 # review 2026-11-17: the fall moves the whole body too far for a morph (two Jokers on top of each other)
-TWEEN_SKIP = {("die_buckle_a", "die_kneel_a2"), ("die_fall_a", "die_kneel_a2"), ("die_down_b", "die_fall_a")}
+TWEEN_SKIP = {("die_buckle_a", "die_kneel_a2"), ("die_fall_a", "die_kneel_a2"), ("die_down_b", "die_fall_a"),
+              # review 2026-11-17 after merging 0.9.49: the coat doubles / two hands show
+              ("summon_bridge3_a", "summon_bridge2_a"), ("glove_reach_a", "summon_bridge2_a")}
 
 
 def _tween_counts(anim):
@@ -701,6 +785,10 @@ def build():
             fade_col += [{"time": t0, "color": hexa(0)}, {"time": round(t0 + fade, 4), "color": hexa(1)}]
             pose_keys.append({"time": round(t0 + fade, 4), "name": p})
         end = round(sum(f[2] for f in fr), 4)
+        if name in HOLD_END and pose_keys[-1]["time"] < end:
+            # a closing key so the animation lasts until `end` (otherwise its length stops at the last pose's start and the
+            # player falls back to idle for a frame before the next animation - user 2026-11-09: Sinful Shell idle blink)
+            pose_keys.append({"time": end, "name": fr[-1][0]})
         slots = {"pose": {"attachment": pose_keys}}
         if fade_keys:
             slots["fade"] = {"attachment": [{"time": 0, "name": None}] + fade_keys, "rgba": fade_col}

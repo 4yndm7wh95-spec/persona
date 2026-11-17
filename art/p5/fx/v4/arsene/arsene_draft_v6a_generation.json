@@ -1,0 +1,57 @@
+{
+  "name": "arsene_draft_v6a",
+  "prompt": "Edit the attached APPROVED ARSENE V5 into a new POSE ONLY. Keep the same Persona 5 Arsene design: tilted black top hat, sharp red beaked mask, glowing red eyes, red fitted tailcoat, white cravat, black waistcoat, black feathered wings with subtle dark red inner feathers, red sculptural high boots with metallic blade heels, black claws. EXACT same clean 2D cel shading, outline weight, restrained crimson palette and proportions as image 1, no redesign, no 3D/painterly style. Portrait 2048x2304 RGBA transparent canvas. Whole character and both wings inside frame with AT LEAST 60 pixels empty transparent margin on EVERY side, no clipped wing tips/hat/heels. Keep body, both arms and two wings separated as much as practical for future layers. No background, halo, smoke, haze, floor, cast shadow, effects, text or other characters. Only a full-character approval draft, not a layer sheet. POSE A, UPRIGHT AND EXPANSIVE: straight upright spine and torso, chest facing front slightly toward screen right, head slightly lowered looking down-right. Two legs separated and NATURALLY EXTENDED nearly straight, one foot slightly ahead and one behind, toes pointing downward, airborne but NOT curled up or knees tucked together. Both enormous wings fully spread symmetrically across upper half. One arm reaches forward-right, elbow softly extended, claws OPEN; other arm opens outward away from the body. Dominant imposing poised presence, no crouch, no hunched torso.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-4447496a-c832-41e1-b49c-e6df469eb905.png",
+  "references": [
+    "art/p5/fx/v4/arsene/arsene_draft_v5.png",
+    "art/p5/fx/v4/arsene/arsene_official_reference.png"
+  ],
+  "recommendation": "暂偏向A：挺立展开更适合持续悬浮，四肢和翅膀相对易分离；B更适合短促出招。用户尚未选择。",
+  "method": "image_gen.imagegen",
+  "generation_count": 1,
+  "redraw_count": 0,
+  "raw_size": [
+    1182,
+    1330
+  ],
+  "delivery_size": [
+    2048,
+    2304
+  ],
+  "processing": "保留raw；等比放入2048x2304透明画布，至少60px空白；alpha<=2和全透明RGB清零，无局部结构修图。",
+  "fit": {
+    "source_bbox": [
+      26,
+      28,
+      1158,
+      1305
+    ],
+    "scale": 1.696113074204947,
+    "paste_xy": [
+      64,
+      69
+    ]
+  },
+  "checks": {
+    "mode": "RGBA",
+    "bbox": [
+      64,
+      69,
+      1984,
+      2235
+    ],
+    "margin_left_top_right_bottom": [
+      64,
+      69,
+      64,
+      69
+    ],
+    "corner_alpha": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "status": "draft_only_awaiting_user_choice_no_layers"
+}

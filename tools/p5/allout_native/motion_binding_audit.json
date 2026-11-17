@@ -1,0 +1,41 @@
+[
+  {
+    "index": 35,
+    "name": "root01",
+    "descendant_mesh_count": 0,
+    "layers": [
+      {
+        "type": "NodePRHalf_2",
+        "keys": 12,
+        "first_time": 0,
+        "last_time": 4.6666665
+      }
+    ]
+  },
+  {
+    "index": 1,
+    "name": "root",
+    "descendant_mesh_count": 32,
+    "layers": [
+      {
+        "type": "NodePRS",
+        "keys": 1,
+        "first_time": 0,
+        "last_time": 0
+      }
+    ]
+  },
+  {
+    "index": 32,
+    "name": "shadow_Point",
+    "descendant_mesh_count": 2,
+    "layers": [
+      {
+        "type": "NodePRHalf_2",
+        "keys": 72,
+        "first_time": 0,
+        "last_time": 4.6666665
+      }
+    ]
+  }
+]

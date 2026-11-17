@@ -15,7 +15,11 @@ import sys
 from pathlib import Path
 import numpy as np
 from PIL import Image
-from scipy import ndimage
+try:
+    from scipy import ndimage
+except ImportError:  # Codex 那边没有 scipy：用纯 numpy 版（tools/p5/_ndimage.py）
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import _ndimage as ndimage
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from normalize_poses import boots  # noqa: E402

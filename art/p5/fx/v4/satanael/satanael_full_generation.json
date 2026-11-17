@@ -1,0 +1,22 @@
+{
+  "group": "satanael",
+  "name": "satanael_full.png",
+  "canvas": [
+    3200,
+    1700
+  ],
+  "prompt": "Edit/outpaint this approved Satanael upper-body sprite into a wider 3200x1700 transparent canvas. Complete all left and right bat wing silhouettes currently cut off by the frame, especially the left wing tips. Keep original character head, horns, torso, arm and enormous ornate handgun pose, colors and cel-shaded drawing style as closely unchanged as possible; provide generous empty transparent margin around every wing tip, horns and muzzle. Frame only waist-up; do not invent legs below waist. No background, glow haze, smoke, flash, ground or text. Genuine transparent RGBA alpha0 outside subject. This is a whole master image for later puppet layers, do not split parts yet.",
+  "output": "C:/Users/kkk/ChatGPT-Accounts/Account2/codex/generated_images/01a17136-0549-7e82-b9cb-f93f6454a90b/exec-326fa1da-567d-4714-8c56-705355037c77.png",
+  "raw_size": [
+    1721,
+    914
+  ],
+  "generation_count": 1,
+  "processing": "尺寸归一化；alpha<=2及全透明RGB清零；独立编辑生成可能有局部位置/比例变化，供后续调整。",
+  "alpha_bbox": [
+    39,
+    20,
+    3184,
+    1674
+  ]
+}

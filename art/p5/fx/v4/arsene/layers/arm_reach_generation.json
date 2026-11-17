@@ -1,0 +1,48 @@
+{
+  "group": "arsene",
+  "name": "layers/arm_reach.png",
+  "canvas": [
+    2048,
+    2304
+  ],
+  "bbox": [
+    730,
+    690,
+    1280,
+    1100
+  ],
+  "prompt": "Precise game puppet LAYER EXTRACTION EDIT of the attached master image. ONLY the forward extended arm and spread black claw hand, including shoulder cap and sleeve. Remove everything else. Preserve exact pose and finger shapes, paint complete hidden shoulder attachment. Preserve the master's exact design, pose, proportions, ink outlines, cel colors and spatial placement. The removed objects become truly transparent; do NOT replace them with black paint. Complete the occluded portions of this layer only so it can rotate without holes. Output the SAME full canvas as the master, keep this part at its original position and scale, DO NOT recenter, zoom or crop it; lots of transparent empty canvas is intentional. Canvas 2048x2304 RGBA, alpha0 outside this one extracted layer. No background, haze, glow, text, other parts, labels, sheet layout or redesign.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-01f75ecf-6ba0-432e-a95f-347b83836510.png",
+  "raw_size": [
+    1182,
+    1330
+  ],
+  "generation_count": 1,
+  "processing": "尺寸归一化；alpha<=2及全透明RGB清零；独立编辑生成可能有局部位置/比例变化，供后续调整。",
+  "alpha_bbox": [
+    402,
+    688,
+    1721,
+    1516
+  ],
+  "registration": {
+    "source_alpha20_bbox": [
+      233,
+      399,
+      991,
+      873
+    ],
+    "uniform_scale": 0.7255936675461742,
+    "pasted_xy": [
+      730,
+      723
+    ],
+    "desired_bbox": [
+      730,
+      690,
+      1280,
+      1100
+    ],
+    "method": "manual target-region fit preserving aspect ratio; approximate, not exact pixel registration"
+  }
+}

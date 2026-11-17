@@ -1,0 +1,16 @@
+{
+  "version": "0.9.13",
+  "destination": "C:\\Users\\kkk\\Desktop\\slaythespire\\Slay the Spire 2\\mods\\P5Joker",
+  "backup": "C:\\Users\\kkk\\sts2_tools\\backups\\P5Joker-0.9.12-before-0.9.13-20261107-035903",
+  "game_running_before_install": false,
+  "game_launched": false,
+  "before_sha256": {
+    "P5Joker.dll": "16b745f6521001a350dee78c5e4c387c48a5f2ffb6c0af27f885ed55d466440f",
+    "P5Joker.json": "7d890a1096f222e6c08e93550ed56acf900d00e41b2f9cf3c4aa2ca6543d5e4c"
+  },
+  "installed_sha256": {
+    "P5Joker.dll": "0c72551aa5fb4ef6622ea089d96bcc8c0ff1b610d426374ae516220ef38b00ab",
+    "P5Joker.json": "60c2aec5b937a591983bd1f4d8a1ac88f114e0712881c5a070eba190c8870250"
+  },
+  "unchanged_pck_sha256": "677bc38c6cb8503cd38dd0101290f377e2928927a436c508bf5561a1cb41956d"
+}

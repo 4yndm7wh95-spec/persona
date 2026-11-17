@@ -1,0 +1,221 @@
+{
+  "group": "particles",
+  "name": "shards_sheet",
+  "w": 2048,
+  "h": 2048,
+  "prompt": "Use case: stylized-concept. A standalone 2D game VFX sprite for a Persona 5 Joker mod: bold hand-painted anime/comic shapes, clean controlled ink accents, high contrast, no 3D or photorealism. GENUINE TRANSPARENT RGBA PNG: alpha zero outside the actual sprite; never paint a dark backdrop, colored haze, vignette, checkerboard or ground. Soft glow must taper to transparent at the outer edge. Keep the whole sprite inside the canvas with transparent margin, no clipping. No text, watermark, characters or additional objects. A precisely aligned 4x4 sprite sheet, 16 separate sharp red/black glass shards, ONE whole shard per 512x512 cell, varied jagged triangular silhouettes with a single bright highlight edge. No grid lines. At least 48px transparent margin within EACH cell, no overlap. Distinct objects not animation. Canvas 2048x2048 pixels.",
+  "output_path": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-fcfaad43-a1ef-4407-99f0-5bf81853f833.png",
+  "raw_size": [
+    1254,
+    1254
+  ],
+  "method": "imagegen",
+  "generation_count": 1,
+  "redraw_count": 0,
+  "delivery_size": [
+    2048,
+    2048
+  ],
+  "reference_images": [],
+  "processing": "保留raw；交付尺寸归一化，alpha<=2残点及全透明RGB清零；未抠底。",
+  "checks": {
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "corner_alpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "alpha_zero_pixels": 3102059,
+    "soft_alpha_pixels": 1090785
+  },
+  "grid_checks": {
+    "cell_size": [
+      512,
+      512
+    ],
+    "cells": [
+      {
+        "row": 0,
+        "column": 0,
+        "bbox_alpha20": [
+          60,
+          56,
+          469,
+          474
+        ],
+        "margin_under_24px": false
+      },
+      {
+        "row": 0,
+        "column": 1,
+        "bbox_alpha20": [
+          103,
+          31,
+          404,
+          498
+        ],
+        "margin_under_24px": true
+      },
+      {
+        "row": 0,
+        "column": 2,
+        "bbox_alpha20": [
+          47,
+          31,
+          458,
+          473
+        ],
+        "margin_under_24px": false
+      },
+      {
+        "row": 0,
+        "column": 3,
+        "bbox_alpha20": [
+          199,
+          31,
+          429,
+          497
+        ],
+        "margin_under_24px": true
+      },
+      {
+        "row": 1,
+        "column": 0,
+        "bbox_alpha20": [
+          81,
+          46,
+          450,
+          469
+        ],
+        "margin_under_24px": false
+      },
+      {
+        "row": 1,
+        "column": 1,
+        "bbox_alpha20": [
+          67,
+          21,
+          473,
+          476
+        ],
+        "margin_under_24px": true
+      },
+      {
+        "row": 1,
+        "column": 2,
+        "bbox_alpha20": [
+          122,
+          18,
+          447,
+          490
+        ],
+        "margin_under_24px": true
+      },
+      {
+        "row": 1,
+        "column": 3,
+        "bbox_alpha20": [
+          49,
+          61,
+          463,
+          447
+        ],
+        "margin_under_24px": false
+      },
+      {
+        "row": 2,
+        "column": 0,
+        "bbox_alpha20": [
+          80,
+          19,
+          422,
+          483
+        ],
+        "margin_under_24px": true
+      },
+      {
+        "row": 2,
+        "column": 1,
+        "bbox_alpha20": [
+          118,
+          20,
+          427,
+          484
+        ],
+        "margin_under_24px": true
+      },
+      {
+        "row": 2,
+        "column": 2,
+        "bbox_alpha20": [
+          26,
+          44,
+          444,
+          443
+        ],
+        "margin_under_24px": false
+      },
+      {
+        "row": 2,
+        "column": 3,
+        "bbox_alpha20": [
+          165,
+          18,
+          397,
+          484
+        ],
+        "margin_under_24px": true
+      },
+      {
+        "row": 3,
+        "column": 0,
+        "bbox_alpha20": [
+          56,
+          97,
+          502,
+          402
+        ],
+        "margin_under_24px": true
+      },
+      {
+        "row": 3,
+        "column": 1,
+        "bbox_alpha20": [
+          170,
+          12,
+          399,
+          480
+        ],
+        "margin_under_24px": true
+      },
+      {
+        "row": 3,
+        "column": 2,
+        "bbox_alpha20": [
+          56,
+          25,
+          462,
+          450
+        ],
+        "margin_under_24px": false
+      },
+      {
+        "row": 3,
+        "column": 3,
+        "bbox_alpha20": [
+          126,
+          19,
+          460,
+          460
+        ],
+        "margin_under_24px": true
+      }
+    ],
+    "note": "只检查512网格内的alpha边界，不自动移动或裁切每个物体；低边距交Claude验收。"
+  }
+}

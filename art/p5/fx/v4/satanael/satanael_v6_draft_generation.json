@@ -1,0 +1,409 @@
+{
+  "tool": "built-in ImageGen",
+  "base_commit": "d5e77754",
+  "method": "Independently regenerated overlapping tiles; no enlargement of generated color pixels",
+  "references": [
+    "satanael_v4_seen.png",
+    "satanael_v5_draft.png"
+  ],
+  "composition_only": {
+    "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a1b9c1-3633-7952-824a-82ea95a17f21\\exec-2e61ed8a-99a9-417e-af9d-6aa85723528d.png",
+    "native_size": [
+      1219,
+      1290
+    ],
+    "sha256": "3a02a2eeb4863a99dec595b6195bef1f0d5c75749d4d47d5603c6a210e632c87",
+    "prompt": "Draw one completely new full Satanael character sprite, waist to horn tips, using two references. Image 1 is the authority for the upright dueling posture and armor design. Image 2 supplies the wide asymmetric swept wings, billowing burgundy cape, and ornate complete long-barrel revolver. Do NOT inherit image 2's hunched torso or tense claw. Output at the highest native resolution supported, aim for 3400×3600, aspect ratio 17:18. Isolated on true transparent RGBA. The complete muzzle must have clear air before the right frame edge.\n\nSatanael is tall, imperious, and fully erect. Pose is a three-quarter right-facing duel stance, chest opened and lifted, pelvis stacked under ribcage, long straight spine almost vertical, at most a slight backward lean. His shoulders are level and relaxed with the far shoulder naturally advanced with the arm. The neck is fully extended above the shoulder line, the regal helmet held high, chin LEVEL or slightly lifted. The glowing red eye looks slightly down and right at the distant rival while the HEAD remains high. Both sculptural horn tips stay in frame with space above. Emphasize the tall figure and proud chest. No hunch, forward bend, tucked chin, contracted neck, or slumped shoulder. Keep the anatomical LEFT arm as the far arm, starting at the image-right shoulder and extending straight to screen right. That hand alone holds the v5 giant ornate antique revolver with a clear cylinder and long slim filigree barrel, seen purely in side view with the muzzle rim visible in profile, pointed right and slightly down. The near anatomical RIGHT arm starts from the large shoulder with the cog on image left and gently bends outward. Near hand rests just beside the waist in front of the hip, palm down, with naturally loose spread fingers, balanced and relaxed. Do not make a claw, a second grip, or a straight hanging arm.\n\nWings open broadly and rise asymmetrically behind the proud upright torso, with dark layered membranes, star bands and muted bronze trim; use image 2 for their motion. Cape billows strongly left in big fluid burgundy curves. Bold black outlines, crisp hard-edged cel shading, matte charcoal armor with desaturated antique bronze details. Same helmet, star trim, armor plating and weapon design. Similar composition to the references: figure on the left, full revolver extending to the right, expansive wings from upper left, crop at waist. No background, gradients around the silhouette, bloom, aura, firing effects, motion lines, text, annotation, or other characters.",
+    "role": "Reference and registration guide, including the cape alpha repair boundary. Supplies no RGB pixels to the assembled sprite."
+  },
+  "tiles": [
+    {
+      "id": "r0c0",
+      "region": "近翼上半",
+      "source": "C:/Users/kkk/ChatGPT-Accounts/Account2/codex/generated_images/01a1b9c1-3633-7952-824a-82ea95a17f21/exec-3fee45d5-d1f5-4ede-8b0d-e87744914350.png",
+      "source_sha256": "f780926ac72ef3750707f07a264dec33dd37dc90c3f420206d7e3ab4c3945b42",
+      "source_size": [
+        1041,
+        1510
+      ],
+      "rect": [
+        0,
+        0,
+        1000,
+        1450
+      ],
+      "registration_shift": [
+        0,
+        0
+      ],
+      "registration_score": 0.1211,
+      "internal_alpha_repairs": 0,
+      "placed_size": [
+        1000,
+        1450
+      ],
+      "prompt": "Redraw this exact cropped patch of a finished 2D game sprite as fresh high-resolution inked cel art. This is one tile of an existing illustration and will be stitched beside neighboring redraws. It contains upper near wing and its left border, including the partial curling horn at the bottom-right. Treat the attached crop as a tight registration template: redraw every existing black outline and flat charcoal, gray-bronze and burgundy shape in the very same pixel position and with identical proportions, color and thickness, while making the lines and ornaments crisp at the highest native detail. Follow every contour all the way out through the same edges of the tile. Keep the same framing and crop, including partial objects and the exact empty area and silhouette. Do not expand, finish, relocate or reinterpret objects that exit the crop. Do not draw a new full character or add framing or a border. Use true transparent RGBA with empty pixels in the same places. Keep all edge landmarks aligned, no zoom, rotation, padding, or aspect change. Render at the highest native resolution, requested exact tile aspect 1000:1450, 1000×1450 or larger, portrait. New sharp redraw for 3400×3600 assembly, no interpolation-only enlargement."
+    },
+    {
+      "id": "r0c1",
+      "region": "近翼翼尖、角尖和远翼交接",
+      "source": "C:/Users/kkk/ChatGPT-Accounts/Account2/codex/generated_images/01a1b9c1-3633-7952-824a-82ea95a17f21/exec-d120c575-be85-473d-8551-6d79ff7ac3a8.png",
+      "source_sha256": "93081c277833968aacd860902ffd7fe8802eb709f7ed7258eb067f400cff04d5",
+      "source_size": [
+        1041,
+        1510
+      ],
+      "rect": [
+        800,
+        0,
+        1800,
+        1450
+      ],
+      "registration_shift": [
+        0,
+        0
+      ],
+      "registration_score": 0.1202,
+      "internal_alpha_repairs": 0,
+      "placed_size": [
+        1000,
+        1450
+      ],
+      "prompt": "Redraw this exact cropped patch of a finished 2D game sprite as fresh high-resolution inked cel art. This is one tile of an existing illustration and will be stitched beside neighboring redraws. It contains junction of the near wing tip, helmet horns, and far wing curves with wide empty space. Treat the attached crop as a tight registration template: redraw every existing black outline and flat charcoal, gray-bronze and burgundy shape in the very same pixel position and with identical proportions, color and thickness, while making the lines and ornaments crisp at the highest native detail. Follow every contour all the way out through the same edges of the tile. Keep the same framing and crop, including partial objects and the exact empty area and silhouette. Do not expand, finish, relocate or reinterpret objects that exit the crop. Do not draw a new full character or add framing or a border. Use true transparent RGBA with empty pixels in the same places. Keep all edge landmarks aligned, no zoom, rotation, padding, or aspect change. Render at the highest native resolution, requested exact tile aspect 1000:1450, 1000×1450 or larger, portrait. New sharp redraw for 3400×3600 assembly, no interpolation-only enlargement."
+    },
+    {
+      "id": "r0c2",
+      "region": "远翼上缘与星纹翼带",
+      "source": "C:/Users/kkk/ChatGPT-Accounts/Account2/codex/generated_images/01a1b9c1-3633-7952-824a-82ea95a17f21/exec-63767354-7252-40ae-b6b8-243ba2028280.png",
+      "source_sha256": "c988bcffb6a6c11839d23e888417eae07567c2a11e451bb20aa662d58f3d3098",
+      "source_size": [
+        1041,
+        1510
+      ],
+      "rect": [
+        1600,
+        0,
+        2600,
+        1450
+      ],
+      "registration_shift": [
+        4,
+        0
+      ],
+      "registration_score": 0.134,
+      "internal_alpha_repairs": 0,
+      "placed_size": [
+        1000,
+        1450
+      ],
+      "prompt": "Redraw this exact cropped patch of a finished 2D game sprite as fresh high-resolution inked cel art. This is one tile of an existing illustration and will be stitched beside neighboring redraws. It contains top and star-patterned side of the far wing, much empty space above and on the right. Treat the attached crop as a tight registration template: redraw every existing black outline and flat charcoal, gray-bronze and burgundy shape in the very same pixel position and with identical proportions, color and thickness, while making the lines and ornaments crisp at the highest native detail. Follow every contour all the way out through the same edges of the tile. Keep the same framing and crop, including partial objects and the exact empty area and silhouette. Do not expand, finish, relocate or reinterpret objects that exit the crop. Do not draw a new full character or add framing or a border. Use true transparent RGBA with empty pixels in the same places. Keep all edge landmarks aligned, no zoom, rotation, padding, or aspect change. Render at the highest native resolution, requested exact tile aspect 1000:1450, 1000×1450 or larger, portrait. New sharp redraw for 3400×3600 assembly, no interpolation-only enlargement."
+    },
+    {
+      "id": "r1c0",
+      "region": "近肩齿轮肩甲、近翼和披风上半",
+      "source": "C:/Users/kkk/ChatGPT-Accounts/Account2/codex/generated_images/01a1b9c1-3633-7952-824a-82ea95a17f21/exec-4581d0dd-4d97-4133-8dc2-ce752b5d7126.png",
+      "source_sha256": "cc6afb0fc55ccd4def111a4bcbd37744519bf473e1294c00c27b587d641b8268",
+      "source_size": [
+        1041,
+        1510
+      ],
+      "rect": [
+        0,
+        1075,
+        1000,
+        2525
+      ],
+      "registration_shift": [
+        0,
+        0
+      ],
+      "registration_score": 0.1684,
+      "internal_alpha_repairs": 0,
+      "placed_size": [
+        1000,
+        1450
+      ],
+      "prompt": "Redraw this exact cropped patch of a finished 2D game sprite as fresh high-resolution inked cel art. This is one tile of an existing illustration and will be stitched beside neighboring redraws. It contains near wing, flowing burgundy cape, large near shoulder with cog badge, and upper arm, each naturally cut by the existing tile boundary. Treat the attached crop as a tight registration template: redraw every existing black outline and flat charcoal, gray-bronze and burgundy shape in the very same pixel position and with identical proportions, color and thickness, while making the lines and ornaments crisp at the highest native detail. Follow every contour all the way out through the same edges of the tile. Keep the same framing and crop, including partial objects and the exact empty area and silhouette. Do not expand, finish, relocate or reinterpret objects that exit the crop. Do not draw a new full character or add framing or a border. Use true transparent RGBA with empty pixels in the same places. Keep all edge landmarks aligned, no zoom, rotation, padding, or aspect change. Render at the highest native resolution, requested exact tile aspect 1000:1450, 1000×1450 or larger, portrait. New sharp redraw for 3400×3600 assembly, no interpolation-only enlargement."
+    },
+    {
+      "id": "r1c1",
+      "region": "头盔、红眼、双角下部和胸甲",
+      "source": "C:/Users/kkk/ChatGPT-Accounts/Account2/codex/generated_images/01a1b9c1-3633-7952-824a-82ea95a17f21/exec-daf79224-d275-4f01-9cc0-a0f65290ae1b.png",
+      "source_sha256": "0db24ca256ab088e1f9fa33166542876e1ab21b21a433b45f29a571f07a7595a",
+      "source_size": [
+        1041,
+        1510
+      ],
+      "rect": [
+        800,
+        1075,
+        1800,
+        2525
+      ],
+      "registration_shift": [
+        0,
+        -4
+      ],
+      "registration_score": 0.1747,
+      "internal_alpha_repairs": 0,
+      "placed_size": [
+        1000,
+        1450
+      ],
+      "prompt": "Redraw this exact cropped patch of a finished 2D game sprite as fresh high-resolution inked cel art. This is one tile of an existing illustration and will be stitched beside neighboring redraws. It contains helmet, red eye, and central chest armor with the partial star-edged wing behind. Treat the attached crop as a tight registration template: redraw every existing black outline and flat charcoal, gray-bronze and burgundy shape in the very same pixel position and with identical proportions, color and thickness, while making the lines and ornaments crisp at the highest native detail. Follow every contour all the way out through the same edges of the tile. Keep the same framing and crop, including partial objects and the exact empty area and silhouette. Do not expand, finish, relocate or reinterpret objects that exit the crop. Do not draw a new full character or add framing or a border. Use true transparent RGBA with empty pixels in the same places. Keep all edge landmarks aligned, no zoom, rotation, padding, or aspect change. Render at the highest native resolution, requested exact tile aspect 1000:1450, 1000×1450 or larger, portrait. New sharp redraw for 3400×3600 assembly, no interpolation-only enlargement."
+    },
+    {
+      "id": "r1c2",
+      "region": "远翼下缘、持枪左臂、手套和左轮转轮",
+      "source": "C:/Users/kkk/ChatGPT-Accounts/Account2/codex/generated_images/01a1b9c1-3633-7952-824a-82ea95a17f21/exec-f3412ec5-0238-4ba0-9bd9-dcc5fda89d9e.png",
+      "source_sha256": "2b7b93eca88ff564ee9f3def47a150e0a36e71bac59a29d013a5c4c241cd11eb",
+      "source_size": [
+        1041,
+        1510
+      ],
+      "rect": [
+        1600,
+        1075,
+        2600,
+        2525
+      ],
+      "registration_shift": [
+        0,
+        -16
+      ],
+      "registration_score": 0.3205,
+      "internal_alpha_repairs": 0,
+      "placed_size": [
+        1000,
+        1450
+      ],
+      "prompt": "Redraw this exact cropped patch of a finished 2D game sprite as fresh high-resolution inked cel art. This is one tile of an existing illustration and will be stitched beside neighboring redraws. It contains partial far wing and the extended armored left forearm, glove and ornate revolver cylinder. Treat the attached crop as a tight registration template: redraw every existing black outline and flat charcoal, gray-bronze and burgundy shape in the very same pixel position and with identical proportions, color and thickness, while making the lines and ornaments crisp at the highest native detail. Follow every contour all the way out through the same edges of the tile. Keep the same framing and crop, including partial objects and the exact empty area and silhouette. Do not expand, finish, relocate or reinterpret objects that exit the crop. Do not draw a new full character or add framing or a border. Use true transparent RGBA with empty pixels in the same places. Keep all edge landmarks aligned, no zoom, rotation, padding, or aspect change. Render at the highest native resolution, requested exact tile aspect 1000:1450, 1000×1450 or larger, portrait. New sharp redraw for 3400×3600 assembly, no interpolation-only enlargement."
+    },
+    {
+      "id": "r1c3",
+      "region": "长枪管右段、准星和完整枪口",
+      "source": "C:/Users/kkk/ChatGPT-Accounts/Account2/codex/generated_images/01a1b9c1-3633-7952-824a-82ea95a17f21/exec-cb0b70a6-4364-4daf-8856-b74b7cd2bf0e.png",
+      "source_sha256": "8fc8abc8f49e086f1d59a50f9446d45892e4556dd75ea5a3a0c1d35841af59e3",
+      "source_size": [
+        1041,
+        1510
+      ],
+      "rect": [
+        2400,
+        1075,
+        3400,
+        2525
+      ],
+      "registration_shift": [
+        0,
+        -12
+      ],
+      "registration_score": 0.3258,
+      "internal_alpha_repairs": 0,
+      "placed_size": [
+        1000,
+        1450
+      ],
+      "prompt": "Redraw this exact cropped patch of a finished 2D game sprite as fresh high-resolution inked cel art. This is one tile of an existing illustration and will be stitched beside neighboring redraws. It contains long side profile of the rightmost barrel and complete muzzle only, with empty transparency in most of the crop. Treat the attached crop as a tight registration template: redraw every existing black outline and flat charcoal, gray-bronze and burgundy shape in the very same pixel position and with identical proportions, color and thickness, while making the lines and ornaments crisp at the highest native detail. Follow every contour all the way out through the same edges of the tile. Keep the same framing and crop, including partial objects and the exact empty area and silhouette. Do not expand, finish, relocate or reinterpret objects that exit the crop. Do not draw a new full character or add framing or a border. Use true transparent RGBA with empty pixels in the same places. Keep all edge landmarks aligned, no zoom, rotation, padding, or aspect change. Render at the highest native resolution, requested exact tile aspect 1000:1450, 1000×1450 or larger, portrait. New sharp redraw for 3400×3600 assembly, no interpolation-only enlargement."
+    },
+    {
+      "id": "r2c0",
+      "region": "近臂、披风下半和腰侧",
+      "source": "C:/Users/kkk/ChatGPT-Accounts/Account2/codex/generated_images/01a1b9c1-3633-7952-824a-82ea95a17f21/exec-0103f4e4-c5be-461b-bfe6-f509c7a52130.png",
+      "source_sha256": "98e46e3d4344d7b4a75ca6986e98653ca2fd01e2ffdc4bb918703446a81bba5b",
+      "source_size": [
+        1041,
+        1510
+      ],
+      "rect": [
+        0,
+        2150,
+        1000,
+        3600
+      ],
+      "registration_shift": [
+        0,
+        0
+      ],
+      "registration_score": 0.1619,
+      "internal_alpha_repairs": 212876,
+      "placed_size": [
+        1000,
+        1450
+      ],
+      "prompt": "Redraw this exact cropped patch of a finished 2D game sprite as fresh high-resolution inked cel art. This is one tile of an existing illustration and will be stitched beside neighboring redraws. It contains near right elbow and forearm, billowing burgundy cape and a portion of the right glove and waist armor. Treat the attached crop as a tight registration template: redraw every existing black outline and flat charcoal, gray-bronze and burgundy shape in the very same pixel position and with identical proportions, color and thickness, while making the lines and ornaments crisp at the highest native detail. Follow every contour all the way out through the same edges of the tile. Keep the same framing and crop, including partial objects and the exact empty area and silhouette. Do not expand, finish, relocate or reinterpret objects that exit the crop. Do not draw a new full character or add framing or a border. Use true transparent RGBA with empty pixels in the same places. Keep all edge landmarks aligned, no zoom, rotation, padding, or aspect change. Render at the highest native resolution, requested exact tile aspect 1000:1450, 1000×1450 or larger, portrait. New sharp redraw for 3400×3600 assembly, no interpolation-only enlargement."
+    },
+    {
+      "id": "r2c1",
+      "region": "腹甲、右手、腰带和裙甲",
+      "source": "C:/Users/kkk/ChatGPT-Accounts/Account2/codex/generated_images/01a1b9c1-3633-7952-824a-82ea95a17f21/exec-72b13967-71cb-47f8-80ae-b33c0d7e7db9.png",
+      "source_sha256": "2173e00eeb7978e9c4e96d3d06f6858d0507b6f02909d3eb0f9123b2b50a7b9d",
+      "source_size": [
+        1041,
+        1510
+      ],
+      "rect": [
+        800,
+        2150,
+        1800,
+        3600
+      ],
+      "registration_shift": [
+        8,
+        0
+      ],
+      "registration_score": 0.2445,
+      "internal_alpha_repairs": 0,
+      "placed_size": [
+        1000,
+        1450
+      ],
+      "prompt": "Redraw this exact cropped patch of a finished 2D game sprite as fresh high-resolution inked cel art. This is one tile of an existing illustration and will be stitched beside neighboring redraws. It contains lower torso, relaxed right claw, waist belt and armor, and the partial far left arm at the top edge. Treat the attached crop as a tight registration template: redraw every existing black outline and flat charcoal, gray-bronze and burgundy shape in the very same pixel position and with identical proportions, color and thickness, while making the lines and ornaments crisp at the highest native detail. Follow every contour all the way out through the same edges of the tile. Keep the same framing and crop, including partial objects and the exact empty area and silhouette. Do not expand, finish, relocate or reinterpret objects that exit the crop. Do not draw a new full character or add framing or a border. Use true transparent RGBA with empty pixels in the same places. Keep all edge landmarks aligned, no zoom, rotation, padding, or aspect change. Render at the highest native resolution, requested exact tile aspect 1000:1450, 1000×1450 or larger, portrait. New sharp redraw for 3400×3600 assembly, no interpolation-only enlargement."
+    },
+    {
+      "id": "r2c2",
+      "region": "远侧翼带下缘和裙甲边缘",
+      "source": "C:/Users/kkk/ChatGPT-Accounts/Account2/codex/generated_images/01a1b9c1-3633-7952-824a-82ea95a17f21/exec-e7c61859-18ed-4c53-934e-61c276f71cff.png",
+      "source_sha256": "a8c7c458e94587e9d49a8b2ed8d874e878e7bd4a2cc0ca43be3187c229734124",
+      "source_size": [
+        1041,
+        1510
+      ],
+      "rect": [
+        1600,
+        2150,
+        2600,
+        3600
+      ],
+      "registration_shift": [
+        0,
+        0
+      ],
+      "registration_score": 0.1781,
+      "internal_alpha_repairs": 0,
+      "placed_size": [
+        1000,
+        1450
+      ],
+      "prompt": "Redraw this exact cropped patch of a finished 2D game sprite as fresh high-resolution inked cel art. This is one tile of an existing illustration and will be stitched beside neighboring redraws. It contains narrow outer edge of waist armor and star-patterned wing band on the left, and a partial glove and revolver at the upper edge. Treat the attached crop as a tight registration template: redraw every existing black outline and flat charcoal, gray-bronze and burgundy shape in the very same pixel position and with identical proportions, color and thickness, while making the lines and ornaments crisp at the highest native detail. Follow every contour all the way out through the same edges of the tile. Keep the same framing and crop, including partial objects and the exact empty area and silhouette. Do not expand, finish, relocate or reinterpret objects that exit the crop. Do not draw a new full character or add framing or a border. Use true transparent RGBA with empty pixels in the same places. Keep all edge landmarks aligned, no zoom, rotation, padding, or aspect change. Render at the highest native resolution, requested exact tile aspect 1000:1450, 1000×1450 or larger, portrait. New sharp redraw for 3400×3600 assembly, no interpolation-only enlargement."
+    }
+  ],
+  "overlap": {
+    "x_pixels": 200,
+    "y_pixels": 375
+  },
+  "stitching": "Lanczos downsample each native tile to 1000x1450; translate small amounts to register; choose continuous low-difference seams within overlaps and crossfade narrowly in premultiplied alpha. Drop faint exterior alpha. Restore opaque alpha in conservative interior cape area using the source tile RGB, and zero RGB at alpha zero.",
+  "seams": [
+    {
+      "name": "r0c0/r0c1",
+      "stats": {
+        "art_pixels": 626,
+        "art_error_median": 0.0046,
+        "art_error_p95": 0.0385,
+        "max_error": 0.9001
+      },
+      "axis": "vertical",
+      "top": 0
+    },
+    {
+      "name": "r0c1/r0c2",
+      "stats": {
+        "art_pixels": 497,
+        "art_error_median": 0.0039,
+        "art_error_p95": 0.0361,
+        "max_error": 0.5914
+      },
+      "axis": "vertical",
+      "top": 0
+    },
+    {
+      "name": "r1c0/r1c1",
+      "stats": {
+        "art_pixels": 958,
+        "art_error_median": 0.0074,
+        "art_error_p95": 0.0377,
+        "max_error": 0.8352
+      },
+      "axis": "vertical",
+      "top": 1075
+    },
+    {
+      "name": "r1c1/r1c2",
+      "stats": {
+        "art_pixels": 984,
+        "art_error_median": 0.0052,
+        "art_error_p95": 0.2018,
+        "max_error": 0.888
+      },
+      "axis": "vertical",
+      "top": 1075
+    },
+    {
+      "name": "r1c2/r1c3",
+      "stats": {
+        "art_pixels": 177,
+        "art_error_median": 0.0099,
+        "art_error_p95": 0.166,
+        "max_error": 0.7431
+      },
+      "axis": "vertical",
+      "top": 1075
+    },
+    {
+      "name": "r2c0/r2c1",
+      "stats": {
+        "art_pixels": 1450,
+        "art_error_median": 0.0164,
+        "art_error_p95": 0.0664,
+        "max_error": 0.7706
+      },
+      "axis": "vertical",
+      "top": 2150
+    },
+    {
+      "name": "r2c1/r2c2",
+      "stats": {
+        "art_pixels": 797,
+        "art_error_median": 0.0052,
+        "art_error_p95": 0.0638,
+        "max_error": 0.9023
+      },
+      "axis": "vertical",
+      "top": 2150
+    },
+    {
+      "name": "r0/r1",
+      "stats": {
+        "art_pixels": 1627,
+        "art_error_median": 0.0052,
+        "art_error_p95": 0.0348,
+        "max_error": 0.911
+      },
+      "axis": "horizontal"
+    },
+    {
+      "name": "r1/r2",
+      "stats": {
+        "art_pixels": 1484,
+        "art_error_median": 0.0057,
+        "art_error_p95": 0.0184,
+        "max_error": 0.4512
+      },
+      "axis": "horizontal"
+    }
+  ],
+  "delivery_size": [
+    3400,
+    3600
+  ],
+  "muzzle_right_edge_x_at_alpha_128": 3353,
+  "right_margin_pixels_at_alpha_128": 46,
+  "composition_generations": 1,
+  "native_tile_generations": 10,
+  "redraws_after_first_assembly": 0,
+  "status": "draft_waiting_for_user",
+  "limitations": [
+    "Not a single native high-resolution render.",
+    "Free hand fingertips slope downward slightly."
+  ]
+}

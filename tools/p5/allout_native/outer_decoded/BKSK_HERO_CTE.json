@@ -1,0 +1,3873 @@
+{
+  "$type": "Epl",
+  "ResourceType": "Epl",
+  "Flags": "6",
+  "RootNode": {
+    "$type": "Node",
+    "ResourceType": "Node",
+    "Name": "",
+    "Translation": {
+      "$type": "Vector3",
+      "X": 0,
+      "Y": 0,
+      "Z": 0
+    },
+    "Rotation": {
+      "$type": "Quaternion",
+      "IsIdentity": true,
+      "X": 0,
+      "Y": 0,
+      "Z": 0,
+      "W": 1
+    },
+    "Scale": {
+      "$type": "Vector3",
+      "X": 1,
+      "Y": 1,
+      "Z": 1
+    },
+    "LocalTransform": {
+      "$type": "Matrix4x4",
+      "IsIdentity": true,
+      "Translation": {
+        "$type": "Vector3",
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "X": {
+        "$type": "Vector4",
+        "X": 1,
+        "Y": 0,
+        "Z": 0,
+        "W": 0
+      },
+      "Y": {
+        "$type": "Vector4",
+        "X": 0,
+        "Y": 1,
+        "Z": 0,
+        "W": 0
+      },
+      "Z": {
+        "$type": "Vector4",
+        "X": 0,
+        "Y": 0,
+        "Z": 1,
+        "W": 0
+      },
+      "W": {
+        "$type": "Vector4",
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "W": 1
+      },
+      "M11": 1,
+      "M12": 0,
+      "M13": 0,
+      "M14": 0,
+      "M21": 0,
+      "M22": 1,
+      "M23": 0,
+      "M24": 0,
+      "M31": 0,
+      "M32": 0,
+      "M33": 1,
+      "M34": 0,
+      "M41": 0,
+      "M42": 0,
+      "M43": 0,
+      "M44": 1
+    },
+    "WorldTransform": {
+      "$type": "Matrix4x4",
+      "IsIdentity": true,
+      "Translation": {
+        "$type": "Vector3",
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "X": {
+        "$type": "Vector4",
+        "X": 1,
+        "Y": 0,
+        "Z": 0,
+        "W": 0
+      },
+      "Y": {
+        "$type": "Vector4",
+        "X": 0,
+        "Y": 1,
+        "Z": 0,
+        "W": 0
+      },
+      "Z": {
+        "$type": "Vector4",
+        "X": 0,
+        "Y": 0,
+        "Z": 1,
+        "W": 0
+      },
+      "W": {
+        "$type": "Vector4",
+        "X": 0,
+        "Y": 0,
+        "Z": 0,
+        "W": 1
+      },
+      "M11": 1,
+      "M12": 0,
+      "M13": 0,
+      "M14": 0,
+      "M21": 0,
+      "M22": 1,
+      "M23": 0,
+      "M24": 0,
+      "M31": 0,
+      "M32": 0,
+      "M33": 1,
+      "M34": 0,
+      "M41": 0,
+      "M42": 0,
+      "M43": 0,
+      "M44": 1
+    },
+    "Attachments": [],
+    "HasAttachments": false,
+    "AttachmentCount": 0,
+    "Meshes": [],
+    "Properties": [],
+    "HasProperties": false,
+    "PropertyCount": 0,
+    "FieldE0": 1,
+    "HasParent": false,
+    "Children": [
+      {
+        "$type": "Node",
+        "ResourceType": "Node",
+        "Name": "",
+        "Translation": {
+          "$type": "Vector3",
+          "X": 0,
+          "Y": 0,
+          "Z": 0
+        },
+        "Rotation": {
+          "$type": "Quaternion",
+          "IsIdentity": true,
+          "X": 0,
+          "Y": 0,
+          "Z": 0,
+          "W": 1
+        },
+        "Scale": {
+          "$type": "Vector3",
+          "X": 1,
+          "Y": 1,
+          "Z": 1
+        },
+        "LocalTransform": {
+          "$type": "Matrix4x4",
+          "IsIdentity": true,
+          "Translation": {
+            "$type": "Vector3",
+            "X": 0,
+            "Y": 0,
+            "Z": 0
+          },
+          "X": {
+            "$type": "Vector4",
+            "X": 1,
+            "Y": 0,
+            "Z": 0,
+            "W": 0
+          },
+          "Y": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 1,
+            "Z": 0,
+            "W": 0
+          },
+          "Z": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 1,
+            "W": 0
+          },
+          "W": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 0,
+            "W": 1
+          },
+          "M11": 1,
+          "M12": 0,
+          "M13": 0,
+          "M14": 0,
+          "M21": 0,
+          "M22": 1,
+          "M23": 0,
+          "M24": 0,
+          "M31": 0,
+          "M32": 0,
+          "M33": 1,
+          "M34": 0,
+          "M41": 0,
+          "M42": 0,
+          "M43": 0,
+          "M44": 1
+        },
+        "WorldTransform": {
+          "$type": "Matrix4x4",
+          "IsIdentity": true,
+          "Translation": {
+            "$type": "Vector3",
+            "X": 0,
+            "Y": 0,
+            "Z": 0
+          },
+          "X": {
+            "$type": "Vector4",
+            "X": 1,
+            "Y": 0,
+            "Z": 0,
+            "W": 0
+          },
+          "Y": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 1,
+            "Z": 0,
+            "W": 0
+          },
+          "Z": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 1,
+            "W": 0
+          },
+          "W": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 0,
+            "W": 1
+          },
+          "M11": 1,
+          "M12": 0,
+          "M13": 0,
+          "M14": 0,
+          "M21": 0,
+          "M22": 1,
+          "M23": 0,
+          "M24": 0,
+          "M31": 0,
+          "M32": 0,
+          "M33": 1,
+          "M34": 0,
+          "M41": 0,
+          "M42": 0,
+          "M43": 0,
+          "M44": 1
+        },
+        "Attachments": [
+          {
+            "$type": "NodeEplLeafAttachment",
+            "EplLeaf": {
+              "$type": "EplLeaf",
+              "ResourceType": "EplLeaf",
+              "Flags": "3",
+              "Name": "NEWPARTS",
+              "Data": {
+                "$type": "EplPostEffect",
+                "ResourceType": "EplPostEffect",
+                "Header": {
+                  "$type": "EplLeafDataHeader",
+                  "ResourceType": "EplLeafDataHeader",
+                  "Type": 16,
+                  "Field04": 5,
+                  "Version": 17846384
+                },
+                "Type": 5,
+                "Field00": 0,
+                "Field04": 1,
+                "Data": {
+                  "$type": "EplPostEffectFillData",
+                  "ResourceType": "EplPostEffectFillData",
+                  "Field10": {
+                    "$type": "EplLeafCommonData2",
+                    "ResourceType": "EplLeafCommonData2",
+                    "Type": 2,
+                    "Field04": 0,
+                    "Field08": null,
+                    "Field0C": 255,
+                    "Field10": null,
+                    "Field14": 255,
+                    "Field18": null,
+                    "Field1C": 255,
+                    "Field20": null,
+                    "Field14_": {
+                      "$type": "Vector4",
+                      "X": 0.33333334,
+                      "Y": 0.33333334,
+                      "Z": 0.6666667,
+                      "W": 0.6666667
+                    },
+                    "Field24": {
+                      "length": 46
+                    },
+                    "Field62": 0,
+                    "Version": 17846384
+                  },
+                  "Field74": {
+                    "$type": "EplLeafCommonData2",
+                    "ResourceType": "EplLeafCommonData2",
+                    "Type": 2,
+                    "Field04": 0,
+                    "Field08": null,
+                    "Field0C": 255,
+                    "Field10": null,
+                    "Field14": 255,
+                    "Field18": null,
+                    "Field1C": 255,
+                    "Field20": null,
+                    "Field14_": {
+                      "$type": "Vector4",
+                      "X": 0.33333334,
+                      "Y": 0.33333334,
+                      "Z": 0.6666667,
+                      "W": 0.6666667
+                    },
+                    "Field24": {
+                      "length": 46
+                    },
+                    "Field62": 0,
+                    "Version": 17846384
+                  },
+                  "FieldD8": {
+                    "$type": "EplLeafCommonData2",
+                    "ResourceType": "EplLeafCommonData2",
+                    "Type": 2,
+                    "Field04": 0,
+                    "Field08": null,
+                    "Field0C": 255,
+                    "Field10": null,
+                    "Field14": 255,
+                    "Field18": null,
+                    "Field1C": 255,
+                    "Field20": null,
+                    "Field14_": {
+                      "$type": "Vector4",
+                      "X": 0.33333334,
+                      "Y": 0.33333334,
+                      "Z": 0.6666667,
+                      "W": 0.6666667
+                    },
+                    "Field24": {
+                      "length": 46
+                    },
+                    "Field62": 0,
+                    "Version": 17846384
+                  },
+                  "Field13C": {
+                    "$type": "EplLeafCommonData2",
+                    "ResourceType": "EplLeafCommonData2",
+                    "Type": 2,
+                    "Field04": 0,
+                    "Field08": null,
+                    "Field0C": 255,
+                    "Field10": null,
+                    "Field14": 255,
+                    "Field18": null,
+                    "Field1C": 255,
+                    "Field20": null,
+                    "Field14_": {
+                      "$type": "Vector4",
+                      "X": 0.33333334,
+                      "Y": 0.33333334,
+                      "Z": 0.6666667,
+                      "W": 0.6666667
+                    },
+                    "Field24": {
+                      "length": 46
+                    },
+                    "Field62": 0,
+                    "Version": 17846384
+                  },
+                  "FieldlA0": 1,
+                  "Version": 17846384
+                },
+                "HasEmbeddedFile": false,
+                "EmbeddedFile": null,
+                "Version": 17846384
+              },
+              "Field34": {
+                "$type": "Vector2",
+                "X": 0,
+                "Y": 0
+              },
+              "Field3C": {
+                "$type": "Vector2",
+                "X": 0,
+                "Y": 0
+              },
+              "Version": 17846384
+            },
+            "Type": "EplLeaf"
+          }
+        ],
+        "HasAttachments": true,
+        "AttachmentCount": 1,
+        "Meshes": [],
+        "Properties": [],
+        "HasProperties": false,
+        "PropertyCount": 0,
+        "FieldE0": 1,
+        "HasParent": true,
+        "Children": [],
+        "HasChildren": false,
+        "ChildCount": 0,
+        "Version": 17846384
+      },
+      {
+        "$type": "Node",
+        "ResourceType": "Node",
+        "Name": "",
+        "Translation": {
+          "$type": "Vector3",
+          "X": 0,
+          "Y": 0,
+          "Z": 0
+        },
+        "Rotation": {
+          "$type": "Quaternion",
+          "IsIdentity": true,
+          "X": 0,
+          "Y": 0,
+          "Z": 0,
+          "W": 1
+        },
+        "Scale": {
+          "$type": "Vector3",
+          "X": 1,
+          "Y": 1,
+          "Z": 1
+        },
+        "LocalTransform": {
+          "$type": "Matrix4x4",
+          "IsIdentity": true,
+          "Translation": {
+            "$type": "Vector3",
+            "X": 0,
+            "Y": 0,
+            "Z": 0
+          },
+          "X": {
+            "$type": "Vector4",
+            "X": 1,
+            "Y": 0,
+            "Z": 0,
+            "W": 0
+          },
+          "Y": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 1,
+            "Z": 0,
+            "W": 0
+          },
+          "Z": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 1,
+            "W": 0
+          },
+          "W": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 0,
+            "W": 1
+          },
+          "M11": 1,
+          "M12": 0,
+          "M13": 0,
+          "M14": 0,
+          "M21": 0,
+          "M22": 1,
+          "M23": 0,
+          "M24": 0,
+          "M31": 0,
+          "M32": 0,
+          "M33": 1,
+          "M34": 0,
+          "M41": 0,
+          "M42": 0,
+          "M43": 0,
+          "M44": 1
+        },
+        "WorldTransform": {
+          "$type": "Matrix4x4",
+          "IsIdentity": true,
+          "Translation": {
+            "$type": "Vector3",
+            "X": 0,
+            "Y": 0,
+            "Z": 0
+          },
+          "X": {
+            "$type": "Vector4",
+            "X": 1,
+            "Y": 0,
+            "Z": 0,
+            "W": 0
+          },
+          "Y": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 1,
+            "Z": 0,
+            "W": 0
+          },
+          "Z": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 1,
+            "W": 0
+          },
+          "W": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 0,
+            "W": 1
+          },
+          "M11": 1,
+          "M12": 0,
+          "M13": 0,
+          "M14": 0,
+          "M21": 0,
+          "M22": 1,
+          "M23": 0,
+          "M24": 0,
+          "M31": 0,
+          "M32": 0,
+          "M33": 1,
+          "M34": 0,
+          "M41": 0,
+          "M42": 0,
+          "M43": 0,
+          "M44": 1
+        },
+        "Attachments": [
+          {
+            "$type": "NodeEplLeafAttachment",
+            "EplLeaf": {
+              "$type": "EplLeaf",
+              "ResourceType": "EplLeaf",
+              "Flags": "3",
+              "Name": "NEWPARTS",
+              "Data": {
+                "$type": "EplPostEffect",
+                "ResourceType": "EplPostEffect",
+                "Header": {
+                  "$type": "EplLeafDataHeader",
+                  "ResourceType": "EplLeafDataHeader",
+                  "Type": 16,
+                  "Field04": 8,
+                  "Version": 17846384
+                },
+                "Type": 8,
+                "Field00": 0,
+                "Field04": 2,
+                "Data": {
+                  "$type": "EplPostEffectMonotoneData",
+                  "ResourceType": "EplPostEffectMonotoneData",
+                  "Field10": 1,
+                  "Field14": {
+                    "$type": "Vector2",
+                    "X": 0.05555556,
+                    "Y": 1
+                  },
+                  "Version": 17846384
+                },
+                "HasEmbeddedFile": false,
+                "EmbeddedFile": null,
+                "Version": 17846384
+              },
+              "Field34": {
+                "$type": "Vector2",
+                "X": 0,
+                "Y": 0
+              },
+              "Field3C": {
+                "$type": "Vector2",
+                "X": 0,
+                "Y": 0
+              },
+              "Version": 17846384
+            },
+            "Type": "EplLeaf"
+          }
+        ],
+        "HasAttachments": true,
+        "AttachmentCount": 1,
+        "Meshes": [],
+        "Properties": [],
+        "HasProperties": false,
+        "PropertyCount": 0,
+        "FieldE0": 1,
+        "HasParent": true,
+        "Children": [],
+        "HasChildren": false,
+        "ChildCount": 0,
+        "Version": 17846384
+      },
+      {
+        "$type": "Node",
+        "ResourceType": "Node",
+        "Name": "",
+        "Translation": {
+          "$type": "Vector3",
+          "X": 0,
+          "Y": 0,
+          "Z": 0
+        },
+        "Rotation": {
+          "$type": "Quaternion",
+          "IsIdentity": true,
+          "X": 0,
+          "Y": 0,
+          "Z": 0,
+          "W": 1
+        },
+        "Scale": {
+          "$type": "Vector3",
+          "X": 1,
+          "Y": 1,
+          "Z": 1
+        },
+        "LocalTransform": {
+          "$type": "Matrix4x4",
+          "IsIdentity": true,
+          "Translation": {
+            "$type": "Vector3",
+            "X": 0,
+            "Y": 0,
+            "Z": 0
+          },
+          "X": {
+            "$type": "Vector4",
+            "X": 1,
+            "Y": 0,
+            "Z": 0,
+            "W": 0
+          },
+          "Y": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 1,
+            "Z": 0,
+            "W": 0
+          },
+          "Z": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 1,
+            "W": 0
+          },
+          "W": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 0,
+            "W": 1
+          },
+          "M11": 1,
+          "M12": 0,
+          "M13": 0,
+          "M14": 0,
+          "M21": 0,
+          "M22": 1,
+          "M23": 0,
+          "M24": 0,
+          "M31": 0,
+          "M32": 0,
+          "M33": 1,
+          "M34": 0,
+          "M41": 0,
+          "M42": 0,
+          "M43": 0,
+          "M44": 1
+        },
+        "WorldTransform": {
+          "$type": "Matrix4x4",
+          "IsIdentity": true,
+          "Translation": {
+            "$type": "Vector3",
+            "X": 0,
+            "Y": 0,
+            "Z": 0
+          },
+          "X": {
+            "$type": "Vector4",
+            "X": 1,
+            "Y": 0,
+            "Z": 0,
+            "W": 0
+          },
+          "Y": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 1,
+            "Z": 0,
+            "W": 0
+          },
+          "Z": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 1,
+            "W": 0
+          },
+          "W": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 0,
+            "W": 1
+          },
+          "M11": 1,
+          "M12": 0,
+          "M13": 0,
+          "M14": 0,
+          "M21": 0,
+          "M22": 1,
+          "M23": 0,
+          "M24": 0,
+          "M31": 0,
+          "M32": 0,
+          "M33": 1,
+          "M34": 0,
+          "M41": 0,
+          "M42": 0,
+          "M43": 0,
+          "M44": 1
+        },
+        "Attachments": [
+          {
+            "$type": "NodeEplLeafAttachment",
+            "EplLeaf": {
+              "$type": "EplLeaf",
+              "ResourceType": "EplLeaf",
+              "Flags": "1",
+              "Name": "M-2D0",
+              "Data": {
+                "$type": "EplModel",
+                "ResourceType": "EplModel",
+                "Header": {
+                  "$type": "EplLeafDataHeader",
+                  "ResourceType": "EplLeafDataHeader",
+                  "Type": 7,
+                  "Field04": 2,
+                  "Version": 17846384
+                },
+                "Type": 2,
+                "Field00": 5,
+                "Field04": 0.03999994,
+                "Field08": 1,
+                "Data": {
+                  "$type": "EplModel2DData",
+                  "ResourceType": "EplModel2DData",
+                  "Field0C": 14.5,
+                  "Version": 17846384
+                },
+                "HasEmbeddedFile": 1,
+                "EmbeddedFile": {
+                  "$type": "EplEmbeddedFile",
+                  "ResourceType": "EplEmbeddedFile",
+                  "FileName": "sozai/gfd/be0cmn_bokosuka_fronttext_hero.GFS",
+                  "Field18": 2,
+                  "Field00": 2,
+                  "DataLength": 65717,
+                  "Data": {
+                    "length": 65717
+                  },
+                  "Version": 17846384
+                },
+                "Field0C": {
+                  "$type": "Vector2",
+                  "X": 0,
+                  "Y": 0
+                },
+                "Field14": {
+                  "$type": "Vector2",
+                  "X": 0,
+                  "Y": 0
+                },
+                "Field24": 0,
+                "Field28": 0,
+                "Field1C": 0,
+                "Field20": 0,
+                "Field0C_P5R": 0,
+                "Field10_P5R": 0,
+                "Field14_P5R": 0,
+                "Field18_P5R": 0,
+                "Field1C_P5R": 0,
+                "Field20_P5R": 0,
+                "Field24_P5R": 0,
+                "Field28_P5R": 0,
+                "Field2C_P5R": 0,
+                "Version": 17846384
+              },
+              "Field34": {
+                "$type": "Vector2",
+                "X": 0,
+                "Y": 0
+              },
+              "Field3C": {
+                "$type": "Vector2",
+                "X": 0,
+                "Y": 0
+              },
+              "Version": 17846384
+            },
+            "Type": "EplLeaf"
+          }
+        ],
+        "HasAttachments": true,
+        "AttachmentCount": 1,
+        "Meshes": [],
+        "Properties": [],
+        "HasProperties": false,
+        "PropertyCount": 0,
+        "FieldE0": 1,
+        "HasParent": true,
+        "Children": [],
+        "HasChildren": false,
+        "ChildCount": 0,
+        "Version": 17846384
+      },
+      {
+        "$type": "Node",
+        "ResourceType": "Node",
+        "Name": "",
+        "Translation": {
+          "$type": "Vector3",
+          "X": 0,
+          "Y": 0,
+          "Z": 0
+        },
+        "Rotation": {
+          "$type": "Quaternion",
+          "IsIdentity": true,
+          "X": 0,
+          "Y": 0,
+          "Z": 0,
+          "W": 1
+        },
+        "Scale": {
+          "$type": "Vector3",
+          "X": 1,
+          "Y": 1,
+          "Z": 1
+        },
+        "LocalTransform": {
+          "$type": "Matrix4x4",
+          "IsIdentity": true,
+          "Translation": {
+            "$type": "Vector3",
+            "X": 0,
+            "Y": 0,
+            "Z": 0
+          },
+          "X": {
+            "$type": "Vector4",
+            "X": 1,
+            "Y": 0,
+            "Z": 0,
+            "W": 0
+          },
+          "Y": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 1,
+            "Z": 0,
+            "W": 0
+          },
+          "Z": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 1,
+            "W": 0
+          },
+          "W": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 0,
+            "W": 1
+          },
+          "M11": 1,
+          "M12": 0,
+          "M13": 0,
+          "M14": 0,
+          "M21": 0,
+          "M22": 1,
+          "M23": 0,
+          "M24": 0,
+          "M31": 0,
+          "M32": 0,
+          "M33": 1,
+          "M34": 0,
+          "M41": 0,
+          "M42": 0,
+          "M43": 0,
+          "M44": 1
+        },
+        "WorldTransform": {
+          "$type": "Matrix4x4",
+          "IsIdentity": true,
+          "Translation": {
+            "$type": "Vector3",
+            "X": 0,
+            "Y": 0,
+            "Z": 0
+          },
+          "X": {
+            "$type": "Vector4",
+            "X": 1,
+            "Y": 0,
+            "Z": 0,
+            "W": 0
+          },
+          "Y": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 1,
+            "Z": 0,
+            "W": 0
+          },
+          "Z": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 1,
+            "W": 0
+          },
+          "W": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 0,
+            "W": 1
+          },
+          "M11": 1,
+          "M12": 0,
+          "M13": 0,
+          "M14": 0,
+          "M21": 0,
+          "M22": 1,
+          "M23": 0,
+          "M24": 0,
+          "M31": 0,
+          "M32": 0,
+          "M33": 1,
+          "M34": 0,
+          "M41": 0,
+          "M42": 0,
+          "M43": 0,
+          "M44": 1
+        },
+        "Attachments": [
+          {
+            "$type": "NodeEplLeafAttachment",
+            "EplLeaf": {
+              "$type": "EplLeaf",
+              "ResourceType": "EplLeaf",
+              "Flags": "1",
+              "Name": "V-QUAKE",
+              "Data": {
+                "$type": "EplCamera",
+                "ResourceType": "EplCamera",
+                "Header": {
+                  "$type": "EplLeafDataHeader",
+                  "ResourceType": "EplLeafDataHeader",
+                  "Type": 14,
+                  "Field04": 2,
+                  "Version": 17846384
+                },
+                "Type": 2,
+                "Field00": 0,
+                "Field04": 1,
+                "Field08": 1,
+                "Field0C": 0,
+                "Params": {
+                  "$type": "EplCameraQuakeParams",
+                  "ResourceType": "EplCameraQuakeParams",
+                  "Field10": 2,
+                  "Field14": 0.3,
+                  "Field18": 3,
+                  "Field1C": 0,
+                  "Field20": 0,
+                  "Version": 17846384
+                },
+                "HasEmbeddedFile": false,
+                "EmbeddedFile": null,
+                "Version": 17846384
+              },
+              "Field34": {
+                "$type": "Vector2",
+                "X": 0,
+                "Y": 0
+              },
+              "Field3C": {
+                "$type": "Vector2",
+                "X": 0,
+                "Y": 0
+              },
+              "Version": 17846384
+            },
+            "Type": "EplLeaf"
+          }
+        ],
+        "HasAttachments": true,
+        "AttachmentCount": 1,
+        "Meshes": [],
+        "Properties": [],
+        "HasProperties": false,
+        "PropertyCount": 0,
+        "FieldE0": 1,
+        "HasParent": true,
+        "Children": [],
+        "HasChildren": false,
+        "ChildCount": 0,
+        "Version": 17846384
+      },
+      {
+        "$type": "Node",
+        "ResourceType": "Node",
+        "Name": "",
+        "Translation": {
+          "$type": "Vector3",
+          "X": 0,
+          "Y": 0,
+          "Z": -1000
+        },
+        "Rotation": {
+          "$type": "Quaternion",
+          "IsIdentity": true,
+          "X": 0,
+          "Y": 0,
+          "Z": 0,
+          "W": 1
+        },
+        "Scale": {
+          "$type": "Vector3",
+          "X": 1,
+          "Y": 1,
+          "Z": 1
+        },
+        "LocalTransform": {
+          "$type": "Matrix4x4",
+          "IsIdentity": false,
+          "Translation": {
+            "$type": "Vector3",
+            "X": 0,
+            "Y": 0,
+            "Z": -1000
+          },
+          "X": {
+            "$type": "Vector4",
+            "X": 1,
+            "Y": 0,
+            "Z": 0,
+            "W": 0
+          },
+          "Y": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 1,
+            "Z": 0,
+            "W": 0
+          },
+          "Z": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 1,
+            "W": 0
+          },
+          "W": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": -1000,
+            "W": 1
+          },
+          "M11": 1,
+          "M12": 0,
+          "M13": 0,
+          "M14": 0,
+          "M21": 0,
+          "M22": 1,
+          "M23": 0,
+          "M24": 0,
+          "M31": 0,
+          "M32": 0,
+          "M33": 1,
+          "M34": 0,
+          "M41": 0,
+          "M42": 0,
+          "M43": -1000,
+          "M44": 1
+        },
+        "WorldTransform": {
+          "$type": "Matrix4x4",
+          "IsIdentity": false,
+          "Translation": {
+            "$type": "Vector3",
+            "X": 0,
+            "Y": 0,
+            "Z": -1000
+          },
+          "X": {
+            "$type": "Vector4",
+            "X": 1,
+            "Y": 0,
+            "Z": 0,
+            "W": 0
+          },
+          "Y": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 1,
+            "Z": 0,
+            "W": 0
+          },
+          "Z": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 1,
+            "W": 0
+          },
+          "W": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": -1000,
+            "W": 1
+          },
+          "M11": 1,
+          "M12": 0,
+          "M13": 0,
+          "M14": 0,
+          "M21": 0,
+          "M22": 1,
+          "M23": 0,
+          "M24": 0,
+          "M31": 0,
+          "M32": 0,
+          "M33": 1,
+          "M34": 0,
+          "M41": 0,
+          "M42": 0,
+          "M43": -1000,
+          "M44": 1
+        },
+        "Attachments": [
+          {
+            "$type": "NodeEplLeafAttachment",
+            "EplLeaf": {
+              "$type": "EplLeaf",
+              "ResourceType": "EplLeaf",
+              "Flags": "5",
+              "Name": "EMPTY",
+              "Data": {
+                "$type": "EplDummy",
+                "ResourceType": "EplDummy",
+                "Header": {
+                  "$type": "EplLeafDataHeader",
+                  "ResourceType": "EplLeafDataHeader",
+                  "Type": 0,
+                  "Field04": 1,
+                  "Version": 17846384
+                },
+                "Version": 17846384
+              },
+              "Field34": {
+                "$type": "Vector2",
+                "X": 0,
+                "Y": 0
+              },
+              "Field3C": {
+                "$type": "Vector2",
+                "X": 0,
+                "Y": 0
+              },
+              "Version": 17846384
+            },
+            "Type": "EplLeaf"
+          }
+        ],
+        "HasAttachments": true,
+        "AttachmentCount": 1,
+        "Meshes": [],
+        "Properties": [],
+        "HasProperties": false,
+        "PropertyCount": 0,
+        "FieldE0": 1,
+        "HasParent": true,
+        "Children": [
+          {
+            "$type": "Node",
+            "ResourceType": "Node",
+            "Name": "",
+            "Translation": {
+              "$type": "Vector3",
+              "X": 0,
+              "Y": 0,
+              "Z": 0
+            },
+            "Rotation": {
+              "$type": "Quaternion",
+              "IsIdentity": true,
+              "X": 0,
+              "Y": 0,
+              "Z": 0,
+              "W": 1
+            },
+            "Scale": {
+              "$type": "Vector3",
+              "X": 1,
+              "Y": 1,
+              "Z": 1
+            },
+            "LocalTransform": {
+              "$type": "Matrix4x4",
+              "IsIdentity": true,
+              "Translation": {
+                "$type": "Vector3",
+                "X": 0,
+                "Y": 0,
+                "Z": 0
+              },
+              "X": {
+                "$type": "Vector4",
+                "X": 1,
+                "Y": 0,
+                "Z": 0,
+                "W": 0
+              },
+              "Y": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 1,
+                "Z": 0,
+                "W": 0
+              },
+              "Z": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 0,
+                "Z": 1,
+                "W": 0
+              },
+              "W": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 0,
+                "Z": 0,
+                "W": 1
+              },
+              "M11": 1,
+              "M12": 0,
+              "M13": 0,
+              "M14": 0,
+              "M21": 0,
+              "M22": 1,
+              "M23": 0,
+              "M24": 0,
+              "M31": 0,
+              "M32": 0,
+              "M33": 1,
+              "M34": 0,
+              "M41": 0,
+              "M42": 0,
+              "M43": 0,
+              "M44": 1
+            },
+            "WorldTransform": {
+              "$type": "Matrix4x4",
+              "IsIdentity": false,
+              "Translation": {
+                "$type": "Vector3",
+                "X": 0,
+                "Y": 0,
+                "Z": -1000
+              },
+              "X": {
+                "$type": "Vector4",
+                "X": 1,
+                "Y": 0,
+                "Z": 0,
+                "W": 0
+              },
+              "Y": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 1,
+                "Z": 0,
+                "W": 0
+              },
+              "Z": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 0,
+                "Z": 1,
+                "W": 0
+              },
+              "W": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 0,
+                "Z": -1000,
+                "W": 1
+              },
+              "M11": 1,
+              "M12": 0,
+              "M13": 0,
+              "M14": 0,
+              "M21": 0,
+              "M22": 1,
+              "M23": 0,
+              "M24": 0,
+              "M31": 0,
+              "M32": 0,
+              "M33": 1,
+              "M34": 0,
+              "M41": 0,
+              "M42": 0,
+              "M43": -1000,
+              "M44": 1
+            },
+            "Attachments": [
+              {
+                "$type": "NodeEplLeafAttachment",
+                "EplLeaf": {
+                  "$type": "EplLeaf",
+                  "ResourceType": "EplLeaf",
+                  "Flags": "5",
+                  "Name": "M-3D0",
+                  "Data": {
+                    "$type": "EplModel",
+                    "ResourceType": "EplModel",
+                    "Header": {
+                      "$type": "EplLeafDataHeader",
+                      "ResourceType": "EplLeafDataHeader",
+                      "Type": 7,
+                      "Field04": 1,
+                      "Version": 17846384
+                    },
+                    "Type": 1,
+                    "Field00": 0,
+                    "Field04": 4,
+                    "Field08": 1,
+                    "Data": {
+                      "$type": "EplModel3DData",
+                      "ResourceType": "EplModel3DData",
+                      "Version": 17846384
+                    },
+                    "HasEmbeddedFile": 1,
+                    "EmbeddedFile": {
+                      "$type": "EplEmbeddedFile",
+                      "ResourceType": "EplEmbeddedFile",
+                      "FileName": "sozai/gfd/be0cmn_bokosuka_back_matte_down.GFS",
+                      "Field18": 2,
+                      "Field00": 2,
+                      "DataLength": 1265,
+                      "Data": {
+                        "length": 1265
+                      },
+                      "Version": 17846384
+                    },
+                    "Field0C": {
+                      "$type": "Vector2",
+                      "X": 0,
+                      "Y": 0
+                    },
+                    "Field14": {
+                      "$type": "Vector2",
+                      "X": 0,
+                      "Y": 0
+                    },
+                    "Field24": 0,
+                    "Field28": 0,
+                    "Field1C": 0,
+                    "Field20": 0,
+                    "Field0C_P5R": 0,
+                    "Field10_P5R": 0,
+                    "Field14_P5R": 0,
+                    "Field18_P5R": 0,
+                    "Field1C_P5R": 0,
+                    "Field20_P5R": 0,
+                    "Field24_P5R": 0,
+                    "Field28_P5R": 0,
+                    "Field2C_P5R": 0,
+                    "Version": 17846384
+                  },
+                  "Field34": {
+                    "$type": "Vector2",
+                    "X": 0,
+                    "Y": 0
+                  },
+                  "Field3C": {
+                    "$type": "Vector2",
+                    "X": 0,
+                    "Y": 0
+                  },
+                  "Version": 17846384
+                },
+                "Type": "EplLeaf"
+              }
+            ],
+            "HasAttachments": true,
+            "AttachmentCount": 1,
+            "Meshes": [],
+            "Properties": [],
+            "HasProperties": false,
+            "PropertyCount": 0,
+            "FieldE0": 1,
+            "HasParent": true,
+            "Children": [],
+            "HasChildren": false,
+            "ChildCount": 0,
+            "Version": 17846384
+          },
+          {
+            "$type": "Node",
+            "ResourceType": "Node",
+            "Name": "",
+            "Translation": {
+              "$type": "Vector3",
+              "X": 0,
+              "Y": 0,
+              "Z": -40
+            },
+            "Rotation": {
+              "$type": "Quaternion",
+              "IsIdentity": true,
+              "X": 0,
+              "Y": 0,
+              "Z": 0,
+              "W": 1
+            },
+            "Scale": {
+              "$type": "Vector3",
+              "X": 1,
+              "Y": 1,
+              "Z": 1
+            },
+            "LocalTransform": {
+              "$type": "Matrix4x4",
+              "IsIdentity": false,
+              "Translation": {
+                "$type": "Vector3",
+                "X": 0,
+                "Y": 0,
+                "Z": -40
+              },
+              "X": {
+                "$type": "Vector4",
+                "X": 1,
+                "Y": 0,
+                "Z": 0,
+                "W": 0
+              },
+              "Y": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 1,
+                "Z": 0,
+                "W": 0
+              },
+              "Z": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 0,
+                "Z": 1,
+                "W": 0
+              },
+              "W": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 0,
+                "Z": -40,
+                "W": 1
+              },
+              "M11": 1,
+              "M12": 0,
+              "M13": 0,
+              "M14": 0,
+              "M21": 0,
+              "M22": 1,
+              "M23": 0,
+              "M24": 0,
+              "M31": 0,
+              "M32": 0,
+              "M33": 1,
+              "M34": 0,
+              "M41": 0,
+              "M42": 0,
+              "M43": -40,
+              "M44": 1
+            },
+            "WorldTransform": {
+              "$type": "Matrix4x4",
+              "IsIdentity": false,
+              "Translation": {
+                "$type": "Vector3",
+                "X": 0,
+                "Y": 0,
+                "Z": -1040
+              },
+              "X": {
+                "$type": "Vector4",
+                "X": 1,
+                "Y": 0,
+                "Z": 0,
+                "W": 0
+              },
+              "Y": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 1,
+                "Z": 0,
+                "W": 0
+              },
+              "Z": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 0,
+                "Z": 1,
+                "W": 0
+              },
+              "W": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 0,
+                "Z": -1040,
+                "W": 1
+              },
+              "M11": 1,
+              "M12": 0,
+              "M13": 0,
+              "M14": 0,
+              "M21": 0,
+              "M22": 1,
+              "M23": 0,
+              "M24": 0,
+              "M31": 0,
+              "M32": 0,
+              "M33": 1,
+              "M34": 0,
+              "M41": 0,
+              "M42": 0,
+              "M43": -1040,
+              "M44": 1
+            },
+            "Attachments": [
+              {
+                "$type": "NodeEplLeafAttachment",
+                "EplLeaf": {
+                  "$type": "EplLeaf",
+                  "ResourceType": "EplLeaf",
+                  "Flags": "5",
+                  "Name": "M-3D0",
+                  "Data": {
+                    "$type": "EplModel",
+                    "ResourceType": "EplModel",
+                    "Header": {
+                      "$type": "EplLeafDataHeader",
+                      "ResourceType": "EplLeafDataHeader",
+                      "Type": 7,
+                      "Field04": 1,
+                      "Version": 17846384
+                    },
+                    "Type": 1,
+                    "Field00": 0,
+                    "Field04": 4,
+                    "Field08": 1,
+                    "Data": {
+                      "$type": "EplModel3DData",
+                      "ResourceType": "EplModel3DData",
+                      "Version": 17846384
+                    },
+                    "HasEmbeddedFile": 1,
+                    "EmbeddedFile": {
+                      "$type": "EplEmbeddedFile",
+                      "ResourceType": "EplEmbeddedFile",
+                      "FileName": "sozai/gfd/be0cmn_bokosuka_back_matte_up.GFS",
+                      "Field18": 2,
+                      "Field00": 2,
+                      "DataLength": 1265,
+                      "Data": {
+                        "length": 1265
+                      },
+                      "Version": 17846384
+                    },
+                    "Field0C": {
+                      "$type": "Vector2",
+                      "X": 0,
+                      "Y": 0
+                    },
+                    "Field14": {
+                      "$type": "Vector2",
+                      "X": 0,
+                      "Y": 0
+                    },
+                    "Field24": 0,
+                    "Field28": 0,
+                    "Field1C": 0,
+                    "Field20": 0,
+                    "Field0C_P5R": 0,
+                    "Field10_P5R": 0,
+                    "Field14_P5R": 0,
+                    "Field18_P5R": 0,
+                    "Field1C_P5R": 0,
+                    "Field20_P5R": 0,
+                    "Field24_P5R": 0,
+                    "Field28_P5R": 0,
+                    "Field2C_P5R": 0,
+                    "Version": 17846384
+                  },
+                  "Field34": {
+                    "$type": "Vector2",
+                    "X": 0,
+                    "Y": 0
+                  },
+                  "Field3C": {
+                    "$type": "Vector2",
+                    "X": 0,
+                    "Y": 0
+                  },
+                  "Version": 17846384
+                },
+                "Type": "EplLeaf"
+              }
+            ],
+            "HasAttachments": true,
+            "AttachmentCount": 1,
+            "Meshes": [],
+            "Properties": [],
+            "HasProperties": false,
+            "PropertyCount": 0,
+            "FieldE0": 1,
+            "HasParent": true,
+            "Children": [],
+            "HasChildren": false,
+            "ChildCount": 0,
+            "Version": 17846384
+          }
+        ],
+        "HasChildren": true,
+        "ChildCount": 2,
+        "Version": 17846384
+      },
+      {
+        "$type": "Node",
+        "ResourceType": "Node",
+        "Name": "",
+        "Translation": {
+          "$type": "Vector3",
+          "X": 150,
+          "Y": -150,
+          "Z": 1400
+        },
+        "Rotation": {
+          "$type": "Quaternion",
+          "IsIdentity": true,
+          "X": 0,
+          "Y": 0,
+          "Z": 0,
+          "W": 1
+        },
+        "Scale": {
+          "$type": "Vector3",
+          "X": 1,
+          "Y": 1,
+          "Z": 1
+        },
+        "LocalTransform": {
+          "$type": "Matrix4x4",
+          "IsIdentity": false,
+          "Translation": {
+            "$type": "Vector3",
+            "X": 150,
+            "Y": -150,
+            "Z": 1400
+          },
+          "X": {
+            "$type": "Vector4",
+            "X": 1,
+            "Y": 0,
+            "Z": 0,
+            "W": 0
+          },
+          "Y": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 1,
+            "Z": 0,
+            "W": 0
+          },
+          "Z": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 1,
+            "W": 0
+          },
+          "W": {
+            "$type": "Vector4",
+            "X": 150,
+            "Y": -150,
+            "Z": 1400,
+            "W": 1
+          },
+          "M11": 1,
+          "M12": 0,
+          "M13": 0,
+          "M14": 0,
+          "M21": 0,
+          "M22": 1,
+          "M23": 0,
+          "M24": 0,
+          "M31": 0,
+          "M32": 0,
+          "M33": 1,
+          "M34": 0,
+          "M41": 150,
+          "M42": -150,
+          "M43": 1400,
+          "M44": 1
+        },
+        "WorldTransform": {
+          "$type": "Matrix4x4",
+          "IsIdentity": false,
+          "Translation": {
+            "$type": "Vector3",
+            "X": 150,
+            "Y": -150,
+            "Z": 1400
+          },
+          "X": {
+            "$type": "Vector4",
+            "X": 1,
+            "Y": 0,
+            "Z": 0,
+            "W": 0
+          },
+          "Y": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 1,
+            "Z": 0,
+            "W": 0
+          },
+          "Z": {
+            "$type": "Vector4",
+            "X": 0,
+            "Y": 0,
+            "Z": 1,
+            "W": 0
+          },
+          "W": {
+            "$type": "Vector4",
+            "X": 150,
+            "Y": -150,
+            "Z": 1400,
+            "W": 1
+          },
+          "M11": 1,
+          "M12": 0,
+          "M13": 0,
+          "M14": 0,
+          "M21": 0,
+          "M22": 1,
+          "M23": 0,
+          "M24": 0,
+          "M31": 0,
+          "M32": 0,
+          "M33": 1,
+          "M34": 0,
+          "M41": 150,
+          "M42": -150,
+          "M43": 1400,
+          "M44": 1
+        },
+        "Attachments": [
+          {
+            "$type": "NodeEplLeafAttachment",
+            "EplLeaf": {
+              "$type": "EplLeaf",
+              "ResourceType": "EplLeaf",
+              "Flags": "5",
+              "Name": "EMPTY",
+              "Data": {
+                "$type": "EplDummy",
+                "ResourceType": "EplDummy",
+                "Header": {
+                  "$type": "EplLeafDataHeader",
+                  "ResourceType": "EplLeafDataHeader",
+                  "Type": 0,
+                  "Field04": 1,
+                  "Version": 17846384
+                },
+                "Version": 17846384
+              },
+              "Field34": {
+                "$type": "Vector2",
+                "X": 0,
+                "Y": 0
+              },
+              "Field3C": {
+                "$type": "Vector2",
+                "X": 0,
+                "Y": 0
+              },
+              "Version": 17846384
+            },
+            "Type": "EplLeaf"
+          }
+        ],
+        "HasAttachments": true,
+        "AttachmentCount": 1,
+        "Meshes": [],
+        "Properties": [],
+        "HasProperties": false,
+        "PropertyCount": 0,
+        "FieldE0": 1,
+        "HasParent": true,
+        "Children": [
+          {
+            "$type": "Node",
+            "ResourceType": "Node",
+            "Name": "",
+            "Translation": {
+              "$type": "Vector3",
+              "X": 0,
+              "Y": 0,
+              "Z": 0
+            },
+            "Rotation": {
+              "$type": "Quaternion",
+              "IsIdentity": true,
+              "X": 0,
+              "Y": 0,
+              "Z": 0,
+              "W": 1
+            },
+            "Scale": {
+              "$type": "Vector3",
+              "X": 1,
+              "Y": 1,
+              "Z": 1
+            },
+            "LocalTransform": {
+              "$type": "Matrix4x4",
+              "IsIdentity": true,
+              "Translation": {
+                "$type": "Vector3",
+                "X": 0,
+                "Y": 0,
+                "Z": 0
+              },
+              "X": {
+                "$type": "Vector4",
+                "X": 1,
+                "Y": 0,
+                "Z": 0,
+                "W": 0
+              },
+              "Y": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 1,
+                "Z": 0,
+                "W": 0
+              },
+              "Z": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 0,
+                "Z": 1,
+                "W": 0
+              },
+              "W": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 0,
+                "Z": 0,
+                "W": 1
+              },
+              "M11": 1,
+              "M12": 0,
+              "M13": 0,
+              "M14": 0,
+              "M21": 0,
+              "M22": 1,
+              "M23": 0,
+              "M24": 0,
+              "M31": 0,
+              "M32": 0,
+              "M33": 1,
+              "M34": 0,
+              "M41": 0,
+              "M42": 0,
+              "M43": 0,
+              "M44": 1
+            },
+            "WorldTransform": {
+              "$type": "Matrix4x4",
+              "IsIdentity": false,
+              "Translation": {
+                "$type": "Vector3",
+                "X": 150,
+                "Y": -150,
+                "Z": 1400
+              },
+              "X": {
+                "$type": "Vector4",
+                "X": 1,
+                "Y": 0,
+                "Z": 0,
+                "W": 0
+              },
+              "Y": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 1,
+                "Z": 0,
+                "W": 0
+              },
+              "Z": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 0,
+                "Z": 1,
+                "W": 0
+              },
+              "W": {
+                "$type": "Vector4",
+                "X": 150,
+                "Y": -150,
+                "Z": 1400,
+                "W": 1
+              },
+              "M11": 1,
+              "M12": 0,
+              "M13": 0,
+              "M14": 0,
+              "M21": 0,
+              "M22": 1,
+              "M23": 0,
+              "M24": 0,
+              "M31": 0,
+              "M32": 0,
+              "M33": 1,
+              "M34": 0,
+              "M41": 150,
+              "M42": -150,
+              "M43": 1400,
+              "M44": 1
+            },
+            "Attachments": [
+              {
+                "$type": "NodeEplLeafAttachment",
+                "EplLeaf": {
+                  "$type": "EplLeaf",
+                  "ResourceType": "EplLeaf",
+                  "Flags": "5",
+                  "Name": "M-3D0",
+                  "Data": {
+                    "$type": "EplModel",
+                    "ResourceType": "EplModel",
+                    "Header": {
+                      "$type": "EplLeafDataHeader",
+                      "ResourceType": "EplLeafDataHeader",
+                      "Type": 7,
+                      "Field04": 1,
+                      "Version": 17846384
+                    },
+                    "Type": 1,
+                    "Field00": 0,
+                    "Field04": 1,
+                    "Field08": 1,
+                    "Data": {
+                      "$type": "EplModel3DData",
+                      "ResourceType": "EplModel3DData",
+                      "Version": 17846384
+                    },
+                    "HasEmbeddedFile": 1,
+                    "EmbeddedFile": {
+                      "$type": "EplEmbeddedFile",
+                      "ResourceType": "EplEmbeddedFile",
+                      "FileName": "sozai/gfd/be0cmn_bokosuka_front_hero.GFS",
+                      "Field18": 2,
+                      "Field00": 2,
+                      "DataLength": 151853,
+                      "Data": {
+                        "length": 151853
+                      },
+                      "Version": 17846384
+                    },
+                    "Field0C": {
+                      "$type": "Vector2",
+                      "X": 0,
+                      "Y": 0
+                    },
+                    "Field14": {
+                      "$type": "Vector2",
+                      "X": 0,
+                      "Y": 0
+                    },
+                    "Field24": 0,
+                    "Field28": 0,
+                    "Field1C": 0,
+                    "Field20": 0,
+                    "Field0C_P5R": 0,
+                    "Field10_P5R": 0,
+                    "Field14_P5R": 0,
+                    "Field18_P5R": 0,
+                    "Field1C_P5R": 0,
+                    "Field20_P5R": 0,
+                    "Field24_P5R": 0,
+                    "Field28_P5R": 0,
+                    "Field2C_P5R": 0,
+                    "Version": 17846384
+                  },
+                  "Field34": {
+                    "$type": "Vector2",
+                    "X": 0,
+                    "Y": 0
+                  },
+                  "Field3C": {
+                    "$type": "Vector2",
+                    "X": 0,
+                    "Y": 0
+                  },
+                  "Version": 17846384
+                },
+                "Type": "EplLeaf"
+              }
+            ],
+            "HasAttachments": true,
+            "AttachmentCount": 1,
+            "Meshes": [],
+            "Properties": [],
+            "HasProperties": false,
+            "PropertyCount": 0,
+            "FieldE0": 1,
+            "HasParent": true,
+            "Children": [],
+            "HasChildren": false,
+            "ChildCount": 0,
+            "Version": 17846384
+          },
+          {
+            "$type": "Node",
+            "ResourceType": "Node",
+            "Name": "",
+            "Translation": {
+              "$type": "Vector3",
+              "X": 520,
+              "Y": 420,
+              "Z": -2500
+            },
+            "Rotation": {
+              "$type": "Quaternion",
+              "IsIdentity": false,
+              "X": 0.1,
+              "Y": 0,
+              "Z": 0,
+              "W": 0.9943608
+            },
+            "Scale": {
+              "$type": "Vector3",
+              "X": 2,
+              "Y": 2,
+              "Z": 2
+            },
+            "LocalTransform": {
+              "$type": "Matrix4x4",
+              "IsIdentity": false,
+              "Translation": {
+                "$type": "Vector3",
+                "X": 520,
+                "Y": 420,
+                "Z": -2500
+              },
+              "X": {
+                "$type": "Vector4",
+                "X": 2,
+                "Y": 0,
+                "Z": 0,
+                "W": 0
+              },
+              "Y": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 1.96,
+                "Z": 0.39774433,
+                "W": 0
+              },
+              "Z": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": -0.39774433,
+                "Z": 1.96,
+                "W": 0
+              },
+              "W": {
+                "$type": "Vector4",
+                "X": 520,
+                "Y": 420,
+                "Z": -2500,
+                "W": 1
+              },
+              "M11": 2,
+              "M12": 0,
+              "M13": 0,
+              "M14": 0,
+              "M21": 0,
+              "M22": 1.96,
+              "M23": 0.39774433,
+              "M24": 0,
+              "M31": 0,
+              "M32": -0.39774433,
+              "M33": 1.96,
+              "M34": 0,
+              "M41": 520,
+              "M42": 420,
+              "M43": -2500,
+              "M44": 1
+            },
+            "WorldTransform": {
+              "$type": "Matrix4x4",
+              "IsIdentity": false,
+              "Translation": {
+                "$type": "Vector3",
+                "X": 670,
+                "Y": 270,
+                "Z": -1100
+              },
+              "X": {
+                "$type": "Vector4",
+                "X": 2,
+                "Y": 0,
+                "Z": 0,
+                "W": 0
+              },
+              "Y": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 1.96,
+                "Z": 0.39774433,
+                "W": 0
+              },
+              "Z": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": -0.39774433,
+                "Z": 1.96,
+                "W": 0
+              },
+              "W": {
+                "$type": "Vector4",
+                "X": 670,
+                "Y": 270,
+                "Z": -1100,
+                "W": 1
+              },
+              "M11": 2,
+              "M12": 0,
+              "M13": 0,
+              "M14": 0,
+              "M21": 0,
+              "M22": 1.96,
+              "M23": 0.39774433,
+              "M24": 0,
+              "M31": 0,
+              "M32": -0.39774433,
+              "M33": 1.96,
+              "M34": 0,
+              "M41": 670,
+              "M42": 270,
+              "M43": -1100,
+              "M44": 1
+            },
+            "Attachments": [
+              {
+                "$type": "NodeEplLeafAttachment",
+                "EplLeaf": {
+                  "$type": "EplLeaf",
+                  "ResourceType": "EplLeaf",
+                  "Flags": "1",
+                  "Name": "M-3D0",
+                  "Data": {
+                    "$type": "EplModel",
+                    "ResourceType": "EplModel",
+                    "Header": {
+                      "$type": "EplLeafDataHeader",
+                      "ResourceType": "EplLeafDataHeader",
+                      "Type": 7,
+                      "Field04": 1,
+                      "Version": 17846384
+                    },
+                    "Type": 1,
+                    "Field00": 0,
+                    "Field04": 1,
+                    "Field08": 1,
+                    "Data": {
+                      "$type": "EplModel3DData",
+                      "ResourceType": "EplModel3DData",
+                      "Version": 17846384
+                    },
+                    "HasEmbeddedFile": 1,
+                    "EmbeddedFile": {
+                      "$type": "EplEmbeddedFile",
+                      "ResourceType": "EplEmbeddedFile",
+                      "FileName": "sozai/gfd/be0cmn_bokosuka_back_hero.GFS",
+                      "Field18": 2,
+                      "Field00": 2,
+                      "DataLength": 132368,
+                      "Data": {
+                        "length": 132368
+                      },
+                      "Version": 17846384
+                    },
+                    "Field0C": {
+                      "$type": "Vector2",
+                      "X": 0,
+                      "Y": 0
+                    },
+                    "Field14": {
+                      "$type": "Vector2",
+                      "X": 0,
+                      "Y": 0
+                    },
+                    "Field24": 0,
+                    "Field28": 0,
+                    "Field1C": 0,
+                    "Field20": 0,
+                    "Field0C_P5R": 0,
+                    "Field10_P5R": 0,
+                    "Field14_P5R": 0,
+                    "Field18_P5R": 0,
+                    "Field1C_P5R": 0,
+                    "Field20_P5R": 0,
+                    "Field24_P5R": 0,
+                    "Field28_P5R": 0,
+                    "Field2C_P5R": 0,
+                    "Version": 17846384
+                  },
+                  "Field34": {
+                    "$type": "Vector2",
+                    "X": 0,
+                    "Y": 0
+                  },
+                  "Field3C": {
+                    "$type": "Vector2",
+                    "X": 0,
+                    "Y": 0
+                  },
+                  "Version": 17846384
+                },
+                "Type": "EplLeaf"
+              }
+            ],
+            "HasAttachments": true,
+            "AttachmentCount": 1,
+            "Meshes": [],
+            "Properties": [],
+            "HasProperties": false,
+            "PropertyCount": 0,
+            "FieldE0": 1,
+            "HasParent": true,
+            "Children": [],
+            "HasChildren": false,
+            "ChildCount": 0,
+            "Version": 17846384
+          },
+          {
+            "$type": "Node",
+            "ResourceType": "Node",
+            "Name": "",
+            "Translation": {
+              "$type": "Vector3",
+              "X": 0,
+              "Y": 0,
+              "Z": 0
+            },
+            "Rotation": {
+              "$type": "Quaternion",
+              "IsIdentity": true,
+              "X": 0,
+              "Y": 0,
+              "Z": 0,
+              "W": 1
+            },
+            "Scale": {
+              "$type": "Vector3",
+              "X": 1,
+              "Y": 1,
+              "Z": 1
+            },
+            "LocalTransform": {
+              "$type": "Matrix4x4",
+              "IsIdentity": true,
+              "Translation": {
+                "$type": "Vector3",
+                "X": 0,
+                "Y": 0,
+                "Z": 0
+              },
+              "X": {
+                "$type": "Vector4",
+                "X": 1,
+                "Y": 0,
+                "Z": 0,
+                "W": 0
+              },
+              "Y": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 1,
+                "Z": 0,
+                "W": 0
+              },
+              "Z": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 0,
+                "Z": 1,
+                "W": 0
+              },
+              "W": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 0,
+                "Z": 0,
+                "W": 1
+              },
+              "M11": 1,
+              "M12": 0,
+              "M13": 0,
+              "M14": 0,
+              "M21": 0,
+              "M22": 1,
+              "M23": 0,
+              "M24": 0,
+              "M31": 0,
+              "M32": 0,
+              "M33": 1,
+              "M34": 0,
+              "M41": 0,
+              "M42": 0,
+              "M43": 0,
+              "M44": 1
+            },
+            "WorldTransform": {
+              "$type": "Matrix4x4",
+              "IsIdentity": false,
+              "Translation": {
+                "$type": "Vector3",
+                "X": 150,
+                "Y": -150,
+                "Z": 1400
+              },
+              "X": {
+                "$type": "Vector4",
+                "X": 1,
+                "Y": 0,
+                "Z": 0,
+                "W": 0
+              },
+              "Y": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 1,
+                "Z": 0,
+                "W": 0
+              },
+              "Z": {
+                "$type": "Vector4",
+                "X": 0,
+                "Y": 0,
+                "Z": 1,
+                "W": 0
+              },
+              "W": {
+                "$type": "Vector4",
+                "X": 150,
+                "Y": -150,
+                "Z": 1400,
+                "W": 1
+              },
+              "M11": 1,
+              "M12": 0,
+              "M13": 0,
+              "M14": 0,
+              "M21": 0,
+              "M22": 1,
+              "M23": 0,
+              "M24": 0,
+              "M31": 0,
+              "M32": 0,
+              "M33": 1,
+              "M34": 0,
+              "M41": 150,
+              "M42": -150,
+              "M43": 1400,
+              "M44": 1
+            },
+            "Attachments": [
+              {
+                "$type": "NodeEplLeafAttachment",
+                "EplLeaf": {
+                  "$type": "EplLeaf",
+                  "ResourceType": "EplLeaf",
+                  "Flags": "5",
+                  "Name": "V-MESH0",
+                  "Data": {
+                    "$type": "EplCamera",
+                    "ResourceType": "EplCamera",
+                    "Header": {
+                      "$type": "EplLeafDataHeader",
+                      "ResourceType": "EplLeafDataHeader",
+                      "Type": 14,
+                      "Field04": 1,
+                      "Version": 17846384
+                    },
+                    "Type": 1,
+                    "Field00": 0,
+                    "Field04": 1,
+                    "Field08": 1,
+                    "Field0C": 0,
+                    "Params": {
+                      "$type": "EplCameraMeshParams",
+                      "ResourceType": "EplCameraMeshParams",
+                      "Version": 17846384
+                    },
+                    "HasEmbeddedFile": true,
+                    "EmbeddedFile": {
+                      "$type": "EplEmbeddedFile",
+                      "ResourceType": "EplEmbeddedFile",
+                      "FileName": "sozai/gfd/be0cmn_bokosuka_camera.GFS",
+                      "Field18": 2,
+                      "Field00": 2,
+                      "DataLength": 1359,
+                      "Data": {
+                        "length": 1359
+                      },
+                      "Version": 17846384
+                    },
+                    "Version": 17846384
+                  },
+                  "Field34": {
+                    "$type": "Vector2",
+                    "X": 0,
+                    "Y": 0
+                  },
+                  "Field3C": {
+                    "$type": "Vector2",
+                    "X": 0,
+                    "Y": 0
+                  },
+                  "Version": 17846384
+                },
+                "Type": "EplLeaf"
+              }
+            ],
+            "HasAttachments": true,
+            "AttachmentCount": 1,
+            "Meshes": [],
+            "Properties": [],
+            "HasProperties": false,
+            "PropertyCount": 0,
+            "FieldE0": 1,
+            "HasParent": true,
+            "Children": [],
+            "HasChildren": false,
+            "ChildCount": 0,
+            "Version": 17846384
+          }
+        ],
+        "HasChildren": true,
+        "ChildCount": 3,
+        "Version": 17846384
+      }
+    ],
+    "HasChildren": true,
+    "ChildCount": 6,
+    "Version": 17846384
+  },
+  "Animation": {
+    "$type": "EplAnimation",
+    "ResourceType": "EplAnimation",
+    "Field00": 0,
+    "Field04": 30,
+    "Animation": {
+      "$type": "Animation",
+      "ResourceType": "Animation",
+      "IsCatherineFullBodyData": false,
+      "Flags": "Bit0",
+      "Duration": 4,
+      "Controllers": [
+        {
+          "$type": "AnimationController",
+          "ResourceType": "AnimationController",
+          "TargetKind": "Node",
+          "TargetId": 151964272,
+          "TargetName": "",
+          "Layers": [
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "NodePRSByte",
+              "Keys": [
+                {
+                  "$type": "PRSByteKey",
+                  "Byte": 1,
+                  "Position": {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": -1000
+                  },
+                  "Rotation": {
+                    "$type": "Quaternion",
+                    "IsIdentity": true,
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 0,
+                    "W": 1
+                  },
+                  "Scale": {
+                    "$type": "Vector3",
+                    "X": 1,
+                    "Y": 1,
+                    "Z": 1
+                  },
+                  "HasPosition": true,
+                  "HasRotation": true,
+                  "HasScale": true,
+                  "IsCompressed": true,
+                  "Type": "NodePRSByte",
+                  "Time": 0
+                }
+              ],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "Single4Byte",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "SingleByte",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            }
+          ],
+          "Version": 17846384
+        },
+        {
+          "$type": "AnimationController",
+          "ResourceType": "AnimationController",
+          "TargetKind": "Node",
+          "TargetId": 151964816,
+          "TargetName": "",
+          "Layers": [
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "NodePRSByte",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "Type22",
+              "Keys": [
+                {
+                  "$type": "KeyType22",
+                  "Field04": 0,
+                  "Field08": 2,
+                  "Field0C": 0,
+                  "Field10": 0,
+                  "Field14": 1,
+                  "Field18": 1,
+                  "Field1C": 0,
+                  "Field20": 0,
+                  "Field24": 0,
+                  "Field28": 1,
+                  "Field2C": 1,
+                  "Field00": 0,
+                  "Type": "Type22",
+                  "Time": 0
+                }
+              ],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            }
+          ],
+          "Version": 17846384
+        },
+        {
+          "$type": "AnimationController",
+          "ResourceType": "AnimationController",
+          "TargetKind": "Node",
+          "TargetId": 151965360,
+          "TargetName": "",
+          "Layers": [
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "NodePRSByte",
+              "Keys": [
+                {
+                  "$type": "PRSByteKey",
+                  "Byte": 1,
+                  "Position": {
+                    "$type": "Vector3",
+                    "X": 150,
+                    "Y": -150,
+                    "Z": 1400
+                  },
+                  "Rotation": {
+                    "$type": "Quaternion",
+                    "IsIdentity": true,
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 0,
+                    "W": 1
+                  },
+                  "Scale": {
+                    "$type": "Vector3",
+                    "X": 1,
+                    "Y": 1,
+                    "Z": 1
+                  },
+                  "HasPosition": true,
+                  "HasRotation": true,
+                  "HasScale": true,
+                  "IsCompressed": true,
+                  "Type": "NodePRSByte",
+                  "Time": 0
+                }
+              ],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "Single4Byte",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "SingleByte",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            }
+          ],
+          "Version": 17846384
+        },
+        {
+          "$type": "AnimationController",
+          "ResourceType": "AnimationController",
+          "TargetKind": "Node",
+          "TargetId": 151965904,
+          "TargetName": "",
+          "Layers": [
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "NodePRSByte",
+              "Keys": [
+                {
+                  "$type": "PRSByteKey",
+                  "Byte": 1,
+                  "Position": {
+                    "$type": "Vector3",
+                    "X": 0,
+                    "Y": 0,
+                    "Z": -40
+                  },
+                  "Rotation": {
+                    "$type": "Quaternion",
+                    "IsIdentity": true,
+                    "X": 0,
+                    "Y": 0,
+                    "Z": 0,
+                    "W": 1
+                  },
+                  "Scale": {
+                    "$type": "Vector3",
+                    "X": 1,
+                    "Y": 1,
+                    "Z": 1
+                  },
+                  "HasPosition": true,
+                  "HasRotation": true,
+                  "HasScale": true,
+                  "IsCompressed": true,
+                  "Type": "NodePRSByte",
+                  "Time": 0
+                }
+              ],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "Single4Byte",
+              "Keys": [
+                {
+                  "$type": "Single3ByteKey",
+                  "Field00": 0.99607843,
+                  "Field04": 0,
+                  "Field08": 0,
+                  "Byte": 1,
+                  "Type": "Single4Byte",
+                  "Time": 0
+                }
+              ],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "SingleByte",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "Type22",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            }
+          ],
+          "Version": 17846384
+        },
+        {
+          "$type": "AnimationController",
+          "ResourceType": "AnimationController",
+          "TargetKind": "Node",
+          "TargetId": 151966448,
+          "TargetName": "",
+          "Layers": [
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "NodePRSByte",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "Single4Byte",
+              "Keys": [
+                {
+                  "$type": "Single3ByteKey",
+                  "Field00": 0,
+                  "Field04": 0,
+                  "Field08": 0,
+                  "Byte": 1,
+                  "Type": "Single4Byte",
+                  "Time": 0
+                }
+              ],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "SingleByte",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "Type22",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            }
+          ],
+          "Version": 17846384
+        },
+        {
+          "$type": "AnimationController",
+          "ResourceType": "AnimationController",
+          "TargetKind": "Node",
+          "TargetId": 151966992,
+          "TargetName": "",
+          "Layers": [
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "NodePRSByte",
+              "Keys": [
+                {
+                  "$type": "PRSByteKey",
+                  "Byte": 1,
+                  "Position": {
+                    "$type": "Vector3",
+                    "X": 520,
+                    "Y": 420,
+                    "Z": -2500
+                  },
+                  "Rotation": {
+                    "$type": "Quaternion",
+                    "IsIdentity": false,
+                    "X": 0.1,
+                    "Y": 0,
+                    "Z": 0,
+                    "W": 0.9943608
+                  },
+                  "Scale": {
+                    "$type": "Vector3",
+                    "X": 2,
+                    "Y": 2,
+                    "Z": 2
+                  },
+                  "HasPosition": true,
+                  "HasRotation": true,
+                  "HasScale": true,
+                  "IsCompressed": true,
+                  "Type": "NodePRSByte",
+                  "Time": 0
+                }
+              ],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "Single4Byte",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "SingleByte",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "Type22",
+              "Keys": [
+                {
+                  "$type": "KeyType22",
+                  "Field04": 0,
+                  "Field08": 2,
+                  "Field0C": 0,
+                  "Field10": 0,
+                  "Field14": 1,
+                  "Field18": 1,
+                  "Field1C": 0,
+                  "Field20": 0,
+                  "Field24": 0,
+                  "Field28": 1,
+                  "Field2C": 1,
+                  "Field00": 0,
+                  "Type": "Type22",
+                  "Time": 0
+                }
+              ],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            }
+          ],
+          "Version": 17846384
+        },
+        {
+          "$type": "AnimationController",
+          "ResourceType": "AnimationController",
+          "TargetKind": "Node",
+          "TargetId": 151967536,
+          "TargetName": "",
+          "Layers": [
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "NodePRSByte",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "Type22",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            }
+          ],
+          "Version": 17846384
+        },
+        {
+          "$type": "AnimationController",
+          "ResourceType": "AnimationController",
+          "TargetKind": "Node",
+          "TargetId": 151968080,
+          "TargetName": "",
+          "Layers": [
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "NodePRSByte",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "Single4Byte",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "SingleByte",
+              "Keys": [
+                {
+                  "$type": "SingleByteKey",
+                  "Field00": 0,
+                  "Byte": 1,
+                  "Type": "SingleByte",
+                  "Time": 0
+                },
+                {
+                  "$type": "SingleByteKey",
+                  "Field00": 0,
+                  "Byte": 1,
+                  "Type": "SingleByte",
+                  "Time": 2.1666667
+                },
+                {
+                  "$type": "SingleByteKey",
+                  "Field00": 1,
+                  "Byte": 1,
+                  "Type": "SingleByte",
+                  "Time": 2.2
+                }
+              ],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "Type22",
+              "Keys": [
+                {
+                  "$type": "KeyType22",
+                  "Field04": 0,
+                  "Field08": 3,
+                  "Field0C": 0,
+                  "Field10": 0,
+                  "Field14": 1,
+                  "Field18": 1,
+                  "Field1C": 0,
+                  "Field20": 0,
+                  "Field24": 0,
+                  "Field28": 1,
+                  "Field2C": 1,
+                  "Field00": 0,
+                  "Type": "Type22",
+                  "Time": 0
+                }
+              ],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            }
+          ],
+          "Version": 17846384
+        },
+        {
+          "$type": "AnimationController",
+          "ResourceType": "AnimationController",
+          "TargetKind": "Node",
+          "TargetId": 151968624,
+          "TargetName": "",
+          "Layers": [
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "NodePRSByte",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "Single4Byte",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "SingleByte",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            }
+          ],
+          "Version": 17846384
+        },
+        {
+          "$type": "AnimationController",
+          "ResourceType": "AnimationController",
+          "TargetKind": "Node",
+          "TargetId": 151969168,
+          "TargetName": "",
+          "Layers": [
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "NodePRSByte",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "Single4Byte",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "SingleByte",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "Type22",
+              "Keys": [
+                {
+                  "$type": "KeyType22",
+                  "Field04": 0,
+                  "Field08": 3,
+                  "Field0C": 0,
+                  "Field10": 0,
+                  "Field14": 1,
+                  "Field18": 1,
+                  "Field1C": 0,
+                  "Field20": 0,
+                  "Field24": 0,
+                  "Field28": 1,
+                  "Field2C": 1,
+                  "Field00": 0,
+                  "Type": "Type22",
+                  "Time": 0
+                }
+              ],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            }
+          ],
+          "Version": 17846384
+        },
+        {
+          "$type": "AnimationController",
+          "ResourceType": "AnimationController",
+          "TargetKind": "Node",
+          "TargetId": 151969712,
+          "TargetName": "",
+          "Layers": [
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "NodePRSByte",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "Single4Byte",
+              "Keys": [],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            },
+            {
+              "$type": "AnimationLayer",
+              "ResourceType": "AnimationLayer",
+              "IsCatherineFullBodyData": false,
+              "KeyType": "SingleByte",
+              "Keys": [
+                {
+                  "$type": "SingleByteKey",
+                  "Field00": 0.74509805,
+                  "Byte": 1,
+                  "Type": "SingleByte",
+                  "Time": 0
+                }
+              ],
+              "PositionScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "ScaleScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              },
+              "UsesScaleVectors": false,
+              "HasPRSKeyFrames": false,
+              "HasSingleKeyFrames": false,
+              "Version": 17846384
+            }
+          ],
+          "Version": 17846384
+        }
+      ],
+      "Field10": null,
+      "Flag10000000Data": null,
+      "Field14": null,
+      "BoundingBox": null,
+      "Field1C": null,
+      "Properties": null,
+      "Speed": null,
+      "Version": 17846384
+    },
+    "Controllers": [
+      {
+        "$type": "EplAnimationController",
+        "ResourceType": "EplAnimationController",
+        "Field00": 0,
+        "Field04": 3.9666667,
+        "ControllerIndex": -1,
+        "Keys": null,
+        "Field0C": 0,
+        "Version": 17846384
+      },
+      {
+        "$type": "EplAnimationController",
+        "ResourceType": "EplAnimationController",
+        "Field00": 0,
+        "Field04": 3.9666667,
+        "ControllerIndex": 0,
+        "Keys": null,
+        "Field0C": 5,
+        "Version": 17846384
+      },
+      {
+        "$type": "EplAnimationController",
+        "ResourceType": "EplAnimationController",
+        "Field00": 0,
+        "Field04": 3.9666667,
+        "ControllerIndex": 1,
+        "Keys": null,
+        "Field0C": 11,
+        "Version": 17846384
+      },
+      {
+        "$type": "EplAnimationController",
+        "ResourceType": "EplAnimationController",
+        "Field00": 0,
+        "Field04": 3.9666667,
+        "ControllerIndex": 2,
+        "Keys": null,
+        "Field0C": 8,
+        "Version": 17846384
+      },
+      {
+        "$type": "EplAnimationController",
+        "ResourceType": "EplAnimationController",
+        "Field00": 0,
+        "Field04": 2.1666667,
+        "ControllerIndex": 3,
+        "Keys": null,
+        "Field0C": 7,
+        "Version": 17846384
+      },
+      {
+        "$type": "EplAnimationController",
+        "ResourceType": "EplAnimationController",
+        "Field00": 0,
+        "Field04": 3.9666667,
+        "ControllerIndex": 4,
+        "Keys": null,
+        "Field0C": 6,
+        "Version": 17846384
+      },
+      {
+        "$type": "EplAnimationController",
+        "ResourceType": "EplAnimationController",
+        "Field00": 2.2,
+        "Field04": 3.9666667,
+        "ControllerIndex": 5,
+        "Keys": null,
+        "Field0C": 10,
+        "Version": 17846384
+      },
+      {
+        "$type": "EplAnimationController",
+        "ResourceType": "EplAnimationController",
+        "Field00": 2.1333334,
+        "Field04": 2.2666667,
+        "ControllerIndex": 6,
+        "Keys": null,
+        "Field0C": 4,
+        "Version": 17846384
+      },
+      {
+        "$type": "EplAnimationController",
+        "ResourceType": "EplAnimationController",
+        "Field00": 0,
+        "Field04": 3.9666667,
+        "ControllerIndex": 7,
+        "Keys": null,
+        "Field0C": 9,
+        "Version": 17846384
+      },
+      {
+        "$type": "EplAnimationController",
+        "ResourceType": "EplAnimationController",
+        "Field00": 3.6666667,
+        "Field04": 3.9666667,
+        "ControllerIndex": 8,
+        "Keys": null,
+        "Field0C": 2,
+        "Version": 17846384
+      },
+      {
+        "$type": "EplAnimationController",
+        "ResourceType": "EplAnimationController",
+        "Field00": 2.1333334,
+        "Field04": 3.9666667,
+        "ControllerIndex": 9,
+        "Keys": null,
+        "Field0C": 3,
+        "Version": 17846384
+      },
+      {
+        "$type": "EplAnimationController",
+        "ResourceType": "EplAnimationController",
+        "Field00": 3.6666667,
+        "Field04": 3.9666667,
+        "ControllerIndex": 10,
+        "Keys": null,
+        "Field0C": 1,
+        "Version": 17846384
+      }
+    ],
+    "Version": 17846384
+  },
+  "Field40": 0,
+  "Field60": {
+    "$type": "Vector4",
+    "X": 0,
+    "Y": 0,
+    "Z": 0,
+    "W": 0
+  },
+  "Field70": {
+    "$type": "Vector4",
+    "X": 0,
+    "Y": 0,
+    "Z": 0,
+    "W": 0
+  },
+  "Version": 17846384
+}

@@ -18,3 +18,5 @@ tools/compat/HeroProjectionTests/.godot/
 tools/compat/PileClipTests/.godot/
 art/p5/rig/preview/
 art/p5/poses/tween/
+docs/p5/preview_*.gif
+art/p5/charselect/game/

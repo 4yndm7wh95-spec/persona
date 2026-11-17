@@ -1,0 +1,45 @@
+{
+  "group": "buff",
+  "name": "thorn_burst",
+  "w": 1024,
+  "h": 1024,
+  "prompt": "Use case: stylized-concept. Asset type: stand-alone hand-painted 2D sprites for buff VFX in a Persona 5 Joker Slay the Spire 2 game mod. Match the visual vocabulary of the project's slash_thin and slash_cross sprites: sharply tapered brushwork; bright white specular cores, vivid scarlet rims near #E5191C, and sparse strands of rich burgundy and ink-black dry-brush marks. The game's shader reads luminance, so keep crisp, separated white, red, and dark values. Fine hand-drawn irregularity and soft antialiasing at the actual silhouette; no heavy cartoon outline, halftone, large flat color patches, flames, or black smoke. Use real RGBA transparency (alpha zero anywhere outside the asset); do not paint checkerboard, gray, white or black backdrops, mist or colored haze. No text, watermark, logo, characters, ground, frame, or axes.\nComposition and canvas: Target 1024×1024 pixels, square. Full uncropped sprite, apportion clear transparent margins on all four sides.\nPrimary request: A single irregular outward burst of about eleven bent thorn spikes, with noticeably different lengths, widths, angles and groupings. The shapes look like twisted pointed briar thorns painted in red ink. They flare outward from near the edge of a completely transparent central hole (leave roughly the inner 15% of the canvas diameter completely empty). No circular connecting stem, no regular star, no straight evenly spaced rays. White glints along some exposed ridges; scarlet edges with sparse dark brush grooves.",
+  "description": "十余根长短参差的荆棘向外刺出，中心镂空。",
+  "method": "imagegen (built-in)",
+  "transparent_background": true,
+  "generation_count": 1,
+  "redraw_count": 0,
+  "rejected": false,
+  "raw_image": "thorn_burst_raw.png",
+  "raw_sha256": "b5aef1c565b49bad4fa10dfb46781a933d35e7e1e69438456db16f6a9309d699",
+  "raw_size": [
+    1254,
+    1254
+  ],
+  "delivery_size": [
+    1024,
+    1024
+  ],
+  "mode": "RGBA",
+  "style_references_reviewed": [
+    "art/p5/fx/v4/slash/slash_thin.png",
+    "art/p5/fx/v4/slash/slash_cross.png"
+  ],
+  "processing": "按原始构图等比重采样至 1024×1024，保留外围透明空间。 清零 alpha≤2 的边缘残点和全透明区域的 RGB；未做抠底。",
+  "checks": {
+    "alpha_range": [
+      0,
+      255
+    ],
+    "alpha_bbox_xyxy": [
+      5,
+      15,
+      1020,
+      1012
+    ],
+    "transparent_pixels": 914138,
+    "soft_alpha_pixels": 133486,
+    "transparent_outer_border": true,
+    "center_48px_is_fully_transparent": true
+  }
+}

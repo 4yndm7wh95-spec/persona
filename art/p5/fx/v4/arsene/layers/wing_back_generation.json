@@ -1,0 +1,48 @@
+{
+  "group": "arsene",
+  "name": "layers/wing_back.png",
+  "canvas": [
+    2048,
+    2304
+  ],
+  "bbox": [
+    0,
+    0,
+    870,
+    1150
+  ],
+  "prompt": "Precise game puppet LAYER EXTRACTION EDIT of the attached master image. ONLY the rear black feather wing on SCREEN LEFT, including its complete broad shoulder root behind the torso. Remove every part of the character and the other wing. Continue the hidden root with matching feathers. Preserve the master's exact design, pose, proportions, ink outlines, cel colors and spatial placement. The removed objects become truly transparent; do NOT replace them with black paint. Complete the occluded portions of this layer only so it can rotate without holes. Output the SAME full canvas as the master, keep this part at its original position and scale, DO NOT recenter, zoom or crop it; lots of transparent empty canvas is intentional. Canvas 2048x2304 RGBA, alpha0 outside this one extracted layer. No background, haze, glow, text, other parts, labels, sheet layout or redesign.",
+  "output": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a17136-0549-7e82-b9cb-f93f6454a90b\\exec-4f7ae664-2e56-40e0-8726-b196a6c2f72c.png",
+  "raw_size": [
+    1182,
+    1330
+  ],
+  "generation_count": 1,
+  "processing": "尺寸归一化；alpha<=2及全透明RGB清零；独立编辑生成可能有局部位置/比例变化，供后续调整。",
+  "alpha_bbox": [
+    17,
+    29,
+    1395,
+    1593
+  ],
+  "registration": {
+    "source_alpha20_bbox": [
+      12,
+      18,
+      803,
+      919
+    ],
+    "uniform_scale": 1.099873577749684,
+    "pasted_xy": [
+      0,
+      79
+    ],
+    "desired_bbox": [
+      0,
+      0,
+      870,
+      1150
+    ],
+    "method": "manual target-region fit preserving aspect ratio; approximate, not exact pixel registration"
+  }
+}

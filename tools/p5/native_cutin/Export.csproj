@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
+    <GfdDir Condition="'$(GfdDir)' == ''">C:/Users/kkk/sts2_tools/p5r_tools/GFDStudio.0.10.3</GfdDir>
+  </PropertyGroup>
+  <ItemGroup><Reference Include="GFDLibrary"><HintPath>$(GfdDir)/GFDLibrary.dll</HintPath></Reference></ItemGroup>
+</Project>

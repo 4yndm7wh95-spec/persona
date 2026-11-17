@@ -1,0 +1,36 @@
+{
+  "tool": "built-in image_gen",
+  "base_commit": "18f4bfc7",
+  "source": "C:\\Users\\kkk\\ChatGPT-Accounts\\Account2\\codex\\generated_images\\01a1b9c1-3633-7952-824a-82ea95a17f21\\exec-1d95d53c-f7ba-4f0e-bd3d-af2fc9ece042.png",
+  "prompt": "Redraw Satanael V3 to fix the rejected V3 draft. Reference1 (V2) is the exact approved identity, normal HEAD SIZE, muted dark antique-bronze/black/burgundy colors and original LONG SLENDER REVOLVER DESIGN. Reference2 (rejected V3) is ONLY for the forward-leaning body, backward open claw, and huge flared wings. REPLACE its forward-pointing cannon and tiny buried head.\n\nSingle waist-to-horn-tip sprite, tall2:3 portrait, requested2400x3600 at highest native detail supported, true transparent RGBA. Low camera is only SLIGHTLY below chest; normal anatomical proportions, not extreme perspective. Torso turns strongly SCREEN RIGHT, leans toward right about15degrees, firing shoulder protracted forward and raised. Other shoulder trails behind. Right claw counterbalances back-left; huge wings open up/back with taut membranes, burgundy cape blows back-left.\n\nAnatomical LEFT HAND holds the gun alone. This is FAR arm on IMAGE RIGHT, from the smaller far shoulder just to image right of neck. Clear continuous shoulder—elbow—wrist—left hand. The wrist sits BEHIND AND BELOW the revolver frame; palm grips the pistol grip, index finger naturally at trigger/trigger guard. Make this grip fully readable. The NEAR LARGE PAULDRON on IMAGE LEFT belongs to the anatomical RIGHT arm, which extends BACK LEFT to the open right claw. Exactly two arms, right hand never supports the gun.\n\nWEAPON SIDE VIEW IS ABSOLUTELY ESSENTIAL: the long revolver aims toward SCREEN RIGHT, angled10-15degrees DOWN. Barrel is PARALLEL TO THE IMAGE PLANE like a side-scrolling game. We see its LONG LATERAL PROFILE with big distinct revolver cylinder, narrow elongated angular barrel, ornate side filigree, front sight, and a slim metal ring at the end. The muzzle is a NARROW SIDE EDGE with no visible front circular opening. NO circular muzzle disk facing us, NO forward-pointing barrel, NO tube/cannon/gatling appearance, NO foreshortened barrel. Keep the whole long weapon in frame with clear space beyond right muzzle. Cylinder wider than slender barrel, preserve V2's decorative design. A giant long-barreled revolver, not artillery.\n\nRestore the helmet to NORMAL large recognizable V2 size. Whole helmet and both complete swept horns are clearly separated from shoulders and wings, both horn silhouettes fully readable with60px clear transparent margins on final canvas. Lower helmet forward toward aiming left shoulder, but do not shrink or bury head. Red eye looks RIGHT/DOWN ALONG THE SIDEWAYS BARREL, not toward viewer. Helmet profile turned right.\n\nCompose torso in left half, left shooting arm extending right through center, long gun in right half at shoulder height. Body remains waist-up with full normal length ribcage. Forward lean, head-down focus and recoil-balancing right claw provide menace without distortion. Dark gray-bronze trim, charcoal black armor, no shiny yellow gold. Clean bold black ink lines, flat two-plane hard cel shading matching V2. Wings may extend off canvas; head, horns, shooting hand and entire gun must fit. No background, sky, gradients, aura, light haze, smoke, glow halo, muzzleflash, cast shadow, ground, lettering, panel grid or extra figures. Alpha zero outside solid silhouette.",
+  "references": [
+    "C:\\Users\\kkk\\sts2_tools\\p5_build\\repo\\art\\p5\\fx\\v4\\satanael\\satanael_v2_draft.png",
+    "C:\\Users\\kkk\\sts2_tools\\p5_build\\repo\\art\\p5\\fx\\v4\\satanael\\ref_v3_wrong.png"
+  ],
+  "generation_count_this_revision": 1,
+  "redraw_count_this_revision": 0,
+  "revision": "v3 first draft rejected; side-on revolver and normal head correction",
+  "raw_size": [
+    1024,
+    1536
+  ],
+  "delivery_size": [
+    2400,
+    3600
+  ],
+  "scale": 2.34375,
+  "offset": [
+    0,
+    0
+  ],
+  "processing": "uniform Lanczos upscale; alpha outside2px expansion of alpha>=200 silhouette and alpha<=2 zeroed; transparent RGB zeroed",
+  "cleanup_alpha_pixels": 10379,
+  "transparent_pixels": 4502498,
+  "transparent_rgb_zero": true,
+  "status": "draft_waiting_for_user",
+  "limits": [
+    "not native2400x3600 detail",
+    "lean/head scale not quantitatively calibrated",
+    "gun angle visually down-right, not calibrated10-15deg"
+  ]
+}

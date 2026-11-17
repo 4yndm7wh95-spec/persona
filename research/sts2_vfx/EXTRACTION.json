@@ -1,0 +1,2271 @@
+{
+  "gdre_version": "2.7.3",
+  "tool_path": "C:/Users/kkk/sts2_tools/gdre/gdre_tools.exe",
+  "source_pck": "C:\\Users\\kkk\\Desktop\\slaythespire\\Slay the Spire 2\\SlayTheSpire2.pck",
+  "source_size": 1990705700,
+  "source_mtime_ns": 1786755707021543100,
+  "initial_scope_files": 1055,
+  "raw_resources": 1615,
+  "raw_resources_delivered": 1615,
+  "recovered_resources": 1102,
+  "recovered_pngs": 485,
+  "scenes_csv_rows": 312,
+  "dependency_files_added": 560,
+  "script_paths_recorded": 137,
+  "font_paths_excluded": 3,
+  "missing_nonexcluded_references": 0,
+  "texture_header_size_differences": [
+    {
+      "file": "animations/vfx/vfx_adrenaline/adrenaline.png",
+      "ctex": [
+        2010,
+        1322
+      ],
+      "png": [
+        2012,
+        1324
+      ]
+    },
+    {
+      "file": "images/events/mirror_mask3.png",
+      "ctex": [
+        971,
+        1024
+      ],
+      "png": [
+        972,
+        1024
+      ]
+    },
+    {
+      "file": "images/monsters/phobia_mode/the_insatiable_phobia.png",
+      "ctex": [
+        1064,
+        1219
+      ],
+      "png": [
+        1064,
+        1220
+      ]
+    },
+    {
+      "file": "images/packed/timeline/epoch_slot_locked_small.png",
+      "ctex": [
+        392,
+        250
+      ],
+      "png": [
+        392,
+        252
+      ]
+    },
+    {
+      "file": "images/packed/vfx/generic/dark_overlay_events.png",
+      "ctex": [
+        360,
+        169
+      ],
+      "png": [
+        360,
+        172
+      ]
+    },
+    {
+      "file": "images/packed/vfx/generic/light_line.png",
+      "ctex": [
+        438,
+        920
+      ],
+      "png": [
+        440,
+        920
+      ]
+    },
+    {
+      "file": "images/packed/vfx/generic/sparkle.png",
+      "ctex": [
+        119,
+        120
+      ],
+      "png": [
+        120,
+        120
+      ]
+    },
+    {
+      "file": "images/packed/vfx/generic/square_speck.png",
+      "ctex": [
+        22,
+        31
+      ],
+      "png": [
+        24,
+        32
+      ]
+    },
+    {
+      "file": "images/packed/vfx/generic/twinkle_star.png",
+      "ctex": [
+        37,
+        37
+      ],
+      "png": [
+        40,
+        40
+      ]
+    },
+    {
+      "file": "images/vfx/crystal_sphere_outline.png",
+      "ctex": [
+        1521,
+        1521
+      ],
+      "png": [
+        1524,
+        1524
+      ]
+    },
+    {
+      "file": "images/vfx/epoch_offscreen_indicator.png",
+      "ctex": [
+        263,
+        333
+      ],
+      "png": [
+        264,
+        336
+      ]
+    },
+    {
+      "file": "images/vfx/epoch_offscreen_indicator2.png",
+      "ctex": [
+        232,
+        333
+      ],
+      "png": [
+        232,
+        336
+      ]
+    },
+    {
+      "file": "images/vfx/fog_sheet_2.png",
+      "ctex": [
+        250,
+        700
+      ],
+      "png": [
+        252,
+        700
+      ]
+    },
+    {
+      "file": "images/vfx/ground_spike.png",
+      "ctex": [
+        107,
+        116
+      ],
+      "png": [
+        108,
+        116
+      ]
+    },
+    {
+      "file": "images/vfx/miasma_cloud.png",
+      "ctex": [
+        133,
+        115
+      ],
+      "png": [
+        136,
+        116
+      ]
+    },
+    {
+      "file": "images/vfx/monsters/decimillipede/decimillipede_blue_flipflake.png",
+      "ctex": [
+        2000,
+        250
+      ],
+      "png": [
+        2000,
+        252
+      ]
+    },
+    {
+      "file": "images/vfx/monsters/decimillipede/decimillipede_flipflake.png",
+      "ctex": [
+        2000,
+        250
+      ],
+      "png": [
+        2000,
+        252
+      ]
+    },
+    {
+      "file": "images/vfx/monsters/devoted_sculptor/devoted_sculptor_spark_particle.png",
+      "ctex": [
+        36,
+        35
+      ],
+      "png": [
+        36,
+        36
+      ]
+    },
+    {
+      "file": "images/vfx/monsters/devoted_sculptor/devoted_sculptor_voice_particle.png",
+      "ctex": [
+        28,
+        179
+      ],
+      "png": [
+        28,
+        180
+      ]
+    },
+    {
+      "file": "images/vfx/short_rice_no_glow_particle.png",
+      "ctex": [
+        8,
+        14
+      ],
+      "png": [
+        8,
+        16
+      ]
+    },
+    {
+      "file": "images/vfx/star1.png",
+      "ctex": [
+        69,
+        79
+      ],
+      "png": [
+        72,
+        80
+      ]
+    },
+    {
+      "file": "images/vfx/vfx_constant_fire/fire_spark.png",
+      "ctex": [
+        50,
+        100
+      ],
+      "png": [
+        52,
+        100
+      ]
+    },
+    {
+      "file": "images/vfx/water_texture.png",
+      "ctex": [
+        600,
+        634
+      ],
+      "png": [
+        600,
+        636
+      ]
+    }
+  ],
+  "png_modes": {
+    "RGBA": 427,
+    "RGB": 32,
+    "LA": 2,
+    "L": 24
+  },
+  "contact_sheets": [
+    {
+      "file": "contact_sheet_animations__monsters__decimillipede.png",
+      "directory": "animations/monsters/decimillipede",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_animations__monsters__the_insatiable.png",
+      "directory": "animations/monsters/the_insatiable",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_animations__vfx__vfx_adrenaline.png",
+      "directory": "animations/vfx/vfx_adrenaline",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_animations__vfx__vfx_bite.png",
+      "directory": "animations/vfx/vfx_bite",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_animations__vfx__vfx_chain.png",
+      "directory": "animations/vfx/vfx_chain",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_animations__vfx__vfx_flying_slash.png",
+      "directory": "animations/vfx/vfx_flying_slash",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_animations__vfx__vfx_gaze.png",
+      "directory": "animations/vfx/vfx_gaze",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_animations__vfx__vfx_kaiser_crab_boss_explosion.png",
+      "directory": "animations/vfx/vfx_kaiser_crab_boss_explosion",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_animations__vfx__vfx_laser.png",
+      "directory": "animations/vfx/vfx_laser",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_animations__vfx__vfx_mecha_knight_shield.png",
+      "directory": "animations/vfx/vfx_mecha_knight_shield",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_animations__vfx__vfx_sandy_impact.png",
+      "directory": "animations/vfx/vfx_sandy_impact",
+      "textures": 4,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_animations__vfx__vfx_scratch.png",
+      "directory": "animations/vfx/vfx_scratch",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_animations__vfx__vfx_sovereign_blade.png",
+      "directory": "animations/vfx/vfx_sovereign_blade",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_animations__vfx__vfx_vine_shamber_vines.png",
+      "directory": "animations/vfx/vfx_vine_shamber_vines",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__atlases.png",
+      "directory": "images/atlases",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__enchantments.png",
+      "directory": "images/enchantments",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__events.png",
+      "directory": "images/events",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__monsters__phobia_mode.png",
+      "directory": "images/monsters/phobia_mode",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__packed.png",
+      "directory": "images/packed",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__packed__map__icons.png",
+      "directory": "images/packed/map/icons",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__packed__timeline.png",
+      "directory": "images/packed/timeline",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__packed__vfx.png",
+      "directory": "images/packed/vfx",
+      "textures": 6,
+      "canvas": [
+        768,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__packed__vfx__combat.png",
+      "directory": "images/packed/vfx/combat",
+      "textures": 4,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__packed__vfx__event.png",
+      "directory": "images/packed/vfx/event",
+      "textures": 20,
+      "canvas": [
+        1280,
+        1256
+      ]
+    },
+    {
+      "file": "contact_sheet_images__packed__vfx__event__dense_vegetation.png",
+      "directory": "images/packed/vfx/event/dense_vegetation",
+      "textures": 5,
+      "canvas": [
+        768,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__packed__vfx__event__morphic_grove.png",
+      "directory": "images/packed/vfx/event/morphic_grove",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__packed__vfx__event__symbiote.png",
+      "directory": "images/packed/vfx/event/symbiote",
+      "textures": 11,
+      "canvas": [
+        1024,
+        952
+      ]
+    },
+    {
+      "file": "contact_sheet_images__packed__vfx__event__tea_master.png",
+      "directory": "images/packed/vfx/event/tea_master",
+      "textures": 10,
+      "canvas": [
+        1024,
+        952
+      ]
+    },
+    {
+      "file": "contact_sheet_images__packed__vfx__generic.png",
+      "directory": "images/packed/vfx/generic",
+      "textures": 12,
+      "canvas": [
+        1024,
+        952
+      ]
+    },
+    {
+      "file": "contact_sheet_images__potions.png",
+      "directory": "images/potions",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__powers.png",
+      "directory": "images/powers",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__rooms__hive.png",
+      "directory": "images/rooms/hive",
+      "textures": 5,
+      "canvas": [
+        768,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__rooms__hive__the_insatiable.png",
+      "directory": "images/rooms/hive/the_insatiable",
+      "textures": 3,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__timeline.png",
+      "directory": "images/timeline",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__timeline__epoch_portraits.png",
+      "directory": "images/timeline/epoch_portraits",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__timeline__ui.png",
+      "directory": "images/timeline/ui",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__ui__combat.png",
+      "directory": "images/ui/combat",
+      "textures": 4,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__ui__rest_site.png",
+      "directory": "images/ui/rest_site",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx.png",
+      "directory": "images/vfx",
+      "textures": 38,
+      "canvas": [
+        1792,
+        1864
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__big_slash.png",
+      "directory": "images/vfx/big_slash",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__characters.png",
+      "directory": "images/vfx/characters",
+      "textures": 13,
+      "canvas": [
+        1024,
+        1256
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__common.png",
+      "directory": "images/vfx/common",
+      "textures": 19,
+      "canvas": [
+        1280,
+        1256
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__dagger.png",
+      "directory": "images/vfx/dagger",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__distortion.png",
+      "directory": "images/vfx/distortion",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__environment__fire.png",
+      "directory": "images/vfx/environment/fire",
+      "textures": 5,
+      "canvas": [
+        768,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__fire.png",
+      "directory": "images/vfx/fire",
+      "textures": 12,
+      "canvas": [
+        1024,
+        952
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__fire_impact.png",
+      "directory": "images/vfx/fire_impact",
+      "textures": 10,
+      "canvas": [
+        1024,
+        952
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__forms__serpent.png",
+      "directory": "images/vfx/forms/serpent",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__forms__void.png",
+      "directory": "images/vfx/forms/void",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__goopy_impact.png",
+      "directory": "images/vfx/goopy_impact",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__grand_finale.png",
+      "directory": "images/vfx/grand_finale",
+      "textures": 4,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__hyperbeam.png",
+      "directory": "images/vfx/hyperbeam",
+      "textures": 4,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__lightning.png",
+      "directory": "images/vfx/lightning",
+      "textures": 3,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__lut.png",
+      "directory": "images/vfx/lut",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__minion_divebomb.png",
+      "directory": "images/vfx/minion_divebomb",
+      "textures": 5,
+      "canvas": [
+        768,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__missile.png",
+      "directory": "images/vfx/missile",
+      "textures": 6,
+      "canvas": [
+        768,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters.png",
+      "directory": "images/vfx/monsters",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__aeon_glass.png",
+      "directory": "images/vfx/monsters/aeon_glass",
+      "textures": 7,
+      "canvas": [
+        768,
+        952
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__amalgam.png",
+      "directory": "images/vfx/monsters/amalgam",
+      "textures": 3,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__axebot.png",
+      "directory": "images/vfx/monsters/axebot",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__battleworn_dummy.png",
+      "directory": "images/vfx/monsters/battleworn_dummy",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__ceremonial_beast.png",
+      "directory": "images/vfx/monsters/ceremonial_beast",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__cubex_construct.png",
+      "directory": "images/vfx/monsters/cubex_construct",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__decimillipede.png",
+      "directory": "images/vfx/monsters/decimillipede",
+      "textures": 5,
+      "canvas": [
+        768,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__devoted_sculptor.png",
+      "directory": "images/vfx/monsters/devoted_sculptor",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__entomancer.png",
+      "directory": "images/vfx/monsters/entomancer",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__fake_merchant.png",
+      "directory": "images/vfx/monsters/fake_merchant",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__fogmog.png",
+      "directory": "images/vfx/monsters/fogmog",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__fuzzy_wurm_crawler.png",
+      "directory": "images/vfx/monsters/fuzzy_wurm_crawler",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__kaiser_crab_boss.png",
+      "directory": "images/vfx/monsters/kaiser_crab_boss",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__kin_follower.png",
+      "directory": "images/vfx/monsters/kin_follower",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__kin_priest.png",
+      "directory": "images/vfx/monsters/kin_priest",
+      "textures": 4,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__knowledge_demom.png",
+      "directory": "images/vfx/monsters/knowledge_demom",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__living_smog.png",
+      "directory": "images/vfx/monsters/living_smog",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__lost_and_forgotten.png",
+      "directory": "images/vfx/monsters/lost_and_forgotten",
+      "textures": 4,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__phantasmal_gardener.png",
+      "directory": "images/vfx/monsters/phantasmal_gardener",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__phrog_parasite.png",
+      "directory": "images/vfx/monsters/phrog_parasite",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__queen.png",
+      "directory": "images/vfx/monsters/queen",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__seapunk.png",
+      "directory": "images/vfx/monsters/seapunk",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__skulking_colony.png",
+      "directory": "images/vfx/monsters/skulking_colony",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__slimed_berserker.png",
+      "directory": "images/vfx/monsters/slimed_berserker",
+      "textures": 3,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__sludge_spinner.png",
+      "directory": "images/vfx/monsters/sludge_spinner",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__snapping_jaxfruit.png",
+      "directory": "images/vfx/monsters/snapping_jaxfruit",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__soul_fysh.png",
+      "directory": "images/vfx/monsters/soul_fysh",
+      "textures": 3,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__soul_nexus.png",
+      "directory": "images/vfx/monsters/soul_nexus",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__spectral_knight.png",
+      "directory": "images/vfx/monsters/spectral_knight",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__spiny_toad.png",
+      "directory": "images/vfx/monsters/spiny_toad",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__test_subject.png",
+      "directory": "images/vfx/monsters/test_subject",
+      "textures": 3,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__the_insatiable.png",
+      "directory": "images/vfx/monsters/the_insatiable",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__the_obscura.png",
+      "directory": "images/vfx/monsters/the_obscura",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__vantom.png",
+      "directory": "images/vfx/monsters/vantom",
+      "textures": 3,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__vine_shambler.png",
+      "directory": "images/vfx/monsters/vine_shambler",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__monsters__waterfall_giant.png",
+      "directory": "images/vfx/monsters/waterfall_giant",
+      "textures": 3,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__noise.png",
+      "directory": "images/vfx/noise",
+      "textures": 4,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__orbs.png",
+      "directory": "images/vfx/orbs",
+      "textures": 5,
+      "canvas": [
+        768,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__poison.png",
+      "directory": "images/vfx/poison",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__potion.png",
+      "directory": "images/vfx/potion",
+      "textures": 3,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__power_applied.png",
+      "directory": "images/vfx/power_applied",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__ribbon_flipbook.png",
+      "directory": "images/vfx/ribbon_flipbook",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__scratch.png",
+      "directory": "images/vfx/scratch",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__scream.png",
+      "directory": "images/vfx/scream",
+      "textures": 5,
+      "canvas": [
+        768,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__shared_use.png",
+      "directory": "images/vfx/shared_use",
+      "textures": 6,
+      "canvas": [
+        768,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__slash.png",
+      "directory": "images/vfx/slash",
+      "textures": 3,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__sleeping.png",
+      "directory": "images/vfx/sleeping",
+      "textures": 3,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__sovereign_blade.png",
+      "directory": "images/vfx/sovereign_blade",
+      "textures": 12,
+      "canvas": [
+        1024,
+        952
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__spore_impact.png",
+      "directory": "images/vfx/spore_impact",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__starry_impact.png",
+      "directory": "images/vfx/starry_impact",
+      "textures": 4,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__sweeping_beam.png",
+      "directory": "images/vfx/sweeping_beam",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__ui.png",
+      "directory": "images/vfx/ui",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__ui__card.png",
+      "directory": "images/vfx/ui/card",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__ui__card__afflictions__bound.png",
+      "directory": "images/vfx/ui/card/afflictions/bound",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__ui__card__afflictions__entangled.png",
+      "directory": "images/vfx/ui/card/afflictions/entangled",
+      "textures": 3,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__ui__card__afflictions__galvanized.png",
+      "directory": "images/vfx/ui/card/afflictions/galvanized",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__ui__card__afflictions__hexed.png",
+      "directory": "images/vfx/ui/card/afflictions/hexed",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__ui__card__afflictions__ringing.png",
+      "directory": "images/vfx/ui/card/afflictions/ringing",
+      "textures": 4,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__ui__card__afflictions__smog.png",
+      "directory": "images/vfx/ui/card/afflictions/smog",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__ui__card__ancient.png",
+      "directory": "images/vfx/ui/card/ancient",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__ui__card__exhaust.png",
+      "directory": "images/vfx/ui/card/exhaust",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__ui__card__remove.png",
+      "directory": "images/vfx/ui/card/remove",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__ui__card__transform.png",
+      "directory": "images/vfx/ui/card/transform",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__ui__epoch_unlock.png",
+      "directory": "images/vfx/ui/epoch_unlock",
+      "textures": 4,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_2d_sphere.png",
+      "directory": "images/vfx/vfx_2d_sphere",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_attack_blunt.png",
+      "directory": "images/vfx/vfx_attack_blunt",
+      "textures": 4,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_attack_slash.png",
+      "directory": "images/vfx/vfx_attack_slash",
+      "textures": 4,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_block.png",
+      "directory": "images/vfx/vfx_block",
+      "textures": 6,
+      "canvas": [
+        768,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_blood_wall.png",
+      "directory": "images/vfx/vfx_blood_wall",
+      "textures": 3,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_bloody_impact.png",
+      "directory": "images/vfx/vfx_bloody_impact",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_coin_explosion.png",
+      "directory": "images/vfx/vfx_coin_explosion",
+      "textures": 3,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_confetti.png",
+      "directory": "images/vfx/vfx_confetti",
+      "textures": 4,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_constant_fire.png",
+      "directory": "images/vfx/vfx_constant_fire",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_dagger_spray.png",
+      "directory": "images/vfx/vfx_dagger_spray",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_dagger_throw.png",
+      "directory": "images/vfx/vfx_dagger_throw",
+      "textures": 3,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_doom.png",
+      "directory": "images/vfx/vfx_doom",
+      "textures": 6,
+      "canvas": [
+        768,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_dramatic_stab.png",
+      "directory": "images/vfx/vfx_dramatic_stab",
+      "textures": 3,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_ghostly_power_up.png",
+      "directory": "images/vfx/vfx_ghostly_power_up",
+      "textures": 3,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_giant_horizontal_slash.png",
+      "directory": "images/vfx/vfx_giant_horizontal_slash",
+      "textures": 1,
+      "canvas": [
+        256,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_heal.png",
+      "directory": "images/vfx/vfx_heal",
+      "textures": 3,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_heal_osty.png",
+      "directory": "images/vfx/vfx_heal_osty",
+      "textures": 4,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_heavy_blunt.png",
+      "directory": "images/vfx/vfx_heavy_blunt",
+      "textures": 5,
+      "canvas": [
+        768,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_lightning.png",
+      "directory": "images/vfx/vfx_lightning",
+      "textures": 5,
+      "canvas": [
+        768,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_molten_fist.png",
+      "directory": "images/vfx/vfx_molten_fist",
+      "textures": 4,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_power_up.png",
+      "directory": "images/vfx/vfx_power_up",
+      "textures": 7,
+      "canvas": [
+        768,
+        952
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_rock_shatter.png",
+      "directory": "images/vfx/vfx_rock_shatter",
+      "textures": 3,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_rolling_boulder.png",
+      "directory": "images/vfx/vfx_rolling_boulder",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_shiv.png",
+      "directory": "images/vfx/vfx_shiv",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_slime_impact.png",
+      "directory": "images/vfx/vfx_slime_impact",
+      "textures": 3,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_smith.png",
+      "directory": "images/vfx/vfx_smith",
+      "textures": 3,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__vfx_thrash.png",
+      "directory": "images/vfx/vfx_thrash",
+      "textures": 4,
+      "canvas": [
+        512,
+        648
+      ]
+    },
+    {
+      "file": "contact_sheet_images__vfx__wormy_impact.png",
+      "directory": "images/vfx/wormy_impact",
+      "textures": 2,
+      "canvas": [
+        512,
+        344
+      ]
+    }
+  ],
+  "local_only": {},
+  "extract_commands": [
+    [
+      "C:/Users/kkk/sts2_tools/gdre/gdre_tools.exe",
+      "--headless",
+      "--extract=C:/Users/kkk/Desktop/slaythespire/Slay the Spire 2/SlayTheSpire2.pck",
+      "--output=C:\\Users\\kkk\\sts2_tools\\tmp\\sts2_vfx_20261102\\raw_stage1",
+      "--include=res://scenes/vfx/**",
+      "--include=res://materials/vfx/**",
+      "--include=res://shaders/vfx/**",
+      "--include=res://images/vfx/**",
+      "--include=res://images/packed/vfx/**",
+      "--include=res://animations/vfx/**",
+      "--include=res://shaders/*.gdshader"
+    ],
+    [
+      "C:/Users/kkk/sts2_tools/gdre/gdre_tools.exe",
+      "--headless",
+      "--extract=C:\\Users\\kkk\\Desktop\\slaythespire\\Slay the Spire 2\\SlayTheSpire2.pck",
+      "--output=C:\\Users\\kkk\\sts2_tools\\tmp\\sts2_vfx_20261102\\extract_batches\\r01_01",
+      "--include=res://.godot/imported/2d_sphere_sides_mask.png-7eb1280d7c66d79a3a49fda48de4f6be.ctex",
+      "--include=res://.godot/imported/2d_sphere_top_bottom_mask.png-a9f68baad6494d9de220c5b95af86302.ctex",
+      "--include=res://.godot/imported/adrenaline.atlas-3a5de6ab6ef91d8f94cd2234670c8666.spatlas",
+      "--include=res://.godot/imported/adrenaline.png-3b3453e8577fb86dddd0d805451efcfd.bptc.ctex",
+      "--include=res://.godot/imported/adrenaline.skel-5b5fb9ca2ce0ba979c6149f34652c438.spskel",
+      "--include=res://.godot/imported/adrenaline_2.png-c61d3f9909c68c0820edabd80b227d9c.ctex",
+      "--include=res://.godot/imported/aeonglass_glob.png-815ec25c774ecb4dc4ccff707319ac52.ctex",
+      "--include=res://.godot/imported/aeonglass_liquid_mask.png-4b5766ce3d8806e6ff46a2cd0a63d462.ctex",
+      "--include=res://.godot/imported/aeonglass_ray.png-8a4b7d59e91bd2af3a7387284918d8f3.ctex",
+      "--include=res://.godot/imported/aeonglass_ray_edge_mask.png-5475cfafcd5a938c3f74579b5f519fe5.ctex",
+      "--include=res://.godot/imported/aeonglass_scrolling_smoke.png-184d1ab837b4e6abd7a0c750bc4c83fd.ctex",
+      "--include=res://.godot/imported/aeonglass_shard_particles.png-012ca4bf00a82f833b7991fafddbad6f.ctex",
+      "--include=res://.godot/imported/aeonglass_whither_particle.png-82fdb4e333ae7354198d4d7c2c5490a8.ctex",
+      "--include=res://.godot/imported/amalgam_death_particles.png-fbbd243c6fc8f782f2f1f52c006852a4.ctex",
+      "--include=res://.godot/imported/amalgam_glare_particle.png-347eb666e5ecefc960316c54a4fc7ac4.ctex",
+      "--include=res://.godot/imported/amalgam_hit_particle.png-fc64a91da55a5c93a30a0fa088fccf2f.ctex",
+      "--include=res://.godot/imported/ash_particle.png-fef8129784390fbe71f275c18954d10f.ctex",
+      "--include=res://.godot/imported/attackbite.atlas-0dbdec9268a3475e6c9cf5c3f419c01a.spatlas",
+      "--include=res://.godot/imported/attackbite.png-b91f6c8b9f1c85d919d1622c02ed43ed.ctex",
+      "--include=res://.godot/imported/attackbite.skel-f399ea7df9980aa93d0e85559a0888fe.spskel",
+      "--include=res://.godot/imported/aura.png-0e92109068af51ef64d0780b1d80ac8a.ctex",
+      "--include=res://.godot/imported/aura.png-f2ccc261f328c94b37e21b083e927eea.ctex",
+      "--include=res://.godot/imported/axebot_spark_particle.png-2cfb399cf03e75cb06e779abe07f2b13.ctex",
+      "--include=res://.godot/imported/base_glow.png-382d5748a9ad57b75c7b5670d96de850.ctex",
+      "--include=res://.godot/imported/base_ring.png-684c4427608f48454326919620451669.ctex",
+      "--include=res://.godot/imported/basic_fire_gradient.png-3b0abc580a4eab98058a2a149fbc393f.ctex",
+      "--include=res://.godot/imported/basic_fire_noise.png-c3bf16c366c2ac6ed38169efbb244bdc.ctex",
+      "--include=res://.godot/imported/battleworn_dummy_chip_particles.png-b800a25afeee7485ddde5fc123c6a6ea.ctex",
+      "--include=res://.godot/imported/beam.png-44196b29518ff8b07dd71817e31d37ce.ctex",
+      "--include=res://.godot/imported/beam_necro_asset.png-2184edc7618396fcde050c4792ddfd33.ctex",
+      "--include=res://.godot/imported/beckonwave.png-64161015a4766931b9743ed78b686b3a.ctex",
+      "--include=res://.godot/imported/bedlam_beacon_foreground.png-1e3f6bb8536dd6538408da9a09254b48.ctex",
+      "--include=res://.godot/imported/big_slash_impact_core_flipbook.png-b4d318be13f45894f3168b7145d173af.ctex",
+      "--include=res://.godot/imported/big_slash_impact_smoke_flipbook.png-bf43229d8653b7d0cca2fdabad9ecf6f.ctex",
+      "--include=res://.godot/imported/blood_wall_asset.png-05ae79f7f1cadb86eda49f7f059beee5.ctex",
+      "--include=res://.godot/imported/bloodyimpact_anim_all.png-352801469a8ecc394826592d1efb0ea8.ctex",
+      "--include=res://.godot/imported/blur_diamond_vfx.png-9dce455f5b6935a0aa3f49e106fdf46e.ctex",
+      "--include=res://.godot/imported/blur_rain.png-08b14cc1c6f0217489e5bcdde8918ce6.ctex",
+      "--include=res://.godot/imported/boulder.png-d77e1931e055330cb84b6c91feddb256.ctex",
+      "--include=res://.godot/imported/boulder_shadow.png-22ded7908daa77d010de6983cfa6c28a.ctex",
+      "--include=res://.godot/imported/brush_particle_2.png-dc2ce940ccb8fd35909c97ee0ba217a2.s3tc.ctex",
+      "--include=res://.godot/imported/bubble_particle.png-e692c3e45f7133679461ef4c7181c960.ctex",
+      "--include=res://.godot/imported/byrdonis_feathers.png-612e96de178da4d1af8693294f5f2f01.ctex",
+      "--include=res://.godot/imported/byrdonis_nest_shine.png-21cf55ab6c405b500092b61adead5f50.ctex",
+      "--include=res://.godot/imported/ceremonial_beast_death_particle.png-1c96884288f96a47a66aaa48742aaf3f.ctex",
+      "--include=res://.godot/imported/chain.atlas-01e43e19f30d5093eba7ecd278090e1a.spatlas",
+      "--include=res://.godot/imported/chain.png-5ba21eecf24244b3a0306a87c5dbf277.ctex",
+      "--include=res://.godot/imported/chain.skel-a665a4dfab70939bf3889cc646cae459.spskel",
+      "--include=res://.godot/imported/cinder_particle.png-069a4d928039508b151bf0308463e6b7.ctex",
+      "--include=res://.godot/imported/coin_explosion_coin.png-7c3438898195c0df9c7cea6cf701107b.ctex",
+      "--include=res://.godot/imported/coin_explosion_flash.png-67994da97168cf6112c61c1ce342c4da.ctex",
+      "--include=res://.godot/imported/coin_explosion_sparkles.png-093843ec54efa3b434566185360d72f5.ctex",
+      "--include=res://.godot/imported/coin_flip_anim.png-ca1dcf6fc5da22927b17ee7bfce321b7.ctex",
+      "--include=res://.godot/imported/coin_impact_puffs.png-879514e6bc7eddcdbbc14e796e390c4e.ctex",
+      "--include=res://.godot/imported/common_blunt_impact_core.png-51f485ab17c288095d5dbe54e93261ac.bptc.ctex",
+      "--include=res://.godot/imported/common_circle.png-244d83eb6780f9876c0fc2008bc444ff.ctex",
+      "--include=res://.godot/imported/common_clean_flare_1.png-9d166f25450115e8b67a7661c0172879.bptc.ctex",
+      "--include=res://.godot/imported/common_glow.png-7a77bf8c28b24b5dfe9a6ef7d80fed28.ctex",
+      "--include=res://.godot/imported/common_glow_speck.png-b1566e2fe4f28df1c3a51e88aad1f92a.ctex",
+      "--include=res://.godot/imported/common_horizontal_smoke.png-42465235a4337c48a9fbe528d93de845.ctex",
+      "--include=res://.godot/imported/common_impact_flare_flipbook.png-c9c99bf8237f76b1a2e4824e479a241d.ctex",
+      "--include=res://.godot/imported/common_outward_streaks.png-319efc746990c7dbd5611852ba57dbb3.s3tc.ctex",
+      "--include=res://.godot/imported/common_poof.png-c21006a7acd0511a7b44a0327a83867f.ctex",
+      "--include=res://.godot/imported/common_projectile_flipbook_1.png-5e2f768d3b69ada0461ff5dd7df12cef.ctex",
+      "--include=res://.godot/imported/common_projectile_flipbook_2.png-a5313a7d9de20765ee38534c511ca387.ctex",
+      "--include=res://.godot/imported/common_ray.png-07e4c286356051cd1f8cb01536d9e02b.s3tc.ctex",
+      "--include=res://.godot/imported/common_ray_no_glow.png-082c31349b56abc18f80c37b051aa9d8.ctex",
+      "--include=res://.godot/imported/common_ring_polar_a.png-20ca2df438ab77e33fd634ba707b99ab.ctex",
+      "--include=res://.godot/imported/common_ring_polar_b.png-53bfe11c00e0920d3ac7aa735a3ca51f.ctex",
+      "--include=res://.godot/imported/common_round_smoke_a.png-6c73f85f32deabceedef9627875f3d81.ctex",
+      "--include=res://.godot/imported/common_round_smoke_flipbook.png-08a2bfa70d47a7172675e30ebbec027b.ctex",
+      "--include=res://.godot/imported/common_speck.png-a8499a64fa8ea733ef5212f750ed888a.ctex",
+      "--include=res://.godot/imported/common_square_small.png-ae461eed0435578dc04131d02a3ce86e.ctex",
+      "--include=res://.godot/imported/confetti.png-c6809481d9c719c07f347323e9775bda.ctex",
+      "--include=res://.godot/imported/confetti_door.png-16d18d2b896a6c60699cc988d21f78e4.ctex",
+      "--include=res://.godot/imported/confetti_explosion_flash.png-1e9f676c05d8e99334a3709a7e8be982.ctex",
+      "--include=res://.godot/imported/confetti_explosion_sparkles.png-b4f97e92715a05b24f76e7c8acdd5402.ctex",
+      "--include=res://.godot/imported/cross_asset.png-2710fa6afba9b751c4ed914ddd35af49.ctex",
+      "--include=res://.godot/imported/crystal_sphere_noise.png-375337d9ca1eec44ce8fb2cdcda4afa8.s3tc.ctex",
+      "--include=res://.godot/imported/crystal_sphere_outline.png-44668afdf77c58d5392f2ccdb3efd53e.s3tc.ctex",
+      "--include=res://.godot/imported/cubex_blast_rings.png-2ef8e1bfbcba386374bf6c90a2af1799.ctex",
+      "--include=res://.godot/imported/dagger_spray_single.png-415f31ac58fced9fdacef2c4b191771a.ctex",
+      "--include=res://.godot/imported/dark_orb_particle.png-1ecd9e13c5e393255ce737772c5c4a6a.ctex",
+      "--include=res://.godot/imported/dark_overlay_events.png-25f3e7f28c449be45dcfb7b6444574e9.s3tc.ctex",
+      "--include=res://.godot/imported/decimillipede_blue_flipflake.png-1007ae7e668535ae63a795c1bc2a8552.s3tc.ctex",
+      "--include=res://.godot/imported/decimillipede_flipflake.png-94618b2f7dfc0b7157211a57434f8070.s3tc.ctex",
+      "--include=res://.godot/imported/decimillipede_suck_gradient.png-5e6725cb5aa319f65349610656307fe8.s3tc.ctex",
+      "--include=res://.godot/imported/decimillipede_suck_mask.png-331c6aa77501cd17b92dd4dcdf26787d.s3tc.ctex",
+      "--include=res://.godot/imported/decimillipede_suck_texture.png-5508a0f3b0f6983575915dc872c9ba4e.s3tc.ctex",
+      "--include=res://.godot/imported/dense_vegetation_particles.png-aad815c107515752d7a0dc43ebe2b692.ctex",
+      "--include=res://.godot/imported/devoted_sculptor_spark_particle.png-1e754a708cfc7b698fa91a31b9e6a38b.s3tc.ctex",
+      "--include=res://.godot/imported/devoted_sculptor_voice_particle.png-aeb1bf360a6ac69e3b10784b66fa0734.s3tc.ctex",
+      "--include=res://.godot/imported/distortion_ring.png-baa70e14b74b454a5647d174afe4d2c8.ctex",
+      "--include=res://.godot/imported/dizzy_zap_particle.png-c646f6c7e300ebf66b5e175b2d6dd68f.ctex",
+      "--include=res://.godot/imported/doll_room_foreground.png-55251dc9baa639a3450f64d5b3be048a.ctex",
+      "--include=res://.godot/imported/doll_room_whisper_bubble_l.png-f889aa03410b54739a4e5c66d337ebd1.ctex",
+      "--include=res://.godot/imported/doll_room_whisper_bubble_r.png-b67a1ca9a193a83f1ca8875752cb5c29.ctex",
+      "--include=res://.godot/imported/doll_room_whispers.png-c906a774bb9a48a247ebb3df650a637f.ctex",
+      "--include=res://.godot/imported/doom_fill_particle.png-af2e9d13840b6e7bdd00efc310ccda2f.ctex",
+      "--include=res://.godot/imported/doom_flame.png-6a5cf02f46b9b6f1de292d79b6fc2484.ctex",
+      "--include=res://.godot/imported/doom_glow.png-3fa9179064ea0b9462be0145bc850932.ctex",
+      "--include=res://.godot/imported/doom_hole_bottom.png-eefd1ac939db36f86c091cabba12a6f5.ctex",
+      "--include=res://.godot/imported/doom_spear_particle.png-22f948a5cb8c7153b636342aca16f890.ctex",
+      "--include=res://.godot/imported/dot.png-3d6b352ca6546c21e900529f2a160024.s3tc.ctex",
+      "--include=res://.godot/imported/dot2.png-bb8fdad0c9287a9b5d8e8aeaf9541f0c.s3tc.ctex",
+      "--include=res://.godot/imported/entomancer_bug_particle.png-fc98122caee14939b14ec0e3e2757768.ctex",
+      "--include=res://.godot/imported/epoch_offscreen_indicator.png-2a1c119113a2edb3cc5c573dbcc2ff44.s3tc.ctex",
+      "--include=res://.godot/imported/epoch_offscreen_indicator2.png-2aa0541bfa97e2a77ae815139f6045b9.s3tc.ctex",
+      "--include=res://.godot/imported/eye_01.png-6e192a59450984282e1718a49fddf527.ctex",
+      "--include=res://.godot/imported/eye_02.png-90f79608e896d11eede716df1523f019.ctex",
+      "--include=res://.godot/imported/eye_03.png-c76974c9eb1c491d23eb4e2068748ba0.ctex",
+      "--include=res://.godot/imported/fake_merchant_coin_particle.png-158d56f6b66c278b117bb5e7ce7350fd.ctex",
+      "--include=res://.godot/imported/falloff_asset.png-5ff2f797004aefe7d5798d39197b0d2c.ctex",
+      "--include=res://.godot/imported/falloff_asset.png-b1fae6b462e175712ea98b1b9083897a.ctex",
+      "--include=res://.godot/imported/false_queen_light.png-a28de8eb3a415ca370da3fb40b9fcd56.ctex",
+      "--include=res://.godot/imported/fire_base_branch_pile.png-f64ced485a4150bc1a3c46b70bc3198b.ctex",
+      "--include=res://.godot/imported/fire_base_campfire.png-144ccc5f0fc4ab0bb70abb90b4d37dd6.ctex",
+      "--include=res://.godot/imported/fire_base_pointy.png-b0329c9ce6b946e89163e2939406ebca.ctex",
+      "--include=res://.godot/imported/fire_base_slim.png-77c54fad6410948d9538462e3a0ffc59.ctex",
+      "--include=res://.godot/imported/fire_bottom_mask.png-a58dadacc0d4b2c9f98dee4ca908d3b6.ctex",
+      "--include=res://.godot/imported/fire_burst_center_flipbook.png-7638c7643d4cf30668c262d82b17197c.s3tc.ctex",
+      "--include=res://.godot/imported/fire_burst_ember_straight.png-61e88b0aa3f1956db669589039e3226a.s3tc.ctex",
+      "--include=res://.godot/imported/fire_burst_ember_straight_no_glow.png-66a8f32a59eff1a402c1989229ab60f8.ctex",
+      "--include=res://.godot/imported/fire_burst_flipbook_1.png-e3138181572c75323b2c24d8de4b58ff.s3tc.ctex",
+      "--include=res://.godot/imported/fire_burst_flipbook_2.png-3e005fd25b37c6f525c6bf31ca6bb0c7.s3tc.ctex",
+      "--include=res://.godot/imported/fire_burst_flipbook_3.png-03c69aca558c76fa254c338a3cb3edf5.s3tc.ctex",
+      "--include=res://.godot/imported/fire_burst_left_flipbook.png-13fd5e861d8b38ea1abc711ae7dfe52c.s3tc.ctex",
+      "--include=res://.godot/imported/fire_burst_right_flipbook.png-f6f29a382127342c3083fddaab4e083f.s3tc.ctex",
+      "--include=res://.godot/imported/fire_flame_sprites.png-c224892d94fccf0b7d277c74087c69cf.ctex",
+      "--include=res://.godot/imported/fire_impact_flipbook.png-59faa29304a0d4611b6a5b8f88ce04d0.ctex",
+      "--include=res://.godot/imported/fire_impact_flipbook_erosion.png-7057a682a549f6dcef68a74cbfdad907.ctex",
+      "--include=res://.godot/imported/fire_shape_1.png-da10104ff8d7caaae35e55cc25cfe418.ctex",
+      "--include=res://.godot/imported/fire_spark.png-f0d6c87e04049c0b95e0f676465ba3ec.s3tc.ctex",
+      "--include=res://.godot/imported/fire_texture_2.png-c7485fde8b95f99ee86b48a7a5b8df7a.s3tc.ctex",
+      "--include=res://.godot/imported/fist.png-28d03ad4fdb3a2c6e115dc01e7f617b0.ctex",
+      "--include=res://.godot/imported/fist_bg_v2.png-f07b81c58fc06afb5f21a3bf6425cc65.ctex",
+      "--include=res://.godot/imported/flame_gradient_mask.png-cd2d20b1935b1a57b840dabb0483f900.ctex",
+      "--include=res://.godot/imported/flame_paricle_tex.png-3a75c9c05b2e96e35db837c815f6132f.ctex",
+      "--include=res://.godot/imported/flash.png-a7b1f4a923259f433b9052cacf246053.ctex",
+      "--include=res://.godot/imported/flash_v2.png-b9e8d22fb90f4b58fa5b719121aeb127.ctex",
+      "--include=res://.godot/imported/flying_slash.atlas-e014b1b62f62a98f07444387c48ce66f.spatlas",
+      "--include=res://.godot/imported/flying_slash.png-2f1f518b52b9ae6571a9611c84b707d3.ctex",
+      "--include=res://.godot/imported/flying_slash.skel-7aed5ed7ba3076626a4e86712234be2d.spskel",
+      "--include=res://.godot/imported/fog_sheet_1.png-f71c8f1f7981f5f44ae2de280b3b8bd2.bptc.ctex",
+      "--include=res://.godot/imported/fog_sheet_2.png-009a9e3afad487319e807b536f8dd3c4.s3tc.ctex",
+      "--include=res://.godot/imported/fogmog_dust_particle.png-f1ab70a33e119388e7c090e317044166.ctex",
+      "--include=res://.godot/imported/fogmog_thrust_particle.png-9346185b54bdf1d0edeb78e79cfc5ac6.ctex",
+      "--include=res://.godot/imported/foom_glob_particles.png-a86dd5272d57e9760eee36124f4ad73d.ctex",
+      "--include=res://.godot/imported/form_serpent_snakes.png-70047db5e2e1b1650e4f4695c30ee2ad.ctex",
+      "--include=res://.godot/imported/form_void_spike.png-4e6f60dc75ac9af2419fc1b5529f6a22.ctex",
+      "--include=res://.godot/imported/frost_orb_particle.png-d17b0ad17cb3e5a62e0b66ffd23229d4.ctex",
+      "--include=res://.godot/imported/fuzzy_wurm_crawler_acid_part.png-7a34110f0b493993713bfc76729def4f.ctex",
+      "--include=res://.godot/imported/gaze.atlas-42feb6d0632feee4085b012ef0508c5d.spatlas",
+      "--include=res://.godot/imported/gaze.png-1ac94a8e457bfd0d8cb29a785d6c94d2.ctex",
+      "--include=res://.godot/imported/gaze.skel-35b0819eac58da099ff475d8b4867f53.spskel",
+      "--include=res://.godot/imported/ghostly_beam.png-5d091379440f9913bb4e21a665c95d58.ctex",
+      "--include=res://.godot/imported/giant_horizontal_slash.png-1879392bec48cd81600065e6fd5436ac.ctex",
+      "--include=res://.godot/imported/globby_spark.png-831dfcbfb997518f1274ef8b248ccf7c.s3tc.ctex",
+      "--include=res://.godot/imported/glow_card_rare.png-fa15053ab27f5c0813c40b7bedf323ed.s3tc.ctex",
+      "--include=res://.godot/imported/glow_card_uncommon.png-bea9b1d0c6e84ba5da61cb88fcbba765.s3tc.ctex",
+      "--include=res://.godot/imported/goopy_impact_bits.png-3905555d2c382f5edbc22fba601a3df1.bptc.ctex",
+      "--include=res://.godot/imported/grand_finale_petals.png-5a7a7784af2eb00816720db067a04fa9.bptc.ctex",
+      "--include=res://.godot/imported/grand_finale_petals_blurry.png-a8e30fc170548de9c75dbcb7e467a060.bptc.ctex",
+      "--include=res://.godot/imported/grand_finale_spotlight.png-3e2f58e838edea5440d5a886bd098316.ctex",
+      "--include=res://.godot/imported/grand_finale_spotlight_inverted.png-6915cdb878eda7794776e29fabf7d79b.ctex",
+      "--include=res://.godot/imported/ground_spark.png-491a72c9af47967e6ee82964648cbc36.ctex",
+      "--include=res://.godot/imported/ground_spike.png-0a792e29af83258cbcffb857a41ad7a6.s3tc.ctex",
+      "--include=res://.godot/imported/hammer_mark.png-a6b2180bcc08ecf5e725ca205669b105.ctex",
+      "--include=res://.godot/imported/hay_particle.png-d31de4762a0bd4f23ceb54f1e61a636d.ctex",
+      "--include=res://.godot/imported/heal_asset.png-79f25f55e588ab609c6b432055e6cbe2.ctex",
+      "--include=res://.godot/imported/heal_stretch_asset.png-8cbccba5a9e254d118ae5911770cbc76.ctex",
+      "--include=res://.godot/imported/heavy_blunt_anticipation_core.png-2d6fbab10375ca9d7cd99f52923de401.ctex",
+      "--include=res://.godot/imported/heavy_blunt_hit_core_flat.png-9dd32fd1107001e0e03127cec289bab8.s3tc.ctex",
+      "--include=res://.godot/imported/heavy_blunt_hit_core_flat_glow.png-63988ee1653a33e1cf23a6b25ae4b9c7.s3tc.ctex",
+      "--include=res://.godot/imported/heavy_blunt_hit_floor_smoke.png-5739d2caa176a240ded342bd8886b397.ctex",
+      "--include=res://.godot/imported/heavy_blunt_hit_spikes.png-973cafa9189254f1a7de436fa6a1db09.ctex",
+      "--include=res://.godot/imported/hellraiser_sword.png-61205b180ff25ea7444aa83c3d351227.ctex",
+      "--include=res://.godot/imported/hyperbeam_core.png-d797ba74e2154efae089871bc63a9622.ctex",
+      "--include=res://.godot/imported/hyperbeam_laser_anticipation.png-5e01b707ff61d724470c64050147a2e6.s3tc.ctex",
+      "--include=res://.godot/imported/hyperbeam_laser_line.png-22ae1dfb7e21de7d56d4237937c6e869.s3tc.ctex",
+      "--include=res://.godot/imported/hyperbeam_laser_overlay.png-ea4a6a6cd9a7276340d940ce4dc038ea.s3tc.ctex",
+      "--include=res://.godot/imported/impact_circle_smith.png-263d005fb1f2af8456d7bedd001992fa.ctex",
+      "--include=res://.godot/imported/infested_automaton_flies.png-817a8b9faeab3f388850d86a8de54dbf.ctex",
+      "--include=res://.godot/imported/infested_boss_explosion.atlas-62f0f65619967249b9901f1f46a8e160.spatlas",
+      "--include=res://.godot/imported/infested_boss_explosion.png-2a723d1ca68ec7a4a9dbf834665739d2.ctex",
+      "--include=res://.godot/imported/infested_boss_explosion.skel-c24fcd5fb9b8f576b46f395a6e59b0d4.spskel",
+      "--include=res://.godot/imported/inner_ring.png-b2b09b00f2851965e3c4b23fe47f5342.ctex",
+      "--include=res://.godot/imported/inner_ring.png-f68f044f8f1aab095535e3bc8e2e4449.ctex",
+      "--include=res://.godot/imported/ironclad_eye_fire_base.png-11a8f53799a2b5589362b5770a1e478a.ctex",
+      "--include=res://.godot/imported/ironclad_slash_base.png-e550ae0be7027f67f92202bdfb5553bb.ctex",
+      "--include=res://.godot/imported/kaiser_crab_boss_dirt_particle.png-cc31fa9155263f484dd04a705fd88fe4.ctex",
+      "--include=res://.godot/imported/kin_crypto_particles.png-7460418839aabe622f8ff8269f60dcb3.ctex",
+      "--include=res://.godot/imported/kin_grenade_blast.png-1dd498b6629e492a61c75e13802b30f8.ctex",
+      "--include=res://.godot/imported/knife.png-6c20fe111161bb37db1c9606d9103471.ctex",
+      "--include=res://.godot/imported/knife.png-ca5290febb2bd0737335147c4689e71d.ctex",
+      "--include=res://.godot/imported/knowledge_demon_fiiber_particle_1.png-971d8694f8d23d66e05adbcd5ca1edb0.ctex",
+      "--include=res://.godot/imported/laser.atlas-eedf9e2694e2fed70b3dd0dbbd11deae.spatlas",
+      "--include=res://.godot/imported/laser.png-e5aa3bc24ebddd9a9f588ad6cf7eb89f.ctex",
+      "--include=res://.godot/imported/laser.skel-bc6a623a0479ef298b07eb657c48c686.spskel",
+      "--include=res://.godot/imported/leaf.png-1166ceca8cec0f00ee3511f762e218f9.ctex",
+      "--include=res://.godot/imported/light.png-3cc1130fcf5d03732ce96704f595dd37.s3tc.ctex",
+      "--include=res://.godot/imported/light_line.png-329aa297a634c5e7bc077aab6795ebca.s3tc.ctex",
+      "--include=res://.godot/imported/lightning_flipbook_1.png-5cea12987abd1ffdb8c1e6421c7fa55e.ctex",
+      "--include=res://.godot/imported/lightning_flipbook_2.png-ac85211e8fe502f075e549db1a650e33.ctex",
+      "--include=res://.godot/imported/lightning_orb_particle.png-f0f36ba78ab68d7d58806d2f860a0b71.ctex",
+      "--include=res://.godot/imported/lightning_radial_row_flipbook.png-88d05ba0f1374f8d00e3e646f92214bf.bptc.ctex",
+      "--include=res://.godot/imported/living_smog_smoke.png-a020d12493e3a75423260b4a80da6bfb.ctex",
+      "--include=res://.godot/imported/living_smog_smoke2.png-2e7b31840c0c713163ba6fd2d658a5f1.ctex",
+      "--include=res://.godot/imported/long_rice_no__glow_particle.png-5dd8036bca430ea81c400052d05ba925.s3tc.ctex",
+      "--include=res://.godot/imported/lost_forgotten_granule.png-1560cdc372f7f31846c262041369dcd0.ctex",
+      "--include=res://.godot/imported/lost_smoke.png-8485d11522e2ee0dd827042b7b0df236.ctex",
+      "--include=res://.godot/imported/lost_smoke_2.png-a4c80ff78569bda3dfcaacf7b7f7f051.ctex",
+      "--include=res://.godot/imported/lost_smoke_gradient.png-82bf98c8ff28f32dc39b26b4d5bd8af9.ctex",
+      "--include=res://.godot/imported/lut_minion_divebomb.png-2c90de92bb45e24dcad9bec0448105d7.ctex",
+      "--include=res://.godot/imported/mecha_knight_fire_particle.png-2fb6ce302b7735e4b35e6cbb6fe8f120.ctex",
+      "--include=res://.godot/imported/mecha_knight_shield.atlas-10de6a30a2ee1d7057825608f2c101b0.spatlas",
+      "--include=res://.godot/imported/mecha_knight_shield.png-1ab8b921ad2554a9a43b992e54abfb06.ctex",
+      "--include=res://.godot/imported/mecha_knight_shield.skel-5ec1b6514d98c0744d4a024712e9d29c.spskel",
+      "--include=res://.godot/imported/miasma_cloud.png-2d1a812b23b8488f55e2255319757ab5.s3tc.ctex",
+      "--include=res://.godot/imported/minion_divebomb_dive.png-41d1b45c97f5a4f9cf2832fb85129f8c.s3tc.ctex",
+      "--include=res://.godot/imported/minion_divebomb_flop.png-5dd120bf21c8f557794151c5577f3c50.s3tc.ctex",
+      "--include=res://.godot/imported/minion_divebomb_ring.png-549689e45c15f35fd2f8be0a7c6b561f.ctex",
+      "--include=res://.godot/imported/minion_divebomb_roll.png-dc8bd2899b16763973255dce0bd4ab8e.s3tc.ctex",
+      "--include=res://.godot/imported/minion_divebomb_trail_flipbook.png-0bd9bde5801e406b86e7c7de148be923.ctex",
+      "--include=res://.godot/imported/missile_core_b.png-2824507362fff39efecd8728eb62f6b4.ctex",
+      "--include=res://.godot/imported/missile_impact_core.png-39c66e1c46fb26b246ab6907b3335711.ctex"
+    ],
+    [
+      "C:/Users/kkk/sts2_tools/gdre/gdre_tools.exe",
+      "--headless",
+      "--extract=C:\\Users\\kkk\\Desktop\\slaythespire\\Slay the Spire 2\\SlayTheSpire2.pck",
+      "--output=C:\\Users\\kkk\\sts2_tools\\tmp\\sts2_vfx_20261102\\extract_batches\\r01_02",
+      "--include=res://.godot/imported/missile_impact_smoke.png-42c004ee2a0543b8dce0505a10589845.ctex",
+      "--include=res://.godot/imported/missile_impact_streak_a.png-cb5aeb992137c8b1fac529bbdc5b394b.ctex",
+      "--include=res://.godot/imported/missile_sky_flare.png-6a3fab856b765767558b8b66310c8b9e.ctex",
+      "--include=res://.godot/imported/missile_sky_ray.png-85c1cfb1c02b817d64782876d0d95e10.ctex",
+      "--include=res://.godot/imported/morphic_grove_foreground.png-da480f1d209ec3a8a842452ece3a13cf.ctex",
+      "--include=res://.godot/imported/motion_line.png-488109f347908644000e3cf9c97a6a8c.ctex",
+      "--include=res://.godot/imported/necro_character_select_fire_shape.png-78f42db5e72ae8b813e50080b1b6ccd8.ctex",
+      "--include=res://.godot/imported/necro_fire_bottom_mask.png-6ea1010be0fef51f7031ec1c96660804.ctex",
+      "--include=res://.godot/imported/necro_fire_shape.png-cc3f050c45d45a1576da7a63a09ff7bb.ctex",
+      "--include=res://.godot/imported/necro_slash_texture.png-11b6305717cd9a8adf8c526f89f47d3d.ctex",
+      "--include=res://.godot/imported/noise_cloud_seamless.png-a6887d561b54f172290e6eb618117015.s3tc.ctex",
+      "--include=res://.godot/imported/obscura_particle.png-68a0d8fe5a5f7a972fc96ad797ffedf2.ctex",
+      "--include=res://.godot/imported/oil_vfx.png-fcf48963df74b8ef232ce562a0b0b836.ctex",
+      "--include=res://.godot/imported/osty_character_select_fire_shape.png-472fb8b1ad40a0349d844399097d5d31.ctex",
+      "--include=res://.godot/imported/osty_fire_bottom_mask.png-9620721305613904e2ec113e2c1ace6e.ctex",
+      "--include=res://.godot/imported/osty_fire_noise_mask.png-310663c0d3df90785fd5fc776ebb7ed2.ctex",
+      "--include=res://.godot/imported/osty_fire_shape.png-303de08907854ea656eff9a303b6b456.ctex",
+      "--include=res://.godot/imported/osty_rest_fire_tex.png-b59e21b8062943aaa5d369e441c75c76.ctex",
+      "--include=res://.godot/imported/phantasmal_spew_particle.png-7ea3d328dbbd7a012e73e72936ef615e.ctex",
+      "--include=res://.godot/imported/phrog_parasite_splat_particles.png-c92dec7051eb1f8ef0a6fad069ae9a27.ctex",
+      "--include=res://.godot/imported/phrog_parasite_worm_particles.png-9f2b520a81399c7de4884ea6830a0f1c.ctex",
+      "--include=res://.godot/imported/plasma_orb_particle.png-dd921907c7a3c4fa160df33099255464.ctex",
+      "--include=res://.godot/imported/plasma_orb_particle_no_glow.png-e230c76b777f8246d6b5f55df0411ae9.ctex",
+      "--include=res://.godot/imported/poison_skull.png-a8409dfc95ab28c6301f871070b6d685.s3tc.ctex",
+      "--include=res://.godot/imported/potion_courier_x.png-c4b8ee3ba74ccc38a6e27fb6bc3d4dc8.ctex",
+      "--include=res://.godot/imported/potion_droplet.png-ad2fa88d9fd5549a725d867e5516dcaf.ctex",
+      "--include=res://.godot/imported/potion_liquid_overlay.png-de0524321c2517cc8623fad0746edd28.ctex",
+      "--include=res://.godot/imported/potion_splash.png-751e5da1b52ae763091a37d25359c044.ctex",
+      "--include=res://.godot/imported/power_applied_noise_mask.png-32a8723c8e625bdbb64b3f746d5db85a.ctex",
+      "--include=res://.godot/imported/pummel_fist.png-2f00cf127be4e36950151c60d5ab8c0f.ctex",
+      "--include=res://.godot/imported/queen_attack_particle.png-6ec58485c08a170c52ecc1a6c71d4190.ctex",
+      "--include=res://.godot/imported/regent_emission_mask.png-67f28c7b5834e84e24ad32a898af291b.ctex",
+      "--include=res://.godot/imported/regent_sparkle.png-331912ef080f2d47237bc506ff85e18c.ctex",
+      "--include=res://.godot/imported/rest_site_cloud.png-e8b09de0d8786962fee4d7a2459a7132.s3tc.ctex",
+      "--include=res://.godot/imported/ribbon_flipbook_1.png-606040b468140a74ac70158a1cf28543.ctex",
+      "--include=res://.godot/imported/ribbon_flipbook_2.png-2b10347773ebcbc1a1ee61abd1264fb1.ctex",
+      "--include=res://.godot/imported/ripple_vfx.png-25899738c24d3ce1d85800ef18f9fdf6.ctex",
+      "--include=res://.godot/imported/round_glow.png-b90dda01a6831a0c95de6efea1bc12ad.s3tc.ctex",
+      "--include=res://.godot/imported/sand_cloud.png-e475c21dd116eb09a49da08715d2a6a9.ctex",
+      "--include=res://.godot/imported/sand_vfx.png-5f5099eee73c4ca204f9f836087c16a0.ctex",
+      "--include=res://.godot/imported/sandfall_mask.png-1978db3177abc13394e46f1ec78df258.ctex",
+      "--include=res://.godot/imported/scratch.atlas-0ebbc07192a4c80202ce593b2ac8245f.spatlas",
+      "--include=res://.godot/imported/scratch.png-1ec4dcf9a8bcdfcb6b1bf33fd429bc3e.ctex",
+      "--include=res://.godot/imported/scratch.skel-b26863d3ec5ccf862201d5adb573ba6b.spskel",
+      "--include=res://.godot/imported/scratch_flipbook.png-09e30ec32ad3e836df81d04e5110ec6e.s3tc.ctex",
+      "--include=res://.godot/imported/scream_distortion_polar.png-b614dd200c059e2d9df1f3a7f0c2e47d.ctex",
+      "--include=res://.godot/imported/scream_ring_polar.png-a3e97c95a65691b054cd66bbbebf0190.ctex",
+      "--include=res://.godot/imported/scream_squiggly_ring_polar.png-6a734ef946c199fa5fc3c5382fae2455.ctex",
+      "--include=res://.godot/imported/scream_squiggly_streak.png-dcc8bb1d874a964bdb3156f89e346fed.ctex",
+      "--include=res://.godot/imported/scream_streak.png-976ef27246ab21695b7ead6bb9c4d5f7.ctex",
+      "--include=res://.godot/imported/scry_voronoi_noise.png-6f3917ae61abedc86cbd8cba41730d64.s3tc.ctex",
+      "--include=res://.godot/imported/seapunk_weed_particle.png-d16a4de347c20127fa4b5cd98c4e2da2.ctex",
+      "--include=res://.godot/imported/self_help_book_shine.png-39b31323e321d92e24df7a9b3eeef7e0.ctex",
+      "--include=res://.godot/imported/shiv_particle.png-0454d5f7d8604b80131f606835446b92.ctex",
+      "--include=res://.godot/imported/shiv_simple.png-62cf86b743d57490a73a169ec203723a.ctex",
+      "--include=res://.godot/imported/shiv_trail.png-63083218b165f0f308468692bce5e43e.ctex",
+      "--include=res://.godot/imported/short_grain_rice_particle.png-0f576849442ed854607cca811aea0271.s3tc.ctex",
+      "--include=res://.godot/imported/short_rice_no_glow_particle.png-96344ce309b04a7cd9931d7ad1ae247f.s3tc.ctex",
+      "--include=res://.godot/imported/skulking_death_particles.png-19975ca8fe86643fe20cc2d65e4cf393.ctex",
+      "--include=res://.godot/imported/slash_flipbook.png-0de763096a5a41592c051d1bb722fcdd.ctex",
+      "--include=res://.godot/imported/slash_quick_flat.png-6d55497292f1e971a695f065da3eb4a7.ctex",
+      "--include=res://.godot/imported/slash_quick_two_tone.png-fc98f11d14e3a9129512595338f026a0.ctex",
+      "--include=res://.godot/imported/sleeping_animation.png-c4201e18f2b0507cd5a61d24ad8256c8.ctex",
+      "--include=res://.godot/imported/sleeping_z_eng.png-cde0af7dbb1a1e95a07e474ed022a4af.ctex",
+      "--include=res://.godot/imported/sleeping_z_jpn.png-d577a3851be3b37d3c33089c85366c89.ctex",
+      "--include=res://.godot/imported/slice_thin_vfx.png-bc55fe42daccd886197cb1b893c3c362.ctex",
+      "--include=res://.godot/imported/slime_clumps.png-cf3a9ce9f13319fea4dcb79b511a97cc.ctex",
+      "--include=res://.godot/imported/slime_droplets.png-167cee5ae0e77d631fffc34ede9f3c75.ctex",
+      "--include=res://.godot/imported/slimed_berserker_drop_1l.png-2d52f52813948979788e1ba8d4af8490.ctex",
+      "--include=res://.godot/imported/slimed_berserker_drop_1r.png-c2b9403b25ef1da5bc7885603a549f8d.ctex",
+      "--include=res://.godot/imported/slimed_berserker_drop_2.png-c6dd94b9ce438bf8e321b26cdbb573df.ctex",
+      "--include=res://.godot/imported/sludge_spinner_drop_particle.png-5c751a03ec2ec6385fdc19364badde5b.ctex",
+      "--include=res://.godot/imported/sludge_spinner_particle_1.png-24b49f656272cc07e238d6fe8549f59e.ctex",
+      "--include=res://.godot/imported/small_card_silhouette.png-f97237b3baf09bb1ab919b600ce029d4.ctex",
+      "--include=res://.godot/imported/smoke_vfx.png-12be608f13465c8bc9884a4975c79aa0.ctex",
+      "--include=res://.godot/imported/smoke_vfx_flat.png-d48304d7f76c7393378269ba3f187b75.ctex",
+      "--include=res://.godot/imported/snapping_jaxfruit_blob.png-6ba68d2998f6af61a6768f6724c64fce.ctex",
+      "--include=res://.godot/imported/soul_beam.png-3d2c0e5c30432600b797a8e1e4e244dc.ctex",
+      "--include=res://.godot/imported/soul_beam_static.png-a645171873ba624136978557f94acc50.ctex",
+      "--include=res://.godot/imported/soul_nexus_head_fire_base.png-8d3f3b033c17fc5c58375665080545e7.ctex",
+      "--include=res://.godot/imported/soundwave.png-0f97655aef83df6c2d0ecac1f9f8ffed.ctex",
+      "--include=res://.godot/imported/soundwave_edge_mask.png-2764375e5a1ca9cfd45420a3f12493cc.ctex",
+      "--include=res://.godot/imported/sovereign_blade.atlas-1ffe916f593df7248357759c5960228f.spatlas",
+      "--include=res://.godot/imported/sovereign_blade.png-cdf08539eb2c7734d05e2d902edea507.ctex",
+      "--include=res://.godot/imported/sovereign_blade_blade.png-c7c7e09dc86e5bea03706b541dd73e45.ctex",
+      "--include=res://.godot/imported/sovereign_blade_blade_glow.png-1c0618c02dff9585c7871c868323a04d.ctex",
+      "--include=res://.godot/imported/sovereign_blade_blade_shine.png-45373d9f527d6d2a0005f313b0aac0cb.ctex",
+      "--include=res://.godot/imported/sovereign_blade_decoration.png-22084f603cdb904df82b5014ed880764.ctex",
+      "--include=res://.godot/imported/sovereign_blade_hilt.png-8501ff33cd877a5bfb982df3235977a4.ctex",
+      "--include=res://.godot/imported/sovereign_blade_hilt_2.png-91d92ef3d8be88719da7597bcd72b671.ctex",
+      "--include=res://.godot/imported/sovereign_blade_outline_mask.png-20d5a225d863db75dde5e508d16a2fae.ctex",
+      "--include=res://.godot/imported/sovereign_blade_spike.png-3c6166138991e97247117f726d3df8d0.ctex",
+      "--include=res://.godot/imported/sovereign_blade_spike_2.png-e38404c117fa3d05c604d0fe0c4bcc1c.ctex",
+      "--include=res://.godot/imported/sovereign_blade_star_center.png-ff93a5ea9d9ae0f2760b9c534eb3a5dd.ctex",
+      "--include=res://.godot/imported/sovereign_blade_star_center2.png-f1a33a5b359e8aab45eca9a14b2f923e.ctex",
+      "--include=res://.godot/imported/sovereign_blade_trail.png-70b7fde44a7a99a451e6e4d4c8a7c5df.ctex",
+      "--include=res://.godot/imported/soveriegn_blade.skel-909881bef3f87988b6b4b800dcad1acc.spskel",
+      "--include=res://.godot/imported/spark.png-69bc13829f841d15fedefec1b6b6c95a.ctex",
+      "--include=res://.godot/imported/spark_smith.png-042f24690ac99493345cab6888a94d63.ctex",
+      "--include=res://.godot/imported/sparkle.png-b07f292923dc420ce97f898efaa68b67.ctex",
+      "--include=res://.godot/imported/sparkle.png-ded431b77275f9a8ea0231aae7e43933.ctex",
+      "--include=res://.godot/imported/sparkle.png-f91b5f1591d4a0d2d7f94240825d3165.ctex",
+      "--include=res://.godot/imported/sparkle.png-fedf54d21383d0526c4d3a036ef89436.s3tc.ctex",
+      "--include=res://.godot/imported/sparkle_2.png-92b6dc193c0f78f9f3b7b6184ff41775.s3tc.ctex",
+      "--include=res://.godot/imported/sparkle_circle.png-90e65e669b48d98583c51517f2184408.ctex",
+      "--include=res://.godot/imported/sparks.png-91e3145f2f49dbb84c77a58041371026.ctex",
+      "--include=res://.godot/imported/spectral_knight_fire_particle.png-4edb6d0a9f0248660b8a2f43b3808138.ctex",
+      "--include=res://.godot/imported/spectral_knight_head_fire_shape.png-84d17bd85d9d638df46baca8c8008014.ctex",
+      "--include=res://.godot/imported/speech_bubble3.png-73497b5c99931dbbea80dd900f431194.ctex",
+      "--include=res://.godot/imported/spiny_toad_spike_particle.png-fdfde0e3e76f4451e73e972bd9898b80.ctex",
+      "--include=res://.godot/imported/spirit_asset.png-67d36bbe6ce97c9f0e7a5be398cc3144.ctex",
+      "--include=res://.godot/imported/spit_glob_particles.png-2749df77792e0c5a53fbec833f461242.ctex",
+      "--include=res://.godot/imported/splash.png-6a3f89927f4ef29f651e824389404543.ctex",
+      "--include=res://.godot/imported/spooky_hand.png-c30a5b29476369f1781b6e45c911a21b.ctex",
+      "--include=res://.godot/imported/spore_impact_poof_flipbook.png-9a68aa27e74cff9c4cff23239cc1ad77.s3tc.ctex",
+      "--include=res://.godot/imported/spore_particle.png-4d6052ab6cea5efa7999bce6abe112ee.ctex",
+      "--include=res://.godot/imported/square_speck.png-9f5898740431dea4335e93fdfa414576.s3tc.ctex",
+      "--include=res://.godot/imported/stab_slash.png-6fde4cc7f2cfe8ff696f0deaea9f63cc.ctex",
+      "--include=res://.godot/imported/star1.png-a2b119c9e05e5c06ec77eec9042eadba.s3tc.ctex",
+      "--include=res://.godot/imported/starry_impact_constellation_small.png-3f4046e5f831ec550379efe5c8fa8cf7.ctex",
+      "--include=res://.godot/imported/starry_impact_core.png-8008290bbaed2f40a471c03997ca71d5.ctex",
+      "--include=res://.godot/imported/starry_impact_small_star.png-9e8fe27063b80ff57bbeeb4b1e5d1067.ctex",
+      "--include=res://.godot/imported/starry_impact_smoke_flipbook.png-24775888ecfa03223c00456c3da065fa.s3tc.ctex",
+      "--include=res://.godot/imported/sweeping_beam_flipbook.png-3d0083dcf7d6199e70c3c743d8a579a5.s3tc.ctex",
+      "--include=res://.godot/imported/sweeping_beam_flipbook_quick.png-6b984358da7470c25597bb2d71a24aed.ctex",
+      "--include=res://.godot/imported/symbiote_eye.png-9f18bffcb00964f08cbd3980a78bcf02.ctex",
+      "--include=res://.godot/imported/symbiote_eye_blink_01.png-26b3518fec2c82b387296a56cc9cfce7.ctex",
+      "--include=res://.godot/imported/symbiote_eye_blink_02.png-43ef8a90925fb66588dbb373239f3af2.ctex",
+      "--include=res://.godot/imported/symbiote_eye_blink_03.png-4ce89e16bcbfb93a359e6c06f7f901e9.ctex",
+      "--include=res://.godot/imported/symbiote_eye_blink_06.png-6be923863528cacdcd4e160bf583c9e6.ctex",
+      "--include=res://.godot/imported/symbiote_eye_blink_09.png-b489631256e8ebe28b50a13b801ca204.ctex",
+      "--include=res://.godot/imported/symbiote_eye_blink_13.png-48fb3bbed528844a7f9716b4c2f3d25e.ctex",
+      "--include=res://.godot/imported/symbiote_highlight.png-d9c6c88e4ab65e008808f9822d3e6342.ctex",
+      "--include=res://.godot/imported/tablet_of_truth_rock.png-fba9b058d1c9de70189e6ea2f7506177.ctex",
+      "--include=res://.godot/imported/tanx_smoke.png-26204b2fdb5a61a0b1d6aa72eb4a96e7.ctex",
+      "--include=res://.godot/imported/tea_master_0.png-affad58ad04f80d120a2796486f333bf.ctex",
+      "--include=res://.godot/imported/tea_master_01.png-1899c0b7b50a3b97311928cc0e0dec51.ctex",
+      "--include=res://.godot/imported/tea_master_02.png-12ce3472af13313b2d5dbbf1ac396fa2.ctex",
+      "--include=res://.godot/imported/tea_master_03.png-f195c1d4931dad2016d7e56a5b37d6c2.ctex",
+      "--include=res://.godot/imported/tea_master_04.png-111f160d5c861bd637b5f69745236491.ctex",
+      "--include=res://.godot/imported/tea_master_05.png-1ac1d49858ca7f03eaab86da9f96fe9e.ctex",
+      "--include=res://.godot/imported/tea_master_06.png-5fd6f0a2231dfc834c63e9a1d09036c5.ctex",
+      "--include=res://.godot/imported/tea_master_07.png-cf9ae11cef60fe7c7ab89d671ae23149.ctex",
+      "--include=res://.godot/imported/tea_master_08.png-12fafb6f0946a012d50968af71a6965d.ctex",
+      "--include=res://.godot/imported/tea_master_09.png-38add51ad4030b8ebcaa5d8e50208381.ctex",
+      "--include=res://.godot/imported/tear_drop.png-04b663f86b840d16f9ae9332e725c45e.ctex",
+      "--include=res://.godot/imported/test_subject_goop_particles.png-09aa62087d4285769b82c702bad993e4.ctex",
+      "--include=res://.godot/imported/test_subject_ground_fire_base.png-796ebc63ad9dcc9d7fe4b44fbad21249.ctex",
+      "--include=res://.godot/imported/the_future_of_potions_foreground.png-3b0578e49c7dbcafeef7f5cdde53cfea.ctex",
+      "--include=res://.godot/imported/the_future_of_potions_glow.png-bfe9fc08d54ec73c2f6ee5b09dd45d41.ctex",
+      "--include=res://.godot/imported/tileable_noise_1.png-4135c4c4216b1b9ac6022a7e71a8cc68.s3tc.ctex",
+      "--include=res://.godot/imported/tileable_noise_2.png-c88a08a05d50087c43e691477c46a5dd.s3tc.ctex",
+      "--include=res://.godot/imported/tileable_noise_4.png-7ba9076a9b14bcf2d17d4cd3645182bf.s3tc.ctex",
+      "--include=res://.godot/imported/tileable_noise_4.png-b93d0d6366919cf581a861ec87fcfc34.ctex",
+      "--include=res://.godot/imported/tileable_noise_5.png-aa70af92c6b92852effdc7883c59602a.s3tc.ctex",
+      "--include=res://.godot/imported/timeline_bg_star_vfx.png-a059c6d4d759c9347cf30d7cd9f5d3cf.s3tc.ctex",
+      "--include=res://.godot/imported/tiny_glow_dot.png-1a1d19293902d39d4b1df62cda091e72.ctex",
+      "--include=res://.godot/imported/tiny_spark_particle.png-b472846d0cd53bc55ff5ac8452c86d18.ctex",
+      "--include=res://.godot/imported/trail.png-6ac572a7b7c469121567317c63a23228.s3tc.ctex",
+      "--include=res://.godot/imported/trail2.png-8664bbf87b15189a77934827f67e335c.s3tc.ctex",
+      "--include=res://.godot/imported/trail3.png-2021b638b64cf53cb7604de775c77085.s3tc.ctex",
+      "--include=res://.godot/imported/trail_faded.png-08ddfc7919a2699c4216c7c18246c517.ctex",
+      "--include=res://.godot/imported/trail_main.png-0d4edc3128bbc6d035a780c4955b0b6f.ctex",
+      "--include=res://.godot/imported/trail_main.png-a012a2a12ddb7f77e073de9cf52a7a33.ctex",
+      "--include=res://.godot/imported/trial_light_beam.png-0b4ed89eb627282c3c3f18417965f04d.ctex",
+      "--include=res://.godot/imported/trial_merchant.png-a089841926b774c8b78a0a1d48d26311.ctex",
+      "--include=res://.godot/imported/trial_noble.png-dc2c258d7b10a251db8884b229e01a8d.ctex",
+      "--include=res://.godot/imported/trial_nondescript.png-34ceb9ce94275ec09c2f8a1ca592d9a3.ctex",
+      "--include=res://.godot/imported/trial_stand_light.png-ac6f372e902a42f72d649ea4ab96535d.ctex",
+      "--include=res://.godot/imported/trial_top_layer.png-36ca4d65c69cf8ea4d89658388db1677.ctex",
+      "--include=res://.godot/imported/triangle_noise_tile.png-74c88308965fafe2390da44a710405b0.ctex",
+      "--include=res://.godot/imported/twinkle_star.png-caa62f51c79466c5633a525c54c6ad3f.s3tc.ctex",
+      "--include=res://.godot/imported/ui_card_ancient_border_main.png-e63ec77a59f27f557069148d287ce936.bptc.ctex",
+      "--include=res://.godot/imported/ui_card_border_glow.png-f661b8745f8d7955b95baf7f7ec35567.s3tc.ctex",
+      "--include=res://.godot/imported/ui_card_border_vignette.png-17b3a4dbb189833faf6bfd4d3ddeb06a.s3tc.ctex",
+      "--include=res://.godot/imported/ui_card_bound_main.png-66354301dd58253f6ea7600879b6788c.ctex",
+      "--include=res://.godot/imported/ui_card_entangled_leaf.png-7e936762a74936cffd468765af7133f7.ctex",
+      "--include=res://.godot/imported/ui_card_entangled_leaves.png-96dac73ba117140c98b4906f0a58884e.ctex",
+      "--include=res://.godot/imported/ui_card_entangled_main.png-ebd8f2387cf2866442a763bd7951ba64.ctex",
+      "--include=res://.godot/imported/ui_card_exhaust_erosion.png-0e497c03894ad5724a67ef268111858b.ctex",
+      "--include=res://.godot/imported/ui_card_exhaust_quick_erosion.png-c29331e3700007a05af67ab21d7fe35c.ctex",
+      "--include=res://.godot/imported/ui_card_galvanized_lightning_corner_flipbook.png-54ae9a0e2cfa7cc26ddfa69ce0d46f30.ctex",
+      "--include=res://.godot/imported/ui_card_galvanized_main.png-05bbb87f21c50469d2b929caec3eac9f.ctex",
+      "--include=res://.godot/imported/ui_card_hexed_main.png-dad6682d4036af3f44c3adee17c4b9b9.ctex",
+      "--include=res://.godot/imported/ui_card_mask.png-cf81bd19e2a1e322db0041368602a584.ctex",
+      "--include=res://.godot/imported/ui_card_remove_erosion.png-2a04dc5a7283d7026253ab081681957a.ctex",
+      "--include=res://.godot/imported/ui_card_ringing_beast_frame.png-ccc9c008ffd34e5c642c934a4d0b3c7f.ctex",
+      "--include=res://.godot/imported/ui_card_ringing_beast_frame_hornless.png-e4bd52b4c5feaeef9be5063fb6d02f30.ctex",
+      "--include=res://.godot/imported/ui_card_ringing_beast_frame_horns_only.png-c3bc12dc18975fd39e37424344d55cad.ctex",
+      "--include=res://.godot/imported/ui_card_ringing_main.png-ab4c4789dfd7065ab7a45ac5e58bc656.ctex",
+      "--include=res://.godot/imported/ui_card_smog_mask.png-a64fa4f1215079e401dda6fdaf0d7104.ctex",
+      "--include=res://.godot/imported/ui_card_smog_mask_outer.png-3220117713ec3ded8921e8c297bc5c91.ctex",
+      "--include=res://.godot/imported/ui_card_transform_shine_flipbook.png-c12827002e748a5355a44066d8eb5da8.bptc.ctex",
+      "--include=res://.godot/imported/ui_epoch_unlock_chain_shards.png-66cf379b6dcedcb36d7ff459184daba8.s3tc.ctex",
+      "--include=res://.godot/imported/ui_epoch_unlock_erosion_exact.png-4d7d7a7898204448e9609845ac70720b.bptc.ctex",
+      "--include=res://.godot/imported/ui_epoch_unlock_erosion_smooth.png-79e699f8f64c6b5b4874faab7d1c30a3.bptc.ctex",
+      "--include=res://.godot/imported/ui_epoch_unlock_erosion_stepped.png-456feba56159438e8df7f8270507460c.bptc.ctex",
+      "--include=res://.godot/imported/underdocks_pole_light_mask.png-b9cc9da6f0cb138e070cc55d6636bc7e.ctex",
+      "--include=res://.godot/imported/uplight.png-a10ff441313b8590eeb8c556f24d016c.s3tc.ctex",
+      "--include=res://.godot/imported/vantom_basic_particle.png-5af275bd496c530d91214953d0063bcb.ctex",
+      "--include=res://.godot/imported/vantom_death_particle.png-32a33f201f89465e8001c9d0f77b261a.ctex",
+      "--include=res://.godot/imported/vfx_ash_dust.png-5ea241349588dff06ada73bb10c1ec1a.ctex",
+      "--include=res://.godot/imported/vfx_ash_rock.png-648f1a9d366c4942e78a7cc25a25de35.ctex",
+      "--include=res://.godot/imported/vfx_attack_blunt_00.png-4e104582dcca99089d65c7175284a419.ctex",
+      "--include=res://.godot/imported/vfx_attack_blunt_01.png-8bfe6f3b7a6541120b7beee881c2df16.ctex",
+      "--include=res://.godot/imported/vfx_attack_blunt_02.png-8e936cb6ea71623ddf404b28ca59ad9c.ctex",
+      "--include=res://.godot/imported/vfx_attack_blunt_03.png-530a64d3c2f207902f3e21c17813e3e3.ctex",
+      "--include=res://.godot/imported/vfx_attack_slash_00.png-e243354f3dd7d73650bf6bff8fb250dc.ctex",
+      "--include=res://.godot/imported/vfx_attack_slash_01.png-f74f86f7cd7e39a93e293accdbf6f217.ctex",
+      "--include=res://.godot/imported/vfx_attack_slash_02.png-156665cfc95f6192d0e02d9a57f76685.ctex",
+      "--include=res://.godot/imported/vfx_attack_slash_03.png-aaff5ce995a63b10b2b52a089d158390.ctex",
+      "--include=res://.godot/imported/vfx_block_00.png-8de3e6d028d892b8de6c7705b2e4c164.ctex",
+      "--include=res://.godot/imported/vfx_block_01.png-555d42dc6e2afe10e5be8c3d3f916dcd.ctex",
+      "--include=res://.godot/imported/vfx_block_02.png-77ad9a78cfdfae6074e500bb436e607e.ctex",
+      "--include=res://.godot/imported/vfx_block_03.png-0ace7cee3768a47c9d5ed8e3f170f7bf.ctex",
+      "--include=res://.godot/imported/vfx_block_04.png-03e8a4e1bb5f5ca69d0829c70e2e296f.ctex",
+      "--include=res://.godot/imported/vfx_block_05.png-28cbee3104c492978cac8b70c70be921.ctex",
+      "--include=res://.godot/imported/vfx_blood_wall_flash.png-bdb9384c22738b5bc9a64f742eccf5b2.ctex",
+      "--include=res://.godot/imported/vfx_dense_vegetation_bug_00.png-f77bf99ffa69fcd52f68242364e8d486.ctex",
+      "--include=res://.godot/imported/vfx_dense_vegetation_bug_02.png-a9f4066aef8bba0697bd4f410007ed8c.ctex",
+      "--include=res://.godot/imported/vfx_dense_vegetation_bug_03.png-23d8e619c0361773935462d8cfdbfae7.ctex",
+      "--include=res://.godot/imported/vfx_dense_vegetation_bug_04.png-d8d0caa85bec35c34cf171af07214cc3.ctex",
+      "--include=res://.godot/imported/vfx_dense_vegetation_bug_05.png-af681086b3bc335bc44aa23afc937fae.ctex",
+      "--include=res://.godot/imported/vfx_lightning_00_crop.png-c303c27ac5b1737a17f6ac51ef2ee9ed.ctex",
+      "--include=res://.godot/imported/vfx_lightning_01b_crop.png-572ac8951cb412c4b1d036d744c4daeb.ctex",
+      "--include=res://.godot/imported/vfx_lightning_02_crop.png-6866942b1af3bde460de1a7dfb00d938.ctex"
+    ],
+    [
+      "C:/Users/kkk/sts2_tools/gdre/gdre_tools.exe",
+      "--headless",
+      "--extract=C:\\Users\\kkk\\Desktop\\slaythespire\\Slay the Spire 2\\SlayTheSpire2.pck",
+      "--output=C:\\Users\\kkk\\sts2_tools\\tmp\\sts2_vfx_20261102\\extract_batches\\r01_03",
+      "--include=res://.godot/imported/vfx_lightning_03_crop.png-390c53ed40aed869acf293c6ba506e90.ctex",
+      "--include=res://.godot/imported/vfx_lightning_04_crop.png-c25231b316648e61422e59cb7894b10c.ctex",
+      "--include=res://.godot/imported/vfx_noise_1.png-e9cd6e7c32b87c487e8985945e8daadf.ctex",
+      "--include=res://.godot/imported/vfx_noise_2.png-131597378ae4342b006a93d58e5ab92e.ctex",
+      "--include=res://.godot/imported/vfx_noise_3.png-6304f5b8925397e289d252f845c72022.ctex",
+      "--include=res://.godot/imported/vfx_noise_4.png-02a067e6798d696894e84f6b5bbbcf77.ctex",
+      "--include=res://.godot/imported/vfx_puff.png-90dc898d649e824d6a9a6f8285a5edb9.ctex",
+      "--include=res://.godot/imported/vfx_rock_light_ver.png-5a7afc25c8c374581bfbdc71ef8335e6.ctex",
+      "--include=res://.godot/imported/vfx_rock_shatter_rock.png-e2659e4ce34ad868e93bb46b2576861c.ctex",
+      "--include=res://.godot/imported/vfx_rock_shatter_shine_01.png-224abf0ba8382faab48852923206dbd2.ctex",
+      "--include=res://.godot/imported/vfx_rock_shatter_smoke.png-40a59da1d6f41e86cb1fafb4ed5346b1.ctex",
+      "--include=res://.godot/imported/vignette_cloud2.png-39f6b5411e39e983e813fcfb5361cfd2.s3tc.ctex",
+      "--include=res://.godot/imported/vine_shambler_vine_dirt.png-430d1beeb97a0c1639fd6cc5e8cef478.ctex",
+      "--include=res://.godot/imported/vine_shambler_vines.png-46d728ec8ec00a32f1b0890893d15ca2.ctex",
+      "--include=res://.godot/imported/vine_shambler_vines_back.atlas-d954be28f824a7f8d7338d7febe08b41.spatlas",
+      "--include=res://.godot/imported/vine_shambler_vines_back.skel-b718cb1b5b3fd7a01e4dff92a03c3bed.spskel",
+      "--include=res://.godot/imported/vine_shambler_vines_front.atlas-85ac3cd16c834825504c67feab990f0e.spatlas",
+      "--include=res://.godot/imported/vine_shambler_vines_front.skel-0413d8c509bb22d2e149046ee8163588.spskel",
+      "--include=res://.godot/imported/water_texture.png-ee9b3c1f2b585663172739081f8fc9a1.s3tc.ctex",
+      "--include=res://.godot/imported/waterfall_giant_body_water_tex.png-d14bc864c30f843e962802475b1fac31.ctex",
+      "--include=res://.godot/imported/waterfall_giant_mouth_water_tex.png-5ece8f5f12708ed0f412d1b5778b2273.ctex",
+      "--include=res://.godot/imported/waterfall_giant_water_tex.png-5f3c74027f6afbf9c4923964f943eaa5.ctex",
+      "--include=res://.godot/imported/waterfall_mask.png-7a20c6184b04a3bfcf0e9b20dcb99156.s3tc.ctex",
+      "--include=res://.godot/imported/waterfall_noise.png-b5e16e2478259ec2bfa0e89d3185097f.s3tc.ctex",
+      "--include=res://.godot/imported/waterfall_noise_tile.png-d077645a41c1146f3ef834169027421e.s3tc.ctex",
+      "--include=res://.godot/imported/wave_noise_round.png-eb2c3386c9f1a38e5009489b2fe1bda9.ctex",
+      "--include=res://.godot/imported/worm_ground_flipbook.png-96b8c3e9a0ff9e235450f339a394d725.ctex",
+      "--include=res://.godot/imported/worm_midair_flipbook.png-198d9a3f2cfd35dee389fa2232ecd5a8.ctex",
+      "--include=res://.godot/imported/zigzag_fire_distortion.png-8a5bdacfccdb4e3d4dd5a289c2f6219c.ctex",
+      "--include=res://animations/monsters/decimillipede/rockstone_skel_data.tres",
+      "--include=res://images/atlases/ui_atlas.sprites/card/card_enchant_s.tres",
+      "--include=res://images/enchantments/slither.png.import",
+      "--include=res://images/events/dense_vegetation_foreground.png.import",
+      "--include=res://images/events/mirror_mask3.png.import",
+      "--include=res://images/packed/cracked_ball.png.import",
+      "--include=res://images/packed/map/icons/map_ping.png.import",
+      "--include=res://images/packed/timeline/epoch_slot_locked_small.png.import",
+      "--include=res://images/potions/missing_potion.png.import",
+      "--include=res://images/powers/missing_power.png.import",
+      "--include=res://images/rooms/hive/hive_00.png.import",
+      "--include=res://images/rooms/hive/hive_01_a.png.import",
+      "--include=res://images/rooms/hive/hive_02_a.png.import",
+      "--include=res://images/rooms/hive/hive_03_a.png.import",
+      "--include=res://images/rooms/hive/hive_04_a.png.import",
+      "--include=res://images/rooms/hive/the_insatiable/battlebg_hive_the_insatiable_floor.png.import",
+      "--include=res://images/rooms/hive/the_insatiable/sand_pile.png.import",
+      "--include=res://images/rooms/hive/the_insatiable/sand_pillar_base.png.import",
+      "--include=res://images/timeline/epoch_card_back.png.import",
+      "--include=res://images/timeline/epoch_portraits/ironclad2_epoch.png.import",
+      "--include=res://images/timeline/ui/slot_outline.png.import",
+      "--include=res://images/ui/combat/block_break_left.png.import",
+      "--include=res://images/ui/combat/block_break_right.png.import",
+      "--include=res://images/ui/combat/energy_star_flash_glow.png.import",
+      "--include=res://images/ui/rest_site/option_heal.png.import",
+      "--include=res://models/vfx/vfx_power_up/powerup_mesh.tres",
+      "--include=res://scenes/creature_visuals/the_insatiable.tscn",
+      "--include=res://scenes/ui/selection_reticle.tscn",
+      "--include=res://shaders/colorize_addblend.tres",
+      "--include=res://shaders/scrolling_smoke.tres",
+      "--include=res://themes/canvas_item_material_additive_shared.tres",
+      "--include=res://themes/kreon_bold_glyph_space_one.tres",
+      "--include=res://themes/kreon_bold_glyph_space_two.tres",
+      "--include=res://themes/kreon_bold_shared.tres",
+      "--include=res://themes/kreon_regular_glyph_space_two.tres",
+      "--include=res://themes/kreon_regular_shared.tres",
+      "--include=res://themes/source_code_pro_medium_shared.tres"
+    ],
+    [
+      "C:/Users/kkk/sts2_tools/gdre/gdre_tools.exe",
+      "--headless",
+      "--extract=C:\\Users\\kkk\\Desktop\\slaythespire\\Slay the Spire 2\\SlayTheSpire2.pck",
+      "--output=C:\\Users\\kkk\\sts2_tools\\tmp\\sts2_vfx_20261102\\extract_batches\\r02_01",
+      "--include=res://.godot/imported/battlebg_hive_the_insatiable_floor.png-bab605b63b9fc826f1ef16c8981d8f9b.bptc.ctex",
+      "--include=res://.godot/imported/block_break_left.png-9d181419db60431c11bbe28c72c04d3e.ctex",
+      "--include=res://.godot/imported/block_break_right.png-5669e15e84951b5b17d3f79ccd363d9a.ctex",
+      "--include=res://.godot/imported/cracked_ball.png-d734914e202433197b7067d942ef8230.ctex",
+      "--include=res://.godot/imported/dense_vegetation_foreground.png-a4a8e8322363f1040f688b6d04f24b60.bptc.ctex",
+      "--include=res://.godot/imported/energy_star_flash_glow.png-072466249f299db32129d95aa6a78d47.ctex",
+      "--include=res://.godot/imported/epoch_card_back.png-9b424765f1b06fca9cf521796a7a6589.ctex",
+      "--include=res://.godot/imported/epoch_slot_locked_small.png-5c547490f31bdce9d646df32e53200ee.bptc.ctex",
+      "--include=res://.godot/imported/hive_00.png-53fd73cc7015e6766073bf52bd00df83.bptc.ctex",
+      "--include=res://.godot/imported/hive_01_a.png-fec8d2d20a395300941e185945e75863.bptc.ctex",
+      "--include=res://.godot/imported/hive_02_a.png-1c25527fd83c9b6eb1959a868f34d805.bptc.ctex",
+      "--include=res://.godot/imported/hive_03_a.png-cf99630f6ed2090eaa757718d6ffdf00.bptc.ctex",
+      "--include=res://.godot/imported/hive_04_a.png-a972959be28df184becef413264ab45f.bptc.ctex",
+      "--include=res://.godot/imported/ironclad2_epoch.png-1e4df8dea94b886c30be313fc672f96e.ctex",
+      "--include=res://.godot/imported/map_ping.png-5f5b5ce31cbcc9f768970aad4a8adb2b.ctex",
+      "--include=res://.godot/imported/mirror_mask3.png-2421a870ee50ff98fe10b760cbe8df46.bptc.ctex",
+      "--include=res://.godot/imported/missing_potion.png-6975d83e26397b18a8296c4d2b4f8f47.ctex",
+      "--include=res://.godot/imported/missing_power.png-403da43777eb51775e66c4e8326dad7a.s3tc.ctex",
+      "--include=res://.godot/imported/option_heal.png-7ae176ac584455c47ae1274083af401a.ctex",
+      "--include=res://.godot/imported/sand_pile.png-580685c72d10380149898f3e12ae61f4.ctex",
+      "--include=res://.godot/imported/sand_pillar_base.png-ae6e9ab8c8fa35b283c6029bd012dcf1.ctex",
+      "--include=res://.godot/imported/slither.png-98161cb021adaa96f18d48b5b8d5cd69.bptc.ctex",
+      "--include=res://.godot/imported/slot_outline.png-c4815eabb7b0a5980758860eb83b1686.s3tc.ctex",
+      "--include=res://animations/monsters/decimillipede/rockstone.atlas.import",
+      "--include=res://animations/monsters/decimillipede/rockstone.skel.import",
+      "--include=res://animations/monsters/the_insatiable/the_insatiable_skel_data.tres",
+      "--include=res://images/atlases/ui_atlas_1.png.import",
+      "--include=res://images/monsters/phobia_mode/the_insatiable_phobia.png.import",
+      "--include=res://images/ui/combat/combat_reticle.png.import"
+    ],
+    [
+      "C:/Users/kkk/sts2_tools/gdre/gdre_tools.exe",
+      "--headless",
+      "--extract=C:\\Users\\kkk\\Desktop\\slaythespire\\Slay the Spire 2\\SlayTheSpire2.pck",
+      "--output=C:\\Users\\kkk\\sts2_tools\\tmp\\sts2_vfx_20261102\\extract_batches\\r03_01",
+      "--include=res://.godot/imported/combat_reticle.png-9db4a5cc4492409aab5dd0075d7ebd47.ctex",
+      "--include=res://.godot/imported/rockstone.atlas-9f475c948cda0fbb4c22395e755ea73c.spatlas",
+      "--include=res://.godot/imported/rockstone.skel-d5df0a8978f3f1025700b365750c4270.spskel",
+      "--include=res://.godot/imported/the_insatiable_phobia.png-5d5803fb5a381cf2c992652834f4887d.bptc.ctex",
+      "--include=res://.godot/imported/ui_atlas_1.png-f189a4bd5a771576610bba42301e5f8d.bptc.ctex",
+      "--include=res://animations/monsters/the_insatiable/the_insatiable.atlas.import",
+      "--include=res://animations/monsters/the_insatiable/the_insatiable.skel.import"
+    ],
+    [
+      "C:/Users/kkk/sts2_tools/gdre/gdre_tools.exe",
+      "--headless",
+      "--extract=C:\\Users\\kkk\\Desktop\\slaythespire\\Slay the Spire 2\\SlayTheSpire2.pck",
+      "--output=C:\\Users\\kkk\\sts2_tools\\tmp\\sts2_vfx_20261102\\extract_batches\\r04_01",
+      "--include=res://.godot/imported/the_insatiable.atlas-be5f0d90e7738f874199745e01ccfe15.spatlas",
+      "--include=res://.godot/imported/the_insatiable.skel-45f02d85d292ac039f17ad65b5daab6c.spskel"
+    ],
+    [
+      "C:/Users/kkk/sts2_tools/gdre/gdre_tools.exe",
+      "--headless",
+      "--extract=C:\\Users\\kkk\\Desktop\\slaythespire\\Slay the Spire 2\\SlayTheSpire2.pck",
+      "--output=C:\\Users\\kkk\\sts2_tools\\tmp\\sts2_vfx_20261102\\atlas_dependency_extract\\round_01",
+      "--include=res://animations/monsters/decimillipede/rockstone.png.import",
+      "--include=res://animations/monsters/the_insatiable/the_insatiable.png.import"
+    ],
+    [
+      "C:/Users/kkk/sts2_tools/gdre/gdre_tools.exe",
+      "--headless",
+      "--extract=C:\\Users\\kkk\\Desktop\\slaythespire\\Slay the Spire 2\\SlayTheSpire2.pck",
+      "--output=C:\\Users\\kkk\\sts2_tools\\tmp\\sts2_vfx_20261102\\atlas_dependency_extract\\round_02",
+      "--include=res://.godot/imported/rockstone.png-36cba78bf03810b271d9369f6173466a.ctex",
+      "--include=res://.godot/imported/the_insatiable.png-562892a2b154960b41220fc49bc41cdd.ctex"
+    ]
+  ],
+  "recover_commands": [
+    [
+      "C:/Users/kkk/sts2_tools/gdre/gdre_tools.exe",
+      "--headless",
+      "--recover=C:\\Users\\kkk\\sts2_tools\\tmp\\sts2_vfx_20261102\\raw_stage1",
+      "--output=C:\\Users\\kkk\\sts2_tools\\tmp\\sts2_vfx_20261102\\recovered_stage1",
+      "--skip-loading-resource-strings"
+    ],
+    [
+      "C:/Users/kkk/sts2_tools/gdre/gdre_tools.exe",
+      "--headless",
+      "--recover=C:\\Users\\kkk\\sts2_tools\\tmp\\sts2_vfx_20261102\\atlas_extra_raw",
+      "--output=C:\\Users\\kkk\\sts2_tools\\tmp\\sts2_vfx_20261102\\recovered_extra",
+      "--skip-loading-resource-strings"
+    ]
+  ],
+  "recovery_totals": {
+    "converted": 513,
+    "failed": 0,
+    "lossy_imports_reported": 103
+  },
+  "recovery_context_warnings": [
+    "Resource-only subset has no project configuration; GDRE reported project config not loaded (three messages per session).",
+    "Could not infer project version; tool suggested 4.0.0, not an assertion of the game engine version.",
+    "GDRE logged reading its own gdre_export.log from the subset; logs are not included as resources."
+  ]
+}

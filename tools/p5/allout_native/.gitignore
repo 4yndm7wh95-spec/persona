@@ -1,0 +1,5 @@
+godot/.godot/
+godot/frames*/
+godot/diag*/
+bake/bin/
+bake/obj/
