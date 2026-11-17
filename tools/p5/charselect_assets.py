@@ -114,6 +114,36 @@ def recolor(im, base=(12, 2, 5), win_k=0.85, seed=3):
     return Image.fromarray(out.clip(0, 255).astype(np.uint8), "RGBA")
 
 
+def warp_map(body):
+    """
+    立绘变形权重图（1/4 分辨率，游戏里铺满画布采样；CharSelectScene 的 PortraitShader 用）：
+      R 头（头发 + 脸，以脖子为支点轻摆）  G 外圈发梢（随风飘）  B 左边领尖（抖动）；A 不用（填满 —— 透明度会让缩放 / 导入改掉 RGB）。
+    胸口 / 肩的呼吸权重只和高度有关，在着色器里算。全部是平滑过渡，变形不会撕开。
+    """
+    import scipy.ndimage as nd
+    a = np.asarray(body).astype(np.float32)
+    al = a[..., 3] / 255
+    lum = a[..., :3].max(-1)
+    H, W = al.shape
+    y, x = np.mgrid[0:H, 0:W].astype(np.float32)
+    # 头：以脸 + 头发为中心的椭圆，外圈平滑衰减；右边竖起的大衣领子不算头
+    r = np.sqrt(((x - 560) / 380) ** 2 + ((y - 300) / 330) ** 2)
+    head = np.clip((1.0 - r) / 0.28, 0, 1)
+    collar_r = np.clip((x - 760) / 120, 0, 1) * np.clip((y - 360) / 140, 0, 1)
+    head *= 1 - collar_r
+    # 外圈发梢：头部范围里的深色像素，离透明背景 50px 以内
+    hair = (lum < 80) & (al > 0.5) & (y < 620)
+    dist = nd.distance_transform_edt(al > 0.5)
+    tips = np.clip(1 - dist / 50, 0, 1) * hair * np.clip(head * 2, 0, 1)
+    tips = nd.gaussian_filter(tips, 4)
+    # 左边领尖：x 越往左越大，只在领子那一条（y 320..470）
+    band = np.clip(1 - np.abs(y - 395) / 80, 0, 1)
+    collar = np.clip((330 - x) / 260, 0, 1) * band
+    collar = nd.gaussian_filter(collar, 8)
+    chans = [Image.fromarray((np.clip(c, 0, 1) * 255).astype(np.uint8), "L").resize((W // 4, H // 4), Image.LANCZOS) for c in (head, tips, collar)]
+    return Image.merge("RGBA", chans + [Image.new("L", chans[0].size, 255)])
+
+
 def morgana_layers():
     body = np.asarray(_rgba("morgana")).astype(np.float32)
     tail = np.asarray(_rgba("morgana_tail")).astype(np.float32)
@@ -215,6 +245,7 @@ def textures():
     layers = portrait_layers()
     yield from layers.items()
     yield "cs_body_line", outline(layers["cs_body"])
+    yield "cs_warp", warp_map(layers["cs_body"])
     yield "cs_hand_line", outline(layers["cs_hand"])
     yield from morgana_layers().items()
     yield "cs_skyline", recolor(_rgba("city_skyline").crop((0, 351, 1536, 1024)))

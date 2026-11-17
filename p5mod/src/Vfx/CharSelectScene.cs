@@ -29,10 +29,17 @@ public static class CharSelectScene
 	private const float PScale = 0.92f;
 	private static readonly Vector2 POrigin = new(SW - 896f * PScale, -25f * PScale);
 	private static readonly Vector2 Pivot = new(512f, 1536f);                 // 呼吸 / 微摆的支点：画布底边中点
-	private static readonly Vector2 ArmPivot = new(150f, 1230f);              // 手（连前臂袖子）浮动的支点：袖口根部
+	private static readonly Vector2 ArmPivot = new(240f, 900f);               // 手（连前臂袖子）忽远忽近的缩放支点：手掌下方（袖口底端几乎不动、指尖动得最多）
 	private static readonly Vector2 BlinkAt = new(330f, 320f);                // tools/p5/charselect_assets.py BLINK_BOX 左上角
 	private static readonly Vector2 Eye = new(608f, 421f);                    // 露出来的那只眼睛的虹膜中心（画面右边那只；另一只被刘海和阴影盖住了）
 	private const float EyeRoll = -0.1f;                                      // 眼睛的倾斜（光条跟着眼线走）
+	private static readonly Vector2 NeckPivot = new(540f, 640f);              // 头部轻摆的支点（脖子）
+	private const float LidTop = 372f, LidBottom = 470f;                     // 眨眼：眼皮从这条线合到那条线（画布 y，以近处那只眼为准），闭眼贴片只画在眼皮上面
+	private const float LidTilt = 0.111f;                                     // 眼皮线顺着两眼连线倾斜（远处那只眼高 19px）：两只眼同一刻合上、睁开
+	// 眼神特写往左挪多少（1080p 屏幕像素，按横幅缩放换算）：主眼从 x≈1124（压在斜条下）挪到 x≈760
+	private const float CutInShift = 364f;
+	/// <summary>原版左侧信息面板等眼神特写碎开之后再淡入（同 P3 mod 的介绍板），秒。</summary>
+	public const float InfoPanelDelay = 0.6f;
 	private static readonly Color EyeTint = new(1f, 0.7f, 0.18f), EyeHot = new(1f, 0.95f, 0.78f);   // 金色光 / 白热的芯
 	// 斜切口（屏幕坐标，上端 → 下端）：切口左边的立绘不画，斜条压在切口上
 	private static readonly Vector2 CutA = new(1150f, 0f), CutB = new(1330f, 1080f);
@@ -53,6 +60,8 @@ public static class CharSelectScene
 		public ColorRect Panel = null!;
 		public Node2D[] Arms = Array.Empty<Node2D>();
 		public Sprite2D Blink = null!, EyeHalo = null!, EyeIris = null!, EyeCore = null!, EyeStreak = null!;
+		public ShaderMaterial Warp = null!, BlinkMat = null!;
+		public float Open = 1f;                                                // 眼睛睁开的程度（眨眼时 1 → 0 → 1）
 		public Node2D Eye = null!;
 		public float Flare;                                                    // 选中那一下的眼睛闪光 0..1
 		public List<Sprite2D> Letters = new();
@@ -328,8 +337,12 @@ void fragment() {
 	private static Shader? _clip;
 
 	/// <summary>
-	/// 斜切口裁剪：只画切口右边（面板里）的像素，按全局坐标算（立绘滑入 / 手浮动时切口不跟着动）。
-	/// mode 1 = 剪影：只用贴图透明度，颜色 = tint（入场残影用）。
+	/// 立绘面板里所有东西共用的着色器：
+	/// · 斜切口裁剪：只画切口右边（面板里）的像素，按全局坐标算（立绘滑入 / 手浮动时切口不跟着动）；
+	/// · warp = 1：立绘变形（cs_warp 权重图：R 头以脖子为支点轻摆、G 外圈发梢随风飘、B 左边领尖抖动；呼吸让上半身起伏、胸口微鼓）——
+	///   描边、身体、手、眨眼贴片用同一套参数，所以永远对得上；rect = 这张贴图在立绘画布里的位置；
+	/// · lid：眨眼贴片只画在眼皮这条线上面（眼皮往下合 / 往上睁）；
+	/// · mode 1 = 剪影：只用贴图透明度，颜色 = tint（入场残影用）。
 	/// </summary>
 	private static Shader ClipShader => _clip ??= new Shader { Code = @"
 shader_type canvas_item;
@@ -337,6 +350,18 @@ uniform vec2 cut_a;
 uniform vec2 cut_b;
 uniform float mode = 0.0;
 uniform vec4 tint : source_color = vec4(1.0);
+uniform float warp = 0.0;
+uniform sampler2D warp_tex : filter_linear;
+uniform vec4 rect = vec4(0.0, 0.0, 1024.0, 1536.0);
+uniform vec2 canvas = vec2(1024.0, 1536.0);
+uniform vec2 pivot = vec2(540.0, 640.0);
+uniform float head_rot = 0.0;
+uniform vec2 head_off = vec2(0.0);
+uniform float tip_t = 0.0;
+uniform vec2 collar = vec2(0.0);
+uniform float breath = 0.0;
+uniform float lid = 100000.0;
+uniform float lid_tilt = 0.0;
 varying vec2 world;
 varying vec4 vmod;
 void vertex() {
@@ -344,28 +369,56 @@ void vertex() {
 	vmod = COLOR;
 }
 void fragment() {
+	vec2 p = rect.xy + UV * rect.zw;
+	vec2 q = p;
+	vec2 uv = UV;
+	if (warp > 0.5) {
+		vec3 w = texture(warp_tex, p / canvas).rgb;
+		vec2 rel = p - pivot;
+		vec2 dh = head_rot * vec2(-rel.y, rel.x) + head_off;
+		vec2 dt = vec2(6.0 * sin(tip_t * 2.73 + p.y * 0.02 + p.x * 0.005), 2.5 * sin(tip_t * 2.17 + p.x * 0.02));
+		float up = clamp((1450.0 - p.y) / 750.0, 0.0, 1.0);
+		float chest = clamp((p.y - 560.0) / 160.0, 0.0, 1.0) * clamp((1450.0 - p.y) / 300.0, 0.0, 1.0);
+		vec2 db = vec2((p.x - 512.0) * 0.008 * chest, -8.0 * up) * breath;
+		q = p - (w.r * dh + w.g * dt + w.b * collar + db);
+		uv = (q - rect.xy) / rect.zw;
+	}
+	vec4 c = texture(TEXTURE, uv);
+	if (uv.x < 0.0 || uv.y < 0.0 || uv.x > 1.0 || uv.y > 1.0) {
+		c.a = 0.0;
+	}
+	c *= vmod;
+	if (mode > 0.5) {
+		c = vec4(tint.rgb, tint.a * c.a);
+	}
 	vec2 d = cut_b - cut_a;
 	float side = (d.y * (world.x - cut_a.x) - d.x * (world.y - cut_a.y)) / length(d);
-	float k = clamp(side + 0.5, 0.0, 1.0);
-	if (mode > 0.5) {
-		COLOR = vec4(tint.rgb, tint.a * texture(TEXTURE, UV).a * vmod.a);
-	}
-	COLOR.a *= k;
+	c.a *= clamp(side + 0.5, 0.0, 1.0);
+	float lid_y = lid + (q.x - 608.0) * lid_tilt;
+	c.a *= smoothstep(lid_y + 7.0, lid_y - 7.0, q.y);
+	COLOR = c;
 }" };
 
-	private static ShaderMaterial ClipMaterial(Rig r, float mode = 0f, Color? tint = null)
+	private static ShaderMaterial ClipMaterial(Rig r, float mode = 0f, Color? tint = null, Rect2? warpRect = null)
 	{
 		ShaderMaterial m = new() { Shader = ClipShader };
 		m.SetShaderParameter("cut_a", G(r, CutA));
 		m.SetShaderParameter("cut_b", G(r, CutB));
 		m.SetShaderParameter("mode", mode);
 		m.SetShaderParameter("tint", tint ?? Colors.White);
+		if (warpRect is Rect2 wr)
+		{
+			m.SetShaderParameter("warp", 1f);
+			m.SetShaderParameter("warp_tex", Need("cs_warp"));
+			m.SetShaderParameter("rect", new Vector4(wr.Position.X, wr.Position.Y, wr.Size.X, wr.Size.Y));
+			m.SetShaderParameter("pivot", NeckPivot);
+		}
 		return m;
 	}
 
-	private static Sprite2D Part(Rig r, Node2D parent, Texture2D tex, Vector2 at)
+	private static Sprite2D Part(Rig r, Node2D parent, Texture2D tex, Vector2 at, ShaderMaterial? material = null)
 	{
-		Sprite2D s = new() { Texture = tex, Centered = false, Position = at, Material = r.Clip };
+		Sprite2D s = new() { Texture = tex, Centered = false, Position = at, Material = material ?? r.Clip };
 		parent.AddChild(s);
 		return s;
 	}
@@ -398,14 +451,18 @@ void fragment() {
 			chest.AddChild(a);
 			return a;
 		}
-		Part(r, chest, Need("cs_body_line"), -Pivot);
+		Texture2D blinkTex = Need("cs_blink");
+		r.Warp = ClipMaterial(r, warpRect: new Rect2(0f, 0f, 1024f, 1536f));
+		r.BlinkMat = ClipMaterial(r, warpRect: new Rect2(BlinkAt, blinkTex.GetSize()));
+		r.BlinkMat.SetShaderParameter("lid", LidTop);
+		r.BlinkMat.SetShaderParameter("lid_tilt", LidTilt);
+		Part(r, chest, Need("cs_body_line"), -Pivot, r.Warp);
 		Node2D armLine = Arm();
-		Part(r, armLine, Need("cs_hand_line"), -ArmPivot);
-		Part(r, chest, Need("cs_body"), -Pivot);
-		r.Blink = Part(r, chest, Need("cs_blink"), BlinkAt - Pivot);
-		r.Blink.Visible = false;
+		Part(r, armLine, Need("cs_hand_line"), -ArmPivot, r.Warp);
+		Part(r, chest, Need("cs_body"), -Pivot, r.Warp);
+		r.Blink = Part(r, chest, blinkTex, BlinkAt - Pivot, r.BlinkMat);
 		Node2D armFront = Arm();
-		Part(r, armFront, Need("cs_hand"), -ArmPivot);
+		Part(r, armFront, Need("cs_hand"), -ArmPivot, r.Warp);
 		r.Arms = new[] { armLine, armFront };
 		// 眼睛的金光（跟着胸口一起呼吸摆动；顺着眼线倾斜）：大柔光 → 虹膜染金 → 亮芯 → 横向光条
 		Node2D eye = new() { Name = "Eye", Position = Eye - Pivot, Rotation = EyeRoll };
@@ -422,7 +479,7 @@ void fragment() {
 		glint.TweenInterval(4.2);
 		glint.TweenCallback(Callable.From(() =>
 		{
-			if (star == null || r.Blink.Visible || Fx.Rng.NextDouble() < 0.25) return;
+			if (star == null || r.Open < 0.95f || Fx.Rng.NextDouble() < 0.25) return;
 			Sprite2D s = new() { Texture = star, Material = Fx.Additive, Modulate = EyeHot, Position = new Vector2(11f, -10f), Scale = Vector2.Zero };
 			eye.AddChild(s);
 			float k = 34f / Mathf.Max(1f, star.GetSize().X);
@@ -512,7 +569,8 @@ void fragment() {
 	/// <summary>常驻：呼吸、微摆、手浮动、眨眼、眼睛金光呼吸（闭眼时熄掉）、选中那一下的眼睛闪光。</summary>
 	private static void Animate(Rig r)
 	{
-		double nextBlink = 2.5;
+		double nextBlink = 2.2;
+		float blinkAt = -10f;
 		ulong last = Stage.NowMs();
 		void Step()
 		{
@@ -521,24 +579,48 @@ void fragment() {
 			last = now;
 			r.T += dt;
 			float t = (float)r.T;
-			r.Chest.Scale = new Vector2(1f, 1f + 0.0045f * Mathf.Sin(t * Mathf.Tau / 4.2f));
-			r.Chest.Rotation = 0.0035f * Mathf.Sin(t * Mathf.Tau / 7.3f);
-			Vector2 armOff = new(2.2f * Mathf.Sin(t * 1.1f), 3.2f * Mathf.Sin(t * 0.83f + 1.2f));
-			float armRot = 0.006f * Mathf.Sin(t * 0.7f + 0.4f);
+			// 立绘变形参数（着色器 ClipShader 里同一套公式）：头以脖子为支点轻摆 ±0.8°（发顶约 ±9px）+ 轻轻左右挪；
+			// 领尖随风抖；呼吸 4.2s 一次，上半身起伏 8px、胸口微鼓；发梢的波在着色器里按 tip_t 走
+			float rot = 0.014f * Mathf.Sin(t * Mathf.Tau / 6f);
+			Vector2 headOff = new(2f * Mathf.Sin(t * Mathf.Tau / 6f + 0.7f), 0f);
+			Vector2 collar = new(7f * Mathf.Sin(t * Mathf.Tau / 1.9f) + 2f * Mathf.Sin(t * Mathf.Tau / 0.83f), -4f * Mathf.Sin(t * Mathf.Tau / 1.9f + 0.6f));
+			float breath = 0.5f - 0.5f * Mathf.Cos(t * Mathf.Tau / 4.2f);
+			// 眨眼：眼皮 0.07s 合上（越合越快）→ 停 0.04s → 0.13s 睁开（越睁越慢）
+			float b = t - blinkAt;
+			float close = b < 0f ? 0f : b < 0.07f ? (b / 0.07f) * (b / 0.07f) : b < 0.11f ? 1f : b < 0.24f ? 1f - Fx.OutCubic((b - 0.11f) / 0.13f) : 0f;
+			if (b >= 0.24f && t >= nextBlink)
+			{
+				blinkAt = t;
+				nextBlink = t + (Fx.Rng.NextDouble() < 0.2 ? 0.32 : Fx.Rand(2.8f, 5.2f));   // 偶尔连眨两下
+			}
+			r.Open = 1f - close;
+			foreach (ShaderMaterial m in new[] { r.Warp, r.BlinkMat })
+			{
+				m.SetShaderParameter("head_rot", rot);
+				m.SetShaderParameter("head_off", headOff);
+				m.SetShaderParameter("tip_t", t);
+				m.SetShaderParameter("collar", collar);
+				m.SetShaderParameter("breath", breath);
+			}
+			r.BlinkMat.SetShaderParameter("lid", Mathf.Lerp(LidTop, LidBottom, close));
+			// 手：忽远忽近（用户 2026-11-17）—— 以手掌下方为支点放大 / 缩小 ±3.5%（近大远小，指尖来回约 17px），3.2s 一个来回；
+			// 指尖在头的范围里，还会跟着脸一起动；整只手再轻轻浮一点
+			float near = Mathf.Sin(t * Mathf.Tau / 3.2f);
+			Vector2 armOff = new(1.2f * Mathf.Sin(t * 1.1f) - 3f * near, 1.6f * Mathf.Sin(t * 0.83f + 1.2f) + 2f * near);
 			foreach (Node2D a in r.Arms)
 			{
 				a.Position = ArmPivot - Pivot + armOff;
-				a.Rotation = armRot;
+				a.Scale = Vector2.One * (1f + 0.035f * near);
 			}
-			if (t >= nextBlink)
-			{
-				r.Blink.Visible = true;
-				Fx.After(r.Blink, 0.11, () => r.Blink.Visible = false);
-				nextBlink = t + (Fx.Rng.NextDouble() < 0.2 ? 0.25 : Fx.Rand(2.8f, 5.2f));   // 偶尔连眨两下
-			}
-			// 眼睛金光：慢慢呼吸（2.6s 一次），闭眼时熄掉；选中那一下（Flare）猛地一亮、光条拉长
+			// 眼睛的光跟着头动（同一套位移，眼睛在头部权重 = 1 的地方、在胸口以上）
+			Vector2 rel = Eye - NeckPivot;
+			Vector2 eyeMove = rot * new Vector2(-rel.Y, rel.X) + headOff + new Vector2(0f, -8f * breath);
+			r.Eye.Position = Eye - Pivot + eyeMove;
+			r.Eye.Rotation = EyeRoll + rot;
+			// 眼睛金光：慢慢呼吸（2.6s 一次），眼皮合上时跟着暗掉；选中那一下（Flare）猛地一亮、光条拉长
 			float f = r.Flare;
-			float k = (r.Blink.Visible ? 0.08f : 1f) * (0.82f + 0.18f * Mathf.Sin(t * Mathf.Tau / 2.6f) + 1.4f * f);
+			float lit = Mathf.SmoothStep(0.55f, 1f, 1f - close);                 // 眼睛睁开过半才亮回来（不会亮在合着的眼皮上）
+			float k = lit * (0.82f + 0.18f * Mathf.Sin(t * Mathf.Tau / 2.6f) + 1.4f * f);
 			r.EyeHalo.Modulate = new Color(EyeTint, Mathf.Min(1f, 0.26f * k));
 			r.EyeIris.Modulate = new Color(EyeTint, Mathf.Min(1f, 0.75f * k));
 			r.EyeCore.Modulate = new Color(EyeHot, Mathf.Min(1f, 0.85f * k));
@@ -565,7 +647,7 @@ void fragment() {
 
 	/// <summary>
 	/// 入场：白闪一下；斜条沿切口方向错开着从上 / 下画出来；立绘从右边带红 / 黑两道残影滑入（残影也按切口裁）；
-	/// 左上标题从左边滑进来。intro：随后原版眼神特写切入 + 召唤舞台，横幅碎开那一下眼睛的金光猛地一亮（光条拉长），再退回常驻。
+	/// 左上标题从左边滑进来。intro：同一时刻原版眼神特写切入 + 召唤舞台（横幅往左挪、看得见主眼），碎开那一下眼睛的金光猛地一亮（光条拉长），再退回常驻。
 	/// </summary>
 	private static void Entrance(Rig r, bool intro)
 	{
@@ -620,24 +702,27 @@ void fragment() {
 			}
 		});
 		foreach (var (s, _) in echoes) Fx.FreeAfter(s, slide + 0.3);
-		Sfx.Play(Sfx.CutIn, 0.6f, 0.03f);
 		if (!intro)
 		{
+			Sfx.Play(Sfx.CutIn, 0.6f);                      // 不播切入时只有立绘 / 斜条进场，一声轻的切入
 			return;
 		}
-		Fx.After(g, slide + 0.05, () =>
+		// 眼神特写和入场同时切进来（用户 2026-11-17：不要后入），整条往左挪，主眼落在斜条左边看得见的地方，碎裂也从主眼开始。
+		// 声音分三层，各管一件事、不叠在一起：0.03s 切入「嗖」（铺垫，SummonStage 里）→ 0.2s 原版眼神特写的那一下（主音，CutIn 里）
+		// → 0.52s 碎裂（高潮，CutIn 里）+ 一层低频垫底，和眼睛闪光同一刻；之后安静。原版静默猎手的选中音效在 CharSelectPatches 里拦掉了。
+		Vector2 screen = Fx.Screen(r.Back);
+		CutInPlayback clip = new(SummonStage.EvokeAt - 0.05f) { Offset = new Vector2(-CutInShift * CutIn.BandScale(screen) / 1.23f, 0f) };
+		Vector2 eyeAt = CutIn.MainEye(screen) + clip.Offset;
+		clip.ShatterFrom = eyeAt;
+		SummonStage.Play(r.Back, r.Front, r.Back.GetCanvasTransform().AffineInverse() * eyeAt, maskFlame: false, playback: clip);
+		CutIn.Eyes(r.Back, clip);
+		Fx.After(g, SummonStage.EvokeAt, () =>
 		{
-			Vector2 eye = r.Eye.GlobalPosition;
-			CutInPlayback clip = new(SummonStage.EvokeAt - 0.05f);
-			SummonStage.Play(r.Back, r.Front, eye, maskFlame: false, playback: clip);
-			CutIn.Eyes(r.Back, clip);
-			Fx.After(g, SummonStage.EvokeAt, () =>
-			{
-				Glow.Flash(r.Front, r.Eye.GlobalPosition, EyeTint, 300f * g.GetGlobalTransform().Scale.X, 0.35f);
-				Tween t = r.Group.CreateTween();
-				t.TweenMethod(Callable.From<float>(v => r.Flare = v), 0f, 1f, 0.08);
-				t.TweenMethod(Callable.From<float>(v => r.Flare = v), 1f, 0f, 1.0).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
-			});
+			Sfx.Play(Sfx.SubBoom, 0.45f, 0.03f);              // 和 CutIn 里的碎裂声同一刻（碎裂在裂纹定格之后）
+			Glow.Flash(r.Front, r.Eye.GlobalPosition, EyeTint, 300f * g.GetGlobalTransform().Scale.X, 0.35f);
+			Tween t = r.Group.CreateTween();
+			t.TweenMethod(Callable.From<float>(v => r.Flare = v), 0f, 1f, 0.08);
+			t.TweenMethod(Callable.From<float>(v => r.Flare = v), 1f, 0f, 1.0).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
 		});
 	}
 }
