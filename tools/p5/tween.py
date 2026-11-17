@@ -37,6 +37,20 @@ def name_of(a, b, t):
     return f"{a}__{b}__{round(t * 100):02d}"
 
 
+def override(a, b, t):
+    """a drawn in-between for a -> b at share t of b, if one exists. Accepted names: the cache name, or the
+    travel-order name <a>__<b>__<percent of the way to b> (either direction)."""
+    pct = round(t * 100)
+    for n in (name_of(a, b, t), f"{a}__{b}__{pct:02d}", f"{b}__{a}__{100 - pct:02d}"):
+        if (OVERRIDE / f"{n}.png").exists():
+            return OVERRIDE / f"{n}.png"
+    return None
+
+
+def has_override(a, b):
+    return OVERRIDE.exists() and any(f.name.startswith((f"{a}__{b}__", f"{b}__{a}__")) for f in OVERRIDE.glob("*.png"))
+
+
 def _load(n):
     a = np.asarray(Image.open(FINAL / f"{n}.png").convert("RGBA")).astype(np.float32) / 255
     a = a.copy()
@@ -135,8 +149,8 @@ def make_pair(a, b, ts, force=False):
     out = {}
     todo = []
     for t in ts:
-        p = OVERRIDE / f"{name_of(a, b, t)}.png"
-        if not p.exists():
+        p = override(a, b, t)
+        if p is None:
             p = CACHE / f"{name_of(a, b, t)}.png"
             if force or not p.exists():
                 todo.append(t)
@@ -153,9 +167,7 @@ def make_pair(a, b, ts, force=False):
 
 
 def path(a, b, t):
-    n = name_of(a, b, t)
-    p = OVERRIDE / f"{n}.png"
-    return p if p.exists() else CACHE / f"{n}.png"
+    return override(a, b, t) or CACHE / f"{name_of(a, b, t)}.png"
 
 
 def sheet(pairs, ts, dst):

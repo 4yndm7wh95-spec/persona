@@ -313,7 +313,8 @@ def _tween_counts(anim):
     left = list(n)
     for i in range(len(raw) - 1):
         a, b = raw[i][0], raw[i + 1][0]
-        if a == b or b in NO_TWEEN_INTO or tuple(sorted((a, b))) in TWEEN_SKIP:
+        skip = (a, b) in TWEEN_SKIP or (b, a) in TWEEN_SKIP
+        if a == b or b in NO_TWEEN_INTO or (skip and not tween.has_override(a, b)):   # a drawn one re-enables it
             continue
         while tw[i] < TWEEN_MAX:
             if left[i] > 1 and left[i] >= left[i + 1]:
