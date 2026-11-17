@@ -23,19 +23,20 @@ public static class EmbarkTransition
 
 	// ───────── 时间轴（秒） ─────────
 	private const float DoorsIn = 0.04f, Close = 0.18f;   // 两扇门同时滑进来、合拢（预告信同一帧砸出来）
-	private const float Throw = 0.30f, Stab = 0.40f;      // 飞刀出手、钉住
+	private const float Stab = 0.40f, Throw = Stab - 0.06f;   // 飞刀出手、钉住（P5R 原版只飞两三帧：一下就扎住）
 
 	// ───────── 形状 / 摆放（1080 高的画面坐标，原点在画面中心） ─────────
 	private const float Slant = 0.2f;                     // 斜线：x 每往下 1 往右 0.2（= 选人界面立绘的斜切线 CutA→CutB）
 	private const float H = 620f;                         // 色块上下伸到屏外
-	private const float RedW = 180f;                      // 每扇门内沿的红带宽（两扇拼起来 360）
-	private const float Gap = 14f;                        // 红带和白线之间的黑缝
-	private const float LineW = 4f;                       // 白线宽
-	private static readonly Vector2 CardAt = new(0f, -10f);
-	private const float CardH = 640f;                     // 预告信显示高（原图 552×528，卡面本身画成斜的）
-	private static readonly Vector2 PinAt = new(170f, -175f);   // 刀尖钉进去的位置：预告信右上角那片红黑圈上（不挡标志和字）
-	private const float KnifeDeg = -20f;                  // 飞刀从右上斜着扎下来（刀尖朝左下）
-	private const float KnifeScale = 0.62f;               // 原图 858×468
+	private const float RedW = 22f;                       // 每扇门内沿的红边宽（用户：红边太粗 → 两扇拼起来 44，一道细红边）
+	private const float Gap = 10f;                        // 红边和白线之间的黑缝
+	private const float LineW = 3f;                       // 白线宽
+	private static readonly Vector2 CardAt = new(0f, 40f);
+	private const float CardH = 620f;                     // 预告信显示高（原图 552×528，卡面本身画成斜的）
+	private static readonly Vector2 PinAt = new(150f, -40f);    // 刀扎进纸面的入口：预告信右上那片红黑圈上（门缝右边，展开时跟右半边走）
+	private const float Hidden = 90f;                           // 刀尖进了纸的那一截长（画面单位）
+	private const float KnifeDeg = -57f;                  // 飞刀几乎从正上方扎下来（刀柄朝右上，同 P5R 切日历那把）
+	private const float KnifeScale = 0.6f;                // 原图 858×468
 	private static readonly Vector2 KnifeTip = new(8f, 236f);   // 刀尖在原图里的位置（刀身是水平的，刀尖朝左）
 	private static readonly Vector2 GlintOnBlade = new(230f, 230f); // 闪光在刀身上的位置（原图像素）
 
@@ -76,6 +77,20 @@ void fragment() {
 	float px = max(length(fwidth(wp)) * 0.7071, 1e-4);
 	vec4 c = texture(TEXTURE, UV) * COLOR;
 	COLOR = vec4(c.rgb, c.a * clamp(s / px + 0.5, 0.0, 1.0));
+}" };
+
+	private static Shader? _cut;
+
+	/// <summary>飞刀：纹理 x &lt; cut_px 的部分（刀尖那截）不画，边缘抗锯齿 —— 刀尖「进了纸里」。</summary>
+	private static Shader CutShader => _cut ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform float tex_w = 858.0;
+uniform float cut_px = -1.0;
+void fragment() {
+	vec4 c = texture(TEXTURE, UV) * COLOR;
+	float px = UV.x * tex_w;
+	float w = max(fwidth(px), 1e-4);
+	COLOR = vec4(c.rgb, c.a * clamp((px - cut_px) / w + 0.5, 0.0, 1.0));
 }" };
 
 	/// <summary>一扇门：黑色门体 + 内沿白线 + 红带。</summary>
@@ -174,21 +189,39 @@ void fragment() {
 		}
 		Sprite2D halfL = HalfOf(left, -1f), halfR = HalfOf(right, 1f);
 
-		// 飞刀：原点在刀尖（Offset 把刀尖挪到原点），画在预告信上面（展开时跟着右门走）；飞行时后面拖两层残影
+		// 飞刀 + 扎开的口子（照 P5R 原版：刀压在预告信上面，在扎进去的那一点把刀尖那截截掉 —— 刀尖「进了纸里」；
+		// 入口处纸面顺着刀的方向裂开一道白缝，旁边一片被顶得翻起来（发白的三角）；预告信跟着一震）。
+		// 都挂在 pin 上，展开时 pin 跟着右门走（入口在门缝右边）
+		Node2D pin = new();
+		stage.AddChild(pin);
+		Vector2 toHandle = Vector2.Right.Rotated(Mathf.DegToRad(KnifeDeg));   // 刀尖 → 刀柄的方向（飞来的方向）
+		Node2D slit = new() { Position = PinAt, Rotation = Mathf.DegToRad(KnifeDeg), Visible = false };
+		pin.AddChild(slit);
+		float sl = Hidden * 1.05f;
+		P5Ui.Quad(slit, new[] { new Vector2(6f, -26f), new Vector2(0f, 0f), new Vector2(-sl, 0.6f), new Vector2(-sl * 0.45f, -20f) }, new Color(1f, 0.93f, 0.92f, 0.42f));
+		P5Ui.Quad(slit, new[] { new Vector2(2f, -3.2f), new Vector2(2f, 3.2f), new Vector2(-sl, 0.5f), new Vector2(-sl, -0.5f) }, White);
 		Texture2D? knifeTex = Fx.Tex("day_knife");
-		Node2D knife = new() { Rotation = Mathf.DegToRad(KnifeDeg), Scale = Vector2.One * KnifeScale, Visible = false };
-		stage.AddChild(knife);
-		knife.AddChild(new Sprite2D { Texture = knifeTex, Centered = false, Offset = -KnifeTip });
-		Sprite2D glint = new() { Texture = Fx.Tex("day_glint"), Position = GlintOnBlade - KnifeTip, Material = Fx.Additive, Visible = false };
-		knife.AddChild(glint);
-		Sprite2D[] ghosts = new Sprite2D[2];
+		Sprite2D KnifeSprite()
+		{
+			ShaderMaterial m = new() { Shader = CutShader };
+			m.SetShaderParameter("tex_w", knifeTex?.GetWidth() ?? 858f);
+			m.SetShaderParameter("cut_px", -1f);
+			return new Sprite2D { Texture = knifeTex, Centered = false, Offset = -KnifeTip, Material = m };
+		}
+		Node2D[] ghosts = new Node2D[2];
 		for (int i = 0; i < ghosts.Length; i++)
 		{
-			ghosts[i] = new Sprite2D { Texture = knifeTex, Centered = false, Offset = -KnifeTip, Rotation = knife.Rotation, Scale = knife.Scale, Visible = false };
-			stage.AddChild(ghosts[i]);
-			stage.MoveChild(ghosts[i], knife.GetIndex());                   // 残影在刀后面
+			ghosts[i] = new Node2D { Rotation = Mathf.DegToRad(KnifeDeg), Scale = Vector2.One * KnifeScale, Visible = false };
+			ghosts[i].AddChild(KnifeSprite());
+			pin.AddChild(ghosts[i]);
 		}
-		Vector2 toHandle = Vector2.Right.Rotated(knife.Rotation);   // 刀尖 → 刀柄的方向（飞来的方向）
+		Node2D knife = new() { Rotation = Mathf.DegToRad(KnifeDeg), Scale = Vector2.One * KnifeScale, Visible = false };
+		pin.AddChild(knife);
+		Sprite2D blade = KnifeSprite();
+		knife.AddChild(blade);
+		Sprite2D glint = new() { Texture = Fx.Tex("day_glint"), Position = GlintOnBlade - KnifeTip, Material = Fx.Additive, Visible = false };
+		knife.AddChild(glint);
+		Vector2 tipAt = PinAt - toHandle * Hidden;                          // 钉住时刀尖的位置（在纸里）
 
 		ColorRect flash = new() { Size = size, Color = White, MouseFilter = Control.MouseFilterEnum.Ignore, Modulate = new Color(1f, 1f, 1f, 0f) };
 		root.AddChild(flash);
@@ -197,7 +230,7 @@ void fragment() {
 		{
 			// 匀速飞来、钉住就停（不减速：扔出去的刀是一下扎住的）
 			float u = Seg(t, Throw, Stab);
-			return PinAt + toHandle * 1400f * (1f - u);
+			return tipAt + toHandle * 1300f * (1f - u);
 		}
 
 		void Pose(float t)
@@ -218,18 +251,25 @@ void fragment() {
 			card.Visible = t >= Close;
 			float stabDt = t - Stab;
 			float jolt = stabDt >= 0f ? Mathf.Exp(-stabDt / 0.06f) : 0f;
-			card.Scale = Vector2.One * cardScale * Mathf.Lerp(1.3f, 1f, OutExpo(Seg(t, Close, Close + 0.05f)));
-			card.Position = CardAt - toHandle * 9f * jolt;
-			card.Rotation = Mathf.DegToRad(-1.2f) * jolt;
+			float bump = 1f + 0.05f * jolt;                                       // 扎中那一下整张卡一震（先大一点再回位）
+			card.Scale = Vector2.One * cardScale * Mathf.Lerp(1.3f, 1f, OutExpo(Seg(t, Close, Close + 0.05f))) * bump;
+			card.Position = CardAt - toHandle * 6f * jolt;
+			card.Rotation = Mathf.DegToRad(-1f) * jolt;
+			// 口子：扎中的一瞬间顺着刀的方向撕开（0.04s 长到全长），跟着卡一起震
+			slit.Visible = t >= Stab;
+			slit.Scale = new Vector2(OutCubic(Seg(t, Stab, Stab + 0.04f)), 1f) * bump;
+			slit.Position = PinAt - toHandle * 6f * jolt;
+			// 刀尖进了纸：扎中以后把入口之前的那截截掉（纹理像素坐标，刀尖在 x = KnifeTip.x）
+			if (blade.Material is ShaderMaterial bm) bm.SetShaderParameter("cut_px", t >= Stab ? KnifeTip.X + Hidden / KnifeScale : -1f);
 
-			// 飞刀：飞行 → 钉住后沿刀身往回弹一点、刀尾颤几下（衰减的正弦）
+			// 飞刀：飞行 → 钉住后只沿刀身轻轻回弹一下（P5R 原版扎住就停，没有大幅颤动）
 			knife.Visible = t >= Throw;
-			float wob = stabDt >= 0f ? Mathf.Sin(stabDt * Mathf.Tau * 16f) * Mathf.Exp(-stabDt / 0.09f) : 0f;
-			knife.Position = KnifePos(t) + toHandle * 5f * wob;
-			knife.Rotation = Mathf.DegToRad(KnifeDeg + 2.5f * wob);
+			float wob = stabDt >= 0f ? Mathf.Sin(stabDt * Mathf.Tau * 12f) * Mathf.Exp(-stabDt / 0.04f) : 0f;
+			knife.Position = KnifePos(t) + toHandle * 4f * wob;
+			knife.Rotation = Mathf.DegToRad(KnifeDeg + 1f * wob);
 			for (int i = 0; i < ghosts.Length; i++)
 			{
-				float gt = t - 0.018f * (i + 1);
+				float gt = t - 0.012f * (i + 1);
 				ghosts[i].Visible = t >= Throw && t < Stab && gt >= Throw;
 				ghosts[i].Position = KnifePos(gt);
 				ghosts[i].Modulate = new Color(1f, 1f, 1f, 0.35f / (i + 1));
@@ -243,7 +283,7 @@ void fragment() {
 			// 震动：合拢 + 预告信砸出来最重，飞刀钉住轻一点
 			float shake = Impulse(t, Close, 9f, 0.13f) + Impulse(t, Stab, 6f, 0.1f);
 			stage.Position = size * 0.5f + new Vector2(Mathf.Sin(t * 230f), Mathf.Cos(t * 190f)) * shake * k;
-			float fl = (t >= Close ? 0.45f * (1f - Seg(t, Close, Close + 0.06f)) : 0f) + (t >= Stab ? 0.14f * (1f - Seg(t, Stab, Stab + 0.05f)) : 0f);
+			float fl = t >= Close ? 0.3f * (1f - Seg(t, Close, Close + 0.06f)) : 0f;   // 钉住时不闪屏（P5R 原版只有刀身的闪光）
 			flash.Modulate = new Color(1f, 1f, 1f, fl);
 		}
 
@@ -263,12 +303,12 @@ void fragment() {
 				h.Rotation = card.Rotation;
 				h.Scale = card.Scale;
 			}
+			pin.Position = new Vector2(Mathf.Lerp(0f, hw + 1000f, InCubic(Seg(t, 0.04f, 0.5f))), 0f);
 			baseBlack.Visible = !split;
 			float open = InCubic(Seg(t, 0.04f, 0.5f));
 			float ro = Mathf.Lerp(0f, hw + 1000f, open);
 			right.Root.Position = new Vector2(ro, 0f);
 			left.Root.Position = new Vector2(-ro, 0f);
-			knife.Position = PinAt + new Vector2(ro, 0f);
 			// 半边按各自那扇门上的门缝裁（门缝在门的本地坐标里是 x = 0.2y 这条线）
 			foreach ((Sprite2D h, Door d) in new[] { (halfL, left), (halfR, right) })
 			{
@@ -282,14 +322,11 @@ void fragment() {
 		}
 
 		Run(root, Pose, OutTime, () => Stage.Safe("embark covered", () => onCovered?.Invoke()));
-		// 声音（P5R 原声）：两扇门滑进来的菜单风声（峰值在样本 0.21s，对着合拢）→ 合拢 + 预告信砸出来的重击 + 低频 →
-		// 飞刀出手的「唰」→ 钉住的清亮「锵~」+ 一记轻的低频
-		Sfx.Play(Sfx.MenuWhoosh, 0.85f, 0f);
-		Sfx.PlayHit(Sfx.Slam, 0.55f, Close);
-		Sfx.PlayHit(Sfx.SubBoom, 0.6f, Close);
-		Sfx.Play(Sfx.Swish, 0.45f, Throw);
-		Sfx.Play(Sfx.KnifeChing, 0.7f, Stab - 0.02f);
-		Sfx.PlayHit(Sfx.SubBoom, 0.3f, Stab);
+		// 声音（用户 2026-11-17：合拢用原版演示里「30 号」拍下来的那一声「彭」；飞刀是两层 —— 刀的「锵~~」+ 扎进去的插入声（弱，但得有，像飞镖扎在靶子上））。
+		// P5R 切日历那两声不在仓库解出来的原声里（多半在 SYSTEM.AWB 的流式音频，只在用户本机资源库），找到以后换 Sfx.KnifeChing / Sfx.KnifeStab
+		Sfx.PlayHit(Sfx.DoorSlam, 0.55f, Close);
+		Sfx.Play(Sfx.KnifeChing, 0.75f, Stab);
+		Sfx.PlayHit(Sfx.KnifeStab, 0.3f, Stab);
 		return new Curtain(root, Open);
 	}
 

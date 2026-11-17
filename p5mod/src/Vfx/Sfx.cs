@@ -48,8 +48,12 @@ public static class Sfx
 		Slam = "punch_taiman",          // 重拳砸中（#46：咒怨之手砸下去）
 		Crack = "crash_object",         // 东西碎开（#176：手从地里钻出来）
 		MenuWhoosh = "camp_whoosh",     // 菜单的「唰」（#224，偏暖的低频风声，峰值在 0.21s）：出发过场两扇门滑进来 / 滑开
-		KnifeChing = "shop_weapon_tag", // 清亮的金属「锵~」（#218，起音 20ms、0.45s 的高频余响）：出发过场飞刀钉住预告信
-		                                //  （P5R 切日历那声飞刀在 SYSTEM.AWB 的流式音频里，仓库没解出来；这是现有原声里最像的）
+		// 出发过场飞刀钉住预告信的两层（用户 2026-11-17 给了 P5R 切日历的原版演示：「锵~~」是 4.27kHz + 6.1kHz 的金属长余响（0.6s 以上），
+		// 同一瞬间一记 300Hz 以下为主、0.2s 衰减完的插入闷响）。原版那两声不在仓库解出来的原声里（多半在 SYSTEM.AWB 的流式音频），
+		// 先用最接近的顶着，等从用户本机资源库解出来再换：
+		KnifeChing = "card_func_on",    // 临时：#250，单音、峰在 4.1kHz（音高最接近原版的「锵」，但只响 0.23s）
+		KnifeStab = "punch_taiman",     // 临时：#46 重拳的闷响，压低音量当插入声
+		DoorSlam = "punch_taiman",      // 两扇门合拢 = 原版演示里「30 号」拍下来的「彭」：仓库原声里最像的是 #46（相关 0.46，不确定），原版找到后换掉
 		PoisonTick = "continuas_damage",// 持续伤害（#20：每轮毒伤）
 		SubBoom = "sub_boom",           // 合成的低频重击（art/sfx_p5/sub_boom.ogg：P5 原声缺低频，垫在冲击层底下）
 		OutbreakBurst = "outbreak_burst", // 毒性爆发毒伤结算（用户 2026-11-08：原版受击声太平淡）：P5R SKILLSE 0406（咒怨系候选，起音 0.01s、偏暗），
