@@ -45,7 +45,7 @@ public static class Aim
 		return t;
 	}
 
-	/// <summary>中和（JokerFx.NeutralizeStart）：游戏要播 attack 时先握刀停住，出牌后这么多秒刀落下（attack_from_ready 第 0.14 秒出刀）。</summary>
+	/// <summary>中和（JokerFx.NeutralizeStart）：游戏要播 attack 时先握刀停住，出牌后这么多秒刀落下（attack_from_ready 第 8 帧 / 0.133 秒出刀）。</summary>
 	public static readonly Dictionary<ulong, float> HoldCut = new();
 
 	/// <summary>中和换来的 knife_in：Postfix 里接上 knife_loop（游戏只会在 attack 后面排 idle）。</summary>
@@ -95,7 +95,7 @@ public static class Aim
 			// 中和：先握刀停着（还在转刀就接着转完），等头顶的预告函转出来，到点一刀劈下
 			if (Joker.FxLayer() is Control layer)
 			{
-				Fx.After(layer, Mathf.Max(0f, cut - 0.14f), () =>
+				Fx.After(layer, Mathf.Max(0f, cut - 0.133f), () =>
 				{
 					bool low = node.Entity.GetHpPercentRemaining() <= 0.25 && body.HasAnimation("low_health_loop");
 					state.SetAnimation("attack_from_ready", false, 0);
@@ -119,7 +119,7 @@ public static class Aim
 		}
 		if (requested == "shiv" && current == "aim_in")
 		{
-			// 转枪还没转完就打出去了：aim_in 就是 shiv 的前 0.18 秒（tools/p5/build_rig_p5.py GUN_IN），
+			// 转枪还没转完就打出去了：aim_in 就是 shiv 开火前的那一段（tools/p5/build_rig_p5.py GUN_IN），
 			// 换成 shiv 并从同一时刻接着播 —— 转枪转完、接住、开火，不从头重来也不硬切
 			using MegaTrackEntry? entry = state.GetCurrent(0);
 			if (entry != null)
@@ -134,7 +134,7 @@ public static class Aim
 		}
 		if (requested == "attack" && current == "knife_in")
 		{
-			// 转刀还没转完就打出去了：knife_in 就是 attack 的前 0.14 秒，换回 attack 并从同一时刻接着播
+			// 转刀还没转完就打出去了：knife_in 就是 attack 出刀前的那一段，换回 attack 并从同一时刻接着播
 			using MegaTrackEntry? entry = state.GetCurrent(0);
 			if (entry != null)
 			{

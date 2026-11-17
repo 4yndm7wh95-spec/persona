@@ -235,18 +235,75 @@ def silhouette_iou(a, b):
     return (ma & mb).sum() / max(1, (ma | mb).sum())
 
 
-def frames(anim):
-    """[(pose, start, dur, fade)]. A crossfade shows both pictures at once, so (user 2026-10-28: "two frames at
-    once") it is only kept between near-identical poses (silhouette overlap >= GHOST_IOU), capped at 0.03 s;
-    anything else is a hard cut."""
+# 60 fps frame grid (2026-11-17, user: "the moves don't switch smoothly from frame to frame"). The game draws at 60 fps
+# (16.7 ms a frame) but many pictures were held 10 / 15 / 25 / 30 / 45 ms: a 15 ms picture was shown for one frame
+# or skipped entirely, a 45 ms one for 2 or 3 frames depending on where the animation started, so the same move
+# played with a different, uneven rhythm every time. Every hold is now a whole number of frames, at least MIN_HOLD
+# (the first picture of an animation is the one already on screen, 1 frame is enough). The moments the code waits
+# for stay put: the cut (slash_a10) lands on frame 8 (0.133 s) and the shot (gun_recoil_b) on frame 11 (0.183 s);
+# the hold just before them gives or takes the difference. Loops keep their exact length.
+GRID = 60
+MIN_HOLD = 2
+ANCHORS = {"slash_a10": 8, "gun_recoil_b": 11}
+
+
+def frames_raw(anim):
+    """[(pose, start, dur, fade)] with the hand-written timings."""
     out, t = [], 0.0
     for i, f in enumerate(ANIMS[anim]):
         fade = f[2] if len(f) > 2 else (0.0 if i == 0 else FADE)
-        if i > 0 and fade > 0:
-            prev = ANIMS[anim][i - 1][0]
-            fade = 0.0 if prev != f[0] and silhouette_iou(prev, f[0]) < GHOST_IOU else min(fade, 0.03)
         out.append((f[0], t, f[1], fade))
         t += f[1]
+    return out
+
+
+def _grid_counts(anim):
+    raw = frames_raw(anim)
+    n = [0 if d <= 0 else max(1 if i == 0 else MIN_HOLD, round(d * GRID)) for i, (_, _, d, _) in enumerate(raw)]
+    for i, (p, _, _, _) in enumerate(raw):
+        if p in ANCHORS and i > 0 and not any(q == p for q, *_ in raw[:i]):
+            diff = ANCHORS[p] - sum(n[:i])
+            for j in range(i - 1, -1, -1):              # take it from / give it to the holds before, nearest first
+                lo = 1 if j == 0 else MIN_HOLD
+                new = max(lo, n[j] + diff)
+                diff -= new - n[j]
+                n[j] = new
+                if diff == 0:
+                    break
+    if anim in LOOPS:
+        total = round(sum(d for _, _, d, _ in raw) * GRID)
+        k = max(range(len(n)), key=lambda j: n[j])       # the long idle hold absorbs the rounding
+        n[k] += total - sum(n)
+    return n
+
+
+def time_map(anim):
+    """maps a time on the hand-written timeline to the frame-grid one (piecewise linear between picture changes)."""
+    raw = frames_raw(anim)
+    n = _grid_counts(anim)
+    src = [0.0] + [r[1] + r[2] for r in raw]
+    dst = [0.0] + [sum(n[:i + 1]) / GRID for i in range(len(n))]
+
+    def f(t):
+        for a0, a1, b0, b1 in zip(src, src[1:], dst, dst[1:]):
+            if t <= a1 + 1e-9:
+                return b0 if a1 <= a0 else b0 + (t - a0) / (a1 - a0) * (b1 - b0)
+        return dst[-1] + t - src[-1]
+    return f
+
+
+def frames(anim):
+    """[(pose, start, dur, fade)] on the 60 fps grid. A crossfade shows both pictures at once, so (user 2026-10-28: "two frames at
+    once") it is only kept between near-identical poses (silhouette overlap >= GHOST_IOU), capped at 0.03 s;
+    anything else is a hard cut."""
+    out, t = [], 0.0
+    for i, ((p, _, _, fade), k) in enumerate(zip(frames_raw(anim), _grid_counts(anim))):
+        dur = k / GRID
+        if i > 0 and fade > 0:
+            prev = ANIMS[anim][i - 1][0]
+            fade = 0.0 if prev != p and silhouette_iou(prev, p) < GHOST_IOU else min(fade, 0.03, dur)
+        out.append((p, round(t, 4), dur, fade))
+        t += dur
     return out
 
 
@@ -446,7 +503,7 @@ def motion(pre, t, length):
 
 def bake_motion(pre, length):
     tl = {}
-    n = round(length * 15)
+    n = round(length * 30)         # was 15 keys/s: linear keys, so the sway visibly changed speed every 67 ms
     for k in range(n + 1):
         t = round(length * k / n, 4)
         for bone, ch in motion(pre, 0.0 if k == n else t, length).items():
@@ -552,7 +609,8 @@ def build():
             starts = {}
             for p, t0, dur, fade in fr:
                 starts.setdefault(p, t0)
-            keys = [((starts[k[0][1:]] + k[1]), *k[2:]) if isinstance(k[0], str) else k for k in IMPACT[name]]
+            remap = time_map(name)                     # hand-written absolute times follow the frame grid
+            keys = [((starts[k[0][1:]] + k[1]), *k[2:]) if isinstance(k[0], str) else (remap(k[0]), *k[1:]) for k in IMPACT[name]]
             if keys[0][0] > 0:
                 keys = [(0, 0, 0, 1, 1, 0)] + keys
             tl["body"] = {"translate": [{"time": round(k[0], 4), "x": k[1], "y": k[2]} for k in keys],
