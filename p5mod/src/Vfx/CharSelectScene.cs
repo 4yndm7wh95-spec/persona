@@ -356,7 +356,7 @@ void fragment() {
 	float side = (d.y * (world.x - cut_a.x) - d.x * (world.y - cut_a.y)) / length(d);
 	c.a *= clamp(side + 0.5, 0.0, 1.0);
 	float lid_y = lid + (q.x - 608.0) * lid_tilt;
-	c.a *= smoothstep(lid_y + 7.0, lid_y - 7.0, q.y);
+	c.a *= smoothstep(lid_y + 10.0, lid_y - 10.0, q.y);
 	COLOR = c;
 }" };
 
@@ -530,6 +530,8 @@ void fragment() {
 
 	// ───────────────────────── 动起来 ─────────────────────────
 
+	private static float SmoothStep(float x) { x = Mathf.Clamp(x, 0f, 1f); return x * x * (3f - 2f * x); }
+
 	/// <summary>常驻：呼吸、微摆、手浮动、眨眼、眼睛金光呼吸（闭眼时熄掉）、选中那一下的眼睛闪光。</summary>
 	private static void Animate(Rig r)
 	{
@@ -549,13 +551,17 @@ void fragment() {
 			Vector2 headOff = new(2f * Mathf.Sin(t * Mathf.Tau / 6f + 0.7f), 0f);
 			Vector2 collar = new(7f * Mathf.Sin(t * Mathf.Tau / 1.9f) + 2f * Mathf.Sin(t * Mathf.Tau / 0.83f), -4f * Mathf.Sin(t * Mathf.Tau / 1.9f + 0.6f));
 			float breath = 0.5f - 0.5f * Mathf.Cos(t * Mathf.Tau / 4.2f);
-			// 眨眼：眼皮 0.07s 合上（越合越快）→ 停 0.04s → 0.13s 睁开（越睁越慢）
+			// 眨眼（用户 2026-11-17：原来 0.24s 一下太快，像闪了一下）：眼皮 0.10s 合上（先慢后快）→ 闭着停 0.06s → 0.22s 慢慢睁开，共 0.38s
+			const float Shut = 0.10f, Hold = 0.06f, Rise = 0.22f, Whole = Shut + Hold + Rise;
 			float b = t - blinkAt;
-			float close = b < 0f ? 0f : b < 0.07f ? (b / 0.07f) * (b / 0.07f) : b < 0.11f ? 1f : b < 0.24f ? 1f - Fx.OutCubic((b - 0.11f) / 0.13f) : 0f;
-			if (b >= 0.24f && t >= nextBlink)
+			float close = b < 0f ? 0f
+				: b < Shut ? Mathf.Pow(b / Shut, 1.6f)
+				: b < Shut + Hold ? 1f
+				: b < Whole ? 1f - SmoothStep((b - Shut - Hold) / Rise) : 0f;   // 睁开两头慢、中间快（OutCubic 开头太猛，一两帧就睁完了）
+			if (b >= Whole && t >= nextBlink)
 			{
 				blinkAt = t;
-				nextBlink = t + (Fx.Rng.NextDouble() < 0.2 ? 0.32 : Fx.Rand(2.8f, 5.2f));   // 偶尔连眨两下
+				nextBlink = t + (Fx.Rng.NextDouble() < 0.2 ? Whole + 0.12f : Fx.Rand(3f, 5.6f));   // 偶尔连眨两下
 			}
 			r.Open = 1f - close;
 			foreach (ShaderMaterial m in new[] { r.Warp, r.BlinkMat })
