@@ -69,6 +69,10 @@ dest_files=["res://.godot/imported/{skel_imp}"]
 """)
 
     write_texture(stage, f"{rel}/{base}.png", Image.open(src_dir / f"{base}.png"), png_uid)
+    for line in atlas_text.split("\n"):              # further atlas pages (<base>_2.png, ...): new resources, no uid
+        line = line.strip()
+        if line.endswith(".png") and line != f"{base}.png":
+            write_texture(stage, f"{rel}/{line}", Image.open(src_dir / line), None)
 
     mix_res = "".join(f'\n[sub_resource type="SpineAnimationMix" id="mix{i}"]\nfrom = "{a}"\nto = "{b}"\nmix = {m}\n'
                       for i, (a, b, m) in enumerate(mixes))

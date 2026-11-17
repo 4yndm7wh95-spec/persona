@@ -26,6 +26,8 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools/rig"))
 from spine_eval import Skeleton  # noqa: E402
 from mesh_rig import MeshRig  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import tween  # noqa: E402
 
 FINAL = ROOT / "art/p5/poses/final"
 POSES = ROOT / "art/p5/poses"
@@ -292,22 +294,100 @@ def time_map(anim):
     return f
 
 
+# in-betweens (tools/p5/tween.py, 2026-11-17): every change of picture gets up to TWEEN_MAX one-frame morphs, taken
+# out of the neighbouring holds (each hold keeps at least one frame of its own picture), so a move reads as motion
+# instead of a jump. The cut and the shot stay a snap (and on their frame): nothing is morphed into them.
+# TWEEN_SKIP lists pairs whose morph looked wrong on review (they keep a hard cut until a drawn in-between exists).
+TWEEN_MAX = 2
+TWEEN_TEX = 0.3                # in-betweens are on screen for one frame each: stored smaller than the poses
+NO_TWEEN_INTO = set(ANCHORS)
+# review 2026-11-17: the fall moves the whole body too far for a morph (two Jokers on top of each other)
+TWEEN_SKIP = {("die_buckle_a", "die_kneel_a2"), ("die_fall_a", "die_kneel_a2"), ("die_down_b", "die_fall_a")}
+
+
+def _tween_counts(anim):
+    """[(head, tail, tweens)] per hold: frames given to the in-betweens before / after it, and how many follow it."""
+    raw = frames_raw(anim)
+    n = _grid_counts(anim)
+    head, tail, tw = [0] * len(n), [0] * len(n), [0] * len(n)
+    left = list(n)
+    for i in range(len(raw) - 1):
+        a, b = raw[i][0], raw[i + 1][0]
+        if a == b or b in NO_TWEEN_INTO or tuple(sorted((a, b))) in TWEEN_SKIP:
+            continue
+        while tw[i] < TWEEN_MAX:
+            if left[i] > 1 and left[i] >= left[i + 1]:
+                left[i] -= 1
+                tail[i] += 1
+            elif left[i + 1] > 1:
+                left[i + 1] -= 1
+                head[i + 1] += 1
+            elif left[i] > 1:
+                left[i] -= 1
+                tail[i] += 1
+            else:
+                break
+            tw[i] += 1
+    return list(zip(head, tail, tw))
+
+
+def tween_name(a, b, t):
+    return "tw_" + tween.name_of(a, b, t)
+
+
+def tween_pairs():
+    pairs = set()
+    for anim in ANIMS:
+        raw = frames_raw(anim)
+        for i, (h, tl, k) in enumerate(_tween_counts(anim)):
+            if k:
+                pairs.add((raw[i][0], raw[i + 1][0]))
+    return sorted(pairs)
+
+
+TWEEN_T = (1 / 3, 1 / 2, 2 / 3)
+TWEENS = {}                    # tween_name -> (a, b, t) for every in-between some animation uses
+
+
 def frames(anim):
-    """[(pose, start, dur, fade)] on the 60 fps grid. A crossfade shows both pictures at once, so (user 2026-10-28: "two frames at
-    once") it is only kept between near-identical poses (silhouette overlap >= GHOST_IOU), capped at 0.03 s;
-    anything else is a hard cut."""
+    """[(picture, start, dur, fade)] on the 60 fps grid, in-betweens included (one frame each). Pairs with no
+    in-between keep the old rule: a crossfade only between near-identical poses (silhouette overlap >= GHOST_IOU),
+    capped at 0.03 s, anything else a hard cut."""
+    raw = frames_raw(anim)
+    n = _grid_counts(anim)
     out, t = [], 0.0
-    for i, ((p, _, _, fade), k) in enumerate(zip(frames_raw(anim), _grid_counts(anim))):
-        dur = k / GRID
+    plan = _tween_counts(anim)
+    for i, ((p, _, _, fade), k) in enumerate(zip(raw, n)):
+        head, tail, tw = plan[i]
+        own = k - head - tail
         if i > 0 and fade > 0:
-            prev = ANIMS[anim][i - 1][0]
-            fade = 0.0 if prev != p and silhouette_iou(prev, p) < GHOST_IOU else min(fade, 0.03, dur)
-        out.append((p, round(t, 4), dur, fade))
-        t += dur
+            prev = raw[i - 1][0]
+            if plan[i - 1][2]:
+                fade = 0.0
+            else:
+                fade = 0.0 if prev != p and silhouette_iou(prev, p) < GHOST_IOU else min(fade, 0.03, own / GRID)
+        out.append((p, round(t, 4), own / GRID, fade))
+        t += own / GRID
+        if tw:
+            b = raw[i + 1][0]
+            for j in range(tw):
+                s = (j + 1) / (tw + 1)
+                s = min(TWEEN_T, key=lambda v: abs(v - s))
+                name = tween_name(p, b, s)
+                TWEENS[name] = (p, b, s)
+                out.append((name, round(t, 4), 1 / GRID, 0.0))
+                t += 1 / GRID
     return out
 
 
 def crop(name):
+    if name in TWEENS:
+        a, b, s = TWEENS[name]
+        im = Image.open(tween.make_pair(a, b, [s])[s]).convert("RGBA")
+        box = im.getchannel("A").point(lambda v: 255 if v > 3 else 0).getbbox()
+        box = (max(0, box[0] - 2), max(0, box[1] - 2), min(im.width, box[2] + 2), min(im.height, box[3] + 2))
+        c = im.crop(box)
+        return c.resize((max(1, round(c.width * TWEEN_TEX)), max(1, round(c.height * TWEEN_TEX))), Image.LANCZOS), box
     im = Image.open(FINAL / f"{name}.png").convert("RGBA")
     box = im.getchannel("A").point(lambda v: 255 if v > 3 else 0).getbbox()
     box = (max(0, box[0] - 2), max(0, box[1] - 2), min(im.width, box[2] + 2), min(im.height, box[3] + 2))
@@ -426,27 +506,40 @@ def region(box, tex):
             "scaleY": round(K * (box[3] - box[1]) / tex.height, 4), "width": tex.width, "height": tex.height}
 
 
+def page_name(k):
+    return "joker.png" if k == 0 else f"joker_{k + 1}.png"
+
+
 def pack(images):
-    items = sorted(images.items(), key=lambda kv: -kv[1].height)
+    """shelf packing on as many PAGE x PAGE pages as needed (the in-betweens need more than one).
+    Returns ([page images], atlas text); page k is page_name(k)."""
+    items = sorted(images.items(), key=lambda kv: (kv[0].startswith("tw_"), -kv[1].height))   # poses on page 1
+    pages = [{}]
     x = y = shelf = 0
-    pos = {}
     for name, im in items:
         if x + im.width + 2 > PAGE:
             x, y, shelf = 0, y + shelf + 2, 0
-        pos[name] = (x, y)
+        if y + im.height > PAGE:
+            pages.append({})
+            x = y = shelf = 0
+        pages[-1][name] = (x, y)
         x += im.width + 2
         shelf = max(shelf, im.height)
-    h = 1
-    while h < y + shelf:
-        h *= 2
-    if h > PAGE:
-        raise SystemExit(f"atlas needs {PAGE}x{h}: lower TEX")
-    sheet = Image.new("RGBA", (PAGE, h), (0, 0, 0, 0))
-    lines = ["joker.png", f"size:{PAGE},{h}", "filter:Linear,Linear", "pma:false"]
-    for name, im in items:
-        sheet.paste(im, pos[name])
-        lines += [name, f"bounds:{pos[name][0]},{pos[name][1]},{im.width},{im.height}"]
-    return sheet, "\n".join(lines) + "\n"
+    sheets, lines = [], []
+    for k, pos in enumerate(pages):
+        bottom = max(y + images[n].height for n, (x, y) in pos.items())
+        h = 1
+        while h < bottom:
+            h *= 2
+        sheet = Image.new("RGBA", (PAGE, h), (0, 0, 0, 0))
+        if lines:
+            lines.append("")
+        lines += [page_name(k), f"size:{PAGE},{h}", "filter:Linear,Linear", "pma:false"]
+        for name, (x, y) in pos.items():
+            sheet.paste(images[name], (x, y))
+            lines += [name, f"bounds:{x},{y},{images[name].width},{images[name].height}"]
+        sheets.append(sheet)
+    return sheets, "\n".join(lines) + "\n"
 
 
 def hexa(a):
@@ -540,7 +633,7 @@ def prop_timelines(fr, segments, slot_defs):
 
 
 def build():
-    used = sorted({f[0] for a in ANIMS.values() for f in a})
+    used = sorted({f[0] for a in ANIMS for f in frames(a)})
     tex, att = {}, {"pose": {}, "fade": {}}
     bone_index = {"root": 0, "body": 1}
     bones = [{"name": "root"}, {"name": "body", "parent": "root"}]
@@ -652,11 +745,14 @@ def build():
 
 def export(data, tex):
     OUT.mkdir(parents=True, exist_ok=True)
-    sheet, atlas = pack(tex)
-    sheet.save(OUT / "joker.png")
+    sheets, atlas = pack(tex)
+    for k in range(1, 16):                      # stale extra pages from an earlier build
+        (OUT / page_name(k)).unlink(missing_ok=True)
+    for k, sheet in enumerate(sheets):
+        sheet.save(OUT / page_name(k))
     (OUT / "joker.atlas").write_text(atlas)
     (OUT / "joker.spine-json").write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")))
-    print("atlas", sheet.size, len(tex), "regions")
+    print("atlas", [s.size for s in sheets], len(tex), "regions")
 
 
 def previews(data, tex):
