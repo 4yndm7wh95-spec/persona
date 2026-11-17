@@ -39,10 +39,13 @@ public static class CharSelectScene
 	// 眼神特写往左挪多少（1080p 屏幕像素，按横幅缩放换算）：主眼从 x≈1124（压在斜条下）挪到 x≈760
 	private const float CutInShift = 364f;
 	/// <summary>原版左侧信息面板等眼神特写碎开之后再淡入（同 P3 mod 的介绍板），秒。</summary>
-	public const float InfoPanelDelay = 0.6f;
+	public const float InfoPanelDelay = Rise + CutInSplit + 0.15f;
 	private static readonly Color EyeTint = new(1f, 0.7f, 0.18f), EyeHot = new(1f, 0.95f, 0.78f);   // 金色光 / 白热的芯
-	// 斜切口（屏幕坐标，上端 → 下端）：切口左边的立绘不画，斜条压在切口上
-	private static readonly Vector2 CutA = new(1150f, 0f), CutB = new(1330f, 1080f);
+	// 斜切口（屏幕坐标，上端 → 下端）：切口左边的立绘不画，斜条压在切口上。斜度照 P3（约 11°），位置贴着手套左边（手套不被切）
+	private static readonly Vector2 CutA = new(1133f, 0f), CutB = new(1349f, 1080f);
+	// 入场节奏（照 P3）：立绘沿切口从下往上升入 0.45s → 落定后眼神特写切入 → 停 0.65s 后裂开（裂纹定格 0.05s）→ 碎片炸开 → 信息面板淡入
+	private const float Rise = 0.45f, CutInSplit = 0.65f;
+	private const float ShatterAt = Rise + CutInSplit + 0.05f;
 	// 锯齿球（charselect_assets.py：贴图尖角外半径 400 → 画布 700）：中心在画布 (520,460)
 	private static readonly Vector2 BurstAt = new(520f, 460f);
 	private const float BurstK = 700f / 400f;
@@ -65,7 +68,8 @@ public static class CharSelectScene
 		public Node2D Eye = null!;
 		public float Flare;                                                    // 选中那一下的眼睛闪光 0..1
 		public List<Sprite2D> Letters = new();
-		public List<ShaderMaterial> Bands = new();
+		public List<(ShaderMaterial m, float fromTop, float delay)> Bands = new();
+		public Node2D Tag = null!;
 		public Node2D SlabText = null!;
 		public ShaderMaterial Clip = null!;
 		public double T;
@@ -521,21 +525,29 @@ void fragment() {
 	COLOR = vec4(color.rgb, color.a * a * shown);
 }" };
 
-	/// <summary>切口上的斜条组：黑色实心斜板（压住切口）+ 红条 + 白色细线 + 外侧半透明宽带；斜板上滚动竖排小字。</summary>
+	/// <summary>
+	/// 切口上的斜条组（照 P3 mod 的 Slash：7 条宽窄不同的条，换成 P5 的黑 / 红 / 白），从切口往左量（负数 = 切口右边、面板里）：
+	/// 外侧半透明黑宽带 232..300 · 黑色实心斜板 -9..92（压住切口）· 斜板上贴切口的红细线 6..12 · 贴切口的亮红线 -12..-6 ·
+	/// 白条 108..116 · 红细线 134..137 · 最外侧白发丝线 206..208。斜板上滚动竖排小字（66px 处），斜板外沿一个红色标签块。
+	/// 入场：各条沿切线方向分别从上 / 下错开切入（0.4s OutExpo，延迟同 P3），0.3s 小字淡入并开始滚动，0.35s 标签块弹出。
+	/// </summary>
 	private static void Stripes(Rig r)
 	{
 		Control at = Layer(r.Screen, "Stripes");
 		float gs = r.Screen.GetGlobalTransform().Scale.X;
-		(float o0, float o1, Color c)[] bands =
+		(float o0, float o1, Color c, int enterFrom, float delay)[] bands =
 		{
-			(-10f, 74f, Ink),                               // 黑色斜板（往面板里多压 10px，盖住裁剪的边）
-			(74f, 90f, Crimson),                            // 红条
-			(102f, 107f, Colors.White),                     // 白色细线
-			(150f, 236f, new Color(Ink, 0.32f)),            // 外侧半透明宽带
+			(232f, 300f, new Color(Ink, 0.28f), +1, 0.12f),              // 外侧半透明黑宽带（从下）
+			(-9f, 92f, new Color(Ink, 0.97f), -1, 0f),                   // 黑色实心斜板（从上）
+			(6f, 12f, new Color(Crimson, 0.95f), +1, 0.05f),             // 斜板上贴切口的红细线（从下）
+			(-12f, -6f, new Color(1f, 0.22f, 0.28f, 0.95f), -1, 0.04f),  // 贴切口的亮红线（从上）
+			(108f, 116f, new Color(1f, 1f, 1f, 0.9f), -1, 0.1f),         // 白条（从上）
+			(134f, 137f, new Color(Crimson, 0.6f), +1, 0.16f),           // 红细线（从下）
+			(206f, 208f, new Color(1f, 1f, 1f, 0.35f), -1, 0.2f),        // 最外侧白发丝线（从上）
 		};
-		foreach (var (o0, o1, c) in bands)
+		foreach (var (o0, o1, c, enterFrom, delay) in bands)
 		{
-			ColorRect rect = new() { Position = new Vector2(CutA.X - 360f, -60f), Size = new Vector2(CutB.X - CutA.X + 420f, SH + 120f),
+			ColorRect rect = new() { Position = new Vector2(CutA.X - 400f, -60f), Size = new Vector2(CutB.X - CutA.X + 460f, SH + 120f),
 				MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = BandShader } };
 			ShaderMaterial m = (ShaderMaterial)rect.Material;
 			m.SetShaderParameter("cut_a", G(r, CutA));
@@ -544,24 +556,31 @@ void fragment() {
 			m.SetShaderParameter("o1", o1 * gs);
 			m.SetShaderParameter("color", c);
 			at.AddChild(rect);
-			r.Bands.Add(m);
+			r.Bands.Add((m, enterFrom < 0 ? 1f : 0f, delay));
 		}
-		// 竖排小字：沿斜板中线（切口左边 32px）往下读，字头朝面板；一个循环单元宽正好是贴图宽，滚动首尾相接
-		Texture2D text = Need("cs_slab_text");
 		Vector2 u = (CutB - CutA).Normalized();
 		Vector2 leftN = new(-u.Y, u.X);
-		float unit = text.GetSize().X * 0.5f;
-		Node2D lane = new() { Name = "SlabText", Position = CutA + leftN * 32f, Rotation = Mathf.Atan2(u.Y, u.X) };
+		// 竖排小字：沿斜板（切口左边 62px），从上往下读，字头朝面板；30px、半透明白；一个循环单元宽正好是贴图宽，滚动首尾相接（26px/s）
+		Texture2D text = Need("cs_slab_text");
+		const float k = 0.44f;
+		float unit = text.GetSize().X * k;
+		Node2D lane = new() { Name = "SlabText", Position = CutA + leftN * 62f, Rotation = Mathf.Atan2(u.Y, u.X), Modulate = new Color(1f, 1f, 1f, 0.6f) };
 		at.AddChild(lane);
 		Node2D scroll = new() { Position = new Vector2(-unit - 120f, 0f) };
 		lane.AddChild(scroll);
 		for (int i = 0; i < 3; i++)
 		{
-			scroll.AddChild(new Sprite2D { Texture = text, Centered = false, Scale = Vector2.One * 0.5f, Position = new Vector2(i * unit, -24f) });
+			scroll.AddChild(new Sprite2D { Texture = text, Centered = false, Scale = Vector2.One * k, Position = new Vector2(i * unit, -text.GetSize().Y * k * 0.5f) });
 		}
 		Tween roll = scroll.CreateTween().SetLoops();
-		roll.TweenProperty(scroll, "position:x", -120f, unit / 28.0).From(-unit - 120f);
+		roll.TweenProperty(scroll, "position:x", -120f, unit / 26.0).From(-unit - 120f);
 		r.SlabText = lane;
+		// 红色标签块（切口往下 72% 处）：P3 贴在斜板外沿，但这里外面是红天，红块看不见 → 压在黑斜板内侧（往左 28px，小字的里侧），竖条 16×140 + 下面一小块白
+		Node2D tag = new() { Name = "Tag", Position = CutA + (CutB - CutA) * 0.72f + leftN * 28f, Rotation = Mathf.Atan2(u.Y, u.X) - Mathf.Pi / 2f };
+		at.AddChild(tag);
+		Fx.Poly(tag, new[] { new Vector2(-8f, -70f), new Vector2(8f, -70f), new Vector2(8f, 70f), new Vector2(-8f, 70f) }, new Color(Crimson, 0.95f));
+		Fx.Poly(tag, new[] { new Vector2(-8f, 76f), new Vector2(8f, 76f), new Vector2(8f, 90f), new Vector2(-8f, 90f) }, new Color(1f, 1f, 1f, 0.9f));
+		r.Tag = tag;
 	}
 
 	// ───────────────────────── 动起来 ─────────────────────────
@@ -646,83 +665,93 @@ void fragment() {
 	}
 
 	/// <summary>
-	/// 入场：白闪一下；斜条沿切口方向错开着从上 / 下画出来；立绘从右边带红 / 黑两道残影滑入（残影也按切口裁）；
-	/// 左上标题从左边滑进来。intro：同一时刻原版眼神特写切入 + 召唤舞台（横幅往左挪、看得见主眼），碎开那一下眼睛的金光猛地一亮（光条拉长），再退回常驻。
+	/// 入场（照 P3 mod 的选人界面）：
+	/// 0s 立绘沿斜切口从下往上升入（0.45s OutExpo，0.15s 淡入，后面拖红 / 白两道残影，0.3s 后淡掉；切口始终落在同一条斜线上）、
+	///    斜条各自从上 / 下错开切入、面板底亮出、左上标题从左滑入；0.3s 小字淡入、0.35s 标签块弹出；
+	/// 0.45s 立绘落定 → 眼神特写切入（横幅插在立绘下面、往左挪到看得见主眼的地方；背景压暗，不用召唤舞台 —— 不会整片闪白）；
+	/// 1.15s 裂开：横幅上的裂纹 + 冲击点一小团闪光 + 碎片，同一刻立绘眼睛金光一亮；压暗在 0.6s 内退掉；随后原版信息面板淡入（CharSelectPatches）。
+	/// 声音：0s 切入「嗖」（立绘 / 斜条进场）→ 0.65s 原版眼神特写的那一下（主音）→ 1.15s 碎裂 + 低频垫底；之后安静。
 	/// </summary>
 	private static void Entrance(Rig r, bool intro)
 	{
 		Node2D g = r.Group;
 		Vector2 home = g.Position;
-		const float slide = 0.38f;
-		ColorRect flash = new() { Position = new Vector2(-300f, -300f), Size = new Vector2(SW + 600f, SH + 600f), Color = new Color(1f, 0.96f, 0.96f, 0.5f),
-			MouseFilter = Control.MouseFilterEnum.Ignore };
-		r.Screen.AddChild(flash);
-		Fx.Animate(flash, 0, 0.16, t => flash.Color = new Color(1f, 0.96f, 0.96f, 0.5f * (1f - t)));
-		Fx.FreeAfter(flash, 0.2);
-		// 斜条：错开 0.05s，一上一下
-		for (int i = 0; i < r.Bands.Count; i++)
+		// 斜条
+		foreach (var (m, fromTop, delay) in r.Bands)
 		{
-			ShaderMaterial m = r.Bands[i];
-			m.SetShaderParameter("from_top", i % 2 == 0 ? 1f : 0f);
-			m.SetShaderParameter("reveal", 0f);
-			Fx.Animate(r.SlabText, 0.04 * i, 0.32, t => m.SetShaderParameter("reveal", Ease5.OutExpo(t)));
+			ShaderMaterial mat = m;
+			mat.SetShaderParameter("from_top", fromTop);
+			mat.SetShaderParameter("reveal", 0f);
+			Fx.Animate(r.SlabText, delay, 0.4, t => mat.SetShaderParameter("reveal", Ease5.OutExpo(t)));
 		}
 		r.SlabText.Modulate = new Color(1f, 1f, 1f, 0f);
-		Fx.Animate(r.SlabText, 0.22, 0.3, t => r.SlabText.Modulate = new Color(1f, 1f, 1f, t));
+		Fx.Animate(r.SlabText, 0.3, 0.4, t => r.SlabText.Modulate = new Color(1f, 1f, 1f, 0.6f * t));
+		r.Tag.Scale = Vector2.Zero;
+		Fx.Animate(r.Tag, 0.35, 0.3, t => r.Tag.Scale = Vector2.One * Mathf.Lerp(1.6f, 1f, Ease5.OutBack(t)) * Mathf.Clamp(t * 3f, 0f, 1f));
 		// 面板底跟着斜条一起亮出来
 		r.Panel.Modulate = new Color(1f, 1f, 1f, 0f);
-		Fx.Animate(r.Panel, 0, 0.18, t => r.Panel.Modulate = new Color(1f, 1f, 1f, t));
+		Fx.Animate(r.Panel, 0, 0.2, t => r.Panel.Modulate = new Color(1f, 1f, 1f, t));
 		// 标题从左边滑进来
 		Vector2 hHome = r.Header.Position;
 		r.Header.Position = hHome + new Vector2(-900f, 0f);
-		Fx.Animate(r.Header, 0.06, 0.36, t => r.Header.Position = hHome + new Vector2(-900f * (1f - Ease5.OutExpo(t)), 0f));
-		// 残影：同一张身体图的红 / 黑剪影，落后一点，也按切口裁
-		var echoes = new List<(Sprite2D s, float lag)>();
+		Fx.Animate(r.Header, 0.1, 0.4, t => r.Header.Position = hHome + new Vector2(-900f * (1f - Ease5.OutExpo(t)), 0f));
+		// 立绘：沿切口方向从下往上升入（起点在切口方向往下 520px），两道残影（同一张身体图的剪影，也按切口裁）落后 0.05 / 0.1s
+		Vector2 from = home + (CutB - CutA).Normalized() * 520f;
+		Vector2 P(float t) => from.Lerp(home, Ease5.OutExpo(Mathf.Clamp(t / Rise, 0f, 1f)));
+		var ghosts = new List<(Sprite2D s, float lag, float a)>();
 		Texture2D body = Need("cs_body");
-		foreach ((Color c, float lag) in new[] { (Ink, 0.09f), (Crimson, 0.05f) })
+		foreach ((Color c, float lag, float a) in new[] { (new Color(1f, 0.92f, 0.92f), 0.1f, 0.3f), (Crimson, 0.05f, 0.5f) })
 		{
-			Sprite2D e = new() { Texture = body, Centered = false, Scale = Vector2.One * PScale, Material = ClipMaterial(r, 1f, c) };
+			Sprite2D e = new() { Texture = body, Centered = false, Scale = Vector2.One * PScale, Material = ClipMaterial(r, 1f, c), Position = from };
 			r.Screen.AddChild(e);
 			r.Screen.MoveChild(e, g.GetIndex());
-			echoes.Add((e, lag));
+			ghosts.Add((e, lag, a));
 		}
-		float X(float t) => home.X + 560f * (1f - Ease5.OutExpo(Mathf.Clamp(t / slide, 0f, 1f)));
-		g.Position = new Vector2(X(0f), home.Y);
+		g.Position = from;
 		g.Modulate = new Color(1f, 1f, 1f, 0f);
-		Fx.Animate(g, 0, slide + 0.2, u =>
+		Fx.Animate(g, 0, 0.6, u =>
 		{
-			float t = u * (slide + 0.2f);
-			g.Position = new Vector2(X(t), home.Y);
-			g.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(t / 0.12f, 0f, 1f));
-			foreach (var (s, lag) in echoes)
+			float t = u * 0.6f;
+			g.Position = P(t);
+			g.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(t / 0.15f, 0f, 1f));
+			float fade = (1f - Fx.InCubic(Mathf.Clamp((t - 0.3f) / 0.3f, 0f, 1f))) * Mathf.Clamp(t / 0.1f, 0f, 1f);
+			foreach (var (s, lag, a) in ghosts)
 			{
 				if (!GodotObject.IsInstanceValid(s)) continue;
-				s.Position = new Vector2(X(t - lag), home.Y);
-				s.Modulate = new Color(1f, 1f, 1f, 0.75f * (1f - Mathf.Clamp((t - slide * 0.6f) / 0.25f, 0f, 1f)) * Mathf.Clamp(t / 0.06f, 0f, 1f));
+				s.Position = P(t - lag);
+				s.Modulate = new Color(1f, 1f, 1f, a * fade);
 			}
 		});
-		foreach (var (s, _) in echoes) Fx.FreeAfter(s, slide + 0.3);
+		foreach (var (s, _, _) in ghosts) Fx.FreeAfter(s, 0.65);
+		Sfx.Play(Sfx.CutIn, 0.7f);                              // 立绘 / 斜条进场：一声切入
 		if (!intro)
 		{
-			Sfx.Play(Sfx.CutIn, 0.6f);                      // 不播切入时只有立绘 / 斜条进场，一声轻的切入
 			return;
 		}
-		// 眼神特写和入场同时切进来（用户 2026-11-17：不要后入），整条往左挪，主眼落在斜条左边看得见的地方，碎裂也从主眼开始。
-		// 声音分三层，各管一件事、不叠在一起：0.03s 切入「嗖」（铺垫，SummonStage 里）→ 0.2s 原版眼神特写的那一下（主音，CutIn 里）
-		// → 0.52s 碎裂（高潮，CutIn 里）+ 一层低频垫底，和眼睛闪光同一刻；之后安静。原版静默猎手的选中音效在 CharSelectPatches 里拦掉了。
-		Vector2 screen = Fx.Screen(r.Back);
-		CutInPlayback clip = new(SummonStage.EvokeAt - 0.05f) { Offset = new Vector2(-CutInShift * CutIn.BandScale(screen) / 1.23f, 0f) };
-		Vector2 eyeAt = CutIn.MainEye(screen) + clip.Offset;
-		clip.ShatterFrom = eyeAt;
-		SummonStage.Play(r.Back, r.Front, r.Back.GetCanvasTransform().AffineInverse() * eyeAt, maskFlame: false, playback: clip);
-		CutIn.Eyes(r.Back, clip);
-		Fx.After(g, SummonStage.EvokeAt, () =>
+		// 立绘落定后：眼神特写
+		Fx.After(g, Rise, () =>
 		{
-			Sfx.Play(Sfx.SubBoom, 0.45f, 0.03f);              // 和 CutIn 里的碎裂声同一刻（碎裂在裂纹定格之后）
-			Glow.Flash(r.Front, r.Eye.GlobalPosition, EyeTint, 300f * g.GetGlobalTransform().Scale.X, 0.35f);
-			Tween t = r.Group.CreateTween();
-			t.TweenMethod(Callable.From<float>(v => r.Flare = v), 0f, 1f, 0.08);
-			t.TweenMethod(Callable.From<float>(v => r.Flare = v), 1f, 0f, 1.0).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
+			Vector2 screen = Fx.Screen(r.Back);
+			// 背景压暗（在立绘 / 斜条后面，横幅前面会盖上来）：0.2s 压到 0.55，碎开后 0.6s 退掉
+			ColorRect dim = new() { Position = new Vector2(-300f, -300f), Size = new Vector2(SW + 600f, SH + 600f), Color = new Color(0.04f, 0f, 0.015f, 0f),
+				MouseFilter = Control.MouseFilterEnum.Ignore };
+			r.Back.AddChild(dim);
+			Fx.Animate(dim, 0, 0.2, t => dim.Color = new Color(0.04f, 0f, 0.015f, 0.55f * Ease5.OutQuint(t)));
+			CutInPlayback clip = new(CutInSplit) { Offset = new Vector2(-CutInShift * CutIn.BandScale(screen) / 1.23f, 0f) };
+			Vector2 eyeAt = CutIn.MainEye(screen) + clip.Offset;
+			clip.ShatterFrom = eyeAt;
+			CutIn.Eyes(r.Back, clip);
+			Fx.After(g, ShatterAt - Rise, () =>
+			{
+				Vector2 impact = r.Back.GetCanvasTransform().AffineInverse() * eyeAt;
+				Glow.Flash(r.Back, impact, new Color(1f, 0.93f, 0.88f), 380f * r.Screen.GetGlobalTransform().Scale.X, 0.2f);   // 冲击点一小团闪光（在立绘后面）
+				Sfx.Play(Sfx.SubBoom, 0.45f, 0.033f);                 // 和 CutIn 里的碎裂声同一刻
+				Fx.Animate(dim, 0, 0.6, t => dim.Color = new Color(0.04f, 0f, 0.015f, 0.55f * (1f - Fx.InCubic(t))));
+				Fx.FreeAfter(dim, 0.65);
+				Tween t = r.Group.CreateTween();
+				t.TweenMethod(Callable.From<float>(v => r.Flare = v), 0f, 1f, 0.08);
+				t.TweenMethod(Callable.From<float>(v => r.Flare = v), 1f, 0f, 1.0).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
+			});
 		});
 	}
 }
