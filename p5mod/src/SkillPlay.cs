@@ -275,7 +275,7 @@ public static class SkillPlay
 							}
 						}
 					}
-					SkillFx.Wail(layer, back, Joker.PosePoint(joker, ReadyFx.MaskFace), victims);
+					SkillFx.Wail(layer, back, Joker.PosePoint(joker, ReadyFx.MaskFace), victims, sound: false);   // 尖啸不放嘶喊声（用户 2026-11-18）
 					break;
 				}
 				case Kind.TimeSlow:

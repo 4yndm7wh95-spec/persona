@@ -223,9 +223,10 @@ void fragment() {
 		{
 			HitStop.Request(0.08);
 			Fx.Shake(2);
-			// 音效只留干净的三拍：刀命中 →「咔、咔、咔」三下轻的扣锁 → 一声重压（用户 2026-11-18：之前叠了下压双音、风声、闷响，太乱）
-			Sfx.Play(Sfx.Slam, 0.32f);
-			Sfx.Play(Sfx.SubBoom, 0.34f);
+			// 音效只留干净的三拍：刀命中 →「咔、咔、咔」三下轻的扣锁 → 一声重压（用户 2026-11-18：之前叠了下压双音、风声、闷响，太乱）。
+			// 重压用捏碎的低沉闷响（crush，起音 10ms、几乎全在 200Hz 以下）+ 低频重击；原来的 punch_taiman 前面有 0.2s 的挥动风声再接一声脆响，像鞭子抽
+			Sfx.Play(Sfx.Crush, 0.6f);
+			Sfx.Play(Sfx.SubBoom, 0.36f);
 			Glow.Flash(layer, waist, Pal5.Hot, h * 0.9f, 0.12f);
 			Glow.Flash(bk, waist, Pal5.Bright, h * 3.2f, 0.45f);
 			Glow.Flash(bk, feet, new Color(0.7f, 0.03f, 0.08f), h * 2.6f, 0.6f);
