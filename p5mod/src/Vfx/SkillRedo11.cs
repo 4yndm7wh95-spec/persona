@@ -239,27 +239,24 @@ void fragment() {
 		Glow.Flash(back, mid, new Color(0.7f, 0.03f, 0.12f), h * 2f, storm + 0.3f);
 		// 弃掉的牌：从手里甩出去烧掉（最多画 4 张）
 		if (n > 0) SkillFx.Discard(front, c.Hand, Mathf.Min(n, 4), f);
-		// 风暴：交错乱窜的疾光，越到后面越密
-		int streaks = 16 + 2 * n;
-		for (int i = 0; i < streaks; i++)
+		// 风暴（用户 2026-11-18：钢铁风暴纯表达、没什么特效 → 主体改成刀光风暴）：用着色器横劈在他周围的三维空间里连劈六刀，
+		// 角度 / 倾斜 / 方向 / 大小各不相同、一刀接一刀，钢铁的银白带红边；每刀扫到最近处迸火星和金属碎光
+		for (int i = 0; i < 6; i++)
 		{
-			float d = storm * Mathf.Pow(Fx.Rand(0f, 1f), 0.7f) * 0.9f;
-			float ang = Fx.Rand(0f, Mathf.Tau);
-			Vector2 dir = Vector2.Right.Rotated(ang);
-			Vector2 center = mid + new Vector2(Fx.Rand(-0.35f, 0.35f) * h, Fx.Rand(-0.45f, 0.4f) * h);
-			Vector2 a = center - dir * h * Fx.Rand(0.7f, 1.1f), b = center + dir * h * Fx.Rand(0.7f, 1.1f);
-			Color col = i % 3 == 0 ? new Color(1f, 0.15f, 0.22f) : new Color(1f, 0.85f, 0.85f);
-			StreakSharp(i % 2 == 0 ? front : back, e => a.Lerp(b, e), d, Fx.Rand(0.13f, 0.2f), h * Fx.Rand(0.45f, 0.7f), Fx.Rand(18f, 30f) * u, col, 1.6f);
-			if (i % 3 == 0)
+			int k = i;
+			float d = 0.03f + 0.065f * k;
+			float dir = k % 2 == 0 ? f : -f;
+			Vector2 ctr = mid + new Vector2(Fx.Rand(-0.25f, 0.25f) * h, Fx.Rand(-0.3f, 0.2f) * h);
+			float rx = h * Fx.Rand(0.55f, 0.85f), ry = rx * Fx.Rand(0.22f, 0.42f), tilt = Fx.Rand(-0.75f, 0.75f);
+			SlashArc(k % 3 == 1 ? back : front, ctr, rx, ry, tilt, dir, d, 0.13f, 0.2f, h, k % 3 == 2 ? 0.35f : 0.8f, 0.9f);
+			Fx.After(front, d + 0.035f, () =>
 			{
-				Vector2 m = a.Lerp(b, Fx.Rand(0.4f, 0.6f));
-				Fx.After(front, d + 0.07f, () =>
-				{
-					Glow.Glint(front, m, 0.5f);
-					Glow.Flash(front, m, new Color(1f, 0.35f, 0.4f), h * 0.25f, 0.15f);
-				});
-				Phantom.Shards(front, m, 4, 250f * u, 600f * u, dir, 60f, 0.25f, 400f * u, 12f * u, d + 0.07f);   // 交错处迸的金属火花
-			}
+				Vector2 near = ctr + new Vector2(0f, ry).Rotated(tilt * dir);
+				Phantom.Shards(front, near, 6, 300f * u, 800f * u, new Vector2(dir, 0.2f), 60f, 0.3f, 600f * u, 14f * u);
+				Glow.Sparks(front, near, 8, 100f * u, 380f * u, 0.4f, new[] { new Color(0.95f, 0.95f, 1f), new Color(0.9f, 0.1f, 0.18f) }, 500f * u, 0.03f * u, 0.07f * u, new Vector2(dir, 0f), 60f);
+				Glow.Glint(front, near, 0.45f);
+				if (k % 2 == 0) S("gx_slice", 0.1f);
+			});
 		}
 		Gather(front, c.Hand, h, u, storm, 18, 0.8f);
 		Fx.After(front, storm, () =>

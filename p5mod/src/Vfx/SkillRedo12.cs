@@ -142,6 +142,7 @@ uniform float alpha = 1.0;
 uniform float clock = 0.0;
 uniform float seed = 0.0;
 uniform float flip = 0.0;
+uniform float steel = 0.0;      // 0 = 暗红刀光，1 = 钢铁的银白（钢铁风暴）
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
 	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y); }
@@ -165,7 +166,7 @@ void fragment() {
 	float prof = 1.0 - clamp(abs(dr) / max(w, 0.001), 0.0, 1.0);
 	float on = step(behind, tail);
 	float fade = on * (1.0 - smoothstep(0.35, 1.0, k)) * smoothstep(0.15, 0.55, n1 * 0.6 + n2 * 0.4 + (1.0 - k) * 0.8 - 0.2);
-	float core = pow(prof, 3.0) * (1.0 - k * 0.8) * (0.4 + 0.6 * near) * fade;   // 一定要乘 fade：不然整个椭圆一圈都亮，远侧那段在画面上就是一条直白线
+	float core = pow(prof, 6.0) * (1.0 - k * 0.85) * (0.3 + 0.7 * near) * fade;     // 白芯收细   // 一定要乘 fade：不然整个椭圆一圈都亮，远侧那段在画面上就是一条直白线
 	float bodyA = smoothstep(0.0, 0.25, prof) * fade;
 	float streak = smoothstep(0.55, 0.9, n2) * prof * fade;
 	float headGlow = exp(-behind / 0.08) * exp(-abs(r - 1.0) / max(w * 1.5, 0.02)) * on;   // 只在刀身附近亮（不限径向的话整条径向线都会亮成一道直光）
@@ -173,15 +174,27 @@ void fragment() {
 	// 所有东西只留在刀身附近（硬遮罩，防任何一项漏出来画成大片）
 	float ring = 1.0 - smoothstep(0.0, 0.25, abs(r - 1.0));
 	bodyA *= ring; core *= ring; streak *= ring; headGlow *= ring;
-	vec3 col = vec3(0.12, 0.0, 0.03) * bodyA
-		+ vec3(0.95, 0.08, 0.18) * (bodyA * (0.55 + 0.45 * near) + streak * 0.6 + inner * 0.35)
-		+ vec3(1.0, 0.9, 0.88) * (core + headGlow * 0.9 + streak * 0.25);
-	float a = clamp(bodyA * 0.9 + headGlow * 0.6 + inner * 0.25, 0.0, 1.0) * alpha;
+	// 细节（用户 2026-11-18：太亮太卡通 → 压暗、丰富细节）：
+	// 顺着刀走的几道细刻痕、被噪声打出的暗纹、沿刃忽闪的细小亮点
+	float across = dr / max(w, 0.001);
+	float grooves = smoothstep(0.8, 1.0, sin(across * 9.0 + n1 * 5.0)) * prof * fade * ring;
+	float darkVein = smoothstep(0.5, 0.85, noise(vec2(th * 35.0 - clock * 2.0, across * 2.5 + seed)));
+	vec2 cellId = floor(vec2(th * 90.0, across * 3.0));
+	float glint = step(0.965, hash(cellId + floor(clock * 6.0))) * prof * fade * ring * near;
+	vec3 deep = mix(vec3(0.05, 0.0, 0.012), vec3(0.06, 0.065, 0.075), steel);
+	vec3 mid = mix(vec3(0.55, 0.03, 0.09), vec3(0.5, 0.52, 0.58), steel);
+	vec3 edge = mix(vec3(0.85, 0.08, 0.16), vec3(0.85, 0.2, 0.26), steel);
+	vec3 hot = mix(vec3(1.0, 0.8, 0.78), vec3(0.95, 0.97, 1.0), steel);
+	vec3 col = deep * bodyA
+		+ mid * bodyA * (0.35 + 0.35 * near) * (1.0 - 0.55 * darkVein)
+		+ edge * (streak * 0.45 + grooves * 0.35 + smoothstep(0.75, 0.0, prof) * bodyA * 0.35)
+		+ hot * (core * 0.85 + headGlow * 0.7 + glint * 0.9 + streak * streak * 0.15);
+	float a = clamp(bodyA * 0.92 + headGlow * 0.5 + glint * 0.5, 0.0, 1.0) * alpha;
 	COLOR = vec4(col * alpha, a);
 }" };
 
 	/// <summary>放一道由里向外的横劈：t0 起，swing 秒刀头从 3.6 扫到 0.1 弧度（ease out），之后 fade 秒尾巴追上去收掉。</summary>
-	internal static void SlashArc(Control layer, Vector2 ctr, float rx, float ry, float tilt, float f, float t0, float swing, float fade, float h)
+	internal static void SlashArc(Control layer, Vector2 ctr, float rx, float ry, float tilt, float f, float t0, float swing, float fade, float h, float steel = 0f, float gain = 1f)
 	{
 		Vector2 size = new(rx * 2.8f, ry * 2.8f + h * 0.5f);
 		Node2D root = Fx.Root(layer, ctr, "P5SlashArc", t0 + swing + fade + 0.1);
@@ -192,6 +205,7 @@ void fragment() {
 		m.SetShaderParameter("tilt", tilt);
 		m.SetShaderParameter("flip", f < 0f ? 1f : 0f);
 		m.SetShaderParameter("seed", Fx.Rand(0f, 20f));
+		m.SetShaderParameter("steel", steel);
 		ColorRect r = new() { Size = size, Position = -size * 0.5f, Material = m, MouseFilter = Control.MouseFilterEnum.Ignore };
 		root.AddChild(r);
 		root.Visible = false;
@@ -205,7 +219,7 @@ void fragment() {
 			float tail = Mathf.Lerp(0.6f, 2.4f, Mathf.Min(1f, s / (swing * 0.6f))) * (1f - Fx.InCubic(Ease5.Seg(s, swing, fade)));
 			m.SetShaderParameter("tail", Mathf.Max(0.02f, tail));
 			m.SetShaderParameter("clock", s * 4f);
-			m.SetShaderParameter("alpha", Mathf.Min(1f, s / 0.02f) * (1f - Ease5.Seg(s, swing + fade * 0.6f, fade * 0.4f)));
+			m.SetShaderParameter("alpha", gain * Mathf.Min(1f, s / 0.02f) * (1f - Ease5.Seg(s, swing + fade * 0.6f, fade * 0.4f)));
 		});
 	}
 
@@ -275,6 +289,7 @@ void fragment() {
 		const float th0 = 3.6f, th1 = -0.35f, swing = 0.17f;   // 刀头的角度（y 朝下，π/2 = 正前方最近处），从左后方扫到右前方
 		Func<float, Vector2> onArc = th => ctr + new Vector2(Mathf.Cos(th) * rx * f, Mathf.Sin(th) * ry).Rotated(tilt * f);
 		Func<float, float> headAt = s => Mathf.Lerp(th0, th1, Fx.OutCubic(Mathf.Clamp((s - fling0) / swing, 0f, 1f)));
+		SlashArc(front, ctr, rx * 1.04f, ry * 1.06f, tilt + 0.04f, f, fling0 + 0.04f, swing, 0.28f, h, 0f, 0.45f);   // 延迟半拍、更暗的残刀（层次）
 		SlashArc(front, ctr, rx, ry, tilt, f, fling0, swing, 0.32f, h);
 		// 刀头一路往外迸碎光、火星（实时）
 		for (int i = 0; i < 8; i++)
@@ -292,8 +307,8 @@ void fragment() {
 			HitStop.Request(0.06);
 			Fx.Shake(2);
 			Vector2 near = onArc(1.57f);
-			Glow.Flash(front, near, Hot, h * 0.45f, 0.1f);
-			Glow.Flash(back, near, Red, h * 2.0f, 0.4f);
+			Glow.Flash(front, near, new Color(1f, 0.75f, 0.72f), h * 0.3f, 0.08f);
+			Glow.Flash(back, near, new Color(0.45f, 0.02f, 0.07f), h * 1.8f, 0.4f);
 			// 不放十字光：它的横向光芒会留成一道从刀尖往外伸的白线（用户 2026-11-18：不要这些白线）
 		});
 		Func<float, float, Vector2> arcAtT = (e, s) => onArc(Mathf.Lerp(2.4f, 0.6f, e));   // 出弹用：刀扫过的身前那一段
