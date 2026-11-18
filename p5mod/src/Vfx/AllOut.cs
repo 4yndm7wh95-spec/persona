@@ -299,6 +299,7 @@ public static class AllOut
 		}
 
 		var shards = new List<Shard>();
+		var cracks = new List<Crack>();
 		Vector2 focus = foes.Count > 0 ? union.GetCenter() : new Vector2(W * 0.66f, H * 0.45f);
 
 		// ── 声音 ──
@@ -319,14 +320,16 @@ public static class AllOut
 			if (T >= CrackAt && !cracked)
 			{
 				cracked = true;
-				shards.AddRange(BuildShards(shardLayer, stage, focus, screen, rng, crackLayer));
+				var built = BuildShards(shardLayer, stage, focus, screen, rng, crackLayer);
+				shards.AddRange(built.Item1);
+				cracks.AddRange(built.Item2);
 			}
-			if (cracked)
+			if (cracked && !broke)
 			{
-				float c = Mathf.Clamp((T - CrackAt) / (ShatterAt - CrackAt), 0f, 1f);
-				crackLayer.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(c * 3f, 0f, 1f));
-				crackLayer.Scale = Vector2.One * Mathf.Lerp(0.6f, 1f, Ease(c));
-				crackLayer.Position = focus * (1f - crackLayer.Scale.X);
+				// 裂纹从撞击点往外窜：0.08 秒到画面外（先快后慢）
+				float c = Mathf.Clamp((T - CrackAt) / 0.08f, 0f, 1f);
+				float reach = 2400f * Mathf.Pow(c, 0.7f) + 30f;
+				foreach (Crack ck in cracks) GrowCrack(ck, reach);
 			}
 			// 碎开：离屏画面定住，玻璃片飞散，下面是原版收尾
 			if (T >= ShatterAt && !broke)
@@ -356,6 +359,9 @@ public static class AllOut
 						n.Scale = Vector2.One * sc;
 						ci.Modulate = new Color(1f, 1f, 1f, a);
 					}
+					// 玻璃的厚度：分开以后才看得到（侧边一层暗红随飞行错开），白边随之亮起
+					sh.Back.Position += new Vector2(7f, 9f) * sc * Mathf.Clamp(fly * 3f, 0f, 1f);
+					sh.Edge.Modulate = new Color(1f, 1f, 1f, a * Mathf.Clamp(fly * 4f, 0f, 1f));
 				}
 				fin?.Seek(Mathf.Min(SrcStart + d, AllOutFinale.End - 0.02f));
 				if (fin != null)
@@ -364,8 +370,8 @@ public static class AllOut
 					fin.Back.Scale = Vector2.One * Mathf.Lerp(1.2f, 1f, bq);
 					fin.Back.Rotation = Mathf.Lerp(0.05f, 0f, bq);
 					float jq = Quint(Mathf.Clamp(d / (EnterLen * 0.85f), 0f, 1f));
-					fin.Front.Position = new Vector2(W * 0.34f, H * 0.05f) * (1f - jq);
-					fin.Front.Scale = Vector2.One * Mathf.Lerp(1.1f, 1f, jq);
+					fin.Front.Position = new Vector2(W * 0.26f, H * 0.03f) * (1f - jq);
+					fin.Front.Scale = Vector2.One * Mathf.Lerp(1.04f, 1f, jq);
 					float tq = Quint(Mathf.Clamp((d - 0.04f) / EnterLen, 0f, 1f));
 					fin.Text.Position = new Vector2(-W * 0.14f, 0f) * (1f - tq);
 					fin.Text.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((d - 0.04f) / 0.08f, 0f, 1f));
@@ -476,52 +482,105 @@ public static class AllOut
 		}
 	}
 
-	/// <summary>以 focus 为中心放射状的玻璃片（环 × 扇区，顶点抖动），贴图 = 离屏画面；同时画出裂纹。</summary>
-	private static List<Shard> BuildShards(Node2D layer, SubViewport stage, Vector2 focus, Vector2 screen, RandomNumberGenerator rng, Node2D cracks)
+	/// <summary>一道裂纹：折线 + 起止粗细，Dist = 每个点离撞击点多远（裂纹从撞击点往外长）。</summary>
+	private sealed class Crack
 	{
-		float[] rings = { 0f, 70f, 170f, 320f, 520f, 800f, 1150f, 1600f, 2300f };
-		int A = 13;
+		public Vector2[] Pts = Array.Empty<Vector2>();
+		public float[] Dist = Array.Empty<float>();
+		public float W0, W1;
+		public Polygon2D Core = null!, Glow = null!;
+	}
+
+	/// <summary>
+	/// 以 focus 为中心的玻璃片（环 × 扇区，顶点抖动；大片再沿对角切开），边是有走向的折线（裂纹和玻璃片共用同一条折线，碎开时严丝合缝）。
+	/// 裂纹：放射线从撞击点一路到画面外、越远越细；环线只在近处三圈、更细；撞击点一圈细碎的短裂纹。贴图 = 离屏画面。
+	/// </summary>
+	private static (List<Shard>, List<Crack>) BuildShards(Node2D layer, SubViewport stage, Vector2 focus, Vector2 screen, RandomNumberGenerator rng, Node2D crackLayer)
+	{
+		float[] rings = { 0f, 46f, 120f, 240f, 420f, 680f, 1020f, 1500f, 2300f };
+		const int A = 12;
 		var v = new Vector2[rings.Length, A];
 		float a0 = rng.RandfRange(0f, Mathf.Tau);
 		float[] angs = new float[A];
-		for (int a = 0; a < A; a++) angs[a] = a0 + Mathf.Tau * (a + rng.RandfRange(-0.3f, 0.3f)) / A;
+		for (int a = 0; a < A; a++) angs[a] = a0 + Mathf.Tau * (a + rng.RandfRange(-0.32f, 0.32f)) / A;
 		for (int r = 0; r < rings.Length; r++)
 		{
 			for (int a = 0; a < A; a++)
 			{
-				float rr = rings[r] * (r == 0 ? 0f : rng.RandfRange(0.85f, 1.15f));
-				float aa = angs[a] + (r == 0 ? 0f : rng.RandfRange(-0.08f, 0.08f));
+				float rr = rings[r] * (r == 0 ? 0f : rng.RandfRange(0.82f, 1.18f));
+				float aa = angs[a] + (r == 0 ? 0f : rng.RandfRange(-0.07f, 0.07f) * (1f + r * 0.15f));
 				v[r, a] = focus + Vector2.FromAngle(aa) * rr;
 			}
 		}
+		// 折线边：同一条边（不管从哪头取）只生成一次
+		var jag = new Dictionary<long, Vector2[]>();
+		Vector2[] Edge(int r1, int a1, int r2, int a2)
+		{
+			long k1 = r1 * 64 + a1, k2 = r2 * 64 + a2;
+			bool flip = k1 > k2;
+			long key = flip ? k2 * 4096 + k1 : k1 * 4096 + k2;
+			if (!jag.TryGetValue(key, out Vector2[]? pts))
+			{
+				Vector2 p = flip ? v[r2, a2] : v[r1, a1], q = flip ? v[r1, a1] : v[r2, a2];
+				float len = p.DistanceTo(q);
+				int n = Mathf.Clamp(Mathf.RoundToInt(len / 26f), 1, 16);
+				pts = new Vector2[n + 1];
+				Vector2 nrm = (q - p).Orthogonal().Normalized();
+				RandomNumberGenerator jr = new() { Seed = (ulong)(key + 17) * 2654435761ul };
+				float drift = 0f;
+				for (int i = 0; i <= n; i++)
+				{
+					float t = i / (float)n;
+					drift = drift * 0.55f + jr.RandfRange(-1f, 1f) * Mathf.Min(len * 0.04f, 14f);   // 有走向的抖动，不是锯齿
+					pts[i] = p.Lerp(q, t) + nrm * drift * Mathf.Sin(t * Mathf.Pi);
+				}
+				jag[key] = pts;
+			}
+			if (!flip) return pts;
+			var rev = new Vector2[pts.Length];
+			for (int i = 0; i < pts.Length; i++) rev[i] = pts[pts.Length - 1 - i];
+			return rev;
+		}
+		Vector2[] Loop((int R, int A)[] corners)
+		{
+			var outp = new List<Vector2>();
+			for (int i = 0; i < corners.Length; i++)
+			{
+				var c1 = corners[i];
+				var c2 = corners[(i + 1) % corners.Length];
+				Vector2[] e = Edge(c1.R, c1.A, c2.R, c2.A);
+				for (int k = 0; k < e.Length - 1; k++) outp.Add(e[k]);
+			}
+			return outp.ToArray();
+		}
 		Texture2D tex = stage.GetTexture();
 		var list = new List<Shard>();
-		var crackPts = new List<Vector2>();
-		Rect2 view = new(Vector2.Zero, screen);
+		var cracks = new List<Crack>();
+		Rect2 view = new Rect2(Vector2.Zero, screen).Grow(60f);
 		for (int r = 0; r < rings.Length - 1; r++)
 		{
 			for (int a = 0; a < A; a++)
 			{
 				int b = (a + 1) % A;
-				Vector2[] quad = r == 0 ? new[] { v[0, a], v[1, a], v[1, b] } : new[] { v[r, a], v[r + 1, a], v[r + 1, b], v[r, b] };
-				// 大片再从对角切一刀
-				var pieces = new List<Vector2[]>();
-				if (quad.Length == 4 && r >= 2 && rng.Randf() < 0.7f)
+				var pieces = new List<(int R, int A)[]>();
+				if (r == 0) pieces.Add(new[] { (0, a), (1, a), (1, b) });
+				else if (r >= 2 && rng.Randf() < 0.6f)
 				{
-					if (rng.Randf() < 0.5f) { pieces.Add(new[] { quad[0], quad[1], quad[2] }); pieces.Add(new[] { quad[0], quad[2], quad[3] }); }
-					else { pieces.Add(new[] { quad[0], quad[1], quad[3] }); pieces.Add(new[] { quad[1], quad[2], quad[3] }); }
+					if (rng.Randf() < 0.5f) { pieces.Add(new[] { (r, a), (r + 1, a), (r + 1, b) }); pieces.Add(new[] { (r, a), (r + 1, b), (r, b) }); }
+					else { pieces.Add(new[] { (r, a), (r + 1, a), (r, b) }); pieces.Add(new[] { (r + 1, a), (r + 1, b), (r, b) }); }
 				}
-				else pieces.Add(quad);
-				foreach (Vector2[] pc in pieces)
+				else pieces.Add(new[] { (r, a), (r + 1, a), (r + 1, b), (r, b) });
+				foreach (var pc in pieces)
 				{
+					Vector2[] poly = Loop(pc);
 					Vector2 c = Vector2.Zero;
-					foreach (Vector2 p in pc) c += p;
+					foreach (var k in pc) c += v[k.R, k.A];
 					c /= pc.Length;
-					Rect2 bb = new(pc[0], Vector2.Zero);
-					foreach (Vector2 p in pc) bb = bb.Expand(p);
+					Rect2 bb = new(poly[0], Vector2.Zero);
+					foreach (Vector2 p in poly) bb = bb.Expand(p);
 					if (!bb.Intersects(view)) continue;
-					var local = new Vector2[pc.Length];
-					for (int k = 0; k < pc.Length; k++) local[k] = pc[k] - c;
+					var local = new Vector2[poly.Length];
+					for (int k = 0; k < poly.Length; k++) local[k] = poly[k] - c;
 					float dist = (c - focus).Length();
 					Shard sh = new()
 					{
@@ -529,29 +588,90 @@ public static class AllOut
 						Speed = (700f + 1900f * Mathf.Clamp(1f - dist / 1800f, 0.2f, 1f)) * rng.RandfRange(0.8f, 1.25f),
 						Spin = rng.RandfRange(-3.2f, 3.2f), Delay = Mathf.Clamp(dist / 9000f, 0f, 0.04f),
 						Grow = rng.Randf() < 0.3f ? rng.RandfRange(0.6f, 1.1f) : rng.RandfRange(0.05f, 0.35f),     // 少数朝镜头飞（变大）
-						Back = new Polygon2D { Polygon = Offset(local, new Vector2(7f, 8f)), Color = new Color(0.22f, 0f, 0.03f), Antialiased = true, Visible = false },
-						Face = new Polygon2D { Polygon = local, Texture = tex, UV = pc, Antialiased = true, Visible = false },
-						Edge = new Line2D { Points = local, Closed = true, Width = 1.6f, DefaultColor = new Color(1f, 0.92f, 0.92f, 0.85f), Antialiased = true, Visible = false },
+						Back = new Polygon2D { Polygon = local, Color = new Color(0.22f, 0f, 0.03f), Antialiased = true, Visible = false },
+						Face = new Polygon2D { Polygon = local, Texture = tex, UV = poly, Antialiased = true, Visible = false },
+						Edge = new Line2D { Points = local, Closed = true, Width = 1.2f, DefaultColor = new Color(1f, 0.95f, 0.95f, 0.7f), Antialiased = true, Visible = false },
 					};
 					layer.AddChild(sh.Back);
 					layer.AddChild(sh.Face);
 					layer.AddChild(sh.Edge);
 					list.Add(sh);
 				}
-				// 裂纹：放射线 + 环线（只画离中心近的几圈）
-				if (r <= 3)
-				{
-					crackPts.Add(v[r, a]); crackPts.Add(v[r + 1, a]);
-					if (r >= 1 && r <= 2) { crackPts.Add(v[r, a]); crackPts.Add(v[r, b]); }
-				}
+				// 裂纹：放射线（每个扇区一条，到画面外）+ 近处三圈环线
+				if (r < rings.Length - 2) cracks.Add(MakeCrack(Edge(r, a, r + 1, a), focus, crackLayer, 1f));
+				if (r >= 1 && r <= 3) cracks.Add(MakeCrack(Edge(r, a, r, b), focus, crackLayer, 0.5f));
 			}
 		}
-		// Line2D 画不连续线段：每段之间插一个重复点无法断开，改成每段一根
-		for (int k = 0; k + 1 < crackPts.Count; k += 2)
+		// 撞击点：一圈细碎的短裂纹
+		for (int i = 0; i < 16; i++)
 		{
-			cracks.AddChild(new Line2D { Points = new[] { crackPts[k], crackPts[k + 1] }, Width = 2.5f, DefaultColor = Colors.White, Antialiased = true });
+			float ang = rng.RandfRange(0f, Mathf.Tau), len = rng.RandfRange(18f, 60f);
+			Vector2 p = focus + Vector2.FromAngle(ang) * rng.RandfRange(4f, 16f);
+			Vector2 q = p + Vector2.FromAngle(ang + rng.RandfRange(-0.4f, 0.4f)) * len;
+			cracks.Add(MakeCrack(new[] { p, p.Lerp(q, 0.5f) + (q - p).Orthogonal() * rng.RandfRange(-0.12f, 0.12f), q }, focus, crackLayer, 0.45f));
 		}
-		return list;
+		return (list, cracks);
+	}
+
+	private static Crack MakeCrack(Vector2[] pts, Vector2 focus, Node2D layer, float weight)
+	{
+		Crack c = new() { Pts = pts, Dist = new float[pts.Length] };
+		for (int i = 0; i < pts.Length; i++) c.Dist[i] = pts[i].DistanceTo(focus);
+		float W(float d) => Mathf.Lerp(4.5f, 0.8f, Mathf.Clamp(d / 900f, 0f, 1f)) * weight;   // 越远越细
+		c.W0 = W(c.Dist[0]);
+		c.W1 = W(c.Dist[^1]);
+		c.Glow = new Polygon2D { Color = new Color(1f, 1f, 1f, 0.16f), Antialiased = true, Visible = false };
+		c.Core = new Polygon2D { Color = new Color(1f, 1f, 1f, 0.95f), Antialiased = true, Visible = false };
+		layer.AddChild(c.Glow);
+		layer.AddChild(c.Core);
+		return c;
+	}
+
+	/// <summary>裂纹长到离撞击点 reach 为止（折线截断，正在长的前端是尖的）。</summary>
+	private static void GrowCrack(Crack c, float reach)
+	{
+		var pts = new List<Vector2>();
+		var ws = new List<float>();
+		int n = c.Pts.Length;
+		for (int i = 0; i < n; i++)
+		{
+			float wt = n == 1 ? 0f : i / (float)(n - 1);
+			if (c.Dist[i] <= reach)
+			{
+				pts.Add(c.Pts[i]);
+				ws.Add(Mathf.Lerp(c.W0, c.W1, wt));
+				continue;
+			}
+			if (i > 0 && c.Dist[i - 1] <= reach)
+			{
+				float f = (reach - c.Dist[i - 1]) / Mathf.Max(0.001f, c.Dist[i] - c.Dist[i - 1]);
+				pts.Add(c.Pts[i - 1].Lerp(c.Pts[i], f));
+				ws.Add(0f);
+			}
+			break;
+		}
+		if (pts.Count < 2)
+		{
+			c.Core.Visible = c.Glow.Visible = false;
+			return;
+		}
+		c.Core.Visible = c.Glow.Visible = true;
+		c.Core.Polygon = Strip(pts, ws, 1f);
+		c.Glow.Polygon = Strip(pts, ws, 3.4f);
+	}
+
+	private static Vector2[] Strip(List<Vector2> pts, List<float> ws, float k)
+	{
+		int n = pts.Count;
+		var o = new Vector2[n * 2];
+		for (int i = 0; i < n; i++)
+		{
+			Vector2 t = (pts[Mathf.Min(i + 1, n - 1)] - pts[Mathf.Max(i - 1, 0)]).Normalized();
+			Vector2 nr = t.Orthogonal() * Mathf.Max(ws[i], 0.05f) * 0.5f * k;
+			o[i] = pts[i] + nr;
+			o[n * 2 - 1 - i] = pts[i] - nr;
+		}
+		return o;
 	}
 
 	private static Vector2[] Offset(Vector2[] pts, Vector2 by)
