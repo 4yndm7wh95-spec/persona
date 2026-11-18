@@ -48,7 +48,8 @@ public static class CardSkillFx
 		SkillRedo4.Register(Cards);         // 第四批：融入暗影、余像、模糊、夹击、萎靡
 		SkillRedo5.Register(Cards);
 		SkillRedo5.RegisterBuffs(Cards);    // 增益牌第一批（2026-11-15）：预判、侧步、磨蚀、速行者、触媒
-		SkillRedo5.RegisterBatch10(Cards);  // 0.9.49 审阅第二批（2026-11-17）：跟踪、磨蚀、触媒、萎靡、谋划专家
+		SkillRedo5.RegisterBatch10(Cards);
+		SkillRedo5.RegisterBatch11(Cards);  // 0.9.49 审阅第四批（2026-11-18）：刀刃交响曲、钢铁风暴  // 0.9.49 审阅第二批（2026-11-17）：跟踪、磨蚀、触媒、萎靡、谋划专家
 		// 第五批（会话 C，2026-11-13）：融入暗影改成怪盗斗篷戏法
 	}
 

@@ -298,7 +298,10 @@ public static class SkillPlay
 			switch (card.GetType().Name)
 			{
 				case "CalculatedGamble":
+				case "StormOfSteel":            // 弃掉整手，每张换一把小刀
 					return hand;
+				case "BladeSymphony":           // 生成几把小刀
+					return card.DynamicVars.TryGetValue("Cards", out var bv) ? bv.IntValue : 2;
 				case "Expertise":
 				{
 					int want = card.DynamicVars.TryGetValue("Cards", out var cv) ? cv.IntValue : 2;

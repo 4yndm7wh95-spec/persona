@@ -957,6 +957,17 @@ public partial class Preview : Node2D
 				}
 			}
 		},
+		// 0.9.49 审阅第四批（装弹一组）：刀刃之舞（共用装弹 + 新音效）、隐秘匕首（弃牌新音效）、刀刃交响曲、钢铁风暴（手牌 6 张）
+		["b4"] = p =>
+		{
+			Vector2 hand = Pose(1010f, 410f);
+			p.At(0.3, () => p._joker?.Play("cast_glove"));
+			p.At(0.55, () => SkillFx.Load(p._front, hand, 3, 1f));
+			p.At(2.1, () => p._joker?.Play("cast_glove"));
+			p.At(2.35, () => SkillFx.Discard(p._front, hand, 2, 1f));
+			p.At(2.65, () => SkillFx.Load(p._front, hand, 2, 1f));
+			RunCards(p, null, new (string, string, double, double)[] { ("BladeSymphony#3", "cast_glove", 0.25, 2.0), ("StormOfSteel#6", "cast_glove", 0.25, 2.4) }, 4.0);
+		},
 		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_glove", 0.25, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast_wave", 0.08, 1.6) }),
 		["redo4b"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.8), ("Afterimage", "cast_glove", 0.25, 1.4), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast_wave", 0.08, 1.8) }),
 		["redo5"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.9), ("Shadowmeld", "cast_glove", 0.25, 1.9) }),
