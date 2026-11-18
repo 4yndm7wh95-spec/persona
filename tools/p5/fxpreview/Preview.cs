@@ -939,13 +939,18 @@ public partial class Preview : Node2D
 		// 匕首雨：攻击动作（第一下伤害 0.15s，第二下紧跟），一扇飞刀 + 一刀切全体 + 刀雨
 		["b3spray"] = p =>
 		{
+			// 两下：每一下重放攻击动作（游戏里 _playOnEveryHit），动作开始约 0.15s 后伤害；第二下动作大约在第一下伤害后 0.25s 开始
 			var foes = new List<Batch3Fx.Foe> { new(Enemy2, Enemy2 + new Vector2(0f, -170f), 230f), new(Enemy, Enemy + new Vector2(0f, -170f), 260f), new(Enemy3, Enemy3 + new Vector2(0f, -150f), 230f) };
-			foreach (double t0 in new[] { 0.3, 2.0 })
+			foreach (double t0 in new[] { 0.3, 2.2 })
 			{
-				p.At(t0, () => { p._joker?.Play("attack"); Batch3Fx.DaggerSpray(p._front, Pose(1376f, 450f), foes, 1f); });
-				foreach (double hh in new[] { 0.15, 0.27 })
+				for (int k = 0; k < 2; k++)
+				{
+					int kk = k;
+					double a = t0 + 0.4 * k;
+					p.At(a, () => { p._joker?.Play("attack"); Batch3Fx.DaggerSprayVolley(p._front, Pose(1376f, 450f), foes, 1f, kk, 0.15f); });
 					foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 })
-						p.At(t0 + hh, () => KnifeFx.Hit(p._front, e, 1f));
+						p.At(a + 0.15, () => KnifeFx.Hit(p._front, e, 1f));
+				}
 			}
 		},
 		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_glove", 0.25, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast_wave", 0.08, 1.6) }),

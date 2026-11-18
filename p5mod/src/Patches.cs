@@ -38,8 +38,8 @@ public static class AttackHitVfxPatch
 				if (card.GetType().Name == "DaggerSpray" && Joker.Node(card.Owner) is NCreature jn && Joker.FxLayer() is Godot.Control dl
 					&& NCombatRoom.Instance is NCombatRoom room)
 				{
-					// 匕首雨（0.9.49 审阅：没有群体攻击的感觉）：一扇飞刀 + 一刀切全体 + 头顶刀雨（Vfx/Batch3Fx.cs）。
-					// 攻击动作只在第一下放（出刀约 0.13s、第一次伤害约 0.15s），第二次伤害紧跟在后面
+					// 匕首雨（0.9.49 审阅：没有群体攻击的感觉；用户 2026-11-18：是攻击两下的）：原版每一下都重放攻击动作（_playOnEveryHit），
+					// 动作开始约 0.15s 后结算伤害 → 每挥一刀放一拨群体特效（Vfx/Batch3Fx.cs）
 					var foes = new List<Batch3Fx.Foe>();
 					foreach (Creature c in __instance.Attacker?.CombatState?.HittableEnemies ?? (IReadOnlyList<Creature>)Array.Empty<Creature>())
 					{
@@ -48,7 +48,7 @@ public static class AttackHitVfxPatch
 							foes.Add(new Batch3Fx.Foe(en.VfxSpawnPosition, en.GetTopOfHitbox(), en.Hitbox.GetGlobalRect().Size.X));
 						}
 					}
-					Batch3Fx.DaggerSpray(dl, Joker.PosePoint(jn, new Godot.Vector2(1376f, 450f)), foes, Joker.Facing(jn));
+					Batch3Fx.ArmSpray(foes);   // 每次挥刀（JokerFx.OnAnim）放一拨，跟着两下伤害走
 				}
 				if (card.GetType().Name == "DaggerThrow")
 				{

@@ -36,6 +36,11 @@ public static class JokerFx
 				// 第四版：手绘刀光扫过（Vfx/KnifeFx.cs）
 				Fx.After(layer, Mathf.Max(0f, 0.125f - skipped), () => KnifeFx.Swing(layer, Joker.PosePoint(node, SwingFrom),
 					Joker.PosePoint(node, SwingTo), Joker.Facing(node)));
+				// 匕首雨：每挥一刀放一拨（第一下一扇飞刀 + 横切全体，第二下刀雨 + 斜切全体）；伤害在动作开始后约 0.15s
+				if (Batch3Fx.NextSprayVolley() is { } volley)
+				{
+					Batch3Fx.DaggerSprayVolley(layer, Joker.PosePoint(node, SwingTo), volley.Foes, Joker.Facing(node), volley.Index, Mathf.Max(0.05f, 0.15f - skipped));
+				}
 				break;
 			case "shiv":
 			case "shiv_from_aim":
