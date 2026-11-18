@@ -162,6 +162,12 @@ SFX = {
     "stab_knife": ROOT / "research/p5r/audio/calendar/stab_knife.ogg",             # the knife pins it: thunk + metallic ring in one cue
     "damage_enemy": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0022.ogg",
     "battle_all_out_atk": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0024.ogg",
+    # 总攻击乱斗的另外五声（SYSTEM #25–26 打击、#27–29 斩击，同一组 battle_all_out_atk cue；p5mod/src/Vfx/AllOut.cs）
+    "aoa_hit_2": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0025.ogg",
+    "aoa_hit_3": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0026.ogg",
+    "aoa_slash_1": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0027.ogg",
+    "aoa_slash_2": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0028.ogg",
+    "aoa_slash_3": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0029.ogg",
     "gun_02": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0032.ogg",
     "gun_10": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0038.ogg",                # the shot (user 2026-11-03: gun_07 sounded like a laser; picked D)
     "gun_07": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0037.ogg",                # the shot (user 2026-11-02: gun_02 read as a strike sound)
@@ -265,6 +271,16 @@ def fx_textures():
     for name, idx in HIGAWARI_TEX.items():
         yield name, Image.open(HIGAWARI / f"{idx:05d}.png").convert("RGBA")
     yield "yokoku", flat_card()
+    # 总攻击（p5mod/src/Vfx/AllOut.cs、AllOutFinale.cs）：P5R 原版收尾 BKSK_HERO_CTE 的贴图（原名加 aoa_ 前缀，AllOutFinale 按材质绑定的名字取）
+    # + BKSK_SPLATTER 的血团（smoke）和噪声（test）
+    for f in sorted((ROOT / "tools/p5/allout_native/godot/tex").glob("*.dds.png")):
+        yield "aoa_" + f.name[:-len(".dds.png")], Image.open(f).convert("RGBA")
+    from allout_native.export_runtime import splatter_textures
+    for name, im in splatter_textures():
+        if name == "smoke":
+            yield "aoa_blob", im
+        elif name == "test":
+            yield "aoa_noise", im
     yield "arsene_cast", arsene_atlas()
     # Izanagi-no-Okami (Codex render of BPS0360_000_main_0006, art/p5/fx/izanagi_okami): spin action atlas + weapon alone
     if (IZANAGI / "spin").exists():
@@ -434,6 +450,9 @@ default_mix = 0.1
 """)
     for name, im in fx_textures():
         write_texture(STAGE, f"p5joker/fx/{name}.png", im)
+    # 总攻击收尾的原版数据（网格 / 材质 / 240 帧矩阵），AllOutFinale 直接读字节
+    from allout_native.export_runtime import main as export_allout
+    export_allout(STAGE / "p5joker/allout/hero.bin")
     # fonts: raw .ttf (p5mod/src/Vfx/P5Ui.cs loads them with FontFile.LoadDynamicFont, no import needed; SIL OFL)
     (STAGE / "p5joker/fonts").mkdir(parents=True, exist_ok=True)
     for f in ("BarlowCondensed-900Italic.ttf", "BarlowCondensed-700Italic.ttf"):
