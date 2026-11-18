@@ -132,8 +132,12 @@ void fragment() {
 		// Codex 的浪身（本身就是红白黑上色好的）：沿浪身往后滚动，尾巴被噪声蚀散、浪头泛白
 		vec4 tx = texture(body_tex, vec2(u * 1.3 - clock * 0.55 + seed + (n - 0.5) * 0.08, mix(0.2, 0.84, UV.y) + (n2 - 0.5) * 0.04));   // 浪身在图里只占中间 0.25～0.8
 		float keep = smoothstep(0.2, 0.6, n * 1.1 + u * 0.75 - 0.1) * smoothstep(0.0, 0.12, u);
+		keep *= smoothstep(0.0, 0.35, prof + (n2 - 0.5) * 0.35);                   // 两侧边缘羽化 + 被噪声啃掉，不留贴图的硬边
 		float ta = tx.a * keep * alpha;
-		vec3 tc = mix(tx.rgb, vec3(1.0, 0.92, 0.9), crest * 0.5);
+		float lum = dot(tx.rgb, vec3(0.3, 0.5, 0.2));
+		vec3 tc = mix(tx.rgb, vec3(1.0, 0.55, 0.58), smoothstep(0.75, 1.0, lum) * 0.35);   // 纯白的高光收一点，往粉红里压
+		tc += vec3(0.5, 0.02, 0.06) * smoothstep(0.15, 0.5, lum) * 0.5;               // 里面一点红的自发光
+		tc = mix(tc, vec3(1.0, 0.92, 0.9), crest * 0.5);
 		float ca = crest * 0.35 * alpha;
 		COLOR = vec4(tc * ta + vec3(1.0, 0.85, 0.82) * ca * (1.0 - ta), clamp(ta + ca * (1.0 - ta), 0.0, 1.0));
 	} else {
@@ -146,6 +150,23 @@ void fragment() {
 	float a = clamp(body * 0.8 + rim * 0.55 + crest * 0.6 + st * 0.4, 0.0, 1.0) * alpha;
 	COLOR = vec4(col * alpha, a);
 	}
+}" };
+
+	private static Shader? _halo;
+
+	/// <summary>浪身后面垫的一层柔红辉光（加法）：横向高斯、沿长度尾淡头亮、噪声起伏。</summary>
+	private static Shader HaloShader => _halo ??= new Shader { Code = @"
+shader_type canvas_item;
+render_mode blend_add;
+uniform float clock = 0.0;
+uniform float alpha = 1.0;
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+float noise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y); }
+void fragment() {
+	float u = UV.x, v = UV.y * 2.0 - 1.0;
+	float g = exp(-v * v * 3.0) * smoothstep(0.0, 0.5, u) * (0.75 + 0.5 * noise(vec2(u * 10.0 - clock * 4.0, v * 2.0)));
+	COLOR = vec4(vec3(0.95, 0.08, 0.18) * g * 0.55 * alpha, 1.0);
 }" };
 
 	/// <summary>Codex 生的浪身纹理（art/p5/fx/v4/corrosive/curse_wave_body_01 / 02，左右无缝），两张随机用。</summary>
@@ -161,10 +182,14 @@ void fragment() {
 		Node2D root = Fx.Root(layer, at, "P5CurseSplash", dur + 0.05);
 		var sp = new Sprite2D { Texture = sheet, Hframes = 4, Vframes = 4, Frame = 0, Centered = true };
 		float cell = sheet.GetWidth() / 4f;
+		Node2D under = Fx.Root(layer, at, "P5CurseSplashGlow", dur + 0.05);
+		Glow.SoftSprite(under, Vector2.Zero, new Color(0.95f, 0.08f, 0.16f, 0.8f), size * 0.9f / 32f);
 		root.AddChild(sp);
+		Fx.Animate(under, 0, dur, t => under.Modulate = new Color(1f, 1f, 1f, (1f - t) * (1f - t)));
 		Fx.Animate(root, 0, dur, t =>
 		{
 			sp.Frame = Mathf.Min(15, (int)(t * 16f));
+			sp.Modulate = new Color(1f, 1f, 1f, 1f - Ease5.Seg(t, 0.5f, 0.5f));
 			float k = size / cell * (0.9f + 0.25f * Fx.OutCubic(t));
 			root.Scale = new Vector2(k * (facing < 0 ? -1f : 1f), k);
 		});
@@ -197,6 +222,14 @@ void fragment() {
 		line.WidthCurve.AddPoint(new Vector2(0.55f, 0.75f));
 		line.WidthCurve.AddPoint(new Vector2(0.92f, 1f));
 		line.WidthCurve.AddPoint(new Vector2(1f, 0.55f));
+		// 后面垫一层更宽的柔红辉光（让浪有体积、会发光，不是一条平的带子）
+		ShaderMaterial hm = new() { Shader = HaloShader };
+		var halo = new Line2D
+		{
+			Width = R * 1.35f, Texture = Glow.Soft, TextureMode = Line2D.LineTextureMode.Stretch, Material = hm,
+			JointMode = Line2D.LineJointMode.Round, WidthCurve = line.WidthCurve,
+		};
+		root.AddChild(halo);
 		root.AddChild(line);
 		root.GlobalPosition = Vector2.Zero;
 		root.Position = Vector2.Zero;
@@ -205,13 +238,25 @@ void fragment() {
 		Node2D glow = Fx.Root(layer, Map(Route[0]), "P5CorrodeGlow", total + 0.1);
 		Glow.SoftSprite(glow, Vector2.Zero, new Color(1f, 0.1f, 0.18f, 0.7f), R * 0.7f / 32f);
 		Glow.SoftSprite(glow, Vector2.Zero, new Color(1f, 0.85f, 0.85f, 0.6f), R * 0.18f / 32f);
-		// 拍下去的路上，浪头往后甩碎光
-		for (int k = 0; k < 3; k++)
+		// 一路上浪头往后甩火星 / 毒滴、沿路留一串淡红光点；拍下去那段甩得更多
+		for (int k = 0; k < 9; k++)
 		{
-			float sAt = Climb + Hang + Slam * (0.3f + 0.25f * k);
+			float sAt = total * (0.08f + 0.1f * k);
 			Vector2 at = Map(PointAt(HeadAt(sAt)));
-			Phantom.Shards(layer, at, 5, 200f * u, 500f * u, new Vector2(-facing, -0.6f), 50f, 0.3f, 600f * u, 14f * u, sAt);
+			Vector2 prev = Map(PointAt(HeadAt(Mathf.Max(0f, sAt - 0.02f))));
+			Vector2 back = (prev - at).LengthSquared() > 1f ? (prev - at).Normalized() : new Vector2(-facing, 0f);
+			bool slamming = sAt > Climb + Hang;
+			Phantom.Shards(layer, at, slamming ? 6 : 3, 160f * u, 460f * u, back + new Vector2(0f, -0.3f), 45f, 0.32f, 900f * u, (slamming ? 14f : 10f) * u, sAt);
+			Glow.Flash(layer, at, new Color(0.9f, 0.06f, 0.15f), R * 0.45f, 0.3f, sAt);
+			if (k % 3 == 1) CardSkillFx.Drop(layer, at, center.Y + h * 0.75f, sAt, h * 2f, u);
 		}
+		// 顶上顿住那一下：浪头一记星光
+		Fx.After(layer, Climb + Hang * 0.3f, () =>
+		{
+			Vector2 top = Map(PointAt(HeadAt(Climb + Hang * 0.3f)));
+			Glow.Glint(layer, top, 0.8f);
+			Glow.Flash(layer, top, new Color(1f, 0.75f, 0.75f), R * 0.35f, 0.12f);
+		});
 		const int n = 34;
 		var pts = new Vector2[n];
 		Fx.Animate(root, 0, total + fade, t =>
@@ -222,6 +267,9 @@ void fragment() {
 			back = Mathf.Min(back, head - 0.01f);
 			for (int i = 0; i < n; i++) pts[i] = Map(PointAt(Mathf.Lerp(back, head, i / (float)(n - 1))));
 			line.Points = pts;
+			halo.Points = pts;
+			hm.SetShaderParameter("clock", s * 2.2f);
+			hm.SetShaderParameter("alpha", Mathf.Min(1f, s / 0.05f) * (1f - Ease5.Seg(s, total - 0.02f, fade + 0.02f)));
 			m.SetShaderParameter("clock", s * 2.2f);
 			m.SetShaderParameter("alpha", Mathf.Min(1f, s / 0.04f) * (1f - Ease5.Seg(s, total, fade)));
 			if (GodotObject.IsInstanceValid(glow))
@@ -308,6 +356,12 @@ void fragment() {
 		}
 		Fx.After(layer, hitAt, () =>
 		{
+			// 拍中：敌人那一片一下压暗（分量），再慢慢回来
+			float minX = float.MaxValue, maxX = float.MinValue, cy = 0f;
+			foreach (Target tt in targets) { minX = Mathf.Min(minX, tt.At.X - tt.Width); maxX = Mathf.Max(maxX, tt.At.X + tt.Width); cy += tt.At.Y; }
+			cy /= targets.Count;
+			SkillRedo5.Dim(layer, new Vector2((minX + maxX) * 0.5f, cy), new Vector2(maxX - minX + 300f * u, 700f * u), 0.5,
+				s => (1f - Ease5.Seg(s, 0.05f, 0.95f)) * (first ? 0.4f : 0.25f));
 			Sfx.Play(Sfx.SubBoom, first ? 0.5f : 0.32f);
 			Sfx.Play(Sfx.CurseSoft, first ? 0.6f : 0.42f);
 			HitStop.Request(first ? 0.07 : 0.035);
