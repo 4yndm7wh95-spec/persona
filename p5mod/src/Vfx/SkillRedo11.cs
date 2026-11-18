@@ -230,7 +230,7 @@ void fragment() {
 		float h = c.Tall, u = c.Unit, f = c.Face;
 		Control back = BackOf(c), front = c.Front;
 		int n = c.Count >= 0 ? Mathf.Clamp(c.Count, 0, 10) : 5;
-		const float storm = 0.5f;
+		const float storm = 0.6f;
 		Vector2 mid = c.Feet + new Vector2(0f, -h * 0.55f);
 		S("gx_whoosh", 0.16f, 0.02f);
 		S("gx_whoosh", 0.12f, 0.2f);
@@ -239,24 +239,31 @@ void fragment() {
 		Glow.Flash(back, mid, new Color(0.7f, 0.03f, 0.12f), h * 2f, storm + 0.3f);
 		// 弃掉的牌：从手里甩出去烧掉（最多画 4 张）
 		if (n > 0) SkillFx.Discard(front, c.Hand, Mathf.Min(n, 4), f);
-		// 风暴（用户 2026-11-18：钢铁风暴纯表达、没什么特效 → 主体改成刀光风暴）：用着色器横劈在他周围的三维空间里连劈六刀，
-		// 角度 / 倾斜 / 方向 / 大小各不相同、一刀接一刀，钢铁的银白带红边；每刀扫到最近处迸火星和金属碎光
-		for (int i = 0; i < 6; i++)
+		// 风暴（第三版，用户 2026-11-18：着色器刀光的材质不对 → 推翻重做）：用打击牌命中那套用户认可的手绘刀光（slash_heavy / slash_thin，P5 血红 LUT），
+		// 在他周围的三维空间里一刀接一刀劈过去：刀的位置绕着他排成一圈（前面的在人前、大；后面的在人后、小 = 透视），
+		// 角度各不相同，节奏越劈越快；每刀落下迸原版金属火星 + 一点白闪，前面的刀带一下极短的顿帧。
+		const int cuts = 9;
+		float tcut = 0.02f;
+		for (int i = 0; i < cuts; i++)
 		{
 			int k = i;
-			float d = 0.03f + 0.065f * k;
-			float dir = k % 2 == 0 ? f : -f;
-			Vector2 ctr = mid + new Vector2(Fx.Rand(-0.25f, 0.25f) * h, Fx.Rand(-0.3f, 0.2f) * h);
-			float rx = h * Fx.Rand(0.65f, 0.9f), ry = rx * Fx.Rand(0.3f, 0.45f), tilt = Fx.Rand(-0.7f, 0.7f);
-			SlashArc(front, ctr, rx, ry, tilt, dir, d, 0.13f, 0.2f, h, 1f, 1f);   // 都在前景层、不透明（用户：颜色淡、粗糙）
-			Fx.After(front, d + 0.035f, () =>
+			float ang = Mathf.Tau * (0.13f + 0.37f * k) + Fx.Rand(-0.25f, 0.25f);      // 绕着他跳着排（不是按顺序转圈）
+			bool inFront = Mathf.Sin(ang) > -0.15f;
+			float depth = 0.75f + 0.25f * Mathf.Sin(ang);                               // 前大后小
+			Vector2 at = mid + new Vector2(Mathf.Cos(ang) * h * 0.5f * f, Mathf.Sin(ang) * h * 0.14f + Fx.Rand(-0.25f, 0.2f) * h);
+			float rot = Fx.Rand(-1.1f, 1.1f) + (k % 2 == 0 ? 0f : Mathf.Pi);
+			float w = (k % 3 == 0 ? 0.55f : 0.42f) * depth * h / 560f;
+			string tex = k % 3 == 0 ? "slash_heavy" : "slash_thin";
+			float dly = tcut;
+			Paint.Sweep(inFront ? front : back, tex, at, rot, new Vector2(w * f, w * 0.7f), Lut5.Blood, 0.05f, 0.04f, 0.22f, 40f * depth, dly, 1.2f);
+			Fx.After(front, dly + 0.05f, () =>
 			{
-				Vector2 near = ctr + new Vector2(0f, ry).Rotated(tilt * dir);
-				Phantom.Shards(front, near, 6, 300f * u, 800f * u, new Vector2(dir, 0.2f), 60f, 0.3f, 600f * u, 14f * u);
-				Glow.Sparks(front, near, 8, 100f * u, 380f * u, 0.4f, new[] { new Color(0.95f, 0.95f, 1f), new Color(0.9f, 0.1f, 0.18f) }, 500f * u, 0.03f * u, 0.07f * u, new Vector2(dir, 0f), 60f);
-				Glow.Glint(front, near, 0.45f);
-				if (k % 2 == 0) S("gx_slice", 0.1f);
+				if (inFront && k % 2 == 0) HitStop.Request(0.02);
+				Glow.Flash(inFront ? front : back, at, new Color(1f, 0.6f, 0.55f), h * 0.35f * depth, 0.12f);
+				if (k % 2 == 0) Vanilla.Burst(inFront ? front : back, Vanilla.Specks, at, rot, 0.8f * depth, Lut5.Blood, amount: 5);   // 火星少放（满屏白点太乱）
+				if (k % 3 == 0) S("gx_slice", 0.12f);
 			});
+			tcut += Mathf.Lerp(0.085f, 0.035f, k / (cuts - 1f));                      // 越劈越快
 		}
 		Gather(front, c.Hand, h, u, storm, 18, 0.8f);
 		Fx.After(front, storm, () =>
