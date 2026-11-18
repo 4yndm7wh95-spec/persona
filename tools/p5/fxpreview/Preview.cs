@@ -909,6 +909,10 @@ public partial class Preview : Node2D
 		["fix2"] = p => RunCards(p, null, new (string, string, double, double)[] {
 			("Tracking", "cast_glove", 0.25, 1.3), ("Abrasive", "cast_glove", 0.25, 1.3), ("Accelerant", "cast_wave", 0.08, 1.3), ("Malaise", "cast", 0.25, 1.3), ("MasterPlanner", "cast_glove", 0.25, 2.0),
 			("Tracking", "cast_glove", 0.25, 2.2), ("Abrasive", "cast_glove", 0.25, 2.2), ("Accelerant", "cast_wave", 0.08, 2.2), ("Malaise", "cast", 0.25, 2.2), ("MasterPlanner", "cast_glove", 0.25, 2.4) }),
+		// 第二批第二轮（2026-11-18）：磨蚀（磨刃火花）、触媒（毒心加速双跳）、萎靡（预告信夺力），先各放一遍让着色器编译好（剪掉前 4.4s）
+		["fix2b"] = p => RunCards(p, null, new (string, string, double, double)[] {
+			("Abrasive", "cast_glove", 0.25, 1.2), ("Accelerant", "cast_wave", 0.08, 1.2), ("Malaise", "cast", 0.25, 1.6),
+			("Abrasive", "cast_glove", 0.25, 2.0), ("Accelerant", "cast_wave", 0.08, 2.2), ("Malaise", "cast", 0.25, 2.6) }),
 		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_glove", 0.25, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast_wave", 0.08, 1.6) }),
 		["redo4b"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.8), ("Afterimage", "cast_glove", 0.25, 1.4), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast_wave", 0.08, 1.8) }),
 		["redo5"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.9), ("Shadowmeld", "cast_glove", 0.25, 1.9) }),

@@ -76,6 +76,15 @@ float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { v += a
 	}
 
 	private static void Set(ColorRect r, string name, Variant v) => ((ShaderMaterial)r.Material).SetShaderParameter(name, v);
+
+	/// <summary>涂毒手上那团翻滚的咒毒（用户认可的画法），给别的牌复用：边长 size 的方块，grow / alpha / clock 由调用方驱动（不自动走时钟）。</summary>
+	internal static ColorRect VenomBlob(Node parent, float size)
+	{
+		ColorRect q = Quad(parent, Venom, Vector2.One * size);
+		Set(q, "seed", Fx.Rand(0f, 40f));
+		Set(q, "grow", 0f);
+		return q;
+	}
 	private static Vector3 V(Color c) => new(c.R, c.G, c.B);
 	private static bool Ok(Control? c) => c != null && GodotObject.IsInstanceValid(c);
 
