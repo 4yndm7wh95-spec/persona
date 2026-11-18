@@ -1002,7 +1002,7 @@ public partial class Preview : Node2D
 			p.At(0.3, () => p._joker?.Play("attack"));
 			p.At(0.43, () => KnifeFx.Swing(p._front, Pose(600f, 850f), Pose(1376f, 450f)));
 			p.At(0.45, () => KnifeFx.Hit(p._front, Enemy, 1f));
-			p.At(0.45, () => StrangleFx.Bind(p._front, p._back, Enemy, top, 260f, tint, 0.28f, Pose(1010f, 410f), tall, 1f));
+			p.At(0.45, () => StrangleFx.Bind(p._front, p._back, Enemy, top, 260f, tint, 0.28f, tall, 1f));
 			foreach (double t in new[] { 2.4, 3.2 })
 			{
 				p.At(t - 0.3, () => p._joker?.Play("cast_glove"));

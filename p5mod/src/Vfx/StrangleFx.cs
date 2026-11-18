@@ -7,9 +7,9 @@ namespace P5Joker;
 /// <summary>
 /// 紧勒（0.9.49 审阅：敌人那里出现一圈像被绳子勒住的特效，要是特效不要贴图；这回合每打一张牌敌人掉血时都要有反馈）。
 /// 第二版「咒烟绞索」（2026-11-18，第一版着色器绳圈被否：像一个平的光环）：材质用群蛇 / 巨手那套咒烟（CurseForm），
-/// · 套上（Bind，刀命中后）：一道咒烟细索从他手里甩出去，飞到敌人身上，绕着脖子 / 上身缠两圈（螺旋往下，后半圈在敌人身后、前半圈在身前），
-///   一拽 —— 两圈猛地收紧（过冲），绞索里透出一下暗红的光、顿帧、一声「咔」、身体一暗；连着他手的那截细索从他那头散成烟，
-///   缠着的两圈留一会儿、慢慢散掉。
+/// · 套上（Bind，刀命中后）：敌人脖子周围一团咒烟凭空凝出来，一边转一边拧成绞绳、绕着脖子 / 上身缠两圈（螺旋往下，后半圈在敌人身后、前半圈在身前），
+///   一拽 —— 两圈猛地收紧（过冲），绞索里透出一下暗红的光、顿帧、一声「咔」、身体一暗；缠着的两圈留一会儿、慢慢散掉。
+///   （用户 2026-11-18：从人物直接连一条绳子过去太直白 → 去掉从他手里甩过去的那截细索，绞索在敌人身上自己凝出来。）
 /// · 每勒一次（Cinch，StranglePower 每次结算，挂在 PowerModel.Flash 上）：两圈从烟里一下聚出来、再狠狠勒紧一截、红光一闪、极短顿帧、身体一暗、散掉。
 /// </summary>
 public static class StrangleFx
@@ -94,36 +94,39 @@ public static class StrangleFx
 		}
 	}
 
-	/// <summary>套上：刀命中后。hand = 他甩出细索的手（没有就直接在敌人身上聚出来），tall = Joker 身高。</summary>
+	/// <summary>套上：刀命中后。tall = Joker 身高（咒烟的尺度）。</summary>
 	public static void Bind(Control layer, Control? back, Vector2 center, Vector2 top, float width, Action<Color>? tint, float delay = 0f,
-		Vector2? hand = null, float tall = 600f, float face = 1f)
+		float tall = 600f, float face = 1f)
 	{
 		Fx.After(layer, delay, () =>
 		{
 			Coil c = Make(center, top, width, face);
 			float u = Fx.Screen(layer).Y / 1080f;
-			const float fly = 0.16f, wrap = 0.26f, cinch = 0.3f, life = 1.5f;
+			const float wrap = 0.3f, cinch = 0.36f, life = 1.55f;
 			CurseForm form = CurseForm.Create(layer, back, life + 0.05, tall);
 			form.Ember = 0.5f;
 			form.TwistF = Mathf.Tau * tall * 0.2f / (c.R * 2.8f);   // 一股绳的螺距 ≈ 1.4 倍绳粗
-			Sfx.Take("gx_whoosh", 0.14f);
+			Sfx.Play("smoke_puff", 0.22f);
 			Sfx.Take("gx_tock", 0.22f, cinch);
+			// 凝出来的那一下：脖子后面一团暗红
+			Glow.Flash(back ?? layer, c.Neck, new Color(0.45f, 0.02f, 0.07f), c.Rx * 3.4f, wrap + 0.2f);
 			float last = 0f;
 			Node2D driver = Fx.Root(layer, c.Neck, "P5StrangleDrive", life + 0.05);
 			Fx.Animate(driver, 0, life, t =>
 			{
 				float s = t * life, dt = s - last;
 				last = s;
-				// 长出来：先飞到身上（细索），再缠两圈
-				float reveal = hand == null ? Ease5.OutQuint(Mathf.Min(1f, s / wrap)) : (s < fly ? 0.2f * (s / fly) : Mathf.Lerp(0.2f, 1f, Ease5.OutQuint(Mathf.Min(1f, (s - fly) / (wrap - fly)))));
-				// 松紧：缠的时候松（1.35）→ 一拽勒紧（0.8，过冲）→ 慢慢松一点
+				// 从一团烟里凝出来：绳子顺着螺旋绕出来，整圈一边转一边从散的烟聚实（像被看不见的手一圈圈缠上去）
+				float g = Fx.OutCubic(Mathf.Min(1f, s / wrap));
+				float reveal = Mathf.Lerp(0.25f, 1f, g);
+				Coil cs = c with { Th0 = c.Th0 + face * 1.8f * (1f - g) };
+				// 松紧：凝出来的时候大、松（1.6 → 1.35）→ 一拽勒紧（0.8，过冲）→ 慢慢松一点
 				float k = Ease5.OutBack(Ease5.Seg(s, cinch, 0.12f));
-				float sc = Mathf.Lerp(1.35f, 0.8f, k) + 0.04f * Ease5.Seg(s, cinch + 0.3f, 0.6f);
+				float sc = Mathf.Lerp(Mathf.Lerp(1.6f, 1.35f, g), 0.8f, k) + 0.04f * Ease5.Seg(s, cinch + 0.3f, 0.6f);
 				form.Flare = Mathf.Exp(-Mathf.Pow((s - cinch - 0.04f) / 0.08f, 2f)) + 0.15f * Ease5.Seg(s, 0f, cinch) * (1f - Ease5.Seg(s, cinch, 0.3f));
-				float cordDiss = Fx.InCubic(Ease5.Seg(s, cinch + 0.05f, 0.3f));
-				float coilDiss = Ease5.Seg(s, life - 0.55f, 0.55f);
-				float alpha = 1f - Ease5.Seg(s, life - 0.15f, 0.15f);
-				Build(form, c, face, sc, reveal, hand, cordDiss, coilDiss, alpha);
+				float coilDiss = Mathf.Max(0.8f * (1f - Fx.OutCubic(Mathf.Min(1f, s / (wrap * 0.9f)))), Ease5.Seg(s, life - 0.55f, 0.55f));
+				float alpha = Mathf.Min(1f, s / 0.06f) * (1f - Ease5.Seg(s, life - 0.15f, 0.15f));
+				Build(form, cs, face, sc, reveal, null, 0f, coilDiss, alpha);
 				form.Commit(dt);
 			});
 			Fx.After(layer, cinch + 0.04f, () =>

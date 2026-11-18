@@ -194,7 +194,7 @@ void fragment() {
 				Phantom.Shards(layer, c + new Vector2(-dz * 0.48f, 0f), 3, 120f * u, 320f * u, Vector2.Left, 50f, 0.22f, 400f * u, 8f * u);
 				Phantom.Shards(layer, c + new Vector2(dz * 0.48f, 0f), 3, 120f * u, 320f * u, Vector2.Right, 50f, 0.22f, 400f * u, 8f * u);
 				HitStop.Request(0.02);
-				Sfx.Play(Sfx.RetainLock, 0.5f);
+				Sfx.Play(Sfx.RetainLock, 0.32f);
 				tint?.Invoke(Colors.White.Lerp(new Color(0.62f, 0.42f, 0.48f), 0.4f + 0.2f * ii));
 			});
 		}
@@ -203,7 +203,6 @@ void fragment() {
 		float[] cAt = { 0.33f, 0.43f, 0.51f, 0.57f };
 		for (int i = 0; i < 4; i++)
 			Chevron(layer, top + new Vector2(0f, -h * (0.75f + 0.12f * i)), waist, h * (0.62f + 0.14f * i), cAt[i], 0.12f - 0.015f * i, 0.3f + 0.15f * i, u);
-		Sfx.Play(Sfx.DebuffDown, 0.35f, 0.33f);
 
 		// ── 最后一道：巨大的 V 从画面顶上砸下来 ──
 		Chevron(layer, at + new Vector2(0f, -h * 2.8f), waist + new Vector2(0f, h * 0.05f), h * 1.7f, press - 0.09f, 0.09f, 1f, u, giant: true);
@@ -220,14 +219,13 @@ void fragment() {
 				P(q, "alpha", Mathf.Min(1f, s / 0.05f) * (1f - Fx.OutCubic(Ease5.Seg(s, 0.08f, 0.42f))));
 			});
 		}
-		Sfx.Take("gx_whoosh", 0.18f, press - 0.1f);
 		Fx.After(layer, press, () =>
 		{
 			HitStop.Request(0.08);
 			Fx.Shake(2);
+			// 音效只留干净的三拍：刀命中 →「咔、咔、咔」三下轻的扣锁 → 一声重压（用户 2026-11-18：之前叠了下压双音、风声、闷响，太乱）
 			Sfx.Play(Sfx.Slam, 0.32f);
-			Sfx.Play(Sfx.SubBoom, 0.38f);
-			Sfx.Play(Sfx.DebuffPress, 0.35f);
+			Sfx.Play(Sfx.SubBoom, 0.34f);
 			Glow.Flash(layer, waist, Pal5.Hot, h * 0.9f, 0.12f);
 			Glow.Flash(bk, waist, Pal5.Bright, h * 3.2f, 0.45f);
 			Glow.Flash(bk, feet, new Color(0.7f, 0.03f, 0.08f), h * 2.6f, 0.6f);

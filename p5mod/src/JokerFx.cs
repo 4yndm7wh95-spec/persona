@@ -134,7 +134,7 @@ public static class JokerFx
 					Vector2 sf = Joker.PosePoint(joker, ReadyFx.Feet);
 					float st = (sf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length();
 					StrangleFx.Bind(layer, Joker.FxLayer(back: true), t.VfxSpawnPosition, t.GetTopOfHitbox(), t.Hitbox.GetGlobalRect().Size.X, SkillPlay.Tint(t), 0.28f,
-						Joker.PosePoint(joker, ReadyFx.GloveCuff), st, Joker.Facing(joker));
+						st, Joker.Facing(joker));
 				}
 				break;
 			case "Outbreak":

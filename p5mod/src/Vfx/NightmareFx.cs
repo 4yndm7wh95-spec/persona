@@ -64,6 +64,47 @@ public static class NightmareFx
 		h.Set("elbow", palm * ((palm.Z + 6f) / palm.Z) + new Vector3(0f, -0.9f, 0f));
 	}
 
+	private static Shader? _vortex;
+
+	/// <summary>梦魇漩涡：极坐标里卷的咒烟（近黑），三条暗红的旋臂往中心卷；中心一点暗红的深处。预乘混合（暗烟压暗背景、红光往上加）。</summary>
+	private static Shader Vortex => _vortex ??= new Shader { Code = @"
+shader_type canvas_item;
+render_mode blend_premul_alpha;
+uniform float clock = 0.0;
+uniform float open = 0.0;
+uniform float spin = 0.0;
+uniform float pulse = 0.0;
+uniform float alpha = 1.0;
+uniform float flip = 1.0;
+float h21(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+float vn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(h21(i), h21(i + vec2(1, 0)), f.x), mix(h21(i + vec2(0, 1)), h21(i + vec2(1, 1)), f.x), f.y); }
+float fbm(vec2 p) { return vn(p) * 0.5 + vn(p * 2.03 + 5.1) * 0.3 + vn(p * 4.1 + 1.7) * 0.2; }
+void fragment() {
+	vec2 p = UV * 2.0 - 1.0;
+	p.x *= flip;
+	float R = max(open, 0.001);
+	float rn = length(p) / R;
+	if (rn > 1.15) discard;
+	float a = atan(p.y, p.x);
+	// 越往中心转得越多（卷进去）
+	float sw = a + spin + 2.4 / (rn + 0.3) + clock * 0.9;
+	vec2 q = vec2(cos(sw), sin(sw)) * rn;
+	float n = fbm(q * 2.6 + vec2(clock * 0.25, -clock * 0.1));
+	float n2 = fbm(q * 5.5 - vec2(clock * 0.4, 0.0) + 3.0);
+	float edge = 1.0 - smoothstep(0.55, 1.05, rn + (n - 0.5) * 0.35);       // 软边，被噪声撕开
+	float dens = edge * (0.55 + 0.45 * n) * smoothstep(0.0, 0.25, rn + 0.1);
+	float arms = 0.5 + 0.5 * sin(sw * 3.0 + n * 5.0);
+	// 旋臂不要是一条光滑的红带子：被两层噪声撕成一缕缕的烟丝
+	float n3 = fbm(q * 11.0 + vec2(clock * 0.8, 1.3));
+	float fil = pow(arms, 6.0) * smoothstep(0.3, 0.8, n2 + 0.25 * n) * (0.5 + 0.7 * n3) * edge * smoothstep(0.08, 0.35, rn);
+	float core = exp(-rn * 5.0);
+	vec3 smoke = mix(vec3(0.02, 0.004, 0.008), vec3(0.09, 0.015, 0.022), n2);
+	vec3 glow = vec3(0.55, 0.03, 0.07) * fil * (0.3 + 0.9 * pulse) + vec3(0.75, 0.06, 0.1) * core * (0.18 + 0.5 * pulse);
+	float al = clamp(dens * 0.9, 0.0, 1.0) * alpha;
+	COLOR = vec4(smoke * al + glow * alpha * edge, al);
+}" };
+
 	public static void Play(SkillCtx c)
 	{
 		float h = c.Tall, u = c.Unit, fc = c.Face;
@@ -100,10 +141,35 @@ public static class NightmareFx
 		Sfx.Take("gx_burn", 0.14f, pull0 + 0.12f);
 		Sfx.Take("gx_card_stack", 0.14f, pull0 + 0.34f);
 
-		// ── 四周压暗 ──
+		float[] beats = { beat0, beat0 + gap, beat0 + gap * 2f };
+		float Beat(float s)
+		{
+			float v = 0f;
+			foreach (float b in beats) v += s > b - 0.03f ? (s < b ? 1f + (s - b) / 0.03f : Mathf.Exp(-(s - b) / 0.09f)) : 0f;
+			return v;
+		}
+
+		// ── 四周压暗：跟着心跳一下下收紧（黑暗在呼吸）──
 		SkillRedo5.Dim(back, cardAt + new Vector2(-fc * h * 0.2f, h * 0.2f), new Vector2(h * 5.5f, h * 3.6f), end + 0.3,
-			s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.22f)) * (1f - Ease5.Seg(s, pull1 - 0.1f, 0.4f)) * 0.82f);
+			s => Mathf.Min(0.95f, Fx.OutCubic(Ease5.Seg(s, 0f, 0.22f)) * (1f - Ease5.Seg(s, pull1 - 0.1f, 0.4f)) * (0.8f + 0.12f * Beat(s))));
 		Glow.Flash(back, cardAt, new Color(0.28f, 0.01f, 0.045f), h * 1.5f, pull1);
+		// 巨手冲出来的地方：黑暗里裂开一团暗红
+		Glow.Flash(back, cardAt + new Vector2(0f, -h * 0.05f), new Color(0.55f, 0.02f, 0.08f), h * 2.6f, 0.55f, surge0);
+
+		// ── 梦魇漩涡（巨手背后）：黑暗里旋开一团咒烟漩涡，巨手从漩涡中心冲出来；跟着心跳透出暗红的旋臂；拳头沉回中心时漩涡旋紧收拢 ──
+		Vector2 vortexAt = cardAt + new Vector2(fc * h * 0.08f, h * 0.06f);
+		float vSize = h * 2.6f;
+		Node2D vroot = Fx.Root(back, vortexAt, "P5NightmareVortex", end + 0.1);
+		vroot.Scale = new Vector2(1f, 0.88f);
+		ColorRect vq = new()
+		{
+			Size = Vector2.One * vSize, Position = -Vector2.One * vSize * 0.5f, MouseFilter = Control.MouseFilterEnum.Ignore,
+			Material = new ShaderMaterial { Shader = Vortex },
+		};
+		vroot.AddChild(vq);
+		var vm = (ShaderMaterial)vq.Material;
+		vm.SetShaderParameter("open", 0f);
+		vm.SetShaderParameter("flip", fc);
 
 		// ── 原牌（他手里浮起来、被攥住、掉出来飞回去）──
 		Phantom.P5Card card = Phantom.Card(front, c.Hand, h * 0.2f, end + 0.05);
@@ -137,7 +203,6 @@ public static class NightmareFx
 		Fx.FreeAfter(rearRoot, end + 0.05);
 		Fx.FreeAfter(frontRoot, end + 0.05);
 
-		float[] beats = { beat0, beat0 + gap, beat0 + gap * 2f };
 		Node2D drive = Fx.Root(front, cardAt, "P5NightmareDrive", end + 0.05);
 		Fx.Animate(drive, 0, end, t =>
 		{
@@ -258,6 +323,17 @@ public static class NightmareFx
 				cp.Set("clip", new Vector3(0f, 1f, -1.3f));
 				cp.Set("burn", burn);
 				cp.Set("alpha", fade);
+			}
+
+			// ── 漩涡 ──
+			{
+				float op = Fx.OutCubic(Mathf.Clamp((s - surge0 + 0.04f) / 0.3f, 0f, 1f));
+				float col = Fx.InCubic(Ease5.Seg(s, pull0, pull1 - pull0 + 0.06f));
+				vm.SetShaderParameter("open", op * (1f - col) * (1f + 0.04f * Beat(s)));
+				vm.SetShaderParameter("spin", fc * (2.4f * (1f - op) + 5f * col * col));
+				vm.SetShaderParameter("clock", s);
+				vm.SetShaderParameter("pulse", Mathf.Min(1.3f, Beat(s) + 0.8f * Mathf.Exp(-Mathf.Pow((s - grab1 - 0.03f) / 0.07f, 2f))));
+				vm.SetShaderParameter("alpha", 1f - Ease5.Seg(s, pull1, 0.1f));
 			}
 		});
 
