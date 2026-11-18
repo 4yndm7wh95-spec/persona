@@ -156,11 +156,9 @@ public sealed class AllOutFinale
 			{
 				Build(li, world);
 			}
-			Camera3D cam = new() { Near = d.Near, Far = d.Far, Fov = d.Fov, Current = true };
-			if (g == TextGroup)
-			{
-				cam = new Camera3D { Projection = Camera3D.ProjectionType.Orthogonal, Size = 720f, Position = new Vector3(0f, 0f, 2000f), Far = 5000f, Current = true };
-			}
+			Camera3D cam = g == TextGroup
+				? new Camera3D { Projection = Camera3D.ProjectionType.Orthogonal, Size = 720f, Position = new Vector3(0f, 0f, 2000f), Far = 5000f, Current = true }
+				: new Camera3D { Near = d.Near, Far = d.Far, Fov = d.Fov, Current = true };
 			vp.AddChild(cam);
 			_cams[g] = cam;
 			rects[g] = new TextureRect

@@ -24,6 +24,8 @@ public static class HitStop
 			Callable.From(() => Request(seconds, scale)).CallDeferred();
 			return;
 		}
+		if (AllOut.Playing) return;
+
 		Install();
 		double now = RealSeconds();
 		if (now < _blockUntil)
@@ -52,10 +54,15 @@ public static class HitStop
 
 	private static void Watch()
 	{
-		if (_on && RealSeconds() >= _until)
-		{
-			_on = false;
-			Engine.TimeScale = _prev < 0.05 ? 1.0 : _prev;
-		}
+		if (_on && RealSeconds() >= _until) Finish();
+	}
+
+	// End a pending impact pause before the finale takes ownership of TimeScale.
+	internal static void Finish()
+	{
+		if (!_on) return;
+
+		_on = false;
+		Engine.TimeScale = _prev < 0.05 ? 1.0 : _prev;
 	}
 }

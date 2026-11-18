@@ -57,7 +57,11 @@ public static partial class AllOut
 
 	private static void SlowDown(float scale)
 	{
-		if (!_slowed) _savedScale = Engine.TimeScale;
+		if (!_slowed)
+		{
+			HitStop.Finish();
+			_savedScale = Engine.TimeScale;
+		}
 		_slowed = true;
 		Engine.TimeScale = scale;
 	}

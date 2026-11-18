@@ -791,7 +791,12 @@ public partial class Preview : Node2D
 			var es = new List<ShivFx.Target> { new(Enemy2, 180f), new(Enemy, 230f), new(Enemy3, 180f) };
 			p.At(1.2, () => { p._joker?.Play("aim_out"); ShivFx.FanOfKnives(p._front, Pose(1275f, 345f), es); });
 		},
-		["warmup"] = p => p.At(0.1, () => Warmup.Run(p._front, 1ul)),
+		["warmup"] = p => p.At(0.1, () =>
+		{
+			Warmup.IdleContext = () => "preview";
+			Warmup.RequestJoker();
+			Warmup.StartMenu();
+		}),
 		["monsters"] = p => { },
 		["attack_pose"] = p => p.At(0.3, () => p._joker?.Play("attack")),
 		// 出刀刀光单独看（和动作对齐）
