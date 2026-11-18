@@ -128,6 +128,10 @@ public static class JokerFx
 				// 刀落下（attack_from_ready 0.14s、伤害 0.15s）之后锁环收紧
 				CardFx.Weaken(layer, t.VfxSpawnPosition, t.GetTopOfHitbox(), 0.12f);
 				break;
+			case "Strangle" when t != null:
+				// 紧勒（0.9.49 审阅）：刀命中之后脖子上套上一圈绳、猛地收紧（Vfx/StrangleFx.cs）；之后每勒一次在 StrangleFlashPatch
+				StrangleFx.Bind(layer, Joker.FxLayer(back: true), t.VfxSpawnPosition, t.GetTopOfHitbox(), t.Hitbox.GetGlobalRect().Size.X, SkillPlay.Tint(t), 0.3f);
+				break;
 			case "Outbreak":
 			{
 				// 第四版：稀有召唤（眼神特写 + 舞台 + 新亚森，Aim）→ 亚森出手，咒怨光束扇形射向每个敌人（PoisonApplyPatch）

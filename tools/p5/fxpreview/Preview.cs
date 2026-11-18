@@ -993,6 +993,21 @@ public partial class Preview : Node2D
 			p.At(5.2, () => Batch5Fx.BeginEcho());
 			p.At(5.34, () => { Batch5Fx.EchoWave(p._front, foes, 1f); Batch5Fx.EchoWave(p._front, foes, 1f); });
 		},
+		// 紧勒：出刀命中 → 套上绳圈收紧；之后打三张牌，每张勒一次
+		["strangle"] = p =>
+		{
+			Vector2 top = Enemy + new Vector2(0f, -170f);
+			System.Action<Color> tint = c => p._enemies[Enemy].Modulate = c;
+			p.At(0.3, () => p._joker?.Play("attack"));
+			p.At(0.43, () => KnifeFx.Swing(p._front, Pose(600f, 850f), Pose(1376f, 450f)));
+			p.At(0.45, () => KnifeFx.Hit(p._front, Enemy, 1f));
+			p.At(0.45, () => StrangleFx.Bind(p._front, p._back, Enemy, top, 260f, tint, 0.3f));
+			foreach (double t in new[] { 2.2, 3.0, 3.8 })
+			{
+				p.At(t - 0.3, () => p._joker?.Play("cast_glove"));
+				p.At(t, () => StrangleFx.Cinch(p._front, p._back, Enemy, top, 260f, tint));
+			}
+		},
 		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_glove", 0.25, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast_wave", 0.08, 1.6) }),
 		["redo4b"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.8), ("Afterimage", "cast_glove", 0.25, 1.4), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast_wave", 0.08, 1.8) }),
 		["redo5"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.9), ("Shadowmeld", "cast_glove", 0.25, 1.9) }),

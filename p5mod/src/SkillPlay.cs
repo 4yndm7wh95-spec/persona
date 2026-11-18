@@ -320,7 +320,7 @@ public static class SkillPlay
 	private static int Count(CardModel card) =>
 		card.DynamicVars.TryGetValue("Cards", out var cards) ? Mathf.Clamp(cards.IntValue, 1, 5) : 2;
 
-	private static Action<Color> Tint(NCreature n) => c =>
+	internal static Action<Color> Tint(NCreature n) => c =>
 	{
 		if (GodotObject.IsInstanceValid(n) && n.Visuals is { } v)
 		{

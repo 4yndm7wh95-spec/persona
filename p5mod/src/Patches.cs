@@ -637,6 +637,24 @@ public static class EchoingSlashPatch
 	}
 }
 
+/// <summary>紧勒：StranglePower 每次结算（这回合 Joker 每打一张牌）前会 Flash 一下 → 在被勒的敌人身上勒紧一次（Vfx/StrangleFx.cs）。</summary>
+[HarmonyPatch(typeof(PowerModel), "Flash")]
+public static class StrangleFlashPatch
+{
+	public static void Postfix(PowerModel __instance)
+	{
+		ModEntry.Safe("StrangleFlash", () =>
+		{
+			if (__instance is not MegaCrit.Sts2.Core.Models.Powers.StranglePower || __instance.Applier?.Player is not { } p || !Joker.Is(p)
+				|| Joker.FxLayer() is not Godot.Control layer || NCombatRoom.Instance?.GetCreatureNode(__instance.Owner) is not NCreature n)
+			{
+				return;
+			}
+			StrangleFx.Cinch(layer, Joker.FxLayer(back: true), n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, SkillPlay.Tint(n));
+		});
+	}
+}
+
 /// <summary>原版腐蚀波每次抽牌在敌人身上放的绿色毒气：Joker 的腐蚀波正由咒火浪表现时藏掉。</summary>
 [HarmonyPatch(typeof(NGaseousImpactVfx), nameof(NGaseousImpactVfx.Create), typeof(Godot.Vector2), typeof(Godot.Color))]   // 原版腐蚀波用的是这个重载
 public static class CorrosiveGasPatch
