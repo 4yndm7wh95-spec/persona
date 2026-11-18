@@ -278,11 +278,12 @@ def fx_textures():
     # + BKSK_SPLATTER 的血团（smoke）和噪声（test）
     for f in sorted((ROOT / "tools/p5/allout_native/godot/tex").glob("*.dds.png")):
         yield "aoa_" + f.name[:-len(".dds.png")], Image.open(f).convert("RGBA")
-    # 总攻击裂痕（Codex 生图，art/p5/fx/gen_codex/allout_cracks）：整张裂痕 + 撞击点粉碎团
-    for name in ("crack_main", "crack_alt", "crack_core"):
-        f = GEN_CODEX / "allout_cracks" / f"{name}.png"
+    # 总攻击裂纹（Codex 生图，P5 风格黑色裂纹，art/p5/fx/gen_codex/allout_cracks_v2）：整张裂纹 ×2 + 撞击点；
+    # 对应的主裂纹折线在 tools/p5/allout_native/cracks/（trace_cracks.py 描的），打包时拷到 p5joker/allout/
+    for name in ("a", "b", "core"):
+        f = GEN_CODEX / "allout_cracks_v2" / f"crack_p5_{name}.png"
         if f.exists():
-            yield f"aoa_{name}", Image.open(f).convert("RGBA")
+            yield f"aoa_crackp5_{name}", Image.open(f).convert("RGBA")
     from allout_native.export_runtime import splatter_textures
     for name, im in splatter_textures():
         if name == "smoke":
@@ -461,6 +462,8 @@ default_mix = 0.1
     # 总攻击收尾的原版数据（网格 / 材质 / 240 帧矩阵），AllOutFinale 直接读字节
     from allout_native.export_runtime import main as export_allout
     export_allout(STAGE / "p5joker/allout/hero.bin")
+    for f in sorted((ROOT / "tools/p5/allout_native/cracks").glob("cracks_*.json")):
+        shutil.copy(f, STAGE / "p5joker/allout" / f.name)
     # fonts: raw .ttf (p5mod/src/Vfx/P5Ui.cs loads them with FontFile.LoadDynamicFont, no import needed; SIL OFL)
     (STAGE / "p5joker/fonts").mkdir(parents=True, exist_ok=True)
     for f in ("BarlowCondensed-900Italic.ttf", "BarlowCondensed-700Italic.ttf"):

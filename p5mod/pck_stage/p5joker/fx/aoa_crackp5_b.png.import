@@ -2,15 +2,15 @@
 
 importer="texture"
 type="CompressedTexture2D"
-path="res://.godot/imported/aoa_crack_alt.png-a23d3abdb4ad1530cc53d9e2507a5c70.ctex"
+path="res://.godot/imported/aoa_crackp5_b.png-eadcc1edca788129b28ae1535cdbffb8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://p5joker/fx/aoa_crack_alt.png"
-dest_files=["res://.godot/imported/aoa_crack_alt.png-a23d3abdb4ad1530cc53d9e2507a5c70.ctex"]
+source_file="res://p5joker/fx/aoa_crackp5_b.png"
+dest_files=["res://.godot/imported/aoa_crackp5_b.png-eadcc1edca788129b28ae1535cdbffb8.ctex"]
 
 [params]
 

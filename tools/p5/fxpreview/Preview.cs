@@ -135,6 +135,11 @@ public partial class Preview : Node2D
 		// 总攻击（p5mod/src/Vfx/AllOut.cs）：最后一刀砍中 → 截三只怪物的剪影 → 总攻击
 		["allout"] = p =>
 		{
+			AllOut.LoadText = name =>
+			{
+				string f = ProjectSettings.GlobalizePath($"res://../../../p5mod/pck_stage/p5joker/allout/{name}");
+				return System.IO.File.Exists(f) ? System.IO.File.ReadAllText(f) : null;
+			};
 			AllOutFinale.LoadData = () =>
 			{
 				string f = ProjectSettings.GlobalizePath("res://../../../p5mod/pck_stage/p5joker/allout/hero.bin");
