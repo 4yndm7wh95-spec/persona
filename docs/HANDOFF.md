@@ -7,9 +7,10 @@
 ## 2026-11-18 · 会话 D（`claude/confident-hypatia-nropgi`）交接：0.9.49 审阅意见逐批修改（已做 10 张）
 
 ### 分支和状态
-- 工作分支 `claude/confident-hypatia-nropgi`，已推送。代码版本号 **0.9.49**（用户另一个会话做了选人界面 / 出发过场，Codex 已编译安装，报告 `docs/codex/reports/p5_build_0.9.49.md`）。
+- 工作分支 `claude/confident-hypatia-nropgi`，已推送。代码版本号 **0.9.50**：用户另一个会话在 `claude/character-animation-smoothness-dearur` 做了局内人物动作平滑（补间帧、重新打包骨骼），出了 0.9.50 并**已装进用户游戏**；11-18 交接后才合进本分支（这一轮一开始漏合了，用户提醒的）。0.9.49 是选人界面 / 出发过场（报告 `docs/codex/reports/p5_build_0.9.49.md`）。
 - **游戏现在是 v0.113.1**（0.9.49 报告：装进了桌面版和 G 盘版两处，DLL / JSON / PCK 已做 SHA-256 比对）。之前说的「游戏是 0.111」已过时。
-- 0.9.49 之后的改动（下面两批）**都没编译进游戏、没实机看过**。下次出包升 0.9.50：复制 `docs/codex/codex_p5_build_0.9.48.md`（重跑版，带网络重试）改版本号和报告文件名；仓库副本路径以 0.9.49 报告里 Codex 实际用的为准。
+- 下面两批审阅修改**不在用户游戏里的 0.9.50 里**（0.9.50 是从动作分支出的），都没实机看过。下次出包升 **0.9.51**：照 `docs/codex/codex_p5_build_0.9.50.md` 改版本号；网络出错的重试写法参考 `codex_p5_build_0.9.48.md`。
+- **教训**：开工前 `git for-each-ref --sort=-committerdate refs/remotes/origin` 看一眼别的分支有没有新版本，用户会在别的会话出版本。
 - 用户在本地 Codex 也在做优化，推送前一定先 `git fetch` + merge。
 
 ### 现在在做什么
