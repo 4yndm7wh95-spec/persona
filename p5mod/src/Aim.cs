@@ -99,7 +99,7 @@ public static class Aim
 		string? current = Current(state);
 		if (requested == "shiv" && current == "aim_in")
 		{
-			// 转枪还没转完就打出去了：aim_in 就是 shiv 的前 0.18 秒（tools/p5/build_rig_p5.py GUN_IN），
+			// 转枪还没转完就打出去了：aim_in 就是 shiv 开火前的那一段（tools/p5/build_rig_p5.py GUN_IN），
 			// 换成 shiv 并从同一时刻接着播 —— 转枪转完、接住、开火，不从头重来也不硬切
 			using MegaTrackEntry? entry = state.GetCurrent(0);
 			if (entry != null)
@@ -114,7 +114,7 @@ public static class Aim
 		}
 		if (requested == "attack" && current == "knife_in")
 		{
-			// 转刀还没转完就打出去了：knife_in 就是 attack 的前 0.14 秒，换回 attack 并从同一时刻接着播
+			// 转刀还没转完就打出去了：knife_in 就是 attack 出刀前的那一段，换回 attack 并从同一时刻接着播
 			using MegaTrackEntry? entry = state.GetCurrent(0);
 			if (entry != null)
 			{
@@ -731,6 +731,19 @@ public static class Aim
 		_lock?.Release();
 		_lock = null;
 		_lockId = 0;
+	}
+
+	/// <summary>自己挥一刀（回响斩击：原版不触发攻击动作）。举着刀就从架势接（SetAnimation 的补丁会把 attack 换成 attack_from_ready），挥完回待机。</summary>
+	public static void PlayAttack(NCreature node)
+	{
+		if (node.Visuals?.SpineBody is not MegaSprite body || body.TryGetAnimationState() is not MegaAnimationState state || !body.HasAnimation("attack"))
+		{
+			return;
+		}
+		bool low = node.Entity.GetHpPercentRemaining() <= 0.25 && body.HasAnimation("low_health_loop");
+		PendingCast.Remove(node.GetInstanceId());
+		state.SetAnimation("attack", false, 0);
+		state.AddAnimation(low ? "low_health_loop" : "idle_loop", 0f, true, 0);
 	}
 
 	public static void Lower(NCreature? node)

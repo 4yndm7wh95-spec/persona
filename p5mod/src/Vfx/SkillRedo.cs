@@ -138,7 +138,8 @@ public static class SkillRedo
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face, w = CardW(c) * 1.45f;
 		Vector2 pivot = c.Chest + new Vector2(f * h * 0.45f, h * 0.12f);       // 扇轴（牌的下端握在这里）
-		const int n = 5;
+		int n = c.Count >= 0 ? Mathf.Min(c.Count, 10) : 3;          // 实际抽到几张就摊几张（用户 2026-11-17 审阅）
+		float step = n > 1 ? Mathf.Min(0.36f, 1.5f / (n - 1)) : 0f;
 		const float open = 0.22f, hold = 0.5f, close = 0.12f;
 		S("gx_fan_open", 0.22f, 0.02f);
 		S("gx_ping", 0.1f, open + 0.06f + 0.07f * (n - 1) + 0.07f);      // 扫完扣上：一声
@@ -147,7 +148,7 @@ public static class SkillRedo
 		for (int i = 0; i < n; i++)
 		{
 			int k = i;
-			float target = (k - (n - 1) / 2f) * 0.36f * f;                           // 扇开后的角度
+			float target = (k - (n - 1) / 2f) * step * f;                           // 扇开后的角度
 			Phantom.P5Card card = Phantom.Card(c.Front, pivot, w, open + hold + close + 0.1);
 			Vector2 off = new(0f, -w * 0.62f);                                      // 牌中心离扇轴
 			float sweepAt = open + 0.06f + 0.07f * k;
@@ -175,7 +176,7 @@ public static class SkillRedo
 			Vector2 stack = pivot + new Vector2(0f, -h * 0.3f) + new Vector2(0f, -w * 0.62f);
 			Glow.Flash(c.Front, stack, Phantom.Hot, w * 2.2f, 0.1f);
 			Phantom.Shards(c.Front, stack, 8, 200f * u, 500f * u, Vector2.Up, 80f, 0.25f, 400f * u, 16f * u);
-			for (int j = 0; j < 3; j++) ToHand(c, stack + new Vector2(j * 2f, -j * 2f), 0.02f * j, 0.4f, 0f, h * 0.2f, 0.8f, 6.3f);
+			for (int j = 0; j < n; j++) ToHand(c, stack + new Vector2(j * 2f, -j * 2f), 0.02f * j, 0.4f, 0f, h * 0.2f, 0.8f, 6.3f);
 		});
 	}
 
@@ -208,43 +209,40 @@ public static class SkillRedo
 	// ═══════════════════════════ 本能反应：快 ═══════════════════════════
 
 	/// <summary>
-	/// 本能反应（抽牌）：快到看不清——手边一下白闪、几根速度线往后甩，牌几乎是直线「射」进手牌区：每张中途「闪现」一次
-	/// （原地留下一个淡下去的残影、往前跳一段），拖着拉长的红白光痕；一张紧跟一张。约 0.5s。
+	/// 本能反应（2026-11-17 审阅：这是抽牌，原来牌从手里往敌人那边甩出去，像弃牌 → 中改）：两张牌从他身后上方「嗖」地射下来，
+	/// 他抬手一把接住（接住那一下手边一闪、星光、短顿帧 —— 反应快），停一瞬，再一张张收进下面的手牌里。方向是「进来」，不是「甩出去」。
 	/// </summary>
 	public static void Reflex(SkillCtx c)
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face, w = CardW(c);
-		Vector2 hand = SkillFx.HandArea(c.Front);
-		Glow.Flash(c.Front, c.Hand, Phantom.Hot, h * 0.3f, 0.08f);
-		Phantom.Shards(c.Front, c.Hand, 10, 600f * u, 1200f * u, new Vector2(-f, 0.1f), 18f, 0.18f, 0f, 30f * u);
-		S("gx_whoosh", 0.26f);                                           // 主拍
-		S("gx_card_stack", 0.16f, 0.42f);
-		for (int i = 0; i < 3; i++)
+		S("gx_whoosh", 0.22f);
+		S("gx_card_stack", 0.16f, 0.62f);
+		Glow.Flash(c.Front, c.Hand, Phantom.Hot, h * 0.22f, 0.08f);
+		for (int i = 0; i < 2; i++)
 		{
 			int k = i;
-			float d = 0.06f * k;
-			Vector2 start = c.Hand + new Vector2(f * h * 0.12f, -h * (0.05f + 0.06f * k));
-			Vector2 mid = start.Lerp(hand, 0.45f) + new Vector2(f * h * 0.15f, -h * 0.12f);
-			DrawTick(k);
-			Phantom.P5Card a = Phantom.Card(c.Front, start, w, d + 0.4, 1.1f);
+			float d = 0.04f + 0.11f * k, fly = 0.16f;
+			Vector2 from = c.Feet + new Vector2(-f * h * (0.8f + 0.2f * k), -h * (1.45f + 0.08f * k));
+			Vector2 grab = c.Hand + new Vector2(f * h * 0.05f, -h * (0.06f + 0.12f * k));
+			Phantom.P5Card a = Phantom.Card(c.Front, from, w, d + fly + 0.1, 1.1f);
 			a.Root.Visible = false;
-			Fx.Animate(a.Root, d, 0.12, t =>
+			Fx.Animate(a.Root, d, fly, t =>
 			{
 				a.Root.Visible = true;
-				a.Place(start.Lerp(mid, Ease5.OutQuint(t)), f * 0.6f, t * 6f, 0.9f);
+				float e = Ease5.OutExpo(t);
+				a.Place(from.Lerp(grab, e), f * (0.9f - 0.7f * e), (1f - e) * 8f, 0.8f + 0.2f * e);
 			});
-			Fx.After(c.Front, d + 0.12f, () =>
+			Fx.After(c.Front, d + fly, () =>
 			{
-				// 闪现：原地留一个白亮的残影淡掉，牌向前跳一段
-				a.Set("glow", 1f);
-				Fx.Animate(a.Root, 0, 0.12, t => a.Set("alpha", 1f - t));
 				a.Trail?.Kill();
-				Glow.Flash(c.Front, mid, Phantom.Hot, w * 1.8f, 0.08f);
-				Vector2 jump = mid.Lerp(hand, 0.35f);
-				Phantom.Shards(c.Front, mid, 6, 300f * u, 700f * u, (jump - mid).Normalized(), 20f, 0.2f, 0f, 22f * u);
-
-				ToHand(c, jump, 0f, 0.18f, f * 0.6f, h * 0.02f, 1.2f, 4f);
+				a.Root.Visible = false;
+				Glow.Flash(c.Front, grab, Phantom.Hot, w * 2.2f, 0.09f);
+				Glow.Flash(c.Front, grab, Phantom.Red, w * 4f, 0.2f);
+				Glow.Glint(c.Front, grab + new Vector2(w * 0.3f, -w * 0.5f), 0.6f);
+				Phantom.Shards(c.Front, grab, 6, 200f * u, 500f * u, new Vector2(f, -0.3f), 40f, 0.22f, 300f * u, 16f * u);
+				if (k == 0) HitStop.Request(0.03);
 			});
+			ToHand(c, grab, d + fly + 0.07f, 0.34f, f * 0.2f, h * 0.12f, 1.0f, 5f);
 		}
 	}
 
@@ -260,9 +258,11 @@ public static class SkillRedo
 		Control back = c.Back != null && GodotObject.IsInstanceValid(c.Back) ? c.Back : c.Front;
 		Vector2 hub = c.Feet + new Vector2(-f * h * 0.12f, -h * 0.52f);
 		// 用户 2026-11-13：游戏里这道弧光有人物两倍高 → 缩到和人差不多高
-		Paint.Sweep(back, "slash_thin", hub, Mathf.Pi * 0.5f, new Vector2(0.36f, 0.36f) * u * h / 300f, Lut5.Blood, 0.05f, 0.04f, 0.28f, -45f * f, 0.02f, 1.25f);
-		Glow.Flash(back, hub + new Vector2(0f, -h * 0.25f), Phantom.Red, h * 0.8f, 0.22f);
-		S("gx_whoosh", 0.3f);                                            // 主拍
+		// 2026-11-17 审阅：太小不明显 → 小改：弧光放大到比人略高（0.36 → 0.5）、更亮，身后的红光更大更久（第二轮：只要一道弧）
+		Paint.Sweep(back, "slash_thin", hub, Mathf.Pi * 0.5f, new Vector2(0.5f, 0.5f) * u * h / 300f, Lut5.Blood, 0.05f, 0.05f, 0.3f, -45f * f, 0.02f, 1.6f);
+		Glow.Flash(back, hub + new Vector2(0f, -h * 0.25f), Phantom.Red, h * 1.4f, 0.35f);
+		Glow.Flash(c.Front, hub + new Vector2(0f, -h * 0.4f), Phantom.Hot, h * 0.3f, 0.08f, 0.04f);
+		// 2026-11-17 用户：后空翻有个像锅一样的音效 → 去掉这声 whoosh
 		S("gx_card_stack", 0.16f, 0.72f);
 
 		Vector2 top = hub + new Vector2(-f * h * 0.05f, -h * 0.5f);
@@ -276,7 +276,7 @@ public static class SkillRedo
 		}
 		Fx.After(c.Front, 0.2f, () =>
 		{
-			Glow.Shockwave(c.Front, c.Feet, Phantom.Hot, h * 1.3f, 0.32f, 0.22f);
+			Glow.Shockwave(c.Front, c.Feet, Phantom.Hot, h * 1.8f, 0.4f, 0.22f);
 			Phantom.Shards(c.Front, c.Feet, 8, 200f * u, 500f * u, new Vector2(-1f, -0.2f), 15f, 0.28f, 400f * u, 18f * u);
 			Phantom.Shards(c.Front, c.Feet, 8, 200f * u, 500f * u, new Vector2(1f, -0.2f), 15f, 0.28f, 400f * u, 18f * u);
 		});
@@ -532,7 +532,7 @@ public static class SkillRedo
 	public static void CalculatedGamble(SkillCtx c)
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face, w = CardW(c);
-		const int n = 5;
+		int n = c.Count >= 0 ? Mathf.Min(c.Count, 10) : 5;          // 弃掉 / 抽回的就是这手牌的张数（用户 2026-11-17 审阅）
 		const float spin = 0.75f;
 		Vector2 center = c.Feet + new Vector2(0f, -h * 0.55f);
 		Control back = c.Back != null && GodotObject.IsInstanceValid(c.Back) ? c.Back : c.Front;
@@ -563,7 +563,7 @@ public static class SkillRedo
 				fr.Trail?.Kill(); fr.Root.Visible = false; bk.Root.Visible = false;
 				float a = ph + Mathf.Tau * 2.3f;
 				Vector2 pos = center + new Vector2(Mathf.Cos(a), Mathf.Sin(a) * 0.24f) * h * 0.6f;
-				Phantom.Confetti(c.Front, pos, 9, 360f * u, (pos - center).Normalized() + Vector2.Up * 0.4f, 50f, 0.9f, 7f * u);
+				Phantom.Confetti(c.Front, pos, Mathf.Max(4, 45 / Mathf.Max(1, n)), 360f * u, (pos - center).Normalized() + Vector2.Up * 0.4f, 50f, 0.9f, 7f * u);
 			});
 		}
 		Fx.After(c.Front, spin, () =>
@@ -579,7 +579,7 @@ public static class SkillRedo
 		{
 			int k = i;
 			float d = spin + 0.14f + 0.05f * k;
-			float ang = -Mathf.Pi / 2f + f * (k - (n - 1) / 2f) * 0.38f;
+			float ang = -Mathf.Pi / 2f + f * (k - (n - 1) / 2f) * (n > 1 ? Mathf.Min(0.38f, 2.4f / (n - 1)) : 0f);
 			Vector2 apex = c.Hand + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * h * 0.42f;
 			Phantom.P5Card card = Phantom.Card(c.Front, c.Hand, w, d + 0.2, 0.6f);
 			card.Root.Visible = false;

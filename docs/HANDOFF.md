@@ -2,6 +2,62 @@
 
 协作规则见 `docs/COLLAB_RULES.md`（草案，用户还没最终确认）。用户说过：交接文档**只在用户要求交接时写**，不用每次做完都写。
 
+> **常驻规则（用户 2026-11-18）：Codex 生图任务单不要让它自我审查、不要让它重新生成、不要要求写报告 / 检查图，生成完直接提交推送。** 详见 `docs/COLLAB_RULES.md` 第 7 条。
+
+---
+
+## 2026-11-18 · 会话 E（`claude/confirm-next-tasks-k5wu6t`）交接：0.9.49 审阅第六批重做 + 第七批，待合并
+
+### 分支和状态（给负责合并的会话）
+- 分支 **`claude/confirm-next-tasks-k5wu6t`**，已全部推送，工作区干净。它包含 `claude/confident-hypatia-nropgi` 和 `claude/character-animation-smoothness-dearur` 的全部提交（直接接在会话 D 后面）。
+- 和 **`claude/exciting-babbage-lm8ubb`**（总攻击第九～十三版，21 个提交）互不包含；试合并过（临时 worktree，`git merge --no-commit`）**没有冲突**，两边都动过的只有 `tools/p5/fxpreview/Preview.cs`、`tools/p5/stage_p5.py`，自动合得上。
+- 代码版本号仍是 **0.9.50**；这些改动**都没进过游戏**。合并后出包升 **0.9.51**（照 `docs/codex/codex_p5_build_0.9.50.md`）。类型检查 `bash tools/p5/cloud/check.sh` 通过。
+
+### 做了什么（审阅表 `docs/p5/review_0.9.49.md` 已逐条标注）
+- **第六批第三版（用户：可以了）**：紧勒「咒烟绞索」（`Vfx/StrangleFx.cs` + 新的 `Vfx/CurseForm.cs`）、夜魇「梦魇之手」（`Vfx/NightmareFx.cs`，复用 `CrushHand`/`CrushHandFrame` + 漩涡）、压制「三重锁压」（`Vfx/SuppressFx.cs`，重压音效 crush + sub_boom）、狩猎「夺宝」（`Vfx/HuntFx.cs`）、必备工具「弹牌」（`Vfx/ToolsFx.cs`）；删掉了 `Vfx/Batch6Fx.cs`。尖啸打出不放声音（`SkillPlay.cs`）。
+- **第七批（等用户确认）**：致命毒药 / 咕嘟冒泡「咒怨裂隙」（新 `Vfx/CurseRift.cs`，接在 `PoisonFx.Apply`）；群蛇形态画布每帧按蛇的范围重算（`SerpentMantle.FitCanvas`，修大房间断开）；刀刃陷阱「时钟陷阱」整个重写（`Vfx/KnifeTrapFx.cs`：褪灰、透明大表盘一枪一格、预告信最多显示 24 张超出补位；`JokerFx.cs` 的调用和 `Aim.HoldCast` 改了）。
+- 预览视频：`docs/p5/preview/fix_batch6_v3.mp4`、`fix_batch6_v4.mp4`、`suppress_press_sfx.mp4`、`fix_batch7.mp4`、`fix_batch7b.mp4`、`serpent_form_check.mp4`。
+- 经验写进了 `docs/p5/TODO.md`（拉黑清单下面）。
+
+### 合并 / 出包后要实机看的
+- 群蛇形态在大房间里还断不断（预览只能近似）。
+- 刀刃陷阱在真实开枪节奏下的表盘步进、24 张以上补位。
+- 夜魇巨手张开时指尖会不会被顶栏挡住。
+
+---
+
+## 2026-11-18 · 会话 D（`claude/confident-hypatia-nropgi`）交接：0.9.49 审阅意见逐批修改（已做 10 张）
+
+### 分支和状态
+- 工作分支 `claude/confident-hypatia-nropgi`，已推送。代码版本号 **0.9.50**：用户另一个会话在 `claude/character-animation-smoothness-dearur` 做了局内人物动作平滑（补间帧、重新打包骨骼），出了 0.9.50 并**已装进用户游戏**；11-18 交接后才合进本分支（这一轮一开始漏合了，用户提醒的）。0.9.49 是选人界面 / 出发过场（报告 `docs/codex/reports/p5_build_0.9.49.md`）。
+- **游戏现在是 v0.113.1**（0.9.49 报告：装进了桌面版和 G 盘版两处，DLL / JSON / PCK 已做 SHA-256 比对）。之前说的「游戏是 0.111」已过时。
+- 下面两批审阅修改**不在用户游戏里的 0.9.50 里**（0.9.50 是从动作分支出的），都没实机看过。下次出包升 **0.9.51**：照 `docs/codex/codex_p5_build_0.9.50.md` 改版本号；网络出错的重试写法参考 `codex_p5_build_0.9.48.md`。
+- **教训**：开工前 `git for-each-ref --sort=-committerdate refs/remotes/origin` 看一眼别的分支有没有新版本，用户会在别的会话出版本。
+- 用户在本地 Codex 也在做优化，推送前一定先 `git fetch` + merge。
+
+### 现在在做什么
+- 用户用自己的工作台审完 92 张牌，意见原文 + 进度在 **`docs/p5/review_0.9.49.md`**（「✅ 已改」是进度标记）。37 张待改，已改 10 张，剩 27 张。
+- 用户定的做法：**一批 5 张，做完出一个视频同时展示 5 张**，放 `docs/p5/preview/fix_batchN.mp4`，左上角标「牌名 · 大改/中改/小改」，推送后给路径，并说清每张是大改还是小改。用户说「之前说的工作台不用做了」。
+- 已交付：
+  - 第一批 `fix_batch1.mp4`：精准、后空翻、本能反应、扫腿、涂毒；
+  - 第一批第二轮 `fix_batch1b.mp4`：精准改成「准星锁定后收进手里」（用户：精准是小刀 buff，不要刀锋）、后空翻只留一道弧；
+  - 第二批 `fix_batch2.mp4`：跟踪、磨蚀、触媒、萎靡、谋划专家（在 `Vfx/SkillRedo10.cs`，`CardSkillFx` 里最后注册 `RegisterBatch10`）。
+  - 用户对第一批的反馈已处理，后空翻「像锅一样的音效」已去掉（判断是 `gx_whoosh`，没完全确认）。**第二批还没反馈。**
+- 下一批原计划：计算下注、独门技术（特效里的牌数要等于实际手牌数 / 抽牌数，要从游戏侧把数量传进来，`SkillPlay.Count` 那套）、刀扇、腐蚀波、匕首雨。
+
+### 要注意的风险
+- **磨蚀第二批用了 `Vortex`（风刃绕身转）当主体**。11-14 交接里写过用户把「环绕光圈 / 刀光绕身转圈」拉黑、最多当点缀。这次是我没翻到那条就做了，用户看了视频没表态前别再往这个方向加；如果被否，换思路。
+- 触媒、萎靡的火是新写的着色器 `RedFlame`（ArseneFx 觉醒火的形状，红 / 暗红配色）。第一版硬边分层的大火柱会碎成一条条细刺 → 已改成低频噪声 + 平滑过渡。用户还没看。
+
+### 这轮的技术坑
+- **`Fx.Animate(owner, delay>0, ...)` 会在等待期间把 owner 藏起来**。owner 传成图层（`c.Front`）就会把整层特效藏掉（精准第一版里身上红光就这么写的，整层消失约 0.3s）。要延迟就写 `Fx.After(layer, d, () => Fx.Animate(layer, 0, ...))`。
+- 预览里第一次用到的着色器要编译几帧才显示 → 批量场景先把每张放一遍（`fix1b` / `fix2`），出视频时用 ffmpeg `-ss` 剪掉前面。
+- 预览的 `p.At` 时间线会随顿帧慢慢漂（一批下来约 0.4s），声音和画面一起漂，不是 bug；视频标签时间要按 `out/<场景>/sfx.txt` 校一下。
+- 视频标签：ffmpeg `drawtext`，字体 `/usr/share/fonts/opentype/unifont/unifont.otf`（容器里唯一的中文字体）。
+- 格挡牌（后空翻、扫腿）的格挡盾在游戏里走 `GainBlockPatch` → `HexGuard.Play`，牌特效里不用再加；预览场景里要手动补 `HexGuard.Play` 才像游戏。
+- `CardSkillFx.Cards` 后注册的覆盖先注册的；同一张牌可能在 CardSkillFx / CardSkillFx2 / 3 / SkillRedo / SkillRedo4 / SkillRedo5 里都有旧版，改之前先 grep `cards["牌名"]` 找最后注册的那个。
+- 蛇咬第八版（绕圈路线，`SerpentMantle` 的 `BuildSolo` / `SoloPose` / 身后咒烟 `WakeSerpent`）用户审阅时判了过关。
+
 ---
 
 ## 2026-11-16 · 会话 D（`claude/confident-hypatia-nropgi`）交接：增益牌第一批、毒系三张、动作和若干修正

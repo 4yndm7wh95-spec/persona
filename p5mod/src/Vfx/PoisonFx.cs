@@ -92,9 +92,11 @@ public static class PoisonFx
 			Fx.After(layer, 0.05, () => Apply(layer, at, top, width, body, amount, retry - 1, outbreak));
 			return;
 		}
+		// 腐蚀波（2026-11-18 用户：带上挂毒的特效）：上毒已推迟到卷浪拍中那一刻（CorrosiveDrawPatch），这里照常放挂毒特效，和拍击同一刻
 		if (CorrosiveFx.Suppressing && !ArseneFx.TryClaw(out _))
 		{
-			return;                                                   // 腐蚀波：抽牌带来的上毒由贴地的咒火浪表现（CorrosiveFx.Wave）
+			Impact(layer, at, top, width, body, amount, new Vector2(1f, 0.6f), false);
+			return;
 		}
 		if (Stage.NowMs() >= NoBeamUntil && ArseneFx.TryClaw(out Vector2 claw))
 		{
@@ -110,7 +112,25 @@ public static class PoisonFx
 				//（细的红 / 白疾光，前后错开，越靠后越小），几乎同时扎进去（致命毒药 / 咕嘟冒泡共用）
 				// 2026-11-16 第六版（用户：光束太直白；光点 / 光尘砸过去很丑）：不再从爪尖往敌人发东西 —— 亚森一挥爪，
 				// 敌人身上同一刻被三道咒怨爪痕撕开（打击牌命中的那套手绘笔触：沿走向扫出、溶解，换咒怨的黑红 LUT），咒火从脚下冲起
-				ClawRake(layer, at, width, d);
+				// 2026-11-18（用户：爪击不错，但少了从人物 / 人格面具到怪物的关系表达；光束、光点、连绳子都太直白）：
+				// 亚森爪前和敌人身上同时被「划开」一模一样的咒怨裂隙，爪痕从敌人那道里撕出来（CurseRift）——这一爪穿过空间抓到了他
+				float rf = d.X >= 0f ? 1f : -1f;
+				float rot = 0.62f * rf + Fx.Rand(-0.06f, 0.06f);
+				Vector2 rAlong = Vector2.FromAngle(rot);
+				float rk = Mathf.Clamp(width / 240f, 0.7f, 1.3f);
+				// 爪前那道在爪子挥下去的前方（爪子伸进去）；敌人那道在爪痕的起点（敌人靠亚森那侧的上方，爪子从里面撕出来、往下划过敌人），不被爪痕和咒火盖住
+				Vector2 riftA = claw + rAlong * 80f * rk;
+				CurseRift.Open(layer, riftA, rot + Mathf.Pi * 0.5f, 270f * rk, 0f, 1f, 0.06f, 0.24f, 0.2f);
+				// 爪子伸进裂口：三道小爪痕划向爪前那道裂口、在口子上收住（和敌人身上撕出来的三道同一套笔触）
+				Vector2 rAcross = rAlong.Orthogonal();
+				for (int i = 0; i < 3; i++)
+				{
+					float sc = 0.2f * rk;
+					Vector2 ci = riftA - rAlong * 1024f * sc * 0.36f + rAcross * (i - 1) * 26f * rk;
+					Paint.Sweep(layer, "slash_thin", ci, rot, new Vector2(sc * rf, sc * 0.9f), Lut5.Blood, 0.04f, 0.03f, 0.16f, 14f, 0.012f * i, 1.3f);
+				}
+				CurseRift.Open(layer, at - rAlong * width * 0.62f, rot + Mathf.Pi * 0.5f, Mathf.Max(width * 1.05f, 260f * rk), 0f, -1f, 0.06f, 0.24f, 0.2f);
+				ClawRake(layer, at, width, d, rot);
 			}
 			_beamLand = Stage.NowMs() + (ulong)(RakeAt * 1000f);
 			// 毒性爆发：光束命中只留「标记」，不炸（用户 2026-11-03：太花、几个高潮挤在一起）——唯一的高潮留给引爆
@@ -342,13 +362,13 @@ void fragment() {
 }" };
 
 	/// <summary>亚森挥爪到爪痕落在敌人身上（= 命中）的秒数。</summary>
-	private const float RakeAt = 0.05f;
+	internal const float RakeAt = 0.05f;
 
 	/// <summary>三道咒怨爪痕：斜着（从亚森那边往下撕）并排扫过敌人，一道接一道（0.025s），白芯黑红边，扫完溶解。</summary>
-	private static void ClawRake(Control layer, Vector2 at, float width, Vector2 dir)
+	internal static void ClawRake(Control layer, Vector2 at, float width, Vector2 dir, float? rotIn = null)
 	{
 		float facing = dir.X >= 0f ? 1f : -1f;
-		float rot = 0.62f * facing + Fx.Rand(-0.06f, 0.06f);            // 从左上往右下撕（朝左时镜像）
+		float rot = rotIn ?? 0.62f * facing + Fx.Rand(-0.06f, 0.06f);   // 从左上往右下撕（朝左时镜像）
 		Vector2 along = Vector2.FromAngle(rot), across = along.Orthogonal();
 		float k = Mathf.Clamp(width / 240f, 0.7f, 1.3f);
 		for (int i = 0; i < 3; i++)

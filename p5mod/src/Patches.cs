@@ -25,6 +25,10 @@ public static class AttackHitVfxPatch
 	private static readonly FieldInfo CustomHitNodes = AccessTools.Field(typeof(AttackCommand), "_customHitVfxNodes");
 	private static readonly FieldInfo HitCount = AccessTools.Field(typeof(AttackCommand), "_hitCount");
 	private static readonly FieldInfo CustomAttackerNodes = AccessTools.Field(typeof(AttackCommand), "_customAttackerVfxNodes");
+	// 多段攻击只挥一次（0.9.49 审阅第五批，Vfx/Batch5Fx.cs）：字段找不到（游戏改名）就保持原版行为
+	private static readonly FieldInfo? PlayOnEveryHit = AccessTools.Field(typeof(AttackCommand), "_playOnEveryHit");
+	private static readonly FieldInfo? WaitBeforeHit = AccessTools.Field(typeof(AttackCommand), "_waitBeforeHit");
+	private static readonly FieldInfo? AnimDelay = AccessTools.Field(typeof(AttackCommand), "_attackerAnimDelay");
 
 	public static void Prefix(AttackCommand __instance)
 	{
@@ -33,8 +37,33 @@ public static class AttackHitVfxPatch
 			if (__instance.ModelSource is CardModel card && Joker.OwnsCard(card))
 			{
 				HitWeights.BeginAttack(card, HitCount.GetValue(__instance) is int n ? n : 1);
+				string cname = card.GetType().Name;
+				if (Batch5Fx.OneSwing.TryGetValue(cname, out float gap) && PlayOnEveryHit != null && WaitBeforeHit?.GetValue(__instance) is float[] wait && wait.Length >= 2)
+				{
+					// 终结技 / 飞镖 / 连续反弹（用户：不要让 Joker 重复打击动作 N 次）：动作只在第一下放，之后每下隔 gap 秒，由 Batch5Fx 表现
+					PlayOnEveryHit.SetValue(__instance, false);
+					wait[0] = gap;
+					wait[1] = gap;
+					if (AnimDelay?.GetValue(__instance) is float d) AnimDelay.SetValue(__instance, Math.Max(0f, d - gap));   // 第一下别因为多等的 gap 变晚
+					Batch5Fx.Begin(cname, HitCount.GetValue(__instance) is int hc ? hc : 1);
+				}
 				HitVfx.SetValue(__instance, null);
 				(CustomHitNodes.GetValue(__instance) as IList)?.Clear();     // 小刀牌原版的飞刀（NShivThrowVfx）
+				if (card.GetType().Name == "DaggerSpray" && Joker.Node(card.Owner) is NCreature jn && Joker.FxLayer() is Godot.Control dl
+					&& NCombatRoom.Instance is NCombatRoom room)
+				{
+					// 匕首雨（0.9.49 审阅：没有群体攻击的感觉；用户 2026-11-18：是攻击两下的）：原版每一下都重放攻击动作（_playOnEveryHit），
+					// 动作开始约 0.15s 后结算伤害 → 每挥一刀放一拨群体特效（Vfx/Batch3Fx.cs）
+					var foes = new List<Batch3Fx.Foe>();
+					foreach (Creature c in __instance.Attacker?.CombatState?.HittableEnemies ?? (IReadOnlyList<Creature>)Array.Empty<Creature>())
+					{
+						if (room.GetCreatureNode(c) is NCreature en && Godot.GodotObject.IsInstanceValid(en))
+						{
+							foes.Add(new Batch3Fx.Foe(en.VfxSpawnPosition, en.GetTopOfHitbox(), en.Hitbox.GetGlobalRect().Size.X));
+						}
+					}
+					Batch3Fx.ArmSpray(foes);   // 每次挥刀（JokerFx.OnAnim）放一拨，跟着两下伤害走
+				}
 				if (card.GetType().Name == "DaggerThrow")
 				{
 					// 投掷匕首：原版和匕首雨共用一片飞刀（NDaggerSprayFlurryVfx）→ 关掉，用打击动作 + 刀的命中（用户 2026-11-04）
@@ -153,6 +182,32 @@ public static class DamagePatch
 				if (gun && hit.Count > 1)
 				{
 					JokerFx.OnRicochet(joker, hit);                // 刀扇：一发子弹弹过所有敌人
+					return;
+				}
+				if (hit.Count == 1 && Joker.FxLayer() is Godot.Control b5 && Batch5Fx.Hit(b5, cardSource.GetType().Name,
+					new Batch5Fx.NCreatureView(Joker.PosePoint(joker, ReadyFx.GloveCuff), Joker.Chest(joker),
+						(Joker.PosePoint(joker, ReadyFx.Feet) - Joker.PosePoint(joker, new Godot.Vector2(815f, 120f))).Length(), Joker.Facing(joker)),
+					hit[0].VfxSpawnPosition, (hit[0].VfxSpawnPosition - hit[0].GetTopOfHitbox()).Length(), d => JokerFx.DelayNumber(hit[0], d)))
+				{
+					return;
+				}
+				if (hit.Count == 1 && Joker.FxLayer() is Godot.Control b6 && cardSource.GetType().Name is "Suppress" or "TheHunt")
+				{
+					// 0.9.49 审阅第六批第三版：压制「三重锁压」（Vfx/SuppressFx.cs）、狩猎「夺宝」（Vfx/HuntFx.cs）
+					NCreature tn = hit[0];
+					if (cardSource.GetType().Name == "Suppress")
+						SuppressFx.Play(b6, Joker.FxLayer(back: true), tn.VfxSpawnPosition, tn.GetTopOfHitbox(), tn.Hitbox.GetGlobalRect().Size.X, Joker.Facing(joker), SkillPlay.Tint(tn));
+					else
+						HuntFx.Hit(b6, tn.VfxSpawnPosition, (tn.VfxSpawnPosition - tn.GetTopOfHitbox()).Length(), Joker.Facing(joker),
+							Joker.PosePoint(joker, ReadyFx.GloveCuff), Joker.Chest(joker),
+							(Joker.PosePoint(joker, ReadyFx.Feet) - Joker.PosePoint(joker, new Godot.Vector2(815f, 120f))).Length());
+					return;
+				}
+				if (cardSource.GetType().Name == "EchoingSlash")
+				{
+					// 回响斩击：一波一道横切全体的长刀光；第二波起是回响（推迟一拍，数字也一起推迟）
+					float delay = Joker.FxLayer() is not Godot.Control el ? 0f : Batch5Fx.EchoWave(el, hit.Select(n => (n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X)).ToList(), Joker.Facing(joker));
+					if (delay > 0f) foreach (NCreature n in hit) JokerFx.DelayNumber(n, delay);
 					return;
 				}
 				foreach (NCreature n in hit)
@@ -474,13 +529,23 @@ public static class PoisonApplyPatch
 
 /// <summary>
 /// 腐蚀波：每抽到一张牌（CorrosiveWavePower.AfterCardDrawn，原版在这里给全体上毒、在每个敌人身上放绿色毒气）——
-/// 在原版上毒之前排一道贴地的咒火浪（Vfx/CorrosiveFx.cs）；这段时间的上毒不放普通施毒落点，原版的绿色毒气藏掉。只给 Joker 的腐蚀波。
+/// Joker 的腐蚀波：先放咒怨卷浪（Vfx/CorrosiveFx.cs），把原版这一步（上毒）推迟到浪拍中敌人的那一刻再跑（用户 2026-11-18：挂毒的确认感要和拍击同步、不要滞后）。
+/// 抽牌是一张一张等着跑的，所以连抽时一道浪接一道浪。原版的绿色毒气藏掉（CorrosiveGasPatch）。
 /// </summary>
 [HarmonyPatch(typeof(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower), nameof(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower.AfterCardDrawn))]
 public static class CorrosiveDrawPatch
 {
-	public static void Prefix(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower __instance, CardModel card)
+	private static bool _bypass;
+	private static ulong _lastMs;
+
+	public static bool Prefix(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower __instance, MegaCrit.Sts2.Core.GameActions.Multiplayer.PlayerChoiceContext choiceContext, CardModel card, bool fromHandDraw, ref System.Threading.Tasks.Task __result)
 	{
+		if (_bypass)
+		{
+			return true;
+		}
+		float wait = 0f;
+		Godot.Node? anchor = null;
 		ModEntry.Safe("CorrosiveDraw", () =>
 		{
 			if (card.Owner?.Creature != __instance.Owner || __instance.Owner.Player is not { } p || !Joker.Is(p)
@@ -496,7 +561,122 @@ public static class CorrosiveDrawPatch
 					targets.Add(new CorrosiveFx.Target(n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, n.Visuals));
 				}
 			}
-			CorrosiveFx.OnDraw(layer, Joker.PosePoint(joker, ReadyFx.Feet), Joker.Facing(joker), targets);
+			ulong now = Godot.Time.GetTicksMsec();
+			bool first = now - _lastMs > 900;          // 连抽：第一下最重
+			_lastMs = now;
+			wait = CorrosiveFx.OnDraw(layer, Joker.PosePoint(joker, ReadyFx.Feet), Joker.Facing(joker), targets, first);
+			anchor = layer;
+		});
+		if (wait <= 0f || anchor == null)
+		{
+			return true;
+		}
+		__result = Delayed(__instance, choiceContext, card, fromHandDraw, wait, anchor);
+		return false;
+	}
+
+	private static async System.Threading.Tasks.Task Delayed(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower power, MegaCrit.Sts2.Core.GameActions.Multiplayer.PlayerChoiceContext ctx, CardModel card, bool fromHandDraw, float wait, Godot.Node anchor)
+	{
+		if (Godot.GodotObject.IsInstanceValid(anchor) && anchor.GetTree() is Godot.SceneTree tree)
+		{
+			await anchor.ToSignal(tree.CreateTimer(wait), Godot.SceneTreeTimer.SignalName.Timeout);
+		}
+		System.Threading.Tasks.Task run;
+		_bypass = true;
+		try
+		{
+			run = power.AfterCardDrawn(ctx, card, fromHandDraw);
+		}
+		finally
+		{
+			_bypass = false;
+		}
+		await run;
+	}
+}
+
+/// <summary>
+/// 回响斩击（用户 2026-11-17 审阅：会卡住局内人物的动作，特效也没做）：原版不走 AttackCommand，不触发攻击动作 → Joker 一直停在举刀的架势上。
+/// 出牌时自己挥一刀（Aim.PlayAttack），把原版结算推迟到出刀那一帧（约 0.14s）再跑，伤害和刀光对齐；每波的特效在 DamagePatch → Batch5Fx.EchoWave。
+/// </summary>
+[HarmonyPatch]
+public static class EchoingSlashPatch
+{
+	private static readonly MethodInfo? OnPlay = AccessTools.Method("MegaCrit.Sts2.Core.Models.Cards.EchoingSlash:OnPlay");
+	private static bool _bypass;
+
+	public static IEnumerable<MethodBase> TargetMethods()
+	{
+		if (OnPlay != null) yield return OnPlay;
+	}
+
+	public static bool Prefix(CardModel __instance, object[] __args, ref System.Threading.Tasks.Task __result)
+	{
+		if (_bypass || !Joker.OwnsCard(__instance) || Joker.Node(__instance.Owner) is not NCreature node || OnPlay == null)
+		{
+			return true;
+		}
+		ModEntry.Safe("EchoingSlash", () =>
+		{
+			Batch5Fx.BeginEcho();
+			Aim.PlayAttack(node);
+		});
+		__result = Delayed(__instance, __args, node);
+		return false;
+	}
+
+	private static async System.Threading.Tasks.Task Delayed(CardModel card, object[] args, NCreature node)
+	{
+		if (Godot.GodotObject.IsInstanceValid(node) && node.GetTree() is Godot.SceneTree tree)
+		{
+			await node.ToSignal(tree.CreateTimer(0.14), Godot.SceneTreeTimer.SignalName.Timeout);
+		}
+		System.Threading.Tasks.Task run;
+		_bypass = true;
+		try
+		{
+			run = (System.Threading.Tasks.Task)OnPlay!.Invoke(card, args)!;
+		}
+		finally
+		{
+			_bypass = false;
+		}
+		await run;
+	}
+}
+
+/// <summary>狩猎斩杀 → 额外一次卡牌奖励（CombatRoom.AddExtraReward）：世界褪灰，猎物身上抽出一张预告信、被他抢进手里（HuntFx.Reward）。</summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Rooms.CombatRoom), nameof(MegaCrit.Sts2.Core.Rooms.CombatRoom.AddExtraReward))]
+public static class HuntRewardPatch
+{
+	public static void Postfix(MegaCrit.Sts2.Core.Entities.Players.Player player)
+	{
+		ModEntry.Safe("HuntReward", () =>
+		{
+			if (Joker.Is(player) && MegaCrit.Sts2.Core.Context.LocalContext.IsMe(player) && Joker.FxLayer() is Godot.Control layer)
+			{
+				HuntFx.Reward(layer);
+			}
+		});
+	}
+}
+
+/// <summary>紧勒：StranglePower 每次结算（这回合 Joker 每打一张牌）前会 Flash 一下 → 在被勒的敌人身上勒紧一次（Vfx/StrangleFx.cs）。</summary>
+[HarmonyPatch(typeof(PowerModel), "Flash")]
+public static class StrangleFlashPatch
+{
+	public static void Postfix(PowerModel __instance)
+	{
+		ModEntry.Safe("StrangleFlash", () =>
+		{
+			if (__instance is not MegaCrit.Sts2.Core.Models.Powers.StranglePower || __instance.Applier?.Player is not { } p || !Joker.Is(p)
+				|| Joker.FxLayer() is not Godot.Control layer || NCombatRoom.Instance?.GetCreatureNode(__instance.Owner) is not NCreature n)
+			{
+				return;
+			}
+			float face = Joker.Node(p) is NCreature jn ? Joker.Facing(jn) : 1f;
+			float tall = Joker.Node(p) is NCreature jn2 ? (Joker.PosePoint(jn2, ReadyFx.Feet) - Joker.PosePoint(jn2, new Godot.Vector2(815f, 120f))).Length() : 600f;
+			StrangleFx.Cinch(layer, Joker.FxLayer(back: true), n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, SkillPlay.Tint(n), tall, face);
 		});
 	}
 }

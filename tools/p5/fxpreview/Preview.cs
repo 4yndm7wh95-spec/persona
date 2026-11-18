@@ -78,8 +78,25 @@ public partial class Preview : Node2D
 
 	private static void RunCards(Preview p, string[]? only, (string Card, string Anim, double Lead, double Gap)[] seq, double start = 0.3)
 	{
+		SkillCtx Ctx() => CtxOf(p);
+		double at = start;
+		foreach (var (card, anim, lead, gap) in seq)
+		{
+			if (only != null && Array.IndexOf(only, card) < 0) continue;
+			string a = anim, cd = card;
+			int cnt = -1;                                   // 「牌名#3」= 这次特效表现 3 张牌（SkillCtx.Count，游戏里由 SkillPlay.FxCount 给）
+			if (cd.IndexOf('#') is int hash and >= 0) { cnt = int.Parse(cd[(hash + 1)..]); cd = cd[..hash]; }
+			if (a.Length > 0) p.At(at, () => p._joker?.Play(a));
+			p.At(at + lead, () => (cd == "AfterimageTick" ? SkillRedo5.AfterimageTick : CardSkillFx.Cards[cd])(Ctx() with { Count = cnt }));
+			at += gap;
+		}
+	}
+
+	/// <summary>预览里的 SkillCtx（Joker 站位、三个敌人）。</summary>
+	private static SkillCtx CtxOf(Preview p)
+	{
 		float tall = (JokerFeet - Pose(815f, 120f)).Length();
-		SkillCtx Ctx() => new(p._front, p._back, JokerFeet, Pose(1010f, 330f), Pose(1010f, 410f), Pose(1010f, 215f), tall, 1f,
+		return new(p._front, p._back, JokerFeet, Pose(1010f, 330f), Pose(1010f, 410f), Pose(1010f, 215f), tall, 1f,
 			c => p._joker!.Modulate = c, new List<SkillFx.Victim>
 			{
 				new(new Vector2(Enemy2.X, 830f), Enemy2 + new Vector2(0f, -170f), 230f, c => p._enemies[Enemy2].Modulate = c),
@@ -91,15 +108,6 @@ public partial class Preview : Node2D
 			Region = new Rect2(JokerFeet + new Vector2(-tall * 0.75f, -tall * 1.15f), new Vector2(tall * 1.5f, tall * 1.3f)),
 			BodyMaterial = m => p._joker!.Material = m,
 		};
-		double at = start;
-		foreach (var (card, anim, lead, gap) in seq)
-		{
-			if (only != null && Array.IndexOf(only, card) < 0) continue;
-			string a = anim, cd = card;
-			if (a.Length > 0) p.At(at, () => p._joker?.Play(a));
-			p.At(at + lead, () => (cd == "AfterimageTick" ? SkillRedo5.AfterimageTick : CardSkillFx.Cards[cd])(Ctx()));
-			at += gap;
-		}
 	}
 
 	private SpinePlayer? _joker;
@@ -234,6 +242,8 @@ public partial class Preview : Node2D
 			foreach (double t in new[] { 2.6, 3.4, 4.3, 4.32, 4.34 })
 			{
 				p.At(t, () => CorrosiveFx.OnDraw(p._front, JokerFeet, 1f, targets));
+				foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 })
+					p.Poison(t + CorrosiveFx.HitTime, e, 3);           // 游戏里上毒推迟到拍中那一刻（CorrosiveDrawPatch）
 			}
 		},
 		// 毒性爆发（稀有）：完整召唤 + 伊邪那岐大神转杖 + 万物真言 + 咒怨毒火，打全体
@@ -465,6 +475,8 @@ public partial class Preview : Node2D
 			foreach (double t in new[] { 2.6, 3.4, 4.3, 4.32, 4.34 })
 			{
 				p.At(t, () => CorrosiveFx.OnDraw(p._front, JokerFeet, 1f, targets));
+				foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 })
+					p.Poison(t + CorrosiveFx.HitTime, e, 3);           // 游戏里上毒推迟到拍中那一刻（CorrosiveDrawPatch）
 			}
 		},
 		// 毒性爆发（稀有）：眼神特写 + 舞台 + 新亚森 → 出手，咒怨光束扇形射向三个敌人（各 9 层）→ 立即触发中毒：全场咒火一起引爆
@@ -624,14 +636,29 @@ public partial class Preview : Node2D
 		["knife_trap"] = p =>
 		{
 			p.At(0.2, () => p._joker?.Play("aim_in"));
-			p.At(0.35, () => { p._enemies.TryGetValue(Enemy, out Node2D? n); KnifeTrapFx.Begin(p._front, p._back, Muzzle, Enemy + new Vector2(0f, -10f), 285f, 260f, 6, n); });
-			for (int i = 0; i < 6; i++)
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.35, () => { p._enemies.TryGetValue(Enemy, out Node2D? n); KnifeTrapFx.Begin(p._front, p._back, Muzzle, Enemy + new Vector2(0f, -10f), 285f, 260f, 10, n, Pose(820f, 600f), tall); });
+			for (int i = 0; i < 10; i++)
 			{
-				double at = 1.0 + 0.28 * i;
-				bool lastShot = i == 5;
+				double at = 0.35 + KnifeTrapFx.EntryTime + 0.25 + 0.24 * i;
+				bool lastShot = i == 9;
 				p.At(at - 0.18, () => p._joker?.Play("shiv_from_aim"));
 				p.At(at - 0.02, () => GunFx.Muzzle(p._front, Muzzle, (Enemy - Muzzle).Normalized()));
 				p.At(at, () => GunFx.Shot(p._front, Muzzle, Enemy + new Vector2(Fx.Rand(-20f, 20f), Fx.Rand(-30f, 30f)), lastShot));
+			}
+		},
+		// 刀刃陷阱：小刀超过 24 张（26）→ 显示 24 张，前两枪各补一张
+		["knife_trap26"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.2, () => p._joker?.Play("aim_in"));
+			p.At(0.35, () => { p._enemies.TryGetValue(Enemy, out Node2D? n); KnifeTrapFx.Begin(p._front, p._back, Muzzle, Enemy + new Vector2(0f, -10f), 285f, 260f, 26, n, Pose(820f, 600f), tall); });
+			for (int i = 0; i < 4; i++)
+			{
+				double at = 0.35 + KnifeTrapFx.EntryTime + 0.25 + 0.24 * i;
+				p.At(at - 0.18, () => p._joker?.Play("shiv_from_aim"));
+				p.At(at - 0.02, () => GunFx.Muzzle(p._front, Muzzle, (Enemy - Muzzle).Normalized()));
+				p.At(at, () => GunFx.Shot(p._front, Muzzle, Enemy + new Vector2(Fx.Rand(-20f, 20f), Fx.Rand(-30f, 30f)), false));
 			}
 		},
 		["poison_v4"] = p =>
@@ -890,6 +917,145 @@ public partial class Preview : Node2D
 			p.At(5.25, () => SkillFx.Draw(p._front, Pose(1010f, 410f), 2));
 			p.At(6.7, () => TimeStop.StopCurrent());
 		},
+		// 0.9.49 审阅修改（2026-11-17）：每批 5 张连着放
+		["fix1"] = p =>
+		{
+			RunCards(p, null, new (string, string, double, double)[] { ("Accuracy", "cast_glove", 0.25, 2.0), ("Backflip", "cast_guard", 0.08, 2.0), ("Reflex", "cast_glove", 0.25, 2.0), ("LegSweep", "cast_guard", 0.08, 2.0), ("Envenom", "cast_glove", 0.25, 2.6) });
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			foreach (double g in new[] { 2.3 + 0.2, 6.3 + 0.2 })   // 后空翻、扫腿的格挡：游戏里走 GainBlockPatch 的蜂巢护盾
+				p.At(g, () => HexGuard.Play(p._front, Chest, tall, 1f, 5, Pose(885f, 310f)));
+		},
+		["fix1b"] = p =>
+		{
+			// 第一遍精准只为让着色器先编译好（预览里第一次用到的着色器要编译几帧才显示），出视频时剪掉前 2s
+			RunCards(p, null, new (string, string, double, double)[] { ("Accuracy", "cast_glove", 0.25, 2.0), ("Accuracy", "cast_glove", 0.25, 2.0), ("Backflip", "cast_guard", 0.08, 2.0) });
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(4.3 + 0.2, () => HexGuard.Play(p._front, Chest, tall, 1f, 5, Pose(885f, 310f)));
+		},
+		// 第二批：先把五张各放一遍让着色器编译好（剪掉前 7.5s）
+		["fix2"] = p => RunCards(p, null, new (string, string, double, double)[] {
+			("Tracking", "cast_glove", 0.25, 1.3), ("Abrasive", "cast_glove", 0.25, 1.3), ("Accelerant", "cast_wave", 0.08, 1.3), ("Malaise", "cast", 0.25, 1.3), ("MasterPlanner", "cast_glove", 0.25, 2.0),
+			("Tracking", "cast_glove", 0.25, 2.2), ("Abrasive", "cast_glove", 0.25, 2.2), ("Accelerant", "cast_wave", 0.08, 2.2), ("Malaise", "cast", 0.25, 2.2), ("MasterPlanner", "cast_glove", 0.25, 2.4) }),
+		// 第二批第二轮（2026-11-18）：磨蚀（磨刃火花）、触媒（毒心加速双跳）、萎靡（预告信夺力），先各放一遍让着色器编译好（剪掉前 4.4s）
+		["fix2b"] = p => RunCards(p, null, new (string, string, double, double)[] {
+			("Abrasive", "cast_glove", 0.25, 1.2), ("Accelerant", "cast_wave", 0.08, 1.2), ("Malaise", "cast", 0.25, 1.6),
+			("Abrasive", "cast_glove", 0.25, 2.0), ("Accelerant", "cast_wave", 0.08, 2.2), ("Malaise", "cast", 0.25, 2.6) }),
+		["mal3"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Malaise", "cast", 0.25, 1.6), ("Malaise", "cast", 0.25, 2.4) }),
+		// 0.9.49 审阅第三批（2026-11-18）：牌数跟着实际手牌 / 抽牌数走
+		["b3cards"] = p => RunCards(p, null, new (string, string, double, double)[] {
+			("CalculatedGamble#3", "cast_glove", 0.25, 2.2), ("CalculatedGamble#8", "cast_glove", 0.25, 2.4),
+			("Expertise#2", "cast_glove", 0.25, 1.8), ("Expertise#3", "cast_glove", 0.25, 2.0) }),
+		// 刀扇：转枪 + 刀扇开合（Batch3Fx）
+		["b3fan"] = p =>
+		{
+			var es = new List<ShivFx.Target> { new(Enemy2, 180f), new(Enemy, 230f), new(Enemy3, 180f) };
+			foreach (double t0 in new[] { 0.2, 2.2 })
+			{
+				p.At(t0, () => { p._joker?.Play("aim_in"); p._joker?.Queue("aim_loop", true); });
+				p.At(t0 + 1.0, () => { p._joker?.Play("aim_out"); ShivFx.FanOfKnives(p._front, Pose(1275f, 345f), es); SkillRedo5.FanOfKnives11(CtxOf(p) with { Hand = Pose(1275f, 345f) }, Muzzle); });
+			}
+		},
+		// 匕首雨：攻击动作（第一下伤害 0.15s，第二下紧跟），一扇飞刀 + 一刀切全体 + 刀雨
+		["b3spray"] = p =>
+		{
+			// 两下：每一下重放攻击动作（游戏里 _playOnEveryHit），动作开始约 0.15s 后伤害；第二下动作大约在第一下伤害后 0.25s 开始
+			var foes = new List<Batch3Fx.Foe> { new(Enemy2, Enemy2 + new Vector2(0f, -170f), 230f), new(Enemy, Enemy + new Vector2(0f, -170f), 260f), new(Enemy3, Enemy3 + new Vector2(0f, -150f), 230f) };
+			foreach (double t0 in new[] { 0.3, 2.2 })
+			{
+				for (int k = 0; k < 2; k++)
+				{
+					int kk = k;
+					double a = t0 + 0.4 * k;
+					p.At(a, () => { p._joker?.Play("attack"); Batch3Fx.DaggerSprayVolley(p._front, Pose(1376f, 450f), foes, 1f, kk, 0.15f); });
+					foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 })
+						p.At(a + 0.15, () => KnifeFx.Hit(p._front, e, 1f));
+				}
+			}
+		},
+		// 0.9.49 审阅第四批（装弹一组）：刀刃之舞（共用装弹 + 新音效）、隐秘匕首（弃牌新音效）、刀刃交响曲、钢铁风暴（手牌 6 张）
+		["b4"] = p =>
+		{
+			Vector2 hand = Pose(1010f, 410f);
+			p.At(0.3, () => p._joker?.Play("cast_glove"));
+			p.At(0.55, () => SkillFx.Load(p._front, hand, 3, 1f));
+			p.At(2.1, () => p._joker?.Play("cast_glove"));
+			p.At(2.35, () => SkillFx.Discard(p._front, hand, 2, 1f));
+			p.At(2.65, () => SkillFx.Load(p._front, hand, 2, 1f));
+			RunCards(p, null, new (string, string, double, double)[] { ("BladeSymphony#3", "cast_glove", 0.25, 2.0), ("StormOfSteel#6", "cast_glove", 0.25, 2.4) }, 4.0);
+		},
+		["b4ink"] = p => RunCards(p, null, new (string, string, double, double)[] { ("BladeOfInk#2", "cast_glove", 0.25, 2.0), ("BladeOfInk#3", "cast_glove", 0.25, 2.0) }),
+		// 0.9.49 审阅第五批（多段攻击）：终结技（5 下）、飞镖（4 下）、连续反弹（4 下随机）、回响斩击（打死一个 → 回响一次）
+		["b5"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			var view = new Batch5Fx.NCreatureView(Pose(1010f, 410f), Pose(820f, 600f), tall, 1f);
+			void Swing(double t) { p.At(t, () => p._joker?.Play("attack")); p.At(t + 0.13, () => KnifeFx.Swing(p._front, Pose(600f, 850f), Pose(1376f, 450f))); }
+			void Multi(double t0, string card, Vector2[] targets, float gap)
+			{
+				Swing(t0);
+				p.At(t0, () => Batch5Fx.Begin(card, targets.Length));
+				for (int i = 0; i < targets.Length; i++)
+				{
+					Vector2 e = targets[i];
+					p.At(t0 + 0.15 + gap * i, () => Batch5Fx.Hit(p._front, card, view, e, 170f, null));
+				}
+			}
+			Multi(0.3, "Finisher", new[] { Enemy, Enemy, Enemy, Enemy, Enemy }, 0.13f);
+			Multi(2.0, "Flechettes", new[] { Enemy, Enemy, Enemy, Enemy }, 0.09f);
+			Multi(3.4, "Ricochet", new[] { Enemy2, Enemy3, Enemy, Enemy2 }, 0.17f);
+			var foes = new List<(Vector2, Vector2, float)> { (Enemy2, Enemy2 + new Vector2(0f, -170f), 230f), (Enemy, Enemy + new Vector2(0f, -170f), 260f), (Enemy3, Enemy3 + new Vector2(0f, -150f), 230f) };
+			Swing(5.2);
+			p.At(5.2, () => Batch5Fx.BeginEcho());
+			p.At(5.34, () => { Batch5Fx.EchoWave(p._front, foes, 1f); Batch5Fx.EchoWave(p._front, foes, 1f); });
+		},
+		// 紧勒：出刀命中 → 套上绳圈收紧；之后打三张牌，每张勒一次
+		["strangle"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			Vector2 top = Enemy + new Vector2(0f, -170f);
+			System.Action<Color> tint = c => p._enemies[Enemy].Modulate = c;
+			p.At(0.3, () => p._joker?.Play("attack"));
+			p.At(0.43, () => KnifeFx.Swing(p._front, Pose(600f, 850f), Pose(1376f, 450f)));
+			p.At(0.45, () => KnifeFx.Hit(p._front, Enemy, 1f));
+			p.At(0.45, () => StrangleFx.Bind(p._front, p._back, Enemy, top, 260f, tint, 0.28f, tall, 1f));
+			foreach (double t in new[] { 2.4, 3.2 })
+			{
+				p.At(t - 0.3, () => p._joker?.Play("cast_glove"));
+				p.At(t, () => StrangleFx.Cinch(p._front, p._back, Enemy, top, 260f, tint, tall, 1f));
+			}
+		},
+		// 压制「三重锁压」：出刀命中（伤害结算那一刻）→ 三道锁环扣上 → 四道 V 光 → 巨大的 V 重压
+		["b6sup"] = p =>
+		{
+			Vector2 top = Enemy + new Vector2(0f, -170f);
+			System.Action<Color> tint = c => p._enemies[Enemy].Modulate = c;
+			p.At(0.3, () => p._joker?.Play("attack"));
+			p.At(0.43, () => KnifeFx.Swing(p._front, Pose(600f, 850f), Pose(1376f, 450f)));
+			p.At(0.45, () => SuppressFx.Play(p._front, p._back, Enemy, top, 260f, 1f, tint));
+		},
+		// 狩猎「夺宝」：出刀命中 → 斩杀（敌人倒下）→ 拿到额外奖励：世界褪灰，猎物身上抽出预告信，被他一把抢进手里
+		["b6hunt"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.3, () => p._joker?.Play("attack"));
+			p.At(0.43, () => KnifeFx.Swing(p._front, Pose(600f, 850f), Pose(1376f, 450f)));
+			p.At(0.45, () => HuntFx.Hit(p._front, Enemy, 170f, 1f, Pose(1010f, 410f), Pose(820f, 600f), tall));
+			p.At(0.55, () => p._enemies[Enemy].CreateTween().TweenProperty(p._enemies[Enemy], "modulate", new Color(1f, 1f, 1f, 0f), 0.6));
+			p.At(0.62, () => HuntFx.Reward(p._front));
+		},
+		["b6tools"] = p => RunCards(p, null, new (string, string, double, double)[] { ("ToolsOfTheTrade", "cast_glove", 0.25, 1.8) }),
+		// 群蛇形态在大房间（镜头拉远、人物变小，敌人在 7 倍身高以外 / 更高）：扑咬的蛇不能被画布切断
+		["serpentfar"] = p =>
+		{
+			// 人物缩到 0.5 倍（= 大房间镜头拉远）：旧画布右边到 430 + 7T ≈ 1725、上边到 830 - 2.9T ≈ 294；
+			// 第一口咬画面最右边（1830，旧画布外），第二口咬高处飞着的（y 250，旧画布上沿外）
+			// 正常大小：咬场上的敌人（和改画布之前同样的写法）
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.1, () => SerpentMantle.Start(p._front, p._back, () => (JokerFeet, tall, 1f), live: true, intro: true));
+			p.At(1.6, () => { p._enemies.TryGetValue(Enemy, out Node2D? b); SerpentMantle.Current?.Strike(Enemy + new Vector2(0f, -170f), b); });
+			p.At(2.3, () => { p._enemies.TryGetValue(Enemy3, out Node2D? b); SerpentMantle.Current?.Strike(Enemy3 + new Vector2(0f, -150f), b); });
+		},
+		["b6nm"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Nightmare", "cast_glove", 0.25, 2.0) }),
 		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_glove", 0.25, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast_wave", 0.08, 1.6) }),
 		["redo4b"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.8), ("Afterimage", "cast_glove", 0.25, 1.4), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast_wave", 0.08, 1.8) }),
 		["redo5"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.9), ("Shadowmeld", "cast_glove", 0.25, 1.9) }),

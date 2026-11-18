@@ -881,6 +881,7 @@ void fragment() {
 			}
 			_box[j] = new Vector4(lo.X - m, lo.Y - m, hi.X + m, hi.Y + m);
 		}
+		FitCanvas(T, nestP);
 		foreach (ShaderMaterial mat in new[] { _frontM, _backM })
 		{
 			mat.SetShaderParameter("spine", _spine);
@@ -901,6 +902,44 @@ void fragment() {
 			mat.SetShaderParameter("ember", _solo ? 1f : 0f);
 			mat.SetShaderParameter("nshift", _nshift);
 			mat.SetShaderParameter("wake", _wakeK);
+		}
+	}
+
+	/// <summary>
+	/// 画布跟着蛇走（用户 2026-11-18：某些大尺寸的房间里蛇还是会断开——画布原来固定在脚下 [-3T, 7T] × [-2.9T, 0.7T]，
+	/// 大房间里敌人站得更远 / 更高，扑过去咬的那条蛇、烟团、烟迹超出画布就被切掉）。每帧取所有蛇身包围盒、蛇巢、烟团、烟迹的并集，
+	/// 至少盖住原来那块（轨道上的蛇、蛇巢都在里面），前后两层一起改。
+	/// </summary>
+	private void FitCanvas(float T, Vector2 nestP)
+	{
+		Vector2 lo = new(-3f * T, -2.9f * T), hi = new(7f * T, 0.7f * T);
+		void Add(Vector2 a, float r) { lo = new Vector2(Mathf.Min(lo.X, a.X - r), Mathf.Min(lo.Y, a.Y - r)); hi = new Vector2(Mathf.Max(hi.X, a.X + r), Mathf.Max(hi.Y, a.Y + r)); }
+		for (int j = 0; j < Count; j++)
+		{
+			Vector4 b = _box[j];
+			if (b.X > b.Z) continue;
+			Add(new Vector2(b.X, b.Y), 0f);
+			Add(new Vector2(b.Z, b.W), 0f);
+		}
+		Add(nestP, 1.4f * T);
+		float gmax = 0f;
+		for (int j = 0; j < Count; j++) gmax = Mathf.Max(gmax, _girth[j]);
+		foreach (Vector4 pf in _puff) if (pf.Z >= 0f) Add(new Vector2(pf.X, pf.Y), Mathf.Abs(pf.W) * 2.4f + 8f);
+		for (int k = 0; k < Slots; k++)
+		{
+			if (_streakA[k] <= 0f) continue;
+			Add(new Vector2(_streak[k].X, _streak[k].Y), gmax * 4f);
+			Add(new Vector2(_streak[k].Z, _streak[k].W), gmax * 4f);
+		}
+		lo -= Vector2.One * 8f;
+		hi += Vector2.One * 8f;
+		foreach (var (root, mat) in new[] { (_frontRoot, _frontM), (_backRoot, _backM) })
+		{
+			if (!GodotObject.IsInstanceValid(root) || root.GetChildCount() == 0 || root.GetChild(0) is not ColorRect q) continue;
+			q.Position = lo;
+			q.Size = hi - lo;
+			mat.SetShaderParameter("origin", lo);
+			mat.SetShaderParameter("size", hi - lo);
 		}
 	}
 

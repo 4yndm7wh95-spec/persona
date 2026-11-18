@@ -12,9 +12,9 @@ namespace P5Joker;
 
 /// <summary>
 /// 把 Joker 的骨骼动画和 HitFx 对上：在姿势图（art/p5/poses/final）上量好的点换算到屏幕，按动画里的时刻放特效。
-/// 时刻见 tools/p5/build_rig_p5.py：打击 attack / attack_chain / attack_from_ready 在 0.14s 出刀（刀光 0.13s 起扫，和出刀帧同一帧；
+/// 时刻见 tools/p5/build_rig_p5.py：打击 attack / attack_chain / attack_from_ready 在第 8 帧（0.133s）出刀（刀光提前约半帧起扫，和出刀帧同一帧；
 /// 转刀中途接上的 attack 要减去跳过的时间），
-/// 开枪 shiv / shiv_from_aim 在 0.18s 开火（转枪中途接上的 shiv 要减去跳过的时间）。
+/// 开枪 shiv / shiv_from_aim 在第 11 帧（0.183s）开火（转枪中途接上的 shiv 要减去跳过的时间）。
 /// </summary>
 public static class JokerFx
 {
@@ -34,12 +34,17 @@ public static class JokerFx
 			case "attack_chain":
 			case "attack_from_ready":
 				// 第四版：手绘刀光扫过（Vfx/KnifeFx.cs）
-				Fx.After(layer, Mathf.Max(0f, 0.13f - skipped), () => KnifeFx.Swing(layer, Joker.PosePoint(node, SwingFrom),
+				Fx.After(layer, Mathf.Max(0f, 0.125f - skipped), () => KnifeFx.Swing(layer, Joker.PosePoint(node, SwingFrom),
 					Joker.PosePoint(node, SwingTo), Joker.Facing(node)));
+				// 匕首雨：每挥一刀放一拨（第一下一扇飞刀 + 横切全体，第二下刀雨 + 斜切全体）；伤害在动作开始后约 0.15s
+				if (Batch3Fx.NextSprayVolley() is { } volley)
+				{
+					Batch3Fx.DaggerSprayVolley(layer, Joker.PosePoint(node, SwingTo), volley.Foes, Joker.Facing(node), volley.Index, Mathf.Max(0.05f, 0.15f - skipped));
+				}
 				break;
 			case "shiv":
 			case "shiv_from_aim":
-				Fx.After(layer, Mathf.Max(0f, 0.18f - skipped), () =>
+				Fx.After(layer, Mathf.Max(0f, 0.183f - skipped), () =>
 				{
 					GunFx.Muzzle(layer, Joker.Muzzle(node), new Vector2(Joker.Facing(node), 0.06f), Joker.Facing(node));   // 第四版枪口（Vfx/GunFx.cs）
 					if (node.Entity?.Player is { } p && MegaCrit.Sts2.Core.Context.LocalContext.IsMe(p) && AmmoPatch.Local is AmmoView ammo
@@ -123,6 +128,15 @@ public static class JokerFx
 				// 刀落下（attack_from_ready 0.14s、伤害 0.15s）之后锁环收紧
 				CardFx.Weaken(layer, t.VfxSpawnPosition, t.GetTopOfHitbox(), 0.12f);
 				break;
+			case "Strangle" when t != null:
+				// 紧勒（0.9.49 审阅）：刀命中之后脖子上套上一圈绳、猛地收紧（Vfx/StrangleFx.cs）；之后每勒一次在 StrangleFlashPatch
+				{
+					Vector2 sf = Joker.PosePoint(joker, ReadyFx.Feet);
+					float st = (sf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length();
+					StrangleFx.Bind(layer, Joker.FxLayer(back: true), t.VfxSpawnPosition, t.GetTopOfHitbox(), t.Hitbox.GetGlobalRect().Size.X, SkillPlay.Tint(t), 0.28f,
+						st, Joker.Facing(joker));
+				}
+				break;
 			case "Outbreak":
 			{
 				// 第四版：稀有召唤（眼神特写 + 舞台 + 新亚森，Aim）→ 亚森出手，咒怨光束扇形射向每个敌人（PoisonApplyPatch）
@@ -156,6 +170,13 @@ public static class JokerFx
 					}
 				}
 				ShivFx.FanOfKnives(layer, Joker.PosePoint(joker, ReadyFx.GunGrip), enemies);
+				// 0.9.49 审阅（金卡，转枪之外没特效）→ 2026-11-18 第二版「弹巢灌红」（SkillRedo10.FanOfKnives11），弹巢整圈转一下
+				SkillCtx fc = SkillPlay.Ctx(joker, null, layer, Joker.FxLayer(back: true), room) with { Hand = Joker.PosePoint(joker, ReadyFx.GunGrip) };
+				SkillRedo5.FanOfKnives11(fc, Joker.Muzzle(joker));
+				if (joker.Entity?.Player is { } fp && MegaCrit.Sts2.Core.Context.LocalContext.IsMe(fp) && AmmoPatch.Local is AmmoView av && GodotObject.IsInstanceValid(av.Root))
+				{
+					Fx.After(layer, 0.05, () => av.Charge());
+				}
 				break;
 			}
 			case "BouncingFlask":
@@ -171,8 +192,11 @@ public static class JokerFx
 				// 用户 2026-11-13：原来太简单 → 敌人四周亮起一圈红光弹（数量 = 要打出的小刀），之后每发小刀打中收一颗扎进去（KnifeTrapFx）
 				int n = MegaCrit.Sts2.Core.Entities.Cards.PileType.Exhaust.GetPile(card.Owner).Cards.Count(c => c.Tags.Contains(CardTag.Shiv));
 				Rect2 box = t.Hitbox.GetGlobalRect();
-				Aim.HoldCast(joker, 0.05f + KnifeTrapFx.Interval * Mathf.Clamp(n, 1, 14) + 0.15f);   // 等预告信全部现身再开始打
-				KnifeTrapFx.Begin(layer, Joker.FxLayer(back: true) ?? layer, Joker.Muzzle(joker), box.GetCenter(), box.Size.Y, box.Size.X, n, t.Visuals);
+				// 第三版「时钟陷阱」（0.9.49 审阅）：场景褪灰、敌人身后展开透明大表盘、表盘边上挂着预告信（= 小刀张数，最多显示 24），每一枪打爆一张、表盘加速
+				Aim.HoldCast(joker, KnifeTrapFx.EntryTime);   // 等表盘展开、卡全部现身再开始打
+				Vector2 jf = Joker.PosePoint(joker, ReadyFx.Feet);
+				KnifeTrapFx.Begin(layer, Joker.FxLayer(back: true) ?? layer, Joker.Muzzle(joker), box.GetCenter(), box.Size.Y, box.Size.X, n, t.Visuals,
+					Joker.Chest(joker), (jf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length());
 				break;
 			}
 			case "Snakebite" when t != null:

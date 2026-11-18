@@ -1,0 +1,13 @@
+{
+  "prompt": "Original P5Joker corrosive wave game VFX texture, transparent actual alpha background, sharp hand-painted liquid ink, brilliant white cores, scarlet #E5191C midtones, ink black shadows and dry brush splinters. No letters, grid lines, flames, smoke, halftone, green. 2048×2048 precisely 4 by 4 uniformly spaced grid of 16 animation frames with generous transparent gutters, no separators. Row-major chronology. Each tile centered same scale side view, one white-red-black liquid wave head curling upper right then slamming diagonally lower right. Row 1 progressively rising; row 2 progressively curling right; row 3 progressively pitching down-right; row 4 progressively breaking into scattered liquid strands and beads. Distinct adjacent frames, no clipping.",
+  "raw_size": [
+    1254,
+    1254
+  ],
+  "delivery_size": [
+    2048,
+    2048
+  ],
+  "attempts": 1,
+  "rejected": false
+}

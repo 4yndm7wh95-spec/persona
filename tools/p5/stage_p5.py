@@ -102,11 +102,15 @@ STAGE = ROOT / "p5mod/pck_stage"
 
 
 def renamed(src_base, dst_base, tmp):
-    """copy <src_base>.{spine-json,atlas,png} to tmp as <dst_base>.*, fixing the atlas page name."""
+    """copy <src_base>.{spine-json,atlas} and every atlas page (<src_base>.png, <src_base>_2.png, ...) to tmp as
+    <dst_base>.*, fixing the page names in the atlas."""
     shutil.copy(RIG / f"{src_base}.spine-json", tmp / f"{dst_base}.spine-json")
-    shutil.copy(RIG / f"{src_base}.png", tmp / f"{dst_base}.png")
     lines = (RIG / f"{src_base}.atlas").read_text().split("\n")
-    lines[0] = f"{dst_base}.png"
+    for i, line in enumerate(lines):
+        if line.startswith(src_base) and line.endswith(".png"):
+            new = dst_base + line[len(src_base):]
+            shutil.copy(RIG / line, tmp / new)
+            lines[i] = new
     (tmp / f"{dst_base}.atlas").write_text("\n".join(lines))
 
 
@@ -132,6 +136,11 @@ V4_TEX = [("slash", n, 0.5) for n in ("slash_thin", "slash_heavy", "slash_cross"
     [("buff", n, 0.5) for n in ("thorn_vine_01", "thorn_vine_02", "thorn_vine_03", "thorn_burst", "mirror_crack_01", "mirror_crack_02",
      "ribbon_01", "ribbon_02", "ribbon_03", "card_stream_01", "card_stream_02", "venom_drops_sheet", "venom_veins_01", "venom_veins_02",
      "buff_motes_sheet")] + \
+    [("corrosive", n, 0.5) for n in ("curse_wave_body_01", "curse_wave_body_02", "curse_splash_sheet")] + \
+    [("ink", n, 0.5) for n in ("ink_stroke_01", "ink_stroke_02", "ink_stroke_03", "ink_splash_sheet", "ink_drops_sheet")] + \
+    [("ink_fling_v3", n, 0.5) for n in ("gather_streak_sheet", "bullet_burst_sheet")] + [("ink_fling_v3", "fling_arc_sheet", 1)] + \
+    [("painted", n, 0.5) for n in ("chop_heavy_01", "chop_heavy_02", "swipe_arc_01", "swipe_arc_02", "swipe_arc_03", "thrust_01", "thrust_02",
+     "claw_rake_01", "claw_rake_02", "impact_star_sheet", "shadow_grasp_sheet")] + \
     [("arsene/layers_v7", n, 0.35) for n in ("wing_back", "wing_front", "arm_back", "body", "arm_reach", "arm_reach_extend", "arm_reach_fist", "eyes_glow")]   # Arsene v7 (user 2026-11-03)
 
 # P5R sound effects (research/p5r/audio): published name -> file (names in p5mod/src/Vfx/Sfx.cs)
@@ -249,6 +258,8 @@ def fx_textures():
         if f.exists():
             im = Image.open(f).convert("RGBA")
             out = f"arsene_{name}" if group.startswith("arsene") else name   # Arsene layers: res://p5joker/fx/arsene_<layer>.png
+            if name.startswith("chop_heavy"):
+                im = im.rotate(90, expand=True)   # 竖向的重劈转成横向（上端 → 左端），Paint.Sweep 沿横向扫出
             yield out, im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS) if k != 1 else im
     # P5R summon blue flame tongues (BE_SYOLOOP, 6x2 flipbook): Persona appear / linger / dismiss (p5mod/src/Vfx/BlueFlame.cs)
     flame = ROOT / "research/p5r/ghost_blueflame/textures_png/bes_syo_fkomaB12kf2.dds.png"
