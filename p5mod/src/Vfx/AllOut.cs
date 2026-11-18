@@ -38,8 +38,8 @@ public static class AllOut
 	private const float SrcStart = AllOutFinale.ArtAt - 0.03f, Settle = 0.32f;
 	// 入场分拍（相对碎开）：0 碎开 + 红底压回（冲击）→ 0.02–0.4 碎星转进来（丝滑，带一点回弹）→ 0.14–0.38 Joker 冲进来、落定震屏（冲击）
 	// → 0.42 怪物剪影砸进 + 喷血 + 震屏（第二下冲击）→ 0.5–0.8 竖排字划上来（丝滑）
-	private const float JokerIn = 0.14f, JokerLen = 0.24f, TextIn = 0.5f, TextLen = 0.3f;
-	private const float ArtT = ShatterAt + 0.42f;
+	private const float JokerLen = 0.6f, TextIn = 0.42f, TextLen = 0.3f;
+	private const float ArtT = ShatterAt + 0.3f;
 	private const float ExitAt = ShatterAt + 2.2f, CoverLen = 0.28f, HoleAt = ExitAt + CoverLen + 0.02f, HoleLen = 0.4f;
 	public const float Total = HoleAt + HoleLen + 0.05f;
 	/// <summary>结算推迟多久：洞开到一半左右时结算页出现在洞里。</summary>
@@ -189,6 +189,10 @@ public static class AllOut
 		stage.AddChild(lines);
 		Node2D crackLayer = new();
 		stage.AddChild(crackLayer);
+		// 裂痕贴图（Codex 生图）：整张裂痕以撞击点为中心，按离撞击点的距离往外显出来（CrackShader 的 reach）；中心叠一团粉碎
+		Texture2D? crackTex = Stage.LoadTexture("aoa_crack_main"), coreTex = Stage.LoadTexture("aoa_crack_core");
+		Sprite2D? crackSp = null, coreSp = null;
+		ShaderMaterial crackM = new() { Shader = CrackShader };
 		TextureRect stageView = new() { Texture = stage.GetTexture(), Size = screen, PivotOffset = screen * 0.5f, MouseFilter = Control.MouseFilterEnum.Ignore };
 
 		// ── 原版收尾 + 夹在中间的怪物剪影和血 ──
@@ -220,7 +224,7 @@ public static class AllOut
 		// 碎开那一下的白闪 + 撞击点的巨大白色四角星（盖在玻璃片上面）
 		ColorRect flash = new() { Color = Colors.White, Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore, Visible = false };
 		rootC.AddChild(flash);
-		Polygon2D burst = new() { Color = Colors.White, Antialiased = true, Polygon = StarPoly(1f), Visible = false };
+		Polygon2D burst = new() { Color = Colors.White, Antialiased = true, Polygon = StarPoly(1f, 0.08f), Visible = false };
 		rootC.AddChild(burst);
 		rootC.AddChild(cover);
 
@@ -334,7 +338,7 @@ public static class AllOut
 		Sfx.Play(Sfx.Crack, 0.45f, CrackAt);                 // 裂开
 		Sfx.Play(Sfx.Shatter, 0.85f, ShatterAt);
 		Sfx.Play(Sfx.SwishLow, 0.5f, ShatterAt + 0.03f);         // 碎星转进来
-		Sfx.Play(Sfx.CutIn, 0.8f, ShatterAt + JokerIn);          // Joker 冲进来
+		Sfx.Play(Sfx.CutIn, 0.8f, ShatterAt + 0.02f);           // Joker 切入
 		Sfx.Play(Sfx.Swish, 0.35f, ShatterAt + TextIn);           // 竖排字
 		Sfx.Play(Sfx.AoaSlash3, 0.6f, ArtT);
 		Sfx.Play(Sfx.SubBoom, 0.7f, ArtT);
@@ -374,7 +378,27 @@ public static class AllOut
 				shards.AddRange(built.Item1);
 				cracks.AddRange(built.Item2);
 			}
-			if (cracked && !broke)
+			if (cracked && crackTex != null && crackSp == null)
+			{
+				float diag = Mathf.Sqrt(W * W + H * H);
+				crackSp = new Sprite2D { Texture = crackTex, Material = crackM, Position = focus, Rotation = rng.RandfRange(0f, Mathf.Tau), Scale = Vector2.One * diag * 1.5f / crackTex.GetWidth() };
+				crackLayer.AddChild(crackSp);
+				if (coreTex != null)
+				{
+					coreSp = new Sprite2D { Texture = coreTex, Material = crackM, Position = focus, Rotation = rng.RandfRange(0f, Mathf.Tau), Scale = Vector2.One * 1.4f };
+					crackLayer.AddChild(coreSp);
+				}
+				foreach (Crack ck in cracks) ck.Core.Visible = ck.Glow.Visible = false;
+			}
+			if (cracked && !broke && crackSp != null)
+			{
+				// 裂痕贴图：reach（像素，离撞击点）换算成贴图里的半径
+				float c = Mathf.Clamp((T - CrackAt) / CrackGrow, 0f, 1f);
+				float reach = 160f * Quint(Mathf.Clamp(c * 4f, 0f, 1f)) + 2300f * Mathf.Pow(c, 2.2f);
+				crackM.SetShaderParameter("reach", reach / (crackSp.Scale.X * crackTex!.GetWidth()));
+				crackM.SetShaderParameter("glow", 1f - c);
+			}
+			else if (cracked && !broke)
 			{
 				// 裂纹从撞击点往外窜：0.08 秒到画面外（先快后慢）
 				// 先一下炸开一圈（撞击点附近），再越长越快地爬满全屏
@@ -397,12 +421,12 @@ public static class AllOut
 				float fa = 1f - Mathf.Clamp(d / 0.08f, 0f, 1f);
 				flash.Visible = fa > 0f;
 				flash.Color = new Color(1f, 1f, 1f, 0.5f * fa * fa);
-				float bt = Mathf.Clamp(d / 0.16f, 0f, 1f);
+				float bt = Mathf.Clamp(d / 0.11f, 0f, 1f);
 				burst.Visible = bt < 1f;
 				burst.Position = focus;
 				burst.Rotation = 0.3f + 0.25f * bt;
-				burst.Scale = Vector2.One * Mathf.Lerp(H * 0.2f, H * 1.1f, Quint(bt));
-				burst.Modulate = new Color(1f, 1f, 1f, 0.75f * (1f - bt) * (1f - bt));
+				burst.Scale = new Vector2(1f, 0.55f) * Mathf.Lerp(H * 0.3f, H * 1.3f, Quint(bt));
+				burst.Modulate = new Color(1f, 1f, 1f, 0.9f * (1f - bt));
 				foreach (Shard sh in shards)
 				{
 					// 炸开：一出手就是最快（四次方缓出），越转越慢；后段带一点下坠，最后 30% 很快淡掉
@@ -435,17 +459,22 @@ public static class AllOut
 					fin.Star.Rotation = Mathf.Lerp(-0.9f, 0f, Back(ks, 1.2f));
 					fin.Star.Scale = Vector2.One * Mathf.Lerp(1.9f, 1f, Back(ks, 0.8f));
 					fin.Star.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(ks * 5f, 0f, 1f));
-					float kj = Mathf.Clamp((d - JokerIn) / JokerLen, 0f, 1f);
-					fin.Front.Visible = d >= JokerIn;
-					fin.Front.Position = new Vector2(W * 0.55f * (1f - Back(kj, 0.9f)), 0f);
-					fin.Front.Scale = Vector2.One * Mathf.Lerp(1.08f, 1f, Quint(kj));
+					// Joker（照 P3 mod 的立绘切入）：碎开那一刻就在玻璃后面，1.3 倍、以脸为支点 0.6s 拉回原大，带一点从右往左的位移；
+					// 先是压暗的剪影色，0.1–0.4s 平滑亮起；之后一直极慢地漂
+					float kj = Mathf.Clamp(d / JokerLen, 0f, 1f), ej = Ease(kj);
+					float js = 1.3f - 0.3f * ej - 0.012f * Mathf.Max(0f, d - JokerLen);
+					fin.Front.PivotOffset = screen * new Vector2(0.62f, 0.2f);                // 脸
+					fin.Front.Scale = Vector2.One * js;
+					fin.Front.Position = new Vector2(W * 0.07f * (1f - ej) - 10f * Mathf.Max(0f, d - JokerLen), 0f);
+					float lit = Mathf.Clamp((d - 0.1f) / 0.3f, 0f, 1f);
+					lit = lit * lit * (3f - 2f * lit);
+					fin.Front.Modulate = new Color(Mathf.Lerp(0.3f, 1f, lit), Mathf.Lerp(0.12f, 1f, lit), Mathf.Lerp(0.16f, 1f, lit), Mathf.Clamp(d / 0.12f, 0f, 1f));
 					float kt = Mathf.Clamp((d - TextIn) / TextLen, 0f, 1f);
 					fin.Text.Visible = d >= TextIn;
 					fin.Text.Position = new Vector2(0f, H * 0.9f * (1f - Ease(kt) * (2f - Ease(kt)) * 0.5f - Ease(kt) * 0.5f));
-					float landed = d - (JokerIn + JokerLen * 0.75f), hitT = T - ArtT;
-					float sh = 0f;
-					if (landed > 0f && landed < 0.16f) sh = (1f - landed / 0.16f) * 9f;
-					if (hitT > 0f && hitT < 0.2f) sh = Mathf.Max(sh, (1f - hitT / 0.2f) * 13f);
+					float hitT = T - ArtT;
+					float sh = d < 0.14f ? (1f - d / 0.14f) * 10f : 0f;
+					if (hitT > 0f && hitT < 0.2f) sh = Mathf.Max(sh, (1f - hitT / 0.2f) * 12f);
 					finRoot.PivotOffset = screen * 0.5f;
 					finRoot.Scale = Vector2.One * (1f + sh * 0.003f);                  // 震的时候略放大，边缘不露底
 					finRoot.Position = new Vector2(Mathf.Sin(d * 120f), Mathf.Cos(d * 95f)) * sh;
@@ -795,10 +824,10 @@ public static class AllOut
 		return p;
 	}
 
-	private static Vector2[] StarPoly(float r)
+	private static Vector2[] StarPoly(float r, float inner = 0.22f)
 	{
 		var p = new Vector2[8];
-		for (int i = 0; i < 8; i++) p[i] = Vector2.FromAngle(Mathf.Pi * i / 4f) * (i % 2 == 0 ? r : r * 0.22f);
+		for (int i = 0; i < 8; i++) p[i] = Vector2.FromAngle(Mathf.Pi * i / 4f) * (i % 2 == 0 ? r : r * inner);
 		return p;
 	}
 
@@ -826,7 +855,7 @@ public static class AllOut
 
 	// ═══════════════════════════ 着色器 ═══════════════════════════
 
-	private static Shader? _sil, _shade, _blob, _cover, _still;
+	private static Shader? _sil, _shade, _blob, _cover, _still, _crack;
 
 	/// <summary>
 	/// 顿帧的定格画面：impact = 冲击帧（黑白反转、高反差），hold = 顿住（压暗、去色 60%、四周收暗、撞击点附近一点红青色散）。
@@ -849,6 +878,18 @@ void fragment() {
 	float hi = smoothstep(0.32, 0.38, l);
 	o = mix(o, vec3(1.0 - hi), impact);
 	COLOR = vec4(o, 1.0);
+}" };
+
+	/// <summary>裂痕贴图逐步显出：UV 离中心的距离（0–0.5 = 贴图半宽）小于 reach 的部分显示，前沿软一点、带一点亮。</summary>
+	private static Shader CrackShader => _crack ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform float reach = 0.0;
+uniform float glow = 0.0;
+void fragment() {
+	vec4 t = texture(TEXTURE, UV);
+	float d = length(UV - vec2(0.5));
+	float m = 1.0 - smoothstep(reach - 0.015, reach, d);
+	COLOR = vec4(vec3(1.0), t.a * m * (1.0 + 0.3 * glow));
 }" };
 
 	/// <summary>纯色剪影（投影用）。</summary>

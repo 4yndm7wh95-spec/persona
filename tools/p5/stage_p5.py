@@ -275,6 +275,11 @@ def fx_textures():
     # + BKSK_SPLATTER 的血团（smoke）和噪声（test）
     for f in sorted((ROOT / "tools/p5/allout_native/godot/tex").glob("*.dds.png")):
         yield "aoa_" + f.name[:-len(".dds.png")], Image.open(f).convert("RGBA")
+    # 总攻击裂痕（Codex 生图，art/p5/fx/gen_codex/allout_cracks）：整张裂痕 + 撞击点粉碎团
+    for name in ("crack_main", "crack_alt", "crack_core"):
+        f = GEN_CODEX / "allout_cracks" / f"{name}.png"
+        if f.exists():
+            yield f"aoa_{name}", Image.open(f).convert("RGBA")
     from allout_native.export_runtime import splatter_textures
     for name, im in splatter_textures():
         if name == "smoke":
