@@ -22,8 +22,9 @@ public static partial class SkillRedo5
 	private static Shader? _inkStroke;
 
 	/// <summary>
-	/// 墨笔触（Codex 的 ink_stroke_0x，本身就是墨黑 + 红边 + 白高光）：reveal 0→1 从左往右「写」出来（笔锋前沿带噪声），
-	/// erode 0→1 被噪声一块块蚀掉（散成墨点的时候）。笔画在图里横跨 0.13～0.87。
+	/// 墨笔触（Codex 的 ink_stroke_0x，本身就是墨黑 + 红边 + 白高光）。笔画在图里横跨 0.13～0.87。
+	/// reveal 0→1：从左往右「写」出来，写的前沿一道烧红的边；wet：墨还湿着 —— 纹理沿笔画方向流动、上下轻轻起伏，湿亮的高光顺着笔画游走；
+	/// erode 0→1：被噪声一块块蚀掉（炸成墨点的时候）。
 	/// </summary>
 	private static Shader InkStrokeShader => _inkStroke ??= new Shader { Code = @"
 shader_type canvas_item;
@@ -31,98 +32,156 @@ uniform float reveal = 1.0;
 uniform float erode = 0.0;
 uniform float alpha = 1.0;
 uniform float seed = 0.0;
+uniform float clock = 0.0;
+uniform float wet = 1.0;
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
 	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y); }
 void fragment() {
-	vec4 c = texture(TEXTURE, UV);
+	vec2 uv = UV;
+	float w1 = noise(vec2(UV.x * 7.0 - clock * 2.5, seed + clock * 0.7)) - 0.5;
+	float w2 = noise(vec2(UV.x * 22.0 - clock * 6.0, UV.y * 4.0 + seed)) - 0.5;
+	uv.y += (w1 * 0.07 + w2 * 0.018) * wet;
+	uv.x += w2 * 0.012 * wet - clock * 0.004 * wet;
+	vec4 c = texture(TEXTURE, uv);
 	float n = noise(UV * vec2(18.0, 6.0) + seed) * 0.6 + noise(UV * vec2(50.0, 16.0) - seed) * 0.4;
 	float front = mix(0.1, 0.9, reveal);
-	float shown = smoothstep(front + 0.02, front - 0.04, UV.x + (n - 0.5) * 0.06);
+	float d = UV.x + (n - 0.5) * 0.06 - front;
+	float shown = smoothstep(0.02, -0.04, d);
 	float kept = smoothstep(erode - 0.05, erode + 0.05, n * 0.85 + (1.0 - UV.x) * 0.15);
-	COLOR = vec4(c.rgb, c.a * shown * kept * alpha);
+	float lum = dot(c.rgb, vec3(0.3, 0.5, 0.2));
+	vec3 col = c.rgb;
+	// 湿亮的高光顺着笔画游走
+	col += vec3(1.0, 0.75, 0.75) * smoothstep(0.35, 1.0, lum) * smoothstep(0.75, 1.0, sin(UV.x * 18.0 - clock * 9.0 + seed) * 0.5 + 0.5) * 0.6 * wet;
+	// 边缘透的红随墨流闪一闪
+	col += vec3(0.75, 0.04, 0.1) * clamp(c.a * (1.0 - c.a) * 4.0, 0.0, 1.0) * (0.3 + 0.5 * noise(vec2(UV.x * 30.0 - clock * 5.0, UV.y * 8.0))) * wet;   // 只在半透明的笔画边缘
+	// 写的前沿：一道烧红的边
+	float edge = exp(-abs(d) / 0.018) * step(reveal, 0.999);
+	col = mix(col, vec3(1.0, 0.35, 0.38), edge * 0.85);
+	COLOR = vec4(col, c.a * shown * kept * alpha);
 }" };
 
+	/// <summary>一笔墨：返回驱动用的材质。at 中心，w 宽，rot 角度，hk 高度倍数，t0 开始写，write 写多久，burst 开始蚀散，alpha 整体透明度。</summary>
+	private static ShaderMaterial? InkStroke(Control layer, Vector2 at, float w, float rot, float f, float hk, float t0, float write, float burst, float life, float alpha = 1f)
+	{
+		Texture2D? tex = Fx.Tex("ink_stroke_0" + (Fx.Rng.Next(3) + 1));
+		if (tex == null) return null;
+		Node2D sr = Fx.Root(layer, at, "P5InkStroke", life + 0.1);
+		ShaderMaterial m = new() { Shader = InkStrokeShader };
+		m.SetShaderParameter("seed", Fx.Rand(0f, 20f));
+		m.SetShaderParameter("reveal", 0f);
+		var sp = new Sprite2D { Texture = tex, Material = m, Centered = true };
+		sr.AddChild(sp);
+		float k = w / (tex.GetWidth() * 0.74f);
+		sr.Rotation = rot;
+		sr.Visible = false;
+		Fx.Animate(sr, t0, life - t0, t =>
+		{
+			sr.Visible = true;
+			float s = t * (life - t0);
+			float wr = Mathf.Min(1f, s / write);
+			// 写到头冲过一点再弹回来
+			float over = Ease5.OutBack(Mathf.Min(1f, s / (write + 0.12f)));
+			sr.Scale = new Vector2(k * f * (0.88f + 0.12f * over), k * hk * (1f + 0.15f * Mathf.Exp(-s * 8f)));
+			m.SetShaderParameter("reveal", Ease5.OutQuint(wr));
+			m.SetShaderParameter("clock", s);
+			m.SetShaderParameter("wet", 1f - 0.6f * Ease5.Seg(s, burst - t0 + 0.2f, 0.3f));
+			m.SetShaderParameter("erode", Fx.OutCubic(Ease5.Seg(s, burst - t0, 0.3f)));
+			m.SetShaderParameter("alpha", alpha * (1f - Ease5.Seg(s, burst - t0 + 0.2f, 0.25f)));
+		});
+		return m;
+	}
+
 	/// <summary>
-	/// 墨之刃（稀有：生成带「墨」附魔的小刀）：「笔墨出刃」（Codex 的墨贴图，用户 2026-11-18：只是简单装弹、没有特色）。
-	/// 慢：四周压暗，他一挥手，身前上方空中「唰」地从左往右写出一笔浓墨（墨后面一层红光托着，暗背景上也看得清），墨从笔画上滴下来；
-	/// 快：子弹从墨里被拔出来（笔画上一闪），翻着落进他手里（共用装弹，子弹从笔画出发、落到手上）；同时笔画「啪」地炸成墨点（墨溅序列帧）散掉。
+	/// 墨之刃（稀有：生成带「墨」附魔的小刀）：「笔墨出刃」（Codex 的墨贴图）。第一版：笔画像整张贴图慢慢露出来、没有动画感，后半段一般 → 第二版：
+	/// 慢：四周压暗，他一挥手，身前上方空中「唰」地写出一笔浓墨 —— 墨是湿的、在流（纹理沿笔画流动起伏、湿亮的高光游走），写的前沿一道烧红的边，
+	///     笔尖一路甩出墨点、墨往下滴；写到头冲过一点再弹回来；一笔细的副笔画晚半拍跟着写出来；墨后面一层红光托着（暗背景上看得清）。
+	/// 快：一道白刃斜着劈开这笔墨（「刃」）—— 白闪、十字光、顿帧，墨从劈开的两处炸开（墨溅序列帧 ×2），子弹从切口里飞出来、翻着落进他手里；
+	/// 慢：手上溅开一小团墨、一下红光，剩下的墨蚀成碎块散掉。
 	/// </summary>
 	public static void BladeOfInk(SkillCtx c)
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face;
 		Control back = BackOf(c), front = c.Front;
 		int n = c.Count > 0 ? c.Count : 2;
-		const float write = 0.2f, pull = 0.42f, burst = 0.5f, life = 1.0f;
+		const float write = 0.22f, cut = 0.46f, life = 1.1f;
 		Vector2 mid = c.Feet + new Vector2(0f, -h * 0.55f);
 		Vector2 strokeAt = c.Feet + new Vector2(f * h * 1.1f, -h * 1.0f);    // 身前上方，起笔在他手前面（别压在他头上）
-		float strokeW = h * 1.5f;
-		S("gx_whoosh", 0.16f, 0.02f);
-		S("gx_slice", 0.12f, write * 0.6f);
-		S("gx_pop", 0.18f, burst);
-		Dim(back, mid + new Vector2(f * h * 0.4f, -h * 0.3f), new Vector2(h * 3.8f, h * 3f), life + 0.4, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.15f)) * (1f - Ease5.Seg(s, 0.7f, 0.3f)) * 0.6f);
-		// 笔画后面托一层红光（墨是黑的，暗背景上要靠它衬出来）
-		Glow.Flash(back, strokeAt, new Color(0.85f, 0.04f, 0.13f), strokeW * 0.9f, burst + 0.3f);
-		Node2D sr = Fx.Root(front, strokeAt, "P5InkStroke", life + 0.1);
-		ShaderMaterial m = new() { Shader = InkStrokeShader };
-		m.SetShaderParameter("seed", Fx.Rand(0f, 20f));
-		m.SetShaderParameter("reveal", 0f);
-		Texture2D? tex = Fx.Tex("ink_stroke_0" + (Fx.Rng.Next(3) + 1));
-		if (tex != null)
-		{
-			var sp = new Sprite2D { Texture = tex, Material = m, Centered = true };
-			sr.AddChild(sp);
-			float k = strokeW / (tex.GetWidth() * 0.74f);
-			sr.Scale = new Vector2(k * f, k * 1.45f);
-			sr.Rotation = -0.18f * f;
-		}
-		Fx.Animate(sr, 0, life, t =>
-		{
-			float s = t * life;
-			m.SetShaderParameter("reveal", Ease5.OutQuint(Mathf.Min(1f, s / write)));
-			m.SetShaderParameter("erode", Fx.OutCubic(Ease5.Seg(s, burst, 0.3f)));
-			m.SetShaderParameter("alpha", 1f - Ease5.Seg(s, burst + 0.2f, 0.25f));
-		});
-		// 写的时候笔锋一路一点红光
-		Vector2 dirL = new Vector2(f, 0f).Rotated(-0.18f * f);
+		float strokeW = h * 1.55f, rot = -0.18f * f;
+		Vector2 dirL = new Vector2(f, 0f).Rotated(rot);
 		Vector2 sA = strokeAt - dirL * strokeW * 0.5f, sB = strokeAt + dirL * strokeW * 0.5f;
-		for (int i = 0; i < 4; i++)
+		S("gx_whoosh", 0.16f, 0.02f);
+		S("gx_slice", 0.1f, write * 0.6f);
+		S("gx_slice", 0.24f, cut);
+		S("gx_pop", 0.16f, cut + 0.02f);
+		Dim(back, mid + new Vector2(f * h * 0.4f, -h * 0.3f), new Vector2(h * 3.8f, h * 3f), life + 0.3, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.15f)) * (1f - Ease5.Seg(s, 0.7f, 0.3f)) * 0.6f);
+		// 墨后面托一层红光（跟着写的进度从起笔亮到收笔）
+		for (int i = 0; i < 3; i++)
 		{
-			float x = (i + 0.5f) / 4f;
-			Glow.Flash(front, sA.Lerp(sB, x), new Color(1f, 0.25f, 0.3f), h * 0.3f, 0.2f, write * Ease5.OutQuint(x) * 0.8f);
+			float x = (i + 0.5f) / 3f;
+			Glow.Flash(back, sA.Lerp(sB, x), new Color(0.85f, 0.04f, 0.13f), strokeW * 0.55f, cut + 0.3f - write * x, write * x);
 		}
-		// 墨从笔画上滴下来（墨滴贴图）
-		if (Fx.Tex("ink_drops_sheet") is Texture2D drops)
-			for (int i = 0; i < 5; i++)
-			{
-				Vector2 from = sA.Lerp(sB, Fx.Rand(0.15f, 0.85f)) + new Vector2(0f, h * 0.05f);
-				float d = write + Fx.Rand(0.02f, 0.3f), fall = Fx.Rand(0.35f, 0.5f);
-				Node2D dr = Fx.Root(front, from, "P5InkDrop", d + fall + 0.05);
-				var dsp = new Sprite2D { Texture = drops, Hframes = 4, Vframes = 4, Frame = Fx.Rng.Next(16) };
-				dr.AddChild(dsp);
-				float sc = h * Fx.Rand(0.07f, 0.12f) / (drops.GetWidth() / 4f);
-				dr.Scale = Vector2.One * sc;
-				dr.Visible = false;
-				Fx.Animate(dr, d, fall, t =>
-				{
-					dr.Visible = true;
-					dr.GlobalPosition = from + new Vector2(0f, h * 0.9f * t * t);
-					dr.Modulate = new Color(1f, 1f, 1f, 1f - Ease5.Seg(t, 0.7f, 0.3f));
-				});
-			}
-		// 子弹从墨里拔出来，落进手里
-		Fx.After(front, pull, () =>
+		InkStroke(front, strokeAt, strokeW, rot, f, 1.5f, 0f, write, cut, life);
+		InkStroke(front, strokeAt + new Vector2(-f * h * 0.08f, h * 0.16f), strokeW * 0.8f, rot + 0.08f * f, f, 0.7f, 0.06f, write * 0.9f, cut, life, 0.75f);
+		// 笔尖：一团红光跟着写的前沿走，一路甩出墨点
+		Node2D tip = Fx.Root(front, sA, "P5InkTip", write + 0.05);
+		Glow.SoftSprite(tip, Vector2.Zero, new Color(1f, 0.25f, 0.3f, 0.8f), h * 0.35f / 32f);
+		Glow.SoftSprite(tip, Vector2.Zero, new Color(1f, 0.9f, 0.88f, 0.7f), h * 0.1f / 32f);
+		Fx.Animate(tip, 0, write, t =>
 		{
-			Glow.Flash(front, strokeAt, Hot, h * 0.3f, 0.1f);
-			Glow.Glint(front, strokeAt, 0.8f);
-			SkillFx.Load(front, strokeAt + new Vector2(0f, h * 0.05f), Mathf.Min(n, 6), f, true, c.Hand);
+			tip.GlobalPosition = sA.Lerp(sB, 0.05f + 0.9f * Ease5.OutQuint(t));
+			tip.Modulate = new Color(1f, 1f, 1f, 1f - Ease5.Seg(t, 0.8f, 0.2f));
 		});
-		// 笔画炸成墨点
-		Fx.After(front, burst, () =>
+		Texture2D? drops = Fx.Tex("ink_drops_sheet");
+		for (int i = 0; i < 6; i++)
 		{
-			HitStop.Request(0.03);
-			InkSplash(front, strokeAt + dirL * strokeW * 0.1f, h * 1.1f, f);
-			Glow.Flash(back, strokeAt, Red, h * 1.4f, 0.35f);
+			float x = (i + 0.5f) / 6f, d = write * Mathf.Pow(x, 0.4f) * 0.9f;
+			Vector2 from = sA.Lerp(sB, 0.05f + 0.9f * x);
+			Phantom.Shards(front, from, 3, 200f * u, 520f * u, new Vector2(-f * 0.6f, -0.5f), 50f, 0.3f, 900f * u, 12f * u, d);
+			if (drops != null) InkDrop(front, drops, from + new Vector2(0f, h * 0.05f), h, d + Fx.Rand(0.02f, 0.2f));
+		}
+		// 刃：一道白刃斜劈开这笔墨
+		Vector2 cutAt = strokeAt + dirL * strokeW * 0.08f;
+		float cutAng = rot + (f > 0 ? -1.25f : Mathf.Pi + 1.25f);
+		Fx.After(front, cut, () =>
+		{
+			HitStop.Request(0.05);
+			Fx.Shake(1);
+			Glow.Blade(front, cutAt, cutAng, h * 1.1f, 46f * u, 0.3f, 0f, Red);
+			Cut.Razor(front, cutAt, cutAng, h * 1.0f, 7f * u, 0.18f);
+			Glow.Flash(front, cutAt, Hot, h * 0.45f, 0.12f);
+			Glow.Flash(back, cutAt, Red, h * 1.6f, 0.4f);
+			Cross(front, cutAt, h * 0.5f);
+			InkSplash(front, cutAt - dirL * strokeW * 0.18f, h * 1.0f, -f);
+			InkSplash(front, cutAt + dirL * strokeW * 0.2f, h * 1.15f, f);
+			Phantom.Shards(front, cutAt, 14, 400f * u, 1000f * u, Vector2.Up, 120f, 0.4f, 900f * u, 18f * u);
+			SkillFx.Load(front, cutAt, Mathf.Min(n, 6), f, true, c.Hand);
+		});
+		// 子弹落进手里：手上溅一小团墨、一下红光
+		Fx.After(front, cut + 0.5f, () =>
+		{
+			InkSplash(front, c.Hand, h * 0.45f, f, 0.4f);
+			Glow.Flash(back, c.Hand, Red, h * 0.9f, 0.3f);
+			EchoPulse(c, 0.05f, 0.3f, 0.6f);
+		});
+	}
+
+	/// <summary>一滴墨（墨滴贴图随机一格）：从 from 往下落、慢慢转、落地前淡掉。</summary>
+	private static void InkDrop(Control layer, Texture2D drops, Vector2 from, float h, float delay)
+	{
+		float fall = Fx.Rand(0.35f, 0.5f);
+		Node2D dr = Fx.Root(layer, from, "P5InkDrop", delay + fall + 0.05);
+		var dsp = new Sprite2D { Texture = drops, Hframes = 4, Vframes = 4, Frame = Fx.Rng.Next(16) };
+		dr.AddChild(dsp);
+		float sc = h * Fx.Rand(0.07f, 0.12f) / (drops.GetWidth() / 4f), spin = Fx.Rand(-2f, 2f);
+		dr.Scale = Vector2.One * sc;
+		dr.Visible = false;
+		Fx.Animate(dr, delay, fall, t =>
+		{
+			dr.Visible = true;
+			dr.GlobalPosition = from + new Vector2(0f, h * 0.9f * t * t);
+			dr.Rotation = spin * t;
+			dr.Modulate = new Color(1f, 1f, 1f, 1f - Ease5.Seg(t, 0.7f, 0.3f));
 		});
 	}
 
