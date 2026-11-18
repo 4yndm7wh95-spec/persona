@@ -29,12 +29,15 @@ public static class AllOut
 	}
 
 	// ── 时间轴（秒） ──
-	private const float CrackAt = 0.02f, ShatterAt = 0.11f, ShardLife = 0.42f, SlamLen = 0.15f;
+	// 节奏照 P3 mod（最后一击 → 约 0.6s 蓄势 → 立绘）：定格顿 0.15s，裂纹 0.3s 内看得见地长满，停一拍、往里推；0.55 碎开
+	private const float CrackAt = 0.15f, CrackGrow = 0.3f, ShatterAt = 0.55f, ShardLife = 0.45f, SlamLen = 0.1f;
 	// 碎开那一刻原版收尾已经在玻璃后面（从源时间 ArtAt 前一点开始放，碎星的血花照原版炸开），三层各自切入：
 	// 背景从放大缩回、Joker 从右边快速滑进、竖排字从左边进、怪物剪影从左边砸进；剪影落定（ArtT）时喷血
-	private const float SrcStart = AllOutFinale.ArtAt - 0.03f, EnterLen = 0.3f;
-	private const float ArtT = ShatterAt + 0.17f;
-	private const float ExitAt = ShatterAt + 2.05f, CoverLen = 0.28f, HoleAt = ExitAt + CoverLen + 0.02f, HoleLen = 0.4f;
+	// 碎开那一刻立绘卡硬切进来（在玻璃片后面，没有空红底），白闪 + 撞击点一颗巨大的白色四角星，整张卡从放大压回来、震屏；
+	// 怪物剪影同一拍砸进左下，紧接着喷血
+	private const float SrcStart = AllOutFinale.ArtAt - 0.03f, Settle = 0.32f;
+	private const float ArtT = ShatterAt + 0.1f;
+	private const float ExitAt = ShatterAt + 2.2f, CoverLen = 0.28f, HoleAt = ExitAt + CoverLen + 0.02f, HoleLen = 0.4f;
 	public const float Total = HoleAt + HoleLen + 0.05f;
 	/// <summary>结算推迟多久：洞开到一半左右时结算页出现在洞里。</summary>
 	public const float Hold = HoleAt + 0.14f;
@@ -206,6 +209,11 @@ public static class AllOut
 		ShaderMaterial coverM = (ShaderMaterial)cover.Material;
 		coverM.SetShaderParameter("size", screen);
 		if (Stage.LoadTexture("aoa_noise") is Texture2D noise) coverM.SetShaderParameter("noise", noise);
+		// 碎开那一下的白闪 + 撞击点的巨大白色四角星（盖在玻璃片上面）
+		ColorRect flash = new() { Color = Colors.White, Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore, Visible = false };
+		rootC.AddChild(flash);
+		Polygon2D burst = new() { Color = Colors.White, Antialiased = true, Polygon = StarPoly(1f), Visible = false };
+		rootC.AddChild(burst);
 		rootC.AddChild(cover);
 
 		Rect2 union = foes.Count > 0 ? foes[0].Rect : new Rect2(W * 0.6f, H * 0.4f, 300f, 300f);
@@ -304,7 +312,8 @@ public static class AllOut
 
 		// ── 声音 ──
 		Sfx.Play(Sfx.AllOut, 0.9f);                          // 最后一击定格：原版总攻击斩击
-		Sfx.Play(Sfx.Shatter, 0.75f, ShatterAt);
+		Sfx.Play(Sfx.Crack, 0.45f, CrackAt);                 // 裂开
+		Sfx.Play(Sfx.Shatter, 0.85f, ShatterAt);
 		Sfx.Play(Sfx.CutIn, 0.8f, ShatterAt);
 		Sfx.Play(Sfx.AoaSlash3, 0.6f, ArtT);
 		Sfx.Play(Sfx.SubBoom, 0.7f, ArtT);
@@ -316,7 +325,12 @@ public static class AllOut
 		{
 			float T = u * Total;
 			// 定格：裂纹从敌人那里炸开，画面往里推一点
-			stageView.Scale = Vector2.One * (1f + 0.035f * Ease(Mathf.Clamp(T / ShatterAt, 0f, 1f)));
+			// 裂开的过程中慢慢往撞击点推近，碎开前一拍微微发抖
+			float push = Mathf.Clamp((T - CrackAt) / (ShatterAt - CrackAt), 0f, 1f);
+			stageView.PivotOffset = focus;
+			stageView.Scale = Vector2.One * (1f + 0.06f * push * push);
+			float tremble = T > ShatterAt - 0.12f && T < ShatterAt ? 3f : 0f;
+			stageView.Position = new Vector2(Mathf.Sin(T * 97f), Mathf.Cos(T * 83f)) * tremble;
 			if (T >= CrackAt && !cracked)
 			{
 				cracked = true;
@@ -327,8 +341,9 @@ public static class AllOut
 			if (cracked && !broke)
 			{
 				// 裂纹从撞击点往外窜：0.08 秒到画面外（先快后慢）
-				float c = Mathf.Clamp((T - CrackAt) / 0.08f, 0f, 1f);
-				float reach = 2400f * Mathf.Pow(c, 0.7f) + 30f;
+				// 先一下炸开一圈（撞击点附近），再越长越快地爬满全屏
+				float c = Mathf.Clamp((T - CrackAt) / CrackGrow, 0f, 1f);
+				float reach = 160f * Quint(Mathf.Clamp(c * 4f, 0f, 1f)) + 2300f * Mathf.Pow(c, 2.2f);
 				foreach (Crack ck in cracks) GrowCrack(ck, reach);
 			}
 			// 碎开：离屏画面定住，玻璃片飞散，下面是原版收尾
@@ -343,6 +358,15 @@ public static class AllOut
 			if (broke)
 			{
 				float d = T - ShatterAt;
+				float fa = 1f - Mathf.Clamp(d / 0.08f, 0f, 1f);
+				flash.Visible = fa > 0f;
+				flash.Color = new Color(1f, 1f, 1f, 0.5f * fa * fa);
+				float bt = Mathf.Clamp(d / 0.2f, 0f, 1f);
+				burst.Visible = bt < 1f;
+				burst.Position = focus;
+				burst.Rotation = 0.3f + 0.25f * bt;
+				burst.Scale = Vector2.One * Mathf.Lerp(H * 0.25f, H * 1.6f, Quint(bt));
+				burst.Modulate = new Color(1f, 1f, 1f, 0.9f * (1f - bt) * (1f - bt));
 				foreach (Shard sh in shards)
 				{
 					// 炸开：一出手就是最快（四次方缓出），越转越慢；后段带一点下坠，最后 30% 很快淡掉
@@ -366,15 +390,14 @@ public static class AllOut
 				fin?.Seek(Mathf.Min(SrcStart + d, AllOutFinale.End - 0.02f));
 				if (fin != null)
 				{
-					float bq = Quint(Mathf.Clamp(d / EnterLen, 0f, 1f));
-					fin.Back.Scale = Vector2.One * Mathf.Lerp(1.2f, 1f, bq);
-					fin.Back.Rotation = Mathf.Lerp(0.05f, 0f, bq);
-					float jq = Quint(Mathf.Clamp(d / (EnterLen * 0.85f), 0f, 1f));
-					fin.Front.Position = new Vector2(W * 0.26f, H * 0.03f) * (1f - jq);
-					fin.Front.Scale = Vector2.One * Mathf.Lerp(1.04f, 1f, jq);
-					float tq = Quint(Mathf.Clamp((d - 0.04f) / EnterLen, 0f, 1f));
-					fin.Text.Position = new Vector2(-W * 0.14f, 0f) * (1f - tq);
-					fin.Text.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((d - 0.04f) / 0.08f, 0f, 1f));
+					// 硬切进来，整张卡从放大压回（人物比背景压得快一点，有一点层次），落定时带一下震
+					float q = Quint(Mathf.Clamp(d / Settle, 0f, 1f)), qf = Quint(Mathf.Clamp(d / (Settle * 0.8f), 0f, 1f));
+					fin.Back.Scale = Vector2.One * Mathf.Lerp(1.14f, 1f, q);
+					fin.Front.Scale = Vector2.One * Mathf.Lerp(1.1f, 1f, qf);
+					fin.Front.Position = new Vector2(W * 0.03f, 0f) * (1f - qf);
+					fin.Text.Scale = Vector2.One * Mathf.Lerp(1.1f, 1f, q);
+					float sh = d < 0.18f ? (1f - d / 0.18f) * 12f : 0f;
+					finRoot.Position = new Vector2(Mathf.Sin(d * 120f), Mathf.Cos(d * 95f)) * sh;
 				}
 				// 剪影：人物出现前一拍砸进收尾位置（从 1.25 倍缩回、带一点倾斜）；喷血时往后一顿
 				float lt = Mathf.Clamp((T - (ArtT - SlamLen)) / SlamLen, 0f, 1f), le = Quint(lt);

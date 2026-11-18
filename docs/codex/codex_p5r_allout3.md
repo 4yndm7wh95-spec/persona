@@ -27,19 +27,12 @@ BKSK_JUMP_CTE.EPL、BKSK_ATTACK_CTE.EPL、BKSK_JUMP_SMOKE.EPL（上一轮 packag
 【4. 喷血 splatterBlood】
 同样的办法解 BKSK_SPLATTER.EPL 里的 be0cmn_bokosuka_splatterBlood.GFS（Plane01–04、SPARK0）：外层 EPL 的节点树和轨道 → splatter/outer.json；嵌套 GFS 的网格、材质、贴图绑定、UV 变换、全部动画轨道 → splatter/splatterBlood.json；三张贴图 PNG → splatter/textures/。
 
-【5. Joker 收尾的 3D 动作（序列帧）】
-原版总攻击收尾前 Joker 从上方落下、单膝落地、外套甩开、站起、扯手套（约 1.7s），由 BKSK_HERO.BCD 调用。
-1. 在 BKSK_HERO.BCD（651 字节）里找角色动作调用：把全部字节按 4 字节一组列成十六进制表放 tools/p5/allout_native/source_more/bksk_hero_bcd_dump.txt，标出疑似动作编号 / GAP 名的位置。
-2. 对照 research/p5r/joker_battle_anim_list.csv（3064 条，名字是 GAP 索引）和你之前渲动作用的流程（research/p5r/REPORT_glove_*.md 等），找出时长约 1.5–2.5s、内容是"落下 → 落地 → 站起 → 扯手套"的那一段（可以先把时长 1.4–2.6s 的候选各渲一张 6 格缩略图拼起来比对，放 research/p5r/allout_motion/candidates.png）。
-3. 找到以后用修好的模型（research/p5r/model/joker/fixed/joker_thief.glb，戴面具版）渲 30fps 序列帧，放 research/p5r/allout_motion/<动作名>/：
-   - color/：全彩，透明背景，1024×1024，正交相机，人物面朝画面右侧的 3/4 侧身，落地点在画面下方 1/4 处（和以前渲动作的统一设置一样）；
-   - sil/：同一相机的纯黑剪影版（透明背景）。
-   再做一张逐帧拼图 sheet.png。找不到确定的那一段就只交候选拼图，不要硬选。
+【5.（取消）】用户决定不做 Joker 落地那一段，不用渲 3D 动作。
 
 【6. 提交】
-只 add：research/p5r/audio/allout、tools/p5/allout_native/source_more、tools/p5/allout_native/splatter、research/p5r/allout_motion，和报告 docs/codex/reports/p5r_allout3.md。新增总量不超过 120MB（超了先把序列帧缩到 768，再不行写进报告）。
+只 add：research/p5r/audio/allout、tools/p5/allout_native/source_more、tools/p5/allout_native/splatter，和报告 docs/codex/reports/p5r_allout3.md。新增总量不超过 120MB（超了先把序列帧缩到 768，再不行写进报告）。
 每个新目录的 README.md 补上这一轮新增的内容。
-git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local commit -m "research: P5R all-out audio streams, effect textures, splatterBlood data, Joker finish motion frames"
+git -c safe.directory=<repo> -c user.name=Codex -c user.email=codex@local commit -m "research: P5R all-out audio streams, effect textures, splatterBlood data"
 git -c safe.directory=<repo> -c http.version=HTTP/1.1 push origin claude/exciting-babbage-lm8ubb
 推送被拒：先 pull --no-rebase --no-edit origin claude/exciting-babbage-lm8ubb 再推；有冲突就停下来报告。
 最后在对话里回复：提交号 + 报告全文。
