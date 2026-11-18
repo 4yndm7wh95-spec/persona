@@ -126,21 +126,49 @@ void fragment() {
 	float u = UV.x, v = UV.y * 2.0 - 1.0;
 	float n = fbm(vec2(u * 8.0 - clock * 3.0 + seed, v * 3.5));
 	float n2 = noise(vec2(u * 16.0 - clock * 5.0, v * 4.0 + seed));
-	if (use_tex > 0.5) { n = mix(n, texture(body_tex, vec2(u * 1.5 - clock * 0.6, UV.y)).r, 0.7); }
 	float prof = 1.0 - abs(v);
+	float crest = smoothstep(0.82, 1.0, u) * smoothstep(0.1, 0.7, prof + (n2 - 0.5) * 0.4);
+	if (use_tex > 0.5) {
+		// Codex 的浪身（本身就是红白黑上色好的）：沿浪身往后滚动，尾巴被噪声蚀散、浪头泛白
+		vec4 tx = texture(body_tex, vec2(u * 1.3 - clock * 0.55 + seed + (n - 0.5) * 0.08, mix(0.2, 0.84, UV.y) + (n2 - 0.5) * 0.04));   // 浪身在图里只占中间 0.25～0.8
+		float keep = smoothstep(0.2, 0.6, n * 1.1 + u * 0.75 - 0.1) * smoothstep(0.0, 0.12, u);
+		float ta = tx.a * keep * alpha;
+		vec3 tc = mix(tx.rgb, vec3(1.0, 0.92, 0.9), crest * 0.5);
+		float ca = crest * 0.35 * alpha;
+		COLOR = vec4(tc * ta + vec3(1.0, 0.85, 0.82) * ca * (1.0 - ta), clamp(ta + ca * (1.0 - ta), 0.0, 1.0));
+	} else {
 	float body = smoothstep(0.1, 0.5, prof + (n - 0.5) * 0.9);
 	body *= smoothstep(0.3, 0.7, n * 1.2 + u * 0.55 - 0.1);            // 被蚀得一块一块的，尾巴散掉
 	float st = smoothstep(0.55, 0.85, noise(vec2(u * 30.0 - clock * 7.0, v * 6.0 + seed))) * prof * smoothstep(0.1, 0.5, u);   // 顺着流向的亮丝
 	float rim = smoothstep(0.45, 0.9, -v + (n2 - 0.5) * 0.5) * smoothstep(0.0, 0.3, u);   // 外沿亮边
-	float crest = smoothstep(0.82, 1.0, u) * smoothstep(0.1, 0.7, prof + (n2 - 0.5) * 0.4);
 	vec3 col = vec3(0.13, 0.0, 0.03) * body + vec3(0.95, 0.06, 0.16) * (rim * 1.1 + body * 0.3 * u + st * 0.8)
 		+ vec3(1.0, 0.82, 0.8) * (crest * 0.85 + pow(rim, 3.0) * 0.6);
 	float a = clamp(body * 0.8 + rim * 0.55 + crest * 0.6 + st * 0.4, 0.0, 1.0) * alpha;
 	COLOR = vec4(col * alpha, a);
+	}
 }" };
 
-	/// <summary>Codex 生的浪身纹理（有就用，art/p5/fx/v4/corrosive/curse_wave_body.png）。</summary>
-	private static Texture2D? BodyTex => Fx.Tex("curse_wave_body");
+	/// <summary>Codex 生的浪身纹理（art/p5/fx/v4/corrosive/curse_wave_body_01 / 02，左右无缝），两张随机用。</summary>
+	private static Texture2D? BodyTex => Fx.Tex(Fx.Rng.Next(2) == 0 ? "curse_wave_body_01" : "curse_wave_body_02");
+
+	/// <summary>
+	/// 拍击溅射（Codex 的 16 帧序列 curse_splash_sheet：从左上往右下拍、往右下呈扇形溅开）：at 为中心，size 边长，facing &lt; 0 时水平翻转。
+	/// 本身就是红白黑上色好的；放的时候一边播一边微微放大。
+	/// </summary>
+	private static void Splash(Control layer, Vector2 at, float size, float facing, float dur = 0.42f)
+	{
+		if (Fx.Tex("curse_splash_sheet") is not Texture2D sheet) return;
+		Node2D root = Fx.Root(layer, at, "P5CurseSplash", dur + 0.05);
+		var sp = new Sprite2D { Texture = sheet, Hframes = 4, Vframes = 4, Frame = 0, Centered = true };
+		float cell = sheet.GetWidth() / 4f;
+		root.AddChild(sp);
+		Fx.Animate(root, 0, dur, t =>
+		{
+			sp.Frame = Mathf.Min(15, (int)(t * 16f));
+			float k = size / cell * (0.9f + 0.25f * Fx.OutCubic(t));
+			root.Scale = new Vector2(k * (facing < 0 ? -1f : 1f), k);
+		});
+	}
 
 	/// <summary>
 	/// 一个敌人身上的卷浪。center = 敌人中心，h / w = 高 / 宽，facing = 远离 Joker 的方向。s 秒时浪头在 HeadAt(s)，浪身拖在后面 TailLen。
@@ -161,7 +189,7 @@ void fragment() {
 		if (BodyTex is Texture2D tex) { m.SetShaderParameter("body_tex", tex); m.SetShaderParameter("use_tex", 1f); }
 		var line = new Line2D
 		{
-			Width = R * 0.5f, Texture = Glow.Soft, TextureMode = Line2D.LineTextureMode.Stretch, Material = m,
+			Width = R * 0.78f, Texture = Glow.Soft, TextureMode = Line2D.LineTextureMode.Stretch, Material = m,
 			JointMode = Line2D.LineJointMode.Round, Antialiased = true,
 			WidthCurve = new Curve(),
 		};
@@ -289,7 +317,10 @@ void fragment() {
 			{
 				float h = Mathf.Max(80f, (tt.At - tt.Top).Length());
 				Glow.Flash(layer, tt.At, Hot, Mathf.Max(tt.Width, h) * 0.6f, 0.1f);
-				Burst(layer, tt.At, Mathf.Max(tt.Width * 0.9f, 160f * u) * (first ? 1f : 0.85f), tt.At.Y + h * 0.75f, first ? 1f : 0.8f);
+				Glow.Flash(layer, tt.At, new Color(0.9f, 0.05f, 0.14f), Mathf.Max(tt.Width, h) * 1.4f, 0.35f);
+				Splash(layer, tt.At + slamDir * h * 0.15f, Mathf.Max(tt.Width, h) * (first ? 1.7f : 1.45f), facing);
+				for (int d = 0; d < 3; d++)
+					CardSkillFx.Drop(layer, tt.At + new Vector2(Fx.Rand(-0.25f, 0.25f) * tt.Width, Fx.Rand(0f, 0.2f) * h), tt.At.Y + h * 0.75f, 0.1f + 0.08f * d, h * 2f, u);
 				Phantom.Shards(layer, tt.At, first ? 14 : 9, 500f * u, 1200f * u, slamDir, 40f, 0.4f, 900f * u, 22f * u);
 				BodyTint.Pulse(tt.Body, new Color(0.7f, 0.42f, 0.52f), 0.12, 0.4);
 			}
