@@ -7,3 +7,8 @@
 - 波形 ID 字段采用 `Streaming 标记:AWB ID`。ACB cue ID、CueIndex、波形行号和 AWB ID 是不同字段。已有音频的编号口径未经核对，不能据此认定哪些素材此前已经导出。
 
 本目录仅含元数据。没有从 cue 名推断 Joker 的具体台词，也没有转码或上传 OGG。
+
+
+## 用户提供的音频
+
+- `battle_all_out_atk_finish_b.ogg`：用户从本机导出的 SYSTEM.ACB cue 1074 `battle_all_out_atk_finish_b`（AWB 第 14 号，2.69s，44.1kHz 立体声），原版总攻击收尾的喷溅声。起音 0.05s，约 1s 的喷涌后衰减。p5mod 里作为怪物剪影喷血的音效（`aoa_splatter`）。
