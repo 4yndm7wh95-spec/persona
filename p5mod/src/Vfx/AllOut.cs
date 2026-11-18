@@ -30,13 +30,16 @@ public static class AllOut
 
 	// ── 时间轴（秒） ──
 	// 节奏照 P3 mod（最后一击 → 约 0.6s 蓄势 → 立绘）：定格顿 0.15s，裂纹 0.3s 内看得见地长满，停一拍、往里推；0.55 碎开
-	private const float CrackAt = 0.15f, CrackGrow = 0.3f, ShatterAt = 0.55f, ShardLife = 0.45f, SlamLen = 0.1f;
+	private const float CrackAt = 0.15f, CrackGrow = 0.3f, ShatterAt = 0.55f, ShardLife = 0.45f, SlamLen = 0.12f;
 	// 碎开那一刻原版收尾已经在玻璃后面（从源时间 ArtAt 前一点开始放，碎星的血花照原版炸开），三层各自切入：
 	// 背景从放大缩回、Joker 从右边快速滑进、竖排字从左边进、怪物剪影从左边砸进；剪影落定（ArtT）时喷血
 	// 碎开那一刻立绘卡硬切进来（在玻璃片后面，没有空红底），白闪 + 撞击点一颗巨大的白色四角星，整张卡从放大压回来、震屏；
 	// 怪物剪影同一拍砸进左下，紧接着喷血
 	private const float SrcStart = AllOutFinale.ArtAt - 0.03f, Settle = 0.32f;
-	private const float ArtT = ShatterAt + 0.1f;
+	// 入场分拍（相对碎开）：0 碎开 + 红底压回（冲击）→ 0.02–0.4 碎星转进来（丝滑，带一点回弹）→ 0.14–0.38 Joker 冲进来、落定震屏（冲击）
+	// → 0.42 怪物剪影砸进 + 喷血 + 震屏（第二下冲击）→ 0.5–0.8 竖排字划上来（丝滑）
+	private const float JokerIn = 0.14f, JokerLen = 0.24f, TextIn = 0.5f, TextLen = 0.3f;
+	private const float ArtT = ShatterAt + 0.42f;
 	private const float ExitAt = ShatterAt + 2.2f, CoverLen = 0.28f, HoleAt = ExitAt + CoverLen + 0.02f, HoleLen = 0.4f;
 	public const float Total = HoleAt + HoleLen + 0.05f;
 	/// <summary>结算推迟多久：洞开到一半左右时结算页出现在洞里。</summary>
@@ -180,7 +183,10 @@ public static class AllOut
 		// ── 定格：最后一击那一帧（原样，不调色）画进离屏画面，裂开时整张拿去当玻璃片的贴图 ──
 		SubViewport stage = new() { Size = new Vector2I((int)W, (int)H), Disable3D = true, RenderTargetUpdateMode = SubViewport.UpdateMode.Always, Name = "P5AllOutStage" };
 		rootC.AddChild(stage);
-		stage.AddChild(new TextureRect { Texture = frozen, Size = screen, StretchMode = TextureRect.StretchModeEnum.Scale });
+		ShaderMaterial still = new() { Shader = StillShader };
+		stage.AddChild(new TextureRect { Texture = frozen, Size = screen, StretchMode = TextureRect.StretchModeEnum.Scale, Material = still });
+		Node2D lines = new();
+		stage.AddChild(lines);
 		Node2D crackLayer = new();
 		stage.AddChild(crackLayer);
 		TextureRect stageView = new() { Texture = stage.GetTexture(), Size = screen, PivotOffset = screen * 0.5f, MouseFilter = Control.MouseFilterEnum.Ignore };
@@ -192,8 +198,10 @@ public static class AllOut
 		finRoot.AddChild(new ColorRect { Color = new Color(0.996f, 0f, 0f), Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore });   // 原版红底（离屏画面第一帧到之前也是红的）
 		if (fin != null)
 		{
-			finRoot.AddChild(fin.Back);
-			fin.Back.PivotOffset = fin.Front.PivotOffset = fin.Text.PivotOffset = screen * 0.5f;
+			finRoot.AddChild(fin.Bg);
+			finRoot.AddChild(fin.Star);
+			fin.Bg.PivotOffset = fin.Front.PivotOffset = fin.Text.PivotOffset = screen * 0.5f;
+			fin.Star.PivotOffset = screen * new Vector2(0.28f, 0.4f);                 // 碎星的中心
 		}
 		Node2D mid = new();
 		finRoot.AddChild(mid);
@@ -306,15 +314,28 @@ public static class AllOut
 			}
 		}
 
+		Vector2 focus = foes.Count > 0 ? union.GetCenter() : new Vector2(W * 0.66f, H * 0.45f);
 		var shards = new List<Shard>();
 		var cracks = new List<Crack>();
-		Vector2 focus = foes.Count > 0 ? union.GetCenter() : new Vector2(W * 0.66f, H * 0.45f);
+		still.SetShaderParameter("focus", focus / screen);
+		still.SetShaderParameter("aspect", W / H);
+		// 顿帧的集中线：从画面四周朝撞击点收进去的细白楔形（不到撞击点，留一圈空）
+		var speed = new List<(Polygon2D P, float Ang, float Len, float W0, float Ph)>();
+		for (int i = 0; i < 44; i++)
+		{
+			float ang = Mathf.Tau * i / 44f + rng.RandfRange(-0.05f, 0.05f);
+			Polygon2D pl = new() { Color = new Color(1f, 1f, 1f, 0f), Antialiased = true };
+			lines.AddChild(pl);
+			speed.Add((pl, ang, rng.RandfRange(0.25f, 0.55f), rng.RandfRange(4f, 12f), rng.RandfRange(0f, 9f)));
+		}
 
 		// ── 声音 ──
 		Sfx.Play(Sfx.AllOut, 0.9f);                          // 最后一击定格：原版总攻击斩击
 		Sfx.Play(Sfx.Crack, 0.45f, CrackAt);                 // 裂开
 		Sfx.Play(Sfx.Shatter, 0.85f, ShatterAt);
-		Sfx.Play(Sfx.CutIn, 0.8f, ShatterAt);
+		Sfx.Play(Sfx.SwishLow, 0.5f, ShatterAt + 0.03f);         // 碎星转进来
+		Sfx.Play(Sfx.CutIn, 0.8f, ShatterAt + JokerIn);          // Joker 冲进来
+		Sfx.Play(Sfx.Swish, 0.35f, ShatterAt + TextIn);           // 竖排字
 		Sfx.Play(Sfx.AoaSlash3, 0.6f, ArtT);
 		Sfx.Play(Sfx.SubBoom, 0.7f, ArtT);
 		Sfx.Play(Sfx.SwishHeavy, 0.55f, ExitAt);
@@ -325,6 +346,21 @@ public static class AllOut
 		{
 			float T = u * Total;
 			// 定格：裂纹从敌人那里炸开，画面往里推一点
+			// 顿帧：最开头两帧是黑白反转的冲击帧，之后画面压暗、去色、四周收暗，撞击点附近色散，集中线一闪一闪
+			float imp = T < 0.07f ? 1f : 0f;
+			float hold = Mathf.Clamp((T - 0.05f) / 0.12f, 0f, 1f);
+			still.SetShaderParameter("impact", imp);
+			still.SetShaderParameter("hold", hold);
+			float rad = Mathf.Sqrt(W * W + H * H);
+			foreach (var sp in speed)
+			{
+				float flick = 0.5f + 0.5f * Mathf.Sin(T * 40f + sp.Ph * 3f);
+				float a = hold * (0.18f + 0.3f * flick) * (broke ? 0f : 1f);
+				Vector2 dir = Vector2.FromAngle(sp.Ang), nrm = dir.Orthogonal();
+				Vector2 outer = focus + dir * rad, inner = focus + dir * rad * (1f - sp.Len * (0.85f + 0.15f * flick));
+				sp.P.Polygon = new[] { outer + nrm * sp.W0, outer - nrm * sp.W0, inner };
+				sp.P.Color = new Color(1f, 1f, 1f, a);
+			}
 			// 裂开的过程中慢慢往撞击点推近，碎开前一拍微微发抖
 			float push = Mathf.Clamp((T - CrackAt) / (ShatterAt - CrackAt), 0f, 1f);
 			stageView.PivotOffset = focus;
@@ -361,12 +397,12 @@ public static class AllOut
 				float fa = 1f - Mathf.Clamp(d / 0.08f, 0f, 1f);
 				flash.Visible = fa > 0f;
 				flash.Color = new Color(1f, 1f, 1f, 0.5f * fa * fa);
-				float bt = Mathf.Clamp(d / 0.2f, 0f, 1f);
+				float bt = Mathf.Clamp(d / 0.16f, 0f, 1f);
 				burst.Visible = bt < 1f;
 				burst.Position = focus;
 				burst.Rotation = 0.3f + 0.25f * bt;
-				burst.Scale = Vector2.One * Mathf.Lerp(H * 0.25f, H * 1.6f, Quint(bt));
-				burst.Modulate = new Color(1f, 1f, 1f, 0.9f * (1f - bt) * (1f - bt));
+				burst.Scale = Vector2.One * Mathf.Lerp(H * 0.2f, H * 1.1f, Quint(bt));
+				burst.Modulate = new Color(1f, 1f, 1f, 0.75f * (1f - bt) * (1f - bt));
 				foreach (Shard sh in shards)
 				{
 					// 炸开：一出手就是最快（四次方缓出），越转越慢；后段带一点下坠，最后 30% 很快淡掉
@@ -390,13 +426,28 @@ public static class AllOut
 				fin?.Seek(Mathf.Min(SrcStart + d, AllOutFinale.End - 0.02f));
 				if (fin != null)
 				{
-					// 硬切进来，整张卡从放大压回（人物比背景压得快一点，有一点层次），落定时带一下震
-					float q = Quint(Mathf.Clamp(d / Settle, 0f, 1f)), qf = Quint(Mathf.Clamp(d / (Settle * 0.8f), 0f, 1f));
-					fin.Back.Scale = Vector2.One * Mathf.Lerp(1.14f, 1f, q);
-					fin.Front.Scale = Vector2.One * Mathf.Lerp(1.1f, 1f, qf);
-					fin.Front.Position = new Vector2(W * 0.03f, 0f) * (1f - qf);
-					fin.Text.Scale = Vector2.One * Mathf.Lerp(1.1f, 1f, q);
-					float sh = d < 0.18f ? (1f - d / 0.18f) * 12f : 0f;
+					// 拆开入场（一层接一层）：红底从放大压回 → 碎星转着砸进来 → Joker 从右边冲进来（带一点回弹）→ 怪物剪影从左边砸进（ArtT）
+					// → 竖排字从下往上划上来；Joker 落定那一下震屏
+					float qb = Quint(Mathf.Clamp(d / 0.3f, 0f, 1f));
+					fin.Bg.Scale = Vector2.One * Mathf.Lerp(1.15f, 1f, qb);
+					float ks = Mathf.Clamp((d - 0.02f) / 0.34f, 0f, 1f);
+					fin.Star.Visible = d >= 0.02f;
+					fin.Star.Rotation = Mathf.Lerp(-0.9f, 0f, Back(ks, 1.2f));
+					fin.Star.Scale = Vector2.One * Mathf.Lerp(1.9f, 1f, Back(ks, 0.8f));
+					fin.Star.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(ks * 5f, 0f, 1f));
+					float kj = Mathf.Clamp((d - JokerIn) / JokerLen, 0f, 1f);
+					fin.Front.Visible = d >= JokerIn;
+					fin.Front.Position = new Vector2(W * 0.55f * (1f - Back(kj, 0.9f)), 0f);
+					fin.Front.Scale = Vector2.One * Mathf.Lerp(1.08f, 1f, Quint(kj));
+					float kt = Mathf.Clamp((d - TextIn) / TextLen, 0f, 1f);
+					fin.Text.Visible = d >= TextIn;
+					fin.Text.Position = new Vector2(0f, H * 0.9f * (1f - Ease(kt) * (2f - Ease(kt)) * 0.5f - Ease(kt) * 0.5f));
+					float landed = d - (JokerIn + JokerLen * 0.75f), hitT = T - ArtT;
+					float sh = 0f;
+					if (landed > 0f && landed < 0.16f) sh = (1f - landed / 0.16f) * 9f;
+					if (hitT > 0f && hitT < 0.2f) sh = Mathf.Max(sh, (1f - hitT / 0.2f) * 13f);
+					finRoot.PivotOffset = screen * 0.5f;
+					finRoot.Scale = Vector2.One * (1f + sh * 0.003f);                  // 震的时候略放大，边缘不露底
 					finRoot.Position = new Vector2(Mathf.Sin(d * 120f), Mathf.Cos(d * 95f)) * sh;
 				}
 				// 剪影：人物出现前一拍砸进收尾位置（从 1.25 倍缩回、带一点倾斜）；喷血时往后一顿
@@ -579,6 +630,8 @@ public static class AllOut
 		Texture2D tex = stage.GetTexture();
 		var list = new List<Shard>();
 		var cracks = new List<Crack>();
+		int[] reachRing = new int[A];
+		for (int a = 0; a < A; a++) reachRing[a] = a % 3 == 0 ? rings.Length - 2 : rng.RandiRange(3, rings.Length - 2);
 		Rect2 view = new Rect2(Vector2.Zero, screen).Grow(60f);
 		for (int r = 0; r < rings.Length - 1; r++)
 		{
@@ -620,9 +673,20 @@ public static class AllOut
 					layer.AddChild(sh.Edge);
 					list.Add(sh);
 				}
-				// 裂纹：放射线（每个扇区一条，到画面外）+ 近处三圈环线
-				if (r < rings.Length - 2) cracks.Add(MakeCrack(Edge(r, a, r + 1, a), focus, crackLayer, 1f));
-				if (r >= 1 && r <= 3) cracks.Add(MakeCrack(Edge(r, a, r, b), focus, crackLayer, 0.5f));
+				// 裂纹：主裂纹沿放射边，长短不一（有的到画面外、有的半路停）；环线只在最里面一圈零星几段 —— 不要整齐的蛛网
+				if (r < reachRing[a]) cracks.Add(MakeCrack(Edge(r, a, r + 1, a), focus, crackLayer, 1f));
+				if (r == 1 && rng.Randf() < 0.55f) cracks.Add(MakeCrack(Edge(r, a, r, b), focus, crackLayer, 0.55f));
+				if (r == 2 && rng.Randf() < 0.25f) cracks.Add(MakeCrack(Edge(r, a, r, b), focus, crackLayer, 0.4f));
+				// 分叉：从主裂纹中段斜着岔出去一小段
+				if (r >= 1 && r < reachRing[a] && rng.Randf() < 0.45f)
+				{
+					Vector2[] e = Edge(r, a, r + 1, a);
+					Vector2 p0 = e[e.Length / 2];
+					Vector2 dir = (e[^1] - e[0]).Normalized().Rotated(rng.RandfRange(0.35f, 0.7f) * (rng.Randf() < 0.5f ? -1f : 1f));
+					float len = (e[^1] - e[0]).Length() * rng.RandfRange(0.35f, 0.7f);
+					Vector2 p2 = p0 + dir * len, p1 = p0.Lerp(p2, 0.5f) + dir.Orthogonal() * len * rng.RandfRange(-0.12f, 0.12f);
+					cracks.Add(MakeCrack(new[] { p0, p1, p2 }, focus, crackLayer, 0.45f));
+				}
 			}
 		}
 		// 撞击点：一圈细碎的短裂纹
@@ -753,9 +817,39 @@ public static class AllOut
 
 	private static float Quint(float t) => 1f - Mathf.Pow(1f - t, 5f);
 
+	/// <summary>带回弹的缓出（超过终点一点再回来），k = 回弹量。</summary>
+	private static float Back(float t, float k)
+	{
+		float c = 1.70158f * k, u = t - 1f;
+		return 1f + (c + 1f) * u * u * u + c * u * u;
+	}
+
 	// ═══════════════════════════ 着色器 ═══════════════════════════
 
-	private static Shader? _sil, _shade, _blob, _cover;
+	private static Shader? _sil, _shade, _blob, _cover, _still;
+
+	/// <summary>
+	/// 顿帧的定格画面：impact = 冲击帧（黑白反转、高反差），hold = 顿住（压暗、去色 60%、四周收暗、撞击点附近一点红青色散）。
+	/// </summary>
+	private static Shader StillShader => _still ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform float impact = 0.0;
+uniform float hold = 0.0;
+uniform vec2 focus = vec2(0.6, 0.5);
+uniform float aspect = 1.7778;
+void fragment() {
+	vec2 d = (UV - focus) * vec2(aspect, 1.0);
+	float r = length(d);
+	vec2 ca = (UV - focus) * 0.006 * hold * smoothstep(0.0, 0.5, r);
+	vec3 c = vec3(texture(TEXTURE, UV + ca).r, texture(TEXTURE, UV).g, texture(TEXTURE, UV - ca).b);
+	float l = dot(c, vec3(0.299, 0.587, 0.114));
+	vec3 held = mix(c, vec3(l), 0.6) * mix(1.0, 0.62, hold);
+	held *= 1.0 - hold * 0.55 * smoothstep(0.35, 1.2, r);
+	vec3 o = mix(c, held, hold);
+	float hi = smoothstep(0.32, 0.38, l);
+	o = mix(o, vec3(1.0 - hi), impact);
+	COLOR = vec4(o, 1.0);
+}" };
 
 	/// <summary>纯色剪影（投影用）。</summary>
 	private static Shader SilShader => _sil ??= new Shader { Code = @"

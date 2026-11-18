@@ -119,8 +119,8 @@ public sealed class AllOutFinale
 
 	public static bool Available => Load() != null;
 
-	/// <summary>三块画面（全屏 TextureRect）：背景、人物、竖排字。调用方按顺序摆进自己的层里。</summary>
-	public readonly TextureRect Back, Front, Text;
+	/// <summary>四块画面（全屏 TextureRect）：红底板、碎星（含网点 / 血花 / 白色笔触）、人物、竖排字。调用方按顺序摆进自己的层里、各自做入场。</summary>
+	public readonly TextureRect Bg, Star, Front, Text;
 
 	private readonly Data _d;
 	private readonly List<SubViewport> _views = new();
@@ -129,18 +129,19 @@ public sealed class AllOutFinale
 	private readonly Node3D?[] _holders;
 	private readonly List<(StandardMaterial3D Mat, Color Base, int Layer)> _mats = new();
 
-	// 三块各放哪些层：0 = 相机（无网格），1 = 碎星背景，2 = 人物，3 = 上底板（红），4 = 下底板（关闭），5 = 竖排字
-	private static readonly int[][] Groups = { new[] { 1, 3 }, new[] { 2 }, new[] { 5 } };
+	// 四块各放哪些层：0 = 相机（无网格），1 = 碎星背景，2 = 人物，3 = 上底板（红），4 = 下底板（关闭），5 = 竖排字
+	private static readonly int[][] Groups = { new[] { 3 }, new[] { 1 }, new[] { 2 }, new[] { 5 } };
+	private const int TextGroup = 3;
 
 	private AllOutFinale(Data d, Node owner, Vector2 size)
 	{
 		_d = d;
 		_nodes = new Node3D[d.Layers.Length][];
 		_holders = new Node3D?[d.Layers.Length];
-		TextureRect[] rects = new TextureRect[3];
-		_cams = new Camera3D[3];
+		TextureRect[] rects = new TextureRect[Groups.Length];
+		_cams = new Camera3D[Groups.Length];
 		Vector2I px = new(Mathf.Max(64, Mathf.RoundToInt(size.X)), Mathf.Max(36, Mathf.RoundToInt(size.Y)));
-		for (int g = 0; g < 3; g++)
+		for (int g = 0; g < Groups.Length; g++)
 		{
 			SubViewport vp = new()
 			{
@@ -156,7 +157,7 @@ public sealed class AllOutFinale
 				Build(li, world);
 			}
 			Camera3D cam = new() { Near = d.Near, Far = d.Far, Fov = d.Fov, Current = true };
-			if (g == 2)
+			if (g == TextGroup)
 			{
 				cam = new Camera3D { Projection = Camera3D.ProjectionType.Orthogonal, Size = 720f, Position = new Vector3(0f, 0f, 2000f), Far = 5000f, Current = true };
 			}
@@ -168,9 +169,10 @@ public sealed class AllOutFinale
 				MouseFilter = Control.MouseFilterEnum.Ignore, Name = $"P5AllOutLayer{g}",
 			};
 		}
-		Back = rects[0];
-		Front = rects[1];
-		Text = rects[2];
+		Bg = rects[0];
+		Star = rects[1];
+		Front = rects[2];
+		Text = rects[3];
 	}
 
 	/// <summary>建好三块离屏画面（挂在 owner 下，跟着 owner 释放）；数据缺失时 null。</summary>
@@ -264,7 +266,7 @@ public sealed class AllOutFinale
 		w = cl.Place * w;
 		w.Basis = w.Basis.Orthonormalized();
 		w = w.RotatedLocal(Vector3.Forward, Mathf.DegToRad(_d.Bank[f]));
-		for (int g = 0; g < 2; g++) _cams[g].GlobalTransform = w;
+		for (int g = 0; g < Groups.Length; g++) if (g != TextGroup) _cams[g].GlobalTransform = w;
 	}
 
 	public void Free()
