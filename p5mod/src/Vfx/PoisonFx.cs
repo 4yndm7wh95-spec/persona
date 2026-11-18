@@ -92,9 +92,11 @@ public static class PoisonFx
 			Fx.After(layer, 0.05, () => Apply(layer, at, top, width, body, amount, retry - 1, outbreak));
 			return;
 		}
+		// 腐蚀波（2026-11-18 用户：带上挂毒的特效）：上毒已推迟到卷浪拍中那一刻（CorrosiveDrawPatch），这里照常放挂毒特效，和拍击同一刻
 		if (CorrosiveFx.Suppressing && !ArseneFx.TryClaw(out _))
 		{
-			return;                                                   // 腐蚀波：抽牌带来的上毒由贴地的咒火浪表现（CorrosiveFx.Wave）
+			Impact(layer, at, top, width, body, amount, new Vector2(1f, 0.6f), false);
+			return;
 		}
 		if (Stage.NowMs() >= NoBeamUntil && ArseneFx.TryClaw(out Vector2 claw))
 		{

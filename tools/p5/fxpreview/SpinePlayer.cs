@@ -22,6 +22,7 @@ public partial class SpinePlayer : Node2D
 	private sealed class Attachment
 	{
 		public bool Mesh;
+		public int Page;                                  // 图集第几页（0.9.50 起 Joker 的图集有两页：joker.png、joker_2.png）
 		public Rect2 Region;
 		public bool Rotated;
 
@@ -56,7 +57,7 @@ public partial class SpinePlayer : Node2D
 	private readonly List<SlotDef> _slots = new();
 	private readonly Dictionary<string, Dictionary<string, Attachment>> _skin = new();
 	private readonly Dictionary<string, Anim> _anims = new();
-	private Texture2D _tex = null!;
+	private readonly List<Texture2D> _pages = new();
 
 	private string _current = "idle_loop";
 	private float _time;
@@ -66,17 +67,30 @@ public partial class SpinePlayer : Node2D
 	public static SpinePlayer Load(string jsonPath, string atlasPath, string pngPath)
 	{
 		SpinePlayer p = new();
-		p._tex = ImageTexture.CreateFromImage(Image.LoadFromFile(pngPath));
+		// 多页图集：每遇到一行「xxx.png」换一页（贴图和 pngPath 在同一个目录）；只有一页时就是 pngPath
+		string dir = System.IO.Path.GetDirectoryName(pngPath) ?? ".";
 		var regions = new Dictionary<string, Rect2>();
+		var pageOf = new Dictionary<string, int>();
 		var rotated = new HashSet<string>();
 		string? name = null;
-		foreach (string raw in System.IO.File.ReadAllLines(atlasPath).Skip(1))
+		int page = -1;
+		foreach (string raw in System.IO.File.ReadAllLines(atlasPath))
 		{
 			string line = raw.Trim();
+			if (line.EndsWith(".png") && !line.Contains(':'))
+			{
+				string file = System.IO.Path.Combine(dir, line);
+				if (!System.IO.File.Exists(file)) file = page < 0 ? pngPath : file;
+				p._pages.Add(ImageTexture.CreateFromImage(Image.LoadFromFile(file)));
+				page = p._pages.Count - 1;
+				name = null;
+				continue;
+			}
 			if (line.StartsWith("bounds:") && name != null)
 			{
 				float[] v = line[7..].Split(',').Select(float.Parse).ToArray();
 				regions[name] = new Rect2(v[0], v[1], v[2], v[3]);
+				pageOf[name] = Mathf.Max(0, page);
 			}
 			else if (line.StartsWith("rotate:") && name != null && line != "rotate:false" && line != "rotate:0")
 			{
@@ -87,6 +101,7 @@ public partial class SpinePlayer : Node2D
 				name = line;
 			}
 		}
+		if (p._pages.Count == 0) p._pages.Add(ImageTexture.CreateFromImage(Image.LoadFromFile(pngPath)));
 		var root = Json.ParseString(System.IO.File.ReadAllText(jsonPath)).AsGodotDictionary();
 		foreach (var bv in root["bones"].AsGodotArray())
 		{
@@ -119,7 +134,7 @@ public partial class SpinePlayer : Node2D
 				var a = av.AsGodotDictionary();
 				string key = (string)attName;
 				string rkey = a.ContainsKey("path") ? (string)a["path"] : key;
-				Attachment at = new() { Region = regions.GetValueOrDefault(rkey), Rotated = rotated.Contains(rkey) };
+				Attachment at = new() { Region = regions.GetValueOrDefault(rkey), Rotated = rotated.Contains(rkey), Page = pageOf.GetValueOrDefault(rkey) };
 				if (a.ContainsKey("type") && (string)a["type"] == "mesh")
 				{
 					at.Mesh = true;
@@ -337,10 +352,11 @@ public partial class SpinePlayer : Node2D
 			uvs = new[] { at.Px(0f, 0f), at.Px(1f, 0f), at.Px(1f, 1f), at.Px(0f, 1f) };
 			idx = new[] { 0, 1, 2, 0, 2, 3 };
 		}
-		Vector2 texSize = _tex.GetSize();
+		Texture2D tex = _pages[Mathf.Clamp(at.Page, 0, _pages.Count - 1)];
+		Vector2 texSize = tex.GetSize();
 		Vector2[] nuv = uvs.Select(u => u / texSize).ToArray();
 		Color[] cols = Enumerable.Repeat(c, pts.Length).ToArray();
-		RenderingServer.CanvasItemAddTriangleArray(GetCanvasItem(), idx, pts, cols, nuv, texture: _tex.GetRid());
+		RenderingServer.CanvasItemAddTriangleArray(GetCanvasItem(), idx, pts, cols, nuv, texture: tex.GetRid());
 	}
 
 	private static (float A, float B) Sample(List<(float T, float A, float B)> keys, float t)

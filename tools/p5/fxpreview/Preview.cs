@@ -242,6 +242,8 @@ public partial class Preview : Node2D
 			foreach (double t in new[] { 2.6, 3.4, 4.3, 4.32, 4.34 })
 			{
 				p.At(t, () => CorrosiveFx.OnDraw(p._front, JokerFeet, 1f, targets));
+				foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 })
+					p.Poison(t + CorrosiveFx.HitTime, e, 3);           // 游戏里上毒推迟到拍中那一刻（CorrosiveDrawPatch）
 			}
 		},
 		// 毒性爆发（稀有）：完整召唤 + 伊邪那岐大神转杖 + 万物真言 + 咒怨毒火，打全体
@@ -473,6 +475,8 @@ public partial class Preview : Node2D
 			foreach (double t in new[] { 2.6, 3.4, 4.3, 4.32, 4.34 })
 			{
 				p.At(t, () => CorrosiveFx.OnDraw(p._front, JokerFeet, 1f, targets));
+				foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 })
+					p.Poison(t + CorrosiveFx.HitTime, e, 3);           // 游戏里上毒推迟到拍中那一刻（CorrosiveDrawPatch）
 			}
 		},
 		// 毒性爆发（稀有）：眼神特写 + 舞台 + 新亚森 → 出手，咒怨光束扇形射向三个敌人（各 9 层）→ 立即触发中毒：全场咒火一起引爆
