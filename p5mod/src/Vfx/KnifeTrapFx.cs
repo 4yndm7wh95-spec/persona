@@ -42,7 +42,12 @@ public static class KnifeTrapFx
 	private static float _h, _w, _R, _cw, _tall;
 	private static int _left, _pending, _shots;
 	private static double _t0;
-	private static float _t, _last, _rot, _vel, _spinPhase, _spinVel, _hand, _kickAt = -10f, _endAt = -1f, _lastHitAt;
+	private static float _t, _last, _rot, _spinPhase, _hand, _kickAt = -10f, _endAt = -1f, _lastHitAt;
+	/// <summary>每一枪：什么时候、表盘转多大一格、卡转多少（用户 2026-11-18：每开一枪转一下、停顿一下再接着转，不要连成一直在转）。</summary>
+	private static readonly List<(float At, float Dial, float Spin)> _steps = new();
+
+	/// <summary>一格：0.15s 内转到位，过冲一点点再回来，然后停住。</summary>
+	private static float Spring(float s) => s <= 0f ? 0f : 1f - Mathf.Exp(-s * 20f) * Mathf.Cos(s * 30f);
 	private static ShaderMaterial? _clockM, _worldM;
 	private static Node2D? _clockRoot, _worldRoot, _bitsRoot;
 	private static SceneTree? _tree;
@@ -143,7 +148,8 @@ void fragment() {
 		int shown = Mathf.Min(_left, MaxShown);
 		_pending = _left - shown;
 		_shots = 0;
-		_rot = 0f; _vel = 0.35f; _spinPhase = 0f; _spinVel = 2.2f; _hand = 0f; _kickAt = -10f; _endAt = -1f;
+		_rot = 0f; _spinPhase = 0f; _hand = 0f; _kickAt = -10f; _endAt = -1f;
+		_steps.Clear();
 		_t0 = HitStop.RealSeconds();
 		_t = 0f; _last = 0f; _lastHitAt = 0f;
 		_until = Stage.NowMs() + (ulong)((6f + 0.7f * _left) * 1000f);
@@ -235,10 +241,18 @@ void fragment() {
 		// 超时（游戏没打到这里 / 打完了没收到最后一枪）：自己收
 		if (_endAt < 0f && (Stage.NowMs() > _until || (_shots > 0 && _t - _lastHitAt > 2.6f))) End();
 
-		// ── 旋转：一直在转，每一枪加速一下（越打越快）──
+		// ── 旋转：一枪一格（转到位、回弹一下、停住，等下一枪）；越往后每格转得越大 ──
 		float kick = _t >= _kickAt ? Mathf.Exp(-(_t - _kickAt) * 4f) : 0f;
-		_rot += (_vel + 3.5f * kick) * dt;
-		_spinPhase += (_spinVel + 10f * kick) * dt;
+		_rot = -1.4f * (1f - Fx.OutCubic(Mathf.Min(1f, _t / 0.42f)));     // 展开的时候拧到位
+		_spinPhase = 0.35f * _t;                                           // 卡平时只极慢地自转
+		_hand = 0f;
+		foreach (var (at, dial, spin) in _steps)
+		{
+			float k = Spring(_t - at);
+			_rot += dial * k;
+			_spinPhase += spin * k;
+			_hand += Mathf.Tau / 12f * k;
+		}
 		float endK = _endAt < 0f ? 0f : _t - _endAt;
 
 		// 表盘
@@ -246,7 +260,7 @@ void fragment() {
 		_clockRoot.Scale = Vector2.One * (0.25f + 0.75f * Mathf.Clamp(open, 0f, 1.2f)) * (1f + 0.03f * kick + 0.08f * Fx.OutCubic(Mathf.Min(1f, endK / 0.3f)));
 		_clockM!.SetShaderParameter("open", 1f);
 		_clockM.SetShaderParameter("rot", _rot);
-		_clockM.SetShaderParameter("hand", _hand + 0.1f * Mathf.Sin(_t * 50f) * kick);
+		_clockM.SetShaderParameter("hand", _hand);
 		_clockM.SetShaderParameter("kick", kick);
 		_clockM.SetShaderParameter("alpha", Mathf.Min(1f, _t / 0.15f));
 		_clockM.SetShaderParameter("shatter", _endAt < 0f ? 0f : Mathf.Clamp(endK / 0.35f, 0f, 1f));
@@ -333,11 +347,10 @@ void fragment() {
 		_left--;
 		_lastHitAt = _t;
 		_until = Stage.NowMs() + 4000;
-		// 加速：每一枪基础转速往上加，再给一下猛的；秒针往前跳一格
-		_vel += 0.32f;
-		_spinVel += 1.4f;
+		// 这一枪：表盘转一格（越往后越大：18° → 54°）、所有卡跟着猛转一下（越往后越多）、秒针跳一格，转到位就停住
+		int n = _steps.Count;
+		_steps.Add((_t, Mathf.DegToRad(Mathf.Min(18f + 5f * n, 54f)), Mathf.Pi * Mathf.Min(0.6f + 0.1f * n, 1.6f)));
 		_kickAt = _t;
-		_hand += Mathf.Tau / 12f;
 		// 子弹穿过表盘靠枪口那一侧：挑离那个方向最近、还在的卡
 		Vector2 toMuzzle = _muzzle - _center;
 		float target = Mathf.Atan2(toMuzzle.X, -toMuzzle.Y);
