@@ -40,7 +40,8 @@ public static partial class AllOut
 	// → 0.42 怪物剪影砸进 + 喷血 + 震屏（第二下冲击）→ 0.5–0.8 竖排字划上来（丝滑）
 	private const float TextIn = 0.75f, TextLen = 0.42f;
 	private const float ArtT = ShatterAt + 0.5f;
-	private const float ExitAt = ShatterAt + 2.6f, CoverLen = 0.36f, HoleAt = ExitAt + CoverLen + 0.02f, HoleLen = 0.5f;
+	private const float ExitAt = ShatterAt + 2.6f, CoverLen = 0.4f, HoleAt = ExitAt + CoverLen + 0.06f, HoleLen = 0.45f;
+	private const int ExitBands = 5;
 	public const float Total = HoleAt + HoleLen + 0.05f;
 	/// <summary>结算推迟多久：洞开到一半左右时结算页出现在洞里。</summary>
 	public const float Hold = HoleAt + 0.14f;
@@ -235,10 +236,18 @@ public static partial class AllOut
 		}
 		Node2D shardLayer = new();
 		rootC.AddChild(shardLayer);
-		ColorRect cover = new() { Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = CoverShader }, Visible = false };
-		ShaderMaterial coverM = (ShaderMaterial)cover.Material;
-		coverM.SetShaderParameter("size", screen);
-		if (Stage.LoadTexture("aoa_noise") is Texture2D noise) coverM.SetShaderParameter("noise", noise);
+		// 收尾（用户 2026-11-18：换一个）：P5 的斜切黑条（斜率同选人界面的切线 dx/dy = 0.2）从右边一条接一条扫进来盖满，
+		// 每条前沿一道细红边；盖满后原版收尾藏掉，黑条接着一条接一条往左扫出去，露出底下的战场 / 结算
+		Node2D cover = new() { Visible = false };
+		var bands = new List<(Polygon2D Ink, Polygon2D Edge, float Delay)>();
+		for (int i = 0; i < ExitBands; i++)
+		{
+			Polygon2D bi = new() { Color = new Color(0.02f, 0.01f, 0.015f), Antialiased = true };
+			Polygon2D be = new() { Color = new Color(0.86f, 0.03f, 0.09f), Antialiased = true };
+			cover.AddChild(bi);
+			cover.AddChild(be);
+			bands.Add((bi, be, i * 0.045f));
+		}
 		// 碎开那一下的白闪 + 撞击点的巨大白色四角星（盖在玻璃片上面）
 		ColorRect flash = new() { Color = Colors.White, Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore, Visible = false };
 		rootC.AddChild(flash);
@@ -255,9 +264,9 @@ public static partial class AllOut
 		order.Sort((a, b) => foes[a].Rect.GetCenter().X.CompareTo(foes[b].Rect.GetCenter().X));
 		float maxH = 1f, sumW = 0f;
 		foreach (Foe f in foes) maxH = Mathf.Max(maxH, f.Tight.Size.Y * f.Rect.Size.Y);
-		float gk = H * 0.56f / maxH;
-		foreach (Foe f in foes) sumW += f.Tight.Size.X * f.Rect.Size.X * gk * 0.7f;
-		if (sumW > W * 0.56f) { gk *= W * 0.56f / sumW; sumW = W * 0.56f; }
+		float gk = H * 0.5f / maxH;
+		foreach (Foe f in foes) sumW += f.Tight.Size.X * f.Rect.Size.X * gk * 0.92f;
+		if (sumW > W * 0.6f) { gk *= W * 0.6f / sumW; sumW = W * 0.6f; }
 		var finRects = new Rect2[foes.Count];
 		float cx = W * 0.31f - sumW * 0.5f;
 		foreach (int i in order)
@@ -265,33 +274,38 @@ public static partial class AllOut
 			Foe f = foes[i];
 			Vector2 full = f.Rect.Size * gk;
 			Vector2 tight = f.Tight.Size * full;
-			float left = cx - (tight.X * 0.22f) * 0.5f;
+			float left = cx - (tight.X * 0.08f) * 0.5f;
 			Vector2 pos = new(left - f.Tight.Position.X * full.X, H * 1.02f - (f.Tight.Position.Y + f.Tight.Size.Y) * full.Y);
 			finRects[i] = new Rect2(pos, full);
-			cx += tight.X * 0.7f;
+			cx += tight.X * 0.92f;
 		}
-		// 剪影：保留怪物身上的明暗和线条（压成炭黑的几档 + 亮部的暗红网点），朝 Joker 那边（右上）一道红色轮廓光、最外缘一线白；
-		// 身后错开一层暗红的投影，和原版背景分开层次
+		// 剪影：照原版 —— 纯黑平涂，没有描边、没有明暗、没有投影（用户 2026-11-18）
 		var finSils = new List<(Sprite2D Sp, Rect2 A, Rect2 B, float Rot)>();
-		var shadows = new List<Sprite2D>();
 		for (int i = 0; i < foes.Count; i++)
 		{
-			ShaderMaterial sm = new() { Shader = SilShader };
-			sm.SetShaderParameter("fill", new Color(0.3f, 0f, 0.035f));
-			Sprite2D sh = new() { Texture = foes[i].Tex, Centered = false, Material = sm, Visible = false };
-			mid.AddChild(sh);
-			shadows.Add(sh);
-		}
-		for (int i = 0; i < foes.Count; i++)
-		{
-			ShaderMaterial m = new() { Shader = ShadeShader };
-			m.SetShaderParameter("rim_px", 7f);
+			ShaderMaterial m = new() { Shader = SilShader };
+			m.SetShaderParameter("fill", Ink);
 			Sprite2D sp = new() { Texture = foes[i].Tex, Centered = false, Material = m, Visible = false };
 			mid.AddChild(sp);
 			finSils.Add((sp, foes[i].Rect, finRects[i], rng.RandfRange(-0.05f, 0.05f)));
 		}
 		Node2D bloodLayer = new();
 		mid.AddChild(bloodLayer);
+		// 持续喷血（照原版：剪影身上一直往外喷细的黑色血丝和血点，不是只喷一下）：每个伤口一组循环的喷射槽，
+		// 每个槽每 SprayCycle 秒重新喷一次（方向、速度、粗细按槽号和第几轮算，每轮都不一样）
+		var spray = new List<(Polygon2D P, int Foe, Vector2 Wound, int Slot, float Fh)>();
+		for (int fi = 0; fi < foes.Count; fi++)
+		{
+			foreach (Vector2 wd in foes[fi].Wounds)
+			{
+				for (int j = 0; j < SpraySlots; j++)
+				{
+					Polygon2D pl = new() { Color = Ink, Antialiased = true, Visible = false };
+					bloodLayer.AddChild(pl);
+					spray.Add((pl, fi, wd, j + fi * 97 + spray.Count * 13, finRects[fi].Size.Y));
+				}
+			}
+		}
 
 		// 血：每个伤口 6～8 道血柱 + 末端血点 + P5R splatterBlood 的血团
 		var jets = new List<Jet>();
@@ -497,15 +511,10 @@ public static partial class AllOut
 					sp.Rotation = rot * (1f - le) - 0.025f * recoil;
 					sp.Position = piv + new Vector2(-B.Size.X * 0.5f * sc, -B.Size.Y * sc).Rotated(sp.Rotation) + new Vector2(-16f * recoil - W * 0.22f * (1f - le), 0f);
 					sp.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(lt * 2.5f, 0f, 1f));
-					Sprite2D sh = shadows[i];
-					sh.Visible = sp.Visible;
-					sh.Scale = sp.Scale;
-					sh.Rotation = sp.Rotation;
-					sh.Position = sp.Position + new Vector2(-B.Size.Y * 0.035f, B.Size.Y * 0.012f);
-					sh.Modulate = sp.Modulate;
 				}
 				// 血
 				foreach (Jet jt in jets) DrawJet(jt, T, finSils[jt.Foe].Sp);
+				foreach (var sp in spray) DrawSpray(sp.P, finSils[sp.Foe].Sp, sp.Wound, sp.Slot, sp.Fh, T);
 				foreach (Splat sl in splats)
 				{
 					float a2 = (T - sl.Born) / 0.08f;
@@ -519,13 +528,27 @@ public static partial class AllOut
 					sl.Sp.Scale = Vector2.One * sl.Size * pop;
 				}
 			}
-			// 收尾：黑墨卷过盖满 → 中间挖开红边的洞
+			// 收尾：斜切黑条扫进来盖满 → 再一条接一条扫出去
 			if (T >= ExitAt)
 			{
 				cover.Visible = true;
-				coverM.SetShaderParameter("sweep", Ease(Mathf.Clamp((T - ExitAt) / CoverLen, 0f, 1f)));
-				float h = Mathf.Clamp((T - HoleAt) / HoleLen, 0f, 1f);
-				coverM.SetShaderParameter("hole", h * h * (3f - 2f * h));
+				float bandH = H / ExitBands;
+				for (int i = 0; i < bands.Count; i++)
+				{
+					var (bi, be, delay) = bands[i];
+					float kin = Quint(Mathf.Clamp((T - ExitAt - delay) / (CoverLen - 0.045f * (ExitBands - 1)), 0f, 1f));
+					float kout = Mathf.Clamp((T - HoleAt - delay) / (HoleLen - 0.045f * (ExitBands - 1)), 0f, 1f);
+					kout = kout * kout * kout;
+					// 横条：从右边外面扫到盖满，再往左扫出去（条之间略叠，不漏缝）
+					float y0 = i * bandH - 2f, y1 = (i + 1) * bandH + 2f;
+					float slant = 0.2f * bandH;
+					float right = Mathf.Lerp(W * 2.2f, W + 80f, kin) - kout * (W * 2.4f);
+					float left = Mathf.Lerp(W * 1.2f, -80f, kin) - kout * (W * 2.4f);
+					bi.Polygon = new[] { new Vector2(left + slant, y0), new Vector2(right + slant, y0), new Vector2(right, y1), new Vector2(left, y1) };
+					float ew = 10f;
+					float lead = kout > 0f ? right : left;           // 扫进来时前沿在左边，扫出去时在右边
+					be.Polygon = new[] { new Vector2(lead + slant - ew, y0), new Vector2(lead + slant + ew, y0), new Vector2(lead + ew, y1), new Vector2(lead - ew, y1) };
+				}
 				if (T >= HoleAt) finRoot.Visible = false;
 			}
 		})), 0f, Total, Total);
@@ -534,6 +557,57 @@ public static partial class AllOut
 			fin?.Free();
 			if (GodotObject.IsInstanceValid(layer)) layer.QueueFree();
 		};
+	}
+
+	private const int SpraySlots = 26;
+	private const float SprayCycle = 0.6f;
+
+	/// <summary>
+	/// 持续喷血的一个槽：第 k 轮在 ArtT + 0.15 + 槽偏移 + k·SprayCycle 喷出，0.32–0.5s 内飞完；
+	/// 七成是细长的血丝（头尖尾细的楔形，沿速度方向拉长），三成是血点。方向主要朝上（左上到右上），越往后越稀。
+	/// </summary>
+	private static void DrawSpray(Polygon2D pl, Sprite2D owner, Vector2 wound, int slot, float fh, float T)
+	{
+		float start = ArtT + 0.15f + (slot % SpraySlots) * SprayCycle / SpraySlots;
+		float since = T - start;
+		if (since < 0f || T > ExitAt + CoverLen) { pl.Visible = false; return; }
+		int k = (int)(since / SprayCycle);
+		float age = since - k * SprayCycle;
+		RandomNumberGenerator r = new() { Seed = (ulong)(slot * 7919 + k * 104729 + 17) };
+		float life = r.RandfRange(0.32f, 0.5f);
+		float density = Mathf.Lerp(1f, 0.55f, Mathf.Clamp((T - ArtT) / 2f, 0f, 1f));   // 越往后越稀
+		if (age > life || r.Randf() > density) { pl.Visible = false; return; }
+		pl.Visible = true;
+		Vector2 o = owner.Transform * (wound * owner.Texture.GetSize());
+		float ang = Mathf.DegToRad(r.RandfRange(-150f, -30f));
+		float speed = fh * r.RandfRange(1.1f, 2.2f);
+		Vector2 v0 = Vector2.FromAngle(ang) * speed, g = new(0f, fh * 2.6f);
+		Vector2 head = o + v0 * age + 0.5f * g * age * age;
+		float ta = Mathf.Max(0f, age - 0.05f);
+		Vector2 tail = o + v0 * ta + 0.5f * g * ta * ta;
+		Vector2 dir = head - tail;
+		float len = dir.Length();
+		if (len < 0.5f) { pl.Visible = false; return; }
+		dir /= len;
+		Vector2 n = dir.Orthogonal();
+		float fade = 1f - Mathf.Clamp((age - life * 0.7f) / (life * 0.3f), 0f, 1f);
+		if (r.Randf() < 0.7f)
+		{
+			float w = fh * r.RandfRange(0.012f, 0.026f) * fade;
+			Vector2 mid = tail + dir * len * 0.65f;
+			pl.Polygon = new[] { tail, mid + n * w, head, mid - n * w };          // 血丝：两头尖
+		}
+		else
+		{
+			float rr = fh * r.RandfRange(0.009f, 0.018f) * fade;
+			var pts = new Vector2[8];
+			for (int i = 0; i < 8; i++)
+			{
+				float a = Mathf.Tau * i / 8f;
+				pts[i] = head + dir * Mathf.Cos(a) * rr * 1.8f + n * Mathf.Sin(a) * rr;
+			}
+			pl.Polygon = pts;
+		}
 	}
 
 	/// <summary>
