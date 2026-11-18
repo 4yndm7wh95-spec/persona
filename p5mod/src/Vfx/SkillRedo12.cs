@@ -87,7 +87,7 @@ void fragment() {
 }" };
 
 	/// <summary>能量鞭：沿 path(0→1) 抽出去，t0 起、dur 秒抽到头，之后 fade 秒尾巴追上去收掉；越往头越粗（透视：往镜头那边）。返回驱动节点。</summary>
-	private static void Whip(Control layer, Control back, Func<float, Vector2> path, float t0, float dur, float fade, float width)
+	internal static void Whip(Control layer, Control back, Func<float, Vector2> path, float t0, float dur, float fade, float width)
 	{
 		Node2D root = Fx.Root(layer, Vector2.Zero, "P5Whip", t0 + dur + fade + 0.1);
 		ShaderMaterial m = new() { Shader = WhipShader };

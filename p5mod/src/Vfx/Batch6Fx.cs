@@ -53,10 +53,20 @@ public static class Batch6Fx
 		float u = U(layer), h = Mathf.Max(100f * u, (at - top).Length());
 		Vector2 foot = at + new Vector2(0f, h * 0.9f);
 		SkillRedo5.Dim(back ?? layer, at, new Vector2(width * 3f, h * 4f), 0.9, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.1f)) * (1f - Ease5.Seg(s, 0.55f, 0.45f)) * 0.55f);
-		// 重劈：从头顶上方往下扫（转好的贴图细端在左 → rot = 90° 细端朝上）
+		// 重劈（用户 2026-11-18：贴图感太重 → 主体换成着色器的能量鞭）：从头顶高处一记往下劈的流纹能量鞭，略带弧度，头宽尾尖；
+		// 后面一道细的白热疾光；手绘重劈贴图只淡淡垫在后面（压暗、半透明）
+		Vector2 sky = at + new Vector2(-face * h * 0.35f, -h * 2.4f), land = at + new Vector2(face * h * 0.08f, h * 0.35f);
+		Vector2 bend = sky.Lerp(land, 0.5f) + new Vector2(face * h * 0.25f, 0f);
+		Func<float, Vector2> chop = e => sky.Lerp(bend, e).Lerp(bend.Lerp(land, e), e);
+		SkillRedo5.Whip(layer, back ?? layer, chop, 0f, 0.08f, 0.26f, h * 1.1f);
+		SkillRedo5.StreakSharp(layer, chop, 0f, 0.09f, h * 1.6f, 26f * u, new Color(1f, 0.9f, 0.88f), 2f);
 		float len = h * 2.6f, k = len / 1024f;
-		Paint.Sweep(layer, Fx.Rng.Next(2) == 0 ? "chop_heavy_01" : "chop_heavy_02", at + new Vector2(0f, -h * 0.55f), Mathf.Pi / 2f,
-			new Vector2(k, k * 1.1f), Lut5.Blood, 0.07f, 0.05f, 0.3f, 50f, 0f, 1.25f);
+		Fx.After(layer, 0.02f, () =>
+		{
+			var st = Paint.Sweep(back ?? layer, Fx.Rng.Next(2) == 0 ? "chop_heavy_01" : "chop_heavy_02", at + new Vector2(0f, -h * 0.55f), Mathf.Pi / 2f,
+				new Vector2(k, k * 1.1f), Lut5.Blood, 0.06f, 0.04f, 0.26f, 40f, 0f, 0.8f);
+			if (st != null) st.Root.Modulate = new Color(0.6f, 0.6f, 0.6f, 0.45f);
+		});
 		Sfx.Take("gx_whoosh", 0.2f);
 		Fx.After(layer, 0.07f, () =>
 		{
@@ -65,18 +75,15 @@ public static class Batch6Fx
 			Fx.Shake(2);
 			Glow.Flash(layer, at, Hot, h * 0.9f, 0.1f);
 			Glow.Flash(back ?? layer, at, Red, h * 3f, 0.45f);
-			Flipbook(layer, "impact_star_sheet", at, h * 2.2f, Fx.Rand(-0.3f, 0.3f), 0.4f);
+			Glow.Ripple(layer, at, h * 2.4f, 0.4f, 0.025f);
+			SkillRedo5.Cross(layer, at, h * 0.5f);
 			Glow.Shockwave(layer, foot, new Color(0.9f, 0.05f, 0.14f), width * 2.6f, 0.45f, 0.22f);
 			Glow.Sparks(layer, at, 22, 300f * u, 900f * u, 0.55f, new[] { Hot, Red, new Color(0.4f, 0f, 0.06f) }, 1400f * u, 0.04f * u, 0.1f * u, Vector2.Down, 70f);
 			tint?.Invoke(new Color(0.6f, 0.4f, 0.45f));
 		});
-		// 两侧交叉补两刀（弧斩，剪刀形那张不用）
-		for (int i = 0; i < 2; i++)
-		{
-			float side = i == 0 ? -1f : 1f, d = 0.14f + 0.05f * i;
-			Paint.Sweep(layer, i == 0 ? "swipe_arc_01" : "swipe_arc_02", at + new Vector2(side * width * 0.1f, -h * 0.1f), side * 0.7f + (side < 0 ? Mathf.Pi : 0f),
-				new Vector2(h * 1.4f / 2048f * 2f, h * 1.4f / 2048f * 2f), Lut5.Blood, 0.05f, 0.04f, 0.24f, 30f, d, 1.2f);
-		}
+		// 劈完两侧各一道着色器小横劈交叉补上（由里向外、带倾斜）
+		SkillRedo5.SlashArc(layer, at + new Vector2(0f, -h * 0.05f), h * 0.75f, h * 0.24f, 0.55f, face, 0.15f, 0.12f, 0.2f, h);
+		SkillRedo5.SlashArc(layer, at + new Vector2(0f, h * 0.05f), h * 0.7f, h * 0.22f, -0.55f, -face, 0.2f, 0.12f, 0.2f, h);
 		CardFx.Weaken(layer, at, top, 0.3f);
 		if (tint != null) Fx.After(layer, 0.7f, () => Fx.Animate(layer, 0, 0.4, t => tint(Colors.White.Lerp(new Color(0.6f, 0.4f, 0.45f), 1f - t))));
 	}
@@ -94,8 +101,18 @@ public static class Batch6Fx
 		float u = U(layer);
 		_huntAt = at;
 		_huntUntil = Stage.NowMs() + 2500;
+		// 四道着色器爪痕（用户：贴图感太重 → 主体换成实时疾光，手绘爪痕压暗垫底）：从左上往右下一道接一道撕下去，粗、头尖尾尖、白热芯
+		Vector2 dir = new Vector2(face * 0.55f, 1f).Normalized(), across = new Vector2(-dir.Y, dir.X);
+		for (int i = 0; i < 4; i++)
+		{
+			Vector2 c0 = at + across * (i - 1.5f) * h * 0.22f - dir * h * 0.75f, c1 = c0 + dir * h * 1.5f;
+			float d = 0.025f * i;
+			SkillRedo5.StreakSharp(layer, e => c0.Lerp(c1, e), d, 0.1f, h * 1.3f, 80f * u, Red, 1.6f);
+			SkillRedo5.StreakSharp(layer, e => c0.Lerp(c1, e), d + 0.01f, 0.1f, h * 1.0f, 22f * u, new Color(1f, 0.9f, 0.88f), 2f);
+		}
 		float k = h * 2.2f / 1024f;
-		Paint.Sweep(layer, "claw_rake_02", at, -0.15f * face, new Vector2(k * face, k), Lut5.Blood, 0.06f, 0.06f, 0.3f, 40f, 0f, 1.25f);
+		var cl = Paint.Sweep(layer, "claw_rake_02", at, -0.15f * face, new Vector2(k * face, k), Lut5.Blood, 0.06f, 0.06f, 0.3f, 40f, 0.04f, 0.7f);
+		if (cl != null) cl.Root.Modulate = new Color(0.55f, 0.55f, 0.55f, 0.4f);
 		Fx.After(layer, 0.05f, () =>
 		{
 			Sfx.Take("gx_slice", 0.22f);
@@ -103,7 +120,8 @@ public static class Batch6Fx
 			Fx.Shake(1);
 			Glow.Flash(layer, at, Hot, h * 0.8f, 0.1f);
 			Glow.Flash(layer, at, Red, h * 2f, 0.35f);
-			Flipbook(layer, "impact_star_sheet", at, h * 1.6f, 0f, 0.36f);
+			Glow.Ripple(layer, at, h * 1.8f, 0.35f, 0.02f);
+			Phantom.Shards(layer, at, 10, 260f * u, 700f * u, dir, 50f, 0.32f, 600f * u, 14f * u);
 		});
 	}
 
@@ -123,6 +141,8 @@ public static class Batch6Fx
 			Glow.Flash(layer, from, new Color(1f, 0.85f, 0.4f), 260f * u, 0.3f);
 			Glow.Glint(layer, from, 1f);
 			Phantom.P5Card card = Phantom.Card(layer, from, w, 1.0, 0.7f);
+			Vector2 c2 = from.Lerp(to, 0.4f) + new Vector2(0f, -200f * u);
+			SkillRedo5.StreakSharp(layer, e => from.Lerp(c2, e).Lerp(c2.Lerp(to, e), e), 0.2f, 0.6f, 260f * u, 14f * u, new Color(1f, 0.8f, 0.45f), 1.6f);
 			Vector2 ctrl = from.Lerp(to, 0.4f) + new Vector2(0f, -200f * u);
 			Fx.Animate(card.Root, 0, 0.8, t =>
 			{
@@ -172,28 +192,34 @@ public static class Batch6Fx
 			card.Place(c.Hand.Lerp(cardAt, e) + shake, 0.15f * Mathf.Sin(s * 4f), 0f, 0.7f + 0.3f * e);
 			card.Set("glow", s > grab ? 0.8f : 0.2f);
 		});
-		// 暗影手：从地上 / 身后伸上来扑向牌
-		int[] frames = { 0, 4, 9, 13, 2 };
-		for (int i = 0; i < frames.Length; i++)
+		// 暗影触须（用户 2026-11-18：贴图感太重、没有着色器特效 → 主体换成着色器的流纹能量鞭）：五条从他脚边 / 身后的地上
+		// 卷上来、一条接一条扑向那张牌，头宽尾尖、暗红黑带红边；暗影手贴图只淡淡叠在触须头上（压暗、半透明）
+		for (int i = 0; i < 5; i++)
 		{
 			int k = i;
-			float ang = Mathf.Lerp(-2.3f, -0.8f, k / (frames.Length - 1f));
-			Vector2 start = cardAt + new Vector2(Mathf.Cos(ang) * h * 1.1f * f, h * 0.9f + Mathf.Sin(ang) * h * 0.25f);
-			float d = 0.08f + 0.05f * k;
-			if (Grasp(k % 2 == 0 ? front : back, start, h * 0.85f, frames[k], end + 0.05) is not { } g) continue;
-			g.Visible = false;
-			float rot0 = (start - cardAt).Angle() - Mathf.Pi / 2f;
-			Fx.Animate(g, d, end - d, t =>
+			float x = (k - 2f) / 2f;
+			Vector2 root0 = c.Feet + new Vector2((x * h * 0.85f - h * 0.1f) * f, h * 0.02f);
+			Vector2 tip = cardAt + new Vector2(x * h * 0.3f * f, h * 0.1f + Mathf.Abs(x) * h * 0.08f);
+			Vector2 c1 = root0.Lerp(tip, 0.35f) + new Vector2(x * h * 0.5f * f + h * 0.15f, -h * 0.1f);
+			Vector2 c2 = root0.Lerp(tip, 0.75f) + new Vector2(-x * h * 0.35f * f, 0f);
+			Func<float, Vector2> path = e =>
 			{
-				g.Visible = true;
-				float s = d + t * (end - d);
-				float reach = Ease5.OutQuint(Mathf.Min(1f, (s - d) / (grab - d)));
-				float back2 = Fx.InCubic(Ease5.Seg(s, split + 0.15f, 0.35f));
-				Vector2 p = start.Lerp(cardAt + (start - cardAt).Normalized() * h * 0.3f, reach * (1f - back2));
-				g.GlobalPosition = p;
-				g.Rotation = rot0 + Mathf.Pi;
-				g.Modulate = new Color(0.9f, 0.7f, 0.75f, Mathf.Min(1f, (s - d) / 0.08f) * (1f - Ease5.Seg(s, split + 0.25f, 0.3f)));
-			});
+				Vector2 a = root0.Lerp(c1, e), b = c1.Lerp(c2, e), cc = c2.Lerp(tip, e);
+				return a.Lerp(b, e).Lerp(b.Lerp(cc, e), e);
+			};
+			float d = 0.1f + 0.06f * k;
+			SkillRedo5.Whip(k % 2 == 0 ? front : back, back, path, d, grab - d, split + 0.3f - grab, h * 0.14f);
+			if (Grasp(k % 2 == 0 ? front : back, tip, h * 0.4f, new[] { 0, 4, 9, 13, 2 }[k], end) is { } g)
+			{
+				g.Visible = false;
+				Fx.Animate(g, grab - 0.06f, split + 0.25f - grab, t =>
+				{
+					g.Visible = true;
+					g.GlobalPosition = path(1f);
+					g.Rotation = (path(1f) - path(0.92f)).Angle() + Mathf.Pi / 2f;
+					g.Modulate = new Color(0.6f, 0.55f, 0.55f, 0.5f * Mathf.Min(1f, t * 6f) * (1f - Ease5.Seg(t, 0.6f, 0.4f)));
+				});
+			}
 		}
 		Fx.After(front, grab, () =>
 		{
@@ -213,7 +239,9 @@ public static class Batch6Fx
 				float e = Ease5.OutQuint(Mathf.Min(1f, t / 0.4f));
 				cp.Place(cardAt.Lerp(dest, e), (k - 1) * 0.3f * e, e * 2.5f, 1f - 0.45f * Fx.InCubic(Ease5.Seg(t, 0.5f, 0.5f)));
 				cp.Set("glow", 0.5f * (1f - t));
-				cp.Rect.Modulate = new Color(0.6f, 0.35f, 0.42f, 1f - Ease5.Seg(t, 0.55f, 0.45f));
+				cp.Set("clip", new Vector3(0f, 1f, -1.3f));
+				cp.Set("burn", Ease5.Seg(t, 0.35f, 0.6f) * 1.2f);   // 用卡牌着色器的燃烧从下往上烧进暗处
+				cp.Rect.Modulate = new Color(0.75f, 0.45f, 0.52f, 1f);
 			});
 			Fx.After(front, split + 0.05f * k, () => Glow.Flash(back, dest, new Color(0.7f, 0.03f, 0.12f), h * 0.4f, 0.3f));
 		}
@@ -236,14 +264,15 @@ public static class Batch6Fx
 		Sfx.Take("gx_slice", 0.2f, snip);
 		Sfx.Take("gx_card_slide", 0.14f, snip + 0.1f);
 		Glow.Flash(back, at, new Color(0.7f, 0.03f, 0.12f), h * 1.4f, 0.8f);
-		float k = h * 1.3f / 2048f * 2f;
-		Paint.Sweep(front, "swipe_arc_03", at, f > 0 ? 0f : Mathf.Pi, new Vector2(k, k), Lut5.Blood, 0.08f, 0.06f, 0.26f, 20f, 0f, 1.25f);
+		// 剪刀（用户：贴图感太重 → 两道着色器小横劈交叉一合，由里向外、一左一右）
+		SkillRedo5.SlashArc(front, at, h * 0.7f, h * 0.25f, 0.6f, f, 0f, snip, 0.22f, h);
+		SkillRedo5.SlashArc(front, at, h * 0.7f, h * 0.25f, -0.6f, -f, 0f, snip, 0.22f, h);
 		Fx.After(front, snip, () =>
 		{
 			HitStop.Request(0.035);
 			Glow.Flash(front, at, Hot, h * 0.4f, 0.1f);
 			Glow.Glint(front, at, 0.9f);
-			Flipbook(front, "impact_star_sheet", at, h * 0.9f, 0f, 0.3f);
+			Glow.Ripple(front, at, h * 0.9f, 0.3f, 0.015f);
 		});
 		// 抽：一张牌从交点弹进手里
 		Phantom.P5Card inCard = Phantom.Card(front, at, h * 0.14f, 0.7, 0.6f);
@@ -262,19 +291,21 @@ public static class Batch6Fx
 			Glow.Flash(front, c.Hand, Hot, h * 0.18f, 0.08f);
 		});
 		// 弃：一张牌从手里翻出去，被剪开碎掉
-		Phantom.P5Card outCard = Phantom.Card(front, c.Hand, h * 0.14f, 0.8);
+		Phantom.P5Card outCard = Phantom.Card(front, c.Hand, h * 0.14f, 0.9);
 		Vector2 cutAt = at + new Vector2(f * h * 0.3f, h * 0.05f);
 		Fx.Animate(outCard.Root, 0, snip + 0.18f, t =>
 		{
 			float e = Ease5.OutQuint(Mathf.Min(1f, t * 1.3f));
 			outCard.Place(c.Hand.Lerp(cutAt, e), -0.4f * f * e, e * 6f, 0.8f + 0.2f * e);
 		});
-		Fx.After(front, snip + 0.18f, () =>
+		// 被剪的那张：沿剪口一切两半、从切口烧掉（卡牌着色器的切开 + 燃烧）
+		Fx.Animate(outCard.Root, snip + 0.18f, 0.45, t =>
 		{
-			outCard.Root.Visible = false;
-			Phantom.Shards(front, cutAt, 12, 200f * u, 600f * u, new Vector2(f, -0.3f), 80f, 0.35f, 600f * u, 14f * u);
-			Glow.Flash(front, cutAt, new Color(1f, 0.3f, 0.35f), h * 0.35f, 0.2f);
+			outCard.Set("clip", new Vector3(0.7f, 0.7f, 0f));
+			outCard.Set("burn", Mathf.Min(1.2f, t * 1.4f));
+			outCard.Place(cutAt + new Vector2(f * 0.04f * h * t, h * 0.08f * t * t), -0.4f * f - 0.3f * t * f, 6f, 1f);
 		});
+		Fx.After(front, snip + 0.18f, () => Glow.Flash(front, cutAt, new Color(1f, 0.3f, 0.35f), h * 0.35f, 0.2f));
 		Fx.After(front, snip + 0.4f, () => SkillRedo5.EchoPulsePublic(c, 0.05f));
 	}
 }
