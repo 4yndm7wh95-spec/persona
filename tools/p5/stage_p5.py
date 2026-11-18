@@ -162,6 +162,7 @@ SFX = {
     "stab_knife": ROOT / "research/p5r/audio/calendar/stab_knife.ogg",             # the knife pins it: thunk + metallic ring in one cue
     "damage_enemy": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0022.ogg",
     "battle_all_out_atk": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0024.ogg",
+    "aoa_splatter": ROOT / "research/p5r/audio/allout/battle_all_out_atk_finish_b.ogg",   # 原版总攻击收尾的喷溅声（cue 1074，用户导出），怪物剪影喷血
     "aoa_crack": ROOT / "art/sfx_p5/aoa_crack.ogg",   # 总攻击裂纹蔓延（art/sfx_p5/aoa_crack.md）
     "aoa_zoom": ROOT / "research/p3r_se/samples/allout__Xrd777__JP__system__Snd_FX_Btl_Allout_Zoom.ogg",   # 总攻击蓄势（P3 mod 同款：0.2s 起涨、0.65s 冲到高潮）
     # 总攻击乱斗的另外五声（SYSTEM #25–26 打击、#27–29 斩击，同一组 battle_all_out_atk cue；p5mod/src/Vfx/AllOut.cs）
