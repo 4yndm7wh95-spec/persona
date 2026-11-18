@@ -166,9 +166,11 @@ void fragment() {
 	float prof = 1.0 - clamp(abs(dr) / max(w, 0.001), 0.0, 1.0);
 	float on = step(behind, tail);
 	float fade = on * (1.0 - smoothstep(0.35, 1.0, k)) * smoothstep(0.15, 0.55, n1 * 0.6 + n2 * 0.4 + (1.0 - k) * 0.8 - 0.2);
-	float core = pow(prof, 6.0) * (1.0 - k * 0.85) * (0.3 + 0.7 * near) * fade;     // 白芯收细   // 一定要乘 fade：不然整个椭圆一圈都亮，远侧那段在画面上就是一条直白线
+	// 亮边在刀的前锋（外沿）、只在刀头附近一段（用户 2026-11-18：刀身正中一道白线，多刀叠起来很脏 → 不要中线白芯）
+	float lead = smoothstep(0.15, 0.85, dr / max(w, 0.001)) * smoothstep(1.0, 0.6, dr / max(w, 0.001));
+	float core = lead * exp(-behind / 0.45) * (0.3 + 0.7 * near) * fade;   // 一定要乘 fade：不然整个椭圆一圈都亮，远侧那段在画面上就是一条直白线
 	float bodyA = smoothstep(0.0, 0.25, prof) * fade;
-	float streak = smoothstep(0.55, 0.9, n2) * prof * fade;
+	float streak = smoothstep(0.6, 0.92, n2) * smoothstep(0.0, 0.6, prof) * fade * 0.7;
 	float headGlow = exp(-behind / 0.08) * exp(-abs(r - 1.0) / max(w * 1.5, 0.02)) * on;   // 只在刀身附近亮（不限径向的话整条径向线都会亮成一道直光）
 	float inner = 0.0;   // 刀弧内侧的扇形拖影去掉了（压扁的椭圆上扇形边会变成一道直线，用户：不要这些白线）
 	// 所有东西只留在刀身附近（硬遮罩，防任何一项漏出来画成大片）
@@ -177,10 +179,10 @@ void fragment() {
 	// 细节（用户 2026-11-18：太亮太卡通 → 压暗、丰富细节）：
 	// 顺着刀走的几道细刻痕、被噪声打出的暗纹、沿刃忽闪的细小亮点
 	float across = dr / max(w, 0.001);
-	float grooves = smoothstep(0.8, 1.0, sin(across * 9.0 + n1 * 5.0)) * prof * fade * ring;
+	float grooves = 0.0;   // 刻痕去掉（平行细线在多刀时也显脏）
 	float darkVein = smoothstep(0.5, 0.85, noise(vec2(th * 35.0 - clock * 2.0, across * 2.5 + seed)));
 	vec2 cellId = floor(vec2(th * 90.0, across * 3.0));
-	float glint = step(0.965, hash(cellId + floor(clock * 6.0))) * prof * fade * ring * near;
+	float glint = step(0.988, hash(cellId + floor(clock * 6.0))) * prof * fade * ring * near * exp(-behind / 0.6);
 	vec3 deep = mix(vec3(0.05, 0.0, 0.012), vec3(0.06, 0.065, 0.075), steel);
 	vec3 mid = mix(vec3(0.55, 0.03, 0.09), vec3(0.5, 0.52, 0.58), steel);
 	vec3 edge = mix(vec3(0.85, 0.08, 0.16), vec3(0.85, 0.2, 0.26), steel);
@@ -188,7 +190,8 @@ void fragment() {
 	vec3 col = deep * bodyA
 		+ mid * bodyA * (0.35 + 0.35 * near) * (1.0 - 0.55 * darkVein)
 		+ edge * (streak * 0.45 + grooves * 0.35 + smoothstep(0.75, 0.0, prof) * bodyA * 0.35)
-		+ hot * (core * 0.85 + headGlow * 0.7 + glint * 0.9 + streak * streak * 0.15);
+		+ hot * (core * 0.6 + headGlow * 0.55 + glint * 0.7)
+		+ mix(mid, hot, 0.35) * smoothstep(-0.7, 1.0, across) * bodyA * (1.0 - smoothstep(0.3, 1.0, k)) * (0.25 + 0.25 * steel);   // 整片的柔和渐变：前锋那侧亮一点（不是一条线）
 	float a = clamp(bodyA * 0.92 + headGlow * 0.5 + glint * 0.5, 0.0, 1.0) * alpha;
 	COLOR = vec4(col * alpha, a);
 }" };

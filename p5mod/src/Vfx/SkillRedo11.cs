@@ -248,7 +248,7 @@ void fragment() {
 			float dir = k % 2 == 0 ? f : -f;
 			Vector2 ctr = mid + new Vector2(Fx.Rand(-0.25f, 0.25f) * h, Fx.Rand(-0.3f, 0.2f) * h);
 			float rx = h * Fx.Rand(0.55f, 0.85f), ry = rx * Fx.Rand(0.22f, 0.42f), tilt = Fx.Rand(-0.75f, 0.75f);
-			SlashArc(k % 3 == 1 ? back : front, ctr, rx, ry, tilt, dir, d, 0.13f, 0.2f, h, k % 3 == 2 ? 0.35f : 0.8f, 0.9f);
+			SlashArc(k % 3 == 1 ? back : front, ctr, rx, ry, tilt, dir, d, 0.13f, 0.2f, h, k % 3 == 2 ? 0.35f : 0.8f, k % 3 == 1 ? 0.6f : 0.8f);
 			Fx.After(front, d + 0.035f, () =>
 			{
 				Vector2 near = ctr + new Vector2(0f, ry).Rotated(tilt * dir);
