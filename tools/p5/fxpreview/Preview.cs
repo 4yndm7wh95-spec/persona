@@ -996,32 +996,40 @@ public partial class Preview : Node2D
 		// 紧勒：出刀命中 → 套上绳圈收紧；之后打三张牌，每张勒一次
 		["strangle"] = p =>
 		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
 			Vector2 top = Enemy + new Vector2(0f, -170f);
 			System.Action<Color> tint = c => p._enemies[Enemy].Modulate = c;
 			p.At(0.3, () => p._joker?.Play("attack"));
 			p.At(0.43, () => KnifeFx.Swing(p._front, Pose(600f, 850f), Pose(1376f, 450f)));
 			p.At(0.45, () => KnifeFx.Hit(p._front, Enemy, 1f));
-			p.At(0.45, () => StrangleFx.Bind(p._front, p._back, Enemy, top, 260f, tint, 0.3f));
-			foreach (double t in new[] { 2.2, 3.0, 3.8 })
+			p.At(0.45, () => StrangleFx.Bind(p._front, p._back, Enemy, top, 260f, tint, 0.28f, Pose(1010f, 410f), tall, 1f));
+			foreach (double t in new[] { 2.4, 3.2 })
 			{
 				p.At(t - 0.3, () => p._joker?.Play("cast_glove"));
-				p.At(t, () => StrangleFx.Cinch(p._front, p._back, Enemy, top, 260f, tint));
+				p.At(t, () => StrangleFx.Cinch(p._front, p._back, Enemy, top, 260f, tint, tall, 1f));
 			}
 		},
-		// 0.9.49 审阅第六批：压制、狩猎（命中 + 斩杀奖励）、夜魇、必备工具
-		["b6"] = p =>
+		// 压制「三重锁压」：出刀命中（伤害结算那一刻）→ 三道锁环扣上 → 四道 V 光 → 巨大的 V 重压
+		["b6sup"] = p =>
 		{
 			Vector2 top = Enemy + new Vector2(0f, -170f);
 			System.Action<Color> tint = c => p._enemies[Enemy].Modulate = c;
 			p.At(0.3, () => p._joker?.Play("attack"));
 			p.At(0.43, () => KnifeFx.Swing(p._front, Pose(600f, 850f), Pose(1376f, 450f)));
-			p.At(0.5, () => Batch6Fx.Suppress(p._front, p._back, Enemy, top, 260f, 1f, tint));
-			p.At(2.1, () => p._joker?.Play("attack"));
-			p.At(2.23, () => KnifeFx.Swing(p._front, Pose(600f, 850f), Pose(1376f, 450f)));
-			p.At(2.25, () => Batch6Fx.HuntHit(p._front, Enemy2, 170f, 1f));
-			p.At(2.3, () => Batch6Fx.HuntReward(p._front));
-			RunCards(p, null, new (string, string, double, double)[] { ("Nightmare", "cast_glove", 0.25, 2.0), ("ToolsOfTheTrade", "cast_glove", 0.25, 1.6) }, 3.7);
+			p.At(0.45, () => SuppressFx.Play(p._front, p._back, Enemy, top, 260f, 1f, tint));
 		},
+		// 狩猎「夺宝」：出刀命中 → 斩杀（敌人倒下）→ 拿到额外奖励：世界褪灰，猎物身上抽出预告信，被他一把抢进手里
+		["b6hunt"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.3, () => p._joker?.Play("attack"));
+			p.At(0.43, () => KnifeFx.Swing(p._front, Pose(600f, 850f), Pose(1376f, 450f)));
+			p.At(0.45, () => HuntFx.Hit(p._front, Enemy, 170f, 1f, Pose(1010f, 410f), Pose(820f, 600f), tall));
+			p.At(0.55, () => p._enemies[Enemy].CreateTween().TweenProperty(p._enemies[Enemy], "modulate", new Color(1f, 1f, 1f, 0f), 0.6));
+			p.At(0.62, () => HuntFx.Reward(p._front));
+		},
+		["b6tools"] = p => RunCards(p, null, new (string, string, double, double)[] { ("ToolsOfTheTrade", "cast_glove", 0.25, 1.8) }),
+		["b6nm"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Nightmare", "cast_glove", 0.25, 2.0) }),
 		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_glove", 0.25, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast_wave", 0.08, 1.6) }),
 		["redo4b"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.8), ("Afterimage", "cast_glove", 0.25, 1.4), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast_wave", 0.08, 1.8) }),
 		["redo5"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.9), ("Shadowmeld", "cast_glove", 0.25, 1.9) }),

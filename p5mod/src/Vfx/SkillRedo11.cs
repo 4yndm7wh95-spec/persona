@@ -15,8 +15,8 @@ public static partial class SkillRedo5
 		cards["BladeSymphony"] = BladeSymphony;
 		cards["StormOfSteel"] = StormOfSteel;
 		cards["BladeOfInk"] = BladeOfInk3;
-		cards["Nightmare"] = Batch6Fx.Nightmare;          // 0.9.49 审阅第六批
-		cards["ToolsOfTheTrade"] = Batch6Fx.Tools;   // 第三版「甩墨出刃」（SkillRedo12.cs）；第二版 BladeOfInk（写墨 + 白刃劈墨）被否
+		cards["Nightmare"] = NightmareFx.Play;            // 0.9.49 审阅第六批（第三版：咒烟之手）
+		cards["ToolsOfTheTrade"] = ToolsFx.Play;   // 第三版「甩墨出刃」（SkillRedo12.cs）；第二版 BladeOfInk（写墨 + 白刃劈墨）被否
 	}
 
 	// ═══════════════════════════ 墨之刃 ═══════════════════════════

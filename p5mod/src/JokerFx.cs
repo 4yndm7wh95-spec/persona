@@ -130,7 +130,12 @@ public static class JokerFx
 				break;
 			case "Strangle" when t != null:
 				// 紧勒（0.9.49 审阅）：刀命中之后脖子上套上一圈绳、猛地收紧（Vfx/StrangleFx.cs）；之后每勒一次在 StrangleFlashPatch
-				StrangleFx.Bind(layer, Joker.FxLayer(back: true), t.VfxSpawnPosition, t.GetTopOfHitbox(), t.Hitbox.GetGlobalRect().Size.X, SkillPlay.Tint(t), 0.3f);
+				{
+					Vector2 sf = Joker.PosePoint(joker, ReadyFx.Feet);
+					float st = (sf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length();
+					StrangleFx.Bind(layer, Joker.FxLayer(back: true), t.VfxSpawnPosition, t.GetTopOfHitbox(), t.Hitbox.GetGlobalRect().Size.X, SkillPlay.Tint(t), 0.28f,
+						Joker.PosePoint(joker, ReadyFx.GloveCuff), st, Joker.Facing(joker));
+				}
 				break;
 			case "Outbreak":
 			{

@@ -197,12 +197,14 @@ public static class DamagePatch
 				}
 				if (hit.Count == 1 && Joker.FxLayer() is Godot.Control b6 && cardSource.GetType().Name is "Suppress" or "TheHunt")
 				{
-					// 0.9.49 审阅第六批（Vfx/Batch6Fx.cs）：压制「重劈压顶」、狩猎「猎爪」
+					// 0.9.49 审阅第六批第三版：压制「三重锁压」（Vfx/SuppressFx.cs）、狩猎「夺宝」（Vfx/HuntFx.cs）
 					NCreature tn = hit[0];
 					if (cardSource.GetType().Name == "Suppress")
-						Batch6Fx.Suppress(b6, Joker.FxLayer(back: true), tn.VfxSpawnPosition, tn.GetTopOfHitbox(), tn.Hitbox.GetGlobalRect().Size.X, Joker.Facing(joker), SkillPlay.Tint(tn));
+						SuppressFx.Play(b6, Joker.FxLayer(back: true), tn.VfxSpawnPosition, tn.GetTopOfHitbox(), tn.Hitbox.GetGlobalRect().Size.X, Joker.Facing(joker), SkillPlay.Tint(tn));
 					else
-						Batch6Fx.HuntHit(b6, tn.VfxSpawnPosition, (tn.VfxSpawnPosition - tn.GetTopOfHitbox()).Length(), Joker.Facing(joker));
+						HuntFx.Hit(b6, tn.VfxSpawnPosition, (tn.VfxSpawnPosition - tn.GetTopOfHitbox()).Length(), Joker.Facing(joker),
+							Joker.PosePoint(joker, ReadyFx.GloveCuff), Joker.Chest(joker),
+							(Joker.PosePoint(joker, ReadyFx.Feet) - Joker.PosePoint(joker, new Godot.Vector2(815f, 120f))).Length());
 					return;
 				}
 				if (cardSource.GetType().Name == "EchoingSlash")
@@ -647,7 +649,7 @@ public static class EchoingSlashPatch
 	}
 }
 
-/// <summary>狩猎斩杀 → 额外一次卡牌奖励（CombatRoom.AddExtraReward）：猎物身上弹出一张预告信飞到顶上（Batch6Fx.HuntReward）。</summary>
+/// <summary>狩猎斩杀 → 额外一次卡牌奖励（CombatRoom.AddExtraReward）：世界褪灰，猎物身上抽出一张预告信、被他抢进手里（HuntFx.Reward）。</summary>
 [HarmonyPatch(typeof(MegaCrit.Sts2.Core.Rooms.CombatRoom), nameof(MegaCrit.Sts2.Core.Rooms.CombatRoom.AddExtraReward))]
 public static class HuntRewardPatch
 {
@@ -657,7 +659,7 @@ public static class HuntRewardPatch
 		{
 			if (Joker.Is(player) && MegaCrit.Sts2.Core.Context.LocalContext.IsMe(player) && Joker.FxLayer() is Godot.Control layer)
 			{
-				Batch6Fx.HuntReward(layer);
+				HuntFx.Reward(layer);
 			}
 		});
 	}
@@ -676,7 +678,9 @@ public static class StrangleFlashPatch
 			{
 				return;
 			}
-			StrangleFx.Cinch(layer, Joker.FxLayer(back: true), n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, SkillPlay.Tint(n));
+			float face = Joker.Node(p) is NCreature jn ? Joker.Facing(jn) : 1f;
+			float tall = Joker.Node(p) is NCreature jn2 ? (Joker.PosePoint(jn2, ReadyFx.Feet) - Joker.PosePoint(jn2, new Godot.Vector2(815f, 120f))).Length() : 600f;
+			StrangleFx.Cinch(layer, Joker.FxLayer(back: true), n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, SkillPlay.Tint(n), tall, face);
 		});
 	}
 }
