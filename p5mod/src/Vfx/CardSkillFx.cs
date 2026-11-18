@@ -465,7 +465,7 @@ void fragment() {
 	}
 
 	/// <summary>一滴毒液：从 from 落到 groundY（加速），落地溅起一小圈和几点飞沫。</summary>
-	private static void Drop(Control layer, Vector2 from, float groundY, float delay, float h, float u)
+	internal static void Drop(Control layer, Vector2 from, float groundY, float delay, float h, float u)
 	{
 		float fall = Mathf.Max(0.12f, Mathf.Sqrt(Mathf.Max(1f, groundY - from.Y) / (h * 4.5f)));
 		Node2D root = Fx.Root(layer, from, "P5Drop", delay + fall + 0.1);

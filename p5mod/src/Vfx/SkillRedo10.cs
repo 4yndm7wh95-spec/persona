@@ -20,6 +20,23 @@ public static partial class SkillRedo5
 		cards["MasterPlanner"] = MasterPlanner;
 	}
 
+	/// <summary>贴身红残影往外一胀（肾上腺素心跳那种）：冻住此刻的他，k = 放大比例。</summary>
+	private static void EchoPulse(SkillCtx c, float k, float dur = 0.36f, float alpha = 0.8f)
+	{
+		if (RedEcho(c, dur + 0.04) is not { } echo) return;
+		var (sp, m) = echo;
+		Vector2 pivot = c.Chest - c.Region.Position;
+		Fx.Animate(sp, 0, dur, t =>
+		{
+			float sc = 1f + k * Fx.OutCubic(t);
+			sp.Scale = Vector2.One * sc;
+			sp.Position = pivot * (1f - sc);
+			m.SetShaderParameter("fill", 0.35f);
+			m.SetShaderParameter("smear", 0f);
+			m.SetShaderParameter("alpha", alpha * (1f - t));
+		});
+	}
+
 	private static Control BackOf(SkillCtx c) => c.Back != null && GodotObject.IsInstanceValid(c.Back) ? c.Back : c.Front;
 
 	// ═══════════════════════════ 跟踪（小改）═══════════════════════════
@@ -67,14 +84,16 @@ public static partial class SkillRedo5
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face;
 		Control back = BackOf(c), front = c.Front;
-		const float s1 = 0.06f, beat = 0.4f;
+		const float s1 = 0.14f, beat = 0.44f;
 		Vector2 mid = c.Feet + new Vector2(0f, -h * 0.55f);
 		Vector2 hand = c.Hand;
 		S("gx_slice", 0.14f, s1);
 		S("gx_slice", 0.26f, beat);
 		Dim(back, mid, new Vector2(h * 3.4f, h * 2.8f), beat + 0.8, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.15f)) * (1f - Ease5.Seg(s, 0.7f, 0.3f)) * 0.6f);
 		Glow.Flash(back, mid, new Color(0.7f, 0.03f, 0.12f), h * 1.5f, beat + 0.15f);
+		Gather(front, hand, h, u, s1, 10, 0.42f);                     // 蓄力：光线往手上收
 		Grind(c, hand, s1, 0.12f, h * 0.32f, 4, 8, 0.75f);
+		Gather(front, hand, h, u, beat - 0.04f, 8, 0.32f);
 		Grind(c, hand, beat - 0.05f, 0.16f, h * 0.62f, 6, 14, 1.25f);
 		Fx.After(front, s1, () => Glow.Flash(front, hand, Hot, h * 0.18f, 0.08f));
 		if (c.SelfTint is { } tint)
@@ -90,13 +109,25 @@ public static partial class SkillRedo5
 			Fx.Shake(1);
 			Glow.Flash(front, hand, Hot, h * 0.4f, 0.12f);
 			Glow.Flash(back, mid, new Color(1f, 0.12f, 0.2f), h * 2.2f, 0.4f);
+			Cross(front, hand, h * 0.32f);
+			Glow.Glint(front, hand + new Vector2(f * h * 0.05f, -h * 0.04f), 1.1f);
+			EchoPulse(c, 0.07f);                                         // 贴身红残影往外一胀：带刺的轮廓
 			// 荆棘：全身往外迸的尖头火花（不是放射直线，是会减速、带一点重力的碎光）
 			Phantom.Shards(front, mid, 12, 480f * u, 820f * u, Vector2.Up, 180f, 0.3f, 400f * u, 13f * u);
 		});
 		// 点缀：三道细风刃贴身转一圈就散
 		Vortex(front, back, c.Feet, h, h * 0.42f, 3, beat + 0.02f, 0.42f, f, 0.2f, 0.85f, 0.7f, 0.05f);
-		// 手上的余热
+		// 火花落到地上溅起的小火星
+		for (int i = 0; i < 5; i++)
+		{
+			float d = beat + 0.2f + 0.05f * i + Fx.Rand(0f, 0.04f);
+			Vector2 g = new(hand.X - f * h * Fx.Rand(0.05f, 0.4f), c.Feet.Y + Fx.Rand(-0.02f, 0.03f) * h);
+			Fx.After(front, d, () => Glow.Flash(front, g, new Color(1f, 0.4f, 0.4f), h * 0.07f, 0.12f));
+			Phantom.Shards(front, g, 3, 120f * u, 260f * u, Vector2.Up, 50f, 0.22f, 900f * u, 7f * u, d);
+		}
+		// 手上的余热：一层暖光 + 几粒慢慢往上飘的火星
 		Fx.After(front, beat + 0.2f, () => Glow.Flash(front, hand, new Color(1f, 0.35f, 0.3f), h * 0.22f, 0.45f));
+		Phantom.Shards(front, hand, 5, 60f * u, 140f * u, Vector2.Up, 30f, 0.6f, -80f * u, 8f * u, beat + 0.25f);
 	}
 
 	/// <summary>
@@ -141,6 +172,7 @@ public static partial class SkillRedo5
 		Vector2 mid = c.Feet + new Vector2(0f, -h * 0.6f);
 		Dim(back, mid, new Vector2(h * 3.4f, h * 3f), life + 0.6, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.2f)) * (1f - Ease5.Seg(s, 0.7f, 0.3f)) * 0.65f);
 		Glow.Flash(back, orb, new Color(0.6f, 0.02f, 0.1f), h * 1.3f, b2 + 0.1f);
+		Gather(front, orb, h, u, b2, 12, 0.3f);                       // 光线往毒团收（催化），收得紧一些，不铺满画面
 		Node2D root = Fx.Root(front, orb, "P5Catalyst", life + 0.1);
 		ColorRect q = CardSkillFx.VenomBlob(root, h * 0.42f);
 		float clock = 0f, last = 0f;
@@ -163,6 +195,7 @@ public static partial class SkillRedo5
 		{
 			Glow.Flash(front, orb, new Color(1f, 0.55f, 0.55f), h * 0.25f, 0.1f);
 			Glow.Flash(back, mid, new Color(0.7f, 0.03f, 0.12f), h * 1.4f, 0.25f);
+			EchoPulse(c, 0.04f, 0.26f, 0.5f);
 		});
 		Fx.After(front, b2, () =>
 		{
@@ -171,7 +204,13 @@ public static partial class SkillRedo5
 			Glow.Flash(front, orb, Hot, h * 0.4f, 0.12f);
 			Glow.Flash(back, mid, Red, h * 2.5f, 0.45f);
 			Phantom.Shards(front, orb, 16, 360f * u, 800f * u, Vector2.Up, 75f, 0.45f, 700f * u, 18f * u);
+			Cross(front, orb, h * 0.45f);
+			EchoPulse(c, 0.09f);
 		});
+		// 收进掌心：一点星光；然后毒液从手上滴几滴下去
+		Fx.After(front, life - 0.02f, () => Glow.Glint(front, palm, 0.8f));
+		for (int i = 0; i < 4; i++)
+			CardSkillFx.Drop(front, palm + new Vector2(Fx.Rand(-0.05f, 0.05f) * h, h * 0.05f), c.Feet.Y + Fx.Rand(-0.02f, 0.03f) * h, b2 + 0.08f + 0.11f * i, h, u);
 		if (c.SelfTint is { } tint)
 			Fx.Animate(front, 0, life + 0.6, t =>
 			{
@@ -189,7 +228,7 @@ public static partial class SkillRedo5
 	/// 慢：他指向敌人，一张预告信从手里甩出去（带拖尾、翻着飞），「噌」地钉在敌人胸口，白闪；
 	/// 停一下：预告信越来越亮，敌人身上慢慢暗下来（力量被吸到牌上）；
 	/// 快：预告信被猛地抽回来，拖出一条长长的红光带（偷走的力量），敌人身上一下变灰、往下一沉的暗闪、顿帧；
-	/// 慢：牌落回他手里化成一点红光收进掌心；敌人保持灰暗一会儿再慢慢恢复。
+	/// 慢：牌飞回来收进他胸口，十字光、身上一层红残影；敌人保持灰暗一会儿再慢慢恢复。
 	/// </summary>
 	public static void Malaise10(SkillCtx c)
 	{
@@ -199,6 +238,7 @@ public static partial class SkillRedo5
 		const float throwAt = 0.04f, hit = 0.36f, yank = 0.76f, home = 1.08f;
 		float w = jh * 0.2f;
 		Vector2 hand = c.Hand, chest = v.Feet.Lerp(v.Top, 0.58f);
+		Vector2 heart = c.Chest;   // 抽回来时他的手已经放下了 → 牌收进胸口
 		S("gx_card_slide", 0.16f, throwAt);
 		S("gx_ping", 0.18f, hit);
 		S("gx_whoosh", 0.18f, yank);
@@ -206,7 +246,7 @@ public static partial class SkillRedo5
 		Phantom.P5Card card = Phantom.Card(front, hand, w, home + 0.1);
 		card.Root.Visible = false;
 		Vector2 ctrlOut = hand.Lerp(chest, 0.5f) + new Vector2(0f, -jh * 0.7f);
-		Vector2 ctrlBack = hand.Lerp(chest, 0.5f) + new Vector2(0f, jh * 0.25f);
+		Vector2 ctrlBack = heart.Lerp(chest, 0.5f) + new Vector2(0f, jh * 0.2f);
 		Fx.Animate(card.Root, throwAt, home - throwAt, t =>
 		{
 			card.Root.Visible = true;
@@ -225,17 +265,25 @@ public static partial class SkillRedo5
 			else
 			{
 				float e = Fx.InCubic(Mathf.Min(1f, (s - yank) / (home - yank)));
-				card.Place(chest.Lerp(ctrlBack, e).Lerp(ctrlBack.Lerp(hand, e), e), f * (0.3f - e * 7f), 0f, 1.2f - 0.6f * e);
+				card.Place(chest.Lerp(ctrlBack, e).Lerp(ctrlBack.Lerp(heart, e), e), f * (0.3f - e * 7f), 0f, 1.2f - 0.6f * e);
 				card.Set("glow", 1f);
 			}
 		});
+		Fx.After(front, throwAt, () =>
+		{
+			Glow.Flash(front, hand, Hot, jh * 0.18f, 0.08f);
+			Glow.Glint(front, hand, 0.7f);
+		});
 		Fx.After(front, hit, () =>
 		{
-			HitStop.Request(0.025);
+			Phantom.Shards(front, chest, 8, 260f * u, 560f * u, (chest - hand).Normalized(), 55f, 0.3f, 400f * u, 12f * u);
 			Glow.Flash(front, chest, Hot, h * 0.3f, 0.1f);
 			Glow.Flash(back, chest, Red, h * 1.1f, 0.3f);
 			Glow.Glint(front, chest + new Vector2(w * 0.4f, -w * 0.7f), 0.7f);
 		});
+		// 吸：一波波细光线从敌人身上往牌里收（力量被吸到牌上）
+		for (int i = 0; i < 3; i++)
+			Gather(front, chest, h, u, hit + 0.16f + 0.12f * i, 7 + 2 * i, 0.55f + 0.1f * i);
 		// 抽回：牌后面跟着一团柔红光（偷走的力量），从敌人身上带出几缕碎光
 		Node2D loot = Fx.Root(front, chest, "P5MalaiseLoot", home + 0.1);
 		Sprite2D lootGlow = Glow.SoftSprite(loot, Vector2.Zero, new Color(1f, 0.12f, 0.2f, 0.9f), 5f * u);
@@ -250,7 +298,7 @@ public static partial class SkillRedo5
 			loot.Modulate = new Color(1f, 1f, 1f, k);
 			loot.Scale = Vector2.One * (0.6f + 0.6f * k);
 		});
-		Fx.After(front, yank, () => Phantom.Shards(front, chest, 9, 300f * u, 700f * u, (hand - chest).Normalized(), 25f, 0.35f, 0f, 16f * u));
+		Fx.After(front, yank, () => Phantom.Shards(front, chest, 9, 300f * u, 700f * u, (heart - chest).Normalized(), 25f, 0.35f, 0f, 16f * u));
 		Fx.After(front, yank, () =>
 		{
 			HitStop.Request(0.04);
@@ -260,9 +308,11 @@ public static partial class SkillRedo5
 		});
 		Fx.After(front, home, () =>
 		{
-			Glow.Flash(front, hand, Hot, jh * 0.25f, 0.1f);
-			Glow.Flash(back, hand, Red, jh * 0.9f, 0.35f);
-			Phantom.Shards(front, hand, 7, 200f * u, 450f * u, Vector2.Up, 60f, 0.28f, 300f * u, 14f * u);
+			Glow.Flash(front, heart, Hot, jh * 0.25f, 0.1f);
+			Glow.Flash(back, heart, Red, jh * 0.9f, 0.35f);
+			Cross(front, heart, jh * 0.4f);
+			EchoPulse(c, 0.06f, 0.3f, 0.6f);
+			Phantom.Shards(front, heart, 7, 200f * u, 450f * u, Vector2.Up, 60f, 0.28f, 300f * u, 14f * u);
 		});
 		if (v.Tint is { } vt)
 		{
