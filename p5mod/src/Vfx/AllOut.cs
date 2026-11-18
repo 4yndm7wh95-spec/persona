@@ -40,11 +40,12 @@ public static partial class AllOut
 	// → 0.42 怪物剪影砸进 + 喷血 + 震屏（第二下冲击）→ 0.5–0.8 竖排字划上来（丝滑）
 	private const float TextIn = 0.75f, TextLen = 0.42f;
 	private const float ArtT = ShatterAt + 0.5f;
-	private const float ExitAt = ShatterAt + 2.6f, CoverLen = 0.4f, HoleAt = ExitAt + CoverLen + 0.06f, HoleLen = 0.45f;
-	private const int ExitBands = 5;
+	// 收尾照 P3 mod：两圈波 CoverSweep 秒扫满（第二圈晚 0.08s，u≈0.75 时已盖满），之后透明波 ClearSweep 秒扩开
+	private const float CoverSweep = 0.42f, ClearSweep = 0.55f;
+	private const float ExitAt = ShatterAt + 2.6f, CoverLen = 0.08f + 0.75f * CoverSweep, HoleAt = ExitAt + CoverLen, HoleLen = ClearSweep;
 	public const float Total = HoleAt + HoleLen + 0.05f;
 	/// <summary>结算推迟多久：洞开到一半左右时结算页出现在洞里。</summary>
-	public const float Hold = HoleAt + 0.14f;
+	public const float Hold = HoleAt + 0.17f;                    // 照 P3：透明波扩开 0.17s 后（约 65% 屏）结算页出现
 
 	private static readonly Color Red = new(0.86f, 0.02f, 0.09f);
 	private static readonly Color Ink = new(0.015f, 0.008f, 0.012f);
@@ -236,18 +237,20 @@ public static partial class AllOut
 		}
 		Node2D shardLayer = new();
 		rootC.AddChild(shardLayer);
-		// 收尾（用户 2026-11-18：换一个）：P5 的斜切黑条（斜率同选人界面的切线 dx/dy = 0.2）从右边一条接一条扫进来盖满，
-		// 每条前沿一道细红边；盖满后原版收尾藏掉，黑条接着一条接一条往左扫出去，露出底下的战场 / 结算
-		Node2D cover = new() { Visible = false };
-		var bands = new List<(Polygon2D Ink, Polygon2D Edge, float Delay)>();
-		for (int i = 0; i < ExitBands; i++)
-		{
-			Polygon2D bi = new() { Color = new Color(0.02f, 0.01f, 0.015f), Antialiased = true };
-			Polygon2D be = new() { Color = new Color(0.86f, 0.03f, 0.09f), Antialiased = true };
-			cover.AddChild(bi);
-			cover.AddChild(be);
-			bands.Add((bi, be, i * 0.045f));
-		}
+		// 收尾：照搬 P3 mod 的收尾（用户 2026-11-18）—— 圆心在画面右上角外，两圈实心的波依次扫满全屏（前沿一道细亮边），
+		// 盖满的那一刻第三圈「透明的波」从同一个圆心扩开（边缘一道亮边），露出下面的战场 / 结算；颜色换成 P5 的黑 → 红
+		ColorRect cover = new() { Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = RingsShader }, Visible = false };
+		ShaderMaterial ringM = (ShaderMaterial)cover.Material;
+		Vector2 ringC = new(W * 0.95f, -H * 0.45f);
+		float ringCover = 0f;
+		foreach (Vector2 corner in new[] { Vector2.Zero, new Vector2(W, 0f), new Vector2(0f, H), screen }) ringCover = Mathf.Max(ringCover, (corner - ringC).Length());
+		ringM.SetShaderParameter("size", screen);
+		ringM.SetShaderParameter("center", ringC);
+		ringM.SetShaderParameter("hole_center", ringC);
+		Color[] ringCols = new Color[12];
+		ringCols[0] = new Color(0.02f, 0.01f, 0.015f);
+		ringCols[1] = new Color(0.8f, 0.03f, 0.08f);
+		ringM.SetShaderParameter("cols", ringCols);
 		// 碎开那一下的白闪 + 撞击点的巨大白色四角星（盖在玻璃片上面）
 		ColorRect flash = new() { Color = Colors.White, Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore, Visible = false };
 		rootC.AddChild(flash);
@@ -302,7 +305,7 @@ public static partial class AllOut
 				{
 					Polygon2D pl = new() { Color = Ink, Antialiased = true, Visible = false };
 					bloodLayer.AddChild(pl);
-					spray.Add((pl, fi, wd, j + fi * 97 + spray.Count * 13, finRects[fi].Size.Y));
+					spray.Add((pl, fi, wd, spray.Count, finRects[fi].Size.Y));          // 槽号连续：每 SprayStrands 个一束
 				}
 			}
 		}
@@ -528,28 +531,31 @@ public static partial class AllOut
 					sl.Sp.Scale = Vector2.One * sl.Size * pop;
 				}
 			}
-			// 收尾：斜切黑条扫进来盖满 → 再一条接一条扫出去
+			// 收尾（P3 mod 同款）：两圈实心波（黑 → 红）依次扫满 → 第三圈透明波露出结算
 			if (T >= ExitAt)
 			{
 				cover.Visible = true;
-				float bandH = H / ExitBands;
-				for (int i = 0; i < bands.Count; i++)
+				float time = T - ExitAt;
+				float[] radii = new float[12];
+				float[] rimR = new float[4], rimA = new float[4];
+				int live = 0;
+				float[] born = { 0f, 0.08f };
+				for (int i = 0; i < 2; i++)
 				{
-					var (bi, be, delay) = bands[i];
-					float kin = Quint(Mathf.Clamp((T - ExitAt - delay) / (CoverLen - 0.045f * (ExitBands - 1)), 0f, 1f));
-					float kout = Mathf.Clamp((T - HoleAt - delay) / (HoleLen - 0.045f * (ExitBands - 1)), 0f, 1f);
-					kout = kout * kout * kout;
-					// 横条：从右边外面扫到盖满，再往左扫出去（条之间略叠，不漏缝）
-					float y0 = i * bandH - 2f, y1 = (i + 1) * bandH + 2f;
-					float slant = 0.2f * bandH;
-					float right = Mathf.Lerp(W * 2.2f, W + 80f, kin) - kout * (W * 2.4f);
-					float left = Mathf.Lerp(W * 1.2f, -80f, kin) - kout * (W * 2.4f);
-					bi.Polygon = new[] { new Vector2(left + slant, y0), new Vector2(right + slant, y0), new Vector2(right, y1), new Vector2(left, y1) };
-					float ew = 10f;
-					float lead = kout > 0f ? right : left;           // 扫进来时前沿在左边，扫出去时在右边
-					be.Polygon = new[] { new Vector2(lead + slant - ew, y0), new Vector2(lead + slant + ew, y0), new Vector2(lead + ew, y1), new Vector2(lead - ew, y1) };
+					float u = (time - born[i]) / CoverSweep;
+					if (u <= 0f) break;
+					radii[i] = ringCover * 1.04f * Ease(Mathf.Min(u, 1f));
+					live = i + 1;
+					rimR[i] = radii[i];
+					rimA[i] = 0.45f * (1f - Mathf.Clamp(u / 0.75f, 0f, 1f));
 				}
-				if (T >= HoleAt) finRoot.Visible = false;
+				ringM.SetShaderParameter("radii", radii);
+				ringM.SetShaderParameter("count", live);
+				ringM.SetShaderParameter("rim_r", rimR);
+				ringM.SetShaderParameter("rim_a", rimA);
+				float c = (T - HoleAt) / ClearSweep;
+				ringM.SetShaderParameter("hole", c > 0f ? ringCover * 1.06f * Ease(Mathf.Min(c, 1f)) + 1f : 0f);
+				if (T >= HoleAt) finRoot.Visible = false;                // 已被两圈完全盖住
 			}
 		})), 0f, Total, Total);
 		tree.CreateTimer(Total + 0.05, true, false, true).Timeout += () =>
@@ -559,55 +565,48 @@ public static partial class AllOut
 		};
 	}
 
-	private const int SpraySlots = 26;
-	private const float SprayCycle = 0.6f;
+	private const int SprayBundles = 5, SprayStrands = 6, SpraySlots = SprayBundles * SprayStrands;
+	private const float SprayCycle = 0.32f;
 
 	/// <summary>
-	/// 持续喷血的一个槽：第 k 轮在 ArtT + 0.15 + 槽偏移 + k·SprayCycle 喷出，0.32–0.5s 内飞完；
-	/// 七成是细长的血丝（头尖尾细的楔形，沿速度方向拉长），三成是血点。方向主要朝上（左上到右上），越往后越稀。
+	/// 持续喷血（照原版：一束束细长的黑色血丝朝右上方猛地射出去，像喷枪喷出的一道道斜线）：
+	/// 每个伤口 SprayBundles 束、每束 SprayStrands 根血丝，同一束方向一致（±4°）、长短粗细不一、有深有浅；
+	/// 一束 0.06s 射到最长，停一下，尾巴脱离伤口往前追、越来越细地散掉（共约 0.26s），每束每 SprayCycle 秒重新喷一次（每轮方向都变）。
 	/// </summary>
 	private static void DrawSpray(Polygon2D pl, Sprite2D owner, Vector2 wound, int slot, float fh, float T)
 	{
-		float start = ArtT + 0.15f + (slot % SpraySlots) * SprayCycle / SpraySlots;
+		int bundle = (slot / SprayStrands) % SprayBundles, strand = slot % SprayStrands;
+		int seedBase = slot / SprayStrands;                                // 同一束共用
+		float start = ArtT + 0.12f + bundle * SprayCycle / SprayBundles;
 		float since = T - start;
-		if (since < 0f || T > ExitAt + CoverLen) { pl.Visible = false; return; }
+		if (since < 0f || T > HoleAt) { pl.Visible = false; return; }
 		int k = (int)(since / SprayCycle);
 		float age = since - k * SprayCycle;
-		RandomNumberGenerator r = new() { Seed = (ulong)(slot * 7919 + k * 104729 + 17) };
-		float life = r.RandfRange(0.32f, 0.5f);
-		float density = Mathf.Lerp(1f, 0.55f, Mathf.Clamp((T - ArtT) / 2f, 0f, 1f));   // 越往后越稀
-		if (age > life || r.Randf() > density) { pl.Visible = false; return; }
+		RandomNumberGenerator rb = new() { Seed = (ulong)(seedBase * 7919 + k * 104729 + 31) };
+		RandomNumberGenerator rs = new() { Seed = (ulong)(slot * 6151 + k * 92821 + 7) };
+		float density = Mathf.Lerp(1f, 0.6f, Mathf.Clamp((T - ArtT) / 2.4f, 0f, 1f));
+		if (rb.Randf() > density) { pl.Visible = false; return; }
+		const float Grow = 0.06f, HoldT = 0.06f, Fade = 0.14f;
+		if (age > Grow + HoldT + Fade) { pl.Visible = false; return; }
+		float baseAng = rb.RandfRange(-80f, -25f);                       // 朝右上（Joker 那边）为主
+		float L0 = fh * rb.RandfRange(0.5f, 0.95f);
+		float ang = Mathf.DegToRad(baseAng + rs.RandfRange(-4f, 4f));
+		float L = L0 * rs.RandfRange(0.55f, 1.15f);
+		float w = fh * rs.RandfRange(0.004f, 0.016f);
+		float alpha = rs.RandfRange(0.55f, 1f);
+		Vector2 o = owner.Transform * (wound * owner.Texture.GetSize()) + Vector2.FromAngle(ang).Orthogonal() * (strand - SprayStrands * 0.5f) * fh * 0.006f;
+		Vector2 dir = Vector2.FromAngle(ang), n = dir.Orthogonal();
+		float head = L * Quint(Mathf.Clamp(age / Grow, 0f, 1f));
+		float tailK = Mathf.Clamp((age - Grow - HoldT) / Fade, 0f, 1f);
+		float tail = L * 0.95f * tailK * tailK;
+		head += L * 0.25f * tailK;                                          // 散掉时整根还在往前飞
+		float thin = 1f - tailK;
+		if (head - tail < 2f) { pl.Visible = false; return; }
 		pl.Visible = true;
-		Vector2 o = owner.Transform * (wound * owner.Texture.GetSize());
-		float ang = Mathf.DegToRad(r.RandfRange(-150f, -30f));
-		float speed = fh * r.RandfRange(1.1f, 2.2f);
-		Vector2 v0 = Vector2.FromAngle(ang) * speed, g = new(0f, fh * 2.6f);
-		Vector2 head = o + v0 * age + 0.5f * g * age * age;
-		float ta = Mathf.Max(0f, age - 0.05f);
-		Vector2 tail = o + v0 * ta + 0.5f * g * ta * ta;
-		Vector2 dir = head - tail;
-		float len = dir.Length();
-		if (len < 0.5f) { pl.Visible = false; return; }
-		dir /= len;
-		Vector2 n = dir.Orthogonal();
-		float fade = 1f - Mathf.Clamp((age - life * 0.7f) / (life * 0.3f), 0f, 1f);
-		if (r.Randf() < 0.7f)
-		{
-			float w = fh * r.RandfRange(0.012f, 0.026f) * fade;
-			Vector2 mid = tail + dir * len * 0.65f;
-			pl.Polygon = new[] { tail, mid + n * w, head, mid - n * w };          // 血丝：两头尖
-		}
-		else
-		{
-			float rr = fh * r.RandfRange(0.009f, 0.018f) * fade;
-			var pts = new Vector2[8];
-			for (int i = 0; i < 8; i++)
-			{
-				float a = Mathf.Tau * i / 8f;
-				pts[i] = head + dir * Mathf.Cos(a) * rr * 1.8f + n * Mathf.Sin(a) * rr;
-			}
-			pl.Polygon = pts;
-		}
+		pl.Color = new Color(Ink.R, Ink.G, Ink.B, alpha * Mathf.Lerp(1f, 0.4f, tailK));
+		Vector2 a = o + dir * tail, b = o + dir * head;
+		float wb = w * thin + 0.6f;
+		pl.Polygon = new[] { a + n * wb * 0.5f, a + dir * (head - tail) * 0.35f + n * wb * 0.6f, b, a + dir * (head - tail) * 0.35f - n * wb * 0.6f, a - n * wb * 0.5f };
 	}
 
 	/// <summary>
@@ -728,7 +727,7 @@ public static partial class AllOut
 
 	// ═══════════════════════════ 着色器 ═══════════════════════════
 
-	private static Shader? _sil, _shade, _blob, _cover, _still, _crack, _crackGlow;
+	private static Shader? _sil, _shade, _blob, _cover, _still, _crack, _crackGlow, _rings;
 
 	/// <summary>
 	/// 顿帧的定格画面：impact = 冲击帧（黑白反转、高反差），hold = 顿住（压暗、去色 60%、四周收暗、撞击点附近一点红青色散）。
@@ -786,6 +785,40 @@ void fragment() {
 	float m = 1.0 - smoothstep(reach - 0.02, reach, d);
 	float core = 1.0 - smoothstep(0.0, 0.08, d);
 	COLOR = vec4(vec3(1.0, 0.08, 0.12) * (a * 2.2 + core * 0.6) * m * amount, 1.0);
+}" };
+
+	/// <summary>P3 mod 收尾的同心圆着色器（mod/src/Vfx/AllOut.cs 的 Rings，亮边颜色换成偏暖的白）。</summary>
+	private static Shader RingsShader => _rings ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform vec2 size;
+uniform vec2 center;
+uniform int count = 0;
+uniform float radii[12];
+uniform vec4 cols[12];
+uniform float rim_r[4];
+uniform float rim_a[4];
+uniform vec2 hole_center;
+uniform float hole = 0.0;
+void fragment() {
+	vec2 p = UV * size;
+	float d = distance(p, center);
+	float aa = max(fwidth(d), 0.75);
+	vec4 c = vec4(0.0);
+	for (int i = 0; i < 12; i++) {
+		if (i >= count) break;
+		float cov = clamp((radii[i] - d) / aa + 0.5, 0.0, 1.0);
+		c.rgb = mix(c.rgb, cols[i].rgb, c.a > 0.0 ? cov : 1.0);
+		c.a = max(c.a, cov);
+	}
+	for (int j = 0; j < 4; j++) {
+		float k = rim_a[j] * (1.0 - smoothstep(0.0, 2.5, abs(d - rim_r[j])));
+		c.rgb = mix(c.rgb, vec3(1.0, 0.92, 0.92), k);
+	}
+	float dh = distance(p, hole_center);
+	float edge = hole > 0.0 ? (1.0 - smoothstep(0.0, 7.0, abs(dh - hole))) : 0.0;
+	c.rgb = mix(c.rgb, vec3(1.0, 0.94, 0.94), edge * 0.8);
+	c.a *= hole > 0.0 ? clamp((dh - hole) / aa + 0.5, 0.0, 1.0) : 1.0;
+	COLOR = c;
 }" };
 
 	/// <summary>纯色剪影（投影用）。</summary>
