@@ -37,6 +37,10 @@ public static partial class SkillRedo5
 		});
 	}
 
+	/// <summary>两头尖的疾光（给别的文件用；path 0 → 1，先快后慢）。</summary>
+	public static void StreakSharp(Control layer, Func<float, Vector2> path, float t0, float dur, float len, float thick, Color tint, float hot = 1.3f) =>
+		DashFly(layer, path, t0, dur, len, thick, tint, hot, Ease5.OutQuint, 0.7f, 1f);
+
 	private static Control BackOf(SkillCtx c) => c.Back != null && GodotObject.IsInstanceValid(c.Back) ? c.Back : c.Front;
 
 	// ═══════════════════════════ 跟踪（小改）═══════════════════════════

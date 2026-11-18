@@ -156,6 +156,12 @@ public static class JokerFx
 					}
 				}
 				ShivFx.FanOfKnives(layer, Joker.PosePoint(joker, ReadyFx.GunGrip), enemies);
+				// 0.9.49 审阅（金卡，转枪之外没特效）：加主体「刀扇开合」（Vfx/Batch3Fx.cs）
+				{
+					Vector2 jf = Joker.PosePoint(joker, ReadyFx.Feet);
+					float tall = (jf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length();
+					Batch3Fx.FanOfKnives(layer, Joker.FxLayer(back: true) ?? layer, Joker.PosePoint(joker, ReadyFx.GunGrip), tall, Joker.Facing(joker));
+				}
 				break;
 			}
 			case "BouncingFlask":

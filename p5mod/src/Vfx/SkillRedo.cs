@@ -138,7 +138,8 @@ public static class SkillRedo
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face, w = CardW(c) * 1.45f;
 		Vector2 pivot = c.Chest + new Vector2(f * h * 0.45f, h * 0.12f);       // 扇轴（牌的下端握在这里）
-		const int n = 5;
+		int n = c.Count >= 0 ? Mathf.Min(c.Count, 10) : 3;          // 实际抽到几张就摊几张（用户 2026-11-17 审阅）
+		float step = n > 1 ? Mathf.Min(0.36f, 1.5f / (n - 1)) : 0f;
 		const float open = 0.22f, hold = 0.5f, close = 0.12f;
 		S("gx_fan_open", 0.22f, 0.02f);
 		S("gx_ping", 0.1f, open + 0.06f + 0.07f * (n - 1) + 0.07f);      // 扫完扣上：一声
@@ -147,7 +148,7 @@ public static class SkillRedo
 		for (int i = 0; i < n; i++)
 		{
 			int k = i;
-			float target = (k - (n - 1) / 2f) * 0.36f * f;                           // 扇开后的角度
+			float target = (k - (n - 1) / 2f) * step * f;                           // 扇开后的角度
 			Phantom.P5Card card = Phantom.Card(c.Front, pivot, w, open + hold + close + 0.1);
 			Vector2 off = new(0f, -w * 0.62f);                                      // 牌中心离扇轴
 			float sweepAt = open + 0.06f + 0.07f * k;
@@ -175,7 +176,7 @@ public static class SkillRedo
 			Vector2 stack = pivot + new Vector2(0f, -h * 0.3f) + new Vector2(0f, -w * 0.62f);
 			Glow.Flash(c.Front, stack, Phantom.Hot, w * 2.2f, 0.1f);
 			Phantom.Shards(c.Front, stack, 8, 200f * u, 500f * u, Vector2.Up, 80f, 0.25f, 400f * u, 16f * u);
-			for (int j = 0; j < 3; j++) ToHand(c, stack + new Vector2(j * 2f, -j * 2f), 0.02f * j, 0.4f, 0f, h * 0.2f, 0.8f, 6.3f);
+			for (int j = 0; j < n; j++) ToHand(c, stack + new Vector2(j * 2f, -j * 2f), 0.02f * j, 0.4f, 0f, h * 0.2f, 0.8f, 6.3f);
 		});
 	}
 
@@ -531,7 +532,7 @@ public static class SkillRedo
 	public static void CalculatedGamble(SkillCtx c)
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face, w = CardW(c);
-		const int n = 5;
+		int n = c.Count >= 0 ? Mathf.Min(c.Count, 10) : 5;          // 弃掉 / 抽回的就是这手牌的张数（用户 2026-11-17 审阅）
 		const float spin = 0.75f;
 		Vector2 center = c.Feet + new Vector2(0f, -h * 0.55f);
 		Control back = c.Back != null && GodotObject.IsInstanceValid(c.Back) ? c.Back : c.Front;
@@ -562,7 +563,7 @@ public static class SkillRedo
 				fr.Trail?.Kill(); fr.Root.Visible = false; bk.Root.Visible = false;
 				float a = ph + Mathf.Tau * 2.3f;
 				Vector2 pos = center + new Vector2(Mathf.Cos(a), Mathf.Sin(a) * 0.24f) * h * 0.6f;
-				Phantom.Confetti(c.Front, pos, 9, 360f * u, (pos - center).Normalized() + Vector2.Up * 0.4f, 50f, 0.9f, 7f * u);
+				Phantom.Confetti(c.Front, pos, Mathf.Max(4, 45 / Mathf.Max(1, n)), 360f * u, (pos - center).Normalized() + Vector2.Up * 0.4f, 50f, 0.9f, 7f * u);
 			});
 		}
 		Fx.After(c.Front, spin, () =>
@@ -578,7 +579,7 @@ public static class SkillRedo
 		{
 			int k = i;
 			float d = spin + 0.14f + 0.05f * k;
-			float ang = -Mathf.Pi / 2f + f * (k - (n - 1) / 2f) * 0.38f;
+			float ang = -Mathf.Pi / 2f + f * (k - (n - 1) / 2f) * (n > 1 ? Mathf.Min(0.38f, 2.4f / (n - 1)) : 0f);
 			Vector2 apex = c.Hand + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * h * 0.42f;
 			Phantom.P5Card card = Phantom.Card(c.Front, c.Hand, w, d + 0.2, 0.6f);
 			card.Root.Visible = false;

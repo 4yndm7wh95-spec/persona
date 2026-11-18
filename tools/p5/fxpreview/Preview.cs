@@ -96,8 +96,10 @@ public partial class Preview : Node2D
 		{
 			if (only != null && Array.IndexOf(only, card) < 0) continue;
 			string a = anim, cd = card;
+			int cnt = -1;                                   // 「牌名#3」= 这次特效表现 3 张牌（SkillCtx.Count，游戏里由 SkillPlay.FxCount 给）
+			if (cd.IndexOf('#') is int hash and >= 0) { cnt = int.Parse(cd[(hash + 1)..]); cd = cd[..hash]; }
 			if (a.Length > 0) p.At(at, () => p._joker?.Play(a));
-			p.At(at + lead, () => (cd == "AfterimageTick" ? SkillRedo5.AfterimageTick : CardSkillFx.Cards[cd])(Ctx()));
+			p.At(at + lead, () => (cd == "AfterimageTick" ? SkillRedo5.AfterimageTick : CardSkillFx.Cards[cd])(Ctx() with { Count = cnt }));
 			at += gap;
 		}
 	}
@@ -914,6 +916,33 @@ public partial class Preview : Node2D
 			("Abrasive", "cast_glove", 0.25, 1.2), ("Accelerant", "cast_wave", 0.08, 1.2), ("Malaise", "cast", 0.25, 1.6),
 			("Abrasive", "cast_glove", 0.25, 2.0), ("Accelerant", "cast_wave", 0.08, 2.2), ("Malaise", "cast", 0.25, 2.6) }),
 		["mal3"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Malaise", "cast", 0.25, 1.6), ("Malaise", "cast", 0.25, 2.4) }),
+		// 0.9.49 审阅第三批（2026-11-18）：牌数跟着实际手牌 / 抽牌数走
+		["b3cards"] = p => RunCards(p, null, new (string, string, double, double)[] {
+			("CalculatedGamble#3", "cast_glove", 0.25, 2.2), ("CalculatedGamble#8", "cast_glove", 0.25, 2.4),
+			("Expertise#2", "cast_glove", 0.25, 1.8), ("Expertise#3", "cast_glove", 0.25, 2.0) }),
+		// 刀扇：转枪 + 刀扇开合（Batch3Fx）
+		["b3fan"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			var es = new List<ShivFx.Target> { new(Enemy2, 180f), new(Enemy, 230f), new(Enemy3, 180f) };
+			foreach (double t0 in new[] { 0.2, 2.2 })
+			{
+				p.At(t0, () => { p._joker?.Play("aim_in"); p._joker?.Queue("aim_loop", true); });
+				p.At(t0 + 1.0, () => { p._joker?.Play("aim_out"); ShivFx.FanOfKnives(p._front, Pose(1275f, 345f), es); Batch3Fx.FanOfKnives(p._front, p._back, Pose(1275f, 345f), tall, 1f); });
+			}
+		},
+		// 匕首雨：攻击动作（第一下伤害 0.15s，第二下紧跟），一扇飞刀 + 一刀切全体 + 刀雨
+		["b3spray"] = p =>
+		{
+			var foes = new List<Batch3Fx.Foe> { new(Enemy2, Enemy2 + new Vector2(0f, -170f), 230f), new(Enemy, Enemy + new Vector2(0f, -170f), 260f), new(Enemy3, Enemy3 + new Vector2(0f, -150f), 230f) };
+			foreach (double t0 in new[] { 0.3, 2.0 })
+			{
+				p.At(t0, () => { p._joker?.Play("attack"); Batch3Fx.DaggerSpray(p._front, Pose(1376f, 450f), foes, 1f); });
+				foreach (double hh in new[] { 0.15, 0.27 })
+					foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 })
+						p.At(t0 + hh, () => KnifeFx.Hit(p._front, e, 1f));
+			}
+		},
 		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_glove", 0.25, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast_wave", 0.08, 1.6) }),
 		["redo4b"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.8), ("Afterimage", "cast_glove", 0.25, 1.4), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast_wave", 0.08, 1.8) }),
 		["redo5"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.9), ("Shadowmeld", "cast_glove", 0.25, 1.9) }),

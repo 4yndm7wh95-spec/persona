@@ -16,6 +16,8 @@ public sealed record SkillCtx(
 	/// <summary>给 Joker 的身体换材质（null = 换回原来的）。持续型的身体特效用（幽魂形态，Vfx/WraithVeil.cs）。</summary>
 	public Action<ShaderMaterial?>? BodyMaterial { get; init; }
 	public Vector2 Head => Feet + new Vector2(0f, -Tall * 1.02f);
+	/// <summary>这次特效要表现的牌数（计算下注 = 弃掉 / 抽回的手牌数，独门技术 = 实际抽到的张数）；-1 = 游戏没给，用各牌自己的默认。</summary>
+	public int Count { get; init; } = -1;
 }
 
 /// <summary>
@@ -386,6 +388,8 @@ uniform float grow = 1.0;
 uniform float alpha = 1.0;
 uniform float seed = 0.0;
 uniform float clock = 0.0;
+uniform float rimk = 1.0;     // 亮边强度（腐蚀波贴地的那滩压低，不然压扁后像一圈描边）
+uniform float soft = 0.015;   // 边缘软硬
 " + Noise + @"
 void fragment() {
 	vec2 p = (UV - 0.5) * 2.0;
@@ -396,8 +400,8 @@ void fragment() {
 	float n = fbm(q * 2.6 + vec2(seed, -clock * 1.3)) * 0.55 + noise(q * 8.0 + vec2(clock * 2.0, seed)) * 0.15;
 	float R = 0.16 + 0.2 * grow;
 	float d = length(q * vec2(1.0, 1.1)) - R - (n - 0.35) * 0.28 * grow;
-	float inside = 1.0 - smoothstep(-0.015, 0.015, d);
-	float rim = exp(-abs(d) / 0.035);
+	float inside = 1.0 - smoothstep(-soft, soft, d);
+	float rim = exp(-abs(d) / 0.035) * rimk;
 	float hi = pow(rim, 4.0) * smoothstep(0.2, 0.8, noise(q * 5.0 - clock * 1.5 + seed));
 	vec3 col = vec3(0.16, 0.0, 0.04) * inside + vec3(0.85, 0.05, 0.16) * rim * 0.9 + vec3(1.0, 0.75, 0.72) * hi * 0.9;
 	float keep = 1.0 - smoothstep(0.6, 0.95, length(p));

@@ -149,6 +149,7 @@ public static class SkillPlay
 		bool summon = Aim.Summons(card);
 		float at = summon ? Aim.HitFor(card) : Moment(joker);
 		CardSkillFx.Cards.TryGetValue(name, out Action<SkillCtx>? perCard);
+		int fxCount = FxCount(card);   // 出牌这一刻（牌已离开手牌、还没结算）算好，等到出手那帧手牌已经变了
 		int cards = perCard == null && kind is (Kind.Draw or Kind.DrawDiscard or Kind.Load or Kind.DiscardLoad or Kind.SurgeDraw)
 			? Count(card)
 			: 0;
@@ -169,7 +170,7 @@ public static class SkillPlay
 			Func<Node, (Node2D, Transform2D)?> clone = parent => Aim.CloneBody(joker, parent, "idle_loop");
 			if (perCard != null)
 			{
-				perCard(Ctx(joker, target, layer, back, room, summon));
+				perCard(Ctx(joker, target, layer, back, room, summon) with { Count = fxCount });
 				return;
 			}
 			switch (kind)
@@ -282,6 +283,33 @@ public static class SkillPlay
 					break;
 			}
 		});
+	}
+
+	/// <summary>
+	/// 特效里要摆几张牌（用户 2026-11-17 审阅：牌数要和实际一致）。BeforeCardPlayed 时打出的牌已在出牌区，手牌里是剩下的。
+	/// 计算下注：弃掉整手、再抽同样多 = 手牌数。独门技术：抽 Cards 张，但受手牌上限（CardPile.MaxCardsInHand）和抽牌堆 + 弃牌堆剩余限制。
+	/// </summary>
+	private static int FxCount(CardModel card)
+	{
+		try
+		{
+			var player = card.Owner;
+			int hand = PileType.Hand.GetPile(player).Cards.Count;
+			switch (card.GetType().Name)
+			{
+				case "CalculatedGamble":
+					return hand;
+				case "Expertise":
+				{
+					int want = card.DynamicVars.TryGetValue("Cards", out var cv) ? cv.IntValue : 2;
+					int room = Math.Max(0, CardPile.MaxCardsInHand - hand);
+					int left = PileType.Draw.GetPile(player).Cards.Count + PileType.Discard.GetPile(player).Cards.Count;
+					return Math.Max(0, Math.Min(want, Math.Min(room, left)));
+				}
+			}
+		}
+		catch (Exception) { }
+		return -1;
 	}
 
 	/// <summary>这张牌抽几张 / 生成几张（DynamicVars.Cards；没有就 2）。</summary>

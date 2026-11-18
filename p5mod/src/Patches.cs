@@ -35,6 +35,21 @@ public static class AttackHitVfxPatch
 				HitWeights.BeginAttack(card, HitCount.GetValue(__instance) is int n ? n : 1);
 				HitVfx.SetValue(__instance, null);
 				(CustomHitNodes.GetValue(__instance) as IList)?.Clear();     // 小刀牌原版的飞刀（NShivThrowVfx）
+				if (card.GetType().Name == "DaggerSpray" && Joker.Node(card.Owner) is NCreature jn && Joker.FxLayer() is Godot.Control dl
+					&& NCombatRoom.Instance is NCombatRoom room)
+				{
+					// 匕首雨（0.9.49 审阅：没有群体攻击的感觉）：一扇飞刀 + 一刀切全体 + 头顶刀雨（Vfx/Batch3Fx.cs）。
+					// 攻击动作只在第一下放（出刀约 0.13s、第一次伤害约 0.15s），第二次伤害紧跟在后面
+					var foes = new List<Batch3Fx.Foe>();
+					foreach (Creature c in __instance.Attacker?.CombatState?.HittableEnemies ?? (IReadOnlyList<Creature>)Array.Empty<Creature>())
+					{
+						if (room.GetCreatureNode(c) is NCreature en && Godot.GodotObject.IsInstanceValid(en))
+						{
+							foes.Add(new Batch3Fx.Foe(en.VfxSpawnPosition, en.GetTopOfHitbox(), en.Hitbox.GetGlobalRect().Size.X));
+						}
+					}
+					Batch3Fx.DaggerSpray(dl, Joker.PosePoint(jn, new Godot.Vector2(1376f, 450f)), foes, Joker.Facing(jn));
+				}
 				if (card.GetType().Name == "DaggerThrow")
 				{
 					// 投掷匕首：原版和匕首雨共用一片飞刀（NDaggerSprayFlurryVfx）→ 关掉，用打击动作 + 刀的命中（用户 2026-11-04）
