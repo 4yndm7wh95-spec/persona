@@ -290,6 +290,8 @@ def fx_textures():
             yield "aoa_blob", im
         elif name == "test":
             yield "aoa_noise", im
+        elif name == "be0cmn_upaura_uv_d":
+            yield "aoa_drip", im                       # splatterBlood 的滴落遮罩：总攻击喷血的血柱
     yield "arsene_cast", arsene_atlas()
     # Izanagi-no-Okami (Codex render of BPS0360_000_main_0006, art/p5/fx/izanagi_okami): spin action atlas + weapon alone
     if (IZANAGI / "spin").exists():

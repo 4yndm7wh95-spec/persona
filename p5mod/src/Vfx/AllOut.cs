@@ -40,7 +40,7 @@ public static partial class AllOut
 	// → 0.42 怪物剪影砸进 + 喷血 + 震屏（第二下冲击）→ 0.5–0.8 竖排字划上来（丝滑）
 	private const float TextIn = 0.75f, TextLen = 0.42f;
 	private const float ArtT = ShatterAt + 0.5f;
-	// 收尾照 P3 mod：两圈波 CoverSweep 秒扫满（第二圈晚 0.08s，u≈0.75 时已盖满），之后透明波 ClearSweep 秒扩开
+	// 收尾照 P3 mod 的速率：红色的波 CoverSweep 秒扫满（u≈0.75 时已盖满），停一拍，透明波 ClearSweep 秒扩开
 	private const float CoverSweep = 0.42f, ClearSweep = 0.55f;
 	private const float ExitAt = ShatterAt + 2.6f, CoverLen = 0.08f + 0.75f * CoverSweep, HoleAt = ExitAt + CoverLen, HoleLen = ClearSweep;
 	public const float Total = HoleAt + HoleLen + 0.05f;
@@ -248,8 +248,7 @@ public static partial class AllOut
 		ringM.SetShaderParameter("center", ringC);
 		ringM.SetShaderParameter("hole_center", ringC);
 		Color[] ringCols = new Color[12];
-		ringCols[0] = new Color(0.02f, 0.01f, 0.015f);
-		ringCols[1] = new Color(0.8f, 0.03f, 0.08f);
+		ringCols[0] = new Color(0.8f, 0.03f, 0.08f);                               // 一层红色的波盖过来，再一层透明的波（用户 2026-11-18）
 		ringM.SetShaderParameter("cols", ringCols);
 		// 碎开那一下的白闪 + 撞击点的巨大白色四角星（盖在玻璃片上面）
 		ColorRect flash = new() { Color = Colors.White, Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore, Visible = false };
@@ -294,26 +293,31 @@ public static partial class AllOut
 		}
 		Node2D bloodLayer = new();
 		mid.AddChild(bloodLayer);
-		// 持续喷血（照原版：剪影身上一直往外喷细的黑色血丝和血点，不是只喷一下）：每个伤口一组循环的喷射槽，
-		// 每个槽每 SprayCycle 秒重新喷一次（方向、速度、粗细按槽号和第几轮算，每轮都不一样）
-		var spray = new List<(Polygon2D P, int Foe, Vector2 Wound, int Slot, float Fh)>();
-		for (int fi = 0; fi < foes.Count; fi++)
+		// 喷血（照原版 P5R splatterBlood）：从剪影头上朝右上方陡陡地喷出一道持续的黑色血柱 —— 拉长的面片贴原版的滴落遮罩
+		// （BKSK_SPLATTER 里的 be0cmn_upaura_uv_d），遮罩沿柱子不停往上滚，所以柱子是一道道软的、半透明的、一直在流动闪烁的黑色血痕；
+		// 第一个伤口一道主柱，第二个伤口一道细一点、角度不同的副柱
+		Texture2D? drip = Stage.LoadTexture("aoa_drip");
+		var columns = new List<(Polygon2D P, ShaderMaterial M, int Foe, Vector2 Wound, float Fh, float Ang, float LenK, float WidK, float Speed, float Phase)>();
+		for (int fi = 0; fi < foes.Count && drip != null; fi++)
 		{
-			foreach (Vector2 wd in foes[fi].Wounds)
+			float fh = finRects[fi].Size.Y;
+			for (int wi = 0; wi < foes[fi].Wounds.Count && wi < 2; wi++)
 			{
-				for (int j = 0; j < SpraySlots; j++)
-				{
-					Polygon2D pl = new() { Color = Ink, Antialiased = true, Visible = false };
-					bloodLayer.AddChild(pl);
-					spray.Add((pl, fi, wd, spray.Count, finRects[fi].Size.Y));          // 槽号连续：每 SprayStrands 个一束
-				}
+				bool primary = wi == 0;
+				ShaderMaterial cm = new() { Shader = ColumnShader };
+				cm.SetShaderParameter("drip", drip);
+				cm.SetShaderParameter("ink", Ink);
+				Polygon2D col = new() { Texture = drip, Material = cm, Visible = false, UV = new[] { Vector2.Zero, new Vector2(drip.GetWidth(), 0f), drip.GetSize(), new Vector2(0f, drip.GetHeight()) } };   // Polygon2D 的 UV 是贴图像素
+				bloodLayer.AddChild(col);
+				columns.Add((col, cm, fi, foes[fi].Wounds[wi], fh, primary ? rng.RandfRange(-74f, -62f) : rng.RandfRange(-110f, -92f),
+					primary ? rng.RandfRange(1.15f, 1.4f) : rng.RandfRange(0.7f, 0.9f), primary ? 1f : 0.6f, rng.RandfRange(1.6f, 2.2f), rng.RandfRange(0f, 9f)));
 			}
 		}
 
 		// 血：每个伤口 6～8 道血柱 + 末端血点 + P5R splatterBlood 的血团
 		var jets = new List<Jet>();
 		var splats = new List<Splat>();
-		for (int fi = 0; fi < foes.Count; fi++)
+		for (int fi = 0; fi < 0; fi++)                                         // （尖刺状的血柱 / 血花不要了，用户 2026-11-18）
 		{
 			Foe f = foes[fi];
 			float fh = finSils[fi].B.Size.Y;
@@ -517,7 +521,24 @@ public static partial class AllOut
 				}
 				// 血
 				foreach (Jet jt in jets) DrawJet(jt, T, finSils[jt.Foe].Sp);
-				foreach (var sp in spray) DrawSpray(sp.P, finSils[sp.Foe].Sp, sp.Wound, sp.Slot, sp.Fh, T);
+				foreach (var c in columns)
+				{
+					// 0.1s 冲到全长，之后长短、角度轻轻起伏；退场前一直在喷
+					float since = T - ArtT;
+					c.P.Visible = since > 0f && T < HoleAt;
+					if (!c.P.Visible) continue;
+					Sprite2D owner = finSils[c.Foe].Sp;
+					Vector2 o = owner.Transform * (c.Wound * owner.Texture.GetSize());
+					float grow = Quint(Mathf.Clamp(since / 0.1f, 0f, 1f));
+					float L = c.Fh * c.LenK * grow * (1f + 0.08f * Mathf.Sin(since * 9f + c.Phase) + 0.05f * Mathf.Sin(since * 23f + c.Phase * 2f));
+					float ang = Mathf.DegToRad(c.Ang + 3f * Mathf.Sin(since * 5f + c.Phase));
+					Vector2 dir = Vector2.FromAngle(ang), nrm = dir.Orthogonal();
+					float w0 = c.Fh * 0.1f * c.WidK, w1 = c.Fh * 0.28f * c.WidK;      // 根部窄、往上散开
+					Vector2 tip = o + dir * L;
+					c.P.Polygon = new[] { o - nrm * w0 * 0.5f, o + nrm * w0 * 0.5f, tip + nrm * w1 * 0.5f, tip - nrm * w1 * 0.5f };
+					c.M.SetShaderParameter("scroll", since * c.Speed);
+					c.M.SetShaderParameter("alpha", Mathf.Clamp(since / 0.05f, 0f, 1f) * (since < 0.25f ? 1f : 0.85f + 0.15f * Mathf.Sin(since * 17f + c.Phase)));
+				}
 				foreach (Splat sl in splats)
 				{
 					float a2 = (T - sl.Born) / 0.08f;
@@ -539,8 +560,8 @@ public static partial class AllOut
 				float[] radii = new float[12];
 				float[] rimR = new float[4], rimA = new float[4];
 				int live = 0;
-				float[] born = { 0f, 0.08f };
-				for (int i = 0; i < 2; i++)
+				float[] born = { 0f };
+				for (int i = 0; i < 1; i++)
 				{
 					float u = (time - born[i]) / CoverSweep;
 					if (u <= 0f) break;
@@ -727,7 +748,7 @@ public static partial class AllOut
 
 	// ═══════════════════════════ 着色器 ═══════════════════════════
 
-	private static Shader? _sil, _shade, _blob, _cover, _still, _crack, _crackGlow, _rings;
+	private static Shader? _sil, _shade, _blob, _cover, _still, _crack, _crackGlow, _rings, _column;
 
 	/// <summary>
 	/// 顿帧的定格画面：impact = 冲击帧（黑白反转、高反差），hold = 顿住（压暗、去色 60%、四周收暗、撞击点附近一点红青色散）。
@@ -819,6 +840,29 @@ void fragment() {
 	c.rgb = mix(c.rgb, vec3(1.0, 0.94, 0.94), edge * 0.8);
 	c.a *= hole > 0.0 ? clamp((dh - hole) / aa + 0.5, 0.0, 1.0) : 1.0;
 	COLOR = c;
+}" };
+
+	/// <summary>
+	/// 血柱：UV.x 横穿柱子（0–1）、UV.y 从根部（0）到顶端（1）。原版滴落遮罩（alpha）两层不同速度沿柱子往上滚，叠出一道道流动的血痕；
+	/// 两侧和顶端软收、根部实，整体黑色半透明。
+	/// </summary>
+	private static Shader ColumnShader => _column ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform sampler2D drip : repeat_enable, filter_linear;
+uniform vec4 ink : source_color = vec4(0.015, 0.008, 0.012, 1.0);
+uniform float scroll = 0.0;
+uniform float alpha = 1.0;
+void fragment() {
+	float x = UV.x, y = UV.y;
+	float a1 = texture(drip, vec2(x * 0.9 + 0.1, y * 1.3 - scroll)).a;
+	float a2 = texture(drip, vec2(x * 0.6 + 0.47, y * 0.9 - scroll * 0.63)).a;
+	float a3 = texture(drip, vec2(x * 1.4 + 0.2, y * 2.1 - scroll * 1.4)).a;
+	float m = clamp(a1 + a2 * 0.8 + a3 * 0.6, 0.0, 1.0);
+	float core = 1.0 - smoothstep(0.45, 1.0, abs(x - 0.5) * 2.0);                       // 中间实、两侧软
+	float along = smoothstep(1.0, 0.55, y);
+	float root = (1.0 - smoothstep(0.05, 0.3, y)) * (1.0 - smoothstep(0.3, 0.9, abs(x - 0.5) * 2.0));   // 根部一团实的
+	float a = max(m * core * along, root);
+	COLOR = vec4(ink.rgb, clamp(a, 0.0, 1.0) * alpha);
 }" };
 
 	/// <summary>纯色剪影（投影用）。</summary>
