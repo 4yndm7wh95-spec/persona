@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System;
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Godot;
 
 namespace P5Joker;
@@ -34,19 +35,38 @@ public static class CutIn
 	private static Clip? _clip;
 	private static Prepared[]? _parts;
 	private static ShaderMaterial? _opaqueEyes;
+	private static Task<Clip>? _pendingClip;
 
-	/// <summary>预热：眼神特写的网格数据先解析好。</summary>
-	public static void Preload() => Load();
+	internal static bool PollPreload()
+	{
+		if (_parts != null) return true;
+		Task<Clip> pending = _pendingClip ??= Task.Run(ReadClip);
+		if (!pending.IsCompleted) return false;
+		Load();
+		return true;
+	}
 
 	private static void Load()
 	{
 		if (_parts != null) return;
+		Clip clip = _pendingClip?.GetAwaiter().GetResult() ?? ReadClip();
+		_pendingClip = null;
+		BuildMeshes(clip);
+	}
+
+	private static Clip ReadClip()
+	{
 		using Stream stream = typeof(CutIn).Assembly.GetManifestResourceStream("P5Joker.EyeCutIn.json")
 			?? throw new InvalidDataException("Missing embedded P5R eye cut-in data");
 		Clip clip = JsonSerializer.Deserialize<Clip>(stream, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
 			?? throw new InvalidDataException("Invalid P5R eye cut-in data");
 		if (clip.Duration <= 0 || clip.Speed <= 0 || clip.Canvas.Length != 2 || clip.Meshes.Length == 0)
 			throw new InvalidDataException("Invalid P5R eye cut-in timing/canvas");
+		return clip;
+	}
+
+	private static void BuildMeshes(Clip clip)
+	{
 		List<Prepared> parts = new();
 		foreach (Part part in clip.Meshes)
 		{

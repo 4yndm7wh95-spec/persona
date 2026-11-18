@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Godot;
 
 namespace P5Joker;
@@ -45,6 +47,22 @@ public static class Fx
 	}
 
 	internal static Texture2D? ReadyTexture(string name) => Cache.TryGetValue(name, out Texture2D? texture) ? texture : null;
+
+	internal static bool Active(Node node) => GodotObject.IsInstanceValid(node) &&
+		node.IsInsideTree() && !node.IsQueuedForDeletion();
+
+	// Keep these reads off the click/animation frame. The idle queue and the live UI
+	// share the same requests, so a fast click cannot start a second read of the texture.
+	internal static async Task PrepareTextures(SceneTree tree, IReadOnlyList<string> names, Func<bool> current)
+	{
+		foreach (string name in names)
+		{
+			if (Cache.ContainsKey(name)) continue;
+			while (current() && !PollTexture(name))
+				await tree.ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+			if (!current()) return;
+		}
+	}
 
 	internal static bool PollResource(string path, out Resource? resource)
 	{

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Godot;
@@ -46,13 +47,19 @@ public static class Embark
 		{
 			Close(_curtain);
 			Traverse.Create(t).Property("InTransition").SetValue(true);
-			bool covered = false;
-			curtain = EmbarkTransition.Out(t, () => covered = true);
-			ulong start = Time.GetTicksMsec();
-			ulong limit = (ulong)((EmbarkTransition.OutTime + 2f) * 1000f);  // 补间被意外停掉时的保底
-			while (!covered && curtain.Alive && Time.GetTicksMsec() - start < limit && !(token?.IsCancellationRequested ?? false))
+			bool Current() => Fx.Active(t) && token?.IsCancellationRequested != true;
+			long began = Stopwatch.GetTimestamp();
+			await EmbarkTransition.PrepareTextures(t, Current);
+			if (Current())
 			{
-				await t.ToSignal(t.GetTree(), SceneTree.SignalName.ProcessFrame);
+				bool covered = false;
+				curtain = EmbarkTransition.Out(t, () => covered = true);
+				GD.Print($"[P5Joker] embark transition ready in {Stopwatch.GetElapsedTime(began).TotalMilliseconds:F1}ms");
+				ulong start = Time.GetTicksMsec();
+				ulong limit = (ulong)((EmbarkTransition.OutTime + 2f) * 1000f);
+				SceneTree tree = t.GetTree();
+				while (!covered && curtain.Alive && Time.GetTicksMsec() - start < limit && Current())
+					await tree.ToSignal(tree, SceneTree.SignalName.ProcessFrame);
 			}
 		}
 		catch (Exception e)
@@ -65,6 +72,7 @@ public static class Embark
 		}
 		// 接上原版的黑屏：原版 FadeOut 0 秒同步跑完（循环一次都不进），NTransition 换成普通淡出材质、阈值 1 = 不透明的黑，并挡住输入。
 		// 我们的幕还盖在它上面（钉着预告信的那一帧当加载画面），等进局时展开；30 秒没等到就撤掉
+		if (!Fx.Active(t)) return;
 		await t.FadeOut(0f, FadePath, null);
 		if (curtain is { Alive: true })
 		{

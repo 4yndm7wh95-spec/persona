@@ -1,18 +1,22 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Characters;
+using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Screens.CharacterSelect;
 
 namespace P5Joker;
 
 /// <summary>
 /// 选人界面：选中静默猎手时，原版刚放进 AnimatedBg 的背景场景（char_select_bg_silent）换成 P5R 风格的选人画面（Vfx/CharSelectScene.cs）。
-/// 原版每次选中都会重新实例化背景，所以每次选中都是"刚被选中"：播一次入场 + 眼神特写。搭建出错就保留原版（CharSelectScene.Build 自己回滚）。
+/// 普通选人与恐惧模式各有入口，两者共用背景。恐惧模式原有的恐惧信息、锁链和灰阶继续由游戏绘制。
 /// 同时：原版静默猎手的选中音效拦掉（选人画面自己安排了分层的声音）；左侧信息面板换成 P5 风格的介绍板（CharSelectInfo），等眼神特写碎开再入场（同 P3 mod）。
 /// </summary>
 [HarmonyPatch(typeof(NCharacterSelectScreen), nameof(NCharacterSelectScreen.SelectCharacter))]
@@ -22,6 +26,12 @@ public static class CharSelectBgPatch
 		AccessTools.FieldRefAccess<NCharacterSelectScreen, Control>("_bgContainer");
 
 	private const string OriginalBackground = "p5_original_select_bg";
+	private const string SilentBackground = "res://scenes/screens/char_select/char_select_bg_silent.tscn";
+	private sealed class Selection
+	{
+		public int Revision;
+	}
+	private static readonly ConditionalWeakTable<Control, Selection> Selections = new();
 	private static readonly HashSet<string> LayoutProperties = new()
 	{
 		"layout_mode", "anchors_preset", "anchor_left", "anchor_top", "anchor_right", "anchor_bottom",
@@ -51,16 +61,14 @@ public static class CharSelectBgPatch
 		}
 
 		CodeInstruction call = calls[0];
-		var button = new CodeInstruction(OpCodes.Ldarg_1).MoveLabelsFrom(call);
-		body.Insert(body.IndexOf(call), button);
 		call.opcode = OpCodes.Call;
 		call.operand = AccessTools.Method(typeof(CharSelectBgPatch), nameof(InstantiateBackground));
 		return body;
 	}
 
-	private static Control InstantiateBackground(PackedScene scene, PackedScene.GenEditState editState, NCharacterSelectButton button)
+	private static Control InstantiateBackground(PackedScene scene, PackedScene.GenEditState editState)
 	{
-		if (IsJoker(button))
+		if (scene.ResourcePath == SilentBackground)
 		{
 			Control? root = null;
 			try
@@ -69,7 +77,7 @@ public static class CharSelectBgPatch
 				if (state.GetNodeCount() > 0 && state.GetNodeType(0).ToString() == nameof(Control))
 				{
 					// 保留原版场景根节点的布局。Joker 不需要实例化随后会隐藏的 Spine、粒子和灯光。
-					root = new Control { MouseFilter = Control.MouseFilterEnum.Ignore };
+					root = new Control { Name = state.GetNodeName(0), MouseFilter = Control.MouseFilterEnum.Ignore };
 					for (int i = 0; i < state.GetNodePropertyCount(0); i++)
 					{
 						StringName property = state.GetNodePropertyName(0, i);
@@ -80,7 +88,7 @@ public static class CharSelectBgPatch
 					return root;
 				}
 			}
-			catch (System.Exception e)
+			catch (Exception e)
 			{
 				root?.Free();
 				Stage.Report("CharSelect background layout", e);
@@ -92,39 +100,104 @@ public static class CharSelectBgPatch
 	public static void Postfix(NCharacterSelectScreen __instance, NCharacterSelectButton __0)
 	{
 		CharSelectSfxMute.Armed = false;
-		bool built = false;
-		bool intro = CharSelectScene.IntroEnabled();
 		CharacterModel? model = IsJoker(__0) ? __0.Character : null;
+		ModEntry.Safe("CharSelectInfo", () => CharSelectInfo.Apply(__instance, __0, null, false));
 		ModEntry.Safe("CharSelectBg", () =>
 		{
-			if (model == null || BgContainer(__instance) is not Control container
-				|| container.GetNodeOrNull<Control>(model.Id.Entry + "_bg") is not Control bg)
-				return;
-
-			if (bg.GetNodeOrNull("P5Select") == null)
+			if (BgContainer(__instance) is Control container)
 			{
-				try
+				Control? bg = model == null ? null : container.GetNodeOrNull<Control>(model.Id.Entry + "_bg");
+				Select(__instance, container, bg, intro => CharSelectInfo.Apply(__instance, __0, model, intro));
+			}
+		});
+	}
+
+	internal static void SelectDread(Control screen)
+	{
+		if (screen.GetNodeOrNull<Control>("%AnimatedBg") is not Control container) return;
+		// The game resolves the rotating character before creating the background.
+		Control? bg = container.GetChildren().OfType<Control>().FirstOrDefault(c =>
+			c.HasMeta(OriginalBackground) || c.SceneFilePath == SilentBackground);
+		Select(screen, container, bg, null);
+	}
+
+	private static void Select(Control screen, Control container, Control? bg, Action<bool>? onReady)
+	{
+		Selection selection = Selections.GetOrCreateValue(screen);
+		int revision = ++selection.Revision;
+		if (bg == null) return;
+		Warmup.MenuShown();
+		_ = ShowBackground();
+
+		async Task ShowBackground()
+		{
+			bool Current() => selection.Revision == revision && Fx.Active(screen) &&
+				screen.IsVisibleInTree() && Fx.Active(bg) && bg.GetParent() == container;
+			bool CanDraw() => NGame.Instance?.Transition.InTransition != true;
+			try
+			{
+				bool intro = CharSelectScene.IntroEnabled();
+			if (await CharSelectScene.BuildAsync(bg, intro, Current, CanDraw, prepareInfo: onReady != null) && Current())
 				{
-					CharSelectScene.Build(bg, intro);
-				}
-				catch
-				{
-					if (bg.HasMeta(OriginalBackground) && bg.GetMeta(OriginalBackground).As<PackedScene>() is PackedScene original)
-					{
-						Control vanilla = original.Instantiate<Control>();
-						vanilla.Name = bg.Name;
-						container.RemoveChild(bg);
-						bg.QueueFree();
-						container.AddChild(vanilla);
-					}
-					throw;
+					bg.RemoveMeta(OriginalBackground);
+					GD.Print($"[P5Joker] character select background attached: {screen.GetType().Name}");
+					ModEntry.Safe("CharSelectInfo", () => onReady?.Invoke(intro));
+					await EmbarkTransition.PrepareTextures(bg, Current);
 				}
 			}
-			if (bg.HasMeta(OriginalBackground)) bg.RemoveMeta(OriginalBackground);
-			built = true;
-			Warmup.MenuShown();
-		});
-		ModEntry.Safe("CharSelectInfo", () => CharSelectInfo.Apply(__instance, __0, built ? model : null, intro));
+			catch (Exception e)
+			{
+				ModEntry.Safe("CharSelect fallback", () =>
+				{
+					if (!Current() || !bg.HasMeta(OriginalBackground)
+						|| bg.GetMeta(OriginalBackground).As<PackedScene>() is not PackedScene original) return;
+					Control vanilla = original.Instantiate<Control>();
+					vanilla.Name = bg.Name;
+					container.RemoveChild(bg);
+					bg.QueueFree();
+					container.AddChild(vanilla);
+				});
+				Stage.Report("CharSelectBg", e);
+			}
+		}
+	}
+}
+
+// The Dread screen is absent in 0.111. Target its actual visual swap, including
+// the calls made outside SelectCharacter when a rotating streak ends.
+[HarmonyPatch]
+public static class DreadSelectBgPatch
+{
+	private static readonly MethodInfo? Visuals = FindVisuals();
+
+	private static MethodInfo? FindVisuals()
+	{
+		Type? screen = typeof(NCharacterSelectScreen).Assembly.GetType("MegaCrit.Sts2.Core.Nodes.Screens.Dread.NDreadScreen");
+		return screen == null ? null : AccessTools.DeclaredMethod(screen, "SetSelectedCharacterVisuals", new[] { typeof(CharacterModel) });
+	}
+
+	public static bool Prepare() => Visuals != null;
+	public static MethodBase? TargetMethod() => Visuals;
+
+	public static void Prefix(Control __instance, CharacterModel __0)
+	{
+		CharacterModel model = __0;
+		if (__0.GetType().Name == "RotatingCharacter")
+		{
+			Traverse screen = Traverse.Create(__instance);
+			model = screen.Field("_rotatingDisplayCharacterOverride").GetValue<CharacterModel>()
+				?? screen.Field("_rotatingCharacter").GetValue<CharacterModel>() ?? model;
+		}
+		CharSelectSfxMute.Armed = model is Silent;
+	}
+
+	public static void Finalizer() => CharSelectBgPatch.Finalizer();
+	public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) =>
+		CharSelectBgPatch.Transpiler(instructions);
+	public static void Postfix(Control __instance)
+	{
+		CharSelectSfxMute.Armed = false;
+		ModEntry.Safe("DreadSelectBg", () => CharSelectBgPatch.SelectDread(__instance));
 	}
 }
 

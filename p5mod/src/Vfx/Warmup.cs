@@ -159,7 +159,7 @@ public static class Warmup
 		Groups.Add("menu");
 		int skipped = MenuJobs.Count;
 		MenuJobs.Clear();
-		if (skipped != 0) Log($"[P5Joker] warmup idle-v2 skipped {skipped} menu tasks; menu already displayed");
+		if (skipped != 0) Log($"[P5Joker] warmup idle-v2 skipped {skipped} menu tasks; selector will load them on demand");
 	}
 
 	private static int Pending => Jobs.Count + MenuJobs.Count;
@@ -167,22 +167,9 @@ public static class Warmup
 
 	private static void BuildMenuPlan()
 	{
-		QueueTextures(new[]
-		{
-			"cs_button", "cs_body", "cs_body_line", "cs_hand", "cs_hand_line", "cs_blink", "cs_warp",
-			"cs_skyline", "cs_rooftop", "cs_slab_text", "cs_eye_streak", "cs_card", "cs_info_head", "cs_info_ghost",
-			"eyes", "cutin_tail_left", "cutin_tail_right", "star4",
-		});
-		// 不再实例化完整选人场景、常驻动画或整块介绍板来预热。
-		QueueShaders(typeof(CharSelectScene), typeof(CharSelectInfoPanel), typeof(P5Ui), typeof(CutIn));
-		foreach (string text in new[] { "心之怪盗团的首领", "以叛逆之魂", "夺取扭曲的心", "蛇之戒指额外抽张牌" })
-		{
-			string sample = text;
-			Enqueue(new("menu glyphs " + sample, Draw: slot =>
-				P5Ui.Text(slot, sample, P5Ui.Font(P5Ui.CjkMedium), 27, Colors.White, Vector2.Zero, 3)));
-		}
-		Enqueue(new("eye cut-in data", Load: () => { CutIn.Preload(); return true; }));
-		QueueSounds(new[] { Sfx.CutIn, Sfx.OneMore, Sfx.SubBoom, Sfx.EvokerShatter });
+		// 在已可操作的主菜单空闲时，先读两张最大的立绘。其余资源在对应页面按需读取。
+		foreach (string name in new[] { "cs_body", "cs_hand" })
+			Enqueue(new("texture " + name, Load: () => Fx.PollTexture(name)));
 	}
 
 	public static void RequestJoker()

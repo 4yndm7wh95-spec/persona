@@ -3,6 +3,7 @@ using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Characters;
+using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Screens.CharacterSelect;
 
 namespace P5Joker;
@@ -81,6 +82,11 @@ public static class CharSelectInfo
 				}
 				try
 				{
+					if (!anchor.IsVisibleInTree() || NGame.Instance?.Transition.InTransition == true)
+					{
+						Restore(panel, saved);
+						return;
+					}
 					CharSelectInfoPanel.Build(anchor, data);
 				}
 				catch (System.Exception)
