@@ -1,5 +1,20 @@
 # P5 Joker 腐蚀波贴图任务报告
 
+按用户指示恢复任务。用独立暂存区从目标分支提交贴图，本地工作区的改动保留。
+
+| 交付图 | 交付尺寸 | 生成次数 | 被拒绝 |
+| --- | --- | ---: | --- |
+| curse_wave_body_01.png | 2048×512 | 1 | 否 |
+| curse_wave_body_02.png | 2048×512 | 1 | 否 |
+| curse_wave_crest_sheet.png | 2048×2048 | 1 | 否 |
+| curse_splash_sheet.png | 2048×2048 | 1 | 否 |
+
+原始图和提示词随交付图一起保存。交付图从原始画布重采样为指定尺寸，两张浪身的边缘做了过渡以对齐接缝，两张序列帧各有 16 个独立单元。检查图位于 art/p5/fx/v4/corrosive/，文件名为 check_corrosive.png、check_corrosive_checker.png、curse_wave_body_01_tile_check.png 和 curse_wave_body_02_tile_check.png。
+
+素材共 17 个文件，17,286,487 字节。提交号见包含本报告的提交。
+
+## 首次执行记录
+
 目标分支 `claude/confirm-next-tasks-k5wu6t`，拉取到的源码提交 `9e7263285360d5b2839113570eb24235ff684b84`。
 
 第 1 步切换分支失败（退出码 1）。Git 检测到切换会覆盖本地改动并中止。按任务单停止，保留本地工作区，仅向目标分支提交此报告。
