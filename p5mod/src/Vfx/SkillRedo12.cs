@@ -151,7 +151,7 @@ void fragment() {
 		Control back = BackOf(c), front = c.Front;
 		int n = Mathf.Clamp(c.Count > 0 ? c.Count : 2, 1, 4);
 		const float gatherEnd = 0.22f, fling0 = 0.2f, flingDur = 0.42f, burst0 = 0.46f, burstDur = 0.26f, home0 = 0.8f;
-		float peak = fling0 + flingDur * 9.5f / 16f;
+		float peak = fling0 + 0.11f;                            // 横扫到头（swing 0.13s 快到底）
 		Vector2 hand = c.Hand, mid = c.Feet + new Vector2(0f, -h * 0.55f);
 		bool flip = f < 0f;
 		S("gx_whoosh", 0.1f, 0.02f);
@@ -181,56 +181,86 @@ void fragment() {
 			Glow.Glint(front, hand, 0.7f);
 		});
 
-		// ── 甩：新月刃弧（序列帧放大、往右下推 = 往镜头冲）
-		float arcSize = h * 1.45f;
-		Vector2 arcAt = hand + new Vector2(f * h * 0.55f, -h * 0.12f);
-		Vector2 drift = new Vector2(f * h * 0.12f, h * 0.16f);
-		// 用户 2026-11-18：弧的凸面要朝前（朝敌人 / 镜头）——图里凸面朝左下，整块转约 -112°（朝左时镜像后转 +112°）
-		float arcRot = -1.953f * f;
-		// 弧在图里的走向（格子单位，中心为原点）：左上起 → 往下弯 → 沿底边扫到右边（最宽的一段）
+		// ── 甩：横劈（用户 2026-11-18：要横劈，不要刀刃从小放大的感觉；削弱塑料感、丰富细节）
+		// 刃弧一出来就是完整大小，转平、压扁成横向的 ⌣（凸面朝镜头），从他身后左侧横扫过身前到右前方。
+		float arcSize = h * 1.4f;
+		Vector2 arcAt = hand + new Vector2(f * h * 0.5f, -h * 0.02f);
+		Vector2 squash = new(1.4f, 0.62f);                    // 屏幕方向压扁：横着的一刀
+		float arcRot = -0.65f * f;                             // 图里凸面朝左下 → 转到朝下（朝镜头）
+		float travel = h * 0.35f;                              // 一刀横扫过去的位移
 		Vector2[] arcPts = { new(-0.22f, -0.3f), new(-0.2f, 0.02f), new(-0.05f, 0.2f), new(0.2f, 0.27f), new(0.42f, 0.2f) };
-		Func<float, float, Vector2> arcAtT = (e, k) =>
+		Func<float, Vector2> local = e =>
 		{
 			float x = e * (arcPts.Length - 1);
 			int i0 = Mathf.Min((int)x, arcPts.Length - 2);
 			Vector2 q = arcPts[i0].Lerp(arcPts[i0 + 1], x - i0);
-			return arcAt + drift * k + new Vector2(q.X * f, q.Y).Rotated(arcRot) * arcSize * (0.8f + 0.55f * k);
+			return new Vector2(q.X * f, q.Y).Rotated(arcRot) * arcSize * squash;
 		};
-		if (InkFlip(front, "fling_arc_sheet", arcAt, arcSize, flip, fling0 + flingDur + 0.1) is { } fl)
+		const float swing = 0.13f;                             // 横扫要多久
+		Func<float, float> slide = s => Ease5.OutQuint(Mathf.Clamp((s - fling0) / swing, 0f, 1f));
+		Func<float, float, Vector2> arcAtT = (e, s) => arcAt + new Vector2(f * travel * (slide(s) - 0.7f), 0f) + local(e);
+		// 刀身后压一条暗带（让刃更锐、不浮在画面上）
+		Dim(back, arcAt + new Vector2(0f, h * 0.05f), new Vector2(arcSize * 2.2f, h * 0.9f), flingDur + 0.3,
+			s => Ease5.Seg(s, 0f, 0.1f) * (1f - Ease5.Seg(s, 0.4f, 0.6f)) * 0.5f);
+		// 主刃 + 一层延迟半拍的淡红残影
+		for (int layer = 0; layer < 2; layer++)
 		{
-			fl.M.SetShaderParameter("veins", 0.15f);
-			fl.M.SetShaderParameter("rim", 0.2f);
-			fl.Root.Visible = false;
-			Fx.Animate(fl.Root, fling0, flingDur, t =>
+			bool ghost = layer == 1;
+			float lag = ghost ? 0.045f : 0f;
+			if (InkFlip(front, "fling_arc_sheet", arcAt, arcSize, flip, fling0 + flingDur + 0.15) is not { } fl) continue;
+			Node2D outer = Fx.Root(front, arcAt, "P5InkArc", fling0 + flingDur + 0.15);
+			fl.Root.GetParent().RemoveChild(fl.Root);
+			outer.AddChild(fl.Root);
+			fl.Root.Position = Vector2.Zero;
+			fl.Root.Rotation = arcRot;
+			outer.Scale = squash;
+			fl.M.SetShaderParameter("veins", 0.1f);
+			fl.M.SetShaderParameter("rim", 0.15f);
+			fl.M.SetShaderParameter("dark", ghost ? 0.3f : 0.1f);
+			outer.Visible = false;
+			Fx.Animate(outer, fling0 + lag, flingDur, t =>
 			{
-				fl.Root.Visible = true;
-				float k = Fx.InCubic(Mathf.Min(1f, t * 1.3f));
-				fl.M.SetShaderParameter("frame", 15f * t);
-				fl.M.SetShaderParameter("clock", t * 2f);
-				fl.Root.Scale = Vector2.One * (0.8f + 0.55f * k);
-				fl.Root.Rotation = arcRot;
-				fl.Root.GlobalPosition = arcAt + drift * k;
+				outer.Visible = true;
+				float s = fling0 + lag + t * flingDur;
+				// 一出来就是完整的刃（从第 7 帧开始），扫过去之后沿流向变细、从尾巴蚀散
+				fl.M.SetShaderParameter("frame", 7f + 8f * Ease5.Seg(t, 0.25f, 0.75f));
+				fl.M.SetShaderParameter("clock", t * 3f);
+				fl.M.SetShaderParameter("erode", Ease5.Seg(t, 0.45f, 0.55f) * 0.85f);
+				fl.M.SetShaderParameter("alpha", (ghost ? 0.4f : 1f) * Mathf.Min(1f, t * 12f) * (1f - Ease5.Seg(t, 0.75f, 0.25f)));
+				outer.GlobalPosition = arcAt + new Vector2(f * travel * (slide(s - lag) - 0.7f), 0f) - (ghost ? new Vector2(f * h * 0.06f, 0f) : Vector2.Zero);
+				outer.Scale = squash * new Vector2(1f + 0.08f * Mathf.Exp(-t * 10f), 1f);
 			});
 		}
-		// 沿弧抽过去的白热 / 红疾光（运动模糊感）+ 沿路碎光
-		float sweep0 = fling0 + flingDur * 3f / 16f, sweepDur = flingDur * 6f / 16f;
-		StreakSharp(front, e => arcAtT(e, Fx.InCubic(Mathf.Min(1f, (3f + 6f * e) / 16f * 1.3f))), sweep0, sweepDur, h * 0.8f, 30f * u, Red, 1.5f);
-		StreakSharp(front, e => arcAtT(e, Fx.InCubic(Mathf.Min(1f, (3f + 6f * e) / 16f * 1.3f))) + new Vector2(0f, h * 0.03f), sweep0 + 0.02f, sweepDur, h * 0.55f, 9f * u, new Color(1f, 0.85f, 0.85f), 1.8f);
+		// 拖影：几道沿刃平行的细疾光一起横扫过去（运动模糊）；前锋一道很细的白热线
+		for (int k2 = 0; k2 < 4; k2++)
+		{
+			float off = (k2 - 1.5f) * h * 0.035f;
+			Color col = k2 == 1 ? new Color(1f, 0.92f, 0.9f) : new Color(1f, 0.15f, 0.22f, 0.9f);
+			StreakSharp(front, e => arcAtT(e, fling0 + swing * e) + new Vector2(0f, off), fling0 + 0.01f * k2, swing + 0.06f, h * (0.5f + 0.1f * k2), (k2 == 1 ? 6f : 14f) * u, col, k2 == 1 ? 2f : 1.5f);
+		}
+		// 刃的尾缘一路迸实时碎光；结束时一缕缕速度纹散掉
+		for (int i = 0; i < 7; i++)
+		{
+			float x = (i + 0.5f) / 7f, d = fling0 + swing * x;
+			Vector2 at = arcAtT(x, d);
+			Phantom.Shards(front, at, 4, 220f * u, 640f * u, new Vector2(-f * 0.3f, 0.6f), 60f, 0.34f, 900f * u, 13f * u, d);
+			if (i % 2 == 0) Glow.Sparks(front, at, 5, 60f * u, 220f * u, 0.45f, new[] { new Color(1f, 0.6f, 0.6f), new Color(0.8f, 0.05f, 0.14f) }, 300f * u, 0.03f * u, 0.08f * u, new Vector2(f, 0f), 50f);
+		}
 		for (int i = 0; i < 5; i++)
 		{
-			float x = (i + 0.5f) / 5f, d = sweep0 + sweepDur * x;
-			Vector2 at = arcAtT(x, Fx.InCubic(Mathf.Min(1f, (3f + 6f * x) / 16f * 1.3f)));
-			Phantom.Shards(front, at, 4, 260f * u, 700f * u, new Vector2(f * 0.6f, 0.4f), 55f, 0.32f, 600f * u, 15f * u, d);
+			float x = Fx.Rand(0.1f, 0.9f), d = fling0 + flingDur * 0.55f + 0.03f * i;
+			Vector2 a = arcAtT(x, d), b = a + new Vector2(f * h * Fx.Rand(0.4f, 0.7f), Fx.Rand(-0.05f, 0.08f) * h);
+			StreakSharp(front, e => a.Lerp(b, e), d, 0.22f, h * 0.35f, 5f * u, new Color(1f, 0.3f, 0.35f), 1.4f);
 		}
 		Fx.After(front, peak, () =>
 		{
 			HitStop.Request(0.06);
 			Fx.Shake(2);
-			Vector2 near = arcAtT(0.75f, 0.85f);
-			Glow.Flash(front, near, Hot, h * 0.5f, 0.1f);
-			Glow.Flash(back, near, Red, h * 2.2f, 0.4f);
-			Cross(front, near, h * 0.6f);
-			Phantom.Shards(front, near, 14, 500f * u, 1200f * u, new Vector2(f * 0.8f, 0.4f), 60f, 0.38f, 800f * u, 20f * u);
+			Vector2 near = arcAtT(0.8f, peak);
+			Glow.Flash(front, near, Hot, h * 0.45f, 0.1f);
+			Glow.Flash(back, near, Red, h * 2.0f, 0.4f);
+			Cross(front, near, h * 0.5f);
+			Phantom.Shards(front, near, 12, 500f * u, 1100f * u, new Vector2(f, 0.2f), 50f, 0.36f, 800f * u, 18f * u);
 		});
 
 		// ── 出弹：弧上 n 处空气被撕开、迸出子弹，再一颗颗飞回手里
@@ -238,7 +268,7 @@ void fragment() {
 		{
 			int k = i;
 			float x = n == 1 ? 0.5f : k / (n - 1f);
-			Vector2 at = arcAtT(0.3f + 0.5f * x, 0.9f) + new Vector2(0f, -h * 0.12f);
+			Vector2 at = arcAtT(0.3f + 0.55f * x, fling0 + flingDur) + new Vector2(0f, -h * 0.1f);
 			float t0 = burst0 + 0.05f * k, back0 = home0 + 0.06f * k, fly = 0.17f;
 			if (InkFlip(front, "bullet_burst_sheet", at, h * 0.6f, flip, back0 + fly + 0.05) is not { } bf) continue;
 			bf.M.SetShaderParameter("veins", 0f);
