@@ -493,13 +493,23 @@ public static class PoisonApplyPatch
 
 /// <summary>
 /// 腐蚀波：每抽到一张牌（CorrosiveWavePower.AfterCardDrawn，原版在这里给全体上毒、在每个敌人身上放绿色毒气）——
-/// 在原版上毒之前排一道贴地的咒火浪（Vfx/CorrosiveFx.cs）；这段时间的上毒不放普通施毒落点，原版的绿色毒气藏掉。只给 Joker 的腐蚀波。
+/// Joker 的腐蚀波：先放咒怨卷浪（Vfx/CorrosiveFx.cs），把原版这一步（上毒）推迟到浪拍中敌人的那一刻再跑（用户 2026-11-18：挂毒的确认感要和拍击同步、不要滞后）。
+/// 抽牌是一张一张等着跑的，所以连抽时一道浪接一道浪。原版的绿色毒气藏掉（CorrosiveGasPatch）。
 /// </summary>
 [HarmonyPatch(typeof(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower), nameof(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower.AfterCardDrawn))]
 public static class CorrosiveDrawPatch
 {
-	public static void Prefix(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower __instance, CardModel card)
+	private static bool _bypass;
+	private static ulong _lastMs;
+
+	public static bool Prefix(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower __instance, MegaCrit.Sts2.Core.GameActions.Multiplayer.PlayerChoiceContext choiceContext, CardModel card, bool fromHandDraw, ref System.Threading.Tasks.Task __result)
 	{
+		if (_bypass)
+		{
+			return true;
+		}
+		float wait = 0f;
+		Godot.Node? anchor = null;
 		ModEntry.Safe("CorrosiveDraw", () =>
 		{
 			if (card.Owner?.Creature != __instance.Owner || __instance.Owner.Player is not { } p || !Joker.Is(p)
@@ -515,8 +525,37 @@ public static class CorrosiveDrawPatch
 					targets.Add(new CorrosiveFx.Target(n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, n.Visuals));
 				}
 			}
-			CorrosiveFx.OnDraw(layer, Joker.PosePoint(joker, ReadyFx.Feet), Joker.Facing(joker), targets);
+			ulong now = Godot.Time.GetTicksMsec();
+			bool first = now - _lastMs > 900;          // 连抽：第一下最重
+			_lastMs = now;
+			wait = CorrosiveFx.OnDraw(layer, Joker.PosePoint(joker, ReadyFx.Feet), Joker.Facing(joker), targets, first);
+			anchor = layer;
 		});
+		if (wait <= 0f || anchor == null)
+		{
+			return true;
+		}
+		__result = Delayed(__instance, choiceContext, card, fromHandDraw, wait, anchor);
+		return false;
+	}
+
+	private static async System.Threading.Tasks.Task Delayed(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower power, MegaCrit.Sts2.Core.GameActions.Multiplayer.PlayerChoiceContext ctx, CardModel card, bool fromHandDraw, float wait, Godot.Node anchor)
+	{
+		if (Godot.GodotObject.IsInstanceValid(anchor) && anchor.GetTree() is Godot.SceneTree tree)
+		{
+			await anchor.ToSignal(tree.CreateTimer(wait), Godot.SceneTreeTimer.SignalName.Timeout);
+		}
+		System.Threading.Tasks.Task run;
+		_bypass = true;
+		try
+		{
+			run = power.AfterCardDrawn(ctx, card, fromHandDraw);
+		}
+		finally
+		{
+			_bypass = false;
+		}
+		await run;
 	}
 }
 

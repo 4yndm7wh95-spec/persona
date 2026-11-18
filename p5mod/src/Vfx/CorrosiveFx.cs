@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 
@@ -5,11 +6,12 @@ namespace P5Joker;
 
 /// <summary>
 /// 腐蚀波（稀有，毒流重点牌：开了之后这回合每抽一张牌都给全体上毒）。
-/// 2026-11-18 第六版「咒爪齐撕」。第五版（贴地的咒毒潮、一滩一滩的毒）被否：用户要挂毒那一下有冲击力、有打击感，不要偏在地上。
-/// · 每抽一张牌（Strike）：所有敌人同一刻被撕开三道咒怨爪痕（致命毒药那套用户认可的笔触），咒毒从伤口里炸开 ——
-///   涂毒那团翻滚的咒毒在它身上一胀再爆开、往外迸碎光、毒液往下滴，身上白闪 + 暗红、身体暗一下；顿帧、震屏。
-///   连抽时一下接一下（间隔 0.12s），只有每批的第一下最重。
-/// · 打出（Plunge）：亚森出手的那一刻，Joker 身前空中被撕开同样的三道大爪痕、咒毒炸开（这回合「爪子」已经亮出来了）。
+/// 2026-11-18 第八版「咒怨卷浪」（用户画了路线草图）。之前被否：贴地毒潮、咒爪齐撕、横扫的浪墙。
+/// · 每抽一张牌（OnDraw）：每个敌人身上同一刻卷起一道咒怨浪 —— 像过山车：从它左下方（Joker 那边）往右上爬起、翻过头顶，
+///   在最高点放慢、顿一小下，然后猛地加速斜着往右下拍到它身上；拍中那一刻 = 这次上毒（CorrosiveDrawPatch 把原版上毒推迟到这一刻，确认感同步、不滞后）：
+///   顿帧、震屏、白闪 + 暗红、咒毒在它身上一胀炸开、碎光顺着拍下去的方向溅出去、身体暗一下。
+///   浪身是着色器画的（翻滚的暗红黑、外沿一道被啃得坑坑洼洼的亮边、浪头最亮、尾巴蚀成碎块散掉）；Codex 生的浪身纹理到了以后只当着色器的输入，不直接贴。
+/// · 打出（Plunge）：亚森出手的一刻，Joker 身前一团咒毒炸开 + 十字光。
 /// · 持续（Aura）：Joker 身上隔一会儿泛一下很淡的暗红（不放在地上）。
 /// </summary>
 public static class CorrosiveFx
@@ -17,14 +19,190 @@ public static class CorrosiveFx
 	/// <summary>一个敌人：中心、头顶、宽度、本体（染色用）。</summary>
 	public record struct Target(Vector2 At, Vector2 Top, float Width, Node2D? Body);
 
-	private static ulong _suppressUntil, _nextWaveAt, _auraNext;
+	private static ulong _suppressUntil, _auraNext;
 
-	/// <summary>抽牌带来的上毒正在由咒爪表现：PoisonFx.Apply 这段时间不放普通落点。</summary>
+	/// <summary>抽牌带来的上毒正在由卷浪表现：PoisonFx.Apply 这段时间不放普通落点。</summary>
 	public static bool Suppressing => Stage.NowMs() < _suppressUntil;
 
 	private static readonly Color Hot = new(1f, 0.95f, 0.94f), Red = new(1f, 0.1f, 0.18f), Deep = new(0.45f, 0.02f, 0.08f);
 
 	private static float U(Control layer) => Fx.Screen(layer).Y / 1080f;
+
+	// ───────────────────────── 卷浪的路线（照用户的草图，单位 = 敌人尺度 R，x 朝远离 Joker，y 朝下）─────────────────────────
+
+	private static readonly Vector2[] Route =
+	{
+		new(-0.95f, 0.75f), new(-0.35f, 0.5f), new(0.3f, 0.2f), new(0.8f, -0.25f), new(0.62f, -0.66f),   // 红：从左下往右上爬起，拐上去
+		new(0.05f, -0.86f),                                                                            // 最高点（红蓝交界）：在这里放慢、顿一下
+		new(-0.3f, -0.76f), new(-0.5f, -0.42f), new(-0.42f, 0.0f), new(-0.08f, 0.38f), new(0.45f, 0.66f), new(0.95f, 0.88f),   // 蓝：翻下来，斜着拍下去
+	};
+	private const int TopIndex = 5, HitIndex = 9;   // 最高点、拍中敌人身体的那一点
+
+	/// <summary>节奏（秒）：爬升（越往上越慢）→ 顶上顿一下 → 拍下去（越来越快）。</summary>
+	private const float Climb = 0.2f, Hang = 0.08f, Slam = 0.13f;
+
+	private static Vector2 CatmullRom(Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3, float t)
+	{
+		float t2 = t * t, t3 = t2 * t;
+		return 0.5f * (2f * p1 + (-p0 + p2) * t + (2f * p0 - 5f * p1 + 4f * p2 - p3) * t2 + (-p0 + 3f * p1 - 3f * p2 + p3) * t3);
+	}
+
+	/// <summary>把路线按弧长采样成 n 段：返回点、每个控制点对应的弧长比例。</summary>
+	private static (List<Vector2> Pts, List<float> Len, float[] At) Sample(int per = 10)
+	{
+		var pts = new List<Vector2>();
+		var at = new float[Route.Length];
+		for (int i = 0; i < Route.Length - 1; i++)
+		{
+			Vector2 p0 = Route[Mathf.Max(0, i - 1)], p1 = Route[i], p2 = Route[i + 1], p3 = Route[Mathf.Min(Route.Length - 1, i + 2)];
+			at[i] = pts.Count;
+			for (int k = 0; k < per; k++) pts.Add(CatmullRom(p0, p1, p2, p3, k / (float)per));
+		}
+		at[^1] = pts.Count;
+		pts.Add(Route[^1]);
+		var len = new List<float> { 0f };
+		for (int i = 1; i < pts.Count; i++) len.Add(len[i - 1] + pts[i].DistanceTo(pts[i - 1]));
+		float total = len[^1];
+		for (int i = 0; i < len.Count; i++) len[i] /= total;
+		for (int i = 0; i < at.Length; i++) at[i] = len[(int)at[i]];
+		return (pts, len, at);
+	}
+
+	private static readonly (List<Vector2> Pts, List<float> Len, float[] At) Path = Sample();
+
+	/// <summary>弧长比例 p 处的点（0～1）。</summary>
+	private static Vector2 PointAt(float p)
+	{
+		var (pts, len, _) = Path;
+		p = Mathf.Clamp(p, 0f, 1f);
+		int i = 1;
+		while (i < len.Count - 1 && len[i] < p) i++;
+		float k = (p - len[i - 1]) / Mathf.Max(1e-5f, len[i] - len[i - 1]);
+		return pts[i - 1].Lerp(pts[i], k);
+	}
+
+	/// <summary>浪头在第 s 秒走到哪（弧长比例）。爬升 ease-out（越往上越慢），顶上慢慢挪一点，拍下去 ease-in（越来越快）。</summary>
+	private static float HeadAt(float s)
+	{
+		float top = Path.At[TopIndex];
+		const float creep = 0.035f;
+		if (s < Climb) { float e = s / Climb; return top * (1f - (1f - e) * (1f - e)); }
+		if (s < Climb + Hang) return top + creep * ((s - Climb) / Hang);
+		float x = Mathf.Min(1f, (s - Climb - Hang) / Slam);
+		return top + creep + (1f - top - creep) * x * x;
+	}
+
+	/// <summary>浪头拍到敌人身体（HitIndex）的时刻（秒）。</summary>
+	public static float HitTime
+	{
+		get
+		{
+			float top = Path.At[TopIndex], hit = Path.At[HitIndex];
+			const float creep = 0.035f;
+			float x = Mathf.Sqrt(Mathf.Clamp((hit - top - creep) / (1f - top - creep), 0f, 1f));
+			return Climb + Hang + Slam * x;
+		}
+	}
+
+	private static Shader? _curl;
+
+	/// <summary>
+	/// 浪身（Line2D：UV.x 沿长度 0 = 尾 → 1 = 头，UV.y 横跨）：翻滚的暗红黑，外沿（v &lt; 0 那侧）一道被啃得坑坑洼洼的亮边，浪头最亮（白），
+	/// 尾巴蚀成碎块散掉。预乘混合：暗的部分真的压暗。body_tex：Codex 生的浪身纹理（亮度当密度用），没有就纯噪声。
+	/// </summary>
+	private static Shader CurlShader => _curl ??= new Shader { Code = @"
+shader_type canvas_item;
+render_mode blend_premul_alpha;
+uniform float clock = 0.0;
+uniform float seed = 0.0;
+uniform float alpha = 1.0;
+uniform float use_tex = 0.0;
+uniform sampler2D body_tex : repeat_enable, filter_linear;
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+float noise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y); }
+float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { v += a * noise(p); p = p * 2.03 + vec2(1.7, 9.2); a *= 0.5; } return v; }
+void fragment() {
+	float u = UV.x, v = UV.y * 2.0 - 1.0;
+	float n = fbm(vec2(u * 8.0 - clock * 3.0 + seed, v * 3.5));
+	float n2 = noise(vec2(u * 16.0 - clock * 5.0, v * 4.0 + seed));
+	if (use_tex > 0.5) { n = mix(n, texture(body_tex, vec2(u * 1.5 - clock * 0.6, UV.y)).r, 0.7); }
+	float prof = 1.0 - abs(v);
+	float body = smoothstep(0.1, 0.5, prof + (n - 0.5) * 0.9);
+	body *= smoothstep(0.3, 0.7, n * 1.2 + u * 0.55 - 0.1);            // 被蚀得一块一块的，尾巴散掉
+	float st = smoothstep(0.55, 0.85, noise(vec2(u * 30.0 - clock * 7.0, v * 6.0 + seed))) * prof * smoothstep(0.1, 0.5, u);   // 顺着流向的亮丝
+	float rim = smoothstep(0.45, 0.9, -v + (n2 - 0.5) * 0.5) * smoothstep(0.0, 0.3, u);   // 外沿亮边
+	float crest = smoothstep(0.82, 1.0, u) * smoothstep(0.1, 0.7, prof + (n2 - 0.5) * 0.4);
+	vec3 col = vec3(0.13, 0.0, 0.03) * body + vec3(0.95, 0.06, 0.16) * (rim * 1.1 + body * 0.3 * u + st * 0.8)
+		+ vec3(1.0, 0.82, 0.8) * (crest * 0.85 + pow(rim, 3.0) * 0.6);
+	float a = clamp(body * 0.8 + rim * 0.55 + crest * 0.6 + st * 0.4, 0.0, 1.0) * alpha;
+	COLOR = vec4(col * alpha, a);
+}" };
+
+	/// <summary>Codex 生的浪身纹理（有就用，art/p5/fx/v4/corrosive/curse_wave_body.png）。</summary>
+	private static Texture2D? BodyTex => Fx.Tex("curse_wave_body");
+
+	/// <summary>
+	/// 一个敌人身上的卷浪。center = 敌人中心，h / w = 高 / 宽，facing = 远离 Joker 的方向。s 秒时浪头在 HeadAt(s)，浪身拖在后面 TailLen。
+	/// 拍中（HitTime）的打击由调用方放。
+	/// </summary>
+	private static void Curl(Control layer, Vector2 center, float h, float w, float facing, float power)
+	{
+		float u = U(layer);
+		float R = Mathf.Max(h * 1.05f, w * 0.85f) * Mathf.Clamp(power, 0.6f, 1.4f);
+		Vector2 hit = Route[HitIndex];
+		Vector2 origin = center - new Vector2(hit.X * facing, hit.Y) * R + new Vector2(0f, h * 0.05f);
+		Vector2 Map(Vector2 q) => origin + new Vector2(q.X * facing, q.Y) * R;
+		float total = Climb + Hang + Slam, fade = 0.16f;
+		const float tail = 0.42f;
+		Node2D root = Fx.Root(layer, origin, "P5CorrodeCurl", total + fade + 0.1);
+		ShaderMaterial m = new() { Shader = CurlShader };
+		m.SetShaderParameter("seed", Fx.Rand(0f, 20f));
+		if (BodyTex is Texture2D tex) { m.SetShaderParameter("body_tex", tex); m.SetShaderParameter("use_tex", 1f); }
+		var line = new Line2D
+		{
+			Width = R * 0.5f, Texture = Glow.Soft, TextureMode = Line2D.LineTextureMode.Stretch, Material = m,
+			JointMode = Line2D.LineJointMode.Round, Antialiased = true,
+			WidthCurve = new Curve(),
+		};
+		line.WidthCurve.AddPoint(new Vector2(0f, 0.05f));
+		line.WidthCurve.AddPoint(new Vector2(0.55f, 0.75f));
+		line.WidthCurve.AddPoint(new Vector2(0.92f, 1f));
+		line.WidthCurve.AddPoint(new Vector2(1f, 0.55f));
+		root.AddChild(line);
+		root.GlobalPosition = Vector2.Zero;
+		root.Position = Vector2.Zero;
+		line.GlobalPosition = Vector2.Zero;
+		// 浪头一团跟着走的红光
+		Node2D glow = Fx.Root(layer, Map(Route[0]), "P5CorrodeGlow", total + 0.1);
+		Glow.SoftSprite(glow, Vector2.Zero, new Color(1f, 0.1f, 0.18f, 0.7f), R * 0.7f / 32f);
+		Glow.SoftSprite(glow, Vector2.Zero, new Color(1f, 0.85f, 0.85f, 0.6f), R * 0.18f / 32f);
+		// 拍下去的路上，浪头往后甩碎光
+		for (int k = 0; k < 3; k++)
+		{
+			float sAt = Climb + Hang + Slam * (0.3f + 0.25f * k);
+			Vector2 at = Map(PointAt(HeadAt(sAt)));
+			Phantom.Shards(layer, at, 5, 200f * u, 500f * u, new Vector2(-facing, -0.6f), 50f, 0.3f, 600f * u, 14f * u, sAt);
+		}
+		const int n = 34;
+		var pts = new Vector2[n];
+		Fx.Animate(root, 0, total + fade, t =>
+		{
+			float s = t * (total + fade);
+			float head = HeadAt(Mathf.Min(s, total));
+			float back = Mathf.Max(0f, head - tail * Mathf.Min(1f, 0.35f + s / Climb)) + (s > total ? (s - total) / fade * tail : 0f);
+			back = Mathf.Min(back, head - 0.01f);
+			for (int i = 0; i < n; i++) pts[i] = Map(PointAt(Mathf.Lerp(back, head, i / (float)(n - 1))));
+			line.Points = pts;
+			m.SetShaderParameter("clock", s * 2.2f);
+			m.SetShaderParameter("alpha", Mathf.Min(1f, s / 0.04f) * (1f - Ease5.Seg(s, total, fade)));
+			if (GodotObject.IsInstanceValid(glow))
+			{
+				glow.GlobalPosition = pts[n - 1];
+				glow.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, s / 0.05f) * (1f - Ease5.Seg(s, total - 0.03f, 0.06f)));
+			}
+		});
+	}
 
 	/// <summary>咒毒炸开：涂毒那团翻滚的咒毒在 at 一下胀起来（0.07s）再炸开散掉；碎光往外迸、毒液往下滴到 groundY。size = 直径。</summary>
 	private static void Burst(Control layer, Vector2 at, float size, float groundY, float power)
@@ -51,24 +229,19 @@ public static class CorrosiveFx
 			CardSkillFx.Drop(layer, at + new Vector2(Fx.Rand(-0.25f, 0.25f) * size, Fx.Rand(0f, 0.2f) * size), groundY, 0.1f + 0.08f * i, size * 2f, u);
 	}
 
-	/// <summary>打出：亚森出手的一刻，Joker 身前空中撕开三道大咒爪、咒毒炸开。claw = 亚森爪尖（没有就用空中一点），ground = Joker 身前地面。</summary>
+	/// <summary>打出：亚森出手的一刻，Joker 身前一团咒毒炸开 + 十字光。</summary>
 	public static void Plunge(Control layer, Vector2 claw, Vector2 ground)
 	{
 		float u = U(layer);
-		Vector2 at = ground + new Vector2((ground.X >= claw.X ? 1f : -1f) * 220f * u, -330f * u);   // 往前挪，别盖住 Joker 自己
-		Vector2 dir = at - claw;
-		if (dir.LengthSquared() < 1f) dir = Vector2.Right;
+		float facing = ground.X >= claw.X ? 1f : -1f;
+		Vector2 at = ground + new Vector2(facing * 120f * u, -280f * u);
 		Sfx.Play(Sfx.Slam, 0.6f);
 		Sfx.Play(Sfx.SubBoom, 0.6f);
 		Sfx.Play(Sfx.Curse, 0.45f);
-		PoisonFx.ClawRake(layer, at, 360f * u, dir);
-		Fx.After(layer, PoisonFx.RakeAt, () =>
-		{
-			HitStop.Request(0.07);
-			Stage.ShakeDir?.Invoke(3, 90f);
-			Burst(layer, at, 300f * u, ground.Y, 1.4f);
-			SkillRedo5.Cross(layer, at, 320f * u);
-		});
+		HitStop.Request(0.07);
+		Stage.ShakeDir?.Invoke(3, 90f);
+		Burst(layer, at, 320f * u, ground.Y, 1.4f);
+		SkillRedo5.Cross(layer, at, 340f * u);
 	}
 
 	/// <summary>持续：每帧调用（腐蚀波生效时）；约每 0.8s 在 Joker 身上泛一下很淡的暗红（不放在地上）。</summary>
@@ -85,47 +258,42 @@ public static class CorrosiveFx
 	}
 
 	/// <summary>
-	/// 抽到一张牌（CorrosiveDrawPatch，在原版给全体上毒之前）：排一下咒爪齐撕。
-	/// 连抽时一下接一下（间隔 0.12s）；之后 0.35s 内（加上排队时间）的上毒都由这里表现。
+	/// 抽到一张牌（CorrosiveDrawPatch）：每个敌人身上同时卷起一道浪，HitTime 秒后拍下去。返回拍中要等几秒 ——
+	/// 调用方把原版上毒推迟这么久，让数字 / 毒层和拍击同一刻出现。first = 这批连抽的第一下（更重）。
 	/// </summary>
-	public static void OnDraw(Control layer, Vector2 feet, float facing, IReadOnlyList<Target> targets)
+	public static float OnDraw(Control layer, Vector2 feet, float facing, IReadOnlyList<Target> targets, bool first = true)
 	{
-		ulong now = Stage.NowMs();
-		ulong start = _nextWaveAt > now ? _nextWaveAt : now;
-		_nextWaveAt = start + 120;
-		_suppressUntil = System.Math.Max(_suppressUntil, start + 350);
-		bool first = start == now;
-		Fx.After(layer, (start - now) / 1000.0, () => Strike(layer, facing, targets, first));
-	}
-
-	private static void Strike(Control layer, float facing, IReadOnlyList<Target> targets, bool first)
-	{
+		float hitAt = HitTime;
+		_suppressUntil = Stage.NowMs() + (ulong)((hitAt + 0.35f) * 1000f);
 		if (targets.Count == 0)
 		{
-			return;
+			return 0f;
 		}
 		float u = U(layer);
-		// 声音（用户：腐蚀波刺耳）：每下只有一声挥动 + 低频 + 一声柔和的咒怨闷响
-		Sfx.Play(Sfx.SwishLow, first ? 0.5f : 0.35f);
-		Sfx.Play(Sfx.SubBoom, first ? 0.45f : 0.28f);
-		Fx.After(layer, PoisonFx.RakeAt, () =>
-		{
-			Sfx.Play(Sfx.CurseSoft, first ? 0.6f : 0.42f);
-			HitStop.Request(first ? 0.06 : 0.025);
-			Stage.ShakeDir?.Invoke(first ? 2 : 1, 0f);
-		});
+		Sfx.Play(Sfx.SwishLow, first ? 0.45f : 0.32f);
+		Fx.After(layer, hitAt - 0.06f, () => Sfx.Play(Sfx.SwishLow, first ? 0.35f : 0.25f));
 		foreach (Target t in targets)
 		{
 			Target tt = t;
 			float h = Mathf.Max(80f, (t.At - t.Top).Length());
-			float k = Mathf.Clamp(t.Width / 240f, 0.6f, 1.3f);
-			Vector2 at = t.At + new Vector2(0f, -h * 0.1f);
-			PoisonFx.ClawRake(layer, at, t.Width, new Vector2(facing, 0.3f));
-			Fx.After(layer, PoisonFx.RakeAt, () =>
-			{
-				Burst(layer, at, Mathf.Max(tt.Width * 0.9f, 160f * u) * (first ? 1f : 0.8f), tt.At.Y + h * 0.75f, first ? 1f : 0.7f);
-				BodyTint.Pulse(tt.Body, new Color(0.72f, 0.45f, 0.55f), 0.1, 0.35);
-			});
+			Curl(layer, t.At, h, t.Width, facing, first ? 1f : 0.85f);
 		}
+		Fx.After(layer, hitAt, () =>
+		{
+			Sfx.Play(Sfx.SubBoom, first ? 0.5f : 0.32f);
+			Sfx.Play(Sfx.CurseSoft, first ? 0.6f : 0.42f);
+			HitStop.Request(first ? 0.07 : 0.035);
+			Stage.ShakeDir?.Invoke(first ? 2 : 1, 0f);
+			Vector2 slamDir = new Vector2(facing * 0.85f, 0.5f).Normalized();
+			foreach (Target tt in targets)
+			{
+				float h = Mathf.Max(80f, (tt.At - tt.Top).Length());
+				Glow.Flash(layer, tt.At, Hot, Mathf.Max(tt.Width, h) * 0.6f, 0.1f);
+				Burst(layer, tt.At, Mathf.Max(tt.Width * 0.9f, 160f * u) * (first ? 1f : 0.85f), tt.At.Y + h * 0.75f, first ? 1f : 0.8f);
+				Phantom.Shards(layer, tt.At, first ? 14 : 9, 500f * u, 1200f * u, slamDir, 40f, 0.4f, 900f * u, 22f * u);
+				BodyTint.Pulse(tt.Body, new Color(0.7f, 0.42f, 0.52f), 0.12, 0.4);
+			}
+		});
+		return hitAt;
 	}
 }
