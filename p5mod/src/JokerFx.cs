@@ -192,8 +192,11 @@ public static class JokerFx
 				// 用户 2026-11-13：原来太简单 → 敌人四周亮起一圈红光弹（数量 = 要打出的小刀），之后每发小刀打中收一颗扎进去（KnifeTrapFx）
 				int n = MegaCrit.Sts2.Core.Entities.Cards.PileType.Exhaust.GetPile(card.Owner).Cards.Count(c => c.Tags.Contains(CardTag.Shiv));
 				Rect2 box = t.Hitbox.GetGlobalRect();
-				Aim.HoldCast(joker, 0.05f + KnifeTrapFx.Interval * Mathf.Clamp(n, 1, 14) + 0.15f);   // 等预告信全部现身再开始打
-				KnifeTrapFx.Begin(layer, Joker.FxLayer(back: true) ?? layer, Joker.Muzzle(joker), box.GetCenter(), box.Size.Y, box.Size.X, n, t.Visuals);
+				// 第三版「时钟陷阱」（0.9.49 审阅）：场景褪灰、敌人身后展开透明大表盘、表盘边上挂着预告信（= 小刀张数，最多显示 24），每一枪打爆一张、表盘加速
+				Aim.HoldCast(joker, KnifeTrapFx.EntryTime);   // 等表盘展开、卡全部现身再开始打
+				Vector2 jf = Joker.PosePoint(joker, ReadyFx.Feet);
+				KnifeTrapFx.Begin(layer, Joker.FxLayer(back: true) ?? layer, Joker.Muzzle(joker), box.GetCenter(), box.Size.Y, box.Size.X, n, t.Visuals,
+					Joker.Chest(joker), (jf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length());
 				break;
 			}
 			case "Snakebite" when t != null:

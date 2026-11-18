@@ -636,14 +636,29 @@ public partial class Preview : Node2D
 		["knife_trap"] = p =>
 		{
 			p.At(0.2, () => p._joker?.Play("aim_in"));
-			p.At(0.35, () => { p._enemies.TryGetValue(Enemy, out Node2D? n); KnifeTrapFx.Begin(p._front, p._back, Muzzle, Enemy + new Vector2(0f, -10f), 285f, 260f, 6, n); });
-			for (int i = 0; i < 6; i++)
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.35, () => { p._enemies.TryGetValue(Enemy, out Node2D? n); KnifeTrapFx.Begin(p._front, p._back, Muzzle, Enemy + new Vector2(0f, -10f), 285f, 260f, 10, n, Pose(820f, 600f), tall); });
+			for (int i = 0; i < 10; i++)
 			{
-				double at = 1.0 + 0.28 * i;
-				bool lastShot = i == 5;
+				double at = 0.35 + KnifeTrapFx.EntryTime + 0.25 + 0.24 * i;
+				bool lastShot = i == 9;
 				p.At(at - 0.18, () => p._joker?.Play("shiv_from_aim"));
 				p.At(at - 0.02, () => GunFx.Muzzle(p._front, Muzzle, (Enemy - Muzzle).Normalized()));
 				p.At(at, () => GunFx.Shot(p._front, Muzzle, Enemy + new Vector2(Fx.Rand(-20f, 20f), Fx.Rand(-30f, 30f)), lastShot));
+			}
+		},
+		// 刀刃陷阱：小刀超过 24 张（26）→ 显示 24 张，前两枪各补一张
+		["knife_trap26"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.2, () => p._joker?.Play("aim_in"));
+			p.At(0.35, () => { p._enemies.TryGetValue(Enemy, out Node2D? n); KnifeTrapFx.Begin(p._front, p._back, Muzzle, Enemy + new Vector2(0f, -10f), 285f, 260f, 26, n, Pose(820f, 600f), tall); });
+			for (int i = 0; i < 4; i++)
+			{
+				double at = 0.35 + KnifeTrapFx.EntryTime + 0.25 + 0.24 * i;
+				p.At(at - 0.18, () => p._joker?.Play("shiv_from_aim"));
+				p.At(at - 0.02, () => GunFx.Muzzle(p._front, Muzzle, (Enemy - Muzzle).Normalized()));
+				p.At(at, () => GunFx.Shot(p._front, Muzzle, Enemy + new Vector2(Fx.Rand(-20f, 20f), Fx.Rand(-30f, 30f)), false));
 			}
 		},
 		["poison_v4"] = p =>

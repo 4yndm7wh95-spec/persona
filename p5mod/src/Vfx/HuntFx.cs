@@ -20,7 +20,7 @@ public static class HuntFx
 	private static Shader? _freeze;
 
 	/// <summary>褪色波（读屏幕）：origin 推出的波里褪成冷灰，红色和他身边一圈（keep）不褪；波前把画面轻轻折一下（没有轮廓线）。</summary>
-	private static Shader Freeze => _freeze ??= new Shader { Code = @"
+	internal static Shader Freeze => _freeze ??= new Shader { Code = @"
 shader_type canvas_item;
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
 uniform vec2 origin = vec2(0.7, 0.6);
