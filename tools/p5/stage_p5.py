@@ -137,6 +137,7 @@ V4_TEX = [("slash", n, 0.5) for n in ("slash_thin", "slash_heavy", "slash_cross"
      "ribbon_01", "ribbon_02", "ribbon_03", "card_stream_01", "card_stream_02", "venom_drops_sheet", "venom_veins_01", "venom_veins_02",
      "buff_motes_sheet")] + \
     [("corrosive", n, 0.5) for n in ("curse_wave_body_01", "curse_wave_body_02", "curse_splash_sheet")] + \
+    [("ink", n, 0.5) for n in ("ink_stroke_01", "ink_stroke_02", "ink_stroke_03", "ink_splash_sheet", "ink_drops_sheet")] + \
     [("arsene/layers_v7", n, 0.35) for n in ("wing_back", "wing_front", "arm_back", "body", "arm_reach", "arm_reach_extend", "arm_reach_fist", "eyes_glow")]   # Arsene v7 (user 2026-11-03)
 
 # P5R sound effects (research/p5r/audio): published name -> file (names in p5mod/src/Vfx/Sfx.cs)

@@ -301,6 +301,7 @@ public static class SkillPlay
 				case "StormOfSteel":            // 弃掉整手，每张换一把小刀
 					return hand;
 				case "BladeSymphony":           // 生成几把小刀
+				case "BladeOfInk":
 					return card.DynamicVars.TryGetValue("Cards", out var bv) ? bv.IntValue : 2;
 				case "Expertise":
 				{
