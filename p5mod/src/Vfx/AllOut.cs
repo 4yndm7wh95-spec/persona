@@ -38,6 +38,8 @@ public static partial class AllOut
 	private const float SrcStart = AllOutFinale.ArtAt - 0.03f, Settle = 0.32f;
 	// 入场分拍（相对碎开）：0 碎开 + 红底压回（冲击）→ 0.02–0.4 碎星转进来（丝滑，带一点回弹）→ 0.14–0.38 Joker 冲进来、落定震屏（冲击）
 	// → 0.42 怪物剪影砸进 + 喷血 + 震屏（第二下冲击）→ 0.5–0.8 竖排字划上来（丝滑）
+	// 立绘弹出后各层一直保持运动直到退场（用户 2026-11-18）：每秒放大 Drift（各层倍数不同，有纵深），加上缓慢的平移
+	private const float Drift = 0.022f;
 	private const float TextIn = 0.75f, TextLen = 0.42f;
 	private const float ArtT = ShatterAt + 0.5f;
 	// 收尾照 P3 mod 的速率：红色的波 CoverSweep 秒扫满（u≈0.75 时已盖满），停一拍，透明波 ClearSweep 秒扩开
@@ -375,7 +377,7 @@ public static partial class AllOut
 
 		// ── 声音（用户 2026-11-18：只要三样）：蓄势（P3 mod 同款，高潮正好在碎开）、碎开、怪物喷血（P5R 原版总攻击斩击） ──
 		// 在时间轴里按真实时间触发（不用 Sfx 的延时：慢放会把延时也拖长）
-		var cues = new List<(float At, string Name, float Vol)> { (ShatterAt - 0.65f, Sfx.AoaZoom, 0.85f), (CrackAt, Sfx.AoaCrack, 0.6f), (ShatterAt, Sfx.Shatter, 0.85f), (ArtT - 0.05f, Sfx.AoaSplatter, 0.9f) };
+		var cues = new List<(float At, string Name, float Vol)> { (ShatterAt - 0.65f, Sfx.AoaZoom, 1.9f), (CrackAt, Sfx.AoaCrack, 1.5f), (ShatterAt, Sfx.Shatter, 1.9f), (ArtT - 0.05f, Sfx.AoaSplatter, 2.0f) };
 		var fired = new bool[cues.Count];
 
 		bool broke = false, cracked = false;
@@ -392,7 +394,7 @@ public static partial class AllOut
 			if (!GodotObject.IsInstanceValid(layer)) return;
 			for (int i = 0; i < cues.Count; i++)
 			{
-				if (!fired[i] && T >= cues[i].At) { fired[i] = true; Sfx.Play(cues[i].Name, cues[i].Vol); }
+				if (!fired[i] && T >= cues[i].At) { fired[i] = true; Sfx.PlayLoud(cues[i].Name, cues[i].Vol); }
 			}
 			// 定格：裂纹从敌人那里炸开，画面往里推一点
 			// 顿帧：最开头两帧是黑白反转的冲击帧，之后画面压暗、去色、四周收暗，撞击点附近色散，集中线一闪一闪
@@ -470,33 +472,36 @@ public static partial class AllOut
 					sh.Back.Position += new Vector2(7f, 9f) * sc * Mathf.Clamp(fly * 3f, 0f, 1f);
 					sh.Edge.Modulate = new Color(1f, 1f, 1f, a * Mathf.Clamp(fly * 4f, 0f, 1f));
 				}
-				fin?.Seek(Mathf.Min(SrcStart + d, AllOutFinale.End - 0.02f));
+				// 原版收尾的时间：入场 0.4s 按原速，之后放慢、正好在透明波扩开时走到原版的最后一帧 —— 一直在动，不会中途停住
+				float stretch = (AllOutFinale.End - 0.02f - SrcStart - 0.4f) / (HoleAt + ClearSweep - ShatterAt - 0.4f);
+				fin?.Seek(Mathf.Min(d < 0.4f ? SrcStart + d : SrcStart + 0.4f + (d - 0.4f) * stretch, AllOutFinale.End - 0.02f));
 				if (fin != null)
 				{
 					// 拆开入场（一层接一层）：红底从放大压回 → 碎星转着砸进来 → Joker 从右边冲进来（带一点回弹）→ 怪物剪影从左边砸进（ArtT）
 					// → 竖排字从下往上划上来；Joker 落定那一下震屏
 					float qb = Quint(Mathf.Clamp(d / 0.3f, 0f, 1f));
-					fin.Bg.Scale = Vector2.One * Mathf.Lerp(1.15f, 1f, qb);
+					fin.Bg.Scale = Vector2.One * (Mathf.Lerp(1.15f, 1f, qb) + Drift * 0.6f * d);   // 之后一直慢慢推近（只放大，不露边）
 					// 碎星：不转（整层是全屏的，一转就露出四角）、不回弹，0.24s 利落地从 1.35 倍压到原大
 					float ks = Mathf.Clamp((d - 0.02f) / 0.24f, 0f, 1f);
 					fin.Star.Visible = d >= 0.02f;
 					fin.Star.Rotation = 0f;
-					fin.Star.Scale = Vector2.One * Mathf.Lerp(1.35f, 1f, Quint(ks));
+					fin.Star.Scale = Vector2.One * (Mathf.Lerp(1.35f, 1f, Quint(ks)) + Drift * 1.3f * d);   // 碎星推得比底板快，有纵深
 					fin.Star.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(ks * 6f, 0f, 1f));
 					// Joker：碎开那一刻就在玻璃后面，从 1.4 倍、以脸为支点 0.12s 砸到略小于原大（0.97），再 0.3s 弹回原大 —— 砸进来的那一下要狠；
 					// 同时从右边 0.1 屏宽冲到位；第一帧整个人白闪一下（加色），压暗只留 0.08s 就亮起；之后一直极慢地漂
 					// 不缩到原大以下（人物这层一直铺到屏幕右边和下边，缩了就露边）：1.4 倍 0.16s 砸到原大，之后极慢地往前推（放大）
 					float slam = Mathf.Clamp(d / 0.16f, 0f, 1f);
-					float js = Mathf.Lerp(1.4f, 1f, Quint(slam)) + 0.008f * Mathf.Max(0f, d - 0.16f);
+					float js = Mathf.Lerp(1.4f, 1f, Quint(slam)) + Drift * d;                    // 人物一直往前推
 					fin.Front.PivotOffset = screen * new Vector2(0.62f, 0.2f);                // 脸
 					fin.Front.Scale = Vector2.One * js;
-					fin.Front.Position = new Vector2(W * 0.1f * (1f - Quint(slam)), 0f);
+					fin.Front.Position = new Vector2(W * 0.1f * (1f - Quint(slam)) - 9f * d, 0f);      // 同时慢慢往左漂（放大量盖得住，不露右边）
 					float lit = Mathf.Clamp((d - 0.04f) / 0.1f, 0f, 1f);
 					float white = d < 0.05f ? 1f - d / 0.05f : 0f;
 					fin.Front.Modulate = new Color(Mathf.Lerp(0.35f, 1f, lit) + white, Mathf.Lerp(0.15f, 1f, lit) + white, Mathf.Lerp(0.2f, 1f, lit) + white, Mathf.Clamp(d / 0.04f, 0f, 1f));
 					float kt = Mathf.Clamp((d - TextIn) / TextLen, 0f, 1f);
 					fin.Text.Visible = d >= TextIn;
 					fin.Text.Position = new Vector2(0f, H * 0.9f * (1f - Ease(kt) * (2f - Ease(kt)) * 0.5f - Ease(kt) * 0.5f));
+					fin.Text.Scale = Vector2.One * (1f + Drift * 0.5f * Mathf.Max(0f, d - TextIn));
 					float hitT = T - ArtT;
 					float jl = d - 0.13f;                                                     // Joker 砸到位那一下震得最狠
 					float sh = jl > 0f && jl < 0.28f ? (1f - jl / 0.28f) * 16f : (d < 0.13f ? 6f : 0f);
@@ -515,11 +520,11 @@ public static partial class AllOut
 					sp.Visible = lt > 0f;
 					float rc = Mathf.Clamp((T - ArtT) / 0.2f, 0f, 1f);
 					float recoil = T >= ArtT ? Mathf.Sin(rc * Mathf.Pi) * (1f - rc * 0.5f) : 0f;
-					float sc = Mathf.Lerp(1.25f, 1f, le) * (1f + 0.035f * recoil);
+					float sc = Mathf.Lerp(1.25f, 1f, le) * (1f + 0.035f * recoil) * (1f + Drift * 0.8f * Mathf.Max(0f, T - ArtT));   // 剪影也一直慢慢放大
 					Vector2 piv = B.Position + B.Size * new Vector2(0.5f, 1f);
 					sp.Scale = B.Size / sp.Texture.GetSize() * sc;
 					sp.Rotation = rot * (1f - le) - 0.025f * recoil;
-					sp.Position = piv + new Vector2(-B.Size.X * 0.5f * sc, -B.Size.Y * sc).Rotated(sp.Rotation) + new Vector2(-16f * recoil - W * 0.22f * (1f - le), 0f);
+					sp.Position = piv + new Vector2(-B.Size.X * 0.5f * sc, -B.Size.Y * sc).Rotated(sp.Rotation) + new Vector2(-16f * recoil - W * 0.22f * (1f - le) + 7f * Mathf.Max(0f, T - ArtT), 0f);   // 往右慢慢逼近（和 Joker 相向）
 					sp.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(lt * 2.5f, 0f, 1f));
 				}
 				// 血
