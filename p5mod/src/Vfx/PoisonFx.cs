@@ -342,10 +342,10 @@ void fragment() {
 }" };
 
 	/// <summary>亚森挥爪到爪痕落在敌人身上（= 命中）的秒数。</summary>
-	private const float RakeAt = 0.05f;
+	internal const float RakeAt = 0.05f;
 
 	/// <summary>三道咒怨爪痕：斜着（从亚森那边往下撕）并排扫过敌人，一道接一道（0.025s），白芯黑红边，扫完溶解。</summary>
-	private static void ClawRake(Control layer, Vector2 at, float width, Vector2 dir)
+	internal static void ClawRake(Control layer, Vector2 at, float width, Vector2 dir)
 	{
 		float facing = dir.X >= 0f ? 1f : -1f;
 		float rot = 0.62f * facing + Fx.Rand(-0.06f, 0.06f);            // 从左上往右下撕（朝左时镜像）

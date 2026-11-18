@@ -388,6 +388,55 @@ public static partial class SkillRedo5
 		});
 	}
 
+	// ═══════════════════════════ 刀扇（第三批，2026-11-18 第二版）═══════════════════════════
+
+	/// <summary>
+	/// 刀扇（金卡能力：之后小刀打所有敌人）。小刀在这套 mod 里就是子弹，所以只用枪 / 弹的意象（第一版画了一把光刃刀扇 → 用户：表达太直白、棱角分明的图案不算特效）。
+	/// 「弹巢灌红」：他把枪在指尖转一圈（ShivFx 的转枪照旧）——
+	/// 慢：四周压暗，细光线一道道往枪上收，转枪的手边一团红光越来越亮，能量球旁的弹巢整圈转一下、每发一亮（AmmoView.Charge，游戏里）；
+	/// 快：枪停住的一刻 —— 枪口白闪 + 十字光、身上红残影往外一胀、身上一下红光、身后一大团红光，枪口往前喷一扇碎光（之后每一枪都散开打全体），顿帧轻震；
+	/// 慢：枪口留一点星光，红光慢慢退。muzzle = 枪口；c.Hand = 转枪的手。
+	/// </summary>
+	public static void FanOfKnives11(SkillCtx c, Vector2 muzzle, float spin = 0.22f)
+	{
+		float h = c.Tall, u = c.Unit, f = c.Face;
+		Control back = BackOf(c), front = c.Front;
+		Vector2 grip = c.Hand, mid = c.Feet + new Vector2(0f, -h * 0.55f);
+		float stop = spin;
+		S("gx_whoosh", 0.12f, 0.02f);
+		S("gx_ping", 0.16f, stop);
+		Dim(back, mid + new Vector2(f * h * 0.3f, 0f), new Vector2(h * 3.6f, h * 2.8f), stop + 0.8, s => Fx.OutCubic(Ease5.Seg(s, 0f, 0.12f)) * (1f - Ease5.Seg(s, 0.65f, 0.35f)) * 0.6f);
+		Gather(front, grip, h, u, stop, 16, 0.55f);
+		Glow.Flash(back, grip, new Color(0.85f, 0.04f, 0.14f), h * 0.9f, stop + 0.1f);
+		Glow.Flash(front, grip, new Color(1f, 0.35f, 0.38f), h * 0.3f, stop + 0.05f);
+		Fx.After(front, stop, () =>
+		{
+			HitStop.Request(0.05);
+			Fx.Shake(1);
+			Glow.Flash(front, muzzle, Hot, h * 0.45f, 0.12f);
+			Glow.Flash(back, mid, Red, h * 2.6f, 0.5f);
+			Cross(front, muzzle, h * 0.55f);
+			EchoPulse(c, 0.08f, 0.4f);
+			Glow.Ripple(front, muzzle, h * 1.0f, 0.35f, 0.02f);
+			// 一扇碎光往前喷（散开 = 之后打全体）
+			Phantom.Shards(front, muzzle, 20, 600f * u, 1300f * u, new Vector2(f, -0.06f), 32f, 0.4f, 150f * u, 26f * u);
+			for (int i = 0; i < 5; i++)
+			{
+				float a = (i - 2f) * 0.16f;
+				Vector2 to = muzzle + new Vector2(f, 0f).Rotated(a * f) * h * Fx.Rand(1.1f, 1.5f);
+				StreakSharp(front, e => muzzle.Lerp(to, e), 0.01f * Mathf.Abs(i - 2), 0.2f, h * 0.5f, 18f * u, i == 2 ? Hot : Red, 1.6f);
+			}
+		});
+		Fx.After(front, stop + 0.18f, () => Glow.Glint(front, muzzle, 0.8f));
+		if (c.SelfTint is { } tint)
+			Fx.Animate(front, 0, stop + 0.7, t =>
+			{
+				float s = t * (stop + 0.7f);
+				float k = 0.25f * Ease5.Seg(s, 0f, stop) + (s > stop ? 0.95f * Mathf.Exp(-(s - stop) * 5f) : 0f);
+				tint(Colors.White.Lerp(new Color(1.6f, 0.7f, 0.75f), k));
+			});
+	}
+
 	// ═══════════════════════════ 谋划专家（新做）═══════════════════════════
 
 	/// <summary>

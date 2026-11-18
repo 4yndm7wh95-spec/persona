@@ -20,7 +20,6 @@ public static class ShivFx
 	{
 		Sfx.Play(Sfx.GunDraw, 0.45f);
 		// 2026-11-18：指尖那两圈细光环去掉（细线圈 / 光环当主体都被拉黑过），主体换成 Batch3Fx.FanOfKnives 的刀扇开合
-		Vanilla.Burst(layer, Vanilla.Specks, finger, -Mathf.Pi / 2f, 0.6f, Lut5.Blood, amount: 10);
 		Fx.After(layer, spin, () =>
 		{
 			Glow.Flash(layer, finger, new Color(1f, 0.4f, 0.42f), 160f, 0.2f);      // 用户 2026-11-04：不要锁定框

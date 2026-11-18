@@ -5,7 +5,7 @@ using Godot;
 namespace P5Joker;
 
 /// <summary>
-/// 0.9.49 审阅第三批（2026-11-18）：匕首雨（群体攻击的感觉）、刀扇（转枪之外加一个主体）。腐蚀波在 CorrosiveFx（整套重做）。
+/// 0.9.49 审阅第三批（2026-11-18）：匕首雨（群体攻击的感觉）。刀扇在 SkillRedo10（FanOfKnives11），腐蚀波在 CorrosiveFx。
 /// 雷点照旧：不用火、烟、贴图拼形状、光环当主体、细线圈；主体用疾光 / 光刃 / 碎光 / 柔光这些认可过的东西。
 /// </summary>
 public static class Batch3Fx
@@ -97,79 +97,6 @@ public static class Batch3Fx
 		{
 			Glow.Flash(layer, to, Hot, 70f * u * k, 0.08f);
 			Glow.Flash(layer, to, Red, 150f * u * k, 0.2f);
-		});
-	}
-
-	// ═══════════════════════════ 刀扇 ═══════════════════════════
-
-	/// <summary>
-	/// 刀扇（之后小刀打所有敌人；金卡；审阅：转枪不错，但一点特效也没有）：转枪照旧（ShivFx），加主体「刀扇开合」。
-	/// 慢：转枪的同时，他持枪的手后面「唰」地一把一把展开七道红白光刃，排成一把半开的扇子（一道接一道，像折扇被甩开），扇面上一道高光扫过；
-	/// 快：枪停住的一刻，扇子「啪」地合拢、所有光刃收进枪里 —— 枪口十字光、白闪、顿帧轻震；
-	/// 慢：枪口朝敌人那边喷出一小扇碎光（之后每一枪都会散开打全体），身上一层淡红慢慢退掉。
-	/// grip = 转枪的手，tall = 人物身高（像素），spin = 转一圈多久（ShivFx 用的那个）。
-	/// </summary>
-	public static void FanOfKnives(Control layer, Control back, Vector2 grip, float tall, float facing, float spin = 0.22f)
-	{
-		float u = Fx.Screen(layer).Y / 1080f, f = facing, h = tall;
-		const int n = 7;
-		float open = 0.05f, step = 0.03f, shut = spin + 0.1f, life = shut + 0.12f;
-		Vector2 pivot = grip + new Vector2(-f * h * 0.04f, h * 0.02f);
-		float len = h * 0.62f;
-		Sfx.Take("gx_fan_open", 0.24f, open);
-		Sfx.Take("gx_fan_close", 0.3f, shut);
-		Sfx.Take("gx_ping", 0.14f, shut + 0.02f);
-		Glow.Flash(back, pivot + new Vector2(-f * len * 0.2f, -len * 0.5f), new Color(0.7f, 0.03f, 0.12f), h * 1.6f, life + 0.3f);
-		var blades = new List<(Polygon2D Glow, Polygon2D Core, float Ang, float At)>();
-		Node2D root = Fx.Root(layer, pivot, "P5KnifeFan", life + 0.1);
-		for (int i = 0; i < n; i++)
-		{
-			// 扇面朝他身后上方展开：从「朝前上」到「朝后上」
-			float ang = -Mathf.Pi / 2f + f * Mathf.Lerp(0.95f, -1.05f, i / (float)(n - 1));
-			Polygon2D g = Glow.TaperPoly(root, new Color(1f, 0.12f, 0.2f, 0.85f));
-			Polygon2D c = Glow.TaperPoly(root, Hot);
-			g.Visible = c.Visible = false;
-			blades.Add((g, c, ang, open + step * i));
-		}
-		float aimAng = f > 0 ? 0f : Mathf.Pi;
-		Fx.Animate(root, 0, life, t =>
-		{
-			float s = t * life;
-			for (int i = 0; i < blades.Count; i++)
-			{
-				var (g, c, ang, at) = blades[i];
-				if (s < at) continue;
-				g.Visible = c.Visible = true;
-				float e = Ease5.OutBack(Mathf.Min(1f, (s - at) / 0.1f));
-				// 合拢：所有光刃转到枪口方向、缩短收进枪里
-				float k = Fx.InCubic(Mathf.Clamp((s - shut + 0.06f) / 0.08f, 0f, 1f));
-				float a = Mathf.LerpAngle(-Mathf.Pi / 2f + f * 0.95f, ang, e);
-				a = Mathf.LerpAngle(a, aimAng, k);
-				float l = len * Mathf.Min(1f, e) * (1f - 0.95f * k) * (0.85f + 0.15f * Mathf.Sin(i * 1.7f));
-				// 扫过的高光：从第一把扫到最后一把
-				float sweep = Mathf.Exp(-Mathf.Pow((s - (open + step * n + 0.04f + 0.02f * i)) / 0.035f, 2f));
-				Vector2 dir = Vector2.Right.Rotated(a);
-				Vector2 p0 = dir * len * 0.12f * (1f - k), p1 = p0 + dir * l;
-				g.Polygon = Glow.TaperPts(p0, p1, 22f * u * (1f + 0.4f * sweep));
-				c.Polygon = Glow.TaperPts(p0, p1, 6f * u * (1f + sweep));
-				g.Modulate = new Color(1f, 1f, 1f, 0.9f);
-			}
-		});
-		// 每把展开时尖上一点星光
-		for (int i = 0; i < n; i++)
-		{
-			var (_, _, ang, at) = blades[i];
-			Vector2 tip = pivot + Vector2.Right.Rotated(ang) * len * 0.95f;
-			Fx.After(layer, at + 0.08f, () => Glow.Glint(layer, tip, 0.45f));
-		}
-		Fx.After(layer, shut + 0.02f, () =>
-		{
-			HitStop.Request(0.04);
-			Fx.Shake(1);
-			Glow.Flash(layer, grip, Hot, h * 0.35f, 0.12f);
-			Glow.Flash(back, grip, Red, h * 1.4f, 0.4f);
-			SkillRedo5.Cross(layer, grip, h * 0.4f);
-			Phantom.Shards(layer, grip, 14, 420f * u, 900f * u, new Vector2(f, -0.08f), 28f, 0.38f, 200f * u, 20f * u);
 		});
 	}
 

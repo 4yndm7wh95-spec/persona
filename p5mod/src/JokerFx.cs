@@ -156,11 +156,12 @@ public static class JokerFx
 					}
 				}
 				ShivFx.FanOfKnives(layer, Joker.PosePoint(joker, ReadyFx.GunGrip), enemies);
-				// 0.9.49 审阅（金卡，转枪之外没特效）：加主体「刀扇开合」（Vfx/Batch3Fx.cs）
+				// 0.9.49 审阅（金卡，转枪之外没特效）→ 2026-11-18 第二版「弹巢灌红」（SkillRedo10.FanOfKnives11），弹巢整圈转一下
+				SkillCtx fc = SkillPlay.Ctx(joker, null, layer, Joker.FxLayer(back: true), room) with { Hand = Joker.PosePoint(joker, ReadyFx.GunGrip) };
+				SkillRedo5.FanOfKnives11(fc, Joker.Muzzle(joker));
+				if (joker.Entity?.Player is { } fp && MegaCrit.Sts2.Core.Context.LocalContext.IsMe(fp) && AmmoPatch.Local is AmmoView av && GodotObject.IsInstanceValid(av.Root))
 				{
-					Vector2 jf = Joker.PosePoint(joker, ReadyFx.Feet);
-					float tall = (jf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length();
-					Batch3Fx.FanOfKnives(layer, Joker.FxLayer(back: true) ?? layer, Joker.PosePoint(joker, ReadyFx.GunGrip), tall, Joker.Facing(joker));
+					Fx.After(layer, 0.05, () => av.Charge());
 				}
 				break;
 			}

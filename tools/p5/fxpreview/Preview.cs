@@ -78,19 +78,7 @@ public partial class Preview : Node2D
 
 	private static void RunCards(Preview p, string[]? only, (string Card, string Anim, double Lead, double Gap)[] seq, double start = 0.3)
 	{
-		float tall = (JokerFeet - Pose(815f, 120f)).Length();
-		SkillCtx Ctx() => new(p._front, p._back, JokerFeet, Pose(1010f, 330f), Pose(1010f, 410f), Pose(1010f, 215f), tall, 1f,
-			c => p._joker!.Modulate = c, new List<SkillFx.Victim>
-			{
-				new(new Vector2(Enemy2.X, 830f), Enemy2 + new Vector2(0f, -170f), 230f, c => p._enemies[Enemy2].Modulate = c),
-				new(new Vector2(Enemy.X, 830f), Enemy + new Vector2(0f, -170f), 260f, c => p._enemies[Enemy].Modulate = c),
-				new(new Vector2(Enemy3.X, 830f), Enemy3 + new Vector2(0f, -150f), 230f, c => p._enemies[Enemy3].Modulate = c),
-			}, new SkillFx.Victim(new Vector2(Enemy.X, 830f), Enemy + new Vector2(0f, -170f), 260f, c => p._enemies[Enemy].Modulate = c))
-		{
-			CopyBody = BodyAura.CloneBody,
-			Region = new Rect2(JokerFeet + new Vector2(-tall * 0.75f, -tall * 1.15f), new Vector2(tall * 1.5f, tall * 1.3f)),
-			BodyMaterial = m => p._joker!.Material = m,
-		};
+		SkillCtx Ctx() => CtxOf(p);
 		double at = start;
 		foreach (var (card, anim, lead, gap) in seq)
 		{
@@ -102,6 +90,24 @@ public partial class Preview : Node2D
 			p.At(at + lead, () => (cd == "AfterimageTick" ? SkillRedo5.AfterimageTick : CardSkillFx.Cards[cd])(Ctx() with { Count = cnt }));
 			at += gap;
 		}
+	}
+
+	/// <summary>预览里的 SkillCtx（Joker 站位、三个敌人）。</summary>
+	private static SkillCtx CtxOf(Preview p)
+	{
+		float tall = (JokerFeet - Pose(815f, 120f)).Length();
+		return new(p._front, p._back, JokerFeet, Pose(1010f, 330f), Pose(1010f, 410f), Pose(1010f, 215f), tall, 1f,
+			c => p._joker!.Modulate = c, new List<SkillFx.Victim>
+			{
+				new(new Vector2(Enemy2.X, 830f), Enemy2 + new Vector2(0f, -170f), 230f, c => p._enemies[Enemy2].Modulate = c),
+				new(new Vector2(Enemy.X, 830f), Enemy + new Vector2(0f, -170f), 260f, c => p._enemies[Enemy].Modulate = c),
+				new(new Vector2(Enemy3.X, 830f), Enemy3 + new Vector2(0f, -150f), 230f, c => p._enemies[Enemy3].Modulate = c),
+			}, new SkillFx.Victim(new Vector2(Enemy.X, 830f), Enemy + new Vector2(0f, -170f), 260f, c => p._enemies[Enemy].Modulate = c))
+		{
+			CopyBody = BodyAura.CloneBody,
+			Region = new Rect2(JokerFeet + new Vector2(-tall * 0.75f, -tall * 1.15f), new Vector2(tall * 1.5f, tall * 1.3f)),
+			BodyMaterial = m => p._joker!.Material = m,
+		};
 	}
 
 	private SpinePlayer? _joker;
@@ -923,12 +929,11 @@ public partial class Preview : Node2D
 		// 刀扇：转枪 + 刀扇开合（Batch3Fx）
 		["b3fan"] = p =>
 		{
-			float tall = (JokerFeet - Pose(815f, 120f)).Length();
 			var es = new List<ShivFx.Target> { new(Enemy2, 180f), new(Enemy, 230f), new(Enemy3, 180f) };
 			foreach (double t0 in new[] { 0.2, 2.2 })
 			{
 				p.At(t0, () => { p._joker?.Play("aim_in"); p._joker?.Queue("aim_loop", true); });
-				p.At(t0 + 1.0, () => { p._joker?.Play("aim_out"); ShivFx.FanOfKnives(p._front, Pose(1275f, 345f), es); Batch3Fx.FanOfKnives(p._front, p._back, Pose(1275f, 345f), tall, 1f); });
+				p.At(t0 + 1.0, () => { p._joker?.Play("aim_out"); ShivFx.FanOfKnives(p._front, Pose(1275f, 345f), es); SkillRedo5.FanOfKnives11(CtxOf(p) with { Hand = Pose(1275f, 345f) }, Muzzle); });
 			}
 		},
 		// 匕首雨：攻击动作（第一下伤害 0.15s，第二下紧跟），一扇飞刀 + 一刀切全体 + 刀雨
