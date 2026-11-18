@@ -969,6 +969,30 @@ public partial class Preview : Node2D
 			RunCards(p, null, new (string, string, double, double)[] { ("BladeSymphony#3", "cast_glove", 0.25, 2.0), ("StormOfSteel#6", "cast_glove", 0.25, 2.4) }, 4.0);
 		},
 		["b4ink"] = p => RunCards(p, null, new (string, string, double, double)[] { ("BladeOfInk#2", "cast_glove", 0.25, 2.0), ("BladeOfInk#3", "cast_glove", 0.25, 2.0) }),
+		// 0.9.49 审阅第五批（多段攻击）：终结技（5 下）、飞镖（4 下）、连续反弹（4 下随机）、回响斩击（打死一个 → 回响一次）
+		["b5"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			var view = new Batch5Fx.NCreatureView(Pose(1010f, 410f), Pose(820f, 600f), tall, 1f);
+			void Swing(double t) { p.At(t, () => p._joker?.Play("attack")); p.At(t + 0.13, () => KnifeFx.Swing(p._front, Pose(600f, 850f), Pose(1376f, 450f))); }
+			void Multi(double t0, string card, Vector2[] targets, float gap)
+			{
+				Swing(t0);
+				p.At(t0, () => Batch5Fx.Begin(card, targets.Length));
+				for (int i = 0; i < targets.Length; i++)
+				{
+					Vector2 e = targets[i];
+					p.At(t0 + 0.15 + gap * i, () => Batch5Fx.Hit(p._front, card, view, e, 170f, null));
+				}
+			}
+			Multi(0.3, "Finisher", new[] { Enemy, Enemy, Enemy, Enemy, Enemy }, 0.13f);
+			Multi(2.0, "Flechettes", new[] { Enemy, Enemy, Enemy, Enemy }, 0.09f);
+			Multi(3.4, "Ricochet", new[] { Enemy2, Enemy3, Enemy, Enemy2 }, 0.17f);
+			var foes = new List<(Vector2, Vector2, float)> { (Enemy2, Enemy2 + new Vector2(0f, -170f), 230f), (Enemy, Enemy + new Vector2(0f, -170f), 260f), (Enemy3, Enemy3 + new Vector2(0f, -150f), 230f) };
+			Swing(5.2);
+			p.At(5.2, () => Batch5Fx.BeginEcho());
+			p.At(5.34, () => { Batch5Fx.EchoWave(p._front, foes, 1f); Batch5Fx.EchoWave(p._front, foes, 1f); });
+		},
 		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_glove", 0.25, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast_wave", 0.08, 1.6) }),
 		["redo4b"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.8), ("Afterimage", "cast_glove", 0.25, 1.4), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast_wave", 0.08, 1.8) }),
 		["redo5"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.9), ("Shadowmeld", "cast_glove", 0.25, 1.9) }),

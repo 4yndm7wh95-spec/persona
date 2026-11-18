@@ -25,6 +25,10 @@ public static class AttackHitVfxPatch
 	private static readonly FieldInfo CustomHitNodes = AccessTools.Field(typeof(AttackCommand), "_customHitVfxNodes");
 	private static readonly FieldInfo HitCount = AccessTools.Field(typeof(AttackCommand), "_hitCount");
 	private static readonly FieldInfo CustomAttackerNodes = AccessTools.Field(typeof(AttackCommand), "_customAttackerVfxNodes");
+	// 多段攻击只挥一次（0.9.49 审阅第五批，Vfx/Batch5Fx.cs）：字段找不到（游戏改名）就保持原版行为
+	private static readonly FieldInfo? PlayOnEveryHit = AccessTools.Field(typeof(AttackCommand), "_playOnEveryHit");
+	private static readonly FieldInfo? WaitBeforeHit = AccessTools.Field(typeof(AttackCommand), "_waitBeforeHit");
+	private static readonly FieldInfo? AnimDelay = AccessTools.Field(typeof(AttackCommand), "_attackerAnimDelay");
 
 	public static void Prefix(AttackCommand __instance)
 	{
@@ -33,6 +37,16 @@ public static class AttackHitVfxPatch
 			if (__instance.ModelSource is CardModel card && Joker.OwnsCard(card))
 			{
 				HitWeights.BeginAttack(card, HitCount.GetValue(__instance) is int n ? n : 1);
+				string cname = card.GetType().Name;
+				if (Batch5Fx.OneSwing.TryGetValue(cname, out float gap) && PlayOnEveryHit != null && WaitBeforeHit?.GetValue(__instance) is float[] wait && wait.Length >= 2)
+				{
+					// 终结技 / 飞镖 / 连续反弹（用户：不要让 Joker 重复打击动作 N 次）：动作只在第一下放，之后每下隔 gap 秒，由 Batch5Fx 表现
+					PlayOnEveryHit.SetValue(__instance, false);
+					wait[0] = gap;
+					wait[1] = gap;
+					if (AnimDelay?.GetValue(__instance) is float d) AnimDelay.SetValue(__instance, Math.Max(0f, d - gap));   // 第一下别因为多等的 gap 变晚
+					Batch5Fx.Begin(cname, HitCount.GetValue(__instance) is int hc ? hc : 1);
+				}
 				HitVfx.SetValue(__instance, null);
 				(CustomHitNodes.GetValue(__instance) as IList)?.Clear();     // 小刀牌原版的飞刀（NShivThrowVfx）
 				if (card.GetType().Name == "DaggerSpray" && Joker.Node(card.Owner) is NCreature jn && Joker.FxLayer() is Godot.Control dl
@@ -172,6 +186,20 @@ public static class DamagePatch
 				if (gun && hit.Count > 1)
 				{
 					JokerFx.OnRicochet(joker, hit);                // 刀扇：一发子弹弹过所有敌人
+					return;
+				}
+				if (hit.Count == 1 && Joker.FxLayer() is Godot.Control b5 && Batch5Fx.Hit(b5, cardSource.GetType().Name,
+					new Batch5Fx.NCreatureView(Joker.PosePoint(joker, ReadyFx.GloveCuff), Joker.Chest(joker),
+						(Joker.PosePoint(joker, ReadyFx.Feet) - Joker.PosePoint(joker, new Godot.Vector2(815f, 120f))).Length(), Joker.Facing(joker)),
+					hit[0].VfxSpawnPosition, (hit[0].VfxSpawnPosition - hit[0].GetTopOfHitbox()).Length(), d => JokerFx.DelayNumber(hit[0], d)))
+				{
+					return;
+				}
+				if (cardSource.GetType().Name == "EchoingSlash")
+				{
+					// 回响斩击：一波一道横切全体的长刀光；第二波起是回响（推迟一拍，数字也一起推迟）
+					float delay = Joker.FxLayer() is not Godot.Control el ? 0f : Batch5Fx.EchoWave(el, hit.Select(n => (n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X)).ToList(), Joker.Facing(joker));
+					if (delay > 0f) foreach (NCreature n in hit) JokerFx.DelayNumber(n, delay);
 					return;
 				}
 				foreach (NCreature n in hit)
@@ -550,6 +578,56 @@ public static class CorrosiveDrawPatch
 		try
 		{
 			run = power.AfterCardDrawn(ctx, card, fromHandDraw);
+		}
+		finally
+		{
+			_bypass = false;
+		}
+		await run;
+	}
+}
+
+/// <summary>
+/// 回响斩击（用户 2026-11-17 审阅：会卡住局内人物的动作，特效也没做）：原版不走 AttackCommand，不触发攻击动作 → Joker 一直停在举刀的架势上。
+/// 出牌时自己挥一刀（Aim.PlayAttack），把原版结算推迟到出刀那一帧（约 0.14s）再跑，伤害和刀光对齐；每波的特效在 DamagePatch → Batch5Fx.EchoWave。
+/// </summary>
+[HarmonyPatch]
+public static class EchoingSlashPatch
+{
+	private static readonly MethodInfo? OnPlay = AccessTools.Method("MegaCrit.Sts2.Core.Models.Cards.EchoingSlash:OnPlay");
+	private static bool _bypass;
+
+	public static IEnumerable<MethodBase> TargetMethods()
+	{
+		if (OnPlay != null) yield return OnPlay;
+	}
+
+	public static bool Prefix(CardModel __instance, object[] __args, ref System.Threading.Tasks.Task __result)
+	{
+		if (_bypass || !Joker.OwnsCard(__instance) || Joker.Node(__instance.Owner) is not NCreature node || OnPlay == null)
+		{
+			return true;
+		}
+		ModEntry.Safe("EchoingSlash", () =>
+		{
+			Batch5Fx.BeginEcho();
+			Aim.PlayAttack(node);
+		});
+		__result = Delayed(__instance, __args, node);
+		return false;
+	}
+
+	private static async System.Threading.Tasks.Task Delayed(CardModel card, object[] args, NCreature node)
+	{
+		if (Godot.GodotObject.IsInstanceValid(node) && node.GetTree() is Godot.SceneTree tree)
+		{
+			await node.ToSignal(tree.CreateTimer(0.14), Godot.SceneTreeTimer.SignalName.Timeout);
+		}
+		System.Threading.Tasks.Task run;
+		_bypass = true;
+		try
+		{
+			run = (System.Threading.Tasks.Task)OnPlay!.Invoke(card, args)!;
 		}
 		finally
 		{

@@ -733,6 +733,19 @@ public static class Aim
 		_lockId = 0;
 	}
 
+	/// <summary>自己挥一刀（回响斩击：原版不触发攻击动作）。举着刀就从架势接（SetAnimation 的补丁会把 attack 换成 attack_from_ready），挥完回待机。</summary>
+	public static void PlayAttack(NCreature node)
+	{
+		if (node.Visuals?.SpineBody is not MegaSprite body || body.TryGetAnimationState() is not MegaAnimationState state || !body.HasAnimation("attack"))
+		{
+			return;
+		}
+		bool low = node.Entity.GetHpPercentRemaining() <= 0.25 && body.HasAnimation("low_health_loop");
+		PendingCast.Remove(node.GetInstanceId());
+		state.SetAnimation("attack", false, 0);
+		state.AddAnimation(low ? "low_health_loop" : "idle_loop", 0f, true, 0);
+	}
+
 	public static void Lower(NCreature? node)
 	{
 		MegaSprite? body = node?.Visuals?.SpineBody;
