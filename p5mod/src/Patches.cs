@@ -541,6 +541,7 @@ public static class CorrosiveDrawPatch
 {
 	private static bool _bypass;
 	private static ulong _lastMs;
+	private static int _chain;
 
 	public static bool Prefix(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower __instance, MegaCrit.Sts2.Core.GameActions.Multiplayer.PlayerChoiceContext choiceContext, CardModel card, bool fromHandDraw, ref System.Threading.Tasks.Task __result)
 	{
@@ -565,10 +566,16 @@ public static class CorrosiveDrawPatch
 					targets.Add(new CorrosiveFx.Target(n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, n.Visuals));
 				}
 			}
-			ulong now = Godot.Time.GetTicksMsec();
-			bool first = now - _lastMs > 900;          // 连抽：第一下最重
-			_lastMs = now;
-			wait = CorrosiveFx.OnDraw(layer, Joker.PosePoint(joker, ReadyFx.Feet), Joker.Facing(joker), targets, first);
+			// 用户 2026-11-18：一次抽好几张只放一道完整的浪；后面的每一张在浪尾上变成一下快速的「咬蚀」，每张仍然各挂一次毒
+			//（抽牌是一张一张等着跑的：上一张挂完毒才轮到下一张，所以离上一张结束不到 0.5s 就算同一串连抽）
+			ulong now = Stage.NowMs();
+			bool chained = _lastMs != 0 && now < _lastMs + 500;
+			_chain = chained ? _chain + 1 : 0;
+			if (_chain == 0)
+				wait = CorrosiveFx.OnDraw(layer, Joker.PosePoint(joker, ReadyFx.Feet), Joker.Facing(joker), targets, true);
+			else
+				wait = CorrosiveFx.Erode(layer, Joker.Facing(joker), targets, _chain);
+			_lastMs = now + (ulong)(wait * 1000f);   // 这一张挂毒的时刻
 			anchor = layer;
 		});
 		if (wait <= 0f || anchor == null)

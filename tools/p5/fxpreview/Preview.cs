@@ -934,12 +934,12 @@ public partial class Preview : Node2D
 		},
 		// 第二批：先把五张各放一遍让着色器编译好（剪掉前 7.5s）
 		["fix2"] = p => RunCards(p, null, new (string, string, double, double)[] {
-			("Tracking", "cast_glove", 0.25, 1.3), ("Abrasive", "cast_glove", 0.25, 1.3), ("Accelerant", "cast_wave", 0.08, 1.3), ("Malaise", "cast", 0.25, 1.3), ("MasterPlanner", "cast_glove", 0.25, 2.0),
-			("Tracking", "cast_glove", 0.25, 2.2), ("Abrasive", "cast_glove", 0.25, 2.2), ("Accelerant", "cast_wave", 0.08, 2.2), ("Malaise", "cast", 0.25, 2.2), ("MasterPlanner", "cast_glove", 0.25, 2.4) }),
+			("Tracking", "cast_glove", 0.25, 1.3), ("Abrasive", "cast_glove", 0.25, 1.3), ("Accelerant", "cast_glove", 0.25, 1.3), ("Malaise", "cast", 0.25, 1.3), ("MasterPlanner", "cast_glove", 0.25, 2.0),
+			("Tracking", "cast_glove", 0.25, 2.2), ("Abrasive", "cast_glove", 0.25, 2.2), ("Accelerant", "cast_glove", 0.25, 2.2), ("Malaise", "cast", 0.25, 2.2), ("MasterPlanner", "cast_glove", 0.25, 2.4) }),
 		// 第二批第二轮（2026-11-18）：磨蚀（磨刃火花）、触媒（毒心加速双跳）、萎靡（预告信夺力），先各放一遍让着色器编译好（剪掉前 4.4s）
 		["fix2b"] = p => RunCards(p, null, new (string, string, double, double)[] {
-			("Abrasive", "cast_glove", 0.25, 1.2), ("Accelerant", "cast_wave", 0.08, 1.2), ("Malaise", "cast", 0.25, 1.6),
-			("Abrasive", "cast_glove", 0.25, 2.0), ("Accelerant", "cast_wave", 0.08, 2.2), ("Malaise", "cast", 0.25, 2.6) }),
+			("Abrasive", "cast_glove", 0.25, 1.2), ("Accelerant", "cast_glove", 0.25, 1.2), ("Malaise", "cast", 0.25, 1.6),
+			("Abrasive", "cast_glove", 0.25, 2.0), ("Accelerant", "cast_glove", 0.25, 2.2), ("Malaise", "cast", 0.25, 2.6) }),
 		["mal3"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Malaise", "cast", 0.25, 1.6), ("Malaise", "cast", 0.25, 2.4) }),
 		// 0.9.49 审阅第三批（2026-11-18）：牌数跟着实际手牌 / 抽牌数走
 		["b3cards"] = p => RunCards(p, null, new (string, string, double, double)[] {
@@ -1055,6 +1055,32 @@ public partial class Preview : Node2D
 			p.At(1.6, () => { p._enemies.TryGetValue(Enemy, out Node2D? b); SerpentMantle.Current?.Strike(Enemy + new Vector2(0f, -170f), b); });
 			p.At(2.3, () => { p._enemies.TryGetValue(Enemy3, out Node2D? b); SerpentMantle.Current?.Strike(Enemy3 + new Vector2(0f, -150f), b); });
 		},
+		// 腐蚀波连抽（用户 2026-11-18）：一次抽 4 张 → 只有第一张放完整的浪，后面三张在浪尾上各一下快速咬蚀、各挂一次毒
+		["corrosive4"] = p =>
+		{
+			var targets = new List<CorrosiveFx.Target>();
+			p.At(0.05, () =>
+			{
+				foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 })
+				{
+					p._enemies.TryGetValue(e, out Node2D? n);
+					targets.Add(new CorrosiveFx.Target(e, e - new Vector2(0f, 120f), 230f, n));
+				}
+			});
+			double t = 0.3;
+			p.At(t, () => CorrosiveFx.OnDraw(p._front, JokerFeet, 1f, targets));
+			t += CorrosiveFx.HitTime;
+			foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 }) p.Poison(t, e, 3);
+			for (int i = 1; i <= 3; i++)
+			{
+				int ii = i;
+				t += 0.16;                                     // 下一张抽上来
+				p.At(t, () => CorrosiveFx.Erode(p._front, 1f, targets, ii));
+				foreach (Vector2 e in new[] { Enemy2, Enemy, Enemy3 }) p.Poison(t + 0.1, e, 3);
+				t += 0.1;
+			}
+		},
+		["accel"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Accelerant", "cast_glove", 0.25, 1.4) }),
 		["b6nm"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Nightmare", "cast_glove", 0.25, 2.0) }),
 		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_glove", 0.25, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast_wave", 0.08, 1.6) }),
 		["redo4b"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.8), ("Afterimage", "cast_glove", 0.25, 1.4), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast_wave", 0.08, 1.8) }),
@@ -1103,7 +1129,7 @@ public partial class Preview : Node2D
 		},
 		["retain"] = p => RetainDemo(p, 0.1, 0.6, 2.2),
 		// 计划妥当：打一次 → 回合结束保留手牌的「封」（RetainFx，每回合都会出现）
-		["buffs1"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Anticipate", "cast_guard", 0.08, 1.3), ("Sidestep", "cast_guard", 0.08, 1.4), ("Abrasive", "cast_glove", 0.25, 1.7), ("Speedster", "cast_glove", 0.25, 2.0), ("Accelerant", "cast_wave", 0.08, 1.4) }),
+		["buffs1"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Anticipate", "cast_guard", 0.08, 1.3), ("Sidestep", "cast_guard", 0.08, 1.4), ("Abrasive", "cast_glove", 0.25, 1.7), ("Speedster", "cast_glove", 0.25, 2.0), ("Accelerant", "cast_glove", 0.25, 1.4) }),
 		// 速行者：打出 → 之后每抽一张牌，所有敌人身上一下轻的伤害特效（SpeedsterTick）
 		["speedster"] = p =>
 		{

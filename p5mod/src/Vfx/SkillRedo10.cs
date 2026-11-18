@@ -170,7 +170,7 @@ public static partial class SkillRedo5
 	{
 		float h = c.Tall, u = c.Unit, f = c.Face;
 		Control back = BackOf(c), front = c.Front;
-		Vector2 palm = c.Feet + new Vector2(f * h * 0.28f, -h * 0.8f);    // 挥手伸直的手
+		Vector2 palm = c.Hand + new Vector2(f * h * 0.04f, -h * 0.02f);   // 拉手套的那只手（用户 2026-11-18：不要挥手，只拉手套）
 		Vector2 orb = palm + new Vector2(0f, -h * 0.1f);
 		const float b1 = 0.1f, b2 = 0.26f, life = 0.44f;
 		S("gx_pop", 0.12f, b1);

@@ -337,6 +337,39 @@ void fragment() {
 	/// 抽到一张牌（CorrosiveDrawPatch）：每个敌人身上同时卷起一道浪，HitTime 秒后拍下去。返回拍中要等几秒 ——
 	/// 调用方把原版上毒推迟这么久，让数字 / 毒层和拍击同一刻出现。first = 这批连抽的第一下（更重）。
 	/// </summary>
+	/// <summary>
+	/// 连抽里第 2 张起（用户 2026-11-18：一次抽好几张不要每张都放一整道浪 → 只放一次完整的浪，浪快结束的尾巴上变成快速的侵蚀，
+	/// 但每抽一张挂一次毒的节奏要明显）：每个敌人身上一下短促的「咬蚀」——暗红一口从边上啃进去（小一号的溅射 + 往里收的碎光）、身体一暗、
+	/// 轻顿帧、一声闷的「噗」，越到后面越快越密。返回挂毒要等几秒（很短）。index = 这是连抽里第几张（1 = 第二张）。
+	/// </summary>
+	public static float Erode(Control layer, float facing, IReadOnlyList<Target> targets, int index)
+	{
+		const float bite = 0.1f;
+		_suppressUntil = Stage.NowMs() + (ulong)((bite + 0.3f) * 1000f);
+		if (targets.Count == 0) return 0f;
+		float u = U(layer);
+		float k = Mathf.Max(0.55f, 1f - 0.08f * (index - 1));
+		Fx.After(layer, bite, () =>
+		{
+			Sfx.Play(Sfx.CurseSoft, 0.32f * k);
+			Sfx.Play(Sfx.SubBoom, 0.2f * k);
+			HitStop.Request(0.02);
+			foreach (Target tt in targets)
+			{
+				float h = Mathf.Max(80f, (tt.At - tt.Top).Length());
+				// 每一口咬在身上不同的地方（边上往里啃）
+				float a = index * 2.4f + tt.At.X * 0.01f;
+				Vector2 off = new Vector2(Mathf.Cos(a) * tt.Width * 0.3f, Mathf.Sin(a) * h * 0.35f);
+				Vector2 at = tt.At + off;
+				Glow.Flash(layer, at, new Color(0.9f, 0.05f, 0.14f), Mathf.Max(tt.Width, h) * 0.8f * k, 0.22f);
+				Splash(layer, at, Mathf.Max(tt.Width, h) * 0.75f * k, off.X >= 0f ? facing : -facing, 0.3f);
+				Phantom.Shards(layer, at - off.Normalized() * h * 0.25f, 6, 300f * u, 700f * u, -off.Normalized(), 50f, 0.25f, 300f * u, 14f * u);
+				BodyTint.Pulse(tt.Body, new Color(0.62f, 0.38f, 0.48f), 0.06, 0.25);
+			}
+		});
+		return bite;
+	}
+
 	public static float OnDraw(Control layer, Vector2 feet, float facing, IReadOnlyList<Target> targets, bool first = true)
 	{
 		float hitAt = HitTime;
