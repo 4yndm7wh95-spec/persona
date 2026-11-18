@@ -99,7 +99,7 @@ public static class Aim
 		string? current = Current(state);
 		if (requested == "shiv" && current == "aim_in")
 		{
-			// 转枪还没转完就打出去了：aim_in 就是 shiv 的前 0.18 秒（tools/p5/build_rig_p5.py GUN_IN），
+			// 转枪还没转完就打出去了：aim_in 就是 shiv 开火前的那一段（tools/p5/build_rig_p5.py GUN_IN），
 			// 换成 shiv 并从同一时刻接着播 —— 转枪转完、接住、开火，不从头重来也不硬切
 			using MegaTrackEntry? entry = state.GetCurrent(0);
 			if (entry != null)
@@ -114,7 +114,7 @@ public static class Aim
 		}
 		if (requested == "attack" && current == "knife_in")
 		{
-			// 转刀还没转完就打出去了：knife_in 就是 attack 的前 0.14 秒，换回 attack 并从同一时刻接着播
+			// 转刀还没转完就打出去了：knife_in 就是 attack 出刀前的那一段，换回 attack 并从同一时刻接着播
 			using MegaTrackEntry? entry = state.GetCurrent(0);
 			if (entry != null)
 			{

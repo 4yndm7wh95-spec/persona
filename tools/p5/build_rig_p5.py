@@ -26,6 +26,8 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools/rig"))
 from spine_eval import Skeleton  # noqa: E402
 from mesh_rig import MeshRig  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import tween  # noqa: E402
 
 FINAL = ROOT / "art/p5/poses/final"
 POSES = ROOT / "art/p5/poses"
@@ -303,22 +305,180 @@ def silhouette_iou(a, b):
     return (ma & mb).sum() / max(1, (ma | mb).sum())
 
 
-def frames(anim):
-    """[(pose, start, dur, fade)]. A crossfade shows both pictures at once, so (user 2026-10-28: "two frames at
-    once") it is only kept between near-identical poses (silhouette overlap >= GHOST_IOU), capped at 0.03 s;
-    anything else is a hard cut."""
+# 60 fps frame grid (2026-11-17, user: "the moves don't switch smoothly from frame to frame"). The game draws at 60 fps
+# (16.7 ms a frame) but many pictures were held 10 / 15 / 25 / 30 / 45 ms: a 15 ms picture was shown for one frame
+# or skipped entirely, a 45 ms one for 2 or 3 frames depending on where the animation started, so the same move
+# played with a different, uneven rhythm every time. Every change of picture is now on a frame (the nearest one to
+# its hand-written time) and every picture is held at least MIN_HOLD frames where its neighbours can spare it (the
+# first picture of an animation is the one already on screen, 1 frame is enough). The cut (slash_a10) lands on frame 8
+# (0.133 s) and the shot (gun_recoil_b) on frame 11 (0.183 s). Loops keep their exact length.
+GRID = 60
+MIN_HOLD = 2
+ANCHORS = {"slash_a10": 8, "gun_recoil_b": 11}
+
+
+def frames_raw(anim):
+    """[(pose, start, dur, fade)] with the hand-written timings."""
     out, t = [], 0.0
     for i, f in enumerate(ANIMS[anim]):
         fade = f[2] if len(f) > 2 else (0.0 if i == 0 else FADE)
-        if i > 0 and fade > 0:
-            prev = ANIMS[anim][i - 1][0]
-            fade = 0.0 if prev != f[0] and silhouette_iou(prev, f[0]) < GHOST_IOU else min(fade, 0.03)
         out.append((f[0], t, f[1], fade))
         t += f[1]
     return out
 
 
+def _grid_counts(anim):
+    """frames per picture. Each change of picture goes to the frame nearest its hand-written time (so code timed to a
+    pose - Arsene's hit, the Sinful Shell catch, the Outbreak crush - stays within half a frame; nothing drifts), the
+    anchors exactly. A picture that would get less than MIN_HOLD frames borrows from a neighbour that can spare one."""
+    raw = frames_raw(anim)
+    T = [0.0]
+    for _, _, d, _ in raw:
+        T.append(T[-1] + max(d, 0.0))
+    B = [round(x * GRID) for x in T]
+    fixed = {0, len(B) - 1}
+    for i, (p, _, _, _) in enumerate(raw):
+        if p in ANCHORS and i > 0 and not any(q == p for q, *_ in raw[:i]):
+            B[i] = ANCHORS[p]
+            fixed.add(i)
+    lo = [0 if d <= 0 else (1 if i == 0 else MIN_HOLD) for i, (_, _, d, _) in enumerate(raw)]
+    for _ in range(4 * len(raw)):
+        changed = False
+        for i in range(len(raw)):
+            if B[i + 1] - B[i] >= lo[i]:
+                continue
+            # push the end later if the next picture can give a frame, else pull the start earlier
+            if i + 1 not in fixed and i + 1 < len(raw) and B[i + 2] - B[i + 1] > lo[i + 1]:
+                B[i + 1] += 1
+                changed = True
+            elif i not in fixed and i > 0 and B[i] - B[i - 1] > lo[i - 1]:
+                B[i] -= 1
+                changed = True
+        if not changed:
+            break
+    for i in range(1, len(B)):                       # never backwards (a squeezed run keeps 1 frame a picture)
+        B[i] = max(B[i], B[i - 1] + (1 if raw[i - 1][2] > 0 else 0))
+    return [B[i + 1] - B[i] for i in range(len(raw))]
+
+
+def time_map(anim):
+    """maps a time on the hand-written timeline to the frame-grid one (piecewise linear between picture changes)."""
+    raw = frames_raw(anim)
+    n = _grid_counts(anim)
+    src = [0.0] + [r[1] + r[2] for r in raw]
+    dst = [0.0] + [sum(n[:i + 1]) / GRID for i in range(len(n))]
+
+    def f(t):
+        for a0, a1, b0, b1 in zip(src, src[1:], dst, dst[1:]):
+            if t <= a1 + 1e-9:
+                return b0 if a1 <= a0 else b0 + (t - a0) / (a1 - a0) * (b1 - b0)
+        return dst[-1] + t - src[-1]
+    return f
+
+
+# in-betweens (tools/p5/tween.py, 2026-11-17): every change of picture gets up to TWEEN_MAX one-frame morphs, taken
+# out of the neighbouring holds (each hold keeps at least one frame of its own picture), so a move reads as motion
+# instead of a jump. The cut and the shot stay a snap (and on their frame): nothing is morphed into them.
+# TWEEN_SKIP lists pairs whose morph looked wrong on review (they keep a hard cut until a drawn in-between exists).
+TWEEN_MAX = 2
+TWEEN_TEX = 0.3                # in-betweens are on screen for one frame each: stored smaller than the poses
+NO_TWEEN_INTO = set(ANCHORS)
+# picture changes a spinning prop (gun / knife and the glove drawn over it, GUN_PROP / KNIFE_PROP) carries across:
+# the prop is drawn on its own bone at the hand of the picture it belongs to, so over a morph (where the hand is
+# somewhere in between) it would float next to the hand. These keep the cut; the spin hides it.
+PROP_SEAMS = {("gun_spin_g", "gun_aim_b"), ("knife_spin_g", "knife_lower_h"), ("knife_lower_h", "knife_ready_b")}
+# review 2026-11-17: the fall moves the whole body too far for a morph (two Jokers on top of each other)
+TWEEN_SKIP = {("die_buckle_a", "die_kneel_a2"), ("die_fall_a", "die_kneel_a2"), ("die_down_b", "die_fall_a"),
+              # review 2026-11-17 after merging 0.9.49: the coat doubles / two hands show
+              ("summon_bridge3_a", "summon_bridge2_a"), ("glove_reach_a", "summon_bridge2_a")}
+
+
+def _tween_counts(anim):
+    """[(head, tail, tweens)] per hold: frames given to the in-betweens before / after it, and how many follow it."""
+    raw = frames_raw(anim)
+    n = _grid_counts(anim)
+    head, tail, tw = [0] * len(n), [0] * len(n), [0] * len(n)
+    left = list(n)
+    for i in range(len(raw) - 1):
+        a, b = raw[i][0], raw[i + 1][0]
+        skip = (a, b) in TWEEN_SKIP or (b, a) in TWEEN_SKIP
+        if (a, b) in PROP_SEAMS or (b, a) in PROP_SEAMS:
+            continue
+        if a == b or b in NO_TWEEN_INTO or (skip and not tween.has_override(a, b)):   # a drawn one re-enables it
+            continue
+        while tw[i] < TWEEN_MAX:
+            if left[i] > 1 and left[i] >= left[i + 1]:
+                left[i] -= 1
+                tail[i] += 1
+            elif left[i + 1] > 1:
+                left[i + 1] -= 1
+                head[i + 1] += 1
+            elif left[i] > 1:
+                left[i] -= 1
+                tail[i] += 1
+            else:
+                break
+            tw[i] += 1
+    return list(zip(head, tail, tw))
+
+
+def tween_name(a, b, t):
+    return "tw_" + tween.name_of(a, b, t)
+
+
+def tween_pairs():
+    pairs = set()
+    for anim in ANIMS:
+        raw = frames_raw(anim)
+        for i, (h, tl, k) in enumerate(_tween_counts(anim)):
+            if k:
+                pairs.add((raw[i][0], raw[i + 1][0]))
+    return sorted(pairs)
+
+
+TWEEN_T = (1 / 3, 1 / 2, 2 / 3)
+TWEENS = {}                    # tween_name -> (a, b, t) for every in-between some animation uses
+
+
+def frames(anim):
+    """[(picture, start, dur, fade)] on the 60 fps grid, in-betweens included (one frame each). Pairs with no
+    in-between keep the old rule: a crossfade only between near-identical poses (silhouette overlap >= GHOST_IOU),
+    capped at 0.03 s, anything else a hard cut."""
+    raw = frames_raw(anim)
+    n = _grid_counts(anim)
+    out, t = [], 0.0
+    plan = _tween_counts(anim)
+    for i, ((p, _, _, fade), k) in enumerate(zip(raw, n)):
+        head, tail, tw = plan[i]
+        own = k - head - tail
+        if i > 0 and fade > 0:
+            prev = raw[i - 1][0]
+            if plan[i - 1][2]:
+                fade = 0.0
+            else:
+                fade = 0.0 if prev != p and silhouette_iou(prev, p) < GHOST_IOU else min(fade, 0.03, own / GRID)
+        out.append((p, round(t, 4), own / GRID, fade))
+        t += own / GRID
+        if tw:
+            b = raw[i + 1][0]
+            for j in range(tw):
+                s = (j + 1) / (tw + 1)
+                s = min(TWEEN_T, key=lambda v: abs(v - s))
+                name = tween_name(p, b, s)
+                TWEENS[name] = (p, b, s)
+                out.append((name, round(t, 4), 1 / GRID, 0.0))
+                t += 1 / GRID
+    return out
+
+
 def crop(name):
+    if name in TWEENS:
+        a, b, s = TWEENS[name]
+        im = Image.open(tween.make_pair(a, b, [s])[s]).convert("RGBA")
+        box = im.getchannel("A").point(lambda v: 255 if v > 3 else 0).getbbox()
+        box = (max(0, box[0] - 2), max(0, box[1] - 2), min(im.width, box[2] + 2), min(im.height, box[3] + 2))
+        c = im.crop(box)
+        return c.resize((max(1, round(c.width * TWEEN_TEX)), max(1, round(c.height * TWEEN_TEX))), Image.LANCZOS), box
     im = Image.open(FINAL / f"{name}.png").convert("RGBA")
     box = im.getchannel("A").point(lambda v: 255 if v > 3 else 0).getbbox()
     box = (max(0, box[0] - 2), max(0, box[1] - 2), min(im.width, box[2] + 2), min(im.height, box[3] + 2))
@@ -437,27 +597,40 @@ def region(box, tex):
             "scaleY": round(K * (box[3] - box[1]) / tex.height, 4), "width": tex.width, "height": tex.height}
 
 
+def page_name(k):
+    return "joker.png" if k == 0 else f"joker_{k + 1}.png"
+
+
 def pack(images):
-    items = sorted(images.items(), key=lambda kv: -kv[1].height)
+    """shelf packing on as many PAGE x PAGE pages as needed (the in-betweens need more than one).
+    Returns ([page images], atlas text); page k is page_name(k)."""
+    items = sorted(images.items(), key=lambda kv: (kv[0].startswith("tw_"), -kv[1].height))   # poses on page 1
+    pages = [{}]
     x = y = shelf = 0
-    pos = {}
     for name, im in items:
         if x + im.width + 2 > PAGE:
             x, y, shelf = 0, y + shelf + 2, 0
-        pos[name] = (x, y)
+        if y + im.height > PAGE:
+            pages.append({})
+            x = y = shelf = 0
+        pages[-1][name] = (x, y)
         x += im.width + 2
         shelf = max(shelf, im.height)
-    h = 1
-    while h < y + shelf:
-        h *= 2
-    if h > PAGE:
-        raise SystemExit(f"atlas needs {PAGE}x{h}: lower TEX")
-    sheet = Image.new("RGBA", (PAGE, h), (0, 0, 0, 0))
-    lines = ["joker.png", f"size:{PAGE},{h}", "filter:Linear,Linear", "pma:false"]
-    for name, im in items:
-        sheet.paste(im, pos[name])
-        lines += [name, f"bounds:{pos[name][0]},{pos[name][1]},{im.width},{im.height}"]
-    return sheet, "\n".join(lines) + "\n"
+    sheets, lines = [], []
+    for k, pos in enumerate(pages):
+        bottom = max(y + images[n].height for n, (x, y) in pos.items())
+        h = 1
+        while h < bottom:
+            h *= 2
+        sheet = Image.new("RGBA", (PAGE, h), (0, 0, 0, 0))
+        if lines:
+            lines.append("")
+        lines += [page_name(k), f"size:{PAGE},{h}", "filter:Linear,Linear", "pma:false"]
+        for name, (x, y) in pos.items():
+            sheet.paste(images[name], (x, y))
+            lines += [name, f"bounds:{x},{y},{images[name].width},{images[name].height}"]
+        sheets.append(sheet)
+    return sheets, "\n".join(lines) + "\n"
 
 
 def hexa(a):
@@ -514,7 +687,7 @@ def motion(pre, t, length):
 
 def bake_motion(pre, length):
     tl = {}
-    n = round(length * 15)
+    n = round(length * 30)         # was 15 keys/s: linear keys, so the sway visibly changed speed every 67 ms
     for k in range(n + 1):
         t = round(length * k / n, 4)
         for bone, ch in motion(pre, 0.0 if k == n else t, length).items():
@@ -528,12 +701,20 @@ def prop_timelines(fr, segments, slot_defs):
     """slot + bone timelines for a loose prop: keys are (time, x, y, rotation, scale, prop alpha, trail alpha) with
     "@pose" / "@@pose" times (that pose's first / last start); each segment shows the prop from its first to its
     last key."""
-    first_at, last_at = {}, {}
+    first_at, last_at, first_end, last_end = {}, {}, {}, {}
     for p, t0, dur, fade in fr:
-        first_at.setdefault(p, t0)
-        last_at[p] = t0
-    segs = [[(round((last_at[k[0][2:]] if k[0].startswith("@@") else first_at[k[0][1:]]) + k[1], 4), *k[2:]) for k in seg]
-            for seg in segments]
+        if p not in first_at:
+            first_at[p], first_end[p] = t0, t0 + dur
+        last_at[p], last_end[p] = t0, t0 + dur
+
+    def at(k):
+        # a prop never outlives its picture: the in-betweens after it (tween.py) already draw the hand without it
+        if k[0].startswith("@@"):
+            return round(min(last_at[k[0][2:]] + k[1], last_end[k[0][2:]]), 4)
+        n = k[0][1:]
+        end = first_end[n] if k[1] > 0 else first_at[n]
+        return round(min(first_at[n] + k[1], max(end, first_at[n])), 4)
+    segs = [[(at(k), *k[2:]) for k in seg] for seg in segments]
     keys = [k for seg in segs for k in seg]
     slots = {}
     for slot, att_name, col in slot_defs:
@@ -551,7 +732,7 @@ def prop_timelines(fr, segments, slot_defs):
 
 
 def build():
-    used = sorted({f[0] for a in ANIMS.values() for f in a})
+    used = sorted({f[0] for a in ANIMS for f in frames(a)})
     tex, att = {}, {"pose": {}, "fade": {}}
     bone_index = {"root": 0, "body": 1}
     bones = [{"name": "root"}, {"name": "body", "parent": "root"}]
@@ -624,7 +805,8 @@ def build():
             starts = {}
             for p, t0, dur, fade in fr:
                 starts.setdefault(p, t0)
-            keys = [((starts[k[0][1:]] + k[1]), *k[2:]) if isinstance(k[0], str) else k for k in IMPACT[name]]
+            remap = time_map(name)                     # hand-written absolute times follow the frame grid
+            keys = [((starts[k[0][1:]] + k[1]), *k[2:]) if isinstance(k[0], str) else (remap(k[0]), *k[1:]) for k in IMPACT[name]]
             if keys[0][0] > 0:
                 keys = [(0, 0, 0, 1, 1, 0)] + keys
             tl["body"] = {"translate": [{"time": round(k[0], 4), "x": k[1], "y": k[2]} for k in keys],
@@ -664,13 +846,54 @@ def build():
     return data, tex
 
 
+def check_props(data):
+    """every frame at 60 fps: a loose prop (gun / knife / the glove drawn over them) may only be on screen over a drawn
+    pose, never over an in-between (it would float beside the moving hand - the bug seen in the 2026-11-17 preview)."""
+    props = ["gun", "gun_smear", "finger_tip", "knife", "knife_smear", "knife_hand_hip", "knife_back",
+             "knife_back_smear", "knife_hand_top"]
+
+    def att(keys, t):
+        cur = None
+        for k in keys:
+            if k["time"] <= t + 1e-6:
+                cur = k["name"]
+        return cur
+
+    def alpha(keys, t):
+        if not keys:
+            return 1.0
+        pts = [(k["time"], int(k["color"][6:8], 16) / 255) for k in keys]
+        if t <= pts[0][0]:
+            return pts[0][1]
+        for (t0, a0), (t1, a1) in zip(pts, pts[1:]):
+            if t0 <= t <= t1:
+                return a0 if t1 == t0 else a0 + (a1 - a0) * (t - t0) / (t1 - t0)
+        return pts[-1][1]
+    bad = []
+    for name, a in data["animations"].items():
+        sl = a["slots"]
+        end = max(k["time"] for s in sl.values() for arr in s.values() for k in arr)
+        for f in range(int(end * GRID) + 1):
+            t = f / GRID + 1e-4
+            pic = att(sl["pose"]["attachment"], t)
+            for p in props:
+                if p in sl and att(sl[p]["attachment"], t) and alpha(sl[p].get("rgba"), t) > 0.03 and pic and pic.startswith("tw_"):
+                    bad.append(f"{name} frame {f}: {p} over {pic}")
+    if bad:
+        raise SystemExit("prop over an in-between:\n" + "\n".join(bad))
+    print("props: never over an in-between")
+
+
 def export(data, tex):
     OUT.mkdir(parents=True, exist_ok=True)
-    sheet, atlas = pack(tex)
-    sheet.save(OUT / "joker.png")
+    sheets, atlas = pack(tex)
+    for k in range(1, 16):                      # stale extra pages from an earlier build
+        (OUT / page_name(k)).unlink(missing_ok=True)
+    for k, sheet in enumerate(sheets):
+        sheet.save(OUT / page_name(k))
     (OUT / "joker.atlas").write_text(atlas)
     (OUT / "joker.spine-json").write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")))
-    print("atlas", sheet.size, len(tex), "regions")
+    print("atlas", [s.size for s in sheets], len(tex), "regions")
 
 
 def previews(data, tex):
@@ -692,6 +915,7 @@ def previews(data, tex):
 
 if __name__ == "__main__":
     d, t = build()
+    check_props(d)
     export(d, t)
     if "--no-preview" not in sys.argv:
         previews(d, t)

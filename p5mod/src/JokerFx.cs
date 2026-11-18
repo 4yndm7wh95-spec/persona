@@ -12,9 +12,9 @@ namespace P5Joker;
 
 /// <summary>
 /// 把 Joker 的骨骼动画和 HitFx 对上：在姿势图（art/p5/poses/final）上量好的点换算到屏幕，按动画里的时刻放特效。
-/// 时刻见 tools/p5/build_rig_p5.py：打击 attack / attack_chain / attack_from_ready 在 0.14s 出刀（刀光 0.13s 起扫，和出刀帧同一帧；
+/// 时刻见 tools/p5/build_rig_p5.py：打击 attack / attack_chain / attack_from_ready 在第 8 帧（0.133s）出刀（刀光提前约半帧起扫，和出刀帧同一帧；
 /// 转刀中途接上的 attack 要减去跳过的时间），
-/// 开枪 shiv / shiv_from_aim 在 0.18s 开火（转枪中途接上的 shiv 要减去跳过的时间）。
+/// 开枪 shiv / shiv_from_aim 在第 11 帧（0.183s）开火（转枪中途接上的 shiv 要减去跳过的时间）。
 /// </summary>
 public static class JokerFx
 {
@@ -34,12 +34,12 @@ public static class JokerFx
 			case "attack_chain":
 			case "attack_from_ready":
 				// 第四版：手绘刀光扫过（Vfx/KnifeFx.cs）
-				Fx.After(layer, Mathf.Max(0f, 0.13f - skipped), () => KnifeFx.Swing(layer, Joker.PosePoint(node, SwingFrom),
+				Fx.After(layer, Mathf.Max(0f, 0.125f - skipped), () => KnifeFx.Swing(layer, Joker.PosePoint(node, SwingFrom),
 					Joker.PosePoint(node, SwingTo), Joker.Facing(node)));
 				break;
 			case "shiv":
 			case "shiv_from_aim":
-				Fx.After(layer, Mathf.Max(0f, 0.18f - skipped), () =>
+				Fx.After(layer, Mathf.Max(0f, 0.183f - skipped), () =>
 				{
 					GunFx.Muzzle(layer, Joker.Muzzle(node), new Vector2(Joker.Facing(node), 0.06f), Joker.Facing(node));   // 第四版枪口（Vfx/GunFx.cs）
 					if (node.Entity?.Player is { } p && MegaCrit.Sts2.Core.Context.LocalContext.IsMe(p) && AmmoPatch.Local is AmmoView ammo

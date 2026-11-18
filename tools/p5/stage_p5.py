@@ -102,11 +102,15 @@ STAGE = ROOT / "p5mod/pck_stage"
 
 
 def renamed(src_base, dst_base, tmp):
-    """copy <src_base>.{spine-json,atlas,png} to tmp as <dst_base>.*, fixing the atlas page name."""
+    """copy <src_base>.{spine-json,atlas} and every atlas page (<src_base>.png, <src_base>_2.png, ...) to tmp as
+    <dst_base>.*, fixing the page names in the atlas."""
     shutil.copy(RIG / f"{src_base}.spine-json", tmp / f"{dst_base}.spine-json")
-    shutil.copy(RIG / f"{src_base}.png", tmp / f"{dst_base}.png")
     lines = (RIG / f"{src_base}.atlas").read_text().split("\n")
-    lines[0] = f"{dst_base}.png"
+    for i, line in enumerate(lines):
+        if line.startswith(src_base) and line.endswith(".png"):
+            new = dst_base + line[len(src_base):]
+            shutil.copy(RIG / line, tmp / new)
+            lines[i] = new
     (tmp / f"{dst_base}.atlas").write_text("\n".join(lines))
 
 
