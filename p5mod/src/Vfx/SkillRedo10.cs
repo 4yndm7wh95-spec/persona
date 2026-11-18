@@ -235,7 +235,7 @@ public static partial class SkillRedo5
 		if (c.Target is not SkillFx.Victim v) return;
 		float jh = c.Tall, u = c.Unit, f = c.Face, h = Mathf.Max(120f, (v.Feet - v.Top).Length());
 		Control back = BackOf(c), front = c.Front;
-		const float throwAt = 0.04f, hit = 0.36f, yank = 0.76f, home = 1.08f;
+		const float throwAt = 0.04f, hit = 0.3f, yank = 0.72f, home = 1.0f;
 		float w = jh * 0.2f;
 		Vector2 hand = c.Hand, chest = v.Feet.Lerp(v.Top, 0.58f);
 		Vector2 heart = c.Chest;   // 抽回来时他的手已经放下了 → 牌收进胸口
@@ -253,7 +253,7 @@ public static partial class SkillRedo5
 			float s = throwAt + t * (home - throwAt);
 			if (s < hit)
 			{
-				float e = Fx.OutCubic((s - throwAt) / (hit - throwAt));
+				float e = Ease5.OutQuint((s - throwAt) / (hit - throwAt));
 				card.Place(hand.Lerp(ctrlOut, e).Lerp(ctrlOut.Lerp(chest, e), e), f * (0.3f + (1f - e) * 9f), 0f, 0.7f + 0.5f * e);
 			}
 			else if (s < yank)
@@ -269,6 +269,11 @@ public static partial class SkillRedo5
 				card.Set("glow", 1f);
 			}
 		});
+		// 飞行轨迹的特效：出手先猛后缓（OutQuint），抽回越来越快（InCubic）
+		Func<float, Vector2> outPath = e => hand.Lerp(ctrlOut, e).Lerp(ctrlOut.Lerp(chest, e), e);
+		Func<float, Vector2> backPath = e => chest.Lerp(ctrlBack, e).Lerp(ctrlBack.Lerp(heart, e), e);
+		CardWake(front, outPath, throwAt, hit - throwAt, Ease5.OutQuint, jh, u, false, w, e => f * (0.3f + (1f - e) * 9f), e => 0.7f + 0.5f * e);
+		CardWake(front, backPath, yank, home - yank, Fx.InCubic, jh, u, true, w, e => f * (0.3f - e * 7f), e => 1.2f - 0.6f * e);
 		Fx.After(front, throwAt, () =>
 		{
 			Glow.Flash(front, hand, Hot, jh * 0.18f, 0.08f);
@@ -327,6 +332,56 @@ public static partial class SkillRedo5
 		}
 		if (c.SelfTint is { } tint)
 			Fx.After(front, home, () => Fx.Animate(front, 0, 0.5, t => tint(Colors.White.Lerp(new Color(1.5f, 0.75f, 0.8f), (1f - t) * (1f - t)))));
+	}
+
+	/// <summary>
+	/// 预告信飞过去的轨迹（用户 2026-11-18：不然像飘过去的）：贴着弧线的两头尖疾光（短，跟着走、不会拉成直线）+ 一道细的副疾光，
+	/// 沿路往后掉的碎光，跟着牌的一团柔红光。heavy = 抽回那一趟（更粗更亮、碎光更多）。
+	/// </summary>
+	private static void CardWake(Control layer, Func<float, Vector2> path, float t0, float dur, Func<float, float> ease, float jh, float u, bool heavy,
+		float w, Func<float, float> tilt, Func<float, float> scale)
+	{
+		float k = heavy ? 1.35f : 1f;
+		DashFly(layer, path, t0, dur + 0.1f, jh * 0.9f * k, 24f * u * k, new Color(1f, 0.12f, 0.2f), 1.5f, ease, 0.8f, 1f);
+		DashFly(layer, e => path(e) + new Vector2(0f, jh * 0.05f), t0 + 0.02f, dur + 0.1f, jh * 0.6f * k, 8f * u, new Color(1f, 0.6f, 0.6f), 1.8f, ease, 0.75f, 1f);
+		DashFly(layer, e => path(e) - new Vector2(0f, jh * 0.06f), t0 + 0.03f, dur + 0.1f, jh * 0.45f * k, 6f * u, new Color(1f, 0.3f, 0.36f), 1.6f, ease, 0.7f, 1f);
+		// 沿路留下三张一闪就淡掉的牌残影（速度感）
+		for (int g = 0; g < 3; g++)
+		{
+			float x = 0.2f + 0.22f * g;
+			float lo2 = 0f, hi2 = 1f;
+			for (int it = 0; it < 12; it++) { float m = (lo2 + hi2) * 0.5f; if (ease(m) < x) lo2 = m; else hi2 = m; }
+			float at2 = t0 + dur * lo2;
+			Phantom.P5Card ghost = Phantom.Card(layer, path(x), w, at2 + 0.25);
+			ghost.Root.Visible = false;
+			Fx.Animate(ghost.Root, at2, 0.15, t =>
+			{
+				ghost.Root.Visible = true;
+				ghost.Place(path(x), tilt(x), 0f, scale(x) * (1f + 0.15f * t));
+				ghost.Set("glow", 0.15f);
+				ghost.Set("alpha", 0.38f * (1f - t) * (1f - t));   // 牌的着色器自己写 COLOR，Modulate 管不到透明度
+			});
+		}
+		int n = heavy ? 7 : 5;
+		for (int i = 0; i < n; i++)
+		{
+			float x = (i + 0.6f) / (n + 0.6f);
+			// 找到牌经过这一段的时刻：ease(t) = x
+			float lo = 0f, hi = 1f;
+			for (int it = 0; it < 12; it++) { float m = (lo + hi) * 0.5f; if (ease(m) < x) lo = m; else hi = m; }
+			float at = t0 + dur * lo;
+			Vector2 p = path(x), back = (path(Mathf.Max(0f, x - 0.05f)) - p).Normalized();
+			Phantom.Shards(layer, p, heavy ? 6 : 4, 160f * u, 420f * u, back, 40f, 0.38f, 500f * u, 18f * u * k, at);
+		}
+		Node2D glow = Fx.Root(layer, path(0f), "P5CardWake", t0 + dur + 0.1);
+		Glow.SoftSprite(glow, Vector2.Zero, new Color(1f, 0.1f, 0.18f, 0.95f), 6f * u * k);
+		glow.Visible = false;
+		Fx.Animate(glow, t0, dur, t =>
+		{
+			glow.Visible = true;
+			glow.GlobalPosition = path(ease(t));
+			glow.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, t * 6f) * (1f - Ease5.Seg(t, 0.85f, 0.15f)));
+		});
 	}
 
 	// ═══════════════════════════ 谋划专家（新做）═══════════════════════════

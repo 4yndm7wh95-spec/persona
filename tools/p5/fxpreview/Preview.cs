@@ -913,6 +913,7 @@ public partial class Preview : Node2D
 		["fix2b"] = p => RunCards(p, null, new (string, string, double, double)[] {
 			("Abrasive", "cast_glove", 0.25, 1.2), ("Accelerant", "cast_wave", 0.08, 1.2), ("Malaise", "cast", 0.25, 1.6),
 			("Abrasive", "cast_glove", 0.25, 2.0), ("Accelerant", "cast_wave", 0.08, 2.2), ("Malaise", "cast", 0.25, 2.6) }),
+		["mal3"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Malaise", "cast", 0.25, 1.6), ("Malaise", "cast", 0.25, 2.4) }),
 		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_glove", 0.25, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast_wave", 0.08, 1.6) }),
 		["redo4b"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.8), ("Afterimage", "cast_glove", 0.25, 1.4), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast_wave", 0.08, 1.8) }),
 		["redo5"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.9), ("Shadowmeld", "cast_glove", 0.25, 1.9) }),
