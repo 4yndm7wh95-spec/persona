@@ -142,7 +142,8 @@ uniform float alpha = 1.0;
 uniform float clock = 0.0;
 uniform float seed = 0.0;
 uniform float flip = 0.0;
-uniform float steel = 0.0;      // 0 = 暗红刀光，1 = 钢铁的银白（钢铁风暴）
+uniform float steel = 0.0;      // 0 = 暗红刀光，1 = 钢铁（铁黑底 + 红边，钢铁风暴）
+uniform float nscale = 1.0;     // 噪声密度倍数：小刀要更稀，不然同样多的噪声挤在小面积里就是一粒粒颗粒
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
 	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y); }
@@ -158,19 +159,20 @@ void fragment() {
 	float k = clamp(behind / max(tail, 0.001), 0.0, 1.0);
 	float near = clamp((sin(th) + 1.0) * 0.5, 0.0, 1.0);         // 1 = 离镜头最近（椭圆下沿）；钳住，不然 pow 遇到 -0.0000001 会算出 NaN
 	// 沿刀走向拉长的速度纹（角度方向频率高、径向低）
-	float n1 = noise(vec2(th * 22.0 + clock * 3.0, (r - 1.0) * 18.0 + seed));
-	float n2 = noise(vec2(th * 60.0 - clock * 6.0, (r - 1.0) * 40.0 - seed));
+	float n1 = noise(vec2(th * 22.0 * nscale + clock * 3.0, (r - 1.0) * 18.0 + seed));
+	float n2 = noise(vec2(th * 60.0 * nscale - clock * 6.0, (r - 1.0) * 40.0 - seed));
 	float w = mix(0.035, 0.2, pow(near, 1.4)) * (1.0 - 0.55 * k);   // 半宽（单位 = 椭圆半径）
 	w *= smoothstep(0.0, 0.35, behind) * 0.85 + 0.15 * smoothstep(0.0, 0.08, behind);   // 刀头收成尖锋（用户 2026-11-18：末端太平）
-	float dr = r - 1.0 - (n1 - 0.5) * w * 0.5;
+	float dr = r - 1.0 - (n1 - 0.5) * w * 0.5 * (1.0 - 0.85 * steel);   // 钢铁：边缘平滑，不被噪声扰成毛边
 	float prof = 1.0 - clamp(abs(dr) / max(w, 0.001), 0.0, 1.0);
 	float on = step(behind, tail);
-	float fade = on * (1.0 - smoothstep(0.35, 1.0, k)) * smoothstep(0.15, 0.55, n1 * 0.6 + n2 * 0.4 + (1.0 - k) * 0.8 - 0.2);
+	float chew = smoothstep(0.15, 0.55, n1 * 0.6 + n2 * 0.4 + (1.0 - k) * 0.8 - 0.2);
+	float fade = on * (1.0 - smoothstep(0.35, 1.0, k)) * mix(chew, mix(1.0, chew, k * k), steel);   // 钢铁：整片变淡，只在尾端才被啃
 	// 亮边在刀的前锋（外沿）、只在刀头附近一段（用户 2026-11-18：刀身正中一道白线，多刀叠起来很脏 → 不要中线白芯）
 	float lead = smoothstep(0.15, 0.85, dr / max(w, 0.001)) * smoothstep(1.0, 0.6, dr / max(w, 0.001));
 	float core = lead * exp(-behind / 0.45) * (0.3 + 0.7 * near) * fade;   // 一定要乘 fade：不然整个椭圆一圈都亮，远侧那段在画面上就是一条直白线
 	float bodyA = smoothstep(0.0, 0.25, prof) * fade;
-	float streak = smoothstep(0.6, 0.92, n2) * smoothstep(0.0, 0.6, prof) * fade * 0.7;
+	float streak = smoothstep(0.6, 0.92, n2) * smoothstep(0.0, 0.6, prof) * fade * 0.7 * (1.0 - steel);
 	float headGlow = exp(-behind / 0.08) * exp(-abs(r - 1.0) / max(w * 1.5, 0.02)) * on;   // 只在刀身附近亮（不限径向的话整条径向线都会亮成一道直光）
 	float inner = 0.0;   // 刀弧内侧的扇形拖影去掉了（压扁的椭圆上扇形边会变成一道直线，用户：不要这些白线）
 	// 所有东西只留在刀身附近（硬遮罩，防任何一项漏出来画成大片）
@@ -180,19 +182,24 @@ void fragment() {
 	// 顺着刀走的几道细刻痕、被噪声打出的暗纹、沿刃忽闪的细小亮点
 	float across = dr / max(w, 0.001);
 	float grooves = 0.0;   // 刻痕去掉（平行细线在多刀时也显脏）
-	float darkVein = smoothstep(0.5, 0.85, noise(vec2(th * 35.0 - clock * 2.0, across * 2.5 + seed)));
+	float darkVein = smoothstep(0.5, 0.85, noise(vec2(th * 35.0 - clock * 2.0, across * 2.5 + seed))) * (1.0 - steel);
 	vec2 cellId = floor(vec2(th * 90.0, across * 3.0));
-	float glint = step(0.988, hash(cellId + floor(clock * 6.0))) * prof * fade * ring * near * exp(-behind / 0.6);
-	vec3 deep = mix(vec3(0.05, 0.0, 0.012), vec3(0.06, 0.065, 0.075), steel);
-	vec3 mid = mix(vec3(0.55, 0.03, 0.09), vec3(0.5, 0.52, 0.58), steel);
-	vec3 edge = mix(vec3(0.85, 0.08, 0.16), vec3(0.85, 0.2, 0.26), steel);
-	vec3 hot = mix(vec3(1.0, 0.8, 0.78), vec3(0.95, 0.97, 1.0), steel);
+	float glint = step(0.988, hash(cellId + floor(clock * 6.0))) * prof * fade * ring * near * exp(-behind / 0.6) * (1.0 - steel);
+	vec3 deep = mix(vec3(0.05, 0.0, 0.012), vec3(0.025, 0.02, 0.025), steel);
+	vec3 mid = mix(vec3(0.55, 0.03, 0.09), vec3(0.32, 0.3, 0.33), steel);
+	vec3 edge = mix(vec3(0.85, 0.08, 0.16), vec3(0.95, 0.07, 0.15), steel);
+	vec3 hot = mix(vec3(1.0, 0.8, 0.78), vec3(1.0, 0.92, 0.9), steel);
 	vec3 col = deep * bodyA
 		+ mid * bodyA * (0.35 + 0.35 * near) * (1.0 - 0.55 * darkVein)
-		+ edge * (streak * 0.45 + grooves * 0.35 + smoothstep(0.75, 0.0, prof) * bodyA * 0.35)
+		+ edge * (streak * 0.45 + grooves * 0.35 + smoothstep(0.75, 0.0, prof) * bodyA * (0.35 + 0.45 * steel))
 		+ hot * (core * 0.6 + headGlow * 0.55 + glint * 0.7)
 		+ mix(mid, hot, 0.35) * smoothstep(-0.7, 1.0, across) * bodyA * (1.0 - smoothstep(0.3, 1.0, k)) * (0.25 + 0.25 * steel);   // 整片的柔和渐变：前锋那侧亮一点（不是一条线）
-	float a = clamp(bodyA * 0.92 + headGlow * 0.5 + glint * 0.5, 0.0, 1.0) * alpha;
+	// 钢铁：一片打磨过的金属刃 —— 背侧铁黑、往前锋渐亮到冷白的反光，前锋一道红边，越靠近刀头越亮
+	float sheenS = smoothstep(-0.9, 0.85, across) * (1.0 - smoothstep(0.85, 1.0, across));
+	float rimS = exp(-abs(across - 0.9) / 0.12);
+	col = mix(col, deep * bodyA + vec3(0.42, 0.42, 0.46) * sheenS * bodyA * (0.4 + 0.6 * near) * (1.0 - 0.6 * k)
+		+ edge * rimS * bodyA * (0.7 + 0.3 * near) + hot * (headGlow * 0.6 + core * 0.5), steel);
+	float a = clamp(bodyA * 0.95 + headGlow * 0.5 + glint * 0.5, 0.0, 1.0) * alpha;
 	COLOR = vec4(col * alpha, a);
 }" };
 
@@ -209,6 +216,7 @@ void fragment() {
 		m.SetShaderParameter("flip", f < 0f ? 1f : 0f);
 		m.SetShaderParameter("seed", Fx.Rand(0f, 20f));
 		m.SetShaderParameter("steel", steel);
+		m.SetShaderParameter("nscale", Mathf.Clamp(rx / (h * 0.88f), 0.4f, 1.2f));   // 按刀的大小换算噪声密度
 		ColorRect r = new() { Size = size, Position = -size * 0.5f, Material = m, MouseFilter = Control.MouseFilterEnum.Ignore };
 		root.AddChild(r);
 		root.Visible = false;
