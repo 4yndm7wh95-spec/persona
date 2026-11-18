@@ -6,6 +6,26 @@
 
 ---
 
+## 2026-11-18 · 会话 E（`claude/confirm-next-tasks-k5wu6t`）交接：0.9.49 审阅第六批重做 + 第七批，待合并
+
+### 分支和状态（给负责合并的会话）
+- 分支 **`claude/confirm-next-tasks-k5wu6t`**，已全部推送，工作区干净。它包含 `claude/confident-hypatia-nropgi` 和 `claude/character-animation-smoothness-dearur` 的全部提交（直接接在会话 D 后面）。
+- 和 **`claude/exciting-babbage-lm8ubb`**（总攻击第九～十三版，21 个提交）互不包含；试合并过（临时 worktree，`git merge --no-commit`）**没有冲突**，两边都动过的只有 `tools/p5/fxpreview/Preview.cs`、`tools/p5/stage_p5.py`，自动合得上。
+- 代码版本号仍是 **0.9.50**；这些改动**都没进过游戏**。合并后出包升 **0.9.51**（照 `docs/codex/codex_p5_build_0.9.50.md`）。类型检查 `bash tools/p5/cloud/check.sh` 通过。
+
+### 做了什么（审阅表 `docs/p5/review_0.9.49.md` 已逐条标注）
+- **第六批第三版（用户：可以了）**：紧勒「咒烟绞索」（`Vfx/StrangleFx.cs` + 新的 `Vfx/CurseForm.cs`）、夜魇「梦魇之手」（`Vfx/NightmareFx.cs`，复用 `CrushHand`/`CrushHandFrame` + 漩涡）、压制「三重锁压」（`Vfx/SuppressFx.cs`，重压音效 crush + sub_boom）、狩猎「夺宝」（`Vfx/HuntFx.cs`）、必备工具「弹牌」（`Vfx/ToolsFx.cs`）；删掉了 `Vfx/Batch6Fx.cs`。尖啸打出不放声音（`SkillPlay.cs`）。
+- **第七批（等用户确认）**：致命毒药 / 咕嘟冒泡「咒怨裂隙」（新 `Vfx/CurseRift.cs`，接在 `PoisonFx.Apply`）；群蛇形态画布每帧按蛇的范围重算（`SerpentMantle.FitCanvas`，修大房间断开）；刀刃陷阱「时钟陷阱」整个重写（`Vfx/KnifeTrapFx.cs`：褪灰、透明大表盘一枪一格、预告信最多显示 24 张超出补位；`JokerFx.cs` 的调用和 `Aim.HoldCast` 改了）。
+- 预览视频：`docs/p5/preview/fix_batch6_v3.mp4`、`fix_batch6_v4.mp4`、`suppress_press_sfx.mp4`、`fix_batch7.mp4`、`fix_batch7b.mp4`、`serpent_form_check.mp4`。
+- 经验写进了 `docs/p5/TODO.md`（拉黑清单下面）。
+
+### 合并 / 出包后要实机看的
+- 群蛇形态在大房间里还断不断（预览只能近似）。
+- 刀刃陷阱在真实开枪节奏下的表盘步进、24 张以上补位。
+- 夜魇巨手张开时指尖会不会被顶栏挡住。
+
+---
+
 ## 2026-11-18 · 会话 D（`claude/confident-hypatia-nropgi`）交接：0.9.49 审阅意见逐批修改（已做 10 张）
 
 ### 分支和状态
