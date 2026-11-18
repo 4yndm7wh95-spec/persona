@@ -52,6 +52,9 @@ public static partial class AllOut
 		public float Scale;
 		public Vector2 Focus;
 		public readonly List<(Polygon2D P, float At, Vector2 Pos, float Size)> Glints = new();
+		// 主裂纹冲到屏幕边的延长段（第三下裂开时长出去）：黑色楔形 + 一侧断续的白边，正好压在块与块的缝上
+		public readonly List<(Polygon2D Ink, Polygon2D Halo, Line2D Lit, Vector2 From, Vector2 Dir, float Len, float W0, float Delay)> Exts = new();
+		public float GlowAmount;
 		public readonly List<(Polygon2D P, float At, Vector2 From, Vector2 Vel, float Spin)> Chips = new();
 
 		public void Param(string name, Variant v)
@@ -114,6 +117,26 @@ public static partial class AllOut
 			poly.Add(extB);
 			for (int k = B.Length - 1; k >= 1; k--) poly.Add(B[k]);
 			AddPane(g, under, poly.ToArray(), focus, screen, rng);
+		}
+		// 延长段：从每条主裂纹的末端沿块缝（撞击点 → 末端的方向）一直冲出屏幕
+		foreach (Vector2[] line in g.Lines)
+		{
+			Vector2 end = line[^1], dir = (end - focus).Normalized();
+			float len = 0f;
+			for (float t = 0f; t < 4000f; t += 20f)
+			{
+				Vector2 q = end + dir * t;
+				len = t;
+				if (q.X < -80f || q.Y < -80f || q.X > screen.X + 80f || q.Y > screen.Y + 80f) break;
+			}
+			if (len < 30f) continue;
+			Polygon2D halo = new() { Color = new Color(0.9f, 0.05f, 0.1f, 0f), Antialiased = true, Visible = false };
+			Polygon2D ink = new() { Color = new Color(0.02f, 0.01f, 0.015f), Antialiased = true, Visible = false };
+			Line2D lit = new() { Width = 1.8f, DefaultColor = new Color(1f, 0.95f, 0.95f, 0.9f), Antialiased = true, Visible = false };
+			over.AddChild(halo);
+			over.AddChild(ink);
+			over.AddChild(lit);
+			g.Exts.Add((ink, halo, lit, end, dir, len, rng.RandfRange(7f, 10f), rng.RandfRange(0f, 0.05f)));
 		}
 		// 裂纹贴图（在各块上面）：红光（加色、模糊）+ 黑色裂纹本体，按离撞击点的距离一圈圈显出来
 		if (art != null)
@@ -206,7 +229,8 @@ public static partial class AllOut
 			// 红光：第三下之后越来越亮，碎开前一下涨满
 			float pre = Mathf.Clamp((T - CrackBeats[^1]) / (ShatterAt - CrackBeats[^1]), 0f, 1f);
 			g.GlowM.SetShaderParameter("reach", reach / 2048f);
-			g.GlowM.SetShaderParameter("amount", 0.06f + 0.22f * pre + 0.5f * Mathf.Pow(pre, 4f));
+			g.GlowAmount = 0.06f + 0.22f * pre + 0.5f * Mathf.Pow(pre, 4f);
+			g.GlowM.SetShaderParameter("amount", g.GlowAmount);
 		}
 		Vector2 shake = new Vector2(Mathf.Sin(T * 97f), Mathf.Cos(T * 83f)) * (tremble + jolt);
 		g.Param("shift", shake / screen);
@@ -217,6 +241,23 @@ public static partial class AllOut
 			p.Poly.Position = p.Pivot + p.Off + shake;
 			p.Poly.Rotation = p.Rot;
 			p.M.SetShaderParameter("shade", 1f + shade * p.ShadeSign);
+		}
+		// 延长段：第三下裂开时 0.12s 内冲到屏幕边（先快后慢），之后跟着震
+		float ek0 = T - CrackBeats[^1];
+		foreach (var e in g.Exts)
+		{
+			float ek = Mathf.Clamp((ek0 - e.Delay) / 0.12f, 0f, 1f);
+			e.Ink.Visible = e.Lit.Visible = e.Halo.Visible = ek > 0f;
+			if (ek <= 0f) continue;
+			float L = e.Len * Quint(ek);
+			Vector2 n = e.Dir.Orthogonal(), a = e.From + shake, b = a + e.Dir * L;
+			float w1 = Mathf.Lerp(e.W0, 2f, Mathf.Clamp(L / 1100f, 0f, 1f));
+			e.Ink.Polygon = new[] { a + n * e.W0 * 0.5f, b + n * w1 * 0.5f, b + e.Dir * 6f, b - n * w1 * 0.5f, a - n * e.W0 * 0.5f };
+			float hw0 = e.W0 * 2.6f, hw1 = w1 * 3f;          // 和裂纹贴图一样渗红光
+			e.Halo.Polygon = new[] { a + n * hw0 * 0.5f, b + n * hw1 * 0.5f, b - n * hw1 * 0.5f, a - n * hw0 * 0.5f };
+			e.Halo.Color = new Color(0.9f, 0.05f, 0.1f, Mathf.Clamp(0.25f + g.GlowAmount * 0.9f, 0f, 0.85f));
+			// 白边：只在一侧、断成几段
+			e.Lit.Points = new[] { a + n * e.W0 * 0.5f + e.Dir * L * 0.08f, a + n * Mathf.Lerp(e.W0, w1, 0.35f) * 0.5f + e.Dir * L * 0.35f };
 		}
 		if (g.Art != null)
 		{

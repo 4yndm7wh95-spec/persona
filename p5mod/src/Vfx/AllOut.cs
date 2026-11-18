@@ -218,7 +218,7 @@ public static partial class AllOut
 		AllOutFinale? fin = AllOutFinale.Create(rootC, screen);
 		Control finRoot = new() { Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore, Visible = false };
 		rootC.AddChild(finRoot);
-		finRoot.AddChild(new ColorRect { Color = new Color(0.996f, 0f, 0f), Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore });   // 原版红底（离屏画面第一帧到之前也是红的）
+		finRoot.AddChild(new ColorRect { Color = new Color(0.8f, 0.03f, 0.08f), Position = new Vector2(-160f, -160f), Size = screen + new Vector2(320f, 320f), MouseFilter = Control.MouseFilterEnum.Ignore });   // 红底（比屏幕大一圈：震的时候不露边）   // 原版红底（离屏画面第一帧到之前也是红的）
 		if (fin != null)
 		{
 			finRoot.AddChild(fin.Bg);
@@ -451,21 +451,22 @@ public static partial class AllOut
 				{
 					// 拆开入场（一层接一层）：红底从放大压回 → 碎星转着砸进来 → Joker 从右边冲进来（带一点回弹）→ 怪物剪影从左边砸进（ArtT）
 					// → 竖排字从下往上划上来；Joker 落定那一下震屏
-					float qb = Quint(Mathf.Clamp(d / 0.45f, 0f, 1f));
+					float qb = Quint(Mathf.Clamp(d / 0.3f, 0f, 1f));
 					fin.Bg.Scale = Vector2.One * Mathf.Lerp(1.15f, 1f, qb);
-					float ks = Mathf.Clamp((d - 0.03f) / 0.55f, 0f, 1f);
+					// 碎星：不转（整层是全屏的，一转就露出四角）、不回弹，0.24s 利落地从 1.35 倍压到原大
+					float ks = Mathf.Clamp((d - 0.02f) / 0.24f, 0f, 1f);
 					fin.Star.Visible = d >= 0.02f;
-					fin.Star.Rotation = Mathf.Lerp(-0.9f, 0f, Back(ks, 1.2f));
-					fin.Star.Scale = Vector2.One * Mathf.Lerp(1.9f, 1f, Back(ks, 0.8f));
-					fin.Star.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(ks * 5f, 0f, 1f));
+					fin.Star.Rotation = 0f;
+					fin.Star.Scale = Vector2.One * Mathf.Lerp(1.35f, 1f, Quint(ks));
+					fin.Star.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(ks * 6f, 0f, 1f));
 					// Joker：碎开那一刻就在玻璃后面，从 1.4 倍、以脸为支点 0.12s 砸到略小于原大（0.97），再 0.3s 弹回原大 —— 砸进来的那一下要狠；
 					// 同时从右边 0.1 屏宽冲到位；第一帧整个人白闪一下（加色），压暗只留 0.08s 就亮起；之后一直极慢地漂
-					float slam = Mathf.Clamp(d / 0.16f, 0f, 1f), settle = Mathf.Clamp((d - 0.16f) / 0.42f, 0f, 1f);
-					float js = d < 0.16f ? Mathf.Lerp(1.4f, 0.97f, Quint(slam)) : Mathf.Lerp(0.97f, 1f, Ease(settle));
-					js -= 0.01f * Mathf.Max(0f, d - 0.58f);
+					// 不缩到原大以下（人物这层一直铺到屏幕右边和下边，缩了就露边）：1.4 倍 0.16s 砸到原大，之后极慢地往前推（放大）
+					float slam = Mathf.Clamp(d / 0.16f, 0f, 1f);
+					float js = Mathf.Lerp(1.4f, 1f, Quint(slam)) + 0.008f * Mathf.Max(0f, d - 0.16f);
 					fin.Front.PivotOffset = screen * new Vector2(0.62f, 0.2f);                // 脸
 					fin.Front.Scale = Vector2.One * js;
-					fin.Front.Position = new Vector2(W * 0.1f * (1f - Quint(slam)) - 8f * Mathf.Max(0f, d - 0.58f), 0f);
+					fin.Front.Position = new Vector2(W * 0.1f * (1f - Quint(slam)), 0f);
 					float lit = Mathf.Clamp((d - 0.04f) / 0.1f, 0f, 1f);
 					float white = d < 0.05f ? 1f - d / 0.05f : 0f;
 					fin.Front.Modulate = new Color(Mathf.Lerp(0.35f, 1f, lit) + white, Mathf.Lerp(0.15f, 1f, lit) + white, Mathf.Lerp(0.2f, 1f, lit) + white, Mathf.Clamp(d / 0.04f, 0f, 1f));
