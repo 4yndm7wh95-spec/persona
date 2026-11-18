@@ -160,6 +160,7 @@ void fragment() {
 	float n1 = noise(vec2(th * 22.0 + clock * 3.0, (r - 1.0) * 18.0 + seed));
 	float n2 = noise(vec2(th * 60.0 - clock * 6.0, (r - 1.0) * 40.0 - seed));
 	float w = mix(0.035, 0.2, pow(near, 1.4)) * (1.0 - 0.55 * k);   // 半宽（单位 = 椭圆半径）
+	w *= smoothstep(0.0, 0.35, behind) * 0.85 + 0.15 * smoothstep(0.0, 0.08, behind);   // 刀头收成尖锋（用户 2026-11-18：末端太平）
 	float dr = r - 1.0 - (n1 - 0.5) * w * 0.5;
 	float prof = 1.0 - clamp(abs(dr) / max(w, 0.001), 0.0, 1.0);
 	float on = step(behind, tail);
@@ -199,7 +200,7 @@ void fragment() {
 			root.Visible = true;
 			float s = t * (swing + fade);
 			float e = Fx.OutCubic(Mathf.Min(1f, s / swing));
-			m.SetShaderParameter("head", Mathf.Lerp(3.6f, 0.1f, e));
+			m.SetShaderParameter("head", Mathf.Lerp(3.6f, -0.35f, e));   // 扫过右侧再往上挑一点收住
 			// 尾巴：扫的时候拖得长，扫完往刀头收
 			float tail = Mathf.Lerp(0.6f, 2.4f, Mathf.Min(1f, s / (swing * 0.6f))) * (1f - Fx.InCubic(Ease5.Seg(s, swing, fade)));
 			m.SetShaderParameter("tail", Mathf.Max(0.02f, tail));
@@ -271,7 +272,7 @@ void fragment() {
 		// 刀走在一个倾斜的水平椭圆上（透视下的一圈）：从他左后方（远、细）扫过身前最近的一点（近、粗、亮）到右前方。
 		float rx = h * 0.88f, ry = h * 0.32f, tilt = -0.2f;
 		Vector2 ctr = hand + new Vector2(f * h * 0.45f, h * 0.06f);
-		const float th0 = 3.6f, th1 = 0.1f, swing = 0.17f;   // 刀头的角度（y 朝下，π/2 = 正前方最近处），从左后方扫到右前方
+		const float th0 = 3.6f, th1 = -0.35f, swing = 0.17f;   // 刀头的角度（y 朝下，π/2 = 正前方最近处），从左后方扫到右前方
 		Func<float, Vector2> onArc = th => ctr + new Vector2(Mathf.Cos(th) * rx * f, Mathf.Sin(th) * ry).Rotated(tilt * f);
 		Func<float, float> headAt = s => Mathf.Lerp(th0, th1, Fx.OutCubic(Mathf.Clamp((s - fling0) / swing, 0f, 1f)));
 		SlashArc(front, ctr, rx, ry, tilt, f, fling0, swing, 0.32f, h);
@@ -326,30 +327,57 @@ void fragment() {
 					bf.Root.GlobalPosition = at.Lerp(hand, e);
 					Vector2 dv = hand - at;
 					float ang = f > 0 ? dv.Angle() : dv.Angle() - Mathf.Pi;
-					bf.Root.Rotation = Mathf.LerpAngle(0f, ang, Mathf.Min(1f, (s - back0) / 0.06f));
+					bf.Root.Rotation = Mathf.LerpAngle(0f, ang, Mathf.Min(1f, (s - back0) / 0.06f)) + Mathf.Tau * f * Ease5.OutQuint((s - back0) / fly);   // 飞回来时翻一整圈
 					bf.Root.Scale = Vector2.One * (1f - 0.4f * e);
 				}
 			});
+			// 出现：空气撕开那一下一个极短的顿帧、红色柔光 + 小星光、迸一把火星
 			Fx.After(front, t0 + 0.02f, () =>
 			{
 				Sfx.Take("gx_ping", 0.12f);
+				if (k == 0) HitStop.Request(0.025);
 				Glow.Flash(front, at, Hot, h * 0.22f, 0.08f);
-				Glow.Flash(front, at, new Color(1f, 0.25f, 0.3f), h * 0.45f, 0.25f);
-				Phantom.Shards(front, at, 6, 240f * u, 600f * u, new Vector2(f, 0f), 70f, 0.28f, 300f * u, 12f * u);
+				Glow.Flash(back, at, new Color(1f, 0.15f, 0.22f), h * 0.6f, 0.35f);
+				Glow.Glint(front, at + new Vector2(f * h * 0.08f, 0f), 0.55f);
+				Phantom.Shards(front, at, 8, 240f * u, 640f * u, new Vector2(f, -0.1f), 75f, 0.3f, 400f * u, 12f * u);
+				Glow.Sparks(front, at, 10, 80f * u, 320f * u, 0.45f, new[] { new Color(1f, 0.75f, 0.7f), new Color(0.9f, 0.08f, 0.16f) }, 400f * u, 0.03f * u, 0.07f * u, Vector2.Up, 120f);
 			});
-			StreakSharp(front, e => at.Lerp(hand, Fx.InCubic(e)), back0, fly, h * 0.45f, 14f * u, Red, 1.5f);
+			// 子弹身上一团红光（出现到落手一直跟着）
+			Node2D aura = Fx.Root(front, at, "P5BulletAura", back0 + fly + 0.05);
+			Glow.SoftSprite(aura, Vector2.Zero, new Color(1f, 0.12f, 0.2f, 0.55f), h * 0.35f / 32f);
+			aura.Visible = false;
+			Fx.Animate(aura, t0, back0 + fly - t0, t =>
+			{
+				aura.Visible = true;
+				float s = t0 + t * (back0 + fly - t0);
+				aura.GlobalPosition = s < back0 ? at : at.Lerp(hand, Fx.InCubic((s - back0) / fly));
+				aura.Modulate = new Color(1f, 1f, 1f, (0.6f + 0.4f * Mathf.Sin(s * 30f + k)) * (1f - Ease5.Seg(s, back0 + fly - 0.04f, 0.04f)));
+			});
+			// 收回：飞的时候翻一整圈、沿途洒火星，拖红疾光
+			StreakSharp(front, e => at.Lerp(hand, Fx.InCubic(e)), back0, fly, h * 0.45f, 16f * u, Red, 1.5f);
+			for (int sIdx = 0; sIdx < 3; sIdx++)
+			{
+				float e = 0.25f + 0.25f * sIdx;
+				Vector2 pp = at.Lerp(hand, Fx.InCubic(e));
+				Glow.Sparks(front, pp, 4, 40f * u, 160f * u, 0.3f, new[] { new Color(1f, 0.6f, 0.6f), new Color(0.8f, 0.05f, 0.14f) }, 300f * u, 0.025f * u, 0.06f * u, Vector2.Up, 160f);
+			}
 			Fx.After(front, back0 + fly, () =>
 			{
 				Sfx.Take("gx_tick", 0.14f);
-				Glow.Flash(front, hand, Hot, h * 0.18f, 0.08f);
+				Glow.Flash(front, hand, Hot, h * 0.2f, 0.08f);
+				Glow.Flash(back, hand, new Color(1f, 0.15f, 0.22f), h * 0.5f, 0.22f);
+				Phantom.Shards(front, hand, 6, 200f * u, 480f * u, new Vector2(-f, -0.4f), 70f, 0.26f, 400f * u, 11f * u);
+				if (c.SelfTint is { } st) Fx.Animate(front, 0, 0.18, tt => st(Colors.White.Lerp(new Color(1.45f, 0.8f, 0.85f), (1f - tt) * 0.8f)));
 			});
 		}
 		float done = home0 + 0.06f * (n - 1) + 0.17f;
 		Fx.After(front, done + 0.02f, () =>
 		{
 			Sfx.Take("gx_tock", 0.16f);
-			Glow.Flash(back, hand, Red, h * 1.0f, 0.3f);
-			Cross(front, hand, h * 0.35f);
+			Glow.Flash(front, hand, Hot, h * 0.3f, 0.1f);
+			Glow.Flash(back, hand, Red, h * 1.2f, 0.35f);
+			Glow.Sparks(front, hand, 16, 120f * u, 480f * u, 0.5f, new[] { new Color(1f, 0.8f, 0.75f), new Color(0.9f, 0.08f, 0.16f) }, 500f * u, 0.03f * u, 0.08f * u, Vector2.Up, 140f);
+			Glow.Glint(front, hand, 0.8f);   // 不用十字光（横竖光芒会拉成白线）
 			EchoPulse(c, 0.05f, 0.3f, 0.6f);
 		});
 		if (c.SelfTint is { } tint)
