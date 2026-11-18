@@ -1049,11 +1049,11 @@ public partial class Preview : Node2D
 		{
 			// 人物缩到 0.5 倍（= 大房间镜头拉远）：旧画布右边到 430 + 7T ≈ 1725、上边到 830 - 2.9T ≈ 294；
 			// 第一口咬画面最右边（1830，旧画布外），第二口咬高处飞着的（y 250，旧画布上沿外）
-			// 人物缩到 0.65 倍（= 大房间镜头拉远）：旧画布上沿在 830 - 2.9T ≈ 130；咬高处飞着的敌人（y 90～110，旧画布外）
-			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 0.65f;
-			p.At(0.1, () => SerpentMantle.Start(p._front, p._back, () => (JokerFeet, tall, 1f), live: true, intro: false));
-			p.At(0.9, () => SerpentMantle.Current?.Strike(new Vector2(1180f, 110f), null));
-			p.At(1.6, () => SerpentMantle.Current?.Strike(new Vector2(1600f, 90f), null));
+			// 正常大小：咬场上的敌人（和改画布之前同样的写法）
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.1, () => SerpentMantle.Start(p._front, p._back, () => (JokerFeet, tall, 1f), live: true, intro: true));
+			p.At(1.6, () => { p._enemies.TryGetValue(Enemy, out Node2D? b); SerpentMantle.Current?.Strike(Enemy + new Vector2(0f, -170f), b); });
+			p.At(2.3, () => { p._enemies.TryGetValue(Enemy3, out Node2D? b); SerpentMantle.Current?.Strike(Enemy3 + new Vector2(0f, -150f), b); });
 		},
 		["b6nm"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Nightmare", "cast_glove", 0.25, 2.0) }),
 		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_glove", 0.25, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast_wave", 0.08, 1.6) }),
