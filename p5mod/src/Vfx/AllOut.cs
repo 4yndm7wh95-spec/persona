@@ -30,7 +30,7 @@ public static class AllOut
 
 	// ── 时间轴（秒） ──
 	// 节奏照 P3 mod（最后一击 → 约 0.6s 蓄势 → 立绘）：定格顿 0.15s，裂纹 0.3s 内看得见地长满，停一拍、往里推；0.55 碎开
-	private const float CrackAt = 0.15f, CrackGrow = 0.3f, ShatterAt = 0.55f, ShardLife = 0.45f, SlamLen = 0.12f;
+	private const float CrackAt = 0.22f, CrackGrow = 0.6f, ShatterAt = 1.0f, ShardLife = 0.7f, SlamLen = 0.16f;
 	// 碎开那一刻原版收尾已经在玻璃后面（从源时间 ArtAt 前一点开始放，碎星的血花照原版炸开），三层各自切入：
 	// 背景从放大缩回、Joker 从右边快速滑进、竖排字从左边进、怪物剪影从左边砸进；剪影落定（ArtT）时喷血
 	// 碎开那一刻立绘卡硬切进来（在玻璃片后面，没有空红底），白闪 + 撞击点一颗巨大的白色四角星，整张卡从放大压回来、震屏；
@@ -38,15 +38,35 @@ public static class AllOut
 	private const float SrcStart = AllOutFinale.ArtAt - 0.03f, Settle = 0.32f;
 	// 入场分拍（相对碎开）：0 碎开 + 红底压回（冲击）→ 0.02–0.4 碎星转进来（丝滑，带一点回弹）→ 0.14–0.38 Joker 冲进来、落定震屏（冲击）
 	// → 0.42 怪物剪影砸进 + 喷血 + 震屏（第二下冲击）→ 0.5–0.8 竖排字划上来（丝滑）
-	private const float JokerLen = 0.6f, TextIn = 0.42f, TextLen = 0.3f;
-	private const float ArtT = ShatterAt + 0.3f;
-	private const float ExitAt = ShatterAt + 2.2f, CoverLen = 0.28f, HoleAt = ExitAt + CoverLen + 0.02f, HoleLen = 0.4f;
+	private const float TextIn = 0.75f, TextLen = 0.42f;
+	private const float ArtT = ShatterAt + 0.5f;
+	private const float ExitAt = ShatterAt + 2.6f, CoverLen = 0.36f, HoleAt = ExitAt + CoverLen + 0.02f, HoleLen = 0.5f;
 	public const float Total = HoleAt + HoleLen + 0.05f;
 	/// <summary>结算推迟多久：洞开到一半左右时结算页出现在洞里。</summary>
 	public const float Hold = HoleAt + 0.14f;
 
 	private static readonly Color Red = new(0.86f, 0.02f, 0.09f);
 	private static readonly Color Ink = new(0.015f, 0.008f, 0.012f);
+
+	// ── 慢放 ──
+	private const float SlowScale = 0.12f;
+	private static bool _slowed;
+	private static double _savedScale = 1.0;
+
+	private static void SlowDown(float scale)
+	{
+		if (!_slowed) _savedScale = Engine.TimeScale;
+		_slowed = true;
+		Engine.TimeScale = scale;
+	}
+
+	/// <summary>恢复正常速度（只在我们改过时恢复；可以重复调用）。AllOutPatches 在战斗结束 / 新战斗开始时也会调。</summary>
+	public static void RestoreTime()
+	{
+		if (!_slowed) return;
+		_slowed = false;
+		Engine.TimeScale = _savedScale > 0.01 ? _savedScale : 1.0;
+	}
 
 	/// <summary>本场已播总攻击（同一场不重复）。</summary>
 	public static bool Played;
@@ -142,6 +162,7 @@ public static class AllOut
 		public Line2D Edge = null!;
 		public Vector2 Center, Dir;
 		public float Speed, Spin, Delay, Grow;
+		public Vector2[] Uv = Array.Empty<Vector2>();
 	}
 
 	private sealed class Jet
@@ -171,29 +192,29 @@ public static class AllOut
 		float W = screen.X, H = screen.Y;
 		RandomNumberGenerator rng = new() { Seed = 5u + (ulong)foes.Count * 131u };
 
-		// 冻住此刻的画面
-		Image shot = main.GetTexture().GetImage();
-		ImageTexture frozen = ImageTexture.CreateFromImage(shot);
+		// 前半段不定格：游戏画面慢放（Engine.TimeScale），碎开那一刻恢复；万一中途被打断，节点离开场景树时 / 真实时间计时器到点时也恢复
+		SlowDown(SlowScale);
 
 		CanvasLayer layer = new() { Layer = 110, Name = "P5AllOut" };
 		tree.Root.AddChild(layer);
 		Control rootC = new() { Size = screen, MouseFilter = Control.MouseFilterEnum.Stop, Name = "P5AllOutRoot" };   // 挡住输入
 		layer.AddChild(rootC);
+		layer.TreeExiting += () => RestoreTime();
+		tree.CreateTimer(ShatterAt + 0.6, true, false, true).Timeout += () => RestoreTime();
 
-		// ── 定格：最后一击那一帧（原样，不调色）画进离屏画面，裂开时整张拿去当玻璃片的贴图 ──
-		SubViewport stage = new() { Size = new Vector2I((int)W, (int)H), Disable3D = true, RenderTargetUpdateMode = SubViewport.UpdateMode.Always, Name = "P5AllOutStage" };
-		rootC.AddChild(stage);
+		// ── 前半段：直接盖在慢放的游戏画面上（读屏着色器压暗去色）+ 集中线 + 裂痕；碎开那一刻把整屏截下来当玻璃片的贴图 ──
+		Control stageRoot = new() { Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore };
+		rootC.AddChild(stageRoot);
 		ShaderMaterial still = new() { Shader = StillShader };
-		stage.AddChild(new TextureRect { Texture = frozen, Size = screen, StretchMode = TextureRect.StretchModeEnum.Scale, Material = still });
+		stageRoot.AddChild(new ColorRect { Size = screen, Material = still, MouseFilter = Control.MouseFilterEnum.Ignore });
 		Node2D lines = new();
-		stage.AddChild(lines);
+		stageRoot.AddChild(lines);
 		Node2D crackLayer = new();
-		stage.AddChild(crackLayer);
+		stageRoot.AddChild(crackLayer);
 		// 裂痕贴图（Codex 生图）：整张裂痕以撞击点为中心，按离撞击点的距离往外显出来（CrackShader 的 reach）；中心叠一团粉碎
 		Texture2D? crackTex = Stage.LoadTexture("aoa_crack_main"), coreTex = Stage.LoadTexture("aoa_crack_core");
 		Sprite2D? crackSp = null, coreSp = null;
 		ShaderMaterial crackM = new() { Shader = CrackShader };
-		TextureRect stageView = new() { Texture = stage.GetTexture(), Size = screen, PivotOffset = screen * 0.5f, MouseFilter = Control.MouseFilterEnum.Ignore };
 
 		// ── 原版收尾 + 夹在中间的怪物剪影和血 ──
 		AllOutFinale? fin = AllOutFinale.Create(rootC, screen);
@@ -214,7 +235,6 @@ public static class AllOut
 			finRoot.AddChild(fin.Front);
 			finRoot.AddChild(fin.Text);
 		}
-		rootC.AddChild(stageView);
 		Node2D shardLayer = new();
 		rootC.AddChild(shardLayer);
 		ColorRect cover = new() { Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = CoverShader }, Visible = false };
@@ -333,26 +353,25 @@ public static class AllOut
 			speed.Add((pl, ang, rng.RandfRange(0.25f, 0.55f), rng.RandfRange(4f, 12f), rng.RandfRange(0f, 9f)));
 		}
 
-		// ── 声音 ──
-		Sfx.Play(Sfx.AllOut, 0.9f);                          // 最后一击定格：原版总攻击斩击
-		Sfx.Play(Sfx.Crack, 0.45f, CrackAt);                 // 裂开
-		Sfx.Play(Sfx.Shatter, 0.85f, ShatterAt);
-		Sfx.Play(Sfx.SwishLow, 0.5f, ShatterAt + 0.03f);         // 碎星转进来
-		Sfx.Play(Sfx.CutIn, 0.8f, ShatterAt + 0.02f);           // Joker 切入
-		Sfx.Play(Sfx.Swish, 0.35f, ShatterAt + TextIn);           // 竖排字
-		Sfx.Play(Sfx.AoaSlash3, 0.6f, ArtT);
-		Sfx.Play(Sfx.SubBoom, 0.7f, ArtT);
-		Sfx.Play(Sfx.SwishHeavy, 0.55f, ExitAt);
-		Sfx.Play(Sfx.MenuWhoosh, 0.5f, HoleAt);
+		// ── 声音（用户 2026-11-18：只要三样）：蓄势（P3 mod 同款，高潮正好在碎开）、碎开、怪物喷血（P5R 原版总攻击斩击） ──
+		// 在时间轴里按真实时间触发（不用 Sfx 的延时：慢放会把延时也拖长）
+		var cues = new List<(float At, string Name, float Vol)> { (ShatterAt - 0.65f, Sfx.AoaZoom, 0.85f), (ShatterAt, Sfx.Shatter, 0.85f), (ArtT, Sfx.AoaSlash1, 0.8f) };
+		var fired = new bool[cues.Count];
 
 		bool broke = false, cracked = false;
-		Fx.Animate(layer, 0, Total, u =>
+		Tween clock = layer.CreateTween();
+		clock.SetIgnoreTimeScale(true);
+		clock.TweenMethod(Callable.From<float>(T => Stage.Safe("allout tick", () =>
 		{
-			float T = u * Total;
+			if (!GodotObject.IsInstanceValid(layer)) return;
+			for (int i = 0; i < cues.Count; i++)
+			{
+				if (!fired[i] && T >= cues[i].At) { fired[i] = true; Sfx.Play(cues[i].Name, cues[i].Vol); }
+			}
 			// 定格：裂纹从敌人那里炸开，画面往里推一点
 			// 顿帧：最开头两帧是黑白反转的冲击帧，之后画面压暗、去色、四周收暗，撞击点附近色散，集中线一闪一闪
-			float imp = T < 0.07f ? 1f : 0f;
-			float hold = Mathf.Clamp((T - 0.05f) / 0.12f, 0f, 1f);
+			float imp = T < 0.08f ? 1f : 0f;
+			float hold = Mathf.Clamp((T - 0.06f) / 0.2f, 0f, 1f);
 			still.SetShaderParameter("impact", imp);
 			still.SetShaderParameter("hold", hold);
 			float rad = Mathf.Sqrt(W * W + H * H);
@@ -367,14 +386,13 @@ public static class AllOut
 			}
 			// 裂开的过程中慢慢往撞击点推近，碎开前一拍微微发抖
 			float push = Mathf.Clamp((T - CrackAt) / (ShatterAt - CrackAt), 0f, 1f);
-			stageView.PivotOffset = focus;
-			stageView.Scale = Vector2.One * (1f + 0.06f * push * push);
-			float tremble = T > ShatterAt - 0.12f && T < ShatterAt ? 3f : 0f;
-			stageView.Position = new Vector2(Mathf.Sin(T * 97f), Mathf.Cos(T * 83f)) * tremble;
+			// （用户 2026-11-18：前半段不要放大游戏画面）碎开前 0.18s 微微发抖
+			float tremble = T > ShatterAt - 0.18f && T < ShatterAt ? 3f : 0f;
+			still.SetShaderParameter("shift", new Vector2(Mathf.Sin(T * 97f), Mathf.Cos(T * 83f)) * tremble / screen);
 			if (T >= CrackAt && !cracked)
 			{
 				cracked = true;
-				var built = BuildShards(shardLayer, stage, focus, screen, rng, crackLayer);
+				var built = BuildShards(shardLayer, focus, screen, rng, crackLayer);
 				shards.AddRange(built.Item1);
 				cracks.AddRange(built.Item2);
 			}
@@ -410,8 +428,19 @@ public static class AllOut
 			if (T >= ShatterAt && !broke)
 			{
 				broke = true;
-				Fx.After(layer, 0.04, () => { if (GodotObject.IsInstanceValid(stage)) stage.RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled; });
-				stageView.Visible = false;
+				// 截下此刻的整屏（含压暗、裂痕）当玻璃片的贴图；恢复正常速度
+				Image shot = main.GetTexture().GetImage();
+				ImageTexture glass = ImageTexture.CreateFromImage(shot);
+				Vector2 k = new Vector2(shot.GetWidth(), shot.GetHeight()) / screen;
+				foreach (Shard sh in shards)
+				{
+					sh.Face.Texture = glass;
+					var uv = new Vector2[sh.Uv.Length];
+					for (int i = 0; i < uv.Length; i++) uv[i] = sh.Uv[i] * k;
+					sh.Face.UV = uv;
+				}
+				stageRoot.Visible = false;
+				RestoreTime();
 				finRoot.Visible = true;
 				foreach (Shard sh in shards) sh.Face.Visible = sh.Back.Visible = sh.Edge.Visible = true;
 			}
@@ -452,29 +481,31 @@ public static class AllOut
 				{
 					// 拆开入场（一层接一层）：红底从放大压回 → 碎星转着砸进来 → Joker 从右边冲进来（带一点回弹）→ 怪物剪影从左边砸进（ArtT）
 					// → 竖排字从下往上划上来；Joker 落定那一下震屏
-					float qb = Quint(Mathf.Clamp(d / 0.3f, 0f, 1f));
+					float qb = Quint(Mathf.Clamp(d / 0.45f, 0f, 1f));
 					fin.Bg.Scale = Vector2.One * Mathf.Lerp(1.15f, 1f, qb);
-					float ks = Mathf.Clamp((d - 0.02f) / 0.34f, 0f, 1f);
+					float ks = Mathf.Clamp((d - 0.03f) / 0.55f, 0f, 1f);
 					fin.Star.Visible = d >= 0.02f;
 					fin.Star.Rotation = Mathf.Lerp(-0.9f, 0f, Back(ks, 1.2f));
 					fin.Star.Scale = Vector2.One * Mathf.Lerp(1.9f, 1f, Back(ks, 0.8f));
 					fin.Star.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(ks * 5f, 0f, 1f));
-					// Joker（照 P3 mod 的立绘切入）：碎开那一刻就在玻璃后面，1.3 倍、以脸为支点 0.6s 拉回原大，带一点从右往左的位移；
-					// 先是压暗的剪影色，0.1–0.4s 平滑亮起；之后一直极慢地漂
-					float kj = Mathf.Clamp(d / JokerLen, 0f, 1f), ej = Ease(kj);
-					float js = 1.3f - 0.3f * ej - 0.012f * Mathf.Max(0f, d - JokerLen);
+					// Joker：碎开那一刻就在玻璃后面，从 1.4 倍、以脸为支点 0.12s 砸到略小于原大（0.97），再 0.3s 弹回原大 —— 砸进来的那一下要狠；
+					// 同时从右边 0.1 屏宽冲到位；第一帧整个人白闪一下（加色），压暗只留 0.08s 就亮起；之后一直极慢地漂
+					float slam = Mathf.Clamp(d / 0.16f, 0f, 1f), settle = Mathf.Clamp((d - 0.16f) / 0.42f, 0f, 1f);
+					float js = d < 0.16f ? Mathf.Lerp(1.4f, 0.97f, Quint(slam)) : Mathf.Lerp(0.97f, 1f, Ease(settle));
+					js -= 0.01f * Mathf.Max(0f, d - 0.58f);
 					fin.Front.PivotOffset = screen * new Vector2(0.62f, 0.2f);                // 脸
 					fin.Front.Scale = Vector2.One * js;
-					fin.Front.Position = new Vector2(W * 0.07f * (1f - ej) - 10f * Mathf.Max(0f, d - JokerLen), 0f);
-					float lit = Mathf.Clamp((d - 0.1f) / 0.3f, 0f, 1f);
-					lit = lit * lit * (3f - 2f * lit);
-					fin.Front.Modulate = new Color(Mathf.Lerp(0.3f, 1f, lit), Mathf.Lerp(0.12f, 1f, lit), Mathf.Lerp(0.16f, 1f, lit), Mathf.Clamp(d / 0.12f, 0f, 1f));
+					fin.Front.Position = new Vector2(W * 0.1f * (1f - Quint(slam)) - 8f * Mathf.Max(0f, d - 0.58f), 0f);
+					float lit = Mathf.Clamp((d - 0.04f) / 0.1f, 0f, 1f);
+					float white = d < 0.05f ? 1f - d / 0.05f : 0f;
+					fin.Front.Modulate = new Color(Mathf.Lerp(0.35f, 1f, lit) + white, Mathf.Lerp(0.15f, 1f, lit) + white, Mathf.Lerp(0.2f, 1f, lit) + white, Mathf.Clamp(d / 0.04f, 0f, 1f));
 					float kt = Mathf.Clamp((d - TextIn) / TextLen, 0f, 1f);
 					fin.Text.Visible = d >= TextIn;
 					fin.Text.Position = new Vector2(0f, H * 0.9f * (1f - Ease(kt) * (2f - Ease(kt)) * 0.5f - Ease(kt) * 0.5f));
 					float hitT = T - ArtT;
-					float sh = d < 0.14f ? (1f - d / 0.14f) * 10f : 0f;
-					if (hitT > 0f && hitT < 0.2f) sh = Mathf.Max(sh, (1f - hitT / 0.2f) * 12f);
+					float jl = d - 0.13f;                                                     // Joker 砸到位那一下震得最狠
+					float sh = jl > 0f && jl < 0.28f ? (1f - jl / 0.28f) * 16f : (d < 0.13f ? 6f : 0f);
+					if (hitT > 0f && hitT < 0.26f) sh = Mathf.Max(sh, (1f - hitT / 0.26f) * 12f);
 					finRoot.PivotOffset = screen * 0.5f;
 					finRoot.Scale = Vector2.One * (1f + sh * 0.003f);                  // 震的时候略放大，边缘不露底
 					finRoot.Position = new Vector2(Mathf.Sin(d * 120f), Mathf.Cos(d * 95f)) * sh;
@@ -524,12 +555,12 @@ public static class AllOut
 				coverM.SetShaderParameter("hole", h * h * (3f - 2f * h));
 				if (T >= HoleAt) finRoot.Visible = false;
 			}
-		});
-		Fx.After(layer, Total + 0.05, () =>
+		})), 0f, Total, Total);
+		tree.CreateTimer(Total + 0.05, true, false, true).Timeout += () =>
 		{
 			fin?.Free();
-			layer.QueueFree();
-		});
+			if (GodotObject.IsInstanceValid(layer)) layer.QueueFree();
+		};
 	}
 
 	/// <summary>
@@ -598,7 +629,7 @@ public static class AllOut
 	/// 以 focus 为中心的玻璃片（环 × 扇区，顶点抖动；大片再沿对角切开），边是有走向的折线（裂纹和玻璃片共用同一条折线，碎开时严丝合缝）。
 	/// 裂纹：放射线从撞击点一路到画面外、越远越细；环线只在近处三圈、更细；撞击点一圈细碎的短裂纹。贴图 = 离屏画面。
 	/// </summary>
-	private static (List<Shard>, List<Crack>) BuildShards(Node2D layer, SubViewport stage, Vector2 focus, Vector2 screen, RandomNumberGenerator rng, Node2D crackLayer)
+	private static (List<Shard>, List<Crack>) BuildShards(Node2D layer, Vector2 focus, Vector2 screen, RandomNumberGenerator rng, Node2D crackLayer)
 	{
 		float[] rings = { 0f, 46f, 120f, 240f, 420f, 680f, 1020f, 1500f, 2300f };
 		const int A = 12;
@@ -656,7 +687,6 @@ public static class AllOut
 			}
 			return outp.ToArray();
 		}
-		Texture2D tex = stage.GetTexture();
 		var list = new List<Shard>();
 		var cracks = new List<Crack>();
 		int[] reachRing = new int[A];
@@ -690,11 +720,12 @@ public static class AllOut
 					Shard sh = new()
 					{
 						Center = c, Dir = (c - focus).LengthSquared() > 1f ? (c - focus).Normalized() : Vector2.Up,
-						Speed = (700f + 1900f * Mathf.Clamp(1f - dist / 1800f, 0.2f, 1f)) * rng.RandfRange(0.8f, 1.25f),
-						Spin = rng.RandfRange(-3.2f, 3.2f), Delay = Mathf.Clamp(dist / 9000f, 0f, 0.04f),
+						Speed = (600f + 1500f * Mathf.Clamp(1f - dist / 1800f, 0.2f, 1f)) * rng.RandfRange(0.8f, 1.25f),
+						Spin = rng.RandfRange(-2.4f, 2.4f), Delay = Mathf.Clamp(dist / 9000f, 0f, 0.04f),
 						Grow = rng.Randf() < 0.3f ? rng.RandfRange(0.6f, 1.1f) : rng.RandfRange(0.05f, 0.35f),     // 少数朝镜头飞（变大）
 						Back = new Polygon2D { Polygon = local, Color = new Color(0.22f, 0f, 0.03f), Antialiased = true, Visible = false },
-						Face = new Polygon2D { Polygon = local, Texture = tex, UV = poly, Antialiased = true, Visible = false },
+						Face = new Polygon2D { Polygon = local, Antialiased = true, Visible = false },
+						Uv = poly,
 						Edge = new Line2D { Points = local, Closed = true, Width = 1.2f, DefaultColor = new Color(1f, 0.95f, 0.95f, 0.7f), Antialiased = true, Visible = false },
 					};
 					layer.AddChild(sh.Back);
@@ -862,15 +893,18 @@ public static class AllOut
 	/// </summary>
 	private static Shader StillShader => _still ??= new Shader { Code = @"
 shader_type canvas_item;
+uniform sampler2D scr : hint_screen_texture, filter_linear;
 uniform float impact = 0.0;
 uniform float hold = 0.0;
 uniform vec2 focus = vec2(0.6, 0.5);
 uniform float aspect = 1.7778;
+uniform vec2 shift = vec2(0.0);
 void fragment() {
-	vec2 d = (UV - focus) * vec2(aspect, 1.0);
+	vec2 uv = SCREEN_UV + shift;
+	vec2 d = (uv - focus) * vec2(aspect, 1.0);
 	float r = length(d);
-	vec2 ca = (UV - focus) * 0.006 * hold * smoothstep(0.0, 0.5, r);
-	vec3 c = vec3(texture(TEXTURE, UV + ca).r, texture(TEXTURE, UV).g, texture(TEXTURE, UV - ca).b);
+	vec2 ca = (uv - focus) * 0.006 * hold * smoothstep(0.0, 0.5, r);
+	vec3 c = vec3(texture(scr, uv + ca).r, texture(scr, uv).g, texture(scr, uv - ca).b);
 	float l = dot(c, vec3(0.299, 0.587, 0.114));
 	vec3 held = mix(c, vec3(l), 0.6) * mix(1.0, 0.62, hold);
 	held *= 1.0 - hold * 0.55 * smoothstep(0.35, 1.2, r);
