@@ -39,6 +39,15 @@ public static class Sfx
 		KnifeRing = "sword_sheath",     // 收刀入鞘的金属「锵」（#48）：转刀落回手里握住的那一下（用户 2026-11-02：转刀声像空转、没分量）
 		Hit = "damage_enemy",           // 打中敌人（#22）
 		AllOut = "battle_all_out_atk",  // 总攻击斩击（#24，第一刀叠上去）
+		AoaHit1 = "battle_all_out_atk", // 总攻击乱斗（Vfx/AllOut.cs）：打击 #24–26、斩击 #27–29，原版同一组 cue 的六个变体
+		AoaHit2 = "aoa_hit_2",
+		AoaSplatter = "aoa_splatter",   // 原版总攻击收尾的喷溅声（SYSTEM.ACB cue 1074 battle_all_out_atk_finish_b）：怪物剪影喷血，起音 0.05s
+		AoaCrack = "aoa_crack",         // 总攻击裂纹蔓延（P3R 镜子裂开 + 玻璃受力的咯吱声拼成，art/sfx_p5/aoa_crack.md）
+		AoaZoom = "aoa_zoom",           // 总攻击蓄势（P3R Snd_FX_Btl_Allout_Zoom，P3 mod 同款）：0.65s 冲到高潮 = 碎开
+		AoaHit3 = "aoa_hit_3",
+		AoaSlash1 = "aoa_slash_1",
+		AoaSlash2 = "aoa_slash_2",
+		AoaSlash3 = "aoa_slash_3",
 		Gun = "gun_10",                 // 枪声（用户 2026-11-03：gun_07 像激光枪 → 试听选 D = gun_10，#38）。原来的说明：（#37：起音 0.2ms、带 0.5s 回响的干脆手枪声。原来的 #32 gun_02 起音慢、尾音短，
 		                                //  被命中声一盖听起来像打击声——用户 2026-11-02 指出；#33 是 10 连发的机关枪）
 		Ricochet = "gun_00",            // 跳弹（#30 gun_00 / talk_ricochet）
