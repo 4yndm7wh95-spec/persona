@@ -1029,6 +1029,14 @@ public partial class Preview : Node2D
 			p.At(0.62, () => HuntFx.Reward(p._front));
 		},
 		["b6tools"] = p => RunCards(p, null, new (string, string, double, double)[] { ("ToolsOfTheTrade", "cast_glove", 0.25, 1.8) }),
+		// 群蛇形态在大房间（镜头拉远、人物变小，敌人在 7 倍身高以外 / 更高）：扑咬的蛇不能被画布切断
+		["serpentfar"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length() * 0.4f;
+			p.At(0.0, () => SerpentMantle.Start(p._front, p._back, () => (JokerFeet, tall, 1f), live: true, intro: false));
+			p.At(0.7, () => { p._enemies.TryGetValue(Enemy3, out Node2D? body); SerpentMantle.Current?.Strike(Enemy3 + new Vector2(0f, -120f), body); });
+			p.At(1.3, () => SerpentMantle.Current?.Strike(Enemy + new Vector2(260f, -520f), null));
+		},
 		["b6nm"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Nightmare", "cast_glove", 0.25, 2.0) }),
 		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_glove", 0.25, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast_wave", 0.08, 1.6) }),
 		["redo4b"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.8), ("Afterimage", "cast_glove", 0.25, 1.4), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast_wave", 0.08, 1.8) }),
