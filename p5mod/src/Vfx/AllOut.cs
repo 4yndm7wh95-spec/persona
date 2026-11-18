@@ -212,9 +212,17 @@ public static class AllOut
 		Node2D crackLayer = new();
 		stageRoot.AddChild(crackLayer);
 		// 裂痕贴图（Codex 生图）：整张裂痕以撞击点为中心，按离撞击点的距离往外显出来（CrackShader 的 reach）；中心叠一团粉碎
-		Texture2D? crackTex = Stage.LoadTexture("aoa_crack_main"), coreTex = Stage.LoadTexture("aoa_crack_core");
+		Texture2D? crackTex = Stage.LoadTexture("aoa_crack_main"), coreTex = Stage.LoadTexture("aoa_crack_core"), altTex = Stage.LoadTexture("aoa_crack_alt");
+		Sprite2D? altSp = null;
+		ShaderMaterial altM = new() { Shader = CrackShader };
 		Sprite2D? crackSp = null, coreSp = null;
 		ShaderMaterial crackM = new() { Shader = CrackShader };
+		// 裂纹蔓延的点缀：裂纹后面渗出来的红光（同一张裂痕贴图、加色、模糊、红色，碎开前越来越亮 —— 预告后面的红色立绘卡）；
+		// 裂纹前沿一闪一闪的玻璃反光（小四角星）；撞击点附近崩落的细小玻璃屑（在慢放的世界里慢慢飘落）
+		ShaderMaterial glowM = new() { Shader = CrackGlowShader };
+		Sprite2D? glowSp = null;
+		var glints = new List<(Polygon2D P, float At, float Ang, float Frac, float Size)>();
+		var chips = new List<(Polygon2D P, float At, Vector2 Vel, float Spin)>();
 
 		// ── 原版收尾 + 夹在中间的怪物剪影和血 ──
 		AllOutFinale? fin = AllOutFinale.Create(rootC, screen);
@@ -355,10 +363,16 @@ public static class AllOut
 
 		// ── 声音（用户 2026-11-18：只要三样）：蓄势（P3 mod 同款，高潮正好在碎开）、碎开、怪物喷血（P5R 原版总攻击斩击） ──
 		// 在时间轴里按真实时间触发（不用 Sfx 的延时：慢放会把延时也拖长）
-		var cues = new List<(float At, string Name, float Vol)> { (ShatterAt - 0.65f, Sfx.AoaZoom, 0.85f), (ShatterAt, Sfx.Shatter, 0.85f), (ArtT, Sfx.AoaSlash1, 0.8f) };
+		var cues = new List<(float At, string Name, float Vol)> { (ShatterAt - 0.65f, Sfx.AoaZoom, 0.85f), (CrackAt, Sfx.AoaCrack, 0.6f), (ShatterAt, Sfx.Shatter, 0.85f), (ArtT, Sfx.AoaSlash1, 0.8f) };
 		var fired = new bool[cues.Count];
 
 		bool broke = false, cracked = false;
+		// 撞击点的粉碎团：打中那一刻（冲击帧）就出现，0.1s 从小炸到原大，之后随裂纹蔓延再慢慢扩一点
+		if (coreTex != null)
+		{
+			coreSp = new Sprite2D { Texture = coreTex, Position = focus, Rotation = rng.RandfRange(0f, Mathf.Tau), Scale = Vector2.Zero };
+			crackLayer.AddChild(coreSp);
+		}
 		Tween clock = layer.CreateTween();
 		clock.SetIgnoreTimeScale(true);
 		clock.TweenMethod(Callable.From<float>(T => Stage.Safe("allout tick", () =>
@@ -384,10 +398,21 @@ public static class AllOut
 				sp.P.Polygon = new[] { outer + nrm * sp.W0, outer - nrm * sp.W0, inner };
 				sp.P.Color = new Color(1f, 1f, 1f, a);
 			}
+			if (coreSp != null)
+			{
+				float ck = Quint(Mathf.Clamp(T / 0.1f, 0f, 1f)) * (1f + 0.35f * Mathf.Clamp((T - CrackAt) / CrackGrow, 0f, 1f));
+				foreach (float beat in new[] { ShatterAt - 0.17f, ShatterAt - 0.07f })   // 碎开前两下心跳似的鼓胀
+				{
+					float bt2 = (T - beat) / 0.07f;
+					if (bt2 > 0f && bt2 < 1f) ck *= 1f + 0.22f * Mathf.Sin(bt2 * Mathf.Pi);
+				}
+				coreSp.Scale = Vector2.One * 1.4f * ck;
+				coreSp.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(T / 0.04f, 0f, 1f));
+			}
 			// 裂开的过程中慢慢往撞击点推近，碎开前一拍微微发抖
 			float push = Mathf.Clamp((T - CrackAt) / (ShatterAt - CrackAt), 0f, 1f);
 			// （用户 2026-11-18：前半段不要放大游戏画面）碎开前 0.18s 微微发抖
-			float tremble = T > ShatterAt - 0.18f && T < ShatterAt ? 3f : 0f;
+			float tremble = T < ShatterAt ? 6f * Mathf.Pow(Mathf.Clamp((T - (ShatterAt - 0.3f)) / 0.3f, 0f, 1f), 1.5f) : 0f;
 			still.SetShaderParameter("shift", new Vector2(Mathf.Sin(T * 97f), Mathf.Cos(T * 83f)) * tremble / screen);
 			if (T >= CrackAt && !cracked)
 			{
@@ -399,13 +424,36 @@ public static class AllOut
 			if (cracked && crackTex != null && crackSp == null)
 			{
 				float diag = Mathf.Sqrt(W * W + H * H);
-				crackSp = new Sprite2D { Texture = crackTex, Material = crackM, Position = focus, Rotation = rng.RandfRange(0f, Mathf.Tau), Scale = Vector2.One * diag * 1.5f / crackTex.GetWidth() };
+				float rot = rng.RandfRange(0f, Mathf.Tau);
+				Vector2 sc = Vector2.One * diag * 1.5f / crackTex.GetWidth();
+				glowSp = new Sprite2D { Texture = crackTex, Material = glowM, Position = focus, Rotation = rot, Scale = sc };
+				crackLayer.AddChild(glowSp);
+				crackSp = new Sprite2D { Texture = crackTex, Material = crackM, Position = focus, Rotation = rot, Scale = sc };
 				crackLayer.AddChild(crackSp);
-				if (coreTex != null)
+				// 第二波裂纹（另一张裂痕，转个角度）：主裂纹爬满以后接着崩开，压力还在涨
+				if (altTex != null)
 				{
-					coreSp = new Sprite2D { Texture = coreTex, Material = crackM, Position = focus, Rotation = rng.RandfRange(0f, Mathf.Tau), Scale = Vector2.One * 1.4f };
-					crackLayer.AddChild(coreSp);
+					altSp = new Sprite2D { Texture = altTex, Material = altM, Position = focus, Rotation = rot + 0.9f, Scale = sc * 0.9f };
+					crackLayer.AddChild(altSp);
 				}
+				for (int i = 0; i < 26; i++)
+				{
+					Polygon2D g = new() { Color = Colors.White, Antialiased = true, Polygon = StarPoly(1f, 0.12f), Visible = false };
+					crackLayer.AddChild(g);
+					glints.Add((g, CrackAt + 0.03f + i * ((ShatterAt - CrackAt - 0.05f) / 26f) + rng.RandfRange(-0.02f, 0.02f), rng.RandfRange(0f, Mathf.Tau), rng.RandfRange(0.55f, 1f), rng.RandfRange(9f, 20f)));
+				}
+				for (int i = 0; i < 18; i++)
+				{
+					float a = rng.RandfRange(0f, Mathf.Tau), r = rng.RandfRange(3f, 8f);
+					Polygon2D c = new()
+					{
+						Color = new Color(1f, 1f, 1f, 0.9f), Antialiased = true, Visible = false,
+						Polygon = new[] { Vector2.FromAngle(a) * r, Vector2.FromAngle(a + rng.RandfRange(1.8f, 2.4f)) * r * rng.RandfRange(0.6f, 1.2f), Vector2.FromAngle(a + rng.RandfRange(3.8f, 4.6f)) * r * rng.RandfRange(0.6f, 1.2f) },
+					};
+					crackLayer.AddChild(c);
+					chips.Add((c, CrackAt + rng.RandfRange(0f, 0.35f), Vector2.FromAngle(rng.RandfRange(0f, Mathf.Tau)) * rng.RandfRange(60f, 200f), rng.RandfRange(-6f, 6f)));
+				}
+
 				foreach (Crack ck in cracks) ck.Core.Visible = ck.Glow.Visible = false;
 			}
 			if (cracked && !broke && crackSp != null)
@@ -413,8 +461,39 @@ public static class AllOut
 				// 裂痕贴图：reach（像素，离撞击点）换算成贴图里的半径
 				float c = Mathf.Clamp((T - CrackAt) / CrackGrow, 0f, 1f);
 				float reach = 160f * Quint(Mathf.Clamp(c * 4f, 0f, 1f)) + 2300f * Mathf.Pow(c, 2.2f);
-				crackM.SetShaderParameter("reach", reach / (crackSp.Scale.X * crackTex!.GetWidth()));
+				float ru = reach / (crackSp.Scale.X * crackTex!.GetWidth());
+				crackM.SetShaderParameter("reach", ru);
 				crackM.SetShaderParameter("glow", 1f - c);
+				// 红光：裂纹长满之后越来越亮，碎开前最后 0.15s 一下涨满
+				float pre = Mathf.Clamp((T - (CrackAt + CrackGrow * 0.6f)) / (ShatterAt - CrackAt - CrackGrow * 0.6f), 0f, 1f);
+				glowM.SetShaderParameter("reach", ru);
+				glowM.SetShaderParameter("amount", 0.25f * pre + 0.75f * Mathf.Pow(pre, 4f));
+				if (altSp != null)
+				{
+					float a2 = Mathf.Clamp((T - (CrackAt + CrackGrow * 0.75f)) / (ShatterAt - 0.03f - (CrackAt + CrackGrow * 0.75f)), 0f, 1f);
+					altM.SetShaderParameter("reach", 0.03f + 0.5f * Mathf.Pow(a2, 1.4f));
+					altM.SetShaderParameter("glow", 1f - a2);
+					altSp.Visible = a2 > 0f;
+				}
+				foreach (var g in glints)
+				{
+					float gt = (T - g.At) / 0.16f;
+					g.P.Visible = gt >= 0f && gt < 1f;
+					if (!g.P.Visible) continue;
+					float gr = 160f * Quint(Mathf.Clamp((g.At - CrackAt) / CrackGrow * 4f, 0f, 1f)) + 2300f * Mathf.Pow(Mathf.Clamp((g.At - CrackAt) / CrackGrow, 0f, 1f), 2.2f);
+					g.P.Position = focus + Vector2.FromAngle(g.Ang) * gr * g.Frac;
+					g.P.Scale = Vector2.One * g.Size * Mathf.Sin(gt * Mathf.Pi);
+					g.P.Rotation = 0.4f + gt * 0.8f;
+				}
+				foreach (var ch in chips)
+				{
+					float ct = T - ch.At;
+					ch.P.Visible = ct >= 0f;
+					if (ct < 0f) continue;
+					ch.P.Position = focus + ch.Vel * ct + new Vector2(0f, 260f) * ct * ct;
+					ch.P.Rotation = ch.Spin * ct;
+					ch.P.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp((ct - 0.4f) / 0.3f, 0f, 1f));
+				}
 			}
 			else if (cracked && !broke)
 			{
@@ -449,7 +528,7 @@ public static class AllOut
 				float d = T - ShatterAt;
 				float fa = 1f - Mathf.Clamp(d / 0.08f, 0f, 1f);
 				flash.Visible = fa > 0f;
-				flash.Color = new Color(1f, 1f, 1f, 0.5f * fa * fa);
+				flash.Color = new Color(1f, 0.82f, 0.82f, 0.55f * fa * fa);
 				float bt = Mathf.Clamp(d / 0.11f, 0f, 1f);
 				burst.Visible = bt < 1f;
 				burst.Position = focus;
@@ -507,7 +586,9 @@ public static class AllOut
 					float sh = jl > 0f && jl < 0.28f ? (1f - jl / 0.28f) * 16f : (d < 0.13f ? 6f : 0f);
 					if (hitT > 0f && hitT < 0.26f) sh = Mathf.Max(sh, (1f - hitT / 0.26f) * 12f);
 					finRoot.PivotOffset = screen * 0.5f;
-					finRoot.Scale = Vector2.One * (1f + sh * 0.003f);                  // 震的时候略放大，边缘不露底
+					// 穿过玻璃：整张卡从 1.12 倍压回（和玻璃片朝镜头飞散同时），震的时候再略放大一点，边缘不露底
+					float through = Mathf.Lerp(1.12f, 1f, Quint(Mathf.Clamp(d / 0.5f, 0f, 1f)));
+					finRoot.Scale = Vector2.One * (through + sh * 0.003f);
 					finRoot.Position = new Vector2(Mathf.Sin(d * 120f), Mathf.Cos(d * 95f)) * sh;
 				}
 				// 剪影：人物出现前一拍砸进收尾位置（从 1.25 倍缩回、带一点倾斜）；喷血时往后一顿
@@ -722,7 +803,7 @@ public static class AllOut
 						Center = c, Dir = (c - focus).LengthSquared() > 1f ? (c - focus).Normalized() : Vector2.Up,
 						Speed = (600f + 1500f * Mathf.Clamp(1f - dist / 1800f, 0.2f, 1f)) * rng.RandfRange(0.8f, 1.25f),
 						Spin = rng.RandfRange(-2.4f, 2.4f), Delay = Mathf.Clamp(dist / 9000f, 0f, 0.04f),
-						Grow = rng.Randf() < 0.3f ? rng.RandfRange(0.6f, 1.1f) : rng.RandfRange(0.05f, 0.35f),     // 少数朝镜头飞（变大）
+						Grow = rng.Randf() < 0.45f ? rng.RandfRange(0.7f, 1.6f) : rng.RandfRange(0.1f, 0.45f),     // 少数朝镜头飞（变大）
 						Back = new Polygon2D { Polygon = local, Color = new Color(0.22f, 0f, 0.03f), Antialiased = true, Visible = false },
 						Face = new Polygon2D { Polygon = local, Antialiased = true, Visible = false },
 						Uv = poly,
@@ -886,7 +967,7 @@ public static class AllOut
 
 	// ═══════════════════════════ 着色器 ═══════════════════════════
 
-	private static Shader? _sil, _shade, _blob, _cover, _still, _crack;
+	private static Shader? _sil, _shade, _blob, _cover, _still, _crack, _crackGlow;
 
 	/// <summary>
 	/// 顿帧的定格画面：impact = 冲击帧（黑白反转、高反差），hold = 顿住（压暗、去色 60%、四周收暗、撞击点附近一点红青色散）。
@@ -924,6 +1005,26 @@ void fragment() {
 	float d = length(UV - vec2(0.5));
 	float m = 1.0 - smoothstep(reach - 0.015, reach, d);
 	COLOR = vec4(vec3(1.0), t.a * m * (1.0 + 0.3 * glow));
+}" };
+
+	/// <summary>裂纹后面渗出来的红光：同一张裂痕贴图，周围 8 个方向取样做模糊，加色叠上去。</summary>
+	private static Shader CrackGlowShader => _crackGlow ??= new Shader { Code = @"
+shader_type canvas_item;
+render_mode blend_add;
+uniform float reach = 0.0;
+uniform float amount = 0.0;
+void fragment() {
+	float a = 0.0;
+	for (int i = 0; i < 8; i++) {
+		float t = 6.2831853 * float(i) / 8.0;
+		a += texture(TEXTURE, UV + vec2(cos(t), sin(t)) * TEXTURE_PIXEL_SIZE * 5.0).a;
+		a += texture(TEXTURE, UV + vec2(cos(t), sin(t)) * TEXTURE_PIXEL_SIZE * 11.0).a * 0.6;
+	}
+	a /= 12.8;
+	float d = length(UV - vec2(0.5));
+	float m = 1.0 - smoothstep(reach - 0.02, reach, d);
+	float core = 1.0 - smoothstep(0.0, 0.08, d);
+	COLOR = vec4(vec3(1.0, 0.08, 0.12) * (a * 2.2 + core * 0.6) * m * amount, 1.0);
 }" };
 
 	/// <summary>纯色剪影（投影用）。</summary>

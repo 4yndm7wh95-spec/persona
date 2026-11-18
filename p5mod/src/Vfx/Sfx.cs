@@ -41,6 +41,7 @@ public static class Sfx
 		AllOut = "battle_all_out_atk",  // 总攻击斩击（#24，第一刀叠上去）
 		AoaHit1 = "battle_all_out_atk", // 总攻击乱斗（Vfx/AllOut.cs）：打击 #24–26、斩击 #27–29，原版同一组 cue 的六个变体
 		AoaHit2 = "aoa_hit_2",
+		AoaCrack = "aoa_crack",         // 总攻击裂纹蔓延（P3R 镜子裂开 + 玻璃受力的咯吱声拼成，art/sfx_p5/aoa_crack.md）
 		AoaZoom = "aoa_zoom",           // 总攻击蓄势（P3R Snd_FX_Btl_Allout_Zoom，P3 mod 同款）：0.65s 冲到高潮 = 碎开
 		AoaHit3 = "aoa_hit_3",
 		AoaSlash1 = "aoa_slash_1",
