@@ -466,6 +466,7 @@ void fragment() {
 	private readonly ShaderMaterial? _eclipseM;
 	private float _eclPulse;
 	private readonly ShaderMaterial? _skyM, _mistFrontM;
+	private readonly ColorRect? _mistFrontQuad;
 	private readonly bool _biteOnly;   // 只有一条蛇从咒烟里冒出来咬一口（蛇咬那张牌用，Bite）：没有场景、蛇巢、其它几条
 	/// <summary>蛇咬第四版（Lunge）：一条蛇从 Joker 身边聚出来，整段扑咬（窜出去 → 化成烟迹飞过去 → 敌人上方聚出蛇头 → 咬），咬完散掉不回来。</summary>
 	private bool _solo;
@@ -624,7 +625,6 @@ void fragment() {
 		back.MoveChild(_skyRoot, 0);   // 固定顺序（2026-11-13）：群蛇场景永远在背景层最底下，子弹时间的褪色 / 钟紧跟在它后面（TimeStop）
 		// 场景：咒雾漫地（Vfx/SerpentMist.cs；2026-11-11 用户：日蚀不搭、太耀眼，换掉）。背景层调色 + 雾 + 雾里的巨蛇背，前景层只有贴地的雾丝
 		_skyM = new ShaderMaterial { Shader = SerpentMist.Shader };
-		_skyM.SetShaderParameter("side", -1f);
 		var skyRect = new ColorRect { Size = Fx.Screen(back), Material = _skyM, MouseFilter = Control.MouseFilterEnum.Ignore };
 		_skyRoot.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });   // 读屏前先刷新（和子弹时间的褪色叠在一起时不读到旧画面）
 		_skyRoot.AddChild(skyRect);
@@ -639,11 +639,10 @@ void fragment() {
 		Fx.Clock(ecl);
 		_mistFrontRoot = Fx.ScreenRoot(front, "P5SerpentMistFront");
 		_mistFrontM = new ShaderMaterial { Shader = SerpentMist.Shader };
-		_mistFrontM.SetShaderParameter("side", 1f);
-		var mistRect = new ColorRect { Size = Fx.Screen(front), Material = _mistFrontM, MouseFilter = Control.MouseFilterEnum.Ignore };
-		_mistFrontRoot.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });   // 读屏前先刷新（2026-11-13）
-		_mistFrontRoot.AddChild(mistRect);
-		Fx.Clock(mistRect);
+		_mistFrontM.SetShaderParameter("foreground", true);
+		_mistFrontQuad = new ColorRect { Material = _mistFrontM, MouseFilter = Control.MouseFilterEnum.Ignore };
+		_mistFrontRoot.AddChild(_mistFrontQuad);
+		Fx.Clock(_mistFrontQuad);
 		}
 		for (int k = 0; k < _puff.Length; k++) _puff[k] = new Vector4(0f, 0f, -1f, 1f);
 		_tree = (SceneTree)Engine.GetMainLoop();
@@ -720,6 +719,19 @@ void fragment() {
 
 	private static float Smooth(float a, float b, float x) { float t = Mathf.Clamp((x - a) / (b - a), 0f, 1f); return t * t * (3f - 2f * t); }
 
+	private void SetMist(ShaderMaterial material, Vector2 feet, Vector2 screen, float tall, float face, float amount, float surge)
+	{
+		material.SetShaderParameter("amount", amount);
+		material.SetShaderParameter("dim_t", _dimT);
+		material.SetShaderParameter("fog_t", _fogT);
+		material.SetShaderParameter("glow_t", _glowT);
+		material.SetShaderParameter("surge", surge);
+		material.SetShaderParameter("aspect", screen.X / screen.Y);
+		material.SetShaderParameter("feet", feet / screen);
+		material.SetShaderParameter("tall", tall / screen.Y);
+		material.SetShaderParameter("face", face);
+	}
+
 	/// <summary>第 i 条蛇的头在时刻 t 的位置（相对脚底，像素）和深度。</summary>
 	private static Vector3 Orbit(int i, float t, float T, float face)
 	{
@@ -790,18 +802,24 @@ void fragment() {
 		float tallS = T * _back.GetCanvasTransform().Scale.Y;
 		// 场景：咒雾漫地，出场时从 Joker 身边漫开；能力没了一起淡掉
 		float amt = _fadeOut >= 0f ? 1f - Smooth(0f, 0.8f, _fadeOut) : (_show > 0f || _intro >= 0f ? 1f : 0f);
-		foreach (ShaderMaterial? sm in new[] { _skyM, _mistFrontM })
+		if (_skyM != null) SetMist(_skyM, fs, scr, tallS, face, amt, surge);
+		if (_mistFrontM != null && _mistFrontQuad != null && GodotObject.IsInstanceValid(_mistFrontQuad))
 		{
-			if (sm == null) continue;
-			sm.SetShaderParameter("amount", amt);
-			sm.SetShaderParameter("dim_t", _dimT);
-			sm.SetShaderParameter("fog_t", _fogT);
-			sm.SetShaderParameter("glow_t", _glowT);
-			sm.SetShaderParameter("surge", surge);
-			sm.SetShaderParameter("aspect", scr.X / scr.Y);
-			sm.SetShaderParameter("feet", new Vector2(fs.X / scr.X, fs.Y / scr.Y));
-			sm.SetShaderParameter("tall", tallS / scr.Y);
-			sm.SetShaderParameter("face", face);
+			Vector2 viewport = Fx.Screen(_front);
+			float feetY = fs.Y / scr.Y * viewport.Y, height = tallS / scr.Y * viewport.Y;
+			float top = Mathf.Clamp(Mathf.Floor(feetY - SerpentMist.FrontAbove * height), 0f, viewport.Y);
+			float bottom = Mathf.Clamp(Mathf.Ceil(feetY + SerpentMist.FrontBelow * height), 0f, viewport.Y);
+			_mistFrontQuad.Visible = amt > 0f && bottom > top;
+			if (_mistFrontQuad.Visible)
+			{
+				Vector2 position = new(0f, top), size = new(viewport.X, bottom - top);
+				if (_mistFrontQuad.Position != position || _mistFrontQuad.Size != size)
+				{
+					_mistFrontQuad.Position = position;
+					_mistFrontQuad.Size = size;
+				}
+				SetMist(_mistFrontM, fs, scr, tallS, face, amt, surge);
+			}
 		}
 		Vector2 nestP = new(-0.12f * face * T, -0.78f * T);
 
