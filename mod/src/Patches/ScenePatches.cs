@@ -49,9 +49,12 @@ public static class CharSelectBgPatch
 [HarmonyPatch(typeof(NCharacterSelectScreen), nameof(NCharacterSelectScreen.SelectCharacter))]
 public static class CharSelectInfoPatch
 {
-	public static void Postfix(NCharacterSelectScreen __instance, NCharacterSelectButton charSelectButton)
+	public static void Prefix(NCharacterSelectScreen __instance) =>
+		ModEntry.Safe("CharSelectInfo restore", () => CharSelectInfo.Clear(__instance));
+
+	public static void Postfix(NCharacterSelectScreen __instance, NCharacterSelectButton __0)
 	{
-		ModEntry.Safe("CharSelectInfo", () => Vfx.Perf.Time("info panel apply", () => CharSelectInfo.Apply(__instance, charSelectButton, charSelectButton.Character)));
+		ModEntry.Safe("CharSelectInfo", () => Vfx.Perf.Time("info panel apply", () => CharSelectInfo.Apply(__instance, __0, __0.Character)));
 	}
 }
 
