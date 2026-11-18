@@ -230,7 +230,7 @@ void fragment() {
 		float h = c.Tall, u = c.Unit, f = c.Face;
 		Control back = BackOf(c), front = c.Front;
 		int n = c.Count >= 0 ? Mathf.Clamp(c.Count, 0, 10) : 5;
-		const float storm = 0.6f;
+		const float storm = 0.58f;
 		Vector2 mid = c.Feet + new Vector2(0f, -h * 0.55f);
 		S("gx_whoosh", 0.16f, 0.02f);
 		S("gx_whoosh", 0.12f, 0.2f);
@@ -242,28 +242,29 @@ void fragment() {
 		// 风暴（第三版，用户 2026-11-18：着色器刀光的材质不对 → 推翻重做）：用打击牌命中那套用户认可的手绘刀光（slash_heavy / slash_thin，P5 血红 LUT），
 		// 在他周围的三维空间里一刀接一刀劈过去：刀的位置绕着他排成一圈（前面的在人前、大；后面的在人后、小 = 透视），
 		// 角度各不相同，节奏越劈越快；每刀落下迸原版金属火星 + 一点白闪，前面的刀带一下极短的顿帧。
-		const int cuts = 9;
-		float tcut = 0.02f;
-		for (int i = 0; i < cuts; i++)
+		// 用户 2026-11-18：不要那么多刀光 → 只劈三刀，每刀更有分量：身后一刀（小）→ 身前斜一刀 → 身前横一刀（最大、顿帧）
+		var cutList = new (float T, float X, float Y, float Rot, float W, bool Front, string Tex)[]
 		{
-			int k = i;
-			float ang = Mathf.Tau * (0.13f + 0.37f * k) + Fx.Rand(-0.25f, 0.25f);      // 绕着他跳着排（不是按顺序转圈）
-			bool inFront = Mathf.Sin(ang) > -0.15f;
-			float depth = 0.75f + 0.25f * Mathf.Sin(ang);                               // 前大后小
-			Vector2 at = mid + new Vector2(Mathf.Cos(ang) * h * 0.5f * f, Mathf.Sin(ang) * h * 0.14f + Fx.Rand(-0.25f, 0.2f) * h);
-			float rot = Fx.Rand(-1.1f, 1.1f) + (k % 2 == 0 ? 0f : Mathf.Pi);
-			float w = (k % 3 == 0 ? 0.55f : 0.42f) * depth * h / 560f;
-			string tex = k % 3 == 0 ? "slash_heavy" : "slash_thin";
-			float dly = tcut;
-			Paint.Sweep(inFront ? front : back, tex, at, rot, new Vector2(w * f, w * 0.7f), Lut5.Blood, 0.05f, 0.04f, 0.22f, 40f * depth, dly, 1.2f);
-			Fx.After(front, dly + 0.05f, () =>
+			(0.04f, -0.25f, -0.25f, -0.7f, 0.42f, false, "slash_thin"),
+			(0.22f, 0.15f, -0.05f, 0.65f, 0.5f, true, "slash_thin"),
+			(0.38f, 0.05f, 0.08f, -0.12f, 0.68f, true, "slash_heavy"),
+		};
+		for (int i = 0; i < cutList.Length; i++)
+		{
+			var (t, x, y, rot, wk, inFront, tex) = cutList[i];
+			bool last = i == cutList.Length - 1;
+			Vector2 at = mid + new Vector2(x * h * f, y * h);
+			float r = f > 0 ? rot : Mathf.Pi - rot;
+			float w = wk * h / 560f;
+			Paint.Sweep(inFront ? front : back, tex, at, r, new Vector2(w * f, w * 0.7f), Lut5.Blood, 0.05f, 0.05f, 0.26f, 40f, t, 1.2f);
+			Fx.After(front, t + 0.05f, () =>
 			{
-				if (inFront && k % 2 == 0) HitStop.Request(0.02);
-				Glow.Flash(inFront ? front : back, at, new Color(1f, 0.6f, 0.55f), h * 0.35f * depth, 0.12f);
-				if (k % 2 == 0) Vanilla.Burst(inFront ? front : back, Vanilla.Specks, at, rot, 0.8f * depth, Lut5.Blood, amount: 5);   // 火星少放（满屏白点太乱）
-				if (k % 3 == 0) S("gx_slice", 0.12f);
+				S("gx_slice", last ? 0.2f : 0.12f);
+				if (inFront) HitStop.Request(last ? 0.05 : 0.02);
+				if (last) Fx.Shake(1);
+				Glow.Flash(inFront ? front : back, at, new Color(1f, 0.6f, 0.55f), h * (last ? 0.5f : 0.3f), 0.12f);
+				Vanilla.Burst(inFront ? front : back, Vanilla.Specks, at, r, last ? 1f : 0.7f, Lut5.Blood, amount: last ? 8 : 4);
 			});
-			tcut += Mathf.Lerp(0.085f, 0.035f, k / (cuts - 1f));                      // 越劈越快
 		}
 		Gather(front, c.Hand, h, u, storm, 18, 0.8f);
 		Fx.After(front, storm, () =>
