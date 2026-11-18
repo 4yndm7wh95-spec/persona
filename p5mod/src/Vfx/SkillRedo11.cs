@@ -14,7 +14,7 @@ public static partial class SkillRedo5
 	{
 		cards["BladeSymphony"] = BladeSymphony;
 		cards["StormOfSteel"] = StormOfSteel;
-		cards["BladeOfInk"] = BladeOfInk;
+		cards["BladeOfInk"] = BladeOfInk3;   // 第三版「甩墨出刃」（SkillRedo12.cs）；第二版 BladeOfInk（写墨 + 白刃劈墨）被否
 	}
 
 	// ═══════════════════════════ 墨之刃 ═══════════════════════════
