@@ -841,7 +841,15 @@ void fragment() {
 		const string name = "雨宮 蓮";
 		const int size = 44;
 		float w = P5Ui.Width(cjk, name, size);
-		Node2D tag = new() { Position = new Vector2(-420f, SH * 0.14f) };
+		// The stock backdrop can extend past the viewport at narrow aspect ratios.
+		// Keep the entire nameplate inside the visible viewport throughout the slide.
+		Vector2 TagPosition(float slide)
+		{
+			Rect2 visible = r.Front.GetViewportRect();
+			Vector2 inset = visible.Size * new Vector2(slide, 0.12f);
+			return r.Front.GetGlobalTransformWithCanvas().AffineInverse() * (visible.Position + inset);
+		}
+		Node2D tag = new() { Position = TagPosition(0.035f) };
 		ui.AddChild(tag);
 		P5Ui.Slab(tag, -12f, w + 40f, 8f, 70f, 14f, new Color(Ink, 0.95f));
 		P5Ui.Slab(tag, -24f, w + 28f, 0f, 62f, 14f, new Color(0.97f, 0.96f, 0.96f, 1f));
@@ -860,7 +868,11 @@ void fragment() {
 			top.Position = new Vector2(SW * 0.5f * (1f - b), 0f);
 			word.Position = new Vector2(SW * 0.03f + 30f * time, SH * 1.08f);
 		});
-		Fx.Animate(tag, 0.04, 0.26, t => tag.Position = new Vector2(Mathf.Lerp(-420f, 56f, Ease5.OutQuint(t)), SH * 0.14f));
+		Fx.Animate(tag, 0.04, 0.26, t =>
+		{
+			tag.Position = TagPosition(Mathf.Lerp(0.035f, 0.055f, Ease5.OutQuint(t)));
+			tag.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(t * 4f, 0f, 1f));
+		});
 		return () =>
 		{
 			if (GodotObject.IsInstanceValid(decor))
@@ -874,11 +886,9 @@ void fragment() {
 			}
 			if (GodotObject.IsInstanceValid(ui))
 			{
-				Vector2 p0 = ui.Position;
 				Fx.Animate(ui, 0, 0.3, t =>
 				{
 					ui.Modulate = new Color(1f, 1f, 1f, 1f - t * t * (3f - 2f * t));
-					ui.Position = p0 + new Vector2(-40f * Fx.InCubic(t), 0f);
 				});
 				Fx.FreeAfter(ui, 0.35);
 			}

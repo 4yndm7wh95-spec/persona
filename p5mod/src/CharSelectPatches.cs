@@ -42,7 +42,11 @@ public static class CharSelectBgPatch
 		!button.IsRandom && !button.IsLocked && button.Character is Silent;
 
 	// 0.111 另传 CharacterModel，0.113 从同一个按钮读 Character。两版都以第一个参数为准。
-	public static void Prefix(NCharacterSelectButton __0) => CharSelectSfxMute.Armed = IsJoker(__0);
+	public static void Prefix(NCharacterSelectScreen __instance, NCharacterSelectButton __0)
+	{
+		ModEntry.Safe("CharSelectInfo restore", () => CharSelectInfo.Clear(__instance));
+		CharSelectSfxMute.Armed = IsJoker(__0);
+	}
 
 	public static void Finalizer() => CharSelectSfxMute.Armed = false;
 
@@ -101,13 +105,15 @@ public static class CharSelectBgPatch
 	{
 		CharSelectSfxMute.Armed = false;
 		CharacterModel? model = IsJoker(__0) ? __0.Character : null;
-		ModEntry.Safe("CharSelectInfo", () => CharSelectInfo.Apply(__instance, __0, null, false));
 		ModEntry.Safe("CharSelectBg", () =>
 		{
 			if (BgContainer(__instance) is Control container)
 			{
 				Control? bg = model == null ? null : container.GetNodeOrNull<Control>(model.Id.Entry + "_bg");
-				Select(__instance, container, bg, intro => CharSelectInfo.Apply(__instance, __0, model, intro));
+				Action<bool?>? panel = null;
+				if (bg != null)
+					ModEntry.Safe("CharSelectInfo", () => panel = CharSelectInfo.Prepare(__instance));
+				Select(__instance, container, bg, panel);
 			}
 		});
 	}
@@ -121,7 +127,7 @@ public static class CharSelectBgPatch
 		Select(screen, container, bg, null);
 	}
 
-	private static void Select(Control screen, Control container, Control? bg, Action<bool>? onReady)
+	private static void Select(Control screen, Control container, Control? bg, Action<bool?>? panel)
 	{
 		Selection selection = Selections.GetOrCreateValue(screen);
 		int revision = ++selection.Revision;
@@ -134,14 +140,16 @@ public static class CharSelectBgPatch
 			bool Current() => selection.Revision == revision && Fx.Active(screen) &&
 				screen.IsVisibleInTree() && Fx.Active(bg) && bg.GetParent() == container;
 			bool CanDraw() => NGame.Instance?.Transition.InTransition != true;
+			bool ready = false;
 			try
 			{
 				bool intro = CharSelectScene.IntroEnabled();
-			if (await CharSelectScene.BuildAsync(bg, intro, Current, CanDraw, prepareInfo: onReady != null) && Current())
+			if (await CharSelectScene.BuildAsync(bg, intro, Current, CanDraw, prepareInfo: panel != null) && Current())
 				{
 					bg.RemoveMeta(OriginalBackground);
 					GD.Print($"[P5Joker] character select background attached: {screen.GetType().Name}");
-					ModEntry.Safe("CharSelectInfo", () => onReady?.Invoke(intro));
+					panel?.Invoke(intro);
+					ready = true;
 					await EmbarkTransition.PrepareTextures(bg, Current);
 				}
 			}
@@ -158,6 +166,10 @@ public static class CharSelectBgPatch
 					container.AddChild(vanilla);
 				});
 				Stage.Report("CharSelectBg", e);
+			}
+			finally
+			{
+				if (!ready) ModEntry.Safe("CharSelectInfo restore", () => panel?.Invoke(null));
 			}
 		}
 	}
