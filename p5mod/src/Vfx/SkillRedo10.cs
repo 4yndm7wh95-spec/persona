@@ -41,6 +41,9 @@ public static partial class SkillRedo5
 	public static void StreakSharp(Control layer, Func<float, Vector2> path, float t0, float dur, float len, float thick, Color tint, float hot = 1.3f) =>
 		DashFly(layer, path, t0, dur, len, thick, tint, hot, Ease5.OutQuint, 0.7f, 1f);
 
+	/// <summary>给别的文件用的贴身红残影外扩。</summary>
+	public static void EchoPulsePublic(SkillCtx c, float k) => EchoPulse(c, k);
+
 	private static Control BackOf(SkillCtx c) => c.Back != null && GodotObject.IsInstanceValid(c.Back) ? c.Back : c.Front;
 
 	// ═══════════════════════════ 跟踪（小改）═══════════════════════════

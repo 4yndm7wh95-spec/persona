@@ -139,6 +139,8 @@ V4_TEX = [("slash", n, 0.5) for n in ("slash_thin", "slash_heavy", "slash_cross"
     [("corrosive", n, 0.5) for n in ("curse_wave_body_01", "curse_wave_body_02", "curse_splash_sheet")] + \
     [("ink", n, 0.5) for n in ("ink_stroke_01", "ink_stroke_02", "ink_stroke_03", "ink_splash_sheet", "ink_drops_sheet")] + \
     [("ink_fling_v3", n, 0.5) for n in ("gather_streak_sheet", "bullet_burst_sheet")] + [("ink_fling_v3", "fling_arc_sheet", 1)] + \
+    [("painted", n, 0.5) for n in ("chop_heavy_01", "chop_heavy_02", "swipe_arc_01", "swipe_arc_02", "swipe_arc_03", "thrust_01", "thrust_02",
+     "claw_rake_01", "claw_rake_02", "impact_star_sheet", "shadow_grasp_sheet")] + \
     [("arsene/layers_v7", n, 0.35) for n in ("wing_back", "wing_front", "arm_back", "body", "arm_reach", "arm_reach_extend", "arm_reach_fist", "eyes_glow")]   # Arsene v7 (user 2026-11-03)
 
 # P5R sound effects (research/p5r/audio): published name -> file (names in p5mod/src/Vfx/Sfx.cs)
@@ -256,6 +258,8 @@ def fx_textures():
         if f.exists():
             im = Image.open(f).convert("RGBA")
             out = f"arsene_{name}" if group.startswith("arsene") else name   # Arsene layers: res://p5joker/fx/arsene_<layer>.png
+            if name.startswith("chop_heavy"):
+                im = im.rotate(90, expand=True)   # 竖向的重劈转成横向（上端 → 左端），Paint.Sweep 沿横向扫出
             yield out, im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS) if k != 1 else im
     # P5R summon blue flame tongues (BE_SYOLOOP, 6x2 flipbook): Persona appear / linger / dismiss (p5mod/src/Vfx/BlueFlame.cs)
     flame = ROOT / "research/p5r/ghost_blueflame/textures_png/bes_syo_fkomaB12kf2.dds.png"

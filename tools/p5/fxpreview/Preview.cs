@@ -1008,6 +1008,20 @@ public partial class Preview : Node2D
 				p.At(t, () => StrangleFx.Cinch(p._front, p._back, Enemy, top, 260f, tint));
 			}
 		},
+		// 0.9.49 审阅第六批：压制、狩猎（命中 + 斩杀奖励）、夜魇、必备工具
+		["b6"] = p =>
+		{
+			Vector2 top = Enemy + new Vector2(0f, -170f);
+			System.Action<Color> tint = c => p._enemies[Enemy].Modulate = c;
+			p.At(0.3, () => p._joker?.Play("attack"));
+			p.At(0.43, () => KnifeFx.Swing(p._front, Pose(600f, 850f), Pose(1376f, 450f)));
+			p.At(0.5, () => Batch6Fx.Suppress(p._front, p._back, Enemy, top, 260f, 1f, tint));
+			p.At(2.1, () => p._joker?.Play("attack"));
+			p.At(2.23, () => KnifeFx.Swing(p._front, Pose(600f, 850f), Pose(1376f, 450f)));
+			p.At(2.25, () => Batch6Fx.HuntHit(p._front, Enemy2, 170f, 1f));
+			p.At(2.3, () => Batch6Fx.HuntReward(p._front));
+			RunCards(p, null, new (string, string, double, double)[] { ("Nightmare", "cast_glove", 0.25, 2.0), ("ToolsOfTheTrade", "cast_glove", 0.25, 1.6) }, 3.7);
+		},
 		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_glove", 0.25, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast_wave", 0.08, 1.6) }),
 		["redo4b"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.8), ("Afterimage", "cast_glove", 0.25, 1.4), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast_wave", 0.08, 1.8) }),
 		["redo5"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.9), ("Shadowmeld", "cast_glove", 0.25, 1.9) }),
