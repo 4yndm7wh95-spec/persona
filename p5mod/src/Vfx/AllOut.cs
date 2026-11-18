@@ -63,6 +63,9 @@ public static partial class AllOut
 	}
 
 	/// <summary>恢复正常速度（只在我们改过时恢复；可以重复调用）。AllOutPatches 在战斗结束 / 新战斗开始时也会调。</summary>
+	/// <summary>总攻击正在播（碎开之前的慢放段）。</summary>
+	public static bool Playing => _slowed;
+
 	public static void RestoreTime()
 	{
 		if (!_slowed) return;

@@ -43,6 +43,7 @@ public static class AllOutGame
 	/// <summary>怪物倒下：截剪影。</summary>
 	public static void OnDeath(NCreature n)
 	{
+		if (!AllOut.Playing) AllOut.RestoreTime();
 		if (Instant || n.Entity is not { IsMonster: true } e || NCombatRoom.Instance is not NCombatRoom room || !BigRoom(room)
 			|| !JokerHere(e.CombatState) || n.Visuals?.Body is not Node2D body || !body.IsVisibleInTree())
 		{
@@ -102,6 +103,8 @@ public static class AllOutGame
 	/// <summary>战斗结束：该播就播，返回要等多久（0 = 不播）。</summary>
 	public static float OnCombatEnd(CombatRoom room, ICombatState? cs)
 	{
+		// 慢放兜底：总攻击的碎开 / 计时器 / 节点退出都会恢复速度；这里只在没在播总攻击时再恢复一次（不打断正在慢放的前半段）
+		if (!AllOut.Playing) AllOut.RestoreTime();
 		if (Instant || room.RoomType is not (RoomType.Elite or RoomType.Boss) || !JokerHere(cs)
 			|| !cs!.Enemies.All(e => !e.IsAlive) || !cs.PlayerCreatures.Any(p => p.IsAlive && p.Player != null && Joker.Is(p.Player)))
 		{
