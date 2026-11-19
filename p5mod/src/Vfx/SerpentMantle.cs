@@ -100,6 +100,7 @@ uniform vec3 eyes[5];           // xy 位置，z 亮度
 uniform vec2 origin;
 uniform vec3 nest;               // 蛇巢：xy 中心（相对脚底），z 半径；五条蛇的尾巴都收进这一团咒烟
 uniform float nest_a = 0.0;
+uniform float nest_sq = 1.15;   // 竖向压扁（第三版：脚下一片扁扁的咒烟池 = 3）
 uniform vec2 size;
 uniform float side = 1.0;
 uniform float clock = 0.0;
@@ -408,7 +409,7 @@ void fragment() {
 	// 蛇巢（背景层，在蛇后面）：Joker 身后一团翻滚的咒烟，里面零星透出暗红的光，往上飘起烟丝
 	if (side < 0.0 && nest_a > 0.0) {
 		vec2 dv = (p - nest.xy) / nest.z;
-		float d = length(dv * vec2(0.85, 1.15));
+		float d = length(dv * vec2(0.85, nest_sq));
 		float nn = fbm(dv * 1.6 + vec2(clock * 0.15, clock * 0.35));
 		float nf = vn(dv * 4.5 - vec2(0.0, clock * 0.8));
 		float body = smoothstep(1.0, 0.25, d + (nn - 0.5) * 0.6 + (nf - 0.5) * 0.12);
@@ -439,11 +440,13 @@ void fragment() {
 		// 第四版（用户 2026-11-11：还是围着他游，只小幅修分布和轨迹；示意图 docs/p5/preview/serpent_orbit_tweak.png）：
 		// 每条守着自己那一块、圈小一些、转得一样快（相位错开），不会挤到一边，身体也不会绕成结。
 		// 上下也要匀（用户：头部以上和腰部以下不均匀，腰部以下没有）：头顶以上两条、胸口一条、腰胯一条、膝盖一条
-		(-0.42f, -1.25f, 0.28f, 0.18f, 0.45f, 1f, 0.0f, 25f, 0.5f, -0.45f, 1.05f, 2.3f),  // 左上，身后（头顶高度）
-		(0.42f, -1.5f, 0.3f, 0.15f, -0.42f, 1f, 1.9f, -15f, 0.4f, -0.5f, 0.95f, 2.2f),    // 右上，身后（头顶以上）
-		(0.66f, -0.82f, 0.24f, 0.22f, 0.48f, 2f, 3.4f, 15f, 0.8f, -0.15f, 0.95f, 2.2f),   // 右侧胸口高度，朝敌人
+		// 第三版布局（2026-11-19 用户：分布太紧凑）：五个头原来都挤在他胸口到头顶那一小块里 → 拉开高低前后：
+		// 左后方中高、身后最高（压过头顶）、右前方探向敌人（填上他和敌人之间的空当）、缠腰、左下低位朝外看
+		(-0.8f, -1.35f, 0.16f, 0.12f, 0.45f, 1f, 0.0f, 25f, 0.5f, -0.45f, 1.05f, 2.3f),   // 左后方，中高
+		(0.22f, -1.75f, 0.18f, 0.1f, -0.42f, 1f, 1.9f, -15f, 0.4f, -0.5f, 1.0f, 2.2f),     // 身后最高的一条，压过头顶
+		(1.1f, -0.95f, 0.16f, 0.12f, 0.48f, 2f, 3.4f, 15f, 0.8f, -0.15f, 0.95f, 2.2f),     // 右前方，探向敌人
 		(0.05f, -0.45f, 0.48f, 0.1f, -0.45f, 1f, 4.6f, -8f, 0.9f, 0.3f, 0.9f, 2.4f),      // 腰胯，从他身前横过去
-		(-0.5f, -0.3f, 0.26f, 0.09f, 0.44f, 1f, 5.7f, -12f, 0.8f, 0.0f, 0.85f, 2.2f),     // 左下，膝盖高度贴着地游
+		(-0.92f, -0.5f, 0.1f, 0.08f, 0.44f, 1f, 5.7f, -12f, 0.8f, 0.0f, 0.85f, 2.2f),    // 左下低位，头朝外（守着身后）
 	};
 
 	/// <summary>
@@ -453,14 +456,22 @@ void fragment() {
 	/// 颈部稳、身体摆；尾巴收尖散进烟里。ZHead / ZTail：头 / 尾的深度（&gt; 0 在 Joker 前面）；Len：身长（身高为单位）；Look：头的俯仰（度，正 = 低头）。
 	/// 立起来的两条（右上身后、右侧身前）脖子往后弯再往下落，像立起来的眼镜蛇；左边两条横着游。
 	/// </summary>
-	private static readonly (float Back, float Curl, float Amp, float Wave, float Speed, float ZHead, float ZTail, float Len, float Look)[] Bodies =
+	private static readonly (float Ax, float Ay, float Look, float Amp, float Wave, float Speed, float ZTail, float ZHead, float K1, float K2, float Len)[] Bodies =
 	{
-		(104f, 8f, 0.13f, 0.7f, 2.0f, -0.35f, -0.55f, 1.2f, 6f),        // 左上身后：立起来，S 形的身子往下落进咒雾
-		(100f, -8f, 0.12f, 0.65f, 1.8f, -0.3f, -0.5f, 1.3f, 4f),        // 右上身后：立起来，脖子往后一弯、身子落在他右肩后面
-		(96f, 6f, 0.11f, 0.62f, 1.9f, 0.35f, 0.5f, 0.95f, 8f),          // 右侧身前：立起来，身子落到他身前右边的地上
-		(0f, 0f, 0f, 0.5f, 2f, 0f, 0f, 1.15f, 0f),                      // 缠腰（BeltPoint，只用 Len）
-		(146f, 6f, 0.12f, 0.6f, 2.4f, -0.25f, -0.4f, 0.9f, -8f),        // 左下：贴着地游，头微微抬起看向前方，身子斜着没进地上的咒雾
+		// 第三版（2026-11-19 用户：右边那条竖着怪；要有自己的扭动；要一体感，不像各自独立；左下那条和缠腰的重了）：
+		// 五条的尾巴都没入他脚下同一片咒烟池（Ax, Ay：尾巴在池里的位置，身高为单位），身子是一条从池里升起、到头的贝塞尔 S 形——
+		// 从池里先往上冒（K1）、到头时顺着头的方向（K2），身上一道从尾往颈传的蛇行波；头的朝向 Look（度，负 = 仰头）也会慢慢左右看。
+		// ZTail / ZHead：尾 / 头的深度（尾在他身后、头绕到他身前的那条会从他腿后面穿出来）。Len 只给缠腰那条用。
+		(-1.05f, 0.05f, -20f, 0.14f, 0.8f, 2.0f, -0.45f, -0.35f, 0.5f, 0.45f, 0f),     // 左后方：从左后方的池里升起
+		(-0.3f, 0.05f, -12f, 0.15f, 0.85f, 1.7f, -0.55f, -0.3f, 0.45f, 0.45f, 0f),      // 最高的一条：从他身后升起，越过头顶
+		(0.3f, 0.06f, -8f, 0.13f, 0.75f, 2.2f, -0.35f, 0.35f, 0.35f, 0.5f, 0f),         // 右前方：从他右脚边斜着探向敌人（尾在身后、头在身前）
+		(0f, 0f, 0f, 0f, 0.5f, 2f, 0f, 0f, 0f, 0f, 1.4f),                               // 缠腰（BeltPoint；尾巴绕到身后往下没进池里）
+		(-0.42f, 0.05f, 200f, 0.12f, 0.65f, 2.4f, -0.25f, -0.15f, 0.45f, 0.45f, 0f),    // 左下低位：从他左脚边拱起，头朝外看（不必个个朝右）
 	};
+
+	/// <summary>脚下咒烟池（相对脚底，身高为单位）：中心、半径。</summary>
+	private static readonly Vector2 PoolC = new(-0.3f, 0.03f);
+	private const float PoolR = 1.2f;
 
 	/// <summary>群蛇形态的蛇头放大倍数（蛇咬单独那条不放大）。</summary>
 	private const float HeadK = 1f;   // 2026-11-19 用户：别头大身子小（试过 1.32 / 1.25，头像个方块）→ 头回到示意图大小，改成身子加粗
@@ -849,7 +860,7 @@ void fragment() {
 				SetMist(_mistFrontM, fs, scr, tallS, face, amt, surge);
 			}
 		}
-		Vector2 nestP = new(-0.12f * face * T, -0.78f * T);
+		Vector2 nestP = new(PoolC.X * face * T, PoolC.Y * T);   // 第三版：脚下的咒烟池（画布要盖住它）
 
 		// 攻击：有目标、出场演完了 → 挑一条闲着的蛇；都在忙（玩家出牌很快）就接手一条已经咬完、正散成烟的蛇（用户 2026-11-13：
 		// 快速出牌时不要排队等上一条演完）。每帧把排着的目标都派出去，不是一帧一个。
@@ -922,7 +933,10 @@ void fragment() {
 			// 出场 0.25s 蛇巢鼓起来（一团烟往上翻涌、比平时大一圈），再收回平时的大小
 			float swell = _intro >= 0f && _introFresh ? Smooth(0.2f, 0.45f, _intro) * (1f - Smooth(0.6f, 1.2f, _intro)) : 0f;
 			mat.SetShaderParameter("nest", new Vector3(nestP.X, nestP.Y - 0.1f * T * swell, 0.55f * T * (1f + 0.4f * swell)));
-			mat.SetShaderParameter("nest_a", 0f);   // 第二版：没有蛇巢了（五条尾巴收进同一团烟 = 从一个点放射出去，像触手）
+			// 第三版：蛇巢换成脚下一片扁扁的咒烟池（五条的尾巴都没进去：一体，但不是从一个点放射出去）
+			mat.SetShaderParameter("nest", new Vector3(PoolC.X * face * T, PoolC.Y * T, PoolR * T));
+			mat.SetShaderParameter("nest_sq", 3.0f);
+			mat.SetShaderParameter("nest_a", 0.5f * (_biteOnly ? 0f : alpha) * (_intro >= 0f && _introFresh ? Smooth(0.1f, 0.4f, _intro) : 1f));
 			mat.SetShaderParameter("head_k", HeadScale);
 			mat.SetShaderParameter("body_k", _solo ? 1f : 1.3f);
 			mat.SetShaderParameter("puff", _puff);
@@ -1091,10 +1105,10 @@ void fragment() {
 			r.Y -= 0.05f * T * near;
 			return r;
 		}
-		// 身后：环的末端以后尾巴往他背后斜下方垂下去、散成烟（第二版：不再收进蛇巢）
+		// 身后：环的末端以后尾巴往他背后垂下去、没进脚下的咒烟池（第三版）
 		Vector3 e = Ring(thEnd, 0f);
 		float rest = (th - thEnd) * ra;
-		return new Vector3(e.X - 0.35f * rest * face * T, e.Y + 0.5f * rest * T, Mathf.Min(e.Z, -0.3f));
+		return new Vector3(e.X - 0.15f * rest * face * T, e.Y + 0.95f * rest * T, Mathf.Min(e.Z, -0.3f));
 	}
 
 	private Node2D? _charge;
@@ -1375,26 +1389,42 @@ void fragment() {
 		}
 		else
 		{
-			// 第二版：独立的一条蛇（见 Bodies）。头在轨道上漂（幅度减到 0.6），身体从颈根往后长；头的漂移越往尾巴传得越少（尾巴稳、头在动）
+			// 第三版：从脚下咒烟池升起的一条（见 Bodies）。头在轨道上漂，再叠一个五条共同的慢摆（像同一个活物在呼吸）；
+			// 身子是池里的尾 → 头的三次贝塞尔（按弧长重新取点），叠一道从尾往颈传的蛇行波，颈部稳、中段摆得最大、尾巴没进池里
 			var b = Bodies[i];
-			float L = b.Len * T * o.Size;
 			Vector3 h3 = Orbit(i, _tau[i], T, face);
 			Vector2 rest = new(o.Cx * face * T, o.Cy * T);
-			Vector2 disp = (new Vector2(h3.X, h3.Y) - rest) * 0.6f;
-			float th0 = 180f + b.Look + 7f * Mathf.Sin(_t * 0.6f + i * 1.9f);   // 颈根处顺着头的反方向（头平视、轻轻点头）
-			Vector2 pl = Vector2.Zero;                        // 局部坐标（x 朝敌人、y 朝下），颈根在原点
-			float ds = L / (nb - 1f);
-			for (int k = nb - 1; k >= 0; k--)
+			Vector2 sway = new Vector2(0.06f * face * Mathf.Sin(_t * 0.8f + i * 0.4f), 0.045f * Mathf.Sin(_t * 0.8f + 1.2f + i * 0.4f)) * T;
+			Vector2 H = rest + (new Vector2(h3.X, h3.Y) - rest) * 0.9f + sway;
+			float look = Mathf.DegToRad(b.Look + 11f * Mathf.Sin(_t * 0.45f + i * 1.9f) + 4f * Mathf.Sin(_t * 1.1f + i));
+			Vector2 F = new(Mathf.Cos(look) * face, Mathf.Sin(look));
+			Vector2 A = new(b.Ax * face * T, b.Ay * T);
+			float dist = (H - A).Length();
+			Vector2 C1 = A + new Vector2(0f, -dist * b.K1), C2 = H - F * dist * b.K2;
+			const int M = 48;
+			Span<Vector2> bz = stackalloc Vector2[M + 1];
+			Span<float> cl = stackalloc float[M + 1];
+			for (int m = 0; m <= M; m++)
 			{
-				float u = 1f - k / (nb - 1f);                  // 0 颈根 → 1 尾尖
-				float th = Mathf.DegToRad(Mathf.Lerp(th0, b.Back + b.Curl * u, Smooth(0f, 0.3f, u)));   // 颈部 30% 里从「平着往后」弯到身子的方向（问号形的脖子）
-				Vector2 dl = new(Mathf.Cos(th), Mathf.Sin(th));
-				float amp = b.Amp * T * Smooth(0.06f, 0.38f, u) * (1f - 0.25f * u);
-				float wv = Mathf.Sin(Mathf.Tau * u * L / (b.Wave * T) - _t * b.Speed + i * 1.3f) * amp;
-				Vector2 q = pl + new Vector2(-dl.Y, dl.X) * wv;
-				Vector2 w = rest + new Vector2(q.X * face, q.Y) + disp * Mathf.Pow(1f - u, 1.6f) + _lunge[i] * Mathf.Pow(1f - u, 1.5f);
-				_spine[i * N + k] = new Vector4(w.X, w.Y, Mathf.Lerp(b.ZHead, b.ZTail, u), Smooth(0f, 0.08f, 1f - u) * alpha);
-				pl += dl * ds;
+				float s = m / (float)M, r = 1f - s;
+				bz[m] = r * r * r * A + 3f * r * r * s * C1 + 3f * r * s * s * C2 + s * s * s * H;
+				cl[m] = m == 0 ? 0f : cl[m - 1] + (bz[m] - bz[m - 1]).Length();
+			}
+			float L = cl[M];
+			_girth[i] *= Mathf.Clamp(Mathf.Sqrt(L / (1.15f * T)), 1f, 1.35f);   // 身子越长越粗（拉开布局以后长的几条显得细，像触手）
+			int seg = 0;
+			for (int k = 0; k < nb; k++)
+			{
+				float f = k / (nb - 1f);                       // 0 尾（池里）→ 1 颈根
+				float want = L * f;
+				while (seg < M - 1 && cl[seg + 1] < want) seg++;
+				float u = cl[seg + 1] > cl[seg] ? Mathf.Clamp((want - cl[seg]) / (cl[seg + 1] - cl[seg]), 0f, 1f) : 0f;
+				Vector2 pnt = bz[seg].Lerp(bz[seg + 1], u);
+				Vector2 tg = (bz[seg + 1] - bz[seg]).Normalized();
+				float amp = b.Amp * T * Mathf.Pow(Mathf.Max(0f, Mathf.Sin(Mathf.Pi * Mathf.Min(f * 1.15f, 1f))), 0.8f) * (1f - Smooth(0.82f, 1f, f));   // Max：sin(π) 在浮点里是极小的负数，开方会变成 NaN
+				float wv = Mathf.Sin(Mathf.Tau * (1f - f) * L / (b.Wave * T) - _t * b.Speed + i * 1.3f) * amp;   // 波从颈往尾传
+				Vector2 w = pnt + new Vector2(-tg.Y, tg.X) * wv + _lunge[i] * Mathf.Pow(f, 1.5f);
+				_spine[i * N + k] = new Vector4(w.X, w.Y, Mathf.Lerp(b.ZTail, b.ZHead, f), Smooth(0f, 0.14f, f) * alpha);
 			}
 		}
 		// 脊线平滑两遍（把波形和弯折处理顺）

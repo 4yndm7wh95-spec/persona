@@ -208,27 +208,29 @@ uniform float fade = 1.0;
 uniform float tail = 1.0;
 " + Noise + @"
 void fragment() {
+	// 第三版（用户 2026-11-19：偏软、像打出了一团烟雾）：弹头是实心的——一颗硬边的白热胶囊，外面只有很窄的一圈青光；
+	// 身后拖一截硬边的尖尾（外青内白两层，越往后越细，边上被噪声轻轻吃一点），只有弹头后面一小段。不再是一团高斯光晕。
 	float x = UV.x, y = (UV.y - 0.5) * 2.0;
 	float xp = x * len_px, yp = y * thick_px * 0.5;
 	float dx = xp - head_px;
-	float sl = thick_px * 0.22, sh = thick_px * 0.085;
-	float slug = exp(-(pow(dx / sl, 2.0) + pow(yp / sh, 2.0)));
-	float slugCore = exp(-(pow(dx / (sl * 0.55), 2.0) + pow(yp / (sh * 0.5), 2.0)));
-	float env = exp(-(pow(dx / (sl * 2.4), 2.0) + pow(yp / (sh * 3.4), 2.0)));
-	// 气浪：弹头前沿往后张开的抛物面
-	float bx = sl * 1.05 - dx;
-	float para = sqrt(max(bx, 0.0) * thick_px * 0.1);
-	float bow = exp(-pow((abs(yp) - para) / (7.0 + 0.05 * bx), 2.0)) * step(0.0, bx) * exp(-bx / (thick_px * 0.85));
-	// 尾：越往后越宽、越散
-	float behind = max(-dx, 0.0);
-	float tw = sh * (1.1 + behind / (thick_px * 1.1));
-	float taper = smoothstep(1.0 - tail, 1.0, x);
-	float pl = fbm(vec2(xp * 0.009 - clock * 24.0, y * 3.5));
-	float plasma = exp(-pow(yp / tw, 2.0)) * (0.3 + 0.7 * smoothstep(0.3, 0.85, pl)) * exp(-behind / (thick_px * 0.75)) * step(dx, 0.0) * taper;
-	float streak = exp(-pow(yp / (sh * 0.38), 2.0)) * exp(-behind / (thick_px * 0.3)) * step(dx, 0.0);   // 短：一颗弹头带一截尾，不是一道光柱
-	vec3 white = vec3(0.96, 0.98, 1.0), cyan = vec3(0.3, 0.76, 1.0), violet = vec3(0.55, 0.32, 1.0);
-	vec3 col = white * (slug * 1.5 + slugCore * 2.2 + streak * 0.9) + cyan * (env * 0.85 + bow * 0.8 + plasma * 0.95) + violet * plasma * 0.25 * (0.5 + 0.5 * y);
-	float edge = (1.0 - smoothstep(0.8, 1.0, abs(y))) * smoothstep(0.0, 0.03, x) * (1.0 - smoothstep(0.985, 1.0, x));
+	float sl = thick_px * 0.16, sh = thick_px * 0.05;
+	float sd = length(vec2(max(abs(dx) - sl, 0.0), yp)) - sh;          // 胶囊的有向距离（像素）
+	float slug = 1.0 - smoothstep(-1.5, 1.5, sd);
+	float rim = exp(-max(sd, 0.0) / 6.0) * (1.0 - slug);
+	float bloom = exp(-max(sd, 0.0) / 24.0) * 0.3;
+	float behind = -(dx + sl * 0.5);
+	float tl = thick_px * 0.8 * tail;
+	float k = clamp(behind / max(tl, 1.0), 0.0, 1.0);
+	float on = step(0.0, behind) * step(behind, tl);
+	float hw = sh * 1.1 * (1.0 - k);
+	float wob = (fbm(vec2(xp * 0.02 - clock * 30.0, y * 2.0)) - 0.5) * sh * 0.6 * k;
+	float d2 = abs(yp + wob) - hw;
+	float trailOut = (1.0 - smoothstep(-1.2, 1.2, d2)) * on;
+	float trailCore = (1.0 - smoothstep(-1.2, 1.2, d2 + hw * 0.5)) * on;
+	float trailGlow = exp(-max(d2, 0.0) / 8.0) * on * (1.0 - k) * 0.45;
+	vec3 white = vec3(0.97, 0.99, 1.0), cyan = vec3(0.35, 0.8, 1.0), deep = vec3(0.15, 0.4, 1.0);
+	vec3 col = white * (slug * 2.2 + trailCore * 1.7) + cyan * (rim * 1.4 + trailOut * (1.0 - trailCore) * 1.3 + trailGlow) + deep * bloom;
+	float edge = (1.0 - smoothstep(0.85, 1.0, abs(y))) * smoothstep(0.0, 0.02, x) * (1.0 - smoothstep(0.985, 1.0, x));
 	COLOR = vec4(col * fade * edge, 1.0);
 }" };
 
@@ -727,14 +729,12 @@ void fragment() {
 			endCharge?.Invoke();
 			Fx.Shake(9);
 			Stage.ShakeDir?.Invoke(4, Mathf.RadToDeg((-dir).Angle()));      // 后坐：往枪的反方向一推
-			Glow.Flash(front, muzzle, new Color(0.85f, 0.95f, 1f), 420f * unit, 0.1f);
+			Glow.Flash(front, muzzle, new Color(0.85f, 0.95f, 1f), 260f * unit, 0.08f);
 			puppet?.Blast();                                               // 远处云海被枪口冲击波压开、翻卷
 			MuzzleBlast(front, muzzle, dir, unit);                         // 枪口炸开的一团：往前一大股、两侧各一股泄压的气焰
 			// 炮口烟：一大团往前推、往上飘的烟（画在人物后面、撒旦耶尔前面），一开始被枪火照亮
-			Smoke(back, muzzle + dir * 140f * unit, 900f * unit, 1.7f, dir * 0.45f + new Vector2(0f, -0.2f), 0.9f, 1.05f);
-			Smoke(back, muzzle + dir * 330f * unit, 620f * unit, 1.3f, dir * 0.5f + new Vector2(0f, -0.15f), 0.7f, 0.85f, 0.03f);
 			Bullet(front, muzzle, dir, screen, unit);                      // 看得见的重弹
-			Tunnel(back, muzzle, dir, screen.Length() * 1.2f, BulletSpeed * unit, 320f * unit, 1.8f);   // 身后翻起的烟道
+			Tunnel(back, muzzle, dir, screen.Length() * 1.2f, BulletSpeed * unit, 280f * unit, 1.3f);   // 身后留下的一条暗烟
 			Glow.Sparks(front, muzzle, 40, 900f, 2600f, 0.42f, new[] { new Color(0.95f, 0.98f, 1f), new Color(0.35f, 0.75f, 1f), new Color(0.6f, 0.3f, 1f) }, 0f,
 				0.06f, 0.18f, dir, 26f);
 		});
@@ -952,25 +952,25 @@ void fragment() {
 	vec2 p = (UV - 0.5) * 2.0;
 	float r = length(p), ang = atan(p.y, p.x);
 	float e = 1.0 - pow(1.0 - prog, 3.0);
-	float fwd = pow(max(cos(ang), 0.0), 16.0);
-	float side = pow(max(cos(abs(ang) - 1.9), 0.0), 26.0) * 0.6;
-	float lobe = fwd + side + 0.1;
+	float fwd = pow(max(cos(ang), 0.0), 12.0);
+	float lobe = fwd + 0.07;   // 第三版：只留往前喷的一股火舌（两侧泄压的那两股做成硬边以后像三叶螺旋桨）
 	float n = fbm(vec2(ang * 2.6 + seed, r * 3.5 - prog * 5.0));
 	float reach = lobe * (0.22 + 0.74 * e) * (0.7 + 0.6 * n);
 	float inside = clamp(1.0 - r / max(reach, 0.001), 0.0, 1.0);
-	float gas = pow(inside, 1.4) * (0.6 + 0.4 * fbm(p * 7.0 + vec2(seed, -prog * 4.0)));
-	float streak = 0.0;   // 第二版：去掉外面那圈细放射线（雷点：细线、放射线）
-	float hot = exp(-r / (0.035 + 0.07 * e));
-	float fade = pow(1.0 - prog, 1.5);
-	vec3 white = vec3(0.96, 0.98, 1.0), cyan = vec3(0.3, 0.75, 1.0), deep = vec3(0.08, 0.22, 0.7);
-	vec3 gcol = mix(deep, mix(cyan, white, smoothstep(0.35, 0.85, inside)), smoothstep(0.0, 0.4, inside));
-	vec3 col = (gcol * gas * 1.25 + cyan * streak * 0.7 + white * hot * 1.6) * fade;
+	// 第三版（用户：偏软、像一团烟）：硬边的实心火光——外沿一道清楚的边、里面一块白芯，很快收掉；不再是一团渐隐的气
+	float aa = 0.012;
+	float solid = smoothstep(0.0, aa / max(reach, 0.05), inside);
+	float coreW = smoothstep(0.42 - aa, 0.42 + aa, inside + (n - 0.5) * 0.25);
+	float hot = 1.0 - smoothstep(0.04 + 0.04 * e - aa, 0.04 + 0.04 * e + aa, r);
+	float fade = 1.0 - smoothstep(0.5, 1.0, prog);
+	vec3 white = vec3(0.97, 0.99, 1.0), cyan = vec3(0.32, 0.78, 1.0);
+	vec3 col = (mix(cyan, white, coreW) * solid * 1.5 + white * hot * 2.0) * fade;
 	COLOR = vec4(col * (1.0 - smoothstep(0.9, 1.0, r)), 1.0);
 }" };
 
 	private static void MuzzleBlast(Control layer, Vector2 at, Vector2 dir, float unit)
 	{
-		const float life = 0.3f;
+		const float life = 0.15f;    // 第三版：短促（硬），0.3 → 0.15
 		float size = 1150f * unit;   // 第二版：缩小，往前那股不再把弹头吞掉
 		Node2D root = Fx.Root(layer, at, "P5SinfulMuzzleBlast", life + 0.05);
 		root.Rotation = dir.Angle();
@@ -1012,7 +1012,6 @@ void fragment() {
 	private static void HitZone(Control layer, Vector2 zone, Vector2 dir, float floorY, float span, float unit)
 	{
 		float big = 1f + span / (420f * unit);
-		Glow.Flash(layer, zone, new Color(0.8f, 0.92f, 1f), 320f * unit * big, 0.12f);
 		PointLight2D pl = Light(layer, zone, new Color(0.65f, 0.85f, 1f), 1200f * unit * big);
 		Fx.Animate(pl, 0, 0.7, k => pl.Energy = 1.7f * Mathf.Pow(1f - k, 2f));
 		Fx.FreeAfter(pl, 0.75);
@@ -1032,8 +1031,9 @@ void fragment() {
 			// 打进去那一下：晚一帧再顿住（贯穿的火已经从身后喷出来一截），敌人被打透的样子停在那里
 			Fx.After(front, 0.03, () => HitStop.Request(0.11));
 		}
-		ExitBurst(front, at, dir, (last ? 1100f : 820f) * unit, 0.45f, last ? 1.25f : 1f);
-		Smoke(back, at + dir * 90f * unit, 640f * unit, 1.2f, dir * 0.3f + new Vector2(0f, -0.28f), 1.2f, 0.7f);
+		Pop(front, at, dir, (first || last ? 260f : 200f) * unit, 0.08f);   // 打中的一下硬白光（顺着弹道压扁）
+		ExitBurst(front, at, dir, (last ? 1000f : 760f) * unit, 0.26f, last ? 1.25f : 1.05f);
+		Smoke(back, at + dir * 90f * unit, 560f * unit, 1.1f, dir * 0.3f + new Vector2(0f, -0.28f), 0.15f, 0.5f, 0.05f);
 		if (body != null)
 		{
 			KnockBack(body, dir * (last ? 90f : 72f) * unit, lifetime);
