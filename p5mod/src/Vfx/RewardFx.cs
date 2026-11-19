@@ -39,7 +39,8 @@ public static class RewardFx
 		screen.SetMeta("p5_reward_run", run);
 		bool Current() => GodotObject.IsInstanceValid(screen) && screen.GetMeta("p5_reward_run").AsInt32() == run;
 		Node2D under = screen.GetNodeOrNull<Node2D>("P5RewardBackdrop") ?? Backdrop(screen, row, view, u, rectOf, cards);
-		if (first) Title(screen, view, u);
+		// 用户 2026-11-19：TREASURE 放到「选择一张牌」横幅下面（横幅和牌之间居中）
+		if (first && cards.Count > 0) Title(screen, view, u, new Vector2(view.X * 0.5f, rectOf(cards[0]).Position.Y - 64f * u));
 
 		Sfx.Take("gx_whoosh", 0.16f);
 		Sfx.Take("gx_card_slide", 0.18f, 0.04f);
@@ -177,17 +178,16 @@ public static class RewardFx
 		return root;
 	}
 
-	/// <summary>左上角剪报拼贴字「TREASURE」：8 张字母纸片一片一片拍上来（每片从大到正常、带一点旋转），下面一行「TAKE YOUR PICK」滑进来。</summary>
-	private static void Title(Control screen, Vector2 view, float u)
+	/// <summary>剪报拼贴字「TREASURE」：8 张字母纸片一片一片拍上来（每片从大到正常、带一点旋转），居中在横幅和牌之间。</summary>
+	private static void Title(Control screen, Vector2 view, float u, Vector2 center)
 	{
 		screen.GetNodeOrNull("P5RewardTitle")?.QueueFree();
 		Node2D root = new() { Name = "P5RewardTitle" };
 		screen.AddChild(root);
 		root.GlobalPosition = Vector2.Zero;
 		string[] letters = { "T", "R", "E1", "A", "S", "U", "R2", "E2" };
-		float k = 0.4f * u, step = 205f * k * 2f * 0.5f;        // 字母贴图半尺寸 256，纸片约 200 宽
-		// 用户 2026-11-19 实机：原来贴着顶上，被顶栏挡住 → 放到顶栏下面、左边遗物栏右侧，缩小一点
-		Vector2 at = new(view.X * 0.07f + 100f * k, view.Y * 0.2f);
+		float k = 0.34f * u, step = 205f * k;                   // 字母贴图 512，纸片约 200 宽
+		Vector2 at = center - new Vector2(step * 3.5f, -14f * u);
 		for (int i = 0; i < letters.Length; i++)
 		{
 			float rot = Fx.Rand(-0.12f, 0.12f), dy = Fx.Rand(-14f, 14f) * u;
@@ -208,18 +208,6 @@ public static class RewardFx
 		}
 		Sfx.Take("gx_card_stack", 0.16f, 0.02f);
 		Sfx.Take("gx_card_stack", 0.12f, 0.14f);
-		// 副标题从左滑进来
-		Sprite2D? sub = Spr(root, "subtitle_take_your_pick", at + new Vector2(step * 2.6f, 210f * k), k * 0.95f, -0.03f);
-		if (sub != null)
-		{
-			Vector2 p0 = sub.Position;
-			sub.Modulate = new Color(1f, 1f, 1f, 0f);
-			Fx.Animate(sub, 0.22, 0.24, t =>
-			{
-				sub.Position = p0 + new Vector2(-view.X * 0.3f * (1f - Ease5.OutExpo(t)), 0f);
-				sub.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, t * 3f));
-			});
-		}
 	}
 
 	/// <summary>选中一张：「STOLEN!」印章重重盖在那张牌上 + 白闪红光、纸屑迸开，其余的牌往两边一甩淡出。</summary>
@@ -265,5 +253,78 @@ public static class RewardFx
 				other.Modulate = new Color(1f - 0.5f * t, 1f - 0.55f * t, 1f - 0.5f * t, 1f - t);
 			});
 		}
+	}
+
+	// ───────────────── 原版界面元件换皮（Codex 的剪报素材，art/p5/ui/reward：header_* / skip_*） ─────────────────
+
+	private static bool Zh => TranslationServer.GetLocale().StartsWith("zh", StringComparison.OrdinalIgnoreCase);
+
+	private static void HideArt(Node n, Node keep)
+	{
+		foreach (Node c in n.GetChildren())
+		{
+			if (c == keep) continue;
+			if (c is TextureRect or NinePatchRect or Sprite2D) ((CanvasItem)c).SelfModulate = new Color(1f, 1f, 1f, 0f);
+			if (!c.IsAncestorOf(keep) || c != keep) HideArt(c, keep);
+		}
+	}
+
+	/// <summary>「选择一张牌」横幅：原版米色卷轴的图藏掉（文字节点留着），换成黑底红边的剪报纸条；中文时文字换成拼贴字图。</summary>
+	public static void SkinBanner(Control banner, Label label)
+	{
+		if (banner.HasMeta("p5_skin") || Fx.Tex("reward_header_plate") is not Texture2D plate) return;
+		banner.SetMeta("p5_skin", true);
+		if (banner is TextureRect tr) tr.SelfModulate = new Color(1f, 1f, 1f, 0f);
+		HideArt(banner, label);
+		Node2D root = new() { Name = "P5Header", Position = label.Position + label.Size * 0.5f, ShowBehindParent = false };
+		Node parent = label.GetParent() ?? banner;
+		parent.AddChild(root);
+		parent.MoveChild(root, label.GetIndex());
+		float k = 680f / (plate.GetWidth() * 0.88f);
+		root.AddChild(new Sprite2D { Texture = plate, Scale = Vector2.One * k, Rotation = -0.02f });
+		if (Zh && Fx.Tex("reward_header_text_zh") is Texture2D txt)
+		{
+			label.SelfModulate = new Color(1f, 1f, 1f, 0f);
+			root.AddChild(new Sprite2D { Texture = txt, Scale = Vector2.One * k * 0.92f, Rotation = -0.02f, Position = new Vector2(0f, -4f) });
+		}
+		else
+		{
+			label.SelfModulate = Colors.White;
+		}
+	}
+
+	/// <summary>跳过（及其他备选）按钮：底板换成剪报纸板（悬停换红色版），「跳过 / SKIP」换成拼贴字图，其他按钮留原文字。</summary>
+	public static void SkinButton(Control button, TextureRect image, Label label)
+	{
+		if (button.HasMeta("p5_skin") || Fx.Tex("reward_skip_plate") is not Texture2D plate) return;
+		button.SetMeta("p5_skin", true);
+		image.Texture = plate;
+		image.Material = null;                                   // 原版的 HSV 悬停着色器会把红黑纸板染掉
+		image.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+		image.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+		string t = label.Text.Trim();
+		bool skip = t is "跳过" or "跳過" || t.Equals("skip", StringComparison.OrdinalIgnoreCase);
+		if (skip && Fx.Tex(Zh ? "reward_skip_text_zh" : "reward_skip_text_en") is Texture2D txt)
+		{
+			label.SelfModulate = new Color(1f, 1f, 1f, 0f);
+			TextureRect tx = new()
+			{
+				Texture = txt, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+				MouseFilter = Control.MouseFilterEnum.Ignore, AnchorRight = 1f, AnchorBottom = 1f, Scale = Vector2.One * 0.8f,
+			};
+			image.AddChild(tx);
+			tx.Size = image.Size;
+			tx.PivotOffset = image.Size * 0.5f;
+		}
+		else
+		{
+			label.SelfModulate = Colors.White;
+		}
+	}
+
+	public static void SkinButtonHover(TextureRect image, bool hover)
+	{
+		if (image.GetParent() is not Control b || !b.HasMeta("p5_skin")) return;
+		if (Fx.Tex(hover ? "reward_skip_plate_hover" : "reward_skip_plate") is Texture2D tex) image.Texture = tex;
 	}
 }

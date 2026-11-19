@@ -265,6 +265,21 @@ def fx_textures():
     for f in sorted((ROOT / "art/p5/ui/reward").glob("*.png")):
         im = Image.open(f).convert("RGBA")
         yield "reward_" + f.stem, im.resize((round(im.width * 0.5), round(im.height * 0.5)), Image.LANCZOS)
+    # 左上角顶栏 / 战绩 / 联机里的角色头像（Codex，art/p5/ui/icons/joker_top_icon.png）+ 描边版（轮廓往外扩一圈的白色剪影）
+    icon = ROOT / "art/p5/ui/icons/joker_top_icon.png"
+    if icon.exists():
+        im = Image.open(icon).convert("RGBA")
+        im = im.crop(im.getchannel("A").getbbox())
+        side = max(im.size) + 40
+        sq = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+        sq.alpha_composite(im, ((side - im.width) // 2, (side - im.height) // 2))
+        sq = sq.resize((256, 256), Image.LANCZOS)
+        yield "icon_top", sq
+        from PIL import ImageFilter
+        a = sq.getchannel("A").filter(ImageFilter.MaxFilter(9))
+        out = Image.new("RGBA", sq.size, (255, 255, 255, 0))
+        out.putalpha(a)
+        yield "icon_top_outline", out
     # P5R summon blue flame tongues (BE_SYOLOOP, 6x2 flipbook): Persona appear / linger / dismiss (p5mod/src/Vfx/BlueFlame.cs)
     flame = ROOT / "research/p5r/ghost_blueflame/textures_png/bes_syo_fkomaB12kf2.dds.png"
     if flame.exists():
