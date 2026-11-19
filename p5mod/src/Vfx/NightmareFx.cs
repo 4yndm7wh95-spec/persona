@@ -105,6 +105,62 @@ void fragment() {
 	COLOR = vec4(smoke * al + glow * alpha * edge, al);
 }" };
 
+	private static Shader? _squeeze;
+
+	/// <summary>攥紧的画面收缩（读屏）：拳心周围的画面往里一缩（蓄力），攥住那一下弹回来、一道冲击往外推、带一点红色的色散。</summary>
+	private static Shader SqueezeShader => _squeeze ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
+uniform vec2 c = vec2(0.5);
+uniform float aspect = 1.7778;
+uniform float r = 0.3;
+uniform float k = 0.0;
+uniform float ring = -1.0;
+uniform float ring_a = 0.0;
+void fragment() {
+	vec2 d = (SCREEN_UV - c) * vec2(aspect, 1.0);
+	float l = length(d);
+	vec2 n = d / max(l, 1e-4);
+	float f = k * exp(-pow(l / r, 2.0));
+	float w = ring_a * exp(-pow((l - ring) / 0.035, 2.0));
+	vec2 off = n * (l * f - w * 0.02);
+	vec2 uv = SCREEN_UV + off / vec2(aspect, 1.0);
+	vec2 ca = n / vec2(aspect, 1.0) * (abs(f) * 0.012 + w * 0.006);
+	vec3 col = vec3(texture(screen_tex, uv + ca).r, texture(screen_tex, uv).g, texture(screen_tex, uv - ca).b);
+	col *= mix(vec3(1.0), vec3(1.12, 0.82, 0.85), clamp(abs(f) * 3.0 + w, 0.0, 0.6));
+	COLOR = vec4(col, 1.0);
+}" };
+
+	private static void Squeeze(Control layer, Vector2 at, float h, float from, float hit)
+	{
+		Vector2 scr = Fx.Screen(layer);
+		Node2D root = Fx.ScreenRoot(layer, "P5NightmareSqueeze");
+		root.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
+		ShaderMaterial m = new() { Shader = SqueezeShader };
+		ColorRect rect = new() { Size = scr, Material = m, MouseFilter = Control.MouseFilterEnum.Ignore, Visible = false };
+		root.AddChild(rect);
+		Vector2 cs = Fx.ScreenPoint(layer, at) / scr;
+		float hs = h * layer.GetCanvasTransform().Scale.Y / scr.Y;
+		m.SetShaderParameter("aspect", scr.X / scr.Y);
+		m.SetShaderParameter("r", hs * 0.9f);
+		float total = hit - from + 0.45f;
+		Fx.FreeAfter(root, from + total + 0.05);
+		Fx.Animate(rect, from, total, t =>
+		{
+			float s = from + t * total;
+			rect.Visible = true;
+			m.SetShaderParameter("c", Fx.ScreenPoint(layer, at) / scr);
+			// 往里缩（越来越快）→ 攥住时弹出去一点 → 回平
+			float k = s < hit ? 0.22f * Fx.InCubic(Mathf.Clamp((s - from) / (hit - from), 0f, 1f))
+				: Mathf.Lerp(-0.08f, 0f, Fx.OutCubic(Mathf.Clamp((s - hit) / 0.25f, 0f, 1f))) * (s - hit < 0.03f ? (s - hit) / 0.03f : 1f);
+			m.SetShaderParameter("k", k);
+			float rs = Mathf.Max(0f, s - hit);
+			m.SetShaderParameter("ring", s < hit ? -1f : hs * (0.15f + 1.6f * Fx.OutCubic(Mathf.Min(1f, rs / 0.4f))));
+			m.SetShaderParameter("ring_a", s < hit ? 0f : 1f - Mathf.Min(1f, rs / 0.4f));
+		});
+		_ = cs;
+	}
+
 	public static void Play(SkillCtx c)
 	{
 		float h = c.Tall, u = c.Unit, fc = c.Face;
@@ -131,10 +187,19 @@ void fragment() {
 		Sfx.Take("gx_card_slide", 0.12f);
 		Sfx.Play(Sfx.Curse, 0.4f, surge0);
 		Sfx.Take("gx_whoosh", 0.16f, surge0 + 0.04f);
-		Sfx.Play(Sfx.Slam, 0.3f, grab1);
-		Sfx.Play(Sfx.SubBoom, 0.32f, grab1);
-		Sfx.Play("heartbeat", 0.5f, beat0 - 0.02f);
-		Sfx.Play("heartbeat", 0.42f, beat0 + gap * 2f - 0.02f);
+		// 攥紧（用户 2026-11-19：捏紧那一下要强反馈、音效做好）：先往里吸的冷声（空气被攥走）→ 捏碎一样的低沉闷响 + 低频重击 + 一层咒怨的闷响尾巴
+		Sfx.Take("gx_freeze", 0.22f, grab0 - 0.04f);
+		Sfx.Take("gx_whoosh", 0.14f, grab0);
+		Sfx.Play(Sfx.Crush, 0.65f, grab1);
+		Sfx.Play(Sfx.SubBoom, 0.48f, grab1);
+		Sfx.Play(Sfx.CurseSoft, 0.4f, grab1 + 0.02f);
+		Sfx.Take("gx_glass", 0.14f, grab1 + 0.03f);
+		// 三下心跳：自己的低沉「咚」（原来的 heartbeat 在游戏里换成了原版的能量音，不像心跳）
+		for (int i = 0; i < 3; i++)
+		{
+			Sfx.Play(Sfx.SubBoom, 0.3f - 0.03f * i, beat0 + gap * i - 0.01f);
+			Sfx.Play(Sfx.CurseSoft, 0.22f, beat0 + gap * i);
+		}
 		for (int i = 0; i < 3; i++) Sfx.Play("card_flick", 0.3f, beat0 + gap * i + 0.03f);
 		Sfx.Play(Sfx.Crack, 0.2f, pull0);
 		Sfx.Take("gx_whoosh", 0.2f, pull0 + 0.02f);
@@ -151,7 +216,8 @@ void fragment() {
 
 		// ── 四周压暗：跟着心跳一下下收紧（黑暗在呼吸）──
 		SkillRedo5.Dim(back, cardAt + new Vector2(-fc * h * 0.2f, h * 0.2f), new Vector2(h * 5.5f, h * 3.6f), end + 0.3,
-			s => Mathf.Min(0.95f, Fx.OutCubic(Ease5.Seg(s, 0f, 0.22f)) * (1f - Ease5.Seg(s, pull1 - 0.1f, 0.4f)) * (0.8f + 0.12f * Beat(s))));
+			s => Mathf.Min(0.97f, Fx.OutCubic(Ease5.Seg(s, 0f, 0.22f)) * (1f - Ease5.Seg(s, pull1 - 0.1f, 0.4f)) * (0.8f + 0.12f * Beat(s)
+				+ 0.18f * Mathf.Exp(-Mathf.Max(0f, s - grab1) / 0.12f) * (s >= grab1 - 0.02f ? 1f : 0f))));   // 攥紧那一下四周猛地再暗一截
 		Glow.Flash(back, cardAt, new Color(0.28f, 0.01f, 0.045f), h * 1.5f, pull1);
 		// 巨手冲出来的地方：黑暗里裂开一团暗红
 		Glow.Flash(back, cardAt + new Vector2(0f, -h * 0.05f), new Color(0.55f, 0.02f, 0.08f), h * 2.6f, 0.55f, surge0);
@@ -337,14 +403,25 @@ void fragment() {
 			}
 		});
 
-		// ── 攥住：顿帧、震屏、拳心一下暗红 ──
+		// ── 攥紧前：四周的光被吸向拳心（蓄力），画面往拳心一缩 ──
+		Squeeze(front, cardAt, h, grab0, grab1);
+		// ── 攥紧：最重的一拍 ──
 		Fx.After(front, grab1, () =>
 		{
-			HitStop.Request(0.07);
-			Fx.Shake(2);
-			Glow.Flash(front, cardAt, new Color(0.8f, 0.1f, 0.15f), h * 0.3f, 0.22f);
-			Glow.Flash(back, cardAt, new Color(0.45f, 0.02f, 0.07f), h * 1.4f, 0.4f);
-			Phantom.Shards(front, cardAt, 10, 220f * u, 560f * u, Vector2.Up, 180f, 0.32f, 360f * u, 10f * u);
+			HitStop.Request(0.11);
+			Fx.Shake(3);
+			// 拳心一下白热、再一大团暗红；手指缝里迸出黑红的碎光（四个指缝的方向）
+			Glow.Flash(front, cardAt, Pal5.Hot, h * 0.22f, 0.1f);
+			Glow.Flash(front, cardAt, new Color(0.9f, 0.1f, 0.15f), h * 0.55f, 0.26f);
+			Glow.Flash(back, cardAt, new Color(0.6f, 0.02f, 0.08f), h * 2.2f, 0.5f);
+			// 指缝里迸出的暗红火星（四个指缝的方向；不用白色的碎光——一把白线）
+			for (int i = 0; i < 4; i++)
+			{
+				Vector2 dir = Vector2.FromAngle(-Mathf.Pi * 0.5f + (i - 1.5f) * 0.55f);
+				Glow.Sparks(front, cardAt + dir * h * 0.12f, 9, 380f * u, 900f * u, 0.32f, new[] { new Color(1f, 0.3f, 0.32f), Pal5.Crimson, new Color(0.3f, 0.02f, 0.06f) }, 500f * u, 0.07f, 0.16f, dir, 14f);
+			}
+			Glow.Sparks(front, cardAt, 26, 200f * u, 640f * u, 0.5f, new[] { new Color(1f, 0.4f, 0.4f), Pal5.Crimson, new Color(0.25f, 0.02f, 0.05f) }, 600f * u, 0.08f, 0.22f, Vector2.Up, 180f);
+			if (c.SelfTint is { } st) Fx.Animate(front, 0, 0.3, t => st(Colors.White.Lerp(new Color(1.3f, 0.75f, 0.8f), (1f - t) * 0.6f)));
 		});
 		// ── 每一下心跳：拳头上沿一下红光、一圈很淡的波，复制被挤出来 ──
 		foreach (float b in beats)
