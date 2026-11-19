@@ -23,7 +23,7 @@ public static class Warmup
 	private static readonly WarmupBudget Budget = new();
 	private static readonly string[] FinaleTextures = SatanaelPuppet.TextureNames().Prepend("sinful_platform").ToArray();
 	private static readonly string[] FinaleSounds = { Sfx.SinfulSweepOpen, Sfx.SinfulSweepClose, Sfx.SinfulThunder,
-		Sfx.SinfulTwirl, Sfx.SinfulCharge, Sfx.SinfulShot, Sfx.SinfulPierceLast };
+		Sfx.SinfulTwirl, Sfx.SinfulCharge, Sfx.SinfulShot, Sfx.SinfulPierceLast, Sfx.SubBoom, Sfx.Crush };
 	private static readonly (string Name, Action<Control> Draw)[] FinaleSamples =
 	{
 		("sky", SinfulShell.WarmSky),
