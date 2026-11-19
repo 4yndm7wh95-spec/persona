@@ -287,6 +287,26 @@ void fragment() {
 		inner *= 0.75 + 0.55 * smoothstep(-0.6, 0.8, -n2.y);
 		float topRim = smoothstep(0.72, 0.95, rr) * smoothstep(0.35, 0.9, -n2.y) * (1.0 - smoothstep(-0.04, 0.04, e)) * upOnly;   // 只在最上沿一细条
 		inner += vec3(0.42, 0.05, 0.06) * topRim * 0.45;
+		// 鳞片（2026-11-19 用户：身体加一点鳞片的材质，不用太明显，能看出来一点；再一点点鳞片的反光；头也按同样的思路，力度控制好）：
+		// 沿身体一排排错开的圆鳞（贴着身体坐标走，跟着蛇动），鳞缝暗一点、每片深浅略有不同；朝上那一侧有些鳞片上一点暖红的反光，随游动慢慢闪。
+		// 头上用头自己的坐标铺小一号的，只在头顶 / 后脑，力度七成；边上的烟、尾巴、散成烟时都没有。
+		float scU = mix(L * 4.6, (q.x + 0.3) * 4.4, headness), scV = mix(acr * 2.8, qu.y * 3.6, headness);
+		float scRow = floor(scU);
+		float scX = scV + 0.5 * mod(scRow, 2.0);
+		vec2 scCell = vec2(floor(scX), scRow);
+		vec2 scF = vec2(fract(scX) - 0.5, fract(scU));
+		float scD = length(vec2(scF.x, scF.y * 0.8));
+		float scGroove = smoothstep(0.4, 0.56, scD);
+		float scH = fract(sin(dot(scCell + float(j) * 7.0, vec2(12.9898, 78.233))) * 43758.5453);
+		float scBody = smoothstep(0.95, 0.4, rr) * smoothstep(0.06, 0.25, bs);
+		float scHead = smoothstep(-0.12, 0.18, qu.y) * smoothstep(1.4, 0.95, q.x) * smoothstep(-0.45, -0.15, q.x) * 0.7;
+		float scMask = mix(scBody, scHead, headness) * (1.0 - dj) * (1.0 - wake[j]);
+		inner *= mix(1.0, (1.0 - 0.3 * scGroove) * (0.9 + 0.2 * scH), scMask * 0.85);
+		vec2 scG = scF - vec2(0.0, 0.32);
+		float scSpot = exp(-dot(scG, scG) * 16.0) * (1.0 - scGroove);
+		float scTw = smoothstep(0.7, 1.0, 0.5 + 0.5 * sin(clock * 1.5 + scH * 6.283 + L * 0.8));
+		float scUp = smoothstep(-0.2, 0.75, -n2.y);
+		inner += vec3(0.62, 0.2, 0.15) * scSpot * scTw * scUp * scMask * 0.2;
 		// 外面往上飘的烟丝；散的时候一大团；几条之间一层薄烟
 		float wn = fbm(vec2(L * 0.7 - clock * 0.8, rr * 0.9 + clock * 0.9 * sign(n2.y)) + 7.0 + float(j) * 3.0);
 		float wisp = smoothstep(0.5, 0.85, wn) * smoothstep(mix(1.8, 2.8, smoothstep(0.0, 0.8, -n2.y)), 0.9, rr) * 0.6 * (1.0 - headness * 0.75);
@@ -334,19 +354,20 @@ void fragment() {
 				bool upper = f < 2;
 				bool far_ = f == 1 || f == 3;
 				vec2 base = upper ? (far_ ? vec2(1.14, -0.09) : vec2(1.24, -0.085)) : (far_ ? vec2(0.93, -0.105) : vec2(1.02, -0.1));
-				float Lf = min(upper ? (far_ ? 0.28 : 0.36) : (far_ ? 0.17 : 0.22), (base.x - HINGE.x) * gapK * (upper ? (far_ ? 0.5 : 0.62) : (far_ ? 0.32 : 0.4)));
+				float Lf = min(upper ? (far_ ? 0.4 : 0.52) : (far_ ? 0.24 : 0.3), (base.x - HINGE.x) * gapK * (upper ? (far_ ? 0.7 : 0.88) : (far_ ? 0.42 : 0.52)));   // 2026-11-19 用户：獠牙要明显一些 → 更长
 				vec2 fq = upper ? qu : ql;
 				float t = clamp((upper ? base.y - fq.y : fq.y - base.y) / max(Lf, 1e-3), -0.2, 1.2);
 				float cx = base.x - 0.12 * Lf * t * t;
-				float wid = 0.04 * (1.0 - clamp(t, 0.0, 1.0)) + 0.006;
-				float fd = abs(fq.x - cx) - wid + (fine - 0.5) * 0.02;
-				float m = smoothstep(0.025, -0.01, fd) * smoothstep(-0.05, 0.03, t) * smoothstep(1.05, 0.85, t) * step(0.02, Lf);
-				fang = max(fang, m * (far_ ? 0.45 : 1.0));
+				float wid = 0.066 * pow(1.0 - clamp(t, 0.0, 1.0), 0.8) + 0.005;   // 更粗、边缘利
+				float fd = abs(fq.x - cx) - wid + (fine - 0.5) * 0.008;
+				float m = smoothstep(0.012, -0.006, fd) * smoothstep(-0.05, 0.02, t) * smoothstep(1.04, 0.9, t) * step(0.02, Lf);
+				fang = max(fang, m * (far_ ? 0.62 : 1.0));
 			}
 			fang *= hw;
-			vec3 fangC = mix(vec3(0.3, 0.12, 0.11), vec3(0.75, 0.58, 0.5), smoothstep(0.3, 0.8, nz2));
-			cc = mix(cc, fangC, fang * 0.85);
-			a = max(a, fang * 0.85 * root.w);
+			vec3 fangC = mix(vec3(0.62, 0.48, 0.42), vec3(0.97, 0.92, 0.84), smoothstep(0.25, 0.75, nz2));   // 象牙色，暗烟里一眼看得到
+			cc = mix(cc, fangC, fang * 0.95);
+			a = max(a, fang * 0.95 * root.w);
+			glow += vec3(0.55, 0.12, 0.08) * fang * 0.18 * root.w;   // 一点点暖红的反光
 		}
 		over(acc, cc, a);
 		// 眼睛：一团晕开的暖红雾光（只在头所在的那一层）
