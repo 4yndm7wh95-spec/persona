@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Godot;
 
 namespace P5Joker;
 
-/// <summary>按需、串行、可暂停的空闲预热；启动阶段只挂回调，不读取或绘制资源。</summary>
+/// <summary>Joker 进局时准备华丽收场，其余资源走可暂停的空闲队列。</summary>
 public static class Warmup
 {
 	private sealed record Job(string Name, Func<bool>? Load = null, Action<Control>? Draw = null);
@@ -21,10 +22,20 @@ public static class Warmup
 	private static readonly List<Resource> Resources = new();
 	private static readonly WarmupBudget Budget = new();
 	private static readonly string[] FinaleTextures = SatanaelPuppet.TextureNames().Prepend("sinful_platform").ToArray();
+	private static readonly string[] FinaleSounds = { Sfx.SinfulSweepOpen, Sfx.SinfulSweepClose, Sfx.SinfulThunder,
+		Sfx.SinfulTwirl, Sfx.SinfulCharge, Sfx.SinfulShot, Sfx.SinfulPierceLast };
+	private static readonly (string Name, Action<Control> Draw)[] FinaleSamples =
+	{
+		("sky", SinfulShell.WarmSky),
+		("platform light", SinfulShell.WarmPlatform),
+		("Satanael light", SinfulShell.WarmPuppet),
+		("impact", SinfulShell.WarmImpact),
+	};
 	private static SceneTree? _tree;
 	private static SubViewport? _viewport;
 	private static Control? _slot;
-	private static bool _installed, _planningMenu, _readingFinaleTextures;
+	private static Task? _finaleLoading;
+	private static bool _installed, _planningMenu;
 	private static double _lastTick, _lastPlan, _cpuMs;
 	private static string? _lastDraw;
 	private static Vector2 _mouse;
@@ -107,13 +118,12 @@ public static class Warmup
 			if (job.Load != null) done = job.Load();
 			else if (job.Draw != null)
 			{
-				Control slot = CreateSlot(_tree.Root);
+				if (_viewport == null || !GodotObject.IsInstanceValid(_viewport))
+					_viewport = CreateViewport(_tree.Root, "P5IdleWarmup");
+				Control slot = CreateSlot(_viewport);
 				_slot = slot;
-				bool wasMuted = Sfx.Muted;
-				Sfx.Muted = true;
-				try { job.Draw(slot); }
-				finally { Sfx.Muted = wasMuted; }
-				_viewport!.RenderTargetUpdateMode = SubViewport.UpdateMode.Once;
+				DrawMuted(slot, job.Draw);
+				_viewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Once;
 				_lastDraw = job.Name;
 			}
 		}
@@ -130,21 +140,31 @@ public static class Warmup
 		}
 	}
 
-	private static Control CreateSlot(Window root)
+	private static SubViewport CreateViewport(Window root, string name)
 	{
-		if (_viewport == null || !GodotObject.IsInstanceValid(_viewport))
+		SubViewport viewport = new()
 		{
-			_viewport = new SubViewport
-			{
-				Name = "P5IdleWarmup", Size = new Vector2I(128, 96), Disable3D = true, World2D = new World2D(),
-				TransparentBg = root.TransparentBg, UseHdr2D = root.UseHdr2D, Msaa2D = root.Msaa2D,
-				GuiDisableInput = true, RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled,
-			};
-			root.AddChild(_viewport);
-		}
-		Control slot = new() { Size = _viewport.Size, MouseFilter = Control.MouseFilterEnum.Ignore };
-		_viewport.AddChild(slot);
+			Name = name, Size = new Vector2I(128, 96), Disable3D = true, World2D = new World2D(),
+			TransparentBg = root.TransparentBg, UseHdr2D = root.UseHdr2D, Msaa2D = root.Msaa2D,
+			GuiDisableInput = true, RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled,
+		};
+		root.AddChild(viewport);
+		return viewport;
+	}
+
+	private static Control CreateSlot(SubViewport viewport)
+	{
+		Control slot = new() { Size = viewport.Size, MouseFilter = Control.MouseFilterEnum.Ignore };
+		viewport.AddChild(slot);
 		return slot;
+	}
+
+	private static void DrawMuted(Control slot, Action<Control> draw)
+	{
+		bool wasMuted = Sfx.Muted;
+		Sfx.Muted = true;
+		try { draw(slot); }
+		finally { Sfx.Muted = wasMuted; }
 	}
 
 	public static void RequestMenu()
@@ -237,31 +257,96 @@ public static class Warmup
 		}
 	}
 
-	internal static async Task PrepareFinaleTextures(SceneTree tree)
+	internal static Task PrepareFinaleForRun(SceneTree tree, Task gameLoad)
 	{
-		if (_readingFinaleTextures || FinalePrepared) return;
-		_readingFinaleTextures = true;
-		try { await Fx.PrepareTextures(tree, FinaleTextures, () => GodotObject.IsInstanceValid(tree)); }
-		catch (Exception e) { Stage.Report("finale texture warmup", e); }
-		finally { _readingFinaleTextures = false; }
+		if (FinalePrepared || DisplayServer.GetName() == "headless" || gameLoad.IsFaulted || gameLoad.IsCanceled)
+			return gameLoad;
+		if (_finaleLoading == null || _finaleLoading.IsCompleted)
+			_finaleLoading = PrepareFinale(tree);
+		return Task.WhenAll(gameLoad, _finaleLoading);
+	}
+
+	private static async Task PrepareFinale(SceneTree tree)
+	{
+		SubViewport? viewport = null;
+		long started = Stopwatch.GetTimestamp();
+		try
+		{
+			Window root = tree.Root;
+			// The native loader still runs. A stalled resource request must not hold the run indefinitely.
+			bool Reading() => Fx.Active(root) && Stopwatch.GetElapsedTime(started).TotalSeconds < 2;
+			await Fx.PrepareTextures(tree, FinaleTextures, Reading);
+			if (!Fx.Active(root) || FinaleTextures.Any(name => Fx.ReadyTexture(name) == null))
+			{
+				Log("[P5Joker] GrandFinale loading warmup incomplete: textures");
+				return;
+			}
+			foreach (string sound in FinaleSounds) Sfx.Preload(sound);
+			await tree.ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+			if (!Fx.Active(root)) return;
+
+			viewport = CreateViewport(root, "P5FinaleLoading");
+			foreach ((string name, Action<Control> draw) in FinaleDraws())
+			{
+				if (!await RenderSample(tree, viewport, draw))
+				{
+					Log($"[P5Joker] GrandFinale loading warmup incomplete: {name} was not drawn");
+					return;
+				}
+			}
+			RuntimeHelpers.PrepareMethod(((Func<Control, Control, SinfulShell.Setup, float[]>)SinfulShell.Play).Method.MethodHandle);
+			FinalePrepared = true;
+			Log($"[P5Joker] GrandFinale loading warmup ready in {Stopwatch.GetElapsedTime(started).TotalMilliseconds:F1}ms");
+		}
+		catch (Exception e) { Stage.Report("finale loading warmup", e); }
+		finally
+		{
+			if (GodotObject.IsInstanceValid(viewport)) viewport!.QueueFree();
+		}
+	}
+
+	private static async Task<bool> RenderSample(SceneTree tree, SubViewport viewport, Action<Control> draw)
+	{
+		Control slot = CreateSlot(viewport);
+		bool drawn = false;
+		void OnDraw() => drawn = true;
+		RenderingServer.FramePostDraw += OnDraw;
+		try
+		{
+			DrawMuted(slot, draw);
+			viewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Once;
+			for (int frame = 0; frame < 4 && !drawn; frame++)
+				await tree.ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+			return drawn;
+		}
+		finally
+		{
+			RenderingServer.FramePostDraw -= OnDraw;
+			if (GodotObject.IsInstanceValid(slot)) slot.Free();
+			if (GodotObject.IsInstanceValid(viewport)) viewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled;
+		}
+	}
+
+	private static IEnumerable<(string Name, Action<Control> Draw)> FinaleDraws()
+	{
+		foreach (var sample in FinaleSamples) yield return sample;
+		foreach (var sample in ShaderSamples(typeof(SinfulShell), null,
+			nameof(SinfulShell.SkyShader), nameof(SinfulShell.PlatformShader)))
+			yield return sample;
+		foreach (var sample in ShaderSamples(typeof(SatanaelPuppet), null)) yield return sample;
 	}
 
 	internal static void RequestFinale()
 	{
-		if (!Groups.Add("GrandFinale")) return;
+		if (FinalePrepared || !Groups.Add("GrandFinale")) return;
 		QueueTextures(FinaleTextures);
-		QueueSounds(new[] { Sfx.SinfulSweepOpen, Sfx.SinfulSweepClose, Sfx.SinfulThunder, Sfx.SinfulTwirl,
-			Sfx.SinfulCharge, Sfx.SinfulShot, Sfx.SinfulPierceLast });
-		Enqueue(new("finale sky", Draw: SinfulShell.WarmSky));
-		Enqueue(new("finale platform light", Draw: SinfulShell.WarmPlatform));
-		Enqueue(new("finale Satanael light", Draw: SinfulShell.WarmPuppet));
-		Enqueue(new("finale impact", Draw: SinfulShell.WarmImpact));
-		QueueShaderType(typeof(SinfulShell), nameof(SinfulShell.SkyShader), nameof(SinfulShell.PlatformShader));
-		QueueShaders(typeof(SatanaelPuppet));
+		QueueSounds(FinaleSounds);
+		foreach ((string name, Action<Control> draw) in FinaleDraws())
+			Enqueue(new("finale " + name, Draw: draw));
 		Enqueue(new("finale warmup finished", Load: () =>
 		{
-			FinalePrepared = true;
-			Log("[P5Joker] GrandFinale warmup finished");
+			FinalePrepared = FinaleTextures.All(name => Fx.ReadyTexture(name) != null);
+			Log($"[P5Joker] GrandFinale idle warmup finished; prepared={FinalePrepared}");
 			return true;
 		}));
 		LogPlan("GrandFinale");
@@ -322,24 +407,28 @@ public static class Warmup
 
 	private static void QueueShaders(params Type[] types)
 	{
-		foreach (Type type in types) QueueShaderType(type);
+		foreach (Type type in types)
+		{
+			if (!ShaderGroups.Add(type)) continue;
+			foreach ((string name, Action<Control> draw) in ShaderSamples(type, Shaders))
+				Enqueue(new(name, Draw: draw));
+		}
 	}
 
-	private static void QueueShaderType(Type type, params string[] drawnSeparately)
+	private static IEnumerable<(string Name, Action<Control> Draw)> ShaderSamples(Type type, HashSet<ulong>? seen, params string[] drawnSeparately)
 	{
-		if (!ShaderGroups.Add(type)) return;
 		foreach (PropertyInfo prop in type.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
 		{
 			if (prop.PropertyType != typeof(Shader) || prop.GetIndexParameters().Length != 0
 				|| drawnSeparately.Contains(prop.Name)) continue;
 			PropertyInfo property = prop;
-			Enqueue(new(type.Name + "." + prop.Name, Draw: slot =>
+			yield return (type.Name + "." + prop.Name, slot =>
 			{
 				if (property.GetValue(null) is not Shader shader || shader.GetMode() != Shader.Mode.CanvasItem
-					|| !Shaders.Add(shader.GetInstanceId())) return;
+					|| (seen != null && !seen.Add(shader.GetInstanceId()))) return;
 				slot.AddChild(new ColorRect { Material = new ShaderMaterial { Shader = shader },
 					Size = new Vector2(8, 8), Position = new Vector2(60, 44), MouseFilter = Control.MouseFilterEnum.Ignore });
-			}));
+			});
 		}
 	}
 
