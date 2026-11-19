@@ -7,11 +7,11 @@ namespace P5Joker;
 /// <summary>
 /// 战斗结束的选卡界面「夺宝」（2026-11-19，用户：参考 P3 mod 的 Shuffle Time，要有特色且不拖沓）。
 /// 原则照 P3 的「精简」模式：点开就能看、能点 —— 牌一开始就是正面，0.3s 内全部到位，特色放在不挡操作的地方：
-/// · 牌后面一道 P5 菜单的斜切色带（暗红底 + 错开的黑色厚边），从左边一下扫进来，之后静静停着、隔一会儿一道暗光扫过；
-/// · 左上角黑底斜切标签「TREASURE」带两层红色残影滑进来（只在这次打开的第一次）；
+/// · 牌后面一条剪报纸带（红底黑边，Codex 画的 art/p5/ui/reward/band.png），从左边一下扫进来；
+/// · 左上角预告函剪报拼贴字「TREASURE」一片一片拍上来，下面「TAKE YOUR PICK」滑进来（只在这次打开的第一次）；
 /// · 三张牌从画面右边依次甩进来（P5 菜单的方向），带一点倾斜、到位回正，身后拖一道红色的斜切残影，落位一下红闪；
-/// · 鼠标 / 手柄停在哪张牌上，牌后面就弹出一块错开的红色斜切底板（P5 选项被选中的样子），一声很轻的光标音；
-/// · 选中：那张牌白闪 + 红光 + 红黑白纸屑迸开（「偷到手」），其余的牌往右一甩、变暗淡出。
+/// · 鼠标 / 手柄停在哪张牌上，牌后面就弹出一块剪出来的红纸板（黑色投影错开垫着，P5 选项被选中的样子），一声很轻的光标音；
+/// · 选中：「STOLEN!」印章重重盖在那张牌上，白闪 + 红光 + 红黑白纸屑迸开，其余的牌往两边一甩、变暗淡出。
 /// 原版的卡牌格子是对象池复用的（P3 mod 踩过的坑）：所有补间都绑在选牌界面上，每一帧先确认格子还在这一排里才动它；
 /// 0.8s 后兜底把牌摆回原版位置、恢复不透明。只动位置 / 旋转 / 透明度，不碰可点击、焦点这些状态。
 /// </summary>
@@ -99,32 +99,38 @@ public static class RewardFx
 		});
 	}
 
-	/// <summary>牌后面的色带 + 悬停底板（选牌界面的第一个子节点：画在牌下面、原版暗色遮罩上面）。</summary>
+	private static Sprite2D? Spr(Node parent, string name, Vector2 at, float scale, float rot = 0f)
+	{
+		if (Fx.Tex("reward_" + name) is not Texture2D tex) return null;
+		Sprite2D sp = new() { Texture = tex, Position = at, Scale = Vector2.One * scale, Rotation = rot };
+		parent.AddChild(sp);
+		return sp;
+	}
+
+	/// <summary>
+	/// 牌后面的色带 + 悬停底板（选牌界面的第一个子节点：画在牌下面、原版暗色遮罩上面）。素材是 Codex 画的剪报纸带 / 剪出来的红纸板（art/p5/ui/reward）。
+	/// </summary>
 	private static Node2D Backdrop(Control screen, Control row, Vector2 view, float u, Func<Control, Rect2> rectOf, IReadOnlyList<Control> firstCards)
 	{
 		Node2D root = new() { Name = "P5RewardBackdrop" };
 		screen.AddChild(root);
 		screen.MoveChild(root, 0);
 		root.GlobalPosition = Vector2.Zero;
-		float cy = row.GlobalPosition.Y, bandH = view.Y * 0.5f, skew = bandH * 0.18f;
-		// 整条色带斜一点（P5 菜单的斜切），上下各一道黑边、一道亮红的细条
-		Node2D band = new() { Rotation = -0.045f };
+		float cy = row.GlobalPosition.Y;
+		// 色带：纸带（贴图半尺寸 2048 宽，纸带本体约 1780 宽）拉到比屏幕宽一点，斜一点
+		Node2D band = new() { Rotation = -0.035f };
 		root.AddChild(band);
-		Node2D bandPivot = new() { Position = new Vector2(view.X * 0.5f, cy) };
-		band.AddChild(bandPivot);
-		Fx.Poly(bandPivot, Slant(new Vector2(18f * u, 16f * u), view.X * 1.4f, bandH * 1.06f, skew), new Color(Ink, 0.92f));
-		Fx.Poly(bandPivot, Slant(Vector2.Zero, view.X * 1.4f, bandH, skew), new Color(0.4f, 0.02f, 0.06f, 0.9f));
-		Fx.Poly(bandPivot, Slant(new Vector2(0f, -bandH * 0.43f), view.X * 1.4f, bandH * 0.05f, 0f), new Color(Ink, 0.9f));
-		Fx.Poly(bandPivot, Slant(new Vector2(0f, -bandH * 0.38f), view.X * 1.4f, bandH * 0.018f, 0f), new Color(Red, 0.95f));
-		Fx.Poly(bandPivot, Slant(new Vector2(0f, bandH * 0.42f), view.X * 1.4f, bandH * 0.03f, 0f), new Color(Red, 0.9f));
-		band.Position = Vector2.Zero;
-		band.GlobalPosition = Vector2.Zero;
-		Polygon2D shine = Fx.Poly(root, Slant(Vector2.Zero, view.Y * 0.16f, bandH, skew), new Color(1f, 0.3f, 0.32f, 0f), additive: true);
-		// 悬停底板：错开的红色斜切块
-		Polygon2D hoverInk = Fx.Poly(root, new[] { Vector2.Zero, Vector2.Zero, Vector2.Zero, Vector2.Zero }, new Color(Ink, 0f));
-		Polygon2D hover = Fx.Poly(root, new[] { Vector2.Zero, Vector2.Zero, Vector2.Zero, Vector2.Zero }, new Color(Red, 0f));
-		Vector2 hc = Vector2.Zero, hs = Vector2.Zero;
-		float ha = 0f;
+		Sprite2D? strip = Spr(band, "band", Vector2.Zero, 1f);
+		float bandK = strip?.Texture is Texture2D bt ? view.X * 1.25f / (bt.GetWidth() * 0.87f) : 1f;
+		if (strip != null) strip.Scale = new Vector2(bandK, bandK * 1.35f);
+		// 悬停底板：黑色投影错开垫在红纸板下面
+		Node2D plate = new();
+		root.AddChild(plate);
+		Sprite2D? plateInk = Spr(plate, "hover_plate_shadow", new Vector2(12f, 12f) * u, 1f);
+		Sprite2D? plateRed = Spr(plate, "hover_plate", Vector2.Zero, 1f);
+		plate.Modulate = new Color(1f, 1f, 1f, 0f);
+		Vector2 pc = Vector2.Zero, psz = Vector2.Zero;
+		float pa = 0f;
 		Control? last = null;
 		Sfx.Play(Sfx.MenuWhoosh, 0.35f);
 		Fx.Animate(screen, 0, 600.0, t =>
@@ -132,11 +138,7 @@ public static class RewardFx
 			float time = t * 600f;
 			if (!GodotObject.IsInstanceValid(root)) return;
 			float k = Ease5.OutExpo(Mathf.Min(1f, time / 0.22f));
-			bandPivot.Position = new Vector2(view.X * 0.5f - view.X * 1.3f * (1f - k), cy);
-			// 一道暗光隔一会儿扫过色带
-			float sw = Mathf.PosMod(time - 0.4f, 3.2f) / 0.9f;
-			shine.Position = new Vector2(Mathf.Lerp(-view.X * 0.2f, view.X * 1.2f, Mathf.Clamp(sw, 0f, 1f)), cy);
-			shine.Color = new Color(1f, 0.3f, 0.32f, sw < 1f ? 0.1f * Mathf.Sin(Mathf.Pi * sw) : 0f);
+			band.Position = new Vector2(view.X * 0.5f - view.X * 1.3f * (1f - k), cy);
 			// 哪张牌被鼠标停着 / 手柄选着
 			Control? hov = null;
 			if (GodotObject.IsInstanceValid(row))
@@ -148,67 +150,75 @@ public static class RewardFx
 					if (rectOf(c).HasPoint(mouse) || c.HasFocus()) { hov = c; break; }
 				}
 			}
-			if (hov != last && hov != null) Sfx.Play(Sfx.Cursor, 0.25f);
+			if (hov != last && hov != null)
+			{
+				Sfx.Play(Sfx.Cursor, 0.25f);
+				plate.Rotation = Fx.Rand(-0.07f, 0.07f);           // 每换一张，纸板歪的角度换一下（剪报的随手感）
+				psz = Vector2.Zero;
+			}
 			last = hov;
-			ha = Mathf.MoveToward(ha, hov != null ? 1f : 0f, 0.016f * 9f);
-			if (hov != null)
+			pa = Mathf.MoveToward(pa, hov != null ? 1f : 0f, 0.16f);
+			if (hov != null && plateRed?.Texture is Texture2D pt)
 			{
 				Rect2 r = rectOf(hov);
-				Vector2 want = r.GetCenter() + new Vector2(14f, 12f) * u, wantS = r.Size * 1.06f;
-				hc = hs == Vector2.Zero ? want : hc.Lerp(want, 0.45f);
-				hs = hs == Vector2.Zero ? wantS * 0.6f : hs.Lerp(wantS, 0.45f);
+				Vector2 want = r.GetCenter() + new Vector2(10f, 8f) * u;
+				Vector2 wantS = new(r.Size.X * 1.14f / (pt.GetWidth() * 0.87f), r.Size.Y * 1.1f / (pt.GetHeight() * 0.84f));
+				pc = psz == Vector2.Zero ? want : pc.Lerp(want, 0.5f);
+				psz = psz == Vector2.Zero ? wantS * 0.75f : psz.Lerp(wantS, 0.45f);    // 弹出来：小一点 → 撑满
 			}
-			if (hs != Vector2.Zero)
-			{
-				hover.Polygon = Slant(hc, hs.X, hs.Y, hs.Y * 0.06f);
-				hoverInk.Polygon = Slant(hc + new Vector2(10f, 10f) * u, hs.X, hs.Y, hs.Y * 0.06f);
-				hover.Color = new Color(Red, 0.9f * ha);
-				hoverInk.Color = new Color(Ink, 0.85f * ha);
-			}
+			plate.Position = pc;
+			plate.Scale = psz;
+			plate.Modulate = new Color(1f, 1f, 1f, pa);
+			_ = plateInk;
 		});
 		return root;
 	}
 
-	/// <summary>左上角黑底斜切标签「TREASURE」，带两层红色残影从左滑进来（不压暗、不挡点击）。</summary>
+	/// <summary>左上角剪报拼贴字「TREASURE」：8 张字母纸片一片一片拍上来（每片从大到正常、带一点旋转），下面一行「TAKE YOUR PICK」滑进来。</summary>
 	private static void Title(Control screen, Vector2 view, float u)
 	{
 		screen.GetNodeOrNull("P5RewardTitle")?.QueueFree();
 		Node2D root = new() { Name = "P5RewardTitle" };
 		screen.AddChild(root);
 		root.GlobalPosition = Vector2.Zero;
-		Font font = P5Ui.Font(P5Ui.Barlow);
-		int size = (int)(86f * u);
-		Vector2 at = new(view.X * 0.06f, view.Y * 0.1f);
-		var layers = new List<(Node2D N, float Lag, float A)>();
-		foreach ((float lag, float a, bool ghost) in new[] { (0.06f, 0.3f, true), (0.03f, 0.55f, true), (0f, 1f, false) })
+		string[] letters = { "T", "R", "E1", "A", "S", "U", "R2", "E2" };
+		float k = 0.54f * u, step = 205f * k * 2f * 0.5f;        // 字母贴图半尺寸 256，纸片约 200 宽
+		Vector2 at = new(view.X * 0.05f + 100f * k, view.Y * 0.1f);
+		for (int i = 0; i < letters.Length; i++)
 		{
-			Node2D n = new() { Rotation = -0.06f };
-			root.AddChild(n);
-			Fx.Poly(n, Slant(new Vector2(size * 2.3f, size * 0.62f), size * 4.9f, size * 1.15f, size * 0.18f), ghost ? new Color(Red, 1f) : Ink);
-			if (!ghost)
+			float rot = Fx.Rand(-0.12f, 0.12f), dy = Fx.Rand(-14f, 14f) * u;
+			Vector2 p = at + new Vector2(step * i, dy - i * 4f * u);
+			Sprite2D? sp = Spr(root, "letter_" + letters[i], p, k, rot);
+			if (sp == null) continue;
+			sp.Modulate = new Color(1f, 1f, 1f, 0f);
+			float delay = 0.03f * i;
+			Fx.Animate(sp, 0, delay + 0.16, t =>
 			{
-				Fx.Poly(n, Slant(new Vector2(size * 2.15f, size * 1.24f), size * 4.2f, size * 0.12f, size * 0.03f), Red);
-				P5Ui.Text(n, "TREASURE", font, size, Colors.White, new Vector2(size * 0.18f, -size * 0.06f), (int)(6f * u), Ink);
-			}
-			n.Modulate = new Color(1f, 1f, 1f, 0f);
-			layers.Add((n, lag, a));
+				float s = t * (delay + 0.16f) - delay;
+				if (s < 0f) return;
+				float e = Ease5.OutBack(Mathf.Min(1f, s / 0.12f));
+				sp.Scale = Vector2.One * k * Mathf.Lerp(1.8f, 1f, e);
+				sp.Rotation = rot + 0.5f * (1f - Mathf.Min(1f, e));
+				sp.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, s / 0.03f));
+			});
 		}
-		Fx.Animate(root, 0, 0.5, t =>
+		Sfx.Take("gx_card_stack", 0.16f, 0.02f);
+		Sfx.Take("gx_card_stack", 0.12f, 0.14f);
+		// 副标题从左滑进来
+		Sprite2D? sub = Spr(root, "subtitle_take_your_pick", at + new Vector2(step * 3.6f, 230f * k), k * 0.95f, -0.03f);
+		if (sub != null)
 		{
-			float time = t * 0.5f;
-			foreach (var (n, lag, a) in layers)
+			Vector2 p0 = sub.Position;
+			sub.Modulate = new Color(1f, 1f, 1f, 0f);
+			Fx.Animate(sub, 0.22, 0.24, t =>
 			{
-				float k = Mathf.Clamp((time - lag) / 0.24f, 0f, 1f);
-				n.Position = at + new Vector2(-view.X * 0.4f * (1f - Ease5.OutExpo(k)), 0f);
-				// 残影跟上之后淡掉，本体留着
-				float fade = a < 1f ? Mathf.Clamp(k * 3f, 0f, 1f) * (1f - Ease5.Seg(time, 0.24f, 0.2f)) : Mathf.Clamp(k * 4f, 0f, 1f);
-				n.Modulate = new Color(1f, 1f, 1f, a * fade);
-			}
-		});
-		Sfx.Take("gx_whoosh", 0.18f, 0.02f);
+				sub.Position = p0 + new Vector2(-view.X * 0.3f * (1f - Ease5.OutExpo(t)), 0f);
+				sub.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, t * 3f));
+			});
+		}
 	}
 
-	/// <summary>选中一张：那张白闪 + 红光 + 纸屑迸开，其余的往右一甩淡出。</summary>
+	/// <summary>选中一张：「STOLEN!」印章重重盖在那张牌上 + 白闪红光、纸屑迸开，其余的牌往两边一甩淡出。</summary>
 	public static void Pick(Control screen, Control row, IReadOnlyList<Control> cards, Control picked, Func<Control, Rect2> rectOf)
 	{
 		if (screen.GetNodeOrNull("P5RewardBackdrop") == null) return;
@@ -217,10 +227,28 @@ public static class RewardFx
 		Rect2 r = rectOf(picked);
 		Vector2 c = r.GetCenter();
 		Sfx.Play(Sfx.Select, 0.6f);
-		Sfx.Take("gx_card_stack", 0.24f, 0.03f);
+		Sfx.Play(Sfx.SubBoom, 0.25f, 0.06f);
+		Sfx.Take("gx_card_stack", 0.28f, 0.06f);
 		Glow.Flash(screen, c, Phantom.Hot, r.Size.Y * 0.6f, 0.12f);
 		Glow.Flash(screen, c, new Color(0.95f, 0.1f, 0.16f), r.Size.Y * 1.6f, 0.35f);
 		Phantom.Confetti(screen, c, 26, 760f * u, Vector2.Up, 180f, 0.9f, 9f * u);
+		// 印章：画在最上面，从 2 倍大重重压下来（0.08s），压住时一抖
+		Node2D top = new() { Name = "P5RewardStamp", ZIndex = 10, TopLevel = true };
+		screen.AddChild(top);
+		top.GlobalPosition = Vector2.Zero;
+		if (Spr(top, "stamp_stolen", c + new Vector2(0f, r.Size.Y * 0.05f), 1f, -0.18f) is { } stamp && stamp.Texture is Texture2D st)
+		{
+			float sk = r.Size.X * 1.25f / (st.GetWidth() * 0.87f);
+			stamp.Modulate = new Color(1f, 1f, 1f, 0f);
+			Fx.Animate(stamp, 0, 0.3, t =>
+			{
+				float s = t * 0.3f;
+				float e = Mathf.Min(1f, s / 0.08f);
+				float shake = s > 0.08f ? Mathf.Sin((s - 0.08f) * 90f) * Mathf.Exp(-(s - 0.08f) * 25f) * 0.04f : 0f;
+				stamp.Scale = Vector2.One * sk * (Mathf.Lerp(2f, 1f, Fx.InCubic(e)) + shake);
+				stamp.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, s / 0.04f));
+			});
+		}
 		foreach (Control other in cards)
 		{
 			if (other == picked || !Still(other, row)) continue;
