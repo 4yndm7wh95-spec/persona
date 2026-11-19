@@ -13,7 +13,7 @@ namespace P5Joker;
 /// </summary>
 public static partial class SinfulShell
 {
-	private static Shader? _burst, _smoke, _tunnel, _pillar;
+	private static Shader? _burst, _smoke, _tunnel, _flood;
 
 	/// <summary>开场的蓝焰爆发：整团往外炸的火（火舌被噪声撕开、外沿一层更亮的壳），白热的芯，prog 0→1 炸开再散掉。加法。</summary>
 	private static Shader BurstShader => _burst ??= new Shader { Code = @"
@@ -105,68 +105,50 @@ void fragment() {
 }" };
 
 	/// <summary>
-	/// 引爆时冲起来的一根蓝焰火柱（用户 2026-11-19：能量弹打到敌人那会儿炸开要更明显、更华丽）：
-	/// 前 45% 的时间从底下猛地冲上去，火身越往上越细、被低频噪声推得左右摆，中间白热、往外是青和深蓝，底下一圈亮；
-	/// 用低频噪声和平滑过渡（大火柱用高频硬边会碎成一条条细刺）。UV.y = 1 是底。加法。
+	/// 打中那一下的光（第五版，用户 2026-11-19：不要连环引爆，火舌很塑料，只要打到敌人那一下更华丽、更有视觉冲击）：
+	/// 命中点爆出一大片刺眼的光往外淹——中间白热，往外青、蓝，最外圈带一点紫；外沿按角度被低频噪声推得一边远一边近
+	/// （宽而软的几束光，不是细线），没有任何硬边形状。画在人物后面就是逆光：敌人被照成剪影。power / spread 由调用方每帧给（按真实时间走，顿帧里照样亮）。加法。
 	/// </summary>
-	private static Shader PillarShader => _pillar ??= new Shader { Code = @"
+	private static Shader FloodShader => _flood ??= new Shader { Code = @"
 shader_type canvas_item;
 render_mode blend_add;
-uniform float prog = 0.0;
+uniform float power = 0.0;
+uniform float spread = 1.0;
 uniform float seed = 0.0;
-uniform float power = 1.0;
 " + Noise + @"
 void fragment() {
-	// 第二版（自查：第一版在画面上是一根光滑的高三角锥，几何感重）：底宽、身上一鼓一鼓、顶上碎成一缕缕往上窜的火舌，里面有往上走的亮暗
-	vec2 p = vec2((UV.x - 0.5) * 2.0, 1.0 - UV.y);
-	float rise = 1.0 - pow(1.0 - min(prog * 2.2, 1.0), 3.0);
-	float hgt = 0.2 + 0.8 * rise;
-	float top = p.y / max(hgt, 0.01);
-	float n = fbm(vec2(p.x * 1.3 + seed, p.y * 1.8 - prog * 5.0));
-	float n2 = fbm(vec2(p.x * 2.6 - seed, p.y * 3.0 - prog * 7.0));
-	float n3 = fbm(vec2(p.x * 4.0 + seed * 2.0, p.y * 2.2 - prog * 9.0));
-	float wob = (n - 0.5) * 0.55 * p.y;
-	float wdt = mix(0.78, 0.26, clamp(top, 0.0, 1.0)) * (0.65 + 0.7 * n2);
-	float d = abs(p.x - wob) / max(wdt, 0.01);
-	float body = 1.0 - smoothstep(0.3, 1.0, d);
-	float cap = 1.0 - smoothstep(0.55, 1.0, top + (n2 - 0.5) * 0.55);
-	float licks = smoothstep(0.32, 0.62, n3 + (1.0 - top) * 0.9);        // 越往上越碎成一缕缕
-	float inside = body * cap * licks;
-	float bands = 0.7 + 0.5 * fbm(vec2(p.x * 2.0, p.y * 5.0 - prog * 14.0));
-	float core = (1.0 - smoothstep(0.0, 0.5, d)) * (1.0 - smoothstep(0.25, 0.8, top)) * licks;
-	float base = exp(-p.y * 6.0) * (1.0 - smoothstep(0.35, 1.0, abs(p.x)));
-	float fade = 1.0 - smoothstep(0.5, 1.0, prog);
-	float heat = inside * (0.5 + 0.5 * n2) * bands + core * 0.8;
-	vec3 deep = vec3(0.06, 0.18, 0.75), cyan = vec3(0.3, 0.75, 1.0), white = vec3(0.95, 0.98, 1.0);
-	vec3 col = mix(deep, cyan, smoothstep(0.15, 0.65, heat));
-	col = mix(col, white, smoothstep(0.85, 1.4, heat));
-	float a = (inside * (0.5 + 0.5 * n2) * bands + core * 0.7 + base * 0.6) * fade * power;
-	COLOR = vec4(col * a * (1.0 - smoothstep(0.85, 1.0, abs(p.x))), 1.0);
+	vec2 p = (UV - 0.5) * 2.0;
+	float r = length(p), ang = atan(p.y, p.x);
+	float beams = 0.6 + 0.6 * fbm(vec2(ang * 2.0 + seed, seed * 0.37));
+	float reach = spread * beams;
+	float glow = exp(-r / max(0.06 + 0.38 * reach, 0.01));
+	float wide = exp(-r / max(0.2 + 0.5 * reach, 0.01)) * 0.35;
+	float core = exp(-r / 0.035);
+	vec3 white = vec3(1.0), cyan = vec3(0.45, 0.85, 1.0), blue = vec3(0.12, 0.38, 1.0), violet = vec3(0.42, 0.22, 0.95);
+	vec3 col = mix(violet, blue, smoothstep(0.02, 0.2, glow));
+	col = mix(col, cyan, smoothstep(0.2, 0.55, glow));
+	col = mix(col, white, smoothstep(0.6, 1.0, glow));
+	vec3 c = col * (glow * 1.7 + wide) + white * core * 2.0;
+	COLOR = vec4(c * power * (1.0 - smoothstep(0.82, 1.0, r)), 1.0);
 }" };
 
-	/// <summary>一根蓝焰火柱：底在 basePt，宽 w、高 h（像素），life 秒。</summary>
-	private static void Pillar(Control layer, Vector2 basePt, float w, float h, float life, float power, float delay = 0f)
+	/// <summary>一片命中的光（直径 size），返回根节点和材质（调用方每帧设 power / spread）。</summary>
+	private static (Node2D Root, ShaderMaterial Mat) Flood(Control layer, Vector2 at, float size, double life)
 	{
-		Node2D root = Fx.Root(layer, basePt, "P5SinfulPillar", delay + life + 0.05);
-		ShaderMaterial m = Quad(root, PillarShader, new Vector2(w, h), new Vector2(-w / 2f, -h));
-		m.SetShaderParameter("power", power);
-		m.SetShaderParameter("prog", 0f);
-		root.Visible = delay <= 0f;
-		Fx.Animate(root, delay, life, t => { root.Visible = true; m.SetShaderParameter("prog", t); });
+		Node2D root = Fx.Root(layer, at, "P5SinfulFlood", life);
+		ShaderMaterial m = Quad(root, FloodShader, Vector2.One * size, -Vector2.One * size / 2f);
+		return (root, m);
 	}
 
-	/// <summary>
-	/// 连环引爆的一处（华丽收场第四版）：子弹穿过所有敌人以后，沿弹道一个接一个炸开——一团大的蓝焰炸开 + 往上冲起一根蓝焰火柱 + 往上喷的火星。
-	/// big = 最后一个（最大）。
-	/// </summary>
-	private static void Detonate(Control layer, Vector2 at, float unit, bool big)
+	/// <summary>后面几个敌人被穿过时各亮一下（游戏时间里自己走完）：一片小一些的光，0.25s 退掉。</summary>
+	private static void FloodPulse(Control layer, Vector2 at, float size, float peak, float life)
 	{
-		float k = big ? 1.3f : 1f;
-		FireBurst(layer, at, 1000f * unit * k, 0.5f, 1.35f, 0f, 0.35f);
-		Pillar(layer, at + new Vector2(0f, 70f * unit), 430f * unit * k, 1050f * unit * k, 0.75f, 1.2f, 0.03f);
-		Glow.Flash(layer, at, new Color(0.7f, 0.9f, 1f), 420f * unit * k, 0.18f);
-		Glow.Sparks(layer, at, big ? 30 : 20, 700f, 1900f, 0.6f, new[] { new Color(0.95f, 0.98f, 1f), new Color(0.35f, 0.75f, 1f), new Color(0.15f, 0.35f, 0.95f) },
-			500f, 0.1f, 0.3f, Vector2.Up, 70f);
+		(Node2D root, ShaderMaterial m) = Flood(layer, at, size, life + 0.05);
+		Fx.Animate(root, 0, life, t =>
+		{
+			m.SetShaderParameter("power", peak * Mathf.Pow(1f - t, 1.6f));
+			m.SetShaderParameter("spread", 0.5f + 0.5f * Mathf.Sqrt(t));
+		});
 	}
 
 	private static ShaderMaterial Quad(Node2D root, Shader shader, Vector2 size, Vector2 offset)
@@ -217,17 +199,6 @@ void fragment() {
 		});
 	}
 
-	/// <summary>朝 dir 拉长的一团火舌炸开（枪口、打中）：开场那种炸开，按 stretch 拉长、往前偏一点。</summary>
-	private static void FireBurstDir(Control layer, Vector2 at, Vector2 dir, float size, float life, float power, Vector2 stretch, float delay = 0f)
-	{
-		Node2D root = Fx.Root(layer, at + dir * size * stretch.X * 0.18f, "P5SinfulBurstDir", delay + life + 0.05);
-		root.Rotation = dir.Angle();
-		root.Scale = stretch;
-		ShaderMaterial m = Quad(root, BurstShader, Vector2.One * size, -Vector2.One * size / 2f);
-		m.SetShaderParameter("power", power);
-		m.SetShaderParameter("prog", 0f);
-		Fx.Animate(root, delay, life, t => m.SetShaderParameter("prog", t));
-	}
 
 	/// <summary>
 	/// 打中往后一震：先瞬间推出去一截（顿帧里就看得到身体被打歪），顿帧过后推满，停一下，再慢慢回到原位。

@@ -251,7 +251,7 @@ void fragment() {
 	/// 场景圈提前 ConcealAfter 开始收、用 ExitTime 收完：半径从画面最远的角开始按 smoothstep 收，收枪结束时（走了 40% 的时间）
 	/// 半径收了三成多、画面上明显在收（用户说「起码两成」）；撒旦耶尔从上往下烧（雷后 ~0.58s）的同时圈从外往脚下收，两个一起走完。
 	/// </summary>
-	public const float ExitAfter = 0.12f + SatanaelPuppet.PutAwayAfter + 0.02f + SatanaelPuppet.SpinTime + 0.04f + ShotHold, ExitTime = 1.0f,
+	public const float ExitAfter = 0.12f + SatanaelPuppet.PutAwayAfter + 0.02f + SatanaelPuppet.SpinTime + 0.04f, ExitTime = 1.0f,
 		ConcealAfter = ExitAfter - 0.4f * ExitTime;
 
 	/// <summary>
@@ -263,9 +263,6 @@ void fragment() {
 	/// 画面在整段时停里持续变暗，声音是「滋」被拖慢掉下去（像磁带停转）再接一小段往上提的气声；时长也从 0.42 缩到 0.3。
 	/// </summary>
 	public const float ChargeAt = CatchAt + 0.06f, ChargeTime = 0.95f, FreezeAt = ChargeAt + ChargeTime, FreezeTime = 0.3f;
-
-	/// <summary>第四版：开枪后多留这么久再收场（子弹穿过以后的连环引爆要演完）。</summary>
-	public const float ShotHold = 0.3f;
 
 	/// <summary>开枪：时停结束的那一刻。</summary>
 	public const float FireAt = FreezeAt + FreezeTime;
@@ -497,7 +494,8 @@ void fragment() {
 		}
 		float now = 0f, shotAt = 1e9f;                              // 当前时刻；开枪回调执行的时刻
 		// 第二版（用户 2026-11-19）：开场炸开 / 开枪的冲击帧按真实时间算（顿帧期间时间流速很慢，帧数照样要对）
-		double burstReal = -1.0, shotReal = -1.0;
+		double burstReal = -1.0, shotReal = -1.0, hitReal = -1.0;
+		(Node2D Root, ShaderMaterial Mat)? floodBack = null, floodFront = null;
 		static int Beat(double since) => since < 0.0 ? 0 : since < 0.045 ? 1 : since < 0.09 ? 2 : 0;
 		// 开场的幕（在人物后面）：打出时先把背景压暗，炸开那一下刷白 → 刷黑，再退掉露出烧穿的场景
 		Node2D veilRoot = Fx.ScreenRoot(back, "P5SinfulVeil");
@@ -526,7 +524,17 @@ void fragment() {
 			float surge = time < BurstAt ? 0f : Mathf.Exp(-(time - BurstAt) / 0.22f);
 			double real = HitStop.RealSeconds();
 			int gBurst = burstReal < 0.0 ? 0 : Beat(real - burstReal), gShot = shotReal < 0.0 ? 0 : Beat(real - shotReal);
-			int beat = Math.Max(gBurst, gShot);
+			float sinceHit = hitReal < 0.0 ? -1f : (float)(real - hitReal);
+			int gHit = sinceHit >= 0f && sinceHit < 0.1f ? 3 : 0;
+			int beat = Math.Max(Math.Max(gBurst, gShot), gHit);
+			if (sinceHit >= 0f)
+			{
+				// 光：顿帧里（0.1s）铺满、最亮，之后 0.25s 退掉；按真实时间走
+				float fl = sinceHit < 0.1f ? 1f : Mathf.Exp(-(sinceHit - 0.1f) / 0.12f);
+				float sp = Mathf.Min(1f, 0.55f + sinceHit * 4.5f);
+				if (floodBack is { } fb && GodotObject.IsInstanceValid(fb.Root)) { fb.Mat.SetShaderParameter("power", 1.35f * fl); fb.Mat.SetShaderParameter("spread", sp); }
+				if (floodFront is { } ff && GodotObject.IsInstanceValid(ff.Root)) { ff.Mat.SetShaderParameter("power", (gHit == 3 ? 1.8f : 1.1f) * fl); ff.Mat.SetShaderParameter("spread", sp); }
+			}
 			if (GodotObject.IsInstanceValid(veil))
 			{
 				float sinceB = burstReal < 0.0 ? -1f : (float)(real - burstReal);
@@ -572,10 +580,10 @@ void fragment() {
 				m.SetShaderParameter("surge", surge);
 			}
 			// 开枪的冲击帧：第一帧场景刷白、人物全黑（剪影），第二帧场景全黑、人物被枪光打亮
-			Color paintSky = gShot == 1 ? new Color(0.96f, 0.97f, 1f, 1f) : gShot == 2 ? new Color(0.004f, 0.008f, 0.022f, 1f) : new Color(0f, 0f, 0f, 0f);
+			Color paintSky = gShot == 1 ? new Color(0.96f, 0.97f, 1f, 1f) : gShot == 2 || gHit == 3 ? new Color(0.004f, 0.008f, 0.022f, 1f) : new Color(0f, 0f, 0f, 0f);
 			sky.SetShaderParameter("paint", paintSky);
 			rocks.SetShaderParameter("paint", paintSky);
-			puppet?.Paint(gShot == 1 ? new Color(0f, 0f, 0f, 1f) : gShot == 2 ? new Color(0.78f, 0.9f, 1f, 0.72f) : new Color(0f, 0f, 0f, 0f), paintSky);
+			puppet?.Paint(gShot == 1 || gHit == 3 ? new Color(0f, 0f, 0f, 1f) : gShot == 2 ? new Color(0.78f, 0.9f, 1f, 0.72f) : new Color(0f, 0f, 0f, 0f), paintSky);
 			// 灯：枪口蓄力光、开枪全场白光、跟着子弹飞的光、雷光、深渊往上打的暗红光
 			float scene = rv * (1f - ex);
 			// 群蛇形态 / 毒雾的场景跟着断崖场景交叉淡化（断崖出来多少，它们就淡掉多少）
@@ -606,7 +614,7 @@ void fragment() {
 				// 用户 2026-11-09：子弹穿过敌人的一瞬间被光从里面打透——不是描边，而是整只过曝成冷白再退回去（modulate 超过 1 就是提亮）
 				// 第四版：被打透的发白按真实时间 0.06s 退掉（顿帧里不会一直白着、把命中特效盖住），也不再白到纯白
 				float ox = pierceReal.TryGetValue(a, out double pr) ? Mathf.Exp(-(float)(real - pr) / 0.06f) : 0f;
-				a.Modulate = beat == 1 ? new Color(0f, 0f, 0f, c.A)
+				a.Modulate = beat == 1 || beat == 3 ? new Color(0f, 0f, 0f, c.A)
 					: beat == 2 ? new Color(2.3f, 2.6f, 3.1f, c.A)
 					: c * tint * new Color(1f + 1.4f * ox, 1f + 1.7f * ox, 1f + 2.2f * ox, 1f);
 			}
@@ -743,7 +751,7 @@ void fragment() {
 			Stage.ShakeDir?.Invoke(4, Mathf.RadToDeg((-dir).Angle()));      // 后坐：往枪的反方向一推
 			Glow.Flash(front, muzzle, new Color(0.85f, 0.95f, 1f), 260f * unit, 0.08f);
 			puppet?.Blast();                                               // 远处云海被枪口冲击波压开、翻卷
-			FireBurstDir(front, muzzle, dir, 440f * unit, 0.2f, 1.25f, new Vector2(1.6f, 0.72f));   // 枪口炸开的火舌（开场那种炸开，朝前拉长；小而短，不糊住弹道）
+			FloodPulse(front, muzzle, 520f * unit, 1.2f, 0.16f);          // 枪口一下光（不再用火舌：用户说塑料）
 			// 炮口烟：一大团往前推、往上飘的烟（画在人物后面、撒旦耶尔前面），一开始被枪火照亮
 			Bullet(front, muzzle, dir, screen, unit);                      // 看得见的重弹
 			Tunnel(back, muzzle, dir, screen.Length() * 1.2f, BulletSpeed * unit, 280f * unit, 1.3f);   // 身后留下的一条暗烟
@@ -766,6 +774,16 @@ void fragment() {
 			Fx.After(front, FireAt + travel[k], () =>
 			{
 				if (body != null) pierceReal[body] = HitStop.RealSeconds();
+				if (first)
+				{
+					// 第五版：打中那一下——全场顿住，画面压黑、所有人成剪影，命中点后面爆出一大片光把敌人逆光照成剪影（step 里按真实时间画）
+					hitReal = HitStop.RealSeconds();
+					HitStop.Request(0.12);
+					floodBack = Flood(back, hit, 1900f * unit, 1.2);
+					floodFront = Flood(front, hit, 620f * unit, 1.2);
+					Fx.Shake(9);
+					Stage.ShakeDir?.Invoke(4, Mathf.RadToDeg(dir.Angle()));
+				}
 				Pierce(front, back, hit, dir, unit, first, last, body, root);
 				s.OnPierce?.Invoke(idx);
 			});
@@ -782,31 +800,7 @@ void fragment() {
 		if (travel.Length > 0)
 		{
 			Fx.After(front, FireAt + travel[0], () => Sfx.Play(HitSound, 1.3f));
-			// 第四版（用户：打到敌人那会儿炸开要更明显、更华丽）：子弹一路穿过所有敌人以后，沿弹道从第一个起一个接一个连环引爆——
-			// 每处一团大的蓝焰炸开 + 冲起一根蓝焰火柱，最后一个最大；第一下引爆顿住、低频重击、重震（原来打中那一下的顿帧挪到这里）
-			float boomAt = FireAt + travel[^1] + 0.07f;
-			for (int k = 0; k < stopHits.Count; k++)
-			{
-				int kk = k;
-				bool lastBoom = k == stopHits.Count - 1;
-				Fx.After(front, boomAt + 0.08f * k, () =>
-				{
-					Detonate(front, stopHits[kk], unit, lastBoom);
-					if (enemiesOrdered[kk].i < s.EnemyVisuals.Count && s.EnemyVisuals[enemiesOrdered[kk].i] is CanvasItem ev2) pierceReal[ev2] = HitStop.RealSeconds();
-					if (kk == 0)
-					{
-						HitStop.Request(0.1);
-						Sfx.Play(Sfx.SubBoom, 1.1f);
-						Sfx.Play(Sfx.Crush, 0.95f);
-						Fx.Shake(9);
-						Stage.ShakeDir?.Invoke(4, -90f);
-					}
-					else if (lastBoom)
-					{
-						Fx.Shake(7);
-					}
-				});
-			}
+			Fx.After(front, FireAt + travel[0], () => { Sfx.Play(Sfx.SubBoom, 1.1f); Sfx.Play(Sfx.Crush, 0.95f); });   // 打中那一下：低频重击压在贯穿声底下
 		}
 		SinfulRender.Observe(root, started);
 		return pierce;
@@ -1020,8 +1014,8 @@ void fragment() {
 		PointLight2D pl = Light(front, at, new Color(0.7f, 0.9f, 1f), 700f * unit);
 		Fx.Animate(pl, 0, 0.4, k => pl.Energy = 1.1f * (1f - k) * (1f - k));   // 第四版：灯光减半（把敌人照成一片白，子弹混在里面看不出）
 		Fx.FreeAfter(pl, 0.45);
-		// 第四版：打中 = 一团顺着弹道拉长的火舌炸开（开场那种），不再是白圆片 + 白楔形
-		FireBurstDir(front, at, dir, (last ? 620f : 480f) * unit, 0.3f, last ? 1.3f : 1.15f, new Vector2(1.5f, 0.85f));
+		// 第五版：第一下的大光在 Play 里（逆光剪影那一下）；后面几个敌人被穿过时各亮一下
+		if (!first) FloodPulse(back, at, (last ? 1100f : 900f) * unit, 1.1f, 0.28f);
 		if (body != null)
 		{
 			KnockBack(body, dir * (last ? 90f : 72f) * unit, lifetime);
