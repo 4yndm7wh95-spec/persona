@@ -1292,6 +1292,15 @@ public partial class Preview : Node2D
 				o?.Set(tt, ltn, Mathf.Min(1f, tt / 0.3f));
 			});
 		},
+		// 2026-11-19：群蛇回到旧版 + 獠牙 + 拉开散开；出场后只看常驻，最后咬两口
+		["serpent_idle"] = p =>
+		{
+			float tall = (JokerFeet - Pose(815f, 120f)).Length();
+			p.At(0.3, () => p._joker?.Play("cast_glove"));
+			p.At(0.55, () => SerpentMantle.Start(p._front, p._back, () => (JokerFeet, tall, 1f), live: true, intro: true));
+			p.At(7.4, () => { p._enemies.TryGetValue(Enemy, out Node2D? body); SerpentMantle.Current?.Strike(Enemy + new Vector2(0f, -170f), body); });
+			p.At(8.0, () => { p._enemies.TryGetValue(Enemy2, out Node2D? body); SerpentMantle.Current?.Strike(Enemy2 + new Vector2(0f, -150f), body); });
+		},
 		["serpent_form"] = p =>
 		{
 			// 出场 → 五条咒烟大蛇绕着 Joker 漂 → 每打一张牌一条蛇吐一颗法球（连出时几条轮流吐）
