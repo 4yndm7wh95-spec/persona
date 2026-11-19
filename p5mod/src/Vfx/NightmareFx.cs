@@ -174,7 +174,7 @@ void fragment() {
 		float pxK = hS / Mathf.Max(1f, h);                                      // 屏幕像素 / 世界像素
 		float zo = 2.3f * Focal * (scr.Y * 0.5f) / (1.3f * hS);                 // 张开的手 ≈ 1.3 倍身高
 
-		const float surge0 = 0.1f, surge1 = 0.32f, grab0 = 0.44f, grab1 = 0.56f, beat0 = 0.64f, pull0 = 0.98f, pull1 = 1.3f, end = 1.46f;   // 用户 2026-11-19：捏完三张一起冒出来，不要一张一张
+		const float surge0 = 0.1f, surge1 = 0.32f, grab0 = 0.44f, grab1 = 0.56f, beat0 = 0.57f, pull0 = 0.98f, pull1 = 1.3f, end = 1.46f;   // 用户 2026-11-19：捏完三张一起冒出来，不要一张一张
 		Vector3 anchor = new(0f, 0.85f, -0.3f);
 		float rl = 0.14f * fc;
 		HP deep = Aim(new HP(new Vector3(0f, 0f, zo * 2.8f), -0.1f, rl * 0.4f, 0.15f, 0.1f, 1f), anchor, cardS + new Vector2(0f, -0.1f * hS), scr);
@@ -194,11 +194,10 @@ void fragment() {
 		Sfx.Play(Sfx.SubBoom, 0.48f, grab1);
 		Sfx.Play(Sfx.CurseSoft, 0.4f, grab1 + 0.02f);
 		Sfx.Take("gx_glass", 0.14f, grab1 + 0.03f);
-		// 捏完一下低沉的「咚」，三张复制同时从拳头里迸出来（扇形展开的声音）
-		Sfx.Play(Sfx.SubBoom, 0.34f, beat0 - 0.01f);
-		Sfx.Play(Sfx.CurseSoft, 0.26f, beat0);
-		Sfx.Take("gx_fan_open", 0.22f, beat0 + 0.02f);
-		Sfx.Play("card_flick", 0.32f, beat0 + 0.03f);
+		// 捏住的同一刻三张复制迸出来（用户 2026-11-19：立刻出来、干脆利落有冲击感）：扇形一甩 + 三张同时钉住的「唰」
+		Sfx.Take("gx_fan_open", 0.26f, beat0);
+		Sfx.Play("card_flick", 0.34f, beat0 + 0.02f);
+		Sfx.Take("gx_slice", 0.2f, beat0 + 0.07f);
 		Sfx.Play(Sfx.Crack, 0.2f, pull0);
 		Sfx.Take("gx_whoosh", 0.2f, pull0 + 0.02f);
 		Sfx.Take("gx_burn", 0.14f, pull0 + 0.12f);
@@ -365,11 +364,11 @@ void fragment() {
 				float d = s - beat0;
 				if (d < 0f || s > pull1) { cp.Root.Visible = false; continue; }
 				cp.Root.Visible = true;
-				float out1 = Fx.OutCubic(Mathf.Min(1f, d / 0.16f));
+				float out1 = Ease5.OutBack(Mathf.Min(1f, d / 0.09f));               // 0.09s 甩到位、冲过头一点再回来
 				Vector2 p = cardAt.Lerp(fanAt[i], out1) + new Vector2(0f, Mathf.Sin(s * 4f + i) * h * 0.008f);
 				float tilt = fanTilt[i] * out1;
-				float flip = Mathf.Tau * (1f - out1) * (i == 1 ? 1f : -1f) * 0.5f;     // 挤出来的时候翻半圈
-				float sc = Mathf.Lerp(0.45f, 1f, out1);
+				float flip = 0.5f * (1f - Mathf.Min(1f, out1)) * (i == 1 ? 1f : -1f);
+				float sc = Mathf.Lerp(0.3f, 1f, out1) * (1f + 0.12f * Mathf.Exp(-Mathf.Max(0f, d - 0.07f) / 0.05f) * (d > 0.07f ? 1f : 0f));   // 钉住那一下一涨
 				float burn = 0f, fade = 1f;
 				if (s > pull0)
 				{
@@ -382,7 +381,7 @@ void fragment() {
 					fade = 1f - Ease5.Seg(k, 0.85f, 0.15f);
 				}
 				cp.Place(p, tilt, flip, sc);
-				cp.Set("glow", d < 0.2f ? 0.6f * (1f - d / 0.2f) : 0f);
+				cp.Set("glow", d < 0.06f ? 0.45f * (1f - d / 0.06f) : 0f);          // 只白一下（攥紧的顿帧会把这段拉长）
 				cp.Set("sheen", Mathf.Clamp(d / 0.3f, 0f, 1f) * 3f - 1f);
 				cp.Set("clip", new Vector3(0f, 1f, -1.3f));
 				cp.Set("burn", burn);
@@ -422,14 +421,20 @@ void fragment() {
 			if (c.SelfTint is { } st) Fx.Animate(front, 0, 0.3, t => st(Colors.White.Lerp(new Color(1.3f, 0.75f, 0.8f), (1f - t) * 0.6f)));
 		});
 		// ── 每一下心跳：拳头上沿一下红光、一圈很淡的波，复制被挤出来 ──
-		foreach (float b in beats)
+		// 三张复制钉住的那一下：每张身上一下白热 + 一团红光、往外迸的暗红火星，画面轻轻一扭
+		Fx.After(front, beat0 + 0.07f, () =>
 		{
-			Fx.After(front, b, () =>
+			HitStop.Request(0.03);
+			for (int i = 0; i < 3; i++)
 			{
-				HitStop.Request(0.025);
-				Glow.Flash(front, cardAt + new Vector2(0f, -h * 0.16f), new Color(0.95f, 0.18f, 0.2f), h * 0.2f, 0.16f);
-			});
-		}
+				Vector2 at = fanAt[i];
+				Vector2 outDir = (at - cardAt).Normalized();
+				Glow.Flash(front, at, Pal5.Hot, h * 0.16f, 0.09f);
+				Glow.Flash(front, at, new Color(0.95f, 0.12f, 0.18f), h * 0.42f, 0.24f);
+				Glow.Sparks(front, at, 8, 220f * u, 620f * u, 0.3f, new[] { new Color(1f, 0.4f, 0.4f), Pal5.Crimson, new Color(0.3f, 0.02f, 0.06f) }, 300f * u, 0.05f, 0.14f, outDir, 50f);
+			}
+			Glow.Ripple(front, cardAt + new Vector2(0f, -h * 0.5f), h * 1.3f, 0.3f, 0.02f);
+		});
 		// ── 原牌落回手里 ──
 		Fx.After(front, pull0 + 0.36f, () =>
 		{
