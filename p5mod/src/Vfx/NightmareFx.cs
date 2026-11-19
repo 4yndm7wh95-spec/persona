@@ -174,7 +174,7 @@ void fragment() {
 		float pxK = hS / Mathf.Max(1f, h);                                      // 屏幕像素 / 世界像素
 		float zo = 2.3f * Focal * (scr.Y * 0.5f) / (1.3f * hS);                 // 张开的手 ≈ 1.3 倍身高
 
-		const float surge0 = 0.1f, surge1 = 0.32f, grab0 = 0.44f, grab1 = 0.56f, beat0 = 0.66f, gap = 0.2f, pull0 = 1.14f, pull1 = 1.46f, end = 1.62f;
+		const float surge0 = 0.1f, surge1 = 0.32f, grab0 = 0.44f, grab1 = 0.56f, beat0 = 0.64f, pull0 = 0.98f, pull1 = 1.3f, end = 1.46f;   // 用户 2026-11-19：捏完三张一起冒出来，不要一张一张
 		Vector3 anchor = new(0f, 0.85f, -0.3f);
 		float rl = 0.14f * fc;
 		HP deep = Aim(new HP(new Vector3(0f, 0f, zo * 2.8f), -0.1f, rl * 0.4f, 0.15f, 0.1f, 1f), anchor, cardS + new Vector2(0f, -0.1f * hS), scr);
@@ -194,19 +194,17 @@ void fragment() {
 		Sfx.Play(Sfx.SubBoom, 0.48f, grab1);
 		Sfx.Play(Sfx.CurseSoft, 0.4f, grab1 + 0.02f);
 		Sfx.Take("gx_glass", 0.14f, grab1 + 0.03f);
-		// 三下心跳：自己的低沉「咚」（原来的 heartbeat 在游戏里换成了原版的能量音，不像心跳）
-		for (int i = 0; i < 3; i++)
-		{
-			Sfx.Play(Sfx.SubBoom, 0.3f - 0.03f * i, beat0 + gap * i - 0.01f);
-			Sfx.Play(Sfx.CurseSoft, 0.22f, beat0 + gap * i);
-		}
-		for (int i = 0; i < 3; i++) Sfx.Play("card_flick", 0.3f, beat0 + gap * i + 0.03f);
+		// 捏完一下低沉的「咚」，三张复制同时从拳头里迸出来（扇形展开的声音）
+		Sfx.Play(Sfx.SubBoom, 0.34f, beat0 - 0.01f);
+		Sfx.Play(Sfx.CurseSoft, 0.26f, beat0);
+		Sfx.Take("gx_fan_open", 0.22f, beat0 + 0.02f);
+		Sfx.Play("card_flick", 0.32f, beat0 + 0.03f);
 		Sfx.Play(Sfx.Crack, 0.2f, pull0);
 		Sfx.Take("gx_whoosh", 0.2f, pull0 + 0.02f);
 		Sfx.Take("gx_burn", 0.14f, pull0 + 0.12f);
 		Sfx.Take("gx_card_stack", 0.14f, pull0 + 0.34f);
 
-		float[] beats = { beat0, beat0 + gap, beat0 + gap * 2f };
+		float[] beats = { beat0 };
 		float Beat(float s)
 		{
 			float v = 0f;
@@ -364,7 +362,7 @@ void fragment() {
 			for (int i = 0; i < 3; i++)
 			{
 				var cp = copies[i];
-				float d = s - beats[i];
+				float d = s - beat0;
 				if (d < 0f || s > pull1) { cp.Root.Visible = false; continue; }
 				cp.Root.Visible = true;
 				float out1 = Fx.OutCubic(Mathf.Min(1f, d / 0.16f));
