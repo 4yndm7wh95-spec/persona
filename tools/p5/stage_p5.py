@@ -281,6 +281,10 @@ def fx_textures():
         for f in sorted(battle.rglob("*.png")):
             im = Image.open(f).convert("RGBA")
             yield "battle_" + f.stem, im.resize((round(im.width * 0.5), round(im.height * 0.5)), Image.LANCZOS)
+    # 战斗 HUD：能量球、结束回合按钮（Codex，art/p5/ui/hud，任务单 docs/codex/codex_p5_hud_art.md）→ hud_<name>（半尺寸）
+    for f in sorted((ROOT / "art/p5/ui/hud").glob("*.png")):
+        im = Image.open(f).convert("RGBA")
+        yield "hud_" + f.stem, im.resize((round(im.width * 0.5), round(im.height * 0.5)), Image.LANCZOS)
     # 左上角顶栏 / 战绩 / 联机里的角色头像（Codex，art/p5/ui/icons/joker_top_icon.png）+ 描边版（轮廓往外扩一圈的白色剪影）
     icon = ROOT / "art/p5/ui/icons/joker_top_icon.png"
     if icon.exists():

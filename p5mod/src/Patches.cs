@@ -1016,3 +1016,24 @@ public static class JokerEnemyTurnBannerPatch
 		return false;
 	}
 }
+
+/// <summary>能量球换皮（Vfx/HudSkin.cs）：只在 Joker 的能量球上显示，节点、逻辑都是原版的。</summary>
+[HarmonyPatch(typeof(NEnergyCounter), nameof(NEnergyCounter._Ready))]
+public static class JokerEnergySkinPatch
+{
+	private static readonly FieldInfo PlayerField = AccessTools.Field(typeof(NEnergyCounter), "_player");
+
+	public static void Postfix(NEnergyCounter __instance) => ModEntry.Safe("JokerEnergySkin", () =>
+	{
+		var counter = __instance;
+		HudSkin.ApplyEnergy(counter, () => PlayerField.GetValue(counter) is MegaCrit.Sts2.Core.Entities.Players.Player p && Joker.Is(p));
+	});
+}
+
+/// <summary>结束回合按钮换皮（Vfx/HudSkin.cs）：按钮在角色加载前就建好了，是否显示由它每帧自己判断（本机玩家是 Joker）。</summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Combat.NEndTurnButton), nameof(MegaCrit.Sts2.Core.Nodes.Combat.NEndTurnButton._Ready))]
+public static class JokerEndTurnSkinPatch
+{
+	public static void Postfix(MegaCrit.Sts2.Core.Nodes.Combat.NEndTurnButton __instance) => ModEntry.Safe("JokerEndTurnSkin", () =>
+		HudSkin.ApplyEndTurn(__instance, static () => Joker.LocalRun));
+}

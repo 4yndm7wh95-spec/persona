@@ -6,7 +6,17 @@
 
 ---
 
-## 2026-11-19 · 会话 E 续三：战斗开始 / 回合横幅（等 Codex 素材），待合并
+## 2026-11-19 · 会话 E 续四：能量球 / 结束回合按钮换皮 + 横幅换上正式素材，待合并
+
+- `Vfx/HudSkin.cs` + `Patches.cs` 末尾 `JokerEnergySkinPatch / JokerEndTurnSkinPatch`（照 P3 mod 的 HudSkin / EndTurnSkin：原版节点、逻辑照常，只把原版图层藏掉，装饰每帧判断要不要显示，别的角色自动恢复原版）。
+  能量：黑色剪纸圆片 + 红星芒（用完换熄灭版）+ 慢转纸环，拼贴数字「当前」大、「/上限」小；涨能量数字弹一下。
+  结束回合：黑纸板 + 拼贴字「结束回合 / END TURN」，回合数小纸片贴右上角；原版发光提示时渐变成红纸板；悬停放大；不能点跟原版变灰；联机「取消」等其他文字照常显示在纸板上。
+- 素材：Codex `art/p5/ui/hud`（任务单 `docs/codex/codex_p5_hud_art.md`）→ `hud_*`；回合横幅素材 `art/p5/ui/battle` 也到了（正式字母 / 数字 / 底板已替换占位）。**出包前跑 `stage_p5.py`。**
+- 这次用户说不用预览；能量球 / 按钮的大小位置是按原版节点尺寸估的（P3 的能量圆半径 60），**实机要看一眼**。
+
+---
+
+## 2026-11-19 · 会话 E 续三：战斗开始 / 回合横幅，待合并
 
 - `Vfx/BattleUiFx.cs` + `Patches.cs` 末尾 `JokerCombatStartBannerPatch / JokerPlayerTurnBannerPatch / JokerEnemyTurnBannerPatch`（只在本机玩家是 Joker 时）。照 P3 mod：原版「战斗开始」横幅只藏画面、节点照常跑（它负责生成第 1 回合横幅）；回合横幅 Create 返回 null、换成自己的。
 - 全部放左上角顶栏下方、画在人物后面（用户：TAKE YOUR HEART 不要放屏幕中间）：战斗开始 = 红色剪报纸带 +「TAKE YOUR HEART!」；我方回合 = 黑纸条 + 红纸牌拼贴数字 +「YOUR TURN」；额外回合「ONE MORE!」（1 MORE 原声）；敌人回合 = 红纸条 +「!」+「ENEMY TURN」。

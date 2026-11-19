@@ -11,7 +11,7 @@ namespace P5Joker;
 /// · 战斗开始：左上角顶栏下方一条红色剪报纸带从左边扫进来，「TAKE YOUR HEART!」字母纸片一片片拍上去，停一眼往左收走（约 1.3s）；
 /// · 回合横幅：P3 的教训（横贯屏幕中央太挡）→ 收成左上角顶栏下方一条短纸条、画在人物后面，红色小纸牌上是拼贴数字，
 ///   「YOUR TURN」/「ENEMY TURN」/ 额外回合「ONE MORE!」，入 0.2s → 停 → 往左收走，约 1.1s。
-/// 素材没到时（Fx.Tex 拿不到）用代码画的纸片 + 粗斜体字顶上，动画一样。
+/// 素材缺哪张（Fx.Tex 拿不到）就用代码画的纸片 + 粗斜体字顶上，动画一样。
 /// </summary>
 public static class BattleUiFx
 {
@@ -26,8 +26,8 @@ public static class BattleUiFx
 		parent.AddChild(p);
 		if (Fx.Tex(tex) is Texture2D t)
 		{
-			// 字母图 512（半尺寸 256）里纸片约占 70%
-			p.AddChild(new Sprite2D { Texture = t, Scale = Vector2.One * size / (t.GetWidth() * 0.7f) });
+			// 字母 / 数字图 512（半尺寸 256）里纸片约占宽 60%
+			p.AddChild(new Sprite2D { Texture = t, Scale = Vector2.One * size / (t.GetWidth() * 0.6f) });
 			return p;
 		}
 		// 占位：歪一点的纸片 + 投影 + 粗斜体字，红黑白轮换（hot = 偏红，敌人回合）
@@ -204,10 +204,10 @@ public static class BattleUiFx
 		Vector2 tagAt = new(view.X * 0.065f, cy - 4f * u);
 		Node2D tag = new() { Position = tagAt, Rotation = -0.1f };
 		root.AddChild(tag);
-		float tagH = 118f * u;
+		float tagH = 100f * u;
 		if ((player ? Fx.Tex("battle_turn_tag") : Fx.Tex("battle_turn_tag_enemy")) is Texture2D tt)
 		{
-			tag.AddChild(new Sprite2D { Texture = tt, Scale = Vector2.One * tagH / (tt.GetHeight() * 0.8f) });
+			tag.AddChild(new Sprite2D { Texture = tt, Scale = Vector2.One * tagH / (tt.GetHeight() * 0.7f) });   // 纸牌约占高 70%
 		}
 		else
 		{
@@ -219,7 +219,7 @@ public static class BattleUiFx
 		}
 		string num = player ? Math.Clamp(round, 0, 99).ToString() : "!";
 		var digits = new List<(Node2D node, float rot)>();
-		float ds = (num.Length > 1 ? 66f : 84f) * u;
+		float ds = (num.Length > 1 ? 50f : 62f) * u;
 		for (int i = 0; i < num.Length; i++)
 		{
 			string ch = num[i].ToString();
