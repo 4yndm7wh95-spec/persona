@@ -42,6 +42,7 @@ public static class KnifeTrapFx
 	private static float _h, _w, _R, _cw, _tall;
 	private static int _left, _pending, _shots;
 	private static double _t0;
+	private static float _flipPhase;
 	private static float _t, _last, _rot, _spinPhase, _hand, _kickAt = -10f, _endAt = -1f, _lastHitAt;
 	/// <summary>每一枪：什么时候、表盘转多大一格、卡转多少（用户 2026-11-18：每开一枪转一下、停顿一下再接着转，不要连成一直在转）。</summary>
 	private static readonly List<(float At, float Dial, float Spin)> _steps = new();
@@ -243,14 +244,17 @@ void fragment() {
 
 		// ── 旋转：一枪一格（转到位、回弹一下、停住，等下一枪）；越往后每格转得越大 ──
 		float kick = _t >= _kickAt ? Mathf.Exp(-(_t - _kickAt) * 4f) : 0f;
-		_rot = -1.4f * (1f - Fx.OutCubic(Mathf.Min(1f, _t / 0.42f)));     // 展开的时候拧到位
-		_spinPhase = 0.35f * _t;                                           // 卡平时只极慢地自转
+		// 用户 2026-11-19：表盘要一直有慢慢自转的感觉、每开一发全部加速一下；卡要在三维里翻、同时在画面里自旋
+		_rot = -1.4f * (1f - Fx.OutCubic(Mathf.Min(1f, _t / 0.42f))) + 0.22f * _t;   // 展开的时候拧到位，之后一直慢慢转
+		_spinPhase = 0.9f * _t;                                            // 卡在画面里慢慢自旋
+		_flipPhase = 1.6f * _t;                                            // 卡在三维里慢慢翻
 		_hand = 0f;
 		foreach (var (at, dial, spin) in _steps)
 		{
 			float k = Spring(_t - at);
 			_rot += dial * k;
 			_spinPhase += spin * k;
+			_flipPhase += spin * 1.3f * k;
 			_hand += Mathf.Tau / 12f * k;
 		}
 		float endK = _endAt < 0f ? 0f : _t - _endAt;
@@ -295,7 +299,10 @@ void fragment() {
 			float fade = _endAt < 0f ? 1f : 1f - Mathf.Clamp(endK / 0.2f, 0f, 1f);
 			// 自转：在画面里转（不绕竖轴翻——翻到侧面会变成一根细白线，24 张一起转就是一把白线），带一点立体的摆动
 			float spinA = sl.Spin + _spinPhase * (0.8f + 0.2f * Mathf.Sin(sl.Seed));
-			sl.Card.Place(pos, a + spinA, 0.7f * Mathf.Sin(spinA * 0.5f + sl.Seed), (0.3f + 0.7f * pop) * (1f + 0.06f * kick));
+			float flipA = sl.Seed * 1.7f + _flipPhase * (0.75f + 0.25f * Mathf.Cos(sl.Seed * 3f));
+			sl.Card.Place(pos, a + spinA, flipA, (0.3f + 0.7f * pop) * (1f + 0.06f * kick));
+			// 翻到侧面那一下淡掉（不然是一根细白线）
+			fade *= Mathf.SmoothStep(0.04f, 0.26f, Mathf.Abs(Mathf.Cos(flipA)));
 			sl.Card.Set("glow", Mathf.Exp(-age * 8f) * 0.8f + 0.1f);
 			sl.Card.Set("sheen", Mathf.PosMod(_t * 0.5f + sl.Seed, 2.5f) - 1f);
 			sl.Card.Set("alpha", fade);

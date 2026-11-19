@@ -47,6 +47,23 @@ public static class ToolsFx
 		Glow.Flash(front, hand, Pal5.Hot, h * 0.14f, 0.1f);
 
 		// ── 弹出去的一沓牌 ──
+		// ── 牌流的光（用户 2026-11-19：卡牌纯运动不好看 → 配特效）：牌流下面一道沿弧线流动的暗红光带（加法、两层：宽的暗红晕 + 窄的亮红芯，
+		//    尾巴透明、头部最亮，不用白色），飞回手里时同一条光带沿回程拖过去；牌叠下面一团暗红的光托着 ──
+		Line2D Smear(float wk, Color head)
+		{
+			var g = new Gradient { Offsets = new[] { 0f, 0.6f, 1f }, Colors = new[] { new Color(head, 0f), new Color(head, 0.45f), head } };
+			Line2D l = new() { Width = h * wk, Gradient = g, Material = Fx.Additive, JointMode = Line2D.LineJointMode.Round, BeginCapMode = Line2D.LineCapMode.Round, EndCapMode = Line2D.LineCapMode.Round,
+				WidthCurve = new Curve() };
+			l.WidthCurve.AddPoint(new Vector2(0f, 0.15f));
+			l.WidthCurve.AddPoint(new Vector2(1f, 1f));
+			front.AddChild(l);
+			l.GlobalPosition = Vector2.Zero;
+			l.TopLevel = true;
+			Fx.FreeAfter(l, end + 0.05);
+			return l;
+		}
+		Line2D glowL = Smear(0.3f, new Color(0.75f, 0.03f, 0.1f, 0.5f)), coreL = Smear(0.07f, new Color(1f, 0.22f, 0.28f, 0.8f));
+		Glow.Flash(back, catchP, new Color(0.55f, 0.02f, 0.08f), h * 0.9f, ret0, go + fly);
 		var cards = new Phantom.P5Card[N];
 		var lean = new float[N];
 		for (int i = 0; i < N; i++)
@@ -76,6 +93,28 @@ public static class ToolsFx
 			int landed = 0;
 			for (int i = 0; i < N; i++) if (i != Drop && s >= go + gap * i + fly) landed++;
 			float ret = Ease5.Seg(s, ret0, ret1 - ret0);
+			// 光带：去程从最后一张在飞的牌到最前面那张；回程沿回程曲线跟着牌流
+			{
+				var pts = new System.Collections.Generic.List<Vector2>();
+				// 头比第一张牌领先一点；尾巴拖在最后一张后面 0.45 段弧，牌全落下以后整条光带从尾巴往头收、淡掉
+				float headE = Mathf.Clamp((s - go) / fly + 0.06f, 0f, 1f), tailE = Mathf.Clamp((s - go - gap * (N - 1)) / fly - 0.45f, 0f, 1f);
+				float fadeOut = 1f - Ease5.Seg(s, go + gap * (N - 1) + fly, 0.3f);
+				if (ret > 0f)
+				{
+					Vector2 mid = catchP.Lerp(hand, 0.5f) + new Vector2(0f, -h * 0.22f);
+					float hr = Fx.InCubic(Mathf.Min(1f, ret * 1.15f)), tr = Fx.InCubic(Mathf.Max(0f, ret * 1.15f - 0.45f));
+					for (int k = 0; k <= 16; k++) { float r = Mathf.Lerp(tr, hr, k / 16f); pts.Add(catchP.Lerp(mid, r).Lerp(mid.Lerp(hand, r), r)); }
+					fadeOut = 1f - Ease5.Seg(s, ret1, 0.12f);
+				}
+				else if (headE > 0f)
+					for (int k = 0; k <= 20; k++) pts.Add(B(Mathf.Lerp(tailE, headE, k / 20f)));
+				foreach (Line2D l in new[] { glowL, coreL })
+				{
+					if (!GodotObject.IsInstanceValid(l)) continue;
+					l.Points = pts.Count >= 2 ? pts.ToArray() : System.Array.Empty<Vector2>();
+					l.Modulate = new Color(1f, 1f, 1f, Mathf.Max(0f, fadeOut));
+				}
+			}
 			for (int i = 0; i < N; i++)
 			{
 				var cd = cards[i];
@@ -169,6 +208,24 @@ public static class ToolsFx
 				fcd.Set("alpha", 1f - Ease5.Seg(s, end - 0.14f, 0.1f));
 			}
 		});
+		// 每张牌弹出 / 落进牌叠：手里、牌叠上一下很小的暗红闪 + 几点火星（每两张一次，连成一串节奏）
+		for (int i = 0; i < N; i += 2)
+		{
+			if (i == Drop) continue;
+			float t0 = go + gap * i;
+			Fx.After(front, t0, () => Glow.Flash(front, hand, new Color(0.95f, 0.15f, 0.2f), h * 0.16f, 0.12f));
+			Fx.After(front, t0 + fly, () =>
+			{
+				Glow.Flash(front, catchP, new Color(0.95f, 0.15f, 0.2f), h * 0.2f, 0.14f);
+				Glow.Sparks(front, catchP, 4, 80f * u, 220f * u, 0.3f, new[] { new Color(1f, 0.4f, 0.4f), Pal5.Crimson }, 300f * u, 0.05f, 0.12f, Vector2.Up, 120f);
+			});
+		}
+		// 牌过弧顶：一点暗红火星往上飘（每三张一次）
+		for (int i = 1; i < N; i += 3)
+		{
+			float t0 = go + gap * i + fly * 0.5f;
+			Fx.After(front, t0, () => Glow.Sparks(front, B(0.5f), 5, 60f * u, 200f * u, 0.45f, new[] { new Color(1f, 0.45f, 0.45f), Pal5.Crimson, new Color(0.3f, 0.02f, 0.06f) }, -60f * u, 0.05f, 0.13f, Vector2.Up, 160f));
+		}
 		// 被弹飞的那张烧起来：几点火星
 		Fx.After(front, go + gap * Drop + fly * 0.5f + 0.12f, () =>
 		{

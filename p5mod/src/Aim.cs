@@ -108,6 +108,12 @@ public static class Aim
 			}
 			return "shiv";
 		}
+		if (requested == "shiv" && current is "twirl_in" or "twirl_loop")
+		{
+			// 刀刃陷阱一直在转枪（用户 2026-11-19）：开枪从 shiv 的转枪那一段接上（跳过插兜、抬手），转着接住、开火
+			SkipTo[node.GetInstanceId()] = 0.07f;
+			return "shiv";
+		}
 		if (requested == "shiv" && current != null && Raised.Contains(current) && body.HasAnimation("shiv_from_aim"))
 		{
 			return "shiv_from_aim";
@@ -596,22 +602,27 @@ public static class Aim
 		return true;
 	}
 
-	/// <summary>刀刃陷阱：举着枪就别收（接下来自动打出的小刀一发发开枪），站着就先掏枪瞄准。</summary>
+	/// <summary>刀刃陷阱：前半段（表盘展开、还没开枪）一直在手指上转枪（twirl_in → twirl_loop，用户 2026-11-19）；没有这两个动作就照旧掏枪瞄准。</summary>
 	private static bool HoldAim(NCreature node, MegaSprite body, MegaAnimationState state)
 	{
 		string? current = Current(state);
 		PendingCast.Remove(node.GetInstanceId());
 		SelfCast[node.GetInstanceId()] = Time.GetTicksMsec() + 1500;
-		if (current is "aim_in" or "aim_loop")
+		bool twirl = body.HasAnimation("twirl_in") && body.HasAnimation("twirl_loop");
+		if (current is "aim_in" or "aim_loop" or "twirl_in" or "twirl_loop")
 		{
+			if (twirl && current is "aim_loop")
+			{
+				state.SetAnimation("twirl_loop", true, 0);
+			}
 			return true;
 		}
 		if (!Idle(current) || !body.HasAnimation("aim_in"))
 		{
 			return false;
 		}
-		state.SetAnimation("aim_in", false, 0);
-		state.AddAnimation("aim_loop", 0f, true, 0);
+		state.SetAnimation(twirl ? "twirl_in" : "aim_in", false, 0);
+		state.AddAnimation(twirl ? "twirl_loop" : "aim_loop", 0f, true, 0);
 		return true;
 	}
 

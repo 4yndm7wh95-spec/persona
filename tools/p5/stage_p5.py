@@ -270,6 +270,10 @@ def fx_textures():
             if name.startswith("chop_heavy"):
                 im = im.rotate(90, expand=True)   # 竖向的重劈转成横向（上端 → 左端），Paint.Sweep 沿横向扫出
             yield out, im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS) if k != 1 else im
+    # 选卡界面「夺宝」（Codex，art/p5/ui/reward）：剪报拼贴字、色带、悬停底板、STOLEN 印章 → res://p5joker/fx/reward_<name>.png（半尺寸）
+    for f in sorted((ROOT / "art/p5/ui/reward").glob("*.png")):
+        im = Image.open(f).convert("RGBA")
+        yield "reward_" + f.stem, im.resize((round(im.width * 0.5), round(im.height * 0.5)), Image.LANCZOS)
     # P5R summon blue flame tongues (BE_SYOLOOP, 6x2 flipbook): Persona appear / linger / dismiss (p5mod/src/Vfx/BlueFlame.cs)
     flame = ROOT / "research/p5r/ghost_blueflame/textures_png/bes_syo_fkomaB12kf2.dds.png"
     if flame.exists():

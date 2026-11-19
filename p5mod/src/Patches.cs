@@ -755,3 +755,62 @@ public static class FlaskSplashPatch
 		}
 	}
 }
+
+/// <summary>
+/// 选卡界面「夺宝」（Vfx/RewardFx.cs，用户 2026-11-19：参考 P3 mod，有特色且不拖沓）：每次打开 / 重抽接管原版的滑入补间，
+/// 牌从右边甩进来、背后 P5 斜切色带、左上角 TREASURE 标签、悬停红底板。牌一开始就看得见、点得到。
+/// </summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardSelectionScreen), nameof(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardSelectionScreen.RefreshOptions))]
+public static class RewardOpenPatch
+{
+	public static void Postfix(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardSelectionScreen __instance)
+	{
+		ModEntry.Safe("RewardOpen", () =>
+		{
+			if (!Joker.LocalRun || Traverse.Create(__instance).Field("_cardRow").GetValue() is not Godot.Control row)
+			{
+				return;
+			}
+			var holders = RewardHolders(row);
+			if (holders.Count == 0)
+			{
+				return;
+			}
+			if (Traverse.Create(__instance).Field("_cardTween").GetValue() is Godot.Tween tw && Godot.GodotObject.IsInstanceValid(tw))
+			{
+				tw.Kill();
+			}
+			// 原版的位置：一排居中，间距 350
+			var finals = new List<Godot.Vector2>();
+			for (int i = 0; i < holders.Count; i++)
+			{
+				finals.Add(Godot.Vector2.Left * (holders.Count - 1) * 350f * 0.5f + Godot.Vector2.Right * 350f * i);
+			}
+			bool first = __instance.GetNodeOrNull("P5RewardBackdrop") == null;
+			RewardFx.Open(__instance, row, holders, finals, first, RectOf);
+		});
+	}
+
+	internal static List<Godot.Control> RewardHolders(Godot.Control row) =>
+		row.GetChildren().OfType<MegaCrit.Sts2.Core.Nodes.Cards.Holders.NGridCardHolder>().Where(h => !h.IsQueuedForDeletion()).Cast<Godot.Control>().ToList();
+
+	internal static Godot.Rect2 RectOf(Godot.Control c) =>
+		c is MegaCrit.Sts2.Core.Nodes.Cards.Holders.NCardHolder h && h.Hitbox != null && Godot.GodotObject.IsInstanceValid(h.Hitbox) ? h.Hitbox.GetGlobalRect() : c.GetGlobalRect();
+}
+
+/// <summary>选卡界面选中一张：「偷到手」（RewardFx.Pick）。</summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardSelectionScreen), "SelectCard")]
+public static class RewardPickPatch
+{
+	public static void Prefix(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardSelectionScreen __instance, MegaCrit.Sts2.Core.Nodes.Cards.Holders.NCardHolder cardHolder)
+	{
+		ModEntry.Safe("RewardPick", () =>
+		{
+			if (!Joker.LocalRun || Traverse.Create(__instance).Field("_cardRow").GetValue() is not Godot.Control row)
+			{
+				return;
+			}
+			RewardFx.Pick(__instance, row, RewardOpenPatch.RewardHolders(row), cardHolder, RewardOpenPatch.RectOf);
+		});
+	}
+}
