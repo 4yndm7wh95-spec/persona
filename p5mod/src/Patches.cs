@@ -1038,3 +1038,24 @@ public static class JokerEndTurnSkinPatch
 	public static void Postfix(MegaCrit.Sts2.Core.Nodes.Combat.NEndTurnButton __instance) => ModEntry.Safe("JokerEndTurnSkin", () =>
 		HudSkin.ApplyEndTurn(__instance, static () => Joker.LocalRun));
 }
+
+/// <summary>
+/// 商店里的 Joker 太大（用户 2026-11-19 实机）：原版商店场景 silent_merchant.tscn 里骨骼缩放 0.47 是按猎人的商店骨骼定的，
+/// 我们的商店骨骼直接用战斗骨骼（stage_p5.py 的 silent_merchant_skel_data），画出来比原版角色大一圈 → 缩到 0.75 倍（脚底是原点，站位不变）。
+/// </summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Screens.Shops.NMerchantCharacter), nameof(MegaCrit.Sts2.Core.Nodes.Screens.Shops.NMerchantCharacter._Ready))]
+public static class JokerMerchantScalePatch
+{
+	public const float Scale = 0.75f;
+
+	public static void Postfix(MegaCrit.Sts2.Core.Nodes.Screens.Shops.NMerchantCharacter __instance) => ModEntry.Safe("JokerMerchantScale", () =>
+	{
+		if (!__instance.SceneFilePath.Contains("silent_merchant", System.StringComparison.OrdinalIgnoreCase)
+			|| __instance.GetChildCount() == 0 || __instance.GetChild(0) is not Godot.Node2D sprite || sprite.HasMeta("p5_scaled"))
+		{
+			return;
+		}
+		sprite.SetMeta("p5_scaled", true);
+		sprite.Scale *= Scale;
+	});
+}

@@ -11,6 +11,7 @@
 - 总攻击立绘锯齿：`AllOutFinale` 的离屏画面原来全压在 1280×720 + 2×MSAA 再放大 → 人物 / 碎星 / 竖排字改成屏幕原分辨率（最高 2560×1440）+ 4×MSAA，平涂红底板仍 1280×720。显存 / 开销会比之前高一些，实机注意一下卡不卡。
 - 总攻击怪物剪影（用牌击杀时是一堆方块或没有，控制台 win 正常）：`AllOutPatches.Clone` 复制出来的身体去掉材质 / 粒子（`Plain`），并把本体运行时换的 Spine 皮套到复制品上（`CopySkin`；BowlbugEgg 等十几种怪是运行时换皮，复制节点会落回默认皮）。**根因是推断的，没在实机复现过**，请用原来的复现方法再试一次。
 - 回合横幅 / 战斗开始横幅缩到约 2/3（字 38–44、纸牌 66），结束回合按钮纸板缩到原版按钮的 0.84。
+- 商店里的 Joker 太大：`JokerMerchantScalePatch`（NMerchantCharacter._Ready 后，silent_merchant 场景的骨骼再乘 0.75）。选卡界面色带切入放慢（0.42s OutQuart，`docs/p5/preview/reward_screen_v4.mp4`）。
 - 扫腿防御特效：`GainBlockPatch` 里有专属特效的牌不放蜂巢盾，扫腿的专属特效只管虚弱 → 加进例外（同模糊）。
 
 ---
