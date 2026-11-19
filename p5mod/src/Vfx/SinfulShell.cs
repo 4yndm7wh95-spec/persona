@@ -801,15 +801,16 @@ void fragment() {
 					floodBack = Flood(back, hit, 1900f * unit, 1.2);
 					floodFront = Flood(front, hit, 620f * unit, 1.2);
 					ripples = new List<(Node2D, ShaderMaterial, float, float)>();
-					void addRipple(Control layer, Vector2 at, float size, float squash, float power, float delay, float life)
+					void addRipple(Control layer, Vector2 at, float size, float squash, float power, float delay, float life, Vector2? axis = null, float drift = 0f)
 					{
-						var (rr, rm) = Ripple(layer, at, size, squash, power, 1.5);
+						var (rr, rm) = Ripple(layer, at, size, squash, power, 1.5, axis, drift);
 						rr.Visible = false;
 						ripples.Add((rr, rm, delay, life));
 					}
-					addRipple(front, hit, 1250f * unit, 0.82f, 1.0f, 0.02f, 0.5f);                     // 以命中点为圆心扩出去的两道
-					addRipple(front, hit, 900f * unit, 0.82f, 0.7f, 0.1f, 0.45f);
-					addRipple(front, new Vector2(hit.X, s.FloorY), 1800f * unit, 0.14f, 0.9f, 0.05f, 0.6f);   // 平台上贴地扫开的一道
+					// 立在垂直于弹道的平面上的两道（侧面看是顺着弹道压扁的窄椭圆，扩开时被子弹往前带）+ 平台上贴地扫开的一道
+					addRipple(front, hit, 1250f * unit, 0.3f, 1.05f, 0.02f, 0.5f, dir, 0.22f);
+					addRipple(front, hit, 950f * unit, 0.3f, 0.75f, 0.1f, 0.45f, dir, 0.34f);
+					addRipple(front, new Vector2(hit.X, s.FloorY), 1800f * unit, 0.14f, 0.9f, 0.05f, 0.6f);
 					Fx.Shake(9);
 					Stage.ShakeDir?.Invoke(4, Mathf.RadToDeg(dir.Angle()));
 				}
@@ -1054,7 +1055,7 @@ void fragment() {
 		if (!first)
 		{
 			FloodPulse(back, at, (last ? 1100f : 900f) * unit, 1.1f, 0.28f);
-			RipplePulse(front, at, (last ? 1000f : 820f) * unit, 0.82f, 0.85f, 0.4f);
+			RipplePulse(front, at, dir, (last ? 1000f : 820f) * unit, 0.85f, 0.4f);
 		}
 		if (body != null)
 		{

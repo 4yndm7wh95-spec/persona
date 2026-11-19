@@ -163,12 +163,14 @@ uniform float prog = 0.0;
 uniform float seed = 0.0;
 uniform float power = 1.0;
 uniform float squash = 1.0;
+uniform float drift = 0.0;   // 圈心沿局部 -y 移动多少（四边形半边长为单位）：立在弹道上的圈被子弹往前带
 " + Noise + @"
 void fragment() {
 	vec2 p = (UV - 0.5) * 2.0;
+	float e = 1.0 - pow(2.0, -8.0 * prog);
+	p.y += drift * e;
 	p.y /= max(squash, 0.05);
 	float r = length(p), ang = atan(p.y, p.x);
-	float e = 1.0 - pow(2.0, -8.0 * prog);
 	float R = 0.05 + 0.88 * e;
 	float fade = pow(1.0 - prog, 1.3);
 	float a = ang / 6.2831853 + 0.5;
@@ -192,21 +194,27 @@ void fragment() {
 	COLOR = vec4(light * clip, shade * clip);
 }" };
 
-	/// <summary>一道波纹（直径 size、竖向压扁 squash），返回根节点和材质（调用方每帧设 prog）。</summary>
-	private static (Node2D Root, ShaderMaterial Mat) Ripple(Control layer, Vector2 at, float size, float squash, float power, double life)
+	/// <summary>
+	/// 一道波纹（直径 size），返回根节点和材质（调用方每帧设 prog）。
+	/// axis = null：圈在地面上（竖向压扁 squash，贴地的那道）；axis = 弹道方向：圈立在垂直于弹道的平面上
+	/// （用户 2026-11-19：三维方向上的子弹怎么打出二维平面上的波纹）——从侧面看是一个顺着弹道压扁的窄椭圆，扩开的同时被子弹往前带 drift。
+	/// </summary>
+	private static (Node2D Root, ShaderMaterial Mat) Ripple(Control layer, Vector2 at, float size, float squash, float power, double life, Vector2? axis = null, float drift = 0f)
 	{
 		Node2D root = Fx.Root(layer, at, "P5SinfulRipple", life);
+		if (axis is Vector2 ax) root.Rotation = ax.Angle() + Mathf.Pi / 2f;   // 局部 y 轴对着弹道（局部 -y = 子弹前进的方向）
 		ShaderMaterial m = Quad(root, RippleShader, Vector2.One * size, -Vector2.One * size / 2f);
 		m.SetShaderParameter("squash", squash);
 		m.SetShaderParameter("power", power);
+		m.SetShaderParameter("drift", drift);
 		m.SetShaderParameter("prog", 0f);
 		return (root, m);
 	}
 
-	/// <summary>后面几个敌人被穿过时的一道波纹（游戏时间里自己走完）。</summary>
-	private static void RipplePulse(Control layer, Vector2 at, float size, float squash, float power, float life)
+	/// <summary>后面几个敌人被穿过时的一道立在弹道上的波纹（游戏时间里自己走完）。</summary>
+	private static void RipplePulse(Control layer, Vector2 at, Vector2 axis, float size, float power, float life)
 	{
-		(Node2D root, ShaderMaterial m) = Ripple(layer, at, size, squash, power, life + 0.05);
+		(Node2D root, ShaderMaterial m) = Ripple(layer, at, size, 0.3f, power, life + 0.05, axis, 0.18f);
 		Fx.Animate(root, 0, life, t => m.SetShaderParameter("prog", t));
 	}
 
