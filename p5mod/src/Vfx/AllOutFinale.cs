@@ -117,7 +117,7 @@ public sealed class AllOutFinale
 
 	private static Vector3 V3(BinaryReader r) => new(r.ReadSingle(), r.ReadSingle(), r.ReadSingle());
 
-	public static bool Available => Load() != null;
+	internal static void Preload() => Load();
 
 	/// <summary>四块画面（全屏 TextureRect）：红底板、碎星（含网点 / 血花 / 白色笔触）、人物、竖排字。调用方按顺序摆进自己的层里、各自做入场。</summary>
 	public readonly TextureRect Bg, Star, Front, Text;
@@ -132,45 +132,63 @@ public sealed class AllOutFinale
 	// 四块各放哪些层：0 = 相机（无网格），1 = 碎星背景，2 = 人物，3 = 上底板（红），4 = 下底板（关闭），5 = 竖排字
 	private static readonly int[][] Groups = { new[] { 3 }, new[] { 1 }, new[] { 2 }, new[] { 5 } };
 	private const int TextGroup = 3;
+	private readonly bool[] _shown = new bool[Groups.Length];
+	private readonly bool[] _layerVisible;
+	private int _sourceFrame = -1, _warmView;
+	private readonly Node _owner;
+	private readonly Vector2I _pixels;
 
 	private AllOutFinale(Data d, Node owner, Vector2 size)
 	{
 		_d = d;
 		_nodes = new Node3D[d.Layers.Length][];
 		_holders = new Node3D?[d.Layers.Length];
-		TextureRect[] rects = new TextureRect[Groups.Length];
+		_layerVisible = new bool[d.Layers.Length];
+		_owner = owner;
 		_cams = new Camera3D[Groups.Length];
-		Vector2I px = new(Mathf.Max(64, Mathf.RoundToInt(size.X)), Mathf.Max(36, Mathf.RoundToInt(size.Y)));
-		for (int g = 0; g < Groups.Length; g++)
+		// Match the screen aspect ratio and cap the four offscreen render targets.
+		float scale = Mathf.Min(1f, Mathf.Min(1280f / size.X, 720f / size.Y));
+		_pixels = new(Mathf.Max(64, Mathf.RoundToInt(size.X * scale)), Mathf.Max(36, Mathf.RoundToInt(size.Y * scale)));
+		Bg = MakeRect(size, 0);
+		Star = MakeRect(size, 1);
+		Front = MakeRect(size, 2);
+		Text = MakeRect(size, TextGroup);
+	}
+
+	private static TextureRect MakeRect(Vector2 size, int group) => new()
+	{
+		Size = size, StretchMode = TextureRect.StretchModeEnum.Scale,
+		MouseFilter = Control.MouseFilterEnum.Ignore, Name = $"P5AllOutLayer{group}",
+	};
+
+	// Allocate one 3D layer during each frame of the glass animation.
+	public void PrepareNextView()
+	{
+		int g = _views.Count;
+		if (g >= Groups.Length) return;
+		SubViewport vp = new()
 		{
-			SubViewport vp = new()
-			{
-				Size = px, TransparentBg = true, OwnWorld3D = true, Msaa3D = Viewport.Msaa.Msaa4X,
-				RenderTargetUpdateMode = SubViewport.UpdateMode.Always, Name = $"P5AllOutView{g}",
-			};
-			owner.AddChild(vp);
-			_views.Add(vp);
-			Node3D world = new();
-			vp.AddChild(world);
-			foreach (int li in Groups[g])
-			{
-				Build(li, world);
-			}
-			Camera3D cam = g == TextGroup
-				? new Camera3D { Projection = Camera3D.ProjectionType.Orthogonal, Size = 720f, Position = new Vector3(0f, 0f, 2000f), Far = 5000f, Current = true }
-				: new Camera3D { Near = d.Near, Far = d.Far, Fov = d.Fov, Current = true };
-			vp.AddChild(cam);
-			_cams[g] = cam;
-			rects[g] = new TextureRect
-			{
-				Texture = vp.GetTexture(), Size = size, StretchMode = TextureRect.StretchModeEnum.Scale,
-				MouseFilter = Control.MouseFilterEnum.Ignore, Name = $"P5AllOutLayer{g}",
-			};
-		}
-		Bg = rects[0];
-		Star = rects[1];
-		Front = rects[2];
-		Text = rects[3];
+			Size = _pixels, TransparentBg = true, OwnWorld3D = true, Msaa3D = Viewport.Msaa.Msaa2X,
+			RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled, Name = $"P5AllOutView{g}",
+		};
+		_owner.AddChild(vp);
+		_views.Add(vp);
+		Node3D world = new();
+		vp.AddChild(world);
+		foreach (int li in Groups[g]) Build(li, world);
+		Camera3D cam = g == TextGroup
+			? new Camera3D { Projection = Camera3D.ProjectionType.Orthogonal, Size = 720f, Position = new Vector3(0f, 0f, 2000f), Far = 5000f, Current = true }
+			: new Camera3D { Near = _d.Near, Far = _d.Far, Fov = _d.Fov, Current = true };
+		vp.AddChild(cam);
+		_cams[g] = cam;
+		TextureRect rect = g switch { 0 => Bg, 1 => Star, 2 => Front, _ => Text };
+		rect.Texture = vp.GetTexture();
+		if (_views.Count == Groups.Length) Seek(ArtAt, textVisible: true, present: false);
+	}
+
+	public void CompletePreparation()
+	{
+		while (_views.Count < Groups.Length) PrepareNextView();
 	}
 
 	/// <summary>建好三块离屏画面（挂在 owner 下，跟着 owner 释放）；数据缺失时 null。</summary>
@@ -180,9 +198,7 @@ public sealed class AllOutFinale
 		if (d == null) return null;
 		try
 		{
-			AllOutFinale f = new(d, owner, size);
-			f.Seek(RedAt);
-			return f;
+			return new AllOutFinale(d, owner, size);
 		}
 		catch (Exception e)
 		{
@@ -194,7 +210,7 @@ public sealed class AllOutFinale
 	private void Build(int li, Node3D world)
 	{
 		Layer l = _d.Layers[li];
-		Node3D holder = new() { Transform = l.Place };
+		Node3D holder = new() { Transform = l.Place, Visible = false };
 		world.AddChild(holder);
 		_holders[li] = holder;
 		int n = l.Parent.Length;
@@ -237,27 +253,53 @@ public sealed class AllOutFinale
 		}
 	}
 
-	/// <summary>设到源时间 t（秒，0–4）。</summary>
-	public void Seek(float t)
+	// Warm one render target per frame while the glass animation is playing.
+	public void WarmNextView()
+	{
+		if (_views.Count == Groups.Length && _warmView < _views.Count)
+			_views[_warmView++].RenderTargetUpdateMode = SubViewport.UpdateMode.Once;
+	}
+
+	/// <summary>Refresh the 3D layers only when a visible layer changes or advances to a new source frame.</summary>
+	public void Seek(float t, bool textVisible, bool present = true)
 	{
 		int f = Mathf.Clamp(Mathf.RoundToInt(t * _d.Fps), 0, _d.Frames - 1);
-		for (int li = 0; li < _d.Layers.Length; li++)
+		bool frameChanged = f != _sourceFrame;
+		_sourceFrame = f;
+		for (int g = 0; g < Groups.Length; g++)
 		{
-			if (_holders[li] is not Node3D holder) continue;
-			Layer l = _d.Layers[li];
-			Color tint = l.Tint[f];
-			holder.Visible = !l.Hidden && t + 1e-6f >= l.Start && t < l.End && tint.A > 1e-5f;
-			Node3D[] nodes = _nodes[li];
-			for (int k = 0; k < nodes.Length; k++) nodes[k].Transform = l.Frames[f, k];
+			bool show = present && (g != TextGroup || textVisible);
+			bool redraw = frameChanged || !_shown[g];
+			foreach (int li in Groups[g])
+			{
+				Layer l = _d.Layers[li];
+				Color tint = l.Tint[f];
+				bool visible = !l.Hidden && t + 1e-6f >= l.Start && t < l.End && tint.A > 1e-5f;
+				if (_layerVisible[li] != visible)
+				{
+					_layerVisible[li] = visible;
+					_holders[li]!.Visible = visible;
+					redraw = true;
+				}
+				if (frameChanged)
+				{
+					Node3D[] nodes = _nodes[li];
+					for (int k = 0; k < nodes.Length; k++) nodes[k].Transform = l.Frames[f, k];
+				}
+			}
+			_shown[g] = show;
+			if (show && redraw) _views[g].RenderTargetUpdateMode = SubViewport.UpdateMode.Once;
 		}
+		if (!frameChanged) return;
 		foreach (var (mat, b, li) in _mats)
 		{
 			Color tint = _d.Layers[li].Tint[f];
 			float a = b.A * tint.A;
-			mat.AlbedoColor = new Color(b.R * tint.R, b.G * tint.G, b.B * tint.B, a);
-			mat.Transparency = a < 0.999f ? BaseMaterial3D.TransparencyEnum.Alpha : BaseMaterial3D.TransparencyEnum.Disabled;
+			Color color = new(b.R * tint.R, b.G * tint.G, b.B * tint.B, a);
+			if (mat.AlbedoColor != color) mat.AlbedoColor = color;
+			var alpha = a < 0.999f ? BaseMaterial3D.TransparencyEnum.Alpha : BaseMaterial3D.TransparencyEnum.Disabled;
+			if (mat.Transparency != alpha) mat.Transparency = alpha;
 		}
-		// 相机：layer 0 的 Camera01 世界变换（外层摆放 × 父链局部矩阵），再绕光轴转 bank 角
 		Layer cl = _d.Layers[_d.CamLayer];
 		Transform3D w = Transform3D.Identity;
 		for (int k = _d.CamNode; k >= 0; k = cl.Parent[k]) w = cl.Frames[f, k] * w;
@@ -269,6 +311,10 @@ public sealed class AllOutFinale
 
 	public void Free()
 	{
+		if (GodotObject.IsInstanceValid(Bg)) Bg.Hide();
+		if (GodotObject.IsInstanceValid(Star)) Star.Hide();
+		if (GodotObject.IsInstanceValid(Front)) Front.Hide();
+		if (GodotObject.IsInstanceValid(Text)) Text.Hide();
 		foreach (SubViewport v in _views)
 		{
 			if (GodotObject.IsInstanceValid(v)) v.QueueFree();

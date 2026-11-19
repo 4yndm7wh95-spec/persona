@@ -247,6 +247,16 @@ public static class Warmup
 		}
 	}
 
+	public static void RequestAllOut()
+	{
+		if (!Groups.Add("allout")) return;
+		QueueTextures(new[] { "aoa_crackp5_a", "aoa_crackp5_core", "aoa_drip" });
+		QueueShaders(typeof(AllOut));
+		QueueSounds(new[] { Sfx.AoaZoom, Sfx.AoaCrack, Sfx.Shatter, Sfx.AoaSplatter });
+		Enqueue(new("allout model", Load: () => { AllOutFinale.Preload(); return true; }));
+		LogPlan("allout");
+	}
+
 	public static void RequestPersona()
 	{
 		if (!Groups.Add("Arsene")) return;

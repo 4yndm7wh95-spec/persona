@@ -22,7 +22,6 @@ public static partial class AllOut
 	public sealed class Foe
 	{
 		public Texture2D Tex = null!;
-		public Image Img = null!;
 		public Rect2 Rect;
 		public List<Vector2> Wounds = new();      // 贴图 UV（0–1）里的伤口
 		public Rect2 Tight = new(0f, 0f, 1f, 1f);  // 不透明部分在贴图 UV 里的范围
@@ -88,15 +87,15 @@ public static partial class AllOut
 	// ═══════════════════════════ 剪影截取 ═══════════════════════════
 
 	/// <summary>
-	/// 截一只怪物：在 host 下面开离屏画面（region = 屏幕坐标，1.5 倍分辨率），fill 往给的节点里放复制品（变换 = 它在屏幕上的变换），
+	/// 截一只怪物：在 host 下面开离屏画面（region = 屏幕坐标，最长边 768 像素），fill 往给的节点里放复制品（变换 = 它在屏幕上的变换），
 	/// 渲染两三帧后取图，回调 done（截不到 / 全透明时 null）。
 	/// </summary>
 	public static void Snap(Node host, Rect2 region, Func<Node2D, bool> fill, Action<Foe?> done)
 	{
-		const float K = 1.5f;
-		float k = Mathf.Min(K, 2048f / Mathf.Max(region.Size.X, region.Size.Y));
+		// A flat silhouette does not need a supersampled readback.
+		float k = Mathf.Min(1f, 768f / Mathf.Max(region.Size.X, region.Size.Y));
 		Vector2I size = new(Mathf.Max(8, Mathf.CeilToInt(region.Size.X * k)), Mathf.Max(8, Mathf.CeilToInt(region.Size.Y * k)));
-		SubViewport vp = new() { Size = size, TransparentBg = true, Disable3D = true, RenderTargetUpdateMode = SubViewport.UpdateMode.Always, Name = "P5AllOutSnap" };
+		SubViewport vp = new() { Size = size, TransparentBg = true, Disable3D = true, RenderTargetUpdateMode = SubViewport.UpdateMode.Once, Name = "P5AllOutSnap" };
 		host.AddChild(vp);
 		Node2D off = new() { Scale = Vector2.One * k, Position = -region.Position * k };
 		vp.AddChild(off);
@@ -121,8 +120,10 @@ public static partial class AllOut
 				Image img = vp.GetTexture().GetImage();
 				if (img == null || img.IsEmpty()) return;
 				img.Convert(Image.Format.Rgba8);
-				foe = new Foe { Img = img, Tex = ImageTexture.CreateFromImage(img), Rect = region };
-				if (!FindWounds(foe)) foe = null;
+				var candidate = new Foe { Rect = region };
+				if (!FindWounds(candidate, img)) return;
+				candidate.Tex = ImageTexture.CreateFromImage(img);
+				foe = candidate;
 			});
 			if (GodotObject.IsInstanceValid(vp)) vp.QueueFree();
 			done(foe);
@@ -131,16 +132,17 @@ public static partial class AllOut
 	}
 
 	/// <summary>在剪影上身挑 2～3 个伤口（不透明处，彼此隔开）；整张透明时 false。</summary>
-	private static bool FindWounds(Foe f)
+	private static bool FindWounds(Foe f, Image img)
 	{
-		Image img = f.Img;
 		int w = img.GetWidth(), h = img.GetHeight();
 		int x0 = w, x1 = -1, y0 = h, y1 = -1, step = Mathf.Max(1, Mathf.Min(w, h) / 96);
+		byte[] rgba = img.GetData();
+		byte AlphaAt(int x, int y) => rgba[(y * w + x) * 4 + 3];
 		for (int y = 0; y < h; y += step)
 		{
 			for (int x = 0; x < w; x += step)
 			{
-				if (img.GetPixel(x, y).A > 0.5f)
+				if (AlphaAt(x, y) > 127)
 				{
 					x0 = Mathf.Min(x0, x); x1 = Mathf.Max(x1, x); y0 = Mathf.Min(y0, y); y1 = Mathf.Max(y1, y);
 				}
@@ -155,7 +157,7 @@ public static partial class AllOut
 		{
 			float u = Mathf.Lerp(x0, x1, rng.RandfRange(0.25f, 0.75f));
 			float v = Mathf.Lerp(y0, y1, rng.RandfRange(0.18f, 0.55f));
-			if (img.GetPixel((int)u, (int)v).A < 0.8f) continue;
+			if (AlphaAt((int)u, (int)v) < 204) continue;
 			Vector2 p = new(u, v);
 			bool far = true;
 			foreach (Vector2 q in f.Wounds) far &= (q * new Vector2(w, h)).DistanceTo(p) > minGap;
@@ -172,8 +174,9 @@ public static partial class AllOut
 		public Polygon2D Face = null!, Back = null!;
 		public Line2D Edge = null!;
 		public Vector2 Center, Dir;
-		public float Speed, Spin, Delay, Grow;
-		public Vector2[] Uv = Array.Empty<Vector2>();
+		public float Speed, SpeedFactor, Spin, Delay, Grow;
+		public Pane Pane = null!;
+		public Vector2[] Local = Array.Empty<Vector2>();
 	}
 
 	private sealed class Jet
@@ -226,23 +229,44 @@ public static partial class AllOut
 		Sprite2D? coreSp = null;
 
 		// ── 原版收尾 + 夹在中间的怪物剪影和血 ──
-		AllOutFinale? fin = AllOutFinale.Create(rootC, screen);
+		AllOutFinale? fin = null;
 		Control finRoot = new() { Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore, Visible = false };
 		rootC.AddChild(finRoot);
 		finRoot.AddChild(new ColorRect { Color = new Color(0.8f, 0.03f, 0.08f), Position = new Vector2(-160f, -160f), Size = screen + new Vector2(320f, 320f), MouseFilter = Control.MouseFilterEnum.Ignore });   // 红底（比屏幕大一圈：震的时候不露边）   // 原版红底（离屏画面第一帧到之前也是红的）
-		if (fin != null)
-		{
-			finRoot.AddChild(fin.Bg);
-			finRoot.AddChild(fin.Star);
-			fin.Bg.PivotOffset = fin.Front.PivotOffset = fin.Text.PivotOffset = screen * 0.5f;
-			fin.Star.PivotOffset = screen * new Vector2(0.28f, 0.4f);                 // 碎星的中心
-		}
 		Node2D mid = new();
 		finRoot.AddChild(mid);
-		if (fin != null)
+		void PrepareFinale()
 		{
+			fin = AllOutFinale.Create(rootC, screen);
+			if (fin == null) return;
+			finRoot.AddChild(fin.Bg);
+			finRoot.MoveChild(fin.Bg, 1);
+			finRoot.AddChild(fin.Star);
+			finRoot.MoveChild(fin.Star, 2);
 			finRoot.AddChild(fin.Front);
 			finRoot.AddChild(fin.Text);
+			fin.Bg.PivotOffset = fin.Text.PivotOffset = screen * 0.5f;
+			fin.Front.PivotOffset = screen * new Vector2(0.62f, 0.2f);
+			fin.Star.PivotOffset = screen * new Vector2(0.28f, 0.4f);
+		}
+		void PrepareFinaleViews(bool immediate)
+		{
+			if (fin == null) return;
+			try
+			{
+				if (immediate) fin.CompletePreparation();
+				else
+				{
+					fin.PrepareNextView();
+					fin.WarmNextView();
+				}
+			}
+			catch (Exception e)
+			{
+				Stage.Report("allout finale build", e);
+				fin.Free();
+				fin = null;
+			}
 		}
 		Node2D shardLayer = new();
 		rootC.AddChild(shardLayer);
@@ -384,13 +408,15 @@ public static partial class AllOut
 		var cues = new List<(float At, string Name, float Vol)> { (ShatterAt - 0.65f, Sfx.AoaZoom, 1.9f), (CrackAt, Sfx.AoaCrack, 1.5f), (ShatterAt, Sfx.Shatter, 1.9f), (ArtT - 0.05f, Sfx.AoaSplatter, 2.0f) };
 		var fired = new bool[cues.Count];
 
-		bool broke = false, cracked = false;
+		bool broke = false, finRequested = false, prepDone = false, shardsVisible = false;
 		// 撞击点的粉碎团：打中那一刻（冲击帧）就出现，0.1s 从小炸到原大，之后随裂纹蔓延再慢慢扩一点
 		if (coreTex != null)
 		{
 			coreSp = new Sprite2D { Texture = coreTex, Position = focus, Rotation = rng.RandfRange(0f, Mathf.Tau), Scale = Vector2.Zero };
 			crackLayer.AddChild(coreSp);
 		}
+		IEnumerator<Shard> prep = PrepareShards(gl, shardLayer, screen, rng).GetEnumerator();
+		layer.TreeExiting += prep.Dispose;
 		Tween clock = layer.CreateTween();
 		clock.SetIgnoreTimeScale(true);
 		clock.TweenMethod(Callable.From<float>(T => Stage.Safe("allout tick", () =>
@@ -402,49 +428,74 @@ public static partial class AllOut
 			}
 			// 定格：裂纹从敌人那里炸开，画面往里推一点
 			// 顿帧：最开头两帧是黑白反转的冲击帧，之后画面压暗、去色、四周收暗，撞击点附近色散，集中线一闪一闪
-			float imp = T < 0.08f ? 1f : 0f;
-			float hold = Mathf.Clamp((T - 0.06f) / 0.2f, 0f, 1f);
-			gl.Param("impact", imp);
-			gl.Param("hold", hold);
-			float rad = Mathf.Sqrt(W * W + H * H);
-			foreach (var sp in speed)
+			if (!broke)
 			{
-				float flick = 0.5f + 0.5f * Mathf.Sin(T * 40f + sp.Ph * 3f);
-				float a = hold * (0.18f + 0.3f * flick) * (broke ? 0f : 1f);
-				Vector2 dir = Vector2.FromAngle(sp.Ang), nrm = dir.Orthogonal();
-				Vector2 outer = focus + dir * rad, inner = focus + dir * rad * (1f - sp.Len * (0.85f + 0.15f * flick));
-				sp.P.Polygon = new[] { outer + nrm * sp.W0, outer - nrm * sp.W0, inner };
-				sp.P.Color = new Color(1f, 1f, 1f, a);
-			}
-			if (coreSp != null)
-			{
-				float ck = Quint(Mathf.Clamp(T / 0.1f, 0f, 1f)) * (1f + 0.25f * Mathf.Clamp((T - CrackAt) / 0.6f, 0f, 1f));
-				foreach (float beat in new[] { ShatterAt - 0.17f, ShatterAt - 0.07f })   // 碎开前两下心跳似的鼓胀
+				float imp = T < 0.08f ? 1f : 0f;
+				float hold = Mathf.Clamp((T - 0.06f) / 0.2f, 0f, 1f);
+				gl.Param("impact", imp);
+				gl.Param("hold", hold);
+				float rad = Mathf.Sqrt(W * W + H * H);
+				foreach (var sp in speed)
 				{
-					float bt2 = (T - beat) / 0.07f;
-					if (bt2 > 0f && bt2 < 1f) ck *= 1f + 0.22f * Mathf.Sin(bt2 * Mathf.Pi);
+					float flick = 0.5f + 0.5f * Mathf.Sin(T * 40f + sp.Ph * 3f);
+					float a = hold * (0.18f + 0.3f * flick) * (broke ? 0f : 1f);
+					Vector2 dir = Vector2.FromAngle(sp.Ang), nrm = dir.Orthogonal();
+					Vector2 outer = focus + dir * rad, inner = focus + dir * rad * (1f - sp.Len * (0.85f + 0.15f * flick));
+					sp.P.Polygon = new[] { outer + nrm * sp.W0, outer - nrm * sp.W0, inner };
+					sp.P.Color = new Color(1f, 1f, 1f, a);
 				}
-				coreSp.Scale = Vector2.One * 0.62f * ck;
-				coreSp.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(T / 0.04f, 0f, 1f));
+				if (coreSp != null)
+				{
+					float ck = Quint(Mathf.Clamp(T / 0.1f, 0f, 1f)) * (1f + 0.25f * Mathf.Clamp((T - CrackAt) / 0.6f, 0f, 1f));
+					foreach (float beat in new[] { ShatterAt - 0.17f, ShatterAt - 0.07f })   // 碎开前两下心跳似的鼓胀
+					{
+						float bt2 = (T - beat) / 0.07f;
+						if (bt2 > 0f && bt2 < 1f) ck *= 1f + 0.22f * Mathf.Sin(bt2 * Mathf.Pi);
+					}
+					coreSp.Scale = Vector2.One * 0.62f * ck;
+					coreSp.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(T / 0.04f, 0f, 1f));
+				}
+				// 裂开的过程中慢慢往撞击点推近，碎开前一拍微微发抖
+				// （用户 2026-11-18：前半段不要放大游戏画面）碎开前 0.18s 微微发抖
+				float tremble = T < ShatterAt ? 6f * Mathf.Pow(Mathf.Clamp((T - (ShatterAt - 0.3f)) / 0.3f, 0f, 1f), 1.5f) : 0f;
+				UpdateGlass(gl, T, screen, tremble);
+				if (T < ShatterAt)
+				{
+					if (!finRequested)
+					{
+						finRequested = true;
+						PrepareFinale();
+					}
+					else PrepareFinaleViews(immediate: false);
+					for (int i = 0; i < 9 && !prepDone; i++)
+					{
+						prepDone = !prep.MoveNext();
+						if (!prepDone) shards.Add(prep.Current);
+					}
+				}
 			}
-			// 裂开的过程中慢慢往撞击点推近，碎开前一拍微微发抖
-			float push = Mathf.Clamp((T - CrackAt) / (ShatterAt - CrackAt), 0f, 1f);
-			// （用户 2026-11-18：前半段不要放大游戏画面）碎开前 0.18s 微微发抖
-			float tremble = T < ShatterAt ? 6f * Mathf.Pow(Mathf.Clamp((T - (ShatterAt - 0.3f)) / 0.3f, 0f, 1f), 1.5f) : 0f;
-			if (!broke) UpdateGlass(gl, T, screen, tremble);
 			// 碎开：离屏画面定住，玻璃片飞散，下面是原版收尾
 			if (T >= ShatterAt && !broke)
 			{
 				broke = true;
+				if (!finRequested) PrepareFinale();
+				PrepareFinaleViews(immediate: true);
 				// 截下此刻的整屏（含压暗、裂痕）当玻璃片的贴图；恢复正常速度
 				Image shot = main.GetTexture().GetImage();
-				shards.AddRange(BreakGlass(gl, shardLayer, shot, screen, rng));
+				while (!prepDone)
+				{
+					prepDone = !prep.MoveNext();
+					if (!prepDone) shards.Add(prep.Current);
+				}
+				shardsVisible = shot != null && !shot.IsEmpty();
+				if (shardsVisible) ApplyShatterTexture(gl, shards, shot!, screen);
 				stageRoot.Visible = false;
 				RestoreTime();
 				finRoot.Visible = true;
-				foreach (Shard sh in shards) sh.Face.Visible = sh.Back.Visible = sh.Edge.Visible = true;
+				if (shardsVisible)
+					foreach (Shard sh in shards) sh.Face.Visible = sh.Back.Visible = sh.Edge.Visible = true;
 			}
-			if (broke)
+			if (broke && T < HoleAt)
 			{
 				float d = T - ShatterAt;
 				float fa = 1f - Mathf.Clamp(d / 0.08f, 0f, 1f);
@@ -456,29 +507,31 @@ public static partial class AllOut
 				burst.Rotation = 0.3f + 0.25f * bt;
 				burst.Scale = new Vector2(1f, 0.55f) * Mathf.Lerp(H * 0.3f, H * 1.3f, Quint(bt));
 				burst.Modulate = new Color(1f, 1f, 1f, 0.9f * (1f - bt));
-				foreach (Shard sh in shards)
+				if (shardsVisible)
 				{
-					// 炸开：一出手就是最快（四次方缓出），越转越慢；后段带一点下坠，最后 30% 很快淡掉
-					float e = Mathf.Clamp((d - sh.Delay) / ShardLife, 0f, 1f);
-					float fly = 1f - Mathf.Pow(1f - e, 4f);
-					Vector2 off = sh.Dir * sh.Speed * fly + new Vector2(0f, 700f) * e * e;
-					float sc = 1f + sh.Grow * fly;
-					float a = 1f - Mathf.Clamp((e - 0.7f) / 0.3f, 0f, 1f);
-					foreach (CanvasItem ci in new CanvasItem[] { sh.Face, sh.Back, sh.Edge })
+					if (d >= ShardLife + 0.04f)
 					{
-						Node2D n = (Node2D)ci;
-						n.Position = sh.Center + off;
-						n.Rotation = sh.Spin * fly;
-						n.Scale = Vector2.One * sc;
-						ci.Modulate = new Color(1f, 1f, 1f, a);
+						shardLayer.Visible = false;
+						shardsVisible = false;
 					}
-					// 玻璃的厚度：分开以后才看得到（侧边一层暗红随飞行错开），白边随之亮起
-					sh.Back.Position += new Vector2(7f, 9f) * sc * Mathf.Clamp(fly * 3f, 0f, 1f);
-					sh.Edge.Modulate = new Color(1f, 1f, 1f, a * Mathf.Clamp(fly * 4f, 0f, 1f));
+					else foreach (Shard sh in shards)
+					{
+						float e = Mathf.Clamp((d - sh.Delay) / ShardLife, 0f, 1f);
+						float fly = 1f - Mathf.Pow(1f - e, 4f);
+						Vector2 off = sh.Dir * sh.Speed * fly + new Vector2(0f, 700f) * e * e;
+						float sc = 1f + sh.Grow * fly;
+						float a = 1f - Mathf.Clamp((e - 0.7f) / 0.3f, 0f, 1f);
+						sh.Face.Position = sh.Edge.Position = sh.Center + off;
+						sh.Back.Position = sh.Face.Position + new Vector2(7f, 9f) * sc * Mathf.Clamp(fly * 3f, 0f, 1f);
+						sh.Face.Rotation = sh.Back.Rotation = sh.Edge.Rotation = sh.Pane.Rot + sh.Spin * fly;
+						sh.Face.Scale = sh.Back.Scale = sh.Edge.Scale = Vector2.One * sc;
+						sh.Face.Modulate = sh.Back.Modulate = new Color(1f, 1f, 1f, a);
+						sh.Edge.Modulate = new Color(1f, 1f, 1f, a * Mathf.Clamp(fly * 4f, 0f, 1f));
+					}
 				}
 				// 原版收尾的时间：入场 0.4s 按原速，之后放慢、正好在透明波扩开时走到原版的最后一帧 —— 一直在动，不会中途停住
 				float stretch = (AllOutFinale.End - 0.02f - SrcStart - 0.4f) / (HoleAt + ClearSweep - ShatterAt - 0.4f);
-				fin?.Seek(Mathf.Min(d < 0.4f ? SrcStart + d : SrcStart + 0.4f + (d - 0.4f) * stretch, AllOutFinale.End - 0.02f));
+				fin?.Seek(Mathf.Min(d < 0.4f ? SrcStart + d : SrcStart + 0.4f + (d - 0.4f) * stretch, AllOutFinale.End - 0.02f), textVisible: d >= TextIn);
 				if (fin != null)
 				{
 					// 拆开入场（一层接一层）：红底从放大压回 → 碎星转着砸进来 → Joker 从右边冲进来（带一点回弹）→ 怪物剪影从左边砸进（ArtT）
@@ -496,7 +549,6 @@ public static partial class AllOut
 					// 不缩到原大以下（人物这层一直铺到屏幕右边和下边，缩了就露边）：1.4 倍 0.16s 砸到原大，之后极慢地往前推（放大）
 					float slam = Mathf.Clamp(d / 0.16f, 0f, 1f);
 					float js = Mathf.Lerp(1.4f, 1f, Quint(slam)) + Drift * d;                    // 人物一直往前推
-					fin.Front.PivotOffset = screen * new Vector2(0.62f, 0.2f);                // 脸
 					fin.Front.Scale = Vector2.One * js;
 					fin.Front.Position = new Vector2(W * 0.1f * (1f - Quint(slam)) - 9f * d, 0f);      // 同时慢慢往左漂（放大量盖得住，不露右边）
 					float lit = Mathf.Clamp((d - 0.04f) / 0.1f, 0f, 1f);
@@ -588,7 +640,11 @@ public static partial class AllOut
 				ringM.SetShaderParameter("rim_a", rimA);
 				float c = (T - HoleAt) / ClearSweep;
 				ringM.SetShaderParameter("hole", c > 0f ? ringCover * 1.06f * Ease(Mathf.Min(c, 1f)) + 1f : 0f);
-				if (T >= HoleAt) finRoot.Visible = false;                // 已被两圈完全盖住
+				if (T >= HoleAt && finRoot.Visible)
+				{
+					finRoot.Visible = false;
+					fin?.Free();
+				}
 			}
 		})), 0f, Total, Total);
 		tree.CreateTimer(Total + 0.05, true, false, true).Timeout += () =>

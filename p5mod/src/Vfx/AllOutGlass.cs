@@ -285,11 +285,8 @@ public static partial class AllOut
 	}
 
 	/// <summary>碎开：每块按离撞击点的几圈切成小片，贴上整屏截图，从各块此刻（错开后）的位置出发。</summary>
-	private static List<Shard> BreakGlass(Glass g, Node2D layer, Image shot, Vector2 screen, RandomNumberGenerator rng)
+	private static IEnumerable<Shard> PrepareShards(Glass g, Node2D layer, Vector2 screen, RandomNumberGenerator rng)
 	{
-		var list = new List<Shard>();
-		ImageTexture tex = ImageTexture.CreateFromImage(shot);
-		Vector2 k = new Vector2(shot.GetWidth(), shot.GetHeight()) / screen;
 		Vector2[] view = { new(-40f, -40f), new(screen.X + 40f, -40f), screen + new Vector2(40f, 40f), new(-40f, screen.Y + 40f) };
 		float[] rings = { 230f, 520f, 900f, 1500f };
 		foreach (Pane p in g.Panes)
@@ -311,35 +308,50 @@ public static partial class AllOut
 				}
 				pieces.AddRange(rest);
 			}
-			Transform2D xf = p.Xform;
 			foreach (Vector2[] piece in pieces)
 			{
 				if (piece.Length < 3) continue;
-				var shown = new Vector2[piece.Length];
-				Vector2 c = Vector2.Zero;
-				for (int i = 0; i < piece.Length; i++) { shown[i] = xf * piece[i]; c += shown[i]; }
-				c /= piece.Length;
+				Vector2 center = Vector2.Zero;
+				foreach (Vector2 point in piece) center += point;
+				center /= piece.Length;
 				var local = new Vector2[piece.Length];
-				var uv = new Vector2[piece.Length];
-				for (int i = 0; i < piece.Length; i++) { local[i] = shown[i] - c; uv[i] = shown[i] * k; }
-				float dist = c.DistanceTo(g.Focus);
+				for (int i = 0; i < piece.Length; i++) local[i] = piece[i] - center;
 				Shard sh = new()
 				{
-					Center = c, Dir = (c - g.Focus).LengthSquared() > 1f ? (c - g.Focus).Normalized() : Vector2.Up,
-					Speed = (600f + 1500f * Mathf.Clamp(1f - dist / 1800f, 0.2f, 1f)) * rng.RandfRange(0.8f, 1.25f),
-					Spin = rng.RandfRange(-2.4f, 2.4f), Delay = Mathf.Clamp(dist / 9000f, 0f, 0.04f),
+					Pane = p, Center = center, Local = local,
+					SpeedFactor = rng.RandfRange(0.8f, 1.25f),
+					Spin = rng.RandfRange(-2.4f, 2.4f),
 					Grow = rng.Randf() < 0.45f ? rng.RandfRange(0.7f, 1.6f) : rng.RandfRange(0.1f, 0.45f),
 					Back = new Polygon2D { Polygon = local, Color = new Color(0.22f, 0f, 0.03f), Antialiased = true, Visible = false },
-					Face = new Polygon2D { Polygon = local, Texture = tex, UV = uv, Antialiased = true, Visible = false },
-					Edge = new Line2D { Points = local, Closed = true, Width = 1.2f, DefaultColor = new Color(1f, 0.95f, 0.95f, 0.7f), Antialiased = true, Visible = false },
+					Face = new Polygon2D { Polygon = local, Antialiased = true, Visible = false },
+					Edge = new Line2D { Points = local, Closed = true, Width = 1.2f, DefaultColor = new Color(1f, 0.95f, 0.9f, 0.7f), Antialiased = true, Visible = false },
 				};
 				layer.AddChild(sh.Back);
 				layer.AddChild(sh.Face);
 				layer.AddChild(sh.Edge);
-				list.Add(sh);
+				yield return sh;
 			}
 		}
-		return list;
+	}
+
+	private static void ApplyShatterTexture(Glass g, List<Shard> shards, Image shot, Vector2 screen)
+	{
+		ImageTexture tex = ImageTexture.CreateFromImage(shot);
+		Vector2 k = new Vector2(shot.GetWidth(), shot.GetHeight()) / screen;
+		foreach (Shard sh in shards)
+		{
+			Transform2D xf = sh.Pane.Xform;
+			var uv = new Vector2[sh.Local.Length];
+			for (int i = 0; i < uv.Length; i++) uv[i] = (xf * (sh.Center + sh.Local[i])) * k;
+			sh.Face.Texture = tex;
+			sh.Face.UV = uv;
+			sh.Center = xf * sh.Center;
+			Vector2 fromFocus = sh.Center - g.Focus;
+			float dist = fromFocus.Length();
+			sh.Dir = dist > 1f ? fromFocus / dist : Vector2.Up;
+			sh.Speed = (600f + 1500f * Mathf.Clamp(1f - dist / 1800f, 0.2f, 1f)) * sh.SpeedFactor;
+			sh.Delay = Mathf.Clamp(dist / 9000f, 0f, 0.04f);
+		}
 	}
 
 	private static Vector2[] Disc(Vector2 c, float r, int n)

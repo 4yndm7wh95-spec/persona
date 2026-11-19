@@ -55,6 +55,7 @@ public static class WarmupGame
 		foreach (var player in state.Players.Where(Joker.Is))
 		{
 			Warmup.RequestJoker();
+			Warmup.RequestAllOut();
 			foreach (var card in player.Deck.Cards)
 			{
 				Warmup.RequestCard(card.GetType().Name);
