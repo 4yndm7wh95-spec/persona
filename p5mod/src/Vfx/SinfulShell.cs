@@ -193,43 +193,50 @@ void fragment() {
 	// ───────────────────────── 子弹 ─────────────────────────
 
 	/// <summary>
-	/// 重弹（第二版，用户 2026-11-19：原来是一道细光，像激光不像一发很重的子弹）：沿 x 从尾到头，head_px = 弹头中心在四边形里的位置（像素）。
-	/// 白热的长弹头 + 外面一层青色的光晕；弹头前面一层被挤开的气浪（往后张开的抛物面，软边，不画线）；身后一股越来越宽、翻滚着的等离子尾，
-	/// 和一道很快暗下去的白热弹迹。tail 控制尾巴长度，fade 整体淡出。加法。
+	/// 大罪穿甲弹（第四版，用户 2026-11-19：上一版开枪的特效根本看不出来，而且命中是一个白圆片 + 一个白楔形，几何感太重）：
+	/// 弹头是一颗大的能量弹（直径约 0.3 × 四边形高），表面翻滚的等离子把边缘撕得不规则，中间白热；身后拖一股拧着的等离子尾——
+	/// 一团越往后越细的等离子 + 两条绕着弹道拧的粗光带（前半圈亮后半圈暗，有立体感），尾巴上每一处按「被弹头经过了多久」变暗、散掉，
+	/// 弹道在画面上留得住 0.3s 左右、看得清子弹是从哪飞到哪的。沿 x 从尾到头；head_px = 弹头中心在四边形里的位置。加法。
 	/// </summary>
 	private static Shader BulletShader => _bullet ??= new Shader { Code = @"
 shader_type canvas_item;
 render_mode blend_add;
 uniform float clock = 0.0;
 uniform float len_px = 1000.0;
-uniform float thick_px = 360.0;
+uniform float thick_px = 420.0;
 uniform float head_px = 900.0;
+uniform float speed_px = 2800.0;
+uniform float extra_age = 0.0;
 uniform float fade = 1.0;
-uniform float tail = 1.0;
 " + Noise + @"
 void fragment() {
-	// 第三版（用户 2026-11-19：偏软、像打出了一团烟雾）：弹头是实心的——一颗硬边的白热胶囊，外面只有很窄的一圈青光；
-	// 身后拖一截硬边的尖尾（外青内白两层，越往后越细，边上被噪声轻轻吃一点），只有弹头后面一小段。不再是一团高斯光晕。
 	float x = UV.x, y = (UV.y - 0.5) * 2.0;
 	float xp = x * len_px, yp = y * thick_px * 0.5;
 	float dx = xp - head_px;
-	float sl = thick_px * 0.16, sh = thick_px * 0.05;
-	float sd = length(vec2(max(abs(dx) - sl, 0.0), yp)) - sh;          // 胶囊的有向距离（像素）
-	float slug = 1.0 - smoothstep(-1.5, 1.5, sd);
-	float rim = exp(-max(sd, 0.0) / 6.0) * (1.0 - slug);
-	float bloom = exp(-max(sd, 0.0) / 24.0) * 0.3;
-	float behind = -(dx + sl * 0.5);
-	float tl = thick_px * 0.8 * tail;
-	float k = clamp(behind / max(tl, 1.0), 0.0, 1.0);
-	float on = step(0.0, behind) * step(behind, tl);
-	float hw = sh * 1.1 * (1.0 - k);
-	float wob = (fbm(vec2(xp * 0.02 - clock * 30.0, y * 2.0)) - 0.5) * sh * 0.6 * k;
-	float d2 = abs(yp + wob) - hw;
-	float trailOut = (1.0 - smoothstep(-1.2, 1.2, d2)) * on;
-	float trailCore = (1.0 - smoothstep(-1.2, 1.2, d2 + hw * 0.5)) * on;
-	float trailGlow = exp(-max(d2, 0.0) / 8.0) * on * (1.0 - k) * 0.45;
-	vec3 white = vec3(0.97, 0.99, 1.0), cyan = vec3(0.35, 0.8, 1.0), deep = vec3(0.15, 0.4, 1.0);
-	vec3 col = white * (slug * 2.2 + trailCore * 1.7) + cyan * (rim * 1.4 + trailOut * (1.0 - trailCore) * 1.3 + trailGlow) + deep * bloom;
+	float R = thick_px * 0.15;
+	// 弹头
+	vec2 hp = vec2(dx * 0.8, yp);
+	float rr = length(hp), ang = atan(hp.y, hp.x);
+	float swirl = fbm(vec2(ang * 1.6 + clock * 9.0, rr / R * 1.5 - clock * 14.0));
+	float Re = R * (0.85 + 0.35 * swirl);
+	float orb = smoothstep(Re + R * 0.25, Re - R * 0.15, rr);
+	float core = smoothstep(R * 0.55, R * 0.12, rr + (swirl - 0.5) * R * 0.3);
+	float halo = exp(-max(rr - Re, 0.0) / (R * 0.55)) * 0.55;
+	// 尾
+	float behind = max(-dx, 0.0);
+	float age = behind / speed_px + extra_age;
+	float life = exp(-age / 0.16);
+	float w = R * mix(0.85, 0.3, clamp(behind / (thick_px * 2.2), 0.0, 1.0)) * (0.8 + 0.5 * min(age * 4.0, 1.0));
+	float tn = fbm(vec2(xp * 0.012 - clock * 20.0, y * 3.0));
+	float on = step(dx, 0.0);
+	float body = exp(-pow(yp / w, 2.0) * (1.2 - 0.6 * tn)) * on;
+	float ph = xp / (R * 2.4) - clock * 22.0;
+	float r1 = abs(yp - w * 0.7 * sin(ph)), r2 = abs(yp - w * 0.7 * sin(ph + 3.14159));
+	float rib = (exp(-pow(r1 / (w * 0.32), 2.0)) * (0.55 + 0.45 * cos(ph)) + exp(-pow(r2 / (w * 0.32), 2.0)) * (0.55 + 0.45 * cos(ph + 3.14159))) * on;
+	float trail = (body * (0.45 + 0.55 * tn) * 0.9 + rib * 0.9) * life;
+	vec3 white = vec3(0.97, 0.99, 1.0), cyan = vec3(0.32, 0.78, 1.0), deep = vec3(0.12, 0.35, 1.0);
+	vec3 col = white * (core * 2.4 + orb * 0.9) + mix(cyan, white, 0.3) * orb * swirl * 0.8 + deep * halo
+		+ mix(deep, cyan, life) * trail * 1.1 + white * rib * life * 1.1;   // 拧着的两条光带亮一些：看得出是一股在旋的能量，不是一条软光带
 	float edge = (1.0 - smoothstep(0.85, 1.0, abs(y))) * smoothstep(0.0, 0.02, x) * (1.0 - smoothstep(0.985, 1.0, x));
 	COLOR = vec4(col * fade * edge, 1.0);
 }" };
@@ -237,14 +244,14 @@ void fragment() {
 	// ───────────────────────── 时序 ─────────────────────────
 
 	/// <summary>各拍的时刻（从出牌算起，秒）。</summary>
-	public const float RevealAt = 0.05f, RevealTime = 0.7f, AimAt = 0.45f, BulletSpeed = 3800f;   // 第二版 5200 → 3800：重弹要看得见飞过去
+	public const float RevealAt = 0.05f, RevealTime = 0.7f, AimAt = 0.45f, BulletSpeed = 2800f;   // 第四版 → 2800：能量弹在画面里飞 6～7 帧才到第一个敌人，看得见
 
 	/// <summary>
 	/// 退场（用户 2026-11-09：收枪结束时场景起码已经开始收回 20% 左右）：枪落回手里（撒旦耶尔开枪 FireAt+0.12 之后 PutAwayAfter + 转两圈 + 一顿）那一刻劈退场的雷；
 	/// 场景圈提前 ConcealAfter 开始收、用 ExitTime 收完：半径从画面最远的角开始按 smoothstep 收，收枪结束时（走了 40% 的时间）
 	/// 半径收了三成多、画面上明显在收（用户说「起码两成」）；撒旦耶尔从上往下烧（雷后 ~0.58s）的同时圈从外往脚下收，两个一起走完。
 	/// </summary>
-	public const float ExitAfter = 0.12f + SatanaelPuppet.PutAwayAfter + 0.02f + SatanaelPuppet.SpinTime + 0.04f, ExitTime = 1.0f,
+	public const float ExitAfter = 0.12f + SatanaelPuppet.PutAwayAfter + 0.02f + SatanaelPuppet.SpinTime + 0.04f + ShotHold, ExitTime = 1.0f,
 		ConcealAfter = ExitAfter - 0.4f * ExitTime;
 
 	/// <summary>
@@ -256,6 +263,9 @@ void fragment() {
 	/// 画面在整段时停里持续变暗，声音是「滋」被拖慢掉下去（像磁带停转）再接一小段往上提的气声；时长也从 0.42 缩到 0.3。
 	/// </summary>
 	public const float ChargeAt = CatchAt + 0.06f, ChargeTime = 0.95f, FreezeAt = ChargeAt + ChargeTime, FreezeTime = 0.3f;
+
+	/// <summary>第四版：开枪后多留这么久再收场（子弹穿过以后的连环引爆要演完）。</summary>
+	public const float ShotHold = 0.3f;
 
 	/// <summary>开枪：时停结束的那一刻。</summary>
 	public const float FireAt = FreezeAt + FreezeTime;
@@ -495,6 +505,7 @@ void fragment() {
 		veilRoot.AddChild(veil);
 		Fx.FreeAfter(veilRoot, BurstAt + 1.0);
 		var pierceOf = new Dictionary<CanvasItem, float>();        // 敌人 → 子弹穿过它的时刻（下面算出 pierce 后填）
+		var pierceReal = new Dictionary<CanvasItem, double>();     // 敌人 → 子弹真的穿过它那一刻的真实时间（发白按真实时间退）
 		Color grade = new(0.6f, 0.68f, 0.95f);
 		Fx.FreeAfter(lights, total + 0.1);
 		root.TreeExiting += () =>
@@ -579,7 +590,7 @@ void fragment() {
 			}
 			muzzleLight.Energy = charge * 1.1f;
 			flashLight.Energy = 2.2f * flash + 1.2f * after;
-			bulletLight.Energy = fly >= 0f && fly < 0.6f ? 2.6f * (1f - fly / 0.6f) : 0f;
+			bulletLight.Energy = fly >= 0f && fly < 0.6f ? 1.3f * (1f - fly / 0.6f) : 0f;
 			if (fly >= 0f)
 			{
 				bulletLight.GlobalPosition = s.PersonaMuzzle + (aimDir * BulletSpeed * unit * fly);
@@ -593,10 +604,11 @@ void fragment() {
 			{
 				if (!GodotObject.IsInstanceValid(a)) continue;
 				// 用户 2026-11-09：子弹穿过敌人的一瞬间被光从里面打透——不是描边，而是整只过曝成冷白再退回去（modulate 超过 1 就是提亮）
-				float ox = pierceOf.TryGetValue(a, out float pt) && time >= pt ? Mathf.Exp(-(time - pt) / 0.12f) : 0f;
+				// 第四版：被打透的发白按真实时间 0.06s 退掉（顿帧里不会一直白着、把命中特效盖住），也不再白到纯白
+				float ox = pierceReal.TryGetValue(a, out double pr) ? Mathf.Exp(-(float)(real - pr) / 0.06f) : 0f;
 				a.Modulate = beat == 1 ? new Color(0f, 0f, 0f, c.A)
 					: beat == 2 ? new Color(2.3f, 2.6f, 3.1f, c.A)
-					: c * tint * new Color(1f + 2.2f * ox, 1f + 2.6f * ox, 1f + 3.2f * ox, 1f);
+					: c * tint * new Color(1f + 1.4f * ox, 1f + 1.7f * ox, 1f + 2.2f * ox, 1f);
 			}
 		};
 		Fx.Animate(root, 0, total, step);
@@ -731,7 +743,7 @@ void fragment() {
 			Stage.ShakeDir?.Invoke(4, Mathf.RadToDeg((-dir).Angle()));      // 后坐：往枪的反方向一推
 			Glow.Flash(front, muzzle, new Color(0.85f, 0.95f, 1f), 260f * unit, 0.08f);
 			puppet?.Blast();                                               // 远处云海被枪口冲击波压开、翻卷
-			MuzzleBlast(front, muzzle, dir, unit);                         // 枪口炸开的一团：往前一大股、两侧各一股泄压的气焰
+			FireBurstDir(front, muzzle, dir, 440f * unit, 0.2f, 1.25f, new Vector2(1.6f, 0.72f));   // 枪口炸开的火舌（开场那种炸开，朝前拉长；小而短，不糊住弹道）
 			// 炮口烟：一大团往前推、往上飘的烟（画在人物后面、撒旦耶尔前面），一开始被枪火照亮
 			Bullet(front, muzzle, dir, screen, unit);                      // 看得见的重弹
 			Tunnel(back, muzzle, dir, screen.Length() * 1.2f, BulletSpeed * unit, 280f * unit, 1.3f);   // 身后留下的一条暗烟
@@ -753,6 +765,7 @@ void fragment() {
 			Node2D? body = idx < s.EnemyVisuals.Count ? s.EnemyVisuals[idx] as Node2D : null;
 			Fx.After(front, FireAt + travel[k], () =>
 			{
+				if (body != null) pierceReal[body] = HitStop.RealSeconds();
 				Pierce(front, back, hit, dir, unit, first, last, body, root);
 				s.OnPierce?.Invoke(idx);
 			});
@@ -768,11 +781,32 @@ void fragment() {
 		// 飞过镜头的呼啸去掉了（和开枪的冲击叠在一起）
 		if (travel.Length > 0)
 		{
-			Fx.After(front, FireAt + travel[0], () =>
+			Fx.After(front, FireAt + travel[0], () => Sfx.Play(HitSound, 1.3f));
+			// 第四版（用户：打到敌人那会儿炸开要更明显、更华丽）：子弹一路穿过所有敌人以后，沿弹道从第一个起一个接一个连环引爆——
+			// 每处一团大的蓝焰炸开 + 冲起一根蓝焰火柱，最后一个最大；第一下引爆顿住、低频重击、重震（原来打中那一下的顿帧挪到这里）
+			float boomAt = FireAt + travel[^1] + 0.07f;
+			for (int k = 0; k < stopHits.Count; k++)
 			{
-				Sfx.Play(HitSound, 1.3f);
-				Sfx.Play(Sfx.Crush, 0.9f);                                 // 打进去的那一下闷响（和顿帧同一刻）
-			});
+				int kk = k;
+				bool lastBoom = k == stopHits.Count - 1;
+				Fx.After(front, boomAt + 0.08f * k, () =>
+				{
+					Detonate(front, stopHits[kk], unit, lastBoom);
+					if (enemiesOrdered[kk].i < s.EnemyVisuals.Count && s.EnemyVisuals[enemiesOrdered[kk].i] is CanvasItem ev2) pierceReal[ev2] = HitStop.RealSeconds();
+					if (kk == 0)
+					{
+						HitStop.Request(0.1);
+						Sfx.Play(Sfx.SubBoom, 1.1f);
+						Sfx.Play(Sfx.Crush, 0.95f);
+						Fx.Shake(9);
+						Stage.ShakeDir?.Invoke(4, -90f);
+					}
+					else if (lastBoom)
+					{
+						Fx.Shake(7);
+					}
+				});
+			}
 		}
 		SinfulRender.Observe(root, started);
 		return pierce;
@@ -780,7 +814,7 @@ void fragment() {
 
 	// ───────────────────────── 开枪的冲击 ─────────────────────────
 
-	private static Shader? _hush, _charge, _blast;
+	private static Shader? _hush, _charge;
 
 	/// <summary>蓄力 / 时停时盖在画面上的一层暗（不读屏幕）：深蓝黑，枪口周围留一圈稍亮的地方——像是只有枪口那点光还照得到。</summary>
 	private static Shader HushShader => _hush ??= new Shader { Code = @"
@@ -938,55 +972,14 @@ void fragment() {
 		};
 	}
 
-	/// <summary>
-	/// 枪口炸开的一团（用户 2026-11-10：这一枪要特别炸裂）。x 轴沿枪管：往前一大股、两侧斜后方各一股泄压的气焰、中心白热；
-	/// 边缘被噪声啃碎、亮度从中心往外连续衰减（白 → 青 → 深蓝，不分色阶），外面甩着一圈细的放射线。prog 0→1 冲出去再散掉。
-	/// </summary>
-	private static Shader BlastShader => _blast ??= new Shader { Code = @"
-shader_type canvas_item;
-render_mode blend_add;
-uniform float prog = 0.0;
-uniform float seed = 0.0;
-" + Noise + @"
-void fragment() {
-	vec2 p = (UV - 0.5) * 2.0;
-	float r = length(p), ang = atan(p.y, p.x);
-	float e = 1.0 - pow(1.0 - prog, 3.0);
-	float fwd = pow(max(cos(ang), 0.0), 12.0);
-	float lobe = fwd + 0.07;   // 第三版：只留往前喷的一股火舌（两侧泄压的那两股做成硬边以后像三叶螺旋桨）
-	float n = fbm(vec2(ang * 2.6 + seed, r * 3.5 - prog * 5.0));
-	float reach = lobe * (0.22 + 0.74 * e) * (0.7 + 0.6 * n);
-	float inside = clamp(1.0 - r / max(reach, 0.001), 0.0, 1.0);
-	// 第三版（用户：偏软、像一团烟）：硬边的实心火光——外沿一道清楚的边、里面一块白芯，很快收掉；不再是一团渐隐的气
-	float aa = 0.012;
-	float solid = smoothstep(0.0, aa / max(reach, 0.05), inside);
-	float coreW = smoothstep(0.42 - aa, 0.42 + aa, inside + (n - 0.5) * 0.25);
-	float hot = 1.0 - smoothstep(0.04 + 0.04 * e - aa, 0.04 + 0.04 * e + aa, r);
-	float fade = 1.0 - smoothstep(0.5, 1.0, prog);
-	vec3 white = vec3(0.97, 0.99, 1.0), cyan = vec3(0.32, 0.78, 1.0);
-	vec3 col = (mix(cyan, white, coreW) * solid * 1.5 + white * hot * 2.0) * fade;
-	COLOR = vec4(col * (1.0 - smoothstep(0.9, 1.0, r)), 1.0);
-}" };
-
-	private static void MuzzleBlast(Control layer, Vector2 at, Vector2 dir, float unit)
-	{
-		const float life = 0.15f;    // 第三版：短促（硬），0.3 → 0.15
-		float size = 1150f * unit;   // 第二版：缩小，往前那股不再把弹头吞掉
-		Node2D root = Fx.Root(layer, at, "P5SinfulMuzzleBlast", life + 0.05);
-		root.Rotation = dir.Angle();
-		ShaderMaterial m = new() { Shader = BlastShader };
-		m.SetShaderParameter("seed", Fx.Rand(0f, 50f));
-		ColorRect q = new() { Size = Vector2.One * size, Position = -Vector2.One * size / 2f, Material = m, MouseFilter = Control.MouseFilterEnum.Ignore };
-		root.AddChild(q);
-		Fx.Animate(root, 0, life, t => m.SetShaderParameter("prog", t));
-	}
 
 	/// <summary>大罪穿甲弹：一个沿弹道拉长的四边形，弹头以 BulletSpeed 飞出屏幕，尾巴跟着拉长，飞出去后尾巴还亮一下再散。</summary>
 	private static void Bullet(Control layer, Vector2 muzzle, Vector2 dir, Vector2 screen, float unit)
 	{
-		float thick = 380f * unit;
+		float thick = 420f * unit;
 		float reach = screen.Length() * 1.2f;
-		float fly = reach / (BulletSpeed * unit), linger = 0.35f;
+		float speed = BulletSpeed * unit;
+		float fly = reach / speed, linger = 0.45f;
 		Node2D root = Fx.Root(layer, muzzle, "P5SinfulBullet", fly + linger + 0.1);
 		root.Rotation = dir.Angle();
 		ShaderMaterial m = new() { Shader = BulletShader };
@@ -994,16 +987,17 @@ void fragment() {
 		root.AddChild(q);
 		Fx.Clock(q);
 		m.SetShaderParameter("thick_px", thick);
+		m.SetShaderParameter("speed_px", speed);
 		Fx.Animate(root, 0, fly + linger, t =>
 		{
 			float time = t * (fly + linger);
-			float headDist = Mathf.Min(time, fly) * BulletSpeed * unit;
-			float len = Mathf.Max(headDist, thick * 0.3f) + thick * 0.75f;
-			q.Size = new Vector2(len + thick * 0.1f, thick);
+			float headDist = Mathf.Min(time, fly) * speed;
+			float len = headDist + thick * 0.5f;
+			q.Size = new Vector2(len, thick);
 			q.Position = new Vector2(-thick * 0.1f, -thick / 2f);
-			m.SetShaderParameter("len_px", len + thick * 0.1f);
+			m.SetShaderParameter("len_px", len);
 			m.SetShaderParameter("head_px", headDist + thick * 0.1f);
-			m.SetShaderParameter("tail", Mathf.Clamp(0.2f + time * 3f, 0f, 1f));
+			m.SetShaderParameter("extra_age", Mathf.Max(0f, time - fly));
 			m.SetShaderParameter("fade", time < fly ? 1f : Mathf.Max(0f, 1f - (time - fly) / linger));
 		});
 	}
@@ -1013,7 +1007,7 @@ void fragment() {
 	{
 		float big = 1f + span / (420f * unit);
 		PointLight2D pl = Light(layer, zone, new Color(0.65f, 0.85f, 1f), 1200f * unit * big);
-		Fx.Animate(pl, 0, 0.7, k => pl.Energy = 1.7f * Mathf.Pow(1f - k, 2f));
+		Fx.Animate(pl, 0, 0.7, k => pl.Energy = 0.8f * Mathf.Pow(1f - k, 2f));
 		Fx.FreeAfter(pl, 0.75);
 	}
 
@@ -1024,16 +1018,10 @@ void fragment() {
 	private static void Pierce(Control front, Control back, Vector2 at, Vector2 dir, float unit, bool first, bool last, Node2D? body, Node lifetime)
 	{
 		PointLight2D pl = Light(front, at, new Color(0.7f, 0.9f, 1f), 700f * unit);
-		Fx.Animate(pl, 0, 0.4, k => pl.Energy = 2.2f * (1f - k) * (1f - k));
+		Fx.Animate(pl, 0, 0.4, k => pl.Energy = 1.1f * (1f - k) * (1f - k));   // 第四版：灯光减半（把敌人照成一片白，子弹混在里面看不出）
 		Fx.FreeAfter(pl, 0.45);
-		if (first)
-		{
-			// 打进去那一下：晚一帧再顿住（贯穿的火已经从身后喷出来一截），敌人被打透的样子停在那里
-			Fx.After(front, 0.03, () => HitStop.Request(0.11));
-		}
-		Pop(front, at, dir, (first || last ? 260f : 200f) * unit, 0.08f);   // 打中的一下硬白光（顺着弹道压扁）
-		ExitBurst(front, at, dir, (last ? 1000f : 760f) * unit, 0.26f, last ? 1.25f : 1.05f);
-		Smoke(back, at + dir * 90f * unit, 560f * unit, 1.1f, dir * 0.3f + new Vector2(0f, -0.28f), 0.15f, 0.5f, 0.05f);
+		// 第四版：打中 = 一团顺着弹道拉长的火舌炸开（开场那种），不再是白圆片 + 白楔形
+		FireBurstDir(front, at, dir, (last ? 620f : 480f) * unit, 0.3f, last ? 1.3f : 1.15f, new Vector2(1.5f, 0.85f));
 		if (body != null)
 		{
 			KnockBack(body, dir * (last ? 90f : 72f) * unit, lifetime);
