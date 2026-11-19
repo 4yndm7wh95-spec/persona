@@ -356,7 +356,8 @@ public static class Warmup
 	{
 		if (!Groups.Add("reward")) return;
 		QueueTextures(new[] { "reward_band", "reward_hover_plate", "reward_hover_plate_shadow",
-			"reward_stamp_stolen", "reward_subtitle_take_your_pick",
+			"reward_stamp_stolen", "reward_header_plate", "reward_header_text_zh",
+			"reward_skip_plate", "reward_skip_plate_hover", "reward_skip_text_en", "reward_skip_text_zh",
 			"reward_letter_T", "reward_letter_R", "reward_letter_E1", "reward_letter_A",
 			"reward_letter_S", "reward_letter_U", "reward_letter_R2", "reward_letter_E2" });
 	}

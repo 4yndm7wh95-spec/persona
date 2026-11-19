@@ -775,8 +775,11 @@ public static class RewardOpenPatch
 {
 	private static readonly FieldInfo? CardTween = AccessTools.Field(typeof(NCardRewardSelectionScreen), "_cardTween");
 
-	public static void Prefix(NCardRewardSelectionScreen __instance) =>
-		ModEntry.Safe("RewardRefresh", () => RewardFx.Recover(__instance));
+	public static void Prefix(NCardRewardSelectionScreen __instance) => ModEntry.Safe("RewardRefresh", () =>
+	{
+		RewardPickPatch.Cancel(__instance);
+		RewardFx.Recover(__instance);
+	});
 
 	public static void Postfix(NCardRewardSelectionScreen __instance, IReadOnlyList<CardCreationResult> options)
 	{
@@ -813,6 +816,27 @@ public static class RewardOpenPatch
 				RewardFx.Recover(__instance);
 				throw;
 			}
+			// 原版的横幅、跳过按钮也换成剪报风（Codex 素材）
+			if (Traverse.Create(__instance).Field("_banner").GetValue() is Godot.Control banner && Traverse.Create(banner).Field("label").GetValue() is Godot.Label bl)
+			{
+				RewardFx.SkinBanner(banner, bl);
+			}
+			if (Traverse.Create(__instance).Field("_rewardAlternativesContainer").GetValue() is Godot.Control alts)
+			{
+				foreach (var btn in alts.GetChildren().OfType<MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardAlternativeButton>())
+				{
+					var b = btn;
+					void Skin()
+					{
+						if (Traverse.Create(b).Field("_image").GetValue() is Godot.TextureRect img && Traverse.Create(b).Field("_label").GetValue() is Godot.Label lab)
+						{
+							RewardFx.SkinButton(b, img, lab);
+						}
+					}
+					if (b.IsNodeReady()) Skin();
+					else b.Ready += () => ModEntry.Safe("RewardSkipSkin", Skin);   // 加子节点被延迟时，等按钮自己 _Ready 设好文字再换
+				}
+			}
 		});
 	}
 
@@ -824,28 +848,138 @@ public static class RewardOpenPatch
 			? h.Hitbox.GetGlobalRect() : c.GetGlobalRect();
 }
 
+/// <summary>
+/// 选卡界面选中一张：「偷到手」（RewardFx.Pick）。原版 SelectCard 一调用就把结果交出去、界面马上关掉、牌飞进牌组 ——
+/// 印章根本来不及出现（用户 2026-11-19：STOLEN 在游戏里没生效，选完直接进牌组）→ 先放演出、等 RewardFx.PickHold 秒再交结果。
+/// 等的这段时间里再点牌不响应；如果这期间结果已经被别的方式交出去了（跳过等），就不再交。
+/// </summary>
 [HarmonyPatch(typeof(NCardRewardSelectionScreen), "SelectCard")]
 public static class RewardPickPatch
 {
 	private static readonly FieldInfo? Completion = AccessTools.Field(typeof(NCardRewardSelectionScreen), "_completionSource");
+	private static readonly MethodInfo? Select = AccessTools.Method(typeof(NCardRewardSelectionScreen), "SelectCard");
+	private static readonly ConditionalWeakTable<NCardRewardSelectionScreen, Godot.Tween> Pending = new();
+	private static NCardRewardSelectionScreen? _bypass;
+
+	internal static void Cancel(NCardRewardSelectionScreen screen)
+	{
+		if (!Pending.TryGetValue(screen, out Godot.Tween? timer)) return;
+		Pending.Remove(screen);
+		if (timer.IsValid()) timer.Kill();
+	}
 
 	public static bool Prefix(NCardRewardSelectionScreen __instance, MegaCrit.Sts2.Core.Nodes.Cards.Holders.NCardHolder cardHolder)
 	{
-		if (!Joker.LocalRun || Completion == null) return true;
-		if (Completion.GetValue(__instance) is not TaskCompletionSource<int?> completion || completion.Task.IsCompleted)
+		if (_bypass == __instance || !Joker.LocalRun || !Fx.Active(__instance)
+			|| Completion is not { } completionField || Select is not { } select) return true;
+		if (completionField.GetValue(__instance) is not TaskCompletionSource<int?> completion || completion.Task.IsCompleted)
 			return false;
 		if (__instance.GetNodeOrNull<Godot.Control>("UI/CardRow") is not { } row) return true;
 		if (!Godot.GodotObject.IsInstanceValid(cardHolder) || cardHolder.IsQueuedForDeletion() || cardHolder.GetParent() != row)
 			return false;
+		if (Pending.TryGetValue(__instance, out _)) return false;
 
+		var card = cardHolder.CardModel;
+		var timer = __instance.CreateTween().SetIgnoreTimeScale(true).SetPauseMode(Godot.Tween.TweenPauseMode.Process);
+		Pending.Add(__instance, timer);
 		ModEntry.Safe("RewardPick", () => RewardFx.Pick(__instance, row, cardHolder, RewardOpenPatch.RectOf));
-		return true;
+		var screen = __instance;
+		void Hand()
+		{
+			if (!Pending.Remove(screen) || !Fx.Active(screen)) return;
+			if (!ReferenceEquals(completionField.GetValue(screen), completion) || completion.Task.IsCompleted
+				|| !Fx.Active(cardHolder) || !Godot.GodotObject.IsInstanceValid(row) || cardHolder.GetParent() != row
+				|| !ReferenceEquals(cardHolder.CardModel, card))
+			{
+				RewardFx.Settle(screen);
+				return;
+			}
+			_bypass = screen;
+			try
+			{
+				select.Invoke(screen, new object[] { cardHolder });
+			}
+			finally
+			{
+				_bypass = null;
+			}
+		}
+		timer.TweenInterval(RewardFx.PickHold);
+		timer.TweenCallback(Godot.Callable.From(() => ModEntry.Safe("RewardPick complete", Hand)));
+		return false;
 	}
 }
 
 [HarmonyPatch(typeof(NCardRewardSelectionScreen), nameof(NCardRewardSelectionScreen.AfterOverlayHidden))]
 public static class RewardHidePatch
 {
-	public static void Prefix(NCardRewardSelectionScreen __instance) =>
-		ModEntry.Safe("RewardHide", () => RewardFx.Settle(__instance));
+	public static void Prefix(NCardRewardSelectionScreen __instance) => ModEntry.Safe("RewardHide", () =>
+	{
+		RewardPickPatch.Cancel(__instance);
+		RewardFx.Settle(__instance);
+	});
+}
+
+/// <summary>选卡界面跳过按钮换皮之后：悬停 / 手柄选中换红色纸板（原版是 HSV 着色器调亮，换皮时去掉了）。</summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardAlternativeButton), "OnFocus")]
+public static class RewardSkipFocusPatch
+{
+	public static void Postfix(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardAlternativeButton __instance) => ModEntry.Safe("RewardSkipFocus", () =>
+	{
+		if (Traverse.Create(__instance).Field("_image").GetValue() is Godot.TextureRect img) RewardFx.SkinButtonHover(img, true);
+	});
+}
+
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardAlternativeButton), "OnUnfocus")]
+public static class RewardSkipUnfocusPatch
+{
+	public static void Postfix(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardAlternativeButton __instance) => ModEntry.Safe("RewardSkipUnfocus", () =>
+	{
+		if (Traverse.Create(__instance).Field("_image").GetValue() is Godot.TextureRect img) RewardFx.SkinButtonHover(img, false);
+	});
+}
+
+/// <summary>角色头像（左上角顶栏 / 战绩 / 联机大厅 / 继续游戏 / 先古对话）：猎人的图换成 Codex 画的 Joker 头像（art/p5/ui/icons/joker_top_icon.png → icon_top）。</summary>
+[HarmonyPatch(typeof(CharacterModel), "get_IconTexture")]
+public static class JokerIconTexturePatch
+{
+	public static void Postfix(CharacterModel __instance, ref Godot.Texture2D __result)
+	{
+		if (__instance is MegaCrit.Sts2.Core.Models.Characters.Silent && Fx.Tex("icon_top") is Godot.Texture2D t) __result = t;
+	}
+}
+
+[HarmonyPatch(typeof(CharacterModel), "get_IconOutlineTexture")]
+public static class JokerIconOutlinePatch
+{
+	public static void Postfix(CharacterModel __instance, ref Godot.Texture2D __result)
+	{
+		if (__instance is MegaCrit.Sts2.Core.Models.Characters.Silent && Fx.Tex("icon_top_outline") is Godot.Texture2D t) __result = t;
+	}
+}
+
+/// <summary>左上角顶栏的头像是实例化的图标场景（ui/character_icons/silent_icon），不走 IconTexture：把里面的图换掉。</summary>
+[HarmonyPatch(typeof(MegaCrit.sts2.Core.Nodes.TopBar.NTopBarPortrait), nameof(MegaCrit.sts2.Core.Nodes.TopBar.NTopBarPortrait.Initialize))]
+public static class JokerTopBarPortraitPatch
+{
+	public static void Postfix(MegaCrit.sts2.Core.Nodes.TopBar.NTopBarPortrait __instance, MegaCrit.Sts2.Core.Entities.Players.Player player) => ModEntry.Safe("JokerTopBarPortrait", () =>
+	{
+		if (!Joker.Is(player) || Fx.Tex("icon_top") is not Godot.Texture2D t) return;
+		void Swap(Godot.Node n)
+		{
+			if (n is Godot.TextureRect tr)
+			{
+				tr.Texture = t;
+				tr.StretchMode = Godot.TextureRect.StretchModeEnum.KeepAspectCentered;
+			}
+			else if (n is Godot.Sprite2D sp)
+			{
+				float k = sp.Texture != null ? sp.Texture.GetWidth() * sp.Scale.X / t.GetWidth() : 1f;
+				sp.Texture = t;
+				sp.Scale = Godot.Vector2.One * k;
+			}
+			foreach (Godot.Node c in n.GetChildren()) Swap(c);
+		}
+		Swap(__instance);
+	});
 }

@@ -262,9 +262,14 @@ def textures():
 def button_icons():
     """角色按钮（原版 132x195）：生图 joker_button 按卡片比例裁上部；未解锁版去色压暗。"""
     W, H = 132, 195
-    im = Image.open(SRC / "joker_button.png").convert("RGBA")
-    ch = round(im.width * H / W)
-    im = im.crop((0, 0, im.width, min(ch, im.height))).resize((W, H), Image.LANCZOS)
+    # 2026-11-19：Codex 专门画的按钮图（art/p5/ui/icons/joker_select_button.png，660x975 = 同比例 x5）；没有就退回从生图裁
+    new = ROOT / "art/p5/ui/icons/joker_select_button.png"
+    if new.exists():
+        im = Image.open(new).convert("RGBA").resize((W, H), Image.LANCZOS)
+    else:
+        im = Image.open(SRC / "joker_button.png").convert("RGBA")
+        ch = round(im.width * H / W)
+        im = im.crop((0, 0, im.width, min(ch, im.height))).resize((W, H), Image.LANCZOS)
     g = np.asarray(im.convert("L")).astype(np.float32) * 0.3 + 26
     locked = Image.fromarray(np.dstack([g, g * 0.96, g * 0.96, np.full_like(g, 255)]).clip(0, 255).astype(np.uint8), "RGBA")
     return im, locked

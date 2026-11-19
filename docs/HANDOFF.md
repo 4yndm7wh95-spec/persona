@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-11-19 · 会话 E 再续：选卡界面实机修正 + Joker 头像 / 选人按钮，待合并
+
+- 实机反馈修正：TREASURE 原来在左上被顶栏挡 → 现在**居中放在「选择一张牌」横幅下面**（横幅和牌之间），去掉 TAKE YOUR PICK；STOLEN! 之前没出来（原版 SelectCard 立刻关界面）→ `RewardPickPatch` 拦下点击，印章演完 `RewardFx.PickHold`（0.45s）再反射调原版 SelectCard。
+- 原版横幅、跳过按钮换皮（Codex 素材 `art/p5/ui/reward/header_* / skip_*`，任务单 `docs/codex/codex_p5_reward_screen_art2.md`）：`RewardFx.SkinBanner / SkinButton / SkinButtonHover`，挂在 `RewardOpenPatch` 里 + `RewardSkipFocusPatch / RewardSkipUnfocusPatch`。横幅：原版底图透明掉、文字节点留着；中文时文字换成拼贴字图，其他语言显示原文字在纸条上。跳过按钮：去掉原版 HSV 着色器，悬停换红纸板；文字是「跳过 / Skip」时换拼贴字图，其他备选按钮留原文字。**横幅节点结构是按源码猜的（没有场景文件），实机要看一眼原版米色底图有没有藏干净。**
+- Joker 头像（Codex `art/p5/ui/icons/joker_top_icon.png`，任务单 `docs/codex/codex_p5_joker_icons_art.md`）：`stage_p5.py` 出 `icon_top`（256）+ `icon_top_outline`（白色剪影描边）；`JokerIconTexturePatch / JokerIconOutlinePatch`（`CharacterModel.IconTexture / IconOutlineTexture`，战绩 / 联机 / 继续游戏 / 先古对话用）+ `JokerTopBarPortraitPatch`（左上角顶栏是实例化的 silent_icon 场景，把里面的贴图换掉）。
+- 选人按钮：`tools/p5/charselect_assets.py` 改用 Codex 的 `art/p5/ui/icons/joker_select_button.png`（缩到 132×195 → `cs_button`）。**出包要重跑 charselect_assets.py + stage_p5.py。**
+- 预览：`docs/p5/preview/reward_screen_v3.mp4`（模拟界面里加了横幅 / 跳过按钮的替身）。
+- **已经把 `codex/p5-0951-integration`（0.9.53，用户本地的优化：RewardRun / Recover / Settle、按 CardModel 配格子、RewardHidePatch 等）合并进本分支并解决了冲突**：选卡界面以 0.9.53 的守卫 / 恢复逻辑为准，在上面加回「延迟 PickHold 再交结果」（0.9.53 的 RewardPickPatch 是立刻 return true，印章看不到）、横幅 / 按钮换皮、标题居中。所以本分支合回 integration 应该是快进 / 无冲突。
+- 0.9.53 把 `pck_stage/p5joker/fx/reward_*` 提交进了仓库；这次新增的 `reward_header_* / reward_skip_* / icon_top*` 没提交到 pck_stage，**出包前跑一次 `stage_p5.py`**。
+
+---
+
 ## 2026-11-19 · 会话 E：选卡界面「夺宝」（用户：可以了），待合并
 
 - 分支 **`claude/confirm-next-tasks-k5wu6t`**（已推送、工作区干净、类型检查通过）。比 `codex/p5-0951-integration` 多 **10 个提交**（下面「会话 E 续」的 6 个 + 选卡界面 3 个 + 本条交接）；和它、和 `claude/exciting-babbage-lm8ubb` 试合并都**无冲突**。

@@ -9,7 +9,7 @@ namespace P5Joker;
 /// 战斗结束的选卡界面「夺宝」（2026-11-19，用户：参考 P3 mod 的 Shuffle Time，要有特色且不拖沓）。
 /// 原则照 P3 的「精简」模式：点开就能看、能点 —— 牌一开始就是正面，0.3s 内全部到位，特色放在不挡操作的地方：
 /// · 牌后面一条剪报纸带（红底黑边，Codex 画的 art/p5/ui/reward/band.png），从左边一下扫进来；
-/// · 左上角预告函剪报拼贴字「TREASURE」一片一片拍上来，下面「TAKE YOUR PICK」滑进来（只在这次打开的第一次）；
+/// · 预告函剪报拼贴字「TREASURE」一片一片拍上来，居中在「选择一张牌」横幅和牌之间（只在这次打开的第一次）；原版横幅 / 跳过按钮换成同风格的剪报纸板；
 /// · 三张牌从画面右边依次甩进来（P5 菜单的方向），带一点倾斜、到位回正，身后拖一道红色的斜切残影，落位一下红闪；
 /// · 鼠标 / 手柄停在哪张牌上，牌后面就弹出一块剪出来的红纸板（黑色投影错开垫着，P5 选项被选中的样子），一声很轻的光标音；
 /// · 选中：「STOLEN!」印章重重盖在那张牌上，白闪 + 红光 + 红黑白纸屑迸开，其余的牌往两边一甩、变暗淡出。
@@ -20,6 +20,9 @@ public static class RewardFx
 {
 	private static readonly Color Red = new(0.82f, 0.04f, 0.1f), Ink = new(0.03f, 0.02f, 0.03f);
 
+	/// <summary>选中之后等多久再把结果交给游戏（界面关掉、牌进牌组）：印章压下 0.08s + 抖一下 + 停一眼。</summary>
+	public const float PickHold = 0.45f;
+
 	private static bool Still(Control c, Control row) => GodotObject.IsInstanceValid(c) && GodotObject.IsInstanceValid(row) && c.GetParent() == row && !c.IsQueuedForDeletion();
 
 	private static readonly ConditionalWeakTable<Control, RewardRun> Runs = new();
@@ -28,6 +31,7 @@ public static class RewardFx
 	{
 		public bool Entering = true;
 		public bool Picking, AnimatingPick;
+		public Node2D? StampRoot;
 		public readonly List<RewardPose> Poses = new();
 	}
 
@@ -61,22 +65,21 @@ public static class RewardFx
 	public static void Recover(Control screen)
 	{
 		if (!Runs.TryGetValue(screen, out RewardRun? run)) return;
+		Settle(screen);
 		Runs.Remove(screen);
-		foreach (RewardPose pose in run.Poses)
-		{
-			pose.Detach();
-			pose.Restore();
-		}
+		foreach (RewardPose pose in run.Poses) pose.Detach();
 	}
 
 	public static void Settle(Control screen)
 	{
 		if (!Runs.TryGetValue(screen, out RewardRun? run)) return;
-		run.Entering = run.AnimatingPick = false;
+		run.Entering = run.AnimatingPick = run.Picking = false;
+		if (GodotObject.IsInstanceValid(run.StampRoot)) run.StampRoot!.QueueFree();
+		run.StampRoot = null;
 		foreach (RewardPose pose in run.Poses) pose.Restore();
 	}
 
-	private static void AnimateCard(Control screen, double duration, Action<float> draw)
+	private static void AnimateCard(Node screen, double duration, Action<float> draw)
 	{
 		var tween = screen.CreateTween().SetIgnoreTimeScale(true).SetPauseMode(Tween.TweenPauseMode.Process);
 		tween.TweenMethod(Callable.From(draw), 0f, 1f, duration);
@@ -100,7 +103,8 @@ public static class RewardFx
 		cardOf ??= static holder => holder;
 		bool Current() => Runs.TryGetValue(screen, out RewardRun? current) && current == run && run.Entering;
 		Node2D under = screen.GetNodeOrNull<Node2D>("P5RewardBackdrop") ?? Backdrop(screen, row, view, u, rectOf, useFocus);
-		if (first) Title(screen, view, u);
+		// 用户 2026-11-19：TREASURE 放到「选择一张牌」横幅下面（横幅和牌之间居中），不要 TAKE YOUR PICK
+		if (first && cards.Count > 0) Title(screen, view, u, new Vector2(view.X * 0.5f, rectOf(cards[0]).Position.Y - 64f * u));
 
 		Sfx.Take("gx_whoosh", 0.16f);
 		Sfx.Take("gx_card_slide", 0.18f, 0.04f);
@@ -239,16 +243,16 @@ public static class RewardFx
 		return root;
 	}
 
-	/// <summary>左上角剪报拼贴字「TREASURE」：8 张字母纸片一片一片拍上来（每片从大到正常、带一点旋转），下面一行「TAKE YOUR PICK」滑进来。</summary>
-	private static void Title(Control screen, Vector2 view, float u)
+	/// <summary>剪报拼贴字「TREASURE」：8 张字母纸片一片一片拍上来（每片从大到正常、带一点旋转），居中在横幅和牌之间。</summary>
+	private static void Title(Control screen, Vector2 view, float u, Vector2 center)
 	{
 		screen.GetNodeOrNull("P5RewardTitle")?.QueueFree();
 		Node2D root = new() { Name = "P5RewardTitle" };
 		screen.AddChild(root);
 		root.GlobalPosition = Vector2.Zero;
 		string[] letters = { "T", "R", "E1", "A", "S", "U", "R2", "E2" };
-		float k = 0.54f * u, step = 205f * k * 2f * 0.5f;        // 字母贴图半尺寸 256，纸片约 200 宽
-		Vector2 at = new(view.X * 0.05f + 100f * k, view.Y * 0.1f);
+		float k = 0.34f * u, step = 205f * k;                   // 字母贴图 512，纸片约 200 宽
+		Vector2 at = center - new Vector2(step * 3.5f, -14f * u);
 		for (int i = 0; i < letters.Length; i++)
 		{
 			float rot = Fx.Rand(-0.12f, 0.12f), dy = Fx.Rand(-14f, 14f) * u;
@@ -269,18 +273,6 @@ public static class RewardFx
 		}
 		Sfx.Take("gx_card_stack", 0.16f, 0.02f);
 		Sfx.Take("gx_card_stack", 0.12f, 0.14f);
-		// 副标题从左滑进来
-		Sprite2D? sub = Spr(root, "subtitle_take_your_pick", at + new Vector2(step * 3.6f, 230f * k), k * 0.95f, -0.03f);
-		if (sub != null)
-		{
-			Vector2 p0 = sub.Position;
-			sub.Modulate = new Color(1f, 1f, 1f, 0f);
-			Fx.Animate(sub, 0.22, 0.24, t =>
-			{
-				sub.Position = p0 + new Vector2(-view.X * 0.3f * (1f - Ease5.OutExpo(t)), 0f);
-				sub.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, t * 3f));
-			});
-		}
 	}
 
 	/// <summary>选中一张：「STOLEN!」印章重重盖在那张牌上 + 白闪红光、纸屑迸开，其余的牌往两边一甩淡出。</summary>
@@ -301,13 +293,14 @@ public static class RewardFx
 		Phantom.Confetti(screen, c, 26, 760f * u, Vector2.Up, 180f, 0.9f, 9f * u);
 		// 印章：画在最上面，从 2 倍大重重压下来（0.08s），压住时一抖
 		Node2D top = new() { Name = "P5RewardStamp", ZIndex = 10, TopLevel = true };
+		run.StampRoot = top;
 		screen.AddChild(top);
 		top.GlobalPosition = Vector2.Zero;
 		if (Spr(top, "stamp_stolen", c + new Vector2(0f, r.Size.Y * 0.05f), 1f, -0.18f) is { } stamp && stamp.Texture is Texture2D st)
 		{
 			float sk = r.Size.X * 1.25f / (st.GetWidth() * 0.87f);
 			stamp.Modulate = new Color(1f, 1f, 1f, 0f);
-			Fx.Animate(stamp, 0, 0.3, t =>
+			AnimateCard(stamp, 0.3, t =>
 			{
 				float s = t * 0.3f;
 				float e = Mathf.Min(1f, s / 0.08f);
@@ -329,5 +322,78 @@ public static class RewardFx
 				other.Modulate = new Color(1f - 0.5f * t, 1f - 0.55f * t, 1f - 0.5f * t, 1f - t);
 			});
 		}
+	}
+
+	// ───────────────── 原版界面元件换皮（Codex 的剪报素材，art/p5/ui/reward：header_* / skip_*） ─────────────────
+
+	private static bool Zh => TranslationServer.GetLocale().StartsWith("zh", StringComparison.OrdinalIgnoreCase);
+
+	private static void HideArt(Node n, Node keep)
+	{
+		foreach (Node c in n.GetChildren())
+		{
+			if (c == keep) continue;
+			if (c is TextureRect or NinePatchRect or Sprite2D) ((CanvasItem)c).SelfModulate = new Color(1f, 1f, 1f, 0f);
+			HideArt(c, keep);
+		}
+	}
+
+	/// <summary>「选择一张牌」横幅：原版米色卷轴的图藏掉（文字节点留着），换成黑底红边的剪报纸条；中文时文字换成拼贴字图。</summary>
+	public static void SkinBanner(Control banner, Label label)
+	{
+		if (banner.HasMeta("p5_skin") || Fx.Tex("reward_header_plate") is not Texture2D plate) return;
+		banner.SetMeta("p5_skin", true);
+		if (banner is TextureRect tr) tr.SelfModulate = new Color(1f, 1f, 1f, 0f);
+		HideArt(banner, label);
+		Node2D root = new() { Name = "P5Header", Position = label.Position + label.Size * 0.5f, ShowBehindParent = false };
+		Node parent = label.GetParent() ?? banner;
+		parent.AddChild(root);
+		parent.MoveChild(root, label.GetIndex());
+		float k = 680f / (plate.GetWidth() * 0.88f);
+		root.AddChild(new Sprite2D { Texture = plate, Scale = Vector2.One * k, Rotation = -0.02f });
+		if (Zh && Fx.Tex("reward_header_text_zh") is Texture2D txt)
+		{
+			label.SelfModulate = new Color(1f, 1f, 1f, 0f);
+			root.AddChild(new Sprite2D { Texture = txt, Scale = Vector2.One * k * 0.92f, Rotation = -0.02f, Position = new Vector2(0f, -4f) });
+		}
+		else
+		{
+			label.SelfModulate = Colors.White;
+		}
+	}
+
+	/// <summary>跳过（及其他备选）按钮：底板换成剪报纸板（悬停换红色版），「跳过 / SKIP」换成拼贴字图，其他按钮留原文字。</summary>
+	public static void SkinButton(Control button, TextureRect image, Label label)
+	{
+		if (button.HasMeta("p5_skin") || Fx.Tex("reward_skip_plate") is not Texture2D plate) return;
+		button.SetMeta("p5_skin", true);
+		image.Texture = plate;
+		image.Material = null;                                   // 原版的 HSV 悬停着色器会把红黑纸板染掉
+		image.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+		image.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+		string t = label.Text.Trim();
+		bool skip = t is "跳过" or "跳過" || t.Equals("skip", StringComparison.OrdinalIgnoreCase);
+		if (skip && Fx.Tex(Zh ? "reward_skip_text_zh" : "reward_skip_text_en") is Texture2D txt)
+		{
+			label.SelfModulate = new Color(1f, 1f, 1f, 0f);
+			TextureRect tx = new()
+			{
+				Texture = txt, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+				MouseFilter = Control.MouseFilterEnum.Ignore, AnchorRight = 1f, AnchorBottom = 1f, Scale = Vector2.One * 0.8f,
+			};
+			image.AddChild(tx);
+			tx.Size = image.Size;
+			tx.PivotOffset = image.Size * 0.5f;
+		}
+		else
+		{
+			label.SelfModulate = Colors.White;
+		}
+	}
+
+	public static void SkinButtonHover(TextureRect image, bool hover)
+	{
+		if (image.GetParent() is not Control b || !b.HasMeta("p5_skin")) return;
+		if (Fx.Tex(hover ? "reward_skip_plate_hover" : "reward_skip_plate") is Texture2D tex) image.Texture = tex;
 	}
 }

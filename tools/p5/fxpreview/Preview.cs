@@ -1139,6 +1139,7 @@ public partial class Preview : Node2D
 		{
 			Vector2 view = p._front.GetViewportRect().Size;
 			Control? screen = null, row = null;
+			TextureRect? skipImg = null;
 			var cards = new List<Control>();
 			var finals = new List<Vector2>();
 			Rect2 RectOf(Control c) => c.GetChild<Control>(0).GetGlobalRect();
@@ -1168,7 +1169,24 @@ public partial class Preview : Node2D
 				screen.AddChild(row);
 				Build();
 				RewardFx.Open(screen, row, cards, finals, true, RectOf);
+				// 原版横幅 / 跳过按钮的替身（结构照游戏：横幅底图 + Label；按钮 Image + Label）
+				TranslationServer.SetLocale("zh_CN");
+				Control banner = new() { Position = new Vector2(view.X * 0.5f - 400f, view.Y * 0.13f - 60f), Size = new Vector2(800f, 120f), MouseFilter = Control.MouseFilterEnum.Ignore };
+				screen.AddChild(banner);
+				banner.AddChild(new TextureRect { Texture = Fx.Tex("reward_band"), Size = banner.Size, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, Modulate = new Color(0.9f, 0.8f, 0.6f) });
+				Label bl = new() { Text = "选择一张牌", Size = banner.Size, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+				banner.AddChild(bl);
+				RewardFx.SkinBanner(banner, bl);
+				Control skip = new() { Position = new Vector2(view.X * 0.5f - 130f, view.Y * 0.86f - 45f), Size = new Vector2(260f, 90f), MouseFilter = Control.MouseFilterEnum.Ignore };
+				screen.AddChild(skip);
+				skipImg = new TextureRect { Size = skip.Size, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize };
+				skip.AddChild(skipImg);
+				Label sl = new() { Text = "跳过", Size = skip.Size, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+				skip.AddChild(sl);
+				RewardFx.SkinButton(skip, skipImg, sl);
 			});
+			p.At(2.0, () => RewardFx.SkinButtonHover(skipImg!, true));
+			p.At(2.25, () => RewardFx.SkinButtonHover(skipImg!, false));
 			p.At(1.0, () => cards[0].GrabFocus());
 			p.At(1.4, () => cards[1].GrabFocus());
 			p.At(1.8, () => cards[2].GrabFocus());
