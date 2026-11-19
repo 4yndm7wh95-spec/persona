@@ -6,6 +6,13 @@
 
 ---
 
+## 2026-11-19 · 会话 E：选卡界面「夺宝」
+
+- 第一版代码已推送：`Vfx/RewardFx.cs` + `Patches.cs` 里的 `RewardOpenPatch` / `RewardPickPatch`（只在本机玩家是 Joker 时接管原版选牌界面的滑入补间），预览 `docs/p5/preview/reward_screen_v1.mp4`（预览场景 `reward` 是仿原版界面的模拟）。
+- 用户：纯代码画不好看 → **已写 Codex 生图任务单 `docs/codex/codex_p5_reward_screen_art.md`（剪报拼贴预告函字「TREASURE / 夺宝 / TAKE YOUR PICK / STOLEN!」、色带、悬停底板），等 Codex 推到 `art/p5/ui/reward/`**，到了之后把 RewardFx 里的代码色块换成这些图。
+
+---
+
 ## 2026-11-19 · 会话 E 续：0.9.51 集成之后又改的 6 个提交，待合并
 
 - 分支仍是 **`claude/confirm-next-tasks-k5wu6t`**（已推送、工作区干净，类型检查通过）。
