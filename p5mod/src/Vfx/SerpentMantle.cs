@@ -287,11 +287,9 @@ void fragment() {
 		inner *= 0.75 + 0.55 * smoothstep(-0.6, 0.8, -n2.y);
 		float topRim = smoothstep(0.72, 0.95, rr) * smoothstep(0.35, 0.9, -n2.y) * (1.0 - smoothstep(-0.04, 0.04, e)) * upOnly;   // 只在最上沿一细条
 		inner += vec3(0.42, 0.05, 0.06) * topRim * 0.45;
-		// 鳞片（2026-11-19 用户：身体加一点鳞片的材质，不用太明显，能看出来一点；再一点点鳞片的反光）：
-		// 沿身体一排排错开的圆鳞（贴着身体坐标走，跟着蛇动），鳞缝暗一点、每片深浅略有不同；
-		// 朝上那一侧有些鳞片上一点暖红的反光，随身体游动慢慢闪。只在身体实心的部分，边上的烟、尾巴、散成烟时都没有。
-		// 头上同样的思路（用户：头也按同样的思路调，力度控制好）：用头自己的坐标（单位 = 脖子粗细）铺更小一号的鳞，
-		// 只在头顶 / 后脑（上半边），吻尖、嘴线、下颚干净；力度是身体的七成
+		// 鳞片（2026-11-19 用户：身体加一点鳞片的材质，不用太明显，能看出来一点；再一点点鳞片的反光；头也按同样的思路，力度控制好）：
+		// 沿身体一排排错开的圆鳞（贴着身体坐标走，跟着蛇动），鳞缝暗一点、每片深浅略有不同；朝上那一侧有些鳞片上一点暖红的反光，随游动慢慢闪。
+		// 头上用头自己的坐标铺小一号的，只在头顶 / 后脑，力度七成；边上的烟、尾巴、散成烟时都没有。
 		float scU = mix(L * 4.6, (q.x + 0.3) * 4.4, headness), scV = mix(acr * 2.8, qu.y * 3.6, headness);
 		float scRow = floor(scU);
 		float scX = scV + 0.5 * mod(scRow, 2.0);
@@ -454,13 +452,11 @@ void fragment() {
 		// 第四版（用户 2026-11-11：还是围着他游，只小幅修分布和轨迹；示意图 docs/p5/preview/serpent_orbit_tweak.png）：
 		// 每条守着自己那一块、圈小一些、转得一样快（相位错开），不会挤到一边，身体也不会绕成结。
 		// 上下也要匀（用户：头部以上和腰部以下不均匀，腰部以下没有）：头顶以上两条、胸口一条、腰胯一条、膝盖一条
-		// 2026-11-19 用户：回到这一版的分布，但离 Joker 远一点点、散一些，别那么像触手、游离一些 → 四条的落点离他拉开约 25%
-		// （左右往外、上面两条再高一点），缠腰那条圈大一点；身体不再全收进他身后同一个点（见 PoseSerpent 的 nestI）
-		(-0.62f, -1.4f, 0.28f, 0.18f, 0.45f, 1f, 0.0f, 25f, 0.5f, -0.45f, 1.05f, 2.3f),   // 左上，身后（头顶高度）
-		(0.42f, -1.66f, 0.3f, 0.15f, -0.42f, 1f, 1.9f, -15f, 0.4f, -0.5f, 0.95f, 2.2f),   // 右上，身后（头顶以上）
-		(0.86f, -0.86f, 0.24f, 0.22f, 0.48f, 2f, 3.4f, 15f, 0.8f, -0.15f, 0.95f, 2.2f),   // 右侧胸口高度，朝敌人
+		(-0.48f, -1.3f, 0.28f, 0.18f, 0.45f, 1f, 0.0f, 25f, 0.5f, -0.45f, 1.05f, 2.3f),   // 左上，身后（头顶高度）
+		(0.32f, -1.55f, 0.3f, 0.15f, -0.42f, 1f, 1.9f, -15f, 0.4f, -0.5f, 0.95f, 2.2f),   // 右上，身后（头顶以上）
+		(0.66f, -0.82f, 0.24f, 0.22f, 0.48f, 2f, 3.4f, 15f, 0.8f, -0.15f, 0.95f, 2.2f),   // 右侧胸口高度，朝敌人
 		(0.05f, -0.45f, 0.48f, 0.1f, -0.45f, 1f, 4.6f, -8f, 0.9f, 0.3f, 0.9f, 2.4f),      // 腰胯，从他身前横过去
-		(-0.72f, -0.26f, 0.26f, 0.09f, 0.44f, 1f, 5.7f, -12f, 0.8f, 0.0f, 0.85f, 2.2f),   // 左下，膝盖高度贴着地游
+		(-0.55f, -0.24f, 0.26f, 0.09f, 0.44f, 1f, 5.7f, -12f, 0.8f, 0.0f, 0.85f, 2.2f),   // 左下，膝盖高度贴着地游
 	};
 
 	private readonly Control _front, _back;
@@ -1066,7 +1062,7 @@ void fragment() {
 	/// </summary>
 	private Vector3 BeltPoint(float f, float len, float T, float face)
 	{
-		const float cy = -0.47f, a = 0.37f, b = 0.075f;   // 身高为单位：胯部高度、半宽（比大衣和垂下的手宽）、斜看的半高（2026-11-19：圈放大一点，离他远一点）
+		const float cy = -0.47f, a = 0.31f, b = 0.065f;   // 身高为单位：胯部高度、半宽（比大衣和垂下的手宽）、斜看的半高
 		float s = (1f - f) * len / T;                     // 离颈根的路程（身高为单位）
 		float th0 = 0.5f + 0.22f * Mathf.Sin(_t * 0.45f) + 0.06f * Mathf.Sin(_t * 1.1f + 1f);   // 颈根在身前右侧，慢慢往前探、往回收
 		const float thEnd = 1.62f * Mathf.Pi;              // 绕到身后哪里为止（之后往上收进蛇巢）
@@ -1375,10 +1371,6 @@ void fragment() {
 			if (acc[k] >= want) { used = k + 1; break; }
 		}
 		float total = acc[used - 1];
-		// 每条自己的「根」：从他身后的蛇巢往自己头的方向挪出 40%（2026-11-19：五条尾巴收进同一个点 = 从一点放射出去，像触手）
-		Vector3 nestBase = new(-0.12f * face * T, -0.78f * T, -0.5f);
-		Vector3 restHead = new(o.Cx * face * T, o.Cy * T, -0.5f);
-		Vector3 nestI = nestBase.Lerp(restHead, 0.4f);
 		for (int k = 0; k < nb; k++)
 		{
 			float f = k / (nb - 1f);                       // 0 尾 → 1 头根
@@ -1392,7 +1384,8 @@ void fragment() {
 			// 身体只「大致」顺着头游过的路（用户 2026-11-11：圈小了身体会把整圈都描一遍、绕成结）：
 			// 和蛇巢 → 头的直线各取一半，弯是跟着游动的弯，但不会回头描圈
 			Vector3 headNow = trail[0];
-			Vector3 line = nestI.Lerp(headNow, f) + new Vector3(0f, -Mathf.Sin(f * Mathf.Pi) * 0.25f * T, 0f);
+			Vector3 nestP = new(-0.12f * face * T, -0.78f * T, -0.5f);
+			Vector3 line = nestP.Lerp(headNow, f) + new Vector3(0f, -Mathf.Sin(f * Mathf.Pi) * 0.25f * T, 0f);
 			v = v.Lerp(line, 0.55f * (1f - f * f * 0.6f));
 			}
 			// 沿身体往尾巴传的 S 波
@@ -1402,9 +1395,9 @@ void fragment() {
 			v += new Vector3(_lunge[i].X, _lunge[i].Y, 0f) * Mathf.Pow(f, 1.5f);
 			// 一体：尾巴都收进 Joker 身后的蛇巢（同一团咒烟里伸出五个头）
 			float pull = i == Belt ? 0f : 1f - Smooth(0f, 0.75f, f);   // 收进蛇巢的那段拉长一些，不在身体中间折出急弯
-			Vector3 nest3 = nestI + new Vector3(Mathf.Sin(_t * 0.7f + i * 1.3f) * 0.12f * T, Mathf.Cos(_t * 0.6f + i * 2.1f) * 0.1f * T, 0f);
-			v = v.Lerp(nest3, pull * pull * 0.6f);
-			float a = Smooth(0f, i == Belt ? 0.08f : 0.24f, f) * alpha;   // 尾巴早一点散进烟里（游离，不像从同一个东西上长出来）
+			Vector3 nest3 = new(-0.12f * face * T + Mathf.Sin(_t * 0.7f + i * 1.3f) * 0.12f * T, -0.78f * T + Mathf.Cos(_t * 0.6f + i * 2.1f) * 0.1f * T, -0.5f);
+			v = v.Lerp(nest3, pull * pull * 0.92f);
+			float a = Smooth(0f, 0.08f, f) * alpha;
 			_spine[i * N + k] = new Vector4(v.X, v.Y, v.Z, a);
 		}
 		// 脊线平滑四遍（2026-11-11 用户：一节一节的）：拉向蛇巢的那一段会在身体上折出急弯，折线的拐点就成了一个球形的关节
