@@ -1135,6 +1135,22 @@ public partial class Preview : Node2D
 		},
 		["accel"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Accelerant", "cast_glove", 0.25, 1.4) }),
 		// 选卡界面「夺宝」（RewardFx）：仿原版选牌界面（暗色遮罩 + 居中一排三张牌），打开 → 依次停在第一 / 第二 / 第三张 → 选中第二张；重抽一次
+		// 2026-11-19：战斗开始 + 回合横幅（Vfx/BattleUiFx.cs）
+		["battleui"] = p =>
+		{
+			string repo = ProjectSettings.GlobalizePath("res://") + "../../../";
+			P5Ui.Load = path =>
+			{
+				FontFile f = new();
+				string file = path == P5Ui.Barlow ? repo + "tools/ui/fonts/BarlowCondensed-900Italic.ttf" : path == P5Ui.BarlowBold ? repo + "tools/ui/fonts/BarlowCondensed-700Italic.ttf" : path;
+				return f.LoadDynamicFont(file) == Error.Ok ? f : null;
+			};
+			p.At(0.2, () => BattleUiFx.BattleStart(p._back));
+			p.At(2.8, () => BattleUiFx.TurnBanner(p._back, true, 1, false));   // 原版：战斗开始横幅播完约 2.6s 才出第 1 回合
+			p.At(4.2, () => BattleUiFx.TurnBanner(p._back, false, 0, false));
+			p.At(5.6, () => BattleUiFx.TurnBanner(p._back, true, 12, false));
+			p.At(7.0, () => BattleUiFx.TurnBanner(p._back, true, 12, true));
+		},
 		["reward"] = p =>
 		{
 			Vector2 view = p._front.GetViewportRect().Size;

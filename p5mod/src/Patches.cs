@@ -958,28 +958,69 @@ public static class JokerIconOutlinePatch
 	}
 }
 
-/// <summary>左上角顶栏的头像是实例化的图标场景（ui/character_icons/silent_icon），不走 IconTexture：把里面的图换掉。</summary>
-[HarmonyPatch(typeof(MegaCrit.sts2.Core.Nodes.TopBar.NTopBarPortrait), nameof(MegaCrit.sts2.Core.Nodes.TopBar.NTopBarPortrait.Initialize))]
-public static class JokerTopBarPortraitPatch
+/// <summary>顶栏用 CharacterModel.Icon 实例化头像，挂入场景树可能延迟。先换头像根节点的贴图。</summary>
+[HarmonyPatch(typeof(CharacterModel), "get_Icon")]
+public static class JokerIconScenePatch
 {
-	public static void Postfix(MegaCrit.sts2.Core.Nodes.TopBar.NTopBarPortrait __instance, MegaCrit.Sts2.Core.Entities.Players.Player player) => ModEntry.Safe("JokerTopBarPortrait", () =>
+	public static void Postfix(CharacterModel __instance, Godot.Control __result) => ModEntry.Safe("JokerIconScene", () =>
 	{
-		if (!Joker.Is(player) || Fx.Tex("icon_top") is not Godot.Texture2D t) return;
-		void Swap(Godot.Node n)
-		{
-			if (n is Godot.TextureRect tr)
-			{
-				tr.Texture = t;
-				tr.StretchMode = Godot.TextureRect.StretchModeEnum.KeepAspectCentered;
-			}
-			else if (n is Godot.Sprite2D sp)
-			{
-				float k = sp.Texture != null ? sp.Texture.GetWidth() * sp.Scale.X / t.GetWidth() : 1f;
-				sp.Texture = t;
-				sp.Scale = Godot.Vector2.One * k;
-			}
-			foreach (Godot.Node c in n.GetChildren()) Swap(c);
-		}
-		Swap(__instance);
+		if (__instance is MegaCrit.Sts2.Core.Models.Characters.Silent && __result is Godot.TextureRect icon
+			&& Fx.Tex("icon_top") is Godot.Texture2D portrait)
+			icon.Texture = portrait;
 	});
+}
+
+/// <summary>
+/// 战斗开始：原版「战斗开始」横幅只藏画面（节点照常跑 —— 它播完负责生成第 1 回合的横幅），换成剪报纸带 + TAKE YOUR HEART!（Vfx/BattleUiFx.cs）。
+/// </summary>
+[HarmonyPatch(typeof(NCombatStartBanner), nameof(NCombatStartBanner._Ready))]
+public static class JokerCombatStartBannerPatch
+{
+	public static void Postfix(NCombatStartBanner __instance) => ModEntry.Safe("JokerCombatStart", () =>
+	{
+		if (!Joker.LocalRun) return;
+		foreach (Godot.Node c in __instance.GetChildren())
+		{
+			if (c is Godot.CanvasItem ci) ci.Visible = false;
+		}
+		BattleUiFx.BattleStart((Joker.FxLayer(back: true) ?? Joker.FxLayer()) ?? (Godot.Control)__instance);   // 画在人物后面
+	});
+}
+
+/// <summary>我方回合横幅换成左上角的剪报纸条（原版的不再创建：返回 null，原版调用处 AddChildSafely 会忽略 null）。</summary>
+[HarmonyPatch(typeof(NPlayerTurnBanner), nameof(NPlayerTurnBanner.Create))]
+public static class JokerPlayerTurnBannerPatch
+{
+	public static bool Prefix(int roundNumber, ref NPlayerTurnBanner? __result)
+	{
+		bool replaced = false;
+		ModEntry.Safe("JokerTurnBanner", () =>
+		{
+			if (!Joker.LocalRun || (Joker.FxLayer(back: true) ?? Joker.FxLayer()) is not Godot.Control back) return;
+			bool extra = MegaCrit.Sts2.Core.Combat.CombatManager.Instance?.PlayersTakingExtraTurn.Count > 0;
+			BattleUiFx.TurnBanner(back, player: true, roundNumber, extra);
+			replaced = true;
+		});
+		if (!replaced) return true;
+		__result = null;
+		return false;
+	}
+}
+
+[HarmonyPatch(typeof(NEnemyTurnBanner), nameof(NEnemyTurnBanner.Create))]
+public static class JokerEnemyTurnBannerPatch
+{
+	public static bool Prefix(ref NEnemyTurnBanner? __result)
+	{
+		bool replaced = false;
+		ModEntry.Safe("JokerEnemyBanner", () =>
+		{
+			if (!Joker.LocalRun || (Joker.FxLayer(back: true) ?? Joker.FxLayer()) is not Godot.Control back) return;
+			BattleUiFx.TurnBanner(back, player: false, 0, false);
+			replaced = true;
+		});
+		if (!replaced) return true;
+		__result = null;
+		return false;
+	}
 }
