@@ -136,7 +136,7 @@ public sealed class AllOutFinale
 	private readonly bool[] _layerVisible;
 	private int _sourceFrame = -1, _warmView;
 	private readonly Node _owner;
-	private readonly Vector2I _pixels;
+	private readonly Vector2I _pixels, _flatPixels;
 
 	private AllOutFinale(Data d, Node owner, Vector2 size)
 	{
@@ -146,9 +146,12 @@ public sealed class AllOutFinale
 		_layerVisible = new bool[d.Layers.Length];
 		_owner = owner;
 		_cams = new Camera3D[Groups.Length];
-		// Match the screen aspect ratio and cap the four offscreen render targets.
-		float scale = Mathf.Min(1f, Mathf.Min(1280f / size.X, 720f / size.Y));
+		// 用户 2026-11-19：立绘边缘毛糙、有锯齿 —— 之前四块离屏画面都压在 1280×720 再放大到屏幕上。
+		// 人物 / 碎星 / 竖排字按屏幕原分辨率画（最高 2560×1440）+ 4× MSAA；只有整块平涂的红底板还用 1280×720 省开销。
+		float scale = Mathf.Min(1f, Mathf.Min(2560f / size.X, 1440f / size.Y));
 		_pixels = new(Mathf.Max(64, Mathf.RoundToInt(size.X * scale)), Mathf.Max(36, Mathf.RoundToInt(size.Y * scale)));
+		float flat = Mathf.Min(1f, Mathf.Min(1280f / size.X, 720f / size.Y));
+		_flatPixels = new(Mathf.Max(64, Mathf.RoundToInt(size.X * flat)), Mathf.Max(36, Mathf.RoundToInt(size.Y * flat)));
 		Bg = MakeRect(size, 0);
 		Star = MakeRect(size, 1);
 		Front = MakeRect(size, 2);
@@ -168,7 +171,7 @@ public sealed class AllOutFinale
 		if (g >= Groups.Length) return;
 		SubViewport vp = new()
 		{
-			Size = _pixels, TransparentBg = true, OwnWorld3D = true, Msaa3D = Viewport.Msaa.Msaa2X,
+			Size = g == 0 ? _flatPixels : _pixels, TransparentBg = true, OwnWorld3D = true, Msaa3D = g == 0 ? Viewport.Msaa.Msaa2X : Viewport.Msaa.Msaa4X,
 			RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled, Name = $"P5AllOutView{g}",
 		};
 		_owner.AddChild(vp);

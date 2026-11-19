@@ -93,14 +93,63 @@ public static class AllOutGame
 		if (n.Visuals.SpineBody != null && Aim.CloneBody(n, parent, "idle_loop") is { } made)
 		{
 			made.Item1.Transform = xf;
-			made.Item1.Modulate = Colors.White;
+			Plain(made.Item1, spine: true);
+			CopySkin(body, made.Item1);
 			return true;
 		}
 		if (body.Duplicate() is not Node2D copy) return false;
 		parent.AddChild(copy);
 		copy.Transform = xf;
-		copy.Modulate = Colors.White;
+		Plain(copy, spine: false);
 		return true;
+	}
+
+	/// <summary>
+	/// 剪影只要形状：复制品去掉身上的材质（用户 2026-11-19：用牌击杀时剪影是一堆方块或者没有，控制台 win 正常）——
+	/// 原版受击 / 中毒会给怪物身体换着色器（液体覆盖 potion_liquid_overlay、色相 hsv），复制出来的身体带着它画进离屏画面，
+	/// 贴图的透明被盖掉，每块部件画成整块的方片；粒子特效节点也一起去掉。
+	/// </summary>
+	/// <summary>
+	/// 换装：不少怪物是运行时换的 Spine 皮（BowlbugEgg 的 cocoon / egg、BattleFriend 的 v1–v3 等十几种），
+	/// 复制节点不带这个，复制品会落回默认皮 —— 画出来是一些奇怪的零件或者什么都没有。把本体此刻的皮套到复制品上。
+	/// </summary>
+	private static void CopySkin(Node2D body, Node2D copy)
+	{
+		try
+		{
+			if (body.Call("get_skeleton").AsGodotObject() is not GodotObject skel || copy.Call("get_skeleton").AsGodotObject() is not GodotObject cskel) return;
+			Variant skin = skel.Call("get_skin");
+			if (skin.AsGodotObject() == null) return;
+			cskel.Call("set_skin", skin);
+			cskel.Call("set_slots_to_setup_pose");
+		}
+		catch (System.Exception e)
+		{
+			Stage.Report("allout copy skin", e);
+		}
+	}
+
+	private static void Plain(Node2D copy, bool spine)
+	{
+		copy.Modulate = Colors.White;
+		copy.SelfModulate = Colors.White;
+		copy.Material = null;
+		if (spine)
+		{
+			try
+			{
+				new MegaCrit.Sts2.Core.Bindings.MegaSpine.MegaSprite(copy).SetNormalMaterial(null!);
+			}
+			catch (System.Exception)
+			{
+				copy.Set("normal_material", default(Variant));
+			}
+		}
+		foreach (Node c in copy.FindChildren("*", "", true, false))
+		{
+			if (c is GpuParticles2D or CpuParticles2D) c.QueueFree();
+			else if (c is CanvasItem ci && ci.Material is ShaderMaterial) ci.Material = null;
+		}
 	}
 
 	/// <summary>战斗结束：该播就播，返回要等多久（0 = 不播）。</summary>
