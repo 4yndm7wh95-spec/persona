@@ -1083,6 +1083,48 @@ public partial class Preview : Node2D
 			}
 		},
 		["accel"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Accelerant", "cast_glove", 0.25, 1.4) }),
+		// 选卡界面「夺宝」（RewardFx）：仿原版选牌界面（暗色遮罩 + 居中一排三张牌），打开 → 依次停在第一 / 第二 / 第三张 → 选中第二张；重抽一次
+		["reward"] = p =>
+		{
+			Vector2 view = p._front.GetViewportRect().Size;
+			Control? screen = null, row = null;
+			var cards = new List<Control>();
+			var finals = new List<Vector2>();
+			Rect2 RectOf(Control c) => c.GetChild<Control>(0).GetGlobalRect();
+			void Build()
+			{
+				foreach (Control c in cards) c.QueueFree();
+				cards.Clear(); finals.Clear();
+				string[] names = { "致命毒药", "刀刃陷阱", "夜魇" };
+				for (int i = 0; i < 3; i++)
+				{
+					Control w = new() { FocusMode = Control.FocusModeEnum.All };
+					row!.AddChild(w);
+					ColorRect face = new() { Size = new Vector2(300f, 420f), Position = new Vector2(-150f, -210f), Color = new Color(0.16f, 0.14f, 0.15f), MouseFilter = Control.MouseFilterEnum.Ignore };
+					w.AddChild(face);
+					face.AddChild(new ColorRect { Size = new Vector2(280f, 200f), Position = new Vector2(10f, 60f), Color = new Color(0.32f, 0.08f, 0.1f) });
+					P5Ui.Text(face, names[i], P5Ui.Font(P5Ui.CjkBold), 30, Colors.White, new Vector2(20f, 12f));
+					cards.Add(w);
+					finals.Add(Vector2.Left * 350f + Vector2.Right * 350f * i);
+				}
+			}
+			p.At(0.2, () =>
+			{
+				screen = new Control { Size = view, MouseFilter = Control.MouseFilterEnum.Ignore };
+				p._front.AddChild(screen);
+				screen.AddChild(new ColorRect { Size = view, Color = new Color(0f, 0f, 0f, 0.6f), MouseFilter = Control.MouseFilterEnum.Ignore });
+				row = new Control { Position = new Vector2(view.X * 0.5f, view.Y * 0.52f), MouseFilter = Control.MouseFilterEnum.Ignore };
+				screen.AddChild(row);
+				Build();
+				RewardFx.Open(screen, row, cards, finals, true, RectOf);
+			});
+			p.At(1.0, () => cards[0].GrabFocus());
+			p.At(1.4, () => cards[1].GrabFocus());
+			p.At(1.8, () => cards[2].GrabFocus());
+			p.At(2.3, () => { Build(); RewardFx.Open(screen!, row!, cards, finals, false, RectOf); });   // 重抽
+			p.At(3.0, () => cards[1].GrabFocus());
+			p.At(3.5, () => RewardFx.Pick(screen!, row!, cards, cards[1], RectOf));
+		},
 		["b6nm"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Nightmare", "cast_glove", 0.25, 2.0) }),
 		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_glove", 0.25, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast_wave", 0.08, 1.6) }),
 		["redo4b"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.8), ("Afterimage", "cast_glove", 0.25, 1.4), ("AfterimageTick", "attack", 0.2, 0.7), ("AfterimageTick", "cast_guard", 0.15, 0.7), ("AfterimageTick", "attack", 0.2, 1.0), ("Malaise", "cast_wave", 0.08, 1.8) }),

@@ -14,6 +14,23 @@ public static class Joker
 {
 	public static bool Is(Player? player) => player?.Character is Silent;
 
+	/// <summary>这一局本机玩家是不是 Joker（选卡界面这类不在战斗里的界面用）。</summary>
+	public static bool LocalRun
+	{
+		get
+		{
+			try
+			{
+				var players = MegaCrit.Sts2.Core.Runs.RunManager.Instance?.DebugOnlyGetState()?.Players;
+				return players != null && Is(MegaCrit.Sts2.Core.Context.LocalContext.GetMe(players));
+			}
+			catch
+			{
+				return false;
+			}
+		}
+	}
+
 	public static bool OwnsCard(CardModel? card) => card != null && Is(card.Owner);
 
 	/// <summary>小刀牌 = 开枪（原版只有 Shiv 这张牌给静默猎手播 shiv 动画）。</summary>
