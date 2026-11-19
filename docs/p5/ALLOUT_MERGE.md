@@ -1,7 +1,7 @@
 # 总攻击：合并说明（给负责合并的会话）
 
 分支：`claude/exciting-babbage-lm8ubb`，从主线 `claude/confident-hypatia-nropgi` 的 `84dd02dd` 分出来。截至写这份说明时，主线没有新提交，试合并（git merge-tree）没有冲突。
-状态：用户在预览里逐版确认过，最后一版是 `docs/p5/preview/allout/allout_v13.mp4`。**还没进游戏验收过。**
+状态：用户在预览里逐版确认过，最后一版是 `docs/p5/preview/allout/allout_v14.mp4`（实机反馈后：音效改走 Master 并加大，立绘各层一直保持运动到退场）。**还没进游戏验收过。**
 
 ## 做了什么
 精英 / Boss 战里，Joker 打出最后一击后：
@@ -34,7 +34,7 @@
   - `research/p5r/audio/allout/battle_all_out_atk_finish_b.ogg`：用户导出的原版喷溅声。
 
 ## 改到的共用文件（只有追加，合并时注意保留）
-- `p5mod/src/Vfx/Sfx.cs`：在 `AllOut = ...` 后面加了 `AoaHit1/2/3`、`AoaSlash1/2/3`、`AoaSplatter`、`AoaCrack`、`AoaZoom`。
+- `p5mod/src/Vfx/Sfx.cs`：新增方法 `PlayLoud`（走 Master 总线、增益最高 2.5，总攻击专用）；在 `AllOut = ...` 后面加了 `AoaHit1/2/3`、`AoaSlash1/2/3`、`AoaSplatter`、`AoaCrack`、`AoaZoom`。
 - `tools/p5/stage_p5.py`，四处追加：
   1. SFX 表里加了 `aoa_*`（在 `battle_all_out_atk` 后面）；
   2. `fx_textures()` 里在 `yokoku` 后面加了 `aoa_` 系列贴图，包括 `allout_native/tools/p5/allout_native/godot/tex`、`splatter_textures()`、`allout_cracks_v2`；

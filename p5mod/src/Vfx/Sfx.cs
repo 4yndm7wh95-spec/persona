@@ -303,6 +303,24 @@ public static class Sfx
 		[SerpentMaw] = (E + "enemy/enemy_attacks/scroll_of_biting/scroll_of_biting_bite", 0.55f),
 	};
 
+	/// <summary>
+	/// 大演出用（总攻击）：走 Master 总线（战斗结束时 SFX 总线可能被游戏压低，P3 mod 同样的做法），gain 可以到 2.5（+8dB）。
+	/// </summary>
+	public static void PlayLoud(string name, float gain) => Stage.Safe("sfx " + name, () =>
+	{
+		if (Muted || Engine.GetMainLoop() is not SceneTree tree) return;
+		Recorder?.Invoke(name, gain);
+		if (Load(name) is not AudioStreamOggVorbis stream) return;
+		AudioStreamPlayer p = new() { Stream = stream, Bus = new StringName("Master"), VolumeDb = Mathf.LinearToDb(Mathf.Clamp(gain, 0.0001f, 2.5f)) };
+		tree.Root.AddChild(p);
+		p.Finished += p.QueueFree;
+		p.Play();
+		tree.CreateTimer(stream.GetLength() + 2.0, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () =>
+		{
+			if (GodotObject.IsInstanceValid(p)) p.QueueFree();
+		};
+	});
+
 	/// <summary>播放；同一音效 45ms 内不重复叠加。volume 0～1.4。</summary>
 	public static void Play(string name, float volume = 1f, float delay = 0f) => Stage.Safe("sfx " + name, () =>
 	{
