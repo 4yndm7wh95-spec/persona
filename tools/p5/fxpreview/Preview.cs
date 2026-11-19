@@ -635,14 +635,16 @@ public partial class Preview : Node2D
 		// 2026-11-13：刀刃陷阱 —— 敌人四周亮起一圈光弹，之后每发小刀打中收一颗
 		["knife_trap"] = p =>
 		{
-			p.At(0.2, () => p._joker?.Play("aim_in"));
+			p.At(0.2, () => p._joker?.Play("twirl_in"));
+			p.At(0.77, () => p._joker?.Play("twirl_loop", true));   // 用户 2026-11-19：开枪前一直转枪
 			float tall = (JokerFeet - Pose(815f, 120f)).Length();
 			p.At(0.35, () => { p._enemies.TryGetValue(Enemy, out Node2D? n); KnifeTrapFx.Begin(p._front, p._back, Muzzle, Enemy + new Vector2(0f, -10f), 285f, 260f, 10, n, Pose(820f, 600f), tall); });
 			for (int i = 0; i < 10; i++)
 			{
 				double at = 0.35 + KnifeTrapFx.EntryTime + 0.25 + 0.24 * i;
 				bool lastShot = i == 9;
-				p.At(at - 0.18, () => p._joker?.Play("shiv_from_aim"));
+				string anim = i == 0 ? "shiv" : "shiv_from_aim";      // 第一枪从转枪接上（游戏里 Aim 把 shiv 跳到转枪那一段）
+				p.At(at - 0.18, () => p._joker?.Play(anim));
 				p.At(at - 0.02, () => GunFx.Muzzle(p._front, Muzzle, (Enemy - Muzzle).Normalized()));
 				p.At(at, () => GunFx.Shot(p._front, Muzzle, Enemy + new Vector2(Fx.Rand(-20f, 20f), Fx.Rand(-30f, 30f)), lastShot));
 			}

@@ -55,6 +55,7 @@ SUMMON_UP = ["summon_lift1_a", "summon_lift2_a", "summon_touch_mid_a", "summon_t
 # spins on the relaxed index finger (gun_spin_g = Codex's gun_spin_f with the finger joint bent so it reads,
 # tools/p5/bend_finger.py), then is caught in gun_aim_b's grip; pocket_in_e eases the left hand in and out
 # gun_arm_mid_h (arm half raised) between the hanging arm and the spin, both ways (user: the arm jumped up / dropped)
+TWIRL = .5          # Knife Trap's steady gun twirl: one turn per TWIRL seconds (SPIN_TWIRL_* below)
 GUN_IN = [("idle_a3", .01), ("pocket_in_e", .03, .015), ("gun_arm_mid_h", .03, .015), ("gun_spin_g", .05, .015),
           ("gun_aim_b", .06, 0)]
 # (user: the hand left the pocket too fast - pocket_in_e and the fade into idle are held longer)
@@ -108,6 +109,10 @@ ANIMS = {
     # aim (shiv_from_aim, shot at 0.18 s like "shiv"); dropping the card lowers it (aim_out)
     "aim_in": GUN_IN,
     "aim_loop": [("gun_aim_b", 4.8)],
+    # Knife Trap (user 2026-11-19): while the trap opens and before the first shot he keeps twirling the gun on the finger
+    # (twirl_in draws it into the spin, twirl_loop spins on and on; the shot is "shiv" played from its spin, p5mod Aim)
+    "twirl_in": [("idle_a3", .01), ("pocket_in_e", .03, .015), ("gun_arm_mid_h", .03, .015), ("gun_spin_g", TWIRL, .015)],
+    "twirl_loop": [("gun_spin_g", TWIRL)],
     "aim_out": [("gun_aim_b", .01)] + GUN_OUT,
     "shiv_from_aim": [("gun_aim_b", .18)] + GUN_SHOT,
     # holding a skill / power / block card while choosing where to play it (user 2026-10-29: every card should have a
@@ -238,7 +243,10 @@ SPIN_SINFUL = [("@gun_spin_g", 0, *SPIN, 580, 1.1, 0, 0), ("@gun_spin_g", .02, *
                ("@gun_spin_g", .12, *SPIN, 360, 1.1, 1, .5), ("@gun_spin_g", .24, *SPIN, 210, 1.1, 1, .45),
                ("@gun_spin_g", .36, *SPIN, 100, 1.1, 1, .35), ("@gun_spin_g", .47, *SPIN, 35, 1.08, 1, .2),
                ("@gun_spin_g", SINFUL_SPIN - .01, *SPIN, 4, 1.04, 1, .05), ("@gun_aim_b", 0, *AIM_GUARD, 0, 1, 1, 0)]
-GUN_PROP = {"aim_in": [SPIN_IN], "shiv": [SPIN_IN, SPIN_OUT], "shiv_from_aim": [SPIN_OUT], "aim_out": [SPIN_OUT],
+# the steady twirl (two turns a second, clockwise); one loop = one turn, so twirl_loop wraps with the gun where it began
+SPIN_TWIRL_IN = [("@gun_spin_g", 0, *SPIN, 230, 1.1, 0, 0)] + [("@gun_spin_g", round(.01 + i * .049, 3), *SPIN, round(230 - 720 * (.01 + i * .049), 1), 1.1, 1, .45) for i in range(10)]
+SPIN_TWIRL_LOOP = [("@gun_spin_g", round(i * .05, 3), *SPIN, round(-130 - 36 * i, 1), 1.1, 1, .45) for i in range(11)]
+GUN_PROP = {"twirl_in": [SPIN_TWIRL_IN], "twirl_loop": [SPIN_TWIRL_LOOP], "aim_in": [SPIN_IN], "shiv": [SPIN_IN, SPIN_OUT], "shiv_from_aim": [SPIN_OUT], "aim_out": [SPIN_OUT],
             "cast_sinful_from_mask": [SPIN_SINFUL]}
 
 # the knife (user 2026-10-28: spin it the same way - on the draw at the hip, then cut upwards; and again at the hip
