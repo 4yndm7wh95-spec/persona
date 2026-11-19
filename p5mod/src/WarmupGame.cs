@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -70,24 +71,29 @@ public static class WarmupGame
 	}
 }
 
-// 读贴图和原版发出的资源请求并行。读档直接进战斗时也有机会提前读完；绘制仍由空闲队列负责。
+// 与原版的进局加载并行，保证直接读档进战斗也会先提交华丽收场的开场材质。
 [HarmonyPatch(typeof(PreloadManager), nameof(PreloadManager.LoadRunAssets))]
 public static class WarmupRunAssetsPatch
 {
-	public static void Postfix(IEnumerable<CharacterModel> __0) => ModEntry.Safe("finale preload", () =>
+	public static void Postfix(IEnumerable<CharacterModel> __0, ref Task __result)
 	{
-		if (__0.Any(character => character is Silent) && Engine.GetMainLoop() is SceneTree tree)
-			_ = Warmup.PrepareFinaleTextures(tree);
-	});
+		try
+		{
+			if (__0.Any(character => character is Silent) && Engine.GetMainLoop() is SceneTree tree)
+				__result = Warmup.PrepareFinaleForRun(tree, __result);
+		}
+		catch (Exception e) { Stage.Report("finale preload", e); }
+		Warmup.WaitFor(__result);
+	}
 }
 
-// 不等待或包装原版 Task；只在它未完成时暂停自己的队列。
+// 其他原版加载只暂停空闲队列。
 [HarmonyPatch]
 public static class WarmupLoadingPatch
 {
 	public static IEnumerable<MethodBase> TargetMethods() => typeof(PreloadManager)
 		.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-		.Where(method => method.Name is "LoadAssetSets" or "LoadCommonAndMainMenuAssets" or "LoadRunAssets" or "LoadRoomAssets")
+		.Where(method => method.Name is "LoadAssetSets" or "LoadCommonAndMainMenuAssets" or "LoadRoomAssets")
 		.Where(method => typeof(Task).IsAssignableFrom(method.ReturnType));
 
 	public static void Postfix(Task __result) => Warmup.WaitFor(__result);

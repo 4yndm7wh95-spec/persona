@@ -31,6 +31,7 @@ public static class RewardFx
 	{
 		public bool Entering = true;
 		public bool Picking, AnimatingPick;
+		public Node2D? StampRoot;
 		public readonly List<RewardPose> Poses = new();
 	}
 
@@ -64,22 +65,21 @@ public static class RewardFx
 	public static void Recover(Control screen)
 	{
 		if (!Runs.TryGetValue(screen, out RewardRun? run)) return;
+		Settle(screen);
 		Runs.Remove(screen);
-		foreach (RewardPose pose in run.Poses)
-		{
-			pose.Detach();
-			pose.Restore();
-		}
+		foreach (RewardPose pose in run.Poses) pose.Detach();
 	}
 
 	public static void Settle(Control screen)
 	{
 		if (!Runs.TryGetValue(screen, out RewardRun? run)) return;
-		run.Entering = run.AnimatingPick = false;
+		run.Entering = run.AnimatingPick = run.Picking = false;
+		if (GodotObject.IsInstanceValid(run.StampRoot)) run.StampRoot!.QueueFree();
+		run.StampRoot = null;
 		foreach (RewardPose pose in run.Poses) pose.Restore();
 	}
 
-	private static void AnimateCard(Control screen, double duration, Action<float> draw)
+	private static void AnimateCard(Node screen, double duration, Action<float> draw)
 	{
 		var tween = screen.CreateTween().SetIgnoreTimeScale(true).SetPauseMode(Tween.TweenPauseMode.Process);
 		tween.TweenMethod(Callable.From(draw), 0f, 1f, duration);
@@ -298,13 +298,14 @@ public static class RewardFx
 		Phantom.Confetti(screen, c, 26, 760f * u, Vector2.Up, 180f, 0.9f, 9f * u);
 		// 印章：画在最上面，从 2 倍大重重压下来（0.08s），压住时一抖
 		Node2D top = new() { Name = "P5RewardStamp", ZIndex = 10, TopLevel = true };
+		run.StampRoot = top;
 		screen.AddChild(top);
 		top.GlobalPosition = Vector2.Zero;
 		if (Spr(top, "stamp_stolen", c + new Vector2(0f, r.Size.Y * 0.05f), 1f, -0.18f) is { } stamp && stamp.Texture is Texture2D st)
 		{
 			float sk = r.Size.X * 1.25f / (st.GetWidth() * 0.87f);
 			stamp.Modulate = new Color(1f, 1f, 1f, 0f);
-			Fx.Animate(stamp, 0, 0.3, t =>
+			AnimateCard(stamp, 0.3, t =>
 			{
 				float s = t * 0.3f;
 				float e = Mathf.Min(1f, s / 0.08f);
@@ -338,7 +339,7 @@ public static class RewardFx
 		{
 			if (c == keep) continue;
 			if (c is TextureRect or NinePatchRect or Sprite2D) ((CanvasItem)c).SelfModulate = new Color(1f, 1f, 1f, 0f);
-			if (!c.IsAncestorOf(keep) || c != keep) HideArt(c, keep);
+			HideArt(c, keep);
 		}
 	}
 
