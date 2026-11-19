@@ -204,6 +204,7 @@ render_mode blend_add;
 uniform float clock = 0.0;
 uniform float len_px = 1000.0;
 uniform float thick_px = 420.0;
+uniform float quad_h = 420.0;   // 画布高度（比子弹本身高一些，光晕在画布里淡完）
 uniform float head_px = 900.0;
 uniform float speed_px = 2800.0;
 uniform float extra_age = 0.0;
@@ -212,7 +213,7 @@ uniform float fade = 1.0;
 " + Noise + @"
 void fragment() {
 	float x = UV.x, y = (UV.y - 0.5) * 2.0;
-	float xp = x * len_px, yp = y * thick_px * 0.5;
+	float xp = x * len_px, yp = y * quad_h * 0.5;
 	float dx = xp - head_px;
 	float R = thick_px * 0.15 * (1.0 + 0.35 * flare);
 	// 弹头
@@ -238,7 +239,9 @@ void fragment() {
 	vec3 white = vec3(0.97, 0.99, 1.0), cyan = vec3(0.32, 0.78, 1.0), deep = vec3(0.12, 0.35, 1.0);
 	vec3 col = white * (core * 2.4 + orb * (0.9 + 0.7 * flare)) + mix(cyan, white, 0.3) * orb * swirl * 0.8 + mix(deep, cyan, flare) * halo
 		+ mix(deep, cyan, life) * trail * 1.1 + white * rib * life * 1.1;   // 拧着的两条光带亮一些：看得出是一股在旋的能量，不是一条软光带
-	float edge = (1.0 - smoothstep(0.85, 1.0, abs(y))) * smoothstep(0.0, 0.02, x) * (1.0 - smoothstep(0.985, 1.0, x));
+	// 2026-11-19 用户：实机里有很硬的边框 → 画布两头 / 上下的淡出按像素给足（原来是长度的 2%，弹道还短、弹头胀大时光晕在画布边被切直）
+	float fadeIn = thick_px * 0.45;
+	float edge = (1.0 - smoothstep(0.55, 1.0, abs(y))) * smoothstep(0.0, fadeIn, xp) * (1.0 - smoothstep(len_px - fadeIn, len_px, xp));
 	COLOR = vec4(col * fade * edge, 1.0);
 }" };
 
@@ -1016,11 +1019,12 @@ void fragment() {
 		{
 			float time = t * (fly + linger);
 			float headDist = Mathf.Min(time, fly) * speed;
-			float len = headDist + thick * 0.5f;
-			q.Size = new Vector2(len, thick);
-			q.Position = new Vector2(-thick * 0.1f, -thick / 2f);
+			float len = headDist + thick * 1.3f;                   // 弹头前面留足空间，光晕在画布里就淡完
+			q.Size = new Vector2(len, thick * 1.3f);
+			q.Position = new Vector2(-thick * 0.4f, -thick * 0.65f);
 			m.SetShaderParameter("len_px", len);
-			m.SetShaderParameter("head_px", headDist + thick * 0.1f);
+			m.SetShaderParameter("quad_h", thick * 1.3f);
+			m.SetShaderParameter("head_px", headDist + thick * 0.4f);
 			m.SetShaderParameter("extra_age", Mathf.Max(0f, time - fly));
 			float fl = 0f;
 			for (int c = 0; c < contacts.Length; c++)

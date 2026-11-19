@@ -6,11 +6,26 @@
 
 ---
 
+## 2026-11-19 · 会话 E 收尾：待合并总览（用户：可以了，整理好等其他会话合并）
+
+- 分支 **`claude/confirm-next-tasks-k5wu6t`**（`ccd94646`，已推送、工作区干净、类型检查通过）。比 `codex/p5-0951-integration`（`f513007b`）多 14 个提交（其中 6 个是合进来的 `claude/confident-hypatia-nropgi` 华丽收场第二～七版）；
+  和 `codex/p5-0951-integration`、`claude/exciting-babbage-lm8ubb`、`claude/confident-hypatia-nropgi` 试合并都**无冲突**。
+- 这批相对 integration 新增的：选卡界面色带切入放慢（`RewardFx`）；商店里 Joker 缩到 0.75（`JokerMerchantScalePatch`）；
+  华丽收场第二～七版（另一会话）+ 本会话修硬边框（`SinfulImpact` / `SinfulShell`）；群蛇形态最终版（旧版 + 獠牙 + 鳞片，见下一条）。
+- 更早已进 integration 的本会话内容（选卡界面换皮、头像 / 选人按钮、战斗开始 / 回合横幅、能量球 / 结束回合换皮、总攻击锯齿 / 剪影、扫腿格挡）见下面各条。
+- **出包前跑 `tools/p5/charselect_assets.py` + `tools/p5/stage_p5.py`**（`reward_header_* / reward_skip_* / icon_top* / battle_* / hud_*` 这些新贴图没提交进 pck_stage）。
+- **群蛇形态的分布用户已定，别再改**；`claude/confident-hypatia-nropgi` 那边的群蛇第二～四版作废（已被覆盖）。
+
+---
+
 ## 2026-11-19 · 会话 E 续六：群蛇形态由本会话接手（另一会话 claude/confident-hypatia-nropgi 的群蛇改动作废）
 
 - **最终（用户定的）**：`SerpentMantle.cs` = 另一会话改动之前一直用的版本（636d1e65 的上一版），只多两样：
   獠牙更明显（着色器：更长更粗、象牙色、一点暖红反光）；鳞片（着色器：沿身体一排排错开的圆鳞、鳞缝略暗、朝上一侧一点随游动闪的暖红反光；头顶 / 后脑小一号、力度七成）。
-  分布、轨迹、蛇巢都没动。中间试过拉开散开、尾巴落地、露尾巴、几种布局草图（`docs/p5/preview/serpent_layout_options.png`），用户都不要，**别再改群蛇的分布**。
+  分布、轨迹、蛇巢都没动。鳞片后来按用户要求加重约 80%（鳞缝 0.3 → 0.54、深浅差 0.2 → 0.36、反光 0.2 → 0.36）。
+- 华丽收场实机有硬边框（用户 2026-11-19 照片）：命中光 Flood / 开场 Burst 的外圈在画布边上还很亮被切掉 → 改成从中间就开始软淡出；
+  烟 / 波纹的边缘淡出放宽；子弹画布前面多留 1.3 倍弹宽、两头 / 上下的淡出按像素给足（新 uniform quad_h，子弹本身大小不变）。
+中间试过拉开散开、尾巴落地、露尾巴、几种布局草图（`docs/p5/preview/serpent_layout_options.png`），用户都不要，**别再改群蛇的分布**。
 - 合并了 `claude/confident-hypatia-nropgi`（华丽收场第七版等），**它的群蛇第二～四版已被上面覆盖**；那边会话不要再改群蛇。
 - 预览场景 `serpent_idle`（`serpent_form_v26_scales.mp4` 是中间拉开散开的那版，分布不是最终的）。
 
