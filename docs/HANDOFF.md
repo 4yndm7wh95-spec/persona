@@ -6,10 +6,13 @@
 
 ---
 
-## 2026-11-19 · 会话 E：选卡界面「夺宝」
+## 2026-11-19 · 会话 E：选卡界面「夺宝」（用户：可以了），待合并
 
-- 第一版代码已推送：`Vfx/RewardFx.cs` + `Patches.cs` 里的 `RewardOpenPatch` / `RewardPickPatch`（只在本机玩家是 Joker 时接管原版选牌界面的滑入补间），预览 `docs/p5/preview/reward_screen_v1.mp4`（预览场景 `reward` 是仿原版界面的模拟）。
-- 用户：纯代码画不好看 → **已写 Codex 生图任务单 `docs/codex/codex_p5_reward_screen_art.md`（剪报拼贴预告函字「TREASURE / 夺宝 / TAKE YOUR PICK / STOLEN!」、色带、悬停底板），等 Codex 推到 `art/p5/ui/reward/`**，到了之后把 RewardFx 里的代码色块换成这些图。
+- 分支 **`claude/confirm-next-tasks-k5wu6t`**（已推送、工作区干净、类型检查通过）。比 `codex/p5-0951-integration` 多 **10 个提交**（下面「会话 E 续」的 6 个 + 选卡界面 3 个 + 本条交接）；和它、和 `claude/exciting-babbage-lm8ubb` 试合并都**无冲突**。
+- 选卡界面：`Vfx/RewardFx.cs` + `Patches.cs` 末尾的 `RewardOpenPatch` / `RewardPickPatch`（只在本机玩家是 Joker 时接管原版 `NCardRewardSelectionScreen` 的滑入补间）：
+  牌从右边甩进来（0.3s 内到位、一开始就能点，0.8s 兜底摆回原版位置）、剪报纸带色带、左上角 TREASURE 字母一片片拍上来 + TAKE YOUR PICK、悬停红纸板、选中盖 STOLEN! 印章。补间绑在界面上、每帧确认格子还在这一排（对象池，P3 踩过的坑）。
+- 素材：Codex 画的 `art/p5/ui/reward/`（17 张，任务单 `docs/codex/codex_p5_reward_screen_art.md`），`tools/p5/stage_p5.py` 打包成 `res://p5joker/fx/reward_*.png`（半尺寸）。**出包时要跑 stage_p5.py 才会带上**；「夺宝」中文字素材有但没用（用户定了 TREASURE）。
+- 预览：`docs/p5/preview/reward_screen_v2.mp4`（预览场景 `reward` 是仿原版界面的模拟，牌是占位）。实机要看：色带高度、标题大小是按模拟界面估的。
 
 ---
 
