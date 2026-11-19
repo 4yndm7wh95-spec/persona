@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-11-19 · 会话 E 收尾：待合并总览（用户：可以了，整理好等其他会话合并）
+
+- 分支 **`claude/confirm-next-tasks-k5wu6t`**（`ccd94646`，已推送、工作区干净、类型检查通过）。比 `codex/p5-0951-integration`（`f513007b`）多 14 个提交（其中 6 个是合进来的 `claude/confident-hypatia-nropgi` 华丽收场第二～七版）；
+  和 `codex/p5-0951-integration`、`claude/exciting-babbage-lm8ubb`、`claude/confident-hypatia-nropgi` 试合并都**无冲突**。
+- 这批相对 integration 新增的：选卡界面色带切入放慢（`RewardFx`）；商店里 Joker 缩到 0.75（`JokerMerchantScalePatch`）；
+  华丽收场第二～七版（另一会话）+ 本会话修硬边框（`SinfulImpact` / `SinfulShell`）；群蛇形态最终版（旧版 + 獠牙 + 鳞片，见下一条）。
+- 更早已进 integration 的本会话内容（选卡界面换皮、头像 / 选人按钮、战斗开始 / 回合横幅、能量球 / 结束回合换皮、总攻击锯齿 / 剪影、扫腿格挡）见下面各条。
+- **出包前跑 `tools/p5/charselect_assets.py` + `tools/p5/stage_p5.py`**（`reward_header_* / reward_skip_* / icon_top* / battle_* / hud_*` 这些新贴图没提交进 pck_stage）。
+- **群蛇形态的分布用户已定，别再改**；`claude/confident-hypatia-nropgi` 那边的群蛇第二～四版作废（已被覆盖）。
+
+---
+
 ## 2026-11-19 · 会话 E 续六：群蛇形态由本会话接手（另一会话 claude/confident-hypatia-nropgi 的群蛇改动作废）
 
 - **最终（用户定的）**：`SerpentMantle.cs` = 另一会话改动之前一直用的版本（636d1e65 的上一版），只多两样：
