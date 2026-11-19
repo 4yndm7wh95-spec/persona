@@ -132,6 +132,52 @@ public partial class Preview : Node2D
 		["charselect"] = p => CharSelect(p),
 		// 出发过场（Vfx/EmbarkTransition.cs）：选人画面 2.6s 后点出发 → 门合拢、预告信、飞刀钉住 → 盖住时把底下换成假战斗场景（代替进局）→
 		// 钉着预告信的那一帧停 0.6s（加载）→ 展开
+		// 总攻击（p5mod/src/Vfx/AllOut.cs）：最后一刀砍中 → 截三只怪物的剪影 → 总攻击
+		["allout"] = p =>
+		{
+			AllOut.LoadText = name =>
+			{
+				string f = ProjectSettings.GlobalizePath($"res://../../../p5mod/pck_stage/p5joker/allout/{name}");
+				return System.IO.File.Exists(f) ? System.IO.File.ReadAllText(f) : null;
+			};
+			AllOutFinale.LoadData = () =>
+			{
+				string f = ProjectSettings.GlobalizePath("res://../../../p5mod/pck_stage/p5joker/allout/hero.bin");
+				return System.IO.File.Exists(f) ? System.IO.File.ReadAllBytes(f) : null;
+			};
+			p.Strike(0.3, Enemy, 99);
+			p.At(0.46, () =>
+			{
+				var foes = new List<AllOut.Foe>();
+				Vector2[] es = { Enemy2, Enemy, Enemy3 };
+				int left = es.Length;
+				void Done(AllOut.Foe? foe)
+				{
+					if (foe != null) foes.Add(foe);
+					if (--left == 0) AllOut.Play(p, foes);
+				}
+				foreach (Vector2 e in es)
+				{
+					if (p._enemies[e] is not SpinePlayer sp || !Monsters.TryGetValue(e, out var mon))
+					{
+						Done(null);
+						continue;
+					}
+					float k = mon.Scale / 0.55f;
+					Rect2 region = new(e.X - 300f * k, 870f - 520f * k, 600f * k, 520f * k);
+					AllOut.Snap(p, region, parent =>
+					{
+						string monDir = ProjectSettings.GlobalizePath("res://.mon");
+						string src = ProjectSettings.GlobalizePath("res://") + "../../../research/sts2_preview_scene/recovered/animations/monsters";
+						SpinePlayer c = SpinePlayer.Load($"{monDir}/{mon.Name}.json", $"{src}/{mon.Name}/{mon.Name}.atlas", $"{src}/{mon.Name}/{mon.Name}.png");
+						c.Transform = sp.GetGlobalTransformWithCanvas();
+						parent.AddChild(c);
+						c.PlayFrom(sp.Current, sp.Time);
+						return true;
+					}, Done);
+				}
+			});
+		},
 		["embark"] = p =>
 		{
 			List<Node> charSelect = CharSelect(p);
@@ -747,7 +793,12 @@ public partial class Preview : Node2D
 			var es = new List<ShivFx.Target> { new(Enemy2, 180f), new(Enemy, 230f), new(Enemy3, 180f) };
 			p.At(1.2, () => { p._joker?.Play("aim_out"); ShivFx.FanOfKnives(p._front, Pose(1275f, 345f), es); });
 		},
-		["warmup"] = p => p.At(0.1, () => Warmup.Run(p._front, 1ul)),
+		["warmup"] = p => p.At(0.1, () =>
+		{
+			Warmup.IdleContext = () => "preview";
+			Warmup.RequestJoker();
+			Warmup.StartMenu();
+		}),
 		["monsters"] = p => { },
 		["attack_pose"] = p => p.At(0.3, () => p._joker?.Play("attack")),
 		// 出刀刀光单独看（和动作对齐）
@@ -1141,7 +1192,7 @@ public partial class Preview : Node2D
 			p.At(1.8, () => cards[2].GrabFocus());
 			p.At(2.3, () => { Build(); RewardFx.Open(screen!, row!, cards, finals, false, RectOf); });   // 重抽
 			p.At(3.0, () => cards[1].GrabFocus());
-			p.At(3.5, () => RewardFx.Pick(screen!, row!, cards, cards[1], RectOf));
+			p.At(3.5, () => RewardFx.Pick(screen!, row!, cards[1], RectOf));
 		},
 		["b6nm"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Nightmare", "cast_glove", 0.25, 2.0) }),
 		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_glove", 0.25, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast_wave", 0.08, 1.6) }),

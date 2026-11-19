@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
@@ -11,6 +13,8 @@ using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using MegaCrit.Sts2.Core.Nodes.CommonUi;
+using MegaCrit.Sts2.Core.Nodes.Screens.CardSelection;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
 using MegaCrit.Sts2.Core.ValueProps;
@@ -122,11 +126,7 @@ public static class AmmoPatch
 				{
 					CorrosiveFx.Aura(cl, Joker.PosePoint(jn, ReadyFx.Feet));
 				}
-				// 每场战斗预热一次第四版特效（首次打出不卡，Vfx/Warmup.cs）
-				if (Joker.FxLayer() is Godot.Control fx && NCombatRoom.Instance is NCombatRoom room)
-				{
-					Warmup.Run(fx, room.GetInstanceId());
-				}
+				// 预热由菜单 / 非战斗空闲队列负责，不在战斗首次更新时集中启动。
 			}
 			// 能量球右上方
 			view.Root.Position = __instance.Size / 2f + new Godot.Vector2(110f, -70f);
@@ -539,9 +539,14 @@ public static class PoisonApplyPatch
 [HarmonyPatch(typeof(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower), nameof(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower.AfterCardDrawn))]
 public static class CorrosiveDrawPatch
 {
+	private sealed class DrawChain
+	{
+		public ulong LastImpact;
+		public int FollowUps;
+	}
+
+	private static readonly ConditionalWeakTable<MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower, DrawChain> DrawChains = new();
 	private static bool _bypass;
-	private static ulong _lastMs;
-	private static int _chain;
 
 	public static bool Prefix(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower __instance, MegaCrit.Sts2.Core.GameActions.Multiplayer.PlayerChoiceContext choiceContext, CardModel card, bool fromHandDraw, ref System.Threading.Tasks.Task __result)
 	{
@@ -569,13 +574,14 @@ public static class CorrosiveDrawPatch
 			// 用户 2026-11-18：一次抽好几张只放一道完整的浪；后面的每一张在浪尾上变成一下快速的「咬蚀」，每张仍然各挂一次毒
 			//（抽牌是一张一张等着跑的：上一张挂完毒才轮到下一张，所以离上一张结束不到 0.5s 就算同一串连抽）
 			ulong now = Stage.NowMs();
-			bool chained = _lastMs != 0 && now < _lastMs + 500;
-			_chain = chained ? _chain + 1 : 0;
-			if (_chain == 0)
+			var chain = DrawChains.GetValue(__instance, static _ => new DrawChain());
+			bool chained = chain.LastImpact != 0 && now < chain.LastImpact + 500;
+			chain.FollowUps = chained ? chain.FollowUps + 1 : 0;
+			if (chain.FollowUps == 0)
 				wait = CorrosiveFx.OnDraw(layer, Joker.PosePoint(joker, ReadyFx.Feet), Joker.Facing(joker), targets, true);
 			else
-				wait = CorrosiveFx.Erode(layer, Joker.Facing(joker), targets, _chain);
-			_lastMs = now + (ulong)(wait * 1000f);   // 这一张挂毒的时刻
+				wait = CorrosiveFx.Erode(layer, Joker.Facing(joker), targets, chain.FollowUps);
+			chain.LastImpact = now + (ulong)(wait * 1000f);   // 这一张挂毒的时刻
 			anchor = layer;
 		});
 		if (wait <= 0f || anchor == null)
@@ -764,34 +770,49 @@ public static class FlaskSplashPatch
 /// 选卡界面「夺宝」（Vfx/RewardFx.cs，用户 2026-11-19：参考 P3 mod，有特色且不拖沓）：每次打开 / 重抽接管原版的滑入补间，
 /// 牌从右边甩进来、背后 P5 斜切色带、左上角 TREASURE 标签、悬停红底板。牌一开始就看得见、点得到。
 /// </summary>
-[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardSelectionScreen), nameof(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardSelectionScreen.RefreshOptions))]
+[HarmonyPatch(typeof(NCardRewardSelectionScreen), nameof(NCardRewardSelectionScreen.RefreshOptions))]
 public static class RewardOpenPatch
 {
-	public static void Postfix(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardSelectionScreen __instance)
+	private static readonly FieldInfo? CardTween = AccessTools.Field(typeof(NCardRewardSelectionScreen), "_cardTween");
+
+	public static void Prefix(NCardRewardSelectionScreen __instance) =>
+		ModEntry.Safe("RewardRefresh", () => RewardFx.Recover(__instance));
+
+	public static void Postfix(NCardRewardSelectionScreen __instance, IReadOnlyList<CardCreationResult> options)
 	{
 		ModEntry.Safe("RewardOpen", () =>
 		{
-			if (!Joker.LocalRun || Traverse.Create(__instance).Field("_cardRow").GetValue() is not Godot.Control row)
-			{
+			if (!Joker.LocalRun || __instance.GetNodeOrNull<Godot.Control>("UI/CardRow") is not { } row
+				|| CardTween?.GetValue(__instance) is not Godot.Tween tween || !Godot.GodotObject.IsInstanceValid(tween))
 				return;
-			}
-			var holders = RewardHolders(row);
-			if (holders.Count == 0)
+
+			var live = row.GetChildren().OfType<MegaCrit.Sts2.Core.Nodes.Cards.Holders.NGridCardHolder>()
+				.Where(h => !h.IsQueuedForDeletion()).ToList();
+			if (options.Count == 0 || live.Count != options.Count) return;
+
+			var holders = new List<Godot.Control>(options.Count);
+			var finals = new List<Godot.Vector2>(options.Count);
+			for (int i = 0; i < options.Count; i++)
 			{
-				return;
+				var holder = live.Find(h => ReferenceEquals(h.CardModel, options[i].Card));
+				if (holder == null) return;
+				live.Remove(holder);
+				holders.Add(holder);
+				finals.Add(Godot.Vector2.Right * (i - (options.Count - 1) * 0.5f) * 350f);
 			}
-			if (Traverse.Create(__instance).Field("_cardTween").GetValue() is Godot.Tween tw && Godot.GodotObject.IsInstanceValid(tw))
-			{
-				tw.Kill();
-			}
-			// 原版的位置：一排居中，间距 350
-			var finals = new List<Godot.Vector2>();
-			for (int i = 0; i < holders.Count; i++)
-			{
-				finals.Add(Godot.Vector2.Left * (holders.Count - 1) * 350f * 0.5f + Godot.Vector2.Right * 350f * i);
-			}
+
 			bool first = __instance.GetNodeOrNull("P5RewardBackdrop") == null;
-			RewardFx.Open(__instance, row, holders, finals, first, RectOf);
+			try
+			{
+				RewardFx.Open(__instance, row, holders, finals, first, RectOf, CardOf,
+					static () => NControllerManager.Instance?.IsUsingDirectionalNavigation == true);
+				tween.Kill();
+			}
+			catch
+			{
+				RewardFx.Recover(__instance);
+				throw;
+			}
 			// 原版的横幅、跳过按钮也换成剪报风（Codex 素材）
 			if (Traverse.Create(__instance).Field("_banner").GetValue() is Godot.Control banner && Traverse.Create(banner).Field("label").GetValue() is Godot.Label bl)
 			{
@@ -816,11 +837,12 @@ public static class RewardOpenPatch
 		});
 	}
 
-	internal static List<Godot.Control> RewardHolders(Godot.Control row) =>
-		row.GetChildren().OfType<MegaCrit.Sts2.Core.Nodes.Cards.Holders.NGridCardHolder>().Where(h => !h.IsQueuedForDeletion()).Cast<Godot.Control>().ToList();
+	private static object? CardOf(Godot.Control c) =>
+		(c as MegaCrit.Sts2.Core.Nodes.Cards.Holders.NCardHolder)?.CardModel;
 
 	internal static Godot.Rect2 RectOf(Godot.Control c) =>
-		c is MegaCrit.Sts2.Core.Nodes.Cards.Holders.NCardHolder h && h.Hitbox != null && Godot.GodotObject.IsInstanceValid(h.Hitbox) ? h.Hitbox.GetGlobalRect() : c.GetGlobalRect();
+		c is MegaCrit.Sts2.Core.Nodes.Cards.Holders.NCardHolder h && h.Hitbox != null && Godot.GodotObject.IsInstanceValid(h.Hitbox)
+			? h.Hitbox.GetGlobalRect() : c.GetGlobalRect();
 }
 
 /// <summary>
@@ -828,52 +850,52 @@ public static class RewardOpenPatch
 /// 印章根本来不及出现（用户 2026-11-19：STOLEN 在游戏里没生效，选完直接进牌组）→ 先放演出、等 RewardFx.PickHold 秒再交结果。
 /// 等的这段时间里再点牌不响应；如果这期间结果已经被别的方式交出去了（跳过等），就不再交。
 /// </summary>
-[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardSelectionScreen), "SelectCard")]
+[HarmonyPatch(typeof(NCardRewardSelectionScreen), "SelectCard")]
 public static class RewardPickPatch
 {
+	private static readonly FieldInfo? Completion = AccessTools.Field(typeof(NCardRewardSelectionScreen), "_completionSource");
+	private static readonly MethodInfo? Select = AccessTools.Method(typeof(NCardRewardSelectionScreen), "SelectCard");
 	private static bool _bypass;
-	private static readonly MethodInfo? Select = AccessTools.Method(typeof(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardSelectionScreen), "SelectCard");
 
-	public static bool Prefix(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardSelectionScreen __instance, MegaCrit.Sts2.Core.Nodes.Cards.Holders.NCardHolder cardHolder)
+	public static bool Prefix(NCardRewardSelectionScreen __instance, MegaCrit.Sts2.Core.Nodes.Cards.Holders.NCardHolder cardHolder)
 	{
-		if (_bypass || Select == null)
+		if (_bypass || !Joker.LocalRun || Completion == null || Select == null) return true;
+		if (Completion.GetValue(__instance) is not TaskCompletionSource<int?> completion || completion.Task.IsCompleted)
+			return false;
+		if (__instance.GetNodeOrNull<Godot.Control>("UI/CardRow") is not { } row) return true;
+		if (!Godot.GodotObject.IsInstanceValid(cardHolder) || cardHolder.IsQueuedForDeletion() || cardHolder.GetParent() != row)
+			return false;
+		if (__instance.HasMeta("p5_pick_pending")) return false;   // 演出中又点了一下：不响应
+
+		__instance.SetMeta("p5_pick_pending", true);
+		ModEntry.Safe("RewardPick", () => RewardFx.Pick(__instance, row, cardHolder, RewardOpenPatch.RectOf));
+		var screen = __instance;
+		void Hand()
 		{
-			return true;
+			if (!Godot.GodotObject.IsInstanceValid(screen)) return;
+			screen.RemoveMeta("p5_pick_pending");
+			if (Completion.GetValue(screen) is not TaskCompletionSource<int?> c2 || c2.Task.IsCompleted) return;
+			_bypass = true;
+			try
+			{
+				Select.Invoke(screen, new object[] { cardHolder });
+			}
+			finally
+			{
+				_bypass = false;
+			}
 		}
-		bool held = false;
-		ModEntry.Safe("RewardPick", () =>
-		{
-			if (!Joker.LocalRun || Traverse.Create(__instance).Field("_cardRow").GetValue() is not Godot.Control row
-				|| Traverse.Create(__instance).Field("_completionSource").GetValue() is not System.Threading.Tasks.TaskCompletionSource<int?> cs || cs.Task.IsCompleted)
-			{
-				return;
-			}
-			held = true;
-			if (__instance.HasMeta("p5_pick_pending"))
-			{
-				return;                                   // 演出中又点了一下：不响应
-			}
-			__instance.SetMeta("p5_pick_pending", true);
-			RewardFx.Pick(__instance, row, RewardOpenPatch.RewardHolders(row), cardHolder, RewardOpenPatch.RectOf);
-			var screen = __instance;
-			Fx.After(screen, RewardFx.PickHold, () =>
-			{
-				if (!Godot.GodotObject.IsInstanceValid(screen)) return;
-				screen.RemoveMeta("p5_pick_pending");
-				if (Traverse.Create(screen).Field("_completionSource").GetValue() is not System.Threading.Tasks.TaskCompletionSource<int?> c2 || c2.Task.IsCompleted) return;
-				_bypass = true;
-				try
-				{
-					Select.Invoke(screen, new object[] { cardHolder });
-				}
-				finally
-				{
-					_bypass = false;
-				}
-			});
-		});
-		return !held;
+		if (screen.GetTree() == null) Hand();                         // 兜底：不在场景树里就别等，直接交
+		else Fx.After(screen, RewardFx.PickHold, Hand);
+		return false;
 	}
+}
+
+[HarmonyPatch(typeof(NCardRewardSelectionScreen), nameof(NCardRewardSelectionScreen.AfterOverlayHidden))]
+public static class RewardHidePatch
+{
+	public static void Prefix(NCardRewardSelectionScreen __instance) =>
+		ModEntry.Safe("RewardHide", () => RewardFx.Settle(__instance));
 }
 
 /// <summary>选卡界面跳过按钮换皮之后：悬停 / 手柄选中换红色纸板（原版是 HSV 着色器调亮，换皮时去掉了）。</summary>

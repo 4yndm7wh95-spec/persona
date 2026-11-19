@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Godot;
 
 namespace P5Joker;
@@ -47,30 +48,17 @@ public static class EmbarkTransition
 	private static readonly Color Red = new(0.9f, 0.07f, 0.1f);
 	private static readonly Color Ink = new(0.025f, 0.012f, 0.016f);
 	private static readonly Color White = new(1f, 0.97f, 0.95f);
+	private static readonly string[] TextureNames = { "yokoku", "day_knife", "day_glint" };
 
-	private static Shader? _strike, _card, _cut, _ring;
+	internal static Task PrepareTextures(Control host, Func<bool> current) =>
+		Fx.PrepareTextures(host.GetTree(), TextureNames, current);
 
-	/// <summary>读屏幕：平滑的红黑双色调（暗部黑、中间调红、亮部白）+ 推镜（以画面中心放大）+ 一闪。</summary>
-	private static Shader StrikeShader => _strike ??= new Shader { Code = @"
-shader_type canvas_item;
-uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
-uniform float amount = 0.0;
-uniform float zoom = 1.0;
-uniform float flash = 0.0;
-uniform vec4 red : source_color = vec4(0.9, 0.07, 0.1, 1.0);
-void fragment() {
-	vec2 uv = vec2(0.5) + (SCREEN_UV - vec2(0.5)) / zoom;
-	vec3 c = texture(screen_tex, uv).rgb;
-	float l = dot(c, vec3(0.299, 0.587, 0.114));
-	vec3 d = mix(vec3(0.025, 0.012, 0.016), red.rgb, smoothstep(0.05, 0.42, l));
-	d = mix(d, vec3(1.0, 0.97, 0.95), smoothstep(0.58, 0.92, l));
-	vec3 o = mix(c, d, amount);
-	COLOR = vec4(mix(o, vec3(1.0), flash), 1.0);
-}" };
+	private static Shader? _card;
+	private static Texture2D? _rings;
+	private const float RingRadius = 900f;
 
 	/// <summary>
-	/// 立体的预告信：每个像素沿视线打到「绕竖轴转 yaw、绕横轴转 pitch」的卡面上（真透视，焦距 focal），取卡面贴图；
-	/// 转到背面时画卡背（深色 + 同样的白边）。卡面贴图四周有透明边，转的时候边缘也是抗锯齿的。
+	/// 在四个顶点投影卡面，用深度倒数校正贴图坐标。转到背面时仍画深色卡背和白边。
 	/// </summary>
 	private static Shader CardShader => _card ??= new Shader { Code = @"
 shader_type canvas_item;
@@ -81,60 +69,58 @@ uniform float yaw = 0.0;
 uniform float pitch = 0.0;
 uniform float focal = 1500.0;
 uniform vec4 back_tint : source_color = vec4(0.16, 0.02, 0.03, 1.0);
-varying vec2 lp;
-void vertex() { lp = VERTEX - rect_size * 0.5; }
-void fragment() {
+varying vec3 perspective_uv;
+varying flat float back_face;
+void vertex() {
 	float cy = cos(yaw), sy = sin(yaw), cp = cos(pitch), sp = sin(pitch);
+	vec2 p = (UV - vec2(0.5)) * card_size;
 	vec3 ex = vec3(cy, 0.0, -sy);
 	vec3 ey = vec3(sy * sp, cp, cy * sp);
-	vec3 n = vec3(sy * cp, -sp, cy * cp);
-	vec3 r = vec3(lp, focal);
-	vec3 c0 = vec3(0.0, 0.0, focal);
-	float dn = dot(n, r);
-	float t = dot(n, c0) / (abs(dn) < 1e-5 ? 1e-5 : dn);
-	vec3 h = r * t - c0;
-	vec2 q = vec2(dot(h, ex), dot(h, ey));
-	vec2 uv = q / card_size + 0.5;
-	bool inside = t > 0.0 && uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0;
-	vec4 c = inside ? texture(card_tex, uv) : vec4(0.0);
-	if (dn < 0.0) {
-		vec4 b = inside ? texture(card_tex, vec2(1.0 - uv.x, uv.y)) : vec4(0.0);
-		float white = step(0.92, min(b.r, min(b.g, b.b)));
-		c = vec4(mix(back_tint.rgb + b.rgb * 0.08, vec3(1.0, 0.97, 0.95), white), b.a);
+	vec3 rotated = ex * p.x + ey * p.y;
+	float inv_depth = focal / (focal + rotated.z);
+	VERTEX = rect_size * 0.5 + rotated.xy * inv_depth;
+	perspective_uv = vec3(UV * inv_depth, inv_depth);
+	back_face = cy * cp;
+}
+void fragment() {
+	vec2 uv = perspective_uv.xy / perspective_uv.z;
+	if (back_face < 0.0) uv.x = 1.0 - uv.x;
+	vec4 c = texture(card_tex, uv);
+	if (back_face < 0.0) {
+		float white = step(0.92, min(c.r, min(c.g, c.b)));
+		c.rgb = mix(back_tint.rgb + c.rgb * 0.08, vec3(1.0, 0.97, 0.95), white);
 	}
 	COLOR = c * COLOR;
 }" };
 
-	/// <summary>飞刀：纹理 x &lt; cut_px 的部分（刀尖那截）不画，边缘抗锯齿 —— 刀尖「进了纸里」。</summary>
-	private static Shader CutShader => _cut ??= new Shader { Code = @"
-shader_type canvas_item;
-uniform float tex_w = 858.0;
-uniform float cut_px = -1.0;
-void fragment() {
-	vec4 c = texture(TEXTURE, UV) * COLOR;
-	float px = UV.x * tex_w;
-	float w = max(fwidth(px), 1e-4);
-	COLOR = vec4(c.rgb, c.a * clamp((px - cut_px) / w + 0.5, 0.0, 1.0));
-}" };
-
-	/// <summary>门上的暗红同心圆环（画面坐标），离圆心越远越淡，门缝两边留出红边和白线。</summary>
-	private static Shader RingShader => _ring ??= new Shader { Code = @"
-shader_type canvas_item;
-uniform vec2 rect_origin;
-uniform vec2 ring_center;
-uniform float clear_w = 60.0;
-uniform float ring_slant = 0.2;
-varying vec2 lp;
-void vertex() { lp = VERTEX + rect_origin; }
-void fragment() {
-	float d = length(lp - ring_center);
-	float px = max(fwidth(d), 1e-4);
-	float b = mod(d - 330.0, 150.0);
-	float band = clamp(b / px, 0.0, 1.0) * clamp((58.0 - b) / px, 0.0, 1.0);
-	float fade = 1.0 - smoothstep(330.0, 900.0, d);
-	float keep = clamp((abs(lp.x - ring_slant * lp.y) - clear_w) / max(fwidth(lp.x), 1e-4), 0.0, 1.0);
-	COLOR = vec4(0.3, 0.025, 0.04, band * fade * keep * 0.4 * COLOR.a);
-}" };
+	/// <summary>门上的暗红同心圆环。生成一张静态透明遮罩，保留门缝红边和白线。</summary>
+	private static Texture2D RingTexture()
+	{
+		if (_rings != null) return _rings;
+		const int size = 512;
+		const float step = 2f * RingRadius / size;
+		const float clear = RedW + Gap + LineW + 10f;
+		byte[] pixels = new byte[size * size * 4];
+		for (int row = 0; row < size; row++)
+		{
+			float y = (row + 0.5f) * step - RingRadius;
+			for (int col = 0; col < size; col++)
+			{
+				float x = (col + 0.5f) * step - RingRadius;
+				float d = MathF.Sqrt(x * x + y * y);
+				float band = d - 330f;
+				band -= 150f * MathF.Floor(band / 150f);
+				float edge = Math.Clamp(MathF.Min(band, 58f - band) / step, 0f, 1f);
+				float fade = 1f - Smooth(Seg(d, 330f, RingRadius));
+				float seam = MathF.Abs(x + CardAt.X - Slant * (y + CardAt.Y)) - clear;
+				float alpha = edge * fade * Math.Clamp(seam / step, 0f, 1f) * 0.4f;
+				int index = (row * size + col) * 4;
+				pixels[index] = pixels[index + 1] = pixels[index + 2] = 255;
+				pixels[index + 3] = (byte)MathF.Round(alpha * 255f);
+			}
+		}
+		return _rings = ImageTexture.CreateFromImage(Image.CreateFromData(size, size, false, Image.Format.Rgba8, pixels));
+	}
 
 	/// <summary>一扇门：黑色门体 + 内沿白线 + 红边。</summary>
 	private sealed class Door
@@ -150,14 +136,21 @@ void fragment() {
 
 	private static Vector2[] Span(float x0, float x1) => SlabPts(Mathf.Min(x0, x1), Mathf.Max(x0, x1));
 
+	private static Polygon2D Slab(Node2D root, Vector2[] points, Color color)
+	{
+		Polygon2D slab = new() { Polygon = points, Color = color, Antialiased = true };
+		root.AddChild(slab);
+		return slab;
+	}
+
 	/// <summary>side = -1 左门、+1 右门。合上时红边贴着中线（各越过 1 防接缝），门体从红边外侧（留 2 重叠）伸到屏外，白线压在门体上、离红边一道黑缝。</summary>
 	private static Door BuildDoor(Node2D stage, float side, float far)
 	{
 		Door d = new() { Root = new Node2D() };
 		stage.AddChild(d.Root);
-		P5Ui.Quad(d.Root, Span(-side, side * (RedW + 2f)), Red);
-		P5Ui.Quad(d.Root, Span(side * (RedW - 1f), side * far), Ink);
-		P5Ui.Quad(d.Root, Span(side * (RedW + Gap), side * (RedW + Gap + LineW)), White);
+		Slab(d.Root, Span(-side, side * (RedW + 2f)), Red);
+		Slab(d.Root, Span(side * (RedW - 1f), side * far), Ink);
+		Slab(d.Root, Span(side * (RedW + Gap), side * (RedW + Gap + LineW)), White);
 		return d;
 	}
 
@@ -199,13 +192,26 @@ void fragment() {
 		Vector2 size = host.Size.X > 2f ? host.Size : Fx.Screen(host);
 		Control root = new() { Name = "P5Embark", Size = size, MouseFilter = Control.MouseFilterEnum.Ignore };
 		host.AddChild(root);
+		try
+		{
+			return Build(root, size, onCovered);
+		}
+		catch
+		{
+			root.QueueFree();
+			throw;
+		}
+	}
+
+	private static Curtain Build(Control root, Vector2 size, Action? onCovered)
+	{
 		float k = size.Y / 1080f;
 		float hw = size.X / k * 0.5f;
 		float far = hw + 700f;
 
-		ShaderMaterial strikeMat = new() { Shader = StrikeShader };
-		strikeMat.SetShaderParameter("red", Red);
-		ColorRect strike = new() { Size = size, Material = strikeMat, MouseFilter = Control.MouseFilterEnum.Ignore };
+		// Use the normal canvas pipeline for the first flash. A screen-reading filter
+		// needs a full back-buffer copy and can stall on its first D3D12 draw.
+		ColorRect strike = new() { Size = size, MouseFilter = Control.MouseFilterEnum.Ignore };
 		root.AddChild(strike);
 		ColorRect baseBlack = new() { Size = size, Color = Ink, MouseFilter = Control.MouseFilterEnum.Ignore, Visible = false };
 		root.AddChild(baseBlack);
@@ -215,13 +221,12 @@ void fragment() {
 		Door right = BuildDoor(stage, 1f, far), left = BuildDoor(stage, -1f, far);
 
 		// 门上的暗红同心圆环（用户：两边全黑太空，简单丰富一下）：圆心在预告信中心，门合拢后才有，开门前淡掉
-		ShaderMaterial ringMat = new() { Shader = RingShader };
-		Vector2 ringMin = new(-hw - 20f, -560f);
-		ringMat.SetShaderParameter("rect_origin", ringMin);
-		ringMat.SetShaderParameter("ring_center", CardAt);
-		ringMat.SetShaderParameter("clear_w", RedW + Gap + LineW + 10f);
-		ringMat.SetShaderParameter("ring_slant", Slant);
-		ColorRect rings = new() { Position = ringMin, Size = new Vector2(2f * hw + 40f, 1120f), Material = ringMat, MouseFilter = Control.MouseFilterEnum.Ignore, Visible = false };
+		Texture2D mask = RingTexture();
+		Sprite2D rings = new()
+		{
+			Position = CardAt, Texture = mask, Scale = Vector2.One * (2f * RingRadius / mask.GetWidth()),
+			SelfModulate = new Color(0.3f, 0.025f, 0.04f), Visible = false,
+		};
 		stage.AddChild(rings);
 
 		// 预告信：立体卡（着色器做透视），挂在 cardNode 上（位置 / 歪的角度 / 整体缩放）
@@ -229,7 +234,7 @@ void fragment() {
 		Vector2 cardSize = cardTex != null ? cardTex.GetSize() * (CardH / cardTex.GetHeight()) : new Vector2(610f, 450f);
 		Vector2 rectSize = cardSize * 1.7f;
 		ShaderMaterial cardMat = new() { Shader = CardShader };
-		cardMat.SetShaderParameter("card_tex", cardTex);
+		if (cardTex != null) cardMat.SetShaderParameter("card_tex", cardTex);
 		cardMat.SetShaderParameter("card_size", cardSize);
 		cardMat.SetShaderParameter("rect_size", rectSize);
 		cardMat.SetShaderParameter("focal", Focal);
@@ -244,16 +249,10 @@ void fragment() {
 		Node2D slit = new() { Position = PinAt, Rotation = Mathf.DegToRad(KnifeDeg), Visible = false };
 		pin.AddChild(slit);
 		float sl = Hidden * 1.05f;
-		P5Ui.Quad(slit, new[] { new Vector2(6f, -26f), new Vector2(0f, 0f), new Vector2(-sl, 0.6f), new Vector2(-sl * 0.45f, -20f) }, new Color(1f, 0.93f, 0.92f, 0.42f));
-		P5Ui.Quad(slit, new[] { new Vector2(2f, -3.2f), new Vector2(2f, 3.2f), new Vector2(-sl, 0.5f), new Vector2(-sl, -0.5f) }, White);
+		Slab(slit, new[] { new Vector2(6f, -26f), new Vector2(0f, 0f), new Vector2(-sl, 0.6f), new Vector2(-sl * 0.45f, -20f) }, new Color(1f, 0.93f, 0.92f, 0.42f));
+		Slab(slit, new[] { new Vector2(2f, -3.2f), new Vector2(2f, 3.2f), new Vector2(-sl, 0.5f), new Vector2(-sl, -0.5f) }, White);
 		Texture2D? knifeTex = Fx.Tex("day_knife");
-		Sprite2D KnifeSprite()
-		{
-			ShaderMaterial m = new() { Shader = CutShader };
-			m.SetShaderParameter("tex_w", knifeTex?.GetWidth() ?? 858f);
-			m.SetShaderParameter("cut_px", -1f);
-			return new Sprite2D { Texture = knifeTex, Centered = false, Offset = -KnifeTip, Material = m };
-		}
+		Sprite2D KnifeSprite() => new() { Texture = knifeTex, Centered = false, Offset = -KnifeTip };
 		Node2D[] ghosts = new Node2D[2];
 		for (int i = 0; i < ghosts.Length; i++)
 		{
@@ -265,6 +264,15 @@ void fragment() {
 		pin.AddChild(knife);
 		Sprite2D blade = KnifeSprite();
 		knife.AddChild(blade);
+		float cut = KnifeTip.X + Hidden / KnifeScale;
+		if (knifeTex != null)
+			blade.RegionRect = new Rect2(cut, 0f, Mathf.Max(0f, knifeTex.GetWidth() - cut), knifeTex.GetHeight());
+		void CutBlade(bool hiddenTip)
+		{
+			if (blade.RegionEnabled == hiddenTip) return;
+			blade.RegionEnabled = hiddenTip;
+			blade.Offset = -KnifeTip + new Vector2(hiddenTip ? cut : 0f, 0f);
+		}
 		Sprite2D glint = new() { Texture = Fx.Tex("day_glint"), Position = GlintOnBlade - KnifeTip, Material = Fx.Additive, Visible = false };
 		knife.AddChild(glint);
 		Vector2 tipAt = PinAt - toHandle * Hidden;                          // 钉住时刀尖的位置（在纸里）
@@ -286,11 +294,16 @@ void fragment() {
 
 		void Pose(float t)
 		{
-			// 定格：双色调、推镜、一闪
-			strike.Visible = t < Close + 0.02f;
-			strikeMat.SetShaderParameter("amount", Smooth(Seg(t, 0f, 0.08f)));
-			strikeMat.SetShaderParameter("zoom", 1f + 0.035f * OutCubic(Seg(t, 0f, 0.12f)));
-			strikeMat.SetShaderParameter("flash", 0.22f * (1f - Seg(t, 0f, 0.08f)));
+			// 门合拢前的红色罩染和白闪合成一次普通透明绘制。
+			strike.Visible = t < Close;
+			if (strike.Visible)
+			{
+				float white = 0.22f * (1f - Seg(t, 0f, 0.08f));
+				float tint = 0.46f * Smooth(Seg(t, 0f, 0.08f)) * (1f - white);
+				Color color = White.Lerp(Red.Darkened(0.42f), tint / (tint + white));
+				color.A = tint + white;
+				strike.Color = color;
+			}
 
 			// 两扇门同时滑进来（指数缓出），Close 合拢；合拢以后底下垫黑，圆环淡入
 			float door = OutExpo(Seg(t, DoorsIn, Close));
@@ -316,7 +329,7 @@ void fragment() {
 			slit.Scale = new Vector2(OutCubic(Seg(t, Stab, Stab + 0.04f)), 1f) * bump;
 			slit.Position = PinAt - toHandle * 6f * jolt;
 			// 刀尖进了纸：扎中以后把入口之前的那截截掉（纹理像素坐标，刀尖在 x = KnifeTip.x）
-			if (blade.Material is ShaderMaterial bm) bm.SetShaderParameter("cut_px", t >= Stab ? KnifeTip.X + Hidden / KnifeScale : -1f);
+			CutBlade(t >= Stab);
 
 			// 飞刀：飞行 → 钉住后只沿刀身轻轻回弹一下
 			knife.Visible = t >= Throw;
@@ -343,13 +356,13 @@ void fragment() {
 		}
 
 		// 展开：飞刀被一下拔走 → 预告信立体翻转着缩小、往左上飞走 → 门缝白光一闪，两扇门往两边加速滑开
-		ColorRect slash = P5Ui.Quad(stage, SlabPts(-3f, 3f), White);
+		Polygon2D slash = Slab(stage, SlabPts(-3f, 3f), White);
 		slash.Visible = false;
 		void Open(float t)
 		{
 			// 拔刀：沿刀身往回加速抽走，刀尖露出来；口子跟着淡掉
 			float pull = Seg(t, 0f, 0.14f);
-			if (blade.Material is ShaderMaterial bm) bm.SetShaderParameter("cut_px", t > 0.01f ? -1f : KnifeTip.X + Hidden / KnifeScale);
+			CutBlade(t <= 0.01f);
 			knife.Position = tipAt + toHandle * 1500f * pull * pull * pull;
 			knife.Visible = pull < 1f;
 			slit.Modulate = new Color(1f, 1f, 1f, 1f - Seg(t, 0.04f, 0.16f));

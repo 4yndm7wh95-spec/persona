@@ -1,9 +1,8 @@
+using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using Godot;
 using HarmonyLib;
-using MegaCrit.Sts2.Core.Models;
-using MegaCrit.Sts2.Core.Models.Characters;
+using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Screens.CharacterSelect;
 
 namespace P5Joker;
@@ -25,18 +24,20 @@ public static class CharSelectInfo
 
 	private static readonly Dictionary<ulong, Saved> State = new();
 
-	/// <summary>model = null：只恢复原版面板（选了别的角色，或 Joker 的选人画面没搭起来）。</summary>
-	public static void Apply(NCharacterSelectScreen screen, NCharacterSelectButton button, CharacterModel? model, bool intro)
+	internal static void Clear(NCharacterSelectScreen screen)
+	{
+		if (Traverse.Create(screen).Field("_infoPanel").GetValue<Control>() is Control panel)
+			Restore(panel);
+	}
+
+	// Hide the stock panel as soon as Joker is selected. Reveal our panel after
+	// the backdrop is ready, or restore the stock panel if the backdrop fails.
+	internal static Action<bool?>? Prepare(NCharacterSelectScreen screen)
 	{
 		Control? panel = Traverse.Create(screen).Field("_infoPanel").GetValue<Control>();
 		if (panel == null || !GodotObject.IsInstanceValid(panel))
 		{
-			return;
-		}
-		Restore(panel);
-		if (button.IsRandom || button.IsLocked || model is not Silent)
-		{
-			return;
+			return null;
 		}
 		Node2D anchor = new() { Name = DecoName };
 		Saved saved = new() { Anchor = anchor };
@@ -50,7 +51,7 @@ public static class CharSelectInfo
 			panel.SelfModulate = new Color(1f, 1f, 1f, 0f);
 			foreach (Node child in panel.GetChildren())
 			{
-				if (child is not CanvasItem ci || child == anchor)
+				if (child is not CanvasItem ci || child == anchor || child.Name == "P3InfoDeco")
 				{
 					continue;
 				}
@@ -67,20 +68,35 @@ public static class CharSelectInfo
 			}
 			string hp = Traverse.Create(screen).Field("_hp").GetValue<Label>()?.Text ?? "";
 			string gold = Traverse.Create(screen).Field("_gold").GetValue<Label>()?.Text ?? "";
-			string relicTitle = Traverse.Create(screen).Field("_relicTitle").GetValue<RichTextLabel>()?.Text ?? "";
-			string relicDesc = Traverse.Create(screen).Field("_relicDescription").GetValue<RichTextLabel>()?.Text ?? "";
+			RichTextLabel? relicTitle = Traverse.Create(screen).Field("_relicTitle").GetValue<RichTextLabel>();
+			RichTextLabel? relicDesc = Traverse.Create(screen).Field("_relicDescription").GetValue<RichTextLabel>();
 			Texture2D? relicIcon = Traverse.Create(screen).Field("_relicIcon").GetValue<TextureRect>()?.Texture;
-			CharSelectInfoPanel.Data data = new(hp, gold, Regex.Replace(relicTitle, @"\[[^\]]*\]", ""), relicDesc, relicIcon);
-			Fx.After(anchor, intro ? CharSelectScene.InfoPanelDelay : 0.1, () =>
+			CharSelectInfoPanel.Data data = new(hp, gold, relicTitle?.GetParsedText() ?? "", relicDesc?.Text ?? "",
+				relicIcon, relicDesc?.CustomEffects);
+			return intro =>
 			{
-				// 快速切走再切回来时，上一次的计时器仍会触发 —— 它的面板已经不是当前这块了，什么都不做
-				if (!GodotObject.IsInstanceValid(anchor) || anchor.GetParent() != panel || anchor.IsQueuedForDeletion()
-					|| !State.TryGetValue(panel.GetInstanceId(), out Saved? current) || current != saved)
+				if (!StillOwnsPanel()) return;
+				if (!intro.HasValue)
 				{
+					Restore(panel, saved);
 					return;
 				}
+				Fx.After(anchor, intro.Value ? CharSelectScene.InfoPanelDelay : 0.1, Show);
+			};
+
+			bool StillOwnsPanel() => GodotObject.IsInstanceValid(anchor) && anchor.GetParent() == panel &&
+				!anchor.IsQueuedForDeletion() && State.TryGetValue(panel.GetInstanceId(), out Saved? current) && current == saved;
+
+			void Show()
+			{
+				if (!StillOwnsPanel()) return;
 				try
 				{
+					if (NGame.Instance?.Transition.InTransition == true)
+					{
+						Restore(panel, saved);
+						return;
+					}
 					CharSelectInfoPanel.Build(anchor, data);
 				}
 				catch (System.Exception)
@@ -88,7 +104,7 @@ public static class CharSelectInfo
 					Restore(panel, saved);                          // 搭新面板出错时恢复原版面板（不能留下一块空白）
 					throw;
 				}
-			});
+			}
 		}
 		catch
 		{

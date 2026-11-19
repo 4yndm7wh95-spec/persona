@@ -15,7 +15,8 @@ namespace P5Joker;
 /// </summary>
 public static class CharSelectInfoPanel
 {
-	public sealed record Data(string Hp, string Gold, string RelicTitle, string RelicDesc, Texture2D? RelicIcon);
+	public sealed record Data(string Hp, string Gold, string RelicTitle, string RelicDesc, Texture2D? RelicIcon,
+		Godot.Collections.Array? RelicEffects = null);
 
 	private const float Tilt = -5f * Mathf.Pi / 180f;           // 整组右端上扬 5°（同抬头）
 	private static readonly Color White = new(0.98f, 0.97f, 0.97f);
@@ -24,7 +25,7 @@ public static class CharSelectInfoPanel
 	private static readonly Color Red = new("de101e");
 	private static readonly Color Pale = new(1f, 0.78f, 0.8f);
 	private static readonly Color Gold = new(1f, 0.8f, 0.2f);
-	private static readonly Color Grey = new(0.84f, 0.82f, 0.83f);
+	private static readonly Color Copy = new("fff4eb"), RelicGold = new("ffda81"), CopyOutline = new("24060b");
 
 	private static Shader? _sheen;
 
@@ -52,10 +53,14 @@ void fragment() {
 		return l;
 	}
 
+	internal static string FormatRelicDescription(string text) => text
+		.Replace("[blue]", "[color=#ffda81]", StringComparison.OrdinalIgnoreCase)
+		.Replace("[/blue]", "[/color]", StringComparison.OrdinalIgnoreCase);
+
 	private static float Seg(float t, float start, float dur) => Mathf.Clamp((t - start) / dur, 0f, 1f);
 
 	/// <summary>在 parent（原版信息面板，或预览里的假面板）下面搭介绍板并播入场。返回整组节点（拆掉它就恢复）。</summary>
-	public static Node2D Build(Node parent, Data d)
+	public static Node2D Build(Node parent, Data d, bool animate = true)
 	{
 		Node2D deco = new() { Name = "P5InfoDeco" };
 		parent.AddChild(deco);
@@ -94,11 +99,11 @@ void fragment() {
 		stats.AddChild(goldLine);
 		P5Ui.Slab(goldLine, 0f, 50f + goldW, 34f, 43f, 4f, Gold);
 
-		// ── 描述：左侧红线 + 两行（白 → 浅灰） ──
+		// ── 描述：左侧红线 + 暖白字与深色描边 ──
 		Node2D desc = new() { Position = new Vector2(-148f, 238f) };
 		deco.AddChild(desc);
 		ColorRect bar = P5Ui.Slab(desc, 0f, 5f, 2f, 70f, 0f, Red);
-		Label descLabel = Text(desc, ShortDesc(), cjkM, 27, White, Grey, new Vector2(22f, -6f));
+		Label descLabel = P5Ui.Text(desc, ShortDesc(), cjkM, 27, Copy, new Vector2(22f, -6f), 3, CopyOutline);
 		descLabel.LabelSettings!.LineSpacing = 2f;
 
 		// ── 天赋：红边图标斜卡 + 名称 + PASSIVE + 说明（说明是原版富文本，带图标） ──
@@ -110,7 +115,7 @@ void fragment() {
 		{
 			relic.AddChild(new Sprite2D { Texture = d.RelicIcon, Position = new Vector2(35f, 30f), Scale = Vector2.One * (52f / Mathf.Max(d.RelicIcon.GetWidth(), 1)) });
 		}
-		Text(relic, d.RelicTitle, cjkB, 26, White, Pale, new Vector2(94f, -6f));
+		P5Ui.Text(relic, d.RelicTitle, cjkB, 26, RelicGold, new Vector2(94f, -6f), 3, CopyOutline);
 		float tx0 = 94f + P5Ui.Width(cjkB, d.RelicTitle, 26) + 18f;
 		Node2D tag = new() { Position = new Vector2(tx0 + 48f, 18f) };
 		relic.AddChild(tag);
@@ -119,14 +124,19 @@ void fragment() {
 		passive.Position = new Vector2(-P5Ui.Width(num, "PASSIVE", 19) * 0.5f + 2.5f, -19f * 0.68f);
 		RichTextLabel rd = new()
 		{
-			BbcodeEnabled = true, Text = d.RelicDesc, FitContent = true, ScrollActive = false, AutowrapMode = TextServer.AutowrapMode.Off,
+			BbcodeEnabled = true, FitContent = true, ScrollActive = false, AutowrapMode = TextServer.AutowrapMode.WordSmart,
 			MouseFilter = Control.MouseFilterEnum.Ignore, Position = new Vector2(94f, 30f), Size = new Vector2(620f, 30f),
 		};
 		rd.AddThemeFontOverride("normal_font", cjkM);
 		rd.AddThemeFontSizeOverride("normal_font_size", 21);
-		rd.AddThemeColorOverride("default_color", Colors.White);
-		rd.Material = P5Ui.Gradient(White, Grey, 21 * 1.4f);
+		rd.AddThemeColorOverride("default_color", Copy);
+		rd.AddThemeColorOverride("font_outline_color", CopyOutline);
+		rd.AddThemeConstantOverride("outline_size", 3);
+		if (d.RelicEffects != null) rd.CustomEffects = d.RelicEffects;
+		// 游戏用 [blue] 标动态数值。用标准 BBCode 保留数值高亮，并与界面的金色一致。
+		rd.Text = FormatRelicDescription(d.RelicDesc);
 		relic.AddChild(rd);
+		if (!animate) return deco;
 
 		// ── 入场（同 P3 的节奏） ──
 		int.TryParse(Regex.Match(d.Gold, @"\d+").Value, out int goldVal);

@@ -13,6 +13,8 @@
 - Joker 头像（Codex `art/p5/ui/icons/joker_top_icon.png`，任务单 `docs/codex/codex_p5_joker_icons_art.md`）：`stage_p5.py` 出 `icon_top`（256）+ `icon_top_outline`（白色剪影描边）；`JokerIconTexturePatch / JokerIconOutlinePatch`（`CharacterModel.IconTexture / IconOutlineTexture`，战绩 / 联机 / 继续游戏 / 先古对话用）+ `JokerTopBarPortraitPatch`（左上角顶栏是实例化的 silent_icon 场景，把里面的贴图换掉）。
 - 选人按钮：`tools/p5/charselect_assets.py` 改用 Codex 的 `art/p5/ui/icons/joker_select_button.png`（缩到 132×195 → `cs_button`）。**出包要重跑 charselect_assets.py + stage_p5.py。**
 - 预览：`docs/p5/preview/reward_screen_v3.mp4`（模拟界面里加了横幅 / 跳过按钮的替身）。
+- **已经把 `codex/p5-0951-integration`（0.9.53，用户本地的优化：RewardRun / Recover / Settle、按 CardModel 配格子、RewardHidePatch 等）合并进本分支并解决了冲突**：选卡界面以 0.9.53 的守卫 / 恢复逻辑为准，在上面加回「延迟 PickHold 再交结果」（0.9.53 的 RewardPickPatch 是立刻 return true，印章看不到）、横幅 / 按钮换皮、标题居中。所以本分支合回 integration 应该是快进 / 无冲突。
+- 0.9.53 把 `pck_stage/p5joker/fx/reward_*` 提交进了仓库；这次新增的 `reward_header_* / reward_skip_* / icon_top*` 没提交到 pck_stage，**出包前跑一次 `stage_p5.py`**。
 
 ---
 

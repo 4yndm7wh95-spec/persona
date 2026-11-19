@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System;
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Godot;
 
 namespace P5Joker;
@@ -34,19 +35,38 @@ public static class CutIn
 	private static Clip? _clip;
 	private static Prepared[]? _parts;
 	private static ShaderMaterial? _opaqueEyes;
+	private static Task<Clip>? _pendingClip;
 
-	/// <summary>预热：眼神特写的网格数据先解析好。</summary>
-	public static void Preload() => Load();
+	internal static bool PollPreload()
+	{
+		if (_parts != null) return true;
+		Task<Clip> pending = _pendingClip ??= Task.Run(ReadClip);
+		if (!pending.IsCompleted) return false;
+		Load();
+		return true;
+	}
 
 	private static void Load()
 	{
 		if (_parts != null) return;
+		Clip clip = _pendingClip?.GetAwaiter().GetResult() ?? ReadClip();
+		_pendingClip = null;
+		BuildMeshes(clip);
+	}
+
+	private static Clip ReadClip()
+	{
 		using Stream stream = typeof(CutIn).Assembly.GetManifestResourceStream("P5Joker.EyeCutIn.json")
 			?? throw new InvalidDataException("Missing embedded P5R eye cut-in data");
 		Clip clip = JsonSerializer.Deserialize<Clip>(stream, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
 			?? throw new InvalidDataException("Invalid P5R eye cut-in data");
 		if (clip.Duration <= 0 || clip.Speed <= 0 || clip.Canvas.Length != 2 || clip.Meshes.Length == 0)
 			throw new InvalidDataException("Invalid P5R eye cut-in timing/canvas");
+		return clip;
+	}
+
+	private static void BuildMeshes(Clip clip)
+	{
 		List<Prepared> parts = new();
 		foreach (Part part in clip.Meshes)
 		{
@@ -256,7 +276,7 @@ void fragment() {
 		return Mathf.Max(screen.X / _clip!.Canvas[0], screen.Y / _clip.Canvas[1]) * 0.82f;
 	}
 
-	public static void Eyes(Control back, CutInPlayback? playback = null)
+	public static void Eyes(Control back, CutInPlayback? playback = null, bool warm = false)
 	{
 		if (Fx.Tex("eyes") is not Texture2D tex) return;
 		Load();
@@ -316,7 +336,7 @@ void fragment() {
 		shown.AddChild(sprite);
 		bool hit = false, shattered = false;
 		Rect2 bandRect = new(new Vector2(0f, root.Position.Y), new Vector2(screen.X, clip.Canvas[1] * scale));     // 连两头的延伸段一起碎
-		Fx.Play(shown, playback, life, s =>
+		void Update(float s)
 		{
 			// 原版动画只放到停住那一帧（不放原版的合拢）
 			float time = Mathf.Min(s * clip.Speed, 1.45f);
@@ -342,19 +362,24 @@ void fragment() {
 			m.SetShaderParameter("zoom", s < ImpactAt ? 1f : Mathf.Lerp(1.08f, 1f, Fx.OutCubic(k)));
 			m.SetShaderParameter("pinch", playback.Pinch);
 			m.SetShaderParameter("pinch_at", playback.PinchAt / screen);
-			if (!hit && s >= ImpactAt)
+			if (!warm && !hit && s >= ImpactAt)
 			{
 				hit = true;
 				Sfx.Play(Sfx.OneMore, 1.1f);                         // 原版弱点眼神特写的音（用户 2026-11-03 试过 battle_cutin，又换回来）
 			}
 			// 碎开（用户 2026-11-01：复用结城理 mod 的玻璃碎裂，不要爪痕）：先裂纹定格 0.05s，然后横幅换成一块块碎片炸开；亚森离场、咒焰收掉、背景退掉都在碎开这一刻
-			if (!shattered && s >= playback.SplitAt)
+			if (!warm && !shattered && s >= playback.SplitAt)
 			{
 				shattered = true;
 				Shatter(back, view.GetTexture(), screen, bandRect, () => sprite.Visible = false, playback.ShatterFrom, playback.Crush ? 0f : 0.05f,
 					playback.Pinch, playback.PinchAt / screen, playback.Outward);
 			}
-		});
+		}
+
+		if (warm)
+			Update(ImpactAt + 0.05f);
+		else
+			Fx.Play(shown, playback, life, Update);
 	}
 
 	private static Shader? _tailShader;

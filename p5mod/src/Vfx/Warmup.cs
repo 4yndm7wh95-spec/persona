@@ -1,107 +1,347 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using Godot;
 
 namespace P5Joker;
 
-/// <summary>
-/// 预热（用户 2026-11-02：特效首次打出会卡顿一下）。第一次用到某个特效时引擎要现编译着色器、现加载原版特效场景，那一帧就会卡。
-/// 每场战斗开始时把第四版用到的东西都在一个几乎全透明（alpha 0.004，仍然会真正绘制）的层里各放一次：
-/// 原版粒子场景（换 LUT 的复制材质）、手绘贴图材质（正常 + 加法两种）、命中白闪 / 空间扭曲、全屏冲击帧。玩家看不见，之后第一次打出就不卡。
-/// </summary>
+/// <summary>按需、串行、可暂停的空闲预热；启动阶段只挂回调，不读取或绘制资源。</summary>
 public static class Warmup
 {
-	private static ulong _lastRoom;
+	private sealed record Job(string Name, Func<bool>? Load = null, Action<Control>? Draw = null);
+	private static readonly Queue<Job> Jobs = new();
+	private static readonly Queue<Job> MenuJobs = new();
+	private static readonly HashSet<string> Groups = new(), Textures = new(), Sounds = new();
+	private static readonly HashSet<ulong> Shaders = new();
+	private static readonly HashSet<Type> ShaderGroups = new();
+	private static readonly List<Task> Loading = new();
+	private static readonly List<Resource> Resources = new();
+	private static readonly WarmupBudget Budget = new();
+	private static readonly string[] FinaleTextures = SatanaelPuppet.TextureNames().Prepend("sinful_platform").ToArray();
+	private static SceneTree? _tree;
+	private static SubViewport? _viewport;
+	private static Control? _slot;
+	private static bool _installed, _planningMenu, _readingFinaleTextures;
+	private static double _lastTick, _lastPlan, _cpuMs;
+	private static string? _lastDraw;
+	private static Vector2 _mouse;
+	private static int _completed;
+	internal static Action<string> Log = message => GD.Print(message);
+	internal static bool FinalePrepared { get; private set; }
 
-	/// <summary>room = 这场战斗的标识（同一场只预热一次）；layer = 战斗特效层。</summary>
-	public static void Run(Control layer, ulong room)
+	// 游戏类型留在 WarmupGame.cs，预览工程仍然只需 Godot。
+	public static Func<string?> IdleContext = () => null;
+	public static Action RefreshPlan = () => { };
+
+	public static void WaitFor(Task task)
 	{
-		if (room == _lastRoom || !GodotObject.IsInstanceValid(layer))
+		lock (Loading)
+			if (!task.IsCompleted && !Loading.Contains(task)) Loading.Add(task);
+	}
+
+	public static void StartMenu()
+	{
+		if (_installed) return;
+		_installed = true;
+		Callable.From(() =>
 		{
+			if (Engine.GetMainLoop() is not SceneTree tree) return;
+			_tree = tree;
+			_mouse = tree.Root.GetMousePosition();
+			tree.ProcessFrame += Tick;
+			Log("[P5Joker] warmup idle-v2 installed; startup work=0; full-directory sweeps disabled");
+		}).CallDeferred();
+	}
+
+	private static void Tick() => Stage.Safe("idle warmup", Advance);
+
+	private static void Advance()
+	{
+		if (_tree == null || !GodotObject.IsInstanceValid(_tree.Root)) return;
+		long begin = Stopwatch.GetTimestamp();
+		double now = Time.GetTicksUsec() / 1000.0, frameMs = now - _lastTick;
+		_lastTick = now;
+		double frameLimit = Engine.MaxFps > 0 ? Math.Max(20, 1400.0 / Engine.MaxFps) : 20;
+
+		// 上一项只画一帧。释放也是工作，不和下一项挤在同一帧。
+		if (_slot != null)
+		{
+			if (GodotObject.IsInstanceValid(_slot)) _slot.Free();
+			_slot = null;
+			if (_viewport != null && GodotObject.IsInstanceValid(_viewport))
+				_viewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled;
+			Budget.SlowDraw(now, frameMs, Math.Max(24, frameLimit));
+			Log($"[P5Joker] warmup idle-v2 {_lastDraw}: cpu={_cpuMs:F2}ms frame={frameMs:F1}ms remaining={Pending}");
+			_lastDraw = null;
 			return;
 		}
-		_lastRoom = room;
-		Control hidden = new()
+
+		bool loading;
+		lock (Loading)
 		{
-			Name = "P5Warmup",
-			Modulate = new Color(1f, 1f, 1f, 0.004f),
-			MouseFilter = Control.MouseFilterEnum.Ignore,
-			Size = Fx.Screen(layer),
-		};
-		layer.AddChild(hidden);
-		hidden.GlobalPosition = Vector2.Zero;
-		Vector2 c = Fx.Screen(layer) * 0.5f;
-		Stage.Safe("warmup textures", Fx.PreloadAll);
-		Stage.Safe("warmup sfx", () => Sfx.PreloadAll(layer));
-		Stage.Safe("warmup cutin", CutIn.Preload);
-		Sfx.Muted = true;                                             // 特效里自带的音效（枪声、命中声）预热时不要响
+			Loading.RemoveAll(task => task.IsCompleted);
+			loading = Loading.Count != 0;
+		}
+		if (now - _lastPlan >= 500)
+		{
+			_lastPlan = now;
+			RefreshPlan();
+		}
+		string? context = !loading && !_tree.Paused ? IdleContext() : null;
+		Vector2 mouse = _tree.Root.GetMousePosition();
+		bool input = Input.IsAnythingPressed() || mouse.DistanceSquaredTo(_mouse) > 1;
+		_mouse = mouse;
+		Budget.Observe(now, frameMs, frameLimit, context != null, input);
+		double cpuUsed = Stopwatch.GetElapsedTime(begin).TotalMilliseconds;
+		if (Pending == 0 || !Budget.CanStart(now, cpuUsed)) return;
+
+		Queue<Job> queue = Jobs.Count != 0 ? Jobs : MenuJobs;
+		Job job = queue.Peek();
+		bool done = true;
+		long start = Stopwatch.GetTimestamp();
 		try
 		{
-			WarmAll(hidden, c);
+			if (job.Load != null) done = job.Load();
+			else if (job.Draw != null)
+			{
+				Control slot = CreateSlot(_tree.Root);
+				_slot = slot;
+				bool wasMuted = Sfx.Muted;
+				Sfx.Muted = true;
+				try { job.Draw(slot); }
+				finally { Sfx.Muted = wasMuted; }
+				_viewport!.RenderTargetUpdateMode = SubViewport.UpdateMode.Once;
+				_lastDraw = job.Name;
+			}
 		}
-		finally
+		catch (Exception e) { Stage.Report("warmup " + job.Name, e); }
+		_cpuMs = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
+		Budget.Submitted(now, _cpuMs);
+		if (done)
 		{
-			Sfx.Muted = false;
+			queue.Dequeue();
+			_completed++;
+			if (_slot == null && _cpuMs >= 2)
+				Log($"[P5Joker] warmup idle-v2 {job.Name}: cpu={_cpuMs:F2}ms context={context} remaining={Pending}");
+			if (Pending == 0) Log($"[P5Joker] warmup idle-v2 queue drained; completed={_completed}; context={context}");
 		}
-		Fx.FreeAfter(hidden, 1.5);
 	}
 
-	private static void WarmAll(Control hidden, Vector2 c)
+	private static Control CreateSlot(Window root)
 	{
+		if (_viewport == null || !GodotObject.IsInstanceValid(_viewport))
+		{
+			_viewport = new SubViewport
+			{
+				Name = "P5IdleWarmup", Size = new Vector2I(128, 96), Disable3D = true, World2D = new World2D(),
+				TransparentBg = root.TransparentBg, UseHdr2D = root.UseHdr2D, Msaa2D = root.Msaa2D,
+				GuiDisableInput = true, RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled,
+			};
+			root.AddChild(_viewport);
+		}
+		Control slot = new() { Size = _viewport.Size, MouseFilter = Control.MouseFilterEnum.Ignore };
+		_viewport.AddChild(slot);
+		return slot;
+	}
 
-		foreach (string path in new[] { Vanilla.BigSlashSmoke, Vanilla.Specks, Vanilla.Streaks })
+	public static void RequestMenu()
+	{
+		if (!Groups.Add("menu")) return;
+		_planningMenu = true;
+		try { BuildMenuPlan(); }
+		finally { _planningMenu = false; }
+		LogPlan("menu");
+	}
+
+	public static void MenuShown()
+	{
+		Groups.Add("menu");
+		int skipped = MenuJobs.Count;
+		MenuJobs.Clear();
+		if (skipped != 0) Log($"[P5Joker] warmup idle-v2 skipped {skipped} menu tasks; selector will load them on demand");
+	}
+
+	private static int Pending => Jobs.Count + MenuJobs.Count;
+	private static void Enqueue(Job job) => (_planningMenu ? MenuJobs : Jobs).Enqueue(job);
+
+	private static void BuildMenuPlan()
+	{
+		// 在已可操作的主菜单空闲时，先读两张最大的立绘。其余资源在对应页面按需读取。
+		foreach (string name in new[] { "cs_body", "cs_hand" })
+			Enqueue(new("texture " + name, Load: () => Fx.PollTexture(name)));
+	}
+
+	public static void RequestJoker()
+	{
+		if (!Groups.Add("common")) return;
+		QueueTextures(new[] { "shell", "slash_thin", "slash_heavy", "slash_thrust", "muzzle_front",
+			"muzzle_side_01", "muzzle_side_02", "muzzle_side_03" });
+		QueueShaders(typeof(GunFx), typeof(Glow), typeof(Paint), typeof(Blade), typeof(PoisonFx), typeof(Impact));
+		Enqueue(new("common impact", Draw: Impact.Warm));
+		// 只建立材质样本，不调用会影响实战状态的完整命中 / 施毒流程。
+		Enqueue(new("muzzle material", Draw: slot => Paint.Pop(slot, "muzzle_side_01", new Vector2(64, 48),
+			0, 0.04f, Lut5.Muzzle, 0.02f, 0.08f, 0.65f)));
+		foreach (string path in new[] { Vanilla.Specks, Vanilla.Streaks, Vanilla.BigSlashSmoke })
 		{
-			Stage.Safe("warmup " + path, () => Vanilla.Burst(hidden, path, c, 0f, 1f, Lut5.Blood));
-		}
-		Stage.Safe("warmup smoke lut", () => Vanilla.Burst(hidden, Vanilla.BigSlashSmoke, c, 0f, 1f, Lut5.Smoke));
-		Stage.Safe("warmup gun", () =>
-		{
-			GunFx.Muzzle(hidden, c, Vector2.Right);
-			GunFx.Shot(hidden, c, c + new Vector2(300f, 0f));
-		});
-		Stage.Safe("warmup poison", () =>
-		{
-			PoisonFx.Apply(hidden, c, c - new Vector2(0f, 120f), 200f, null, 9);
-			PoisonFx.Tick(hidden, c, c - new Vector2(0f, 120f), 200f, null);
-		});
-		foreach (string tex in new[] { "slash_thin", "slash_heavy" })
-		{
-			Stage.Safe("warmup " + tex, () => Paint.Sweep(hidden, tex, c, 0f, Vector2.One * 0.3f, Lut5.Blood, 0.05f, 0.05f, 0.2f));
-		}
-		Stage.Safe("warmup glow", () =>
-		{
-			Glow.Flash(hidden, c, new Color(1f, 1f, 1f, 0f), 8f, 0.1f);
-			Glow.Ripple(hidden, c, 8f, 0.1f, 0f);
-		});
-		Stage.Safe("warmup impact", () => Impact.Warm(hidden));
-		Stage.Safe("warmup blue flame", () => BlueFlame.Tongue(hidden, c, 0.5f, 0.2f));
-		Stage.Safe("warmup sinful shell", () => SinfulShell.Warm(hidden, c));   // 华丽收场：撒旦耶尔大贴图上传、场景 + 灯光、粒子、命中区
-		// 所有着色器（mod 里每个 static Shader 属性：巨手、亚森、眼神特写、舞台、刀光……）各画一个 4×4 的小方块编译掉
-		foreach (System.Type type in typeof(Warmup).Assembly.GetTypes())
-		{
-			foreach (System.Reflection.PropertyInfo prop in type.GetProperties(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic))
+			string scene = path;
+			Enqueue(new("common particle resource " + scene, Load: () =>
 			{
-				if (prop.PropertyType != typeof(Shader) || prop.GetIndexParameters().Length > 0)
-				{
-					continue;
-				}
-				Stage.Safe("warmup shader " + type.Name + "." + prop.Name, () =>
-				{
-					if (prop.GetValue(null) is not Shader sh || sh.GetMode() != Shader.Mode.CanvasItem)
-					{
-						return;
-					}
-					ColorRect r = new() { Material = new ShaderMaterial { Shader = sh }, Size = new Vector2(4f, 4f), MouseFilter = Control.MouseFilterEnum.Ignore };
-					hidden.AddChild(r);
-					r.GlobalPosition = c;
-				});
-			}
+				if (!Fx.PollResource(scene, out Resource? resource)) return false;
+				if (resource != null) Resources.Add(resource);
+				return true;
+			}));
+			Enqueue(new("common particle material " + scene, Draw: slot =>
+				Vanilla.Burst(slot, scene, new Vector2(64, 48), 0, 0.1f, Lut5.Blood, amount: 2)));
 		}
-		// 原版特效场景：每个都放一次（粒子材质第一次用也要编译）
-		foreach (System.Reflection.FieldInfo fi in typeof(Vanilla).GetFields(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public))
+		QueueSounds(new[] { Sfx.Ricochet, Sfx.GunHit, Sfx.GunHitFinal, Sfx.PoisonTick });
+		LogPlan("common");
+	}
+
+	public static void RequestCard(string card)
+	{
+		if (card == "SerpentForm")
 		{
-			if (fi.IsLiteral && fi.GetRawConstantValue() is string path)
+			if (!Groups.Add("SerpentForm")) return;
+			foreach (string path in new[]
 			{
-				Stage.Safe("warmup " + path, () => Vanilla.Burst(hidden, path, c, 0f, 0.3f, Lut5.Curse));
+				"res://scenes/vfx/forms/serpent/vfx_serpent_form_idle_vfx.tscn",
+				"res://images/powers/serpent_form_power.png",
+			})
+			{
+				string resourcePath = path;
+				Enqueue(new("serpent resource " + path, Load: () =>
+				{
+					if (!Fx.PollResource(resourcePath, out Resource? resource)) return false;
+					if (resource != null) Resources.Add(resource);
+					return true;
+				}));
 			}
+			QueueShaders(typeof(SerpentMantle), typeof(SerpentMist), typeof(SerpentEclipse));
+			Enqueue(new("serpent body", Draw: SerpentMantle.Warm));
+			QueueSounds(new[] { Sfx.SerpentRise, Sfx.SerpentMaw });
+			LogPlan("SerpentForm");
+			return;
+		}
+		if (card == "GrandFinale") { RequestFinale(); return; }
+		if (card == "Snakebite" && Groups.Add("Snakebite")) QueueShaders(typeof(SerpentMantle));
+		if (card == "Outbreak" && Groups.Add("Outbreak")) QueueShaders(typeof(CrushHand));
+		if (card == "WraithForm" && Groups.Add("WraithForm")) QueueShaders(typeof(WraithVeil));
+		// 用当前实际注册的处理器，避开已被重做版覆盖的旧特效，也不扫描整个程序集。
+		if (CardSkillFx.Cards.TryGetValue(card, out var effect) && effect.Method.DeclaringType is Type owner)
+		{
+			while (owner.IsNested && owner.DeclaringType != null) owner = owner.DeclaringType;
+			QueueShaders(owner);
 		}
 	}
+
+	internal static async Task PrepareFinaleTextures(SceneTree tree)
+	{
+		if (_readingFinaleTextures || FinalePrepared) return;
+		_readingFinaleTextures = true;
+		try { await Fx.PrepareTextures(tree, FinaleTextures, () => GodotObject.IsInstanceValid(tree)); }
+		catch (Exception e) { Stage.Report("finale texture warmup", e); }
+		finally { _readingFinaleTextures = false; }
+	}
+
+	internal static void RequestFinale()
+	{
+		if (!Groups.Add("GrandFinale")) return;
+		QueueTextures(FinaleTextures);
+		QueueSounds(new[] { Sfx.SinfulSweepOpen, Sfx.SinfulSweepClose, Sfx.SinfulThunder, Sfx.SinfulTwirl,
+			Sfx.SinfulCharge, Sfx.SinfulShot, Sfx.SinfulPierceLast });
+		Enqueue(new("finale sky", Draw: SinfulShell.WarmSky));
+		Enqueue(new("finale platform light", Draw: SinfulShell.WarmPlatform));
+		Enqueue(new("finale Satanael light", Draw: SinfulShell.WarmPuppet));
+		Enqueue(new("finale impact", Draw: SinfulShell.WarmImpact));
+		QueueShaderType(typeof(SinfulShell), nameof(SinfulShell.SkyShader), nameof(SinfulShell.PlatformShader));
+		QueueShaders(typeof(SatanaelPuppet));
+		Enqueue(new("finale warmup finished", Load: () =>
+		{
+			FinalePrepared = true;
+			Log("[P5Joker] GrandFinale warmup finished");
+			return true;
+		}));
+		LogPlan("GrandFinale");
+	}
+
+	public static void RequestReward()
+	{
+		if (!Groups.Add("reward")) return;
+		QueueTextures(new[] { "reward_band", "reward_hover_plate", "reward_hover_plate_shadow",
+			"reward_stamp_stolen", "reward_subtitle_take_your_pick",
+			"reward_letter_T", "reward_letter_R", "reward_letter_E1", "reward_letter_A",
+			"reward_letter_S", "reward_letter_U", "reward_letter_R2", "reward_letter_E2" });
+	}
+
+	public static void RequestAllOut()
+	{
+		if (!Groups.Add("allout")) return;
+		QueueTextures(new[] { "aoa_crackp5_a", "aoa_crackp5_core", "aoa_drip" });
+		QueueShaders(typeof(AllOut));
+		QueueSounds(new[] { Sfx.AoaZoom, Sfx.AoaCrack, Sfx.Shatter, Sfx.AoaSplatter });
+		Enqueue(new("allout model", Load: () => { AllOutFinale.Preload(); return true; }));
+		LogPlan("allout");
+	}
+
+	public static void RequestPersona()
+	{
+		if (!Groups.Add("Arsene")) return;
+		QueueTextures(ArseneFx.TextureNames());
+		QueueShaders(typeof(ArseneFx));
+		LogPlan("Arsene");
+	}
+
+	private static void QueueTextures(IEnumerable<string> names)
+	{
+		foreach (string name in names)
+		{
+			if (!Textures.Add(name)) continue;
+			string texture = name;
+			Enqueue(new("texture " + texture, Load: () => Fx.PollTexture(texture)));
+			Enqueue(new("upload " + texture, Draw: slot =>
+			{
+				if (Fx.ReadyTexture(texture) is not Texture2D tex) return;
+				slot.AddChild(new Sprite2D { Texture = tex, Position = new Vector2(64, 48),
+					Scale = Vector2.One * (48f / Math.Max(tex.GetWidth(), tex.GetHeight())) });
+			}));
+		}
+	}
+
+	private static void QueueSounds(IEnumerable<string> names)
+	{
+		foreach (string name in names)
+		{
+			if (!Sounds.Add(name)) continue;
+			string sound = name;
+			Enqueue(new("audio " + sound, Load: () => { Sfx.Preload(sound); return true; }));
+		}
+	}
+
+	private static void QueueShaders(params Type[] types)
+	{
+		foreach (Type type in types) QueueShaderType(type);
+	}
+
+	private static void QueueShaderType(Type type, params string[] drawnSeparately)
+	{
+		if (!ShaderGroups.Add(type)) return;
+		foreach (PropertyInfo prop in type.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
+		{
+			if (prop.PropertyType != typeof(Shader) || prop.GetIndexParameters().Length != 0
+				|| drawnSeparately.Contains(prop.Name)) continue;
+			PropertyInfo property = prop;
+			Enqueue(new(type.Name + "." + prop.Name, Draw: slot =>
+			{
+				if (property.GetValue(null) is not Shader shader || shader.GetMode() != Shader.Mode.CanvasItem
+					|| !Shaders.Add(shader.GetInstanceId())) return;
+				slot.AddChild(new ColorRect { Material = new ShaderMaterial { Shader = shader },
+					Size = new Vector2(8, 8), Position = new Vector2(60, 44), MouseFilter = Control.MouseFilterEnum.Ignore });
+			}));
+		}
+	}
+
+	private static void LogPlan(string group) => Log($"[P5Joker] warmup idle-v2 requested {group}; pending={Pending}; textures={Textures.Count}; sounds={Sounds.Count}");
 }

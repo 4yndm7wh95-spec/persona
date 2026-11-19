@@ -31,6 +31,14 @@ public static class P5Ui
 
 	private static readonly Dictionary<string, Font?> Cache = new();
 
+	internal static bool PollFont(string path)
+	{
+		if (Cache.ContainsKey(path)) return true;
+		if (!Fx.PollResource(path, out Resource? resource)) return false;
+		if (resource is Font font) Cache[path] = font;
+		return true;
+	}
+
 	public static Font Font(string path)
 	{
 		if (!Cache.TryGetValue(path, out Font? f))

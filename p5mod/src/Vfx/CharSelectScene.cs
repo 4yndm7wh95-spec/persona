@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using Godot;
 
 namespace P5Joker;
@@ -49,6 +51,13 @@ public static class CharSelectScene
 	// 天际线顶边（屏幕 y）、远景再高一点
 	private const float Horizon = 700f;
 	private static readonly Color Crimson = new("de101e"), Ink = new("0a0608");
+	private static readonly string[] CityTextures = { "cs_skyline", "cs_card", "cs_rooftop" };
+	private static readonly string[] PortraitTextures =
+	{
+		"cs_body", "cs_hand", "cs_body_line", "cs_hand_line", "cs_blink", "cs_warp", "cs_eye_streak", "star4", "cs_slab_text",
+	};
+	private static readonly string[] IntroTextures = { "eyes", "cutin_tail_left", "cutin_tail_right" };
+	private static readonly string[] InfoTextures = { "cs_info_head", "cs_info_ghost" };
 
 	private sealed class Rig
 	{
@@ -60,7 +69,7 @@ public static class CharSelectScene
 		public float Open = 1f;                                                // 眼睛睁开的程度（眨眼时 1 → 0 → 1）
 		public Node2D Eye = null!;
 		public float Flare;                                                    // 选中那一下的眼睛闪光 0..1
-		public List<(ShaderMaterial m, float fromTop, float delay)> Bands = new();
+		public List<(Polygon2D strip, bool fromTop, float delay)> Bands = new();
 		public Node2D Tag = null!;
 		public Node2D SlabText = null!;
 		public ShaderMaterial Clip = null!;
@@ -70,9 +79,7 @@ public static class CharSelectScene
 	/// <summary>搭好整个场景。bg = 原版场景根；全部搭完才藏原版（出错时拆掉自己的，原版保持原样）。</summary>
 	public static void Build(Control bg, bool intro)
 	{
-		Control root = new() { Name = "P5Select", MouseFilter = Control.MouseFilterEnum.Ignore, Size = new Vector2(W, H) };
-		bg.AddChild(root);
-		bg.MoveChild(root, 0);
+		Control root = CreateRoot(bg);
 		try
 		{
 			BuildInto(root, intro && IntroEnabled());
@@ -85,6 +92,92 @@ public static class CharSelectScene
 			}
 			throw;
 		}
+		HideOriginal(bg, root);
+	}
+
+	// The real screen can accept input while its textures load. Draw the background,
+	// portrait and trim on separate frames, keeping their first draws apart.
+	internal static async Task<bool> BuildAsync(Control bg, bool intro, Func<bool> current,
+		Func<bool>? canDraw = null, bool prepareInfo = true)
+	{
+		if (!Fx.Active(bg)) return false;
+		SceneTree tree = bg.GetTree();
+		async Task<bool> NextFrame()
+		{
+			do
+				await tree.ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+			while (current() && canDraw?.Invoke() == false);
+			return current();
+		}
+
+		long began = Stopwatch.GetTimestamp();
+		Control? root = null;
+		bool shown = false;
+		try
+		{
+			if (!await NextFrame()) return false;
+			root = CreateRoot(bg);
+			Rig r = CreateRig(root);
+			Sky(r.Screen);
+			await Fx.PrepareTextures(tree, CityTextures, current);
+			if (!await NextFrame()) return false;
+			BuildCity(r.Screen);
+
+			await Fx.PrepareTextures(tree, PortraitTextures, current);
+			if (!await NextFrame()) return false;
+			if (intro) CutIn.PollPreload();
+			r.Back = Layer(r.Screen, "Back");
+			Portrait(r);
+			r.Group.Modulate = new Color(1f, 1f, 1f, 0f);
+			if (!await NextFrame()) return false;
+			Stripes(r, entering: true);
+			if (intro)
+			{
+				await Fx.PrepareTextures(tree, IntroTextures, current);
+				if (!await NextFrame()) return false;
+				while (!CutIn.PollPreload())
+					if (!await NextFrame()) return false;
+			}
+			if (prepareInfo)
+				await Fx.PrepareTextures(tree, InfoTextures, current);
+			if (!await NextFrame()) return false;
+			if (intro || prepareInfo)
+			{
+				while (!P5Ui.PollFont(P5Ui.CjkBold))
+					if (!await NextFrame()) return false;
+			}
+			if (prepareInfo)
+			{
+				while (!P5Ui.PollFont(P5Ui.CjkMedium))
+					if (!await NextFrame()) return false;
+			}
+			r.Group.Modulate = Colors.White;
+			Finish(r, intro, canDraw);
+			HideOriginal(bg, root);
+			shown = true;
+			GD.Print($"[P5Joker] character select ready in {Stopwatch.GetElapsedTime(began).TotalMilliseconds:F1}ms");
+			return true;
+		}
+		finally
+		{
+			if (!shown && root != null && GodotObject.IsInstanceValid(root))
+			{
+				root.GetParent()?.RemoveChild(root);
+				root.QueueFree();
+			}
+		}
+	}
+
+	private static Control CreateRoot(Control bg)
+	{
+		Control root = new() { Name = "P5Select", MouseFilter = Control.MouseFilterEnum.Ignore, Size = new Vector2(W, H) };
+		bg.AddChild(root);
+		bg.MoveChild(root, 0);
+		return root;
+	}
+
+	private static void HideOriginal(Control bg, Control root)
+	{
 		foreach (Node c in bg.GetChildren())
 		{
 			if (c != root && c is CanvasItem ci)
@@ -92,6 +185,17 @@ public static class CharSelectScene
 				ci.Visible = false;                   // 原版背景图、臭气线、静默猎手骨骼
 			}
 		}
+	}
+
+	internal static void Warm(Control slot)
+	{
+		Control sample = new()
+		{
+			Size = new Vector2(W, H), Scale = Vector2.One * 0.03f,
+			Position = new Vector2(12f, 16f), MouseFilter = Control.MouseFilterEnum.Ignore,
+		};
+		slot.AddChild(sample);
+		BuildInto(sample, false);
 	}
 
 	private static Texture2D Need(string name) => Fx.Tex(name) ?? throw new InvalidOperationException($"missing texture {name}");
@@ -105,21 +209,37 @@ public static class CharSelectScene
 
 	private static void BuildInto(Control root, bool intro)
 	{
-		Rig r = new() { Root = root };
-		r.Screen = Layer(root, "Screen");
-		r.Screen.Position = new Vector2(0f, ScreenTop);
+		Rig r = CreateRig(root);
 		Sky(r.Screen);
-		Band(r.Screen);
-		City(r.Screen);
-		Cards(r.Screen);
-		Rooftop(r.Screen);
-		Shade(r.Screen);
+		BuildCity(r.Screen);
 		r.Back = Layer(r.Screen, "Back");
 		Portrait(r);
 		Stripes(r);
+		Finish(r, intro);
+	}
+
+	private static Rig CreateRig(Control root)
+	{
+		Rig r = new() { Root = root };
+		r.Screen = Layer(root, "Screen");
+		r.Screen.Position = new Vector2(0f, ScreenTop);
+		return r;
+	}
+
+	private static void BuildCity(Control screen)
+	{
+		Band(screen);
+		City(screen);
+		Cards(screen);
+		Rooftop(screen);
+		Shade(screen);
+	}
+
+	private static void Finish(Rig r, bool intro, Func<bool>? canDraw = null)
+	{
 		r.Front = Layer(r.Screen, "Front");
 		Animate(r);
-		Entrance(r, intro);
+		Entrance(r, intro, canDraw);
 	}
 
 	private static Vector2 G(Rig r, Vector2 screen) => r.Screen.GetGlobalTransform() * screen;
@@ -253,28 +373,32 @@ void fragment() {
 		loop.TweenCallback(Callable.From(() => Spawn(0f)));
 	}
 
-	private static Shader? _shade;
+	private static Texture2D? _shade;
 
 	/// <summary>左侧（信息面板那边）和底部（角色按钮那边）压暗一点，衬字。</summary>
-	private static Shader ShadeShader => _shade ??= new Shader { Code = @"
-shader_type canvas_item;
-uniform vec2 res = vec2(2520.0, 1680.0);
-uniform vec2 pad = vec2(300.0, 300.0);
-void fragment() {
-	vec2 px = UV * res - pad;
-	float left = 0.42 * clamp(1.0 - px.x / 860.0, 0.0, 1.0);
-	float bottom = 0.45 * clamp((px.y - 880.0) / 200.0, 0.0, 1.0);
-	COLOR = vec4(0.0, 0.0, 0.0, clamp(left + bottom, 0.0, 0.75));
-}" };
-
 	private static void Shade(Control screen)
 	{
 		Vector2 pad = new(300f, 300f), size = new(SW + 600f, SH + 600f);
-		ColorRect c = new() { Name = "Shade", Position = -pad, Size = size, MouseFilter = Control.MouseFilterEnum.Ignore,
-			Material = new ShaderMaterial { Shader = ShadeShader } };
-		((ShaderMaterial)c.Material).SetShaderParameter("res", size);
-		((ShaderMaterial)c.Material).SetShaderParameter("pad", pad);
-		screen.AddChild(c);
+		if (_shade == null)
+		{
+			// A static mask can share the normal texture pipeline with the rooftop.
+			const int columns = 128, rows = 96;
+			byte[] pixels = new byte[columns * rows * 4];
+			for (int y = 0; y < rows; y++)
+			{
+				float screenY = (y + 0.5f) * size.Y / rows - pad.Y;
+				float bottom = 0.45f * Mathf.Clamp((screenY - 880f) / 200f, 0f, 1f);
+				for (int x = 0; x < columns; x++)
+				{
+					float screenX = (x + 0.5f) * size.X / columns - pad.X;
+					float left = 0.42f * Mathf.Clamp(1f - screenX / 860f, 0f, 1f);
+					pixels[(y * columns + x) * 4 + 3] = (byte)Mathf.Round(255f * Mathf.Min(left + bottom, 0.75f));
+				}
+			}
+			_shade = ImageTexture.CreateFromImage(Image.CreateFromData(columns, rows, false, Image.Format.Rgba8, pixels));
+		}
+		screen.AddChild(new TextureRect { Name = "Shade", Position = -pad, Size = size, Texture = _shade,
+			ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, MouseFilter = Control.MouseFilterEnum.Ignore });
 	}
 
 	/// <summary>
@@ -441,45 +565,19 @@ void fragment() {
 		}));
 	}
 
-	private static Shader? _band;
-
-	/// <summary>
-	/// 斜条：切口左边 o0..o1（屏幕像素 × 全局缩放）的一条带子，边缘抗锯齿（原生 Polygon2D 的斜边有锯齿）。
-	/// reveal 0..1：沿切口方向从上（from_top = 1）或从下画出来（入场）。
-	/// </summary>
-	private static Shader BandShader => _band ??= new Shader { Code = @"
-shader_type canvas_item;
-uniform vec2 cut_a;
-uniform vec2 cut_b;
-uniform float o0 = 0.0;
-uniform float o1 = 10.0;
-uniform vec4 color : source_color = vec4(0.0, 0.0, 0.0, 1.0);
-uniform float reveal = 1.0;
-uniform float from_top = 1.0;
-varying vec2 world;
-void vertex() { world = (MODEL_MATRIX * vec4(VERTEX, 0.0, 1.0)).xy; }
-void fragment() {
-	vec2 d = cut_b - cut_a;
-	float L = length(d);
-	vec2 rel = world - cut_a;
-	float left = (d.x * rel.y - d.y * rel.x) / L;
-	float along = dot(rel, d) / (L * L);
-	float a = smoothstep(o0 - 0.6, o0 + 0.6, left) * (1.0 - smoothstep(o1 - 0.6, o1 + 0.6, left));
-	float edge = mix(-0.08, 1.08, reveal);
-	float shown = from_top > 0.5 ? 1.0 - smoothstep(edge - 0.01, edge, along) : smoothstep(1.0 - edge, 1.0 - edge + 0.01, along);
-	COLOR = vec4(color.rgb, color.a * a * shown);
-}" };
-
 	/// <summary>
 	/// 切口上的斜条组（照 P3 mod 的 Slash：7 条宽窄不同的条，换成 P5 的黑 / 红 / 白），从切口往左量（负数 = 切口右边、面板里）：
 	/// 外侧半透明黑宽带 232..300 · 黑色实心斜板 -9..92（压住切口）· 斜板上贴切口的红细线 6..12 · 贴切口的亮红线 -12..-6 ·
 	/// 白条 108..116 · 红细线 134..137 · 最外侧白发丝线 206..208。斜板上滚动竖排小字（66px 处），斜板外沿一个红色标签块。
 	/// 入场：各条沿切线方向分别从上 / 下错开切入（0.4s OutExpo，延迟同 P3），0.3s 小字淡入并开始滚动，0.35s 标签块弹出。
 	/// </summary>
-	private static void Stripes(Rig r)
+	private static void Stripes(Rig r, bool entering = false)
 	{
 		Control at = Layer(r.Screen, "Stripes");
-		float gs = r.Screen.GetGlobalTransform().Scale.X;
+		Vector2 cut = CutB - CutA, u = cut.Normalized();
+		Node2D strips = new() { Position = CutA, Rotation = cut.Angle() };
+		at.AddChild(strips);
+		float length = cut.Length();
 		(float o0, float o1, Color c, int enterFrom, float delay)[] bands =
 		{
 			(232f, 300f, new Color(Ink, 0.28f), +1, 0.12f),              // 外侧半透明黑宽带（从下）
@@ -492,18 +590,16 @@ void fragment() {
 		};
 		foreach (var (o0, o1, c, enterFrom, delay) in bands)
 		{
-			ColorRect rect = new() { Position = new Vector2(CutA.X - 400f, -60f), Size = new Vector2(CutB.X - CutA.X + 460f, SH + 120f),
-				MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = BandShader } };
-			ShaderMaterial m = (ShaderMaterial)rect.Material;
-			m.SetShaderParameter("cut_a", G(r, CutA));
-			m.SetShaderParameter("cut_b", G(r, CutB));
-			m.SetShaderParameter("o0", o0 * gs);
-			m.SetShaderParameter("o1", o1 * gs);
-			m.SetShaderParameter("color", c);
-			at.AddChild(rect);
-			r.Bands.Add((m, enterFrom < 0 ? 1f : 0f, delay));
+			Polygon2D strip = new()
+			{
+				Polygon = new[] { new Vector2(0f, o0), new Vector2(length, o0), new Vector2(length, o1), new Vector2(0f, o1) },
+				Color = c, Antialiased = true,
+			};
+			bool fromTop = enterFrom < 0;
+			RevealStrip(strip, fromTop, entering ? 0f : 1f, length);
+			strips.AddChild(strip);
+			r.Bands.Add((strip, fromTop, delay));
 		}
-		Vector2 u = (CutB - CutA).Normalized();
 		Vector2 leftN = new(-u.Y, u.X);
 		// 竖排小字：沿斜板（切口左边 62px），从上往下读，字头朝面板；30px、半透明白；一个循环单元宽正好是贴图宽，滚动首尾相接（26px/s）
 		Texture2D text = Need("cs_slab_text");
@@ -526,6 +622,24 @@ void fragment() {
 		Fx.Poly(tag, new[] { new Vector2(-8f, -70f), new Vector2(8f, -70f), new Vector2(8f, 70f), new Vector2(-8f, 70f) }, new Color(Crimson, 0.95f));
 		Fx.Poly(tag, new[] { new Vector2(-8f, 76f), new Vector2(8f, 76f), new Vector2(8f, 90f), new Vector2(-8f, 90f) }, new Color(1f, 1f, 1f, 0.9f));
 		r.Tag = tag;
+		if (entering)
+		{
+			lane.Modulate = new Color(1f, 1f, 1f, 0f);
+			tag.Scale = Vector2.Zero;
+		}
+	}
+
+	private static void RevealStrip(Polygon2D strip, bool fromTop, float progress, float length)
+	{
+		if (progress <= 0f)
+		{
+			strip.Hide();
+			return;
+		}
+		float extent = 1.16f * progress;
+		strip.Position = new Vector2(length * (fromTop ? -0.08f : 1.08f - extent), 0f);
+		strip.Scale = new Vector2(extent, 1f);
+		strip.Show();
 	}
 
 	// ───────────────────────── 动起来 ─────────────────────────
@@ -623,17 +737,16 @@ void fragment() {
 	/// 1.15s 裂开：横幅上的裂纹 + 冲击点一小团闪光 + 碎片，同一刻立绘眼睛金光一亮；压暗在 0.6s 内退掉；随后原版信息面板淡入（CharSelectPatches）。
 	/// 声音：0s 切入「嗖」（立绘 / 斜条进场）→ 0.65s 原版眼神特写的那一下（主音）→ 1.15s 碎裂 + 低频垫底；之后安静。
 	/// </summary>
-	private static void Entrance(Rig r, bool intro)
+	private static void Entrance(Rig r, bool intro, Func<bool>? canDraw)
 	{
 		Node2D g = r.Group;
 		Vector2 home = g.Position;
 		// 斜条
-		foreach (var (m, fromTop, delay) in r.Bands)
+		float length = (CutB - CutA).Length();
+		foreach (var (strip, fromTop, delay) in r.Bands)
 		{
-			ShaderMaterial mat = m;
-			mat.SetShaderParameter("from_top", fromTop);
-			mat.SetShaderParameter("reveal", 0f);
-			Fx.Animate(r.SlabText, delay, 0.4, t => mat.SetShaderParameter("reveal", Ease5.OutExpo(t)));
+			RevealStrip(strip, fromTop, 0f, length);
+			Fx.Animate(strip, delay, 0.4, t => RevealStrip(strip, fromTop, Ease5.OutExpo(t), length));
 		}
 		r.SlabText.Modulate = new Color(1f, 1f, 1f, 0f);
 		Fx.Animate(r.SlabText, 0.3, 0.4, t => r.SlabText.Modulate = new Color(1f, 1f, 1f, 0.6f * t));
@@ -675,6 +788,7 @@ void fragment() {
 		// 立绘落定后：眼神特写
 		Fx.After(g, Rise, () =>
 		{
+			if (canDraw?.Invoke() == false) return;
 			Vector2 screen = Fx.Screen(r.Back);
 			// 背景压暗（在立绘 / 斜条后面，横幅前面会盖上来）：0.2s 压到 0.55，碎开后 0.6s 退掉
 			ColorRect dim = new() { Position = new Vector2(-300f, -300f), Size = new Vector2(SW + 600f, SH + 600f), Color = new Color(0.04f, 0f, 0.015f, 0f),
@@ -727,7 +841,15 @@ void fragment() {
 		const string name = "雨宮 蓮";
 		const int size = 44;
 		float w = P5Ui.Width(cjk, name, size);
-		Node2D tag = new() { Position = new Vector2(-420f, SH * 0.14f) };
+		// The stock backdrop can extend past the viewport at narrow aspect ratios.
+		// Keep the entire nameplate inside the visible viewport throughout the slide.
+		Vector2 TagPosition(float slide)
+		{
+			Rect2 visible = r.Front.GetViewportRect();
+			Vector2 inset = visible.Size * new Vector2(slide, 0.12f);
+			return r.Front.GetGlobalTransformWithCanvas().AffineInverse() * (visible.Position + inset);
+		}
+		Node2D tag = new() { Position = TagPosition(0.035f) };
 		ui.AddChild(tag);
 		P5Ui.Slab(tag, -12f, w + 40f, 8f, 70f, 14f, new Color(Ink, 0.95f));
 		P5Ui.Slab(tag, -24f, w + 28f, 0f, 62f, 14f, new Color(0.97f, 0.96f, 0.96f, 1f));
@@ -746,7 +868,11 @@ void fragment() {
 			top.Position = new Vector2(SW * 0.5f * (1f - b), 0f);
 			word.Position = new Vector2(SW * 0.03f + 30f * time, SH * 1.08f);
 		});
-		Fx.Animate(tag, 0.04, 0.26, t => tag.Position = new Vector2(Mathf.Lerp(-420f, 56f, Ease5.OutQuint(t)), SH * 0.14f));
+		Fx.Animate(tag, 0.04, 0.26, t =>
+		{
+			tag.Position = TagPosition(Mathf.Lerp(0.035f, 0.055f, Ease5.OutQuint(t)));
+			tag.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(t * 4f, 0f, 1f));
+		});
 		return () =>
 		{
 			if (GodotObject.IsInstanceValid(decor))
@@ -760,11 +886,9 @@ void fragment() {
 			}
 			if (GodotObject.IsInstanceValid(ui))
 			{
-				Vector2 p0 = ui.Position;
 				Fx.Animate(ui, 0, 0.3, t =>
 				{
 					ui.Modulate = new Color(1f, 1f, 1f, 1f - t * t * (3f - 2f * t));
-					ui.Position = p0 + new Vector2(-40f * Fx.InCubic(t), 0f);
 				});
 				Fx.FreeAfter(ui, 0.35);
 			}

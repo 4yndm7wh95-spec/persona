@@ -18,13 +18,15 @@ public static class SinfulShell
 {
 	// ───────────────────────── 场景 ─────────────────────────
 
-	private const string Noise = @"
+	private const string NoiseFunctions = @"
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p);
 	f = f * f * (3.0 - 2.0 * f);
 	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
-}
+}";
+
+	private const string Noise = NoiseFunctions + @"
 float fbm(vec2 p) {
 	float v = 0.0, a = 0.5;
 	for (int i = 0; i < 5; i++) { v += a * noise(p); p = p * 2.03 + vec2(1.7, 9.2); a *= 0.5; }
@@ -32,28 +34,24 @@ float fbm(vec2 p) {
 }
 ";
 
-	private static Shader? _scene, _vortex, _bullet, _ring;
+	private static Shader? _sky, _platform, _vortex, _bullet, _ring;
 
-	/// <summary>夜空场景。part 0 = 天空 + 深渊（最底下），part 1 = 两边断崖（盖在人格面具前面、人物后面）。</summary>
-	private static Shader Scene => _scene ??= new Shader { Code = @"
-shader_type canvas_item;
+	private const string SceneCommon = @"
 uniform vec2 sres = vec2(1920.0, 1080.0);
 uniform vec2 origin = vec2(430.0, 830.0);
 uniform float reveal = 0.0;
-uniform int part = 0;
 uniform float clock = 0.0;
 uniform float dim = 0.0;
 uniform float flash = 0.0;
 uniform float feet_y = 830.0;
-uniform float cliff_x = 640.0;
-uniform float floor_y = 830.0;
-uniform float cliff2_x = 1000.0;
-uniform vec3 moon = vec3(1570.0, 170.0, 58.0);   // 月亮：屏幕位置 + 半径（像素）
-// Codex 画的平台（有就用它，没有就用下面程序画的岩石）：贴图左上角在屏幕上的位置、在屏幕上的大小
-uniform sampler2D plat : filter_linear;
-uniform vec2 plat_origin = vec2(0.0);
-uniform vec2 plat_size = vec2(0.0);
-" + Noise + @"
+uniform int scene_octaves = 5;
+" + NoiseFunctions + @"
+// Keep the same five octaves without unrolling the nested cloud noise in the driver compiler.
+float fbm(vec2 p) {
+	float v = 0.0, a = 0.5;
+	for (int i = 0; i < scene_octaves; i++) { v += a * noise(p); p = p * 2.03 + vec2(1.7, 9.2); a *= 0.5; }
+	return v;
+}
 // 烧穿的边界（用户 2026-11-09：四档硬边的蓝焰太卡通、太漫画）：改成一道能量缝——
 // 极细的热白芯（亮度闪烁）+ 平滑衰减的青色辉光 + 更宽一层淡淡的深蓝雾；辉光被顺着边走的细丝噪声撕开，往外飘出几缕；边上零星的亮点。没有色阶硬边。
 // s = 到边界的有向距离（>0 在场景里）
@@ -77,7 +75,77 @@ float revealDist(vec2 px) {
 	float d = length((px - origin) * vec2(1.0, 1.25)) + n;
 	return reveal - d;                                     // 场景 = 以 Joker 脚下为圆心的一个圈：展开（reveal 变大）、收回（reveal 变小）
 }
-// 平台（用户 2026-11-08）：从屏幕右边伸出来的一整块，敌人和 Joker 都站在上面；到 Joker 脚下左边就是悬崖，崖面往下、往里收。<0 在岩石里
+";
+
+	// The sky never receives a point light. Keep cloud noise out of the platform's lit pipeline.
+	internal static Shader SkyShader => _sky ??= new Shader { Code = "shader_type canvas_item;\nrender_mode unshaded;\n" + SceneCommon + @"
+uniform vec3 moon = vec3(1570.0, 170.0, 58.0);
+void fragment() {
+	vec2 px = UV * sres;
+	vec2 uv = UV;
+	float s = revealDist(px);
+	float shown = smoothstep(-2.0, 2.0, s);
+	vec4 edge = flameEdge(px, s);
+	// 天空：深蓝 → 地平线一圈青蓝的亮
+	vec3 col = mix(vec3(0.012, 0.025, 0.07), vec3(0.04, 0.12, 0.22), smoothstep(0.0, 0.62, uv.y));
+	col += vec3(0.06, 0.32, 0.42) * exp(-abs(uv.y - 0.6) * 9.0);
+	// 星星（云少的上空）
+	vec2 sg = floor(px / 3.0);
+	col += vec3(0.7, 0.85, 1.0) * step(0.9985, hash(sg)) * smoothstep(0.45, 0.0, uv.y) * (0.6 + 0.4 * sin(clock * 3.0 + hash(sg) * 30.0));
+	// 月亮（用户 2026-11-09：着色器画、当光源）：略带残缺的满月——灰白的月面、暗色月海、小环形山、边缘变暗；外面两层月晕
+	vec2 mp = (px - moon.xy) / moon.z;
+	float md = length(mp);
+	col += vec3(0.32, 0.42, 0.58) * exp(-md * 0.45) * 0.28 + vec3(0.55, 0.64, 0.78) * exp(-md * 1.8) * 0.3;
+	col += vec3(0.5, 0.6, 0.75) * exp(-pow((md - 2.6) / 0.35, 2.0)) * 0.05;          // 一圈很淡的月晕环
+	if (md < 1.05) {
+		float z = sqrt(max(1.0 - md * md, 0.0));
+		vec3 nrm = vec3(mp, z);
+		float sun = clamp(dot(nrm, normalize(vec3(-0.35, -0.15, 1.0))) * 1.2 + 0.15, 0.0, 1.0);   // 受光面偏左上，右下边缘一点点阴影
+		float maria = fbm(mp * 1.7 + vec2(5.2, 1.3));
+		float crater = smoothstep(0.62, 0.8, noise(mp * 7.0 + 11.0)) * 0.5 + smoothstep(0.7, 0.85, noise(mp * 16.0 + 3.0)) * 0.3;
+		vec3 mc = mix(vec3(0.5, 0.54, 0.62), vec3(0.86, 0.89, 0.95), smoothstep(0.38, 0.62, maria));
+		mc *= (1.0 - 0.25 * crater) * (0.35 + 0.65 * sun) * (0.82 + 0.18 * z);
+		col = mix(col, mc, 1.0 - smoothstep(0.97, 1.03, md));
+	}
+	float moonNear = exp(-md / 7.0);                                     // 月光照到的云
+	// 乌云：两层域扭曲噪声，横向拉长，慢慢翻滚；亮边偏蓝，云底透红光
+	vec2 p = vec2(px.x / sres.y, px.y / sres.y);
+	for (int k = 0; k < 2; k++) {
+		float fk = float(k);
+		vec2 q = vec2(p.x * (1.1 + fk * 0.5) + clock * (0.012 + fk * 0.01), p.y * (2.8 + fk));
+		vec2 warp = vec2(fbm(q + vec2(clock * 0.05, 0.0)), fbm(q + vec2(4.3, clock * 0.04)));
+		float c = fbm(q + warp * 1.4 + fk * 3.7);
+		float band = smoothstep(0.78 - fk * 0.18, 0.12, uv.y) * smoothstep(-0.05, 0.1, uv.y);
+		float dens = smoothstep(0.44, 0.78, c) * band;
+		float lit = clamp((c - fbm(q + warp * 1.4 + fk * 3.7 + vec2(0.0, 0.05))) * 6.0 + 0.5, 0.0, 1.0);
+		vec3 cc = mix(vec3(0.02, 0.04, 0.09), vec3(0.18, 0.34, 0.5), lit);
+		cc += vec3(0.55, 0.04, 0.08) * (1.0 - lit) * smoothstep(0.15, 0.6, uv.y) * (0.6 + 0.4 * fk);
+		// 月光：月亮附近的云头镶一道银边，挡在月亮前面的薄云被从后面透亮
+		cc += vec3(0.5, 0.58, 0.72) * lit * moonNear * 0.9 + vec3(0.3, 0.36, 0.46) * exp(-md * 0.9) * (1.0 - dens * 0.5);
+		col = mix(col, cc, dens * (0.85 - fk * 0.15));
+	}
+	// 远处闪电：偶尔在一片云里亮一下
+	float slot = floor(clock * 2.5);
+	float fl = step(0.82, hash(vec2(slot, 1.7))) * exp(-fract(clock * 2.5) * 9.0);
+	vec2 lpos = vec2(hash(vec2(slot, 3.1)) * sres.x, (0.1 + 0.3 * hash(vec2(slot, 5.9))) * sres.y);
+	col += vec3(0.5, 0.75, 1.0) * fl * exp(-length((px - lpos) / vec2(420.0, 220.0)));
+	// 深渊：地面线以下越来越暗，底下翻上来暗红的雾
+	float below = smoothstep(feet_y - 40.0, sres.y, px.y);
+	float mist = fbm(vec2(px.x * 0.004 + clock * 0.03, px.y * 0.01 - clock * 0.25));
+	col = mix(col, vec3(0.01, 0.015, 0.03), below * 0.85);
+	col += vec3(0.5, 0.05, 0.08) * smoothstep(0.45, 0.85, mist) * below * 0.6;
+	col *= 1.0 - 0.5 * dim;
+	col += vec3(0.85, 0.95, 1.0) * flash;
+	COLOR = vec4(mix(col, edge.rgb, edge.a), max(shown, edge.a));
+}" };
+
+	internal static Shader PlatformShader => _platform ??= new Shader { Code = "shader_type canvas_item;\n" + SceneCommon + @"
+uniform float cliff_x = 640.0;
+uniform float floor_y = 830.0;
+uniform sampler2D plat : filter_linear;
+uniform vec2 plat_origin = vec2(0.0);
+uniform vec2 plat_size = vec2(0.0);
+// 贴图不存在时保留程序生成的断崖。负值在岩石内。
 float rock(vec2 px) {
 	float top = feet_y - 12.0 - 9.0 * fbm(vec2(px.x * 0.012, 3.1)) + (px.x - cliff_x) * (floor_y - feet_y) / max(sres.x - cliff_x, 1.0);
 	float edge = cliff_x + (px.y - feet_y) * 0.28 + (fbm(vec2(px.y * 0.02, 7.7)) - 0.5) * 60.0
@@ -86,94 +154,33 @@ float rock(vec2 px) {
 }
 void fragment() {
 	vec2 px = UV * sres;
-	vec2 uv = UV;
-	float s = revealDist(px);
-	float shown = smoothstep(-2.0, 2.0, s);
-	vec4 edge = flameEdge(px, s);
 	vec3 col;
-	float a;
-	if (part == 0) {
-		// 天空：深蓝 → 地平线一圈青蓝的亮
-		col = mix(vec3(0.012, 0.025, 0.07), vec3(0.04, 0.12, 0.22), smoothstep(0.0, 0.62, uv.y));
-		col += vec3(0.06, 0.32, 0.42) * exp(-abs(uv.y - 0.6) * 9.0);
-		// 星星（云少的上空）
-		vec2 sg = floor(px / 3.0);
-		col += vec3(0.7, 0.85, 1.0) * step(0.9985, hash(sg)) * smoothstep(0.45, 0.0, uv.y) * (0.6 + 0.4 * sin(clock * 3.0 + hash(sg) * 30.0));
-		// 月亮（用户 2026-11-09：着色器画、当光源）：略带残缺的满月——灰白的月面、暗色月海、小环形山、边缘变暗；外面两层月晕
-		vec2 mp = (px - moon.xy) / moon.z;
-		float md = length(mp);
-		col += vec3(0.32, 0.42, 0.58) * exp(-md * 0.45) * 0.28 + vec3(0.55, 0.64, 0.78) * exp(-md * 1.8) * 0.3;
-		col += vec3(0.5, 0.6, 0.75) * exp(-pow((md - 2.6) / 0.35, 2.0)) * 0.05;          // 一圈很淡的月晕环
-		if (md < 1.05) {
-			float z = sqrt(max(1.0 - md * md, 0.0));
-			vec3 nrm = vec3(mp, z);
-			float sun = clamp(dot(nrm, normalize(vec3(-0.35, -0.15, 1.0))) * 1.2 + 0.15, 0.0, 1.0);   // 受光面偏左上，右下边缘一点点阴影
-			float maria = fbm(mp * 1.7 + vec2(5.2, 1.3));
-			float crater = smoothstep(0.62, 0.8, noise(mp * 7.0 + 11.0)) * 0.5 + smoothstep(0.7, 0.85, noise(mp * 16.0 + 3.0)) * 0.3;
-			vec3 mc = mix(vec3(0.5, 0.54, 0.62), vec3(0.86, 0.89, 0.95), smoothstep(0.38, 0.62, maria));
-			mc *= (1.0 - 0.25 * crater) * (0.35 + 0.65 * sun) * (0.82 + 0.18 * z);
-			col = mix(col, mc, 1.0 - smoothstep(0.97, 1.03, md));
-		}
-		float moonNear = exp(-md / 7.0);                                     // 月光照到的云
-		// 乌云：两层域扭曲噪声，横向拉长，慢慢翻滚；亮边偏蓝，云底透红光
-		vec2 p = vec2(px.x / sres.y, px.y / sres.y);
-		for (int k = 0; k < 2; k++) {
-			float fk = float(k);
-			vec2 q = vec2(p.x * (1.1 + fk * 0.5) + clock * (0.012 + fk * 0.01), p.y * (2.8 + fk));
-			vec2 warp = vec2(fbm(q + vec2(clock * 0.05, 0.0)), fbm(q + vec2(4.3, clock * 0.04)));
-			float c = fbm(q + warp * 1.4 + fk * 3.7);
-			float band = smoothstep(0.78 - fk * 0.18, 0.12, uv.y) * smoothstep(-0.05, 0.1, uv.y);
-			float dens = smoothstep(0.44, 0.78, c) * band;
-			float lit = clamp((c - fbm(q + warp * 1.4 + fk * 3.7 + vec2(0.0, 0.05))) * 6.0 + 0.5, 0.0, 1.0);
-			vec3 cc = mix(vec3(0.02, 0.04, 0.09), vec3(0.18, 0.34, 0.5), lit);
-			cc += vec3(0.55, 0.04, 0.08) * (1.0 - lit) * smoothstep(0.15, 0.6, uv.y) * (0.6 + 0.4 * fk);
-			// 月光：月亮附近的云头镶一道银边，挡在月亮前面的薄云被从后面透亮
-			cc += vec3(0.5, 0.58, 0.72) * lit * moonNear * 0.9 + vec3(0.3, 0.36, 0.46) * exp(-md * 0.9) * (1.0 - dens * 0.5);
-			col = mix(col, cc, dens * (0.85 - fk * 0.15));
-		}
-		// 远处闪电：偶尔在一片云里亮一下
-		float slot = floor(clock * 2.5);
-		float fl = step(0.82, hash(vec2(slot, 1.7))) * exp(-fract(clock * 2.5) * 9.0);
-		vec2 lpos = vec2(hash(vec2(slot, 3.1)) * sres.x, (0.1 + 0.3 * hash(vec2(slot, 5.9))) * sres.y);
-		col += vec3(0.5, 0.75, 1.0) * fl * exp(-length((px - lpos) / vec2(420.0, 220.0)));
-		// 深渊：地面线以下越来越暗，底下翻上来暗红的雾
-		float below = smoothstep(feet_y - 40.0, sres.y, px.y);
-		float mist = fbm(vec2(px.x * 0.004 + clock * 0.03, px.y * 0.01 - clock * 0.25));
-		col = mix(col, vec3(0.01, 0.015, 0.03), below * 0.85);
-		col += vec3(0.5, 0.05, 0.08) * smoothstep(0.45, 0.85, mist) * below * 0.6;
-		col *= 1.0 - 0.5 * dim;
-		col += vec3(0.85, 0.95, 1.0) * flash;
-		a = shown;
-		col = mix(col, edge.rgb, edge.a);
-		a = max(a, edge.a);
+	float inside;
+	if (plat_size.x > 0.0) {
+		vec2 puv = (px - plat_origin) / plat_size;
+		if (puv.x < 0.0 || puv.x > 1.0 || puv.y < 0.0 || puv.y > 1.0) discard;
+		vec4 pt = texture(plat, puv);
+		if (pt.a <= 0.0) discard;
+		inside = pt.a;
+		col = pt.rgb * 0.8;
 	} else {
-		float inside;
-		if (plat_size.x > 0.0) {
-			vec2 puv = (px - plat_origin) / plat_size;
-			if (puv.x < 0.0 || puv.x > 1.0 || puv.y < 0.0 || puv.y > 1.0) discard;
-			vec4 pt = texture(plat, puv);
-			if (pt.a <= 0.0) discard;
-			inside = pt.a;
-			col = pt.rgb * 0.8;
-		} else {
-			float d = rock(px);
-			inside = 1.0 - smoothstep(-1.0, 1.0, d);
-			if (inside <= 0.0) discard;
-			float strata = fbm(vec2(px.x * 0.01, px.y * 0.05));
-			float crack = smoothstep(0.02, 0.0, abs(fbm(px * 0.02) - 0.5));
-			col = mix(vec3(0.02, 0.025, 0.045), vec3(0.06, 0.07, 0.1), strata) * (1.0 - 0.5 * crack);
-			float topLit = smoothstep(14.0, 0.0, abs(px.y - (feet_y - 15.0))) * step(d, 0.0);
-			col += vec3(0.25, 0.5, 0.75) * topLit * 0.5;
-			float rim = smoothstep(-16.0, 0.0, d);
-			col += vec3(0.45, 0.05, 0.08) * rim * smoothstep(feet_y, sres.y, px.y) * 1.2;
-			col += vec3(0.3, 0.55, 0.8) * rim * smoothstep(feet_y + 60.0, feet_y, px.y) * 0.4;
-		}
-		col *= 1.0 - 0.45 * dim;
-		col += vec3(0.85, 0.95, 1.0) * flash * 0.6;
-		a = inside * shown;
-		col = mix(col, edge.rgb, edge.a * inside);
+		float d = rock(px);
+		inside = 1.0 - smoothstep(-1.0, 1.0, d);
+		if (inside <= 0.0) discard;
+		float strata = fbm(vec2(px.x * 0.01, px.y * 0.05));
+		float crack = smoothstep(0.02, 0.0, abs(fbm(px * 0.02) - 0.5));
+		col = mix(vec3(0.02, 0.025, 0.045), vec3(0.06, 0.07, 0.1), strata) * (1.0 - 0.5 * crack);
+		float topLit = smoothstep(14.0, 0.0, abs(px.y - (feet_y - 15.0))) * step(d, 0.0);
+		col += vec3(0.25, 0.5, 0.75) * topLit * 0.5;
+		float rim = smoothstep(-16.0, 0.0, d);
+		col += vec3(0.45, 0.05, 0.08) * rim * smoothstep(feet_y, sres.y, px.y) * 1.2;
+		col += vec3(0.3, 0.55, 0.8) * rim * smoothstep(feet_y + 60.0, feet_y, px.y) * 0.4;
 	}
-	COLOR = vec4(col, a);
+	col *= 1.0 - 0.45 * dim;
+	col += vec3(0.85, 0.95, 1.0) * flash * 0.6;
+	float s = revealDist(px);
+	vec4 edge = flameEdge(px, s);
+	COLOR = vec4(mix(col, edge.rgb, edge.a * inside), inside * smoothstep(-2.0, 2.0, s));
 }" };
 
 	// ───────────────────────── 蓄力漩涡 ─────────────────────────
@@ -352,37 +359,58 @@ void fragment() {
 		return l;
 	}
 
-	/// <summary>
-	/// 预热（用户 2026-11-09：东西加多了，第一次打出肯定会卡）：Warmup.Run 每场战斗开始时在几乎透明的层里调一次。
-	/// 着色器本身 Warmup 已经按反射全编译过；这里补上它照顾不到的：撒旦耶尔的大贴图第一次画时才上传显卡（整套部件建一个很小的、摆一帧）、
-	/// 场景着色器带平台贴图 + 被引擎 2D 灯照着画一次、余烬 / 火花粒子的处理材质、命中区那一套（冲击波 + 粒子 + 灯），顺带把这些 C# 方法 JIT 掉。不出声。
-	/// </summary>
-	public static void Warm(Control hidden, Vector2 c)
+	// 分帧画出实机对应的着色器变体：独立天空视口、带灯的平台和人物、粒子及命中区。
+	internal static void WarmSky(Control slot)
 	{
-		Node2D slot = new() { Name = "SinfulWarm" };
-		hidden.AddChild(slot);
-		if (SatanaelPuppet.Available)
+		Vector2 screen = Fx.Screen(slot), c = screen * 0.5f;
+		ShaderMaterial sky = new() { Shader = SkyShader };
+		sky.SetShaderParameter("sres", screen);
+		sky.SetShaderParameter("origin", c);
+		sky.SetShaderParameter("reveal", 1e5f);
+		SinfulRender.Sky(slot, screen, sky);
+	}
+
+	internal static void WarmPlatform(Control slot)
+	{
+		Vector2 screen = Fx.Screen(slot), c = screen * 0.5f;
+		ShaderMaterial rocks = new() { Shader = PlatformShader };
+		rocks.SetShaderParameter("sres", screen);
+		rocks.SetShaderParameter("origin", c);
+		rocks.SetShaderParameter("reveal", 1e5f);
+		if (Fx.Tex("sinful_platform") is Texture2D platform)
 		{
-			SatanaelPuppet pp = new(slot, c, 0.05f, c + new Vector2(100f, 100f));
-			pp.Update(1f, 0f, 0.5f, 1.5f, 9f);
-			pp.SceneMask(c, 1e5f);
-			pp.LightFrom(c + new Vector2(100f, -100f));
+			rocks.SetShaderParameter("plat", platform);
+			rocks.SetShaderParameter("plat_origin", c);
+			rocks.SetShaderParameter("plat_size", new Vector2(36f, 18f));
 		}
-		ShaderMaterial m = new() { Shader = Scene };
-		m.SetShaderParameter("reveal", 1e5f);
-		if (Fx.Tex("sinful_platform") is Texture2D plat)
+		slot.AddChild(new ColorRect
 		{
-			m.SetShaderParameter("plat", plat);
-			m.SetShaderParameter("plat_size", new Vector2(8f, 8f));
-		}
-		ColorRect r = new() { Size = new Vector2(8f, 8f), Material = m, MouseFilter = Control.MouseFilterEnum.Ignore };
-		slot.AddChild(r);
-		r.GlobalPosition = c;
-		PointLight2D l = Light(slot, c, Colors.White, 64f);
-		l.Energy = 0.05f;
+			Size = screen, Material = rocks, LightMask = SinfulRender.ActorLightMask,
+			MouseFilter = Control.MouseFilterEnum.Ignore,
+		});
+		Light(slot, c, Colors.White, 64f).Energy = 1f;
+	}
+
+	internal static void WarmPuppet(Control slot)
+	{
+		if (!SatanaelPuppet.Available) return;
+		Vector2 c = Fx.Screen(slot) * 0.5f;
+		Node2D puppetRoot = new();
+		slot.AddChild(puppetRoot);
+		SatanaelPuppet puppet = new(puppetRoot, new Vector2(6f, 0f), 0.05f, c + new Vector2(48f, 24f));
+		puppet.Update(1f, 0f, 0.5f, 1.5f, 9f);
+		puppet.SceneMask(c, 1e5f);
+		puppet.LightFrom(c + new Vector2(32f, -32f));
+		SinfulRender.LightActors(slot, new[] { puppetRoot });
+		Light(slot, c, Colors.White, 64f).Energy = 1f;
+	}
+
+	internal static void WarmImpact(Control slot)
+	{
+		Vector2 c = Fx.Screen(slot) * 0.5f;
 		GpuParticles2D embers = ReadyFx.Embers(slot, c, new[] { Colors.White, Colors.White }, 4, 8f, 0.3f, 10f, 20f, 5f);
-		embers.Material = MaskMaterial(Fx.Screen(hidden), c);
-		HitZone(hidden, c, Vector2.Right, c.Y, 0f, 0.02f);
+		embers.Material = MaskMaterial(Fx.Screen(slot), c);
+		HitZone(slot, c, Vector2.Right, c.Y, 0f, 0.02f);
 	}
 
 	/// <summary>放整段大罪穿甲弹。back = 背景层（场景、人格面具），front = 前景层（子弹、命中）。返回子弹穿过每个敌人的时刻（秒，从现在算）。</summary>
@@ -391,34 +419,30 @@ void fragment() {
 
 	public static float[] Play(Control back, Control front, Setup s)
 	{
+		ulong started = Time.GetTicksUsec();
 		Vector2 screen = Fx.Screen(back);
 		float unit = screen.Y / 1080f;
 		Func<Vector2, Vector2> toScreen = w => Fx.ScreenPoint(back, w);
 		Vector2 feetS = toScreen(s.JokerFeet), floorS = toScreen(new Vector2(0f, s.FloorY));
 		var enemiesOrdered = s.Enemies.Select((e, i) => (e, i)).OrderBy(t => t.e.DistanceSquaredTo(s.PersonaMuzzle)).ToList();
-		float firstEnemyX = enemiesOrdered.Count > 0 ? enemiesOrdered.Min(t => toScreen(t.e).X) : screen.X * 0.6f;
-
 		// ── 场景：天空层（最底下）+ 断崖层（盖在人格面具前面）
 		Node2D root = Fx.ScreenRoot(back, "P5SinfulShellScene");
-		SinfulRender.Observe(root);
 		// 场景切换，不叠（用户 2026-11-13）：群蛇形态的咒雾 / 蛇、毒雾在华丽收场期间整个藏起来，演完放回来
 		root.TreeExiting += () => { SerpentMantle.Suspend(false); FumesField.Suspend(false); };
 		back.MoveChild(root, 0);
-		ShaderMaterial sky = new() { Shader = Scene }, rocks = new() { Shader = Scene };
+		ShaderMaterial sky = new() { Shader = SkyShader }, rocks = new() { Shader = PlatformShader };
+		ShaderMaterial[] scenery = { sky, rocks };
 		float total = FireAt + Mathf.Max(ConcealAfter + ExitTime, ExitAfter + 0.6f) + 0.15f;
-		foreach (ShaderMaterial m in new[] { sky, rocks })
+		foreach (ShaderMaterial m in scenery)
 		{
 			m.SetShaderParameter("sres", screen);
 			m.SetShaderParameter("origin", feetS);
 			m.SetShaderParameter("feet_y", feetS.Y);
-			m.SetShaderParameter("floor_y", floorS.Y);
-			m.SetShaderParameter("cliff_x", feetS.X - 95f * unit);           // Joker 站在悬崖边上
-			m.SetShaderParameter("cliff2_x", Mathf.Max(feetS.X + 420f * unit, firstEnemyX - 160f * unit));
 		}
-		sky.SetShaderParameter("part", 0);
+		rocks.SetShaderParameter("floor_y", floorS.Y);
+		rocks.SetShaderParameter("cliff_x", feetS.X - 95f * unit);
 		Vector2 moonS = new(screen.X * 0.82f, screen.Y * 0.16f);              // 右上的空天：敌人头上、撒旦耶尔翅膀够不到的地方
 		sky.SetShaderParameter("moon", new Vector3(moonS.X, moonS.Y, 58f * unit));
-		rocks.SetShaderParameter("part", 1);
 		if (Fx.Tex("sinful_platform") is Texture2D plat)
 		{
 			// Codex 的平台：原图 3840×1100（×0.52），顶面 y=140、悬崖边 x=760 → 悬崖边对到 Joker 脚边、顶面对到脚底
@@ -528,7 +552,7 @@ void fragment() {
 				thunder = puppet.Lightning;
 				muzzleLight.GlobalPosition = puppet.MuzzleGlobal;
 			}
-			foreach (ShaderMaterial m in new[] { sky, rocks })
+			foreach (ShaderMaterial m in scenery)
 			{
 				m.SetShaderParameter("reveal", reveal);
 				m.SetShaderParameter("dim", dim);
@@ -714,6 +738,7 @@ void fragment() {
 		}
 		// 余韵：弹道在夜空里留下一道细光痕，慢慢散掉
 		Fx.After(front, FireAt + 0.25f, () => Afterglow(front, muzzle, dir, screen, unit));
+		SinfulRender.Observe(root, started);
 		return pierce;
 	}
 

@@ -39,6 +39,15 @@ public static class Sfx
 		KnifeRing = "sword_sheath",     // 收刀入鞘的金属「锵」（#48）：转刀落回手里握住的那一下（用户 2026-11-02：转刀声像空转、没分量）
 		Hit = "damage_enemy",           // 打中敌人（#22）
 		AllOut = "battle_all_out_atk",  // 总攻击斩击（#24，第一刀叠上去）
+		AoaHit1 = "battle_all_out_atk", // 总攻击乱斗（Vfx/AllOut.cs）：打击 #24–26、斩击 #27–29，原版同一组 cue 的六个变体
+		AoaHit2 = "aoa_hit_2",
+		AoaSplatter = "aoa_splatter",   // 原版总攻击收尾的喷溅声（SYSTEM.ACB cue 1074 battle_all_out_atk_finish_b）：怪物剪影喷血，起音 0.05s
+		AoaCrack = "aoa_crack",         // 总攻击裂纹蔓延（P3R 镜子裂开 + 玻璃受力的咯吱声拼成，art/sfx_p5/aoa_crack.md）
+		AoaZoom = "aoa_zoom",           // 总攻击蓄势（P3R Snd_FX_Btl_Allout_Zoom，P3 mod 同款）：0.65s 冲到高潮 = 碎开
+		AoaHit3 = "aoa_hit_3",
+		AoaSlash1 = "aoa_slash_1",
+		AoaSlash2 = "aoa_slash_2",
+		AoaSlash3 = "aoa_slash_3",
 		Gun = "gun_10",                 // 枪声（用户 2026-11-03：gun_07 像激光枪 → 试听选 D = gun_10，#38）。原来的说明：（#37：起音 0.2ms、带 0.5s 回响的干脆手枪声。原来的 #32 gun_02 起音慢、尾音短，
 		                                //  被命中声一盖听起来像打击声——用户 2026-11-02 指出；#33 是 10 连发的机关枪）
 		Ricochet = "gun_00",            // 跳弹（#30 gun_00 / talk_ricochet）
@@ -171,21 +180,16 @@ public static class Sfx
 	/// 预热：把 res://p5joker/sfx/ 里所有音效都读进来解码好（用户 2026-11-03：第一次打出打击都会卡一下——
 	/// 预热时音效被静音、一次都没加载过，第一次播放才现读现解码）。每帧解几个，不在一帧里全做完。
 	/// </summary>
-	public static void PreloadAll(Node anchor)
+	internal static void Preload(string name) => Load(name);
+
+	internal static IEnumerable<string> PreloadNames()
 	{
-		var names = new System.Collections.Generic.List<string>();
+		var names = new HashSet<string>();
 		foreach (string f in DirAccess.GetFilesAt(Dir))
 		{
 			string n = f.Replace(".import", "").Replace(".remap", "");
-			if (n.EndsWith(".ogg") && !names.Contains(n[..^4]))
-			{
-				names.Add(n[..^4]);
-			}
-		}
-		for (int i = 0; i < names.Count; i++)
-		{
-			string n = names[i];
-			Fx.After(anchor, 0.05 + 0.03 * (i / 3), () => Load(n));
+			if (n.EndsWith(".ogg", StringComparison.Ordinal) && names.Add(n[..^4]))
+				yield return n[..^4];
 		}
 	}
 
@@ -298,6 +302,24 @@ public static class Sfx
 		[SerpentRise] = (E + "characters/defect/defect_dark_channel", 0.6f),
 		[SerpentMaw] = (E + "enemy/enemy_attacks/scroll_of_biting/scroll_of_biting_bite", 0.55f),
 	};
+
+	/// <summary>
+	/// 大演出用（总攻击）：走 Master 总线（战斗结束时 SFX 总线可能被游戏压低，P3 mod 同样的做法），gain 可以到 2.5（+8dB）。
+	/// </summary>
+	public static void PlayLoud(string name, float gain) => Stage.Safe("sfx " + name, () =>
+	{
+		if (Muted || Engine.GetMainLoop() is not SceneTree tree) return;
+		Recorder?.Invoke(name, gain);
+		if (Load(name) is not AudioStreamOggVorbis stream) return;
+		AudioStreamPlayer p = new() { Stream = stream, Bus = new StringName("Master"), VolumeDb = Mathf.LinearToDb(Mathf.Clamp(gain, 0.0001f, 2.5f)) };
+		tree.Root.AddChild(p);
+		p.Finished += p.QueueFree;
+		p.Play();
+		tree.CreateTimer(stream.GetLength() + 2.0, processAlways: true, processInPhysics: false, ignoreTimeScale: true).Timeout += () =>
+		{
+			if (GodotObject.IsInstanceValid(p)) p.QueueFree();
+		};
+	});
 
 	/// <summary>播放；同一音效 45ms 内不重复叠加。volume 0～1.4。</summary>
 	public static void Play(string name, float volume = 1f, float delay = 0f) => Stage.Safe("sfx " + name, () =>
