@@ -13,7 +13,7 @@ namespace P5Joker;
 /// </summary>
 public static partial class SinfulShell
 {
-	private static Shader? _burst, _smoke, _tunnel, _flood;
+	private static Shader? _burst, _smoke, _tunnel, _flood, _ripple;
 
 	/// <summary>开场的蓝焰爆发：整团往外炸的火（火舌被噪声撕开、外沿一层更亮的壳），白热的芯，prog 0→1 炸开再散掉。加法。</summary>
 	private static Shader BurstShader => _burst ??= new Shader { Code = @"
@@ -149,6 +149,65 @@ void fragment() {
 			m.SetShaderParameter("power", peak * Mathf.Pow(1f - t, 1.6f));
 			m.SetShaderParameter("spread", 0.5f + 0.5f * Mathf.Sqrt(t));
 		});
+	}
+
+	/// <summary>
+	/// 打中的冲击波纹（用户 2026-11-19：可以加一些波纹）：一圈有厚度的冲击波——前沿亮（白），外沿一层紫色色散、里面一层青，
+	/// 后面跟一条压暗的折射带，再拖两圈越来越淡的余波；亮度沿圈被噪声分成明暗不一的几段，粗细也起伏（不是一条均匀的细线）。
+	/// prog 0→1 先猛后缓地扩开、越扩越细越淡；squash 竖向压扁（1 = 正圆，贴地的那道很扁）。premul：亮的是加上去的，暗带真的压暗。
+	/// </summary>
+	private static Shader RippleShader => _ripple ??= new Shader { Code = @"
+shader_type canvas_item;
+render_mode blend_premul_alpha;
+uniform float prog = 0.0;
+uniform float seed = 0.0;
+uniform float power = 1.0;
+uniform float squash = 1.0;
+" + Noise + @"
+void fragment() {
+	vec2 p = (UV - 0.5) * 2.0;
+	p.y /= max(squash, 0.05);
+	float r = length(p), ang = atan(p.y, p.x);
+	float e = 1.0 - pow(2.0, -8.0 * prog);
+	float R = 0.05 + 0.88 * e;
+	float fade = pow(1.0 - prog, 1.3);
+	float a = ang / 6.2831853 + 0.5;
+	float seg = 0.5 + 0.5 * smoothstep(0.25, 0.75, noise(vec2(a * 9.0 + seed, prog * 2.0)));
+	float w = (0.012 + 0.03 * (1.0 - e)) * (0.7 + 0.6 * noise(vec2(a * 21.0 + seed * 1.7, 0.0)));
+	float d = r - R;
+	float front = exp(-pow(d / w, 2.0)) * seg;
+	float fringe = exp(-pow((d - w * 1.8) / (w * 1.1), 2.0)) * seg;
+	float inner = exp(-pow((d + w * 1.6) / (w * 1.3), 2.0));
+	float echo = 0.0;
+	for (int i = 1; i <= 2; i++) {
+		float Ri = R * (1.0 - 0.14 * float(i));
+		echo += exp(-pow((r - Ri) / (w * 0.8), 2.0)) * (0.45 / float(i)) * seg;
+	}
+	float behind = clamp(-d, 0.0, 1.0);
+	float band = smoothstep(0.0, 0.015, behind) * (1.0 - smoothstep(0.03, 0.12, behind));
+	vec3 white = vec3(0.95, 0.98, 1.0), cyan = vec3(0.35, 0.8, 1.0), violet = vec3(0.6, 0.32, 1.0);
+	vec3 light = (white * front * 1.5 + violet * fringe * 0.8 + cyan * (inner * 0.7 + echo)) * fade * power;
+	float shade = band * 0.35 * fade * power;
+	float clip = 1.0 - smoothstep(0.9, 1.0, r);
+	COLOR = vec4(light * clip, shade * clip);
+}" };
+
+	/// <summary>一道波纹（直径 size、竖向压扁 squash），返回根节点和材质（调用方每帧设 prog）。</summary>
+	private static (Node2D Root, ShaderMaterial Mat) Ripple(Control layer, Vector2 at, float size, float squash, float power, double life)
+	{
+		Node2D root = Fx.Root(layer, at, "P5SinfulRipple", life);
+		ShaderMaterial m = Quad(root, RippleShader, Vector2.One * size, -Vector2.One * size / 2f);
+		m.SetShaderParameter("squash", squash);
+		m.SetShaderParameter("power", power);
+		m.SetShaderParameter("prog", 0f);
+		return (root, m);
+	}
+
+	/// <summary>后面几个敌人被穿过时的一道波纹（游戏时间里自己走完）。</summary>
+	private static void RipplePulse(Control layer, Vector2 at, float size, float squash, float power, float life)
+	{
+		(Node2D root, ShaderMaterial m) = Ripple(layer, at, size, squash, power, life + 0.05);
+		Fx.Animate(root, 0, life, t => m.SetShaderParameter("prog", t));
 	}
 
 	private static ShaderMaterial Quad(Node2D root, Shader shader, Vector2 size, Vector2 offset)
