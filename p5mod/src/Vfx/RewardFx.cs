@@ -204,8 +204,13 @@ public static class RewardFx
 		{
 			float time = t * 600f;
 			if (!GodotObject.IsInstanceValid(root) || !screen.IsVisibleInTree()) return;
-			float k = Ease5.OutExpo(Mathf.Min(1f, time / 0.22f));
-			band.Position = new Vector2(view.X * 0.5f - view.X * 1.3f * (1f - k), cy);
+			// 用户 2026-11-19：色带切入太快、像突然一下滑进来 → 0.22s OutExpo（前两帧就走完大半）改成 0.42s OutQuart，
+			// 看得清它从左边扫进来；入场时多斜一点、纸带略扁，落位时回正撑开
+			float p = Mathf.Min(1f, time / 0.42f);
+			float k = 1f - Mathf.Pow(1f - p, 4f);
+			band.Position = new Vector2(view.X * 0.5f - view.X * 1.2f * (1f - k), cy);
+			band.Rotation = -0.035f - 0.05f * (1f - k);
+			band.Scale = new Vector2(1f, Mathf.Lerp(0.8f, 1f, Ease5.OutBack(Ease5.Seg(time, 0.2f, 0.22f))));
 			// 哪张牌被鼠标停着 / 手柄选着
 			Control? hov = null;
 			if (Runs.TryGetValue(screen, out RewardRun? run))
