@@ -274,6 +274,13 @@ def fx_textures():
     for f in sorted((ROOT / "art/p5/ui/reward").glob("*.png")):
         im = Image.open(f).convert("RGBA")
         yield "reward_" + f.stem, im.resize((round(im.width * 0.5), round(im.height * 0.5)), Image.LANCZOS)
+    # 战斗开始 / 回合横幅（Codex，art/p5/ui/battle，任务单 docs/codex/codex_p5_battle_ui_art.md）：
+    # letters/<WORD>_<n>.png → battle_<WORD>_<n>，digits/digit_<n>.png → battle_digit_<n>，底板 → battle_<name>（都是半尺寸）
+    battle = ROOT / "art/p5/ui/battle"
+    if battle.exists():
+        for f in sorted(battle.rglob("*.png")):
+            im = Image.open(f).convert("RGBA")
+            yield "battle_" + f.stem, im.resize((round(im.width * 0.5), round(im.height * 0.5)), Image.LANCZOS)
     # 左上角顶栏 / 战绩 / 联机里的角色头像（Codex，art/p5/ui/icons/joker_top_icon.png）+ 描边版（轮廓往外扩一圈的白色剪影）
     icon = ROOT / "art/p5/ui/icons/joker_top_icon.png"
     if icon.exists():

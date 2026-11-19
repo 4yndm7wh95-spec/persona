@@ -961,3 +961,58 @@ public static class JokerTopBarPortraitPatch
 		Swap(__instance);
 	});
 }
+
+/// <summary>
+/// 战斗开始：原版「战斗开始」横幅只藏画面（节点照常跑 —— 它播完负责生成第 1 回合的横幅），换成剪报纸带 + TAKE YOUR HEART!（Vfx/BattleUiFx.cs）。
+/// </summary>
+[HarmonyPatch(typeof(NCombatStartBanner), nameof(NCombatStartBanner._Ready))]
+public static class JokerCombatStartBannerPatch
+{
+	public static void Postfix(NCombatStartBanner __instance) => ModEntry.Safe("JokerCombatStart", () =>
+	{
+		if (!Joker.LocalRun) return;
+		foreach (Godot.Node c in __instance.GetChildren())
+		{
+			if (c is Godot.CanvasItem ci) ci.Visible = false;
+		}
+		BattleUiFx.BattleStart((Joker.FxLayer(back: true) ?? Joker.FxLayer()) ?? (Godot.Control)__instance);   // 画在人物后面
+	});
+}
+
+/// <summary>我方回合横幅换成左上角的剪报纸条（原版的不再创建：返回 null，原版调用处 AddChildSafely 会忽略 null）。</summary>
+[HarmonyPatch(typeof(NPlayerTurnBanner), nameof(NPlayerTurnBanner.Create))]
+public static class JokerPlayerTurnBannerPatch
+{
+	public static bool Prefix(int roundNumber, ref NPlayerTurnBanner? __result)
+	{
+		bool replaced = false;
+		ModEntry.Safe("JokerTurnBanner", () =>
+		{
+			if (!Joker.LocalRun || (Joker.FxLayer(back: true) ?? Joker.FxLayer()) is not Godot.Control back) return;
+			bool extra = MegaCrit.Sts2.Core.Combat.CombatManager.Instance?.PlayersTakingExtraTurn.Count > 0;
+			BattleUiFx.TurnBanner(back, player: true, roundNumber, extra);
+			replaced = true;
+		});
+		if (!replaced) return true;
+		__result = null;
+		return false;
+	}
+}
+
+[HarmonyPatch(typeof(NEnemyTurnBanner), nameof(NEnemyTurnBanner.Create))]
+public static class JokerEnemyTurnBannerPatch
+{
+	public static bool Prefix(ref NEnemyTurnBanner? __result)
+	{
+		bool replaced = false;
+		ModEntry.Safe("JokerEnemyBanner", () =>
+		{
+			if (!Joker.LocalRun || (Joker.FxLayer(back: true) ?? Joker.FxLayer()) is not Godot.Control back) return;
+			BattleUiFx.TurnBanner(back, player: false, 0, false);
+			replaced = true;
+		});
+		if (!replaced) return true;
+		__result = null;
+		return false;
+	}
+}

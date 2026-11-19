@@ -6,6 +6,15 @@
 
 ---
 
+## 2026-11-19 · 会话 E 续三：战斗开始 / 回合横幅（等 Codex 素材），待合并
+
+- `Vfx/BattleUiFx.cs` + `Patches.cs` 末尾 `JokerCombatStartBannerPatch / JokerPlayerTurnBannerPatch / JokerEnemyTurnBannerPatch`（只在本机玩家是 Joker 时）。照 P3 mod：原版「战斗开始」横幅只藏画面、节点照常跑（它负责生成第 1 回合横幅）；回合横幅 Create 返回 null、换成自己的。
+- 全部放左上角顶栏下方、画在人物后面（用户：TAKE YOUR HEART 不要放屏幕中间）：战斗开始 = 红色剪报纸带 +「TAKE YOUR HEART!」；我方回合 = 黑纸条 + 红纸牌拼贴数字 +「YOUR TURN」；额外回合「ONE MORE!」（1 MORE 原声）；敌人回合 = 红纸条 +「!」+「ENEMY TURN」。
+- 素材任务单 `docs/codex/codex_p5_battle_ui_art.md`（art/p5/ui/battle：字母纸片 / 数字 / 底板），`stage_p5.py` 打包成 `battle_*`。**素材没到时是代码画的纸片占位**，到了自动换上，不用改代码。
+- 预览：`docs/p5/preview/battle_ui_v1.mp4`（场景 `battleui`）。
+
+---
+
 ## 2026-11-19 · 会话 E 再续：选卡界面实机修正 + Joker 头像 / 选人按钮，待合并
 
 - 实机反馈修正：TREASURE 原来在左上被顶栏挡 → 现在**居中放在「选择一张牌」横幅下面**（横幅和牌之间），去掉 TAKE YOUR PICK；STOLEN! 之前没出来（原版 SelectCard 立刻关界面）→ `RewardPickPatch` 拦下点击，印章演完 `RewardFx.PickHold`（0.45s）再反射调原版 SelectCard。
