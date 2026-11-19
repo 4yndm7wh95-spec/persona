@@ -19,6 +19,9 @@ public static class RewardFx
 {
 	private static readonly Color Red = new(0.82f, 0.04f, 0.1f), Ink = new(0.03f, 0.02f, 0.03f);
 
+	/// <summary>选中之后等多久再把结果交给游戏（界面关掉、牌进牌组）：印章压下 0.08s + 抖一下 + 停一眼。</summary>
+	public const float PickHold = 0.45f;
+
 	private static bool Still(Control c, Control row) => GodotObject.IsInstanceValid(c) && GodotObject.IsInstanceValid(row) && c.GetParent() == row && !c.IsQueuedForDeletion();
 
 	private static Vector2[] Slant(Vector2 c, float w, float h, float skew) =>
@@ -182,8 +185,9 @@ public static class RewardFx
 		screen.AddChild(root);
 		root.GlobalPosition = Vector2.Zero;
 		string[] letters = { "T", "R", "E1", "A", "S", "U", "R2", "E2" };
-		float k = 0.54f * u, step = 205f * k * 2f * 0.5f;        // 字母贴图半尺寸 256，纸片约 200 宽
-		Vector2 at = new(view.X * 0.05f + 100f * k, view.Y * 0.1f);
+		float k = 0.4f * u, step = 205f * k * 2f * 0.5f;        // 字母贴图半尺寸 256，纸片约 200 宽
+		// 用户 2026-11-19 实机：原来贴着顶上，被顶栏挡住 → 放到顶栏下面、左边遗物栏右侧，缩小一点
+		Vector2 at = new(view.X * 0.07f + 100f * k, view.Y * 0.2f);
 		for (int i = 0; i < letters.Length; i++)
 		{
 			float rot = Fx.Rand(-0.12f, 0.12f), dy = Fx.Rand(-14f, 14f) * u;
@@ -205,7 +209,7 @@ public static class RewardFx
 		Sfx.Take("gx_card_stack", 0.16f, 0.02f);
 		Sfx.Take("gx_card_stack", 0.12f, 0.14f);
 		// 副标题从左滑进来
-		Sprite2D? sub = Spr(root, "subtitle_take_your_pick", at + new Vector2(step * 3.6f, 230f * k), k * 0.95f, -0.03f);
+		Sprite2D? sub = Spr(root, "subtitle_take_your_pick", at + new Vector2(step * 2.6f, 210f * k), k * 0.95f, -0.03f);
 		if (sub != null)
 		{
 			Vector2 p0 = sub.Position;

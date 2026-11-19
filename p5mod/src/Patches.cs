@@ -802,19 +802,55 @@ public static class RewardOpenPatch
 		c is MegaCrit.Sts2.Core.Nodes.Cards.Holders.NCardHolder h && h.Hitbox != null && Godot.GodotObject.IsInstanceValid(h.Hitbox) ? h.Hitbox.GetGlobalRect() : c.GetGlobalRect();
 }
 
-/// <summary>选卡界面选中一张：「偷到手」（RewardFx.Pick）。</summary>
+/// <summary>
+/// 选卡界面选中一张：「偷到手」（RewardFx.Pick）。原版 SelectCard 一调用就把结果交出去、界面马上关掉、牌飞进牌组 ——
+/// 印章根本来不及出现（用户 2026-11-19：STOLEN 在游戏里没生效，选完直接进牌组）→ 先放演出、等 RewardFx.PickHold 秒再交结果。
+/// 等的这段时间里再点牌不响应；如果这期间结果已经被别的方式交出去了（跳过等），就不再交。
+/// </summary>
 [HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardSelectionScreen), "SelectCard")]
 public static class RewardPickPatch
 {
-	public static void Prefix(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardSelectionScreen __instance, MegaCrit.Sts2.Core.Nodes.Cards.Holders.NCardHolder cardHolder)
+	private static bool _bypass;
+	private static readonly MethodInfo? Select = AccessTools.Method(typeof(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardSelectionScreen), "SelectCard");
+
+	public static bool Prefix(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardSelectionScreen __instance, MegaCrit.Sts2.Core.Nodes.Cards.Holders.NCardHolder cardHolder)
 	{
+		if (_bypass || Select == null)
+		{
+			return true;
+		}
+		bool held = false;
 		ModEntry.Safe("RewardPick", () =>
 		{
-			if (!Joker.LocalRun || Traverse.Create(__instance).Field("_cardRow").GetValue() is not Godot.Control row)
+			if (!Joker.LocalRun || Traverse.Create(__instance).Field("_cardRow").GetValue() is not Godot.Control row
+				|| Traverse.Create(__instance).Field("_completionSource").GetValue() is not System.Threading.Tasks.TaskCompletionSource<int?> cs || cs.Task.IsCompleted)
 			{
 				return;
 			}
+			held = true;
+			if (__instance.HasMeta("p5_pick_pending"))
+			{
+				return;                                   // 演出中又点了一下：不响应
+			}
+			__instance.SetMeta("p5_pick_pending", true);
 			RewardFx.Pick(__instance, row, RewardOpenPatch.RewardHolders(row), cardHolder, RewardOpenPatch.RectOf);
+			var screen = __instance;
+			Fx.After(screen, RewardFx.PickHold, () =>
+			{
+				if (!Godot.GodotObject.IsInstanceValid(screen)) return;
+				screen.RemoveMeta("p5_pick_pending");
+				if (Traverse.Create(screen).Field("_completionSource").GetValue() is not System.Threading.Tasks.TaskCompletionSource<int?> c2 || c2.Task.IsCompleted) return;
+				_bypass = true;
+				try
+				{
+					Select.Invoke(screen, new object[] { cardHolder });
+				}
+				finally
+				{
+					_bypass = false;
+				}
+			});
 		});
+		return !held;
 	}
 }
