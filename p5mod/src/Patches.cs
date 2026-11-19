@@ -393,9 +393,10 @@ public static class GainBlockPatch
 				&& NCombatRoom.Instance?.GetCreatureNode(creature) is NCreature node)
 			{
 				// 用户 2026-11-13：有专属特效的牌（后空翻、生存者……）再叠一层通用蜂巢盾，两种特效打架 → 只放专属的。
-				// 模糊例外：它的专属特效就是配着蜂巢盾做的。
+				// 模糊例外：它的专属特效就是配着蜂巢盾做的。扫腿也例外（用户 2026-11-19：防御特效不见了 ——
+				// 它的专属特效只管挂虚弱，格挡本来就交给蜂巢盾，见 CardSkillFx2.LegSweep）。
 				string name = cardPlay.Card.GetType().Name;
-				if (CardSkillFx.Cards.ContainsKey(name) && name != "Blur")
+				if (CardSkillFx.Cards.ContainsKey(name) && name is not ("Blur" or "LegSweep"))
 				{
 					return;
 				}

@@ -113,24 +113,24 @@ public static class BattleUiFx
 		float cy = view.Y * 0.2f;
 
 		var text = new[] { new Word("TAKE", "TAKE"), new Word("YOUR", "YOUR"), new Word("HEART", "HEART!") };
-		float size = 66f * u;
+		float size = 44f * u;                       // 用户 2026-11-19 实机：太大、压到遗物栏 → 缩到约 2/3
 		int letters = 0;
 		foreach (Word wd in text) letters += wd.Text.Length;
 		float lineW = letters * size * 0.92f + (text.Length - 1) * size * 0.42f;
 		float lineX = view.X * 0.04f + lineW * 0.5f;
-		float w = (lineX + lineW * 0.5f + 70f * u) / 0.9f;
+		float w = (lineX + lineW * 0.5f + 50f * u) / 0.9f;
 
 		// 红色剪报纸带，左端出血到屏幕外
 		Node2D band = new() { Position = new Vector2(w * 0.42f, cy), Rotation = -0.04f };
 		root.AddChild(band);
 		if (Fx.Tex("reward_band") is Texture2D bt)
 		{
-			band.AddChild(new Sprite2D { Texture = bt, Scale = new Vector2(w / (bt.GetWidth() * 0.9f), 150f * u / (bt.GetHeight() * 0.62f)) });
+			band.AddChild(new Sprite2D { Texture = bt, Scale = new Vector2(w / (bt.GetWidth() * 0.9f), 100f * u / (bt.GetHeight() * 0.62f)) });
 		}
 		else
 		{
-			P5Ui.Slab(band, -w * 0.5f, w * 0.5f, -62f * u, 62f * u, 20f * u, Ink);
-			P5Ui.Slab(band, -w * 0.5f, w * 0.5f, -48f * u, 48f * u, 20f * u, Red);
+			P5Ui.Slab(band, -w * 0.5f, w * 0.5f, -42f * u, 42f * u, 14f * u, Ink);
+			P5Ui.Slab(band, -w * 0.5f, w * 0.5f, -32f * u, 32f * u, 14f * u, Red);
 		}
 
 		Node2D words = new();
@@ -178,14 +178,14 @@ public static class BattleUiFx
 		Word[] text = !player ? new[] { new Word("ENEMY", "ENEMY"), new Word("TURN", "TURN") }
 			: extra ? new[] { new Word("ONE", "ONE"), new Word("MORE", "MORE!") }
 			: new[] { new Word("YOUR", "YOUR"), new Word("TURN", "TURN") };
-		float size = 58f * u;
+		float size = 38f * u;                       // 用户 2026-11-19 实机：太大 → 缩到约 2/3
 		int letters = 0;
 		foreach (Word wd in text) letters += wd.Text.Length;
 		float lineW = letters * size * 0.92f + (text.Length - 1) * size * 0.42f;
-		float lineX = view.X * 0.065f + 90f * u + lineW * 0.5f;
+		float lineX = view.X * 0.045f + 62f * u + lineW * 0.5f;
 
 		// 纸条：我方 = 黑纸条垫红（选卡界面横幅那块），敌方 = 红纸条垫黑
-		float w = Mathf.Max(view.X * 0.3f, (lineX + lineW * 0.5f + 50f * u) / 0.9f);
+		float w = (lineX + lineW * 0.5f + 36f * u) / 0.9f;
 		Node2D strip = new() { Position = new Vector2(w * 0.42f, cy), Rotation = -0.04f };
 		root.AddChild(strip);
 		Texture2D? st = player ? Fx.Tex("reward_header_plate") : Fx.Tex("battle_strip_enemy");
@@ -201,10 +201,10 @@ public static class BattleUiFx
 		}
 
 		// 第几回合的小纸牌（敌人回合是「!」）
-		Vector2 tagAt = new(view.X * 0.065f, cy - 4f * u);
+		Vector2 tagAt = new(view.X * 0.045f, cy - 3f * u);
 		Node2D tag = new() { Position = tagAt, Rotation = -0.1f };
 		root.AddChild(tag);
-		float tagH = 100f * u;
+		float tagH = 66f * u;
 		if ((player ? Fx.Tex("battle_turn_tag") : Fx.Tex("battle_turn_tag_enemy")) is Texture2D tt)
 		{
 			tag.AddChild(new Sprite2D { Texture = tt, Scale = Vector2.One * tagH / (tt.GetHeight() * 0.7f) });   // 纸牌约占高 70%
@@ -219,7 +219,7 @@ public static class BattleUiFx
 		}
 		string num = player ? Math.Clamp(round, 0, 99).ToString() : "!";
 		var digits = new List<(Node2D node, float rot)>();
-		float ds = (num.Length > 1 ? 50f : 62f) * u;
+		float ds = (num.Length > 1 ? 33f : 41f) * u;
 		for (int i = 0; i < num.Length; i++)
 		{
 			string ch = num[i].ToString();
