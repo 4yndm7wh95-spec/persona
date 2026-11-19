@@ -6,6 +6,22 @@
 
 ---
 
+## 2026-11-19 · 会话 E 续：0.9.51 集成之后又改的 6 个提交，待合并
+
+- 分支仍是 **`claude/confirm-next-tasks-k5wu6t`**（已推送、工作区干净，类型检查通过）。
+- Codex 的 **`codex/p5-0951-integration`**（已到 0.9.52）合到了本分支的 `20bb9edb`（触媒只拉手套 / 腐蚀波连抽）为止；**之后这 6 个提交还没进去**，在临时 worktree 里试合并 **无冲突**（和 `claude/exciting-babbage-lm8ubb` 也无冲突）：
+  1. 致命毒药 / 咕嘟冒泡整体缩到 0.62 倍（实机太大；`PoisonFx.PersonaScale`，只影响亚森出手那条路）
+  2. 夜魇攥紧强反馈：读屏收缩 / 弹回冲击 + 色散、加重顿帧震屏、指缝火星；音效换成吸气冷声 → crush + sub_boom + 咒怨尾音
+  3. 必备工具牌流配光带（`Line2D` 加法暗红晕 + 亮红芯，不用白色）+ 弹出 / 落下 / 弧顶火星；刀刃陷阱卡三维翻 + 自旋（翻到侧面淡掉）、表盘一直慢转、每枪全部加速
+  4. 夜魇三张复制改成一起出来
+  5. **刀刃陷阱开枪前一直转枪**：人物骨骼新增动作 `twirl_in` / `twirl_loop`（`tools/p5/build_rig_p5.py` 重新生成 `art/p5/rig/joker.spine-json`，并同步到 `p5mod/pck_stage/animations/characters/silent/silent.spine-json`；其他动作和贴图逐像素不变，PNG 没动）；`Aim.HoldAim` 播转枪，第一枪 `shiv` 从转枪段（0.07s）接上
+  6. 夜魇捏住即出三张（0.09s 甩到位）+ 钉住的入场特效、音效
+- 重新生成骨骼要 `pip install opencv-python-headless`（`tools/p5/tween.py` 用 cv2）。
+- 预览：`docs/p5/preview/deadly_poison_smaller.mp4`、`nightmare_grab*.mp4`、`tools_knifetrap_v2.mp4`、`knife_trap_twirl.mp4`。用户都已认可（最后一句：可以了，整理好等其他会话合并）。
+- 实机待确认：转枪循环接第一枪是否顺（预览工具不能跳进动作中段，只能在游戏里看）。
+
+---
+
 ## 2026-11-18 · 会话 E（`claude/confirm-next-tasks-k5wu6t`）交接：0.9.49 审阅第六批重做 + 第七批，待合并
 
 ### 分支和状态（给负责合并的会话）
