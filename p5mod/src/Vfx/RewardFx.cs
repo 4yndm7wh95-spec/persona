@@ -116,7 +116,7 @@ public static class RewardFx
 			RewardPose pose = new(h, row, final, cardOf);
 			run.Poses.Add(pose);
 			h.TreeExiting += pose.Restore;
-			float delay = 0.035f * i;
+			float delay = 0.12f + 0.07f * i;                    // 用户 2026-11-19（第二次）：再缓一些
 			Vector2 from = final + new Vector2(view.X * 0.55f / Mathf.Max(0.01f, rowXf.X.Length()), 0f);
 			h.Position = from;
 			h.Rotation = 0.14f;
@@ -124,8 +124,8 @@ public static class RewardFx
 			// 身后拖一道红色的斜切残影（画在牌下面）
 			Polygon2D streak = Fx.Poly(under, new[] { Vector2.Zero, Vector2.Zero, Vector2.Zero, Vector2.Zero }, new Color(Red, 0f));
 			pose.Streak = streak;
-			const float slide = 0.24f;
-			float total = delay + slide + 0.14f;
+			const float slide = 0.4f;
+			float total = delay + slide + 0.2f;
 			AnimateCard(screen, total, t =>
 			{
 				if (!Current()) return;
@@ -157,7 +157,7 @@ public static class RewardFx
 			});
 		}
 		var settle = screen.CreateTween().SetIgnoreTimeScale(true).SetPauseMode(Tween.TweenPauseMode.Process);
-		settle.TweenInterval(0.8);
+		settle.TweenInterval(1.3);
 		settle.TweenCallback(Callable.From(() =>
 		{
 			if (!Current()) return;
@@ -206,11 +206,11 @@ public static class RewardFx
 			if (!GodotObject.IsInstanceValid(root) || !screen.IsVisibleInTree()) return;
 			// 用户 2026-11-19：色带切入太快、像突然一下滑进来 → 0.22s OutExpo（前两帧就走完大半）改成 0.42s OutQuart，
 			// 看得清它从左边扫进来；入场时多斜一点、纸带略扁，落位时回正撑开
-			float p = Mathf.Min(1f, time / 0.42f);
+			float p = Mathf.Min(1f, time / 0.65f);   // 用户 2026-11-19（第二次）：再缓一些 → 0.65s
 			float k = 1f - Mathf.Pow(1f - p, 4f);
 			band.Position = new Vector2(view.X * 0.5f - view.X * 1.2f * (1f - k), cy);
 			band.Rotation = -0.035f - 0.05f * (1f - k);
-			band.Scale = new Vector2(1f, Mathf.Lerp(0.8f, 1f, Ease5.OutBack(Ease5.Seg(time, 0.2f, 0.22f))));
+			band.Scale = new Vector2(1f, Mathf.Lerp(0.8f, 1f, Ease5.OutBack(Ease5.Seg(time, 0.32f, 0.3f))));
 			// 哪张牌被鼠标停着 / 手柄选着
 			Control? hov = null;
 			if (Runs.TryGetValue(screen, out RewardRun? run))
@@ -265,12 +265,12 @@ public static class RewardFx
 			Sprite2D? sp = Spr(root, "letter_" + letters[i], p, k, rot);
 			if (sp == null) continue;
 			sp.Modulate = new Color(1f, 1f, 1f, 0f);
-			float delay = 0.03f * i;
-			Fx.Animate(sp, 0, delay + 0.16, t =>
+			float delay = 0.24f + 0.045f * i;                   // 色带扫进来一半以后才开始一片片拍上来
+			Fx.Animate(sp, 0, delay + 0.22, t =>
 			{
-				float s = t * (delay + 0.16f) - delay;
+				float s = t * (delay + 0.22f) - delay;
 				if (s < 0f) return;
-				float e = Ease5.OutBack(Mathf.Min(1f, s / 0.12f));
+				float e = Ease5.OutBack(Mathf.Min(1f, s / 0.18f));
 				sp.Scale = Vector2.One * k * Mathf.Lerp(1.8f, 1f, e);
 				sp.Rotation = rot + 0.5f * (1f - Mathf.Min(1f, e));
 				sp.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, s / 0.03f));
@@ -355,16 +355,46 @@ public static class RewardFx
 		parent.AddChild(root);
 		parent.MoveChild(root, label.GetIndex());
 		float k = 680f / (plate.GetWidth() * 0.88f);
-		root.AddChild(new Sprite2D { Texture = plate, Scale = Vector2.One * k, Rotation = -0.02f });
+		Sprite2D plateSp = new() { Texture = plate, Scale = Vector2.One * k, Rotation = -0.02f };
+		root.AddChild(plateSp);
+		Sprite2D? textSp = null;
 		if (Zh && Fx.Tex("reward_header_text_zh") is Texture2D txt)
 		{
 			label.SelfModulate = new Color(1f, 1f, 1f, 0f);
-			root.AddChild(new Sprite2D { Texture = txt, Scale = Vector2.One * k * 0.92f, Rotation = -0.02f, Position = new Vector2(0f, -4f) });
+			textSp = new Sprite2D { Texture = txt, Scale = Vector2.One * k * 0.92f, Rotation = -0.02f, Position = new Vector2(0f, -4f) };
+			root.AddChild(textSp);
 		}
 		else
 		{
 			label.SelfModulate = Colors.White;
 		}
+		// 入场（用户 2026-11-19：每个组件都要有切入动画）：纸条从左边斜着滑进来、回正，字随后一拍压上去
+		float vw = banner.GetViewportRect().Size.X;
+		const float d0 = 0.06f, slide = 0.45f, total = 0.85f;
+		plateSp.Modulate = new Color(1f, 1f, 1f, 0f);
+		if (textSp != null) textSp.Modulate = new Color(1f, 1f, 1f, 0f);
+		AnimateCard(banner, total, t =>
+		{
+			if (!GodotObject.IsInstanceValid(root)) return;
+			float time = t * total;
+			float p = Mathf.Clamp((time - d0) / slide, 0f, 1f);
+			float e = 1f - Mathf.Pow(1f - p, 4f);
+			plateSp.Position = new Vector2(-vw * 0.7f * (1f - e), 0f);
+			plateSp.Rotation = -0.02f - 0.09f * (1f - e);
+			plateSp.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, p * 4f));
+			if (textSp != null)
+			{
+				float q = Ease5.Seg(time, d0 + slide * 0.75f, 0.22f);
+				textSp.Scale = Vector2.One * k * 0.92f * Mathf.Lerp(1.5f, 1f, Ease5.OutBack(q));
+				textSp.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, q * 4f));
+			}
+			else if (GodotObject.IsInstanceValid(label))
+			{
+				float q = Ease5.Seg(time, d0 + slide * 0.75f, 0.2f);
+				label.SelfModulate = new Color(1f, 1f, 1f, q);
+			}
+		});
+
 	}
 
 	/// <summary>跳过（及其他备选）按钮：底板换成剪报纸板（悬停换红色版），「跳过 / SKIP」换成拼贴字图，其他按钮留原文字。</summary>
@@ -389,11 +419,43 @@ public static class RewardFx
 			image.AddChild(tx);
 			tx.Size = image.Size;
 			tx.PivotOffset = image.Size * 0.5f;
+			Enter(button, image, tx, null);
 		}
 		else
 		{
 			label.SelfModulate = Colors.White;
+			Enter(button, image, null, label);
 		}
+	}
+
+	/// <summary>
+	/// 跳过按钮的入场（用户 2026-11-19：每个组件都要有切入动画）：牌落位以后，纸板从下面斜着翻上来、回弹，字随后一拍压上去。
+	/// 原版按钮自己的淡入 / 位移照常（这里只动纸板和字的缩放、角度、透明度）。
+	/// </summary>
+	private static void Enter(Control button, TextureRect image, TextureRect? text, Label? label)
+	{
+		const float d0 = 0.55f, pop = 0.32f, total = 1.1f;
+		image.SelfModulate = new Color(1f, 1f, 1f, 0f);
+		if (text != null) text.Modulate = new Color(1f, 1f, 1f, 0f);
+		if (label != null) label.SelfModulate = new Color(1f, 1f, 1f, 0f);
+		AnimateCard(button, total, t =>
+		{
+			if (!GodotObject.IsInstanceValid(image)) return;
+			float time = t * total;
+			float p = Ease5.Seg(time, d0, pop);
+			float e = Ease5.OutBack(p);
+			image.PivotOffset = image.Size * 0.5f;
+			image.Scale = new Vector2(Mathf.Lerp(0.55f, 1f, e), Mathf.Lerp(0.2f, 1f, e));
+			image.Rotation = -0.18f * (1f - Mathf.Min(1f, e));
+			image.SelfModulate = new Color(1f, 1f, 1f, Mathf.Min(1f, p * 4f));
+			float q = Ease5.Seg(time, d0 + pop * 0.7f, 0.2f);
+			if (text != null && GodotObject.IsInstanceValid(text))
+			{
+				text.Scale = Vector2.One * 0.8f * Mathf.Lerp(1.5f, 1f, Ease5.OutBack(q));
+				text.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, q * 4f));
+			}
+			if (label != null && GodotObject.IsInstanceValid(label)) label.SelfModulate = new Color(1f, 1f, 1f, q);
+		});
 	}
 
 	public static void SkinButtonHover(TextureRect image, bool hover)
