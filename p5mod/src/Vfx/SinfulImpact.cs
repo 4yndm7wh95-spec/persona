@@ -42,7 +42,7 @@ void fragment() {
 	vec3 col = mix(deep, cyan, smoothstep(0.1, 0.65, heat));
 	col = mix(col, white, smoothstep(0.75, 1.4, heat));
 	float a = (body + shell + hot * 1.4) * fade * power;
-	COLOR = vec4(col * a * (1.0 - smoothstep(0.88, 1.0, r)), 1.0);
+	COLOR = vec4(col * a * pow(1.0 - smoothstep(0.35, 1.0, r), 1.4), 1.0);   // 同上：软淡出，不留硬边
 }" };
 
 	/// <summary>
@@ -69,7 +69,7 @@ void fragment() {
 	float dens = smoothstep(1.0, 0.3, d) * (1.0 - smoothstep(0.3, 1.0, prog)) * (0.5 + 0.5 * n);
 	float glowk = heat * exp(-prog * 7.0) * smoothstep(1.0, 0.0, d);
 	vec3 smoke = mix(vec3(0.13, 0.16, 0.24), vec3(0.32, 0.38, 0.52), smoothstep(0.3, 0.8, n2));   // 比夜空亮一点才看得出是烟
-	float a = clamp(dens * thick, 0.0, 0.92) * (1.0 - smoothstep(0.85, 1.0, length(p)));
+	float a = clamp(dens * thick, 0.0, 0.92) * (1.0 - smoothstep(0.55, 1.0, length(p)));
 	// 里面的火光只在烟浓的地方（被照亮的是烟，不是一整块发光的圆）
 	vec3 light = (vec3(0.35, 0.72, 1.0) * glowk + vec3(0.9, 0.97, 1.0) * glowk * glowk * 0.25) * smoothstep(0.05, 0.6, dens);
 	COLOR = vec4(smoke * a + light, a);
@@ -129,7 +129,8 @@ void fragment() {
 	col = mix(col, cyan, smoothstep(0.2, 0.55, glow));
 	col = mix(col, white, smoothstep(0.6, 1.0, glow));
 	vec3 c = col * (glow * 1.7 + wide) + white * core * 2.0;
-	COLOR = vec4(c * power * (1.0 - smoothstep(0.82, 1.0, r)), 1.0);
+	// 2026-11-19 用户：实机里光有很硬的边框 → 外圈的光在画布边上还很亮、被一刀切掉。改成从中间就开始软软地淡出，到边上已经是 0
+	COLOR = vec4(c * power * pow(1.0 - smoothstep(0.2, 1.0, r), 1.6), 1.0);
 }" };
 
 	/// <summary>一片命中的光（直径 size），返回根节点和材质（调用方每帧设 power / spread）。</summary>
@@ -190,7 +191,7 @@ void fragment() {
 	vec3 white = vec3(0.95, 0.98, 1.0), cyan = vec3(0.35, 0.8, 1.0), violet = vec3(0.6, 0.32, 1.0);
 	vec3 light = (white * front * 1.5 + violet * fringe * 0.8 + cyan * (inner * 0.7 + echo)) * fade * power;
 	float shade = band * 0.35 * fade * power;
-	float clip = 1.0 - smoothstep(0.9, 1.0, r);
+	float clip = 1.0 - smoothstep(0.7, 1.0, r);
 	COLOR = vec4(light * clip, shade * clip);
 }" };
 

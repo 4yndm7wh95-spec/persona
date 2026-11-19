@@ -301,12 +301,12 @@ void fragment() {
 		float scBody = smoothstep(0.95, 0.4, rr) * smoothstep(0.06, 0.25, bs);
 		float scHead = smoothstep(-0.12, 0.18, qu.y) * smoothstep(1.4, 0.95, q.x) * smoothstep(-0.45, -0.15, q.x) * 0.7;
 		float scMask = mix(scBody, scHead, headness) * (1.0 - dj) * (1.0 - wake[j]);
-		inner *= mix(1.0, (1.0 - 0.3 * scGroove) * (0.9 + 0.2 * scH), scMask * 0.85);
+		inner *= mix(1.0, (1.0 - 0.54 * scGroove) * (0.82 + 0.36 * scH), scMask * 0.9);   // 2026-11-19 用户：鳞片感再加重约 80%
 		vec2 scG = scF - vec2(0.0, 0.32);
 		float scSpot = exp(-dot(scG, scG) * 16.0) * (1.0 - scGroove);
 		float scTw = smoothstep(0.7, 1.0, 0.5 + 0.5 * sin(clock * 1.5 + scH * 6.283 + L * 0.8));
 		float scUp = smoothstep(-0.2, 0.75, -n2.y);
-		inner += vec3(0.62, 0.2, 0.15) * scSpot * scTw * scUp * scMask * 0.2;
+		inner += vec3(0.62, 0.2, 0.15) * scSpot * scTw * scUp * scMask * 0.36;
 		// 外面往上飘的烟丝；散的时候一大团；几条之间一层薄烟
 		float wn = fbm(vec2(L * 0.7 - clock * 0.8, rr * 0.9 + clock * 0.9 * sign(n2.y)) + 7.0 + float(j) * 3.0);
 		float wisp = smoothstep(0.5, 0.85, wn) * smoothstep(mix(1.8, 2.8, smoothstep(0.0, 0.8, -n2.y)), 0.9, rr) * 0.6 * (1.0 - headness * 0.75);
