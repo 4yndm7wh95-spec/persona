@@ -201,7 +201,7 @@ public static class HudSkin
 			Vector2 size = image.Size;
 			deco.Position = image.Position + size * 0.5f;
 			// 纸板素材 1024×384（半尺寸 512），纸板本身约占宽 0.88
-			float pk = size.X * 1.08f / (512f * 0.88f);
+			float pk = size.X * 0.84f / (512f * 0.88f);           // 用户 2026-11-19 实机：太大 → 比原版按钮略小
 			if (plate != null) plate.Scale = Vector2.One * pk;
 			if (ready != null) ready.Scale = Vector2.One * pk;
 
@@ -219,17 +219,17 @@ public static class HudSkin
 					if (digits.Length > 2) digits = digits[^2..];
 					for (int i = 0; i < digits.Length; i++)
 					{
-						Digit(badge, "battle_digit_" + digits[i], 34f, new Vector2(i * 20f, 0f), i % 2 == 0 ? 0.12f : -0.05f);
+						Digit(badge, "battle_digit_" + digits[i], 27f, new Vector2(i * 16f, 0f), i % 2 == 0 ? 0.12f : -0.05f);
 					}
 				}
 			}
 			if (text != null)
 			{
 				text.Visible = useArt;
-				text.Scale = Vector2.One * size.X * 0.74f / (384f * 0.88f);
-				text.Position = new Vector2(-size.X * 0.03f, 0f);
+				text.Scale = Vector2.One * size.X * 0.58f / (384f * 0.88f);
+				text.Position = new Vector2(-size.X * 0.025f, 0f);
 			}
-			badge.Position = new Vector2(size.X * 0.47f, -size.Y * 0.36f);
+			badge.Position = new Vector2(size.X * 0.37f, -size.Y * 0.28f);
 			label.SelfModulate = useArt ? Hidden : Colors.White;
 
 			// 原版「该结束回合了」的发光层透明度（0 → 0.75）→ 红色纸板
