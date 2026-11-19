@@ -56,6 +56,7 @@ public static class WarmupGame
 		{
 			Warmup.RequestJoker();
 			Warmup.RequestAllOut();
+			Warmup.RequestReward();
 			foreach (var card in player.Deck.Cards)
 			{
 				Warmup.RequestCard(card.GetType().Name);

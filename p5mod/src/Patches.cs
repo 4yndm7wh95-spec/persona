@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
@@ -11,6 +13,8 @@ using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using MegaCrit.Sts2.Core.Nodes.CommonUi;
+using MegaCrit.Sts2.Core.Nodes.Screens.CardSelection;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
 using MegaCrit.Sts2.Core.ValueProps;
@@ -535,9 +539,14 @@ public static class PoisonApplyPatch
 [HarmonyPatch(typeof(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower), nameof(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower.AfterCardDrawn))]
 public static class CorrosiveDrawPatch
 {
+	private sealed class DrawChain
+	{
+		public ulong LastImpact;
+		public int FollowUps;
+	}
+
+	private static readonly ConditionalWeakTable<MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower, DrawChain> DrawChains = new();
 	private static bool _bypass;
-	private static ulong _lastMs;
-	private static int _chain;
 
 	public static bool Prefix(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower __instance, MegaCrit.Sts2.Core.GameActions.Multiplayer.PlayerChoiceContext choiceContext, CardModel card, bool fromHandDraw, ref System.Threading.Tasks.Task __result)
 	{
@@ -565,13 +574,14 @@ public static class CorrosiveDrawPatch
 			// 用户 2026-11-18：一次抽好几张只放一道完整的浪；后面的每一张在浪尾上变成一下快速的「咬蚀」，每张仍然各挂一次毒
 			//（抽牌是一张一张等着跑的：上一张挂完毒才轮到下一张，所以离上一张结束不到 0.5s 就算同一串连抽）
 			ulong now = Stage.NowMs();
-			bool chained = _lastMs != 0 && now < _lastMs + 500;
-			_chain = chained ? _chain + 1 : 0;
-			if (_chain == 0)
+			var chain = DrawChains.GetValue(__instance, static _ => new DrawChain());
+			bool chained = chain.LastImpact != 0 && now < chain.LastImpact + 500;
+			chain.FollowUps = chained ? chain.FollowUps + 1 : 0;
+			if (chain.FollowUps == 0)
 				wait = CorrosiveFx.OnDraw(layer, Joker.PosePoint(joker, ReadyFx.Feet), Joker.Facing(joker), targets, true);
 			else
-				wait = CorrosiveFx.Erode(layer, Joker.Facing(joker), targets, _chain);
-			_lastMs = now + (ulong)(wait * 1000f);   // 这一张挂毒的时刻
+				wait = CorrosiveFx.Erode(layer, Joker.Facing(joker), targets, chain.FollowUps);
+			chain.LastImpact = now + (ulong)(wait * 1000f);   // 这一张挂毒的时刻
 			anchor = layer;
 		});
 		if (wait <= 0f || anchor == null)
@@ -760,57 +770,82 @@ public static class FlaskSplashPatch
 /// 选卡界面「夺宝」（Vfx/RewardFx.cs，用户 2026-11-19：参考 P3 mod，有特色且不拖沓）：每次打开 / 重抽接管原版的滑入补间，
 /// 牌从右边甩进来、背后 P5 斜切色带、左上角 TREASURE 标签、悬停红底板。牌一开始就看得见、点得到。
 /// </summary>
-[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardSelectionScreen), nameof(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardSelectionScreen.RefreshOptions))]
+[HarmonyPatch(typeof(NCardRewardSelectionScreen), nameof(NCardRewardSelectionScreen.RefreshOptions))]
 public static class RewardOpenPatch
 {
-	public static void Postfix(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardSelectionScreen __instance)
+	private static readonly FieldInfo? CardTween = AccessTools.Field(typeof(NCardRewardSelectionScreen), "_cardTween");
+
+	public static void Prefix(NCardRewardSelectionScreen __instance) =>
+		ModEntry.Safe("RewardRefresh", () => RewardFx.Recover(__instance));
+
+	public static void Postfix(NCardRewardSelectionScreen __instance, IReadOnlyList<CardCreationResult> options)
 	{
 		ModEntry.Safe("RewardOpen", () =>
 		{
-			if (!Joker.LocalRun || Traverse.Create(__instance).Field("_cardRow").GetValue() is not Godot.Control row)
-			{
+			if (!Joker.LocalRun || __instance.GetNodeOrNull<Godot.Control>("UI/CardRow") is not { } row
+				|| CardTween?.GetValue(__instance) is not Godot.Tween tween || !Godot.GodotObject.IsInstanceValid(tween))
 				return;
-			}
-			var holders = RewardHolders(row);
-			if (holders.Count == 0)
+
+			var live = row.GetChildren().OfType<MegaCrit.Sts2.Core.Nodes.Cards.Holders.NGridCardHolder>()
+				.Where(h => !h.IsQueuedForDeletion()).ToList();
+			if (options.Count == 0 || live.Count != options.Count) return;
+
+			var holders = new List<Godot.Control>(options.Count);
+			var finals = new List<Godot.Vector2>(options.Count);
+			for (int i = 0; i < options.Count; i++)
 			{
-				return;
+				var holder = live.Find(h => ReferenceEquals(h.CardModel, options[i].Card));
+				if (holder == null) return;
+				live.Remove(holder);
+				holders.Add(holder);
+				finals.Add(Godot.Vector2.Right * (i - (options.Count - 1) * 0.5f) * 350f);
 			}
-			if (Traverse.Create(__instance).Field("_cardTween").GetValue() is Godot.Tween tw && Godot.GodotObject.IsInstanceValid(tw))
-			{
-				tw.Kill();
-			}
-			// 原版的位置：一排居中，间距 350
-			var finals = new List<Godot.Vector2>();
-			for (int i = 0; i < holders.Count; i++)
-			{
-				finals.Add(Godot.Vector2.Left * (holders.Count - 1) * 350f * 0.5f + Godot.Vector2.Right * 350f * i);
-			}
+
 			bool first = __instance.GetNodeOrNull("P5RewardBackdrop") == null;
-			RewardFx.Open(__instance, row, holders, finals, first, RectOf);
+			try
+			{
+				RewardFx.Open(__instance, row, holders, finals, first, RectOf, CardOf,
+					static () => NControllerManager.Instance?.IsUsingDirectionalNavigation == true);
+				tween.Kill();
+			}
+			catch
+			{
+				RewardFx.Recover(__instance);
+				throw;
+			}
 		});
 	}
 
-	internal static List<Godot.Control> RewardHolders(Godot.Control row) =>
-		row.GetChildren().OfType<MegaCrit.Sts2.Core.Nodes.Cards.Holders.NGridCardHolder>().Where(h => !h.IsQueuedForDeletion()).Cast<Godot.Control>().ToList();
+	private static object? CardOf(Godot.Control c) =>
+		(c as MegaCrit.Sts2.Core.Nodes.Cards.Holders.NCardHolder)?.CardModel;
 
 	internal static Godot.Rect2 RectOf(Godot.Control c) =>
-		c is MegaCrit.Sts2.Core.Nodes.Cards.Holders.NCardHolder h && h.Hitbox != null && Godot.GodotObject.IsInstanceValid(h.Hitbox) ? h.Hitbox.GetGlobalRect() : c.GetGlobalRect();
+		c is MegaCrit.Sts2.Core.Nodes.Cards.Holders.NCardHolder h && h.Hitbox != null && Godot.GodotObject.IsInstanceValid(h.Hitbox)
+			? h.Hitbox.GetGlobalRect() : c.GetGlobalRect();
 }
 
-/// <summary>选卡界面选中一张：「偷到手」（RewardFx.Pick）。</summary>
-[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardSelectionScreen), "SelectCard")]
+[HarmonyPatch(typeof(NCardRewardSelectionScreen), "SelectCard")]
 public static class RewardPickPatch
 {
-	public static void Prefix(MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.NCardRewardSelectionScreen __instance, MegaCrit.Sts2.Core.Nodes.Cards.Holders.NCardHolder cardHolder)
+	private static readonly FieldInfo? Completion = AccessTools.Field(typeof(NCardRewardSelectionScreen), "_completionSource");
+
+	public static bool Prefix(NCardRewardSelectionScreen __instance, MegaCrit.Sts2.Core.Nodes.Cards.Holders.NCardHolder cardHolder)
 	{
-		ModEntry.Safe("RewardPick", () =>
-		{
-			if (!Joker.LocalRun || Traverse.Create(__instance).Field("_cardRow").GetValue() is not Godot.Control row)
-			{
-				return;
-			}
-			RewardFx.Pick(__instance, row, RewardOpenPatch.RewardHolders(row), cardHolder, RewardOpenPatch.RectOf);
-		});
+		if (!Joker.LocalRun || Completion == null) return true;
+		if (Completion.GetValue(__instance) is not TaskCompletionSource<int?> completion || completion.Task.IsCompleted)
+			return false;
+		if (__instance.GetNodeOrNull<Godot.Control>("UI/CardRow") is not { } row) return true;
+		if (!Godot.GodotObject.IsInstanceValid(cardHolder) || cardHolder.IsQueuedForDeletion() || cardHolder.GetParent() != row)
+			return false;
+
+		ModEntry.Safe("RewardPick", () => RewardFx.Pick(__instance, row, cardHolder, RewardOpenPatch.RectOf));
+		return true;
 	}
+}
+
+[HarmonyPatch(typeof(NCardRewardSelectionScreen), nameof(NCardRewardSelectionScreen.AfterOverlayHidden))]
+public static class RewardHidePatch
+{
+	public static void Prefix(NCardRewardSelectionScreen __instance) =>
+		ModEntry.Safe("RewardHide", () => RewardFx.Settle(__instance));
 }

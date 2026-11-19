@@ -38,7 +38,8 @@ public static class AllOutGame
 	}
 
 	private static bool JokerHere(ICombatState? cs) =>
-		cs != null && cs.PlayerCreatures.Any(p => p.Player != null && Joker.Is(p.Player));
+		Joker.LocalPlayer is { } local && Joker.Is(local) && cs != null
+		&& cs.PlayerCreatures.Any(p => p.IsAlive && p.Player == local);
 
 	/// <summary>怪物倒下：截剪影。</summary>
 	public static void OnDeath(NCreature n)
@@ -54,10 +55,11 @@ public static class AllOutGame
 		Rect2 hb = n.Hitbox.GetGlobalTransformWithCanvas() * new Rect2(Vector2.Zero, n.Hitbox.Size);
 		float w = Mathf.Max(hb.Size.X * 2.1f, hb.Size.Y * 1.3f), h = hb.Size.Y * 1.75f;
 		Rect2 region = new(hb.GetCenter().X - w * 0.5f, hb.End.Y + hb.Size.Y * 0.18f - h, w, h);
-		bool last = e.CombatState!.Enemies.All(x => !x.IsAlive) && e.CombatState.PlayerCreatures.Any(p => p.IsAlive && p.Player != null && Joker.Is(p.Player));
-		if (last) _pending = true;
+		bool last = e.CombatState!.Enemies.All(x => !x.IsAlive);
+		if (last) _pendingRoom = id;
 		AllOut.Snap(room, region, parent => Clone(n, body, parent), foe =>
 		{
+			if (NCombatRoom.Instance is not { } current || current.GetInstanceId() != id || _playedRoom == id) return;
 			if (foe != null)
 			{
 				Foes.Add((id, foe));
@@ -71,15 +73,16 @@ public static class AllOutGame
 		});
 	}
 
-	private static bool _pending;
+	private static ulong _pendingRoom;
 	private static ulong _playedRoom;
 
 	private static void Start(ulong id)
 	{
-		_pending = false;
+		if (_pendingRoom == id) _pendingRoom = 0;
 		if (_playedRoom == id || NCombatRoom.Instance is not NCombatRoom r || r.GetInstanceId() != id) return;
 		_playedRoom = id;
 		var foes = Foes.Where(f => f.Room == id).Select(f => f.Foe).ToList();
+		Foes.RemoveAll(f => f.Room == id);
 		ModEntry.Safe("allout", () => AllOut.Play(r, foes));
 	}
 
@@ -106,16 +109,16 @@ public static class AllOutGame
 		// 慢放兜底：总攻击的碎开 / 计时器 / 节点退出都会恢复速度；这里只在没在播总攻击时再恢复一次（不打断正在慢放的前半段）
 		if (!AllOut.Playing) AllOut.RestoreTime();
 		if (Instant || room.RoomType is not (RoomType.Elite or RoomType.Boss) || !JokerHere(cs)
-			|| !cs!.Enemies.All(e => !e.IsAlive) || !cs.PlayerCreatures.Any(p => p.IsAlive && p.Player != null && Joker.Is(p.Player)))
+			|| !cs!.Enemies.All(e => !e.IsAlive) || NCombatRoom.Instance is not { } view)
 		{
 			Foes.Clear();
 			return 0f;
 		}
-		ulong id = NCombatRoom.Instance?.GetInstanceId() ?? 0;
+		ulong id = view.GetInstanceId();
 		if (_playedRoom != id)
 		{
 			// 最后一只倒下时没开播（还在截图就先到了这里 / 截图失败）：截图还在路上就等它，否则现在补播
-			if (!_pending) Callable.From(() => Start(id)).CallDeferred();
+			if (_pendingRoom != id) Callable.From(() => Start(id)).CallDeferred();
 			return AllOut.Hold + 0.1f;
 		}
 		float done = (Time.GetTicksMsec() - AllOut.StartedMs) / 1000f;

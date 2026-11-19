@@ -1174,7 +1174,7 @@ public partial class Preview : Node2D
 			p.At(1.8, () => cards[2].GrabFocus());
 			p.At(2.3, () => { Build(); RewardFx.Open(screen!, row!, cards, finals, false, RectOf); });   // 重抽
 			p.At(3.0, () => cards[1].GrabFocus());
-			p.At(3.5, () => RewardFx.Pick(screen!, row!, cards, cards[1], RectOf));
+			p.At(3.5, () => RewardFx.Pick(screen!, row!, cards[1], RectOf));
 		},
 		["b6nm"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Nightmare", "cast_glove", 0.25, 2.0) }),
 		["redo4"] = p => RunCards(p, null, new (string, string, double, double)[] { ("Shadowmeld", "cast_glove", 0.25, 1.6), ("Afterimage", "cast_glove", 0.25, 1.6), ("Blur", "cast_guard", 0.08, 1.2), ("Flanking", "cast_glove", 0.25, 1.4), ("Malaise", "cast_wave", 0.08, 1.6) }),

@@ -15,18 +15,20 @@ public static class Joker
 	public static bool Is(Player? player) => player?.Character is Silent;
 
 	/// <summary>这一局本机玩家是不是 Joker（选卡界面这类不在战斗里的界面用）。</summary>
-	public static bool LocalRun
+	public static bool LocalRun => Is(LocalPlayer);
+
+	internal static Player? LocalPlayer
 	{
 		get
 		{
 			try
 			{
 				var players = MegaCrit.Sts2.Core.Runs.RunManager.Instance?.DebugOnlyGetState()?.Players;
-				return players != null && Is(MegaCrit.Sts2.Core.Context.LocalContext.GetMe(players));
+				return players == null ? null : MegaCrit.Sts2.Core.Context.LocalContext.GetMe(players);
 			}
 			catch
 			{
-				return false;
+				return null;
 			}
 		}
 	}

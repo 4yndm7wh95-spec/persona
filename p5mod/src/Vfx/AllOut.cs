@@ -54,6 +54,7 @@ public static partial class AllOut
 	// ── 慢放 ──
 	private const float SlowScale = 0.12f;
 	private static bool _slowed;
+	private static ulong _playRun;
 	private static double _savedScale = 1.0;
 
 	private static void SlowDown(float scale)
@@ -207,14 +208,20 @@ public static partial class AllOut
 		RandomNumberGenerator rng = new() { Seed = 5u + (ulong)foes.Count * 131u };
 
 		// 前半段不定格：游戏画面慢放（Engine.TimeScale），碎开那一刻恢复；万一中途被打断，节点离开场景树时 / 真实时间计时器到点时也恢复
-		SlowDown(SlowScale);
+		ulong playRun = ++_playRun;
 
 		CanvasLayer layer = new() { Layer = 110, Name = "P5AllOut" };
-		tree.Root.AddChild(layer);
+		host.AddChild(layer);
 		Control rootC = new() { Size = screen, MouseFilter = Control.MouseFilterEnum.Stop, Name = "P5AllOutRoot" };   // 挡住输入
 		layer.AddChild(rootC);
-		layer.TreeExiting += () => RestoreTime();
-		tree.CreateTimer(ShatterAt + 0.6, true, false, true).Timeout += () => RestoreTime();
+		// A delayed callback from an exited room cannot change the next fight's speed.
+		void RestoreThisRun()
+		{
+			if (playRun == _playRun) RestoreTime();
+		}
+		layer.TreeExiting += RestoreThisRun;
+		tree.CreateTimer(ShatterAt + 0.6, true, false, true).Timeout += RestoreThisRun;
+		SlowDown(SlowScale);
 
 		// ── 前半段：直接盖在慢放的游戏画面上（读屏着色器压暗去色）+ 集中线 + 裂痕；碎开那一刻把整屏截下来当玻璃片的贴图 ──
 		Control stageRoot = new() { Size = screen, MouseFilter = Control.MouseFilterEnum.Ignore };
@@ -490,7 +497,7 @@ public static partial class AllOut
 				shardsVisible = shot != null && !shot.IsEmpty();
 				if (shardsVisible) ApplyShatterTexture(gl, shards, shot!, screen);
 				stageRoot.Visible = false;
-				RestoreTime();
+				RestoreThisRun();
 				finRoot.Visible = true;
 				if (shardsVisible)
 					foreach (Shard sh in shards) sh.Face.Visible = sh.Back.Visible = sh.Edge.Visible = true;

@@ -247,6 +247,15 @@ public static class Warmup
 		}
 	}
 
+	public static void RequestReward()
+	{
+		if (!Groups.Add("reward")) return;
+		QueueTextures(new[] { "reward_band", "reward_hover_plate", "reward_hover_plate_shadow",
+			"reward_stamp_stolen", "reward_subtitle_take_your_pick",
+			"reward_letter_T", "reward_letter_R", "reward_letter_E1", "reward_letter_A",
+			"reward_letter_S", "reward_letter_U", "reward_letter_R2", "reward_letter_E2" });
+	}
+
 	public static void RequestAllOut()
 	{
 		if (!Groups.Add("allout")) return;
