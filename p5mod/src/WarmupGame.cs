@@ -6,13 +6,15 @@ using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Assets;
 using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Characters;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Screens.CharacterSelect;
 using MegaCrit.Sts2.Core.Runs;
 
 namespace P5Joker;
 
-/// <summary>原版加载结束后的菜单和非战斗房间才可预热；牌组决定需要哪些大效果。</summary>
+/// <summary>原版加载结束后的菜单和非战斗房间才可预热。</summary>
 public static class WarmupGame
 {
 	private static readonly AccessTools.FieldRef<NCharacterSelectScreen, NCharacterSelectButton> Selected =
@@ -45,7 +47,7 @@ public static class WarmupGame
 		{
 			Warmup.RequestMenu();
 			if (game.MainMenu?.SubmenuStack is { SubmenusOpen: true } stack && stack.Peek() is NCharacterSelectScreen screen
-				&& Selected(screen)?.Character is MegaCrit.Sts2.Core.Models.Characters.Silent)
+				&& Selected(screen)?.Character is Silent)
 				Warmup.RequestJoker();
 			return;
 		}
@@ -56,6 +58,8 @@ public static class WarmupGame
 		{
 			Warmup.RequestJoker();
 			Warmup.RequestAllOut();
+			// 生成、复制或控制台给的华丽收场可直接进战斗手牌，不经过牌组。
+			Warmup.RequestFinale();
 			Warmup.RequestReward();
 			foreach (var card in player.Deck.Cards)
 			{
@@ -64,6 +68,17 @@ public static class WarmupGame
 			}
 		}
 	}
+}
+
+// 读贴图和原版发出的资源请求并行。读档直接进战斗时也有机会提前读完；绘制仍由空闲队列负责。
+[HarmonyPatch(typeof(PreloadManager), nameof(PreloadManager.LoadRunAssets))]
+public static class WarmupRunAssetsPatch
+{
+	public static void Postfix(IEnumerable<CharacterModel> __0) => ModEntry.Safe("finale preload", () =>
+	{
+		if (__0.Any(character => character is Silent) && Engine.GetMainLoop() is SceneTree tree)
+			_ = Warmup.PrepareFinaleTextures(tree);
+	});
 }
 
 // 不等待或包装原版 Task；只在它未完成时暂停自己的队列。

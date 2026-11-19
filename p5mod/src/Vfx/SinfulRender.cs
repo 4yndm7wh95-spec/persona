@@ -7,17 +7,24 @@ namespace P5Joker;
 internal static class SinfulRender
 {
 	internal const int ActorLightMask = 1 << 19;
-	internal static void Observe(Node lifetime)
+	internal static void Observe(Node lifetime, ulong started)
 	{
 		var tree = lifetime.GetTree();
 		var rid = lifetime.GetViewport().GetViewportRid();
-		var samples = new List<double>();
-		ulong last = Time.GetTicksUsec();
-		double worstFrame = 0;
+		var samples = new List<double>(512);
+		double setupMs = (Time.GetTicksUsec() - started) / 1000.0;
+		bool prepared = Warmup.FinalePrepared;
+		ulong last = started;
+		double worstFrame = 0, worstAt = 0;
 		void Tick()
 		{
 			ulong now = Time.GetTicksUsec();
-			worstFrame = System.Math.Max(worstFrame, (now - last) / 1000.0);
+			double frame = (now - last) / 1000.0;
+			if (frame > worstFrame)
+			{
+				worstFrame = frame;
+				worstAt = (last - started) / 1000.0;
+			}
 			last = now;
 			samples.Add(RenderingServer.ViewportGetMeasuredRenderTimeGpu(rid));
 		}
@@ -27,7 +34,7 @@ internal static class SinfulRender
 			tree.ProcessFrame -= Tick;
 			if (samples.Count == 0) return;
 			samples.Sort();
-			GD.Print($"[P5Joker] finale render-budget-v1 frames={samples.Count} gpu_median={samples[samples.Count / 2]:0.0}ms gpu_p95={samples[(int)((samples.Count - 1) * 0.95)]:0.0}ms worst_frame={worstFrame:0.0}ms");
+			GD.Print($"[P5Joker] finale render-budget-v2 prepared={prepared} setup={setupMs:0.0}ms frames={samples.Count} gpu_median={samples[samples.Count / 2]:0.0}ms gpu_p95={samples[(int)((samples.Count - 1) * 0.95)]:0.0}ms worst_frame={worstFrame:0.0}ms at={worstAt:0.0}ms");
 		};
 	}
 

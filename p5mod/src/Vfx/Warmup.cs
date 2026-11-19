@@ -20,15 +20,17 @@ public static class Warmup
 	private static readonly List<Task> Loading = new();
 	private static readonly List<Resource> Resources = new();
 	private static readonly WarmupBudget Budget = new();
+	private static readonly string[] FinaleTextures = SatanaelPuppet.TextureNames().Prepend("sinful_platform").ToArray();
 	private static SceneTree? _tree;
 	private static SubViewport? _viewport;
 	private static Control? _slot;
-	private static bool _installed, _planningMenu;
+	private static bool _installed, _planningMenu, _readingFinaleTextures;
 	private static double _lastTick, _lastPlan, _cpuMs;
 	private static string? _lastDraw;
 	private static Vector2 _mouse;
 	private static int _completed;
 	internal static Action<string> Log = message => GD.Print(message);
+	internal static bool FinalePrepared { get; private set; }
 
 	// 游戏类型留在 WarmupGame.cs，预览工程仍然只需 Godot。
 	public static Func<string?> IdleContext = () => null;
@@ -223,19 +225,7 @@ public static class Warmup
 			LogPlan("SerpentForm");
 			return;
 		}
-		if (card == "GrandFinale")
-		{
-			if (!Groups.Add("GrandFinale")) return;
-			QueueTextures(SatanaelPuppet.TextureNames().Prepend("sinful_platform"));
-			QueueShaders(typeof(SinfulShell), typeof(SatanaelPuppet));
-			Enqueue(new("finale sky / platform light", Draw: SinfulShell.WarmScene));
-			Enqueue(new("finale Satanael light", Draw: SinfulShell.WarmPuppet));
-			Enqueue(new("finale impact", Draw: SinfulShell.WarmImpact));
-			QueueSounds(new[] { Sfx.SinfulSweepOpen, Sfx.SinfulSweepClose, Sfx.SinfulThunder, Sfx.SinfulTwirl,
-				Sfx.SinfulCharge, Sfx.SinfulShot, Sfx.SinfulPierceLast });
-			LogPlan("GrandFinale");
-			return;
-		}
+		if (card == "GrandFinale") { RequestFinale(); return; }
 		if (card == "Snakebite" && Groups.Add("Snakebite")) QueueShaders(typeof(SerpentMantle));
 		if (card == "Outbreak" && Groups.Add("Outbreak")) QueueShaders(typeof(CrushHand));
 		if (card == "WraithForm" && Groups.Add("WraithForm")) QueueShaders(typeof(WraithVeil));
@@ -245,6 +235,36 @@ public static class Warmup
 			while (owner.IsNested && owner.DeclaringType != null) owner = owner.DeclaringType;
 			QueueShaders(owner);
 		}
+	}
+
+	internal static async Task PrepareFinaleTextures(SceneTree tree)
+	{
+		if (_readingFinaleTextures || FinalePrepared) return;
+		_readingFinaleTextures = true;
+		try { await Fx.PrepareTextures(tree, FinaleTextures, () => GodotObject.IsInstanceValid(tree)); }
+		catch (Exception e) { Stage.Report("finale texture warmup", e); }
+		finally { _readingFinaleTextures = false; }
+	}
+
+	internal static void RequestFinale()
+	{
+		if (!Groups.Add("GrandFinale")) return;
+		QueueTextures(FinaleTextures);
+		QueueSounds(new[] { Sfx.SinfulSweepOpen, Sfx.SinfulSweepClose, Sfx.SinfulThunder, Sfx.SinfulTwirl,
+			Sfx.SinfulCharge, Sfx.SinfulShot, Sfx.SinfulPierceLast });
+		Enqueue(new("finale sky", Draw: SinfulShell.WarmSky));
+		Enqueue(new("finale platform light", Draw: SinfulShell.WarmPlatform));
+		Enqueue(new("finale Satanael light", Draw: SinfulShell.WarmPuppet));
+		Enqueue(new("finale impact", Draw: SinfulShell.WarmImpact));
+		QueueShaderType(typeof(SinfulShell), nameof(SinfulShell.SkyShader), nameof(SinfulShell.PlatformShader));
+		QueueShaders(typeof(SatanaelPuppet));
+		Enqueue(new("finale warmup finished", Load: () =>
+		{
+			FinalePrepared = true;
+			Log("[P5Joker] GrandFinale warmup finished");
+			return true;
+		}));
+		LogPlan("GrandFinale");
 	}
 
 	public static void RequestReward()
@@ -302,21 +322,24 @@ public static class Warmup
 
 	private static void QueueShaders(params Type[] types)
 	{
-		foreach (Type type in types)
+		foreach (Type type in types) QueueShaderType(type);
+	}
+
+	private static void QueueShaderType(Type type, params string[] drawnSeparately)
+	{
+		if (!ShaderGroups.Add(type)) return;
+		foreach (PropertyInfo prop in type.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
 		{
-			if (!ShaderGroups.Add(type)) continue;
-			foreach (PropertyInfo prop in type.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
+			if (prop.PropertyType != typeof(Shader) || prop.GetIndexParameters().Length != 0
+				|| drawnSeparately.Contains(prop.Name)) continue;
+			PropertyInfo property = prop;
+			Enqueue(new(type.Name + "." + prop.Name, Draw: slot =>
 			{
-				if (prop.PropertyType != typeof(Shader) || prop.GetIndexParameters().Length != 0) continue;
-				PropertyInfo property = prop;
-				Enqueue(new(type.Name + "." + prop.Name, Draw: slot =>
-				{
-					if (property.GetValue(null) is not Shader shader || shader.GetMode() != Shader.Mode.CanvasItem
-						|| !Shaders.Add(shader.GetInstanceId())) return;
-					slot.AddChild(new ColorRect { Material = new ShaderMaterial { Shader = shader },
-						Size = new Vector2(8, 8), Position = new Vector2(60, 44), MouseFilter = Control.MouseFilterEnum.Ignore });
-				}));
-			}
+				if (property.GetValue(null) is not Shader shader || shader.GetMode() != Shader.Mode.CanvasItem
+					|| !Shaders.Add(shader.GetInstanceId())) return;
+				slot.AddChild(new ColorRect { Material = new ShaderMaterial { Shader = shader },
+					Size = new Vector2(8, 8), Position = new Vector2(60, 44), MouseFilter = Control.MouseFilterEnum.Ignore });
+			}));
 		}
 	}
 
