@@ -10,16 +10,14 @@ namespace P3Makoto;
 public static class ModEntry
 {
 	public const string Tag = "[P3Makoto]";
-	public const string Version = "0.15.38";
+	public const string Version = "0.15.39";
 
 	public static void Init()
 	{
-		GD.Print($"{Tag} init v{Version} build 20261120-shop-option");
+		GD.Print($"{Tag} init v{Version} build 20261120-ios-runtime");
 		// v0.14.44（多版本兼容）：记下游戏版本，换版本出问题时日志里一眼能看到是哪个版本
 		Safe("game version", () => GD.Print($"{Tag} game version {P3Makoto.Core.Compat.GameVersion()}"));
-		// v0.14.59（玩家：iOS 移植版报 PlatformNotSupportedException）：iOS / 纯 AOT 平台不能在运行时生成代码，
-		// Harmony 打补丁会抛异常甚至让游戏起不来。这种平台上什么补丁和特效都不装，只留资源包里的皮肤（资源包自己就覆盖原版路径）。
-		// 注：目前 iOS 版在加载 DLL 这一步就失败了（代码根本跑不到这里），只能删掉 DLL 用皮肤；这里是兜底。
+		// iOS 移植端加载 DLL 后，按运行时的动态代码能力决定是否尝试安装 Harmony 补丁。
 		if (!CanPatch(out string why))
 		{
 			GD.Print($"{Tag} runtime code patching unavailable ({why}) -> effects disabled, only the skin art from the pck is used");
@@ -90,7 +88,7 @@ public static class ModEntry
 		try
 		{
 			string os = OS.GetName();
-			if (os == "iOS" || os == "Web")
+			if (os == "Web")
 			{
 				why = "platform " + os;
 				return false;
