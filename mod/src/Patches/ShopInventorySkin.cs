@@ -48,6 +48,8 @@ internal static class ShopInventorySkin
 
 internal partial class ShopWater : Control
 {
+    private static readonly System.Reflection.FieldInfo? InputBlocked =
+        AccessTools.Field(typeof(NMerchantInventory), "_isInputBlocked");
     private ShaderMaterial water = null!;
     private ShaderMaterial paper = null!, portrait = null!;
     private Node2D hero = null!;
@@ -134,19 +136,25 @@ internal partial class ShopWater : Control
         hero.Modulate=Colors.White;
         EnsureStage();
         setActive?.Invoke(true);
-        // Finish only the native visual slide; retain Open's transactions and input setup.
-        if(AccessTools.Field(typeof(NMerchantInventory), "_inventoryTween").GetValue(inventory) is Tween nativeTween) nativeTween.Kill();
-        if(inventory.GetNodeOrNull<Control>("SlotsContainer") is {} slots) slots.Position=new Vector2(slots.Position.X,80f);
-        if(AccessTools.Field(typeof(NMerchantInventory), "_backstop").GetValue(inventory) is CanvasItem backstop) backstop.Modulate=new Color(1,1,1,.8f);
-        // Goods are already interactive. Start partially visible and let the
-        // tween finish regardless of window focus, pause or combat time scale.
-        tween=CreateTween().SetPauseMode(Tween.TweenPauseMode.Process).SetIgnoreTimeScale(true);
-        tween.TweenProperty(inventory,"modulate:a",1f,OpenDuration)
-            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-        tween.TweenCallback(Callable.From(() => GD.Print($"{ModEntry.Tag} shop opening completed")));
-        inventory.Modulate=new Color(1,1,1,.25f);
+        // Lord's Parasol blocks input before it opens the inventory itself.
+        // Let the game's opening tween run to completion during that sequence.
+        bool manualOpen = InputBlocked?.GetValue(inventory) is false;
+        if (manualOpen)
+        {
+            // Finish only the native visual slide; retain Open's transactions and input setup.
+            if (AccessTools.Field(typeof(NMerchantInventory), "_inventoryTween")?.GetValue(inventory) is Tween nativeTween)
+                nativeTween.Kill();
+            if (inventory.GetNodeOrNull<Control>("SlotsContainer") is { } slots)
+                slots.Position = new Vector2(slots.Position.X, 80f);
+            if (AccessTools.Field(typeof(NMerchantInventory), "_backstop")?.GetValue(inventory) is CanvasItem backstop)
+                backstop.Modulate = new Color(1, 1, 1, .8f);
+            tween = CreateTween().SetPauseMode(Tween.TweenPauseMode.Process).SetIgnoreTimeScale(true);
+            tween.TweenProperty(inventory, "modulate:a", 1f, OpenDuration)
+                .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+            inventory.Modulate = new Color(1, 1, 1, .25f);
+        }
         Audio.Sfx.Clip("igor_shop_cue107", Audio.Sfx.IgorVoice);
-        GD.Print($"{ModEntry.Tag} shop opening started; size={Size}");
+        GD.Print($"{ModEntry.Tag} shop opening started; size={Size}; native transition={!manualOpen}");
     }
     private void StopWarmup()
     {

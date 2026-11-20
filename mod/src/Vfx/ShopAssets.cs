@@ -115,6 +115,7 @@ internal static class ShopAssets
 		bool quiet = Quiet(now);
 		if (now < nextCheck) return;
 		nextCheck = now + 120;
+		if (!P3Makoto.Core.P3Settings.Current.VelvetShop) return;
 		if (decode == null)
 		{
 			nextCheck = now + 500;

@@ -23,6 +23,7 @@ public static class P3Settings
 		public bool CutIn { get; set; } = true;           // Persona 召唤切入（眼神特写）
 		public bool SelectSummon { get; set; } = true;    // 选人时的召唤演出
 		public bool Architect { get; set; } = true;       // 建筑师房间（关闭 = 全部原版）
+		public bool VelvetShop { get; set; } = true;
 		public bool PileScreen { get; set; } = true;      // 抽牌堆 / 弃牌堆界面（P3R 菜单风格）
 		public bool TipList { get; set; } = true;         // v0.14.66 角色状态说明：P3R 滚动列表
 		public bool SettingsSkin { get; set; } = true;    // v0.14.67 设置界面（P3R 主菜单风格）
@@ -38,10 +39,10 @@ public static class P3Settings
 		get
 		{
 			Data d = Current;
-			bool[] flags = { d.AllOut, d.Victory, d.ShuffleTime, d.ShuffleFull, d.CutIn, d.SelectSummon, d.Architect, d.PileScreen, d.TipList, d.CursorSkin };
+			bool[] flags = { d.AllOut, d.Victory, d.ShuffleTime, d.ShuffleFull, d.CutIn, d.SelectSummon, d.Architect, d.PileScreen, d.TipList, d.CursorSkin, d.VelvetShop };
 			bool all = true;
 			foreach (bool flag in flags) all &= flag;
-			bool simple = d.AllOut && !d.Victory && d.ShuffleTime && !d.ShuffleFull && !d.CutIn && d.SelectSummon && !d.Architect && !d.PileScreen && d.TipList && d.CursorSkin;
+			bool simple = d.AllOut && !d.Victory && d.ShuffleTime && !d.ShuffleFull && !d.CutIn && d.SelectSummon && !d.Architect && !d.PileScreen && d.TipList && d.CursorSkin && !d.VelvetShop;
 			return all ? 1 : simple ? 0 : 2;
 		}
 	}
@@ -50,7 +51,7 @@ public static class P3Settings
 	{
 		Data d = Current;
 		d.AllOut = d.ShuffleTime = d.SelectSummon = d.TipList = d.CursorSkin = true;
-		d.Victory = d.ShuffleFull = d.CutIn = d.Architect = d.PileScreen = enabled;
+		d.Victory = d.ShuffleFull = d.CutIn = d.Architect = d.PileScreen = d.VelvetShop = enabled;
 		Save();
 	}
 

@@ -22,7 +22,7 @@ public static class VelvetShopPatch
 
 	private static void Install(NMerchantRoom room)
 	{
-		if (!Stage.MakotoRun || room.HasNode("P3VelvetShop")) return;
+		if (!Core.P3Settings.Current.VelvetShop || !Stage.MakotoRun || room.HasNode("P3VelvetShop")) return;
 		ulong installStart = Time.GetTicksUsec();
 		// Load before hiding anything: missing artwork leaves the native room usable.
 		// Kept for the session (0.15.30): reloading them on every visit was part of the entry stall.
