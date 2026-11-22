@@ -478,6 +478,9 @@ PILE_SPR = ROOT / "research/p5r/ui/camp_main/sprites"
 # 名字 → (来源, 1080p 下显示宽度, 描边半径 px@1080p 或 0)
 PILE_TEX = {
     "pile_camptop": (ROOT / "research/p5r/art/portrait/BASE__P5_CAMPTOP_2D__e441c53ea3.png", 1510, 0),   # 原版比例（实机截图量的）
+    "pile_campskill": (ROOT / "research/p5r/art/portrait/BASE__P5_CAMPSKILL_2D01__5af504dfb6.png", 1500, 0),   # 消耗堆 = SKILL 页
+    **{f"pile_sd_{i}": (PILE_SPR / f"{96 + i:05d}.png", 0, 0) for i in range(10)},                         # 原版小数字（字图描边见 pile_texts）
+    "pile_sx": (PILE_SPR / "00107.png", 0, 0),
     "pile_txt_command": (PILE_SPR / "00201.png", 643, 7),
     "pile_txt_dontlook": (PILE_SPR / "00046.png", 413, 0),
     "pile_txt_likethat": (PILE_SPR / "00047.png", 292, 0),
@@ -488,11 +491,37 @@ PILE_TEX = {
 }
 
 
+PILE_TEXT_OL = 8
+
+
+def _outline(im, r):
+    from PIL import ImageFilter
+    pad = Image.new("RGBA", (im.width + 2 * PILE_TEXT_OL, im.height + 2 * PILE_TEXT_OL), (0, 0, 0, 0))
+    pad.alpha_composite(im, (PILE_TEXT_OL, PILE_TEXT_OL))
+    a = pad.getchannel("A").filter(ImageFilter.MaxFilter(2 * r + 1)).filter(ImageFilter.GaussianBlur(0.6))
+    out = Image.new("RGBA", pad.size, (255, 255, 255, 0))
+    out.putalpha(a)
+    return out
+
+
+def pile_texts():
+    for f in sorted((ROOT / "art/p5/ui/pile_text").glob("txt_*.png")):
+        im = Image.open(f).convert("RGBA")
+        im = im.resize((round(im.width * 72 / im.height), 72), Image.LANCZOS)
+        name = "pile_t_" + f.stem[4:]
+        yield name, im
+        yield name + "_ol", _outline(im, 5)
+    for i in range(10):
+        im = Image.open(PILE_SPR / f"{96 + i:05d}.png").convert("RGBA")
+        yield f"pile_sd_{i}_ol", _outline(im, 5)
+    yield "pile_sx_ol", _outline(Image.open(PILE_SPR / "00107.png").convert("RGBA"), 5)
+
+
 def pile_textures():
     from PIL import ImageFilter
     for name, (src, width, outline) in PILE_TEX.items():
         im = Image.open(src).convert("RGBA")
-        w = min(im.width, round(width * PILE_W))
+        w = min(im.width, round(width * PILE_W)) if width else im.width
         if w != im.width:
             im = im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
         if outline:
@@ -518,6 +547,10 @@ def pile_textures():
             ext.paste(im, (0, 0))
             ext.paste(im.crop((0, im.height - 1, im.width, im.height)).resize((im.width, 240)), (0, im.height))
             yield f"pile_m3d_{i:02d}", ext
+    # P5 风格文字（art/p5/ui/pile_text，Codex 照原版菜单字排的）+ 原版小数字 / ×：缩到字高 72（游戏里最高显示约 54px），
+    # 每张另出一张黑描边版 _ol（每边多 PILE_TEXT_OL 像素，PileText.OlPad）
+    for name, im in pile_texts():
+        yield name, im
     # 预告信（tools/p5/pile/deskew_cards.py 拉正的原版）：正面 + 7 封信的正文（每次打开随机一封当背面）；运行时生成 mipmap
     yield "pile_card_front", Image.open(ROOT / "art/p5/ui/pile/calling_card.png").convert("RGBA")
     for f in sorted((ROOT / "art/p5/ui/pile/letters").glob("letter_*.png")):

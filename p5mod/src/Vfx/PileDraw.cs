@@ -20,7 +20,7 @@ namespace P5Joker;
 /// 这里用交叉渐变 + 位移代替），星纹面板从右边扫进来，白手带一点回弹落定，标题牌和 COMMAND 依次弹入，最后预告信起转。
 /// 退场（0.32s）大致倒放。坐标全按 1920×1080 写，运行时乘 k = 视口高 / 1080；右侧元素跟着宽屏右移 rx。
 /// </summary>
-public sealed class PileDraw
+public sealed class PileDraw : IPileDecor
 {
 	// ── 版式（1920×1080）──
 	public const float GridX = 70f, GridTop = 168f, GridBottom = 1046f;
@@ -54,7 +54,7 @@ public sealed class PileDraw
 	private readonly bool _has3d;
 	private static readonly Vector2 M3dAt = new(1117f, 117f), M3dSize = new(921f, 1007f);   // 高度含往下延伸的 240px（×0.843）   // 1080p 下的左上角和大小（最后一帧的头对齐 2D 定格图的头）
 
-	public PileDraw(Control root, Vector2 view, int count, string caption)
+	public PileDraw(Control root, Vector2 view, int count)
 	{
 		_root = root;
 		_view = view;
@@ -127,8 +127,7 @@ public sealed class PileDraw
 		root.AddChild(_command);
 		Glyph(_command, "pile_txt_command_ol", Vector2.Zero, 643f, 0f, Ink);
 		Glyph(_command, "pile_txt_command", Vector2.Zero, 643f, 0f, Paper);
-		Label cap = P5Ui.Text(_command, caption, P5Ui.Font(P5Ui.CjkBold), (int)(30f * k), Paper, new Vector2(150f, 70f) * k, (int)(5f * k), Ink);
-		cap.MouseFilter = Control.MouseFilterEnum.Ignore;
+		Caption(_command, "draw", count, new Vector2(150f, 62f) * k, 36f * k);
 		_pops.Add((_command, _command.Position, _command.Rotation, 0.46f));
 
 		// 6. 预告信
@@ -137,10 +136,33 @@ public sealed class PileDraw
 		Enter(0f);
 	}
 
-	private static readonly Color Ink = new(0.04f, 0.04f, 0.04f), Paper = new(0.94f, 0.94f, 0.94f);
+	internal static readonly Color Ink = new(0.04f, 0.04f, 0.04f), Paper = new(0.94f, 0.94f, 0.94f);
 
 	/// <summary>手指碰到一张牌：预告信额外踢转 120°（P3 同款）。</summary>
 	public void Kick() => _card?.Kick();
+
+	float IPileDecor.GridX => GridX;
+	float IPileDecor.GridTop => GridTop;
+	float IPileDecor.GridBottom => GridBottom;
+	int IPileDecor.Cols => Cols;
+	float IPileDecor.CardW => CardW;
+	float IPileDecor.CellW => CellW;
+	float IPileDecor.CellH => CellH;
+	float IPileDecor.CardsStart => CardsStart;
+	float IPileDecor.ExitTime => ExitTime;
+	public Vector2 FocusAt => new(640f, 560f);
+	public Vector2 InfoAt => new(1000f, 300f);
+	public Vector2 SwitchAt => new(70f, 44f);
+	public Vector2 EnterOffset => new(-40f, 46f);
+	public Vector2 ExitOffset => new(-20f, 130f);
+
+	/// <summary>说明行：「抽牌堆 · 23 张」/「DRAW · 23」，全部是 P5 字图（PileText），白字黑描边。</summary>
+	internal static void Caption(Node2D parent, string pile, int count, Vector2 at, float h)
+	{
+		bool zh = TranslationServer.GetLocale().StartsWith("zh");
+		if (zh) PileText.Row(parent, at, h, Paper, true, 8f * h / 36f, pile + "_zh", "#" + count, "cards_zh");
+		else PileText.Row(parent, at, h, Paper, true, 10f * h / 36f, pile, "#" + count);
+	}
 
 	/// <summary>牌从哪里飞进来（屏幕像素）：抽牌堆按钮那个角。</summary>
 	public Vector2 CardSource => new(60f * _k, _view.Y - 40f * _k);
@@ -316,7 +338,7 @@ public sealed class PileDraw
 	}
 
 	// ── 星纹着色器 ──
-	private static ShaderMaterial StarMaterial(float baseSize, Color paper, Color ink, Color grayInk, Vector2 shade)
+	internal static ShaderMaterial StarMaterial(float baseSize, Color paper, Color ink, Color grayInk, Vector2 shade)
 	{
 		ShaderMaterial m = new() { Shader = StarShader };
 		float[] data = new float[Stars.Length * 5];
@@ -428,7 +450,7 @@ void fragment() {
 " };
 
 	/// <summary>立绘：按 fill_amt 把颜色换成 fill_color（剪影），保留透明度和 modulate。</summary>
-	private static Shader FillShader => _fill ??= new Shader { Code = @"
+	internal static Shader FillShader => _fill ??= new Shader { Code = @"
 shader_type canvas_item;
 uniform vec4 fill_color : source_color = vec4(1.0);
 uniform float fill_amt = 0.0;

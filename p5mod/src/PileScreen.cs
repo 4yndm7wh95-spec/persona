@@ -26,7 +26,6 @@ public static class PileScreen
 	private const string RootName = "P5PileScreen";
 	private const float HeaderH = 70f;
 	private const float FocusW = 450f;
-	private static readonly Vector2 FocusAt = new(640f, 560f);
 
 	private static readonly Color Ink = new(0.04f, 0.04f, 0.04f), Paper = new(0.94f, 0.94f, 0.94f), Red = new(0.9f, 0.1f, 0.11f);
 
@@ -34,7 +33,7 @@ public static class PileScreen
 	private static Font Cjk => P5Ui.Font(P5Ui.CjkBold);
 
 	public static bool Enabled(CardPile? pile) =>
-		pile != null && pile.Type == PileType.Draw && P5Settings.Enabled(P5Settings.Option.Pile) && Joker.LocalRun;
+		pile != null && (pile.Type == PileType.Draw || pile.Type == PileType.Exhaust) && P5Settings.Enabled(P5Settings.Option.Pile) && Joker.LocalRun;
 
 	private sealed class Item
 	{
@@ -117,13 +116,13 @@ public static class PileScreen
 		Vector2 view = screen.GetViewportRect().Size;
 		if (view.X <= 0f || view.Y <= 0f) return;
 		float k = view.Y / 1080f;
-		float gx = PileDraw.GridX;
+		bool exhaust = pile.Type == PileType.Exhaust;
 		Font font = Barlow;
 		float t0 = Time.GetTicksMsec() / 1000f;
 		float Now() => Time.GetTicksMsec() / 1000f - t0;
 		bool exiting = false, finalized = false;
 		float exitT0 = 0f;
-		bool orderMode = P5Settings.DrawOrder;
+		bool orderMode = exhaust ? P5Settings.ExhaustOrder : P5Settings.DrawOrder;
 
 		Control root = new() { Name = RootName, MouseFilter = Control.MouseFilterEnum.Stop };
 		root.SetAnchorsPreset(Control.LayoutPreset.FullRect);
@@ -135,25 +134,30 @@ public static class PileScreen
 		}
 
 		// ── 装饰（红底、星纹面板、标题牌、立绘、COMMAND、预告信）──
-		PileDraw draw = new(root, view, pile.Cards.Count, Caption(pile.Cards.Count));
+		// 抽牌堆 = P5R 主菜单（PileDraw），消耗堆 = SKILL 页（PileExhaust）
+		IPileDecor draw = exhaust ? new PileExhaust(root, view, pile.Cards.Count) : new PileDraw(root, view, pile.Cards.Count);
+		IPileDecor L = draw;
+		float gx = L.GridX;
 		Node2D head = new() { Name = "PileHead" };
 		root.AddChild(head);
-		ModeSwitch modeSwitch = ModeSwitch.Build(head, new Vector2(gx, 44f) * k, k, orderMode);
+		ModeSwitch modeSwitch = ModeSwitch.Build(head, L.SwitchAt * k, k, orderMode);
 
 		// ── 网格 ──
 		Control cards = new() { MouseFilter = Control.MouseFilterEnum.Ignore };
 		cards.SetAnchorsPreset(Control.LayoutPreset.FullRect);
 		root.AddChild(cards);                                // 在装饰上面：特写的压暗层 / 说明 / 翻转的牌都要盖住立绘
 		Node2D heads = new();
-		Vector2 clipAt = new(0f, PileDraw.GridTop * k);
-		Vector2 clipSize = new(view.X, (PileDraw.GridBottom - PileDraw.GridTop) * k);
+		Vector2 clipAt = new(0f, L.GridTop * k);
+		Vector2 clipSize = new(view.X, (L.GridBottom - L.GridTop) * k);
 		Control headClip = new() { Name = "PileHeadingClip", Position = clipAt, Size = clipSize, ClipContents = true, MouseFilter = Control.MouseFilterEnum.Ignore };
 		root.AddChild(headClip);
 		headClip.AddChild(heads);
 		heads.Position = -clipAt;
 		root.MoveChild(headClip, cards.GetIndex());
 		Node2D? plate = null;
-		Label empty = Text(root, "EMPTY", font, (int)(90f * k), new Color(1f, 1f, 1f, 0.45f), new Vector2(gx, PileDraw.GridTop + 60f) * k, 0, Ink);
+		Node2D empty = new() { Modulate = new Color(1f, 1f, 1f, 0.5f) };
+		root.AddChild(empty);
+		PileText.Word(empty, "empty", new Vector2(gx, L.GridTop + 60f) * k, 90f * k, Paper);
 		empty.Visible = false;
 
 		// ── 点击特写 ──
@@ -214,7 +218,7 @@ public static class PileScreen
 		void EnsureFocus()
 		{
 			if (fx != null) return;
-			fx = FocusLayer(cards, view, k, FocusAt);
+			fx = FocusLayer(cards, view, k, L.FocusAt, L.InfoAt);
 			UpgradeButton button = UpgradeButton.Build(cards, k);
 			upBtn = button;
 			button.Hit.GuiInput += ev => ModEntry.Safe("pile upgrade flip", () =>
@@ -234,7 +238,7 @@ public static class PileScreen
 		float scroll = 0f, target = 0f, contentH = 0f;
 		bool dragging = false;
 		float dragFrom = 0f, dragScroll = 0f;
-		float nextBorn = PileDraw.CardsStart;
+		float nextBorn = L.CardsStart;
 
 		void ReleaseCard(Item it)
 		{
@@ -285,14 +289,14 @@ public static class PileScreen
 			List<(string En, string Zh, List<CardModel> Cards)> groups = new();
 			if (orderMode)
 			{
-				if (all.Count > 0) groups.Add(("DRAW ORDER", "", VanillaOrder(grid, pile.Type, all)));
+				if (all.Count > 0) groups.Add((exhaust ? "exhaust" : "draw", "", VanillaOrder(grid, pile.Type, all)));
 			}
 			else
 			{
 				foreach (IGrouping<int, CardModel> g in all.GroupBy(c => TypeOrder(c.Type)).OrderBy(g => g.Key))
 				{
 					List<CardModel> list = g.OrderBy(Cost).ThenBy(c => c.Title, StringComparer.Ordinal).ThenBy(c => c.IsUpgraded ? 1 : 0).ToList();
-					groups.Add((TypeEn(list[0].Type), TypeZh(list[0].Type), list));
+					groups.Add((TypeKey(list[0].Type), Zh ? TypeKey(list[0].Type) + "_zh" : "", list));
 				}
 			}
 			return groups;
@@ -310,7 +314,7 @@ public static class PileScreen
 				y += HeaderH;
 				for (int i = 0; i < list.Count; i++)
 				{
-					Vector2 at = new((i % PileDraw.Cols) * PileDraw.CellW + PileDraw.CellW / 2f, y + (i / PileDraw.Cols) * PileDraw.CellH + PileDraw.CellH / 2f);
+					Vector2 at = new((i % L.Cols) * L.CellW + L.CellW / 2f, y + (i / L.Cols) * L.CellH + L.CellH / 2f);
 					if (!reuse.Remove(list[i], out Item? it)) it = new Item { Card = list[i], At = at, AnimateEntrance = initial };
 					it.From = it.At;
 					it.At = at;
@@ -320,7 +324,7 @@ public static class PileScreen
 					if (it.Slot == null) pending.Enqueue(it);
 					order.Add(it);
 				}
-				y += Mathf.Ceil(list.Count / (float)PileDraw.Cols) * PileDraw.CellH + 16f;
+				y += Mathf.Ceil(list.Count / (float)L.Cols) * L.CellH + 16f;
 			}
 			items.Clear();
 			items.AddRange(order);
@@ -331,13 +335,13 @@ public static class PileScreen
 		{
 			if (orderMode == toOrder || exiting || focused != null) return;
 			orderMode = toOrder;
-			P5Settings.SetDrawOrder(toOrder);
+			if (exhaust) P5Settings.SetExhaustOrder(toOrder); else P5Settings.SetDrawOrder(toOrder);
 			Refresh(pile.Cards.ToList(), animateSort: true);
 			modeSwitch.Set(toOrder);
 			Sfx.Take("gx_card_stack", 0.2f);
 		}
 
-		float MaxScroll() => Mathf.Max(0f, contentH - (PileDraw.GridBottom - PileDraw.GridTop));
+		float MaxScroll() => Mathf.Max(0f, contentH - (L.GridBottom - L.GridTop));
 
 		void Create(Item it)
 		{
@@ -544,10 +548,10 @@ public static class PileScreen
 			else if (now >= repeatAt) { repeatAt = now + 0.09f; Move(dx, dy); }
 			if (sel != null)
 			{
-				float visH = PileDraw.GridBottom - PileDraw.GridTop;
-				float topY = sel.At.Y - PileDraw.CellH * 0.5f - HeaderH;
+				float visH = L.GridBottom - L.GridTop;
+				float topY = sel.At.Y - L.CellH * 0.5f - HeaderH;
 				if (topY < target) target = Mathf.Max(0f, topY);
-				if (sel.At.Y + PileDraw.CellH * 0.5f > target + visH) target = Mathf.Min(MaxScroll(), sel.At.Y + PileDraw.CellH * 0.5f - visH);
+				if (sel.At.Y + L.CellH * 0.5f > target + visH) target = Mathf.Min(MaxScroll(), sel.At.Y + L.CellH * 0.5f - visH);
 				if (sel.Slot != null) hovered = sel;
 				if (Pressed("ui_select") || Pressed("ui_confirm")) Toggle(sel);
 			}
@@ -557,8 +561,8 @@ public static class PileScreen
 		{
 			if (ev is InputEventMouseButton { Pressed: true } mb)
 			{
-				if (mb.ButtonIndex == MouseButton.WheelUp) target -= PileDraw.CellH * 0.6f;
-				else if (mb.ButtonIndex == MouseButton.WheelDown) target += PileDraw.CellH * 0.6f;
+				if (mb.ButtonIndex == MouseButton.WheelUp) target -= L.CellH * 0.6f;
+				else if (mb.ButtonIndex == MouseButton.WheelDown) target += L.CellH * 0.6f;
 			}
 		}
 
@@ -624,9 +628,9 @@ public static class PileScreen
 					flip = null;
 				}
 				float fe = Ease5Ext.InOutCubic(focusP);
-				Vector2 focusCenter = FocusAt * k;
+				Vector2 focusCenter = L.FocusAt * k;
 				if (fx != null) Animate(fx, fe, focusP, focusOn, k, focusCenter);
-				float ex = exiting ? Mathf.Clamp((now - exitT0) / PileDraw.ExitTime, 0f, 1f) : 0f;
+				float ex = exiting ? Mathf.Clamp((now - exitT0) / L.ExitTime, 0f, 1f) : 0f;
 				if (exiting)
 				{
 					if (screen.GetNodeOrNull<CanvasItem>("BackButton") is CanvasItem backBtn)
@@ -655,7 +659,7 @@ public static class PileScreen
 				target = Mathf.Clamp(target, -120f, max + 120f);
 				scroll = Mathf.Lerp(scroll, target, 0.2f);
 
-				Vector2 Screen(Vector2 at) => new Vector2(gx + at.X, PileDraw.GridTop + at.Y - scroll) * k;
+				Vector2 Screen(Vector2 at) => new Vector2(gx + at.X, L.GridTop + at.Y - scroll) * k;
 				foreach (Section s in sections)
 				{
 					Vector2 p = Screen(new Vector2(0f, s.Y + HeaderH * 0.5f));
@@ -692,7 +696,7 @@ public static class PileScreen
 					if (it.Holder is not { } h || !GodotObject.IsInstanceValid(h) || !GodotObject.IsInstanceValid(h.CardNode))
 						throw new InvalidOperationException($"Pile card {it.Card.Id} lost its display node");
 					Vector2 cs = h.Hitbox.Size.X > 1f ? h.Hitbox.Size : new Vector2(300f, 422f);
-					float baseScale = PileDraw.CardW * k / cs.X;
+					float baseScale = L.CardW * k / cs.X;
 					float move = 0f;
 					Vector2 at = it.At;
 					if (it.MoveT0 >= 0f)
@@ -710,7 +714,7 @@ public static class PileScreen
 					it.Lift = Mathf.MoveToward(it.Lift, it == hovered ? 1f : 0f, 0.12f);
 					float lift = Fx.OutCubic(it.Lift);
 					it.Dim = Mathf.MoveToward(it.Dim, any && it != hovered ? 0.55f : 1f, 0.07f);
-					p += new Vector2(-40f, 46f) * k * (1f - pop);
+					p += L.EnterOffset * k * (1f - pop);
 					p += new Vector2(0f, -14f) * k * lift;
 					it.Slot.Visible = true;
 					it.Clip!.ClipContents = it != focused;
@@ -778,7 +782,7 @@ public static class PileScreen
 					{
 						float r = Mathf.Clamp((ex - Mathf.Min(0.35f, it.Index * 0.012f)) / 0.65f, 0f, 1f);
 						float ri = Ease5Ext.InCubic(r);
-						p += new Vector2(-20f, 130f) * k * ri;
+						p += L.ExitOffset * k * ri;
 						want *= 1f - 0.12f * ri;
 						rot += Mathf.DegToRad(4f) * ri;
 						alpha *= 1f - Fx.OutCubic(r);
@@ -857,7 +861,6 @@ public static class PileScreen
 		PileDraw.ScheduleSlamSounds();               // camp_open 的「啪」、重击、拳击声都落在手掌砸中那一刻（PileDraw.SlamAt）
 	}
 
-	private static string Caption(int n) => Zh ? $"抽牌堆 · {n} 张" : $"DRAW PILE · {n}";
 
 	// ── 点击特写：压暗 + 穿过卡牌的红色斜带（黑细条）+ 左侧说明 ──
 	private sealed class Focus
@@ -867,13 +870,16 @@ public static class PileScreen
 		public Node2D Band = null!;
 		public Node2D Info = null!;
 		public Label Name = null!;
-		public Label Kind = null!;
-		public Label Copies = null!;
+		public Node2D Kind = null!;
+		public Node2D Copies = null!;
+		public float K;
+		public Vector2 At;
 	}
 
-	private static Focus FocusLayer(Control parent, Vector2 view, float k, Vector2 center)
+	/// <summary>特写：压暗 + 穿过卡牌的红色斜带 + 说明（牌名用游戏字体——是游戏实时给的；类型、费用、张数、提示都是 P5 字图）。</summary>
+	private static Focus FocusLayer(Control parent, Vector2 view, float k, Vector2 center, Vector2 infoAt)
 	{
-		Focus f = new() { Layer = new Node2D { Visible = false } };
+		Focus f = new() { Layer = new Node2D { Visible = false }, K = k, At = infoAt };
 		parent.AddChild(f.Layer);
 		f.Dim = new ColorRect { Size = view, Color = new Color(0f, 0f, 0f, 0f), MouseFilter = Control.MouseFilterEnum.Ignore };
 		f.Layer.AddChild(f.Dim);
@@ -886,22 +892,34 @@ public static class PileScreen
 		Fx.Poly(f.Band, new[] { new Vector2(-len, -h / 2 - 18f * k), new Vector2(len, -h / 2 - 18f * k), new Vector2(len, -h / 2 - 10f * k), new Vector2(-len, -h / 2 - 10f * k) }, Paper);
 		f.Info = new Node2D();
 		f.Layer.AddChild(f.Info);
-		float ix = 1000f;
-		f.Name = Text(f.Info, "", Cjk, (int)(54f * k), Paper, new Vector2(ix, 300f) * k, (int)(7f * k), Ink);
-		Fx.Poly(f.Info, new[] { new Vector2(ix, 384f) * k, new Vector2(ix + 360f, 378f) * k, new Vector2(ix + 356f, 390f) * k, new Vector2(ix - 4f, 394f) * k }, Red);
-		f.Kind = Text(f.Info, "", Barlow, (int)(40f * k), Paper, new Vector2(ix, 400f) * k, (int)(5f * k), Ink);
-		f.Copies = Text(f.Info, "", Barlow, (int)(34f * k), Paper, new Vector2(ix, 450f) * k, (int)(5f * k), Ink);
-		Text(f.Info, Zh ? "点击任意处返回" : "CLICK ANYWHERE TO RETURN", Zh ? Cjk : Barlow, (int)(20f * k), new Color(1f, 1f, 1f, 0.8f), new Vector2(ix + 2f, 510f) * k, (int)(4f * k), Ink);
+		float ix = infoAt.X, iy = infoAt.Y;
+		f.Name = Text(f.Info, "", Cjk, (int)(54f * k), Paper, new Vector2(ix, iy) * k, (int)(7f * k), Ink);
+		Fx.Poly(f.Info, new[] { new Vector2(ix, iy + 84f) * k, new Vector2(ix + 360f, iy + 78f) * k, new Vector2(ix + 356f, iy + 90f) * k, new Vector2(ix - 4f, iy + 94f) * k }, Red);
+		f.Kind = new Node2D();
+		f.Info.AddChild(f.Kind);
+		f.Copies = new Node2D();
+		f.Info.AddChild(f.Copies);
+		Node2D back = new();
+		f.Info.AddChild(back);
+		PileText.Word(back, "back", new Vector2(ix + 2f, iy + 214f) * k, 26f * k, new Color(1f, 1f, 1f, 0.85f), true);
 		return f;
 	}
 
 	private static void Fill(Focus f, CardModel card, CardPile pile)
 	{
 		f.Name.Text = card.Title;
+		float k = f.K;
 		int cost = Cost(card);
-		f.Kind.Text = $"{TypeEn(card.Type)}  ·  COST {(cost < 0 ? "X" : cost.ToString())}";
+		foreach (Node n in f.Kind.GetChildren()) n.QueueFree();
+		foreach (Node n in f.Copies.GetChildren()) n.QueueFree();
+		Vector2 at = f.At;
+		// 类型（中文版用中文字图）· COST n
+		float w = PileText.Word(f.Kind, TypeKey(card.Type), new Vector2(at.X, at.Y + 104f) * k, 44f * k, Paper, true);
+		float x = at.X + w / k + 26f;
+		x += PileText.Word(f.Kind, "cost", new Vector2(x, at.Y + 104f) * k, 44f * k, Red, true) / k + 12f;
+		if (cost >= 0) PileText.Number(f.Kind, cost.ToString(), new Vector2(x, at.Y + 108f) * k, 40f * k, Paper, true);
 		int copies = pile.Cards.Count(c => c.Id.Entry == card.Id.Entry && c.IsUpgraded == card.IsUpgraded);
-		f.Copies.Text = Zh ? $"牌堆中 ×{copies}" : $"IN PILE ×{copies}";
+		PileText.Row(f.Copies, new Vector2(at.X, at.Y + 160f) * k, 38f * k, Paper, true, 12f * k, "inpile", "×" + copies);
 	}
 
 	private static void Animate(Focus f, float e, float p, bool on, float k, Vector2 center)
@@ -923,7 +941,7 @@ public static class PileScreen
 		public Action<bool>? Changed;
 		private Node2D root = null!;
 		private Polygon2D knob = null!;
-		private Label left = null!, right = null!;
+		private Node2D left = null!, right = null!;
 		private float k;
 		private bool order;
 
@@ -935,14 +953,16 @@ public static class PileScreen
 			Fx.Poly(m.root, new[] { new Vector2(0f, 4f), new Vector2(W, 0f), new Vector2(W + 4f, H), new Vector2(2f, H + 4f) }.Select(p => p * k).ToArray(), Ink);
 			m.knob = new Polygon2D { Color = Red, Polygon = new[] { new Vector2(4f, 6f), new Vector2(W / 2f, 3f), new Vector2(W / 2f + 2f, H - 2f), new Vector2(6f, H) }.Select(p => p * k).ToArray() };
 			m.root.AddChild(m.knob);
-			m.left = Text(m.root, Zh ? "原版顺序" : "ORDER", Zh ? Cjk : Barlow, (int)(24f * k), Paper, Vector2.Zero, 0, Ink);
-			m.right = Text(m.root, Zh ? "按类型" : "BY TYPE", Zh ? Cjk : Barlow, (int)(24f * k), Paper, Vector2.Zero, 0, Ink);
-			foreach ((Label l, float cx) in new[] { (m.left, W * 0.25f), (m.right, W * 0.75f) })
+			// 文字：P5 字图（原版顺序 / 按类型），各自在半边里居中
+			m.left = new Node2D();
+			m.right = new Node2D();
+			m.root.AddChild(m.left);
+			m.root.AddChild(m.right);
+			float th = 30f * k;
+			foreach ((Node2D n, string key, float cx) in new[] { (m.left, "order", W * 0.25f), (m.right, "bytype", W * 0.75f) })
 			{
-				l.HorizontalAlignment = HorizontalAlignment.Center;
-				l.VerticalAlignment = VerticalAlignment.Center;
-				l.Size = new Vector2(W / 2f * k, (H + 4f) * k);
-				l.Position = new Vector2((cx - W / 4f) * k, 0f);
+				float tw = PileText.RowWidth(th, 0f, PileText.Pick(key));
+				PileText.Word(n, key, new Vector2(cx * k - tw * 0.5f, (H * k - th) * 0.5f + 2f * k), th, Colors.White);
 			}
 			Control hit = new() { Size = new Vector2(W, H) * k, MouseFilter = Control.MouseFilterEnum.Stop, MouseDefaultCursorShape = Control.CursorShape.PointingHand };
 			m.root.AddChild(hit);
@@ -972,23 +992,22 @@ public static class PileScreen
 		{
 			float from = order ? W / 2f : 0f, to = order ? 0f : W / 2f;
 			knob.Position = new Vector2(Mathf.Lerp(from, to, t) * k, 0f);
-			left.AddThemeColorOverride("font_color", order ? Paper : new Color(0.6f, 0.6f, 0.6f));
-			right.AddThemeColorOverride("font_color", order ? new Color(0.6f, 0.6f, 0.6f) : Paper);
+			left.Modulate = order ? Paper : new Color(0.55f, 0.55f, 0.55f);
+			right.Modulate = order ? new Color(0.55f, 0.55f, 0.55f) : Paper;
 		}
 	}
 
-	/// <summary>段标题：黑色斜剪报纸片 + 白色英文类型 + 红色中文 + 白色张数。</summary>
+	/// <summary>段标题：黑色斜剪报纸片 + 白色英文类型字图 + 红色中文字图 + 原版数字 ×张数。</summary>
 	private static Node2D SectionHead(Node2D parent, string en, string zh, int count, float k)
 	{
 		Node2D n = new() { Modulate = new Color(1f, 1f, 1f, 0f), Rotation = Mathf.DegToRad(-1.5f) };
 		parent.AddChild(n);
 		float h = 54f;
 		Fx.Poly(n, new[] { new Vector2(0f, -h / 2 + 4f), new Vector2(330f, -h / 2), new Vector2(338f, h / 2 - 2f), new Vector2(6f, h / 2 + 2f) }.Select(p => p * k).ToArray(), Ink);
-		Label enL = Text(n, en, Barlow, (int)(40f * k), Paper, new Vector2(16f, -28f) * k, 0, Ink);
-		if (zh.Length > 0) Text(n, zh, Cjk, (int)(24f * k), Red, new Vector2(26f * k + enL.GetMinimumSize().X, -16f * k), 0, Ink);
-		Label c = Text(n, "×" + count, Barlow, (int)(36f * k), Paper, new Vector2(250f, -26f) * k, 0, Ink);
-		c.HorizontalAlignment = HorizontalAlignment.Right;
-		c.Size = new Vector2(70f * k, c.Size.Y);
+		float w = PileText.Word(n, en.Length > 0 && Fx.Tex("pile_t_" + en) != null ? en : "draw", new Vector2(16f, -21f) * k, 40f * k, Paper) / k;
+		float x = 16f + w + 10f;
+		if (zh.Length > 0) x += PileText.Word(n, zh, new Vector2(x, -15f) * k, 28f * k, Red) / k + 10f;
+		PileText.Number(n, "×" + count, new Vector2(Mathf.Max(x, 236f), -17f) * k, 34f * k, Paper);
 		return n;
 	}
 
@@ -1106,7 +1125,8 @@ public static class PileScreen
 		internal Node2D Root = null!;
 		internal Control Hit = null!;
 		private Polygon2D _sel = null!;
-		private Label _text = null!;
+		private Node2D _text = null!;
+		private float _k;
 		private bool _mouse, _enabled, _up, _multi;
 		private int _level;
 
@@ -1120,7 +1140,9 @@ public static class PileScreen
 			Fx.Poly(b.Root, new[] { new Vector2(lean, 0f), new Vector2(w + lean, 0f), new Vector2(w, h), new Vector2(0f, h) }, Ink);
 			b._sel = Fx.Poly(b.Root, new[] { new Vector2(lean, 0f), new Vector2(w + lean, 0f), new Vector2(w, h), new Vector2(0f, h) }, Paper);
 			Fx.Poly(b.Root, new[] { new Vector2(0f, h - 4f * k), new Vector2(w, h - 4f * k), new Vector2(w, h), new Vector2(0f, h) }, Red);
-			b._text = Text(b.Root, "", Zh ? Cjk : Barlow, (int)(20f * k), Paper, new Vector2(20f * k, h * 0.5f - 15f * k), 0, Ink);
+			b._k = k;
+			b._text = new Node2D();
+			b.Root.AddChild(b._text);
 			b.Hit = new Control { Size = new Vector2(w + lean, h), MouseFilter = Control.MouseFilterEnum.Stop, MouseDefaultCursorShape = Control.CursorShape.PointingHand };
 			b.Root.AddChild(b.Hit);
 			b.Hit.MouseEntered += () => { b._mouse = true; b.Refresh(); };
@@ -1171,11 +1193,12 @@ public static class PileScreen
 			if (!GodotObject.IsInstanceValid(Root)) return;
 			bool lit = _mouse && _enabled;
 			_sel.Visible = lit;
-			_text.Text = !_enabled ? (Zh ? "已升级" : "UPGRADED")
-				: _up ? (Zh ? "查看升级前" : "VIEW BASE")
-				: _multi ? (Zh ? $"查看升级 +{_level}" : $"VIEW UPGRADE +{_level}")
-				: (Zh ? "查看升级" : "VIEW UPGRADE");
-			_text.AddThemeColorOverride("font_color", lit ? Ink : Paper);
+			foreach (Node c in _text.GetChildren()) c.QueueFree();
+			string key = !_enabled ? "upgraded" : _up ? "upbase" : "upgrade";
+			float th = 26f * _k;
+			float x = PileText.Word(_text, key, new Vector2(18f * _k, 6f * _k), th, Colors.White);
+			if (_enabled && !_up && _multi) PileText.Number(_text, _level.ToString(), new Vector2(18f * _k + x + 8f * _k, 8f * _k), th * 0.9f, Colors.White);
+			_text.Modulate = lit ? Ink : Paper;
 		}
 	}
 
@@ -1193,6 +1216,16 @@ public static class PileScreen
 		CardType.Status => 3,
 		CardType.Curse => 4,
 		_ => 5,
+	};
+
+	private static string TypeKey(CardType t) => t switch
+	{
+		CardType.Attack => "attack",
+		CardType.Skill => "skill",
+		CardType.Power => "power",
+		CardType.Status => "status",
+		CardType.Curse => "curse",
+		_ => "skill",
 	};
 
 	private static string TypeEn(CardType t) => t switch
