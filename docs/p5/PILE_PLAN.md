@@ -21,7 +21,7 @@
 - 待 Codex（`docs/codex/codex_p5_pile_assets.md`）：
   - `INIT/P5CAMP_00SPD.SPD`：星纹拼贴、COMMAND、标题牌、菜单字、列表行、标签牌、斜板等；
   - PLG 斜块数据、星纹背景动画数据、转场擦除贴图；
-  - 生成的预告信正、背面高清卡图。
+  - 预告信：用原版 P5_CARD02 拉正（`art/p5/ui/pile/calling_card.png`），正反两面都用它。
 
 ## 共用骨架（照搬 P3）
 - 补丁挂在 `NCardPileScreen._Ready` 和 `NDeckViewScreen._Ready` 上；关闭时先播退场再关；只在 Joker 时生效，设置里有开关；出错退回原版；手柄 / 键盘走原版。
