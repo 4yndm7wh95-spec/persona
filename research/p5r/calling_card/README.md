@@ -28,4 +28,4 @@
 
 ## 提交状态
 
-基于 ab788364。执行 git add 时退出码为 1，提示 “The following paths and/or pathspecs matched paths that exist outside of your sparse-checkout definition, so will not be updated in the index”。列出的 48 个文件均属于 research/p5r/calling_card。按任务单的出错停止要求，本次未提交、未推送。交付文件保留在本机独立工作树。
+基于 ab788364。初次暂存因稀疏检出范围受阻，按任务单暂停。收到确认后，仅暂存本任务目录，素材提交为 39ef1956。
