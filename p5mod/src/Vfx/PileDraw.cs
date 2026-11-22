@@ -183,7 +183,7 @@ public sealed class PileDraw
 			int idx = Mathf.RoundToInt(Mathf.Clamp((t - 0.06f) / 0.31f, 0f, 1f) * 11f);
 			if (_m3dFrames[idx] is Texture2D f && _m3d.Texture != f) _m3d.Texture = f;
 			_split.SetShaderParameter("edge", 1.25f - 1.6f * Ease5Ext.InOutCubic(Mathf.Clamp((t - 0.08f) / 0.26f, 0f, 1f)));
-			float m3dA = Mathf.Clamp((t - 0.03f) / 0.02f, 0f, 1f) * (1f - Mathf.Clamp((t - 0.40f) / 0.06f, 0f, 1f));
+			float m3dA = Mathf.Clamp((t - 0.03f) / 0.02f, 0f, 1f) * (1f - Mathf.Clamp((t - 0.385f) / 0.025f, 0f, 1f));
 			_m3d.Visible = m3dA > 0.001f;
 			_m3d.Modulate = new Color(1f, 1f, 1f, m3dA);
 			float pop = Mathf.Clamp((t - 0.36f) / 0.18f, 0f, 1f);
@@ -191,7 +191,7 @@ public sealed class PileDraw
 			_portrait.Position = home + new Vector2(0f, 50f) * k * (1f - b);
 			_porSprite.Scale = Vector2.One * _porScale * Mathf.Lerp(0.96f, 1f, b);
 			_por.SetShaderParameter("fill_amt", 0f);
-			_portrait.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((t - 0.36f) / 0.06f, 0f, 1f));
+			_portrait.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((t - 0.36f) / 0.025f, 0f, 1f));
 		}
 		else
 		{
@@ -370,11 +370,11 @@ shader_type canvas_item;
 uniform float edge = 1.25;
 uniform float slope = 0.28;
 void fragment() {
-	vec4 t = texture(TEXTURE, UV);
+	// Godot 4：COLOR 进来时已经是 贴图 × modulate
 	float line = edge + slope * (0.5 - UV.y);
 	float w = fwidth(UV.x) * 1.5;
 	float white = 1.0 - smoothstep(line - w, line + w, UV.x);
-	COLOR = vec4(mix(t.rgb, vec3(0.94), white) * COLOR.rgb, t.a * COLOR.a);
+	COLOR.rgb = mix(COLOR.rgb, vec3(0.94), white);
 }
 " };
 
@@ -384,8 +384,8 @@ shader_type canvas_item;
 uniform vec4 fill_color : source_color = vec4(1.0);
 uniform float fill_amt = 0.0;
 void fragment() {
-	vec4 t = texture(TEXTURE, UV);
-	COLOR = vec4(mix(t.rgb * COLOR.rgb, fill_color.rgb, fill_amt), t.a * COLOR.a);
+	// Godot 4：COLOR 进来时已经是 贴图 × modulate
+	COLOR.rgb = mix(COLOR.rgb, fill_color.rgb, fill_amt);
 }
 " };
 
