@@ -45,6 +45,12 @@ public sealed class PileDraw
 	private readonly CallingCard? _card;
 	private float _exitT0 = -1f;
 	private float _porA = 1f, _porScale = 1f;
+	// 原版菜单 3D Joker 的入场动作（research/p5r/menu3d/main_0000，12 帧，Codex 从 MENU_C0001 GMD/GAP 渲的）
+	private readonly Texture2D?[] _m3dFrames = new Texture2D?[12];
+	private readonly Sprite2D? _m3d;
+	private readonly ShaderMaterial? _split;
+	private readonly bool _has3d;
+	private static readonly Vector2 M3dAt = new(1215f, 256f), M3dSize = new(732f, 640f);   // 1080p 下的左上角和大小（最后一帧的头对齐 2D 定格图的头）
 
 	public PileDraw(Control root, Vector2 view, int count, string caption)
 	{
@@ -88,6 +94,17 @@ public sealed class PileDraw
 		_porScale = _porSprite.Texture is { } pt ? PortraitW * k / pt.GetWidth() : 1f;
 		_porSprite.Scale = Vector2.One * _porScale;
 		_portrait.AddChild(_porSprite);
+
+		// 4b. 原版菜单 3D Joker：播原版入场动作，一条斜线从右往左扫过，人物由白剪影变成黑（原版就是同一段动作 + 移动的分界线）
+		for (int i = 0; i < 12; i++) _m3dFrames[i] = Fx.Tex($"pile_m3d_{i:00}");
+		_has3d = _m3dFrames[0] != null && _m3dFrames[11] != null;
+		if (_has3d)
+		{
+			_split = new ShaderMaterial { Shader = SplitShader };
+			_m3d = new Sprite2D { Name = "PileMenu3d", Texture = _m3dFrames[0], Material = _split, TextureFilter = CanvasItem.TextureFilterEnum.Linear, Visible = false };
+			_m3d.Scale = Vector2.One * M3dSize.X * k / _m3dFrames[0]!.GetWidth();
+			root.AddChild(_m3d);
+		}
 
 		// 牌数（原版页码大数字，白字黑描边，叠在 Joker 右边）
 		Node2D digits = new() { Position = new Vector2(1770f * k + _rx, 566f * k) };
@@ -155,17 +172,40 @@ public sealed class PileDraw
 		// 星纹面板从右边扫进来：0.06 → 0.42s
 		float pe = Ease5.OutExpo(Mathf.Clamp((t - 0.06f) / 0.36f, 0f, 1f));
 		_panel.SetShaderParameter("edge_shift", (1f - pe) * (_view.X - PanelEdgeBottom * k - _rx + 40f * k));
-		// Joker：白剪影 → 黑剪影 → 原画，同时顺斜向滑进来；白手最后带一点回弹
-		float move = Ease5.OutExpo(Mathf.Clamp((t - 0.04f) / 0.34f, 0f, 1f));
 		Vector2 home = (PortraitAt + new Vector2(PortraitW, PortraitW) * 0.5f) * k + new Vector2(_rx, 0f);
-		_portrait.Position = home + new Vector2(-300f, 180f) * k * (1f - move);
-		float toBlack = Mathf.Clamp((t - 0.12f) / 0.06f, 0f, 1f);
-		float toArt = Mathf.Clamp((t - 0.24f) / 0.16f, 0f, 1f);
-		_por.SetShaderParameter("fill_color", Paper.Lerp(Ink, toBlack));
-		_por.SetShaderParameter("fill_amt", 1f - Ease5.OutQuint(toArt));
-		float pop = Mathf.Clamp((t - 0.28f) / 0.26f, 0f, 1f);
-		_porSprite.Scale = Vector2.One * _porScale * Mathf.Lerp(0.96f, 1f, Ease5.OutBack(pop));
-		_portrait.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((t - 0.04f) / 0.03f, 0f, 1f));
+		if (_has3d && _m3d != null && _split != null)
+		{
+			// 原版入场：3D Joker 带着白剪影斜着滑进来（0.03 → 0.23），播原版转身抬头（0.06 → 0.37，原版 0.367s / Speed 1.2），
+			// 同时分界线从右往左扫过（0.08 → 0.34）由白变黑；0.36 起交叉切到 2D 定格（白手 + 红手套），手带一点回弹
+			float slide = Ease5.OutExpo(Mathf.Clamp((t - 0.03f) / 0.2f, 0f, 1f));
+			Vector2 at = (M3dAt + M3dSize * 0.5f) * k + new Vector2(_rx, 0f);
+			_m3d.Position = at + new Vector2(-220f, 120f) * k * (1f - slide);
+			int idx = Mathf.RoundToInt(Mathf.Clamp((t - 0.06f) / 0.31f, 0f, 1f) * 11f);
+			if (_m3dFrames[idx] is Texture2D f && _m3d.Texture != f) _m3d.Texture = f;
+			_split.SetShaderParameter("edge", 1.25f - 1.6f * Ease5Ext.InOutCubic(Mathf.Clamp((t - 0.08f) / 0.26f, 0f, 1f)));
+			float m3dA = Mathf.Clamp((t - 0.03f) / 0.02f, 0f, 1f) * (1f - Mathf.Clamp((t - 0.40f) / 0.06f, 0f, 1f));
+			_m3d.Visible = m3dA > 0.001f;
+			_m3d.Modulate = new Color(1f, 1f, 1f, m3dA);
+			float pop = Mathf.Clamp((t - 0.36f) / 0.18f, 0f, 1f);
+			float b = Ease5.OutBack(pop);
+			_portrait.Position = home + new Vector2(0f, 50f) * k * (1f - b);
+			_porSprite.Scale = Vector2.One * _porScale * Mathf.Lerp(0.96f, 1f, b);
+			_por.SetShaderParameter("fill_amt", 0f);
+			_portrait.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((t - 0.36f) / 0.06f, 0f, 1f));
+		}
+		else
+		{
+			// 没有 3D 帧时的退路：2D 定格图本身做白剪影 → 黑剪影 → 原画
+			float move = Ease5.OutExpo(Mathf.Clamp((t - 0.04f) / 0.34f, 0f, 1f));
+			_portrait.Position = home + new Vector2(-300f, 180f) * k * (1f - move);
+			float toBlack = Mathf.Clamp((t - 0.12f) / 0.06f, 0f, 1f);
+			float toArt = Mathf.Clamp((t - 0.24f) / 0.16f, 0f, 1f);
+			_por.SetShaderParameter("fill_color", Paper.Lerp(Ink, toBlack));
+			_por.SetShaderParameter("fill_amt", 1f - Ease5.OutQuint(toArt));
+			float pop = Mathf.Clamp((t - 0.28f) / 0.26f, 0f, 1f);
+			_porSprite.Scale = Vector2.One * _porScale * Mathf.Lerp(0.96f, 1f, Ease5.OutBack(pop));
+			_portrait.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((t - 0.04f) / 0.03f, 0f, 1f));
+		}
 		// 标题牌、牌数、COMMAND 依次弹入
 		foreach (var (node, at, rot, delay) in _pops)
 		{
@@ -181,6 +221,7 @@ public sealed class PileDraw
 	private void Exit(float e)
 	{
 		float k = _k;
+		if (_m3d != null) _m3d.Visible = false;
 		// 面板先往右退（0 → 0.7），红底晚一点从后往按钮那个角收（0.15 → 1，先慢后快）
 		float pe = Ease5Ext.InOutCubic(Mathf.Clamp(e / 0.7f, 0f, 1f));
 		_panel.SetShaderParameter("edge_shift", pe * (_view.X - PanelEdgeBottom * k - _rx + 40f * k));
@@ -322,6 +363,21 @@ void fragment() {
 }
 " };
 
+	/// <summary>菜单 3D Joker：分界线左边整个变成白剪影，右边是原样（黑底白细节）；分界线上斜（上端偏右），抗锯齿。</summary>
+	private static Shader? _splitShader;
+	private static Shader SplitShader => _splitShader ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform float edge = 1.25;
+uniform float slope = 0.28;
+void fragment() {
+	vec4 t = texture(TEXTURE, UV);
+	float line = edge + slope * (0.5 - UV.y);
+	float w = fwidth(UV.x) * 1.5;
+	float white = 1.0 - smoothstep(line - w, line + w, UV.x);
+	COLOR = vec4(mix(t.rgb, vec3(0.94), white) * COLOR.rgb, t.a * COLOR.a);
+}
+" };
+
 	/// <summary>立绘：按 fill_amt 把颜色换成 fill_color（剪影），保留透明度和 modulate。</summary>
 	private static Shader FillShader => _fill ??= new Shader { Code = @"
 shader_type canvas_item;
@@ -356,7 +412,7 @@ void fragment() {
 	public static readonly string[] Textures = BuildTextureList();
 	private static string[] BuildTextureList()
 	{
-		List<string> l = new() { "pile_camptop", "pile_txt_command", "pile_txt_command_ol", "pile_txt_dontlook", "pile_txt_likethat", "pile_txt_menu", "pile_txt_main", "pile_txt_cmdselect", "pile_card_front" };
+		List<string> l = new() { "pile_m3d_00", "pile_m3d_01", "pile_m3d_02", "pile_m3d_03", "pile_m3d_04", "pile_m3d_05", "pile_m3d_06", "pile_m3d_07", "pile_m3d_08", "pile_m3d_09", "pile_m3d_10", "pile_m3d_11", "pile_camptop", "pile_txt_command", "pile_txt_command_ol", "pile_txt_dontlook", "pile_txt_likethat", "pile_txt_menu", "pile_txt_main", "pile_txt_cmdselect", "pile_card_front" };
 		for (int i = 0; i < 10; i++) { l.Add($"pile_digit_{i}"); l.Add($"pile_digit_{i}_ol"); }
 		foreach (string s in CallingCard.Letters) l.Add("pile_letter_" + s);
 		return l.ToArray();

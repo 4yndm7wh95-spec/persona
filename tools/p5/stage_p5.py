@@ -505,6 +505,15 @@ def pile_textures():
             ol.putalpha(a)
             yield name + "_ol", ol
         yield name, im
+    # 原版菜单 3D Joker 的入场动作（research/p5r/menu3d/main_0000，Codex 从 MENU_C0001 GMD/GAP 渲的 12 帧，1920×1080）：
+    # 裁到 12 帧的并集包围盒 (828,125)-(1920,1080)，按游戏里 0.67 倍显示 ×1.34 预缩（PileDraw.M3d*）
+    m3d = ROOT / "research/p5r/menu3d/main_0000"
+    for i in range(12):
+        f = m3d / f"f{i:04d}.png"
+        if f.exists():
+            im = Image.open(f).convert("RGBA").crop((828, 125, 1920, 1080))
+            k = 0.67 * PILE_W
+            yield f"pile_m3d_{i:02d}", im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
     # 预告信（tools/p5/pile/deskew_cards.py 拉正的原版）：正面 + 7 封信的正文（每次打开随机一封当背面）；运行时生成 mipmap
     yield "pile_card_front", Image.open(ROOT / "art/p5/ui/pile/calling_card.png").convert("RGBA")
     for f in sorted((ROOT / "art/p5/ui/pile/letters").glob("letter_*.png")):
