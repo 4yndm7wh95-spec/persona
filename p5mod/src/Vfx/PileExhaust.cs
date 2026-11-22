@@ -243,6 +243,11 @@ public sealed class PileExhaust : IPileDecor
 		float pe = Ease5Ext.InOutCubic(Mathf.Clamp(e / 0.75f, 0f, 1f));
 		Vector2 off = new(1500f * k * pe, 0f);
 		_slab.Position = _wedge.Position = _band.Position = off;
+		// 黑块 / 灰楔形 / 星纹带边退边淡掉（不然灰楔形滑到牌后面露出一块白三角）
+		Color fade = new(1f, 1f, 1f, 1f - Mathf.Clamp(e / 0.45f, 0f, 1f));
+		_wedge.Modulate = fade;
+		_band.Modulate = fade;
+		_slab.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp((e - 0.25f) / 0.5f, 0f, 1f));
 		_por.SetShaderParameter("fill_color", Ink);
 		_por.SetShaderParameter("fill_amt", Fx.OutCubic(Mathf.Clamp(e / 0.3f, 0f, 1f)));
 		Vector2 home = (PorAt + new Vector2(PorW, PorW) * 0.5f) * k;
