@@ -48,3 +48,9 @@
 - 转牌：贴图四周留 2px 透明边，压窄时边缘靠双线性过滤抗锯齿；透视在 shader 里做。
 - 半透明边缘检查白边 / 黑边（预乘 alpha）。
 - 每次出预览都在 1080p 和 1440p 截局部放大图自检。
+
+## 原版数据解析结果（2026-11-22）
+- `CAMP.PLG`：106 个带名字的多边形。每条记录 72 字节：顶点偏移、索引偏移、顶点数、索引数、包围盒、名字[32]；顶点 16 字节 = 颜色 u32 + x + y + 0；索引是 u16 三角形。内容是 SKILL / ITEM 页的队伍列表锯齿框（party_01～10）、角色头像剪影（st_*）、爆炸星形（bt_black / bt_white）。解析脚本：`tools/p5/pile/plg.py`。
+- `CAMPBGSTARANIME.DAT`：大端序，0x20 起每颗星 32 字节，共 49 颗：x、y（1280×720 坐标 ×1000）、颜色（0x000000FF 黑 / 0x606060FF 灰）、缩放 ×1000、旋转角 ×1000，后面接逐帧动画数据。星纹是同心五角星，黑（或灰）白一圈圈交替。游戏里用 shader 照这份数据画（矢量，任何分辨率都锐利）。对比图：`docs/p5/preview/pile_stars_vs_p5r.jpg`。
+- `P5CAMP_00SPD` 切图：COMMAND = 00201，Don't Look at ME = 00046，LIKE THAT! = 00047，MeNu& = 00048，MAIN = 00061，COMMAND SELECT = 00479，页码数字 0–9 = 00033–00042。原图都是白字，运行时上色。
+- 排版图：`docs/p5/preview/pile_draw_layout_v1.png`，生成脚本 `tools/p5/pile/mock_draw.py`。
