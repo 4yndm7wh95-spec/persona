@@ -54,3 +54,12 @@
 - `CAMPBGSTARANIME.DAT`：大端序，0x20 起每颗星 32 字节，共 49 颗：x、y（1280×720 坐标 ×1000）、颜色（0x000000FF 黑 / 0x606060FF 灰）、缩放 ×1000、旋转角 ×1000，后面接逐帧动画数据。星纹是同心五角星，黑（或灰）白一圈圈交替。游戏里用 shader 照这份数据画（矢量，任何分辨率都锐利）。对比图：`docs/p5/preview/pile_stars_vs_p5r.jpg`。
 - `P5CAMP_00SPD` 切图：COMMAND = 00201，Don't Look at ME = 00046，LIKE THAT! = 00047，MeNu& = 00048，MAIN = 00061，COMMAND SELECT = 00479，页码数字 0–9 = 00033–00042。原图都是白字，运行时上色。
 - 排版图：`docs/p5/preview/pile_draw_layout_v1.png`，生成脚本 `tools/p5/pile/mock_draw.py`。
+
+## 实现（分支 claude/p5-pile-ui，2026-11-22）
+- `p5mod/src/PilePatches.cs`：`NCardPileScreen._Ready` 后置、`AfterCapstoneClosed` 前置（先播退场）。只接抽牌堆；其他牌堆没做之前走原版。
+- `p5mod/src/PileScreen.cs`：照搬 P3 PileFx 的交互（复用原版 NGridCardHolder、按类型 / 原版顺序、悬停名牌、点击翻牌特写 + 查看升级、手柄、滚动、出错回滚），配色和纸片换成 P5 剪报风。
+- `p5mod/src/Vfx/PileDraw.cs`（只依赖 Godot，预览工具能编译）：星纹 shader（49 颗原版星，左红右黑白）、原版立绘 / 字图、牌数大数字、真 3D 预告信（`CallingCard`）、入场 / 退场时间轴。
+- 设置：`P5Settings.Option.Pile`（设置页「牌堆界面（P5R 菜单风格）」）、`DrawOrder` 记住排列方式。
+- 预热：`Warmup.RequestPile()`（贴图、canvas 着色器、音效）。
+- 素材：`tools/p5/stage_p5.py` 的 `pile_textures()`（按 1080p 显示宽 ×1.34 离线预缩，白字图出黑描边版 `_ol`），音效 `camp_open` / `camp_cancel`。
+- 预览：`tools/p5/fxpreview/render.sh pile_draw 6`（假牌格子 + 真装饰 / 动画）。

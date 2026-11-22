@@ -65,6 +65,7 @@ public static class WarmupGame
 			// 生成、复制或控制台给的华丽收场可直接进战斗手牌，不经过牌组。
 			Warmup.RequestFinale();
 			if (P5Settings.Enabled(P5Settings.Option.Reward)) Warmup.RequestReward();
+			if (P5Settings.Enabled(P5Settings.Option.Pile)) Warmup.RequestPile();
 			foreach (var card in player.Deck.Cards)
 			{
 				Warmup.RequestCard(card.GetType().Name);

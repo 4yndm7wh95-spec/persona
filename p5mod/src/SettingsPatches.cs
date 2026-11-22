@@ -57,6 +57,8 @@ internal static class P5SettingsSectionPatch
 			T("关闭后，下次打开时使用原版选牌界面。", "Use the base game's card reward screen the next time it opens."));
 		AddSwitch(Option.AllOut, T("Boss／精英战总攻击动画", "Boss / elite All-Out Attack"),
 			T("关闭后，Boss 和精英战胜利时直接进入原版结算。", "Go straight to the regular results after winning a boss or elite fight."));
+		AddSwitch(Option.Pile, T("牌堆界面（P5R 菜单风格）", "Pile screens (P5R menu style)"),
+			T("关闭后，下次打开牌堆时使用原版界面。", "Use the base game's pile screens the next time one opens."));
 
 		error.Hide();
 		section.AddChild(error);

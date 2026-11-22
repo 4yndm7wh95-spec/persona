@@ -407,6 +407,16 @@ public static class Warmup
 			"reward_letter_S", "reward_letter_U", "reward_letter_R2", "reward_letter_E2" });
 	}
 
+	/// <summary>抽牌堆界面（PileDraw.cs）：原版暂停菜单素材 + 预告信、星纹 / 剪影着色器、开关菜单音效。</summary>
+	public static void RequestPile()
+	{
+		if (!Groups.Add("pile")) return;
+		QueueTextures(PileDraw.Textures);
+		QueueShaders(typeof(PileDraw));
+		QueueSounds(new[] { "camp_open", "camp_cancel", Sfx.Cursor });
+		LogPlan("pile");
+	}
+
 	public static void RequestAllOut()
 	{
 		if (!Groups.Add("allout")) return;

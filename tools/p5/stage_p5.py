@@ -159,7 +159,10 @@ SFX = {
     "swish_04": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0149.ogg",
     "swish_05": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0151.ogg",
     "sword_sheath": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0048.ogg",          # knife spin: the catch (user 2026-11-02)
-    "camp_whoosh": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0224.ogg",           # char select embark transition: the doors whoosh in (EmbarkTransition.cs)
+    "camp_whoosh": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0224.ogg",
+    # 牌堆界面（p5mod/src/Vfx/PileDraw.cs）：原版暂停菜单打开 / 关闭（research/p5r/audio/camp，Codex 从 SYSTEM.ACB 拷出）
+    "camp_open": ROOT / "research/p5r/audio/camp/SOUND_J_SOUND_SYSTEM.ACB_0170.ogg",
+    "camp_cancel": ROOT / "research/p5r/audio/camp/SOUND_J_SOUND_SYSTEM.ACB_0172.ogg",           # char select embark transition: the doors whoosh in (EmbarkTransition.cs)
     # embark transition: P5R's own day-change cues (SYSTEM.AWB streams 37 / 82, ripped by Codex: research/p5r/audio/calendar/README.md)
     "calendar_change": ROOT / "research/p5r/audio/calendar/calendar_change.ogg",   # the date slams down -> the doors close
     "stab_knife": ROOT / "research/p5r/audio/calendar/stab_knife.ogg",             # the knife pins it: thunk + metallic ring in one cue
@@ -328,6 +331,9 @@ def fx_textures():
         elif name == "be0cmn_upaura_uv_d":
             yield "aoa_drip", im                       # splatterBlood 的滴落遮罩：总攻击喷血的血柱
     yield "arsene_cast", arsene_atlas()
+    # 牌堆界面（p5mod/src/Vfx/PileDraw.cs，docs/p5/PILE_PLAN.md）：原版 P5R 暂停菜单素材，按 1080p 显示尺寸 ×1.34 离线 Lanczos 预缩
+    # （ctex 没有 mipmap，大图直接缩到 1/3 会闪烁起锯齿）；白色字图另出一张黑描边版（_ol）。
+    yield from pile_textures()
     # Izanagi-no-Okami (Codex render of BPS0360_000_main_0006, art/p5/fx/izanagi_okami): spin action atlas + weapon alone
     if (IZANAGI / "spin").exists():
         yield "izanagi_spin", izanagi_atlas()
@@ -465,6 +471,44 @@ def arsene_atlas():
         im = Image.open(f).convert("RGBA").resize((w, h), Image.LANCZOS)
         atlas.paste(im, (i % ARSENE_COLS * w, i // ARSENE_COLS * h))
     return atlas
+
+
+PILE_W = 1.34          # 预缩到 1080p 显示宽度的这么多倍（1440p 下 ≈1:1）
+PILE_SPR = ROOT / "research/p5r/ui/camp_main/sprites"
+# 名字 → (来源, 1080p 下显示宽度, 描边半径 px@1080p 或 0)
+PILE_TEX = {
+    "pile_camptop": (ROOT / "research/p5r/art/portrait/BASE__P5_CAMPTOP_2D__e441c53ea3.png", 1200, 0),
+    "pile_txt_command": (PILE_SPR / "00201.png", 643, 7),
+    "pile_txt_dontlook": (PILE_SPR / "00046.png", 413, 0),
+    "pile_txt_likethat": (PILE_SPR / "00047.png", 292, 0),
+    "pile_txt_menu": (PILE_SPR / "00048.png", 131, 0),
+    "pile_txt_main": (PILE_SPR / "00061.png", 106, 0),
+    "pile_txt_cmdselect": (PILE_SPR / "00479.png", 212, 0),
+    **{f"pile_digit_{i}": (PILE_SPR / f"{33 + i:05d}.png", 123, 6) for i in range(10)},
+}
+
+
+def pile_textures():
+    from PIL import ImageFilter
+    for name, (src, width, outline) in PILE_TEX.items():
+        im = Image.open(src).convert("RGBA")
+        w = min(im.width, round(width * PILE_W))
+        if w != im.width:
+            im = im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
+        if outline:
+            r = max(1, round(outline * PILE_W))
+            pad = Image.new("RGBA", (im.width + 2 * r + 4, im.height + 2 * r + 4), (0, 0, 0, 0))
+            pad.alpha_composite(im, (r + 2, r + 2))
+            im = pad
+            a = im.getchannel("A").filter(ImageFilter.MaxFilter(2 * r + 1)).filter(ImageFilter.GaussianBlur(0.6))
+            ol = Image.new("RGBA", im.size, (255, 255, 255, 0))
+            ol.putalpha(a)
+            yield name + "_ol", ol
+        yield name, im
+    # 预告信（tools/p5/pile/deskew_cards.py 拉正的原版）：正面 + 7 封信的正文（每次打开随机一封当背面）；运行时生成 mipmap
+    yield "pile_card_front", Image.open(ROOT / "art/p5/ui/pile/calling_card.png").convert("RGBA")
+    for f in sorted((ROOT / "art/p5/ui/pile/letters").glob("letter_*.png")):
+        yield "pile_" + f.stem, Image.open(f).convert("RGBA")
 
 
 def main():

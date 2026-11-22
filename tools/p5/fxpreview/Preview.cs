@@ -199,6 +199,8 @@ public partial class Preview : Node2D
 				});
 			});
 		},
+		// 抽牌堆界面（p5mod/src/Vfx/PileDraw.cs）：0.5s 打开 → 假牌格子依次飞入 → 2.2s / 3.2s 碰到一张牌（预告信踢转）→ 4.4s 关闭
+		["pile_draw"] = p => PileDrawPreview(p),
 		["damage"] = p =>
 		{
 			p.Strike(0.3, Enemy, 7);
@@ -1810,5 +1812,90 @@ public partial class Preview : Node2D
 		n.AddChild(new Polygon2D { Polygon = pts, Color = new Color("4b2f5c") });
 		n.AddChild(new Polygon2D { Polygon = Fx.Circle(16f * k, 16), Color = new Color("f2d14a"), Position = new Vector2(-45f, -60f) * k });
 		n.AddChild(new Polygon2D { Polygon = Fx.Circle(16f * k, 16), Color = new Color("f2d14a"), Position = new Vector2(20f, -66f) * k });
+	}
+
+	private static void PileDrawPreview(Preview p)
+	{
+		CanvasLayer top = new() { Layer = 50 };
+		p.AddChild(top);
+		Control host = new() { Size = new Vector2(1920f, 1080f), MouseFilter = Control.MouseFilterEnum.Ignore };
+		top.AddChild(host);
+		p.At(0.5, () =>
+		{
+			Sfx.Play("camp_open", 0.5f);
+			PileDraw draw = new(host, new Vector2(1920f, 1080f), 23, "抽牌堆 · 23 张");
+			// 假牌：攻击 7 / 技能 9 / 能力 3（灰卡 + 类型色块），按 PileDraw 的版式排
+			Control cards = new() { MouseFilter = Control.MouseFilterEnum.Ignore };
+			host.AddChild(cards);
+			var items = new List<(Control C, Vector2 At, float Born)>();
+			var heads = new List<(Node2D N, Vector2 At)>();
+			Color[] tint = { new(0.72f, 0.19f, 0.16f), new(0.16f, 0.38f, 0.63f), new(0.77f, 0.59f, 0.16f) };
+			int[] counts = { 7, 9, 3 };
+			string[] en = { "ATTACK", "SKILL", "POWER" }, zh = { "攻击", "技能", "能力" };
+			float y = 0f, born = PileDraw.CardsStart;
+			for (int g = 0; g < 3; g++)
+			{
+				Node2D head = new() { Modulate = new Color(1f, 1f, 1f, 0f) };
+				cards.AddChild(head);
+				Fx.Poly(head, new[] { new Vector2(0f, 4f), new Vector2(300f, -4f), new Vector2(310f, 52f), new Vector2(6f, 58f) }, new Color(0.04f, 0.04f, 0.04f));
+				P5Ui.Text(head, en[g], P5Ui.Font(P5Ui.Barlow), 40, new Color(0.94f, 0.94f, 0.94f), new Vector2(18f, 2f));
+				P5Ui.Text(head, zh[g], P5Ui.Font(P5Ui.CjkBold), 26, new Color(0.9f, 0.1f, 0.11f), new Vector2(196f, 14f));
+				P5Ui.Text(head, "×" + counts[g], P5Ui.Font(P5Ui.Barlow), 34, new Color(0.94f, 0.94f, 0.94f), new Vector2(256f, 8f));
+				heads.Add((head, new Vector2(PileDraw.GridX - 6f, PileDraw.GridTop + y)));
+				y += 70f;
+				for (int i = 0; i < counts[g]; i++)
+				{
+					Control c = new() { Size = new Vector2(PileDraw.CardW, PileDraw.CardW * 1.406f), PivotOffset = new Vector2(PileDraw.CardW, PileDraw.CardW * 1.406f) * 0.5f, Modulate = new Color(1f, 1f, 1f, 0f) };
+					cards.AddChild(c);
+					c.AddChild(new ColorRect { Size = c.Size, Color = new Color(0.82f, 0.82f, 0.82f) });
+					c.AddChild(new ColorRect { Position = new Vector2(3f, 3f), Size = c.Size - new Vector2(6f, 6f), Color = new Color(0.11f, 0.1f, 0.12f) });
+					c.AddChild(new ColorRect { Position = new Vector2(10f, 22f), Size = new Vector2(PileDraw.CardW - 20f, 84f), Color = tint[g] });
+					Vector2 at = new(PileDraw.GridX + (i % PileDraw.Cols) * PileDraw.CellW + PileDraw.CellW * 0.5f, PileDraw.GridTop + y + (i / PileDraw.Cols) * PileDraw.CellH + PileDraw.CellH * 0.5f);
+					items.Add((c, at, born));
+					born += 0.022f;
+				}
+				y += Mathf.Ceil(counts[g] / (float)PileDraw.Cols) * PileDraw.CellH + 16f;
+			}
+			int hovered = -1;
+			float exitAt = -1f, last = 0f;
+			Fx.Animate(host, 0, 6.0, t =>
+			{
+				float now = t * 6f, dt = Mathf.Max(0f, now - last);
+				last = now;
+				if (exitAt < 0f && now >= 3.9f) { exitAt = now; draw.BeginExit(now); }
+				int want = now >= 1.7f && now < 2.5f ? 1 : now >= 2.7f && now < 3.5f ? 8 : -1;
+				if (want != hovered) { hovered = want; if (want >= 0) { draw.Kick(); Sfx.Play("cursor", 0.35f); } }
+				draw.Update(now, dt);
+				float ex = exitAt < 0f ? 0f : Mathf.Clamp((now - exitAt) / PileDraw.ExitTime, 0f, 1f);
+				foreach (var (n, at) in heads)
+				{
+					float a = Mathf.Clamp((now - 0.2f) / 0.25f, 0f, 1f) * (1f - ex);
+					n.Position = at + new Vector2(-80f * (1f - Ease5.OutExpo(Mathf.Clamp((now - 0.2f) / 0.3f, 0f, 1f))) - 260f * Ease5Ext.InCubic(ex), 0f);
+					n.Modulate = new Color(1f, 1f, 1f, a);
+				}
+				for (int i = 0; i < items.Count; i++)
+				{
+					var (c, at, b) = items[i];
+					float bt = Mathf.Clamp((now - b) / 0.38f, 0f, 1f);
+					float pop = Ease5.OutBack(bt);
+					Vector2 pos = at + new Vector2(-40f, 46f) * (1f - pop);
+					float lift = i == hovered ? 1f : 0f;
+					float sc = (0.85f + 0.15f * pop) * (1f + 0.26f * lift);
+					float alpha = Mathf.Clamp(bt * 3f, 0f, 1f);
+					if (ex > 0f)
+					{
+						float r = Ease5Ext.InCubic(Mathf.Clamp((ex - Mathf.Min(0.35f, i * 0.012f)) / 0.65f, 0f, 1f));
+						pos += new Vector2(-20f, 130f) * r;
+						sc *= 1f - 0.12f * r;
+						alpha *= 1f - r;
+					}
+					c.Position = pos + new Vector2(0f, -14f * lift) - c.Size * 0.5f;
+					c.Scale = Vector2.One * sc;
+					float dim = hovered >= 0 && i != hovered ? 0.55f : 1f;
+					c.Modulate = new Color(dim, dim, dim, alpha);
+					if (lift > 0f) cards.MoveChild(c, cards.GetChildCount() - 1);
+				}
+			});
+		});
 	}
 }

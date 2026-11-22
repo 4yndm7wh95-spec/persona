@@ -12,6 +12,14 @@ for name, im in fx_textures():
     im.save(out / f"{name}.png")
 print("textures in", out)
 
+# 字体（P5Ui 读 res://p5joker/fonts/…，游戏里在 PCK 里）：拷到预览工程的同一路径
+import shutil  # noqa: E402
+fonts = HERE / "p5joker/fonts"
+fonts.mkdir(parents=True, exist_ok=True)
+for f in ("BarlowCondensed-900Italic.ttf", "BarlowCondensed-700Italic.ttf"):
+    if not (fonts / f).exists():
+        shutil.copy(ROOT / "tools/ui/fonts" / f, fonts / f)
+
 # 原版怪物（research/sts2_preview_scene）：.skel → JSON（tools/spine/skel_reader.py），给 SpinePlayer 播
 import subprocess  # noqa: E402
 mon = HERE / ".mon"
