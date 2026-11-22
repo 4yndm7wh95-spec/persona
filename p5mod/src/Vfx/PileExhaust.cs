@@ -183,7 +183,7 @@ public sealed class PileExhaust : IPileDecor
 			_portrait.Position = home + new Vector2(0f, -10f) * k;
 			_porSprite.Scale = Vector2.One * _porScale * 1.03f;
 			_por.SetShaderParameter("fill_amt", 0f);
-			_por.SetShaderParameter("clip_top", 0.34f);
+			_por.SetShaderParameter("clip_top", 0.335f);   // 白腿顶端在 UV 0.335，上面渐隐
 			if (_m3d != null)
 			{
 				// 原版 frame_0111 → 0120：侧身插兜站着（近景 3 帧 → 中景 8 帧），0.08 → HandAt 播完
