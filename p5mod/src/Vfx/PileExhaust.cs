@@ -215,8 +215,15 @@ void fragment() {
 				// 原版 frame_0111 → 0120：侧身插兜站着（近景 3 帧 → 中景 8 帧），0.08 → HandAt 播完
 				int idx = Mathf.Clamp((int)((t - 0.08f) / (HandAt - 0.08f) * 11f), 0, 10);
 				if (_sk3d[idx] is Texture2D f && _m3d.Texture != f) _m3d.Texture = f;
+				// 一脚踩下来、人往镜头这边压（用户 2026-11-22：前几帧到最后一帧跳太大）：中景段 3D Joker 以头为支点放大 1 → 1.45、
+				// 头挪到立绘头的位置，到 HandAt 正好和立绘的头重合，换成立绘时不跳
 				float slide = Ease5.OutExpo(Mathf.Clamp((t - 0.08f) / 0.16f, 0f, 1f));
-				_m3d.Position = new Vector2(-160f * k * (1f - slide), 0f);
+				float grow = Ease5Ext.InOutCubic(Mathf.Clamp((t - 0.20f) / (HandAt - 0.20f), 0f, 1f));
+				float sc = Mathf.Lerp(1f, 1.45f, grow);
+				Vector2 pivot = new(718f, 120f);
+				Vector2 at = pivot.Lerp(new Vector2(768f, 150f), grow) + new Vector2(-160f * (1f - slide), 0f);
+				_m3d.Scale = Vector2.One * k * sc;
+				_m3d.Position = (at - pivot * sc) * k;
 				_m3d.Visible = t >= 0.08f;
 			}
 		}
@@ -227,8 +234,8 @@ void fragment() {
 			if (t < SlamAt)
 			{
 				float e = Mathf.Pow(Mathf.Clamp((t - HandAt) / (SlamAt - HandAt), 0f, 1f), 3f);
-				scale = Mathf.Lerp(1.06f, 0.965f, e);
-				drop = Mathf.Lerp(-24f, 8f, e);
+				scale = Mathf.Lerp(1.02f, 0.965f, e);
+				drop = Mathf.Lerp(-10f, 8f, e);
 			}
 			else
 			{
