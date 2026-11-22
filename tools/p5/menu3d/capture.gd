@@ -110,9 +110,13 @@ func capture() -> void:
 			quit(1)
 			return
 		var draft := false
+		var frame_positions: Dictionary = {}
+		var frame_rotations: Dictionary = {}
 		if pages:
 			var view: Dictionary = clip.view
 			draft = view.get("draft", false)
+			frame_positions = view.get("frame_positions", {}).get(clip.name, {})
+			frame_rotations = view.get("frame_rotations", {}).get(clip.name, {})
 			viewport.size = Vector2i(384, 216) if draft else Vector2i(3840, 2160)
 			camera.position = vector3(view.position)
 			camera.rotation_degrees = vector3(view.rotation_degrees)
@@ -123,6 +127,10 @@ func capture() -> void:
 		var picks: Array = clip.frames
 		for frame in picks:
 			var number := "%04d" % int(frame)
+			if frame_positions.has(number):
+				camera.position = vector3(frame_positions[number])
+			if frame_rotations.has(number):
+				camera.rotation_degrees = vector3(frame_rotations[number])
 			var file := FileAccess.open(scratch + clip.name + "_" + number + ".bin", FileAccess.READ)
 			if file == null:
 				quit(1)
