@@ -19,8 +19,7 @@ public sealed class FumesField
 	public static FumesField? Current;
 
 	private static Shader? _shader;
-
-	private static Shader Shader => _shader ??= new Shader { Code = @"
+	private static Shader Shader => _shader ??= SerpentMist.WithCellNoise(@"
 shader_type canvas_item;
 render_mode blend_premul_alpha;
 uniform float floor_y = 0.75;
@@ -34,17 +33,13 @@ uniform float seed = 0.0;
 uniform float clock = 0.0;
 uniform float dens = 1.0;
 uniform float low = 0.0;      // 前面那层：只留贴地的一薄层
+uniform vec3 coverage = vec3(1.0, 1.0, 0.0);
 uniform vec3 deep = vec3(0.12, 0.0, 0.03);
 uniform vec3 mid = vec3(0.72, 0.04, 0.14);
-float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
-float noise(vec2 p) {
-	vec2 i = floor(p), f = fract(p);
-	f = f * f * (3.0 - 2.0 * f);
-	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
-}
-float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p = p * 2.03 + vec2(1.7, 9.2); a *= 0.5; } return v; }
+" + SerpentMist.CellNoise + @"
+float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * cell_noise(p); p = p * 2.03 + vec2(1.7, 9.2); a *= 0.5; } return v; }
 void fragment() {
-	vec2 uv = UV;
+	vec2 uv = UV * coverage.xy + vec2(0.0, coverage.z);
 	float x = uv.x * aspect;
 	float h = (floor_y - uv.y) / band;                 // 0 地面，1 雾带顶；地面以下为负
 	float n = fbm(vec2(x * 1.6 - flow, h * 1.1 + clock * 0.04) + seed);
@@ -56,22 +51,26 @@ void fragment() {
 	float edge = uv.x + (n2 - 0.5) * 0.16;
 	float lead = 1.0 - smoothstep(front - 0.18, front + 0.02, edge);
 	// 风丝：横向拉长的细丝，吹进来的时候亮
-	float st = fbm(vec2(x * 0.7 - flow * 2.4, uv.y / band * 7.0 + seed));
-	float streak = smoothstep(0.55, 0.82, st) * gust * smoothstep(-0.6, 0.2, h) * (1.0 - smoothstep(0.5, 1.3, h));
+	float streak = 0.0;
+	if (gust > 0.0 && h > -0.6 && h < 1.3) {
+		float st = fbm(vec2(x * 0.7 - flow * 2.4, uv.y / band * 7.0 + seed));
+		streak = smoothstep(0.55, 0.82, st) * gust * smoothstep(-0.6, 0.2, h) * (1.0 - smoothstep(0.5, 1.3, h));
+	}
 	float holes = smoothstep(0.2, 0.7, fbm(vec2(x * 2.8 - flow * 1.3, h * 1.8) + seed * 3.1));
 	float d = prof * lead * (0.3 + 0.7 * n2) * mix(0.45, 1.0, holes) * dens;
 	vec3 col = mix(deep, mid, clamp(pow(n2 * n * 2.0, 2.0), 0.0, 1.0)) * d;
 	col += mid * streak * 0.55 * lead;
 	float a = clamp(d * 0.8 + streak * 0.2 * lead, 0.0, 0.82) * alpha;
 	COLOR = vec4(col * alpha, a);
-}" };
+}");
 
 	private readonly Control _front;
 	private readonly Control? _back;
 	private readonly float _tall;
 	private readonly SceneTree _tree;
-	private readonly List<(Node2D Root, ShaderMaterial M)> _layers = new();
+	private readonly List<(Node2D Root, ColorRect Quad, ShaderMaterial M, bool Low)> _layers = new();
 	private float _t, _flow, _speed, _gust, _fade = -1f, _nextGhost;
+	private float _nextAliveCheck = 2.5f;
 	private readonly float _floorWorldY;
 
 	/// <summary>开始（或已经有了：再吹一阵风）。feet：Joker 脚底（世界坐标），决定地面高度。</summary>
@@ -115,8 +114,8 @@ void fragment() {
 			if (layer == null || !GodotObject.IsInstanceValid(layer)) continue;
 			Node2D root = Fx.ScreenRoot(layer, "P5FumesField");
 			Vector2 scr = Fx.Screen(layer);
-			ShaderMaterial m = new() { Shader = Shader };
-			ColorRect q = new() { Size = scr, Material = m, MouseFilter = Control.MouseFilterEnum.Ignore };
+			ShaderMaterial m = MakeMaterial();
+			ColorRect q = new() { Material = m, MouseFilter = Control.MouseFilterEnum.Ignore };
 			root.AddChild(q);
 			m.SetShaderParameter("seed", seed);
 			m.SetShaderParameter("aspect", scr.X / scr.Y);
@@ -124,10 +123,29 @@ void fragment() {
 			m.SetShaderParameter("low", low);
 			m.SetShaderParameter("front", -0.2f);
 			Fx.Clock(q);
-			_layers.Add((root, m));
+			_layers.Add((root, q, m, low > 0f));
 		}
 		_tree.ProcessFrame += Tick;
 		Tick();
+	}
+
+	private static ShaderMaterial MakeMaterial() => new() { Shader = Shader };
+
+	internal static void Warm(Control slot)
+	{
+		ShaderMaterial material = MakeMaterial();
+		material.SetShaderParameter("gust", 1f);
+		slot.AddChild(new ColorRect { Size = new Vector2(24, 16), Position = new Vector2(48, 42),
+			Material = material, MouseFilter = Control.MouseFilterEnum.Ignore });
+	}
+
+	internal static Rect2 VisibleBand(Vector2 screen, float floor, float band, float front, bool low, bool blowing)
+	{
+		// Outside [-1, 1.3] the original profiles are both zero. The quiet
+		// foreground tops out below 0.47, and the lead noise extends X by at most 0.10.
+		float a = Mathf.Clamp(floor - band * (low && !blowing ? 0.47f : 1.3f), 0f, 1f);
+		float b = Mathf.Clamp(floor + band, 0f, 1f);
+		return new Rect2(0f, a * screen.Y, Mathf.Clamp(front + 0.1f, 0f, 1f) * screen.X, (b - a) * screen.Y);
 	}
 
 	/// <summary>别的场景（华丽收场）占满画面时藏起来、演完放回来（同 SerpentMantle.Suspend）。</summary>
@@ -138,7 +156,7 @@ void fragment() {
 	{
 		if (Current is not { } f) return;
 		f._hidden = alpha < 0.5f;
-		foreach (var (root, _) in f._layers)
+		foreach (var (root, _, _, _) in f._layers)
 		{
 			if (!GodotObject.IsInstanceValid(root)) continue;
 			root.Visible = alpha > 0.005f;
@@ -170,8 +188,11 @@ void fragment() {
 		_flow += _speed * dt;
 		_gust = Mathf.Max(0f, _gust - dt * 0.9f);
 		float front = -0.2f + 1.55f * Ease5.OutExpo(Mathf.Min(1f, _t / Entry));
-		bool alive = _t < 2.5f || (Alive?.Invoke() ?? _t < PreviewLife);   // 前 2.5s 不查：能力可能比特效晚一点挂上
-		if (!alive && _fade < 0f) _fade = 0f;
+		if (_fade < 0f && _t >= _nextAliveCheck)
+		{
+			_nextAliveCheck = _t + 0.2f;
+			if (!(Alive?.Invoke() ?? _t < PreviewLife)) _fade = 0f;
+		}
 		float a = Mathf.Min(1f, _t / 0.15f);
 		if (_fade >= 0f)
 		{
@@ -184,16 +205,27 @@ void fragment() {
 			}
 		}
 		Vector2 scr = Fx.Screen(_front);
+		if (scr.X <= 0f || scr.Y <= 0f) return;
 		float floorY = Fx.ScreenPoint(_front, new Vector2(0f, _floorWorldY)).Y / scr.Y;
 		float tallS = _tall * _front.GetCanvasTransform().Scale.Y / scr.Y;
-		foreach (var (_, m) in _layers)
+		float floor = floorY + tallS * 0.04f;
+		float band = Mathf.Max(tallS * 0.95f, 0.001f);
+		foreach (var (root, quad, m, low) in _layers)
 		{
+			if (!Fx.Active(root) || !root.Visible) continue;
+			Rect2 rect = VisibleBand(scr, floor, band, front, low, _gust > 0f);
+			quad.Visible = rect.HasArea();
+			if (!quad.Visible) continue;
+			if (quad.Position != rect.Position) quad.Position = rect.Position;
+			if (quad.Size != rect.Size) quad.Size = rect.Size;
+			m.SetShaderParameter("coverage", new Vector3(rect.Size.X / scr.X, rect.Size.Y / scr.Y, rect.Position.Y / scr.Y));
+			m.SetShaderParameter("aspect", scr.X / scr.Y);
 			m.SetShaderParameter("front", front);
 			m.SetShaderParameter("flow", _flow);
 			m.SetShaderParameter("gust", _gust);
 			m.SetShaderParameter("alpha", a);
-			m.SetShaderParameter("floor_y", floorY + tallS * 0.04f);
-			m.SetShaderParameter("band", tallS * 0.95f);
+			m.SetShaderParameter("floor_y", floor);
+			m.SetShaderParameter("band", band);
 		}
 		// 小怨灵：时不时冒一两个（风还没吹到的地方不冒）
 		if (_fade < 0f && !_hidden && _t > _nextGhost)
@@ -220,7 +252,7 @@ void fragment() {
 	private void Free()
 	{
 		_tree.ProcessFrame -= Tick;
-		foreach (var (root, _) in _layers)
+		foreach (var (root, _, _, _) in _layers)
 		{
 			if (GodotObject.IsInstanceValid(root)) root.QueueFree();
 		}

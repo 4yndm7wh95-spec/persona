@@ -153,9 +153,10 @@ public static class SkillPlay
 		int cards = perCard == null && kind is (Kind.Draw or Kind.DrawDiscard or Kind.Load or Kind.DiscardLoad or Kind.SurgeDraw)
 			? Count(card)
 			: 0;
+		Func<bool>? bulletTimeTurn = name == "BulletTime" ? BulletTimePlay.BindTurn(joker.Entity, room) : null;
 		Fx.After(layer, at, () =>
 		{
-			if (!GodotObject.IsInstanceValid(joker))
+			if (!GodotObject.IsInstanceValid(joker) || bulletTimeTurn?.Invoke() == false)
 			{
 				return;
 			}
@@ -170,7 +171,7 @@ public static class SkillPlay
 			Func<Node, (Node2D, Transform2D)?> clone = parent => Aim.CloneBody(joker, parent, "idle_loop");
 			if (perCard != null)
 			{
-				perCard(Ctx(joker, target, layer, back, room, summon) with { Count = fxCount });
+				perCard(Ctx(joker, target, layer, back, room, summon) with { Count = fxCount, BulletTimeTurn = bulletTimeTurn });
 				return;
 			}
 			switch (kind)

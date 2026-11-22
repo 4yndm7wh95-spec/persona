@@ -90,6 +90,8 @@ public static class HudSkin
 		deco.AddChild(num);
 
 		bool skinned = false;
+		bool originalLayers = true, originalBack = true, originalFront = true;
+		Color originalLabel = Colors.White;
 		string shownText = "";
 		int shownCur = -1;
 		float pulse = 0f, dead = 0f;
@@ -97,13 +99,22 @@ public static class HudSkin
 		void Skin(bool on)
 		{
 			if (on == skinned) return;
+			if (on)
+			{
+				originalLayers = layers.Visible;
+				originalBack = vfxBack?.Visible ?? true;
+				originalFront = vfxFront?.Visible ?? true;
+				originalLabel = label.SelfModulate;
+			}
 			skinned = on;
 			deco.Visible = on;
-			layers.Visible = !on;
-			if (vfxBack != null) vfxBack.Visible = !on;
-			if (vfxFront != null) vfxFront.Visible = !on;
-			label.SelfModulate = on ? Hidden : Colors.White;
+			layers.Visible = !on && originalLayers;
+			if (vfxBack != null) vfxBack.Visible = !on && originalBack;
+			if (vfxFront != null) vfxFront.Visible = !on && originalFront;
+			label.SelfModulate = on ? Hidden : originalLabel;
 			shownText = "";
+			shownCur = -1;
+			pulse = dead = 0f;
 		}
 
 		void Build(int cur, int max)
@@ -126,6 +137,7 @@ public static class HudSkin
 			}
 		}
 
+		deco.TreeExiting += () => Skin(false);
 		Drive(counter, deco, "P5HudEnergy", dt =>
 		{
 			Skin(joker());
@@ -178,6 +190,7 @@ public static class HudSkin
 		body.AddChild(badge);
 
 		bool skinned = false;
+		Color originalImage = Colors.White, originalGlow = Colors.White, originalGlowVfx = Colors.White, originalLabel = Colors.White;
 		string shownText = "";
 		bool useArt = false;
 		float hover = 0f, readyA = 0f;
@@ -185,15 +198,25 @@ public static class HudSkin
 		void Skin(bool on)
 		{
 			if (on == skinned) return;
+			if (on)
+			{
+				originalImage = image.SelfModulate;
+				originalGlow = glow?.SelfModulate ?? Colors.White;
+				originalGlowVfx = glowVfx?.SelfModulate ?? Colors.White;
+				originalLabel = label.SelfModulate;
+			}
 			skinned = on;
 			deco.Visible = on;
-			image.SelfModulate = on ? Hidden : Colors.White;
-			if (glow != null) glow.SelfModulate = on ? Hidden : Colors.White;
-			if (glowVfx != null) glowVfx.SelfModulate = on ? Hidden : Colors.White;
-			if (!on) label.SelfModulate = Colors.White;
+			image.SelfModulate = on ? Hidden : originalImage;
+			if (glow != null) glow.SelfModulate = on ? Hidden : originalGlow;
+			if (glowVfx != null) glowVfx.SelfModulate = on ? Hidden : originalGlowVfx;
+			if (!on) label.SelfModulate = originalLabel;
 			shownText = "";
+			useArt = false;
+			hover = readyA = 0f;
 		}
 
+		deco.TreeExiting += () => Skin(false);
 		Drive(button, deco, "P5HudEndTurn", dt =>
 		{
 			Skin(joker());
@@ -230,7 +253,7 @@ public static class HudSkin
 				text.Position = new Vector2(-size.X * 0.025f, 0f);
 			}
 			badge.Position = new Vector2(size.X * 0.37f, -size.Y * 0.28f);
-			label.SelfModulate = useArt ? Hidden : Colors.White;
+			label.SelfModulate = useArt ? Hidden : originalLabel;
 
 			// 原版「该结束回合了」的发光层透明度（0 → 0.75）→ 红色纸板
 			float target = glow != null ? Mathf.Clamp(glow.Modulate.A / 0.75f, 0f, 1f) : 0f;

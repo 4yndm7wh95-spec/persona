@@ -1,12 +1,17 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Godot;
 using HarmonyLib;
+using MegaCrit.Sts2.Core.Bindings.MegaSpine;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Nodes.Screens;
+using MegaCrit.Sts2.Core.Nodes.Screens.Overlays;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves;
@@ -15,21 +20,39 @@ using MegaCrit.Sts2.Core.Settings;
 namespace P5Joker;
 
 /// <summary>
-/// 总攻击（Vfx/AllOut.cs）接进游戏，触发照 P3 mod 的 AllOutPatch：
-/// · 怪物开始死亡动画时（NCreature.StartDeathAnim 前）—— Joker 在打精英 / Boss —— 把它此刻的样子截成剪影存起来（这一局的怪物，最多留 5 只、大的优先）；
-///   倒下的是最后一只（敌人全灭、Joker 活着）→ 剪影截好（约 3 帧）立刻开播：最后一击的伤害数字一出来玻璃就碎（用户 2026-11-18）。
-/// · 战斗结束（Hook.AfterCombatEnd 后）：结算流程推迟到总攻击放完（AllOut.Hold 减去已经放了的时间，只推迟表现，不改结果）；
-///   万一前面没开播（截图失败等），在这里补播。
-/// 快速模式「瞬间」不播。截图 / 播放出错都只记日志，照常结算。
+/// Joker 在精英或 Boss 战中于敌人倒下时采集剪影，游戏确认胜利后才播放总攻击。
+/// 等本场在途剪影采集结束后播放，奖励界面等到收尾揭幕时再入栈。快速模式「瞬间」跳过。
 /// </summary>
 public static class AllOutGame
 {
-	private static readonly List<(ulong Room, AllOut.Foe Foe)> Foes = new();
+	private const int MaxFoes = 5;
+	private static readonly ConditionalWeakTable<NCreature, SpinePose> BeforeHit = new();
+	private sealed record SpinePose(string Animation, float Time);
+
+	private sealed class CaptureBatch(ulong roomId)
+	{
+		public ulong RoomId { get; } = roomId;
+		public List<AllOut.Foe> Foes { get; } = new();
+		public int Pending;
+		public bool CrabRequested;
+		public bool Started;
+		public Task? Playback;
+	}
+
+	private static CaptureBatch? _batch;
+
+	private static CaptureBatch GetBatch(NCombatRoom room)
+	{
+		ulong id = room.GetInstanceId();
+		if (_batch?.RoomId != id) _batch = new CaptureBatch(id);
+		return _batch;
+	}
 
 	private static readonly AccessTools.FieldRef<NCombatRoom, ICombatRoomVisuals> Visuals =
 		AccessTools.FieldRefAccess<NCombatRoom, ICombatRoomVisuals>("_visuals");
 
 	private static bool Instant => SaveManager.Instance?.PrefsSave?.FastMode == FastModeType.Instant;
+	private static bool Enabled => P5Settings.Enabled(P5Settings.Option.AllOut) && !Instant;
 
 	private static bool BigRoom(NCombatRoom room)
 	{
@@ -41,137 +64,249 @@ public static class AllOutGame
 		Joker.LocalPlayer is { } local && Joker.Is(local) && cs != null
 		&& cs.PlayerCreatures.Any(p => p.IsAlive && p.Player == local);
 
-	/// <summary>怪物倒下：截剪影。</summary>
-	public static void OnDeath(NCreature n)
+	// Friendly summons such as Osty have a Monster model too.
+	internal static bool IsEnemySilhouette(Creature? creature) => creature is { IsEnemy: true, IsMonster: true };
+
+	// CreatureCmd.Damage triggers Hit after HP reaches zero, before StartDeathAnim.
+	// Save the pose before the hit changes the Spine track. Win skips that trigger.
+	internal static void RememberLethalHit(NCreature n)
 	{
-		if (!AllOut.Playing) AllOut.RestoreTime();
-		if (Instant || n.Entity is not { IsMonster: true } e || NCombatRoom.Instance is not NCombatRoom room || !BigRoom(room)
-			|| !JokerHere(e.CombatState) || n.Visuals?.Body is not Node2D body || !body.IsVisibleInTree())
+		if (!Enabled || n.Entity is not { IsDead: true } e || !IsEnemySilhouette(e)
+			|| NCombatRoom.Instance is not NCombatRoom room || !BigRoom(room) || !JokerHere(e.CombatState)
+			|| ReadPose(n.Visuals?.SpineBody) is not { } pose)
 		{
 			return;
 		}
-		ulong id = room.GetInstanceId();
-		Foes.RemoveAll(f => f.Room != id);
-		Rect2 hb = n.Hitbox.GetGlobalTransformWithCanvas() * new Rect2(Vector2.Zero, n.Hitbox.Size);
-		float w = Mathf.Max(hb.Size.X * 2.1f, hb.Size.Y * 1.3f), h = hb.Size.Y * 1.75f;
-		Rect2 region = new(hb.GetCenter().X - w * 0.5f, hb.End.Y + hb.Size.Y * 0.18f - h, w, h);
-		bool last = e.CombatState!.Enemies.All(x => !x.IsAlive);
-		if (last) _pendingRoom = id;
-		AllOut.Snap(room, region, parent => Clone(n, body, parent), foe =>
+		BeforeHit.GetValue(n, _ => pose);
+	}
+
+	private static SpinePose? ReadPose(MegaSprite? sprite)
+	{
+		if (sprite?.TryGetAnimationState() is not { } state) return null;
+		string? name = state.GetCurrentAnimationName(0);
+		if (string.IsNullOrEmpty(name) || name is "hurt" or "hit" or "die" or "death") return null;
+		MegaTrackEntry? track = state.GetCurrent(0);
+		using var trackLifetime = (object?)track as System.IDisposable;
+		return new SpinePose(name, track?.GetTrackTime() ?? 0f);
+	}
+
+	/// <summary>敌人倒下时采集剪影，保留死亡动作前的形态。</summary>
+	public static void OnDeath(NCreature n)
+	{
+		if (!Enabled || n.Entity is not { } e || !IsEnemySilhouette(e) || NCombatRoom.Instance is not { } room
+			|| !BigRoom(room) || !JokerHere(e.CombatState)) return;
+
+		CaptureBatch batch = GetBatch(room);
+		if (batch.Started) return;
+		BeforeHit.TryGetValue(n, out SpinePose? pose);
+		BeforeHit.Remove(n);
+
+		// Kaiser Crab's two targetable creatures are invisible. Both claws and
+		// the body are drawn by a single rig in the room background.
+		Node2D? crabRig = room.Background?.GetNodeOrNull<Node2D>("%KaiserCrab")?.GetNodeOrNull<Node2D>("%Visuals");
+		if (crabRig != null)
 		{
-			if (NCombatRoom.Instance is not { } current || current.GetInstanceId() != id || _playedRoom == id) return;
-			if (foe != null)
+			if (batch.CrabRequested) return;
+			batch.CrabRequested = true;
+			Rect2 crabRegion = room.GetViewport().GetVisibleRect().Grow(128f);
+			Capture(room, batch, crabRegion, crabRig, null, crab: true);
+			return;
+		}
+
+		if (n.Visuals?.GetCurrentBody() is not Node2D body) return;
+		if (body == n.Visuals.SpineBody?.BoundObject) pose ??= ReadPose(n.Visuals.SpineBody);
+		Rect2 hitbox = n.Hitbox.GetGlobalTransformWithCanvas() * new Rect2(Vector2.Zero, n.Hitbox.Size);
+		float width = Mathf.Max(hitbox.Size.X * 2.1f, hitbox.Size.Y * 1.3f);
+		float height = hitbox.Size.Y * 1.75f;
+		Rect2 region = new(hitbox.GetCenter().X - width * 0.5f, hitbox.End.Y + hitbox.Size.Y * 0.18f - height, width, height);
+		Capture(room, batch, region, body, pose);
+	}
+
+	private static void Capture(NCombatRoom room, CaptureBatch batch, Rect2 region, Node2D body, SpinePose? pose, bool crab = false)
+	{
+		batch.Pending++;
+		try
+		{
+			AllOut.Snap(room, region, parent => Clone(body, parent, pose, crab), foe =>
 			{
-				Foes.Add((id, foe));
-				if (Foes.Count > 5)
+				batch.Pending--;
+				if (_batch != batch || batch.Started || foe == null) return;
+				batch.Foes.Add(foe);
+				if (batch.Foes.Count <= MaxFoes) return;
+				batch.Foes.Sort((a, b) => (b.Rect.Size.X * b.Rect.Size.Y).CompareTo(a.Rect.Size.X * a.Rect.Size.Y));
+				batch.Foes.RemoveAt(MaxFoes);
+			});
+		}
+		catch
+		{
+			batch.Pending--;
+			throw;
+		}
+	}
+
+	private static bool Clone(Node2D body, Node2D parent, SpinePose? pose, bool crab)
+	{
+		Transform2D transform = body.GetGlobalTransformWithCanvas();
+		if (body.IsClass(MegaSprite.spineClassName))
+		{
+			// Use only the rig data. Duplicating the battle node also copied its
+			// materials and attached scripts, which ran _Ready in the snapshot.
+			Variant data = body.Get("skeleton_data_res");
+			if (data.AsGodotObject() == null
+				|| ClassDB.Instantiate(MegaSprite.spineClassName).AsGodotObject() is not Node2D copy)
+			{
+				return false;
+			}
+
+			copy.Transform = transform;
+			parent.AddChild(copy);
+			copy.Set("skeleton_data_res", data);
+			if (copy.Call("get_skeleton").AsGodotObject() is not { } skeleton) return false;
+			if (body.Call("get_skeleton").AsGodotObject() is { } sourceSkeleton)
+			{
+				Variant skin = sourceSkeleton.Call("get_skin");
+				if (skin.AsGodotObject() != null) skeleton.Call("set_skin", skin);
+			}
+			skeleton.Call("set_slots_to_setup_pose");
+
+			var sprite = new MegaSprite(copy);
+			string? animation;
+			if (crab)
+			{
+				foreach (string boneName in new[] { "ArmBoneL", "ArmBoneR" })
 				{
-					Foes.Sort((a, b) => (b.Foe.Rect.Size.X * b.Foe.Rect.Size.Y).CompareTo(a.Foe.Rect.Size.X * a.Foe.Rect.Size.Y));
-					Foes.RemoveRange(5, Foes.Count - 5);
+					if (body.GetNodeOrNull<Node2D>(boneName)?.Duplicate(0) is Node2D bone) copy.AddChild(bone);
+				}
+				animation = "body/idle_loop";
+				if (sprite.TryGetAnimationState() is { } state)
+				{
+					state.SetSpineAnimation(animation, true, 0);
+					state.SetSpineAnimation("left/idle_loop", true, 1);
+					state.SetSpineAnimation("right/idle_loop", true, 2);
+					state.SetTimeScale(0f);
 				}
 			}
-			if (last) Start(id);
-		});
-	}
-
-	private static ulong _pendingRoom;
-	private static ulong _playedRoom;
-
-	private static void Start(ulong id)
-	{
-		if (_pendingRoom == id) _pendingRoom = 0;
-		if (_playedRoom == id || NCombatRoom.Instance is not NCombatRoom r || r.GetInstanceId() != id) return;
-		_playedRoom = id;
-		var foes = Foes.Where(f => f.Room == id).Select(f => f.Foe).ToList();
-		Foes.RemoveAll(f => f.Room == id);
-		ModEntry.Safe("allout", () => AllOut.Play(r, foes));
-	}
-
-	/// <summary>复制怪物此刻的身体（骨骼动画定在同一个动作、同一时刻），变换 = 它在屏幕上的变换。</summary>
-	private static bool Clone(NCreature n, Node2D body, Node2D parent)
-	{
-		Transform2D xf = body.GetGlobalTransformWithCanvas();
-		if (n.Visuals.SpineBody != null && Aim.CloneBody(n, parent, "idle_loop") is { } made)
-		{
-			made.Item1.Transform = xf;
-			Plain(made.Item1, spine: true);
-			CopySkin(body, made.Item1);
+			else
+			{
+				string preview = body.Get("preview_animation").AsString();
+				animation = pose != null && sprite.HasAnimation(pose.Animation) ? pose.Animation
+					: sprite.HasAnimation("idle_loop") ? "idle_loop"
+					: !string.IsNullOrEmpty(preview) && sprite.HasAnimation(preview) ? preview : null;
+				if (animation != null && sprite.TryGetAnimationState() is { } state)
+				{
+					state.SetSpineAnimation(animation, true, 0);
+					MegaTrackEntry? track = state.GetCurrent(0);
+					using var trackLifetime = (object?)track as System.IDisposable;
+					track?.SetTrackTime(animation == pose?.Animation ? pose.Time : 0f);
+					state.SetTimeScale(0f);
+				}
+			}
+			if (copy.HasMethod("update_skeleton")) copy.Call("update_skeleton", 0f);
+			GD.Print($"[P5Joker] allout rig: {body.Name}, animation={animation ?? "setup pose"}");
 			return true;
 		}
-		if (body.Duplicate() is not Node2D copy) return false;
-		parent.AddChild(copy);
-		copy.Transform = xf;
-		Plain(copy, spine: false);
+
+		// The static body can contain multiple sprites. Duplicate its geometry
+		// without scripts, signal connections or scene instantiation.
+		if (body.Duplicate(0) is not Node2D staticCopy) return false;
+		CleanStaticBody(staticCopy);
+		staticCopy.Transform = transform;
+		staticCopy.Show();
+		parent.AddChild(staticCopy);
 		return true;
 	}
 
-	/// <summary>
-	/// 剪影只要形状：复制品去掉身上的材质（用户 2026-11-19：用牌击杀时剪影是一堆方块或者没有，控制台 win 正常）——
-	/// 原版受击 / 中毒会给怪物身体换着色器（液体覆盖 potion_liquid_overlay、色相 hsv），复制出来的身体带着它画进离屏画面，
-	/// 贴图的透明被盖掉，每块部件画成整块的方片；粒子特效节点也一起去掉。
-	/// </summary>
-	/// <summary>
-	/// 换装：不少怪物是运行时换的 Spine 皮（BowlbugEgg 的 cocoon / egg、BattleFriend 的 v1–v3 等十几种），
-	/// 复制节点不带这个，复制品会落回默认皮 —— 画出来是一些奇怪的零件或者什么都没有。把本体此刻的皮套到复制品上。
-	/// </summary>
-	private static void CopySkin(Node2D body, Node2D copy)
+	private static void CleanStaticBody(Node node)
 	{
+		if (node is CanvasItem item)
+		{
+			item.Modulate = Colors.White;
+			item.SelfModulate = Colors.White;
+			item.Material = null;
+		}
+		foreach (Node child in node.GetChildren())
+		{
+			if (child is GpuParticles2D or CpuParticles2D)
+			{
+				node.RemoveChild(child);
+				child.QueueFree();
+			}
+			else CleanStaticBody(child);
+		}
+	}
+
+	public static Task OnCombatEnd(CombatRoom room, ICombatState? cs)
+	{
+		if (!Enabled)
+		{
+			_batch = null;
+			return Task.CompletedTask;
+		}
+		if (room.RoomType is not (RoomType.Elite or RoomType.Boss) || !JokerHere(cs)
+			|| NCombatRoom.Instance is not { } view) return Task.CompletedTask;
+
+		CaptureBatch batch = GetBatch(view);
+		return batch.Playback ??= Play(view, batch);
+	}
+
+	private static async Task Play(NCombatRoom view, CaptureBatch batch)
+	{
+		bool Current() => Fx.Active(view) && NCombatRoom.Instance == view && _batch == batch;
 		try
 		{
-			if (body.Call("get_skeleton").AsGodotObject() is not GodotObject skel || copy.Call("get_skeleton").AsGodotObject() is not GodotObject cskel) return;
-			Variant skin = skel.Call("get_skin");
-			if (skin.AsGodotObject() == null) return;
-			cskel.Call("set_skin", skin);
-			cskel.Call("set_slots_to_setup_pose");
+			// Snap also ticks on ProcessFrame. Allow an extra frame so the last
+			// capture callback can run before the overlay reads the batch.
+			SceneTree tree = view.GetTree();
+			for (int frame = 0; Current() && batch.Pending > 0 && frame <= AllOut.SnapFrameLimit; frame++)
+			{
+				await tree.ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+			}
+			ulong deadline = Time.GetTicksMsec() + (ulong)(1000 * Math.Max(2.5, SinfulPlay.Remaining(view) + 1.0));
+			while (Current() && Enabled && Time.GetTicksMsec() < deadline
+				&& (SinfulPlay.Remaining(view) > 0 || OutbreakCue.HasPendingImpact(view)))
+			{
+				await tree.ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+			}
+			if (!Current() || !Enabled || batch.Started) return;
+			batch.Started = true;
+			AllOut.Foe[] foes = batch.Foes.ToArray();
+			batch.Foes.Clear();
+			GD.Print($"[P5Joker] allout play: {foes.Length} foe silhouette(s)");
+			await AllOut.Play(view, foes);
 		}
-		catch (System.Exception e)
+		catch (System.Exception ex)
 		{
-			Stage.Report("allout copy skin", e);
+			GD.PushWarning($"[P5Joker] allout: {ex}");
 		}
 	}
 
-	private static void Plain(Node2D copy, bool spine)
+	internal static bool DeferRewards(NOverlayStack stack, NRewardsScreen rewards)
 	{
-		copy.Modulate = Colors.White;
-		copy.SelfModulate = Colors.White;
-		copy.Material = null;
-		if (spine)
+		if (!Fx.Active(stack) || NCombatRoom.Instance is not { } room || !Fx.Active(room)
+			|| _batch is not { Playback: { IsCompleted: false } playback } batch
+			|| batch.RoomId != room.GetInstanceId()) return false;
+		_ = ShowRewards();
+		return true;
+
+		async Task ShowRewards()
 		{
-			try
-			{
-				new MegaCrit.Sts2.Core.Bindings.MegaSpine.MegaSprite(copy).SetNormalMaterial(null!);
-			}
-			catch (System.Exception)
-			{
-				copy.Set("normal_material", default(Variant));
-			}
-		}
-		foreach (Node c in copy.FindChildren("*", "", true, false))
-		{
-			if (c is GpuParticles2D or CpuParticles2D) c.QueueFree();
-			else if (c is CanvasItem ci && ci.Material is ShaderMaterial) ci.Material = null;
+			await playback;
+			if (!GodotObject.IsInstanceValid(rewards) || rewards.IsQueuedForDeletion() || rewards.GetParent() != null) return;
+			if (Fx.Active(stack) && Fx.Active(room) && NCombatRoom.Instance == room)
+				Stage.Safe("allout show rewards", () => stack.Push(rewards));
+			else
+				rewards.QueueFree();
 		}
 	}
+}
 
-	/// <summary>战斗结束：该播就播，返回要等多久（0 = 不播）。</summary>
-	public static float OnCombatEnd(CombatRoom room, ICombatState? cs)
+[HarmonyPatch(typeof(NCreature), nameof(NCreature.SetAnimationTrigger))]
+public static class AllOutLethalHitPatch
+{
+	public static void Prefix(NCreature __instance, string __0)
 	{
-		// 慢放兜底：总攻击的碎开 / 计时器 / 节点退出都会恢复速度；这里只在没在播总攻击时再恢复一次（不打断正在慢放的前半段）
-		if (!AllOut.Playing) AllOut.RestoreTime();
-		if (Instant || room.RoomType is not (RoomType.Elite or RoomType.Boss) || !JokerHere(cs)
-			|| !cs!.Enemies.All(e => !e.IsAlive) || NCombatRoom.Instance is not { } view)
-		{
-			Foes.Clear();
-			return 0f;
-		}
-		ulong id = view.GetInstanceId();
-		if (_playedRoom != id)
-		{
-			// 最后一只倒下时没开播（还在截图就先到了这里 / 截图失败）：截图还在路上就等它，否则现在补播
-			if (_pendingRoom != id) Callable.From(() => Start(id)).CallDeferred();
-			return AllOut.Hold + 0.1f;
-		}
-		float done = (Time.GetTicksMsec() - AllOut.StartedMs) / 1000f;
-		return Mathf.Max(0.05f, AllOut.Hold - done);
+		if (__0 == "Hit")
+			ModEntry.Safe("allout pre-hit pose", () => AllOutGame.RememberLethalHit(__instance));
 	}
 }
 
@@ -184,13 +319,23 @@ public static class AllOutDeathPatch
 [HarmonyPatch(typeof(MegaCrit.Sts2.Core.Hooks.Hook), nameof(MegaCrit.Sts2.Core.Hooks.Hook.AfterCombatEnd))]
 public static class AllOutCombatEndPatch
 {
-	public static void Postfix(IRunState runState, ICombatState? combatState, CombatRoom room, ref Task __result)
+	public static void Postfix(IRunState runState, ICombatState? combatState, CombatRoom room)
 	{
-		float hold = 0f;
-		ModEntry.Safe("allout check", () => hold = AllOutGame.OnCombatEnd(room, combatState));
-		if (hold > 0f)
-		{
-			__result = Task.WhenAll(__result, Task.Delay((int)(hold * 1000f)));
-		}
+		ModEntry.Safe("allout combat end", () => AllOutGame.OnCombatEnd(room, combatState));
+	}
+}
+
+[HarmonyPatch(typeof(NOverlayStack), nameof(NOverlayStack.Push))]
+public static class AllOutRewardScreenPatch
+{
+	private static readonly AccessTools.FieldRef<NRewardsScreen, bool> IsTerminal =
+		AccessTools.FieldRefAccess<NRewardsScreen, bool>("_isTerminal");
+
+	public static bool Prefix(NOverlayStack __instance, IOverlayScreen screen)
+	{
+		if (screen is not NRewardsScreen rewards || !IsTerminal(rewards)) return true;
+		bool deferred = false;
+		Stage.Safe("allout defer rewards", () => deferred = AllOutGame.DeferRewards(__instance, rewards));
+		return !deferred;
 	}
 }

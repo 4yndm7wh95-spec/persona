@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Nodes;
-using MegaCrit.Sts2.Core.Nodes.Screens.CharacterSelect;
 
 namespace P5Joker;
 
@@ -18,13 +17,13 @@ public static class CharSelectInfo
 
 	private sealed class Saved
 	{
-		public readonly List<(CanvasItem Item, Color Color, bool Self)> Hidden = new();
+		public Color OriginalModulate;
 		public Node2D Anchor = null!;
 	}
 
 	private static readonly Dictionary<ulong, Saved> State = new();
 
-	internal static void Clear(NCharacterSelectScreen screen)
+	internal static void Clear(Control screen)
 	{
 		if (Traverse.Create(screen).Field("_infoPanel").GetValue<Control>() is Control panel)
 			Restore(panel);
@@ -32,40 +31,28 @@ public static class CharSelectInfo
 
 	// Hide the stock panel as soon as Joker is selected. Reveal our panel after
 	// the backdrop is ready, or restore the stock panel if the backdrop fails.
-	internal static Action<bool?>? Prepare(NCharacterSelectScreen screen)
+	internal static Action<bool?>? Prepare(Control screen)
 	{
 		Control? panel = Traverse.Create(screen).Field("_infoPanel").GetValue<Control>();
 		if (panel == null || !GodotObject.IsInstanceValid(panel))
 		{
 			return null;
 		}
+		if (panel.GetParent() is not Node parent || panel.GetTree() is not SceneTree tree)
+			return null;
+
+		Restore(panel);
 		Node2D anchor = new() { Name = DecoName };
-		Saved saved = new() { Anchor = anchor };
+		Saved saved = new() { Anchor = anchor, OriginalModulate = panel.Modulate };
 		State[panel.GetInstanceId()] = saved;
-		anchor.TreeExiting += () => Restore(panel, saved, removeAnchor: false);   // 别的 mod 拆掉我们的节点时也恢复原版
 		try
 		{
-			panel.AddChild(anchor);
-			// 原版面板整块隐藏：底板（面板自身 + 非容器子节点）用 SelfModulate，内容容器用 Modulate（连同所有子节点）
-			saved.Hidden.Add((panel, panel.SelfModulate, true));
-			panel.SelfModulate = new Color(1f, 1f, 1f, 0f);
-			foreach (Node child in panel.GetChildren())
-			{
-				if (child is not CanvasItem ci || child == anchor || child.Name == "P3InfoDeco")
-				{
-					continue;
-				}
-				if (child is Container)
-				{
-					saved.Hidden.Add((ci, ci.Modulate, false));
-					ci.Modulate = new Color(1f, 1f, 1f, 0f);
-				}
-				else
-				{
-					saved.Hidden.Add((ci, ci.SelfModulate, true));
-					ci.SelfModulate = new Color(1f, 1f, 1f, 0f);
-				}
-			}
+			parent.AddChild(anchor);
+			anchor.TreeExiting += Detach;
+			panel.TreeExiting += PanelExiting;
+			parent.MoveChild(anchor, panel.GetIndex() + 1);
+			tree.ProcessFrame += Align;
+			Align();
 			string hp = Traverse.Create(screen).Field("_hp").GetValue<Label>()?.Text ?? "";
 			string gold = Traverse.Create(screen).Field("_gold").GetValue<Label>()?.Text ?? "";
 			RichTextLabel? relicTitle = Traverse.Create(screen).Field("_relicTitle").GetValue<RichTextLabel>();
@@ -84,8 +71,24 @@ public static class CharSelectInfo
 				Fx.After(anchor, intro.Value ? CharSelectScene.InfoPanelDelay : 0.1, Show);
 			};
 
-			bool StillOwnsPanel() => GodotObject.IsInstanceValid(anchor) && anchor.GetParent() == panel &&
-				!anchor.IsQueuedForDeletion() && State.TryGetValue(panel.GetInstanceId(), out Saved? current) && current == saved;
+			bool StillOwnsPanel() => GodotObject.IsInstanceValid(panel) && Fx.Active(anchor) &&
+				anchor.GetParent() == parent && State.TryGetValue(panel.GetInstanceId(), out Saved? current) && current == saved;
+
+			void Align()
+			{
+				if (!StillOwnsPanel()) return;
+				anchor.Transform = panel.GetTransform();
+				anchor.Visible = panel.Visible;
+				if (panel.Modulate.A != 0f) panel.Modulate = new Color(panel.Modulate, 0f);
+			}
+
+			void PanelExiting() => Restore(panel, saved);
+			void Detach()
+			{
+				tree.ProcessFrame -= Align;
+				if (GodotObject.IsInstanceValid(panel)) panel.TreeExiting -= PanelExiting;
+				Restore(panel, saved, removeAnchor: false);
+			}
 
 			void Show()
 			{
@@ -122,15 +125,11 @@ public static class CharSelectInfo
 			return;
 		}
 		State.Remove(panel.GetInstanceId());                       // 先撤销所有权：RemoveChild 会同步触发 TreeExiting
-		foreach ((CanvasItem item, Color c, bool self) in saved.Hidden)
-		{
-			if (!GodotObject.IsInstanceValid(item)) continue;
-			if (self) item.SelfModulate = c;
-			else item.Modulate = c;
-		}
+		panel.Modulate = saved.OriginalModulate;
 		if (removeAnchor && GodotObject.IsInstanceValid(saved.Anchor))
 		{
-			if (saved.Anchor.GetParent() == panel) panel.RemoveChild(saved.Anchor);
+			saved.Anchor.Hide();
+			saved.Anchor.GetParent()?.RemoveChild(saved.Anchor);
 			saved.Anchor.QueueFree();
 		}
 	}

@@ -107,19 +107,13 @@ public static class Fx
 
 	public static void FreeAfter(Node node, double seconds)
 	{
-		node.GetTree()?.CreateTimer(seconds).Connect("timeout", Callable.From(() =>
-		{
-			if (GodotObject.IsInstanceValid(node))
-			{
-				node.QueueFree();
-			}
-		}));
+		After(node, seconds, node.QueueFree);
 	}
 
 	/// <summary>delay 秒后用 0→1 的进度驱动动画（step 每帧调用）。</summary>
 	public static void Animate(Node owner, double delay, double seconds, Action<float> step)
 	{
-		Tween tween = owner.CreateTween();
+		Tween tween = HitStop.Track(owner.CreateTween());
 		if (delay > 0)
 		{
 			// 等待期间藏起来（否则贴图会先在默认位置闪一下），开始时再显示
@@ -215,7 +209,7 @@ public static class Fx
 		{
 			return;
 		}
-		Tween loop = item.CreateTween().SetLoops();
+		Tween loop = HitStop.Track(item.CreateTween().SetLoops());
 		loop.TweenMethod(Callable.From<float>(v => mat.SetShaderParameter("clock", v)), 0f, 600f, 600.0);
 		item.SetMeta("p5_clock", loop);
 	}
@@ -260,12 +254,12 @@ public static class Fx
 			Stage.Safe("fx", action);
 			return;
 		}
-		anchor.GetTree()?.CreateTimer(delay).Connect("timeout", Callable.From(() =>
+		if (!Active(anchor)) return;
+		Tween tween = HitStop.Track(anchor.CreateTween().SetPauseMode(Tween.TweenPauseMode.Process));
+		tween.TweenInterval(delay);
+		tween.TweenCallback(Callable.From(() =>
 		{
-			if (GodotObject.IsInstanceValid(anchor))
-			{
-				Stage.Safe("fx", action);
-			}
+			if (Active(anchor)) Stage.Safe("fx", action);
 		}));
 	}
 
@@ -288,11 +282,23 @@ public static class Fx
 
 	public static Vector2 ScreenPoint(Control layer, Vector2 world) => layer.GetCanvasTransform() * world;
 
+	/// <summary>Fit a screen read to a centered quad, including its maximum UV offset and bilinear sample border.</summary>
+	internal static void FitScreenCopy(BackBufferCopy copy, Vector2 quadSize, float maxUvOffset)
+	{
+		// Godot 4.5's canvas renderers use CopyMode.Rect in viewport coordinates.
+		quadSize = quadSize.Abs();
+		Rect2 bounds = copy.GetGlobalTransformWithCanvas() * new Rect2(-quadSize * 0.5f, quadSize);
+		Vector2 pad = Screen(copy) * maxUvOffset + Vector2.One * 2f;
+		Vector2 start = (bounds.Position - pad).Floor();
+		Rect2 rect = new(start, (bounds.End + pad).Ceil() - start);
+		if (copy.Rect != rect) copy.Rect = rect;
+	}
+
 	/// <summary>All parts sample the same per-play clock, including an optional wait before crushing.</summary>
 	public static void Play(Node owner, CutInPlayback clip, float life, Action<float> step)
 	{
 		step(clip.Time);
-		Tween tween = owner.CreateTween();
+		Tween tween = HitStop.Track(owner.CreateTween());
 		tween.TweenMethod(Callable.From<float>(_ =>
 		{
 			float s = clip.Time;

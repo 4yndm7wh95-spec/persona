@@ -14,7 +14,7 @@ public static class SerpentEclipse
 {
 	private static Shader? _shader;
 
-	public static Shader Shader => _shader ??= new Shader { Code = @"
+	public static Shader Shader => _shader ??= SerpentMist.WithCellNoise(@"
 shader_type canvas_item;
 render_mode blend_premul_alpha;
 uniform float clock = 0.0;
@@ -22,12 +22,8 @@ uniform float grow = 1.0;
 uniform float pulse = 0.0;
 uniform float alpha = 1.0;
 uniform float disk = 0.42;     // 日面半径（quad 半边长 = 1）
-float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
-float noise(vec2 p) {
-	vec2 i = floor(p), f = fract(p);
-	f = f * f * (3.0 - 2.0 * f);
-	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
-}
+" + SerpentMist.CellNoise + @"
+float noise(vec2 p) { return cell_noise(p); }
 float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p = p * 2.03 + vec2(1.7, 9.2); a *= 0.5; } return v; }
 float anoise(float a, float r, float k) { return noise(vec2(cos(a), sin(a)) * k + vec2(r, r * 0.7)); }
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(vec2(c, s), vec2(-s, c)); }
@@ -94,5 +90,5 @@ void fragment() {
 	col *= alpha * fin;
 	if (al <= 0.003) discard;
 	COLOR = vec4(col, al);
-}" };
+}");
 }

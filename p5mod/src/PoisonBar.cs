@@ -53,8 +53,12 @@ void fragment() {
 		}
 	}
 
-	public static void Postfix(NHealthBar __instance)
+	public static bool Prefix(NHealthBar __instance) =>
+		CreatureF.GetValue(__instance) is not Creature target || !OutbreakCue.DeferHealth(__instance, target);
+
+	public static void Postfix(NHealthBar __instance, bool __runOriginal)
 	{
+		if (!__runOriginal) return;
 		ModEntry.Safe("PoisonBar", () =>
 		{
 			if (CreatureF.GetValue(__instance) is not Creature c || c.IsPlayer) return;

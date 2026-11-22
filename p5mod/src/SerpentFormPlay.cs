@@ -1,11 +1,14 @@
 using System;
+using System.Reflection;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
-using MegaCrit.Sts2.Core.Nodes.Vfx.Forms;
+using MegaCrit.Sts2.Core.Hooks;
+using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Powers;
 
 namespace P5Joker;
 
@@ -16,6 +19,7 @@ namespace P5Joker;
 /// </summary>
 public static class SerpentFormPlay
 {
+	internal static readonly Type? NativeVfx = typeof(Creature).Assembly.GetType("MegaCrit.Sts2.Core.Nodes.Vfx.Forms.NSerpentFormVfx");
 	private static ulong _triggeredMs;
 
 	/// <summary>能力挂上（或刷新）：常驻的蛇开始（接到真的 Joker 上）。</summary>
@@ -35,7 +39,8 @@ public static class SerpentFormPlay
 
 	private static (Vector2 Feet, float Tall, float Face)? Body(NCreature node)
 	{
-		if (!GodotObject.IsInstanceValid(node) || node.Entity is not { } c || c.IsDead)
+		if (!Fx.Active(node) || node.Entity is not { IsDead: false } c || !Joker.Is(c.Player)
+			|| c.GetPower<SerpentFormPower>() == null)
 		{
 			return null;
 		}
@@ -49,7 +54,7 @@ public static class SerpentFormPlay
 	/// <summary>能力触发后紧跟着的那次钝击特效：换成一条蛇扑过去咬。返回 true = 已经接管（原版不放）。</summary>
 	internal static bool TakeHit(Creature target)
 	{
-		if (Time.GetTicksMsec() - _triggeredMs > 600 || SerpentMantle.Current is not { } m || NCombatRoom.Instance is not NCombatRoom room)
+		if (!LegacySerpentFormCuePatch.Active.Value && (_triggeredMs == 0 || Time.GetTicksMsec() - _triggeredMs > 600) || SerpentMantle.Current is not { } m || NCombatRoom.Instance is not NCombatRoom room)
 		{
 			return false;
 		}
@@ -66,10 +71,13 @@ public static class SerpentFormPlay
 	}
 }
 
-[HarmonyPatch(typeof(NSerpentFormVfx), nameof(NSerpentFormVfx.Create))]
+[HarmonyPatch]
 public static class SerpentFormVfxCreatePatch
 {
-	public static void Postfix(Creature target, NSerpentFormVfx? __result)
+	public static bool Prepare() => SerpentFormPlay.NativeVfx != null;
+	public static MethodBase? TargetMethod() => AccessTools.Method(SerpentFormPlay.NativeVfx, "Create");
+
+	public static void Postfix(Creature target, CanvasItem? __result)
 	{
 		if (target.Player is { } p && Joker.Is(p))
 		{
@@ -82,10 +90,13 @@ public static class SerpentFormVfxCreatePatch
 	}
 }
 
-[HarmonyPatch(typeof(NSerpentFormVfx), nameof(NSerpentFormVfx.OnEffectTriggered))]
+[HarmonyPatch]
 public static class SerpentFormVfxTriggerPatch
 {
-	public static void Postfix(NSerpentFormVfx __instance)
+	public static bool Prepare() => SerpentFormPlay.NativeVfx != null;
+	public static MethodBase? TargetMethod() => AccessTools.Method(SerpentFormPlay.NativeVfx, "OnEffectTriggered");
+
+	public static void Postfix(CanvasItem __instance)
 	{
 		if (!__instance.Visible)
 		{
@@ -94,15 +105,30 @@ public static class SerpentFormVfxTriggerPatch
 	}
 }
 
-[HarmonyPatch(typeof(NFormVfx), nameof(NFormVfx.SetActive))]
+[HarmonyPatch]
 public static class SerpentFormVfxActivePatch
 {
-	public static void Postfix(NFormVfx __instance, bool isActive)
+	public static bool Prepare() => SerpentFormPlay.NativeVfx != null;
+	public static MethodBase? TargetMethod() => AccessTools.Method(SerpentFormPlay.NativeVfx?.BaseType, "SetActive");
+
+	public static void Postfix(CanvasItem __instance, bool isActive)
 	{
-		if (!isActive && __instance is NSerpentFormVfx && !__instance.Visible)
+		if (!isActive && SerpentFormPlay.NativeVfx?.IsInstanceOfType(__instance) == true && !__instance.Visible)
 		{
 			SerpentMantle.StopCurrent();
 		}
+	}
+}
+
+[HarmonyPatch(typeof(Hook), nameof(Hook.AfterPowerAmountChanged))]
+public static class LegacySerpentFormPowerPatch
+{
+	public static bool Prepare() => SerpentFormPlay.NativeVfx == null;
+
+	public static void Prefix(PowerModel power, decimal amount)
+	{
+		if (power is SerpentFormPower && amount > 0)
+			Stage.Safe("legacy serpent mantle", () => SerpentFormPlay.Begin(power.Owner));
 	}
 }
 
@@ -121,33 +147,18 @@ public static class SerpentFormHitPatch
 	}
 }
 
-/// <summary>
-/// 用户 2026-11-13：群蛇形态的出伤不跟手（打击牌结算完还要等一下蛇才咬）。原版 SerpentFormPower.AfterCardPlayed 在造成伤害前
-/// 先 Cmd.CustomScaledWait(0.1, 0.2)；Joker 的跳过这一下（随机目标、伤害照旧），蛇的扑咬自己只要 0.1s。
-/// 做法：进 AfterCardPlayed 时立一个标记，它里面第一次调用 CustomScaledWait 时直接返回完成的 Task；出来时清掉标记。
-/// </summary>
-[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Models.Powers.SerpentFormPower), nameof(MegaCrit.Sts2.Core.Models.Powers.SerpentFormPower.AfterCardPlayed))]
-public static class SerpentFormNoWaitPatch
+[HarmonyPatch(typeof(SerpentFormPower), nameof(SerpentFormPower.AfterCardPlayed))]
+public static class LegacySerpentFormCuePatch
 {
-	[ThreadStatic] internal static bool Skip;
+	internal static readonly System.Threading.AsyncLocal<bool> Active = new();
 
-	public static void Prefix(MegaCrit.Sts2.Core.Models.Powers.SerpentFormPower __instance)
+	public static bool Prepare() => SerpentFormPlay.NativeVfx == null;
+
+	public static void Prefix(SerpentFormPower __instance, out bool __state)
 	{
-		Skip = false;
-		ModEntry.Safe("SerpentNoWait", () => Skip = __instance.Owner?.Player is { } p && Joker.Is(p));
+		__state = Active.Value;
+		Stage.Safe("legacy serpent cue", () => Active.Value = __instance.Owner?.Player is { } p && Joker.Is(p));
 	}
 
-	public static void Postfix() => Skip = false;
-}
-
-[HarmonyPatch(typeof(Cmd), nameof(Cmd.CustomScaledWait))]
-public static class SerpentFormWaitSkipPatch
-{
-	public static bool Prefix(ref System.Threading.Tasks.Task __result)
-	{
-		if (!SerpentFormNoWaitPatch.Skip) return true;
-		SerpentFormNoWaitPatch.Skip = false;
-		__result = System.Threading.Tasks.Task.CompletedTask;
-		return false;
-	}
+	public static void Finalizer(bool __state) => Active.Value = __state;
 }

@@ -50,7 +50,7 @@ public static class Casts
 		["StormOfSteel"] = Cast.Glove,
 		["BladeSymphony"] = Cast.Glove,
 		["KnifeTrap"] = Cast.Glove,
-		["Outbreak"] = Cast.Big,
+		["Outbreak"] = PoisonDamage.HasImmediateTrigger ? Cast.Big : Cast.Glove,
 		["Concoct"] = Cast.Glove,
 		["Snakebite"] = Cast.Wave,                     // 用户 2026-11-16：重做，直接挥手（SnakebiteFx）
 		["Adrenaline"] = Cast.Glove,                   // 不召唤亚森（召唤太频繁）

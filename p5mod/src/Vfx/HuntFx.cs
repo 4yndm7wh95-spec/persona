@@ -72,6 +72,9 @@ void fragment() {
 
 		// ── 褪色波：从猎物身上推出去，抢到牌之后退回去 ──
 		Node2D sroot = Fx.ScreenRoot(layer, "P5HuntFreeze");
+		// A background effect may have copied the screen before the fighters were drawn.
+		// Refresh the copy here so the opaque wash still contains both fighters.
+		sroot.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
 		ColorRect fr = new() { Size = scr, MouseFilter = Control.MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = Freeze } };
 		sroot.AddChild(fr);
 		var fm = (ShaderMaterial)fr.Material;

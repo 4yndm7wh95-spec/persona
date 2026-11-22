@@ -15,6 +15,7 @@ public static class Warmup
 	private sealed record Job(string Name, Func<bool>? Load = null, Action<Control>? Draw = null);
 	private static readonly Queue<Job> Jobs = new();
 	private static readonly Queue<Job> MenuJobs = new();
+	private static readonly Queue<Job> CardShaders = new();
 	private static readonly HashSet<string> Groups = new(), Textures = new(), Sounds = new();
 	private static readonly HashSet<ulong> Shaders = new();
 	private static readonly HashSet<Type> ShaderGroups = new();
@@ -67,7 +68,27 @@ public static class Warmup
 		}).CallDeferred();
 	}
 
-	private static void Tick() => Stage.Safe("idle warmup", Advance);
+	private static void Tick()
+	{
+		try
+		{
+			Advance();
+		}
+		catch (Exception error) when (error.GetBaseException() is MissingMemberException or TypeLoadException)
+		{
+			// A missing API cannot recover on the next frame. Stop this optional
+			// scheduler so it cannot flood the game log or stall the main thread.
+			if (_tree != null) _tree.ProcessFrame -= Tick;
+			if (GodotObject.IsInstanceValid(_viewport)) _viewport!.QueueFree();
+			_viewport = null;
+			_slot = null;
+			Stage.Report("idle warmup disabled on incompatible game API", error);
+		}
+		catch (Exception error)
+		{
+			Stage.Report("idle warmup", error);
+		}
+	}
 
 	private static void Advance()
 	{
@@ -109,7 +130,7 @@ public static class Warmup
 		double cpuUsed = Stopwatch.GetElapsedTime(begin).TotalMilliseconds;
 		if (Pending == 0 || !Budget.CanStart(now, cpuUsed)) return;
 
-		Queue<Job> queue = Jobs.Count != 0 ? Jobs : MenuJobs;
+		Queue<Job> queue = CardShaders.Count != 0 ? CardShaders : Jobs.Count != 0 ? Jobs : MenuJobs;
 		Job job = queue.Peek();
 		bool done = true;
 		long start = Stopwatch.GetTimestamp();
@@ -184,7 +205,7 @@ public static class Warmup
 		if (skipped != 0) Log($"[P5Joker] warmup idle-v2 skipped {skipped} menu tasks; selector will load them on demand");
 	}
 
-	private static int Pending => Jobs.Count + MenuJobs.Count;
+	private static int Pending => CardShaders.Count + Jobs.Count + MenuJobs.Count;
 	private static void Enqueue(Job job) => (_planningMenu ? MenuJobs : Jobs).Enqueue(job);
 
 	private static void BuildMenuPlan()
@@ -197,6 +218,7 @@ public static class Warmup
 	public static void RequestJoker()
 	{
 		if (!Groups.Add("common")) return;
+		SerpentMantle.PrepareHead();
 		QueueTextures(new[] { "shell", "slash_thin", "slash_heavy", "slash_thrust", "muzzle_front",
 			"muzzle_side_01", "muzzle_side_02", "muzzle_side_03" });
 		QueueShaders(typeof(GunFx), typeof(Glow), typeof(Paint), typeof(Blade), typeof(PoisonFx), typeof(Impact));
@@ -222,6 +244,13 @@ public static class Warmup
 
 	public static void RequestCard(string card)
 	{
+		if (card is "Snakebite" or "SerpentForm" && Groups.Add("serpent body"))
+		{
+			SerpentMantle.PrepareHead();
+			CardShaders.Enqueue(new("serpent head field", Load: static () => SerpentMantle.HeadReady));
+			CardShaders.Enqueue(new("serpent body", Draw: SerpentMantle.Warm));
+			QueueSounds(new[] { Sfx.SerpentMaw });
+		}
 		if (card == "SerpentForm")
 		{
 			if (!Groups.Add("SerpentForm")) return;
@@ -239,14 +268,30 @@ public static class Warmup
 					return true;
 				}));
 			}
-			QueueShaders(typeof(SerpentMantle), typeof(SerpentMist), typeof(SerpentEclipse));
-			Enqueue(new("serpent body", Draw: SerpentMantle.Warm));
-			QueueSounds(new[] { Sfx.SerpentRise, Sfx.SerpentMaw });
+			QueueShaders(CardShaders.Enqueue, typeof(SerpentMist), typeof(SerpentEclipse));
+			QueueSounds(new[] { Sfx.SerpentRise });
 			LogPlan("SerpentForm");
 			return;
 		}
+		if (card == "BulletTime")
+		{
+			if (!Groups.Add(card)) return;
+			CardShaders.Enqueue(new("bullet time background", Draw: TimeStop.WarmBackground));
+			CardShaders.Enqueue(new("bullet time enemies", Draw: TimeStop.WarmEnemies));
+			CardShaders.Enqueue(new("bullet time dust", Draw: TimeStop.WarmDust));
+			CardShaders.Enqueue(new("bullet time card", Draw: slot => Phantom.Card(slot, slot.Size / 2f, 18f, 0.3f)));
+			QueueSounds(new[] { "gx_tock", "gx_freeze", "gx_tick", "gx_burn", "gx_glass", "gx_whoosh" }
+				.SelectMany(name => Enumerable.Range(0, Sfx.Palette[name]).Select(index => name + "_" + index)));
+			LogPlan(card);
+			return;
+		}
 		if (card == "GrandFinale") { RequestFinale(); return; }
-		if (card == "Snakebite" && Groups.Add("Snakebite")) QueueShaders(typeof(SerpentMantle));
+		if (card == "NoxiousFumes" && Groups.Add(card))
+		{
+			CardShaders.Enqueue(new("noxious fumes", Draw: FumesField.Warm));
+			QueueTextures(new[] { "curse_ghost", "curse_soul" });
+			QueueSounds(new[] { Sfx.FumesRoll });
+		}
 		if (card == "Outbreak" && Groups.Add("Outbreak")) QueueShaders(typeof(CrushHand));
 		if (card == "WraithForm" && Groups.Add("WraithForm")) QueueShaders(typeof(WraithVeil));
 		// 用当前实际注册的处理器，避开已被重做版覆盖的旧特效，也不扫描整个程序集。
@@ -406,13 +451,15 @@ public static class Warmup
 		}
 	}
 
-	private static void QueueShaders(params Type[] types)
+	private static void QueueShaders(params Type[] types) => QueueShaders(Enqueue, types);
+
+	private static void QueueShaders(Action<Job> enqueue, params Type[] types)
 	{
 		foreach (Type type in types)
 		{
 			if (!ShaderGroups.Add(type)) continue;
 			foreach ((string name, Action<Control> draw) in ShaderSamples(type, Shaders))
-				Enqueue(new(name, Draw: draw));
+				enqueue(new(name, Draw: draw));
 		}
 	}
 

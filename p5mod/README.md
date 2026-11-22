@@ -22,7 +22,8 @@ PCK（骨骼动画 + 特效贴图）+ DLL（特效代码，p5mod/src）：战斗
 `dotnet build -c Release`（在 p5mod 目录），产物 `bin/Release/net9.0/P5Joker.dll`。云端只能做类型检查。
 
 ## 打包安装（本地）
-`gdre_tools --headless --pck-create=<p5mod/pck_stage 的副本> --output=P5Joker.pck --pck-version=3 --pck-engine-version=4.5.1`，
+先运行 `gdre_tools --headless --pck-create=<p5mod/pck_stage 的副本> --output=P5Joker-base.pck --pck-version=3 --pck-engine-version=4.5.1`。
+再运行 `python p5mod/pack_portraits.py "<游戏目录>/SlayTheSpire2.pck" P5Joker-base.pck P5Joker.pck`，让 SkinChanger 可以识别 Joker 的选人头像和顶栏头像。
 把 `P5Joker.json`、`P5Joker.dll` 和 `P5Joker.pck` 放进 `游戏目录/mods/P5Joker/`。
 
 ## 第一版的限制

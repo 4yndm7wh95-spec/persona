@@ -24,12 +24,13 @@ public static class CharSelectBgPatch
 {
 	private static readonly AccessTools.FieldRef<NCharacterSelectScreen, Control> BgContainer =
 		AccessTools.FieldRefAccess<NCharacterSelectScreen, Control>("_bgContainer");
+	private static readonly FieldInfo? SelectedButton = AccessTools.Field(typeof(NCharacterSelectScreen), "_selectedButton");
 
 	private const string OriginalBackground = "p5_original_select_bg";
 	private const string SilentBackground = "res://scenes/screens/char_select/char_select_bg_silent.tscn";
 	private sealed class Selection
 	{
-		public int Revision;
+		public Control? Root;
 	}
 	private static readonly ConditionalWeakTable<Control, Selection> Selections = new();
 	private static readonly HashSet<string> LayoutProperties = new()
@@ -39,13 +40,16 @@ public static class CharSelectBgPatch
 	};
 
 	private static bool IsJoker(NCharacterSelectButton button) =>
-		!button.IsRandom && !button.IsLocked && button.Character is Silent;
+		!button.IsRandom && !button.IsLocked && button.Character is Silent && JokerCostume.Selected;
 
 	// 0.111 另传 CharacterModel，0.113 从同一个按钮读 Character。两版都以第一个参数为准。
-	public static void Prefix(NCharacterSelectScreen __instance, NCharacterSelectButton __0)
+	public static void Prefix(Control __instance, NCharacterSelectButton __0)
 	{
 		ModEntry.Safe("CharSelectInfo restore", () => CharSelectInfo.Clear(__instance));
-		CharSelectSfxMute.Armed = IsJoker(__0);
+		if (__instance is NCharacterSelectScreen)
+			ModEntry.Safe("SkinChanger selection setup", SkinChangerSelect.Install);
+		CharSelectSfxMute.Armed = IsJoker(__0) && (__instance is not NCharacterSelectScreen
+			|| SkinChangerSelect.ShowsJoker() != false);
 	}
 
 	public static void Finalizer() => CharSelectSfxMute.Armed = false;
@@ -72,7 +76,9 @@ public static class CharSelectBgPatch
 
 	private static Control InstantiateBackground(PackedScene scene, PackedScene.GenEditState editState)
 	{
-		if (scene.ResourcePath == SilentBackground)
+		// A manager needs the real backdrop so it can restore it when our overlay leaves.
+		if (scene.ResourcePath == SilentBackground && !SkinChangerSelect.Installed
+			&& JokerCostume.ManagedSelection == null && JokerCostume.HasStandaloneSkeleton)
 		{
 			Control? root = null;
 			try
@@ -101,52 +107,92 @@ public static class CharSelectBgPatch
 		return scene.Instantiate<Control>(editState);
 	}
 
-	public static void Postfix(NCharacterSelectScreen __instance, NCharacterSelectButton __0)
+	// SkinChanger replays this postfix by the game's parameter name.
+	[HarmonyAfter(SkinChangerSelect.ManagerId)]
+	public static void Postfix(NCharacterSelectScreen __instance, NCharacterSelectButton charSelectButton)
 	{
 		CharSelectSfxMute.Armed = false;
-		CharacterModel? model = IsJoker(__0) ? __0.Character : null;
 		ModEntry.Safe("CharSelectBg", () =>
 		{
 			if (BgContainer(__instance) is Control container)
-			{
-				Control? bg = model == null ? null : container.GetNodeOrNull<Control>(model.Id.Entry + "_bg");
-				Action<bool?>? panel = null;
-				if (bg != null)
-					ModEntry.Safe("CharSelectInfo", () => panel = CharSelectInfo.Prepare(__instance));
-				Select(__instance, container, bg, panel);
-			}
+				ApplySelection(__instance, container, charSelectButton, SkinChangerSelect.ShowsJoker);
 		});
+	}
+
+	internal static void ApplySelection(Control screen, Control container, NCharacterSelectButton button,
+		Func<bool?>? selected = null)
+	{
+		bool ShowsJoker() => selected?.Invoke() ?? JokerCostume.Selected;
+		CharacterModel? model = !button.IsRandom && !button.IsLocked && button.Character is Silent && ShowsJoker()
+			? button.Character : null;
+		Control? bg = model == null ? null : container.GetNodeOrNull<Control>(model.Id.Entry + "_bg");
+		if (bg != null && Selections.TryGetValue(screen, out Selection? existing)
+			&& existing.Root is { } root && Fx.Active(root) && root.GetParent() == bg) return;
+		Select(screen, container, bg, () => CharSelectInfo.Prepare(screen), selected: ShowsJoker);
+	}
+
+	internal static void AfterSkinChangerRefresh(NCharacterSelectScreen screen, CharacterModel character, string groupId)
+	{
+		if (character is Silent && Fx.Active(screen) && screen.IsVisibleInTree()
+			&& JokerCostume.ManagedSelection == null
+			&& SelectedButton?.GetValue(screen) is NCharacterSelectButton button && button.Character is Silent
+			&& BgContainer(screen) is Control container)
+		{
+			ApplySelection(screen, container, button, () => SkinChangerSelect.ShowsJoker(groupId));
+		}
 	}
 
 	internal static void SelectDread(Control screen)
 	{
 		if (screen.GetNodeOrNull<Control>("%AnimatedBg") is not Control container) return;
 		// The game resolves the rotating character before creating the background.
-		Control? bg = container.GetChildren().OfType<Control>().FirstOrDefault(c =>
-			c.HasMeta(OriginalBackground) || c.SceneFilePath == SilentBackground);
-		Select(screen, container, bg, null);
+		Control? bg = JokerCostume.Selected ? container.GetChildren().OfType<Control>().FirstOrDefault(c =>
+			c.HasMeta(OriginalBackground) || c.SceneFilePath == SilentBackground) : null;
+		Select(screen, container, bg);
 	}
 
-	private static void Select(Control screen, Control container, Control? bg, Action<bool?>? panel)
+	internal static void Select(Control screen, Control container, Control? bg, Func<Action<bool?>?>? preparePanel = null,
+		bool playIntro = true, Func<bool>? selected = null)
 	{
 		Selection selection = Selections.GetOrCreateValue(screen);
-		int revision = ++selection.Revision;
-		if (bg == null) return;
-		Warmup.MenuShown();
+		if (selection.Root is { } previous && GodotObject.IsInstanceValid(previous))
+		{
+			previous.GetParent()?.RemoveChild(previous);
+			previous.QueueFree();
+		}
+		if (bg == null || !Fx.Active(bg)) return;
+
+		var originalChildren = bg.GetChildren().OfType<CanvasItem>().Where(child => child.Visible).ToArray();
+		// SkinChanger records the new roots at the end of the postfix. Attach the
+		// root now, then stream its textures and children over subsequent frames.
+		Control root = CharSelectScene.CreateRoot(bg);
+		selection.Root = root;
+		Action<bool?>? panel = null;
+		root.TreeExiting += () => ModEntry.Safe("CharSelect restore", () =>
+		{
+			if (selection.Root == root) selection.Root = null;
+			foreach (CanvasItem child in originalChildren)
+				if (GodotObject.IsInstanceValid(child) && child.GetParent() == bg) child.Show();
+			panel?.Invoke(null);
+		});
+		foreach (CanvasItem child in originalChildren) child.Hide();
+		if (preparePanel != null) ModEntry.Safe("CharSelectInfo", () => panel = preparePanel());
 		_ = ShowBackground();
 
 		async Task ShowBackground()
 		{
-			bool Current() => selection.Revision == revision && Fx.Active(screen) &&
-				screen.IsVisibleInTree() && Fx.Active(bg) && bg.GetParent() == container;
+			bool Current() => selection.Root == root && Fx.Active(root) && root.GetParent() == bg
+				&& Fx.Active(bg) && bg.GetParent() == container && Fx.Active(screen) && screen.IsVisibleInTree()
+				&& (selected?.Invoke() ?? JokerCostume.Selected);
 			bool CanDraw() => NGame.Instance?.Transition.InTransition != true;
 			bool ready = false;
 			try
 			{
-				bool intro = CharSelectScene.IntroEnabled();
-			if (await CharSelectScene.BuildAsync(bg, intro, Current, CanDraw, prepareInfo: panel != null) && Current())
+				Warmup.MenuShown();
+				bool intro = playIntro && CharSelectScene.IntroEnabled();
+				if (await CharSelectScene.BuildAsync(root, intro, Current, CanDraw, prepareInfo: panel != null) && Current())
 				{
-					bg.RemoveMeta(OriginalBackground);
+					if (bg.HasMeta(OriginalBackground)) bg.RemoveMeta(OriginalBackground);
 					GD.Print($"[P5Joker] character select background attached: {screen.GetType().Name}");
 					panel?.Invoke(intro);
 					ready = true;
@@ -169,10 +215,67 @@ public static class CharSelectBgPatch
 			}
 			finally
 			{
-				if (!ready) ModEntry.Safe("CharSelectInfo restore", () => panel?.Invoke(null));
+				if (!ready && GodotObject.IsInstanceValid(root)) ModEntry.Safe("CharSelect cleanup", () =>
+				{
+					root.GetParent()?.RemoveChild(root);
+					root.QueueFree();
+				});
 			}
 		}
 	}
+}
+
+// Blitz has a separate selection screen in v0.113. Resolve it at runtime so
+// the same package still loads on versions that predate that mode.
+[HarmonyPatch]
+public static class BlitzSelectBgPatch
+{
+	private static readonly MethodInfo? SelectCharacter = typeof(NCharacterSelectScreen).Assembly
+		.GetType("MegaCrit.Sts2.Core.Nodes.Screens.Blitz.NBlitzScreen")
+		?.GetMethod("SelectCharacter", new[] { typeof(NCharacterSelectButton) });
+
+	public static bool Prepare() => SelectCharacter != null;
+	public static MethodBase? TargetMethod() => SelectCharacter;
+	public static void Prefix(Control __instance, NCharacterSelectButton __0) => CharSelectBgPatch.Prefix(__instance, __0);
+	public static void Finalizer() => CharSelectBgPatch.Finalizer();
+	public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) => CharSelectBgPatch.Transpiler(instructions);
+
+	public static void Postfix(Control __instance, NCharacterSelectButton charSelectButton)
+	{
+		CharSelectSfxMute.Armed = false;
+		ModEntry.Safe("Blitz character select", () =>
+		{
+			if (__instance.GetNodeOrNull<Control>("AnimatedBg") is Control container)
+				CharSelectBgPatch.ApplySelection(__instance, container, charSelectButton);
+		});
+	}
+}
+
+// Resuming multiplayer creates its own character backdrop, for the local saved
+// character on both host and client. Leave the lobby controls and save info alone.
+internal static class MultiplayerResumeBackground
+{
+	private static readonly AccessTools.FieldRef<NMultiplayerLoadGameScreen, Control> BgContainer =
+		AccessTools.FieldRefAccess<NMultiplayerLoadGameScreen, Control>("_bgContainer");
+
+	internal static void Set(NMultiplayerLoadGameScreen screen, bool open) => ModEntry.Safe("Multiplayer resume backdrop", () =>
+	{
+		if (BgContainer(screen) is not Control container) return;
+		Control? bg = open && JokerCostume.Selected ? container.GetNodeOrNull<Control>("SILENT_bg") : null;
+		CharSelectBgPatch.Select(screen, container, bg, playIntro: false);
+	});
+}
+
+[HarmonyPatch(typeof(NMultiplayerLoadGameScreen), nameof(NMultiplayerLoadGameScreen.OnSubmenuOpened))]
+internal static class MultiplayerResumeOpenPatch
+{
+	public static void Postfix(NMultiplayerLoadGameScreen __instance) => MultiplayerResumeBackground.Set(__instance, true);
+}
+
+[HarmonyPatch(typeof(NMultiplayerLoadGameScreen), nameof(NMultiplayerLoadGameScreen.OnSubmenuClosed))]
+internal static class MultiplayerResumeClosePatch
+{
+	public static void Postfix(NMultiplayerLoadGameScreen __instance) => MultiplayerResumeBackground.Set(__instance, false);
 }
 
 // The Dread screen is absent in 0.111. Target its actual visual swap, including
@@ -200,7 +303,7 @@ public static class DreadSelectBgPatch
 			model = screen.Field("_rotatingDisplayCharacterOverride").GetValue<CharacterModel>()
 				?? screen.Field("_rotatingCharacter").GetValue<CharacterModel>() ?? model;
 		}
-		CharSelectSfxMute.Armed = model is Silent;
+		CharSelectSfxMute.Armed = model is Silent && JokerCostume.Selected;
 	}
 
 	public static void Finalizer() => CharSelectBgPatch.Finalizer();
@@ -258,7 +361,8 @@ public static class CharSelectButtonPatch
 	{
 		ModEntry.Safe("CharSelectButton", () =>
 		{
-			if (character is Silent && !__instance.IsLocked && Fx.Tex("cs_button") is Texture2D tex && Icon(__instance) is TextureRect icon)
+			if (character is Silent && !__instance.IsLocked && JokerCostume.Selected
+				&& Fx.Tex("cs_button") is Texture2D tex && Icon(__instance) is TextureRect icon)
 			{
 				icon.Texture = tex;
 			}

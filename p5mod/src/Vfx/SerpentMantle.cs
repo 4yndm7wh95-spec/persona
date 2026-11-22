@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Godot;
 
 namespace P5Joker;
@@ -61,38 +63,109 @@ public sealed class SerpentMantle
 		return o;
 	}
 
-	private sealed record HeadShape(Vector2[] Fixed, int FixedCount, Vector2[] Jaw, int JawCount, Vector2[] UpperLip, Vector2[] LowerLip);
-	private static HeadShape? _headShape;
+	private static readonly Vector2 HeadFieldMin = new(-2.5f, -2.6f), HeadFieldSpan = new(6f, 5.6f);
+	private const int HeadFieldWidth = 224, HeadFieldHeight = 200;
+	private static Task<byte[]>? _headPixels;
+	private static ImageTexture? _headField;
 
-	private static HeadShape MakeHeadShape()
+	internal static void PrepareHead()
+	{
+		if (_headField == null) _headPixels ??= Task.Run(BuildHeadField);
+	}
+
+	internal static bool HeadReady => _headField != null || _headPixels?.IsCompleted == true;
+
+	private static byte[] BuildHeadField()
 	{
 		var up = CatRom(Upper); var mouth = CatRom(Mouth); var jt = CatRom(JawTop); var ju = CatRom(JawUnder);
 		var fixedP = new List<Vector2>(up); fixedP.AddRange(mouth);
 		fixedP.AddRange(new Vector2[] { new(0f, -0.56f), new(-0.3f, -0.56f), new(-0.6f, -0.5f), new(-0.95f, -0.5f) });
 		var jaw = new List<Vector2>(jt); jaw.AddRange(ju.GetRange(1, ju.Count - 2));
-		var f72 = new Vector2[72]; for (int i = 0; i < fixedP.Count && i < 72; i++) f72[i] = fixedP[i];
-		var j60 = new Vector2[60]; for (int i = 0; i < jaw.Count && i < 60; i++) j60[i] = jaw[i];
-		return new HeadShape(f72, Math.Min(fixedP.Count, 72), j60, Math.Min(jaw.Count, 60), mouth.ToArray(), jt.ToArray());
+		var fixedEdges = Edges(fixedP);
+		var jawEdges = Edges(jaw);
+		Half[] pixels = new Half[HeadFieldWidth * HeadFieldHeight * 4];
+		var columns = new (float X, Half Upper, Half Lower)[HeadFieldWidth];
+		for (int x = 0; x < HeadFieldWidth; x++)
+		{
+			float px = HeadFieldMin.X + HeadFieldSpan.X * (x + 0.5f) / HeadFieldWidth;
+			columns[x] = (px, (Half)LipHeight(mouth, px), (Half)LipHeight(jt, px));
+		}
+		for (int y = 0; y < HeadFieldHeight; y++)
+		{
+			float py = HeadFieldMin.Y + HeadFieldSpan.Y * (y + 0.5f) / HeadFieldHeight;
+			for (int x = 0; x < HeadFieldWidth; x++)
+			{
+				var column = columns[x];
+				int index = (y * HeadFieldWidth + x) * 4;
+				pixels[index] = (Half)Distance(fixedEdges, column.X, py);
+				pixels[index + 1] = (Half)Distance(jawEdges, column.X, py);
+				pixels[index + 2] = column.Upper;
+				pixels[index + 3] = column.Lower;
+			}
+		}
+		return MemoryMarshal.AsBytes(pixels.AsSpan()).ToArray();
 	}
 
-	private static void PushHead(ShaderMaterial m)
+	private readonly record struct Edge(Vector2 Start, Vector2 End, Vector2 Delta, float InverseLengthSquared);
+
+	private static Edge[] Edges(List<Vector2> points)
 	{
-		HeadShape head = _headShape ??= MakeHeadShape();
-		m.SetShaderParameter("head_fixed", head.Fixed);
-		m.SetShaderParameter("head_fixed_n", head.FixedCount);
-		m.SetShaderParameter("head_jaw", head.Jaw);
-		m.SetShaderParameter("head_jaw_n", head.JawCount);
-		m.SetShaderParameter("lip_up", head.UpperLip);
-		m.SetShaderParameter("lip_low", head.LowerLip);
+		var edges = new Edge[points.Count];
+		for (int i = 0, previous = points.Count - 1; i < points.Count; previous = i++)
+		{
+			Vector2 delta = points[previous] - points[i];
+			edges[i] = new Edge(points[i], points[previous], delta, 1f / MathF.Max(delta.LengthSquared(), 1e-8f));
+		}
+		return edges;
 	}
 
-	private static Shader Shade => _shader ??= new Shader { Code = @"
+	private static float Distance(Edge[] edges, float x, float y)
+	{
+		float nearest = float.MaxValue;
+		bool inside = false;
+		foreach (ref readonly Edge edge in edges.AsSpan())
+		{
+			float wx = x - edge.Start.X, wy = y - edge.Start.Y;
+			float dx = edge.Delta.X, dy = edge.Delta.Y;
+			float h = Math.Clamp((wx * dx + wy * dy) * edge.InverseLengthSquared, 0f, 1f);
+			float sx = wx - dx * h, sy = wy - dy * h;
+			nearest = MathF.Min(nearest, sx * sx + sy * sy);
+			bool upward = y >= edge.Start.Y;
+			if (upward == (y < edge.End.Y) && upward == (dx * wy - dy * wx > 0f)) inside = !inside;
+		}
+		return MathF.Sqrt(nearest) * (inside ? -1f : 1f);
+	}
+
+	private static float LipHeight(List<Vector2> points, float x)
+	{
+		for (int i = 0; i < points.Count - 1; i++)
+		{
+			Vector2 a = points[i], b = points[i + 1];
+			if (x <= a.X && x >= b.X) return Mathf.Lerp(a.Y, b.Y, (x - a.X) / MathF.Min(b.X - a.X, -1e-4f));
+		}
+		return x > points[0].X ? points[0].Y : points[^1].Y;
+	}
+
+	private static Texture2D HeadField()
+	{
+		if (_headField != null) return _headField;
+		PrepareHead();
+		byte[] data = _headPixels!.GetAwaiter().GetResult();
+		using Image image = Image.CreateFromData(HeadFieldWidth, HeadFieldHeight, false, Image.Format.Rgbah, data);
+		_headPixels = null;
+		return _headField = ImageTexture.CreateFromImage(image);
+	}
+
+	private static Shader Shade => _shader ??= SerpentMist.WithCellNoise(@"
 shader_type canvas_item;
 render_mode blend_premul_alpha;
 uniform vec4 spine[160];        // 5 条 × 32 点：xy 相对脚底的像素，z 深度（> 0 在 Joker 前面），w 透明度；0 = 尾，27 = 头根，31 = 吻尖
 uniform vec4 box[5];
-uniform float girth[5];
-uniform vec2 hup[5];
+uniform vec4 segment_groups[15]; // 3 bounds per serpent, 9 body segments in each
+uniform int first_serpent = 0;
+uniform int serpents_end = 5;
+uniform vec4 body_params[5];     // girth, dissolve, mouth, smoke shift
+uniform vec4 head_params[5];     // head up direction xy, wake z
 uniform vec3 eyes[5];           // xy 位置，z 亮度
 uniform vec2 origin;
 uniform vec3 nest;               // 蛇巢：xy 中心（相对脚底），z 半径；五条蛇的尾巴都收进这一团咒烟
@@ -101,57 +174,22 @@ uniform vec2 size;
 uniform float side = 1.0;
 uniform float clock = 0.0;
 uniform float unit = 300.0;     // Joker 身高（像素）
-uniform float diss[5];          // 每条蛇散成烟的程度（攻击时 0 → 1 → 0）
 uniform vec4 puff[15];          // 咒烟团（每发攻击 3 个：烟团、咬中、原位留下的残烟）：xy 中心，z 进度（0～1；< 0 没有），w 大小（像素；负数 = 咬中那一团，中间带一下光）
 uniform vec4 streak[5];        // 攻击的烟迹：xy 尾、zw 头（相对脚底）；蛇在原位散掉的同时化成一道咒烟飞向敌人上方
 uniform float streak_a[5];     // 烟迹的浓度（0 = 没有）
 uniform float ember = 0.0;     // 蛇咬单独出场（没有群蛇的红雾场景，背景暗）：边里的暗红透光更足、外面一圈暗红的晕，看得清
-uniform float mouth[5];         // 嘴张多大：0 平时微张，1 张到最大，< 0 合上
-uniform float nshift[5];        // 身体噪声沿身长方向的平移（蛇咬身后那道咒烟：纹理钉在路上，不跟着蛇跑）
-uniform float wake[5];          // 1 = 蛇咬身后拖着的那道咒烟：粗细匀、更散更透、红光弱（不像一道发光的线）
-// 蛇头的轮廓（照 docs/p5/preview/serpent_head_plan.png 的点，tools/p5/diagrams/serpent_head_plan.py 同一组；单位 = 脖子粗细 W，x 朝吻尖，y 朝上）
-uniform vec2 head_fixed[72];    // 不动的部分：脖子上沿 → 后脑 → 头顶 → 眉骨 → 吻尖 → 嘴线 → 铰点 → 后脑下沿 → 脖子下沿
-uniform int head_fixed_n = 0;
-uniform vec2 head_jaw[60];      // 下颚：嘴线（下巴 → 铰点）+ 下沿（铰点 → 颚角 → 下巴）
-uniform int head_jaw_n = 0;
-uniform vec2 lip_up[26];        // 上唇（嘴线，吻尖 → 铰点）
-uniform vec2 lip_low[26];       // 下唇（下巴 → 铰点，下颚自己的坐标）
+// RG = signed distances for the head and jaw. BA = their lip heights.
+uniform sampler2D head_field : filter_linear, repeat_disable;
+uniform vec2 head_field_min;
+uniform vec2 head_field_span;
 
-float h21(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
-float vn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
-	return mix(mix(h21(i), h21(i + vec2(1, 0)), f.x), mix(h21(i + vec2(0, 1)), h21(i + vec2(1, 1)), f.x), f.y); }
-float fbm(vec2 p) { return vn(p) * 0.5 + vn(p * 2.03 + 5.1) * 0.3 + vn(p * 4.1 + 1.7) * 0.2; }
+vec4 headAt(vec2 p) {
+	return textureLod(head_field, (p - head_field_min) / head_field_span, 0.0);
+}
+
+" + SerpentMist.CellNoise + @"
+float fbm(vec2 p) { return cell_noise(p) * 0.5 + cell_noise(p * 2.03 + 5.1) * 0.3 + cell_noise(p * 4.1 + 1.7) * 0.2; }
 float ease3(float x) { return 1.0 - pow(1.0 - clamp(x, 0.0, 1.0), 3.0); }
-float sdPolyFixed(vec2 p) {
-	float d = dot(p - head_fixed[0], p - head_fixed[0]); float sg = 1.0;
-	for (int i = 0, j = head_fixed_n - 1; i < head_fixed_n; j = i, i++) {
-		vec2 e = head_fixed[j] - head_fixed[i], w = p - head_fixed[i];
-		vec2 b = w - e * clamp(dot(w, e) / dot(e, e), 0.0, 1.0);
-		d = min(d, dot(b, b));
-		bvec3 c = bvec3(p.y >= head_fixed[i].y, p.y < head_fixed[j].y, e.x * w.y > e.y * w.x);
-		if (all(c) || all(not(c))) sg *= -1.0;
-	}
-	return sg * sqrt(d);
-}
-float sdPolyJaw(vec2 p) {
-	float d = dot(p - head_jaw[0], p - head_jaw[0]); float sg = 1.0;
-	for (int i = 0, j = head_jaw_n - 1; i < head_jaw_n; j = i, i++) {
-		vec2 e = head_jaw[j] - head_jaw[i], w = p - head_jaw[i];
-		vec2 b = w - e * clamp(dot(w, e) / dot(e, e), 0.0, 1.0);
-		d = min(d, dot(b, b));
-		bvec3 c = bvec3(p.y >= head_jaw[i].y, p.y < head_jaw[j].y, e.x * w.y > e.y * w.x);
-		if (all(c) || all(not(c))) sg *= -1.0;
-	}
-	return sg * sqrt(d);
-}
-// 唇线在 x 处的高度（点按 x 从大到小排）
-float lipY(vec2 pts[26], float x) {
-	for (int i = 0; i < 25; i++) {
-		vec2 a = pts[i], b = pts[i + 1];
-		if (x <= a.x && x >= b.x) return mix(a.y, b.y, (x - a.x) / min(b.x - a.x, -1e-4));
-	}
-	return x > pts[0].x ? pts[0].y : pts[25].y;
-}
 vec2 rotAbout(vec2 p, vec2 c, float a) { float s = sin(a), co = cos(a); p -= c; return c + vec2(co * p.x - s * p.y, s * p.x + co * p.y); }
 float smin(float a, float b, float k) { float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0); return mix(b, a, h) - k * h * (1.0 - h); }
 
@@ -165,7 +203,20 @@ float bodyR(float s) {
 }
 
 // 每一小段的半径（× girth）：身后那道咒烟粗细匀一些，越老的一头（s → 1）越散越粗
-float segR(int j, float s) { return wake[j] > 0.5 ? 0.42 + 0.3 * s : bodyR(s); }
+float segR(float wake, float s) { return wake > 0.5 ? 0.42 + 0.3 * s : bodyR(s); }
+
+// Same projection and radius in the nearest segment, crossing, and lighting passes.
+bool segmentVisible(vec4 a, vec4 b) {
+	return max(a.w, b.w) > 0.001 && (side > 0.0 ? max(a.z, b.z) > -0.05 : min(a.z, b.z) <= 0.15);
+}
+float segmentDistance(float g, float wake, int k, vec2 p, vec4 a, vec4 b, out float h) {
+	vec2 ab = b.xy - a.xy;
+	h = clamp(dot(p - a.xy, ab) / max(dot(ab, ab), 1e-3), 0.0, 1.0);
+	return length(p - (a.xy + ab * h)) - g * segR(wake, (float(k) + h) / 27.0);
+}
+bool outside_group(vec2 p, vec4 bounds, vec2 pad) {
+	return any(lessThan(p, bounds.xy - pad)) || any(greaterThan(p, bounds.zw + pad));
+}
 
 // 叠一层（预乘）
 void over(inout vec4 acc, vec3 c, float a) { acc.rgb += (1.0 - acc.a) * c * a; acc.a += (1.0 - acc.a) * a; }
@@ -177,37 +228,62 @@ void fragment() {
 	// 每条蛇是「一个」形状（2026-11-11 重写：以前蛇身管道和头的轮廓各画各的、靠替换 / 裁掉拼起来，越改越错位）：
 	// 蛇身 = 一根粗细连续变化的管子（所有小段的并集，交叉处不会互相挖空）；头 = 示意图的轮廓（docs/p5/preview/serpent_head_plan.png），
 	// 以颈根为原点、沿脖子末端的方向放，和管子平滑地融成一个形状。烟、透光、层次都对这一个形状算；嘴、牙、舌头只在头的坐标里画。
-	for (int j = 0; j < 5; j++) {
+	for (int j = first_serpent; j < serpents_end; j++) {
 		vec4 bb = box[j];
 		if (p.x < bb.x || p.y < bb.y || p.x > bb.z || p.y > bb.w) continue;
-		float g = girth[j];
-		float dj = diss[j];
+		vec4 bp = body_params[j], hp = head_params[j];
+		float g = bp.x, dj = bp.y, wake = hp.z;
 		// ── 蛇身：脊线 0～27（27 = 颈根）上每一小段是一个圆头的管子 ──
 		// 交叉的地方分前后（2026-11-11 用户：提亮以后蛇身一节一节的——以前所有小段取并集当一个形状算明暗，
 		// 身体自己交叉 / 两段重叠的地方在交界上折出一道痕）：先找离得最近的那段；如果这个像素同时在身体另一截
 		// （脊线上隔得远的段）里面、而那一截更靠前，就用那一截自己的轮廓算明暗，盖在后面那截上。轮廓（透明度）仍取并集。
-		float sdArr[27];
-		float zArr[27];
-		float sdU = 1e9; int kb = -1;
-		for (int k = 0; k < 27; k++) {
-			sdArr[k] = 1e9; zArr[k] = -9.0;
-			vec4 a = spine[j * 32 + k], b = spine[j * 32 + k + 1];
-			if (max(a.w, b.w) <= 0.001) continue;
-			// 前后两层在 z = 0 附近重叠一段（前景层在那里渐渐淡掉），绕到身后的地方不会断成一个圆头（用户：一节一节的）
-			if (side > 0.0 ? max(a.z, b.z) <= -0.05 : min(a.z, b.z) > 0.15) continue;
-			vec2 ab = b.xy - a.xy;
-			float h = clamp(dot(p - a.xy, ab) / max(dot(ab, ab), 1e-3), 0.0, 1.0);
-			vec2 cq = a.xy + ab * h;
-			float sk = (float(k) + h) / 27.0;
-			float sdk = length(p - cq) - g * segR(j, sk);
-			sdArr[k] = sdk; zArr[k] = mix(a.z, b.z, h);
-			if (sdk < sdU) { sdU = sdk; kb = k; }
+		// ── 头：示意图的轮廓，单位 W = 脖子粗细；原点在颈根后 0.3 W（示意图 x = -0.3 是颈根）──
+		vec4 root = spine[j * 32 + 27];
+		vec2 hDir = normalize(spine[j * 32 + 31].xy - root.xy + vec2(1e-4));
+		float Wd = g * 1.16;
+		vec2 q = vec2(dot(p - root.xy, hDir) / Wd - 0.3, dot(p - root.xy, hp.xy) / Wd);
+		bool headHere = root.w > 0.001 && (side > 0.0 ? root.z > 0.0 : root.z <= 0.0) && q.x > -1.3 && q.x < 2.5 && abs(q.y) < 1.8;
+		// A segment outside this band cannot contribute to a visible body
+		// pixel. Near the head, keep every candidate for the smooth join.
+		vec2 bodyBand = vec2(g * 0.72 + 2.2 * max(g * 0.72, 0.5));
+		bool cullDistantSegments = !headHere;
+		float sdU = 1e9, nearestZ = 0.0;
+		int kb = -1;
+		for (int group = 0; group < 3; group++) {
+			if (cullDistantSegments && outside_group(p, segment_groups[j * 3 + group], bodyBand)) continue;
+			for (int k = group * 9; k < (group + 1) * 9; k++) {
+				vec4 a = spine[j * 32 + k], b = spine[j * 32 + k + 1];
+				if (!segmentVisible(a, b)) continue;
+				if (cullDistantSegments && (any(lessThan(p, min(a.xy, b.xy) - bodyBand)) ||
+					any(greaterThan(p, max(a.xy, b.xy) + bodyBand)))) continue;
+				float h;
+				float sdk = segmentDistance(g, wake, k, p, a, b, h);
+				if (sdk < sdU) {
+					sdU = sdk;
+					kb = k;
+					nearestZ = mix(a.z, b.z, h);
+				}
+			}
 		}
 		int kc = kb;
-		if (kb >= 0) {
-			float zb = zArr[kb], zf = zb + 0.02;
-			for (int k = 0; k < 27; k++) {
-				if (abs(k - kb) > 3 && sdArr[k] < 0.0 && zArr[k] > zf) { zf = zArr[k]; kc = k; }
+		// A crossing can only cover this pixel if at least one segment contains it.
+		// Revisit candidates here instead of keeping two per-pixel arrays.
+		if (sdU < 0.0) {
+			float zf = nearestZ + 0.02;
+			vec2 maxRadius = vec2(g * 0.72);
+			for (int group = 0; group < 3; group++) {
+				if (outside_group(p, segment_groups[j * 3 + group], maxRadius)) continue;
+				for (int k = group * 9; k < (group + 1) * 9; k++) {
+					if (abs(k - kb) <= 3) continue;
+					vec4 a = spine[j * 32 + k], b = spine[j * 32 + k + 1];
+					if (max(a.z, b.z) <= zf || !segmentVisible(a, b)) continue;
+					if (any(lessThan(p, min(a.xy, b.xy) - maxRadius)) ||
+						any(greaterThan(p, max(a.xy, b.xy) + maxRadius))) continue;
+					float h;
+					float sdk = segmentDistance(g, wake, k, p, a, b, h);
+					float zk = mix(a.z, b.z, h);
+					if (sdk < 0.0 && zk > zf) { zf = zk; kc = k; }
+				}
 			}
 		}
 		// 选中的那一截：在它前后 2 段里取最近的（同一截里换段是连续的，不会折）
@@ -215,35 +291,32 @@ void fragment() {
 		vec2 bq = p;
 		if (kc >= 0) {
 			for (int k = max(kc - 2, 0); k <= min(kc + 2, 26); k++) {
-				if (sdArr[k] > 1e8) continue;
 				vec4 a = spine[j * 32 + k], b = spine[j * 32 + k + 1];
+				if (!segmentVisible(a, b)) continue;
 				vec2 ab = b.xy - a.xy;
 				float h = clamp(dot(p - a.xy, ab) / max(dot(ab, ab), 1e-3), 0.0, 1.0);
 				vec2 cq = a.xy + ab * h;
 				float sk = (float(k) + h) / 27.0;
-				float rk = g * segR(j, sk);
+				float rk = g * segR(wake, sk);
 				float sdk = length(p - cq) - rk;
 				if (sdk < sdB) { sdB = sdk; bs = sk; bz = mix(a.z, b.z, h); ba = mix(a.w, b.w, h); bq = cq; br = rk; }
 			}
 		}
 		bool layered = kc != kb;
-		// ── 头：示意图的轮廓，单位 W = 脖子粗细；原点在颈根后 0.3 W（示意图 x = -0.3 是颈根）──
-		vec4 root = spine[j * 32 + 27];
-		vec2 hDir = normalize(spine[j * 32 + 31].xy - root.xy + vec2(1e-4));
-		float Wd = g * 1.16;
-		vec2 q = vec2(dot(p - root.xy, hDir) / Wd - 0.3, dot(p - root.xy, hup[j]) / Wd);
-		bool headHere = root.w > 0.001 && (side > 0.0 ? root.z > 0.0 : root.z <= 0.0) && q.x > -1.3 && q.x < 2.5 && abs(q.y) < 1.8;
-		float mo = mouth[j];
+		float mo = bp.z;
 		float openA = radians(mo < 0.0 ? 0.0 : 12.0 + 28.0 * mo);   // 平时 12°，扑咬 40°，咬住 0°
 		float upA = radians(mo > 0.0 ? 8.0 * mo : 0.0);
 		vec2 HINGE = vec2(0.06, -0.3);
 		vec2 qu = rotAbout(q, HINGE, -upA);
 		vec2 ql = rotAbout(q, HINGE, openA);
+		vec4 upperField = vec4(0.0), lowerField = vec4(0.0);
 		float sdH = 1e9;
 		if (headHere) {
 			// 示意图的「不动部分」带着一截脖子（x < -0.3），这里只要头：颈根往后切掉，脖子由管子负责
-			float dF = max(sdPolyFixed(qu), -0.25 - qu.x);
-			float dJ = sdPolyJaw(ql);
+			upperField = headAt(qu);
+			lowerField = headAt(ql);
+			float dF = max(upperField.r, -0.25 - qu.x);
+			float dJ = lowerField.g;
 			sdH = smin(dF, dJ, 0.05) * Wd;
 		}
 		if (sdB > 1e8 && sdH > 1e8) continue;
@@ -258,10 +331,10 @@ void fragment() {
 		vec2 hc = root.xy + hDir * Wd * 0.9;                        // 头中间（算头上的光照方向）
 		vec2 n2 = normalize(mix(p - bq, p - hc, headness) + vec2(1e-4));
 		float hx = clamp(q.x, -0.3, 1.6);
-		float L = mix(bs * 11.0 + nshift[j], 11.0 + hx * 1.5, headness);
+		float L = mix(bs * 11.0 + bp.w, 11.0 + hx * 1.5, headness);
 		float acr = rr * (n2.y < 0.0 ? 1.0 : -1.0);
 		float nz = fbm(vec2(L * 2.2 - clock * 1.3, acr * 1.1 - clock * 0.2) + float(j) * 11.0);
-		float fine = vn(vec2(L * 3.5 - clock * 2.6, acr * 3.0) + float(j) * 4.0);
+		float fine = cell_noise(vec2(L * 3.5 - clock * 2.6, acr * 3.0) + float(j) * 4.0);
 		float nz2 = fbm(vec2(L * 2.0 - clock * 1.8, acr * 1.6) + float(j) * 2.0);
 		float flick = fbm(vec2(L * 1.7 - clock * 2.2, acr * 2.0) + 3.0 + float(j));
 		// 烟：身体边上细碎、尾巴散开；头上后脑带一点，吻部、颚、嘴线保持干净
@@ -270,15 +343,15 @@ void fragment() {
 			+ (1.0 - smoothstep(0.0, 0.25, bs)) * nz * 0.6 * (1.0 - headness);
 		torn += dj * (0.5 + nz * 1.8);                              // 散成烟
 		float e = sdn + torn;
-		float dens = smoothstep(0.16, -0.3, e) * (1.0 - dj * 0.6) * (1.0 - 0.15 * wake[j]);   // 边缘更软、半透（2026-11-11 用户：通体乌黑不好看）
+		float dens = smoothstep(0.16, -0.3, e) * (1.0 - dj * 0.6) * (1.0 - 0.15 * wake);   // 边缘更软、半透（2026-11-11 用户：通体乌黑不好看）
 		// 前面那截的边缘下面是后面那截的身体，不能透出背景：透明度按并集的轮廓
 		if (layered) dens = max(dens, smoothstep(0.16, -0.3, sdU / max(br, 0.5) + 1.0 + torn) * (1.0 - dj * 0.6) * 0.92);
 		// 颜色：近黑的烟；边里面断断续续透一点暗红；朝上一侧一道细的暗红边光（头只在上半边，下颚不勾线）
 		float lit = 0.55 + 0.45 * smoothstep(-0.5, 0.8, -n2.y);
 		float shell = smoothstep(-0.34, -0.05, e) * (1.0 - smoothstep(-0.05, 0.1, e));
 		float upOnly = mix(1.0, smoothstep(-0.2, 0.15, qu.y), headness);
-		vec3 emit = vec3(0.6, 0.05, 0.07) * shell * smoothstep(0.5 - 0.3 * ember, 0.82, flick) * 1.1 * lit * (1.0 + dj * 1.5) * upOnly * (1.0 + 1.4 * ember) * (1.0 - 0.6 * wake[j]);
-		glow += vec3(0.75, 0.04, 0.1) * exp(-max(e, 0.0) * 2.2) * step(0.0, e) * ember * 0.3 * ba * (1.0 - dj) * (1.0 - wake[j]);
+		vec3 emit = vec3(0.6, 0.05, 0.07) * shell * smoothstep(0.5 - 0.3 * ember, 0.82, flick) * 1.1 * lit * (1.0 + dj * 1.5) * upOnly * (1.0 + 1.4 * ember) * (1.0 - 0.6 * wake);
+		glow += vec3(0.75, 0.04, 0.1) * exp(-max(e, 0.0) * 2.2) * step(0.0, e) * ember * 0.3 * ba * (1.0 - dj) * (1.0 - wake);
 		// 体积（用户 2026-11-11：蛇通体乌漆嘛黑不好看，但太亮又会露出没细节）：只用大面积的柔和过渡，不加线条亮斑——
 		// 核心深，往边缘渐渐变成背光透过来的暗红烟；朝上的一侧整体亮一点；烟里的明暗随噪声慢慢流动
 		vec3 inner = mix(vec3(0.045, 0.009, 0.014), vec3(0.13, 0.026, 0.034), smoothstep(0.35, 0.9, nz2));
@@ -300,7 +373,7 @@ void fragment() {
 		float scH = fract(sin(dot(scCell + float(j) * 7.0, vec2(12.9898, 78.233))) * 43758.5453);
 		float scBody = smoothstep(0.95, 0.4, rr) * smoothstep(0.06, 0.25, bs);
 		float scHead = smoothstep(-0.12, 0.18, qu.y) * smoothstep(1.4, 0.95, q.x) * smoothstep(-0.45, -0.15, q.x) * 0.7;
-		float scMask = mix(scBody, scHead, headness) * (1.0 - dj) * (1.0 - wake[j]);
+		float scMask = mix(scBody, scHead, headness) * (1.0 - dj) * (1.0 - wake);
 		inner *= mix(1.0, (1.0 - 0.54 * scGroove) * (0.82 + 0.36 * scH), scMask * 0.9);   // 2026-11-19 用户：鳞片感再加重约 80%
 		vec2 scG = scF - vec2(0.0, 0.32);
 		float scSpot = exp(-dot(scG, scG) * 16.0) * (1.0 - scGroove);
@@ -324,8 +397,8 @@ void fragment() {
 			float hw = smoothstep(-0.3, 0.0, q.x) * (1.0 - dj);
 			// 口腔：上唇和下唇之间，嘴角最深（近黑），往吻尖淡掉（前面透出后面）
 			if (openA > 0.001 && q.x > HINGE.x) {
-				float upLip = lipY(lip_up, qu.x);
-				float lowLip = lipY(lip_low, ql.x);
+				float upLip = upperField.b;
+				float lowLip = lowerField.a;
 				float inGap = smoothstep(0.015, -0.015, qu.y - upLip) * smoothstep(-0.015, 0.015, ql.y - lowLip);
 				float th = inGap * clamp((1.35 - q.x) / 0.6, 0.0, 1.0) * hw;
 				vec3 throatC = mix(vec3(0.015, 0.002, 0.005), vec3(0.27, 0.047, 0.07), smoothstep(HINGE.x, HINGE.x + 0.55, q.x)) * (0.85 + 0.3 * nz);
@@ -387,7 +460,7 @@ void fragment() {
 			float d = length(dv);
 			if (d > 2.2) continue;
 			float pn = fbm(dv * 2.4 + vec2(0.0, -k * 1.6) + float(i) * 7.0);
-			float pf = vn(dv * 6.0 - k * 3.0 + float(i));
+			float pf = cell_noise(dv * 6.0 - k * 3.0 + float(i));
 			float R = 0.45 + 0.75 * ease3(k);
 			float body = smoothstep(R, R * 0.25, d + (pn - 0.5) * 0.6 + (pf - 0.5) * 0.12) * pow(1.0 - k, 1.3);
 			float hole = puff[i].w < 0.0 ? mix(1.0, smoothstep(0.0, R * 0.7, d), smoothstep(0.0, 0.4, k)) : 1.0;   // 炸开的那团中间先空
@@ -422,20 +495,23 @@ void fragment() {
 	if (side < 0.0 && nest_a > 0.0) {
 		vec2 dv = (p - nest.xy) / nest.z;
 		float d = length(dv * vec2(0.85, 1.15));
-		float nn = fbm(dv * 1.6 + vec2(clock * 0.15, clock * 0.35));
-		float nf = vn(dv * 4.5 - vec2(0.0, clock * 0.8));
-		float body = smoothstep(1.0, 0.25, d + (nn - 0.5) * 0.6 + (nf - 0.5) * 0.12);
-		float rise = smoothstep(0.5, 0.85, fbm(vec2(dv.x * 2.0, dv.y * 1.2 + clock * 0.6) + 4.0)) * smoothstep(1.9, 0.6, d) * smoothstep(0.6, -0.6, dv.y) * 0.5;
-		vec3 nc = mix(vec3(0.015, 0.003, 0.007), vec3(0.09, 0.016, 0.024), smoothstep(0.35, 0.8, nn));
-		nc += vec3(0.4, 0.035, 0.05) * smoothstep(0.7, 0.9, nf) * smoothstep(0.9, 0.3, d) * 0.3;
-		over(acc, nc, clamp(body * 0.92 + rise * (1.0 - body), 0.0, 1.0) * nest_a);
+		// Both the body and the rising wisps are zero past this radius.
+		if (d < 1.9) {
+			float nn = fbm(dv * 1.6 + vec2(clock * 0.15, clock * 0.35));
+			float nf = cell_noise(dv * 4.5 - vec2(0.0, clock * 0.8));
+			float body = smoothstep(1.0, 0.25, d + (nn - 0.5) * 0.6 + (nf - 0.5) * 0.12);
+			float rise = smoothstep(0.5, 0.85, fbm(vec2(dv.x * 2.0, dv.y * 1.2 + clock * 0.6) + 4.0)) * smoothstep(1.9, 0.6, d) * smoothstep(0.6, -0.6, dv.y) * 0.5;
+			vec3 nc = mix(vec3(0.015, 0.003, 0.007), vec3(0.09, 0.016, 0.024), smoothstep(0.35, 0.8, nn));
+			nc += vec3(0.4, 0.035, 0.05) * smoothstep(0.7, 0.9, nf) * smoothstep(0.9, 0.3, d) * 0.3;
+			over(acc, nc, clamp(body * 0.92 + rise * (1.0 - body), 0.0, 1.0) * nest_a);
+		}
 	}
 	acc.rgb += glow * (1.0 - acc.a * 0.4);
 	acc.a = clamp(acc.a + dot(glow, vec3(0.33)) * 0.6, 0.0, 1.0);
 	if (acc.a <= 0.002) discard;
 	COLOR = acc;
 }
-" };
+");
 
 
 
@@ -462,12 +538,18 @@ void fragment() {
 	private readonly Control _front, _back;
 	private Func<(Vector2 Feet, float Tall, float Face)?> _body;
 	private bool _live;
-	private readonly Node2D _frontRoot, _backRoot;
+	private readonly Node2D _frontRoot;
+	private readonly Node2D? _backRoot;
 	private readonly Control _top = null!;
-	private readonly ShaderMaterial _frontM, _backM;
+	private readonly ShaderMaterial _frontM;
+	private readonly ShaderMaterial? _backM;
+	private readonly ColorRect _frontQuad;
+	private readonly ColorRect? _backQuad;
 	private readonly SceneTree _tree;
 	private readonly Vector4[] _spine = new Vector4[Count * N];
 	private readonly Vector4[] _box = new Vector4[Count];
+	private readonly Vector4[] _segmentGroups = new Vector4[Count * 3];
+	private readonly Vector4[] _bodyParams = new Vector4[Count], _headParams = new Vector4[Count];
 	private readonly float[] _girth = new float[Count];
 	private readonly Vector2[] _hup = new Vector2[Count];
 	private readonly Vector3[] _eyes = new Vector3[Count];
@@ -487,10 +569,10 @@ void fragment() {
 	private readonly ShaderMaterial? _eclipseM;
 	private float _eclPulse;
 	private readonly ShaderMaterial? _skyM, _mistFrontM;
-	private readonly ColorRect? _mistFrontQuad;
+	private readonly ColorRect? _skyQuad, _mistFrontQuad;
 	private readonly bool _biteOnly;   // 只有一条蛇从咒烟里冒出来咬一口（蛇咬那张牌用，Bite）：没有场景、蛇巢、其它几条
 	/// <summary>蛇咬第四版（Lunge）：一条蛇从 Joker 身边聚出来，整段扑咬（窜出去 → 化成烟迹飞过去 → 敌人上方聚出蛇头 → 咬），咬完散掉不回来。</summary>
-	private bool _solo;
+	private readonly bool _solo;
 	private int _nextSerpent;
 
 	private sealed class Attack
@@ -585,7 +667,7 @@ void fragment() {
 	public static float Lunge(Control front, Control back, Vector2 feet, float tall, float face, Vector2 target, Node2D? body)
 	{
 		float T = tall * LungeScale;
-		var m = new SerpentMantle(front, back, () => (feet, T, face), live: false, biteOnly: true) { _solo = true, _show = 1f };
+		var m = new SerpentMantle(front, back, () => (feet, T, face), live: false, biteOnly: true, solo: true) { _show = 1f };
 		// 第八版（用户画的线路）：蛇从他伸出的手里冲出来，整条沿「往前 → 往上兜一圈 → 俯冲」的路线游过去（身体跟着头走过的路）
 		Vector2 hand = new(face * tall * 0.3f, -tall * 0.83f);
 		m._attacks[0] = new Attack { Serpent = LungeSerpent, Target = target - feet, Body = body, T = 0f, Side = 1f, From = hand };
@@ -621,9 +703,10 @@ void fragment() {
 		if (Current != null && Current._fadeOut < 0f) Current._fadeOut = 0f;
 	}
 
-	private SerpentMantle(Control front, Control back, Func<(Vector2 Feet, float Tall, float Face)?> body, bool live, bool biteOnly = false)
+	private SerpentMantle(Control front, Control back, Func<(Vector2 Feet, float Tall, float Face)?> body, bool live, bool biteOnly = false, bool solo = false)
 	{
 		_biteOnly = biteOnly;
+		_solo = solo;
 		_front = front;
 		_back = back;
 		_body = body;
@@ -638,7 +721,21 @@ void fragment() {
 		_top = new Control { Name = "P5SerpentTop", ZIndex = 5, MouseFilter = Control.MouseFilterEnum.Ignore };
 		front.AddChild(_top);
 		_frontRoot.TreeExiting += () => { if (GodotObject.IsInstanceValid(_top)) _top.QueueFree(); };
-		(_backRoot, _backM) = Make(back, feet, rect, -1f, "P5SerpentsBack");
+		_frontQuad = _frontRoot.GetChild<ColorRect>(0);
+		_frontQuad.Hide();
+		if (solo)
+		{
+			// Snakebite's snake and smoke trail both have positive depth for the entire shot.
+			_frontM.SetShaderParameter("ember", 1f);
+			_frontM.SetShaderParameter("first_serpent", LungeSerpent);
+			_frontM.SetShaderParameter("serpents_end", WakeSerpent + 1);
+		}
+		else
+		{
+			(_backRoot, _backM) = Make(back, feet, rect, -1f, "P5SerpentsBack");
+			_backQuad = _backRoot.GetChild<ColorRect>(0);
+			_backQuad.Hide();
+		}
 		for (int i = 0; i < Count; i++) _girth[i] = 0.068f * tall * Orbits[i].Size;   // 修长：细一些、长一些（第三版：再细，用户说太肥）
 		if (!biteOnly)
 		{
@@ -646,21 +743,27 @@ void fragment() {
 		back.MoveChild(_skyRoot, 0);   // 固定顺序（2026-11-13）：群蛇场景永远在背景层最底下，子弹时间的褪色 / 钟紧跟在它后面（TimeStop）
 		// 场景：咒雾漫地（Vfx/SerpentMist.cs；2026-11-11 用户：日蚀不搭、太耀眼，换掉）。背景层调色 + 雾 + 雾里的巨蛇背，前景层只有贴地的雾丝
 		_skyM = new ShaderMaterial { Shader = SerpentMist.Shader };
-		var skyRect = new ColorRect { Size = Fx.Screen(back), Material = _skyM, MouseFilter = Control.MouseFilterEnum.Ignore };
-		_skyRoot.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });   // 读屏前先刷新（和子弹时间的褪色叠在一起时不读到旧画面）
-		_skyRoot.AddChild(skyRect);
-		Fx.Clock(skyRect);
+		_skyQuad = new ColorRect { Material = _skyM, MouseFilter = Control.MouseFilterEnum.Ignore, Visible = false };
+		var skyCopy = new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport, Visible = false };
+		_skyRoot.AddChild(skyCopy);
+		_skyRoot.AddChild(_skyQuad);
+		ColorRect skyQuad = _skyQuad;
+		skyQuad.VisibilityChanged += () =>
+		{
+			if (GodotObject.IsInstanceValid(skyCopy)) skyCopy.Visible = skyQuad.IsVisibleInTree();
+		};
+		Fx.Clock(skyQuad);
 		// 身后的日食（用户 2026-11-13）：在咒雾场景上面、蛇和人物后面；直径 1.15 倍身高
 		_eclipseRoot = new Node2D { Name = "P5SerpentEclipse" };
 		back.AddChild(_eclipseRoot);
 		back.MoveChild(_eclipseRoot, _skyRoot.GetIndex() + 1);
 		_eclipseM = new ShaderMaterial { Shader = SerpentEclipse.Shader };
+		_eclipseM.SetShaderParameter("alpha", 0f);
 		var ecl = new ColorRect { Size = new Vector2(2f, 2f), Position = new Vector2(-1f, -1f), Material = _eclipseM, MouseFilter = Control.MouseFilterEnum.Ignore };
 		_eclipseRoot.AddChild(ecl);
 		Fx.Clock(ecl);
 		_mistFrontRoot = Fx.ScreenRoot(front, "P5SerpentMistFront");
-		_mistFrontM = new ShaderMaterial { Shader = SerpentMist.Shader };
-		_mistFrontM.SetShaderParameter("foreground", true);
+		_mistFrontM = new ShaderMaterial { Shader = SerpentMist.ForegroundShader };
 		_mistFrontQuad = new ColorRect { Material = _mistFrontM, MouseFilter = Control.MouseFilterEnum.Ignore };
 		_mistFrontRoot.AddChild(_mistFrontQuad);
 		Fx.Clock(_mistFrontQuad);
@@ -671,7 +774,7 @@ void fragment() {
 		_frontRoot.TreeExiting += Detach;
 	}
 
-	private bool Valid => GodotObject.IsInstanceValid(_frontRoot) && GodotObject.IsInstanceValid(_backRoot);
+	private bool Valid => GodotObject.IsInstanceValid(_frontRoot) && (_solo || GodotObject.IsInstanceValid(_backRoot));
 
 	internal static void Warm(Control slot)
 	{
@@ -692,7 +795,9 @@ void fragment() {
 		m.SetShaderParameter("origin", rect.Position);
 		m.SetShaderParameter("size", rect.Size);
 		m.SetShaderParameter("side", side);
-		PushHead(m);
+		m.SetShaderParameter("head_field", HeadField());
+		m.SetShaderParameter("head_field_min", HeadFieldMin);
+		m.SetShaderParameter("head_field_span", HeadFieldSpan);
 		Fx.Clock(q);
 		return (root, m);
 	}
@@ -732,7 +837,7 @@ void fragment() {
 	{
 		Detach();
 		if (GodotObject.IsInstanceValid(_frontRoot)) _frontRoot.QueueFree();
-		if (GodotObject.IsInstanceValid(_backRoot)) _backRoot.QueueFree();
+		if (_backRoot != null && GodotObject.IsInstanceValid(_backRoot)) _backRoot.QueueFree();
 		if (GodotObject.IsInstanceValid(_skyRoot)) _skyRoot.QueueFree();
 		if (GodotObject.IsInstanceValid(_mistFrontRoot)) _mistFrontRoot.QueueFree();
 		if (GodotObject.IsInstanceValid(_eclipseRoot)) _eclipseRoot.QueueFree();
@@ -768,6 +873,16 @@ void fragment() {
 
 	private void Tick()
 	{
+		try { Step(); }
+		catch (Exception error)
+		{
+			Free();
+			Stage.Report(_solo ? "Snakebite" : "Serpent mantle", error);
+		}
+	}
+
+	private void Step()
+	{
 		if (!Valid || !GodotObject.IsInstanceValid(_front) || !GodotObject.IsInstanceValid(_back) || _body() is not var (feet, T, face))
 		{
 			Free();
@@ -789,8 +904,17 @@ void fragment() {
 			_fadeOut += dt;
 			if (_fadeOut > 0.8f) { Free(); return; }
 		}
+		// During the initial delay or an overlapping cinematic, keep the idle
+		// animation clocks running without rebuilding geometry that cannot be seen.
+		if (_targets.Count == 0 && Array.TrueForAll(_attacks, static attack => attack == null)
+			&& ((!_frontRoot.Visible && _backRoot?.Visible != true) || (_show <= 0f && _intro < 0f)))
+		{
+			_frontQuad.Hide();
+			_backQuad?.Hide();
+			return;
+		}
 		_frontRoot.GlobalPosition = feet;
-		_backRoot.GlobalPosition = feet;
+		if (_backRoot != null) _backRoot.GlobalPosition = feet;
 		float alpha = (_intro >= 0f ? 1f : Smooth(0f, 0.8f, _show)) * (_fadeOut >= 0f ? 1f - Smooth(0f, 0.8f, _fadeOut) : 1f);
 		if (_eclipseRoot != null && _eclipseM != null && GodotObject.IsInstanceValid(_eclipseRoot))
 		{
@@ -823,7 +947,15 @@ void fragment() {
 		float tallS = T * _back.GetCanvasTransform().Scale.Y;
 		// 场景：咒雾漫地，出场时从 Joker 身边漫开；能力没了一起淡掉
 		float amt = _fadeOut >= 0f ? 1f - Smooth(0f, 0.8f, _fadeOut) : (_show > 0f || _intro >= 0f ? 1f : 0f);
-		if (_skyM != null) SetMist(_skyM, fs, scr, tallS, face, amt, surge);
+		if (_skyM != null && _skyQuad != null)
+		{
+			_skyQuad.Visible = amt > 0f;
+			if (_skyQuad.Visible)
+			{
+				if (_skyQuad.Size != scr) _skyQuad.Size = scr;
+				SetMist(_skyM, fs, scr, tallS, face, amt, surge);
+			}
+		}
 		if (_mistFrontM != null && _mistFrontQuad != null && GodotObject.IsInstanceValid(_mistFrontQuad))
 		{
 			Vector2 viewport = Fx.Screen(_front);
@@ -882,86 +1014,106 @@ void fragment() {
 		{
 			// 扑咬时那条蛇放大一些（更有气势），回到轨道上恢复
 			Attack? sa = AttackOf(i);
+			if (_biteOnly && sa == null && !(_solo && i == WakeSerpent)) continue;
 			float big = sa != null ? Smooth(EmergeAt - 0.02f, EmergeAt + 0.02f, sa.T) * (1f - Smooth(LeaveAt - 0.02f, LeaveAt, sa.T)) : 0f;
 			_girth[i] = 0.068f * T * Orbits[i].Size * (_solo ? 1.5f : 1f + 1.0f * big);   // 扑咬时放大到两倍（用户：要更有表现力）；蛇咬单独那条一直粗一些
-			PoseSerpent(i, T, face, _biteOnly && sa == null ? 0f : alpha);
+			PoseSerpent(i, T, face, alpha);
 		}
 		UpdateAttacks(dt, feet, T);
 		if (_biteOnly && _attacks[0] == null) { Free(); return; }
 		for (int i = 0; i < Count; i++) _diss[i] = Mathf.Max(_diss[i], _introDiss[i]);
 
-		for (int j = 0; j < Count; j++)
+		Vector2 lo = new(1e9f, 1e9f);
+		Vector2 hi = new(-1e9f, -1e9f);
+		void Include(ref Vector2 min, ref Vector2 max, Vector2 p, float margin)
 		{
-			float m = _girth[j] * 3.4f;
-			Vector2 lo = new(1e9f, 1e9f), hi = new(-1e9f, -1e9f);
-			for (int k = 0; k < N; k++)
-			{
-				Vector4 q = _spine[j * N + k];
-				lo = new Vector2(Mathf.Min(lo.X, q.X), Mathf.Min(lo.Y, q.Y));
-				hi = new Vector2(Mathf.Max(hi.X, q.X), Mathf.Max(hi.Y, q.Y));
-			}
-			_box[j] = new Vector4(lo.X - m, lo.Y - m, hi.X + m, hi.Y + m);
+			Vector2 pad = Vector2.One * margin;
+			min = new Vector2(Mathf.Min(min.X, p.X - pad.X), Mathf.Min(min.Y, p.Y - pad.Y));
+			max = new Vector2(Mathf.Max(max.X, p.X + pad.X), Mathf.Max(max.Y, p.Y + pad.Y));
 		}
-		FitCanvas(T, nestP);
-		foreach (ShaderMaterial mat in new[] { _frontM, _backM })
-		{
-			mat.SetShaderParameter("spine", _spine);
-			mat.SetShaderParameter("box", _box);
-			mat.SetShaderParameter("girth", _girth);
-			mat.SetShaderParameter("hup", _hup);
-			mat.SetShaderParameter("eyes", _eyes);
-			mat.SetShaderParameter("unit", T);
-			mat.SetShaderParameter("diss", _diss);
-			// 出场 0.25s 蛇巢鼓起来（一团烟往上翻涌、比平时大一圈），再收回平时的大小
-			float swell = _intro >= 0f && _introFresh ? Smooth(0.2f, 0.45f, _intro) * (1f - Smooth(0.6f, 1.2f, _intro)) : 0f;
-			mat.SetShaderParameter("nest", new Vector3(nestP.X, nestP.Y - 0.1f * T * swell, 0.55f * T * (1f + 0.4f * swell)));
-			mat.SetShaderParameter("nest_a", 0.4f * (_biteOnly ? 0f : alpha) * (_intro >= 0f && _introFresh ? Smooth(0.2f, 0.45f, _intro) : 1f));   // 2026-11-13：调淡，让身后的红日透出来
-			mat.SetShaderParameter("puff", _puff);
-			mat.SetShaderParameter("streak", _streak);
-			mat.SetShaderParameter("streak_a", _streakA);
-			mat.SetShaderParameter("mouth", _mouth);
-			mat.SetShaderParameter("ember", _solo ? 1f : 0f);
-			mat.SetShaderParameter("nshift", _nshift);
-			mat.SetShaderParameter("wake", _wakeK);
-		}
-	}
 
-	/// <summary>
-	/// 画布跟着蛇走（用户 2026-11-18：某些大尺寸的房间里蛇还是会断开——画布原来固定在脚下 [-3T, 7T] × [-2.9T, 0.7T]，
-	/// 大房间里敌人站得更远 / 更高，扑过去咬的那条蛇、烟团、烟迹超出画布就被切掉）。每帧取所有蛇身包围盒、蛇巢、烟团、烟迹的并集，
-	/// 至少盖住原来那块（轨道上的蛇、蛇巢都在里面），前后两层一起改。
-	/// </summary>
-	private void FitCanvas(float T, Vector2 nestP)
-	{
-		Vector2 lo = new(-3f * T, -2.9f * T), hi = new(7f * T, 0.7f * T);
-		void Add(Vector2 a, float r) { lo = new Vector2(Mathf.Min(lo.X, a.X - r), Mathf.Min(lo.Y, a.Y - r)); hi = new Vector2(Mathf.Max(hi.X, a.X + r), Mathf.Max(hi.Y, a.Y + r)); }
 		for (int j = 0; j < Count; j++)
 		{
-			Vector4 b = _box[j];
-			if (b.X > b.Z) continue;
-			Add(new Vector2(b.X, b.Y), 0f);
-			Add(new Vector2(b.Z, b.W), 0f);
+			float margin = _girth[j] * 3.4f;
+			Vector2 min = new(1e9f, 1e9f);
+			Vector2 max = new(-1e9f, -1e9f);
+			int start = j * N;
+			Vector2 groupMin = min, groupMax = max;
+			for (int k = 0; k < N - 1; k++)
+			{
+				Vector4 p = _spine[start + k], q = _spine[start + k + 1];
+				if (Mathf.Max(p.W, q.W) > 0.001f)
+				{
+					Include(ref min, ref max, new Vector2(p.X, p.Y), margin);
+					Include(ref min, ref max, new Vector2(q.X, q.Y), margin);
+					if (k < 27)
+					{
+						Include(ref groupMin, ref groupMax, new Vector2(p.X, p.Y), 0f);
+						Include(ref groupMin, ref groupMax, new Vector2(q.X, q.Y), 0f);
+					}
+				}
+				if (k < 27 && k % 9 == 8)
+				{
+					_segmentGroups[j * 3 + k / 9] = new Vector4(groupMin.X, groupMin.Y, groupMax.X, groupMax.Y);
+					groupMin = new Vector2(1e9f, 1e9f);
+					groupMax = -groupMin;
+				}
+			}
+			_box[j] = new Vector4(min.X, min.Y, max.X, max.Y);
+			if (min.X > max.X) continue;
+			Include(ref lo, ref hi, min, 0f);
+			Include(ref lo, ref hi, max, 0f);
 		}
-		Add(nestP, 1.4f * T);
-		float gmax = 0f;
-		for (int j = 0; j < Count; j++) gmax = Mathf.Max(gmax, _girth[j]);
-		foreach (Vector4 pf in _puff) if (pf.Z >= 0f) Add(new Vector2(pf.X, pf.Y), Mathf.Abs(pf.W) * 2.4f + 8f);
+
+		float swell = _intro >= 0f && _introFresh ? Smooth(0.2f, 0.45f, _intro) * (1f - Smooth(0.6f, 1.2f, _intro)) : 0f;
+		var nest = new Vector3(nestP.X, nestP.Y - 0.1f * T * swell, 0.55f * T * (1f + 0.4f * swell));
+		float nestAlpha = 0.4f * (_biteOnly ? 0f : alpha) * (_intro >= 0f && _introFresh ? Smooth(0.2f, 0.45f, _intro) : 1f);
+
+		// Fit only the pixels each pass can cover, including expanded smoke for distant attacks.
+		Vector2 backLo = lo, backHi = hi;
+		if (nestAlpha > 0f) Include(ref backLo, ref backHi, new Vector2(nest.X, nest.Y), nest.Z * 1.9f / 0.85f);
+		foreach (Vector4 cloud in _puff)
+			if (cloud.Z >= 0f) Include(ref lo, ref hi, new Vector2(cloud.X, cloud.Y), Mathf.Abs(cloud.W) * 2.2f);
 		for (int k = 0; k < Slots; k++)
 		{
-			if (_streakA[k] <= 0f) continue;
-			Add(new Vector2(_streak[k].X, _streak[k].Y), gmax * 4f);
-			Add(new Vector2(_streak[k].Z, _streak[k].W), gmax * 4f);
+			if (_streakA[k] <= 0.001f) continue;
+			Include(ref lo, ref hi, new Vector2(_streak[k].X, _streak[k].Y), 0.6f * T);
+			Include(ref lo, ref hi, new Vector2(_streak[k].Z, _streak[k].W), 0.6f * T);
 		}
-		lo -= Vector2.One * 8f;
-		hi += Vector2.One * 8f;
-		foreach (var (root, mat) in new[] { (_frontRoot, _frontM), (_backRoot, _backM) })
+		for (int i = 0; i < Count; i++)
 		{
-			if (!GodotObject.IsInstanceValid(root) || root.GetChildCount() == 0 || root.GetChild(0) is not ColorRect q) continue;
-			q.Position = lo;
-			q.Size = hi - lo;
-			mat.SetShaderParameter("origin", lo);
-			mat.SetShaderParameter("size", hi - lo);
+			_bodyParams[i] = new Vector4(_girth[i], _diss[i], _mouth[i], _nshift[i]);
+			_headParams[i] = new Vector4(_hup[i].X, _hup[i].Y, _wakeK[i], 0f);
 		}
+		DrawSnakes(_frontQuad, _frontM, lo, hi, T, nest, 0f);
+		if (_backQuad != null && _backM != null) DrawSnakes(_backQuad, _backM, backLo, backHi, T, nest, nestAlpha);
+	}
+
+	private void DrawSnakes(ColorRect quad, ShaderMaterial material, Vector2 min, Vector2 max, float tall, Vector3 nest, float nestAlpha)
+	{
+		quad.Visible = min.X <= max.X;
+		if (!quad.Visible) return;
+		Vector2 position = min.Floor() - Vector2.One * 8f;
+		Vector2 size = max.Ceil() + Vector2.One * 8f - position;
+		if (quad.Position != position || quad.Size != size)
+		{
+			quad.Position = position;
+			quad.Size = size;
+			material.SetShaderParameter("origin", position);
+			material.SetShaderParameter("size", size);
+		}
+		material.SetShaderParameter("spine", _spine);
+		material.SetShaderParameter("box", _box);
+		material.SetShaderParameter("segment_groups", _segmentGroups);
+		material.SetShaderParameter("body_params", _bodyParams);
+		material.SetShaderParameter("head_params", _headParams);
+		material.SetShaderParameter("eyes", _eyes);
+		material.SetShaderParameter("unit", tall);
+		material.SetShaderParameter("nest", nest);
+		material.SetShaderParameter("nest_a", nestAlpha);
+		material.SetShaderParameter("puff", _puff);
+		material.SetShaderParameter("streak", _streak);
+		material.SetShaderParameter("streak_a", _streakA);
 	}
 
 	private Attack? AttackOf(int serpent)
@@ -1361,8 +1513,9 @@ void fragment() {
 		Span<Vector3> trail = stackalloc Vector3[D];
 		Span<float> acc = stackalloc float[D];
 		float want = o.Len * T * o.Size, step = 0.06f;
-		int used = D;
-		for (int k = 0; k < D; k++)
+		int used = i == Belt ? 1 : D;
+		acc[0] = 0f;
+		for (int k = 0; i != Belt && k < D; k++)
 		{
 			float back = k * step;
 			Vector3 v = Orbit(i, _tau[i] - back, T, face);
@@ -1371,22 +1524,22 @@ void fragment() {
 			if (acc[k] >= want) { used = k + 1; break; }
 		}
 		float total = acc[used - 1];
+		int seg = Math.Max(0, used - 2);
 		for (int k = 0; k < nb; k++)
 		{
 			float f = k / (nb - 1f);                       // 0 尾 → 1 头根
-			float s = total * (1f - f);                    // 离头的路程
-			int seg = 0;
-			while (seg < used - 2 && acc[seg + 1] < s) seg++;
-			float u = acc[seg + 1] > acc[seg] ? Mathf.Clamp((s - acc[seg]) / (acc[seg + 1] - acc[seg]), 0f, 1f) : 0f;
-			Vector3 v = trail[seg].Lerp(trail[seg + 1], u);
-			if (i == Belt) v = BeltPoint(f, o.Len * T * o.Size, T, face);
-			else {
-			// 身体只「大致」顺着头游过的路（用户 2026-11-11：圈小了身体会把整圈都描一遍、绕成结）：
-			// 和蛇巢 → 头的直线各取一半，弯是跟着游动的弯，但不会回头描圈
-			Vector3 headNow = trail[0];
-			Vector3 nestP = new(-0.12f * face * T, -0.78f * T, -0.5f);
-			Vector3 line = nestP.Lerp(headNow, f) + new Vector3(0f, -Mathf.Sin(f * Mathf.Pi) * 0.25f * T, 0f);
-			v = v.Lerp(line, 0.55f * (1f - f * f * 0.6f));
+			Vector3 v;
+			if (i == Belt) v = BeltPoint(f, want, T, face);
+			else
+			{
+				float distance = total * (1f - f);
+				while (seg > 0 && acc[seg] >= distance) seg--;
+				float u = acc[seg + 1] > acc[seg] ? Mathf.Clamp((distance - acc[seg]) / (acc[seg + 1] - acc[seg]), 0f, 1f) : 0f;
+				v = trail[seg].Lerp(trail[seg + 1], u);
+				// Blend the trail with the nest-to-head curve to prevent the body winding onto itself.
+				Vector3 nestP = new(-0.12f * face * T, -0.78f * T, -0.5f);
+				Vector3 line = nestP.Lerp(trail[0], f) + new Vector3(0f, -Mathf.Sin(f * Mathf.Pi) * 0.25f * T, 0f);
+				v = v.Lerp(line, 0.55f * (1f - f * f * 0.6f));
 			}
 			// 沿身体往尾巴传的 S 波
 			float wave = Mathf.Sin(f * 9f - _t * 3.4f + i) * 0.065f * T * (0.25f + 0.75f * (1f - f));

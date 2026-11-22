@@ -137,7 +137,7 @@ public static class JokerFx
 						st, Joker.Facing(joker));
 				}
 				break;
-			case "Outbreak":
+			case "Outbreak" when PoisonDamage.HasImmediateTrigger:
 			{
 				// 第四版：稀有召唤（眼神特写 + 舞台 + 新亚森，Aim）→ 亚森出手，咒怨光束扇形射向每个敌人（PoisonApplyPatch）
 				// → 牌效果「立即触发中毒」时所有敌人的咒火一起引爆（PoisonFx.Blast）。0.7 的深处之手（DepthGrip）停用。
@@ -193,7 +193,7 @@ public static class JokerFx
 				int n = MegaCrit.Sts2.Core.Entities.Cards.PileType.Exhaust.GetPile(card.Owner).Cards.Count(c => c.Tags.Contains(CardTag.Shiv));
 				Rect2 box = t.Hitbox.GetGlobalRect();
 				// 第三版「时钟陷阱」（0.9.49 审阅）：场景褪灰、敌人身后展开透明大表盘、表盘边上挂着预告信（= 小刀张数，最多显示 24），每一枪打爆一张、表盘加速
-				Aim.HoldCast(joker, KnifeTrapFx.EntryTime);   // 等表盘展开、卡全部现身再开始打
+
 				Vector2 jf = Joker.PosePoint(joker, ReadyFx.Feet);
 				KnifeTrapFx.Begin(layer, Joker.FxLayer(back: true) ?? layer, Joker.Muzzle(joker), box.GetCenter(), box.Size.Y, box.Size.X, n, t.Visuals,
 					Joker.Chest(joker), (jf - Joker.PosePoint(joker, new Vector2(815f, 120f))).Length());
@@ -210,7 +210,7 @@ public static class JokerFx
 				float face = Joker.Facing(joker);
 				const float start = 0.1f;                                // 挥手（cast_wave）手伸直的时刻：蛇从伸直的手里钻出来
 				float biteIn = start + SnakebiteFx.BiteDelay + 0.03f;   // 上毒（带顿帧）落在咬合之后一点：先结算会把蛇的咬合拖到顿帧之后
-				Aim.HoldCast(joker, biteIn);
+
 				PoisonFx.NoBeamUntil = Stage.NowMs() + (ulong)((biteIn + 0.6f) * 1000f);
 				NCreature tn = t;
 				Fx.After(layer, start, () =>

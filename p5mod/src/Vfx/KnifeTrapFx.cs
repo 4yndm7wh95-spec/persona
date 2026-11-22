@@ -15,7 +15,7 @@ namespace P5Joker;
 /// </summary>
 public static class KnifeTrapFx
 {
-	/// <summary>切入（时钟展开 + 卡全部现身）要多久：游戏推迟这么久再开始打（Aim.HoldCast）。</summary>
+	/// <summary>切入（时钟展开 + 卡全部现身）要多久。</summary>
 	public const float EntryTime = 0.62f;
 	/// <summary>旧接口：每张卡现身的间隔（JokerFx 算等待时间用）。</summary>
 	public const float Interval = 0.02f;
@@ -143,7 +143,7 @@ void fragment() {
 		_w = tw;
 		_tall = tall > 1f ? tall : th * 1.3f;
 		_joker = joker ?? muzzle + new Vector2(-0.4f * _tall, 0.1f * _tall);
-		_R = Mathf.Max(th * 1.2f, tw * 0.95f);        // 巨大的表盘：直径约 2.4 倍敌人身高
+		_R = Mathf.Min(Mathf.Max(th * 1.2f, tw * 0.95f), 250f * u);   // 大型敌人身上的时钟半径按画面高度封顶
 		_cw = Mathf.Clamp(_R * 0.19f, 40f * u, 92f * u);
 		_left = Mathf.Max(0, count);
 		int shown = Mathf.Min(_left, MaxShown);

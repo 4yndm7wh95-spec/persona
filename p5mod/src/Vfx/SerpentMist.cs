@@ -1,3 +1,4 @@
+using System;
 using Godot;
 
 namespace P5Joker;
@@ -11,16 +12,57 @@ namespace P5Joker;
 /// </summary>
 public static class SerpentMist
 {
-	private static Shader? _shader;
+	private static Shader? _shader, _foregroundShader;
 
-	public static Shader Shader => _shader ??= new Shader { Code = MistSource };
+	public static Shader Shader => _shader ??= WithCellNoise(MistSource);
+	internal static Shader ForegroundShader => _foregroundShader ??= WithCellNoise("#define FRONT_FOG\n" + MistSource);
+	private static ImageTexture? _cells;
+
+	internal static Shader WithCellNoise(string source)
+	{
+		var shader = new Shader { Code = source };
+		shader.SetDefaultTextureParameter("noise_cells", _cells ??= MakeCells());
+		return shader;
+	}
+
+	private static ImageTexture MakeCells()
+	{
+		// Precompute the same hash lattice for the smoke. Cubic interpolation is still
+		// evaluated in the shader, then the four cell values come from one filtered tap.
+		const int side = 512;
+		static float Fract(float value) => value - MathF.Floor(value);
+		float[] axis = new float[side];
+		for (int i = 0; i < side; i++) axis[i] = Fract((i - side / 2) * 0.1031f);
+		byte[] cells = new byte[side * side];
+		for (int y = 0; y < side; y++)
+		for (int x = 0; x < side; x++)
+		{
+			float a = axis[x], b = axis[y];
+			float shift = a * (b + 33.33f) + b * (a + 33.33f) + a * (a + 33.33f);
+			cells[y * side + x] = (byte)MathF.Round(Fract((a + b + 2f * shift) * (a + shift)) * 255f);
+		}
+		using Image image = Image.CreateFromData(side, side, false, Image.Format.R8, cells);
+		return ImageTexture.CreateFromImage(image);
+	}
+
+	internal const string CellNoise = @"
+uniform sampler2D noise_cells : filter_linear, repeat_enable;
+float cell_noise(vec2 p) {
+	vec2 f = fract(p);
+	vec2 uv = (floor(p) + f * f * (3.0 - 2.0 * f) + 256.5) / 512.0;
+	return textureLod(noise_cells, uv, 0.0).r;
+}";
 	internal const float FrontAbove = 0.15f, FrontBelow = 0.12f;
 
 	private const string MistSource = @"
 shader_type canvas_item;
 render_mode blend_premul_alpha;
+#ifdef FRONT_FOG
+const bool foreground = true;
+#else
+const bool foreground = false;
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
-uniform bool foreground = false;
+#endif
 uniform float aspect = 1.7778;
 uniform float clock = 0.0;
 uniform float amount = 0.0;
@@ -33,12 +75,8 @@ uniform float fog_t = 0.0;              // 雾浪从脚下沿地面往两边铺�
 uniform float glow_t = 0.0;             // 身后背光、蛇巢的烟亮起来
 uniform float surge = 0.0;              // 雾里第一次翻起巨蛇背（出场 0.9s 一下）
 
-float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
-float noise(vec2 p) {
-	vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
-	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
-}
-float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p = p * 2.02 + vec2(3.1, 7.7); a *= 0.5; } return v; }
+" + CellNoise + @"
+float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * cell_noise(p); p = p * 2.02 + vec2(3.1, 7.7); a *= 0.5; } return v; }
 
 void fragment() {
 	vec2 uv = foreground ? SCREEN_UV : UV;
@@ -62,7 +100,7 @@ void fragment() {
 		vec2 fp = vec2(uv.x * aspect * 2.2 - clock * 0.05 * face, uv.y * 6.0);
 		vec2 warp = vec2(fbm(fp * 0.7 + vec2(0.0, clock * 0.04)), fbm(fp * 0.7 + 5.2 - vec2(clock * 0.03, 0.0)));
 		fn = fbm(fp + warp * 1.6);
-		float wn = noise(vec2(hgt * 6.0, clock * 0.8) + uv.x * 3.0) - 0.5;
+		float wn = cell_noise(vec2(hgt * 6.0, clock * 0.8) + uv.x * 3.0) - 0.5;
 		float front = smoothstep(frontD + 0.05, frontD - 0.45, abs(dx) + wn * 0.3);
 		// 一团团翻滚：细一档的噪声决定浓淡，往上挪一点再取一次，差值当作团的受光面（上面亮、下面暗）
 		vec2 bp = vec2(uv.x * aspect / tall * 2.6 - clock * 0.12 * face, hgt * 5.0 - clock * 0.08) + warp * 1.8;
@@ -77,7 +115,7 @@ void fragment() {
 			vec3 c = mix(vec3(0.1, 0.03, 0.035), vec3(0.24, 0.075, 0.075), smoothstep(0.3, 0.8, bl)) * (1.0 + 0.4 * billowLit);
 			wisp_color = vec4(c * af, af);
 		} else {
-			fine = noise(fp * 3.1 + warp * 2.0 - vec2(clock * 0.2 * face, 0.0));
+			fine = cell_noise(fp * 3.1 + warp * 2.0 - vec2(clock * 0.2 * face, 0.0));
 			// 雾顶的高度（从脚底往上，单位 = 身高）：脚下高到膝盖以上，远处低。
 			top = (0.16 + 0.36 * exp(-pow(dx / 1.5, 2.0))) * (0.75 + 0.55 * fbm(vec2(uv.x * aspect * 1.6 - clock * 0.04 * face, clock * 0.05)));
 			top *= 0.55 + 0.45 * ft;
@@ -110,10 +148,11 @@ void fragment() {
 			}
 		}
 	}
-	if (foreground) {
-		if (wisp_color.a <= 0.002) discard;
-		COLOR = wisp_color;
-	} else {
+	#ifdef FRONT_FOG
+	if (wisp_color.a <= 0.002) discard;
+	COLOR = wisp_color;
+	#else
+	{
 		vec2 asp = vec2(aspect, 1.0);
 		// ── 背景层 ──
 		// 背景压暗、降饱和，偏一点冷的暗红；上面和四角更暗
@@ -124,8 +163,10 @@ void fragment() {
 		// 对比（用户嫌日蚀耀眼，但黑蛇要有亮一点的底才看得清）：Joker 身后、雾里透出一大片很柔、低饱和的暗红背光，不是一个光源
 		vec2 bd = (uv - feet + vec2(0.1 * face * tall / aspect, 0.85 * tall)) * asp / tall;
 		float back = exp(-dot(bd * vec2(0.75, 1.0), bd * vec2(0.75, 1.0)) / 2.2);
-		back *= 0.8 + 0.4 * fbm(bd * 0.8 + vec2(clock * 0.03, -clock * 0.05));
-		g += vec3(0.42, 0.1, 0.09) * back * 1.15 * glow_t;
+		if (back * glow_t > 0.001) {
+			back *= 0.8 + 0.4 * fbm(bd * 0.8 + vec2(clock * 0.03, -clock * 0.05));
+			g += vec3(0.42, 0.1, 0.09) * back * 1.15 * glow_t;
+		}
 		float vig = smoothstep(0.35, 1.0, length((uv - vec2(0.5, 0.55)) * vec2(aspect * 0.55, 1.0)));
 		g *= (1.0 - 0.4 * vig) * mix(0.75, 1.0, smoothstep(0.0, 0.5, uv.y));
 		// 压暗从四角先开始（光像被他脚下吸走），然后整屏
@@ -155,5 +196,6 @@ void fragment() {
 		// 没漫到的地方保持原背景；整个场景跟着 amount 淡入淡出（读的是原背景，所以输出不透明）
 		COLOR = vec4(mix(b, col, amount), 1.0);
 	}
+	#endif
 }";
 }

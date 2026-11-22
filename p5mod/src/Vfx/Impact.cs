@@ -183,7 +183,7 @@ public static class Impact
 	/// </summary>
 	public static Shader FrameShader => _frame ??= new Shader { Code = @"
 shader_type canvas_item;
-uniform sampler2D screen_tex : hint_screen_texture, filter_linear_mipmap;
+uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
 uniform float ink = 0.0;
 uniform float chroma = 0.0;
 uniform vec2 dir = vec2(1.0, 0.0);

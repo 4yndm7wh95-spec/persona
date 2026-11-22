@@ -23,7 +23,7 @@ public static class CharSelectScene
 	public const float W = 2560f, H = 1200f;
 	/// <summary>场景根本地坐标里 1080p 屏幕顶边的位置。</summary>
 	public const float ScreenTop = -19f;
-	/// <summary>设置里关掉"选人动画"时为 false：不播切入，直接常驻。</summary>
+	/// <summary>播放选人入口的眼神特写。</summary>
 	public static Func<bool> IntroEnabled = () => true;
 
 	private const float SW = 1920f, SH = 1080f;
@@ -97,11 +97,11 @@ public static class CharSelectScene
 
 	// The real screen can accept input while its textures load. Draw the background,
 	// portrait and trim on separate frames, keeping their first draws apart.
-	internal static async Task<bool> BuildAsync(Control bg, bool intro, Func<bool> current,
+	internal static async Task<bool> BuildAsync(Control root, bool intro, Func<bool> current,
 		Func<bool>? canDraw = null, bool prepareInfo = true)
 	{
-		if (!Fx.Active(bg)) return false;
-		SceneTree tree = bg.GetTree();
+		if (!Fx.Active(root)) return false;
+		SceneTree tree = root.GetTree();
 		async Task<bool> NextFrame()
 		{
 			do
@@ -111,64 +111,48 @@ public static class CharSelectScene
 		}
 
 		long began = Stopwatch.GetTimestamp();
-		Control? root = null;
-		bool shown = false;
-		try
-		{
-			if (!await NextFrame()) return false;
-			root = CreateRoot(bg);
-			Rig r = CreateRig(root);
-			Sky(r.Screen);
-			await Fx.PrepareTextures(tree, CityTextures, current);
-			if (!await NextFrame()) return false;
-			BuildCity(r.Screen);
+		if (!await NextFrame()) return false;
+		Rig r = CreateRig(root);
+		Sky(r.Screen);
+		await Fx.PrepareTextures(tree, CityTextures, current);
+		if (!await NextFrame()) return false;
+		BuildCity(r.Screen);
 
-			await Fx.PrepareTextures(tree, PortraitTextures, current);
-			if (!await NextFrame()) return false;
-			if (intro) CutIn.PollPreload();
-			r.Back = Layer(r.Screen, "Back");
-			Portrait(r);
-			r.Group.Modulate = new Color(1f, 1f, 1f, 0f);
-			if (!await NextFrame()) return false;
-			Stripes(r, entering: true);
-			if (intro)
-			{
-				await Fx.PrepareTextures(tree, IntroTextures, current);
-				if (!await NextFrame()) return false;
-				while (!CutIn.PollPreload())
-					if (!await NextFrame()) return false;
-			}
-			if (prepareInfo)
-				await Fx.PrepareTextures(tree, InfoTextures, current);
-			if (!await NextFrame()) return false;
-			if (intro || prepareInfo)
-			{
-				while (!P5Ui.PollFont(P5Ui.CjkBold))
-					if (!await NextFrame()) return false;
-			}
-			if (prepareInfo)
-			{
-				while (!P5Ui.PollFont(P5Ui.CjkMedium))
-					if (!await NextFrame()) return false;
-			}
-			r.Group.Modulate = Colors.White;
-			Finish(r, intro, canDraw);
-			HideOriginal(bg, root);
-			shown = true;
-			GD.Print($"[P5Joker] character select ready in {Stopwatch.GetElapsedTime(began).TotalMilliseconds:F1}ms");
-			return true;
-		}
-		finally
+		await Fx.PrepareTextures(tree, PortraitTextures, current);
+		if (!await NextFrame()) return false;
+		if (intro) CutIn.PollPreload();
+		r.Back = Layer(r.Screen, "Back");
+		Portrait(r);
+		r.Group.Modulate = new Color(1f, 1f, 1f, 0f);
+		if (!await NextFrame()) return false;
+		Stripes(r, entering: true);
+		if (intro)
 		{
-			if (!shown && root != null && GodotObject.IsInstanceValid(root))
-			{
-				root.GetParent()?.RemoveChild(root);
-				root.QueueFree();
-			}
+			await Fx.PrepareTextures(tree, IntroTextures, current);
+			if (!await NextFrame()) return false;
+			while (!CutIn.PollPreload())
+				if (!await NextFrame()) return false;
 		}
+		if (prepareInfo)
+			await Fx.PrepareTextures(tree, InfoTextures, current);
+		if (!await NextFrame()) return false;
+		if (intro || prepareInfo)
+		{
+			while (!P5Ui.PollFont(P5Ui.CjkBold))
+				if (!await NextFrame()) return false;
+		}
+		if (prepareInfo)
+		{
+			while (!P5Ui.PollFont(P5Ui.CjkMedium))
+				if (!await NextFrame()) return false;
+		}
+		r.Group.Modulate = Colors.White;
+		Finish(r, intro, canDraw);
+		GD.Print($"[P5Joker] character select ready in {Stopwatch.GetElapsedTime(began).TotalMilliseconds:F1}ms");
+		return true;
 	}
 
-	private static Control CreateRoot(Control bg)
+	internal static Control CreateRoot(Control bg)
 	{
 		Control root = new() { Name = "P5Select", MouseFilter = Control.MouseFilterEnum.Ignore, Size = new Vector2(W, H) };
 		bg.AddChild(root);

@@ -11,6 +11,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Characters;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Screens.CharacterSelect;
+using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 
 namespace P5Joker;
@@ -18,8 +19,7 @@ namespace P5Joker;
 /// <summary>原版加载结束后的菜单和非战斗房间才可预热。</summary>
 public static class WarmupGame
 {
-	private static readonly AccessTools.FieldRef<NCharacterSelectScreen, NCharacterSelectButton> Selected =
-		AccessTools.FieldRefAccess<NCharacterSelectScreen, NCharacterSelectButton>("_selectedButton");
+	private static readonly FieldInfo? Selected = AccessTools.Field(typeof(NCharacterSelectScreen), "_selectedButton");
 
 	public static void Install()
 	{
@@ -28,27 +28,30 @@ public static class WarmupGame
 		Warmup.StartMenu();
 	}
 
-	private static bool Started(NGame? game) => game != null && game.GameStartupComplete.IsCompletedSuccessfully;
+	private static bool Started(NGame? game) => game != null && GameCompat.Started(game);
 
 	private static string? IdleContext()
 	{
+		if (JokerCostume.ManagedSelection == false) return null;
 		NGame? game = NGame.Instance;
 		if (!Started(game) || game!.Transition.InTransition) return null;
 		if (game.CurrentRunNode == null) return game.MainMenu?.IsVisibleInTree() == true ? "menu" : null;
-		CombatManager combat = CombatManager.Instance;
-		if (combat.IsInProgress || combat.IsStarting || combat.IsEnding) return null;
+		// Pause warmup throughout the combat room lifecycle, including setup
+		// and rewards. Older ports do not expose the transient combat flags.
+		if (NCombatRoom.Instance != null || CombatManager.Instance.IsInProgress) return null;
 		return game.CurrentRunNode.IsVisibleInTree() ? "non-combat" : null;
 	}
 
 	private static void RefreshPlan()
 	{
+		if (JokerCostume.ManagedSelection == false) return;
 		NGame? game = NGame.Instance;
 		if (!Started(game)) return;
 		if (game!.CurrentRunNode == null)
 		{
 			Warmup.RequestMenu();
 			if (game.MainMenu?.SubmenuStack is { SubmenusOpen: true } stack && stack.Peek() is NCharacterSelectScreen screen
-				&& Selected(screen)?.Character is Silent)
+				&& Selected?.GetValue(screen) is NCharacterSelectButton { Character: Silent })
 				Warmup.RequestJoker();
 			return;
 		}
@@ -58,10 +61,10 @@ public static class WarmupGame
 		foreach (var player in state.Players.Where(Joker.Is))
 		{
 			Warmup.RequestJoker();
-			Warmup.RequestAllOut();
+			if (P5Settings.Enabled(P5Settings.Option.AllOut)) Warmup.RequestAllOut();
 			// 生成、复制或控制台给的华丽收场可直接进战斗手牌，不经过牌组。
 			Warmup.RequestFinale();
-			Warmup.RequestReward();
+			if (P5Settings.Enabled(P5Settings.Option.Reward)) Warmup.RequestReward();
 			foreach (var card in player.Deck.Cards)
 			{
 				Warmup.RequestCard(card.GetType().Name);
@@ -75,12 +78,12 @@ public static class WarmupGame
 [HarmonyPatch(typeof(PreloadManager), nameof(PreloadManager.LoadRunAssets))]
 public static class WarmupRunAssetsPatch
 {
-	public static void Postfix(IEnumerable<CharacterModel> __0, ref Task __result)
+	public static void Postfix(IEnumerable<CharacterModel> __0, Task __result)
 	{
 		try
 		{
-			if (__0.Any(character => character is Silent) && Engine.GetMainLoop() is SceneTree tree)
-				__result = Warmup.PrepareFinaleForRun(tree, __result);
+			if (__0.Any(character => character is Silent) && JokerCostume.Selected && Engine.GetMainLoop() is SceneTree tree)
+				_ = Warmup.PrepareFinaleForRun(tree, __result);
 		}
 		catch (Exception e) { Stage.Report("finale preload", e); }
 		Warmup.WaitFor(__result);

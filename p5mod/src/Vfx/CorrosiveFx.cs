@@ -19,10 +19,7 @@ public static class CorrosiveFx
 	/// <summary>一个敌人：中心、头顶、宽度、本体（染色用）。</summary>
 	public record struct Target(Vector2 At, Vector2 Top, float Width, Node2D? Body);
 
-	private static ulong _suppressUntil, _auraNext;
-
-	/// <summary>抽牌带来的上毒正在由卷浪表现：PoisonFx.Apply 这段时间不放普通落点。</summary>
-	public static bool Suppressing => Stage.NowMs() < _suppressUntil;
+	private static ulong _auraNext;
 
 	private static readonly Color Hot = new(1f, 0.95f, 0.94f), Red = new(1f, 0.1f, 0.18f), Deep = new(0.45f, 0.02f, 0.08f);
 
@@ -342,10 +339,11 @@ void fragment() {
 	/// 但每抽一张挂一次毒的节奏要明显）：每个敌人身上一下短促的「咬蚀」——暗红一口从边上啃进去（小一号的溅射 + 往里收的碎光）、身体一暗、
 	/// 轻顿帧、一声闷的「噗」，越到后面越快越密。返回挂毒要等几秒（很短）。index = 这是连抽里第几张（1 = 第二张）。
 	/// </summary>
+	internal const float ErodeHit = 0.1f;
+
 	public static float Erode(Control layer, float facing, IReadOnlyList<Target> targets, int index)
 	{
-		const float bite = 0.1f;
-		_suppressUntil = Stage.NowMs() + (ulong)((bite + 0.3f) * 1000f);
+		const float bite = ErodeHit;
 		if (targets.Count == 0) return 0f;
 		float u = U(layer);
 		float k = Mathf.Max(0.55f, 1f - 0.08f * (index - 1));
@@ -373,7 +371,6 @@ void fragment() {
 	public static float OnDraw(Control layer, Vector2 feet, float facing, IReadOnlyList<Target> targets, bool first = true)
 	{
 		float hitAt = HitTime;
-		_suppressUntil = Stage.NowMs() + (ulong)((hitAt + 0.35f) * 1000f);
 		if (targets.Count == 0)
 		{
 			return 0f;

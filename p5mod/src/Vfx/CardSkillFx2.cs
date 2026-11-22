@@ -315,7 +315,7 @@ void fragment() {
 	/// <summary>子弹时间：时停到回合结束（Vfx/TimeStop.cs；回合结束的接法在 BulletTimePlay.cs）。</summary>
 	public static void BulletTime(SkillCtx c)
 	{
-		TimeStop.Start(c.Front, c.Back, c.Feet, c.Tall, c.Face, c.Hand);
+		TimeStop.Start(c.Front, c.Back, c.Feet, c.Tall, c.Face, c.Hand, c.BulletTimeTurn);
 		// 停住的那一刻身后留下一个定格的红色剪影（他从自己停住的那一瞬里走出来）
 		SkillFx.Ghosts(c.Back ?? c.Front, c.CopyBody, c.Region, c.Face, sound: false);
 	}

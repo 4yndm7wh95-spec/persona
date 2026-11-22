@@ -27,19 +27,29 @@ public sealed class TimeStop
 	public static bool Frozen => Current is { _goAt: < 0f };
 
 	private const float StopDur = 0.75f, GoDur = 0.55f, Reach = 7.5f, EnemySlow = 0.1f;
+	private const int BurstBits = 26, MaxBits = 192, MaxEnemyBoxes = 6;
 
-	private readonly Control _front, _back;
+	private readonly Control _front, _cardLayer;
 	private Vector2 _hand;
 	private readonly Node2D _screen, _enemyScreen, _bitsRoot;
 	private readonly ShaderMaterial _m, _em;
+	private readonly ColorRect _backgroundQuad, _enemyQuad;
+	private readonly TimeStopDust _dust;
+	private Vector2 _viewportSize, _centerUv;
+	private float _tallUv;
 	private readonly Vector2 _center;
 	private readonly float _tall, _face;
 	private readonly SceneTree _tree;
 	private readonly double _t0;
+	private readonly Func<bool>? _turnActive;
 	private float _t, _goAt = -1f, _pulseAt = -10f, _last;
 	private bool _done, _hadEnemies;
 	private readonly List<Bit> _bits = new();
 	private readonly Dictionary<ulong, (Actor A, float Cur, bool Hit, bool Jolted)> _actors = new();
+	private readonly HashSet<ulong> _seen = new();
+	private readonly List<ulong> _missing = new();
+	private readonly Vector4[] _enemyBoxes = new Vector4[MaxEnemyBoxes];
+	private int _enemyBoxCount;
 	private readonly List<(Vector2 At, Vector2 Dir)> _marks = new();
 	private readonly List<float> _ticks = new();          // 时停里每出一张牌的时刻：秒针往前跳一格
 	private float _prevS, _prevM, _ckR = 1f, _hs, _tickBump;
@@ -66,10 +76,10 @@ public sealed class TimeStop
 		public float Len;
 	}
 
-	private TimeStop(Control front, Control back, Vector2 feet, float tall, float face)
+	private TimeStop(Control front, Control back, Vector2 feet, float tall, float face, Func<bool>? turnActive)
 	{
+		_turnActive = turnActive;
 		_front = front;
-		_back = back;
 		_hand = feet + new Vector2(0.35f * face, -0.75f) * tall;
 		_tall = tall;
 		_face = face;
@@ -84,35 +94,41 @@ public sealed class TimeStop
 		foreach (Node ch in back.GetChildren()) if (ch.Name == "P5SerpentSky") { sky = ch; break; }
 		back.MoveChild(_screen, sky != null ? sky.GetIndex() + 1 : 0);
 		_m = new ShaderMaterial { Shader = Shader };
-		_m.SetShaderParameter("mode", 0);
 		// 读屏前先刷新（用户 2026-11-13：先开群蛇形态、再打子弹时间，时停结束时有一秒露出原版场景 —— 读到的是群蛇场景画上去之前的旧拷贝）
 		_screen.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
-		_screen.AddChild(new ColorRect { Size = Fx.Screen(back), Material = _m, MouseFilter = Control.MouseFilterEnum.Ignore });
+		_backgroundQuad = new ColorRect { Material = _m, MouseFilter = Control.MouseFilterEnum.Ignore };
+		_screen.AddChild(_backgroundQuad);
+		_dust = new TimeStopDust(_screen);
 		_enemyScreen = Fx.ScreenRoot(front, "P5TimeStopEnemies");
 		front.MoveChild(_enemyScreen, 0);
-		_em = new ShaderMaterial { Shader = Shader };
-		_em.SetShaderParameter("mode", 1);
-		// 背景层已经读过一次屏幕：这里先重新拷贝一次（带上人物），不然读到的是没有人物的旧画面
-		_enemyScreen.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
-		_enemyScreen.AddChild(new ColorRect { Size = Fx.Screen(front), Material = _em, MouseFilter = Control.MouseFilterEnum.Ignore });
+		_em = new ShaderMaterial { Shader = EnemyShader };
+		// Take a fresh viewport copy after the creatures have drawn. A rect copy can
+		// leave stale pixels at its edges on scaled viewports and paint them over enemies.
+		var enemyCopy = new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport };
+		_enemyQuad = new ColorRect { Material = _em, MouseFilter = Control.MouseFilterEnum.Ignore };
+		_enemyScreen.AddChild(enemyCopy);
+		_enemyScreen.AddChild(_enemyQuad);
+		_enemyScreen.Hide();
 		_bitsRoot = new Node2D { Name = "P5TimeStopBits" };
 		front.AddChild(_bitsRoot);
+		_cardLayer = new Control { Name = "P5TimeStopCards", MouseFilter = Control.MouseFilterEnum.Ignore };
+		back.AddChild(_cardLayer);
 		_tree.ProcessFrame += Tick;
 		_screen.TreeExiting += Detach;
 		_enemyScreen.TreeExiting += Detach;
 	}
 
 	/// <summary>打出子弹时间。已经在时停里（同一回合又打一张）：只再涨一下，不再开一层。</summary>
-	public static void Start(Control front, Control? back, Vector2 feet, float tall, float face, Vector2? hand = null)
+	public static void Start(Control front, Control? back, Vector2 feet, float tall, float face, Vector2? hand = null, Func<bool>? turnActive = null)
 	{
-		if (Current is { } cur && !cur._done && cur._goAt < 0f)
+		if (Current is { } cur && !cur._done && cur._goAt < 0f && cur._turnActive?.Invoke() != false)
 		{
 			cur.Pulse();
 			Sfx.Take("gx_tock", 0.35f);
 			return;
 		}
 		Current?.Finish();
-		var ts = new TimeStop(front, back ?? front, feet, tall, face);
+		var ts = new TimeStop(front, back ?? front, feet, tall, face, turnActive);
 		Current = ts;
 		if (hand is Vector2 h) ts._hand = h;
 		// 拍 1：「咔」——钟停住；冷的霜声往里收。拍 2（0.62s）：最后一下很轻的「嗒」，像秒针停住前的余震
@@ -195,9 +211,9 @@ public sealed class TimeStop
 	private void Burst()
 	{
 		float u = _tall / 360f;
-		for (int i = 0; i < 26; i++)
+		for (int i = 0; i < BurstBits; i++)
 		{
-			float ang = Mathf.Tau * (i + Fx.Rand(-0.35f, 0.35f)) / 26f;
+			float ang = Mathf.Tau * (i + Fx.Rand(-0.35f, 0.35f)) / BurstBits;
 			Vector2 d = Vector2.Right.Rotated(ang);
 			Vector2 start = _center + new Vector2(d.X * 0.12f, d.Y * 0.3f) * _tall;
 			Vector2 v = d * Fx.Rand(700f, 1150f) * u;
@@ -211,11 +227,24 @@ public sealed class TimeStop
 
 	private static readonly Color Red = Phantom.Red, Hot = Phantom.Hot, Ink = new(0.05f, 0.03f, 0.04f), Deep = new(0.55f, 0.02f, 0.07f);
 
+	private Node2D AddBitNode()
+	{
+		if (_bits.Count >= MaxBits)
+		{
+			// Keep the first ring around Joker. Retire the oldest hit debris as new hits arrive.
+			Node2D old = _bits[BurstBits].Node;
+			if (GodotObject.IsInstanceValid(old)) old.QueueFree();
+			_bits.RemoveAt(BurstBits);
+		}
+		Node2D node = new();
+		_bitsRoot.AddChild(node);
+		return node;
+	}
+
 	/// <summary>一片尖碎片：kind 0 红、1 黑、2 白；一条边上有一道会随转动明暗的高光（像在光里慢慢翻转）。</summary>
 	private void AddSliver(Vector2 at, Vector2 v, float size, float need, int kind)
 	{
-		Node2D n = new();
-		_bitsRoot.AddChild(n);
+		Node2D n = AddBitNode();
 		float w = size, h = size * Fx.Rand(0.22f, 0.4f), k = Fx.Rand(-0.3f, 0.3f);
 		Vector2[] tri = { new(-w, -h * 0.4f + k * h), new(w * 1.1f, 0f), new(-w * 0.7f, h) };
 		Color body = kind switch { 0 => Red, 1 => Ink, _ => new Color(0.92f, 0.9f, 0.88f) };
@@ -229,8 +258,7 @@ public sealed class TimeStop
 	/// <summary>一道火花：白芯红晕、沿速度拉长，冻住时保持拉长的样子（停住的动态模糊）。</summary>
 	private void AddStreak(Vector2 at, Vector2 v, float len, float need, bool red)
 	{
-		Node2D n = new();
-		_bitsRoot.AddChild(n);
+		Node2D n = AddBitNode();
 		Vector2[] dia = { new(-1f, 0f), new(0f, -1f), new(0.35f, 0f), new(0f, 1f) };
 		Polygon2D glow = Fx.Poly(n, dia, red ? new Color(1f, 0.15f, 0.2f, 0.75f) : new Color(1f, 0.45f, 0.4f, 0.55f), additive: true);
 		glow.Scale = new Vector2(len, len * 0.13f);
@@ -250,6 +278,29 @@ public sealed class TimeStop
 
 	private static float WaveR(float s, float dur) => s <= 0f ? 0f : Reach * (1f - Mathf.Pow(1f - Mathf.Min(1f, s / dur), 2f));
 
+	private void UpdateView(Vector2 size, Vector2 center, float tall)
+	{
+		if (_viewportSize == size && _centerUv == center && _tallUv == tall) return;
+		_viewportSize = size;
+		_centerUv = center;
+		_tallUv = tall;
+		_backgroundQuad.Size = size;
+		_m.SetShaderParameter("aspect", size.X / size.Y);
+		_m.SetShaderParameter("center", center);
+		_m.SetShaderParameter("tall", tall);
+		_em.SetShaderParameter("aspect", size.X / size.Y);
+		_em.SetShaderParameter("center", center);
+		_em.SetShaderParameter("tall", tall);
+		_dust.Resize(size, center, tall);
+	}
+
+	private static void SetWave(ShaderMaterial material, float stopRadius, float goRadius, float amount)
+	{
+		material.SetShaderParameter("stop_r", stopRadius);
+		material.SetShaderParameter("go_r", goRadius);
+		material.SetShaderParameter("amount", amount);
+	}
+
 	private void Tick()
 	{
 		if (_done) return;
@@ -258,7 +309,19 @@ public sealed class TimeStop
 			Detach();
 			return;
 		}
-		Stage.Safe("TimeStop", Step);
+		try
+		{
+			if (_goAt < 0f && _turnActive?.Invoke() == false) Stop();
+			if (_goAt >= 0f && HitStop.RealSeconds() - _t0 - _goAt > GoDur + 0.7f)
+				Finish();
+			else
+				Step();
+		}
+		catch (Exception error)
+		{
+			Finish();
+			Stage.Report("TimeStop", error);
+		}
 	}
 
 	private void Step()
@@ -271,22 +334,17 @@ public sealed class TimeStop
 
 		// 调色层
 		Vector2 scr = Fx.Screen(_front);
-		Vector2 cs = Fx.ScreenPoint(_front, _center);
-		float tallS = _tall * _front.GetCanvasTransform().Scale.Y;
+		if (scr.X <= 0f || scr.Y <= 0f) return;
+		Transform2D canvas = _front.GetCanvasTransform();
+		UpdateView(scr, (canvas * _center) / scr, _tall * Mathf.Abs(canvas.Scale.Y) / scr.Y);
 		float ps = _t - _pulseAt;
-		foreach (ShaderMaterial m in new[] { _m, _em })
-		{
-			m.SetShaderParameter("aspect", scr.X / scr.Y);
-			m.SetShaderParameter("center", new Vector2(cs.X / scr.X, cs.Y / scr.Y));
-			m.SetShaderParameter("tall", tallS / scr.Y);
-			m.SetShaderParameter("t", _t);
-			m.SetShaderParameter("go_at", _goAt >= 0f ? _goAt : 1e5f);
-			m.SetShaderParameter("stop_dur", StopDur);
-			m.SetShaderParameter("go_dur", GoDur);
-			m.SetShaderParameter("reach", Reach);
-			m.SetShaderParameter("pulse_s", ps);
-			m.SetShaderParameter("amount", Mathf.Min(1f, _t / 0.06f));
-		}
+		float resume = _goAt >= 0f ? _goAt : 1e5f;
+		float amount = Mathf.Min(1f, _t / 0.06f);
+		_m.SetShaderParameter("t", _t);
+		_m.SetShaderParameter("go_at", resume);
+		_m.SetShaderParameter("pulse_s", ps);
+		SetWave(_m, stopR, goR, amount);
+		_dust.Step(_t, resume, ps, stopR, goR, amount);
 		Clock(dt);
 		StepCards(dt);
 
@@ -295,18 +353,23 @@ public sealed class TimeStop
 		// 敌人全死了（回合没结束战斗就赢了）：时间也回来
 		if (live.Count > 0) _hadEnemies = true;
 		else if (_hadEnemies && _goAt < 0f) Stop();
-		var seen = new HashSet<ulong>();
+		_seen.Clear();
 		foreach (Actor a in live)
 		{
 			if (!GodotObject.IsInstanceValid(a.Body)) continue;
 			ulong id = a.Body.GetInstanceId();
-			seen.Add(id);
+			_seen.Add(id);
 			var e = _actors.TryGetValue(id, out var old) ? old with { A = a } : (A: a, Cur: 1f, Hit: false, Jolted: false);
 			float d = Dist(a.At);
 			bool resumed = goR >= 0f && d < goR;
 			float target = d < stopR && !resumed ? EnemySlow : 1f;
-			e.Cur = Mathf.MoveToward(e.Cur, target, dt * (target < e.Cur ? 3.2f : 6f));
-			a.Speed(e.Cur);
+			float next = Mathf.MoveToward(e.Cur, target, dt * (target < e.Cur ? 3.2f : 6f));
+			if (next != e.Cur)
+			{
+				e.Cur = next;
+				_actors[id] = e;
+				a.Speed(next);
+			}
 			if (resumed && e.Hit && !e.Jolted)
 			{
 				e.Jolted = true;
@@ -314,23 +377,15 @@ public sealed class TimeStop
 			}
 			_actors[id] = e;
 		}
-		// 敌人身上的褪色范围（屏幕 0～1：中心、半宽高），最多 6 个
-		var boxes = new Godot.Collections.Array<Vector4>();
-		foreach (Actor a in live)
-		{
-			if (boxes.Count >= 6 || !GodotObject.IsInstanceValid(a.Body)) continue;
-			Vector2 p0 = Fx.ScreenPoint(_front, a.Box.Position), p1 = Fx.ScreenPoint(_front, a.Box.End);
-			Vector2 c0 = (p0 + p1) * 0.5f, hs = (p1 - p0).Abs() * 0.5f;
-			boxes.Add(new Vector4(c0.X / scr.X, c0.Y / scr.Y, hs.X / scr.X, hs.Y / scr.Y));
-		}
-		while (boxes.Count < 6) boxes.Add(new Vector4(-9f, -9f, 0f, 0f));
-		_em.SetShaderParameter("boxes", boxes);
+		DrawEnemyGrade(live, canvas, scr, stopR, goR, amount);
 		// 死掉 / 不在列表里的：恢复正常速度（死亡动画按原速放）
-		foreach (ulong id in new List<ulong>(_actors.Keys))
+		_missing.Clear();
+		foreach (ulong id in _actors.Keys)
+			if (!_seen.Contains(id)) _missing.Add(id);
+		foreach (ulong id in _missing)
 		{
-			if (seen.Contains(id)) continue;
 			var e = _actors[id];
-			if (GodotObject.IsInstanceValid(e.A.Body)) e.A.Speed(1f);
+			if (e.Cur != 1f && GodotObject.IsInstanceValid(e.A.Body)) e.A.Speed(1f);
 			_actors.Remove(id);
 		}
 
@@ -418,15 +473,58 @@ public sealed class TimeStop
 			b.Node.Modulate = new Color(1f - 0.18f * cold, 1f - 0.12f * cold, 1f, (1f - 0.12f * cold) * b.Fade);
 		}
 
-		// 回来的波走完：收尾
-		if (_goAt >= 0f && _t - _goAt > GoDur + 0.7f)
+		if (_goAt < 0f && _turnActive == null && _t > 900f) Stop();
+	}
+
+	private void DrawEnemyGrade(List<Actor> live, Transform2D canvas, Vector2 screen, float stopRadius, float goRadius, float amount)
+	{
+		Rect2 bounds = default;
+		int count = 0;
+		bool changed = false;
+		foreach (Actor actor in live)
 		{
-			Finish();
+			if (count == MaxEnemyBoxes) break;
+			if (!Fx.Active(actor.Body) || !actor.Body.IsVisibleInTree()) continue;
+			Vector2 p0 = canvas * actor.Box.Position, p1 = canvas * actor.Box.End;
+			Vector2 center = (p0 + p1) * 0.5f, half = (p1 - p0).Abs() * 0.5f;
+			// Match the ellipse falloff in EnemyShader. Round out for screen-space edges.
+			Vector2 reach = half * new Vector2(1.45f, 1.35f);
+			Vector2 start = (center - reach).Floor();
+			Rect2 rect = new(start, (center + reach).Ceil() - start);
+			if (!EnemyGradeIntersectsWave(rect, _centerUv * screen, _tallUv * screen.Y, stopRadius, goRadius)) continue;
+			bounds = count == 0 ? rect : bounds.Merge(rect);
+			Vector4 box = new(center.X / screen.X, center.Y / screen.Y, half.X / screen.X, half.Y / screen.Y);
+			changed |= _enemyBoxes[count] != box;
+			_enemyBoxes[count++] = box;
 		}
-		else if (_t > 900f)
+		bounds = bounds.Intersection(new Rect2(Vector2.Zero, screen));
+		bool visible = count > 0 && bounds.HasArea() && amount > 0f;
+		_enemyScreen.Visible = visible;
+		if (!visible)
 		{
-			Stop();
+			_enemyBoxCount = 0;
+			return;
 		}
+		if (changed || count != _enemyBoxCount)
+		{
+			_em.SetShaderParameter("boxes", _enemyBoxes);
+			_em.SetShaderParameter("box_count", count);
+			_enemyBoxCount = count;
+		}
+		if (_enemyQuad.Position != bounds.Position) _enemyQuad.Position = bounds.Position;
+		if (_enemyQuad.Size != bounds.Size) _enemyQuad.Size = bounds.Size;
+		SetWave(_em, stopRadius, goRadius, amount);
+	}
+
+	internal static bool EnemyGradeIntersectsWave(Rect2 rect, Vector2 origin, float tall, float stop, float go)
+	{
+		if (!rect.HasArea() || tall <= 0f) return false;
+		Vector2 a = rect.Position - origin, b = rect.End - origin;
+		Vector2 near = new(Mathf.Max(0f, Mathf.Max(a.X, -b.X)), Mathf.Max(0f, Mathf.Max(a.Y, -b.Y)));
+		Vector2 far = new(Mathf.Max(Mathf.Abs(a.X), Mathf.Abs(b.X)), Mathf.Max(Mathf.Abs(a.Y), Mathf.Abs(b.Y)));
+		Vector2 aspect = new(1f, 1.15f);
+		return (near * aspect).Length() <= (stop + 0.05f) * tall
+			&& (go < 0f || (far * aspect).Length() >= (go - 0.35f) * tall);
 	}
 
 	/// <summary>三张预告信卡从手里甩出去，飞到钟边上急停、冻在半空（微微浮动），回合结束接着转、从底边烧掉。</summary>
@@ -437,7 +535,7 @@ public sealed class TimeStop
 		for (int i = 0; i < angs.Length; i++)
 		{
 			Vector2 dir = new(Mathf.Sin(angs[i]), -Mathf.Cos(angs[i]));
-			Phantom.P5Card c = Phantom.Card(_back, _hand, w, 900.0, trail: 0.55f);
+			Phantom.P5Card c = Phantom.Card(_cardLayer, _hand, w, 900.0, trail: 0.55f);
 			c.Root.Visible = false;
 			_cards.Add(new FrozenCard
 			{
@@ -612,7 +710,7 @@ public sealed class TimeStop
 		if (GodotObject.IsInstanceValid(_screen)) _screen.QueueFree();
 		if (GodotObject.IsInstanceValid(_enemyScreen)) _enemyScreen.QueueFree();
 		if (GodotObject.IsInstanceValid(_bitsRoot)) _bitsRoot.QueueFree();
-		foreach (FrozenCard f in _cards) if (GodotObject.IsInstanceValid(f.C.Root)) f.C.Root.QueueFree();
+		if (GodotObject.IsInstanceValid(_cardLayer)) _cardLayer.QueueFree();
 		if (Current == this) Current = null;
 	}
 
@@ -624,23 +722,64 @@ public sealed class TimeStop
 
 	// ───────────────────────── 着色器 ─────────────────────────
 
-	private static Shader? _shader;
+	private static Shader? _shader, _enemyShader;
 
-	public static Shader Shader => _shader ??= new Shader { Code = @"
+	public static Shader Shader => _shader ??= new Shader { Code = ScreenSource + BackgroundSource };
+	private static Shader EnemyShader => _enemyShader ??= new Shader { Code = ScreenSource + EnemySource };
+
+	internal static void WarmBackground(Control slot) => WarmGrade(slot, Shader);
+	internal static void WarmEnemies(Control slot) => WarmGrade(slot, EnemyShader);
+
+	internal static void WarmDust(Control slot)
+	{
+		Vector2 size = Fx.Screen(slot);
+		var dust = new TimeStopDust(slot);
+		dust.Resize(size, new Vector2(0.4f, 0.65f), 0.33f);
+		dust.Step(0.65f, 100000f, 10f, 6f, -1f, 1f);
+	}
+
+	private static void WarmGrade(Control slot, Shader shader)
+	{
+		slot.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
+		var material = new ShaderMaterial { Shader = shader };
+		SetWave(material, 7f, -1f, 1f);
+		if (shader == EnemyShader)
+		{
+			material.SetShaderParameter("box_count", 1);
+			material.SetShaderParameter("boxes", new Vector4[] { new(0.5f, 0.5f, 0.25f, 0.25f), default, default, default, default, default });
+		}
+		slot.AddChild(new ColorRect { Material = material, Position = new Vector2(60, 44),
+			Size = new Vector2(8, 8), MouseFilter = Control.MouseFilterEnum.Ignore });
+	}
+
+	private const string ScreenSource = @"
 shader_type canvas_item;
-uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
-uniform int mode = 0;                   // 0 = 背景层（褪色 + 浮尘 + 折射波），1 = 前景层敌人身上（只褪色）
-uniform vec4 boxes[6];                  // mode 1：敌人身体范围（屏幕 0～1：中心 xy、半宽高 zw）
+uniform sampler2D screen_tex : hint_screen_texture, filter_linear, repeat_disable;
 uniform float aspect = 1.7778;
-uniform vec2 center = vec2(0.22, 0.6);  // 他身体中间（0～1）
-uniform float tall = 0.33;              // 身高（屏幕高度的比例）
-uniform float t = 0.0;                  // 打出后过了几秒
-uniform float go_at = 100000.0;         // 回合结束（时间回来）在第几秒
-uniform float stop_dur = 0.75;
-uniform float go_dur = 0.55;
-uniform float reach = 7.5;              // 波走多远（身高为单位）
-uniform float pulse_s = 10.0;           // 时停里出牌后过了几秒（从他身边推出一小圈涟漪）
-uniform float amount = 1.0;
+uniform vec2 center = vec2(0.22, 0.6);
+uniform float tall = 0.33;
+uniform float stop_r = 0.0;
+uniform float go_r = -1.0;
+uniform float amount = 0.0;
+vec2 local(vec2 uv) { return (uv - center) * vec2(aspect, 1.0) / tall; }
+float dist(vec2 q) { return length(q * vec2(1.0, 1.15)); }
+float frozen_at(float d) {
+	return smoothstep(stop_r + 0.05, stop_r - 0.3, d) * (1.0 - smoothstep(go_r + 0.05, go_r - 0.35, d));
+}
+// 褪色：冷灰，红色不褪
+vec3 grade(vec3 b, float tint) {
+	float l = dot(b, vec3(0.299, 0.587, 0.114));
+	vec3 g = mix(b, vec3(l), 0.86) * mix(vec3(1.0), vec3(0.88, 0.95, 1.08), tint);
+	float red = clamp((b.r - max(b.g, b.b)) * 2.2, 0.0, 1.0);
+	return mix(g, b * vec3(1.0, 0.86, 0.9), smoothstep(0.25, 0.75, red) * 0.85);
+}
+";
+
+	private const string BackgroundSource = @"
+uniform float t = 0.0;
+uniform float go_at = 100000.0;
+uniform float pulse_s = 10.0;
+const float stop_dur = 0.75, go_dur = 0.55;
 // 透明大时钟（mode 0）
 uniform float ck_r = 0.85;               // 半径（身高为单位）
 uniform float ck_a = 0.0;               // 可见度
@@ -651,13 +790,6 @@ uniform vec2 ck_tick = vec2(0.0, 10.0);  // 出牌反馈：强度、过了几秒
 uniform vec2 ck_c = vec2(0.0, -0.13);   // 钟心相对身体中间（身高为单位）：胸口
 
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
-vec2 hash2(vec2 p) { return vec2(hash(p), hash(p + 17.31)); }
-
-vec2 local(vec2 uv) { return (uv - center) * vec2(aspect, 1.0) / tall; }
-float dist(vec2 q) { return length(q * vec2(1.0, 1.15)); }
-float arrive(float d, float t0, float dur) { return t0 + dur * (1.0 - sqrt(max(0.0, 1.0 - clamp(d / reach, 0.0, 1.0)))); }
-float waveR(float s, float dur) { return s <= 0.0 ? 0.0 : reach * (1.0 - pow(1.0 - min(1.0, s / dur), 2.0)); }
-
 float noise(vec2 p) {
 	vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
 	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
@@ -674,6 +806,7 @@ vec2 hand(vec2 cq, float a, float len, float tail, float w) {
 
 // 拖影：沿转过的角度往回取 5 次平均
 vec2 handBlur(vec2 cq, float a, float blur, float len, float tail, float w) {
+	if (abs(blur) < 0.0001) return hand(cq, a, len, tail, w);
 	vec2 acc = vec2(0.0); float wsum = 0.0;
 	for (int i = 0; i < 5; i++) {
 		float f = float(i) / 4.0;
@@ -788,102 +921,66 @@ Clk clockFx(vec2 q) {
 	return o;
 }
 
-// 褪色：冷灰，红色不褪
-vec3 grade(vec3 b, float tint) {
-	float l = dot(b, vec3(0.299, 0.587, 0.114));
-	vec3 g = mix(b, vec3(l), 0.86) * mix(vec3(1.0), vec3(0.88, 0.95, 1.08), tint);
-	float red = clamp((b.r - max(b.g, b.b)) * 2.2, 0.0, 1.0);
-	return mix(g, b * vec3(1.0, 0.86, 0.9), smoothstep(0.25, 0.75, red) * 0.85);
-}
-
 void fragment() {
 	vec2 uv = SCREEN_UV;
 	vec2 q = local(uv);
-	float d = dist(q);
-	float sR = waveR(t, stop_dur);
-	float gS = t - go_at;
-	float gR = waveR(gS, go_dur);
-	float frozen = smoothstep(sR + 0.05, sR - 0.3, d) * (1.0 - smoothstep(gR + 0.05, gR - 0.35, d) * step(0.0, gS));
+	float d = dist(q), frozen = frozen_at(d);
+	float sR = stop_r, gR = go_r, gS = t - go_at;
+	vec2 radial = normalize(q + 1e-5) / vec2(aspect, 1.0) * tall;
+	// 折射波：透明的一圈空气推出去，只有扭曲 + 很轻的色散，不发光、没有线
+	float sFade = pow(1.0 - min(1.0, t / stop_dur), 0.7);
+	float ds = (d - sR) / 0.22;
+	float sFront = sFade > 0.0 && t > 0.001 ? exp(-ds * ds) * sFade : 0.0;
+	float gFade = gS > 0.0 ? pow(1.0 - min(1.0, gS / go_dur), 0.6) : 0.0;
+	float dg = (d - gR) / 0.28;
+	float gFront = gFade > 0.0 ? exp(-dg * dg) * gFade : 0.0;
+	// 出牌：他身边推出一小圈涟漪（走 1.6 个身高就散）
+	float pR = pulse_s * 3.2;
+	float pFront = pulse_s >= 0.0 && pulse_s < 0.6 ? exp(-pow((d - pR) / 0.16, 2.0)) * (1.0 - pulse_s / 0.6) : 0.0;
+	Clk ck = clockFx(q);
+	vec2 off = radial * (sFront * 0.05 + gFront * 0.07 + pFront * 0.025) + ck.off * ck_r * tall / vec2(aspect, 1.0);
+	vec3 b;
+	if (dot(off, off) < 1e-12) b = texture(screen_tex, uv).rgb;
+	else b = vec3(texture(screen_tex, uv - off * 1.35).r, texture(screen_tex, uv - off).g, texture(screen_tex, uv - off * 0.7).b);
+	vec3 g = grade(b, 1.0);
+	g = (g - 0.4) * 1.04 + 0.42;
+	float vig = smoothstep(0.45, 1.3, length((uv - vec2(0.5)) * vec2(aspect * 0.6, 1.0)));
+	g *= 1.0 - 0.16 * vig;
+	// P5 的红：暗部透一点暗红（亮部还是冷白），四角一层很淡的红色半调网点
+	float gl = dot(g, vec3(0.3, 0.55, 0.15));
+	g += vec3(0.032, 0.0, 0.006) * (1.0 - smoothstep(0.01, 0.16, gl));
+	vec2 hpx = mat2(vec2(0.7071, 0.7071), vec2(-0.7071, 0.7071)) * (uv * vec2(aspect, 1.0) * 1080.0) / 11.0;
+	float hdot = smoothstep(vig * 0.55, vig * 0.55 - 0.1, length(fract(hpx) - 0.5));
+	g = mix(g, vec3(0.42, 0.03, 0.06), hdot * smoothstep(0.15, 0.8, vig) * 0.38);
+	vec3 col = mix(b, g, frozen);
 
-	if (mode == 1) {
-		// 敌人身上：软边范围内褪色（背景已经在背景层褪过，再褪一次几乎不变，所以看不出范围边）
-		float m = 0.0;
-		for (int i = 0; i < 6; i++) {
-			vec4 bx = boxes[i];
-			vec2 e = abs(uv - bx.xy) / max(bx.zw, vec2(1e-4));
-			float r = length(max(e - vec2(0.7, 0.75), 0.0) / vec2(0.75, 0.6));
-			m = max(m, 1.0 - smoothstep(0.0, 1.0, r));
-		}
-		m *= frozen * amount;
-		if (m <= 0.001) discard;
-		// 冻住的敌人带一点红蓝错开（像停在动作中间）
-		vec2 ca = vec2(2.5 / 1080.0 / aspect, 0.0);
-		vec3 b = vec3(texture(screen_tex, uv + ca).r, texture(screen_tex, uv).g, texture(screen_tex, uv - ca).b);
-		COLOR = vec4(grade(b, 0.0), m);
-	} else {
-		vec2 radial = normalize(q + 1e-5) / vec2(aspect, 1.0) * tall;
-		// 折射波：透明的一圈空气推出去，只有扭曲 + 很轻的色散，不发光、没有线
-		float sFade = pow(1.0 - min(1.0, t / stop_dur), 0.7);
-		float sFront = exp(-pow((d - sR) / 0.22, 2.0)) * sFade * step(0.001, t);
-		float gFade = gS > 0.0 ? pow(1.0 - min(1.0, gS / go_dur), 0.6) : 0.0;
-		float gFront = exp(-pow((d - gR) / 0.28, 2.0)) * gFade;
-		// 出牌：他身边推出一小圈涟漪（走 1.6 个身高就散）
-		float pR = pulse_s * 3.2;
-		float pFront = pulse_s >= 0.0 && pulse_s < 0.6 ? exp(-pow((d - pR) / 0.16, 2.0)) * (1.0 - pulse_s / 0.6) : 0.0;
-		Clk ck = clockFx(q);
-		vec2 off = radial * (sFront * 0.05 + gFront * 0.07 + pFront * 0.025) + ck.off * ck_r * tall / vec2(aspect, 1.0);
-		vec3 b;
-		b.r = texture(screen_tex, uv - off * 1.35).r;
-		b.g = texture(screen_tex, uv - off).g;
-		b.b = texture(screen_tex, uv - off * 0.7).b;
-		vec3 g = grade(b, 1.0);
-		g = (g - 0.4) * 1.04 + 0.42;
-		float vig = smoothstep(0.45, 1.3, length((uv - vec2(0.5)) * vec2(aspect * 0.6, 1.0)));
-		g *= 1.0 - 0.16 * vig;
-		// P5 的红：暗部透一点暗红（亮部还是冷白），四角一层很淡的红色半调网点
-		float gl = dot(g, vec3(0.3, 0.55, 0.15));
-		g += vec3(0.032, 0.0, 0.006) * (1.0 - smoothstep(0.01, 0.16, gl));
-		vec2 hpx = mat2(vec2(0.7071, 0.7071), vec2(-0.7071, 0.7071)) * (uv * vec2(aspect, 1.0) * 1080.0) / 11.0;
-		float hdot = smoothstep(vig * 0.55, vig * 0.55 - 0.1, length(fract(hpx) - 0.5));
-		g = mix(g, vec3(0.42, 0.03, 0.06), hdot * smoothstep(0.15, 0.8, vig) * 0.38);
-		vec3 col = mix(b, g, frozen);
+	// 时钟：表盘里透一点暗红的光（越近钟心越暖），玻璃高光，红色的刻度、网点、秒针
+	float cr = length((q - ck_c) / ck_r);
+	col += vec3(0.16, 0.012, 0.03) * ck.inside * pow(max(0.0, 1.0 - cr), 1.5) * (0.9 + 2.2 * ck_tick.x);
+	col += vec3(1.0, 0.96, 0.95) * ck.spec * 0.5;
+	col = mix(col, vec3(0.93, 0.07, 0.13), ck.red * 0.85);
+	col += vec3(0.25, 0.02, 0.04) * ck.red * 0.35;
+	COLOR = vec4(mix(b, col, amount), 1.0);
+}";
 
-		// 浮尘：动着的时候慢慢漂；波过之处停住，时间回来接着漂
-		vec2 px = uv * vec2(aspect, 1.0) * 1080.0;
-		float dust = 0.0;
-		for (int k = 0; k < 3; k++) {
-			float fk = float(k);
-			float cs = 70.0 - 18.0 * fk;
-			vec2 cell = floor(px / cs);
-			for (int j = 0; j < 9; j++) {
-				vec2 c2 = cell + vec2(float(j % 3) - 1.0, float(j / 3) - 1.0);
-				float h = hash(c2 + fk * 31.7);
-				if (h > 0.42) continue;
-				vec2 base = (c2 + 0.15 + 0.7 * hash2(c2 + fk * 7.3)) * cs;
-				float cd = dist(local(base / 1080.0 / vec2(aspect, 1.0)));
-				// 停住以后还以 7% 的速度极慢地漂（不是死的）；时间回来恢复原速
-				float tf = arrive(cd, 0.0, stop_dur), tg = arrive(cd, go_at, go_dur);
-				float tau = min(t, tf) + max(0.0, min(t, tg) - tf) * 0.07 + max(0.0, t - tg);
-				vec2 p = base + vec2(sin(tau * (0.5 + h) + h * 40.0) * cs * 0.22, sin(tau * (0.4 + 0.6 * h) + h * 17.0) * cs * 0.18);
-				// 出牌的涟漪经过：浮尘被往外推一下
-				float pRr = pulse_s * 3.2;
-				vec2 cdir = normalize(base / 1080.0 / vec2(aspect, 1.0) - center + 1e-5) * vec2(1.0, 1.0);
-				p += cdir * 9.0 * (pulse_s >= 0.0 && pulse_s < 1.5 ? exp(-pow((cd - pRr) / 0.6, 2.0)) * exp(-pulse_s * 1.2) : 0.0);
-				float r = 0.7 + 1.5 * hash(c2 + 5.1 + fk);
-				float dd = length(px - p);
-				float tw = 0.55 + 0.45 * sin(t * (0.6 + 1.2 * h) + h * 60.0);   // 一直在轻轻闪
-				dust += (smoothstep(r, r * 0.25, dd) + 0.18 * smoothstep(r * 4.0, 0.0, dd)) * tw * (0.35 + 0.65 * h / 0.42) * (0.5 + 0.25 * fk);
-			}
-		}
-		float dustA = (0.25 + 0.75 * frozen) * smoothstep(0.0, 0.25, t) * (1.0 - step(0.0, gS) * smoothstep(0.0, go_dur + 0.6, gS));
-		col += vec3(0.78, 0.86, 1.0) * dust * 0.3 * dustA;
-		// 时钟：表盘里透一点暗红的光（越近钟心越暖），玻璃高光，红色的刻度、网点、秒针
-		float cr = length((q - ck_c) / ck_r);
-		col += vec3(0.16, 0.012, 0.03) * ck.inside * pow(max(0.0, 1.0 - cr), 1.5) * (0.9 + 2.2 * ck_tick.x);
-		col += vec3(1.0, 0.96, 0.95) * ck.spec * 0.5;
-		col = mix(col, vec3(0.93, 0.07, 0.13), ck.red * 0.85);
-		col += vec3(0.25, 0.02, 0.04) * ck.red * 0.35;
-		COLOR = vec4(mix(b, col, amount), 1.0);
+	private const string EnemySource = @"
+uniform vec4 boxes[6];
+uniform int box_count = 0;
+void fragment() {
+	vec2 uv = SCREEN_UV;
+	// 敌人身上：软边范围内褪色（背景已经在背景层褪过，再褪一次几乎不变，所以看不出范围边）
+	float m = 0.0;
+	for (int i = 0; i < box_count; i++) {
+		vec4 bx = boxes[i];
+		vec2 e = abs(uv - bx.xy) / max(bx.zw, vec2(1e-4));
+		float r = length(max(e - vec2(0.7, 0.75), 0.0) / vec2(0.75, 0.6));
+		m = max(m, 1.0 - smoothstep(0.0, 1.0, r));
 	}
-}" };
+	m *= frozen_at(dist(local(uv))) * amount;
+	if (m <= 0.001) discard;
+	// 冻住的敌人带一点红蓝错开（像停在动作中间）
+	vec2 ca = vec2(2.5 / 1080.0 / aspect, 0.0);
+	vec3 b = vec3(texture(screen_tex, uv + ca).r, texture(screen_tex, uv).g, texture(screen_tex, uv - ca).b);
+	COLOR = vec4(grade(b, 0.0), m);
+}";
 }

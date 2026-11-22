@@ -18,6 +18,7 @@ public sealed record SkillCtx(
 	public Vector2 Head => Feet + new Vector2(0f, -Tall * 1.02f);
 	/// <summary>这次特效要表现的牌数（计算下注 = 弃掉 / 抽回的手牌数，独门技术 = 实际抽到的张数）；-1 = 游戏没给，用各牌自己的默认。</summary>
 	public int Count { get; init; } = -1;
+	public Func<bool>? BulletTimeTurn { get; init; }
 }
 
 /// <summary>

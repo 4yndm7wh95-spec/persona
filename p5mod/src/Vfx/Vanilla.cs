@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Godot;
 
 namespace P5Joker;
@@ -91,7 +92,7 @@ public static class Lut5
 /// <summary>
 /// 直接用游戏自己的特效（res://scenes/vfx/...，游戏 PCK 里有；预览工程里是 research/sts2_vfx 的拷贝）。
 /// 只用没有脚本的组件场景（根节点就是 GPUParticles2D 的那些），发射由我们控制；
-/// 材质复制一份再换 LUT，不影响游戏里其他地方用到的同一份材质。
+/// 同一款粒子材质和 LUT 共用一份换色材质。
 /// </summary>
 public static class Vanilla
 {
@@ -117,6 +118,26 @@ public static class Vanilla
 	public const string PoisonSkull = "res://scenes/vfx/poison/vfx_poison_skull.tscn";
 
 	private static readonly Dictionary<string, PackedScene?> Scenes = new();
+
+	// PackedScene emitter materials are shared resources. The recolored instance
+	// is immutable after creation and can be reused across bursts.
+	private static readonly ConditionalWeakTable<ShaderMaterial, Dictionary<Texture2D, ShaderMaterial>> Recolored = new();
+
+	private static ShaderMaterial WithLut(ShaderMaterial original, Texture2D lut)
+	{
+		if (original.ResourceLocalToScene)
+		{
+			var local = (ShaderMaterial)original.Duplicate();
+			local.SetShaderParameter("lut", lut);
+			return local;
+		}
+		var variants = Recolored.GetOrCreateValue(original);
+		if (variants.TryGetValue(lut, out var existing)) return existing;
+		var material = (ShaderMaterial)original.Duplicate();
+		material.SetShaderParameter("lut", lut);
+		variants.Add(lut, material);
+		return material;
+	}
 
 	private static PackedScene? Scene(string path)
 	{
@@ -157,9 +178,7 @@ public static class Vanilla
 		{
 			if (lut != null && p.Material is ShaderMaterial m)
 			{
-				ShaderMaterial copy = (ShaderMaterial)m.Duplicate();
-				copy.SetShaderParameter("lut", lut);
-				p.Material = copy;
+				p.Material = WithLut(m, lut);
 			}
 			if (tint is Color c)
 			{

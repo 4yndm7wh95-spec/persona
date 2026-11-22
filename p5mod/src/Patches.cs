@@ -4,15 +4,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Hooks;
+using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using MegaCrit.Sts2.Core.Nodes.Cards.Holders;
 using MegaCrit.Sts2.Core.Nodes.CommonUi;
 using MegaCrit.Sts2.Core.Nodes.Screens.CardSelection;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
@@ -21,76 +26,58 @@ using MegaCrit.Sts2.Core.ValueProps;
 
 namespace P5Joker;
 
-/// <summary>Joker 的攻击牌：关掉原版命中特效（刀光、飞刀），换成 HitFx（JokerFx.OnHit）；原版命中音效保留。</summary>
+/// <summary>Read the native hit count for the local effects.</summary>
 [HarmonyPatch(typeof(AttackCommand), nameof(AttackCommand.Execute))]
 public static class AttackHitVfxPatch
 {
-	private static readonly PropertyInfo HitVfx = AccessTools.Property(typeof(AttackCommand), "HitVfx");
-	private static readonly FieldInfo CustomHitNodes = AccessTools.Field(typeof(AttackCommand), "_customHitVfxNodes");
-	private static readonly FieldInfo HitCount = AccessTools.Field(typeof(AttackCommand), "_hitCount");
-	private static readonly FieldInfo CustomAttackerNodes = AccessTools.Field(typeof(AttackCommand), "_customAttackerVfxNodes");
-	// 多段攻击只挥一次（0.9.49 审阅第五批，Vfx/Batch5Fx.cs）：字段找不到（游戏改名）就保持原版行为
-	private static readonly FieldInfo? PlayOnEveryHit = AccessTools.Field(typeof(AttackCommand), "_playOnEveryHit");
-	private static readonly FieldInfo? WaitBeforeHit = AccessTools.Field(typeof(AttackCommand), "_waitBeforeHit");
-	private static readonly FieldInfo? AnimDelay = AccessTools.Field(typeof(AttackCommand), "_attackerAnimDelay");
+	private static readonly FieldInfo? HitCount = AccessTools.Field(typeof(AttackCommand), "_hitCount");
 
-	public static void Prefix(AttackCommand __instance)
+	public sealed class Swing(CardModel card, Batch5Fx.Sequence motion)
 	{
+		public CardModel Card { get; } = card;
+		public Batch5Fx.Sequence Motion { get; } = motion;
+		public bool Played;
+	}
+
+	private static readonly AsyncLocal<Swing?> CurrentSwing = new();
+
+	internal static Batch5Fx.Sequence? SequenceFor(CardModel card) =>
+		CurrentSwing.Value is { } swing && ReferenceEquals(swing.Card, card) ? swing.Motion : null;
+
+	internal static bool AlreadySwung(Creature? owner)
+	{
+		if (CurrentSwing.Value is not { } swing || swing.Card.Owner.Creature != owner) return false;
+		if (swing.Played) return true;
+		swing.Played = true;
+		return false;
+	}
+
+	public static void Prefix(AttackCommand __instance, out Swing? __state)
+	{
+		__state = CurrentSwing.Value;
+		CurrentSwing.Value = null;
 		ModEntry.Safe("AttackHitVfx", () =>
 		{
-			if (__instance.ModelSource is CardModel card && Joker.OwnsCard(card))
+			if (__instance.ModelSource is not CardModel card || !Joker.OwnsCard(card)) return;
+
+			int count = HitCount?.GetValue(__instance) is int hits ? hits : 1;
+			HitWeights.BeginAttack(card, count);
+			string name = card.GetType().Name;
+			if (Batch5Fx.OneSwing.ContainsKey(name))
 			{
-				HitWeights.BeginAttack(card, HitCount.GetValue(__instance) is int n ? n : 1);
-				string cname = card.GetType().Name;
-				if (Batch5Fx.OneSwing.TryGetValue(cname, out float gap) && PlayOnEveryHit != null && WaitBeforeHit?.GetValue(__instance) is float[] wait && wait.Length >= 2)
-				{
-					// 终结技 / 飞镖 / 连续反弹（用户：不要让 Joker 重复打击动作 N 次）：动作只在第一下放，之后每下隔 gap 秒，由 Batch5Fx 表现
-					PlayOnEveryHit.SetValue(__instance, false);
-					wait[0] = gap;
-					wait[1] = gap;
-					if (AnimDelay?.GetValue(__instance) is float d) AnimDelay.SetValue(__instance, Math.Max(0f, d - gap));   // 第一下别因为多等的 gap 变晚
-					Batch5Fx.Begin(cname, HitCount.GetValue(__instance) is int hc ? hc : 1);
-				}
-				HitVfx.SetValue(__instance, null);
-				(CustomHitNodes.GetValue(__instance) as IList)?.Clear();     // 小刀牌原版的飞刀（NShivThrowVfx）
-				if (card.GetType().Name == "DaggerSpray" && Joker.Node(card.Owner) is NCreature jn && Joker.FxLayer() is Godot.Control dl
-					&& NCombatRoom.Instance is NCombatRoom room)
-				{
-					// 匕首雨（0.9.49 审阅：没有群体攻击的感觉；用户 2026-11-18：是攻击两下的）：原版每一下都重放攻击动作（_playOnEveryHit），
-					// 动作开始约 0.15s 后结算伤害 → 每挥一刀放一拨群体特效（Vfx/Batch3Fx.cs）
-					var foes = new List<Batch3Fx.Foe>();
-					foreach (Creature c in __instance.Attacker?.CombatState?.HittableEnemies ?? (IReadOnlyList<Creature>)Array.Empty<Creature>())
-					{
-						if (room.GetCreatureNode(c) is NCreature en && Godot.GodotObject.IsInstanceValid(en))
-						{
-							foes.Add(new Batch3Fx.Foe(en.VfxSpawnPosition, en.GetTopOfHitbox(), en.Hitbox.GetGlobalRect().Size.X));
-						}
-					}
-					Batch3Fx.ArmSpray(foes);   // 每次挥刀（JokerFx.OnAnim）放一拨，跟着两下伤害走
-				}
-				if (card.GetType().Name == "DaggerThrow")
-				{
-					// 投掷匕首：原版和匕首雨共用一片飞刀（NDaggerSprayFlurryVfx）→ 关掉，用打击动作 + 刀的命中（用户 2026-11-04）
-					(CustomAttackerNodes.GetValue(__instance) as IList)?.Clear();
-				}
+				CurrentSwing.Value = new Swing(card, new Batch5Fx.Sequence(name, count));
+			}
+			if (name == "DaggerSpray" && NCombatRoom.Instance is { } room)
+			{
+				var foes = new List<Batch3Fx.Foe>();
+				foreach (Creature target in __instance.Attacker?.CombatState?.HittableEnemies ?? (IReadOnlyList<Creature>)Array.Empty<Creature>())
+					if (room.GetCreatureNode(target) is NCreature n && Fx.Active(n))
+						foes.Add(new Batch3Fx.Foe(n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X));
+				Batch3Fx.ArmSpray(foes);
 			}
 		});
 	}
-}
-
-/// <summary>原版中和出牌时在敌人身上放的细斩（NThinSliceVfx）：Joker 出的牌不要，刀光由 HitFx / CardFx 放。</summary>
-[HarmonyPatch(typeof(NThinSliceVfx), nameof(NThinSliceVfx.Create))]
-public static class ThinSlicePatch
-{
-	public static bool Prefix(ref NThinSliceVfx? __result)
-	{
-		if (Godot.Time.GetTicksMsec() - JokerFx.LastPlayMs < 250)
-		{
-			__result = null;
-			return false;
-		}
-		return true;
-	}
+	public static void Finalizer(Swing? __state) => CurrentSwing.Value = __state;
 }
 
 /// <summary>小刀弹药（Vfx/Ammo.cs）：Joker 的能量球每帧更新旁边的左轮弹巢 = 手牌里的小刀牌张数。</summary>
@@ -107,17 +94,24 @@ public static class AmmoPatch
 	{
 		ModEntry.Safe("Ammo", () =>
 		{
-			if (PlayerField.GetValue(__instance) is not MegaCrit.Sts2.Core.Entities.Players.Player player || !Joker.Is(player))
+			ulong id = __instance.GetInstanceId();
+			if (PlayerField.GetValue(__instance) is not Player player || !Joker.Is(player))
 			{
+				if (Views.TryGetValue(id, out AmmoView? old) && Fx.Active(old.Root)) old.Root.Hide();
 				return;
 			}
-			ulong id = __instance.GetInstanceId();
+			bool local = MegaCrit.Sts2.Core.Context.LocalContext.IsMe(player);
 			if (!Views.TryGetValue(id, out AmmoView? view) || !Godot.GodotObject.IsInstanceValid(view.Root))
 			{
 				view = new AmmoView(__instance);
 				Views[id] = view;
+				TrackSelection(view, id);
+				// A mid-run switch can keep the existing End Turn button and skip its _Ready.
+				if (local && JokerCostume.ManagedSelection == true && NCombatRoom.Instance?.Ui?.EndTurnButton is { } button)
+					JokerEndTurnSkinPatch.Postfix(button);
 			}
-			if (MegaCrit.Sts2.Core.Context.LocalContext.IsMe(player))
+			view.Root.Show();
+			if (local)
 			{
 				Local = view;
 				// 腐蚀波生效中：Joker 脚下咒怨一直翻腾（Vfx/CorrosiveFx.cs）
@@ -134,6 +128,26 @@ public static class AmmoPatch
 			view.Set(shivs);
 			view.Tick((float)delta);
 		});
+	}
+
+	private static void TrackSelection(AmmoView view, ulong id)
+	{
+		Godot.SceneTree tree = view.Root.GetTree();
+		bool managed = JokerCostume.ManagedSelection == true;
+		if (managed) tree.ProcessFrame += DropIfUnselected;
+		view.Root.TreeExiting += () =>
+		{
+			if (managed) tree.ProcessFrame -= DropIfUnselected;
+			Views.Remove(id);
+			if (Local == view) Local = null;
+		};
+
+		void DropIfUnselected()
+		{
+			if (JokerCostume.ManagedSelection != false) return;
+			view.Root.Hide();
+			view.Root.QueueFree();
+		}
 	}
 }
 
@@ -172,7 +186,7 @@ public static class DamagePatch
 			{
 				return;
 			}
-			if (SinfulPlay.Active)
+			if (SinfulPlay.IsPlaying(cardSource))
 			{
 				Hits.Mark(targets, false, Weight.Heavy);          // 华丽收场：数字照样换成 P5 样式，敌人那边的特效和声音全由 SinfulShell 放
 				return;
@@ -188,7 +202,7 @@ public static class DamagePatch
 					JokerFx.OnRicochet(joker, hit);                // 刀扇：一发子弹弹过所有敌人
 					return;
 				}
-				if (hit.Count == 1 && Joker.FxLayer() is Godot.Control b5 && Batch5Fx.Hit(b5, cardSource.GetType().Name,
+				if (hit.Count == 1 && Joker.FxLayer() is Godot.Control b5 && AttackHitVfxPatch.SequenceFor(cardSource) is { } sequence && sequence.Hit(b5,
 					new Batch5Fx.NCreatureView(Joker.PosePoint(joker, ReadyFx.GloveCuff), Joker.Chest(joker),
 						(Joker.PosePoint(joker, ReadyFx.Feet) - Joker.PosePoint(joker, new Godot.Vector2(815f, 120f))).Length(), Joker.Facing(joker)),
 					hit[0].VfxSpawnPosition, (hit[0].VfxSpawnPosition - hit[0].GetTopOfHitbox()).Length(), d => JokerFx.DelayNumber(hit[0], d)))
@@ -269,107 +283,81 @@ public static class Hits
 [HarmonyPatch(typeof(NDamageNumVfx), nameof(NDamageNumVfx.Create), typeof(Creature), typeof(DamageResult))]
 public static class DamageNumberPatch
 {
-	public static void Postfix(Creature target, DamageResult result, ref NDamageNumVfx? __result)
+	public static void Postfix(Creature target, DamageResult result, NDamageNumVfx? __result)
 	{
-		NDamageNumVfx? original = __result;
-		bool replaced = false;
+		if (__result == null) return;
 		ModEntry.Safe("DamageNumber", () =>
 		{
-			// Every real Joker-owned poison tick, including every Accelerant repeat, owns its number.
-			if (original != null && !target.IsPlayer && PoisonDamage.Current.Value is { } poison
-				&& ReferenceEquals(poison.Owner, target)
-				&& poison.Applier?.Player is { } owner && Joker.Is(owner)
-				&& NCombatRoom.Instance?.GetCreatureNode(target) is NCreature pn && Joker.FxLayer() is Godot.Control pl)
+			if (target.IsPlayer) return;
+			if (NCombatRoom.Instance?.GetCreatureNode(target) is not NCreature node || Joker.FxLayer() is not Godot.Control layer)
+				return;
+			int damage = result.UnblockedDamage + (target.Monster is MegaCrit.Sts2.Core.Models.Monsters.Osty ? 0 : result.OverkillDamage);
+			if (damage <= 0) return;
+
+			ulong id = node.GetInstanceId();
+			var at = node.VfxSpawnPosition;
+			var top = node.GetTopOfHitbox();
+			float width = node.Hitbox.GetGlobalRect().Size.X;
+			var body = node.Visuals;
+			bool killed = result.WasTargetKilled;
+			OutbreakCue? outbreak = OutbreakVisualPatch.Current;
+			if (PoisonDamage.Current.Value is { } poison && ReferenceEquals(poison.Owner, target)
+				&& (outbreak != null || (poison.Applier?.Player is { } owner && Joker.Is(owner))))
 			{
-				int damage = result.UnblockedDamage + (target.Monster is MegaCrit.Sts2.Core.Models.Monsters.Osty ? 0 : result.OverkillDamage);
-				if (damage <= 0) return;
-				Popups.Damage(pl, pn.GetInstanceId(), pn.VfxSpawnPosition, damage, false);
-				PoisonFx.Tick(pl, pn.VfxSpawnPosition, pn.GetTopOfHitbox(), pn.Hitbox.GetGlobalRect().Size.X, pn.Visuals,
-					outbreak: OutbreakPlayback.Current.Value != null, killed: result.WasTargetKilled);
-				Grip.OnTick(pn.GetInstanceId());
-				DepthGrip.OnTick(pn.GetInstanceId());
-				Myriad.OnPoisonTick(pl, pn.GetInstanceId(), pn.VfxSpawnPosition, pn.GetTopOfHitbox(), null);
-				original.QueueFree();
-				replaced = true;
+				void ShowPoison()
+				{
+					outbreak?.ReleaseHealth(target);
+					Popups.Damage(layer, id, at, damage, false);
+					PoisonFx.Tick(layer, at, top, width, Godot.GodotObject.IsInstanceValid(body) ? body : null, outbreak != null, killed);
+					Grip.OnTick(id);
+					DepthGrip.OnTick(id);
+					Myriad.OnPoisonTick(layer, id, at, top, null);
+				}
+				if (outbreak != null) outbreak.Show(layer, at, ShowPoison);
+				else ShowPoison();
+				__result.Visible = false;
 				return;
 			}
-			if (original == null || target.IsPlayer || !Hits.Recent(target, out bool gun)
-				|| NCombatRoom.Instance?.GetCreatureNode(target) is not NCreature node || Joker.FxLayer() is not Godot.Control layer)
-			{
-				return;
-			}
-			int amount = result.UnblockedDamage + (target.Monster is MegaCrit.Sts2.Core.Models.Monsters.Osty ? 0 : result.OverkillDamage);
-			if (amount <= 0)
-			{
-				return;
-			}
-			float wait = JokerFx.DamageNumberDelay(node);
-			// 打击确认感：顿帧 + 定向震屏 + 受击白闪 / 击退 + 重击 / 击杀的全屏冲击帧（Vfx/Impact.cs）；数字推迟时一起推迟（打到的那一刻才有冲击）
+			if (!Hits.Recent(target, out bool gun)) return;
+
+			bool sinful = SinfulPlay.Active;
+			float wait = sinful ? SinfulPlay.ImpactDelay(target) : JokerFx.DamageNumberDelay(node);
 			(Weight floor, bool calm) = Hits.FloorOf(target);
-			bool finale = result.WasTargetKilled && target.CombatState?.Enemies.All(e => e.IsDead) == true;
-			var grade = Impact.Grade(floor, result.UnblockedDamage, target.CurrentHp + result.UnblockedDamage, result.WasTargetKilled, finale, calm);
-			void Land()
+			bool finale = killed && target.CombatState?.Enemies.All(e => e.IsDead) == true;
+			var grade = Impact.Grade(floor, result.UnblockedDamage, target.CurrentHp + result.UnblockedDamage, killed, finale, calm);
+			Fx.After(layer, wait, () =>
 			{
-				if (!Godot.GodotObject.IsInstanceValid(node) || !Godot.GodotObject.IsInstanceValid(layer)) return;
-				Popups.Damage(layer, node.GetInstanceId(), node.VfxSpawnPosition, amount, gun);
-				if (!SinfulPlay.Active)
-					Impact.Confirm(layer, node.Visuals, node.VfxSpawnPosition, new Godot.Vector2(1f, 0.12f), grade);
-			}
-			if (wait > 0f) Fx.After(layer, wait, Land);
-			else Land();
-			original.QueueFree();
-			replaced = true;
+				Popups.Damage(layer, id, at, damage, gun);
+				if (!sinful)
+					Impact.Confirm(layer, Godot.GodotObject.IsInstanceValid(body) ? body : null, at, new Godot.Vector2(1f, 0.12f), grade);
+			});
+			__result.Visible = false;
 		});
-		if (replaced)
-		{
-			__result = null;                                   // 调用方拿到 null 就不显示原版数字
-		}
 	}
 }
 
-/// <summary>
-/// 「BLOCK」：Joker 的格挡完全挡住一次攻击时（原版 CreatureCmd.Damage 里 WasFullyBlocked → NDamageBlockedVfx.Create），
-/// 原版的"格挡"字样换成 P5 的 BLOCK（Popups.Block），照 P3 mod 的做法。原版音效保留。
-/// </summary>
 [HarmonyPatch(typeof(NDamageBlockedVfx), nameof(NDamageBlockedVfx.Create))]
 public static class BlockPopupPatch
 {
-	public static bool Prefix(Creature target, ref NDamageBlockedVfx? __result)
+	public static void Postfix(Creature target, NDamageBlockedVfx? __result) => ModEntry.Safe("BlockPopup", () =>
 	{
-		bool replaced = false;
-		ModEntry.Safe("BlockPopup", () =>
+		if (target.IsPlayer && Joker.Is(target.Player) && NCombatRoom.Instance?.GetCreatureNode(target) is NCreature node
+			&& Joker.FxLayer() is Godot.Control front)
 		{
-			if (target.IsPlayer && Joker.Is(target.Player) && NCombatRoom.Instance?.GetCreatureNode(target) is NCreature node
-				&& Joker.FxLayer() is Godot.Control front)
-			{
-				Popups.Block(front, Joker.Chest(node), Joker.Facing(node));
-				replaced = true;
-			}
-		});
-		if (replaced)
-		{
-			__result = null;
-			return false;
+			Popups.Block(front, Joker.Chest(node), Joker.Facing(node));
+			if (__result != null) __result.Visible = false;
 		}
-		return true;
-	}
+	});
 }
 
-/// <summary>Joker 格挡时原版的蓝色格挡火花也不要（换成 Popups.Block 的冲击）。</summary>
 [HarmonyPatch(typeof(NBlockSparkVfx), nameof(NBlockSparkVfx.Create))]
 public static class BlockSparkPatch
 {
-	public static bool Prefix(Creature target, ref NBlockSparkVfx? __result)
+	public static void Postfix(Creature target, NBlockSparkVfx? __result) => ModEntry.Safe("BlockSpark", () =>
 	{
-		bool skip = false;
-		ModEntry.Safe("BlockSpark", () => skip = target.IsPlayer && Joker.Is(target.Player));
-		if (skip)
-		{
-			__result = null;
-			return false;
-		}
-		return true;
-	}
+		if (__result != null && target.IsPlayer && Joker.Is(target.Player))
+			__result.Visible = false;
+	});
 }
 
 /// <summary>Joker 用牌获得格挡（所有 GainBlock 重载都汇到带 cardPlay 的那个）：身前张开光盾（JokerFx.OnBlock）。</summary>
@@ -395,8 +383,9 @@ public static class GainBlockPatch
 				// 用户 2026-11-13：有专属特效的牌（后空翻、生存者……）再叠一层通用蜂巢盾，两种特效打架 → 只放专属的。
 				// 模糊例外：它的专属特效就是配着蜂巢盾做的。扫腿也例外（用户 2026-11-19：防御特效不见了 ——
 				// 它的专属特效只管挂虚弱，格挡本来就交给蜂巢盾，见 CardSkillFx2.LegSweep）。
+				// 逃脱计划的专属特效只表现抽牌和烟弹，抽到技能获得格挡时也用蜂巢盾。
 				string name = cardPlay.Card.GetType().Name;
-				if (CardSkillFx.Cards.ContainsKey(name) && name is not ("Blur" or "LegSweep"))
+				if (CardSkillFx.Cards.ContainsKey(name) && name is not ("Blur" or "LegSweep" or "EscapePlan"))
 				{
 					return;
 				}
@@ -418,63 +407,6 @@ public static class BlockVfxPatch
 	}
 }
 
-/// <summary>原版致命毒药等出牌时在敌人身上放的毒雾（NPoisonImpactVfx）：Joker 出的牌不要，换成咒怨（CardFx.Eiha）。</summary>
-[HarmonyPatch(typeof(NPoisonImpactVfx), nameof(NPoisonImpactVfx.Create), typeof(Creature))]
-public static class PoisonImpactPatch
-{
-	public static bool Prefix(ref NPoisonImpactVfx? __result)
-	{
-		if (Godot.Time.GetTicksMsec() - JokerFx.LastPlayMs < 250)
-		{
-			__result = null;
-			return false;
-		}
-		return true;
-	}
-}
-
-/// <summary>
-/// Joker 的刀砍下去和伤害同时到：原版中和等牌在普通速度下把出刀到结算拉长到 0.35s，Joker 的 attack 0.14s 就出刀了，
-/// 命中特效和数字晚一截 —— Joker 的牌一律按静默猎手的 AttackAnimDelay（0.15s）结算。只改等待时间，不改结果。
-/// </summary>
-[HarmonyPatch(typeof(AttackCommand), nameof(AttackCommand.WithAttackerAnim))]
-public static class AttackDelayPatch
-{
-	public static void Prefix(AttackCommand __instance, string? animName, ref float delay)
-	{
-		if (animName == "Attack" && delay > 0.15f && __instance.ModelSource is CardModel card && Joker.OwnsCard(card))
-		{
-			delay = 0.15f;
-		}
-	}
-}
-
-/// <summary>
-/// Persona 召唤：牌在施法（TriggerAnim "Cast"）之后才结算（加中毒、扣血），把这段等待推到亚森出手的那一刻（Aim.SummonHit），
-/// 亚森出手、敌人身上炸开、数字跳出来是同一刻（用户 2026-11-01）。只改等待时间，不改结果。
-/// </summary>
-[HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.TriggerAnim))]
-public static class TriggerAnimDelayPatch
-{
-	public static void Prefix(Creature creature, string triggerName, ref float waitTime)
-	{
-		float hit = 0f;
-		ModEntry.Safe("TriggerAnimDelay", () =>
-		{
-			if (triggerName == "Cast" && creature.IsPlayer && Joker.Is(creature.Player) && NCombatRoom.Instance?.GetCreatureNode(creature) is NCreature node)
-			{
-				hit = Aim.TakeSummon(node);
-				if (OutbreakPlayback.Current.Value != null) hit = 0f;
-			}
-		});
-		if (OutbreakPlayback.Current.Value != null && triggerName == "Cast") waitTime = 0f;
-		if (hit > 0f)
-		{
-			waitTime = Godot.Mathf.Max(waitTime, hit);
-		}
-	}
-}
-
 /// <summary>出牌那一刻（结算之前）：技能 / 能力牌 Joker 自己施法（Aim.PlayCast），放出牌特效；记下施法动作（Aim 改动画名时用）。</summary>
 [HarmonyPatch(typeof(Hook), nameof(Hook.BeforeCardPlayed))]
 public static class CardPlayedPatch
@@ -483,13 +415,13 @@ public static class CardPlayedPatch
 	{
 		ModEntry.Safe("CardPlayed", () =>
 		{
+			if (cardPlay.Card.Type == CardType.Status) return;
 			if (Joker.OwnsCard(cardPlay.Card) && Joker.Node(cardPlay.Card.Owner) is NCreature node)
 			{
-				OutbreakPlayback? playback = OutbreakPlayback.Prepare(cardPlay);
 				Aim.PendingCast[node.GetInstanceId()] = Casts.For(cardPlay.Card);
 				if (cardPlay.Card.Type != CardType.Attack)
 				{
-					Aim.PlayCast(node, cardPlay.Card, playback);
+					Aim.PlayCast(node, cardPlay.Card, OutbreakCue.Prepare(cardPlay));
 				}
 				JokerFx.OnPlay(cardPlay.Card, node, cardPlay.Target);
 			}
@@ -497,170 +429,131 @@ public static class CardPlayedPatch
 	}
 }
 
-/// <summary>
-/// 施毒（第四版，Vfx/PoisonFx.cs）：游戏给敌人加中毒 / 叠毒时都会弹一下状态图标（NCreature.OnPowerIncreased → NPowerAppliedVfx.Create），
-/// 挂在这里就和游戏加毒同一刻，所有来源（致命毒药、带毒刺击、弹跳药瓶每一跳、涂毒、腐蚀波、毒雾、迷雾……）一起覆盖。只给 Joker 施的毒放。
-/// </summary>
 [HarmonyPatch(typeof(NPowerAppliedVfx), nameof(NPowerAppliedVfx.Create))]
 public static class PoisonApplyPatch
 {
-	/// <summary>
-	/// 毒性爆发（用户 2026-11-08）：毒在出牌一开始就加上了，原版的中毒图标弹出 + 减益特效会让敌人在 0 秒就有反应、抢了捏碎的戏 →
-	/// Joker 的毒性爆发上毒时不弹（只是不显示，层数照加）。敌人的反应全部留到捏碎后咒怨打到的那一刻。
-	/// </summary>
-	public static bool Prefix(PowerModel power, ref NPowerAppliedVfx? __result)
-	{
-		if (OutbreakPlayback.Current.Value != null && power is MegaCrit.Sts2.Core.Models.Powers.PoisonPower && !power.Owner.IsPlayer)
-		{
-			__result = null;
-			return false;
-		}
-		return true;
-	}
-
-	public static void Postfix(PowerModel power, int amount)
+	public static void Postfix(PowerModel power, int amount, NPowerAppliedVfx? __result)
 	{
 		ModEntry.Safe("PoisonApply", () =>
 		{
-			if (power is not MegaCrit.Sts2.Core.Models.Powers.PoisonPower || power.Owner.IsPlayer || power.Applier?.Player is not { } p || !Joker.Is(p)
+			var wave = CorrosiveDrawPatch.Current.Value;
+			if (power is not PoisonPower || power.Owner.IsPlayer || (wave?.Owner ?? power.Applier)?.Player is not { } p || !Joker.Is(p)
 				|| Joker.FxLayer() is not Godot.Control layer || NCombatRoom.Instance?.GetCreatureNode(power.Owner) is not NCreature n)
-			{
 				return;
+
+			if (wave != null)
+			{
+				var at = n.VfxSpawnPosition;
+				var top = n.GetTopOfHitbox();
+				float width = n.Hitbox.GetGlobalRect().Size.X;
+				var body = n.Visuals;
+				float delay = (float)Math.Max(0, wave.ImpactAt - HitStop.VisualSeconds());
+				Fx.After(layer, delay, () => PoisonFx.CorrosiveImpact(layer, at, top, width,
+					Godot.GodotObject.IsInstanceValid(body) ? body : null, amount));
 			}
-			PoisonFx.Apply(layer, n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, n.Visuals, amount, outbreak: OutbreakPlayback.Current.Value != null);
+			else if (OutbreakVisualPatch.Current == null)
+			{
+				PoisonFx.Apply(layer, n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, n.Visuals, amount, outbreak: false);
+			}
+			if (__result != null && (wave != null || OutbreakVisualPatch.Current != null))
+				__result.Visible = false;
 		});
 	}
 }
 
-/// <summary>
-/// 腐蚀波：每抽到一张牌（CorrosiveWavePower.AfterCardDrawn，原版在这里给全体上毒、在每个敌人身上放绿色毒气）——
-/// Joker 的腐蚀波：先放咒怨卷浪（Vfx/CorrosiveFx.cs），把原版这一步（上毒）推迟到浪拍中敌人的那一刻再跑（用户 2026-11-18：挂毒的确认感要和拍击同步、不要滞后）。
-/// 抽牌是一张一张等着跑的，所以连抽时一道浪接一道浪。原版的绿色毒气藏掉（CorrosiveGasPatch）。
-/// </summary>
-[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower), nameof(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower.AfterCardDrawn))]
+/// <summary>Draw and poison settle normally. Schedule the wave and bite visuals on their own timeline.</summary>
+[HarmonyPatch(typeof(CorrosiveWavePower), nameof(CorrosiveWavePower.AfterCardDrawn))]
 public static class CorrosiveDrawPatch
 {
-	private sealed class DrawChain
+	public sealed class DrawBatch(Player player)
 	{
-		public ulong LastImpact;
-		public int FollowUps;
+		public Player Player { get; } = player;
+		public int Played;
+		public double FirstImpactAt;
 	}
 
-	private static readonly ConditionalWeakTable<MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower, DrawChain> DrawChains = new();
-	private static bool _bypass;
+	public sealed record Cue(Creature Owner, double ImpactAt);
+	internal static readonly AsyncLocal<DrawBatch?> Batch = new();
+	internal static readonly AsyncLocal<Cue?> Current = new();
 
-	public static bool Prefix(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower __instance, MegaCrit.Sts2.Core.GameActions.Multiplayer.PlayerChoiceContext choiceContext, CardModel card, bool fromHandDraw, ref System.Threading.Tasks.Task __result)
+	public static void Prefix(CorrosiveWavePower __instance, CardModel card, out Cue? __state)
 	{
-		if (_bypass)
-		{
-			return true;
-		}
-		float wait = 0f;
-		Godot.Node? anchor = null;
+		__state = Current.Value;
 		ModEntry.Safe("CorrosiveDraw", () =>
 		{
 			if (card.Owner?.Creature != __instance.Owner || __instance.Owner.Player is not { } p || !Joker.Is(p)
 				|| Joker.FxLayer() is not Godot.Control layer || NCombatRoom.Instance is not NCombatRoom room || Joker.Node(p) is not NCreature joker)
-			{
 				return;
-			}
 			var targets = new List<CorrosiveFx.Target>();
 			foreach (Creature c in __instance.CombatState.HittableEnemies)
-			{
 				if (room.GetCreatureNode(c) is NCreature n)
-				{
 					targets.Add(new CorrosiveFx.Target(n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, n.Visuals));
-				}
+			if (targets.Count == 0) return;
+
+			var batch = Batch.Value is { } active && active.Player == p ? active : null;
+			int index = batch?.Played ?? 0;
+			double now = HitStop.VisualSeconds();
+			float face = Joker.Facing(joker);
+			double impact;
+			if (batch == null || index == 0)
+			{
+				impact = now + CorrosiveFx.OnDraw(layer, Joker.PosePoint(joker, ReadyFx.Feet), face, targets);
+				if (batch != null) batch.FirstImpactAt = impact;
 			}
-			// 用户 2026-11-18：一次抽好几张只放一道完整的浪；后面的每一张在浪尾上变成一下快速的「咬蚀」，每张仍然各挂一次毒
-			//（抽牌是一张一张等着跑的：上一张挂完毒才轮到下一张，所以离上一张结束不到 0.5s 就算同一串连抽）
-			ulong now = Stage.NowMs();
-			var chain = DrawChains.GetValue(__instance, static _ => new DrawChain());
-			bool chained = chain.LastImpact != 0 && now < chain.LastImpact + 500;
-			chain.FollowUps = chained ? chain.FollowUps + 1 : 0;
-			if (chain.FollowUps == 0)
-				wait = CorrosiveFx.OnDraw(layer, Joker.PosePoint(joker, ReadyFx.Feet), Joker.Facing(joker), targets, true);
 			else
-				wait = CorrosiveFx.Erode(layer, Joker.Facing(joker), targets, chain.FollowUps);
-			chain.LastImpact = now + (ulong)(wait * 1000f);   // 这一张挂毒的时刻
-			anchor = layer;
+			{
+				float delay = (float)Math.Max(0, batch.FirstImpactAt - now + (index - 1) * 0.09);
+				Fx.After(layer, delay, () => CorrosiveFx.Erode(layer, face, targets, index));
+				impact = now + delay + CorrosiveFx.ErodeHit;
+			}
+			if (batch != null) batch.Played++;
+			Current.Value = new Cue(__instance.Owner, impact);
 		});
-		if (wait <= 0f || anchor == null)
-		{
-			return true;
-		}
-		__result = Delayed(__instance, choiceContext, card, fromHandDraw, wait, anchor);
-		return false;
 	}
 
-	private static async System.Threading.Tasks.Task Delayed(MegaCrit.Sts2.Core.Models.Powers.CorrosiveWavePower power, MegaCrit.Sts2.Core.GameActions.Multiplayer.PlayerChoiceContext ctx, CardModel card, bool fromHandDraw, float wait, Godot.Node anchor)
+	public static void Finalizer(Cue? __state) => Current.Value = __state;
+}
+
+[HarmonyPatch]
+public static class CorrosiveDrawBatchPatch
+{
+	public static MethodBase TargetMethod()
 	{
-		if (Godot.GodotObject.IsInstanceValid(anchor) && anchor.GetTree() is Godot.SceneTree tree)
+		Type[] args = { typeof(PlayerChoiceContext), typeof(decimal), typeof(Player), typeof(bool) };
+		return AccessTools.Method(typeof(CardPileCmd), "DrawInternal", args)
+			?? AccessTools.Method(typeof(CardPileCmd), nameof(CardPileCmd.Draw), args);
+	}
+
+	public static void Prefix(Player player, out (bool Started, CorrosiveDrawPatch.DrawBatch? Previous) __state)
+	{
+		__state = (true, CorrosiveDrawPatch.Batch.Value);
+		CorrosiveDrawPatch.Batch.Value = new CorrosiveDrawPatch.DrawBatch(player);
+	}
+
+	public static void Finalizer((bool Started, CorrosiveDrawPatch.DrawBatch? Previous) __state)
+	{
+		if (__state.Started)
 		{
-			await anchor.ToSignal(tree.CreateTimer(wait), Godot.SceneTreeTimer.SignalName.Timeout);
+			CorrosiveDrawPatch.Batch.Value = __state.Previous;
 		}
-		System.Threading.Tasks.Task run;
-		_bypass = true;
-		try
-		{
-			run = power.AfterCardDrawn(ctx, card, fromHandDraw);
-		}
-		finally
-		{
-			_bypass = false;
-		}
-		await run;
 	}
 }
 
-/// <summary>
-/// 回响斩击（用户 2026-11-17 审阅：会卡住局内人物的动作，特效也没做）：原版不走 AttackCommand，不触发攻击动作 → Joker 一直停在举刀的架势上。
-/// 出牌时自己挥一刀（Aim.PlayAttack），把原版结算推迟到出刀那一帧（约 0.14s）再跑，伤害和刀光对齐；每波的特效在 DamagePatch → Batch5Fx.EchoWave。
-/// </summary>
 [HarmonyPatch]
 public static class EchoingSlashPatch
 {
-	private static readonly MethodInfo? OnPlay = AccessTools.Method("MegaCrit.Sts2.Core.Models.Cards.EchoingSlash:OnPlay");
-	private static bool _bypass;
-
 	public static IEnumerable<MethodBase> TargetMethods()
 	{
-		if (OnPlay != null) yield return OnPlay;
+		if (AccessTools.Method("MegaCrit.Sts2.Core.Models.Cards.EchoingSlash:OnPlay") is { } method)
+			yield return method;
 	}
 
-	public static bool Prefix(CardModel __instance, object[] __args, ref System.Threading.Tasks.Task __result)
+	public static void Prefix(CardModel __instance) => ModEntry.Safe("EchoingSlash", () =>
 	{
-		if (_bypass || !Joker.OwnsCard(__instance) || Joker.Node(__instance.Owner) is not NCreature node || OnPlay == null)
-		{
-			return true;
-		}
-		ModEntry.Safe("EchoingSlash", () =>
-		{
-			Batch5Fx.BeginEcho();
-			Aim.PlayAttack(node);
-		});
-		__result = Delayed(__instance, __args, node);
-		return false;
-	}
-
-	private static async System.Threading.Tasks.Task Delayed(CardModel card, object[] args, NCreature node)
-	{
-		if (Godot.GodotObject.IsInstanceValid(node) && node.GetTree() is Godot.SceneTree tree)
-		{
-			await node.ToSignal(tree.CreateTimer(0.14), Godot.SceneTreeTimer.SignalName.Timeout);
-		}
-		System.Threading.Tasks.Task run;
-		_bypass = true;
-		try
-		{
-			run = (System.Threading.Tasks.Task)OnPlay!.Invoke(card, args)!;
-		}
-		finally
-		{
-			_bypass = false;
-		}
-		await run;
-	}
+		if (!Joker.OwnsCard(__instance) || Joker.Node(__instance.Owner) is not NCreature node) return;
+		Batch5Fx.BeginEcho();
+		Aim.PlayAttack(node);
+	});
 }
 
 /// <summary>狩猎斩杀 → 额外一次卡牌奖励（CombatRoom.AddExtraReward）：世界褪灰，猎物身上抽出一张预告信、被他抢进手里（HuntFx.Reward）。</summary>
@@ -705,7 +598,7 @@ public static class CorrosiveGasPatch
 {
 	public static void Postfix(NGaseousImpactVfx? __result)
 	{
-		if (__result != null && (CorrosiveFx.Suppressing || SnakeFx.FlaskActive))
+		if (__result != null && (CorrosiveDrawPatch.Current.Value != null || SnakeFx.FlaskActive))
 		{
 			__result.Visible = false;
 		}
@@ -775,10 +668,11 @@ public static class FlaskSplashPatch
 public static class RewardOpenPatch
 {
 	private static readonly FieldInfo? CardTween = AccessTools.Field(typeof(NCardRewardSelectionScreen), "_cardTween");
+	private sealed record Presentation(bool Enabled);
+	private static readonly ConditionalWeakTable<NCardRewardSelectionScreen, Presentation> Presentations = new();
 
 	public static void Prefix(NCardRewardSelectionScreen __instance) => ModEntry.Safe("RewardRefresh", () =>
 	{
-		RewardPickPatch.Cancel(__instance);
 		RewardFx.Recover(__instance);
 	});
 
@@ -786,7 +680,10 @@ public static class RewardOpenPatch
 	{
 		ModEntry.Safe("RewardOpen", () =>
 		{
-			if (!Joker.LocalRun || __instance.GetNodeOrNull<Godot.Control>("UI/CardRow") is not { } row
+			// Rerolls share a screen and its skinned controls. Each new reward screen reads the setting once.
+			if (!Joker.LocalRun || !Presentations.GetValue(__instance,
+					static _ => new Presentation(P5Settings.Enabled(P5Settings.Option.Reward))).Enabled
+				|| __instance.GetNodeOrNull<Godot.Control>("UI/CardRow") is not { } row
 				|| CardTween?.GetValue(__instance) is not Godot.Tween tween || !Godot.GodotObject.IsInstanceValid(tween))
 				return;
 
@@ -809,7 +706,7 @@ public static class RewardOpenPatch
 			try
 			{
 				RewardFx.Open(__instance, row, holders, finals, first, RectOf, CardOf,
-					static () => NControllerManager.Instance?.IsUsingDirectionalNavigation == true);
+					GameCompat.DirectionalNavigation);
 				tween.Kill();
 			}
 			catch
@@ -849,76 +746,29 @@ public static class RewardOpenPatch
 			? h.Hitbox.GetGlobalRect() : c.GetGlobalRect();
 }
 
-/// <summary>
-/// 选卡界面选中一张：「偷到手」（RewardFx.Pick）。原版 SelectCard 一调用就把结果交出去、界面马上关掉、牌飞进牌组 ——
-/// 印章根本来不及出现（用户 2026-11-19：STOLEN 在游戏里没生效，选完直接进牌组）→ 先放演出、等 RewardFx.PickHold 秒再交结果。
-/// 等的这段时间里再点牌不响应；如果这期间结果已经被别的方式交出去了（跳过等），就不再交。
-/// </summary>
-[HarmonyPatch(typeof(NCardRewardSelectionScreen), "SelectCard")]
+[HarmonyPatch(typeof(NCardRewardSelectionScreen), "SelectCard", typeof(NCardHolder))]
 public static class RewardPickPatch
 {
 	private static readonly FieldInfo? Completion = AccessTools.Field(typeof(NCardRewardSelectionScreen), "_completionSource");
-	private static readonly MethodInfo? Select = AccessTools.Method(typeof(NCardRewardSelectionScreen), "SelectCard");
-	private static readonly ConditionalWeakTable<NCardRewardSelectionScreen, Godot.Tween> Pending = new();
-	private static NCardRewardSelectionScreen? _bypass;
+	private static readonly FieldInfo? Options = AccessTools.Field(typeof(NCardRewardSelectionScreen), "_options");
 
-	internal static void Cancel(NCardRewardSelectionScreen screen)
+	public static void Prefix(NCardRewardSelectionScreen __instance, NCardHolder __0) => ModEntry.Safe("RewardPick", () =>
 	{
-		if (!Pending.TryGetValue(screen, out Godot.Tween? timer)) return;
-		Pending.Remove(screen);
-		if (timer.IsValid()) timer.Kill();
-	}
-
-	public static bool Prefix(NCardRewardSelectionScreen __instance, MegaCrit.Sts2.Core.Nodes.Cards.Holders.NCardHolder cardHolder)
-	{
-		if (_bypass == __instance || !Joker.LocalRun || !Fx.Active(__instance)
-			|| Completion is not { } completionField || Select is not { } select) return true;
-		if (completionField.GetValue(__instance) is not TaskCompletionSource<int?> completion || completion.Task.IsCompleted)
-			return false;
-		if (__instance.GetNodeOrNull<Godot.Control>("UI/CardRow") is not { } row) return true;
-		if (!Godot.GodotObject.IsInstanceValid(cardHolder) || cardHolder.IsQueuedForDeletion() || cardHolder.GetParent() != row)
-			return false;
-		if (Pending.TryGetValue(__instance, out _)) return false;
-
-		var card = cardHolder.CardModel;
-		var timer = __instance.CreateTween().SetIgnoreTimeScale(true).SetPauseMode(Godot.Tween.TweenPauseMode.Process);
-		Pending.Add(__instance, timer);
-		ModEntry.Safe("RewardPick", () => RewardFx.Pick(__instance, row, cardHolder, RewardOpenPatch.RectOf));
-		var screen = __instance;
-		void Hand()
-		{
-			if (!Pending.Remove(screen) || !Fx.Active(screen)) return;
-			if (!ReferenceEquals(completionField.GetValue(screen), completion) || completion.Task.IsCompleted
-				|| !Fx.Active(cardHolder) || !Godot.GodotObject.IsInstanceValid(row) || cardHolder.GetParent() != row
-				|| !ReferenceEquals(cardHolder.CardModel, card))
-			{
-				RewardFx.Settle(screen);
-				return;
-			}
-			_bypass = screen;
-			try
-			{
-				select.Invoke(screen, new object[] { cardHolder });
-			}
-			finally
-			{
-				_bypass = null;
-			}
-		}
-		timer.TweenInterval(RewardFx.PickHold);
-		timer.TweenCallback(Godot.Callable.From(() => ModEntry.Safe("RewardPick complete", Hand)));
-		return false;
-	}
+		if (Joker.LocalRun && Fx.Active(__instance) && __instance.IsVisibleInTree()
+			&& __instance.HasNode("P5RewardBackdrop")
+			&& Completion?.GetValue(__instance) is TaskCompletionSource<int?> { Task.IsCompleted: false }
+			&& Fx.Active(__0) && __0.GetParent() == __instance.GetNodeOrNull<Godot.Control>("UI/CardRow")
+			&& Options?.GetValue(__instance) is IReadOnlyList<CardCreationResult> options
+			&& options.Any(option => ReferenceEquals(option.Card, __0.CardModel)))
+			RewardFx.Confirm(__instance, RewardOpenPatch.RectOf(__0));
+	});
 }
 
 [HarmonyPatch(typeof(NCardRewardSelectionScreen), nameof(NCardRewardSelectionScreen.AfterOverlayHidden))]
 public static class RewardHidePatch
 {
-	public static void Prefix(NCardRewardSelectionScreen __instance) => ModEntry.Safe("RewardHide", () =>
-	{
-		RewardPickPatch.Cancel(__instance);
-		RewardFx.Settle(__instance);
-	});
+	public static void Prefix(NCardRewardSelectionScreen __instance) =>
+		ModEntry.Safe("RewardHide", () => RewardFx.Settle(__instance));
 }
 
 /// <summary>选卡界面跳过按钮换皮之后：悬停 / 手柄选中换红色纸板（原版是 HSV 着色器调亮，换皮时去掉了）。</summary>
@@ -946,7 +796,8 @@ public static class JokerIconTexturePatch
 {
 	public static void Postfix(CharacterModel __instance, ref Godot.Texture2D __result)
 	{
-		if (__instance is MegaCrit.Sts2.Core.Models.Characters.Silent && Fx.Tex("icon_top") is Godot.Texture2D t) __result = t;
+		if (__instance is MegaCrit.Sts2.Core.Models.Characters.Silent && JokerCostume.Selected
+			&& Fx.Tex("icon_top") is Godot.Texture2D t) __result = t;
 	}
 }
 
@@ -955,7 +806,8 @@ public static class JokerIconOutlinePatch
 {
 	public static void Postfix(CharacterModel __instance, ref Godot.Texture2D __result)
 	{
-		if (__instance is MegaCrit.Sts2.Core.Models.Characters.Silent && Fx.Tex("icon_top_outline") is Godot.Texture2D t) __result = t;
+		if (__instance is MegaCrit.Sts2.Core.Models.Characters.Silent && JokerCostume.Selected
+			&& Fx.Tex("icon_top_outline") is Godot.Texture2D t) __result = t;
 	}
 }
 
@@ -965,7 +817,7 @@ public static class JokerIconScenePatch
 {
 	public static void Postfix(CharacterModel __instance, Godot.Control __result) => ModEntry.Safe("JokerIconScene", () =>
 	{
-		if (__instance is MegaCrit.Sts2.Core.Models.Characters.Silent && __result is Godot.TextureRect icon
+		if (__instance is MegaCrit.Sts2.Core.Models.Characters.Silent && JokerCostume.Selected && __result is Godot.TextureRect icon
 			&& Fx.Tex("icon_top") is Godot.Texture2D portrait)
 			icon.Texture = portrait;
 	});
@@ -992,40 +844,24 @@ public static class JokerCombatStartBannerPatch
 [HarmonyPatch(typeof(NPlayerTurnBanner), nameof(NPlayerTurnBanner.Create))]
 public static class JokerPlayerTurnBannerPatch
 {
-	public static bool Prefix(int roundNumber, ref NPlayerTurnBanner? __result)
+	public static void Postfix(int roundNumber, NPlayerTurnBanner? __result) => ModEntry.Safe("JokerTurnBanner", () =>
 	{
-		bool replaced = false;
-		ModEntry.Safe("JokerTurnBanner", () =>
-		{
-			if (!Joker.LocalRun || (Joker.FxLayer(back: true) ?? Joker.FxLayer()) is not Godot.Control back) return;
+		if (!Joker.LocalRun || (Joker.FxLayer(back: true) ?? Joker.FxLayer()) is not Godot.Control back) return;
 			bool extra = MegaCrit.Sts2.Core.Combat.CombatManager.Instance?.PlayersTakingExtraTurn.Count > 0;
-			BattleUiFx.TurnBanner(back, player: true, roundNumber, extra);
-			replaced = true;
-		});
-		if (!replaced) return true;
-		__result = null;
-		return false;
-	}
+		BattleUiFx.TurnBanner(back, player: true, roundNumber, extra);
+		if (__result != null) __result.Visible = false;
+	});
 }
-
 [HarmonyPatch(typeof(NEnemyTurnBanner), nameof(NEnemyTurnBanner.Create))]
 public static class JokerEnemyTurnBannerPatch
 {
-	public static bool Prefix(ref NEnemyTurnBanner? __result)
+	public static void Postfix(NEnemyTurnBanner? __result) => ModEntry.Safe("JokerTurnBanner", () =>
 	{
-		bool replaced = false;
-		ModEntry.Safe("JokerEnemyBanner", () =>
-		{
-			if (!Joker.LocalRun || (Joker.FxLayer(back: true) ?? Joker.FxLayer()) is not Godot.Control back) return;
-			BattleUiFx.TurnBanner(back, player: false, 0, false);
-			replaced = true;
-		});
-		if (!replaced) return true;
-		__result = null;
-		return false;
-	}
+		if (!Joker.LocalRun || (Joker.FxLayer(back: true) ?? Joker.FxLayer()) is not Godot.Control back) return;
+		BattleUiFx.TurnBanner(back, player: false, 0, false);
+		if (__result != null) __result.Visible = false;
+	});
 }
-
 /// <summary>能量球换皮（Vfx/HudSkin.cs）：只在 Joker 的能量球上显示，节点、逻辑都是原版的。</summary>
 [HarmonyPatch(typeof(NEnergyCounter), nameof(NEnergyCounter._Ready))]
 public static class JokerEnergySkinPatch
@@ -1059,7 +895,8 @@ public static class JokerMerchantScalePatch
 	public static void Postfix(MegaCrit.Sts2.Core.Nodes.Screens.Shops.NMerchantCharacter __instance) => ModEntry.Safe("JokerMerchantScale", () =>
 	{
 		if (!__instance.SceneFilePath.Contains("silent_merchant", System.StringComparison.OrdinalIgnoreCase)
-			|| __instance.GetChildCount() == 0 || __instance.GetChild(0) is not Godot.Node2D sprite || sprite.HasMeta("p5_scaled"))
+			|| __instance.GetChildCount() == 0 || __instance.GetChild(0) is not Godot.Node2D sprite || sprite.HasMeta("p5_scaled")
+			|| !(JokerCostume.OwnsBody(sprite) ?? JokerCostume.Selected))
 		{
 			return;
 		}

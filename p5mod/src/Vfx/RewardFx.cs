@@ -14,7 +14,7 @@ namespace P5Joker;
 /// · 鼠标 / 手柄停在哪张牌上，牌后面就弹出一块剪出来的红纸板（黑色投影错开垫着，P5 选项被选中的样子），一声很轻的光标音；
 /// · 选中：「STOLEN!」印章重重盖在那张牌上，白闪 + 红光 + 红黑白纸屑迸开，其余的牌往两边一甩、变暗淡出。
 /// 原版的卡牌格子是对象池复用的（P3 mod 踩过的坑）：所有补间都绑在选牌界面上，每一帧先确认格子还在这一排里才动它；
-/// 0.8s 后兜底把牌摆回原版位置、恢复不透明。只动位置 / 旋转 / 透明度，不碰可点击、焦点这些状态。
+/// 入场结束后把牌摆回原版位置、恢复不透明。只动位置 / 旋转 / 透明度，不碰可点击、焦点这些状态。
 /// </summary>
 public static class RewardFx
 {
@@ -72,7 +72,7 @@ public static class RewardFx
 
 	public static void Settle(Control screen)
 	{
-		if (!Runs.TryGetValue(screen, out RewardRun? run)) return;
+		if (!GodotObject.IsInstanceValid(screen) || !Runs.TryGetValue(screen, out RewardRun? run)) return;
 		run.Entering = run.AnimatingPick = run.Picking = false;
 		if (GodotObject.IsInstanceValid(run.StampRoot)) run.StampRoot!.QueueFree();
 		run.StampRoot = null;
@@ -281,14 +281,47 @@ public static class RewardFx
 	}
 
 	/// <summary>选中一张：「STOLEN!」印章重重盖在那张牌上 + 白闪红光、纸屑迸开，其余的牌往两边一甩淡出。</summary>
-	public static void Pick(Control screen, Control row, Control picked, Func<Control, Rect2> rectOf)
+	public static bool Pick(Control screen, Control row, Control picked, Func<Control, Rect2> rectOf)
 	{
-		if (!Still(picked, row) || !Runs.TryGetValue(screen, out RewardRun? run) || run.Picking) return;
+		if (!Still(picked, row) || !Runs.TryGetValue(screen, out RewardRun? run) || run.Picking) return false;
 		run.Picking = run.AnimatingPick = true;
 		run.Entering = false;
-		float u = screen.GetViewportRect().Size.Y / 1080f;
 		foreach (RewardPose pose in run.Poses) pose.Restore();
 		Rect2 r = rectOf(picked);
+		Vector2 c = r.GetCenter();
+		run.StampRoot = PlayStamp(screen, r);
+		foreach (RewardPose pose in run.Poses)
+		{
+			Control other = pose.Holder;
+			if (other == picked || !Still(other, row) || !pose.SameHolder) continue;
+			Vector2 p0 = other.Position;
+			float dx = (other.GetGlobalRect().GetCenter().X > c.X ? 1f : -1f) * 120f;
+			AnimateCard(screen, 0.22, t =>
+			{
+				if (!run.AnimatingPick || !Still(other, row) || !pose.SameHolder || !Runs.TryGetValue(screen, out RewardRun? current) || current != run) return;
+				other.Position = p0 + new Vector2(dx * Ease5.OutExpo(t), 0f);
+				other.Modulate = new Color(1f - 0.5f * t, 1f - 0.55f * t, 1f - 0.5f * t, 1f - t);
+			});
+		}
+		return true;
+	}
+
+	// The stamp lives above the reward screen during the native closing transition.
+	internal static void Confirm(Control screen, Rect2 rect)
+	{
+		Settle(screen);
+		var layer = new CanvasLayer { Layer = 120, Name = "P5RewardConfirm" };
+		screen.GetViewport().AddChild(layer);
+		var root = new Control { Size = screen.GetViewportRect().Size, MouseFilter = Control.MouseFilterEnum.Ignore };
+		layer.AddChild(root);
+		Fx.FreeAfter(layer, PickHold);
+		PlayStamp(root, rect);
+		AnimateCard(root, PickHold, t => root.Modulate = new Color(1f, 1f, 1f, 1f - Ease5.Seg(t, 0.72f, 0.28f)));
+	}
+
+	private static Node2D PlayStamp(Control screen, Rect2 r)
+	{
+		float u = screen.GetViewportRect().Size.Y / 1080f;
 		Vector2 c = r.GetCenter();
 		Sfx.Play(Sfx.Select, 0.6f);
 		Sfx.Play(Sfx.SubBoom, 0.25f, 0.06f);
@@ -298,7 +331,6 @@ public static class RewardFx
 		Phantom.Confetti(screen, c, 26, 760f * u, Vector2.Up, 180f, 0.9f, 9f * u);
 		// 印章：画在最上面，从 2 倍大重重压下来（0.08s），压住时一抖
 		Node2D top = new() { Name = "P5RewardStamp", ZIndex = 10, TopLevel = true };
-		run.StampRoot = top;
 		screen.AddChild(top);
 		top.GlobalPosition = Vector2.Zero;
 		if (Spr(top, "stamp_stolen", c + new Vector2(0f, r.Size.Y * 0.05f), 1f, -0.18f) is { } stamp && stamp.Texture is Texture2D st)
@@ -314,19 +346,7 @@ public static class RewardFx
 				stamp.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, s / 0.04f));
 			});
 		}
-		foreach (RewardPose pose in run.Poses)
-		{
-			Control other = pose.Holder;
-			if (other == picked || !Still(other, row) || !pose.SameHolder) continue;
-			Vector2 p0 = other.Position;
-			float dx = (other.GetGlobalRect().GetCenter().X > c.X ? 1f : -1f) * 120f;
-			AnimateCard(screen, 0.22, t =>
-			{
-				if (!run.AnimatingPick || !Still(other, row) || !pose.SameHolder || !Runs.TryGetValue(screen, out RewardRun? current) || current != run) return;
-				other.Position = p0 + new Vector2(dx * Ease5.OutExpo(t), 0f);
-				other.Modulate = new Color(1f - 0.5f * t, 1f - 0.55f * t, 1f - 0.5f * t, 1f - t);
-			});
-		}
+		return top;
 	}
 
 	// ───────────────── 原版界面元件换皮（Codex 的剪报素材，art/p5/ui/reward：header_* / skip_*） ─────────────────

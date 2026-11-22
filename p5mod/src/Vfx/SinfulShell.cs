@@ -20,13 +20,9 @@ public static partial class SinfulShell
 {
 	// ───────────────────────── 场景 ─────────────────────────
 
-	private const string NoiseFunctions = @"
-float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
-float noise(vec2 p) {
-	vec2 i = floor(p), f = fract(p);
-	f = f * f * (3.0 - 2.0 * f);
-	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
-}";
+	private const string NoiseFunctions = SerpentMist.CellNoise + @"
+float noise(vec2 p) { return cell_noise(p); }
+";
 
 	private const string Noise = NoiseFunctions + @"
 float fbm(vec2 p) {
@@ -50,6 +46,7 @@ uniform int scene_octaves = 5;
 uniform float surge = 0.0;       // 开场炸开那一下：烧穿的边变成一道很厚的蓝焰浪，1 → 0（第二版，用户 2026-11-19：切换场景太柔弱）
 uniform vec4 paint = vec4(0.0);  // 冲击帧：整片刷成 paint.rgb（a = 程度）
 " + NoiseFunctions + @"
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 // Keep the same five octaves without unrolling the nested cloud noise in the driver compiler.
 float fbm(vec2 p) {
 	float v = 0.0, a = 0.5;
@@ -85,7 +82,7 @@ float revealDist(vec2 px) {
 ";
 
 	// The sky never receives a point light. Keep cloud noise out of the platform's lit pipeline.
-	internal static Shader SkyShader => _sky ??= new Shader { Code = "shader_type canvas_item;\nrender_mode unshaded;\n" + SceneCommon + @"
+	internal static Shader SkyShader => _sky ??= SerpentMist.WithCellNoise("shader_type canvas_item;\nrender_mode unshaded;\n" + SceneCommon + @"
 uniform vec3 moon = vec3(1570.0, 170.0, 58.0);
 void fragment() {
 	vec2 px = UV * sres;
@@ -144,9 +141,9 @@ void fragment() {
 	col *= 1.0 - 0.5 * dim;
 	col += vec3(0.85, 0.95, 1.0) * flash;
 	COLOR = vec4(mix(mix(col, edge.rgb, edge.a), paint.rgb, paint.a), max(shown, edge.a));
-}" };
+}");
 
-	internal static Shader PlatformShader => _platform ??= new Shader { Code = "shader_type canvas_item;\n" + SceneCommon + @"
+	internal static Shader PlatformShader => _platform ??= SerpentMist.WithCellNoise("shader_type canvas_item;\n" + SceneCommon + @"
 uniform float cliff_x = 640.0;
 uniform float floor_y = 830.0;
 uniform sampler2D plat : filter_linear;
@@ -188,7 +185,7 @@ void fragment() {
 	float s = revealDist(px);
 	vec4 edge = flameEdge(px, s);
 	COLOR = vec4(mix(mix(col, edge.rgb, edge.a * inside), paint.rgb, paint.a), inside * smoothstep(-2.0, 2.0, s));
-}" };
+}");
 
 	// ───────────────────────── 子弹 ─────────────────────────
 
@@ -198,7 +195,7 @@ void fragment() {
 	/// 一团越往后越细的等离子 + 两条绕着弹道拧的粗光带（前半圈亮后半圈暗，有立体感），尾巴上每一处按「被弹头经过了多久」变暗、散掉，
 	/// 弹道在画面上留得住 0.3s 左右、看得清子弹是从哪飞到哪的。沿 x 从尾到头；head_px = 弹头中心在四边形里的位置。加法。
 	/// </summary>
-	private static Shader BulletShader => _bullet ??= new Shader { Code = @"
+	private static Shader BulletShader => _bullet ??= SerpentMist.WithCellNoise(@"
 shader_type canvas_item;
 render_mode blend_add;
 uniform float clock = 0.0;
@@ -243,7 +240,7 @@ void fragment() {
 	float fadeIn = thick_px * 0.45;
 	float edge = (1.0 - smoothstep(0.55, 1.0, abs(y))) * smoothstep(0.0, fadeIn, xp) * (1.0 - smoothstep(len_px - fadeIn, len_px, xp));
 	COLOR = vec4(col * fade * edge, 1.0);
-}" };
+}");
 
 	// ───────────────────────── 时序 ─────────────────────────
 
@@ -719,29 +716,9 @@ void fragment() {
 		Fx.After(front, ChargeAt + 0.45f, () => Fx.Shake(1));
 		Fx.After(front, ChargeAt + 0.62f, () => Fx.Shake(1));
 		Fx.After(front, ChargeAt + 0.74f, () => Fx.Shake(2));
-		// 时停：场景里自己会动的东西（火焰、云、余烬、撒旦耶尔的翅膀）全部停住；敌人的待机动画也停住（Joker 这时本来就举着枪不动）
-		var held = new List<(Node n, Node.ProcessModeEnum mode)>();
-		void release()
-		{
-			foreach ((Node n, Node.ProcessModeEnum mode) in held)
-			{
-				if (GodotObject.IsInstanceValid(n)) n.ProcessMode = mode;
-			}
-			held.Clear();
-			Fx.HoldClocks(root, false);
-		}
-		Fx.After(front, FreezeAt, () =>
-		{
-			Fx.HoldClocks(root, true);
-			foreach (CanvasItem? ev in s.EnemyVisuals)
-			{
-				if (ev == null || !GodotObject.IsInstanceValid(ev)) continue;
-				held.Add((ev, ev.ProcessMode));
-				ev.ProcessMode = Node.ProcessModeEnum.Disabled;
-			}
-		});
-		Fx.After(front, FireAt, release);
-		root.TreeExiting += release;
+		// Freeze the presentation's clocks. Vanilla creature nodes keep their own lifecycle.
+		Fx.After(front, FreezeAt, () => Fx.HoldClocks(root, true));
+		Fx.After(front, FireAt, () => Fx.HoldClocks(root, false));
 
 		// ── 开枪
 		Fx.After(front, FireAt - 0.18f, () => s.OnJokerShoot?.Invoke());       // shiv_from_aim 前 0.18s 是举枪不动，落在时停里看不出来

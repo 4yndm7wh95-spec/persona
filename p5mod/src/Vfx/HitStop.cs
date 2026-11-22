@@ -1,21 +1,33 @@
 using System;
+using System.Collections.Generic;
 using Godot;
 
 namespace P5Joker;
 
-/// <summary>
-/// 顿帧（照结城理 mod 的 EvokerShot.HitStop / TimeScale）：物理命中那一下把时间流速压到 0.08 停一小会儿，再恢复。
-/// · 到期按「不受时间流速影响」的时钟判断（游戏里是真实毫秒，预览里是录像帧数），每帧在 SceneTree.ProcessFrame 里检查；
-/// · 多段攻击只有第一下顿帧：一次顿帧之后 0.35s 内不再顿；
-/// · 开始时记下原来的流速，结束写回它（不硬写 1）；只在主线程改 Engine.TimeScale。
-/// </summary>
+/// <summary>Impact slowdown for P5-owned tweens only.</summary>
 public static class HitStop
 {
-	/// <summary>不受时间流速影响的秒数。预览工具换成录像帧数 / 30。</summary>
 	public static Func<double> RealSeconds = () => Time.GetTicksMsec() / 1000.0;
 
-	private static double _until, _blockUntil, _prev = 1.0;
-	private static bool _on, _hooked;
+	private static readonly List<Tween> Tweens = new();
+	private static SceneTree? _tree;
+	private static double _began, _until, _blockUntil, _lostTime, _scale = 1.0;
+	private static int _registered;
+
+	internal static double VisualSeconds()
+	{
+		double now = RealSeconds();
+		double pending = _began < _until ? Math.Clamp(now - _began, 0, _until - _began) * (1 - _scale) : 0;
+		return now - _lostTime - pending;
+	}
+
+	internal static Tween Track(Tween tween)
+	{
+		if (++_registered % 64 == 0) Tweens.RemoveAll(t => !t.IsValid());
+		Tweens.Add(tween);
+		if (_began < _until) tween.SetSpeedScale((float)_scale);
+		return tween;
+	}
 
 	public static void Request(double seconds, double scale = 0.08)
 	{
@@ -24,45 +36,37 @@ public static class HitStop
 			Callable.From(() => Request(seconds, scale)).CallDeferred();
 			return;
 		}
-		if (AllOut.Playing) return;
-
-		Install();
 		double now = RealSeconds();
-		if (now < _blockUntil)
-		{
-			return;
-		}
-		_blockUntil = now + seconds + 0.35;
-		if (!_on)
-		{
-			_prev = Engine.TimeScale;
-		}
-		_on = true;
+		if (now < _blockUntil || Engine.GetMainLoop() is not SceneTree tree) return;
+		Finish();
+		_began = now;
 		_until = now + seconds;
-		Engine.TimeScale = scale;
-	}
-
-	private static void Install()
-	{
-		if (_hooked || Engine.GetMainLoop() is not SceneTree tree)
+		_blockUntil = _until + 0.35;
+		_scale = scale;
+		SetSpeeds((float)scale);
+		if (!ReferenceEquals(_tree, tree))
 		{
-			return;
+			_tree = tree;
+			tree.ProcessFrame += Watch;
 		}
-		_hooked = true;
-		tree.ProcessFrame += () => Stage.Safe("hitstop", Watch);
 	}
 
 	private static void Watch()
 	{
-		if (_on && RealSeconds() >= _until) Finish();
+		if (_began < _until && RealSeconds() >= _until) Finish();
 	}
 
-	// End a pending impact pause before the finale takes ownership of TimeScale.
-	internal static void Finish()
+	private static void Finish()
 	{
-		if (!_on) return;
+		if (_began >= _until) return;
+		_lostTime += (_until - _began) * (1 - _scale);
+		_began = _until;
+		SetSpeeds(1f);
+	}
 
-		_on = false;
-		Engine.TimeScale = _prev < 0.05 ? 1.0 : _prev;
+	private static void SetSpeeds(float speed)
+	{
+		Tweens.RemoveAll(t => !t.IsValid());
+		foreach (Tween tween in Tweens) tween.SetSpeedScale(speed);
 	}
 }

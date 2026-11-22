@@ -6,7 +6,7 @@ namespace P5Joker;
 /// <summary>
 /// 0.9.49 审阅第五批（2026-11-18，多段攻击）：终结技、飞镖、连续反弹、回响斩击。
 /// 共同点：原版每一下都重放一次攻击动作（终结技 / 飞镖 / 连续反弹）或者根本不放（回响斩击，人物停在举刀的架势上）。
-/// 改成：攻击动作只挥一次（AttackHitVfxPatch 关掉 _playOnEveryHit、拉开每下的间隔），后面每一下由这里的特效表现。
+/// 改成：只播放一次角色攻击动画，后面的本地命中特效按自己的节拍播放。
 /// 材质都用用户认可的：打击牌命中的手绘刀光（slash_thin / slash_heavy）、疾光、原版火星。
 /// </summary>
 public static class Batch5Fx
@@ -16,37 +16,45 @@ public static class Batch5Fx
 	/// <summary>这几张牌：动作只挥一次，每下之间隔多少秒（AttackHitVfxPatch 用）。</summary>
 	public static readonly Dictionary<string, float> OneSwing = new() { ["Finisher"] = 0.13f, ["Flechettes"] = 0.09f, ["Ricochet"] = 0.17f };
 
-	private static string? _card;
-	private static int _index, _total;
-	private static Vector2 _last;
-	private static ulong _until;
+	private static Sequence? _preview;
 
-	/// <summary>一张多段攻击牌开始结算：记下牌名、总段数。</summary>
-	public static void Begin(string card, int total)
-	{
-		_card = card;
-		_index = 0;
-		_total = Mathf.Max(1, total);
-		_until = Stage.NowMs() + 4000;
-	}
+	public static void Begin(string card, int total) => _preview = new Sequence(card, total);
 
-	/// <summary>DamagePatch：这一下是不是由这里表现（是就放特效，返回 true，调用方不再放普通命中）。</summary>
-	public static bool Hit(Control layer, string card, NCreatureView joker, Vector2 target, float targetH, System.Action<float>? delayNumber)
+	public static bool Hit(Control layer, string card, NCreatureView joker, Vector2 target, float targetH, System.Action<float>? delayNumber) =>
+		_preview is { } sequence && sequence.Card == card && sequence.Hit(layer, joker, target, targetH, delayNumber);
+
+	public sealed class Sequence(string card, int total)
 	{
-		if (card != _card || Stage.NowMs() > _until || !GodotObject.IsInstanceValid(layer))
+		public string Card { get; } = card;
+		private int _index;
+		private double _firstHit;
+		private Vector2 _last;
+
+		public bool Hit(Control layer, NCreatureView joker, Vector2 target, float targetH, System.Action<float>? delayNumber)
 		{
-			return false;
+			if (!GodotObject.IsInstanceValid(layer) || !OneSwing.TryGetValue(Card, out float gap))
+				return false;
+
+			int i = _index++;
+			bool last = i == Mathf.Max(1, total) - 1;
+			Vector2 from = i == 0 ? joker.Hand : _last;
+			_last = target;
+			float alignment = Card == "Flechettes" ? 0.07f : Card == "Ricochet" ? 0.08f : 0;
+			double now = HitStop.VisualSeconds();
+			if (i == 0) _firstHit = now;
+			float wait = (float)System.Math.Max(0, _firstHit + i * gap - now);
+			if (wait + alignment > 0) delayNumber?.Invoke(wait + alignment);
+			Fx.After(layer, wait, () =>
+			{
+				switch (Card)
+				{
+					case "Finisher": Finisher(layer, joker, target, targetH, i, last); break;
+					case "Flechettes": Flechette(layer, joker, target, targetH, i, last); break;
+					case "Ricochet": Ricochet(layer, joker, from, target, targetH, i, last); break;
+				}
+			});
+			return true;
 		}
-		int i = _index++;
-		bool last = i == _total - 1;
-		switch (card)
-		{
-			case "Finisher": Finisher(layer, joker, target, targetH, i, last); return true;
-			case "Flechettes": delayNumber?.Invoke(0.07f); Flechette(layer, joker, target, targetH, i, last); return true;
-			case "Ricochet": delayNumber?.Invoke(0.08f); Ricochet(layer, joker, target, targetH, i, last); return true;
-			case "EchoingSlash": return false;
-		}
-		return false;
 	}
 
 	/// <summary>Joker 的几个位置（只取一次，不依赖节点类型）。</summary>
@@ -120,11 +128,9 @@ public static class Batch5Fx
 	/// 连续反弹（随机敌人打 N 下；用户：不是枪击）：他甩出一把刀（旋转的红刃 + 拖尾），从他手边飞到第一个目标、弹开、带一道弧飞向下一个目标……
 	/// 每次弹到一个敌人：刀光一划（手绘刀光）、白闪、火星、一声金属响；最后一下弹完刀碎成碎光。
 	/// </summary>
-	private static void Ricochet(Control layer, NCreatureView j, Vector2 at, float h, int i, bool last)
+	private static void Ricochet(Control layer, NCreatureView j, Vector2 from, Vector2 at, float h, int i, bool last)
 	{
 		float u = Fx.Screen(layer).Y / 1080f, f = j.Face;
-		Vector2 from = i == 0 ? j.Hand : _last;
-		_last = at;
 		Vector2 mid = from.Lerp(at, 0.5f) + new Vector2(0f, -Mathf.Max(60f * u, from.DistanceTo(at) * 0.25f));
 		System.Func<float, Vector2> path = e => from.Lerp(mid, e).Lerp(mid.Lerp(at, e), e);
 		SkillRedo5.StreakSharp(layer, path, 0f, 0.09f, j.Tall * 0.45f, 22f * u, Red, 1.5f);

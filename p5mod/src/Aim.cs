@@ -43,7 +43,8 @@ public static class Aim
 		{
 			return 0f;
 		}
-		using MegaTrackEntry? entry = state.GetCurrent(0);
+		MegaTrackEntry? entry = state.GetCurrent(0);
+		using var entryLifetime = (object?)entry as System.IDisposable;
 		entry?.SetTrackTime(t);
 		entry?.SetMixDuration(0f);
 		return t;
@@ -101,7 +102,8 @@ public static class Aim
 		{
 			// 转枪还没转完就打出去了：aim_in 就是 shiv 开火前的那一段（tools/p5/build_rig_p5.py GUN_IN），
 			// 换成 shiv 并从同一时刻接着播 —— 转枪转完、接住、开火，不从头重来也不硬切
-			using MegaTrackEntry? entry = state.GetCurrent(0);
+			MegaTrackEntry? entry = state.GetCurrent(0);
+			using var entryLifetime = (object?)entry as System.IDisposable;
 			if (entry != null)
 			{
 				SkipTo[node.GetInstanceId()] = entry.GetTrackTime();
@@ -121,7 +123,8 @@ public static class Aim
 		if (requested == "attack" && current == "knife_in")
 		{
 			// 转刀还没转完就打出去了：knife_in 就是 attack 出刀前的那一段，换回 attack 并从同一时刻接着播
-			using MegaTrackEntry? entry = state.GetCurrent(0);
+			MegaTrackEntry? entry = state.GetCurrent(0);
+			using var entryLifetime = (object?)entry as System.IDisposable;
 			if (entry != null)
 			{
 				SkipTo[node.GetInstanceId()] = entry.GetTrackTime();
@@ -140,11 +143,12 @@ public static class Aim
 	}
 
 	/// <summary>拿起的这张牌要摆哪种架势。</summary>
-	public static Stance StanceFor(CardModel card) =>
-		card.GetType().Name == "GrandFinale" ? Stance.Mask                       // 华丽收场：扶面具（大罪穿甲弹，GrandFinale.cs）
+	public static Stance? StanceFor(CardModel card) =>
+		card.Type == CardType.Status ? null
+		: card.GetType().Name == "GrandFinale" ? Stance.Mask                       // 华丽收场：扶面具（大罪穿甲弹，GrandFinale.cs）
 		: Joker.IsShot(card) || card.GetType().Name is "FanOfKnives" or "BulletTime" or "KnifeTrap" ? Stance.Gun   // 拿枪不开枪的牌：选中掏枪（用户 2026-11-04）
 		: card.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Attack ? Stance.Knife
-		: card.GetType().Name == "Outbreak" || Casts.For(card) == Cast.MaskOff ? Stance.Mask   // 毒性爆发（扶面具 → 攥拳）、蛇咬（只放下手）保留扶面具架势
+		: (card.GetType().Name == "Outbreak" && PoisonDamage.HasImmediateTrigger) || Casts.For(card) == Cast.MaskOff ? Stance.Mask   // 毒性爆发（扶面具 → 攥拳）、蛇咬（只放下手）保留扶面具架势
 		// 用户 2026-11-16：不要再有「扶面具 → 挥手」的复合动作 → 原来扶面具 / 撕面具甩手的牌一律改成直接挥手（架势同扯手套）
 		: Casts.For(card) switch { Cast.Guard => Stance.Guard, _ => Stance.Glove };
 
@@ -162,7 +166,7 @@ public static class Aim
 	/// <summary>拿起一张牌（单体牌开始选目标 / 群体牌拖进出牌区）：摆架势、放架势特效。</summary>
 	public static void Raise(CardModel card)
 	{
-		if (!Joker.OwnsCard(card) || !LocalContext.IsMe(card.Owner))
+		if (!Joker.OwnsCard(card) || !LocalContext.IsMe(card.Owner) || StanceFor(card) is not Stance stance)
 		{
 			return;
 		}
@@ -172,12 +176,11 @@ public static class Aim
 		{
 			return;
 		}
-		Stance stance = StanceFor(card);
 		string pre = Prefix(stance);
 		string? current = Current(state);
 		if (stance == Stance.Gun && current is "shiv" or "shiv_from_aim")
 		{
-			state.SetAnimation("aim_loop", true, 0);              // 上一枪还没收完：直接回到瞄准
+			state.SetSpineAnimation("aim_loop", true, 0);              // 上一枪还没收完：直接回到瞄准
 		}
 		else if (current != pre + "_in" && current != pre + "_loop")
 		{
@@ -185,8 +188,8 @@ public static class Aim
 			{
 				return;                                           // 正在出别的牌 / 受击：不打断（刚收起的可以直接换）
 			}
-			state.SetAnimation(pre + "_in", false, 0);
-			state.AddAnimation(pre + "_loop", 0f, true, 0);
+			state.SetSpineAnimation(pre + "_in", false, 0);
+			state.AddSpineAnimation(pre + "_loop", 0f, true, 0);
 		}
 		if (_fx != null && _fxCard == card && _fx.Stance == stance)
 		{
@@ -223,7 +226,8 @@ public static class Aim
 			float time = 0f;
 			try
 			{
-				using MegaTrackEntry? e = state.GetCurrent(0);
+				MegaTrackEntry? e = state.GetCurrent(0);
+				using var eLifetime = (object?)e as System.IDisposable;
 				time = e?.GetTrackTime() ?? 0f;
 			}
 			catch (System.Exception)
@@ -257,7 +261,7 @@ public static class Aim
 	/// </summary>
 	internal static (Node2D, Transform2D)? CloneBody(NCreature joker, Node target, string then)
 	{
-		if (joker.Visuals?.Body is not Node2D body || joker.Visuals.SpineBody?.TryGetAnimationState() is not MegaAnimationState src
+		if (joker.Visuals?.GetCurrentBody() is not Node2D body || joker.Visuals.SpineBody?.TryGetAnimationState() is not MegaAnimationState src
 			|| body.Duplicate() is not Node2D clone)
 		{
 			return null;
@@ -270,7 +274,8 @@ public static class Aim
 			float time = 0f;
 			try
 			{
-				using MegaTrackEntry? e = src.GetCurrent(0);
+				MegaTrackEntry? e = src.GetCurrent(0);
+				using var eLifetime = (object?)e as System.IDisposable;
 				time = e?.GetTrackTime() ?? 0f;
 			}
 			catch (System.Exception)
@@ -278,13 +283,14 @@ public static class Aim
 			}
 			if (anim != null && sprite.HasAnimation(anim))
 			{
-				st.SetAnimation(anim, anim == then, 0);
-				using MegaTrackEntry? ce = st.GetCurrent(0);
+				st.SetSpineAnimation(anim, anim == then, 0);
+				MegaTrackEntry? ce = st.GetCurrent(0);
+				using var ceLifetime = (object?)ce as System.IDisposable;
 				ce?.SetTrackTime(time);
 				ce?.SetMixDuration(0f);
 				if (anim != then && sprite.HasAnimation(then))
 				{
-					st.AddAnimation(then, 0f, true, 0);
+					st.AddSpineAnimation(then, 0f, true, 0);
 				}
 			}
 		}
@@ -301,9 +307,9 @@ public static class Aim
 	/// 出技能 / 能力牌（CardPlayedPatch）：Joker 自己施法 —— 摆着架势就从架势接（*_from_*），站着就播对应的 cast。
 	/// 原版很多牌（防御等）根本不触发 Cast 动画，不这样做人会一直停在架势上。返回是否播了。
 	/// </summary>
-	public static bool PlayCast(NCreature node, CardModel card, OutbreakPlayback? playback = null)
+	public static bool PlayCast(NCreature node, CardModel card, OutbreakCue? outbreakCue = null)
 	{
-		Stance stance = StanceFor(card);
+		if (StanceFor(card) is not Stance stance) return false;
 		MegaSprite? body = node.Visuals?.SpineBody;
 		if (stance == Stance.Gun && !Joker.IsShot(card) && body?.TryGetAnimationState() is MegaAnimationState gs)
 		{
@@ -339,8 +345,8 @@ public static class Aim
 		}
 		bool low = node.Entity.GetHpPercentRemaining() <= 0.25 && body.HasAnimation("low_health_loop");
 		PendingCast.Remove(node.GetInstanceId());
-		state.SetAnimation(name, false, 0);
-		state.AddAnimation(low ? "low_health_loop" : "idle_loop", 0f, true, 0);
+		state.SetSpineAnimation(name, false, 0);
+		state.AddSpineAnimation(low ? "low_health_loop" : "idle_loop", 0f, true, 0);
 		SelfCast[node.GetInstanceId()] = Time.GetTicksMsec() + 1500;
 		if (_held is ReadyFx held && Joker.FxLayer() is Control layer)
 		{
@@ -379,10 +385,9 @@ public static class Aim
 			//   拍 2「出手」：人格面具出手 = 伤害 / 上毒结算（各张牌自己的命中特效带顿帧和冲击声）。
 			Persona.Spec spec = PersonaFor(card);
 			float evoke = tier == Tier.Rare ? SummonStage.EvokeAt : 0f;
-			Summoning[node.GetInstanceId()] = Time.GetTicksMsec() + (ulong)(HitFor(card) * 1000f);
-			if (card.GetType().Name == "Outbreak")
+			if (outbreak)
 			{
-				OutbreakHand(node, back, playback);
+				OutbreakHand(node, back, outbreakCue);
 				return true;
 			}
 			Vector2 head = Joker.PosePoint(node, ReadyFx.MaskFace);
@@ -457,7 +462,6 @@ public static class Aim
 		&& (Tiers.For(card) >= Tier.Uncommon || Grips(card.GetType().Name) || Commands(card.GetType().Name));
 
 	/// <summary>游戏结算这张牌（Cast 之后的等待）推迟 seconds 秒（蛇咬：等蛇咬下去再上毒）。</summary>
-	public static void HoldCast(NCreature node, float seconds) => Summoning[node.GetInstanceId()] = Time.GetTicksMsec() + (ulong)(seconds * 1000f);
 
 	/// <summary>这张牌召唤时人格面具出手的时刻（施法后几秒）：出牌特效对齐到这一刻。</summary>
 	public static float HitFor(CardModel card) => card.GetType().Name == "Outbreak"
@@ -475,32 +479,27 @@ public static class Aim
 
 	/// <summary>
 	/// 毒性爆发（用户 2026-11-03 创意）：舞台 + 眼神特写 → 亚森照常召唤现身（拍 1，但眼神特写不碎）→ 亚森往前出手，横幅里冲出一只咒烟巨手（CrushHand）
-	/// → 攥住横幅（所有敌人被标记）→ 捏碎 = 横幅碎开 = 游戏结算毒伤 = 所有敌人咒火一起引爆（PoisonFx.Blast）→ 亚森退场。没有光束。
+	/// → 攥住横幅（所有敌人被标记）→ 捏碎 = 横幅碎开，咒怨到达时重放伤害数字和引爆（PoisonFx.Blast）→ 亚森退场。没有光束。
 	/// </summary>
-	private static void OutbreakHand(NCreature node, Control back, OutbreakPlayback? play)
+	private static void OutbreakHand(NCreature node, Control back, OutbreakCue? cue)
 	{
 		Vector2 head = Joker.PosePoint(node, ReadyFx.MaskFace);
 		Persona.Spec spec = PersonaFor("Outbreak");
+		var marked = new List<PoisonFx.Target>();
+		if (NCombatRoom.Instance is { } room && node.Entity?.CombatState is { } combat)
+			foreach (Creature enemy in combat.HittableEnemies)
+				if (room.GetCreatureNode(enemy) is NCreature n)
+					marked.Add(new PoisonFx.Target(n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, n.Visuals));
 		Fx.After(back, 0.04, () =>
 		{
 			Vector2 feet = Joker.PosePoint(node, ReadyFx.Feet);
 			float tall = (feet - Joker.PosePoint(node, new Vector2(815f, 120f))).Length();
 			float face = Joker.Facing(node);
-			CutInPlayback clip = play?.Clip ?? new CutInPlayback(OutbreakEmerge + CrushHand.CrushAfter, crush: true);
+			CutInPlayback clip = new CutInPlayback(OutbreakEmerge + CrushHand.CrushAfter, crush: true);
 			clip.Start();      // 横幅碎开 = 捏碎
 			// 用户 2026-11-08：打出去敌人身上要马上有反馈 → 手一攥，所有敌人身上落咒印、开始暗燃，一直烧到捏碎
-			if (Joker.FxLayer() is Control bl && NCombatRoom.Instance is NCombatRoom br && node.Entity?.CombatState is { } bcs)
-			{
-				var marked = new List<PoisonFx.Target>();
-				foreach (Creature c in bcs.HittableEnemies)
-				{
-					if (br.GetCreatureNode(c) is NCreature n)
-					{
-						marked.Add(new PoisonFx.Target(n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, n.Visuals));
-					}
-				}
+			if (Joker.FxLayer() is Control bl)
 				Fx.After(bl, 0.06, () => PoisonFx.Brand(bl, marked, OutbreakEmerge + CrushHand.CrushAfter - 0.06f, OutbreakEmerge + CrushHand.FistAfter - 0.06f));
-			}
 			if (Joker.FxLayer() is Control fr)
 			{
 				SummonStage.Play(back, fr, head, maskFlame: false, playback: clip);     // 用户 2026-11-03：亚森出现只响一声蓝焰（原来舞台一声 + 现身一声）
@@ -512,62 +511,26 @@ public static class Aim
 				ArseneFx.NextClench = (spec.AttackAt + CrushHand.FistAfter, spec.AttackAt + CrushHand.CrushAfter);   // 不扑：伸手攥拳，跟巨手同步
 				Persona.Show(spec, back, feet, tall * 1.35f, face, playback: clip, clockOffset: OutbreakShow);
 			});
-			CrushHand hand = CrushHand.Outbreak(back, OutbreakEmerge, onFist: () =>
+			CrushHand.Outbreak(back, OutbreakEmerge, onFist: () =>
 			{
-				if (Joker.FxLayer() is not Control layer || NCombatRoom.Instance is not NCombatRoom room || node.Entity?.CombatState is not { } cs)
-				{
-					return;
-				}
-				var targets = new List<PoisonFx.Target>();
-				foreach (Creature c in cs.HittableEnemies)
-				{
-					if (room.GetCreatureNode(c) is NCreature n)
-					{
-						targets.Add(new PoisonFx.Target(n.VfxSpawnPosition, n.GetTopOfHitbox(), n.Hitbox.GetGlobalRect().Size.X, n.Visuals));
-					}
-				}
-				PoisonFx.Squeeze(layer, targets);
+				if (Joker.FxLayer() is Control layer) PoisonFx.Squeeze(layer, marked);
 			}, onCrush: () =>
 			{
 				Vector2 at = clip.ShatterFrom ?? Fx.Screen(back) * 0.5f;
 				CrushWave.Play(back, at);
-				// 用户 2026-11-08：捏碎那一下要有冲击力 → 全场定格一下，再从拳心甩出咒怨打到每个敌人身上（到了才结算、才炸）。
-				// 先记下拳心，再放行结算（Crush 会同步接着跑 OutbreakPlayback.Run，它要用拳心算每个敌人的到达时刻）
 				if (Joker.FxLayer() is Control fl)
-				{
-					var targets = new List<Vector2>();
-					if (NCombatRoom.Instance is NCombatRoom cr && node.Entity?.CombatState is { } ccs)
-					{
-						foreach (Creature c in ccs.HittableEnemies)
-						{
-							if (cr.GetCreatureNode(c) is NCreature n)
-							{
-								targets.Add(n.VfxSpawnPosition);
-							}
-						}
-					}
-					PoisonFx.Crushed(fl, fl.GetCanvasTransform().AffineInverse() * at, targets);
-				}
+					PoisonFx.Crushed(fl, fl.GetCanvasTransform().AffineInverse() * at, marked.Select(target => target.At));
+				cue?.Crush();
 				if (_gripped is ReadyFx g)
 				{
 					_gripped = null;
 					g.End(true);                                        // 攥了一路的面具火跟着捏碎一起炸开
 				}
 				HitStop.Request(0.12, 0.05);
-				play?.Crush();
+
 			}, playback: clip);
-			play?.Started(hand.Rect);
+
 		});
-	}
-
-	/// <summary>正在召唤的 Joker：(到这个时刻为止的毫秒, 结算要推迟到施法后几秒)。</summary>
-	private static readonly Dictionary<ulong, ulong> Summoning = new();
-
-	/// <summary>这个 Joker 这次施法是 Persona 召唤吗：是就返回结算要推迟到几秒（TriggerAnimDelayPatch 用，用一次就清掉），不是返回 0。</summary>
-	public static float TakeSummon(NCreature node)
-	{
-		ulong now = Time.GetTicksMsec();
-		return Summoning.Remove(node.GetInstanceId(), out ulong due) && now < due ? (due - now) / 1000f : 0f;
 	}
 
 	/// <summary>游戏要播 cast，但 Joker 刚自己施过法：不重播。</summary>
@@ -590,14 +553,14 @@ public static class Aim
 		PendingCast.Remove(node.GetInstanceId());
 		if (held)
 		{
-			state.SetAnimation("aim_out", false, 0);
+			state.SetSpineAnimation("aim_out", false, 0);
 		}
 		else
 		{
-			state.SetAnimation("aim_in", false, 0);
-			state.AddAnimation("aim_out", 0f, false, 0);
+			state.SetSpineAnimation("aim_in", false, 0);
+			state.AddSpineAnimation("aim_out", 0f, false, 0);
 		}
-		state.AddAnimation(low ? "low_health_loop" : "idle_loop", 0f, true, 0);
+		state.AddSpineAnimation(low ? "low_health_loop" : "idle_loop", 0f, true, 0);
 		SelfCast[node.GetInstanceId()] = Time.GetTicksMsec() + 1500;
 		return true;
 	}
@@ -613,7 +576,7 @@ public static class Aim
 		{
 			if (twirl && current is "aim_loop")
 			{
-				state.SetAnimation("twirl_loop", true, 0);
+				state.SetSpineAnimation("twirl_loop", true, 0);
 			}
 			return true;
 		}
@@ -621,8 +584,8 @@ public static class Aim
 		{
 			return false;
 		}
-		state.SetAnimation(twirl ? "twirl_in" : "aim_in", false, 0);
-		state.AddAnimation(twirl ? "twirl_loop" : "aim_loop", 0f, true, 0);
+		state.SetSpineAnimation(twirl ? "twirl_in" : "aim_in", false, 0);
+		state.AddSpineAnimation(twirl ? "twirl_loop" : "aim_loop", 0f, true, 0);
 		return true;
 	}
 
@@ -672,7 +635,7 @@ public static class Aim
 	/// </summary>
 	private static void GripTremble(NCreature node, Control layer, float fistAt, float crushAt)
 	{
-		if (node.Visuals?.Body is not Node2D body)
+		if (node.Visuals?.GetCurrentBody() is not Node2D body)
 		{
 			return;
 		}
@@ -753,8 +716,8 @@ public static class Aim
 		}
 		bool low = node.Entity.GetHpPercentRemaining() <= 0.25 && body.HasAnimation("low_health_loop");
 		PendingCast.Remove(node.GetInstanceId());
-		state.SetAnimation("attack", false, 0);
-		state.AddAnimation(low ? "low_health_loop" : "idle_loop", 0f, true, 0);
+		state.SetSpineAnimation("attack", false, 0);
+		state.AddSpineAnimation(low ? "low_health_loop" : "idle_loop", 0f, true, 0);
 	}
 
 	public static void Lower(NCreature? node)
@@ -779,8 +742,8 @@ public static class Aim
 			return;
 		}
 		bool low = node!.Entity.GetHpPercentRemaining() <= 0.25 && body.HasAnimation("low_health_loop");
-		state.SetAnimation(putAway, false, 0);
-		state.AddAnimation(low ? "low_health_loop" : "idle_loop", 0f, true, 0);
+		state.SetSpineAnimation(putAway, false, 0);
+		state.AddSpineAnimation(low ? "low_health_loop" : "idle_loop", 0f, true, 0);
 	}
 
 	public static void LowerLocal()
@@ -814,37 +777,33 @@ public static class Aim
 }
 
 /// <summary>换动画的唯一入口：Joker 正举着枪 / 正在收刀时，把 shiv / attack 换成接续版本。</summary>
-[HarmonyPatch(typeof(MegaAnimationState), nameof(MegaAnimationState.SetAnimation))]
+[HarmonyPatch]
 public static class AnimRenamePatch
 {
+	public static MethodBase TargetMethod() => GameCompat.SetAnimationMethod;
 	public static bool Prefix(MegaAnimationState __instance, ref string animationName)
 	{
 		if (animationName is not ("shiv" or "attack" or "cast"))
 		{
 			return true;
 		}
-		if (animationName == "cast")
-		{
-			bool swallow = false;
-			ModEntry.Safe("AnimSwallow", () => swallow = Aim.SwallowCast(__instance));
-			if (swallow)
-			{
-				return false;
-			}
-		}
 		string requested = animationName;
 		string? replacement = null;
-		ModEntry.Safe("AnimRename", () => replacement = Aim.Rename(__instance, requested));
-		if (replacement != null)
+		bool swallow = false;
+		ModEntry.Safe("AnimRename", () =>
 		{
-			animationName = replacement;
-		}
+			swallow = requested == "cast" ? Aim.SwallowCast(__instance)
+				: Aim.Owner(__instance) is { } owner && AttackHitVfxPatch.AlreadySwung(owner.Entity);
+			if (!swallow) replacement = Aim.Rename(__instance, requested);
+		});
+		if (swallow) return false;
+		if (replacement != null) animationName = replacement;
 		return true;
 	}
 
-	public static void Postfix(MegaAnimationState __instance, string animationName)
+	public static void Postfix(MegaAnimationState __instance, string animationName, bool __runOriginal)
 	{
-		if (animationName is not ("shiv" or "shiv_from_aim" or "attack" or "attack_chain" or "attack_from_ready"))
+		if (!__runOriginal || animationName is not ("shiv" or "shiv_from_aim" or "attack" or "attack_chain" or "attack_from_ready"))
 		{
 			return;
 		}
@@ -909,7 +868,7 @@ public static class CardPlayCleanupPatch
 		ModEntry.Safe("CardPlayCleanup", isFinished ? Aim.Played : Aim.LowerLocal);
 	}
 
-	public static void Postfix() => Inside = false;
+	public static void Finalizer() => Inside = false;
 }
 
 /// <summary>群体牌拖回出牌区下面（原版藏起目标框）：收起架势；再拖上去 MultiTargetingPatch 又会摆起来。</summary>
