@@ -5,10 +5,19 @@ func _initialize() -> void:
 
 func capture() -> void:
 	var args := OS.get_cmdline_user_args()
-	if args.size() != 3:
-		push_error("Pass repository path, output path, and 'preview' or 'all'")
+	var pages := args.size() == 4 and args[2] == "pages"
+	if not pages and (args.size() != 3 or args[2] == "pages"):
+		push_error("Pass REPO OUTPUT MODE, or REPO OUTPUT pages PLAN.json")
 		quit(1)
 		return
+	var plan: Array = []
+	if pages:
+		var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(args[3]))
+		if not data is Array or data.is_empty():
+			push_error("Expected a nonempty array of camera jobs")
+			quit(1)
+			return
+		plan = data
 	var scratch := "res://scratch/"
 	var specs: Array = JSON.parse_string(FileAccess.get_file_as_string(scratch + "meshes.json"))
 	var clips: Array = JSON.parse_string(FileAccess.get_file_as_string(scratch + "clips.json"))
@@ -68,14 +77,50 @@ func capture() -> void:
 				uv.append(Vector2(pair[0], pair[1]))
 			layout[Mesh.ARRAY_TEX_UV] = uv
 		layouts.append(layout)
-	for clip in clips:
-		if glove_test and clip.name != "main_0000":
-			continue
-		var folder: String = args[1] + "/" + clip.name
-		DirAccess.make_dir_recursive_absolute(folder)
+	var jobs: Array = []
+	if pages:
+		var clips_by_name := {}
+		for clip in clips:
+			clips_by_name[clip.name] = clip.frames
+		for view in plan:
+			for name in view.clips:
+				if not clips_by_name.has(name):
+					push_error("Unknown clip: " + name)
+					quit(1)
+					return
+				jobs.append({
+					"name": name,
+					"folder": view.folder + "/" + name,
+					"frames": view.get("frames", {}).get(name, clips_by_name[name]),
+					"view": view
+				})
+	else:
+		for clip in clips:
+			if glove_test and clip.name != "main_0000":
+				continue
+			var picks: Array = clip.frames
+			if preview and not glove_test:
+				picks = [picks[0], picks[picks.size() / 2], picks[-1]]
+			jobs.append({"name": clip.name, "folder": clip.name, "frames": picks})
+
+	for clip in jobs:
+		var folder: String = args[1] + "/" + clip.folder
+		if DirAccess.make_dir_recursive_absolute(folder) != OK:
+			push_error("Cannot create output directory: " + folder)
+			quit(1)
+			return
+		var draft := false
+		if pages:
+			var view: Dictionary = clip.view
+			draft = view.get("draft", false)
+			viewport.size = Vector2i(384, 216) if draft else Vector2i(3840, 2160)
+			camera.position = vector3(view.position)
+			camera.rotation_degrees = vector3(view.rotation_degrees)
+			camera.fov = view.fov
+			camera.h_offset = view.get("h_offset", 0.0)
+			camera.v_offset = view.get("v_offset", 0.0)
+			camera.far = view.get("far", 500.0)
 		var picks: Array = clip.frames
-		if preview and not glove_test:
-			picks = [picks[0], picks[picks.size() / 2], picks[-1]]
 		for frame in picks:
 			var number := "%04d" % int(frame)
 			var file := FileAccess.open(scratch + clip.name + "_" + number + ".bin", FileAccess.READ)
@@ -94,8 +139,33 @@ func capture() -> void:
 			viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 			await RenderingServer.frame_post_draw
 			var result := viewport.get_texture().get_image()
-			if result == null or result.save_png(folder + "/f" + number + ".png") != OK:
+			if result == null:
+				push_error("Cannot read viewport pixels")
+				quit(1)
+				return
+			if pages and not draft:
+				# A 2:1 bilinear resize averages each 2x2 block of resolved samples.
+				result.resize(1920, 1080, Image.INTERPOLATE_BILINEAR)
+				result = to_straight_alpha(result)
+			if result.save_png(folder + "/f" + number + ".png") != OK:
 				quit(1)
 				return
 		print(clip.name)
 	quit()
+
+func vector3(values: Array) -> Vector3:
+	return Vector3(values[0], values[1], values[2])
+
+# Compatibility MSAA resolves against transparent black. Convert the averaged
+# premultiplied edge colors to straight alpha before writing PNG.
+func to_straight_alpha(result: Image) -> Image:
+	result.convert(Image.FORMAT_RGBA8)
+	var pixels := result.get_data()
+	for offset in range(0, pixels.size(), 4):
+		var alpha := pixels[offset + 3]
+		if alpha == 0 or alpha == 255:
+			continue
+		for channel in 3:
+			var index := offset + channel
+			pixels[index] = mini(255, roundi(pixels[index] * 255.0 / alpha))
+	return Image.create_from_data(result.get_width(), result.get_height(), false, Image.FORMAT_RGBA8, pixels)
