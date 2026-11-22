@@ -512,7 +512,12 @@ def pile_textures():
         f = m3d / f"f{i:04d}.png"
         if f.exists():
             im = Image.open(f).convert("RGBA").crop((828, 125, 1920, 1080))
-            yield f"pile_m3d_{i:02d}", im
+            # 原渲染画面下缘把身体截断了（游戏里显示时下缘在屏幕 922px 处，下面露出背景）：
+            # 把最后一行像素往下延伸 240px，身体一直延到屏幕底边外（原版人物也是一直到底）
+            ext = Image.new("RGBA", (im.width, im.height + 240))
+            ext.paste(im, (0, 0))
+            ext.paste(im.crop((0, im.height - 1, im.width, im.height)).resize((im.width, 240)), (0, im.height))
+            yield f"pile_m3d_{i:02d}", ext
     # 预告信（tools/p5/pile/deskew_cards.py 拉正的原版）：正面 + 7 封信的正文（每次打开随机一封当背面）；运行时生成 mipmap
     yield "pile_card_front", Image.open(ROOT / "art/p5/ui/pile/calling_card.png").convert("RGBA")
     for f in sorted((ROOT / "art/p5/ui/pile/letters").glob("letter_*.png")):

@@ -52,7 +52,7 @@ public sealed class PileDraw
 	private readonly Sprite2D? _m3d;
 	private readonly ShaderMaterial? _split;
 	private readonly bool _has3d;
-	private static readonly Vector2 M3dAt = new(1117f, 117f), M3dSize = new(921f, 805f);   // 1080p 下的左上角和大小（最后一帧的头对齐 2D 定格图的头）
+	private static readonly Vector2 M3dAt = new(1117f, 117f), M3dSize = new(921f, 1007f);   // 高度含往下延伸的 240px（×0.843）   // 1080p 下的左上角和大小（最后一帧的头对齐 2D 定格图的头）
 
 	public PileDraw(Control root, Vector2 view, int count, string caption)
 	{
