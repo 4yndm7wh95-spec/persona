@@ -1823,6 +1823,7 @@ public partial class Preview : Node2D
 		p.At(0.5, () =>
 		{
 			Sfx.Play("camp_open", 0.5f);
+			PileDraw.ScheduleSlamSounds();
 			PileDraw draw = new(host, new Vector2(1920f, 1080f), 23, "抽牌堆 · 23 张");
 			// 假牌：攻击 7 / 技能 9 / 能力 3（灰卡 + 类型色块），按 PileDraw 的版式排
 			Control cards = new() { MouseFilter = Control.MouseFilterEnum.Ignore };

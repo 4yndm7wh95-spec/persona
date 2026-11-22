@@ -854,6 +854,7 @@ public static class PileScreen
 		};
 		// 建界面这一帧要几十毫秒：延到下一帧再播，声音不抢在画面前面
 		Sfx.Play("camp_open", 0.5f, 0.001f);
+		PileDraw.ScheduleSlamSounds();               // camp_open 的「啪」、重击、拳击声都落在手掌砸中那一刻（PileDraw.SlamAt）
 	}
 
 	private static string Caption(int n) => Zh ? $"抽牌堆 · {n} 张" : $"DRAW PILE · {n}";

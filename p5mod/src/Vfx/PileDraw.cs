@@ -177,15 +177,15 @@ public sealed class PileDraw
 		Vector2 home = (PortraitAt + new Vector2(PortraitW, PortraitW) * 0.5f) * k + new Vector2(_rx, 0f);
 		if (_has3d && _m3d != null && _split != null)
 		{
-			// 原版入场：3D Joker 带着白剪影斜着滑进来（0.03 → 0.23），播原版转身抬头（0.06 → 0.37，原版 0.367s / Speed 1.2），
+			// 原版入场：3D Joker 带着白剪影斜着滑进来（0.03 → 0.23），播原版转身抬头（0.06 → HandAt），
 			// 同时分界线从右往左扫过（0.08 → 0.34）由白变黑；0.36 起交叉切到 2D 定格（白手 + 红手套），手带一点回弹
 			float slide = Ease5.OutExpo(Mathf.Clamp((t - 0.05f) / 0.2f, 0f, 1f));
 			Vector2 at = (M3dAt + M3dSize * 0.5f) * k + new Vector2(_rx, 0f);
 			_m3d.Position = at + new Vector2(-220f, 120f) * k * (1f - slide);
-			int idx = Mathf.RoundToInt(Mathf.Clamp((t - 0.06f) / 0.31f, 0f, 1f) * 11f);
+			int idx = Mathf.RoundToInt(Mathf.Clamp((t - 0.06f) / (HandAt - 0.07f), 0f, 1f) * 11f);
 			if (_m3dFrames[idx] is Texture2D f && _m3d.Texture != f) _m3d.Texture = f;
 			_split.SetShaderParameter("edge", 1.25f - 1.6f * Ease5Ext.InOutCubic(Mathf.Clamp((t - 0.08f) / 0.26f, 0f, 1f)));
-			float m3dA = t >= 0.36f ? 0f : Mathf.Clamp((t - 0.05f) / 0.02f, 0f, 1f);   // 手掌砸进来那一帧硬切，不留半透明重影
+			float m3dA = t >= HandAt ? 0f : Mathf.Clamp((t - 0.05f) / 0.02f, 0f, 1f);   // 手掌砸进来那一帧硬切，不留半透明重影
 			_m3d.Visible = m3dA > 0.001f;
 			_m3d.Modulate = new Color(1f, 1f, 1f, m3dA);
 			// 手掌拍下来（用户：要有力量感）：从放大 1.22 倍猛地砸下去（0.36 → 0.42，加速），砸到底压扁到 0.965，
@@ -193,7 +193,7 @@ public sealed class PileDraw
 			float scale, drop;
 			if (t < SlamAt)
 			{
-				float d = Mathf.Clamp((t - 0.36f) / (SlamAt - 0.36f), 0f, 1f);
+				float d = Mathf.Clamp((t - HandAt) / (SlamAt - HandAt), 0f, 1f);
 				float e = d * d * d;
 				scale = Mathf.Lerp(1.22f, 0.965f, e);
 				drop = Mathf.Lerp(-70f, 8f, e);
@@ -208,7 +208,7 @@ public sealed class PileDraw
 			_portrait.Position = home + new Vector2(0f, drop) * k;
 			_porSprite.Scale = Vector2.One * _porScale * scale;
 			_por.SetShaderParameter("fill_amt", 0f);
-			_portrait.Modulate = new Color(1f, 1f, 1f, t >= 0.36f ? 1f : 0f);
+			_portrait.Modulate = new Color(1f, 1f, 1f, t >= HandAt ? 1f : 0f);
 			Shake(t);
 		}
 		else
@@ -236,8 +236,21 @@ public sealed class PileDraw
 		}
 	}
 
-	private const float SlamAt = 0.42f;
+	/// <summary>
+	/// 手掌砸中的那一刻（用户 2026-11-22：手掌、音效的「啪」、预告信出现要在同一帧）。
+	/// 原版打开菜单的音效 camp_open 自己带一声「啪」，峰值在文件第 0.488s；打开时（t=0）就开始播，所以砸中定在 0.488s，
+	/// 低频重击 sub_boom（起音 0.001s）和拳击声 punch_taiman（起音 0.087s）在打开时就按偏移预约好，三声的冲击落在同一刻。
+	/// </summary>
+	public const float SlamAt = 0.488f;
+	private const float HandAt = SlamAt - 0.06f;                       // 手掌出现、开始往下砸（砸 0.06s，加速）
 	private bool _slammed;
+
+	/// <summary>打开界面时调用一次（和 camp_open 同时）：把砸中那一下的两声按起音提前量预约好。</summary>
+	public static void ScheduleSlamSounds()
+	{
+		Sfx.Play(Sfx.SubBoom, 0.7f, SlamAt);
+		Sfx.Play(Sfx.Slam, 0.4f, SlamAt - 0.087f);
+	}
 
 	/// <summary>手掌砸中：整个界面（root）短促一震，衰减 0.24s；第一次到这一刻时放重击声。</summary>
 	private void Shake(float t)
@@ -245,8 +258,7 @@ public sealed class PileDraw
 		if (t >= SlamAt && !_slammed)
 		{
 			_slammed = true;
-			Sfx.Play(Sfx.SubBoom, 0.7f);
-			Sfx.Play(Sfx.Slam, 0.4f);
+			_card?.Slam();                                             // 预告信同一帧出现，带一记踢转
 		}
 		float a = t < SlamAt ? 0f : Mathf.Max(0f, 1f - (t - SlamAt) / 0.24f);
 		a *= a;
@@ -563,11 +575,21 @@ void fragment() { float r = length(local); COLOR.a *= 1.0 - smoothstep(0.0, 1.0,
 
 	public void Kick() => _target += KickDeg;
 
+	/// <summary>手掌砸中：这一帧出现，起转就带一记踢转（被拍出来的劲），之后落回底速。</summary>
+	public void Slam()
+	{
+		if (_born >= 0f) return;
+		_born = _now;
+		_target += 200f;
+		_vel = 900f;
+	}
+	private float _now;
+
 	public void Update(float now, float dt, bool alive)
 	{
 		if (!GodotObject.IsInstanceValid(_view)) return;
 		dt = Mathf.Clamp(dt, 0f, 1f / 30f);
-		if (_born < 0f && now >= 0.48f) _born = now;              // 手掌砸下去（0.42s）之后才出现
+		_now = now;
 		float life = _born < 0f ? 0f : now - _born;
 		float ramp = Mathf.Clamp(life / 0.6f, 0f, 1f);
 		_base = (_base + BaseSpin * ramp * ramp * (3f - 2f * ramp) * dt) % 360f;
@@ -588,14 +610,16 @@ void fragment() { float r = length(local); COLOR.a *= 1.0 - smoothstep(0.0, 1.0,
 			m.SetShaderParameter("band_amt", 0.22f * Mathf.Sqrt(Mathf.Abs(c)));
 		}
 		// 出现：0.4s 起 0.3s 弹出；退场时跟着淡掉
-		float pop = Mathf.Clamp(life / 0.3f, 0f, 1f);
-		_alpha = alive ? Mathf.Clamp(pop * 2f, 0f, 1f) : Mathf.MoveToward(_alpha, 0f, dt / 0.2f);
-		float scale = alive ? Mathf.Lerp(0.6f, 1f, Ease5.OutBack(pop)) : 1f;
+		// 砸中那一帧直接出现（不弹跳，用户：太软）：满尺寸、不透明，带一下短促的白闪 + 随手掌一起往下一顿
+		_alpha = alive ? (_born < 0f ? 0f : 1f) : Mathf.MoveToward(_alpha, 0f, dt / 0.2f);
+		float flash = _born < 0f ? 0f : Mathf.Max(0f, 1f - life / 0.12f);
+		float scale = 1f;
 		float bob = 6f * Mathf.Sin(now * 1.7f) * _k;
 		Vector2 size = Box * _k * scale;
 		_view.Size = size;
 		_view.Position = _center - size * 0.5f + new Vector2(0f, bob);
-		_view.Modulate = new Color(1f, 1f, 1f, _alpha);
+		float fl = 1f + 1.2f * flash * flash;
+		_view.Modulate = new Color(fl, fl, fl, _alpha);
 		float sw = (Mathf.Abs(c) * W * 0.5f + 10f) * _k * scale;
 		_shadow.Position = _center + new Vector2(30f, 128f) * _k * (H / 198f);
 		_shadow.Scale = new Vector2(sw * 1.15f, 30f * _k * scale * (H / 198f));
