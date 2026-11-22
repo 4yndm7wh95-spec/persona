@@ -35,7 +35,7 @@ public static class CharSelectBgPatch
 	{
 		ModEntry.Safe("CharSelectBg", () =>
 		{
-			if (!Makoto.AssetsOurs)
+			if (!MakotoSelectSkin.IsSelected)
 			{
 				return;                                 // 储君骨骼被别的换皮 mod 换掉了：选人界面也让给它
 			}
@@ -52,9 +52,23 @@ public static class CharSelectInfoPatch
 	public static void Prefix(NCharacterSelectScreen __instance) =>
 		ModEntry.Safe("CharSelectInfo restore", () => CharSelectInfo.Clear(__instance));
 
-	public static void Postfix(NCharacterSelectScreen __instance, NCharacterSelectButton __0)
+	// SkinChanger passes this argument by name during its presentation replay.
+	[HarmonyAfter("Gurio.SkinChanger")]
+	public static void Postfix(NCharacterSelectScreen __instance, [HarmonyArgument(0)] NCharacterSelectButton charSelectButton)
 	{
-		ModEntry.Safe("CharSelectInfo", () => Vfx.Perf.Time("info panel apply", () => CharSelectInfo.Apply(__instance, __0, __0.Character)));
+		ModEntry.Safe("CharSelectInfo", () => Vfx.Perf.Time("info panel apply", () =>
+		{
+			if (charSelectButton.IsRandom || charSelectButton.IsLocked || charSelectButton.Character.GetType().Name != "Regent"
+				|| !MakotoSelectSkin.IsSelected)
+				return;
+
+			if (MakotoSelectSkin.ManagedSelection == true
+				&& __instance.GetNodeOrNull<Control>("AnimatedBg/" + charSelectButton.Character.Id.Entry + "_bg") is { } bg)
+				CharSelectBg.Build(bg);
+
+			CharSelectInfo.Clear(__instance);
+			CharSelectInfo.Apply(__instance, charSelectButton, charSelectButton.Character);
+		}));
 	}
 }
 

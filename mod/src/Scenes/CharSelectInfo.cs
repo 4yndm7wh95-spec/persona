@@ -77,7 +77,7 @@ public static class CharSelectInfo
 		{
 			return;
 		}
-		if (button.IsRandom || button.IsLocked || model.GetType().Name != "Regent" || !Core.Makoto.AssetsOurs)
+		if (button.IsRandom || button.IsLocked || model.GetType().Name != "Regent" || !Core.MakotoSelectSkin.IsSelected)
 		{
 			return;
 		}

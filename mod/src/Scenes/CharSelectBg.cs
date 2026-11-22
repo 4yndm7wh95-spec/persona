@@ -23,6 +23,8 @@ public static class CharSelectBg
 	/// </summary>
 	public static void Build(Control bg)
 	{
+		if (bg.GetNodeOrNull<Control>("P3RBackground") is { } existing && !existing.IsQueuedForDeletion()) return;
+
 		Control root = new() { Name = "P3RBackground", MouseFilter = Control.MouseFilterEnum.Ignore, Size = new Vector2(W, H) };
 		bg.AddChild(root);
 		bg.MoveChild(root, 0);
