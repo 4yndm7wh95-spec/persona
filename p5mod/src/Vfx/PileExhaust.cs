@@ -89,23 +89,23 @@ public sealed class PileExhaust : IPileDecor
 		_portrait.AddChild(_porSprite);
 
 		// 5. 标题牌 MeNu&EXHAUST + COMMAND SELECT（原版字图 + P5 字图）
-		Node2D plate = new() { Position = R(1700f, 90f), Rotation = Mathf.DegToRad(-4f) };
+		Node2D plate = new() { Position = R(1680f, 90f), Rotation = Mathf.DegToRad(-4f) };
 		root.AddChild(plate);
-		Vector2 h = new Vector2(190f, 65f) * k;
+		Vector2 h = new Vector2(215f, 65f) * k;
 		Fx.Poly(plate, new[] { -h, new Vector2(h.X, -h.Y), h, new Vector2(-h.X, h.Y) }, Paper);
 		Vector2 hi = h - new Vector2(6f, 6f) * k;
 		Fx.Poly(plate, new[] { -hi, new Vector2(hi.X, -hi.Y), hi, new Vector2(-hi.X, hi.Y) }, Ink);
-		Glyph(plate, "pile_txt_menu", new Vector2(-95f, -15f), 131f, Paper);
-		PileText.Word(plate, "menu_exhaust", new Vector2(-20f, -48f) * k, 58f * k, Paper);
+		Glyph(plate, "pile_txt_menu", new Vector2(-128f, -15f), 120f, Paper);
+		PileText.Exact(plate, "menu_exhaust", new Vector2(-58f, -46f) * k, 52f * k, Paper);
 		Glyph(plate, "pile_txt_cmdselect", new Vector2(5f, 40f), 212f, Paper);
 		_pops.Add((plate, plate.Position, plate.Rotation, SlamAt + 0.02f));
 
 		// 6. COMMAND + 说明
-		Node2D command = new() { Position = new Vector2(760f, 960f) * k, Rotation = Mathf.DegToRad(-4f) };
+		Node2D command = new() { Position = new Vector2(760f, 915f) * k, Rotation = Mathf.DegToRad(-4f) };
 		root.AddChild(command);
 		Glyph(command, "pile_txt_command_ol", Vector2.Zero, 551f, Ink);
 		Glyph(command, "pile_txt_command", Vector2.Zero, 551f, Paper);
-		PileDraw.Caption(command, "exhaust", count, new Vector2(-110f, 62f) * k, 36f * k);
+		PileDraw.Caption(command, "exhaust", count, new Vector2(-150f, 100f) * k, 38f * k);
 		_pops.Add((command, command.Position, command.Rotation, SlamAt + 0.06f));
 
 		Enter(0f);

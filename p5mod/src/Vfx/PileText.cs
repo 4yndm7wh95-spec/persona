@@ -20,6 +20,10 @@ public static class PileText
 	public static float Word(Node2D parent, string name, Vector2 at, float height, Color color, bool ol = false) =>
 		Piece(parent, "pile_t_" + Pick(name), at, height, color, ol);
 
+	/// <summary>指定哪一张就用哪一张（不按语言换成 _zh）。</summary>
+	public static float Exact(Node2D parent, string name, Vector2 at, float height, Color color, bool ol = false) =>
+		Piece(parent, "pile_t_" + name, at, height, color, ol);
+
 	/// <summary>原版小数字拼成的数（可带前缀 ×）。返回宽度。</summary>
 	public static float Number(Node2D parent, string text, Vector2 at, float height, Color color, bool ol = false)
 	{

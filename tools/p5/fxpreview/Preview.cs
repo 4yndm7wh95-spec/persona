@@ -1842,12 +1842,14 @@ public partial class Preview : Node2D
 			{
 				Node2D head = new() { Modulate = new Color(1f, 1f, 1f, 0f) };
 				cards.AddChild(head);
-				Fx.Poly(head, new[] { new Vector2(0f, 4f), new Vector2(330f, -4f), new Vector2(338f, 52f), new Vector2(6f, 58f) }, new Color(0.04f, 0.04f, 0.04f));
 				string[] keys = { "attack", "skill", "power" };
-				float tw = PileText.Word(head, keys[g], new Vector2(16f, 8f), 40f, new Color(0.94f, 0.94f, 0.94f));
-				float tx = 16f + tw + 10f;
-				tx += PileText.Word(head, keys[g] + "_zh", new Vector2(tx, 14f), 28f, new Color(0.9f, 0.1f, 0.11f)) + 10f;
-				PileText.Number(head, "×" + counts[g], new Vector2(Mathf.Max(tx, 236f), 12f), 34f, new Color(0.94f, 0.94f, 0.94f));
+				float tx = 16f;
+				tx += PileText.Exact(head, keys[g], new Vector2(tx, 8f), 40f, new Color(0.94f, 0.94f, 0.94f)) + 10f;
+				tx += PileText.Exact(head, keys[g] + "_zh", new Vector2(tx, 15f), 28f, new Color(0.9f, 0.1f, 0.11f)) + 12f;
+				tx += PileText.Number(head, "×" + counts[g], new Vector2(tx, 12f), 34f, new Color(0.94f, 0.94f, 0.94f)) + 14f;
+				Polygon2D po = Fx.Poly(head, new[] { new Vector2(-4f, 2f), new Vector2(tx + 4f, -4f), new Vector2(tx + 12f, 56f), new Vector2(2f, 62f) }, new Color(0.94f, 0.94f, 0.94f));
+				Polygon2D pi = Fx.Poly(head, new[] { new Vector2(0f, 5f), new Vector2(tx, 0f), new Vector2(tx + 8f, 52f), new Vector2(6f, 58f) }, new Color(0.04f, 0.04f, 0.04f));
+				head.MoveChild(po, 0); head.MoveChild(pi, 1);
 				heads.Add((head, new Vector2(L.GridX - 6f, L.GridTop + y)));
 				y += 70f;
 				for (int i = 0; i < counts[g]; i++)
@@ -1876,8 +1878,8 @@ public partial class Preview : Node2D
 				float ex = exitAt < 0f ? 0f : Mathf.Clamp((now - exitAt) / L.ExitTime, 0f, 1f);
 				foreach (var (n, at) in heads)
 				{
-					float a = Mathf.Clamp((now - 0.2f) / 0.25f, 0f, 1f) * (1f - ex);
-					n.Position = at + new Vector2(-80f * (1f - Ease5.OutExpo(Mathf.Clamp((now - 0.2f) / 0.3f, 0f, 1f))) - 260f * Ease5Ext.InCubic(ex), 0f);
+					float a = Mathf.Clamp((now - L.CardsStart) / 0.25f, 0f, 1f) * (1f - ex);
+					n.Position = at + new Vector2(-80f * (1f - Ease5.OutExpo(Mathf.Clamp((now - L.CardsStart) / 0.3f, 0f, 1f))) - 260f * Ease5Ext.InCubic(ex), 0f);
 					n.Modulate = new Color(1f, 1f, 1f, a);
 				}
 				for (int i = 0; i < items.Count; i++)

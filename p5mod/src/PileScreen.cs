@@ -664,9 +664,9 @@ public static class PileScreen
 				{
 					Vector2 p = Screen(new Vector2(0f, s.Y + HeaderH * 0.5f));
 					float sIn = s.Born < 0f ? 1f : Fx.OutCubic(Mathf.Clamp((now - s.Born) / 0.3f, 0f, 1f));
-					float hIn = Ease5.OutExpo(Mathf.Clamp((now - 0.2f) / 0.3f, 0f, 1f));
+					float hIn = Ease5.OutExpo(Mathf.Clamp((now - L.CardsStart) / 0.3f, 0f, 1f));
 					s.Head.Position = p + new Vector2(-6f * k - 80f * k * (1f - sIn) - 80f * k * (1f - hIn) - 260f * k * Ease5Ext.InCubic(ex) - 60f * k * fe, 0f);
-					s.Head.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((now - 0.2f) / 0.25f, 0f, 1f) * sIn * (1f - fe) * (1f - ex));
+					s.Head.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((now - L.CardsStart) / 0.25f, 0f, 1f) * sIn * (1f - fe) * (1f - ex));
 				}
 				for (int i = dying.Count - 1; i >= 0; i--)
 				{
@@ -997,17 +997,22 @@ public static class PileScreen
 		}
 	}
 
-	/// <summary>段标题：黑色斜剪报纸片 + 白色英文类型字图 + 红色中文字图 + 原版数字 ×张数。</summary>
+	/// <summary>段标题：白边黑色斜剪报纸片 + 白色英文类型字图 + 红色中文字图（中文版）+ 原版数字 ×张数；纸片宽度跟着字走。</summary>
 	private static Node2D SectionHead(Node2D parent, string en, string zh, int count, float k)
 	{
 		Node2D n = new() { Modulate = new Color(1f, 1f, 1f, 0f), Rotation = Mathf.DegToRad(-1.5f) };
 		parent.AddChild(n);
+		Node2D plate = new();
+		n.AddChild(plate);
+		float x = 16f;
+		x += PileText.Exact(n, en, new Vector2(x, -21f) * k, 40f * k, Paper) / k + 10f;
+		if (zh.Length > 0) x += PileText.Exact(n, zh, new Vector2(x, -14f) * k, 28f * k, Red) / k + 12f;
+		x += PileText.Number(n, "×" + count, new Vector2(x, -17f) * k, 34f * k, Paper) / k + 14f;
 		float h = 54f;
-		Fx.Poly(n, new[] { new Vector2(0f, -h / 2 + 4f), new Vector2(330f, -h / 2), new Vector2(338f, h / 2 - 2f), new Vector2(6f, h / 2 + 2f) }.Select(p => p * k).ToArray(), Ink);
-		float w = PileText.Word(n, en.Length > 0 && Fx.Tex("pile_t_" + en) != null ? en : "draw", new Vector2(16f, -21f) * k, 40f * k, Paper) / k;
-		float x = 16f + w + 10f;
-		if (zh.Length > 0) x += PileText.Word(n, zh, new Vector2(x, -15f) * k, 28f * k, Red) / k + 10f;
-		PileText.Number(n, "×" + count, new Vector2(Mathf.Max(x, 236f), -17f) * k, 34f * k, Paper);
+		Vector2[] outer = { new(-4f, -h / 2 + 1f), new(x + 4f, -h / 2 - 4f), new(x + 12f, h / 2 + 1f), new(2f, h / 2 + 6f) };
+		Vector2[] inner = { new(0f, -h / 2 + 4f), new(x, -h / 2), new(x + 8f, h / 2 - 2f), new(6f, h / 2 + 2f) };
+		Fx.Poly(plate, outer.Select(p => p * k).ToArray(), Paper);
+		Fx.Poly(plate, inner.Select(p => p * k).ToArray(), Ink);
 		return n;
 	}
 
