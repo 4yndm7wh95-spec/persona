@@ -454,7 +454,9 @@ void fragment() {
 shader_type canvas_item;
 uniform vec4 fill_color : source_color = vec4(1.0);
 uniform float fill_amt = 0.0;
+uniform float clip_top = -1.0;   // UV.y 小于它的部分不画（软边 0.04）；-1 = 不裁
 void fragment() {
+	if (clip_top > 0.0) COLOR.a *= smoothstep(clip_top - 0.02, clip_top + 0.02, UV.y);
 	// Godot 4：COLOR 进来时已经是 贴图 × modulate
 	COLOR.rgb = mix(COLOR.rgb, fill_color.rgb, fill_amt);
 }

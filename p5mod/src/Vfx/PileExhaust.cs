@@ -29,6 +29,8 @@ public sealed class PileExhaust : IPileDecor
 	public Vector2 ExitOffset => new(260f, 40f);
 
 	private const float SlamAt = PileDraw.SlamAt, HandAt = SlamAt - 0.06f;
+	/// <summary>原版 frame_0118～0122：白板先变成黑块，立绘的白色腿（抬起的那条腿）先露出来，上半身还是 3D Joker；HandAt 才换成立绘的上半身。</summary>
+	private const float LegAt = 0.31f;
 	private static readonly Color Ink = PileDraw.Ink, Paper = PileDraw.Paper, Gray = new(0.84f, 0.84f, 0.84f);
 	private static readonly Vector2 PorAt = new(-80f, 40f);
 	private const float PorW = 1500f;
@@ -116,6 +118,7 @@ public sealed class PileExhaust : IPileDecor
 		if (_porSprite.Texture is Texture2D pt) _porScale = PorW * k / pt.GetWidth();
 		_porSprite.Scale = Vector2.One * _porScale;
 		_portrait.AddChild(_porSprite);
+		if (_m3d != null) root.MoveChild(_m3d, _portrait.GetIndex());   // 3D Joker 盖在立绘上面（交接那几帧两者同时在）
 
 		// 5. 标题牌 MeNu&EXHAUST + COMMAND SELECT（原版字图 + P5 字图）
 		Node2D plate = new() { Position = R(1680f, 90f), Rotation = Mathf.DegToRad(-4f) };
@@ -163,18 +166,24 @@ public sealed class PileExhaust : IPileDecor
 		_bg.SetShaderParameter("wipe", t >= 0.3f ? 1e7f : Ease5.OutQuint(Mathf.Clamp(t / 0.3f, 0f, 1f)) * reach);
 		// 白板从右边扫进来（0.04 → 0.22）
 		float sweep = Ease5.OutExpo(Mathf.Clamp((t - 0.04f) / 0.18f, 0f, 1f));
-		bool cut = t >= HandAt;
+		bool cut = t >= HandAt, leg = t >= LegAt;
 		_white.Position = new Vector2(1500f * k * (1f - sweep), 0f);
-		_white.Visible = !cut;
-		_slab.Visible = _wedge.Visible = _band.Visible = cut;
+		_white.Visible = !leg;
+		_slab.Visible = _wedge.Visible = leg;
+		_band.Visible = cut;
 		Vector2 home = (PorAt + new Vector2(PorW, PorW) * 0.5f) * k;
 		// 弧形星纹带转进来（0.05 → 0.24），切到最终构图时收掉
 		float arcIn = Ease5.OutExpo(Mathf.Clamp((t - 0.05f) / 0.19f, 0f, 1f));
 		_arc.Rotation = Mathf.DegToRad(-70f) * (1f - arcIn);
-		_arc.Visible = !cut && t >= 0.05f;
+		_arc.Visible = !leg && t >= 0.05f;
 		if (!cut)
 		{
-			_portrait.Modulate = new Color(1f, 1f, 1f, 0f);
+			// 交接（LegAt → HandAt）：立绘只露下半身（白色的腿），上半身是 3D Joker
+			_portrait.Modulate = new Color(1f, 1f, 1f, leg ? 1f : 0f);
+			_portrait.Position = home + new Vector2(0f, -10f) * k;
+			_porSprite.Scale = Vector2.One * _porScale * 1.03f;
+			_por.SetShaderParameter("fill_amt", 0f);
+			_por.SetShaderParameter("clip_top", 0.34f);
 			if (_m3d != null)
 			{
 				// 原版 frame_0111 → 0120：侧身插兜站着（近景 3 帧 → 中景 8 帧），0.08 → HandAt 播完
@@ -187,13 +196,14 @@ public sealed class PileExhaust : IPileDecor
 		}
 		else
 		{
-			// 硬切成原版构图，立绘从放大砸下（HandAt → SlamAt，加速），压扁 0.965 再回弹（同抽牌堆的手掌）
+			// 换成立绘上半身，从 1.06 倍砸下（HandAt → SlamAt，加速），压扁 0.965 再回弹（同抽牌堆的手掌）
+			_por.SetShaderParameter("clip_top", -1f);
 			float scale, drop;
 			if (t < SlamAt)
 			{
 				float e = Mathf.Pow(Mathf.Clamp((t - HandAt) / (SlamAt - HandAt), 0f, 1f), 3f);
-				scale = Mathf.Lerp(1.12f, 0.965f, e);
-				drop = Mathf.Lerp(-40f, 8f, e);
+				scale = Mathf.Lerp(1.06f, 0.965f, e);
+				drop = Mathf.Lerp(-24f, 8f, e);
 			}
 			else
 			{
