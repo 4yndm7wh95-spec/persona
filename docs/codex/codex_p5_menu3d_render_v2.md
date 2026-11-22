@@ -31,4 +31,6 @@
 - 提交信息 "research: menu 3D Joker v2 (phantom thief outfit, texture-only shading, refit camera)"，推送到 claude/p5-pile-ui（命令同上一轮任务单第 4 步）。
 - 报告（中文）：显示 / 隐藏了哪些网格；手套选了哪种、为什么；着色改了什么；新相机参数；和参考帧的差别；提交号。
 
-【绝对不要做】同上一轮任务单的清单，全部照旧（只改 research/p5r/menu3d 和 tools/p5/menu3d；不安装、不下载、不启动游戏、不用 Computer Use、不生图、不删除目录、不碰 CPK 和游戏目录、不读 obs.json 和密码、不进入旧仓库、出错就停下报告）。
+【绝对不要做】同上一轮任务单的清单，全部照旧（只改 research/p5r/menu3d 和 tools/p5/menu3d；不安装、不下载、不启动游戏、不用 Computer Use、不生图、不删除目录、不碰 CPK 和游戏目录、不读 obs.json 和密码、不进入旧仓库）。
+
+遇到问题不要停下：没写到的情况、命令出错、结果拿不准，都按你自己的理解选最合理的做法继续，把任务做完，最后在报告里写清楚遇到了什么、怎么处理的、哪里还不确定。
