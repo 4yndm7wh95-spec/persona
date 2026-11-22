@@ -39,6 +39,12 @@ public sealed class PileExhaust : IPileDecor
 	private readonly ShaderMaterial _bg, _por;
 	private readonly Polygon2D _slab, _wedge, _white;
 	private readonly Node2D _band, _portrait;
+	// 入场的原版 3D Joker（SKILL 页镜头，main_0015 → main_0016 → main_0017，共 16 帧）和它脚下扫过的弧形星纹带
+	private readonly Texture2D?[] _sk3d = new Texture2D?[16];
+	private readonly Sprite2D? _m3d;
+	private readonly Node2D _arc;
+	private readonly float _arcR0, _arcR1;
+	private readonly Vector2 _arcC;
 	private readonly Sprite2D _porSprite;
 	private readonly float _porScale = 1f;
 	private readonly List<(Node2D Node, Vector2 At, float Rot, float Delay)> _pops = new();
@@ -78,6 +84,29 @@ public sealed class PileExhaust : IPileDecor
 		bandMat.SetShaderParameter("size", view);
 		bandMask.AddChild(new ColorRect { Size = view, Material = bandMat, MouseFilter = Control.MouseFilterEnum.Ignore });
 		_band = bandMask;
+
+		// 3b. 入场时扫过画面的弧形星纹带（原版 SKILL 页 frame_0110：从左下弯到右上的一条粗弧），绕圆心转进来
+		_arcC = new Vector2(1250f, 1550f) * k;
+		_arcR0 = 1150f * k;
+		_arcR1 = 1480f * k;
+		Polygon2D arcMask = new() { Color = Colors.White, ClipChildren = CanvasItem.ClipChildrenMode.Only, Position = _arcC, Antialiased = true };
+		List<Vector2> ring = new();
+		for (int i = 0; i <= 48; i++) { float a = Mathf.DegToRad(-175f + 95f * i / 48f); ring.Add(new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * _arcR1); }
+		for (int i = 48; i >= 0; i--) { float a = Mathf.DegToRad(-175f + 95f * i / 48f); ring.Add(new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * _arcR0); }
+		arcMask.Polygon = ring.ToArray();
+		root.AddChild(arcMask);
+		ShaderMaterial arcMat = PileDraw.StarMaterial(118f, new Color(0.91f, 0.91f, 0.91f), new Color(0.03f, 0.03f, 0.03f), new Color(0.376f, 0.376f, 0.376f), Vector2.Zero);
+		arcMat.SetShaderParameter("size", view);
+		arcMask.AddChild(new ColorRect { Size = view, Position = -_arcC, Material = arcMat, MouseFilter = Control.MouseFilterEnum.Ignore });
+		_arc = arcMask;
+
+		// 3c. 原版 3D Joker（黑身白脸，1:1 贴屏幕左上角，渲染画面的上 / 左 / 下边缘就是屏幕边缘）
+		for (int i = 0; i < 16; i++) _sk3d[i] = Fx.Tex($"pile_sk3d_{i:00}");
+		if (_sk3d[0] != null)
+		{
+			_m3d = new Sprite2D { Texture = _sk3d[0], Centered = false, Scale = Vector2.One * k, TextureFilter = CanvasItem.TextureFilterEnum.Linear, Visible = false };
+			root.AddChild(_m3d);
+		}
 
 		// 4. Joker（原版 CAMPSKILL_2D01）
 		_portrait = new Node2D { Name = "PilePortrait", Position = (PorAt + new Vector2(PorW, PorW) * 0.5f) * k };
@@ -139,15 +168,24 @@ public sealed class PileExhaust : IPileDecor
 		_white.Visible = !cut;
 		_slab.Visible = _wedge.Visible = _band.Visible = cut;
 		Vector2 home = (PorAt + new Vector2(PorW, PorW) * 0.5f) * k;
+		// 弧形星纹带转进来（0.05 → 0.24），切到最终构图时收掉
+		float arcIn = Ease5.OutExpo(Mathf.Clamp((t - 0.05f) / 0.19f, 0f, 1f));
+		_arc.Rotation = Mathf.DegToRad(-70f) * (1f - arcIn);
+		_arc.Visible = !cut && t >= 0.05f;
 		if (!cut)
 		{
-			// Joker 黑剪影压在白板上滑进来（0.08 → 0.3）
-			float slide = Ease5.OutExpo(Mathf.Clamp((t - 0.08f) / 0.22f, 0f, 1f));
-			_portrait.Position = home + new Vector2(260f, -60f) * k * (1f - slide);
-			_por.SetShaderParameter("fill_color", Ink);
-			_por.SetShaderParameter("fill_amt", 1f);
-			_porSprite.Scale = Vector2.One * _porScale * 1.12f;
-			_portrait.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((t - 0.08f) / 0.03f, 0f, 1f));
+			// 原版 3D Joker：main_0015（全身，0.08 → 0.30）→ main_0016（停一下，0.30 → 0.35）→ main_0017（俯身，0.35 → HandAt）
+			_portrait.Modulate = new Color(1f, 1f, 1f, 0f);
+			if (_m3d != null)
+			{
+				int idx = t < 0.30f ? Mathf.Clamp((int)((t - 0.08f) / 0.22f * 11f), 0, 10)
+					: t < 0.35f ? 11 + Mathf.Clamp((int)((t - 0.30f) / 0.05f * 2f), 0, 1)
+					: 13 + Mathf.Clamp((int)((t - 0.35f) / (HandAt - 0.35f) * 3f), 0, 2);
+				if (_sk3d[idx] is Texture2D f && _m3d.Texture != f) _m3d.Texture = f;
+				float slide = Ease5.OutExpo(Mathf.Clamp((t - 0.08f) / 0.16f, 0f, 1f));
+				_m3d.Position = new Vector2(-160f * k * (1f - slide), 0f);
+				_m3d.Visible = t >= 0.08f;
+			}
 		}
 		else
 		{
@@ -169,6 +207,7 @@ public sealed class PileExhaust : IPileDecor
 			_porSprite.Scale = Vector2.One * _porScale * scale;
 			_por.SetShaderParameter("fill_amt", 0f);
 			_portrait.Modulate = Colors.White;
+			if (_m3d != null) _m3d.Visible = false;
 			Shake(t);
 		}
 		foreach (var (node, at, rot, delay) in _pops)
@@ -195,6 +234,8 @@ public sealed class PileExhaust : IPileDecor
 	{
 		float k = _k;
 		_root.Position = Vector2.Zero;
+		if (_m3d != null) _m3d.Visible = false;
+		_arc.Visible = false;
 		float ei = Ease5Ext.InCubic(e);
 		float reach = (_view + new Vector2(0f, _view.Y)).Length() * 1.05f;
 		_bg.SetShaderParameter("wipe", reach * (1f - Ease5Ext.InCubic(Mathf.Clamp((e - 0.15f) / 0.85f, 0f, 1f))));
@@ -221,5 +262,5 @@ public sealed class PileExhaust : IPileDecor
 		parent.AddChild(new Sprite2D { Texture = t, Position = at * _k, Scale = Vector2.One * w * _k / t.GetWidth(), Modulate = tint, TextureFilter = CanvasItem.TextureFilterEnum.Linear });
 	}
 
-	public static readonly string[] Textures = { "pile_campskill", "pile_txt_menu", "pile_txt_cmdselect", "pile_txt_command", "pile_txt_command_ol" };
+	public static readonly string[] Textures = { "pile_sk3d_00", "pile_sk3d_01", "pile_sk3d_02", "pile_sk3d_03", "pile_sk3d_04", "pile_sk3d_05", "pile_sk3d_06", "pile_sk3d_07", "pile_sk3d_08", "pile_sk3d_09", "pile_sk3d_10", "pile_sk3d_11", "pile_sk3d_12", "pile_sk3d_13", "pile_sk3d_14", "pile_sk3d_15", "pile_campskill", "pile_txt_menu", "pile_txt_cmdselect", "pile_txt_command", "pile_txt_command_ol" };
 }
