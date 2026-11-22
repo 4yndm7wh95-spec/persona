@@ -29,8 +29,12 @@ public sealed class PileExhaust : IPileDecor
 	public Vector2 ExitOffset => new(260f, 40f);
 
 	private const float SlamAt = PileDraw.SlamAt, HandAt = SlamAt - 0.06f;
-	/// <summary>原版 frame_0118～0122：白板先变成黑块，立绘的白色腿（抬起的那条腿）先露出来，上半身还是 3D Joker；HandAt 才换成立绘的上半身。</summary>
-	private const float LegAt = 0.31f;
+	/// <summary>
+	/// 原版 frame_0118～0122 的「区域反色」（P5 的撞色：用户 2026-11-22 讲的）：Joker 一脚踏进白色区域，这块区域里黑白互换——
+	/// 白板变黑，伸进来的那条黑腿变白，和后面的黑底衬出来。之前的帧那条黑腿其实一直在（黑腿压在白板上）。
+	/// 这里在 LegAt 把白板区域整块反色（屏幕反色着色器，区域 = 白板去掉 Joker 上半身那一角），HandAt 再换成立绘砸下。
+	/// </summary>
+	private const float LegAt = 0.32f;
 	private static readonly Color Ink = PileDraw.Ink, Paper = PileDraw.Paper, Gray = new(0.84f, 0.84f, 0.84f);
 	private static readonly Vector2 PorAt = new(-80f, 40f);
 	private const float PorW = 1500f;
@@ -39,7 +43,7 @@ public sealed class PileExhaust : IPileDecor
 	private readonly Vector2 _view;
 	private readonly float _k, _rx;
 	private readonly ShaderMaterial _bg, _por;
-	private readonly Polygon2D _slab, _wedge, _white;
+	private readonly Polygon2D _slab, _wedge, _white, _invert;
 	private readonly Node2D _band, _portrait;
 	// 入场的原版 3D Joker（SKILL 页镜头，侧身插兜站着：main_0015 淡入 main_0113，共 11 帧）和它脚下扫过的弧形星纹带
 	private readonly Texture2D?[] _sk3d = new Texture2D?[11];
@@ -118,7 +122,16 @@ public sealed class PileExhaust : IPileDecor
 		if (_porSprite.Texture is Texture2D pt) _porScale = PorW * k / pt.GetWidth();
 		_porSprite.Scale = Vector2.One * _porScale;
 		_portrait.AddChild(_porSprite);
-		if (_m3d != null) root.MoveChild(_m3d, _portrait.GetIndex());   // 3D Joker 盖在立绘上面（交接那几帧两者同时在）
+		// 反色区域：盖在白板和 3D Joker 上面，读屏幕颜色取反（白板 → 黑、黑腿 → 白）
+		root.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
+		_invert = new Polygon2D
+		{
+			Polygon = new[] { R(1000f, 0f), R(1650f, 0f), R(1920f, 300f), R(1920f, 760f), R(1350f, 1080f), R(500f, 1080f), R(500f, 780f) },
+			Color = Colors.White, Antialiased = true, Visible = false,
+			Material = new ShaderMaterial { Shader = InvertShader },
+		};
+		root.AddChild(_invert);
+		root.MoveChild(_portrait, _invert.GetIndex() + 1);
 
 		// 5. 标题牌 MeNu&EXHAUST + COMMAND SELECT（原版字图 + P5 字图）
 		Node2D plate = new() { Position = R(1680f, 90f), Rotation = Mathf.DegToRad(-4f) };
@@ -145,6 +158,17 @@ public sealed class PileExhaust : IPileDecor
 
 	public void Kick() { }
 
+	private static Shader? _inv;
+	/// <summary>区域反色：读屏幕，颜色取反（不透明）。</summary>
+	private static Shader InvertShader => _inv ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
+void fragment() {
+	vec3 c = texture(screen_tex, SCREEN_UV).rgb;
+	COLOR = vec4(vec3(1.0) - c, 1.0);
+}
+" };
+
 	public void BeginExit(float now)
 	{
 		if (_exitT0 >= 0f) return;
@@ -168,22 +192,18 @@ public sealed class PileExhaust : IPileDecor
 		float sweep = Ease5.OutExpo(Mathf.Clamp((t - 0.04f) / 0.18f, 0f, 1f));
 		bool cut = t >= HandAt, leg = t >= LegAt;
 		_white.Position = new Vector2(1500f * k * (1f - sweep), 0f);
-		_white.Visible = !leg;
-		_slab.Visible = _wedge.Visible = leg;
+		_white.Visible = !cut;
+		_invert.Visible = leg && !cut;
+		_slab.Visible = _wedge.Visible = cut;
 		_band.Visible = cut;
 		Vector2 home = (PorAt + new Vector2(PorW, PorW) * 0.5f) * k;
 		// 弧形星纹带转进来（0.05 → 0.24），切到最终构图时收掉
 		float arcIn = Ease5.OutExpo(Mathf.Clamp((t - 0.05f) / 0.19f, 0f, 1f));
 		_arc.Rotation = Mathf.DegToRad(-70f) * (1f - arcIn);
-		_arc.Visible = !leg && t >= 0.05f;
+		_arc.Visible = !cut && t >= 0.05f;
 		if (!cut)
 		{
-			// 交接（LegAt → HandAt）：立绘只露下半身（白色的腿），上半身是 3D Joker
-			_portrait.Modulate = new Color(1f, 1f, 1f, leg ? 1f : 0f);
-			_portrait.Position = home + new Vector2(0f, -10f) * k;
-			_porSprite.Scale = Vector2.One * _porScale * 1.03f;
-			_por.SetShaderParameter("fill_amt", 0f);
-			_por.SetShaderParameter("clip_top", 0.335f);   // 白腿顶端在 UV 0.335，上面渐隐
+			_portrait.Modulate = new Color(1f, 1f, 1f, 0f);
 			if (_m3d != null)
 			{
 				// 原版 frame_0111 → 0120：侧身插兜站着（近景 3 帧 → 中景 8 帧），0.08 → HandAt 播完
@@ -197,7 +217,6 @@ public sealed class PileExhaust : IPileDecor
 		else
 		{
 			// 换成立绘上半身，从 1.06 倍砸下（HandAt → SlamAt，加速），压扁 0.965 再回弹（同抽牌堆的手掌）
-			_por.SetShaderParameter("clip_top", -1f);
 			float scale, drop;
 			if (t < SlamAt)
 			{
