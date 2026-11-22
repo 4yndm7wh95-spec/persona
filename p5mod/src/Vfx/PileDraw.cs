@@ -177,13 +177,13 @@ public sealed class PileDraw
 		{
 			// 原版入场：3D Joker 带着白剪影斜着滑进来（0.03 → 0.23），播原版转身抬头（0.06 → 0.37，原版 0.367s / Speed 1.2），
 			// 同时分界线从右往左扫过（0.08 → 0.34）由白变黑；0.36 起交叉切到 2D 定格（白手 + 红手套），手带一点回弹
-			float slide = Ease5.OutExpo(Mathf.Clamp((t - 0.03f) / 0.2f, 0f, 1f));
+			float slide = Ease5.OutExpo(Mathf.Clamp((t - 0.05f) / 0.2f, 0f, 1f));
 			Vector2 at = (M3dAt + M3dSize * 0.5f) * k + new Vector2(_rx, 0f);
 			_m3d.Position = at + new Vector2(-220f, 120f) * k * (1f - slide);
 			int idx = Mathf.RoundToInt(Mathf.Clamp((t - 0.06f) / 0.31f, 0f, 1f) * 11f);
 			if (_m3dFrames[idx] is Texture2D f && _m3d.Texture != f) _m3d.Texture = f;
 			_split.SetShaderParameter("edge", 1.25f - 1.6f * Ease5Ext.InOutCubic(Mathf.Clamp((t - 0.08f) / 0.26f, 0f, 1f)));
-			float m3dA = Mathf.Clamp((t - 0.03f) / 0.02f, 0f, 1f) * (1f - Mathf.Clamp((t - 0.385f) / 0.025f, 0f, 1f));
+			float m3dA = Mathf.Clamp((t - 0.05f) / 0.02f, 0f, 1f) * (1f - Mathf.Clamp((t - 0.385f) / 0.025f, 0f, 1f));
 			_m3d.Visible = m3dA > 0.001f;
 			_m3d.Modulate = new Color(1f, 1f, 1f, m3dA);
 			float pop = Mathf.Clamp((t - 0.36f) / 0.18f, 0f, 1f);
