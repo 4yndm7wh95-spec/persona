@@ -5,7 +5,7 @@ BASE = Image.open(sys.argv[1]).convert('RGBA')
 OUT = sys.argv[2]
 X0, Y0, OW, OH = 700, 280, 854, 480              # 1:1 裁出手掌附近（不缩放，看真实清晰度）
 SS = 2; FPS = 30; DUR = 6.5
-CX, CY = 1140 - X0, 590 - Y0
+CX, CY = 1197 - X0, 590 - Y0
 front = Image.open('art/p5/ui/pile/calling_card.png').convert('RGBA')
 backs = [Image.open(f'art/p5/ui/pile/letters/letter_{k}.png').convert('RGBA') for k in ('madarame', 'kamoshida', 'kaneshiro')]
 CW, CH = 250, 179                                 # 屏幕上卡的大小（1080p）

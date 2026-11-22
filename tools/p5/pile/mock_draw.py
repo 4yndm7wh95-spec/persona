@@ -92,7 +92,7 @@ def main(out, card_on=True, bg='flat'):
       sq = card.resize((int(card.width * 0.62), card.height), Image.LANCZOS)
       glow = Image.new('RGBA', (sq.width + 120, sq.height + 120)); glow.alpha_composite(tint(sq, (255, 255, 255)), (60, 60))
       glow = glow.filter(ImageFilter.GaussianBlur(26)); glow.putalpha(glow.getchannel('A').point(lambda v: v * 0.55))
-      place(cv, glow, 1140, 590, 0.39, -8); place(cv, sq, 1140, 590, 0.39, -8)
+      place(cv, glow, 1197, 590, 0.39, -8); place(cv, sq, 1197, 590, 0.39, -8)
     # 牌格子（左侧，占位卡）
     fb = ImageFont.truetype(FONT, 40 * SS); fz = ImageFont.truetype(CJK, 26 * SS); fn = ImageFont.truetype(CJK, 15 * SS)
     cols = {'攻击': (182, 48, 40), '技能': (40, 96, 160), '能力': (196, 150, 40)}
