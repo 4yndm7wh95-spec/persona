@@ -131,7 +131,7 @@ public sealed class PileExhaust : IPileDecor
 			Material = new ShaderMaterial { Shader = InvertShader },
 		};
 		root.AddChild(_invert);
-		root.MoveChild(_portrait, _invert.GetIndex() + 1);
+		if (_m3d != null) root.MoveChild(_m3d, _portrait.GetIndex());   // 3D Joker 上半身盖在立绘黑剪影上面；两者都在反色区域下面
 
 		// 5. 标题牌 MeNu&EXHAUST + COMMAND SELECT（原版字图 + P5 字图）
 		Node2D plate = new() { Position = R(1680f, 90f), Rotation = Mathf.DegToRad(-4f) };
@@ -203,7 +203,13 @@ void fragment() {
 		_arc.Visible = !cut && t >= 0.05f;
 		if (!cut)
 		{
-			_portrait.Modulate = new Color(1f, 1f, 1f, 0f);
+			// 用户 2026-11-22（原版 0113）：Joker 伸出来的那条腿一直在，是黑的，压在白板上；3D 上半身盖在上面。
+			// 用立绘的黑剪影当这条腿（和最后定格的腿同一个位置），LegAt 那一刻区域反色，腿就变白
+			_portrait.Position = home;
+			_porSprite.Scale = Vector2.One * _porScale;
+			_por.SetShaderParameter("fill_color", Ink);
+			_por.SetShaderParameter("fill_amt", 1f);
+			_portrait.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((t - 0.16f) / 0.04f, 0f, 1f));
 			if (_m3d != null)
 			{
 				// 原版 frame_0111 → 0120：侧身插兜站着（近景 3 帧 → 中景 8 帧），0.08 → HandAt 播完
