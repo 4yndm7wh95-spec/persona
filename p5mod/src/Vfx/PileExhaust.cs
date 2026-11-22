@@ -39,8 +39,8 @@ public sealed class PileExhaust : IPileDecor
 	private readonly ShaderMaterial _bg, _por;
 	private readonly Polygon2D _slab, _wedge, _white;
 	private readonly Node2D _band, _portrait;
-	// 入场的原版 3D Joker（SKILL 页镜头，main_0015 → main_0016 → main_0017，共 16 帧）和它脚下扫过的弧形星纹带
-	private readonly Texture2D?[] _sk3d = new Texture2D?[16];
+	// 入场的原版 3D Joker（SKILL 页镜头，侧身插兜站着：main_0015 淡入 main_0113，共 11 帧）和它脚下扫过的弧形星纹带
+	private readonly Texture2D?[] _sk3d = new Texture2D?[11];
 	private readonly Sprite2D? _m3d;
 	private readonly Node2D _arc;
 	private readonly float _arcR0, _arcR1;
@@ -101,7 +101,7 @@ public sealed class PileExhaust : IPileDecor
 		_arc = arcMask;
 
 		// 3c. 原版 3D Joker（黑身白脸，1:1 贴屏幕左上角，渲染画面的上 / 左 / 下边缘就是屏幕边缘）
-		for (int i = 0; i < 16; i++) _sk3d[i] = Fx.Tex($"pile_sk3d_{i:00}");
+		for (int i = 0; i < 11; i++) _sk3d[i] = Fx.Tex($"pile_sk3d_{i:00}");
 		if (_sk3d[0] != null)
 		{
 			_m3d = new Sprite2D { Texture = _sk3d[0], Centered = false, Scale = Vector2.One * k, TextureFilter = CanvasItem.TextureFilterEnum.Linear, Visible = false };
@@ -174,13 +174,11 @@ public sealed class PileExhaust : IPileDecor
 		_arc.Visible = !cut && t >= 0.05f;
 		if (!cut)
 		{
-			// 原版 3D Joker：main_0015（全身，0.08 → 0.30）→ main_0016（停一下，0.30 → 0.35）→ main_0017（俯身，0.35 → HandAt）
 			_portrait.Modulate = new Color(1f, 1f, 1f, 0f);
 			if (_m3d != null)
 			{
-				int idx = t < 0.30f ? Mathf.Clamp((int)((t - 0.08f) / 0.22f * 11f), 0, 10)
-					: t < 0.35f ? 11 + Mathf.Clamp((int)((t - 0.30f) / 0.05f * 2f), 0, 1)
-					: 13 + Mathf.Clamp((int)((t - 0.35f) / (HandAt - 0.35f) * 3f), 0, 2);
+				// 原版 frame_0111 → 0120：侧身插兜站着（近景 3 帧 → 中景 8 帧），0.08 → HandAt 播完
+				int idx = Mathf.Clamp((int)((t - 0.08f) / (HandAt - 0.08f) * 11f), 0, 10);
 				if (_sk3d[idx] is Texture2D f && _m3d.Texture != f) _m3d.Texture = f;
 				float slide = Ease5.OutExpo(Mathf.Clamp((t - 0.08f) / 0.16f, 0f, 1f));
 				_m3d.Position = new Vector2(-160f * k * (1f - slide), 0f);
@@ -267,5 +265,5 @@ public sealed class PileExhaust : IPileDecor
 		parent.AddChild(new Sprite2D { Texture = t, Position = at * _k, Scale = Vector2.One * w * _k / t.GetWidth(), Modulate = tint, TextureFilter = CanvasItem.TextureFilterEnum.Linear });
 	}
 
-	public static readonly string[] Textures = { "pile_sk3d_00", "pile_sk3d_01", "pile_sk3d_02", "pile_sk3d_03", "pile_sk3d_04", "pile_sk3d_05", "pile_sk3d_06", "pile_sk3d_07", "pile_sk3d_08", "pile_sk3d_09", "pile_sk3d_10", "pile_sk3d_11", "pile_sk3d_12", "pile_sk3d_13", "pile_sk3d_14", "pile_sk3d_15", "pile_campskill", "pile_txt_menu", "pile_txt_cmdselect", "pile_txt_command", "pile_txt_command_ol" };
+	public static readonly string[] Textures = { "pile_sk3d_00", "pile_sk3d_01", "pile_sk3d_02", "pile_sk3d_03", "pile_sk3d_04", "pile_sk3d_05", "pile_sk3d_06", "pile_sk3d_07", "pile_sk3d_08", "pile_sk3d_09", "pile_sk3d_10", "pile_campskill", "pile_txt_menu", "pile_txt_cmdselect", "pile_txt_command", "pile_txt_command_ol" };
 }

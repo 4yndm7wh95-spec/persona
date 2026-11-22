@@ -551,14 +551,13 @@ def pile_textures():
     # 每张另出一张黑描边版 _ol（每边多 PILE_TEXT_OL 像素，PileText.OlPad）
     for name, im in pile_texts():
         yield name, im
-    # 消耗堆（SKILL 页）入场的 3D Joker（research/p5r/menu3d_pages/skill，Codex 按 SKILL 页镜头渲的）：main_0015 11 帧 + main_0016 2 帧 + main_0017 3 帧，
-    # 1:1 显示、贴屏幕左上角（渲染画面的上 / 左 / 下边缘正好是屏幕边缘，人物不会被截断在画面中间）；裁掉右边空白
+    # 消耗堆（SKILL 页）入场的 3D Joker（research/p5r/menu3d_pages/skill，Codex v2 按姿势重认的：侧身插兜站着）：
+    # 近景 near/cross_113_20 f0004–f0006（main_0015 淡入 main_0113）+ 中景 mid/main_0113 f0006–f0013，共 11 帧（对应原版 frame_0111–0120）。
+    # 1:1 显示、贴屏幕左上角（渲染画面的上 / 左 / 下边缘就是屏幕边缘，人物不会被截断在画面中间）；裁掉右边空白
     sk = ROOT / "research/p5r/menu3d_pages/skill"
-    i = 0
-    for clip in ("main_0015", "main_0016", "main_0017"):
-        for f in sorted((sk / clip).glob("f*.png")):
-            yield f"pile_sk3d_{i:02d}", Image.open(f).convert("RGBA").crop((0, 0, 1040, 1080))
-            i += 1
+    frames = [sk / f"near/cross_113_20/f{i:04d}.png" for i in (4, 5, 6)] + [sk / f"mid/main_0113/f{i:04d}.png" for i in range(6, 14)]
+    for i, f in enumerate(frames):
+        yield f"pile_sk3d_{i:02d}", Image.open(f).convert("RGBA").crop((0, 0, 1040, 1080))
     # 预告信（tools/p5/pile/deskew_cards.py 拉正的原版）：正面 + 7 封信的正文（每次打开随机一封当背面）；运行时生成 mipmap
     yield "pile_card_front", Image.open(ROOT / "art/p5/ui/pile/calling_card.png").convert("RGBA")
     for f in sorted((ROOT / "art/p5/ui/pile/letters").glob("letter_*.png")):
