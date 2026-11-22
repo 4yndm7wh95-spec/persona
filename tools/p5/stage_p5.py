@@ -477,7 +477,7 @@ PILE_W = 1.34          # 预缩到 1080p 显示宽度的这么多倍（1440p 下
 PILE_SPR = ROOT / "research/p5r/ui/camp_main/sprites"
 # 名字 → (来源, 1080p 下显示宽度, 描边半径 px@1080p 或 0)
 PILE_TEX = {
-    "pile_camptop": (ROOT / "research/p5r/art/portrait/BASE__P5_CAMPTOP_2D__e441c53ea3.png", 1200, 0),
+    "pile_camptop": (ROOT / "research/p5r/art/portrait/BASE__P5_CAMPTOP_2D__e441c53ea3.png", 1510, 0),   # 原版比例（实机截图量的）
     "pile_txt_command": (PILE_SPR / "00201.png", 643, 7),
     "pile_txt_dontlook": (PILE_SPR / "00046.png", 413, 0),
     "pile_txt_likethat": (PILE_SPR / "00047.png", 292, 0),
@@ -506,14 +506,13 @@ def pile_textures():
             yield name + "_ol", ol
         yield name, im
     # 原版菜单 3D Joker 的入场动作（research/p5r/menu3d/main_0000，Codex 从 MENU_C0001 GMD/GAP 渲的 12 帧，1920×1080）：
-    # 裁到 12 帧的并集包围盒 (828,125)-(1920,1080)，按游戏里 0.67 倍显示 ×1.34 预缩（PileDraw.M3d*）
+    # 裁到 12 帧的并集包围盒 (828,125)-(1920,1080)，游戏里显示 0.843 倍，×1.34 会超过原尺寸 → 保留原尺寸（PileDraw.M3d*）
     m3d = ROOT / "research/p5r/menu3d/main_0000"
     for i in range(12):
         f = m3d / f"f{i:04d}.png"
         if f.exists():
             im = Image.open(f).convert("RGBA").crop((828, 125, 1920, 1080))
-            k = 0.67 * PILE_W
-            yield f"pile_m3d_{i:02d}", im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
+            yield f"pile_m3d_{i:02d}", im
     # 预告信（tools/p5/pile/deskew_cards.py 拉正的原版）：正面 + 7 封信的正文（每次打开随机一封当背面）；运行时生成 mipmap
     yield "pile_card_front", Image.open(ROOT / "art/p5/ui/pile/calling_card.png").convert("RGBA")
     for f in sorted((ROOT / "art/p5/ui/pile/letters").glob("letter_*.png")):

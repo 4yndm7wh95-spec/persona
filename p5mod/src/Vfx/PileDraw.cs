@@ -24,11 +24,13 @@ public sealed class PileDraw
 {
 	// ── 版式（1920×1080）──
 	public const float GridX = 70f, GridTop = 168f, GridBottom = 1046f;
-	public const int Cols = 5;
-	public const float CardW = 158f, CellW = 172f, CellH = 236f;
-	private static readonly Vector2 PortraitAt = new(788f, 158f);
-	private const float PortraitW = 1200f;
-	private static readonly Vector2 PalmAt = new(1172f, 590f);           // 预告信中心（用户 2026-11-22 定：白手掌心偏左一点）
+	public const int Cols = 4;
+	public const float CardW = 168f, CellW = 182f, CellH = 250f;
+	// 立绘按原版比例（实机截图量的：比第一版大 1.258 倍，手指尖顶到画面上缘）；牌格子改 4 列，手掌左边缘正好在牌格子右边
+	private static readonly Vector2 PortraitAt = new(580f, -6f);
+	private const float PortraitW = 1510f;
+	private const float CardScale = 1.258f;
+	private static readonly Vector2 PalmAt = new(1063f, 537f);           // 预告信中心（用户 2026-11-22 定的白手掌心偏左一点，随立绘等比换算）
 	private const float PanelEdgeTop = 1150f, PanelEdgeBottom = 1000f;  // 星纹面板左边的斜边
 	private static readonly Vector2 WipeFrom = new(0f, 1080f);          // 抽牌堆按钮在左下角
 
@@ -50,7 +52,7 @@ public sealed class PileDraw
 	private readonly Sprite2D? _m3d;
 	private readonly ShaderMaterial? _split;
 	private readonly bool _has3d;
-	private static readonly Vector2 M3dAt = new(1215f, 256f), M3dSize = new(732f, 640f);   // 1080p 下的左上角和大小（最后一帧的头对齐 2D 定格图的头）
+	private static readonly Vector2 M3dAt = new(1117f, 117f), M3dSize = new(921f, 805f);   // 1080p 下的左上角和大小（最后一帧的头对齐 2D 定格图的头）
 
 	public PileDraw(Control root, Vector2 view, int count, string caption)
 	{
@@ -107,7 +109,7 @@ public sealed class PileDraw
 		}
 
 		// 牌数（原版页码大数字，白字黑描边，叠在 Joker 右边）
-		Node2D digits = new() { Position = new Vector2(1770f * k + _rx, 566f * k) };
+		Node2D digits = new() { Position = new Vector2(1790f * k + _rx, 690f * k) };
 		root.AddChild(digits);
 		string n = Math.Clamp(count, 0, 999).ToString();
 		float dw = n.Length >= 3 ? 104f : 140f;
@@ -130,7 +132,7 @@ public sealed class PileDraw
 		_pops.Add((_command, _command.Position, _command.Rotation, 0.46f));
 
 		// 6. 预告信
-		_card = CallingCard.Create(root, PalmAt * k + new Vector2(_rx, 0f), k);
+		_card = CallingCard.Create(root, PalmAt * k + new Vector2(_rx, 0f), k, CardScale);
 
 		Enter(0f);
 	}
@@ -186,12 +188,28 @@ public sealed class PileDraw
 			float m3dA = Mathf.Clamp((t - 0.05f) / 0.02f, 0f, 1f) * (1f - Mathf.Clamp((t - 0.385f) / 0.025f, 0f, 1f));
 			_m3d.Visible = m3dA > 0.001f;
 			_m3d.Modulate = new Color(1f, 1f, 1f, m3dA);
-			float pop = Mathf.Clamp((t - 0.36f) / 0.18f, 0f, 1f);
-			float b = Ease5.OutBack(pop);
-			_portrait.Position = home + new Vector2(0f, 50f) * k * (1f - b);
-			_porSprite.Scale = Vector2.One * _porScale * Mathf.Lerp(0.96f, 1f, b);
+			// 手掌拍下来（用户：要有力量感）：从放大 1.22 倍猛地砸下去（0.36 → 0.42，加速），砸到底压扁到 0.965，
+			// 再弹回 1.0（0.42 → 0.56）；砸中那一下整个界面短促一震（衰减 0.24s）+ 低沉的重击声
+			float scale, drop;
+			if (t < SlamAt)
+			{
+				float d = Mathf.Clamp((t - 0.36f) / (SlamAt - 0.36f), 0f, 1f);
+				float e = d * d * d;
+				scale = Mathf.Lerp(1.22f, 0.965f, e);
+				drop = Mathf.Lerp(-70f, 8f, e);
+			}
+			else
+			{
+				float r = Mathf.Clamp((t - SlamAt) / 0.14f, 0f, 1f);
+				float b = Ease5.OutBack(r);
+				scale = Mathf.Lerp(0.965f, 1f, b);
+				drop = Mathf.Lerp(8f, 0f, b);
+			}
+			_portrait.Position = home + new Vector2(0f, drop) * k;
+			_porSprite.Scale = Vector2.One * _porScale * scale;
 			_por.SetShaderParameter("fill_amt", 0f);
 			_portrait.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((t - 0.36f) / 0.025f, 0f, 1f));
+			Shake(t);
 		}
 		else
 		{
@@ -218,10 +236,29 @@ public sealed class PileDraw
 		}
 	}
 
+	private const float SlamAt = 0.42f;
+	private bool _slammed;
+
+	/// <summary>手掌砸中：整个界面（root）短促一震，衰减 0.24s；第一次到这一刻时放重击声。</summary>
+	private void Shake(float t)
+	{
+		if (t >= SlamAt && !_slammed)
+		{
+			_slammed = true;
+			Sfx.Play(Sfx.SubBoom, 0.7f);
+			Sfx.Play(Sfx.Slam, 0.4f);
+		}
+		float a = t < SlamAt ? 0f : Mathf.Max(0f, 1f - (t - SlamAt) / 0.24f);
+		a *= a;
+		float u = (t - SlamAt) * 34f;
+		_root.Position = a <= 0f ? Vector2.Zero : new Vector2(Mathf.Sin(u * 1.3f) * 6f, Mathf.Cos(u) * 14f) * _k * a;
+	}
+
 	private void Exit(float e)
 	{
 		float k = _k;
 		if (_m3d != null) _m3d.Visible = false;
+		_root.Position = Vector2.Zero;
 		// 面板先往右退（0 → 0.7），红底晚一点从后往按钮那个角收（0.15 → 1，先慢后快）
 		float pe = Ease5Ext.InOutCubic(Mathf.Clamp(e / 0.7f, 0f, 1f));
 		_panel.SetShaderParameter("edge_shift", pe * (_view.X - PanelEdgeBottom * k - _rx + 40f * k));
@@ -435,8 +472,9 @@ public static class Ease5Ext
 public sealed class CallingCard
 {
 	public static readonly string[] Letters = { "kamoshida", "madarame", "kaneshiro", "futaba", "okumura", "sae", "maruki" };
-	private const float W = 276f, H = 198f, Thick = 6f, Focal = 1100f;
-	private static readonly Vector2 Box = new(400f, 320f);         // 显示框（1080p 像素），转到斜着也装得下
+	private const float Focal = 1100f;
+	private float W = 276f, H = 198f, Thick = 6f;
+	private Vector2 Box = new(400f, 320f);                          // 显示框（1080p 像素），转到斜着也装得下
 	private const float BaseSpin = 36f, KickDeg = 120f, KickOmega = 9f;
 	private static readonly Dictionary<string, Texture2D> Mipped = new();
 
@@ -449,16 +487,17 @@ public sealed class CallingCard
 	private float _k;
 	private float _base, _extra, _vel, _target, _born = -1f, _alpha;
 
-	public static CallingCard? Create(Control parent, Vector2 center, float k)
+	public static CallingCard? Create(Control parent, Vector2 center, float k, float size = 1f)
 	{
 		Texture2D? front = Mip("pile_card_front");
 		Texture2D? back = Mip("pile_letter_" + Letters[(int)(GD.Randi() % (uint)Letters.Length)]);
 		if (front == null || back == null) return null;
 		CallingCard c = new() { _center = center, _k = k };
-		Vector2I px = (Vector2I)(Box * k * 2f).Ceil();
+		c.W *= size; c.H *= size; c.Thick *= size; c.Box *= size;
+		Vector2I px = (Vector2I)(c.Box * k * 2f).Ceil();
 		c._vp = new SubViewport { Size = px, TransparentBg = true, OwnWorld3D = true, Msaa3D = Viewport.Msaa.Msaa4X, RenderTargetUpdateMode = SubViewport.UpdateMode.Always };
 		parent.AddChild(c._vp);
-		Camera3D cam = new() { Position = new Vector3(0f, 0f, Focal), Fov = Mathf.RadToDeg(2f * Mathf.Atan(Box.Y * 0.5f / Focal)), Near = 10f, Far = 4000f };
+		Camera3D cam = new() { Position = new Vector3(0f, 0f, Focal), Fov = Mathf.RadToDeg(2f * Mathf.Atan(c.Box.Y * 0.5f / Focal)), Near = 10f, Far = 4000f };
 		c._vp.AddChild(cam);
 		// 歪一点（绕 Z -8°）再后仰一点（绕 X 8°），里面那层绕 Y 转
 		Node3D tilt = new() { RotationDegrees = new Vector3(8f, 0f, -8f) };
@@ -467,13 +506,13 @@ public sealed class CallingCard
 		tilt.AddChild(c._spin);
 		c._front = Face(front);
 		c._back = Face(back);
-		c._spin.AddChild(new MeshInstance3D { Mesh = new QuadMesh { Size = new Vector2(W, H) }, MaterialOverride = c._front, Position = new Vector3(0f, 0f, Thick * 0.5f + 0.05f) });
-		c._spin.AddChild(new MeshInstance3D { Mesh = new QuadMesh { Size = new Vector2(W, H) }, MaterialOverride = c._back, Position = new Vector3(0f, 0f, -Thick * 0.5f - 0.05f), RotationDegrees = new Vector3(0f, 180f, 0f) });
-		c._spin.AddChild(new MeshInstance3D { Mesh = new BoxMesh { Size = new Vector3(W - 0.5f, H - 0.5f, Thick) }, MaterialOverride = new StandardMaterial3D { ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, AlbedoColor = new Color(0.27f, 0.024f, 0.04f) } });
+		c._spin.AddChild(new MeshInstance3D { Mesh = new QuadMesh { Size = new Vector2(c.W, c.H) }, MaterialOverride = c._front, Position = new Vector3(0f, 0f, c.Thick * 0.5f + 0.05f) });
+		c._spin.AddChild(new MeshInstance3D { Mesh = new QuadMesh { Size = new Vector2(c.W, c.H) }, MaterialOverride = c._back, Position = new Vector3(0f, 0f, -c.Thick * 0.5f - 0.05f), RotationDegrees = new Vector3(0f, 180f, 0f) });
+		c._spin.AddChild(new MeshInstance3D { Mesh = new BoxMesh { Size = new Vector3(c.W - 0.5f, c.H - 0.5f, c.Thick) }, MaterialOverride = new StandardMaterial3D { ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, AlbedoColor = new Color(0.27f, 0.024f, 0.04f) } });
 		// 落在手上的投影（跟着卡的宽度变化）
 		c._shadow = new Polygon2D { Color = new Color(0.12f, 0f, 0f, 0.3f), Polygon = Fx.Circle(1f, 48), Material = Soft };
 		parent.AddChild(c._shadow);
-		c._view = new TextureRect { Texture = c._vp.GetTexture(), Size = Box * k, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, TextureFilter = CanvasItem.TextureFilterEnum.Linear, MouseFilter = Control.MouseFilterEnum.Ignore, Modulate = new Color(1f, 1f, 1f, 0f) };
+		c._view = new TextureRect { Texture = c._vp.GetTexture(), Size = c.Box * k, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale, TextureFilter = CanvasItem.TextureFilterEnum.Linear, MouseFilter = Control.MouseFilterEnum.Ignore, Modulate = new Color(1f, 1f, 1f, 0f) };
 		parent.AddChild(c._view);
 		return c;
 	}
@@ -528,7 +567,7 @@ void fragment() { float r = length(local); COLOR.a *= 1.0 - smoothstep(0.0, 1.0,
 	{
 		if (!GodotObject.IsInstanceValid(_view)) return;
 		dt = Mathf.Clamp(dt, 0f, 1f / 30f);
-		if (_born < 0f && now >= 0.4f) _born = now;
+		if (_born < 0f && now >= 0.48f) _born = now;              // 手掌砸下去（0.42s）之后才出现
 		float life = _born < 0f ? 0f : now - _born;
 		float ramp = Mathf.Clamp(life / 0.6f, 0f, 1f);
 		_base = (_base + BaseSpin * ramp * ramp * (3f - 2f * ramp) * dt) % 360f;
@@ -558,8 +597,8 @@ void fragment() { float r = length(local); COLOR.a *= 1.0 - smoothstep(0.0, 1.0,
 		_view.Position = _center - size * 0.5f + new Vector2(0f, bob);
 		_view.Modulate = new Color(1f, 1f, 1f, _alpha);
 		float sw = (Mathf.Abs(c) * W * 0.5f + 10f) * _k * scale;
-		_shadow.Position = _center + new Vector2(30f, 128f) * _k;
-		_shadow.Scale = new Vector2(sw * 1.15f, 30f * _k * scale);
+		_shadow.Position = _center + new Vector2(30f, 128f) * _k * (H / 198f);
+		_shadow.Scale = new Vector2(sw * 1.15f, 30f * _k * scale * (H / 198f));
 		_shadow.Modulate = new Color(1f, 1f, 1f, _alpha);
 	}
 }
