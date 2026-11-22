@@ -39,7 +39,7 @@ def stars(w, h, base=118, n=8, inner=0.46):
         img = np.where(dist < 1, v, img)
     return Image.fromarray(img.astype(np.uint8)).convert('RGBA')
 
-def main(out):
+def main(out, card_on=True, bg='flat'):
     cv = Image.new('RGBA', (W * SS, H * SS))
     # 背景：不透明深红 + 轻微纸张明暗（低频，不是网点）
     g = np.linspace(0, 1, W * SS)[None, :] * 0.35 + np.linspace(0, 1, H * SS)[:, None] * 0.25
@@ -49,6 +49,14 @@ def main(out):
     base = np.array([138, 10, 18], np.float32)
     rgb = base[None, None, :] * (1 - g[..., None]) * (1 + p[..., None] * 0.10)
     cv.alpha_composite(Image.fromarray(np.clip(rgb, 0, 255).astype(np.uint8)).convert('RGBA'))
+    if bg == 'stars':
+        # 左侧：同一份原版星纹，红上压暗红（同色系），远处感 = 放大 + 轻微模糊
+        rs = stars(W * SS, H * SS, base=160, n=8)
+        v = np.asarray(rs.convert('L'), np.float32) / 232.0           # 1=底色 0=星纹墨色
+        dark = base * 0.50; lite = base * 0.86
+        rgbs = (dark[None, None, :] * (1 - v[..., None]) + lite[None, None, :] * v[..., None]) * (1 - g[..., None] * 0.9) * (1 + p[..., None] * 0.08)
+        rimg = Image.fromarray(np.clip(rgbs, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.2 * SS)).convert('RGBA')
+        cv.alpha_composite(rimg)
     # 星纹面板：右侧，左边是斜边
     st = stars(W * SS, H * SS)
     mask = Image.new('L', (W * SS, H * SS)); ImageDraw.Draw(mask).polygon([(1150 * SS, 0), (W * SS, 0), (W * SS, H * SS), (1000 * SS, H * SS)], fill=255)
@@ -79,11 +87,12 @@ def main(out):
     d2.text((6 * SS, 6 * SS), '抽牌堆 · 23 张', font=f, fill=(240, 240, 240), stroke_width=4 * SS, stroke_fill=(10, 10, 10))
     place(cv, cap, 1700, 1052, 1 / SS, 4)
     # 预告信：悬在白手掌心上方，正在转（横向压窄表示转到一半）
-    card = Image.open('art/p5/ui/pile/calling_card.png').convert('RGBA')
-    sq = card.resize((int(card.width * 0.62), card.height), Image.LANCZOS)
-    glow = Image.new('RGBA', (sq.width + 120, sq.height + 120)); glow.alpha_composite(tint(sq, (255, 255, 255)), (60, 60))
-    glow = glow.filter(ImageFilter.GaussianBlur(26)); glow.putalpha(glow.getchannel('A').point(lambda v: v * 0.55))
-    place(cv, glow, 1125, 520, 0.44, -8); place(cv, sq, 1125, 520, 0.44, -8)
+    if card_on:
+      card = Image.open('art/p5/ui/pile/calling_card.png').convert('RGBA')
+      sq = card.resize((int(card.width * 0.62), card.height), Image.LANCZOS)
+      glow = Image.new('RGBA', (sq.width + 120, sq.height + 120)); glow.alpha_composite(tint(sq, (255, 255, 255)), (60, 60))
+      glow = glow.filter(ImageFilter.GaussianBlur(26)); glow.putalpha(glow.getchannel('A').point(lambda v: v * 0.55))
+      place(cv, glow, 1125, 520, 0.44, -8); place(cv, sq, 1125, 520, 0.44, -8)
     # 牌格子（左侧，占位卡）
     fb = ImageFont.truetype(FONT, 40 * SS); fz = ImageFont.truetype(CJK, 26 * SS); fn = ImageFont.truetype(CJK, 15 * SS)
     cols = {'攻击': (182, 48, 40), '技能': (40, 96, 160), '能力': (196, 150, 40)}
@@ -132,4 +141,5 @@ def main(out):
     cv.resize((W, H), Image.LANCZOS).convert('RGB').save(out, quality=92)
 
 if __name__ == '__main__':
-    main(sys.argv[1] if len(sys.argv) > 1 else 'docs/p5/preview/pile_draw_layout_v1.png')
+    a = sys.argv[1:]
+    main(a[0] if a else 'docs/p5/preview/pile_draw_layout_v1.png', card_on='nocard' not in a, bg='stars' if 'stars' in a else 'flat')
