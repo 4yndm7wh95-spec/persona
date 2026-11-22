@@ -32,7 +32,7 @@ def main(out):
     fb = ImageFont.truetype(FONT, 56 * S); fs = ImageFont.truetype(FONT, 26 * S); fz = ImageFont.truetype(CJK, 26 * S)
     rows = [('EXHAUST', '消耗', 12, None), ('ATTACK', '攻击', 4, (182, 48, 40)), ('SKILL', '技能', 6, (40, 96, 200)), ('POWER', '能力', 1, (220, 170, 40)), ('STATUS', '状态', 1, (120, 120, 120))]
     y = 30
-    for i, (en, zh, n, col) in enumerate(rows):
+    for i, (en, zh, n, col) in enumerate(rows if '--list' in sys.argv else []):
         key = f'party_0{i + 1}_01'
         p = P[key]
         sc = 1.0 if i == 0 else 0.82
@@ -60,15 +60,16 @@ def main(out):
     # 6. 右：消耗的牌（原版技能列表的位置），4 列
     fn = ImageFont.truetype(CJK, 15 * S)
     cols = [(182, 48, 40)] * 4 + [(40, 96, 160)] * 6 + [(196, 150, 40)] + [(110, 110, 110)]
-    cw, ch, g = 160, 225, 12
-    x0, y0 = 1150, 200
+    cw, ch, g = 158, 222, 34
+    x0, y0 = 1130, 215
     for i, c in enumerate(cols):
         r_, k_ = divmod(i, 4)
+        gy = 30
         cd = Image.new('RGBA', (cw * S, ch * S)); cdr = ImageDraw.Draw(cd)
         cdr.rounded_rectangle([0, 0, cw * S - 1, ch * S - 1], 10 * S, fill=(30, 28, 32), outline=(150, 150, 150), width=3 * S)
         cdr.rectangle([10 * S, 26 * S, cw * S - 10 * S, 120 * S], fill=tuple(int(v * 0.7) for v in c))
         cdr.text((12 * S, 130 * S), '卡牌占位', font=fn, fill=(170, 170, 170))
-        place(cv, cd, x0 + k_ * (cw + g) + cw / 2, y0 + r_ * (ch + g) + ch / 2, 1 / S, 0)
+        place(cv, cd, x0 + k_ * (cw + g) + cw / 2, y0 + r_ * (ch + gy) + ch / 2, 1 / S, 0)
     # 7. COMMAND（原版）+ 说明
     place(cv, outline(spr('00201'), 10), 760, 960, 0.36, 4); place(cv, spr('00201'), 760, 960, 0.36, 4)
     cap = Image.new('RGBA', (420 * S, 60 * S)); ImageDraw.Draw(cap).text((6 * S, 6 * S), '消耗堆 · 12 张', font=ImageFont.truetype(CJK, 30 * S), fill=(240, 240, 240), stroke_width=4 * S, stroke_fill=(10, 10, 10))
