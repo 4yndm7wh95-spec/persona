@@ -42,7 +42,7 @@ for row, clip in enumerate(clips):
 sheet.save(folder / "all_clips.png")
 
 for label, ref, name, number in (
-    ("main", 52, "main_0000", 6),
+    ("main", 52, "main_0000", 9),
     ("item", 182, "main_0020", 8),
     ("skill", 113, "main_0015", 5),
     ("equip", 238, "main_0030", 6),
@@ -60,8 +60,21 @@ for label, ref, name, number in (
         render.putalpha(render.getchannel("A").point(lambda a: a // 2))
         Image.alpha_composite(real, render).save(folder / "match_frame_0052.png")
 
+sequence = Image.new("RGB", (1280, 6 * 202), "#273448")
+labels = ImageDraw.Draw(sequence)
+for index in range(12):
+    x, y = index % 2 * 640, index // 2 * 202
+    number = 49 + index // 2
+    actual = reference(number, (320, 180))
+    render = frame("main_0000", index, actual.size)
+    sequence.paste(actual, (x, y))
+    sequence.paste(render, (x + 320, y), render)
+    labels.text((x + 4, y + 182), f"P5R {number:04}", fill="white")
+    labels.text((x + 324, y + 182), f"main_0000 / f{index:04}", fill="white")
+sequence.save(folder / "compare_main_seq.png")
+
 files = list(output.rglob("*.png"))
-assert len(files) == sum(len(c["frames"]) for c in clips) + 6
+assert len(files) == sum(len(c["frames"]) for c in clips) + 7
 assert all(p.stat().st_size < 20_000_000 for p in files)
 assert sum(p.stat().st_size for p in files) < 400_000_000
 print(f"{len(clips)} clips; {len(files)} PNGs; {sum(p.stat().st_size for p in files)} bytes")
