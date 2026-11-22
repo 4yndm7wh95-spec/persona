@@ -185,7 +185,7 @@ public sealed class PileDraw
 			int idx = Mathf.RoundToInt(Mathf.Clamp((t - 0.06f) / 0.31f, 0f, 1f) * 11f);
 			if (_m3dFrames[idx] is Texture2D f && _m3d.Texture != f) _m3d.Texture = f;
 			_split.SetShaderParameter("edge", 1.25f - 1.6f * Ease5Ext.InOutCubic(Mathf.Clamp((t - 0.08f) / 0.26f, 0f, 1f)));
-			float m3dA = Mathf.Clamp((t - 0.05f) / 0.02f, 0f, 1f) * (1f - Mathf.Clamp((t - 0.385f) / 0.025f, 0f, 1f));
+			float m3dA = t >= 0.36f ? 0f : Mathf.Clamp((t - 0.05f) / 0.02f, 0f, 1f);   // 手掌砸进来那一帧硬切，不留半透明重影
 			_m3d.Visible = m3dA > 0.001f;
 			_m3d.Modulate = new Color(1f, 1f, 1f, m3dA);
 			// 手掌拍下来（用户：要有力量感）：从放大 1.22 倍猛地砸下去（0.36 → 0.42，加速），砸到底压扁到 0.965，
@@ -208,7 +208,7 @@ public sealed class PileDraw
 			_portrait.Position = home + new Vector2(0f, drop) * k;
 			_porSprite.Scale = Vector2.One * _porScale * scale;
 			_por.SetShaderParameter("fill_amt", 0f);
-			_portrait.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((t - 0.36f) / 0.025f, 0f, 1f));
+			_portrait.Modulate = new Color(1f, 1f, 1f, t >= 0.36f ? 1f : 0f);
 			Shake(t);
 		}
 		else
