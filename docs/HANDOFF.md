@@ -6,6 +6,33 @@
 
 ---
 
+## 2026-11-23 · 会话 E 交接（总览，最新）—— 分支 `claude/confirm-next-tasks-k5wu6t`，等合并
+
+### 分支状态
+- `claude/confirm-next-tasks-k5wu6t` @ `f1cd1b56`（加上这条交接），已推送、工作区干净、`bash tools/p5/cloud/check.sh` 通过。
+- 它已经包含 `codex/p5-0951-integration`（555c06c0）、`claude/p5-pile-ui`（c9eff0b9）、`claude/confident-hypatia-nropgi`（17d16253）、`claude/exciting-babbage-lm8ubb`：
+  这四个都是它的祖先 → 合进 integration 是**快进**，没有冲突。
+- 版本号没动（`P5Joker.json` 0.9.72）。**出包前跑 `tools/p5/charselect_assets.py` + `tools/p5/stage_p5.py`**（新贴图 `reward_* / icon_top* / battle_* / hud_* / pile_dc_* / pile_dc3d_*` 都没提交进 pck_stage）。
+
+### 本会话做完的（按时间，细节见下面各条）
+1. 选卡界面「夺宝」：剪报素材、TREASURE 在横幅下、STOLEN 印章延迟交结果、原版横幅 / 跳过按钮换皮、入场整体放慢 + 每个部件都有切入（`Vfx/RewardFx.cs`）。
+2. Joker 头像（顶栏 / 战绩 / 联机）、选人按钮图。
+3. 战斗开始「TAKE YOUR HEART!」/ 回合横幅 / ONE MORE!（左上角剪报纸条，`Vfx/BattleUiFx.cs`）；能量球、结束回合按钮换皮（`Vfx/HudSkin.cs`）。
+4. 实机修正：总攻击立绘分辨率 + 4×MSAA、出牌击杀时剪影（去材质 / 套运行时 Spine 皮）、扫腿格挡、商店 Joker 0.75 倍、华丽收场光效硬边框。
+5. 群蛇形态：用户定稿 = 另一会话改动之前的版本 + 獠牙更明显 + 鳞片（加重 80%）。**分布别再改。**
+6. 弃牌堆 = ITEM 页（`Vfx/PileDiscard.cs`）：排版 v4、左边类型列表（真实张数 / 已升级）、右下斜带压在牌上面、3D Joker 逐帧入场 → 切 2D 立绘。
+
+### 全部只在预览里看过、没进游戏的
+选卡界面入场新动画、战斗横幅 / HUD 的最终大小、商店缩放、华丽收场去边框、群蛇鳞片强度、**弃牌堆整页**（另外两页牌堆也没进过游戏，见牌堆会话交接）。
+
+### 没做完 / 可以接着做
+- **弃牌堆入场不是逐帧精确拟合**：动作 main_0010 + 拟合的末帧机位 + 粗量的推近路径（`tools/p5/menu3d/item_entrance.py` 文件头有结论）。要更像原版，照 `tools/p5/menu3d/fit/README.md` 第 3 步逐帧量眼睛解机位。
+- 弃牌堆的排列切换开关是正的，没跟着斜带歪（用户还没说要不要改）。
+- 牌组（EQUIP 页）还走原版；线索在 `tools/p5/menu3d/fit/README.md`（原版序号约 233–243，立绘 CAMPEQUIP_2D01/02/03）。
+- 用户问过但没定的：能量球大小（这次没缩）。
+
+---
+
 ## 2026-11-23 · 会话 E：弃牌堆（ITEM 页）做进游戏代码 —— 接手牌堆会话的「进行中」，合了 `claude/p5-pile-ui`
 
 - 用户在本会话改了排版（v3：左边列表收窄、右缘斜直边 + 白边 + 内侧红条、每行跟着斜边错开；v4：右下斜带往下压、牌区多约一排），定稿 `docs/p5/preview/pile_discard_layout_v4.png`；
