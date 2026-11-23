@@ -534,6 +534,11 @@ def pile_textures():
             ol.putalpha(a)
             yield name + "_ol", ol
         yield name, im
+    # 弃牌堆入场的原版菜单 3D Joker（tools/p5/menu3d/item_entrance.py 渲的 10 帧，research/p5r/menu3d_item）→ pile_dc3d_00…09
+    for i in range(10):
+        f = ROOT / f"research/p5r/menu3d_item/f{i:02d}.png"
+        if f.exists():
+            yield f"pile_dc3d_{i:02d}", Image.open(f).convert("RGBA")
     # 弃牌堆（ITEM 页）：tools/p5/pile/export_discard.py 从排版图分层导出的 1080p 图层 → pile_dc_<名字>（原尺寸，PileDiscard.cs 按 1080p 摆）
     for f in sorted((ROOT / "art/p5/ui/pile_discard").glob("*.png")):
         yield "pile_dc_" + f.stem, Image.open(f).convert("RGBA")

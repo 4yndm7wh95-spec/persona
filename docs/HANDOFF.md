@@ -14,7 +14,11 @@
   黑块 + 星纹条、撞色立绘、标题牌、COMMAND、每行头像底 / 图标、两个标签、原版大 / 小数字和下划线。运行时：红底、面板斜边、每行的张数 / 已升级数和文字（按真实弃牌堆统计，`PileScreen.DiscardStats`，0 张的行半透明）、
   右下斜带和它下面的红底（下一帧挪到牌上面，PileHead 再挪到它上面）、入场 / 退场。改排版图以后要重跑 export_discard.py。
 - `PileScreen`：弃牌堆接上（`Enabled` 加 Discard）；手掌砸下的声音只给另两页；排列方式单独记 `P5Settings.DiscardOrder`。牌在立绘上面一层，所以 GridX 右移到 1100、CellW 182。
-- 预览场景 `pile_discard`（`docs/p5/preview/pile_discard_v1.mp4`）。**没进过游戏**。牌组（EQUIP）还走原版。
+- **入场的 3D Joker 逐帧**（用户：立绘要有每一帧的动画，同另两页）：`tools/p5/menu3d/item_entrance.py` 渲 10 帧到 `research/p5r/menu3d_item`（stage 成 `pile_dc3d_*`）。
+  artfit 对 29 个片段末帧拟合立绘剪影没有明显赢家（立绘左上举起的手都对不上，结论在脚本文件头），所以动作用 main_0010（转身、手扫过），
+  最后一帧用拟合的机位，前面沿视线拉远 + 平移到原版那一帧头的位置（粗量）。代码里 `PileDiscard.M3dAt` / `Map`，3D 帧也套斜线撞色（SlantShader），CutAt 硬切 2D 立绘。
+  **不是 SKILL 页那种逐帧精确拟合**；要更像原版，按 `tools/p5/menu3d/fit/README.md` 第 3 步逐帧量眼睛再解机位。
+- 预览场景 `pile_discard`（`docs/p5/preview/pile_discard_v2.mp4`）。**没进过游戏**。牌组（EQUIP）还走原版。
 
 ---
 

@@ -21,7 +21,7 @@ public sealed class PileDiscard : IPileDecor
 	public float CardW => 158f;
 	public float CellW => 182f;
 	public float CellH => 252f;
-	public float CardsStart => 0.4f;
+	public float CardsStart => CutAt + 0.02f;
 	public float ExitTime => 0.32f;
 	public Vector2 FocusAt => new(560f, 540f);
 	public Vector2 InfoAt => new(980f, 300f);
@@ -43,6 +43,23 @@ public sealed class PileDiscard : IPileDecor
 		("status", new(23f, 733f), 99.89f, 964.29f, -4f),
 		("curse", new(3f, 896f), 65.35f, 1178.57f, -2f),
 	};
+
+	// ── 入场的原版菜单 3D Joker（tools/p5/menu3d/item_entrance.py，research/p5r/menu3d_item）：原版 ITEM 页 177–186 十帧，
+	//    镜头从远处推近（右边站着的小 Joker → 转身、手扫过 → 低头特写），之后硬切成 2D 立绘（同另外两页）。
+	//    帧图在原版屏幕坐标里的左上角 = M3dAt；原版立绘 = 缩放 0.5、左上 (0, 0)，我们的立绘 = 缩放 1500/3072、左上 (-80, 0) → 同一个变换 Map ──
+	private const float MapK = 1500f / 3072f / 0.5f;
+	private static Vector2 Map(Vector2 p) => p * MapK + new Vector2(-80f, 0f);
+	private static readonly Vector2[] M3dAt =
+	{
+		new(1120f, 238f), new(1051f, 215f), new(787f, 157f), new(625f, 3f), new(186f, -60f), new(-60f, -60f), new(-60f, -60f), new(-60f, -60f), new(-60f, -60f), new(-60f, -60f),
+	};
+	private const float M3dStart = 0.05f, M3dDt = 0.036f;
+	/// <summary>切成 2D 立绘的时刻（最后一帧 3D 播完）。</summary>
+	private const float CutAt = M3dStart + 10 * M3dDt;
+	/// <summary>撞色斜线（我们的排版坐标，同 export_discard.py 的 A_TOP / A_BOT）：右边黑 → 浅灰、白 → 黑。</summary>
+	private static readonly Vector2 SlantA = new(1019.1f, -39.1f), SlantB = new(544.4f, 1093.8f);
+	private readonly Texture2D?[] _m3dTex = new Texture2D?[10];
+	private readonly Sprite2D? _m3d;
 
 	private readonly Control _root;
 	private readonly Vector2 _view;
@@ -75,6 +92,16 @@ public sealed class PileDiscard : IPileDecor
 		// 2. 黑块 + 星纹条、3. 撞色立绘
 		_slab = Layer(root, "slab", R(548f, 0f));
 		_portrait = Layer(root, "portrait", Vector2.Zero);
+		for (int i = 0; i < 10; i++) _m3dTex[i] = Fx.Tex($"pile_dc3d_{i:00}");
+		if (_m3dTex[0] != null)
+		{
+			ShaderMaterial sm = new() { Shader = SlantShader };
+			sm.SetShaderParameter("a", SlantA * k);
+			sm.SetShaderParameter("b", SlantB * k);
+			_m3d = new Sprite2D { Texture = _m3dTex[0], Centered = false, Scale = Vector2.One * MapK * k, Material = sm, TextureFilter = CanvasItem.TextureFilterEnum.Linear, Visible = false };
+			root.AddChild(_m3d);
+			root.MoveChild(_m3d, _portrait.GetIndex());
+		}
 
 		// 4. 左边面板：斜边（白边 + 黑 + 内侧红条）+ 六行 + 两个标签牌
 		_panel = new Node2D { Name = "PileDiscardList" };
@@ -181,6 +208,26 @@ public sealed class PileDiscard : IPileDecor
 
 	public void Kick() { }
 
+	private static Shader? _slant;
+	/// <summary>3D Joker 的撞色（同 2D 立绘导出时的处理）：斜线右边按亮度反过来 —— 黑 → 浅灰、白 → 黑。</summary>
+	private static Shader SlantShader => _slant ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform vec2 a = vec2(0.0);
+uniform vec2 b = vec2(0.0);
+varying vec2 wp;
+void vertex() { wp = (MODEL_MATRIX * vec4(VERTEX, 0.0, 1.0)).xy; }
+void fragment() {
+	vec4 c = COLOR;                       // canvas_item 的 COLOR 已经是贴图 × 调制色
+	vec2 d = b - a;
+	float side = d.x * (wp.y - a.y) - d.y * (wp.x - a.x);
+	if (side < 0.0) {
+		float lum = (c.r + c.g + c.b) / 3.0;
+		c.rgb = vec3(clamp(222.0 / 255.0 - lum * (214.0 / 255.0), 8.0 / 255.0, 230.0 / 255.0));
+	}
+	COLOR = c;
+}
+" };
+
 	public void BeginExit(float now)
 	{
 		if (_exitT0 >= 0f) return;
@@ -206,9 +253,21 @@ public sealed class PileDiscard : IPileDecor
 		float a = Ease5.OutExpo(Seg(t, 0.03f, 0.3f));
 		_slab.Position = new Vector2(548f * k + _rx + 900f * k * (1f - a), 0f);
 		_slab.Modulate = new Color(1f, 1f, 1f, Seg(t, 0.03f, 0.06f));
-		float p = Ease5.OutExpo(Seg(t, 0.07f, 0.32f));
-		_portrait.Position = new Vector2(-260f * k * (1f - p), 0f);
-		_portrait.Modulate = new Color(1f, 1f, 1f, Seg(t, 0.07f, 0.08f));
+		// 3D Joker 逐帧（镜头推近、转身、手扫过），CutAt 硬切成 2D 立绘：压一下再回弹（同另外两页砸下来的那一下）
+		bool cut = t >= CutAt;
+		if (_m3d != null)
+		{
+			int i = Mathf.Clamp(Mathf.FloorToInt((t - M3dStart) / M3dDt), 0, 9);
+			if (_m3dTex[i] is Texture2D f && _m3d.Texture != f) _m3d.Texture = f;
+			_m3d.Position = Map(M3dAt[i]) * k;
+			_m3d.Visible = t >= M3dStart && !cut;
+		}
+		_portrait.Visible = cut || _m3d == null;
+		float bump = cut ? Mathf.Lerp(0.965f, 1f, Ease5.OutBack(Seg(t, CutAt, 0.14f))) : 1f;
+		_portrait.Scale = Vector2.One * bump;
+		_portrait.Position = new Vector2(760f, 540f) * k * (1f - bump);
+		_portrait.Modulate = Colors.White;
+		_root.Position = cut ? new Vector2(Mathf.Sin((t - CutAt) * 44f) * 5f, Mathf.Cos((t - CutAt) * 34f) * 10f) * k * Mathf.Pow(Mathf.Max(0f, 1f - (t - CutAt) / 0.22f), 2f) : Vector2.Zero;
 		// 左边面板滑进来，六行依次弹出
 		float l = Ease5.OutExpo(Seg(t, 0.1f, 0.28f));
 		_panel.Position = new Vector2(-520f * k * (1f - l), 0f);
@@ -243,6 +302,10 @@ public sealed class PileDiscard : IPileDecor
 	private void Exit(float e)
 	{
 		float k = _k;
+		_root.Position = Vector2.Zero;
+		if (_m3d != null) _m3d.Visible = false;
+		_portrait.Visible = true;
+		_portrait.Scale = Vector2.One;
 		float reach = (_view + new Vector2(0f, _view.Y)).Length() * 1.05f;
 		_bg.SetShaderParameter("wipe", reach * (1f - Ease5Ext.InCubic(Seg(e, 0.15f, 0.85f))));
 		float o = Ease5Ext.InOutCubic(Seg(e, 0f, 0.75f));
@@ -258,6 +321,7 @@ public sealed class PileDiscard : IPileDecor
 
 	public static readonly string[] Textures =
 	{
+		"pile_dc3d_00", "pile_dc3d_01", "pile_dc3d_02", "pile_dc3d_03", "pile_dc3d_04", "pile_dc3d_05", "pile_dc3d_06", "pile_dc3d_07", "pile_dc3d_08", "pile_dc3d_09",
 		"pile_dc_slab", "pile_dc_portrait", "pile_dc_title", "pile_dc_command", "pile_dc_underline", "pile_dc_tag_discard", "pile_dc_tag_bytype",
 		"pile_dc_row0", "pile_dc_row1", "pile_dc_row2", "pile_dc_row3", "pile_dc_row4", "pile_dc_row5",
 	};
