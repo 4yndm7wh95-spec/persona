@@ -66,24 +66,36 @@ def draw_plg(cv, name, cx, cy, size, fill, rot=0.0, ref=None):
             dx, dy = (x - c0[0]) * sc, (y - c0[1]) * sc
             pts.append(((cx + dx * cs - dy * sn) * SS, (cy + dx * sn + dy * cs) * SS))
         d.polygon(pts, fill=fill)
+LIST_K = 0.84                  # 用户 2026-11-23：左边面板挡太多 → 内容缩小、面板收窄
+LIST_EDGE = ((474, -20), (322, H + 20))   # 面板右缘：一条斜直边，和立绘的撞色斜线大致同向（用户：阶梯凹凸不平不好看、竖直边没设计感）
+def edge_x(y):
+    (ax, ay), (bx, by) = LIST_EDGE
+    return ax + (bx - ax) * (y - ay) / (by - ay)
 def left_list(cv, total, counts, ups):
     S = SS; d = ImageDraw.Draw(cv)
-    n = 1 + len(TYPE_ROWS); rh = H / n
-    xs = [546, 568, 532, 560, 526, 552]                 # 每行右边缘（阶梯，同原版队伍列表）
-    right = []
-    for i in range(n):
-        y0, y1 = i * rh, (i + 1) * rh
-        right += [(xs[i] + 14, y0 + 10), (xs[i], y1 - 14)]
-    edge = [(right[0][0], -20)] + right + [(right[-1][0], H + 20)]
-    d.polygon([(x * S, y * S) for x, y in [(-20, -20)] + edge + [(-20, H + 20)]], fill=(240, 240, 240))
-    d.polygon([(x * S, y * S) for x, y in [(-20, -20)] + [(x - 14, y) for x, y in edge] + [(-20, H + 20)]], fill=(8, 8, 8))
+    (ax, ay), (bx, by) = LIST_EDGE
+    d.polygon([(x * S, y * S) for x, y in [(-20, -20), (ax + 14, ay), (bx + 14, by), (-20, H + 20)]], fill=(240, 240, 240))
+    d.polygon([(x * S, y * S) for x, y in [(-20, -20), (ax, ay), (bx, by), (-20, H + 20)]], fill=(8, 8, 8))
+    d.polygon([(x * S, y * S) for x, y in [(ax - 22, ay), (ax - 15, ay), (bx - 15, by), (bx - 22, by)]], fill=(200, 20, 30))   # 内侧一道细红条
+    full = cv
+    cv = Image.new('RGBA', (int(full.width / LIST_K), int(full.height / LIST_K)))
+    _list_body(cv, total, counts, ups, H / LIST_K)
+    cv = cv.resize((int(cv.width * LIST_K), int(cv.height * LIST_K)), Image.LANCZOS)
+    full.alpha_composite(cv.crop((0, 0, full.width, full.height)))
+
+def _list_body(cv, total, counts, ups, Hh):
+    n = 1 + len(TYPE_ROWS); rh = Hh / n
     rows = [('discard', None, total, sum(ups.values()))] + [(k, ic, counts.get(k, 0), ups.get(k, 0)) for k, ic in TYPE_ROWS]
     for i, (key, icon, cnt, up) in enumerate(rows):
         yc = (i + 0.5) * rh; a = 1.0 if cnt > 0 else 0.42
+        # 每行跟着斜边错开：右端离边（红条内侧）约 30px，不留一大条空
+        right = (372 if i == 0 else 272) / 0.8
+        dx = (edge_x(yc * LIST_K) - 52) / LIST_K - right
+        cv_shift = dx
         tilt = -4 if i % 2 == 0 else -2
         k = i % 8 + 1
         # 头像位：原版头像后面的锯齿形（PLG party_0k_02 白、party_0k_04 黑，同原版的白色闪电边）
-        hx = 158 if i == 0 else 92          # 第一行头像往右让开 DISCARD 标签（原版 LEADER 牌只压住头像左边一点）
+        hx = (150 if i == 0 else 88) + cv_shift          # 第一行头像往右让开 DISCARD 标签（原版 LEADER 牌只压住头像左边一点）
         draw_plg(cv, f'party_0{k}_02', hx, yc - 4, 168, (240, 240, 240), -6)
         if icon is not None:            # 白色属性图标放在黑底上（白边黑芯）；Joker 头像本身是黑头发，直接压在白色锯齿底上（同原版）
             draw_plg(cv, f'party_0{k}_04', hx + 4, yc - 2, 168 * 222 / 267, (8, 8, 8), -6)
@@ -106,8 +118,8 @@ def left_list(cv, total, counts, ups):
         if icon is not None:
             en = tinted(txt(key, 26), PINK)
             ul2 = tinted(spr('00256'), PINK).resize((en.width + 14, 11), Image.LANCZOS)
-            ex = lx0 + line.width + 12
-            paste_at(cv, en, ex, yc + 10, a, tilt); paste_at(cv, ul2, ex - 6, yc + 42, a, tilt)
+            ex = lx0 + 4                                    # 粉色英文放到青色行下面（不再往右排，面板窄了）
+            paste_at(cv, en, ex, yc + 56, a, tilt); paste_at(cv, ul2, ex - 6, yc + 88, a, tilt)
     # 标签牌（原版 00253 空框）：第一行 DISCARD（原版 LEADER 牌），类型段开头 BY TYPE（原版 PARTY 牌）
     for key, y, rot, w in (('discard', 2, 14, 140), ('bytype', rh + 96, 10, 168)):
         tag = spr('00253').resize((w, int(w * 222 / 298)), Image.LANCZOS)
