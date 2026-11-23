@@ -24,7 +24,7 @@ public sealed class SovereignButterfly
 	// 拖尾（用户 2026-11-23：原来那串连续的光团太黏，像一坨橡皮泥黏在屁股上、像负重）：
 	// 改成「翅尖两道一下就散的细光丝」+「下扑时从翅尖抖落、甩出去以后自己飘的鳞粉」——粒子出来就不跟着蝴蝶走了
 	private const int Tip = 14, MaxDust = 40;
-	private const float TipSpan = 0.3f;
+	private const float TipSpan = 0.45f;
 
 	private readonly Func<(Vector2 Feet, float Tall)?> _body;
 	private readonly ColorRect _front, _back;
@@ -152,7 +152,9 @@ public sealed class SovereignButterfly
 		// 屏幕上的翅尖（右 / 左翅的翅尖在翅面坐标 (s 0.95, t 0.55)）
 		Vector3 ScrV(Vector3 v) => new(v.X, v.Y - v.Z * 0.18f, v.Z);
 		Vector3 f3 = ScrV(_fwd), r3 = ScrV(r), u3 = ScrV(u);
-		Vector3 wr3 = r3 * Mathf.Cos(a) + u3 * Mathf.Sin(a), wl3 = -r3 * Mathf.Cos(a) + u3 * Mathf.Sin(a);
+		// 光丝从翅膀「平均张开」时的翅尖拉出（不跟着扑翅上下跳，不然拉成一道道锯齿折线）
+		const float aMid = 0.45f;
+		Vector3 wr3 = r3 * Mathf.Cos(aMid) + u3 * Mathf.Sin(aMid), wl3 = -r3 * Mathf.Cos(aMid) + u3 * Mathf.Sin(aMid);
 		Vector2 tipR = sp + (new Vector2(f3.X, f3.Y) * 0.55f + new Vector2(wr3.X, wr3.Y) * 0.95f) * scale;
 		Vector2 tipL = sp + (new Vector2(f3.X, f3.Y) * 0.55f + new Vector2(wl3.X, wl3.Y) * 0.95f) * scale;
 		_tipHistL.AsSpan(0, 63).CopyTo(_tipHistL.AsSpan(1)); _tipHistR.AsSpan(0, 63).CopyTo(_tipHistR.AsSpan(1)); _tipT.AsSpan(0, 63).CopyTo(_tipT.AsSpan(1));
@@ -169,18 +171,22 @@ public sealed class SovereignButterfly
 		Vector2 bv = _histN > 3 ? new Vector2(_hist[0].X - _hist[3].X, _hist[0].Y - _hist[3].Y) / Mathf.Max(_histT[0] - _histT[3], 1e-3f) : Vector2.Zero;
 		bool down = _prevS > 0.62f && s <= 0.62f;
 		_prevS = s;
-		_emitAcc += dt * 5f;
-		int emit = down ? 3 : 0;
+		// 2026-11-23 第二版（用户：正下方挂着一竖串，很黏）：只在下扑和飞得快时放，飞得慢几乎不放；
+		// 粒子散在刚飞过的那一小段路上、往后和侧面散开、几乎不下坠 → 留下的是沿飞行路线往后渐淡的星点，不是吊在身上的一串
+		float vpx = bv.Length() / Mathf.Max(T, 1f);
+		_emitAcc += dt * 14f * Mathf.Clamp((vpx - 0.35f) / 0.8f, 0f, 1f);
+		int emit = down ? 2 : 0;
 		while (_emitAcc >= 1f) { emit++; _emitAcc -= 1f; }
 		for (int e = 0; e < emit; e++)
 		{
 			int k = _dNext; _dNext = (_dNext + 1) % MaxDust;
-			Vector2 at = (e % 2 == 0) ? tipR : tipL;
-			_dp[k] = at + new Vector2(_rng.RandfRange(-1f, 1f), _rng.RandfRange(-1f, 1f)) * scale * 0.15f;
-			Vector2 outward = (at - sp).Normalized();
-			_dv[k] = bv * 0.18f + outward * T * _rng.RandfRange(0.05f, 0.16f) + new Vector2(_rng.RandfRange(-1f, 1f), _rng.RandfRange(-1f, 0.4f)) * T * 0.05f;
+			Vector2 at = ((e % 2 == 0) ? tipR : tipL).Lerp(sp, _rng.RandfRange(0f, 0.5f)) - bv * _rng.RandfRange(0f, 0.08f);
+			_dp[k] = at + new Vector2(_rng.RandfRange(-1f, 1f), _rng.RandfRange(-1f, 1f)) * scale * 0.2f;
+			Vector2 back = bv.LengthSquared() > 1f ? -bv.Normalized() : Vector2.Zero;
+			Vector2 sideV = new Vector2(-back.Y, back.X) * _rng.RandfRange(-1f, 1f);
+			_dv[k] = back * T * _rng.RandfRange(0.04f, 0.12f) + sideV * T * 0.1f;
 			_dAge[k] = 0f;
-			_dLife[k] = _rng.RandfRange(0.55f, 1.05f);
+			_dLife[k] = _rng.RandfRange(0.3f, 0.6f);
 			_dDepth[k] = depth;
 		}
 		for (int k = 0; k < MaxDust; k++)
@@ -189,9 +195,9 @@ public sealed class SovereignButterfly
 			_dAge[k] += dt;
 			float lifeK = 1f - _dAge[k] / _dLife[k];
 			if (lifeK <= 0f) { _dLife[k] = 0f; _dust[k] = Vector4.Zero; continue; }
-			_dv[k] *= Mathf.Exp(-2.4f * dt);
-			_dv[k] += new Vector2(Mathf.Sin(_dp[k].Y * 0.025f + _t * 2.1f + k), Mathf.Cos(_dp[k].X * 0.025f + _t * 1.7f + k)) * T * 0.09f * dt;
-			_dv[k].Y += T * 0.05f * dt;
+			_dv[k] *= Mathf.Exp(-3f * dt);
+			_dv[k] += new Vector2(Mathf.Sin(_dp[k].Y * 0.025f + _t * 2.1f + k), Mathf.Cos(_dp[k].X * 0.025f + _t * 1.7f + k)) * T * 0.06f * dt;
+			_dv[k].Y += T * 0.012f * dt;
 			_dp[k] += _dv[k] * dt;
 			_dust[k] = new Vector4(_dp[k].X - c0.X, _dp[k].Y - c0.Y, lifeK, _dDepth[k]);
 		}
@@ -357,8 +363,8 @@ void fragment() {
 			float h = clamp(dot(p - a0.xy, ab) / max(dot(ab, ab), 1e-3), 0.0, 1.0);
 			float d = length(p - (a0.xy + ab * h));
 			float fz = mix(a0.z, a1.z, h);
-			float w = unit * 0.0018 * (0.4 + fz);
-			glow += vec3(0.55, 0.85, 1.0) * (exp(-d * d / (w * w)) * 0.55 + exp(-d / (w * 6.0)) * 0.06) * fz * fz * lw;
+			float w = unit * 0.0022 * (0.3 + fz);
+			glow += vec3(0.55, 0.85, 1.0) * (exp(-d * d / (w * w)) * 0.45 + exp(-d / (w * 5.0)) * 0.08) * fz * fz * lw;
 		}
 	}
 	// ── 鳞粉：甩出去自己飘的小闪光（四角星 + 一点芯），一闪一闪 ──
