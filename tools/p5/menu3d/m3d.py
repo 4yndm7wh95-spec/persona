@@ -50,3 +50,22 @@ def landmarks(V):
     face = V[mesh_slice('c0001_faceUI_main', 0)]
     out['face_low'] = face[np.argmin(face[:, 1])]
     return out
+
+def euler_yxz(R):
+    """rotation matrix (columns = camera axes) → Godot rotation_degrees (EULER_ORDER_YXZ)"""
+    x = np.arcsin(np.clip(-R[1, 2], -1, 1)); y = np.arctan2(R[0, 2], R[2, 2]); z = np.arctan2(R[1, 0], R[1, 1])
+    return np.degrees([x, y, z])
+
+def look_at(pos, target, up=(0, 1, 0)):
+    """camera at pos looking at target → Godot camera dict (fov to be filled in)"""
+    pos = np.asarray(pos, float); zc = pos - np.asarray(target, float); zc /= np.linalg.norm(zc)
+    xc = np.cross(np.asarray(up, float), zc); xc /= np.linalg.norm(xc); yc = np.cross(zc, xc)
+    return {'position': pos.tolist(), 'rotation_degrees': euler_yxz(np.stack([xc, yc, zc], 1)).tolist()}
+
+FACE = dict(nose=1873, chin=1919, earR=2823, earL=1989, jawR=2725, jawL=1895)
+
+def head_points(V):
+    """固定顶点的脸部特征点（模型空间）：双眼球中心、鼻尖、下巴底、两耳、两腮"""
+    out = {'eyeR': V[mesh_slice('eye r0_main')].mean(0), 'eyeL': V[mesh_slice('eye l0_main')].mean(0)}
+    for k, i in FACE.items(): out[k] = V[i]
+    return out

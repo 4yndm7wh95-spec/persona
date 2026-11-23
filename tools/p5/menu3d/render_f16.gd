@@ -5,6 +5,7 @@ extends SceneTree
 ## jobs.json：{"size":[1920,1080],"ss":2,"jobs":[{"clip":"main_0015","frame":5.0,"camera":{"position":[..],"rotation_degrees":[..],"fov":40,
 ##             "h_offset":0,"v_offset":0},"mode":"color|silhouette","out":"/abs/path.png"}]}
 ## frame 可以是小数（相邻两帧线性插值）；mode=silhouette 时全部画成纯黑（叠图对轮廓用）。
+## 也可以给 "verts": "/abs/x.bin"（小端 float32 [顶点][xyz]），这时 clip / frame 只作标注。
 
 func _initialize() -> void:
 	call_deferred("run")
@@ -86,7 +87,11 @@ func run() -> void:
 		camera.fov = float(cam.get("fov", 40.0))
 		camera.h_offset = float(cam.get("h_offset", 0.0))
 		camera.v_offset = float(cam.get("v_offset", 0.0))
-		var verts := frame_vertices(data_dir, String(job.clip), float(job.frame))
+		var verts: PackedVector3Array
+		if job.has("verts"):
+			verts = raw_vertices(String(job.verts))
+		else:
+			verts = frame_vertices(data_dir, String(job.clip), float(job.frame))
 		var silhouette: bool = job.get("mode", "color") == "silhouette"
 		var hidden: Array = job.get("hide", [])
 		var cursor := 0
@@ -133,6 +138,16 @@ func frame_vertices(data_dir: String, clip: String, frame: float) -> PackedVecto
 			var p1 := Vector3(bytes.decode_half(b + o), bytes.decode_half(b + o + 2), bytes.decode_half(b + o + 4))
 			p0 = p0.lerp(p1, t)
 		out[v] = p0
+	return out
+
+## 任务里给了 "verts"（小端 float32，[顶点][xyz]，顶点数 = meshes.json 总数）就直接用它：Python 侧算好的混合帧 / 转头后的顶点
+func raw_vertices(path: String) -> PackedVector3Array:
+	var bytes := FileAccess.get_file_as_bytes(path)
+	var out := PackedVector3Array()
+	out.resize(total_vertices)
+	for v in total_vertices:
+		var o := v * 12
+		out[v] = Vector3(bytes.decode_float(o), bytes.decode_float(o + 4), bytes.decode_float(o + 8))
 	return out
 
 func to_straight_alpha(result: Image) -> Image:
