@@ -33,7 +33,7 @@ public static class PileScreen
 	private static Font Cjk => P5Ui.Font(P5Ui.CjkBold);
 
 	public static bool Enabled(CardPile? pile) =>
-		pile != null && (pile.Type == PileType.Draw || pile.Type == PileType.Exhaust) && P5Settings.Enabled(P5Settings.Option.Pile) && Joker.LocalRun;
+		pile != null && (pile.Type == PileType.Draw || pile.Type == PileType.Exhaust || pile.Type == PileType.Discard) && P5Settings.Enabled(P5Settings.Option.Pile) && Joker.LocalRun;
 
 	private sealed class Item
 	{
@@ -63,6 +63,22 @@ public static class PileScreen
 	{
 		try { return AccessTools.FieldRefAccess<NCardGrid, List<CardModel>>("_cards"); }
 		catch { return null; }
+	}
+
+	/// <summary>弃牌堆左边列表要的数：总张数 / 总已升级 / 各类型的张数和已升级数（Vfx/PileDiscard.cs）。</summary>
+	private static (int Total, int Up, Dictionary<string, (int N, int Up)> ByType) DiscardStats(IReadOnlyCollection<CardModel> cards)
+	{
+		var counts = new Dictionary<string, (int N, int Up)>();
+		int total = 0, totalUp = 0;
+		foreach (CardModel c in cards)
+		{
+			string key = c.Type switch { CardType.Attack => "attack", CardType.Skill => "skill", CardType.Power => "power", CardType.Curse => "curse", _ => "status" };
+			counts.TryGetValue(key, out var v);
+			counts[key] = (v.N + 1, v.Up + (c.IsUpgraded ? 1 : 0));
+			total++;
+			if (c.IsUpgraded) totalUp++;
+		}
+		return (total, totalUp, counts);
 	}
 
 	/// <summary>原版抽牌堆的顺序（P3 v0.14.98：SL 要看）：优先直接读原版网格，读不到按同一段排序现算。</summary>
@@ -117,12 +133,13 @@ public static class PileScreen
 		if (view.X <= 0f || view.Y <= 0f) return;
 		float k = view.Y / 1080f;
 		bool exhaust = pile.Type == PileType.Exhaust;
+		bool discard = pile.Type == PileType.Discard;   // 2026-11-23：弃牌堆 = ITEM 页（Vfx/PileDiscard.cs）
 		Font font = Barlow;
 		float t0 = Time.GetTicksMsec() / 1000f;
 		float Now() => Time.GetTicksMsec() / 1000f - t0;
 		bool exiting = false, finalized = false;
 		float exitT0 = 0f;
-		bool orderMode = exhaust ? P5Settings.ExhaustOrder : P5Settings.DrawOrder;
+		bool orderMode = discard ? P5Settings.DiscardOrder : exhaust ? P5Settings.ExhaustOrder : P5Settings.DrawOrder;
 
 		Control root = new() { Name = RootName, MouseFilter = Control.MouseFilterEnum.Stop };
 		root.SetAnchorsPreset(Control.LayoutPreset.FullRect);
@@ -135,7 +152,7 @@ public static class PileScreen
 
 		// ── 装饰（红底、星纹面板、标题牌、立绘、COMMAND、预告信）──
 		// 抽牌堆 = P5R 主菜单（PileDraw），消耗堆 = SKILL 页（PileExhaust）
-		IPileDecor draw = exhaust ? new PileExhaust(root, view, pile.Cards.Count) : new PileDraw(root, view, pile.Cards.Count);
+		IPileDecor draw = discard ? new PileDiscard(root, view, DiscardStats(pile.Cards)) : exhaust ? new PileExhaust(root, view, pile.Cards.Count) : new PileDraw(root, view, pile.Cards.Count);
 		IPileDecor L = draw;
 		float gx = L.GridX;
 		Node2D head = new() { Name = "PileHead" };
@@ -289,7 +306,7 @@ public static class PileScreen
 			List<(string En, string Zh, List<CardModel> Cards)> groups = new();
 			if (orderMode)
 			{
-				if (all.Count > 0) groups.Add((exhaust ? "exhaust" : "draw", "", VanillaOrder(grid, pile.Type, all)));
+				if (all.Count > 0) groups.Add((discard ? "discard" : exhaust ? "exhaust" : "draw", "", VanillaOrder(grid, pile.Type, all)));
 			}
 			else
 			{
@@ -335,7 +352,7 @@ public static class PileScreen
 		{
 			if (orderMode == toOrder || exiting || focused != null) return;
 			orderMode = toOrder;
-			if (exhaust) P5Settings.SetExhaustOrder(toOrder); else P5Settings.SetDrawOrder(toOrder);
+			if (discard) P5Settings.SetDiscardOrder(toOrder); else if (exhaust) P5Settings.SetExhaustOrder(toOrder); else P5Settings.SetDrawOrder(toOrder);
 			Refresh(pile.Cards.ToList(), animateSort: true);
 			modeSwitch.Set(toOrder);
 			Sfx.Take("gx_card_stack", 0.2f);
@@ -858,7 +875,7 @@ public static class PileScreen
 		};
 		// 建界面这一帧要几十毫秒：延到下一帧再播，声音不抢在画面前面
 		Sfx.Play("camp_open", 0.5f, 0.001f);
-		PileDraw.ScheduleSlamSounds();               // camp_open 的「啪」、重击、拳击声都落在手掌砸中那一刻（PileDraw.SlamAt）
+		if (!discard) PileDraw.ScheduleSlamSounds();   // camp_open 的「啪」、重击、拳击声都落在手掌砸中那一刻（PileDraw.SlamAt）
 	}
 
 

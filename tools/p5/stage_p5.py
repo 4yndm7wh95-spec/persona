@@ -534,6 +534,9 @@ def pile_textures():
             ol.putalpha(a)
             yield name + "_ol", ol
         yield name, im
+    # 弃牌堆（ITEM 页）：tools/p5/pile/export_discard.py 从排版图分层导出的 1080p 图层 → pile_dc_<名字>（原尺寸，PileDiscard.cs 按 1080p 摆）
+    for f in sorted((ROOT / "art/p5/ui/pile_discard").glob("*.png")):
+        yield "pile_dc_" + f.stem, Image.open(f).convert("RGBA")
     # 原版菜单 3D Joker 的入场动作（research/p5r/menu3d/main_0000，Codex 从 MENU_C0001 GMD/GAP 渲的 12 帧，1920×1080）：
     # 裁到 12 帧的并集包围盒 (828,125)-(1920,1080)，游戏里显示 0.843 倍，×1.34 会超过原尺寸 → 保留原尺寸（PileDraw.M3d*）
     m3d = ROOT / "research/p5r/menu3d/main_0000"

@@ -203,6 +203,8 @@ public partial class Preview : Node2D
 		["pile_draw"] = p => PileDrawPreview(p, false),
 		// 消耗堆界面（p5mod/src/Vfx/PileExhaust.cs，P5R SKILL 页）
 		["pile_exhaust"] = p => PileDrawPreview(p, true),
+		// 弃牌堆界面（p5mod/src/Vfx/PileDiscard.cs，P5R ITEM 页，2026-11-23）
+		["pile_discard"] = p => PileDrawPreview(p, true, true),
 		["damage"] = p =>
 		{
 			p.Strike(0.3, Enemy, 7);
@@ -1816,7 +1818,7 @@ public partial class Preview : Node2D
 		n.AddChild(new Polygon2D { Polygon = Fx.Circle(16f * k, 16), Color = new Color("f2d14a"), Position = new Vector2(20f, -66f) * k });
 	}
 
-	private static void PileDrawPreview(Preview p, bool exhaust)
+	private static void PileDrawPreview(Preview p, bool exhaust, bool discard = false)
 	{
 		TranslationServer.SetLocale("zh_CN");          // 预览按中文版（字图走 _zh）
 		CanvasLayer top = new() { Layer = 50 };
@@ -1826,8 +1828,10 @@ public partial class Preview : Node2D
 		p.At(0.5, () =>
 		{
 			Sfx.Play("camp_open", 0.5f);
-			PileDraw.ScheduleSlamSounds();
-			IPileDecor draw = exhaust ? new PileExhaust(host, new Vector2(1920f, 1080f), 12) : new PileDraw(host, new Vector2(1920f, 1080f), 23);
+			if (!discard) PileDraw.ScheduleSlamSounds();
+			// 弃牌堆：攻击 5（升级 2）/ 技能 5（升级 1）/ 能力 2，同排版图
+			var dstats = (12, 3, new Dictionary<string, (int N, int Up)> { ["attack"] = (5, 2), ["skill"] = (5, 1), ["power"] = (2, 0) });
+			IPileDecor draw = discard ? new PileDiscard(host, new Vector2(1920f, 1080f), dstats) : exhaust ? new PileExhaust(host, new Vector2(1920f, 1080f), 12) : new PileDraw(host, new Vector2(1920f, 1080f), 23);
 			IPileDecor L = draw;
 			// 假牌：攻击 7 / 技能 9 / 能力 3（灰卡 + 类型色块），按 PileDraw 的版式排
 			Control cards = new() { MouseFilter = Control.MouseFilterEnum.Ignore };
@@ -1835,7 +1839,7 @@ public partial class Preview : Node2D
 			var items = new List<(Control C, Vector2 At, float Born)>();
 			var heads = new List<(Node2D N, Vector2 At)>();
 			Color[] tint = { new(0.72f, 0.19f, 0.16f), new(0.16f, 0.38f, 0.63f), new(0.77f, 0.59f, 0.16f) };
-			int[] counts = exhaust ? new[] { 4, 6, 2 } : new[] { 7, 9, 3 };
+			int[] counts = discard ? new[] { 5, 5, 2 } : exhaust ? new[] { 4, 6, 2 } : new[] { 7, 9, 3 };
 			string[] en = { "ATTACK", "SKILL", "POWER" }, zh = { "攻击", "技能", "能力" };
 			float y = 0f, born = L.CardsStart;
 			for (int g = 0; g < 3; g++)
@@ -1866,14 +1870,14 @@ public partial class Preview : Node2D
 				y += Mathf.Ceil(counts[g] / (float)L.Cols) * L.CellH + 16f;
 			}
 			// 排列切换（和游戏里同一个 PileModeSwitch）：2.75s 切到「原版顺序」，牌按原版牌堆的顺序（假的：打乱的类型交错）重排成一段
-			Node2D swNode = new() { Modulate = new Color(1f, 1f, 1f, 0f) };
+			Node2D swNode = new() { Name = "PileHead", Modulate = new Color(1f, 1f, 1f, 0f) };
 			host.AddChild(swNode);
 			PileModeSwitch sw = PileModeSwitch.Build(swNode, Vector2.Zero, 1f, false);
 			Node2D orderHead = new() { Modulate = new Color(1f, 1f, 1f, 0f) };
 			cards.AddChild(orderHead);
 			{
 				float tx = 16f;
-				tx += PileText.Exact(orderHead, exhaust ? "exhaust" : "draw", new Vector2(tx, 8f), 40f, new Color(0.94f, 0.94f, 0.94f)) + 12f;
+				tx += PileText.Exact(orderHead, discard ? "discard" : exhaust ? "exhaust" : "draw", new Vector2(tx, 8f), 40f, new Color(0.94f, 0.94f, 0.94f)) + 12f;
 				tx += PileText.Number(orderHead, "×" + items.Count, new Vector2(tx, 12f), 34f, new Color(0.94f, 0.94f, 0.94f)) + 14f;
 				Polygon2D po = Fx.Poly(orderHead, new[] { new Vector2(-4f, 2f), new Vector2(tx + 4f, -4f), new Vector2(tx + 12f, 56f), new Vector2(2f, 62f) }, new Color(0.94f, 0.94f, 0.94f));
 				Polygon2D pi = Fx.Poly(orderHead, new[] { new Vector2(0f, 5f), new Vector2(tx, 0f), new Vector2(tx + 8f, 52f), new Vector2(6f, 58f) }, new Color(0.04f, 0.04f, 0.04f));

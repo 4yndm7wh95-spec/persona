@@ -413,6 +413,7 @@ public static class Warmup
 		if (!Groups.Add("pile")) return;
 		QueueTextures(PileDraw.Textures);
 		QueueTextures(PileExhaust.Textures);
+		QueueTextures(PileDiscard.Textures);
 		QueueTextures(PileText.Textures());
 		QueueShaders(typeof(PileDraw));
 		QueueShaders(typeof(PileExhaust));

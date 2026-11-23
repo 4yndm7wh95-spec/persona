@@ -8,8 +8,8 @@ namespace P5Joker;
 internal static class P5Settings
 {
 	internal enum Option { Reward, AllOut, Pile }
-	private sealed record Preferences(bool Reward = true, bool AllOut = true, bool Pile = true, bool DrawOrder = false, bool ExhaustOrder = false);
-	private sealed record SavedPreferences(bool? Reward = null, bool? AllOut = null, int Profile = 1, int Custom = 4, bool? Pile = null, bool? DrawOrder = null, bool? ExhaustOrder = null)
+	private sealed record Preferences(bool Reward = true, bool AllOut = true, bool Pile = true, bool DrawOrder = false, bool ExhaustOrder = false, bool DiscardOrder = false);
+	private sealed record SavedPreferences(bool? Reward = null, bool? AllOut = null, int Profile = 1, int Custom = 4, bool? Pile = null, bool? DrawOrder = null, bool? ExhaustOrder = null, bool? DiscardOrder = null)
 	{
 		// The previous build stored the effective reward option in a preset or bit mask.
 		internal bool LegacyReward => Profile != 0 && (Profile != 2 || (Custom & (1 << 2)) != 0);
@@ -34,6 +34,11 @@ internal static class P5Settings
 
 	internal static bool SetExhaustOrder(bool on) => Save(_preferences with { ExhaustOrder = on });
 
+	/// <summary>弃牌堆界面：true = 原版顺序，false = 按类型分区。</summary>
+	internal static bool DiscardOrder => _preferences.DiscardOrder;
+
+	internal static bool SetDiscardOrder(bool on) => Save(_preferences with { DiscardOrder = on });
+
 	internal static void Load(string? path = null)
 	{
 		_path = path ?? ProjectSettings.GlobalizePath("user://p5joker_settings.json");
@@ -42,7 +47,7 @@ internal static class P5Settings
 		{
 			using FileStream reader = File.OpenRead(_path);
 			if (JsonSerializer.Deserialize<SavedPreferences>(reader) is { } saved)
-				_preferences = new Preferences(saved.Reward ?? saved.LegacyReward, saved.AllOut ?? true, saved.Pile ?? true, saved.DrawOrder ?? false, saved.ExhaustOrder ?? false);
+				_preferences = new Preferences(saved.Reward ?? saved.LegacyReward, saved.AllOut ?? true, saved.Pile ?? true, saved.DrawOrder ?? false, saved.ExhaustOrder ?? false, saved.DiscardOrder ?? false);
 		}
 		catch (FileNotFoundException) { }
 		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)

@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-11-23 · 会话 E：弃牌堆（ITEM 页）做进游戏代码 —— 接手牌堆会话的「进行中」，合了 `claude/p5-pile-ui`
+
+- 用户在本会话改了排版（v3：左边列表收窄、右缘斜直边 + 白边 + 内侧红条、每行跟着斜边错开；v4：右下斜带往下压、牌区多约一排），定稿 `docs/p5/preview/pile_discard_layout_v4.png`；
+  牌堆会话的三个问题用户说「就现在这样」：图标照排版图、消耗堆不加左边列表、弃牌堆 3 列。
+- 实现：`p5mod/src/Vfx/PileDiscard.cs`（IPileDecor）。静态部分 `tools/p5/pile/export_discard.py` 从排版脚本分层导出到 `art/p5/ui/pile_discard`（stage 成 `pile_dc_*`，原尺寸 1080p）：
+  黑块 + 星纹条、撞色立绘、标题牌、COMMAND、每行头像底 / 图标、两个标签、原版大 / 小数字和下划线。运行时：红底、面板斜边、每行的张数 / 已升级数和文字（按真实弃牌堆统计，`PileScreen.DiscardStats`，0 张的行半透明）、
+  右下斜带和它下面的红底（下一帧挪到牌上面，PileHead 再挪到它上面）、入场 / 退场。改排版图以后要重跑 export_discard.py。
+- `PileScreen`：弃牌堆接上（`Enabled` 加 Discard）；手掌砸下的声音只给另两页；排列方式单独记 `P5Settings.DiscardOrder`。牌在立绘上面一层，所以 GridX 右移到 1100、CellW 182。
+- 预览场景 `pile_discard`（`docs/p5/preview/pile_discard_v1.mp4`）。**没进过游戏**。牌组（EQUIP）还走原版。
+
+---
+
 ## 2026-11-23 · 牌堆界面会话（`claude/p5-pile-ui`）交接 —— 抽牌堆、消耗堆做完（只在预览里看过），弃牌堆在排版阶段等用户回复
 
 ### 分支和状态
