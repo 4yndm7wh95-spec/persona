@@ -43,14 +43,23 @@
         "research/silent_assets/card_portraits/accelerant.png",
         "art/p5/cards/refs/takemi/official.png"
       ],
-      "generated": "exec-a6a43fcf-c1e5-42d1-9f06-ba3e64b2f3e1.png",
+      "generated": "exec-a5783286-f5b0-4d86-94f8-0e9d4e7ea6d9.png",
       "output": "art/p5/cards/round1/batch_01/accelerant.png",
       "size": [
         1000,
         760
       ],
       "status": "awaiting_user_review",
-      "tool": "built-in image_gen"
+      "tool": "built-in image_gen",
+      "revisions": [
+        {
+          "reason": "User requested head direction and head/body proportions correction",
+          "prompt": "Edit ONLY head and neck proportions of this exact card illustration of Tae Takemi. The current head is too small for shoulders and torso, and exposed neck too long. Enlarge her head and face about 25 percent relative to torso, move chin downward closer to the coat collar, shorten visible neck about 40 percent. Let the enlarged top of the bob remain cropped by upper edge. Natural adult anime proportions: believable jaw-to-neck connection, black studded choker close beneath jaw, chin close to collar, face looking down toward dropper, short blue-black bob. Preserve exact identity and restrained expression, preserve all foreground hand anatomy and size, both hand positions, dropper, yellow drop, purple bottle, body, shoulders, clothes, green background and hard angular cel shading. Do not enlarge hands or zoom entire image. Enlarge only head, redraw neck locally, preserve rest. Opaque full-bleed landscape.",
+          "edit_source": "exec-a096a7fd-91f0-4ef9-b0b8-cc49de850e6c.png",
+          "generated": "exec-a5783286-f5b0-4d86-94f8-0e9d4e7ea6d9.png",
+          "status": "awaiting_user_review"
+        }
+      ]
     },
     {
       "card": "accuracy",
