@@ -1865,26 +1865,64 @@ public partial class Preview : Node2D
 				}
 				y += Mathf.Ceil(counts[g] / (float)L.Cols) * L.CellH + 16f;
 			}
+			// 排列切换（和游戏里同一个 PileModeSwitch）：2.75s 切到「原版顺序」，牌按原版牌堆的顺序（假的：打乱的类型交错）重排成一段
+			Node2D swNode = new() { Modulate = new Color(1f, 1f, 1f, 0f) };
+			host.AddChild(swNode);
+			PileModeSwitch sw = PileModeSwitch.Build(swNode, Vector2.Zero, 1f, false);
+			Node2D orderHead = new() { Modulate = new Color(1f, 1f, 1f, 0f) };
+			cards.AddChild(orderHead);
+			{
+				float tx = 16f;
+				tx += PileText.Exact(orderHead, exhaust ? "exhaust" : "draw", new Vector2(tx, 8f), 40f, new Color(0.94f, 0.94f, 0.94f)) + 12f;
+				tx += PileText.Number(orderHead, "×" + items.Count, new Vector2(tx, 12f), 34f, new Color(0.94f, 0.94f, 0.94f)) + 14f;
+				Polygon2D po = Fx.Poly(orderHead, new[] { new Vector2(-4f, 2f), new Vector2(tx + 4f, -4f), new Vector2(tx + 12f, 56f), new Vector2(2f, 62f) }, new Color(0.94f, 0.94f, 0.94f));
+				Polygon2D pi = Fx.Poly(orderHead, new[] { new Vector2(0f, 5f), new Vector2(tx, 0f), new Vector2(tx + 8f, 52f), new Vector2(6f, 58f) }, new Color(0.04f, 0.04f, 0.04f));
+				orderHead.MoveChild(po, 0); orderHead.MoveChild(pi, 1);
+			}
+			Vector2 orderHeadAt = new(L.GridX - 6f, L.GridTop);
+			int[] perm = { 3, 9, 0, 14, 6, 11, 1, 16, 7, 4, 12, 2, 18, 8, 13, 5, 17, 10, 15 };
+			var orderAt = new Vector2[items.Count];
+			int slot = 0;
+			foreach (int src in perm)
+			{
+				if (src >= items.Count) continue;
+				orderAt[src] = new Vector2(L.GridX + (slot % L.Cols) * L.CellW + L.CellW * 0.5f, L.GridTop + 70f + (slot / L.Cols) * L.CellH + L.CellH * 0.5f);
+				slot++;
+			}
+			var orderIndex = new int[items.Count];
+			{ int o = 0; foreach (int src in perm) if (src < items.Count) orderIndex[src] = o++; }
+			const float SwitchAt = 2.75f;
+			bool switched = false;
 			int hovered = -1;
 			float exitAt = -1f, last = 0f;
 			Fx.Animate(host, 0, 6.0, t =>
 			{
 				float now = t * 6f, dt = Mathf.Max(0f, now - last);
 				last = now;
-				if (exitAt < 0f && now >= 3.9f) { exitAt = now; draw.BeginExit(now); }
-				int want = now >= 1.7f && now < 2.5f ? 1 : now >= 2.7f && now < 3.5f ? 8 : -1;
+				if (exitAt < 0f && now >= 4.4f) { exitAt = now; draw.BeginExit(now); }
+				if (!switched && now >= SwitchAt) { switched = true; sw.Set(true); Sfx.Play("gx_card_stack", 0.2f); }
+				int want = now >= 1.7f && now < 2.45f ? 1 : now >= 3.35f && now < 4.1f ? 8 : -1;
 				if (want != hovered) { hovered = want; if (want >= 0) { draw.Kick(); Sfx.Play("cursor", 0.35f); } }
 				draw.Update(now, dt);
 				float ex = exitAt < 0f ? 0f : Mathf.Clamp((now - exitAt) / L.ExitTime, 0f, 1f);
+				float sIn = Mathf.Clamp((now - L.CardsStart) / 0.3f, 0f, 1f);
+				swNode.Position = L.SwitchAt + new Vector2(-80f * (1f - Ease5.OutExpo(sIn)) - 260f * Ease5Ext.InCubic(ex), 0f);
+				swNode.Modulate = new Color(1f, 1f, 1f, sIn * (1f - ex));
+				float swT = Mathf.Clamp((now - SwitchAt) / 0.15f, 0f, 1f);
 				foreach (var (n, at) in heads)
 				{
-					float a = Mathf.Clamp((now - L.CardsStart) / 0.25f, 0f, 1f) * (1f - ex);
-					n.Position = at + new Vector2(-80f * (1f - Ease5.OutExpo(Mathf.Clamp((now - L.CardsStart) / 0.3f, 0f, 1f))) - 260f * Ease5Ext.InCubic(ex), 0f);
+					float a = Mathf.Clamp((now - L.CardsStart) / 0.25f, 0f, 1f) * (1f - ex) * (1f - swT);
+					n.Position = at + new Vector2(-80f * (1f - Ease5.OutExpo(Mathf.Clamp((now - L.CardsStart) / 0.3f, 0f, 1f))) - 260f * Ease5Ext.InCubic(ex) - 120f * Ease5Ext.InCubic(swT), 0f);
 					n.Modulate = new Color(1f, 1f, 1f, a);
 				}
+				float hIn = Mathf.Clamp((now - SwitchAt - 0.18f) / 0.25f, 0f, 1f);
+				orderHead.Position = orderHeadAt + new Vector2(-80f * (1f - Ease5.OutExpo(hIn)) - 260f * Ease5Ext.InCubic(ex), 0f);
+				orderHead.Modulate = new Color(1f, 1f, 1f, hIn * (1f - ex));
 				for (int i = 0; i < items.Count; i++)
 				{
-					var (c, at, b) = items[i];
+					var (c, at0, b) = items[i];
+					float mt = Ease5Ext.InOutCubic(Mathf.Clamp((now - SwitchAt - Mathf.Min(0.3f, orderIndex[i] * 0.014f)) / 0.35f, 0f, 1f));
+					Vector2 at = at0.Lerp(orderAt[i], mt);
 					float bt = Mathf.Clamp((now - b) / 0.38f, 0f, 1f);
 					float pop = Ease5.OutBack(bt);
 					Vector2 pos = at + L.EnterOffset * (1f - pop);

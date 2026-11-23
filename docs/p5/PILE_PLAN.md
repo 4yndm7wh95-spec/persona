@@ -63,3 +63,19 @@
 - 预热：`Warmup.RequestPile()`（贴图、canvas 着色器、音效）。
 - 素材：`tools/p5/stage_p5.py` 的 `pile_textures()`（按 1080p 显示宽 ×1.34 离线预缩，白字图出黑描边版 `_ol`），音效 `camp_open` / `camp_cancel`。
 - 预览：`tools/p5/fxpreview/render.sh pile_draw 6`（假牌格子 + 真装饰 / 动画）。
+
+## 消耗堆（SKILL 页，2026-11-23 定稿入场）
+- 入场照原版 frame 113–125 逐帧还原：`tools/p5/menu3d/skill_entrance.py` 用 Codex 导出的逐帧顶点（research/p5r/menu3d_data）拟合出机位和动作，渲出 11 帧（research/p5r/menu3d_skill）。
+  定格姿势 = main_0016（和 2D 立绘 CAMPSKILL_2D01 的剪影重合度 0.85），前面是 main_0015 抬膝 + 镜头右摇，119 镜头上仰、混合进 main_0016。
+- 撞色：白板里 Joker 是白的；黑色反色区从立绘白腿那条直边往右扫开（同心圆、半径逐帧变大），区域里白板变黑、腿变白。
+- 对比图 `docs/p5/preview/pile_exhaust_entrance_vs_p5r.jpg`，预览 `pile_exhaust_v7.mp4`。
+
+## 排列切换
+- `p5mod/src/Vfx/PileSwitch.cs`（PileModeSwitch）：「原版顺序 / 按类型」，每个牌堆分开记（P5Settings.DrawOrder / ExhaustOrder，弃牌堆 / 牌组做的时候再加）。
+  原版顺序 = 直接读原版网格 `NCardGrid._cards`（读不到时抽牌堆按稀有度 + ID 现排，同原版不暴露真实顺序）。
+
+## 弃牌堆（ITEM 页）
+- 排版图 v1：`docs/p5/preview/pile_discard_layout_v1.png`（和原版对照 `pile_discard_layout_v1_vs_p5r.jpg`），脚本 `tools/p5/pile/mock_discard.py`。
+- 原版构图（frame 194–206 取中值描的边）：立绘 CAMPITEM_2D01 0.5 倍贴左上角；撞色斜线 x = 874 − 0.419 (y − 560) 右边，立绘的黑身体画成浅灰、白描边变黑；
+  黑块顶上一个红三角、右边一条斜边外是红底；右下一条浅灰斜带（原版放「消耗品 ●○○ Q/E」切分类）→ 我们放排列切换。
+  坐标按立绘对齐到我们的排版（缩放 0.977、平移 (−80, 0)，立绘大小和消耗堆一致，上边缘贴屏幕顶）。牌 3 列放进黑块，只在黑色窗口里露出来，往下滚时从浅灰身体 / 斜带下面钻过去。
