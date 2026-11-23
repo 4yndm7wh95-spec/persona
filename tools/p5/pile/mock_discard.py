@@ -14,6 +14,107 @@ def m(p): return (p[0] * MAP + ART_AT[0], p[1] * MAP + ART_AT[1])
 def Lx_orig(y): return 874 - 0.419 * (y - 560)
 A_TOP, A_BOT = m((Lx_orig(-40), -40)), m((Lx_orig(1120), 1120))     # 我们排版里的撞色斜线（两端伸出屏幕）
 
+
+# ── 左边的类型列表（原版 ITEM / SKILL 页左边是队伍列表，把立绘左半边挡住；用户 2026-11-23：原版这块不打算给人看）──
+# 同一套原版零件：黑色长条 + 右边阶梯状白边、LEADER 式标签牌（00253 空框）、斜体大数字（00235–00244）、HP/SP 式青 / 粉两行带下划线（00256）、
+# 头像位：第一行是原版 Joker 头像（00245，原版 LEADER 行就是他），类型行用原版属性图标（物 / 风 / 雷 / 念 / 呪）
+TYPE_ROWS = [('attack', 312), ('skill', 317), ('power', 316), ('status', 318), ('curse', 321)]
+TEAL, PINK = (92, 230, 200), (226, 70, 220)
+def digits(n, h):
+    ims = [spr(f'{235 + int(c):05d}') for c in str(n)]
+    sc = h / ims[0].height
+    ims = [im.resize((max(1, int(im.width * sc)), int(h)), Image.LANCZOS) for im in ims]
+    w = sum(int(im.width * 0.82) for im in ims) + int(ims[-1].width * 0.18)
+    out = Image.new('RGBA', (w + 4, int(h) + 4)); x = 0
+    for im in ims: out.alpha_composite(im, (x, 0)); x += int(im.width * 0.82)
+    return out
+def small_digits(n, h):
+    ims = [spr(f'{257 + int(c):05d}') for c in str(n)]
+    sc = h / ims[0].height
+    ims = [im.resize((max(1, int(im.width * sc)), int(h)), Image.LANCZOS) for im in ims]
+    out = Image.new('RGBA', (sum(int(im.width * 0.86) for im in ims) + 8, int(h) + 2)); x = 0
+    for im in ims: out.alpha_composite(im, (x, 0)); x += int(im.width * 0.86)
+    return out
+def tinted(im, rgb):
+    a = im.getchannel('A'); o = Image.new('RGBA', im.size, rgb + (255,)); o.putalpha(a); return o
+def txt(key, h):
+    t = Image.open(f'art/p5/ui/pile_text/txt_{key}.png').convert('RGBA')
+    return t.resize((max(1, int(t.width * h / t.height)), int(h)), Image.LANCZOS)
+def paste_at(cv, im, x, y, alpha=1.0, rot=0.0):
+    """左上角放在 (x, y)（1080p 坐标），im 是 1080p 尺寸，按 SS 放大"""
+    im = im.resize((max(1, int(im.width * SS)), max(1, int(im.height * SS))), Image.LANCZOS)
+    if rot: im = im.rotate(rot, Image.BICUBIC, expand=True)
+    if alpha < 1: a = np.asarray(im).astype(np.float32); a[..., 3] *= alpha; im = Image.fromarray(a.astype(np.uint8))
+    cv.alpha_composite(im, (int(x * SS), int(y * SS)))
+def plg_shape(name):
+    import plg as _plg
+    global _PLG
+    try: _PLG
+    except NameError: _PLG = {q['name']: q for q in _plg.read(R + 'ui/camp_main/raw/CAMP.PLG') if q['v']}
+    q = _PLG[name]; v = np.array(q['v'], float)
+    return [[tuple(v[i]) for i in q['idx'][t:t + 3]] for t in range(0, len(q['idx']) - 2, 3)], v.min(0), v.max(0)
+def draw_plg(cv, name, cx, cy, size, fill, rot=0.0, ref=None):
+    """把 PLG 多边形按 ref（默认自己）的包围盒缩放到 size 宽、中心放在 (cx, cy)"""
+    tris, lo, hi = plg_shape(name)
+    rlo, rhi = (lo, hi) if ref is None else plg_shape(ref)[1:]
+    sc = size / (rhi[0] - rlo[0]); c0 = (rlo + rhi) / 2
+    th = np.radians(rot); cs, sn = np.cos(th), np.sin(th)
+    d = ImageDraw.Draw(cv)
+    for tri in tris:
+        pts = []
+        for x, y in tri:
+            dx, dy = (x - c0[0]) * sc, (y - c0[1]) * sc
+            pts.append(((cx + dx * cs - dy * sn) * SS, (cy + dx * sn + dy * cs) * SS))
+        d.polygon(pts, fill=fill)
+def left_list(cv, total, counts, ups):
+    S = SS; d = ImageDraw.Draw(cv)
+    n = 1 + len(TYPE_ROWS); rh = H / n
+    xs = [546, 568, 532, 560, 526, 552]                 # 每行右边缘（阶梯，同原版队伍列表）
+    right = []
+    for i in range(n):
+        y0, y1 = i * rh, (i + 1) * rh
+        right += [(xs[i] + 14, y0 + 10), (xs[i], y1 - 14)]
+    edge = [(right[0][0], -20)] + right + [(right[-1][0], H + 20)]
+    d.polygon([(x * S, y * S) for x, y in [(-20, -20)] + edge + [(-20, H + 20)]], fill=(240, 240, 240))
+    d.polygon([(x * S, y * S) for x, y in [(-20, -20)] + [(x - 14, y) for x, y in edge] + [(-20, H + 20)]], fill=(8, 8, 8))
+    rows = [('discard', None, total, sum(ups.values()))] + [(k, ic, counts.get(k, 0), ups.get(k, 0)) for k, ic in TYPE_ROWS]
+    for i, (key, icon, cnt, up) in enumerate(rows):
+        yc = (i + 0.5) * rh; a = 1.0 if cnt > 0 else 0.42
+        tilt = -4 if i % 2 == 0 else -2
+        k = i % 8 + 1
+        # 头像位：原版头像后面的锯齿形（PLG party_0k_02 白、party_0k_04 黑，同原版的白色闪电边）
+        hx = 158 if i == 0 else 92          # 第一行头像往右让开 DISCARD 标签（原版 LEADER 牌只压住头像左边一点）
+        draw_plg(cv, f'party_0{k}_02', hx, yc - 4, 168, (240, 240, 240), -6)
+        if icon is not None:            # 白色属性图标放在黑底上（白边黑芯）；Joker 头像本身是黑头发，直接压在白色锯齿底上（同原版）
+            draw_plg(cv, f'party_0{k}_04', hx + 4, yc - 2, 168 * 222 / 267, (8, 8, 8), -6)
+        if icon is None:
+            head = spr('00245').resize((156, 156), Image.LANCZOS)
+            paste_at(cv, head, hx - 76, yc - 90, a)
+        else:
+            ic = spr(f'{icon:05d}'); sc = 100 / max(ic.size); ic = ic.resize((int(ic.width * sc), int(ic.height * sc)), Image.LANCZOS)
+            paste_at(cv, ic, hx - ic.width / 2, yc - ic.height / 2 - 4, a, 8)
+        x = hx + 74
+        dg = digits(cnt, 90); paste_at(cv, dg, x, yc - 60, a, tilt)
+        nx = x + dg.width + 6
+        nm = txt(key + '_zh', 38); paste_at(cv, nm, nx, yc - 66, a, tilt)
+        # 青色行：已升级 n（原版 HP 的位置）；粉色行：英文类型名（原版 SP 的位置），第一行不放
+        lab = tinted(txt('upgraded_zh', 24), TEAL); dg2 = tinted(small_digits(up, 30), TEAL)
+        line = Image.new('RGBA', (lab.width + dg2.width + 14, 40)); line.alpha_composite(lab, (0, 8)); line.alpha_composite(dg2, (lab.width + 8, 2))
+        ul = tinted(spr('00256'), TEAL).resize((line.width + 12, 11), Image.LANCZOS)
+        lx0 = nx - 14
+        paste_at(cv, line, lx0, yc + 6, a, tilt); paste_at(cv, ul, lx0 - 6, yc + 44, a, tilt)
+        if icon is not None:
+            en = tinted(txt(key, 26), PINK)
+            ul2 = tinted(spr('00256'), PINK).resize((en.width + 14, 11), Image.LANCZOS)
+            ex = lx0 + line.width + 12
+            paste_at(cv, en, ex, yc + 10, a, tilt); paste_at(cv, ul2, ex - 6, yc + 42, a, tilt)
+    # 标签牌（原版 00253 空框）：第一行 DISCARD（原版 LEADER 牌），类型段开头 BY TYPE（原版 PARTY 牌）
+    for key, y, rot, w in (('discard', 2, 14, 140), ('bytype', rh + 96, 10, 168)):
+        tag = spr('00253').resize((w, int(w * 222 / 298)), Image.LANCZOS)
+        t = txt(key, 26); t = t.resize((min(t.width, int(w * 0.62)), 26), Image.LANCZOS)
+        tg = Image.new('RGBA', tag.size); tg.alpha_composite(tag); tg.alpha_composite(t, ((tag.width - t.width) // 2 + 2, (tag.height - 26) // 2 + 2))
+        paste_at(cv, tg, -22, y, 1.0, rot)
+
 def main(out):
     S = SS
     cv = Image.new('RGBA', (W * S, H * S))
@@ -70,6 +171,8 @@ def main(out):
     if ox < 0:
         lay = lay.crop((-ox, 0, lay.width, lay.height)); ox = 0
     cv.alpha_composite(lay, (ox, oy))
+    # 4b. 左边类型列表（盖住立绘左半边：举起的手臂、下半身，同原版队伍列表）
+    left_list(cv, 12, {'attack': 5, 'skill': 5, 'power': 2}, {'attack': 2, 'skill': 1})
     # 5. 右上标题牌 MeNu&DISCARD（原版 MeNu& 字图 + P5 字图 DISCARD + 原版 COMMAND SELECT）
     plate = Image.new('RGBA', (430 * S, 130 * S)); pd = ImageDraw.Draw(plate)
     pd.rectangle([0, 0, 430 * S, 130 * S], fill=(235, 235, 235)); pd.rectangle([6 * S, 6 * S, 424 * S, 124 * S], fill=(10, 10, 10))
@@ -95,9 +198,9 @@ def main(out):
     place(cv, sw, 1600, 728, 1 / S, 16)
     # 7. COMMAND（原版字图，黑字压在浅灰身体上，同原版 ITEM 页）+ 说明
     from mock_draw import tint
-    place(cv, tint(spr('00201'), (12, 12, 12)), 800, 940, 0.36, 4)      # 原版 ITEM 页：COMMAND 是黑字压在浅灰身体上
+    place(cv, tint(spr('00201'), (12, 12, 12)), 840, 940, 0.36, 4)      # 原版 ITEM 页：COMMAND 是黑字压在浅灰身体上
     cap = Image.new('RGBA', (420 * S, 60 * S)); ImageDraw.Draw(cap).text((6 * S, 6 * S), '弃牌堆 · 12 张', font=ImageFont.truetype(CJK, 30 * S), fill=(240, 240, 240), stroke_width=4 * S, stroke_fill=(10, 10, 10))
-    place(cv, cap, 840, 1040, 1 / S, 4)
+    place(cv, cap, 880, 1040, 1 / S, 4)
     cv.resize((W, H), Image.LANCZOS).convert('RGB').save(out, quality=92)
 
 if __name__ == '__main__':
