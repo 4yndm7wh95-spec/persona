@@ -21,13 +21,24 @@ namespace P3Makoto.Vfx;
 /// </summary>
 public sealed class SovereignButterfly
 {
-	private const int Trail = 24;
-	private const float TrailSpan = 0.75f;
+	// 拖尾（用户 2026-11-23：原来那串连续的光团太黏，像一坨橡皮泥黏在屁股上、像负重）：
+	// 改成「翅尖两道一下就散的细光丝」+「下扑时从翅尖抖落、甩出去以后自己飘的鳞粉」——粒子出来就不跟着蝴蝶走了
+	private const int Tip = 14, MaxDust = 40;
+	private const float TipSpan = 0.3f;
 
 	private readonly Func<(Vector2 Feet, float Tall)?> _body;
 	private readonly ColorRect _front, _back;
 	private readonly ShaderMaterial _fm, _bm;
-	private readonly Vector4[] _trail = new Vector4[Trail];
+	private readonly Vector4[] _tipL = new Vector4[Tip], _tipR = new Vector4[Tip];     // xy = 画布像素，z = 亮度，w = 深度
+	private readonly Vector3[] _tipHistL = new Vector3[64], _tipHistR = new Vector3[64];
+	private readonly float[] _tipT = new float[64];
+	private int _tipN;
+	private readonly Vector2[] _dp = new Vector2[MaxDust], _dv = new Vector2[MaxDust];
+	private readonly float[] _dAge = new float[MaxDust], _dLife = new float[MaxDust], _dDepth = new float[MaxDust];
+	private readonly Vector4[] _dust = new Vector4[MaxDust];
+	private int _dNext;
+	private float _emitAcc, _prevS;
+	private readonly RandomNumberGenerator _rng = new();
 	private readonly Vector3[] _hist = new Vector3[256];
 	private readonly float[] _histT = new float[256];
 	private int _histN;
@@ -138,12 +149,51 @@ public sealed class SovereignButterfly
 
 		Vector2 c0 = feet + new Vector2(-1.2f, -1.45f) * T, size = new Vector2(2.4f, 1.8f) * T;
 		foreach (ColorRect cr in new[] { _front, _back }) { cr.Position = c0; cr.Size = size; }
-		for (int i = 0; i < Trail; i++)
+		// 屏幕上的翅尖（右 / 左翅的翅尖在翅面坐标 (s 0.95, t 0.55)）
+		Vector3 ScrV(Vector3 v) => new(v.X, v.Y - v.Z * 0.18f, v.Z);
+		Vector3 f3 = ScrV(_fwd), r3 = ScrV(r), u3 = ScrV(u);
+		Vector3 wr3 = r3 * Mathf.Cos(a) + u3 * Mathf.Sin(a), wl3 = -r3 * Mathf.Cos(a) + u3 * Mathf.Sin(a);
+		Vector2 tipR = sp + (new Vector2(f3.X, f3.Y) * 0.55f + new Vector2(wr3.X, wr3.Y) * 0.95f) * scale;
+		Vector2 tipL = sp + (new Vector2(f3.X, f3.Y) * 0.55f + new Vector2(wl3.X, wl3.Y) * 0.95f) * scale;
+		_tipHistL.AsSpan(0, 63).CopyTo(_tipHistL.AsSpan(1)); _tipHistR.AsSpan(0, 63).CopyTo(_tipHistR.AsSpan(1)); _tipT.AsSpan(0, 63).CopyTo(_tipT.AsSpan(1));
+		_tipHistL[0] = new Vector3(tipL.X, tipL.Y, depth); _tipHistR[0] = new Vector3(tipR.X, tipR.Y, depth); _tipT[0] = _t;
+		_tipN = Math.Min(_tipN + 1, 64);
+		for (int i = 0; i < Tip; i++)
 		{
-			float age = TrailSpan * (i + 1) / Trail;
-			Vector3 h = Sample(_t - age);
-			float fade = 1f - (float)i / (Trail - 1);
-			_trail[i] = new Vector4(h.X - c0.X, h.Y - c0.Y, fade, h.Z);
+			float age = TipSpan * i / (Tip - 1), fade = 1f - (float)i / (Tip - 1);
+			Vector3 hl = SampleTip(_tipHistL, _t - age), hr = SampleTip(_tipHistR, _t - age);
+			_tipL[i] = new Vector4(hl.X - c0.X, hl.Y - c0.Y, fade, hl.Z);
+			_tipR[i] = new Vector4(hr.X - c0.X, hr.Y - c0.Y, fade, hr.Z);
+		}
+		// 鳞粉：下扑的那一下从两个翅尖各抖落 1～2 粒，平时零星几粒；出来以后自己飘（带一点蝴蝶的惯性，空气拖慢、轻轻打旋、慢慢往下落）
+		Vector2 bv = _histN > 3 ? new Vector2(_hist[0].X - _hist[3].X, _hist[0].Y - _hist[3].Y) / Mathf.Max(_histT[0] - _histT[3], 1e-3f) : Vector2.Zero;
+		bool down = _prevS > 0.62f && s <= 0.62f;
+		_prevS = s;
+		_emitAcc += dt * 5f;
+		int emit = down ? 3 : 0;
+		while (_emitAcc >= 1f) { emit++; _emitAcc -= 1f; }
+		for (int e = 0; e < emit; e++)
+		{
+			int k = _dNext; _dNext = (_dNext + 1) % MaxDust;
+			Vector2 at = (e % 2 == 0) ? tipR : tipL;
+			_dp[k] = at + new Vector2(_rng.RandfRange(-1f, 1f), _rng.RandfRange(-1f, 1f)) * scale * 0.15f;
+			Vector2 outward = (at - sp).Normalized();
+			_dv[k] = bv * 0.18f + outward * T * _rng.RandfRange(0.05f, 0.16f) + new Vector2(_rng.RandfRange(-1f, 1f), _rng.RandfRange(-1f, 0.4f)) * T * 0.05f;
+			_dAge[k] = 0f;
+			_dLife[k] = _rng.RandfRange(0.55f, 1.05f);
+			_dDepth[k] = depth;
+		}
+		for (int k = 0; k < MaxDust; k++)
+		{
+			if (_dLife[k] <= 0f) { _dust[k] = new Vector4(0f, 0f, 0f, 0f); continue; }
+			_dAge[k] += dt;
+			float lifeK = 1f - _dAge[k] / _dLife[k];
+			if (lifeK <= 0f) { _dLife[k] = 0f; _dust[k] = Vector4.Zero; continue; }
+			_dv[k] *= Mathf.Exp(-2.4f * dt);
+			_dv[k] += new Vector2(Mathf.Sin(_dp[k].Y * 0.025f + _t * 2.1f + k), Mathf.Cos(_dp[k].X * 0.025f + _t * 1.7f + k)) * T * 0.09f * dt;
+			_dv[k].Y += T * 0.05f * dt;
+			_dp[k] += _dv[k] * dt;
+			_dust[k] = new Vector4(_dp[k].X - c0.X, _dp[k].Y - c0.Y, lifeK, _dDepth[k]);
 		}
 		// 屏幕坐标系下的 3D 方向（y 向下；z 朝镜头，投影时 z 往上挪 0.18）
 		Vector3 Scr(Vector3 v) => new(v.X, v.Y - v.Z * 0.18f, v.Z);
@@ -158,12 +208,29 @@ public sealed class SovereignButterfly
 			m.SetShaderParameter("flap_spread", da);
 			m.SetShaderParameter("scale", scale);
 			m.SetShaderParameter("depth", depth);
-			m.SetShaderParameter("trail", _trail);
+			m.SetShaderParameter("tip_l", _tipL);
+			m.SetShaderParameter("tip_r", _tipR);
+			m.SetShaderParameter("dust", _dust);
 			m.SetShaderParameter("unit", T);
 			m.SetShaderParameter("clock", _t);
 			m.SetShaderParameter("alpha", _alpha);
 			m.SetShaderParameter("burst", burst);
 		}
+	}
+
+	private Vector3 SampleTip(Vector3[] h, float t)
+	{
+		if (_tipN == 0) return Vector3.Zero;
+		for (int i = 0; i < _tipN - 1; i++)
+		{
+			if (_tipT[i + 1] <= t)
+			{
+				float span = _tipT[i] - _tipT[i + 1];
+				float u = span > 1e-5f ? (t - _tipT[i + 1]) / span : 0f;
+				return h[i + 1].Lerp(h[i], u);
+			}
+		}
+		return h[_tipN - 1];
 	}
 
 	private Vector3 Sample(float t)
@@ -201,7 +268,9 @@ uniform float flap_spread = 0.05;
 uniform float scale = 30.0;
 uniform float depth = 0.0;
 uniform float side = 1.0;
-uniform vec4 trail[24];
+uniform vec4 tip_l[14];
+uniform vec4 tip_r[14];
+uniform vec4 dust[40];
 uniform float unit = 400.0;
 uniform float clock = 0.0;
 uniform float alpha = 1.0;
@@ -277,24 +346,35 @@ void fragment() {
 	vec4 acc = vec4(0.0);
 	vec3 glow = vec3(0.0);
 
-	// ── 拖尾：四角星闪光 + 往下飘的鳞粉 ──
-	for (int i = 0; i < 24; i++) {
-		vec4 tp = trail[i];
-		float lw = layerW(tp.w);
-		if (lw <= 0.001 || tp.z <= 0.001) continue;
-		float age = 1.0 - tp.z;
-		for (int k = 0; k < 2; k++) {
-			float hk = h12(vec2(float(i) * 1.7, float(k) + floor(clock * 0.4)));
-			vec2 off = vec2((hk - 0.5) * unit * 0.07, age * age * unit * 0.14 + (h12(vec2(hk, 3.0)) - 0.5) * unit * 0.03);
-			vec2 dd = p - (tp.xy + off);
-			float rr = unit * (0.003 + 0.005 * tp.z);
-			float tw = 0.4 + 0.6 * pow(0.5 + 0.5 * sin(clock * 8.0 + hk * 40.0), 2.0);
-			float star = exp(-abs(dd.x) * abs(dd.y) / (rr * rr * 0.6)) * exp(-length(dd) / (rr * 3.0));
-			float dotg = exp(-dot(dd, dd) / (rr * rr));
-			glow += vec3(0.5, 0.82, 1.0) * (star * 0.9 + dotg) * tw * tp.z * lw;
+	// ── 翅尖两道细光丝：很细、很淡、0.3s 就散（划过空气的痕迹，不是一条光带）──
+	for (int side_i = 0; side_i < 2; side_i++) {
+		for (int i = 0; i < 13; i++) {
+			vec4 a0 = side_i == 0 ? tip_l[i] : tip_r[i];
+			vec4 a1 = side_i == 0 ? tip_l[i + 1] : tip_r[i + 1];
+			float lw = layerW(a0.w);
+			if (lw <= 0.001 || a0.z <= 0.001) continue;
+			vec2 ab = a1.xy - a0.xy;
+			float h = clamp(dot(p - a0.xy, ab) / max(dot(ab, ab), 1e-3), 0.0, 1.0);
+			float d = length(p - (a0.xy + ab * h));
+			float fz = mix(a0.z, a1.z, h);
+			float w = unit * 0.0018 * (0.4 + fz);
+			glow += vec3(0.55, 0.85, 1.0) * (exp(-d * d / (w * w)) * 0.55 + exp(-d / (w * 6.0)) * 0.06) * fz * fz * lw;
 		}
-		vec2 d0 = p - tp.xy; float r0 = unit * mix(0.004, 0.016, tp.z);
-		glow += vec3(0.2, 0.5, 1.0) * exp(-dot(d0, d0) / (r0 * r0)) * tp.z * 0.35 * lw;
+	}
+	// ── 鳞粉：甩出去自己飘的小闪光（四角星 + 一点芯），一闪一闪 ──
+	for (int i = 0; i < 40; i++) {
+		vec4 dp = dust[i];
+		if (dp.z <= 0.001) continue;
+		float lw = layerW(dp.w);
+		if (lw <= 0.001) continue;
+		vec2 dd = p - dp.xy;
+		float hk = h12(vec2(float(i), 7.0));
+		float rr = unit * mix(0.0025, 0.0055, hk) * (0.6 + 0.4 * dp.z);
+		if (dot(dd, dd) > rr * rr * 120.0) continue;
+		float tw = 0.35 + 0.65 * pow(0.5 + 0.5 * sin(clock * (10.0 + hk * 8.0) + hk * 40.0), 3.0);
+		float star = exp(-abs(dd.x) * abs(dd.y) / (rr * rr * 0.5)) * exp(-length(dd) / (rr * 3.5));
+		float dotg = exp(-dot(dd, dd) / (rr * rr));
+		glow += mix(vec3(0.45, 0.75, 1.0), vec3(0.85, 0.95, 1.0), hk) * (star * 0.8 + dotg) * tw * dp.z * lw;
 	}
 
 	// ── 蝴蝶本体（3D 翅膀 + 身体）──
