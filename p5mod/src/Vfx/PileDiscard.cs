@@ -10,7 +10,9 @@ namespace P5Joker;
 /// 黑块 + 黑白星纹条、撞色立绘（原版 CAMPITEM_2D01，斜线右边黑 → 浅灰）、标题牌、COMMAND、左边列表每行的头像底 / 图标、两个标签牌。
 /// 运行时做：红星纹底、左边面板（斜边 + 白边 + 内侧红条）、每行的张数 / 已升级数（原版数字字图）和文字、
 /// 右下浅灰斜带和它下面的红底（盖在牌上面，牌从下面钻过去）、入场 / 退场。
-/// 入场（约 0.5s）：红底从右下铺开 → 黑块从右边甩进来、立绘从左边推进来 → 左边面板滑进、六行依次弹出 → 标题牌 / COMMAND 压上 → 斜带从右下切进来 → 牌飞入。
+/// 入场照原版 ITEM 页序号 177–185 逐帧还原（tools/p5/menu3d/item_entrance.py：逐帧拟合的机位 + 从原版截图取的区域形状，PileDiscardEntrance.cs）：
+/// 主菜单的黑白星纹底上，原版 3D Joker 转身、手扫过脸、手举到头边，镜头一路推近；黑区（P 系列撞色：Joker 进去变白）和右下的红底逐帧变形状；
+/// 然后硬切成 2D 立绘 + 最终排版（同原版第 186 帧），左边面板滑进、六行弹出、标题牌 / COMMAND 压上、斜带切进来、牌飞入。
 /// </summary>
 public sealed class PileDiscard : IPileDecor
 {
@@ -44,22 +46,21 @@ public sealed class PileDiscard : IPileDecor
 		("curse", new(3f, 896f), 65.35f, 1178.57f, -2f),
 	};
 
-	// ── 入场的原版菜单 3D Joker（tools/p5/menu3d/item_entrance.py，research/p5r/menu3d_item）：原版 ITEM 页 177–186 十帧，
-	//    镜头从远处推近（右边站着的小 Joker → 转身、手扫过 → 低头特写），之后硬切成 2D 立绘（同另外两页）。
-	//    帧图在原版屏幕坐标里的左上角 = M3dAt；原版立绘 = 缩放 0.5、左上 (0, 0)，我们的立绘 = 缩放 1500/3072、左上 (-80, 0) → 同一个变换 Map ──
+	// ── 入场（原版序号 177–185，九帧）：帧图 / 区域都是原版屏幕坐标；原版立绘 = 缩放 0.5、左上 (0, 0)，我们的立绘 = 缩放 1500/3072、左上 (-80, 0)
+	//    → 同一个变换 Map 把原版坐标换到我们的排版（3D → 2D 立绘的相对位置和原版一样）──
 	private const float MapK = 1500f / 3072f / 0.5f;
 	private static Vector2 Map(Vector2 p) => p * MapK + new Vector2(-80f, 0f);
-	private static readonly Vector2[] M3dAt =
-	{
-		new(1120f, 238f), new(1051f, 215f), new(787f, 157f), new(625f, 3f), new(186f, -60f), new(-60f, -60f), new(-60f, -60f), new(-60f, -60f), new(-60f, -60f), new(-60f, -60f),
-	};
-	private const float M3dStart = 0.05f, M3dDt = 0.036f;
-	/// <summary>切成 2D 立绘的时刻（最后一帧 3D 播完）。</summary>
-	private const float CutAt = M3dStart + 10 * M3dDt;
-	/// <summary>撞色斜线（我们的排版坐标，同 export_discard.py 的 A_TOP / A_BOT）：右边黑 → 浅灰、白 → 黑。</summary>
-	private static readonly Vector2 SlantA = new(1019.1f, -39.1f), SlantB = new(544.4f, 1093.8f);
-	private readonly Texture2D?[] _m3dTex = new Texture2D?[10];
+	/// <summary>原版一帧（录像 27.5fps）；第 k 帧在 FrameStart + k·FrameDt 显示，九帧放完硬切 2D 立绘。</summary>
+	private const float FrameStart = 0.086f, FrameDt = 0.036f;
+	private const int FrameCount = 9;
+	/// <summary>切成 2D 立绘的时刻（= 原版第 186 帧）。</summary>
+	private const float CutAt = FrameStart + FrameCount * FrameDt;
+	private readonly Texture2D?[] _m3dTex = new Texture2D?[FrameCount];
+	private readonly Node2D _entrance;
 	private readonly Sprite2D? _m3d;
+	private readonly ShaderMaterial _invertMat;
+	private readonly List<Polygon2D> _darkPaper = new(), _darkInvert = new(), _redMasks = new();
+	private int _shownFrame = -1;
 
 	private readonly Control _root;
 	private readonly Vector2 _view;
@@ -92,15 +93,41 @@ public sealed class PileDiscard : IPileDecor
 		// 2. 黑块 + 星纹条、3. 撞色立绘
 		_slab = Layer(root, "slab", R(548f, 0f));
 		_portrait = Layer(root, "portrait", Vector2.Zero);
-		for (int i = 0; i < 10; i++) _m3dTex[i] = Fx.Tex($"pile_dc3d_{i:00}");
+		// 2b. 入场（原版 177–185）：主菜单的黑白星纹底 → 黑区先画成白纸 → 3D Joker → 读屏把黑区反色（白纸 → 黑、黑 Joker → 白，同消耗堆的撞色）→ 红底
+		_entrance = new Node2D { Name = "PileDiscardEntrance" };
+		root.AddChild(_entrance);
+		ShaderMaterial plateMat = PileDraw.StarMaterial(118f, new Color(0.91f, 0.91f, 0.91f), new Color(0.03f, 0.03f, 0.03f), new Color(0.376f, 0.376f, 0.376f), Vector2.Zero);
+		plateMat.SetShaderParameter("size", view);
+		_entrance.AddChild(new ColorRect { Size = view, Material = plateMat, MouseFilter = Control.MouseFilterEnum.Ignore });
+		Node2D paper = new();
+		_entrance.AddChild(paper);
+		for (int i = 0; i < FrameCount; i++) _m3dTex[i] = Fx.Tex($"pile_dc3d_{i:00}");
 		if (_m3dTex[0] != null)
 		{
-			ShaderMaterial sm = new() { Shader = SlantShader };
-			sm.SetShaderParameter("a", SlantA * k);
-			sm.SetShaderParameter("b", SlantB * k);
-			_m3d = new Sprite2D { Texture = _m3dTex[0], Centered = false, Scale = Vector2.One * MapK * k, Material = sm, TextureFilter = CanvasItem.TextureFilterEnum.Linear, Visible = false };
-			root.AddChild(_m3d);
-			root.MoveChild(_m3d, _portrait.GetIndex());
+			_m3d = new Sprite2D { Texture = _m3dTex[0], Centered = false, Scale = Vector2.One * MapK * k, TextureFilter = CanvasItem.TextureFilterEnum.Linear };
+			_entrance.AddChild(_m3d);
+		}
+		_entrance.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
+		Node2D inverted = new();
+		_entrance.AddChild(inverted);
+		_invertMat = new ShaderMaterial { Shader = InvertShader };
+		_invertMat.SetShaderParameter("sum", Paper.R + Ink.R);
+		int maxDark = PileDiscardEntrance.Dark.Max(f => f.Length), maxRed = PileDiscardEntrance.Red.Max(f => f.Length);
+		for (int i = 0; i < maxDark; i++)
+		{
+			_darkPaper.Add(new Polygon2D { Color = Paper, Antialiased = true });
+			paper.AddChild(_darkPaper[^1]);
+			_darkInvert.Add(new Polygon2D { Color = Colors.White, Antialiased = true, Material = _invertMat });
+			inverted.AddChild(_darkInvert[^1]);
+		}
+		ShaderMaterial redMat = (ShaderMaterial)_bg.Duplicate();
+		redMat.SetShaderParameter("wipe", 1e7f);
+		for (int i = 0; i < maxRed; i++)
+		{
+			Polygon2D m = new() { Color = Colors.White, ClipChildren = CanvasItem.ClipChildrenMode.Only, Antialiased = true };
+			m.AddChild(new ColorRect { Size = view, Material = redMat, MouseFilter = Control.MouseFilterEnum.Ignore });
+			_entrance.AddChild(m);
+			_redMasks.Add(m);
 		}
 
 		// 4. 左边面板：斜边（白边 + 黑 + 内侧红条）+ 六行 + 两个标签牌
@@ -117,7 +144,7 @@ public sealed class PileDiscard : IPileDecor
 			_panel.AddChild(node);
 			Layer(node, $"row{i}", row.Img * k);
 			RowText(node, row.Key, row.Hx, row.Yc, row.Tilt, n, up, i > 0);
-			_rows.Add((node, 0.16f + 0.045f * i, n > 0 ? 1f : 0.42f));
+			_rows.Add((node, 0.03f + 0.03f * i, n > 0 ? 1f : 0.42f));     // 切到最终排版之后的延迟
 		}
 		_tags.Add(Layer(_panel, "tag_discard", new Vector2(0f, 20f) * k));
 		_tags.Add(Layer(_panel, "tag_bytype", new Vector2(0f, 282f) * k));
@@ -208,25 +235,54 @@ public sealed class PileDiscard : IPileDecor
 
 	public void Kick() { }
 
-	private static Shader? _slant;
-	/// <summary>3D Joker 的撞色（同 2D 立绘导出时的处理）：斜线右边按亮度反过来 —— 黑 → 浅灰、白 → 黑。</summary>
-	private static Shader SlantShader => _slant ??= new Shader { Code = @"
+	private static Shader? _inv;
+	/// <summary>入场的黑区：读屏把两种色调互换（sum = 纸色 + 墨色：白纸 → 墨黑，黑 Joker → 纸白，脸 → 暗），多边形边缘按覆盖率混合。</summary>
+	private static Shader InvertShader => _inv ??= new Shader { Code = @"
 shader_type canvas_item;
-uniform vec2 a = vec2(0.0);
-uniform vec2 b = vec2(0.0);
-varying vec2 wp;
-void vertex() { wp = (MODEL_MATRIX * vec4(VERTEX, 0.0, 1.0)).xy; }
+uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
+uniform float sum = 0.98;
 void fragment() {
-	vec4 c = COLOR;                       // canvas_item 的 COLOR 已经是贴图 × 调制色
-	vec2 d = b - a;
-	float side = d.x * (wp.y - a.y) - d.y * (wp.x - a.x);
-	if (side < 0.0) {
-		float lum = (c.r + c.g + c.b) / 3.0;
-		c.rgb = vec3(clamp(222.0 / 255.0 - lum * (214.0 / 255.0), 8.0 / 255.0, 230.0 / 255.0));
-	}
-	COLOR = c;
+	vec3 s = texture(screen_tex, SCREEN_UV).rgb;
+	COLOR = vec4(clamp(vec3(sum) - s, 0.0, 1.0), COLOR.a);
 }
 " };
+
+	/// <summary>原版坐标的区域点 → 屏幕：贴原版画面右 / 下边（生成时推到边外的点）推到屏幕边外（我们的排版把原版缩小了，原版右 / 下边缘落在屏幕里面）。</summary>
+	private Vector2 MapEdge(Vector2 p)
+	{
+		Vector2 q = Map(p) * _k;
+		if (p.X >= 1950f) q.X = _view.X + 40f;
+		if (p.Y >= 1110f) q.Y = _view.Y + 40f;
+		return q;
+	}
+
+	/// <summary>换到入场第 f 帧：3D 帧图、黑区、红底。</summary>
+	private void ShowFrame(int f)
+	{
+		if (f == _shownFrame) return;
+		_shownFrame = f;
+		Vector2[][] dark = PileDiscardEntrance.Dark[f], red = PileDiscardEntrance.Red[f];
+		for (int i = 0; i < _darkPaper.Count; i++)
+		{
+			bool on = i < dark.Length;
+			_darkPaper[i].Visible = _darkInvert[i].Visible = on;
+			if (!on) continue;
+			Vector2[] pts = dark[i].Select(MapEdge).ToArray();
+			_darkPaper[i].Polygon = pts;
+			_darkInvert[i].Polygon = pts;
+		}
+		for (int i = 0; i < _redMasks.Count; i++)
+		{
+			bool on = i < red.Length;
+			_redMasks[i].Visible = on;
+			if (on) _redMasks[i].Polygon = red[i].Select(MapEdge).ToArray();
+		}
+		if (_m3d != null && _m3dTex[f] is Texture2D t)
+		{
+			_m3d.Texture = t;
+			_m3d.Position = Map(PileDiscardEntrance.FrameAt[f]) * _k;
+		}
+	}
 
 	public void BeginExit(float now)
 	{
@@ -249,44 +305,42 @@ void fragment() {
 		float k = _k;
 		float reach = (_view + new Vector2(0f, _view.Y)).Length() * 1.05f;
 		_bg.SetShaderParameter("wipe", t >= 0.3f ? 1e7f : Ease5.OutQuint(Seg(t, 0f, 0.3f)) * reach);
-		// 黑块从右边甩进来、立绘从左边推进来（两块在撞色斜线那里对上）
-		float a = Ease5.OutExpo(Seg(t, 0.03f, 0.3f));
-		_slab.Position = new Vector2(548f * k + _rx + 900f * k * (1f - a), 0f);
-		_slab.Modulate = new Color(1f, 1f, 1f, Seg(t, 0.03f, 0.06f));
-		// 3D Joker 逐帧（镜头推近、转身、手扫过），CutAt 硬切成 2D 立绘：压一下再回弹（同另外两页砸下来的那一下）
+		// 入场：九帧原版画面（星纹底 + 黑区 + 3D Joker + 红底），开头从右边甩进来；CutAt 硬切成 2D 立绘 + 最终排版（同原版第 186 帧）
 		bool cut = t >= CutAt;
-		if (_m3d != null)
+		_entrance.Visible = !cut;
+		if (!cut)
 		{
-			int i = Mathf.Clamp(Mathf.FloorToInt((t - M3dStart) / M3dDt), 0, 9);
-			if (_m3dTex[i] is Texture2D f && _m3d.Texture != f) _m3d.Texture = f;
-			_m3d.Position = Map(M3dAt[i]) * k;
-			_m3d.Visible = t >= M3dStart && !cut;
+			ShowFrame(Mathf.Clamp(Mathf.FloorToInt((t - FrameStart) / FrameDt), 0, FrameCount - 1));
+			_entrance.Position = new Vector2(_view.X * 0.7f * (1f - Ease5.OutExpo(Seg(t, 0f, 0.1f))), 0f);
 		}
-		_portrait.Visible = cut || _m3d == null;
+		_slab.Visible = _portrait.Visible = _panel.Visible = _bandRoot.Visible = cut;
+		_slab.Position = new Vector2(548f * k + _rx, 0f);
+		_slab.Modulate = Colors.White;
+		// 切的那一下：立绘压一下再回弹 + 界面一震（同另外两页砸下来的那一下）
 		float bump = cut ? Mathf.Lerp(0.965f, 1f, Ease5.OutBack(Seg(t, CutAt, 0.14f))) : 1f;
 		_portrait.Scale = Vector2.One * bump;
 		_portrait.Position = new Vector2(760f, 540f) * k * (1f - bump);
 		_portrait.Modulate = Colors.White;
 		_root.Position = cut ? new Vector2(Mathf.Sin((t - CutAt) * 44f) * 5f, Mathf.Cos((t - CutAt) * 34f) * 10f) * k * Mathf.Pow(Mathf.Max(0f, 1f - (t - CutAt) / 0.22f), 2f) : Vector2.Zero;
-		// 左边面板滑进来，六行依次弹出
-		float l = Ease5.OutExpo(Seg(t, 0.1f, 0.28f));
+		// 左边面板滑进来，六行依次弹出（原版第 186 帧队伍列表已经在了，这里快一点）
+		float l = Ease5.OutExpo(Seg(t, CutAt, 0.16f));
 		_panel.Position = new Vector2(-520f * k * (1f - l), 0f);
 		foreach (var (node, delay, alpha) in _rows)
 		{
-			float r = Seg(t, delay, 0.22f);
+			float r = Seg(t, CutAt + delay, 0.2f);
 			node.Position = new Vector2(-140f * k * (1f - Ease5.OutBack(r)), 0f);
 			node.Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, r * 4f) * alpha);
 		}
 		for (int i = 0; i < _tags.Count; i++)
 		{
-			float q = Ease5.OutBack(Seg(t, 0.34f + 0.05f * i, 0.16f));
+			float q = Ease5.OutBack(Seg(t, CutAt + 0.12f + 0.05f * i, 0.16f));
 			_tags[i].Scale = Vector2.One * Mathf.Lerp(1.5f, 1f, q);
-			_tags[i].Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, Seg(t, 0.34f + 0.05f * i, 0.05f)));
+			_tags[i].Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, Seg(t, CutAt + 0.12f + 0.05f * i, 0.05f)));
 		}
-		Pop(_title, t, 0.3f, R0(1458f, 7f));
-		Pop(_command, t, 0.34f, Vector2.Zero);
+		Pop(_title, t, CutAt + 0.02f, R0(1458f, 7f));
+		Pop(_command, t, CutAt + 0.05f, Vector2.Zero);
 		// 斜带从右下切进来
-		float b = Ease5.OutExpo(Seg(t, 0.28f, 0.26f));
+		float b = Ease5.OutExpo(Seg(t, CutAt + 0.02f, 0.22f));
 		_bandRoot.Position = new Vector2(700f, 260f) * k * (1f - b);
 	}
 
@@ -303,8 +357,8 @@ void fragment() {
 	{
 		float k = _k;
 		_root.Position = Vector2.Zero;
-		if (_m3d != null) _m3d.Visible = false;
-		_portrait.Visible = true;
+		_entrance.Visible = false;
+		_slab.Visible = _portrait.Visible = _panel.Visible = _bandRoot.Visible = true;
 		_portrait.Scale = Vector2.One;
 		float reach = (_view + new Vector2(0f, _view.Y)).Length() * 1.05f;
 		_bg.SetShaderParameter("wipe", reach * (1f - Ease5Ext.InCubic(Seg(e, 0.15f, 0.85f))));
@@ -321,7 +375,7 @@ void fragment() {
 
 	public static readonly string[] Textures =
 	{
-		"pile_dc3d_00", "pile_dc3d_01", "pile_dc3d_02", "pile_dc3d_03", "pile_dc3d_04", "pile_dc3d_05", "pile_dc3d_06", "pile_dc3d_07", "pile_dc3d_08", "pile_dc3d_09",
+		"pile_dc3d_00", "pile_dc3d_01", "pile_dc3d_02", "pile_dc3d_03", "pile_dc3d_04", "pile_dc3d_05", "pile_dc3d_06", "pile_dc3d_07", "pile_dc3d_08",
 		"pile_dc_slab", "pile_dc_portrait", "pile_dc_title", "pile_dc_command", "pile_dc_underline", "pile_dc_tag_discard", "pile_dc_tag_bytype",
 		"pile_dc_row0", "pile_dc_row1", "pile_dc_row2", "pile_dc_row3", "pile_dc_row4", "pile_dc_row5",
 	};

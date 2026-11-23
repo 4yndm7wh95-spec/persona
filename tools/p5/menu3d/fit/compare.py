@@ -18,7 +18,8 @@ font = ImageFont.truetype('/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc', 22)
 CW, CH = 640, 360; rows = []
 for i in range(a, b + 1):
     t = hand - (cut - i) * DT
-    n = max(0, min(len(files) - 1, int(round((OPEN + t) * 30))))
+    # 取这一帧显示区间的中间（区间起点正好卡在帧边界上，录屏 30fps 一取整就会落到前一帧）
+    n = max(0, min(len(files) - 1, int(round((OPEN + t + DT * 0.5) * 30))))
     o = orig(i); om = o.resize((round(1920 * MK), round(1080 * MK)), Image.LANCZOS)
     c = Image.new('RGB', (1920, 1080), (30, 30, 30)); c.paste(om, (round(px - ox * MK), round(py - oy * MK)))
     row = Image.new('RGB', (CW * 2 + 12, CH + 34), (18, 18, 18))

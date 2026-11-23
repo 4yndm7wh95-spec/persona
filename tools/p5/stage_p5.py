@@ -534,8 +534,8 @@ def pile_textures():
             ol.putalpha(a)
             yield name + "_ol", ol
         yield name, im
-    # 弃牌堆入场的原版菜单 3D Joker（tools/p5/menu3d/item_entrance.py 渲的 10 帧，research/p5r/menu3d_item）→ pile_dc3d_00…09
-    for i in range(10):
+    # 弃牌堆入场的原版菜单 3D Joker（tools/p5/menu3d/item_entrance.py 逐帧拟合渲的 9 帧 = 原版序号 177–185，research/p5r/menu3d_item）→ pile_dc3d_00…08
+    for i in range(9):
         f = ROOT / f"research/p5r/menu3d_item/f{i:02d}.png"
         if f.exists():
             yield f"pile_dc3d_{i:02d}", Image.open(f).convert("RGBA")
