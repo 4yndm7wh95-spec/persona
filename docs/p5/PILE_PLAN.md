@@ -56,7 +56,7 @@
 - 排版图：`docs/p5/preview/pile_draw_layout_v1.png`，生成脚本 `tools/p5/pile/mock_draw.py`。
 
 ## 实现（分支 claude/p5-pile-ui，2026-11-22）
-- `p5mod/src/PilePatches.cs`：`NCardPileScreen._Ready` 后置、`AfterCapstoneClosed` 前置（先播退场）。只接抽牌堆；其他牌堆没做之前走原版。
+- `p5mod/src/PilePatches.cs`：`NCardPileScreen._Ready` 后置、`AfterCapstoneClosed` 前置（先播退场）。现在接抽牌堆和消耗堆；弃牌堆、牌组没做之前走原版。
 - `p5mod/src/PileScreen.cs`：照搬 P3 PileFx 的交互（复用原版 NGridCardHolder、按类型 / 原版顺序、悬停名牌、点击翻牌特写 + 查看升级、手柄、滚动、出错回滚），配色和纸片换成 P5 剪报风。
 - `p5mod/src/Vfx/PileDraw.cs`（只依赖 Godot，预览工具能编译）：星纹 shader（49 颗原版星，左红右黑白）、原版立绘 / 字图、牌数大数字、真 3D 预告信（`CallingCard`）、入场 / 退场时间轴。
 - 设置：`P5Settings.Option.Pile`（设置页「牌堆界面（P5R 菜单风格）」）、`DrawOrder` 记住排列方式。
