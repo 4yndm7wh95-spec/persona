@@ -141,13 +141,14 @@ def main(out):
     # 2. 原版 ITEM 页的块面（frame 194–206 取中值后描的边，原版坐标 → m() 换到我们的排版）：
     #    黑块 = 撞色斜线右边、顶上一个红三角（星纹条和黑块之间）、右边一条斜边外是红底；右下一条浅灰斜带（原版放「消耗品 ●○○ Q/E」切分类），斜带下面是红底
     def lx(y): return A_TOP[0] + (A_BOT[0] - A_TOP[0]) * (y - A_TOP[1]) / (A_BOT[1] - A_TOP[1])
-    TL, TR, BR = m((1456, 0)), m((1700, 0)), m((1916, 795))
-    TIP, BOT = m((1309, 960)), m((1150, 1080))
+    # 用户 2026-11-23：右边牌的显示范围小了 → 右下浅灰斜带和下面的红底往下压（原版 795 / 960 → 905 / 1075），黑色牌区往下扩约一排
+    TL, TR, BR = m((1456, 0)), m((1700, 0)), m((1930, 905))
+    TIP, BOT = m((1335, 1075)), m((1290, 1120))
     BOT2 = (BOT[0] + (BOT[0] - TIP[0]) / (BOT[1] - TIP[1]) * (H - BOT[1]), H)
     TRI = m((1078, 112))
     slab = [(lx(TRI[1]), TRI[1]), TL, (TR[0], 0), BR, TIP, BOT, BOT2, (lx(H), H)]
     d.polygon([(x * S, y * S) for x, y in slab], fill=(8, 8, 8))
-    BAND = [m((1868, 632)), BR, TIP]
+    BAND = [m((1890, 785)), BR, TIP]
     globals()['BAND'] = BAND
     # 3. 黑白星纹条：原版在头的右边、斜线左边（PHANTOM / ITEM 那块）
     st = stars(W * S, H * S, base=118, n=8)
@@ -159,7 +160,7 @@ def main(out):
     fn = ImageFont.truetype(CJK, 15 * S)
     cols = [(182, 48, 40)] * 5 + [(40, 96, 160)] * 5 + [(196, 150, 40)] * 2
     cw, ch, cellw, cellh = 158, 222, 190, 252
-    x0, y0 = 1062, 180
+    x0, y0 = 1062, 170
     for i, c in enumerate(cols):
         r_, k_ = divmod(i, 3)
         cd = Image.new('RGBA', (cw * S, ch * S)); cdr = ImageDraw.Draw(cd)
@@ -207,7 +208,7 @@ def main(out):
         t = Image.open(f'art/p5/ui/pile_text/txt_{key}.png').convert('RGBA'); t = t.resize((max(1, int(t.width * 28 * S / t.height)), 28 * S), Image.LANCZOS)
         if key == 'bytype_zh': t = Image.fromarray((np.asarray(t) * np.array([0.55, 0.55, 0.55, 1])).astype(np.uint8))
         sw.alpha_composite(t, (int(cx * S - t.width / 2), 14 * S))
-    place(cv, sw, 1600, 728, 1 / S, 16)
+    place(cv, sw, 1640, 838, 1 / S, 16)
     # 7. COMMAND（原版字图，黑字压在浅灰身体上，同原版 ITEM 页）+ 说明
     from mock_draw import tint
     place(cv, tint(spr('00201'), (12, 12, 12)), 840, 940, 0.36, 4)      # 原版 ITEM 页：COMMAND 是黑字压在浅灰身体上
