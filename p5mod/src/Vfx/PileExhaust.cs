@@ -8,8 +8,11 @@ namespace P5Joker;
 /// 层次：红星纹底（不透明）→ 黑色大斜块 + 左下浅灰楔形（原版 SKILL 页的构图，矢量多边形）→ 立绘后面的黑白星纹斜带（同一份原版星纹数据）
 /// → 原版 Joker 咧嘴笑立绘（CAMPSKILL_2D01；放大到下切口在屏幕底边外、左切口在屏幕左边外，用户：不要露出立绘边缘）
 /// → 右上标题牌 MeNu&amp;EXHAUST → COMMAND + 说明；牌格子在右边黑块里（原版技能列表的位置）。
-/// 入场（同抽牌堆的节奏和力量感）：红底从右下角（消耗堆按钮）铺开，白色大斜板从右边扫进来，Joker 以黑剪影压在白板上滑入，
-/// 砸中那一刻（PileDraw.SlamAt，和原版 camp_open 的「啪」同一刻）硬切成原版构图：白板变黑块 + 灰楔形，立绘从放大砸下、压扁回弹，界面一震。
+/// 入场照原版 SKILL 页 frame 112–123 逐帧还原（tools/p5/menu3d/skill_entrance.py 拟合的机位和动作，research/p5r/menu3d_skill）：
+/// 红底从右下角铺开、白板扫进来；原版 3D Joker（main_0015 抬膝）低头站着，镜头慢慢右摇；然后镜头一仰、他一脚踩进来，
+/// 混合进定格姿势 main_0016（最后一帧 = 2D 立绘的姿势和机位）；砸中那一刻（PileDraw.SlamAt，camp_open 的「啪」）硬切成 2D 立绘，界面一震。
+/// P 系列的「区域反色」（用户 2026-11-22）：白板区域里 Joker 是白的（白底上看不见），黑色区域从直线 L 往右扫开，
+/// 区域里白板变黑、伸进来的那条腿就成了黑底上的白腿；L 正好是 2D 立绘里白腿左边那条直边，切到立绘时严丝合缝。
 /// </summary>
 public sealed class PileExhaust : IPileDecor
 {
@@ -29,33 +32,53 @@ public sealed class PileExhaust : IPileDecor
 	public Vector2 ExitOffset => new(260f, 40f);
 
 	private const float SlamAt = PileDraw.SlamAt, HandAt = SlamAt - 0.06f;
-	/// <summary>
-	/// 原版 frame_0118～0122 的「区域反色」（P5 的撞色：用户 2026-11-22 讲的）：Joker 一脚踏进白色区域，这块区域里黑白互换——
-	/// 白板变黑，伸进来的那条黑腿变白，和后面的黑底衬出来。之前的帧那条黑腿其实一直在（黑腿压在白板上）。
-	/// 这里在 LegAt 把白板区域整块反色（屏幕反色着色器，区域 = 白板去掉 Joker 上半身那一角），HandAt 再换成立绘砸下。
-	/// </summary>
-	private const float LegAt = 0.32f;
 	private static readonly Color Ink = PileDraw.Ink, Paper = PileDraw.Paper, Gray = new(0.84f, 0.84f, 0.84f);
 	private static readonly Vector2 PorAt = new(-80f, 40f);
 	private const float PorW = 1500f;
 
+	// ── 原版屏幕坐标 → 我们的排版：原版 2D 立绘（缩放 0.50795、左上 (0.47, 18.05)，拿 frame 123/124 配准的）对齐到我们的 PorAt / PorW，
+	//    3D 帧、白板边、反色区都用这同一个变换，所以 3D → 2D 的相对位置和原版一模一样 ──
+	private const float OrigArtScale = 0.50795f;
+	private static readonly Vector2 OrigArtAt = new(0.47f, 18.05f);
+	private const float MapK = PorW / 3072f / OrigArtScale;
+	private static Vector2 Map(Vector2 p) => (p - OrigArtAt) * MapK + PorAt;
+
+	/// <summary>原版一帧的时长（录像约 27.5fps = 0.0364s，稍微压快一点）；第 i 帧（原版 112+i）在 FrameT(i) 显示，原版 123（2D 立绘）= HandAt。</summary>
+	private const float FrameDt = 0.0335f;
+	private static float FrameT(float i) => HandAt - (11f - i) * FrameDt;
+	/// <summary>3D 帧的左上角（原版屏幕坐标，research/p5r/menu3d_skill/frames.json）。</summary>
+	private static readonly Vector2[] Sk3dAt =
+	{
+		new(-60f, -48f), new(-60f, -35f), new(-60f, -23f), new(-60f, -29f), new(-60f, -36f), new(-60f, -42f),
+		new(19f, -60f), new(-60f, 90f), new(-60f, 40f), new(-60f, 16f), new(-60f, 0f),
+	};
+	/// <summary>白板左边缘（原版屏幕坐标，y=500 / y=900 两点）：原版 112–117 量出来的，118 起 = 反色区左边的直线 L（= 立绘白腿的直边）。</summary>
+	private static readonly (Vector2 A, Vector2 B)[] EdgeKeys =
+	{
+		(new(905f, 500f), new(855f, 900f)), (new(980f, 500f), new(783f, 900f)), (new(1028f, 500f), new(750f, 900f)),
+		(new(1054f, 500f), new(731f, 900f)), (new(1056f, 500f), new(727f, 900f)), (new(1056f, 500f), new(727f, 900f)),
+		(new(834f, 500f), new(584f, 900f)),
+	};
+	/// <summary>
+	/// 黑色反色区 = 圆内 ∩ 白板（白板此时左边就是 L）。原版 118–120 的弧线拟合成同心圆、半径逐帧变大（均方根误差 15px）：
+	/// 117 半径刚好擦到 L（还没有黑区），118 一下子扫开一大片，之后继续往右，121 盖满。
+	/// </summary>
+	private static readonly Vector2 RCenter = new(185f, -397f);
+	private static readonly float[] RRadius = { 1026f, 1518f, 1621f, 1719f, 2000f, 2300f };
+
 	private readonly Control _root;
 	private readonly Vector2 _view;
 	private readonly float _k, _rx;
-	private readonly ShaderMaterial _bg, _por;
-	private readonly Polygon2D _slab, _wedge, _white, _invert;
+	private readonly ShaderMaterial _bg, _por, _coverMat, _invertMat;
+	private readonly Polygon2D _slab, _wedge, _plate, _cover, _invert;
+	private readonly Vector2[] _slabPts, _platePts;
 	private readonly Node2D _band, _portrait;
-	// 入场的原版 3D Joker（SKILL 页镜头，侧身插兜站着：main_0015 淡入 main_0113，共 11 帧）和它脚下扫过的弧形星纹带
 	private readonly Texture2D?[] _sk3d = new Texture2D?[11];
 	private readonly Sprite2D? _m3d;
-	private readonly Node2D _arc;
-	private readonly float _arcR0, _arcR1;
-	private readonly Vector2 _arcC;
 	private readonly Sprite2D _porSprite;
 	private readonly float _porScale = 1f;
 	private readonly List<(Node2D Node, Vector2 At, float Rot, float Delay)> _pops = new();
 	private float _exitT0 = -1f;
-	private bool _slammed;
 
 	public PileExhaust(Control root, Vector2 view, int count)
 	{
@@ -74,16 +97,16 @@ public sealed class PileExhaust : IPileDecor
 		_bg.SetShaderParameter("wipe", 0f);
 		root.AddChild(new ColorRect { Name = "PileBg", Size = view, Material = _bg, MouseFilter = Control.MouseFilterEnum.Ignore });
 
-		// 2. 黑色大斜块 + 左下灰楔形（原版构图），入场时先是同形状的白板
-		Vector2[] slab = { R(560f, 0f), R(1650f, 0f), R(1920f, 300f), R(1920f, 760f), R(1350f, 1080f), R(560f, 1080f) };
-		_slab = new Polygon2D { Polygon = slab, Color = new Color(0.03f, 0.03f, 0.03f), Antialiased = true, Visible = false };
+		// 2. 最终构图：黑色大斜块 + 左下灰楔形（砸中时才出现）
+		_slabPts = new[] { R(560f, 0f), R(1650f, 0f), R(1920f, 300f), R(1920f, 760f), R(1350f, 1080f), R(560f, 1080f) };
+		// 入场白板的外轮廓 = 黑块往左延伸到 x=300（左边由白板边 / 直线 L 裁）：原版反色区一直贴着 L 到屏幕底，立绘白腿也越过 x=560
+		_platePts = new[] { R(300f, 0f), R(1650f, 0f), R(1920f, 300f), R(1920f, 760f), R(1350f, 1080f), R(300f, 1080f) };
+		_slab = new Polygon2D { Polygon = _slabPts, Color = new Color(0.03f, 0.03f, 0.03f), Antialiased = true, Visible = false };
 		root.AddChild(_slab);
 		_wedge = new Polygon2D { Polygon = new[] { R(560f, 1080f), R(560f, 620f), R(1350f, 1080f) }, Color = Gray, Antialiased = true, Visible = false };
 		root.AddChild(_wedge);
-		_white = new Polygon2D { Polygon = slab, Color = Paper, Antialiased = true };
-		root.AddChild(_white);
 
-		// 3. 立绘后面的黑白星纹斜带：裁在一个斜四边形里（clip_children）
+		// 3. 立绘 / 3D Joker 后面的黑白星纹斜带：裁在一个斜四边形里（clip_children）；入场时就在 Joker 身后（原版 112–117 头后面的星纹）
 		Polygon2D bandMask = new() { Polygon = new[] { R(600f, 0f), R(900f, 0f), R(700f, 520f), R(560f, 520f) }, Color = Colors.White, ClipChildren = CanvasItem.ClipChildrenMode.Only, Visible = false };
 		root.AddChild(bandMask);
 		ShaderMaterial bandMat = PileDraw.StarMaterial(118f, new Color(0.91f, 0.91f, 0.91f), new Color(0.03f, 0.03f, 0.03f), new Color(0.376f, 0.376f, 0.376f), Vector2.Zero);
@@ -91,49 +114,36 @@ public sealed class PileExhaust : IPileDecor
 		bandMask.AddChild(new ColorRect { Size = view, Material = bandMat, MouseFilter = Control.MouseFilterEnum.Ignore });
 		_band = bandMask;
 
-		// 3b. 入场时扫过画面的弧形星纹带（原版 SKILL 页 frame_0110：从左下弯到右上的一条粗弧），绕圆心转进来
-		_arcC = new Vector2(1250f, 1550f) * k;
-		_arcR0 = 1150f * k;
-		_arcR1 = 1480f * k;
-		Polygon2D arcMask = new() { Color = Colors.White, ClipChildren = CanvasItem.ClipChildrenMode.Only, Position = _arcC, Antialiased = true };
-		List<Vector2> ring = new();
-		for (int i = 0; i <= 48; i++) { float a = Mathf.DegToRad(-175f + 95f * i / 48f); ring.Add(new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * _arcR1); }
-		for (int i = 48; i >= 0; i--) { float a = Mathf.DegToRad(-175f + 95f * i / 48f); ring.Add(new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * _arcR0); }
-		arcMask.Polygon = ring.ToArray();
-		root.AddChild(arcMask);
-		ShaderMaterial arcMat = PileDraw.StarMaterial(118f, new Color(0.91f, 0.91f, 0.91f), new Color(0.03f, 0.03f, 0.03f), new Color(0.376f, 0.376f, 0.376f), Vector2.Zero);
-		arcMat.SetShaderParameter("size", view);
-		arcMask.AddChild(new ColorRect { Size = view, Position = -_arcC, Material = arcMat, MouseFilter = Control.MouseFilterEnum.Ignore });
-		_arc = arcMask;
-
-		// 3c. 原版 3D Joker（黑身白脸，1:1 贴屏幕左上角，渲染画面的上 / 左 / 下边缘就是屏幕边缘）
+		// 4. 入场白板（Joker 下面）→ 3D Joker → 白板遮罩（Joker 上面，挖掉黑色区域：白板里的 Joker 是白的，白底上看不见）
+		_plate = new Polygon2D { Color = Paper, Antialiased = true, Visible = false };
+		root.AddChild(_plate);
 		for (int i = 0; i < 11; i++) _sk3d[i] = Fx.Tex($"pile_sk3d_{i:00}");
 		if (_sk3d[0] != null)
 		{
-			_m3d = new Sprite2D { Texture = _sk3d[0], Centered = false, Scale = Vector2.One * k, TextureFilter = CanvasItem.TextureFilterEnum.Linear, Visible = false };
+			_m3d = new Sprite2D { Texture = _sk3d[0], Centered = false, Scale = Vector2.One * MapK * k, TextureFilter = CanvasItem.TextureFilterEnum.Linear, Visible = false };
 			root.AddChild(_m3d);
 		}
+		_coverMat = new ShaderMaterial { Shader = CoverShader };
+		_cover = new Polygon2D { Color = Paper, Antialiased = true, Visible = false, Material = _coverMat };
+		root.AddChild(_cover);
 
-		// 4. Joker（原版 CAMPSKILL_2D01）
-		_portrait = new Node2D { Name = "PilePortrait", Position = (PorAt + new Vector2(PorW, PorW) * 0.5f) * k };
+		// 5. Joker（原版 CAMPSKILL_2D01），砸中时出现
+		_portrait = new Node2D { Name = "PilePortrait", Position = (PorAt + new Vector2(PorW, PorW) * 0.5f) * k, Visible = false };
 		root.AddChild(_portrait);
 		_por = new ShaderMaterial { Shader = PileDraw.FillShader };
 		_porSprite = new Sprite2D { Texture = Fx.Tex("pile_campskill"), Material = _por, TextureFilter = CanvasItem.TextureFilterEnum.Linear };
 		if (_porSprite.Texture is Texture2D pt) _porScale = PorW * k / pt.GetWidth();
 		_porSprite.Scale = Vector2.One * _porScale;
 		_portrait.AddChild(_porSprite);
-		// 反色区域：盖在白板和 3D Joker 上面，读屏幕颜色取反（白板 → 黑、黑腿 → 白）
-		root.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
-		_invert = new Polygon2D
-		{
-			Polygon = new[] { R(1000f, 0f), R(1650f, 0f), R(1920f, 300f), R(1920f, 760f), R(1350f, 1080f), R(500f, 1080f), R(500f, 780f) },
-			Color = Colors.White, Antialiased = true, Visible = false,
-			Material = new ShaderMaterial { Shader = InvertShader },
-		};
-		root.AddChild(_invert);
-		if (_m3d != null) root.MoveChild(_m3d, _portrait.GetIndex());   // 3D Joker 上半身盖在立绘黑剪影上面；两者都在反色区域下面
 
-		// 5. 标题牌 MeNu&EXHAUST + COMMAND SELECT（原版字图 + P5 字图）
+		// 6. 黑色反色区：读屏幕，白板 ↔ 黑、黑 Joker ↔ 白（P 系列的撞色）；形状 = 白板多边形，着色器只保留圆内
+		root.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
+		_invertMat = new ShaderMaterial { Shader = InvertShader };
+		_invertMat.SetShaderParameter("sum", Paper.R + Ink.R);
+		_invert = new Polygon2D { Color = Colors.White, Antialiased = true, Visible = false, Material = _invertMat };
+		root.AddChild(_invert);
+
+		// 7. 标题牌 MeNu&EXHAUST + COMMAND SELECT（原版字图 + P5 字图）
 		Node2D plate = new() { Position = R(1680f, 90f), Rotation = Mathf.DegToRad(-4f) };
 		root.AddChild(plate);
 		Vector2 h = new Vector2(215f, 65f) * k;
@@ -145,7 +155,7 @@ public sealed class PileExhaust : IPileDecor
 		Glyph(plate, "pile_txt_cmdselect", new Vector2(5f, 40f), 212f, Paper);
 		_pops.Add((plate, plate.Position, plate.Rotation, SlamAt + 0.02f));
 
-		// 6. COMMAND + 说明
+		// 8. COMMAND + 说明
 		Node2D command = new() { Position = new Vector2(760f, 915f) * k, Rotation = Mathf.DegToRad(-4f) };
 		root.AddChild(command);
 		Glyph(command, "pile_txt_command_ol", Vector2.Zero, 551f, Ink);
@@ -158,14 +168,34 @@ public sealed class PileExhaust : IPileDecor
 
 	public void Kick() { }
 
-	private static Shader? _inv;
-	/// <summary>区域反色：读屏幕，颜色取反（不透明）。</summary>
+	private static Shader? _inv, _cov;
+	/// <summary>黑色反色区：圆内读屏幕、两种色调互换（sum = 纸色 + 墨色：白板 → 墨黑，黑 Joker → 纸白），圆外丢弃；圆边 2px 抗锯齿。</summary>
 	private static Shader InvertShader => _inv ??= new Shader { Code = @"
 shader_type canvas_item;
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
+uniform vec2 c = vec2(0.0);
+uniform float r = 0.0;
+uniform float sum = 0.98;
+varying vec2 lp;
+void vertex() { lp = VERTEX; }
 void fragment() {
-	vec3 c = texture(screen_tex, SCREEN_UV).rgb;
-	COLOR = vec4(vec3(1.0) - c, 1.0);
+	float a = 1.0 - smoothstep(r - 1.0, r + 1.0, distance(lp, c));
+	if (a <= 0.0) discard;
+	vec3 s = texture(screen_tex, SCREEN_UV).rgb;
+	COLOR = vec4(clamp(vec3(sum) - s, 0.0, 1.0), COLOR.a * a);
+}
+" };
+	/// <summary>白板遮罩：盖在 3D Joker 上面的白板，圆内（黑色反色区）挖空，让下面的 Joker 被反色成白腿。</summary>
+	private static Shader CoverShader => _cov ??= new Shader { Code = @"
+shader_type canvas_item;
+uniform vec2 c = vec2(0.0);
+uniform float r = 0.0;
+varying vec2 lp;
+void vertex() { lp = VERTEX; }
+void fragment() {
+	float a = smoothstep(r - 1.0, r + 1.0, distance(lp, c));
+	if (a <= 0.0) discard;
+	COLOR.a *= a;
 }
 " };
 
@@ -183,53 +213,94 @@ void fragment() {
 		else Exit(Mathf.Clamp((now - _exitT0) / ExitTime, 0f, 1f));
 	}
 
+	/// <summary>白板左边缘在 t 时刻的两点（原版屏幕坐标）：先从右边扫进来，112–117 按原版逐帧插值，117→118 跳到直线 L。</summary>
+	private static (Vector2 A, Vector2 B) Edge(float t)
+	{
+		float u = (t - FrameT(0)) / FrameDt;
+		if (u <= 0f)
+		{
+			float s = 1500f * (1f - Ease5.OutExpo(Mathf.Clamp((t - 0.015f) / (FrameT(0) - 0.015f), 0f, 1f)));
+			return (EdgeKeys[0].A + new Vector2(s, 0f), EdgeKeys[0].B + new Vector2(s, 0f));
+		}
+		int i = Mathf.Min((int)u, EdgeKeys.Length - 1);
+		if (i >= EdgeKeys.Length - 1) return EdgeKeys[^1];
+		float f = Ease5Ext.InOutCubic(u - i);
+		return (EdgeKeys[i].A.Lerp(EdgeKeys[i + 1].A, f), EdgeKeys[i].B.Lerp(EdgeKeys[i + 1].B, f));
+	}
+
+	/// <summary>黑色反色区半径（原版屏幕坐标）：117 之前 0，之后按原版逐帧插值。</summary>
+	private static float Radius(float t)
+	{
+		float u = (t - FrameT(5)) / FrameDt;
+		if (u <= 0f) return 0f;
+		int i = Mathf.Min((int)u, RRadius.Length - 1);
+		if (i >= RRadius.Length - 1) return RRadius[^1];
+		return Mathf.Lerp(RRadius[i], RRadius[i + 1], u - i);
+	}
+
+	/// <summary>凸多边形按半平面裁剪（Sutherland–Hodgman）：保留直线 a→b 右侧（屏幕 x 更大的一侧）。</summary>
+	private static Vector2[] ClipRight(Vector2[] poly, Vector2 a, Vector2 b)
+	{
+		Vector2 d = b - a;
+		Vector2 n = new(d.Y, -d.X);
+		if (n.X < 0f) n = -n;
+		float Side(Vector2 p) => (p - a).Dot(n);
+		List<Vector2> o = new();
+		for (int i = 0; i < poly.Length; i++)
+		{
+			Vector2 p = poly[i], q = poly[(i + 1) % poly.Length];
+			float sp = Side(p), sq = Side(q);
+			if (sp >= 0f) o.Add(p);
+			if ((sp >= 0f) != (sq >= 0f)) o.Add(p + (q - p) * (sp / (sp - sq)));
+		}
+		return o.ToArray();
+	}
+
 	private void Enter(float t)
 	{
 		float k = _k;
 		float reach = (_view + new Vector2(0f, _view.Y)).Length() * 1.05f;
 		_bg.SetShaderParameter("wipe", t >= 0.3f ? 1e7f : Ease5.OutQuint(Mathf.Clamp(t / 0.3f, 0f, 1f)) * reach);
-		// 白板从右边扫进来（0.04 → 0.22）
-		float sweep = Ease5.OutExpo(Mathf.Clamp((t - 0.04f) / 0.18f, 0f, 1f));
-		bool cut = t >= HandAt, leg = t >= LegAt;
-		_white.Position = new Vector2(1500f * k * (1f - sweep), 0f);
-		_white.Visible = !cut;
-		_invert.Visible = leg && !cut;
-		_slab.Visible = _wedge.Visible = cut;
-		_band.Visible = cut;
-		Vector2 home = (PorAt + new Vector2(PorW, PorW) * 0.5f) * k;
-		// 弧形星纹带转进来（0.05 → 0.24），切到最终构图时收掉
-		float arcIn = Ease5.OutExpo(Mathf.Clamp((t - 0.05f) / 0.19f, 0f, 1f));
-		_arc.Rotation = Mathf.DegToRad(-70f) * (1f - arcIn);
-		_arc.Visible = !cut && t >= 0.05f;
+		bool cut = t >= HandAt;
+		// 黑块从白板到位起就垫在 Joker 下面（原版 Joker 身后是黑底：黑色的身体 / 腿和背景连成一片），不然黑色区域和身体之间会露出一条红缝
+		_slab.Visible = t >= 0.03f;
+		_slab.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((t - 0.03f) / 0.05f, 0f, 1f));
+		// 灰楔形是我们排版自己加的，原版切立绘那一刻是黑的：砸中之后再淡进来，切换那一下不冒出一块灰
+		_wedge.Visible = cut;
+		_wedge.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((t - SlamAt) / 0.16f, 0f, 1f));
+		_band.Visible = t >= 0.05f;
+		_portrait.Visible = cut;
 		if (!cut)
 		{
-			// 用户 2026-11-22（原版 0113）：Joker 伸出来的那条腿一直在，是黑的，压在白板上；3D 上半身盖在上面。
-			// 用立绘的黑剪影当这条腿（和最后定格的腿同一个位置），LegAt 那一刻区域反色，腿就变白
-			_portrait.Position = home;
-			_porSprite.Scale = Vector2.One * _porScale;
-			_por.SetShaderParameter("fill_color", Ink);
-			_por.SetShaderParameter("fill_amt", 1f);
-			_portrait.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((t - 0.16f) / 0.04f, 0f, 1f));
+			// 白板（Joker 下面 + 上面的遮罩）和黑色反色区共用同一个多边形：最终黑块的形状裁掉白板左边缘左侧
+			var (ea, eb) = Edge(t);
+			Vector2[] poly = ClipRight(_platePts, Map(ea) * k, Map(eb) * k);
+			bool show = t >= 0.015f && poly.Length >= 3;
+			_plate.Visible = _cover.Visible = show;
+			if (show) _plate.Polygon = _cover.Polygon = _invert.Polygon = poly;
+			float r = Radius(t);
+			_invert.Visible = show && r > 0f;
+			Vector2 c = Map(RCenter) * k;
+			float rr = r * MapK * k;
+			_coverMat.SetShaderParameter("c", c);
+			_coverMat.SetShaderParameter("r", rr);
+			_invertMat.SetShaderParameter("c", c);
+			_invertMat.SetShaderParameter("r", rr);
 			if (_m3d != null)
 			{
-				// 原版 frame_0111 → 0120：侧身插兜站着（近景 3 帧 → 中景 8 帧），0.08 → HandAt 播完
-				int idx = Mathf.Clamp((int)((t - 0.08f) / (HandAt - 0.08f) * 11f), 0, 10);
-				if (_sk3d[idx] is Texture2D f && _m3d.Texture != f) _m3d.Texture = f;
-				// 一脚踩下来、人往镜头这边压（用户 2026-11-22：前几帧到最后一帧跳太大）：中景段 3D Joker 以头为支点放大 1 → 1.45、
-				// 头挪到立绘头的位置，到 HandAt 正好和立绘的头重合，换成立绘时不跳
-				float slide = Ease5.OutExpo(Mathf.Clamp((t - 0.08f) / 0.16f, 0f, 1f));
-				float grow = Ease5Ext.InOutCubic(Mathf.Clamp((t - 0.20f) / (HandAt - 0.20f), 0f, 1f));
-				float sc = Mathf.Lerp(1f, 1.45f, grow);
-				Vector2 pivot = new(718f, 120f);
-				Vector2 at = pivot.Lerp(new Vector2(768f, 150f), grow) + new Vector2(-160f * (1f - slide), 0f);
-				_m3d.Scale = Vector2.One * k * sc;
-				_m3d.Position = (at - pivot * sc) * k;
-				_m3d.Visible = t >= 0.08f;
+				// 原版 112–122 的 3D Joker：第 i 帧在 FrameT(i) 前后半帧显示；最开始从左边滑进来（原版切镜头时那一下甩）
+				int i = Mathf.Clamp(Mathf.FloorToInt((t - FrameT(0)) / FrameDt + 0.5f), 0, 10);
+				if (_sk3d[i] is Texture2D f && _m3d.Texture != f) _m3d.Texture = f;
+				float slide = Ease5.OutExpo(Mathf.Clamp((t - 0.035f) / 0.09f, 0f, 1f));
+				_m3d.Position = Map(Sk3dAt[i]) * k + new Vector2(-140f * k * (1f - slide), 0f);
+				_m3d.Visible = t >= 0.035f;
 			}
 		}
 		else
 		{
-			// 换成立绘上半身，从 1.06 倍砸下（HandAt → SlamAt，加速），压扁 0.965 再回弹（同抽牌堆的手掌）
+			_plate.Visible = _cover.Visible = _invert.Visible = false;
+			if (_m3d != null) _m3d.Visible = false;
+			// 换成立绘，从 1.02 倍砸下（HandAt → SlamAt，加速），压扁 0.965 再回弹（同抽牌堆的手掌）
 			float scale, drop;
 			if (t < SlamAt)
 			{
@@ -243,11 +314,11 @@ void fragment() {
 				scale = Mathf.Lerp(0.965f, 1f, b);
 				drop = Mathf.Lerp(8f, 0f, b);
 			}
+			Vector2 home = (PorAt + new Vector2(PorW, PorW) * 0.5f) * k;
 			_portrait.Position = home + new Vector2(0f, drop) * k;
 			_porSprite.Scale = Vector2.One * _porScale * scale;
 			_por.SetShaderParameter("fill_amt", 0f);
 			_portrait.Modulate = Colors.White;
-			if (_m3d != null) _m3d.Visible = false;
 			Shake(t);
 		}
 		foreach (var (node, at, rot, delay) in _pops)
@@ -263,7 +334,6 @@ void fragment() {
 
 	private void Shake(float t)
 	{
-		if (t >= SlamAt) _slammed = true;
 		float a = t < SlamAt ? 0f : Mathf.Max(0f, 1f - (t - SlamAt) / 0.24f);
 		a *= a;
 		float u = (t - SlamAt) * 34f;
@@ -275,7 +345,8 @@ void fragment() {
 		float k = _k;
 		_root.Position = Vector2.Zero;
 		if (_m3d != null) _m3d.Visible = false;
-		_arc.Visible = false;
+		_plate.Visible = _cover.Visible = _invert.Visible = false;
+		_portrait.Visible = true;
 		float ei = Ease5Ext.InCubic(e);
 		float reach = (_view + new Vector2(0f, _view.Y)).Length() * 1.05f;
 		_bg.SetShaderParameter("wipe", reach * (1f - Ease5Ext.InCubic(Mathf.Clamp((e - 0.15f) / 0.85f, 0f, 1f))));
