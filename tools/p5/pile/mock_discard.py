@@ -38,7 +38,7 @@ def main(out):
     globals()['BAND'] = BAND
     # 3. 黑白星纹条：原版在头的右边、斜线左边（PHANTOM / ITEM 那块）
     st = stars(W * S, H * S, base=118, n=8)
-    band = [(760, 0), (lx(0), 0), (lx(300), 300), (800, 360)]
+    band = [(690, 0), (lx(0), 0), (lx(440), 440), (740, 440)]       # 左边塞到头发后面、下边一直到肩膀（原版星纹条被头 / 肩挡住，不露红缝）
     mk = Image.new('L', (W * S, H * S)); ImageDraw.Draw(mk).polygon([(x * S, y * S) for x, y in band], fill=255)
     st.putalpha(mk); cv.alpha_composite(st)
     # 3b. 弃掉的牌：3 列放进黑块（右边是原版那条斜边，4 列会伸到红底上）。先画牌、再画立绘和斜带：
@@ -65,10 +65,11 @@ def main(out):
     inv = np.clip(222 - lum * (214 / 255), 8, 230)           # 黑 → 214 浅灰，白 → 8 黑
     a2[right, :3] = inv[right][:, None]
     lay = Image.fromarray(a2.astype(np.uint8))
-    cv.alpha_composite(lay, (int(ART_AT[0] * S), int(ART_AT[1] * S)) if ART_AT[0] >= 0 else (0, int(ART_AT[1] * S)))
-    if ART_AT[0] < 0:   # 左边伸出屏幕的部分裁掉后再贴
-        cv2 = Image.new('RGBA', cv.size); cv2.alpha_composite(lay.crop((int(-ART_AT[0] * S), 0, lay.width, lay.height)), (0, int(ART_AT[1] * S)))
-        cv.alpha_composite(cv2)
+    # 只贴一次：左边伸出屏幕的部分先裁掉（之前这里先把没裁的整张贴在 x=0、再贴裁过的，立绘错开 80px 叠了两层 = 重影）
+    ox, oy = int(ART_AT[0] * S), int(ART_AT[1] * S)
+    if ox < 0:
+        lay = lay.crop((-ox, 0, lay.width, lay.height)); ox = 0
+    cv.alpha_composite(lay, (ox, oy))
     # 5. 右上标题牌 MeNu&DISCARD（原版 MeNu& 字图 + P5 字图 DISCARD + 原版 COMMAND SELECT）
     plate = Image.new('RGBA', (430 * S, 130 * S)); pd = ImageDraw.Draw(plate)
     pd.rectangle([0, 0, 430 * S, 130 * S], fill=(235, 235, 235)); pd.rectangle([6 * S, 6 * S, 424 * S, 124 * S], fill=(10, 10, 10))
