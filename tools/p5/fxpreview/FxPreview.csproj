@@ -6,6 +6,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../../../p5mod/src/Vfx/**/*.cs" />
+    <!-- P3 君王之剑替代的蓝蝶（还没进 P3 mod，见 tools/p3/butterfly） -->
+    <Compile Include="../../p3/butterfly/*.cs" />
     <EmbeddedResource Include="../../../p5mod/data/eye_cutin.json" LogicalName="P5Joker.EyeCutIn.json" />
   </ItemGroup>
 </Project>
