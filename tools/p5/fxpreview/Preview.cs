@@ -1847,6 +1847,10 @@ public partial class Preview : Node2D
 		p.AddChild(top);
 		Control host = new() { Size = new Vector2(1920f, 1080f), MouseFilter = Control.MouseFilterEnum.Ignore };
 		top.AddChild(host);
+		// 游戏顶栏（血量 / 金币 / 地图那一条，1080p 下约 80px 高）盖在牌堆界面上面：预览里画一条，看排版有没有被挡
+		CanvasLayer barLayer = new() { Layer = 60 };
+		p.AddChild(barLayer);
+		barLayer.AddChild(new ColorRect { Size = new Vector2(1920f, 80f), Color = new Color(0.17f, 0.22f, 0.25f, 0.85f), MouseFilter = Control.MouseFilterEnum.Ignore });
 		p.At(0.5, () =>
 		{
 			Sfx.Play("camp_open", 0.5f);

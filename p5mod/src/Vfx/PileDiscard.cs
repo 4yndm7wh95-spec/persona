@@ -34,6 +34,8 @@ public sealed class PileDiscard : IPileDecor
 	private static readonly Color Ink = PileDraw.Ink, Paper = PileDraw.Paper;
 	private static readonly Color Teal = new(92 / 255f, 230 / 255f, 200 / 255f), Pink = new(226 / 255f, 70 / 255f, 220 / 255f);
 	private const float ListK = 0.84f;
+	/// <summary>游戏顶栏的高度（1080p）：顶部的东西都放到它下面。</summary>
+	private const float TopInset = 78f, ListSquash = 0.93f, TitleDrop = 62f;   // 标题牌只让出顶栏露出来的那截，不压第一排牌
 	private static readonly Vector2 EdgeA = new(474f, -20f), EdgeB = new(322f, 1100f);
 	/// <summary>每行（export_discard.py 的 layout.json）：头像底图层左上角、排版用的 hx / yc（列表画布单位，再乘 ListK）、倾斜。</summary>
 	private static readonly (string Key, Vector2 Img, float Hx, float Yc, float Tilt)[] Rows =
@@ -136,21 +138,24 @@ public sealed class PileDiscard : IPileDecor
 		Fx.Poly(_panel, new[] { new Vector2(-40f, -20f), EdgeA + new Vector2(14f, 0f), EdgeB + new Vector2(14f, 0f), new Vector2(-40f, 1100f) }.Select(p => p * k).ToArray(), new Color(0.94f, 0.94f, 0.94f));
 		Fx.Poly(_panel, new[] { new Vector2(-40f, -20f), EdgeA, EdgeB, new Vector2(-40f, 1100f) }.Select(p => p * k).ToArray(), new Color(0.03f, 0.03f, 0.03f));
 		Fx.Poly(_panel, new[] { EdgeA + new Vector2(-22f, 0f), EdgeA + new Vector2(-15f, 0f), EdgeB + new Vector2(-15f, 0f), EdgeB + new Vector2(-22f, 0f) }.Select(p => p * k).ToArray(), new Color(0.78f, 0.08f, 0.12f));
+		// 游戏顶栏（1080p 下约 80px）盖在界面最上面：列表整体下移 TopInset、纵向压到 ListSquash，六行都露出来（用户 2026-11-24 实机截图）
+		Node2D list = new() { Position = new Vector2(0f, TopInset * k), Scale = new Vector2(1f, ListSquash) };
+		_panel.AddChild(list);
 		for (int i = 0; i < Rows.Length; i++)
 		{
 			var row = Rows[i];
 			(int n, int up) = i == 0 ? (total, totalUp) : counts.TryGetValue(row.Key, out var v) ? v : (0, 0);
 			Node2D node = new() { Modulate = new Color(1f, 1f, 1f, n > 0 ? 1f : 0.42f) };
-			_panel.AddChild(node);
+			list.AddChild(node);
 			Layer(node, $"row{i}", row.Img * k);
 			RowText(node, row.Key, row.Hx, row.Yc, row.Tilt, n, up, i > 0);
 			_rows.Add((node, 0.03f + 0.03f * i, n > 0 ? 1f : 0.42f));     // 切到最终排版之后的延迟
 		}
-		_tags.Add(Layer(_panel, "tag_discard", new Vector2(0f, 20f) * k));
-		_tags.Add(Layer(_panel, "tag_bytype", new Vector2(0f, 282f) * k));
+		_tags.Add(Layer(list, "tag_discard", new Vector2(0f, 20f) * k));
+		_tags.Add(Layer(list, "tag_bytype", new Vector2(0f, 282f) * k));
 
 		// 5. 标题牌、COMMAND + 说明
-		_title = Layer(root, "title", R(1458f, 7f));
+		_title = Layer(root, "title", R(1458f, 7f + TitleDrop));
 		_command = new Node2D();
 		root.AddChild(_command);
 		Layer(_command, "command", new Vector2(569f, 834f) * k);
@@ -337,7 +342,7 @@ void fragment() {
 			_tags[i].Scale = Vector2.One * Mathf.Lerp(1.5f, 1f, q);
 			_tags[i].Modulate = new Color(1f, 1f, 1f, Mathf.Min(1f, Seg(t, CutAt + 0.12f + 0.05f * i, 0.05f)));
 		}
-		Pop(_title, t, CutAt + 0.02f, R0(1458f, 7f));
+		Pop(_title, t, CutAt + 0.02f, R0(1458f, 7f + TitleDrop));
 		Pop(_command, t, CutAt + 0.05f, Vector2.Zero);
 		// 斜带从右下切进来
 		float b = Ease5.OutExpo(Seg(t, CutAt + 0.02f, 0.22f));

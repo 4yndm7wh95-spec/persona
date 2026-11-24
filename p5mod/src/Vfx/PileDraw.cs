@@ -23,7 +23,7 @@ namespace P5Joker;
 public sealed class PileDraw : IPileDecor
 {
 	// ── 版式（1920×1080）──
-	public const float GridX = 70f, GridTop = 168f, GridBottom = 1046f;
+	public const float GridX = 70f, GridTop = 176f, GridBottom = 1046f;
 	public const int Cols = 4;
 	public const float CardW = 168f, CellW = 182f, CellH = 250f;
 	// 立绘按原版比例（实机截图量的：比第一版大 1.258 倍，手指尖顶到画面上缘）；牌格子改 4 列，手掌左边缘正好在牌格子右边
@@ -86,9 +86,9 @@ public sealed class PileDraw : IPileDecor
 		// 3. 标题牌 + 牌数
 		_plates = new Node2D { Name = "PilePlates" };
 		root.AddChild(_plates);
-		Plate(new Vector2(1520f, 72f), new Vector2(470f, 92f), -6f, Ink, Paper, "pile_txt_dontlook", 413f, Paper, 0.30f);
-		Plate(new Vector2(1700f, 150f), new Vector2(330f, 96f), -2f, Paper, Ink, "pile_txt_likethat", 292f, Ink, 0.34f);
-		Node2D menu = Plate(new Vector2(1760f, 300f), new Vector2(300f, 130f), 5f, Ink, Paper, null, 0f, Paper, 0.38f);
+		Plate(new Vector2(1655f, 118f), new Vector2(470f, 92f), -6f, Ink, Paper, "pile_txt_dontlook", 413f, Paper, 0.30f);
+		Plate(new Vector2(1745f, 202f), new Vector2(330f, 96f), -2f, Paper, Ink, "pile_txt_likethat", 292f, Ink, 0.34f);
+		Node2D menu = Plate(new Vector2(1760f, 346f), new Vector2(300f, 130f), 5f, Ink, Paper, null, 0f, Paper, 0.38f);
 		Glyph(menu, "pile_txt_menu", new Vector2(-60f, -12f), 131f, 0f, Paper);
 		Glyph(menu, "pile_txt_main", new Vector2(70f, -20f), 106f, 0f, Paper);
 		Glyph(menu, "pile_txt_cmdselect", new Vector2(5f, 40f), 212f, 0f, Paper);
@@ -96,6 +96,7 @@ public sealed class PileDraw : IPileDecor
 		// 4. Joker + 白手 + 红手套（剪影 → 原画用 fill 着色器）
 		_portrait = new Node2D { Name = "PilePortrait", Position = (PortraitAt + new Vector2(PortraitW, PortraitW) * 0.5f) * k + new Vector2(_rx, 0f) };
 		root.AddChild(_portrait);
+		root.MoveChild(_plates, _portrait.GetIndex());   // 标题牌压在立绘上面（原版的拼贴字牌都在最上层；顶栏让位后不能钻到头发下面）
 		_por = new ShaderMaterial { Shader = FillShader };
 		_porSprite = new Sprite2D { Texture = Fx.Tex("pile_camptop"), Material = _por, TextureFilter = CanvasItem.TextureFilterEnum.Linear };
 		_porScale = _porSprite.Texture is { } pt ? PortraitW * k / pt.GetWidth() : 1f;
@@ -157,7 +158,7 @@ public sealed class PileDraw : IPileDecor
 	float IPileDecor.ExitTime => ExitTime;
 	public Vector2 FocusAt => new(640f, 560f);
 	public Vector2 InfoAt => new(1000f, 300f);
-	public Vector2 SwitchAt => new(70f, 44f);
+	public Vector2 SwitchAt => new(70f, 112f);   // 游戏顶栏（约 80px）下面
 	public Vector2 EnterOffset => new(-40f, 46f);
 	public Vector2 ExitOffset => new(-20f, 130f);
 

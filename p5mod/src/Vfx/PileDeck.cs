@@ -40,9 +40,9 @@ public sealed class PileDeck : IPileDecor
 	private const float MapK = 1500f / 3072f / 0.5f;
 	private static Vector2 Map(Vector2 p) => p * MapK + new Vector2(-80f, 0f);
 	/// <summary>export_deck.py 的 layout.json：各图层左上角、红底多边形（1080p）。</summary>
-	private static readonly Vector2 BgAt = Vector2.Zero, PortraitPos = Vector2.Zero, TitleAt = new(1443f, 1f), CommandAt = new(59f, 734f);
+	private static readonly Vector2 BgAt = Vector2.Zero, PortraitPos = Vector2.Zero, TitleAt = new(1443f, 79f), CommandAt = new(59f, 734f);
 	/// <summary>中间类型列表：第一行左上角、行距、每行往左挪多少（跟着浅灰板的斜边）。</summary>
-	private const float ListX = 880f, ListY = 70f, ListStep = 88f, ListSlant = 46f;
+	private const float ListX = 880f, ListY = 128f, ListStep = 84f, ListSlant = 44f;   // 第一行在游戏顶栏（约 80px）下面
 	private static readonly string[] Keys = { "deck", "attack", "skill", "power", "status", "curse" };
 
 	private readonly Control _root;

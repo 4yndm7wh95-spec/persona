@@ -67,6 +67,8 @@ public sealed class PileExhaust : IPileDecor
 	private readonly Polygon2D _slab, _wedge, _plate, _cover, _invert;
 	private readonly Vector2[] _slabPts, _platePts;
 	private readonly Node2D _band, _portrait;
+	private readonly Polygon2D _bandEdge;
+	private readonly Vector2[] _bandPts;
 	/// <summary>原版 112–122 的 3D Joker：游戏里实时渲染（MenuJoker3D，关键帧 MenuJoker3DKeys.Exhaust）。</summary>
 	private readonly MenuJoker3D? _m3d;
 	private static readonly string[] Hide3d = { "smartphone", "card", "school_bag", "gun_outline", "gun_main", "ef line_obj_01", "ef line_obj_02", "ef line_obj_03", "ef line_obj_04", "ef line_obj_05", "ef line_obj_06", "ef line_obj_07", "ef line_obj_08" };
@@ -102,12 +104,16 @@ public sealed class PileExhaust : IPileDecor
 		root.AddChild(_wedge);
 
 		// 3. 立绘 / 3D Joker 后面的黑白星纹斜带：裁在一个斜四边形里（clip_children）；入场时就在 Joker 身后（原版 112–117 头后面的星纹）
-		Polygon2D bandMask = new() { Polygon = new[] { R(600f, 0f), R(900f, 0f), R(700f, 520f), R(560f, 520f) }, Color = Colors.White, ClipChildren = CanvasItem.ClipChildrenMode.Only, Visible = false };
+		_bandPts = new[] { R(600f, 0f), R(900f, 0f), R(700f, 520f), R(560f, 520f) };
+		Polygon2D bandMask = new() { Polygon = _bandPts, Color = Colors.White, ClipChildren = CanvasItem.ClipChildrenMode.Only, Visible = false };
 		root.AddChild(bandMask);
 		ShaderMaterial bandMat = PileDraw.StarMaterial(118f, new Color(0.91f, 0.91f, 0.91f), new Color(0.03f, 0.03f, 0.03f), new Color(0.376f, 0.376f, 0.376f), Vector2.Zero);
 		bandMat.SetShaderParameter("size", view);
 		bandMask.AddChild(new ColorRect { Size = view, Material = bandMat, MouseFilter = Control.MouseFilterEnum.Ignore });
 		_band = bandMask;
+		// 切入的前沿：一道黑边跟着划开的下沿走（同红底铺开的前沿）
+		_bandEdge = new Polygon2D { Color = new Color(0.02f, 0.02f, 0.02f), Antialiased = true, Visible = false };
+		root.AddChild(_bandEdge);
 
 		// 4. 入场白板（Joker 下面）→ 3D Joker → 白板遮罩（Joker 上面，挖掉黑色区域：白板里的 Joker 是白的，白底上看不见）
 		_plate = new Polygon2D { Color = Paper, Antialiased = true, Visible = false };
@@ -138,15 +144,17 @@ public sealed class PileExhaust : IPileDecor
 		root.AddChild(_invert);
 
 		// 7. 标题牌 MeNu&EXHAUST + COMMAND SELECT（原版字图 + P5 字图）
-		Node2D plate = new() { Position = R(1680f, 90f), Rotation = Mathf.DegToRad(-4f) };
+		Node2D plate = new() { Position = R(1690f, 142f), Rotation = Mathf.DegToRad(-4f) };   // 在游戏顶栏（约 80px）下面
 		root.AddChild(plate);
+		Node2D plateIn = new() { Scale = Vector2.One * 0.86f };
+		plate.AddChild(plateIn);
 		Vector2 h = new Vector2(215f, 65f) * k;
-		Fx.Poly(plate, new[] { -h, new Vector2(h.X, -h.Y), h, new Vector2(-h.X, h.Y) }, Paper);
+		Fx.Poly(plateIn, new[] { -h, new Vector2(h.X, -h.Y), h, new Vector2(-h.X, h.Y) }, Paper);
 		Vector2 hi = h - new Vector2(6f, 6f) * k;
-		Fx.Poly(plate, new[] { -hi, new Vector2(hi.X, -hi.Y), hi, new Vector2(-hi.X, hi.Y) }, Ink);
-		Glyph(plate, "pile_txt_menu", new Vector2(-128f, -15f), 120f, Paper);
-		PileText.Exact(plate, "menu_exhaust", new Vector2(-58f, -46f) * k, 52f * k, Paper);
-		Glyph(plate, "pile_txt_cmdselect", new Vector2(5f, 40f), 212f, Paper);
+		Fx.Poly(plateIn, new[] { -hi, new Vector2(hi.X, -hi.Y), hi, new Vector2(-hi.X, hi.Y) }, Ink);
+		Glyph(plateIn, "pile_txt_menu", new Vector2(-128f, -15f), 120f, Paper);
+		PileText.Exact(plateIn, "menu_exhaust", new Vector2(-58f, -46f) * k, 52f * k, Paper);
+		Glyph(plateIn, "pile_txt_cmdselect", new Vector2(5f, 40f), 212f, Paper);
 		_pops.Add((plate, plate.Position, plate.Rotation, SlamAt + 0.02f));
 
 		// 8. COMMAND + 说明
@@ -161,6 +169,31 @@ public sealed class PileExhaust : IPileDecor
 	}
 
 	public void Kick() { }
+
+	/// <summary>
+	/// 星纹斜带切入（用户 2026-11-24：之前直接放进来太僵硬）：0.05 → 0.25s 从顶部沿斜带往下划开，同时从中线向两边张开（三次缓出，前快后慢），
+	/// 下沿跟着一道黑边；到位后黑边收掉。原版这条带是上一页的星纹拼贴收成的一窄条，这里用同一个方向的划入。
+	/// </summary>
+	private void Band(float t)
+	{
+		const float t0 = 0.05f, len = 0.2f;
+		float p = Mathf.Clamp((t - t0) / len, 0f, 1f);
+		var mask = (Polygon2D)_band;
+		mask.Visible = t >= t0;
+		_bandEdge.Visible = t >= t0 && p < 1f;
+		if (p >= 1f) { mask.Polygon = _bandPts; return; }
+		float d = 1f - Mathf.Pow(1f - p, 3f), w = 1f - Mathf.Pow(1f - Mathf.Clamp(p * 1.3f, 0f, 1f), 3f);
+		Vector2 a = _bandPts[0], b = _bandPts[1], c = _bandPts[2], e = _bandPts[3];
+		Vector2 midTop = (a + b) * 0.5f, midBot = (e + c) * 0.5f;
+		Vector2 Spread(Vector2 q, Vector2 mid) => mid + (q - mid) * Mathf.Lerp(0.15f, 1f, w);
+		// 下沿在左右两条边上按 d 往下走
+		Vector2 l = a.Lerp(e, d), r = b.Lerp(c, d), midL = midTop.Lerp(midBot, d);
+		Vector2 tl = Spread(a, midTop), tr = Spread(b, midTop), bl = Spread(l, midL), br = Spread(r, midL);
+		mask.Polygon = new[] { tl, tr, br, bl };
+		float th = 14f * _k * (1f - p);
+		Vector2 n = new Vector2(0f, th);
+		_bandEdge.Polygon = new[] { bl, br, br + n, bl + n };
+	}
 
 	private static Shader? _inv, _cov;
 	/// <summary>黑色反色区：圆内读屏幕、两种色调互换（sum = 纸色 + 墨色：白板 → 墨黑，黑 Joker → 纸白），圆外丢弃；圆边 2px 抗锯齿。</summary>
@@ -262,7 +295,7 @@ void fragment() {
 		// 灰楔形是我们排版自己加的，原版切立绘那一刻是黑的：砸中之后再淡进来，切换那一下不冒出一块灰
 		_wedge.Visible = cut;
 		_wedge.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((t - SlamAt) / 0.16f, 0f, 1f));
-		_band.Visible = t >= 0.05f;
+		Band(t);
 		_portrait.Visible = cut;
 		if (!cut)
 		{
@@ -350,6 +383,7 @@ void fragment() {
 		float pe = Ease5Ext.InOutCubic(Mathf.Clamp(e / 0.75f, 0f, 1f));
 		Vector2 off = new(1500f * k * pe, 0f);
 		_slab.Position = _wedge.Position = _band.Position = off;
+		_bandEdge.Visible = false;
 		// 黑块 / 灰楔形 / 星纹带边退边淡掉（不然灰楔形滑到牌后面露出一块白三角）
 		Color fade = new(1f, 1f, 1f, 1f - Mathf.Clamp(e / 0.45f, 0f, 1f));
 		_wedge.Modulate = fade;
