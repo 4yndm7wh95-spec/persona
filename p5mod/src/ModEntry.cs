@@ -11,11 +11,16 @@ namespace P5Joker;
 public static class ModEntry
 {
 	public const string Tag = "[P5Joker]";
-	public const string Version = "0.9.72";
+	public const string Version = "0.9.75";
 
 	public static void Init()
 	{
 		GD.Print($"{Tag} init v{Version}");
+		Callable.From(() => Stage.Safe("asset diagnostics", () =>
+		{
+			bool effectsPresent = ResourceLoader.Exists("res://p5joker/fx/curse_ghost.png");
+			GD.Print($"{Tag} assets: curse_ghost={effectsPresent}; OS={OS.GetName()}; renderer={RenderingServer.GetCurrentRenderingMethod()}");
+		})).CallDeferred();
 		Stage.Report = (where, e) => GD.PrintErr($"{Tag} {where}: {e}");
 		P5Settings.Load();
 		Stage.Shake = s => NGame.Instance?.ScreenShake(s switch

@@ -162,18 +162,21 @@ void fragment() {
 			vec3 pw = rd * t;
 			if (pw.z > band_z || T < 0.02) break;
 			vec3 lp = to_local(pw);
-			float s = map(pw) / hs;
+			float s = smin(hand(lp) * hs, arm(pw), 0.12 * hs) / hs;
 			if (s > 0.32) { t += (s - 0.28) * hs; continue; }
 			float stepv = s > 0.06 ? 0.045 * hs : dt;                  // 手外面的烟丝走大步，进到手里走小步
 			// 手四周的咒烟丝：离手 0.3 以内，被往上飘的噪声撕成一缕一缕（手不再「形单影只」）
-			float wn = fbm(lp * vec3(2.4, 1.3, 2.4) + vec3(0.0, -clock * 1.3, clock * 0.2));
-			float aura = smoothstep(0.3, 0.02, s) * smoothstep(0.5, 0.72, wn) * step(0.0, s) * smoothstep(0.0, 0.5, lp.y);   // 手腕以下不出烟（不然像一摊血）
-			if (aura > 0.001) {
-				// 以暗烟为主（一缕缕黑烟），只在烟丝最浓的地方带一点暗红
-				float aa = 1.0 - exp(-aura * stepv / hs * 9.0);
-				col += T * (aa * vec3(0.025, 0.0, 0.008) + vec3(0.5, 0.025, 0.055) * aura * smoothstep(0.62, 0.8, wn) * stepv / hs * 1.2);
-				T *= 1.0 - aa;
+			if (s >= 0.0 && s < 0.3 && lp.y > 0.0) {
+				float wn = fbm(lp * vec3(2.4, 1.3, 2.4) + vec3(0.0, -clock * 1.3, clock * 0.2));
+				float aura = (1.0 - smoothstep(0.02, 0.3, s)) * smoothstep(0.5, 0.72, wn) * smoothstep(0.0, 0.5, lp.y);
+				if (aura > 0.001) {
+					float aa = 1.0 - exp(-aura * stepv / hs * 9.0);
+					col += T * (aa * vec3(0.025, 0.0, 0.008) + vec3(0.5, 0.025, 0.055) * aura * smoothstep(0.62, 0.8, wn) * stepv / hs * 1.2);
+					T *= 1.0 - aa;
+				}
 			}
+			// fbm is in [0, 1]. Even its lowest value cannot produce dense smoke here.
+			if (s > 0.096 + 0.13 * dissolve) { t += stepv; continue; }
 			vec3 fp = lp * 5.0 + vec3(0.0, -clock * 1.4, clock * 0.3);
 			float nz = fbm(fp);
 			float sd = s + (nz - 0.5) * 0.12 + dissolve * (0.22 + (nz - 0.5) * 0.7);

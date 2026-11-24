@@ -70,9 +70,6 @@ public static class PoisonFx
 	public static void Apply(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount, bool? outbreak = null) =>
 		Apply(layer, at, top, width, body, amount, 6, outbreak ?? InOutbreak);
 
-	public static void CorrosiveImpact(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount) =>
-		Impact(layer, at, top, width, body, amount, new Vector2(1f, 0.6f), false);
-
 	private static void Apply(Control layer, Vector2 at, Vector2 top, float width, Node2D? body, int amount, int retry, bool outbreak)
 	{
 		// 弹跳烧瓶：咒怨火球落到这个敌人身上（SnakeFx.Throw 飞过来，落地 = 这一刻）
@@ -93,6 +90,12 @@ public static class PoisonFx
 		if (retry > 0 && !ArseneFx.TryClaw(out _) && ArseneFx.AttackPending)
 		{
 			Fx.After(layer, 0.05, () => Apply(layer, at, top, width, body, amount, retry - 1, outbreak));
+			return;
+		}
+		// 腐蚀波（2026-11-18 用户：带上挂毒的特效）：上毒已推迟到卷浪拍中那一刻（CorrosiveDrawPatch），这里照常放挂毒特效，和拍击同一刻
+		if (CorrosiveFx.Suppressing && !ArseneFx.TryClaw(out _))
+		{
+			Impact(layer, at, top, width, body, amount, new Vector2(1f, 0.6f), false);
 			return;
 		}
 		if (Stage.NowMs() >= NoBeamUntil && ArseneFx.TryClaw(out Vector2 claw))
@@ -426,7 +429,7 @@ void fragment() {
 
 	/// <summary>
 	/// 捏碎（用户 2026-11-08：捏爆那一下和敌人身上的伤害要连上）：从拳心朝每个敌人甩出一道咒怨，ArrivalDelay 秒后打到 =
-	/// 为该敌人播放原版结算的伤害数字和咒怨引爆。
+	/// 那个敌人结算毒伤、引爆（OutbreakLandPatch 按同一个时刻等）。全场定格（HitStop）期间这些都停着，定格一松开才飞。
 	/// </summary>
 	public static void Crushed(Control layer, Vector2 from, IEnumerable<Vector2> targets)
 	{

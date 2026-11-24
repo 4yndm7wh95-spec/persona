@@ -15,7 +15,7 @@ namespace P5Joker;
 /// </summary>
 public static class KnifeTrapFx
 {
-	/// <summary>切入（时钟展开 + 卡全部现身）要多久。</summary>
+	/// <summary>切入（时钟展开 + 卡全部现身）要多久：游戏推迟这么久再开始打（Aim.HoldCast）。</summary>
 	public const float EntryTime = 0.62f;
 	/// <summary>旧接口：每张卡现身的间隔（JokerFx 算等待时间用）。</summary>
 	public const float Interval = 0.02f;

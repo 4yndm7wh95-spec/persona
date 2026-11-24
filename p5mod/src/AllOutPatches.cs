@@ -20,8 +20,8 @@ using MegaCrit.Sts2.Core.Settings;
 namespace P5Joker;
 
 /// <summary>
-/// Joker 在精英或 Boss 战中于敌人倒下时采集剪影，游戏确认胜利后才播放总攻击。
-/// 等本场在途剪影采集结束后播放，奖励界面等到收尾揭幕时再入栈。快速模式「瞬间」跳过。
+/// Joker 在精英或 Boss 战中于敌人倒下时采集剪影；最后一只倒下就开播总攻击（前半段慢放，0.9.58）。
+/// 等本场在途剪影采集结束后播放，奖励界面等到收尾揭幕时再入栈；战斗结束时还没开播就在那里补播。快速模式「瞬间」跳过。
 /// </summary>
 public static class AllOutGame
 {
@@ -93,6 +93,7 @@ public static class AllOutGame
 	/// <summary>敌人倒下时采集剪影，保留死亡动作前的形态。</summary>
 	public static void OnDeath(NCreature n)
 	{
+		if (!AllOut.Playing) AllOut.RestoreTime();
 		if (!Enabled || n.Entity is not { } e || !IsEnemySilhouette(e) || NCombatRoom.Instance is not { } room
 			|| !BigRoom(room) || !JokerHere(e.CombatState)) return;
 
@@ -100,7 +101,21 @@ public static class AllOutGame
 		if (batch.Started) return;
 		BeforeHit.TryGetValue(n, out SpinePose? pose);
 		BeforeHit.Remove(n);
+		// 0.9.58：倒下的是最后一只 → 剪影截好（Play 先等在途的截图）就立刻开播，最后一击的伤害数字一出来玻璃就碎、前半段慢放。
+		// 不等游戏确认胜利（那时候结算流程已经往下走了，慢放就没了）。
+		bool last = e.CombatState?.Enemies.All(x => !x.IsAlive) == true;
+		try
+		{
+			CaptureFoe(n, room, batch, pose);
+		}
+		finally
+		{
+			if (last) batch.Playback ??= Play(room, batch);
+		}
+	}
 
+	private static void CaptureFoe(NCreature n, NCombatRoom room, CaptureBatch batch, SpinePose? pose)
+	{
 		// Kaiser Crab's two targetable creatures are invisible. Both claws and
 		// the body are drawn by a single rig in the room background.
 		Node2D? crabRig = room.Background?.GetNodeOrNull<Node2D>("%KaiserCrab")?.GetNodeOrNull<Node2D>("%Visuals");
@@ -237,6 +252,8 @@ public static class AllOutGame
 
 	public static Task OnCombatEnd(CombatRoom room, ICombatState? cs)
 	{
+		// 慢放兜底：只在没在播总攻击时恢复（不打断正在慢放的前半段）
+		if (!AllOut.Playing) AllOut.RestoreTime();
 		if (!Enabled)
 		{
 			_batch = null;

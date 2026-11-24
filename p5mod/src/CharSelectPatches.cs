@@ -11,6 +11,8 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Characters;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Screens.CharacterSelect;
+using MegaCrit.Sts2.Core.Saves;
+using MegaCrit.Sts2.Core.Settings;
 
 namespace P5Joker;
 
@@ -120,15 +122,19 @@ public static class CharSelectBgPatch
 	}
 
 	internal static void ApplySelection(Control screen, Control container, NCharacterSelectButton button,
-		Func<bool?>? selected = null)
+		Func<bool?>? selected = null, bool waitForTransition = true)
 	{
 		bool ShowsJoker() => selected?.Invoke() ?? JokerCostume.Selected;
 		CharacterModel? model = !button.IsRandom && !button.IsLocked && button.Character is Silent && ShowsJoker()
 			? button.Character : null;
-		Control? bg = model == null ? null : container.GetNodeOrNull<Control>(model.Id.Entry + "_bg");
+		Control? bg = model == null ? null : container.GetNodeOrNull<Control>(model.Id.Entry + "_bg")
+			?? container.GetChildren().OfType<Control>().FirstOrDefault(c =>
+				c.HasMeta(OriginalBackground) || c.SceneFilePath == SilentBackground);
 		if (bg != null && Selections.TryGetValue(screen, out Selection? existing)
 			&& existing.Root is { } root && Fx.Active(root) && root.GetParent() == bg) return;
-		Select(screen, container, bg, () => CharSelectInfo.Prepare(screen), selected: ShowsJoker);
+		waitForTransition = waitForTransition && SaveManager.Instance?.PrefsSave?.FastMode is not (FastModeType.Fast or FastModeType.Instant);
+		Select(screen, container, bg, () => CharSelectInfo.Prepare(screen, waitForTransition), selected: ShowsJoker,
+			waitForTransition: waitForTransition);
 	}
 
 	internal static void AfterSkinChangerRefresh(NCharacterSelectScreen screen, CharacterModel character, string groupId)
@@ -152,7 +158,7 @@ public static class CharSelectBgPatch
 	}
 
 	internal static void Select(Control screen, Control container, Control? bg, Func<Action<bool?>?>? preparePanel = null,
-		bool playIntro = true, Func<bool>? selected = null)
+		bool playIntro = true, Func<bool>? selected = null, bool waitForTransition = true)
 	{
 		Selection selection = Selections.GetOrCreateValue(screen);
 		if (selection.Root is { } previous && GodotObject.IsInstanceValid(previous))
@@ -184,7 +190,7 @@ public static class CharSelectBgPatch
 			bool Current() => selection.Root == root && Fx.Active(root) && root.GetParent() == bg
 				&& Fx.Active(bg) && bg.GetParent() == container && Fx.Active(screen) && screen.IsVisibleInTree()
 				&& (selected?.Invoke() ?? JokerCostume.Selected);
-			bool CanDraw() => NGame.Instance?.Transition.InTransition != true;
+			bool CanDraw() => !waitForTransition || NGame.Instance?.Transition.InTransition != true;
 			bool ready = false;
 			try
 			{
@@ -240,14 +246,17 @@ public static class BlitzSelectBgPatch
 	public static void Finalizer() => CharSelectBgPatch.Finalizer();
 	public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) => CharSelectBgPatch.Transpiler(instructions);
 
-	public static void Postfix(Control __instance, NCharacterSelectButton charSelectButton)
+	[HarmonyAfter(SkinChangerSelect.ManagerId)]
+	public static void Postfix(Control __instance, NCharacterSelectButton __0, Control ____bgContainer)
 	{
 		CharSelectSfxMute.Armed = false;
-		ModEntry.Safe("Blitz character select", () =>
+		// The preferred character can be selected while the submenu is opening.
+		Callable.From(() => ModEntry.Safe("Blitz character select", () =>
 		{
-			if (__instance.GetNodeOrNull<Control>("AnimatedBg") is Control container)
-				CharSelectBgPatch.ApplySelection(__instance, container, charSelectButton);
-		});
+			if (Fx.Active(__instance) && __instance.IsVisibleInTree() && Fx.Active(____bgContainer)
+				&& Traverse.Create(__instance).Field("_selectedButton").GetValue<NCharacterSelectButton>() == __0)
+				CharSelectBgPatch.ApplySelection(__instance, ____bgContainer, __0, waitForTransition: false);
+		})).CallDeferred();
 	}
 }
 
