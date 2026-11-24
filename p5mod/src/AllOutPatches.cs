@@ -103,14 +103,41 @@ public static class AllOutGame
 		BeforeHit.Remove(n);
 		// 0.9.58：倒下的是最后一只 → 剪影截好（Play 先等在途的截图）就立刻开播，最后一击的伤害数字一出来玻璃就碎、前半段慢放。
 		// 不等游戏确认胜利（那时候结算流程已经往下走了，慢放就没了）。
-		bool last = e.CombatState?.Enemies.All(x => !x.IsAlive) == true;
+		bool last = IsFinalBlow(e.CombatState);
 		try
 		{
-			CaptureFoe(n, room, batch, pose);
+			// 会复活的（实验体前两条命）不截：它还会再倒下一次，截了收尾里就有好几个一样的剪影
+			if (WillStayDead(e)) CaptureFoe(n, room, batch, pose);
 		}
 		finally
 		{
 			if (last) batch.Playback ??= Play(room, batch);
+		}
+	}
+
+	/// <summary>
+	/// 这一下是不是真的赢了（2026-11-24 回归 bug：实验体三条命，打掉第一条命就播了总攻击）。照游戏自己的胜利判定（CombatManager.IsCombatEnding）：
+	/// 没有活着的主要敌人（小怪不算），并且没有谁拦着战斗结束 —— 实验体的 AdaptablePower、寄生、蒸汽爆发、存货、惊喜这类会复活 / 进下一阶段的
+	/// 都靠 ShouldStopCombatFromEnding 拦着（实验体第三形态时这个 power 已经移除，最后一条命才算）。判断出错就当不是，交给 OnCombatEnd 补播。
+	/// </summary>
+	private static bool WillStayDead(MegaCrit.Sts2.Core.Entities.Creatures.Creature e)
+	{
+		try { return e.CombatState is not { } cs || MegaCrit.Sts2.Core.Hooks.Hook.ShouldCreatureBeRemovedFromCombatAfterDeath(cs, e); }
+		catch (System.Exception) { return true; }
+	}
+
+	private static bool IsFinalBlow(MegaCrit.Sts2.Core.Combat.ICombatState? cs)
+	{
+		if (cs == null) return false;
+		try
+		{
+			if (cs.Enemies.Any(x => x != null && x.IsAlive && x.IsPrimaryEnemy)) return false;
+			return !MegaCrit.Sts2.Core.Hooks.Hook.ShouldStopCombatFromEnding(cs);
+		}
+		catch (System.Exception ex)
+		{
+			Stage.Report("allout final blow check", ex);
+			return false;
 		}
 	}
 
