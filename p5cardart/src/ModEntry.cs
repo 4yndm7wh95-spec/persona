@@ -16,7 +16,7 @@ public static class ModEntry
 
     public static void Init()
     {
-        GD.Print($"{Tag} init v1.0.0 (P5 Joker card art for the Silent pool + Shiv)");
+        GD.Print($"{Tag} init v1.0.1 (P5 Joker card art for the Silent pool + Shiv)");
         try
         {
             Harmony harmony = new("brooks.p5cardart");
