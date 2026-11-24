@@ -19,10 +19,10 @@ public sealed class PileExhaust : IPileDecor
 	public float GridX => 1130f;
 	public float GridTop => 214f;
 	public float GridBottom => 1050f;
-	public int Cols => 4;
-	public float CardW => 158f;
-	public float CellW => 192f;
-	public float CellH => 252f;
+	public int Cols => 3;
+	public float CardW => 210f;   // 用户 2026-11-24：卡太小 → 放大约 30%、3 列
+	public float CellW => 238f;
+	public float CellH => 318f;
 	public float CardsStart => PileDraw.SlamAt - 0.02f;     // 砸中之后牌才从右边飞进来
 	public float ExitTime => 0.32f;
 	public Vector2 FocusAt => new(560f, 560f);

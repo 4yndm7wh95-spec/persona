@@ -19,12 +19,12 @@ namespace P5Joker;
 public sealed class PileDeck : IPileDecor
 {
 	public float GridX => 1090f;
-	public float GridTop => 140f;
-	public float GridBottom => 880f;   // 格子下面露出原版那把枪（排版 v2：第三排只露半截）
-	public int Cols => 4;
-	public float CardW => 158f;
-	public float CellW => 190f;
-	public float CellH => 252f;
+	public float GridTop => 250f;   // 用户 2026-11-24：牌挡住右上角 MENU DECK 标题牌 → 往下挪（下面空间大）
+	public float GridBottom => 990f;   // 格子下面露出原版那把枪（排版 v2：第三排只露半截）
+	public int Cols => 3;
+	public float CardW => 210f;   // 用户 2026-11-24：卡太小 → 放大约 30%、3 列
+	public float CellW => 238f;
+	public float CellH => 318f;
 	public float CardsStart => PortraitAt + 0.06f;
 	public float ExitTime => 0.32f;
 	public Vector2 FocusAt => new(560f, 540f);

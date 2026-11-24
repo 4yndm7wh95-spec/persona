@@ -914,7 +914,7 @@ public static class PileScreen
 		f.Info.AddChild(f.Copies);
 		Node2D back = new();
 		f.Info.AddChild(back);
-		PileText.Word(back, "back", new Vector2(ix + 2f, iy + 214f) * k, 26f * k, new Color(1f, 1f, 1f, 0.85f), true);
+		PileText.Word(back, "back", new Vector2(ix + 2f, iy + 168f) * k, 26f * k, new Color(1f, 1f, 1f, 0.85f), true);
 		return f;
 	}
 
@@ -931,8 +931,7 @@ public static class PileScreen
 		float x = at.X + w / k + 26f;
 		x += PileText.Word(f.Kind, "cost", new Vector2(x, at.Y + 104f) * k, 44f * k, Red, true) / k + 12f;
 		if (cost >= 0) PileText.Number(f.Kind, cost.ToString(), new Vector2(x, at.Y + 108f) * k, 40f * k, Paper, true);
-		int copies = pile.Cards.Count(c => c.Id.Entry == card.Id.Entry && c.IsUpgraded == card.IsUpgraded);
-		PileText.Row(f.Copies, new Vector2(at.X, at.Y + 160f) * k, 38f * k, Paper, true, 12f * k, "inpile", "×" + copies);
+		// 「牌堆中 ×N」去掉了（用户 2026-11-24），Copies 留空
 	}
 
 	private static void Animate(Focus f, float e, float p, bool on, float k, Vector2 center)

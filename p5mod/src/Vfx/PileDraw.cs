@@ -24,8 +24,8 @@ public sealed class PileDraw : IPileDecor
 {
 	// ── 版式（1920×1080）──
 	public const float GridX = 70f, GridTop = 214f, GridBottom = 1046f;
-	public const int Cols = 4;
-	public const float CardW = 168f, CellW = 182f, CellH = 250f;
+	public const int Cols = 3;
+	public const float CardW = 210f, CellW = 238f, CellH = 318f;   // 用户 2026-11-24：卡太小 → 放大约 30%、3 列
 	// 立绘按原版比例（实机截图量的：比第一版大 1.258 倍，手指尖顶到画面上缘）；牌格子改 4 列，手掌左边缘正好在牌格子右边
 	private static readonly Vector2 PortraitAt = new(580f, -6f);
 	private const float PortraitW = 1510f;
@@ -585,7 +585,7 @@ public sealed class CallingCard
 		Vector2I px = (Vector2I)(c.Box * k * 2f).Ceil();
 		c._vp = new SubViewport { Size = px, TransparentBg = true, OwnWorld3D = true, Msaa3D = Viewport.Msaa.Msaa4X, RenderTargetUpdateMode = SubViewport.UpdateMode.Always };
 		parent.AddChild(c._vp);
-		Camera3D cam = new() { Position = new Vector3(0f, 0f, Focal), Fov = Mathf.RadToDeg(2f * Mathf.Atan(c.Box.Y * 0.5f / Focal)), Near = 10f, Far = 4000f };
+		Camera3D cam = new() { Position = new Vector3(0f, 0f, Focal), Fov = Mathf.RadToDeg(2f * Mathf.Atan(c.Box.Y * 0.5f / Focal)), Near = Focal - 400f, Far = Focal + 400f };   // 近 / 远裁剪面贴着卡（用户 2026-11-24：两面顶上一条红黑噪点 = 贴图面和厚度盒子深度冲突，Near 10 时精度不够）
 		c._vp.AddChild(cam);
 		// 歪一点（绕 Z -8°）再后仰一点（绕 X 8°），里面那层绕 Y 转
 		Node3D tilt = new() { RotationDegrees = new Vector3(8f, 0f, -8f) };
@@ -596,7 +596,7 @@ public sealed class CallingCard
 		c._back = Face(back);
 		c._spin.AddChild(new MeshInstance3D { Mesh = new QuadMesh { Size = new Vector2(c.W, c.H) }, MaterialOverride = c._front, Position = new Vector3(0f, 0f, c.Thick * 0.5f + 0.05f) });
 		c._spin.AddChild(new MeshInstance3D { Mesh = new QuadMesh { Size = new Vector2(c.W, c.H) }, MaterialOverride = c._back, Position = new Vector3(0f, 0f, -c.Thick * 0.5f - 0.05f), RotationDegrees = new Vector3(0f, 180f, 0f) });
-		c._spin.AddChild(new MeshInstance3D { Mesh = new BoxMesh { Size = new Vector3(c.W - 0.5f, c.H - 0.5f, c.Thick) }, MaterialOverride = new StandardMaterial3D { ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, AlbedoColor = new Color(0.27f, 0.024f, 0.04f) } });
+		c._spin.AddChild(new MeshInstance3D { Mesh = new BoxMesh { Size = new Vector3(c.W - 0.5f, c.H - 0.5f, Mathf.Max(0.5f, c.Thick - 0.8f)) }, MaterialOverride = new StandardMaterial3D { ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, AlbedoColor = new Color(0.27f, 0.024f, 0.04f) } });
 		// 落在手上的投影（跟着卡的宽度变化）
 		c._shadow = new Polygon2D { Color = new Color(0.12f, 0f, 0f, 0.3f), Polygon = Fx.Circle(1f, 48), Material = Soft };
 		parent.AddChild(c._shadow);

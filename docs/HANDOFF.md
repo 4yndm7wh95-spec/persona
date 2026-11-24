@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-11-24 · 会话 E：牌堆实机 UI 问题（0.9.77）
+
+- **根因（重要）**：`Vfx/AaPoly.cs`（牌堆会话加的抗锯齿多边形）重写了 `_Draw`，而 Mod 用普通 .NET SDK 编译，自定义节点的 Godot 虚方法在游戏里**不会被调用**
+  （`docs/ART_SPEC.md` 1927 行早就记过 `_Process` 的同一个坑），预览里正常所以没发现。实机所有 `AaPoly` / `PileDraw.Poly` 都没画：
+  分区标题 / 排序开关 / 牌组高亮行的底板没了（文字和背景融在一起）；弃牌堆右下斜带的遮罩失效 → 整屏红星纹盖住所有东西（「切完只剩红底」）；
+  消耗堆的黑板 / 白板 / 反色层没了 → 入场 Joker 全黑、定格突然半身白。改成构造时订阅 `draw` 信号（`Draw += Paint`）。**以后 Mod 里别重写任何 `_Xxx` 虚方法，用信号。**
+- 预告信两面顶上红黑噪点 = 贴图面和厚度盒子深度冲突：SubViewport 相机 Near/Far 贴近卡片，盒子厚度往里收。
+- 牌放大约 30%（四页都 3 列，卡宽 210、格子 238×318）；牌组网格下移到标题牌下面（GridTop 250、GridBottom 990）；弃牌堆 GridTop 232、排序开关挪到网格上方。
+- 特写说明去掉「牌堆中 ×N」。预览：`docs/p5/preview/pile_draw_v12 / pile_exhaust_v14 / pile_discard_v14 / pile_deck_v12.mp4`（预览里本来就正常，修的是实机）。
+- 卡面 Mod 1.0.1（卡图柔化）：`docs/codex/codex_p5_cardart_build_1.0.1.md`。
+
+---
+
 ## 2026-11-24 · 会话 E 收尾：牌堆三页入场 + 总攻击多条命（0.9.76，用户：可以了，等合并）
 
 - 分支 `claude/confirm-next-tasks-k5wu6t`（已推送、工作区干净、类型检查通过），已合入 `claude/p5-pile-ui`、`claude/p5-restore-fx`（这两个现在都是本分支的祖先）。

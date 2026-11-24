@@ -20,17 +20,17 @@ namespace P5Joker;
 public sealed class PileDiscard : IPileDecor
 {
 	public float GridX => 1100f;   // 牌区右移一点：牌在立绘上面一层，第一列别压住浅灰身体和 COMMAND 的 D
-	public float GridTop => 170f;
+	public float GridTop => 232f;   // 让开右上角标题牌（用户 2026-11-24）
 	public float GridBottom => 1060f;
 	public int Cols => 3;
-	public float CardW => 158f;
-	public float CellW => 182f;
-	public float CellH => 252f;
+	public float CardW => 210f;   // 用户 2026-11-24：卡太小 → 放大约 30%、3 列
+	public float CellW => 238f;
+	public float CellH => 318f;
 	public float CardsStart => CutAt + 0.02f;
 	public float ExitTime => 0.32f;
 	public Vector2 FocusAt => new(560f, 540f);
 	public Vector2 InfoAt => new(980f, 300f);
-	public Vector2 SwitchAt => new(1440f, 836f);
+	public Vector2 SwitchAt => new(1100f, 168f);   // 牌放大以后右下角会压在牌上（用户 2026-11-24）→ 网格上方、标题牌左边
 	public Vector2 EnterOffset => new(70f, 30f);
 	public Vector2 ExitOffset => new(260f, 40f);
 
