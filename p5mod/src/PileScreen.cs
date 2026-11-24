@@ -136,8 +136,9 @@ public static class PileScreen
 		bool discard = pile.Type == PileType.Discard;   // 2026-11-23：弃牌堆 = ITEM 页（Vfx/PileDiscard.cs）
 		bool deck = pile.Type == PileType.Deck;         // 2026-11-24：牌组 = EQUIP 页（Vfx/PileDeck.cs，地图 / 顶栏打开的 NDeckViewScreen）
 		Font font = Barlow;
-		float t0 = Time.GetTicksMsec() / 1000f;
-		float Now() => Time.GetTicksMsec() / 1000f - t0;
+		// 动画时钟从第一次刷新开始走（用户 2026-11-24：入场开头会顿一下 —— 搭界面那一帧要几十毫秒，从搭界面时算起，第一帧就跳过一截）
+		float t0 = -1f;
+		float Now() => t0 < 0f ? 0f : Time.GetTicksMsec() / 1000f - t0;
 		bool exiting = false, finalized = false;
 		float exitT0 = 0f;
 		bool orderMode = deck ? P5Settings.DeckOrder : discard ? P5Settings.DiscardOrder : exhaust ? P5Settings.ExhaustOrder : P5Settings.DrawOrder;
@@ -624,6 +625,7 @@ public static class PileScreen
 		void Tick()
 		{
 			if (!GodotObject.IsInstanceValid(root) || !root.IsVisibleInTree()) return;
+			if (t0 < 0f) t0 = Time.GetTicksMsec() / 1000f;
 			try
 			{
 				if (!exiting && (needsRefill || items.Count != pile.Cards.Count))

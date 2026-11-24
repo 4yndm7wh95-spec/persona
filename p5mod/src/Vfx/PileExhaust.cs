@@ -71,6 +71,7 @@ public sealed class PileExhaust : IPileDecor
 	private readonly Vector2[] _bandPts;
 	/// <summary>原版 112–122 的 3D Joker：游戏里实时渲染（MenuJoker3D，关键帧 MenuJoker3DKeys.Exhaust）。</summary>
 	private readonly MenuJoker3D? _m3d;
+	private readonly PileReveal? _reveal;
 	private static readonly string[] Hide3d = { "smartphone", "card", "school_bag", "gun_outline", "gun_main", "ef line_obj_01", "ef line_obj_02", "ef line_obj_03", "ef line_obj_04", "ef line_obj_05", "ef line_obj_06", "ef line_obj_07", "ef line_obj_08" };
 	private readonly Sprite2D _porSprite;
 	private readonly float _porScale = 1f;
@@ -122,6 +123,8 @@ public sealed class PileExhaust : IPileDecor
 		{
 			_m3d = new MenuJoker3D(root, view, MapK, PorAt - OrigArtAt * MapK, Hide3d);
 			root.AddChild(_m3d.Sprite);
+			_reveal = new PileReveal(root, view);
+			_m3d.Sprite.Material = _reveal.Track();
 		}
 		_coverMat = new ShaderMaterial { Shader = CoverShader };
 		_cover = new Polygon2D { Color = Paper, Antialiased = true, Visible = false, Material = _coverMat };
@@ -240,15 +243,13 @@ void fragment() {
 		else Exit(Mathf.Clamp((now - _exitT0) / ExitTime, 0f, 1f));
 	}
 
+	/// <summary>入场进度 = 原版第几帧（112 + u）：从 0 开始就在动，HandAt 正好到第 10 帧（3D、白板边、反色圆共用）。</summary>
+	private static float U(float t) => PileReveal.Progress(t, HandAt, 10f);
+
 	/// <summary>白板左边缘在 t 时刻的两点（原版屏幕坐标）：先从右边扫进来，112–117 按原版逐帧插值，117→118 跳到直线 L。</summary>
 	private static (Vector2 A, Vector2 B) Edge(float t)
 	{
-		float u = (t - FrameT(0)) / FrameDt;
-		if (u <= 0f)
-		{
-			float s = 1500f * (1f - Ease5.OutExpo(Mathf.Clamp((t - 0.015f) / (FrameT(0) - 0.015f), 0f, 1f)));
-			return (EdgeKeys[0].A + new Vector2(s, 0f), EdgeKeys[0].B + new Vector2(s, 0f));
-		}
+		float u = U(t);
 		int i = Mathf.Min((int)u, EdgeKeys.Length - 1);
 		if (i >= EdgeKeys.Length - 1) return EdgeKeys[^1];
 		float f = Ease5Ext.InOutCubic(u - i);
@@ -258,7 +259,7 @@ void fragment() {
 	/// <summary>黑色反色区半径（原版屏幕坐标）：117 之前 0，之后按原版逐帧插值。</summary>
 	private static float Radius(float t)
 	{
-		float u = (t - FrameT(5)) / FrameDt;
+		float u = U(t) - 5f;
 		if (u <= 0f) return 0f;
 		int i = Mathf.Min((int)u, RRadius.Length - 1);
 		if (i >= RRadius.Length - 1) return RRadius[^1];
@@ -289,9 +290,13 @@ void fragment() {
 		float reach = (_view + new Vector2(0f, _view.Y)).Length() * 1.05f;
 		_bg.SetShaderParameter("wipe", t >= 0.3f ? 1e7f : Ease5.OutQuint(Mathf.Clamp(t / 0.3f, 0f, 1f)) * reach);
 		bool cut = t >= HandAt;
+		_reveal?.Set(t);
 		// 黑块从白板到位起就垫在 Joker 下面（原版 Joker 身后是黑底：黑色的身体 / 腿和背景连成一片），不然黑色区域和身体之间会露出一条红缝
-		_slab.Visible = t >= 0.03f;
-		_slab.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((t - 0.03f) / 0.05f, 0f, 1f));
+		_slab.Visible = true;
+		_slab.Modulate = Colors.White;
+		Vector2[] slab = _reveal != null && !cut ? _reveal.Clip(_slabPts) : _slabPts;
+		_slab.Visible = slab.Length >= 3;
+		if (_slab.Visible) _slab.Polygon = slab;
 		// 灰楔形是我们排版自己加的，原版切立绘那一刻是黑的：砸中之后再淡进来，切换那一下不冒出一块灰
 		_wedge.Visible = cut;
 		_wedge.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp((t - SlamAt) / 0.16f, 0f, 1f));
@@ -302,7 +307,8 @@ void fragment() {
 			// 白板（Joker 下面 + 上面的遮罩）和黑色反色区共用同一个多边形：最终黑块的形状裁掉白板左边缘左侧
 			var (ea, eb) = Edge(t);
 			Vector2[] poly = ClipRight(_platePts, Map(ea) * k, Map(eb) * k);
-			bool show = t >= 0.015f && poly.Length >= 3;
+			if (_reveal != null) poly = _reveal.Clip(poly);   // 白板也跟着揭幕的斜线露出来（原来是从右边整块滑进来）
+			bool show = poly.Length >= 3;
 			_plate.Visible = _cover.Visible = show;
 			if (show) _plate.Polygon = _cover.Polygon = _invert.Polygon = poly;
 			float r = Radius(t);
@@ -315,14 +321,10 @@ void fragment() {
 			_invertMat.SetShaderParameter("r", rr);
 			if (_m3d != null)
 			{
-				// 原版 112–122 的 3D Joker：连续播（u = 原版第几帧，小数在两帧之间插值）；最开始从左边滑进来（原版切镜头时那一下甩）
-				float slide = Ease5.OutExpo(Mathf.Clamp((t - 0.035f) / 0.09f, 0f, 1f));
-				if (t >= 0.035f)
-				{
-					_m3d.Show(MenuJoker3DKeys.Exhaust, Mathf.Clamp((t - FrameT(0)) / FrameDt, 0f, 10f));
-					_m3d.Sprite.Position = new Vector2(-140f * k * (1f - slide), 0f);
-				}
-				else _m3d.Hide();
+				// 原版 112–122 的 3D Joker：从第 0 帧就开始连续播（u = 原版第几帧，小数在两帧之间插值）、HandAt 正好放到最后一帧；
+				// 斜切揭幕（PileReveal）露出来，不再定格平移（用户 2026-11-24）
+				_m3d.Show(MenuJoker3DKeys.Exhaust, U(t));
+				_m3d.Sprite.Position = Vector2.Zero;
 			}
 		}
 		else

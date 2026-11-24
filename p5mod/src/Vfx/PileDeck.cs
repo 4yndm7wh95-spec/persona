@@ -58,9 +58,13 @@ public sealed class PileDeck : IPileDecor
 	private readonly Node2D _entrance;
 	/// <summary>原版 233–239 的 3D Joker：游戏里实时渲染（MenuJoker3D，关键帧 MenuJoker3DKeys.Deck；这一页拿着枪）。</summary>
 	private readonly MenuJoker3D? _m3d;
+	private readonly Polygon2D _base;
+	private readonly PileReveal _reveal;
+	private readonly ShaderMaterial? _revealMat;
 	private static readonly string[] Hide3d = { "smartphone", "card", "school_bag", "ef line_obj_01", "ef line_obj_02", "ef line_obj_03", "ef line_obj_04", "ef line_obj_05", "ef line_obj_06", "ef line_obj_07", "ef line_obj_08" };
 	private readonly List<Polygon2D> _star = new(), _gray = new(), _red = new(), _darkPaper = new(), _darkInvert = new();
 	private int _shownFrame = -1;
+	private bool _clipped = true;
 
 	/// <summary>stats：总张数和各类型张数（PileScreen.DiscardStats 同一份统计）。</summary>
 	public PileDeck(Control root, Vector2 view, (int Total, int Up, Dictionary<string, (int N, int Up)> ByType) stats)
@@ -86,7 +90,8 @@ public sealed class PileDeck : IPileDecor
 		// 1b. 入场（原版 233–239）：黑底 → 星纹 / 浅灰板 / 红底 → 黑区先画成白纸 → 3D Joker → 读屏把黑区反色（白纸 → 黑、黑 Joker → 白）
 		_entrance = new Node2D { Name = "PileDeckEntrance" };
 		root.AddChild(_entrance);
-		_entrance.AddChild(new ColorRect { Size = view, Color = Ink, MouseFilter = Control.MouseFilterEnum.Ignore });
+		_base = new Polygon2D { Color = Ink };   // 黑底：跟着揭幕的斜线裁
+		_entrance.AddChild(_base);
 		ShaderMaterial starMat = PileDraw.StarMaterial(118f, new Color(0.91f, 0.91f, 0.91f), new Color(0.03f, 0.03f, 0.03f), new Color(0.376f, 0.376f, 0.376f), Vector2.Zero);
 		starMat.SetShaderParameter("size", view);
 		ShaderMaterial redMat = (ShaderMaterial)_bg.Duplicate();
@@ -104,6 +109,8 @@ public sealed class PileDeck : IPileDecor
 		{
 			_m3d = new MenuJoker3D(_entrance, view, MapK, new Vector2(-80f, 0f), Hide3d);
 			_entrance.AddChild(_m3d.Sprite);
+			_revealMat = new ShaderMaterial { Shader = PileReveal.Shader };
+			_m3d.Sprite.Material = _revealMat;
 		}
 		_entrance.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
 		Node2D inverted = new();
@@ -117,6 +124,8 @@ public sealed class PileDeck : IPileDecor
 			_darkInvert.Add(new Polygon2D { Color = Colors.White, Antialiased = true, Material = invertMat });
 			inverted.AddChild(_darkInvert[^1]);
 		}
+		_reveal = new PileReveal(_entrance, view);
+		if (_revealMat != null) _reveal.Track(_revealMat);
 
 		// 2. 中间类型列表
 		_list = new Node2D { Name = "PileDeckList" };
@@ -180,20 +189,24 @@ public sealed class PileDeck : IPileDecor
 	{
 		for (int i = 0; i < nodes.Count; i++)
 		{
-			bool on = i < polys.Length;
+			Vector2[] pts = i < polys.Length ? _reveal.Clip(polys[i].Select(MapEdge).ToArray()) : System.Array.Empty<Vector2>();
+			bool on = pts.Length >= 3;
 			nodes[i].Visible = on;
-			if (on) nodes[i].Polygon = polys[i].Select(MapEdge).ToArray();
+			if (on) nodes[i].Polygon = pts;
 		}
 	}
 
-	/// <summary>入场第 u 帧（原版 233 + u，小数）：3D Joker 连续插值；四种区域取最近的补间形状（每帧 Sub 步）。</summary>
+	/// <summary>入场第 u 帧（原版 233 + u，小数）：3D Joker 连续插值；四种区域取最近的补间形状（每帧 Sub 步），再按揭幕的斜线裁。</summary>
 	private void ShowFrame(float u)
 	{
 		u = Mathf.Clamp(u, 0f, FrameCount - 1);
 		_m3d?.Show(MenuJoker3DKeys.Deck, u);
 		int f = Mathf.Clamp(Mathf.RoundToInt(u * PileDeckEntrance.Sub), 0, PileDeckEntrance.Dark.Length - 1);
-		if (f == _shownFrame) return;
+		if (f == _shownFrame && _reveal.Done && !_clipped) return;   // 揭幕刚结束的那一帧还要不裁地重画一次
 		_shownFrame = f;
+		_clipped = !_reveal.Done;
+		Vector2 big = _view + new Vector2(80f, 80f);
+		_base.Polygon = _reveal.Clip(new[] { new Vector2(-40f, -40f), new Vector2(big.X, -40f), big, new Vector2(-40f, big.Y) });
 		SetPolys(_star, PileDeckEntrance.Star[f]);
 		SetPolys(_gray, PileDeckEntrance.Gray[f]);
 		SetPolys(_red, PileDeckEntrance.Red[f]);
@@ -259,8 +272,9 @@ public sealed class PileDeck : IPileDecor
 		if (cut) _m3d?.Hide();
 		if (!cut)
 		{
-			ShowFrame((t - FrameStart) / FrameDt - 0.5f);
-			_entrance.Position = new Vector2(_view.X * 0.7f * (1f - Ease5.OutExpo(Seg(t, 0f, 0.1f))), 0f);
+			// 斜切揭幕 + 3D 从第 0 帧就开始连续播，PortraitAt（= camp_open 的「啪」）正好放到最后一帧
+			_reveal.Set(t);
+			ShowFrame(PileReveal.Progress(t, PortraitAt, FrameCount - 1));
 		}
 		_back.Visible = _portrait.Visible = _list.Visible = cut;
 		_back.Position = Vector2.Zero;

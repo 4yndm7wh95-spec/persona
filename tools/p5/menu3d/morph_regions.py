@@ -4,7 +4,7 @@
 import re, sys, numpy as np
 from pathlib import Path
 from PIL import Image, ImageDraw
-from scipy.ndimage import distance_transform_edt as edt
+from scipy.ndimage import distance_transform_edt as edt, binary_closing, binary_opening
 sys.path.insert(0, str(Path(__file__).parent / 'fit')); sys.path.insert(0, str(Path(__file__).parent / 'fit/item_example'))
 from regions import polys
 from item_entrance import edge_out, cs_polys
@@ -35,21 +35,39 @@ def to_polys(m):
         out.append(edge_out([((x / 2 - PAD) * S, (y / 2 - PAD) * S) for x, y in p]))     # polys 已经 ×2（按 960 宽的掩码写的）
     return out
 
-def main(path, cls, names, sub=4):
+def disk(r):
+    y, x = np.mgrid[-r:r + 1, -r:r + 1]
+    return x * x + y * y <= r * r
+
+def smooth(m, r=12):
+    """抹掉小于约 2r 像素（×S = 原版像素）的凸起和缺口（原版 Joker 的手臂 / 衣角被抠进区域里留下的小舌头，用户 2026-11-24）。"""
+    if not m.any(): return m
+    m = binary_closing(m, structure=disk(r), border_value=1)
+    return binary_opening(m, structure=disk(r), border_value=0) | (m & ~binary_opening(np.ones_like(m), structure=disk(r)))
+
+def main(path, cls, names, sub=4, r=12):
     path = Path(path); cs = path.read_text()
     for name in names:
         frames = parse(cs, name)
+        keys = [smooth(mask(f), r) for f in frames]
+        polys_k = [to_polys(m) for m in keys]
         out = []
         for k in range(len(frames)):
-            out.append(frames[k])
+            out.append(polys_k[k])
             if k == len(frames) - 1: break
-            a, b = mask(frames[k]), mask(frames[k + 1])
+            a, b = keys[k], keys[k + 1]
             if (a == b).all():
-                out += [frames[k]] * (sub - 1); continue
+                out += [polys_k[k]] * (sub - 1); continue
             da, db = sdf(a), sdf(b)
+            lo = min(a.sum(), b.sum())
             for j in range(1, sub):
                 t = j / sub
-                out.append(to_polys(((1 - t) * da + t * db) < 0))
+                m = ((1 - t) * da + t * db) < 0
+                # 两帧的形状不重叠（区域整块换了位置）时距离场平均会变空：这一段改成中点硬切
+                if lo > 0 and m.sum() < 0.6 * lo:
+                    out.append(polys_k[k] if t < 0.5 else polys_k[k + 1])
+                else:
+                    out.append(to_polys(m))
         blk_start = cs.index(f' {name} =')
         line_start = cs.rindex('\n', 0, blk_start) + 1
         blk_end = cs.index('\t};', blk_start) + 4

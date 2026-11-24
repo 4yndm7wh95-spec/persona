@@ -110,6 +110,8 @@ public sealed class PileDraw : IPileDecor
 			_m3d = new MenuJoker3D(root, view, MapK, MapOff + new Vector2(_rx / k, 0f), Hide3d);
 			_split = new ShaderMaterial { Shader = SplitShader };
 			_split.SetShaderParameter("size", view);
+			_split.SetShaderParameter("wipe_origin", WipeFrom * k);
+			_split.SetShaderParameter("wipe_dir", new Vector2(1f, -0.62f).Normalized());
 			_m3d.Sprite.Material = _split;
 			root.AddChild(_m3d.Sprite);
 		}
@@ -206,22 +208,23 @@ public sealed class PileDraw : IPileDecor
 		Vector2 home = (PortraitAt + new Vector2(PortraitW, PortraitW) * 0.5f) * k + new Vector2(_rx, 0f);
 		if (_has3d && _m3d != null && _split != null)
 		{
-			// 原版入场 46–52：3D Joker 连续播（u = 原版第几帧，小数在两帧之间插值）；46 之前停在第一帧、从左下滑进来；52 之后停住到白手掌冲进来（HandAt）
-			float u = Mathf.Clamp((t - T46) / FrameDt, 0f, 6f);
-			float slide = Ease5.OutExpo(Mathf.Clamp((t - 0.05f) / (T46 - 0.05f + 0.06f), 0f, 1f));
-			Vector2 off = new Vector2(-220f, 120f) * k * (1f - slide);
-			bool show3d = t >= 0.05f && t < HandAt;
+			// 原版入场 46–52：3D Joker 从第 0 帧就开始连续播（u = 原版第几帧，小数在两帧之间插值），HandAt（白手掌冲进来）正好放到最后一帧；
+			// 不再定格滑入（用户 2026-11-24）：跟着红底铺开的那道斜线一起露出来（SplitShader 的 wipe 和 _bg 同一组参数）
+			float u = PileReveal.Progress(t, HandAt, 6f);
+			Vector2 off = Vector2.Zero;
+			bool show3d = t < HandAt;
 			if (show3d)
 			{
 				_m3d.Show(MenuJoker3DKeys.Draw, u);
 				_m3d.Sprite.Position = off;
 			}
 			else _m3d.Hide();
-			// 分界线（原版坐标 x = a + b·y）：46 之前从右边扫进来到 46 的位置，46–52 按原版逐帧（插值），52 之后转到最终面板的斜边
+			_split.SetShaderParameter("wipe", t >= 0.3f ? 1e7f : wipe * reach);
+			// 分界线（原版坐标 x = a + b·y）：开头 0.14s 跟着星纹面板从右边扫进来，之后按原版逐帧（插值），52 之后转到最终面板的斜边
 			var (la, lb) = SplitAt(u);
-			if (t < T46)
+			if (t < 0.14f)
 			{
-				float e = Ease5.OutExpo(Mathf.Clamp((t - 0.06f) / (T46 - 0.06f), 0f, 1f));
+				float e = 1f - Mathf.Pow(1f - t / 0.14f, 3f);
 				la += (1f - e) * 1400f;
 			}
 			Vector2 top = ToScreen(new Vector2(la, 0f)), bot = ToScreen(new Vector2(la + lb * 1080f, 1080f));
@@ -476,12 +479,17 @@ void fragment() {
 shader_type canvas_item;
 uniform vec2 line = vec2(1e6, 0.0);
 uniform vec2 size = vec2(1920.0, 1080.0);
+uniform vec2 wipe_origin = vec2(0.0);
+uniform vec2 wipe_dir = vec2(1.0, 0.0);
+uniform float wipe = 1e7;
 void fragment() {
 	// Godot 4：COLOR 进来时已经是 贴图 × modulate
 	vec2 px = UV * size;
 	float d = px.x - (line.x + line.y * px.y);
 	float white = 1.0 - smoothstep(-0.75, 0.75, d);
 	COLOR.rgb = mix(COLOR.rgb, vec3(0.94), white);
+	// 跟红底一起铺开：红底前沿外面不画（_bg 的 wipe 同一组参数）
+	COLOR.a *= clamp(wipe - dot(px - wipe_origin, wipe_dir) - 16.0 + 0.5, 0.0, 1.0);
 }
 " };
 
