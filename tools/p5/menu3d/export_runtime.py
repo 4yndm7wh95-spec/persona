@@ -31,7 +31,7 @@ def main():
     for c in CLIPS:
         b = (SRC / f'{c}.f16').read_bytes()
         # 手改过的额外帧接在片段后面（research/p5r/menu3d_extra/<片段>.f16，同样 [帧][顶点][xyz] float16）：
-        # main_0005 第 11 帧 = 牌组收尾「240」，大衣下摆往左铺开对上立绘（fit/equip_example/coat240.py）
+        # （之前 main_0005 第 11 帧 = 大衣下摆往左推的手改帧，coat240.py；第五轮改成对原版 240、241 拟合机位以后不用了，文件已删）
         extra = ROOT / 'research/p5r/menu3d_extra' / f'{c}.f16'
         if extra.exists(): b += extra.read_bytes()
         (OUT / f'{c}.f16').write_bytes(b)

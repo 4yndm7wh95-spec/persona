@@ -24,8 +24,6 @@ def rebase(cam, old, new, w=1.0):
     p = (1 - w) * np.array(cam[:3], float) + w * p
     return [round(float(v), 4) for v in p] + [round(float(v), 4) for v in m3d.euler_yxz(r)] + [round(cam[6] + w * (new[6] - old[6]), 4)]
 
-# 牌组收尾「240」第一版的机位（fit240.py）：233–239 按它 → 第二版（fit240b.py，final.json 里的 "240"）整段搬过去
-DECK_OLD_240 = [122.626, 147.73, 55.601, -6.327, 54.791, -12.251, 30.0012]
 
 def main():
     import skill_entrance as sk, item_entrance as it
@@ -47,12 +45,10 @@ def main():
     if fin.exists():
         lines = ''
         for idx, (f, cam) in sorted(json.load(open(fin)).items(), key=lambda kv: int(kv[0])):
-            # 233–239 逐渐搬到新「240」的角度（用户 2026-11-24：整段全搬过去前半段和原版角度对不上——原版侧身、左手全程看不见；
-            # 只搬最后一帧又看得出最后镜头转过去）：开头用原版拟合的机位，按 ((原版帧 − 233) / 7)² 越往后搬得越多，转角摊在整段运镜里
-            if idx != '240': cam = rebase(cam, DECK_OLD_240, json.load(open(fin))['240'][1], ((int(idx) - 233) / 7) ** 2)
-            if idx == '240': f = 11.0   # 第 11 帧 = 第 9 帧 + 大衣下摆往左铺开（coat240.py，export_runtime 接在 main_0005 后面）
+            # 用户 2026-11-24 第五轮：原版 240、241 还是 3D（侧身、手臂水平伸出、左臂全藏住），242 才硬切立绘 + 枪口闪光 →
+            # 233–241 全用原版逐帧拟合的机位（239–241：fit/equip_example/fit241.py、fit241b.py），不再往立绘的角度搬
             lines += cs_key(int(idx) - 233, 'main_0005', f, 'main_0005', f, 0.0, cam)
-        out.append(('Deck', '牌组（原版 EQUIP 页 233–239 + 收尾「240」= 枪甩下来对上 2D 立绘，U = 原版帧 − 233）', lines))
+        out.append(('Deck', '牌组（原版 EQUIP 页 233–241，241 之后硬切 2D 立绘；U = 原版帧 − 233）', lines))
     fin = ROOT / 'tools/p5/menu3d/fit/draw_example/final.json'
     split = ''
     if fin.exists():

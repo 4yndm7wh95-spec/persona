@@ -12,9 +12,9 @@ namespace P5Joker;
 /// 牌格子在原版装备栏的位置，4 列，画在立绘上面（枪在格子下面露出来）。
 /// 入场（用户 2026-11-24：原版截图抠出来的区域不规则、乱 → 自己设计干净的色块碰撞，PileField 一个着色器画完）：
 /// 黑底从左边斜扫进来 → 一道星纹笔触从左下劈到右上 → 左边星纹块、右边灰板、红底先后撞进来，停在最终排版的位置（L1 / L2 / 折线）；
-/// 原版 3D Joker（233–239 逐帧拟合的动作和平滑后的机位 + 收尾「240」枪甩下来、头身对上立绘，MenuJoker3DKeys.Deck）从头到尾连续播，
-/// 在黑区里反色（白）、在星纹 / 灰 / 红上是黑的；PortraitAt（0.42 秒）前后一道红边斜线从左往右把 3D 扫成 2D 立绘 + 最终排版（背景色块不变），
-/// 立绘的枪往前一送、立绘压一下、列表一行行弹出、标题牌 / COMMAND 压上、牌飞入。
+/// 原版 3D Joker（233–241 逐帧拟合的动作和机位，MenuJoker3DKeys.Deck）从头到尾连续播，
+/// 在黑区里反色（白）、在星纹 / 灰 / 红上是黑的；PortraitAt（0.42 秒）硬切 2D 立绘 + 最终排版（背景色块不变）+ 枪口闪光（同原版 242），
+/// 立绘压一下、列表一行行弹出、标题牌 / COMMAND 压上、牌飞入。
 /// </summary>
 public sealed class PileDeck : IPileDecor
 {
@@ -35,20 +35,22 @@ public sealed class PileDeck : IPileDecor
 
 	private static readonly Color Ink = PileDraw.Ink, Paper = PileDraw.Paper;
 	/// <summary>
-	/// 3D 入场的关键帧数：原版 233–239 + 收尾的「240」（用户 2026-11-24：3D 最后一帧和 2D 立绘差太多，切的时候跳一大下 ——
-	/// 原版 239 枪举在头顶、240 直接是枪口朝右下的 2D 立绘；这里让 3D 把枪甩下来、手臂水平伸出去（main_0005 第 9.0 帧），机位按立绘的耳 / 眼 + 枪的击锤 / 枪口 / 握把拟合（fit240b.py；第一版 8.35 只对了头，枪收在身前、低着头，用户 2026-11-24 说枪和视线都朝下）
-	///（fit/equip_example/fit240.py），切的时候头、身子、枪的方向都对得上）。PortraitAt 切成 2D 立绘。
+	/// 3D 入场的关键帧数：原版 233–241（用户 2026-11-24 第五轮：原版 240、241 还是 3D——侧身、手臂水平伸出、枪口朝右下、左臂全藏在身后，
+	/// 姿势已经和立绘几乎一样；242 才硬切立绘、枪口闪一下）。239–241 的机位对原版逐帧拟合（fit/equip_example/fit241.py、fit241b.py：耳 / 眼 / 枪口 / 握把 + 大衣左边缘）。
+	/// 之前几版把立绘当成 240 去拟合、机位往立绘的角度搬，角度不对（左臂、手肘露出来）。
 	/// </summary>
-	private const int FrameCount = 8;
+	private const int FrameCount = 9;
 	private const float PortraitAt = 0.42f;
 	/// <summary>色块动画的节奏（用户 2026-11-24：切入别太拖沓）：下面 Field 里的时间点按 0.52 秒的版本写，整体压到 0.8 倍。</summary>
 	private const float Pace = 0.8f;
 	/// <summary>
-	/// 3D → 2D 立绘不是一下换掉（用户 2026-11-24：跳动太大 —— 立绘是画的，大衣、白条、伸出去的枪和模型怎么摆都对不上，原版 239→240 也是硬切）：
-	/// 头和身子先用「240」机位对齐，然后一道斜边（同入场黑底的角度）带着红边从左往右扫过去，扫过的地方换成 2D 立绘，前面还是 3D（停在最后的姿势）；
-	/// 背景色块两边一模一样，看得出变化的只有 Joker，变成一刀扫过去的过渡。
+	/// 3D 播到 241 就硬切立绘（同原版 241→242；之前的红边斜扫是为了盖住对不上的姿势，现在对上了就不用了），切的同时枪口闪光（MuzzleFlash）。
+	/// 240→241 只差一点机位：LastAt 之前播到 240，最后 0.035 秒（原版一帧）带过 241 就切，别在最后停住。
 	/// </summary>
-	private const float WipeAt = PortraitAt - 0.02f, WipeTime = 0.12f;
+	private const float LastAt = PortraitAt - 0.035f;
+	/// <summary>枪口闪光的位置（立绘的枪口，原版 (1730, 830) 换到我们的排版）和大小（1080p 像素）。原版 242：浅灰圆盘 + 往左上的一道白线；243–245 圆盘；246 炸成碎片；250 没了。</summary>
+	private static readonly Vector2 MuzzleAt = new(1730f * MapK - 80f, 830f * MapK);
+	private const float FlashR = 72f;
 	/// <summary>
 	/// 立绘的手臂和枪（L2 右边那块）在扫过去的同时往外送：立绘的枪是夸张透视（比模型的枪长得多），按行往 L2 压到 ArmFrom，ArmTime 弹开。
 	/// 收尾「240」第二版 3D 已经把手臂和枪伸到立绘的位置（fit240b.py），再压回去反而跳：ArmFrom = 1（不压）；以后要再用就改回 0.5。
@@ -73,6 +75,8 @@ public sealed class PileDeck : IPileDecor
 	private readonly float _k, _rx;
 	private readonly ShaderMaterial _bg;
 	private readonly Node2D _back, _portrait, _list, _title, _command;
+	private readonly Node2D _flash, _flashDisc, _flashStreak;
+	private readonly List<Node2D> _shards = new();
 	private readonly ShaderMaterial? _armMat;
 	private readonly List<(Node2D Node, float Delay, float Alpha)> _rows = new();
 	private float _exitT0 = -1f;
@@ -154,6 +158,31 @@ public sealed class PileDeck : IPileDecor
 		root.AddChild(_command);
 		Layer(_command, "command", CommandAt * k);
 		PileDraw.Caption(_command, "deck", total, new Vector2(270f, 960f) * k, 34f * k);
+
+		// 4. 枪口闪光（切立绘那一刻）
+		Color flashC = new(0.85f, 0.85f, 0.84f);
+		_flash = new Node2D { Name = "PileDeckMuzzleFlash", Position = new Vector2(MuzzleAt.X * k + _rx, MuzzleAt.Y * k), Visible = false };
+		root.AddChild(_flash);
+		_flashStreak = new Node2D();
+		_flash.AddChild(_flashStreak);
+		PileDraw.Poly(_flashStreak, new[] { new Vector2(-14f, -40f), new Vector2(12f, -46f), new Vector2(-70f, -400f), new Vector2(-84f, -396f) }.Select(v => v * k).ToArray(), flashC);
+		_flashDisc = new Node2D();
+		_flash.AddChild(_flashDisc);
+		var disc = new Vector2[11];
+		for (int i = 0; i < disc.Length; i++)
+		{
+			float a = Mathf.Tau * i / disc.Length, r = FlashR * (i % 3 == 0 ? 1.06f : 0.96f);
+			disc[i] = new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r * k;
+		}
+		PileDraw.Poly(_flashDisc, disc, flashC);
+		for (int i = 0; i < 9; i++)
+		{
+			var s = new Node2D { Rotation = Mathf.Tau * i / 9f + 0.3f * (i % 2) };
+			_flash.AddChild(s);
+			float len = (i % 3 == 0 ? 120f : 80f) * k, w = (i % 2 == 0 ? 9f : 6f) * k;
+			PileDraw.Poly(s, new[] { new Vector2(0f, -w), new Vector2(len, 0f), new Vector2(0f, w) }, Colors.White);
+			_shards.Add(s);
+		}
 
 		Enter(0f);
 	}
@@ -282,21 +311,20 @@ void fragment() {
 	{
 		float k = _k;
 		float reach = (_view + new Vector2(0f, _view.Y)).Length() * 1.05f;
-		_bg.SetShaderParameter("wipe", t >= WipeAt ? 1e7f : 0f);
-		// 入场：色块碰撞 + 3D（原版 233–239 + 收尾「240」）；PortraitAt 起一道斜边把 3D 扫成 2D 立绘 + 最终排版
-		bool cut = t >= WipeAt;
-		float wipe = cut ? Seg(t, WipeAt, WipeTime) : 0f;
-		bool wiping = cut && wipe < 1f;
-		_entrance.Visible = !cut || wiping;
-		if (cut && !wiping) _m3d?.Hide();
+		_bg.SetShaderParameter("wipe", t >= PortraitAt ? 1e7f : 0f);
+		// 入场：色块碰撞 + 3D（原版 233–241）；PortraitAt 硬切 2D 立绘 + 最终排版 + 枪口闪光（同原版 242）
+		bool cut = t >= PortraitAt;
+		_entrance.Visible = !cut;
+		if (cut) _m3d?.Hide();
 		else
 		{
-			// 色块碰撞 + 3D 从第 0 帧就开始连续播，PortraitAt 正好放到最后一帧（同一个时间：红星纹和最终排版的红底一起转）；扫的时候停在最后一帧
-			float tf = Mathf.Min(t, PortraitAt);
-			_m3d?.Show(MenuJoker3DKeys.Deck, PileReveal.Progress(tf, PortraitAt, FrameCount - 1));
+			// 色块碰撞 + 3D 从第 0 帧就开始连续播：LastAt 到 240，再 0.035 秒带过 241，PortraitAt 切
+			float u = t < LastAt ? PileReveal.Progress(t, LastAt, FrameCount - 2) : FrameCount - 2 + Seg(t, LastAt, PortraitAt - LastAt);
+			_m3d?.Show(MenuJoker3DKeys.Deck, u);
 			_field.SetTime(t);
-			Field(tf, wiping ? PileShapes.OutCubic(wipe) : -1f);
+			Field(t, -1f);
 		}
+		Flash(t - PortraitAt);
 		_back.Visible = _portrait.Visible = _list.Visible = cut;
 		_back.Position = Vector2.Zero;
 		_back.Modulate = Colors.White;
@@ -319,6 +347,25 @@ void fragment() {
 		_title.Visible = _command.Visible = cut;
 	}
 
+	/// <summary>枪口闪光（e = 切立绘后的秒数）：一开始圆盘 + 往左上的白线（一帧），圆盘留到 0.12 秒，然后炸成一圈白碎片往外飞、0.24 秒散完。</summary>
+	private void Flash(float e)
+	{
+		_flash.Visible = e >= 0f && e < 0.24f;
+		if (!_flash.Visible) return;
+		_flashStreak.Visible = e < 0.04f;
+		_flashDisc.Visible = e < 0.12f;
+		_flashDisc.Scale = Vector2.One * Mathf.Lerp(0.8f, 1f, Ease5.OutExpo(Seg(e, 0f, 0.05f)));
+		float b = Seg(e, 0.11f, 0.13f);
+		for (int i = 0; i < _shards.Count; i++)
+		{
+			var s = _shards[i];
+			s.Visible = e >= 0.11f;
+			s.Position = Vector2.FromAngle(s.Rotation) * (40f + 150f * Ease5.OutExpo(b)) * _k;
+			s.Scale = new Vector2(Mathf.Lerp(1f, 0.3f, b), Mathf.Lerp(1f, 0.5f, b));
+			s.Modulate = new Color(1f, 1f, 1f, 1f - b * b);
+		}
+	}
+
 	private void Pop(Node2D node, float t, float delay, Vector2 at)
 	{
 		float p = Seg(t, delay, 0.2f);
@@ -337,6 +384,7 @@ void fragment() {
 		_portrait.Position = new Vector2(-500f * k * o, 0f);
 		_portrait.Scale = Vector2.One;
 		_armMat?.SetShaderParameter("arm", 1f);
+		_flash.Visible = false;
 		Color fade = new(1f, 1f, 1f, 1f - Seg(e, 0.35f, 0.5f));
 		_portrait.Modulate = _back.Modulate = fade;
 		Color quick = new(1f, 1f, 1f, 1f - Mathf.Clamp(e * 1.8f, 0f, 1f));
