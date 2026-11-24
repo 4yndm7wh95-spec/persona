@@ -76,6 +76,14 @@ public sealed class PileExhaust : IPileDecor
 	private readonly Sprite2D _porSprite;
 	private readonly float _porScale = 1f;
 	private readonly List<(Node2D Node, Vector2 At, float Rot, float Delay)> _pops = new();
+	/// <summary>
+	/// 踩下去那一下展开的两条细白线（用户 2026-11-24：原版 SKILL 页 121 帧起，黑板边缘延长成两条细白线，把画面分成左 / 中 / 右下三块）：
+	/// 下面那条从黑板右下边缘横穿右下红三角伸出屏幕（原版 (1565,860)→(1920,729)，约 −20°）；上面那条沿星纹斜带右边缘从屏幕顶划下来、压过脸。
+	/// LineAt 开始展开，留在定格画面里。
+	/// </summary>
+	private readonly AaPoly _lineLo, _lineHi;
+	private static readonly Vector2 LoA = new(1528f, 980f), LoB = new(1990f, 809f), HiA = new(909f, -24f), HiB = new(651f, 646f);
+	private const float LineW = 5f, LineAt = SlamAt - 0.03f, LineTime = 0.14f;
 	private float _exitT0 = -1f;
 
 	public PileExhaust(Control root, Vector2 view, int count)
@@ -168,6 +176,11 @@ public sealed class PileExhaust : IPileDecor
 		Glyph(command, "pile_txt_command", Vector2.Zero, 551f, Paper);
 		PileDraw.Caption(command, "exhaust", count, new Vector2(-150f, 100f) * k, 38f * k);
 		_pops.Add((command, command.Position, command.Rotation, SlamAt + 0.06f));
+
+		_lineLo = new AaPoly { Color = LineColor, Visible = false };
+		_lineHi = new AaPoly { Color = LineColor, Visible = false };
+		root.AddChild(_lineHi);
+		root.AddChild(_lineLo);
 
 		Enter(0f);
 	}
@@ -359,6 +372,7 @@ void fragment() {
 			_portrait.Modulate = Colors.White;
 			Shake(t);
 		}
+		Lines(t);
 		foreach (var (node, at, rot, delay) in _pops)
 		{
 			float p = Mathf.Clamp((t - delay) / 0.2f, 0f, 1f);
@@ -368,6 +382,27 @@ void fragment() {
 			node.Scale = Vector2.One * Mathf.Lerp(0.7f, 1f, b);
 			node.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(p * 3f, 0f, 1f));
 		}
+	}
+
+	private static readonly Color LineColor = new(0.86f, 0.86f, 0.85f);
+
+	/// <summary>一条细线：a → a + (b − a)·g（g = 展开进度），1080p 坐标、LineW 宽。</summary>
+	private void SetLine(AaPoly line, Vector2 a, Vector2 b, float g)
+	{
+		line.Visible = g > 0.001f;
+		if (!line.Visible) return;
+		Vector2 R(float x, float y) => new(x * _k + (x > 960f ? _rx : 0f), y * _k);
+		Vector2 pa = R(a.X, a.Y), pb = R(a.X + (b.X - a.X) * g, a.Y + (b.Y - a.Y) * g);
+		Vector2 n = (pb - pa).Normalized().Orthogonal() * (LineW * 0.5f * _k);
+		line.Polygon = new[] { pa - n, pb - n, pb + n, pa + n };
+	}
+
+	private void Lines(float t)
+	{
+		float g = Ease5.OutExpo(Mathf.Clamp((t - LineAt) / LineTime, 0f, 1f));
+		SetLine(_lineLo, LoA, LoB, g);                              // 从黑板边往右伸出去
+		SetLine(_lineHi, HiA, HiB, Ease5.OutExpo(Mathf.Clamp((t - LineAt - 0.02f) / LineTime, 0f, 1f)));   // 从屏幕顶往下划
+		_lineLo.Modulate = _lineHi.Modulate = Colors.White;
 	}
 
 	private void Shake(float t)
@@ -398,6 +433,8 @@ void fragment() {
 		_wedge.Modulate = fade;
 		_band.Modulate = fade;
 		_slab.Modulate = new Color(1f, 1f, 1f, 1f - Mathf.Clamp((e - 0.25f) / 0.5f, 0f, 1f));
+		_lineLo.Position = _lineHi.Position = off;
+		_lineLo.Modulate = _lineHi.Modulate = fade;
 		_por.SetShaderParameter("fill_color", Ink);
 		_por.SetShaderParameter("fill_amt", Fx.OutCubic(Mathf.Clamp(e / 0.3f, 0f, 1f)));
 		Vector2 home = (PorAt + new Vector2(PorW, PorW) * 0.5f) * k;

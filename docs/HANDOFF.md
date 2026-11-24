@@ -14,6 +14,7 @@
   消耗堆的黑板 / 白板 / 反色层没了 → 入场 Joker 全黑、定格突然半身白。改成构造时订阅 `draw` 信号（`Draw += Paint`）。**以后 Mod 里别重写任何 `_Xxx` 虚方法，用信号。**
 - 预告信两面顶上红黑噪点 = 贴图面和厚度盒子深度冲突：SubViewport 相机 Near/Far 贴近卡片，盒子厚度往里收。
 - 牌放大约 30%（四页都 3 列，卡宽 210、格子 238×318）；牌组网格下移到标题牌下面（GridTop 250、GridBottom 990）；弃牌堆 GridTop 232、排序开关挪到网格上方。
+- 消耗堆：踩下去那一刻展开两条细白线（原版 SKILL 页 121 帧起黑板边缘延长成细白线，把画面分成三块）：下面那条横穿右下红三角，上面那条沿星纹斜带右边缘从屏幕顶划下来压过脸（`PileExhaust.Lines`）。
 - 特写说明去掉「牌堆中 ×N」。预览：`docs/p5/preview/pile_draw_v12 / pile_exhaust_v14 / pile_discard_v14 / pile_deck_v12.mp4`（预览里本来就正常，修的是实机）。
 - 卡面 Mod 1.0.1（卡图柔化）：`docs/codex/codex_p5_cardart_build_1.0.1.md`。
 
