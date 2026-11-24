@@ -542,6 +542,11 @@ def pile_textures():
     # 弃牌堆（ITEM 页）：tools/p5/pile/export_discard.py 从排版图分层导出的 1080p 图层 → pile_dc_<名字>（原尺寸，PileDiscard.cs 按 1080p 摆）
     for f in sorted((ROOT / "art/p5/ui/pile_discard").glob("*.png")):
         yield "pile_dc_" + f.stem, Image.open(f).convert("RGBA")
+    # 牌组入场的原版菜单 3D Joker（tools/p5/menu3d/equip_entrance.py 逐帧拟合渲的 7 帧 = 原版序号 233–239，research/p5r/menu3d_equip）→ pile_dk3d_00…06
+    for i in range(7):
+        f = ROOT / f"research/p5r/menu3d_equip/f{i:02d}.png"
+        if f.exists():
+            yield f"pile_dk3d_{i:02d}", Image.open(f).convert("RGBA")
     # 牌组（EQUIP 页）：tools/p5/pile/export_deck.py 从排版图分层导出的 1080p 图层 → pile_dk_<名字>（PileDeck.cs 按 1080p 摆）
     for f in sorted((ROOT / "art/p5/ui/pile_deck").glob("*.png")):
         yield "pile_dk_" + f.stem, Image.open(f).convert("RGBA")

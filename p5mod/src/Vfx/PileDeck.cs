@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 
 namespace P5Joker;
@@ -9,7 +10,9 @@ namespace P5Joker;
 /// 背景块面（左上星纹拼贴 / 中间黑块 / 右边浅灰板，分界线是立绘自带白斜条两条边的延长线）、立绘 CAMPEQUIP_2D01、标题牌、COMMAND。
 /// 运行时做：红星纹底（右下）、中间类型列表（原版「更换谁的装备？」名单的位置：类型名 + 原版斜体大数字，第一个有牌的类型垫青 / 红斜条）、入场 / 退场。
 /// 牌格子在原版装备栏的位置，4 列，画在立绘上面（枪在格子下面露出来）。
-/// 入场目前是 2D 版：红底从右下铺开、背景块面从右边甩进来、立绘从左边推进来压一下、列表一行行弹出（原版 EQUIP 页的 3D Joker 逐帧入场下一步做）。
+/// 入场照原版 EQUIP 页序号 233–239 逐帧还原（tools/p5/menu3d/equip_entrance.py：逐帧拟合的机位 + 从原版截图取的区域形状，PileDeckEntrance.cs）：
+/// 原版 3D Joker 低头 → 手举过头顶 → 拔枪，镜头从他正前方绕到左前方推近；主菜单的星纹弧带扫过、黑区（P 系列撞色：Joker 进去变纯白）、
+/// 右上的红底 / 浅灰板逐帧变形状；然后硬切成 2D 立绘 + 最终排版（同原版第 240 帧），立绘压一下、列表一行行弹出、标题牌 / COMMAND 压上、牌飞入。
 /// </summary>
 public sealed class PileDeck : IPileDecor
 {
@@ -29,7 +32,13 @@ public sealed class PileDeck : IPileDecor
 	public Vector2 ExitOffset => new(260f, 40f);
 
 	private static readonly Color Ink = PileDraw.Ink, Paper = PileDraw.Paper;
-	private const float PortraitAt = 0.3f;
+	/// <summary>原版一帧（录像 27.5fps）；第 k 帧在 FrameStart + k·FrameDt 显示，七帧放完硬切 2D 立绘（= 原版第 240 帧）。</summary>
+	private const float FrameStart = 0.086f, FrameDt = 0.036f;
+	private const int FrameCount = 7;
+	private const float PortraitAt = FrameStart + FrameCount * FrameDt;
+	/// <summary>原版 1920×1080 → 我们的排版（同弃牌堆：立绘配准对齐，缩放 0.977、左移 80）。</summary>
+	private const float MapK = 1500f / 3072f / 0.5f;
+	private static Vector2 Map(Vector2 p) => p * MapK + new Vector2(-80f, 0f);
 	/// <summary>export_deck.py 的 layout.json：各图层左上角、红底多边形（1080p）。</summary>
 	private static readonly Vector2 BgAt = Vector2.Zero, PortraitPos = Vector2.Zero, TitleAt = new(1443f, 1f), CommandAt = new(59f, 734f);
 	/// <summary>中间类型列表：第一行左上角、行距、每行往左挪多少（跟着浅灰板的斜边）。</summary>
@@ -43,6 +52,12 @@ public sealed class PileDeck : IPileDecor
 	private readonly Node2D _back, _portrait, _list, _title, _command;
 	private readonly List<(Node2D Node, float Delay, float Alpha)> _rows = new();
 	private float _exitT0 = -1f;
+	// 入场（原版 233–239）
+	private readonly Node2D _entrance;
+	private readonly Sprite2D? _m3d;
+	private readonly Texture2D?[] _m3dTex = new Texture2D?[FrameCount];
+	private readonly List<Polygon2D> _star = new(), _gray = new(), _red = new(), _darkPaper = new(), _darkInvert = new();
+	private int _shownFrame = -1;
 
 	/// <summary>stats：总张数和各类型张数（PileScreen.DiscardStats 同一份统计）。</summary>
 	public PileDeck(Control root, Vector2 view, (int Total, int Up, Dictionary<string, (int N, int Up)> ByType) stats)
@@ -64,6 +79,42 @@ public sealed class PileDeck : IPileDecor
 		// 背景块面（黑 / 灰 / 星纹拼贴）：图层本身在红色那块是透明的，下面露出红星纹
 		_back = Layer(root, "bg", BgAt * k);
 		_portrait = Layer(root, "portrait", PortraitPos * k);
+
+		// 1b. 入场（原版 233–239）：黑底 → 星纹 / 浅灰板 / 红底 → 黑区先画成白纸 → 3D Joker → 读屏把黑区反色（白纸 → 黑、黑 Joker → 白）
+		_entrance = new Node2D { Name = "PileDeckEntrance" };
+		root.AddChild(_entrance);
+		_entrance.AddChild(new ColorRect { Size = view, Color = Ink, MouseFilter = Control.MouseFilterEnum.Ignore });
+		ShaderMaterial starMat = PileDraw.StarMaterial(118f, new Color(0.91f, 0.91f, 0.91f), new Color(0.03f, 0.03f, 0.03f), new Color(0.376f, 0.376f, 0.376f), Vector2.Zero);
+		starMat.SetShaderParameter("size", view);
+		ShaderMaterial redMat = (ShaderMaterial)_bg.Duplicate();
+		redMat.SetShaderParameter("wipe", 1e7f);
+		Clipped(_star, PileDeckEntrance.Star, starMat);
+		for (int i = 0; i < PileDeckEntrance.Gray.Max(f => f.Length); i++)
+		{
+			_gray.Add(new Polygon2D { Color = new Color(0.84f, 0.84f, 0.84f), Antialiased = true });
+			_entrance.AddChild(_gray[^1]);
+		}
+		Clipped(_red, PileDeckEntrance.Red, redMat);
+		Node2D paper = new();
+		_entrance.AddChild(paper);
+		for (int i = 0; i < FrameCount; i++) _m3dTex[i] = Fx.Tex($"pile_dk3d_{i:00}");
+		if (_m3dTex[0] != null)
+		{
+			_m3d = new Sprite2D { Texture = _m3dTex[0], Centered = false, Scale = Vector2.One * MapK * k, TextureFilter = CanvasItem.TextureFilterEnum.Linear };
+			_entrance.AddChild(_m3d);
+		}
+		_entrance.AddChild(new BackBufferCopy { CopyMode = BackBufferCopy.CopyModeEnum.Viewport });
+		Node2D inverted = new();
+		_entrance.AddChild(inverted);
+		ShaderMaterial invertMat = new() { Shader = PileDiscard.InvertShader };
+		invertMat.SetShaderParameter("sum", Paper.R + Ink.R);
+		for (int i = 0; i < PileDeckEntrance.Dark.Max(f => f.Length); i++)
+		{
+			_darkPaper.Add(new Polygon2D { Color = Paper, Antialiased = true });
+			paper.AddChild(_darkPaper[^1]);
+			_darkInvert.Add(new Polygon2D { Color = Colors.White, Antialiased = true, Material = invertMat });
+			inverted.AddChild(_darkInvert[^1]);
+		}
 
 		// 2. 中间类型列表
 		_list = new Node2D { Name = "PileDeckList" };
@@ -89,7 +140,7 @@ public sealed class PileDeck : IPileDecor
 			Color tc = hl ? Ink : Paper;
 			float w = PileText.Word(row, Keys[i], Vector2.Zero, 44f * k, tc, !hl);
 			Digits(row, n.ToString(), new Vector2(w + 24f * k, -6f * k), 52f * k, hl ? Ink : Paper);
-			_rows.Add((row, PortraitAt - 0.02f + 0.035f * i, a));
+			_rows.Add((row, PortraitAt + 0.02f + 0.035f * i, a));
 		}
 
 		// 3. 标题牌、COMMAND + 说明
@@ -100,6 +151,54 @@ public sealed class PileDeck : IPileDecor
 		PileDraw.Caption(_command, "deck", total, new Vector2(270f, 960f) * k, 34f * k);
 
 		Enter(0f);
+	}
+
+	/// <summary>一组按多边形裁剪的全屏材质（星纹 / 红底）。</summary>
+	private void Clipped(List<Polygon2D> list, Vector2[][][] frames, ShaderMaterial mat)
+	{
+		for (int i = 0; i < frames.Max(f => f.Length); i++)
+		{
+			Polygon2D m = new() { Color = Colors.White, ClipChildren = CanvasItem.ClipChildrenMode.Only, Antialiased = true };
+			m.AddChild(new ColorRect { Size = _view, Material = mat, MouseFilter = Control.MouseFilterEnum.Ignore });
+			_entrance.AddChild(m);
+			list.Add(m);
+		}
+	}
+
+	/// <summary>原版坐标的区域点 → 屏幕：贴原版画面右 / 下边（生成时推到边外的点）推到屏幕边外（我们的排版把原版缩小了，原版右 / 下边缘落在屏幕里面）。</summary>
+	private Vector2 MapEdge(Vector2 p)
+	{
+		Vector2 q = Map(p) * _k;
+		if (p.X >= 1950f) q.X = _view.X + 40f;
+		if (p.Y >= 1110f) q.Y = _view.Y + 40f;
+		return q;
+	}
+
+	private void SetPolys(List<Polygon2D> nodes, Vector2[][] polys)
+	{
+		for (int i = 0; i < nodes.Count; i++)
+		{
+			bool on = i < polys.Length;
+			nodes[i].Visible = on;
+			if (on) nodes[i].Polygon = polys[i].Select(MapEdge).ToArray();
+		}
+	}
+
+	/// <summary>换到入场第 f 帧：3D 帧图和四种区域。</summary>
+	private void ShowFrame(int f)
+	{
+		if (f == _shownFrame) return;
+		_shownFrame = f;
+		SetPolys(_star, PileDeckEntrance.Star[f]);
+		SetPolys(_gray, PileDeckEntrance.Gray[f]);
+		SetPolys(_red, PileDeckEntrance.Red[f]);
+		SetPolys(_darkPaper, PileDeckEntrance.Dark[f]);
+		SetPolys(_darkInvert, PileDeckEntrance.Dark[f]);
+		if (_m3d != null && _m3dTex[f] is Texture2D t)
+		{
+			_m3d.Texture = t;
+			_m3d.Position = Map(PileDeckEntrance.FrameAt[f]) * _k;
+		}
 	}
 
 	private Vector2[] Scale(Vector2[] pts, Vector2 offset, float s)
@@ -153,20 +252,25 @@ public sealed class PileDeck : IPileDecor
 	{
 		float k = _k;
 		float reach = (_view + new Vector2(0f, _view.Y)).Length() * 1.05f;
-		_bg.SetShaderParameter("wipe", t >= 0.3f ? 1e7f : Ease5.OutQuint(Seg(t, 0f, 0.3f)) * reach);
-		// 背景块面从右边甩进来
-		float a = Ease5.OutExpo(Seg(t, 0.03f, 0.26f));
-		_back.Position = new Vector2(_view.X * 0.8f * (1f - a), 0f);
-		_back.Modulate = new Color(1f, 1f, 1f, Seg(t, 0.03f, 0.05f));
-		// 立绘从左边推进来，到位那一下压一下 + 界面一震（同另外几页）
-		float p = Ease5.OutExpo(Seg(t, 0.06f, PortraitAt - 0.06f));
-		bool hit = t >= PortraitAt;
-		float bump = hit ? Mathf.Lerp(0.965f, 1f, Ease5.OutBack(Seg(t, PortraitAt, 0.14f))) : 1f;
+		_bg.SetShaderParameter("wipe", t >= PortraitAt ? 1e7f : 0f);
+		// 入场：七帧原版画面（星纹带 + 黑区 + 3D Joker + 红底 / 浅灰板），开头从右边甩进来；PortraitAt 硬切成 2D 立绘 + 最终排版（同原版第 240 帧）
+		bool cut = t >= PortraitAt;
+		_entrance.Visible = !cut;
+		if (!cut)
+		{
+			ShowFrame(Mathf.Clamp(Mathf.FloorToInt((t - FrameStart) / FrameDt), 0, FrameCount - 1));
+			_entrance.Position = new Vector2(_view.X * 0.7f * (1f - Ease5.OutExpo(Seg(t, 0f, 0.1f))), 0f);
+		}
+		_back.Visible = _portrait.Visible = _list.Visible = cut;
+		_back.Position = Vector2.Zero;
+		_back.Modulate = Colors.White;
+		// 切的那一下：立绘压一下再回弹 + 界面一震（同另外几页）
+		float bump = cut ? Mathf.Lerp(0.965f, 1f, Ease5.OutBack(Seg(t, PortraitAt, 0.14f))) : 1f;
 		_portrait.Scale = Vector2.One * bump;
-		_portrait.Position = new Vector2(-700f * k * (1f - p), 0f) + new Vector2(560f, 540f) * k * (1f - bump);
-		_portrait.Modulate = new Color(1f, 1f, 1f, Seg(t, 0.06f, 0.05f));
-		_root.Position = hit ? new Vector2(Mathf.Sin((t - PortraitAt) * 44f) * 5f, Mathf.Cos((t - PortraitAt) * 34f) * 10f) * k * Mathf.Pow(Mathf.Max(0f, 1f - (t - PortraitAt) / 0.22f), 2f) : Vector2.Zero;
-		// 列表一行行从右边弹出
+		_portrait.Position = new Vector2(560f, 540f) * k * (1f - bump);
+		_portrait.Modulate = Colors.White;
+		_root.Position = cut ? new Vector2(Mathf.Sin((t - PortraitAt) * 44f) * 5f, Mathf.Cos((t - PortraitAt) * 34f) * 10f) * k * Mathf.Pow(Mathf.Max(0f, 1f - (t - PortraitAt) / 0.22f), 2f) : Vector2.Zero;
+		// 列表一行行弹出（原版第 240 帧名单在一行行出来）
 		foreach (var (node, delay, alpha) in _rows)
 		{
 			float r = Seg(t, delay, 0.2f);
@@ -175,6 +279,7 @@ public sealed class PileDeck : IPileDecor
 		}
 		Pop(_title, t, PortraitAt + 0.02f, new Vector2(TitleAt.X * k + _rx, TitleAt.Y * k));
 		Pop(_command, t, PortraitAt + 0.05f, Vector2.Zero);
+		_title.Visible = _command.Visible = cut;
 	}
 
 	private void Pop(Node2D node, float t, float delay, Vector2 at)
@@ -204,5 +309,6 @@ public sealed class PileDeck : IPileDecor
 	{
 		"pile_dk_bg", "pile_dk_portrait", "pile_dk_title", "pile_dk_command",
 		"pile_dk_big0", "pile_dk_big1", "pile_dk_big2", "pile_dk_big3", "pile_dk_big4", "pile_dk_big5", "pile_dk_big6", "pile_dk_big7", "pile_dk_big8", "pile_dk_big9",
+		"pile_dk3d_00", "pile_dk3d_01", "pile_dk3d_02", "pile_dk3d_03", "pile_dk3d_04", "pile_dk3d_05", "pile_dk3d_06",
 	};
 }

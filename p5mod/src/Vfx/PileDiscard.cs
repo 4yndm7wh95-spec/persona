@@ -237,7 +237,7 @@ public sealed class PileDiscard : IPileDecor
 
 	private static Shader? _inv;
 	/// <summary>入场的黑区：读屏把两种色调互换（sum = 纸色 + 墨色：白纸 → 墨黑，黑 Joker → 纸白，脸 → 暗），多边形边缘按覆盖率混合。</summary>
-	private static Shader InvertShader => _inv ??= new Shader { Code = @"
+	internal static Shader InvertShader => _inv ??= new Shader { Code = @"
 shader_type canvas_item;
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
 uniform float sum = 0.98;
