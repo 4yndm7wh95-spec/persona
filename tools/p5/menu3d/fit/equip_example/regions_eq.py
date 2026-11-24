@@ -9,7 +9,7 @@ from scipy.ndimage import uniform_filter, binary_closing, binary_opening, binary
 sys.path.insert(0, str(Path(__file__).resolve().parents[1])); sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'item_example'))
 from common import orig
 from regions import polys
-from zones import ZONE, PLATE
+from zones import ZONE, PLATE, PLATE_LIGHT
 W, H = 960, 540
 
 def pmask(ps):
@@ -28,8 +28,15 @@ def labels(i, S):
     m = uniform_filter(L, 9); sd = np.sqrt(np.maximum(uniform_filter(L * L, 9) - m * m, 0))
     red = binary_opening((im[..., 0] > 70) & (im[..., 0] > im[..., 1] * 1.8), iterations=3)
     red = big(binary_closing(red, iterations=3), 3000)
-    star = big(binary_closing((sd > 40) & ~red, iterations=6) & ~red, 4000)
+    # 星纹 = 边缘很密的地方（大窗口里一半以上是明暗交界）：Joker 剪影的边、字只是零散的线，不算
+    m5 = uniform_filter(L, 5); sd5 = np.sqrt(np.maximum(uniform_filter(L * L, 5) - m5 * m5, 0))
+    edge = (sd5 > 40) & ~red
+    core = uniform_filter(edge.astype(float), 41) > 0.42
+    star = binary_closing(edge, iterations=4) & binary_dilation(core, iterations=22) & ~red
+    star = big(star, 4000)
     A = pmask([ZONE[i]])
+    star &= ~A                                   # 这几帧星纹都在黑区外面；黑区里有纹理的是装备栏的字牌（入场不画）
+    star = big(star, 4000)
     holes = binary_fill_holes(star) & ~star
     lab, n = label(holes)
     if n:
@@ -38,6 +45,7 @@ def labels(i, S):
     star = star | (S & binary_dilation(star, iterations=30) & ~A)
     light = (L > 160) & (sat < 35) & ~star & ~red
     gray = big(binary_opening(light & ~A & ~binary_dilation(S, iterations=6), iterations=3), 2500) | pmask(PLATE.get(i, []))
+    gray |= big(binary_opening(light & pmask(PLATE_LIGHT.get(i, [])), iterations=2), 2000)
     gray &= ~star & ~red
     dark = A & ~star & ~red & ~gray
     return {'star': star, 'gray': gray, 'red': red, 'dark': dark}
@@ -55,4 +63,5 @@ def clean(mask, k=3, n_min=1500):
 def regions(i, sil_png, eps=1.6):
     S = np.asarray(Image.open(sil_png).convert('RGBA').resize((W, H)))[..., 3] > 128
     lab = labels(i, S)
-    return {k: polys(clean(v), eps) for k, v in lab.items()}, lab
+    # 多边形只取外轮廓：先补满洞，免得里面的块和外面的块重叠（黑区重叠会被反色两次）
+    return {k: polys(binary_fill_holes(clean(v)), eps) for k, v in lab.items()}, lab
