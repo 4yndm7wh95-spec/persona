@@ -1,0 +1,10 @@
+{
+  "id": "P5CardArt",
+  "name": "P5 卡面替换",
+  "author": "brooks",
+  "description": "独立替换静默猎手卡池 91 张卡牌插画和小刀牌（P5R 怪盗团风格），保留原版卡框和文字。可单独使用，也可搭配 P5 Joker Mod。启用或停用后重启游戏生效。",
+  "version": "1.0.0",
+  "has_pck": true,
+  "has_dll": true,
+  "affects_gameplay": false
+}
