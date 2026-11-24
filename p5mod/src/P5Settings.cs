@@ -7,9 +7,9 @@ namespace P5Joker;
 
 internal static class P5Settings
 {
-	internal enum Option { Reward, AllOut }
-	private sealed record Preferences(bool Reward = true, bool AllOut = true);
-	private sealed record SavedPreferences(bool? Reward = null, bool? AllOut = null, int Profile = 1, int Custom = 4)
+	internal enum Option { Reward, AllOut, Pile }
+	private sealed record Preferences(bool Reward = true, bool AllOut = true, bool Pile = true, bool DrawOrder = false, bool ExhaustOrder = false, bool DiscardOrder = false, bool DeckOrder = false);
+	private sealed record SavedPreferences(bool? Reward = null, bool? AllOut = null, int Profile = 1, int Custom = 4, bool? Pile = null, bool? DrawOrder = null, bool? ExhaustOrder = null, bool? DiscardOrder = null, bool? DeckOrder = null)
 	{
 		// The previous build stored the effective reward option in a preset or bit mask.
 		internal bool LegacyReward => Profile != 0 && (Profile != 2 || (Custom & (1 << 2)) != 0);
@@ -17,7 +17,32 @@ internal static class P5Settings
 	private static Preferences _preferences = new();
 	private static string? _path;
 
-	internal static bool Enabled(Option option) => option == Option.Reward ? _preferences.Reward : _preferences.AllOut;
+	internal static bool Enabled(Option option) => option switch
+	{
+		Option.Reward => _preferences.Reward,
+		Option.Pile => _preferences.Pile,
+		_ => _preferences.AllOut,
+	};
+
+	/// <summary>抽牌堆界面：true = 原版顺序（能看出抽牌顺序），false = 按类型分区（PileScreen.cs）。</summary>
+	internal static bool DrawOrder => _preferences.DrawOrder;
+
+	internal static bool SetDrawOrder(bool on) => Save(_preferences with { DrawOrder = on });
+
+	/// <summary>消耗堆界面：true = 原版顺序，false = 按类型分区。</summary>
+	internal static bool ExhaustOrder => _preferences.ExhaustOrder;
+
+	internal static bool SetExhaustOrder(bool on) => Save(_preferences with { ExhaustOrder = on });
+
+	/// <summary>弃牌堆界面：true = 原版顺序，false = 按类型分区。</summary>
+	internal static bool DiscardOrder => _preferences.DiscardOrder;
+
+	internal static bool SetDiscardOrder(bool on) => Save(_preferences with { DiscardOrder = on });
+
+	/// <summary>牌组界面：true = 原版顺序（获得顺序），false = 按类型分区。</summary>
+	internal static bool DeckOrder => _preferences.DeckOrder;
+
+	internal static bool SetDeckOrder(bool on) => Save(_preferences with { DeckOrder = on });
 
 	internal static void Load(string? path = null)
 	{
@@ -27,7 +52,7 @@ internal static class P5Settings
 		{
 			using FileStream reader = File.OpenRead(_path);
 			if (JsonSerializer.Deserialize<SavedPreferences>(reader) is { } saved)
-				_preferences = new Preferences(saved.Reward ?? saved.LegacyReward, saved.AllOut ?? true);
+				_preferences = new Preferences(saved.Reward ?? saved.LegacyReward, saved.AllOut ?? true, saved.Pile ?? true, saved.DrawOrder ?? false, saved.ExhaustOrder ?? false, saved.DiscardOrder ?? false, saved.DeckOrder ?? false);
 		}
 		catch (FileNotFoundException) { }
 		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
@@ -36,8 +61,12 @@ internal static class P5Settings
 		}
 	}
 
-	internal static bool Set(Option option, bool on) => Save(option == Option.Reward
-		? _preferences with { Reward = on } : _preferences with { AllOut = on });
+	internal static bool Set(Option option, bool on) => Save(option switch
+	{
+		Option.Reward => _preferences with { Reward = on },
+		Option.Pile => _preferences with { Pile = on },
+		_ => _preferences with { AllOut = on },
+	});
 
 	private static bool Save(Preferences preferences)
 	{

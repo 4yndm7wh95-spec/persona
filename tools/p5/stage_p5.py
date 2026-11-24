@@ -159,7 +159,10 @@ SFX = {
     "swish_04": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0149.ogg",
     "swish_05": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0151.ogg",
     "sword_sheath": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0048.ogg",          # knife spin: the catch (user 2026-11-02)
-    "camp_whoosh": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0224.ogg",           # char select embark transition: the doors whoosh in (EmbarkTransition.cs)
+    "camp_whoosh": P5SFX / "SOUND_J_SOUND_SYSTEM.ACB_0224.ogg",
+    # 牌堆界面（p5mod/src/Vfx/PileDraw.cs）：原版暂停菜单打开 / 关闭（research/p5r/audio/camp，Codex 从 SYSTEM.ACB 拷出）
+    "camp_open": ROOT / "research/p5r/audio/camp/SOUND_J_SOUND_SYSTEM.ACB_0170.ogg",
+    "camp_cancel": ROOT / "research/p5r/audio/camp/SOUND_J_SOUND_SYSTEM.ACB_0172.ogg",           # char select embark transition: the doors whoosh in (EmbarkTransition.cs)
     # embark transition: P5R's own day-change cues (SYSTEM.AWB streams 37 / 82, ripped by Codex: research/p5r/audio/calendar/README.md)
     "calendar_change": ROOT / "research/p5r/audio/calendar/calendar_change.ogg",   # the date slams down -> the doors close
     "stab_knife": ROOT / "research/p5r/audio/calendar/stab_knife.ogg",             # the knife pins it: thunk + metallic ring in one cue
@@ -328,6 +331,9 @@ def fx_textures():
         elif name == "be0cmn_upaura_uv_d":
             yield "aoa_drip", im                       # splatterBlood 的滴落遮罩：总攻击喷血的血柱
     yield "arsene_cast", arsene_atlas()
+    # 牌堆界面（p5mod/src/Vfx/PileDraw.cs，docs/p5/PILE_PLAN.md）：原版 P5R 暂停菜单素材，按 1080p 显示尺寸 ×1.34 离线 Lanczos 预缩
+    # （ctex 没有 mipmap，大图直接缩到 1/3 会闪烁起锯齿）；白色字图另出一张黑描边版（_ol）。
+    yield from pile_textures()
     # Izanagi-no-Okami (Codex render of BPS0360_000_main_0006, art/p5/fx/izanagi_okami): spin action atlas + weapon alone
     if (IZANAGI / "spin").exists():
         yield "izanagi_spin", izanagi_atlas()
@@ -467,6 +473,99 @@ def arsene_atlas():
     return atlas
 
 
+PILE_W = 1.34          # 预缩到 1080p 显示宽度的这么多倍（1440p 下 ≈1:1）
+PILE_SPR = ROOT / "research/p5r/ui/camp_main/sprites"
+# 名字 → (来源, 1080p 下显示宽度, 描边半径 px@1080p 或 0)
+PILE_TEX = {
+    "pile_camptop": (ROOT / "research/p5r/art/portrait/BASE__P5_CAMPTOP_2D__e441c53ea3.png", 1510, 0),   # 原版比例（实机截图量的）
+    "pile_campskill": (ROOT / "research/p5r/art/portrait/BASE__P5_CAMPSKILL_2D01__5af504dfb6.png", 1500, 0),   # 消耗堆 = SKILL 页
+    **{f"pile_sd_{i}": (PILE_SPR / f"{96 + i:05d}.png", 0, 0) for i in range(10)},                         # 原版小数字（字图描边见 pile_texts）
+    "pile_sx": (PILE_SPR / "00107.png", 0, 0),
+    "pile_txt_command": (PILE_SPR / "00201.png", 643, 7),
+    "pile_txt_dontlook": (PILE_SPR / "00046.png", 413, 0),
+    "pile_txt_likethat": (PILE_SPR / "00047.png", 292, 0),
+    "pile_txt_menu": (PILE_SPR / "00048.png", 131, 0),
+    "pile_txt_main": (PILE_SPR / "00061.png", 106, 0),
+    "pile_txt_cmdselect": (PILE_SPR / "00479.png", 212, 0),
+    **{f"pile_digit_{i}": (PILE_SPR / f"{33 + i:05d}.png", 123, 6) for i in range(10)},
+}
+
+
+PILE_TEXT_OL = 8
+
+
+def _outline(im, r):
+    from PIL import ImageFilter
+    pad = Image.new("RGBA", (im.width + 2 * PILE_TEXT_OL, im.height + 2 * PILE_TEXT_OL), (0, 0, 0, 0))
+    pad.alpha_composite(im, (PILE_TEXT_OL, PILE_TEXT_OL))
+    a = pad.getchannel("A").filter(ImageFilter.MaxFilter(2 * r + 1)).filter(ImageFilter.GaussianBlur(0.6))
+    out = Image.new("RGBA", pad.size, (255, 255, 255, 0))
+    out.putalpha(a)
+    return out
+
+
+def pile_texts():
+    for f in sorted((ROOT / "art/p5/ui/pile_text").glob("txt_*.png")):
+        im = Image.open(f).convert("RGBA")
+        im = im.resize((round(im.width * 72 / im.height), 72), Image.LANCZOS)
+        name = "pile_t_" + f.stem[4:]
+        yield name, im
+        yield name + "_ol", _outline(im, 5)
+    for i in range(10):
+        im = Image.open(PILE_SPR / f"{96 + i:05d}.png").convert("RGBA")
+        yield f"pile_sd_{i}_ol", _outline(im, 5)
+    yield "pile_sx_ol", _outline(Image.open(PILE_SPR / "00107.png").convert("RGBA"), 5)
+
+
+def pile_textures():
+    from PIL import ImageFilter
+    for name, (src, width, outline) in PILE_TEX.items():
+        im = Image.open(src).convert("RGBA")
+        w = min(im.width, round(width * PILE_W)) if width else im.width
+        if w != im.width:
+            im = im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
+        if outline:
+            r = max(1, round(outline * PILE_W))
+            pad = Image.new("RGBA", (im.width + 2 * r + 4, im.height + 2 * r + 4), (0, 0, 0, 0))
+            pad.alpha_composite(im, (r + 2, r + 2))
+            im = pad
+            a = im.getchannel("A").filter(ImageFilter.MaxFilter(2 * r + 1)).filter(ImageFilter.GaussianBlur(0.6))
+            ol = Image.new("RGBA", im.size, (255, 255, 255, 0))
+            ol.putalpha(a)
+            yield name + "_ol", ol
+        yield name, im
+    # 弃牌堆（ITEM 页）：tools/p5/pile/export_discard.py 从排版图分层导出的 1080p 图层 → pile_dc_<名字>（原尺寸，PileDiscard.cs 按 1080p 摆）
+    for f in sorted((ROOT / "art/p5/ui/pile_discard").glob("*.png")):
+        yield "pile_dc_" + f.stem, Image.open(f).convert("RGBA")
+    # 牌组（EQUIP 页）：tools/p5/pile/export_deck.py 从排版图分层导出的 1080p 图层 → pile_dk_<名字>（PileDeck.cs 按 1080p 摆）
+    for f in sorted((ROOT / "art/p5/ui/pile_deck").glob("*.png")):
+        yield "pile_dk_" + f.stem, Image.open(f).convert("RGBA")
+    # 原版菜单 3D Joker 的入场动作（research/p5r/menu3d/main_0000，Codex 从 MENU_C0001 GMD/GAP 渲的 12 帧，1920×1080）：
+    # 裁到 12 帧的并集包围盒 (828,125)-(1920,1080)，游戏里显示 0.843 倍，×1.34 会超过原尺寸 → 保留原尺寸（PileDraw.M3d*）
+    m3d = ROOT / "research/p5r/menu3d/main_0000"
+    for i in range(12):
+        f = m3d / f"f{i:04d}.png"
+        if f.exists():
+            im = Image.open(f).convert("RGBA").crop((828, 125, 1920, 1080))
+            # 原渲染画面下缘把身体截断了（游戏里显示时下缘在屏幕 922px 处，下面露出背景）：
+            # 把最后一行像素往下延伸 240px，身体一直延到屏幕底边外（原版人物也是一直到底）
+            ext = Image.new("RGBA", (im.width, im.height + 240))
+            ext.paste(im, (0, 0))
+            ext.paste(im.crop((0, im.height - 1, im.width, im.height)).resize((im.width, 240)), (0, im.height))
+            yield f"pile_m3d_{i:02d}", ext
+    # P5 风格文字（art/p5/ui/pile_text，Codex 照原版菜单字排的）+ 原版小数字 / ×：缩到字高 72（游戏里最高显示约 54px），
+    # 每张另出一张黑描边版 _ol（每边多 PILE_TEXT_OL 像素，PileText.OlPad）
+    for name, im in pile_texts():
+        yield name, im
+    # 牌堆入场的菜单 3D Joker 游戏里实时渲染（MenuJoker3D.cs，数据在 p5joker/m3d/，见 main()）：脸 / 面具贴图 → m3d_<贴图名>
+    for f in sorted((ROOT / "research/p5r/model/joker/joker_menu_Textures").glob("*.png")):
+        yield "m3d_" + f.stem, Image.open(f).convert("RGBA")
+    # 预告信（tools/p5/pile/deskew_cards.py 拉正的原版）：正面 + 7 封信的正文（每次打开随机一封当背面）；运行时生成 mipmap
+    yield "pile_card_front", Image.open(ROOT / "art/p5/ui/pile/calling_card.png").convert("RGBA")
+    for f in sorted((ROOT / "art/p5/ui/pile/letters").glob("letter_*.png")):
+        yield "pile_" + f.stem, Image.open(f).convert("RGBA")
+
+
 def main():
     if STAGE.exists():
         shutil.rmtree(STAGE)
@@ -495,12 +594,17 @@ skeleton_file_res = ExtResource("2_skel")
 default_mix = 0.1
 """)
     for name, im in fx_textures():
-        write_texture(STAGE, f"p5joker/fx/{name}.png", im)
+        # 牌堆界面的图（按 1440p 预缩，1080p 下缩到 0.75 显示）和菜单 3D 的贴图带 mipmap：缩小显示不起锯齿（用户 2026-11-24）
+        write_texture(STAGE, f"p5joker/fx/{name}.png", im, mipmaps=name.startswith(("pile_", "m3d_")))
     # 总攻击收尾的原版数据（网格 / 材质 / 240 帧矩阵），AllOutFinale 直接读字节
     from allout_native.export_runtime import main as export_allout
     export_allout(STAGE / "p5joker/allout/hero.bin")
     for f in sorted((ROOT / "tools/p5/allout_native/cracks").glob("cracks_*.json")):
         shutil.copy(f, STAGE / "p5joker/allout" / f.name)
+    # 菜单 3D Joker 的网格和动作片段（tools/p5/menu3d/export_runtime.py），MenuJoker3D 直接读字节
+    (STAGE / "p5joker/m3d").mkdir(parents=True, exist_ok=True)
+    for f in sorted((ROOT / "research/p5r/menu3d_runtime").iterdir()):
+        shutil.copy(f, STAGE / "p5joker/m3d" / f.name)
     # fonts: raw .ttf (p5mod/src/Vfx/P5Ui.cs loads them with FontFile.LoadDynamicFont, no import needed; SIL OFL)
     (STAGE / "p5joker/fonts").mkdir(parents=True, exist_ok=True)
     for f in ("BarlowCondensed-900Italic.ttf", "BarlowCondensed-700Italic.ttf"):

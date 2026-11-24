@@ -199,6 +199,14 @@ public partial class Preview : Node2D
 				});
 			});
 		},
+		// 抽牌堆界面（p5mod/src/Vfx/PileDraw.cs）：0.5s 打开 → 假牌格子依次飞入 → 2.2s / 3.2s 碰到一张牌（预告信踢转）→ 4.4s 关闭
+		["pile_draw"] = p => PileDrawPreview(p, false),
+		// 消耗堆界面（p5mod/src/Vfx/PileExhaust.cs，P5R SKILL 页）
+		["pile_exhaust"] = p => PileDrawPreview(p, true),
+		// 弃牌堆界面（p5mod/src/Vfx/PileDiscard.cs，P5R ITEM 页，2026-11-23）
+		["pile_discard"] = p => PileDrawPreview(p, true, true),
+		// 牌组界面（p5mod/src/Vfx/PileDeck.cs，P5R EQUIP 页，2026-11-24）
+		["pile_deck"] = p => PileDrawPreview(p, true, false, true),
 		["damage"] = p =>
 		{
 			p.Strike(0.3, Enemy, 7);
@@ -1286,7 +1294,7 @@ public partial class Preview : Node2D
 			p.At(0.05, () => { o = new Orochi(p._back, JokerFeet, tall); });
 			p.Every(() =>
 			{
-				t0 += 1.0 / 30.0;
+				t0 += 1.0 / RecFps;
 				float tt = (float)t0;
 				float ltn = Mathf.Exp(-Mathf.Pow((tt - 1.6f) / 0.05f, 2f)) + 0.6f * Mathf.Exp(-Mathf.Pow((tt - 1.8f) / 0.04f, 2f));
 				o?.Set(tt, ltn, Mathf.Min(1f, tt / 0.3f));
@@ -1625,6 +1633,11 @@ public partial class Preview : Node2D
 			{
 				scenario = a["--scenario=".Length..];
 			}
+			if (a == "--measure")
+			{
+				_measure = true;
+				RenderingServer.ViewportSetMeasureRenderTime(GetViewport().GetViewportRid(), true);
+			}
 		}
 		string texDir = ProjectSettings.GlobalizePath("res://.tex");
 		Stage.LoadTexture = name =>
@@ -1632,14 +1645,17 @@ public partial class Preview : Node2D
 			string path = $"{texDir}/{name}.png";
 			if (!FileAccess.FileExists(path))
 				path = ProjectSettings.GlobalizePath($"res://../../../p5mod/pck_stage/p5joker/fx/{name}.png");
-			return FileAccess.FileExists(path) ? ImageTexture.CreateFromImage(Image.LoadFromFile(path)) : null;
+			if (!FileAccess.FileExists(path)) return null;
+			Image img = Image.LoadFromFile(path);
+			if (name.StartsWith("pile_") || name.StartsWith("m3d_")) img.GenerateMipmaps();   // 同游戏里打包时带的 mipmap（tools/pck/godot_tex.py）
+			return ImageTexture.CreateFromImage(img);
 		};
 		Stage.Report = (where, e) => GD.PrintErr($"[P5Joker] {where}: {e}");
 		Stage.NowMs = () => (ulong)(_clock * 1000.0);
-		HitStop.RealSeconds = () => _frames / 30.0;
+		HitStop.RealSeconds = () => _frames / RecFps;
 		string sfxLog = ProjectSettings.GlobalizePath("res://") + $"out/{scenario}/sfx.txt";
 		System.IO.File.WriteAllText(sfxLog, "");
-		Sfx.Recorder = (name, vol) => System.IO.File.AppendAllText(sfxLog, $"{_frames / 30.0:0.000} {name} {vol:0.00}\n");                 // 顿帧按录像帧数计时（不受时间流速影响）
+		Sfx.Recorder = (name, vol) => System.IO.File.AppendAllText(sfxLog, $"{_frames / RecFps:0.000} {name} {vol:0.00}\n");                 // 顿帧按录像帧数计时（不受时间流速影响）
 		Stage.PlayEvent = (e, vol) => Sfx.Recorder?.Invoke(e, vol);   // 游戏自带的 FMOD 事件：记下事件名，mix.py 用解出来的原版样本（tools/p5/fxpreview/game_sfx.py）
 		GD.Seed(52029);
 		Stage.Shake = s => { _shake = s; _shakeLeft = 0.25f; _shakeDir = null; };
@@ -1679,10 +1695,28 @@ public partial class Preview : Node2D
 	private Vector2? _shakeDir;
 	private long _frames;
 
+	/// <summary>录像帧率（render.sh 的 FPS，默认 30）：音效日志、顿帧时钟都按它把帧数换成秒。</summary>
+	private static readonly double RecFps = double.TryParse(System.Environment.GetEnvironmentVariable("FPS"), out double f) && f > 0 ? f : 30.0;
+
+	private bool _measure;
+	private double _mGpu, _mCpu; private int _mN, _mSec;
+
 	public override void _Process(double delta)
 	{
 		_clock += delta;
 		_frames++;
+		if (_measure)
+		{
+			// --measure：每 0.5s（场景时间）打印主视口平均渲染耗时（GPU / CPU 毫秒）
+			Rid vp = GetViewport().GetViewportRid();
+			_mGpu += RenderingServer.ViewportGetMeasuredRenderTimeGpu(vp); _mCpu += RenderingServer.ViewportGetMeasuredRenderTimeCpu(vp); _mN++;
+			if ((int)(_clock * 2) != _mSec)
+			{
+				_mSec = (int)(_clock * 2);
+				GD.Print($"[measure] t={_clock:F1} gpu={_mGpu / _mN:F2}ms cpu={_mCpu / _mN:F2}ms n={_mN}");
+				_mGpu = _mCpu = 0; _mN = 0;
+			}
+		}
 		foreach (Action a in _every)
 		{
 			Stage.Safe("every", a);
@@ -1810,5 +1844,144 @@ public partial class Preview : Node2D
 		n.AddChild(new Polygon2D { Polygon = pts, Color = new Color("4b2f5c") });
 		n.AddChild(new Polygon2D { Polygon = Fx.Circle(16f * k, 16), Color = new Color("f2d14a"), Position = new Vector2(-45f, -60f) * k });
 		n.AddChild(new Polygon2D { Polygon = Fx.Circle(16f * k, 16), Color = new Color("f2d14a"), Position = new Vector2(20f, -66f) * k });
+	}
+
+	private static void PileDrawPreview(Preview p, bool exhaust, bool discard = false, bool deck = false)
+	{
+		TranslationServer.SetLocale("zh_CN");          // 预览按中文版（字图走 _zh）
+		CanvasLayer top = new() { Layer = 50 };
+		p.AddChild(top);
+		Control host = new() { Size = new Vector2(1920f, 1080f), MouseFilter = Control.MouseFilterEnum.Ignore };
+		top.AddChild(host);
+		// 游戏顶栏（血量 / 金币 / 地图那一条，1080p 下约 80px 高）盖在牌堆界面上面：预览里画一条，看排版有没有被挡
+		CanvasLayer barLayer = new() { Layer = 60 };
+		p.AddChild(barLayer);
+		barLayer.AddChild(new ColorRect { Size = new Vector2(1920f, 80f), Color = new Color(0.17f, 0.22f, 0.25f, 0.85f), MouseFilter = Control.MouseFilterEnum.Ignore });
+		// 顶栏下面那排遗物（实机截图：y 85–143，三个）
+		for (int r = 0; r < 3; r++)
+			barLayer.AddChild(new ColorRect { Position = new Vector2(18f + 66f * r, 87f), Size = new Vector2(54f, 54f), Color = new Color(0.25f, 0.6f, 0.35f, 0.8f), MouseFilter = Control.MouseFilterEnum.Ignore });
+		p.At(0.5, () =>
+		{
+			// 弃牌堆：攻击 5（升级 2）/ 技能 5（升级 1）/ 能力 2，同排版图
+			var dstats = (12, 3, new Dictionary<string, (int N, int Up)> { ["attack"] = (5, 2), ["skill"] = (5, 1), ["power"] = (2, 0) });
+			var kstats = (20, 4, new Dictionary<string, (int N, int Up)> { ["attack"] = (8, 2), ["skill"] = (9, 2), ["power"] = (2, 0), ["curse"] = (1, 0) });
+			IPileDecor draw = deck ? new PileDeck(host, new Vector2(1920f, 1080f), kstats) : discard ? new PileDiscard(host, new Vector2(1920f, 1080f), dstats) : exhaust ? new PileExhaust(host, new Vector2(1920f, 1080f), 12) : new PileDraw(host, new Vector2(1920f, 1080f), 23);
+			IPileDecor L = draw;
+			// 假牌：攻击 7 / 技能 9 / 能力 3（灰卡 + 类型色块），按 PileDraw 的版式排
+			Control cards = new() { MouseFilter = Control.MouseFilterEnum.Ignore };
+			host.AddChild(cards);
+			var items = new List<(Control C, Vector2 At, float Born)>();
+			var heads = new List<(Node2D N, Vector2 At)>();
+			Color[] tint = { new(0.72f, 0.19f, 0.16f), new(0.16f, 0.38f, 0.63f), new(0.77f, 0.59f, 0.16f) };
+			int[] counts = deck ? new[] { 8, 9, 2 } : discard ? new[] { 5, 5, 2 } : exhaust ? new[] { 4, 6, 2 } : new[] { 7, 9, 3 };
+			string[] en = { "ATTACK", "SKILL", "POWER" }, zh = { "攻击", "技能", "能力" };
+			float y = 0f, born = L.CardsStart;
+			for (int g = 0; g < 3; g++)
+			{
+				Node2D head = new() { Modulate = new Color(1f, 1f, 1f, 0f) };
+				cards.AddChild(head);
+				string[] keys = { "attack", "skill", "power" };
+				float tx = 16f;
+				tx += PileText.Exact(head, keys[g], new Vector2(tx, 8f), 40f, new Color(0.94f, 0.94f, 0.94f)) + 10f;
+				tx += PileText.Exact(head, keys[g] + "_zh", new Vector2(tx, 15f), 28f, new Color(0.9f, 0.1f, 0.11f)) + 12f;
+				tx += PileText.Number(head, "×" + counts[g], new Vector2(tx, 12f), 34f, new Color(0.94f, 0.94f, 0.94f)) + 14f;
+				var po = PileDraw.Poly(head, new[] { new Vector2(-4f, 2f), new Vector2(tx + 4f, -4f), new Vector2(tx + 12f, 56f), new Vector2(2f, 62f) }, new Color(0.94f, 0.94f, 0.94f));
+				var pi = PileDraw.Poly(head, new[] { new Vector2(0f, 5f), new Vector2(tx, 0f), new Vector2(tx + 8f, 52f), new Vector2(6f, 58f) }, new Color(0.04f, 0.04f, 0.04f));
+				head.MoveChild(po, 0); head.MoveChild(pi, 1);
+				heads.Add((head, new Vector2(L.GridX - 6f, L.GridTop + y)));
+				y += 70f;
+				for (int i = 0; i < counts[g]; i++)
+				{
+					Control c = new() { Size = new Vector2(L.CardW, L.CardW * 1.406f), PivotOffset = new Vector2(L.CardW, L.CardW * 1.406f) * 0.5f, Modulate = new Color(1f, 1f, 1f, 0f) };
+					cards.AddChild(c);
+					c.AddChild(new ColorRect { Size = c.Size, Color = new Color(0.82f, 0.82f, 0.82f) });
+					c.AddChild(new ColorRect { Position = new Vector2(3f, 3f), Size = c.Size - new Vector2(6f, 6f), Color = new Color(0.11f, 0.1f, 0.12f) });
+					c.AddChild(new ColorRect { Position = new Vector2(10f, 22f), Size = new Vector2(L.CardW - 20f, 84f), Color = tint[g] });
+					Vector2 at = new(L.GridX + (i % L.Cols) * L.CellW + L.CellW * 0.5f, L.GridTop + y + (i / L.Cols) * L.CellH + L.CellH * 0.5f);
+					items.Add((c, at, born));
+					born += 0.022f;
+				}
+				y += Mathf.Ceil(counts[g] / (float)L.Cols) * L.CellH + 16f;
+			}
+			// 排列切换（和游戏里同一个 PileModeSwitch）：2.75s 切到「原版顺序」，牌按原版牌堆的顺序（假的：打乱的类型交错）重排成一段
+			Node2D swNode = new() { Name = "PileHead", Modulate = new Color(1f, 1f, 1f, 0f) };
+			host.AddChild(swNode);
+			PileModeSwitch sw = PileModeSwitch.Build(swNode, Vector2.Zero, 1f, false);
+			Node2D orderHead = new() { Modulate = new Color(1f, 1f, 1f, 0f) };
+			cards.AddChild(orderHead);
+			{
+				float tx = 16f;
+				tx += PileText.Exact(orderHead, deck ? "deck" : discard ? "discard" : exhaust ? "exhaust" : "draw", new Vector2(tx, 8f), 40f, new Color(0.94f, 0.94f, 0.94f)) + 12f;
+				tx += PileText.Number(orderHead, "×" + items.Count, new Vector2(tx, 12f), 34f, new Color(0.94f, 0.94f, 0.94f)) + 14f;
+				var po = PileDraw.Poly(orderHead, new[] { new Vector2(-4f, 2f), new Vector2(tx + 4f, -4f), new Vector2(tx + 12f, 56f), new Vector2(2f, 62f) }, new Color(0.94f, 0.94f, 0.94f));
+				var pi = PileDraw.Poly(orderHead, new[] { new Vector2(0f, 5f), new Vector2(tx, 0f), new Vector2(tx + 8f, 52f), new Vector2(6f, 58f) }, new Color(0.04f, 0.04f, 0.04f));
+				orderHead.MoveChild(po, 0); orderHead.MoveChild(pi, 1);
+			}
+			Vector2 orderHeadAt = new(L.GridX - 6f, L.GridTop);
+			int[] perm = { 3, 9, 0, 14, 6, 11, 1, 16, 7, 4, 12, 2, 18, 8, 13, 5, 17, 10, 15 };
+			var orderAt = new Vector2[items.Count];
+			int slot = 0;
+			foreach (int src in perm)
+			{
+				if (src >= items.Count) continue;
+				orderAt[src] = new Vector2(L.GridX + (slot % L.Cols) * L.CellW + L.CellW * 0.5f, L.GridTop + 70f + (slot / L.Cols) * L.CellH + L.CellH * 0.5f);
+				slot++;
+			}
+			var orderIndex = new int[items.Count];
+			{ int o = 0; foreach (int src in perm) if (src < items.Count) orderIndex[src] = o++; }
+			const float SwitchAt = 2.75f;
+			bool switched = false;
+			int hovered = -1;
+			float exitAt = -1f, last = 0f;
+			Fx.Animate(host, 0, 6.0, t =>
+			{
+				float now = t * 6f, dt = Mathf.Max(0f, now - last);
+				last = now;
+				if (exitAt < 0f && now >= 4.4f) { exitAt = now; draw.BeginExit(now); }
+				if (!switched && now >= SwitchAt) { switched = true; sw.Set(true); }
+				int want = now >= 1.7f && now < 2.45f ? 1 : now >= 3.35f && now < 4.1f ? 8 : -1;
+				if (want != hovered) { hovered = want; if (want >= 0) { draw.Kick(); } }
+				draw.Update(now, dt);
+				float ex = exitAt < 0f ? 0f : Mathf.Clamp((now - exitAt) / L.ExitTime, 0f, 1f);
+				float sIn = Mathf.Clamp((now - L.CardsStart) / 0.3f, 0f, 1f);
+				swNode.Position = L.SwitchAt + new Vector2(-80f * (1f - Ease5.OutExpo(sIn)) - 260f * Ease5Ext.InCubic(ex), 0f);
+				swNode.Modulate = new Color(1f, 1f, 1f, sIn * (1f - ex));
+				float swT = Mathf.Clamp((now - SwitchAt) / 0.15f, 0f, 1f);
+				foreach (var (n, at) in heads)
+				{
+					float a = Mathf.Clamp((now - L.CardsStart) / 0.25f, 0f, 1f) * (1f - ex) * (1f - swT);
+					n.Position = at + new Vector2(-80f * (1f - Ease5.OutExpo(Mathf.Clamp((now - L.CardsStart) / 0.3f, 0f, 1f))) - 260f * Ease5Ext.InCubic(ex) - 120f * Ease5Ext.InCubic(swT), 0f);
+					n.Modulate = new Color(1f, 1f, 1f, a);
+				}
+				float hIn = Mathf.Clamp((now - SwitchAt - 0.18f) / 0.25f, 0f, 1f);
+				orderHead.Position = orderHeadAt + new Vector2(-80f * (1f - Ease5.OutExpo(hIn)) - 260f * Ease5Ext.InCubic(ex), 0f);
+				orderHead.Modulate = new Color(1f, 1f, 1f, hIn * (1f - ex));
+				for (int i = 0; i < items.Count; i++)
+				{
+					var (c, at0, b) = items[i];
+					float mt = Ease5Ext.InOutCubic(Mathf.Clamp((now - SwitchAt - Mathf.Min(0.3f, orderIndex[i] * 0.014f)) / 0.35f, 0f, 1f));
+					Vector2 at = at0.Lerp(orderAt[i], mt);
+					float bt = Mathf.Clamp((now - b) / 0.38f, 0f, 1f);
+					float pop = Ease5.OutBack(bt);
+					Vector2 pos = at + L.EnterOffset * (1f - pop);
+					float lift = i == hovered ? 1f : 0f;
+					float sc = (0.85f + 0.15f * pop) * (1f + 0.26f * lift);
+					float alpha = Mathf.Clamp(bt * 3f, 0f, 1f);
+					alpha *= Mathf.Clamp((L.GridBottom - (at.Y - c.Size.Y * 0.5f)) / (c.Size.Y * 0.8f), 0f, 1f);   // 同游戏：格子区下边以外的牌淡出（牌组页下面要露出枪）
+					if (ex > 0f)
+					{
+						float r = Ease5Ext.InCubic(Mathf.Clamp((ex - Mathf.Min(0.35f, i * 0.012f)) / 0.65f, 0f, 1f));
+						pos += L.ExitOffset * r;
+						sc *= 1f - 0.12f * r;
+						alpha *= 1f - r;
+					}
+					c.Position = pos + new Vector2(0f, -14f * lift) - c.Size * 0.5f;
+					c.Scale = Vector2.One * sc;
+					float dim = hovered >= 0 && i != hovered ? 0.55f : 1f;
+					c.Modulate = new Color(dim, dim, dim, alpha);
+					if (lift > 0f) cards.MoveChild(c, cards.GetChildCount() - 1);
+				}
+			});
+		});
 	}
 }

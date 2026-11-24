@@ -6,6 +6,107 @@
 
 ---
 
+## 2026-11-23 · 会话 E 交接（总览，最新）—— 分支 `claude/confirm-next-tasks-k5wu6t`，等合并
+
+### 分支状态
+- `claude/confirm-next-tasks-k5wu6t` @ `f1cd1b56`（加上这条交接），已推送、工作区干净、`bash tools/p5/cloud/check.sh` 通过。
+- 它已经包含 `codex/p5-0951-integration`（555c06c0）、`claude/p5-pile-ui`（c9eff0b9）、`claude/confident-hypatia-nropgi`（17d16253）、`claude/exciting-babbage-lm8ubb`：
+  这四个都是它的祖先 → 合进 integration 是**快进**，没有冲突。
+- 版本号没动（`P5Joker.json` 0.9.72）。**出包前跑 `tools/p5/charselect_assets.py` + `tools/p5/stage_p5.py`**（新贴图 `reward_* / icon_top* / battle_* / hud_* / pile_dc_* / pile_dc3d_*` 都没提交进 pck_stage）。
+
+### 本会话做完的（按时间，细节见下面各条）
+1. 选卡界面「夺宝」：剪报素材、TREASURE 在横幅下、STOLEN 印章延迟交结果、原版横幅 / 跳过按钮换皮、入场整体放慢 + 每个部件都有切入（`Vfx/RewardFx.cs`）。
+2. Joker 头像（顶栏 / 战绩 / 联机）、选人按钮图。
+3. 战斗开始「TAKE YOUR HEART!」/ 回合横幅 / ONE MORE!（左上角剪报纸条，`Vfx/BattleUiFx.cs`）；能量球、结束回合按钮换皮（`Vfx/HudSkin.cs`）。
+4. 实机修正：总攻击立绘分辨率 + 4×MSAA、出牌击杀时剪影（去材质 / 套运行时 Spine 皮）、扫腿格挡、商店 Joker 0.75 倍、华丽收场光效硬边框。
+5. 群蛇形态：用户定稿 = 另一会话改动之前的版本 + 獠牙更明显 + 鳞片（加重 80%）。**分布别再改。**
+6. 弃牌堆 = ITEM 页（`Vfx/PileDiscard.cs`）：排版 v4、左边类型列表（真实张数 / 已升级）、右下斜带压在牌上面、3D Joker 逐帧入场 → 切 2D 立绘。
+
+### 全部只在预览里看过、没进游戏的
+选卡界面入场新动画、战斗横幅 / HUD 的最终大小、商店缩放、华丽收场去边框、群蛇鳞片强度、**弃牌堆整页**（另外两页牌堆也没进过游戏，见牌堆会话交接）。
+
+### 没做完 / 可以接着做
+- **弃牌堆入场不是逐帧精确拟合**：动作 main_0010 + 拟合的末帧机位 + 粗量的推近路径（`tools/p5/menu3d/item_entrance.py` 文件头有结论）。要更像原版，照 `tools/p5/menu3d/fit/README.md` 第 3 步逐帧量眼睛解机位。
+- 弃牌堆的排列切换开关是正的，没跟着斜带歪（用户还没说要不要改）。
+- 牌组（EQUIP 页）还走原版；线索在 `tools/p5/menu3d/fit/README.md`（原版序号约 233–243，立绘 CAMPEQUIP_2D01/02/03）。
+- 用户问过但没定的：能量球大小（这次没缩）。
+
+---
+
+## 2026-11-23 · 会话 E：弃牌堆（ITEM 页）做进游戏代码 —— 接手牌堆会话的「进行中」，合了 `claude/p5-pile-ui`
+
+- 用户在本会话改了排版（v3：左边列表收窄、右缘斜直边 + 白边 + 内侧红条、每行跟着斜边错开；v4：右下斜带往下压、牌区多约一排），定稿 `docs/p5/preview/pile_discard_layout_v4.png`；
+  牌堆会话的三个问题用户说「就现在这样」：图标照排版图、消耗堆不加左边列表、弃牌堆 3 列。
+- 实现：`p5mod/src/Vfx/PileDiscard.cs`（IPileDecor）。静态部分 `tools/p5/pile/export_discard.py` 从排版脚本分层导出到 `art/p5/ui/pile_discard`（stage 成 `pile_dc_*`，原尺寸 1080p）：
+  黑块 + 星纹条、撞色立绘、标题牌、COMMAND、每行头像底 / 图标、两个标签、原版大 / 小数字和下划线。运行时：红底、面板斜边、每行的张数 / 已升级数和文字（按真实弃牌堆统计，`PileScreen.DiscardStats`，0 张的行半透明）、
+  右下斜带和它下面的红底（下一帧挪到牌上面，PileHead 再挪到它上面）、入场 / 退场。改排版图以后要重跑 export_discard.py。
+- `PileScreen`：弃牌堆接上（`Enabled` 加 Discard）；手掌砸下的声音只给另两页；排列方式单独记 `P5Settings.DiscardOrder`。牌在立绘上面一层，所以 GridX 右移到 1100、CellW 182。
+- **入场的 3D Joker 逐帧**（用户：立绘要有每一帧的动画，同另两页）：`tools/p5/menu3d/item_entrance.py` 渲 10 帧到 `research/p5r/menu3d_item`（stage 成 `pile_dc3d_*`）。
+  artfit 对 29 个片段末帧拟合立绘剪影没有明显赢家（立绘左上举起的手都对不上，结论在脚本文件头），所以动作用 main_0010（转身、手扫过），
+  最后一帧用拟合的机位，前面沿视线拉远 + 平移到原版那一帧头的位置（粗量）。代码里 `PileDiscard.M3dAt` / `Map`，3D 帧也套斜线撞色（SlantShader），CutAt 硬切 2D 立绘。
+  **不是 SKILL 页那种逐帧精确拟合**；要更像原版，按 `tools/p5/menu3d/fit/README.md` 第 3 步逐帧量眼睛再解机位。
+- 预览场景 `pile_discard`（`docs/p5/preview/pile_discard_v2.mp4`）。**没进过游戏**。牌组（EQUIP）还走原版。
+
+---
+
+## 2026-11-23 · 牌堆界面会话（`claude/p5-pile-ui`）交接 —— 抽牌堆、消耗堆做完（只在预览里看过），弃牌堆在排版阶段等用户回复
+
+### 分支和状态
+- 分支 **`claude/p5-pile-ui`**（用户要求单独开：「这个 UI 改动我还没那么快推出」），已推送、工作区干净，`bash tools/p5/cloud/check.sh` 通过。
+  从 `codex/p5-0951-integration`（`555c06c0`）开出来，integration 之后没有新提交 → 合回去是快进。
+- 版本号没动（`P5Joker.json` 0.9.72）。**牌堆界面一次都没进过游戏**，全部只在预览里看过。
+- 总计划和各页结论：`docs/p5/PILE_PLAN.md`（对应关系：抽牌堆 = 主菜单、消耗堆 = SKILL、弃牌堆 = ITEM、牌组 = EQUIP）。
+
+### 已完成
+1. **骨架**（照搬 P3 的 PileFx）：`p5mod/src/PilePatches.cs`（`NCardPileScreen._Ready` 后置；`AfterCapstoneClosed` 前置，先播退场再关）+ `p5mod/src/PileScreen.cs`
+   （复用原版 `NGridCardHolder`：悬停名牌、点击翻牌特写 + 查看升级、手柄 / 键盘、滚动、出错回滚到原版）。
+   现在**只接抽牌堆和消耗堆**（`PileScreen.Enabled`），弃牌堆 / 牌组走原版。设置开关「牌堆界面（P5R 菜单风格）」（`P5Settings.Option.Pile`）。
+   每页的装饰 / 版式 / 入场退场是一个 `IPileDecor`（定义在 `Vfx/PileText.cs`）。
+2. **抽牌堆 = 主菜单**（`Vfx/PileDraw.cs`）：用户在预览里认可（`docs/p5/preview/pile_draw_v5.mp4`）。
+   原版红星纹底（`CAMPBGSTARANIME.DAT` 49 颗星，着色器画）、原版菜单 3D Joker 入场（`pile_m3d_*`）、原版立绘 CAMPTOP 手掌拍下
+   （`SlamAt = 0.488`，和 camp_open 那声「啪」、重击声、预告信落下同一刻）、掌心真 3D 预告信（正面原版 P5_CARD02，背面每次随机一封原版预告信正文，碰牌加速转）。
+3. **消耗堆 = SKILL 页**（`Vfx/PileExhaust.cs`）：排版和入场用户都认可（`pile_exhaust_v7.mp4`，逐帧对照 `pile_exhaust_entrance_vs_p5r.jpg`）。
+   入场逐帧还原原版 frame 113–125：Codex 导出逐帧顶点（`research/p5r/menu3d_data`）后在云端拟合机位（`tools/p5/menu3d/skill_entrance.py`，结论在文件头），
+   渲出 11 帧（`research/p5r/menu3d_skill`）。定格姿势 main_0016 = 2D 立绘的姿势和机位，切立绘不跳。
+   P 系列撞色（用户讲的）：白板里 Joker 是白的；黑色区域从立绘白腿那条直边往右扫开（同心圆、半径逐帧变大，`BackBufferCopy` + 读屏着色器），区域里白板变黑、腿变白。
+4. **排列切换「原版顺序 / 按类型」**（`Vfx/PileSwitch.cs`）：每个牌堆分开记（`P5Settings.DrawOrder / ExhaustOrder`）；原版顺序直接读原版网格 `NCardGrid._cards`。
+   用户以为忘了做——其实一直有，只是之前预览用假牌没放进去；v7 预览 2.75 秒处演示了。
+5. 固定文字全是 P5 字图（`art/p5/ui/pile_text`，Codex 生的；数字用原版字图），卡牌名用游戏字体。
+
+### 进行中：弃牌堆 = ITEM 页（排版图 v2 已发，等用户回三个问题）
+- `docs/p5/preview/pile_discard_layout_v2.png`（和原版对照 `pile_discard_layout_v2_vs_p5r.jpg`），脚本 `tools/p5/pile/mock_discard.py`；块面形状是从原版 frame 194–206 描的。
+- 用户提的：立绘左半边原版是被队伍列表挡住的（只有入场时露出来）→ v2 左边放**原版队伍列表样式的类型列表**，零件全是原版
+  （阶梯白边黑长条、CAMP.PLG 头像锯齿底、标签牌 00253、斜体大数字、HP / SP 那样的青 / 粉两行；第一行原版 Joker 头像 + 总张数；类型行用原版属性图标）。
+- **等用户回答**：① 图标对应（物理 = 攻击、疾风 = 技能、电击 = 能力、念动 = 状态、咒怨 = 诅咒）行不行；
+  ② 消耗堆要不要也加同样的左边列表（原版 SKILL 页也有，我建议加）；③ 弃牌堆牌格子 3 列（留原版右边红边，一屏 7–8 张）还是 4 列。
+- 定下来以后：`Vfx/PileDiscard.cs`（IPileDecor）——撞色斜线（立绘在线右边黑 → 浅灰、白描边 → 黑）用着色器；PLG 多边形导成运行时数据；
+  牌只在黑色窗口里显示（从浅灰身体 / 右下斜带下面钻过去）；排列切换放右下浅灰斜带上（原版这里是「消耗品 ●○○ Q/E」）；
+  左边列表点一行跳到那一段（我向用户提的，还没确认）；`P5Settings.DiscardOrder`；`PileScreen.Enabled` 加弃牌堆。
+  入场按 `tools/p5/menu3d/fit/README.md` 拟合原版 ITEM 入场（3D Joker + 撞色），砸中时左边列表滑进来（同原版）。之后是牌组 = EQUIP 页（没开始）。
+
+### 出包 / 实机
+- 牌堆贴图在 `p5mod/pck_stage/p5joker/fx/pile_*`（已提交）。改了 `stage_p5.py` 的 `pile_textures()` 后**只重写 pile_* 那几张**：
+  `python3 -c "import sys; sys.path[:0]=['tools/p5','tools/pck']; import stage_p5 as s; from godot_tex import write_texture; [write_texture(s.STAGE, f'p5joker/fx/{n}.png', im) for n, im in s.pile_textures() if n.startswith('pile_sk3d_')]"`
+  （前缀按需要改）。**别整个重跑 `stage_p5.py` 的 main**，会改动 540 个已提交的文件。
+- 实机要看：清晰度 / 锯齿（大图都按显示宽 ×1.34 离线预缩）、帧率（消耗堆入场有读屏反色、11 张大贴图）、手柄、出错回滚。
+
+### 用户在这个会话定的规矩（后面两页照做）
+- 能用原版素材就用原版，没有的再让 Codex 生图；UI 文字用 P5 字图。
+- **还原原版**：入场动作对着原版逐帧比，交付前自己出「原版 vs 我们同一时刻」的对照图检查过再发；**放大到 100% 查局部**
+  （这次弃牌堆排版图出过「立绘贴了两次」的重影，就是只看缩小图漏掉的）。用户原话：「请你仔细去做 自己仔细和原版对照 不要随随便便就交一版上来了」。
+- 不露立绘截边（靠大小 / 排版解决）；背景不透明（红星纹）；入场干脆不拖沓；牌格子别太紧凑。
+- 预览 854 宽、带声音，旧版删掉；回复用中文。
+- Codex 任务单：遇到问题不要停下，按自己理解做完最后报告（`docs/codex/README.md`），安全清单照旧；生图任务不自审、不重生、不写报告。
+  GFD 相关的活交给 Codex（云端从下载的源码编 GFD-Studio 被安全分类器拦了，别绕）。
+
+### 工具
+- `tools/p5/menu3d/fit/`：逐帧拟合工具 + 流程说明（README）；`reg2d.py` 立绘配准、`artfit.py` 找定格姿势和机位、`fitlib.py` 按脸部特征点解机位、
+  `rast.py` 剪影、`render.py` Godot 渲染 + 叠原版、`compare.py` 交付前对照图、`grid.py` 量点；`skill_example/` 是 SKILL 页实际用的做法。
+- 预览：`GODOT=… bash tools/p5/fxpreview/render.sh pile_draw|pile_exhaust 6`，再 `python3 tools/p5/fxpreview/mix.py <场景>` 出带声 mp4（预览场景在 `Preview.cs` 的 `PileDrawPreview`）。
+- 静态排版图：`tools/p5/pile/mock_draw.py / mock_exhaust.py / mock_discard.py`。
+
+---
+
 ## 2026-11-19 · 会话 E 收尾：待合并总览（用户：可以了，整理好等其他会话合并）
 
 - 分支 **`claude/confirm-next-tasks-k5wu6t`**（`ccd94646`，已推送、工作区干净、类型检查通过）。比 `codex/p5-0951-integration`（`f513007b`）多 14 个提交（其中 6 个是合进来的 `claude/confident-hypatia-nropgi` 华丽收场第二～七版）；
