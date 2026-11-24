@@ -29,7 +29,16 @@ def main():
         for idx, (f, cam) in sorted(json.load(open(fin)).items(), key=lambda kv: int(kv[0])):
             lines += cs_key(int(idx) - 233, 'main_0005', f, 'main_0005', f, 0.0, cam)
         out.append(('Deck', '牌组（原版 EQUIP 页 233–239，U = 原版帧 − 233）', lines))
-    body = ''.join(f'\t/// <summary>{doc}</summary>\n\tpublic static readonly MenuJoker3D.Key[] {name} =\n\t{{\n{ls}\t}};\n' for name, doc, ls in out)
+    fin = ROOT / 'tools/p5/menu3d/fit/draw_example/final.json'
+    split = ''
+    if fin.exists():
+        d = json.load(open(fin)); lines = ''
+        for idx, (f, cam) in sorted(d['keys'].items(), key=lambda kv: int(kv[0])):
+            lines += cs_key(int(idx) - 46, 'main_0000', f, 'main_0000', f, 0.0, cam)
+        out.append(('Draw', '抽牌堆（原版主菜单 46–52，U = 原版帧 − 46）', lines))
+        split = ('\t/// <summary>抽牌堆 46–52 每帧红底 / 星纹的分界线 x = a + b·y（原版坐标，fit/draw_example/split.py）。</summary>\n'
+                 '\tpublic static readonly float[][] DrawSplit = { ' + ', '.join(f'new[] {{ {a:.2f}f, {b:.4f}f }}' for a, b in d['split']) + ' };\n')
+    body = split + ''.join(f'\t/// <summary>{doc}</summary>\n\tpublic static readonly MenuJoker3D.Key[] {name} =\n\t{{\n{ls}\t}};\n' for name, doc, ls in out)
     (ROOT / 'p5mod/src/Vfx/MenuJoker3DKeys.cs').write_text('// 生成的文件（tools/p5/menu3d/runtime_keys.py），别手改。\nnamespace P5Joker;\n\n'
         '/// <summary>各页入场 3D Joker 的关键帧：原版逐帧拟合的姿势和机位（原版 1920×1080 屏幕坐标的 Godot Camera3D 参数）。</summary>\n'
         'internal static class MenuJoker3DKeys\n{\n' + body + '}\n', encoding='utf-8')
